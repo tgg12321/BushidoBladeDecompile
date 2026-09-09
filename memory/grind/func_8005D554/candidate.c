@@ -158,6 +158,29 @@
  *       the call puts the base in a PREDECESSOR block, which emits it BEFORE the argument
  *       setup -- the side we already have.  schedule_insns is per-block (sched.c:4937).
  * Do NOT re-try sibling-8005FA98 order, the narrow pointer-local, or intra-body block splits.
+ *
+ * s12 (rederive, 2026-09-09, HEAD main @ 0c19707c): floor RE-MEASURED at 6/176 on this body; the
+ * kill re-audit passes for a fourth session (fake_ablate finds no FAKE construct in the closest
+ * banked form, and that form re-measures 6/176).  Three results, two of them corrections:
+ *   (1) s8's "three-argument call is byte-inert" verdict has the WRONG MECHANISM.  text1b.c:2642
+ *       carries a file-scope prototype extern s32 func_80073728(s32, s32); and a function-local
+ *       K&R redeclaration does not override it, so GCC 2.7.2 simply DISCARDS a third argument --
+ *       even a loop-variant one, which measures byte-identical to the control at 6/176.  Any
+ *       future argument-position probe must bypass the prototype.
+ *   (2) A GENUINE third argument (local function-pointer cast) measures 17/178.  The argument
+ *       value is materialised after both argument moves, but by dependence on the accumulate, not
+ *       by rank, and the four-insn window is the control's rotation with the base reseated to a3.
+ *       Argument position is not a lever: the zero1C value is consumed before the call.
+ *   (3) A base with no consumer but a call argument is not born late, it is DELETED -- single-set
+ *       single-use (s32)r4 - K is a loop.c movable and is hoisted to the preheader (66/162,
+ *       fourteen insns below target).  The accumulate is what keeps the base insn in the loop.
+ * And the INSN_PRIORITY family is now closed by a PREDICATE rather than by observation:
+ * schedule_select walks the ready list in maximal equal-priority groups (sched.c:2674) and only
+ * advances when a group is fully queued (sched.c:2704), so a base lifted above the argument moves
+ * is also lifted above the three priority-3 struct stores and, since selection order is reverse
+ * emission order, is EMITTED after them -- while the target emits it before them (4DEC0 vs
+ * 4DEC4/4DEC8/4DECC).  That retires frontier item 3.  Do NOT re-attempt priority levers, extra
+ * call arguments, or hoisting the base out of its accumulate.  See hypotheses.md H35-H39.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

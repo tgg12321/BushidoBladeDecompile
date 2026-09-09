@@ -1348,3 +1348,105 @@ it is in, not how the a2 value is spelled.
 - [s11] Re-derived reading of the target window (asm/funcs/func_8005D554.s lines 92-109), to be inherited rather than re-derived: addiu $a2,$s4,-0xC at 4DEC0 is NOT a call-argument move. It is the base of the zero1C value; the accumulate addu $a2,$a2,$v0 is at 4DEE8 and the store sw $a2,0x2C($sp) is the jal delay slot at 4DEF4. $a2 is just the caller-saved seat local-alloc chose. The real argument moves are addiu $a0,$sp,0x10 (4DEB4) and addu $a1,$zero,$zero (4DEB8). This is why the s8 three-argument reading of func_80073728 is byte-inert, and why no argument-position spelling of the a2 value can raise its LUID above the moves: the value is accumulated and stored BEFORE the call, so its base insn is necessarily born before expand_call runs (calls.c:1880).
 
 - [s11] Frontier item 2 (sched2 inversion) is analytically de-prioritised, not measured: rank_for_schedule's last tie-break is return INSN_LUID (tmp) - INSN_LUID (tmp2); (sched.c:2464), a stable-sort tie-break, and sched2 recomputes INSN_LUID from the current insn chain (sched.c:2198), so for a group tied on priority/class/hazard sched2's output order equals its input order. The one term never measured post-reload is whether physical-register anti-deps break that tie in sched2 - see frontier.
+
+## s12 (rederive, 2026-09-09, HEAD main @ 0c19707c)
+
+- Control (memory/grind/func_8005D554/candidate.c applied to src/text1b.c) re-measures
+  **6/176**, build_insns == target_insns == 176.  Chassis identical to s10/s11.
+- Kill re-audit (fourth consecutive pass): `tools/fake_ablate.py --func func_8005D554 --file
+  text1b --candidate rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c` reports
+  no FAKE-annotated construct, and that form re-measures **6/176** on the current chassis --
+  identical to its banked score.  No banked lever in this ledger was measured behind a carrier.
+
+### 1. CORRECTION to s8: the "three-argument call is byte-inert" finding had the wrong cause
+
+s8 concluded that `func_80073728(&s, 0, a2_offset)` is byte-inert "because expand_call evaluates
+argument expressions into pseudos before emitting the hard-register moves, so an already-computed
+value adds no insn".  That is not what happens.  **src/text1b.c:2642 carries a file-scope
+prototype `extern s32 func_80073728(s32, s32);`**, and a function-local `extern s32
+func_80073728();` does not override it.  With a 2-parameter prototype in scope GCC 2.7.2 simply
+DISCARDS the third argument: form p2 (`tmp/grind/func_8005D554/s12/p2_variant_third_arg.c`,
+banked at `rejected/third-arg-dropped-by-file-scope-prototype-scores-6.c`) passes a genuinely
+loop-VARIANT third argument `a2_offset - 0xC` and produces byte-identical output to the control
+(6/176, 176 insns) -- the disassembly (`tmp/grind/func_8005D554/s12/fn.txt` at that revision)
+contains no insn for it at all.  Any future session testing a third argument MUST bypass the
+prototype; s8's inert verdict says nothing about argument-position birth.
+
+### 2. A GENUINE third argument does materialise, and it is emitted AFTER both argument moves
+
+Form p3 (`tmp/grind/func_8005D554/s12/p3_fnptr_third_arg.c`, banked at
+`rejected/genuine-third-arg-via-fnptr-cast-scores-17.c`) bypasses the prototype with a local
+function-pointer `s32 (*f3)(s32,s32,s32) = (s32 (*)(s32,s32,s32))func_80073728;` and calls
+`f3((s32)&s, 0, a2_offset - 0xC)`.  Score **17/178**.  The third argument IS materialised, as
+`addiu a2,a3,-12`, and it is emitted at 0x35cc -- i.e. AFTER `addiu a0,sp,16` (0x3598) and
+`move a1,zero` (0x35a0).  But it lands there by DEPENDENCE, not by rank: it consumes the
+accumulate `addu a3,a3,v0` which itself sits after the whole rand-scale chain.  The four-insn
+window is otherwise unchanged: the zero1C base simply moves to `$a3`
+(`addiu a3,s4,-12` / `addiu a0,sp,16` / `lw v1,0(gp)` / `move a1,zero`), the same rotation as the
+control.  Conclusion for the ledger: argument position is not a lever on the window, because the
+value the window's `addiu` produces is CONSUMED (accumulated, then stored to `s.zero1C`) before
+the call, so its base insn is expanded before `calls.c:1881` regardless of how the call is
+spelled.
+
+### 3. A base whose only use is the call argument is LICM-hoisted out of the loop
+
+Form p1 (`rejected/base-only-as-third-arg-licm-hoisted-scores-66.c`) removes the accumulate and
+passes `(s32)r4 - 0xC` as the (prototype-dropped) third argument, leaving the base with no other
+use.  Score **66/162** -- fourteen instructions FEWER than the target.  `(s32)r4 - K` is
+loop-invariant, and once it is single-set/single-use it becomes a `loop.c` movable and is hoisted
+to the preheader; the window's `addiu` disappears entirely.  This is why every "birth the base
+somewhere else" form has to keep the base multi-set or accumulated: the accumulate is what keeps
+the insn inside the loop at all.
+
+### 4. The whole INSN_PRIORITY family is now closed by a predicate (frontier item 3, class kill)
+
+Reading `schedule_select` (sched.c:2660-2726) settles what s8/s9 could only measure.  The ready
+list is processed in PRIORITY GROUPS: `for (i = 0; i < n_ready; i = j)` at **sched.c:2674** walks
+maximal runs of equal `INSN_PRIORITY` in rank order, queues the blocked members of the group, and
+`continue`s to the next group only if the whole group was queued (sched.c:2704).  Within the
+surviving group the winner is the one with the largest `potential_hazard` (sched.c:2711-2723),
+ties going to the first in rank order.  Consequences for this function's clock-64 pick:
+  (a) `potential_hazard` returns 0 for any insn with `insn_unit == -1` (sched.c:1359-1364: for a
+      negative unit the loop body `unit = ~unit` is 0 and never executes), so every arith form of
+      the a2 base ties the two argument moves at hazard 0.  Only a memory/imuldiv opcode could
+      break that tie -- i.e. not `addiu $a2,$s4,-K`.
+  (b) `rank_for_schedule`'s class term (sched.c:2429-2441) is computed from the CANDIDATE's own
+      `insn_cost`, which clamps to 1 for any insn with no function unit, so both moves are class 3
+      under every `last_scheduled_insn`.
+  (c) Therefore, if the a2 base ties the moves on priority, the pick is `INSN_LUID` (sched.c:2464)
+      and the moves win, because `expand_call` emits them last (calls.c:1881).
+  (d) And if the a2 base is given a STRICTLY HIGHER priority than the moves -- the entire content
+      of frontier item 3 -- then by sched.c:2674 its priority group is exhausted BEFORE the
+      priority group that holds the three struct stores (`sw zero,0x20` / `sw s6,0x24` /
+      `sw s1,0x1C`, all priority 3).  Selection order is reverse emission order, so an
+      earlier-selected insn is emitted LATER: the base would be emitted AFTER those three stores.
+      The target emits `addiu $a2,$s4,-0xC` (4DEC0) BEFORE all three of them (4DEC4/4DEC8/4DECC).
+      Raising the base's priority therefore lands it on the wrong side of the stores for ANY
+      spelling, independent of instruction count -- which is exactly the "six-slot overshoot" s8
+      measured at 32/178 with the load-producer form, now explained rather than observed.
+  The only surviving configuration is `priority(stores) >= priority(a2 base) > priority(moves)`,
+  and the stores cannot leave priority 3: they are sinks whose single successor is the call at
+  cost 1, and `adjust_priority`'s `birthing_insn_p` boost (sched.c:2508-2591) applies only to
+  insns that SET a register, never to a store.
+
+- [s12] Control re-measured 6/176 on HEAD main @ 0c19707c; kill re-audit passed for a fourth session (fake_ablate: no FAKE construct in the closest banked form; that form re-measures 6/176).
+- [s12] src/text1b.c:2642 declares `extern s32 func_80073728(s32, s32);` at file scope, so a function-local K&R `extern s32 func_80073728();` does NOT enable a third argument -- GCC 2.7.2 discards it and the output is byte-identical to the control. s8's "three-argument reading is byte-inert" verdict has the wrong cause and must not be cited as evidence about argument-position birth.
+- [s12] A genuine third argument (function-pointer cast, p3) scores 17/178 and materialises as `addiu a2,a3,-12` AFTER both argument moves -- but by dependence on the accumulate, not by rank; the four-insn window rotation is unchanged with the base merely reseated to $a3.
+- [s12] `(s32)r4 - K` with no accumulate and a single use is a loop.c movable and gets hoisted to the preheader: 66/162, fourteen insns BELOW target. The accumulate is what keeps the base insn inside the loop.
+- [s12] sched.c:2674 processes the ready list in priority groups and exhausts a higher-priority group before a lower one; since selection order is reverse emission order, any form that lifts the a2 base above the two argument moves' priority also lifts it above the three priority-3 struct stores and emits it AFTER them, while the target emits it BEFORE them (4DEC0 vs 4DEC4/4DEC8/4DECC).
+
+- [s12] Control re-measured 6/176 (build_insns equals target_insns equals 176) on HEAD main @ 0c19707c; chassis identical to s10/s11.
+
+- [s12] Kill re-audit passed for a fourth session: fake_ablate finds no FAKE construct in rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c and that form re-measures 6/176.
+
+- [s12] src/text1b.c:2642 declares extern s32 func_80073728(s32, s32) at file scope. A function-local K&R redeclaration does not override it, so GCC 2.7.2 discards a third actual argument and emits no RTL for it - the real reason s8's three-argument form was byte-inert.
+
+- [s12] A genuine third argument via a local function-pointer cast measures 17/178 and materialises as addiu a2,a3,-12 after both argument moves, but by dependence on the accumulate; the four-insn window rotation is unchanged with the base reseated to $a3.
+
+- [s12] (s32)r4 - K with the accumulate removed is a loop.c movable and is hoisted to the preheader: 66/162, fourteen insns below target. The accumulate is what keeps the base insn inside the loop.
+
+- [s12] sched.c:2674 processes the ready list in maximal equal-priority groups and exhausts a higher-priority group before a lower one; since selection order is reverse emission order, any priority lift of the a2 base above the argument moves also lifts it above the three priority-3 struct stores and emits it AFTER them, contradicting the target (4DEC0 before 4DEC4/4DEC8/4DECC).
+
+- [s12] sched.c:1359: for insn_unit -1 the loop that iterates the unit bitmask never executes, so potential_hazard is 0 for every arith spelling of the a2 base - only a memory or imuldiv opcode could win the hazard tie-break, which is not the target addiu.
+
+- [s12] The only scheduler configuration that reproduces the target window is priority(stores) >= priority(a2 base) > priority(moves) with the stores held at 3 - forbidden by sched.c:2674 - or LUID(a2 base) > LUID(a1 move), forbidden by calls.c:1881 for any value consumed before the call.

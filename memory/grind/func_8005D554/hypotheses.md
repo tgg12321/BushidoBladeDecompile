@@ -1611,3 +1611,95 @@ PROBE: hand compile via `tmp/grind/func_8005D554/s9/cc.sh` -> `text1b.c:2769: pa
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## s12 (rederive, 2026-09-09, HEAD main @ 0c19707c)
+
+**H35 (KILLED, instance).** The kill re-audit: the closest banked form
+(`rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c`) still measures 6/176 on the
+current chassis and carries no FAKE construct (`tools/fake_ablate.py`), so nothing in this
+ledger's kill bank was measured behind a carrier.  Fourth consecutive passing re-audit.
+
+**H36 (KILLED, instance).** Passing the a2 base as an extra call argument through a
+function-local K&R declaration does nothing, because src/text1b.c:2642 already declares
+`extern s32 func_80073728(s32, s32);` at file scope and GCC 2.7.2 discards the surplus argument.
+Measured: a loop-VARIANT third argument produced output byte-identical to the control
+(6/176, 176 insns, no insn emitted for it).  This retires s8's stated MECHANISM for the same
+observation; the observation itself was a front-end drop, not an expand_call precompute.
+
+**H37 (KILLED, instance).** A genuine third argument, reached by bypassing the prototype with a
+local function-pointer cast, does not move the four-insn window.  Measured 17/178: the argument
+value is materialised as `addiu a2,a3,-12` after both argument moves, but only because it
+consumes the accumulate; the window itself emits
+`addiu a3,s4,-12` / `addiu a0,sp,16` / `lw v1,0(gp)` / `move a1,zero`, the control's rotation with
+the base reseated from $a2 to $a3.  Argument position is not a lever, because the zero1C value is
+consumed before the call.
+
+**H38 (KILLED, instance).** Giving the a2 base no consumer other than a call argument does not
+birth it late; it deletes it.  `(s32)r4 - K` is loop-invariant, and single-set/single-use it
+becomes a loop.c movable and is hoisted to the preheader: measured 66/162, fourteen instructions
+below the target.  The accumulate is load-bearing for keeping the base insn in the loop body.
+
+**H39 (KILLED, class).** Raising `INSN_PRIORITY` of the a2 base above the two argument moves
+cannot produce the target window, whatever the instruction count.  `schedule_select` walks the
+ready list in maximal equal-priority groups (sched.c:2674) and only advances to the next group
+when the current one is fully queued (sched.c:2704); the three struct stores `sw zero,0x20`,
+`sw s6,0x24`, `sw s1,0x1C` sit at priority 3 and cannot be lifted (they set no register, so
+`adjust_priority`'s `birthing_insn_p` boost does not apply to them, and their only successor is
+the call at cost 1).  So a strictly-higher-priority base is selected before the stores' group;
+selection order is reverse emission order, so it is EMITTED after those three stores, whereas the
+target emits it before them (4DEC0 vs 4DEC4/4DEC8/4DECC).  This closes s11's frontier item 3 (the
+"lengthen the a2 base's downstream chain so its priority reads 4" probe) analytically, and it
+explains rather than merely records s8's six-slot overshoot at 32/178.  Predicate: sched.c:2674.
+
+**Where the residual stands after s12.** All four terms of the deciding clock-64 pick are closed:
+priority (H39, sched.c:2674), class (sched.c:2429, arith always class 3), potential_hazard
+(sched.c:1359, `insn_unit == -1` returns 0), and INSN_LUID (calls.c:1881 bound, s10).  The only
+configuration that reproduces the target is `priority(stores) >= priority(a2 base) >
+priority(moves)` with the stores held at 3 -- i.e. the base must reach priority 4 while the stores
+stay at 3 AND still be emitted before them, which sched.c:2674 forbids -- or `LUID(a2 base) >
+LUID(a1 move)`, which calls.c:1881 forbids for any value consumed before the call.  The next
+sessions' search space is therefore: (i) a chassis in which the s.zero1C value is NOT consumed
+before the call (so its base can be born inside expand_call), (ii) a chassis in which the three
+struct stores are not priority-3 members of the same block, or (iii) a post-reload (sched2)
+difference, which remains the one term never measured on the physical-register stream.
+
+## [s12] The closest banked form (a2 statements at the maximal pre-call birth point) still measures 6/176 on the current chassis and carries no FAKE-annotated construct, so no banked lever in this ledger was measured behind a carrier.
+- mechanism: Mandated kill re-audit: a lever measured inert while a FAKE carrier occupies its target pseudo is not a kill, so the closest score-6 form is re-run on the current chassis with tools/fake_ablate.py first.
+- probe: tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c, then apply that form to src/text1b.c and run sandbox func_8005D554 --disable all.
+- result: fake_ablate reported no FAKE-annotated constructs found, nothing to ablate. Sandbox: score 6, build_insns 176, target_insns 176 - identical to the banked score. Fourth consecutive passing re-audit.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s12] Adding a third argument to the func_80073728 call through a function-local K&R declaration emits no instruction for it, because src/text1b.c:2642 declares extern s32 func_80073728(s32, s32) at file scope and GCC 2.7.2 discards the surplus argument.
+- mechanism: A function-local K&R extern does not override an in-scope file-scope prototype; with a 2-parameter prototype visible the front end drops the third actual argument before expand_call ever runs, so no RTL is produced for it.
+- probe: Form p2 (tmp/grind/func_8005D554/s12/p2_variant_third_arg.c): control body plus a genuinely loop-VARIANT third argument a2_offset - 0xC and a2_offset - 0x19; measured with sandbox and disassembled with mipsel-linux-gnu-objdump.
+- result: Score 6, build_insns 176 - byte-identical to the control - and the disassembled body contains no insn for the third argument. This retires the MECHANISM s8 recorded for the same observation (s8 attributed it to expand_call precomputing an already-computed value); the observation was a front-end argument drop, so it is not evidence about argument-position birth.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s12] A genuine third call argument, reached by bypassing the file-scope prototype with a local function-pointer cast, does not change the four-insn window rotation.
+- mechanism: expand_call evaluates argument expressions before emitting the hard-register moves at calls.c:1881, and the zero1C value is consumed (accumulated, then stored) before the call, so its base insn is expanded before the moves however the call is spelled.
+- probe: Form p3 (tmp/grind/func_8005D554/s12/p3_fnptr_third_arg.c): a local function pointer cast to a 3-parameter signature, called as f3((s32)&s, 0, a2_offset - 0xC) in both halves; measured and disassembled (tmp/grind/func_8005D554/s12/fn.txt).
+- result: Score 17, build_insns 178. The third argument IS materialised, as addiu a2,a3,-12 at 0x35cc - after addiu a0,sp,16 at 0x3598 and move a1,zero at 0x35a0 - but only by dependence on the accumulate addu a3,a3,v0, not by rank. The window itself emits addiu a3,s4,-12 / addiu a0,sp,16 / lw v1,0(gp) / move a1,zero: the control rotation with the base merely reseated from $a2 to $a3.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s12] Removing the accumulate so that the a2 base has no consumer other than a call argument does not birth the base late - it removes the insn from the loop entirely.
+- mechanism: (s32)r4 - K is loop-invariant. Once it is single-set and single-use it becomes a loop.c movable and is hoisted to the loop preheader, so the window addiu disappears and the body loses instructions.
+- probe: Form p1 (tmp/grind/func_8005D554/s12/p1_base_as_third_arg.c): s.zero1C stores the scaled rand value alone and (s32)r4 - 0xC / (s32)r4 - 0x19 is passed as the call's extra argument; measured and disassembled.
+- result: Score 66, build_insns 162 - fourteen instructions BELOW the 176-insn target - and no addiu $a2,$s4,-K appears anywhere in the loop body. The accumulate is load-bearing for keeping the base insn inside the loop at all.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s12] Giving the a2 base a strictly higher INSN_PRIORITY than the two argument moves places it on the wrong side of the three struct stores in the emitted stream, at any instruction count.
+- mechanism: schedule_select walks the ready list in maximal equal-priority groups (sched.c:2674) and advances to the next group only when the current group is fully queued (sched.c:2704). The three struct stores sw zero,0x20 / sw s6,0x24 / sw s1,0x1C sit at priority 3 and cannot be lifted: they set no register, so the birthing_insn_p boost in adjust_priority does not reach them, and their only successor is the call at cost 1. A base at priority 4 is therefore selected before the stores group, and because schedule_block selects backwards (selected first equals emitted last) it is EMITTED after them - while the target emits addiu $a2,$s4,-0xC at 4DEC0, before all three stores at 4DEC4/4DEC8/4DECC.
+- probe: Read schedule_select and rank_for_schedule end to end in tools/gcc-2.7.2/sched.c (2400-2726) and potential_hazard (1325-1364); cross-checked against the already-banked instance rejected/both-bases-in-local-array-load-consumer-scores-32.c, the s8 load-producer form that reaches priority 4 via a load consumer and measures 32/178 with a six-slot overshoot in exactly the predicted direction.
+- result: Closes the s11 frontier item that proposed lengthening the a2 base downstream chain so its priority reads 4 at 176 insns: the instruction count is irrelevant, the group ordering alone puts the base after the stores. Together with the class term (sched.c:2429, arith is class 3 under every last_scheduled_insn), the hazard term (sched.c:1359, insn_unit -1 makes potential_hazard 0 for any arith spelling) and the LUID bound (calls.c:1881), all four terms of the deciding clock-64 pick are now closed with predicates.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+- predicate_cite: sched.c:2674

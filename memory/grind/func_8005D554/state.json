@@ -1,7 +1,7 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -69,23 +69,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "rederive: control re-measured 6/176; the third in-file S46C sibling func_8005FA98 is now spent (60/180), and s10's frontier items 1 and 3 are both measured dead (21/179 and 53/177) - a real basic-bloc"
+  },
+  {
+   "session": 12,
+   "floor": 6,
+   "modality": "rederive",
+   "headline": "Floor re-measured 6/176; the INSN_PRIORITY family (frontier item 3) is closed by predicate sched.c:2674, and s8's three-argument verdict is corrected - the extra argument was dropped by a file-scope p"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The priority/class/hazard tie that forces the sched.c:2464 LUID tie-break was measured only PRE-reload (s7 sched1 INSN_PRIORITY, s10 class and potential_hazard). After reload the window's pseudos are physical registers, which adds anti-dependences sched1 never saw; if any of those breaks the tie in sched2, the sched1 emission order stops being a sched2 fixpoint and the target order becomes reachable from an order sched1 CAN produce.",
-   "mechanism": "sched2 runs schedule_insns a second time on the post-reload stream and recomputes INSN_LUID over the sched1 OUTPUT order (sched.c:2198). s9 recorded sched2 as a no-op for the control, but that only says the control is a fixpoint; it says nothing about the priorities and classes sched2 computes from post-reload deps.",
-   "next_probe": "Re-run the instrumented cc1 with BB2_SCHED_DEBUG=1 and capture the SECOND scheduling pass's window (not sched1's) for both halves: the ready list, INSN_PRIORITY, class and hazard for the four window insns after reload. If any term differs from sched1's 3/3/3/3 tie, drive tools/sched_solver's inversion from THAT model; if all four terms tie again, bank a class kill for frontier item 2 with predicate sched.c:2464."
+   "hypothesis": "A chassis in which the s.zero1C value is NOT consumed before the call would let its base insn be born inside expand_call and out-LUID the argument moves. The callee reads only $a0 and $a1 (s10), so the struct field could in principle be written by a spelling whose base is produced in argument position and whose store is reached from that same pseudo after the moves are emitted.",
+   "mechanism": "calls.c:1881 emits the hard-register argument moves after every argument expression is evaluated; anything expanded from a later point in the same statement - notably an argument expression whose result is reused for the store - would carry a higher INSN_LUID than 42/43 and win the clock-64 tie-break at sched.c:2464.",
+   "next_probe": "Enumerate spellings in which the zero1C store is fed by the value of an argument expression rather than by a preceding statement (for example a comma expression inside the argument list, or a temporary written from the argument's own pseudo), gate on build_insns == 176, and read the emitted window: success is addiu a0,sp,0x10 / addu a1,zero,zero / lw v1,gp / addiu a2,s4,-K."
   },
   {
-   "hypothesis": "Because a two-armed branch costs only +1 insn here (s11 H34), a chassis that moves the three struct stores out of the call's basic block is affordable at 177-178 and changes the ready-list CONTENTS at the deciding clock rather than the LUIDs.",
-   "mechanism": "schedule_block is per basic block (sched.c:4937): a block holding the call plus only the argument moves and the a2 chain has a different clock structure from one that also holds the three struct stores and the rand3 xor chain, and those three stores (unit memory, maxb 3) are exactly what wins clocks 61-63 today (s10, sched.c:1338).",
-   "next_probe": "Build a chassis in which the zero10/one14/ret stores sit in a block that does NOT contain the call - e.g. hoisted above a branch whose arms both reach the call - measure with build_insns as the gate, and capture the SCHEDDBG window for any form whose block boundaries move the stores out of the call's block. The goal is not fewer insns but a clock-64 ready list that no longer contains both argument moves."
+   "hypothesis": "A chassis in which the three struct stores zero10/one14/ret are not priority-3 members of the call's dependence graph would remove the constraint that pins the a2 base at priority 3, re-opening the priority route that sched.c:2674 currently forecloses.",
+   "mechanism": "The stores are pinned at priority 3 because their only successor is the call at insn_cost 1. If those fields were written by a spelling that gives them a longer path to the block end, the stores group would sit above the base's group, and a priority-4 base would then be emitted BEFORE them as the target requires.",
+   "next_probe": "Build forms in which zero10/one14/ret are stored through a route that adds a dependence step (for example each stored from a value that itself feeds another pre-call insn), confirm with BB2_SCHED_DEBUG=1 that their INSN_PRIORITY reads 4, and only then re-try a priority-4 a2 base; gate every form on build_insns == 176."
   },
   {
-   "hypothesis": "The residual needs INSN_PRIORITY(a2 base) strictly above the two argument moves and NOT above the three struct stores. s9 measured that every priority lever overshoots because the stores are also priority 3; but readiness, not priority, is what gates selection at clocks 61-63, and the a2 base becomes ready only after its accumulate is scheduled.",
-   "mechanism": "rank_for_schedule is consulted only among READY insns. If the a2 base's downstream chain is lengthened by one insn that already exists (so the count stays 176), its priority rises to 4 while its readiness is delayed by one clock - potentially past the store window - which is the one combination s8's array-load form (+2 insns, 6-slot overshoot) did not test.",
-   "next_probe": "Enumerate 176-instruction spellings in which the a2 base feeds one MORE already-existing insn before the zero1C store (for example a two-step accumulate the {6,15} quantization has not already covered, or routing the base through an insn the a0 chain currently owns), gate on build_insns == 176, and capture the SCHEDDBG clock-61..64 windows for any form whose base priority reads 4."
+   "hypothesis": "The post-reload scheduling pass is still the only term of the clock-64 pick never measured on the physical-register stream: after reload the window pseudos are hard registers, which adds anti-dependences sched1 never saw.",
+   "mechanism": "sched2 runs schedule_insns a second time and recomputes INSN_LUID over the sched1 OUTPUT order (sched.c:2198). s9 recorded sched2 as a no-op for the control, which only says the control is a fixpoint; it says nothing about the priorities, classes and hazards sched2 computes from post-reload dependences.",
+   "next_probe": "Re-run the instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 and capture the SECOND pass window for both halves - ready list, INSN_PRIORITY, class and hazard for the four window insns after reload. If any term differs from the sched1 3/3/3/3 tie, drive the tools/sched_solver inversion from THAT model; if all four tie again, bank a class kill for this item with predicate sched.c:2464."
   }
  ],
  "judge_constraints": [
@@ -444,6 +450,46 @@
    "measured_on": "HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "53/177. fn.txt:90 and fn.txt:136 both show addiu a2,s4,-K / addiu a0,sp,0x10 / lw v1,0(gp) / move a1,zero - the control'"
+  },
+  {
+   "session": 12,
+   "statement": "The closest banked form (a2 statements at the maximal pre-call birth point) still measures 6/176 on the current chassis and carries no FAKE-annotated construct, so no banked lever in this ledger was m",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "fake_ablate reported no FAKE-annotated constructs found, nothing to ablate. Sandbox: score 6, build_insns 176, target_in"
+  },
+  {
+   "session": 12,
+   "statement": "Adding a third argument to the func_80073728 call through a function-local K&R declaration emits no instruction for it, because src/text1b.c:2642 declares extern s32 func_80073728(s32, s32) at file sc",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "Score 6, build_insns 176 - byte-identical to the control - and the disassembled body contains no insn for the third argu"
+  },
+  {
+   "session": 12,
+   "statement": "A genuine third call argument, reached by bypassing the file-scope prototype with a local function-pointer cast, does not change the four-insn window rotation.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "Score 17, build_insns 178. The third argument IS materialised, as addiu a2,a3,-12 at 0x35cc - after addiu a0,sp,16 at 0x"
+  },
+  {
+   "session": 12,
+   "statement": "Removing the accumulate so that the a2 base has no consumer other than a call argument does not birth the base late - it removes the insn from the loop entirely.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "Score 66, build_insns 162 - fourteen instructions BELOW the 176-insn target - and no addiu $a2,$s4,-K appears anywhere i"
+  },
+  {
+   "session": 12,
+   "statement": "Giving the a2 base a strictly higher INSN_PRIORITY than the two argument moves places it on the wrong side of the three struct stores in the emitted stream, at any instruction count.",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "sched.c:2674",
+   "result": "Closes the s11 frontier item that proposed lengthening the a2 base downstream chain so its priority reads 4 at 176 insns"
   }
  ],
  "ladder_skip": 0,
