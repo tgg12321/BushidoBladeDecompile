@@ -1,0 +1,18 @@
+{
+ "func": "func_800335D8",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "Land the candidate.c body (K2 form, no loop_bottom label; K2.o == J.o) with the include/code6cac.h + undefined_syms_auto.txt + named_syms.txt patch; the driver's candidate-ready sandbox-0 gate (tools/grinder/grind.ps1:621) will discard the landing until engine/score.py _symtab() also resolves asm/data dlabel addresses -- that engine fix is the OPERATOR's prerequisite (engine/ is session-denylisted; keep `engine test` green), never a session edit and never a build-output rewrite.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-08): scope grant: func_800335D8 include/code6cac.h undefined_syms_auto.txt named_syms.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-09T00:19:59.490089+00:00"
+}

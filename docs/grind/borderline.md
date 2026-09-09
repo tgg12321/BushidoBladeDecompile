@@ -672,3 +672,8 @@ disposition taken: REFUSED under the current frozen policy; FORECLOSED silently 
 category: policy-question
 evidence: session-filed disposition: docs/grind/decisions.md:26057
 disposition taken: ROTATED (owner ruling 2026-09-08 rotation-not-foreclosure — no pending states, no packets; returns automatically).
+
+## 2026-09-08 — func_800335D8 — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-08 — func_800335D8 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_800335D8 include/code6cac.h undefined_syms_auto.txt named_syms.txt; function stays ACTIVE.

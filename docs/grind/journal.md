@@ -1909,3 +1909,4 @@
 - 2026-09-08 18:05 _spu_pitch2note s3 [structural] floor=20: Floor 21 -> 20: splitting ONLY the upper inner-loop bound (hi = lower + next; hi >>= 12;) is worth -1; the rest of the split-compound-assignment family, the re-run 24-permutation pre-loop order sweep, LICM-hoisting of target=pitch, block-local declarations and six scan-loop respellings are measured and banked.
 - 2026-09-08 18:34 _spu_pitch2note s4 [permuter] floor=19: Floor 20 -> 19: the inner loop's accumulator inits move into the for-init comma expression (acc = 0 AFTER inner = 0) - ordinary C, 74/74 insns; the lever was localised by a semantically-invalid permuter find and then spelled legally by hand.
 - 2026-09-08 19:19 _spu_pitch2note COMPLETED-C after 5 sessions (closer: s5 [permuter]).
+- 2026-09-08 20:10 func_800335D8 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_800335D8 include/code6cac.h undefined_syms_auto.txt named_syms.txt), function stays active.

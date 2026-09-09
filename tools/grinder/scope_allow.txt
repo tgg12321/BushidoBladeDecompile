@@ -62,3 +62,6 @@ func_8004473C include/game.h undefined_syms_auto.txt named_syms.txt
 # _addque2: pipeline scope grant 2026-09-06 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 _addque2 volatile_extern_allowlist.txt include/gpu.h undefined_syms_auto.txt named_syms.txt
+# func_800335D8: pipeline scope grant 2026-09-08 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+func_800335D8 include/code6cac.h undefined_syms_auto.txt named_syms.txt
