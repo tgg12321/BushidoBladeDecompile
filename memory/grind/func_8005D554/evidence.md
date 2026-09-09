@@ -1450,3 +1450,88 @@ ties going to the first in rank order.  Consequences for this function's clock-6
 - [s12] sched.c:1359: for insn_unit -1 the loop that iterates the unit bitmask never executes, so potential_hazard is 0 for every arith spelling of the a2 base - only a memory or imuldiv opcode could win the hazard tie-break, which is not the target addiu.
 
 - [s12] The only scheduler configuration that reproduces the target window is priority(stores) >= priority(a2 base) > priority(moves) with the stores held at 3 - forbidden by sched.c:2674 - or LUID(a2 base) > LUID(a1 move), forbidden by calls.c:1881 for any value consumed before the call.
+
+## s13 (structural, 2026-09-09, HEAD main @ 5daf178d) -- the deciding term is the birthing boost
+
+Control re-measured 6/176 (176 build insns, 176 target insns) on memory/grind/func_8005D554/candidate.c.
+
+### New instrumentation
+The instrumented cc1 (tools/gcc-2.7.2/cc1) carries a previously UNUSED hook, `BB2_PRIO_DEBUG`,
+inside `priority()` (sched.c:1497-1517).  Enabling it alongside BB2_SCHED_DEBUG=1 prints, for every
+insn, each LOG_LINKS predecessor with its kind, cost and priority contribution.  Harness:
+tmp/grind/func_8005D554/s13/sched_dump.sh (control) and .../sd2.sh (score-0 body).
+
+### What the trace says
+GCC 2.7.2's `priority()` walks LOG_LINKS -- PREDECESSORS -- so INSN_PRIORITY is DEPTH FROM THE
+BLOCK START, not distance to the block end.  Both loop halves live in ONE basic block (block 6,
+92 insns, `SCHEDDBG block=6 n_insns=92`), which is why half 1's window ties at priority 3 and
+half 2's at 6.
+
+Control, block 6 nodes around the half-1 window:
+    insn=205 luid=28 unit=0 icost=2 pri=3   (lw D_800A3418)
+    insn=211 luid=31 unit=-1 icost=1 pri=3  (addiu a2,s4,-0xC  <- THE a2 BASE)
+    insn=228/231/234 luid=38/39/40 unit=0 pri=3   (sw zero10 / one14 / ret)
+    insn=237 luid=41 unit=0 pri=4                 (sw zero1C)
+    insn=240 luid=42 unit=-1 pri=3                (addiu a0,sp,0x10)
+    insn=242 luid=43 unit=-1 pri=3                (addu a1,zero,zero)
+    insn=244 luid=44 pri=4                        (the func_80073728 call)
+Picks: clock61=234, 62=231, 63=228, 64=242, 65=205, 66=240, 67=211.  Backward scheduler, so the
+emission is the reverse: 211, 240, 205, 242 -- our rotation.  At clock 64 the ready list is
+[242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)]; priority ties, class ties, so rank_for_schedule
+(sched.c:2464) takes the highest INSN_LUID, 242.
+
+Score-0 body (rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c), same block:
+    insn=198 luid=25 unit=-1 pri=1  (the a2 base, born BEFORE the s.zero18 store and the 3rd rand)
+    SCHEDDBG ADJPRI insn=198 deaths=0 birth=1 maxpri=2130706433 pri=1
+    SCHEDDBG PICK clock=61 picked=198 (pri=2130706433 luid=25)
+The base is BOOSTED to max_priority by `adjust_priority` (sched.c:2584) because
+`birthing_insn_p` (sched.c:2505) holds: the pattern is a SET whose REG dest is live and whose
+dest has `reg_n_sets == 1`.  In the control the base's dest is `a2_offset`, which is multi-set,
+so birth=0 and no boost.  THIS -- not INSN_PRIORITY depth (s8/s12), not INSN_LUID (s10), not the
+class or hazard terms (s10) -- is the term that separates 6 from 0.
+
+### Why the boost is out of reach from a single-set source spelling
+`birthing_insn_p` needs reg_n_sets == 1.  loop.c's movable acceptance needs the SAME thing:
+`n_times_set[REGNO (SET_DEST (set))] == 1` with an invariant source (loop.c:705).  The guard just
+above it (loop.c:695-700) rejects a candidate only when ALL THREE of (i) `!maybe_never &&
+!loop_reg_used_before_p`, (ii) dest is neither a user variable nor a loop-test reg, and
+(iii) `reg_in_basic_block_p` are false.  This loop body has no backward jump and no read of a
+carrier before its set, so (i) is true for every natural carrier -- the invariant `(s32)r4 - K`
+is always a movable and is hoisted to the preheader (54/... in every measured single-set form).
+The score-0 body escapes only by having TWO source-level sets, one of which combine deletes
+(`nv = ret; s.ret = nv;` folds to `s.ret = ret`), so loop.c sees 2 and sched1 sees 1.  That is the
+Judge-FAILed fresh multi-write carrier, and no sanctioned family reproduces it on this chassis.
+
+### The five spellings measured
+| form | score/insns | file |
+|---|---|---|
+| v0/v3 borrowed at the score-0 carrier positions, `carrier = ret; s.ret = carrier;` | 63/178 | s13/p1_v0v3_ret_restage.c |
+| a2_offset itself carries the base across the third rand | 31/178 | s13/p3_a2early_only.c |
+| as above + a0_offset borrowed for the ret restage | 31/178 | s13/p2_a2early_a0borrow_ret.c |
+| a0_offset borrowed for the ret restage ONLY (control positions) | 6/176 (byte-inert) | s13/p4_a0borrow_ret_only.c |
+| role swap: a0 value into a2_offset, a2 base staged early into a0_offset (+/- ret restage) | 30/178 | s13/p5_role_swap_existing_locals.c, p6 |
+
+Two structural facts fall out.  (1) The `carrier = ret; s.ret = carrier;` second write is NOT the
+lever -- on its own it is byte-inert, because combine folds it away.  The lever is the EARLY BASE
+and the reg_n_sets == 1 it leaves behind.  (2) EVERY existing-local carrier whose live range spans
+the third `rand()` call costs exactly +2 instructions inside the loop; the disassembly of the
+v0/v3 form (s13/p1.txt) shows frame 120 and the same ten register saves as the target, so the +2
+is loop body cost, not a tenth callee-saved seat.
+
+- [s13] Control floor re-measured this session at 6/176 on memory/grind/func_8005D554/candidate.c (176 build insns, 176 target insns).
+
+- [s13] tools/gcc-2.7.2/cc1 carries a previously unused BB2_PRIO_DEBUG hook inside priority() (sched.c:1497-1517) that prints every LOG_LINKS predecessor with its kind, cost and priority contribution; s13 is the first session to enable it.
+
+- [s13] GCC 2.7.2's priority() walks LOG_LINKS (predecessors), so INSN_PRIORITY is depth from the BLOCK START, not distance to the block end - this corrects the framing prior sessions used.
+
+- [s13] Both loop halves are in ONE basic block (SCHEDDBG block=6 n_insns=92), which is why half 1's window ties at priority 3 and half 2's at 6.
+
+- [s13] In the control the a2 base is insn 211 (luid 31, pri 3, birth=0); in the banked score-0 body it is insn 198 (luid 25, pri 1, birth=1, boosted to max_priority 2130706433 and picked at clock 61).
+
+- [s13] adjust_priority's boost (sched.c:2584) fires only when birthing_insn_p (sched.c:2505) holds, i.e. reg_n_sets[dest] == 1 and the dest is live.
+
+- [s13] The score-0 body's second write ('nv = ret; s.ret = nv;') is deleted by combine, so loop.c sees n_times_set == 2 (not a movable) while sched1 sees reg_n_sets == 1 (boost) - that split is the entire trick, and it is the Judge-FAILed construct.
+
+- [s13] Every existing-loop-local carrier whose live range spans the third rand() call costs exactly +2 instructions inside the loop (63/178, 31/178, 30/178 measured); the v0/v3 disassembly shows frame 120 and the target's ten register saves, so it is not a tenth callee-saved seat.
+
+- [s13] The ret restage alone is byte-inert (6/176), so it is not the lever; the early base is.

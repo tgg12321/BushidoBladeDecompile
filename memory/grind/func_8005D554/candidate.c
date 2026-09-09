@@ -181,6 +181,38 @@
  * emission order, is EMITTED after them -- while the target emits it before them (4DEC0 vs
  * 4DEC4/4DEC8/4DECC).  That retires frontier item 3.  Do NOT re-attempt priority levers, extra
  * call arguments, or hoisting the base out of its accumulate.  See hypotheses.md H35-H39.
+ *
+ * s13 (structural, 2026-09-09, HEAD main @ 5daf178d): floor RE-MEASURED at 6/176 on this body.
+ * THE DECIDING COMPILER TERM IS NOW NAMED, and it is NOT the one s8-s12 were attacking.  Both
+ * this body and the banked score-0 body were compiled with the instrumented cc1 under
+ * BB2_SCHED_DEBUG=1 plus a new BB2_PRIO_DEBUG=1 capture, and their sched1 block-6 traces were
+ * read side by side (tmp/grind/func_8005D554/s13/blk6.log, nv_blk6.log):
+ *   - THIS body: the a2 base is insn 211, luid 31, INSN_PRIORITY 3, ADJPRI birth=0.  It gets no
+ *     boost, so at clock 64 it loses the three-way tie [242(p3,l43) 240(p3,l42) 211(p3,l31)] on
+ *     INSN_LUID and is picked LAST, at clock 67 -- which in a backward scheduler means emitted
+ *     FIRST in the window.  That is the whole 6-point residual.
+ *   - THE SCORE-0 body: its a2 base is insn 198, born EARLY (luid 25, before the s.zero18 store
+ *     and before the third rand call), INSN_PRIORITY 1, ADJPRI birth=1 -- and adjust_priority
+ *     (sched.c:2584) raises it to max_priority 2130706433, so it is picked at clock 61.
+ * So the lever is `birthing_insn_p` (sched.c:2505): a SET whose REG dest is live and whose dest
+ * has reg_n_sets == 1 gets LAUNCH priority.  It is NOT the priority-4 route (s8/s12), NOT the
+ * INSN_LUID route (s10), and NOT the class/hazard route (s10).
+ * THE BIND: loop.c:705 uses the SAME predicate (n_times_set == 1) to accept a loop-invariant as
+ * a movable, and loop.c:695-700's three-way OR always considers a user-variable dest whose life
+ * sits inside one basic block (this loop body is ONE basic block, block 6, 92 insns).  So a
+ * single-set carrier for the invariant (s32)r4 - K is HOISTED to the preheader (every such form
+ * measures 54/...), and a multi-set carrier gets no boost.  The banked score-0 body escapes only
+ * because it has TWO source-level sets (loop.c sees n_times_set == 2, not a movable) of which
+ * combine deletes one (`nv = ret; s.ret = nv;` folds to `s.ret = ret`), leaving reg_n_sets == 1
+ * at sched1 -- i.e. exactly the fresh multi-write carrier the Judge FAILed.
+ * Five new spellings measured, all dead: v0/v3 borrowed at the score-0 carrier positions with the
+ * same `carrier = ret; s.ret = carrier;` second write -> 63/178; the base carried across the third
+ * rand in a2_offset itself -> 31/178; the a0_offset/a2_offset ROLE SWAP (a0 value in a2_offset,
+ * a2 base staged early in a0_offset), with and without the ret restage -> 30/178 both; and the
+ * ret restage alone at control positions -> 6/176 BYTE-INERT.  So the `carrier = ret` second
+ * write is not the lever, the EARLY base is; and every existing-loop-local carrier that spans the
+ * third rand call costs exactly +2 insns.  Do NOT re-try existing-local carriers that span the
+ * third rand call, and do NOT re-attempt priority-4/LUID/class levers.  See hypotheses.md s13.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

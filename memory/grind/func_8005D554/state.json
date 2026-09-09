@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 12,
- "current_modality": "rederive",
+ "session_count": 13,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -75,23 +75,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "Floor re-measured 6/176; the INSN_PRIORITY family (frontier item 3) is closed by predicate sched.c:2674, and s8's three-argument verdict is corrected - the extra argument was dropped by a file-scope p"
+  },
+  {
+   "session": 13,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "The 6-point residual is the birthing_insn_p LAUNCH boost (sched.c:2505/2584), not priority depth, LUID or class - and loop.c:705 uses the same reg_n_sets==1 predicate, so any single-set carrier is LIC"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A chassis in which the s.zero1C value is NOT consumed before the call would let its base insn be born inside expand_call and out-LUID the argument moves. The callee reads only $a0 and $a1 (s10), so the struct field could in principle be written by a spelling whose base is produced in argument position and whose store is reached from that same pseudo after the moves are emitted.",
-   "mechanism": "calls.c:1881 emits the hard-register argument moves after every argument expression is evaluated; anything expanded from a later point in the same statement - notably an argument expression whose result is reused for the store - would carry a higher INSN_LUID than 42/43 and win the clock-64 tie-break at sched.c:2464.",
-   "next_probe": "Enumerate spellings in which the zero1C store is fed by the value of an argument expression rather than by a preceding statement (for example a comma expression inside the argument list, or a temporary written from the argument's own pseudo), gate on build_insns == 176, and read the emitted window: success is addiu a0,sp,0x10 / addu a1,zero,zero / lw v1,gp / addiu a2,s4,-K."
+   "hypothesis": "An existing-local carrier can supply the early base at 176 instructions if the +2 it costs inside the loop is paid for by freeing a callee-saved seat elsewhere in the function.",
+   "mechanism": "The v0/v3 form measures 63/178 with the target's frame and register-save count, so the two extra insns are copies inside the loop rather than prologue/epilogue growth. s5b measured that inlining a pointer local (p_b2e0 / p_b390 / base_offset) buys instructions back (27/28 in a different combination), and that combination has never been measured together with an early-birth existing-local carrier.",
+   "next_probe": "Take tmp/grind/func_8005D554/s13/p1_v0v3_ret_restage.c and, one at a time, inline p_b390 (s.p1 = &D_8009B390), p_b2e0 and base_offset at their use sites; gate each on build_insns == 176 and, for any form that reaches 176, capture BB2_SCHED_DEBUG=1 + BB2_PRIO_DEBUG=1 and confirm ADJPRI birth=1 on the base insn before scoring."
   },
   {
-   "hypothesis": "A chassis in which the three struct stores zero10/one14/ret are not priority-3 members of the call's dependence graph would remove the constraint that pins the a2 base at priority 3, re-opening the priority route that sched.c:2674 currently forecloses.",
-   "mechanism": "The stores are pinned at priority 3 because their only successor is the call at insn_cost 1. If those fields were written by a spelling that gives them a longer path to the block end, the stores group would sit above the base's group, and a priority-4 base would then be emitted BEFORE them as the target requires.",
-   "next_probe": "Build forms in which zero10/one14/ret are stored through a route that adds a dependence step (for example each stored from a value that itself feeds another pre-call insn), confirm with BB2_SCHED_DEBUG=1 that their INSN_PRIORITY reads 4, and only then re-try a priority-4 a2 base; gate every form on build_insns == 176."
+   "hypothesis": "A single-set carrier can escape loop.c's movable test - and therefore keep reg_n_sets == 1 for the boost - if loop.c:695-700's first disjunct is made false, i.e. if maybe_never is set or the carrier is read before its set inside the loop.",
+   "mechanism": "scan_loop sets maybe_never when it passes a jump whose label is earlier in the loop (a backward branch); with maybe_never true, and a user-variable dest whose life spans more than one basic block, all three disjuncts of loop.c:695-700 are false and the invariant is never considered as a movable. s11 measured that a real two-armed branch in this loop body costs only +1 instruction (53/177), so block shape is cheap here.",
+   "next_probe": "Build forms in which the per-half base local is a fresh SINGLE-set user variable and the loop body contains a backward-jumping construct before the base statement (or the base local is read before its set as a loop-carried value); confirm with the .loop dump under 'pwsh tools/grinder/dump.ps1 func_8005D554' that the base insn is NOT hoisted to the preheader, then check ADJPRI birth=1 in the sched trace, and gate on build_insns == 176."
   },
   {
-   "hypothesis": "The post-reload scheduling pass is still the only term of the clock-64 pick never measured on the physical-register stream: after reload the window pseudos are hard registers, which adds anti-dependences sched1 never saw.",
-   "mechanism": "sched2 runs schedule_insns a second time and recomputes INSN_LUID over the sched1 OUTPUT order (sched.c:2198). s9 recorded sched2 as a no-op for the control, which only says the control is a fixpoint; it says nothing about the priorities, classes and hazards sched2 computes from post-reload dependences.",
-   "next_probe": "Re-run the instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 and capture the SECOND pass window for both halves - ready list, INSN_PRIORITY, class and hazard for the four window insns after reload. If any term differs from the sched1 3/3/3/3 tie, drive the tools/sched_solver inversion from THAT model; if all four tie again, bank a class kill for this item with predicate sched.c:2464."
+   "hypothesis": "The final ordering step for the score-0 body may not be sched1: its sched1 emission places the three struct stores BEFORE the lw and the base, which is not the target order, so sched2 or reorg must complete the rotation.",
+   "mechanism": "sched2 runs schedule_insns a second time after reload and recomputes INSN_LUID over the sched1 output order; birthing_insn_p returns 0 once reload_completed is 1 (sched.c:2510), so the boost is a sched1-only effect and the post-reload pass ranks purely on priority, class and LUID over hard registers.",
+   "next_probe": "Extract the pass=2 block-6 trace for the score-0 body (tmp/grind/func_8005D554/s13/sched_nvnw.log, the 'SCHEDDBG FUNC func=func_8005D554 pass=2' section) and for the control, and diff the two windows insn by insn; if sched2 is what performs the rotation, the lever may be reachable by changing the sched1 OUTPUT order rather than the boost."
   }
  ],
  "judge_constraints": [
@@ -490,6 +496,46 @@
    "measured_on": "HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
    "predicate_cite": "sched.c:2674",
    "result": "Closes the s11 frontier item that proposed lengthening the a2 base downstream chain so its priority reads 4 at 176 insns"
+  },
+  {
+   "session": 13,
+   "statement": "Borrowing the existing pre-loop locals v0 and v3 as the per-half early carriers, at the exact positions and with the exact 'carrier = ret; s.ret = carrier;' second write of the score-0 body, measures ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "63/178 - the same score the s3-era 'v0 = 0' variant reached, so the second write's VALUE is not the lever. The disassemb"
+  },
+  {
+   "session": 13,
+   "statement": "Letting a2_offset itself carry the a2 base across the third rand call, with the base statement moved above the s.zero18 store and no extra carrier, measures 31/178.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "31/178 for both, so the ret restage is byte-neutral on top of the early base. Banked at rejected/a2offset-carries-base-a"
+  },
+  {
+   "session": 13,
+   "statement": "The a0_offset/a2_offset role swap - the a0 value computed into a2_offset and the a2 base staged early into a0_offset, i.e. the score-0 shape spelled entirely with existing loop-local variables - measu",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "30/178 and 30/178. Banked at rejected/role-swap-a0offset-carries-base-scores-30.c"
+  },
+  {
+   "session": 13,
+   "statement": "The 'carrier = ret; s.ret = carrier;' restage on its own, at the control's statement positions and through the existing local a0_offset, is byte-inert at 6/176.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "6/176, identical to the control. Banked at rejected/a0offset-ret-restage-byte-inert-scores-6.c"
+  },
+  {
+   "session": 13,
+   "statement": "A carrier that is single-set in the SOURCE cannot supply the boost on this chassis, because the predicate that enables the boost is the same one that makes the loop-invariant base a LICM movable.",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "loop.c:705",
+   "result": "Single-set in source implies hoisted; multi-set in source implies no boost. The only measured escape is a source-level s"
   }
  ],
  "ladder_skip": 0,

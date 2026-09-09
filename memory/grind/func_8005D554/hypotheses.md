@@ -1703,3 +1703,148 @@ difference, which remains the one term never measured on the physical-register s
 - kill_scope: class
 - measured_on: HEAD main @ 0c19707c, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
 - predicate_cite: sched.c:2674
+
+## s13 (structural, 2026-09-09, HEAD main @ 5daf178d)
+
+**Control re-measured 6/176** on candidate.c before any probe.
+
+**H40 (CONFIRMED).** The whole 6-point residual is the `birthing_insn_p` LAUNCH-priority boost,
+not INSN_PRIORITY depth, not INSN_LUID, not class, not hazard.
+- mechanism: `adjust_priority` (tools/gcc-2.7.2/sched.c:2584) raises an insn's INSN_PRIORITY to
+  `max_priority` when it has no REG_DEAD notes and `birthing_insn_p` (sched.c:2505) holds --
+  i.e. the pattern is a SET whose dest is a REG that is live in `bb_live_regs` and whose
+  `reg_n_sets[REGNO] == 1`.  Also newly established from the PRIODBG capture: GCC 2.7.2's
+  `priority()` (sched.c:1434-1520) walks LOG_LINKS, i.e. PREDECESSORS, so INSN_PRIORITY is
+  DEPTH FROM THE BLOCK START, not distance to the block end.  That is why half 1's window ties
+  at 3 and half 2's at 6 -- both halves are in the SAME basic block (block 6, 92 insns).
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) run with BB2_SCHED_DEBUG=1 AND BB2_PRIO_DEBUG=1
+  over the control body and over rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c;
+  block-6 traces extracted to tmp/grind/func_8005D554/s13/blk6.log and .../nv_blk6.log.
+- result: CONTROL -- a2 base = insn 211, luid 31, pri 3, `ADJPRI ... birth=0`; at clock 64 the
+  ready list is [242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)], rank_for_schedule falls through
+  priority and class to INSN_LUID (sched.c:2464) and picks 242; 211 is picked last at clock 67,
+  so in the backward scheduler it is EMITTED FIRST -- the observed rotation.
+  SCORE-0 BODY -- a2 base = insn 198, luid 25 (born before the s.zero18 store and before the
+  third rand call), pri 1, `ADJPRI insn=198 deaths=0 birth=1 maxpri=2130706433`, boosted and
+  picked at clock 61.  Same file, same block, same registers; the only difference is the boost.
+- verdict: CONFIRMED
+
+**H41 (KILLED, instance).** Borrowing the existing pre-loop locals v0 and v3 as the per-half
+early carriers, at the EXACT positions and with the EXACT `carrier = ret; s.ret = carrier;`
+second write of the score-0 body, measures 63/178 -- the same score the s3-era `v0 = 0` variant
+reached, so the second write's VALUE is not the lever.
+- mechanism: v0 and v3 are set and read before the loop, so a second live range inside the loop
+  gives each pseudo one interference-spanning range; local/global alloc seats them in s0 and s1
+  (confirmed in the disassembly, tmp/grind/func_8005D554/s13/p1.txt: frame 120 and ten register
+  saves, same as the target, so the +2 is inside the loop, not a tenth callee-saved seat).
+- probe: tmp/grind/func_8005D554/s13/p1_v0v3_ret_restage.c, sandbox --disable all, then objdump.
+- result: 63/178.  Banked at rejected/v0v3-borrow-at-score0-carrier-positions-scores-63.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+**H42 (KILLED, instance).** Letting `a2_offset` itself carry the base across the third rand call
+(the base statement moved above `s.zero18 = a0_offset;`, no extra carrier) measures 31/178.
+- mechanism: a2_offset's live range then spans the third `rand()` call, so the allocator must
+  keep the value in a call-saved seat and two extra insns appear inside the loop.  a2_offset also
+  stays multi-set, so `birthing_insn_p` still fails and the base insn still gets no boost.
+- probe: tmp/grind/func_8005D554/s13/p3_a2early_only.c
+- result: 31/178.  Banked at rejected/a2offset-carries-base-across-third-rand-scores-31.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+**H43 (KILLED, instance).** The a0_offset/a2_offset ROLE SWAP -- the a0 value computed into
+a2_offset and the a2 base staged early into a0_offset, i.e. the score-0 shape spelled entirely
+with EXISTING loop-local variables -- measures 30/178 both with and without the
+`a0_offset = ret; s.ret = a0_offset;` second write.
+- mechanism: a0_offset is multi-set, so no boost; and its borrowed range now spans the third rand
+  call, which costs the same +2 as H42.  The existing-local borrow quadrant therefore cannot buy
+  the early-birth position at 176 instructions on this chassis.
+- probe: tmp/grind/func_8005D554/s13/p5_role_swap_existing_locals.c and p6_role_swap_no_ret_restage.c
+- result: 30/178 and 30/178.  Banked at rejected/role-swap-a0offset-carries-base-scores-30.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+**H44 (KILLED, instance).** The `carrier = ret; s.ret = carrier;` restage on its own, at the
+control's statement positions and through the existing local a0_offset (dead after its
+`s.zero18 = a0_offset;` store), is BYTE-INERT: 6/176, identical to the control.
+- mechanism: combine folds the copy pair back to `s.ret = ret` and deletes the extra set, so
+  neither the insn stream nor the dependence graph changes.  This isolates the score-0 body's
+  lever to the EARLY BASE plus the resulting reg_n_sets == 1, not to the restage statement.
+- probe: tmp/grind/func_8005D554/s13/p4_a0borrow_ret_only.c
+- result: 6/176.  Banked at rejected/a0offset-ret-restage-byte-inert-scores-6.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+**H45 (KILLED, class).** No carrier that is single-set in the SOURCE can supply the boost on this
+chassis, because the same predicate that enables the boost makes the loop-invariant base a LICM
+movable.
+- mechanism: `birthing_insn_p` requires `reg_n_sets[dest] == 1` (sched.c:2505).  loop.c's movable
+  acceptance requires `n_times_set[REGNO (SET_DEST (set))] == 1` for an invariant source
+  (loop.c:705), and the guard immediately above it (loop.c:695-700) only REJECTS a candidate when
+  all three of (i) `!maybe_never && !loop_reg_used_before_p`, (ii) dest is neither a user variable
+  nor a loop-test reg, and (iii) `reg_in_basic_block_p` are false.  This loop body is a single
+  basic block (block 6) with no backward jump, so (i) is true for any carrier that is not read
+  before its set -- the invariant `(s32)r4 - K` is therefore always a movable and is hoisted to
+  the preheader (measured repeatedly at 54/...).  Hence: single-set in source => hoisted;
+  multi-set in source => no boost.  The only measured escape is a source-level second set that
+  COMBINE deletes, which is precisely the fresh multi-write carrier the Judge FAILed on
+  2026-09-08.
+- probe: read loop.c:660-760 and sched.c:2490-2600 end to end against the two PRIODBG/SCHEDDBG
+  traces captured this session; cross-checked against the already-banked
+  rejected/fresh-single-set-perhalf-base-licm-hoisted-scores-54.c and
+  rejected/fresh-singleset-a2-base-adds-2-insns-scores-54.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+- predicate_cite: loop.c:705
+
+## [s13] The whole 6-point residual is the birthing_insn_p LAUNCH-priority boost applied by adjust_priority, not INSN_PRIORITY depth, not INSN_LUID, not the class or hazard terms.
+- mechanism: adjust_priority (tools/gcc-2.7.2/sched.c:2584) raises an insn's INSN_PRIORITY to max_priority when it carries no REG_DEAD notes and birthing_insn_p (sched.c:2505) holds - a SET whose REG dest is live in bb_live_regs and whose reg_n_sets[REGNO] == 1. The same capture also establishes that GCC 2.7.2's priority() walks LOG_LINKS, i.e. PREDECESSORS, so INSN_PRIORITY is depth from the BLOCK START; both loop halves sit in one basic block (block 6, 92 insns), which is why half 1 ties at 3 and half 2 at 6.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) run with BB2_SCHED_DEBUG=1 and, for the first time, BB2_PRIO_DEBUG=1, over both the control body and the banked score-0 body; block-6 traces extracted to tmp/grind/func_8005D554/s13/blk6.log and nv_blk6.log.
+- result: CONTROL: a2 base = insn 211, luid 31, pri 3, ADJPRI birth=0; at clock 64 the ready list is [242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)], priority and class tie, INSN_LUID (sched.c:2464) takes 242, and 211 is picked last at clock 67 - emitted first in the window, which is exactly our rotation. SCORE-0 BODY: a2 base = insn 198, luid 25 (born before the s.zero18 store and before the third rand call), pri 1, ADJPRI insn=198 deaths=0 birth=1 maxpri=2130706433, picked at clock 61. Same block, same registers; the only difference is the boost.
+- verdict: CONFIRMED
+
+## [s13] Borrowing the existing pre-loop locals v0 and v3 as the per-half early carriers, at the exact positions and with the exact 'carrier = ret; s.ret = carrier;' second write of the score-0 body, measures 63/178.
+- mechanism: v0 and v3 are set and read before the loop, so a second live range inside the loop gives each pseudo one interference-spanning range; the allocator seats them in s0 and s1 and two extra instructions appear inside the loop.
+- probe: tmp/grind/func_8005D554/s13/p1_v0v3_ret_restage.c, sandbox --disable all, then mipsel-linux-gnu-objdump (tmp/grind/func_8005D554/s13/p1.txt).
+- result: 63/178 - the same score the s3-era 'v0 = 0' variant reached, so the second write's VALUE is not the lever. The disassembly shows frame 120 and the same ten register saves as the target, so the +2 is loop-body cost, not a tenth callee-saved seat. Banked at rejected/v0v3-borrow-at-score0-carrier-positions-scores-63.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s13] Letting a2_offset itself carry the a2 base across the third rand call, with the base statement moved above the s.zero18 store and no extra carrier, measures 31/178.
+- mechanism: a2_offset's live range then spans the third rand() call, so the value must occupy a call-saved seat and two extra instructions appear in the loop; a2_offset also stays multi-set, so birthing_insn_p still fails and the base insn still gets no boost.
+- probe: tmp/grind/func_8005D554/s13/p3_a2early_only.c (and p2_a2early_a0borrow_ret.c, which adds the a0_offset ret restage on top).
+- result: 31/178 for both, so the ret restage is byte-neutral on top of the early base. Banked at rejected/a2offset-carries-base-across-third-rand-scores-31.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s13] The a0_offset/a2_offset role swap - the a0 value computed into a2_offset and the a2 base staged early into a0_offset, i.e. the score-0 shape spelled entirely with existing loop-local variables - measures 30/178 with and without the ret restage.
+- mechanism: a0_offset is multi-set so no boost fires, and its borrowed range now spans the third rand call, costing the same +2 instructions as the a2_offset variant.
+- probe: tmp/grind/func_8005D554/s13/p5_role_swap_existing_locals.c and p6_role_swap_no_ret_restage.c
+- result: 30/178 and 30/178. Banked at rejected/role-swap-a0offset-carries-base-scores-30.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s13] The 'carrier = ret; s.ret = carrier;' restage on its own, at the control's statement positions and through the existing local a0_offset, is byte-inert at 6/176.
+- mechanism: combine folds the copy pair back to 's.ret = ret' and deletes the extra set, so neither the insn stream nor the dependence graph changes. This isolates the score-0 body's lever to the early base and the reg_n_sets == 1 it leaves behind, not to the restage statement.
+- probe: tmp/grind/func_8005D554/s13/p4_a0borrow_ret_only.c
+- result: 6/176, identical to the control. Banked at rejected/a0offset-ret-restage-byte-inert-scores-6.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s13] A carrier that is single-set in the SOURCE cannot supply the boost on this chassis, because the predicate that enables the boost is the same one that makes the loop-invariant base a LICM movable.
+- mechanism: birthing_insn_p requires reg_n_sets[dest] == 1 (sched.c:2505). loop.c's movable acceptance requires n_times_set[REGNO (SET_DEST (set))] == 1 for an invariant source (loop.c:705), and the guard immediately above it (loop.c:695-700) rejects a candidate only when all three of (i) !maybe_never && !loop_reg_used_before_p, (ii) dest is neither a user variable nor a loop-test reg, and (iii) reg_in_basic_block_p are false. This loop body is one basic block with no backward jump and no carrier read before its set, so (i) is true for every natural carrier and the invariant (s32)r4 - K is always hoisted to the preheader.
+- probe: Read loop.c:660-760 and sched.c:2490-2600 end to end against the two PRIODBG/SCHEDDBG traces captured this session; cross-checked against the already-banked rejected/fresh-single-set-perhalf-base-licm-hoisted-scores-54.c and rejected/fresh-singleset-a2-base-adds-2-insns-scores-54.c, both 54.
+- result: Single-set in source implies hoisted; multi-set in source implies no boost. The only measured escape is a source-level second set that combine deletes ('nv = ret; s.ret = nv;' folding to 's.ret = ret'), which is exactly the fresh multi-write carrier the Judge FAILed on 2026-09-08.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+- predicate_cite: loop.c:705
