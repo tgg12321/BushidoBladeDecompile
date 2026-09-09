@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "rederive: fresh m2c shape (75) and its 3-arg callee reading (byte-inert at 6) measured out, sibling func_8005D46C spent at 28 - but a load-producer for the a2 base moves that insn PAST the call's argu"
+  },
+  {
+   "session": 9,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Instrumented-cc1 SCHEDDBG trace reduces the whole 6-point residual to ONE sched1 ready-list pick governed by INSN_LUID (sched.c:2462); half-asymmetry, combine-placement and every INSN_PRIORITY lever a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The dependence-delay lever proven by d1 works but overshoots by six slots and pays a load (+2 insns). A delay of exactly one cycle, sourced from an insn already present in the window, would land the base insn on the target's slot 91 at 176 instructions.",
-   "mechanism": "sched.c:1497 makes only a load's consumer cost 2; every other producer in the window costs 1. The overshoot in d1 comes from the 2-cycle load plus the extra lw occupying a ready slot. A 1-cycle producer would delay the base insn by exactly one issue slot - which is the whole distance between slot 88 and the position the target wants - without changing the instruction count.",
-   "next_probe": "Enumerate every insn already emitted in the contested window (the shift chain's srl, the xor, the gp store, the s.zero18 store, the previous half's spilled 0x40(sp) reload) and find a spelling in which the a2 base legally reads one of them. Concretely: route r4 through the SAME expression tree that produces the third rnd's operand (e.g. spell the base as an expression whose operand is the xor result masked to zero-contribution is NOT allowed - it must be a real value), or exploit the half-2-only 0x40(sp) reload the target already performs and check whether half 2 alone rotates. Measure with tools/sweep_variants.py and require build_insns == 176 before crediting anything."
+   "hypothesis": "RELOAD is the only remaining pass that can give the a2 base an INSN_LUID greater than the argument moves', because it runs AFTER sched1 and its insertions are re-numbered for sched2 from the post-reload stream.",
+   "mechanism": "reload1.c inserts reload insns at the use point rather than at the value's original position. sched2 recomputes INSN_LUID over the post-reload chain, so an a2 base materialised by reload after the argument moves would carry a higher LUID and win the clock-64 pick that sched.c:2462 currently gives to 242. This is the one creation site sections 4-6 of evidence.md s9 did not close.",
+   "next_probe": "Read tmp/grind/func_8005D554/s9/dumps/F.greg and F.jump2 to establish the pre-sched2 stream order and confirm the LUIDs sched2 assigns; then look for a source form that puts the a2 base's pseudo under enough pressure to be reloaded at its use (the store to s.zero1C) rather than allocated live across the window, WITHOUT adding a callee-saved seat. Require build_insns == 176 before crediting anything; s3 already measured that hoisting the a2 base costs a tenth callee-saved seat (+2 insns), so the probe must not create a new live range."
   },
   {
-   "hypothesis": "Half 1 and half 2 may not need the same lever: the target already spills base_offset to 0x40(sp) and reloads it in half 2 only, so half 2 already contains a load in its window while half 1 does not.",
-   "mechanism": "The residual is 3 slots per half. If a form exists that fixes only half 2 (whose window already has 'lw a3,0x40(sp)' available as a 2-cycle producer), the floor drops from 6 to 3 without touching half 1 - and a 3-floor is a strictly better platform for the next lever than the current symmetric 6.",
-   "next_probe": "Sweep asymmetric forms: apply the d1 array spelling to half 2's base only (keeping half 1's scalar), and separately try making half 2's base read from the same 0x40(sp) slot the target already reloads. Score each and record whether the half-2 rotation flips independently of half 1's - no session has yet measured the two halves as separable."
+   "hypothesis": "A source form in which the a2 base's dest pseudo carries potential_hazard strictly greater than the argument moves' would win the clock-64 pick inside priority group 3 without any LUID or priority change.",
+   "mechanism": "schedule_select (sched.c:2708-2723) scans the equal-priority group for the insn with the largest potential_hazard and moves it to ready[0]; that is exactly how the three struct stores beat the higher-LUID argument moves at clocks 61-63. The comparison is strict, so a tie keeps ready[0] and our addsi3_internal loses. An a2 base emitted on a function unit with a larger blockage (the multiply/divide unit is the only one on mips.md with MAX_BLOCKAGE > 1) would win.",
+   "next_probe": "Enumerate the mips.md function_units and their blockage values, then check whether any 176-instruction spelling of (s32)r4 - K can be emitted on a unit other than the ALU. If none can, this axis is a class kill with a mips.md predicate cite and the LUID/reload route is the last one standing."
   },
   {
-   "hypothesis": "Frontier item 1 from s7 (an a2 base insn MANUFACTURED by combine at a late i3 position) is still untested; s8 tested only source-level reassociations, all of which cse/combine re-canonicalise back to the same pair.",
-   "mechanism": "combine.c places a combined insn at i3's position, so the LUID a sched1 tie-break reads is i3's, not the source statement's. The s8 sweep (v4) shows source association cannot reach this; the insn must be one combine CREATES, which requires a source form where the base does not exist as an insn until combine splits or merges something later in the block.",
-   "next_probe": "Diff tmp/grind/func_8005D554/s7/dumps2/text1b.rtl against .combine over the block-6 region to enumerate which insns combine creates and where it places them (this diff has still never been read), then sweep source forms whose a2 base is only materialised by that pass. Confirm build_insns stays 176 before crediting."
+   "hypothesis": "The target's a2 base may not be a separately-born insn at all: if in the original source the value stored to s.zero1C is produced by an expression whose final add is the base subtraction (i.e. the shift term is computed FIRST and the base subtracted last), the addiu would be the chain's last insn and could carry a LUID above the argument moves.",
+   "mechanism": "The emitted target pair is 'addiu a2,s4,-K' at slot 91 followed later by 'addu a2,a2,v0', which is the same two-insn shape as ours, so reassociation alone cannot be it (s7 killed the reassociation instance). But the ORDER in which cse canonicalises the two operands determines which of the two insns is born first, and that is set before sched1 assigns LUIDs.",
+   "next_probe": "Read tmp/grind/func_8005D554/s9/dumps/F.cse and F.cse2 over insns 205-223 and record which pass fixes the (base, shift-term) operand order, then sweep the small set of source spellings that change cse's canonical order. Confirm build_insns == 176 and re-run the BB2_SCHED_DEBUG trace on any spelling that moves LUID(211) at all - the trace, not the score, is the signal here."
   }
  ],
  "judge_constraints": [
@@ -338,6 +344,38 @@
    "measured_on": "HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant.",
    "predicate_cite": "",
    "result": "e4 (s32)(r4 - K) 6/176; e2 jitter - (K - (s32)r4) 15/176; e3 a2_offset = (s32)r4 + jitter then a2_offset -= K 15/176; e5"
+  },
+  {
+   "session": 9,
+   "statement": "The two loop halves are not separable: their sched1 windows are structurally identical on this chassis (same insn kinds, same priority level, same sign and comparable size of the LUID gap), so half 2 ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 7dcbdc8e, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "Both halves fail on the same single decision with the same LUID gap sign (31 vs 42/43 and 76 vs 88/89). No asymmetric fo"
+  },
+  {
+   "session": 9,
+   "statement": "Combine manufactures no insn in either contested window of this function, so the s7 route of an a2 base placed late by combine at an i3 position has no instance on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 7dcbdc8e, candidate.c chassis, floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "ONLY IN combine: [393]. ONLY IN loop: []. Nothing combine creates sits in or near either call window."
+  },
+  {
+   "session": 9,
+   "statement": "No INSN_PRIORITY lever can place the a2 base on the target slot, because the required rank is strictly between insns that all carry priority 3 and rank_for_schedule compares priority before every othe",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 7dcbdc8e, candidate.c chassis, floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2417",
+   "result": "The priority axis is a group key, not a tunable slot delay; every spelling that raises the a2 base's priority reproduces"
+  },
+  {
+   "session": 9,
+   "statement": "Splitting the a2 base constant into two steps (a2_offset = (s32)r4 - 0x8; a2_offset -= 4;) in both halves does not lengthen the a2 dependence chain and changes no scheduling decision.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 7dcbdc8e, candidate.c chassis, control floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "6/176, byte-identical to the control. This was the mandated kill re-audit of the closest banked instance kill (s8's a2-s"
   }
  ],
  "ladder_skip": 0,

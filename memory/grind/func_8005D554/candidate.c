@@ -74,7 +74,7 @@
  * Do NOT re-derive the priority or class framing; see hypotheses.md s7 and evidence.md s7.
  *
  * s8 (rederive, 2026-09-09, HEAD main @ 4297dfd2): floor RE-MEASURED at 6/176 on this body.
- * The kill re-audit passed: fake_ablate finds NO /* FAKE */ construct in this candidate (so no
+ * The kill re-audit passed: fake_ablate finds NO FAKE-annotated construct in this candidate (so no
  * banked lever was ever measured behind a carrier), and the five closest banked forms all
  * reproduce their recorded scores exactly on this chassis.  A fresh m2c decompile was run and
  * measured: its shape scores 75/176, and its independent THREE-ARGUMENT reading of the callee
@@ -90,6 +90,33 @@
  * The lever is the dependence graph (sched.c:1497 load-consumer cost 2), not INSN_LUID.
  * See hypotheses.md s8 and evidence.md s8.  Do NOT re-derive the m2c shape or the sibling
  * field order; do NOT re-sweep a2-sum re-spellings (still quantized to {6,15}).
+ *
+ * s9 (forensics, 2026-09-09, HEAD main @ 7dcbdc8e): floor RE-MEASURED at 6/176 on this body.
+ * FIRST: this file did not COMPILE as banked by s8 -- it carried a FAKE annotation with its
+ * comment delimiters inside this block comment, which closed the comment early (text1b.c:2769:
+ * parse error).  The sandbox reports that as "func_8005D554 not found in ...text1b.o"; if you
+ * ever see that message, hand-compile the TU first.  Never write comment delimiters inside this
+ * header.  SECOND, and the real result: the instrumented cc1's SCHEDDBG hooks (BB2_SCHED_DEBUG=1)
+ * were captured for the first time, and they reduce the entire 6-point residual to ONE ready-list
+ * pick.  GCC 2.7.2's schedule_block is a BACKWARD list scheduler (sched.c:4036-4038: selected
+ * first == emitted last).  In half 1, at sched1 clock 64 the ready list is
+ * [242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)] -- the two expand_call argument moves and the a2
+ * base.  Priorities tie, the last-scheduled class ties, potential_hazard ties structurally, so
+ * rank_for_schedule falls to INSN_LUID (sched.c:2462) and takes the highest, 242.  If 211 were
+ * taken there, the rest follows automatically (the one-cycle-blocked lw 205 re-enters with
+ * LAUNCH_PRIORITY, then 242, then 240) and the emission is 240,242,205,211 == the target.  So the
+ * whole residual is the single boolean INSN_LUID(a2 base) > INSN_LUID(a1 argument move).  sched2
+ * is a NO-OP here (its LUIDs already equal our emitted order).  Half 2 is structurally IDENTICAL
+ * (316 l=76 vs 346/348 l=88/89, all p=6) -- the halves are NOT separable, and s8's premise that
+ * only half 2's window holds a load is refuted (both windows hold exactly one SELBLOCKed lw).
+ * Combine creates exactly ONE insn in this whole function, (use (reg 119)) at the top, so there is
+ * no combine-manufactured a2 base to place late.  And every INSN_PRIORITY lever OVERSHOOTS by
+ * construction: the three struct stores also sit at priority 3, so a load producer (3+2-1=4,
+ * sched.c:1497) or a single-assignment dest (birthing_insn_p, sched.c:2505, raises to
+ * max_priority) lifts the a2 base above them too -- exactly s8's six-slot overshoot.  Do NOT
+ * re-attempt priority levers, half-asymmetric forms, or combine-placement forms.  The one untested
+ * creation site left is RELOAD, which runs after sched1 and whose insertions get fresh LUIDs for
+ * sched2.  See hypotheses.md s9 and evidence.md s9.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

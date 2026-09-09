@@ -1296,3 +1296,128 @@ R3. **Re-open the `s.zero10` dependence route with a construct that is not an in
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant.
+
+
+## s9 (forensics, 2026-09-09) — hypotheses
+
+Chassis for every entry below: HEAD main @ 7dcbdc8e, `memory/grind/func_8005D554/candidate.c`
+applied to `src/text1b.c`, control floor RE-MEASURED at 6/176. No FAKE constructs present in the
+control or in any variant measured this session.
+
+### H-s9-1 (CONFIRMED) — the 6-point residual is one boolean on one insn
+STATEMENT: at sched1 the entire 3-slot-per-half residual is decided by a single ready-list pick;
+if the a2-base insn were selected at that one point instead of the a1 argument move, the rest of
+the window reproduces the target byte-for-byte with no other change.
+MECHANISM: `schedule_block` is backward (sched.c:4036-4038, selected-first = emitted-last). At the
+divergence the ready list is `[242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)]`; priority ties,
+last-scheduled class ties (s7), `potential_hazard` ties structurally (sched.c:2708-2723, strict
+comparison keeps `ready[0]`), so `rank_for_schedule`'s final criterion
+`INSN_LUID(tmp) - INSN_LUID(tmp2)` (sched.c:2462) picks the highest LUID, 242. Selecting 211 there
+leaves {242,240} plus the one-cycle-blocked lw 205, which re-enters with LAUNCH_PRIORITY and is
+picked next, then 242 (l=43), then 240 (l=42) — emitted `240,242,205,211` = the target.
+PROBE: instrumented cc1 with `BB2_SCHED_DEBUG=1`; `tmp/grind/func_8005D554/s9/sched_window_half1.log`.
+RESULT: measured, not inferred — the full pick/ready trace for both halves is banked.
+
+### H-s9-2 (KILLED, instance) — the two loop halves are not separable
+STATEMENT: applying a lever to half 2 alone does not fix half 2 alone; the two halves' sched1
+windows are structurally identical on this chassis (same insn kinds, same priority level, same
+sign and comparable size of the LUID gap), so half 2's window offers no load or hazard the first
+half's lacks.
+MECHANISM: half 2's window is 316 (a2 base, l=76), 334/337/340 (stores, l=84/85/86), 346 (l=88),
+348 (l=89), 310 (the lw); all priority 6; selection order `340,337,334,348,310,346,316`. The lw is
+`SELBLOCK`ed for one cycle in both halves. s8's premise that only half 2's window contains a load
+is refuted by the trace.
+PROBE: `BB2_SCHED_DEBUG=1` trace, `tmp/grind/func_8005D554/s9/sched_window_half2.log`.
+MEASURED_ON: HEAD main @ 7dcbdc8e, candidate.c chassis, control floor 6/176; no FAKE constructs.
+
+### H-s9-3 (KILLED, instance) — combine manufactures no insn in the contested window
+STATEMENT: the `.loop`-to-`.combine` insn-set diff for this function shows exactly one
+combine-created insn, `(insn 393 (use (reg:SI 119)))` attached to the first `rand()` call at the
+top of the function, and none in block 6 or in either call window, so the s7 route of an a2 base
+manufactured by combine at a late i3 position has no instance here.
+MECHANISM: `combine.c` places a combined insn at i3's position; with no combination occurring in
+this region there is no i3 to inherit a late position from.
+PROBE: `tmp/grind/func_8005D554/s9/insns.py loop combine`; output
+`tmp/grind/func_8005D554/s9/combine_created_insns.txt`.
+MEASURED_ON: HEAD main @ 7dcbdc8e, candidate.c chassis, floor 6/176; no FAKE constructs.
+
+### H-s9-4 (KILLED, class) — no INSN_PRIORITY lever can place the a2 base on the target slot
+STATEMENT: every lever that raises the a2-base insn's INSN_PRIORITY above 3 also raises it above
+the three struct stores, which sit at priority 3 in the same window, so the insn is selected
+before them and emitted six slots past the target position; the required rank is strictly between
+two insns that share priority 3, and `rank_for_schedule` compares priority before anything else
+(sched.c:2417), so no priority value can express it.
+MECHANISM: `adjust_priority` (sched.c:2542) raises a ready insn to `max_priority` when
+`birthing_insn_p` (sched.c:2505, `reg_n_sets[dest] == 1`) holds; a load producer instead gives
+`priority(x) + insn_cost - 1 = 3 + 2 - 1 = 4` (sched.c:1497). Both land the insn in a strictly
+higher group than the stores 228/231/234, reproducing the six-slot overshoot s8 measured with
+`u32 rb[2]`. Within one priority group the only remaining discriminators are `potential_hazard`
+(structural tie: `addsi3_internal` vs `addsi3_internal`/`movsi_internal2` on one unit) and LUID.
+PROBE: `BB2_SCHED_DEBUG=1` ADJPRI/SELBEST trace plus the sched.c predicates; corroborated by s8's
+measured `rb[2]` overshoot (six slots, +2 insns, 32/178).
+PREDICATE_CITE: tools/gcc-2.7.2/sched.c:2417
+MEASURED_ON: HEAD main @ 7dcbdc8e, candidate.c chassis, floor 6/176; no FAKE constructs.
+
+### H-s9-5 (KILLED, instance) — splitting the a2 base constant does not lengthen its chain
+STATEMENT: spelling the a2 base as two constant steps (`a2_offset = (s32)r4 - 0x8;
+a2_offset -= 4;` in both halves) does not add a dependent insn to the a2 chain and does not change
+any scheduling decision.
+MECHANISM: cse/combine re-fold the two `addiu` constants into one before sched1 sees the block, so
+`reg_n_sets` and the chain length are unchanged.
+PROBE: applied and measured with `sandbox func_8005D554 --disable all`.
+RESULT: 6/176, byte-identical to the control. Banked at
+`rejected/a2-base-constant-split-refolds-by-cse-scores-6.c`.
+MEASURED_ON: HEAD main @ 7dcbdc8e, candidate.c chassis, control floor 6/176; no FAKE constructs.
+
+### H-s9-6 (CONFIRMED) — the s8 candidate.c did not compile as banked
+STATEMENT: candidate.c as written by s8 contained a FAKE annotation with its comment delimiters
+inside the leading block comment, which terminated that comment early and made `src/text1b.c` fail
+to parse; the sandbox reported this as `func_8005D554 not found in ...text1b.o`, not as a compile
+error.
+PROBE: hand compile via `tmp/grind/func_8005D554/s9/cc.sh` -> `text1b.c:2769: parse error before
+'in'`. Fixed in place; the floor then measured 6/176 as recorded.
+
+## [s9] The entire 3-slot-per-half residual is decided by a single sched1 ready-list pick: at clock 64 the ready list is [242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)] (the two expand_call argument moves and the a2 base); selecting 211 there, and nothing else, reproduces the target's emission order 240,242,205,211 exactly.
+- mechanism: GCC 2.7.2 schedule_block is a BACKWARD list scheduler (sched.c:4036-4038 prepends each selected insn, so selected-first == emitted-last). At that pick INSN_PRIORITY ties at 3, the last-scheduled class ties 3-vs-3 (s7), and schedule_select's potential_hazard ties structurally (sched.c:2708-2723, strict comparison keeps ready[0]), so rank_for_schedule falls through to its final criterion INSN_LUID(tmp) - INSN_LUID(tmp2) (sched.c:2462) and takes the highest LUID, 242. With 211 taken instead, the one-cycle-SELBLOCKed lw 205 (load-consumer cost, sched.c:1497) re-enters with LAUNCH_PRIORITY and is picked next, then 242 (l=43), then 240 (l=42). sched2 is a no-op here: its LUIDs (211=25, 240=26, 205=27, 242=28) already equal our emitted order.
+- probe: Ran tools/gcc-2.7.2/cc1 with BB2_SCHED_DEBUG=1 (SCHEDDBG PICK/SELBEST/SELBLOCK/ADJPRI hooks) over src/text1b.c with candidate.c applied; extracted the full pick-and-ready trace for both call windows.
+- result: Measured selection order 234,231,228,242,205,240,211 -> emitted 211,240,205,242,228,231,234, which is byte-for-byte our asm; the target needs selection 234,231,228,211,205,242,240. The residual is therefore the single boolean INSN_LUID(a2 base) > INSN_LUID(a1 argument move). Trace banked at tmp/grind/func_8005D554/s9/sched_window_half1.log.
+- verdict: CONFIRMED
+
+## [s9] The two loop halves are not separable: their sched1 windows are structurally identical on this chassis (same insn kinds, same priority level, same sign and comparable size of the LUID gap), so half 2 offers no load or hazard that half 1's window lacks.
+- mechanism: Half 2's window is 316 (a2 base, l=76), 334/337/340 (the three struct stores, l=84/85/86), 346 (l=88) and 348 (l=89), all at INSN_PRIORITY 6, with the lw 310 SELBLOCKed for one cycle exactly as 205 is in half 1. Selection order 340,337,334,348,310,346,316 mirrors half 1 pick for pick. s8's frontier premise that only half 2's window already contains a load is refuted by the trace.
+- probe: Same BB2_SCHED_DEBUG=1 trace, half-2 window extracted to tmp/grind/func_8005D554/s9/sched_window_half2.log.
+- result: Both halves fail on the same single decision with the same LUID gap sign (31 vs 42/43 and 76 vs 88/89). No asymmetric form can move one half without the other on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 7dcbdc8e, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s9] Combine manufactures no insn in either contested window of this function, so the s7 route of an a2 base placed late by combine at an i3 position has no instance on this chassis.
+- mechanism: combine.c places a combined insn at i3's position; the .loop-to-.combine insn-set diff shows exactly one insn added across the whole function, (insn 393 (use (reg:SI 119))) attached to the first rand() call at the top, and none removed in block 6.
+- probe: Wrote tmp/grind/func_8005D554/s9/insns.py to parse both -da dumps into insn-UID sets and diff them; output banked at tmp/grind/func_8005D554/s9/combine_created_insns.txt.
+- result: ONLY IN combine: [393]. ONLY IN loop: []. Nothing combine creates sits in or near either call window.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 7dcbdc8e, candidate.c chassis, floor 6/176; no FAKE constructs present.
+
+## [s9] No INSN_PRIORITY lever can place the a2 base on the target slot, because the required rank is strictly between insns that all carry priority 3 and rank_for_schedule compares priority before every other criterion.
+- mechanism: The a2 base must rank BELOW the three struct stores 228/231/234 and ABOVE the two argument moves 240/242, and all five carry INSN_PRIORITY 3. adjust_priority (sched.c:2542) raises a ready insn to max_priority when birthing_insn_p (sched.c:2505, reg_n_sets[dest] == 1) holds, and a load producer gives priority(x) + insn_cost - 1 = 3 + 2 - 1 = 4 (sched.c:1497); either lands the a2 base in a strictly higher group than the stores, so it is selected before them and emitted six slots past the target. Within one priority group the only remaining discriminators are potential_hazard (a structural tie: addsi3_internal against addsi3_internal and movsi_internal2 on one function unit) and LUID.
+- probe: BB2_SCHED_DEBUG=1 ADJPRI/SELBEST trace (ADJPRI insn=211 deaths=0 birth=0 pri=3, while 205/206/217/219/220/222/223 all carry p=2130706433) read against the sched.c predicates; corroborated by s8's measured u32 rb[2] result, six-slot overshoot at 32/178.
+- result: The priority axis is a group key, not a tunable slot delay; every spelling that raises the a2 base's priority reproduces s8's six-slot overshoot. Only LUID can express the required rank.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 7dcbdc8e, candidate.c chassis, floor 6/176; no FAKE constructs present.
+- predicate_cite: tools/gcc-2.7.2/sched.c:2417
+
+## [s9] Splitting the a2 base constant into two steps (a2_offset = (s32)r4 - 0x8; a2_offset -= 4;) in both halves does not lengthen the a2 dependence chain and changes no scheduling decision.
+- mechanism: cse and combine re-fold the two addiu constants into a single addiu before sched1 sees the block, so reg_n_sets and the chain length are unchanged and adjust_priority still reports birth=0, pri=3.
+- probe: Applied the variant to src/text1b.c and measured with sandbox func_8005D554 --disable all.
+- result: 6/176, byte-identical to the control. This was the mandated kill re-audit of the closest banked instance kill (s8's a2-sum quantization to {6,15}); the s8 kill reproduces on the current chassis. Banked at memory/grind/func_8005D554/rejected/a2-base-constant-split-refolds-by-cse-scores-6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 7dcbdc8e, candidate.c chassis, control floor 6/176; no FAKE constructs present.
+
+## [s9] The candidate.c banked by s8 did not compile: it carried a FAKE annotation with its comment delimiters inside the leading block comment, which closed that comment early.
+- mechanism: The inner comment terminator ends the header block comment at what s8 intended as prose, so the remaining header text is parsed as C. The sandbox surfaces this not as a compile error but as 'score unavailable: func_8005D554 not found in tmp/sandbox/func_8005D554/text1b.o', whose suggested cause (a sibling index-based reorder rule truncating the pipeline) is misleading.
+- probe: Hand-compiled the preprocessed TU with tools/gcc-2.7.2/cc1 via tmp/grind/func_8005D554/s9/cc.sh.
+- result: text1b.c:2769: parse error before 'in'. Fixed in candidate.c; the floor then measured 6/176. Future sessions seeing the 'not found in text1b.o' sandbox message should hand-compile the TU first.
+- verdict: CONFIRMED

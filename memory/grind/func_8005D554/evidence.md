@@ -1030,3 +1030,154 @@ the dependence graph (d1) does.
 - [s8] The matched sibling func_8005D46C (src/text1b.c:2659, same S46C struct, same func_80073728 callee) is spent: its field-store order transplants at 28/178.
 
 - [s8] NEW: a load producer for the a2 base moves 'addiu a2,...,-K' from slot 88 (before the call's argument setup) to slot 97 (six slots after it) at 32/178. s4's 'no source-level order can beat the argument setup' bounds statement order only; the dependence graph is a separate, working handle on the same rotation.
+
+
+## s9 (forensics, 2026-09-09) — the residual reduced to ONE binary predicate, measured inside sched1
+
+Chassis: HEAD main @ 7dcbdc8e, `memory/grind/func_8005D554/candidate.c` applied to `src/text1b.c`.
+Floor RE-MEASURED: **6 / 176 instructions** (`sandbox func_8005D554 --disable all`). No FAKE
+constructs are present in the candidate (confirmed again by inspection; s8's `fake_ablate` result
+still holds).
+
+### 0. DEFECT FOUND AND FIXED: the s8 candidate.c did not compile
+s8 wrote the literal token `/* FAKE */` **inside** candidate.c's leading block comment
+("fake_ablate finds NO /* FAKE */ construct in this candidate"). The inner terminator ends the
+block comment, so applying candidate.c to `src/text1b.c` produced
+`text1b.c:2769: parse error before 'in'` and an EMPTY object; the sandbox then reported
+`score unavailable: 'func_8005D554 not found in tmp/sandbox/func_8005D554/text1b.o'`. The wording
+is now `finds NO FAKE-annotated construct`. **Never write a FAKE annotation with its comment
+delimiters inside a C block comment in a banked form.** Any future session that sees
+"func not found in ...text1b.o" from the sandbox should first compile the TU by hand
+(`tmp/grind/func_8005D554/s9/cc.sh`) and read the cc1 errors — the sandbox's message names a
+linker/reorder cause that was not the real one here.
+
+### 1. The scheduler pass that decides the residual is sched1, NOT sched2
+`tools/gcc-2.7.2/cc1` was run with `BB2_SCHED_DEBUG=1` (SCHEDDBG PICK / SELBEST / SELBLOCK /
+ADJPRI hooks, sched.c:2579, 2694, 2735, 4014) — a log no prior session had captured (s7 captured
+only PRIODBG and RANKDBG). Extracts are banked at
+`tmp/grind/func_8005D554/s9/sched_window_half1.log` and `..._half2.log`.
+
+GCC 2.7.2's `schedule_block` is a **backward (bottom-up) list scheduler**: sched.c:4036-4038
+(`NEXT_INSN (insn) = last; PREV_INSN (last) = insn; last = insn;`) prepends each selected insn,
+so **the first insn SELECTED is the LAST insn EMITTED**. Every ranking statement in this ledger
+must be read in that direction.
+
+Half 1's contested window (insn UIDs are stable from `.combine` through `.sched2`):
+  * 211 = `addiu $a2,$s4,-0xC`  (the a2 base)
+  * 240 = `addiu $a0,$sp,0x10`  (expand_call's first argument-register move)
+  * 242 = `addu  $a1,$zero,$zero` (expand_call's second argument-register move)
+  * 205 = `lw $v1,%gp_rel(D_800A3418)($gp)`
+  * 228/231/234 = `sw $zero,0x20($sp)` / `sw $s6,0x24($sp)` / `sw $s1,0x1C($sp)`
+
+Measured sched1 selection order: `234, 231, 228, 242, 205, 240, 211`
+  -> emitted (reversed): `211, 240, 205, 242, 228, 231, 234` = exactly our asm.
+Target's emitted order (asm/funcs/func_8005D554.s 4DEB4..4DECC): `240, 242, 205, 211, 228, 231, 234`
+  -> required selection order: `234, 231, 228, 211, 205, 242, 240`.
+
+**sched2 is a no-op here.** The LUIDs entering sched2 are 211=25, 240=26, 205=27, 242=28 — i.e.
+already our emitted order — and sched2 reproduces it unchanged. The order is fixed in sched1.
+
+### 2. The single differing decision, and the exact predicate that governs it
+The two selection sequences agree on the first three picks (234, 231, 228 — the struct stores, all
+`INSN_PRIORITY == 3`, chosen over the higher-LUID 242/240 by `schedule_select`'s
+`potential_hazard` tie-break, sched.c:2708-2723, logged as `SELBEST ... pos=N`). They then
+diverge at exactly one point:
+
+    SCHEDDBG PICK clock=64 picked=242 (pri=3 luid=43)
+    SCHEDDBG   ready was: [ 242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31) 161(p=1,l=6) ]
+
+All three candidates carry `INSN_PRIORITY == 3`; s7 already measured the last-scheduled CLASS as a
+3-vs-3 tie; `potential_hazard` is a structural tie (two `addsi3_internal` and one
+`movsi_internal2`, same function unit, and the comparison at sched.c:2717 is strict, so the tie
+keeps `ready[0]`). `rank_for_schedule` therefore falls through to its last criterion,
+**`return INSN_LUID (tmp) - INSN_LUID (tmp2);` (sched.c:2462)**, which selects the HIGHEST LUID
+first. Our LUIDs are 242=43 > 240=42 > 211=31, so 242 wins and the a2 base is left for last —
+i.e. emitted first.
+
+**If insn 211 is selected at that one point, everything else follows automatically and the target
+is reproduced exactly:** the remaining ready set is {242, 240} plus the queued 205; 205 is released
+one cycle later (it is `SELBLOCK`ed with cost 1 at clocks 62/63/64 — the load-consumer cost of
+sched.c:1497 — and re-enters with LAUNCH_PRIORITY), so the picks become 205 (clock 65), then 242
+(l=43), then 240 (l=42), giving emitted `240, 242, 205, 211`. Nothing else in the function has to
+change. **The whole 6-point residual is the single boolean `INSN_LUID(a2-base) > INSN_LUID(a1
+argument move)`.**
+
+### 3. Half 2 is structurally IDENTICAL — the halves are NOT separable (s8 frontier item 2 refuted)
+Half 2's window is 316 (`addiu $a2,$s4,-0x19`), 346/348 (the two argument moves), 310 (the lw),
+334/337/340 (the three struct stores). Measured LUIDs: 316=76, 334/337/340=84/85/86, 346=88,
+348=89; all at `INSN_PRIORITY == 6`. Selection order `340, 337, 334, 348, 310, 346, 316` — the
+same shape, the same one differing decision, the same LUID gap sign (76 vs 88/89, a gap of 12;
+half 1's is 31 vs 42/43, a gap of 11). The s8 frontier premise that "half 2 already contains a
+load in its window while half 1 does not" is **wrong**: both windows contain exactly one lw
+(205 / 310) and it is `SELBLOCK`ed identically in both. There is no asymmetry to exploit and no
+form can fix one half without the other on this chassis.
+
+### 4. Combine creates ONE insn in this function, nowhere near either window (s7 frontier item 3 closed)
+The `.loop` -> `.combine` insn-set diff (never read before; script
+`tmp/grind/func_8005D554/s9/insns.py`, output `tmp/grind/func_8005D554/s9/combine_created_insns.txt`)
+shows exactly one insn added by combine across the whole of `func_8005D554`:
+
+    (insn 393 42 45 (use (reg:SI 119)) -1 ...)
+
+a `(use)` attached to the first `rand()` call at the top of the function. Combine creates nothing
+in block 6 or in either contested window, and deletes nothing there. The "an a2 base insn
+MANUFACTURED by combine at a late i3 position" route has no instance to work with on this chassis.
+
+### 5. Why every priority-raising lever OVERSHOOTS (s8 frontier item 1 re-framed)
+`adjust_priority` (sched.c:2542) runs on each insn as it becomes ready. With `n_deaths == 0` it
+consults `birthing_insn_p` (sched.c:2505), which returns `reg_n_sets[REGNO(SET_DEST)] == 1` for a
+live dest — and if true it raises the insn's priority to `max_priority` (LAUNCH_PRIORITY,
+0x7F000001). This is visible in the log: 205, 206, 217, 219, 220, 222, 223 all carry
+`p=2130706433`, while `ADJPRI insn=211 deaths=0 birth=0 ... pri=3` leaves the a2 base at 3 —
+because `a2_offset` is written twice in the candidate (`a2_offset = base;` then
+`a2_offset += term;`), so `reg_n_sets == 2`.
+
+The consequence is decisive: **priority is a GROUP key, not a slot delay.** The three struct
+stores 228/231/234 also sit at priority 3. Any lever that lifts the a2 base above priority 3 —
+a load producer (s8's `u32 rb[2]`; `insn_cost == 2` at sched.c:1497 gives `3 + 2 - 1 = 4`), or
+making its dest single-assignment so `birthing_insn_p` fires — lifts it above those three stores
+as well, so it is selected before them and emitted six slots too late. That is exactly the
+six-slot overshoot s8 measured, and it is not tunable by cycle count: the a2 base must rank BELOW
+the three stores and ABOVE the two argument moves, and all five carry priority 3, so no priority
+value can separate them. Within a priority group the only discriminators are `potential_hazard`
+(a structural tie here) and LUID. **Only LUID can land the a2 base on slot 91.**
+
+### 6. What LUID > 43 would require
+`INSN_LUID` is assigned in stream order over the insn chain entering sched1, i.e. over combine's
+output. Insns 240/242 are emitted by `expand_call` immediately before the call insn, so they are
+the last two insns of the block; any source *statement* placed before the call gets a smaller LUID
+(s6 already measured 0 of 420 dependence-legal statement permutations reaching it, and s8 measured
+the three-argument callee reading as byte-inert for the same reason — `expand_call` evaluates
+argument expressions into pseudos BEFORE emitting the hard-register moves). So the a2 base cannot
+outrank them by source order. The remaining creation sites for an insn positioned after the
+argument moves are passes that INSERT insns at a use point: combine (measured inert, section 4)
+and reload (which runs after sched1, so its insertions are only visible to sched2 — and sched2's
+LUIDs are recomputed from the post-reload stream, which is the one place a late-born a2 base would
+still be re-ranked). The reload route is untested and is the s9 frontier.
+
+### 7. Kill re-audit (mandatory, floor flat)
+The closest banked instance kill — the a2-sum re-spelling family (s8, "still quantized to {6,15}")
+— was re-measured on this chassis in a new spelling not previously tried: splitting the base
+constant so the a2 chain gains one dependent insn
+(`a2_offset = (s32)r4 - 0x8; a2_offset -= 4;`, both halves). Result: **6 / 176**, byte-identical
+to the candidate — cse/combine re-fold the two constants into one `addiu`, so the chain is not
+lengthened and no priority changes. Banked at
+`rejected/a2-base-constant-split-refolds-by-cse-scores-6.c`. The s8 kill reproduces.
+
+- [s9] Floor re-measured 6/176 on HEAD main @ 7dcbdc8e with candidate.c applied; frame and register allocation still byte-identical to the target, residual is the same 3-slot rotation in each of the two call windows.
+
+- [s9] GCC 2.7.2's schedule_block is a BACKWARD (bottom-up) list scheduler: sched.c:4036-4038 prepends each selected insn to the emitted chain, so the FIRST insn selected is the LAST insn emitted. Every prior ranking statement in this ledger must be read in that direction.
+
+- [s9] The residual is decided entirely in sched1. The LUIDs entering sched2 (211=25, 240=26, 205=27, 242=28) already equal our emitted order, and sched2 reproduces it unchanged.
+
+- [s9] Half 1 divergence point, verbatim from the trace: 'SCHEDDBG PICK clock=64 picked=242 (pri=3 luid=43)' with 'ready was: [ 242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31) 161(p=1,l=6) ]'. All three tie on priority, class and potential_hazard, so sched.c:2462's INSN_LUID tiebreak decides.
+
+- [s9] The three struct stores 228/231/234 beat the higher-LUID argument moves at clocks 61-63 not by rank_for_schedule but by schedule_select's potential_hazard scan (sched.c:2708-2723), logged as 'SELBEST ... pos=N'. The target's schedule agrees with ours on those three picks.
+
+- [s9] The lw of D_800A3418 (205 in half 1, 310 in half 2) is SELBLOCKed for exactly one cycle in BOTH halves (load-consumer cost 2, sched.c:1497) and re-enters the ready list with LAUNCH_PRIORITY. Its position at slot 2 of the window is identical in ours and in the target.
+
+- [s9] adjust_priority (sched.c:2542) reports 'ADJPRI insn=211 deaths=0 birth=0 pri=3' because a2_offset is written twice, so birthing_insn_p (sched.c:2505, reg_n_sets[dest] == 1) is false. Every insn in the block that IS birthing (205, 206, 217, 219, 220, 222, 223) carries p=2130706433 in the trace.
+
+- [s9] expand_call emits the argument-register moves immediately before the call insn, so they are the last two insns of the block; no source statement placed before the call can outrank them by LUID. This is the mechanism behind s6's 0-of-420 permutation result and s8's byte-inert three-argument reading.
+
+- [s9] Combine adds exactly one insn to the whole function, a (use (reg:SI 119)) at the top, and removes none in block 6.
