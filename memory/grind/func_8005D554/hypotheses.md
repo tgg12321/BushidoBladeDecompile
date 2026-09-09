@@ -416,3 +416,147 @@ G3. **`rederive` modality: re-open the loop chassis itself.** Every s1/s2 probe 
   `defeat-licm-hoist-var-reuse.md` (whose shipped `s32 tmp;` shape is exactly ours, see
   src/code6cac_c2.c:1360-1365) is scoped to the loop.c hoist mechanism, not sched.c's
   `birthing_insn_p`. Hence the s3 `ruling-request`.
+
+## s3b (permuter, post-Judge-FAIL re-dispatch) — measured. FLOOR 6 (candidate.c reset to the clean form).
+
+Context: the s3 `ruling-request` body (fresh multi-write carriers `nv`/`nw`, distance 0) was
+FAILed by the Judge on 2026-09-08 (docs/grind/decisions.md, "2026-09-08 22:31 — func_8005D554").
+Binding constraint carried forward: no fresh (invented) local may be written more than once to
+act as a staging carrier for the a2-site base `(s32)r4 - K`, or for any other value here, under
+any name. `candidate.c` is therefore reset to the clean 176/176 score-6 body (s2's form); the
+FAILed body is banked verbatim at
+`rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c` and must never be resubmitted
+(the driver keys review verdicts by BODY).
+
+### H19 — Merging the staging carrier INTO the accumulator (per-half a2 accumulators whose base init is hoisted to the pre-`s.zero18` slot) reproduces the winning shape without an invented carrier. **KILLED (instance).**
+- statement: on the s3b chassis, replacing the shared `a2_offset` with per-half accumulators
+  `a2a`/`a2b` and hoisting each half's `a2X = (s32)r4 - K;` to the slot between
+  `a0_offset += ...` and `s.zero18 = a0_offset;` — so the accumulator itself is the multi-set
+  variable and no staging local exists — compiles to 178 instructions and scores 47.
+- mechanism: the hoisted base is live across the `rand()` call, so it needs a callee-saved
+  seat; the function already uses all nine (s0-s7 + fp) and so does the target
+  (`asm/funcs/func_8005D554.s:4DD5C-4DD84` saves s0-s7, fp, ra — a 0x78 frame, same as ours).
+  The tenth long-lived value evicts `p_b2e0`, which GCC then rematerializes with extra
+  `lui/addiu` pairs in the pre-loop block: +2 instructions.
+- probe: `sandbox func_8005D554 --disable all` on `tmp/grind/func_8005D554/s3/k1_perhalf_acc_hoist.c`
+  -> 47/178; objdump pairdiff of `s3/k0.asm` vs `s3/k1.asm` shows exactly the eviction
+  (k0: `lui s8/addiu s8` + `lui s7/addiu s7` once in the pre-loop; k1: three `lui a2/addiu a2`
+  pairs, with s0/s1 now holding a2a/a2b).
+- kill_scope: instance. measured_on: s3b chassis == s1/s2 candidate chassis (guard-in-i,
+  p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present.
+  Form: `rejected/perhalf-accumulator-hoisted-base-scores-47.c`.
+- result: **this overturns the s3 mechanism story.** H15 attributed the win to
+  `reg_n_sets > 1` defeating `sched.c:2505 birthing_insn_p`; `a2a` here is written twice at the
+  same statement positions (reg_n_sets == 2) and still misses by 47. The distinguishing
+  property of the FAILed `nv`/`nw` forms is the SEPARATE pseudo copied into the accumulator,
+  not the write count. A future session must not re-derive the reg_n_sets reading.
+
+### H20 — The +2 that every hoisted spelling pays is register pressure, and freeing one callee-saved seat buys it back. **CONFIRMED (as a mechanism); the resulting forms KILLED (instance).**
+- statement: with the ordinary-C hoist in place (`g7_reorder_only`, 178/31), deleting one
+  callee-saved-resident local restores 176 instructions exactly: dropping the
+  `p_b390 = p_b388 + 2` local scores 27/176 (`k9`), dropping the `p_b2e0` local scores 28/176
+  (`k11`). Symmetrically, deleting the same local WITHOUT the hoist costs two instructions:
+  `k10` (no hoist, no p_b390) is 174/45 and `k12` (no hoist, no p_b2e0) is 174/47.
+- mechanism: the seat budget is exactly nine callee-saved registers in both our build and the
+  target; a hoisted base occupies a tenth, and each freed pointer local returns one.
+- probe: `sandbox` on `s3/{k9_g7_nopb390.c, k11_g7_nopb2e0.c, k10_k0_nopb390.c, k12_k0_nopb2e0.c}`.
+- kill_scope: instance (for the forms). measured_on: s3b chassis, no FAKE constructs.
+  Forms: `rejected/hoist-plus-freed-pb390-seat-scores-27.c`,
+  `rejected/hoist-plus-freed-pb2e0-seat-scores-28.c`.
+- result: buying the instructions back does NOT buy the target order. `k11`'s objdump
+  (`s3/k11.asm`, body insn 75) puts the base at `addiu s0,s4,-12` in the second `rand` delay
+  slot — held in a CALLEE-SAVED register across the call — while the target computes it in
+  caller-saved `$a2` AFTER the call (`asm/funcs/func_8005D554.s:4DEC0`). Every source-level
+  hoist is therefore structurally unlike the target, even the FAILed one that matched bytes:
+  in the `nv`/`nw` forms some pass deletes the early insn and re-materializes it after the arg
+  loads. Naming that pass is the next session's job (see frontier P1).
+
+### H21 — Removing the `c1` / `c100` constant-holder locals relieves enough pressure for the hoist. **KILLED (instance).**
+- statement: on the hoisted (`g7`) chassis, spelling `s.one14 = 1;` instead of the `c1` holder
+  scores 32/178, spelling `s.c24 = 0x100; s.c20 = 0x100;` instead of the `c100` holder scores
+  33/178, and dropping both scores 34/178 — none recovers an instruction. (Control: dropping
+  `c1` on the un-hoisted chassis scores 8/176, i.e. it is mildly harmful on its own.)
+- mechanism: both constants are re-loaded per use rather than freeing a seat; the target itself
+  keeps the 1 in a callee-saved register (`sw $s6, 0x24($sp)`, `asm/funcs/func_8005D554.s:4DEC8`).
+- kill_scope: instance. measured_on: s3b chassis, no FAKE constructs.
+  Forms: `rejected/hoist-without-c1-holder-scores-32.c`; probes
+  `tmp/grind/func_8005D554/s3/{k4_g7_noc1.c,k5_g7_noc100.c,k7_g7_noc1_noc100.c,k8_k0_noc1.c}`.
+
+### H22 — A permuter campaign seeded on the ordinary-C hoist chassis (`g7`, 178 insns) finds the register-pressure relief that closes it. **KILLED (instance).**
+- statement: a campaign on `tmp/perm_5d554_g7` (base.c = `g7_reorder_only`, permuter base score
+  940) ran 24,879 iterations with 8 jobs over ~13 minutes and improved only to 655; the z3
+  campaign that produced the s3 find started at 310 and reached 160.
+- mechanism: at 178 instructions the chassis is two deletions plus a rotation away from the
+  target, outside the single-site mutation radius the permuter samples; the score landscape
+  between 940 and 655 is all pointer-rematerialization noise.
+- kill_scope: instance. measured_on: s3b chassis, no FAKE constructs;
+  campaign telemetry in `metrics/events.jsonl`, label `s3b-g7-ordinary-hoist-chassis`;
+  finds under `tmp/perm_5d554_g7/output-*`.
+- result: three chassis are now spent for permutation — the s1/s2 candidate chassis (21,569
+  iters, 0 finds), the `z3` guard-duplicated while (30,891 iters, the banned `new_var` find),
+  and `g7` (24,879 iters, best 655). A fourth seed must be a 176/6-class chassis that is
+  structurally different from both k0 and z3.
+
+## Frontier after s3b
+
+P1. **Name the pass that re-materializes `addiu a2,s4,-K` after the call in the `nv`/`nw` forms.**
+    Mechanism: the FAILed `g17`/`g23` bodies put `nv = (s32)r4 - K;` BEFORE the `rand()` call in
+    source, yet their output computes the base in caller-saved `$a2` AFTER the call — so some
+    pass (cse.c re-materialization at the copy `a2_offset = nv;`, combine.c folding the copy,
+    or flow.c deleting the now-dead early set) moves the arithmetic down, and the insn is
+    re-emitted with a LUID above the arg loads. This is the only known mechanism that satisfies
+    H4/H7's LUID predicate, and H7's class kill (no C spelling can raise that LUID) is
+    contradicted by the measurement — re-open it. Next probe: `pwsh tools/grinder/dump.ps1
+    func_8005D554` with `s3/g17_perhalf_base.c` applied and again with
+    `s3/k1_perhalf_acc_hoist.c` applied; diff the `.cse`, `.combine` and `.flow` dumps around
+    the a2 base insn and identify the exact transformation. Once the pass is named, look for an
+    ORDINARY-C construct that triggers the same transformation on the accumulator itself (a
+    real copy the program needs, or a sub-expression CSE already has available) rather than an
+    invented carrier.
+
+P2. **Attack the sched1 clock-64 tie from the PRIORITY side instead of the LUID side.**
+    Mechanism: `sched.c:2464` reaches the INSN_LUID tie-break only when priority and class are
+    equal. Every session so far has tried to raise the a2 init's LUID; nobody has tried to
+    LOWER its `INSN_PRIORITY` (shorten its path to the block end) or to RAISE the a0/a1 arg
+    loads'. Next probe: run `tools/sched_solver` extract/simulate pass 1 on `candidate.c` and
+    enumerate, in the exact model, which priority perturbation on uids 211/240/242 flips the
+    clock-64 pick; only then look for a C spelling producing it at 176 insns.
+
+P3. **A fourth permuter seed: a stacked-neutral 176/6 chassis.** All of the s2 neutral
+    spellings (`x2` per-half blocks, `v6` declaration order, `w5` store order, `z3`
+    guard-duplicated while) score 6 at 176; stacking three or four of them gives a chassis with
+    a different emission order that is still one edit from the goal, unlike `g7`. Seed that,
+    and vet any find hard: the permuter's attractor in this function is the banned
+    fresh-multi-write carrier, and a find that spells one is not a candidate.
+
+## [s3] On the s3b chassis, replacing the shared a2_offset with per-half accumulators a2a/a2b and hoisting each half's a2X = (s32)r4 - K to the slot between a0_offset += ... and s.zero18 = a0_offset -- so the accumulator itself is the multi-set variable and no staging local exists -- compiles to 178 instructions and scores 47.
+- mechanism: The hoisted base is live across the rand() call so it needs a callee-saved seat; the build already uses all nine (s0-s7 + fp) and so does the target (asm/funcs/func_8005D554.s:4DD5C-4DD84 saves s0-s7, fp, ra into a 0x78 frame). The tenth long-lived value evicts p_b2e0, which GCC rematerializes with extra lui/addiu pairs in the pre-loop block: +2 instructions.
+- probe: sandbox func_8005D554 --disable all on tmp/grind/func_8005D554/s3/k1_perhalf_acc_hoist.c -> 47/178; objdump pairdiff s3/k0.asm vs s3/k1.asm shows the eviction (k0 keeps p_b2e0 in fp and p_b388 in s7; k1 has three lui a2/addiu a2 rematerializations with s0/s1 holding a2a/a2b).
+- result: 47/178. This also overturns the s3 H15 mechanism story: a2a is written twice at exactly the s3 statement positions (reg_n_sets == 2) and still misses by 47, so the reg_n_sets > 1 / birthing_insn_p reading is not what made the FAILed nv/nw forms work. The distinguishing property is the SEPARATE pseudo copied into the accumulator, not the write count. Form banked at rejected/perhalf-accumulator-hoisted-base-scores-47.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3b chassis == s1/s2 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present
+
+## [s3] With the ordinary-C hoist of the a2 base in place (g7_reorder_only, 178/31), deleting one callee-saved-resident pointer local restores 176 instructions but not the target order: dropping p_b390 scores 27/176 and dropping p_b2e0 scores 28/176, while the same deletions without the hoist cost two instructions (174/45 and 174/47).
+- mechanism: The callee-saved seat budget is exactly nine in both our build and the target; a hoisted base occupies a tenth and each deleted pointer local returns one, so the +2 and the -2 cancel. But the resulting code holds the base in s0 across the rand call (s3/k11.asm body insn 75: addiu s0,s4,-12 in the rand delay slot) whereas the target computes it in caller-saved $a2 AFTER the call (asm/funcs/func_8005D554.s:4DEC0).
+- probe: sandbox func_8005D554 --disable all on tmp/grind/func_8005D554/s3/{k9_g7_nopb390.c,k11_g7_nopb2e0.c,k10_k0_nopb390.c,k12_k0_nopb2e0.c}; objdump of the k11 sandbox object.
+- result: 27/176, 28/176, 45/174, 47/174. Buying the instructions back does not buy the target order -- every source-level hoist is structurally unlike the target, so the route to the residual is not a hoist. Forms banked at rejected/hoist-plus-freed-pb390-seat-scores-27.c and rejected/hoist-plus-freed-pb2e0-seat-scores-28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3b chassis == s1/s2 candidate chassis, no FAKE constructs present
+
+## [s3] On the hoisted g7 chassis, removing the c1 constant-holder local (s.one14 = 1) scores 32/178, removing the c100 holder (literal 0x100 stores) scores 33/178, and removing both scores 34/178, so neither holder is the seat that the hoist needs; the control without the hoist scores 8/176.
+- mechanism: Both constants are re-loaded per use rather than freeing a callee-saved seat, because the target itself keeps the 1 in a callee-saved register (sw $s6, 0x24($sp), asm/funcs/func_8005D554.s:4DEC8).
+- probe: sandbox func_8005D554 --disable all on tmp/grind/func_8005D554/s3/{k4_g7_noc1.c,k5_g7_noc100.c,k7_g7_noc1_noc100.c,k8_k0_noc1.c}.
+- result: 32/178, 33/178, 34/178, 8/176. Form banked at rejected/hoist-without-c1-holder-scores-32.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3b chassis == s1/s2 candidate chassis, no FAKE constructs present
+
+## [s3] A permuter campaign seeded on the ordinary-C hoist chassis (g7_reorder_only, 178 instructions, permuter base score 940) ran 24,879 iterations with 8 jobs and improved only to 655, with no find in the 160-class basin the z3 campaign reached.
+- mechanism: At 178 instructions the chassis is two deletions plus a rotation away from the target, outside the single-site mutation radius the permuter samples; the score landscape between 940 and 655 is pointer-rematerialization noise, not progress toward the emission-order residual.
+- probe: tools/permuter_campaign.py launch/wait/harvest --stop on tmp/perm_5d554_g7, label s3b-g7-ordinary-hoist-chassis; telemetry in metrics/events.jsonl; finds under tmp/perm_5d554_g7/output-*.
+- result: Best find 655 of base 940. Three chassis are now spent for permutation on this function: the k0/candidate chassis (21,569 iters, 0 finds), z3 guard-duplicated while (30,891 iters, produced only the banned new_var carrier), and g7 (24,879 iters, best 655). Campaign stopped and harvested in-session; no orphan.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3b chassis == s1/s2 candidate chassis, no FAKE constructs present; campaign workspace tmp/perm_5d554_g7

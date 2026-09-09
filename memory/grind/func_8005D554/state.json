@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -15,23 +15,29 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Floor holds at 6 (176/176, RA byte-identical to target); 16 structural spellings measured, both banked frontier routes F1 and F2 retired with mechanism cites, residual is a pure 3-insn emission-order "
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Judge-FAILed nv/nw body retired from candidate.c; measured that every source-level hoist of the a2 base costs a tenth callee-saved seat (+2 insns) and is not target-shaped; the s3 reg_n_sets mechanism"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Our pre-sched1 dependence graph around uids 211 (a2 init), 240 (a0 load), 242 (a1 load) and 205 (the lw) differs from what the target's order requires - most plausibly an anti-dependence our a2 pseudo carries because split-init writes it four times.",
-   "mechanism": "sched1 rank_for_schedule (tools/gcc-2.7.2/sched.c:2464) only reaches the INSN_LUID tie-break when priority and class are equal and the insn is READY; a dependence that delays 211's readiness past clocks 66-67, or one that removes 242/240 from the clock-64 ready set, reproduces the target order without needing luid(211) > 43. s1 already showed 'LAUNCH(211) + 228 depends on 211' hits the target in both halves, so the dependence axis is live even though the LAUNCH prong (H8) is not affordable.",
-   "next_probe": "Run tools/sched_solver extract.py text1b + simulate.py --func func_8005D554 --pass 1 on the current candidate and dump the full dependence LISTS (not just priorities) for uids 205/211/240/242; then enumerate, in the exact model, which single added or removed dependence flips the clock-64 pick, and only then look for a C spelling that produces exactly that dependence at 176 insns."
+   "hypothesis": "Some pass deletes the early `nv = (s32)r4 - K` insn and re-materializes `addiu a2,s4,-K` after the call's arg loads in the FAILed g17/g23 bodies; naming that pass names the only known mechanism that satisfies the sched1 LUID condition, and an ORDINARY-C construct may trigger the same transformation on the accumulator itself.",
+   "mechanism": "Candidates are cse.c re-materialization at the copy `a2_offset = nv;`, combine.c folding the copy into the arithmetic at the copy site, or flow.c deleting the now-dead early set. Whichever it is, the insn is re-emitted with an INSN_LUID above the arg loads, which is what sched.c:2464's tie-break at the clock-64 pick reads - and what tools/gcc-2.7.2/expr.c:8641 / calls.c:1909 were read as forbidding (H7).",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_8005D554 with tmp/grind/func_8005D554/s3/g17_perhalf_base.c applied, then again with s3/k1_perhalf_acc_hoist.c applied; diff the .cse, .combine and .flow dumps around the a2 base insn to identify the transformation, then search for a real, program-motivated copy (not an invented carrier) that reproduces it."
   },
   {
-   "hypothesis": "The loop chassis itself (guard-in-i + do-while, inherited unchanged from the 2026-08-05 WIP) is not the target's, and a different loop shape changes the block's dependence graph and register pressure enough to move the residual.",
-   "mechanism": "The chassis was selected on the pre-soft-float chassis for the frame +16 (jump.c duplicate_loop_exit_test phantom slot); the frame is now settled at 120 == target, so the shape was never re-justified on this chassis. Note this does NOT evade the H7 class kill - the arg loads are emitted last whatever the loop shape - its value is the dependence/pressure change.",
-   "next_probe": "Re-measure a for-loop chassis and a while-loop chassis with the identical body (and with/without the guard duplicated into the loop variable), checking BOTH the frame size and the 12-insn residual; if any keeps frame 120 and changes the residual shape, re-run pairdiff and the pass-1 simulation on it."
+   "hypothesis": "The sched1 clock-64 tie can be flipped from the PRIORITY side rather than the LUID side: lower the a2 init's INSN_PRIORITY (shorten its path to the block end) or raise the a0/a1 arg loads'.",
+   "mechanism": "sched.c:2464 reaches the INSN_LUID tie-break only when priority and class are equal; every session so far has attacked the LUID term and none has attacked the priority term.",
+   "next_probe": "Run tools/sched_solver extract.py text1b + simulate.py --func func_8005D554 --pass 1 on the reset candidate.c and enumerate, in the exact model, which priority perturbation on uids 211 (a2 init), 240 (a0 load) and 242 (a1 load) flips the clock-64 pick; only then look for a C spelling that produces it at 176 instructions."
   },
   {
-   "hypothesis": "r4 (the loop-invariant (D_800A3418 * 0xDC) >> 0xF computed before the loop) is not the carrier the target subtracts from, and a different but semantically identical source expression for the a2 base lands its insn elsewhere in the RTL stream.",
-   "mechanism": "The target's addiu a2,s4,-K reads s4 which our build also assigns to r4, so any alternative must be arithmetically identical; but the RTL position of the subtraction is fixed by which tree node expand walks it from, and s1/s2 only ever spelled it as a subtraction off a plain local.",
-   "next_probe": "Enumerate arithmetically identical spellings of the a2 base that expand from a different tree shape - e.g. r4 held in a second invariant local written once before the loop, the subtraction expressed as an addition of a negative constant, or the base carried as a pointer displacement - and measure each with sandbox; any that keeps 176/176 and moves the addiu is worth a pass-1 simulation."
+   "hypothesis": "A fourth permuter seed - a chassis built by STACKING the s2 neutral spellings (z3 guard-duplicated while + x2 per-half blocks + v6 declaration order + w5 store order), all of which score 6 at 176 - sits one edit from the goal with a different emission order, unlike the 178-instruction g7 chassis that did not yield.",
+   "mechanism": "The permuter yields from basins whose base score is near the target (z3 started at 310 and found 160); g7 started at 940 and stalled at 655. A stacked-neutral 176/6 chassis starts in the 310 class but with a different setup-block order than either spent seed.",
+   "next_probe": "Build tmp/perm_5d554_stack from the stacked-neutral body, launch with tools/permuter_campaign.py -j 8, wait in-turn, and vet every find hard: this function's permuter attractor is the banned fresh multi-write carrier, and a find that spells one is not a candidate."
   }
  ],
  "judge_constraints": [
@@ -118,6 +124,38 @@
    "measured_on": "HEAD main @ 8d3c3235 working tree, source grep",
    "predicate_cite": "",
    "result": "src/ings.c shares no global, callee or block with func_8005D554; there is nothing to transplant. Recorded so no later se"
+  },
+  {
+   "session": 3,
+   "statement": "On the s3b chassis, replacing the shared a2_offset with per-half accumulators a2a/a2b and hoisting each half's a2X = (s32)r4 - K to the slot between a0_offset += ... and s.zero18 = a0_offset -- so the",
+   "kill_scope": "instance",
+   "measured_on": "s3b chassis == s1/s2 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "47/178. This also overturns the s3 H15 mechanism story: a2a is written twice at exactly the s3 statement positions (reg_"
+  },
+  {
+   "session": 3,
+   "statement": "With the ordinary-C hoist of the a2 base in place (g7_reorder_only, 178/31), deleting one callee-saved-resident pointer local restores 176 instructions but not the target order: dropping p_b390 scores",
+   "kill_scope": "instance",
+   "measured_on": "s3b chassis == s1/s2 candidate chassis, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "27/176, 28/176, 45/174, 47/174. Buying the instructions back does not buy the target order -- every source-level hoist i"
+  },
+  {
+   "session": 3,
+   "statement": "On the hoisted g7 chassis, removing the c1 constant-holder local (s.one14 = 1) scores 32/178, removing the c100 holder (literal 0x100 stores) scores 33/178, and removing both scores 34/178, so neither",
+   "kill_scope": "instance",
+   "measured_on": "s3b chassis == s1/s2 candidate chassis, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "32/178, 33/178, 34/178, 8/176. Form banked at rejected/hoist-without-c1-holder-scores-32.c."
+  },
+  {
+   "session": 3,
+   "statement": "A permuter campaign seeded on the ordinary-C hoist chassis (g7_reorder_only, 178 instructions, permuter base score 940) ran 24,879 iterations with 8 jobs and improved only to 655, with no find in the ",
+   "kill_scope": "instance",
+   "measured_on": "s3b chassis == s1/s2 candidate chassis, no FAKE constructs present; campaign workspace tmp/perm_5d554_g7",
+   "predicate_cite": "",
+   "result": "Best find 655 of base 940. Three chassis are now spent for permutation on this function: the k0/candidate chassis (21,56"
   }
  ],
  "ladder_skip": 0,

@@ -1,18 +1,19 @@
-/* func_8005D554 - candidate at honest sandbox distance 0 (176/176 insns, frame 120 == target),
- * measured s3 2026-09-08 on HEAD main @ 1ddb0a8c with `sandbox func_8005D554 --disable all`.
+/* func_8005D554 -- BEST CLEAN FORM: honest sandbox distance 6 at 176/176 instructions,
+ * frame 120 == target, register allocation byte-identical to the target (H12).
+ * Measured s3b 2026-09-08 on HEAD main @ 4e7ad872 with `sandbox func_8005D554 --disable all`.
  *
- * NOT YET SUBMITTED: the closing construct is a ruling-request (s3). The last-6 residual
- * (two identical 3-insn rotations, one per loop half) closes only when the a2-site base
- * `(s32)r4 - K` is computed one statement EARLIER (between `a0_offset += ...` and
- * `s.zero18 = a0_offset;`) into a carrier that is written a SECOND time in the same half
- * with another real, immediately-consumed value (`nv = ret; s.ret = nv;`).  The second
- * write is load-bearing: it makes the carrier's pseudo multi-set, so sched.c's
- * `birthing_insn_p` (reg_n_sets == 1) no longer gives the base insn LAUNCH priority.
- * Every measured variant that keeps the carrier single-set, or that borrows an EXISTING
- * local instead of a fresh one, compiles to 178 instructions instead of 176 (see the s3
- * probe table in evidence.md).  The carrier is therefore a FRESH (invented) local, which
- * `staged-value-reused-variable.md` bound 2 excludes, while its shape is exactly the
- * `s32 tmp;` multi-set reuse shipped at src/code6cac_c2.c:1360-1365 -- hence the ruling.
+ * This body REPLACES the previous candidate.c, which reached distance 0 but did so with the
+ * fresh multi-write carriers `nv`/`nw` -- a construct the Judge FAILed on 2026-09-08
+ * (docs/grind/decisions.md, "2026-09-08 22:31 -- func_8005D554 -- ruling ... FAIL").  That body
+ * is banked verbatim at rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c and
+ * MUST NOT be resubmitted: the driver keys review verdicts by body, so it is rejected without
+ * review.  The Judge's binding constraint: no fresh (invented) local may be written more than
+ * once to act as a staging carrier for the a2-site base `(s32)r4 - K`, under any name.
+ *
+ * The whole remaining residual is 6 = two identical 3-insn rotations, one per loop half.
+ * Ours emits [addiu a2,s4,-K][addiu a0,sp,16][lw v1,gp][move a1,zero]; the target emits
+ * [addiu a0,sp,16][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K]
+ * (asm/funcs/func_8005D554.s:4DEB4-4DEC0).  Everything else in the function matches.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);
@@ -31,8 +32,6 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
     s32 stride;
     s32 a0_offset;
     s32 a2_offset;
-    s32 nv;
-    s32 nw;
     s32 c100;
     s32 c1;
     s32 *p_b388;
@@ -75,15 +74,13 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             D_800A3418 ^= rand();
             a0_offset = (s32)r5 - 0x19;
             a0_offset += ((u32)(D_800A3418 * 0x32) >> 0xF);
-            nv = (s32)r4 - 0xC;
             s.zero18 = a0_offset;
             D_800A3418 ^= rand();
-            a2_offset = nv;
+            a2_offset = (s32)r4 - 0xC;
             a2_offset += ((u32)(D_800A3418 * 0x19) >> 0xF);
             s.zero10 = 0;
             s.one14 = c1;
-            nv = ret;
-            s.ret = nv;
+            s.ret = ret;
             s.zero1C = a2_offset;
             ret = func_80073728((s32)&s, 0);
 
@@ -95,15 +92,13 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             D_800A3418 ^= rand();
             a0_offset = (s32)r5 - 0x32;
             a0_offset += ((u32)(D_800A3418 * 0x64) >> 0xF);
-            nw = (s32)r4 - 0x19;
             s.zero18 = a0_offset;
             D_800A3418 ^= rand();
-            a2_offset = nw;
+            a2_offset = (s32)r4 - 0x19;
             a2_offset += ((u32)(D_800A3418 * 0x32) >> 0xF);
             s.zero10 = 0;
             s.one14 = c1;
-            nw = ret;
-            s.ret = nw;
+            s.ret = ret;
             s.zero1C = a2_offset;
             ret = func_80073728((s32)&s, 0);
         } while (i < ((D_800A326C + 1) * 2));

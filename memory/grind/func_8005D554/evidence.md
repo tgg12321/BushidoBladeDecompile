@@ -329,3 +329,81 @@ no dead code at all.
   `a2_offset` (31 at 178), `ret` (33 at 175-176), and the remaining locals
   (`i`, `stride`, `c100`, `c1`, `r4`, `r5`, `p_b2e0`, `p_b2ec`, `p_b388`, `p_b390`,
   `base_offset`) are loop-carried and cannot legally be overwritten there.
+
+## s3b (permuter, post-Judge-FAIL re-dispatch) — 2026-09-08, HEAD main @ 4e7ad872
+
+### Disposition of the s3 result
+The s3 body that reached honest distance 0 used the fresh multi-write carriers `nv`/`nw` and was
+FAILed by the Judge (docs/grind/decisions.md, entry "2026-09-08 22:31 — func_8005D554 — ruling
+… **FAIL**"): non-membership in every frozen family, not a format defect. `candidate.c` is now
+the clean 176/176 score-6 body; the FAILed body is preserved verbatim at
+`rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c`. Because the driver keys
+review verdicts by BODY, that text is permanently unsubmittable — comment changes do not make a
+new body.
+
+### The residual, stated exactly (unchanged, re-verified this session)
+Ours, per loop half, after the `jal rand` delay slot `sw a0,0x28(sp)`:
+
+    addiu a2,s4,-K      addiu a0,sp,0x10
+    addiu a0,sp,0x10    addu  a1,zero,zero
+    lw    v1,gp(...)    lw    v1,gp(...)
+    move  a1,zero       addiu a2,s4,-K        <- target (asm/funcs/func_8005D554.s:4DEB4-4DEC0)
+
+Two halves x 3 differing lines = the whole score of 6. Registers, frame (0x78) and instruction
+count (176) already match the target everywhere (H12).
+
+### s3b probe table (all `sandbox func_8005D554 --disable all`, forms in tmp/grind/func_8005D554/s3/)
+
+| form | what it changes vs candidate.c | insns | score |
+|---|---|---|---|
+| `k0_base.c` | (= candidate.c, the clean score-6 body) | 176 | 6 |
+| `k1_perhalf_acc_hoist.c` | per-half accumulators `a2a`/`a2b`, base init hoisted before `s.zero18` | 178 | 47 |
+| `k2_perhalf_acc_nohoist.c` | per-half accumulators, no hoist (control) | 170 | 53 |
+| `k3_half1_only.c` | half-1 only: `a2a` hoisted, half 2 unchanged | 178 | 23 |
+| `g7_reorder_only.c` (s3) | ordinary-C hoist of the shared `a2_offset` base init | 178 | 31 |
+| `k4_g7_noc1.c` | g7 + `s.one14 = 1;` (drop the `c1` holder) | 178 | 32 |
+| `k5_g7_noc100.c` | g7 + literal `0x100` stores (drop the `c100` holder) | 178 | 33 |
+| `k7_g7_noc1_noc100.c` | g7 + both holders dropped | 178 | 34 |
+| `k8_k0_noc1.c` | candidate + `s.one14 = 1;` (control, no hoist) | 176 | 8 |
+| `k9_g7_nopb390.c` | g7 + drop the `p_b390 = p_b388 + 2` local | 176 | 27 |
+| `k11_g7_nopb2e0.c` | g7 + drop the `p_b2e0` local | 176 | 28 |
+| `k10_k0_nopb390.c` | candidate + drop `p_b390` (control, no hoist) | 174 | 45 |
+| `k12_k0_nopb2e0.c` | candidate + drop `p_b2e0` (control, no hoist) | 174 | 47 |
+
+### SEAT BUDGET (the finding that explains the whole +2 column)
+The target's prologue saves `s0-s7`, `fp`, `ra` into a 0x78 frame
+(`asm/funcs/func_8005D554.s:4DD58-4DD84`) — nine callee-saved registers, exactly what our build
+uses. Any spelling that hoists the a2-site base above the `rand()` call makes that value live
+across a call and so demands a TENTH callee-saved seat; GCC evicts `p_b2e0` (or `p_b388`) and
+rematerializes it with extra `lui/addiu` pairs in the pre-loop block, which is the +2 in every
+178-instruction row above. Deleting one pointer local hands the seat back and restores 176
+(k9/k11) — but the resulting code holds the base in `s0` across the call
+(`s3/k11.asm` body insn 75: `addiu s0,s4,-12` in the rand delay slot), whereas the target holds
+it in caller-saved `$a2` computed AFTER the call. So no source-level hoist is target-shaped.
+
+### THE MECHANISM CORRECTION (supersedes the s3 H15 story)
+s3 recorded the win as `reg_n_sets > 1` defeating `sched.c:2505 birthing_insn_p`. That reading is
+wrong: `k1`'s `a2a` is written twice at exactly the s3 statement positions (base, then `+=`) and
+scores 47/178. What separates the FAILed `g17`/`g23` bodies from `k1` is the presence of a
+SEPARATE pseudo whose value is copied into the accumulator (`nv = r4 - K; … a2_offset = nv;`),
+not the write count — i.e. some later pass folds the copy and re-emits the arithmetic at the
+copy site, after the arg loads, which is precisely the LUID condition H4/H7 said no C spelling
+could reach. H7's class kill is therefore contradicted by measurement and must be re-opened;
+naming the responsible pass (cse.c / combine.c / flow.c) is frontier item P1.
+
+### Permuter campaign (this session's mandated modality)
+Workspace `tmp/perm_5d554_g7` (base.c = the `g7` ordinary-C hoist chassis, permuter base score
+940), label `s3b-g7-ordinary-hoist-chassis`, 8 jobs, 24,879 iterations, ~13 minutes, stopped and
+harvested in-session. Best find 655; no approach to the 160-class basin the `z3` campaign
+reached. Chassis ledger for permutation: k0/candidate chassis spent (21,569 iters, 0 finds),
+`z3` spent (30,891 iters, the banned `new_var` find), `g7` spent (24,879 iters, best 655).
+
+- [s3] The s3 body that reached distance 0 was FAILed by the Judge (docs/grind/decisions.md, '2026-09-08 22:31 - func_8005D554 - ruling ... FAIL') for non-membership, not format. candidate.c has been reset to the clean 176/176 score-6 body; the FAILed text is preserved verbatim at memory/grind/func_8005D554/rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c and is permanently unsubmittable because the driver keys review verdicts by body.
+
+- [s3] SEAT BUDGET: the target's prologue saves s0-s7, fp and ra into a 0x78 frame (asm/funcs/func_8005D554.s:4DD58-4DD84) - nine callee-saved registers, exactly what our build uses. There is no free seat, so any spelling that makes the a2-site base live across the rand() call pays +2 instructions of pointer rematerialization. This is a single fact that explains every 178-instruction row in the s1/s2/s3 probe tables.
+
+- [s3] The target computes the a2-site base in caller-saved $a2 AFTER the rand call (asm/funcs/func_8005D554.s:4DEC0 addiu $a2,$s4,-0xC, three insns later than ours). Our candidate does the same thing three insns too early: ours emits [addiu a2][addiu a0,sp][lw v1][move a1] where the target emits [addiu a0,sp][addu a1,zero,zero][lw v1][addiu a2]. Two halves x 3 lines = the entire score of 6.
+
+- [s3] MECHANISM CORRECTION: the s3 ledger attributed the distance-0 win to reg_n_sets > 1 defeating sched.c:2505 birthing_insn_p. k1_perhalf_acc_hoist writes its accumulator twice at exactly those statement positions (reg_n_sets == 2) and scores 47/178, so that reading is disproven. What separates the FAILed nv/nw forms is a SEPARATE pseudo copied into the accumulator, which implies a later pass folds the copy and re-emits the arithmetic at the copy site - i.e. exactly the LUID condition H7 class-killed as unreachable by any C spelling. H7's class kill is contradicted by measurement and should be treated as re-opened.
+
+- [s3] Full s3b probe table (13 forms, insns and scores) is in memory/grind/func_8005D554/evidence.md under 's3b'; every form is on disk under tmp/grind/func_8005D554/s3/ and the five decisive ones are banked in memory/grind/func_8005D554/rejected/.
