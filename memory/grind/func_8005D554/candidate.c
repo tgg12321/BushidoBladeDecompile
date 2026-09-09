@@ -213,6 +213,40 @@
  * write is not the lever, the EARLY base is; and every existing-loop-local carrier that spans the
  * third rand call costs exactly +2 insns.  Do NOT re-try existing-local carriers that span the
  * third rand call, and do NOT re-attempt priority-4/LUID/class levers.  See hypotheses.md s13.
+ *
+ * s14 (structural, 2026-09-09, HEAD main @ 46867ae6): floor RE-MEASURED at 6/176 on this body;
+ * the kill re-audit passes for a fifth session (fake_ablate finds no FAKE construct in the
+ * closest banked form, rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c).
+ * s14 attacked s13's frontier item 2 -- the LICM escape for a SINGLE-SET base carrier -- by
+ * reading loop.c's guard end to end and then measuring each of its three disjuncts.  The guard
+ * at loop.c:695-700 accepts a candidate movable when ANY of
+ *   A  = not maybe_never and not loop_reg_used_before_p
+ *   B  = dest is neither a user variable nor a loop-test reg
+ *   C  = reg_in_basic_block_p, loop.c:1062
+ * holds.  B is false for every C-level local (all are user variables), so an escape needs A and
+ * C false together.  Four measurements, all dead, and all four disassembled to confirm the
+ * hoist by inspection rather than by score:
+ *   (1) C alone falsified -- base1 set in half 1 and read again in half 2 as base2 = base1 - 0xD,
+ *       with half 2's p0 selection respelled as a real if/else so a CODE_LABEL sits between
+ *       base1's set and its last use -- 57/179, and the disassembly still shows both bases in the
+ *       PREHEADER.  A was still true, and one true disjunct is enough.
+ *   (2) The plain non-guard-duplicated while chassis does NOT buy maybe_never.  GCC rotates the
+ *       top test out of the loop (guard at 0x351C, loop top at 0x3534), so no jump or label
+ *       precedes the base inside the body -- 64/176 with the base hoisted AND spilled to the
+ *       frame, the in-loop insn being a reload rather than the addiu.  The 176 count is a
+ *       coincidence of spill-plus-reload, not a win.
+ *   (3) The while chassis combined with (1) is still hoisted -- 70/177.
+ *   (4) Making the base's SOURCE non-invariant is not reachable by a no-op set: both
+ *       r4 = r4 and r4 = (u32)(base1 + 0xC) measure 54/178, byte-identical to the plain
+ *       fresh-single-set form, because cse runs BEFORE loop and deletes the no-op move, so
+ *       loop.c never sees n_times_set[r4] greater than 0.
+ * CORRECTION to s12: the target window at 4DEB4-4DECC is addiu a0 / addu a1 / lw v1 / addiu a2 /
+ * sw / sw / sw, so the target's sched1 picks the three struct stores FIRST (clocks 61-63) and the
+ * a2 base at clock 64.  The target therefore does NOT need the base ranked above the stores, and
+ * the banked score-0 body -- which boosts the base to max_priority and picks it at clock 61,
+ * ahead of the stores -- reaches the target order only because a LATER pass completes the
+ * rotation.  s12's overshoot argument is not a reason to abandon priority levers.
+ * Do NOT re-try the plain-while chassis, no-op sets of r4, or a join placed after the base's set.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

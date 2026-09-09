@@ -1535,3 +1535,35 @@ is loop body cost, not a tenth callee-saved seat.
 - [s13] Every existing-loop-local carrier whose live range spans the third rand() call costs exactly +2 instructions inside the loop (63/178, 31/178, 30/178 measured); the v0/v3 disassembly shows frame 120 and the target's ten register saves, so it is not a tenth callee-saved seat.
 
 - [s13] The ret restage alone is byte-inert (6/176), so it is not the lever; the early base is.
+
+## s14 (structural)
+
+- [s14] Control floor re-measured 6/176 on memory/grind/func_8005D554/candidate.c at HEAD main @ 46867ae6.
+- [s14] Kill re-audit (fifth consecutive pass): tools/fake_ablate.py reports no FAKE-annotated construct in rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c, so no banked lever on this function was ever measured behind a carrier.
+- [s14] loop.c's movable guard is a THREE-WAY OR (loop.c:695-700). A candidate is rejected only when all of A = (!maybe_never && !loop_reg_used_before_p), B = (!REG_USERVAR_P && !REG_LOOP_TEST_P) and C = reg_in_basic_block_p (loop.c:1062) are false. B is false for every C-level local, so an escape needs A and C false SIMULTANEOUSLY. s13's frontier item 2 described them as alternatives; they are not.
+- [s14] reg_in_basic_block_p (loop.c:1062) returns 0 in two ways: regno_first_uid[regno] != INSN_UID(set), i.e. the carrier is mentioned somewhere earlier in the function; or a CODE_LABEL / JUMP_INSN sits between the set and the carrier's last use. The second way is what a join placed after the call buys; the first way needs a pre-loop mention of the carrier that is NOT a set (a set would make reg_n_sets 2 and kill the birthing boost), i.e. a read of an uninitialised local.
+- [s14] maybe_never is set only when scan_loop's forward scan passes a CODE_LABEL or JUMP_INSN inside the loop (loop.c:919-930), and it is sticky for the remainder of the body. It is NOT set by the loop's own bottom test, which comes after every base statement.
+- [s14] MEASURED: the plain non-guard-duplicated while chassis gives no maybe_never, because GCC rotates the top test into a guard OUTSIDE the loop -- the disassembly of fF shows the guard blez at 0x351C and the loop top at 0x3534. 64/176, both bases hoisted, the first additionally spilled to 64(sp) and reloaded inside the loop; the 176 instruction count is spill-plus-reload arithmetic, not proximity to the target.
+- [s14] MEASURED: falsifying C alone (base1 read again in half 2 across a real if/else join) leaves the hoist in place -- 57/179 on the do-while chassis, 70/177 on the while chassis, with the addiu in the preheader in both disassemblies.
+- [s14] MEASURED: no-op sets of r4 (r4 = r4, and r4 = (u32)(base1 + 0xC) which folds to it) are deleted by cse BEFORE loop_optimize, so the "make the source non-invariant" route (invariant_p, loop.c:2756) needs a set that genuinely survives cse and therefore costs an instruction. Both forms measure 54/178, byte-identical to the plain fresh-single-set form.
+- [s14] CORRECTION to s12: the target window asm/funcs/func_8005D554.s 4DEB4-4DECC is a0 / a1 / lw / a2 base / sw / sw / sw. Backward scheduling makes the target's selection order sw,sw,sw,base,lw,a1,a0 -- the base is picked at clock 64, NOT ahead of the stores. The banked score-0 body picks its boosted base at clock 61 and still matches, so a later pass completes the rotation, and "priority lifts overshoot by construction" is not a valid class argument.
+
+- [s14] Control floor re-measured 6/176 on memory/grind/func_8005D554/candidate.c at HEAD main @ 46867ae6.
+
+- [s14] Kill re-audit passes for a fifth consecutive session: tools/fake_ablate.py finds no FAKE-annotated construct in rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c.
+
+- [s14] loop.c's movable guard is a THREE-way OR (loop.c:695-700), not a single test: a candidate is skipped only when A = (!maybe_never && !loop_reg_used_before_p), B = (!REG_USERVAR_P && !REG_LOOP_TEST_P) and C = reg_in_basic_block_p are ALL false. s13's frontier item 2 treated maybe_never and reg_in_basic_block_p as alternatives; they must both be falsified at once.
+
+- [s14] B is false for free for every C-level local, since every user variable carries REG_USERVAR_P.
+
+- [s14] reg_in_basic_block_p (loop.c:1062) returns 0 either when regno_first_uid[regno] != INSN_UID(set) - the carrier is mentioned earlier in the function - or when a CODE_LABEL / JUMP_INSN sits between the set and the carrier's last use. The first route needs a pre-loop MENTION that is not a set, because a pre-loop set would make reg_n_sets 2 and kill the birthing boost.
+
+- [s14] maybe_never is sticky once scan_loop's forward scan passes a CODE_LABEL or JUMP_INSN inside the loop (loop.c:919-930), and the loop's own bottom test never sets it for the body because it follows every base statement.
+
+- [s14] MEASURED: the plain while chassis is rotated by GCC into a guarded do-while (guard blez at 0x351C, loop top at 0x3534), so it contributes no in-body jump and no maybe_never; 64/176 with both bases hoisted and one spilled to 64(sp) plus reloaded in-loop.
+
+- [s14] MEASURED: falsifying C alone still hoists - 57/179 on the do-while chassis, 70/177 on the while chassis, both confirmed by disassembly of the preheader.
+
+- [s14] MEASURED: no-op sets of r4 are removed by cse before loop_optimize (54/178 twice, byte-identical to the plain fresh-single-set form), so the invariant_p route needs a set that survives cse and therefore costs an instruction.
+
+- [s14] CORRECTION to s12: the target emits a0 / a1 / lw / a2 base / sw / sw / sw at 4DEB4-4DECC, so its selection order picks the three stores first and the a2 base at clock 64; the score-0 body's boosted base is picked at clock 61 (ahead of the stores) and still matches, so an overshoot at sched1 is completed by a later pass and priority levers remain live.

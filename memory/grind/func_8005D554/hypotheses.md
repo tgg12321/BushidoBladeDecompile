@@ -1848,3 +1848,79 @@ movable.
 - kill_scope: class
 - measured_on: HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
 - predicate_cite: loop.c:705
+
+## [s14] loop.c's movable guard (loop.c:695-700) is a three-way OR, and disjunct C (reg_in_basic_block_p, loop.c:1062) alone keeps the invariant a movable, so falsifying only C does not stop the hoist.
+- mechanism: scan_loop rejects a candidate movable only when ALL of A = (!maybe_never && !loop_reg_used_before_p), B = (!REG_USERVAR_P && !REG_LOOP_TEST_P) and C = reg_in_basic_block_p are false. Every C-level local is a user variable, so B is false for free; A is true whenever no jump or label precedes the base's set inside the loop body.
+- probe: base1 = (s32)r4 - 0xC set in half 1 and read again in half 2 as base2 = base1 - 0xD, with half 2's p0 selection respelled as a real if/else so a CODE_LABEL sits between base1's set and its last use. tmp/grind/func_8005D554/s14/fB_base1_reused_across_join.c, disassembled to tmp/grind/func_8005D554/s14/fB.dis.
+- result: 57/179, and the disassembly shows addiu a2,a0,-12 at 0x352C and addiu a0,a0,-25 at 0x3534, both BEFORE the loop top at 0x353C -- still hoisted. Banked at rejected/base1-reused-across-ifelse-join-still-hoisted-scores-57.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] The plain non-guard-duplicated while chassis does not set maybe_never for the loop body, because GCC rotates the exit test out of the loop.
+- mechanism: scan_loop sets maybe_never only when its forward scan passes a CODE_LABEL or JUMP_INSN inside the loop (loop.c:919-930). A source-level while loop is rotated by expand_end_loop into a guarded do-while, so the only conditional jump is the guard (outside the loop) and the bottom test (which follows every base statement).
+- probe: fresh single-set per-half base carriers under a plain while chassis. tmp/grind/func_8005D554/s14/fF_while_chassis_freshA.c, disassembled to tmp/grind/func_8005D554/s14/fF.dis.
+- result: 64/176. The guard sits at 0x351C and the loop top at 0x3534, with addiu a2,v1,-12 at 0x3528 and addiu s8,v1,-25 at 0x3530 -- both hoisted, and the first is additionally SPILLED (sw a2,64(sp)) and reloaded inside the loop (lw a2,64(sp)), which is why the instruction count lands on 176 without being any closer to the target. Banked at rejected/plain-while-chassis-rotated-no-maybe-never-scores-64.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] Combining the while chassis with the half-2 join (both of s13's suggested maybe_never and reg_in_basic_block_p levers at once) still hoists both bases.
+- mechanism: the rotation of the while chassis means the only in-body jump is still the half-2 if/else, which sits AFTER half 1's base statement; half 1's base therefore keeps disjunct A true and stays a movable, and half 2's base keeps disjunct C true because its set and its only use share a basic block.
+- probe: tmp/grind/func_8005D554/s14/fE_while_chassis_join.c, disassembled to tmp/grind/func_8005D554/s14/fE.dis.
+- result: 70/177; addiu a2,v1,-12 at 0x3524 and addiu v1,v1,-25 at 0x352C, loop top at 0x3534 -- both in the preheader. Banked at rejected/while-chassis-plus-join-still-hoisted-scores-70.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] Making the base's SOURCE non-invariant with a no-op set of r4 does not reach loop.c at all: cse runs before loop and deletes the move.
+- mechanism: invariant_p (loop.c:2756) returns true for (plus (reg r4) (const)) exactly when n_times_set[r4] == 0 inside the loop, so an in-loop set of r4 would make the base insn ineligible as a movable while leaving the base carrier single-set (reg_n_sets == 1) for birthing_insn_p. But cse_main runs before loop_optimize in the pass order, and it deletes both a literal self-assign and a set whose source folds back to the destination.
+- probe: two forms -- r4 = r4; at the top of the loop body, and r4 = (u32)(base1 + 0xC); immediately after half 1's accumulate (which folds to r4 = r4 once cse propagates base1 = r4 - 0xC). tmp/grind/func_8005D554/s14/fC2_r4_selfassign.c and fC_r4_reestablished.c.
+- result: 54/178 and 54/178 -- byte-identical to the plain fresh-single-set form fA (54/178), i.e. the sets left no trace whatsoever. Banked at rejected/r4-self-assign-cse-deletes-scores-54.c and rejected/r4-reestablished-from-base1-cse-deletes-scores-54.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] CORRECTION to s12: the target does not rank the a2 base above the three struct stores, so the priority family is not self-defeating by overshoot.
+- mechanism: GCC 2.7.2's schedule_block is a backward list scheduler (sched.c:4036-4038), so emission order is the reverse of selection order. The target's window (asm/funcs/func_8005D554.s, 4DEB4-4DECC) is addiu a0,sp,0x10 / addu a1,zero,zero / lw v1,gp / addiu a2,s4,-0xC / sw zero / sw s6 / sw s1. Reversing it gives the selection order sw, sw, sw, a2 base, lw, a1, a0 -- the three stores at clocks 61-63 and the a2 base at clock 64, exactly the slot where our control loses the INSN_LUID tie.
+- probe: read the target asm window directly.
+- result: The banked score-0 body boosts the base to max_priority and is picked at clock 61 (ahead of the stores) and still scores 0, so a later pass completes the rotation. s12's conclusion that any priority lift overshoots by construction is therefore not a reason to abandon the priority family; what the target's sched1 needs is only that the base win the clock-64 three-way tie.
+- verdict: CONFIRMED
+
+## [s14] Falsifying only loop.c's reg_in_basic_block_p disjunct - base1 set in half 1 and read again in half 2 as base2 = base1 - 0xD, with half 2's p0 selection respelled as a real if/else so a CODE_LABEL sits between base1's set and its last use - leaves both bases hoisted to the preheader and measures 57/179.
+- mechanism: scan_loop (loop.c:695-700) rejects a candidate movable only when ALL THREE of A = (!maybe_never && !loop_reg_used_before_p), B = (!REG_USERVAR_P && !REG_LOOP_TEST_P) and C = reg_in_basic_block_p (loop.c:1062) are false. Every C-level local is a user variable, so B is false for free, but A stays true whenever no jump or label precedes the base's set inside the loop body - and the half-2 join sits after half 1's base statement.
+- probe: tmp/grind/func_8005D554/s14/fB_base1_reused_across_join.c, sandbox --disable all, then mipsel-linux-gnu-objdump to tmp/grind/func_8005D554/s14/fB.dis.
+- result: 57/179. The disassembly shows addiu a2,a0,-12 at 0x352C and addiu a0,a0,-25 at 0x3534, both before the loop top at 0x353C, so LICM still hoisted them. Banked at rejected/base1-reused-across-ifelse-join-still-hoisted-scores-57.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] The plain non-guard-duplicated while chassis does not buy maybe_never for the loop body: with fresh single-set per-half base carriers it measures 64/176 with both bases in the preheader and the first one additionally spilled to the frame and reloaded inside the loop.
+- mechanism: scan_loop sets maybe_never only when its forward scan passes a CODE_LABEL or JUMP_INSN inside the loop (loop.c:919-930). A source-level while loop is rotated by expand_end_loop into a guarded do-while, so the only conditional jump before the body is the guard, which sits OUTSIDE the loop; the disassembly places the guard blez at 0x351C and the loop top at 0x3534.
+- probe: tmp/grind/func_8005D554/s14/fF_while_chassis_freshA.c, sandbox --disable all, then objdump to tmp/grind/func_8005D554/s14/fF.dis.
+- result: 64/176. addiu a2,v1,-12 at 0x3528 and addiu s8,v1,-25 at 0x3530 are both hoisted; sw a2,64(sp) in the preheader and lw a2,64(sp) inside the loop show the in-loop instruction is a reload, not the addiu, so the 176 count is spill-plus-reload arithmetic rather than proximity. Banked at rejected/plain-while-chassis-rotated-no-maybe-never-scores-64.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] Combining the while chassis with the half-2 join - s13's two suggested levers applied together - still hoists both bases and measures 70/177.
+- mechanism: the while rotation leaves the half-2 if/else as the only in-body jump, so half 1's base keeps disjunct A true, and half 2's base keeps disjunct C true because its set and its only use share a basic block.
+- probe: tmp/grind/func_8005D554/s14/fE_while_chassis_join.c, sandbox --disable all, then objdump to tmp/grind/func_8005D554/s14/fE.dis.
+- result: 70/177; addiu a2,v1,-12 at 0x3524 and addiu v1,v1,-25 at 0x352C sit before the loop top at 0x3534. Banked at rejected/while-chassis-plus-join-still-hoisted-scores-70.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] Making the base's source non-invariant with a no-op set of r4 never reaches loop.c: both r4 = r4 and r4 = (u32)(base1 + 0xC) measure 54/178, byte-identical to the plain fresh-single-set form, because cse runs before loop_optimize and deletes the move.
+- mechanism: invariant_p (loop.c:2756) treats (plus (reg r4) (const)) as invariant exactly when n_times_set[r4] == 0 inside the loop, so an in-loop set of r4 would disqualify the base insn as a movable while leaving the base carrier single-set for birthing_insn_p (sched.c:2505). But cse_main precedes loop_optimize in the pass order and deletes both a literal self-assign and a set whose source folds back to the destination.
+- probe: tmp/grind/func_8005D554/s14/fC2_r4_selfassign.c and tmp/grind/func_8005D554/s14/fC_r4_reestablished.c, sandbox --disable all.
+- result: 54/178 and 54/178, identical to the fresh-single-set control form fA (54/178) - the sets left no byte trace at all. Banked at rejected/r4-self-assign-cse-deletes-scores-54.c and rejected/r4-reestablished-from-base1-cse-deletes-scores-54.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s14] The target's own sched1 picks the a2 base at clock 64 and the three struct stores at clocks 61-63, so s12's claim that any INSN_PRIORITY lift overshoots by construction is not a class argument against the priority family.
+- mechanism: schedule_block is a backward list scheduler (sched.c:4036-4038), so emission order is the reverse of selection order. The target window at asm/funcs/func_8005D554.s 4DEB4-4DECC is addiu a0,sp,0x10 / addu a1,zero,zero / lw v1,gp / addiu a2,s4,-0xC / sw zero,0x20(sp) / sw s6,0x24(sp) / sw s1,0x1C(sp); reversed that is sw, sw, sw, a2 base, lw, a1, a0.
+- probe: read the target asm window directly and reversed it against s9's recorded control pick sequence (clock61=234, 62=231, 63=228, 64=242, 65=205, 66=240, 67=211).
+- result: The single divergent decision is the clock-64 three-way tie [242(l43) 240(l42) 211(l31)], which the target resolves to 211. The banked score-0 body boosts its base to max_priority and is picked at clock 61, AHEAD of the stores, and still scores 0 - so a later pass completes the rotation and an overshoot at sched1 is survivable. The priority family is therefore re-opened, not closed.
+- verdict: CONFIRMED

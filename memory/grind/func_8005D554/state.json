@@ -1,7 +1,7 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -81,23 +81,29 @@
    "floor": 6,
    "modality": "structural",
    "headline": "The 6-point residual is the birthing_insn_p LAUNCH boost (sched.c:2505/2584), not priority depth, LUID or class - and loop.c:705 uses the same reg_n_sets==1 predicate, so any single-set carrier is LIC"
+  },
+  {
+   "session": 14,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "loop.c's movable guard is a THREE-way OR, so s13's frontier item 2 needs maybe_never AND reg_in_basic_block_p false at once - four spellings measured, all still hoisted - and the target window read co"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An existing-local carrier can supply the early base at 176 instructions if the +2 it costs inside the loop is paid for by freeing a callee-saved seat elsewhere in the function.",
-   "mechanism": "The v0/v3 form measures 63/178 with the target's frame and register-save count, so the two extra insns are copies inside the loop rather than prologue/epilogue growth. s5b measured that inlining a pointer local (p_b2e0 / p_b390 / base_offset) buys instructions back (27/28 in a different combination), and that combination has never been measured together with an early-birth existing-local carrier.",
-   "next_probe": "Take tmp/grind/func_8005D554/s13/p1_v0v3_ret_restage.c and, one at a time, inline p_b390 (s.p1 = &D_8009B390), p_b2e0 and base_offset at their use sites; gate each on build_insns == 176 and, for any form that reaches 176, capture BB2_SCHED_DEBUG=1 + BB2_PRIO_DEBUG=1 and confirm ADJPRI birth=1 on the base insn before scoring."
+   "hypothesis": "The only carrier that can have BOTH loop.c disjuncts A and C false on this chassis is half 2's base: it already sits after the half-2 if/else (maybe_never = 1), so it needs only its last use moved across a second jump or label - which the loop's own bottom branch supplies if the carrier is live OUT of the loop.",
+   "mechanism": "reg_in_basic_block_p scans forward from the set and returns 0 at the first JUMP_INSN that is not the last use; the loop's bottom conditional branch qualifies for any carrier whose last use is after the loop. With A false (the if/else precedes the set), B false (user variable) and C false, the invariant is never considered as a movable, so it stays in the loop with n_times_set 1 and reg_n_sets 1 - the exact state birthing_insn_p (sched.c:2505) needs for the LAUNCH boost.",
+   "next_probe": "Build a form where half 2's base is a fresh single-set local whose value is also consumed after the loop (a genuine post-loop consumer, not a discard), with half 2's p0 selection kept as the real if/else; disassemble to confirm the addiu is NOT in the preheader, then capture BB2_SCHED_DEBUG=1 plus BB2_PRIO_DEBUG=1 and confirm ADJPRI birth=1 on that insn. Score the half-2 window in isolation even if the whole-function count exceeds 176 - the question this probe answers is whether the boost is reachable at all without a combine-deleted set."
   },
   {
-   "hypothesis": "A single-set carrier can escape loop.c's movable test - and therefore keep reg_n_sets == 1 for the boost - if loop.c:695-700's first disjunct is made false, i.e. if maybe_never is set or the carrier is read before its set inside the loop.",
-   "mechanism": "scan_loop sets maybe_never when it passes a jump whose label is earlier in the loop (a backward branch); with maybe_never true, and a user-variable dest whose life spans more than one basic block, all three disjuncts of loop.c:695-700 are false and the invariant is never considered as a movable. s11 measured that a real two-armed branch in this loop body costs only +1 instruction (53/177), so block shape is cheap here.",
-   "next_probe": "Build forms in which the per-half base local is a fresh SINGLE-set user variable and the loop body contains a backward-jumping construct before the base statement (or the base local is read before its set as a loop-carried value); confirm with the .loop dump under 'pwsh tools/grinder/dump.ps1 func_8005D554' that the base insn is NOT hoisted to the preheader, then check ADJPRI birth=1 in the sched trace, and gate on build_insns == 176."
+   "hypothesis": "Because the target itself picks the a2 base at clock 64 rather than ahead of the struct stores, a lift that only breaks the clock-64 tie - short of max_priority - may land the whole window exactly, and s12's overshoot argument does not forbid it.",
+   "mechanism": "rank_for_schedule compares INSN_PRIORITY first; the window ties at 3 for the lw, the base and both argument moves, and the three struct stores also sit at 3 with one at 4. A base at priority 4 would join the existing priority-4 group rather than the max_priority group, which is a strictly smaller lift than birthing_insn_p applies.",
+   "next_probe": "Enumerate spellings that raise the base insn's LOG_LINKS depth by exactly one WITHOUT adding an instruction (an operand that already has an in-block producer at the right depth, a consumer whose insn_cost is 2 per sched.c:1497), gate each on build_insns == 176, and read the ADJPRI/PICK lines of the block-6 trace for clocks 61-64 before scoring."
   },
   {
-   "hypothesis": "The final ordering step for the score-0 body may not be sched1: its sched1 emission places the three struct stores BEFORE the lw and the base, which is not the target order, so sched2 or reorg must complete the rotation.",
+   "hypothesis": "The final ordering step for the banked score-0 body may not be sched1 at all: its sched1 emission places the three struct stores BEFORE the lw and the base, which is not the target order, so sched2 or reorg completes the rotation.",
    "mechanism": "sched2 runs schedule_insns a second time after reload and recomputes INSN_LUID over the sched1 output order; birthing_insn_p returns 0 once reload_completed is 1 (sched.c:2510), so the boost is a sched1-only effect and the post-reload pass ranks purely on priority, class and LUID over hard registers.",
-   "next_probe": "Extract the pass=2 block-6 trace for the score-0 body (tmp/grind/func_8005D554/s13/sched_nvnw.log, the 'SCHEDDBG FUNC func=func_8005D554 pass=2' section) and for the control, and diff the two windows insn by insn; if sched2 is what performs the rotation, the lever may be reachable by changing the sched1 OUTPUT order rather than the boost."
+   "next_probe": "Extract the pass=2 block-6 trace for the score-0 body (tmp/grind/func_8005D554/s13/sched_nvnw.log, the SCHEDDBG FUNC func=func_8005D554 pass=2 section) and for the control, and diff the two windows insn by insn; if sched2 is what performs the rotation, the lever may be reachable by changing the sched1 OUTPUT order rather than the boost."
   }
  ],
  "judge_constraints": [
@@ -536,6 +542,38 @@
    "measured_on": "HEAD main @ 5daf178d, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
    "predicate_cite": "loop.c:705",
    "result": "Single-set in source implies hoisted; multi-set in source implies no boost. The only measured escape is a source-level s"
+  },
+  {
+   "session": 14,
+   "statement": "Falsifying only loop.c's reg_in_basic_block_p disjunct - base1 set in half 1 and read again in half 2 as base2 = base1 - 0xD, with half 2's p0 selection respelled as a real if/else so a CODE_LABEL sit",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "57/179. The disassembly shows addiu a2,a0,-12 at 0x352C and addiu a0,a0,-25 at 0x3534, both before the loop top at 0x353"
+  },
+  {
+   "session": 14,
+   "statement": "The plain non-guard-duplicated while chassis does not buy maybe_never for the loop body: with fresh single-set per-half base carriers it measures 64/176 with both bases in the preheader and the first ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "64/176. addiu a2,v1,-12 at 0x3528 and addiu s8,v1,-25 at 0x3530 are both hoisted; sw a2,64(sp) in the preheader and lw a"
+  },
+  {
+   "session": 14,
+   "statement": "Combining the while chassis with the half-2 join - s13's two suggested levers applied together - still hoists both bases and measures 70/177.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "70/177; addiu a2,v1,-12 at 0x3524 and addiu v1,v1,-25 at 0x352C sit before the loop top at 0x3534. Banked at rejected/wh"
+  },
+  {
+   "session": 14,
+   "statement": "Making the base's source non-invariant with a no-op set of r4 never reaches loop.c: both r4 = r4 and r4 = (u32)(base1 + 0xC) measure 54/178, byte-identical to the plain fresh-single-set form, because ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 46867ae6, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "54/178 and 54/178, identical to the fresh-single-set control form fA (54/178) - the sets left no byte trace at all. Bank"
   }
  ],
  "ladder_skip": 0,
