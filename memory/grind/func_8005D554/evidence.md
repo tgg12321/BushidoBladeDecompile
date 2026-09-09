@@ -1989,3 +1989,72 @@ multiply chain and the gap goes back over 4.  A double-copy variant that also st
 - [s18] Kill re-audit passes for a ninth consecutive session: control 6/176, rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c 6/176, rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c 19/176, no FAKE-annotated constructs in the closest banked forms.
 
 - [s18] src/ and include/ are unmodified at end of session; every measurement went through tools/sweep_variants.py or s18/dump.sh, which restores src/text1b.c (git status clean).
+
+## s19 (solver, 2026-09-09, HEAD main @ afafbb45) — the two chassis have DISJOINT, mutually exclusive scheduler vector spaces, and the boost chassis's single vector is spellable at a cost of one instruction
+
+Floor RE-MEASURED at **6/176** with candidate.c applied to src/text1b.c. Kill re-audit passed
+(s18's `G1_gap1_both.c` 8/176, `G1_gap1_h1.c` 7/176, both as banked; `fake_ablate` clean).
+
+- [s19] Tool routing note for every future solver session on this function: `inverse_compose.py
+  classify text1b func_8005D554` REFUSES for zero-rule functions ("would report a FICTITIOUS
+  PRE-RA verdict") and prints the object route. Use
+  `python3 tools/ra_solver/goal_from_tgt.py classify text1b func_8005D554`, and for perturb pass
+  `--target-object build/src/text1b.o --ours-object tmp/sandbox/func_8005D554/text1b.o`.
+  `perturb.py --goal-from-target text1b` still derives NO goal for this function (the two
+  identical loop halves mis-pair, as s1 recorded) — the explicit `--goal-before` route is the
+  only working one, and the uids differ per chassis, so re-derive them from
+  `tmp/sched_solver_work/text1b.i.dbr` (`tmp/grind/func_8005D554/s19/rtl.py <lo> <hi>`) after
+  every edit.
+
+- [s19] Window uids, CONTROL chassis: 240 `addu a0,sp,16`, 242 `move a1,0`, 205
+  `lw v1,D_800A3418`, 211 the base `addu a2,s4,-12`, 228/231/234 the three struct stores
+  (sp+32 = 0, sp+36 = s6, sp+28 = s1), 206 xor, 217/219/220/222 chain, 223 srl, 225 accumulate,
+  244 the call. GAP-1 BOOST chassis: 241 a0, 243 a1, 205 lw, 223 the base `addu v0,s4,-12`,
+  229/232/235 the stores, 220 srl, 226 accumulate, 245 the call.
+
+- [s19] The two chassis' depth-1 vector spaces for the SAME window goal are disjoint and each is
+  complete: CONTROL -> 102 vectors, all `luid swap 211 <-> X` with X at or after the call, zero
+  dep/cost hits; BOOST -> 2 vectors out of 21,672, both the single edge `add_dep 229 <- 223`
+  (data and anti-output spellings of the same edge), zero luid hits. The control's carrier is the
+  base's LUID; the boost chassis's carrier is the base's DEPENDENT SET, because a max_priority
+  insn's emitted position is decided by what releases it, not by its rank.
+
+- [s19] The `s.zero10 = 0` slot cannot take a DATA dependence at all: combine runs before sched1,
+  so any C expression whose value GCC folds to 0 loses the dependence along with the computation.
+  A dependence into that exact slot is therefore only reachable in the anti/output direction, i.e.
+  the base insn must itself reference `MEM(s + 0x10)`.
+
+- [s19] Compiler agreement with H49's vector, MEASURED: spelling the dependence as
+  `s.zero10 = b1 & 1;` placed BETWEEN the base def and the accumulate (so the carrier's
+  def-to-last-use gap stays 2 and loop.c does not hoist it) scores 23/177 and rotates the window
+  to `addiu a0,sp,16 / move a1,zero / addiu a3,s4,-12 / lw a2,0(gp) / andi v1,a3,1 / sw v1,32(sp)
+  / sw s6,36(sp) / sw s1,28(sp)`. Two firsts for this ledger: `move a1,zero` is emitted BEFORE
+  `lw v1,0(gp)` (the target's order), and the base has left the bottom of the window for the
+  four-insn call-argument head. The residual overage is the `andi` (1 insn) and the base/lw
+  transposition caused by the `andi` being the base's true dependent instead of the store.
+
+- [s19] The same dependence spelled with the second use AFTER the accumulate is self-defeating:
+  the carrier's def-to-last-use gap crosses H43's boundary of 3, loop.c hoists the base to the
+  preheader (`addu a2,a2,s0`), the birth boost disappears and the score is 53/181 (half 1) /
+  59/184 (both halves).
+
+- [s19] Both sched_solver models built this session are EXACT on this function (16/16 blocks
+  order- AND clock-exact in both passes, `parity=True` for the whole TU) — one from candidate.c,
+  one from `G1_gap1_both.c` (the latter preserved at `tmp/grind/func_8005D554/s19/g1.sched.json`
+  so the next session need not re-extract it).
+
+- [s19] src/text1b.c was left byte-clean (func_8005D554 still INCLUDE_ASM); every score came from
+  `tools/sweep_variants.py`, which restores the file, and the two manual applications were
+  reverted with `git checkout -- src/text1b.c`.
+
+- [s19] Floor re-measured 6/176 on HEAD main @ afafbb45 with candidate.c applied to src/text1b.c; src left byte-clean at session end (func_8005D554 still INCLUDE_ASM).
+
+- [s19] Tool routing for every future solver session here: inverse_compose.py classify REFUSES for zero-rule functions and prints the object route; use goal_from_tgt.py classify, and pass --target-object build/src/text1b.o --ours-object tmp/sandbox/func_8005D554/text1b.o to perturb.py. perturb.py --goal-from-target still derives NO goal for this function (the two identical loop halves mis-pair, as s1 recorded), so the explicit --goal-before route is the only working one.
+
+- [s19] Window uids are CHASSIS-SPECIFIC and must be re-derived after every edit (tmp/grind/func_8005D554/s19/rtl.py <lo> <hi> reads tmp/sched_solver_work/text1b.i.dbr). CONTROL: 240 a0, 242 a1, 205 lw, 211 base, 228/231/234 stores, 225 accumulate, 244 call. BOOST: 241 a0, 243 a1, 205 lw, 223 base, 229/232/235 stores, 226 accumulate, 245 call.
+
+- [s19] The two chassis have DISJOINT depth-1 vector spaces for the identical window goal: the control's carrier is the base's LUID (102 vectors, all unspellable), the boost chassis's carrier is the base's DEPENDENT SET (2 vectors, one edge). A max_priority insn's emitted position is set by what releases it, not by its rank - which is why swapping chassis swaps which axis is even live.
+
+- [s19] The s.zero10 = 0 slot cannot take a DATA dependence at all: combine runs before sched1, so any C expression whose value GCC folds to 0 loses the dependence along with the computation. That slot is reachable only in the anti/output direction, i.e. the base insn must itself reference MEM(s + 0x10).
+
+- [s19] Both sched_solver models built this session are exact on this function (16/16 blocks order- AND clock-exact in both passes, parity=True for the whole TU); the boost-chassis model is preserved at tmp/grind/func_8005D554/s19/g1.sched.json so the next session need not re-extract it.

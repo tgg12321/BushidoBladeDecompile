@@ -2256,3 +2256,160 @@ copy into `a2_offset` keeps it in the loop.** KILLED (instance).
 - probe: tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c, plus a three-form sweep (tmp/grind/func_8005D554/s18/reaudit/) of candidate.c, rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c and rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c.
 - result: fake_ablate: 'no FAKE-annotated constructs found; nothing to ablate'. Sweep: CTRL 6/176, the score-6 form 6/176, the score-19 form 19/176 - all exactly as banked. Ninth consecutive passing re-audit; the chassis is unchanged.
 - verdict: CONFIRMED
+
+## s19 (solver, 2026-09-09, HEAD main @ afafbb45) — H47-H51
+
+Chassis: candidate.c, control RE-MEASURED **6/176**. Kill re-audit (mandated, floor flat):
+the structurally closest banked form, s18's `G1_gap1_both.c` (the birth-boost gap-1 carrier),
+re-measures **8/176** and `G1_gap1_h1.c` **7/176**, exactly as banked; `tools/fake_ablate.py`
+reports "no FAKE-annotated constructs found" on it. Tenth consecutive passing re-audit.
+
+Both sched_solver models used this session are EXACT on this function
+(`simulate.py --func func_8005D554` -> `blocks 16/16 order-exact, 16/16 clock-exact,
+functions fully exact 2/2`), on both the control chassis and the gap-1 boost chassis, with
+`extract.py` reporting `parity=True` for the whole TU.
+
+**H47 — the residual on the boost chassis is a 4-insn rotation per half plus one pseudo-role
+rename; the control's residual is the same rotation without the rename.** CONFIRMED.
+- probe: `goal_from_tgt.py classify text1b func_8005D554` on the gap-1 chassis (the text-stream
+  `inverse_compose.py classify` is guarded off for zero-rule functions and would report a
+  FICTITIOUS PRE-RA verdict — the object route is the correct one), plus a full aligned objdump
+  diff (`tmp/grind/func_8005D554/s19/sxs.py`) of `tmp/sandbox/func_8005D554/text1b.o` against
+  `build/src/text1b.o`.
+- result: `ours 176 insns, target 176 insns; FIRST DIVERGENCE: RA; $a2 -> $v0 x1`, the single
+  rename being `srl a2,v0,0xf` vs `srl v0,v0,0xf` — the consequence of the base and the srl
+  holding opposite pseudos. The aligned diff gives the exact per-half windows:
+  * CONTROL (6/176): ours `[base a2][a0][lw][a1]`, target `[a0][a1][lw][base a2]` — i.e. the
+    control's ONLY two errors per half are (i) the base three slots too early and (ii)
+    `lw v1,0(gp)` / `move a1,zero` transposed. 3 wrong slots x 2 halves = the 6.
+  * GAP-1 BOOST (8/176): ours `[a0][lw][a1][3 sw][xor][chain][srl a2][base v0][addu]`, target
+    `[a0][a1][lw][base a2][3 sw][xor][chain][srl v0][addu]`.
+
+**H48 — on the CONTROL chassis (multi-set `a2_offset` base, no birth boost) the depth-1 vector
+space for the FULL window goal is 102 vectors and every one is a LUID swap of the base statement
+with an insn at or after the call.** CONFIRMED (reproduces s6 under a STRICTER goal).
+- mechanism: `rank_for_schedule` (sched.c:2408) ties on priority (all four insns are priority 3)
+  and on the last-scheduled class, so `INSN_LUID` descending (sched.c:2464) alone decides; the
+  base would have to be born after `expand_call`'s `a0`/`a1` setters, which no statement order can
+  do because the base's own consumer is born before the call.
+- probe: `tmp/grind/func_8005D554/s19/pbc.sh` -> `pbc_d1_all.txt`; goal
+  `--goal-before 228:211 --goal-before 211:205 --goal-before 205:242 --goal-before 242:240`
+  (s6's goal PLUS the store constraint `228:211`, which pins the base to the target's slot 4
+  rather than merely ahead of the lw), depth 1 over all 21,672 atoms.
+- result: 102 hits, all `luid swap 211 <-> X` for X in 244..365 (the call and everything after
+  it). ZERO `add_dep`, ZERO `del_dep`, ZERO `cost` hits. Baseline exact.
+
+**H49 — on the BOOST chassis the depth-1 vector space for the same window goal is exactly TWO
+vectors out of 21,672, and both are the SAME single dependence edge: the `s.zero10 = 0` store made
+to depend on the base insn.** CONFIRMED.
+- mechanism: with `birthing_insn_p` / `adjust_priority` (sched.c:2505/2584) raising the base to
+  `max_priority`, the base is picked in the same clock region as whichever insn RELEASES it, so its
+  emitted position is set by its DEPENDENTS, not by its LUID — which is why the LUID axis that
+  carries the control chassis has zero hits here, and the dependence axis that is empty on the
+  control carries this one. The target's insn immediately after the base is `sw zero,32(sp)`
+  (uid 229 = `s.zero10 = 0`), so the releasing insn must be that store.
+- probe: `tmp/grind/func_8005D554/s19/pb.sh` -> `pb_d1_all.txt`; model extracted from
+  `G1_gap1_both.c` applied to src (saved as `s19/g1.sched.json`), goal
+  `--goal-before 229:223 --goal-before 223:205 --goal-before 205:243 --goal-before 243:241`,
+  depth 1, all atoms.
+- result: `2 vector(s) reach the goal: add_dep 229 <- 223 (true/data)` and
+  `add_dep 229 <- 223 (anti-output(kind 14))`. Both produce the EXACT target pick order
+  `... 235, 232, 229, 223, 205, 243, 241`, i.e. emission `[a0][a1][lw][base][sw][sw][sw]` — the
+  a1/lw transposition is fixed by the same atom, for free.
+
+**H50 — spelling H49's dependence as a SECOND USE of the base carrier placed AFTER the accumulate
+destroys the vector: the carrier's def-to-last-use gap exceeds 3, loop.c hoists the base and the
+boost is gone.** KILLED (instance).
+- mechanism: H43's measured boundary (loop.c:1631 with threshold 29 and insn_count 98 reduces to
+  `lifetime >= 4`, lifetime = def-to-LAST-use luid gap, loop.c:790-792). A second use placed after
+  the accumulate moves `regno_last_uid` past the whole multiply chain, so the carrier becomes a
+  movable again, is hoisted to the preheader, and `birthing_insn_p`'s in-block SET disappears.
+- probe: `s19/dep/V1_datadep_zero10.c` (both halves) and `V2_datadep_h1.c` (half 1), spelling
+  `s.zero10 = b1 & 1;` after the accumulate.
+- result: 59/184 and 53/181; the half-1 window disassembles to `addu a2,a2,s0` with the base
+  living in the callee-saved `s0` — hoisted, exactly the H43 gap>=4 signature. Banked as
+  `rejected/datadep-zero10-second-use-hoists-base-scores-53.c`.
+- kill_scope: instance. measured_on: HEAD main @ afafbb45, candidate.c chassis (control
+  re-measured 6/176) with s18's G1_gap1_both.c as the carrier chassis; no FAKE constructs present
+  (fake_ablate clean).
+
+**H51 — spelling H49's dependence with the dependent store placed BETWEEN the base def and the
+accumulate (gap 2, so the carrier stays unhoisted and the boost still fires) moves the base out of
+the bottom of the window into the four-insn call-argument head AND fixes the a1/lw transposition —
+at a cost of exactly one instruction (the value computation feeding the dependent store).**
+CONFIRMED.
+- mechanism: H49's vector, spelled. The base keeps `reg_n_sets == 1` and a def-to-last-use gap of
+  2, so loop.c:1631 declines the move and `adjust_priority` still boosts it; the store is now a
+  dependent, so `schedule_insn`'s release makes the base ready only when its dependent is picked,
+  and emission places the base immediately before that dependent.
+- probe: `s19/dep2/` — three spellings (`s.zero10 = b1 & 1`, the same with the other two struct
+  stores hoisted ahead of the base def, and `s.zero10 = (s32)((u32)b1 >> 31)`), swept with
+  `tools/sweep_variants.py`; window disassembled in `s19/A_window.txt`.
+- result: all three measure **23/177** (one instruction over target). Half-1 window:
+  `addiu a0,sp,16 / move a1,zero / addiu a3,s4,-12 / lw a2,0(gp) / andi v1,a3,1 / sw v1,32(sp) /
+  sw s6,36(sp) / sw s1,28(sp) / xor / chain / srl t0 / addu t0,t0,a3` against the target's
+  `addiu a0,sp,16 / move a1,zero / lw v1,0(gp) / addiu a2,s4,-12 / sw zero,32(sp) / ...`. So
+  `move a1,zero` is now BEFORE `lw` (the target's order — the first time in this ledger), the base
+  has come from the bottom of the window up into the four-insn head, and the only structural
+  errors left in the head are the base/lw transposition (the base landed one slot early because
+  the `andi`, not the store, is its true dependent) and the extra `andi` itself.
+- Banked as `rejected/gap2-dep-store-moves-base-to-slot3-costs-andi-scores-23.c`.
+
+### Frontier after s19
+
+S1. The dependent that releases the boosted base must be an insn the target ALREADY contains at
+    the slot right after the base, and it must depend on the base at ZERO instruction cost.
+    H51's `andi` is the whole 1-insn overage AND the reason the base landed one slot early. The
+    untested question is whether any of the three struct stores the target emits at slots 92-94
+    (`sw zero,32(sp)`, `sw s6,36(sp)`, `sw s1,28(sp)`) can be made to depend on the base without
+    adding an insn — via the store ADDRESS rather than the stored value (e.g. reaching those
+    members through a pointer derived from the base), or via an anti-dependence on a member the
+    base's own expression reads.
+S2. A data dependence into a store of a COMPILE-TIME-ZERO value is unreachable by construction:
+    any C expression whose value GCC folds to 0 also loses the dependence (combine runs before
+    sched1), so the `s.zero10 = 0` slot can only be reached by the anti/output direction, i.e. the
+    base insn must itself reference `MEM(s + 0x10)`. Measure whether such an anti-dependence can
+    be created at zero cost — e.g. by making the base a sub-word or aliased read of that same
+    struct slot, or by placing the base's def where GCC's `memrefs_conflict_p` cannot disambiguate
+    the two stack offsets.
+S3. (carried) The object model of D_8009B2E0 / D_8009B388 — a header-canonical aggregate
+    declaration for the 0x3C-stride particle-template table — remains the last untried
+    non-spelling axis; candidate.c still carries the declaration pun `p_b2e0 = (u8 *)&D_8009B2E0`.
+
+## [s19] The kill re-audit passes on the current chassis: candidate.c re-measures 6/176, s18's structurally closest banked form G1_gap1_both.c re-measures 8/176 and G1_gap1_h1.c 7/176, all exactly as banked, and fake_ablate reports no FAKE-annotated construct in any of them.
+- mechanism: Mandated flat-floor re-audit: an instance kill is only valid on the chassis and FAKE state it was measured under, so the closest-to-target banked form is re-measured and ablated before any new probe.
+- probe: tools/sweep_variants.py over tmp/grind/func_8005D554/s19/reaudit/ (CTRL.c, G1_gap1_both.c, G1_gap1_h1.c) plus tools/fake_ablate.py --func func_8005D554 --file text1b --candidate .../G1_gap1_both.c.
+- result: CTRL 6/176, G1_gap1_h1 7/176, G1_gap1_both 8/176; fake_ablate: 'no FAKE-annotated constructs found; nothing to ablate'. Tenth consecutive passing re-audit; the chassis has not moved.
+- verdict: CONFIRMED
+
+## [s19] The residual on the birth-boost chassis is a 4-insn rotation per loop half plus one pseudo-role rename, and the control's residual is the same rotation without the rename: per half the control's only errors are the a2 base sitting three slots too early and lw v1,0(gp) / move a1,zero being transposed.
+- mechanism: goal_from_tgt.py aligns our cheat-stripped object against build/src/text1b.o instruction by instruction; the rename ($a2 -> $v0 on the srl) is the consequence of the base and the srl holding opposite pseudos on the boost chassis, where the base is a fresh carrier rather than a2_offset's first set.
+- probe: python3 tools/ra_solver/goal_from_tgt.py classify text1b func_8005D554 (the text-stream inverse_compose.py classify is guarded off for zero-rule functions and would report a fictitious PRE-RA verdict) plus a full aligned objdump diff, tmp/grind/func_8005D554/s19/sxs.py, on both chassis.
+- result: 'ours 176 insns, target 176 insns; FIRST DIVERGENCE: RA; $a2 -> $v0 x1'. Control window ours [base a2][a0][lw][a1] vs target [a0][a1][lw][base a2]; boost window ours [a0][lw][a1][3 sw][xor][chain][srl a2][base v0][addu] vs target [a0][a1][lw][base a2][3 sw][xor][chain][srl v0][addu].
+- verdict: CONFIRMED
+
+## [s19] On the control chassis, where the a2 base is a2_offset's multi-set first write and the birth boost does not fire, the depth-1 vector space for the full window goal (base after the three stores in pick order, then lw, then a1, then a0) is 102 vectors and every one of them is a LUID swap of the base statement with an insn at or after the call; there are zero add_dep, zero del_dep and zero cost hits.
+- mechanism: rank_for_schedule (sched.c:2408) ties on INSN_PRIORITY (all four window insns are priority 3) and on the last-scheduled dependence class, so INSN_LUID descending (sched.c:2464) alone decides the order; the base would have to be born after expand_call's a0/a1 setters, which no statement order can produce because the base's own consumer is born before the call.
+- probe: tmp/grind/func_8005D554/s19/pbc.sh -> pbc_d1_all.txt: perturb.py on an exact model (16/16 blocks order- and clock-exact, parity=True) extracted from candidate.c, --pass 1 --block 6 --depth 1 over all 21,672 atoms, goal --goal-before 228:211 --goal-before 211:205 --goal-before 205:242 --goal-before 242:240 (s6's goal PLUS the store constraint that pins the base to the target's slot 4).
+- result: 102 vectors, all 'luid swap 211 <-> X' for X in 244..365. This reproduces s6's finding under a strictly tighter goal and adds the new fact that the dependence axis is EMPTY on this chassis.
+- verdict: CONFIRMED
+
+## [s19] On the birth-boost chassis the depth-1 vector space for the same window goal is exactly two vectors out of 21,672, and both are the same single dependence edge - the s.zero10 = 0 store (uid 229) made to depend on the base insn (uid 223), in its data and its anti-output spelling - while the LUID axis that carries the control chassis has zero hits here.
+- mechanism: birthing_insn_p / adjust_priority (sched.c:2505/2584) raise the base to max_priority, so its emitted position is decided by whichever insn RELEASES it in schedule_insn's backward walk, not by its rank or LUID. The target's insn immediately after the base is sw zero,32(sp), so the releasing insn must be that store.
+- probe: tmp/grind/func_8005D554/s19/pb.sh -> pb_d1_all.txt: perturb.py on an exact model extracted from s18's G1_gap1_both.c applied to src (preserved as s19/g1.sched.json), --pass 1 --block 6 --depth 1, all atoms, goal --goal-before 229:223 --goal-before 223:205 --goal-before 205:243 --goal-before 243:241.
+- result: '2 vector(s) reach the goal: add_dep 229 <- 223 (true/data)' and 'add_dep 229 <- 223 (anti-output(kind 14))'. Both produce the EXACT target pick order ...235, 232, 229, 223, 205, 243, 241, i.e. emission [a0][a1][lw][base][sw][sw][sw] - the a1/lw transposition is fixed by the same atom, for free.
+- verdict: CONFIRMED
+
+## [s19] Spelling that dependence as a second use of the base carrier placed after the accumulate (s.zero10 = b1 & 1 following a2_offset += b1) is self-defeating on this chassis: the carrier's def-to-last-use luid gap crosses 3, loop.c hoists the base to the preheader and the birth boost disappears, measuring 53/181 for half 1 and 59/184 for both halves.
+- mechanism: H43's measured boundary - loop.c:1631 with threshold 29 (loop.c:532) and insn_count 98 reduces to lifetime >= 4, where lifetime is the def-to-LAST-use luid gap (loop.c:790-792). A second use after the accumulate moves regno_last_uid past the whole multiply chain, the carrier becomes a movable again, and birthing_insn_p's in-block SET is gone.
+- probe: tmp/grind/func_8005D554/s19/dep/ - V1_datadep_zero10.c (both halves) and V2_datadep_h1.c (half 1), swept with tools/sweep_variants.py; the half-1 window of V2 disassembled.
+- result: 53/181 and 59/184; the window disassembles to addu a2,a2,s0 with the base living in the callee-saved s0 - exactly the H43 gap>=4 hoisted signature. Banked as rejected/datadep-zero10-second-use-hoists-base-scores-53.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ afafbb45, memory/grind/func_8005D554/candidate.c chassis with s18's G1_gap1_both.c as the carrier body, control re-measured 6/176; fake_ablate reports no FAKE-annotated construct in any swept form.
+
+## [s19] Spelling the same dependence with the dependent store placed BETWEEN the base def and the accumulate, so the carrier's def-to-last-use gap stays 2 and the boost still fires, moves the base out of the bottom of the window into the four-insn call-argument head AND emits move a1,zero before lw v1,0(gp) - the target's order, for the first time in this ledger - at a cost of exactly one instruction, measuring 23/177.
+- mechanism: H49's vector, spelled. The carrier keeps reg_n_sets == 1 and lifetime 2, so loop.c:1631 declines the move and adjust_priority still boosts it to max_priority; the store's value computation is now the base's dependent, so schedule_insn releases the base only when that insn is picked, and emission places the base immediately before it.
+- probe: tmp/grind/func_8005D554/s19/dep2/ - three spellings (s.zero10 = b1 & 1; the same with the other two struct stores hoisted ahead of the base def; s.zero10 = (s32)((u32)b1 >> 31)) swept with tools/sweep_variants.py, and the half-1 window of the first disassembled into s19/A_window.txt.
+- result: All three measure 23/177. Window: addiu a0,sp,16 / move a1,zero / addiu a3,s4,-12 / lw a2,0(gp) / andi v1,a3,1 / sw v1,32(sp) / sw s6,36(sp) / sw s1,28(sp) / xor / chain / srl t0 / addu t0,t0,a3, against the target's addiu a0,sp,16 / move a1,zero / lw v1,0(gp) / addiu a2,s4,-12 / sw zero,32(sp). The only structural errors left in the head are the extra andi and the base/lw transposition it causes (the andi, not the store, is the base's true dependent). Banked as rejected/gap2-dep-store-moves-base-to-slot3-costs-andi-scores-23.c.
+- verdict: CONFIRMED
