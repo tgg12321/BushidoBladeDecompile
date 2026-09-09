@@ -1,7 +1,7 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -57,23 +57,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Instrumented-cc1 SCHEDDBG trace reduces the whole 6-point residual to ONE sched1 ready-list pick governed by INSN_LUID (sched.c:2462); half-asymmetry, combine-placement and every INSN_PRIORITY lever a"
+  },
+  {
+   "session": 10,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "All four terms of the deciding clock-64 sched1 pick are now closed - three of them with predicates (hazard sched.c:1338, class sched.c:2429, LUID bound calls.c:1880) - and the reload route is measured"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "RELOAD is the only remaining pass that can give the a2 base an INSN_LUID greater than the argument moves', because it runs AFTER sched1 and its insertions are re-numbered for sched2 from the post-reload stream.",
-   "mechanism": "reload1.c inserts reload insns at the use point rather than at the value's original position. sched2 recomputes INSN_LUID over the post-reload chain, so an a2 base materialised by reload after the argument moves would carry a higher LUID and win the clock-64 pick that sched.c:2462 currently gives to 242. This is the one creation site sections 4-6 of evidence.md s9 did not close.",
-   "next_probe": "Read tmp/grind/func_8005D554/s9/dumps/F.greg and F.jump2 to establish the pre-sched2 stream order and confirm the LUIDs sched2 assigns; then look for a source form that puts the a2 base's pseudo under enough pressure to be reloaded at its use (the store to s.zero1C) rather than allocated live across the window, WITHOUT adding a callee-saved seat. Require build_insns == 176 before crediting anything; s3 already measured that hoisting the a2 base costs a tenth callee-saved seat (+2 insns), so the probe must not create a new live range."
+   "hypothesis": "The insn that holds LUID 42 does not have to be `addiu a0,sp,0x10`. If the first argument's value is born as its own insn earlier in the block (a pointer local to the local struct, `S46C *ps = &s;` hoisted out of the loop, called as `func_80073728((s32)ps, 0)`), expand_call's move becomes `a0 = pseudo` - a separate insn that greg coalesces away - so the deciding ready list at clock 64 contains a different insn set and sched2 sees a different post-reload stream.",
+   "mechanism": "calls.c:1880 always emits the hard-register move last, but WHAT that move copies is source-determined. A pseudo-to-hard-reg copy is a candidate for coalescing in local-alloc/greg, so the insn can vanish before sched2 while still having occupied LUID 42 during sched1 - the only route found so far that changes which insn wins the sched.c:2462 tie-break without touching the a2 expression.",
+   "next_probe": "First read rejected/struct-via-pointer-local-scores-60.c and rejected/tu-local-struct-pointer-mixed-scores-10.c to confirm those measured the D_8009B2E0 object model rather than a pointer to the LOCAL struct s. Then build the `S46C *ps = &s;` form, require build_insns == 176, and capture the BB2_SCHED_DEBUG clock-64 window plus the sched2 RTL segment; the trace (which insn holds the top two LUIDs), not the score, is the signal."
   },
   {
-   "hypothesis": "A source form in which the a2 base's dest pseudo carries potential_hazard strictly greater than the argument moves' would win the clock-64 pick inside priority group 3 without any LUID or priority change.",
-   "mechanism": "schedule_select (sched.c:2708-2723) scans the equal-priority group for the insn with the largest potential_hazard and moves it to ready[0]; that is exactly how the three struct stores beat the higher-LUID argument moves at clocks 61-63. The comparison is strict, so a tie keeps ready[0] and our addsi3_internal loses. An a2 base emitted on a function unit with a larger blockage (the multiply/divide unit is the only one on mips.md with MAX_BLOCKAGE > 1) would win.",
-   "next_probe": "Enumerate the mips.md function_units and their blockage values, then check whether any 176-instruction spelling of (s32)r4 - K can be emitted on a unit other than the ALU. If none can, this axis is a class kill with a mips.md predicate cite and the LUID/reload route is the last one standing."
+   "hypothesis": "sched1 cannot produce the target order, but sched2 runs on a renumbered post-reload stream; there may be a sched1 emission order, other than the target's own, whose sched2 output is the target order.",
+   "mechanism": "sched2 recomputes INSN_LUID over the sched1-emitted chain, so its tie-break input is the sched1 OUTPUT order rather than the RTL birth order. s9 recorded sched2 as a no-op for the control because the control's emitted order is already a sched2 fixpoint; that says nothing about other sched1 orders. If some reachable sched1 order maps onto 240,242,205,211 under sched2, the calls.c:1880 LUID bound is bypassed entirely.",
+   "next_probe": "Use tools/sched_solver to invert sched2 over the four-insn window: enumerate every pre-sched2 order whose sched2 output is 240,242,205,211, then intersect that set with the sched1 emission orders the s6 depth-1/depth-2 searches showed to be reachable. Bank the intersection - possibly empty, which would itself be a class kill with a sched.c predicate."
   },
   {
-   "hypothesis": "The target's a2 base may not be a separately-born insn at all: if in the original source the value stored to s.zero1C is produced by an expression whose final add is the base subtraction (i.e. the shift term is computed FIRST and the base subtracted last), the addiu would be the chain's last insn and could carry a LUID above the argument moves.",
-   "mechanism": "The emitted target pair is 'addiu a2,s4,-K' at slot 91 followed later by 'addu a2,a2,v0', which is the same two-insn shape as ours, so reassociation alone cannot be it (s7 killed the reassociation instance). But the ORDER in which cse canonicalises the two operands determines which of the two insns is born first, and that is set before sched1 assigns LUIDs.",
-   "next_probe": "Read tmp/grind/func_8005D554/s9/dumps/F.cse and F.cse2 over insns 205-223 and record which pass fixes the (base, shift-term) operand order, then sweep the small set of source spellings that change cse's canonical order. Confirm build_insns == 176 and re-run the BB2_SCHED_DEBUG trace on any spelling that moves LUID(211) at all - the trace, not the score, is the signal here."
+   "hypothesis": "The residual may not be reachable by any change to the a2 expression at all; the remaining degree of freedom is which basic block the argument moves terminate. If the func_80073728 call sits at the end of a block whose successor differs (a chassis where one half is guarded, or the loop is restructured so the call is not in the same block as the struct stores), the sched1 window itself changes shape.",
+   "mechanism": "schedule_block operates per basic block, and both the LUID numbering and the ready-list contents are block-local. Every form measured in ten sessions keeps both halves and both calls in one block; the s5b loop-chassis sweep varied the loop form but never the block boundaries inside the body.",
+   "next_probe": "Enumerate source forms that split the loop body into more than one basic block without changing the emitted instruction multiset (an `if` on an already-computed condition whose arms are both taken, a `continue` at the end of the first half), measure each with build_insns == 176 as the gate, and capture the SCHEDDBG window for any form whose block count changes."
   }
  ],
  "judge_constraints": [
@@ -376,6 +382,38 @@
    "measured_on": "HEAD main @ 7dcbdc8e, candidate.c chassis, control floor 6/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "6/176, byte-identical to the control. This was the mandated kill re-audit of the closest banked instance kill (s8's a2-s"
+  },
+  {
+   "session": 10,
+   "statement": "potential_hazard cannot separate the a2 base insn from the two expand_call argument moves at the deciding clock-64 pick, because MIPS type arith matches no define_function_unit and potential_hazard re",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ c09c5da8, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:1338",
+   "result": "At clock 64 the trace prints `SELBEST clock=64 insn=242 pos=1` over ready [242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)] - "
+  },
+  {
+   "session": 10,
+   "statement": "The last-scheduled CLASS criterion of rank_for_schedule assigns class 3 to the a2 base and to both argument moves under every possible last_scheduled_insn, because insn_cost clamps to 1 for any insn w",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2429",
+   "result": "No comparison in the trace produces a nonzero class delta, and the source shows the class-3 branch is taken for any arit"
+  },
+  {
+   "session": 10,
+   "statement": "No source-side placement or operand order can give the a2 base insn an INSN_LUID above the call's hard-register argument moves, because expand_call emits those moves after every argument expression ha",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ c09c5da8, candidate.c chassis, control 6/176 and v1 6/176; no FAKE constructs present in either.",
+   "predicate_cite": "tools/gcc-2.7.2/calls.c:1880",
+   "result": "v1 scores 6/176. Its a2 base is uid 220 (verified in the sched2 RTL: `(set (reg/v:SI 6 a2) (plus:SI (reg/v:SI 20 s4) (co"
+  },
+  {
+   "session": 10,
+   "statement": "Reload inserts no instruction into either contested window of this function, so the s9 frontier's route of an a2 base materialised by reload after the argument moves has no instance on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "18 pseudos to allocate, 18 register dispositions, zero 'Reloads for insn' entries, zero reload_in/reload_out entries. Th"
   }
  ],
  "ladder_skip": 0,

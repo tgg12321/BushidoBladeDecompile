@@ -117,6 +117,26 @@
  * re-attempt priority levers, half-asymmetric forms, or combine-placement forms.  The one untested
  * creation site left is RELOAD, which runs after sched1 and whose insertions get fresh LUIDs for
  * sched2.  See hypotheses.md s9 and evidence.md s9.
+ *
+ * s10 (forensics, 2026-09-09, HEAD main @ c09c5da8): floor RE-MEASURED at 6/176 on this body;
+ * fake_ablate again finds no FAKE construct here.  The clock-64 pick that IS the whole residual
+ * is now closed on ALL FOUR of its deciding terms, three of them with predicates:
+ * priority (s9), last-scheduled CLASS (sched.c:2429 -- insn_cost clamps to 1 for any insn with
+ * no function unit, so an arith producer forces class 3 under EVERY last_scheduled_insn),
+ * potential_hazard (sched.c:1338 -- MIPS type arith matches no define_function_unit in
+ * mips.md:153-260, so insn_unit is -1 and the hazard is 0; this is also exactly why the three
+ * struct stores, unit "memory" with maxb=3, beat the higher-LUID argument moves at clocks
+ * 61-63), and INSN_LUID (calls.c:1880 -- expand_call emits the hard-register argument moves
+ * after every argument expression is evaluated and after every preceding statement expands, so
+ * they hold the two highest pre-call LUIDs, 42 and 43, against a measured ceiling of 41 for
+ * everything else in the window).  Measured confirmation: form v1 moved both halves' a2
+ * statements to the LAST possible pre-call position (after the zero10/one14/ret stores,
+ * immediately before the zero1C store); the a2 base's LUID rose 31 to 34, the argument moves
+ * stayed at 42/43, and the score stayed 6/176 with the rotation unchanged.  Reload is also
+ * measured out: greg shows 18/18 pseudos allocated, zero reload insertions in either window.
+ * Do NOT re-attempt hazard, class, or LUID levers on the a2 expression, and do NOT re-try the
+ * cse-operand-order route -- cse moves no insn across statements, so it cannot beat a bound
+ * that statement placement itself cannot reach.  See hypotheses.md s10 and evidence.md s10.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

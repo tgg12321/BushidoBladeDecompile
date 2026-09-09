@@ -1421,3 +1421,91 @@ PROBE: hand compile via `tmp/grind/func_8005D554/s9/cc.sh` -> `text1b.c:2769: pa
 - probe: Hand-compiled the preprocessed TU with tools/gcc-2.7.2/cc1 via tmp/grind/func_8005D554/s9/cc.sh.
 - result: text1b.c:2769: parse error before 'in'. Fixed in candidate.c; the floor then measured 6/176. Future sessions seeing the 'not found in text1b.o' sandbox message should hand-compile the TU first.
 - verdict: CONFIRMED
+
+## s10 (forensics, 2026-09-09) — hypotheses
+
+## [s10] The candidate's floor reproduces at 6/176 on HEAD main @ c09c5da8 and `fake_ablate` again finds no FAKE-annotated construct in it, so every banked lever in this ledger was measured with the a2-site pseudo unoccupied by a carrier. **CONFIRMED.**
+- probe: re-applied `memory/grind/func_8005D554/candidate.c` to `src/text1b.c`, ran `sandbox func_8005D554 --disable all` (score 6, target_insns 176, build_insns 176), then `python3 tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/candidate.c`.
+- result: score 6/176; fake_ablate prints "no FAKE-annotated constructs found ...; nothing to ablate".
+
+## [s10] `potential_hazard` cannot separate the a2 base from the two argument moves at the deciding clock-64 pick, because MIPS type `arith` matches no `define_function_unit` and `potential_hazard` returns 0 for an insn whose `insn_unit` is negative. **KILLED (class).**
+- mechanism: `potential_hazard` (sched.c:1327) only produces a positive cost when `insn_unit (insn) >= 0` (sched.c:1335) and `function_units[unit].max_blockage > 1` (sched.c:1338); when `insn_unit` returns -1 the fallback loop at sched.c:1360 iterates zero times. `mips.md` (lines 153-260) defines units only for `load`/`store`/`xfer` ("memory"), `hilo`/`imul`/`idiv` ("imuldiv") and the FP types; `arith` is absent, so `addiu a2,s4,-K`, `addiu a0,sp,0x10` and `move a1,$zero` all tie at hazard 0 and `schedule_select`'s strict `>` scan keeps the LUID-sorted head. The same mechanism, with the opposite sign, is what lets the three struct stores (unit 0 "memory", `maxb=3`) beat the higher-LUID argument moves at clocks 61-63.
+- probe: BB2_SCHED_DEBUG=1 trace of the control (`tmp/grind/func_8005D554/s10/sched.log`), plus reading `tools/gcc-2.7.2/sched.c:1327-1366` and the `define_function_unit` table in `tools/gcc-2.7.2/config/mips/mips.md:153-260`.
+- result: at clock 64 the trace prints `SELBEST clock=64 insn=242 pos=1` over ready `[242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)]` — the hazard scan returns the group head, i.e. the tie is total. Any hazard-winning spelling of the a2 base would have to be a memory or imuldiv insn, which is a different opcode from the target's `addiu $a2, $s4, -0xC`.
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/sched.c:1338
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s10] The last-scheduled CLASS criterion of `rank_for_schedule` is 3-vs-3 for the a2 base and both argument moves under EVERY possible `last_scheduled_insn`, not just the ones our stream produces. **KILLED (class).**
+- mechanism: `rank_for_schedule` assigns class 3 whenever `link == 0 || insn_cost (tmp, link, last_scheduled_insn) == 1` (sched.c:2429 and its twin at 2437), and `insn_cost` (sched.c:1372) clamps its result to 1 for any insn whose `result_ready_cost` is below 1 — which is every insn with no function unit, i.e. every `arith`/`move`. The a2 base and both argument moves are arith, so they are class 3 regardless of what was scheduled last, including the call insn itself. This upgrades s7's finding (class delta 0 across 203 measured comparisons) from an instance observation to a predicate.
+- probe: read `tools/gcc-2.7.2/sched.c:2420-2445` and `sched.c:1372-1398`; cross-checked against the RANKDBG/SCHEDDBG traces in `tmp/grind/func_8005D554/s10/sched.log`.
+- result: no comparison in the trace produces a nonzero class delta, and the source shows why: the class-3 branch is taken for any arith producer.
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/sched.c:2429
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176; no FAKE constructs present.
+
+## [s10] No source-side placement of the a2 base can give it an INSN_LUID above the call's hard-register argument moves, because `expand_call` emits those moves after every argument expression has been evaluated and after every preceding statement's expansion. **KILLED (class).**
+- mechanism: `expand_call`'s final register-load loop calls `emit_move_insn (reg, args[i].value)` at calls.c:1880, under the comment "Their expressions were already evaluated" (calls.c:1845), and the call insn is emitted immediately after. Every insn produced by expanding a source statement that must complete before the call — which includes any value stored into the argument struct — therefore carries a strictly lower LUID. `rank_for_schedule` falls through to `INSN_LUID (tmp) - INSN_LUID (tmp2)` (sched.c:2462) and takes the largest, so the argument moves win the clock-64 pick unconditionally.
+- probe: read `tools/gcc-2.7.2/calls.c:1843-1900`; measured the control trace (LUID 42/43 for the two argument moves, 41 for the highest other window insn, 31 for the a2 base) and then built form **v1** (`tmp/grind/func_8005D554/s10/v1.c`) with both halves rewritten so the two a2 statements sit at the last possible pre-call position — immediately before the `s.zero1C` store and after the `zero10`/`one14`/`ret` stores.
+- result: v1 scores **6/176**. Its a2 base is uid 220 (`(set (reg/v:SI 6 a2) (plus:SI (reg/v:SI 20 s4) (const_int -12)))`, verified in `tmp/grind/func_8005D554/s10/sched2_seg.txt`), its LUID rose from 31 to 34, and the argument moves stayed at exactly 42/43. The emitted rotation is unchanged: `[addiu a2,s4,-12][addiu a0,sp,16][lw v1][move a1,zero]`. Banked at `rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c`. This also disposes of the s9 frontier's cse-operand-order route: cse does not move insns across statements, so it cannot lift the base past a bound statement placement itself cannot reach.
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/calls.c:1880
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176 and v1 6/176; no FAKE constructs present in either.
+
+## [s10] Reload inserts no instruction into either contested window of this function, so the s9 frontier's "a2 base materialised by reload after the argument moves" route has no instance. **KILLED (instance).**
+- mechanism: reload1.c inserts reload insns at the use point, and sched2 renumbers LUIDs over the post-reload stream — but only if a pseudo actually fails to get a hard register. `tmp/grind/func_8005D554/s10/greg_seg.txt` (the `func_8005D554` segment of `text1b.greg`) shows 18 pseudos to allocate and 18 register dispositions, zero `Reloads for insn` entries and zero `reload_in`/`reload_out` entries; the only reload activity in the whole function is `Spilling reg 7` (hard `$a3`) for insn 133, outside both windows. A reload insertion for the a2 base pseudo would in any case be a memory reference against its stack slot — an extra instruction beyond 176 and a different opcode from the target's `addiu a2,s4,-K`.
+- probe: ran the instrumented cc1 with `-da` (`tmp/grind/func_8005D554/s10/sched_dump.sh`), extracted the function's segment from `text1b.greg`, and counted reload markers.
+- result: 0 reload insertions in the function; 18/18 pseudos allocated.
+- kill_scope: instance
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176; no FAKE constructs present.
+
+## [s10] func_80073728 is a TWO-argument function: it reads $a0 and $a1 at entry and never reads $a2 before overwriting it, so the caller's $a2 is pure scratch and m2c's three-argument reading (s8) is wrong. **CONFIRMED.**
+- probe: grepped `asm/funcs/func_80073728.s` for `$a0`/`$a1`/`$a2` uses.
+- result: `addu $s2, $a0, $zero` (line 4) and `addu $s6, $a1, $zero` (line 17) are the only entry reads of argument registers; the first appearance of `$a2` is `mflo $a2` (line 194), a write. The a2 chain in func_8005D554 is therefore the value of the `s.zero1C` struct field only, and no argument-passing route can move its birth position.
+
+## [s10] The candidate's floor reproduces at 6/176 on HEAD main @ c09c5da8 and fake_ablate finds no FAKE-annotated construct in it, so no banked lever in this ledger was measured behind a carrier occupying the a2-site pseudo.
+- mechanism: Kill re-audit required by the brief: an instance kill measured while a FAKE carrier sits on the target pseudo is not a kill. tools/fake_ablate.py enumerates FAKE annotations in the candidate and ablates them one at a time.
+- probe: Re-applied memory/grind/func_8005D554/candidate.c to src/text1b.c; ran `sandbox func_8005D554 --disable all`; ran `python3 tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/candidate.c`.
+- result: score 6, target_insns 176, build_insns 176. fake_ablate: 'no FAKE-annotated constructs found in memory/grind/func_8005D554/candidate.c; nothing to ablate'.
+- verdict: CONFIRMED
+
+## [s10] potential_hazard cannot separate the a2 base insn from the two expand_call argument moves at the deciding clock-64 pick, because MIPS type arith matches no define_function_unit and potential_hazard returns 0 for an insn whose insn_unit is negative.
+- mechanism: potential_hazard (sched.c:1327) yields a positive cost only when insn_unit(insn) >= 0 (sched.c:1335) and function_units[unit].max_blockage > 1 (sched.c:1338); for a negative unit the fallback loop at sched.c:1360 iterates zero times. mips.md:153-260 defines units only for load/store/xfer ('memory'), hilo/imul/idiv ('imuldiv') and the FP types - arith is absent. The same mechanism with the opposite sign is why the three struct stores (unit 0 'memory', maxb=3 in the BLOCKAGE trace lines) beat the higher-LUID argument moves at clocks 61-63.
+- probe: BB2_SCHED_DEBUG=1 instrumented-cc1 trace of the control (tmp/grind/func_8005D554/s10/sched.log) plus reading tools/gcc-2.7.2/sched.c:1327-1366 and the define_function_unit table in tools/gcc-2.7.2/config/mips/mips.md:153-260.
+- result: At clock 64 the trace prints `SELBEST clock=64 insn=242 pos=1` over ready [242(p=3,l=43) 240(p=3,l=42) 211(p=3,l=31)] - the hazard scan returns the head of the LUID-sorted priority group, i.e. all three tie at cost 0. A hazard-winning spelling of the a2 base would have to be emitted as a memory or imuldiv insn, a different opcode from the target's `addiu $a2, $s4, -0xC`.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+- predicate_cite: tools/gcc-2.7.2/sched.c:1338
+
+## [s10] The last-scheduled CLASS criterion of rank_for_schedule assigns class 3 to the a2 base and to both argument moves under every possible last_scheduled_insn, because insn_cost clamps to 1 for any insn with no function unit.
+- mechanism: rank_for_schedule takes the class-3 branch whenever `link == 0 || insn_cost (tmp, link, last_scheduled_insn) == 1` (sched.c:2429, twin at 2437). insn_cost (sched.c:1372-1398) computes result_ready_cost and clamps anything below 1 up to 1, which is every arith/move insn. So no choice of last_scheduled_insn - including the call insn itself - can demote the argument moves below class 3. This upgrades s7's 0/203 measured class deltas from an instance observation to a predicate.
+- probe: Read tools/gcc-2.7.2/sched.c:2420-2445 and sched.c:1372-1398; cross-checked against the SCHEDDBG/RANKDBG trace in tmp/grind/func_8005D554/s10/sched.log.
+- result: No comparison in the trace produces a nonzero class delta, and the source shows the class-3 branch is taken for any arith producer.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176; no FAKE constructs present.
+- predicate_cite: tools/gcc-2.7.2/sched.c:2429
+
+## [s10] No source-side placement or operand order can give the a2 base insn an INSN_LUID above the call's hard-register argument moves, because expand_call emits those moves after every argument expression has been evaluated and after every preceding statement has expanded.
+- mechanism: expand_call's final register-load loop calls emit_move_insn (reg, args[i].value) at calls.c:1880, under the comment 'Their expressions were already evaluated' (calls.c:1845), and emits the call insn immediately after. Every insn from expanding a source statement that must complete before the call - which includes any value stored into the argument struct - carries a strictly lower LUID, and rank_for_schedule's final term is INSN_LUID (sched.c:2462), largest wins.
+- probe: Read tools/gcc-2.7.2/calls.c:1843-1900. Measured the control trace (argument moves at LUID 42 and 43, highest other window insn 41, a2 base 31), then built form v1 (tmp/grind/func_8005D554/s10/v1.c) with both halves rewritten so the two a2 statements sit at the last possible pre-call position - after the zero10/one14/ret stores, immediately before the zero1C store - and re-ran the sandbox and the SCHEDDBG trace.
+- result: v1 scores 6/176. Its a2 base is uid 220 (verified in the sched2 RTL: `(set (reg/v:SI 6 a2) (plus:SI (reg/v:SI 20 s4) (const_int -12)))`), its LUID rose 31 to 34, and the argument moves stayed at exactly 42/43; the emitted rotation is unchanged. Banked at rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c. This also disposes of the s9 frontier's cse-operand-order route, since cse moves no insn across statements and so cannot beat a bound that statement placement itself cannot reach.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control 6/176 and v1 6/176; no FAKE constructs present in either.
+- predicate_cite: tools/gcc-2.7.2/calls.c:1880
+
+## [s10] Reload inserts no instruction into either contested window of this function, so the s9 frontier's route of an a2 base materialised by reload after the argument moves has no instance on this chassis.
+- mechanism: reload1.c only inserts at a use point when a pseudo fails to get a hard register; sched2 then renumbers LUIDs over the post-reload stream. If nothing is reloaded in the window, sched2 sees the sched1 order.
+- probe: Ran the instrumented cc1 with -da (tmp/grind/func_8005D554/s10/sched_dump.sh) and extracted the func_8005D554 segment of text1b.greg to tmp/grind/func_8005D554/s10/greg_seg.txt.
+- result: 18 pseudos to allocate, 18 register dispositions, zero 'Reloads for insn' entries, zero reload_in/reload_out entries. The only reload activity in the whole function is `Spilling reg 7` (hard $a3) for insn 133, outside both windows. A reload insertion for the a2 base pseudo would in any case be a memory reference against its stack slot - an extra instruction beyond 176 with a different opcode from `addiu a2,s4,-K`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176; no FAKE constructs present.
+
+## [s10] func_80073728 is a two-argument function: it reads $a0 and $a1 at entry and never reads $a2 before overwriting it, so the caller's $a2 is pure scratch and m2c's three-argument reading recorded in s8 is wrong.
+- mechanism: If the callee never reads $a2, no argument-passing route can move the a2 chain's birth position out of the struct-store region and into expand_call's argument evaluation.
+- probe: Grepped asm/funcs/func_80073728.s for uses of $a0/$a1/$a2.
+- result: `addu $s2, $a0, $zero` (line 4) and `addu $s6, $a1, $zero` (line 17) are the only entry reads of argument registers; the first appearance of $a2 is `mflo $a2` (line 194), a write.
+- verdict: CONFIRMED

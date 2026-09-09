@@ -1181,3 +1181,125 @@ lengthened and no priority changes. Banked at
 - [s9] expand_call emits the argument-register moves immediately before the call insn, so they are the last two insns of the block; no source statement placed before the call can outrank them by LUID. This is the mechanism behind s6's 0-of-420 permutation result and s8's byte-inert three-argument reading.
 
 - [s9] Combine adds exactly one insn to the whole function, a (use (reg:SI 119)) at the top, and removes none in block 6.
+
+## s10 (forensics, 2026-09-09, HEAD main @ c09c5da8) — all four rank_for_schedule criteria are now closed with predicates, and the LUID axis is bounded by expand_call
+
+Chassis: candidate.c re-applied to src/text1b.c, `sandbox func_8005D554 --disable all` =
+**6 / 176 (build_insns 176 == target_insns 176)** — the floor reproduces exactly.
+Kill re-audit: `tools/fake_ablate.py --func func_8005D554 --file text1b --candidate
+memory/grind/func_8005D554/candidate.c` reports "no FAKE-annotated constructs found;
+nothing to ablate" (same as s8), so no banked lever in this ledger was measured behind a
+FAKE carrier.
+
+Instrumented cc1 (`tools/gcc-2.7.2/cc1`, BB2_SCHED_DEBUG=1) re-captured for the control and
+for one new form; dumps under `tmp/grind/func_8005D554/s10/`.
+
+### 1. The control window reproduces s9 exactly, and the SELBEST line names the tie-break
+
+sched1, half 1, clocks 61-67 (`tmp/grind/func_8005D554/s10/sched.log`):
+
+    SELBEST clock=61 insn=234 pos=2   PICK 234 (p=3,l=40)   [stores beat the arg moves]
+    SELBEST clock=62 insn=231 pos=3   PICK 231 (p=3,l=39)
+    SELBEST clock=63 insn=228 pos=3   PICK 228 (p=3,l=38)
+    SELBLOCK clock=64 insn=205 unit=0 cost=1
+    SELBEST clock=64 insn=242 pos=1   PICK 242 (p=3,l=43)   ready [242(l=43) 240(l=42) 211(l=31)]
+    PICK clock=65 205 ; PICK clock=66 240 ; PICK clock=67 211
+
+Backward scheduler ⇒ emission is the reverse of the pick order: `211,240,205,242`
+= `[addiu a2,s4,-K][addiu a0,sp,16][lw v1,gp][move a1,zero]`; the target is
+`240,242,205,211` (asm/funcs/func_8005D554.s:93-96). The whole 3-slot rotation is the single
+clock-64 pick, exactly as s9 recorded.
+
+The `SELBEST ... pos=1` line is new information: at clock 64 the ready array (before the
+move-to-front) was `[205, 242, 240, 211, 161]`; 205 carries LAUNCH_PRIORITY and forms its own
+priority group, so the priority-3 group starts at index 1 and `schedule_select`'s
+potential-hazard scan (sched.c:2708-2723) picks index 1 = uid 242 — i.e. the head of the
+LUID-descending sort, because the scan uses a STRICT `>` and every candidate ties at cost 0.
+
+### 2. potential_hazard can never separate these three insns (frontier item 2 — CLASS KILL)
+
+`potential_hazard` (sched.c:1327-1366) returns its incoming cost unchanged unless
+`insn_unit (insn) >= 0` **and** `function_units[unit].max_blockage > 1` (sched.c:1335, 1338);
+for a negative unit the fallback loop `for (i = 0, unit = ~unit; unit; ...)` (sched.c:1360)
+executes zero times when `insn_unit` returned -1.
+
+`mips.md` defines function units only for the types `load`, `store`, `xfer` (unit "memory"),
+`hilo`/`imul`/`idiv` (unit "imuldiv") and the FP types (mips.md:153-260). MIPS type `arith`
+— which is what `addiu a2,s4,-K`, `addiu a0,sp,0x10` and `move a1,$zero` all are — matches
+no `define_function_unit`, so `function_units_used` yields 0, `insn_unit` returns -1
+(sched.c:1126) and the hazard is 0 for all three.
+
+This is directly visible in the trace: the *stores* (unit=0 "memory", `maxb=3` in the
+BLOCKAGE lines) DO carry a positive hazard and that is exactly how uids 234/231/228 beat the
+higher-LUID argument moves at clocks 61-63; the three arith insns at clock 64 do not.
+
+Consequence: a hazard-winning spelling of the a2 base would have to be emitted as a memory or
+imuldiv insn — i.e. a different opcode from the target's `addiu $a2, $s4, -0xC`. The axis is
+closed for any form that keeps the target's instruction.
+
+### 3. The last-scheduled CLASS criterion is structurally 3-vs-3 (upgrades s7 from instance to class)
+
+`rank_for_schedule` computes `tmp_class = 3` whenever
+`link == 0 || insn_cost (tmp, link, last_scheduled_insn) == 1` (sched.c:2429/2437), and
+`insn_cost` (sched.c:1372-1398) clamps to 1 for any insn whose `result_ready_cost` is below 1
+— which is every insn with no function unit, i.e. every `arith`/`move`. Because the a2 base
+and both argument moves are arith, they are class 3 under EVERY possible
+`last_scheduled_insn`, including the call insn itself. s7 measured this as 0/203 comparisons;
+the predicate shows it holds for any stream, not just ours.
+
+### 4. The LUID axis is bounded by expand_call (frontier item 3 — measured, and the bound named)
+
+`expand_call`'s final loop emits the hard-register argument moves —
+`emit_move_insn (reg, args[i].value)` at **calls.c:1880** — AFTER every argument's value has
+been evaluated ("Their expressions were already evaluated", calls.c:1845) and therefore after
+every insn produced by expanding any preceding source statement. The call insn follows
+immediately. So in the pre-call region the two argument moves hold the two highest LUIDs.
+
+Measured, control: `LUID(a0 move) = 42`, `LUID(a1 move) = 43`, and the largest LUID over every
+other insn in the window is 41 (the `s.zero1C` store, uid 237). The a2 base sits at 31.
+
+Measured, new form **v1** (`tmp/grind/func_8005D554/s10/v1.c`, banked at
+`rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c`): both halves rewritten so
+the two a2 statements sit at the LAST possible pre-call position, immediately before the
+`s.zero1C` store and after the `zero10`/`one14`/`ret` stores. **Score 6/176.** In v1 the a2
+base is uid 220 (verified against the RTL in `tmp/grind/func_8005D554/s10/sched2_seg.txt`:
+`(insn 220 ... (set (reg/v:SI 6 a2) (plus:SI (reg/v:SI 20 s4) (const_int -12))))`), its LUID
+rose 31 → 34, and the argument moves stayed at exactly 42/43. The emitted rotation is
+unchanged: `[addiu a2,s4,-12][addiu a0,sp,16][lw v1][move a1,zero]`.
+
+So the maximum LUID any source-expressed pre-call value can reach is bounded strictly below
+the argument moves', and moving the statements to that maximum does not close the gap. This
+also disposes of the s9 frontier's cse-operand-order route: cse does not move insns between
+statements, so it cannot lift the base past a bound that statement placement itself cannot
+reach.
+
+### 5. RELOAD inserts nothing in either window (frontier item 1 — measured dead)
+
+`tmp/grind/func_8005D554/s10/greg_seg.txt` (the `func_8005D554` segment of `text1b.greg`):
+18 pseudos to allocate, all 18 receive hard registers, `Reloads for insn` count = 0,
+`reload_in`/`reload_out` count = 0. The only reload activity in the whole function is
+`Spilling reg 7` (hard `$a3`) for insn 133 — outside both contested windows. Structurally, a
+reload insertion for the a2 base pseudo would be a memory reference against its stack slot:
+an extra instruction (>176) with a different opcode from `addiu a2,s4,-K`. The s9 frontier's
+reload route has no instance on this chassis and no target-shaped form.
+
+### Where that leaves the residual
+
+All three criteria of `rank_for_schedule` plus `schedule_select`'s hazard tie-break are now
+closed for the clock-64 pick — priority (s9), class (s7 measured, §3 predicate), hazard (§2),
+LUID (§4 bound). The pick therefore cannot be changed by anything that leaves the a2 base as a
+pre-call arith insn born from a source expression, which is every form measured in ten
+sessions. The next session's search has to change WHAT insn occupies that slot or WHICH block
+it is in, not how the a2 value is spelled.
+
+- [s10] Control floor re-measured this session: score 6, target_insns 176, build_insns 176, on HEAD main @ c09c5da8 with candidate.c applied to src/text1b.c.
+
+- [s10] The clock-64 SELBEST trace line (`SELBEST clock=64 insn=242 pos=1`) shows the potential-hazard scan returning the head of the priority-3 group rather than breaking the tie: uid 205 carries LAUNCH_PRIORITY and forms its own group, so the priority-3 group starts at ready index 1.
+
+- [s10] The three struct stores win clocks 61-63 over the higher-LUID argument moves purely because they sit on function unit 0 ('memory', max_blockage 3 per the BLOCKAGE trace lines) while the argument moves are arith with no unit - the one place potential_hazard is decisive in this function.
+
+- [s10] Control LUIDs in the half-1 window: a0 argument move 42, a1 argument move 43, s.zero1C store 41, a2 base 31. Form v1 (a2 statements at the last possible pre-call position) raises the a2 base to 34 and leaves the argument moves at 42/43.
+
+- [s10] greg for func_8005D554: 18 pseudos to allocate, 18 dispositions, no reload insertions; only `Spilling reg 7` for insn 133, outside both windows.
+
+- [s10] func_80073728 reads only $a0 and $a1; $a2 is never read before being written, so the callee is two-argument and the s8 three-argument reading is retired.
