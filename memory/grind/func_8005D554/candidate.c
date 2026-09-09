@@ -247,6 +247,44 @@
  * ahead of the stores -- reaches the target order only because a LATER pass completes the
  * rotation.  s12's overshoot argument is not a reason to abandon priority levers.
  * Do NOT re-try the plain-while chassis, no-op sets of r4, or a join placed after the base's set.
+ *
+ * s15 (enumerate, 2026-09-09, HEAD main @ 36291a08): floor RE-MEASURED at 6/176 on this body; the
+ * kill re-audit passes for a SIXTH session (fake_ablate finds no FAKE construct in the closest
+ * banked form, rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c, and that form
+ * re-measures 6/176 exactly).  61 further spellings were swept
+ * (tmp/grind/func_8005D554/s15/{v,enumA,enumB}, histogram in s15/sweepA.json): 8 hand-built
+ * association/store-placement forms, a 48-form symmetric cross product over the a2 expression's
+ * naming space (multiply named or inlined x shift named or inlined x base named or inlined x
+ * base-declaration position x final-add operand order x multiply operand order, the SAME spelling
+ * applied to both halves), and 5 staging/association forms.  Score histogram: 6 (2 forms), 8 (2),
+ * 15 (7), 18 (1), 23 (3), 32 (1), 41 (1), 42 (44).  NOTHING scores below 6.  Three results:
+ *   (1) Every spelling that gives the multiply, the shift or the base its OWN named local
+ *       collapses the build to 153 instructions -- 23 BELOW the target's 176 -- at score 42.
+ *       A per-half named local for any of those three sub-expressions is single-set, hence a
+ *       loop.c movable (loop.c:705), and LICM hoists it and its whole chain out of the loop.
+ *       44 of the 48 enumA variants land there; only the four fully-inlined spellings keep 176.
+ *       This is the same predicate that killed the single-set base carrier in s13, reached from
+ *       a completely different direction, and it is why a2_offset must stay MULTI-SET.
+ *   (2) THE BASE-LAST ASSOCIATION IS THE FIRST FORM IN FIFTEEN SESSIONS THAT MOVES THE a2 BASE
+ *       INSN OUT OF THE PRE-CALL WINDOW.  Writing the half as `a2_offset = m; a2_offset +=
+ *       (s32)r4 - K;` emits the window as [addiu a0,sp,0x10][lw v1,gp][move a1,zero][sw][sw][sw]
+ *       -- `addiu a0,sp,0x10` wins slot 1, which is the TARGET's slot 1 and which the control
+ *       never achieves.  But combine reassociates the constant off s4 and onto the multiply
+ *       result: the emitted pair is `addiu v0,v0,-12; addu v0,v0,s4` (0x35C4/0x35C8) where the
+ *       target has `addiu a2,s4,-0xC; addu a2,a2,v0` (4DEC0/4DEE8).  So on this chassis, in this
+ *       expression's spelling space, "emit the base after the multiply chain" and "keep the
+ *       constant attached to s4" did not co-occur in any of the 61 forms measured: every
+ *       base-last spelling scores 15/176 and every constant-on-s4 spelling emits the base first.
+ *       Banked at rejected/a2-base-last-association-combine-moves-const-off-s4-scores-15.c.
+ *   (3) Staging the multiply-shift through the DEAD existing local a0_offset (sanctioned
+ *       variable reuse, no live-range extension, no extra instruction) costs 23 points, and it
+ *       costs exactly the same 23 whether the base statement precedes or follows the staged
+ *       value -- another independent confirmation that the base statement's POSITION is byte-inert.
+ *   And one form that is byte-inert at the floor: building the base in three steps
+ *   (`a2_offset = (s32)r4; a2_offset -= K; a2_offset += m;`) measures 6/176 exactly like the
+ *   control, so the copy/subtract pair is folded back by combine.
+ * Do NOT re-sweep the a2 expression's naming space, the base-last association, or multiply-shift
+ * staging through an existing local.  See hypotheses.md s15 and evidence.md s15.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

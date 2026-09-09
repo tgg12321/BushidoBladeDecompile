@@ -1924,3 +1924,91 @@ movable.
 - probe: read the target asm window directly and reversed it against s9's recorded control pick sequence (clock61=234, 62=231, 63=228, 64=242, 65=205, 66=240, 67=211).
 - result: The single divergent decision is the clock-64 three-way tie [242(l43) 240(l42) 211(l31)], which the target resolves to 211. The banked score-0 body boosts its base to max_priority and is picked at clock 61, AHEAD of the stores, and still scores 0 - so a later pass completes the rotation and an overshoot at sched1 is survivable. The priority family is therefore re-opened, not closed.
 - verdict: CONFIRMED
+
+## [s15] Every spelling that gives the a2 expression's multiply, shift or base its own named per-half local is LICM-hoisted, collapsing the build from 176 to 153 instructions at score 42.
+- mechanism: a per-half named local for a sub-expression of (s32)r4 - K + ((u32)(D_800A3418 * M) >> 0xF) is set exactly once, so n_times_set is 1 and scan_loop accepts the SET as a movable (loop.c:705) whenever any of its three guard disjuncts (loop.c:695-700) holds; every C-level local is a user variable, so disjunct B is false for free, but disjunct A stays true because no jump or label precedes the set inside this single-basic-block loop body. The invariant base and, through it, the whole chain are hoisted to the preheader.
+- probe: a 48-form symmetric cross product over the a2 expression's naming space (multiply named/inlined x shift named/inlined x base named/inlined x base-declaration position x final-add operand order x multiply operand order), the SAME spelling applied to both halves. tmp/grind/func_8005D554/s15/genA.py, variants in s15/enumA, histogram in s15/sweepA.json.
+- result: 44 of 48 variants score 42 at 153 build instructions (23 BELOW the target's 176); the only variants that keep 176 are the four fully-inlined spellings, which score 15. Banked at rejected/named-singleset-mul-sh-base-locals-all-licm-hoisted-scores-42.c
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+- predicate_cite: loop.c:705
+
+## [s15] The base-last association moves the a2 base instruction out of the pre-call window and makes addiu a0,sp,0x10 win the window's first slot, but combine reassociates the constant off s4 onto the multiply result, so this spelling measures 15/176.
+- mechanism: writing the half as a2_offset = ((u32)(D_800A3418 * M) >> 0xF); a2_offset += (s32)r4 - K; expands the r4 - K subtraction AFTER the seven-instruction multiply-shift chain, raising the base insn's INSN_LUID past the chain; but the resulting RTL is (plus (reg m) (plus (reg r4) (const -K))) and combine folds the constant into the already-available multiply result, emitting addiu v0,v0,-12 followed by addu v0,v0,s4 instead of the target's addiu a2,s4,-0xC followed by addu a2,a2,v0.
+- probe: tmp/grind/func_8005D554/s15/v/v03_both_a2_baselast.c and the enumA fully-inlined spellings; disassembled from tmp/sandbox/func_8005D554/text1b.o.
+- result: 15/176. The emitted pre-call window becomes [addiu a0,sp,0x10][lw v1,0(gp)][move a1,zero][sw zero][sw s6][sw s1] at 0x3594-0x35A8 -- addiu a0,sp,0x10 occupies the target's slot-1 position (4DEB4), which the control never achieves -- while the base pair sits at 0x35C4/0x35C8 with the constant on the multiply result. Single-half base-last forms measure 8/176. Banked at rejected/a2-base-last-association-combine-moves-const-off-s4-scores-15.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] Staging the multiply-shift through the dead existing local a0_offset costs 23 points and costs exactly the same whether the a2 base statement precedes or follows the staged value.
+- mechanism: a0_offset is dead after s.zero18 = a0_offset;, so reusing it for the half's own multiply-shift result extends no live range and adds no instruction (both forms build 176). The identical score for the two statement orders shows the base statement's position relative to the staged value leaves the emitted stream unchanged, matching s6's predicate-backed closure of statement placement (sched.c:2464).
+- probe: tmp/grind/func_8005D554/s15/enumB/E_mul_via_a0offset_base_late.c and F_mul_via_a0offset_base_first.c
+- result: 23/176 and 23/176. Staging through a single combined statement measures 18/176. Banked at rejected/mulshift-staged-through-dead-a0offset-scores-23.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] Building the a2 base in three steps (copy r4, subtract the constant, accumulate the multiply-shift) is byte-inert at the floor.
+- mechanism: combine folds the register copy and the immediate subtraction into a single addiu with the same destination, so the RTL reaching sched1 is identical to the control's two-statement form.
+- probe: tmp/grind/func_8005D554/s15/enumB/D_copy_sub_acc.c
+- result: 6/176, identical to the control. Banked at rejected/a2-base-built-copy-sub-acc-byte-inert-scores-6.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] Hoisting the s.zero10/s.one14/s.ret stores above the a2 chain so that the a2 chain is the last thing before the call does not help, and it is the most expensive store move measured.
+- mechanism: the three stores are scheduled at clocks 61-63 in both bodies because their memory function unit gives them a nonzero potential_hazard (sched.c:1338) that the arithmetic window insns lack; moving their source statements earlier only lowers their INSN_LUIDs, which is the term they already win on.
+- probe: tmp/grind/func_8005D554/s15/v/v08_control_stores_hoisted.c (control chain) and v07_baselast_stores_hoisted.c (base-last chain)
+- result: 32/176 and 41/176. Banked at rejected/zero10-one14-ret-stores-hoisted-above-a2-chain-scores-32.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] Every spelling that gives the a2 expression's multiply, shift or base its own named per-half local is LICM-hoisted, collapsing the build from 176 to 153 instructions at score 42.
+- mechanism: A per-half named local for a sub-expression of (s32)r4 - K + ((u32)(D_800A3418 * M) >> 0xF) is set exactly once, so n_times_set is 1 and scan_loop accepts the SET as a movable (loop.c:705) whenever any of its three guard disjuncts (loop.c:695-700) holds. Every C-level local is a user variable, so disjunct B is false for free, but disjunct A stays true because no jump or label precedes the set inside this single-basic-block loop body, so the invariant base and its whole chain are hoisted into the preheader.
+- probe: A 48-form symmetric cross product over the a2 expression's naming space (multiply named/inlined x shift named/inlined x base named/inlined x base-declaration position x final-add operand order x multiply operand order), the same spelling applied to both halves. tmp/grind/func_8005D554/s15/genA.py, variants in s15/enumA, histogram in s15/sweepA.json.
+- result: 44 of 48 variants score 42 at 153 build instructions - 23 BELOW the target's 176. The only variants that keep 176 instructions are the four fully-inlined spellings, which score 15. This reproduces s13's multi-set requirement from a completely independent direction: a2_offset must stay multi-set or the whole chain leaves the loop. Banked at rejected/named-singleset-mul-sh-base-locals-all-licm-hoisted-scores-42.c
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+- predicate_cite: loop.c:705
+
+## [s15] The base-last association moves the a2 base instruction out of the pre-call window and gives addiu a0,sp,0x10 the window's first slot, but combine reassociates the constant off s4 onto the multiply result, and this spelling measures 15/176.
+- mechanism: Writing the half as a2_offset = ((u32)(D_800A3418 * M) >> 0xF); a2_offset += (s32)r4 - K; expands the r4 - K subtraction after the seven-instruction multiply-shift chain, raising the base insn's INSN_LUID past that chain. The resulting RTL is (plus (reg m) (plus (reg r4) (const -K))) and combine folds the constant into the already-available multiply result, emitting addiu v0,v0,-12 then addu v0,v0,s4 instead of the target's addiu a2,s4,-0xC then addu a2,a2,v0.
+- probe: tmp/grind/func_8005D554/s15/v/v03_both_a2_baselast.c plus the four fully-inlined enumA spellings and the single-half forms v01/v02; disassembled from tmp/sandbox/func_8005D554/text1b.o.
+- result: 15/176 for both halves base-last, 8/176 for one half only. The emitted pre-call window becomes [addiu a0,sp,16][lw v1,0(gp)][move a1,zero][sw zero][sw s6][sw s1] at 0x3594-0x35A8, so addiu a0,sp,0x10 occupies the target's slot-1 position (4DEB4) for the first time in fifteen sessions - the control emits the a2 base there instead. The base pair lands at 0x35C4/0x35C8 with the constant on the multiply result. Across all 61 forms measured this session, no spelling produced both the late base instruction and the constant attached to s4. Banked at rejected/a2-base-last-association-combine-moves-const-off-s4-scores-15.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] Staging the half's multiply-shift through the dead existing local a0_offset costs 23 points and costs exactly the same whether the a2 base statement precedes or follows the staged value.
+- mechanism: a0_offset is dead after s.zero18 = a0_offset;, so reusing it for the half's own multiply-shift result extends no live range and adds no instruction - both forms build 176. The identical score for the two statement orders shows the base statement's position relative to the staged value leaves the emitted stream unchanged, replicating s6's closure of statement placement (sched.c:2464).
+- probe: tmp/grind/func_8005D554/s15/enumB/E_mul_via_a0offset_base_late.c and F_mul_via_a0offset_base_first.c, plus the single-combined-statement variant G.
+- result: 23/176 and 23/176; the combined-statement variant measures 18/176. Banked at rejected/mulshift-staged-through-dead-a0offset-scores-23.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] Building the a2 base in three steps - copy r4, subtract the constant, accumulate the multiply-shift - is byte-inert at the floor.
+- mechanism: combine folds the register copy and the immediate subtraction into a single addiu with the same destination, so the RTL reaching sched1 is identical to the control's two-statement form.
+- probe: tmp/grind/func_8005D554/s15/enumB/D_copy_sub_acc.c
+- result: 6/176, identical to the control - a second distinct spelling that sits exactly at the floor. Banked at rejected/a2-base-built-copy-sub-acc-byte-inert-scores-6.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] Hoisting the s.zero10, s.one14 and s.ret stores above the a2 chain, so the a2 chain is the last thing before the call, is the most expensive store move measured this session.
+- mechanism: The three stores are selected at clocks 61-63 in both bodies because their memory function unit gives them a nonzero potential_hazard (sched.c:1338) that the arithmetic window insns lack; moving their source statements earlier only lowers their INSN_LUIDs, which is a term they already win.
+- probe: tmp/grind/func_8005D554/s15/v/v08_control_stores_hoisted.c (control chain) and v07_baselast_stores_hoisted.c (base-last chain).
+- result: 32/176 and 41/176. Banked at rejected/zero10-one14-ret-stores-hoisted-above-a2-chain-scores-32.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s15] All four contested window instructions draw their INSN_PRIORITY of 3 from a single shared predecessor - the third jal rand - so no operand respelling of the a2 base can raise its priority without making it a consumer of the in-block load.
+- mechanism: The PRIODBG capture shows insns 205 (lw), 211 (a2 base), 240 (addiu a0,sp,0x10) and 242 (addu a1,zero,zero) each take pred=201 kind=14 pred_pri=3 cost=1 contrib=3, and the three struct stores 228/231/234 also finish at 3. The only priority-4 insns in the window are the load's own data consumers 206 and 208, which get 3 + 2 - 1 via the load's ready cost (sched.c:1497). The a2 base's value is (s32)r4 - K and r4 is set outside the loop, so it has no in-block data producer to inherit depth from.
+- probe: tmp/grind/func_8005D554/s13/sched.log lines 54365-56111 extracted to tmp/grind/func_8005D554/s15/p1.log, grepped for the window uids and for every final_pri above 3.
+- result: Confirmed against the compiler's own trace; this is the reason the 48-form naming sweep could not move the priority term without also adding an instruction or triggering the LICM hoist.
+- verdict: CONFIRMED

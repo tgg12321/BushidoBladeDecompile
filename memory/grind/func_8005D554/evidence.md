@@ -1567,3 +1567,89 @@ is loop body cost, not a tenth callee-saved seat.
 - [s14] MEASURED: no-op sets of r4 are removed by cse before loop_optimize (54/178 twice, byte-identical to the plain fresh-single-set form), so the invariant_p route needs a set that survives cse and therefore costs an instruction.
 
 - [s14] CORRECTION to s12: the target emits a0 / a1 / lw / a2 base / sw / sw / sw at 4DEB4-4DECC, so its selection order picks the three stores first and the a2 base at clock 64; the score-0 body's boosted base is picked at clock 61 (ahead of the stores) and still matches, so an overshoot at sched1 is completed by a later pass and priority levers remain live.
+
+## s15 (enumerate, 2026-09-09, HEAD main @ 36291a08)
+
+Kill re-audit (sixth consecutive session): tools/fake_ablate.py --func func_8005D554 --file text1b
+--candidate memory/grind/func_8005D554/rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c
+reports "no FAKE-annotated constructs found; nothing to ablate", and a sweep of that form together
+with the control candidate returns 6/176 for both. The chassis is unchanged.
+
+ENUMERATION: 61 spellings, best 6, 2 at the floor.
+  histogram (score x count): 6 x 2, 8 x 2, 15 x 7, 18 x 1, 23 x 3, 32 x 1, 41 x 1, 42 x 44.
+  generators: tmp/grind/func_8005D554/s15/gen.py (8 hand association/store-placement forms),
+  genA.py (48-form symmetric cross product over the a2 expression's naming space), genB.py
+  (5 staging/association forms). Raw sweep JSON: tmp/grind/func_8005D554/s15/sweepA.json.
+
+Forensic reading that framed the sweep. The block-6 PRIODBG capture banked by s13
+(tmp/grind/func_8005D554/s13/sched.log lines 54365-56111, extracted to s15/p1.log) shows the four
+window instructions all take their INSN_PRIORITY from ONE predecessor, the third jal rand
+(insn 201, priority 3), through a kind-14 (anti) dependence with insn_cost 1:
+    PRIODBG insn=205 pred=201 kind=14 pred_pri=3 cost=1 contrib=3   (lw v1,gp)
+    PRIODBG insn=211 pred=201 kind=14 pred_pri=3 cost=1 contrib=3   (addiu a2,s4,-K)
+    PRIODBG insn=240 pred=201 kind=14 pred_pri=3 cost=1 contrib=3   (addiu a0,sp,0x10)
+    PRIODBG insn=242 pred=201 kind=14 pred_pri=3 cost=1 contrib=3   (addu a1,zero,zero)
+and the three struct stores 228/231/234 also finish at priority 3. The only insns in the window
+that reach priority 4 are the load's own consumers (206, 208), via insn_cost 2 (sched.c:1497,
+3+2-1=4). So the only C-reachable way to give the a2 base priority 4 without adding an instruction
+is to make it a data consumer of the in-block load -- which it cannot be, because its value is
+(s32)r4 - K and r4 is set outside the loop.
+
+Positional bound on the INSN_LUID term (corroborates s10's calls.c:1880 class kill from the other
+side): the a2 base instruction is necessarily followed, still before the call, by its addu
+consumer and by the s.zero1C store (the callee reads the struct through &s), while expand_call
+emits the hard-register argument moves after every argument expression and every preceding
+statement. INSN_LUID is assigned in emission order, so INSN_LUID(base) <= INSN_LUID(a0 move) - 3
+strictly, for any statement arrangement. s10's measured ceiling (34 against 42/43) is that bound.
+
+Result 1 -- the naming space is closed by LICM. 44 of the 48 enumA variants build 153 instructions,
+23 BELOW the target's 176, and score 42. Any per-half named local for the multiply, the shift or
+the base is single-set, so scan_loop accepts it as a movable (loop.c:705) and hoists the invariant
+base and its chain into the preheader. Only the four fully-inlined spellings keep 176 instructions,
+and they score 15. This reaches s13's conclusion -- a2_offset must stay MULTI-SET -- from a
+completely independent direction.
+
+Result 2 -- the first form in fifteen sessions that moves the a2 base out of the window. The
+base-last association a2_offset = ((u32)(D_800A3418 * M) >> 0xF); a2_offset += (s32)r4 - K;
+emits the pre-call window as
+    3594 addiu a0,sp,16 / 3598 lw v1,0(gp) / 359c move a1,zero / 35a0 sw zero,32(sp) /
+    35a4 sw s6,36(sp) / 35a8 sw s1,28(sp)
+against the target's
+    4DEB4 addiu a0,sp,0x10 / 4DEB8 addu a1,zero,zero / 4DEBC lw v1,gp / 4DEC0 addiu a2,s4,-0xC /
+    4DEC4 sw zero,0x20(sp) / 4DEC8 sw s6,0x24(sp) / 4DECC sw s1,0x1C(sp)
+-- addiu a0,sp,0x10 finally occupies the target's slot 1, which the control (which emits the a2
+base there) never achieves. The cost is that combine reassociates the constant off s4: the base
+pair becomes addiu v0,v0,-12 at 0x35C4 and addu v0,v0,s4 at 0x35C8, where the target has
+addiu a2,s4,-0xC and addu a2,a2,v0. Across all 61 forms measured this session, no spelling
+produced both the late base instruction and the constant attached to s4. Score 15/176 for both
+halves base-last, 8/176 for one half only.
+
+Result 3 -- statement position confirmed byte-inert once more. Staging the multiply-shift through
+the dead existing local a0_offset (sanctioned variable reuse; a0_offset is dead after
+s.zero18 = a0_offset;, so no live range grows and the build stays at 176) scores 23/176 whether
+the a2 base statement precedes or follows the staged value. The identical score for the two orders
+is an independent replication of s6's sched.c:2464 closure of statement placement.
+
+Result 4 -- a second spelling at the floor. a2_offset = (s32)r4; a2_offset -= K; a2_offset +=
+((u32)(D_800A3418 * M) >> 0xF); measures 6/176, byte-identical to the control: combine folds the
+copy and the immediate subtraction into one addiu.
+
+Result 5 -- moving the s.zero10/s.one14/s.ret stores above the a2 chain (so the a2 chain is the
+last thing before the call) is the most expensive store move measured: 32/176 on the control chain
+and 41/176 on the base-last chain.
+
+- [s15] Kill re-audit passes for a sixth consecutive session: fake_ablate reports no FAKE-annotated construct in rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c, and that form plus the control candidate both re-measure 6/176 on HEAD main @ 36291a08.
+
+- [s15] ENUMERATION: 61 spellings, best 6, 2 at the floor. Score histogram: 6 x 2, 8 x 2, 15 x 7, 18 x 1, 23 x 3, 32 x 1, 41 x 1, 42 x 44.
+
+- [s15] 44 of 48 variants in the a2-expression naming cross product build 153 instructions - 23 below the target's 176 - because a named per-half local for the multiply, the shift or the base is single-set and therefore a loop.c movable (loop.c:705).
+
+- [s15] PRIODBG (s13 capture, re-read this session): insns 205, 211, 240 and 242 all take priority 3 from pred=201 (the third jal rand) with cost 1; struct stores 228/231/234 are also priority 3; the only priority-4 insns in the window are the load's consumers 206 and 208.
+
+- [s15] Positional bound on INSN_LUID: the a2 base insn is necessarily followed before the call by its addu consumer and by the s.zero1C store, while expand_call emits the hard-register argument moves last (calls.c:1880), so INSN_LUID(base) is at most INSN_LUID(a0 move) - 3 for any statement arrangement - which is exactly the 34-vs-42/43 ceiling s10 measured.
+
+- [s15] The base-last association emits [addiu a0,sp,16][lw v1,0(gp)][move a1,zero][sw][sw][sw] at 0x3594-0x35A8, putting addiu a0,sp,0x10 in the target's slot-1 position (4DEB4) for the first time; the base pair moves to 0x35C4/0x35C8 as addiu v0,v0,-12 / addu v0,v0,s4, with the constant reassociated off s4 by combine.
+
+- [s15] Staging the multiply-shift through the dead existing local a0_offset adds no instruction (176) and scores 23 whether the base statement precedes or follows it - an independent replication of s6's statement-placement closure (sched.c:2464).
+
+- [s15] A second distinct spelling sits exactly at the floor: a2_offset = (s32)r4; a2_offset -= K; a2_offset += ((u32)(D_800A3418 * M) >> 0xF); measures 6/176, byte-identical to the control.
