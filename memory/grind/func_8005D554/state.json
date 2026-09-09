@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 17,
- "current_modality": "enumerate",
+ "session_count": 18,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 6,
    "modality": "enumerate",
    "headline": "The existing-local borrow quadrant the Judge left open is swept flat: 66 spellings, best 19, none below 6 - the early-birth slot costs +2/+3 insns for every carrier the function contains, and the cont"
+  },
+  {
+   "session": 18,
+   "floor": 6,
+   "modality": "synthesis",
+   "headline": "s13's LICM verdict is corrected: a fresh WRITTEN-ONCE base carrier escapes the loop.c hoist whenever its def-to-use luid gap is <= 3 (measured boundary, 176 insns), and the birthing_insn_p LAUNCH boos"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every carrier form measured so far - the Judge-failed fresh nv/nw and all 66 of s17's existing-local borrows - supplies the carrier's second loop-time set with an ADDED redundant restage statement. The untested shape is one where both of the carrier's loop-time sets are REAL values already in the function, produced by restructuring an existing multi-set local's own chain rather than by adding a statement.",
-   "mechanism": "loop.c:705 rejects the invariant base as a movable when n_times_set > 1 and consec_sets_invariant_p fails (a variant second set is enough); birthing_insn_p (sched.c:2505) then needs reg_n_sets == 1 at sched1, which combine can supply only by deleting a redundant copy. a0_offset already carries two real sets per half (= (s32)r5 - K and += m), so a shared accumulator spanning the a0 and a2 chains could in principle present two real sets at loop time and one at sched1 with no added statement.",
-   "next_probe": "Enumerate ordinary-C rewrites of the a0 and a2 chains as a single shared accumulator (per half and shared across halves), gate every variant on build_insns == 176, and for each survivor capture BB2_SCHED_DEBUG=1 with the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) and read the ADJPRI line for the base insn to see whether birth flips from 0 to 1."
+   "hypothesis": "The gap<=3 non-hoisted cell is newly open and the birth boost fires inside it at 176 instructions, but the boosted base lands next to its accumulate. The untested sub-cell is one where the boosted base's CONSUMER is itself scheduled early, so that 'adjacent to the consumer' coincides with the target's slot 4 - i.e. shapes in which the accumulate (addu a2,a2,v0) is pulled ahead of the three struct stores.",
+   "mechanism": "adjust_priority (sched.c:2584) boosts the base to max_priority, so backward selection takes it one clock after its consumer and emission places it immediately before that consumer. The consumer's own position is set by its priority and LUID; the three stores (priority 3) currently sit between the window head and the chain. Moving the accumulate's selection earlier moves the boosted base with it, without changing the base's own rank.",
+   "next_probe": "Starting from s18/enumB/G1_gap1_both.c, enumerate placements of the three struct stores (s.zero10/s.one14/s.ret) and of the s.zero1C store relative to the chain+accumulate, keeping the base's def-to-use gap at 1-3 so the carrier stays unhoisted; gate every variant on build_insns == 176, disassemble the 0x3594 window for each survivor, and capture BB2_SCHED_DEBUG=1 for the best to read the PICK clocks of the base (223) and its accumulate (226)."
   },
   {
-   "hypothesis": "The object model of D_8009B2E0 / D_8009B388 is still the last untried non-spelling axis. The declaration-pun scan flags candidate.c's p_b2e0 = (u8 *)&D_8009B2E0; and s7 measured a TU-local struct pointer at 10/176, but a HEADER-CANONICAL aggregate declaration - the sanctioned fix at the declaration site - has never been measured on this function.",
-   "mechanism": "The a2 base is addiu a2,s4,-K, and which callee-saved register holds which loop base is decided by allocno priority, which is driven by reg_n_refs. A different declared object model changes the number of references to the pointer locals - and therefore the seats - without changing any statement in the a2 chain.",
-   "next_probe": "Enumerate header-canonical aggregate declarations for the 0x3C-stride particle-template table at D_8009B2E0 and the pair D_8009B388/D_8009B390 (aggregate-merge prong (a) is satisfied by the 0x3C stride and the p_b2ec + stride addressing), applied via an integration handoff for the header edit, and sweep the loop's pointer-local spellings against each. Gate on build_insns == 176 and disassemble the 0x3594 window for every survivor."
+   "hypothesis": "With the LICM escape now costing zero instructions, the same gap<=3 single-set carrier can be applied to the A0 chain as well as the a2 chain, and to the two chains asymmetrically; the half-1-only measurements (7/176 vs 8/176 for both halves) show the two halves are not symmetric, so a per-half mix has never been swept in this cell.",
+   "mechanism": "Each half's a2 base is an independent movable with its own lifetime; the a0 chain's base is already emitted in the target's position, so introducing a boosted carrier there changes the block's ready-list composition at the clocks that decide the a2 window without touching the a2 statements at all.",
+   "next_probe": "Cross the gap-1/2/3 carrier over {a2 half 1, a2 half 2, a0 half 1, a0 half 2} (16 cells) plus the four single-half controls, gate on build_insns == 176, and disassemble every form that scores below 8."
   },
   {
-   "hypothesis": "INSN_PRIORITY 4 for the base insn at 176 instructions has never been reached: every priority attempt so far paid an extra instruction (s8's u32 rb[2] load producer, 32/178).",
-   "mechanism": "priority(insn) is the height to the block end over LOG_LINKS with insn_cost 2 only for a load's data consumer (sched.c:1497). The base's chain is addiu -> addu -> sw, height 3, tying the two expand_call argument moves. Making the base a consumer of an insn already in the block at zero added cost is the only way to reach 4 without an instruction, and the base must stay inside the call's basic block, which s11/s16 show any label-based route forfeits.",
-   "next_probe": "Enumerate spellings in which the base's addiu takes an operand that is already a data consumer of the in-block gp load or of the third rand's return value while remaining arithmetically equal to (s32)r4 - K. Gate on build_insns == 176, then capture BB2_PRIO_DEBUG=1 for each survivor and check whether the base insn's contrib line changes from cost=1 to cost=2."
+   "hypothesis": "The object model of D_8009B2E0 / D_8009B388 remains the last untried non-spelling axis (carried from s17): a HEADER-CANONICAL aggregate declaration for the 0x3C-stride particle-template table has never been measured on this function, and candidate.c still carries the declaration pun p_b2e0 = (u8 *)&D_8009B2E0.",
+   "mechanism": "Which callee-saved register holds which loop base is decided by allocno priority, driven by reg_n_refs; a different declared object model changes the number of references to the pointer locals, and therefore the seats, without changing any statement in the a2 chain.",
+   "next_probe": "Enumerate header-canonical aggregate declarations for the 0x3C-stride table at D_8009B2E0 and the pair D_8009B388/D_8009B390 (aggregate-merge prong (a) satisfied by the 0x3C stride and the p_b2ec + stride addressing), applied through an integration handoff for the header edit, and sweep the loop's pointer-local spellings against each; gate on build_insns == 176."
   }
  ],
  "judge_constraints": [
@@ -129,22 +135,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 2,
-   "statement": "func_80073728 never reads $a2 as an incoming argument - the only $a2 references in its shipped body are mflo writes - so its ABI arity is (a0, a1) and the offset cannot be routed through a third param",
-   "kill_scope": "class",
-   "measured_on": "HEAD main @ 8d3c3235, the shipped callee body; independent of our chassis and of any FAKE construct",
-   "predicate_cite": "asm/funcs/func_80073728.s:194",
-   "result": "Kills the reading that the target's addiu a2,s4,-K sits after the a0/a1 loads because it is a third argument; a2 is a sc"
-  },
-  {
-   "session": 2,
-   "statement": "Sibling main in src/ings.c (COMPLETED-C, floor 0) carries a spelling transplantable onto this chassis.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ 8d3c3235 working tree, source grep",
-   "predicate_cite": "",
-   "result": "src/ings.c shares no global, callee or block with func_8005D554; there is nothing to transplant. Recorded so no later se"
-  },
   {
    "session": 3,
    "statement": "On the s3b chassis, replacing the shared a2_offset with per-half accumulators a2a/a2b and hoisting each half's a2X = (s32)r4 - K to the slot between a0_offset += ... and s.zero18 = a0_offset -- so the",
@@ -608,6 +598,22 @@
    "measured_on": "HEAD main @ fa84454f, candidate.c chassis, control re-measured 6/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "Round B histogram 19 (2 forms), 21 (13), 26 (2), 28 (9), 40 (4). Disassembly of B_v0v3_ret_ctrl at 0x3594: addiu a3,s4,-"
+  },
+  {
+   "session": 18,
+   "statement": "With the birthing boost firing, the gap-1 form emits the a2 base immediately before its own accumulate at the bottom of the window rather than in the target's slot 4, scoring 8/176.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 9a80dc30, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present in any swept form",
+   "predicate_cite": "",
+   "result": "Ours: addiu a0,sp,16 / lw v1,gp / move a1,zero / sw zero,0x20 / sw s6,0x24 / sw s1,0x1C / xor / chain / addiu v0,s4,-12 "
+  },
+  {
+   "session": 18,
+   "statement": "Holding the base at the control luid slot with gap 1 by making its single use an immediately following copy into a2_offset does not keep it in the loop: all four positions of that shape measure 54/178",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 9a80dc30, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All four single-copy shapes: 54/178 both halves, 35/178 half 1. The double-copy variant that blocks the propagation by a"
   }
  ],
  "ladder_skip": 0,

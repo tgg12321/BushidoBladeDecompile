@@ -2160,3 +2160,99 @@ R3. (unchanged) INSN_PRIORITY 4 for the base insn at 176 instructions: make the 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ fa84454f, candidate.c chassis, control re-measured 6/176; no FAKE constructs present.
+
+## s18 (synthesis, 2026-09-09, HEAD main @ 9a80dc30) — H43-H46
+
+**H43 — a fresh WRITTEN-ONCE base carrier for `(s32)r4 - K` escapes the loop.c hoist whenever
+its def-to-last-use luid gap is at most 3, at zero instruction cost.** CONFIRMED.
+- mechanism: `loop.c:597` bcopies `n_times_set` into `n_times_used`, so `m->savings`
+  (`loop.c:793`) is the STATIC SET COUNT; for a single-set carrier savings == 1 and the move gate
+  `threshold * savings * m->lifetime >= insn_count` (`loop.c:1631`) with threshold 29 (loop.c:532,
+  loop_has_call) and insn_count 98 reduces to `lifetime >= 4`, where `m->lifetime` is the luid gap
+  between the carrier's def and its last use (`loop.c:790-792`).
+- probe: `tmp/grind/func_8005D554/s18/genB.py` -> `s18/enumB/` (14 forms, `enumB.json`), gap 1/2/3/4
+  and two base-first controls, each for both halves and half 1 alone.
+- result: gap 1, 2, 3 -> **176 build instructions, 8/176 (both) and 7/176 (half 1)**, base NOT
+  hoisted, emitted in-loop as `addiu v0,s4,-12` (the target's operand form). gap 4 and base-first
+  -> **178 instructions, 54/178 (both) and 36/178 (half 1)**, base hoisted to the preheader.
+  Banked: `rejected/fresh-single-set-base-gap1-birth-boost-fires-scores-8.c` and
+  `rejected/fresh-single-set-base-gap4-licm-hoisted-scores-54.c`.
+
+**H44 — `birthing_insn_p` gives the a2 base the LAUNCH boost for an ordinary once-written C local,
+with no second write and no multi-set trick.** CONFIRMED.
+- mechanism: `birthing_insn_p` (sched.c:2505) needs only a SET whose REG dest is in
+  `bb_live_regs` with `reg_n_sets == 1`; `adjust_priority` (sched.c:2584) then raises the insn to
+  `max_priority`. H43's carrier satisfies both while surviving to sched1 because loop.c does not
+  hoist it and neither loop.c's `reg_single_usage` fold (loop.c:735-760, `validate_replace_rtx`
+  fails for `(plus s4 -K)` substituted into the accumulate) nor combine erases it.
+- probe: instrumented cc1 (`tools/gcc-2.7.2/cc1`) with `BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1` on the
+  gap-1 form, harness `s18/dump.sh`, capture `s18/dumps/g1/sched.log` (control in `dumps/ctrl/`).
+- result: `SCHEDDBG ADJPRI insn=223 deaths=0 birth=1 maxpri=2130706433 pri=3` followed by
+  `SCHEDDBG PICK clock=55 picked=223 (pri=2130706433 luid=36)`. This corrects s13's conclusion that
+  the boost required the Judge-FAILed two-source-set carrier.
+
+**H45 — with the boost firing, the base is emitted at the BOTTOM of the window (immediately before
+its accumulate), not in the target's slot 4.** KILLED (instance).
+- mechanism: `max_priority` makes the base the highest-ranked ready insn, so backward selection
+  takes it one clock after its own consumer (`addu`, 226 at clock 54; base 223 at clock 55) and
+  emission, being reverse selection order, places it adjacent to that consumer. The base's LUID is
+  36 — after the multiply chain — which the gap<=3 requirement forces, because the accumulate
+  cannot precede the chain it consumes.
+- probe: disassembly of `s18/enumB/G1_gap1_both.c` (`tmp/grind/func_8005D554/s18/g1.txt`,
+  half-1 window 0x3594-0x35c8) against the target at 4DEB4-4DEEC.
+- result: window `a0 / lw / a1 / sw x3 / xor / chain / addiu v0,s4,-12 / addu` vs target
+  `a0 / a1 / lw / addiu a2,s4,-0xC / sw x3 / xor / chain / addu`. 8/176. The form does gain the
+  target's `addiu a0,sp,0x10` in slot 1, which the control never produces.
+- kill_scope: instance. measured_on: HEAD main @ 9a80dc30, memory/grind/func_8005D554/candidate.c
+  chassis, control re-measured 6/176; no FAKE constructs present in any swept form.
+
+**H46 — holding the base at the CONTROL luid slot with gap 1 by making its single use an adjacent
+copy into `a2_offset` keeps it in the loop.** KILLED (instance).
+- mechanism intended: `b1 = (s32)r4 - K; a2_offset = b1; a2_offset += chain;` puts the carrier's
+  only use one insn after its def, so `m->lifetime` is 1 and loop.c:1631 declines the move, while
+  the base insn keeps the control's early LUID and the copy is register-allocator-coalescable.
+- probe: `s18/genC.py` -> `s18/enumC/` (10 forms: copy adjacent, copy after 1 and 2 stores, stores
+  hoisted before the accumulate, and a double-copy variant), both halves and half 1 alone.
+- result: all four single-copy shapes measure **54/178 (both) and 35/178 (half 1)** — the hoisted
+  signature — because cse runs before loop and copy-propagates `a2_offset = b1` into the
+  accumulate, moving `regno_last_uid[b1]` past the whole multiply chain and restoring gap >= 4.
+  The double-copy variant that blocks the propagation by also storing `b1` into `s.zero1C` costs
+  instructions: 32/180. Banked:
+  `rejected/early-base-adjacent-copy-cse-propagates-then-hoisted-scores-54.c`,
+  `rejected/early-base-double-copy-second-use-scores-32.c`.
+- kill_scope: instance. measured_on: HEAD main @ 9a80dc30, candidate.c chassis, control
+  re-measured 6/176; no FAKE constructs present.
+
+## [s18] A fresh, written-once base carrier for the invariant (s32)r4 - K is NOT hoisted by loop.c when its def-to-last-use luid gap is 1, 2 or 3, and it costs no instructions: the form builds 176 instructions with the base emitted in-loop as addiu <reg>,s4,-12.
+- mechanism: loop.c:597 bcopies n_times_set into n_times_used, so m->savings (loop.c:793) is the carrier's STATIC SET COUNT, not its use count; for any single-set carrier savings == 1 and the move gate threshold * savings * m->lifetime >= insn_count (loop.c:1631), with threshold 29 (loop.c:532, loop_has_call) and insn_count 98, reduces to lifetime >= 4, where m->lifetime is the luid gap between the carrier's def and its last use (loop.c:790-792).
+- probe: tmp/grind/func_8005D554/s18/genB.py -> s18/enumB/ (14 forms, sweep tmp/grind/func_8005D554/s18/enumB.json): the control a2 chain kept verbatim, a fresh b1/b2 introduced, and the def-to-use gap walked over 1/2/3/4 plus two base-first controls, each for both halves and for half 1 alone; every form gated on build_insns.
+- result: gap 1, 2, 3 -> 176 build instructions, 8/176 (both halves) and 7/176 (half 1), base NOT hoisted; gap 4 and base-first -> 178 instructions, 54/178 (both) and 36/178 (half 1), base hoisted to the preheader. The 176->178 and 8->54 discontinuity sits exactly between gap 3 and gap 4, where 29*3=87 < 98 <= 116=29*4. This corrects s13's reading that the invariant base is a movable and is hoisted in every single-set form: that was an instance fact about the gap>=4 spellings s13 measured.
+- verdict: CONFIRMED
+
+## [s18] birthing_insn_p gives the a2 base insn the LAUNCH boost (priority raised to max_priority) for an ordinary once-written C local, with no second write and no combine-deleted restage, at 176 build instructions.
+- mechanism: birthing_insn_p (sched.c:2505) requires only a SET whose REG dest is in bb_live_regs with reg_n_sets == 1; adjust_priority (sched.c:2584) then raises INSN_PRIORITY to max_priority. The gap<=3 carrier satisfies both because loop.c does not hoist it and neither loop.c's reg_single_usage fold (loop.c:735-760, where validate_replace_rtx fails when (plus s4 -K) is substituted into the accumulate) nor combine erases its def.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1 on the gap-1 form, harness tmp/grind/func_8005D554/s18/dump.sh, capture tmp/grind/func_8005D554/s18/dumps/g1/sched.log (control capture in dumps/ctrl/).
+- result: sched.log line 55885: 'SCHEDDBG ADJPRI insn=223 deaths=0 birth=1 maxpri=2130706433 pri=3' followed by 'SCHEDDBG PICK clock=55 picked=223 (pri=2130706433 luid=36)'. Insn 223 is the a2 base, emitted as addiu v0,s4,-12 at 0x35c4 with the target's operand form. s13's conclusion that the boost was reachable only through the Judge-FAILed two-source-set carrier is corrected.
+- verdict: CONFIRMED
+
+## [s18] With the birthing boost firing, the gap-1 form emits the a2 base immediately before its own accumulate at the bottom of the window rather than in the target's slot 4, scoring 8/176.
+- mechanism: max_priority makes the base the highest-ranked ready insn, so backward selection takes it one clock after its consumer (addu 226 at clock 54, base 223 at clock 55), and emission being reverse selection order places it adjacent to that consumer. The base's LUID is 36, after the multiply chain, which gap<=3 forces because the accumulate cannot precede the chain it consumes.
+- probe: Disassembly of s18/enumB/G1_gap1_both.c (tmp/grind/func_8005D554/s18/g1.txt, half-1 window 0x3594-0x35c8) compared against the target at asm/funcs/func_8005D554.s 4DEB4-4DEEC.
+- result: Ours: addiu a0,sp,16 / lw v1,gp / move a1,zero / sw zero,0x20 / sw s6,0x24 / sw s1,0x1C / xor / chain / addiu v0,s4,-12 / addu. Target: addiu a0,sp,0x10 / addu a1,zero,zero / lw v1,gp / addiu a2,s4,-0xC / the three sw / xor / chain / addu. 8/176. The form is the first in this ledger to place addiu a0,sp,0x10 in window slot 1, the target's slot; its remaining errors are the lw/a1 transposition and the base's position after the chain. Banked as rejected/fresh-single-set-base-gap1-birth-boost-fires-scores-8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 9a80dc30, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present in any swept form
+
+## [s18] Holding the base at the control luid slot with gap 1 by making its single use an immediately following copy into a2_offset does not keep it in the loop: all four positions of that shape measure 54/178, the hoisted signature.
+- mechanism: Intended: b1 = (s32)r4 - K; a2_offset = b1; a2_offset += chain; puts the carrier's only use one insn after its def so m->lifetime is 1 and loop.c:1631 declines the move, while the base insn keeps the control's early LUID and the copy is coalescable. What actually happens is that cse runs before loop and copy-propagates a2_offset = b1 into the accumulate, so regno_last_uid[b1] moves past the whole multiply chain and the gap returns to >= 4.
+- probe: tmp/grind/func_8005D554/s18/genC.py -> s18/enumC/ (10 forms: copy adjacent, copy after one and after two stores, stores hoisted ahead of the accumulate, and a double-copy variant), both halves and half 1 alone.
+- result: All four single-copy shapes: 54/178 both halves, 35/178 half 1. The double-copy variant that blocks the propagation by also storing b1 into s.zero1C costs instructions: 32/180. Banked as rejected/early-base-adjacent-copy-cse-propagates-then-hoisted-scores-54.c and rejected/early-base-double-copy-second-use-scores-32.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 9a80dc30, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present
+
+## [s18] Kill re-audit: the three closest banked forms reproduce their banked scores on the current chassis and carry no FAKE-annotated construct.
+- mechanism: Mandated flat-floor re-audit: an instance kill is only valid on the chassis and FAKE state it was measured under, so the closest-to-target banked forms are re-measured before any new probe.
+- probe: tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c, plus a three-form sweep (tmp/grind/func_8005D554/s18/reaudit/) of candidate.c, rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c and rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c.
+- result: fake_ablate: 'no FAKE-annotated constructs found; nothing to ablate'. Sweep: CTRL 6/176, the score-6 form 6/176, the score-19 form 19/176 - all exactly as banked. Ninth consecutive passing re-audit; the chassis is unchanged.
+- verdict: CONFIRMED

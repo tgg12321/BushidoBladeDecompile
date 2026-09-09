@@ -1858,3 +1858,134 @@ existing-local borrow reaches 176 instructions AND a surviving single-set base i
 - [s17] loop.c:695-760 read end to end: a candidate with n_times_set == 2 is STILL a movable when consec_sets_invariant_p holds for both sets, so a two-set carrier escapes LICM only because its second set is variant (the accumulate) or is the restage - the escape does not follow from the set count alone.
 
 - [s17] src/ and include/ are unmodified at end of session; candidate.c re-measures 6/176 with the new s17 header paragraph in place (tmp/grind/func_8005D554/s17/final.json).
+
+## s18 (synthesis, 2026-09-09, HEAD main @ 9a80dc30) — the LICM hoist of a single-set carrier is NOT a class fact, and the birthing boost is reachable in ordinary C at 176 instructions
+
+Floor RE-MEASURED at 6/176 on `memory/grind/func_8005D554/candidate.c`.  Kill re-audit passes
+for a NINTH consecutive session: `tools/fake_ablate.py` finds no FAKE-annotated construct in
+`rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c`, and the three banked forms
+re-measure exactly as banked on this chassis
+(`tmp/grind/func_8005D554/s18/reaudit.json`): CTRL 6/176,
+`a2-statements-at-maximal-pre-call-birth-point-scores-6.c` 6/176,
+`existing-local-borrow-selfacc-c20-restage-scores-19.c` 19/176.
+
+### 1. The loop.c hoist gate re-read: `savings` is a SET count, not a use count
+
+`loop.c:597` is `bcopy ((char *) n_times_set, (char *) n_times_used, nregs * sizeof (short));`
+— `n_times_used` is a verbatim COPY of `n_times_set`.  Therefore `m->savings = n_times_used[regno]`
+(`loop.c:793`) is the carrier's STATIC SET COUNT, and for ANY single-set carrier savings == 1.
+With `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 29` and `insn_count = 98`
+(both measured in s1), the move gate `threshold * savings * m->lifetime >= insn_count`
+(`loop.c:1631`) collapses to a pure DISTANCE test:
+
+    hoisted  <=>  lifetime >= 4      (29*3 = 87 < 98 <= 116 = 29*4)
+
+with `m->lifetime = uid_luid[regno_last_uid[regno]] - uid_luid[regno_first_uid[regno]]`
+(`loop.c:790-792`) — i.e. the luid gap between the carrier's def and its last use.
+
+### 2. The boundary MEASURED, and it is exactly where the arithmetic puts it
+
+Round B (`tmp/grind/func_8005D554/s18/genB.py`, `enumB/`, sweep `enumB.json`) keeps the control's
+a2 chain verbatim and introduces ONLY a fresh, WRITTEN-ONCE base carrier `b1`/`b2`, walking the
+def->use luid gap.  The a2 chain is computed into `a2_offset` first, then the base, then
+`a2_offset += b1`, with 0-3 struct stores inserted between the base and the accumulate:
+
+| form | gap | score / insns (both halves) | (half 1 only) |
+|---|---|---|---|
+| G1 `a2_offset = chain; b1 = base; a2_offset += b1;`        | 1 | **8 / 176** | 7 / 176 |
+| G1b same with `a2_offset = b1 + a2_offset;`                | 1 | 8 / 176 | 7 / 176 |
+| G2 one store between base and accumulate                   | 2 | 8 / 176 | 7 / 176 |
+| G3 two stores between                                      | 3 | 8 / 176 | 7 / 176 |
+| G4 three stores between                                    | 4 | 54 / 178 | 36 / 178 |
+| G5 `b1 = base; a2_offset = chain; a2_offset += b1;`        | ~8 | 54 / 178 | 36 / 178 |
+| G6 same with the sum spelling                              | ~8 | 54 / 178 | 36 / 178 |
+
+The step from gap 3 to gap 4 is the whole 176 -> 178 / 8 -> 54 discontinuity, exactly as
+`loop.c:1631` predicts.  **s13's reading — "the invariant `(s32)r4 - K` is always a movable and
+is hoisted (54/... in every measured single-set form)" — is therefore an INSTANCE fact about the
+gap>=4 spellings s13 happened to measure, not a property of single-set carriers.**  A fresh
+single-set carrier for the a2 base is reachable at 176 instructions in ordinary C.
+
+### 3. `birthing_insn_p` FIRES for that carrier — no multi-write trick required
+
+Instrumented-cc1 capture for G1 (`tmp/grind/func_8005D554/s18/dumps/g1/sched.log`, block region
+around line 55885; harness `s18/dump.sh`, control capture in `dumps/ctrl/`):
+
+    SCHEDDBG ADJPRI insn=223 deaths=0 birth=1 maxpri=2130706433 pri=3
+    SCHEDDBG PICK   clock=55 picked=223 (pri=2130706433 luid=36)
+
+Insn 223 is the a2 base (`addiu v0,s4,-12` in the G1 disassembly at 0x35c4 — the TARGET's operand
+form, with the constant on `s4`).  Its dest is the fresh single-set carrier, so `reg_n_sets == 1`,
+the dest is live, `birthing_insn_p` (sched.c:2505) holds and `adjust_priority` (sched.c:2584)
+raises it to `max_priority`.  s13 recorded that this boost was only reachable through the
+Judge-FAILed two-source-set carrier whose second write combine deletes; that is now false.
+The whole multiply chain (insns 214-220) is boosted the same way for the same reason.
+
+### 4. Why the boost still does not match: the boosted base emits next to its consumer
+
+Because the boost is `max_priority`, the base is selected the moment it becomes ready — clock 55,
+one clock after its consumer `addu` (226, clock 54) — so backward selection emits it IMMEDIATELY
+BEFORE the `addu`, at the bottom of the window.  G1's half-1 window (0x3594-0x35c8):
+
+    addiu a0,sp,16 / lw v1,gp / move a1,zero / sw zero,0x20 / sw s6,0x24 / sw s1,0x1C /
+    xor / sll / addu / sll / addu / srl a2 / addiu v0,s4,-12 / addu a2,a2,v0
+
+versus the target (4DEB4-4DEEC):
+
+    addiu a0,sp,0x10 / addu a1,zero,zero / lw v1,gp / addiu a2,s4,-0xC /
+    sw zero,0x20 / sw s6,0x24 / sw s1,0x1C / xor / sll / addu / sll / addu / srl / addu a2,a2,v0
+
+Two residual facts fall out.  (a) G1 gets `addiu a0,sp,0x10` into window slot 1 — the target's
+slot — which the control never does; the remaining window error is `lw`/`a1` transposed and the
+base sitting after the chain instead of in slot 4.  (b) The base's LUID is now 36, i.e. AFTER the
+chain, and that is FORCED: gap<=3 means the base must be adjacent to the accumulate, and the
+accumulate cannot precede the chain it consumes.  Early base + gap<=3 is the cell the target
+occupies, and it is not reachable through this shape.
+
+### 5. Round C: an early base whose single use is an adjacent COPY is hoisted anyway (cse)
+
+Round C (`s18/genC.py`, `enumC/`) tried to keep the base at the CONTROL luid slot while holding
+the gap at 1, by making its single use an immediately-following copy
+(`b1 = (s32)r4 - K; a2_offset = b1; a2_offset += chain;`) in four positions.  All four measure
+**54/178** for both halves (35/178 half 1) — the hoisted signature.  cse runs before loop and
+copy-propagates `a2_offset = b1` into the accumulate, so `regno_last_uid[b1]` moves past the whole
+multiply chain and the gap goes back over 4.  A double-copy variant that also stores `b1` into
+`s.zero1C` before the accumulate (H5) costs instructions instead: 32/180.
+
+- [s18] Kill re-audit passes for a NINTH consecutive session; control 6/176, rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c 6/176, rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c 19/176, and fake_ablate finds no FAKE constructs in the closest banked forms.
+
+- [s18] loop.c:597 bcopies n_times_set into n_times_used, so m->savings (loop.c:793) is the carrier's STATIC SET COUNT, not its use count. For any single-set carrier savings == 1 and the loop.c:1631 move gate collapses to `lifetime >= 4` with threshold 29 and insn_count 98.
+
+- [s18] MEASURED BOUNDARY (14 forms, s18/enumB): a fresh WRITTEN-ONCE base carrier whose def-to-last-use luid gap is 1, 2 or 3 builds 176 instructions and is NOT hoisted (8/176 both halves, 7/176 half 1); at gap 4 and beyond it is hoisted and costs +2 (54/178 both, 36/178 half 1). The discontinuity is exactly where loop.c:1631 puts it.
+
+- [s18] CORRECTION to s13: "the invariant (s32)r4 - K is always a movable and is hoisted in every measured single-set form" is an INSTANCE fact about gap>=4 spellings, not a property of single-set carriers. The LICM escape for a single-set carrier costs zero instructions and needs no label, no maybe_never and no second write.
+
+- [s18] MEASURED IN THE COMPILER (s18/dumps/g1/sched.log:55885): for the gap-1 form the a2 base insn 223 carries `ADJPRI deaths=0 birth=1 maxpri=2130706433` and is picked at clock 55 with the boosted priority. birthing_insn_p (sched.c:2505) therefore fires for an ordinary once-written C local at 176 instructions - the Judge-FAILed two-source-set carrier is NOT required to reach the boost.
+
+- [s18] The boosted base is selected one clock after its own consumer and is therefore emitted immediately before the accumulate, at the BOTTOM of the window (G1 half-1 window at 0x3594: a0 / lw / a1 / sw x3 / xor / chain / addiu v0,s4,-12 / addu). The target emits the base in slot 4, ahead of the three stores. Boost placement and base LUID are coupled: gap<=3 forces the base after the chain.
+
+- [s18] G1 is the first measured form that puts `addiu a0,sp,0x10` in window slot 1, the target's slot; its remaining window error is the lw/a1 transposition plus the base's position after the chain.
+
+- [s18] MEASURED: an early base whose single use is an adjacent copy (`b1 = base; a2_offset = b1; a2_offset += chain;`) is hoisted anyway - 54/178 in all four positions - because cse copy-propagates the copy before loop runs and the carrier's last use moves past the chain. A second copy into s.zero1C to block the propagation costs instructions (32/180).
+
+- [s18] Round A of this session (a named local for the multiply result) was INVALID: the generator's declaration anchor did not match (`s32 *base_offset;`, not `s32 base_offset;`), so b1/m1 were never declared and the 42/153 and 66/162 numbers it produced are build failures, not measurements. Rounds B and C were re-run with the anchor fixed and are the valid data.
+
+- [s18] loop.c:597 bcopies n_times_set into n_times_used, so m->savings (loop.c:793) is the carrier's STATIC SET COUNT and equals 1 for every single-set carrier; the loop.c:1631 move gate therefore collapses to lifetime >= 4 with threshold 29 and insn_count 98.
+
+- [s18] MEASURED BOUNDARY: a fresh written-once a2 base carrier with def-to-last-use luid gap 1, 2 or 3 builds 176 instructions and is not hoisted (8/176 both halves, 7/176 half 1); at gap 4 and beyond it is hoisted and costs +2 (54/178 both, 36/178 half 1).
+
+- [s18] CORRECTION to s13: 'the invariant (s32)r4 - K is always a movable and is hoisted in every measured single-set form' is an instance fact about gap>=4 spellings, not a property of single-set carriers. The LICM escape costs zero instructions and needs no label, no maybe_never and no second write.
+
+- [s18] MEASURED IN THE COMPILER (tmp/grind/func_8005D554/s18/dumps/g1/sched.log:55885): the gap-1 form's a2 base insn 223 carries ADJPRI deaths=0 birth=1 maxpri=2130706433 and is picked at clock 55 with the boosted priority, so birthing_insn_p (sched.c:2505) fires for an ordinary once-written C local at 176 instructions.
+
+- [s18] The boosted base is selected one clock after its own consumer and is therefore emitted immediately before the accumulate, at the bottom of the window; gap<=3 forces the base's LUID after the multiply chain, so boost placement and base LUID are coupled.
+
+- [s18] G1 (gap 1) is the first form in this ledger that puts addiu a0,sp,0x10 into window slot 1, the target's slot; its remaining window error is the lw/a1 transposition plus the base after the chain.
+
+- [s18] An early base whose single use is an adjacent copy is hoisted anyway (54/178 in all four positions) because cse copy-propagates the copy before loop runs; blocking the propagation with a second copy into s.zero1C costs instructions (32/180).
+
+- [s18] Round A of this session (a named local for the multiply result) was INVALID and must not be cited: the generator's declaration anchor did not match (src declares s32 *base_offset, not s32 base_offset), so the carriers were never declared and the 42/153 and 66/162 numbers are build failures. Rounds B and C were re-run with the anchor fixed and are the valid data.
+
+- [s18] Kill re-audit passes for a ninth consecutive session: control 6/176, rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c 6/176, rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c 19/176, no FAKE-annotated constructs in the closest banked forms.
+
+- [s18] src/ and include/ are unmodified at end of session; every measurement went through tools/sweep_variants.py or s18/dump.sh, which restores src/text1b.c (git status clean).
