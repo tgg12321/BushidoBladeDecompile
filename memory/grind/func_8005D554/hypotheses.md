@@ -1509,3 +1509,105 @@ PROBE: hand compile via `tmp/grind/func_8005D554/s9/cc.sh` -> `text1b.c:2769: pa
 - probe: Grepped asm/funcs/func_80073728.s for uses of $a0/$a1/$a2.
 - result: `addu $s2, $a0, $zero` (line 4) and `addu $s6, $a1, $zero` (line 17) are the only entry reads of argument registers; the first appearance of $a2 is `mflo $a2` (line 194), a write.
 - verdict: CONFIRMED
+
+## s11 (rederive, 2026-09-09, HEAD main @ e4c60089) — control re-measured 6/176
+
+### Kill re-audit (mandated: floor flat >= 3 sessions)
+- `python3 tools/fake_ablate.py --func func_8005D554 --file text1b --candidate
+  memory/grind/func_8005D554/rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c`
+  → "no FAKE-annotated constructs found; nothing to ablate".  The closest-to-target banked form
+  (s10's maximal pre-call birth point, 6/176) carries no FAKE carrier, so its inert verdict was
+  not measured behind one.  Control body re-applied to src/text1b.c and re-measured: **6/176**,
+  build_insns 176 == target_insns 176.  Chassis unchanged from s10.
+
+### H32 — the unspent in-file sibling func_8005FA98 (KILLED, instance)
+- statement: Transplanting the store order of the matched in-file sibling func_8005FA98
+  (src/text1b.c:2710 — same S46C type, same callee func_80073728, two back-to-back calls with a
+  re-used stack struct) onto the candidate chassis scores 60/180 on this chassis.
+- mechanism: 8005FA98 stores c20,c24,p0,byte28,zero1C,zero18,zero10,one14,p1,ret — zero1C early
+  and ret last, unlike both our chassis (zero1C last) and the s8-spent sibling func_8005D46C
+  (zero1C before zero18).  Preserving the rand() sequence forces all three rand calls and both
+  offset computations ahead of the ten stores; half 2's p0 store must stay before its rands
+  because it READS D_800A3418.
+- probe: `tmp/grind/func_8005D554/s11/vB_sibling_8005FA98_order.c`, applied to src/text1b.c,
+  `sandbox func_8005D554 --disable all`.
+- result: **60/180** (+4 insns).  a0_offset and a2_offset are simultaneously live across a rand
+  call, so the allocator needs two extra callee-saved seats and the frame/prologue grows.  The
+  third and last structural sibling in this file is now SPENT (8005D46C at s8, 8005FA98 here).
+- verdict: KILLED (instance) — banked at
+  rejected/sibling-8005FA98-store-order-all-rands-first-scores-60.c
+
+### H33 — frontier item 1: pointer local used ONLY at the call argument (KILLED, instance)
+- statement: Declaring `S46C *ps;`, assigning `ps = &s;` in the loop preheader and passing
+  `func_80073728((s32)ps, 0)` while leaving every field store spelled `s.field` scores 21/179.
+- mechanism: s10's frontier hoped that giving the first argument a pseudo producer would turn
+  expand_call's hard-register move into a coalescable pseudo-to-hard-reg copy (calls.c:1880
+  always emits the move last, but WHAT it copies is source-determined), so that the insn holding
+  LUID 42 would vanish before sched2 while still having occupied that LUID during sched1.
+- probe: `tmp/grind/func_8005D554/s11/vC_ps_call_site_only.c` (distinct from the banked
+  struct-via-pointer-local-scores-60.c, which routed EVERY field access through ps).
+- result: **21/179** (+3 insns).  ps is live across both calls, so it takes a callee-saved seat;
+  the preheader gains `addiu ps,sp,0x10`; and because ps is still live at each call the copy
+  `a0 = ps` is NOT coalesced away — both `move a0,ps` insns survive in addition to the hoisted
+  addiu.  The coalescing premise of the frontier item does not hold for a value that is live at
+  more than one call site.
+- verdict: KILLED (instance) — banked at
+  rejected/ps-pointer-local-call-argument-only-scores-21.c
+
+### H34 — frontier item 3: splitting the loop body into more basic blocks (KILLED, instance)
+- statement: Respelling half 2's `s.p0 = (u8 *)base_offset + (D_800A3418 & 1) * 0xC` as a real
+  if/else splits the loop body into four basic blocks at a cost of ONE instruction (53/177) and
+  leaves the residual rotation byte-identical in BOTH halves.
+- mechanism: schedule_block operates per basic block (schedule_insns' block loop, sched.c:4937),
+  so both the LUID numbering and the ready-list contents are block-local; s10's frontier hoped a
+  different block shape would change the clock-64 window.
+- probe: `tmp/grind/func_8005D554/s11/vF_half2_block_split.c`; emitted code disassembled to
+  `tmp/grind/func_8005D554/s11/fn.txt`.
+- result: **53/177**.  fn.txt:90 and fn.txt:136 show both windows as
+  `addiu a2,s4,-K` / `addiu a0,sp,0x10` / `lw v1,0(gp)` / `move a1,zero` — the control's
+  rotation exactly.  The if/else JOIN dominates the entire a2 chain and the call, so the call's
+  block still contains all four window insns in the same relative order.  Note the useful
+  by-product: a real two-armed branch here costs only +1 insn, so block shape is cheap — it is
+  simply not a lever on this window.  Structural consequence (not itself a measurement): the a2
+  base is a program-order predecessor of the call, so any block boundary placed between them
+  puts the base in a PREDECESSOR block, and cross-block emission order follows program order —
+  the base would be emitted BEFORE the argument setup, which is the side the control already has.
+- verdict: KILLED (instance) — banked at
+  rejected/half2-p0-branch-block-split-scores-53.c
+
+### H35 — frontier item 2: sched2 as an escape from the sched1 LUID bound (analysis, not a probe)
+- statement: For the four-insn window whose INSN_PRIORITY, last-scheduled class and
+  potential_hazard are all measured tied (s7/s9/s10), rank_for_schedule's final tie-break
+  `return INSN_LUID (tmp) - INSN_LUID (tmp2);` (sched.c:2464) is a STABLE-SORT tie-break, and
+  sched2 recomputes INSN_LUID from the current insn chain (sched.c:2198).  So for a tied group
+  sched2's output order equals its input order, and the only sched1 emission order whose sched2
+  output is the target order 240,242,205,211 is that order itself.
+- status: NOT measured this session — recorded as the reasoning that de-prioritises the s10
+  frontier item 2 sched_solver inversion, not as a kill.  s9 measured sched2 as a no-op on the
+  control, which is the one data point consistent with it.  A future session that wants to spend
+  the inversion should first check whether post-reload physical-register anti-deps break the
+  priority tie in sched2 (they are the one term s7/s9/s10 measured only PRE-reload).
+
+## [s11] Transplanting the store order of the previously unnamed in-file sibling func_8005FA98 (src/text1b.c:2710 - matched, same S46C, same callee func_80073728, same re-used stack struct) onto the candidate chassis scores 60/180.
+- mechanism: func_8005FA98 stores c20,c24,p0,byte28,zero1C,zero18,zero10,one14,p1,ret - zero1C early and ret last, unlike both our chassis (zero1C last) and the s8-spent sibling func_8005D46C (zero1C before zero18). Preserving the rand() sequence forces all three rand calls and both offset computations ahead of the ten stores, so a0_offset and a2_offset are live across a rand call simultaneously and the allocator needs two extra callee-saved seats.
+- probe: tmp/grind/func_8005D554/s11/vB_sibling_8005FA98_order.c applied to src/text1b.c, sandbox func_8005D554 --disable all.
+- result: 60/180 (+4 instructions vs the 6/176 control). All three in-file S46C siblings are now spent: func_8005D46C (s8, 28/178), func_8005FA98 (s11, 60/180), main in src/ings.c (s10). Banked at rejected/sibling-8005FA98-store-order-all-rands-first-scores-60.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s11] A pointer local S46C *ps = &s; hoisted to the loop preheader and used ONLY as the first call argument, with every field store left spelled s.field, scores 21/179.
+- mechanism: s10's frontier item 1: calls.c:1880 always emits the hard-register argument move last, but WHAT it copies is source-determined, so a pseudo producer for the first argument was expected to make a0 = pseudo a coalescable copy that vanishes before sched2 while still having occupied LUID 42 during sched1.
+- probe: tmp/grind/func_8005D554/s11/vC_ps_call_site_only.c - distinct from the banked struct-via-pointer-local-scores-60.c, which routed every field access through ps.
+- result: 21/179 (+3 instructions). ps is live at BOTH call sites, so it takes a callee-saved seat, the preheader gains addiu ps,sp,0x10, and neither move a0,ps is coalesced away. The coalescing premise does not hold for a value live at more than one call. Banked at rejected/ps-pointer-local-call-argument-only-scores-21.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
+
+## [s11] Respelling half 2's s.p0 = (u8 *)base_offset + (D_800A3418 & 1) * 0xC as a real if/else splits the loop body into four basic blocks for one extra instruction (53/177) and leaves the emitted window rotation byte-identical in both halves.
+- mechanism: s10's frontier item 3: schedule_block operates per basic block (schedule_insns' block loop, sched.c:4937), so LUID numbering and ready-list contents are block-local and a different block shape was expected to change the clock-64 window.
+- probe: tmp/grind/func_8005D554/s11/vF_half2_block_split.c; emitted code disassembled to tmp/grind/func_8005D554/s11/fn.txt.
+- result: 53/177. fn.txt:90 and fn.txt:136 both show addiu a2,s4,-K / addiu a0,sp,0x10 / lw v1,0(gp) / move a1,zero - the control's rotation exactly. The if/else join dominates the whole a2 chain and the call, so the call's block still holds all four window insns in the same relative order. Useful by-product: a two-armed branch costs only +1 insn here, so block shape is cheap on this chassis. Banked at rejected/half2-p0-branch-block-split-scores-53.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.

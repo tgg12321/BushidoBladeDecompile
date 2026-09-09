@@ -1303,3 +1303,48 @@ it is in, not how the a2 value is spelled.
 - [s10] greg for func_8005D554: 18 pseudos to allocate, 18 dispositions, no reload insertions; only `Spilling reg 7` for insn 133, outside both windows.
 
 - [s10] func_80073728 reads only $a0 and $a1; $a2 is never read before being written, so the callee is two-argument and the s8 three-argument reading is retired.
+
+## s11 (rederive, 2026-09-09, HEAD main @ e4c60089)
+
+- Control (memory/grind/func_8005D554/candidate.c applied to src/text1b.c) re-measures
+  **6/176**, build_insns == target_insns == 176.  Chassis identical to s10.
+- Kill re-audit: `tools/fake_ablate.py` on the closest banked form
+  (rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c) reports no FAKE-annotated
+  construct, so that inert verdict was not measured behind a carrier.
+- **src/text1b.c holds a THIRD S46C sibling that no prior session named: func_8005FA98
+  (text1b.c:2710).**  It is matched, uses the same S46C, calls the same func_80073728 twice with
+  the same re-used stack struct, and stores the fields in the order
+  c20, c24, p0, byte28, zero1C, zero18, zero10, one14, p1, ret.  That order is different from
+  both our chassis and func_8005D46C's.  Transplanted (rand sequence preserved) it scores
+  **60/180**.  All three in-file S46C siblings are now spent: func_8005D46C (s8, 28/178),
+  func_8005FA98 (s11, 60/180), and main in src/ings.c (s10).
+- Frontier item 1 (s10) measured in its narrow form: pointer local used ONLY as the first call
+  argument, field stores left direct → **21/179**.  The coalescing premise fails because ps is
+  live at BOTH call sites, so `a0 = ps` is not a dead copy.
+- Frontier item 3 (s10) measured for the first time: a real if/else for half 2's p0 selection
+  splits the loop body into four basic blocks for **+1 instruction only** (53/177).  The
+  disassembly (tmp/grind/func_8005D554/s11/fn.txt lines 90 and 136) shows both halves still
+  emitting `addiu a2,s4,-K` / `addiu a0,sp,0x10` / `lw v1,0(gp)` / `move a1,zero`.  Block shape
+  is CHEAP on this chassis but is not a lever on the clock-64 window, because the if/else join
+  dominates the a2 chain and the call alike.
+- Reading of the target window that this session re-derived from asm/funcs/func_8005D554.s
+  (lines 92-109) and that future sessions should not re-derive: `addiu $a2,$s4,-0xC` at 4DEC0 is
+  NOT a call-argument move.  It is the base of the zero1C value; the accumulate
+  `addu $a2,$a2,$v0` sits at 4DEE8 and the store `sw $a2,0x2C($sp)` is the jal delay slot at
+  4DEF4.  $a2 is simply the caller-saved seat local-alloc chose.  The genuine argument moves are
+  `addiu $a0,$sp,0x10` (4DEB4) and `addu $a1,$zero,$zero` (4DEB8).  This is why the s8 three-
+  argument reading of func_80073728 is byte-inert and why no argument-position spelling of the
+  a2 value can raise its LUID above the moves: the value is CONSUMED (accumulated and stored)
+  before the call, so its base insn is necessarily born before expand_call runs.
+
+- [s11] Control re-measured 6/176 (build_insns == target_insns == 176) on HEAD main @ e4c60089; chassis identical to s10.
+
+- [s11] Kill re-audit passed for a third session: tools/fake_ablate.py on the closest banked form (rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c) reports no FAKE-annotated construct, so that inert verdict was not measured behind a carrier.
+
+- [s11] src/text1b.c holds a THIRD S46C sibling no prior session named: func_8005FA98 at text1b.c:2710 (matched; same struct, same callee, same two-call pattern). Its store order is c20,c24,p0,byte28,zero1C,zero18,zero10,one14,p1,ret. It is now spent at 60/180.
+
+- [s11] A real two-armed branch inside the loop body costs only ONE instruction on this chassis (177 vs 176) - block shape is cheap here, it is simply not a lever on the clock-64 window.
+
+- [s11] Re-derived reading of the target window (asm/funcs/func_8005D554.s lines 92-109), to be inherited rather than re-derived: addiu $a2,$s4,-0xC at 4DEC0 is NOT a call-argument move. It is the base of the zero1C value; the accumulate addu $a2,$a2,$v0 is at 4DEE8 and the store sw $a2,0x2C($sp) is the jal delay slot at 4DEF4. $a2 is just the caller-saved seat local-alloc chose. The real argument moves are addiu $a0,$sp,0x10 (4DEB4) and addu $a1,$zero,$zero (4DEB8). This is why the s8 three-argument reading of func_80073728 is byte-inert, and why no argument-position spelling of the a2 value can raise its LUID above the moves: the value is accumulated and stored BEFORE the call, so its base insn is necessarily born before expand_call runs (calls.c:1880).
+
+- [s11] Frontier item 2 (sched2 inversion) is analytically de-prioritised, not measured: rank_for_schedule's last tie-break is return INSN_LUID (tmp) - INSN_LUID (tmp2); (sched.c:2464), a stable-sort tie-break, and sched2 recomputes INSN_LUID from the current insn chain (sched.c:2198), so for a group tied on priority/class/hazard sched2's output order equals its input order. The one term never measured post-reload is whether physical-register anti-deps break that tie in sched2 - see frontier.

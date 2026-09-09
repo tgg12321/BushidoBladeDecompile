@@ -137,6 +137,27 @@
  * Do NOT re-attempt hazard, class, or LUID levers on the a2 expression, and do NOT re-try the
  * cse-operand-order route -- cse moves no insn across statements, so it cannot beat a bound
  * that statement placement itself cannot reach.  See hypotheses.md s10 and evidence.md s10.
+ *
+ * s11 (rederive, 2026-09-09, HEAD main @ e4c60089): floor RE-MEASURED at 6/176 on this body;
+ * fake_ablate again finds no FAKE construct in the closest banked form
+ * (rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c), so the kill re-audit
+ * passes for a third session.  THREE new structurally-different shapes were measured and all
+ * three are dead, and the ledger's remaining structural frontier is now closed:
+ *   (1) the UNSPENT in-file sibling func_8005FA98 (text1b.c:2710, matched, same S46C, same
+ *       callee) contributes a genuinely different store order (c20,c24,p0,byte28,zero1C,
+ *       zero18,zero10,one14,p1,ret) -- transplanted with the rand sequence preserved it costs
+ *       +4 insns (60/180) because both offsets go live across a rand call at once;
+ *   (2) frontier item 1's NARROW form (pointer local used ONLY as the call's first argument,
+ *       field stores left direct) costs +3 insns (21/179): ps is live across both calls, so
+ *       expand_call's `a0 = ps` copy is not coalescable and the preheader addiu is pure cost;
+ *   (3) frontier item 3 (basic-block split) is measured for the first time: half 2's p0
+ *       selection respelled as a real if/else costs only ONE insn (53/177) and does split the
+ *       body into four blocks, but the emitted window in BOTH halves is the control's rotation
+ *       verbatim.  The join dominates the whole a2 chain and the call, so the call's block
+ *       still holds all four window insns.  Any block boundary placed between the a2 base and
+ *       the call puts the base in a PREDECESSOR block, which emits it BEFORE the argument
+ *       setup -- the side we already have.  schedule_insns is per-block (sched.c:4937).
+ * Do NOT re-try sibling-8005FA98 order, the narrow pointer-local, or intra-body block splits.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "forensics",
+ "session_count": 11,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "All four terms of the deciding clock-64 sched1 pick are now closed - three of them with predicates (hazard sched.c:1338, class sched.c:2429, LUID bound calls.c:1880) - and the reload route is measured"
+  },
+  {
+   "session": 11,
+   "floor": 6,
+   "modality": "rederive",
+   "headline": "rederive: control re-measured 6/176; the third in-file S46C sibling func_8005FA98 is now spent (60/180), and s10's frontier items 1 and 3 are both measured dead (21/179 and 53/177) - a real basic-bloc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The insn that holds LUID 42 does not have to be `addiu a0,sp,0x10`. If the first argument's value is born as its own insn earlier in the block (a pointer local to the local struct, `S46C *ps = &s;` hoisted out of the loop, called as `func_80073728((s32)ps, 0)`), expand_call's move becomes `a0 = pseudo` - a separate insn that greg coalesces away - so the deciding ready list at clock 64 contains a different insn set and sched2 sees a different post-reload stream.",
-   "mechanism": "calls.c:1880 always emits the hard-register move last, but WHAT that move copies is source-determined. A pseudo-to-hard-reg copy is a candidate for coalescing in local-alloc/greg, so the insn can vanish before sched2 while still having occupied LUID 42 during sched1 - the only route found so far that changes which insn wins the sched.c:2462 tie-break without touching the a2 expression.",
-   "next_probe": "First read rejected/struct-via-pointer-local-scores-60.c and rejected/tu-local-struct-pointer-mixed-scores-10.c to confirm those measured the D_8009B2E0 object model rather than a pointer to the LOCAL struct s. Then build the `S46C *ps = &s;` form, require build_insns == 176, and capture the BB2_SCHED_DEBUG clock-64 window plus the sched2 RTL segment; the trace (which insn holds the top two LUIDs), not the score, is the signal."
+   "hypothesis": "The priority/class/hazard tie that forces the sched.c:2464 LUID tie-break was measured only PRE-reload (s7 sched1 INSN_PRIORITY, s10 class and potential_hazard). After reload the window's pseudos are physical registers, which adds anti-dependences sched1 never saw; if any of those breaks the tie in sched2, the sched1 emission order stops being a sched2 fixpoint and the target order becomes reachable from an order sched1 CAN produce.",
+   "mechanism": "sched2 runs schedule_insns a second time on the post-reload stream and recomputes INSN_LUID over the sched1 OUTPUT order (sched.c:2198). s9 recorded sched2 as a no-op for the control, but that only says the control is a fixpoint; it says nothing about the priorities and classes sched2 computes from post-reload deps.",
+   "next_probe": "Re-run the instrumented cc1 with BB2_SCHED_DEBUG=1 and capture the SECOND scheduling pass's window (not sched1's) for both halves: the ready list, INSN_PRIORITY, class and hazard for the four window insns after reload. If any term differs from sched1's 3/3/3/3 tie, drive tools/sched_solver's inversion from THAT model; if all four terms tie again, bank a class kill for frontier item 2 with predicate sched.c:2464."
   },
   {
-   "hypothesis": "sched1 cannot produce the target order, but sched2 runs on a renumbered post-reload stream; there may be a sched1 emission order, other than the target's own, whose sched2 output is the target order.",
-   "mechanism": "sched2 recomputes INSN_LUID over the sched1-emitted chain, so its tie-break input is the sched1 OUTPUT order rather than the RTL birth order. s9 recorded sched2 as a no-op for the control because the control's emitted order is already a sched2 fixpoint; that says nothing about other sched1 orders. If some reachable sched1 order maps onto 240,242,205,211 under sched2, the calls.c:1880 LUID bound is bypassed entirely.",
-   "next_probe": "Use tools/sched_solver to invert sched2 over the four-insn window: enumerate every pre-sched2 order whose sched2 output is 240,242,205,211, then intersect that set with the sched1 emission orders the s6 depth-1/depth-2 searches showed to be reachable. Bank the intersection - possibly empty, which would itself be a class kill with a sched.c predicate."
+   "hypothesis": "Because a two-armed branch costs only +1 insn here (s11 H34), a chassis that moves the three struct stores out of the call's basic block is affordable at 177-178 and changes the ready-list CONTENTS at the deciding clock rather than the LUIDs.",
+   "mechanism": "schedule_block is per basic block (sched.c:4937): a block holding the call plus only the argument moves and the a2 chain has a different clock structure from one that also holds the three struct stores and the rand3 xor chain, and those three stores (unit memory, maxb 3) are exactly what wins clocks 61-63 today (s10, sched.c:1338).",
+   "next_probe": "Build a chassis in which the zero10/one14/ret stores sit in a block that does NOT contain the call - e.g. hoisted above a branch whose arms both reach the call - measure with build_insns as the gate, and capture the SCHEDDBG window for any form whose block boundaries move the stores out of the call's block. The goal is not fewer insns but a clock-64 ready list that no longer contains both argument moves."
   },
   {
-   "hypothesis": "The residual may not be reachable by any change to the a2 expression at all; the remaining degree of freedom is which basic block the argument moves terminate. If the func_80073728 call sits at the end of a block whose successor differs (a chassis where one half is guarded, or the loop is restructured so the call is not in the same block as the struct stores), the sched1 window itself changes shape.",
-   "mechanism": "schedule_block operates per basic block, and both the LUID numbering and the ready-list contents are block-local. Every form measured in ten sessions keeps both halves and both calls in one block; the s5b loop-chassis sweep varied the loop form but never the block boundaries inside the body.",
-   "next_probe": "Enumerate source forms that split the loop body into more than one basic block without changing the emitted instruction multiset (an `if` on an already-computed condition whose arms are both taken, a `continue` at the end of the first half), measure each with build_insns == 176 as the gate, and capture the SCHEDDBG window for any form whose block count changes."
+   "hypothesis": "The residual needs INSN_PRIORITY(a2 base) strictly above the two argument moves and NOT above the three struct stores. s9 measured that every priority lever overshoots because the stores are also priority 3; but readiness, not priority, is what gates selection at clocks 61-63, and the a2 base becomes ready only after its accumulate is scheduled.",
+   "mechanism": "rank_for_schedule is consulted only among READY insns. If the a2 base's downstream chain is lengthened by one insn that already exists (so the count stays 176), its priority rises to 4 while its readiness is delayed by one clock - potentially past the store window - which is the one combination s8's array-load form (+2 insns, 6-slot overshoot) did not test.",
+   "next_probe": "Enumerate 176-instruction spellings in which the a2 base feeds one MORE already-existing insn before the zero1C store (for example a two-step accumulate the {6,15} quantization has not already covered, or routing the base through an insn the a0 chain currently owns), gate on build_insns == 176, and capture the SCHEDDBG clock-61..64 windows for any form whose base priority reads 4."
   }
  ],
  "judge_constraints": [
@@ -414,6 +420,30 @@
    "measured_on": "HEAD main @ c09c5da8, candidate.c chassis, control floor 6/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "18 pseudos to allocate, 18 register dispositions, zero 'Reloads for insn' entries, zero reload_in/reload_out entries. Th"
+  },
+  {
+   "session": 11,
+   "statement": "Transplanting the store order of the previously unnamed in-file sibling func_8005FA98 (src/text1b.c:2710 - matched, same S46C, same callee func_80073728, same re-used stack struct) onto the candidate ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "60/180 (+4 instructions vs the 6/176 control). All three in-file S46C siblings are now spent: func_8005D46C (s8, 28/178)"
+  },
+  {
+   "session": 11,
+   "statement": "A pointer local S46C *ps = &s; hoisted to the loop preheader and used ONLY as the first call argument, with every field store left spelled s.field, scores 21/179.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "21/179 (+3 instructions). ps is live at BOTH call sites, so it takes a callee-saved seat, the preheader gains addiu ps,s"
+  },
+  {
+   "session": 11,
+   "statement": "Respelling half 2's s.p0 = (u8 *)base_offset + (D_800A3418 & 1) * 0xC as a real if/else splits the loop body into four basic blocks for one extra instruction (53/177) and leaves the emitted window rot",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ e4c60089, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "53/177. fn.txt:90 and fn.txt:136 both show addiu a2,s4,-K / addiu a0,sp,0x10 / lw v1,0(gp) / move a1,zero - the control'"
   }
  ],
  "ladder_skip": 0,
