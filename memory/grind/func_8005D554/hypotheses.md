@@ -1001,3 +1001,127 @@ R3. **Re-open the `s.zero10` dependence route with a construct that is not an in
 - probe: grep of asm/funcs/func_80073728.s for `s2)` references and for the a0 copy at line 4
 - result: This removes the semantic justification for the permuter's shared-pseudo trick (giving the a2 base and the s.zero10 store the same destination pseudo): the original source has no program reason to route a 0 through a variable here. It also confirms the field layout the candidate's S46C struct assumes.
 - verdict: CONFIRMED
+
+## [s6 — SOLVER] The residual is typed SCHED, and the target order is UNREACHABLE by statement order on this insn multiset: all 420 dependence-legal statement permutations of the half-1 window, replayed through the exact sched1+sched2 funnel, miss it. **KILLED (class, statement-order axis).**
+- statement: `inverse_compose.py classify` types the whole 6-point residual as SCHED (176 vs 176
+  register-blanked-identical instructions, 6 slots in a different order — no PRE-RA and no RA
+  component at all). Within that layer, the goal for half 1 is the pick order
+  `211 -> 205 -> 242 -> 240` (emission `addiu a0,sp,16; move a1,zero; lw v1,gp; addiu a2,s4,-K`
+  against our `addiu a2; addiu a0; lw v1; move a1`). A depth-1 `perturb.py` search over ALL
+  12,558 single atoms of pass-1 block 6 (add_dep / del_dep / luid / luid_move / cost) returns
+  exactly 102 hits, every one of them a LUID move of insn 211 (`a2 = s4 - K`) to a position at or
+  after uid 244 (the `func_80073728` call); the cheapest is
+  `luid_move 211 -> immediately before 244`. No dependence edge, no edge deletion and no
+  instruction-cost change reaches the goal alone. Insn 211's LUID must therefore exceed the
+  LUIDs of the call's own argument-setup insns 240 (`a0 = sp+16`, luid 42) and 242
+  (`a1 = 0`, luid 43), which GCC emits inside `expand_call` at the call itself — while 211's
+  consumer 225 (`a2 += v0`) sits at luid 37, so no C statement ordering can put 211 there.
+- mechanism: `sched.c:2464` (`rank_for_schedule`) makes INSN_LUID the FINAL tie-break, and in
+  this window the four insns are mutually independent with equal INSN_PRIORITY (3) and equal
+  dependence class against the last-scheduled insn, so the LUID comparison alone decides the
+  order. LUIDs in sched1 are source RTL-emission order; LUIDs in sched2 are sched1's OUTPUT
+  order. Priorities cannot differ without a different dependence graph, and the dependence graph
+  is fixed by the (identical) insn multiset.
+- probe: (a) `inverse_compose.py classify text1b func_8005D554 --target-object build/src/text1b.o
+  --ours-object tmp/sandbox/func_8005D554/text1b.o`; (b)
+  `sched_solver/perturb.py ... --pass 1 --block 6 --goal-before 211:205 --goal-before 205:242
+  --goal-before 242:240 --depth 1` with and without `--atoms luid,luid_move`
+  (`tmp/grind/func_8005D554/s6/perturb_p1.txt`, `perturb_p1_all.txt`); (c)
+  `tmp/grind/func_8005D554/s6/stmtperm.py` — all 420 dependence-legal permutations of the eight
+  half-1 source statements simulated through sched1; (d)
+  `tmp/grind/func_8005D554/s6/compose.py` — the same 420 replayed through sched1 AND sched2, with
+  sched2's LUIDs rebuilt from each permutation's sched1 emission order. compose.py carries a
+  self-check that the control replay reproduces the real sched2 dump exactly (`replay == real:
+  True`), so the funnel model is not an approximation here.
+- result: 0 of 420 permutations reach the target order at either pass. The four spellings swept
+  against the real compiler agree with the model: `v3_a2base_last_legal_slot` (the a2 base moved
+  to the last slot the dependence graph allows, immediately after the zero10/one14/ret stores)
+  measures 6/176, i.e. exactly the control; `v4_base_folded_into_store`
+  (`s.zero1C = ((s32)r4 - K) + a2_offset`, the subtract born at the store) measures 15/176; and
+  `v2_struct_via_pointer` (all struct stores through an `S46C *ps = &s;` local, to change the
+  memory-dependence graph rather than the order) measures 60/179.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+- measured_on: HEAD main @ 07aadcc3, candidate.c applied to src/text1b.c, floor re-measured 6/176
+  this session; no FAKE constructs present in the control or in any of the four swept variants.
+  The class is the STATEMENT-ORDER axis for the half-1 window on the current insn multiset and
+  dependence graph — a different multiset or a different dependence graph is NOT covered.
+
+## [s6] Writing the argument struct through a pointer local (`S46C *ps = &s;`) — the one ordinary-C way to change sched.c's MEMORY dependence graph without changing the insn multiset — costs three instructions and 54 points. **KILLED (instance).**
+- statement: `v2_struct_via_pointer`, identical to the candidate except that `s` is written as
+  `ps->field` throughout and the call is `func_80073728((s32)ps, 0)`, measures 60/179 against the
+  control's 6/176.
+- mechanism: the pointer local becomes a pseudo that global-alloc must keep live across both
+  calls, so `addiu a0,sp,16` is replaced by a copy from that pseudo plus its own initialisation,
+  and the frame-address insn no longer sits in the window at all.
+- probe: `tools/sweep_variants.py --func func_8005D554 --file text1b --variants
+  tmp/grind/func_8005D554/s6/vars/` (`tmp/grind/func_8005D554/s6/sweep.json`).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; no FAKE constructs present.
+  Form banked at `rejected/struct-via-pointer-local-scores-60.c`.
+
+## [s6] The depth-2 dependence-only search over the half-1 window returns 30 solutions, and every one of them either forces the call's argument-setup insns 240/242 ahead of the load 205 / the a2 base 211, or deletes the anti/output dependences those two insns carry on the `rand` call 201. **KILLED (instance — the dependence-edge axis at depth 2, dep atoms only).**
+- statement: restricting `perturb.py`'s atom enumeration to the 421 `add_dep`/`del_dep` atoms whose
+  both endpoints lie in the half-1 window and searching all pairs gives 30 hits: 24
+  `add_dep`+`add_dep`, 4 `add_dep`+`del_dep`, 1 `del_dep`+`add_dep` and 1 `del_dep`+`del_dep`.
+  The `del_dep`+`del_dep` solution is exactly `del_dep 240<-201` plus `del_dep 242<-201`; every
+  `add_dep` solution is drawn from the set {205<-240, 205<-242, 211<-240, 211<-242, 242<-240,
+  211<-205} in kind 0 or kind 14.
+- mechanism: 240 (`a0 = sp+16`) and 242 (`a1 = 0`) set the argument hard registers `$a0`/`$a1`,
+  which the preceding `jal rand` (uid 201) clobbers, so `sched.c`'s call handling gives each of
+  them an unconditional output/anti dependence on 201. Those two edges are what pins the arg
+  setup behind the rand call; without them the scheduler floats the setup forward and the
+  rotation happens by itself. They are a property of the MIPS call-clobber model, not of the C.
+  The `add_dep` half of the solution space is the mirror image: it forces 240/242 ahead by making
+  the load or the a2 base depend on them, which would require `D_800A3418` to alias the frame or
+  the a2 base to be computed from the literal second argument — neither is true of this program.
+- probe: `tmp/grind/func_8005D554/s6/depth2_deps.py` -> `s6/depth2_deps.txt` (421 atoms, all
+  pairs). The unrestricted depth-2 window search over all 934 window atoms
+  (`s6/depth2_window.py`, background job, 1,792 hits) shows the same shape: 1,133 of the 1,792
+  hits pair a dep atom or a cost atom with the same unspellable `luid`/`luid_move` of uid 211 to
+  slot 244 that the depth-1 search already found.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; model self-check baseline
+  exact for both passes; no FAKE constructs present. This is the dependence-edge axis restricted
+  to the half-1 window at depth 2 with dep atoms only — wider windows, depth 3, and pairs that
+  mix a dep atom with a SPELLABLE luid move are not covered.
+
+## [s6] The 6-point residual is entirely a sched.c ordering residual: inverse_compose.py classify reports SCHED with 176 honest vs 176 target instructions, register-blanked multisets equal AND register-bearing texts equal as a multiset, 6 slots in a different order.
+- mechanism: classify compares the two objdump streams in three stages -- register-blanked multiset (PRE-RA), register-bearing multiset (RA), then position (SCHED). Equality at the first two stages means no instruction and no register assignment differs, so nothing upstream of sched.c can be the cause.
+- probe: python3 tools/ra_solver/inverse_compose.py classify text1b func_8005D554 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_8005D554/text1b.o, with candidate.c applied to src/text1b.c and the sandbox re-measured at 6/176 first.
+- result: FIRST DIVERGENCE: SCHED -- 'same instructions and registers, 6 slot(s) in a different order'. This settles the layer question that s1-s5 inferred from asm reading: there is no PRE-RA and no RA component left in this function.
+- verdict: CONFIRMED
+
+## [s6] In sched1 block 6 the target's half-1 order (emission addiu a0,sp,16 / move a1,zero / lw v1,gp / addiu a2,s4,-K) is reached by exactly 102 of the 12,558 single atoms, and every one of them is a LUID move of the a2-base insn 211 to a slot at or after the func_80073728 call insn 244; no add_dep, del_dep or cost atom reaches it.
+- mechanism: sched.c:2464 makes INSN_LUID the final tie-break in rank_for_schedule. The four insns in the window are mutually independent, all at INSN_PRIORITY 3, and all in the same dependence class against the last-scheduled insn, so the LUID comparison alone decides their order. Insn 211 (LUID 31) must out-rank 240 (LUID 42, a0 = sp+16) and 242 (LUID 43, a1 = 0), which expand_call emits at the call itself, while 211's consumer 225 (a2 += v0) sits at LUID 37.
+- probe: python3 tools/sched_solver/perturb.py tmp/sched_solver_work/text1b.sched.json --func func_8005D554 --pass 1 --block 6 --goal-before 211:205 --goal-before 205:242 --goal-before 242:240 --depth 1 --max 500, run twice: once with --atoms luid,luid_move (tmp/grind/func_8005D554/s6/perturb_p1.txt) and once over all atom classes (perturb_p1_all.txt). Model self-check: baseline exact for both passes.
+- result: 102 hits, all luid/luid_move on uid 211; cheapest is 'luid_move 211 -> immediately before 244'. Zero add_dep, zero del_dep, zero cost hits. The pass-2 search (perturb_half1.txt) additionally shows that if sched1 merely emitted 211 after the three struct stores, sched2 would finish the rotation on its own.
+- verdict: CONFIRMED
+
+## [s6] No ordering of the eight source statements in the half-1 window produces the target instruction order: all 420 dependence-legal permutations, replayed through sched1 and then through sched2 with its LUIDs rebuilt from that permutation's sched1 emission order, miss the goal, and the compiler agrees with the model on the best-placed spelling.
+- mechanism: sched.c:2464 -- INSN_LUID is the final tie-break in rank_for_schedule, sched1's LUIDs are source RTL-emission order and sched2's LUIDs are sched1's output order. The dependence graph and the INSN_PRIORITY values are fixed by the insn multiset, which is already target-identical, so statement order is the only input a C statement move can change.
+- probe: tmp/grind/func_8005D554/s6/stmtperm.py (420 permutations through sched1) and tmp/grind/func_8005D554/s6/compose.py (the same 420 through sched1+sched2, with a self-check that the control replay reproduces the real sched2 dump exactly). Cross-checked against the real compiler with tools/sweep_variants.py over four bodies (tmp/grind/func_8005D554/s6/sweep.json).
+- result: 0 of 420 at sched1 and 0 of 420 after sched2; compose.py prints 'real sched2 exact: True' and 'replay == real: True', so the funnel replay is exact rather than approximate. The compiler agrees: v3_a2base_last_legal_slot, which moves the a2 base to the last slot the dependence graph allows, measures 6/176 -- identical to the control -- and v4_base_folded_into_store (the subtract born at the s.zero1C store) measures 15/176.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 07aadcc3, memory/grind/func_8005D554/candidate.c applied to src/text1b.c, floor re-measured 6/176 this session; no FAKE constructs present in the control or in any swept variant. The class is the statement-order axis for the half-1 window on the current insn multiset and dependence graph.
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+
+## [s6] Writing the argument struct through a pointer local (S46C *ps = &s; every field written as ps->field; the call taking (s32)ps), the one ordinary-C way to change sched.c's memory-dependence graph without changing the insn multiset, measures 60/179 against the control's 6/176.
+- mechanism: The pointer local becomes a pseudo global-alloc must keep live across both calls, so addiu a0,sp,16 is replaced by a copy from that pseudo plus its own initialisation and the frame-address insn leaves the window entirely; the three extra instructions also change every downstream LUID.
+- probe: tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s6/vars/ (tmp/grind/func_8005D554/s6/sweep.json); form banked at memory/grind/func_8005D554/rejected/struct-via-pointer-local-scores-60.c
+- result: 60/179 -- 54 points and three instructions worse. The cheapest memory-aliasing lever available in ordinary C does not pay for itself on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; no FAKE constructs present.
+
+## [s6] The depth-2 dependence-only search over the half-1 window returns 30 solutions, and every one of them either forces the call's argument-setup insns 240/242 ahead of the load 205 / the a2 base 211, or deletes the anti/output dependences those two insns carry on the rand call 201.
+- mechanism: 240 (a0 = sp+16) and 242 (a1 = 0) set the argument hard registers $a0/$a1, which the preceding jal rand (uid 201) clobbers, so sched.c's call handling gives each an unconditional output/anti dependence on 201. Those two edges pin the argument setup behind the rand call; without them the scheduler floats the setup forward and the rotation happens by itself. They are a property of the MIPS call-clobber model, not of the C. The add_dep half of the solution space is the mirror image and would require D_800A3418 to alias the frame, or the a2 base to be computed from the literal second argument.
+- probe: tmp/grind/func_8005D554/s6/depth2_deps.py over the 421 add_dep/del_dep atoms whose endpoints both lie in the window, all pairs (tmp/grind/func_8005D554/s6/depth2_deps.txt); plus the unrestricted 934-atom depth-2 window search tmp/grind/func_8005D554/s6/depth2_window.py, which returned 1,792 hits.
+- result: 30 dep-only hits: 24 add_dep+add_dep, 4 add_dep+del_dep, 1 del_dep+add_dep, 1 del_dep+del_dep (the last being exactly del_dep 240<-201 plus del_dep 242<-201). Every add_dep solution is drawn from {205<-240, 205<-242, 211<-240, 211<-242, 242<-240, 211<-205}. In the unrestricted search, 1,133 of the 1,792 hits pair a dep or cost atom with the same unspellable luid move of uid 211 to slot 244 that depth 1 already found.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; model self-check baseline exact for both passes; no FAKE constructs present. This is the dependence-edge axis restricted to the half-1 window at depth 2 with dep atoms only.

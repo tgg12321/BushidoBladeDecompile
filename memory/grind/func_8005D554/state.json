@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "synthesis",
+ "session_count": 6,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 6,
    "modality": "synthesis",
    "headline": "Floor re-measured 6/176; 55 new spellings retire all three s5 frontier items (per-half locals, carrier identity, loop chassis) and the param-borrow + zero-constant-holder levers; loop.c:1631 named as "
+  },
+  {
+   "session": 6,
+   "floor": 6,
+   "modality": "solver",
+   "headline": "Residual typed SCHED (176/176, registers identical, 6 slots reordered); the statement-order axis is closed by predicate sched.c:2464 (0 of 420 dependence-legal permutations through an exact sched1+sch"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The one untried mechanism-level lever is to remove (s32)r4 - K from loop.c's movable set by making it not loop-invariant, so a single-set fresh carrier stays inside the loop and reproduces the winning single-set, single-use, REG_DEAD RTL shape without a multi-write carrier.",
-   "mechanism": "loop.c:1631 moves a movable when threshold * savings * lifetime >= insn_count; loop.c:532 fixes threshold; loop.c:790-793 fix savings and lifetime. Every measured spelling so far changes the set count only. If invariant_p does not accept the base's source expression, no movable is recorded at all and the +2 disappears.",
-   "next_probe": "Run tmp/grind/func_8005D554/run_dump.sh on tmp/grind/func_8005D554/s5b/enum2/fresh_direct_before.c and read the .loop dump's movable list for this loop to get the recorded lifetime, savings and insn_count numbers; then search for a source spelling of the base whose value invariant_p rejects while cse.c/combine.c fold the emitted arithmetic back to the same addiu -- e.g. deriving the -K displacement through a loop-written location."
+   "hypothesis": "The pinning edges are the anti/output dependences that uid 240 (a0 = sp+16) and uid 242 (a1 = 0) carry on the preceding rand call, because that call clobbers $a0/$a1. Every dependence-only solution the depth-2 search finds either deletes those two edges or adds an edge forcing 240/242 ahead. The reachable version of that is a source shape in which the a0/a1 argument setup is NOT separated from its call by an intervening call.",
+   "mechanism": "sched.c gives every set of a call-clobbered hard register an unconditional dependence on a preceding call insn. The third rand() call sits between the a0/a1 setup's natural birth point and the func_80073728 call in our RTL. If the a2-site rand() were consumed such that no rand call sits between the two argument-register writes and their call, the pinning edges vanish and the scheduler produces the target rotation with no statement move at all.",
+   "next_probe": "Sweep bodies in which the a2-site `D_800A3418 ^= rand()` is hoisted out of the argument window -- e.g. computing BOTH halves' random draws before the first call, or reassociating so the last rand() precedes the a0_offset statement rather than the a2_offset statement -- and check with tmp/grind/func_8005D554/s6/compose.py (self-checked exact) whether the resulting block still carries deps 240<-201 and 242<-201. Note the multiset must stay at 176; measure with tools/sweep_variants.py before crediting anything."
   },
   {
-   "hypothesis": "The object model at the p_b2e0 = (u8 *)&D_8009B2E0 declaration pun is the last untried STRUCTURAL axis; a real struct type with a member for the +0xC sub-object changes which insns exist in the setup block and therefore the INSN_LUID sequence the sched1 tie-break reads.",
-   "mechanism": "The typed-array spelling (H3) was killed at 21 because array indexing re-derives idx*60 + base per use; a base POINTER to a struct with an explicit sub-object member keeps stride in s0 and base+0xC+stride in the frame slot the way the byte-pointer model does, while changing the setup block's insn set.",
-   "next_probe": "Declare the struct type TU-locally in src/text1b.c purely to MEASURE (a TU-local aggregate is excluded by the aggregate-merge family's header-canonical prong, so it cannot be submitted as-is); sweep it against the candidate. Only if it scores below 6 is the header route + integration handoff worth opening."
+   "hypothesis": "Because sched2 finishes the rotation for free once sched1 emits uid 211 after the three struct stores, the reachable goal is weaker than the final order: a source change that only perturbs sched1's OUTPUT position of 211 by three slots is enough.",
+   "mechanism": "sched2's INSN_LUIDs are sched1's emission order (measured this session: pass-2 LUIDs 24..41 are exactly sched1's output sequence). The pass-2 depth-1 search hits on 'luid swap 206 <-> 211', 'luid swap 208 <-> 211' and 'luid swap 211 <-> 217' -- all tiny, three-slot moves -- whereas the pass-1 search needs a thirteen-slot move.",
+   "next_probe": "Re-run tmp/grind/func_8005D554/s6/compose.py with the goal expressed on sched1's OUTPUT (211 emitted after 234) instead of on the final order, over a WIDER permutation space than the eight half-1 statements: include the half-2 statements and the loop-top statements, whose LUIDs also feed block 6's tie-breaks. The current 420-permutation space deliberately held everything outside the half-1 window fixed."
   },
   {
-   "hypothesis": "The s.zero10 output-dependence route -- the only construct that has ever measured below 6 (the permuter's sandbox-3 find) -- may still be reachable through a value the program genuinely stages, now that parameters and dead locals are measured out.",
-   "mechanism": "s1's exact scheduler model (tmp/grind/func_8005D554/s1/mutate_out.txt, case launch_dep228) predicts the target order when the a2-base set and the s.zero10 store share a destination pseudo. The permuter reaches it with an invented multi-write local, which the Judge banned on 2026-09-08.",
-   "next_probe": "This session confirmed func_80073728 reads +0x10 as a real input (asm/funcs/func_80073728.s:314), so a program-motivated carrier for that store is unlikely; before spending more here, re-check whether the 0x1C field (the a2 site) and the 0x10 field are ever written from the same source value elsewhere in text1b.c's sibling callers of func_80073728, and if no caller does, treat this route as closed and put the next session's weight on frontier item 1."
+   "hypothesis": "The object model at the p_b2e0 = (u8 *)&D_8009B2E0 declaration pun remains the last untried STRUCTURAL axis and is the only measured route to a DIFFERENT insn multiset in the setup block, which is what would change the priorities the tie-break reads.",
+   "mechanism": "A base pointer to a real struct type with a member for the +0xC sub-object keeps the stride in s0 and base+0xC+stride in the frame slot the way the byte-pointer model does, while changing which insns exist in the setup block -- and therefore both the dependence graph and the LUID sequence. The typed-ARRAY spelling was killed at 21 by H3 because array indexing re-derives idx*60 + base per use; a pointer-to-struct does not.",
+   "next_probe": "Declare the struct TU-locally in src/text1b.c purely to MEASURE (a TU-local aggregate is excluded by the aggregate-merge family's header-canonical prong, so it cannot be submitted as-is) and sweep it against the candidate. Only if it scores below 6 is the header route plus integration handoff worth opening."
   }
  ],
  "judge_constraints": [
@@ -232,6 +238,30 @@
    "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
    "predicate_cite": "",
    "result": "The a1 = 0 argument insn is already target-shaped; re-spelling the literal only adds instructions. Form banked at memory"
+  },
+  {
+   "session": 6,
+   "statement": "No ordering of the eight source statements in the half-1 window produces the target instruction order: all 420 dependence-legal permutations, replayed through sched1 and then through sched2 with its L",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 07aadcc3, memory/grind/func_8005D554/candidate.c applied to src/text1b.c, floor re-measured 6/176 this session; no FAKE constructs present in the control or in any swept variant. The class",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
+   "result": "0 of 420 at sched1 and 0 of 420 after sched2; compose.py prints 'real sched2 exact: True' and 'replay == real: True', so"
+  },
+  {
+   "session": 6,
+   "statement": "Writing the argument struct through a pointer local (S46C *ps = &s; every field written as ps->field; the call taking (s32)ps), the one ordinary-C way to change sched.c's memory-dependence graph witho",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "60/179 -- 54 points and three instructions worse. The cheapest memory-aliasing lever available in ordinary C does not pa"
+  },
+  {
+   "session": 6,
+   "statement": "The depth-2 dependence-only search over the half-1 window returns 30 solutions, and every one of them either forces the call's argument-setup insns 240/242 ahead of the load 205 / the a2 base 211, or ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; model self-check baseline exact for both passes; no FAKE constructs present. This is the dependence-edge axis restricted to the half-1 window at",
+   "predicate_cite": "",
+   "result": "30 dep-only hits: 24 add_dep+add_dep, 4 add_dep+del_dep, 1 del_dep+add_dep, 1 del_dep+del_dep (the last being exactly de"
   }
  ],
  "ladder_skip": 0,

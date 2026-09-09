@@ -700,3 +700,84 @@ f.sched f.sched2` per-function extracts), `chain.py` (post-sched1 window reader)
 - [s5] The residual window is unchanged and precisely located: ours emits [addiu a2,s4,-K][addiu a0,sp,0x10][lw v1,gp][move a1,zero]; the target emits [addiu a0,sp,0x10][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K] at asm/funcs/func_8005D554.s:93-96, repeated once per loop half.
 
 - [s5] src/text1b.c was left byte-clean at the end of the session (func_8005D554 still INCLUDE_ASM); every measurement went through tools/sweep_variants.py, which restores the file.
+
+## s6 (solver, 2026-09-09, HEAD main @ 07aadcc3) — the residual is typed, and the statement-order axis is closed with a predicate
+
+Floor RE-MEASURED at **6/176** with candidate.c applied to src/text1b.c.
+
+**Typing.** `python3 tools/ra_solver/inverse_compose.py classify text1b func_8005D554
+--target-object build/src/text1b.o --ours-object tmp/sandbox/func_8005D554/text1b.o` reports
+`FIRST DIVERGENCE: SCHED — same instructions and registers, 6 slot(s) in a different order`
+(honest 176, target 176). There is no PRE-RA component and no RA component: register-blanked
+multisets are equal AND the register-bearing texts are equal as a multiset. Every future session
+can take this as settled — the whole residual lives in `sched.c`.
+
+**The goal, in UIDs.** The two rotations are symmetric. Half 1 (uids from
+`tmp/sched_solver_work/text1b.i.dbr`):
+
+| uid | insn | pass-1 LUID (= source order) | pass-2 LUID (= sched1 output) |
+|---|---|---|---|
+| 201 | `jal rand` | 26 | 24 |
+| 205 | `lw v1, D_800A3418` | 28 | 27 |
+| 211 | `addiu a2, s4, -0xC` (the a2 base) | 31 | 25 |
+| 225 | `addu a2, a2, v0` (the accumulate) | 37 | 38 |
+| 228/231/234 | `s.zero10` / `s.one14` / `s.ret` stores | 38/39/40 | 29/30/31 |
+| 237 | `s.zero1C = a2_offset` | 41 | 40 |
+| 240 | `addiu a0, sp, 16` (call arg 1) | 42 | 26 |
+| 242 | `move a1, zero` (call arg 2) | 43 | 28 |
+| 244 | `jal func_80073728` | 44 | 41 |
+
+Half 2 is the same shape with 306/310/316/331/334/337/340/343/346/348/350.
+Ours emits `211, 240, 205, 242`; the target emits `240, 242, 205, 211`
+(objdump positions 88-91 of `build/src/text1b.o`). In `perturb.py`'s pick space (reverse
+emission) the goal is `211 before 205 before 242 before 240`.
+
+**Depth-1, all atoms.** `perturb.py --pass 1 --block 6 --depth 1 --max 500` over all 12,558
+single atoms (`add_dep`, `del_dep`, `luid`, `luid_move`, `cost`) returns exactly 102 hits and
+every one is a LUID move of insn 211 to a slot at or after uid 244. Zero `add_dep`, zero
+`del_dep`, zero `cost` hits. The cheapest hit is `luid_move 211 -> immediately before 244`.
+
+**Why that is unspellable.** `sched.c:2464` makes `INSN_LUID (tmp) - INSN_LUID (tmp2)` the last
+tie-break in `rank_for_schedule`, and here the four insns are mutually independent, all at
+INSN_PRIORITY 3, all in the same dependence class against the last-scheduled insn — so LUID
+alone decides. Insn 211 would have to be born after 240 and 242, which `expand_call` emits at the
+call, while 211's own consumer 225 is born at LUID 37. No C statement order can do that.
+
+**The exhaustive check.** `tmp/grind/func_8005D554/s6/stmtperm.py` enumerates every
+dependence-legal permutation of the eight half-1 source statements (S1 `D_800A3418 ^= rand()`
+tail, S2 a2 base, S3 a2 accumulate, S4/S5/S6 the three struct stores, S7 the `s.zero1C` store,
+S8 the call), 420 of them, and simulates sched1 for each: 0 reach the goal.
+`tmp/grind/func_8005D554/s6/compose.py` replays the same 420 through the FULL funnel — sched1,
+then sched2 with its LUIDs rebuilt from that permutation's sched1 emission order — and again
+reaches 0. compose.py self-checks that the control replay reproduces the real sched2 dump
+bit-for-bit (`real sched2 exact: True`, `replay == real: True`), so this is an exact result, not
+a modelling approximation.
+
+**Compiler agreement.** Four bodies swept with `tools/sweep_variants.py`
+(`tmp/grind/func_8005D554/s6/sweep.json`): control 6/176;
+`v3_a2base_last_legal_slot` (a2 base moved to the last slot the dependence graph allows, right
+after the zero10/one14/ret stores — the maximum LUID the model says is reachable) **6/176**,
+exactly as predicted; `v4_base_folded_into_store` 15/176; `v2_struct_via_pointer` 60/179.
+
+**What this leaves.** Since the insn multiset and the register assignment are both already
+target-identical, and statement order is now closed with a predicate, the remaining lever must
+change the DEPENDENCE GRAPH or the INSN_PRIORITY values while keeping the multiset — i.e. a
+different value-flow, not a different order. The depth-1 search says no single edge does it; the
+depth-2 window search over the same eight statements' insns was launched this session
+(`tmp/grind/func_8005D554/s6/depth2_window.py`) and is the natural first probe for s7.
+
+- [s6] Floor RE-MEASURED at 6/176 this session on HEAD main @ 07aadcc3 with candidate.c applied to src/text1b.c; the chassis has not moved since s5.
+
+- [s6] inverse_compose.py classify types the entire residual as SCHED: 176 honest vs 176 target instructions, register-blanked multisets equal, register-bearing texts equal as a multiset, 6 slots in a different order. No PRE-RA and no RA component remains.
+
+- [s6] The half-1 window in RTL uids (tmp/sched_solver_work/text1b.i.dbr): 201 jal rand, 205 lw v1 D_800A3418, 211 addiu a2 s4 -0xC, 217-225 the shift chain and a2 += v0, 228/231/234 the zero10/one14/ret stores, 237 the zero1C store, 240 addiu a0 sp 16, 242 move a1 zero, 244 jal func_80073728. Half 2 is the same shape at 306/310/316/331/334/337/340/343/346/348/350.
+
+- [s6] Pass-1 LUIDs (source order) are 205=28, 211=31, 225=37, 228=38, 231=39, 234=40, 237=41, 240=42, 242=43, 244=44; pass-2 LUIDs (sched1 output order) are 201=24, 211=25, 240=26, 205=27, 242=28, 228=29, 231=30, 234=31, 206=32, 225=38, 237=40, 244=41. sched2 is a no-op in this window: the final emission order equals sched1's output.
+
+- [s6] Depth-1 perturb over ALL 12,558 single atoms of sched1 block 6 yields 102 hits, all of them LUID moves of uid 211 to a slot at or after uid 244, and zero hits from add_dep, del_dep or cost.
+
+- [s6] All 420 dependence-legal permutations of the eight half-1 source statements fail at sched1 AND after a sched2 replay whose control is self-checked bit-for-bit against the real sched2 dump.
+
+- [s6] Four bodies swept against the real compiler: control 6/176, v3_a2base_last_legal_slot 6/176 (the model-predicted maximum LUID placement, byte-level no-op as predicted), v4_base_folded_into_store 15/176, v2_struct_via_pointer 60/179.
+
+- [s6] The pass-2 search shows the rotation is completed by sched2 for free if sched1 emits uid 211 after the three struct stores -- so a lever that changes only sched1's OUTPUT (not the source order) is sufficient; it does not have to reach the final order directly.

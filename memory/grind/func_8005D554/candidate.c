@@ -46,6 +46,18 @@
  * carriers for the permuter s zero10-restage trick cost 1-3 insns (25-61); a zero constant
  * holder for the second call argument costs 2-3 insns (16-30). See hypotheses.md H27-H31 and
  * frontier R1-R3.  Do NOT re-sweep loop-chassis, carrier-identity or per-half-local axes.
+ *
+ * s6 (solver, 2026-09-09, HEAD main @ 07aadcc3): floor RE-MEASURED at 6/176 on this body.  The
+ * residual is now TYPED: inverse_compose.py classify reports SCHED (176 vs 176, registers
+ * identical, 6 slots reordered) -- there is no PRE-RA or RA component left at all.  A depth-1
+ * perturb.py search over ALL 12,558 single atoms of sched1 block 6 finds only LUID moves of the
+ * `addiu a2,s4,-K` insn (uid 211) to a slot at or after the func_80073728 call; and all 420
+ * dependence-legal permutations of the eight half-1 source statements, replayed through the
+ * exact sched1+sched2 funnel (self-checked against the real dump), miss the target order.  So
+ * statement ORDER is closed with a predicate (sched.c:2464, the INSN_LUID tie-break); the next
+ * lever has to change the dependence graph or the priorities, not the order.  Confirmed against
+ * the compiler: the model-predicted best statement placement measures 6/176 like the control.
+ * See hypotheses.md s6 and evidence.md s6.  Do NOT re-sweep statement placements of the a2 base.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);
