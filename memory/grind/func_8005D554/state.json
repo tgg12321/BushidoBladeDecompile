@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "enumerate",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 6,
    "modality": "enumerate",
    "headline": "1,224 spellings swept: the a2-site region collapses to {6,15}, every neutral axis is an 800/800 byte-level no-op, and sched.c's own source names the residual as a LUID-ordering problem no source state"
+  },
+  {
+   "session": 5,
+   "floor": 6,
+   "modality": "synthesis",
+   "headline": "Floor re-measured 6/176; 55 new spellings retire all three s5 frontier items (per-half locals, carrier identity, loop chassis) and the param-borrow + zero-constant-holder levers; loop.c:1631 named as "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a post-expand re-emission problem: some pass moves the a2 arithmetic below the call's argument setup in the FAILed nv/nw bodies, and naming that pass is the prerequisite to finding an ordinary-C trigger for it.",
-   "mechanism": "rank_for_schedule reaches the INSN_LUID tie-break (sched.c:2464) only when INSN_PRIORITY (sched.c:2418) ties, and the a2 base insn's dependence path to the block end is strictly longer than the argument setup's, so the arithmetic insn must physically be re-emitted below the argument setup. Candidates are cse.c re-materialization at the copy, combine.c folding the copy into the arithmetic at the copy site, or flow.c deleting the now-dead early set.",
-   "next_probe": "pwsh tools/grinder/dump.ps1 func_8005D554 with rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c applied, then again with candidate.c applied; diff the .cse, .combine and .flow dumps around the a2 base insn to name the transformation, then search for a real program-motivated copy that reproduces it without an invented multi-write carrier."
+   "hypothesis": "The one untried mechanism-level lever is to remove (s32)r4 - K from loop.c's movable set by making it not loop-invariant, so a single-set fresh carrier stays inside the loop and reproduces the winning single-set, single-use, REG_DEAD RTL shape without a multi-write carrier.",
+   "mechanism": "loop.c:1631 moves a movable when threshold * savings * lifetime >= insn_count; loop.c:532 fixes threshold; loop.c:790-793 fix savings and lifetime. Every measured spelling so far changes the set count only. If invariant_p does not accept the base's source expression, no movable is recorded at all and the +2 disappears.",
+   "next_probe": "Run tmp/grind/func_8005D554/run_dump.sh on tmp/grind/func_8005D554/s5b/enum2/fresh_direct_before.c and read the .loop dump's movable list for this loop to get the recorded lifetime, savings and insn_count numbers; then search for a source spelling of the base whose value invariant_p rejects while cse.c/combine.c fold the emitted arithmetic back to the same addiu -- e.g. deriving the -K displacement through a loop-written location."
   },
   {
-   "hypothesis": "The untried side of the tie is the ARGUMENT SETUP, not the a2 base: if the function had a single func_80073728 call site in the source, reg_n_sets for the hard argument registers would be 1, birthing_insn_p would fire, and adjust_priority would raise the argument setup to max_priority -- putting it ahead of the a2 base without touching the a2 base at all.",
-   "mechanism": "birthing_insn_p (tools/gcc-2.7.2/sched.c:2526) returns nonzero iff the destination register is live and reg_n_sets[REGNO] == 1; adjust_priority (sched.c:2584) then raises INSN_PRIORITY to max_priority, which wins term 1 of rank_for_schedule (sched.c:2418) outright. Both hard argument registers are currently set at two call sites, so the bump never fires. This route has never been measured in four sessions.",
-   "next_probe": "Write a single-call-site chassis in ordinary C -- both halves funnelled through one func_80073728 call, e.g. a two-iteration inner loop over the per-half constants held in a small local table, or an if/else selecting the constants and falling into a shared call -- measure it with sandbox --disable all, and if the argument setup does move ahead of the a2 base, work on getting that form back to 176 instructions."
+   "hypothesis": "The object model at the p_b2e0 = (u8 *)&D_8009B2E0 declaration pun is the last untried STRUCTURAL axis; a real struct type with a member for the +0xC sub-object changes which insns exist in the setup block and therefore the INSN_LUID sequence the sched1 tie-break reads.",
+   "mechanism": "The typed-array spelling (H3) was killed at 21 because array indexing re-derives idx*60 + base per use; a base POINTER to a struct with an explicit sub-object member keeps stride in s0 and base+0xC+stride in the frame slot the way the byte-pointer model does, while changing the setup block's insn set.",
+   "next_probe": "Declare the struct type TU-locally in src/text1b.c purely to MEASURE (a TU-local aggregate is excluded by the aggregate-merge family's header-canonical prong, so it cannot be submitted as-is); sweep it against the candidate. Only if it scores below 6 is the header route + integration handoff worth opening."
   },
   {
-   "hypothesis": "The residual lives in block structure or the object model, not in local spelling: the enumerated space proves invariance inside the block, and the untried structural axes are the loop form, the guard shape, and the declared shape of s / D_8009B2E0.",
-   "mechanism": "Changing the loop form (the s2 z3 while + duplicated guard, which is neutral at 6 but sits OUTSIDE the enum3 space) or replacing the `p_b2e0 = (u8 *)&D_8009B2E0` declaration pun with a real declared object changes which insns exist in the block and therefore changes the INSN_LUID sequence the tie-break at sched.c:2464 reads.",
-   "next_probe": "Rebuild the s2 z3 guard-duplicated-while body on the current chassis, confirm it still measures 6/176, then re-run gen3.py's arithmetic x declaration-scope cross product on top of it (about 200 spellings) to test whether the score stays invariant once the block structure changes."
+   "hypothesis": "The s.zero10 output-dependence route -- the only construct that has ever measured below 6 (the permuter's sandbox-3 find) -- may still be reachable through a value the program genuinely stages, now that parameters and dead locals are measured out.",
+   "mechanism": "s1's exact scheduler model (tmp/grind/func_8005D554/s1/mutate_out.txt, case launch_dep228) predicts the target order when the a2-base set and the s.zero10 store share a destination pseudo. The permuter reaches it with an invented multi-write local, which the Judge banned on 2026-09-08.",
+   "next_probe": "This session confirmed func_80073728 reads +0x10 as a real input (asm/funcs/func_80073728.s:314), so a program-motivated carrier for that store is unlikely; before spending more here, re-check whether the 0x1C field (the a2 site) and the 0x10 field are ever written from the same source value elsewhere in text1b.c's sibling callers of func_80073728, and if no caller does, treat this route as closed and put the next session's weight on frontier item 1."
   }
  ],
  "judge_constraints": [
@@ -186,6 +192,46 @@
    "measured_on": "HEAD main @ f95f6b8a chassis with candidate.c applied to src/text1b.c; no FAKE constructs present in any variant",
    "predicate_cite": "",
    "result": "800/800 at exactly 6/176. A representative stacked form is banked at rejected/neutral-stack-a11-arith-perhalf-scope-stor"
+  },
+  {
+   "session": 5,
+   "statement": "On the current candidate chassis the 4-local chassis (separate a0a/a2a and a0b/a2b offset locals per loop half) measures 6/176, and the three early-birth placements measured on top of it (base at the ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis (floor re-measured 6/176 this session); no FAKE constructs present in any variant",
+   "predicate_cite": "",
+   "result": "q2_late_none 6/176 (control), q4_late_none 6/176, q2_late_b390 18/175, q4_late_b390 18/175, q2_posta0/prerand_b390 29/17"
+  },
+  {
+   "session": 5,
+   "statement": "Eighteen bodies crossing three a2-base carriers (the shared a2_offset, one fresh local shared by both halves, two fresh per-half locals) x accumulate vs direct-store consumption x three positions of t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
+   "predicate_cite": "",
+   "result": "Nothing in the measured set sits below the floor. Naming or freshening the accumulate-shape carrier is a byte-level no-o"
+  },
+  {
+   "session": 5,
+   "statement": "Nine bodies reproducing the permuter's sandbox-3 shape from tmp/perm_5d554_z3/output-160-1/source.c (a carrier holding one half's a2 base and re-written to 0 in the other half to feed s.zero10) with t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
+   "predicate_cite": "",
+   "result": "The sanctioned staged-value / dead-param quadrant does not reach 176 instructions on this chassis, so the permuter's onl"
+  },
+  {
+   "session": 5,
+   "statement": "Twenty bodies crossing four loop chassis (the candidate's do-while, the s2 z3 guard-duplicated while, a for(;;) with a trailing if(!cond) break, and an explicit label + goto loop) x three a2-site arit",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
+   "predicate_cite": "",
+   "result": "s5 frontier Q3's loop-structure half is retired: the three normalising chassis are indistinguishable at the floor. Form "
+  },
+  {
+   "session": 5,
+   "statement": "Five bodies attacking the argument-setup side of the sched1 tie -- a c0 = 0 constant holder initialised in the guard block and used as the second call argument (19/179), used for the s.zero10 stores (",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
+   "predicate_cite": "",
+   "result": "The a1 = 0 argument insn is already target-shaped; re-spelling the literal only adds instructions. Form banked at memory"
   }
  ],
  "ladder_skip": 0,

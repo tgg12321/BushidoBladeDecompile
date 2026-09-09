@@ -535,3 +535,168 @@ That is why 1,224 spellings of the region are quantized to exactly two values.
 - [s4] adjust_priority's birthing bump (sched.c:2584) is the only mechanism in cc1 that could raise the argument setup to parity, and birthing_insn_p (sched.c:2526) gates it on reg_n_sets[REGNO(dest)] == 1. Both hard argument registers are set at TWO func_80073728 call sites in this function, so the bump cannot fire. This is the correct home of the reg_n_sets flag that s3 mis-attributed to sched.c:2505 birthing_insn_p's write-count of the accumulator.
 
 - [s4] Consequence: the target's order requires INSN_LUID(a2 base) > INSN_LUID(a0 argument setup). expand_call emits argument setup at the call statement, i.e. after every statement that computes the value stored into the struct, so no source-level statement order can produce that inequality -- which is exactly why only the Judge-FAILed nv/nw bodies (a copy re-materialized by a post-expand pass) ever reached it, and why 1,224 spellings are quantized to two values.
+
+## s5 (synthesis, 2026-09-09) — dumps read, s3/s4 mechanism stories corrected
+
+Chassis re-measured at dispatch: `candidate.c` applied to `src/text1b.c` on HEAD main
+@ 4f43e5cf scores **6 / 176 build_insns** under `sandbox func_8005D554 --disable all`
+(target_insns 176). The floor is unchanged from s2/s3b/s4.
+
+### CORRECTION 1 — s4's closing claim is false
+s4 recorded: "the target's order requires INSN_LUID(a2 base) > INSN_LUID(a0 argument setup)
+... no source-level statement order can produce that inequality." The dumps show the opposite.
+In the Judge-FAILed `nv`/`nw` body (the only measured body at distance 0) the a2 base insn is
+`(insn 198 ...)`, born BEFORE the third `rand` call (`call_insn 204`), i.e. with a LUID far
+BELOW the argument setup's — and sched1 still schedules it last, sinking it across the call to
+sit immediately after the `D_800A3418` load (`dumps_nvnw/f.lreg`: the insn is chained
+`208 -> 198 -> 209`). The residual is therefore not a LUID inequality problem at all; the
+scheduler's placement is driven by the base pseudo's live range and dependence notes, not by
+its source position. Any future session that re-derives the "must out-LUID the arg loads"
+framing is re-deriving a disproven claim.
+
+### CORRECTION 2 — s3's `reg_n_sets`/`birthing_insn_p` story is dead twice over
+s3 H15 attributed the FAILed body's win to `reg_n_sets > 1` on the carrier. s3's own H19
+already contradicted it (a per-half accumulator with `reg_n_sets == 2` scores 47). s5 finishes
+it: `grep -c 'set (reg/v:SI 83)' dumps_nvnw/f.combine` returns **1** — after `combine.c` the
+winning carrier is SINGLE-set, with a `REG_DEAD` note at the consuming `addu`
+(`dumps_nvnw/f.combine:572-574`). The source-level second write (`nv = ret; s.ret = nv;`) is
+erased by combine; its only job is to exist while `loop.c` runs.
+
+### The actual causal chain (H23), pass by pass
+1. `loop.c` — a loop-invariant value written ONCE is a movable and is hoisted out of the loop.
+   Proof: with a fresh single-set per-half carrier, the base insn is renumbered and relocated
+   into the pre-loop block (`dumps_freshsingle/f.combine:339` — `(insn 393 133 394 (set (reg/v:SI 83)
+   (plus (reg/v:SI 78) (const_int -12))))`), `dumps_freshsingle/f.greg:391` seats it in `$a2`
+   there, and the loop body is 178 instructions (score 54). A carrier written TWICE in source
+   is not a movable and stays in the loop.
+2. `combine.c` — erases the redundant second write and the `a2_offset = carrier` copy, folding
+   the copy into the consuming add so the surviving pair is
+   `(set regB (plus r4 -K))` ... `(set regA (plus regB rnd))`. The base insn is NOT merged into
+   the add because the base pseudo is multi-set when combine examines it.
+3. `sched1` — with `regB` single-set, single-use and dying at the add, the base insn sinks to
+   immediately after the `D_800A3418` load: the target's slot.
+4. `local-alloc` — `regB`'s live range is now confined to one loop half, so it is seated in
+   caller-saved `$a2`, matching `asm/funcs/func_8005D554.s:4DEC0`. No callee-saved seat is
+   consumed, so no pointer local is evicted and the body stays at 176 instructions.
+
+Every step of that chain is reproduced or refuted by a banked dump; nothing here is inferred.
+
+### What the sixteen new measurements say (H24)
+The a2-site shape axis is a byte-level no-op and the seat axis is a fixed +/-2:
+
+| spelling | plain | `p_b390` freed | `p_b2e0` freed | both freed |
+|---|---|---|---|---|
+| base after `s.zero18` store, direct-store sum (v1) | 31/178 | 27/176 | 28/176 | 53/174 |
+| base at the `nv` slot, direct-store sum (v2) | 31/178 | 27/176 | 28/176 | 53/174 |
+| base at the `nv` slot, RMW accumulate (v4) | 31/178 | 27/176 | 28/176 | 53/174 |
+| base at the natural late slot, direct-store sum (v3) | 10/176 | — | — | — |
+| base after `s.zero18`, RMW accumulate (v5) | 31/178 | — | — | — |
+| sum into `a0_offset` instead of `a2_offset` (v6/v7) | 30/178 | — | — | — |
+| FRESH single-set per-half carrier (LICM-hoisted) | 54/178 | 32/176 | 35/176 | — |
+| `a0_offset` borrowed for the base | 35/178 | 33/176 | 32/176 | — |
+| `a2_offset` borrowed + `X = ret; s.ret = X;` restage | 30/178 | 30/176 | 27/176 | — |
+| `a0_offset` borrowed + `X = ret; s.ret = X;` restage | 35/178 | 33/176 | 32/176 | — |
+
+Reading: the direct-store vs accumulate distinction, and the choice of which local receives
+the sum, are exact no-ops (v1 == v2 == v4 == v5 to the byte). The ONLY thing that moves the
+score is where the base pseudo lives. Freeing a pointer local buys the two instructions back
+but leaves the base in a callee-saved register across the `rand` call
+(`dumps_v2/f.greg:455` — `(set (reg/v:SI 16 s0) (plus (reg:SI 20 s4) (const_int -12)))`),
+so those 176-instruction forms are structurally further from the target than the 6-point
+candidate is.
+
+Critically, the `X = ret; s.ret = X;` restage — the exact source construct that erases the
+second set in the FAILed body — does NOT reproduce the win when `X` is an existing
+function-scope local. That is the direct experimental separation between the Judge-banned
+construct and the sanctioned existing-local borrow quadrant: the borrow fails not on the write
+count but on the live range, because every function-scope local here is read again in the
+other loop half.
+
+### s4 frontier F2 (single call site) is closed on target evidence
+`grep -n 'jal' asm/funcs/func_8005D554.s` — nine `jal`, seven to `rand`, and exactly two to
+`func_80073728` (lines 108 and 155). A source with one call site emits one `jal`; GCC 2.7.2
+does not unroll at `-O2`. The `birthing_insn_p` bump on the argument registers is therefore
+unreachable by construction, not merely unmeasured.
+
+### Kill re-audit
+`rejected/shared-a2-base-direct-store-scores-10.c` re-measures 10/176 (as `s5/enum/v3.c`) and
+`rejected/hoist-plus-freed-pb390-seat-scores-27.c` re-measures 27/176 (as
+`s5/enum2/v4_nob390.c`) on the current chassis — both banked kills reproduce.
+`tools/fake_ablate.py` on the FAILed body reports "no FAKE-annotated constructs found", so no
+banked measurement on this function was taken with a FAKE carrier occupying the a2 pseudo.
+
+### Artifacts
+`tmp/grind/func_8005D554/s5/` — `dumps_cand/`, `dumps_nvnw/`, `dumps_v2/`,
+`dumps_freshsingle/` (each with `f.rtl f.jump f.cse f.loop f.combine f.flow f.lreg f.greg
+f.sched f.sched2` per-function extracts), `chain.py` (post-sched1 window reader), `ext.sh`,
+`gen.py gen2.py gen3.py gen4.py gen5.py`, `enum{,2,3,4,5}/` (25 complete bodies),
+`sweep{,2,3,4,5}.json`.
+
+## s5b (synthesis, 2026-09-09) — 55 new measured spellings; floor holds at 6/176
+
+- [s5b] The floor was RE-MEASURED at 6/176 on `memory/grind/func_8005D554/candidate.c` on
+  HEAD main @ 4f43e5cf; the control body in every sweep this session (`s5b/enum/q2_late_none.c`,
+  `s5b/enum2/shared_accum_before.c`, `s5b/enum4/dowhile_split_tail.c`) reproduces 6/176 exactly.
+
+- [s5b] The 4-local chassis (separate `a0a`/`a2a` and `a0b`/`a2b` offset locals per loop half)
+  is a byte-level no-op at the floor: 6/176, identical to the 2-local candidate. Early-birthing
+  the a2 base on top of it is strictly worse than on the 2-local chassis (47/178 in all four
+  measured cells vs 31/178). s5 frontier Q1 is retired.
+
+- [s5b] Carrier IDENTITY for the a2 base is invisible in the accumulate shape: the shared
+  `a2_offset`, one fresh local shared by both halves, and two fresh per-half locals all give
+  6/176 when the base is born late and the value is accumulated. In the direct-store shape
+  (`s.zero1C = X + rnd`) the same three carriers give 10/176, 10/176 and 54/178 — the last
+  because a fresh PER-HALF carrier is set exactly once in the loop and `loop.c` hoists the
+  invariant `(s32)r4 - K` out of the loop entirely.
+
+- [s5b] The `loop.c` gate is now named exactly: a movable is moved when
+  `threshold * savings * lifetime >= insn_count` (`tools/gcc-2.7.2/loop.c:1631`), with
+  `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (`loop.c:532`),
+  `savings = n_times_used[regno]` and `lifetime = luid(last use) - luid(first def)`
+  (`loop.c:790-793`). Every spelling measured across s3/s4/s5/s5b attacks the SET COUNT (which
+  decides whether a movable is recorded at all); `insn_count`, `lifetime` and the invariance
+  test itself are untried.
+
+- [s5b] Reproducing the permuter's only sub-6 find (`tmp/perm_5d554_z3/output-160-1`, sandbox 3:
+  a carrier that holds the half-1 a2 base and is later re-written to 0 to feed `s.zero10`) with
+  the dead PARAMETERS `arg0`/`arg1` or the dead locals `v0`/`v3` as the carrier costs 1-3
+  instructions in all nine measured bodies (25/178, 37/177, 42/178, 43/177 x3, 43/179, 50/179,
+  61/178 x2). The sanctioned staged-value quadrant does not reach 176 instructions here.
+
+- [s5b] The LOOP CHASSIS is measured out. `do { } while`, the s2 `z3` guard-duplicated `while`,
+  and `for (;;) { ...; if (!cond) break; }` produce the same 6/176 in every measured column;
+  `jump.c`'s `duplicate_loop_exit_test` normalises all three to the same RTL. An explicit
+  label + `goto` loop loses the phantom compare pseudo and drops to 175 instructions (37/175).
+
+- [s5b] Routing the call's literal second argument through a zero constant-holder local costs
+  2-3 instructions (16/178 function-top holder, 19/179 guard-block holder, 21/179 when the
+  holder also feeds `s.zero10`, 30/179 for both). The target's `addu $a1, $zero, $zero` is
+  exactly what GCC emits for a literal `0` argument, which the candidate already emits.
+
+- [s5b] The callee `func_80073728` genuinely READS the +0x10 and +0x14 fields of its argument
+  struct (`asm/funcs/func_80073728.s:314` `lw $a1, 0x10($s2)`, `:317` `lw $v0, 0x14($s2)`,
+  `:323` `sw $t0, 0x14($s2)`), so `s.zero10 = 0` and `s.one14 = 1` are real input stores of
+  literal constants in the original source — not staging sites for another value. That removes
+  the semantic justification for the permuter's shared-pseudo trick.
+
+- [s5b] The residual window is unchanged and precisely located: ours emits
+  `[addiu a2,s4,-K][addiu a0,sp,0x10][lw v1,gp][move a1,zero]`, the target emits
+  `[addiu a0,sp,0x10][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K]`
+  (`asm/funcs/func_8005D554.s:93-96` and `:139-142`), twice — once per loop half.
+
+- [s5] Floor RE-MEASURED at 6/176 on memory/grind/func_8005D554/candidate.c on HEAD main @ 4f43e5cf; every sweep this session carried a control body reproducing 6/176 exactly.
+
+- [s5] The previous session's work (H23-H26 pass attribution, dumps under tmp/grind/func_8005D554/s5/) survives on disk and was re-read rather than re-derived; that session was discarded on an outcome-JSON kill-scope wording defect, not a measurement defect.
+
+- [s5] The loop.c hoist gate is now named exactly: a movable is moved when threshold * savings * lifetime >= insn_count (tools/gcc-2.7.2/loop.c:1631), with threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) (loop.c:532), savings = n_times_used[regno] and lifetime = luid(last use) - luid(first def) (loop.c:790-793).
+
+- [s5] Every spelling measured across s3/s4/s5/s5b attacks the carrier's SET COUNT, which decides only whether a movable is recorded at all; insn_count, lifetime and the invariant_p test itself have never been attacked.
+
+- [s5] Carrier identity for the a2 base is invisible in the accumulate shape (shared local, fresh shared local and fresh per-half locals all give 6/176) and only decides 176 vs 178 in the direct-store shape.
+
+- [s5] The loop chassis is measured out: do-while, the z3 guard-duplicated while, and for(;;)+break are all 6/176 because jump.c's duplicate_loop_exit_test normalises them to one RTL stream; label+goto drops to 175 instructions.
+
+- [s5] The residual window is unchanged and precisely located: ours emits [addiu a2,s4,-K][addiu a0,sp,0x10][lw v1,gp][move a1,zero]; the target emits [addiu a0,sp,0x10][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K] at asm/funcs/func_8005D554.s:93-96, repeated once per loop half.
+
+- [s5] src/text1b.c was left byte-clean at the end of the session (func_8005D554 still INCLUDE_ASM); every measurement went through tools/sweep_variants.py, which restores the file.

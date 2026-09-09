@@ -656,3 +656,348 @@ F3. **Block structure, not local spelling.** Sweeps 1-3 prove the residual is in
 - probe: mipsel-linux-gnu-objdump -d on tmp/sandbox/func_8005D554/text1b.o after a clean `sandbox func_8005D554 --disable all` on the candidate body (score 6, build_insns 176), aligned against the target listing by tmp/grind/func_8005D554/s4/pairdiff.py; disassembly banked at tmp/grind/func_8005D554/s4/ours.dis.
 - result: Confirmed: 176 slots, 6 differing, two identical 3-diff windows. Note for future sessions -- tmp/sandbox/<func>/ holds the LAST object built, so a disassembly taken after a sweep_variants run shows the last VARIANT, not the candidate; re-run sandbox on the candidate before dumping.
 - verdict: CONFIRMED
+
+## s5 (synthesis) — measured. FLOOR 6/176 (re-measured this session on HEAD main @ 4f43e5cf).
+
+This session ran the PASS ATTRIBUTION that s4's frontier F1 asked for, and the answer
+**overturns the mechanism story of s3 (H15/H19) and of s4 (F1/F2)**. All four dump sets are
+banked under `tmp/grind/func_8005D554/s5/dumps_{cand,nvnw,v2,freshsingle}/` (per-function
+extracts `f.rtl`, `f.combine`, `f.lreg`, `f.greg`, produced by
+`pwsh tools/grinder/dump.ps1`-equivalent `tmp/grind/func_8005D554/run_dump.sh` +
+`s5/ext.sh`).
+
+### H23 — PASS ATTRIBUTION: the Judge-FAILed `nv`/`nw` body wins through a two-phase
+`loop.c`-then-`combine.c` interaction, not through `reg_n_sets`/`birthing_insn_p` and not
+through a two-pseudo RTL shape. **CONFIRMED.**
+- statement: in the FAILed body the a2 base carrier `nv` is written twice IN SOURCE, so at
+  `loop.c` time it is not a movable and its loop-invariant value `(s32)r4 - K` is NOT hoisted
+  out of the loop. `combine.c` then erases the second write (`nv = ret; s.ret = nv;` collapses
+  to `s.ret = ret`), leaving a pseudo that is SINGLE-SET, single-use and carries a `REG_DEAD`
+  note at the consuming `addu`. `sched1` places that insn immediately after the
+  `D_800A3418` load, and `local-alloc` therefore seats it in caller-saved `$a2` — the target's
+  exact shape.
+- mechanism + evidence, insn by insn (all insn numbers from the banked dumps):
+  * `dumps_nvnw/f.rtl:484` — `(insn 198 195 201 (set (reg/v:SI 83) (plus (reg/v:SI 78) (const_int -12))))`,
+    i.e. the base insn is born EARLY, before the third `rand` call (`call_insn 204`).
+  * `dumps_nvnw/f.combine:493` — insn 198 survives combine unchanged AND
+    `grep -c 'set (reg/v:SI 83)' = 1`: the second source write of `nv` is gone, and
+    `f.combine:572-574` shows the consuming `addu` with `REG_DEAD (reg/v:SI 83)`.
+  * `dumps_nvnw/f.lreg` — insn 198 is now chained `208 -> 198 -> 209`, i.e. sched1 SANK it
+    across the call to sit right after the `D_800A3418` load.
+  * `dumps_cand/f.rtl:515` — on `candidate.c` the same value is born LATE
+    (`(insn 211 208 214 ...)`, already after the `D_800A3418` load) into the accumulator
+    pseudo 82, and sched1 HOISTS it above the argument setup: that is the whole 6-point residual.
+  * `dumps_freshsingle/f.combine:339` — with a FRESH SINGLE-SET per-half carrier the base insn
+    is renumbered to `(insn 393 133 394 ...)` and sits in the PRE-LOOP block: `loop.c` hoisted
+    the loop-invariant out of the loop entirely; `dumps_freshsingle/f.greg:391` then shows it
+    allocated to `$a2` in the pre-loop but the loop body pays two extra insns.
+- probe: `run_dump.sh` on each of the four bodies; extracts via `s5/ext.sh`; chain reader
+  `s5/chain.py` printed the post-sched1 window before each `func_80073728` call.
+- result: the correct causal chain is LICM-avoidance (source multi-set) -> combine erasing the
+  extra set -> short single-use live range -> sched1 sink -> caller-saved `$a2`. Future sessions
+  must NOT re-derive the s3 `reg_n_sets > 1 defeats birthing_insn_p` reading (already overturned
+  by s3's own H19) nor the s4 reading that the residual needs a LUID above the argument loads:
+  the winning insn's LUID is BELOW the argument loads and it still schedules last.
+- verdict: CONFIRMED
+- measured_on: HEAD main @ 4f43e5cf, floor re-measured 6/176 on candidate.c this session;
+  no FAKE constructs in candidate.c; the nv/nw body is the banked Judge-FAILed form.
+
+### H24 — The `+2` instructions that every "born early" spelling pays is `loop.c` LICM of a
+single-set loop-invariant, and the two-pseudo (dest != accumulator) RTL shape is a byte-level
+no-op. **KILLED (instance).**
+- statement: sixteen new spellings measured this session — 7 arithmetic/position shapes at the
+  a2 site (base after the `s.zero18` store / at the `nv` slot / at the natural late slot, each
+  crossed with direct-store `s.zero1C = base + rnd` vs read-modify-write accumulate, plus a
+  variant summing into `a0_offset`), crossed with three seat states (both pointer locals kept,
+  `p_b390` freed, `p_b2e0` freed, both freed) — reproduce exactly three score classes and
+  nothing below the floor: every early-birth form is 178 instructions and scores 30-35; every
+  early-birth form with ONE pointer local freed is 176 instructions and scores 27-33; freeing
+  both is 174/53; the late-birth direct-store form is 176/10.
+- mechanism: the direct-store shape and the accumulate shape lower to the same RTL because
+  `combine.c` cannot merge the base insn into the add in either case (the base pseudo is
+  multi-set at combine time), so the only quantity that changes is WHERE the base pseudo lives:
+  a per-function local borrowed for the base keeps a live range that spans the half boundary,
+  gets a callee-saved seat from `global-alloc`, and evicts a pointer local (+2); a fresh
+  single-set per-half local is a `loop.c` movable and gets hoisted clean out of the loop (+2 in
+  the body). Freeing one pointer local pays the +2 back but leaves the base in a callee-saved
+  register across the `rand` call (`dumps_v2/f.greg:455` — `(set (reg/v:SI 16 s0) (plus (reg:SI 20 s4) (const_int -12)))`),
+  which is structurally unlike the target's caller-saved `$a2`.
+- probe: `tmp/grind/func_8005D554/s5/gen.py|gen2.py|gen3.py|gen4.py|gen5.py` ->
+  `s5/enum{,2,3,4,5}`; swept with `tools/sweep_variants.py --func func_8005D554 --file text1b
+  --json`; histograms `s5/sweep{,2,3,4,5}.json`.
+- result: v1 31/178, v2 31/178, v3 10/176, v4 31/178, v5 31/178, v6 30/178, v7 30/178;
+  v{1,2,4}_nob390 27/176, v{1,2,4}_nob2e0 28/176, v{1,2,4}_both 53/174; fresh single-set
+  per-half base 54/178 (plain), 32/176 (nob390), 35/176 (nob2e0); `a0_offset` borrow 35/178,
+  33/176, 32/176; existing-local borrow with the `X = ret; s.ret = X;` restage that erases the
+  second set in the FAILed body 30/178, 30/176 (`a2_offset` carrier), 35/178, 33/176
+  (`a0_offset` carrier). Forms banked at
+  `rejected/early-birth-existing-local-two-pseudo-scores-31.c`,
+  `rejected/fresh-single-set-perhalf-base-licm-hoisted-scores-54.c`,
+  `rejected/existing-local-borrow-ret-restage-scores-30.c`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf with candidate.c as the chassis (floor re-measured 6/176);
+  no FAKE constructs present in any variant
+
+### H25 — s4 frontier F2: a single `func_80073728` call site in the source raises the argument
+setup's priority via `birthing_insn_p`. **KILLED (class).**
+- statement: the shipped target emits TWO distinct `jal func_80073728` instructions
+  (`asm/funcs/func_8005D554.s:108` and `:155`), so a source with a single call site — an
+  if/else selecting the per-half constants and falling into one call, or a two-iteration inner
+  loop — emits one `jal` and cannot produce the target's 176-instruction body under GCC 2.7.2,
+  which does not unroll loops at `-O2` without `-funroll-loops`.
+- mechanism: one `CALL_EXPR` in the source expands to one `call_insn`; no pass in the 2.7.2
+  pipeline duplicates a call insn (`reorg.c` delay-slot filling excepted, which cannot create a
+  second `jal` to the same target in a different block).
+- probe: `grep -n 'jal' asm/funcs/func_8005D554.s` -> 9 `jal`, of which exactly two are
+  `func_80073728` (lines 108, 155) and seven are `rand`.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: asm/funcs/func_8005D554.s:155
+- measured_on: the shipped target listing; independent of our chassis and of any FAKE construct
+
+### H26 — KILL RE-AUDIT (mandated): the two closest-to-target instance kills reproduce on the
+current chassis. **CONFIRMED.**
+- statement: `rejected/shared-a2-base-direct-store-scores-10.c` (the closest non-floor form,
+  score 10) re-measures at 10/176 as this session's `s5/enum/v3.c`, and
+  `rejected/hoist-plus-freed-pb390-seat-scores-27.c` (score 27) re-measures at 27/176 as
+  `s5/enum2/v4_nob390.c`. `tools/fake_ablate.py --func func_8005D554 --file text1b --candidate
+  rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c` reports "no FAKE-annotated
+  constructs found", confirming there is no FAKE carrier masking a lever anywhere in the banked
+  forms (candidate.c is likewise FAKE-free).
+- verdict: CONFIRMED
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176
+
+## Frontier after s5 (replaces s4's F1-F3)
+
+Q1. **Find the ordinary-C construct that keeps the a2 base out of `loop.c`'s movable set AND
+    out of a callee-saved seat.** H23 names the exact requirement: the base pseudo must be
+    multi-set when `loop.c` runs (so the invariant is not hoisted) and must end up with a live
+    range confined to the single half (so `local-alloc` seats it in caller-saved `$a2`). Every
+    EXISTING local measured so far (`a0_offset`, `a2_offset`, `v0`, `v3`, `ret`) satisfies the
+    first condition and fails the second, because each is declared at function scope and is
+    read again in the other loop half. The untried lever is therefore NOT another borrow but a
+    change that shortens the borrowed local's range — e.g. giving the two halves genuinely
+    separate a0/a2 offset variables (four function-scope locals instead of two) so each is
+    written and read within one half only, then borrowing the half-local for the base. Next
+    probe: build the 4-local chassis (`a0a/a2a` for half 1, `a0b/a2b` for half 2), confirm it
+    still measures 6/176, then re-run the s5 early-birth cross product on top of it.
+
+Q2. **Attack `loop.c` directly: make the invariant not invariant.** `(s32)r4 - K` is
+    loop-invariant only because `r4` is. If the source computes the base from a value that
+    `loop.c` cannot prove invariant — e.g. reading `r4` back out of a location the loop writes,
+    or deriving it from `i` in a way that cancels — the movable disappears and a single-set
+    fresh-free spelling becomes affordable. Any such spelling must not add instructions, so the
+    cancellation has to be one `combine.c` folds away. Next probe: dump `.loop` for
+    `s5/enum3/acc_plain.c` and read the `movable` list to see exactly which invariants `loop.c`
+    records for this loop, then look for a spelling that removes `(s32)r4 - K` from it without
+    changing the emitted arithmetic.
+
+Q3. **A fourth permuter seed on a BLOCK-STRUCTURE-different 176/6 chassis.** s4 retired the
+    stacked-neutral seed (P3) because those axes are byte-level no-ops; s5 adds sixteen more
+    no-op/penalty points. The remaining structurally different 176/6 chassis is the s2 `z3`
+    guard-duplicated `while` — already permuted in s3 and it produced only the banned
+    fresh-multi-write carrier. A genuinely new seed therefore needs a new BLOCK structure: the
+    Q1 4-local chassis, or an object-model change at the `p_b2e0 = (u8 *)&D_8009B2E0`
+    declaration pun (the DATA MODEL block flags it; the typed-array spelling was killed at 21,
+    but a `struct`-typed base pointer with a real member for the +0xC sub-object was not).
+
+## s5b (synthesis, re-run after the s5 outcome was discarded on a wording defect) — measured. FLOOR 6/176.
+
+The s5 session's measurements (H23-H26) survive on disk and were re-read, not re-derived; that
+discard was purely an outcome-JSON kill-scope wording defect, not a measurement defect. This
+section adds 55 NEW measured spellings on top of them (`tmp/grind/func_8005D554/s5b/`,
+generators `gen{,2,3,4,5}.py`, histograms `sweep{1,2,3,4,5}.json`), and retires all three of
+the s5 frontier items Q1/Q2/Q3 with measurements.
+
+### H27 — s5 frontier Q1: giving the two loop halves genuinely separate offset locals shortens
+the borrowed carrier's live range enough to win a caller-saved seat for the a2 base. **KILLED (instance).**
+- statement: on the current candidate chassis, the 4-local chassis (`a0a`/`a2a` for half 1,
+  `a0b`/`a2b` for half 2) measures 6/176 — byte-identical to the 2-local candidate — and the
+  three early-birth placements measured on top of it (base at the `nv` slot before the a2-site
+  `rand`, base right after the `a0 +=` statement, each with and without the `p_b390` pointer
+  local) measure 47/178, worse than the same placements on the 2-local chassis (31/178).
+- mechanism: per-half offset locals are still written twice inside the loop (`= r5 - K` then
+  `+= rnd`), so they are not `loop.c` movables either way; separating them does not shorten the
+  live range that `global-alloc` sees, because both halves sit in the same basic block and the
+  half-1 locals stay live across the half-2 code for the loop back-edge. Early-birthing the base
+  into a per-half local adds a fourth simultaneously-live offset pseudo, which costs the two
+  instructions the 2-local chassis already paid plus a second callee-saved seat.
+- probe: `tmp/grind/func_8005D554/s5b/gen.py` -> `s5b/enum` (12 bodies), swept with
+  `tools/sweep_variants.py --func func_8005D554 --file text1b --json` -> `s5b/sweep1.json`.
+- result: q2_late_none 6/176 (control = candidate.c), q4_late_none 6/176, q2_late_b390 18/175,
+  q4_late_b390 18/175, q2_posta0/prerand_b390 29/177, q2_posta0/prerand_none 31/178,
+  q4_posta0/prerand_{none,b390} 47/178 (all four). Form banked at
+  `rejected/four-perhalf-offset-locals-early-birth-scores-47.c`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf with candidate.c as the chassis (floor re-measured 6/176);
+  no FAKE constructs present in any variant
+
+### H28 — The identity and freshness of the a2 base carrier is a byte-level no-op in the
+accumulate shape, and decides between 176 and 178 instructions only in the direct-store shape.
+**CONFIRMED (as a mechanism); the 18 measured forms KILLED (instance).**
+- statement: eighteen bodies crossing three carriers (the shared `a2_offset`, one fresh local
+  shared by both halves, two fresh per-half locals) x two consumption shapes (accumulate
+  `X += rnd; s.zero1C = X;` vs direct store `s.zero1C = X + rnd;`) x three positions of the
+  `zero10/one14/ret` store group relative to the base statement, all born LATE (after the
+  a2-site `D_800A3418 ^= rand()`), collapse to exactly three scores: the nine accumulate bodies
+  are 6/176, the six direct-store bodies with a carrier written twice in the loop are 10/176,
+  and the three direct-store bodies with fresh PER-HALF carriers are 54/178.
+- mechanism: a carrier written twice anywhere in the loop is not a `loop.c` movable
+  (`loop.c:791` records a movable only for a register whose set count qualifies), so the
+  invariant `(s32)r4 - K` stays in the loop; a fresh per-half carrier is set exactly once in the
+  loop, becomes a movable, and passes the desirability test at `loop.c:1631`
+  (`threshold * savings * lifetime >= insn_count`), so the invariant is hoisted to the pre-loop
+  block and the loop body pays two extra instructions. In the accumulate shape `combine.c`
+  merges the base set into the accumulator so the carrier's identity never reaches the
+  scheduler at all — which is why naming it changes nothing.
+- probe: `s5b/gen2.py` -> `s5b/enum2` (18 bodies) -> `s5b/sweep2.json`.
+- verdict: KILLED (no form below the floor)
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs
+  present in any variant. Form banked at
+  `rejected/fresh-perhalf-carrier-direct-store-hoisted-scores-54.c`.
+
+### H29 — The permuter's sandbox-3 `new_var` shape (base staged through a carrier in one half,
+the same carrier re-written to 0 to feed `s.zero10` in the other half) works with a PARAMETER
+as the carrier, which is inside the sanctioned staged-value/dead-store quadrant rather than the
+Judge-banned invented-carrier quadrant. **KILLED (instance).**
+- statement: nine bodies that reproduce `tmp/perm_5d554_z3/output-160-1/source.c`'s two-write
+  staging shape with the dead parameters `arg0`/`arg1` and with the dead locals `v0`/`v3` as
+  the carriers — both halves staged, half-1-only staged, and the half-1 stage without the
+  second write — measure 25/178 (`arg0` half-1 only), 37/177, 42/178, 43/177 (three bodies),
+  43/179, 50/179 and 61/178 (two bodies). None of the nine reaches 176 instructions.
+- mechanism: `arg0` and `arg1` are dead inside the loop but their pseudos are born in the
+  function prologue block, so `global-alloc` gives each a callee-saved seat that lives across
+  the whole loop; re-writing them inside the loop therefore adds a copy rather than reusing a
+  free seat, exactly as the `v0`/`v3` borrows measured in s3 (H16) did.
+- probe: `s5b/gen3.py` -> `s5b/enum3` (9 bodies) -> `s5b/sweep3.json`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs
+  present in any variant. Forms banked at
+  `rejected/param-borrow-arg0-arg1-zero10-restage-scores-43.c` and
+  `rejected/param-borrow-arg0-h1only-scores-25.c`.
+
+### H30 — s5 frontier Q3: a different LOOP chassis changes the emission order in the residual
+window. **KILLED (instance).**
+- statement: twenty bodies crossing four loop chassis (the candidate's `do { } while`, the s2
+  `z3` guard-duplicated `while`, a `for (;;)` with a trailing `if (!cond) break;`, and an
+  explicit label + `goto` loop) x three a2-site arithmetic spellings (split `= r4 - K` then
+  `+= rnd`, `+ -K`, direct store) x two positions of the `s.zero1C` store measure 6/176 for the
+  do-while, while and for-break bodies in the split and `+ -K` columns, 10/176 for the three
+  direct-store bodies, and 37/175 or 41/175 for the five label+goto bodies.
+- mechanism: `jump.c`'s `duplicate_loop_exit_test` normalises the guard-duplicated `while` and
+  the `for (;;) { ... if (!c) break; }` into the same `do { } while` RTL as the candidate, so
+  the three forms share one insn stream; the label+goto form loses the phantom compare pseudo
+  that gives the candidate its 176th instruction and drops to 175.
+- probe: `s5b/gen4.py` -> `s5b/enum4` (20 bodies) -> `s5b/sweep4.json`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs
+  present in any variant. Form banked at `rejected/goto-loop-chassis-scores-37.c`.
+
+### H31 — The untried side of the sched1 tie is the ARGUMENT SETUP: routing the call's literal
+second argument through a zero constant-holder local changes the `a1 = 0` insn's shape and
+therefore its position in the tie. **KILLED (instance).**
+- statement: five bodies — a `c0 = 0;` constant holder initialised inside the guard block and
+  used as the second call argument (19/179), used for the `s.zero10` stores (21/179), used for
+  both (30/179), initialised at function top and used as the second argument (16/178), and a
+  re-parenthesised `(s32)(&s)` first argument (6/176) — measure no body below the floor, and
+  the four constant-holder bodies each add two or three instructions.
+- mechanism: a pseudo holding 0 that is live across the loop is not propagated back to `$zero`
+  by `local-alloc`, so `load_register_parameters` emits a register-to-register copy plus the
+  holder's own set, and `global-alloc` spends a seat keeping it live; the target's
+  `addu $a1, $zero, $zero` is what GCC emits for a literal `0` argument, which is what the
+  candidate already emits.
+- probe: `s5b/gen5.py` -> `s5b/enum5` (5 bodies) -> `s5b/sweep5.json`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs
+  present in any variant. Form banked at
+  `rejected/zero-constant-holder-second-call-arg-scores-19.c`.
+
+## Frontier after s5b (replaces Q1/Q2/Q3)
+
+R1. **s5 frontier Q2 is now the only untried mechanism-level lever: remove `(s32)r4 - K` from
+    `loop.c`'s movable set by making it not loop-invariant, so a single-set fresh carrier stays
+    in the loop.** H28 pins the exact gate: `loop.c:1631` moves a movable when
+    `threshold * savings * lifetime >= insn_count`, with
+    `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (`loop.c:532`) and
+    `savings = n_times_used[regno]`, `lifetime = luid(last use) - luid(first def)`
+    (`loop.c:790-793`). Everything measured so far attacks the set count; nothing has attacked
+    `insn_count`, `lifetime`, or the invariance test itself. Next probe: run `run_dump.sh` on
+    `s5b/enum2/fresh_direct_before.c` and read the `.loop` dump's movable list for this loop to
+    get the recorded `lifetime`, `savings` and `insn_count` numbers, then look for a source
+    spelling of the base whose value `invariant_p` does not accept — e.g. deriving the `- K`
+    displacement from a loop-written location that `cse.c` folds back to a constant, so the
+    emitted arithmetic is unchanged but the movable disappears.
+
+R2. **The object model at the `p_b2e0 = (u8 *)&D_8009B2E0` declaration pun is the last untried
+    STRUCTURAL axis** (the loop chassis is now measured out by H30, and the typed-array spelling
+    was killed at 21 by H3). The remaining spelling is a base pointer to a real struct type with
+    a member for the +0xC sub-object, which changes which insns exist in the setup block and
+    therefore the INSN_LUID sequence the sched1 tie-break reads. NOTE: a TU-local struct
+    declaration is excluded by the aggregate-merge family's header-canonical prong, so this axis
+    needs a header edit and therefore an integration handoff, or a ruling, before it can be
+    submitted — but it can be MEASURED first with a TU-local declaration to see whether the
+    residual moves at all. Next probe: declare the type locally, measure, and only pursue the
+    header route if the score drops below 6.
+
+R3. **Re-open the `s.zero10` dependence route with a construct that is not an invented carrier.**
+    The permuter's only sub-6 find (`tmp/perm_5d554_z3/output-160-1`, sandbox 3) works by giving
+    the a2-base set and the `s.zero10` store the same destination pseudo, which creates the
+    output dependence s1's exact scheduler model (`s1/mutate_out.txt`, `launch_dep228`) predicted
+    would reproduce the target order. H29 shows parameters and dead locals cannot carry it
+    without adding instructions. The untried carrier class is a value the program ALREADY stages
+    for both purposes — i.e. a spelling in which the number stored into `s.zero10` is genuinely
+    derived from the a2 site. Next probe: read the callee `func_80073728` for whether the +0x10
+    field of the argument struct is read at all; if it is a genuine input field the original
+    source may have zeroed it from a variable, and that variable is the carrier.
+
+## [s5] On the current candidate chassis the 4-local chassis (separate a0a/a2a and a0b/a2b offset locals per loop half) measures 6/176, and the three early-birth placements measured on top of it (base at the pre-rand slot, base right after the a0 += statement, each with and without the p_b390 pointer local) measure 47/178, worse than the same placements on the 2-local chassis at 31/178.
+- mechanism: Per-half offset locals are still written twice inside the loop (= r5 - K then += rnd) so they are not loop.c movables either way; both halves sit in one basic block, so separating them does not shorten the live range global-alloc sees. Early-birthing the base into a per-half local adds a fourth simultaneously-live offset pseudo, costing the two instructions the 2-local chassis already paid plus a second callee-saved seat.
+- probe: tmp/grind/func_8005D554/s5b/gen.py -> s5b/enum (12 bodies), swept with tools/sweep_variants.py --func func_8005D554 --file text1b --json -> s5b/sweep1.json
+- result: q2_late_none 6/176 (control), q4_late_none 6/176, q2_late_b390 18/175, q4_late_b390 18/175, q2_posta0/prerand_b390 29/177, q2_posta0/prerand_none 31/178, the four q4_posta0/prerand cells 47/178. s5 frontier Q1 retired. Form banked at memory/grind/func_8005D554/rejected/four-perhalf-offset-locals-early-birth-scores-47.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis (floor re-measured 6/176 this session); no FAKE constructs present in any variant
+
+## [s5] Eighteen bodies crossing three a2-base carriers (the shared a2_offset, one fresh local shared by both halves, two fresh per-half locals) x accumulate vs direct-store consumption x three positions of the zero10/one14/ret store group, all born after the a2-site rand, collapse to three scores: the nine accumulate bodies 6/176, the six direct-store bodies whose carrier is written twice in the loop 10/176, and the three direct-store bodies with fresh per-half carriers 54/178.
+- mechanism: A carrier written twice anywhere in the loop is not a loop.c movable (loop.c:791 records a movable only for a register whose set count qualifies), so the invariant (s32)r4 - K stays in the loop; a fresh per-half carrier is set once, becomes a movable, and passes the desirability test at loop.c:1631 (threshold * savings * lifetime >= insn_count), so the invariant is hoisted to the pre-loop block and the loop body pays two extra instructions. In the accumulate shape combine.c merges the base set into the accumulator, so the carrier's identity never reaches the scheduler.
+- probe: tmp/grind/func_8005D554/s5b/gen2.py -> s5b/enum2 (18 bodies) -> s5b/sweep2.json
+- result: Nothing in the measured set sits below the floor. Naming or freshening the accumulate-shape carrier is a byte-level no-op; the direct-store shape is 4 points worse at best. Form banked at memory/grind/func_8005D554/rejected/fresh-perhalf-carrier-direct-store-hoisted-scores-54.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant
+
+## [s5] Nine bodies reproducing the permuter's sandbox-3 shape from tmp/perm_5d554_z3/output-160-1/source.c (a carrier holding one half's a2 base and re-written to 0 in the other half to feed s.zero10) with the dead parameters arg0/arg1 and the dead locals v0/v3 as the carrier measure 25/178, 37/177, 42/178, 43/177 (three bodies), 43/179, 50/179 and 61/178 (two bodies); none of the nine reaches 176 instructions.
+- mechanism: arg0 and arg1 are dead inside the loop but their pseudos are born in the prologue block, so global-alloc gives each a callee-saved seat live across the whole loop; re-writing them inside the loop adds a copy rather than reusing a free seat, matching the v0/v3 borrow measurements banked in s3 (H16).
+- probe: tmp/grind/func_8005D554/s5b/gen3.py -> s5b/enum3 (9 bodies) -> s5b/sweep3.json
+- result: The sanctioned staged-value / dead-param quadrant does not reach 176 instructions on this chassis, so the permuter's only sub-6 find has no measured re-spelling inside it. Forms banked at rejected/param-borrow-arg0-arg1-zero10-restage-scores-43.c and rejected/param-borrow-arg0-h1only-scores-25.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant
+
+## [s5] Twenty bodies crossing four loop chassis (the candidate's do-while, the s2 z3 guard-duplicated while, a for(;;) with a trailing if(!cond) break, and an explicit label + goto loop) x three a2-site arithmetic spellings x two positions of the s.zero1C store measure 6/176 for the do-while, while and for-break bodies in the split and '+ -K' columns, 10/176 for the three direct-store bodies, and 37/175 or 41/175 for the five label+goto bodies.
+- mechanism: jump.c's duplicate_loop_exit_test normalises the guard-duplicated while and the for-break form into the same do-while RTL as the candidate, so the three share one insn stream; the label+goto form loses the phantom compare pseudo that supplies the candidate's 176th instruction and drops to 175.
+- probe: tmp/grind/func_8005D554/s5b/gen4.py -> s5b/enum4 (20 bodies) -> s5b/sweep4.json
+- result: s5 frontier Q3's loop-structure half is retired: the three normalising chassis are indistinguishable at the floor. Form banked at memory/grind/func_8005D554/rejected/goto-loop-chassis-scores-37.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant
+
+## [s5] Five bodies attacking the argument-setup side of the sched1 tie -- a c0 = 0 constant holder initialised in the guard block and used as the second call argument (19/179), used for the s.zero10 stores (21/179), used for both (30/179), initialised at function top and used as the second argument (16/178), and a re-parenthesised (s32)(&s) first argument (6/176) -- measure no body below the floor, and the four constant-holder bodies each add two or three instructions.
+- mechanism: A pseudo holding 0 that is live across the loop is not folded back to $zero by local-alloc, so load_register_parameters emits a register-to-register copy plus the holder's own set and global-alloc spends a seat keeping it live. The target's addu $a1, $zero, $zero is what GCC emits for a literal 0 argument, which the candidate already emits.
+- probe: tmp/grind/func_8005D554/s5b/gen5.py -> s5b/enum5 (5 bodies) -> s5b/sweep5.json
+- result: The a1 = 0 argument insn is already target-shaped; re-spelling the literal only adds instructions. Form banked at memory/grind/func_8005D554/rejected/zero-constant-holder-second-call-arg-scores-19.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant
+
+## [s5] The callee func_80073728 genuinely reads the +0x10 and +0x14 fields of its argument struct, so the candidate's s.zero10 = 0 and s.one14 = 1 are real input stores of literal constants rather than staging sites for another value.
+- mechanism: asm/funcs/func_80073728.s:314 is `lw $a1, 0x10($s2)` and :317 `lw $v0, 0x14($s2)` with :323 `sw $t0, 0x14($s2)`, where $s2 is the incoming $a0 (set at :4, `addu $s2, $a0, $zero`). Both offsets are read before being written, so both are inputs.
+- probe: grep of asm/funcs/func_80073728.s for `s2)` references and for the a0 copy at line 4
+- result: This removes the semantic justification for the permuter's shared-pseudo trick (giving the a2 base and the s.zero10 store the same destination pseudo): the original source has no program reason to route a 0 through a variable here. It also confirms the field layout the candidate's S46C struct assumes.
+- verdict: CONFIRMED

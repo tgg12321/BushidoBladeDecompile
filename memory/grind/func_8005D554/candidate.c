@@ -21,6 +21,31 @@
  * a2-arithmetic spelling space is quantized to {6, 15}; the 800-form cross product of every
  * neutral axis (a0/a2 arithmetic forms x declaration scope x zero1C position x tail-store
  * moves) is 800/800 at exactly 6/176.  Do not re-sweep those axes: they are byte-level no-ops.
+ *
+ * s5 (synthesis, 2026-09-09, HEAD main @ 4f43e5cf): floor RE-MEASURED at 6/176 on this body.
+ * The pass attribution is now DONE and it corrects s3 and s4.  The Judge-FAILed nv/nw body did
+ * NOT win by reg_n_sets (its carrier is SINGLE-set after combine) and did NOT win by out-LUIDing
+ * the argument loads (its base insn is born BEFORE the third rand call, i.e. with a LOWER LUID,
+ * and sched1 SINKS it).  The real chain: a source-multi-set carrier is not a loop.c movable, so
+ * the loop-invariant (s32)r4 - K is not hoisted; combine.c then erases the extra set, leaving a
+ * single-set single-use pseudo that dies at the add; sched1 sinks its insn to just after the
+ * D_800A3418 load; local-alloc seats it in caller-saved $a2.  Sixteen new spellings (s5/enum*)
+ * show the direct-store vs accumulate shape is an exact byte-level no-op, that every early-birth
+ * form costs +2 (LICM hoist for a fresh single-set carrier, a tenth callee-saved seat for an
+ * existing local), and that freeing a pointer local buys the count back but leaves the base in a
+ * callee-saved register -- structurally further from the target than this body.  Do not re-derive
+ * the LUID framing or the reg_n_sets framing; see hypotheses.md H23-H26.
+ *
+ * s5b (synthesis, 2026-09-09, HEAD main @ 4f43e5cf): floor RE-MEASURED at 6/176 on this body.
+ * 55 further spellings measured (tmp/grind/func_8005D554/s5b/, sweep{1..5}.json) retire all
+ * three s5 frontier items: the 4-local per-half offset chassis is a byte-level no-op at the
+ * floor (6/176) and strictly worse when early-birthed (47/178); a2-base carrier IDENTITY is
+ * invisible in the accumulate shape (shared / fresh-shared / fresh-per-half all 6/176) and only
+ * decides 176 vs 178 in the direct-store shape; the loop chassis is measured out (do-while ==
+ * guard-duplicated while == for-break, all 6/176; label+goto 37/175); parameter and dead-local
+ * carriers for the permuter s zero10-restage trick cost 1-3 insns (25-61); a zero constant
+ * holder for the second call argument costs 2-3 insns (16-30). See hypotheses.md H27-H31 and
+ * frontier R1-R3.  Do NOT re-sweep loop-chassis, carrier-identity or per-half-local axes.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);
