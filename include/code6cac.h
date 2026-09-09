@@ -50,8 +50,15 @@ extern u8 D_8008E5A8;
 extern u8 D_8008E5CC;
 extern u8 D_8008E748;
 extern u8 D_8008E75C;
-extern u8 D_8008EA44;
-extern u8 D_8008EA45;
+/* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries (types 2..6);
+   D_8008EBFC: indexed by leaf category, 6 entries. The original binary indexes both at a
+   2-byte stride and reads both bytes at the same index (asm/funcs/func_800335D8.s). */
+typedef struct {
+    u8 a;
+    u8 b;
+} LeafThreshold;
+
+extern LeafThreshold D_8008EA44[5];
 extern s16 D_8008EAC0;
 extern s16 D_8008EB04;
 extern s16 D_8008EB06;
@@ -70,9 +77,8 @@ extern u8 D_8008EB8E;
 extern u16 D_8008EBA0;
 extern s32 D_8008EBCC;
 extern s32 D_8008EBE0;
-extern u8 D_8008EBF4;
-extern u8 D_8008EBFC;
-extern u8 D_8008EBFD;
+extern u8 D_8008EBF4[6];
+extern LeafThreshold D_8008EBFC[6];
 extern u8 D_8008EC30;
 extern u32 D_8008EC38;
 extern s16 D_8008F12C;
@@ -135,7 +141,10 @@ extern u8 D_800A371B;
 extern s32 D_800A371C;
 extern u8 D_800A3728;
 extern s8 D_800A3748;
-extern s16 D_800A3756;
+/* 4-entry s16 leaf random/scratch buffer (named_syms.txt: g_leaf_random_buffer). func_800335D8
+   walks it from D_800A3750 to D_800A3750+8 at a 2-byte stride; func_80033510 clears it from the
+   last element down (asm/funcs/func_80033510.s starts at 0x800A3756). */
+extern s16 D_800A3750[4];
 extern u8 D_800A3758;
 extern u8 D_800A3764;
 extern u8 D_800A3769;

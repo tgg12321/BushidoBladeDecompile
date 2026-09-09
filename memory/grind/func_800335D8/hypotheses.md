@@ -54,3 +54,22 @@ KILLED: none this session (K2-with-cast is byte-identical, not disproven -- noth
 FRONTIER: none -- candidate-ready (sandbox 0 this session, edits in place in src/ + the granted integration surfaces).
 Post-landing housekeeping for the OPERATOR (not a session surface): once asm/funcs/func_800335D8.s is retired the
 `D_8008EA45` / `D_8008EBFD` alias rows in undefined_syms_auto.txt can go (their suffix says so).
+
+## s3 = driver session 1 after ledger reset (2026-09-08, recon) -- floor (INCLUDE_ASM at HEAD) -> 0 (sandbox AND oracle SHA1, edits in place)
+
+CONFIRMED
+9. Completing the leaf-buffer aggregate merge (header `extern s16 D_800A3750[4];` replacing `extern s16 D_800A3756;`,
+   TU-local extern removed, func_80033510 respelled `&D_800A3750[3]`, D_800A3756 rows removed from
+   undefined_syms_auto.txt / named_syms.txt) is byte-neutral for every consumer: sandbox func_800335D8 = 0 (176/176),
+   sandbox func_80033510 = 0 (16/16), verify-oracle --rebuild SHA1 == oracle. Mechanism: `&D_800A3750[3]` and
+   `&D_800A3756` are the same link-time constant 0x800A3756; cc1 emits identical `la`/`addiu` for either. This
+   removes the layer-1 defect (two C handles to 0x800A3756) without touching the function body.
+10. Sibling `main` (src/ings.c): no shared block (src/ings.c names neither func_800335D8 nor any D_800A375x symbol).
+
+KILLED: none (nothing measured non-zero this session; the s2 body with the incomplete merge is already banked in
+rejected/layer1-fail-0908-2027.c).
+
+FRONTIER: none -- candidate-ready (sandbox 0 this session, edits in place in src/ + include/code6cac.h +
+undefined_syms_auto.txt + named_syms.txt, all inside the 2026-09-08 integration-handoff scope grant).
+Operator housekeeping after landing: the alias-suffixed rows D_8008EA45 / D_8008EBFD in undefined_syms_auto.txt
+retire with asm/funcs/func_800335D8.s.

@@ -15,9 +15,8 @@
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
 /* Extern data declarations */
-extern u8 D_8008E914;
-extern u8 D_8008EA00;
-extern s16 D_800A3750;
+extern u8 D_8008E914[][8];
+extern s32 D_8008EA00[][4];
 extern s32 func_8001DB58(void);
 extern s32 D_800F33D8;
 extern u32 D_800A378C;
@@ -3009,7 +3008,7 @@ s32 func_80033498(void) {
 extern u8 D_800A391D;
 void func_80033510(void) {
     s32 i = 3;
-    s16 *p1 = &D_800A3756;
+    s16 *p1 = &D_800A3750[3];
     do {
         *p1 = 0;
         i--;
@@ -3040,7 +3039,95 @@ void func_80033550(LeafPos *arg0) {
     D_80107850[i] = *arg0;
 }
 
-INCLUDE_ASM("asm/funcs", func_800335D8);
+void func_800335D8(void) {
+    s32 i;
+    u8 *tbl = D_8008E914[D_800A36A4];
+
+    for (i = 0; i < 6; i++) {
+        if (D_800A3918[i] != 0) {
+            s32 cat = func_80033498();
+            u8 cur = D_800A3918[i];
+
+            if (cur == 1) {
+                func_800325E0(D_8008EBF4[cat], &D_80107850[i].x);
+            } else if (cur == D_8008EBFC[cat].a) {
+                func_800325E0(D_8008EBF4[cat] + 1, &D_80107850[i].x);
+            } else if (cur == D_8008EBFC[cat].b) {
+                func_800325E0(D_8008EBF4[cat] + 2, &D_80107850[i].x);
+            }
+
+            {
+                s32 val = D_800A3918[i] + 1;
+                D_800A3918[i] = val;
+                if ((u32)D_8008EBFC[cat].b < (u32)(val & 0xFF)) {
+                    D_800A3918[i] = 0;
+                }
+            }
+        }
+    }
+
+    if (func_8001DB58() != 0) {
+        s16 *buf = D_800A3750;
+
+        for (i = 0; i < 4; i++, tbl += 2) {
+            u8 *data = tbl + 1;
+            s32 rng;
+            s32 type;
+            s32 rnd;
+
+            rng = rng_Next();
+            rnd = rng & 0x3FF;
+            type = *tbl;
+
+            if (type == 1) goto handle_type_1;
+            if (type < 2) goto skip;
+            if (type < 7) goto handle_type_2_6;
+            continue;
+
+        handle_type_1:
+            if (buf[i] != 0) goto skip;
+            buf[i] = 1;
+            goto call_default;
+
+        handle_type_2_6:
+            {
+                s32 adj = type - 2;
+                s32 count;
+                s32 scount;
+                s32 thresh;
+                s32 limit;
+
+                count = (u16)buf[i] + 1;
+                buf[i] = count;
+                scount = (s16)count;
+                thresh = D_8008EA44[adj].a;
+                limit = thresh * 30;
+
+                if (limit < scount) {
+                    s32 ratio = ((scount - limit) << 10) / (D_8008EA44[adj].b * 30);
+
+                    if (rnd < ratio) {
+                        buf[i] = 0;
+                        type = *tbl;
+                        if ((u32)(type - 5) < 2) {
+                            func_800325E0(0x7B + i, D_8008EA00[type]);
+                            continue;
+                        }
+                        goto call_default;
+                    }
+                }
+                goto skip;
+            }
+
+        call_default:
+            {
+                u8 val = *data;
+                func_8005C650(0x7B + i, val, val);
+            }
+        skip:;
+        }
+    }
+}
 void func_80033898(void) {
     gpu_EnableDisplay();
     D_800A37B8 = 0;

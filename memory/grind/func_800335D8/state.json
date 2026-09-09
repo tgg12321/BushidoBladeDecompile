@@ -27,6 +27,13 @@
    "hash": "210c28dc869f88ce",
    "when": "2026-09-09T01:27:10.262262+00:00",
    "summary": "Body logic, casts, goto dispatch, the two LeafThreshold merges and the D_80107850[i].x argument all verify clean against asm/funcs/func_800335D8.s and the data bytes; the ONE defect is `extern s16 D_800A3750[4];` (TU-local, src/code6cac_b.c:20), which overlaps the still-live per-word scalar `extern "
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "210c28dc869f88ce",
+   "when": "2026-09-09T01:42:31.059737+00:00",
+   "summary": "final call: Body is ordinary C: goto/label dispatch renders the asm's beq/slti compare chain faithfully (K1 structured form killed at 19, rejected/loop2-structured-if-else-dispatch.c); the *tbl re-read after buf["
   }
  ]
 }

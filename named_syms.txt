@@ -1547,8 +1547,7 @@ g_leaf_position_table                                   = 0x80107850;  /* 12-byt
 g_leaf_stage_data_table                                 = 0x8008E914;  /* per-stage leaf data (8-byte stride, indexed by g_stage_id_current) */
 g_leaf_action_id_base                                   = 0x8008EBF4;  /* per-cat base action IDs */
 g_leaf_action_threshold_a                               = 0x8008EBFC;  /* per-cat threshold (cat*2 index) */
-g_leaf_action_threshold_b                               = 0x8008EBFD;  /* per-cat threshold paired with _a */
-g_leaf_random_buffer                                    = 0x800A3750;  /* s16 random/scratch buffer (~0x7B entries) */
+g_leaf_random_buffer                                    = 0x800A3750;  /* s16 random/scratch buffer, 4 entries (0x7B is the sound-slot id base, not a size) */
 
 /* === Motion state flag table true base (2026-05-17) -- 1 high === */
 /* The existing g_motion_ex_flag_table_4 at 0x800F10E0 is actually */
@@ -2435,7 +2434,6 @@ g_special_cam_win_byte_b_plus_2                         = 0x800A371A;  /* +2 fro
 g_special_cam_win_byte_b_plus_3                         = 0x800A371B;  /* +3 from g_special_cam_win_byte_b (0x800A3718) */
 g_gnd_fog_prev_plus_4                                   = 0x800A3724;  /* +4 from g_gnd_fog_prev (0x800A3720) */
 g_gnd_fog_prev_plus_8                                   = 0x800A3728;  /* +8 from g_gnd_fog_prev (0x800A3720) */
-g_leaf_random_buffer_plus_6                             = 0x800A3756;  /* +6 from g_leaf_random_buffer (0x800A3750) */
 g_leaf_random_buffer_plus_8                             = 0x800A3758;  /* +8 from g_leaf_random_buffer (0x800A3750) */
 g_mottest_substate_plus_1                               = 0x800A376C;  /* +1 from g_mottest_substate (0x800A376B) */
 g_mottest_substate_plus_3                               = 0x800A376E;  /* +3 from g_mottest_substate (0x800A376B) */
@@ -2821,7 +2819,6 @@ g_char_class_init_tbl_5bytes                                   = 0x8008E338;
 g_s16_lookup_u8idx_E75C                                   = 0x8008E75C;
 g_buffer_base_E908                                   = 0x8008E908;
 g_threshold_lookup_EA44                                   = 0x8008EA44;
-g_threshold_lookup_EA45                                   = 0x8008EA45;
 g_winanim_per_stage_intro_frame                                  = 0x8008EAC0;
 g_winanim_callout_a_frame                                  = 0x8008EB04;
 g_winanim_callout_b_frame                                  = 0x8008EB06;
