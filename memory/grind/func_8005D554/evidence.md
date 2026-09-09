@@ -2058,3 +2058,151 @@ Floor RE-MEASURED at **6/176** with candidate.c applied to src/text1b.c. Kill re
 - [s19] The s.zero10 = 0 slot cannot take a DATA dependence at all: combine runs before sched1, so any C expression whose value GCC folds to 0 loses the dependence along with the computation. That slot is reachable only in the anti/output direction, i.e. the base insn must itself reference MEM(s + 0x10).
 
 - [s19] Both sched_solver models built this session are exact on this function (16/16 blocks order- AND clock-exact in both passes, parity=True for the whole TU); the boost-chassis model is preserved at tmp/grind/func_8005D554/s19/g1.sched.json so the next session need not re-extract it.
+
+## s20 (forensics, 2026-09-09, HEAD main @ 7a5fbffb) — the sched1 pick at clock 64 is now enumerated INPUT BY INPUT from the instrumented compiler, and the store-preference mechanism was mis-attributed for four sessions
+
+Floor RE-MEASURED at **6/176** with `memory/grind/func_8005D554/candidate.c` applied to
+`src/text1b.c` (`sandbox func_8005D554 --disable all`). Kill re-audit passes for a TENTH
+consecutive session: `tools/fake_ablate.py --func func_8005D554 --file text1b --candidate
+tmp/grind/func_8005D554/s18/enumB/G1_gap1_both.c` reports no FAKE-annotated construct, and the
+boost chassis re-measures 8/176 exactly as s18 banked it (it is `V0_ctl` in this session's sweep).
+
+### 1. The complete sched1 trace of the half-1 window (control chassis)
+
+Captured with the instrumented cc1 (`tools/gcc-2.7.2/cc1`, NOT `build/cc1`) under
+`BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1`; harness
+`tmp/grind/func_8005D554/s20/dump.sh`, log `tmp/grind/func_8005D554/s20/dumps/ctrl/sched.log`
+(10 MB — grep it, never cat it; the half-1 window lives at lines 56730-57790).
+
+    clock 60  pick 206 (xor)        pri=2130706433  luid=29
+    clock 61  pick 234 (sw s1,1C)   pri=3 luid=40   SELBEST pos=2
+    clock 62  pick 231 (sw s6,24)   pri=3 luid=39   SELBEST pos=3   SELBLOCK 205 unit=0 cost=1
+    clock 63  pick 228 (sw zero,20) pri=3 luid=38   SELBEST pos=3   SELBLOCK 205 unit=0 cost=1
+    clock 64  pick 242 (a1 = 0)     pri=3 luid=43   SELBEST pos=1   SELBLOCK 205 unit=0 cost=1
+    clock 65  pick 205 (lw v1,gp)   pri=2130706433  luid=28
+    clock 66  pick 240 (a0 = sp+16) pri=3 luid=42
+    clock 67  pick 211 (a2 base)    pri=3 luid=31
+
+Emission is the reverse of the pick order (sched.c:4036-4038), giving the control's
+`base / a0 / lw / a1 / sw / sw / sw`. The TARGET's `a0 / a1 / lw / base / sw / sw / sw`
+requires the base 211 to be picked at clock 64, i.e. to beat 242 and 240 in that one call
+to `schedule_select` plus `rank_for_schedule`.
+
+### 2. CORRECTION to s9/s17: the three struct stores do NOT win by LUID, they win by potential_hazard
+
+s9 and s17 both read the window as a pure `rank_for_schedule` LUID contest. The trace refutes
+that: at clock 61 the ready list is `[242(l=43) 240(l=42) 234(l=40) 231(l=39) 228(l=38)
+211(l=31) 161]`, sorted DESCENDING by LUID, and yet `SELBEST clock=61 insn=234 pos=2` moves the
+*third* element to the front. The mechanism is `schedule_select` (sched.c:2707-2720): inside a
+maximal equal-priority group it takes the insn with the LARGEST `potential_hazard`, and
+`potential_hazard` returns 0 unconditionally for `unit < 0` (sched.c:1334). On MIPS the
+loads/stores occupy function unit 0 (visible in the `SELBLOCK`/`BLOCKAGE` lines, all `unit=0`)
+while every ALU insn has `insn_unit == -1`. So the three `sw` insns are preferred over the two
+argument-setup ALU insns REGARDLESS of LUID, and the LUID tie-break at sched.c:2462 only ever
+arbitrates among the unit-less insns. s17's statement that "all four contested window insns are
+MIPS arith with insn_unit -1 and potential_hazard 0, so best_insn stays at index 0" is correct
+for the four, but it is not the reason the stores lead them.
+
+This is why the residual is the four-insn rotation and never the store block: the stores'
+position is decided by a machine-model term no C spelling touches.
+
+### 3. Every input to the clock-64 pick, enumerated with its source-side reachability
+
+`schedule_select` then `rank_for_schedule` consume exactly five inputs. All five are now
+measured on this function:
+
+(a) **`actual_hazard` (the SELBLOCK gate, sched.c:2684).** Non-zero only for unit >= 0.
+    211/240/242 are ALU insns with unit -1, so none of them can ever be blocked. The only
+    SELBLOCK in the window is the lw 205, blocked one cycle at clocks 62/63/64, which is why a
+    max_priority insn is not picked until clock 65.
+
+(b) **`potential_hazard` (the SELBEST term, sched.c:2717 and 1334).** 0 for all three of
+    211/240/242 for the same reason. Making the base outrank the argument moves here would
+    require the base insn to occupy function unit 0 — i.e. to be a load or a store — but the
+    target's base insn is `addiu a2,s4,-0xC`.
+
+(c) **`INSN_PRIORITY` (sched.c:2417).** Measured from PRIODBG at sched.log:56745-56805:
+    228=3, 231=3, 234=3, 205=3, 211=3, 240=3, 242=3, and the accumulate 225=4. Every one of
+    those 3s comes from a single link: `PRIODBG insn=<X> pred=201 kind=14 pred_pri=3 cost=1
+    contrib=3`, i.e. a REG_DEP_ANTI edge from the preceding `rand` CALL_INSN 201. `priority()`
+    is a MAX over predecessors (sched.c:1497), so C can only RAISE an insn's priority, never
+    lower it: there is no source form that drops 240/242/205 below the base's 3. Raising the
+    base to 4 instead puts it in the same group as the whole multiply chain — 206, 217, 219,
+    220, 222, 223 and 225 are all priority 4 and all already max_priority-boosted — which is
+    emitted AFTER the stores, and that is precisely s8's measured six-slot overshoot.
+
+(d) **The last-scheduled class (sched.c:2429-2441).** MIPS `ADJUST_COST`
+    (`tools/gcc-2.7.2/config/mips/mips.h:2947`) sets the cost of EVERY anti/output link to 0,
+    which `insn_cost` then clamps to `LINK_COST_FREE`/1 — so class 2 is unreachable on this
+    target, and class 1 requires the ready candidate to be a producer with
+    `result_ready_cost >= 2`, i.e. a load. 240 is an `addiu` and 242 is a constant move; both
+    are class 3 in every possible scheduling state. The class term can never separate the base
+    from the argument moves.
+
+(e) **`INSN_LUID` (sched.c:2462).** 31 vs 42/43. `expand_call` emits both hard-register argument
+    moves after every argument pseudo is computed, so no statement written before the call can
+    out-LUID them; s19's solver enumerated all 102 depth-1 luid vectors and every one of them
+    moves 211 to a slot at or after the call.
+
+So the control chassis is closed on all five inputs, each with a predicate, and the boost
+chassis (where the base carries `max_priority` and its emitted position is set by which insn
+releases it) remains the only live route — exactly as s19's disjoint-vector-space result said.
+
+### 4. The zero-cost releasing dependent (s19 frontier items 1 and 2) is measured out
+
+Ten complete spellings, generated by `tmp/grind/func_8005D554/s20/gen.py` onto s19's
+`dep2/A_gap2_depstore.c` chassis (fresh written-once carriers b1/b2, def-to-last-use gap held
+inside H43's <= 3 window so loop.c does not hoist), swept in
+`tmp/grind/func_8005D554/s20/enumA`, histogram `s20/enumA.json`:
+
+| form | spelling of the base to `s.zero10 = 0` edge | score / insns |
+|---|---|---|
+| V0_ctl  | none (the s18 G1 gap-1 boost control)            | 8 / 176 |
+| V1_and0 | `s.zero10 = b1 & 0;`                              | 8 / 176 |
+| V2_selfsub | `s.zero10 = b1 - b1;`                          | 8 / 176 |
+| V3_mul0 | `s.zero10 = b1 * 0;`                              | 8 / 176 |
+| V4_outdep | `s.zero10 = b1; s.zero10 = 0;` (output dep)     | 8 / 176 |
+| V9_addrfold | `*(s32 *)((u8 *)&s + 0x10 + (b1 & 0)) = 0;`   | 8 / 176 |
+| V5_antizero10 | `b1 = ((s32)r4 - K) + s.zero10;`            | 14 / 180 |
+| V6_antione14 | `b1 = ((s32)r4 - K) + s.one14;`              | 14 / 180 |
+| V7_antiret | `b1 = ((s32)r4 - K) + s.ret;`                  | 14 / 180 |
+| V8_subword | `b1 = ((s32)r4 - K) + (s32)*(u8 *)&s.zero10;`  | 14 / 180 |
+
+The split is total and it is a fold/no-fold split. Every spelling whose value or address GCC can
+constant-fold produces bytes IDENTICAL to the dependence-free control (8/176) — the dependence
+dies with the computation, exactly as s19 predicted for the data direction, and V4 shows the
+output direction dies the same way because the same-address dead store is deleted before sched1
+(build_insns stays 176). Every spelling that survives folding does so because it is a real
+memory READ, and a real memory read costs +2 instructions per half (180 = 176 + 4), which is the
+whole overage twice over. Among the channels sched.c can record, a dependence edge into insn 228
+can only be created by 228's stored value, by 228's address, or by a MEM inside the base insn's
+own pattern, and `addiu a2,s4,-0xC` has no MEM.
+
+- [s20] Floor re-measured 6/176 on HEAD main @ 7a5fbffb with candidate.c applied; src/ and include/ left byte-clean at session end.
+- [s20] Kill re-audit passes for a TENTH consecutive session: fake_ablate finds no FAKE construct in s18's G1_gap1_both.c and that form re-measures 8/176 as banked (it is V0_ctl of this session's sweep).
+- [s20] CORRECTION to s9 and s17: the three struct stores are picked ahead of the two call-argument ALU insns by schedule_select's largest-potential-hazard rule (sched.c:2717), not by INSN_LUID. potential_hazard returns 0 for unit < 0 (sched.c:1334) and on MIPS only loads/stores have a function unit (unit 0), so the store block's position in this window is decided by a machine-model term no C spelling reaches.
+- [s20] MEASURED IN THE COMPILER (s20/dumps/ctrl/sched.log:56745-56805): every window insn's priority 3 comes from one REG_DEP_ANTI (kind=14) link to the preceding rand CALL_INSN 201 at cost 1. priority() is a MAX over predecessors (sched.c:1497), so no C form can lower 240/242/205 below the base's 3; raising 211 to 4 joins it to the already-max_priority-boosted multiply chain (206/217/219/220/222/223 and the accumulate 225), which is emitted after the stores - s8's six-slot overshoot.
+- [s20] MEASURED IN THE COMPILER: in the CONTROL chassis the multiply chain and the gp load are ALREADY max_priority-boosted (ADJPRI birth=1, pri 2130706433 at clocks 55-60 and 65). The birth boost is the norm in this block; the four contested window insns are precisely the ones that are not boosted.
+- [s20] MIPS ADJUST_COST (tools/gcc-2.7.2/config/mips/mips.h:2947) zeroes the cost of every anti/output link, so rank_for_schedule's class 2 is unreachable on this target and class 1 requires a result_ready_cost >= 2 producer (a load). The two argument-setup insns are an addiu and a constant move, so the class term is structurally incapable of separating the a2 base from them.
+- [s20] 10 spellings measured for the base-to-s.zero10-store dependence edge (s20/enumA, s20/enumA.json): the six foldable spellings (b1 & 0, b1 - b1, b1 * 0, the folded address form, and the output-dependence dead store) are byte-IDENTICAL to the dependence-free boost control at 8/176; the four surviving spellings are real memory reads and all cost +2 instructions per half (14/180).
+- [s20] V4 (s.zero10 = b1 followed by s.zero10 = 0) builds 176 instructions, so GCC 2.7.2 deletes the same-address dead store to the addressable local struct before sched1 - the output-dependence direction of the H49 edge dies exactly like the data direction.
+
+- [s20] Floor re-measured 6/176 on HEAD main @ 7a5fbffb with candidate.c applied to src/text1b.c; src/ and include/ left byte-clean at session end, and candidate.c re-measures 6/176 with the new s20 header paragraph in place (tmp/grind/func_8005D554/s20/final).
+
+- [s20] Kill re-audit passes for a TENTH consecutive session: tools/fake_ablate.py finds no FAKE-annotated construct in s18's G1_gap1_both.c, and that form re-measures 8/176 exactly as banked (it is V0_ctl of this session's sweep).
+
+- [s20] The complete sched1 pick trace of the half-1 window (control chassis): clock 60 pick 206 (maxpri), 61 pick 234 (pri 3 luid 40, SELBEST pos=2), 62 pick 231 (SELBEST pos=3), 63 pick 228 (SELBEST pos=3), 64 pick 242 (pri 3 luid 43, SELBEST pos=1), 65 pick 205 (maxpri, previously SELBLOCKed unit=0 cost=1 at clocks 62/63/64), 66 pick 240, 67 pick 211. Emission is the reverse (sched.c:4036-4038).
+
+- [s20] CORRECTION to s9 and s17: the three struct stores lead the two argument-setup insns by schedule_select's largest-potential-hazard rule (sched.c:2717), not by INSN_LUID. potential_hazard returns 0 for insn_unit < 0 (sched.c:1334) and on MIPS only loads and stores carry a function unit (unit 0, visible in every SELBLOCK/BLOCKAGE line).
+
+- [s20] MEASURED IN THE COMPILER (s20/dumps/ctrl/sched.log:56745-56805): every window insn's priority 3 comes from one REG_DEP_ANTI (kind=14) link to the preceding rand CALL_INSN 201 at cost 1, and the accumulate 225 is 4. priority() is a MAX over predecessors (sched.c:1497), so no C form lowers 240/242/205 below the base's 3.
+
+- [s20] MEASURED IN THE COMPILER: in the CONTROL chassis the multiply chain and the gp load are ALREADY max_priority-boosted (ADJPRI birth=1, pri 2130706433 at clocks 55-60 and 65). The birth boost is the norm in this block; the four contested window insns are precisely the ones that are not boosted.
+
+- [s20] MIPS ADJUST_COST (tools/gcc-2.7.2/config/mips/mips.h:2947) zeroes the cost of every anti/output link, so rank_for_schedule's class 2 is unreachable on this target and class 1 requires a result_ready_cost >= 2 producer (a load); the two argument-setup insns are an addiu and a constant move.
+
+- [s20] All five inputs to the decisive clock-64 pick are now individually measured and closed in the control chassis: actual_hazard (unit-less ALU insns can never block), potential_hazard (0 unless the insn is a load or store), INSN_PRIORITY (floored by the call anti-dep, raisable only into the boosted chain group - s8's six-slot overshoot), last-scheduled class (structurally 3 for all three candidates), and INSN_LUID (s19's 102 unspellable vectors).
+
+- [s20] 10 spellings measured for the base-to-s.zero10-store dependence edge (tmp/grind/func_8005D554/s20/enumA, enumA.json): the six foldable spellings are byte-identical to the dependence-free boost control at 8/176; the four surviving memory reads all cost +2 instructions per half at 14/180.
+
+- [s20] V4 (s.zero10 = b1 followed by s.zero10 = 0) builds 176 instructions, so GCC 2.7.2 deletes the same-address dead store to the addressable local struct before sched1 - the output-dependence direction of the H49 edge dies exactly like the data direction.

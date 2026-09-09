@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 19,
- "current_modality": "solver",
+ "session_count": 20,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -117,18 +117,24 @@
    "floor": 6,
    "modality": "solver",
    "headline": "Solver typed both chassis exactly: the control's 102 depth-1 vectors are all unspellable LUID moves past the call, while the birth-boost chassis has exactly ONE vector (a dependence from the base into"
+  },
+  {
+   "session": 20,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "sched1's decisive clock-64 pick traced input-by-input in the instrumented cc1: the store block leads by potential_hazard (not LUID, correcting s9/s17), priority and last-scheduled class are class-kill"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The releasing dependent of the boosted base must be an insn the target ALREADY emits at the slot right after the base, and it must depend on the base at ZERO instruction cost. H51's andi is both the whole 1-insn overage and the reason the base landed one slot early.",
-   "mechanism": "schedule_insn releases a max_priority insn when its last dependent is picked, and emission (reverse pick order) then places it immediately before that dependent. If the dependent is one of the three struct stores the target already emits at slots 92-94, the base lands exactly in the target's slot 91 with no added insn.",
-   "next_probe": "Make one of s.zero10 / s.one14 / s.ret depend on the base through its ADDRESS rather than its stored value - e.g. reach those members through a pointer local derived from the base, or through a differently-based lvalue GCC's memrefs_conflict_p cannot disambiguate from MEM(sp+32) - starting from s19/dep2/A_gap2_depstore.c, keeping the carrier's def-to-last-use gap at 1-3, and gating every variant on build_insns == 176 before disassembling the 0x3594 window."
+   "hypothesis": "The two call-argument setup insns 240/242 are ready from clock 55 onward and only win because they sit at the front of the pri-3 group once the stores are gone; if their READY CLOCK could be pushed past 64 the base would be the sole pri-3 candidate at clock 64 and would be picked without any change to priority, class or LUID.",
+   "mechanism": "In a backward list scheduler an insn enters the ready list when its last successor has been scheduled, at clock(successor) + insn_cost(insn -> successor). The only successor of 240 and 242 is the CALL_INSN 244, and insn_cost from an addiu or a constant move is 1, so they arrive one cycle after the call is picked. A third call argument whose value is produced by a load would give that argument move a result_ready_cost of 2 and, more importantly, changes which insns 244 depends on and when the argument moves are released - s12 measured only the SCORE of a genuine third argument (17/178, the value materialised as a separate addiu a2,a3,-12), never the ready-clock trace.",
+   "next_probe": "Re-run s12's genuine third-argument form (the local function-pointer cast that bypasses the file-scope 2-parameter prototype at src/text1b.c:2642) on BOTH the control and the s18 G1 boost chassis under BB2_SCHED_DEBUG=1, and read the SCHEDDBG 'ready was' lines at clocks 60-67 rather than the score: record the clock at which 240/242 enter the ready list and whether any argument spelling delays them past the base. Gate every variant on build_insns == 176 before disassembling the 0x3594 window."
   },
   {
-   "hypothesis": "The anti/output direction of the H49 edge has never been spelled: the base insn referencing MEM(s + 0x10) itself, rather than the store referencing the base.",
-   "mechanism": "sched.c records an anti-dependence from a later write to an earlier read of the same memory, and GCC 2.7.2's memrefs_conflict_p disambiguates two constant sp offsets - so the base's expression must touch the SAME struct member the store writes for the edge to exist. Unlike the data direction it does not require the store's value to change, so it does not conflict with the target's sw zero,32(sp).",
-   "next_probe": "Enumerate base spellings that read s.zero10 (or an aliasing sub-word / union / char-pointer view of it) while still emitting a single addiu <reg>,s4,-K - including forms where the read is folded away by cse but the dependence survives - gate on build_insns == 176, and read BB2_SCHED_DEBUG=1 to confirm whether the dep is recorded and whether the boost still fires."
+   "hypothesis": "RELOAD remains the one insn-creation site never probed on this function: it runs after sched1 and its insertions receive fresh LUIDs for sched2, which is the only pass that can give the a2 base a LUID higher than the argument moves' (the condition s9 reduced the whole residual to).",
+   "mechanism": "sched2 recomputes INSN_LUID from the post-reload insn chain. s9 measured sched2 as a no-op here because its LUIDs already equal the sched1 emission order, but that was measured without any reload insertion in the window. A reload-inserted copy or reload of the base value would be placed at its use site with a fresh LUID, changing the sched2 ready-list order in the window.",
+   "next_probe": "Capture BB2_RELOAD_DEBUG=1 plus the .greg/.lreg dumps for the control and for s18's G1 boost chassis, identify whether any reload insn is generated inside the loop body at all, and if so read the sched2 SCHEDDBG trace of the half-1 window to see whether the four-insn rotation is decided there rather than in sched1. If no reload insn exists in the block, record that as a class kill of the reload creation site with the greg dump as evidence."
   },
   {
    "hypothesis": "(carried) The object model of D_8009B2E0 / D_8009B388 is still the last untried non-spelling axis: a header-canonical aggregate declaration for the 0x3C-stride particle-template table has never been measured on this function, and candidate.c still carries the declaration pun p_b2e0 = (u8 *)&D_8009B2E0.",
@@ -141,30 +147,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 3,
-   "statement": "With the ordinary-C hoist of the a2 base in place (g7_reorder_only, 178/31), deleting one callee-saved-resident pointer local restores 176 instructions but not the target order: dropping p_b390 scores",
-   "kill_scope": "instance",
-   "measured_on": "s3b chassis == s1/s2 candidate chassis, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "27/176, 28/176, 45/174, 47/174. Buying the instructions back does not buy the target order -- every source-level hoist i"
-  },
-  {
-   "session": 3,
-   "statement": "On the hoisted g7 chassis, removing the c1 constant-holder local (s.one14 = 1) scores 32/178, removing the c100 holder (literal 0x100 stores) scores 33/178, and removing both scores 34/178, so neither",
-   "kill_scope": "instance",
-   "measured_on": "s3b chassis == s1/s2 candidate chassis, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "32/178, 33/178, 34/178, 8/176. Form banked at rejected/hoist-without-c1-holder-scores-32.c."
-  },
-  {
-   "session": 3,
-   "statement": "A permuter campaign seeded on the ordinary-C hoist chassis (g7_reorder_only, 178 instructions, permuter base score 940) ran 24,879 iterations with 8 jobs and improved only to 655, with no find in the ",
-   "kill_scope": "instance",
-   "measured_on": "s3b chassis == s1/s2 candidate chassis, no FAKE constructs present; campaign workspace tmp/perm_5d554_g7",
-   "predicate_cite": "",
-   "result": "Best find 655 of base 940. Three chassis are now spent for permutation on this function: the k0/candidate chassis (21,56"
-  },
   {
    "session": 4,
    "statement": "The complete local-spelling space of the a2-site region -- 12 arithmetic forms x 2 cast spellings of the r4 read x 4 insertion points among the tail stores x 2 positions of the s.zero1C store, 168 com",
@@ -620,6 +602,30 @@
    "measured_on": "HEAD main @ afafbb45, memory/grind/func_8005D554/candidate.c chassis with s18's G1_gap1_both.c as the carrier body, control re-measured 6/176; fake_ablate reports no FAKE-annotated construct in any sw",
    "predicate_cite": "",
    "result": "53/181 and 59/184; the window disassembles to addu a2,a2,s0 with the base living in the callee-saved s0 - exactly the H4"
+  },
+  {
+   "session": 20,
+   "statement": "No C form can lower the priority of the two call-argument setup insns or the gp load below the a2 base's, because all three are floored at the preceding rand CALL_INSN's priority by a REG_DEP_ANTI lin",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 7a5fbffb, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:1497",
+   "result": "228=3, 231=3, 234=3, 205=3, 211=3, 240=3, 242=3, accumulate 225=4, and every 3 traces to the single pred=201 kind=14 con"
+  },
+  {
+   "session": 20,
+   "statement": "rank_for_schedule's last-scheduled-class term cannot separate the a2 base from the two argument-setup insns on this target, because MIPS ADJUST_COST makes class 2 unreachable and class 1 requires a lo",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 7a5fbffb, candidate.c chassis, control re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2947",
+   "result": "The class term contributes 0 to every comparison in the window, so the pick at clock 64 reduces to potential_hazard (0 f"
+  },
+  {
+   "session": 20,
+   "statement": "The ten measured spellings of a dependence edge from the a2 base into the s.zero10 store split into six foldable ones that emit bytes identical to the dependence-free boost control at 8/176 and four g",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 7a5fbffb, s19 dep2/A_gap2_depstore.c boost chassis with fresh written-once b1/b2 at gap 1-2, control V0_ctl re-measured 8/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "V0_ctl (no edge) 8/176; V1 s.zero10 = b1 & 0 8/176; V2 s.zero10 = b1 - b1 8/176; V3 s.zero10 = b1 * 0 8/176; V4 s.zero10"
   }
  ],
  "ladder_skip": 0,

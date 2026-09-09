@@ -367,6 +367,34 @@
  * instructions; control keeps 176 instructions and loses the carrier to combine.  Do NOT re-sweep
  * existing-local borrows, restage values/positions, or a2_offset consumption shapes.  See
  * hypotheses.md H40-H42 and frontier R1-R3.
+ *
+ * s20 (forensics, 2026-09-09, HEAD main @ 7a5fbffb): floor RE-MEASURED at 6/176 on this body; the
+ * kill re-audit passes for a TENTH session (fake_ablate finds no FAKE construct in s18's
+ * G1_gap1_both.c and that form re-measures 8/176 as banked).  The decisive sched1 pick was traced
+ * INSN BY INSN in the instrumented compiler and its five inputs are now individually closed.
+ * FIRST, a CORRECTION to s9 and s17: the three struct stores do NOT lead the two call-argument
+ * setup insns by INSN_LUID.  At clock 61 the ready list is [242(l=43) 240(l=42) 234(l=40)
+ * 231(l=39) 228(l=38) 211(l=31)], sorted descending by LUID, and schedule_select moves the THIRD
+ * element to the front (SELBEST pos=2), because inside a maximal equal-priority group it takes the
+ * insn with the largest potential_hazard (sched.c:2717) and potential_hazard is 0 for every
+ * insn_unit < 0 (sched.c:1334) - on MIPS only loads and stores have a function unit.  The store
+ * block's position is therefore decided by a machine-model term no C spelling reaches, which is
+ * why the residual has always been the four-insn rotation and never the stores.  SECOND, the five
+ * inputs to the clock-64 pick where 242 beats 211: actual_hazard cannot block a unit-less ALU insn;
+ * potential_hazard is 0 for 211, 240 and 242 alike and would need the base insn to BE a load or a
+ * store; INSN_PRIORITY is floored at 3 for all seven window insns by one REG_DEP_ANTI link to the
+ * preceding rand CALL_INSN 201 and priority() is a MAX over predecessors (sched.c:1497), so C can
+ * only raise it, and raising 211 to 4 joins it to the already-boosted multiply chain that is
+ * emitted after the stores (s8's six-slot overshoot); the last-scheduled class is structurally
+ * stuck at 3 because MIPS ADJUST_COST zeroes every anti/output link cost (mips.h:2947) so class 2
+ * is unreachable and class 1 needs a load; and INSN_LUID was already enumerated by s19's solver as
+ * 102 unspellable vectors.  THIRD, s19's frontier items 1 and 2 are measured out: 10 spellings of
+ * a dependence edge from the a2 base into the s.zero10 store (s20/enumA) split cleanly into six
+ * foldable forms that are byte-IDENTICAL to the dependence-free boost control at 8/176 - including
+ * the output-dependence direction, whose same-address dead store GCC deletes before sched1 - and
+ * four genuine memory reads that all cost +2 instructions per half at 14/180.  Do NOT re-derive the
+ * priority, class or store-order framing, and do NOT re-sweep foldable dependence spellings.  See
+ * hypotheses.md s20 and evidence.md s20.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);
