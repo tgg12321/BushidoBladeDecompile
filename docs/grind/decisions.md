@@ -26191,3 +26191,7 @@ tie-break inputs or `qty_compare_1`'s priority arithmetic (a `CC_FLAGS` change o
 7's shape — NOTE: the `func_8002E6B0` instance of this trigger fired and was measured negative
 this session, so a future sibling trigger must name a DIFFERENT sibling to be worth a session.
 (4) A queue drain that returns the item on rotation.
+
+## 2026-09-08 19:19 — _spu_pitch2note — final call — **PASS**
+
+Ordinary pure C: two loops over a shared counter `i`, explicit loop-carried accumulators (acc/next), bounds split add-then-shift, a `goto found` search exit, and the `curve *= 0x103B; curve >>= 12;` split inherited from COMPLETED-C sibling _spu_2pitch. Every local is written and read; no FAKE, no asm, no volatile, no dead stores, so the frozen-list membership gate (ordinary-c-judge-decidable Ruling 1) is not engaged; the statement splits are owner-sanctioned ordinary C (split-init-accumulation ruling). Decisive fact: the diff is confined to src/main.c (git diff --stat HEAD: 1 file) - no pipeline/gate-list/asm-file edits, so bytes come from the committed C alone. Independently verified candidate.c == the body on main and state.json has empty judge_constraints/banned_constructs. Evidence: memory/grind/_spu_pitch2note/evidence.md (s1 decode + ladder), hypotheses.md, self_vet.md, rejected/.
