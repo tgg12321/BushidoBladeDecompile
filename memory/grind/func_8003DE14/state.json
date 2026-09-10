@@ -1,0 +1,88 @@
+{
+ "func": "func_8003DE14",
+ "file": "code6cac_c2",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 57,
+   "modality": "recon",
+   "headline": "Recon: stale 119 migration pin killed \u2014 honest floor is 57/173 (insn-count already exact); residual is one OR-association copy + the count-1 comparand carrier, both pass-attributed from the .loop dump"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The target_color OR-association is the single extra instruction (the trailing `move s6,a0`), and a flat single-expression spelling with the -0x8000 constant physically inside the green term reproduces the target's grouping without any sanctioned-family construct.",
+   "mechanism": "GCC 2.7.2 fold-const.c reassociates a constant operand leftwards through an associative `|` chain built by `|=` accumulation; combine/jump2 then fails to coalesce the final OR pseudo into the callee-save holding target_color, leaving a copy.",
+   "next_probe": "Measure `target_color = ((u32)r >> 3) | (((g & 0xF8) << 2) | (s32)-0x8000) | ((b & 0xF8) << 7);` as a single expression with no `|=`, plus the blue-first variant, then read tmp/grind/func_8003DE14/dumps/code6cac_c2.combine for func_8003DE14 to see whether the trailing copy is a combine artifact or a greg artifact. Pure ordinary C, no family question, cheap."
+  },
+  {
+   "hypothesis": "No sanctioned-family construct is needed for the `count - 1` comparand at all \u2014 the inline `if (i == count - 1)` form (v1, 66) hoisted via the `already_moved` / `m->forces` clause of loop.c:1631, not the arithmetic clause, so a different ordinary-C shape can leave it inline the way the target does.",
+   "mechanism": "loop.c:1631 `if (already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count || (m->forces && m->forces->done && n_times_used[m->forces->regno] == 1))`. The dump already proves the arithmetic clause is FALSE here (threshold <= 56 vs insn_count 57 for life-1/savings-1 movables), so whatever hoisted v1's comparand came from one of the other two clauses.",
+   "next_probe": "Re-run `pwsh tools/grinder/dump.ps1 func_8003DE14` with v1 applied (memory/grind/func_8003DE14/rejected/v1-ordinary-c-count-minus-1-inline-hoisted.c) and read the `;; Function func_8003DE14` .loop diagnostics for the pseudo holding `count - 1`: is it listed, and under which clause was it moved? That single read decides whether this function needs any /* FAKE */ construct. Do it BEFORE proposing one."
+  },
+  {
+   "hypothesis": "The r/g/b callee-save rotation (target s5/s4/s3 + s6, build s6/s5/s4 + s3) is a downstream cascade of the two items above and not an independent lever.",
+   "mechanism": "GCC 2.7.2 global.c allocno ordering \u2014 the target_color pseudo's priority relative to the three colour-component pseudos shifts when the OR chain shape or the comparand's live range changes.",
+   "next_probe": "After F1 and F2 land, run tools/ra_solver/inverse_compose.py classify on the .greg allocation for the four pseudos to get a typed REACHABLE / FORECLOSED verdict with ranked C-lever vectors, instead of guessing at declaration-order spellings (which K4 already showed to be inert here)."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "The 119 floor recorded in migration_pin.json is the honest floor of the banked pre-migration body on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), src/code6cac_c2.c, no FAKE constructs present in the measured body",
+   "predicate_cite": "",
+   "result": "Score 66, with target_insns == build_insns == 173. The frame layout (0x858; src_buf +0x10, dst_buf +0x410, color_info +0"
+  },
+  {
+   "session": 1,
+   "statement": "GCC hoists the three loop-invariant `channel * factor` multiplies out of the per-pixel loop, so an anti-LICM lever is needed to keep them inline the way the target does.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, cc1 -da dumps of src/code6cac_c2.c with the s1 best form applied; no FAKE constructs in the dumped body",
+   "predicate_cite": "",
+   "result": "The .loop dump reports `Loop from 145 to 303: 57 real insns` and `Insn 226/235/244: regno 131/135/139 (life 1), savings "
+  },
+  {
+   "session": 1,
+   "statement": "func_8003DE14 needs a multu_pad_funcs.txt entry because asm/funcs/func_8003DE14.s shows 179 instructions (three 2-nop mult/mflo pads) while the build shows 173.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, sandbox object vs build/src/code6cac_c2.o, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "The pads are present in BOTH objects \u2014 GNU as in reorder mode already inserts the mult/mflo hazard nops. The 179-vs-173 "
+  },
+  {
+   "session": 1,
+   "statement": "Declaring `dst` before `src` flips the build's a2=src / a3=dst cursor registers to the target's a3=src / a2=dst.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, form v5 (tmp/grind/func_8003DE14/s1/body_v5.c), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Score 57 \u2014 identical to the unswapped form, and the same a2/a3 assignment in the diff. Declaration order is not the disc"
+  },
+  {
+   "session": 1,
+   "statement": "A fresh multi-set scratch local carrying the div numerator `(i+1)<<12` and then `count - 1` is a better carrier than borrowing the existing `total` local.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, forms v2/v3 in tmp/grind/func_8003DE14/s1/, both un-annotated (no /* FAKE */ present at measurement time)",
+   "predicate_cite": "",
+   "result": "v3 = 58, v2 = 57. The fresh scratch is worse and would also need the harder family justification (inventing a local to b"
+  },
+  {
+   "session": 1,
+   "statement": "Introducing a named intermediate `s32 gc = ((g & 0xF8) << 2) | (s32)-0x8000;` restores the target's OR association for target_color.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, form v4 (tmp/grind/func_8003DE14/s1/body_v4.c), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Score 62, five WORSE than the 57 baseline. The named intermediate perturbs the callee-save allocation of r/g/b without f"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T20:34:10.685944+00:00",
+ "object_model_audited": 1
+}
