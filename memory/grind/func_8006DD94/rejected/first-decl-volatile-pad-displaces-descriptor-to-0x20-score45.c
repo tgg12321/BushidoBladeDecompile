@@ -1,29 +1,13 @@
-/* s4-RERUN UPDATE (enumerate, 2026-09-10): body UNCHANGED.  The previous s4 outcome was
- * DISCARDED by the driver for an invalid predicate_cite path; its findings were re-measured
- * and re-banked here.  MIGRATION STATUS: HEAD/main still carries
- * `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948 - this file is the
- * in-progress candidate only, spliced and reverted again this session.
- * Re-measured this session: sandbox func_8006DD94 --disable all = 21 (117/117, rules_dropped 0).
- * NEW this session: (a) the frozen pad family's FIRST-DECLARATION requirement is measured
- * incompatible with the target layout - `volatile u32 pad[2];` declared first gives the exact
- * target frame size but moves the descriptor from sp+0x18 to sp+0x20, sandbox 45
- * (rejected/first-decl-volatile-pad-displaces-descriptor-to-0x20-score45.c); only an INTERIOR
- * reservation reproduces sp+0x18 descriptor / sp+0x50 rect.  (b) the mandated systematic
- * spelling sweep of the rect block (65 spellings, swap axis included) has best 21, one at the
- * floor - the residual is not in that block's spelling space.
- */
-/* s4 UPDATE (enumerate, 2026-09-10): this file is UNCHANGED as the layer-1-clean chassis
- * (sandbox 21, vars= 56, rect at sp+0x48, 112 body insns).  MIGRATION STATUS: HEAD/main
- * still carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948 - this
- * file is the in-progress candidate only and was spliced/reverted again this session.
- * s4 measured the residual to be exactly `vars= 56` vs the target's `vars= 64`, enumerated
- * 41 spellings for a construct that closes that 8-byte gap without adding an instruction,
- * and found that all six hits reserve the bytes with an object no instruction touches.
- * The byte-proven form is rejected/two-separate-rect-arrays-oracle-match-sandbox-21.c
- * (verify-oracle build_matches true, re-verified s4); it is held there pending a Judge
- * ruling on its construct class, which s4 requested.  A byte-neutral variant of THIS
- * chassis with the rect in a trailing nested block is tmp/grind/func_8006DD94/s4/b1_nested.c
- * - use it if a future probe needs a stack temp to be allocated below the rect.
+/* REJECTED (s4-rerun, enumerate, 2026-09-10) - WHY IT IS DEAD:
+ * this is the ONLY closure form the Judge's standing constraint permits for the
+ * sp+0x44..0x4F hole: a FIRST-DECLARATION `volatile u32 pad[N];`.  Measured, it produces the
+ * target's frame SIZE (vars= 64, addiu sp,sp,-0x78, rect at sp+0x50) but the WRONG LAYOUT:
+ * GCC 2.7.2 hands out increasing frame offsets in declaration order
+ * (tools/gcc-2.7.2/function.c:724, `frame_offset += size;` under #ifndef FRAME_GROWS_DOWNWARD,
+ * and MIPS leaves that macro undefined), so the first declaration owns the LOWEST slot and the
+ * 0x2C descriptor is displaced from sp+0x18 to sp+0x20.  Every descriptor store then moves.
+ * Spliced into src/text1b.c: sandbox --disable all = 45 (target 117 insns, build 119) - more
+ * than twice the honest floor of 21.  Do not re-propose a first-declaration pad here.
  */
 /* MIGRATION BANNER (s3, 2026-09-10): HEAD/main does NOT carry this body.  src/text1b.c:5948
  * carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` per [[asm-until-matched]]; this file is
@@ -87,6 +71,7 @@ typedef struct EnvB {
 extern s32 D_800A374C;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_8006DD94(s32 *arg0) {
+    volatile u32 pad[2];
     EnvB s;
     u16 rect[4];
     s16 i;

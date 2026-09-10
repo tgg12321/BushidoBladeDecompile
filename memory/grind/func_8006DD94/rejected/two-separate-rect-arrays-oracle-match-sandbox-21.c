@@ -1,4 +1,28 @@
-typedef struct TexEnv {
+/* two-separate-rect-arrays  -  NOT disproven: this form BUILDS THE ORACLE.
+ *
+ * s4 (enumerate, 2026-09-10) RE-VERIFIED this exact body on the current HEAD chassis:
+ *   sandbox func_8006DD94 --disable all  -> score 21 (117/117, rules_dropped 0)
+ *   verify-oracle                        -> ok true, build_matches true,
+ *                                           build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+ * i.e. the whole 606,208-byte SLUS_006.63 is byte-identical to the original with this
+ * body in src/text1b.c.  The 21 comes from engine/volatile_cheats.py stripping the
+ * untouched `u16 rect0[4]` out of the SCORED object file only.
+ *
+ * It lives in rejected/ ONLY because its construct class (a declared-but-untouched
+ * local array) has not been ruled on by the Judge for this function.  It is NOT on the
+ * BANNED CONSTRUCTS list: the banned forms are the MERGED `u16 rects[2][4]` and the
+ * function-local EnvB struct's trailing pad members, both of which respell the hole
+ * inside a live declaration.  This form declares a separate sibling object.
+ *
+ * s4's 41-spelling enumeration (evidence.md s4) showed this is one of only six spellings
+ * out of 41 that reproduce the target frame (vars= 64, rect at sp+0x50, body n= 112) and
+ * that all six reserve via an object no instruction touches - so no expression-level
+ * spelling replaces it.
+ *
+ * DO NOT submit as candidate-ready without a Judge ruling on the construct class.
+ */
+/* BEGIN func_8006DD94 */
+typedef struct EnvB {
     s32 *header;
     s8  *table;
     s32  out;
@@ -12,11 +36,11 @@ typedef struct TexEnv {
     u8   col_r;
     u8   col_g;
     u8   col_b;
-} TexEnv;
+} EnvB;
 extern s32 D_800A374C;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_8006DD94(s32 *arg0) {
-    TexEnv s;
+    EnvB s;
     u16 rect0[4];
     u16 rect[4];
     s16 i;
@@ -62,3 +86,4 @@ void func_8006DD94(s32 *arg0) {
     rect[3] = 1;
     func_80069898((GameObj *)arg0, rect, 0x11);
 }
+/* END func_8006DD94 */

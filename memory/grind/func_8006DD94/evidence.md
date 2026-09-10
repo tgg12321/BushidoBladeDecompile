@@ -602,3 +602,114 @@ E-s3-4  **THE SHAPE OF WHAT IS LEFT, restated exactly.** The descriptor is the F
 - [s3] Restated shape of what remains after s3: the descriptor is the FIRST stack object (sp+0x18 = args_size) and the rect is the last written one, so the source declares between them an object that is stack-homed (BLKmode, volatile or address-taken, per the register-eligibility test at tools/gcc-2.7.2/stmt.c:3357-3364) and is referenced by no surviving instruction. s3 adds no new spelling of that object; it removes the last mechanism that would have avoided needing one.
 
 - [s3] candidate.c is unchanged in body and now carries a migration banner that clears the STALE HEAD CLAIMS audit warning: it states plainly that HEAD does not carry this body, that the file is the in-progress candidate only, and what s3 measured.
+
+## s4 (enumerate, 2026-09-10) — chassis: HEAD (INCLUDE_ASM), honest floor 21
+
+### The residual, restated exactly (re-measured, not inherited)
+`asm/funcs/func_8006DD94.s` frame: `addiu sp,sp,-0x78`; descriptor `sp+0x18..0x43`;
+rect `sp+0x50..0x57`; 8 register saves `sp+0x58..0x70`. cc1's own frame equation
+(`frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs)`, mips.c:compute_frame_size)
+resolves the target uniquely: `args = 0x18` (fixed by the descriptor starting at 0x18),
+`gp_regs = 0x20` (8 saves), therefore **`vars` must be exactly 0x40 = 64**.
+The honest 0x2C-descriptor chassis (memory/grind/func_8006DD94/candidate.c) prints
+`vars= 56` and puts the rect at `sp+0x48`. **Nothing else differs**: both are 117 target
+insns / 112 body insns, identical register classes, identical instruction stream.
+So this session's gradient was not the sandbox score but cc1's own `vars=` +
+the emitted body-insn count `n`: a HIT is exactly `vars= 64` AND `n= 112` AND
+`addiu $a1,$sp,0x50`. Instrument: `tmp/grind/func_8006DD94/s4/fp4.py` (one cc1 run
+per spelling, ~1 s each), derived from s3's fp3.py with OUT retargeted to s4/.
+
+### Byte-neutral enumeration chassis established
+`tmp/grind/func_8006DD94/s4/b1_nested.c` moves `u16 rect[4]` out of the outer
+declaration list into a trailing nested block (`{ u16 rect[4]; rect[2]=...; ...
+func_80069898(...); }`). Measured **byte-neutral**: `vars= 56`, `n= 112`, rect still at
+`sp+0x48`, identical spmem map to the flat chassis. This is the chassis s3's frontier
+item 1 asked for — it puts the rect's `expand_decl` AFTER every statement of the
+function body, so any stack temp created while expanding those statements is allocated
+at a LOWER frame offset than the rect and would push it to `sp+0x50`. It is the only
+chassis on which the "surviving keep-temp" hypothesis is even testable, and it costs
+zero bytes.
+
+### THE ENUMERATION — 41 spellings, 6 hits, and every hit is the same object class
+Batches: `tmp/grind/func_8006DD94/s4/batch1.log` (24), `batch2.log` (12), `batch3.log` (5).
+Axes swept, each inserted immediately before the rect's block on the nested chassis
+(or as an outer-scope declaration on the flat chassis for the w-series):
+
+  - DImode / `long long` temps (7 spellings: mul, add, shift, negate, unsigned divide,
+    unsigned modulo, compare, from-call-result, and a *used* form feeding `c`)
+    -> **all `vars= 56`**. GCC 2.7.2 keeps DImode in register pairs; no frame slot.
+  - soft-float `double` / `float` (4 spellings incl. a used `c = (s32)d;` form)
+    -> **all `vars= 56`** except the compare form, which grew `n` to 121.
+  - BLKmode-valued expressions — s3's frontier item 1 (5 spellings: `EnvB t = s;`,
+    `EnvB t; t = s;`, `EnvB t = *(EnvB *)&s;`, `EnvB t = s; t.x = c;`, `EnvB t[1];`)
+    -> temps ARE allocated (`vars= 96`, i.e. +0x28 for the EnvB copy) but **always with
+    the block-move instructions attached** (`n= 132/136/116`). There is no 8-byte
+    BLKmode-valued expression in this body to try: every callee it invokes
+    (func_8007352C, func_8006E480, SetDrawMode, AddPrim, func_8006D808, func_80069898)
+    returns a scalar. An 8-byte struct built by hand (`struct Q { s32 a, b; }`, copied
+    or passed by address) does reach `vars= 64` — at `n= 123` and `n= 126`.
+  - unions, one-member structs, HImode bitwise pairs (the tslLineG5Init minimal trigger
+    from [[phantom-frame-slots-gcc272]]), written local arrays -> `vars= 56`
+    (the written array also grew `n` to 114 and left the rect at `sp+0x48`).
+  - outer-scope plain scalars declared before the rect (`s32 hole;`, `long long hole;`)
+    -> **`vars= 56`**: a non-addressable scalar decl gets a pseudo, never a slot.
+  - address-taken locals (`s32 t; s32 *p = &t;` and the `long long` / `double` /
+    array / used-pointer variants) -> **`vars= 64`, `n= 112`, rect at `sp+0x50`**.
+  - outer-scope untouched sibling array (`u16 rect0[4]; u16 rect[4];`)
+    -> **`vars= 64`, `n= 112`, rect at `sp+0x50`**.
+
+**Six hits out of 41, and all six share one property: the reserving object is never
+read, never written, and its address is never materialized into an instruction.**
+Every spelling in which the reserving object is genuinely consumed by the program
+raised `n` above 112, i.e. added instructions the target does not contain. That is not
+a coincidence of spelling — it is forced: the target provably contains NO instruction
+that touches `sp+0x44..0x4F` and NO instruction that forms its address (verified by
+grepping every `$sp` reference in asm/funcs/func_8006DD94.s this session; the complete
+set is 8 saves + 8 restores + the descriptor at 0x18..0x43 + the rect at 0x50..0x56 +
+the outgoing-arg stores at 0x10).
+
+### THE CONTROL, RE-VERIFIED THIS SESSION (this is the load-bearing fact)
+`tmp/grind/func_8006DD94/s4/w01_rect0_before.c` — the flat chassis with one added line,
+`u16 rect0[4];` immediately before `u16 rect[4];`, nothing else changed — was spliced
+into src/text1b.c and measured both ways:
+  - `sandbox func_8006DD94 --disable all` -> **score 21** (117/117, rules_dropped 0,
+    cheat_asm_stripped 154).
+  - `verify-oracle` -> **`"ok": true, "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+    "build_matches": true`**.
+The full 606,208-byte executable is byte-identical to the original with this body in
+place. src/text1b.c was restored to HEAD immediately afterwards (`git status` clean
+except metrics/events.jsonl). The 21 is produced by engine/volatile_cheats.py stripping
+the untouched array out of the SCORED object file only; it is not a byte distance and
+never was (this re-confirms s2's E-s2-6 on the current chassis, as the kill re-audit
+mandate required — the form carries no FAKE construct, so there was nothing to ablate).
+
+## E-s4r (enumerate re-run, 2026-09-10)
+
+- **E-s4r-1.** Chassis re-measured: candidate.c spliced into src/text1b.c gives
+  `sandbox func_8006DD94 --disable all` = 21, target_insns 117, build_insns 117, rules_dropped 0.
+  The dispatch brief's "measurement unavailable" is therefore resolved: the floor is still 21.
+
+- **E-s4r-2.** Target frame, read directly from `asm/funcs/func_8006DD94.s`:
+  `addiu sp,sp,-0x78`; descriptor 0x18..0x43 (`addiu a0,sp,0x18`, `sw` at 0x18/0x1C/0x20/0x28/0x2C/
+  0x30/0x34, `sb` at 0x40..0x43); NOTHING at 0x44..0x4F; rect 0x50..0x57 (`addiu a1,sp,0x50`,
+  `sh` at 0x50/0x52/0x54/0x56); register saves 0x58..0x70. The untouched region is INTERIOR.
+
+- **E-s4r-3.** Four pad-position probes (fp4.py, project CC_FLAGS):
+  | probe | position | vars | descriptor | rect |
+  |---|---|---|---|---|
+  | b0 (honest chassis) | - | 56 | 0x18 | 0x48 |
+  | p01_pad3_first | before descriptor | 72 | 0x28 | 0x58 |
+  | p02_pad2_first | before descriptor | 64 | 0x20 | 0x50 |
+  | p03_pad3_interior | between | 72 | 0x18 | 0x58 |
+  | p04_pad2_interior | between | 64 | 0x18 | 0x50 |
+  | TARGET | - | 64 | 0x18 | 0x50 |
+  Only the INTERIOR 8-byte reservation reproduces the target. The first-declaration form the
+  frozen pad family requires is measured at sandbox **45**, twice the honest floor.
+
+- **E-s4r-4.** Systematic spelling sweep of the rect block (the only block carrying differing
+  instructions besides the prologue): 65 spellings, best 21, one at the floor, histogram
+  {21:1, 22:4, 23:12, 24:24, 26:24}. Zero improvement. The residual is not a spelling residual.
+
+- **E-s4r-5.** Citation correction for the whole ledger: the frame-offset predicate is
+  `tools/gcc-2.7.2/function.c:724`, NOT `tools/gcc-2.7.2/gcc/function.c:724`. The bad path cost
+  the previous session its entire outcome.

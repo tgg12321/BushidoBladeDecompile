@@ -651,3 +651,138 @@ Remaining honest ideas, in the order the next session should take them:
 - kill_scope: class
 - measured_on: tools/gcc-2.7.2 source at HEAD plus the s3 probe sweep on the honest 0x2C-descriptor chassis (sandbox 21 re-measured this session); no FAKE construct.
 - predicate_cite: tools/gcc-2.7.2/stmt.c:3419
+
+## s4 (enumerate, 2026-09-10)
+
+### H-s4-1 — KILLED (class)
+**Statement.** On the nested-rect chassis, every expression class GCC 2.7.2 expands with
+a stack temp — DImode arithmetic, soft-float double/float, BLKmode struct copies, unions,
+one-member structs, HImode bitwise pairs — either leaves no surviving slot (`vars= 56`)
+or leaves one only together with the instructions that use it (`n` > 112); no expression
+class in this body's vocabulary reserves 8 bytes below the rect at zero instruction cost.
+**Mechanism.** `assign_stack_temp` and `expand_decl` draw from the same monotonically
+increasing `frame_offset`, so the nested-block chassis is the ordering that lets a
+statement-created temp land below the rect; but GCC 2.7.2 keeps DImode and soft-float
+values in register pairs (no `assign_stack_local` at all), and the only expressions it
+DOES give a stack temp are BLKmode aggregates, whose temp is always the destination of an
+emitted block move.
+**Probe.** 41 spellings compiled with the project's exact CC_FLAGS through
+`tmp/grind/func_8006DD94/s4/fp4.py`; logs batch1.log / batch2.log / batch3.log.
+**Result.** 6 hits at `vars= 64, n= 112`; all six reserve via an untouched declaration
+(five address-taken dead locals, one untouched sibling array). Zero hits from the
+expression axis. This closes s3's frontier item 1 (the BLKmode keep=1 temp) on its own
+chassis: the class is allocatable but not instruction-free, and this body contains no
+8-byte BLKmode-valued expression to begin with — every callee returns a scalar.
+**predicate_cite.** `tools/gcc-2.7.2/gcc/function.c:724`
+**kill_scope.** class   **measured_on.** HEAD chassis (INCLUDE_ASM in src/), honest
+0x2C-descriptor body from candidate.c plus the byte-neutral nested-rect variant
+b1_nested.c; no FAKE construct present in any of the 41 probes.
+
+### H-s4-2 — CONFIRMED
+**Statement.** The one-line form `u16 rect0[4]; u16 rect[4];` on the honest
+0x2C-descriptor chassis builds the whole SLUS_006.63 byte-identical to the oracle, while
+`sandbox --disable all` reports 21 for it.
+**Mechanism.** engine/volatile_cheats.py removes the untouched local array from the
+object file the sandbox scores; the real build keeps it, GCC reserves its 8 bytes, the
+rect lands at `sp+0x50`, and `vars= 64` matches the target frame exactly.
+**Probe.** spliced into src/text1b.c this session; `sandbox func_8006DD94 --disable all`
+= 21 (117/117, rules_dropped 0), then `verify-oracle` = `ok: true`,
+`build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa`, `build_matches: true`. src
+restored to HEAD.
+**Result.** Re-confirmed on the current chassis (kill re-audit discharged: the form
+carries no FAKE construct, so ablation is a no-op). The honest floor of 21 is a scoring
+artifact of the stripper, not a byte distance.
+
+### H-s4-3 — KILLED (instance)
+**Statement.** A plain non-addressable scalar declared at outer scope before the rect
+(`s32 hole;` and `long long hole;`) reserves the 8 bytes the target's frame reserves.
+**Mechanism.** expand_decl gives a non-addressable scalar decl a pseudo, not a stack
+slot, so `get_frame_size()` never grows.
+**Probe.** w02_s32_before.c, w03_ll_before.c via fp4.py.
+**Result.** Both `vars= 56`, rect still at `sp+0x48`, `n= 112`. Only objects GCC must
+address (arrays, aggregates, address-taken scalars) reserve. Declaring the untouched
+object as a scalar is therefore not an escape from the array/aggregate families.
+**kill_scope.** instance   **measured_on.** HEAD chassis, flat 0x2C-descriptor body,
+no FAKE construct present.
+
+### Frontier after s4
+The codegen question is closed to a single classification question. Every mechanism that
+can put `vars` at 0x40 has now been enumerated, and each one requires a declared object at
+`sp+0x44..0x4F` that no instruction touches. The remaining families for such an object are
+all either banned for this function (the merged `rects[2][4]`, the trailing struct pads) or
+frozen behind prerequisites this instance cannot meet (the interior `volatile` pad the
+Judge refused; the sanctioned pad family requires FIRST-declaration position, which would
+displace the descriptor from `sp+0x18`). The one form that is neither banned nor
+FAKE-annotated — a second, separately declared, untouched `u16 rect0[4]` sibling — is the
+subject of this session's ruling request.
+
+## s4-rerun (enumerate, 2026-09-10) - the previous s4 outcome was DISCARDED by the driver
+(invalid `predicate_cite` path: `tools/gcc-2.7.2/gcc/function.c:724`; the file actually lives at
+`tools/gcc-2.7.2/function.c:724`). Every s4 finding above stands - the chassis was re-measured
+here - and the corrected citation for the frame-offset predicate is
+`tools/gcc-2.7.2/function.c:724` (`frame_offset += size;` inside `assign_stack_local`, guarded by
+`#ifndef FRAME_GROWS_DOWNWARD`). Any future session quoting that predicate must use the corrected
+path; the `gcc/` infix does not exist in this checkout.
+
+### H-s4r-1 - KILLED (instance): the Judge's own sanctioned closure form is measured WRONG
+**Statement.** A first-declaration `volatile u32 pad[2];` - the shape the Judge's standing
+constraint names as the only permitted way to close the sp+0x44..0x4F hole - reproduces the
+target's frame size exactly (`vars= 64`, `addiu sp,sp,-0x78`, rect at `sp+0x50`) but places the
+0x2C descriptor at `sp+0x20` instead of the target's `sp+0x18`, so every descriptor store moves and
+the honest sandbox score rises from 21 to 45 (119 build insns vs 117 target).
+**Mechanism.** `assign_stack_local` hands out monotonically increasing frame offsets in
+`expand_decl` order (`tools/gcc-2.7.2/function.c:724`, `frame_offset += size;` under
+`#ifndef FRAME_GROWS_DOWNWARD`; MIPS leaves that macro undefined, mips.h:1645). The FIRST
+declaration therefore owns the LOWEST slot. The target's lowest slot is the live descriptor at
+0x18 and its untouched bytes sit at 0x44..0x4F - i.e. INTERIOR, between the descriptor and the
+rect. A first-declaration pad can only ever be below the descriptor, which is the one position the
+target does not use.
+**Probe.** `tmp/grind/func_8006DD94/s4b/p01..p04_*.c` compiled with the project CC_FLAGS through
+`tmp/grind/func_8006DD94/s4/fp4.py`, plus a full `sandbox --disable all` on the pad2-first form
+with it spliced into `src/text1b.c`.
+**Result.**
+  - `p01_pad3_first`  (`volatile u32 pad[3]` first): vars= 72, descriptor at 0x28, rect at 0x58.
+  - `p02_pad2_first`  (`volatile u32 pad[2]` first): vars= 64, sp -0x78, rect at 0x50 (both target),
+    descriptor at 0x20 (target 0x18). Spliced sandbox score **45** (target 117 insns, build 119).
+  - `p03_pad3_interior`: vars= 72, descriptor 0x18, rect 0x58.
+  - `p04_pad2_interior` (descriptor, then `volatile u32 pad[2]`, then rect): vars= 64, sp -0x78,
+    descriptor 0x18, rect 0x50 - the EXACT target frame. This is the interior position the Judge
+    refused, and it is the only pad position that reproduces the layout.
+So the frozen pad family and this function's target layout are mutually exclusive by CODEGEN, not
+by policy: the family requires first-declaration position, the target requires interior position.
+Banked as `rejected/first-decl-volatile-pad-displaces-descriptor-to-0x20-score45.c`.
+**kill_scope.** instance   **measured_on.** HEAD chassis (INCLUDE_ASM in src/), honest
+0x2C-descriptor candidate.c body, with a `volatile u32 pad[N]` FAKE-family carrier present in the
+probe by construction (the carrier IS the hypothesis).
+
+### H-s4r-2 - KILLED (class): the rect block's spelling space contains nothing below 21
+**Statement.** Enumerating the rect-store block in fully-named form over the inline/keep-named axis
+and the commutative-swap axis produces 65 distinct spellings whose best honest sandbox score is 21,
+reached by exactly one spelling (the fully-inlined literal form already in candidate.c).
+**Mechanism.** The residual is a frame-allocation residual, not an expression residual: build and
+target are both 117 instructions and differ only in `addiu sp`, the seven register saves,
+`addiu a1,sp,N` and the four rect `sh` offsets. Statement spelling inside the block cannot change
+`get_frame_size()`, because frame offsets are handed out by declaration order in
+`assign_stack_local` (`tools/gcc-2.7.2/function.c:724`) and are independent of how the stores that
+consume the slot are written.
+**Probe.** `tools/spelling_enum.py --candidate tmp/grind/func_8006DD94/s4b/enum_src.c --out
+tmp/grind/func_8006DD94/s4b/enum` (65 variants, swap axis included) swept with the sweep driver
+(`tmp/grind/func_8006DD94/s4b/sweep.json`).
+**Result.** ENUMERATION: 65 spellings, best 21, 1 at the floor. Histogram
+{21: 1, 22: 4, 23: 12, 24: 24, 26: 24}. Zero hits below the floor - the strongest available
+evidence that the residual does not live in this block at all, but in the declaration region.
+**kill_scope.** class   **predicate_cite.** `tools/gcc-2.7.2/function.c:724`
+**measured_on.** HEAD chassis, honest 0x2C-descriptor candidate.c body, no FAKE construct present
+in any of the 65 variants.
+
+### H-s4r-3 - CONFIRMED: chassis unchanged
+candidate.c spliced into `src/text1b.c` measures `sandbox func_8006DD94 --disable all` = **21**,
+target_insns 117, build_insns 117, rules_dropped 0. src/ restored to HEAD afterwards.
+
+### Frontier after s4-rerun
+The codegen question is closed and the policy question is now sharp enough to state in one
+sentence: **the target reserves 12 bytes between two live objects, and every construct that
+reserves interior bytes is either banned for this function or belongs to a family whose rule
+requires first-declaration position - a position measured here to produce the wrong layout.**
+That is a classification question, not a search question, and this session returns it as a
+ruling-request rather than re-spending measurements on it.

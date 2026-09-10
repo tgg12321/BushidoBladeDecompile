@@ -42,7 +42,8 @@
  ],
  "judge_constraints": [
   "Do not submit the clut/NULL body without (a) a spent modality ladder recorded in hypotheses.md and (b) a /* FAKE: ... */ annotation at the holder naming the cse/loop.c mechanism; and do not re-type func_8006E480's parameters against its definition at src/text1b.c:6174.",
-  "Close the sp+0x44..0x4F hole only via the frozen volatile-pad family (first-decl `volatile u32 pad[N];` + !FAKE + _SANCTIONED_UNWRITTEN_PADS row + forensics) or by evidence that the descriptor type is genuinely larger; never by unevidenced struct members."
+  "Close the sp+0x44..0x4F hole only via the frozen volatile-pad family (first-decl `volatile u32 pad[N];` + !FAKE + _SANCTIONED_UNWRITTEN_PADS row + forensics) or by evidence that the descriptor type is genuinely larger; never by unevidenced struct members.",
+  "The sp+0x44..0x4F hole may not be reserved by ANY untouched declaration in a non-first position, in any spelling; the frozen pad family is measured inapplicable here, so stop spelling search and rotate."
  ],
  "banned_constructs": [
   "typedef struct EnvB { ... s32 pad2C, pad30; } EnvB;  /* the two TRAILING members, function-local at src/text1b.c:5949-5964 */",
