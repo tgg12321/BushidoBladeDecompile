@@ -158,3 +158,126 @@ at all. Do not submit `candidate.c` as-is.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-10, form v4 (tmp/grind/func_8003DE14/s1/body_v4.c), no FAKE constructs
+
+
+## KILLED / CONFIRMED (s2, 2026-09-10, structural)
+
+### C1 (CONFIRMED) - the `count - 1` comparand needs NO sanctioned-family construct; it stays inline as ordinary C once another invariant spends the first move
+**Statement:** s1's F2 asked whether the function needs any FAKE construct for the
+comparand. It does not. Declaring `s32 complement = blend_base - factor;` inside the
+inner do-body (instead of in the `if (total > 0)` prologue) makes it the first movable
+in the inner loop's movables list; move_movables moves it (it is still loop-invariant
+and lands in the inner preheader, exactly where the target has `subu $t5,$fp,$t3` at
+8003DF30), then executes `threshold -= 3` at `loop.c:1904`. The next movable - insn
+147, the `count - 1` comparand, life 1 savings 1 - then fails
+`threshold * savings * lifetime >= insn_count` (55 >= 59 is false) and is reported
+"not desirable", so it stays inline at the top of the loop body and is no longer
+hoisted out of the outer loop either.
+**Probe:** `pwsh tools/grinder/dump.ps1 func_8003DE14` with v1 applied and again with
+x1 applied; read the `;; Function func_8003DE14` section of
+`tmp/grind/func_8003DE14/dumps/code6cac_c2.loop` both times.
+**Result:** v1 - `Loop from 142 to 302: 58 real insns` /
+`Insn 147: regno 115 (life 1), savings 1  moved to 382` then
+`Insn 382: regno 115 (life 78), savings 1 halved since already moved  moved to 383`.
+x1 - `Loop from 139 to 303: 59 real insns` /
+`Insn 144: regno 114 (life 50), savings 1  moved to 382` /
+`Insn 147: regno 115 (life 1), savings 1 not desirable`. Score 59 and
+`build_insns == target_insns == 173` (the borrow form was 174). CONFIRMED.
+
+### C2 (CONFIRMED) - the r/g/b callee-save rotation is a downstream cascade (s1 F3)
+**Statement:** s1 predicted the `s6/s5/s4` vs `s5/s4/s3` rotation would fall out once
+the OR chain and the comparand were fixed, and was not an independent lever.
+**Probe:** side-by-side of the y1 object against `build/src/code6cac_c2.o`.
+**Result:** r/g/b now sit in the target's `s5/s4/s3` and `target_color` in `s6`; the
+four pseudos no longer appear in the diff at all. No spelling was aimed at them.
+CONFIRMED.
+
+### K7 - re-associating the target_color OR chain at the C level reproduces the target's `or v0,v0,v1` / `or a0,a0,v0` grouping
+**Statement:** writing the `-0x8000` constant physically inside the green term, with
+or without `|=` accumulation, makes GCC OR the constant into the green term the way the
+target does (s1 frontier F1's next probe, verbatim).
+**Probe:** seven spellings measured - w1/w2/w3/w4/w5 on the s1 borrow chassis and
+y1/y3/y4/y7/z4/z5/q1/q2 on the s2 structural chassis (full table in evidence.md).
+**Result:** in every one the build still emits `li v0,-32768` followed by
+`or <red>,<red>,v0` as the FIRST or of the chain - the parentheses around the green
+group are not honoured, fold-const.c reassociates the constant operand outwards.
+Scores: 59/66/63/64/59 on the borrow chassis (all worse than its 57) and
+52/58/58/60/53/72/55/68 on the structural chassis (the flat single expression, 52, is
+the best of them but still has the wrong grouping). KILLED (instance): C-level
+regrouping of this OR chain is not the discriminator. The next probe must be a
+`.combine`/`.cse` read to find where the constant is absorbed, not another spelling.
+
+### K8 - declaration order fixes the `src`/`dst` and `j`/`complement` register pairs
+**Statement:** swapping the declaration order of the two cursor pointers, or moving
+`j` to the head of the outer-loop block, flips the build's `a2`=src/`a3`=dst and
+`t5`=j/`t4`=complement to the target's `a3`=src/`a2`=dst and `t4`=j/`t5`=complement.
+**Probe:** z1 (`dst` before `src`) and z2 (`j` declared first), both on the y1 form.
+**Result:** both score 52, byte-identical residual to y1. KILLED (instance) - third
+independent confirmation of K4 on a third chassis. Stop trying declaration order on
+this function; route the pair to `tools/ra_solver`.
+
+## OPEN FRONTIER (for s3+)
+
+### G1 - the OR-chain constant absorption is a fold/combine question, not a spelling
+fold-const.c pulls `(s32)-0x8000` out of the parenthesised green group and merges it
+with whichever term the chain starts with. Seven spellings are banked as dead (K7).
+**Next probe:** with y1 applied, read
+`tmp/grind/func_8003DE14/dumps/code6cac_c2.combine` and `.cse` for the
+`;; Function func_8003DE14` section and find the insn that first materialises
+`(ior (reg) (const_int -32768))` - is the grouping already wrong in `.rtl` (the tree
+came out of fold reassociated, so a fix must change the TREE shape - e.g. make the red
+term not be the chain's first operand at tree level) or does `.combine` re-sink it?
+That decides whether any tree-level spelling is left at all.
+
+### G2 - one allocation decision, two symptoms (`a2`/`a3` and `t4`/`t5`)
+In both pairs the build hands the lower-numbered caller-save to the wrong member.
+Declaration order is measured inert (K8), so this is an allocno-ordering question.
+**Next probe:** `tools/ra_solver/inverse_compose.py classify` on the `.greg`/`.lreg`
+allocation for the src/dst and j/complement pseudos, for a typed REACHABLE /
+FORECLOSED verdict with ranked C-lever vectors.
+
+### G3 - blend-arm ordering residual
+The `andi 0x7C00` sits after the final `or` chain in the build and before it in the
+target, and the blue-channel `mflo`/`srl` interleave differs by one slot. Same
+instruction count. **Next probe:** `tools/sched_solver` on the blend arm's basic block,
+or a statement re-association of
+`*dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);` that computes the masked
+blue term into its own named local before the final OR.
+
+## Standing constraint on the current best form - WITHDRAWN (s2)
+
+s1 recorded that `candidate.c` could not ship because of the `total = count - 1;`
+borrow. That borrow is GONE (see C1) and the replacement is strictly better (52 vs 57,
+and 173 vs 174 instructions). `candidate.c` is now ordinary C end to end: no borrowed
+local, no dead store, no named intermediate, no FAKE annotation, no sanctioned-family
+claim. There is no open family question on this function.
+
+## [s2] The `count - 1` comparand needs no sanctioned-family construct at all: declaring the loop-invariant `complement` INSIDE the inner do-body makes it the first movable, move_movables spends the first move on it and applies `threshold -= 3` (loop.c:1904), and the comparand then fails the arithmetic clause and stays inline the way the target has it.
+- mechanism: loop.c:532 `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` gives 58 for this call-free inner loop (bounded 58 <= threshold <= 59 by the dumps themselves). loop.c:1631 `(threshold * savings * m->lifetime) >= insn_count` is TRUE for the FIRST life-1/savings-1 movable in a 58-insn loop and FALSE for every later one because each successful move runs `threshold -= 3` at loop.c:1904. Moving `complement`'s declaration into the loop inserts a movable ahead of the comparand in the movables list (and raises insn_count to 59), so the comparand is reported 'not desirable' and is left inline; it is consequently no longer a movable for the outer loop either. `complement` itself is hoisted straight back to the inner-loop preheader, which is exactly where the target keeps it (`subu $t5,$fp,$t3` at 8003DF30).
+- probe: `pwsh tools/grinder/dump.ps1 func_8003DE14` with v1 applied and again with x1 applied; read the `;; Function func_8003DE14` section of tmp/grind/func_8003DE14/dumps/code6cac_c2.loop both times; then `sandbox func_8003DE14 --disable all` on x1 and on y1.
+- result: v1 dump: `Loop from 142 to 302: 58 real insns` / `Insn 147: regno 115 (life 1), savings 1  moved to 382`, then in the outer loop `Insn 382: regno 115 (life 78), savings 1 halved since already moved  moved to 383` (reg 115 identified from the .jump dump as `(set (reg:SI 115) (plus:SI (reg/v:SI 73) (const_int -1)))`, i.e. count - 1). x1 dump: `Loop from 139 to 303: 59 real insns` / `Insn 144: regno 114 (life 50), savings 1  moved to 382` / `Insn 147: regno 115 (life 1), savings 1 not desirable`. x1 scores 59 with build_insns == target_insns == 173; s1's borrow form scored 57 but with build_insns 174. Adding the flat single-expression target_color (y1) takes it to 52, still 173/173. candidate.c is now ordinary C end to end - no borrowed local, no dead store, no named intermediate, no FAKE annotation, no family claim.
+- verdict: CONFIRMED
+
+## [s2] Re-associating the target_color OR chain at the C level - writing the `(s32)-0x8000` constant physically inside the green term, with or without `|=` accumulation - reproduces the target's `or v0,v0,v1` / `or a0,a0,v0` grouping.
+- mechanism: fold-const.c reassociates a constant operand outwards through an associative `|` chain, so the parentheses around `(((g & 0xF8) << 2) | (s32)-0x8000)` are not honoured and the constant is merged with whichever term heads the chain.
+- probe: Seven distinct spellings measured with `sandbox func_8003DE14 --disable all`: w1/w2/w3/w4/w5 on the s1 borrow chassis (base 57) and y1/y3/y4/y7/z4/z5/q1/q2 on the s2 structural chassis. Objects side-by-side-diffed against build/src/code6cac_c2.o with tmp/grind/func_8003DE14/s1/sd2.py.
+- result: Every spelling still emits `li v0,-32768` followed by `or <red>,<red>,v0` as the first OR of the chain; none reproduced the target's green-term grouping. Borrow chassis: 59/66/63/64/59 (all worse than its 57). Structural chassis: y1 52, z4 53, q1 55, y3 58, y4 58, y7 60, q2 68, z5 72. The flat single expression (y1, 52) is the best of them and is the new candidate, but its grouping is still wrong, so the +0 instruction-count win came from elsewhere. This is now a fold/combine question for a dump read, not a spelling question.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), src/code6cac_c2.c, bodies in tmp/grind/func_8003DE14/s2/body_{w1,w2,w3,w4,w5,y1,y3,y4,y7,z4,z5,q1,q2}.c, no FAKE constructs present in any measured body
+
+## [s2] Declaration order fixes the two swapped register pairs: swapping the `src`/`dst` cursor declarations, or moving `j` to the head of the outer-loop block, flips the build's a2=src/a3=dst and t5=j/t4=complement to the target's a3=src/a2=dst and t4=j/t5=complement.
+- mechanism: GCC 2.7.2 local-alloc walks pseudos in first-set order within a block, so declaration order can decide which of two same-class pseudos receives the lower hard register.
+- probe: z1 (`dst` declared before `src`) and z2 (`j` declared first among the outer-body locals), both built on the y1 form; `sandbox func_8003DE14 --disable all` plus the side-by-side diff.
+- result: Both score 52, the same as y1, with a byte-identical residual - a2/a3 and t4/t5 are still swapped. This is the third independent confirmation of s1's K4 on a third chassis. Declaration order is not the discriminator for these pairs; the next attack is tools/ra_solver/inverse_compose.py classify on the .greg allocation, not more spellings.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, forms tmp/grind/func_8003DE14/s2/body_z1.c and body_z2.c on the y1 chassis, no FAKE constructs
+
+## [s2] The r/g/b callee-save rotation (target s5/s4/s3 + s6=target_color, build s6/s5/s4 + s3) is an independent lever needing its own spelling.
+- mechanism: s1's F3 predicted instead that it was a downstream cascade of the OR-chain shape and the comparand's live range, via global.c allocno ordering.
+- probe: Side-by-side diff of the y1 object against build/src/code6cac_c2.o, with no spelling aimed at r/g/b at all.
+- result: r/g/b now sit in the target's s5/s4/s3 and target_color in s6; all four pseudos dropped out of the diff entirely once the comparand stayed inline and target_color became a single flat expression. s1's F3 is CONFIRMED as a cascade and this hypothesis is dead - do not spend a session on the rotation.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, form tmp/grind/func_8003DE14/s2/body_y1.c (score 52), no FAKE constructs

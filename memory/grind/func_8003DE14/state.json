@@ -1,31 +1,37 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 57,
    "modality": "recon",
    "headline": "Recon: stale 119 migration pin killed \u2014 honest floor is 57/173 (insn-count already exact); residual is one OR-association copy + the count-1 comparand carrier, both pass-attributed from the .loop dump"
+  },
+  {
+   "session": 2,
+   "floor": 52,
+   "modality": "structural",
+   "headline": "Floor 57 -> 52 in pure ordinary C: declaring `complement` inside the inner loop spends loop.c's first move (threshold -= 3) so the `count - 1` comparand stays inline, which retires s1's variable-reuse"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target_color OR-association is the single extra instruction (the trailing `move s6,a0`), and a flat single-expression spelling with the -0x8000 constant physically inside the green term reproduces the target's grouping without any sanctioned-family construct.",
-   "mechanism": "GCC 2.7.2 fold-const.c reassociates a constant operand leftwards through an associative `|` chain built by `|=` accumulation; combine/jump2 then fails to coalesce the final OR pseudo into the callee-save holding target_color, leaving a copy.",
-   "next_probe": "Measure `target_color = ((u32)r >> 3) | (((g & 0xF8) << 2) | (s32)-0x8000) | ((b & 0xF8) << 7);` as a single expression with no `|=`, plus the blue-first variant, then read tmp/grind/func_8003DE14/dumps/code6cac_c2.combine for func_8003DE14 to see whether the trailing copy is a combine artifact or a greg artifact. Pure ordinary C, no family question, cheap."
+   "hypothesis": "The OR-chain constant absorption is decided in the TREE (fold-const.c) before RTL, so no remaining C-level regrouping of the same three terms can move `-0x8000` onto the green term; the fix, if one exists, has to change which term heads the chain at tree level or change what the green term IS.",
+   "mechanism": "fold-const.c reassociates a constant operand outwards through associative `|`; seven spellings (K7) all produced `li v0,-32768` + `or <red>,<red>,v0` first, so the parenthesised grouping never survives to RTL.",
+   "next_probe": "With y1 applied, read the `;; Function func_8003DE14` section of tmp/grind/func_8003DE14/dumps/code6cac_c2.rtl first, then .cse and .combine, and find the insn that first materialises `(ior (reg) (const_int -32768))`. If the grouping is already wrong in .rtl the tree came out of fold reassociated (tree-shape fix needed, or the term is not what we think it is); if .combine re-sinks it, the lever is a combine-visible one. One read decides whether any spelling is left."
   },
   {
-   "hypothesis": "No sanctioned-family construct is needed for the `count - 1` comparand at all \u2014 the inline `if (i == count - 1)` form (v1, 66) hoisted via the `already_moved` / `m->forces` clause of loop.c:1631, not the arithmetic clause, so a different ordinary-C shape can leave it inline the way the target does.",
-   "mechanism": "loop.c:1631 `if (already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count || (m->forces && m->forces->done && n_times_used[m->forces->regno] == 1))`. The dump already proves the arithmetic clause is FALSE here (threshold <= 56 vs insn_count 57 for life-1/savings-1 movables), so whatever hoisted v1's comparand came from one of the other two clauses.",
-   "next_probe": "Re-run `pwsh tools/grinder/dump.ps1 func_8003DE14` with v1 applied (memory/grind/func_8003DE14/rejected/v1-ordinary-c-count-minus-1-inline-hoisted.c) and read the `;; Function func_8003DE14` .loop diagnostics for the pseudo holding `count - 1`: is it listed, and under which clause was it moved? That single read decides whether this function needs any /* FAKE */ construct. Do it BEFORE proposing one."
+   "hypothesis": "The swapped src/dst (a2/a3) and j/complement (t4/t5) pairs are a single allocno-ordering decision, and declaration order is measured inert (K4 three times, K8), so the residual is a typed RA question rather than a C-spelling question.",
+   "mechanism": "GCC 2.7.2 global.c/local-alloc allocno priority ordering hands the lower-numbered caller-save to the wrong member of each pair; the two pairs show the identical relation, suggesting one ordering comparison decides both.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify on the .greg/.lreg allocation for the src, dst, j and complement pseudos (pseudo numbers are in tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg) for a REACHABLE / FORECLOSED verdict plus ranked C-lever vectors, instead of guessing more declaration permutations."
   },
   {
-   "hypothesis": "The r/g/b callee-save rotation (target s5/s4/s3 + s6, build s6/s5/s4 + s3) is a downstream cascade of the two items above and not an independent lever.",
-   "mechanism": "GCC 2.7.2 global.c allocno ordering \u2014 the target_color pseudo's priority relative to the three colour-component pseudos shifts when the OR chain shape or the comparand's live range changes.",
-   "next_probe": "After F1 and F2 land, run tools/ra_solver/inverse_compose.py classify on the .greg allocation for the four pseudos to get a typed REACHABLE / FORECLOSED verdict with ranked C-lever vectors, instead of guessing at declaration-order spellings (which K4 already showed to be inert here)."
+   "hypothesis": "The blend-arm ordering residual (the `andi 0x7C00` after the final `or` chain in the build vs before it in the target, and a one-slot `mflo`/`srl` interleave difference on the blue channel) is a scheduler-order item, not an allocation one.",
+   "mechanism": "sched.c list-scheduling priority within the blend basic block; the instruction count already matches exactly, so only emission order differs.",
+   "next_probe": "tools/sched_solver on the blend arm's basic block for an order-exact verdict; in parallel, measure a statement re-association that computes the masked blue term into its own named local before the final OR of `*dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);`."
   }
  ],
  "judge_constraints": [],
@@ -78,11 +84,36 @@
    "measured_on": "HEAD chassis 2026-09-10, form v4 (tmp/grind/func_8003DE14/s1/body_v4.c), no FAKE constructs",
    "predicate_cite": "",
    "result": "Score 62, five WORSE than the 57 baseline. The named intermediate perturbs the callee-save allocation of r/g/b without f"
+  },
+  {
+   "session": 2,
+   "statement": "Re-associating the target_color OR chain at the C level - writing the `(s32)-0x8000` constant physically inside the green term, with or without `|=` accumulation - reproduces the target's `or v0,v0,v1",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), src/code6cac_c2.c, bodies in tmp/grind/func_8003DE14/s2/body_{w1,w2,w3,w4,w5,y1,y3,y4,y7,z4,z5,q1,q2}.c, no FAKE constructs present in any measu",
+   "predicate_cite": "",
+   "result": "Every spelling still emits `li v0,-32768` followed by `or <red>,<red>,v0` as the first OR of the chain; none reproduced "
+  },
+  {
+   "session": 2,
+   "statement": "Declaration order fixes the two swapped register pairs: swapping the `src`/`dst` cursor declarations, or moving `j` to the head of the outer-loop block, flips the build's a2=src/a3=dst and t5=j/t4=com",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, forms tmp/grind/func_8003DE14/s2/body_z1.c and body_z2.c on the y1 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Both score 52, the same as y1, with a byte-identical residual - a2/a3 and t4/t5 are still swapped. This is the third ind"
+  },
+  {
+   "session": 2,
+   "statement": "The r/g/b callee-save rotation (target s5/s4/s3 + s6=target_color, build s6/s5/s4 + s3) is an independent lever needing its own spelling.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, form tmp/grind/func_8003DE14/s2/body_y1.c (score 52), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "r/g/b now sit in the target's s5/s4/s3 and target_color in s6; all four pseudos dropped out of the diff entirely once th"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T20:34:10.685944+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }

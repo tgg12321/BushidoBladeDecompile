@@ -171,3 +171,136 @@ under `memory/grind/func_8003DE14/rejected/`.
 - [s1] Reusable tooling written this session: tmp/grind/func_8003DE14/s1/sd2.py prints an aligned side-by-side of the sandbox object against build/src/code6cac_c2.o using objdump -dz (elision off). Its branch-target text differences are false positives — engine/score.py masks control-flow targets.
 
 - [s1] The best form (57) is NOT submittable: it contains `total = count - 1;`, a borrow of an existing local that is dead after its guard test. That is the variable-reuse family (.claude/rules/defeat-licm-hoist-var-reuse.md, gated by staged-value-reused-variable.md) and needs a /* FAKE */ annotation, a quoted scope sentence, a precedent citation and a demonstrated lever-exhaustion ladder. Frontier item F2 exists to determine whether it is needed at all.
+
+
+## s2 (2026-09-10, structural) - floor 57 -> 52, insn count now EXACT, borrow retired
+
+**The headline: `candidate.c` no longer contains any sanctioned-family construct.**
+s1's standing constraint ("the 57 form needs the `total = count - 1;` borrow and
+therefore a FAKE family claim") is retired. The comparand stays inline for a purely
+mechanical reason that costs nothing at the C level, and the resulting form scores
+BETTER than the borrow (52 vs 57) with `build_insns == target_insns == 173` (the
+borrow form was 174 - it carried the extra `move s6,a0`).
+
+### The loop.c:1631 threshold is a knife edge, and `threshold -= 3` is the lever
+
+Calibration, all read off `.loop` diagnostics for this function (never guessed):
+
+| form | inner loop "real insns" | first movable | count-1 movable (insn 147) |
+|---|---|---|---|
+| s1 v2 (borrow, 57) | 57 | insn 174 regno 117 moved | not a loop movable (set outside) |
+| v1 (inline, 66) | 58 | **insn 147 regno 115 moved to 382** | hoisted out of inner AND outer loop |
+| s2 x1 (complement moved inside, 59) | 59 | insn 144 regno 114 (complement, life 50) moved to 382 | **"not desirable" - stays inline** |
+
+`threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (`loop.c:532`); the
+inner loop is call-free. From v1: `threshold * 1 * 1 >= 58` was TRUE for insn 147 and
+FALSE for every later `life 1, savings 1` movable in the same loop, and the only thing
+that changes between them is `threshold -= 3` executed after each successful move
+(`loop.c:1904`). Therefore **`threshold` is 58 or 59 on this chassis** (58 <= threshold
+<= 59, i.e. n_non_fixed_regs is 28 and the real value is 58). That is a one-insn margin
+against `insn_count`, which is why this function looked like it needed a coercion: the
+comparand hoists only because it is the FIRST movable in a 58-insn loop.
+
+**The fix is ordinary C: declare `complement` inside the inner do-body.**
+`s32 complement = blend_base - factor;` is loop-invariant, so loop.c hoists it right
+back to the inner-loop preheader - which is exactly where the target keeps it
+(`subu $t5,$fp,$t3` at 8003DF30, immediately before the reorg-peeled
+`addiu $v0,$s2,-1` at 8003DF34). But it is now the first movable in the list (insn 144,
+life 50, savings 1), so it consumes the first move, `threshold` drops to 55, and insn
+147 (`count - 1`, life 1, savings 1) fails `55 >= 59` and is left inline at the top of
+the loop body - which is the target's shape (the 8003DF34 copy is reorg's duplicate of
+the loop-top insn, not a preheader computation; cf. the
+`reorg-peel-is-not-a-source-statement` memory). Moving the declaration also pushes the
+inner loop to 59 real insns, so the margin is no longer knife-edge either.
+
+Consequence for the NEXT session: there is no outstanding family question on this
+function. Everything measured this session is ordinary C.
+
+### Second structural win: target_color as one flat expression
+
+`target_color = ((u32)r >> 3) | (((g & 0xF8) << 2) | (s32)-0x8000) | ((b & 0xF8) << 7);`
+(single statement, no `|=` accumulation) scores **52**. With the `|=` accumulation
+spelling on the same chassis it is 59. The flat form also fixes the callee-save
+rotation that s1 recorded as diff item 4: r/g/b now land in the target's `s5/s4/s3`
+and `target_color` in `s6`, and they no longer appear in the side-by-side diff at all.
+So s1's F3 ("the r/g/b rotation is a downstream cascade") is CONFIRMED - it fell out
+for free.
+
+### Forms measured this session (all HEAD chassis 2026-09-10, `sandbox --disable all`)
+
+On the s1 borrow chassis (base = s1 candidate, 57, build_insns 174) - every OR
+re-association is worse and NONE of them removed the extra `move`:
+
+| form | target_color spelling | score |
+|---|---|---|
+| base | s1 candidate (accumulated with `\|=`) | 57 |
+| w1 | flat single expression | 59 |
+| w2 | blue-first flat | 66 |
+| w3 | green-or-const statement, then red, then blue | 63 |
+| w4 | four-step accumulation, green first | 64 |
+| w5 | explicit left-nested parens | 59 |
+
+On the new structural chassis (`complement` inside the inner loop):
+
+| form | change vs x1 | score | build_insns |
+|---|---|---|---|
+| x1 | v1 + complement inside inner loop | 59 | 173 |
+| x5 | x1 + `s32 last = count - 1;` block-local | 59 | 173 |
+| **y1** | **x1 + flat single-expression target_color** | **52** | **173** |
+| y3 | x1 + three-statement target-shaped OR | 58 | 173 |
+| y4 | x1 + four-step accumulation, green first | 58 | 173 |
+| y6 | x1 + `target_color` declared before r/g/b | 59 | 173 |
+| y7 | x1 + two-statement OR | 60 | 173 |
+| z1 | y1 + `dst` declared before `src` | 52 | 173 |
+| z2 | y1 + `j` declared first in the outer body | 52 | 173 |
+| z4 | y1 + green-or-const as the leading term | 53 | 173 |
+| z5 | y1 + blue before green | 72 | 173 |
+| q1 | y1 + named `gc` intermediate | 55 | 173 |
+| q2 | y1 + right-associated OR chain | 68 | 173 |
+
+Sources: `tmp/grind/func_8003DE14/s2/body_*.c`; the interesting losers are banked under
+`memory/grind/func_8003DE14/rejected/`.
+
+### What the remaining 52 is (side-by-side vs `build/src/code6cac_c2.o`, y1 applied)
+
+Reproduce with `python3 tmp/grind/func_8003DE14/s1/sd2.py` (Bash tool, not PowerShell -
+it shells out to `wsl`, which is not on PATH inside tools/wsl.sh when that is invoked
+from PowerShell). Both objects are 179 instructions.
+
+1. **OR-chain association (still open, now the leading item).** Target computes the
+   GREEN term first and ORs the constant into it:
+   `srl a0,s5,3 / andi v0,s4,0xF8 / sll v0,v0,2 / or v0,v0,v1 / or a0,a0,v0 /
+   andi v0,s3,0xF8 / sll v0,v0,7 / or s6,a0,v0`.
+   The build folds the constant into the RED term instead:
+   `li v0,-32768 / srl v1,s5,3 / or v1,v1,v0 / ... / or s6,v1,v0`.
+   Every source-level regrouping tried (seven spellings, table above) either keeps the
+   constant on the red term or costs more elsewhere. fold-const.c reassociates the
+   constant operand out of the parenthesised green group; the parentheses are not
+   honoured. This now needs a `.combine`/`.cse` read, not another spelling guess.
+2. **`src`/`dst` cursors still swapped**: target `a3`=src / `a2`=dst, build `a2`=src /
+   `a3`=dst. Declaration order is inert (z1 = 52, same as y1) - third independent
+   confirmation of s1's K4.
+3. **`j`/`complement` swapped in the same way**: target `t4`=j / `t5`=complement,
+   build `t5`=j / `t4`=complement. Note this is the SAME relation as (2): in both pairs
+   the build gives the lower-numbered temp to the wrong member. One allocation
+   decision, two visible symptoms - attack it with `tools/ra_solver`, not spellings.
+4. **Two local ordering differences in the blend arm** (the `mflo`/`srl` interleave
+   around the blue channel; the `andi 0x7C00` sits after the final `or` chain in the
+   build and before it in the target) plus one prologue pair (`addiu a1,sp,16` vs
+   `move s1,zero`). Scratch-register names only, no count difference.
+
+- [s2] [s2] New honest floor 52/173 (was 57), and for the first time build_insns == target_insns == 173 - s1's 57 form carried an extra `move s6,a0` (174). Best form: memory/grind/func_8003DE14/candidate.c, also tmp/grind/func_8003DE14/s2/body_y1.c.
+
+- [s2] [s2] candidate.c is now ORDINARY C END TO END. s1's standing constraint (the 57 form needed `total = count - 1;`, a borrow of a dead local = the variable-reuse family, hence a /* FAKE */ annotation + scope quote + precedent + lever-exhaustion) is WITHDRAWN: the borrow is gone, the replacement is strictly better, and there is no open sanctioned-family question on this function.
+
+- [s2] [s2] loop.c threshold pinned by measurement, not formula: the inner loop is call-free, so loop.c:532 gives `threshold = 2 * (1 + n_non_fixed_regs)`, and the dumps bound it to 58 <= threshold <= 59 (a life-1/savings-1 movable IS moved at insn_count 58 but every later one in the same loop is 'not desirable', and the only thing that changes is `threshold -= 3` at loop.c:1904). So n_non_fixed_regs == 28 and threshold == 58 under -msoft-float. This supersedes s1's looser 'threshold <= 56' calibration, which was read off a 57-insn loop and did not account for the -= 3 decay.
+
+- [s2] [s2] The general lever this exposes, reusable on any function with a knife-edge LICM hoist: you do not have to defeat loop.c's movable test on the insn you care about - you can instead give it a CHEAPER neighbour earlier in the loop. Each successful move costs `threshold -= 3` (loop.c:1904, and again at loop.c:1719), so one extra moved invariant ahead of yours in the movables list can flip yours from 'moved' to 'not desirable'. Declaring an existing loop-invariant local inside the loop body where it is used is ordinary, human C and is enough to do it.
+
+- [s2] [s2] Mechanism note for the 8003DF34 / 8003E048 pair in the target: the `addiu $v0,$s2,-1` at the inner-loop preheader is reorg's delay-slot duplicate of the LOOP-TOP insn (cf. the reorg-peel-is-not-a-source-statement memory), not a hoisted invariant. The source truth is that `count - 1` is computed inside the inner loop every iteration - which is what the x1/y1 forms now produce.
+
+- [s2] [s2] target_color spelling matters a lot and the winner is the flat one: `target_color = ((u32)r >> 3) | (((g & 0xF8) << 2) | (s32)-0x8000) | ((b & 0xF8) << 7);` = 52, while `|=` accumulation of the same terms = 59, a named `gc` intermediate = 55, the three-statement target-shaped spelling = 58, right-associated = 68, blue-before-green = 72. On the s1 borrow chassis the same flat form was 59 (worse than its 57) - spelling verdicts for this expression are chassis-relative and must be re-measured after any structural change.
+
+- [s2] [s2] Residual 52 decomposes into exactly four items (side-by-side diff, both objects 179 instructions, tmp/grind/func_8003DE14/s2/sidediff_y1.txt): (1) the OR chain still folds `-0x8000` into the RED term instead of the green one; (2) src/dst cursors swapped (target a3=src/a2=dst); (3) j/complement swapped (target t4=j/t5=complement) - the SAME relation as (2), one allocation decision with two symptoms; (4) two local ordering differences in the blend arm plus one prologue pair, scratch names only, no count delta.
+
+- [s2] [s2] Tooling note: tmp/grind/func_8003DE14/s1/sd2.py must be run from the Bash tool (it shells out to `wsl` directly). `bash tools/wsl.sh ...` invoked from the PowerShell tool fails with 'wsl: command not found'. The batch measurement driver written this session is tmp/grind/func_8003DE14/s2/measure.ps1 (applies body_<form>.c via tmp/grind/func_8003DE14/s1/apply.py with Windows python - safe because apply.py uses newline='' - then runs the sandbox and prints score/build_insns/target_insns); run it as `& tmp/grind/func_8003DE14/s2/measure.ps1 -Forms a,b,c` for one turn per batch.

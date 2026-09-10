@@ -1,29 +1,3 @@
-/* func_8003DE14 - best form as of grind session 2 (structural), honest floor 52/173.
- *
- * ORDINARY C THROUGHOUT. No /* FAKE *\/ construct, no borrowed local, no
- * sanctioned-family claim needed. s1's `total = count - 1;` borrow is GONE:
- * see hypotheses.md C1 for the loop.c:1631 threshold mechanism that replaced it.
- *
- * Two structural changes vs s1's 57-scoring candidate:
- *   1. `s32 complement = blend_base - factor;` is DECLARED INSIDE the inner
- *      do-body (it was outside, in the `if (total > 0)` prologue). It is still
- *      loop-invariant, so loop.c hoists it straight back to the inner-loop
- *      preheader - exactly where the target has `subu $t5,$fp,$t3` (8003DF30).
- *      The point is that it is now the FIRST movable in the inner loop's
- *      movables list, so move_movables spends the first move on it and applies
- *      `threshold -= 3` (loop.c:1904). The next movable - the `count - 1`
- *      comparand at insn 147 - then fails `threshold * savings * lifetime >=
- *      insn_count` (55 < 59) and is reported "not desirable", i.e. it stays
- *      INLINE at the top of the inner loop the way the target has it, and is no
- *      longer hoisted on out of the outer loop either.
- *   2. target_color is one flat single expression instead of `|=` accumulation.
- *
- * Result: build_insns == target_insns == 173 (s1's best had 174, an extra
- * `move s6,a0`), r/g/b land in the target's s5/s4/s3 and target_color in s6.
- *
- * Chassis: HEAD 2026-09-10 (post -mel / -msoft-float). Score measured with
- * `sandbox func_8003DE14 --disable all`.
- */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
@@ -34,6 +8,7 @@ void func_8003DE14(s16 *rect, s32 count) {
     s32 g;
     s32 b;
     s32 target_color;
+    s32 gc;
 
     DrawSync(0);
     count--;
@@ -49,7 +24,8 @@ void func_8003DE14(s16 *rect, s32 count) {
     r = color_info[0];
     g = color_info[1];
     b = color_info[2];
-    target_color = ((u32)r >> 3) | (((g & 0xF8) << 2) | (s32)-0x8000) | ((b & 0xF8) << 7);
+    gc = ((g & 0xF8) << 2) | (s32)-0x8000;
+    target_color = (((u32)r >> 3) | gc) | ((b & 0xF8) << 7);
 
     if (count > 0) {
         s32 blend_base = 0x1000;
