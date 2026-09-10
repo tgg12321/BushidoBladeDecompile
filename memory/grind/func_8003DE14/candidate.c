@@ -151,3 +151,27 @@ void func_8003DE14(s16 *rect, s32 count) {
  * ra_solver reports as a one-atom reference-count goal sitting on a floor_log2
  * threshold at 32 refs.  See evidence.md / hypotheses.md, section s4.
  */
+
+/* s5 ADDENDUM (enumerate modality, 2026-09-10).  candidate.c is UNCHANGED and
+ * still the lowest-scoring form (31 / 172).  s5 ran the systematic spelling
+ * sweep on four regions - 4,488 spellings in total - and found no form below
+ * the banked floor on either chassis:
+ *
+ *   enum1  blend block, f1/srcup chassis, 1,800 spellings (naming x order)
+ *          -> best 42 / 173 (base 43).  Banked as
+ *          memory/grind/func_8003DE14/chassis_h1_structure_exact_42.c.
+ *   enum2  outer-loop declaration block (total/src/dst/factor/j) on the h1
+ *          chassis, all 120 orderings -> best 42 = the baseline, no move.
+ *   enum3  blend block on the d4 chassis (this file), 1,800 spellings
+ *          -> best 31 = the baseline, no move.
+ *   enum4  blend block on the h1 chassis WITH the commutative-operand-swap
+ *          axis, 768 spellings -> best 42 = the baseline, range 42-45.
+ *
+ * Conclusion for the next session: the residual does NOT live in the blend
+ * block's local-naming / declaration-order / operand-order space, and it does
+ * not live in the outer-loop declaration block's ordering space.  It is the
+ * src/dst register seat, and the only lever the ra_solver still reports is
+ * refs_up on pseudo 109 (dst) - which s4 proved cannot be bought with any
+ * spelling the tree folds.  Look at declaration SCOPE, block structure, or the
+ * object model (rect as a struct), not at how the arithmetic is spelled.
+ */

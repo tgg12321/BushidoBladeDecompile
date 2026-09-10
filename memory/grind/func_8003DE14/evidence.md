@@ -631,3 +631,75 @@ score delta.
 - [s4] A reusable full-TU permuter workspace for this function now exists (tmp/perm_3DE14_s4a / _s4b): base.c is the whole preprocessed src/code6cac_c2.c and compile.sh reproduces the Makefile pipeline verbatim including -mel/-msoft-float and --prefill-label-funcs, then sed-extracts the .ent/.end region. A later session can re-seed it by re-running cpp over an edited src.
 
 - [s4] src/code6cac_c2.c was restored to its committed INCLUDE_ASM state before the session ended; the only tracked changes are the ledger files under memory/grind/func_8003DE14/.
+
+
+## s5 (enumerate, 2026-09-10)
+
+Systematic spelling sweep per the owner's 2026-09-08 ruling. Four regions,
+4,488 distinct spellings, every one scored with `sandbox --disable all`.
+
+| sweep | chassis | region | axes | N | best | baseline |
+|---|---|---|---|---|---|---|
+| enum1 | f1_srcup (43/173) | inner-loop blend block | naming x decl order | 1800 | **42 / 173** | 43 |
+| enum2 | h1 (42/173) | outer-loop decl block total/src/dst/factor/j | decl order | 120 | 42 (= base) | 42 |
+| enum3 | d4 (31/172) | inner-loop blend block | naming x decl order | 1800 | 31 (= base) | 31 |
+| enum4 | h1 (42/173) | inner-loop blend block | naming x decl order x operand swaps | 768 | 42 (= base) | 42 |
+
+Score histograms are in hypotheses.md [s5]; the raw per-variant results are
+tmp/grind/func_8003DE14/s5/enum{1,2,3,4}_results.json and the variant bodies
+are in the sibling enum{1,2,3,4}/ directories.
+
+What this buys the next session:
+
+1. **The floor did not move** - it is still 31 on the d4 chassis (172 insns).
+   The structurally-exact chassis improved 43 -> 42 (173 insns) and is banked
+   as `memory/grind/func_8003DE14/chassis_h1_structure_exact_42.c`. The h1 form
+   keeps `r_src`, `g_src`, `b_src` and `r_ch` as named locals and writes the
+   green and blue channel expressions inline in the final store.
+
+2. **The blend block's spelling space is swept, on BOTH chassis** - 1,800
+   spellings on each, plus 768 more with the operand-swap axis on top. Nothing
+   in "which sub-expression is a named local", "what order do the declarations
+   sit in", or "which way round is each product written" reaches the target on
+   either chassis. A later session should not hand-probe another blend-arm
+   respelling; that region is finished.
+
+3. **Declaration/birth order in the block where src and dst are born is not the
+   lever for the src/dst seat.** All 120 orderings of
+   `total / src / dst / factor / j` were measured; the seat never moved and the
+   whole axis is worth one point (42 vs 43). This corroborates s4's ra_solver
+   finding from the C side: the goal really is a pure reference-count move on
+   pseudo 109, not a live-range or birth-order move.
+
+4. **`src++` position inside the blend arm is byte-neutral** (43/173 whether it
+   sits before the innermost brace, inside it after the declarations, or after
+   the store). Useful for building future enumeration chassis: hoisting it
+   before the brace turns the blend block into an all-declaration region.
+
+5. **The operand-swap axis is nearly inert here** - all 768 swap spellings land
+   in a 4-point band (42-45). Under -msoft-float GCC 2.7.2 canonicalises the
+   multiply and add operand order in this expression shape before RTL, so
+   commutative swaps are not a lever worth a future session on this function.
+
+Where the residual must be, by elimination: not in the blend block's spelling,
+not in the outer declaration block's order, not in operand order, not in the
+reference-count spellings s4 swept, and not in what the permuter reaches from
+either chassis. What remains untouched is declaration SCOPE and BLOCK STRUCTURE
+above the blend block (where `src` and `dst` are declared relative to the outer
+do-loop, and whether the two arms live in one block or two), and the object
+model for `rect` - currently a bare `s16 *` read through three different casts,
+never yet tried as a struct.
+
+- [s5] Floor unchanged at 31 / 172 (d4 chassis, memory/grind/func_8003DE14/candidate.c). The structurally-exact 173-instruction chassis improved from 43 to 42 and is banked as memory/grind/func_8003DE14/chassis_h1_structure_exact_42.c — it differs from f1 only in the blend block's naming (r_src/g_src/b_src/r_ch stay named; green and blue are inline in the store) and in src++ sitting one statement earlier.
+
+- [s5] 4,488 distinct ordinary-C spellings were compiled and scored this session across four regions and three chassis, with zero forms at distance 0 and zero forms below either chassis baseline apart from the single 43 -> 42 improvement.
+
+- [s5] The inner-loop blend block's spelling space is now swept on BOTH chassis (1,800 spellings each) plus 768 more with commutative operand swaps on the h1 chassis. No hand-probing of another blend-arm respelling is worth a future session.
+
+- [s5] All 120 def-before-use orderings of the outer-loop declaration block 'total / src / dst / factor / j' were measured on the h1 chassis: 40 score 42, 80 score 43, and the src/dst register seat never moved. This corroborates s4's ra_solver result from the C side — the 108/109 goal is a pure reference-count move, not a live-range or birth-order move.
+
+- [s5] The commutative-operand-swap axis in the blend products spans only 42-45 over 768 spellings, so GCC 2.7.2 canonicalises this expression shape's multiply/add operand order before RTL; swaps are not a lever for this function.
+
+- [s5] src++ placement inside the blend arm is byte-neutral on the f1 chassis (43 / 173 in all three positions measured).
+
+- [s5] tools/sweep_variants.py restores src/code6cac_c2.c byte-exact after every sweep; the tree is clean of src edits and only the ledger files under memory/grind/func_8003DE14/ were modified.

@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 31,
    "modality": "permuter",
    "headline": "Found the missing 173rd instruction: the target inlines dst++ on the COLOUR arm, not the zero-pixel arm \u2014 form f1 is 43/173 with a structurally exact inner loop, and its whole residual is a one-atom s"
+  },
+  {
+   "session": 5,
+   "floor": 31,
+   "modality": "enumerate",
+   "headline": "Enumerate modality: 4,488 spellings swept across four regions on three chassis, ZERO hit \u2014 the blend block's naming/order/operand space and the outer declaration block's ordering space are both exhaus"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the f1 chassis (43 / 173, structurally exact) there is an ordinary-C form that lifts pseudo 109 (dst) from 26 to >=32 reg_n_refs WITHOUT adding an instruction \u2014 and that form is the match.",
-   "mechanism": "inverse.py reports the src/dst goal as a single refs_up atom on 109, and s4 proved the two families that do NOT work: tree-folded splits (`*dst = v; dst = dst + 1;`) add zero references, and distinct address forms (`dst[-1]`) add an instruction. What is left is a spelling that makes dst appear in RTL insns that the target also has \u2014 i.e. the dst reference must come from a real value the current C computes some other way. Note reg_n_refs is loop-depth weighted, so ONE extra reference inside the inner do-body is worth several units.",
-   "next_probe": "On the f1 chassis, try dst spellings whose references survive to RTL without new insns: (i) make the inner-loop bound or the LoadImage argument dst-derived where it is provably equal (e.g. `LoadImage((s32)rect, (s32)dst_buf)` is the only outer-loop dst_buf use \u2014 check whether the target's 0x214-0x234 block could have come from a dst-based bound); (ii) give the blend main path `dst[0] = ...` plus a second dst-based read that the target already performs; (iii) measure each with sandbox AND re-run tools/ra_solver/extract.py + simulate.py, confirming build_insns stays 173 and 108 -> $a3 / 109 -> $a2. Do NOT re-try e1/e2/e4/e6/e3 or g1/g2 \u2014 all measured."
+   "hypothesis": "The src/dst seat is bought by declaration SCOPE or BLOCK STRUCTURE above the blend block, not by any spelling inside it \u2014 e.g. declaring src and dst outside the outer do-loop (assigned rather than initialised each iteration), or splitting/merging the two arms' enclosing braces so dst's references land in different basic blocks.",
+   "mechanism": "s5 exhausted naming, declaration order and operand order inside the two blocks where the arithmetic lives, and s4 exhausted the reference-count spellings that the tree folds away. What was never varied is where src and dst are DECLARED relative to the outer do-loop and how the arm bodies are bracketed \u2014 both change the basic-block partition flow.c walks when it accumulates REG_N_REFS, and reg_n_refs is loop-depth weighted, so moving one dst reference into a deeper block is worth several units on its own.",
+   "next_probe": "On the h1 chassis (42 / 173), enumerate the DECLARATION-SCOPE axis rather than the spelling axis: (i) hoist 'u16 *src, *dst;' to function scope with 'src = src_buf; dst = dst_buf;' at the top of the outer do-body; (ii) the same but with only dst hoisted; (iii) wrap the two arms in a single shared brace and in two separate braces; (iv) move the 'advance_dst:' label's dst++ into each arm's own block. Measure each with sandbox --disable all AND re-run tools/ra_solver/extract.py + simulate.py, checking build_insns stays 173 and whether 108 -> $a3 / 109 -> $a2. Do NOT re-probe blend-arm spellings \u2014 enum1/enum3/enum4 covered them."
   },
   {
-   "hypothesis": "The j/complement $t4/$t5 pair and the blend-arm mflo/srl interleave are both downstream of the src/dst seat and will collapse on their own once 108/109 are right.",
-   "mechanism": "The s4 side-by-side shows the blend arm's v0/v1/a0/a1 naming and the loop-bottom `lh v0,4(s0) / lh v1,6(s0) / mult v0,v1` reload differ only in which register holds what, and all of them are downstream of the a2/a3 assignment in global.c's ordering. The j/complement priorities (5789 vs 6346) are close enough that a change in the a2/a3 seats can reorder them.",
-   "next_probe": "Do not spend a session on the j/complement goal or the blend interleave until the src/dst seat is settled. When it is, re-extract the model and re-run inverse.py for '{\"115\": 12, \"116\": 13}' before assuming s3's vectors still apply \u2014 the remaining untested ones are refs_down on complement by 1, live_extend on complement by 8, and refs_up on j by 2."
+   "hypothesis": "The object model for 'rect' is wrong: it is currently a bare 's16 *' read through three different casts (s16*, u16*, s32*), and a struct-typed rect changes the addressing and the pressure at the LoadImage/StoreImage calls enough to move the src/dst seat.",
+   "mechanism": "The target's 0x214-0x234 block has never been checked against a struct-typed rect. A struct member read is one base register plus a constant offset, where the current casts force a fresh cast-and-index expression each time; that changes both the number of RTL references attributed to the pointer pseudos and what the calls clobber across the loop. This is the one structural axis the ledger has never touched.",
+   "next_probe": "Grep include/ for an existing PsyQ RECT declaration (x/y/w/h as s16) and for other BB2 callers that pass the same buffer to StoreImage/LoadImage; if a RECT type already exists in the TU, re-spell the parameter as 'RECT *rect' and measure on both the h1 and d4 chassis. Read tmp/grind/func_8003DE14/dumps/*.combine to confirm whether the cast chain survives to RTL before spending more than two measurements on it."
   },
   {
-   "hypothesis": "The TU that originally compiled func_8003DE14 saw a WIDER return type for DrawSync than `void`/`int`, and that changes the pressure at the call enough to move the src/dst seat.",
-   "mechanism": "The f1-chassis permuter's only sub-base find (290 vs 300) was `extern void DrawSync(s32);` -> `extern long long DrawSync(s32);`. A DImode return makes the call clobber a register pair and widens the live set across the three DrawSync calls in this function. This is a prototype question, not a coercion, IF the bytes support it \u2014 the prototype-contradiction norm (memory reference sotn-prototype-struct-precedent-2026-08-10) says bytes decide the declaration.",
-   "next_probe": "This is OUT OF SCOPE for a func_8003DE14-only session (the declaration lives in the shared includes and would perturb every caller in the TU). Before spending anything on it: grep the other DrawSync callers in code6cac_c2.c and check whether ANY of them show a v0/v1 pair clobber the current declaration does not predict. Only if that census is positive is it worth a measurement; a permuter score delta alone is not evidence."
+   "hypothesis": "The DrawSync prototype width lead from s4 is real: the TU that compiled func_8003DE14 saw a wider return type for DrawSync than void/int, which widens the live set across the three DrawSync calls and moves the src/dst seat.",
+   "mechanism": "The f1-chassis permuter's only sub-base find (290 vs 300) was widening 'extern void DrawSync(s32);' to 'extern long long DrawSync(s32);'. A DImode return makes the call clobber a register pair. The prototype-contradiction norm (memory reference sotn-prototype-struct-precedent-2026-08-10) says the bytes decide the declaration \u2014 but a permuter score delta alone is not evidence.",
+   "next_probe": "Still OUT OF SCOPE for a func_8003DE14-only session, and it stays that way until the census is positive: grep the other DrawSync callers in src/code6cac_c2.c and check whether ANY of them shows a v0/v1 pair clobber that the current 'void' declaration does not predict. Only a positive census justifies a measurement; the declaration lives in the shared includes and would perturb every caller in the TU."
   }
  ],
  "judge_constraints": [],
@@ -168,6 +174,22 @@
    "measured_on": "HEAD chassis 2026-09-10, d4 chassis (score 31) and f1 chassis (score 43), campaigns tmp/perm_3DE14_s4a (27,747 it) and tmp/perm_3DE14_s4b (7,009 it), no FAKE constructs",
    "predicate_cite": "",
    "result": "KILLED for both seeds. s4a's best find (permuter 300) is `dst = dst++; *dst = pixel;` \u2014 an unsequenced self-assignment t"
+  },
+  {
+   "session": 5,
+   "statement": "The remaining residual on the structurally-exact (173-insn) chassis lives in the blend block's spelling space: which sub-expressions are named locals, in what order those declarations sit, and which w",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), three chassis measured: f1/f1_srcup (43 / 173 insns), h1 (42 / 173), d4 (31 / 172). No FAKE constructs in any variant; every spelling is ordinar",
+   "predicate_cite": "",
+   "result": "ZERO HIT in all four sweeps; no spelling in any region reached distance 0 and none beat its own chassis baseline except "
+  },
+  {
+   "session": 5,
+   "statement": "Moving the 'src++' statement within the blend arm \u2014 before the innermost brace, between the declarations and the channel arithmetic, or after the store \u2014 changes the emitted bytes on the f1 chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "All three measure 43 / 173 \u2014 identical. The increment's position inside this arm is byte-neutral, which makes it a free "
   }
  ],
  "ladder_skip": 0,
