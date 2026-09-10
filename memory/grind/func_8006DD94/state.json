@@ -1,8 +1,8 @@
 {
  "func": "func_8006DD94",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "permuter",
+ "session_count": 3,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -15,23 +15,29 @@
    "floor": 21,
    "modality": "permuter",
    "headline": "Permuter modality spent (56k iterations, 2 campaigns): the only score-0 attractor on the honest chassis is an interior volatile pad; the residual is now pinned to exactly ONE stack-homed slot, and the"
+  },
+  {
+   "session": 3,
+   "floor": 21,
+   "modality": "structural",
+   "headline": "Structural: the spill-home frontier is closed by measurement plus a mechanism cite - register pressure does reach the target's vars=64 but the spill lands ABOVE the rect at sp+0x50, and alignment cann"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The slot is a REGISTER SPILL home, not a declaration: at some spelling of this body local-alloc or global-alloc fails to seat a pseudo, assigns it a stack slot, and a later pass removes every reference to it - the only mechanism measured anywhere in this project that produces frame bytes with zero sp-relative traffic.",
-   "mechanism": "Every probe in the ledger so far tried to ADD an object and then argue about whether it is honest. The untried inverse is to change register pressure until GCC itself puts something on the stack. s2b's b_p4_sel proved the knob exists and is reachable from truthful C: hoisting the D_800A352C + 1 selector out of the loop changes the function from regs 7/0 frame 104... i.e. it moves the allocator, while leaving vars at 56. reload.c/global.c assign spill homes via assign_stack_local, and get_frame_size counts them whether or not the reload survives.",
-   "next_probe": "Solver modality, or forensics with dumps. Run `pwsh tools/grinder/dump.ps1 func_8006DD94` on the score-21 chassis and read .lreg/.greg for which pseudos are seated and how much slack there is; then use tools/ra_solver inverse_compose.py classify to ask directly whether any C-level lever produces an allocation in which one pseudo is spilled while its references are dead. Measure candidates with tmp/grind/func_8006DD94/s2/fp.py, which reads cc1's own vars= line and is far cheaper than the sandbox."
+   "hypothesis": "The object in sp+0x44..0x4F is not a DECLARATION at all but a keep-temp allocated by assign_stack_temp during RTL expansion of a statement sitting between the descriptor's declaration and the rect's declaration - the one slot-producing mechanism still ordered BEFORE the rect's expand_decl and therefore still able to land below it.",
+   "mechanism": "expand_decl and assign_stack_temp draw from the same monotonically increasing frame_offset (function.c:724), so ordering is everything: a reload spill (killed in s3) is always too late, but a temp created while expanding a statement that precedes the rect's declaration is early enough. s1's E5 probed four expression classes (HImode bitwise pair, long long multiply, long long divide, soft-float double) and none left a surviving temp, but it did not probe the class GCC 2.7.2 allocates with keep=1: BLKmode-valued expressions - a struct returned by value from a call, a block move whose source is a call result, or a structure passed by value.",
+   "next_probe": "Forensics or rederive modality. First establish whether any BLKmode-valued expression exists truthfully in this body at all - func_8007352C, func_8006E480, SetDrawMode, AddPrim, func_8006D808 and func_80069898 all return scalars, so the honest answer may be no, which empties the axis in a single read and reduces the search entirely to the declared-object question. If a candidate exists, measure it with tmp/grind/func_8006DD94/s3/fp3.py with the rect in a trailing nested block: a surviving temp shows up as vars= 64 with the rect moved to sp+0x50."
   },
   {
-   "hypothesis": "The only construct measured to close this function is a volatile unwritten local that must sit BETWEEN two declarations rather than first, and the frozen phantom-frame-slot volatile pad family excludes it purely on form (first-decl position), not on mechanism.",
-   "mechanism": "The frozen family at .claude/rules/no-new-park-categories.md:422-435 requires a first-decl `volatile u32 pad[N];`, a !FAKE annotation, ledger frame-forensics, and a _SANCTIONED_UNWRITTEN_PADS row (engine/volatile_cheats.py:746). Its two working exemplars (func_80047EE8 / func_80047FBC pre_pad[8]) happen to have LEADING holes. This function's hole is interior because the 0x2C descriptor already sits at the bottom of the vars region, immediately above the 24-byte arg area. The Judge answered this once, on 2026-09-10 05:59, and refused.",
-   "next_probe": "Do NOT re-ask without new evidence. If frontier item 1 is spent and comes back dead, the honest disposition is rotation under the >5 floor title, not a second attempt at the pad. If it is re-asked, the ruling-request must lead with the new fact this session produced - that two independent permuter campaigns totalling 56k iterations find the interior pad and nothing else - rather than with a form argument."
+   "hypothesis": "The honest floor of 21 is not a byte distance and never was, so no further spelling work on this chassis can move the number the queue records - the remaining question about this function is a disposition question, not a codegen question.",
+   "mechanism": "E-s2-6 measured that the plainest ordinary-C spelling of the same object model ('u16 rect0[4]; u16 rect[4];' with rect0 declared and never touched) builds byte-identical to the oracle - verify-oracle returned build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true - while the sandbox reported 21, because engine/volatile_cheats.py strips the untouched array out of the SCORED object file only. s3 now shows there is no mechanism left that produces those frame bytes WITHOUT a declared object, so every remaining preimage runs into that stripper or into a family this function has already been refused (trailing struct pads, the merged frame-block struct, rects[2][4], the interior volatile pad).",
+   "next_probe": "Do not re-probe spellings. The next session should choose between (a) a precise ruling-request that leads with the two class kills banked here plus the oracle-match control - asking whether an untouched sibling declaration in this family's shared block is ordinary C for THIS function, rather than re-asking whether a pad is allowed - and (b) an escalation-modality proof-of-foreclosure record, which is the driver's call and not a session's. Note the floor is 21 (> 5), so the 2026-07-27 standing ruling is not its subject and no endgame-lock claim may be made."
   },
   {
-   "hypothesis": "The hole is a family-wide artefact of ONE shared source idiom (it appears at 12, 12, 20, 20 and 36 bytes across five siblings and at 0 bytes in the two that byte-match or use both rect rows), so recovering the idiom from ANY member closes all five at once.",
-   "mechanism": "Five functions in one file, all built around the same 0x2C descriptor at sp+0x18 and the same func_8007352C call, all reserving an 8-aligned region above the descriptor that their own code never touches, at five different sizes. A per-function accident would not size itself differently in each function while starting at the same offset in all of them; a shared declaration block whose members are used to different depths would.",
-   "next_probe": "Forensics on the two ZERO-hole members instead of the five with holes - the inverse reading nobody has taken. func_8006BB68 is COMPLETED-C on main and func_800720FC uses both rect rows; diff their accepted/target shapes against func_80069F80 (20-byte hole, no rectangle at all) and ask what the 20 bytes could be that the zero-hole members do not declare. func_80069F80 and func_8006A1A0 are the cleanest test cases in the family because they have NO rectangle: their entire residual would be the hole alone."
+   "hypothesis": "Whatever closes func_8006DD94 closes func_8006F97C at the same time, so the next session should not treat this as a single-function problem.",
+   "mechanism": "tmp/grind/func_8006DD94/s2/spmap.txt maps seven family members: func_8006F97C has func_8006DD94's exact layout - the same 0x2C descriptor at sp+0x18..0x43, the same untouched 12 bytes at 0x44..0x4F, the same func_80069898 rect at sp+0x50 - plus one extra u16 local at sp+0x58. It is active in the queue at floor 513 after one session and its ledger has never heard any of this.",
+   "next_probe": "When a form for the hole is ruled on, transplant it to func_8006F97C immediately and measure; conversely, if func_8006F97C's own grind finds a truthful object for its identical hole, that answer transplants back here unchanged. Its extra u16 at sp+0x58 is a second, independent constraint on the shared declaration block and may name the block where func_8006DD94's target alone cannot."
   }
  ],
  "judge_constraints": [
@@ -92,6 +98,22 @@
    "measured_on": "target asm asm/funcs/{func_8006BB68,func_8006DD94,func_8006F97C,func_80069F80,func_8006A1A0,func_80070188,func_800720FC}.s at HEAD; no build, no FAKE construct.",
    "predicate_cite": "",
    "result": "KILLED. Not one of the five hole-carrying siblings touches its hole, and none takes an address into it. Measured family "
+  },
+  {
+   "session": 3,
+   "statement": "Frontier item 1: the sp+0x44..0x4F bytes are a REGISTER SPILL HOME rather than a declaration - at some spelling of this body the allocator stack-homes a pseudo whose references later die, producing fr",
+   "kill_scope": "class",
+   "measured_on": "the honest 0x2C-descriptor chassis (memory/grind/func_8006DD94/candidate.c, sandbox 21 re-measured this session, 117/117, rules_dropped 0) spliced into tmp/perm_6dd94/base.c and compiled with engine.b",
+   "predicate_cite": "tools/gcc-2.7.2/function.c:724",
+   "result": "KILLED, mechanically rather than by sampling. The predicted spill does appear: p2_hoist6 and p3_hoist10 both reach vars="
+  },
+  {
+   "session": 3,
+   "statement": "The rect can be given 16-byte alignment by an ordinary C declaration, landing it on sp+0x50 with nothing declared between it and the descriptor.",
+   "kill_scope": "class",
+   "measured_on": "tools/gcc-2.7.2 source at HEAD plus the s3 probe sweep on the honest 0x2C-descriptor chassis (sandbox 21 re-measured this session); no FAKE construct.",
+   "predicate_cite": "tools/gcc-2.7.2/stmt.c:3419",
+   "result": "KILLED. GCC 2.7.2 clamps every BLKmode automatic to exactly BIGGEST_ALIGNMENT on this target and no mode wider than DImo"
   }
  ],
  "ladder_skip": 13,

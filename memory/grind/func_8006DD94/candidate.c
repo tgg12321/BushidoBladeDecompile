@@ -1,3 +1,15 @@
+/* MIGRATION BANNER (s3, 2026-09-10): HEAD/main does NOT carry this body.  src/text1b.c:5948
+ * carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` per [[asm-until-matched]]; this file is
+ * the in-progress candidate only.  Re-measured s3 by splicing it in with
+ * tmp/grind/func_8006DD94/s2/splice.py: sandbox func_8006DD94 --disable all = 21 (117/117,
+ * rules_dropped 0).  src/ was reverted to HEAD afterwards.  s3 closed the last two mechanisms
+ * that could have produced the sp+0x44..0x4F bytes without declaring an object there:
+ * register-pressure spill homes (they land ABOVE the rect - FRAME_GROWS_DOWNWARD is undefined
+ * on MIPS, mips.h:1645, so function.c:724 hands out increasing offsets in allocation order and
+ * the rect's expand_decl slot always precedes any reload slot) and alignment (BIGGEST_ALIGNMENT
+ * is 64 bits, mips.h:1082, and stmt.c:3419 clamps every BLKmode automatic to it, so sp+0x48 is
+ * the first legal slot after a descriptor ending at sp+0x44).
+ */
 /* func_8006DD94 - HONEST BEST FORM, sandbox 21, re-measured this session (s2, permuter).
  *
  * WHY THIS REPLACED THE PREVIOUS candidate.c (2026-09-10, session s2/permuter):

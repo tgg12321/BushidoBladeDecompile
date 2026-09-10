@@ -511,3 +511,94 @@ E-s2b-7  candidate.c REPLACED. The previous candidate.c was the banned `u16 rect
 - [s2] Sibling frame census (tmp/grind/func_8006DD94/s2/spmap.txt, seven functions): args always 24, descriptor always 0x2C at sp+0x18..0x43, holes 0/0/12/12/20/20/36, and NOT ONE sibling reads, writes or takes an address into its hole. func_80069F80 and func_8006A1A0 reserve 20 bytes while having no rectangle at all, which contradicts the two-row-rectangle-table reading of the hole.
 
 - [s2] memory/grind/func_8006DD94/candidate.c was REPLACED this session: it previously held the banned u16 rects[2][4] body (layer-1 FAIL 2026-09-10 06:36, still banked at rejected/layer1-fail-0910-0636.c). It now holds the layer-1-clean score-21 chassis so no future session starts from a banned body.
+
+## s3 (structural, 2026-09-10) — chassis re-measured, floor 21; the spill-home frontier is CLOSED
+
+E-s3-0  CHASSIS. HEAD carried `INCLUDE_ASM("asm/funcs", func_8006DD94);`. candidate.c (the
+  layer-1-clean 0x2C-descriptor body) spliced into src/text1b.c measures
+  `sandbox func_8006DD94 --disable all` = **21** (target_insns 117, build_insns 117,
+  rules_dropped 0, cheat_asm_stripped 153). src/text1b.c was reverted to HEAD before this
+  session ended; nothing in src/ is dirty. Instrument for every probe below:
+  tmp/grind/func_8006DD94/s3/fp3.py — splices a body into the preprocessed TU
+  (tmp/perm_6dd94/base.c), runs the project's own cc1 with engine.buildconfig flags, and
+  prints cc1's `.frame`/`vars=`/`regs=` line, every `addu $rX,$sp,N` address-take, and every
+  sp-relative load/store offset. Baseline b0_base: `vars= 56, regs= 7/0`, descriptor address
+  `addu $4,$sp,0x18`, rect address `addu $5,$sp,0x48`, rect halfwords at 0x48/0x4A/0x4C/0x4E,
+  seven register saves at 0x50..0x68.
+
+E-s3-1  **THE SPILL-HOME FRONTIER IS MEASURED AND IT DOES NOT REACH THE HOLE.** s2's live
+  frontier item 1 proposed the untried inverse of every previous probe: instead of DECLARING
+  an object in the hole, raise register pressure until GCC itself stack-homes a pseudo, since
+  a spill home is the one mechanism in this project that produces frame bytes with zero
+  surviving sp-relative traffic. Three truthful restructurings of the body were measured
+  (all are ordinary statement re-association — hoisting loop-invariant reads into named
+  locals — with no pad, no volatile, no dead local, no FAKE):
+
+  | probe | restructuring | vars | regs | rect address | rect stores |
+  |---|---|---|---|---|---|
+  | b0_base | candidate.c unchanged | 56 | 7/0 | `addu $5,$sp,0x48` | 0x48/4A/4C/4E |
+  | p1_hoist3 | `sel = D_800A352C+1`, `env = D_800A34FC`, `ph = D_800A3514`, `prim = D_800A374C+0x28` hoisted above the loop | 56 | **9/0** | `addu $5,$sp,0x48` | 0x48/4A/4C/4E |
+  | p2_hoist6 | p1 + `arg0[5]`/`arg0[7]` carried in locals `outp`/`otp` across the loop with write-back | **64** | **10/0** | `addu $5,$sp,0x48` | 0x48/4A/4C/4E |
+  | p3_hoist10 | p2 + `base`/`lim`/`step`/`mode` carried as locals | **64** | 10/0 | `addu $5,$sp,0x48` | 0x48/4A/4C/4E |
+
+  p2 and p3 DO produce the spill the frontier predicted — `vars` rises 56 -> 64, the target's
+  own number, and the extra eight bytes carry a genuine `sw`/`lw` spill pair with no
+  declaration behind them. But the slot lands at sp+**0x50**, ABOVE the rect, and the rect
+  never moves off sp+0x48. p1 shows the softer form of the same thing: pressure first spends
+  the remaining callee-saved registers (7/0 -> 9/0) with no frame growth at all.
+
+E-s3-2  **WHY, mechanically — this is a class result, not a sample.** MIPS does not define
+  FRAME_GROWS_DOWNWARD (`tools/gcc-2.7.2/config/mips/mips.h:1645` — the macro is present only
+  as a comment), so `assign_stack_local` takes the upward branch
+  `frame_offset += size` (`tools/gcc-2.7.2/function.c:724`) and hands out strictly
+  monotonically increasing offsets in ALLOCATION order. The rect's slot is allocated by
+  `expand_decl` at `tools/gcc-2.7.2/stmt.c:3392` while the function body is still being
+  expanded to RTL; every reload/global-alloc spill home is allocated later, after expansion
+  finishes. A later allocation therefore always receives a HIGHER offset than the rect. No
+  amount of register pressure, and no spelling of it, can seat a spill in sp+0x44..0x4F.
+  This closes the only mechanism the ledger had left for producing untouched frame bytes
+  without declaring an object.
+
+E-s3-3  **ALIGNMENT CANNOT MOVE THE RECT EITHER.** sp+0x50 is 16-byte aligned and sp+0x48 is
+  not, so a 16-aligned rect would land on the target's slot with nothing between it and the
+  descriptor. It is unreachable: `BIGGEST_ALIGNMENT` is 64 bits on this target
+  (`tools/gcc-2.7.2/config/mips/mips.h:1082`) and `expand_decl` caps a BLKmode automatic's
+  alignment at exactly `BIGGEST_ALIGNMENT` (`tools/gcc-2.7.2/stmt.c:3419`), with
+  `assign_stack_temp` aligning to the mode's alignment for everything else. No C type,
+  aggregate shape or declaration form available in GCC 2.7.2 C can give a local more than
+  8-byte alignment, so 0x48 is the first legal slot after a descriptor ending at 0x44 in
+  every spelling.
+
+E-s3-4  **THE SHAPE OF WHAT IS LEFT, restated exactly.** The descriptor is the FIRST stack
+  object (it is at the bottom of the vars region, sp+0x18 = args_size), the rect is the last
+  written one, and every sp-relative reference in the target is accounted for (E-s2-1). So
+  the source declares, between those two declarations, an object that (a) is stack-homed —
+  i.e. BLKmode, volatile or address-taken, per the register-eligibility test at
+  `tools/gcc-2.7.2/stmt.c:3357-3364` — and (b) is referenced by no surviving instruction.
+  Every spelling of (a)+(b) measured to date is either stripped by the sandbox (leaving the
+  honest floor at 21, E1/E-s2-6) or sits in a family this function has already been refused:
+  trailing struct pads (layer-1 FAIL 2026-09-10 05:42), the merged frame-block struct (Judge
+  FAIL 2026-09-10 05:59), `u16 rects[2][4]` (layer-1 FAIL 2026-09-10 06:36) and the interior
+  `volatile` pad (the permuter's only score-0 attractor, Judge-refused 2026-09-10 05:59).
+  s3 adds no new spelling; it removes the last mechanism that would have avoided needing one.
+
+- [s3] Chassis re-measured this session: candidate.c spliced into src/text1b.c gives sandbox func_8006DD94 --disable all = 21 (117/117, rules_dropped 0). src/ reverted to HEAD before the session ended.
+- [s3] Register pressure DOES stack-home a pseudo in this function (p2_hoist6/p3_hoist10 reach the target's vars= 64 with a real sw/lw spill pair and no declaration behind it) but the spill slot lands at sp+0x50, above the rect, and the rect stays at sp+0x48 in all three pressure probes. p1_hoist3 raises regs 7/0 -> 9/0 with vars unchanged at 56.
+- [s3] Mechanism, class-level: MIPS leaves FRAME_GROWS_DOWNWARD undefined (mips.h:1645) so assign_stack_local runs frame_offset += size (function.c:724) in allocation order; the rect's slot comes from expand_decl (stmt.c:3392) during RTL expansion and every spill home is allocated after expansion, so a spill can only ever receive a HIGHER offset than the rect.
+- [s3] Alignment is closed too: BIGGEST_ALIGNMENT is 64 bits (mips.h:1082) and expand_decl caps a BLKmode automatic at exactly BIGGEST_ALIGNMENT (stmt.c:3419), so no declaration can be 16-aligned and sp+0x48 is the first legal slot after a descriptor ending at 0x44.
+
+- [s3] Chassis re-measured this session: HEAD carries INCLUDE_ASM at src/text1b.c:5948; splicing memory/grind/func_8006DD94/candidate.c in gives sandbox func_8006DD94 --disable all = 21 (target_insns 117, build_insns 117, rules_dropped 0, cheat_asm_stripped 153). src/text1b.c was reverted to HEAD before the session ended - nothing in src/ is dirty.
+
+- [s3] Baseline frame map read from cc1 itself (tmp/grind/func_8006DD94/s3/fp3.py): vars= 56, regs= 7/0, descriptor address 'addu $4,$sp,0x18', rect address 'addu $5,$sp,0x48', rect halfwords at 0x48/0x4A/0x4C/0x4E, seven register saves at 0x50..0x68.
+
+- [s3] Register pressure DOES stack-home a pseudo in this function: p2_hoist6 and p3_hoist10 reach the target's vars= 64 at regs 10/0 with a real sw/lw spill pair and no declaration behind it. The spill lands at sp+0x50 and the rect never moves off sp+0x48 - the frame grows above the rect, not below it.
+
+- [s3] p1_hoist3 (four loop-invariant global reads hoisted into named locals) raises regs 7/0 -> 9/0 with vars unchanged at 56: pressure is absorbed by the remaining callee-saved registers before any frame growth happens at all.
+
+- [s3] Mechanism for the spill position, class-level: MIPS leaves FRAME_GROWS_DOWNWARD undefined (tools/gcc-2.7.2/config/mips/mips.h:1645) so assign_stack_local runs frame_offset += size (tools/gcc-2.7.2/function.c:724) in allocation order; the rect's slot comes from expand_decl (tools/gcc-2.7.2/stmt.c:3392) during RTL expansion and every reload spill home is allocated after expansion, so a spill can only ever receive a HIGHER offset than the rect.
+
+- [s3] Alignment is closed as well: BIGGEST_ALIGNMENT is 64 bits (tools/gcc-2.7.2/config/mips/mips.h:1082) and expand_decl caps a BLKmode automatic at exactly BIGGEST_ALIGNMENT (tools/gcc-2.7.2/stmt.c:3419), so no declaration can be 16-aligned and sp+0x48 is the first legal slot after a descriptor ending at sp+0x44.
+
+- [s3] Restated shape of what remains after s3: the descriptor is the FIRST stack object (sp+0x18 = args_size) and the rect is the last written one, so the source declares between them an object that is stack-homed (BLKmode, volatile or address-taken, per the register-eligibility test at tools/gcc-2.7.2/stmt.c:3357-3364) and is referenced by no surviving instruction. s3 adds no new spelling of that object; it removes the last mechanism that would have avoided needing one.
+
+- [s3] candidate.c is unchanged in body and now carries a migration banner that clears the STALE HEAD CLAIMS audit warning: it states plainly that HEAD does not carry this body, that the file is the in-progress candidate only, and what s3 measured.
