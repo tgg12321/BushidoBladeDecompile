@@ -1,7 +1,7 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 53,
    "modality": "enumerate",
    "headline": "Floor 56 -> 53 and every FAKE construct retired: spelling the second loop as a top-test for() whose secondary counters are expressions of the loop variable makes jump.c's duplicate_loop_exit_test fire"
+  },
+  {
+   "session": 6,
+   "floor": 39,
+   "modality": "enumerate",
+   "headline": "Floor 53 -> 39 at 194 insns (== target) with an EXACT frame: the 0x18 overshoot was three reload spill slots proven by BB2_FRAME_DEBUG, and reverting s5's top-test for to an if-guarded do/while remove"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 0x18 frame overshoot is three dead pseudos left behind by duplicate_loop_exit_test's reg_map copies; a source shape whose exit test has fewer replaceable intermediate registers should not leave them.",
-   "mechanism": "jump.c:2229-2257 gives a NEW pseudo to every insn in the exit test that sets a register whose first and last uid both lie inside the exit code and which is not a user variable. Each such original pseudo, once cse_around_loop has consumed it, survives only as a (use (reg)) insn, wins no hard register in .greg, and is given an 8-byte stack slot. Fewer intermediate temporaries in the bound expression, or naming the bound in a user variable, means fewer leftovers.",
-   "next_probe": "Read tmp/grind/func_80070C70/dumps/text1b.lreg for insns 551-556 and identify which bound sub-expression each of pseudos 118, 168 and 171 came from, then sweep bound spellings that name the bound in a USER VARIABLE (jump.c's replacement skips user variables) or that reduce the number of intermediates -- e.g. hoisting D_800A35B0 or the whole bound into a local declared at function scope and read in the for-condition."
+   "hypothesis": "The last four points are the target holding $a1 = D_800A35B0 and $a2 = lhu D_800A3558 live across the loop (loaded in the guard block at 80070DF4/DFC, re-loaded in the loop TAIL at 80070ECC-ED4, consumed by sll $v0,$a2,16 / sra / addu $v0,$a1,$v0 at 80070E78-E80). We re-load both inside the body every iteration. Reaching that WITHOUT the top-test loop's 24 frame bytes is the whole remaining problem.",
+   "mechanism": "cse.c:7909 cse_set_around_loop needs REG_LOOP_TEST_P (cse.c:7936), set only by jump.c:2253 in duplicate_loop_exit_test, which needs a top-test loop -- and that same routine's gen_reg_rtx (jump.c:2246) is what leaves the three dead pseudos. So EITHER find a top-test spelling in which every copied exit-test insn SURVIVES combine (the target's guard block keeps all six of its insns: lhu, lw, lh, addiu, addu, blez -- ours collapses a load plus sign-extend into one lh and orphans the REG_DEAD notes), OR find a non-cse_around_loop route to the same register reuse.",
+   "next_probe": "On the top-test for chassis (tmp/grind/func_80070C70/s6/struct/i2_m1_d32.c, score 49), dump with pwsh tools/grinder/dump.ps1 func_80070C70 and read text1b.combine for WHICH copied guard insns combine deletes and which REG_DEAD notes it orphans; then sweep guard-block spellings that stop that fold -- in particular forms in which the guard's two reads of D_800A3558 cannot be folded into a single lh (a separate function-scope local holding one of them, the two reads at different widths, or the guard expression written so the sign-extension and the load land in different insns). Verify each with the 1-second vars= gradient (tmp/grind/func_80070C70/s6/varsweep.sh) before spending a sandbox measurement: the target is vars= 80."
   },
   {
-   "hypothesis": "The target reduces D_800A3560's giv to a byte OFFSET (lui $at,%hi / addu $at,$at,$s2 / lbu %lo($at), addiu $s2,$s2,3) where we reduce it to a full ADDRESS (lui $s2 / addiu $s2 / lbu 0($s2)); a different index spelling or array declaration should reproduce the offset form.",
-   "mechanism": "loop.c's strength_reduce folds the %hi/%lo symbol base into the giv when the address is a legitimate giv of the biv. Whether the symbol is absorbed depends on how the address expression is built in expand_expr, which the array's declared element type and the index expression control.",
-   "next_probe": "Sweep D_800A3560 index and declaration spellings on the floor-53 chassis: u8[] with `[var_s0 * 3]`, a 3-byte record array, `[i]` over a stride-3 struct, and a separate index variable; read the `Loop from` section of tmp/grind/func_80070C70/dumps/text1b.loop for which giv is reduced in each."
+   "hypothesis": "`t = prim.p_geom + 0xC` is emitted into the SAME register as p_geom (addiu $v0,$v0,12) at three sites where the target keeps two live registers (addiu $v1,$v0,12).",
+   "mechanism": "local-alloc coalesces the add's destination onto its source when the source dies at that insn. The target's p_geom read stays live past the add, which means in the original source the read feeding the add is used again afterwards (or is a different pseudo).",
+   "next_probe": "Sweep the three sites (the pre-loop prim.p_static = prim.p_geom + 0xC, the pre-do/while prim.p_geom + 0x48, and the loop body's t) for spellings that keep p_geom live: reading prim.p_geom again after the add, computing the addend from ctx_or_var_s2 instead of from prim.p_geom, and naming the p_geom read in its own local. Read text1b.lreg for the qty coalescing decision on each."
   },
   {
-   "hypothesis": "IconC70's `s16 sp50[12]` tail is a placeholder; its real field list is recoverable from func_80069898's other callers and is the only declaration still blocking submission.",
-   "mechanism": "Carried unspent from s1/s2/s3/s4. The 0x20 size is proven by the target's frame arithmetic, but the trailing array is a spelling of that fact, not evidence for it. The RecC70 half of this item is now CLOSED (s5: D_800A3590 is a plain s16[]).",
-   "next_probe": "Read the $a1-relative stores in func_8006B120, func_8006CFBC, func_800720FC, func_80074488 and func_8006F97C to recover the real member layout at offsets 0x50-0x67."
+   "hypothesis": "`s32 ctx = var_s0 * 3;` is a named intermediate that must clear that family's 6 prongs (or be replaced by an ordinary-C equivalent) before this function can be submitted.",
+   "mechanism": "Family-selection table: FRESH local, once-written once-read, real consumed value -> named-intermediate, .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification in .claude/rules/no-new-park-categories.md; 6 prongs, FAKE annotation plus dumps required.",
+   "next_probe": "Before candidate-ready, read that rule end to end and answer the six prongs in self_vet.md, or measure whether the `u8 *p = D_800A3560 + var_s0 * 3;` pointer-local spelling (identical score) clears an easier bar. If neither is clearly inside a sanctioned family, emit ruling-request naming both spellings rather than submitting."
   }
  ],
  "judge_constraints": [],
@@ -166,6 +172,30 @@
    "measured_on": "floor-57 for-loop chassis (S4_for_arr_u16 body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern u16 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2",
    "predicate_cite": "",
    "result": "57 / 57 / 57 / 59 against the 57 baseline: block scope is byte-neutral and inlining t is worse. The three dead pseudos a"
+  },
+  {
+   "session": 6,
+   "statement": "Re-declaring D_800A3558, re-associating the loop bound, or re-spelling the body condition removes the three spill slots while the loop keeps its test at the top.",
+   "kill_scope": "instance",
+   "measured_on": "floor-53/49 top-test for chassis (s5 candidate.c body plus the s6 `s32 ctx = var_s0 * 3;` named index + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs pre",
+   "predicate_cite": "",
+   "result": "All 27 of the k sweep are vars= 104. In the bc sweep every < form is 104 and every <= / >= form is 96 (one spill slot fe"
+  },
+  {
+   "session": 6,
+   "statement": "Body-level spelling of the second loop (the p_static addend order, the mode expression order, the index product order, hoisting ctx to function scope, re-ordering t's two stores) moves the do/while ch",
+   "kill_scope": "instance",
+   "measured_on": "floor-40 if-guarded do/while chassis (s6 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern s32 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --dis",
+   "predicate_cite": "",
+   "result": "Histogram {39: 1, 40: 8, 43: 1}. The only live axis is the || operand order in the mode test: (D_800A35BC == 2) || (((s1"
+  },
+  {
+   "session": 6,
+   "statement": "The declared type of D_800A3558 (extern s32 with an (s16) cast, extern u16, extern s16) changes the score on either chassis.",
+   "kill_scope": "instance",
+   "measured_on": "both the floor-49 top-test for chassis and the floor-40 if-guarded do/while chassis (s6 candidate.c bodies + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE construct",
+   "predicate_cite": "",
+   "result": "Byte-neutral everywhere: all 9 bound x condition pairs score identically for d32 / du16 / ds16 on the do/while chassis ("
   }
  ],
  "ladder_skip": 0,

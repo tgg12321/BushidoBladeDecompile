@@ -606,3 +606,79 @@ chassis (a basin that still had the extra induction register in it had nothing t
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-57 for-loop chassis (S4_for_arr_u16 body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern u16 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s6] The 0x18 frame overshoot on the s5 for-loop chassis is three reload spill slots for pseudos that carry a reference but no set, created by jump.c's duplicate_loop_exit_test and materialised by combine.c's USE-at-label handling of orphaned REG_DEAD notes.
+- mechanism: jump.c:2246 (`reg_map[REGNO (reg)] = gen_reg_rtx (GET_MODE (reg))`) inside duplicate_loop_exit_test gives a NEW pseudo to every exit-test insn whose destination pseudo has its first AND last uid inside the exit code. combine then folds/deletes the copies it can (the guard block's load + sign-extend pair collapses to a single `lh`), and combine.c:10839 parks each orphaned REG_DEAD note on a fresh `(use (reg))` insn at the following CODE_LABEL. Those pseudos have REG_N_REFS 1 and no set, win no hard register in .greg, and reload's alter_reg assigns each an 8-byte stack slot.
+- probe: (a) instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_FRAME_DEBUG=1 via tmp/grind/func_80070C70/s6/framedbg.sh, which prints the whole assign_stack_local census with a ctx tag per slot; (b) pass-by-pass grep of tmp/grind/func_80070C70/dumps/text1b.{rtl,jump,cse,loop,combine,lreg,greg} for the pseudo numbers and for `(use (reg:SI N))`.
+- result: census on the for chassis is stack_temp 48 (prim) + stack_temp 32 (icon) + spill_new_p116 8 + spill_new_p165 8 + spill_new_p170 8 = 104 = the `vars= 104` cc1 reports, against the target's `vars= 80`. Regs 165/170 are absent from .rtl and present from .jump onward; the `(use (reg))` insns first appear in .combine. On the if-guarded do/while chassis the census stops after icon: vars= 80, frame 128, byte-identical prologue and epilogue.
+- verdict: CONFIRMED
+
+## [s6] Re-declaring D_800A3558, re-associating the loop bound, or re-spelling the body condition removes the three spill slots on the top-test for chassis.
+- mechanism: exhaustive spelling sweep of the two expressions that make up the loop-exit test, measured on the `vars=` gradient (cc1's own .frame comment) rather than the sandbox score, so the frame is isolated from the rest of the codegen.
+- probe: tmp/grind/func_80070C70/s6/bc/ (10 bound forms x 4 condition forms = 40 variants) and tmp/grind/func_80070C70/s6/k/ (3 declarations x 3 bounds x 3 conditions = 27 variants), swept with tmp/grind/func_80070C70/s6/varsweep.sh.
+- result: all 27 of the k sweep are vars= 104. In the bc sweep every `<` form is 104 and every `<=` / `>=` form is 96 (one spill slot fewer, because the `+ 1` intermediate disappears from the exit test) -- but the `<=` forms score 79 on the sandbox, far worse than 49. No spelling of the bound, the condition or the declaration reaches vars= 80 while the loop keeps its test at the top.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-53/49 top-test for chassis (s5 candidate.c body plus the s6 `s32 ctx = var_s0 * 3;` named index + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, cc1 vars= gradient and sandbox --disable all, 2026-09-10
+
+## [s6] Naming the D_800A3560 index in a fresh once-written/once-read local (`s32 ctx = var_s0 * 3;`) makes loop.c's strength_reduce reduce that giv to a byte OFFSET instead of a full ADDRESS, which is the target's `lui $at,%hi / addu $at,$at,$s2 / lbu %lo($at)` plus `addiu $s2,$s2,3` form.
+- mechanism: with the multiply inlined into the array reference, expand_expr builds the whole address `symbol + i*3` as one expression and loop.c reduces the ADDRESS giv, emitting `lui $s2 / addiu $s2 / lbu 0($s2)`. Naming the product makes `ctx` itself the giv that strength_reduce reduces, leaving the symbol to be re-added by legitimize_address at each reference.
+- probe: tmp/grind/func_80070C70/s6/struct/ -- 5 index spellings (inlined index, named local, comma-initialised second biv, pointer-arithmetic deref, pointer local) x 2 secondary-counter spellings x 3 declarations of D_800A3558 = 30 variants, scored with sandbox --disable all.
+- result: {49: 6, 52: 6, 53: 6, 56: 6, 88: 3, 90: 3}. Named local (i2) and pointer local (i5) are 49 at 194 insns (the target's instruction count) against 53 at 193 for both inlined spellings; the comma-initialised second biv is 88 at 196 insns. This closes the s4/s5 frontier item "the target reduces D_800A3560's giv to a byte OFFSET where we reduce it to a full ADDRESS".
+- verdict: CONFIRMED
+
+## [s6] The second loop must be an if-guarded do/while, not the s5 top-test for: it is worth 10 points because it removes the three spill slots, at the cost of the tail-load CSE that only a top-test loop can reach.
+- mechanism: cse.c:7909 cse_set_around_loop is the only transform that can move a loop-head memory read into the previous iteration's tail, and its gate at cse.c:7936 is `REG_LOOP_TEST_P (src_elt->exp)`; REG_LOOP_TEST_P is set in exactly one place in GCC 2.7.2, jump.c:2253, inside duplicate_loop_exit_test, which requires a NOTE_INSN_LOOP_BEG followed by an unconditional jump -- a top-test loop. The same transform is what creates the pseudos that become the three spill slots.
+- probe: tmp/grind/func_80070C70/s6/g/ -- 8 loop-structure variants (top-test for, while, for(;;)+break, for+break, `<=`, `!(>)`, reversed `>`, if-guarded do/while) on the s6 named-index chassis, scored on both the vars= gradient and sandbox --disable all; then refined with the 27-variant s6/h/ declaration x bound x condition sweep and the 10-variant s6/l/ body sweep.
+- result: if-guarded do/while = vars 80 (frame 128, prologue and epilogue byte-identical to the target) and score 43, then 40 with the reassociated body condition and 39 with the `||` operands swapped, at 194 insns == the target. Every top-test form = vars 104 (frame 152) and score 49 at best. for(;;)+break and for+break = 62; `<=` and `!(>)` = 79. s5's structural conclusion is therefore SUPERSEDED: the `for` chassis was a local optimum that was paying 14 prologue/epilogue instructions for 4 body instructions.
+- verdict: CONFIRMED
+
+## [s6] Body-level spelling of the second loop (the p_static addend order, the mode expression order, the index product order, hoisting `ctx` to function scope, inlining `t`) moves the do/while chassis below 39.
+- mechanism: mandated enumerate modality -- 10 body spellings on the 40-point do/while chassis, one axis at a time.
+- probe: tmp/grind/func_80070C70/s6/l/ swept with tmp/grind/func_80070C70/s6/sweep.py.
+- result: histogram {39: 1, 40: 8, 43: 1}. The only live axis is the `||` operand order in the mode test: `(D_800A35BC == 2) || (((s16)D_800A3558 + D_800A35B0) != 0)` is 39 at 194 insns, the other order 40 at 190. `(D_800A3590[var_s0] << 4) + t` instead of `t + (...)` is 43. `3 * var_s0`, `var_s0 * 0x16C + 0x50`, `D_800A3590[var_s0] * 16`, hoisting `ctx` to function scope and re-ordering `t`'s two stores are all byte-neutral at 40.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-40 if-guarded do/while chassis (s6 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern s32 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s6] The 0x18 frame overshoot on the s5 for-loop chassis is three reload spill slots for pseudos that carry a reference but no set, created by jump.c's duplicate_loop_exit_test and materialised by combine.c's USE-at-label handling of orphaned REG_DEAD notes.
+- mechanism: jump.c:2246 (reg_map[REGNO(reg)] = gen_reg_rtx(GET_MODE(reg))) inside duplicate_loop_exit_test gives a NEW pseudo to every exit-test insn whose destination pseudo has its first AND last uid inside the exit code. combine folds and deletes the copies it can (the guard block's load + sign-extend pair collapses to one lh) and combine.c:10839 parks each orphaned REG_DEAD note on a fresh (use (reg)) insn at the following CODE_LABEL. Those pseudos have REG_N_REFS 1 and no set, win no hard register in .greg, and reload's alter_reg gives each an 8-byte stack slot.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_FRAME_DEBUG=1 via tmp/grind/func_80070C70/s6/framedbg.sh, printing the full assign_stack_local census with a ctx tag per slot; plus a pass-by-pass grep of tmp/grind/func_80070C70/dumps/text1b.{rtl,jump,cse,loop,combine,lreg,greg} for the pseudo numbers and for (use (reg:SI N)).
+- result: Census on the for chassis: stack_temp 48 (prim) + stack_temp 32 (icon) + spill_new_p116 8 + spill_new_p165 8 + spill_new_p170 8 = 104, matching cc1's own 'vars= 104' against the target's 'vars= 80'. Regs 165/170 are absent from .rtl and present from .jump onward; the (use (reg)) insns first appear in .combine. On the if-guarded do/while chassis the census stops after icon: vars= 80, frame 128, prologue and epilogue byte-identical to the target. This also independently proves IconC70's 0x20 size (48 + 32 = 80 exactly, nothing left over).
+- verdict: CONFIRMED
+
+## [s6] Naming the D_800A3560 index in a fresh once-written/once-read local (s32 ctx = var_s0 * 3;) makes loop.c's strength_reduce reduce that giv to a byte OFFSET instead of a full ADDRESS, reproducing the target's lui $at,%hi / addu $at,$at,$s2 / lbu %lo($at) plus addiu $s2,$s2,3.
+- mechanism: With the multiply inlined into the array reference, expand_expr builds the whole address symbol + i*3 as one expression and loop.c reduces the ADDRESS giv (lui $s2 / addiu $s2 / lbu 0($s2)). Naming the product makes ctx itself the giv that strength_reduce reduces, leaving the symbol to be re-added by legitimize_address at each reference.
+- probe: tmp/grind/func_80070C70/s6/struct/ -- 5 index spellings (inlined index, named local, comma-initialised second biv, pointer-arithmetic deref, pointer local) x 2 secondary-counter spellings x 3 declarations of D_800A3558 = 30 variants, scored with sandbox --disable all.
+- result: {49: 6, 52: 6, 53: 6, 56: 6, 88: 3, 90: 3}. Named local and pointer local are 49 at 194 insns (the target's count) against 53 at 193 for both inlined spellings; a comma-initialised second biv is 88 at 196. Closes the s4/s5 frontier item about the D_800A3560 giv. NOTE: ctx is a NAMED INTERMEDIATE and must be vetted against that family's 6 prongs before any candidate-ready.
+- verdict: CONFIRMED
+
+## [s6] The second loop must be an if-guarded do/while rather than the s5 top-test for: it is worth 10 points because it removes the three spill slots, at the cost of the tail-load CSE that only a top-test loop can reach.
+- mechanism: cse.c:7909 cse_set_around_loop is the only transform that can move a loop-head memory read into the previous iteration's tail, and its gate at cse.c:7936 is REG_LOOP_TEST_P (src_elt->exp). REG_LOOP_TEST_P is set in exactly one place in GCC 2.7.2 -- jump.c:2253, inside duplicate_loop_exit_test -- which requires a NOTE_INSN_LOOP_BEG followed by an unconditional jump, i.e. a top-test loop. The same transform creates the pseudos that become the three spill slots, so the two target features are coupled through one pass.
+- probe: tmp/grind/func_80070C70/s6/g/ -- 8 loop-structure variants scored on both the cc1 vars= gradient and sandbox --disable all; refined by the 27-variant s6/h/ declaration x bound x condition sweep and the 10-variant s6/l/ body sweep.
+- result: if-guarded do/while = vars 80 (frame 128, prologue and epilogue byte-identical) and score 43, then 40 with the reassociated body condition and 39 with the || operands swapped, at 194 insns == the target. Every top-test form = vars 104 (frame 152) and 49 at best; for(;;)+break and for+break = 62; <= and !(>) = 79. s5's structural conclusion is superseded: the for chassis was a local optimum paying 14 prologue/epilogue instructions for 4 body instructions.
+- verdict: CONFIRMED
+
+## [s6] Re-declaring D_800A3558, re-associating the loop bound, or re-spelling the body condition removes the three spill slots while the loop keeps its test at the top.
+- mechanism: Exhaustive spelling sweep of the two expressions that make up the loop-exit test, measured on the vars= gradient (cc1's own .frame comment) so the frame is isolated from the rest of the codegen.
+- probe: tmp/grind/func_80070C70/s6/bc/ (10 bound forms x 4 condition forms = 40 variants) and tmp/grind/func_80070C70/s6/k/ (3 declarations x 3 bounds x 3 conditions = 27 variants), swept with tmp/grind/func_80070C70/s6/varsweep.sh.
+- result: All 27 of the k sweep are vars= 104. In the bc sweep every < form is 104 and every <= / >= form is 96 (one spill slot fewer, because the + 1 intermediate leaves the exit test) -- but those <= forms score 79 on the sandbox against 49. Nothing in that space reaches vars= 80.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-53/49 top-test for chassis (s5 candidate.c body plus the s6 `s32 ctx = var_s0 * 3;` named index + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, cc1 vars= gradient and sandbox --disable all, 2026-09-10
+
+## [s6] Body-level spelling of the second loop (the p_static addend order, the mode expression order, the index product order, hoisting ctx to function scope, re-ordering t's two stores) moves the do/while chassis below 39.
+- mechanism: Mandated enumerate modality -- 10 body spellings on the 40-point do/while chassis, one axis at a time.
+- probe: tmp/grind/func_80070C70/s6/l/ swept with tmp/grind/func_80070C70/s6/sweep.py.
+- result: Histogram {39: 1, 40: 8, 43: 1}. The only live axis is the || operand order in the mode test: (D_800A35BC == 2) || (((s16)D_800A3558 + D_800A35B0) != 0) is 39 at 194 insns, the other order 40 at 190. (D_800A3590[var_s0] << 4) + t instead of t + (...) is 43. 3 * var_s0, var_s0 * 0x16C + 0x50, D_800A3590[var_s0] * 16, hoisting ctx to function scope and re-ordering t's two stores are all byte-neutral at 40.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-40 if-guarded do/while chassis (s6 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern s32 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s6] The declared type of D_800A3558 (extern s32 with an (s16) cast, extern u16, extern s16) changes the score on either chassis.
+- mechanism: The target's guard block loads the symbol twice, once as lhu (kept live and sign-extended in the loop body by sll 16 / sra 16) and once as lh (folded by combine inside the guard block). The hypothesis was that a halfword declaration is what produces the lhu.
+- probe: All three declarations crossed with 3 bound forms x 3 condition forms on both chassis: tmp/grind/func_80070C70/s6/h/ (27 variants, sandbox) and tmp/grind/func_80070C70/s6/k/ (27 variants, vars= gradient), plus the 30-variant s6/struct/ sweep.
+- result: Byte-neutral everywhere: all 9 bound x condition pairs score identically for d32 / du16 / ds16 on the do/while chassis (three-way ties at 40/41/42/43/44/45), all 27 k variants are vars= 104 on the for chassis, and the struct sweep's 10 triples are three-way ties. The lhu does not come from the declaration. The ordinary extern s32 D_800A3558; is kept.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: both the floor-49 top-test for chassis and the floor-40 if-guarded do/while chassis (s6 candidate.c bodies + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all and the cc1 vars= gradient, 2026-09-10

@@ -453,3 +453,80 @@
 - [s5] Residual at 53 (193 insns vs 194): (i) frame 0x98 vs 0x80, caused by three no-conflict pseudos (118, 168, 171) that exist only as (use (reg)) insns and take 8-byte stack slots at sp+104/112/120 -- leftovers of duplicate_loop_exit_test's reg_map copies; every sp-relative insn differs by the offset, making this the dominant scoring item. (ii) D_800A3560's giv is reduced to a full address where the target reduces it to a byte offset and re-adds %hi/%lo each iteration. (iii) `t = prim.p_geom + 0xC` lands in p_geom's own register in three places where the target keeps two live registers.
 
 - [s5] tmp/grind/func_80070C70/s5/sweep.py is a guard-clean variant sweeper that also varies header DECLARATIONS via `//@sub <anchor>|||<replacement>` lines; tools/sweep_variants.py cannot vary declarations and is blocked by the worktree-contamination guard unless pinned through wteng.
+
+## s6 (enumerate, 2026-09-10) — floor 53 -> 39, build_insns 194 == target, FRAME EXACT
+
+- [s6] The floor-53 s5 chassis re-measured 53 at dispatch (sandbox --disable all, 193 insns
+  vs target 194), so every s5 conclusion below is on the same chassis it was banked on.
+- [s6] NEW INSTRUMENT: `vars=` from cc1's own `.frame` comment is a 1-second-per-variant
+  gradient on the frame, independent of the sandbox score
+  (tmp/grind/func_80070C70/s6/varsweep.sh; see [[phantom-frame-slots-gcc272]]). The target
+  is `.frame $sp,128,$31  # vars= 80, regs= 6/0, args= 24, extra= 0`.
+- [s6] The 0x18 frame overshoot is THREE RELOAD SPILL SLOTS, measured directly, not inferred.
+  The instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_FRAME_DEBUG=1 prints the whole
+  frame-slot census for the function (tmp/grind/func_80070C70/s6/framedbg.sh):
+      ctx=stack_temp     size=48 frame_offset=48    <- prim  (PrimC70, 44 bytes -> 48)
+      ctx=stack_temp     size=32 frame_offset=80    <- icon  (IconC70, 0x20)
+      ctx=spill_new_p116 size=8  frame_offset=88
+      ctx=spill_new_p165 size=8  frame_offset=96
+      ctx=spill_new_p170 size=8  frame_offset=104
+  The last three are pseudos that carry a reference but NO set: they appear in the dumps
+  only as `(insn N (use (reg:SI 165)))` / `(use (reg:SI 170))` (grep the .lreg dump), get
+  no hard register in .greg, and reload's alter_reg gives each an 8-byte slot. This ALSO
+  independently PROVES IconC70's 0x20 size: prim 48 + icon 32 = the target's vars= 80 with
+  nothing left over.
+- [s6] PASS ATTRIBUTION, read out of the dumps rather than guessed. Regs 165/170 do not
+  exist in .rtl and first appear in .jump — i.e. they are created by jump.c:2246
+  `reg_map[REGNO (reg)] = gen_reg_rtx (GET_MODE (reg))` inside duplicate_loop_exit_test,
+  which hands a fresh pseudo to every exit-test insn whose destination's first AND last uid
+  both lie inside the exit code. The `(use (reg))` insns themselves first appear in
+  .combine: combine.c:10839 emits `emit_insn_after (gen_rtx (USE, VOIDmode, XEXP (note, 0)), tem)`
+  when it deletes an insn and cannot find a home for the orphaned REG_DEAD note, parking it
+  on a USE at the following CODE_LABEL. So the chain is
+  jump.c duplicate_loop_exit_test -> dead copies -> combine.c USE-at-label -> reload spill slot.
+- [s6] THE TWO TARGET FEATURES ARE COUPLED THROUGH THE SAME TRANSFORM, and this is the
+  central fact the next session inherits. cse.c:7909 `cse_set_around_loop` is the only
+  mechanism that can move the loop-head reads of D_800A3558 / D_800A35B0 into the previous
+  iteration's TAIL (the target's `lhu $a2` / `lw $a1` at 80070ECC-ED4 feeding
+  `sll $v0,$a2,16 / sra / addu $v0,$a1,$v0` at 80070E78-E80). Its gate is literally
+  `REG_LOOP_TEST_P (src_elt->exp)` at cse.c:7936, and REG_LOOP_TEST_P is set in exactly one
+  place in the compiler: jump.c:2253, inside duplicate_loop_exit_test. duplicate_loop_exit_test
+  only fires on a TOP-TEST loop (`for`/`while`), never on an `if`-guarded do/while. So the
+  top-test chassis buys the tail-load CSE and pays 24 frame bytes; the do/while chassis buys
+  the exact frame and pays the tail-load CSE. Measured both ways this session:
+      top-test `for`  + named ctx : score 49, build_insns 194, vars 104 (frame 152)
+      if-guarded do/while + ctx   : score 43, build_insns 190, vars  80 (frame 128)  <- adopted
+- [s6] `s32 ctx = var_s0 * 3;` (a fresh once-written/once-read named intermediate for the
+  D_800A3560 index) is worth 4 points and one instruction on BOTH chassis. It is what makes
+  loop.c's strength_reduce reduce D_800A3560's giv to a byte OFFSET (`addiu $s2,$s2,3`, with
+  `lui $at,%hi / addu $at,$at,$s2 / lbu %lo($at)` at 80070E28-E30 = the target) instead of a
+  full ADDRESS (`lui $s2 / addiu $s2 / lbu 0($s2)`). This CLOSES the s5 frontier item (ii).
+  A `u8 *p = D_800A3560 + var_s0 * 3;` pointer local measures identically (49 on the for
+  chassis); inlining the index (`D_800A3560[var_s0 * 3]` or `*(D_800A3560 + var_s0 * 3)`)
+  costs the 4 points back; a comma-initialised second biv (`for (i = 0, ctx = 0; ...; i++, ctx += 3)`)
+  is catastrophic (88). NOTE FOR THE NEXT SESSION: `ctx` is a NAMED INTERMEDIATE and must be
+  vetted against that family's 6 prongs before any candidate-ready.
+- [s6] The `||` operand order in the mode test is NOT byte-neutral: writing
+  `(D_800A35BC == 2) || (((s16)D_800A3558 + D_800A35B0) != 0)` scores 39 at 194 insns where
+  the other order scores 40 at 190 insns. (The target evaluates the D_800A3558 term first in
+  the emitted code, which is the ordering GCC produces from the swapped source.)
+- [s6] D_800A3558's declared type is byte-neutral on BOTH chassis: `extern s32` + an `(s16)`
+  cast, `extern u16`, and `extern s16` all give identical scores in all 9 bound x condition
+  pairs on the do/while chassis and identical vars= on the for chassis. The ordinary
+  `extern s32 D_800A3558;` is kept.
+
+- [s6] Floor 53 -> 39 this session; build_insns is now 194, exactly the target's 194, and the frame is EXACT (.frame $sp,128,$31 # vars= 80, regs= 6/0, args= 24 -- every prologue and epilogue instruction matches, which was the single biggest scoring item at 14 instructions).
+
+- [s6] NEW INSTRUMENT for this function and for the project: cc1's own `vars=` field in the .frame comment is a 1-second-per-variant gradient on the frame, independent of the sandbox score (tmp/grind/func_80070C70/s6/varsweep.sh; see the phantom-frame-slots-gcc272 memory). The BB2_FRAME_DEBUG=1 census in the instrumented cc1 at tools/gcc-2.7.2/cc1 (function.c:735) then names each slot -- stack_temp vs spill_new_pNNN -- which is what turned three sessions of frame guessing into one measurement.
+
+- [s6] The frame overshoot and the tail-load CSE are COUPLED THROUGH ONE PASS. cse.c:7936 gates cse_set_around_loop on REG_LOOP_TEST_P, and jump.c:2253 (duplicate_loop_exit_test) is the only place in GCC 2.7.2 that sets it; the same routine's gen_reg_rtx at jump.c:2246 is what leaves the dead pseudos that become 24 bytes of spill slots. Top-test loop = tail-load CSE + 24 wasted frame bytes; if-guarded do/while = exact frame, no tail-load CSE. Measured: 49 vs 39.
+
+- [s6] s5's structural conclusion is SUPERSEDED, not wrong: the top-test for chassis really does produce the target's tail lhu + next-iteration sll/sra pair, but it pays 14 prologue/epilogue instructions for 4 body instructions. The s5 frontier item that framed the overshoot as 'a source shape whose exit test has fewer replaceable intermediate registers' is now measured dead as a spelling axis (all 67 bound/condition/declaration spellings stay at vars= 104 or 96).
+
+- [s6] `s32 ctx = var_s0 * 3;` closes the s4/s5 frontier item on D_800A3560's giv: naming the index makes strength_reduce reduce a byte OFFSET (addiu $s2,$s2,3, with the symbol re-added per reference) instead of a full ADDRESS. Worth 4 points and one instruction on both chassis. It is a fresh once-written/once-read NAMED INTERMEDIATE and needs that family's 6-prong vet before any candidate-ready; a `u8 *p = D_800A3560 + var_s0 * 3;` pointer local measures identically and is the alternative spelling to vet alongside it.
+
+- [s6] IconC70's 0x20 size is now proven by direct measurement rather than by frame arithmetic: the BB2_FRAME_DEBUG census reports stack_temp 48 (prim) + stack_temp 32 (icon) = the target's vars= 80 with no residue. The `s16 sp50[12]` spelling of the trailing 24 bytes is still a placeholder for the real member list.
+
+- [s6] The `||` operand order in the mode test is not byte-neutral: (D_800A35BC == 2) first is 39 at 194 insns, the D_800A3558 term first is 40 at 190.
+
+- [s6] Everything measured this session is ordinary C except the one named intermediate: no dead store, no pad, no volatile, no asm, no duplicated arms, no record wrapper.

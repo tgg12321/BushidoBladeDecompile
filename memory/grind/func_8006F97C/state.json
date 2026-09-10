@@ -50,10 +50,10 @@
   },
   {
    "from": "func_80070C70",
-   "floor": 53,
-   "session": 5,
-   "at": "2026-09-10T16:56:12.554657+00:00",
-   "headline": "Floor 56 -> 53 and every FAKE construct retired: spelling the second loop as a top-test for() whose secondary counters are expressions of the loop variable makes jump.c's duplicate_loop_exit_test fire",
+   "floor": 39,
+   "session": 6,
+   "at": "2026-09-10T17:19:00.014436+00:00",
+   "headline": "Floor 53 -> 39 at 194 insns (== target) with an EXACT frame: the 0x18 overshoot was three reload spill slots proven by BB2_FRAME_DEBUG, and reverting s5's top-test for to an if-guarded do/while remove",
    "consumed": null
   }
  ]

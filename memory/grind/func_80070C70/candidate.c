@@ -1,73 +1,84 @@
-/* candidate.c - func_80070C70 - session 5 (enumerate). Honest floor 53 (was 56 at s4).
+/* candidate.c - func_80070C70 - session 6 (enumerate). Honest floor 39 (was 53 at s5).
  *
- * FLOOR HISTORY: 194 (HEAD, no C body) -> 101 (s1) -> 99 (s3) -> 56 (s4) -> 53 (s5).
+ * FLOOR HISTORY: 194 (HEAD, no C body) -> 101 (s1) -> 99 (s3) -> 56 (s4) -> 53 (s5) -> 39 (s6).
+ * Instruction count is now 194 == the target's 194, and the FRAME MATCHES EXACTLY
+ * (.frame $sp,128 / vars= 80, regs= 6/0, args= 24 -- identical to the target's prologue
+ * and epilogue offsets). Every remaining difference is register seating / scheduling.
  *
- * THE s5 MOVE IS STRUCTURAL, NOT A SPELLING TWEAK, AND IT RETIRES EVERY FAKE CONSTRUCT
- * THE LEDGER HAD ACCUMULATED. The body below is ORDINARY C: no duplicated `var_s0 += 1`
- * across arms (s4's biv_count-3 construct), no `new_var` named intermediate, no RecC70
- * one-member record, no dead store, no pad, no volatile, no asm.
+ * THE BODY BELOW IS ORDINARY C EXCEPT FOR ONE CONSTRUCT THAT STILL NEEDS A FAMILY VET:
+ *   `s32 ctx = var_s0 * 3;` -- a fresh, block-scoped, once-written / once-read named
+ *   intermediate whose value IS consumed in the target's bytes (it is the byte OFFSET
+ *   giv `addiu $s2,$s2,3` that the target re-adds to %hi(D_800A3560) every iteration).
+ *   It is worth 4 points and 1 instruction on its own (53 -> 49 on the s5 for-loop
+ *   chassis) and it is what lets loop.c reduce D_800A3560's giv to an OFFSET instead of
+ *   a full ADDRESS. Before any candidate-ready, vet it against the named-intermediate
+ *   6 prongs (.claude/rules/narrow-byte-args-packed-call.md + the 2026-08-17 clarification
+ *   in .claude/rules/no-new-park-categories.md); it needs a /* FAKE */ annotation if that
+ *   family is the right one. Measured alternatives: hoisting `ctx` to function scope is
+ *   also 40 (still a named intermediate); a `u8 *p = D_800A3560 + var_s0 * 3;` pointer
+ *   local is also 49 on the for chassis; INLINING it (`D_800A3560[var_s0 * 3]` or
+ *   `*(D_800A3560 + var_s0 * 3)`) costs 4 points.
  *
- * WHAT CHANGED, AND WHY IT WORKS (mechanism read out of the GCC 2.7.2 sources, not guessed):
- *   The second loop is spelled as a `for (var_s0 = 0; var_s0 < <bound>; var_s0++)` with the
- *   two secondary loop counters expressed as FUNCTIONS OF var_s0 (`D_800A3560[var_s0 * 3]`
- *   and `prim.mode = 0x50 + var_s0 * 0x16C`) instead of the previous
- *   `if (<bound> > 0) { var_s3 = 0x50; ctx = 0; do { ... var_s3 += 0x16C; ctx += 3; } while (...); }`.
- *   Three separate target facts fall out of that single change:
+ * THE TWO s6 MOVES (both measured, both structural):
+ *   1. `s32 ctx = var_s0 * 3;` (see above): 53 -> 49, build_insns 193 -> 194.
+ *   2. THE SECOND LOOP GOES BACK TO AN if-GUARDED do/while: 49 -> 43, and the frame
+ *      collapses from 152 to the target's 128. s5 had moved it to a top-test `for`
+ *      because that is the only shape that makes jump.c:2163 duplicate_loop_exit_test
+ *      fire, which in turn is the ONLY way cse.c:7909 cse_set_around_loop can hoist the
+ *      loop-head reads into the previous iteration's tail (the test is literally
+ *      `REG_LOOP_TEST_P (src_elt->exp)`, cse.c:7936, and only duplicate_loop_exit_test
+ *      ever sets that flag).  But the SAME transform is what costs the frame: it hands a
+ *      NEW pseudo to every exit-test register whose whole live range sits inside the exit
+ *      code (jump.c:2246 `reg_map[REGNO (reg)] = gen_reg_rtx (...)`), combine then deletes
+ *      the copies it can fold and parks the orphaned REG_DEAD notes on `(use (reg))` insns
+ *      at the following CODE_LABEL (combine.c:10839), and reload's alter_reg gives each of
+ *      those three refs-but-never-set pseudos an 8-byte spill slot.  MEASURED DIRECTLY with
+ *      the instrumented cc1's BB2_FRAME_DEBUG census (tmp/grind/func_80070C70/s6/framedbg.sh):
+ *        FRAMEDBG ctx=stack_temp size=48 frame_offset=48      <- prim
+ *        FRAMEDBG ctx=stack_temp size=32 frame_offset=80      <- icon
+ *        FRAMEDBG ctx=spill_new_p116 size=8 frame_offset=88   <- the 24 bytes of overshoot
+ *        FRAMEDBG ctx=spill_new_p165 size=8 frame_offset=96
+ *        FRAMEDBG ctx=spill_new_p170 size=8 frame_offset=104
+ *      On the if-guarded do/while the census stops at icon: vars= 80, frame 128, exact.
+ *   3. Swapping the `||` operands of the mode test (`(D_800A35BC == 2) || (...)`) is worth
+ *      one more point and restores build_insns to 194: 40 -> 39.
  *
- *   (a) TEST AT THE TOP => jump.c:2163 `duplicate_loop_exit_test` fires. It copies the exit
- *       test in front of the loop (that copy is the target's `blez` guard at 80070E18) and
- *       marks the ORIGINAL test's registers REG_LOOP_TEST_P (jump.c:2253).
- *   (b) REG_LOOP_TEST_P then lets cse.c:7741 `cse_around_loop` (reached from cse.c:8581)
- *       substitute the loop-HEAD's read of D_800A3558 with the register the loop-TAIL test
- *       already loaded. That is the whole of s4's frontier item F4: the target's
- *       `lhu $a2, %gp_rel(D_800A3558)` in the tail block at 80070ECC feeding
- *       `sll/sra 16` in the next iteration's body at 80070E78/E7C. We now emit exactly that
- *       pair. combine cannot fold the sign_extend into the load because they are in
- *       different basic blocks -- which is why the target shows BOTH `lhu` and `lh` of the
- *       same address in one block and every s2/s3/s4 declaration experiment failed to
- *       reproduce it.
- *   (c) var_s3 and ctx become GIVs of var_s0, so loop.c's strength_reduce emits their
- *       initialisations at loop_start, i.e. AFTER the duplicated guard -- the target's
- *       `addiu $s3,$zero,0x50` / `addu $s2,$zero,$zero` at 80070E20/E24, which sit between
- *       the `blez` and the loop label and which no `if`-guarded do/while chassis can place
- *       there. The callee-saved seat rotation (s5's F5 frontier item: arg0=$s1, var_s0=$s0,
- *       var_s3=$s3, ctx=$s2, c60=$s4) also comes out CORRECT for the first time.
- *
- * COMPANION EDITS in src/text1b.c that are part of the measured 53:
+ * COMPANION EDITS in src/text1b.c that are part of the measured 39 (unchanged from s5):
  *   1. extern u8  D_800A3560[];   (was: extern u8  D_800A3560;)   both occurrences
  *   2. extern s16 D_800A3590[];   (was: extern s16 D_800A3590;)   both occurrences
- *      NOTE: the s3-era `typedef struct RecC70 { s16 v; } RecC70;` record is now WRONG --
- *      it measures 90 on this chassis versus 53 for the plain halfword array. The s1/s2/s3/s4
- *      frontier item "recover RecC70's real field list" is therefore CLOSED: there is no
- *      record; D_800A3590 is a plain `s16[]` indexed by the same loop counter.
  *   3. typedef struct IconC70 { s16 sp48; s16 sp4A; s16 sp4C; s16 sp4E; s16 sp50[12]; } IconC70;
- *      (unchanged from s1; the 0x20 size is proven by the frame arithmetic, the `sp50[12]`
- *      tail is still a placeholder and still needs recovering from func_80069898's other callers.)
- *   D_800A3558's declared type is BYTE-NEUTRAL at 53 (s32 with an (s16) cast, u16, and s16
- *   all measure 53), so the ordinary `extern s32 D_800A3558;` is kept.
+ *      The 0x20 size is now PROVEN independently of any frame guesswork: the BB2_FRAME_DEBUG
+ *      census shows prim=48 + icon=32 = vars 80 = the target's `vars= 80` exactly, with no
+ *      temps left over.  The `sp50[12]` spelling of the trailing 24 bytes is still a
+ *      placeholder for the real member list.
+ *   4. D_800A3558 keeps its ordinary `extern s32 D_800A3558;` declaration -- u16 and s16 are
+ *      BYTE-NEUTRAL on both the for and the do/while chassis (27-variant sweep, s6/k and s6/h).
  *
- * RESIDUAL AT 53 (193 insns vs target 194), in descending cost:
- *   (i)  FRAME 0x98 vs target 0x80. The extra 0x18 is three pseudos (regs 118, 168, 171 in
- *        tmp/grind/func_80070C70/dumps/text1b.lreg) that exist only as `(use (reg))` insns
- *        created between .flow and .lreg, have NO conflicts, get no hard register in .greg,
- *        and are given 8-byte stack slots at sp+104/112/120. They are the leftovers of
- *        duplicate_loop_exit_test's register copies. Every prologue/epilogue/`sp`-relative
- *        insn differs by the resulting offset, so this is the single biggest scoring item.
- *   (ii) D_800A3560's giv is reduced to a full ADDRESS (`lui s2 / addiu s2 / lbu 0(s2)`,
- *        `addiu s2,s2,3`) where the target reduces it to a byte OFFSET and re-adds the
- *        symbol every iteration (`lui at,%hi / addu at,at,s2 / lbu %lo(at)`).
- *   (iii) `t = prim.p_geom + 0xC` is emitted into the same register as p_geom in three
- *        places where the target keeps two live registers (`addiu $v1,$v0,0xC`).
+ * RESIDUAL AT 39 (194 insns vs target 194 -- a pure seating/ordering residual now):
+ *   (i)  The target keeps $a1 = D_800A35B0 and $a2 = lhu D_800A3558 LIVE across the loop:
+ *        they are loaded once in the guard block (80070DF4/DFC) and re-loaded in the loop
+ *        TAIL (80070ECC/ED0/ED4), and the body consumes them with `sll $v0,$a2,16 / sra /
+ *        addu $v0,$a1,$v0`.  We re-load both INSIDE the body every iteration instead.  This
+ *        is exactly cse_set_around_loop, and its gate (REG_LOOP_TEST_P) is unreachable on
+ *        the do/while chassis -- see the frontier: the two effects have to be reconciled.
+ *   (ii) `t = prim.p_geom + 0xC` lands in the SAME register as p_geom (`addiu $v0,$v0,12`)
+ *        where the target keeps two live registers (`addiu $v1,$v0,12`), at three sites.
+ *   (iii) two scheduling ties: `addiu $a0,$sp,24` vs `addu $s0,$zero,$zero`, and the
+ *        position of `sw $s3,0x2C($sp)`.
  *
- * SWEEP EVIDENCE (all measured this session, sandbox --disable all):
- *   - 172-spelling enumeration of the pre-loop block on the OLD floor-56 chassis:
- *     best 55, histogram {55:1, 58:2, 59:9, 60:28, 63:26, 64:106} -- i.e. the old chassis'
- *     naming/order space was worth 1 point.
- *   - 84-spelling sweep of the loop bound / body condition / index / mode expressions on the
- *     new chassis: {53:36, 57:36, 58:12}. The winning axis is the loop BOUND: dropping the
- *     redundant `(s32)` cast (`D_800A35B0 + (s16)D_800A3558 + 1`) is 53; the cast forms are 57.
- *     The condition, index (`var_s0 * 3` vs `3 * var_s0`) and mode operand orders are all
- *     byte-neutral.
+ * SWEEP EVIDENCE (all measured this session, sandbox --disable all + the vars= gradient):
+ *   - 30-variant index x mode-counter x D_800A3558-declaration cross product (s6/struct/):
+ *     {49: 6, 52: 6, 53: 6, 56: 6, 88: 3, 90: 3}.  Named index local (i2) or pointer local
+ *     (i5) = 49; inlined index (i1/i4) = 53; a comma-initialised second biv (i3) = 88.
+ *   - 40-variant bound x condition sweep on the for chassis (s6/bc/), vars= gradient:
+ *     every `<` form = 104, every `<=` form = 96, `>=` = 96.  No spelling reaches 80.
+ *   - 27-variant declaration x bound x condition sweep on the for chassis (s6/k/): all 104.
+ *   - 8 loop-structure variants (s6/g/): if-guarded do/while = vars 80 / score 43; while,
+ *     for(;;)+break, for+break, for with `>` reversed = vars 104; `<=`/`!(>)` = vars 96.
+ *   - 27-variant declaration x bound x condition sweep on the do/while chassis (s6/h/):
+ *     {40: 3, 41: 3, 42: 3, 43: 6, 44: 6, 45: 6}; the winning axis is the body condition
+ *     spelling, and the D_800A3558 declaration is byte-neutral in all 9 pairs.
+ *   - 10-variant body-spelling sweep (s6/l/): {39: 1, 40: 8, 43: 1}.
  */
 void func_80070C70(s32 arg0) {
     s32 c60 = 0x60;
@@ -118,21 +129,26 @@ void func_80070C70(s32 arg0) {
     AddPrim(D_800A374C + 0x28, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
-    for (var_s0 = 0; var_s0 < D_800A35B0 + (s16)D_800A3558 + 1; var_s0++) {
-        code = D_800A3560[var_s0 * 3];
-        if ((code != 5) && (code != 16)) {
-            t = prim.p_geom + 0xC;
-            prim.p_static = t;
-            prim.p_static = t + (D_800A3590[var_s0] << 4);
-            if (((D_800A35B0 + (s16)D_800A3558) != 0) || (D_800A35BC == 2)) {
-                prim.mode = 0x50 + var_s0 * 0x16C;
-            } else {
-                prim.mode = 0x105;
+    if (D_800A35B0 + (s16)D_800A3558 + 1 > 0) {
+        var_s0 = 0;
+        do {
+            s32 ctx = var_s0 * 3;
+            code = D_800A3560[ctx];
+            if ((code != 5) && (code != 16)) {
+                t = prim.p_geom + 0xC;
+                prim.p_static = t;
+                prim.p_static = t + (D_800A3590[var_s0] << 4);
+                if ((D_800A35BC == 2) || (((s16)D_800A3558 + D_800A35B0) != 0)) {
+                    prim.mode = 0x50 + var_s0 * 0x16C;
+                } else {
+                    prim.mode = 0x105;
+                }
+                prim.code = 1;
+                prim.link = *(s32 *)(arg0 + 0x10);
+                *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
             }
-            prim.code = 1;
-            prim.link = *(s32 *)(arg0 + 0x10);
-            *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-        }
+            var_s0++;
+        } while (var_s0 < D_800A35B0 + (s16)D_800A3558 + 1);
     }
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
     AddPrim(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
