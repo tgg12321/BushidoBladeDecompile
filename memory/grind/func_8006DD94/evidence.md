@@ -237,3 +237,144 @@ and func_8006A1A0 jump to +0x40 (20 bytes), func_80070188 jumps to +0x50 (36 byt
 those are still INCLUDE_ASM, so none is usable as decompiled precedent — but the pattern
 says whatever source idiom reserves the hole is shared across this whole render-function
 family, so a ruling here generalises to at least four more queue items.
+
+## s4 (recon, 2026-09-10; dispatched as "session 1" after the s3 Judge FAIL) — chassis: HEAD (INCLUDE_ASM, sandbox 117); honest ordinary-C floor re-measured at **21**
+
+OBJECT MODEL: D_800A374C — **MATCHES**, re-affirmed, unchanged from s1. Declared
+`extern s32 D_800A374C;` (m2c_context.h and at file scope in src/text1b.c); the target
+reads it lui %hi / lw %lo and adds 0x28 before AddPrim (asm/funcs/func_8006DD94.s
+8006DEBC..8006DECC), the identical shape the COMPLETED-C sibling func_8006BB68 ships
+(AddPrim(D_800A374C + 0x28, arg0[7]), src/text1b.c:5776). sdata_exclude.txt:69 already
+pins `func_8006DD94: D_800A374C`. No declaration change was needed, none was tried, and
+the whole 21-insn residual this session is a frame-size displacement that touches no
+global at all. No other symbol the function touches is flagged: D_800A352C, D_800A3514
+and D_800A34FC are read $gp-relative through the pre-existing file-scope `extern s32`
+declarations and are byte-exact in every probe.
+
+### E1 — the honest floor is 21, and NO pad spelling can move it (the decisive measurement)
+
+s3 reported sandbox 0 for its merged S_6DD94 struct; the Judge (2026-09-10 05:59) ruled
+that a false 0 because a struct member evades engine/volatile_cheats.py's pad allowlist.
+s4 measured the same construct in the spelling the engine DOES see — a second, never
+written `u16 rect0[4]` declared ahead of the real rect
+(tmp/grind/func_8006DD94/s1/v8_two_rects.c, banked
+rejected/two-rects-sandbox-strips-score21.c):
+
+  * cc1 prints `.frame $sp,120,$31  # vars= 64, regs= 7/0, args= 24, extra= 0` — the
+    target's exact frame — and the rect stores land at sp+0x50/0x52/0x54/0x56, exactly
+    where the target puts them.
+  * `sandbox func_8006DD94 --disable all` nevertheless reports **21** (117/117,
+    rules_dropped 0): the engine strips the unwritten array before scoring.
+
+So every unwritten-filler spelling of this residual is mechanically inert on the honest
+floor ([[unannotated-fake-inflates-honest-floor]]). Chasing pads here cannot lower the
+number the queue records, whatever a Judge might rule. Honest floor = 21.
+
+### E2 — the residual is exactly one 8-byte frame displacement, quantified
+
+Target locals map (asm/funcs/func_8006DD94.s, sp-relative): args 0x00..0x17; descriptor
+0x18..0x43 (0x2C bytes; written at 0x18,0x1C,0x20,0x28,0x2C,0x30,0x34,0x40..0x43);
+**nothing read or written in 0x44..0x4F**; `u16 rect[4]` at 0x50..0x57 (addiu $a1,$sp,0x50
+at 8006DF14); saved s0-s5 + ra at 0x58..0x70; frame 0x78 = 120.
+Best honest body: descriptor 0x18..0x43, rect at 0x48, frame 112, `# vars= 56`.
+Frame equation ALIGN8(vars)+ALIGN8(args)+ALIGN8(gp_regs) (mips.c compute_frame_size):
+64+24+32 = 120 (target) vs 56+24+32 = 112 (ours). The 21 differing insns are that
+displacement and its knock-on offsets — no other divergence exists anywhere in the body.
+
+### E3 — the descriptor type is NOT larger than 0x2C (s3's axis (b) is dead)
+
+s3's remaining "ordinary C" hope, and the first of the two axes the Judge left open, was
+that func_8007352C's descriptor is genuinely 0x34-0x38 bytes rather than 0x2C. It is not:
+
+  * **COMPLETED-C func_8006BB68 is a byte-match with a 0x2C descriptor and its rect
+    immediately after it.** Its target frame is 0x68 = 104 (addiu $sp,$sp,-0x68 at
+    8006BB68), it passes the rect as addiu $a1,$sp,0x48 (8006BCD0), and its accepted C
+    (src/text1b.c:5754-5806) declares exactly `S69E18 s; u16 rect[4];`. vars = 104-24-24 =
+    56: descriptor 0x18..0x44, rect 0x48..0x50. If the shared descriptor type were 0x34 or
+    0x38 bytes, BB68's rect would sit at sp+0x50 and BB68 would not match. It does match,
+    so the type is at most 0x30 bytes at a func_8007352C call site.
+  * **35-caller census** (tmp/grind/func_8006DD94/s1/census.py, run over every
+    asm/funcs/*.s that calls func_8007352C, computing every sp-relative store/load offset
+    relative to that function's `addiu $a0,$sp,N` descriptor base): **no caller anywhere
+    writes or reads descriptor-relative 0x2C..0x2F.** The stores that do appear at
+    descriptor-relative 0x30+ are 4-halfword rect blocks — the same slot BB68's rect
+    occupies. This independently reproduces the Judge's negative census with the actual
+    numbers attached.
+
+### E4 — what the sibling census DOES show: a real two-rect idiom, which still buys nothing
+
+func_800720FC's target genuinely uses TWO 4-halfword rects on different paths — one built
+at sp+0x50 and passed as addiu $a1,$sp,0x50 (asm/funcs/func_800720FC.s, 800725A0-800725C8)
+and one built at sp+0x48 and passed as addiu $a1,$sp,0x48 (800728A4-800728D0) — with the
+same 0x18 descriptor base. func_8006BB68 uses only the sp+0x48 slot; func_8006DD94 and
+func_8006F97C use only the sp+0x50 slot. So a two-rect declaration idiom demonstrably
+exists in this file and would explain the hole as an ordinary copy-paste artifact of the
+original source. It is nevertheless a dead axis for the FLOOR, because E1 shows the engine
+strips the unused rect and the score stays 21. It is recorded here as the only positive
+evidence anyone has produced about what the original programmer declared in that hole.
+
+### E5 — frame-slot mechanics: exactly which declarations can move the rect (eleven probes)
+
+Instrument: tmp/grind/func_8006DD94/s1/frameprobe.py — splices a body into src/text1b.c,
+runs the project's own cpp|cc1 (engine.buildconfig flags), prints cc1's `.frame` line and
+every sp-relative store offset, then restores the file. Baseline (the honest body):
+`vars= 56`, rect stores at 0x48/0x4A/0x4C/0x4E.
+
+| probe | construct added / changed | vars | rect at |
+|---|---|---|---|
+| v1_innerblock | `u16 rect[4]` moved into a trailing nested block, declared after every statement | 56 | 0x48 |
+| v2_inner_himode | v1 + the [[phantom-frame-slots-gcc272]] trigger (`s16 aa,bb;` feeding `(aa & ~bb) & 1`) before the block | 56 | 0x48 |
+| v3_inner_ll | v1 + a `long long` multiply/shift before the block | 56 | 0x48 |
+| t1_double | v1 + soft-float `double` multiply before the block | 56 | 0x48 |
+| t2_lldiv | v1 + a `long long` division before the block | 56 | 0x48 |
+| t4_himode | v1 + the memory note's HImode form assigned to a third `s16` | 56 | 0x48 |
+| v4_inner_plus_used_arr | v1 + a genuinely USED `s32 t[2]` declared before the rect | **64** | **0x50** |
+| t5_addrof | v1 + an address-taken `s32 tv` (`&tv` passed to a call) before the rect | **64** | **0x50** |
+| t6_deadarr | a never-used `s32 dead[2]` declared before the rect | **64** | **0x50** |
+| t7_structval | a `struct P2 {s32 a,b;}` passed by value to a call, declared before the rect | **64** | **0x50** |
+| v8_two_rects | `u16 rect0[4];` (never written) before the real rect | **64** | **0x50** |
+
+Two facts fall straight out, and together they close the scalar/temp axis:
+
+1. **Nesting the rect's declaration does not delay its slot.** GCC 2.7.2's C front end
+   calls expand_decl at the point the declaration is parsed, so slots are handed out in
+   source declaration order interleaved with statement expansion — but none of the
+   expressions probed (HImode bitwise pair, long long multiply, long long divide,
+   soft-float double) allocates a *surviving* stack temp in this function, so there is
+   nothing for a later declaration to sit above. The [[phantom-frame-slots-gcc272]] trigger
+   does not reproduce here.
+2. **Only a declaration that fails GCC's register-eligibility test reserves frame bytes.**
+   tools/gcc-2.7.2/stmt.c:3357-3364 puts an automatic into a pseudo — zero frame
+   footprint — unless it is BLKmode (any array/struct), volatile, or TREE_ADDRESSABLE;
+   otherwise it falls to assign_stack_temp at stmt.c:3392 with
+   DECL_ALIGN = BIGGEST_ALIGNMENT for BLKmode (stmt.c:3419), which is why an 8-byte
+   aggregate lands 8-aligned at rel 0x30 and pushes the rect to rel 0x38 = sp+0x50.
+   Every probe that reached vars=64 declares such an object; every probe that did not,
+   did not. There is no scalar spelling of this hole.
+
+### E6 — the consequence, stated plainly
+
+To reach the target frame, the source must declare — before the rect — an aggregate or an
+address-taken object of 5..8 bytes. The target contains no store to and no load from
+sp+0x44..0x4F, so any such object that is genuinely *used* would emit sp-relative traffic
+the target does not have (probes v4/t5/t7 all do), and any such object that is *unused* is
+stripped by the sandbox and leaves the honest floor at 21 (E1). That is the whole shape of
+the remaining problem, and it is now measured rather than argued.
+
+- [s1] OBJECT MODEL: D_800A374C — MATCHES. Declared `extern s32 D_800A374C;` (m2c_context.h and file scope in src/text1b.c); the target reads it lui %hi / lw %lo and adds 0x28 before AddPrim (asm/funcs/func_8006DD94.s, 8006DEBC..8006DECC), the identical shape the COMPLETED-C sibling func_8006BB68 ships as `AddPrim(D_800A374C + 0x28, arg0[7])` (src/text1b.c:5776); sdata_exclude.txt:69 already pins `func_8006DD94: D_800A374C`. No declaration change was needed and none was tried. No other symbol the function touches is flagged: D_800A352C, D_800A3514 and D_800A34FC are read $gp-relative through the pre-existing file-scope `extern s32` declarations and are byte-exact in every probe this session. The entire remaining residual is a frame-size displacement that touches no global at all.
+
+- [s1] HEAD baseline re-measured this session: `sandbox func_8006DD94 --disable all` = 117 with no_c_body true (src/text1b.c:5948 is INCLUDE_ASM). Honest ordinary-C floor with the banked body in place: 21.
+
+- [s1] Target locals map (asm/funcs/func_8006DD94.s): args sp+0x00..0x17; descriptor at sp+0x18, 0x2C bytes, written at 0x18,0x1C,0x20,0x28,0x2C,0x30,0x34,0x40..0x43; NOTHING read or written in sp+0x44..0x4F; `u16 rect[4]` at sp+0x50..0x57 (addiu $a1,$sp,0x50 at 8006DF14); saved s0-s5 + ra at 0x58..0x70; frame 0x78 = 120. The honest body gives descriptor at sp+0x18, rect at sp+0x48, frame 112 (`# vars= 56`). 64+24+32 = 120 vs 56+24+32 = 112 — the 21 differing insns are that one 8-byte displacement and its knock-on offsets.
+
+- [s1] The pad family is mechanically INERT on this function's floor: a never-written `u16 rect0[4]` gives cc1 the target's exact frame (`# vars= 64, regs= 7/0, args= 24`) and the target's exact rect stores at sp+0x50..0x56, and the sandbox still scores 21 because the engine strips the array. s3's reported 0 was a false 0 that only appeared because the same filler was spelled as struct members, which evade the pad allowlist.
+
+- [s1] func_8006BB68 (COMPLETED-C, byte-matching on main) is a positive counter-witness that the func_8007352C descriptor type is at most 0x30 bytes: its C declares `S69E18 s; u16 rect[4];` (src/text1b.c:5754-5806), its frame is 104, and it passes the rect as addiu $a1,$sp,0x48 — a 0x34-byte descriptor would move that to sp+0x50 and break it.
+
+- [s1] 35-caller census of func_8007352C (tmp/grind/func_8006DD94/s1/census.py): no caller anywhere writes or reads descriptor-relative 0x2C..0x2F. The halfword blocks at descriptor-relative 0x30+ are rect locals in func_8006BB68's slot.
+
+- [s1] A genuine two-rect idiom exists in this file: func_800720FC's target builds and passes a rect at sp+0x50 (asm/funcs/func_800720FC.s 800725A0-800725C8) AND a second rect at sp+0x48 (800728A4-800728D0) off the same sp+0x18 descriptor base. func_8006BB68 uses only the sp+0x48 slot; func_8006DD94 and func_8006F97C use only the sp+0x50 slot. This is the only positive evidence anyone has produced about what the original programmer declared in the hole — but it does not move the floor, because the unused rect is stripped (see above).
+
+- [s1] Frame-slot rule, now exact and cheap to re-derive: tools/gcc-2.7.2/stmt.c:3357-3364 gives an automatic a pseudo unless it is BLKmode, volatile or TREE_ADDRESSABLE; otherwise stmt.c:3392 assign_stack_temp with BIGGEST_ALIGNMENT for BLKmode (stmt.c:3419). Nesting a declaration in a later block does NOT delay its slot unless a surviving stack temp was allocated in between, and none of HImode-bitwise / long long multiply / long long divide / soft-float double leaves one in this function.
+
+- [s1] candidate.c was replaced this session: it is now the honest score-21 body (0x2C descriptor + a real `u16 rect[4]`, no pad, no dead local, no FAKE, no family claim). The Judge-FAILed s3 merged struct is banked at rejected/merged-struct-judge-fail-0559.c and must never be resubmitted — review verdicts are keyed by body.

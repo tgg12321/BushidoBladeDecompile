@@ -1965,3 +1965,4 @@
 - 2026-09-10 05:03 _spu_FwriteByIO COMPLETED-C after 2 sessions (closer: s2 [structural]).
 - 2026-09-10 05:39 model-fallback layer1 claude-fable-5-1[1m]->claude-opus-5[1m] until 06:09
 - 2026-09-10 05:42 func_8006DD94: LAYER-1 FAILED a sandbox-0 candidate — The function-local EnvB typedef's two TRAILING unwritten words (pad2C, pad30) are an un-annotated, un-allowlisted phantom-frame-slot pad in struct clothing — they reserve target frame bytes 0x44-0x4F that no instruction touches, and meet none of the sanctioned pad family's prerequisites.
+- 2026-09-10 06:15 func_8006DD94 s1 [recon] floor=21: Honest floor is 21, not 0: the pad family is INERT here (sandbox strips it even when the frame is byte-exact), and the Judge's remaining 'larger descriptor' axis is killed by the byte-matching sibling func_8006BB68 — residual is one 8-byte frame displacement with the mechanics now fully mapped.

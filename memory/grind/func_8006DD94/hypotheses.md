@@ -177,3 +177,148 @@ If the ruling REFUSES the interior words, the remaining axes in priority order a
     programmer actually declared here;
 (c) the constant-holder/FAKE route the 2026-09-10 05:24 Judge ruling left open, which is about
     the `semi` local and does NOT address the frame hole at all.
+
+## s4 (recon, 2026-09-10; dispatched as "session 1" after the s3 Judge FAIL) — HEAD floor 117; honest ordinary-C floor established at 21
+
+Context inherited: the Judge FAILed s3's merged frame-block struct at FINAL CALL
+(docs/grind/decisions.md 2026-09-10 05:59) — interior unwritten words are the banned
+trailing pad relocated, a new family, and not granted. The Judge's own disposition named
+exactly two honest axes left: (b) sibling forensics recovering a genuinely larger evidenced
+descriptor type, or rotation; plus the frozen first-decl `volatile u32 pad[N]` family,
+which is form-constrained to LEADING holes. s4 attacked (b) and the frame mechanics.
+
+H10 — "the pad/filler family is worth pursuing at all, i.e. some spelling of unwritten
+filler both reproduces the target frame AND lowers the honest floor."
+mechanism: engine/volatile_cheats.py strips unwritten pad locals before the sandbox scores,
+so a construct that only reserves frame bytes contributes no scorable instructions
+([[unannotated-fake-inflates-honest-floor]]).
+probe: built the pad in the spelling the stripper actually sees — a never-written
+`u16 rect0[4]` declared ahead of the real rect — read cc1's .frame line, then ran
+`sandbox func_8006DD94 --disable all`.
+result: KILLED (instance). cc1 prints `# vars= 64, regs= 7/0, args= 24` and puts the rect
+stores at sp+0x50..0x56, i.e. the frame is byte-exact — and the sandbox still reports 21.
+The engine strips the array. s3's "sandbox 0" was a false 0 produced only by hiding the
+filler inside a struct member, exactly as the Judge said. Banked
+rejected/two-rects-sandbox-strips-score21.c.
+kill_scope: instance. measured_on: HEAD chassis + the honest 0x2C-descriptor body
+(candidate.c) with one added never-written `u16 rect0[4]`; no FAKE construct present.
+
+H11 — "the descriptor type consumed by func_8007352C is genuinely larger than 0x2C bytes
+(0x34-0x38), which would place this function's rect at sp+0x50 with no added local — s3's
+axis (b), the first of the two honest axes the Judge left open."
+mechanism: a larger struct size feeds get_frame_size directly; the next declared local is
+laid out above it (tools/gcc-2.7.2/stmt.c:3392 assign_stack_temp, BLKmode 8-alignment at
+stmt.c:3419).
+probe: (i) read the COMPLETED-C byte-matching sibling func_8006BB68 — its accepted C
+declares `S69E18 s; u16 rect[4];` (src/text1b.c:5754-5806), its target frame is 0x68 = 104
+and it passes the rect as `addiu $a1,$sp,0x48` (asm/funcs/func_8006BB68.s, 8006BCD0), which
+forces vars = 56 = descriptor 0x2C + rect at 0x48; (ii) ran a 35-caller census over every
+asm/funcs/*.s that calls func_8007352C, mapping every sp-relative store and load to that
+function's own descriptor base (tmp/grind/func_8006DD94/s1/census.py).
+result: KILLED (instance). A 0x34+ descriptor would move func_8006BB68's rect to sp+0x50
+and break a function that byte-matches today, so the type is at most 0x30 bytes at a
+func_8007352C call site. The census independently finds no caller touching
+descriptor-relative 0x2C..0x2F anywhere; the halfword blocks that do appear at
+descriptor-relative 0x30+ are rect locals sitting in exactly BB68's slot. This closes the
+Judge's axis (b) with measurements instead of the earlier bare "census found none".
+kill_scope: instance. measured_on: HEAD chassis, target asm of func_8006BB68 + 35 callers
+of func_8007352C; no FAKE construct involved.
+
+H12 — "the 12-byte hole is a phantom frame slot: some ordinary expression in the body
+allocates a stack temp, and declaring `u16 rect[4]` in a trailing nested block (so its slot
+is handed out after that temp) puts the rect at sp+0x50 with no extra declaration at all."
+mechanism: GCC 2.7.2's C front end calls expand_decl at the point a declaration is parsed,
+so frame slots are handed out in source order interleaved with statement expansion; a temp
+created while expanding an earlier statement therefore precedes a later block's decl.
+[[phantom-frame-slots-gcc272]] names a minimal trigger (two HImode locals feeding
+`(aa & ~bb) & 1`) that reserved 8 bytes in tslLineG5Init.
+probe: six bodies through the project's own cpp|cc1, each reading cc1's `.frame` line and
+the emitted rect store offsets (tmp/grind/func_8006DD94/s1/frameprobe.py): rect in a
+trailing nested block alone; the same plus the memory note's HImode pair; plus a `long long`
+multiply; plus a `long long` divide; plus a soft-float `double` multiply; plus the HImode
+form assigned into a third s16.
+result: KILLED (instance). All six print `vars= 56` with the rect still at sp+0x48. Nesting
+the declaration changes nothing because none of these expressions leaves a surviving stack
+temp in this function — the phantom-slot trigger does not reproduce here. s3's H8 killed the
+scalar spellings declared at top level; this kills the nested-declaration and
+expression-temp variants too.
+kill_scope: instance. measured_on: HEAD chassis + the honest 0x2C-descriptor body; no FAKE
+construct present in any probe.
+
+H13 — "only a declaration that fails GCC 2.7.2's register-eligibility test can reserve any
+frame bytes, so the hole requires an aggregate or an address-taken object declared before
+the rect."
+mechanism: tools/gcc-2.7.2/stmt.c:3357-3364 gives an automatic a pseudo (zero frame
+footprint) unless it is BLKmode, volatile, or TREE_ADDRESSABLE; otherwise stmt.c:3392 calls
+assign_stack_temp, and stmt.c:3419 gives a BLKmode decl BIGGEST_ALIGNMENT — which is why an
+8-byte aggregate lands 8-aligned at descriptor-relative 0x30 and pushes the rect to 0x38 =
+sp+0x50.
+probe: five positive controls measured the same way — a USED `s32 t[2]`; an address-taken
+`s32 tv`; an unused `s32 dead[2]`; a `struct P2 {s32 a,b;}` passed by value; the never-written
+`u16 rect0[4]`.
+result: CONFIRMED. All five print `vars= 64` with the rect at sp+0x50; every probe that
+declared no such object stayed at 56. The rule is exact and now costs nothing to re-derive.
+
+## OPEN — the residual, stated as a closed dilemma, and where the next session should push
+
+Everything in the body except the frame is byte-exact and inherited (do NOT re-derive: the
+3-iteration loop, the u8 colour triple via the chained assignment, the s16 counter, the rect
+store order, the named `semi` local). The whole 21-insn residual is one 8-byte frame
+displacement, and H10-H13 pin it to a dilemma with no third horn found yet:
+
+  * the target reads and writes NOTHING in sp+0x44..0x4F (E2);
+  * only an aggregate / address-taken decl placed before the rect reserves those bytes (H13);
+  * such an object, if genuinely used, emits sp-relative traffic the target does not contain
+    (probes v4/t5/t7);
+  * such an object, if unused, is stripped by the sandbox and the honest floor stays 21 (H10).
+
+Priority for the next session, in order:
+
+1. **FORENSICS on the sibling family, not more spelling search.** func_8006F97C has the
+   IDENTICAL layout (0x2C descriptor at sp+0x18, nothing in sp+0x44..0x4F, rect at sp+0x50)
+   and func_800720FC uses BOTH the sp+0x48 and the sp+0x50 rect slots with the same
+   descriptor base (E4). Three more siblings show the same hole at other sizes
+   (func_80069F80 / func_8006A1A0 at 20 bytes, func_80070188 at 36). Recovering what those
+   functions declare — especially any sibling whose target genuinely WRITES into its hole —
+   is the only remaining source of evidence about the original declaration, and a single
+   find would convert the hole from "pad" to ordinary C for the whole family at once.
+2. **Re-read the pad-family question with H10 in hand.** The frozen first-decl
+   `volatile u32 pad[N]` family cannot produce an INTERIOR hole (the pad would land at
+   sp+0x18 and displace the descriptor), and the Judge has already refused an interior pad.
+   H10 now adds that it would not even lower the honest floor. Nobody should spend another
+   session on a pad spelling; if the family is revisited it must be as a policy question,
+   not a probe.
+3. **Do NOT resubmit either FAILed body.** Review verdicts are keyed by body: s2's trailing
+   -pad EnvB (layer-1 FAIL) and s3's merged S_6DD94 (Judge FINAL-CALL FAIL, banked at
+   rejected/merged-struct-judge-fail-0559.c) are both permanently closed. candidate.c is now
+   the honest score-21 body, which carries no pad, no dead local and no family claim.
+
+## [s1] An unwritten-filler local that reproduces the target's frame also lowers the honest sandbox floor for func_8006DD94.
+- mechanism: engine/volatile_cheats.py strips unwritten pad locals before the sandbox scores, so a declaration that only reserves frame bytes contributes no scorable instructions ([[unannotated-fake-inflates-honest-floor]]); the frame itself is set by mips.c compute_frame_size from get_frame_size().
+- probe: Built the filler in the spelling the stripper actually sees — a never-written `u16 rect0[4]` declared ahead of the real rect (tmp/grind/func_8006DD94/s1/v8_two_rects.c) — read cc1's .frame line via tmp/grind/func_8006DD94/s1/frameprobe.py, then ran `sandbox func_8006DD94 --disable all` with the body in src/text1b.c.
+- result: KILLED. cc1 printed `.frame $sp,120,$31 # vars= 64, regs= 7/0, args= 24, extra= 0` and put the rect stores at sp+0x50/0x52/0x54/0x56 — the target's exact frame — yet the sandbox still reported 21 (117/117, rules_dropped 0). The engine strips the array. This retroactively explains s3's sandbox 0: hiding the same filler inside struct members evaded the pad allowlist and produced a false 0, exactly as the Judge ruled on 2026-09-10 05:59. Banked memory/grind/func_8006DD94/rejected/two-rects-sandbox-strips-score21.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (INCLUDE_ASM, sandbox 117) + the honest 0x2C-descriptor body from memory/grind/func_8006DD94/candidate.c with one added never-written `u16 rect0[4]`; no FAKE construct present.
+
+## [s1] The descriptor type consumed by func_8007352C is genuinely larger than 0x2C bytes (0x34-0x38), which would place func_8006DD94's rect at sp+0x50 with no added local — s3's axis (b), the first of the two honest axes the Judge left open on 2026-09-10 05:59.
+- mechanism: A larger struct size feeds get_frame_size directly and the next declared local is laid out above it (tools/gcc-2.7.2/stmt.c:3392 assign_stack_temp; BLKmode decls get BIGGEST_ALIGNMENT at stmt.c:3419), so a 0x34-byte descriptor would push a following 8-byte rect from sp+0x48 to sp+0x50.
+- probe: (i) Read the COMPLETED-C byte-matching sibling func_8006BB68: its accepted C declares `S69E18 s; u16 rect[4];` (src/text1b.c:5754-5806), its target frame is 0x68 = 104 (asm/funcs/func_8006BB68.s prologue) and it passes the rect as `addiu $a1,$sp,0x48` (8006BCD0). (ii) Ran a 35-caller census over every asm/funcs/*.s that calls func_8007352C, mapping each function's sp-relative stores and loads onto its own `addiu $a0,$sp,N` descriptor base (tmp/grind/func_8006DD94/s1/census.py).
+- result: KILLED. func_8006BB68's frame forces vars = 104-24-24 = 56, i.e. descriptor 0x18..0x44 with the rect immediately after at 0x48; a 0x34+ descriptor would move that rect to sp+0x50 and break a function that byte-matches on main today. The census independently finds no caller anywhere touching descriptor-relative 0x2C..0x2F; the halfword blocks that do appear at descriptor-relative 0x30+ are rect locals sitting in exactly func_8006BB68's slot. The Judge's bare 'census found none' now has the numbers and a positive counter-witness attached.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis; target asm of func_8006BB68 plus the 35 asm/funcs callers of func_8007352C; no FAKE construct involved.
+
+## [s1] The 12-byte hole at sp+0x44..0x4F is a phantom frame slot: an expression already in the body allocates a stack temp, and declaring `u16 rect[4]` in a trailing nested block hands out its slot after that temp, putting the rect at sp+0x50.
+- mechanism: GCC 2.7.2's C front end calls expand_decl at the point a declaration is parsed, so frame slots are handed out in source order interleaved with statement expansion; a temp created while expanding an earlier statement therefore precedes a later block's declaration. [[phantom-frame-slots-gcc272]] names a minimal trigger (two HImode locals feeding `(aa & ~bb) & 1`) that reserved 8 bytes in tslLineG5Init.
+- probe: Six bodies through the project's own cpp|cc1 with engine.buildconfig flags, each reading cc1's .frame line and the emitted rect store offsets (tmp/grind/func_8006DD94/s1/frameprobe.py): rect in a trailing nested block alone (v1_innerblock); the same plus the memory note's HImode pair (v2_inner_himode, t4_himode); plus a long long multiply (v3_inner_ll); plus a long long divide (t2_lldiv); plus a soft-float double multiply (t1_double).
+- result: KILLED. All six print `vars= 56` with the rect still at sp+0x48. Nesting the declaration changes nothing because none of these expressions leaves a surviving stack temp in this function — the phantom-slot trigger does not reproduce in this context. s3's H8 had killed the scalar spellings declared at top level; this adds the nested-declaration and expression-temp variants.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis + the honest 0x2C-descriptor body (candidate.c); no FAKE construct present in any probe.
+
+## [s1] A declaration reserves frame bytes for func_8006DD94 only when it fails GCC 2.7.2's register-eligibility test, so moving the rect to sp+0x50 requires an aggregate or an address-taken object declared before it.
+- mechanism: tools/gcc-2.7.2/stmt.c:3357-3364 gives an automatic a pseudo (zero frame footprint) unless it is BLKmode, volatile or TREE_ADDRESSABLE; otherwise stmt.c:3392 calls assign_stack_temp and stmt.c:3419 gives a BLKmode decl BIGGEST_ALIGNMENT, so an 8-byte aggregate lands 8-aligned at descriptor-relative 0x30 and pushes the rect to 0x38 = sp+0x50.
+- probe: Five positive controls measured with the same frameprobe instrument: a genuinely USED `s32 t[2]` (v4_inner_plus_used_arr); an address-taken `s32 tv` with `&tv` passed to a call (t5_addrof); an unused `s32 dead[2]` (t6_deadarr); a `struct P2 {s32 a,b;}` passed by value (t7_structval); the never-written `u16 rect0[4]` (v8_two_rects).
+- result: CONFIRMED. All five print `vars= 64` with the rect at sp+0x50; every probe declaring no such object stayed at `vars= 56` / sp+0x48. Combined with the target reading and writing nothing in sp+0x44..0x4F, this closes the residual into a dilemma: a used object emits sp-relative traffic the target lacks (v4/t5/t7 all do), and an unused one is stripped by the sandbox and leaves the floor at 21.
+- verdict: CONFIRMED
