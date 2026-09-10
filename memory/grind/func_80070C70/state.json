@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -15,23 +15,29 @@
    "floor": 101,
    "modality": "structural",
    "headline": "Floor held at 101; quantified the loop.c gate that costs the 7th callee-saved register (threshold bracketed 26..29, insn 312 savings 1 lifetime 2) and PROVED that killing that hoist alone restores tar"
+  },
+  {
+   "session": 3,
+   "floor": 99,
+   "modality": "permuter",
+   "headline": "Floor 101 -> 99 and build_insns 193 -> 194 (= target's 194): declaring D_800A3590 as an array of a 2-byte record routes the read through expand_expr's COMPONENT_REF/get_inner_reference offset path, wh"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Dropping reg 126's m->lifetime from 2 to 1 makes loop.c:1631 reject the hoist outright, which the s2 measurements show is sufficient to restore the target's fused addressing and free the 7th callee-saved register.",
-   "mechanism": "threshold is at most 29 and insn_count is 50, so lifetime 1 loses the comparison by a wide margin (lifetime 2 gives 52..58, which wins). reg 126's life is exactly 2 because insn 315, the `ashift` by 1 that scales the index, is emitted between the symbol move at insn 312 and the address plus at insn 317; any shape where the scaled index is already in a pseudo when the address is expanded leaves 312 and 317 adjacent.",
-   "next_probe": "(a) Look for a second, earlier use of var_s0*2 or of the D_800A3590 element that the target's bytes also justify, so CSE has the scale in hand before the address is expanded. (b) Read tools/gcc-2.7.2/explow.c memory_address() and expand_expr's ARRAY_REF path end to end and identify which source shapes reach the reg-first PLUS that the scale-1 D_800A3560 access in this same loop already gets - that access is a working in-function control, so the fused form is demonstrably reachable for this compiler here. (c) If the answer requires a construct outside ordinary C, emit a ruling-request rather than spelling around it; do NOT re-try the seven spellings banked in rejected/."
+   "hypothesis": "Stopping loop.c strength_reduce from reducing the D_800A3590 address giv removes the fourth induction register, which is the entire 0x88-versus-0x80 frame delta and the base the five-seat callee-saved rotation sits on.",
+   "mechanism": "loop.c:3824 `v->lifetime * threshold * benefit < insn_count` with threshold 28..31 (loop.c:3241), insn_count 48 and lifetime 1 leaves exactly two terms C can move. (a) `bl->biv_count` for biv 75 (var_s0): at biv_count 2 the combined benefit falls from 4 to 2 and at biv_count 3 to 0, and biv_count counts the induction INCREMENT insns recorded for that biv register. (b) `benefit` itself, which general_induction_var fixes at 4 for a mult-2 DEST_ADDR giv (2 per rtx operation) -- only a scale-1 access earns the benefit-2 rejection that D_800A3560 already enjoys.",
+   "next_probe": "(a) Check whether any byte-faithful source shape gives var_s0 more than one increment site -- the two arms of the `code != 5 && code != 16` test are the obvious place, and duplicated-statement-into-arms is a sanctioned family if a plain form does not do it -- but FIRST read whether the target's single `addiu $s0,$s0,1` at 80070EC8 is even compatible with two source increments. (b) Ask whether the target's object model makes this access scale-1 rather than scale-2: D_800A3560 is a 3-byte-stride record array indexed by var_s0*3 in the same loop, so test whether D_800A3590's halfword is really a member of a parallel record whose stride the compiler sees as 1 element. Do NOT re-try the insn_count route -- it needs a loop 15+ RTL insns larger than ours and the target's is smaller."
   },
   {
-   "hypothesis": "The target's two differently-signed reads of D_800A3558 come from a u16-typed object rather than from casts on an s32 or s16 declaration.",
-   "mechanism": "GCC 2.7.2's convert_to_integer folds `(short)(unsigned short)x` to `(short)x`, which is why the cast route measured neutral. An object whose declared type is u16 gives a genuine HImode zero-extending load that must then be sign-extended, producing target's lhu + sll 16 + sra 16, while a separately spelled signed read gives the lh that feeds the loop bound.",
-   "next_probe": "Measure `extern u16 D_800A3558;` with the body spelled `(s16)D_800A3558` and the loop bound spelled to keep a signed halfword load; check the objdump for `lhu` plus `sra`. This is a 2-3 insn shape issue that will stay invisible in the score while the register rotation saturates it, so read the objdump, not the score. Do it after F1, since F1 changes the allocation the score is made of."
+   "hypothesis": "D_800A3590's real record type is recoverable from its other consumers, replacing the codegen-motivated `struct RecC70 { s16 v; }` that currently blocks submission.",
+   "mechanism": "The 2-byte stride is proven by the target's own addressing, but a one-member struct (and the equally contrived `extern s16 D_800A3590[][1];`, which measures the same 99) is a spelling of that stride, not evidence for it. The symbol's other consumers write and read the fields this function leaves alone, and their asm names the real offsets and widths -- the same method that resolved D_800A3560's array shape in s1.",
+   "next_probe": "Read the `%hi/%lo(D_800A3590)` and base-register accesses in func_8006F100, func_80070188 and func_80070F78 (all still INCLUDE_ASM) and the declaration at src/text1b_b.c:271, build the true field list, and re-measure with the real type in place. Keep the census row's `alias of g_replay_motion_shared_state_d+6` suffix per the brief's DATA MODEL block (prong (c) amendment 2026-09-03). If the consumers show a bare halfword array with no record structure, emit a ruling-request naming the family before any submission rather than shipping the one-member struct."
   },
   {
-   "hypothesis": "IconC70's real tail layout (bytes 0x8..0x20) is recoverable from func_80069898's other callers, replacing the placeholder that blocks submission.",
-   "mechanism": "The 0x20 size is proven by frame arithmetic, but candidate.c spells the tail as `s16 sp50[12]`, which is a placeholder rather than evidence and would not survive review. func_80069898's other callers write the fields this function leaves alone, and their asm names the real offsets and widths.",
-   "next_probe": "Read the $a1-relative stores in func_8006B120, func_8006CFBC, func_800720FC, func_80074488 and func_8006F97C, build the true field list, replace the placeholder, re-measure, and propagate the corrected type to the func_8006F97C and func_800720FC ledgers - both are active queue siblings in the same TU."
+   "hypothesis": "IconC70's real tail layout (bytes 0x8..0x20) is recoverable from func_80069898's other callers, replacing the `s16 sp50[12]` placeholder that also blocks submission.",
+   "mechanism": "The 0x20 size is proven by s1's frame arithmetic (target frame 0x80 = 0x18 outgoing args + 0x50 locals + 0x18 six callee-saved slots, with prim at 0x18 and icon at 0x48), but candidate.c spells the tail as a placeholder rather than as evidence. func_80069898 itself reads only offsets 0x0/0x2/0x4/0x6 of its $a1 argument, so the tail is written by its other callers.",
+   "next_probe": "Read the $a1-relative stores in func_8006B120, func_8006CFBC, func_800720FC, func_80074488 and func_8006F97C, build the true field list, replace the placeholder, re-measure, and propagate the corrected type to the func_8006F97C and func_800720FC ledgers -- both are active queue siblings in the same TU. Carried unchanged from s1 and s2; untouched in s3."
   }
  ],
  "judge_constraints": [],
@@ -76,11 +82,36 @@
    "measured_on": "floor-101 chassis (s1 candidate.c body + both array declarations + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10",
    "predicate_cite": "",
    "result": "101 -> 101, and the body still emits a single `lh $a1,%gp_rel(D_800A3558)`; no `lhu` and no `sra` anywhere in the functi"
+  },
+  {
+   "session": 3,
+   "statement": "Re-declaring D_800A3558 as u16 (with the loop bound cast or uncast) or as s16 reproduces the target's paired `lhu` + `sll 16` + `sra 16` body read and `lh` bound read.",
+   "kill_scope": "instance",
+   "measured_on": "floor-99 chassis (s3 candidate.c body + `extern u8 D_800A3560[];` + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, `sandbox --disable all`",
+   "predicate_cite": "",
+   "result": "All three measure 99, byte-neutral against the `extern s32 D_800A3558;` the chassis carries. Banked as memory/grind/func"
+  },
+  {
+   "session": 3,
+   "statement": "A loop-body statement restatement or an alternative record spelling moves the score off 99 on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "floor-99 chassis (s3 candidate.c body + `extern u8 D_800A3560[];` + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, `sandbox --disable all`",
+   "predicate_cite": "",
+   "result": "All six measure 99 (the t-dropping variant emits 195 insns instead of 194 and still scores 99). Banked as memory/grind/f"
+  },
+  {
+   "session": 3,
+   "statement": "A permuter campaign on this function's chassis produces a usable spelling proposal for the remaining residual.",
+   "kill_scope": "instance",
+   "measured_on": "floor-101 chassis (campaign A) and floor-99 chassis (campaign B), both with default permuter weights including perm_inline, --stack-diffs on by default, 8 jobs, 44,170 iterations combined, no FAKE con",
+   "predicate_cite": "",
+   "result": "Neither campaign yielded a usable proposal. Campaign A's best find (output-4198-1) lifts `new_var = prim.p_geom;` ACROSS"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T14:58:44.782596+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }

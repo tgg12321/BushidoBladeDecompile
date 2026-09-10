@@ -231,3 +231,146 @@ func_800720FC, func_80074488, func_8006F97C) before any submission. Untouched th
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-101 chassis (s1 candidate.c body + both array declarations + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+---
+
+# Session 3 (permuter, 2026-09-10) — floor 101 -> 99
+
+## CONFIRMED
+
+### H6 — a scale-2 array read reaches target's fused `lui %hi / addu / lh %lo` only through the COMPONENT_REF offset path
+**Mechanism:** `D_800A3590[var_s0]` on a plain `extern s16 D_800A3590[]` is an ARRAY_REF with a
+nonconstant index, which expand_expr (expr.c:4589) rewrites into `*(&array + index*2)`; the address
+rtx is `(plus (mult (reg) 2) (symbol_ref))`. MIPS GO_IF_LEGITIMATE_ADDRESS
+(config/mips/mips.h) accepts a PLUS only with a REG on one side, and swaps operands only when
+`code0 != REG && code1 == REG`, so a MULT + SYMBOL_REF pair is rejected. memory_address
+(explow.c:385) then break_out_memory_refs's the SYMBOL_REF into a pseudo and force_operand emits
+the scale after it — the exact 312 / 315 / 317 triple s2 read out of text1b.cse, and the reason the
+symbol pseudo had lifetime 2. Spelling the read as a record member (`D_800A3590[var_s0].v`) makes
+it a COMPONENT_REF, so expand_expr takes the get_inner_reference path, expands the byte offset
+FIRST as an ordinary insn (`expand_expr (offset, NULL_RTX, VOIDmode, 0)`), force_reg's it, and
+forms `(plus (symbol_ref) (reg))` — which IS legitimate on MIPS. No symbol pseudo, no movable, no
+hoist.
+**Probe:** declared `typedef struct RecC70 { s16 v; } RecC70; extern RecC70 D_800A3590[];` at both
+declaration sites and read `D_800A3590[var_s0].v`; measured `sandbox --disable all`; re-ran
+`pwsh tools/grinder/dump.ps1 func_80070C70` and re-read text1b.loop; checked relocations with
+`mipsel-linux-gnu-objdump -dr`.
+**Result:** 101 -> 99, and build_insns 193 -> 194, i.e. the emitted instruction COUNT now equals
+target's 194. `Insn 312: regno 126 (life 2) ... moved to 486` is gone from the loop dump and the
+object carries exactly one HI16/LO16 pair for D_800A3590. `extern s16 D_800A3590[][1];` read as
+`D_800A3590[var_s0][0]` measures identically 99, and `s16 v[1]` as the record member also measures
+99 — the win is owned by the access PATH, not by the record spelling. CONFIRMED.
+
+### H7 — at floor 99 the residual owner is loop.c strength_reduce, not move_movables
+**Mechanism:** the gate is loop.c:3824 `v->lifetime * threshold * benefit < insn_count`, with
+`threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)` (loop.c:3241 — NOT the
+`(1 + n_non_fixed_regs)` of loop.c:532 that s2 bracketed) and `benefit` reduced by
+`add_cost * bl->biv_count` (add_cost = 2, loop.c:307). s2's 26..29 bracket pins n_non_fixed_regs to
+25..28, so this threshold is 28..31.
+**Probe:** read the new "Loop from 284 to 415: 48 real insns" section of text1b.loop.
+**Result:** the scale-1 D_800A3560 address giv at insn 291 is rejected exactly as in target
+("giv of insn 291 not worth while, 0 vs 48" — benefit 2 - 2*1 = 0). The scale-2 D_800A3590 address
+giv at insn 319 (benefit 4) is COMBINED with the standalone scale giv at insn 313 (benefit 2) and
+reduced to reg 159, producing a fourth induction register (`move s3,zero` / `addiu s3,s3,2`) that
+target does not spend — target recomputes `sll $a0, $s0, 1` in-loop at 80070E3C. Arithmetic:
+combined 6-2 = 4, product 112..124 vs insn_count 48 → reduced; and even if the combine were
+prevented, 4-2 = 2 gives 56..62 vs 48 → still reduced. CONFIRMED.
+
+## KILLED
+
+### K4 — a u16 (or s16) declaration of D_800A3558 produces target's `lhu`+sign-extend / `lh` pair
+**Probe:** three spellings on the floor-99 chassis (tmp/grind/func_80070C70/s3/probe2.py):
+`extern u16 D_800A3558;` with the bound `(s32)(D_800A35B0 + ((s16)D_800A3558 + 1))` and body
+`(D_800A35B0 + (s16)D_800A3558)`; the same with an uncast bound; and `extern s16 D_800A3558;` with
+the body `(D_800A35B0 + (s16)(u16)D_800A3558)`.
+**Result:** all three measure 99, byte-neutral against the `extern s32` declaration the chassis
+carries. Together with s2's K1 (the cast route) this closes the declaration-retyping avenue for
+that pair on this chassis. KILLED (instance).
+**kill_scope:** instance
+**measured_on:** floor-99 chassis (s3 candidate.c body + `extern u8 D_800A3560[];` + the RecC70
+record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present,
+`sandbox --disable all`, 2026-09-10
+
+### K5 — a loop-body statement restatement moves the score at floor 99
+**Probe:** six variants (tmp/grind/func_80070C70/s3/probe3.py): dropping the `s32 t` intermediate
+and restating both p_static stores from prim.p_geom; two orderings of the three increments;
+`s16 v[1]` as the record member read `.v[0]`; `extern s16 D_800A3590[][1];` read `[var_s0][0]`; and
+an explicit `(s32)` on the record read before the `<< 4`.
+**Result:** all six measure 99 (the `t`-dropping variant emits 195 insns instead of 194 and still
+scores 99). This re-confirms at floor 99 what s1 found at 108 — the score is saturated by the
+callee-saved seat rotation plus the extra reduced-giv register, so arithmetic-level spelling reads
+0. KILLED (instance).
+**kill_scope:** instance
+**measured_on:** floor-99 chassis as above, no FAKE constructs present, `sandbox --disable all`,
+2026-09-10
+
+## OPEN FRONTIER (supersedes s2's F1 — F1 is ANSWERED and spent; F2 is now K4)
+
+### F1' — stop loop.c from reducing the D_800A3590 address giv (the last induction register)
+This is the direct successor of s2's F1 and the one thing standing between 99 and the target's
+register file. The gate arithmetic (H7) leaves exactly two terms C can touch:
+(a) `bl->biv_count` for biv 75 (var_s0): at biv_count 2 the combined benefit falls from 4 to 2 and
+    at biv_count 3 to 0. biv_count is the number of induction INCREMENT insns recorded for the biv
+    register, so the question is whether any byte-faithful source shape gives var_s0 more than one
+    increment site (the two arms of the `code != 5 && code != 16` test are the obvious place to
+    look, and duplicated-statement-into-arms is a sanctioned family if a plain form does not do it
+    — but check first whether target's single `addiu $s0,$s0,1` at 80070EC8 is even compatible
+    with two source increments).
+(b) `benefit` itself, which general_induction_var fixes at 4 for a mult-2 DEST_ADDR giv (2 per rtx
+    operation). Only a scale-1 access gets benefit 2 and hence the rejection D_800A3560 enjoys.
+    Ask whether the target's object model actually makes this access scale-1 — e.g. whether the
+    2-byte record is really an element of the SAME 3-byte-stride record array as D_800A3560, read
+    through a different member — before assuming the mult-2 shape is forced.
+Do NOT re-try the insn_count route: H7 shows it needs a loop 15+ RTL insns larger than ours and
+target's loop is smaller.
+
+### F2' — recover D_800A3590's REAL record type (this is what blocks submission, not the floor)
+The 2-byte stride is proven by the target's bytes, but `struct RecC70 { s16 v; }` is a
+codegen-motivated spelling of that stride, not recovered evidence, and a reviewer will fairly ask
+why a one-member struct exists (the `[][1]` array form is equally contrived and measures the same).
+The symbol's other consumers are func_8006F100, func_80070188 and func_80070F78 (all still
+INCLUDE_ASM) plus src/text1b_b.c:271; their `%hi/%lo(D_800A3590)` and base-register accesses name
+the real offsets and widths. Per the brief's DATA MODEL block the census row must keep its
+`alias of g_replay_motion_shared_state_d+6` suffix. If those consumers show a wider record with the
+halfword at offset 0, the declaration becomes evidence-backed and the construct question closes;
+if they show a bare halfword array, this needs a ruling-request before any submission.
+
+### F3 — IconC70's real tail layout (carried forward unchanged from s1/s2)
+`s16 sp50[12]` is still a placeholder. Recover from func_80069898's other callers
+(func_8006B120, func_8006CFBC, func_800720FC, func_80074488, func_8006F97C). Untouched in s3.
+
+## [s3] A scale-2 array read reaches the target's fused `lui %hi / addu / lh %lo` addressing when the reference is spelled as a COMPONENT_REF (a record member, or a nested ARRAY_REF with a constant inner index) instead of a bare ARRAY_REF with a nonconstant index.
+- mechanism: `D_800A3590[var_s0]` on a plain `extern s16 D_800A3590[]` is an ARRAY_REF with a nonconstant index; expand_expr (tools/gcc-2.7.2/expr.c:4589) rewrites it into `*(&array + index*2)`, so the address rtx is `(plus (mult (reg) (const_int 2)) (symbol_ref))`. MIPS GO_IF_LEGITIMATE_ADDRESS (tools/gcc-2.7.2/config/mips/mips.h) accepts a PLUS only with a REG on one side and a CONST_INT or CONSTANT_ADDRESS_P term on the other, and swaps operands only under `code0 != REG && code1 == REG`; a MULT plus a SYMBOL_REF matches neither, so the address is rejected. memory_address (tools/gcc-2.7.2/explow.c:385) then runs break_out_memory_refs, which force_reg's the SYMBOL_REF into a pseudo, and force_operand emits the index scale after it -- exactly s2's insn 312 / 315 / 317 triple, and the reason the symbol pseudo's LOOP_REG_LIFETIME was 2 and loop.c:1631 hoisted it. Spelling the read as `D_800A3590[var_s0].v` makes it a COMPONENT_REF, so expand_expr takes the get_inner_reference path: the byte offset is folded into an `offset` tree, expanded FIRST as an ordinary insn via `expand_expr (offset, NULL_RTX, VOIDmode, 0)`, force_reg'd, and combined as `(plus (symbol_ref) (reg))`, which IS legitimate on MIPS (the macro's swap branch fires). No symbol pseudo is created, so there is no loop-invariant movable to hoist.
+- probe: Declared `typedef struct RecC70 { s16 v; } RecC70; extern RecC70 D_800A3590[];` at both declaration sites in src/text1b.c (l.2129, l.6500) and read `D_800A3590[var_s0].v`; measured `& tools/wteng.ps1 main sandbox func_80070C70 --disable all`; re-ran `pwsh tools/grinder/dump.ps1 func_80070C70` and re-read the `Loop from 284 to 415` section of tmp/grind/func_80070C70/dumps/text1b.loop; checked relocations with `mipsel-linux-gnu-objdump -dr` on tmp/sandbox/func_80070C70/text1b.o.
+- result: score 101 -> 99, target_insns 194, build_insns 193 -> 194 -- the emitted instruction COUNT now equals the target's exactly. The dump line `Insn 312: regno 126 (life 2), move-insn savings 1  moved to 486` is gone, and the object now carries exactly one R_MIPS_HI16 / R_MIPS_LO16 pair for D_800A3590 instead of a preheader `la` plus the in-loop pair. Two other spellings that reach the same path measure identically 99 (`extern s16 D_800A3590[][1];` read `D_800A3590[var_s0][0]`, and a record member declared `s16 v[1]` read `.v[0]`), so the win belongs to the access PATH and not to the particular record spelling. This also explains s1's unexplained asymmetry: D_800A3560 has element size 1, its offset is a bare pseudo, the PLUS comes out REG-plus-SYMBOL and is accepted directly, which is why that access matched target from the start.
+- verdict: CONFIRMED
+
+## [s3] At floor 99 the remaining extra callee-saved register is created by loop.c strength_reduce, which combines the standalone index-scale giv at insn 313 with the D_800A3590 address giv at insn 319 and reduces them into a fourth induction register, while the scale-1 D_800A3560 address giv at insn 291 is rejected exactly as the target's bytes require.
+- mechanism: The gate is tools/gcc-2.7.2/loop.c:3824, `v->lifetime * threshold * benefit < insn_count` marks a giv not worth while, where threshold is `(loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)` at loop.c:3241 -- a DIFFERENT constant from move_movables' `(1 + n_non_fixed_regs)` at loop.c:532 that s2 bracketed to 26..29 -- and benefit is the recorded benefit minus `add_cost * bl->biv_count` with add_cost = rtx_cost of a reg+reg PLUS = 2 (loop.c:307). The loop calls func_8007352C so the loop_has_call multiplier is 1; s2's bracket pins n_non_fixed_regs to 25..28 and hence this threshold to 28..31. With insn_count 48 and lifetime 1: insn 291 has benefit 2 - 2 = 0, product 0 < 48, rejected (the dump prints exactly `giv of insn 291 not worth while, 0 vs 48`); the combined 313+319 pair has benefit 6 - 2 = 4, product 112..124 >= 48, reduced.
+- probe: Read the regenerated `Loop from 284 to 415: 48 real insns` section of tmp/grind/func_80070C70/dumps/text1b.loop (saved as tmp/grind/func_80070C70/s3/loop_decisions_at_99.txt) against the emitted object, and read the two threshold/benefit sites in tools/gcc-2.7.2/loop.c.
+- result: The dump reads `Insn 313: giv reg 127 src reg 75 benefit 2 ... mult 2 add 0`, `Insn 319: dest address src reg 75 benefit 4 ... mult 2 add (symbol_ref "D_800A3590")`, `giv at 319 combined with giv at 313`, `giv at 313 reduced to (reg:SI 159)`. The reduced giv is emitted as `move s3,zero` plus `addiu s3,s3,2`; the target instead recomputes `sll $a0, $s0, 1` inside the loop at 80070E3C (in the delay slot of the first beq). That single register is the whole 0x88-versus-0x80 frame delta and the five-seat callee-saved rotation rides on top of it. The insn_count route is closed by the same arithmetic: even with the combine prevented, benefit 4 - 2 = 2 gives 56..62 against insn_count 48, so rejection would need a loop 15+ RTL insns larger than ours and the target's loop is smaller than ours.
+- verdict: CONFIRMED
+
+## [s3] Re-declaring D_800A3558 as u16 (with the loop bound cast or uncast) or as s16 reproduces the target's paired `lhu` + `sll 16` + `sra 16` body read and `lh` bound read.
+- mechanism: s2's K1 showed GCC 2.7.2's convert_to_integer folds `(short)(unsigned short)x` to `(short)x`, so the cast route cannot split the two loads; the remaining candidate was that the symbol is a genuine u16 OBJECT, which would give a zero-extending HImode load that must then be sign-extended for the body while a separately spelled signed read supplies the bound.
+- probe: Three spellings measured on the floor-99 chassis via tmp/grind/func_80070C70/s3/probe2.py: `extern u16 D_800A3558;` with bound `(s32)(D_800A35B0 + ((s16)D_800A3558 + 1))` and body `(D_800A35B0 + (s16)D_800A3558)`; the same with the bound spelled `(s32)(D_800A35B0 + (D_800A3558 + 1))`; and `extern s16 D_800A3558;` with body `(D_800A35B0 + (s16)(u16)D_800A3558)`.
+- result: All three measure 99, byte-neutral against the `extern s32 D_800A3558;` the chassis carries. Banked as memory/grind/func_80070C70/rejected/u16-decl-D_800A3558-lhu-lh-pair.c. Together with s2's K1 this spends the declaration-retyping avenue for that 2-3 insn pair on this chassis; it stays invisible in the score while the allocation residual saturates it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-99 chassis (s3 candidate.c body + `extern u8 D_800A3560[];` + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, `sandbox --disable all`, 2026-09-10
+
+## [s3] A loop-body statement restatement or an alternative record spelling moves the score off 99 on this chassis.
+- mechanism: s1 measured at floor 108 that the score is saturated by the callee-saved seat rotation, so arithmetic-level probes read 0; the question was whether the s3 declaration win changed that, and whether the two contrived record spellings differ from each other.
+- probe: Six variants measured via tmp/grind/func_80070C70/s3/probe3.py: dropping the `s32 t` intermediate and restating both p_static stores from prim.p_geom; var_s0's increment moved ahead of var_s3's; var_s0's increment moved after ctx_or_var_s2's; the record member declared `s16 v[1]` read `.v[0]`; `extern s16 D_800A3590[][1];` read `D_800A3590[var_s0][0]`; and an explicit `(s32)` on the record read before the `<< 4`.
+- result: All six measure 99 (the t-dropping variant emits 195 insns instead of 194 and still scores 99). Banked as memory/grind/func_80070C70/rejected/loop-body-restatements-at-99.c. Two consequences: the saturation finding still holds at 99, so the next session should attack the allocation and not the arithmetic; and the two contrived declarations of D_800A3590 are interchangeable, which is why the record-type question (frontier F2') is an evidence question rather than a codegen one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-99 chassis (s3 candidate.c body + `extern u8 D_800A3560[];` + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, `sandbox --disable all`, 2026-09-10
+
+## [s3] A permuter campaign on this function's chassis produces a usable spelling proposal for the remaining residual.
+- mechanism: Mandated modality. Two campaigns were run through tools/permuter_campaign.py with telemetry, the second re-seeded on the improved chassis per the 2026-09-01 chassis rule.
+- probe: Campaign A on the floor-101 chassis (label s3-floor101-chassis): base permuter score 5083, 12,658 iterations, 562 outputs, best 4198. Campaign B re-seeded on the floor-99 chassis (label s3-floor99-componentref-chassis): base permuter score 4778, 31,512 iterations, 1,241 new outputs, best 3498. Both harvested with --stop; workspace tmp/perm_70c70, logs copied to tmp/grind/func_80070C70/s3/campaign_b.log.
+- result: Neither campaign yielded a usable proposal. Campaign A's best find (output-4198-1) lifts `new_var = prim.p_geom;` ACROSS a later reassignment of prim.p_geom, so it captures *(ctx+4) and then uses it where the source needs *(ctx) -- semantically wrong, a scorer artifact rather than a proposal, recorded so no later session re-chases it. Campaign B's best find (output-3498-1) reaches its score entirely by introducing the permuter's synthetic `inline_fn` / `inline_fn2` helper functions, which fails the human-programmer test outright and is not a decomp form. The useful positive datum is that the base permuter score fell 5083 -> 4778 across the declaration change, i.e. the s3 win registers in the permuter metric too. Recommendation for any future campaign on this function: set `perm_inline = 0.0` in settings.toml's weight_overrides (as tools/mar_perm_workspace.sh does), because otherwise perm_inline dominates the output stream with unusable finds.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-101 chassis (campaign A) and floor-99 chassis (campaign B), both with default permuter weights including perm_inline, --stack-diffs on by default, 8 jobs, 44,170 iterations combined, no FAKE constructs present, 2026-09-10

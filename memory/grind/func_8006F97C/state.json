@@ -47,6 +47,14 @@
    "at": "2026-09-10T13:47:21.327308+00:00",
    "headline": "func_8006DD94 COMPLETED-C",
    "consumed": null
+  },
+  {
+   "from": "func_80070C70",
+   "floor": 99,
+   "session": 3,
+   "at": "2026-09-10T16:00:42.521686+00:00",
+   "headline": "Floor 101 -> 99 and build_insns 193 -> 194 (= target's 194): declaring D_800A3590 as an array of a 2-byte record routes the read through expand_expr's COMPONENT_REF/get_inner_reference offset path, wh",
+   "consumed": null
   }
  ]
 }
