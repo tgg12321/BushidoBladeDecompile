@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 31,
    "modality": "synthesis",
    "headline": "Seat question re-framed from the target's own asm: the TARGET compiles with the same weighted reg_n_refs we do (src 32 / dst 26), so the banked 'refs move on pseudo 109' framing is not how the origina"
+  },
+  {
+   "session": 7,
+   "floor": 31,
+   "modality": "solver",
+   "headline": "Solver: the residual is FOUR pseudos (src/dst AND j/complement) and the two pairs are independent 1-atom sub-problems; the j/complement half needs j's live_length to merely TIE complement's (52, not 4"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The refs_up atom on dst (26 -> 32) can be bought without losing the 173rd instruction if the duplicated statement lands in arms whose TAILS are not byte-identical, so jump2 has nothing to cross-jump.",
-   "mechanism": "inverse.py's own catalog names duplicated-statement-into-arms (SANCTIONED, .claude/rules/duplicated-statement-into-arms.md, FAKE-annotated) as the byte-free reg_n_refs lift for exactly this global-RA priority wall. Every dose measured so far (s3 d2/d3/d5/d6, s6 k8) duplicates the dst increment into an arm whose tail then matches the colour arm's `sh / addiu a2 / j loop_check / addiu a3` exactly, and jump2's cross_jump merges it. A duplication placed BEFORE the store, or into arms that jump to different labels, gives jump2 no common suffix.",
-   "next_probe": "On the k1 chassis, enumerate duplications that raise dst's weighted refs by 6 while leaving the four arm tails pairwise distinct: (i) duplicate the dst store (not the increment) into the blend main path and the colour arm with different following labels; (ii) put the extra dst reference before the `sh` rather than after it; (iii) split `advance_dst: dst++;` so the two zero arms reach it through different labels. Gate every form on `build_insns == 173` FIRST - a 172-insn result is the same dead end as k8 and needs no further analysis - then read the seat with tools/ra_solver simulate --trace. Only if a 173-insn form with dst refs >= 32 exists is the FAKE paperwork (scope sentence quoted from the rule, SOTN precedent, exhaustion ledger) worth writing."
+   "hypothesis": "j's live_length reaches 52 - the exact tie that hands it $t4 - if the first-pass scheduler emits loop.c's hoisted `complement` subu BEFORE `j = 0` in the inner-loop preheader, since both are independent insns in the same basic block and flow's life analysis runs after that scheduling pass.",
+   "mechanism": "On the q_j_late chassis j is live 53 and complement 52, and the whole difference is one preheader insn: `move $t5,zero` then `subu $t4,$s8,$t3`. sched.c's list scheduler orders that block by INSN_PRIORITY, and the subu feeds three mults (a long critical path) while the li feeds only the latch addiu - so the ordering is a scheduler question, not a spelling one, and it is exactly the layer tools/sched_solver models order- and clock-exactly.",
+   "next_probe": "Apply q_j_late, run tools/sched_solver on the inner-loop preheader block with --target pinned to the target head, and use inverse_sched.py to get ranked C-lever vectors for the (move, subu) pair specifically. Verify any candidate with tmp/grind/func_8003DE14/s7/models.py: the read-out is j livelen == 52 and 115 -> $t4, NOT the score (q_j_late itself scores 44, one worse than k1, while being one insn from the pair)."
   },
   {
-   "hypothesis": "The mirror atom - src 32 -> 26 weighted refs - is buyable by removing exactly one `addiu a3,a3,2` from the inner loop while keeping 173 instructions, if the removal leaves the remaining arms' `j`s with delay-slot fillers.",
-   "mechanism": "s4 killed the two natural hoists (g1 = 61 / 162, g2 = 48 / 166) because moving the read and/or all four increments to the top of the do-body leaves reorg.c nothing to fill three `j` delay slots with, losing 7-11 instructions. That is an argument against hoisting ALL of them, not against removing ONE. Removing one increment is -2 RTL refs at depth 3 = -6 weighted, which is exactly the atom.",
-   "next_probe": "On the k1 chassis, measure forms that share ONE `src++` between exactly two arms while the other two keep their own: (i) `advance_dst: dst++; src++;` with the colour arm and the blend main path keeping their own increments; (ii) the last-frame branch's two arms sharing a single `u16 pixel = *src++;` while the blend branch keeps its two. Check `build_insns` before anything else; if a form holds 173, extract the model and check refs on pseudo 108 and the seat."
+   "hypothesis": "The cursor seat is reachable with src refs 32 -> 26 rather than dst 26 -> 32, if a C shape exists whose pre-RA RTL holds three `src++` statements while reorg.c's delay-slot fills restore the fourth `addiu $a3` - giving the target's 173 instructions with a lower reference count and no duplicated-statement construct.",
+   "mechanism": "reg_n_refs is counted by flow.c pre-RA; reorg.c runs post-allocation, so a fill that COPIES the branch target's first insn adds an uncounted instruction (the opposite sign to jump2's cross-jump, which is what costs k8 its 173rd insn). cursor_thresh.py measures that src refs 26 alone flips the pair, since floor_log2(26)*26/59 falls below dst's 104/58.",
+   "next_probe": "On the k1 chassis, spell forms where the three non-blend arms reach a shared `advance_src: src++;` tail through distinct continuations (the blend arm keeps its own inline increment), and forms where the shared tail's first insn is the increment so reorg can steal it into each `j`'s slot. Gate on build_insns == 173 FIRST, then read refs on pseudo 108 with models.py - the target is refs 26, not the seat directly."
   },
   {
-   "hypothesis": "The blend arm's emission order - now the largest single block in the h1/k1 residual - is a first-pass sched.c ordering, not a spelling, and is separable from the seat.",
-   "mechanism": "The target emits all six mult/mflo pairs and both channel adds before it starts the OR chain (8003DF8C-8003E020); our builds interleave an `or` after each channel. sched.c's list scheduler runs before local/global allocation, so this ordering is also an input to the allocation that produces the seat - which is why k1's extra named intermediate moved the seat at all. s5 exhausted the naming/declaration-order/operand-order axes on this block, so more spellings are not the tool.",
-   "next_probe": "Run tools/sched_solver on the k1 chassis against the target's blend-arm order (it is order- and clock-exact and reproduces both scheduler passes), and use inverse_sched.py to get ranked C-lever vectors for the specific insn pairs that differ. Treat any verdict as a hypothesis until a spelled C form measures; the point of the run is to say whether the ordering is REACHABLE at all before another session spends itself on it."
+   "hypothesis": "The two residual pairs being independent means a 173-insn chassis that fixes ONLY the j/complement pair is worth banking even though it scores worse, because the cursor atom composes onto it unchanged.",
+   "mechanism": "inverse.py's 72 minimal vectors are all products of one atom from each pair, so no cursor lever interacts with the j/complement lever. Score is not monotone in distance-to-target on this function (the s3 lesson, repeated by k1 at 43 vs h1 at 42 with k1 strictly closer), so the read-out for a j/complement chassis is the disposition 115 -> $t4, not the sandbox number.",
+   "next_probe": "If the sched_solver route lands j at $t4 with 173 insns, bank it as chassis_<name>_t4t5_fixed.c alongside k1 regardless of score, then re-run inverse.py on ITS model with the cursor-only goal to confirm the remaining atom is still refs_down 108 / refs_up 109 and nothing new appeared."
   }
  ],
  "judge_constraints": [],
@@ -228,6 +234,30 @@
    "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), 24 bodies tmp/grind/func_8003DE14/s6/body_m_*.c, no FAKE constructs",
    "predicate_cite": "",
    "result": "Every one of the 24 scores 43 - identical to k1 itself, and to each other. Both cursors are born one instruction apart a"
+  },
+  {
+   "session": 7,
+   "statement": "Moving j's birth later drives its live_length from 57 to 53 and stops there: all six forms that additionally move src, dst and/or factor into the `if (total > 0)` guard ahead of j measure j livelen 53",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), k1 chassis (43 / 173 insns), forms tmp/grind/func_8003DE14/s7/q_j_late.c and r1_sd_in.c .. r6_s_in.c, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "q_j_late: j livelen 53 pri 6226 vs complement 52 pri 6346, score 44/173. All six r-forms: j livelen 53 regardless of wha"
+  },
+  {
+   "session": 7,
+   "statement": "Writing `complement` in the outer body ahead of `j = 0` (the live_extend 116 atom) leaves the emitted $t4/$t5 pair byte-identical to k1's and costs the `count - 1` inline property.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), forms tmp/grind/func_8003DE14/s7/u1_c_before_j.c .. u4_fc_then_j.c, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "All four score 65 / 173 (k1 is 43). The side-by-side names the cause at stream position 48: target `li s8,4096` vs ours "
+  },
+  {
+   "session": 7,
+   "statement": "Changing only the cursors' live lengths did not reach the target seat on the k1 chassis: the measured thresholds are dst 58 -> 38 or src 59 -> 90, while both cursors are live across the whole inner lo",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), model tmp/grind/func_8003DE14/s6/k1.model.json, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "dst livelen 38 -> 108=$a3 109=$a2 (first hit descending from 58); src livelen 90 -> 108=$a3 109=$a2 (first hit ascending"
   }
  ],
  "ladder_skip": 0,

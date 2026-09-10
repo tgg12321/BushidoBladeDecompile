@@ -888,3 +888,45 @@ concrete exhaustion argument for it.
 - [s6] [s6] Tooling: tmp/grind/func_8003DE14/s6/sweep.ps1 is a repo-pinned wrapper around tools/sweep_variants.py (the worktree contamination guard blocks the unpinned Bash form; the wrapper hardcodes the main repo's absolute WSL path, which is the same guarantee wteng.ps1 gives engine calls). tmp/grind/func_8003DE14/s6/mkvars.py and mkdecl.py generate the blend-shape and declaration-order variant families off a banked chassis body.
 
 - [s6] [s6] src/code6cac_c2.c was restored to its committed INCLUDE_ASM state before the session ended; the only tracked changes are the ledger files under memory/grind/func_8003DE14/.
+
+- [s7] The residual is FOUR pseudos, not two. `goal_from_tgt.py classify code6cac_c2 func_8003DE14` (the object-level path; the text-stream classifier refuses on a zero-rule function) types the whole gap as FIRST DIVERGENCE: RA with ours 173 / target 173 insns, and `goal_from_tgt.py goal --model .../k1.model.json` attributes it uniquely to {108 src -> $a3, 109 dst -> $a2, 115 j -> $t4, 116 complement -> $t5}. Every session before s7 ran the solver against the cursor pair alone.
+
+- [s7] Against that full goal inverse.py's minimal solution is 2 atoms / 72 vectors, always one cursor atom x one j/complement atom - the two pairs are independent sub-problems and can be attacked separately. Reports: tmp/grind/func_8003DE14/s7/inverse_fullgoal_d2.txt and inverse_cursor_d2.txt.
+
+- [s7] The j/complement pair is a pure live_length question: both allocnos carry refs 11, so allocno_compare (global.c:643) decides on live_length alone, and on an exact tie it falls through to `return *v1 - *v2` (global.c:653) - the lower allocno wins, and j IS the lower allocno (115 vs 116). The validated simulator says j livelen 52 (equal to complement's) already yields 115=$t4 / 116=$t5, the target's disposition; 53 does not. The requirement is ONE insn, not the 8 inverse.py's live grid samples. Harness: tmp/grind/func_8003DE14/s7/tie_test.py.
+
+- [s7] j's live length bottoms out at 53 by birth placement. Moving `s32 j = 0;` inside the `if (total > 0)` guard takes it 57 -> 53; additionally moving src, dst and/or factor into the guarded block ahead of it leaves it at exactly 53 in all six r-forms (scores 44-46, all 173 insns). The residual insn is loop.c's hoisted `complement` subu, which is emitted immediately before the loop start note and therefore always after j's init.
+
+- [s7] Writing complement in the outer body ahead of j (the live_extend 116 atom) costs the `count - 1` inline property: all four u-forms score 65/173, and the side-by-side against the target object shows `addiu s6,s2,-1` hoisted into the outer preheader at stream position 48 where the target has `li s8,4096`. It also RENUMBERS the pseudos (complement becomes 115, j becomes 116) - the emitted `subu $t4 / move $t5` pair is byte-identical to k1's, so the pair is not fixed. Any model read-out on a form that moves a declaration must be keyed on ROLE, not on the pseudo number.
+
+- [s7] `if (j < total)` as the inner-loop guard (j is 0 there, so the predicate is identical) buys j refs 11 -> 13, pri 5789 -> 6842, and DOES seat j at $t4. It costs 18 points elsewhere - 61/173 - because materialising j for the compare replaces the single `blez` guard with an slt/branch pair and shifts the preheader. Banked at memory/grind/func_8003DE14/rejected/s7-j-guard-refs-up-seats-t4-but-61.c.
+
+- [s7] Exact cursor thresholds, measured through the validated simulator (tmp/grind/func_8003DE14/s7/cursor_thresh.py): dst livelen must go 58 -> <=38, or src livelen 59 -> >=90, or dst nrefs 26 -> 32. Both cursors are live across the entire inner loop (each is incremented and re-read every iteration, so each is live over the back edge) and that loop's block span is ~50 insns, so neither live-length door is a property any spelling of this loop can have. The cursor seat is a reference-count question and nothing else.
+
+- [s7] In the target's stream three of the four `addiu $a3,$a3,2` sit in `j` delay slots (DF58 -> .L8003E024, DF68 -> .L8003E028, DF88 -> .L8003E024) and the fourth is inline mid-blend-arm (DFE4). None of the three fills copies its branch target's first insn (those labels start with `addiu $a2,$a2,2` and the loop latch), so on the face of it they are ordinary reorg sinks of each arm's own preceding insn and the target's src refs really are 32 - the s6 contradiction stands. The decoupling that would resolve it has to be a C shape with FEWER `src++` statements pre-RA than `addiu $a3` insns post-reorg; the three-way shared advance tail is the untested shape.
+
+- [s7] Tooling added under tmp/grind/func_8003DE14/s7/: models.py (splice a body into src, run extract.py, print refs/livelen/pri/hardreg/order for the four goal pseudos), tie_test.py and cursor_thresh.py (perturb one model input and re-run simulate.Sim.simulate(overrides=...) - the right way to price an atom that falls between inverse.py's grid points), sbs.py (splice + sandbox + positional side-by-side against build/src/code6cac_c2.o).
+
+- [s7] src/code6cac_c2.c was restored to its committed INCLUDE_ASM state before the session ended; the only tracked changes are the ledger files under memory/grind/func_8003DE14/.
+
+- [s7] goal_from_tgt.py classify code6cac_c2 func_8003DE14 (object-level; the text-stream classifier refuses on a zero-rule function and says so) types the k1 residual as FIRST DIVERGENCE: RA with ours 173 / target 173 insns; the register substitution histogram is $a2->$a3 x8, $v1->$a0 x5, $t5->$t4 x4, $v0->$v1 x4, $a0->$v1 x4, $a3->$a2 x3, $t4->$t5 x3, plus a $v0/$v1/$a0 rotation in the blend arm.
+
+- [s7] The unique pseudo attribution of that histogram is exactly four allocnos: 108 (src) -> $a3, 109 (dst) -> $a2, 115 (j) -> $t4, 116 (complement) -> $t5. Every prior session ran the solver against the first two only.
+
+- [s7] inverse.py global on the k1 model against the full four-pseudo goal: minimal solution 2 atoms / 72 vectors, always one cursor atom crossed with one j/complement atom - the pairs are independent and separately attackable.
+
+- [s7] j and complement both carry reg_n_refs 11, so allocno_compare decides the pair on live_length alone; on an exact tie global.c:653 returns *v1 - *v2 and the lower allocno (115 = j) wins. The validated simulator gives 115=$t4 / 116=$t5 at j livelen 52, 51 and 49, and 115=$t5 at 53. The requirement is ONE insn, not the eight inverse.py's grid samples.
+
+- [s7] j's live length bottoms out at 53 by birth placement: `s32 j = 0;` inside the `if (total > 0)` guard takes it 57 -> 53, and six further forms that move src/dst/factor into the guard ahead of it all measure 53 (scores 44-46, all 173 insns). The remaining insn is loop.c's hoisted complement subu, emitted immediately before the loop start note and therefore always after j's init.
+
+- [s7] Writing complement in the outer body ahead of j costs the count-1 inline property (all four u-forms 65/173; the side-by-side shows `addiu s6,s2,-1` hoisted into the outer preheader at stream position 48 where the target has `li s8,4096`) and renumbers the pseudos so complement becomes 115 - the emitted $t4/$t5 pair is unchanged.
+
+- [s7] `if (j < total)` as the guard buys j refs 11 -> 13 (pri 5789 -> 6842) and does seat j at $t4, but costs 18 points: 61/173.
+
+- [s7] Exact cursor thresholds through the validated simulator: dst livelen 58 -> 38, src livelen 59 -> 90, or dst nrefs 26 -> 32. Both cursors are live across the whole inner loop (block span ~50 insns), so the cursor seat is a reference-count question and nothing else.
+
+- [s7] In the target's stream the four `addiu $a3,$a3,2` are DF58 (delay slot of `j .L8003E024`), DF68 (`j .L8003E028`), DF88 (`j .L8003E024`) and DFE4 (inline in the blend arm); none of the three fills copies its target label's first insn, so the target's pre-RA src refs read as 32, the same as ours.
+
+- [s7] New reusable tooling under tmp/grind/func_8003DE14/s7/: models.py (splice a body into src, run extract.py, print refs/livelen/pri/hardreg/allocation-order for chosen pseudos), tie_test.py and cursor_thresh.py (perturb ONE model input and re-run simulate.Sim.simulate(overrides=...) - the way to price an atom that falls between inverse.py's grid points), sbs.py (splice + sandbox + positional side-by-side against build/src/code6cac_c2.o).
+
+- [s7] src/code6cac_c2.c was restored to its committed INCLUDE_ASM state; the only tracked changes are the ledger files under memory/grind/func_8003DE14/.
