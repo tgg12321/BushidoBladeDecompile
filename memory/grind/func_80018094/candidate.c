@@ -160,6 +160,20 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * 4/5/8/13) and s10 H50-H52 (the two denominator-side and the
                  * assignment-in-condition levers, all measured dead).
                  * Family: do-while-zero-exception (owner ruling 2026-07-06). */
+                /* PsyQ libgte inline macro gte_Lzc(r1,r2) --- gtemac.h:174-178, which
+                 * expands to gte_ldlzc(r1) (inline_c.h:228-231, `mtc2 %0,$30`), two
+                 * gte_nop() (inline_c.h:1346-1347), then gte_stlzc(r2)
+                 * (inline_c.h:1318-1322, `swc2 $31,0(%0)`).  DISCLOSURE OF THE ADDRESSING
+                 * PREAMBLE: the two `addu $t4, ..., $zero` moves and the `addiu $v0,$sp,0x10`
+                 * are NOT part of those macros own text -- they are the operand-addressing
+                 * preamble the original build inline expansion emitted around them (the
+                 * `addu $t4,$aN,$zero` + cop2 idiom of the 28-function cluster in
+                 * .claude/rules/cop2-addressing-preamble-cluster.md, of which this function
+                 * is an enumerated member, line 60).  They are written literally here because
+                 * the island must reproduce those bytes; `"=m"(sp_tmp[0])` names the frame
+                 * slot the `addiu $v0,$sp,0x10` computes, and `"r"(lut)` the ldlzc input.
+                 * The operand list is exactly the granted form -- no extra output, tied, or
+                 * clobber operand (Judge constraint, docs/grind/decisions.md 2026-09-09 23:11). */
                 do {
                 __asm__ volatile(
                     "addu   $t4, %1, $zero\n"

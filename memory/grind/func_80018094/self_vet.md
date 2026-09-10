@@ -1,4 +1,19 @@
-# SELF-VET — func_80018094  (s10, 2026-09-09, forensics — filed WITH a `candidate-ready`)
+# SELF-VET — func_80018094  (s11, 2026-09-10, annotation-fix — filed WITH a `candidate-ready`)
+
+**s11 FIX-UP SCOPE.** The Judge's 2026-09-10 00:29 FINAL CALL FAILed the s10 submission on
+CITATION/COMMENT grounds only, with the work itself accepted. This session changed COMMENTS ONLY:
+(1) the LZC island now carries the PsyQ macro-name + header-line citation the Judge asked for
+(`gte_Lzc(r1,r2)`, gtemac.h:174-178, expanding to gte_ldlzc inline_c.h:228-231, two gte_nop
+inline_c.h:1346-1347, gte_stlzc inline_c.h:1318-1322) together with an explicit disclosure that
+the `addu $t4,...,$zero` / `addiu $v0,$sp,0x10` addressing preamble is NOT macro text but the
+cop2-addressing-preamble idiom of the 28-function cluster this function is enumerated in
+(.claude/rules/cop2-addressing-preamble-cluster.md:60); (2) the mojibake'd em-dash comment lines
+outside func_80018094 are gone — `git diff src/code6cac.c` now contains exactly one hunk, the
+func_80018094 body replacing its `INCLUDE_ASM`, with zero other lines touched (verified: the s11
+splice starts from a clean `main` src/code6cac.c and inserts only this function). The executable
+BODY is byte-for-byte the s10 body; no construct was added, removed, renamed or reordered, and
+every FAKE annotation below is unchanged. Re-measured this session: `sandbox func_80018094
+--disable all` == 0 (target_insns 153, build_insns 153, rules_dropped 0, cheat_asm_stripped 20).
 
 The body under vet is `memory/grind/func_80018094/candidate.c` (= tmp/grind/func_80018094/s10/final.c,
 generated from s10/e1.c by adding the FAKE annotations only). Spliced into src/code6cac.c it

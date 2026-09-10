@@ -957,3 +957,40 @@ LZC-arm do-while(0) -> 13 (s10/a0.c). `s32 sp_tmp` scalar instead of `s32 sp_tmp
 - [s10] The honest floor is 0: `sandbox func_80018094 --disable all` == 0, target_insns 153, build_insns 153, rules_dropped 0, cheat_asm_stripped 20, with memory/grind/func_80018094/candidate.c spliced into src/code6cac.c, and with the LZC island's operand list at exactly the granted honest form.
 
 - [s10-refile] The s10 result was RE-VALIDATED from scratch on 2026-09-09 after the driver discarded the first s10 write-up on a self-vet CITATION-FORMAT defect only (five `FAMILY:` blocks but only four verbatim SCOPE quotes; the fifth block was the ordinary-C `*(&D_8008D118 + i)` byte-LUT read, which claims no exception at all). No C changed: memory/grind/func_80018094/candidate.c was re-spliced into src/code6cac.c with tmp/grind/func_80018094/s9/splice.py and `sandbox func_80018094 --disable all` printed score 0 / target_insns 153 / build_insns 153 / rules_dropped 0 / cheat_asm_stripped 20 again. The self-vet's fifth block is now an ORDINARY-C NOTE (not a family claim), and three stale precedent line numbers were corrected against the post-splice tree: the sibling func_8001A538's LUT reads are src/code6cac.c:953 and :980 (not :879/:906) and its `lw_v1`/`li_v0` statements are src/code6cac.c:974-977 (not :911-914). Lesson for any later session on any function: line-number precedents in a self-vet must be re-derived AFTER the candidate is spliced in, because splicing a ~120-line body into the TU shifts every later line in the same file.
+
+## s11 (2026-09-10) — annotation-fix modality — COMMENT-ONLY, floor re-measured 0
+
+The Judge's 2026-09-10 00:29 FINAL CALL on the s10 body was a CITATION FAIL, not a construct
+FAIL: "Comment-only fix-up: (1) add the gte_Lzc macro-name + header-line citation
+(gtemac.h:174-178; inline_c.h:228-231, :1346-1347, :1318-1322) to the LZC island's comment,
+disclosing the addressing preamble; (2) revert the 16 mojibake'd em-dash comment lines outside
+func_80018094 so git diff src/code6cac.c contains only this function's hunk. Body must not change."
+
+Both defects are now discharged, and NOTHING else changed:
+
+1. The LZC island carries a new comment block naming the PsyQ libgte macro it reproduces —
+   `gte_Lzc(r1,r2)` (gtemac.h:174-178), which expands to `gte_ldlzc(r1)` (inline_c.h:228-231,
+   `mtc2 %0,$30`), two `gte_nop()` (inline_c.h:1346-1347), then `gte_stlzc(r2)`
+   (inline_c.h:1318-1322, `swc2 $31,0(%0)`). The line numbers were VERIFIED against the header
+   copies in the tree at tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/ before
+   being written; each cited range contains exactly the macro claimed. The comment additionally
+   DISCLOSES that the two `addu $t4, ..., $zero` moves and the `addiu $v0, $sp, 0x10` are not
+   macro text but the operand-addressing preamble of the 28-function cop2 cluster this function
+   is an enumerated member of (.claude/rules/cop2-addressing-preamble-cluster.md:60), and
+   restates that the operand list is exactly the granted form.
+
+2. The s11 splice starts from a CLEAN `main` src/code6cac.c (the file was at its committed
+   `INCLUDE_ASM("asm/funcs", func_80018094);` state at session start) and inserts only the
+   candidate body in that one line's place. `git diff -U0 src/code6cac.c` now reports exactly
+   ONE hunk, 212 insertions / 1 deletion, and every added line is pure ASCII (checked with
+   `LC_ALL=C grep '[^ -~]'` over the `+` lines — no hits), so the mojibake class cannot recur.
+
+Re-measured with the edits in src/: `sandbox func_80018094 --disable all` = 0 (target_insns 153,
+build_insns 153, rules_dropped 0, cheat_asm_stripped 20). The executable body is identical to the
+s10 body — the driver keys review verdicts by body, and this body's only prior verdict is the
+citation FAIL, so it goes to the Judge directly.
+
+REMAINING MERGE BLOCKER (outside session scope, restated so it is not lost): the Judge's merge
+note requires an operator row for func_80018094 in tools/grinder/owner_cluster_grants.txt, because
+the body carries three non-cop2-whitelist inline-asm islands and the function is not allowlisted.
+That is an operator/integration action on a surface a grind session may not touch.

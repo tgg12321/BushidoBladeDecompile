@@ -359,8 +359,8 @@
  "ladder_skip": 0,
  "pending_fixup": {
   "kind": "citation",
-  "detail": "Comment-only fix-up: (1) add the gte_Lzc macro-name + header-line citation (gtemac.h:174-178; inline_c.h:228-231, :1346-1347, :1318-1322) to the LZC island's comment, disclosing the addressing preamble; (2) revert the 16 mojibake'd em-dash comment lines outside func_80018094 so git diff src/code6cac.c contains only this function's hunk. Body must not change. Merge additionally needs an operator row in tools/grinder/owner_cluster_grants.txt (outside session scope).",
-  "set": "2026-09-10T05:29:30.746820+00:00"
+  "detail": "No construct objection -- every construct independently re-verified inside its sanctioned family on this body (Judge 2026-09-10 00:29 concurs), sandbox --disable all re-measured 0 (153/153, cheat_asm_stripped 20), single-hunk ASCII diff, body byte-identical to candidate.c; the ONLY defects are two citations that do not resolve: the Set*Matrix island comment cites src/code6cac_b.c:935 (which is `func_800288C8();`) as the \"memory\"-clobber precedent, and the self-vet attributes the D_8008D118 / lw_v1 sibling precedent to `pure-C func_8001A538` at :953/:974-977/:980 when those statements live in f",
+  "set": "2026-09-10T05:37:34.879130+00:00"
  },
  "origin": "queue",
  "created": "2026-09-10T00:33:40.741531+00:00",
