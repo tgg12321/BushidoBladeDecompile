@@ -1,0 +1,26 @@
+{
+ "func": "func_8002EBDC",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 7 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T08:30:26.490270+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "1b44e6afef0b58e6",
+   "when": "2026-09-10T08:39:09.713868+00:00",
+   "summary": "final call: Nine cop2 islands + ordinary C; zero pins, zero move-aliasing blocks, zero barriers, zero FAKE constructs. Family: owner COP2 addressing-preamble cluster -- func_8002EBDC is enumerated BY NAME in the "
+  }
+ ]
+}
