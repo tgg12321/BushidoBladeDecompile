@@ -216,3 +216,88 @@
 - [s3] A FRAMEDBG census of the whole src/code6cac_c2.c TU (53 slot events) shows all 11 non-spill non-round_frame slots are mode=26 BLKmode aggregates; there is no SImode/HImode stack temp anywhere in this codebase, which explains why every scalar-level lever (s2 H15 declaration scope/order/hoisting, s3 HImode narrowing, s3 named-intermediate splits) is frame-neutral.
 
 - [s3] Binary-wide census: all 29 `mtc2 $t4,$30` sites in asm/funcs are preceded by `addu $t4, $a0, $zero`, while the SetRotMatrix/SetTransMatrix preamble in this same function reads $a2 (`lw $a2,4($s0); addu $t4,$a2,$zero`). That asymmetry is the evidence that the LZC island's asm text names $a0 itself, and it is why no `r`-constraint C spelling forces the target's `move a0,a1` copy.
+
+## s4 (permuter, 2026-09-09) - floor 18 -> 7: the frame residual is CLOSED and 3 of the 10 seat insns fell to a permuter find
+
+- Chassis re-measured at session start on the committed s2/s3 candidate.c: `sandbox func_80018094
+  --disable all` = **18** (153/153 insns, rules_dropped 0, cheat_asm_stripped 20). The dispatch brief's
+  "measurement unavailable" is resolved: the ledger floor 18 was correct.
+- **STANDALONE CHASSIS IS EXACT.** A 7-line minimal TU (typedefs + `extern u8 D_8008D118;` + the two
+  callee prototypes + the candidate body, tmp/grind/func_80018094/s4/m0.c) compiles to asm that is
+  identical to the full-TU code6cac.c compile except for `.L` label NUMBERS. That is what made a
+  permuter workspace possible at all - pycparser cannot parse the full TU's file-scope `INCLUDE_ASM`
+  asm blocks, and it parses the minimal TU (including the three inline-asm islands) without a patch.
+  Workspaces: tmp/perm_80018094{,b,c}; builders tmp/grind/func_80018094/s4/mkperm{,2,3}.sh.
+- **FRAME CLOSED (8 of the 18 insns), at ZERO insn cost.** The missing 8 frame bytes are the unwritten
+  TAIL of the LZC output local itself, not a separate temp: spelling `s32 sp_tmp;` as `s32 sp_tmp[4];`
+  (island operand `"=m"(sp_tmp[0])`, read `sp_tmp[0]`) prints `.frame $sp,48 # vars= 16, regs= 3/0,
+  args= 16` - the target's exact frame - while leaving the other 145 insns bit-identical. Measured
+  sandbox 18 -> **10**. This makes s3's frontier hypothesis (an 8-byte BLKmode stack TEMP created in
+  the post-island tail) WRONG in its mechanism: no temp is needed, the sp_tmp slot itself is oversized
+  in the original.
+- **The four spellings of that slot are byte-identical** (tmp/grind/func_80018094/s4/v20{b,c,d,g,h}.s
+  all diff-clean against each other): `struct { s32 a, b, c; }`, `s32 [3]`, `s32 [4]` with `"=m"(sp_tmp)`
+  and `s32 [4]` with `"=m"(sp_tmp[0])`. So the declared size is recoverable only as the RANGE 9..16
+  raw bytes - exactly the situation the OVERSIZED-LOCALS carve-out's range-annotation prerequisite
+  (.claude/rules/dead-vars-local-array.md, owner ruling 2026-07-13) was written for.
+- **Frame-math proof (carve-out prerequisite 1), from the target bytes alone**: target frame 0x30 =
+  outgoing args 0x10 + locals 0x10 + callee-saves 0x10 (s0/s1/ra at 0x20/0x24/0x28); the ONLY locals
+  traffic anywhere in asm/funcs/func_80018094.s is the island's `swc2 $31,0($t4)` with `$t4 = $sp+0x10`
+  and the matching `lw $v1,0x10($sp)` - 4 bytes written of a 16-byte locals region. A fully-written
+  4-byte locals set yields ALIGN8(4)+16+16 = 0x28 != 0x30, so no fully-written locals set can produce
+  the target frame. Prerequisite 2 (prefer extending a LIVE object over a dead pad) is satisfied by
+  construction here: sp_tmp[0] is the live LZC output, and the carve-out's own precedent shape
+  (func_80037540's `s32 sp[8]` with only sp[0..5] stored) is the same written-prefix-buffer form.
+- **PERMUTER FIND (3 more insns).** Campaign `s4-v20g-framefixed` (tmp/perm_80018094b, base score 245,
+  --stack-diffs, -j 8) produced output-230-1 at 24,345 iterations / ~9.5 min. Its ONE semantic delta
+  from the base is staging the LZCR-read result through the enclosing block's `log2_val`:
+  `li_v0 = lw_v1 & li_v0; log2_val = li_v0; shift_a = 0x16 - log2_val;`. Applied to the candidate this
+  measures sandbox 10 -> **7**, and it fixes precisely the seats s2/s3 predicted: sum_sq now sits in
+  **$a1** for every use (`addu at,at,a1`, `srav v0,a1,v1` now byte-identical to the target).
+  Banked source: tmp/grind/func_80018094/s4/perm_find_230.c.
+- **THE RESIDUAL IS NOW 7 INSNS AND ALL 7 ARE DOWNSTREAM OF ONE MISSING COPY**
+  (tmp/grind/func_80018094/s4/v21a_pairdiff.txt): index 69 `nop` vs `move a0,a1` (the island-input
+  copy reorg parks in the `beqz v0` delay slot), 74/75 (`srl a0` vs `srl a1`; `move t4,a1` vs
+  `move t4,a0`), 82/84 (li_v0 in `$a0` vs the target's `$v0`), 93/96 (log2_val in `$a0` vs `$a1`).
+  The target reserves `$a0` for the copy across that whole region, which is what pushes li_v0 to $v0
+  and log2_val to $a1. This is the same single question s2/s3 identified, now with the frame and the
+  sum_sq seat removed from around it: how the original fixed the LZC island's input to `$a0`.
+- **Permuter exhaustion on the post-find chassis**: campaign `s4-v21a-log2staged` (tmp/perm_80018094c,
+  base score 230) ran **45,681 iterations / ~18 min with ZERO novel finds** before harvest --stop.
+  Combined with `s4-v8a-chassis` (8,906 iterations, 0 improvements) that is 78,932 iterations across
+  three chassis this session; only the frame-fixed chassis yielded, and it yielded in ~9 minutes,
+  exactly as the basins-yield-early rule predicts.
+
+- [s4] Floor 18 -> 7 this session. candidate.c is the s2 v8a body + `s32 sp_tmp[4]` (OVERSIZED-LOCALS carve-out, closes the 8 frame insns at zero insn cost) + the permuter's `log2_val` staging of the LZCR-read result (closes 3 seat insns). Both constructs are FAKE-annotated in candidate.c.
+
+- [s4] s3's frontier mechanism is REFUTED: the missing 8 frame bytes are not a post-island BLKmode stack temp, they are the unwritten TAIL of the LZC output local. `s32 sp_tmp[4]` with `"=m"(sp_tmp[0])` gives `.frame $sp,48 # vars= 16, args= 16, regs= 3/0` with all 145 non-frame insns unchanged.
+
+- [s4] The declared size of that locals object is recoverable only as a RANGE (raw 9..16 bytes): `struct {s32 a,b,c;}`, `s32[3]`, `s32[4]` with `"=m"(sp_tmp)` and `s32[4]` with `"=m"(sp_tmp[0])` all assemble identically (s4/v20{b,c,d,g,h}.s).
+
+- [s4] Frame-math proof for the carve-out: target frame 0x30 = args 0x10 + locals 0x10 + saves 0x10; the only locals traffic in the entire target is `swc2 $31,0($sp+0x10)` / `lw $v1,0x10($sp)` (4 bytes of 16); a fully-written 4-byte locals set gives ALIGN8(4)+16+16 = 0x28 != 0x30.
+
+- [s4] A minimal 7-line-header standalone TU reproduces the full-TU codegen for this function exactly (labels aside), which is what makes decomp-permuter usable here - pycparser cannot parse code6cac.c's file-scope INCLUDE_ASM blocks but parses the minimal TU with all three inline-asm islands intact.
+
+- [s4] Permuter telemetry: 78,932 iterations over three chassis. s4-v8a-chassis 8,906 it / 0 improvements; s4-v20g-framefixed 24,345 it / one improvement (245 -> 230) at ~9.5 min = the log2_val staging; s4-v21a-log2staged 45,681 it / 0 novel finds in 18 min (harvested --stop).
+
+- [s4] The remaining 7 insns are ALL downstream of the single missing `move a0,a1` island-input copy: with $a0 reserved for it the target is forced to put li_v0 in $v0 and log2_val in $a1, which is exactly the other 6 diffs (s4/v21a_pairdiff.txt).
+
+- [s4] Chassis re-measured at session start on the committed s2/s3 candidate.c: sandbox func_80018094 --disable all = 18 (153/153 insns, rules_dropped 0, cheat_asm_stripped 20). The dispatch brief's 'measurement unavailable' is resolved — the ledger floor 18 was correct.
+
+- [s4] Floor moved 18 -> 10 -> 7 this session, each step re-measured with the sandbox on the spliced src/code6cac.c; src was reverted to INCLUDE_ASM at session end and the floor-7 body is saved to memory/grind/func_80018094/candidate.c.
+
+- [s4] A 7-line-header standalone TU (typedefs + extern u8 D_8008D118 + the two callee prototypes + the candidate body, tmp/grind/func_80018094/s4/m0.c) reproduces the full-TU code6cac.c codegen for this function EXACTLY except for .L label numbers. That is what makes decomp-permuter usable here: pycparser cannot parse code6cac.c's file-scope INCLUDE_ASM asm blocks, but it parses the minimal TU with all three inline-asm islands intact.
+
+- [s4] Frame closed at ZERO insn cost by spelling the LZC output local as `s32 sp_tmp[4]` with island operand "=m"(sp_tmp[0]) and read sp_tmp[0]: .frame $sp,48 # vars= 16, regs= 3/0, args= 16, with the other 145 insns bit-identical to the scalar chassis.
+
+- [s4] The declared size of that locals object is recoverable only as a RANGE (raw 9..16 bytes): struct{s32 a,b,c;}, s32[3], s32[4] with "=m"(sp_tmp) and s32[4] with "=m"(sp_tmp[0]) all assemble identically (tmp/grind/func_80018094/s4/v20{b,c,d,g,h}.s) — the exact situation the OVERSIZED-LOCALS carve-out's range-annotation prerequisite was written for.
+
+- [s4] OVERSIZED-LOCALS prerequisite 1 (frame-math proof from the target bytes alone) holds: target frame 0x30 = outgoing args 0x10 + locals 0x10 + callee-saves 0x10 (s0/s1/ra at 0x20/0x24/0x28); the only locals traffic anywhere in asm/funcs/func_80018094.s is `swc2 $31,0($t4)` with $t4 = $sp+0x10 and the matching `lw $v1,0x10($sp)`, i.e. 4 bytes written of a 16-byte locals region; a fully-written 4-byte locals set yields ALIGN8(4)+16+16 = 0x28 != 0x30.
+
+- [s4] OVERSIZED-LOCALS prerequisite 2 (prefer extending a LIVE object over a dead pad) is satisfied by construction: sp_tmp[0] is the live LZC output, so this is the carve-out's written-prefix-buffer shape (its own precedent is func_80037540's s32 sp[8] with only sp[0..5] stored), not a dead pad local.
+
+- [s4] Both constructs in candidate.c carry /* FAKE: what + named GCC-pass mechanism + lever-exhaustion pointer */ annotations, and the sp_tmp declaration additionally carries the SOTN `n.b.!` range annotation with the frame derivation, per carve-out prerequisite 3.
+
+- [s4] Permuter telemetry (all campaigns harvested --stop, 0 live at session end): s4-v8a-chassis 8,906 iterations / base 303 / 0 improvements; s4-v20g-framefixed 24,345 iterations / base 245 / one improvement to 230 at ~9.5 min (the log2_val staging); s4-v21a-log2staged 45,681 iterations / base 230 / 0 novel finds in ~18 min. 78,932 iterations total.
+
+- [s4] The residual is now 7 insns and every one of them is a consequence of the missing island-input copy: index 69 nop vs `move a0,a1`, 74/75, 82/84, 93/96 (tmp/grind/func_80018094/s4/v21a_pairdiff.txt).

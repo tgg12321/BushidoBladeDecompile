@@ -1,18 +1,36 @@
-/* func_80018094 candidate -- s2 (structural, 2026-09-09). sandbox --disable all == 18 (153/153 insns,
- * rules_dropped 0, 20 island insns stripped on both sides). Chassis: -mel -msoft-float. s1's v6a body
- * (floor 21) plus the COMPLETED sibling func_8001A67C's LZCR-read statement block
- * (src/code6cac.c:869-873: `s32 lw_v1 = sp_tmp; s32 li_v0 = -2; li_v0 = lw_v1 & li_v0;`), which fixes
- * the 3 read seats `lw v1,16(sp); li v0,-2; and v0,v1,v0` exactly.
+/* func_80018094 candidate -- s4 (permuter, 2026-09-09). sandbox --disable all == 7 (153/153 insns,
+ * rules_dropped 0, 20 island insns stripped on both sides). Chassis: -mel -msoft-float. s2's v8a body
+ * (floor 18) plus the OVERSIZED-LOCALS spelling of the LZC output local (s32 sp_tmp[4], only element 0
+ * written and read), which closes the 8 frame-offset insns at ZERO insn cost (frame 40 -> 48, vars 8 -> 16).
+ * Lineage: s1 v6a (scratchpad-in-struct + else-arm scale=0x100) + the COMPLETED sibling func_8001A67C's
+ * LZCR-read statement block (src/code6cac.c:869-873) + this session's locals-object extension + the
+ * permuter's log2_val staging of the LZCR-read result (`log2_val = li_v0; shift_a = 0x16 - log2_val;`,
+ * campaign s4-v20g-framefixed output-230-1), which seats sum_sq in $a1 for every use and takes 10 -> 7.
  * Islands: gte_SetRotMatrix / gte_SetTransMatrix in the func_80019310 / func_800300B4 spelling,
- * LZCS/LZCR in the authorized func_8001A67C template (inline_asm_canonical.txt:266). No FAKE
- * constructs, no register pins.
- * Residual (18): frame vars 8 vs 16 (8 insns) + the LZC-island input seat cluster (10 insns: the
- * target keeps sum_sq in a1 and feeds the island a `move a0,a1` copy; ours keeps sum_sq in a0 and
- * emits no copy). See memory/grind/func_80018094/{evidence,hypotheses}.md. */
+ * LZCS/LZCR in the authorized func_8001A67C template (inline_asm_canonical.txt:266). No register pins.
+ * Residual (7, tmp/grind/func_80018094/s4/v21a_pairdiff.txt): ALL of it is downstream of the single
+ * missing island-input copy. The target reserves $a0 for a `move a0,a1` copy that reorg parks in the
+ * `beqz v0` delay slot (ours: nop), which in turn pushes li_v0 to $v0 and log2_val to $a1; ours puts
+ * both in $a0 and feeds the island $a1 directly. See memory/grind/func_80018094/{evidence,hypotheses}.md. */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
 void func_80018094(s32 *arg0, s32 *arg1) {
-    s32 sp_tmp;
+    /* n.b.! sp_tmp must be 9-16 bytes (inclusive): s32[3] and s32[4] are byte-identical (measured,
+     * tmp/grind/func_80018094/s4/v20g.s == v20h.s). Frame derivation from the target bytes alone
+     * (asm/funcs/func_80018094.s): frame 0x30 = outgoing args 0x10 + locals 0x10 + callee-saves 0x10
+     * (s0/s1/ra at 0x20/0x24/0x28); the ONLY locals traffic in the whole target is the island's
+     * `swc2 $31,0($t4)` with $t4 = $sp+0x10 and the matching `lw $v1,0x10($sp)`, i.e. 4 bytes written
+     * of a 16-byte locals region. A fully-written 4-byte locals set yields ALIGN8(4)+16+16 = 0x28 != 0x30,
+     * so the original declared this object strictly larger than the bytes it writes. OVERSIZED-LOCALS
+     * carve-out (.claude/rules/dead-vars-local-array.md, owner ruling 2026-07-13), prerequisite 2
+     * (extend the LIVE locals object, not a dead pad): sp_tmp[0] is the live LZC output.
+     * FAKE: unwritten tail sp_tmp[1..3] on the live LZC-output locals object, mechanism:
+     * function.c assign_stack_local / mips.c compute_frame_size (get_frame_size raw 16 -> MIPS_STACK_ALIGN
+     * keeps 16 where the scalar form rounds 4 -> 8), lever-exhaustion:
+     * memory/grind/func_80018094/hypotheses.md s2 H15 (declaration scope/order/hoisting), s3 H19-H22
+     * (HImode narrowing, named-intermediate scalar splits, live 8-byte aggregate, BLKmode-only FRAMEDBG
+     * census) and s4 (8,906 permuter iterations on the scalar chassis, 0 novel finds). */
+    s32 sp_tmp[4];
     s32 dx, dy, dz;
     s32 sum_sq;
     s32 scale;
@@ -76,14 +94,26 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                     "addiu  $v0, $sp, 0x10\n"
                     "addu   $t4, $v0, $zero\n"
                     "swc2   $31, 0($t4)\n"
-                    : "=m"(sp_tmp)
+                    : "=m"(sp_tmp[0])
                     : "r"(sum_sq)
                     : "$2", "$12");
                 {
-                    s32 lw_v1 = sp_tmp;
+                    s32 lw_v1 = sp_tmp[0];
                     s32 li_v0 = -2;
                     li_v0 = lw_v1 & li_v0;
-                    shift_a = 0x16 - li_v0;
+                    /* FAKE: the LZCR-read result is staged through log2_val -- an existing
+                     * enclosing-block local that is dead at this point and is re-assigned with the
+                     * LUT result below -- which seats sum_sq in $a1 for every one of its uses,
+                     * mechanism: global.c find_reg / local-alloc allocno priority (the extra
+                     * reference on log2_val's allocno reorders the ascending first-free scan so the
+                     * sum_sq allocno no longer takes $a0), lever-exhaustion:
+                     * memory/grind/func_80018094/hypotheses.md s2 H13/H14/H18 + s3 H19-H22, plus
+                     * this session's 8,906- and 24,345-iteration permuter campaigns (the find itself
+                     * is s4 campaign s4-v20g-framefixed output-230-1, tmp/grind/func_80018094/s4/
+                     * perm_find_230.c). Family: staged-value-reused-variable (owner ruling
+                     * 2026-07-03). */
+                    log2_val = li_v0;
+                    shift_a = 0x16 - log2_val;
                 }
                 shift_b = shift_a >> 1;
                 log2_val = ((u8)(*(&D_8008D118 + (sum_sq >> shift_a))) << 16) >> (0x13 - shift_b);

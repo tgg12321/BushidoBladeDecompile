@@ -299,3 +299,55 @@ dropped).
 - probe: BB2_FRAME_DEBUG=1 compile of the whole src/code6cac_c2.c TU (tmp/grind/func_80018094/s3/fd.sh code6cac_c2 -> code6cac_c2.fd, 53 slot events)
 - result: only three contexts appear — round_frame (39), stack_temp (11), spill_new_pNN (3) — and all 11 stack_temp events are `mode=26` (BLKmode) at sizes 8/16/32/256/1024. No SImode or HImode stack temp is ever allocated in this TU, which is why every scalar lever tried in s2 and s3 is frame-neutral
 - verdict: CONFIRMED
+
+## [s4] The target's extra 8 frame bytes are the unwritten TAIL of the LZC output local itself, not a separate post-island stack temp
+- mechanism: mips.c compute_frame_size / function.c assign_stack_local - get_frame_size returns the raw locals size and MIPS_STACK_ALIGN rounds it; a 4-byte scalar rounds to 8, a 9..16-byte object stays 16, and the object still starts at vars offset 0 so the island's hand-written `addiu $v0,$sp,0x10` keeps naming it
+- probe: compile `s32 sp_tmp[4]` / `s32 sp_tmp[3]` / `struct {s32 a,b,c;}` variants (tmp/grind/func_80018094/s4/v20{b,c,d,g,h}.c) with s4/cc.sh, read `.frame`, diff against m0.s; then splice the array form into src/code6cac.c and run `sandbox func_80018094 --disable all`
+- result: every variant prints `.frame $sp,48 # vars= 16, regs= 3/0, args= 16` and differs from the scalar chassis ONLY in the 8 frame-offset insns; sandbox 18 -> 10. All four spellings are byte-identical to each other, so the original size is recoverable only as the range raw 9..16. s3's "post-island BLKmode stack temp" mechanism is refuted - no temp is involved
+- verdict: CONFIRMED
+
+## [s4] Staging the LZCR-read result through the enclosing block's dead `log2_val` local seats sum_sq in $a1 for every use
+- mechanism: staged-value-reused-variable (owner ruling 2026-07-03) - the extra reference on log2_val's allocno changes local-alloc/global.c ordering so the sum_sq allocno is no longer first to the ascending free-register scan; found by decomp-permuter, not by hand
+- probe: campaign s4-v20g-framefixed (tmp/perm_80018094b, base 245, --stack-diffs -j 8) output-230-1 at 24,345 iterations; the single semantic delta (`log2_val = li_v0; shift_a = 0x16 - log2_val;`) transplanted onto candidate.c as tmp/grind/func_80018094/s4/cand_v21a.c and measured with the sandbox
+- result: sandbox 10 -> 7; `addu at,at,a1` and `srav v0,a1,v1` become byte-identical to the target, i.e. sum_sq is now seated in $a1 across the whole if-chain exactly as s2/s3 predicted it must be
+- verdict: CONFIRMED
+
+## [s4] The decomp-permuter did not reach the remaining 7 insns from the log2-staged chassis in 45,681 iterations
+- mechanism: the residual is a register-seat problem whose only known solver is fixing the island input to $a0; the permuter's randomization operates on C statements/types and never emits a construct that materialises a value in a named hard register
+- probe: campaign s4-v21a-log2staged (tmp/perm_80018094c, base score 230, --stack-diffs, -j 8), harvested with --stop
+- result: 45,681 iterations / ~18 minutes with ZERO novel finds (no output-* dirs at all). The earlier chassis campaigns bracket it: s4-v8a-chassis 8,906 iterations / 0 improvements, s4-v20g-framefixed one improvement at ~9.5 min. 78,932 iterations total this session
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 (s32 sp_tmp[4] + log2_val staging, both FAKE-annotated), decomp-permuter default randomization with --stack-diffs, -j 8
+
+## [s4] All 7 remaining residual insns are downstream of the single missing `move a0,a1` island-input copy
+- mechanism: with $a0 reserved for the copy allocno across the else-branch, local-alloc's ascending find_free_reg is forced to give li_v0 $v0 and log2_val $a1; without the copy both land in $a0 and the island reads sum_sq's $a1 directly
+- probe: tools/pairdiff.py code6cac func_80018094 on the spliced floor-7 candidate (tmp/grind/func_80018094/s4/v21a_pairdiff.txt)
+- result: the 7 hunks are index 69 (`nop` vs `move a0,a1`), 74/75 (`srl a0` vs `srl a1`, `move t4,a1` vs `move t4,a0`), 82/84 (li_v0 in $a0 vs $v0), 93/96 (log2_val in $a0 vs $a1) - one cause, six consequences. s2's register-pin diagnostic (v11a) already reproduced this whole cluster, and s2 proved cse.c canon_reg deletes every pin-free C-level copy
+- verdict: CONFIRMED
+
+## [s4] The target's extra 8 frame bytes are the unwritten TAIL of the LZC output local itself, not a separate post-island stack temp
+- mechanism: mips.c compute_frame_size / function.c assign_stack_local — get_frame_size returns the raw locals size and MIPS_STACK_ALIGN rounds it, so a 4-byte scalar rounds to 8 while a 9..16-byte object stays 16; the object still starts at vars offset 0, so the island's hand-written `addiu $v0,$sp,0x10` keeps naming it
+- probe: compiled `s32 sp_tmp[4]`, `s32 sp_tmp[3]` and `struct {s32 a,b,c;}` variants (tmp/grind/func_80018094/s4/v20{b,c,d,g,h}.c) with s4/cc.sh, read the `.frame` comment and diffed each against m0.s; then spliced the array form into src/code6cac.c and ran `sandbox func_80018094 --disable all`
+- result: every variant prints `.frame $sp,48 # vars= 16, regs= 3/0, args= 16` — the target's exact frame — and differs from the scalar chassis ONLY in the 8 frame-offset insns; sandbox 18 -> 10. All four spellings are byte-identical to one another, so the original's declared size is recoverable only as the range raw 9..16 bytes. s3's frontier mechanism (an 8-byte BLKmode stack TEMP allocated in the post-island tail) is refuted: no temp is involved, the sp_tmp slot itself was oversized in the original. Frame-math proof for the OVERSIZED-LOCALS carve-out (.claude/rules/dead-vars-local-array.md, owner ruling 2026-07-13): target frame 0x30 = args 0x10 + locals 0x10 + saves 0x10, the only locals traffic in the whole target is `swc2 $31,0($sp+0x10)` / `lw $v1,0x10($sp)` (4 bytes of 16), and a fully-written 4-byte locals set gives ALIGN8(4)+16+16 = 0x28 != 0x30
+- verdict: CONFIRMED
+
+## [s4] Staging the LZCR-read result through the enclosing block's currently-dead log2_val local seats sum_sq in $a1 for every one of its uses
+- mechanism: staged-value-reused-variable (owner ruling 2026-07-03) — the extra reference on log2_val's allocno changes local-alloc / global.c find_reg ordering so the sum_sq allocno is no longer first to the ascending free-register scan and no longer takes $a0
+- probe: permuter campaign s4-v20g-framefixed (tmp/perm_80018094b, base score 245, --stack-diffs, -j 8) produced output-230-1 at 24,345 iterations / ~9.5 min; its single semantic delta (`log2_val = li_v0; shift_a = 0x16 - log2_val;`) was transplanted onto candidate.c as tmp/grind/func_80018094/s4/cand_v21a.c and measured with the sandbox
+- result: sandbox 10 -> 7. `addu at,at,a1` and `srav v0,a1,v1` become byte-identical to the target, i.e. sum_sq is now seated in $a1 across the whole if-chain exactly as s2 and s3 predicted it must be. Banked source: tmp/grind/func_80018094/s4/perm_find_230.c
+- verdict: CONFIRMED
+
+## [s4] The decomp-permuter did not reach the remaining 7 insns from the log2-staged chassis in 45,681 iterations
+- mechanism: the residual is a register-seat problem whose only known solver is fixing the island input to $a0; the permuter's randomization operates on C statements and types and never emits a construct that materialises a value in a named hard register
+- probe: campaign s4-v21a-log2staged (tmp/perm_80018094c, base score 230, --stack-diffs, -j 8), waited in-turn with `permuter_campaign.py wait` and harvested with --stop
+- result: 45,681 iterations / ~18 minutes with ZERO novel finds (no output-* directories at all). The other two campaigns bracket it: s4-v8a-chassis 8,906 iterations / 0 improvements, s4-v20g-framefixed 24,345 iterations / one improvement at ~9.5 min. 78,932 iterations total this session, all three campaigns harvested and stopped (0 live at session end)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 (s32 sp_tmp[4] + the log2_val staging, both FAKE-annotated), decomp-permuter default randomization with --stack-diffs, -j 8
+
+## [s4] All 7 remaining residual insns are downstream of the single missing `move a0,a1` island-input copy
+- mechanism: with $a0 reserved for the copy allocno across the else branch, local-alloc's ascending find_free_reg is forced to give li_v0 $v0 and log2_val $a1; without the copy both land in $a0 and the island reads sum_sq's $a1 directly
+- probe: tools/pairdiff.py code6cac func_80018094 on the spliced floor-7 candidate (tmp/grind/func_80018094/s4/v21a_pairdiff.txt)
+- result: the 7 hunks are index 69 (`nop` vs `move a0,a1`, the copy reorg parks in the `beqz v0` delay slot), 74/75 (`srl a0` vs `srl a1`, `move t4,a1` vs `move t4,a0`), 82/84 (li_v0 in $a0 vs the target's $v0) and 93/96 (log2_val in $a0 vs $a1) — one cause and six consequences. s2's register-pin diagnostic (v11a) already reproduced this whole cluster, and s2's dump attribution proved cse.c canon_reg deletes every pin-free C-level copy
+- verdict: CONFIRMED
