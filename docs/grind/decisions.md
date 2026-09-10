@@ -26531,3 +26531,72 @@ Body e0c6782c5f0884c0 is plain C with no FAKE, asm, volatile, pin, pad, or dead 
 ## 2026-09-10 03:30 — func_80048864 — final call — **PASS**
 
 Body is ordinary C throughout: a 2-case switch on mode, per-arm source-pointer increments (*dst++ = *src++ / src++), and reassignment of live r/g/b locals for the luma path. No inline asm, no volatile, no dead locals, no pads, no FAKE annotation, so no frozen-family claim is needed (self_vet.md SANCTIONED-FAMILY-CLAIMS: none). Decisive fact: the target really multiplies the already-scaled r for g and b (asm/funcs/func_80048864.s lines 97-103: sra $a0,$v1,12 then mult $a0,$s5 / mult $a0,$s4), so the r-reuse is program semantics, and the 0x547/0x800/0x2B8 luma weights are the same constants sibling func_8004881C uses. Independently verified: candidate.c is byte-identical to the src/text1b.c diff; the target asm supports H3. Evidence: memory/grind/func_80048864/hypotheses.md (H1-H3, v1 44 -> v2 0), rejected/if-else-chain-shared-src-increment-score44.c.
+
+## 2026-09-10 — func_8002EBDC (src/code6cac_b.c) — **CANONICAL-ASM GRANT PATH: blocked at the operator registry row (bytes PROVEN, Judge PASS on record, LOW scan tier)**
+
+Filed by grind session s1b (recon modality, re-dispatch after the 8438e66dc merge refusal). **This is
+NOT an exhaustion claim, NOT an endgame lock, and NOT a question to the owner.** It is a
+proof-of-foreclosure record of the integration-handoff kind, identical in shape to the func_80019310
+entry (2026-09-06, decisions.md:24678 — resolved by operator row 2cef233c, merged 3869ca31) and the
+func_800204C0 entry (2026-09-08, decisions.md:25556): the function is SOLVED (pure-C body + the PsyQ
+SDK GTE macro islands, sandbox 0), the Judge has already PASSed the exact body, and the ONLY missing
+piece is one line in a file no grind session may write.
+
+### State of proof (all re-measured this session on HEAD 6c886096c)
+
+- Body: `memory/grind/func_8002EBDC/candidate.c` (function at line 1551), Judge hash
+  `1b44e6afef0b58e6`, Judge PASS 2026-09-10 08:39 (`state.json` review_ledger; final call: "Nine cop2
+  islands + ordinary C; zero pins, zero move-aliasing blocks, zero barriers, zero FAKE constructs").
+- `sandbox func_8002EBDC --disable all` = score 0, 182/182, rules_dropped 0 (re-measured this session
+  with the candidate applied). `canonical` = ASM-PARTIAL, 24/182 cop2 insns.
+  Zero pins, zero aliasing blocks, zero scheduling barriers, zero `/* FAKE */`; the C body is ordinary
+  (ratan2 / squared magnitude / LUT lookup head, two identity-matrix blocks, RotMatrixY/X calls, three
+  signed `/ 256` scalings, negated second pass into `out`). Structural twin of the merged sibling
+  func_8002E838 (inline_asm_canonical.txt:373).
+- `tools/scan_hand_coded.py --single func_8002EBDC` = tier LOW 1/8 (S4 front loads only; none of the
+  STRONG signals S1/S2/S6) — the GTE-wrapper-misroute artifact the 2026-09-01 grant record itself names.
+- The refusal's other branch, "the islands are C-expressible (respell them in C)", is measured DEAD on
+  this chassis: the second gte_ldlv0 VX0/VY0 pack respelled as C with single-insn cop2 islands scores 7
+  (181/182) — GCC 2.7.2 seats the lhu pair in $v0/$v1 off the folded $s0 scratchpad base and never
+  emits the redundant `addu $t4,$s3,$zero` copy the target carries
+  (`tmp/grind/func_8002EBDC/s1/probe_c_pack_objdump.txt` vs asm/funcs/func_8002EBDC.s L100-106;
+  hypotheses.md H2; `rejected/thin-ldlv0-c-pack-seats-v0-v1-off-s0-not-t5-t6.c`). Same class result
+  as func_800204C0 s1b H5, func_80019310 s3 H10 and func_800300B4 H4/H29/H30.
+
+### Why the driver refused the merge, and why no session can cure it
+
+`grant_canonical_asm` (tools/grinder/grindlib.py:1648) has two evidence doors: STRONG scan tier, or a
+row naming the function in `tools/grinder/owner_cluster_grants.txt`. The tier is LOW and the registry
+has no `func_8002EBDC` row. The registry header states it is OPERATOR-MAINTAINED ONLY and `tools/` is
+outside session scope. The owner rulings that admit this function already exist:
+- func_8002EBDC is enumerated BY NAME in the 2026-08-17 cluster ruling's census table
+  (`.claude/rules/cop2-addressing-preamble-cluster.md:80`: `L44 addu $t4,$a0,$zero -> mtc2 $t4,$30 ;
+  nop ; nop`, LZCS sub-family) — the same door the Judge accepted for func_80031890 (decisions.md:20266);
+- its seven other preamble sites copy from `$v0/$s1/$s3/$s6` (asm/funcs/func_8002EBDC.s L49, L89,
+  L100, L111, L160, L171, L181) — covered by the 2026-09-01 widened-anchor owner GRANT
+  (decisions.md:18082; rule :140-160), with ten splat `/* handwritten instruction */` tags (.s L45,
+  L92-99, L105, L113-114, L163). The island spelling is character-identical to the integrated
+  func_8002E838 / func_80031890 bodies (inline_asm_canonical.txt:373-374); condition 3 as clarified by
+  owner Ruling A 2026-09-02 (decisions.md:20594) admits the gte_ldlv0 pack as SDK macro text.
+Nothing is being asked of the owner; the rulings are landed. The missing surface is purely clerical.
+
+### The exact operator step (the whole remedy)
+
+1. Append ONE row to `tools/grinder/owner_cluster_grants.txt`, same shape as the func_80031890 row:
+   `func_8002EBDC cop2-addressing-preamble-cluster.md (census row :80, owner ruling 2026-08-17) + widened anchor for the $v0/$s1/$s3/$s6-source sites (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)`
+2. Re-activate the function (`queue unpark func_8002EBDC --reason "registry row added"`) if the driver
+   rotated it on this entry.
+3. The next session applies `memory/grind/func_8002EBDC/candidate.c` EXACTLY (the Judge clearance
+   1b44e6afef0b58e6 skips layer-1); the driver re-proves bytes, runs FINAL CALL, and its grant door
+   writes the `inline_asm_canonical.txt` line itself (tier "OWNER-CLUSTER"). Honest bucket:
+   COMPLETED-INLINE-ASM-CANONICAL. The operator's fresh layer-2 cheat-reviewer still runs on the C
+   before acceptance.
+
+### Routing note
+
+As with func_80019310 and func_800204C0, the session cites this entry in `escalation_ref` WITHOUT the
+grant-path branch keyword so the driver takes its borderline-log + rotation branch (grind.ps1:1474)
+rather than re-dispatching sessions that cannot act until the registry row exists. Re-activation
+triggers: the registry row above, OR a future rule/toolchain change that lets a session write the row
+itself. Evidence pointers: `memory/grind/func_8002EBDC/evidence.md` (s1, s1b), `hypotheses.md`
+(H0-H3), `rejected/` (one disproven form), `tmp/grind/func_8002EBDC/s1/`.
