@@ -1,0 +1,24 @@
+{
+ "func": "func_8003EB84",
+ "file": "code6cac_c2",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T07:12:26.157215+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "e0c6782c5f0884c0",
+   "when": "2026-09-10T08:21:06.567776+00:00",
+   "summary": "final call: Body e0c6782c5f0884c0 is plain C with no FAKE, asm, volatile, pin, pad, or dead store. The one unusual construct is the mask block: the positive arm does `goto calc` into the else-arm's if-body while "
+  }
+ ]
+}
