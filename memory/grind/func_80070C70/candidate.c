@@ -1,64 +1,56 @@
-/* candidate.c - func_80070C70 - session 11 (rederive). Honest floor 22 (was 39 at s6-s10).
+/* candidate.c - func_80070C70 - session 12 (rederive). Honest floor 22 (unchanged from s11),
+ * but with ONE FEWER constant-holder local than the s11 body: `s32 var_s3 = 0xA;` is GONE,
+ * replaced by the literal `prim.code = 0xA;` at byte-identical cost (s12 measured 22/194 both
+ * ways).  That removes a construct that would have needed a named-local FAKE vet at submission.
  *
- * FLOOR HISTORY: 194 -> 101 (s1) -> 99 (s3) -> 56 (s4) -> 53 (s5) -> 39 (s6) -> 22 (s11).
- * Instruction count is 194 == the target's 194 and the frame is still exact
- * (.frame $sp,128 # vars= 80, regs= 6/0, args= 24).  Chassis is UNCHANGED - still the
- * if-guarded do/while.  s11 did NOT change the chassis; it changed four ORDINARY-C
- * spellings inside it, each measured independently, each worth points:
+ * FLOOR HISTORY: 194 -> 101 (s1) -> 99 (s3) -> 56 (s4) -> 53 (s5) -> 39 (s6) -> 22 (s11) -> 22 (s12).
+ * Chassis: if-guarded do/while, 194 insns == target, frame exact
+ * (.frame $sp,128 # vars= 80, regs= 6/0, args= 24).
  *
- *   L1  TAIL BOUND PARENTHESISATION  39 -> 38.  The second loop's tail test is now
- *       `var_s0 < D_800A35B0 + ((s16)D_800A3558 + 1)`.  The target adds 1 to the
- *       SIGN-EXTENDED halfword and then adds D_800A35B0 (`lh v0; addiu v0,v0,1;
- *       addu v0,a1,v0`); the unparenthesised form `D_800A35B0 + (s16)D_800A3558 + 1`
- *       parses as `(D_800A35B0 + sext) + 1` and emits `addu` then `addiu` on the other
- *       operand.  NOTE: the GUARD copy of the bound must stay UNparenthesised - moving
- *       the parens there as well is 41, and doing both is 41 at 196 insns.
- *   L2  A NAMED GEOM/STATIC TEMP PAIR AT THE TWO PRE-LOOP SITES  38 -> 22 (with L3).
- *       `g = *(s32 *)(ctx + N); t = g + K; prim.p_geom = g; prim.p_static = t;`
- *       The target computes the +0xC / +0x48 into a SECOND live register before either
- *       store (`addiu v1,v0,12` / `sw v0,24(sp)` / `sw v1,28(sp)`).  Reading the value
- *       back out of the struct member (`prim.p_static = prim.p_geom + 0xC;`) lets the
- *       add be scheduled after the store, so the pseudo dies at the add and gets the
- *       SAME hard register.  Ordering the ADD as its own statement before both stores
- *       is what keeps two pseudos live across it.  Both sites together are worth 7
- *       points (25 -> 22 for the second site alone).  s8 measured the REVERSED store
- *       order (`prim.p_static = g + 0xC; prim.p_geom = g;`) and it is still worse: 40.
- *   L3  `link` READ BEFORE `code` STORE AT BOTH LOOP CALL SITES  36 -> 31 -> 29.
- *       In both the first and the second loop the target emits `lw v1,0x10(s1)` before
- *       `sw v0,0x2C(sp)`, i.e. the source reads prim.link's new value before storing
- *       prim.code.  Swapping those two statements in the second loop is worth 5 points
- *       and in the first loop another 2.
- *   L4  `g = prim.p_geom; t = g + 0xC;` INSIDE THE SECOND LOOP BODY  38 -> 36.
- *       Same two-live-register effect as L2 at the in-loop site, where the target has
- *       `lw v0,24(sp) / addiu v1,v0,12 / ... / addu v0,v1,v0`.
+ * WHAT S12 SETTLED (all measured, see hypotheses.md):
+ *  1. THE CHASSIS QUESTION IS CLOSED WITH A NUMBER.  s11's frontier asked whether L2/L3/L4
+ *     port to the shape-exact TOP-TEST for chassis and beat 22.  They port (49 -> 42 with L3,
+ *     -> 36 with L2, -> 31 with L4) but 31 > 22: the top-test chassis' 24-byte orphan frame
+ *     penalty is still NOT affordable.  Bodies tmp/grind/func_80070C70/s12/a/a0..a6.c.
+ *  2. EVERY frame-buying lever re-measured ON THAT IMPROVED (31) top-test chassis is still
+ *     net-negative: bound-in-a-local 51/187, bare-u16 bound 34, `!=` bound 62.  (s10 measured
+ *     these on the 49 body; the CURRENT-SCOPE rule required re-measuring them on the new one.)
+ *  3. THE CARRIED-LOCALS FAMILY, re-measured on the 22 chassis (s11 measured it on 39 and got
+ *     55-59): six spellings of "h = D_800A3558; nb = D_800A35B0; ... reload at the bottom" all
+ *     score 42 at 195 insns, byte-identical to each other.  Carrying ONLY D_800A35B0 in a local
+ *     (`nb`) is the best of the family at 27/194 - still 5 worse than plain re-reads.
+ *  4. `var_s0 = 0;` hoisted ABOVE the `if` guard (the target emits `move s0,zero` before the
+ *     guard's loads) is 54/193.  Dead.
+ *  5. A pointer local `s32 *pp = (s32 *)&prim;` used at the three call sites is 38/197 at both
+ *     tested declaration positions.  Dead.
  *
- * RESIDUAL AT 22 - now essentially ONE cluster plus one scheduler tie:
- *   (i) THE LOOP-CARRIED $a1/$a2 (about 18 of the 22).  The target loads
- *       `lhu $a2, D_800A3558` and `lw $a1, D_800A35B0` in the second loop's GUARD block
- *       and again in its TAIL, and the loop BODY consumes the registers
- *       (`sll $v0,$a2,16 / sra $v0,$v0,16 / addu $v0,$a1,$v0`) instead of re-loading.
- *       We re-load both inside the body every iteration.  This is cse_set_around_loop
- *       and it is the unchanged frontier from s7-s10.  s11 re-measured the direct C
- *       spelling of it (carry the two values in locals, re-assign them at the bottom of
- *       the body): 55-59 at 197 insns on THIS chassis - see rejected/.
- *  (ii) `addiu $a0,$sp,24` and `addu $s0,$zero,$zero` are swapped in the prologue.
- *       s11 measured five source positions for `var_s0 = 0;` (before `g =`, after `g =`,
- *       after `t =`, after `prim.p_geom =`, after `prim.p_static =`, and immediately
- *       before the do-loop): ALL SIX score 22 with identical bytes.  Statement order does
- *       not reach this tie.
- * (iii) The `||` operand order.  The target tests the SUM first
- *       (`bnez` on the sum, then D_800A35BC), we test D_800A35BC first.  Spelling it in
- *       the target's order costs 8 points here (22 -> 30 at 190 insns) because it also
- *       removes four insns; do not "fix" it by inspection.
+ * IconC70 CORRECTNESS - THE PLACEHOLDER IS NOW DISPROVEN, DO NOT SHIP IT.  s12 read the callee:
+ * func_80069898 dereferences its $a1 argument at EXACTLY four offsets - lhu 0x0/0x2/0x4/0x6 -
+ * and feeds them to a TILE prim (sh to +0x8/0xA/0xC/0xE, three times).  And the sibling caller
+ * func_8006B120 has `.frame` 0x68 with $s0 saved at 0x50 and args 0x18, i.e. vars = 0x38 = 56 =
+ * prim(48 at 0x18) + icon(8 at 0x48) EXACTLY.  So the icon record is EIGHT bytes (four 16-bit
+ * fields), not 0x20.  The 24 bytes at sp+0x50..0x67 in func_80070C70 belong to a DIFFERENT,
+ * still-unidentified local - and it must be a REFERENCED one: s12 measured that an unreferenced
+ * `s32 sp50[6]` is dropped entirely by GCC 2.7.2 here (frame falls 128 -> 104, score 36).
+ * The `s16 sp50[12];` member this body still relies on is therefore a KNOWN-WRONG placeholder
+ * that happens to reproduce the frame; identifying the real 24-byte local is now the #1
+ * correctness prerequisite for any submission.  (func_800720FC has the same shape with 32
+ * spare bytes: frame 0x98, $s0 at 0x70, icon at 0x48 - so the extra local is a TU-wide idiom.)
  *
- * THE CONSTRUCTS IN THIS BODY THAT STILL NEED A FAMILY VET BEFORE ANY SUBMISSION:
- *   - `s32 g;` and `s32 t;` are each written and read at three sites (variable reuse).
- *     Every write is a real consumed value (the geometry pointer / the static pointer),
- *     so this reads as ordinary C, but see .claude/rules/defeat-licm-hoist-var-reuse.md
- *     and the named-intermediate 6 prongs before claiming a family.
- *   - `s32 ctx = var_s0 * 3;` (unchanged from s6) - the byte-offset giv.
- *   - `IconC70.sp50[12]` is still a PLACEHOLDER member list for the trailing 24 bytes of
- *     the 0x20-byte icon record; the size is proven, the members are not.
+ * RESIDUAL AT 22 (objdump diff, tmp/grind/func_80070C70/s12/{ours,tgt}.txt): four hunks, and
+ * three of them are the same cluster - the target keeps D_800A3558 in $a2 (as a raw `lhu`) and
+ * D_800A35B0 in $a1 across the second loop's back edge, loading both in the guard block and
+ * again in the tail, while we re-read both inside the body.  That is cse.c:7909
+ * cse_set_around_loop, gated on REG_LOOP_TEST_P (cse.c:7933), which only jump.c:2253
+ * duplicate_loop_exit_test sets - and that needs a top-test loop.  The fourth hunk is the
+ * prologue tie (`addiu $a0,$sp,24` vs `addu $s0,$zero,$zero`), measured dead six ways in s11.
+ *
+ * CONSTRUCTS STILL NEEDING A FAMILY VET BEFORE ANY SUBMISSION:
+ *   - `s32 c60 = 0x60;` - a constant-holder local, and it is LOAD-BEARING: the literal spelling
+ *     is 29/191 (s12 f1.c).  Named-local FAKE family, .claude/rules/named-local-fake-exception.md.
+ *   - `s32 g;` / `s32 t;` written+read at three sites each (every write a real consumed value).
+ *   - `s32 ctx = var_s0 * 3;` - the byte-offset giv.
+ *   - `IconC70.sp50[12]` - see above, now known wrong.
  *
  * COMPANION EDITS in src/text1b.c that are part of the measured 22 (unchanged):
  *   extern u8 D_800A3560[];  extern s16 D_800A3590[];  IconC70 gains `s16 sp50[12];`
@@ -69,7 +61,6 @@ void func_80070C70(s32 arg0) {
     IconC70 icon;
     s32 ctx_or_var_s2;
     s32 var_s0;
-    s32 var_s3;
     s32 t;
     u8 code;
     s32 g;
@@ -100,14 +91,13 @@ void func_80070C70(s32 arg0) {
     icon.sp4E = 1;
     func_80069898(arg0, (s32 *)&icon, 1);
     g = *(s32 *)(ctx_or_var_s2);
-    var_s3 = 0xA;
     t = g + 0x48;
     prim.p_geom = g;
     prim.p_static = t;
     do {
         prim.mode = var_s0 << 6;
         prim.link = *(s32 *)(arg0 + 0x10);
-        prim.code = var_s3;
+        prim.code = 0xA;
         *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
         var_s0 += 1;
         prim.p_geom += 0xC;

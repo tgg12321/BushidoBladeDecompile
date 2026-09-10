@@ -1,7 +1,7 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -69,23 +69,29 @@
    "floor": 22,
    "modality": "rederive",
    "headline": "Floor 39 -> 22 at 194/194 insns with the target's exact frame, on the UNCHANGED if-guarded do/while chassis: four ordinary-C statement-level spellings (tail-bound parenthesisation, a named geom/static"
+  },
+  {
+   "session": 12,
+   "floor": 22,
+   "modality": "rederive",
+   "headline": "Floor holds at 22 but the chassis question is closed with a number (top-test + s11's levers = 31, nine worse), one constant-holder local is retired at zero cost, and the IconC70 0x20 size is DISPROVEN"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole remaining residual is one cluster - the cse_set_around_loop hoist of the D_800A3558 and D_800A35B0 reads out of the second loop body into its guard block and its tail - and the do/while chassis is now 17 points closer to the target than it was when s7-s10 framed that question, so the frontier is unchanged but far cheaper to close.",
-   "mechanism": "cse.c:7909 cse_set_around_loop only acts on values flagged REG_LOOP_TEST_P (cse.c:7936), and the only setter of that flag is jump.c's duplicate_loop_exit_test, which requires a top-test loop. s10 proved the top-test chassis pays 24 frame bytes (three combine-orphaned '(use (reg))' pseudos typed ST_REGS) for that hoist. The question s11 did NOT get to is whether the four new statement-level levers apply to the top-test chassis too: it was 49 with the OLD body, and if L2-L4 are worth anything like 17 points there as well, its 24-byte frame penalty (about 13 insns) may now be affordable.",
-   "next_probe": "Port levers L2, L3 and L4 (the geom/static temp pair at both pre-loop sites and in the body, and prim.link before prim.code at both call sites - NOT L1, which s7 measured backwards on that chassis) onto memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c and score it with tmp/grind/func_80070C70/s11/score.sh. If it lands below 22 the chassis question reopens with a real number instead of a strategic argument. If it does not, read tools/gcc-2.7.2/cse.c's cse_around_loop / invalidate_skipped_block path with the .cse and .cse2 dumps of the 22-point body open (tmp/grind/func_80070C70/s10/scan.py extracts the func section) and enumerate the SOURCE-side inputs to that predicate."
+   "hypothesis": "The real 24-byte local at sp+0x50..0x67 is a referenced aggregate that the source declares after the 8-byte icon record, and recovering it is now a hard prerequisite for any submission - the current s16 sp50[12] inflation of IconC70 is KNOWN WRONG, contradicted by func_80069898's four-field contract and func_8006B120's frame.",
+   "mechanism": "Correctness of the submitted C, not codegen. GCC 2.7.2 drops an unreferenced local outright (s12 measured frame 128 -> 104), so whatever occupies those 24 bytes is read, written or address-taken somewhere in the function - which means the target's own instruction stream must touch it, or it is passed by address to one of the six callees (func_8007352C, func_8006E480, SetDrawMode, AddPrim, func_80070F78, func_8006ECF4, func_80072E10, func_80073200).",
+   "next_probe": "Disassemble asm/funcs/func_80070C70.s and enumerate EVERY $sp-relative access with an offset in 0x50..0x67 (there appear to be none in the objdump extract tmp/grind/func_80070C70/s12/tgt.txt, so check the raw .s for addiu $aN,$sp,0x50-style address materialisations feeding a call). Then do the same for func_800720FC, whose spare region is 32 bytes at 0x50..0x6F - two functions with the same idiom and different sizes should identify the type. Cross-check func_8006F97C (active queue sibling, same TU, same func_80069898 call) and propagate the corrected 8-byte IconC70 to its ledger either way."
   },
   {
-   "hypothesis": "The three 'addiu $v1,$v0,K' sites are now matched but two smaller ordering diffs remain that were never isolated: the position of 'sw $s3,0x2C($sp)' in the first loop, and the nop the target keeps after 'lw $v0,0x18($s1)' in the second loop's guard where our build fills the slot.",
-   "mechanism": "Both are sched1/reorg outcomes downstream of what else is ready in the same cycle. The first-loop one moved once already this session (it disappeared between q3 and r1 when prim.link was read before prim.code), which is evidence that call-argument statement order is the knob for that block rather than the store order itself.",
-   "next_probe": "Re-diff the 22-point body (tmp/grind/func_80070C70/s9/dis.sh after installing candidate.c) and enumerate statement orders for the FIRST loop's four body statements (prim.mode, prim.link, prim.code, the call) the way s11 did for the second loop - only two of the six orders have been measured."
+   "hypothesis": "The whole remaining 22 is still one cluster - the missing cse_set_around_loop hoist of the D_800A3558 and D_800A35B0 reads out of the second loop body - and the do/while chassis cannot reach it by any C spelling, so the only two live routes are (a) making the top-test chassis' three orphan spill pseudos not exist, or (b) finding a do/while spelling in which the guard's loads survive into the body through ordinary cse rather than cse_set_around_loop.",
+   "mechanism": "cse.c:7933 gates the transform on REG_LOOP_TEST_P, set only by jump.c:2253 in duplicate_loop_exit_test, which requires a top-test loop; the top-test loop in turn pays three combine-orphaned (use (reg)) pseudos typed ST_REGS (H-s10-1) worth 24 frame bytes. s12 priced that trade at 9 points against us with both chassis fully levered, and re-killed all three known orphan-removal levers on the improved chassis.",
+   "next_probe": "Route (a) is the only untried angle left and it is a combine question, not an RA one: read tools/gcc-2.7.2/combine.c:2089 and 10730-10850 with tmp/grind/func_80070C70/s10/w/sec.combine open, and work out what property of the target's insn stream let its REG_DEAD notes find homes (the target has the guard copy AND vars=80, so its build did NOT take the newi2pat path that orphans p116/p168/p173). Regenerate the dumps for the 31-point a3 body first via pwsh tools/grinder/dump.ps1 func_80070C70 - every existing dump is of the 49-point body."
   },
   {
-   "hypothesis": "IconC70's trailing 24 bytes still have a placeholder member list ('s16 sp50[12]'), and recovering the real one remains a prerequisite for any submission. Carried unspent from s1/s2/s3 and now the single largest correctness risk on a body that is 22 points from matching.",
-   "mechanism": "Correctness of the submitted C, not codegen. The 0x20 SIZE is proven three ways (frame arithmetic in s1, the BB2_FRAME_DEBUG census in s6, s10's 'stack_temp mode=26 size=32'), but the field list is not evidence-backed and the Judge will read it.",
-   "next_probe": "Read the $a1-relative stores in func_80069898's other callers - func_8006B120, func_8006CFBC, func_800720FC, func_80074488, func_8006F97C - and build the true field list, then propagate the corrected type to func_8006F97C's ledger, an active queue sibling in the same TU."
+   "hypothesis": "The prologue tie (addiu $a0,$sp,24 against addu $s0,$zero,$zero) and the guard block's instruction order are reachable from the two remaining unswept statement-order axes: the four statements of the FIRST loop body, and the order of the three pre-guard statements (the AddPrim tail, prim.p_geom = ctx[8], and the guard test itself).",
+   "mechanism": "Both are sched1/reorg outcomes downstream of what else is ready in the same cycle. s11 swept six positions of var_s0 = 0; inside the guarded region and s12 swept the position outside it (54) plus a pointer local for &prim (38) and the ctx read hoist (60); the first loop's own four-statement order has still only had two of six orders measured, and it moved once already (between s11's q3 and r1).",
+   "next_probe": "Install memory/grind/func_80070C70/candidate.c, regenerate the objdump diff with tmp/grind/func_80070C70/s12/dis.sh, then enumerate the remaining four orders of the first loop's body statements (prim.mode, prim.link read, prim.code store, the func_8007352C call) and the three orders of the pre-guard statements, scoring with tmp/grind/func_80070C70/s12/score.sh. Note that s12's g3.c (the duplicated prim.zero1C/prim.mode pair reordered) is 24, i.e. that pair's order IS live at 2 points - the neighbouring statement orders are worth sweeping for the same reason."
   }
  ],
  "judge_constraints": [],
@@ -354,6 +360,54 @@
    "measured_on": "the 22-point if-guarded do/while chassis (candidate.c body) and its 29-point r1 ancestor, zero FAKE constructs present, sandbox --disable all",
    "predicate_cite": "",
    "result": "KILLED as a lever on this chassis. Banked as rejected/s11-or-operands-sum-first-30.c. NOTE for future sessions: s7 measu"
+  },
+  {
+   "session": 12,
+   "statement": "Porting s11's ordinary-C levers L2 (named geom/static temp pair at both pre-loop sites), L3 (prim.link read before the prim.code store at both call sites) and L4 (the same temp pair inside the second ",
+   "kill_scope": "instance",
+   "measured_on": "the shape-exact top-test for chassis (memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c body: extern s16 D_800A3558 bare in the bound, (s16) cast in the body) with s11's L2/L3/L4 applied; zer",
+   "predicate_cite": "",
+   "result": "The levers DO port and are worth 18 points on the top-test chassis (49 -> 42 with L3 -> 36 with L2 -> 31 with L4), one p"
+  },
+  {
+   "session": 12,
+   "statement": "The three frame-buying levers s10 measured on the 49-point top-test body (bound hoisted into a local, bare-u16 bound, != bound) become net-positive once the body carries s11's L2/L3/L4 and the chassis",
+   "kill_scope": "instance",
+   "measured_on": "the 31-point top-test for chassis (tmp/grind/func_80070C70/s12/a/a3.c body), zero FAKE constructs beyond the inherited s32 c60, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "c1 = 51 at 187 insns, c2 = 34 at 194, c3 = 62 at 192, c4 = 51 at 187. All four are worse than a3's 31, and the bound-in-"
+  },
+  {
+   "session": 12,
+   "statement": "Carrying the second loop's two globals in C locals - the literal transcription of the target's $a1/$a2 register structure - wins on the 22-point do/while chassis, where s11 could only measure it again",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (memory/grind/func_80070C70/candidate.c as written by s12), zero FAKE constructs beyond the inherited s32 c60, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "All six two-local spellings score exactly 42 at 195 instructions and are byte-identical to one another - declared type, "
+  },
+  {
+   "session": 12,
+   "statement": "The `s32 var_s3 = 0xA;` constant-holder local inherited from the s11 candidate is load-bearing and cannot be written as a literal.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s11 candidate.c body), sandbox --disable all",
+   "predicate_cite": "",
+   "result": "f2 scores 22 at 194 instructions, identical to the body that declares var_s3, so that constant-holder is removable at ze"
+  },
+  {
+   "session": 12,
+   "statement": "IconC70 is a 0x20-byte record, so the trailing 24 bytes of the target's vars=80 frame belong to the icon struct and the placeholder `s16 sp50[12]` member list only needs its field NAMES recovered.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s12 candidate.c body) for the frame measurement; the callee and sibling-caller evidence is static asm reading and is chassis-independent",
+   "predicate_cite": "",
+   "result": "The icon record is EIGHT bytes - four 16-bit fields at +0/+2/+4/+6 - not 0x20. func_8006B120's vars region is 0x18..0x4F"
+  },
+  {
+   "session": 12,
+   "statement": "Two cheap statement-position levers reach the remaining prologue tie and the second loop's guard block: hoisting `var_s0 = 0;` above the if-guard, and materialising &prim into a pointer local.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s12 candidate.c body), zero FAKE constructs beyond the inherited s32 c60, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "e1 = 54 at 193 insns, e2 = 71 at 194, g1 = g2 = 38 at 197, g3 = 24 at 194, g4 = 60 at 194. Every one is worse than 22; t"
   }
  ],
  "ladder_skip": 0,
