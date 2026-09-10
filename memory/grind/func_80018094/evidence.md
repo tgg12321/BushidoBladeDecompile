@@ -75,3 +75,76 @@
 - [s1] Residual 21 = prologue/epilogue frame offsets (8) + island-input copy and sum seat a1 (9) + LZCR-read seats `lw v1,16(sp); li v0,-2; and v0,v1,v0` (3) + log2_val seat a1 (1).
 
 - [s1] Tooling: s1/splice2.py <variant.c> replaces the INCLUDE_ASM line after `git checkout src/code6cac.c`; s1/cc.sh <v...> compiles variants with the build cc1; s1/cc_dbg.sh <v> ENV=1 runs the instrumented cc1 with -da dumps and BB2_* hooks. The first splice.py re-inserts the header typedef on every call and must not be reused.
+
+## s2 (structural, 2026-09-09) — floor 21 -> 18, chassis -mel -msoft-float, no FAKE constructs
+
+- SIBLING TRANSPLANT (mandated): the COMPLETED-C sibling func_8001A67C (src/code6cac.c:834-878) shares
+  the whole LZCS/LZCR else-branch with this function. Transplanting its LZCR-read statement block —
+  `{ s32 lw_v1 = sp_tmp; s32 li_v0 = -2; li_v0 = lw_v1 & li_v0; shift_a = 0x16 - li_v0; }`
+  (src/code6cac.c:869-873) — in place of `shift_a = 0x16 - (sp_tmp & -2);` emits
+  `lw $3,16($sp); li $2,-2; and $2,$3,$2` = the target's `lw v1,16(sp); li v0,-2; and v0,v1,v0`
+  byte-identically. sandbox 21 -> 18 (tmp/grind/func_80018094/s2/v8a.c). The sibling's OTHER spellings
+  do NOT transplant: its u32 typing of the else branch (dist_sq/log2_val/shift_a/shift_b unsigned)
+  turns the target's `sra v1,v1,0x1` / `srav v0,a1,v1` into `srl` (s2/v9a.s) — func_80018094 needs the
+  SIGNED spelling because sum_sq also carries the `> 250000` and `< 0` tests.
+- RESIDUAL 18 = 8 prologue/epilogue frame-offset insns (vars 8 vs target 16) + a 10-insn register-seat
+  cluster. The seat cluster is ONE phenomenon: the target keeps sum_sq in a1 for every use
+  (`addu a1,v0,a3`, `slt`, `bgez a1`, `slti a1,1024`, `addu at,at,a1`, `srav v0,a1,v1`, and log2_val
+  reuses a1 too) and feeds the LZC island a SEPARATE pseudo in a0 produced by a `move a0,a1` copy that
+  reorg parks in the `beqz` delay slot (ours: a nop there, sum_sq in a0, no copy at all).
+- PASS ATTRIBUTION (dumps, not guesswork): a C-level copy `lz_in = sum_sq;` exists as
+  `(insn 124 (set (reg/v:SI 108) (reg/v:SI 78)))` in s2/v8b.rtl AND in s2/v8b.jump, and is GONE in
+  s2/v8b.cse, where the asm_operands input has been rewritten from reg108 to reg78. The deleting pass
+  is cse.c (canon_reg returns qty_first_reg, which is the older reg78 even when the block starts a
+  fresh cse path, so the copy always becomes dead and is deleted). This closes the s1 frontier
+  question "cse vs combine": it is cse, and it is position-independent — the copy is deleted equally
+  when it sits at the top of the else-big block (s1 v7a) and when it sits in the pre-branch block
+  (s2 v11b, whose asm is byte-identical to v8a).
+- BINARY-WIDE CENSUS of the LZC island: grep for `mtc2 ... $30` over asm/funcs/*.s finds 28 files;
+  EVERY inlined site emits `addu $t4, $a0, $zero` — the input is in $a0 at all 21 inlined sites
+  regardless of the surrounding code (the three library leaves Lzc / SquareRoot0 / SquareRoot12 use
+  `mtc2 $a0,$30` directly, a0 being their first parameter). The original's island input is
+  register-FIXED to $a0; it is not an allocation coincidence.
+- MECHANISM PROOF (diagnostic only, banned family, never proposed): a local register variable pinned
+  to $4 (`register s32 lz_in __asm__("$4"); lz_in = sum_sq;` placed in the pre-branch block, the island
+  reading it) reproduces the target's ENTIRE seat cluster exactly — `addu $5,$2,$7`, `slt $3,$3,$5`,
+  `bgez $5`, `slt $2,$5,1024`, `move $4,$5`, `lbu $2,D_8008D118($5)`, `sra $2,$5,$3` (s2/v11a.s vs
+  s2/v8a.s). It is INERT as a lever: the sandbox strips it (cheat_asm_stripped 20 -> 22) and the honest
+  score goes UP to 24, exactly as the anti-cheat design intends. Banked at
+  rejected/lzc-input-copy-register-pin-a0-sandbox-strips-24.c.
+- The one non-pin construct that makes a copy SURVIVE is a tied output/input pair on the island
+  (`: "=m"(sp_tmp), "=r"(lz_in) : "1"(sum_sq)`): reload emits a real `move $3,$4` (s2/v10b.s). It seats
+  WRONG — the copy is a block-local qty and local-alloc's ascending find_free_reg gives it $3 (the
+  island's own clobber list blocks $2), leaving sum_sq in $4; the target needs the copy in $4 and
+  sum_sq in $5. It is also a dead asm output (the island never writes that register), so it is a
+  coercion smell, not ordinary C. Banked at rejected/lzc-input-tied-output-copy-seats-v1-not-a0.c.
+- RA-SOLVER GROUND TRUTH (tools/ra_solver/extract.py func_80018094 code6cac, model at
+  tmp/ra_solver_work/func_80018094.model.json): global allocation order
+  [79, 78, 120, 99, 72, 96, 127, 132, 137, 94, 73, 93]; dispositions 79 -> $3, 78 (sum_sq) -> $4,
+  93 -> $5. sum_sq is allocated second and takes the first free register ($2 unavailable, $3 taken by
+  79). For sum_sq to land in $5, some allocno CONFLICTING with it must take $4 first — in the target
+  that allocno is precisely the island-input copy. So the frame residual and the seat residual are
+  independent, but the entire 10-insn seat cluster is downstream of ONE question: how the original
+  source fixed the island input to $a0.
+- Structural levers that are byte-NEUTRAL on this body (all compiled; s2/*.s identical to v8a.s):
+  sp_tmp declared in the innermost block (v9b), declaration-order permutation with dst first and
+  sp_tmp last (v9c), log2_val hoisted to function scope (v9e), and the pre-branch copy local (v11b).
+  Frame `vars=` stayed 8 for every one of them, so none of them is the missing 8 frame bytes.
+- Tooling: tmp/grind/func_80018094/s2/{cc.sh,cc_dbg.sh} are the s1 scripts re-pointed at s2 and fixed
+  to use splice2.py with a `git checkout src/code6cac.c` before every splice. They must be run under
+  WSL (`bash tools/wsl.sh 'bash tmp/grind/func_80018094/s2/cc.sh <v>'`) — the Windows-side Git Bash
+  cannot exec the Linux cc1 ("Exec format error").
+
+- [s2] Floor 21 -> 18 on the chassis measured this session; candidate.c re-verified at 18 (153/153 insns, rules_dropped 0, cheat_asm_stripped 20) with no FAKE constructs and no register pins.
+
+- [s2] Residual 18 = 8 prologue/epilogue frame-offset insns (vars 8 vs the target's 16) + a single 10-insn register-seat cluster: the target keeps sum_sq in a1 for every use and feeds the LZC island a separate a0 pseudo via a `move a0,a1` copy that reorg parks in the beqz delay slot; ours keeps sum_sq in a0, emits no copy, and leaves that slot a nop.
+
+- [s2] Binary-wide census: grep of `mtc2 ... $30` over asm/funcs/*.s finds 28 files, and every one of the 21 inlined LZC sites emits `addu $t4, $a0, $zero` regardless of surrounding code (the three library leaves Lzc / SquareRoot0 / SquareRoot12 read $a0 as their first parameter). The original's island input is register-fixed to $a0, not allocated there by chance.
+
+- [s2] Pass attribution by dump, not inference: the C-level copy is insn 124 in v8b.rtl and v8b.jump and is gone in v8b.cse with the asm operand rewritten to the source pseudo — cse.c canon_reg deletes it, in both the top-of-else-block position (s1 v7a) and the pre-branch position (s2 v11b).
+
+- [s2] RA-solver ground truth (tmp/ra_solver_work/func_80018094.model.json): global order [79, 78, 120, 99, 72, 96, 127, 132, 137, 94, 73, 93]; 79 -> $3, 78 (sum_sq) -> $4, 93 -> $5. sum_sq is allocated second and takes the first free register, so it can only land in $5 if a conflicting allocno takes $4 first — in the target that allocno is exactly the island-input copy. The frame residual and the seat residual are independent problems.
+
+- [s2] Structural levers measured byte-neutral on this body: sp_tmp in the innermost block, declaration-order permutation, log2_val at function scope, pre-branch copy local — all four assemble identically to the candidate and all four keep `vars= 8`.
+
+- [s2] Tooling: tmp/grind/func_80018094/s2/{cc.sh,cc_dbg.sh,splice2.py} are the s1 scripts re-pointed at s2 and fixed to git-checkout src/code6cac.c before each splice; they must run under WSL (`bash tools/wsl.sh 'bash tmp/grind/func_80018094/s2/cc.sh <v>'`) because Windows-side Git Bash cannot exec the Linux cc1.

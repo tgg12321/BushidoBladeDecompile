@@ -1,14 +1,10 @@
-/* func_80018094 candidate -- s2 (structural, 2026-09-09). sandbox --disable all == 18 (153/153 insns,
- * rules_dropped 0, 20 island insns stripped on both sides). Chassis: -mel -msoft-float. s1's v6a body
- * (floor 21) plus the COMPLETED sibling func_8001A67C's LZCR-read statement block
- * (src/code6cac.c:869-873: `s32 lw_v1 = sp_tmp; s32 li_v0 = -2; li_v0 = lw_v1 & li_v0;`), which fixes
- * the 3 read seats `lw v1,16(sp); li v0,-2; and v0,v1,v0` exactly.
+/* func_80018094 candidate -- s1 (recon, 2026-09-09). sandbox --disable all == 21 (153/153 insns,
+ * rules_dropped 0, 20 island insns stripped by the sandbox on both sides). Chassis: -mel -msoft-float.
  * Islands: gte_SetRotMatrix / gte_SetTransMatrix in the func_80019310 / func_800300B4 spelling,
  * LZCS/LZCR in the authorized func_8001A67C template (inline_asm_canonical.txt:266). No FAKE
- * constructs, no register pins.
- * Residual (18): frame vars 8 vs 16 (8 insns) + the LZC-island input seat cluster (10 insns: the
- * target keeps sum_sq in a1 and feeds the island a `move a0,a1` copy; ours keeps sum_sq in a0 and
- * emits no copy). See memory/grind/func_80018094/{evidence,hypotheses}.md. */
+ * constructs. Residual (21): frame vars 8 vs 16 (8 insns), island-input copy `move a0,a1` + sum_sq
+ * seat a1 vs a0 (9 insns), LZCR read seats lw->v1 / li->v0 (3 insns), log2_val seat a1 (1 insn).
+ * See memory/grind/func_80018094/{evidence,hypotheses}.md. */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
 void func_80018094(s32 *arg0, s32 *arg1) {
@@ -53,7 +49,9 @@ void func_80018094(s32 *arg0, s32 *arg1) {
     dz = ((s32 *)arg0[1])[7] - arg1[12];
     SCRV->z = dz;
 
-    sum_sq = (dx * dx) + (dy * dy) + (dz * dz);
+    sum_sq = dx * dx;
+    sum_sq += dy * dy;
+    sum_sq += dz * dz;
 
     if (sum_sq > 250000) {
         scale = 0x100;

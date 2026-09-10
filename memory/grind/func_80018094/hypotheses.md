@@ -98,3 +98,95 @@ dropped).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-09 (-mel -msoft-float), v3d/v6a bodies, no FAKE constructs
+
+## s2 (structural, 2026-09-09) — chassis -mel -msoft-float; body = s1 v6a + sibling LZCR-read block
+
+| # | hypothesis | probe | result | verdict |
+|---|---|---|---|---|
+| H11 | sibling func_8001A67C's `lw_v1/li_v0` LZCR-read block fixes the 3 read seats | sandbox v8a | 21 -> 18; `lw $3,16($sp); li $2,-2; and $2,$3,$2` = target | CONFIRMED |
+| H12 | the sibling's u32 typing of the else branch transplants too | cc1 v9a | `sra` -> `srl` at 2 sites (target has sra) | KILLED (instance) |
+| H13 | cse (not combine) deletes the island-input copy | dumps v8b.rtl / .jump / .cse | insn 124 present in .rtl and .jump, gone in .cse, asm operand rewritten to reg78 | CONFIRMED |
+| H14 | the copy survives if placed in the pre-branch block (global allocno) | cc1 v11b | asm byte-identical to v8a; cse deletes it there too | KILLED (instance) |
+| H15 | frame vars 16 comes from a declaration-scope / order / hoisting structural lever | cc1 v9b / v9c / v9e / v11b `.frame` | vars= 8 in every variant | KILLED (instance) |
+| H16 | split accumulation `sum=dx*dx; sum+=dy*dy; sum+=dz*dz;` moves the sum seat | cc1 v9d | mflo pair swaps, sum still $4, block-1 add order breaks | KILLED (instance) |
+| H17 | a $4-pinned register variable is a usable lever for the seat cluster | cc1 v11a + sandbox | asm reproduces the target's 10 seat insns EXACTLY, but the sandbox strips it (22 vs 20 stripped) and the honest score rises to 24 | KILLED (instance) as a lever; the asm output stands as mechanism proof |
+| H18 | a tied output/input pair on the island produces a surviving copy seated in $4 | cc1 v10b | copy survives reload (`move $3,$4`) but seats $3 with sum_sq still $4; also a dead asm output | KILLED (instance) |
+
+## Frontier (next session)
+1. The 10-insn seat cluster reduces to ONE question: how the original fixed the LZC island's input to
+   $a0 (binary-wide: all 21 inlined sites read $a0). Ordinary C copies cannot survive cse.c canon_reg
+   (H13/H14 here, s1 H7/H8 before). The register-pin spelling reproduces the bytes but is a banned
+   family and is stripped by the sandbox (H17). The open RULING question is whether the input-register
+   fixing belongs to the AUTHORIZED canonical island for this cop2-cluster member
+   (.claude/rules/cop2-addressing-preamble-cluster.md:60, inline_asm_canonical.txt:266) rather than to
+   the C — i.e. whether the island template for func_80018094 may be spelled with $a0 in its own text
+   plus an operand form that makes the compiler materialise the value there.
+2. Frame vars 8 -> 16 (8 insns) is INDEPENDENT of the seat cluster and is untouched by declaration
+   scope, declaration order and function-scope hoisting (H15). Next: BB2_FRAME_DEBUG on bodies that
+   introduce a stack TEMP rather than a stack VARIABLE (memory phantom-frame-slots-gcc272 records that
+   an HImode bitwise expression over two HImode locals is the known minimal trigger for exactly 8
+   phantom bytes) — e.g. narrowing the `sp_tmp & -2` block or the `0x16 - x` / `0x13 - y` shift
+   arithmetic to s16 intermediates, then reading `vars=` from the `.frame` comment.
+3. If (1) is ruled C-side, the remaining pin-free mechanism to test is a copy that reload MUST
+   materialise: the tied-operand form of H18 with $3 made busy across the copy's block-local range so
+   local-alloc's ascending find_free_reg lands on $4 and pushes sum_sq to $5.
+
+## [s2] the COMPLETED-C sibling func_8001A67C's LZCR-read statement block (`s32 lw_v1 = sp_tmp; s32 li_v0 = -2; li_v0 = lw_v1 & li_v0; shift_a = 0x16 - li_v0;`, src/code6cac.c:869-873) replaces `shift_a = 0x16 - (sp_tmp & -2);` and emits the target's three read seats exactly
+- mechanism: the split named intermediates give local-alloc a 2-address `and` whose destination qty is the li-constant qty, so the load lands in $3 and the constant in $2 (target `lw v1,16(sp); li v0,-2; and v0,v1,v0`)
+- probe: sandbox func_80018094 --disable all on tmp/grind/func_80018094/s2/v8a.c (= s1 v6a + the sibling block)
+- result: 21 -> 18, 153/153 insns, rules_dropped 0, cheat_asm_stripped 20; the three insns are byte-identical; this is the s1 frontier item 1 sibling transplant, banked as the new candidate.c
+- verdict: CONFIRMED
+
+## [s2] cse.c, not combine.c, is the pass that deletes a C-level island-input copy `lz_in = sum_sq;` on this body
+- mechanism: cse.c canon_reg rewrites the asm_operands input to qty_first_reg (the older pseudo reg78) even when the copy opens a fresh cse path, after which the copy insn is dead and is deleted
+- probe: tmp/grind/func_80018094/s2/cc_dbg.sh v8b, then grep `reg/v:SI 108` across v8b.rtl / v8b.jump / v8b.cse
+- result: (insn 124 (set (reg/v:SI 108) (reg/v:SI 78))) is present in .rtl and .jump and absent in .cse, where the asm input reads reg78; this closes the s1 open question 'cse vs combine'
+- verdict: CONFIRMED
+
+## [s2] placing the island-input copy `lz_in = sum_sq;` in the pre-branch block (before `if (sum_sq < 0x400)`) so that it becomes a cross-block allocno, measured on this candidate body, makes the copy survive to the assembly
+- mechanism: a copy live across a branch would be a global.c allocno conflicting with sum_sq and would take $4 before it, pushing sum_sq to $5
+- probe: cc1 v11b (tmp/grind/func_80018094/s2/v11b.c, v11b.s) diffed against v8a.s
+- result: v11b.s is byte-identical to v8a.s: cse deletes the copy in that position as well, so no copy reaches RA and sum_sq keeps $4
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), v8a body (s1 v6a + sibling LZCR-read block), no FAKE constructs
+
+## [s2] declaration-scope / declaration-order / hoisting structural levers (sp_tmp declared in the innermost block, dst-first + sp_tmp-last permutation, log2_val hoisted to function scope) move the frame from vars=8 toward the target's vars=16, measured on this candidate body
+- mechanism: function.c assign_stack_local / put_reg_into_stack ordering plus reload1.c round_frame
+- probe: cc1 v9b, v9c, v9e and v11b; read the `.frame` comment (vars= IS get_frame_size) and diff each .s against v8a.s
+- result: all four print `vars= 8` and all four assemble byte-identically to v8a.s — these levers are frame-neutral and codegen-neutral here
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), v8a body, no FAKE constructs
+
+## [s2] transplanting the sibling func_8001A67C's u32 typing of the LZC else branch (log2_val / shift_a / shift_b unsigned) onto this body keeps the target's shift forms
+- mechanism: unsigned shift operands select lshiftrt (srl) instead of ashiftrt (sra) in the RTL expander
+- probe: cc1 v9a diffed against v8a.s
+- result: `sra $3,$3,1` -> `srl $3,$3,1` and `sra $3,$4,$2` -> `srl $3,$4,$2`; the target has sra at both sites, so func_80018094 needs the signed spelling (sum_sq also carries the `> 250000` and `< 0` tests)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), v8a body, no FAKE constructs
+
+## [s2] re-associating the sum as split accumulation (`sum_sq = dx*dx; sum_sq += dy*dy; sum_sq += dz*dz;`) moves the sum_sq seat off $4, measured on this candidate body
+- mechanism: changing the order in which the three products are born changes which partial-product qty local-alloc reuses for the accumulator
+- probe: cc1 v9d diffed against v8a.s
+- result: the two mflo destinations swap ($5/$4 -> $4/$5) and the adds become `addu $4,$4,$5; addu $4,$4,$7`; sum_sq still lands in $4 and block 1 loses the target's `addu v0,a1,a0` form
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), v8a body, no FAKE constructs
+
+## [s2] a local register variable pinned to $4 carrying the island input is a usable lever for the 10-insn seat cluster on this body
+- mechanism: the hard-reg range conflicts with sum_sq's allocno so global.c find_reg pushes sum_sq to $5 and reload materialises `move $4,$5`
+- probe: cc1 v11a (asm compared against asm/funcs/func_80018094.s) then sandbox func_80018094 --disable all
+- result: the assembly reproduces the target's whole seat cluster exactly (addu $5,$2,$7 / slt $3,$3,$5 / bgez $5 / slt $2,$5,1024 / move $4,$5 / lbu $2,D_8008D118($5) / sra $2,$5,$3), but the register pin is a banned family AND is inert: the sandbox strips it (cheat_asm_stripped 20 -> 22) and the honest score RISES to 24. Kept only as mechanism proof in rejected/lzc-input-copy-register-pin-a0-sandbox-strips-24.c; never proposed as a candidate
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), v8a body plus one register-pin declaration (the banned construct under test)
+
+## [s2] a tied output/input pair on the island (`: "=m"(sp_tmp), "=r"(lz_in) : "1"(sum_sq)`) produces a surviving input copy seated in $4 with sum_sq pushed to $5, measured on this candidate body
+- mechanism: reload must satisfy the matching constraint while sum_sq is live afterwards, so it emits a real reg-reg copy that cse cannot touch
+- probe: cc1 v10b diffed against v8a.s, plus tools/ra_solver/extract.py on the v10b body
+- result: a copy does survive (`move $3,$4`, island reads $3) but it is a block-local qty and local-alloc's ascending find_free_reg gives it $3 ($2 is blocked by the island's own clobber), leaving sum_sq in $4; the model shows order [78, 79, ...] with 78 -> $4. It is also a dead asm output (the island never writes that register), i.e. a coercion smell rather than ordinary C
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), v8a body plus a tied asm output operand (the construct under test)
