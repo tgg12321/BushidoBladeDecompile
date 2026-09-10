@@ -301,3 +301,85 @@
 - [s4] Permuter telemetry (all campaigns harvested --stop, 0 live at session end): s4-v8a-chassis 8,906 iterations / base 303 / 0 improvements; s4-v20g-framefixed 24,345 iterations / base 245 / one improvement to 230 at ~9.5 min (the log2_val staging); s4-v21a-log2staged 45,681 iterations / base 230 / 0 novel finds in ~18 min. 78,932 iterations total.
 
 - [s4] The residual is now 7 insns and every one of them is a consequence of the missing island-input copy: index 69 nop vs `move a0,a1`, 74/75, 82/84, 93/96 (tmp/grind/func_80018094/s4/v21a_pairdiff.txt).
+
+## s5 (permuter, 2026-09-09) — the island-input copy is now MATERIALISED; the residual is one register name
+
+Chassis at dispatch: candidate.c re-measured on HEAD = sandbox 7 (153/153 insns, rules_dropped 0,
+20 island insns stripped on both sides). Unchanged from s4.
+
+**What moved.** s4's frontier said "all 7 remaining insns fall together the moment the LZC island's
+input is fixed to $a0" and framed a ruling-request about naming $a0 in the island's asm text. That
+ruling request is NOT needed: the copy can be produced by ordinary operand plumbing. A tied asm
+output on the island (`: "=m"(sp_tmp[0]), "=r"(lz_in) : "1"(sum_sq)`) makes GCC emit a real
+`move lz_in,sum_sq` that cse.c cannot delete, and reorg.c parks it in the `beqz v0` delay slot in
+exactly the target's position. Adding it alone costs 3 insns (sandbox 10); the s5 permuter campaign
+found that a `do { ... } while (0);` wrap around the inner if-chain plus its `scale = ...` statement
+gives all 3 back (sandbox 7). That body — `rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-
+equal-floor-7.c` — is the same floor as candidate.c but a strictly better structural position:
+
+| | ours (w6) | target |
+|---|---|---|
+| 69 (delay slot) | `move v1,a1` | `move a0,a1` |
+| 75 (island input) | `move t4,v1` | `move t4,a0` |
+| 74 | `srl a0,v0,3` | `srl a1,v0,3` |
+| 82/84 (li_v0) | `$a0` | `$v0` |
+| 93/96 (log2_val) | `$a0` | `$a1` |
+
+sum_sq is seated in $a1 on both sides. Every one of the 7 differing insns is now a consequence of
+ONE fact: our copy takes $v1, the target's takes $a0.
+
+**Why it takes $v1 (measured, not inferred).** tools/ra_solver, run on the spliced body:
+- global model (`extract.py` + `simulate.py`): sort order MATCH, dispositions 10/12. The three
+  contested globals are pseudo 77 = sum_sq (nrefs 8, livelen 16), 98 = log2_val (nrefs 5, livelen 7,
+  prefs [4]), 78 = scale (nrefs 6, livelen 15). The copy is NOT among them.
+- local model (`local_extract.py` + `local_alloc.py`, order 6/6 blocks, assign 29/34): the copy is
+  `blk 6 qty 0` — birth 4, death 5, refs 2, got 3. It is a BLOCK-LOCAL quantity, allocated by
+  local_alloc BEFORE global_alloc runs, and `find_free_reg` scans ascending over
+  `fixed_reg_set | union(regs_live_at[4..5])`. $2 is in that set (the island's own clobber list);
+  nothing else is; $3 is therefore the first free register. The next qty in the block is born at 6,
+  so no reordering of block 6's own quantities can occupy $3 across [4,5].
+- `inverse.py local --block 6 --goal '{"0": 4}' --depth 2` returns exactly ONE minimal vector:
+  **[live_extend] qty 0 dies later (5 -> 9)**.
+
+**The structural consequence.** For the target's copy to take $a0 it cannot be a block-local qty of
+the else block at all — it must be a cross-block GLOBAL allocno, defined in the pre-branch block and
+used at the island (which is also the simplest reading of the target's delay slot: the copy is the
+insn immediately before `beqz`, not a reorg hoist out of the branch target). A tied asm operand
+structurally cannot produce that: GCC emits the copy immediately before the asm, inside the else
+block. And s1 H7 already killed the direct spelling (`lz_in = sum_sq;` before the branch) — cse.c
+canon_reg deletes it.
+
+**The live-extend vector, spelled honestly, overshoots.** The only real consumer of sum_sq's value
+after the island is the LUT index `sum_sq >> shift_a` at position ~18, not ~9. Re-sourcing it from
+lz_in (s5/w8.c) makes sum_sq die at the copy, cse re-unifies the two values, and the copy insn
+disappears: sandbox 12, 148 emitted lines. Banked as
+`rejected/lzc-input-tied-copy-live-extend-to-lut-index-cse-refolds.c`.
+
+**Campaign telemetry.** s5-w1-tiedcopy (tmp/perm_80018094d, base score 55, --stack-diffs, -j 8):
+38,542 iterations, three finds — output-35-1 at **23 s** (the do-while(0) wrap; the entire yield),
+output-45-1 at 880 s and output-55-1 at 942 s (both non-improving). Harvested with --stop; 0 live
+campaigns at session end. Consistent with the fresh-seed rule: this basin yielded immediately or
+not at all.
+
+**Inert on this chassis (measured, do not re-derive):** declaration scope of the tied output pseudo
+(function-top vs else-arm: byte-identical); the permuter's split sum accumulation
+(`new_var = dx*dx + dy*dy; sum_sq = new_var + dz*dz;` — sandbox 10, i.e. no change from the tied
+form alone); a dead `log2_val = lz_in;` store as a live-extend carrier (sandbox 7, diagnostic only).
+
+- [s5] HEAD floor re-measured at dispatch: candidate.c spliced into src/code6cac.c gives sandbox --disable all == 7 (153/153 insns, rules_dropped 0, cheat_asm_stripped 20). Unchanged from s4.
+
+- [s5] s4's frontier framed a ruling-request asking whether the authorized LZC island may name $a0 in its own asm text. That request is NOT needed and should not be filed: a tied asm output operand produces the missing `move a0,a1`-shaped copy with ordinary operand plumbing, in the target's exact delay-slot position, with no register pin.
+
+- [s5] On the s5 w6 chassis all 7 differing insns are consequences of ONE register name: our island-input copy takes $v1, the target's takes $a0. sum_sq is seated in $a1 on both sides; the four downstream hunks (srl a0 vs a1, li_v0 in $a0 vs $v0, log2_val in $a0 vs $a1 twice) follow from $a0 being free in ours.
+
+- [s5] ra_solver global model on this body: sort order MATCH, dispositions 10/12; the two misses are pseudo 77 (sum_sq, sim=5 dump=4) and pseudo 98 (log2_val, sim=4 dump=5) - the simulator already predicts the TARGET's seats for both, i.e. global.c is not where the divergence lives.
+
+- [s5] ra_solver local model: the copy is blk 6 qty 0 (birth 4, death 5, refs 2, got $3), allocated last in the block; $2 is in find_free_reg's `used` set via the island's clobber list, nothing else is, and the block's next qty is born at 6 - so $3 is unavoidable for a block-local copy here.
+
+- [s5] Structural conclusion the next session should start from: the target's copy is a cross-block GLOBAL allocno (defined in the pre-branch block, used at the island). A tied asm operand cannot produce that shape, and s1 H7 already killed the direct `lz_in = sum_sq;` pre-branch spelling (cse.c canon_reg deletes it). The open question is what ordinary C puts a cse-surviving copy in the PRE-BRANCH block.
+
+- [s5] Inert on this chassis, do not re-derive: tied-output declaration scope (function-top vs else-arm, byte-identical); the permuter's split sum accumulation `new_var = dx*dx + dy*dy; sum_sq = new_var + dz*dz;` (sandbox 10, no change from the tied form alone); a dead `log2_val = lz_in;` store as a live-extend carrier (sandbox 7, diagnostic only).
+
+- [s5] Campaign telemetry: s5-w1-tiedcopy, base score 55, 38,542 iterations, 3 finds, entire useful yield at 23 s. Harvested with --stop; `permuter_campaign.py status` reports 0 live campaigns at session end.
+
+- [s5] src/code6cac.c was reverted to its INCLUDE_ASM state at session end; the tree carries only memory/grind ledger changes.

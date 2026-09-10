@@ -9,6 +9,11 @@
  * Islands: gte_SetRotMatrix / gte_SetTransMatrix in the func_80019310 / func_800300B4 spelling,
  * LZCS/LZCR in the authorized func_8001A67C template (inline_asm_canonical.txt:266). No register pins.
  * Residual (7, tmp/grind/func_80018094/s4/v21a_pairdiff.txt): ALL of it is downstream of the single
+ * s5 UPDATE: an EQUAL-floor (7) but structurally closer chassis now exists --
+ * rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c adds a tied asm output
+ * on the island (which materialises the missing copy, in the target's delay-slot position) plus
+ * a do{...}while(0) wrap that pays back its 3-insn cost. There the residual is ONE register name
+ * (our copy takes $v1, target's takes $a0). Read s5 in evidence.md before choosing a chassis.
  * missing island-input copy. The target reserves $a0 for a `move a0,a1` copy that reorg parks in the
  * `beqz v0` delay slot (ours: nop), which in turn pushes li_v0 to $v0 and log2_val to $a1; ours puts
  * both in $a0 and feeds the island $a1 directly. See memory/grind/func_80018094/{evidence,hypotheses}.md. */

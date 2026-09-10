@@ -351,3 +351,75 @@ dropped).
 - probe: tools/pairdiff.py code6cac func_80018094 on the spliced floor-7 candidate (tmp/grind/func_80018094/s4/v21a_pairdiff.txt)
 - result: the 7 hunks are index 69 (`nop` vs `move a0,a1`, the copy reorg parks in the `beqz v0` delay slot), 74/75 (`srl a0` vs `srl a1`, `move t4,a1` vs `move t4,a0`), 82/84 (li_v0 in $a0 vs the target's $v0) and 93/96 (log2_val in $a0 vs $a1) — one cause and six consequences. s2's register-pin diagnostic (v11a) already reproduced this whole cluster, and s2's dump attribution proved cse.c canon_reg deletes every pin-free C-level copy
 - verdict: CONFIRMED
+
+## [s5] Re-measuring the s2 tied-asm-output island-input copy on the CURRENT floor-7 chassis materialises the copy but seats it in $v1
+- mechanism: a tied asm operand pair (`: "=m"(sp_tmp[0]), "=r"(lz_in) : "1"(sum_sq)`) forces GCC to emit a real `move lz_in,sum_sq` before the asm because the output pseudo is distinct from sum_sq's, which cse.c canon_reg cannot delete (unlike every pin-free C-level copy killed in s1 H7 / s2 H13); reorg.c then parks that copy in the `beqz v0` delay slot exactly as the target does. s2 measured this lever BEFORE the s4 frame fix and the log2_val staging, so its allocno ordering was stale
+- probe: four variants on the current chassis (tmp/grind/func_80018094/s5/w1..w4.c: lz_in declared in the else arm vs at function top, each with and without the log2_val staging), compiled with s5/cc.sh and each spliced into src/code6cac.c for `sandbox func_80018094 --disable all`
+- result: the copy IS materialised and IS delay-slot-parked in all four, but takes $v1, and adding it displaces sum_sq from $a1 to $a0 — sandbox 7 -> 10 (with staging, w1/w2) and 7 -> 11 (without, w3/w4). Declaration scope is inert (w1 == w2 byte-for-byte, w3 == w4), which is itself the signal that the copy pseudo is block-local. Banked: rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c (the improved w6 form below)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 (s32 sp_tmp[4] + log2_val staging, both FAKE-annotated) plus one tied asm output operand (the construct under test)
+
+## [s5] A do{...}while(0) wrap around the inner if-chain recovers the 3 insns the tied-operand copy costs, giving a floor-7 chassis that CARRIES the copy
+- mechanism: found by the decomp-permuter, not by hand — campaign s5-w1-tiedcopy (tmp/perm_80018094d, base score 55) produced output-35-1 at 23s combining a do-while(0) wrap of `if (sum_sq < 0x400) {...} else {...} scale = ...` with a split sum accumulation (`new_var = dx*dx + dy*dy; sum_sq = new_var + dz*dz;`). Family: do-while-zero-exception (owner ruling 2026-07-06, ANY codegen effect incl. register allocation)
+- probe: the two deltas split apart and measured separately (s5/w5.c = split sum only, w6.c = do-while only, w7.c = both), each spliced into src/code6cac.c and sandboxed; then `tools/pairdiff.py code6cac func_80018094` on w6 (s5/w6_pairdiff.txt)
+- result: the split sum is inert (w5 = 10, same as w1); the do-while(0) wrap alone is the whole find (w6 = 7, w7 = 7). w6 is a genuinely different chassis at the SAME floor: the copy now exists, reorg parks it in the `beqz v0` delay slot, and sum_sq is correctly seated in $a1 — the 7 differing insns become a single register-naming question (`move v1,a1` / `move t4,v1` where the target has `move a0,a1` / `move t4,a0`, plus the four consequences that follow from $a0 being free for log2_val and li_v0)
+- verdict: CONFIRMED
+
+## [s5] The island-input copy this chassis emits is a block-LOCAL quantity, so no reordering of the else block's own quantities can move it off $v1
+- mechanism: local_alloc's `find_free_reg` scans ascending over `used = fixed_reg_set | union(regs_live_at[birth..death))` and runs BEFORE global_alloc, so the copy claims its register before sum_sq/scale/log2_val exist as assignments
+- probe: tools/ra_solver/extract.py + simulate.py (global model: sort order MATCH, dispositions 10/12; pseudo 77 = sum_sq, 98 = log2_val, 78 = scale) and local_extract.py + local_alloc.py (order 6/6 blocks, assign 29/34) on the spliced w1 and w6 bodies; then tools/ra_solver/inverse.py local --block 6 --goal '{"0": 4}' --depth 2
+- result: the copy is `code6cac.local.json func_80018094 blk 6 qty 0` — birth 4, death 5, refs 2, got 3. $2 is in `used` (the island's clobber list), nothing else is, so $3 is the first free register. NO other local qty of block 6 overlaps [4,5] (the next birth is 6), so the block's own allocation order cannot occupy $3 there. The target's copy must therefore be a cross-block GLOBAL allocno (defined in the pre-branch block, used at the island), which the tied-operand spelling structurally cannot produce — GCC emits a tied-operand copy immediately before the asm, inside the else block. inverse.py returns exactly ONE minimal vector: [live_extend] qty 0 dies later (5 -> 9)
+- verdict: CONFIRMED
+
+## [s5] The only honest spelling of the inverse solver's live-extend vector available in this body overshoots and lets CSE refold the copy
+- mechanism: [live_extend] qty 0 death 5 -> 9 needs the copy's value read once, shortly after the island and before `li $v0,-2`; the sole real consumer of sum_sq's value in that region is the post-island LUT index `sum_sq >> shift_a`, which sits at ~18, not ~9
+- probe: s5/w8.c (`(u8)(*(&D_8008D118 + (lz_in >> shift_a)))` in place of the sum_sq read), compiled and sandboxed; s5/w9.c (a dead `log2_val = lz_in;` store) run only as a diagnostic of the same vector
+- result: w8 = 12 — with lz_in carrying the later read, sum_sq dies at the copy, cse re-unifies the two values and the copy insn vanishes altogether (148 emitted lines vs 153). w9 (dead store, diagnostic only, not committable) = 7, i.e. the vector is not reached by a same-block extra reference either. Banked as rejected/lzc-input-tied-copy-live-extend-to-lut-index-cse-refolds.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s5 w6 body (candidate.c + tied asm output + do-while(0) wrap, three FAKE constructs) with the LUT-index read re-sourced from lz_in
+
+## [s5] The decomp-permuter reached the do-while(0) find quickly on the tied-copy chassis but nothing further in 38,542 iterations
+- mechanism: fresh-seed discipline — a basin yields early or not at all; the tied-copy chassis is structurally different from the s4 floor-7 chassis (the copy insn exists), so it is a valid re-seed under the 2026-09-01 chassis rule
+- probe: campaign s5-w1-tiedcopy (tmp/perm_80018094d, base score 55, --stack-diffs, -j 8), waited in-turn with `permuter_campaign.py wait`, harvested with --stop
+- result: three finds — output-35-1 at 23s (the do-while(0) wrap, transplanted above), output-45-1 at 880s and output-55-1 at 942s (both non-improving relative to 35). 38,542 iterations total, campaign stopped, 0 live at session end. The whole yield of the basin arrived in the first 25 seconds
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s5 w1 body (candidate.c + tied asm output, permuter base score 55), decomp-permuter default randomization with --stack-diffs, -j 8
+
+## [s5] Re-measuring the s2 tied-asm-output island-input copy on the current floor-7 chassis materialises the copy but seats it in $v1 and displaces sum_sq from $a1 to $a0
+- mechanism: a tied asm operand pair (`: "=m"(sp_tmp[0]), "=r"(lz_in) : "1"(sum_sq)`) forces GCC to emit a real `move lz_in,sum_sq` before the asm because the output pseudo is distinct from sum_sq's, which cse.c canon_reg cannot delete (unlike every pin-free C-level copy killed in s1 H7 / s2 H13); reorg.c then parks that copy in the `beqz v0` delay slot exactly where the target has it. s2 measured this lever before the s4 frame fix and log2_val staging, so its allocno ordering was stale
+- probe: four variants on the current chassis (tmp/grind/func_80018094/s5/w1..w4.c: lz_in declared in the else arm vs at function top, each with and without the log2_val staging), compiled with s5/cc.sh and each spliced into src/code6cac.c for `sandbox func_80018094 --disable all`
+- result: the copy is materialised and delay-slot-parked in all four, but takes $v1; sandbox 7 -> 10 with the staging (w1/w2) and 7 -> 11 without it (w3/w4). Declaration scope is inert (w1 == w2 byte-for-byte, w3 == w4), which is itself the signal that the copy pseudo is block-local rather than global
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 (s32 sp_tmp[4] + log2_val staging, both FAKE-annotated) plus one tied asm output operand (the construct under test)
+
+## [s5] A do{...}while(0) wrap around the inner if-chain recovers the 3 insns the tied-operand copy costs, giving a floor-7 chassis that carries the copy with sum_sq correctly seated in $a1
+- mechanism: found by the decomp-permuter, not by hand - campaign s5-w1-tiedcopy (tmp/perm_80018094d, base score 55) produced output-35-1 at 23s combining a do-while(0) wrap of `if (sum_sq < 0x400) {...} else {...} scale = ...` with a split sum accumulation. Family: do-while-zero-exception (owner ruling 2026-07-06, ANY codegen effect incl. register allocation)
+- probe: the two deltas split apart and measured separately (s5/w5.c = split sum only, w6.c = do-while only, w7.c = both), each spliced into src/code6cac.c and sandboxed; then tools/pairdiff.py code6cac func_80018094 on w6 (s5/w6_pairdiff.txt)
+- result: the split sum is inert (w5 = 10, same as w1); the do-while(0) wrap alone is the whole find (w6 = 7, w7 = 7). w6 is a different chassis at the same floor: copy present, reorg-parked in the `beqz v0` delay slot, sum_sq in $a1 - and all 7 differing insns reduce to one register name (ours `move v1,a1` / `move t4,v1` vs target `move a0,a1` / `move t4,a0`, plus the four consequences of $a0 being free for log2_val and li_v0). Banked as rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c
+- verdict: CONFIRMED
+
+## [s5] The island-input copy this chassis emits is a block-LOCAL quantity of the else block (blk 6 qty 0, birth 4, death 5, refs 2, got $3), so no reordering of that block's own quantities can move it off $v1
+- mechanism: local_alloc's find_free_reg scans ascending over `used = fixed_reg_set | union(regs_live_at[birth..death))` and runs BEFORE global_alloc, so the copy claims its register before sum_sq/scale/log2_val exist as assignments; $2 is in `used` (the island's own clobber list) and nothing else is
+- probe: tools/ra_solver/extract.py + simulate.py (global model: sort order MATCH, dispositions 10/12; pseudo 77 = sum_sq nrefs 8 livelen 16, 98 = log2_val nrefs 5 livelen 7 prefs [4], 78 = scale nrefs 6 livelen 15 - the copy is NOT among them) and local_extract.py + local_alloc.py (order 6/6 blocks, assign 29/34) on the spliced w1 and w6 bodies; then tools/ra_solver/inverse.py local --block 6 --goal '{"0": 4}' --depth 2
+- result: the copy is code6cac.local.json func_80018094 blk 6 qty 0; the next qty in the block is born at 6, so nothing can overlap [4,5]. The target's copy must therefore be a cross-block GLOBAL allocno (defined in the pre-branch block, used at the island), which a tied operand structurally cannot produce - GCC emits a tied-operand copy immediately before the asm. inverse.py returns exactly ONE minimal vector: [live_extend] qty 0 dies later (5 -> 9)
+- verdict: CONFIRMED
+
+## [s5] The only honest spelling of the inverse solver's live-extend vector available in this body (re-sourcing the post-island LUT index from the tied output lz_in) overshoots and lets cse refold the copy away
+- mechanism: [live_extend] qty 0 death 5 -> 9 needs the copy's value read shortly after the island and before `li $v0,-2`; the sole real consumer of sum_sq's value in that region is the LUT index `sum_sq >> shift_a`, which sits at ~18, not ~9
+- probe: s5/w8.c (`(u8)(*(&D_8008D118 + (lz_in >> shift_a)))` in place of the sum_sq read), compiled with s5/cc.sh and sandboxed; s5/w9.c (a dead `log2_val = lz_in;` store) run only as a diagnostic of the same vector, never as a candidate
+- result: w8 = 12 - with lz_in carrying the later read, sum_sq dies at the copy, cse re-unifies the two values and the copy insn vanishes (148 emitted lines vs 153). The dead-store diagnostic w9 = 7, i.e. an extra same-block reference does not reach the vector either. Banked as rejected/lzc-input-tied-copy-live-extend-to-lut-index-cse-refolds.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s5 w6 body (candidate.c + tied asm output + do-while(0) wrap, three FAKE constructs present) with the LUT-index read re-sourced from lz_in
+
+## [s5] The decomp-permuter reached the do-while(0) find in the first 25 seconds on the tied-copy chassis and nothing further in 38,542 iterations
+- mechanism: fresh-seed discipline - a basin yields early or not at all; the tied-copy chassis is structurally different from the s4 floor-7 chassis (the copy insn exists in the stream), so it is a valid re-seed under the 2026-09-01 chassis rule
+- probe: campaign s5-w1-tiedcopy (tmp/perm_80018094d, base score 55, --stack-diffs, -j 8), waited in-turn with `permuter_campaign.py wait --dir`, harvested with --stop
+- result: three finds - output-35-1 at 23 s (the do-while(0) wrap, transplanted and measured above), output-45-1 at 880 s and output-55-1 at 942 s (both non-improving relative to 35). 38,542 iterations; campaign stopped, 0 live at session end
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s5 w1 body (candidate.c + tied asm output, permuter base score 55), decomp-permuter default randomization with --stack-diffs, -j 8
