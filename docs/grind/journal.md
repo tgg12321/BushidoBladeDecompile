@@ -1972,3 +1972,4 @@
 - 2026-09-10 07:21 func_8006DD94 s3 [structural] floor=21: Structural: the spill-home frontier is closed by measurement plus a mechanism cite - register pressure does reach the target's vars=64 but the spill lands ABOVE the rect at sp+0x50, and alignment cannot move the rect either, so nothing but a declared object can occupy sp+0x44..0x4F.
 - 2026-09-10 08:19 func_8006DD94 s4 [enumerate] floor=21: Enumerate modality spent: 1,015 new spellings swept (973 loop-tail + 42 declaration orders), nothing below 21; the declaration-order space is measured to have exactly two points and the last non-declaration slot mechanism (BLKmode keep-temp) has no honest carrier in this body.
 - 2026-09-10 08:47 func_8006DD94 COMPLETED-C after 5 sessions (closer: s5 [synthesis]).
+- 2026-09-10 09:07 func_8005C6D0 s1 [recon] floor=5: First C body for func_8005C6D0: 118 -> 5 honest, register allocation and every relocation now identical; sole residual is the beq delay-slot fill.

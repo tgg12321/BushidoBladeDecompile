@@ -1,0 +1,39 @@
+{
+ "func": "func_8005C6D0",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 5,
+   "modality": "recon",
+   "headline": "First C body for func_8005C6D0: 118 -> 5 honest, register allocation and every relocation now identical; sole residual is the beq delay-slot fill."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Moving `vab = *p;` above the `if (SpuGetKeyStatus(1 << voice) != 1)` test (byte-neutral in C) changes the sched2 ready-list order so `li $v0,6` is no longer available above the branch, letting reorg.c fill the beq delay slot from the .L8005C838 thread with `addiu $v0,$s0,0x1` as the target does.",
+   "mechanism": "sched2 ready-list ordering feeds reorg.c's fill_simple_delay_slots vs fill_slots_from_thread choice; the constant load only wins the branch slot because it is scheduled above the branch.",
+   "next_probe": "Apply memory/grind/func_8005C6D0/candidate.c, permute the two statements, `& tools/wteng.ps1 main sandbox func_8005C6D0 --disable all`, and read tmp/grind/func_8005C6D0/dumps/text1b.sched2 and text1b.dbr for the actual fill decision rather than inferring it."
+  },
+  {
+   "hypothesis": "Spelling the loop-continue increment in the do-while control position (`do { ... } while ((s16)(voice = (s16)(voice + 1)) < 0x18);`) places `addiu $v0,$s0,0x1` at the top of the continue thread where reorg.c can claim it for the branch delay slot, collapsing the `addiu / addu` pair at the loop bottom into the target's single `addu $s0,$v0,$zero`.",
+   "mechanism": "reorg.c fill_slots_from_thread moves the first insn of the branch-target thread into the delay slot and retargets the label past it; that only fires when the increment is the thread's leading insn.",
+   "next_probe": "Same chassis, single edit to the do-while condition, sandbox --disable all, then diff the disassembly indices 41-44 and 89-91 against asm/funcs/func_8005C6D0.s."
+  },
+  {
+   "hypothesis": "The residual is a pure emission-order tie that tools/sched_solver can type as REACHABLE or FORECLOSED before any further spelling is spent.",
+   "mechanism": "sched.c list-scheduler priority between the `li $v0,6` constant load and the `addiu $v0,$s0,0x1` increment, followed by reorg.c slot assignment.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify on the residual and tools/sched_solver on the inner-loop block to get a ranked C-lever vector for the `li 6` / increment ordering."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T13:47:24.242531+00:00",
+ "object_model_audited": 1
+}
