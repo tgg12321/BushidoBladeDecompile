@@ -943,3 +943,100 @@ filed and the item rotated.
 - probe: Read of src/text1b.c:5415-5440 and 5495-5512 this session, compared against candidate.c's descriptor and against the target's sp map (E-s2-1: descriptor 0x18..0x43, nothing in 0x44..0x4F, rect 0x50..0x57).
 - result: Byte-neutral transplant: candidate.c already carries that construct, so the floor stays 21. func_8006DD94's 12 bytes lie OUTSIDE every object any callee reads, so they are reserved frame bytes rather than unset fields, and no spelling of S_69AE4 covers them without growing the descriptor type past 0x2C - the axis killed three times (func_8006BB68 byte-matches on main with the 0x2C shape and a rect at sp+0x48; the 35-caller census finds no access at descriptor-relative 0x2C..0x2F). Recorded so no future session re-opens this as precedent.
 - verdict: CONFIRMED
+
+## s6 (synthesis, 2026-09-10; dispatched as "session 5") - merged attack + frontier reset
+
+## [s6] A second frozen family covers this residual - the OVERSIZED-LOCALS carve-out of .claude/rules/dead-vars-local-array.md (owner ruling 2026-07-13), which the 2026-09-10 07:42 Judge ruling did not enumerate - and all five of its prerequisites are satisfiable for func_8006DD94 by extending the LIVE descriptor.
+- mechanism: the carve-out sanctions "a locals object with an unwritten tail (written-prefix
+  buffer) ... when the target frame equation PROVES the original declared locals strictly larger
+  than the bytes it writes"; prong 2 prefers extending a live object. func_8006DD94's descriptor
+  is live (its address is passed to func_8007352C each iteration) and extending its tail from 0x2C
+  to 0x34 moves the rect from sp+0x48 to sp+0x50, reproducing the target frame exactly (mips.c
+  compute_frame_size: ALIGN8(vars)+ALIGN8(args)+ALIGN8(gp_regs)).
+- probe: read the rule end-to-end; located the in-tree live use at src/text1a_post.c:387-400
+  (func_80041BF4, `s16 rect[8]`); measured all three sizes of the extension plus the alternative
+  direction on the current chassis; verify-oracle on the 0x34 form.
+- result: CONFIRMED. sandbox 0 for descriptor sizes 0x34 and 0x38, 21 for 0x30, 5 for the
+  rect-side extension; verify-oracle on the 0x34 form = ok true, build_sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true. Not submitted: the trailing-member
+  spelling is on this function's BANNED list, so the session returned `ruling-request` naming the
+  grant that supersedes it rather than a candidate the driver would discard unreviewed.
+- verdict: CONFIRMED
+
+## [s6] Extending the OTHER live locals object - the rect, which is the func_80041BF4 exemplar's exact shape (`s16 rect[8]`) - reproduces the target frame size but not the target layout on this chassis.
+- mechanism: assign_stack_local hands out increasing offsets in allocation order
+  (tools/gcc-2.7.2/function.c:724), so growing the LAST object cannot move its own base; only
+  growing an EARLIER object displaces a later one.
+- probe: tmp/grind/func_8006DD94/s5/D_rect8.c (`u16 rect[8]`, everything else candidate.c).
+- result: sandbox 5 (117/117, rules_dropped 0); the rect base stays at sp+0x48. Banked at
+  rejected/extend-live-rect-tail-rect8-frame-ok-base-still-0x48-score5.c.
+- verdict: KILLED (kill_scope instance; measured on the HEAD chassis with the candidate.c body,
+  no FAKE construct present)
+
+## [s6] The oversized-descriptor range has a measured lower bound: a single trailing word (descriptor size 0x30) does not reach the target layout.
+- mechanism: the rect's stack slot is 8-aligned (stmt.c:3419 clamps a BLKmode automatic to
+  BIGGEST_ALIGNMENT = 64 bits, mips.h:1082), so descriptor sizes 0x2D..0x30 all leave the rect at
+  sp+0x48 and only 0x31..0x38 push it to sp+0x50.
+- probe: tmp/grind/func_8006DD94/s5/E_desc30.c (pad2C only).
+- result: sandbox 21, identical to the un-extended chassis. The carve-out's prong-3 range is
+  therefore 0x34..0x38 (two or three trailing words), with 0x34 and 0x38 byte-identical. Banked at
+  rejected/oversized-desc-0x30-one-trailing-word-rect-still-0x48-score21.c.
+- verdict: KILLED (kill_scope instance; measured on the HEAD chassis, no FAKE construct present)
+
+## [s6] This project ships an accepted-C instance of a never-addressed interior frame reservation somewhere, which would make a free-standing interior pad the right family here.
+- mechanism: a binary-wide census of frame geometry (tmp/grind/func_8006DD94/s5/gapcensus.py)
+  separates an untouched run that is the TAIL of an address-materialized object from one that no
+  instruction addresses at all; only the latter would be precedent for a free-standing pad.
+- probe: all asm/funcs/*.s parsed; 272 functions carry an interior untouched run of >= 8 bytes,
+  153 with func_8006DD94's exact shape (run topped by an address-take), 7 of them implemented in C
+  on main.
+- result: all 7 accepted-C instances are untouched TAILS of objects whose base address is
+  materialized (func_80019568, func_800203B4, func_8003984C, func_8003D52C, func_800475A4,
+  func_80048864 x2). No accepted-C never-addressed interior reservation exists in this project,
+  which is why the written-prefix/unwritten-tail carve-out rather than a pad is the correct family
+  to claim. 22 still-INCLUDE_ASM functions share the shape, so a ruling here is reusable.
+- verdict: KILLED (kill_scope instance; measured on the committed asm/funcs + src/ tree at HEAD,
+  no FAKE construct involved)
+
+## [s6] The shared descriptor type consumed by func_8007352C is larger than 0x2C once the census window is widened from 0x2C..0x2F to the full 0x2C..0x37.
+- mechanism: if the type were 0x34+, every caller's next stack object would sit at
+  descriptor+0x38 or beyond; a caller with an object at descriptor+0x30 bounds the type at 0x30.
+- probe: tmp/grind/func_8006DD94/s5/desc_census.py over all 36 asm/funcs callers of func_8007352C,
+  reporting every descriptor-relative byte touched in [0, 0x40).
+- result: func_8006BB68 - COMPLETED-C and byte-matching on main - has its func_80069898 rect at
+  descriptor+0x30 (`addiu $a1,$sp,0x48`, `sh` at 0x48/0x4C). The shared type is 0x2C (= EnvA,
+  src/text1b.c:6654-6668), so the oversized form must be a per-function locals extension. The same
+  census recovers what the hole IS: the family declares two 8-byte RECT-shaped locals after the
+  descriptor (func_8006A880: +0x30 -> SetDrawArea, +0x38 -> SetDrawOffset; func_800720FC: +0x38 ->
+  SetDrawArea, +0x30 -> func_80069898), and func_8006DD94's target uses only the second.
+- verdict: KILLED (kill_scope instance; measured on target asm of all 36 asm/funcs callers of
+  func_8007352C plus the COMPLETED-C body of func_8006BB68 on main, no FAKE construct involved)
+
+## OPEN after s6 - one classification question, with both candidate spellings bytes-proven
+The residual stopped being a search problem at s2, and s6 makes the shape of what is left exact:
+two different honest readings of the untouched 8 bytes each build byte-identical to the original
+executable, and the only open question is which one the policy wants.
+
+  (A) **Oversized live descriptor** (sandbox 0, oracle-proven, needs no engine surface): `EnvB`
+      extended to 0x34 with an unwritten tail under the OVERSIZED-LOCALS carve-out
+      (.claude/rules/dead-vars-local-array.md:39-95, owner ruling 2026-07-13); annotated body at
+      memory/grind/func_8006DD94/pending-ruling-oversized-descriptor-0x34-oracle-match.c. Blocked
+      only because the trailing-member spelling is on this function's BANNED list from the 05:42
+      layer-1 FAIL and the 05:59 / 07:42 Judge FAILs - all three of which cited the volatile-pad
+      family rather than this carve-out, and none of which saw a frame-math proof, a range
+      annotation or a FAKE annotation.
+  (B) **Two library-typed RECT locals** (oracle-proven, sandbox 21 because the unused one is
+      stripped): rejected/two-separate-rect-arrays-oracle-match-sandbox-21.c, now supported by
+      family evidence rather than assertion - func_8006A880 and func_800720FC both pass the two
+      objects at descriptor+0x30 and +0x38 to SetDrawArea / SetDrawOffset / func_80069898. This
+      spelling additionally needs a `_SANCTIONED_UNWRITTEN_PADS`-style row in
+      engine/volatile_cheats.py (an operator step; engine/ is off-limits to grind sessions), so
+      (A) is the cheaper path if the carve-out covers it.
+
+Next session: if the ruling grants (A), submit the annotated body verbatim with a self-vet
+claiming FAMILY "oversized-locals carve-out", SCOPE quoted from the rule's description line, and
+PRECEDENT src/text1a_post.c:387 - and re-derive nothing in this ledger. If the ruling prefers (B),
+the outcome is an integration handoff (bytes proven; blocked only on the engine allowlist row). If
+the ruling refuses both, the remaining lead is sibling-first: func_800720FC (active, floor 688) and
+func_8006A880 USE the slot live, so decompiling either names the object honestly and supplies a
+live-use basis for func_8006DD94 and func_8006F97C.

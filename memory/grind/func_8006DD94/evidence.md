@@ -821,3 +821,109 @@ E-s5-5  KILL RE-AUDIT (mandated: floor flat 3 sessions). The banked instance kil
 - [s4] The Judge's 2026-09-10 07:42 ruling on this function contains an explicit disposition instruction: rotate func_8006DD94 and transplant its kills into func_8006F97C's ledger before that function repeats the search. The transplant was performed this session (memory/grind/func_8006F97C/evidence.md, section 'INHERITED FROM func_8006DD94', 7 numbered findings with mechanism cites).
 
 - [s4] src/text1b.c was restored to HEAD before this session ended; git status shows no dirt under src/. No campaign, watcher or background job is left running.
+
+## s6 (synthesis, 2026-09-10; dispatched as "session 5") - chassis 21; THE FAMILY THE 07:42 RULING DID NOT ENUMERATE
+
+E-s6-0  CHASSIS. HEAD carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948.
+  candidate.c spliced in with tmp/grind/func_8006DD94/s2/splice.py measures
+  `sandbox func_8006DD94 --disable all` = **21** (target_insns 117, build_insns 117,
+  rules_dropped 0) - unchanged from s3/s4/s5, so every chassis-relative conclusion in this
+  ledger is still valid as recorded. src/text1b.c was restored to HEAD at the end of this
+  session (`git status` clean except metrics/events.jsonl).
+
+E-s6-1  **THE DECISIVE FINDING: the 07:42 ruling's family enumeration is incomplete.** That
+  ruling states "The only frozen family covering an allocated-but-untouched frame region is the
+  phantom-frame-slot volatile pad (.claude/rules/no-new-park-categories.md:422-431)" and
+  concludes the family is inapplicable here because it requires FIRST-DECL position. There is a
+  SECOND, owner-granted family covering exactly this residual, and no session in this ledger had
+  read it: the **OVERSIZED-LOCALS CARVE-OUT (owner ruling 2026-07-13)** in
+  `.claude/rules/dead-vars-local-array.md:39-95`. Its scope sentence, verbatim from the rule's
+  `description:` line: "OVERSIZED-LOCALS CARVE-OUT 2026-07-13: a locals object with an unwritten
+  tail (written-prefix buffer) or, fallback, a dead pad local is sanctioned when the target frame
+  equation PROVES the original declared locals strictly larger than the bytes it writes -
+  frame-math proof + range annotation + exhaustion + dual review required." It is in LIVE USE ON
+  MAIN: `src/text1a_post.c:387-400` (func_80041BF4) ships `s16 rect[8]` where rect[0..3] is the
+  live LoadImage RECT and rect[4..7] is the unwritten tail, carrying a FAKE annotation with the
+  frame-math derivation and the same "size recoverable only as a RANGE" note this carve-out
+  prescribes. The family is NOT positionally restricted the way the volatile-pad family is
+  (engine/volatile_cheats.py:753-755 records an owner-granted TRAILING row, `pad2`, for
+  func_8003CF84), and its prong 2 explicitly PREFERS extending a live object over adding a pad.
+
+E-s6-2  **ALL FIVE PREREQUISITES ARE SATISFIED FOR func_8006DD94, MEASURED THIS SESSION.**
+  - **Prong 1 (frame-math proof from the target bytes alone).** Target frame 0x78; seven
+    callee-saves ($s0-$s5,$ra at sp+0x58..0x70 => ALIGN8(28) = 0x20); outgoing-args area 0x18
+    (the 5-arg func_8006D808 call stores at sp+0x10). Locals region = 0x78 - 0x20 - 0x18 =
+    **0x40 = 64 bytes**, while the only stores into it are the 0x2C descriptor at sp+0x18..0x43
+    and the 8-byte rect at sp+0x50..0x57 = 52 bytes. The fully-written form (EnvB 0x2C +
+    u16 rect[4]) measures `vars= 56` => ALIGN8(56)+0x18+0x20 = 0x70 != 0x78, so no fully-written
+    locals set can produce the target frame. This is the exact shape prong 1 demands.
+  - **Prong 2 (prefer extending a LIVE object).** Two live locals objects exist: the descriptor
+    `EnvB s` (address passed to func_8007352C every iteration) and `u16 rect[4]` (address passed
+    to func_80069898). Extending the descriptor tail from 0x2C to 0x34 moves the rect from
+    sp+0x48 to sp+0x50 and reproduces the target; extending the RECT tail instead -
+    `u16 rect[8]`, the func_80041BF4 exemplar's exact shape - reaches the target frame but leaves
+    the rect base at sp+0x48: measured **score 5** (tmp/grind/func_8006DD94/s5/D_rect8.c). The
+    carve-out's preferred direction is therefore uniquely determined here: the descriptor.
+  - **Prong 3 (range annotation).** The rect's slot is 8-aligned (stmt.c:3419 clamps a BLKmode
+    automatic to BIGGEST_ALIGNMENT = 64 bits, mips.h:1082), so the declared descriptor size is
+    recoverable only as a RANGE. Measured: **0x34** (pad2C, pad30) -> sandbox **0**; **0x38**
+    (pad2C, pad30, pad34) -> sandbox **0** (byte-identical); **0x30** (pad2C alone) -> sandbox
+    **21**, rect back at sp+0x48. Range = 0x34..0x38, lower bound measured rather than inferred
+    (probes B_desc34.c / C_desc38.c / E_desc30.c).
+  - **Prong 4 (documented lever-exhaustion).** This ledger: 5 prior sessions, 1,080 enumerated
+    spellings (973 loop-tail + 65 rect-block + 42 declaration orders), 56k permuter iterations
+    across 2 campaigns, 4 class kills (spill homes cannot land below the rect - function.c:724;
+    alignment capped - stmt.c:3419; no BLKmode keep-temp carrier exists; the declaration-order
+    space has exactly two points).
+  - **Prong 5 (dual review).** The Grinder's default-FAIL Judge - which is why this session
+    returns `ruling-request` rather than a candidate.
+
+E-s6-3  **THE FORM IS BYTES-PROVEN ON THE CURRENT CHASSIS, AND IT NEEDS NO ENGINE SURFACE.**
+  tmp/grind/func_8006DD94/s5/B_desc34.c (the body of rejected/layer1-fail-0910-0542.c, the 0x34
+  descriptor) measured this session: `sandbox func_8006DD94 --disable all` = **0** (117/117,
+  rules_dropped 0) and `verify-oracle` = **ok true, build_sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true**. Crucially, unlike the
+  two-separate-RECT form (which the sandbox strips, reporting a false 21), this form is NOT
+  stripped - the struct is live and partially written - so it needs NO
+  `_SANCTIONED_UNWRITTEN_PADS` row in engine/volatile_cheats.py and no operator step. If the
+  carve-out is granted, the annotated body at
+  memory/grind/func_8006DD94/pending-ruling-oversized-descriptor-0x34-oracle-match.c is directly
+  submittable.
+
+E-s6-4  **BINARY-WIDE INTERIOR-GAP CENSUS (new instrument: tmp/grind/func_8006DD94/s5/
+  gapcensus.py).** Every asm/funcs/*.s function was parsed for its frame size, all sp-relative
+  traffic (callee-save traffic classified separately) and all `addiu rX,$sp,N` address-takes; an
+  interior run of >= 8 untouched bytes below the register-save region was reported. 272 functions
+  carry such a run; 153 have func_8006DD94's exact shape (the run is topped by an address-taken
+  object at its upper boundary); **7 of those 153 are implemented in C on main, and every one of
+  the 7 is the untouched TAIL of an object whose base address IS materialized** (partially-written
+  buffers/structs: func_80019568 gap 0x1C+12 under an address-take at 0x18, func_800203B4,
+  func_8003984C, func_8003D52C, func_800475A4, func_80048864 x2). There is NO accepted-C instance
+  in this project of a never-addressed interior reservation. That is the positive evidence for
+  E-s6-1's conclusion: the in-tree accepted shape for this residual class is the OVERSIZED live
+  object (written prefix + unwritten tail), not a free-standing pad - which is precisely why the
+  carve-out's prong 2 reads the way it does. The same census lists 22 still-INCLUDE_ASM functions
+  with the shape (incl. func_80073C78 +0x70/8, func_80021DB0 +0x50/8, func_80067200,
+  func_8003E6D8, func_800693CC, prnt), so a ruling here is reusable across the queue.
+
+E-s6-5  **DESCRIPTOR-SIZE CENSUS WIDENED FROM 0x2C..0x2F TO 0x2C..0x37, ALL 36 CALLERS**
+  (tmp/grind/func_8006DD94/s5/desc_census.py + desc_census.txt). Every caller of func_8007352C
+  places its descriptor at sp+0x18. 22 of 36 touch descriptor-relative bytes at or beyond 0x30 -
+  but the decisive row is **func_8006BB68, COMPLETED-C and byte-matching on main, whose next stack
+  object sits at descriptor+0x30** (`addiu $a1,$sp,0x48` plus `sh` at 0x48/0x4C: its
+  func_80069898 rect). A shared descriptor type of 0x34+ would push that object to +0x38 there
+  too, so the SHARED type is 0x2C (= EnvA, src/text1b.c:6654-6668) and the oversized form must be
+  a per-function locals extension, exactly as the carve-out frames it - not a wider shared type.
+  The widened census also recovers what the hole IS: in func_8006A880 the object at
+  descriptor+0x30 is passed to **SetDrawArea** (`sh` 0x48/0x4C, `addiu $a1,$sp,0x48`) and the one
+  at +0x38 to **SetDrawOffset**; in func_800720FC +0x38 goes to SetDrawArea and +0x30 to
+  func_80069898. This render family declares TWO 8-byte RECT-shaped locals after the descriptor,
+  and func_8006DD94's target uses only the SECOND - the independent, family-evidenced reading of
+  the untouched 8 bytes, and the alternative spelling named in this session's ruling question.
+
+- [s6] Chassis re-measured: candidate.c = sandbox 21 (117/117, rules_dropped 0); src/ restored to HEAD.
+- [s6] The OVERSIZED-LOCALS carve-out (.claude/rules/dead-vars-local-array.md:39-95, owner ruling 2026-07-13) is a second frozen family covering an allocated-but-untouched frame region; the 2026-09-10 07:42 Judge ruling enumerated only the volatile-pad family and therefore rested on an incomplete enumeration. In-tree live use: src/text1a_post.c:387-400 (func_80041BF4, `s16 rect[8]`).
+- [s6] All five carve-out prerequisites are satisfied here and were MEASURED, not argued: prong 1 frame math (0x78-0x20-0x18 = 0x40 = 64 vs the fully-written form's 56 => 0x70), prong 2 direction uniquely the descriptor (extending the rect instead, `u16 rect[8]`, scores 5), prong 3 range 0x34..0x38 byte-identical with 0x30 measured at 21, prong 4 this ledger, prong 5 the Judge.
+- [s6] The 0x34-descriptor body measures sandbox 0 AND verify-oracle build_matches true (SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa) on the current chassis, and it is NOT stripped by the sandbox, so it needs no engine/volatile_cheats.py row and no operator step.
+- [s6] Binary-wide interior-gap census: 272 functions carry an interior untouched run, 153 with this function's exact shape, 7 implemented in C - and all 7 are untouched TAILS of address-materialized objects. No accepted-C instance of a never-addressed interior reservation exists in this project; 22 INCLUDE_ASM functions share the shape.
+- [s6] Widened descriptor census (0x2C..0x37 over all 36 callers): func_8006BB68 (COMPLETED-C, byte-matching) has its next stack object at descriptor+0x30, so the shared type is 0x2C; the family's two post-descriptor objects are RECTs - func_8006A880 passes +0x30 to SetDrawArea and +0x38 to SetDrawOffset, func_800720FC passes +0x38 to SetDrawArea and +0x30 to func_80069898. func_8006DD94's target uses only the second of the two.

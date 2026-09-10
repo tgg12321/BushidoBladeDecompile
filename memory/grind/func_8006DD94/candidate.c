@@ -1,3 +1,29 @@
+/* s6 UPDATE (synthesis, 2026-09-10; dispatched as "session 5"): body UNCHANGED - this is still
+ * the layer-1-clean, FAKE-free 0x2C-descriptor chassis, re-measured `sandbox func_8006DD94
+ * --disable all` = 21 (117/117, rules_dropped 0).  MIGRATION STATUS: HEAD/main carries
+ * `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948; this file is the in-progress
+ * candidate only, spliced and reverted again this session.
+ * BUT THIS IS NO LONGER THE BEST FORM ON FILE.  s6 found the frozen family that the 2026-09-10
+ * 07:42 Judge ruling did not enumerate - the OVERSIZED-LOCALS carve-out of
+ * .claude/rules/dead-vars-local-array.md:39-95 (owner ruling 2026-07-13), in live use on main at
+ * src/text1a_post.c:387-400 (func_80041BF4, `s16 rect[8]`) - and measured that all five of its
+ * prerequisites hold here when the LIVE descriptor is the extended object:
+ *   prong 1  target frame 0x78 - 0x20 saves - 0x18 args = 0x40 = 64-byte locals region vs this
+ *            body's vars= 56 (the fully-written form yields frame 0x70 != 0x78);
+ *   prong 2  extending the descriptor moves the rect to sp+0x50 (target); extending the other
+ *            live object instead (u16 rect[8]) reaches the frame but keeps the rect at sp+0x48,
+ *            score 5;
+ *   prong 3  range measured: descriptor 0x34 -> sandbox 0, 0x38 -> sandbox 0 (byte-identical),
+ *            0x30 -> sandbox 21;
+ *   prong 4  this ledger (1,080 spellings, 56k permuter iterations, 4 class kills);
+ *   prong 5  the Judge.
+ * The 0x34 form measures sandbox 0 AND verify-oracle build_matches true (SHA1
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa) on this chassis, and the sandbox does NOT strip it,
+ * so it needs no engine allowlist row.  It is held, FAKE-annotated, at
+ * memory/grind/func_8006DD94/pending-ruling-oversized-descriptor-0x34-oracle-match.c and was NOT
+ * submitted: the trailing-member spelling is on this function's BANNED list, so s6 returned
+ * `ruling-request` naming the grant that supersedes the ban.  Do not re-run spelling search.
+ */
 /* s5 UPDATE (enumerate, 2026-09-10; dispatched as "session 4"): body UNCHANGED - this is still
  * the layer-1-clean, FAKE-free 0x2C-descriptor chassis and it is still the best honest form.
  * MIGRATION STATUS: HEAD/main carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` at
