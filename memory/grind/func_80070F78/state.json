@@ -42,10 +42,10 @@
   },
   {
    "from": "func_80070C70",
-   "floor": 7,
-   "session": 15,
-   "at": "2026-09-10T19:44:29.382268+00:00",
-   "headline": "Chassis flip: the top-test chassis' 24-byte 'frame penalty' was the compiler supplying the bytes the do/while chassis had to FAKE - top-test + honest u16 rect[4] + the target's bound association takes",
+   "floor": 0,
+   "session": 17,
+   "at": "2026-09-10T20:34:07.758718+00:00",
+   "headline": "func_80070C70 COMPLETED-C",
    "consumed": null
   }
  ]
