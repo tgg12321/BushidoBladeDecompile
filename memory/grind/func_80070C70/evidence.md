@@ -383,3 +383,73 @@
 - [s4] The RecC70 and IconC70 declarations are still codegen-motivated placeholders and still block submission independently of the floor (frontier F6, carried unspent from s1).
 
 - [s4] src/text1b.c was reverted to HEAD at end of session; the tree carries only memory/grind/func_80070C70 ledger changes.
+
+- [s5] [enumerate 2026-09-10] FLOOR 56 -> 53, and the chassis is now ORDINARY C with zero FAKE
+  constructs. The second loop is spelled `for (var_s0 = 0; var_s0 < D_800A35B0 + (s16)D_800A3558 + 1;
+  var_s0++)` with the two secondary counters expressed as functions of var_s0
+  (`D_800A3560[var_s0 * 3]`, `prim.mode = 0x50 + var_s0 * 0x16C`). s4's three-arm `var_s0 += 1`
+  biv_count construct, the `new_var` named intermediate and the RecC70 record are all retired.
+- [s5] MECHANISM CHAIN (read out of tools/gcc-2.7.2/, not inferred): a top-test loop makes
+  jump.c:2163 `duplicate_loop_exit_test` copy the exit test in front of the loop (= the target's
+  `blez` guard at 80070E18) and mark the original test's registers REG_LOOP_TEST_P (jump.c:2253).
+  cse.c:8581 then calls `cse_around_loop` (cse.c:7741) whose `cse_set_around_loop` (cse.c:7909)
+  rewrites a loop-HEAD SET_SRC to a REG_LOOP_TEST_P register the TAIL test already loaded. This is
+  the ONLY mechanism in GCC 2.7.2 that puts a load in the loop tail and consumes it at the top of
+  the next iteration -- i.e. the target's `lhu $a2, %gp_rel(D_800A3558)` at 80070ECC feeding
+  `sll $v0,$a2,16 / sra $v0,$v0,16` at 80070E78/E7C, which four sessions of declaration retyping
+  (s2 K1, s3 K4, s4 K7) could not reproduce. combine cannot fold the sign_extend into the load
+  because they are in different basic blocks, which is why the target shows BOTH `lhu` and `lh` of
+  the same address in the tail block.
+- [s5] `duplicate_loop_exit_test` bails on an exit test containing a CALL_INSN or CODE_LABEL, on a
+  nested-loop NOTE_INSN_LOOP_BEG, and on any exit test longer than 20 insns (jump.c:2175-2220).
+  This loop's bound (three loads, two adds, the compare) is well inside that.
+- [s5] The target's `addiu $s3,$zero,0x50` / `addu $s2,$zero,$zero` at 80070E20/E24 sit BETWEEN the
+  guard branch and the loop label. Nothing in an `if (...) { init; do { } while (); }` chassis can
+  put them there: source statements before a loop precede the NOTE_INSN_LOOP_BEG, and both
+  duplicate_loop_exit_test and move_movables insert before that note. They are reduced-GIV
+  initialisations emitted by loop.c's strength_reduce, which is what proves var_s3 and ctx are
+  expressions of the loop counter in the original source, not independent accumulators.
+- [s5] The callee-saved seat rotation that s1/s2/s4 tracked as frontier item F5 (target arg0=$s1,
+  var_s0=$s0, var_s3=$s3, ctx=$s2, c60=$s4) comes out CORRECT on the for-loop chassis with no RA
+  work at all. It was a symptom of the wrong loop structure, not an allocation problem, so
+  tools/ra_solver is no longer the right next tool for this function.
+- [s5] D_800A3590 is a plain `extern s16 D_800A3590[]` indexed by the loop counter. The RecC70
+  record measures 90 vs the array's 53 on this chassis. The s1/s2/s3/s4 frontier item "recover
+  RecC70's real field list from its other consumers" is CLOSED -- there is no record. IconC70's
+  `s16 sp50[12]` tail is the only placeholder declaration still blocking submission.
+- [s5] D_800A3558's declared type is byte-neutral at 53: `extern s32` with an `(s16)` cast, `u16`,
+  and `s16` all measure 53. Keep the ordinary `extern s32 D_800A3558;`.
+- [s5] RESIDUAL AT 53 (193 insns vs 194). (i) frame 0x98 vs 0x80: three pseudos (118, 168, 171)
+  exist only as `(use (reg))` insns created between .flow and .lreg, have no conflicts, get no hard
+  register in .greg, and take 8-byte stack slots at sp+104/112/120 -- leftovers of
+  duplicate_loop_exit_test's `reg_map` copies. Every sp-relative insn differs by the offset, so this
+  is the dominant scoring item. (ii) D_800A3560's giv is reduced to a full ADDRESS
+  (`lui s2 / addiu s2 / lbu 0(s2)`, `addiu s2,s2,3`) where the target reduces it to a byte OFFSET
+  and re-adds `%hi/%lo` every iteration. (iii) `t = prim.p_geom + 0xC` lands in p_geom's own
+  register in three places where the target keeps two live registers (`addiu $v1,$v0,0xC`).
+- [s5] TOOLING: tmp/grind/func_80070C70/s5/sweep.py is a guard-clean variant sweeper (splices a body
+  into src/text1b.c, scores via `tools/wteng.ps1 main sandbox`, always restores) that also applies
+  header-declaration substitutions via `//@sub <anchor>|||<replacement>` lines at the top of a
+  variant file -- tools/sweep_variants.py cannot vary declarations and is blocked by the
+  worktree-contamination guard unless pinned through wteng. s5/cmp2.py is a normalising
+  target-vs-built instruction differ (objdump aliases, register names and hex offsets folded).
+- [s5] src/text1b.c was reverted to HEAD at end of session; the tree carries only
+  memory/grind/func_80070C70 ledger changes.
+
+- [s5] Floor 56 -> 53 with a body that is ordinary C: no duplicated increments across arms, no named intermediate, no record spelling, no dead store, no pad, no volatile, no asm. Every FAKE construct the ledger accumulated across s3/s4 is retired by the structural change.
+
+- [s5] The matching source shape for the second loop is `for (var_s0 = 0; var_s0 < D_800A35B0 + (s16)D_800A3558 + 1; var_s0++)` with `D_800A3560[var_s0 * 3]` and `prim.mode = 0x50 + var_s0 * 0x16C` -- the secondary counters are expressions of the loop variable, and GCC's strength reduction turns them back into the target's $s3 and $s2 increments.
+
+- [s5] jump.c:2163 duplicate_loop_exit_test fires only on a top-test loop; it is the sole source of REG_LOOP_TEST_P (jump.c:2253), which is the sole enabler of cse.c:7741 cse_around_loop. That chain is the mechanism behind the target's tail-block lhu of D_800A3558 at 80070ECC feeding the next iteration's sll 16 / sra 16 at 80070E78/E7C -- the frontier item four sessions attacked with declaration retyping.
+
+- [s5] The target's addiu $s3,$zero,0x50 / addu $s2,$zero,$zero at 80070E20/E24 sit between the guard branch and the loop label, which is where loop.c's strength_reduce emits reduced-giv initialisations. No if-guarded do/while chassis can place them there, because source statements before a loop precede NOTE_INSN_LOOP_BEG and both duplicate_loop_exit_test and move_movables insert before that note.
+
+- [s5] The callee-saved seat rotation tracked as frontier F5 since s1 (target arg0=$s1, var_s0=$s0, var_s3=$s3, ctx=$s2, c60=$s4) comes out correct with no RA work: it was a symptom of the wrong loop structure, not an allocation problem. tools/ra_solver is no longer the right next tool for this function.
+
+- [s5] D_800A3590 is a plain `extern s16 D_800A3590[]` halfword array; the RecC70 record measures 90 versus 53. The long-standing frontier item asking for RecC70's real field list is closed -- there is no record. IconC70's `s16 sp50[12]` tail is now the ONLY placeholder declaration blocking submission.
+
+- [s5] D_800A3558's declared type is byte-neutral at 53 (extern s32 with an (s16) cast, u16, and s16 all score 53), so the ordinary extern s32 declaration is kept.
+
+- [s5] Residual at 53 (193 insns vs 194): (i) frame 0x98 vs 0x80, caused by three no-conflict pseudos (118, 168, 171) that exist only as (use (reg)) insns and take 8-byte stack slots at sp+104/112/120 -- leftovers of duplicate_loop_exit_test's reg_map copies; every sp-relative insn differs by the offset, making this the dominant scoring item. (ii) D_800A3560's giv is reduced to a full address where the target reduces it to a byte offset and re-adds %hi/%lo each iteration. (iii) `t = prim.p_geom + 0xC` lands in p_geom's own register in three places where the target keeps two live registers.
+
+- [s5] tmp/grind/func_80070C70/s5/sweep.py is a guard-clean variant sweeper that also varies header DECLARATIONS via `//@sub <anchor>|||<replacement>` lines; tools/sweep_variants.py cannot vary declarations and is blocked by the worktree-contamination guard unless pinned through wteng.

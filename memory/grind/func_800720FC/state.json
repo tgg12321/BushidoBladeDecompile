@@ -58,10 +58,10 @@
   },
   {
    "from": "func_80070C70",
-   "floor": 56,
-   "session": 4,
-   "at": "2026-09-10T16:29:40.810310+00:00",
-   "headline": "Floor 99 -> 56: giving var_s0 three source increment sites raises loop.c's bl->biv_count to 3, zeroing the D_800A3590 address giv's benefit so strength_reduce REJECTS the reduction that s3 pinned as t",
+   "floor": 53,
+   "session": 5,
+   "at": "2026-09-10T16:56:12.557659+00:00",
+   "headline": "Floor 56 -> 53 and every FAKE construct retired: spelling the second loop as a top-test for() whose secondary counters are expressions of the loop variable makes jump.c's duplicate_loop_exit_test fire",
    "consumed": null
   }
  ]

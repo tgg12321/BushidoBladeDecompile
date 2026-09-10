@@ -530,3 +530,79 @@ chassis (a basin that still had the extra induction register in it had nothing t
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-61 chassis (s4 candidate.c loop + extern u8 D_800A3560[]; + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] Spelling the second loop as a `for (var_s0 = 0; var_s0 < <bound>; var_s0++)` whose secondary counters are expressions of var_s0 makes jump.c's duplicate_loop_exit_test fire, which is the precondition for cse.c's cse_around_loop to place the D_800A3558 read in the loop TAIL block (frontier F4) and for strength_reduce to emit the var_s3/ctx initialisations after the guard (the target's 80070E20/E24).
+- mechanism: jump.c:2163 `duplicate_loop_exit_test` only applies to a loop whose NOTE_INSN_LOOP_BEG is followed by an unconditional jump, i.e. a source loop with the test at the TOP (`for`/`while`), never an `if (...) { do { ... } while (...); }`. It copies the exit test in front of the loop (that copy IS the target's `blez` guard) and marks the ORIGINAL test's registers REG_LOOP_TEST_P (jump.c:2253). cse.c:8581 then calls `cse_around_loop` (cse.c:7741), and `cse_set_around_loop` (cse.c:7909) replaces a loop-head SET_SRC with a REG_LOOP_TEST_P register whose value the tail's test already computed, emitting a copy in the preheader. That is the only mechanism in GCC 2.7.2 that can put a load in the loop tail and consume it at the top of the next iteration, which is exactly the target's `lhu $a2, %gp_rel(D_800A3558)` at 80070ECC feeding `sll/sra 16` at 80070E78/E7C. Separately, expressing var_s3 (`0x50 + i*0x16C`) and ctx (`i*3`) as functions of var_s0 makes them GIVs, and strength_reduce emits reduced-giv initialisations at loop_start -- i.e. AFTER the duplicated guard, which is where the target's `addiu $s3,$zero,0x50` / `addu $s2,$zero,$zero` sit and where no if-guarded do/while chassis can put them.
+- probe: Eight structural chassis variants (tmp/grind/func_80070C70/s5/struct/, S1-S8) crossing {for, while, for-with-explicit-accumulators} x {RecC70 record, plain s16 array} x {s32, u16 declaration of D_800A3558}, scored with `sandbox --disable all` via tmp/grind/func_80070C70/s5/sweep.py; then the frame/decl/bound refinements (s5/frame/, s5/decl/, s5/bound/); diffed against asm/funcs/func_80070C70.s with s5/cmp2.py.
+- result: 56 -> 57 at 193 insns (up from 190) for the first for-loop chassis, then 53 at 193 after dropping the redundant `(s32)` cast on the bound. The emitted code now carries the tail-block `lhu` + next-iteration `sll 16/sra 16` pair (F4 CLOSED) AND the target's exact callee-saved seat assignment arg0=$s1, var_s0=$s0, var_s3=$s3, ctx=$s2, c60=$s4 (F5 CLOSED). Every FAKE construct the ledger had accumulated (s4's three-arm `var_s0 += 1`, the `new_var` named intermediate, the RecC70 one-member record) is GONE: the 53 body is ordinary C.
+- verdict: CONFIRMED
+
+## [s5] D_800A3590 is a plain `extern s16 D_800A3590[]` halfword array indexed by the loop counter, not a record; the s3-era RecC70 COMPONENT_REF spelling is actively harmful on the correct chassis.
+- mechanism: s3 adopted `typedef struct RecC70 { s16 v; }` because on the do/while chassis it routed the read through expand_expr's COMPONENT_REF/get_inner_reference path and bought 2 points. On the for-loop chassis the target's own addressing (`sll $a0,$s0,1` in the delay slot at 80070E3C, then `lui $at,%hi(D_800A3590) / addu $at,$at,$a0 / lh $v0,%lo(D_800A3590)($at)`) is what a plain halfword array indexed by the loop counter emits directly.
+- probe: S1/S3/S5 (record) vs S2/S4/S6 (plain array) in tmp/grind/func_80070C70/s5/struct/, and D2 vs D1 in s5/decl/.
+- result: record 94/94/94 and 90; plain array 57/57/57 and 53. Banked as rejected/rec-record-decl-on-for-chassis-94.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-53 for-loop chassis (s5 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] Re-associating or re-casting the loop bound, the body condition, the D_800A3560 index and the prim.mode expression moves the score off 53 on the for-loop chassis.
+- mechanism: exhaustive spelling sweep of the four expressions that carry the residual, 7 bound forms x 3 condition forms x 2 index forms x 2 mode forms = 84 spellings.
+- probe: tmp/grind/func_80070C70/s5/bound/ swept with s5/sweep.py; log tmp/grind/func_80070C70/s5/bound.log.
+- result: histogram {53: 36, 57: 36, 58: 12}. The ONLY live axis is the bound's redundant `(s32)` cast: every uncast form (`D_800A35B0 + (s16)D_800A3558 + 1` and its rotations) is 53, every `(s32)(...)` form is 57, and one shape is 58. Condition order, `var_s0 * 3` vs `3 * var_s0`, and `0x50 + var_s0 * 0x16C` vs `var_s0 * 0x16C + 0x50` are ALL byte-neutral. Banked as rejected/s32-cast-loop-bound-57.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-53 for-loop chassis (s5 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] The 172-spelling naming/declaration-order enumeration of the pre-loop block moves the floor-56 do/while chassis below 55.
+- mechanism: mandated `enumerate` modality. The block from `var_s0 = 0` through the loop-entry `if` was written in fully-named form (dst, geom, base, shown, limit) and swept with tools/spelling_enum.py over the keep-vs-inline and declaration-order axes (--no-swaps).
+- probe: tmp/grind/func_80070C70/s5/enum_region1.c -> s5/enum1/ (172 variants), swept with s5/sweep.py; log s5/enum1.log.
+- result: histogram {55: 1, 58: 2, 59: 9, 60: 28, 63: 26, 64: 106}; best 55 (v169) against the 56 baseline. The entire naming/ordering space of that block on the do/while chassis is worth one point, which is what motivated attacking the loop's STRUCTURE instead.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-56 chassis (s4 candidate.c body + extern u8 D_800A3560[]; + the RecC70 record declaration of D_800A3590 + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] Hoisting the loop-body block-scoped locals (`u8 code`, `s32 t`) to function scope, or inlining them, removes the +0x18 frame overshoot.
+- mechanism: The floor-53 build's frame is 0x98 against the target's 0x80. The extra 0x18 is three pseudos (118, 168, 171) that appear only as `(use (reg))` insns created between the .flow and .lreg dumps, carry NO conflicts in .greg, receive no hard register, and are given 8-byte stack slots at sp+104/112/120. Hypothesis under test: they are block-scoped locals kept alive across the loop.
+- probe: tmp/grind/func_80070C70/s5/frame/ U1 (hoist t), U2 (hoist code), U3 (hoist both), U4 (inline t).
+- result: 57 / 57 / 57 / 59 against the 57 baseline -- block scope is byte-neutral and inlining `t` is worse. The three dead pseudos are NOT the block-scoped locals; they are the leftovers of duplicate_loop_exit_test's `reg_map` copies (jump.c:2246).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-57 for-loop chassis (S4_for_arr_u16 body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern u16 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] Spelling the second loop as `for (var_s0 = 0; var_s0 < <bound>; var_s0++)` with the secondary counters written as expressions of var_s0 makes jump.c's duplicate_loop_exit_test fire, enabling cse_around_loop to place the D_800A3558 read in the loop tail block and strength_reduce to emit the var_s3/ctx initialisations after the guard.
+- mechanism: jump.c:2163 duplicate_loop_exit_test requires a NOTE_INSN_LOOP_BEG followed by an unconditional jump (a top-test for/while loop, never an if-guarded do/while). It copies the exit test in front of the loop -- that copy is the target's blez guard at 80070E18 -- and marks the original test's registers REG_LOOP_TEST_P at jump.c:2253. cse.c:8581 then calls cse_around_loop (cse.c:7741), whose cse_set_around_loop (cse.c:7909) rewrites a loop-head SET_SRC to a REG_LOOP_TEST_P register the tail test already loaded. That is the only GCC 2.7.2 mechanism that puts a load in the loop tail and consumes it at the top of the next iteration, i.e. the target's lhu $a2,%gp_rel(D_800A3558) at 80070ECC feeding sll/sra 16 at 80070E78/E7C. Separately, var_s3 = 0x50 + i*0x16C and ctx = i*3 become GIVs, so strength_reduce emits their initialisations at loop_start, after the duplicated guard, which is where the target's addiu $s3,$zero,0x50 / addu $s2,$zero,$zero sit at 80070E20/E24.
+- probe: Eight structural chassis variants (tmp/grind/func_80070C70/s5/struct/, S1-S8) crossing {for, while, for-with-explicit-accumulators} x {RecC70 record, plain s16 array} x {s32, u16 declaration of D_800A3558}, then the frame/decl/bound refinements (s5/frame/, s5/decl/, s5/bound/), all scored with `sandbox --disable all` and diffed against asm/funcs/func_80070C70.s with s5/cmp2.py.
+- result: 56 -> 57 at 193 insns (up from 190) on the first for-loop chassis, then 53 at 193 once the bound's redundant (s32) cast is dropped. The build now emits the tail-block lhu plus the next-iteration sll 16 / sra 16 pair (frontier F4 closed) and the target's exact callee-saved seats arg0=$s1, var_s0=$s0, var_s3=$s3, ctx=$s2, c60=$s4 (frontier F5 closed). s4's three-arm `var_s0 += 1`, the `new_var` named intermediate and the RecC70 record are all retired: the 53 body is ordinary C with no FAKE construct of any kind.
+- verdict: CONFIRMED
+
+## [s5] D_800A3590 declared as the s3-era one-member RecC70 record keeps the floor at or below the plain `extern s16 D_800A3590[]` array spelling on the for-loop chassis.
+- mechanism: s3 adopted the record because on the do/while chassis it routed the read through expand_expr's COMPONENT_REF/get_inner_reference offset path and bought two points. On the for-loop chassis the target's own addressing (sll $a0,$s0,1 at 80070E3C, then lui $at,%hi / addu $at,$at,$a0 / lh $v0,%lo($at)) is exactly what a plain halfword array indexed by the loop counter emits.
+- probe: S1/S3/S5 (record) versus S2/S4/S6 (plain array) in tmp/grind/func_80070C70/s5/struct/, and D2 versus D1 in s5/decl/.
+- result: record 94/94/94 and 90; plain array 57/57/57 and 53. Banked as rejected/rec-record-decl-on-for-chassis-94.c. This also closes the s1-s4 frontier item asking for RecC70's real field list: there is no record, D_800A3590 is a plain s16[].
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-53 for-loop chassis (s5 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] Re-associating or re-casting the loop bound, the body condition, the D_800A3560 index or the prim.mode expression moves the score off 53 on the for-loop chassis.
+- mechanism: Exhaustive spelling sweep of the four expressions carrying the residual: 7 bound forms x 3 condition forms x 2 index forms x 2 mode forms.
+- probe: 84 variants generated into tmp/grind/func_80070C70/s5/bound/ and swept with s5/sweep.py; log s5/bound.log.
+- result: Histogram {53: 36, 57: 36, 58: 12}. The only live axis is the bound's redundant (s32) cast: every uncast form is 53, every (s32)(...) form is 57. Condition operand order, var_s0 * 3 versus 3 * var_s0, and 0x50 + var_s0 * 0x16C versus var_s0 * 0x16C + 0x50 are all byte-neutral. Banked as rejected/s32-cast-loop-bound-57.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-53 for-loop chassis (s5 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] The 172-spelling naming and declaration-order enumeration of the pre-loop block takes the floor-56 do/while chassis below 55.
+- mechanism: Mandated enumerate modality: the block from var_s0 = 0 through the loop-entry if was written in fully-named form (dst, geom, base, shown, limit) and swept over tools/spelling_enum.py's keep-versus-inline and declaration-order axes.
+- probe: tmp/grind/func_80070C70/s5/enum_region1.c -> s5/enum1/ (172 variants) swept with s5/sweep.py; log s5/enum1.log.
+- result: Histogram {55: 1, 58: 2, 59: 9, 60: 28, 63: 26, 64: 106}; best 55 against the 56 baseline. The whole naming/ordering space of that block on the do/while chassis is worth one point, which is what redirected this session at the loop's structure.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-56 chassis (s4 candidate.c body + extern u8 D_800A3560[]; + the RecC70 record declaration of D_800A3590 + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s5] Hoisting the loop-body block-scoped locals (u8 code, s32 t) to function scope, or inlining t, removes the 0x18 frame overshoot on the for-loop chassis.
+- mechanism: The build's frame is 0x98 against the target's 0x80. The extra 0x18 is three pseudos (118, 168, 171) that appear only as (use (reg)) insns created between the .flow and .lreg dumps, carry no conflicts in .greg, receive no hard register, and take 8-byte stack slots at sp+104/112/120.
+- probe: tmp/grind/func_80070C70/s5/frame/ U1 (hoist t), U2 (hoist code), U3 (hoist both), U4 (inline t), scored with sandbox --disable all.
+- result: 57 / 57 / 57 / 59 against the 57 baseline: block scope is byte-neutral and inlining t is worse. The three dead pseudos are not the block-scoped locals; they are the leftovers of duplicate_loop_exit_test's reg_map copies (jump.c:2246).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-57 for-loop chassis (S4_for_arr_u16 body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern u16 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10

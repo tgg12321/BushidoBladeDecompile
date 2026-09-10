@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 56,
    "modality": "permuter",
    "headline": "Floor 99 -> 56: giving var_s0 three source increment sites raises loop.c's bl->biv_count to 3, zeroing the D_800A3590 address giv's benefit so strength_reduce REJECTS the reduction that s3 pinned as t"
+  },
+  {
+   "session": 5,
+   "floor": 53,
+   "modality": "enumerate",
+   "headline": "Floor 56 -> 53 and every FAKE construct retired: spelling the second loop as a top-test for() whose secondary counters are expressions of the loop variable makes jump.c's duplicate_loop_exit_test fire"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last two missing insns are the target's tail-block `lhu` of D_800A3558 and its in-body `sll 16 / sra 16` sign-extension, and the discriminator is basic-block placement rather than the symbol's declared type.",
-   "mechanism": "combine folds a sign_extend into a zero-extending load only when both insns live in the same basic block. The target's zero-extending load sits in the loop tail block at 80070ECC and its sign-extension at 80070E78/E7C in the next iteration's body, so the fold cannot fire. Every declaration spelling measured so far keeps both in the body block (s2 K1, s3 K4, s4 K7 all byte-neutral).",
-   "next_probe": "Read the .combine dump for the fold at the D_800A3558 body read before spelling anything. Then look for a byte-faithful source shape that puts the zero-extended value's definition in the tail block: a variable whose live range crosses the loop back-edge (read at the bottom of iteration N, consumed at the top of iteration N+1), or a re-spelling of the loop-continuation test that makes CSE keep the body's read in the condition block. Note the target loads the SAME address twice in that block (lhu then lh), so the source almost certainly has two distinct reads with different signedness in different places, not one."
+   "hypothesis": "The 0x18 frame overshoot is three dead pseudos left behind by duplicate_loop_exit_test's reg_map copies; a source shape whose exit test has fewer replaceable intermediate registers should not leave them.",
+   "mechanism": "jump.c:2229-2257 gives a NEW pseudo to every insn in the exit test that sets a register whose first and last uid both lie inside the exit code and which is not a user variable. Each such original pseudo, once cse_around_loop has consumed it, survives only as a (use (reg)) insn, wins no hard register in .greg, and is given an 8-byte stack slot. Fewer intermediate temporaries in the bound expression, or naming the bound in a user variable, means fewer leftovers.",
+   "next_probe": "Read tmp/grind/func_80070C70/dumps/text1b.lreg for insns 551-556 and identify which bound sub-expression each of pseudos 118, 168 and 171 came from, then sweep bound spellings that name the bound in a USER VARIABLE (jump.c's replacement skips user variables) or that reduce the number of intermediates -- e.g. hoisting D_800A35B0 or the whole bound into a local declared at function scope and read in the for-condition."
   },
   {
-   "hypothesis": "The residual at floor 56 is a clean 5-seat callee-saved rotation with no spurious allocno, so tools/ra_solver can type it REACHABLE or FORECLOSED and rank C levers instead of more hand spelling.",
-   "mechanism": "local-alloc / global-alloc seat assignment. Target: arg0=$s1, var_s0=$s0, var_s3=$s3, ctx_or_var_s2=$s2, c60=$s4. Until this session the comparison was polluted by the extra reduced-giv allocno, which is why s1/s2's H4 never got a clean answer; that allocno is gone now.",
-   "next_probe": "Run `tools/ra_solver/inverse_compose.py classify` on the floor-56 chassis (memory/grind/func_80070C70/candidate.c applied to src/text1b.c) and follow the ranked lever vector; use tools/sweep_variants.py for whatever spelled forms it names."
+   "hypothesis": "The target reduces D_800A3560's giv to a byte OFFSET (lui $at,%hi / addu $at,$at,$s2 / lbu %lo($at), addiu $s2,$s2,3) where we reduce it to a full ADDRESS (lui $s2 / addiu $s2 / lbu 0($s2)); a different index spelling or array declaration should reproduce the offset form.",
+   "mechanism": "loop.c's strength_reduce folds the %hi/%lo symbol base into the giv when the address is a legitimate giv of the biv. Whether the symbol is absorbed depends on how the address expression is built in expand_expr, which the array's declared element type and the index expression control.",
+   "next_probe": "Sweep D_800A3560 index and declaration spellings on the floor-53 chassis: u8[] with `[var_s0 * 3]`, a 3-byte record array, `[i]` over a stride-3 struct, and a separate index variable; read the `Loop from` section of tmp/grind/func_80070C70/dumps/text1b.loop for which giv is reduced in each."
   },
   {
-   "hypothesis": "RecC70's and IconC70's real field lists are recoverable from their other consumers, replacing the two placeholder declarations that block submission independently of the floor.",
-   "mechanism": "Carried unspent from s1/s2/s3. The 2-byte stride and the 0x20 size are proven by the target's addressing and frame arithmetic, but a one-member struct and an `s16 sp50[12]` tail are spellings of those facts, not evidence for them.",
-   "next_probe": "Read the %hi/%lo(D_800A3590) and base-register accesses in func_8006F100, func_80070188, func_80070F78 and src/text1b_b.c:271 for RecC70; read the $a1-relative stores in func_8006B120, func_8006CFBC, func_800720FC, func_80074488 and func_8006F97C for IconC70's tail. Keep the census row's `alias of g_replay_motion_shared_state_d+6` suffix. If the consumers show a bare halfword array with no record structure, emit a ruling-request naming the family before any submission."
+   "hypothesis": "IconC70's `s16 sp50[12]` tail is a placeholder; its real field list is recoverable from func_80069898's other callers and is the only declaration still blocking submission.",
+   "mechanism": "Carried unspent from s1/s2/s3/s4. The 0x20 size is proven by the target's frame arithmetic, but the trailing array is a spelling of that fact, not evidence for it. The RecC70 half of this item is now CLOSED (s5: D_800A3590 is a plain s16[]).",
+   "next_probe": "Read the $a1-relative stores in func_8006B120, func_8006CFBC, func_800720FC, func_80074488 and func_8006F97C to recover the real member layout at offsets 0x50-0x67."
   }
  ],
  "judge_constraints": [],
@@ -128,6 +134,38 @@
    "measured_on": "floor-61 chassis (s4 candidate.c loop + extern u8 D_800A3560[]; + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 20",
    "predicate_cite": "",
    "result": "61 / 67 / 61 / 61 - every byte-neutral spelling still emits a single lh in the body block. s3's K4 survives the chassis "
+  },
+  {
+   "session": 5,
+   "statement": "D_800A3590 declared as the s3-era one-member RecC70 record keeps the floor at or below the plain `extern s16 D_800A3590[]` array spelling on the for-loop chassis.",
+   "kill_scope": "instance",
+   "measured_on": "floor-53 for-loop chassis (s5 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10",
+   "predicate_cite": "",
+   "result": "record 94/94/94 and 90; plain array 57/57/57 and 53. Banked as rejected/rec-record-decl-on-for-chassis-94.c. This also c"
+  },
+  {
+   "session": 5,
+   "statement": "Re-associating or re-casting the loop bound, the body condition, the D_800A3560 index or the prim.mode expression moves the score off 53 on the for-loop chassis.",
+   "kill_scope": "instance",
+   "measured_on": "floor-53 for-loop chassis (s5 candidate.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10",
+   "predicate_cite": "",
+   "result": "Histogram {53: 36, 57: 36, 58: 12}. The only live axis is the bound's redundant (s32) cast: every uncast form is 53, eve"
+  },
+  {
+   "session": 5,
+   "statement": "The 172-spelling naming and declaration-order enumeration of the pre-loop block takes the floor-56 do/while chassis below 55.",
+   "kill_scope": "instance",
+   "measured_on": "floor-56 chassis (s4 candidate.c body + extern u8 D_800A3560[]; + the RecC70 record declaration of D_800A3590 + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10",
+   "predicate_cite": "",
+   "result": "Histogram {55: 1, 58: 2, 59: 9, 60: 28, 63: 26, 64: 106}; best 55 against the 56 baseline. The whole naming/ordering spa"
+  },
+  {
+   "session": 5,
+   "statement": "Hoisting the loop-body block-scoped locals (u8 code, s32 t) to function scope, or inlining t, removes the 0x18 frame overshoot on the for-loop chassis.",
+   "kill_scope": "instance",
+   "measured_on": "floor-57 for-loop chassis (S4_for_arr_u16 body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + extern u16 D_800A3558; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2",
+   "predicate_cite": "",
+   "result": "57 / 57 / 57 / 59 against the 57 baseline: block scope is byte-neutral and inlining t is worse. The three dead pseudos a"
   }
  ],
  "ladder_skip": 0,
