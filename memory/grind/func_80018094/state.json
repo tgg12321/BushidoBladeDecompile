@@ -1,0 +1,88 @@
+{
+ "func": "func_80018094",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 21,
+   "modality": "recon",
+   "headline": "recon s1: honest floor 81 -> 21 (153/153 insns); scratchpad in-struct spelling + else-arm scale=0x100 close block 1, block 2 and the MATRIX copy byte-identically; residual = frame vars 8 vs 16, LZCS i"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The island-input copy `move a0,a1` (with sum_sq in a1) comes from a second pseudo that cse cannot canonicalize to sum_sq; naming the pass that deletes the v7a copy (cse vs combine) pins the spelling family; the completed sibling's LZCR-read statements (`lw_v1 = sp_tmp; li_v0 = -2; li_v0 = lw_v1 & li_v0;`, func_8001A67C in src/code6cac.c) fix the 3 read-seat insns",
+   "mechanism": "cse.c canon_reg / combine.c subst into the asm insn; local-alloc 2-address tie for the `and`",
+   "next_probe": "bash tmp/grind/func_80018094/s1/cc_dbg.sh v7a ; diff the copy insn across v7a.cse / v7a.combine; then splice2.py a v6a variant with the func_8001A67C read shape and sandbox it"
+  },
+  {
+   "hypothesis": "The target's extra 8 frame bytes (vars 16) are a stack temp of a construct the original had (12-byte local for the LZCR store, or a DImode temp) that the candidate lacks",
+   "mechanism": "function.c assign_stack_temp / put_reg_into_stack + reload1.c round_frame (BB2_FRAME_DEBUG ctx names the allocator)",
+   "next_probe": "grep psyz / SOTN for gte_stlzc callers to learn the natural local type, then cc_dbg.sh <variant> BB2_FRAME_DEBUG=1 and read `FRAMEDBG func=func_80018094` for each candidate declaration"
+  },
+  {
+   "hypothesis": "Once the copy pseudo exists, sum_sq lands in $5 (a1) and log2_val in $5 by ordinary global allocation",
+   "mechanism": "global.c find_reg with the copy occupying $4 across the island",
+   "next_probe": "tools/ra_solver/extract.py func_80018094 code6cac ; inverse_compose.py classify for pseudo(sum) -> 5"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "plain `*(s32 *)0x1F800024/28/2C` casts for the three scratchpad stores and the three read-modify-writes, measured on this candidate body",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), v1 body: SDK-macro SetRot/SetTrans islands + func_8001A67C LZC template, scale=0x100 before the if, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "81/153; block-1 stores sink below all three subtractions, block 2 emits `lui/ori addr; lw 0(addr) ... sw 0(addr)`"
+  },
+  {
+   "session": 1,
+   "statement": "a `s32 *scr = (s32 *)0x1F800000;` pointer variable indexed scr[9..11] for all six scratchpad accesses, measured on this candidate body",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), v2 body: islands as v1, scale=0x100 before the if, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "62/153; block-1 stores now in place, but `sw s2,32(sp); lui s2,0x1f80` in the prologue and `lw v0,36(s2)` forms in block"
+  },
+  {
+   "session": 1,
+   "statement": "`scale = 0x100;` assigned before `if (sum_sq <= 250000) { if (sum_sq < 0) scale = 0; else {...} }`, measured on this candidate body",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), v3d body: struct-macro scratchpad, islands as v1, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "dz triple `lw v1,28(v0); lw v0,48(s1)` (target `lw v1,48(s1); lw v0,28(v0)`), `subu $3`, `li $4,0x30000`, sum in $4; the"
+  },
+  {
+   "session": 1,
+   "statement": "a named local copy `lz_in = sum_sq;` as the LZCS island input, measured on this candidate body, produces the target's `move a0,a1` before `addu $t4,$a0,$zero`",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), v7a body = v6a + `s32 lz_in` local, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "no move emitted; island reads the sum register directly (`addu $t4,$4,$zero`), output identical to v6a"
+  },
+  {
+   "session": 1,
+   "statement": "a `static inline s32 lzc_of(s32 v)` helper wrapping the LZC island (parameter copy + its own `s32 r` local), measured on this candidate body, produces the input copy and/or the target's 16-byte vars a",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), v7b body = v6a with the island moved into a static inline helper, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "no move emitted (copy eliminated), `.frame` still vars= 8"
+  },
+  {
+   "session": 1,
+   "statement": "a single `s32 sp_tmp;` \"=m\" operand for the LZCR store reaches the target's vars=16 frame, measured on this candidate body",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), v3d/v6a bodies, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "vars= 8 (frame 40) vs target 48 (vars 16, sp_tmp at 0x10, 0x14..0x1F untouched); the COMPLETED sibling func_8001A67C sho"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T00:33:40.741531+00:00",
+ "object_model_audited": 1
+}
