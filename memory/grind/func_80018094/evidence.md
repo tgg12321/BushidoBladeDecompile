@@ -148,3 +148,71 @@
 - [s2] Structural levers measured byte-neutral on this body: sp_tmp in the innermost block, declaration-order permutation, log2_val at function scope, pre-branch copy local — all four assemble identically to the candidate and all four keep `vars= 8`.
 
 - [s2] Tooling: tmp/grind/func_80018094/s2/{cc.sh,cc_dbg.sh,splice2.py} are the s1 scripts re-pointed at s2 and fixed to git-checkout src/code6cac.c before each splice; they must run under WSL (`bash tools/wsl.sh 'bash tmp/grind/func_80018094/s2/cc.sh <v>'`) because Windows-side Git Bash cannot exec the Linux cc1.
+
+## s3 (structural, 2026-09-09) — the residual is exactly {8 frame insns} + {10 seat insns}, and they are independent
+
+- Chassis re-measured this session: `sandbox func_80018094 --disable all` on the committed
+  memory/grind/func_80018094/candidate.c = **18** (153/153 insns, rules_dropped 0,
+  cheat_asm_stripped 20). The ledger's floor 18 stands on the current chassis.
+- `tools/pairdiff.py code6cac func_80018094` (tmp/grind/func_80018094/s3/base_pairdiff.txt) resolves
+  the 18 into two disjoint sets:
+  - **Frame (8 insns)**: ours `addiu sp,sp,-40` / `sw s0,24(sp)` / `sw s1,28(sp)` / `sw ra,32(sp)` and
+    the four matching epilogue insns; target `-48` / `32` / `36` / `40`. Nothing else in the body
+    depends on them.
+  - **Seats (10 insns)**: indices 60, 61, 64, 65, 69, 71, 74, 85, 93, 96. The target keeps sum_sq in
+    **$a1** across the whole if-chain (`addu a1,v0,a3`, `slt v1,v1,a1`, `bgez a1`, `slti v0,a1,1024`,
+    `addu at,at,a1`, `srl a1,v0,3`, `srav v0,a1,v1`, `srav a1,a0,v0`, `sll v1,a1,6`) and fills the
+    delay slot of `beqz v0` with **`move a0,a1`**, where ours emits `nop`. So the island-input copy is
+    a real insn that reorg.c stole into the delay slot — it is not part of the hand-asm island.
+- The two sets are decoupled: s2's register-pin body (s2/v11a.s), which reproduces the whole seat
+  cluster byte-for-byte, still prints `.frame $sp,40 # vars= 8`. Fixing either does not fix the other.
+
+### Frame: the search space is now bounded on three sides
+- Frame equation (mips.c compute_frame_size, MIPS_STACK_ALIGN=8):
+  `48 = ALIGN8(vars) + ALIGN8(args=16) + ALIGN8(gp_regs=12)` => `ALIGN8(vars)=16`, i.e. raw vars 9..16.
+  Ours is raw 4 -> round_frame 8. The missing amount is 5..12 raw bytes; 8 is the natural fit.
+- **Position**: the target's island writes `addiu $v0,$sp,0x10` and the C-side read is `lw $v1,0x10($sp)`,
+  so sp_tmp is at vars offset 0 with args=16. Any extra object must therefore be allocated *after*
+  sp_tmp's `put_reg_into_stack`, i.e. by a construct expanded after the LZC island statement. Measured
+  both ways: the same 8-byte struct placed before the island (p2.c) pushes sp_tmp to `24($sp)` and
+  breaks the island; placed after it (p3.c) it keeps `0x10` and prints `vars= 16, frame 48` — the
+  target's exact frame.
+- **Invisibility**: the target contains no sp-relative access other than that one 0x10 pair, so the
+  extra slot is never read or written. It is a phantom (memory phantom-frame-slots-gcc272), which
+  excludes every LIVE aggregate spelling (p3 costs 3 real memory insns).
+- **Mode**: a FRAMEDBG census of the entire src/code6cac_c2.c TU with the instrumented cc1
+  (`BB2_FRAME_DEBUG=1 tools/gcc-2.7.2/cc1`, tmp/grind/func_80018094/s3/code6cac_c2.fd — 53 slot
+  events) finds only three contexts in this codebase: `round_frame` (39), `stack_temp` (11) and
+  `spill_new_pNN` (3). **Every one of the 11 `stack_temp` events is `mode=26` (BLKmode)**, sizes
+  8/16/32/256/1024. No SImode or HImode stack temp is ever allocated in this TU. So the construct to
+  hunt is an 8-byte **aggregate-typed** temp in the post-island tail, not a scalar.
+- Ruled out this session as frame levers on this body: HImode narrowing of the LZCR-read block or of
+  shift_a/shift_b (v12a/v12b/v12c — vars stays 8 and costs 2 sign-extension insns), and named-
+  intermediate scalar splits of the products / shift arithmetic / division (v14a-v14d — vars stays 8;
+  v14b additionally burns a 4th callee-saved register). Combined with s2's H15 (declaration scope,
+  declaration order, function-scope hoisting all frame-neutral), **no scalar-level structural lever
+  moves this frame** — the answer is an aggregate object model in the tail.
+
+### Seat cluster: the $a0 census is 29/29
+- `grep -B3 'mtc2 .*\$30' asm/funcs/*.s` over the whole binary: every one of the 29 inlined LZCS sites
+  is preceded by `addu $t4, $a0, $zero`. By contrast the SetRotMatrix/SetTransMatrix preambles in this
+  same function read `$a2` (`lw $a2,4($s0); addu $t4,$a2,$zero`), i.e. that macro's register genuinely
+  varies with its operand. The LZC macro's does not. That asymmetry is the evidence that the LZC
+  island's asm text names `$a0` itself, and it is why every "r"-constraint C spelling seats the input
+  wherever the allocator likes ($a0 here, by luck) instead of forcing the copy the target has.
+
+- [s3] Chassis re-measured this session: sandbox func_80018094 --disable all on the committed candidate.c = 18 (153/153 insns, rules_dropped 0, cheat_asm_stripped 20). The ledger floor 18 stands on the current -mel -msoft-float chassis.
+
+- [s3] The 18 residual insns are exactly 8 frame-offset insns (prologue/epilogue, ours frame 40 vs target 48) and 10 register-seat insns (target keeps sum_sq in $a1 and fills the `beqz v0` delay slot with `move a0,a1`, where ours emits `nop`).
+
+- [s3] The two residuals are independent: s2's register-pin body v11a reproduces the entire seat cluster byte-for-byte and still prints vars= 8.
+
+- [s3] Frame equation for the target: 48 = ALIGN8(vars) + ALIGN8(args=16) + ALIGN8(gp_regs=12) => ALIGN8(vars)=16, i.e. raw vars 9..16; ours is raw 4 rounded to 8. The missing amount is 5..12 raw bytes and 8 is the natural fit.
+
+- [s3] Position is fixed by the island: the target writes `addiu $v0,$sp,0x10` and reads `lw $v1,0x10($sp)`, so sp_tmp occupies vars offset 0 and any extra slot must be allocated after it. Measured both ways with the same 8-byte struct: before the island it pushes sp_tmp to 24($sp) (wrong); after the island it keeps 0x10 and yields frame 48 / vars 16 (exactly right).
+
+- [s3] The extra slot is a PHANTOM: the target has no sp-relative access other than that single 0x10 pair, so the object is allocated and never touched — every live-aggregate spelling is excluded by the target's own bytes (p3 costs 3 real memory insns).
+
+- [s3] A FRAMEDBG census of the whole src/code6cac_c2.c TU (53 slot events) shows all 11 non-spill non-round_frame slots are mode=26 BLKmode aggregates; there is no SImode/HImode stack temp anywhere in this codebase, which explains why every scalar-level lever (s2 H15 declaration scope/order/hoisting, s3 HImode narrowing, s3 named-intermediate splits) is frame-neutral.
+
+- [s3] Binary-wide census: all 29 `mtc2 $t4,$30` sites in asm/funcs are preceded by `addu $t4, $a0, $zero`, while the SetRotMatrix/SetTransMatrix preamble in this same function reads $a2 (`lw $a2,4($s0); addu $t4,$a2,$zero`). That asymmetry is the evidence that the LZC island's asm text names $a0 itself, and it is why no `r`-constraint C spelling forces the target's `move a0,a1` copy.

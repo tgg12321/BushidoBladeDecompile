@@ -190,3 +190,112 @@ dropped).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-09 (-mel -msoft-float), v8a body plus a tied asm output operand (the construct under test)
+
+## s3 (structural, 2026-09-09) — chassis -mel -msoft-float; body = candidate.c (s2 v8a), baseline sandbox 18 re-measured this session
+
+| # | hypothesis | probe | result | verdict |
+|---|---|---|---|---|
+| H19 | the 18 residual insns are 8 frame-offset insns + 10 seat insns, and the two are independent | pairdiff base_pairdiff.txt + `.frame` of s2/v11a (the register-pin body that reproduces the seat cluster) | v11a still prints vars= 8: the pin fixes the seats and leaves the frame wrong — the two residuals are decoupled | CONFIRMED |
+| H20 | HImode (s16) narrowing of the sibling LZCR-read block raises vars from 8 toward 16 (memory phantom-frame-slots-gcc272 names an HImode bitwise expression as the minimal 8-byte trigger) | cc1 v12a/v12b/v12c | all three print vars= 8 and add 2 sign-extension insns (`sll $2,$2,16; sra $2,$2,16`) plus swap the lw/li seat pair | KILLED (instance) |
+| H21 | extra named-intermediate locals (split products, split shift arithmetic, split scale computation) raise vars | cc1 v14a/v14b/v14c/v14d | all print vars= 8; v14b additionally forces a 4th saved register (regs= 4/0) and loses 3 insns of shape | KILLED (instance) |
+| H22 | +8 bytes of frame is the right magnitude and IS reachable in this body | cc1 p2 (a live 8-byte struct before the island) | vars= 16, frame= 48 — the target's exact frame equation (16 args + 16 vars + 16 gp) | CONFIRMED |
+| H23 | the extra 8 bytes must be allocated AFTER sp_tmp's slot, i.e. by a construct expanded after the LZC island statement | cc1 p2 (aggregate before the island) vs p3 (same aggregate after it) | p2 pushes sp_tmp to `24($sp)` (target reads `16($sp)`) — WRONG; p3 keeps `addiu $v0,$sp,0x10` / `lw $3,16($sp)` AND prints vars= 16 — RIGHT | CONFIRMED |
+| H24 | a live 8-byte aggregate in the tail is byte-usable as the frame source | cc1 p3 | frame layout exact, but the aggregate is real memory: +3 insns (`sw $4,24($sp)` etc.), and the target has NO sp-relative access other than the 0x10 pair, so the target's 8 bytes are a PHANTOM (allocated, never accessed) | KILLED (instance) |
+
+## Frontier (next session)
+1. FRAME (8 of the 18 insns, fully independent of the seat cluster). The search is now sharply bounded
+   by three measured facts: (a) the slot is 5..12 raw bytes (ALIGN8 -> 16) — an 8-byte object is the
+   natural fit; (b) it is allocated AFTER the island's `put_reg_into_stack` for sp_tmp, so it cannot be
+   any object declared/expanded before the island (H23); (c) it is never accessed by any emitted insn
+   (H24), i.e. it is a BLKmode stack TEMP, not a stack VARIABLE. A FRAMEDBG census of the whole
+   src/code6cac_c2.c TU (s3/code6cac_c2.fd, 53 slots) shows EVERY non-spill, non-round_frame slot in
+   this codebase is `ctx=stack_temp mode=26` (BLKmode) — so the construct to hunt is an 8-byte
+   AGGREGATE-typed temp in the post-island tail whose accesses are optimized away: candidates are
+   expr.c:6105 (TARGET_EXPR, keep-level 2 so it is never reused), calls.c:1083 (a struct argument
+   copied by value), expr.c:4531 / expr.c:5090 (a struct-valued rvalue with no target). PsyQ's only
+   8-byte aggregate is SVECTOR (4 shorts); MATRIX is 32 and VECTOR is 16, both of which overshoot.
+2. SEATS (10 insns). Unchanged and now precisely characterized by base_pairdiff.txt: the target keeps
+   sum_sq in $a1 for the whole if-chain and materialises `move a0,a1` in the DELAY SLOT of `beqz v0`
+   (ours emits `nop` there), so the copy is a real insn reorg stole into the slot, not an island
+   artifact. A binary census of all 29 `mtc2 $t4,$30` sites shows `addu $t4, $a0, $zero` at 29/29 —
+   the LZC island's asm text names $a0, which no "r"-constraint spelling can guarantee. This remains
+   the standing ruling question from s2.
+3. If the frame temp is found, the floor drops 18 -> 10 with no change to the seat question.
+
+## [s3] the 18-insn residual splits into 8 frame-offset insns and 10 register-seat insns that are independent levers
+- mechanism: the frame insns are the 4 prologue / 4 epilogue sp-offset-bearing insns (addiu sp / sw s0,s1,ra / lw ra,s1,s0 / addiu sp); the seat insns are every place the target names $a1 for sum_sq plus the `move a0,a1` delay-slot fill
+- probe: tools/pairdiff.py code6cac func_80018094 on the spliced candidate (tmp/grind/func_80018094/s3/base_pairdiff.txt) plus `grep .frame` on s2/v11a.s (the register-pin body that reproduces the whole seat cluster)
+- result: the pairdiff hunks are exactly {0,1,3,5,147,148,149,150} (frame) and {60,61,64,65,69,71,74,85,93,96} (seats); v11a fixes the second set and still prints `vars= 8`, so neither residual is downstream of the other
+- verdict: CONFIRMED
+
+## [s3] HImode (s16) narrowing of the LZCR-read block or of shift_a/shift_b raises the frame from vars=8 toward the target's 16, measured on this candidate body
+- mechanism: memory phantom-frame-slots-gcc272 records "two HImode locals feeding an HImode bitwise expression" as the minimal 8-byte phantom-slot trigger measured on func_80037540
+- probe: cc1 v12a (lw_v1/li_v0 as s16), v12b (+ shift_a/shift_b s16), v12c (shift_b s16 only); read the `.frame` comment and diff against s2/v8a.s
+- result: all three print `vars= 8, frame 40`; each also costs 2 insns (`sll $2,$2,16; sra $2,$2,16` re-extending the HImode `and` result for the SImode `0x16 - x`) and swaps the target's `lw $3 / li $2` seat pair to `lw $2 / li $3`
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body (s2 v8a), no FAKE constructs
+
+## [s3] adding named-intermediate scalar locals (split products for the sum, a split `0x16 - li_v0`, a split `(log2_val<<6)/500`) raises the frame, measured on this candidate body
+- mechanism: GCC 2.7.2 can reserve locals bytes for a computation it later register-allocates away (phantom-frame-slots-gcc272), so more live named pseudos might buy the slot
+- probe: cc1 v14a (named products p1/p2/p3), v14b (named `li_c` / `li_v1` around the shift arithmetic), v14c (named `num` / `q` around the division), v14d (all combined)
+- result: every variant prints `vars= 8`; scalar locals never take a frame slot here. v14b is strictly worse (regs= 4/0, 145 insns, a 4th callee-saved register)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body, no FAKE constructs
+
+## [s3] the target's extra 8 frame bytes belong to a slot allocated AFTER sp_tmp's, so no object expanded before the LZC island can be their source
+- mechanism: function.c assign_stack_local hands out increasing frame_offsets; sp_tmp's slot comes from put_reg_into_stack at the moment the `"=m"` asm is expanded, and the target's island reads `addiu $v0,$sp,0x10` / `lw $v1,0x10($sp)` — i.e. sp_tmp sits at vars offset 0 with args=16
+- probe: the same live 8-byte struct placed before the island (p2.c) and after it (p3.c); read `.frame` and the sp offsets in p2.s / p3.s
+- result: p2 gives `vars= 16` but moves sp_tmp to `24($sp)` (the aggregate took offsets 0..7) — the island's hand-written 0x10 no longer names sp_tmp; p3 gives `vars= 16, frame 48` AND keeps `addiu $v0,$sp,0x10` / `lw $3,16($sp)`, reproducing the target's frame equation exactly (args 16 + vars 16 + gp regs 16 = 48)
+- verdict: CONFIRMED
+
+## [s3] a live 8-byte aggregate local in the post-island tail is a byte-usable source for the missing frame bytes
+- mechanism: an aggregate local is never a register candidate in GCC 2.7.2, so it occupies its stack slot and every member access is a real load/store
+- probe: cc1 p3 (`struct { s32 a, b; } q;` carrying scale and SCRV->x through the first scaling statement) diffed against s2/v8a.s and against the target
+- result: the frame is exact but the body grows to 151 insns with real `sw $4,24($sp)`-class accesses, while the target contains NO sp-relative access other than the `addiu $v0,$sp,0x10` / `lw $v1,0x10($sp)` pair — so the target's extra 8 bytes are a phantom slot that is allocated and never touched, and any LIVE aggregate spelling is excluded by the target's own bytes
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body plus one live 8-byte struct (the construct under test), no FAKE constructs
+
+## [s3] The 18-insn residual splits into 8 frame-offset insns and 10 register-seat insns, and the two are independent levers on this candidate body
+- mechanism: the frame insns are the 4 prologue / 4 epilogue sp-offset-bearing insns (addiu sp / sw s0,s1,ra and their restores); the seat insns are every site where the target names $a1 for sum_sq plus the `move a0,a1` that reorg.c stole into the delay slot of `beqz v0` (ours emits `nop` there)
+- probe: tools/pairdiff.py code6cac func_80018094 on the spliced candidate (tmp/grind/func_80018094/s3/base_pairdiff.txt), plus `grep .frame` on tmp/grind/func_80018094/s2/v11a.s, the s2 register-pin body that reproduces the whole seat cluster
+- result: the pairdiff hunks are exactly {0,1,3,5,147,148,149,150} (frame) and {60,61,64,65,69,71,74,85,93,96} (seats); v11a fixes the second set and still prints `.frame $sp,40 # vars= 8`, so neither residual is downstream of the other and either can be closed alone
+- verdict: CONFIRMED
+
+## [s3] HImode (s16) narrowing of the sibling LZCR-read block, or of shift_a/shift_b, raises the frame from vars=8 toward the target's vars=16 on this candidate body
+- mechanism: memory phantom-frame-slots-gcc272 records 'two HImode locals feeding an HImode bitwise expression' as the minimal 8-byte phantom-slot trigger measured on func_80037540, and the LZCR-read block (`lw_v1 & li_v0`) is exactly that shape here
+- probe: cc1 v12a (lw_v1/li_v0 as s16), v12b (+ shift_a/shift_b s16), v12c (shift_b s16 only) via tmp/grind/func_80018094/s3/cc.sh; read the `.frame` comment and diff each .s against s2/v8a.s
+- result: all three print `vars= 8, frame 40` — unchanged — and each costs 2 extra insns (`sll $2,$2,16; sra $2,$2,16` re-extending the HImode `and` result for the SImode `0x16 - x`) while swapping the target's `lw $3 / li $2` seat pair to `lw $2 / li $3`. Banked as rejected/lzcr-read-himode-narrowing-adds-sign-extend.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body (s2 v8a: s1 v6a + the sibling LZCR-read block), no FAKE constructs
+
+## [s3] Adding named-intermediate scalar locals (split products for the sum, a split 0x16 - li_v0, a split (log2_val<<6)/500) raises the frame on this candidate body
+- mechanism: GCC 2.7.2 can reserve locals bytes for a computation it later register-allocates away (phantom-frame-slots-gcc272), so more live named pseudos were the cheapest candidate source of the slot
+- probe: cc1 v14a (named products), v14b (named li_c/li_v1 around the shift arithmetic), v14c (named num/q around the division), v14d (all combined); read `.frame` and the insn count
+- result: every variant prints `vars= 8`; scalar locals never take a frame slot in this function. v14b is strictly worse (regs= 4/0, i.e. a 4th callee-saved register, and 145 insns). Banked as rejected/shift-arith-named-intermediates-extra-saved-reg.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body, no FAKE constructs
+
+## [s3] The target's extra 8 frame bytes belong to a slot allocated AFTER sp_tmp's slot, so no object expanded before the LZC island can be their source on this body
+- mechanism: function.c assign_stack_local hands out increasing frame_offsets, and sp_tmp's slot comes from put_reg_into_stack at the moment the `=m` asm is expanded; the target's island writes `addiu $v0,$sp,0x10` and its C-side read is `lw $v1,0x10($sp)`, pinning sp_tmp to vars offset 0 with args=16
+- probe: the same live 8-byte struct placed before the island (tmp/grind/func_80018094/s3/p2.c) and after it (p3.c); read `.frame` plus the sp offsets in p2.s / p3.s
+- result: p2 gives `vars= 16` but moves sp_tmp to `24($sp)`, which breaks the island's hand-written 0x10; p3 gives `vars= 16, frame 48` AND keeps `addiu $v0,$sp,0x10` / `lw $3,16($sp)` — the target's exact frame equation (args 16 + vars 16 + gp regs 16 = 48). The +8 magnitude is therefore correct and reachable, and its position is fixed
+- verdict: CONFIRMED
+
+## [s3] A live 8-byte aggregate local in the post-island tail is a byte-usable source for the missing frame bytes on this candidate body
+- mechanism: an aggregate local is never a register candidate in GCC 2.7.2, so it occupies its stack slot and every member access is emitted as a real load/store
+- probe: cc1 p3 (`struct { s32 a, b; } q;` carrying scale and SCRV->x through the first scaling statement) diffed against s2/v8a.s and against asm/funcs/func_80018094.s
+- result: the frame is exact but the body grows to 151 insns with real `sw $4,24($sp)`-class accesses, while the target contains NO sp-relative access other than the `addiu $v0,$sp,0x10` / `lw $v1,0x10($sp)` pair — so the target's extra 8 bytes are a phantom slot that is allocated and never touched, and the LIVE-aggregate spelling is excluded by the target's own bytes. Banked as rejected/frame-8byte-aggregate-after-island-costs-3-insns.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body plus one live 8-byte struct (the construct under test), no FAKE constructs
+
+## [s3] Every non-spill stack slot GCC 2.7.2 allocates in this codebase is a BLKmode (aggregate) temp, so the missing frame bytes come from an aggregate-typed object rather than any scalar
+- mechanism: function.c:896 sets ctx=stack_temp for assign_stack_temp; the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_FRAME_DEBUG=1) prints mode/size/frame_offset for every slot handed out
+- probe: BB2_FRAME_DEBUG=1 compile of the whole src/code6cac_c2.c TU (tmp/grind/func_80018094/s3/fd.sh code6cac_c2 -> code6cac_c2.fd, 53 slot events)
+- result: only three contexts appear — round_frame (39), stack_temp (11), spill_new_pNN (3) — and all 11 stack_temp events are `mode=26` (BLKmode) at sizes 8/16/32/256/1024. No SImode or HImode stack temp is ever allocated in this TU, which is why every scalar lever tried in s2 and s3 is frame-neutral
+- verdict: CONFIRMED

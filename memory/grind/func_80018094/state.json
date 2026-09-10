@@ -1,7 +1,7 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 18,
    "modality": "structural",
    "headline": "structural s2: floor 21 -> 18 by transplanting the COMPLETED sibling func_8001A67C's LZCR-read statement block; the remaining 18 = 8 frame-offset insns + one 10-insn seat cluster that reduces to how t"
+  },
+  {
+   "session": 3,
+   "floor": 18,
+   "modality": "structural",
+   "headline": "structural s3: floor holds at 18; the residual is proven to split into 8 independent frame insns + 10 seat insns, and the frame slot is now bounded to an 8-byte BLKmode temp allocated AFTER the LZC is"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole 10-insn seat cluster is downstream of one question: how the original source fixed the LZC island's input to $a0 (all 21 inlined sites in the binary read $a0). Every C-level copy is deleted by cse.c canon_reg, and the register-pin spelling that does reproduce the bytes is a banned family that the sandbox strips. The question worth a RULING is whether the input-register fixing belongs to the AUTHORIZED canonical island for this cop2-cluster member rather than to the C.",
-   "mechanism": "cse.c canon_reg / qty_first_reg deletes reg-reg copies; global.c find_reg then seats sum_sq in the first free register ($4)",
-   "next_probe": "read .claude/rules/cop2-addressing-preamble-cluster.md and inline_asm_canonical.txt:266 end-to-end, then emit a ruling-request asking whether func_80018094's authorized island template may name $a0 in its own asm text (with an operand form that materialises the value there), citing the 21-site census and the v11a asm reproduction"
+   "hypothesis": "The missing 8 frame bytes come from an 8-byte BLKmode (aggregate-typed) stack TEMP created in the post-island tail whose accesses are all optimized away \u2014 the only slot class GCC 2.7.2 allocates in this codebase, in the only position the island's 0x10 permits.",
+   "mechanism": "function.c assign_stack_temp via one of expr.c:6105 (TARGET_EXPR, keep-level 2 so the slot is never reused), calls.c:1083 (a struct argument copied by value), expr.c:4531 / expr.c:5090 (a struct-valued rvalue with no target); counted by get_frame_size and rounded by reload1.c round_frame",
+   "next_probe": "spell the tail (`dst = arg1; *(MATRIX *)(dst + 5) = *(MATRIX *)arg0[1]; func_80018300(dst);` and the three SCRV scalings) with 8-byte aggregate object models \u2014 PsyQ's only 8-byte aggregate is SVECTOR (4 shorts); MATRIX is 32 and VECTOR is 16 and both overshoot \u2014 compile each with tmp/grind/func_80018094/s3/cc.sh and read `vars=` from the `.frame` comment, then confirm the slot's provenance with `BB2_FRAME_DEBUG=1` (tmp/grind/func_80018094/s3/fd.sh) and require `ctx=stack_temp mode=26 size=8 frame_offset=12`"
   },
   {
-   "hypothesis": "The 8 missing frame bytes (vars 8 vs 16) are a phantom stack TEMP of a construct the original had, not a stack VARIABLE: declaration scope, declaration order and function-scope hoisting are all measured frame-neutral here.",
-   "mechanism": "function.c assign_stack_temp for a computation later register-allocated away, counted by get_frame_size and rounded by reload1.c round_frame (memory phantom-frame-slots-gcc272 names an HImode bitwise expression over two HImode locals as the minimal 8-byte trigger)",
-   "next_probe": "cc.sh variants narrowing the `sp_tmp & -2` / `0x16 - x` / `0x13 - y` arithmetic to s16 intermediates and read `vars=` from the .frame comment; confirm with cc_dbg.sh <v> BB2_FRAME_DEBUG=1 and grep `FRAMEDBG func=func_80018094` for the allocating context"
+   "hypothesis": "The 10-insn seat cluster reduces to how the original fixed the LZC island's input to $a0; the 29/29 `addu $t4,$a0,$zero` census says the register is named by the island's own asm text, not chosen by the allocator.",
+   "mechanism": "cse.c canon_reg deletes every C-level reg-reg copy before RA (s2 H13/H14, s1 H7/H8); global.c find_reg then seats sum_sq in the first free register ($4), so no `move a0,a1` is ever materialised",
+   "next_probe": "emit the ruling-request the s2 frontier already framed: whether func_80018094's authorized canonical island (inline_asm_canonical.txt:266, .claude/rules/cop2-addressing-preamble-cluster.md:60) may name $a0 in its own asm text with an operand form that materialises the value there \u2014 citing the 29-site census, the SetRotMatrix $a2 contrast, and the v11a byte reproduction"
   },
   {
-   "hypothesis": "If the island input is ruled C-side, the only pin-free copy that survives to RA is the tied-operand one, and it can be steered into $4 (pushing sum_sq to $5) by making $3 busy across its block-local range.",
+   "hypothesis": "If the island input is ruled C-side, the only pin-free copy that survives to RA is the tied-operand form of s2 H18, steerable into $4 by making $3 busy across its block-local range.",
    "mechanism": "local-alloc find_free_reg scans ascending over regs_live_at[birth..death]; $2 is already blocked by the island's clobber list, so occupying $3 leaves $4 as the first free register",
-   "next_probe": "start from rejected/lzc-input-tied-output-copy-seats-v1-not-a0.c, extend a live value across the copy's range (e.g. by ordering the LZCR read statements before the island's consumer), recompile with cc.sh and re-run tools/ra_solver/extract.py to read the new dispositions"
+   "next_probe": "start from rejected/lzc-input-tied-output-copy-seats-v1-not-a0.c, extend a live value across the copy's range (e.g. order the LZCR-read statements before the island's consumer), recompile with s3/cc.sh and re-run tools/ra_solver/extract.py to read the new dispositions"
   }
  ],
  "judge_constraints": [],
@@ -132,6 +138,30 @@
    "measured_on": "chassis 2026-09-09 (-mel -msoft-float), v8a body plus a tied asm output operand (the construct under test)",
    "predicate_cite": "",
    "result": "a copy does survive (`move $3,$4`, island reads $3) but it is a block-local qty and local-alloc's ascending find_free_re"
+  },
+  {
+   "session": 3,
+   "statement": "HImode (s16) narrowing of the sibling LZCR-read block, or of shift_a/shift_b, raises the frame from vars=8 toward the target's vars=16 on this candidate body",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body (s2 v8a: s1 v6a + the sibling LZCR-read block), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "all three print `vars= 8, frame 40` \u2014 unchanged \u2014 and each costs 2 extra insns (`sll $2,$2,16; sra $2,$2,16` re-extendin"
+  },
+  {
+   "session": 3,
+   "statement": "Adding named-intermediate scalar locals (split products for the sum, a split 0x16 - li_v0, a split (log2_val<<6)/500) raises the frame on this candidate body",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "every variant prints `vars= 8`; scalar locals never take a frame slot in this function. v14b is strictly worse (regs= 4/"
+  },
+  {
+   "session": 3,
+   "statement": "A live 8-byte aggregate local in the post-island tail is a byte-usable source for the missing frame bytes on this candidate body",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body plus one live 8-byte struct (the construct under test), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "the frame is exact but the body grows to 151 insns with real `sw $4,24($sp)`-class accesses, while the target contains N"
   }
  ],
  "ladder_skip": 0,
