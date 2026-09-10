@@ -893,3 +893,122 @@ tied output on a fresh local reused as the `-2` carrier **9**; as `shift_a` **11
 pre-branch local `dz` **24**; the sum_sq merge with the staging retained **12**; a separate `res`
 variable for the arm result **11**; dropping the staging on b4 without the `lut` split **11**;
 `s32 sp_tmp` scalar on the zero chassis **8**; no do-while(0) on the zero chassis **13**; both **21**.
+
+## s9b (solver, 2026-09-09) — the cse block-extension gate, and the honest copy
+
+**H44 — CONFIRMED (pass attribution, measured).** *The honest `lz_in = sum_sq;` island-input
+copy dies in cse1, not in flow, and a `do { lz_in = sum_sq; } while (0);` wrap around the copy
+makes it survive cse1 — but cse2 finishes the job.*
+- mechanism: `cse_end_of_basic_block` breaks the block scan on a `NOTE_INSN_LOOP_END` only when
+  `! after_loop` (tools/gcc-2.7.2/cse.c:8053-8055). cse1 runs with after_loop = 0, cse2 with
+  after_loop = 1, so a loop-end note between the copy and the branch blocks cse1 and nothing else.
+- probe: `pwsh tools/grinder/dump.ps1 func_80018094` on tmp/grind/func_80018094/s9/k1.c, then
+  counting `reg/v:SI 107` (the copy's pseudo) per pass dump: .rtl 2, .jump 2, .cse 2, .loop 2,
+  .cse2 **1**, .flow **0**.
+- result: the copy's USE (the asm operand) is rewritten to `sum_sq` by cse2; flow then deletes the
+  now-dead set. Score unchanged at 10. This is the first per-pass localisation of the deletion in
+  nine sessions — s6/s9a attributed it to "cse.c:8102" without separating cse1 from cse2.
+- verdict: CONFIRMED
+
+**H45 — CONFIRMED (the session's result).** *cse's follow-jumps gate can be closed against BOTH
+cse runs by putting a `NOTE_INSN_LOOP_END` between the small arm's terminating BARRIER and the
+LZC arm's label, and with the gate closed the honest copy survives to RA and materialises the
+target's pre-island `move`.*
+- mechanism: the gate at tools/gcc-2.7.2/cse.c:8100-8125 follows a conditional jump only if
+  `LABEL_NUSES (JUMP_LABEL (p)) == 1` **and** the backward walk from the target label reaches a
+  BARRIER. That walk skips NOTEs *except* `NOTE_INSN_LOOP_END` and `NOTE_INSN_SETJMP`, and it
+  carries no `after_loop` guard, so a loop-end note sitting after the barrier stops the walk on a
+  NOTE and the jump is not followed in cse1 or cse2. `if (c) { ... }` with NO else, whose body is
+  `do { ...; goto lzc_done; } while (0);`, emits exactly
+  `[body][goto][BARRIER][cont-label][end-label][NOTE_INSN_LOOP_END][if-false-label]`.
+  (An `if/else` cannot produce this: `expand_start_else` emits its jump+BARRIER immediately before
+  the else label with nothing in between.)
+- probe: tmp/grind/func_80018094/s9/m1.c (outer wrap kept) and m2.c (outer wrap dropped), both
+  measured with sweep_variants and then disassembled against the target.
+- result: **13 and 13**, build_insns 153, and the objdump diff shows `move a1,a0` in the `beqz`
+  delay slot where the target has `move a0,a1` — i.e. the copy EXISTS, honestly, for the first
+  time; only the two registers are swapped. m3.c (same shape but a plain `goto` with no
+  do-while(0), so no loop-end note) scores **10** with a `nop` in that slot: the wrap is the
+  load-bearing part, not the goto.
+- verdict: CONFIRMED
+
+**H46 — CONFIRMED.** *With the copy alive, the remaining question is purely global.c's allocation
+ORDER: the copy's allocno and `sum_sq`'s allocno have IDENTICAL conflict sets and both carry
+`preferences: 4`, so whichever is sorted first takes $a0.*
+- mechanism: m1's .greg gives `;; 12 regs to allocate: 118 77 80 78 ...` (priority order),
+  `77 conflicts: 72 73 77 80 2 3 12 29` / `77 preferences: 4` and `80 conflicts: 72 73 77 80 2 3
+  12 29` / `80 preferences: 4`; dispositions `77 in 4`, `80 in 5`. 77 is `sum_sq`, 80 the copy.
+  $2 and $3 are closed to both (the island's own clobber list plus the conflict set), so the first
+  of the two allocated takes $4 and the second $5.
+- probe: tmp/grind/func_80018094/s9/m1.greg.txt (extracted from the dump with s9/ext.py).
+- result: the residual is one comparison in global.c's `allocno_compare` priority sort, not a
+  conflict fact and not a preference fact. This retires the s8/s9a framing ("99 must conflict with
+  78"), which was a property of the tied-operand chassis.
+- verdict: CONFIRMED
+
+**H47 — CONFIRMED.** *Giving the copy's variable two more references — by holding the small arm's
+LUT byte in the same variable — flips the sort and seats sum_sq at $a1 and the copy at $a0.*
+- probe: s9/n1.c (small arm spelled `lut = (u8)(*(&D_8008D118 + sum_sq)); sum_sq = lut >> 3;`).
+- result: **13 -> 2**. Every seat in the function is then byte-identical to the target except the
+  small arm's byte temp itself: target `lbu $v0,0($at)` / `srl $a1,$v0,3`, ours `lbu $a0,0($at)` /
+  `sra $a1,$a0,3`. Declaring `lut` as `u32` and casting the LZC tail
+  (`sum_sq = ((s32)(lut << 16)) >> (0x13 - shift_b);`) converts the `sra` back to `srl` at no
+  cost — s9/n13.c, still **2**, now banked as memory/grind/func_80018094/candidate.c.
+- verdict: CONFIRMED
+
+**H48 — KILLED (instance).** *The reference boost that flips the sort can come from somewhere
+other than the small arm's LUT byte.*
+- mechanism: every other site in the arm where `lut` could carry a value maps onto a target
+  register that is NOT $a0, so borrowing it costs the seats it touches.
+- probe: five spellings, all measured with sweep_variants on the m1/n13 chassis —
+  `lut` carries the `-2` mask (s9/n5.c), `lut` carries the LUT index (s9/n8.c and n9.c), the
+  `sll` written back into `lut` so the allocno has the target's own five references
+  (s9/p1.c, n7.c), the small arm indexing through `lut` instead of holding the byte (s9/p5.c),
+  and a separate `res` variable to shorten `sum_sq` (s9/n10.c, q8.c).
+- result: **5, 4, 4, 13, 13, 13, 8, 8** — n5 and n8 keep the seats but move the `-2`/index block;
+  p1/n7/p5 flip the sort back to 13; the `res` split adds a 154th instruction. Only the small-arm
+  byte spelling reaches 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s9b m1/n13 goto+do-while(0) chassis with
+  the sp_tmp[4] oversized-locals FAKE and both do-while(0) wraps present, honest island operands
+
+**H49 — the live frontier.** The last two instructions need `sum_sq` to lose global.c's priority
+sort WITHOUT the small arm's byte being parked in `lut`. `allocno_compare`
+(tools/gcc-2.7.2/global.c) ranks by a function of `allocno_n_refs` and `allocno_live_length`; the
+next session should read those two arrays for both allocnos out of an instrumented run (or infer
+them from the .lreg/.greg dumps of m1.c versus n1.c, which differ only in the boost) and then
+target the DENOMINATOR — lengthening `sum_sq`'s live range, or shortening the copy's — rather than
+the numerator, which H48 shows is spelled out.
+
+## [s9] The honest `lz_in = sum_sq;` island-input copy is deleted by cse1, and a `do { lz_in = sum_sq; } while (0);` wrap makes it survive cse1 while cse2 deletes it instead.
+- mechanism: cse_end_of_basic_block breaks the block scan on NOTE_INSN_LOOP_END only when `! after_loop` (tools/gcc-2.7.2/cse.c:8053-8055); cse1 runs with after_loop = 0 and cse2 with after_loop = 1, so a loop-end note between the copy and the branch blocks the first run only.
+- probe: pwsh tools/grinder/dump.ps1 func_80018094 with tmp/grind/func_80018094/s9/k0.c and k1.c spliced into src/code6cac.c; the copy's pseudo (reg/v:SI 107) counted in each pass dump with tmp/grind/func_80018094/s9/ext.py.
+- result: k0 (plain copy): present in .rtl, absent by .cse. k1 (do-while(0) wrapped): .rtl 2, .jump 2, .cse 2, .loop 2, .cse2 1, .flow 0 - cse2 rewrites the asm operand back to sum_sq and flow deletes the dead set. Both score 10. First per-pass localisation of this deletion in nine sessions.
+- verdict: CONFIRMED
+
+## [s9] cse's follow-jumps gate can be closed against both cse runs by putting a NOTE_INSN_LOOP_END between the small arm's terminating BARRIER and the LZC arm's label, and with the gate closed the honest copy survives to RA and materialises the target's pre-island move.
+- mechanism: The gate at tools/gcc-2.7.2/cse.c:8100-8125 extends a block across a conditional jump only when LABEL_NUSES(JUMP_LABEL) == 1 and the backward walk from the target label reaches a BARRIER; that walk stops on NOTE_INSN_LOOP_END and carries no after_loop guard. An `if` with NO else whose body is `do { ...; goto lzc_done; } while (0);` emits [body][goto][BARRIER][cont-label][end-label][NOTE_INSN_LOOP_END][if-false-label]. An if/else cannot: expand_start_else emits its jump+BARRIER immediately before the else label.
+- probe: tmp/grind/func_80018094/s9/m1.c and m2.c measured with tools/sweep_variants.py, then disassembled against asm/funcs/func_80018094.s with tmp/grind/func_80018094/s9/dis.sh; control m3.c is the same shape with a plain goto and no do-while(0).
+- result: m1/m2 score 13 (build_insns 153) and the delay slot of `beqz` now holds `move a1,a0` where the target has `move a0,a1` - the copy exists honestly for the first time, only the two registers are swapped. m3 scores 10 with a `nop` in that slot, so the do-while(0) is the load-bearing part, not the goto.
+- verdict: CONFIRMED
+
+## [s9] With the copy alive, the remaining difference is global.c's allocation ORDER: the copy's allocno and sum_sq's allocno have identical conflict sets and both carry `preferences: 4`, so whichever is sorted first takes $a0.
+- mechanism: global.c allocates in the priority order it prints; find_reg then scans hard regs ascending. $2 is closed by the island's own clobber list and $3 by the conflict set, so the first of the pair takes $4 and the second $5.
+- probe: tmp/grind/func_80018094/s9/m1.greg.txt, extracted from tmp/grind/func_80018094/dumps/code6cac.greg.
+- result: `;; 12 regs to allocate: 118 77 80 78 ...`; `77 conflicts: 72 73 77 80 2 3 12 29`, `77 preferences: 4`; `80 conflicts: 72 73 77 80 2 3 12 29`, `80 preferences: 4`; dispositions `77 in 4`, `80 in 5`. The residual is one comparison in allocno_compare, not a conflict fact and not a preference fact - this supersedes the s6/s8/s9a framing 'allocno 99 must conflict with allocno 78', which was a property of the tied-operand chassis.
+- verdict: CONFIRMED
+
+## [s9] Giving the copy's variable two more references by holding the small arm's LUT byte in the same variable flips the priority sort and seats sum_sq at $a1 and the copy at $a0.
+- mechanism: allocno_compare ranks on a function of allocno_n_refs and allocno_live_length; the two extra references lift the copy's allocno above sum_sq's, so it is allocated first and takes $4.
+- probe: tmp/grind/func_80018094/s9/n1.c (small arm spelled `lut = (u8)(*(&D_8008D118 + sum_sq)); sum_sq = lut >> 3;`) and n13.c (n1 with `u32 lut` and the LZC tail cast `((s32)(lut << 16)) >> (0x13 - shift_b)`), both measured with sweep_variants and disassembled.
+- result: 13 -> 2. Every seat in the function is byte-identical to the target except the small arm's byte temp itself (target `lbu $v0,0($at)` / `srl $a1,$v0,3`, ours `lbu $a0,0($at)`); the u32 typing converts our `sra` back to the target's `srl` at zero cost. n13 is banked as memory/grind/func_80018094/candidate.c and re-measured at 2 from that path.
+- verdict: CONFIRMED
+
+## [s9] The reference boost that flips the priority sort can be spelled at a site other than the small arm's LUT byte on this chassis.
+- mechanism: Every other site in the arm where the copy's variable could carry a value maps onto a target register that is not $a0, so borrowing it moves the seats it touches; and shortening sum_sq by splitting off a result variable adds a 154th instruction.
+- probe: Eight spellings measured with sweep_variants on the s9b m1/n13 chassis: `lut` carries the -2 mask (s9/n5.c), `lut` carries the LUT index (s9/n8.c, n9.c), the sll written back into `lut` to give the allocno the target's own five references (s9/p1.c, n7.c), the small arm indexing through `lut` instead of holding the byte (s9/p5.c), and a separate `res` result variable (s9/n10.c, q8.c).
+- result: 5, 4, 4, 13, 13, 13, 8 (154 insns), 8 (154 insns). n5 and n8 keep the seats but relocate the -2 / index block; p1, n7 and p5 flip the sort back to 13; the res split adds an instruction. Only the small-arm byte spelling reaches 2. Banked in memory/grind/func_80018094/rejected/s9b-*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s9b goto + do-while(0) chassis (m1/n13) with the sp_tmp[4] oversized-locals FAKE and both do-while(0) wraps present and the island operand list at its granted honest form

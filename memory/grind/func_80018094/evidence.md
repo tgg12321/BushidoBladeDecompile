@@ -836,3 +836,76 @@ compiler-emitted schedulable insn, not island scaffolding.
 - [s9] The target's `move $a0,$a1` is NOT island scaffolding: reorg parks it in the `beqz` delay slot, which reorg cannot do to an insn inside a volatile `__asm__` block. It is a compiler-emitted, schedulable insn, so the cop2-addressing-preamble-cluster island grant does not cover it.
 - [s9] Also measured and rejected: tied output on a fresh local reused as the `-2` carrier (9), as `shift_a` (11), on the dead pre-branch local `dz` (24); the sum_sq merge with the staging retained (12); a separate `res` variable for the arm result (11); dropping the staging on b4 without the `lut` split (11).
 - [s9] src/code6cac.c restored with `git checkout --` at session end; `git status --porcelain` shows only metrics/events.jsonl plus the memory/grind ledger changes.
+
+## s9b (solver, 2026-09-09) — honest floor 7 -> 2
+
+**Chassis at dispatch.** HEAD is `INCLUDE_ASM("asm/funcs", func_80018094);` (src/code6cac.c:309).
+The s9a body banked at candidate.c measured `sandbox --disable all == 0` but the Judge FAILed its
+tied asm operand (docs/grind/decisions.md, 2026-09-09 23:11); dropping the operand from that body
+scores 10, and the honest floor carried in the ledger was 7 (an older, unmerged chassis).
+
+**The residual, stated exactly.** With the tied operand removed the objdump diff against
+asm/funcs/func_80018094.s is ONE structural difference plus its register fallout: the target has
+`addu $a0,$a1,$zero` in the `beqz` delay slot at .L800181A4 and carries the sum in $a1; we emit a
+`nop` there and carry the sum in $a0. Instruction counts are equal (153/153) either way — the
+delay slot exists in both, so the copy is FREE.
+
+**Pass attribution (dumps, not hypothesis).** `pwsh tools/grinder/dump.ps1 func_80018094` with the
+honest copy spliced in; the copy's pseudo counted per pass with tmp/grind/func_80018094/s9/ext.py:
+- plain copy (s9/k0.c): pseudo 107 present in .rtl, absent by .cse -> **cse1 deletes it**.
+- copy wrapped in `do { } while (0)` (s9/k1.c): present in .rtl/.jump/.cse/.loop, one occurrence
+  left in .cse2, gone in .flow -> **cse1 is blocked, cse2 deletes it**.
+The asymmetry is `cse_end_of_basic_block`'s `if (! after_loop && ... NOTE_INSN_LOOP_END) break;`
+(tools/gcc-2.7.2/cse.c:8053-8055): cse1 runs after_loop = 0, cse2 after_loop = 1.
+
+**The gate that closes both.** Same function, the follow-jumps test at cse.c:8100-8125: cse extends
+the basic block across a conditional jump only when `LABEL_NUSES (JUMP_LABEL (p)) == 1` and the
+backward walk from the target label lands on a BARRIER. The walk skips NOTEs *except*
+NOTE_INSN_LOOP_END / NOTE_INSN_SETJMP, and has no `after_loop` guard. Spelling the small arm as an
+`if` with NO else whose body is `do { ...; goto lzc_done; } while (0);` puts the loop-end note
+between the small arm's BARRIER and the LZC arm's label, so neither cse run extends into the LZC
+block, the asm operand keeps its own pseudo, and the copy survives to RA. An `if/else` can never
+produce this layout — `expand_start_else` emits its jump+BARRIER immediately before the else label.
+
+**Measured ladder this session** (all `sandbox --disable all`, build_insns 153 unless noted):
+| body | score | what it shows |
+|---|---|---|
+| s9/k0-k3 (honest copy, four scopes/wraps) | 10 | cse kills the copy at every scope |
+| s9/m3 (goto, no do-while(0)) | 10 | the `goto` alone is not the lever |
+| s9/m1, m2 (goto + do-while(0)) | 13 | **the copy exists**, registers swapped |
+| s9/m4, m5 (separate short-lived copy var) | 11 | copy becomes block-local -> $v1 |
+| s9/n5 (`lut` carries the -2 mask) | 5 | seats correct, -2 block moves |
+| s9/n8, n9 (`lut` carries the LUT index) | 4 | seats correct, index block moves |
+| s9/n1 (`lut` holds the small arm's byte) | **2** | all seats correct |
+| s9/n13 (n1 + `u32 lut` + `(s32)` cast) | **2** | also fixes `sra` -> `srl`; **banked** |
+| s9/n4 (copy above the `sum_sq < 0` test) | 14 (154) | adds an instruction |
+| s9/n10, q8 (separate result variable) | 8 (154) | adds an instruction |
+| s9/p1, n7 (sll written back into `lut`) | 13 | 5 refs is not enough to flip the sort |
+| s9/p5 (small arm indexes through `lut`) | 13 | sort flips back |
+
+**Allocation facts (m1's .greg, tmp/grind/func_80018094/s9/m1.greg.txt).** `sum_sq` (77) and the
+copy (80) have IDENTICAL conflict sets `{72 73 77 80 2 3 12 29}` and BOTH carry `preferences: 4`.
+$2 is closed by the island's clobber list and $3 by the conflict set, so the first one allocated
+takes $4 and the second $5. The priority order printed by global.c is `118 77 80 78 ...`. The
+entire remaining residual is therefore one comparison in `allocno_compare` — a references/live-
+length fact, not a conflict fact and not a preference fact. This supersedes the s6/s8/s9a framing
+("allocno 99 must conflict with allocno 78"), which was a property of the tied-operand chassis.
+
+**Remaining 2 instructions.** Target `lbu $v0,0($at)` / `srl $a1,$v0,3` in the small arm; ours
+`lbu $a0,0($at)` / `srl $a1,$a0,3`, because the byte is parked in `lut` purely to win the sort.
+
+- [s9] The whole residual after the Judge's FAIL of the tied operand was ONE structural insn: the target's `addu $a0,$a1,$zero` in the `beqz` delay slot at .L800181A4, plus nine register-name diffs that follow from sum_sq sitting in $a1 rather than $a0. Instruction counts are equal (153/153) with or without it, because the delay slot exists either way - the copy is free.
+
+- [s9] cse deletes an honest reg-to-reg copy of a live value at EVERY declaration scope because cse_end_of_basic_block extends the basic block across the conditional jump into the LZC arm; the copy and the asm then sit in one extended block and canon_reg rewrites the asm operand back to sum_sq.
+
+- [s9] That extension is gated at tools/gcc-2.7.2/cse.c:8100-8125 on LABEL_NUSES(JUMP_LABEL) == 1 AND the insn preceding the target label being a BARRIER; the backward walk that looks for the BARRIER stops early on NOTE_INSN_LOOP_END and NOTE_INSN_SETJMP and has no after_loop guard, so a loop-end note placed there blocks cse1 and cse2 alike.
+
+- [s9] `if (cond) { do { ...; goto label; } while (0); }` with NO else is the only C shape that puts a NOTE_INSN_LOOP_END between the then-arm's BARRIER and the if's false label; `if/else` cannot, because expand_start_else emits its jump and BARRIER immediately before the else label.
+
+- [s9] With the gate closed the copy reaches RA as a global allocno and reorg parks it in the beqz delay slot exactly as the target does (measured, tmp/grind/func_80018094/s9/m1.c).
+
+- [s9] m1's .greg shows sum_sq (77) and the copy (80) with identical conflict sets {72 73 77 80 2 3 12 29} and both carrying `preferences: 4`; $2 is closed by the island clobber list and $3 by the conflict set, so allocation ORDER alone decides which takes $a0.
+
+- [s9] The honest floor is now 2 and the two remaining instructions are the small arm's LUT byte temp (target $v0, ours $a0), which is parked in the copy's variable only to win global.c's priority sort.
+
+- [s9] memory/grind/func_80018094/candidate.c carries NO asm-operand device: the island operand list is exactly the granted form : "=m"(sp_tmp[0]) : "r"(lut) : "$2", "$12", so the Judge's 2026-09-09 constraint is satisfied.

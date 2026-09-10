@@ -1,8 +1,8 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 8,
- "current_modality": "synthesis",
+ "session_count": 9,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "Synthesis s8: the 7-insn residual reduces to ONE dump-level requirement (the island-input copy must conflict with `scale`); the copy's preference channel is proven closed, and three more spelling fami"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "solver",
+   "headline": "Honest floor 7 -> 2: cse's follow-jumps gate closed with a do-while(0)+goto small arm, so the target's pre-island `move $a0,$a1` materialises from ordinary C with NO asm-operand device; the last 2 ins"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual closes by extending the island-input copy's live range FORWARD into `scale`'s range, rather than extending `scale`'s backward \u2014 the same 99-conflicts-78 requirement approached from the side no session has attacked.",
-   "mechanism": "s6/s7 attacked the conflict from scale's side and every spelling cost 15-47 insns (s8's variable merge is the cheapest at +10). s5's `inverse.py local --block 6 --goal '{\"0\": 4}' --depth 2` returned exactly ONE minimal vector \u2014 [live_extend] qty 0 dies later (5 -> 9) \u2014 and s5 only ever spelled it as an OVERSHOOT, consuming the tied output at the LUT index (position ~18) where cse refolds the copy (sandbox 12). A SHORT extension, to a consumer between the LZCR read and the `0x16 - li_v0` subtraction, has never been spelled.",
-   "next_probe": "Re-run tools/ra_solver's inverse.py on the CURRENT s5 w6 body with the goal restated as 'allocno 99 conflicts with allocno 78' rather than 'qty 0 gets reg 4' \u2014 the two are the same fact and the conflict form may return a cheaper vector. Then spell the short live-extension on the w6 tied chassis (rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c) AND on the -fno-cse-follow-jumps global-copy chassis (tmp/grind/func_80018094/s6/v1.c) so 'cse refolded it' and 'it did not conflict' are separable outcomes."
+   "hypothesis": "The last two instructions close by making `sum_sq` lose global.c's priority sort from the DENOMINATOR side (live length) rather than the numerator (references), so the small arm's LUT byte can go back to its own short-lived pseudo and land in $v0.",
+   "mechanism": "allocno_compare ranks allocnos on a function of allocno_n_refs and allocno_live_length. The numerator side is measured flat: every reference the copy's variable can honestly take, other than the small arm's byte, costs the seats it touches (5, 4, 4, 13, 13, 13). The denominator has never been attacked - lengthening sum_sq's live range, or shortening the copy's while keeping it a cross-block (global) allocno, would flip the same comparison without borrowing a register that shows in the bytes.",
+   "next_probe": "Read allocno_n_refs / allocno_live_length for both allocnos out of the .lreg and .greg dumps of tmp/grind/func_80018094/s9/m1.c (loses the sort) versus n1.c (wins it) - they differ only in the boost, so the two arrays bracket the threshold. Then spell denominator-side C on the n13 chassis: move the `lut = sum_sq;` copy later (it is currently the first statement inside the outer wrap, before the `sum_sq < 0x400` test - the target's copy is in the branch's delay slot, i.e. as late as possible), and try ending sum_sq's live range differently in the tail."
   },
   {
-   "hypothesis": "The merged-variable body (s8's scale/log2_val merge, +10) is a better chassis to drive than candidate.c despite its worse raw score, because its pseudo structure is the target's own.",
-   "mechanism": "The target carries the arm result and the (x<<6)/500 + 0xC0 tail in ONE register ($a1 -> $v1); the merged body carries them in one variable. Its 10-insn cost is pure seat churn (build_insns identical at 153), so it may be a small number of seat moves rather than a structural regression \u2014 the same reasoning under which s5's w6 body was adopted as 'structurally closer at equal floor'.",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_80018094` with tmp/grind/func_80018094/s8/hand/h1_merge_scale_log2_plain.c spliced in, read the .greg dispositions/conflicts, and decompose the 10 insns into named seat moves. If the merged allocno can be made live at the island entry at a cost the merge already pays for, the necessary-and-sufficient conflict falls out."
+   "hypothesis": "The s9b gate shape generalises: a residual that is a cse-deleted copy across a two-arm branch can be closed by respelling the fallthrough arm as `if (cond) { do { ...; goto L; } while (0); }`.",
+   "mechanism": "The lever is a property of tools/gcc-2.7.2/cse.c's follow-jumps gate, not of this function: the loop-end note between the arm's BARRIER and the else label is what stops cse from extending the block. Nine sessions here treated 'cse deletes the copy' as a class kill (s6, s9a H42, predicate cse.c:8102); that kill is now scoped to bodies whose arms are spelled `if/else`.",
+   "next_probe": "When a sibling ledger reports a copy that 'cse always deletes', transplant this shape before re-deriving. Within this function, re-audit the s6/s9a class kill H42 - it is instance-scoped under the new evidence, and its predicate line (cse.c:8102) points at the block scan rather than at the gate at 8100-8125."
   },
   {
-   "hypothesis": "log2_val's misseat (ours $a0, target $a1) is a PREFERENCE fact, not a spelling fact, and removing the copy insn that gives allocno 98 its `preferences: 4` moves it to $a1 without disturbing the seats that already match.",
-   "mechanism": "s7 and s8 swept both the staged and unstaged spelling families of the LZC arm flat, so 98's seat is not reachable by renaming. The greg dump shows 98 carrying an explicit `preferences: 4` while 99 carries none, and global.c's expand_preferences (tools/gcc-2.7.2/global.c:838-871) propagates preferences only across copies whose source carries a REG_DEAD note \u2014 a small, identifiable set of insns.",
-   "next_probe": "Dump .lreg/.greg for candidate.c with `pwsh tools/grinder/dump.ps1 func_80018094`, find the single_set + REG_DEAD pair that seeds 98's preference for $4, and test the C-level spellings that remove that copy (this is the cosmetic half of the residual, worth attacking only after frontier item 1 or 2 has moved the copy's seat)."
+   "hypothesis": "The Judge-FAILed tied-operand lineage (s9a b4 -> f1) is fully superseded and should not be revisited: everything it bought is now bought honestly.",
+   "mechanism": "The tied `\"=r\"(lut)` / `\"1\"(sum_sq)` pair existed only to make reload materialise the pre-island copy. The s9b gate materialises the same copy from ordinary C, and the seat it landed on ($a0) is reproduced by the priority-sort boost. The zero body's other two devices (sp_tmp[4] oversized locals, the outer do-while(0) wrap) are carried unchanged in candidate.c.",
+   "next_probe": "None needed; recorded so a later session does not re-file a ruling-request on the operand. The Judge's binding constraint stands: no extra output, tied, or clobber operand may be added to any __asm__ in this function."
   }
  ],
  "judge_constraints": [
@@ -338,6 +344,14 @@
    "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c and the s5 w6 tied body, both FAKE constructs present",
    "predicate_cite": "",
    "result": "baseline 7 (build_insns 153); merged-plain 17 (153); merged-tied 17 (153) \u2014 identical instruction counts, i.e. 10 insns "
+  },
+  {
+   "session": 9,
+   "statement": "The reference boost that flips the priority sort can be spelled at a site other than the small arm's LUT byte on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), the s9b goto + do-while(0) chassis (m1/n13) with the sp_tmp[4] oversized-locals FAKE and both do-while(0) wraps present and the island operand list at its grant",
+   "predicate_cite": "",
+   "result": "5, 4, 4, 13, 13, 13, 8 (154 insns), 8 (154 insns). n5 and n8 keep the seats but relocate the -2 / index block; p1, n7 an"
   }
  ],
  "ladder_skip": 0,
