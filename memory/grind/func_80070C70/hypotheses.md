@@ -1692,3 +1692,51 @@ combine/orphan question on the TOP-TEST chassis, which remains the only untried 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the NEW 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all
+
+## [s16] The 5-insn guard-block schedule is reachable by some LOCAL SPELLING of the guard region (the `*(arg0 + 0x18) += 0xC` store, the p_geom load, the bound expression, the mode-test expression) on the 7-point top-test/rect[4] chassis.
+- mechanism: The residual is two instruction-ORDER divergences with identical multisets and registers, so the enumerate modality's premise is that source spelling of the region sets RTL emission order (LUID) and hence sched.c's tie-break.
+- probe: v1 (70 spellings: 5 forms of the increment store x 2 p_geom forms x bound inline/hoisted x mode-test inline/hoisted x hoist position) and v2 (48 spellings: mode-test operand order x comparison spelling x clause order x 6 bound associations), scored with tools/sweep_variants.py against the 7-point incumbent.
+- result: 118 spellings, best 7 - the incumbent, tied only by the byte-identical synonyms `*(arg0+0x18) += 0xC` and `0xC + *(arg0+0x18)`. A named temp for the increment costs 1 (8), p_geom via a named g costs 18 (25), an explicitly hoisted bound or mode-test local costs 35 (42), a mode-test operand swap costs 1 (8), a clause-order swap costs 8 (15). Not one spelling reorders the guard block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558, no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all
+
+## [s16] The 2-insn prologue tie moves with the source position of the entry-block `var_s0 = 0;` initialiser, with the first loop's chassis (do/while vs for vs while), or with the declaration order of the function's locals.
+- mechanism: sched.c:2400 breaks an INSN_PRIORITY + dependence-class tie by INSN_LUID, i.e. original insn order, which is set by RTL emission order; declaration order additionally sets pseudo numbering and frame-slot assignment, which is how s13's declaration-order sweep was justified on the old chassis (and that sweep is chassis-void here).
+- probe: v4 (13 positions of `var_s0 = 0;` across the whole entry block, plus the first loop rewritten as `for (var_s0 = 0; var_s0 < 6; var_s0++)` with no separate initialiser, plus a while-loop form) and v5 (147: all 120 permutations of the five scalar declarations, 9 positions each of `u16 rect[4]`, `s32 c60` and `PrimC70 prim`).
+- result: 167 spellings. Every one of the 13 initialiser positions = 7 at identical insn count, and so do the for-loop and while-loop rewrites - the emission point of `move s0,zero` (insn 49) does not follow the source at all. All 120 scalar declaration permutations = 7; c60's position is inert in all 9 slots; rect[4] and prim only ever get worse (45) when moved to a slot that changes the frame layout. Declaration order is a dead axis on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558, no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all
+
+## [s16] Carrying D_800A3558 (and/or D_800A35B0) in an explicit local read BEFORE the `*(arg0 + 0x18) += 0xC` store reproduces the target's guard block, because it puts the two loads ahead of the store where the target has them.
+- mechanism: This is the direct C-level expression of the mechanism this session found in the .sched2 dump - the three gp loads carry a data dependence on the store (insn 253) because GCC 2.7.2's sched_analyze cannot disambiguate a symbol_ref MEM from a (plus (reg s1) 24) MEM - so moving the loads' SOURCE position ahead of the store should move their RTL position ahead of it and free the scheduler to interleave. It is also the mandated re-measurement of s14's HImode-carrier kill on the new chassis.
+- probe: v6, 30 spellings: carrier type {s16, u16, s32, none} x {with, without an `s32 b = D_800A35B0` companion} x 3 insertion points (before the second SetDrawMode/AddPrim pair, before the increment store, before the p_geom load) x both declaration orders.
+- result: DEAD, and by a wide margin - best 23 (a lone `b = D_800A35B0;` before the store), every HImode carrier 32-37, every two-carrier form >= 40, against the incumbent's 7. An explicit carrier makes the value a live pseudo across the whole loop and reshapes the loop body's codegen, so it never reproduces loop.c's "hoisted load + per-iteration register use". s14's HImode-carrier kill (25 on the do/while chassis) therefore SURVIVES the chassis change, at a worse cost.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558, no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all
+
+## [s16] The 5-insn guard-block schedule is reachable by some LOCAL SPELLING of the guard region (the *(arg0 + 0x18) += 0xC store, the p_geom load, the bound expression, the mode-test expression) on the 7-point top-test/rect[4] chassis.
+- mechanism: The residual is two instruction-ORDER divergences with identical instruction multisets and identical registers, so the enumerate modality's premise is that the source spelling of the region sets RTL emission order (LUID) and hence sched.c:2400's tie-break.
+- probe: v1 (70 spellings: 5 forms of the increment store x 2 p_geom forms x bound inline/hoisted x mode-test sum inline/hoisted x hoist position) and v2 (48 spellings: mode-test operand order x comparison spelling x clause order x 6 bound associations), generated by tmp/grind/func_80070C70/s16/gen1.py and gen2.py and scored with tools/sweep_variants.py against the 7-point incumbent.
+- result: 118 spellings, best 7 - the incumbent, tied only by its byte-identical synonyms `*(arg0+0x18) += 0xC` and `0xC + *(arg0+0x18)`. A named temp for the increment costs 1 (8), p_geom via a named g costs 18 (25), an explicitly hoisted bound or mode-test local costs 35 (42), a mode-test operand swap costs 1 (8), a clause-order swap costs 8 (15), the four other bound associations >= 15. Not one spelling reorders the guard block. `!= 0` vs a bare truth test is byte-neutral.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all
+
+## [s16] The 2-insn prologue tie moves with the source position of the entry-block var_s0 = 0 initialiser, with the first loop's chassis (do/while vs for vs while), or with the declaration order of the function's locals.
+- mechanism: sched.c:2400 breaks an INSN_PRIORITY + dependence-class tie by INSN_LUID (original insn order), which is set by RTL emission order; declaration order additionally sets pseudo numbering and frame-slot assignment, which is how s13 justified its declaration-order sweep on the old chassis (that sweep is chassis-void here).
+- probe: v4 (20 spellings: all 13 source positions of `var_s0 = 0;` across the entry block, plus the first loop rewritten as `for (var_s0 = 0; var_s0 < 6; var_s0++)` with no separate initialiser, plus a while-loop form) and v5 (147 spellings: all 120 permutations of the five scalar declarations, plus 9 positions each of `u16 rect[4]`, `s32 c60` and `PrimC70 prim`).
+- result: 167 spellings, none below 7. Every one of the 13 initialiser positions scores 7 at identical insn count, and so do the for-loop and while-loop rewrites - the emission point of `move s0,zero` (insn 49 in .sched2) does not follow the source at all. All 120 scalar declaration permutations = 7; c60's position is inert in all 9 slots; rect[4] and prim only ever get worse (45) when moved to a slot that changes the frame layout. Declaration order is a dead axis on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all
+
+## [s16] Carrying D_800A3558 (and/or D_800A35B0) in an explicit local read BEFORE the *(arg0 + 0x18) += 0xC store reproduces the target's guard block, because it puts the two loads ahead of the store where the target has them.
+- mechanism: The direct C-level expression of this session's .sched2 finding: insns 479/482/480 (the three gp loads) each carry a data dependence on insn 253 (the sw v0,24(s1) store) because GCC 2.7.2's sched_analyze cannot disambiguate a symbol_ref MEM from a (plus (reg s1) 24) MEM, so moving the loads' SOURCE position ahead of the store should move their RTL position ahead of it and free the scheduler to interleave. Also the mandated re-measurement of s14's HImode-carrier kill on the new chassis.
+- probe: v6, 30 spellings: carrier type {s16, u16, s32, none} x {with, without an `s32 b = D_800A35B0` companion} x 3 insertion points (before the second SetDrawMode/AddPrim pair, before the increment store, before the p_geom load) x both declaration orders (tmp/grind/func_80070C70/s16/gen6.py).
+- result: Dead by a wide margin - best 23 (a lone `b = D_800A35B0;` before the store), every HImode carrier 32-37, every two-carrier form >= 40, against the incumbent's 7. An explicit carrier makes the value a live pseudo across the whole loop and reshapes the loop body's codegen, so it never reproduces loop.c's 'hoisted load + per-iteration register use'. s14's HImode-carrier kill (25 on the do/while chassis) therefore SURVIVES the chassis change, at a worse cost.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all

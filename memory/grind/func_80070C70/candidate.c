@@ -70,6 +70,27 @@
  * .claude/rules/named-local-fake-exception.md + a /* FAKE *\/ annotation at submission.
  * `u16 rect[16]` - the OTHER FAKE the do/while chassis needed - IS NOW GONE: rect[4] is the
  * honest declaration and it is the optimum here.
+ *
+ * ============================ S16 (enumerate): floor HELD at 7 / 194 ============================
+ * 317 spellings swept (tmp/grind/func_80070C70/s16/v1,v2,v4,v5,v6 + the .json histograms); this
+ * body is the unique optimum on every axis.  Dead axes, with their costs: the guard region's
+ * local spelling (a named temp for the increment 8, p_geom via a named g 25, any hoisted bound
+ * or mode-test local >= 42); the mode-test operand order (8) and clause order (15); the four
+ * other bound associations (>= 15); all 13 source positions of the entry-block var_s0 = 0 and
+ * the for-/while-loop rewrites of the FIRST loop (all inert at 7); all 120 permutations of the
+ * five scalar declarations plus 9 positions each of rect/c60/prim (all inert at 7, or 45 when
+ * the frame layout breaks); every explicit {s16,u16,s32} carrier for D_800A3558/D_800A35B0
+ * read before the increment store (best 23).
+ *
+ * WHY THE GUARD BLOCK DOES NOT MOVE (read from tmp/grind/func_80070C70/dumps/text1b.sched2,
+ * slice saved as s16/f.sched2): insns 479 (lhu a2 = D_800A3558), 482 (lw a1 = D_800A35B0) and
+ * 480 (lh v0 = D_800A3558) each carry a DATA dependence on insn 253, the sw v0,24(s1) store of
+ * *(arg0 + 0x18) += 0xC - GCC 2.7.2's sched_analyze cannot disambiguate a symbol_ref MEM from a
+ * (plus (reg s1) 24) MEM, so the loads are PINNED after the store.  The scheduler is obeying a
+ * dependence, not breaking a tie; the target's a1/a2 loads precede that store, so the question
+ * is where loop.c inserts the invariant hoists relative to the pre-loop store.  The OTHER tie
+ * (insn 49 `s0 = 0` vs insn 71 `a0 = sp + 24`, a pure swap) is a genuine rank_for_schedule
+ * decision and is the one BB2_PRIO_DEBUG (sched.c:1504) can answer directly.
  */
 void func_80070C70(s32 arg0) {
     s32 c60 = 0x60;

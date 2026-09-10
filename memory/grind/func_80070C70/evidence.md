@@ -982,3 +982,69 @@ root (the Bash tool here is Git Bash, not WSL - `bash tools/wsl.sh` is the bridg
 - [s15] Byte-neutral and therefore dropped from the candidate: the s32 var_s3 = 0xA; carrier for the first loop's prim.code, and every (s16) cast on D_800A3558 (the extern s16 D_800A3558 declaration selects the read signedness on its own).
 
 - [s15] METHOD: the drop came from executing the brief's contradiction rule - re-pricing the WEAKEST foreclosure (the one whose cost term had never been re-checked after a later session changed one of its inputs) instead of grinding further inside the chassis that verdict left standing.
+
+- [s16] ENUMERATION (mandated modality), 317 spellings swept in five sweeps, ALL >= 7: the
+  guard-region local spelling space, the mode-test/bound operand-order space, the entry-block
+  initialiser-position space, the DECLARATION-ORDER space and the invariant-carrier space are
+  each exhausted on the 7-point top-test/rect[4] chassis. Histograms:
+    v1 (70) guard region = {5 spellings of *(arg0+0x18) += 0xC} x {p_geom inline vs via g} x
+      {bound inline vs hoisted local} x {mode-test sum inline vs hoisted local} x {hoist before
+      vs after the store}: best 7 (the incumbent form and its `+= 0xC` / `0xC + x` synonyms - all
+      three byte-identical), a named temp for the increment = 8, p_geom via g = 25, ANY hoisted
+      bound or mode-test local >= 42.
+    v2 (48) = {mode-test operand order} x {`!= 0` vs bare} x {clause order} x {6 bound
+      associations}: 7 only for associations 1+B0+3558 and B0+1+3558 with sum-first and
+      B0-first; operand swap = 8, clause-order swap (BC==2 first) = 15, the four other
+      associations >= 15. `!= 0` vs bare is byte-neutral.
+    v4 (20) = all 13 source positions of the entry-block `var_s0 = 0;` PLUS rewriting the first
+      loop as a for-loop (init in the header) or a while-loop: ALL 7, identical insn counts.
+      The emission point of `move s0,zero` is insensitive to the source.
+    v5 (147) = all 120 permutations of the five scalar declarations x 9 positions of
+      `u16 rect[4]` x 9 of `s32 c60` x 9 of `PrimC70 prim`: ALL 120 scalar permutations = 7;
+      c60 position inert (9/9 = 7); rect position inert except the 2 slots that break the frame
+      (45); prim position 2 of 9 legal (the rest 45). Declaration order is a dead axis here.
+    v6 (30) = carrying D_800A3558 and/or D_800A35B0 in an explicit local ({s16,u16,s32} x
+      {with,without an s32 b} x 3 insertion points x 2 orders): best 23, i.e. 16 WORSE.
+
+- [s16] THE MECHANISM OF THE 5-INSN GUARD TIE IS NOT A PRIORITY TIE - IT IS AN ALIAS DEPENDENCE.
+  Read out of tmp/grind/func_80070C70/dumps/text1b.sched2 (function slice saved as
+  tmp/grind/func_80070C70/s16/f.sched2): all three gp loads in the guard block carry a DATA
+  dependence on insn 253, the `sw v0,24(s1)` store of `*(arg0 + 0x18) += 0xC`:
+    (insn 479 ... (set (reg/s:HI 6 a2) (mem:HI (symbol_ref "D_800A3558")))  ... (insn_list 253 ...
+    (insn 482 ... (set (reg/s:SI 5 a1) (mem:SI (symbol_ref "D_800A35B0")))  ... (insn_list 253 ...
+    (insn 480 ... (set (reg:SI 2 v0) (sign_extend (mem:HI (symbol_ref "D_800A3558")))) ... 253 ...
+  GCC 2.7.2's sched_analyze cannot prove a store through (plus (reg s1) 24) does not alias a
+  symbol_ref MEM, so the loads are PINNED after the store. That is why every spelling this
+  session emits the += chain first: the scheduler is not choosing, it is obeying a dependence.
+  The target's a1/a2 loads sit BEFORE that store, so in the target's RTL they were emitted
+  before it - i.e. the divergence is WHERE the loop invariants are placed (loop.c preheader
+  insertion relative to the pre-loop store), not how the block is scheduled.
+
+- [s16] The C-level attempt to move those loads earlier - reading the globals into named locals
+  before the store - is measured DEAD (v6, best 23 vs 7): an explicit carrier keeps the value
+  live in a callee-saved seat across the loop and changes the loop body's codegen, so it never
+  reproduces "hoisted load, per-iteration register use" that loop.c produces for free.
+
+- [s16] Entry-block tie UIDs for the next session: insn 49 = `(set (reg/v:SI 16 s0) (const_int 0))`
+  and insn 71 = `(set (reg:SI 4 a0) (plus (reg 29 sp) (const_int 24)))`. In the .sched2 order ours
+  is 37, 49, 40, 43, 46, 71, 52; the target's is 37, 71, 40, 43, 46, 49, 52 - a pure swap of 49
+  and 71. Insn 71's only dependences are (insn_list 550) and REG_DEP_ANTI 4; insn 49's is
+  REG_DEP_ANTI 562. Both are ready in the same cycle, so this one IS the rank_for_schedule
+  question (sched.c:2408), and the instrumented cc1's BB2_PRIO_DEBUG (sched.c:1504) will print
+  the two INSN_PRIORITY values directly.
+
+- [s16] Chassis re-verified this session: the s15 candidate body reinstalled on HEAD's src/text1b.c scores 7/194 under `sandbox func_80070C70 --disable all` (measured twice, before and after the candidate.c header edit). src/text1b.c was restored to HEAD at the end of the session.
+
+- [s16] The 7-point residual is exactly the two blocks s15 described: (a) entry block, `addiu a0,sp,24` and `move s0,zero` swapped; (b) guard block, target = move s0,zero / lhu a2,0(gp) / lw v0,24(s1) / lw a1,0(gp) / addiu v0,v0,12 / sw v0,24(s1) / lh v0,0(gp), ours = the 24(s1) chain first then the three gp loads. Identical multisets, identical registers.
+
+- [s16] RE-ATTRIBUTION (from tmp/grind/func_80070C70/dumps/text1b.sched2, function slice saved as tmp/grind/func_80070C70/s16/f.sched2): insn 479 (lhu a2 = D_800A3558), insn 482 (lw a1 = D_800A35B0) and insn 480 (lh v0 = D_800A3558) EACH carry a data dependence `(insn_list 253 ...)` on insn 253, the `sw v0,24(s1)` store of *(arg0 + 0x18) += 0xC. GCC 2.7.2's sched_analyze cannot prove a store through (plus (reg s1) 24) does not alias a symbol_ref MEM, so the three loads are PINNED after the store. The guard block is not a scheduler tie at all - the scheduler is obeying a dependence. The target's a1/a2 loads sit BEFORE that store, so in the target's RTL they were emitted before it: the divergence is WHERE loop.c places the invariant hoists relative to the pre-loop store, not how sched.c orders the block.
+
+- [s16] The entry-block divergence IS a genuine rank_for_schedule question: insn 49 = (set (reg/v:SI 16 s0) (const_int 0)) and insn 71 = (set (reg:SI 4 a0) (plus (reg 29 sp) (const_int 24))). Our .sched2 order is 37, 49, 40, 43, 46, 71, 52; the target's is 37, 71, 40, 43, 46, 49, 52 - a pure swap. Insn 71's only dependences are (insn_list 550) and REG_DEP_ANTI 4; insn 49's is REG_DEP_ANTI 562; both are ready in the same cycle.
+
+- [s16] ENUMERATION: 317 spellings across five sweeps, best 7, 293 at the floor or above with 0 below. v1 (70) guard-region local spelling; v2 (48) mode-test/bound operand-order space; v4 (20) entry-block initialiser positions + first-loop chassis rewrites; v5 (147) declaration-order space; v6 (30) explicit invariant carriers. Per-sweep histograms are in tmp/grind/func_80070C70/s16/v{1,2,4,5,6}.json and in evidence.md.
+
+- [s16] Byte-neutral synonyms confirmed on this chassis (all 7): `*(arg0+0x18) = *(arg0+0x18) + 0xC`, `*(arg0+0x18) += 0xC`, `*(arg0+0x18) = 0xC + *(arg0+0x18)`; and `(X != 0)` vs a bare `X` in the mode test. A named temp for the increment is NOT neutral (8).
+
+- [s16] Sanity note for a later session: a generator that reuses s15/gen1.py's default FOR macro inherits the LOSING bound association (D_800A35B0 + D_800A3558 + 1) and the (s16)-cast mode test, which alone costs 10 points (17 vs 7). tmp/grind/func_80070C70/s16/gen4.py shows the two .replace() calls that fix it; v3 is the mis-based sweep kept only as the control that proved the axis inert at 17.
+
+- [s16] s16 rejected forms banked: rejected/s16-hoist-D_800A35B0-local-preheader-23.c, s16-himode-carrier-D_800A3558-local-32.c, s16-named-temp-for-0x18-increment-8.c, s16-modetest-operand-swap-8.c, s16-modetest-clause-order-swap-15.c.

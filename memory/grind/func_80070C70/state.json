@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 15,
- "current_modality": "synthesis",
+ "session_count": 16,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -93,23 +93,29 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "Chassis flip: the top-test chassis' 24-byte 'frame penalty' was the compiler supplying the bytes the do/while chassis had to FAKE - top-test + honest u16 rect[4] + the target's bound association takes"
+  },
+  {
+   "session": 16,
+   "floor": 7,
+   "modality": "enumerate",
+   "headline": "Floor holds at 7/194, but the guard-block residual is RE-ATTRIBUTED: the three gp loads carry a DATA dependence on the *(arg0+0x18)+=0xC store in .sched2, so the scheduler is obeying an alias dependen"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 5-insn guard-block schedule is a sched.c rank_for_schedule tie that some C-level lever still reaches - the target gives the three gp loads higher effective priority than the *(arg0+0x18) += 0xC chain, and we do not.",
-   "mechanism": "tools/gcc-2.7.2/sched.c:2408 rank_for_schedule orders the ready list by INSN_PRIORITY and, on a tie, by a three-way classification of each candidate's dependence on last_scheduled_insn (data / anti-output / independent-or-latency-1). Identical instruction multisets with identical registers means the divergence is a priority or class decision, not an RTL-shape one.",
-   "next_probe": "Read the guard block out of tmp/grind/func_80070C70/dumps/text1b.sched (captured this session for the 7-point body) and compare the printed INSN_PRIORITY values for the gp loads against the 24(s1) chain; then re-run the same TU under the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1, -Instrumented on tools/grinder/dump.ps1) with BB2_RANK_DEBUG=1 to print the class-tie decisions directly. Do NOT re-sweep source statement positions - all 7 initialiser positions, both loop-body orders (6 and 24 permutations) and the 3 p_geom-load positions are measured dead on this chassis."
+   "hypothesis": "The guard block is reachable only by changing WHERE loop.c inserts the third loop's invariant hoists relative to the pre-loop `*(arg0+0x18) += 0xC` store - the store must be RTL-later than the two invariant loads, since sched.c can never move a symbol_ref load above an aliasing base-register store.",
+   "mechanism": "tools/gcc-2.7.2/sched.c sched_analyze records a data dependence from insn 253 (the sw through (plus (reg s1) 24)) to insns 479/482/480 (the symbol_ref loads) because GCC 2.7.2's memory disambiguation cannot separate a symbol MEM from a base-register MEM. loop.c hoists invariants into the preheader, which sits after every pre-loop statement, so the loads can only precede the store if they are emitted from an EARLIER loop's preheader or from a different structural position.",
+   "next_probe": "Read tmp/grind/func_80070C70/dumps/text1b.loop for where the D_800A3558/D_800A35B0 invariants are moved and which basic block becomes the third loop's preheader; then test STRUCTURAL (not spelling) variants that change preheader placement - e.g. putting the second (6-iteration) loop and the third loop in the same enclosing block, or making the increment store part of the second loop's tail. Do NOT re-sweep guard-region spelling, mode-test/bound operand order, initialiser position, declaration order, or explicit invariant carriers: 317 spellings this session cover all five and none goes below 7."
   },
   {
-   "hypothesis": "The 2-insn prologue tie (addiu a0,sp,24 vs move s0,zero) is the same sched.c ready-list question in the entry block and falls to the same dump-driven attack, not to more spelling enumeration.",
-   "mechanism": "Both insns are independent and ready in the same cycle; GCC 2.7.2 sched.c breaks the tie by INSN_PRIORITY then by the dependence class against last_scheduled_insn, and the LUID order that would otherwise decide it is set by RTL emission order.",
-   "next_probe": "Same .sched read for the entry block. The spelling side is exhausted: 40+ spellings across s11 (6 source positions of var_s0 = 0), s13 (all 24 declaration-order permutations, inert), s12 (pointer-local 38, hoist-above-guard 54) and s15 (7 more positions on the new chassis, all inert)."
+   "hypothesis": "The 2-insn entry tie (insn 49 `s0 = 0` vs insn 71 `a0 = sp + 24`) is decided by INSN_PRIORITY, not by the dependence class, and the priority gap is set by how many in-block insns depend on the &prim address.",
+   "mechanism": "sched.c:2408 rank_for_schedule compares INSN_PRIORITY first; priority() (sched.c:1504, where the BB2_PRIO_DEBUG hook prints it) is the longest dependence path to the end of the block. Insn 71 feeds the first call's argument; insn 49 has no in-block dependents, yet OUR scheduler emits 49 first, which a pure priority comparison should not produce - so either the priorities are equal (making it a class/LUID decision) or the model is wrong.",
+   "next_probe": "Re-run the TU under the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1, i.e. `pwsh tools/grinder/dump.ps1 func_80070C70 -Instrumented`) with BB2_PRIO_DEBUG=1 and BB2_RANK_DEBUG=1 in the environment, capture stderr to tmp/grind/func_80070C70/s17/, and grep for UIDs 49 and 71 to read their INSN_PRIORITY values and the class-tie decision directly. The source-side levers are exhausted: 13 initialiser positions, three first-loop chassis forms and 147 declaration-order spellings are all inert at 7."
   },
   {
-   "hypothesis": "Every remaining s11-s14 kill in state.json is chassis-void and at least one more of them hides a lever, exactly as the s12 top-test foreclosure did.",
-   "mechanism": "All of them carry measured_on = the 22-point if-guarded do/while chassis with u16 rect[16] present; the chassis is now the top-test/rect[4] one and rect[16] is gone, so both the chassis and the FAKE state under which they were measured have changed.",
-   "next_probe": "Before any new construct, re-measure on the 7-point chassis the two kills that sat closest to the target: the s14 HImode-carrier family (25 on the do/while - it emitted the target's sll/sra shape, which we now get for free, so its cost structure has changed) and the s14 invariant-hoist family (31 on the do/while - the target's per-iteration reloads now match, so a hoist may behave differently). Sibling propagation still owed: func_800720FC and func_8006F97C share the TU and the rect[] idiom; tell their ledgers that the ARRAY SIZE is chassis-dependent - size it to the honest callee contract first and let the chassis supply the rest."
+   "hypothesis": "The one remaining FAKE, `s32 c60 = 0x60;`, is still load-bearing and its position is irrelevant, so it is a submission-time annotation question rather than a search axis.",
+   "mechanism": "Re-measured on this chassis by s15 (literal 14/191 vs the constant-holder local 7/194) and re-confirmed inert in all 9 declaration slots by this session's v5 sweep. It sits in the sanctioned constant-holder family (.claude/rules/named-local-fake-exception.md) and needs a /* FAKE: ... */ annotation naming the mechanism and the lever-exhaustion ledger when the body is finally submitted.",
+   "next_probe": "No probe needed for the search. At candidate-ready time, annotate it and write the self-vet claiming the constant-holder family with .claude/rules/named-local-fake-exception.md's scope sentence quoted verbatim plus a precedent file:line."
   }
  ],
  "judge_constraints": [],
@@ -514,6 +520,30 @@
    "measured_on": "the NEW 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all",
    "predicate_cite": "",
    "result": "The initialiser axis is completely inert - all 7 positions, including hoisting var_s0 = 0; out of the for header entirel"
+  },
+  {
+   "session": 16,
+   "statement": "The 5-insn guard-block schedule is reachable by some LOCAL SPELLING of the guard region (the *(arg0 + 0x18) += 0xC store, the p_geom load, the bound expression, the mode-test expression) on the 7-poin",
+   "kill_scope": "instance",
+   "measured_on": "the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all",
+   "predicate_cite": "",
+   "result": "118 spellings, best 7 - the incumbent, tied only by its byte-identical synonyms `*(arg0+0x18) += 0xC` and `0xC + *(arg0+"
+  },
+  {
+   "session": 16,
+   "statement": "The 2-insn prologue tie moves with the source position of the entry-block var_s0 = 0 initialiser, with the first loop's chassis (do/while vs for vs while), or with the declaration order of the functio",
+   "kill_scope": "instance",
+   "measured_on": "the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all",
+   "predicate_cite": "",
+   "result": "167 spellings, none below 7. Every one of the 13 initialiser positions scores 7 at identical insn count, and so do the f"
+  },
+  {
+   "session": 16,
+   "statement": "Carrying D_800A3558 (and/or D_800A35B0) in an explicit local read BEFORE the *(arg0 + 0x18) += 0xC store reproduces the target's guard block, because it puts the two loads ahead of the store where the",
+   "kill_scope": "instance",
+   "measured_on": "the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all",
+   "predicate_cite": "",
+   "result": "Dead by a wide margin - best 23 (a lone `b = D_800A35B0;` before the store), every HImode carrier 32-37, every two-carri"
   }
  ],
  "ladder_skip": 0,
