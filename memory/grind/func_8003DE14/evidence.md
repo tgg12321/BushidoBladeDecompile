@@ -450,3 +450,184 @@ Bodies: `tmp/grind/func_8003DE14/s3/body_*.c`; side-by-side diffs
 - [s3] The residual 31 is exactly three items (tmp/grind/func_8003DE14/s3/sidediff_d4.txt): (1) one instruction short — jump2 merges the last-frame zero arm's tail one instruction further than the target, the price of the dst-refs lever; (2) j/complement still swapped (build $t5=j/$t4=complement vs target $t4=j/$t5=complement); (3) blend-arm emission order (the mflo/srl interleave on the blue channel and the final or/andi 0x7C00 pair), a sched.c item with no count delta.
 
 - [s3] s2's item (4) 'prologue pair (addiu a1,sp,16 vs move s1,zero)' and its items (1) and (2) are all gone from the diff; the whole prologue through the color computation is now byte-exact.
+
+
+## s4 (permuter) — the 173rd instruction is found; the residual is now ONE reference-count threshold
+
+Chassis at dispatch: HEAD 2026-09-10 (post -mel, post -msoft-float). candidate.c
+(the s3 "d4" form) re-measured at the top of the session: **score 31,
+build_insns 172, target_insns 173** — the ledger floor reproduces exactly.
+
+### The permuter workspaces (this session's mandated modality)
+
+Two full-TU workspaces were built from scratch (there was no prior permuter
+workspace for this function, so the 2026-09-01 chassis rule does not bite):
+
+  * `tmp/perm_3DE14_s4a` — the d4 chassis (score 31). base.c is the WHOLE
+    preprocessed `src/code6cac_c2.c`; compile.sh reproduces the Makefile
+    pipeline verbatim (cc1 `-O2 -G0 -funsigned-char -mcpu=3000 -mips1
+    -mno-abicalls -fno-builtin -w -mel -msoft-float` | prologue_fix | maspsx
+    with the full flag set incl. `--prefill-label-funcs` | multu_pad) and then
+    sed-extracts the `.ent func_8003DE14` .. `.end func_8003DE14` region before
+    assembling. Permuter base score 360. 27,747 iterations, 985 s, best find 300.
+  * `tmp/perm_3DE14_s4b` — the f1 chassis (see below). Permuter base score 300.
+    7,009 iterations, 447 s, best find 290.
+
+Both were harvested with `--stop`; no campaign outlived the session.
+
+### The d4 campaign's one real datum: it is a dst reference-count problem
+
+The best find on the d4 chassis (`output-300-1`, 300 vs base 360) respells the
+zero-pixel arm of the `i == count - 1` branch as `dst = dst++; *dst = pixel;`.
+That is undefined behaviour with an unsequenced self-assignment, and under this
+cc1 it leaves `dst` UNCHANGED, so the arm stops advancing the destination cursor
+— the function computes a different image. Measured 30/174 and rejected on
+SEMANTICS (`rejected/e5-...`), not on policy.
+
+Its value is the mechanism it points at: the extra reference to `dst` is what
+buys the point. Five semantics-preserving respellings of the same reference
+count were then measured by hand on the d4 chassis:
+
+| form | spelling of the zero-pixel arm (or colour arm) | score / insns |
+|---|---|---|
+| e1 | `*dst = pixel; dst = dst + 1;` | 31 / 172 |
+| e2 | `dst[0] = pixel; dst++;` | 31 / 172 |
+| e4 | e1 + colour arm also split into store-then-increment | 31 / 172 |
+| e6 | colour arm split only | 31 / 172 |
+| e3 | `dst = dst + 1; dst[-1] = pixel;` | 31 / **174** |
+
+**Finding: C-level "extra references" that GCC folds back into a single
+post-increment RTL insn do NOT raise `reg_n_refs`.** `REG_N_REFS` is counted by
+flow.c over RTL, long after the tree has canonicalised `*p = v; p = p + 1;`
+into `*p++ = v;`, so e1/e2/e4/e6 are literally the same insn stream as
+candidate.c. Only e3, which forces a distinct address form, changes anything —
+and it changes the wrong thing (one instruction too many).
+
+### The session's real result: f1 recovers the 173rd instruction
+
+Reading the TARGET's own disassembly around the inner-loop arms (rather than
+inferring from the score) settles what s3's d4 sweep got backwards:
+
+```
+ 0x12c  lhu   v0,0(a3)          ; i == count-1 : pixel = *src
+ 0x134  bnez  v0,0x148
+ 0x13c  sh    v0,0(a2)          ; ZERO-PIXEL ARM: store, NO dst++
+ 0x140  j     0x210             ;   -> advance_dst
+ 0x144  addiu a3,a3,2           ;   src++ in the delay slot
+ 0x148  sh    s6,0(a2)          ; COLOUR ARM: store
+ 0x14c  addiu a2,a2,2           ;   dst++ INLINE
+ 0x150  j     0x214             ;   -> loop_check
+ 0x154  addiu a3,a3,2
+ 0x16c  sh    t0,0(a2)          ; blend zero-pixel arm -> 0x210, src++ in slot
+ 0x20c  sh    v0,0(a2)          ; blend main path, falls through
+ 0x210  addiu a2,a2,2           ; advance_dst:
+ 0x214  lh    v0,4(s0)          ; loop_check:
+```
+
+So the arm that carries an inline `dst++` is the **target-colour** arm, and the
+zero-pixel arm routes through the shared `advance_dst` tail. s3's d4 put the
+inline increment on the zero-pixel arm as WELL, which gave jump2 two identical
+`sh / addiu a2 / j / addiu a3` tails to cross-jump — that merge is what ate the
+173rd instruction and is why every d-series form topped out at 172.
+
+Form **f1** = candidate.c with exactly one hunk changed:
+
+```c
+    if (pixel == 0) {
+-       *dst++ = pixel;
++       *dst   = pixel;
+        src++;
+-       goto loop_check;
++       goto advance_dst;
+    }
+```
+
+Measured **43 / 173**. The instruction count is now EXACT and a side-by-side
+against the target shows the arm block is structurally identical — every
+remaining line in that region differs only by which of `$a2`/`$a3` is used.
+Banked as `memory/grind/func_8003DE14/chassis_f1_structure_exact_43.c`.
+
+f1's whole residual, from the s4 side-by-side (`tmp/grind/func_8003DE14/s4/sbs.sh`):
+  (a) `src`/`dst` swapped — we allocate 108(src)->$a2, 109(dst)->$a3; the target
+      has 108->$a3, 109->$a2. This one swap accounts for the entire 43-vs-31
+      delta and also drags the v0/v1/a0/a1 naming through the blend arm and the
+      loop-bottom `lh v0,4(s0) / lh v1,6(s0) / mult v0,v1` reload.
+  (b) `j`/`complement` still $t5/$t4 instead of the target's $t4/$t5 (unchanged
+      since s3).
+  (c) the blend arm's mflo/srl interleave (unchanged since s3, H-s3-4).
+
+### ra_solver re-extracted on the f1 chassis (the model is exact here)
+
+`tools/ra_solver/extract.py func_8003DE14 code6cac_c2` + `simulate.py`:
+sort order MATCH, **dispositions 25/25**.
+
+  * pseudo 108 (`src`): refs 32, priority 27118 -> $a2 (reg 6)
+  * pseudo 109 (`dst`): refs 26, priority 17931 -> $a3 (reg 7)
+  * pseudo 115 (`j`): refs 11, livelen 57, priority 5789 -> $t5
+  * pseudo 116 (`complement`): refs 11, livelen 52, priority 6346 -> $t4
+
+`inverse.py global <model> --goal '{"108": 7, "109": 6}'` -> minimal solution
+size **1 atom, 8 distinct vectors**, and every one of them is a reference count:
+`refs_down 108: 32 -> 26 (or lower)` or `refs_up 109: 26 -> 32..38`. There is NO
+live-length, birth-order or preference vector at size 1. The reason is a
+`floor_log2` threshold in global.c's priority formula
+(`floor_log2(refs) * refs * 10000 / livelen`): the two live lengths are within
+one LUID of each other (~59 vs ~58), but floor_log2(32) = 5 while
+floor_log2(26) = 4, so src gets a 25% priority bonus purely from crossing 32.
+
+`inverse.py global <model> --goal '{"115": 12, "116": 13}'` -> minimal solution
+size 1, 9 vectors: `live_shrink 115 by 8` (measured dead, H-s3-5),
+`refs_down 116 by 1..5`, `live_extend 116 by 8`, `refs_up 115 by 2`.
+
+### The refs_down-on-src direction is measured dead in its two natural spellings
+
+The only ordinary-C way to remove ~6 weighted references from `src` is to stop
+writing four separate `src++`:
+
+  * **g1** — `u16 pixel = *src++;` hoisted to the top of the inner do-body, all
+    four arm-local `src++` deleted: **61 / 162**. Eleven instructions vanish:
+    with one increment the three `j <tail>` arms have nothing for reorg.c to put
+    in their delay slots.
+  * **g2** — only the `*src` READ hoisted, the four `src++` kept: **48 / 166**.
+    The single shared load lets jump2 merge arm tails; seven instructions lost.
+
+Both destroy the very arm structure f1 exists to reproduce, so the refs_down
+direction cannot be bought without giving back the 173rd instruction.
+
+### f1-chassis permuter campaign
+
+7,009 iterations found nothing below the base 300 except `output-290-1`, whose
+only change is `extern void DrawSync(s32);` -> `extern long long DrawSync(s32);`
+in the TU's declarations. A DImode return changes the call's clobber set and
+therefore the pressure at the call, which is why it moves the permuter score by
+10. It is (i) outside this session's surface (the declaration lives in the
+shared includes, not in func_8003DE14), (ii) a prototype contradiction on a
+Sony library function whose real signature returns `int`, and (iii) not measured
+against the honest objdump metric. Banked as a LEAD for a future session that
+wants to test whether the target's TU really did see a wider DrawSync
+prototype — under the prototype-contradiction norm
+([[sotn-prototype-struct-precedent-2026-08-10]]: bytes decide the declaration)
+that is a legitimate question, but it needs its own evidence, not a permuter
+score delta.
+
+- [s4] candidate.c (s3 d4 form) re-measured at dispatch on HEAD: score 31, build_insns 172, target_insns 173 — the ledger floor reproduces exactly on the current chassis.
+
+- [s4] The target's inner-loop arm block (assembled from asm/funcs/func_8003DE14.s) is: 0x13c zero-pixel arm `sh v0,0(a2) / j 0x210 / addiu a3,a3,2` (no dst increment); 0x148 colour arm `sh s6,0(a2) / addiu a2,a2,2 / j 0x214 / addiu a3,a3,2`; 0x16c blend zero-pixel arm `sh t0,0(a2) / j 0x210 / addiu a3,a3,2`; 0x20c blend main falls through; 0x210 = advance_dst (`addiu a2,a2,2`); 0x214 = loop_check.
+
+- [s4] Form f1 (zero-pixel arm of the i==count-1 branch respelled `*dst = pixel; src++; goto advance_dst;`) measures 43 / 173 — the FIRST form in this grind with the target's instruction count. Banked as memory/grind/func_8003DE14/chassis_f1_structure_exact_43.c.
+
+- [s4] f1's complete residual: (a) src/dst swapped ($a2/$a3), which also drags the v0/v1/a0/a1 naming in the blend arm and the loop-bottom `lh v0,4(s0) / lh v1,6(s0) / mult v0,v1` reload; (b) the j/complement $t4/$t5 pair; (c) the blend arm's mflo/srl interleave. Items (b) and (c) are unchanged from s3.
+
+- [s4] ra_solver on the f1 chassis: sort order MATCH, dispositions 25/25. 108 (src) refs 32 / pri 27118 -> $a2; 109 (dst) refs 26 / pri 17931 -> $a3; 115 (j) refs 11 / livelen 57 / pri 5789 -> $t5; 116 (complement) refs 11 / livelen 52 / pri 6346 -> $t4.
+
+- [s4] inverse.py global --goal '{"108": 7, "109": 6}' on the f1 model: minimal solution size 1, EIGHT vectors, all reference-count (refs_down 108 to <=26, or refs_up 109 to >=32). No live-length or birth-order atom exists at size 1 — the two live lengths are ~59 and ~58, so the entire priority gap is the floor_log2 step from 26 (=4) to 32 (=5).
+
+- [s4] C-level reference splits that the tree folds are INERT for reg_n_refs: `*dst = pixel; dst = dst + 1;`, `dst[0] = pixel; dst++;` and the same split applied to the colour arm all reproduce candidate.c's 31 / 172 exactly. Only a spelling that survives to RTL as a distinct address form changes anything (`dst = dst + 1; dst[-1] = pixel;` = 31 / 174).
+
+- [s4] Hoisting src's read and/or increment out of the arms (g1 = 61/162, g2 = 48/166) is measured dead: the target's four delay-slot `addiu a3,a3,2` exist only because there are four separate src++ statements for reorg.c to fill from.
+
+- [s4] Two permuter campaigns totalling 34,756 iterations produced no semantics-preserving in-function improvement. Both were harvested with --stop; nothing outlived the session.
+
+- [s4] A reusable full-TU permuter workspace for this function now exists (tmp/perm_3DE14_s4a / _s4b): base.c is the whole preprocessed src/code6cac_c2.c and compile.sh reproduces the Makefile pipeline verbatim including -mel/-msoft-float and --prefill-label-funcs, then sed-extracts the .ent/.end region. A later session can re-seed it by re-running cpp over an edited src.
+
+- [s4] src/code6cac_c2.c was restored to its committed INCLUDE_ASM state before the session ended; the only tracked changes are the ledger files under memory/grind/func_8003DE14/.

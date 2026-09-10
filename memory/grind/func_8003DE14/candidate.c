@@ -134,3 +134,20 @@ void func_8003DE14(s16 *rect, s32 count) {
         } while (i < count);
     }
 }
+
+/* s4 ADDENDUM (permuter modality, 2026-09-10) - READ THIS BEFORE WORKING FROM
+ * THIS FILE.  candidate.c is still the LOWEST-SCORING form (31), but it is
+ * probably NOT the right chassis any more: it is 172 instructions against a
+ * target of 173, and s4 proved why.  The zero-pixel arm below spells
+ * `*dst++ = pixel; ... goto loop_check;`, which gives jump2 a tail identical to
+ * the target-colour arm's; the cross-jump merge is what eats the 173rd
+ * instruction.  The target inlines `dst++` on the COLOUR arm only and routes the
+ * zero-pixel arm through the shared `advance_dst` tail.
+ *
+ * memory/grind/func_8003DE14/chassis_f1_structure_exact_43.c is that form: it
+ * scores 43 but build_insns == 173 and the whole inner-loop arm block is
+ * structurally identical to the target.  Its ENTIRE residual is the src/dst
+ * register swap (pseudo 108 -> $a2, 109 -> $a3; target wants the reverse), which
+ * ra_solver reports as a one-atom reference-count goal sitting on a floor_log2
+ * threshold at 32 refs.  See evidence.md / hypotheses.md, section s4.
+ */

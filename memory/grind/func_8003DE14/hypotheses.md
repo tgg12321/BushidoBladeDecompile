@@ -436,3 +436,76 @@ claim. There is no open family question on this function.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-10, form tmp/grind/func_8003DE14/s3/body_a1.c plus its .rtl dump, no FAKE constructs
+
+
+## [s4] The 173rd instruction is lost to a jump2 cross-jump because s3's d4 form inlined `dst++` on the ZERO-PIXEL arm; the target inlines it on the TARGET-COLOUR arm and routes the zero-pixel arm through the shared `advance_dst` tail.
+- mechanism: jump2's cross-jumping merges identical tails. With `*dst++ = pixel; src++; goto loop_check;` in the zero-pixel arm AND `*dst++ = target_color; src++; goto loop_check;` in the colour arm, both arms end in the identical four-insn tail `sh / addiu a2,a2,2 / j loop_check / addiu a3,a3,2`, so jump2 keeps one copy and the build emits 172 instructions. The target's own disassembly shows the asymmetric shape: 0x13c zero-pixel arm = `sh v0,0(a2) / j 0x210 (advance_dst) / addiu a3,a3,2` with NO dst increment, and 0x148 colour arm = `sh s6,0(a2) / addiu a2,a2,2 / j 0x214 (loop_check) / addiu a3,a3,2`.
+- probe: read the assembled target.o at 0x12c-0x214 and identified the two tail labels, then measured form f1 = candidate.c with the zero-pixel arm changed to `*dst = pixel; src++; goto advance_dst;`.
+- result: CONFIRMED. f1 measures score 43 / **build_insns 173** (target 173) — the first form in four sessions with the correct instruction count. The side-by-side over the arm block shows structural identity; every remaining difference there is which of $a2/$a3 is used. Whole-function score rose 31 -> 43 because the same edit removes the dst references that had been winning the src/dst seat. Banked as memory/grind/func_8003DE14/chassis_f1_structure_exact_43.c.
+- verdict: CONFIRMED
+
+## [s4] On the f1 chassis the src/dst register swap is a pure reference-count problem with a floor_log2 threshold at 32, and no live-length or birth-order lever reaches it.
+- mechanism: global.c allocno priority = floor_log2(refs) * refs * 10000 / live_length. Re-extracted model (dispositions 25/25, sort order MATCH): pseudo 108 (src) refs 32 / livelen ~59 / priority 27118 -> $a2; pseudo 109 (dst) refs 26 / livelen ~58 / priority 17931 -> $a3. The live lengths are within one LUID; the whole gap comes from floor_log2(32)=5 vs floor_log2(26)=4.
+- probe: tools/ra_solver/extract.py + simulate.py on the f1 chassis, then inverse.py global --goal '{"108": 7, "109": 6}'.
+- result: CONFIRMED. Minimal solution size 1 atom, 8 distinct vectors, ALL of them reference-count moves (`refs_down 108: 32 -> <=26` or `refs_up 109: 26 -> >=32`). No live_shrink/live_extend/birth-order vector is emitted at size 1, and 50 preference atoms are reported mechanically unreachable from C.
+- verdict: CONFIRMED
+
+## [s4] Adding C-level references to `dst` in the zero-pixel arm (store-then-increment, indexed store, or the same split in the colour arm) raises reg_n_refs enough to win the $a2 seat.
+- mechanism: the ra_solver refs_up vector on pseudo 109; each extra textual reference to dst was expected to be counted by flow.c.
+- probe: four semantics-preserving respellings measured on the d4 chassis — e1 `*dst = pixel; dst = dst + 1;`, e2 `dst[0] = pixel; dst++;`, e4 (e1 plus the colour arm split the same way), e6 (colour arm split only) — plus e3 `dst = dst + 1; dst[-1] = pixel;` as a stronger dose. Bodies tmp/grind/func_8003DE14/s4/body_e1.c, body_e2.c, body_e3.c, body_e4.c, body_e6.c.
+- result: KILLED. e1/e2/e4/e6 all measure 31 / 172 — byte-identical to candidate.c. REG_N_REFS is counted by flow.c over RTL, and the tree has already canonicalised `*p = v; p = p + 1;` back into `*p++ = v;`, so a C-level split adds no reference at all. e3 does change the address form and measures 31 / **174** — one instruction too many, allocation unmoved.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), d4 chassis, forms tmp/grind/func_8003DE14/s4/body_e1.c, body_e2.c, body_e3.c, body_e4.c, body_e6.c, no FAKE constructs
+
+## [s4] Reducing `src`'s reference count by hoisting the read and/or the increment out of the arms (the refs_down-on-108 half of the inverse.py solution) reaches the src/dst goal on the f1 chassis.
+- mechanism: inverse.py vector #1 is `refs_down pseudo 108: 32 -> 26`; collapsing the four arm-local `src++` (and/or the two duplicated `*src` reads) into one shared statement is the only ordinary-C spelling that removes that many references.
+- probe: g1 (`u16 pixel = *src++;` hoisted to the top of the inner do-body, all four `src++` deleted) and g2 (only the READ hoisted, the four `src++` kept), both on the f1 chassis. Bodies tmp/grind/func_8003DE14/s4/body_g1.c and body_g2.c.
+- result: KILLED. g1 = 61 / 162 and g2 = 48 / 166 against a target of 173. The four `addiu a3,a3,2` the target carries in its arm delay slots exist only because there are four separate `src++` statements for reorg.c to fill with; hoisting removes eleven (g1) or seven (g2) instructions. On this chassis the refs_down direction is paid for with exactly the structure f1 was built to recover.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1 chassis (score 43 / 173 insns), forms tmp/grind/func_8003DE14/s4/body_g1.c and body_g2.c, no FAKE constructs
+
+## [s4] decomp-permuter, seeded on the d4 chassis and again on the f1 chassis, finds a semantics-preserving form below the banked floor.
+- mechanism: randomised C-level perturbation of the function body against the honest per-function object diff, run through tools/permuter_campaign.py with --stack-diffs.
+- probe: two campaigns. tmp/perm_3DE14_s4a on the d4 chassis (permuter base 360), 27,747 iterations / 985 s. tmp/perm_3DE14_s4b on the f1 chassis (permuter base 300), 7,009 iterations / 447 s. Both harvested with --stop.
+- result: KILLED for both seeds. s4a's best find (300) is `dst = dst++; *dst = pixel;` — undefined behaviour that under this cc1 leaves dst unchanged, so the zero-pixel arm stops advancing the destination cursor; measured 30 / 174 and rejected on semantics (rejected/e5-...). s4b's best find (290) changes nothing inside the function: it widens `extern void DrawSync(s32);` to `extern long long DrawSync(s32);` in the TU declarations. No campaign produced a semantics-preserving in-function form below the banked floor of 31.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, d4 chassis (score 31) and f1 chassis (score 43), campaigns tmp/perm_3DE14_s4a (27,747 it) and tmp/perm_3DE14_s4b (7,009 it), no FAKE constructs
+
+## [s4] The 173rd instruction is lost to a jump2 cross-jump because s3's d4 form inlined dst++ on the ZERO-PIXEL arm; the target inlines it on the TARGET-COLOUR arm and routes the zero-pixel arm through the shared advance_dst tail.
+- mechanism: jump2's cross-jumping merges identical tails. With `*dst++ = pixel; src++; goto loop_check;` in the zero-pixel arm AND `*dst++ = target_color; src++; goto loop_check;` in the colour arm, both arms end in the identical four-insn tail `sh / addiu a2,a2,2 / j loop_check / addiu a3,a3,2`, so jump2 keeps one copy and the build emits 172. The target's disassembly is asymmetric: 0x13c zero-pixel arm = `sh v0,0(a2) / j 0x210 (advance_dst) / addiu a3,a3,2` with NO dst increment; 0x148 colour arm = `sh s6,0(a2) / addiu a2,a2,2 / j 0x214 (loop_check) / addiu a3,a3,2`.
+- probe: Read the assembled target.o at 0x12c-0x214 and identified the two tail labels (0x210 = advance_dst, 0x214 = loop_check), then measured form f1 = candidate.c with the zero-pixel arm changed to `*dst = pixel; src++; goto advance_dst;`.
+- result: CONFIRMED. f1 measures score 43 / build_insns 173 (target 173) — the first form in four sessions with the correct instruction count, and the side-by-side over the arm block is structurally identical (every remaining line there differs only in $a2 vs $a3). The whole-function score rose 31 -> 43 because the same edit removes the dst references that had been winning the src/dst seat. Banked as memory/grind/func_8003DE14/chassis_f1_structure_exact_43.c.
+- verdict: CONFIRMED
+
+## [s4] On the f1 chassis the src/dst register swap is a pure reference-count problem with a floor_log2 threshold at 32 refs, and no live-length or birth-order lever reaches it at solution size 1.
+- mechanism: global.c allocno priority = floor_log2(refs) * refs * 10000 / live_length. Re-extracted model (sort order MATCH, dispositions 25/25): pseudo 108 (src) refs 32 / livelen ~59 / priority 27118 -> $a2; pseudo 109 (dst) refs 26 / livelen ~58 / priority 17931 -> $a3. The live lengths are within one LUID; the whole gap comes from floor_log2(32)=5 vs floor_log2(26)=4.
+- probe: tools/ra_solver/extract.py func_8003DE14 code6cac_c2 + simulate.py on the f1 chassis, then inverse.py global --goal '{"108": 7, "109": 6}' and --goal '{"115": 12, "116": 13}'.
+- result: CONFIRMED. Minimal solution size 1 atom, 8 distinct vectors, ALL reference-count moves (refs_down 108: 32 -> <=26, or refs_up 109: 26 -> >=32). No live_shrink/live_extend/birth-order vector is emitted at size 1; 50 preference atoms are reported mechanically unreachable from C. The j/complement goal is unchanged from s3: 9 vectors, live_shrink 115 by 8 (already measured dead), refs_down 116 by 1..5, live_extend 116 by 8, refs_up 115 by 2.
+- verdict: CONFIRMED
+
+## [s4] Adding C-level references to dst in the zero-pixel arm (store-then-increment, indexed store, or the same split in the colour arm) raises reg_n_refs on the d4 chassis.
+- mechanism: The ra_solver refs_up vector on pseudo 109; each extra textual reference to dst was expected to be counted by flow.c.
+- probe: Four semantics-preserving respellings measured on the d4 chassis — e1 `*dst = pixel; dst = dst + 1;`, e2 `dst[0] = pixel; dst++;`, e4 (e1 plus the colour arm split the same way), e6 (colour arm split only) — plus e3 `dst = dst + 1; dst[-1] = pixel;` as a stronger dose.
+- result: KILLED. e1/e2/e4/e6 all measure 31 / 172, byte-identical to candidate.c: REG_N_REFS is counted by flow.c over RTL, and the tree has already canonicalised `*p = v; p = p + 1;` back into `*p++ = v;`, so a C-level split adds no reference at all. e3 does force a distinct address form and measures 31 / 174 — one instruction too many with the allocation unmoved. This is a generally useful fact for the RA-solver workflow: a refs_up vector cannot be bought with a spelling the tree folds.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), d4 chassis (score 31/172), forms tmp/grind/func_8003DE14/s4/body_e1.c, body_e2.c, body_e3.c, body_e4.c, body_e6.c, no FAKE constructs
+
+## [s4] Reducing src's reference count by hoisting the read and/or the increment out of the arms — the refs_down-on-108 half of the inverse.py solution — reaches the src/dst goal on the f1 chassis.
+- mechanism: inverse.py vector #1 is refs_down pseudo 108: 32 -> 26; collapsing the four arm-local `src++` (and/or the two duplicated `*src` reads) into one shared statement is the only ordinary-C spelling that removes that many references.
+- probe: g1 (`u16 pixel = *src++;` hoisted to the top of the inner do-body, all four arm-local `src++` deleted) and g2 (only the `*src` READ hoisted, the four `src++` kept), both measured on the f1 chassis with sandbox --disable all.
+- result: KILLED. g1 = 61 / 162 and g2 = 48 / 166 against a target of 173. The four `addiu a3,a3,2` the target carries in its arm delay slots exist only because there are four separate `src++` statements for reorg.c to fill them with; hoisting removes eleven (g1) or seven (g2) instructions. On this chassis the refs_down direction is paid for with exactly the structure f1 was built to recover, so the remaining reachable half of the goal is refs_up on dst.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1 chassis (score 43 / 173 insns), forms tmp/grind/func_8003DE14/s4/body_g1.c and body_g2.c, no FAKE constructs
+
+## [s4] decomp-permuter, seeded on the d4 chassis and again on the f1 chassis, finds a semantics-preserving form below the banked floor of 31.
+- mechanism: Randomised C-level perturbation of the function body scored against the honest per-function object diff, run through tools/permuter_campaign.py with --stack-diffs on a full-TU workspace that reproduces the Makefile pipeline verbatim.
+- probe: Two campaigns, both harvested with --stop before the session ended. tmp/perm_3DE14_s4a on the d4 chassis (permuter base 360): 27,747 iterations / 985 s. tmp/perm_3DE14_s4b on the f1 chassis (permuter base 300): 7,009 iterations / 447 s.
+- result: KILLED for both seeds. s4a's best find (permuter 300) is `dst = dst++; *dst = pixel;` — an unsequenced self-assignment that under this cc1 leaves dst unchanged, so the zero-pixel arm stops advancing the destination cursor and the function computes a different image; measured 30 / 174 and rejected on SEMANTICS, not policy. Its one useful datum (the extra dst reference is what buys the point) drove the e-series above. s4b's best find (permuter 290) changes nothing inside the function: it widens `extern void DrawSync(s32);` to `extern long long DrawSync(s32);` in the TU declarations — outside this session's surface and a prototype contradiction on a Sony library function; banked as a lead only. Neither campaign produced a semantics-preserving in-function form below 31.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, d4 chassis (score 31) and f1 chassis (score 43), campaigns tmp/perm_3DE14_s4a (27,747 it) and tmp/perm_3DE14_s4b (7,009 it), no FAKE constructs
