@@ -682,3 +682,8 @@ disposition taken: driver-executed per integration-handoff-self-serve (owner rul
 category: integration-handoff (REFUSED: no executable remedy in verdict)
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-10 — func_80018094 — JUDGE ESCALATE on final call (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: REFUSED under the current frozen policy; ROTATED to the back of the active worklist (owner ruling 2026-09-08, rotation-not-foreclosure; returns automatically); candidate preserved at memory/grind/func_80018094/candidate.c.
+
+## 2026-09-10 — func_80074B18 — integration-handoff (REFUSED: no executable remedy in verdict)
+category: integration-handoff (REFUSED: no executable remedy in verdict)
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-10 — func_80074B18 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: REFUSED under the current frozen policy; ROTATED to the back of the active worklist (owner ruling 2026-09-08, rotation-not-foreclosure; returns automatically); candidate preserved at memory/grind/func_80074B18/candidate.c.

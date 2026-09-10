@@ -26424,3 +26424,102 @@ THE BLOCKER AND THE REMEDY (the only reason this is not a plain PASS). The hones
 THE PRECISE GRANT FOR THE OWNER. Append ONE row to tools/grinder/owner_cluster_grants.txt, same shape as the existing cluster rows: `func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :60, SetRotMatrix sub-family :95; registry per ruling 2026-08-30)`. Then `queue unpark func_80018094`; the next session submits candidate.c EXACTLY (body cleared, layer-1 skipped), the driver re-proves bytes, runs FINAL CALL, and its owner-cluster door writes the inline_asm_canonical.txt line. The other side, stated fairly: the 2026-08-30 ruling limited registry rows to the 'proven-or-near-floor set' named then, and func_80018094 was at distance 103 at that time, so it was not in that set -- the owner may prefer to confirm that a now-proven member of the enumerated 28 qualifies for a row on the same terms as func_80019310 did. Nothing else pends: no construct, no evidence, no citation question remains. Evidence: memory/grind/func_80018094/{self_vet.md,evidence.md,hypotheses.md H44-H53,rejected/} and tmp/grind/func_80018094/s10/.
 
 **Constraint recorded for any future session:** Submit memory/grind/func_80018094/candidate.c EXACTLY (body f5e49e3dddc24d62, Judge-cleared) once tools/grinder/owner_cluster_grants.txt carries a func_80018094 row; do not respell the islands, do not add or change any __asm__ operand (2026-09-09 23:11 constraint stands), and do not add FAKE/pins/barriers to chase a STRONG scan tier.
+
+## 2026-09-10 — func_80074B18 (src/text1b.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven: gated object 0 diffs AND full relink SHA1 == oracle with the gate entry; blocked ONLY by `maspsx_label_nop_funcs.txt`, a fidelity-gate surface a grind session may not stage)**
+
+This is **not** an exhaustion claim and **not** an endgame lock. The function is solved in
+pure C with zero constructs (no FAKE, no volatile, no asm, no pins; self-vet at
+`memory/grind/func_80074B18/self_vet.md`). What is missing is a one-line per-function opt-in
+in `maspsx_label_nop_funcs.txt`, which `.claude/rules/integration-handoff-self-serve.md`
+places on the add-scope-allow DENYLIST, so neither a grind session nor the driver's
+scope-widening path may land it — it is an operator surface. Precedent for exactly this
+residual and this disposition: func_80027640 (decisions.md 2026-09-01 entry, granted and
+merged 2026-09-02 in the operator lane; earlier: commit edd7faae for func_80088740).
+
+**Measured this session (recon s1, HEAD 938d5bdf3, `-mel -msoft-float`; src restored to HEAD
+afterwards, the gate list never touched):**
+* `sandbox func_80074B18 --disable all` on the candidate -> `"score": 1` (133/133 insns,
+  rules_dropped 0). The single diff is the load-delay `nop` at 0x80074CF0: target
+  `lw $a3,0x10($sp)` @0x80074CEC -> `.L80074CF0:` -> `nop` -> `sw $s3,0x14($a3)` @0x80074CF4
+  (asm/funcs/func_80074B18.s:130-133). Our cc1 emits the identical stream with the `.L` label
+  between the load and its base-register store consumer (reorg.c relax_delay_slots retargets the
+  top `beqz` past the redundant reload, tools/gcc-2.7.2/reorg.c:4003-4013, exactly as the
+  target); maspsx `is_label()` does not recognise `.L`, so the hazard nop is dropped — the
+  load-consumer shape of `.claude/rules/maspsx-label-nop-gate.md` (gate code
+  tools/maspsx/maspsx/__init__.py:832-838 already matches a store's base operand,
+  `line_loads_from_reg` :92).
+* Object proof with the gate: `tmp/grind/func_80074B18/s1/build_gated.sh` reruns the exact
+  Makefile pipeline for text1b with `--label-nop-funcs=` pointed at a SCRATCH copy of the list
+  plus `func_80074B18`; `engine.score.normalized_insns` of the gated object vs
+  `build/src/text1b.o`: **zero differing instructions** (`gated_diff.txt` empty).
+* Full-link proof with the gate: `tmp/grind/func_80074B18/s1/link_gated.sh` copies the
+  oracle-matching `build/` tree, swaps in the gated `text1b.o`, relinks with a path-rewritten
+  copy of `bb2.ld`, objcopy + make_psexe: **SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  == oracle** (`tmp/grind/func_80074B18/s1/gated_sha1.txt`).
+
+**The C** (`memory/grind/func_80074B18/candidate.c`): two nested `for` loops (rows =
+`D_800A36A0->u8[0x65] + 3`, columns `s16 n = 5; if (arg2) n = 8;`), per tile SetTile /
+colour+size copy from the 12-byte tile table at `D_800A36A0->ptr[4]->0x3C` / SetSemiTrans /
+x,y placement (`arg1 * 240`, `i * 34 + 0x2B` or `i * 17 + 0x7C`) / `ot = 0xB; if (arg1) ot =
+0x15; AddPrim(D_800A374C + ot * 4, p)`, cursor write-back to `arg0[5]`. Raw-offset style of
+the matched neighbours (func_8007526C). Six rejected spellings banked in
+`memory/grind/func_80074B18/rejected/` with scores (ternary OT index 46; `s32 n` 32; `u8 n` 3;
+struct/post-increment cursor orders 38-47). Pass attribution in
+`memory/grind/func_80074B18/evidence.md` (combine.c:724-733/:8989-8995 nonzero_bits fold of
+the duplicated entry test under `s32 n`; loop.c:1631 "not desirable" on the 77-insn outer loop).
+
+**Why no C spelling can close the last instruction.** cc1's instruction stream is already
+identical to the target's; ASPSX 2.34 inserted the nop at assembly time and our maspsx drops it
+across `.L` labels. `.claude/rules/maspsx-gate-lists.md` adjudicates this list as a FIDELITY
+gate ("No C spelling can emit an assembler hazard nop") and names the per-function opt-in as the
+pure-C RETIREMENT path, not a park.
+
+**Operator steps (exact):**
+1. Append `func_80074B18` to `maspsx_label_nop_funcs.txt` (one name per line).
+2. Replace `INCLUDE_ASM("asm/funcs", func_80074B18);` in src/text1b.c with the body of
+   `memory/grind/func_80074B18/candidate.c`
+   (`python3 tmp/grind/func_80074B18/s1/splice.py memory/grind/func_80074B18/candidate.c` does
+   exactly that; drop the header comment if desired).
+3. `& tools/wteng.ps1 main sandbox func_80074B18 --disable all` -> expect 0;
+   `& tools/wteng.ps1 main verify-oracle --rebuild` -> expect SHA1 == oracle.
+4. Fresh layer-2 `cheat-reviewer` on the C (self-vet at `memory/grind/func_80074B18/self_vet.md`).
+5. `& tools/wteng.ps1 main queue done func_80074B18`; commit with the
+   `[infra-rule: maspsx-label-nop]` tag plus the target-site citation above
+   (required by tools/hooks/no_new_regfix_guard.py for a net gate-list addition).
+
+Re-activation triggers if the list line is declined: none needed on the C axis — the C is
+final; the only alternative is the globalised `.L` label fix in maspsx (maspsx-gate-lists.md
+"Endgame" item 1), a substrate change outside grind scope.
+
+## 2026-09-10 02:12 — func_80074B18 — ruling: INTEGRATION HANDOFF filed for func_80074B18 : docs/grind/decisions.md - 2026-09- — **ESCALATE**
+
+WHAT WAS BUILT. func_80074B18 (src/text1b.c) is a tile-sprite emitter: two nested for loops (rows = a byte from the global block + 3, columns = 5 or 8), and per tile it calls SetTile, copies colour and size from a 12-byte table entry, calls SetSemiTrans, places x/y, picks an ordering-table slot (0xB or 0x15) and calls AddPrim, then writes the advanced cursor back to arg0[5]. The C in memory/grind/func_80074B18/candidate.c is ordinary: no inline asm, no volatile, no register pins, no FAKE, no dead stores, no constant holders, no duplicated statements. I read it and the six rejected/ spellings; the only codegen-sensitive choice is the column count being declared `s16` instead of `s32`, which is a truthful type for a small tile count and is exactly the 'choose among semantically-truthful spellings by codegen effect' method the 2026-08-31 owner ruling (.claude/rules/ordinary-c-judge-decidable.md) protects. Self-vet (self_vet.md) claims no constructs and no family; I agree. Six-test checklist: passes all six.
+
+WHY IT IS SOUND (verified by me, not taken from the session). I rebuilt the proof from scratch in tmp/grind/func_80074B18/judge/ with src/, tools/maspsx and maspsx_label_nop_funcs.txt untouched (git status clean afterwards): spliced candidate.c into a tmp copy of text1b.c, ran the exact Makefile pipeline (cpp | cc1 -mel -msoft-float | prologue_fix | maspsx | multu_pad | as). (1) UNGATED (the live gate list): engine-normalized diff against build/src/text1b.o is exactly ONE instruction — a missing `nop` at insn index 118 — i.e. honest sandbox distance 1, matching the ledger's floor_history. (2) GATED (a scratch copy of the list plus func_80074B18, passed via --label-nop-funcs, nothing else changed): ZERO differing instructions. (3) Full relink of the oracle build/ tree with the gated text1b.o swapped in: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. The nop site is asm/funcs/func_80074B18.s:130-133 — `lw $a3,0x10($sp)` / `.L80074CF0:` / `nop` / `sw $s3,0x14($a3)` — and in our gated.s it is exactly `lw $7,16($sp)` / `.L944:` / nop / `sw $19,20($7)`: a load whose base register is consumed by a store across a single `.L` merge label. That is the documented load-consumer blind spot of maspsx's `is_label()` (.claude/rules/maspsx-label-nop-gate.md), which .claude/rules/maspsx-gate-lists.md adjudicates as a FIDELITY gate: 'No C spelling can emit an assembler hazard nop.' cc1's instruction stream is already identical to the target; ASPSX inserted the nop at assembly time. So no further grinding on the C axis can ever close the last instruction — it would be waste, not diligence.
+
+THE BLOCKER AND WHY THIS IS NOT A PLAIN PASS OR A FAIL. The one remaining step is a one-line entry `func_80074B18` in maspsx_label_nop_funcs.txt. That file is named verbatim on the add-scope-allow DENYLIST (.claude/rules/integration-handoff-self-serve.md:56-61, 'assembler-behavior gates are substrate-adjacent'), so the driver's scope-widening will refuse the scope_paths above mechanically, and neither a grind session nor the driver may stage it. It is an owner/operator surface by design. The C is clean, so a FAIL(CONSTRUCT) would be false and would ban nothing real; a FAIL(EVIDENCE) would be false because the evidence is complete and independently reproduced. ESCALATE is the honest verdict: the work is sound and complete, and the grant is above the Judge's authority. I expect the driver to refuse the widening, log this packet to docs/grind/borderline.md and ROTATE the item (owner ruling 2026-09-08, rotation-not-foreclosure), which is the same landing func_80022F34 took on 2026-09-05 before the owner applied its line on 2026-09-06 (commit d4338774, [infra-rule: maspsx-label-nop]).
+
+BOTH SIDES, STATED FAIRLY. Against: two earlier Judge rulings on this exact residual (func_80027640 2026-09-01 22:05; func_8007526C 2026-09-07 11:56) returned FAIL rather than ESCALATE, reasoning that no driver-executable grant exists. For: those rulings predate the 2026-09-08 rotation rule that gives a refused ESCALATE a clean, non-terminal landing; a ruling-request FAIL leaves the function ACTIVE with a closed C-axis, so the next session can only re-file the same handoff; and the owner has applied this exact one-line remedy three times (func_80027640 2026-09-02, func_80022F34 2026-09-06, func_8007526C 2026-09-07), which is the owner's revealed standing disposition for this residual class. Nothing about the C is uncertain, so default-FAIL is not engaged.
+
+THE PRECISE OWNER STEP (from the decisions.md 2026-09-10 entry, verified): append `func_80074B18` to maspsx_label_nop_funcs.txt; splice memory/grind/func_80074B18/candidate.c over the INCLUDE_ASM line in src/text1b.c (tmp/grind/func_80074B18/s1/splice.py does this); `sandbox func_80074B18 --disable all` -> 0; `verify-oracle --rebuild` -> oracle SHA1; fresh layer-2 cheat-reviewer; `queue done func_80074B18`; commit tagged [infra-rule: maspsx-label-nop] citing target site asm/funcs/func_80074B18.s:130-133. The standing question already on the owner's ledger — globalising the `.L` label fix in maspsx (maspsx-gate-lists.md Endgame item 1) instead of growing the per-function list — is unchanged by this ruling. Evidence: memory/grind/func_80074B18/{candidate.c,self_vet.md,evidence.md,hypotheses.md,rejected/,state.json}, tmp/grind/func_80074B18/s1/ (session proof) and tmp/grind/func_80074B18/judge/ (my independent reproduction: ungated_diff.txt, gated_diff.txt, gated_sha1.txt).
+
+## 2026-09-10 — func_80074B18 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-10)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT WAS BUILT. func_80074B18 (src/text1b.c) is a tile-sprite emitter: two nested for loops (rows = a byte from the global block + 3, columns = 5 or 8), and per tile it calls SetTile, copies colour and size from a 12-byte table entry, calls SetSemiTrans, places x/y, picks an ordering-table slot (0xB or 0x15) and calls AddPrim, then writes the advanced cursor back to arg0[5]. The C in memory/grind/func_80074B18/candidate.c is ordinary: no inline asm, no volatile, no register pins, no FAKE, no dead stores, no constant holders, no duplicated statements. I read it and the six rejected/ spellings; the only codegen-sensitive choice is the column count being declared `s16` instead of `s32`, which is a truthful type for a small tile count and is exactly the 'choose among semantically-truthful spellings by codegen effect' method the 2026-08-31 owner ruling (.claude/rules/ordinary-c-judge-decidable.md) protects. Self-vet (self_vet.md) claims no constructs and no family; I agree. Six-test checklist: passes all six.
+
+WHY IT IS SOUND (verified by me, not taken from the session). I rebuilt the proof from scratch in tmp/grind/func_80074B18/judge/ with src/, tools/maspsx and maspsx_label_nop_funcs.txt untouched (git status clean afterwards): spliced candidate.c into a tmp copy of text1b.c, ran the exact Makefile pipeline (cpp | cc1 -mel -msoft-float | prologue_fix | maspsx | multu_pad | as). (1) UNGATED (the live gate list): engine-normalized diff against build/src/text1b.o is exactly ONE instruction — a missing `nop` at insn index 118 — i.e. honest sandbox distance 1, matching the ledger's floor_history. (2) GATED (a scratch copy of the list plus func_80074B18, passed via --label-nop-funcs, nothing else changed): ZERO differing instructions. (3) Full relink of the oracle build/ tree with the gated text1b.o swapped in: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. The nop site is asm/funcs/func_80074B18.s:130-133 — `lw $a3,0x10($sp)` / `.L80074CF0:` / `nop` / `sw $s3,0x14($a3)` — and in our gated.s it is exactly `lw $7,16($sp)` / `.L944:` / nop / `sw $19,20($7)`: a load whose base register is consumed by a store across a single `.L` merge label. That is the documented load-consumer blind spot of maspsx's `is_label()` (.claude/rules/maspsx-label-nop-gate.md), which .claude/rules/maspsx-gate-lists.md adjudicates as a FIDELITY gate: 'No C spelling can emit an assembler hazard nop.' cc1's instruction stream is already identical to the target; ASPSX inserted the nop at assembly time. So no further grinding on the C axis can ever close the last instruction — it would be waste, not diligence.
+
+THE BLOCKER AND WHY THIS IS NOT A PLAIN PASS OR A FAIL. The one remaining step is a one-line entry `func_80074B18` in maspsx_label_nop_funcs.txt. That file is named verbatim on the add-scope-allow DENYLIST (.claude/rules/integration-handoff-self-serve.md:56-61, 'assembler-behavior gates are substrate-adjacent'), so the driver's scope-widening will refuse the scope_paths above mechanically, and neither a grind session nor the driver may stage it. It is an owner/operator surface by design. The C is clean, so a FAIL(CONSTRUCT) would be false and would ban nothing real; a FAIL(EVIDENCE) would be false because the evidence is complete and independently reproduced. ESCALATE is the honest verdict: the work is sound and complete, and the grant is above the Judge's authority. I expect the driver to refuse the widening, log this packet to docs/grind/borderline.md and ROTATE the item (owner ruling 2026-09-08, rotation-not-foreclosure), which is the same landing func_80022F34 took on 2026-09-05 before the owner applied its line on 2026-09-06 (commit d4338774, [infra-rule: maspsx-label-nop]).
+
+BOTH SIDES, STATED FAIRLY. Against: two earlier Judge rulings on this exact residual (func_80027640 2026-09-01 22:05; func_8007526C 2026-09-07 11:56) returned FAIL rather than ESCALATE, reasoning that no driver-executable grant exists. For: those rulings predate the 2026-09-08 rotation rule that gives a refused ESCALATE a clean, non-terminal landing; a ruling-request FAIL leaves the function ACTIVE with a closed C-axis, so the next session can only re-file the same handoff; and the owner has applied this exact one-line remedy three times (func_80027640 2026-09-02, func_80022F34 2026-09-06, func_8007526C 2026-09-07), which is the owner's revealed standing disposition for this residual class. Nothing about the C is uncertain, so default-FAIL is not engaged.
+
+THE PRECISE OWNER STEP (from the decisions.md 2026-09-10 entry, verified): append `func_80074B18` to maspsx_label_nop_funcs.txt; splice memory/grind/func_80074B18/candidate.c over the INCLUDE_ASM line in src/text1b.c (tmp/grind/func_80074B18/s1/splice.py does this); `sandbox func_80074B18 --disable all` -> 0; `verify-oracle --rebuild` -> oracle SHA1; fresh layer-2 cheat-reviewer; `queue done func_80074B18`; commit tagged [infra-rule: maspsx-label-nop] citing target site asm/funcs/func_80074B18.s:130-133. The standing question already on the owner's ledger — globalising the `.L` label fix in maspsx (maspsx-gate-lists.md Endgame item 1) instead of growing the per-function list — is unchanged by this ruling. Evidence: memory/grind/func_80074B18/{candidate.c,self_vet.md,evidence.md,hypotheses.md,rejected/,state.json}, tmp/grind/func_80074B18/s1/ (session proof) and tmp/grind/func_80074B18/judge/ (my independent reproduction: ungated_diff.txt, gated_diff.txt, gated_sha1.txt).
+
+**Constraint recorded for any future session:** C-axis CLOSED for func_80074B18: the candidate.c body (sha1 a00d6744, s1 2026-09-10) is final. Do not respell, do not add FAKE/volatile/asm/pins, do not touch maspsx_label_nop_funcs.txt or tools/maspsx from a grind session. The only remaining step is the owner-lane line `func_80074B18` in maspsx_label_nop_funcs.txt (operator steps in decisions.md 2026-09-10 entry); once it exists, submit candidate.c EXACTLY.

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80074B18",
-      "file": "text1b",
-      "distance": 79,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8003EB84",
       "file": "code6cac_c2",
       "distance": 81,
@@ -1345,17 +1337,28 @@
       "rotation": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-10 \u2014 func_80018094 \u2014 JUDGE ESCALATE on final call (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
       "rotated_at": "2026-09-10T06:35:34+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_80074B18",
+      "file": "text1b",
+      "distance": 79,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-10 \u2014 func_80074B18 \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
+      "rotated_at": "2026-09-10T07:12:22+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 149,
-    "active": 144,
+    "active": 143,
     "by_status": {
-      "active": 144,
-      "rotated": 5
+      "active": 143,
+      "rotated": 6
     },
     "by_verdict": {
-      "C": 121,
+      "C": 120,
       "ASM-PARTIAL": 23
     }
   },
