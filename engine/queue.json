@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80070C70",
-      "file": "text1b",
-      "distance": 118,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8003DE14",
       "file": "code6cac_c2",
       "distance": 119,
@@ -1306,14 +1298,14 @@
     }
   ],
   "counts": {
-    "total": 143,
-    "active": 136,
+    "total": 142,
+    "active": 135,
     "by_status": {
-      "active": 136,
+      "active": 135,
       "rotated": 7
     },
     "by_verdict": {
-      "C": 114,
+      "C": 113,
       "ASM-PARTIAL": 22
     }
   },

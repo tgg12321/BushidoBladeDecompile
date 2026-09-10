@@ -564,6 +564,13 @@
    "hash": "032a02d423a75c06",
    "when": "2026-09-10T20:26:58.626582+00:00",
    "summary": "Nearly clean \u2014 c60, the duplicated zero-init pair, g/t, rect and the declaration fixes all verified legitimate \u2014 but the load-bearing `s32 ctx = var_s0 * 3;` named intermediate ships with no /* FAKE */ annotation and is absent from the self-vet's CONSTRUCTS list and family claims, so its family's pr"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "032a02d423a75c06",
+   "when": "2026-09-10T20:34:02.339250+00:00",
+   "summary": "final call: Bytes proven (evidence.md:1052,1092,1099 - sandbox 0/194 rules_dropped 0, full-build SHA1 == oracle, re-measured after the comment-only edits); candidate.c body == the src/text1b.c body I read (diff e"
   }
  ]
 }

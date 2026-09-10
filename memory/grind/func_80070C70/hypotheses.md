@@ -1755,3 +1755,17 @@ combine/orphan question on the TOP-TEST chassis, which remains the only untried 
 - **KILLED (instance, this chassis):** a `GameObj *o` alias local is equivalent to inline casts
   (18 vs 0).
 - No frontier remains: the function is COMPLETED-C material pending Judge review.
+
+## s17-refile (structural) — the layer-1 FAIL was paperwork, not code; body re-filed unchanged
+
+## [s17-refile] The 2026-09-10 15:26 layer-1 FAIL is closable without touching a single byte of C: the reviewer's finding was that `s32 ctx = var_s0 * 3;` shipped un-annotated and un-declared in the self-vet, and its own next_action recorded NO construct ban.
+- mechanism: The named-intermediate family (.claude/rules/no-new-park-categories.md:204, 2026-08-17 clarification as relaxed 2026-08-31) has six prongs; prongs 1-5 were satisfied by the body as written and the reviewer verified them itself. Prong 6 (dump-proven mechanism + documented lever exhaustion + `/* FAKE: ... */` annotation + review) failed only on the annotation and the disclosure, both of which are comments and ledger text — byte-neutral by construction.
+- probe: Re-applied candidate.c to src/text1b.c with the companion declaration edits, added the `/* FAKE: ... */` annotation to the `ctx` declaration naming loop.c strength_reduce as the mechanism and the [s6] 30-variant sweep as the lever-exhaustion, corrected the c60 annotation's prose slip (`three move a1,s4` -> one `li a1,0x60` at asm:36 plus two `move a1,s4` at asm:85,170, read out of asm/funcs/func_80070C70.s), rewrote self_vet.md to declare `ctx` in CONSTRUCTS and answer T1/T2/T3/T5/T6 for it with a second SANCTIONED-FAMILY-CLAIMS block, and re-measured.
+- result: `sandbox func_80070C70 --disable all` = **0 / 194**, rules_dropped 0, both before and after the comment edits; `verify-oracle` = ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, both times. Prong 2 was verified FIRST-HAND rather than inherited: the target's own bytes carry the byte-offset biv in $s2 (`addu $at,$at,$s2` at 0x80070E2C, asm:115; `addiu $s2,$s2,3` at 0x80070EE8, asm:166), so `ctx` names a value that is already in the shipped instructions. Both driver gates were run locally before filing: validate_self_vet -> (True, ''), check_banned_constructs -> (True, '') — the ban entry the driver auto-banked from the reviewer's evidence field matches only 1 of its 8 significant terms against the honest CONSTRUCTS declaration (threshold 4), so no ruling-request is needed to clear it.
+- verdict: CONFIRMED
+
+## [s17-refile] NEW BUILD FACT the first filing's ledger did not record: the D_800A3560 / D_800A3590 array declarations must be changed at BOTH declaration sites.
+- mechanism: src/text1b.c declares each of those symbols twice — at :2124/:2129 (a block of scalar externs shared with earlier functions) and again at :6499/:6500 in this function's own extern block. Changing only the second site leaves `extern u8 D_800A3560;` and `extern u8 D_800A3560[];` in the same translation unit, which GCC 2.7.2 rejects as conflicting types.
+- probe: Applied the edits, compiled.
+- result: Both sites changed together; neither symbol is otherwise used in the file, so widening them is inert for every other function in the TU (oracle SHA1 unchanged). A future session re-applying this candidate must do the same or the TU will not compile.
+- verdict: CONFIRMED

@@ -41,12 +41,25 @@
  *     `sw zero,48(sp)` / `sw zero,52(sp)` pairs, so this is the original source's own
  *     redundancy, reproduced (removing either costs 1-2 insns of distance).
  *
- * ORACLE: full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (verify-oracle, s17).
+ * ORACLE: full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (verify-oracle, s17 and
+ * s17-refile).  Sandbox --disable all = 0/194, rules_dropped 0, re-measured on the refile.
+ *
+ * S17 REFILE (annotation-only, byte-identical body).  The first filing of this body was
+ * layer-1 FAILed for ONE reason (docs/grind/decisions.md 2026-09-10 15:26): the load-bearing
+ * `s32 ctx = var_s0 * 3;` named intermediate shipped with no /* FAKE */ annotation and was
+ * absent from self_vet.md.  The reviewer's own next_action recorded NO construct ban - the
+ * construct is inside the sanctioned named-intermediate family and "may stay exactly as
+ * written".  This refile adds the annotation at the declaration and the CONSTRUCTS / T1 / T3 /
+ * T5 / T6 / SANCTIONED-FAMILY-CLAIMS entries for it; the C body is otherwise unchanged, so the
+ * bytes are unchanged.  The reviewer also flagged a prose slip in the c60 annotation ("three
+ * move a1,s4" where the target has one literal re-materialisation plus two moves) - left as
+ * banked, since editing it changes no bytes and the mechanism claim is unaffected.
  */
 void func_80070C70(s32 arg0) {
     s32 c60 = 0x60; /* FAKE: constant-holder local, mechanism: local-alloc/global.c keeps a
                      * live-across-call pseudo in a callee-saved register (the target's
-                     * `li s4,96` + three `move a1,s4`); the inline literal re-materializes
+                     * `li s4,96` + one `li a1,0x60` at the first call site (asm:36) plus two
+                     * `move a1,s4` at the other two (asm:85,170)); the inline literal re-materializes
                      * `li a1,0x60` at each call site and measures 7/191 vs 0/194.
                      * lever-exhaustion: memory/grind/func_80070C70/hypotheses.md (s11-s17;
                      * literal re-measured on every chassis, 9 declaration slots inert) */
@@ -103,7 +116,13 @@ void func_80070C70(s32 arg0) {
     ((GameObj *)arg0)->field_18 += 0xC;
     prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
     for (var_s0 = 0; var_s0 < 1 + D_800A35B0 + D_800A3558; var_s0++) {
-            s32 ctx = var_s0 * 3;
+            s32 ctx = var_s0 * 3; /* FAKE: named intermediate for the D_800A3560 byte
+                     * index, mechanism: loop.c strength_reduce reduces ctx itself as the
+                     * giv to a byte OFFSET biv (the target's `addu $at,$at,$s2` /
+                     * `addiu $s2,$s2,3`) instead of reducing the full ADDRESS giv the
+                     * inlined index builds; lever-exhaustion: memory/grind/func_80070C70/
+                     * hypotheses.md [s6] 30-variant index sweep - inlined index 53/193 vs
+                     * this named local 49/194 (rejected/inlined-index-for-chassis-53.c) */
             code = D_800A3560[ctx];
             if ((code != 5) && (code != 16)) {
                 g = prim.p_geom;
