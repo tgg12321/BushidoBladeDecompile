@@ -1954,3 +1954,4 @@
 - 2026-09-10 01:23 func_80018094: MERGE REFUSED after judge PASS — 3 unallowlisted inline-asm island(s), no grant door; constraint banked.
 - 2026-09-10 01:35 func_80018094 JUDGE ESCALATE (final call, integration-handoff (REFUSED: no executable remedy in verdict)) — refused + ROTATED (returns automatically; owner ruling 2026-09-08).
 - 2026-09-10 02:12 func_80074B18 JUDGE ESCALATE (ruling request, integration-handoff (REFUSED: no executable remedy in verdict)) — refused + ROTATED (returns automatically; owner ruling 2026-09-08).
+- 2026-09-10 03:21 func_8003EB84 COMPLETED-C after 1 sessions (closer: s1 [recon]).
