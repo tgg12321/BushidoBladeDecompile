@@ -2366,3 +2366,5 @@ by a mechanism the original did not use.
 - [s22] In GCC 2.7.2 the only emitter of a standalone (clobber (reg)) for a pseudo that is not a multi-word/DImode path is store_constructor for a UNION built into a register (expr.c:2996); expr.c:1991 and expr.c:913 are the multi-word paths and belong to the banned DImode family.
 
 - [s22] The a0 side must be left alone: converting the two a0 bases to fresh single-set locals on the same chassis costs six points (68/182 vs 26/179). The a0 windows already match the target with the multi-set a0_offset.
+
+- [s22] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 56267f85ffea scores 6 under our cc1 and 18 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).

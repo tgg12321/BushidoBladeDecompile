@@ -644,5 +644,14 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-09T01:42:36.995090+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "cc1psx_check": {
+  "at": "2026-09-10T00:24:42.351937+00:00",
+  "candidate_sha": "56267f85ffea",
+  "ours": 6,
+  "psx": 18,
+  "closer": false,
+  "ok": true,
+  "error": null
+ }
 }
