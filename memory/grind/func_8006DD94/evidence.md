@@ -440,3 +440,74 @@ E-s2-7  Artifacts for both measurements: tmp/grind/func_8006DD94/s2/body_2drow.c
 tmp/grind/func_8006DD94/s2/body_tworects.c (the same-bytes control), and
 tmp/grind/func_8006DD94/s2/splice.py (the harness that swaps a body into src/text1b.c in place
 of the INCLUDE_ASM line, LF-preserving).
+
+## s2b (permuter, 2026-09-10) — measured facts
+
+E-s2b-1  CHASSIS. HEAD carried `INCLUDE_ASM("asm/funcs", func_8006DD94);`. The honest
+  0x2C-descriptor body spliced into src/text1b.c measures `sandbox func_8006DD94
+  --disable all` = 21, 117/117 insns, rules_dropped 0. src/text1b.c was reverted to HEAD
+  before this session ended; nothing in src/ is dirty.
+
+E-s2b-2  THE RESIDUAL IS ONLY THE FRAME. A single-function decomp-permuter workspace
+  (tmp/grind/func_8006DD94/s2/mkws.sh -> tmp/perm_6dd94; full pipeline flags incl. -mel and
+  -msoft-float) disassembles base and target side by side: both 117 instructions, and the
+  complete diff is `addiu sp,sp,-112` vs `-120`; the seven register saves at 80/84/88/92/96/
+  100/104 vs 88/92/96/100/104/108/112; `addiu a1,sp,72` vs `addiu a1,sp,80`; and the four
+  rect `sh` at 72/74/76/78 vs 80/82/84/86. Nothing else differs anywhere in the body.
+
+E-s2b-3  ONE SLOT, ANY SIZE. cc1's own `vars=` (tmp/grind/func_8006DD94/s2/fp.py) reads 56
+  for the honest body with the rect at sp+0x48. Every construct that reserves a single
+  stack-homed slot in front of the rect reads 64 with the rect at sp+0x50, independent of the
+  slot's size: 2 bytes (`volatile short`), 4 bytes (address-taken s32, `volatile int`),
+  8 bytes (`volatile unsigned long long`, unused `s32[2]`, unused `u16[4]`). Position is
+  load-bearing — the same declaration placed after the rect leaves the rect at 0x48.
+
+E-s2b-4  THE PERMUTER'S ONLY SCORE-0 ATTRACTOR IS A PAD. Campaign s2-frame-residual
+  (tmp/perm_6dd94, 8 jobs, --stack-diffs, base_score 159) reached 24,368 iterations and
+  produced six novel finds; three score 0 and all three are `volatile <T> pad;` declared
+  between `EnvB s;` and `u16 rect[4];` (`short`, `int`, `unsigned long long`). A second
+  campaign (tmp/perm_6dd94b, same chassis, `perm_pad_var_decl = 0` and
+  `perm_add_self_assignment = 0` in settings.toml) ran 32,175 iterations and never reached 0:
+  its best was 37, a body that makes the REAL local `c` volatile — which fixes the frame size
+  but leaves the rect at sp+0x48 and adds the volatile's own load/store traffic. Both
+  campaigns were harvested with --stop inside this session; nothing is left running.
+
+E-s2b-5  THE PHANTOM-FRAME-SLOT ROUTE DOES NOT EXIST HERE. [[phantom-frame-slots-gcc272]]'s
+  byte-verified witness is func_8003DA8C at src/code6cac_c2.c:1290-1296 — `s16 v1 =
+  D_800F6656; s16 mask = D_80090608; if ((v1 & ~mask) & 1)`. Transplanted VERBATIM into
+  func_8006DD94 it reserves nothing: `vars= 56`. Six further truthful HImode spellings (a
+  carrier for the `*(s16 *)(D_800A34FC + 0xE)` read, a carrier for the D_800A3514 phase, both
+  as block-scope initialised decls, a selector carrier, and two variants with the rect in a
+  trailing nested block) also read 56. The witness's mechanism is register pressure, not
+  syntax; func_8006DD94 already saves seven registers and seats its HImode pseudos in them.
+
+E-s2b-6  THE SIBLING FAMILY CANNOT NAME THE OBJECT. tmp/grind/func_8006DD94/s2/spmap.py maps
+  every `$sp` load, store and `addiu $rX,$sp,N` in seven family members
+  (tmp/grind/func_8006DD94/s2/spmap.txt). Args are always 24 and the descriptor is always the
+  0x2C block at sp+0x18..0x43. Holes: func_8006BB68 0, func_800720FC 0, func_8006DD94 12,
+  func_8006F97C 12, func_80069F80 20, func_8006A1A0 20, func_80070188 36. NONE of the five
+  hole-carrying siblings reads or writes its hole, and none takes an address into it.
+  func_80069F80 and func_8006A1A0 reserve 20 bytes and use NOTHING above the descriptor —
+  they never call func_80069898 and have no rectangle at all — so the "unused first row of a
+  two-row rectangle table" reading is contradicted by the family itself, not just banned.
+
+E-s2b-7  candidate.c REPLACED. The previous candidate.c was the banned `u16 rects[2][4]`
+  body (layer-1 FAIL 2026-09-10 06:36; still banked at rejected/layer1-fail-0910-0636.c).
+  candidate.c is now the layer-1-clean score-21 body so that no future session starts from a
+  banned chassis.
+
+- [s2] Chassis re-measured this session: HEAD carried INCLUDE_ASM; splicing the honest 0x2C-descriptor body into src/text1b.c gives sandbox func_8006DD94 --disable all = 21 (117/117, rules_dropped 0). src/text1b.c was reverted to HEAD before the session ended - nothing in src/ is dirty.
+
+- [s2] The residual is ONLY the frame: base and target are both 117 instructions and the complete disassembly diff is addiu sp,sp,-112 vs -120, the seven register saves, addiu a1,sp,72 vs 80, and the four rect sh at 72/74/76/78 vs 80/82/84/86.
+
+- [s2] One stack-homed slot of ANY size in front of the rect reproduces the target frame: 2 bytes (volatile short), 4 bytes (address-taken s32, volatile int), 8 bytes (volatile unsigned long long, unused s32[2], unused u16[4]) all print vars= 64 with the rect at sp+0x50. Position is load-bearing - after the rect it does nothing.
+
+- [s2] Permuter campaign 1 (tmp/perm_6dd94, 24,368 iterations, base_score 159, --stack-diffs): six novel finds, three at score 0, every one of them a volatile unused pad declared between the descriptor and the rect. Banked at memory/grind/func_8006DD94/rejected/permuter-interior-volatile-pad-score0.c.
+
+- [s2] Permuter campaign 2 (tmp/perm_6dd94b, same chassis, perm_pad_var_decl = 0 and perm_add_self_assignment = 0): 32,175 iterations, never reached 0, best 37 (a body making the real local c volatile, which fixes frame size but leaves the rect at 0x48 and adds the volatile's own traffic). Both campaigns harvested with --stop inside this session; permuter_campaign.py status reports zero alive.
+
+- [s2] The phantom-frame-slot witness at src/code6cac_c2.c:1290-1296 (s16 v1 = D_800F6656; s16 mask = D_80090608; if ((v1 & ~mask) & 1)) transplanted VERBATIM into func_8006DD94 reserves nothing: vars= 56. Six further truthful HImode spellings also read 56. The witness's mechanism is register pressure, not syntax.
+
+- [s2] Sibling frame census (tmp/grind/func_8006DD94/s2/spmap.txt, seven functions): args always 24, descriptor always 0x2C at sp+0x18..0x43, holes 0/0/12/12/20/20/36, and NOT ONE sibling reads, writes or takes an address into its hole. func_80069F80 and func_8006A1A0 reserve 20 bytes while having no rectangle at all, which contradicts the two-row-rectangle-table reading of the hole.
+
+- [s2] memory/grind/func_8006DD94/candidate.c was REPLACED this session: it previously held the banned u16 rects[2][4] body (layer-1 FAIL 2026-09-10 06:36, still banked at rejected/layer1-fail-0910-0636.c). It now holds the layer-1-clean score-21 chassis so no future session starts from a banned body.

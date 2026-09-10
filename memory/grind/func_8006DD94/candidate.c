@@ -1,46 +1,36 @@
-/* func_8006DD94 — BYTES PROVEN at session 2 (structural, 2026-09-10), re-measured from a
- * clean HEAD checkout this session: `sandbox func_8006DD94 --disable all` = 0 (117/117,
- * rules_dropped 0) and `verify-oracle` build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa,
- * build_matches true.  NO pad, NO dead scalar, NO FAKE construct, NO sanctioned-family claim.
+/* func_8006DD94 - HONEST BEST FORM, sandbox 21, re-measured this session (s2, permuter).
  *
- * WHAT CHANGED FROM THE SCORE-21 BODY: only the rectangle declaration.  Sessions 1-4 proved
- * the whole 21-insn residual is ONE 8-byte frame displacement (target `# vars= 64`, frame 120;
- * the reconstruction `# vars= 56`, frame 112) and that the target reserves sp+0x44..0x4F and
- * touches none of it.  Reserving those bytes with a SEPARATE untouched object gives cc1 the
- * target's exact frame but the sandbox strips the object and still prints 21.
+ * WHY THIS REPLACED THE PREVIOUS candidate.c (2026-09-10, session s2/permuter):
+ * the previous candidate.c carried `u16 rects[2][4]` with row 0 never written and never
+ * read.  That body was layer-1 FAILed (2026-09-10 06:36) and is now on this function's
+ * BANNED CONSTRUCTS list, so it must never be used as a starting chassis again.  This file
+ * is the layer-1-clean 0x2C-descriptor body (previously banked as
+ * rejected/separate-rect-0x2C-score21.c): no pad, no dead local, no volatile, no FAKE
+ * construct, no sanctioned-family claim.  It measures `sandbox func_8006DD94 --disable all`
+ * = 21 (117/117, rules_dropped 0) and it is the chassis every future probe should start from.
  *
- * THE DECISIVE NEW MEASUREMENT (session 2): the plainest ordinary-C spelling of the same
- * object model — `u16 rect0[4]; u16 rect[4];` with rect0 never touched — BYTE-MATCHES.  Run
- * this session: sandbox 21, but verify-oracle build_sha1 == oracle, build_matches true
- * (body banked at rejected/two-separate-rect-arrays-oracle-match-sandbox-21.c).  So the two
- * spellings compile to the SAME BINARY; the 21 is an artifact of engine/volatile_cheats.py
- * stripping an untouched array, not a codegen difference.  The one-array spelling below is
- * the one the sandbox can see, and it is what makes the honest floor 0.
+ * THE ENTIRE RESIDUAL IS ONE STACK SLOT.  The permuter workspace built this session
+ * (tmp/grind/func_8006DD94/s2/mkws.sh -> tmp/perm_6dd94) shows base and target are both 117
+ * instructions and differ ONLY in the frame: `addiu sp,sp,-112` vs `-120`, the seven register
+ * saves, `addiu a1,sp,72` vs `80`, and the four rect `sh` at 72/74/76/78 vs 80/82/84/86.
+ * The 0x2C descriptor fills sp+0x18..0x43; with nothing between it and the rect, the rect
+ * (BLKmode, BIGGEST_ALIGNMENT) lands at sp+0x48 and cc1 prints `vars= 56`.  ONE additional
+ * stack-homed local of ANY size declared before the rect moves it to sp+0x50 and prints
+ * `vars= 64` - the target's frame.
  *
- * THE SIBLING EVIDENCE (all from target asm, never from a reconstruction):
- *   - func_800720FC (asm/funcs/func_800720FC.s) has the identical frame prefix — a 0x2C
- *     descriptor at sp+0x18 passed to func_8007352C — and USES BOTH rectangle rows: it fills
- *     sp+0x48/0x4A/0x4C/0x4E and passes `addiu $a1,$sp,0x48` to func_80069898 (800728A4), and
- *     it fills sp+0x50/0x52/0x54/0x56 and passes `addiu $a1,$sp,0x50` to SetDrawArea (80072180
- *     and 800725C4).  Two 8-aligned 4-halfword rows, back to back at 0x48 and 0x50.
- *   - func_8006F97C has this function's exact layout (descriptor 0x18..0x43, nothing in
- *     0x44..0x4F, the func_80069898 rectangle at sp+0x50) plus one more u16 local at sp+0x58.
- *   - func_8006DD94 itself uses only the upper row: `addiu $a1,$sp,0x50` at 8006DF14 with the
- *     four `sh` at 0x50/0x52/0x54/0x56, and NO insn among the 117 references sp+0x44..0x4F.
- *
- * THE DESCRIPTOR IS EnvA'S SHAPE, NOT A WIDENED ONE.  TexEnv stops at offset +0x2B exactly
- * like EnvA (src/text1b.c:6654).  It is declared here rather than shared because EnvA is
- * declared further down the file, after this function.  Widening the shared 0x2C shape is
- * both banned for this function and independently disproven (s1: it regressed COMPLETED-C
- * func_8006BB68 from 0 to 17).
- *
- * Byte-confirmed and NOT to be re-derived (s1-s4): the 3-iteration loop, the u8 colour triple
- * written through the chained assignment (u8, not s8 — s8 folds 0x80 to -128 and costs an
- * insn), the s16 counter, the rectangle store order [2],[0],[1],[3], and the named `semi`
- * local (replacing it with the literal 0 costs 8 insns — rejected/no-local-literal-score8.c).
+ * WHAT IS MEASURED DEAD (do not re-derive - full detail in hypotheses.md):
+ *   - a wider shared descriptor type: killed three times; func_8006BB68 byte-matches on main
+ *     with the 0x2C shape and zero hole, and so does func_800720FC.
+ *   - a sibling that writes into its hole: none exists.  spmap.py mapped every $sp reference
+ *     of all seven family members; func_80069F80 and func_8006A1A0 reserve 20 bytes above the
+ *     descriptor and touch nothing above it at all - they have no rectangle whatsoever.
+ *   - the phantom-frame-slot / HImode trigger, including the in-tree witness's verbatim
+ *     spelling: seven probes, all `vars= 56`.
+ *   - the permuter: 24k iterations on this chassis; every score-0 attractor it reaches is a
+ *     `volatile` unused pad local in the interior position the Judge refused.
  */
 /* BEGIN func_8006DD94 */
-typedef struct TexEnv {
+typedef struct EnvB {
     s32 *header;
     s8  *table;
     s32  out;
@@ -54,12 +44,12 @@ typedef struct TexEnv {
     u8   col_r;
     u8   col_g;
     u8   col_b;
-} TexEnv;
+} EnvB;
 extern s32 D_800A374C;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_8006DD94(s32 *arg0) {
-    TexEnv s;
-    u16 rects[2][4];
+    EnvB s;
+    u16 rect[4];
     s16 i;
     s32 *q;
     s32 c;
@@ -97,10 +87,10 @@ void func_8006DD94(s32 *arg0) {
 
     func_8006D808(&arg0[5], &arg0[7], q, s.ot_idx, -1);
 
-    rects[1][2] = 0x96;
-    rects[1][0] = 0xF5;
-    rects[1][1] = 0x25;
-    rects[1][3] = 1;
-    func_80069898((GameObj *)arg0, rects[1], 0x11);
+    rect[2] = 0x96;
+    rect[0] = 0xF5;
+    rect[1] = 0x25;
+    rect[3] = 1;
+    func_80069898((GameObj *)arg0, rect, 0x11);
 }
 /* END func_8006DD94 */

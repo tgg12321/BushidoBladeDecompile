@@ -421,3 +421,197 @@ another spelling.
 The same reading should close func_8006F97C (identical layout: descriptor 0x18..0x43, hole
 0x44..0x4F, rect at sp+0x50) at once, and is worth testing on func_80069F80 / func_8006A1A0
 (20-byte holes) and func_80070188 (36-byte hole) above the same descriptor.
+
+## s2b (permuter, 2026-09-10) — mandated modality: permuter
+
+Chassis re-measured at dispatch: HEAD carried `INCLUDE_ASM("asm/funcs", func_8006DD94);`.
+Splicing the honest 0x2C-descriptor body (rejected/separate-rect-0x2C-score21.c) into
+src/text1b.c re-measured `sandbox func_8006DD94 --disable all` = 21 (117/117,
+rules_dropped 0) — the ledger floor is correct and every banked conclusion was spent on
+the right chassis. A single-function decomp-permuter workspace built this session
+(tmp/grind/func_8006DD94/s2/mkws.sh -> tmp/perm_6dd94) reproduces the residual exactly:
+base 117 insns vs target 117, and the ONLY differing instructions are the frame ones
+(`addiu sp,sp,-112` vs `-120`, the seven register saves, `addiu a1,sp,72` vs `80`, and the
+four rect `sh` at 72/74/76/78 vs 80/82/84/86). Nothing else in the body differs.
+
+## [s2b] The permuter, sampling the honest score-21 chassis, can reach a score-0 body by an ordinary-C mutation (no pad, no dead local, no volatile).
+- mechanism: decomp-permuter's randomizers mutate declarations, types, statement order and
+  expression shape; the residual is a single 8-byte frame displacement, which is exactly the
+  kind of thing a declaration-level mutation can hit. `--stack-diffs` is on by default so
+  sp-relative offsets are scored rather than normalised away (the launch reported base_score
+  159 on that metric).
+- probe: `tools/permuter_campaign.py launch --func func_8006DD94 --dir tmp/perm_6dd94
+  --label s2-frame-residual -j 8`, run to 24,368+ iterations, waited in-turn with
+  `permuter_campaign.py wait`, harvested with `--stop`. Every output-* directory was read.
+- result: KILLED (instance). The campaign produced six novel finds and three of them score 0 —
+  and every single one is a `volatile` unused pad local:
+    output-0-1  `volatile short pad;`              declared between `EnvB s;` and `u16 rect[4];`
+    output-0-2  `volatile unsigned long long pad;` same position (banked at
+                rejected/permuter-interior-volatile-pad-score0.c)
+    output-0-3  same family
+    output-37-1 `volatile int pad;` declared LAST, after every other local -> score 37, i.e.
+                WORSE than the chassis: the slot only helps when it precedes the rect
+    output-97-1 a dead `short new_var = 0;` (score 97)
+  No ordinary-C mutation in the reachable neighbourhood closes the frame. The score-0 finds
+  are the forbidden unused-local pad family in the INTERIOR position the Judge explicitly
+  refused on 2026-09-10 05:59, so they are proposals that die at the cheat checklist, not
+  candidates. They are still a measurement (see the geometry fact below).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/perm_6dd94 workspace over the honest 0x2C-descriptor chassis
+  (rejected/separate-rect-0x2C-score21.c, sandbox 21); no FAKE construct in the base;
+  24,368 iterations, 8 jobs, --stack-diffs.
+
+## [s2b] GEOMETRY (CONFIRMED, and it simplifies every future probe): the residual is exactly ONE stack-homed local slot, of ANY size or mode, declared between the descriptor and the rect.
+- mechanism: GCC 2.7.2 hands out frame slots in declaration order and rounds the running
+  frame offset so that the next BLKmode decl gets BIGGEST_ALIGNMENT (tools/gcc-2.7.2/stmt.c:3419).
+  The 0x2C descriptor occupies sp+0x18..0x43; with nothing between, the rect (BLKmode,
+  8-aligned) lands at sp+0x48 and vars = 56. Any single additional stack-homed object — 2
+  bytes, 4 bytes or 8 bytes, it does not matter — consumes the 0x44/0x48 region and pushes the
+  rect to sp+0x50, giving vars = 64 and frame 120, the target exactly.
+- probe: cross-read of five independent measurements: s1's t5_addrof (one address-taken s32 ->
+  vars 64), s1's t6_deadarr and v8_two_rects (unused arrays -> vars 64), and this session's
+  permuter finds output-0-1 (`volatile short`, 2 bytes -> score 0) and output-0-2
+  (`volatile unsigned long long`, 8 bytes -> score 0). Position is load-bearing: output-37-1
+  put the same slot AFTER the rect and scored 37.
+- result: CONFIRMED. The search target is therefore precisely stated for every future session:
+  find ONE ordinary-C object that (a) is stack-homed (aggregate, address-taken, or volatile —
+  a plain scalar gets a pseudo and reserves nothing, stmt.c:3357-3364), (b) is declared before
+  the rect, and (c) emits ZERO sp-relative traffic. (a) and (c) are what the whole ledger has
+  failed to satisfy simultaneously.
+- verdict: CONFIRMED
+
+## [s2b] The in-tree phantom-frame-slot witness reproduces in func_8006DD94: transplanting tslLineG5Init's exact HImode trigger reserves the missing 8 bytes with zero dead declarations.
+- mechanism: [[phantom-frame-slots-gcc272]] records that GCC 2.7.2 allocates a stack temp for
+  a computation it later register-allocates away; `get_frame_size()` counts it and no store is
+  emitted. The note's byte-verified witness is func_8003DA8C (the tslLineG5Init grind), and I
+  read the actual C at src/code6cac_c2.c:1290-1296: `s16 v1 = D_800F6656; s16 mask =
+  D_80090608; if ((v1 & ~mask) & 1) { ... }` — two s16 locals loaded from s16 globals feeding
+  an and-with-complement test.
+- probe: seven bodies through the project's own cc1 with engine.buildconfig flags, reading
+  cc1's own `.frame`/`vars=` line and the emitted rect `sh` offsets
+  (tmp/grind/func_8006DD94/s2/fp.py, which splices the function into the preprocessed TU
+  tmp/perm_6dd94/base.c so no cpp round-trip is needed):
+    b_ctl_himode_pair  — the witness's trigger transplanted VERBATIM (v1/mask read from
+                         D_800A352C/D_800A3514) as a MECHANISM CONTROL
+    b_p1_yv            — one truthful s16 carrier for `*(s16 *)(D_800A34FC + 0xE)`
+    b_p2_yv_ph         — two truthful s16 carriers (the y read + the D_800A3514 phase)
+    b_p3_block_init    — the same two, declared WITH INITIALISERS inside the branch's own
+                         block, i.e. the witness's exact syntactic shape
+    b_p4_sel           — an s16 carrier for the `D_800A352C + 1` selector
+    b_p5_p2_innerrect  — b_p2 plus the rect declared in a trailing nested block
+    b_p6_ctl_innerrect — the verbatim control plus the rect in a trailing nested block
+- result: KILLED (instance). All seven print `# vars= 56` with the rect still at sp+0x48.
+  The verbatim control failing is the decisive one: the phantom-slot trigger is not a property
+  of the source spelling, it is a property of register pressure — in the witness the HImode
+  pseudos have no hard register to live in, while func_8006DD94 already saves seven registers
+  and its HImode pseudos are seated in callee-saved registers, so no stack temp is ever
+  allocated. (b_p4_sel is separately interesting: hoisting the selector out of the loop drops
+  a saved register, frame 104, regs 6/0 — a real codegen change, still vars 56.)
+  s1's H12 killed six expression-temp variants; this kills the HImode family at its source,
+  including the exact in-tree witness spelling, so [[phantom-frame-slots-gcc272]]'s "hunt the
+  live-locals form first" instruction is now discharged for this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the honest 0x2C-descriptor chassis spliced into the preprocessed TU
+  tmp/perm_6dd94/base.c, compiled with engine.buildconfig CC_FLAGS (-mel -msoft-float);
+  no FAKE construct in any of the seven probes.
+
+## [s2b] FRONTIER ITEM 1 IS DEAD: one of the sibling functions with the same descriptor-plus-hole layout has a target that genuinely WRITES into its hole, which would name the object the original programmer declared there.
+- mechanism: the hole must be an aggregate or address-taken decl (stmt.c:3357-3364); a sibling
+  whose target contains stores into it identifies the type and its truthful role, and all the
+  siblings share the func_8007352C descriptor idiom, so the declaration block is likely
+  copy-pasted between them.
+- probe: tmp/grind/func_8006DD94/s2/spmap.py maps EVERY `$sp`-relative load, store and
+  `addiu $rX,$sp,N` in the target asm of all seven family members onto the frame; full output
+  banked at tmp/grind/func_8006DD94/s2/spmap.txt. This extends s1's census.py, which
+  deliberately did not follow computed bases: spmap.py lists every `addiu` from `$sp`, so a
+  computed base into a hole would show up.
+- result: KILLED (instance). Not one of the five hole-carrying siblings touches its hole, and
+  there is no `addiu` from `$sp` into any hole in any of them. The measured family layout
+  (args always 24, descriptor always the 0x2C block at sp+0x18..0x43, next used object always
+  8-aligned):
+    func_8006BB68  frame 0x68  rect at 0x48                       hole 0 bytes  (COMPLETED-C)
+    func_8006DD94  frame 0x78  rect at 0x50                       hole 0x44..0x4F = 12
+    func_8006F97C  frame 0x88  rect at 0x50, u16 at 0x58          hole 0x44..0x4F = 12
+    func_80069F80  frame 0x70  NO rect and no object at all above hole 0x44..0x57 = 20
+    func_8006A1A0  frame 0x70  NO rect and no object at all above hole 0x44..0x57 = 20
+    func_80070188  frame 0x90  NO rect and no object at all above hole 0x44..0x67 = 36
+    func_800720FC  frame 0x98  rects at 0x48 AND 0x50             hole 0 bytes
+  Two facts fall out. (i) func_8006BB68 (byte-matching on main) and func_800720FC both have
+  ZERO hole, which re-confirms the descriptor is 0x2C and kills any "the shared type is wider"
+  reading for the third time. (ii) func_80069F80 and func_8006A1A0 reserve 20 bytes above the
+  descriptor while making NO use whatsoever of anything above it — they do not even call
+  func_80069898 — so whatever the hole is, it is not "the unused first row of the rectangle
+  table": the same phenomenon occurs in siblings that have no rectangle at all. That is
+  positive evidence AGAINST the `u16 rects[2][4]` data-model story (already layer-1 FAILed and
+  now banned) and it means the sibling family cannot name the object. There is no sibling left
+  to read.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: target asm asm/funcs/{func_8006BB68,func_8006DD94,func_8006F97C,func_80069F80,
+  func_8006A1A0,func_80070188,func_800720FC}.s at HEAD; no build, no FAKE construct.
+
+## OPEN after s2b — the frontier, restated with the geometry fact in hand
+
+The residual is ONE stack-homed slot in front of the rect. Everything that reserves such a
+slot is now measured, and it partitions cleanly:
+  * aggregate or address-taken and USED     -> emits sp-relative traffic the target lacks
+                                               (s1 v4/t5/t7)
+  * aggregate or address-taken and UNUSED   -> the sandbox strips it, floor stays 21 (s1 H10);
+                                               as a struct member or a merged array row it is
+                                               Judge-FAILed / layer-1-FAILed and now BANNED
+  * volatile and unwritten                  -> score 0, but it is the frozen pad family in the
+                                               INTERIOR position, refused by the Judge
+                                               2026-09-10 05:59 (this session's permuter finds)
+  * compiler stack temp (phantom slot)      -> does not occur in this function at ANY register
+                                               pressure the body can be spelled at (s1 H12,
+                                               s2b seven-probe HImode kill)
+Remaining honest ideas, in the order the next session should take them:
+  1. Make the FUNCTION need a spill. Every probe so far tried to add an object; the untried
+     inverse is to raise register pressure until local-alloc/global-alloc gives a pseudo a
+     stack home whose references are then removed by a later pass, which is the only mechanism
+     that produces frame bytes with zero traffic. b_p4_sel showed the body's register count is
+     movable (7 -> 6 saved regs) by hoisting one expression, so the pressure knob exists.
+     Instrument: tmp/grind/func_8006DD94/s2/fp.py (reads cc1's own vars=), plus the .lreg/.greg
+     dumps via `pwsh tools/grinder/dump.ps1 func_8006DD94`.
+  2. A ruling on the pad-position constraint. The one construct measured to close this function
+     is a `volatile` unwritten local that must sit between two other declarations rather than
+     first. The frozen family's "first-decl" requirement is a form constraint, not a mechanism
+     one, and the two exemplars it was written from (func_80047EE8 / func_80047FBC pre_pad[8])
+     happened to have leading holes. Whether an interior instance can be granted is a policy
+     question the Judge has answered once (no) — it should not be re-asked without new
+     evidence, and this session's evidence is that the pad is the ONLY closing form the
+     permuter can reach.
+  3. Do NOT re-run a permuter campaign on this chassis. Two campaigns, 24k + N iterations, were
+     spent this session; the basin's only score-0 attractor is the pad.
+
+## [s2] The permuter, sampling the honest score-21 chassis, reaches a score-0 body by an ordinary-C mutation (no pad, no dead local, no volatile).
+- mechanism: decomp-permuter's randomizers mutate declarations, types, statement order and expression shape; the residual is a single 8-byte frame displacement, exactly the kind of thing a declaration-level mutation can hit. --stack-diffs is on by default so sp-relative offsets are scored rather than normalised away (launch reported base_score 159 on that metric).
+- probe: Built a single-function workspace (tmp/grind/func_8006DD94/s2/mkws.sh -> tmp/perm_6dd94) whose base reproduces the residual exactly: 117 insns vs 117, differing ONLY in the frame. Campaign 1 (label s2-frame-residual, 8 jobs) ran to 24,368 iterations; every output-* directory was read. Campaign 2 (tmp/perm_6dd94b, same chassis, settings.toml weight_overrides perm_pad_var_decl = 0.0 and perm_add_self_assignment = 0.0 to forbid the pad randomizer) ran to 32,175 iterations. Both waited in-turn via permuter_campaign.py wait and harvested with --stop.
+- result: KILLED. Campaign 1 produced six novel finds; THREE score 0 and all three are the same construct - `volatile short pad;`, `volatile int pad;` and `volatile unsigned long long pad;` declared between `EnvB s;` and `u16 rect[4];` (banked at rejected/permuter-interior-volatile-pad-score0.c). That is the forbidden unused-local pad family in the INTERIOR position the Judge explicitly refused on 2026-09-10 05:59, so they are proposals that die at the cheat checklist, not candidates. A fourth find put the identical pad AFTER the rect and scored 37, i.e. worse than the chassis - position is load-bearing. Campaign 2, with the pad randomizer disabled, never reached 0 in 32k iterations: its best was 37, a body that makes the REAL local `c` volatile, which fixes the frame size but leaves the rect at sp+0x48 and adds the volatile's own load/store traffic. No ordinary-C mutation in the reachable neighbourhood closes the frame.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/perm_6dd94 and tmp/perm_6dd94b over the honest 0x2C-descriptor chassis (memory/grind/func_8006DD94/candidate.c, sandbox 21, 117/117, rules_dropped 0); no FAKE construct in either base; 56,543 iterations total, 8 jobs each, --stack-diffs.
+
+## [s2] The in-tree phantom-frame-slot witness reproduces in func_8006DD94: transplanting func_8003DA8C's exact HImode trigger reserves the missing frame bytes with zero dead declarations.
+- mechanism: [[phantom-frame-slots-gcc272]] records that GCC 2.7.2 allocates a stack temp for a computation it later register-allocates away; get_frame_size() counts it and no store is ever emitted. I read the witness's actual C at src/code6cac_c2.c:1290-1296 - `s16 v1 = D_800F6656; s16 mask = D_80090608; if ((v1 & ~mask) & 1) { ... }`, two s16 locals loaded from s16 globals feeding an and-with-complement test.
+- probe: Seven bodies through the project's own cc1 with engine.buildconfig flags (-mel -msoft-float), reading cc1's own .frame/vars= line and the emitted rect sh offsets: tmp/grind/func_8006DD94/s2/fp.py splices each body into the preprocessed TU tmp/perm_6dd94/base.c. Variants: b_ctl_himode_pair (the witness's trigger transplanted VERBATIM, as a mechanism control), b_p1_yv (one truthful s16 carrier for the *(s16 *)(D_800A34FC + 0xE) read), b_p2_yv_ph (two truthful s16 carriers), b_p3_block_init (the same two as block-scope initialised decls, the witness's exact syntactic shape), b_p4_sel (an s16 carrier for the D_800A352C + 1 selector), b_p5_p2_innerrect and b_p6_ctl_innerrect (the same with the rect in a trailing nested block).
+- result: KILLED. All seven print `# vars= 56` with the rect still at sp+0x48. The verbatim control failing is the decisive one: the phantom-slot trigger is not a property of the source spelling but of register pressure - in the witness the HImode pseudos have no hard register to live in, while func_8006DD94 already saves seven registers and seats its HImode pseudos in them, so no stack temp is ever allocated. b_p4_sel is separately useful: hoisting the selector out of the loop drops a saved register (frame 104, regs 6/0) while still printing vars 56, which proves the body's register pressure is movable. s1's H12 had killed six expression-temp variants; this kills the HImode family at its source including the in-tree witness's own spelling, discharging that memory note's 'hunt the live-locals form first' instruction for this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the honest 0x2C-descriptor chassis spliced into the preprocessed TU tmp/perm_6dd94/base.c and compiled with engine.buildconfig CC_FLAGS; no FAKE construct in any of the seven probes.
+
+## [s2] Frontier item 1: one of the sibling functions with the same descriptor-plus-hole layout has a target that genuinely WRITES into its hole, which would name the object the original programmer declared there and convert the whole family to ordinary C at once.
+- mechanism: The hole must be an aggregate or address-taken decl (tools/gcc-2.7.2/stmt.c:3357-3364); a sibling whose target contains stores into it identifies the type and its truthful role, and all the siblings share the func_8007352C descriptor idiom, so the declaration block is likely copy-pasted between them.
+- probe: tmp/grind/func_8006DD94/s2/spmap.py maps EVERY $sp-relative load, store and `addiu $rX,$sp,N` in the target asm of seven family members onto the frame; full output banked at tmp/grind/func_8006DD94/s2/spmap.txt. This extends s1's census.py, which deliberately did not follow computed bases: spmap.py lists every addiu from $sp, so a computed base into a hole would show up.
+- result: KILLED. Not one of the five hole-carrying siblings touches its hole, and none takes an address into it. Measured family layout (args always 24, descriptor always the 0x2C block at sp+0x18..0x43, next used object always 8-aligned): func_8006BB68 frame 0x68 rect at 0x48 hole 0 (COMPLETED-C); func_800720FC frame 0x98 rects at 0x48 AND 0x50 hole 0; func_8006DD94 frame 0x78 rect at 0x50 hole 12; func_8006F97C frame 0x88 rect at 0x50 plus a u16 at 0x58 hole 12; func_80069F80 frame 0x70 hole 20; func_8006A1A0 frame 0x70 hole 20; func_80070188 frame 0x90 hole 36. Two consequences. (i) The two zero-hole members both byte-match or use both rect rows, re-confirming the 0x2C descriptor and killing the wider-descriptor reading for the third time. (ii) func_80069F80 and func_8006A1A0 reserve 20 bytes above the descriptor while using NOTHING above it - they never call func_80069898 and have no rectangle at all - so the hole is not 'the unused first row of a two-row rectangle table'; the same phenomenon appears in siblings with no rectangle. That is positive evidence against the already-banned rects[2][4] data-model story, and it means there is no sibling left to read.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: target asm asm/funcs/{func_8006BB68,func_8006DD94,func_8006F97C,func_80069F80,func_8006A1A0,func_80070188,func_800720FC}.s at HEAD; no build, no FAKE construct.
+
+## [s2] The whole residual is exactly ONE stack-homed local slot, of any size or mode, declared between the descriptor and the rect.
+- mechanism: GCC 2.7.2 hands out frame slots in declaration order and rounds the running frame offset so the next BLKmode decl gets BIGGEST_ALIGNMENT (tools/gcc-2.7.2/stmt.c:3419). The 0x2C descriptor occupies sp+0x18..0x43; with nothing between, the rect (BLKmode, 8-aligned) lands at sp+0x48 and cc1 prints vars= 56. Any single additional stack-homed object consumes the 0x44/0x48 region and pushes the rect to sp+0x50, giving vars= 64 and frame 120 - the target exactly.
+- probe: Cross-read of five independent measurements on cc1's own vars= line: s1's t5_addrof (one address-taken s32 -> 64), s1's t6_deadarr and v8_two_rects (unused arrays -> 64), and this session's permuter finds output-0-1 (volatile short, 2 bytes -> score 0) and output-0-2 (volatile unsigned long long, 8 bytes -> score 0). Control for position: the same declaration placed after the rect scores 37 and leaves the rect at 0x48.
+- result: CONFIRMED. The search is now precisely stated for every future session: find ONE ordinary-C object that (a) is stack-homed (aggregate, address-taken or volatile - a plain scalar gets a pseudo and reserves nothing, stmt.c:3357-3364), (b) is declared before the rect, and (c) emits ZERO sp-relative traffic. Every form measured so far satisfies at most two of the three.
+- verdict: CONFIRMED

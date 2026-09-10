@@ -1,31 +1,37 @@
 {
  "func": "func_8006DD94",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
    "floor": 21,
    "modality": "recon",
    "headline": "Honest floor is 21, not 0: the pad family is INERT here (sandbox strips it even when the frame is byte-exact), and the Judge's remaining 'larger descriptor' axis is killed by the byte-matching sibling"
+  },
+  {
+   "session": 2,
+   "floor": 21,
+   "modality": "permuter",
+   "headline": "Permuter modality spent (56k iterations, 2 campaigns): the only score-0 attractor on the honest chassis is an interior volatile pad; the residual is now pinned to exactly ONE stack-homed slot, and the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the four sibling functions with the same descriptor-plus-hole layout (func_8006F97C, 12 bytes, identical to this one; func_80069F80 and func_8006A1A0, 20 bytes; func_80070188, 36 bytes) has a target that genuinely WRITES into its hole, which would name the object the original programmer declared there and convert the whole family to ordinary C at once.",
-   "mechanism": "The hole must be an aggregate or address-taken decl (stmt.c:3357-3364); a sibling whose target contains stores into it identifies the type and its truthful role, and all five functions share the func_8007352C descriptor idiom and the func_80069898 rect idiom, so the declaration block is very likely copy-pasted between them.",
-   "next_probe": "Forensics modality: for each of the four siblings, map every store/load \u2014 including those made through a computed base register, which tmp/grind/func_8006DD94/s1/census.py deliberately does not follow \u2014 onto the sp frame, and look for any write landing between the 0x2C descriptor and the rect. Extend census.py to track `addiu $rX,$sp,N` bases and their subsequent stores."
+   "hypothesis": "The slot is a REGISTER SPILL home, not a declaration: at some spelling of this body local-alloc or global-alloc fails to seat a pseudo, assigns it a stack slot, and a later pass removes every reference to it - the only mechanism measured anywhere in this project that produces frame bytes with zero sp-relative traffic.",
+   "mechanism": "Every probe in the ledger so far tried to ADD an object and then argue about whether it is honest. The untried inverse is to change register pressure until GCC itself puts something on the stack. s2b's b_p4_sel proved the knob exists and is reachable from truthful C: hoisting the D_800A352C + 1 selector out of the loop changes the function from regs 7/0 frame 104... i.e. it moves the allocator, while leaving vars at 56. reload.c/global.c assign spill homes via assign_stack_local, and get_frame_size counts them whether or not the reload survives.",
+   "next_probe": "Solver modality, or forensics with dumps. Run `pwsh tools/grinder/dump.ps1 func_8006DD94` on the score-21 chassis and read .lreg/.greg for which pseudos are seated and how much slack there is; then use tools/ra_solver inverse_compose.py classify to ask directly whether any C-level lever produces an allocation in which one pseudo is spilled while its references are dead. Measure candidates with tmp/grind/func_8006DD94/s2/fp.py, which reads cc1's own vars= line and is far cheaper than the sandbox."
   },
   {
-   "hypothesis": "The 8 bytes belong to an address-taken scalar or a small aggregate that IS used, and the traffic it would emit is absent from the target because the original's uses are all in a path this reconstruction folded away (for example a second rect built on a branch, as func_800720FC really does).",
-   "mechanism": "t5_addrof and v4_inner_plus_used_arr both reach the target frame with a used object; they were rejected only because they add sp-relative traffic. If the object's stores coincide with insns already in the target, the frame closes with no dead declaration at all.",
-   "next_probe": "Re-derive modality: take the target's 117 insns and check whether ANY of them can be read as a store into sp+0x44..0x4F under a different register/offset attribution (e.g. a store through a base register set up earlier); if not, this hypothesis dies and the residual is provably a declaration with zero uses."
+   "hypothesis": "The only construct measured to close this function is a volatile unwritten local that must sit BETWEEN two declarations rather than first, and the frozen phantom-frame-slot volatile pad family excludes it purely on form (first-decl position), not on mechanism.",
+   "mechanism": "The frozen family at .claude/rules/no-new-park-categories.md:422-435 requires a first-decl `volatile u32 pad[N];`, a !FAKE annotation, ledger frame-forensics, and a _SANCTIONED_UNWRITTEN_PADS row (engine/volatile_cheats.py:746). Its two working exemplars (func_80047EE8 / func_80047FBC pre_pad[8]) happen to have LEADING holes. This function's hole is interior because the 0x2C descriptor already sits at the bottom of the vars region, immediately above the 24-byte arg area. The Judge answered this once, on 2026-09-10 05:59, and refused.",
+   "next_probe": "Do NOT re-ask without new evidence. If frontier item 1 is spent and comes back dead, the honest disposition is rotation under the >5 floor title, not a second attempt at the pad. If it is re-asked, the ruling-request must lead with the new fact this session produced - that two independent permuter campaigns totalling 56k iterations find the interior pad and nothing else - rather than with a form argument."
   },
   {
-   "hypothesis": "The residual cannot be closed by any construct that also lowers the honest floor, so the correct disposition once the ladder is spent is rotation \u2014 not a pad grant.",
-   "mechanism": "H10 shows the sandbox strips every unwritten filler; the Judge (2026-09-10 05:59) refused interior pads and the frozen volatile-pad family is form-constrained to LEADING holes, which cannot occur here because the descriptor already sits at the bottom of the vars region (sp+0x18, immediately above the 24-byte arg area).",
-   "next_probe": "Only after frontier item 1 is spent: in escalation modality, file the proof-of-foreclosure record in docs/grind/decisions.md with floor 21 (so the >5 'LADDER EXHAUSTED (non-endgame residual, floor 21): ROTATED' title, not the standing-ruling title) and return owner-gated."
+   "hypothesis": "The hole is a family-wide artefact of ONE shared source idiom (it appears at 12, 12, 20, 20 and 36 bytes across five siblings and at 0 bytes in the two that byte-match or use both rect rows), so recovering the idiom from ANY member closes all five at once.",
+   "mechanism": "Five functions in one file, all built around the same 0x2C descriptor at sp+0x18 and the same func_8007352C call, all reserving an 8-aligned region above the descriptor that their own code never touches, at five different sizes. A per-function accident would not size itself differently in each function while starting at the same offset in all of them; a shared declaration block whose members are used to different depths would.",
+   "next_probe": "Forensics on the two ZERO-hole members instead of the five with holes - the inverse reading nobody has taken. func_8006BB68 is COMPLETED-C on main and func_800720FC uses both rect rows; diff their accepted/target shapes against func_80069F80 (20-byte hole, no rectangle at all) and ask what the 20 bytes could be that the zero-hole members do not declare. func_80069F80 and func_8006A1A0 are the cleanest test cases in the family because they have NO rectangle: their entire residual would be the hole alone."
   }
  ],
  "judge_constraints": [
@@ -62,6 +68,30 @@
    "measured_on": "HEAD chassis + the honest 0x2C-descriptor body (candidate.c); no FAKE construct present in any probe.",
    "predicate_cite": "",
    "result": "KILLED. All six print `vars= 56` with the rect still at sp+0x48. Nesting the declaration changes nothing because none of"
+  },
+  {
+   "session": 2,
+   "statement": "The permuter, sampling the honest score-21 chassis, reaches a score-0 body by an ordinary-C mutation (no pad, no dead local, no volatile).",
+   "kill_scope": "instance",
+   "measured_on": "tmp/perm_6dd94 and tmp/perm_6dd94b over the honest 0x2C-descriptor chassis (memory/grind/func_8006DD94/candidate.c, sandbox 21, 117/117, rules_dropped 0); no FAKE construct in either base; 56,543 iter",
+   "predicate_cite": "",
+   "result": "KILLED. Campaign 1 produced six novel finds; THREE score 0 and all three are the same construct - `volatile short pad;`,"
+  },
+  {
+   "session": 2,
+   "statement": "The in-tree phantom-frame-slot witness reproduces in func_8006DD94: transplanting func_8003DA8C's exact HImode trigger reserves the missing frame bytes with zero dead declarations.",
+   "kill_scope": "instance",
+   "measured_on": "the honest 0x2C-descriptor chassis spliced into the preprocessed TU tmp/perm_6dd94/base.c and compiled with engine.buildconfig CC_FLAGS; no FAKE construct in any of the seven probes.",
+   "predicate_cite": "",
+   "result": "KILLED. All seven print `# vars= 56` with the rect still at sp+0x48. The verbatim control failing is the decisive one: t"
+  },
+  {
+   "session": 2,
+   "statement": "Frontier item 1: one of the sibling functions with the same descriptor-plus-hole layout has a target that genuinely WRITES into its hole, which would name the object the original programmer declared t",
+   "kill_scope": "instance",
+   "measured_on": "target asm asm/funcs/{func_8006BB68,func_8006DD94,func_8006F97C,func_80069F80,func_8006A1A0,func_80070188,func_800720FC}.s at HEAD; no build, no FAKE construct.",
+   "predicate_cite": "",
+   "result": "KILLED. Not one of the five hole-carrying siblings touches its hole, and none takes an address into it. Measured family "
   }
  ],
  "ladder_skip": 13,
