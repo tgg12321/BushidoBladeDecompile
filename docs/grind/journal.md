@@ -1958,3 +1958,5 @@
 - 2026-09-10 03:30 func_80048864 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-10 03:39 func_8002EBDC: MERGE REFUSED after judge PASS — 7 unallowlisted inline-asm island(s), no grant door; constraint banked.
 - 2026-09-10 03:47 func_8002EBDC s1 [recon] OWNER-GATED — borderline-logged, rotated: func_8002EBDC is SOLVED (sandbox 0, 182/182, Judge PASS 1b44e6afef0b58e6 on record); merge blocked ONLY by a missing operator row in tools/grinder/owner_cluster_grants.txt (scan tier LOW). Registry-row handoff filed in decisions.md; the C-respell branch of the refusal measured dead (7).
+- 2026-09-10 04:22 model-fallback layer1 claude-fable-5-1[1m]->claude-opus-5[1m] until 04:52
+- 2026-09-10 04:28 func_8006BB68 COMPLETED-C after 1 sessions (closer: s1 [recon]).
