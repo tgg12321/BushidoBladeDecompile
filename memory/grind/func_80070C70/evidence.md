@@ -911,3 +911,74 @@ root (the Bash tool here is Git Bash, not WSL - `bash tools/wsl.sh` is the bridg
 - [s14] Both remaining signature divergences reduce to ONE fact: the target keeps D_800A3558 (lhu) in $a2 and D_800A35B0 in $a1 live across the second loop's back edge, reloading both in the tail after the jal, and supplies the entry copies from a guard block that is an insn-for-insn copy of the tail test. No local C spelling on the if-guarded do/while chassis reaches that, because a C local is hoisted (measured: every hoist 31-41) and a re-read is CSE'd against the guard's own reads.
 
 - [s14] src/text1b.c was restored byte-exact to its pristine INCLUDE_ASM state at the end of the session; git status shows only metrics/events.jsonl modified.
+
+## [s15 synthesis 2026-09-10] CHASSIS FLIP: the do/while chassis is retired; floor 22 -> 7/194.
+
+- [s15] The four-session foreclosure of the TOP-TEST chassis rested on ONE unexamined
+  assumption: that its 24-byte frame overshoot (three combine-orphaned `(use (reg))` spill
+  pseudos, vars=104 vs the target's 80) was a cost to be removed. It is not. The do/while
+  chassis reaches vars=80 only by declaring the sp+0x48 array OVERSIZED (`u16 rect[16]`,
+  0x20 bytes, an oversized-locals FAKE); on the top-test chassis the orphan slots supply 24 of
+  those 32 bytes for free, so the array supplies only 8 - `u16 rect[4]`, the honest
+  declaration that func_80069898 (src/text1b.c:5413, `u16 *` parameter, reads arg1[0..3]) and
+  its two on-main callers (src/text1b.c:5822, 6065) already document. MEASURED: top-test +
+  rect[4] = 17/194; top-test + the s12 0x20-byte icon = 31/194 (the s12 number reproduced
+  exactly); every rect[N] with N >= 5 = 31. The 14-point gap s12 attributed to the chassis was
+  entirely the array's declared size.
+- [s15] The remaining 17 -> 7 is the loop bound's ADDITION ASSOCIATION, a lever that only
+  exists once the exit test is duplicated into a guard block: the target computes
+  ((1 + D_800A35B0) + D_800A3558), and `1 + D_800A35B0 + D_800A3558` (or `D_800A35B0 + 1 +
+  D_800A3558`) = 7/194, while every association measured before s15 -
+  ((D_800A35B0 + D_800A3558) + 1) - is 17, and the parenthesised (ext + 1) forms are 21 at 196
+  insns.
+- [s15] AT 7 THE REGISTER ALLOCATION IS EXACT. The target's $a1 = D_800A35B0, $a2 = the `lhu`
+  of D_800A3558 and $a0 = the `sll` index are all reproduced, as are the lhu/lh/lw opcode
+  triple and the sum-first mode-test topology. s14 spent 220 spellings proving those three
+  things unreachable on the do/while chassis and concluded they were "downstream of the
+  register allocation of D_800A3558/D_800A35B0 across the loop's back edge" - which was
+  correct, and the chassis flip delivers all of them at once.
+- [s15] The whole residual at 7 is two pure INSTRUCTION-ORDER ties, and neither moves with any
+  source statement position measured so far (100 spellings this session):
+    (1) 2 insns - the prologue tie, `addiu a0,sp,24` before (target) vs after (ours)
+        `move s0,zero`; now 40+ spellings deep across s11/s13/s15.
+    (2) 5 insns - the guard block. Target: move s0,zero / lhu a2,0(gp) / lw v0,24(s1) /
+        lw a1,0(gp) / addiu v0,v0,12 / sw v0,24(s1) / lh v0,0(gp). Ours: lw v0,24(s1) /
+        move s0,zero / addiu v0,v0,12 / sw v0,24(s1) / lhu a2,0(gp) / lw a1,0(gp) /
+        lh v0,0(gp). Identical multiset and registers; the target interleaves the three gp
+        loads into the `*(arg0+0x18) += 0xC` chain's latency slots. sched.c
+        rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) is the decision point: INSN_PRIORITY
+        first, then a three-way dependence classification against last_scheduled_insn. The
+        instrumented cc1 already carries a BB2_RANK_DEBUG hook that prints exactly those
+        class-tie decisions (sched.c ~2440) - that is the next probe, together with the
+        .sched/.sched2 dumps regenerated for this body this session.
+- [s15] FAKE ACCOUNTING IMPROVED. The candidate now carries ONE FAKE construct instead of two:
+  `u16 rect[16]` is gone (rect[4] is both honest and optimal here); `s32 c60 = 0x60;` remains
+  load-bearing on this chassis too (literal = 14/191 vs the local's 7/194) and still needs
+  .claude/rules/named-local-fake-exception.md plus a /* FAKE */ annotation at submission.
+  Also dropped as byte-neutral: the `s32 var_s3 = 0xA;` carrier and every `(s16)` cast on
+  D_800A3558 (the `extern s16 D_800A3558;` declaration selects the read signedness on its own).
+- [s15] METHODOLOGICAL NOTE FOR FUTURE SESSIONS: this floor drop came from re-reading a
+  FORECLOSED chassis' verdict against a finding made one session later on the OTHER chassis.
+  s12 wrote "the top-test chassis' frame penalty remains unaffordable" and s13/s14 then spent
+  two sessions and 220 spellings inside the chassis that verdict left standing. The contradiction
+  rule in the brief ("if the ledger marks every chassis dead, one verdict is wrong") is what this
+  session executed, and the weakest verdict was the one whose cost term had never been
+  re-priced after a later discovery changed one of its inputs.
+
+- [s15] FLOOR 22 -> 7 / 194 this session, on a chassis the ledger had treated as foreclosed since s12.
+
+- [s15] The s12 verdict 'the top-test chassis' frame penalty remains unaffordable' was measured with an IconC70 icon declared 0x20 bytes wide. Swapping that for u16 rect[4] reproduces s12's 31 exactly at every rect[N>=5] and gives 17 at rect[4] - the 14-point 'chassis penalty' was the array's declared size, not the chassis.
+
+- [s15] u16 rect[4] is the honest declaration: func_80069898 at src/text1b.c:5413 takes a u16 * and reads arg1[0..3], and both on-main callers (src/text1b.c:5822 func_8006BB68, src/text1b.c:6065 func_8006DD94) declare exactly u16 rect[4]. The do/while chassis' oversized rect[16] FAKE is retired.
+
+- [s15] 17 -> 7 is the loop bound's addition ASSOCIATION, a lever that only exists once jump.c:2253 duplicate_loop_exit_test has copied the test into a guard block: the target computes ((1 + D_800A35B0) + D_800A3558); 1 + D_800A35B0 + D_800A3558 and D_800A35B0 + 1 + D_800A3558 = 7, every ((base+ext)+1) association = 17, and the parenthesised (ext+1) forms = 21 at 196 insns.
+
+- [s15] At 7 the register allocation is EXACT: target $a1 = D_800A35B0, $a2 = the lhu of D_800A3558, $a0 = the sll index, plus the lhu/lh/lw opcode triple and the sum-first mode-test topology, are all reproduced (tmp/grind/func_80070C70/s15/ours.txt vs s13/tgt.txt). s14's conclusion that those three divergences were downstream of the register seats was right, and the chassis flip delivers all three at once.
+
+- [s15] The residual at 7 is exactly two instruction-ORDER ties with identical multisets and registers: 2 insns of the prologue tie (addiu a0,sp,24 before vs after move s0,zero) and 5 insns of the guard block, where the target interleaves the three gp loads into the *(arg0+0x18) += 0xC chain's latency slots (target: move s0,zero / lhu a2,0(gp) / lw v0,24(s1) / lw a1,0(gp) / addiu v0,v0,12 / sw v0,24(s1) / lh v0,0(gp); ours emits the 24(s1) chain first).
+
+- [s15] s32 c60 = 0x60; is still load-bearing on the new chassis (literal = 14/191 vs the local's 7/194) - it remains the candidate's only FAKE construct and still needs .claude/rules/named-local-fake-exception.md plus a /* FAKE */ annotation at submission.
+
+- [s15] Byte-neutral and therefore dropped from the candidate: the s32 var_s3 = 0xA; carrier for the first loop's prim.code, and every (s16) cast on D_800A3558 (the extern s16 D_800A3558 declaration selects the read signedness on its own).
+
+- [s15] METHOD: the drop came from executing the brief's contradiction rule - re-pricing the WEAKEST foreclosure (the one whose cost term had never been re-checked after a later session changed one of its inputs) instead of grinding further inside the chassis that verdict left standing.

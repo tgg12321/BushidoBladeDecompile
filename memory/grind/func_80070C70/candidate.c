@@ -1,106 +1,80 @@
-//@sub     s16 sp50[12];
+//@sub extern s32 D_800A3558;|||extern s16 D_800A3558;
+//@sub extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
 |||
-//@sub extern s32 func_80069898(s32 a0, s32 *p, s32 mode);|||
-/* REPRESENTATION BANNER (s14): this file is a CANDIDATE, not the state of main.  On main
+/* REPRESENTATION BANNER: this file is a CANDIDATE, not the state of main.  On main
  * func_80070C70 is committed as INCLUDE_ASM("asm/funcs", func_80070C70) per the 2026-08-19
- * asm-until-matched ruling; every "on main" reference below is to the SIBLING functions in
- * src/text1b.c (func_8006BB68, func_8006DD94) whose matched C bodies are on main and supply
- * the rect[] precedent, not to this function.  Install with
- * tmp/grind/func_80070C70/s14/setup.py (or s10/install.py) to reproduce the 22.
+ * asm-until-matched ruling.  Install with tmp/grind/func_80070C70/s15/setup15.py (which
+ * rebuilds src/text1b.c from tmp/grind/func_80070C70/s14/text1b.pristine.c with the two
+ * //@sub companion edits above plus the array declarations) followed by
+ * tmp/grind/func_80070C70/s15/inst.py <this file>.
  *
- * S14 (enumerate) - BODY UNCHANGED, floor still 22/194.  220 spellings measured across six
- * EXHAUSTIVE axes, and this body is the UNIQUE optimum on every one of them:
- *   - 128-cell cross product of guard-bound spelling (4) x tail-bound spelling (4) x mode-test
- *     spelling (8).  The axes are additive: guard 0/+1/+3/+4, tail 0/0/+1/+1, mode-test
- *     35BC-first 0 vs sum-first +8; `!= 0` vs bare truthiness is byte-neutral.
- *   - 20-cell invariant-hoist cross product (bound / mode-test sum / D_800A35BC into fresh
- *     locals): every hoist is worse (31-41); closes on the do/while chassis what s8 closed on
- *     the top-test one.
- *   - 21-cell declaration-signedness RE-AUDIT of the s2/s3 kill: under an s16 or u16 extern for
- *     D_800A3558 all seven cast spellings are byte-identical at 22; the kill holds.
- *   - 15-cell HImode-carrier sweep: `u16 h; h = D_800A3558;` + `(s16)h` DOES emit the target's
- *     `sll 16 / sra 16` shape but costs 25/194 (48 raw insn diffs vs this body's 44).
- *   - 12 mode-test branch structures (ternary, duplicated arms, goto, De Morgan, store-then-
- *     override): the target's sum-first topology is +8 in every dress.
- *   - all 24 statement orders of the second loop body: PMLC (this one) is the unique optimum.
- * CONCLUSION: the residual is not a spelling of these statements.  Both signature divergences
- * (sum-first mode test, lhu/lh read pair) are downstream of the target holding D_800A3558 in
- * $a2 and D_800A35B0 in $a1 across the loop back edge.
- */
-/* candidate.c - func_80070C70 - session 13 (structural). Honest floor 22 (unchanged from
- * s11/s12), but the body is BYTE-IDENTICAL to the s12 candidate while replacing its single
- * biggest correctness defect: the invented `IconC70` struct with the known-wrong `s16 sp50[12]`
- * placeholder tail is GONE, replaced by `u16 rect[16];` - the idiom this TU already uses.
+ * ============================ S15 (synthesis): 22 -> 7 / 194 ============================
+ * THE MERGE.  s12 measured the TOP-TEST (for-loop) chassis at 31 and priced it out as
+ * "9 worse than the do/while 22, because its three combine-orphaned spill pseudos cost
+ * 24 frame bytes".  s13 - one session LATER, and only ever applied to the do/while chassis -
+ * discovered that the object at sp+0x48 is a `u16 rect[]` and that the do/while chassis needs
+ * it OVERSIZED to rect[16] (0x20 bytes) to reach the target's vars=80 frame.
+ * Those two findings had never been put together.  They cancel exactly:
+ *   do/while chassis:  rect must supply 0x20 bytes   (rect[16], oversized => a FAKE)
+ *   top-test chassis:  the 3 orphan spill slots ALREADY supply 24 of those bytes, so rect
+ *                      must supply only 8 => `u16 rect[4]` - the HONEST, evidence-backed
+ *                      declaration (func_80069898 at src/text1b.c:5413 takes u16 * and reads
+ *                      arg1[0..3]; both on-main callers declare exactly `u16 rect[4]`).
+ * MEASURED: top-test + rect[4] = 17/194 (vs 31 with the 0x20 icon, vs 22 for the do/while).
+ * The "frame penalty" that foreclosed the top-test chassis for four sessions was never a
+ * penalty - it was the compiler supplying, for free, the 24 bytes the do/while chassis had to
+ * fake.  And the top-test chassis is the one that gets cse_set_around_loop (cse.c:7933 needs
+ * REG_LOOP_TEST_P, set only by jump.c:2253 duplicate_loop_exit_test).
  *
- * FLOOR HISTORY: 194 -> 101 (s1) -> 99 (s3) -> 56 (s4) -> 53 (s5) -> 39 (s6) -> 22 (s11)
- * -> 22 (s12) -> 22 (s13).  Chassis unchanged: if-guarded do/while, 194 insns == target,
- * frame exact (.frame $sp,128 # vars= 80, regs= 6/0, args= 24).
+ * 17 -> 7: the loop bound's ADDITION ASSOCIATION.  With the exit test now duplicated into a
+ * guard block, the target's guard computes ((1 + D_800A35B0) + D_800A3558); every spelling
+ * measured before s15 computed ((D_800A35B0 + D_800A3558) + 1).  `1 + D_800A35B0 +
+ * D_800A3558` (and `D_800A35B0 + 1 + D_800A3558`) = 7/194; the parenthesised
+ * `D_800A35B0 + ((s16)D_800A3558 + 1)` costs an extra insn (196) and 21 points.
  *
- * WHY rect[16] (s13's main result - this closes s12's frontier item #1):
- *   func_80069898 is ALREADY DECOMPILED in this same TU (src/text1b.c:5413) and its prototype
- *   is `void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2)` - arg1 is a u16 POINTER, and
- *   the body reads arg1[0..3].  Both existing callers on main pass a plain local ARRAY, not a
- *   struct: func_8006BB68 (src/text1b.c:5822) declares `u16 rect[4];` and writes it in the
- *   order rect[2], rect[0], rect[1], rect[3] - the EXACT store order func_80070C70's target
- *   asm uses at sp+0x4C, +0x48, +0x4A, +0x4E - and func_8006DD94 (src/text1b.c:6065) does the
- *   same.  So the object at sp+0x48 in func_80070C70 is a `u16 rect[]`, and the 24 "mystery"
- *   bytes at sp+0x50..0x67 are simply its UNWRITTEN TAIL: rect[16] spans 0x48..0x67 exactly.
- *   That is the same OVERSIZED-LOCALS shape already accepted on main for the two exemplars
- *   (src/text1b.c:6032 func_8006DD94 `EnvB s` + `u16 rect[4]`; src/text1a_post.c:404
- *   func_80041BF4 `s16 rect[8]`), and it needs no invented type and no dead local: the array's
- *   ADDRESS is passed to func_80069898, so it is the LIVE object being extended (prong 2).
- *   MEASURED s13: rect[16] = 22/194 and BYTE-IDENTICAL (194/194 opcode-column diff empty) to
- *   the s12 IconC70+sp50[12] body; `s16 rect[16]` is also 22; `u16 rect[15]` is also 22 (the
- *   declared length is a RANGE [15,16], exactly as the func_8006DD94 record documents, because
- *   stmt.c:3419 8-aligns a BLKmode automatic); `u16 rect[4]` is 36 - so the 24 bytes are
- *   load-bearing and s12's measurement that an UNREFERENCED `s32 sp50[6]` is dropped is
- *   consistent: this tail is referenced because the whole array is address-taken.
- *   The sibling func_800720FC has the same idiom with 32 spare bytes (rect[20]).
+ * WHAT IS LEFT AT 7 - two pure INSTRUCTION-ORDER ties, register allocation is now EXACT
+ * (tmp/grind/func_80070C70/s15/ours.txt vs s13/tgt.txt; the target's $a1 = D_800A35B0,
+ * $a2 = lhu D_800A3558, $a0 = the sll index are all reproduced, and so are the lhu/lh/lw
+ * opcode triple and the sum-first mode test that s14 proved unreachable on the do/while side):
+ *   (1) 2 insns - the long-standing prologue tie, `addiu a0,sp,24` scheduled before (target)
+ *       vs after (ours) `move s0,zero`.
+ *   (2) 5 insns - the guard block's schedule.  Target:  move s0,zero / lhu a2,0(gp) /
+ *       lw v0,24(s1) / lw a1,0(gp) / addiu v0,v0,12 / sw v0,24(s1) / lh v0,0(gp).
+ *       Ours:      lw v0,24(s1) / move s0,zero / addiu v0,v0,12 / sw v0,24(s1) /
+ *                  lhu a2,0(gp) / lw a1,0(gp) / lh v0,0(gp).
+ *       Same multiset, same registers; the target interleaves the three gp loads into the
+ *       `*(arg0+0x18) += 0xC` chain's latency slots and we emit that chain first.  This is
+ *       sched.c rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) - INSN_PRIORITY first, then
+ *       the three-way dependence class against last_scheduled_insn.
  *
- * COMPANION EDITS in src/text1b.c that are part of the measured 22:
- *   extern u8 D_800A3560[];   extern s16 D_800A3590[];
- *   the `typedef struct IconC70` block is NO LONGER USED (delete it at submission), and the
- *   local re-declaration `extern s32 func_80069898(s32 a0, s32 *p, s32 mode);` must be DROPPED
- *   - the real prototype at line 5413 is in scope and is the one that types `rect`.
- *   (Both are expressed as the //@sub directives at the top of this file, which is why they
- *   must stay on lines 1-2: tmp/grind/func_80070C70/s10/install.py only consumes //@sub at the
- *   very start of the file - see the s10 hygiene note.)
+ * AXES SWEPT AND EXHAUSTED ON THIS NEW CHASSIS THIS SESSION (all void-and-re-measured from
+ * the do/while ledger, 100 spellings):
+ *   - rect size: 2/4/5/6/8/10/12/15/16 -> {2,4}=17, everything >=5 = 31.  rect[4] is both the
+ *     optimum AND the correct declaration.  s16 rect[4] is also 7.
+ *   - mode-test operand order x bound parenthesisation (20 cells): sum-first NOW WINS by 5
+ *     (it lost by 8 on the do/while) - the exact reversal s14 predicted would follow from the
+ *     register seats.
+ *   - bound association (12 cells): `1 + D_800A35B0 + D_800A3558` / `D_800A35B0 + 1 +
+ *     D_800A3558` = 7; every other association 17-21.
+ *   - (s16) casts on D_800A3558 at both use sites: BYTE-NEUTRAL under the s16 extern, so the
+ *     candidate carries none (cleanest spelling).
+ *   - `s32 var_s3 = 0xA;` carrier for the first loop's prim.code: byte-neutral -> dropped.
+ *   - position of `prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);` (3): last is optimum (49/50).
+ *   - position of the second loop's `var_s0 = 0` (7 positions incl. hoisted out of the for):
+ *     completely inert, all 7.
+ *   - first-loop body order (6): ABC unique optimum (others 9-15).
+ *   - second-loop body order (24 permutations): PMLC unique optimum (next best 12).
  *
- * CONSTRUCTS STILL NEEDING A FAMILY VET BEFORE ANY SUBMISSION:
- *   - `s32 c60 = 0x60;` - constant-holder local, LOAD-BEARING (literal spelling is 29/191,
- *     s12 f1.c).  Family: .claude/rules/named-local-fake-exception.md, FAKE annotation needed.
- *   - `u16 rect[16];` - oversized LIVE address-taken array; family
- *     .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out, in-TU precedent
- *     src/text1b.c:6032 and src/text1a_post.c:404.  FAKE annotation needed.
- *   - `s32 g;` / `s32 t;` (real consumed values at three sites each) and
- *     `s32 ctx = var_s0 * 3;` (the byte-offset giv) are ordinary C.
- *
- * RESIDUAL AT 22 - unchanged and re-confirmed by s13's objdump diff
- * (tmp/grind/func_80070C70/s13/{ours,tgt}.txt): 2 points are the prologue tie
- * (`addiu $a0,$sp,24` scheduled before vs after `move $s0,$zero`) and the other ~20 are the
- * single cse_set_around_loop cluster - the target keeps D_800A3558 in $a2 as a raw `lhu` and
- * D_800A35B0 in $a1 across the second loop's back edge (reloading BOTH in the tail after the
- * call, since $a1/$a2 do not survive `jal`), loading them in the guard block too, while we
- * re-read both inside the body.  cse.c:7933 gates that on REG_LOOP_TEST_P, set only by
- * jump.c:2253 duplicate_loop_exit_test, which needs a top-test loop; the top-test chassis costs
- * 24 frame bytes of combine-orphaned spill pseudos and prices out at 31 (s12).
- *
- * S13 SWEPT AND KILLED (all on this chassis, see hypotheses.md):
- *   - first-loop body statement order: all 6 orders x 2 increment orders; ABC (this one) is the
- *     unique optimum at 22, the other five orders are 24-30, and the two increments are
- *     byte-neutral.
- *   - pre-guard statement position of `prim.p_geom = *(s32 *)(ctx + 8)`: all 3 legal positions;
- *     the current one is optimal (others 25, 26).
- *   - declaration order of the four body scalars (var_s0, t, code, g): ALL 24 permutations are
- *     byte-identical at 22/194.  The scalar declaration axis is completely inert here.
- *   - defeating LICM on the bound by reusing an existing body-written local
- *     (.claude/rules/defeat-licm-hoist-var-reuse.md) is 61/69 on the top-test chassis and
- *     byte-neutral/1-worse on this one.
+ * THE ONE REMAINING FAKE: `s32 c60 = 0x60;`.  Re-measured on THIS chassis - the literal
+ * spelling is 14/191, the constant-holder local is 7/194.  Still load-bearing, still needs
+ * .claude/rules/named-local-fake-exception.md + a /* FAKE *\/ annotation at submission.
+ * `u16 rect[16]` - the OTHER FAKE the do/while chassis needed - IS NOW GONE: rect[4] is the
+ * honest declaration and it is the optimum here.
  */
 void func_80070C70(s32 arg0) {
     s32 c60 = 0x60;
     PrimC70 prim;
-    u16 rect[16];
+    u16 rect[4];
     s32 ctx_or_var_s2;
     s32 var_s0;
     s32 t;
@@ -149,9 +123,7 @@ void func_80070C70(s32 arg0) {
     AddPrim(D_800A374C + 0x28, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
-    if (D_800A35B0 + (s16)D_800A3558 + 1 > 0) {
-        var_s0 = 0;
-        do {
+    for (var_s0 = 0; var_s0 < 1 + D_800A35B0 + D_800A3558; var_s0++) {
             s32 ctx = var_s0 * 3;
             code = D_800A3560[ctx];
             if ((code != 5) && (code != 16)) {
@@ -159,7 +131,7 @@ void func_80070C70(s32 arg0) {
                 t = g + 0xC;
                 prim.p_static = t;
                 prim.p_static = t + (D_800A3590[var_s0] << 4);
-                if ((D_800A35BC == 2) || (((s16)D_800A3558 + D_800A35B0) != 0)) {
+                if (((D_800A35B0 + D_800A3558) != 0) || (D_800A35BC == 2)) {
                     prim.mode = 0x50 + var_s0 * 0x16C;
                 } else {
                     prim.mode = 0x105;
@@ -168,8 +140,6 @@ void func_80070C70(s32 arg0) {
                 prim.code = 1;
                 *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
             }
-            var_s0++;
-        } while (var_s0 < D_800A35B0 + ((s16)D_800A3558 + 1));
     }
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
     AddPrim(D_800A374C + 4, *(s32 *)(arg0 + 0x18));

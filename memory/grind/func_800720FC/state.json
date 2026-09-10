@@ -58,10 +58,10 @@
   },
   {
    "from": "func_80070C70",
-   "floor": 22,
-   "session": 11,
-   "at": "2026-09-10T18:38:21.038804+00:00",
-   "headline": "Floor 39 -> 22 at 194/194 insns with the target's exact frame, on the UNCHANGED if-guarded do/while chassis: four ordinary-C statement-level spellings (tail-bound parenthesisation, a named geom/static",
+   "floor": 7,
+   "session": 15,
+   "at": "2026-09-10T19:44:29.383268+00:00",
+   "headline": "Chassis flip: the top-test chassis' 24-byte 'frame penalty' was the compiler supplying the bytes the do/while chassis had to FAKE - top-test + honest u16 rect[4] + the target's bound association takes",
    "consumed": null
   }
  ]
