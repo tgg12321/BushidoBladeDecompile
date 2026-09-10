@@ -1,8 +1,8 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 7,
    "modality": "permuter",
    "headline": "The missing island-input copy is MATERIALISED by a tied asm output + a do-while(0) wrap (equal floor 7, structurally closer); ra_solver proves it is a block-LOCAL qty that can only take $v1, so the ta"
+  },
+  {
+   "session": 6,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Floor holds at 7; s5's central structural hypothesis is REFUTED by measurement - a cross-block GLOBAL island-input copy still takes $v1, because MIPS has no REG_ALLOC_ORDER; and cse.c:8102 is now the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's island-input copy is a cross-block GLOBAL allocno defined in the pre-branch block; the remaining question is which ordinary C spelling puts a cse-surviving copy there, given that the tied operand always emits it inside the else block and a plain `lz_in = sum_sq;` is deleted by cse.c canon_reg (s1 H7).",
-   "mechanism": "local_alloc runs before global_alloc and assigns block-local qtys first, so a copy born inside the else block takes $v1 unconditionally (find_free_reg ascending, $2 blocked by the island clobber, no overlapping qty to occupy $3). Only a copy whose live range crosses the `beqz` reaches global.c, where it competes with sum_sq (pseudo 77) and scale (pseudo 78) and can be pushed to $a0.",
-   "next_probe": "Take rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c as the chassis and hunt for a pre-branch materialisation: (a) restructure the arms into the sibling shape at src/code6cac_b.c:1385 (`s32 lzcr = 0; if (dist_sq >= 0) { island; lzcr = sp_tmp; }`), which nests the sign test INSIDE the else arm and changes which basic block the copy is born in; (b) re-run tools/ra_solver/local_extract.py after each variant and read `blk N qty` for the copy - that single field decides local-vs-global before any register is named."
+   "hypothesis": "The residual is now a global.c CONFLICT-SET problem with a precise two-part target: the island-input copy's allocno must conflict with the `scale` allocno (seated $3) so $3 closes to it, and the `log2_val` allocno must stop conflicting with the `sum_sq` allocno so those two can share $5. Solving only one of the two moves a different insn and holds or worsens the floor (measured: dropping the staging solves the second alone and costs 4 insns).",
+   "mechanism": "global.c find_reg scans ascending with no REG_ALLOC_ORDER on MIPS, so a seat is decided purely by which hard regs the allocno's conflicting allocnos already hold; and the allocation order printed in the greg dump (`98 78 120 77 99 ...`) means log2_val's preference for $4 is honoured before sum_sq and the copy are considered.",
+   "next_probe": "Run tools/ra_solver/inverse.py global on the tied chassis (s6/t0.c / rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c) with a goal seating the copy at 4, log2_val at 5 and sum_sq at 5, --depth 3, and tools/ra_solver/inverse_compose.py classify with --target-object/--ours-object to confirm the residual is RA and not PRE-RA on this chassis. Then spell the top-ranked non-forbidden vector. Re-extract the model first (tools/ra_solver/extract.py + local_extract.py) because the pseudo numbering quoted in evidence.md comes from the s6 diagnostic build, not from the tied build."
   },
   {
-   "hypothesis": "With the copy present and sum_sq already at $a1, the residual may also be closable from the other side: move log2_val (global pseudo 98, currently $a0, prefs [4]) onto $a1, which is what simulate.py already predicts (sim=5 dump=4).",
-   "mechanism": "global.c find_reg with copy- then full-preference upgrades; pseudo 98 carries prefs [4] from the copy relationship with the LUT result, and simulate.py's only two disagreements with the dump are exactly pseudos 77 and 98, both in the target's direction - so the seat is decided by a preference/priority detail the model resolves correctly and the real allocator does not.",
-   "next_probe": "tools/ra_solver/inverse.py global tmp/ra_solver_work/func_80018094.model.json --goal '{\"98\": 5, \"77\": 5}' --depth 2 on the w6 body, then spell the top-ranked non-forbidden vector; also run tools/ra_solver/inverse_compose.py classify with --target-object/--ours-object to confirm the residual is RA and not PRE-RA on this new chassis."
+   "hypothesis": "`scale` can be made to conflict with the island-input copy by an ordinary-C change to WHERE scale is written, without adding an insn: e.g. writing the shared tail `scale = ((log2_val << 6) / 500) + 0xC0;` into both inner arms (duplicated-statement-into-arms, a sanctioned family) changes scale's live range and the merge structure.",
+   "mechanism": "global.c builds conflicts from allocno live ranges; scale is currently dead across the whole else arm (it is assigned only at the arm's end), which is exactly why the copy's allocno can share $3 with it. Any form that makes scale live at the island entry closes $3 to the copy.",
+   "next_probe": "On the s5 w6 chassis measure: (a) `scale = ...` duplicated into both inner arms with the merge label removed; (b) `scale` given a pre-chain default write; (c) `scale` split into a per-arm local copied out at the merge. Score each with `sandbox func_80018094 --disable all` and read the `;; NN conflicts:` line for the copy's allocno in the .greg dump after each - the conflict line, not the score, is the decision variable."
   },
   {
-   "hypothesis": "The three FAKE constructs the w6 chassis would carry (s32 sp_tmp[4] oversized locals, the log2_val staging, the do-while(0) wrap) are each inside a sanctioned family, but the tied asm output operand is NOT yet classified and may not be ordinary C.",
-   "mechanism": "`: \"=m\"(sp_tmp[0]), \"=r\"(lz_in) : \"1\"(sum_sq)` declares an asm output the island never writes, purely so the copy insn is materialised - that is a semantic-purpose (T1) and human-programmer (T2) question, not a family question, and no rule file in .claude/rules/ covers tied asm operands on an authorized canonical island.",
-   "next_probe": "Before any candidate-ready on the w6 lineage, grep docs/reference/sotn-construct-index.md for tied / multi-output inline-asm operand precedent among PSX (untagged) entries; if there is none, emit a ruling-request asking whether an authorized canonical island may carry a tied `\"=r\"` / `\"1\"` operand pair whose only effect is to materialise the input copy the target itself contains."
+   "hypothesis": "The tied asm output operand (`: \"=m\"(sp_tmp[0]), \"=r\"(lz_in) : \"1\"(sum_sq)`) on the authorized canonical LZC island is still UNCLASSIFIED - it declares an output the island's text never writes, purely so GCC materialises the input copy. It is not covered by any family in .claude/rules/, so any candidate-ready on the w6 lineage needs a ruling first.",
+   "mechanism": "T1 (semantic purpose) and T2 (human-programmer) questions, not a family question: the operand has no observable effect on the function's output, and a reader would ask why the island declares an output register it never assigns.",
+   "next_probe": "Grep docs/reference/sotn-construct-index.md for tied / multi-output inline-asm operand precedent among PSX (untagged) entries. If there is none, emit a ruling-request asking whether an authorized canonical-asm island may carry a tied \"=r\"/\"1\" operand pair whose only effect is to materialise a copy the target itself contains. Do this BEFORE spending a session driving the w6 lineage to zero."
   }
  ],
  "judge_constraints": [],
@@ -206,6 +212,54 @@
    "measured_on": "chassis 2026-09-09 (-mel -msoft-float), the s5 w1 body (candidate.c + tied asm output, permuter base score 55), decomp-permuter default randomization with --stack-diffs, -j 8",
    "predicate_cite": "",
    "result": "three finds - output-35-1 at 23 s (the do-while(0) wrap, transplanted and measured above), output-45-1 at 880 s and outp"
+  },
+  {
+   "session": 6,
+   "statement": "A plain pre-branch copy `lz_in = sum_sq;` in the else arm, with the island reading \"r\"(lz_in), can be made to survive to the island by choosing a different declaration scope for lz_in.",
+   "kill_scope": "class",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 (s32 sp_tmp[4] + log2_val staging, both FAKE-annotated), plus the copy under test",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:8102",
+   "result": "Both scopes byte-identical to the floor-7 candidate; the deletion is cse.c, dump-proven rather than inferred. Re-confirm"
+  },
+  {
+   "session": 6,
+   "statement": "The target's island-input copy takes $a0 because it is a cross-block GLOBAL allocno defined in the pre-branch block, so producing a copy in that shape (rather than the tied-asm block-local copy of s5)",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 plus a pre-branch copy, compiled with cse follow-jumps/skip-blocks disabled as a diagnostic",
+   "predicate_cite": "",
+   "result": "The copy IS the global cross-block allocno s5 asked for, in the right slot, and it is still assigned $3 rather than $a0."
+  },
+  {
+   "session": 6,
+   "statement": "cse.c's LABEL_NUSES(island label)==1 predicate can be broken from C by giving the LUT arm a second conjunct (`sum_sq < 0x400 && sum_sq >= 0`), which would emit a second branch to the island label.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, FAKE constructs sp_tmp[4] + log2_val staging present",
+   "predicate_cite": "",
+   "result": "Both are byte-identical to candidate.c - jump optimisation folds the redundant `sum_sq >= 0` test away (it is implied by"
+  },
+  {
+   "session": 6,
+   "statement": "With the island-input copy materialised by the s5 tied asm output, the s4 log2_val staging is no longer needed and dropping it improves or holds the floor.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), the s5 w6 body (candidate.c + tied asm output + do-while(0) wrap, three FAKE constructs) with the staging removed",
+   "predicate_cite": "",
+   "result": "sandbox 11 (vs 7 for w6 and for candidate.c). The staging is load-bearing on both chassis; on the surviving-copy chassis"
+  },
+  {
+   "session": 6,
+   "statement": "Hoisting the `s32 li_v0 = -2;` constant holder above the LZC island makes its quantity overlap the island-input copy in find_free_reg's `used` set and pushes the copy off $v1.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), the s5 w6 body (three FAKE constructs) with the constant holder hoisted",
+   "predicate_cite": "",
+   "result": "t1: the copy still takes $3 and is additionally pushed OUT of the `beqz` delay slot (s6/t1.s:108 vs t0.s:95) - strictly "
+  },
+  {
+   "session": 6,
+   "statement": "Swapping the inner arms so the LZC island is the fall-through and the small-LUT arm is the branch target changes which basic block the copy is born in and closes part of the residual.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with the inner arms swapped",
+   "predicate_cite": "",
+   "result": "v3 emits 149 lines vs 148 for candidate.c (+1 insn) and moves 21 asm lines; the target's own shape is ours (asm/funcs/fu"
   }
  ],
  "ladder_skip": 0,

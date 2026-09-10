@@ -423,3 +423,92 @@ dropped).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-09 (-mel -msoft-float), the s5 w1 body (candidate.c + tied asm output, permuter base score 55), decomp-permuter default randomization with --stack-diffs, -j 8
+
+## s6 (structural, 2026-09-09)
+
+- **H27 — KILLED (class, cse.c:8102).** A plain pre-branch copy `lz_in = sum_sq;` in the else arm,
+  with the island reading `"r"(lz_in)`, survives to the island in some declaration scope.
+  Measured at two scopes (else-arm block s6/v1.c; function top, assigned immediately after sum_sq,
+  s6/v2.c): both byte-identical to candidate.c. Dump-attributed to cse.c — the copy is live in
+  v1.i.jump and gone in v1.i.cse. Gate: `cse_end_of_basic_block`'s follow-jumps arm
+  (tools/gcc-2.7.2/cse.c:8102) extends cse's path through the `beqz` into the island block because
+  LABEL_NUSES(island)==1 and a BARRIER precedes the label — both properties of the target's own
+  control-flow shape, unaffected by how the copy is spelled. Banked:
+  rejected/lzc-input-prebranch-copy-cse-follow-jumps-deletes-remeasured-s6.c.
+- **H28 — KILLED (instance).** Breaking cse's LABEL_NUSES==1 predicate from C by giving the LUT
+  arm a second (redundant) conjunct `sum_sq >= 0`. Measured (s6/d1.c with the copy, s6/d2.c
+  without): jump optimisation folds the redundant test and both outputs are byte-identical to
+  candidate.c, so the second label reference never materialises.
+- **H29 — KILLED (instance), and it REFUTES the s5 frontier.** "The target's island-input copy is
+  a cross-block GLOBAL allocno defined in the pre-branch block; make a copy survive to that shape
+  and it takes $a0." Measured with a scratch-only diagnostic compile
+  (`-fno-cse-follow-jumps -fno-cse-skip-blocks` on s6/v1.c — never a build path, see
+  .claude/rules/no-compiler-divergence.md; used solely to isolate the pass): the copy survives,
+  `v1.i.lreg` shows reg 99 is not a local qty, `v1.i.greg` lists it among the global allocnos, and
+  reorg parks it in the `beqz` delay slot in the target's exact position — and it is assigned
+  **$3**, not $a0 (s6/v1.diag.s:95). Mechanism: `tools/gcc-2.7.2/config/mips/mips.h` defines no
+  REG_ALLOC_ORDER, so global.c `find_reg` and local-alloc `find_free_reg` both scan ascending;
+  $2 is closed by the island's clobber list and $3 is the first free register for either allocator.
+- **H30 — KILLED (instance).** The s4 `log2_val` staging is removable now that the copy exists.
+  Measured: tied chassis without the staging (s6/t4.c) = sandbox **11** (vs 7); on the copy chassis
+  it moves sum_sq to $a0 (s6/v5.diag.s). Banked:
+  rejected/tied-copy-chassis-without-log2-staging-sandbox-11.c.
+- **H31 — KILLED (instance).** Declaration-order lever: hoisting `s32 li_v0 = -2;` above the island
+  so its qty is born before the copy and overlaps it in find_free_reg's `used` set. Measured
+  (s6/t1.c): the copy still takes $3 and is pushed out of the `beqz` delay slot — strictly worse.
+  Hoisting only the declaration (s6/t2.c) is byte-identical to w6. Banked:
+  rejected/minus2-const-holder-hoisted-above-island-copy-leaves-delay-slot.c.
+- **H32 — KILLED (instance).** Swapping the inner arms (`if (sum_sq >= 0x400) { island } else { LUT }`,
+  s6/v3.c) so the island becomes the fall-through: +1 insn (149 vs 148 emitted lines), 21 asm lines
+  moved; the target's shape is ours (asm/funcs/func_80018094.s:71 branches TO the island). Adding
+  the pre-branch copy on top (s6/v4.c) is byte-identical to v3. Banked:
+  rejected/inner-arms-swapped-island-fallthrough-plus-one-insn.c.
+
+## [s6] A plain pre-branch copy `lz_in = sum_sq;` in the else arm, with the island reading "r"(lz_in), can be made to survive to the island by choosing a different declaration scope for lz_in.
+- mechanism: cse.c's extended-path walk: cse_end_of_basic_block's follow-jumps arm extends the path through the `beqz` into the island block whenever LABEL_NUSES(target label)==1 and the insn before the label is a BARRIER. Inside that extended path reg 99 is a known equivalent of reg 77, so canon_reg rewrites the asm operand and the copy dies. Both predicates are properties of the target's own control-flow shape (the LUT arm ends in `j` to the merge, which emits the BARRIER), so no spelling of the copy touches them.
+- probe: Built the copy at two declaration scopes - else-arm block (tmp/grind/func_80018094/s6/v1.c) and function top assigned immediately after sum_sq (s6/v2.c) - compiled both with the canonical cc1 flags; both .s outputs are byte-identical to candidate.c (s6/v1.s == s6/v2.s == s6/w0.s). Pass attribution from -da dumps: s6/d_v1/v1.i.jump still has `insn 103 (set (reg/v:SI 99) (reg/v:SI 77))` with the asm operand as reg 99; s6/d_v1/v1.i.cse has the operand as reg 77 and no insn 103.
+- result: Both scopes byte-identical to the floor-7 candidate; the deletion is cse.c, dump-proven rather than inferred. Re-confirms s1 H7 on the current chassis and names the gate. Banked as rejected/lzc-input-prebranch-copy-cse-follow-jumps-deletes-remeasured-s6.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 (s32 sp_tmp[4] + log2_val staging, both FAKE-annotated), plus the copy under test
+- predicate_cite: tools/gcc-2.7.2/cse.c:8102
+
+## [s6] The target's island-input copy takes $a0 because it is a cross-block GLOBAL allocno defined in the pre-branch block, so producing a copy in that shape (rather than the tied-asm block-local copy of s5) would seat it at $a0.
+- mechanism: s5 read the ra_solver local model (copy = blk 6 qty 0, find_free_reg ascending, $2 closed by the island clobber, $3 first free) and concluded local_alloc was the discriminator, so a global allocno would be allocated by global.c find_reg instead and could reach $a0.
+- probe: Scratch-only diagnostic compile of s6/v1.c with -fno-cse-follow-jumps -fno-cse-skip-blocks (never a build path; used solely to isolate the pass). The copy survives; s6/d2_v1/v1.i.lreg shows reg 99 is not a local qty; v1.i.greg lists it in ';; 13 regs to allocate: 98 78 120 77 99 ...' with ';; 99 conflicts: 72 73 77 99 2 12 29'; reorg parks it in the `beqz` delay slot in the target's exact position (s6/v1.diag.s:95 `move $3,$5` under `beq $2,$0,.L6`). Dispositions: 77 in 5, 78 in 3, 98 in 4, 99 in 3.
+- result: The copy IS the global cross-block allocno s5 asked for, in the right slot, and it is still assigned $3 rather than $a0. Local-vs-global allocation is not the discriminator here: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so global.c find_reg and local-alloc find_free_reg both scan hard regs ascending and both land on $3 once $2 is closed by the island's clobber list. The real requirement, read off the greg conflict sets, is two conflict-set changes about OTHER pseudos: allocno 99 must conflict with 78 (scale, seated $3) to close $3, and 98 (log2_val) must stop conflicting with 77 (sum_sq) so both can share $5.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 plus a pre-branch copy, compiled with cse follow-jumps/skip-blocks disabled as a diagnostic
+
+## [s6] cse.c's LABEL_NUSES(island label)==1 predicate can be broken from C by giving the LUT arm a second conjunct (`sum_sq < 0x400 && sum_sq >= 0`), which would emit a second branch to the island label.
+- mechanism: cse_end_of_basic_block only extends the path when the branch target label has exactly one use; a compound && condition emits two conditional branches around the then-arm.
+- probe: s6/d1.c (compound condition + pre-branch copy) and s6/d2.c (compound condition alone), compiled with the canonical flags.
+- result: Both are byte-identical to candidate.c - jump optimisation folds the redundant `sum_sq >= 0` test away (it is implied by the enclosing else-if), so the second label reference never exists and the copy is still deleted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, FAKE constructs sp_tmp[4] + log2_val staging present
+
+## [s6] With the island-input copy materialised by the s5 tied asm output, the s4 log2_val staging is no longer needed and dropping it improves or holds the floor.
+- mechanism: s4 introduced the staging to seat sum_sq at $a1; with a copy present the seat might be held by the copy relationship instead.
+- probe: s6/t4.c = the s5 w6 body (tied output + do-while(0) wrap) with `log2_val = li_v0; shift_a = 0x16 - log2_val;` replaced by `shift_a = 0x16 - li_v0;`. Spliced into src/code6cac.c and scored with `sandbox func_80018094 --disable all`.
+- result: sandbox 11 (vs 7 for w6 and for candidate.c). The staging is load-bearing on both chassis; on the surviving-copy chassis dropping it moves sum_sq to $a0 (s6/v5.diag.s `move $3,$4`). The greg dump explains why: the staging is what makes pseudo 98 (log2_val) conflict with 77 (sum_sq), which keeps 77 off $a0 - while simultaneously forcing 98 onto its preferred $4, the register the target reserves for the copy. Banked as rejected/tied-copy-chassis-without-log2-staging-sandbox-11.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s5 w6 body (candidate.c + tied asm output + do-while(0) wrap, three FAKE constructs) with the staging removed
+
+## [s6] Hoisting the `s32 li_v0 = -2;` constant holder above the LZC island makes its quantity overlap the island-input copy in find_free_reg's `used` set and pushes the copy off $v1.
+- mechanism: local-alloc's find_free_reg excludes hard regs live across the quantity's range; a longer-lived quantity born before the copy and allocated first would take $3 and force the copy to the next free register.
+- probe: s6/t1.c (declaration + initialiser hoisted above the asm) and s6/t2.c (declaration only, initialiser left in place), compiled with the canonical flags and compared against s6/t0.s (the w6 body).
+- result: t1: the copy still takes $3 and is additionally pushed OUT of the `beqz` delay slot (s6/t1.s:108 vs t0.s:95) - strictly worse. t2: byte-identical to w6. Banked as rejected/minus2-const-holder-hoisted-above-island-copy-leaves-delay-slot.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s5 w6 body (three FAKE constructs) with the constant holder hoisted
+
+## [s6] Swapping the inner arms so the LZC island is the fall-through and the small-LUT arm is the branch target changes which basic block the copy is born in and closes part of the residual.
+- mechanism: Frontier probe (a) from s5: the sibling shape at src/code6cac_b.c:1385 nests the tests differently, which changes block membership and therefore which allocator sees the copy.
+- probe: s6/v3.c (`if (sum_sq >= 0x400) { island } else { LUT }`) and s6/v4.c (v3 plus the pre-branch copy), compiled with the canonical flags.
+- result: v3 emits 149 lines vs 148 for candidate.c (+1 insn) and moves 21 asm lines; the target's own shape is ours (asm/funcs/func_80018094.s:71 `beqz $v0,.L800181C0` branches TO the island). v4 is byte-identical to v3 - with the island as the fall-through, cse folds the copy without even needing the follow-jumps path. Banked as rejected/inner-arms-swapped-island-fallthrough-plus-one-insn.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with the inner arms swapped

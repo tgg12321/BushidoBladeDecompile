@@ -383,3 +383,88 @@ form alone); a dead `log2_val = lz_in;` store as a live-extend carrier (sandbox 
 - [s5] Campaign telemetry: s5-w1-tiedcopy, base score 55, 38,542 iterations, 3 finds, entire useful yield at 23 s. Harvested with --stop; `permuter_campaign.py status` reports 0 live campaigns at session end.
 
 - [s5] src/code6cac.c was reverted to its INCLUDE_ASM state at session end; the tree carries only memory/grind ledger changes.
+
+## s6 (structural, 2026-09-09) — the s5 frontier's central mechanism is REFUTED; the residual is a global.c conflict-set problem, not a local-vs-global one
+
+Chassis re-measured at dispatch: candidate.c spliced into src/code6cac.c gives
+`sandbox func_80018094 --disable all` == **7** (rules_dropped 0, cheat_asm_stripped 20).
+The s5 w6 body (rejected/tied-copy-dowhile-wrap-…-equal-floor-7.c) re-measures **7** as well.
+Unchanged from s4/s5.
+
+**1. The pass that deletes the pre-branch copy is cse.c, and the predicate is now named.**
+s1 H7 ("`lz_in = sum_sq;` before the branch is deleted") was re-measured on the floor-7 chassis at
+two declaration scopes (else-arm block, function top): both are BYTE-IDENTICAL to candidate.c
+(s6/v1.s == s6/v2.s == s6/w0.s). Dump attribution, not inference: in `s6/d_v1/v1.i.jump` the copy
+is `insn 103 (set (reg/v:SI 99) (reg/v:SI 77))` and the island asm's input operand is `reg/v:SI 99`;
+in `v1.i.cse` the operand is `reg/v:SI 77` and insn 103 is gone. The substitution is cse's
+extended-path walk: `cse_end_of_basic_block`'s follow-jumps arm
+(tools/gcc-2.7.2/cse.c:8102-8117) extends the path THROUGH the `beqz` into the island block
+because (a) `LABEL_NUSES (island label) == 1` and (b) the insn before the label is the BARRIER
+emitted after the LUT arm's `j` to the merge. Both predicates are properties of the target's own
+control-flow shape, so no declaration-scope respelling touches them.
+Attempting to break (a) with a redundant second conjunct (`sum_sq < 0x400 && sum_sq >= 0`,
+s6/d1.c, s6/d2.c) does nothing: jump optimisation folds the redundant test away and the output is
+byte-identical to candidate.c.
+
+**2. THE REFUTATION.** s5's frontier said: "the target's copy must be a cross-block GLOBAL allocno
+defined in the pre-branch block; a tied asm operand structurally cannot produce that shape, and
+that is why ours takes $v1". Measured with a diagnostic compile (scratch only, never a build
+path): `cc1 … -fno-cse-follow-jumps -fno-cse-skip-blocks` on s6/v1.c makes the pre-branch copy
+SURVIVE, and `v1.i.lreg` confirms reg 99 is not a local qty while `v1.i.greg` lists it in
+";; 13 regs to allocate: 98 78 120 77 99 …" — i.e. it is exactly the cross-block GLOBAL allocno
+s5 asked for, and reorg parks it in the `beqz` delay slot in the target's exact position
+(s6/v1.diag.s:95 `move $3,$5` under `beq $2,$0,.L6`). **It still takes $3, not $a0.**
+So local-vs-global allocation is NOT the discriminator. Root cause: `tools/gcc-2.7.2/config/mips/mips.h`
+defines no `REG_ALLOC_ORDER`, so global.c's `find_reg` and local-alloc's `find_free_reg` both scan
+hard regs ascending; with $2 blocked by the island's clobber list, $3 is the first free register
+for either allocator.
+
+**3. What the greg dump says the target's seat actually requires.** From `s6/d2_v1/v1.i.greg`
+(the surviving-copy chassis): allocation order `98 78 120 77 99 95 …`; `98 preferences: 4`;
+`98 conflicts: 72 73 77 98 2 3 29`; `99 conflicts: 72 73 77 99 2 12 29`;
+dispositions `77 in 5, 78 in 3, 98 in 4, 99 in 3`. The copy (99) reaches $3 because it does NOT
+conflict with 78 (`scale`, seated in $3). The target's seats are copy=$a0(4), log2_val=$a1(5),
+sum_sq=$a1(5), li_v0=$v0(2). Reproducing them requires TWO simultaneous conflict-set changes:
+(i) 99 must conflict with 78 so $3 is closed to it, and (ii) 98 must stop conflicting with 77 so
+it can share $5 with sum_sq. Neither is a spelling of the copy — both are liveness facts about
+`scale` and `log2_val`.
+
+**4. The s4 log2_val staging is load-bearing and is also (ii)'s obstacle.** Removing it from the
+tied chassis (s6/t4.c) measures sandbox **11**; removing it from the copy chassis moves sum_sq to
+$a0 (s6/v5.diag.s `move $3,$4`). The staging is precisely what makes 98 conflict with 77 — which
+is what keeps sum_sq at $a1 (worth 3 insns since s4) and simultaneously forces 98 onto its
+preferred $4, the register the target needs for the copy.
+
+**5. Declaration-order levers measured inert or worse.** Hoisting `s32 li_v0 = -2;` above the
+island (so its qty is born before the copy) leaves the copy at $3 and pushes it OUT of the delay
+slot (s6/t1.s:108 vs t0.s:95) — worse. Hoisting only the declaration (s6/t2.c) is byte-identical
+to w6. Swapping the inner arms so the island is the fall-through (s6/v3.c) costs +1 insn, and the
+pre-branch copy on top of it (s6/v4.c) is byte-identical to v3 (cse folds it without needing the
+follow-jumps path at all).
+
+- [s6] HEAD chassis re-measured: candidate.c == sandbox 7; the s5 w6 tied body == sandbox 7.
+- [s6] cse.c is the pass that deletes the pre-branch copy; the gate is cse_end_of_basic_block's follow-jumps arm at tools/gcc-2.7.2/cse.c:8102 (LABEL_NUSES==1 + preceding BARRIER). Dump-proven via v1.i.jump vs v1.i.cse.
+- [s6] REFUTED (s5 frontier item 1): making the copy a cross-block GLOBAL allocno does NOT give it $a0. Diagnostic -fno-cse-follow-jumps build keeps it global (greg allocno 99) in the target's exact delay-slot position and it still takes $3.
+- [s6] Mechanism for that: MIPS has no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so both allocators scan ascending; $2 is blocked by the island clobber and $3 is the first free reg.
+- [s6] The target's seats need TWO conflict-set changes, both about OTHER pseudos: the copy must conflict with 78 (scale, $3) and 98 (log2_val) must stop conflicting with 77 (sum_sq) so both can sit at $5.
+- [s6] The s4 log2_val staging is load-bearing (removing it: tied chassis sandbox 7 -> 11) AND is what creates the 98-77 conflict blocking (ii).
+
+- [s6] HEAD chassis re-measured this session: candidate.c spliced into src/code6cac.c gives `sandbox func_80018094 --disable all` == 7 (rules_dropped 0, cheat_asm_stripped 20). The s5 w6 tied body re-measures 7 as well. The dispatch brief's 'measurement unavailable' is resolved: the ledger floor 7 is correct.
+
+- [s6] PASS ATTRIBUTION (dump-proven): the pre-branch island-input copy is deleted by cse.c, not by combine or flow. tmp/grind/func_80018094/s6/d_v1/v1.i.jump carries `insn 103 (set (reg/v:SI 99) (reg/v:SI 77))` with the asm operand as reg 99; v1.i.cse has the operand as reg 77 and no insn 103.
+
+- [s6] The gate is cse_end_of_basic_block's follow-jumps arm (tools/gcc-2.7.2/cse.c:8102-8117): it extends cse's path through the `beqz` into the island block because LABEL_NUSES(island label)==1 and the insn preceding the label is the BARRIER emitted after the LUT arm's `j` to the merge. Both are properties of the target's own control-flow shape.
+
+- [s6] REFUTATION of the s5 frontier: a diagnostic compile with -fno-cse-follow-jumps -fno-cse-skip-blocks makes the pre-branch copy survive as a genuine cross-block GLOBAL allocno (absent from v1.i.lreg's local-qty list; present in v1.i.greg's ';; 13 regs to allocate: 98 78 120 77 99 ...'), parked by reorg in the `beqz` delay slot in the target's exact position - and it is still assigned $3, not $a0.
+
+- [s6] Mechanism for that refutation: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so global.c find_reg and local-alloc find_free_reg both scan hard registers ascending. With $2 closed by the island's clobber list, $3 is the first free register for either allocator. Local-vs-global is not the discriminator for this seat.
+
+- [s6] greg conflict data on the surviving-copy chassis (s6/d2_v1/v1.i.greg): allocation order `98 78 120 77 99 95 127 132 137 72 93 73 92`; `98 preferences: 4`; `98 conflicts: 72 73 77 98 2 3 29`; `99 conflicts: 72 73 77 99 2 12 29`; dispositions `77 in 5, 78 in 3, 98 in 4, 99 in 3`. The copy reaches $3 only because it does NOT conflict with 78 (scale).
+
+- [s6] The target's seats are copy=$a0, log2_val=$a1, sum_sq=$a1, li_v0=$v0. Reproducing them needs two simultaneous conflict-set changes about OTHER pseudos - 99 must conflict with 78 (scale, $3) so $3 closes, and 98 must stop conflicting with 77 so it can share $5 with sum_sq. Neither is a spelling of the copy itself.
+
+- [s6] The s4 log2_val staging is load-bearing AND is the obstacle to the second of those changes: removing it costs 4 insns on the tied chassis (sandbox 7 -> 11) and moves sum_sq to $a0 on the copy chassis, because the staging is exactly what creates the 98-77 conflict.
+
+- [s6] Declaration-order levers measured: hoisting `s32 li_v0 = -2;` above the island keeps the copy at $3 and pushes it out of the delay slot (worse); hoisting only its declaration is byte-identical; swapping the inner arms costs +1 insn and lets cse fold the copy without the follow-jumps path.
+
+- [s6] src/code6cac.c was reverted to its INCLUDE_ASM state at session end; the tree carries only memory/grind ledger changes and tmp/ scratch.
