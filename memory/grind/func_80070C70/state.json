@@ -1,0 +1,56 @@
+{
+ "func": "func_80070C70",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 101,
+   "modality": "recon",
+   "headline": "Floor 194 (no C body on HEAD) -> 101: de-cheated the retired chassis, fixed both flagged declarations to arrays, and sized IconC70 to 0x20; residual is a 5-seat callee-saved rotation plus one extra re"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 7th callee-saved register is loop.c's marginal (savings 1) hoist of &D_800A3590 at insn 312; kill the hoist and the giv reduction that depends on its `add (reg 126)` term goes with it, taking the frame to 0x80 and freeing a seat for the rotation.",
+   "mechanism": "loop.c move_movables hoists the loop-invariant symbol address into pseudo 126; the resulting giv combines with the load's giv at 319 and clears a reduction threshold the bare `mult 2 add 0` giv at 315 fails. Removing the invariant term drops the benefit back below threshold.",
+   "next_probe": "Ordinary-C avenues first, in order: (a) restructure the inner `if` so pseudo 126's life shrinks or the address is reachable on fewer paths; (b) sink the whole `prim.p_static = ...` computation into the two arms of the mode `if` (the duplicated-statement family is available if the plain form does not do it); (c) anything that raises inner-loop register pressure, since savings 1 is a one-vote margin. Only once those are spent and banked does .claude/rules/defeat-licm-hoist-var-reuse.md become the relevant family, and it is FAKE-gated so it needs this exhaustion ledger to be real first."
+  },
+  {
+   "hypothesis": "The remaining 101 is a 5-seat callee-saved rotation that should be typed by the solver rather than probed by hand.",
+   "mechanism": "local-alloc/global-alloc seat assignment: arg0 wants $s1, var_s0 wants $s0, ctx wants $s2, var_s3 wants $s3, c60 wants $s4. Because almost every scored insn names a register, this rotation is what the 101 is made of - which is exactly why the s1 diagnostic that changed the array's index variable moved the score by 0.",
+   "next_probe": "Run tools/ra_solver (global.c + local-alloc models) via inverse_compose.py classify on the floor-101 chassis, once with the extra H3 allocno present and once with it absent, for a typed REACHABLE/FORECLOSED verdict plus a ranked C-lever vector. If the 6-allocno case comes back FORECLOSED, do the H3 hoist work first and re-classify."
+  },
+  {
+   "hypothesis": "IconC70's real tail layout (bytes 0x8..0x20) is recoverable from func_80069898's other callers, replacing the placeholder that currently blocks submission.",
+   "mechanism": "The 0x20 size is proven by frame arithmetic, but candidate.c spells the tail as `s16 sp50[12]`, which is a placeholder rather than evidence and would not survive review. func_80069898's other callers write the fields this function leaves alone, and their asm names the real offsets and widths.",
+   "next_probe": "Read the $a1-relative stores in func_8006B120, func_8006CFBC, func_800720FC, func_80074488 and func_8006F97C, build the true field list, replace the placeholder, re-measure, and propagate the corrected type to func_8006F97C's ledger."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Introducing a named intermediate local for the D_800A3590[var_s0] read, i.e. `s32 h; h = D_800A3590[var_s0]; prim.p_static = t + (h << 4);`, changes the strength-reduction decision on the array-addres",
+   "kill_scope": "instance",
+   "measured_on": "floor-101 chassis (de-cheated body + array declarations + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10",
+   "predicate_cite": "",
+   "result": "101 -> 101, no codegen change at all. The dump still prints `giv at 319 reduced to (reg:SI 159)`. Both spellings lower t"
+  },
+  {
+   "session": 1,
+   "statement": "Changing which induction variable feeds the D_800A3590 address (indexing by the +3 biv ctx_or_var_s2 instead of by var_s0) moves the score.",
+   "kill_scope": "instance",
+   "measured_on": "floor-108 chassis (de-cheated body + array declarations, IconC70 still 8 bytes), no FAKE constructs present, sandbox --disable all, 2026-09-10",
+   "predicate_cite": "",
+   "result": "108 -> 108, exactly zero movement, and the prologue still saved 7 callee-saved registers with a 0x70 frame. This is the "
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T14:58:44.782596+00:00",
+ "object_model_audited": 1
+}
