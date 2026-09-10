@@ -1740,3 +1740,18 @@ combine/orphan question on the TOP-TEST chassis, which remains the only untried 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the 7-point top-test (for-loop) chassis with u16 rect[4], extern s16 D_800A3558 and no casts; FAKE constructs present: s32 c60 = 0x60 only; sandbox --disable all
+
+## s17 (structural) — CLOSED: the function byte-matches (0/194, oracle SHA1 verified)
+
+- **CONFIRMED (the match):** the guard-block residual is a MEM_IN_STRUCT_P disambiguation
+  question, not a scheduling-tie question. `((GameObj *)arg0)->field_18` for the
+  `*(arg0 + 0x18)` accesses removes the false data dependence at sched.c:817 (true_dependence)
+  and takes the floor 7 -> 2; writing the six-iteration loop as
+  `for (var_s0 = 0; var_s0 < 6; var_s0++)` takes 2 -> 0.
+- **KILLED (instance, this chassis):** `s32 c60 = 0x60;` can be replaced by the inline literal
+  (7/191), by a `const` local (7), or dropped (7). Retained + FAKE-annotated.
+- **KILLED (instance, this chassis):** the second `prim.zero1C = 0; prim.mode = 0;` pair is
+  removable (2) or halvable (1) — it is not; both stores are in the target's bytes.
+- **KILLED (instance, this chassis):** a `GameObj *o` alias local is equivalent to inline casts
+  (18 vs 0).
+- No frontier remains: the function is COMPLETED-C material pending Judge review.

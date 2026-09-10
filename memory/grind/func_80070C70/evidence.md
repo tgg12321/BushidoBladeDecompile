@@ -1048,3 +1048,50 @@ root (the Bash tool here is Git Bash, not WSL - `bash tools/wsl.sh` is the bridg
 - [s16] Sanity note for a later session: a generator that reuses s15/gen1.py's default FOR macro inherits the LOSING bound association (D_800A35B0 + D_800A3558 + 1) and the (s16)-cast mode test, which alone costs 10 points (17 vs 7). tmp/grind/func_80070C70/s16/gen4.py shows the two .replace() calls that fix it; v3 is the mis-based sweep kept only as the control that proved the axis inert at 17.
 
 - [s16] s16 rejected forms banked: rejected/s16-hoist-D_800A35B0-local-preheader-23.c, s16-himode-carrier-D_800A3558-local-32.c, s16-named-temp-for-0x18-increment-8.c, s16-modetest-operand-swap-8.c, s16-modetest-clause-order-swap-15.c.
+
+## s17 (structural, 2026-09-10) — 7 -> 0 / 194, BYTE MATCH, full-build SHA1 == oracle
+
+- [s17] **THE MECHANISM.** `tools/gcc-2.7.2/sched.c:817 true_dependence` returns 0 when
+  `MEM_IN_STRUCT_P(store) && rtx_addr_varies_p(store) && GET_MODE(store) != QImode &&
+  !MEM_IN_STRUCT_P(load) && !rtx_addr_varies_p(load)`. s16 closed the 5-insn guard-block
+  residual as "the three gp loads carry a data dependence on the `*(arg0 + 0x18) += 0xC`
+  store", which was correct but INCOMPLETE: the dependence exists only because a pointer-cast
+  deref (`*(s32 *)(arg0 + 0x18)`) never sets MEM_IN_STRUCT_P. Spelling the access as a
+  COMPONENT_REF (`((GameObj *)arg0)->field_18`) sets it, the loads (symbol_ref, fixed address,
+  not in a struct) become independent of the store, and sched.c produces the target's
+  interleave. **7 -> 2 in one edit.** (tmp/grind/func_80070C70/s17/v1.json)
+- [s17] Granularity measured: all 12 `arg0 + 0x18` sites as struct members = 2; only the four
+  sites of the pre-third-loop block = 2; only the store's LHS = 2; only the store's RHS (the
+  read) = 7. It is the STORE's MEM that must be in-struct - which is exactly what the predicate
+  says (the store is `mem`, the loads are `x`).
+- [s17] A `GameObj *o = (GameObj *)arg0;` alias local instead of inline casts costs 18 (the
+  alias pseudo takes a register seat). Inline casts at each use are both cheaper and honest.
+- [s17] **2 -> 0.** On the struct-store chassis the second loop's induction-variable initialiser
+  is NO LONGER INERT (s16's kill was explicitly chassis-relative). Writing that loop as
+  `for (var_s0 = 0; var_s0 < 6; var_s0++)` - initialiser in the loop header instead of the entry
+  block - flips the `addiu a0,sp,24` / `move s0,zero` prologue tie to the target's order. All 13
+  entry-block positions from the first `func_8007352C` call onward also give 0; the 4 positions
+  before it stay at 2. (s17/v2.json, 31 spellings)
+- [s17] The `prim.p_static = t; prim.p_static = t + (D_800A3590[i] << 4);` dead store is NOT
+  required: the compound `prim.p_static += D_800A3590[i] << 4;` (ordinary split-init
+  accumulation) is also 0. Dropping the first store entirely costs 22. (s17/v4.json)
+- [s17] The duplicated `prim.zero1C = 0; prim.mode = 0;` pair is ORIGINAL CODE, not a coercion:
+  asm/funcs/func_80070C70.s emits `sw zero,48(sp)` / `sw zero,52(sp)` before the `lw s2,100(v1)`
+  context fetch and again after it. Single occurrence = 2, half of it = 1, both = 0. 20
+  single-occurrence positions/orders swept (s17/v4.json).
+- [s17] `s32 c60 = 0x60;` remains load-bearing on this chassis too: inline literal = 7/191,
+  `const`-qualified = 7, split init (`s32 c60; c60 = 0x60;`) = 0, position after the other decls
+  = 0. The target holds the constant in a callee-saved register (`li s4,96` + three
+  `move a1,s4`), which is what a live-across-call C local produces. FAKE-annotated under
+  .claude/rules/named-local-fake-exception.md. (s17/v5.json)
+- [s17] The s15 `IconC70 { ...; s16 sp50[12]; }` frame-coercion field is NOT needed on this
+  chassis and has been removed; so has the wrong `extern s32 func_80069898(s32, s32 *, s32);`
+  m2c prototype. Kept declaration edits: `extern s16 D_800A3558;`, `extern u8 D_800A3560[];`,
+  `extern s16 D_800A3590[];` (the last two applied at the ORIGINAL declaration site, lines
+  2124/2129, not as a second conflicting declaration).
+- [s17] `& tools/wteng.ps1 main verify-oracle` -> ok:true, build_sha1 ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa. The TU-wide declaration changes break nothing.
+- [s17] **Transferable lesson for every sibling in this repo:** when a scheduler residual is
+  "loads pinned after a base-register store", the question is not the schedule, it is whether
+  the store is a COMPONENT_REF. Pointer-cast derefs (`*(s32 *)(p + N)`) suppress GCC 2.7.2's
+  only memory-disambiguation heuristic; typed struct access restores it.

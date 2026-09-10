@@ -119,7 +119,9 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "s32 ctx = var_s0 * 3;  /* in the third loop: code = D_800A3560[ctx]; */  \u2014 no annotation, not listed in the self-vet"
+ ],
  "kills": [
   {
    "session": 1,
@@ -546,10 +548,22 @@
    "result": "Dead by a wide margin - best 23 (a lone `b = D_800A35B0;` before the store), every HImode carrier 32-37, every two-carri"
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 11,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T14:58:44.782596+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Nearly clean \u2014 c60, the duplicated zero-init pair, g/t, rect and the declaration fixes all verified legitimate \u2014 but the load-bearing `s32 ctx = var_s0 * 3;` named intermediate ships with no /* FAKE */ annotation and is absent from the self-vet's CONSTRUCTS list and family claims, so its family's prong-6 prerequisite is unmet. Next action: NO construct ban \u2014 `s32 ctx = var_s0 * 3;` is inside the sanctioned named-intermediate family and may stay exactly as written. The remedy is byte-neutral and needs no re-grind: (1) annotate the declaration, e.g. `s32 ctx = var_s0"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "032a02d423a75c06",
+   "when": "2026-09-10T20:26:58.626582+00:00",
+   "summary": "Nearly clean \u2014 c60, the duplicated zero-init pair, g/t, rect and the declaration fixes all verified legitimate \u2014 but the load-bearing `s32 ctx = var_s0 * 3;` named intermediate ships with no /* FAKE */ annotation and is absent from the self-vet's CONSTRUCTS list and family claims, so its family's pr"
+  }
+ ]
 }
