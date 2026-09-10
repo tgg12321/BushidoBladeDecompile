@@ -20,27 +20,26 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    # LANE MODELS — owner directive 2026-09-07 (evening; supersedes the same-day
-    # "all lanes on Opus" directive): Judge on Fable 5.1, execution sessions on
-    # Opus, every other lane on Fable 5.1.
+    # LANE MODELS — owner directive 2026-09-10 (supersedes the 2026-09-07
+    # evening split): ALL lanes on Opus 5. Fable 5.1's allowance was exhausted,
+    # so every Fable-pinned lane was spending its first spawn discovering the
+    # limit and then falling back to Opus anyway.
     #
-    # History that shaped this: three Fable-allowance outages (2026-08-12 judge
+    # History that shaped this: four Fable-allowance outages (2026-08-12 judge
     # 429 x5 over 2.5 h; 2026-09-06 execution lane 429 x5; 2026-09-07 recon lane
-    # 429 x16, ~7 h of backoff on func_800238C4) each stalled the whole
-    # pipeline because a lane was HARD-pinned to a model with its own
-    # exhaustible allowance. The fix is not "never use Fable" but "never let a
-    # Fable limit block": every lane pinned to a non-$FallbackModel model falls
-    # back to $FallbackModel for the rest of that limit window the moment a
-    # spawn dies on a usage-limit 429 (see Invoke-GrindAgent / Get-LaneModel).
-    # Quality where it pays (Judge, recon, object-model, layer-1) and volume
-    # where it is cheap (execution), with no single point of failure.
+    # 429 x16, ~7 h of backoff on func_800238C4; 2026-09-10 owner report) each
+    # stalled the pipeline because a lane was HARD-pinned to a model with its
+    # own exhaustible allowance. The runtime fallback (Invoke-GrindAgent /
+    # Get-LaneModel) stays in place for whichever model is limited next: any
+    # lane pinned to a non-$FallbackModel model falls back to $FallbackModel for
+    # the rest of that limit window the moment a spawn dies on a 429.
     #
-    # `claude-fable-5[1m]` still resolves to Fable 5 (probed 2026-09-01), so
-    # Fable 5.1 is pinned by its explicit id.
+    # To split lanes again, pass e.g. -JudgeModel 'claude-fable-5-1[1m]'
+    # explicitly ('claude-fable-5[1m]' resolves to Fable 5, not 5.1).
     [string]$Model = 'claude-opus-5[1m]',              # execution sessions
-    [string]$ReconModel = 'claude-fable-5-1[1m]',      # recon + object-model sessions
-    [string]$JudgeModel = 'claude-fable-5-1[1m]',      # the default-FAIL Judge
-    [string]$Layer1Model = 'claude-fable-5-1[1m]',     # pre-Judge cheat-reviewer gate
+    [string]$ReconModel = 'claude-opus-5[1m]',         # recon + object-model sessions
+    [string]$JudgeModel = 'claude-opus-5[1m]',         # the default-FAIL Judge
+    [string]$Layer1Model = 'claude-opus-5[1m]',        # pre-Judge cheat-reviewer gate
     # Fallback for ANY lane whose model hits a usage-limit 429 (see above).
     [string]$FallbackModel = 'claude-opus-5[1m]',
     [int]$SessionTimeoutMin = 90,

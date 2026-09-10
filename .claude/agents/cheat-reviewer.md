@@ -8,7 +8,7 @@ description: >
   test. Replaces the missing semantic-review step in the previous workflow,
   where mechanical detectors + sandbox==0 + SHA1==oracle were treated as
   sufficient evidence of compliance — they aren't.
-model: sonnet
+model: opus
 tools: ["Read", "Grep", "Glob", "Bash", "PowerShell"]
 ---
 
