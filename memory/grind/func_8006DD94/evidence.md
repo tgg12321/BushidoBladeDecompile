@@ -145,3 +145,95 @@ the target lacks); passing the struct member itself (`s.semi`) instead of a loca
 null-pointer constant cast at the call site with no local (`(s32)(s32 *)0`, 8 — folded
 like any constant); the same named zero given a THIRD, in-loop read (`s.y = semi;` in
 the else branch, 1).
+
+## s3 (recon, 2026-09-10; dispatched as "session 1" after the s2 layer-1 FAIL) — chassis: HEAD (INCLUDE_ASM, floor 117) + the s2 candidate re-applied
+
+OBJECT MODEL: D_800A374C — **MATCHES**, unchanged from s1. The existing `extern s32
+D_800A374C;` plus the `sdata_exclude.txt:69` row (`func_8006DD94: D_800A374C`) gives the
+target's `lui %hi / lw %lo` + `addiu 0x28` shape; the body that measures sandbox 0 this
+session uses that declaration untouched, so the symbol's object model is byte-confirmed,
+not merely plausible. No other global the function touches is flagged (D_800A352C,
+D_800A3514, D_800A34FC all read gp-relative through their pre-existing file-scope
+`extern s32` declarations and are byte-exact).
+
+### The ENTIRE remaining residual is one 8-byte stack displacement
+
+Re-measured from the s2 body with the two trailing `EnvB` words deleted (i.e. the plain
+0x2C descriptor + a separate `u16 rect[4]`, which is what layer-1 would have accepted):
+
+| body | cc1 `.frame` | descriptor at | rect at | sandbox |
+|---|---|---|---|---|
+| 0x2C descriptor + separate `u16 rect[4]` | `vars= 56, regs= 7/0, args= 24` (frame 112) | sp+0x18 | sp+0x48 | **21** |
+| s2's 0x34 descriptor (two TRAILING words — BANNED) + separate rect | `vars= 64` (frame 120) | sp+0x18 | sp+0x50 | 0 |
+| merged frame-block struct, rect a member at struct 0x38 | `vars= 64` (frame 120) | sp+0x18 | sp+0x50 | **0** |
+
+The target (asm/funcs/func_8006DD94.s) writes the descriptor at sp+0x18..0x43 and the rect
+at sp+0x50..0x57, leaving sp+0x44..0x4F untouched. GCC 2.7.2 8-aligns every stack slot, so
+a 0x2C descriptor followed by a separate rect puts the rect at sp+0x48 — 8 bytes short. All
+21 differing insns are that displacement plus its knock-on `sw/lw` offsets; nothing else in
+the body is wrong. (Instrument: cc1's own `.frame` comment, per [[phantom-frame-slots-gcc272]];
+harness `tmp/grind/func_8006DD94/s1/sweep.py`, which patches the body, runs the project's
+exact `cpp | cc1`, and prints `vars=` plus the measured sp offsets of `&descriptor` and
+`&rect`.)
+
+### No scalar spelling reserves those bytes — measured, not inferred
+
+[[phantom-frame-slots-gcc272]] says GCC 2.7.2 can reserve locals bytes for ordinary LIVE
+locals no instruction touches, and names a minimal trigger (two HImode locals feeding an
+HImode bitwise expression). Swept on this chassis, every candidate DECLARED BETWEEN the
+descriptor and the rect (so that any phantom slot would land in the hole):
+
+| spelling | rect lands at | vars |
+|---|---|---|
+| base (nothing between) | sp+0x48 | 56 |
+| all scalars (`i`,`q`,`c`,`hdr`,`semi`) moved before the rect | sp+0x48 | 56 |
+| `s16 aa, bb;` + `s.x = (aa & ~bb) & 1;` (the memory note's own trigger) | sp+0x48 | 56 |
+| `s16 cc;` + `s.x = cc & 1;` | sp+0x48 | 56 |
+| `s64 acc;` + a 64-bit multiply | sp+0x48 | 56 |
+| `s16 i;` hoisted above the rect | sp+0x48 | 56 |
+| `u16 uv[4];` written four times | **sp+0x50** | **64** |
+| `s32 t[2];` written and read | **sp+0x50** | **64** |
+| `s32 t[3];` written and read | sp+0x58 | 72 |
+
+Conclusion: on THIS function only a declared 8-byte AGGREGATE moves the rect to sp+0x50,
+and a written one materialises stores at sp+0x44..0x4B that the target does not contain
+(the `u16 uv[4]` row emits `sh` at 72/74/76/78). GCC 2.7.2 assigns stack slots to
+top-of-function decls in declaration order before any statement is expanded, so an
+`assign_stack_temp` — which is allocated during statement expansion — can only land ABOVE
+the rect and can never fill this hole. The phantom-live-local escape hatch is measured
+CLOSED here.
+
+### The merged frame-block struct (the s3 form) — bytes proven
+
+Modelling the function's whole stack-locals block as ONE struct puts the three unknown
+words BETWEEN two used members instead of at the end: descriptor fields at struct
+0x00..0x2B (the address `&s.header` = sp+0x18 is what goes to func_8007352C, bit-identical
+to s2's `&s`), three unwritten words `sp44/sp48/sp4C` at struct 0x2C..0x37, and the screen
+rect as a real member `u16 rect[4]` at struct 0x38 => sp+0x50. Measured this session with
+that exact body in src/text1b.c: `sandbox func_8006DD94 --disable all` = **score 0**
+(117/117, rules_dropped 0) and `verify-oracle` = **build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true**. Two filler words instead of
+three puts the rect member at struct 0x34 => sp+0x4C and scores 5 (banked in rejected/) —
+the frame is already right there, which isolates the last 5 insns to the rect's own
+address+stores.
+
+### In-file precedent for unwritten INTERIOR members in already-accepted C
+
+- `S_69AE4`, src/text1b.c:5424-5426 — the stack-block struct of func_80069AE4, which is
+  COMPLETED-C and off the queue. Its members are named for their sp offsets; sp24, sp38 and
+  sp3C are never written by func_80069AE4 (verified against asm/funcs/func_80069AE4.s: the
+  descriptor-relative writes are 0x0,0x4,0x8,0x10,0x14,0x18,0x1C,0x28 only) and are followed
+  by the written member sp40. Its descriptor is passed as `&s.sp18` (src/text1b.c:5498) —
+  the same "address of the first member of a frame-block struct" idiom this body uses.
+- `EnvA`, src/text1b.c:6654-6669 — the descriptor type of COMPLETED-C func_8007352C, which
+  ships pad0C/pad20/pad24: interior members no caller writes.
+
+### The hole is a recurring family feature, not a one-off
+
+Census of every asm function that calls func_8007352C with a stack descriptor
+(`tmp/grind/func_8006DD94/s1/descensus.py`): after the descriptor's last written byte at
++0x2B, func_8006DD94 and func_8006F97C both jump to +0x38 (a 12-byte hole), func_80069F80
+and func_8006A1A0 jump to +0x40 (20 bytes), func_80070188 jumps to +0x50 (36 bytes). All of
+those are still INCLUDE_ASM, so none is usable as decompiled precedent — but the pattern
+says whatever source idiom reserves the hole is shared across this whole render-function
+family, so a ruling here generalises to at least four more queue items.

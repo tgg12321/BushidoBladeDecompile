@@ -1,30 +1,42 @@
-/* func_8006DD94 - BEST FORM, session 2 (recon).  sandbox --disable all = 0 AND
- * verify-oracle build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa this session.
- * ORDINARY C - no FAKE construct, no pointer-clothed zero-holder.
+/* func_8006DD94 - BEST FORM, session s3 (recon).  sandbox --disable all = 0 (117/117,
+ * rules_dropped 0) AND verify-oracle build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+ * both measured THIS session with this exact body in src/text1b.c.
  *
- * What changed vs session 1's candidate: s1 believed an `s32` zero could not carry the
- * loop-invariant 0 into a callee-saved register ("cse folds it, score 8") and therefore
- * reached for `s32 *clut; clut = NULL;`.  That row is DISPROVEN.  Re-measured this
- * session on BOTH chassis: `s32 semi; semi = 0;` -> 0 and `s32 semi = 0;` -> 0.  The
- * mode of the local was never the mechanism; having a NAMED LOCAL rather than the
- * literal at the call is.  Deleting the local (literal 0 at the call) is the only thing
- * that costs the 8 insns - measured this session, rejected/no-local-literal-score8.c.
+ * RULING PENDING - do not submit this body as candidate-ready until the pipeline rules on
+ * the three unwritten INTERIOR words (sp44/sp48/sp4C).  See the s3 ruling_question.
  *
- * `semi` is semantically truthful, not a zero-holder: it is the semi-transparency mode.
- * It is consumed twice, both times as a semi-transparency operand:
- *   - `s.semi` is EnvA offset 0x10, which func_8007352C hands to SetSemiTrans
- *     (src/text1b.c:6790);
- *   - func_8006E480 (src/text1b.c:6106) computes (a0[0] & 0xFE1F) + (a0[1] << 7) + a1,
- *     i.e. a getTPage word whose bits 5-6 (the abr / semi-transparency field, cleared by
- *     the 0xFE1F mask) come from that second argument.
- * Mode 0 = no semi-transparency, consistently, in both consumers.
+ * What changed vs the layer-1-FAILed s2 body: s2 declared a function-local `EnvB` that was
+ * the 0x2C EnvA layout plus two TRAILING unwritten words, with the rect as a separate
+ * `u16 rect[4]` local.  Layer-1 FAILed exactly those two trailing words (banned construct).
+ * This body instead models the function's whole stack-locals block as ONE struct - the
+ * descriptor sub-range at offset 0 (passed to func_8007352C as &s.header, the same address
+ * the s2 body passed) and the screen rect as a real member at struct offset 0x38 => sp+0x50.
+ * The three unknown words now sit BETWEEN two used members instead of at the end.
  *
- * The EnvB typedef is the EnvA layout (src/text1b.c:6710) widened to 0x34 and MUST stay
- * function-local: widening the shared EnvA/S69E18 regressed COMPLETED-C func_8006BB68
- * from 0 to 17 (s1).  0x34 is what puts vars=64 / rect at sp+0x50 (s1).
+ * Why any filler is needed at all (measured, s3): GCC 2.7.2 8-aligns every stack slot, so a
+ * 0x2C descriptor followed by a separate `u16 rect[4]` puts the rect at sp+0x48 and the frame
+ * at 112; the target has the rect at sp+0x50 and the frame at 120.  The whole residual is
+ * that one 8-byte displacement (score 21 without it - rejected/separate-rect-0x2C-score21.c).
+ * s3 swept every scalar spelling that could plausibly leave a phantom slot in that hole
+ * (s16 pair feeding an HImode bitwise expr, s16 scalar, s64, declaration reordering,
+ * scalars-before-rect): NONE of them reserves a byte.  Only a declared aggregate does, and a
+ * WRITTEN one materialises stores the target does not have.
+ *
+ * In-file precedent for unwritten interior members in already-accepted C:
+ *   - `S_69AE4` (src/text1b.c:5424-5426), the stack-block struct of COMPLETED-C
+ *     func_80069AE4, whose members sp24/sp38/sp3C are never written and are followed by the
+ *     written member sp40; its descriptor is likewise passed as `&s.sp18`
+ *     (src/text1b.c:5498).  The sp<offset> member-naming convention here is taken from it.
+ *   - `EnvA` (src/text1b.c:6654-6669), the descriptor type of COMPLETED-C func_8007352C,
+ *     which ships pad0C/pad20/pad24 - interior members no BB2 caller writes.
+ *
+ * Everything else is inherited byte-confirmed from s1/s2 and must NOT be re-derived: the
+ * 3-iteration loop shape, the u8 colour triple written via the chained assignment, the s16
+ * counter, the rect store order, and the named `semi` local (deleting it costs 8 insns -
+ * rejected/no-local-literal-score8.c).
  */
 /* BEGIN func_8006DD94 */
-typedef struct EnvB {
+typedef struct S_6DD94 {
     s32 *header;
     s8  *table;
     s32  out;
@@ -38,13 +50,13 @@ typedef struct EnvB {
     u8   col_r;
     u8   col_g;
     u8   col_b;
-    s32  pad2C, pad30;
-} EnvB;
+    s32  sp44, sp48, sp4C;
+    u16  rect[4];
+} S_6DD94;
 extern s32 D_800A374C;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_8006DD94(s32 *arg0) {
-    EnvB s;
-    u16 rect[4];
+    S_6DD94 s;
     s16 i;
     s32 *q;
     s32 c;
@@ -74,7 +86,7 @@ void func_8006DD94(s32 *arg0) {
         s.header = (s32 *)hdr;
         s.table = (s8 *)(hdr + 0xC);
         s.out = arg0[5];
-        arg0[5] = func_8007352C((s32)&s);
+        arg0[5] = func_8007352C((s32)&s.header);
         SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, semi), 0);
         AddPrim(D_800A374C + 0x28, arg0[7]);
         arg0[7] += 0xC;
@@ -82,10 +94,10 @@ void func_8006DD94(s32 *arg0) {
 
     func_8006D808(&arg0[5], &arg0[7], q, s.ot_idx, -1);
 
-    rect[2] = 0x96;
-    rect[0] = 0xF5;
-    rect[1] = 0x25;
-    rect[3] = 1;
-    func_80069898((GameObj *)arg0, rect, 0x11);
+    s.rect[2] = 0x96;
+    s.rect[0] = 0xF5;
+    s.rect[1] = 0x25;
+    s.rect[3] = 1;
+    func_80069898((GameObj *)arg0, s.rect, 0x11);
 }
 /* END func_8006DD94 */
