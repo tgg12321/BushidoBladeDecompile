@@ -1974,3 +1974,4 @@
 - 2026-09-10 08:47 func_8006DD94 COMPLETED-C after 5 sessions (closer: s5 [synthesis]).
 - 2026-09-10 09:07 func_8005C6D0 s1 [recon] floor=5: First C body for func_8005C6D0: 118 -> 5 honest, register allocation and every relocation now identical; sole residual is the beq delay-slot fill.
 - 2026-09-10 09:29 func_8005C6D0: LAYER-1 FAILED a sandbox-0 candidate — The inner scan's `if ((s16)voice < 0x18)` guard duplicates the top-tested `for`'s own condition exactly — semantically null — and the candidate's own header comment plus evidence.md justify it purely by jump.c duplicate_loop_exit_test / reorg.c delay-slot prediction, which the self-vet's T3 answer flatly denies.
+- 2026-09-10 09:58 func_8005C6D0 COMPLETED-C after 2 sessions (closer: s2 [permuter]).
