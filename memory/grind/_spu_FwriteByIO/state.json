@@ -1,0 +1,56 @@
+{
+ "func": "_spu_FwriteByIO",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 3,
+   "modality": "recon",
+   "headline": "psyz/PsyQ libspu transplant lands 113/115 instructions byte-identical; floor 115 -> 3, and the target's 8 phantom frame bytes turn out to be an ordinary `for (i = 0; ...)` loop, not a dead local."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 2-word residual closes by getting cc1 to emit the loop-invariant `lui/lw %hi/%lo(_spu_RXX)` BELOW the fifo loop's guard branch, so the target's `blez` + `addu $v1,$zero,$zero` delay-slot pair appears and the load-delay nop disappears.",
+   "mechanism": "Unknown pass \u2014 ATTRIBUTE IT WITH A DUMP BEFORE SPELLING ANYTHING. Candidates are loop.c invariant hoisting into the preheader, jump.c duplicate_loop_exit_test reshaping the guard (the `if (num > 0)` guard and the `for`'s exit test are the same condition), and reorg.c delay-slot fill choosing `move $v1,$zero` over `addu $v1,$zero,$zero` placement.",
+   "next_probe": "`pwsh tools/grinder/dump.ps1 _spu_FwriteByIO` with candidate.c applied, then read tmp/grind/_spu_FwriteByIO/dumps/*.loop (is the _spu_RXX load recorded as a loop invariant moved to the preheader?) and *.sched / *.reorg (is the ordering set at scheduling or at delay-slot fill?). Only then spell a fix. The instrumented cc1 is tools/gcc-2.7.2/cc1."
+  },
+  {
+   "hypothesis": "Holding the `for (i = 0; ...)` init clause (required for vars=8) but changing WHAT the preheader holds moves the load below the branch.",
+   "mechanism": "loop_has_volatile blocks MEM invariant hoisting in GCC 2.7.2 loop.c, so a base address that is already a source-level local inside the guarded block cannot be re-hoisted; the already-matched _spu_init exploits exactly this at src/main.c:1721 with `vp = (volatile u16 *)_spu_RXX;` before its voice loop.",
+   "next_probe": "Sweep, one compile each via tmp/grind/_spu_FwriteByIO/s1/try.py: (a) `volatile u16 *fifo = (volatile u16 *)(_spu_RXX + 0x1A8);` initialised inside the guard, loop body `*fifo = *cur++;`; (b) same but `(volatile u16 *)_spu_RXX` with `fifo[0xD4] = ...`; (c) `b` derived from a value the guard already computed. Check `.frame ... # vars=` stays 8 first, then run the sandbox only on spellings that keep it."
+  },
+  {
+   "hypothesis": "Integer type choices on num / i / size shift the preheader ordering.",
+   "mechanism": "Signedness changes which compare pattern combine.c picks (slt vs sltu) and therefore what the guard branch consumes, which can change what is available to fill its delay slot.",
+   "next_probe": "One compile each via try.py with `num` as u32, `i` as u32, and `size` as `unsigned long`; the target's existing `sltiu $v0,$s1,0x41` and `slt $v0,$v1,$s0` already match, so treat this as a cheap elimination sweep rather than a lead, and record the kills."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Two unused plain `s32` locals (wt0, wt1) added to the transplant body reserve the target's 8 extra frame bytes.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 66e2f1e6e, CC_FLAGS -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float; no FAKE constructs present in the measured form.",
+   "predicate_cite": "",
+   "result": "vars= 0, frame $sp,40 unchanged, sandbox still 12. GCC 2.7.2 drops unreferenced non-volatile scalars before frame layout"
+  },
+  {
+   "session": 1,
+   "statement": "Marking those two locals `volatile` (Sony's vestigial WASTE_TIME macro locals, as banked bit-exact by Closer phase-3 session 11) is the way to reserve the 8 bytes and reach an honest zero.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 66e2f1e6e, same CC_FLAGS, with the two volatile unused pads present as the only FAKE-class construct in the body.",
+   "predicate_cite": "",
+   "result": "The real cc1 compile does give `.frame $sp,48 # vars= 8` (the target frame), but the sandbox blanks both declaration lin"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T09:28:04.621761+00:00",
+ "object_model_audited": 1
+}
