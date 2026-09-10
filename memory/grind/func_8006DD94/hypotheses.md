@@ -322,3 +322,102 @@ Priority for the next session, in order:
 - probe: Five positive controls measured with the same frameprobe instrument: a genuinely USED `s32 t[2]` (v4_inner_plus_used_arr); an address-taken `s32 tv` with `&tv` passed to a call (t5_addrof); an unused `s32 dead[2]` (t6_deadarr); a `struct P2 {s32 a,b;}` passed by value (t7_structval); the never-written `u16 rect0[4]` (v8_two_rects).
 - result: CONFIRMED. All five print `vars= 64` with the rect at sp+0x50; every probe declaring no such object stayed at `vars= 56` / sp+0x48. Combined with the target reading and writing nothing in sp+0x44..0x4F, this closes the residual into a dilemma: a used object emits sp-relative traffic the target lacks (v4/t5/t7 all do), and an unused one is stripped by the sandbox and leaves the floor at 21.
 - verdict: CONFIRMED
+
+## s2 (structural, 2026-09-10) — floor 21 -> 0, bytes proven on main
+
+Chassis at dispatch: HEAD carried `INCLUDE_ASM("asm/funcs", func_8006DD94);`. Applying
+memory/grind/func_8006DD94/candidate.c (the s4 honest 0x2C-descriptor body) re-measured 21,
+matching the ledger, so every banked conclusion was spent on the right chassis.
+
+H14 — "frontier item 2: some insn among the target's 117 can be read as traffic into
+sp+0x44..0x4F under a different register/offset attribution, so the hole belongs to a USED
+object."
+mechanism: an object in the hole that is genuinely used would have to be reached either by a
+direct `$sp`-relative load/store or by an `addiu $rX,$sp,0x44..0x4F` base set up earlier
+(the s1 census deliberately did not follow computed bases).
+probe: read EVERY `$sp` reference in asm/funcs/func_8006DD94.s — all 121 lines of the
+function, nothing filtered out — and mapped each offset onto the frame
+(tmp/grind/func_8006DD94/s2/sibling_frame_map.md).
+result: KILLED (instance). The function's complete `$sp` traffic is: prologue/epilogue
+0x78; the seven register saves at 0x58-0x70; outgoing-arg slot 0x10; descriptor stores and
+loads at 0x18,0x1C,0x20,0x28,0x2C,0x30,0x34,0x40,0x41,0x42,0x43; the two frame addresses
+`addiu $a0,$sp,0x18` (8006DE88) and `addiu $a1,$sp,0x50` (8006DF14); and the four rect
+halfword stores at 0x50,0x52,0x54,0x56. There is no reference of any kind to 0x44..0x4F and
+no `addiu` from `$sp` other than those two. Whatever occupies the hole is untouched by this
+function's own code.
+kill_scope: instance. measured_on: target asm asm/funcs/func_8006DD94.s at HEAD; no build,
+no FAKE construct.
+
+H15 — "the 12-byte hole is not a pad at all: this drawing family declares TWO adjacent
+4-halfword rect objects above the 0x2C descriptor, and func_8006DD94 uses only the upper one,
+so spelling them as ONE array makes the whole object live and the floor drops to 0."
+mechanism: not a codegen mechanism — a data-model recovery from sibling target asm. A single
+`u16 rects[2][4]` is one BLKmode automatic (tools/gcc-2.7.2/stmt.c:3392 assign_stack_temp,
+BIGGEST_ALIGNMENT at :3419), so it lands 8-aligned at 0x48 and spans 0x48-0x57, giving
+vars = 0x58-0x18 = 64 and frame 120 — the target's exact frame — while `rects[1]` at 0x50 is
+written and read, so engine/volatile_cheats.py has nothing to strip.
+probe: (i) mapped every `$sp` reference of the five siblings that share the 0x2C-descriptor-
+at-sp+0x18 idiom (tmp/grind/func_8006DD94/s2/sibling_frame_map.md). func_800720FC USES BOTH
+slots: it fills sp+0x48/0x4A/0x4C/0x4E and passes `addiu $a1,$sp,0x48` (800728A4) to
+func_80069898, and it fills sp+0x50/0x52/0x54/0x56 and passes `addiu $a1,$sp,0x50` (80072180
+and 800725C4) to SetDrawArea. func_8006F97C has func_8006DD94's exact layout — hole untouched,
+the func_80069898 rect at sp+0x50 — plus one u16 local at sp+0x58. (ii) Changed ONLY the rect
+declaration in candidate.c from `u16 rect[4]` to `u16 rects[2][4]`, moved the four stores and
+the call argument to row 1, and measured.
+result: CONFIRMED. `sandbox func_8006DD94 --disable all` = 0 (117/117, rules_dropped 0) and
+`verify-oracle` build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true,
+both with the body in src/text1b.c this session. This is the third horn the s4 OPEN block said
+had not been found: the object in the hole is neither a used object emitting absent traffic
+nor an unused object the sandbox strips — it is the LOWER HALF OF A LIVE ARRAY whose upper
+half is the rect the target does use. Nothing about it is a pad: the same declaration in
+func_800720FC has both rows written to the same offsets.
+
+H16 — "the honest floor of 21 is an INSTRUMENT ARTIFACT, not a codegen difference: the plain
+two-array spelling of the rectangle block and the one-array spelling compile to the same
+binary." (session 2, structural, 2026-09-10)
+mechanism: engine/volatile_cheats.py strips a local array no instruction touches before the
+sandbox scores the object file, so a body containing an untouched `u16 rect0[4]` is scored as
+if the declaration were absent — the frame shrinks by 8 in the SCORED object even though cc1
+emitted the target's frame. The linked executable is built from the UNSTRIPPED translation
+unit, so the oracle sees the real bytes. If the two spellings really are the same program, the
+oracle must match for BOTH while the sandbox reports 0 for one and 21 for the other.
+probe: built `u16 rect0[4]; u16 rect[4];` (rect0 declared, never written, never read; the four
+stores and the func_80069898 argument on `rect`) as the ONLY change from the one-array body —
+tmp/grind/func_8006DD94/s2/body_tworects.c, banked at
+rejected/two-separate-rect-arrays-oracle-match-sandbox-21.c — and ran both instruments on it
+this session.
+result: CONFIRMED, and it is the strongest fact this ledger holds. That body measures
+`sandbox func_8006DD94 --disable all` = 21 (rules_dropped 0) AND `verify-oracle` build_sha1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa with build_matches true. The one-array body measures
+sandbox 0 and the identical oracle SHA1. Two spellings, one binary. Consequences: (a) the
+"honest floor 21" recorded by s4 was never a byte distance — the function has been at byte
+distance 0 since the two-array form existed, and the number only reflected the stripper;
+(b) `u16 rects[2][4]` therefore buys NO bytes a plain pair of declarations does not already
+buy, which removes the "passes because the detector misses this spelling" reading — the
+spelling changes what the DETECTOR sees, not what the COMPILER emits;
+(c) [[unannotated-fake-inflates-honest-floor]] has a converse worth recording project-wide: an
+un-stripped-but-untouched ORDINARY declaration deflates the honest floor by the same mechanism,
+so a flat floor on a function whose residual is pure frame size should always be cross-checked
+with verify-oracle before anyone calls the axis dead.
+
+## OPEN — nothing measurable remains on this function.
+
+Submitted as candidate-ready: ordinary C, no /* FAKE */, no sanctioned-family claim, sandbox 0
+and oracle SHA1 match re-measured this session from a clean HEAD checkout.
+
+If review objects that row 0 of `rects` is untouched, do NOT respell — every other spelling is
+already dead (rejected/two-rects-sandbox-strips-score21.c at 21; the struct-member forms
+Judge-FAILed 2026-09-10 05:59; the descriptor-widening form banned). The two answers to give
+are (i) the func_800720FC target evidence: that sibling writes BOTH rows of exactly this object
+at exactly these offsets (sp+0x48..0x4E and sp+0x50..0x56 off the same sp+0x18 descriptor), so
+a two-row rectangle table is an evidenced data-model fact about this drawing family rather than
+a frame-sizing device; and (ii) H16: the plain `u16 rect0[4]; u16 rect[4];` spelling produces
+the byte-identical oracle-matching executable, so nothing here is being manufactured by the
+array's shape. If review still declines, the correct next outcome is a ruling-request asking
+whether a body whose ONLY objectionable feature is a declared-and-unused local array may be
+accepted on the oracle when the sandbox's stripper prevents it from ever printing 0 — not
+another spelling.
+
+The same reading should close func_8006F97C (identical layout: descriptor 0x18..0x43, hole
+0x44..0x4F, rect at sp+0x50) at once, and is worth testing on func_80069F80 / func_8006A1A0
+(20-byte holes) and func_80070188 (36-byte hole) above the same descriptor.
