@@ -81,3 +81,46 @@ branch, forcing a `nop` after the `lhu` and leaving the increment split at the l
 - probe: Isolated single edit from the scalar-local form to the pointer-local form on an otherwise identical body; `sandbox func_8005C6D0 --disable all`.
 - result: Score moved 57 -> 37 on that one edit; the disassembly then shows `lw $a2,0($v1)` followed after the 0x10($sp) store by `lw $v0,0($v1)` at the same indices as the target (0x8005C7DC / 0x8005C7F0). Also confirmed in the same sweep: `vab` must be u16 (the target's `andi $v1,$a1,0xFFFF` is HImode zero-extend-before-compare; an s16 carrier emits a second `lh`), and the note word must be u32 (target uses `srl`, an s32 carrier emits `sra`).
 - verdict: CONFIRMED
+
+## s2 (structural, 2026-09-10) — H4 CLOSED, function MATCHED at distance 0
+
+### H4 — the score-5 residual is the `beq $v0,$s5` delay-slot fill
+**CONFIRMED and CLOSED.** Root cause read out of the instrumented reorg.c trace
+(BB2_DBR_DEBUG=1), not inferred: `mostly_true_jump` (tools/gcc-2.7.2/reorg.c:1379) returns 0
+for this EQ branch because no loop note sits next to its target label, so
+`fill_eager_delay_slots` (tools/gcc-2.7.2/reorg.c:3812) tries the FALL-THROUGH thread first,
+rejects the `lhu $a1` on `may_trap_p`, and steals the `li $v0,6` compare constant into the
+slot. Fixed by spelling the inner voice scan as a top-tested `for` inside the existing
+explicit guard, which lets jump.c's `duplicate_loop_exit_test` (tools/gcc-2.7.2/jump.c:2338)
+rotate the loop and emit the `NOTE_INSN_LOOP_VTOP` that flips the prediction; reorg then fills
+the slot from the loop-continue thread with `addiu $v0,$s0,0x1` as the target does.
+Measured 5 -> 2 (119 -> 118 insns).
+
+### H5 — the residual argument-setup order is fixed by the POSITION of `next = voice + 1`
+### relative to the SsUtKeyOnV call, not by the expression's shape
+**CONFIRMED (measured, five points).** With the statement before the call, the increment is
+emitted ahead of the argument setup and sched2 keeps it there (`addiu $s4 / sll $a0 /
+sra $a0`). Four rewrites of the expression in that position (before `ev`, first statement of
+the if-body, `next = voice + 1` without the inner cast, and split into `next = voice;
+next = (s16)(next + 1);`) all reproduce that order. Moving the statement AFTER the call —
+semantically identical, since SsUtKeyOnV cannot touch the local — emits it after the call,
+where sched2 hoists it back across the call (both `$s4` and `$s0` are callee-saved, so there
+is no dependency) into the target's slot between the `$a0` sign-extension and the `$a1`
+shift. Measured 2 -> 0.
+
+### H6 — the brief's SPLIT-AGGREGATE / declaration-pun signal is contradicted by the bytes
+**CONFIRMED (measured, not argued).** The aggregate/array-declaration spelling of the pool and
+the two volume symbols makes loop.c hoist `%hi(D_800EFB78)` into a callee-saved register
+(112 insns, frame 0x60) and is structurally different from the target, which emits three
+independent `lui %hi / addu $at / {lw,lbu,sw} %lo` triples against three distinct symbols and
+never shares a base register. The split `(u8 *)&SYM + off` spelling — identical to the one the
+byte-matching sibling func_8005C650 already ships on main at src/text1b.c:2685-2689 against
+the same three symbols — is what reaches distance 0. Banked as
+rejected/array-decl-licm-hoist-frame-0x60.c.
+
+### H7 — s1's two-offset-locals arrangement survives the chassis change
+**CONFIRMED (re-measured on the `for` chassis).** Single shared offset local: 105 insns (guard
+cross-jumped). Single shared local also used at the clear site: 99 insns. The s1 arrangement
+(pool load through its own local, volumes through a local declared inside the voice guard,
+clear site inline `i * 8`) is the only one of the three that reaches 118 insns, so the
+conclusion s1 banked on the do-while chassis holds unchanged on the matching chassis.

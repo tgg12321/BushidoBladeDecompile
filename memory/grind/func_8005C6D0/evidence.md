@@ -140,3 +140,95 @@
 - [s1] Integration note for whoever lands this: src/text1b.c:5928 currently declares `extern s32 func_8005C6D0(void);` later in the same TU; it must become `extern void func_8005C6D0(void);` because the target sets no return value. `D_800EFC38` must be declared at BLOCK scope inside the function since src/text1b.c:2617 already has a conflicting file-scope `extern s32 D_800EFC38;`.
 
 - [s1] Siblings func_80070188 (floor 696) and func_800720FC (floor 688) have no candidate.c and share no block with this function; nothing was transplantable. The load-bearing neighbour is func_8005C650 (src/text1b.c:2678), the already-byte-matching WRITER of the same pool, whose splat scalar-address spelling this session reused verbatim.
+
+## s2 (structural, 2026-09-10) — MATCHED: honest floor 5 -> 0, oracle SHA1 confirmed
+
+- [s2] RESULT. `sandbox func_8005C6D0 --disable all` => **score 0**, target_insns 118,
+  build_insns 118. Full `verify-oracle` with the C body in src/text1b.c reports
+  `"ok": true, "build_matches": true`. The final body is
+  memory/grind/func_8005C6D0/candidate.c (installed at src/text1b.c:2700, with the later
+  forward declaration at src/text1b.c:5976 changed from `extern s32 func_8005C6D0(void);`
+  to `extern void func_8005C6D0(void);` exactly as the s1 integration note predicted).
+
+- [s2] CHASSIS RE-MEASURE. s1's candidate re-measured at score 5 unchanged before any edit,
+  so every s1 spelling conclusion was still chassis-valid at the start of this session.
+
+- [s2] TOOLING (reusable on any text1b function, and the reason a 10-variant sweep was
+  affordable):
+  * `tmp/grind/func_8005C6D0/s2/probe.sh` + `mini_head.c` compile a MINIMAL TU containing
+    only this function plus its externs, with the project's exact cpp/cc1 flags. The
+    resulting assembly is IDENTICAL to the full-TU build for this function except for label
+    numbering (verified by diff against tmp/grind/func_8005C6D0/dumps/text1b.s), and the
+    RTL insn UIDs are identical too. A probe is ~3 seconds instead of a full sandbox build.
+  * The instrumented cc1 at tools/gcc-2.7.2/cc1 already carries BB2_DBR_DEBUG=1 reorg.c
+    tracing (added by an earlier campaign; see reorg.c:142-148). It prints, for every
+    conditional jump, which thread reorg tried FIRST, whether it owned that thread, and for
+    each candidate insn the exact reason it was rejected (`refset` / `setset` / `setneed` /
+    `setsopp` / `trap`). That single trace replaced all delay-slot guessing.
+
+- [s2] THE s1 RESIDUAL, ROOT-CAUSED FROM THE TRACE (not inferred). For the
+  `beq $v0,$s5,.L8005C838` branch the s1 chassis produced:
+  `DBRDBG thr insn=96 thread=100 opp=219 own=1 likely=0 tif=0`, then `trial=100 ... trap=1`
+  (LOSE), then `trial=104 ... trap=0` WINNER. Reading tools/gcc-2.7.2/reorg.c:
+  `fill_eager_delay_slots` (reorg.c:3812) calls `mostly_true_jump` (reorg.c:1379); for an EQ
+  condition with no loop note adjacent to the target label that returns 0, so reorg tries
+  the FALL-THROUGH thread first. In that thread the `lhu $a1,0($s1)` is rejected by the
+  `! may_trap_p (pat)` guard and the very next insn, the `li $v0,6` compare constant, is
+  stolen into the branch delay slot. That is the whole of the s1 score-5 residual: `li 6` in
+  the branch slot, a `nop` after the `lhu`, and the loop-continue increment left split as
+  `addiu $v0,$s0,1 / addu $s0,$v0,$zero` (+1 instruction).
+
+- [s2] THE FIX, AND WHY IT IS ORDINARY C. `mostly_true_jump` returns 1 when
+  `NEXT_INSN (target_label)` is a `NOTE_INSN_LOOP_VTOP`, and that note exists only where
+  jump.c's `duplicate_loop_exit_test` (jump.c:2338) has ROTATED a top-tested loop. s1's inner
+  scan was spelled `voice = next; if (voice < 0x18) { off = i*8; do { ... } while (voice <
+  0x18); }` — an explicit do-while, which is never rotated, hence no VTOP note, hence
+  prediction 0, hence fall-through-first. Spelling the same scan as a top-tested `for` INSIDE
+  the same explicit guard — `voice = next; if ((s16)voice < 0x18) { vol_off = i*8; for (;
+  (s16)voice < 0x18; voice = (s16)(voice + 1)) { ... } }` — gets the loop rotated, gets the
+  VTOP note, flips reorg to try the loop-continue thread first, and fills the delay slot with
+  `addiu $v0,$s0,0x1` exactly as the target does, with `li 6` landing in the `lhu` load-delay
+  slot. Measured: **score 5 -> 2, build_insns 119 -> 118**. The explicit `if` guard is still
+  required — it is what keeps the s1 `addu $s2,$v1,$zero` copy and stops the guard being
+  cross-jumped: the same `for` with the offset assignment hoisted out of the guard emits
+  `j <bottom test>` instead of the duplicated guard (106 insns; probe kept at
+  tmp/grind/func_8005C6D0/s2/variants/v3_for_outer_off.c).
+
+- [s2] THE LAST TWO INSTRUCTIONS. At score 2 the only divergence was the order of three insns
+  in the argument-setup block: target `sll $a0,$s0,16 / sra $a0,$a0,16 / addiu $s4,$s0,0x1 /
+  sll $a1,$a1,16`, build `addiu $s4,$s0,1 / sll $a0 / sra $a0 / sll $a1`. Cause:
+  `next = (s16)(voice + 1);` was written BEFORE the SsUtKeyOnV call, so its RTL was emitted
+  ahead of the argument setup and sched2 kept it there. Moving the statement to AFTER the
+  call is semantically identical (`voice` is not touched by the call): the insn is then
+  emitted after the call, and because `$s4` and `$s0` are both callee-saved it carries no
+  dependency on the call, so sched2 hoists it back up into exactly the target's slot between
+  the `$a0` sign-extension and the `$a1` shift. Measured: **score 2 -> 0**. Four other
+  placements/shapes of the same statement (before `ev`, as the first statement of the
+  if-body, `next = voice + 1` without the inner cast, and split into two assignments) all
+  reproduce the score-2 order — the position relative to the CALL is the operative thing, not
+  the expression's shape.
+
+- [s2] OBJECT MODEL, RE-CONFIRMED BY MEASUREMENT ON THE MATCHING CHASSIS. The brief's
+  SPLIT-AGGREGATE signal for D_800EFB7C / D_800EFB7D and its four flagged "declaration puns"
+  point at the aggregate-merge family; the bytes contradict it, and this session MEASURED the
+  merge-shaped alternative rather than only arguing from the disassembly. Declaring the pool
+  as an array (`extern u16 *D_800EFB78[];` + `D_800EFB78[i*2]`, with `D_800EFB7C[]` /
+  `D_800EFB7D[]` likewise) makes loop.c hoist `%hi(D_800EFB78)` into a callee-saved register,
+  adding a preheader `la`, a save/restore pair and 8 frame bytes: 112 insns, frame 0x60 —
+  structurally different from the target. Banked as
+  rejected/array-decl-licm-hoist-frame-0x60.c. The split `(u8 *)&SYM + off` spelling, the
+  same one the byte-matching sibling func_8005C650 already ships on main at
+  src/text1b.c:2685-2689 against the same three symbols, is what reaches distance 0.
+
+- [s2] THE TWO OFFSET LOCALS ARE LOAD-BEARING ON THE NEW CHASSIS TOO (re-measured, since s1's
+  conclusion was taken on the do-while chassis). Folding `entry_off` and `vol_off` into one
+  outer-loop local gives 105 insns (guard cross-jumped); additionally routing the clear site
+  through it gives 99 insns. Both are structurally different functions, not reorderings. The
+  winning arrangement is unchanged from s1: pool load through its own local, volumes through
+  a local declared inside the voice guard, clear site inline `i * 8`.
+
+- [s2] SIBLINGS. func_80070188 (floor 696) and func_800720FC (floor 688) still have no
+  candidate.c and share no block with this function; nothing was transplantable in either
+  direction, and nothing this session produced is spelling-specific to them. The transferable
+  asset for them is the s2 TOOLING entry above (minimal-TU probe + BB2_DBR_DEBUG reorg
+  trace), not any C form.

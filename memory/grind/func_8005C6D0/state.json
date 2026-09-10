@@ -29,11 +29,26 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "candidate.c:60-62 \u2014 `voice = next; if ((s16)voice < 0x18) { vol_off = i * 8; for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) { ... } }`",
+  "candidate.c:56 + 61 \u2014 `entry_off = i * 8;` and a second local `vol_off = i * 8;` holding the identical value, plus the clear site re-inlining `i * 8` at line 82"
+ ],
  "kills": [],
- "ladder_skip": 0,
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T13:47:24.242531+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The inner scan's `if ((s16)voice < 0x18)` guard duplicates the top-tested `for`'s own condition exactly \u2014 semantically null \u2014 and the candidate's own header comment plus evidence.md justify it purely by jump.c duplicate_loop_exit_test / reorg.c delay-slot prediction, which the self-vet's T3 answer flatly denies. Next action: Do not commit. Two clean routes, in order of preference: (1) Re-derive without the redundant guard \u2014 the score-2/score-0 mechanism hangs on NOTE_INSN_LOOP_VTOP from jump.c's rotation of a top-tested loop, which the `for` produces by itself; pro"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "de221c44dff2b149",
+   "when": "2026-09-10T14:29:46.897028+00:00",
+   "summary": "The inner scan's `if ((s16)voice < 0x18)` guard duplicates the top-tested `for`'s own condition exactly \u2014 semantically null \u2014 and the candidate's own header comment plus evidence.md justify it purely by jump.c duplicate_loop_exit_test / reorg.c delay-slot prediction, which the self-vet's T3 answer f"
+  }
+ ]
 }
