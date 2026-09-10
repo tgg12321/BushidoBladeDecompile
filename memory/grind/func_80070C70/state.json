@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 9,
- "current_modality": "solver",
+ "session_count": 10,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 39,
    "modality": "solver",
    "headline": "Solver types the residual PRE-RA on every chassis (no RA/sched purchase); mips.md:2346 force_not_mem closes the 16-bit-read spelling axis as a CLASS kill; object-shape classify re-ranks the top-test c"
+  },
+  {
+   "session": 10,
+   "floor": 39,
+   "modality": "forensics",
+   "headline": "Closed the 24-byte frame mechanism end to end (combine newi2pat -> orphan (use (reg)) -> ST_REGS -> reload spill slot), answered s9's F12 tem-identity question from the dumps, and measured that the do"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The three orphaned spill pseudos are a CODE_LABEL-placement artifact of the loop's own exit/continue label, so the lever is the loop's exit topology and not the exit test's arithmetic.",
-   "mechanism": "combine.c:10834 emits `(use (reg))` only after the note-placement scan hits a CODE_LABEL without finding a referencing insn (combine.c:10826). mips.md:2346 makes the ashift pair that creates the fold unavoidable, and the target's build paid the same fold and still got vars=80, so the difference is where the notes could land, i.e. which CODE_LABEL `tem` is.",
-   "next_probe": "Read tmp/grind/func_80070C70/dumps/text1b.combine for the insn immediately preceding each `(use (reg 116/168/173))` - in the s9 dumps they sit after insns 203, 544 and 405 - and identify the CODE_LABEL `tem` resolves to, cross-reading jump.c's duplicate_loop_exit_test (jump.c:2163-2258) for which label it creates. Then attack THAT label from C: what statement ends the loop body (call vs store), whether the increment is written in the for-header or at the bottom of the body, and what immediately follows the loop."
+   "hypothesis": "The do/while chassis is the shorter road after all: it is already at the target's exact frame (vars=80, 0 spills, regs=6/0) and is missing exactly one thing - the cse_set_around_loop hoist of the D_800A3558 and D_800A35B0 reads out of the second loop into its guard block.",
+   "mechanism": "s7 and s8 measured that the hoist does not fire on an if-guarded do/while and treated that as the reason to switch chassis. But s10's frame census shows the top-test chassis buys the hoist at a price (24 frame bytes it structurally cannot avoid, per H-s10-1, plus a seat swap and scheduling work). The correct question is therefore not 'which chassis scores lower' but 'what makes cse.c hoist a loop-invariant memory read into the guard block', asked with the .cse and .cse2 dumps open rather than by trying loop spellings.",
+   "next_probe": "Install memory/grind/func_80070C70/candidate.c, run `pwsh tools/grinder/dump.ps1 func_80070C70`, extract the func section of text1b.cse and text1b.cse2 with tmp/grind/func_80070C70/s10/scan.py, and find where cse_set_around_loop's precondition fails for the two %gp_rel reads. Read tools/gcc-2.7.2/cse.c's cse_around_loop / invalidate_skipped_block path and enumerate the SOURCE-side inputs to that predicate (what else writes memory inside the loop, whether the guard block is a block cse enters, whether the reads are marked RTX_UNCHANGING). Then spell those inputs, and check each with s10/probe.sh first so a spelling that regresses the frame is discarded before it is ever scored."
   },
   {
-   "hypothesis": "The top-test chassis is now the shorter road: its deficit is one structural fix (the 24 frame bytes) where the do/while chassis needs the whole cse_set_around_loop hoist that s7 and s8 measured unreachable on a do/while.",
-   "mechanism": "s9's classify run quantifies both residuals. The do/while's is a 6-shape PRE-RA difference that is exactly the missing hoist; the top-test's is 13 frame shapes plus one instruction. Score ranks them 39 vs 49 only because the frame overshoot inflates 13 otherwise-correct insns.",
-   "next_probe": "Work the F12 label-topology probe on memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c, and stop spending sessions trying to import the cse structure onto the do/while body. Any hit there should be re-classified with goal_from_tgt.py rather than judged on score alone."
+   "hypothesis": "On the top-test chassis the three orphans are removable only by changing what combine folds at the 16-bit compare, and the two known levers (bare u16 bound, != bound) each cost more elsewhere than the frame bytes they save - but a third lever may exist in how the guard copy's compare is CONSTRUCTED, since p173 is orphaned only because combine had an i1 leg (`var_s0 = 0`) to substitute.",
+   "mechanism": "combine.c:2089 zeroes elim_i2 only when newi2pat is produced, and the newi2pat here is the re-emitted `var_s0 = 0`. If the guard's compare had no LOG_LINK to a constant-setting insn in the same basic block, try_combine would be a plain 2-to-1 combination, elim_i2 would equal i2dest (p173), and combine.c:10741 would drop the note with no USE emitted. s10 could not break that LOG_LINK with any of the eight topology spellings tried, because duplicate_loop_exit_test always plants the guard copy immediately after the loop's initialisation.",
+   "next_probe": "Read tools/gcc-2.7.2/jump.c duplicate_loop_exit_test (jump.c:2163-2258) for exactly where it inserts the copied test relative to the initialisation, then ask what SOURCE construct puts a basic-block boundary (a call is not one for LOG_LINK purposes; a label or a branch is) between the loop counter's initialisation and the loop's first test. Candidates worth one probe.sh run each: initialising the counter inside a preceding conditional, and entering the second loop from two different predecessors."
   },
   {
-   "hypothesis": "IconC70's trailing 24 bytes have a real member list that the placeholder `s16 sp50[12]` only approximates, and recovering it is a prerequisite for any submission (carried from s1/s2/s3, still unspent).",
-   "mechanism": "Correctness of the submitted C, not codegen - the 0x20 SIZE is proven twice (frame arithmetic in s1, the BB2_FRAME_DEBUG census in s6) but the field list is not evidence-backed.",
-   "next_probe": "Read the $a1-relative stores in func_80069898's other callers (func_8006B120, func_8006CFBC, func_800720FC, func_80074488, func_8006F97C) and build the true field list; propagate the corrected type to func_8006F97C's ledger, which is an active queue sibling in the same TU."
+   "hypothesis": "IconC70's trailing 24 bytes still have a placeholder member list (`s16 sp50[12]`), and recovering the real one remains a prerequisite for any submission. Carried unspent from s1/s2/s3.",
+   "mechanism": "Correctness of the submitted C, not codegen. The 0x20 SIZE is proven three ways now (frame arithmetic in s1, the BB2_FRAME_DEBUG census in s6, and s10's `stack_temp mode=26 size=32` line), but the field list is not evidence-backed and the Judge will read it.",
+   "next_probe": "Read the $a1-relative stores in func_80069898's other callers - func_8006B120, func_8006CFBC, func_800720FC, func_80074488, func_8006F97C - and build the true field list, then propagate the corrected type to func_8006F97C's ledger, which is an active queue sibling in the same TU."
   }
  ],
  "judge_constraints": [],
@@ -286,6 +292,22 @@
    "measured_on": "the shape-exact top-test for chassis (memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c body) with extern u8 D_800A3560[]; extern s16 D_800A3590[]; IconC70 sized 0x20, no FAKE constructs pres",
    "predicate_cite": "",
    "result": "Completely inert. All three score 49 at 194 insns, identical to the unmodified chassis, and both censuses return the sam"
+  },
+  {
+   "session": 10,
+   "statement": "On the shape-exact top-test for chassis, re-spelling the second loop's topology leaves the three orphan pseudos and the 104-byte vars region bit-identical in eight of eight spellings measured: a fresh",
+   "kill_scope": "instance",
+   "measured_on": "the shape-exact top-test for chassis (memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c body: extern s16 D_800A3558 read bare in the loop bound with an (s16) cast in the loop body), zero FAKE",
+   "predicate_cite": "",
+   "result": "KILLED. This closes s9's F12 next-probe as it was written (\"attack THAT label from C: what statement ends the loop body,"
+  },
+  {
+   "session": 10,
+   "statement": "The score-49 top-test body's object-level residual against build/src/text1b.o is larger than the 13 frame insns plus one addiu-against-nop that s9 recorded: it also carries an $a1/$a2 seat swap at bot",
+   "kill_scope": "instance",
+   "measured_on": "the shape-exact top-test for chassis (memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c body after the //@sub hygiene fix, re-measured at score 49 / 194 insns this session), zero FAKE constru",
+   "predicate_cite": "",
+   "result": "KILLED as a framing. A future session should not plan on the top-test chassis being 'two instruction shapes from the tar"
   }
  ],
  "ladder_skip": 0,

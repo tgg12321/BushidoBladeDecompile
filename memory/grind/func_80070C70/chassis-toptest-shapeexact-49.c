@@ -1,3 +1,12 @@
+//@sub extern s32 D_800A3558;|||extern s16 D_800A3558;
+/* [s10 forensics 2026-09-10] HYGIENE FIX: the //@sub directive MUST be line 1.
+ * install.py only consumes `//@sub` lines at the START of the file, so while it sat
+ * below this header comment the substitution was silently skipped and the file
+ * installed as `extern s32 D_800A3558;` and measured 56, not 49.  s10 re-measured
+ * 49 with the directive hoisted.  Do not move it back below the comment.
+ * s10 frame census: this body spends 3 orphan spill slots (vars=104 vs the
+ * target 80).  EVERY do/while declaration variant spends ZERO (vars=80 exactly).
+ */
 /* [s9 solver 2026-09-10] TOP-TEST CHASSIS, SHAPE-EXACT-EXCEPT-FRAME.  Score 49, 194 insns.
  * This body scores ONE POINT WORSE than chassis-toptest-cse-48.c but is structurally
  * CLOSER to the target, and score is the misleading gradient here.  Measured with
@@ -16,7 +25,6 @@
  * The equivalent `extern u16 D_800A3558;` + (s16) cast at BOTH sites (s9/d/tt_u16_c_c.c)
  * is the same 49 with the same shape residual and the same three orphans.
  */
-//@sub extern s32 D_800A3558;|||extern s16 D_800A3558;
 void func_80070C70(s32 arg0) {
     s32 c60 = 0x60;
     PrimC70 prim;

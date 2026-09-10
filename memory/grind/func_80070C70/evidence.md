@@ -627,3 +627,119 @@
 - [s9] ORPHAN IDENTITY under every spelling tried: .jump shows p116 = the ashift of the loop's own tail exit test, p168 = the ashift of the guard copy, p173 = the `lt` of the guard copy; .combine shows all three as literal `(use (reg))` insns; BB2_FRAME_DEBUG shows spill_new_p116/p168/p173 at frame_offset 88/96/104 giving vars=104 against the target's 80. Six declaration variants and three body-guard re-spellings leave that triple bit-identical.
 
 - [s9] combine.c:10830-10846 is the emission site: the `(use (reg))` is created only when the scan reaches a CODE_LABEL with place still 0 (`if (REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0)`); the alternative at combine.c:10826 is finding an insn that references the register. s9 proved the label reached is not the body `if`'s join label.
+
+- [s10 forensics 2026-09-10] LEDGER HYGIENE BUG (fixed this session; it cost s10 two turns and would
+  have cost every future session the same). `memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c`
+  as banked by s9 carried its 18-line header comment ABOVE its `//@sub` directive. The installer
+  (`tmp/grind/func_80070C70/s9/install.py`, copied forward as s10/install.py) consumes `//@sub` lines
+  only with `while b.startswith('//@sub ')`, i.e. only at the very start of the file, and then slices
+  the body from `b.index(SIG)` - so the directive was silently DROPPED, the body installed against the
+  pristine `extern s32 D_800A3558;`, and the banked "score 49" file actually measures 56. The file has
+  been rewritten with the `//@sub` on line 1 and re-measured at 49. RULE for every future banked
+  candidate: `//@sub` directives must be the FIRST lines of the file, above any comment.
+
+- [s10 forensics 2026-09-10] THE FULL MECHANISM OF THE 24 FRAME BYTES, END TO END, EVERY STEP READ OUT
+  OF A DUMP OR A COMPILER SOURCE LINE. s8/s9 had named combine.c:10834 as the emission site; s10 closes
+  the chain from there to the frame bytes and names the enabling predicate.
+  1. `combine.c:2089` computes `elim_i2 = (newi2pat || i2dest_in_i2src || i2dest_in_i1src ? 0 : i2dest)`.
+     When try_combine SPLITS a 3-insn combination back into two insns it sets `newi2pat`, and elim_i2
+     becomes 0 - so i2's dest is NOT on the eliminate list.
+  2. `combine.c:10741` (`if (XEXP (note, 0) == elim_i2 || ...) break;`) is therefore not taken for that
+     REG_DEAD note, and the note falls into the backward scan at combine.c:10756-10758, which runs
+     `tem = prev_nonnote_insn (tem)` while `GET_CODE (tem) == INSN || GET_CODE (tem) == CALL_INSN`. The
+     insn that SET the dying register has already been turned into a NOTE by the combination, so
+     `prev_nonnote_insn` skips straight past it and nothing else references the register.
+  3. `combine.c:10830-10836`: `place == 0 && tem != 0` -> `emit_insn_after (gen_rtx (USE, VOIDmode, reg), tem)`.
+  4. THE NEW STEP (s10): a pseudo whose ONLY reference is that `(use (reg))` gets no register-class
+     preference from any constraint, and regclass hands it ST_REGS. Read verbatim out of
+     `tmp/grind/func_80070C70/dumps/text1b.lreg` (s10 func-section extract w/sec.lreg, lines 69/121/129):
+        Register 116 used 4 times across 1 insns in block 11; ST_REGS or none.
+        Register 168 used 2 times across 2 insns in block 2;  ST_REGS or none.
+        Register 173 used 2 times across 1 insns in block 2;  ST_REGS or none.
+     ST_REGS is the MIPS fp-status class (`tools/gcc-2.7.2/config/mips/mips.h:1386`), disjoint from
+     GR_REGS, so global_alloc can never satisfy it and `reg_renumber[i]` stays < 0.
+  5. `reload1.c:2382-2404` `alter_reg`: `reg_renumber[i] < 0 && reg_n_refs[i] > 0 && no equiv` with
+     `from_reg == -1` ("No known place to spill from => no slot to reuse") -> a brand-new
+     `assign_stack_local`. The instrumentation at reload1.c:2403 prints it as `spill_new_p<N>`. Each one
+     costs 8 bytes (mode=4/SImode, alignment 8).
+  CONSEQUENCE: an orphaned `(use (reg))` is ALWAYS 8 frame bytes and can never be "allocated away" by
+  any RA-side lever. The only lever is to stop combine from emitting it.
+
+- [s10 forensics 2026-09-10] THE `tem` IDENTITY - s9's open frontier question F12 is ANSWERED. Read
+  directly out of `tmp/grind/func_80070C70/s10/w/sec.combine` (func-section extract of the .combine dump
+  for the top-test chassis):
+  * `(insn 545 405 500 (use (reg/s:SI 116)))` sits immediately after `(code_label 405 404 545 924 "")`,
+    which `.jump` shows is preceded by `(note 404 402 405 "" NOTE_INSN_LOOP_CONT)` - i.e. `tem` is the
+    SECOND LOOP'S OWN CONTINUE LABEL, and p116 is the ashift of the loop's tail exit test (`.jump` insns
+    266/267/268: `reg:HI 114 <- mem:HI D_800A3558`, `reg 116 <- ashift(subreg 114,16)`,
+    `reg 115 <- ashiftrt(reg 116,16)`).
+  * `(insn 544 203 543 (use (reg:SI 173)))` and `(insn 543 544 209 (use (reg:SI 168)))` sit immediately
+    after `(jump_insn 203 ...)`, the FIRST loop's bottom `bnez` back-edge - NOT a CODE_LABEL at all. The
+    comment at combine.c:10828 says "we have hit a CODE_LABEL", but the scan loop only tests
+    `INSN || CALL_INSN`, so a JUMP_INSN terminates it too and is a legal `tem`. p168/p173 belong to the
+    SECOND loop's duplicate_loop_exit_test GUARD COPY (`.jump` insns 481-488), which sits far downstream;
+    the scan walked back over ~15 insns and two CALL_INSNs before stopping at insn 203.
+  * The guard copy's post-combine form (sec.combine lines 626-661) is `lhu; lh; lw; addu; addiu; li 0; blez`
+    - the `slt` (insn 487, setting p173) was folded into the branch as `le (reg 172) (const_int 0)` while
+    `(set (reg/v:SI 75) (const_int 0))` was RE-EMITTED as the newi2pat at i2's slot. That re-emitted
+    `var_s0 = 0` sitting between the `addiu` and the `blez` is the visible fingerprint of the newi2pat
+    split that orphans p173, and it is present in the target's assembly too.
+
+- [s10 forensics 2026-09-10] THE 24-BYTE OVERSHOOT IS A PROPERTY OF THE TOP-TEST CHASSIS ALONE, AND THE
+  do/while CHASSIS ALREADY HAS THE TARGET'S EXACT FRAME. 26-body frame census
+  (`tmp/grind/func_80070C70/s10/frame_census.txt`, harness `s10/probe.py` + `s10/probe.sh`: one
+  instrumented-cc1 run per body with BB2_FRAME_DEBUG=1, no assembler and no sandbox, ~8s each - this is
+  the cheap gradient for any frame question on this function):
+  * ALL SIX do/while declaration variants (s9/d/dw_*.c) and the floor-39 candidate.c measure 0 spills,
+    `.frame $sp,128 # vars= 80, regs= 6/0, args= 24` - byte-identical to the target's frame.
+  * ALL FIVE sign-extending top-test variants measure 3 orphans / vars=104.
+  This DEMOTES s9's frontier claim that "the top-test chassis is now the shorter road". On the frame axis
+  the do/while chassis is already AT the target and the top-test chassis has to buy back 24 bytes it
+  spends; the two chassis are each missing a different thing, and the do/while's deficit (the
+  cse_set_around_loop hoist) is the one that has never been attacked with a dump in hand.
+
+- [s10 forensics 2026-09-10] LOOP TOPOLOGY IS INERT ON THE ORPHAN COUNT; THE BOUND'S SIGN-EXTENSION IS
+  THE ONLY INPUT THAT MOVES IT. Nine top-test spellings measured (frame_census.txt): fresh loop variable,
+  init hoisted out of the for-header, increment moved to the bottom of the body with an empty third
+  clause, while-form, inverted body guard with `continue`, bound hoisted into a local, two operand
+  reorderings of the bound expression, and `!(i >= bound)`. Eight of the nine leave p116/p168/p173
+  bit-identical at vars=104. Only two inputs move the count, and both are about the 16-bit READ, not the
+  loop's shape:
+  * `extern u16 D_800A3558` read BARE in the bound with an `(s16)` cast in the body (s9/d/tt_u16_b_c.c):
+    1 orphan (p171), vars=88 - the bound becomes a zero-extend, there is no ashift/ashiftrt pair to fold,
+    and two of the three orphans never exist. Sandbox score 54 (the bound's `lhu` costs more than the 16
+    frame bytes it saves). Banked rejected/toptest-u16-bare-bound-1-orphan-54.c.
+  * `var_s0 != bound` instead of `<`: 2 orphans (p116,p167), vars=96 - no `slt` to fold into the branch,
+    so p173 never exists. Banked rejected/toptest-ne-bound-2-orphans.c.
+  * bound hoisted into a local: 1 orphan but `regs= 7/0` - it buys the frame back and immediately spends a
+    SEVENTH callee-saved register. Banked rejected/toptest-bound-in-local-7th-callee-saved.c.
+  So s9's F12 next-probe ("attack THAT label from C: what statement ends the loop body, whether the
+  increment is written in the for-header or at the bottom, and what immediately follows the loop") is
+  measured dead as an instance on this chassis: `tem` is not reachable from loop topology, because the
+  orphan is created by the newi2pat split of the 16-bit compare wherever that compare happens to sit.
+
+- [s10 forensics 2026-09-10] THE TOP-TEST RESIDUAL IS NOT ONLY THE FRAME. s9 recorded the score-49 body's
+  object-level residual as "13 prologue/epilogue insns plus one addiu against one nop". The s10 objdump
+  diff (`tmp/grind/func_80070C70/s9/dis.sh` regenerated; ours.txt vs tgt.txt) shows in addition:
+  (a) a genuine $a1/$a2 SEAT SWAP - the target holds the hoisted `lhu` of D_800A3558 in $a2 and the `lw`
+  of D_800A35B0 in $a1 (`lhu a2,0(gp)` / `lw a1,0(gp)` / `sll v0,a2,0x10` / `addu v0,a1,v0`), while we
+  hold them the other way round at BOTH the guard and the tail; (b) several $v0-vs-$v1 destination
+  differences on the `addiu #,#,12` / `sw #,28(sp)` pairs; (c) delay-slot and load-ordering differences
+  (the target keeps a `nop` after `lw v1,0(gp)` where we fill that slot with `sw v1,28(sp)`). Any future
+  session quoting "the top-test chassis is 2 shapes from the target" should quote this instead.
+
+- [s10] Chassis re-measured at dispatch: memory/grind/func_80070C70/candidate.c = score 39 / 194 build insns / 194 target insns under `sandbox func_80070C70 --disable all`. The ledger floor of 39 is live on current HEAD; tmp/grind/func_80070C70/s8/text1b.pristine.c is byte-identical to HEAD's src/text1b.c.
+
+- [s10] The 24-byte frame overshoot decomposes exactly: BB2_FRAME_DEBUG prints stack_temp size=48 (prim) at frame_offset 48, stack_temp size=32 (icon) at 80, then spill_new_p116 at 88, spill_new_p168 at 96, spill_new_p173 at 104, then round_frame at 104. The target's vars=80 is precisely prim(48) + icon(32) with zero spills.
+
+- [s10] tools/gcc-2.7.2/combine.c:2089 is the enabling predicate for the whole orphan family: elim_i2 is zeroed whenever try_combine produces a newi2pat, which is what leaves i2dest's REG_DEAD note to be placed by the backward scan instead of being dropped at combine.c:10741.
+
+- [s10] tools/gcc-2.7.2/config/mips/mips.h:1386 defines ST_REGS as the fp-status class. A USE-only pseudo is assigned that class by regclass, which is why reg_renumber stays negative and reload1.c:2403 always allocates a fresh slot. This is the step s8 and s9 were missing.
+
+- [s10] The .combine dump shows the post-combine guard copy of the second loop as lhu / lh / lw / addu / addiu / li 0 / blez, with the `li 0` re-emitted between the addiu and the blez as the newi2pat - so the guard's `var_s0 = 0` sitting in that position is a compiler artifact of the split, not a source-order effect.
+
+- [s10] 26-body frame census (tmp/grind/func_80070C70/s10/frame_census.txt): 0 spills / vars=80 for candidate.c and all six do/while declaration variants; 3 spills / vars=104 for all five sign-extending top-test variants and for eight of the twelve top-test topology spellings; 2 spills / vars=96 for the `!=` bound; 1 spill / vars=88 for a bare u16 bound (score 54) and for the bound hoisted into a local (but at regs=7/0).
+
+- [s10] New cheap gradient banked for this function: tmp/grind/func_80070C70/s10/probe.py + probe.sh runs only cpp|cc1 with the instrumented compiler and prints `spills=<n> <pseudos> <.frame line>` per body in about 8 seconds, against roughly 40 seconds for a sandbox run. Frame and orphan questions should be answered with it before anything is scored. tmp/grind/func_80070C70/s10/scan.py <pass> extracts the func_80070C70 section from any -da dump into s10/w/sec.<pass>.
+
+- [s10] Ledger-hygiene rule established: a banked candidate's //@sub directives must be the first lines of the file. The s9 top-test chassis violated this and measured 56 instead of 49 for every session that would have installed it; the file has been fixed.

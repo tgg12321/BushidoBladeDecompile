@@ -1,3 +1,12 @@
+/* [s10 forensics 2026-09-10] STILL THE FLOOR at 39, and s10 measured a NEW reason to prefer it:
+ * this body reproduces the target FRAME EXACTLY - 0 spill slots,
+ * ".frame $sp,128 # vars= 80, regs= 6/0, args= 24" - as do all six do/while declaration variants.
+ * Every top-test chassis spends 24 extra bytes on three orphaned combine `(use (reg))` pseudos that
+ * regclass types ST_REGS and reload can only give stack slots (see hypotheses.md H-s10-1/H-s10-6).
+ * s9 ranked the top-test chassis as the shorter road; on the frame axis that is wrong. This body is
+ * missing exactly ONE thing: the cse_set_around_loop hoist of the D_800A3558 / D_800A35B0 reads out
+ * of the second loop into its guard.  That is the frontier.
+ */
 /* [s9 solver 2026-09-10] FLOOR UNCHANGED at 39; this do/while body is still the SCORE floor
  * and is byte-for-byte the s8 body.  What s9 changed is the strategic ranking and one axis:
  *   1. RE-MEASURED FIRST: this body scores exactly 39 at 194 insns on the current HEAD chassis.
