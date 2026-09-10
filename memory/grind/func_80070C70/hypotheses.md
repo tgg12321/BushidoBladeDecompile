@@ -1211,3 +1211,111 @@ dump into `s10/w/sec.<passname>` and lists every `(use (reg N))` in it.
 - probe: Installed the banked file verbatim and measured `sandbox func_80070C70 --disable all` = 56; installed tmp/grind/func_80070C70/s9/d/tt_s16_b_c.c (byte-identical body, //@sub on line 1) and measured 49; confirmed src/text1b.c carried `extern s32 D_800A3558;` in the first case.
 - result: CONFIRMED and FIXED: the banked file now carries the //@sub on line 1 with a header note explaining the constraint. Standing rule recorded in evidence.md - in any banked candidate the //@sub directives must be the first lines of the file, above any comment.
 - verdict: CONFIRMED
+
+## [s11] The second loop's tail bound must be parenthesised as `D_800A35B0 + ((s16)D_800A3558 + 1)` while the guard copy of the same bound must NOT be, and this asymmetry is worth a point on the if-guarded do/while chassis.
+- mechanism: The target's tail test is `lh $v0,%gp_rel(D_800A3558); addiu $v0,$v0,1; addu $v0,$a1,$v0` - the constant 1 is added to the sign-extended halfword and the D_800A35B0 word is the OTHER addend of the final `addu`. Written unparenthesised, C's left associativity gives `(D_800A35B0 + sext) + 1`, which emits `addu` first and `addiu` second on the wrong operand. GCC 2.7.2 does not reassociate the mixed sign-extend/word tree back.
+- probe: tmp/grind/func_80070C70/s11/w/*.c scored with tmp/grind/func_80070C70/s11/score.sh. w7_paren_tailonly.c = 38/194 insns; w1_paren.c (both guard and tail) = 41/196; x4_g_paren.c (guard only, on the 38 chassis) = 41/196; base = 39/194.
+- result: CONFIRMED. Banked as lever L1 in candidate.c. The guard-side form is banked as rejected/s11-guard-bound-parenthesised-too-32.c.
+- verdict: CONFIRMED
+
+## [s11] Sequencing the `+0xC`/`+0x48` add as its own statement into a named local BEFORE both struct stores (`g = *(s32*)(ctx+N); t = g + K; prim.p_geom = g; prim.p_static = t;`) reproduces the target's two-live-register `addiu $v1,$v0,12 / sw $v0,0x18($sp) / sw $v1,0x1C($sp)` form at all three sites, and is worth 7 points at the two pre-loop sites plus 2 at the in-loop site.
+- mechanism: GCC 2.7.2 schedules before register allocation. When the add is written as `prim.p_static = prim.p_geom + 0xC;` the value is read back out of the just-stored member, the scheduler is free to emit `sw` then `addiu`, the source pseudo dies at the add, and local-alloc gives the add the SAME hard register (`addiu $v0,$v0,12`). Emitting the add as a separate statement between the load and both stores keeps both pseudos live across it, so they must get different hard registers.
+- probe: tmp/grind/func_80070C70/s11/u/*.c. u1_t_both.c = 22, u2_t_s1.c = 25, u3_t_s2.c = 25 against the 29-point r1 chassis; z3_g_both_body.c = 36 against the 38-point w7 chassis. The reversed store order (`prim.p_static = g + 0xC; prim.p_geom = g;`) is 40 - s8's result, reproduced - banked as rejected/s11-pstatic-stored-before-pgeom-40.c.
+- result: CONFIRMED. Banked as levers L2 and L4 in candidate.c.
+- verdict: CONFIRMED
+
+## [s11] Reading `prim.link` before storing `prim.code` at both loop call sites is worth 7 points.
+- mechanism: The target emits `lw $v1,0x10($s1)` ahead of `sw $v0,0x2C($sp)` in both loops (80070D80/D88 and 80070EAC/EB4), and lands the link value in the `jal` delay slot from a register that the `li 1` did not clobber. With the stores in the other source order GCC assigns both to $v0 and the delay slot carries the call's own result register.
+- probe: tmp/grind/func_80070C70/s11/q/q3_linkfirst.c = 31 (from 36); tmp/grind/func_80070C70/s11/r/r1_loop1_linkfirst.c = 29 (from 31).
+- result: CONFIRMED. Banked as lever L3 in candidate.c.
+- verdict: CONFIRMED
+
+## [s11] Iterating the second loop with a walking pointer over D_800A3560 (`u8 *p = D_800A3560; code = *p; ...; p += 3;`) scores 91-93 at 195 insns on the if-guarded do/while chassis, against 38 for the index-times-3 offset form.
+- mechanism: An incremented pointer is an ADDRESS biv, so loop.c materialises `%hi(D_800A3560)+%lo` into a register in the preheader and the loop indexes off it. The target instead re-emits `lui $at,%hi(D_800A3560); addu $at,$at,$s2; lbu %lo(D_800A3560)($at)` every iteration, i.e. $s2 is an OFFSET giv that is re-added to a fresh %hi each time, which is what `s32 ctx = var_s0 * 3;` produces.
+- probe: tmp/grind/func_80070C70/s11/v/v1_ptrwalk.c = 91/195, v3_ptr_modeacc.c = 93/195, v6_ptr_both.c = 93/195 (a second walking pointer over D_800A3590), v5_ptr_modeacc_le.c = 95/193. Banked as rejected/s11-walking-pointer-D_800A3560-91.c and rejected/s11-walking-pointer-plus-mode-accumulator-93.c.
+- result: KILLED.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the if-guarded do/while chassis (memory/grind/func_80070C70 s10 candidate body, floor 39, and its s11 w7 derivative at 38), zero FAKE constructs present, `sandbox --disable all`
+
+## [s11] Spelling the second loop's mode as an explicit accumulator (`m = 0x50; ... prim.mode = m; ... m += 0x16C;`) is BYTE-NEUTRAL against `prim.mode = 0x50 + var_s0 * 0x16C`.
+- mechanism: loop.c's strength reduction already reduces the `0x50 + i*0x16C` giv to the target's `addiu $s3,$s3,0x16C` at the biv increment site, so the source-level accumulator adds nothing the compiler was not already doing.
+- probe: tmp/grind/func_80070C70/s11/v/v2_modeacc.c = 39 at 194/194 insns against base.c = 39 at 194/194.
+- result: KILLED as a lever (it is a legitimate alternative spelling, but it buys nothing, so the simpler expression stays).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the if-guarded do/while chassis (s10 candidate body, floor 39), zero FAKE constructs present
+
+## [s11] Carrying D_800A3558 and D_800A35B0 in C locals that are re-assigned at the bottom of the loop body - the literal C spelling of the target's loop-carried $a1/$a2 - scores 55 to 59 at 197 insns on the 38-point do/while chassis.
+- mechanism: The source-level carry adds a third and fourth live value across the whole loop, and GCC 2.7.2 emits the reload as an extra pair of insns in BOTH the guard and the tail rather than folding it into the test's own loads, so the body saves two insns and the loop's edges pay five. The target's structure has the SAME load in the tail serving both the test and the next body, which only cse can produce.
+- probe: tmp/grind/func_80070C70/s11/y/*.c: y1_u16_carry.c (u16 declaration, `(s16)h` in the body) = 59/197, y2 (reload before the increment) = 59/197, y3 (s16 declaration) = 59/197, y4 (operands reversed) = 59/197, y5 (plain s32 locals) = 55/194. Banked as rejected/s11-carry-two-globals-in-locals-59.c.
+- result: KILLED. Reproduces s8's kill of the same idea on a chassis 17 points lower, so the kill is not an artifact of the old chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the if-guarded do/while chassis at 38 (tmp/grind/func_80070C70/s11/w/w7_paren_tailonly.c body), with the D_800A3558 declaration substituted per variant, zero FAKE constructs present
+
+## [s11] The prologue tie between `addiu $a0,$sp,24` and `addu $s0,$zero,$zero` is not reachable from the source position of `var_s0 = 0;`.
+- mechanism: Both insns are ready at the same cycle with no data dependence on anything in flight; GCC 2.7.2's sched1 breaks the tie by INSN_PRIORITY, which is derived from the length of each insn's dependence chain to the end of the block, not from source order. `addiu $a0,$sp,24` feeds a `jal` argument several insns later and `addu $s0,$zero,$zero` feeds the first loop, and the source position of the assignment does not change either chain.
+- probe: tmp/grind/func_80070C70/s11/a/a1..a5 - `var_s0 = 0;` placed before `g = ...`, after `g = ...`, after `t = ...`, after `prim.p_geom = g;`, after `prim.p_static = t;`, and immediately before the do-loop. All six score 22 at 194/194 insns with identical output.
+- result: KILLED. The residual (ii) in candidate.c stands; a future session should not spend probes on statement placement for it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 22-point if-guarded do/while chassis (memory/grind/func_80070C70/candidate.c as written by s11), zero FAKE constructs present
+
+## [s11] The second loop's TAIL bound must be parenthesised as `D_800A35B0 + ((s16)D_800A3558 + 1)` while the GUARD copy of the same bound must stay unparenthesised, and that asymmetry is worth a point on the if-guarded do/while chassis.
+- mechanism: The target's tail test is `lh $v0,%gp_rel(D_800A3558); addiu $v0,$v0,1; addu $v0,$a1,$v0` - the constant 1 is added to the sign-extended halfword and the D_800A35B0 word is the other addend of the final addu. C's left associativity makes the unparenthesised form `(D_800A35B0 + sext) + 1`, which emits addu first and addiu on the wrong operand; GCC 2.7.2 does not reassociate the mixed sign-extend/word tree back. s7 killed this same parenthesisation, but only on the TOP-TEST chassis (57/54 there against 51/49) - that kill was chassis-relative and this session's re-audit found the lever live on the do/while.
+- probe: tmp/grind/func_80070C70/s11/w/*.c via tmp/grind/func_80070C70/s11/score.sh: w7_paren_tailonly.c = 38 at 194/194 against base.c = 39; w1_paren.c (both copies) = 41 at 196; x4_g_paren.c (guard only, on the 38 chassis) = 41 at 196.
+- result: CONFIRMED and banked as lever L1 in memory/grind/func_80070C70/candidate.c. The guard-side form is banked as rejected/s11-guard-bound-parenthesised-too-32.c.
+- verdict: CONFIRMED
+
+## [s11] Sequencing the +0xC / +0x48 add as its own statement into a named local before both struct stores (`g = *(s32*)(ctx+N); t = g + K; prim.p_geom = g; prim.p_static = t;`) reproduces the target's two-live-register `addiu $v1,$v0,12 / sw $v0,0x18($sp) / sw $v1,0x1C($sp)` at all three p_static sites and is worth 9 points.
+- mechanism: GCC 2.7.2 schedules before register allocation. Written as `prim.p_static = prim.p_geom + 0xC;` the value is read back out of the just-stored member, sched1 is free to emit the sw before the addiu, the source pseudo dies at the add, and local-alloc gives the add the SAME hard register (`addiu $v0,$v0,12`). Emitting the add as a separate statement between the load and both stores keeps two pseudos live across it, so they must get different hard registers. This is NOT s8's killed form: s8 measured the REVERSED STORE ORDER (`prim.p_static = g + 0xC; prim.p_geom = g;`), which is still worse (40); keeping the target's store order and lifting only the ADD out is the win.
+- probe: tmp/grind/func_80070C70/s11/u/u1_t_both.c = 22, u2_t_s1.c = 25, u3_t_s2.c = 25 against the 29-point r1 chassis; tmp/grind/func_80070C70/s11/z/z3_g_both_body.c = 36 against the 38-point w7 chassis. The reversed order was re-measured this session at tmp/grind/func_80070C70/s11/q/q1_static_first_both.c = 40.
+- result: CONFIRMED and banked as levers L2 and L4 in candidate.c; the reversed form is banked as rejected/s11-pstatic-stored-before-pgeom-40.c.
+- verdict: CONFIRMED
+
+## [s11] Reading prim.link before storing prim.code at both loop call sites is worth 7 points.
+- mechanism: The target emits `lw $v1,0x10($s1)` ahead of `sw $v0,0x2C($sp)` in both loops (80070D80/D88 and 80070EAC/EB4) and carries the link value into the jal delay slot in a register the `li 1` did not clobber. With the stores in the other source order GCC assigns both to $v0 and the delay slot carries the call's own result register instead.
+- probe: tmp/grind/func_80070C70/s11/q/q3_linkfirst.c = 31 (from 36, second loop); tmp/grind/func_80070C70/s11/r/r1_loop1_linkfirst.c = 29 (from 31, first loop).
+- result: CONFIRMED and banked as lever L3 in candidate.c.
+- verdict: CONFIRMED
+
+## [s11] Iterating the second loop with a walking pointer over D_800A3560 (`u8 *p = D_800A3560; code = *p; ...; p += 3;`) scores 91 to 95 at 195 insns on the if-guarded do/while chassis, against 38 for the index-times-3 offset form.
+- mechanism: An incremented pointer is an ADDRESS biv, so loop.c materialises %hi(D_800A3560)+%lo into a register in the preheader and the loop indexes off it. The target instead re-emits `lui $at,%hi(D_800A3560); addu $at,$at,$s2; lbu %lo(D_800A3560)($at)` every iteration, i.e. $s2 is an OFFSET giv re-added to a fresh %hi each time, which is what `s32 ctx = var_s0 * 3;` produces.
+- probe: tmp/grind/func_80070C70/s11/v/v1_ptrwalk.c = 91/195, v3_ptr_modeacc.c = 93/195, v6_ptr_both.c = 93/195 (a second walking pointer over D_800A3590), v5_ptr_modeacc_le.c = 95/193.
+- result: KILLED. Banked as rejected/s11-walking-pointer-D_800A3560-91.c and rejected/s11-walking-pointer-plus-mode-accumulator-93.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the if-guarded do/while chassis (s10 candidate body at floor 39 and its s11 w7 derivative at 38), zero FAKE constructs present, sandbox --disable all
+
+## [s11] Spelling the second loop's mode as an explicit accumulator (`m = 0x50; ... prim.mode = m; ... m += 0x16C;`) is byte-neutral against `prim.mode = 0x50 + var_s0 * 0x16C`.
+- mechanism: loop.c's strength reduction already reduces the `0x50 + i*0x16C` giv to the target's `addiu $s3,$s3,0x16C` at the biv increment site, so the source-level accumulator adds nothing the compiler was not already doing.
+- probe: tmp/grind/func_80070C70/s11/v/v2_modeacc.c = 39 at 194/194 insns against base.c = 39 at 194/194.
+- result: KILLED as a lever - a legitimate alternative spelling that buys nothing, so the simpler expression stays in candidate.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the if-guarded do/while chassis (s10 candidate body, floor 39), zero FAKE constructs present, sandbox --disable all
+
+## [s11] Carrying D_800A3558 and D_800A35B0 in C locals re-assigned at the bottom of the loop body - the literal C spelling of the target's loop-carried $a1/$a2 - scores 55 to 59 at 197 insns on the 38-point do/while chassis.
+- mechanism: The source-level carry adds two more live values across the whole loop, and GCC 2.7.2 emits the reload as an extra pair of insns in BOTH the guard and the tail rather than folding it into the test's own loads: the body saves two insns and the loop's edges pay five. The target's structure has the same load in the tail serving both the exit test and the next iteration's body, which only cse can produce.
+- probe: tmp/grind/func_80070C70/s11/y/y1_u16_carry.c (u16 declaration, (s16)h in the body) = 59/197, y2 (reload before the increment) = 59/197, y3 (s16 declaration) = 59/197, y4 (operands reversed) = 59/197, y5 (plain s32 locals) = 55/194.
+- result: KILLED, and it reproduces s8's kill of the same idea on a chassis 17 points lower, so that kill is not an artifact of the old chassis. Banked as rejected/s11-carry-two-globals-in-locals-59.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the if-guarded do/while chassis at 38 (tmp/grind/func_80070C70/s11/w/w7_paren_tailonly.c body) with the D_800A3558 declaration substituted per variant, zero FAKE constructs present, sandbox --disable all
+
+## [s11] The prologue tie between `addiu $a0,$sp,24` and `addu $s0,$zero,$zero` does not move for any of six source positions of `var_s0 = 0;`.
+- mechanism: Both insns are ready in the same cycle with no data dependence on anything in flight; GCC 2.7.2's sched1 breaks the tie by INSN_PRIORITY, derived from the length of each insn's dependence chain to the end of the block rather than from source order. `addiu $a0,$sp,24` feeds a jal argument several insns later and `addu $s0,$zero,$zero` feeds the first loop, and moving the assignment changes neither chain.
+- probe: tmp/grind/func_80070C70/s11/a/a1..a5 plus the candidate body - `var_s0 = 0;` placed before `g = ...`, after `g = ...`, after `t = ...`, after `prim.p_geom = g;`, after `prim.p_static = t;`, and immediately before the do-loop. All six score 22 at 194/194 insns with identical output.
+- result: KILLED. Residual (ii) in candidate.c stands and a future session should not spend probes on statement placement for it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 22-point if-guarded do/while chassis (memory/grind/func_80070C70/candidate.c as written by s11), zero FAKE constructs present, sandbox --disable all
+
+## [s11] Spelling the mode test's || operands in the target's order (the sum tested first, D_800A35BC second) is worse on the do/while chassis at every score level measured, including the new 22-point one.
+- mechanism: The target's block really is sum-first (`bnez $v0,.L80070E9C` on the sum, then the D_800A35BC compare), so this is a case where the object shape and the score disagree: putting the sum first also removes four instructions elsewhere (190 built against the target's 194), and that shortfall costs more than the branch-order match gains.
+- probe: tmp/grind/func_80070C70/s11/a/a6_orswap.c = 30 at 190/194 against candidate.c = 22 at 194/194; tmp/grind/func_80070C70/s11/t/t3_orswap.c = 34 against r1 = 29; s6 measured the same direction (39 vs 40).
+- result: KILLED as a lever on this chassis. Banked as rejected/s11-or-operands-sum-first-30.c. NOTE for future sessions: s7 measured the OPPOSITE on the top-test chassis (sum-first wins there, 49 vs 51), so this is genuinely chassis-coupled and must be re-measured after any chassis change.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 22-point if-guarded do/while chassis (candidate.c body) and its 29-point r1 ancestor, zero FAKE constructs present, sandbox --disable all

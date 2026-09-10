@@ -743,3 +743,77 @@
 - [s10] New cheap gradient banked for this function: tmp/grind/func_80070C70/s10/probe.py + probe.sh runs only cpp|cc1 with the instrumented compiler and prints `spills=<n> <pseudos> <.frame line>` per body in about 8 seconds, against roughly 40 seconds for a sandbox run. Frame and orphan questions should be answered with it before anything is scored. tmp/grind/func_80070C70/s10/scan.py <pass> extracts the func_80070C70 section from any -da dump into s10/w/sec.<pass>.
 
 - [s10] Ledger-hygiene rule established: a banked candidate's //@sub directives must be the first lines of the file. The s9 top-test chassis violated this and measured 56 instead of 49 for every session that would have installed it; the file has been fixed.
+
+## [s11 rederive 2026-09-10] FLOOR 39 -> 22 on the UNCHANGED if-guarded do/while chassis
+
+s11's mandate was a structurally different C shape. Two genuinely different shapes were
+built and both are DEAD (banked in rejected/), but the object-level diff produced while
+re-deriving them exposed four ordinary-C statement-level spellings that were worth 17
+points together. All numbers are `sandbox func_80070C70 --disable all`, 194/194 insns,
+frame `$sp,128 # vars= 80, regs= 6/0, args= 24` with 0 spill slots throughout.
+
+- BASELINE RE-MEASURED FIRST (chassis check): memory/grind/func_80070C70/candidate.c as
+  banked by s10 scores 39 on today's HEAD. The brief's "measurement unavailable" is
+  resolved: the chassis had NOT moved.
+- L1 TAIL-BOUND PARENTHESISATION, 39 -> 38. `var_s0 < D_800A35B0 + ((s16)D_800A3558 + 1)`.
+  The target's tail is `lh $v0; addiu $v0,$v0,1; addu $v0,$a1,$v0` - the 1 is added to the
+  sign-extended halfword, not to the sum. Guard copy must stay unparenthesised (both = 41
+  at 196 insns; guard-only = 41).
+- L2 NAMED geom/static TEMP PAIR AT THE TWO PRE-LOOP SITES, worth 7 points.
+  `g = *(s32*)(ctx+N); t = g + K; prim.p_geom = g; prim.p_static = t;` reproduces the
+  target's `addiu $v1,$v0,12 / sw $v0,0x18($sp) / sw $v1,0x1C($sp)` two-live-register
+  form. Writing the add as `prim.p_static = prim.p_geom + 0xC;` (reading the member back)
+  lets the scheduler put the add AFTER the store, the pseudo dies at the add, and it
+  reuses the same hard register. Sequencing the add as its own statement before both
+  stores is what keeps two pseudos live across it.
+- L3 `prim.link` READ BEFORE `prim.code` STORE at both loop call sites, worth 7 points
+  (36 -> 31 second loop, 31 -> 29 first loop). The target emits `lw $v1,0x10($s1)` before
+  `sw $v0,0x2C($sp)` at both.
+- L4 `g = prim.p_geom; t = g + 0xC;` inside the second loop body, 38 -> 36. Same
+  two-live-register effect at the in-loop site.
+
+### s11 negative results (structural rederivations that are DEAD on this chassis)
+- WALKING POINTER over D_800A3560 (`u8 *p = D_800A3560; code = *p; ... p += 3;`) = 91 at
+  195 insns; with a mode accumulator = 93; with a second walking pointer over D_800A3590
+  = 93. A pointer that is incremented is a real ADDRESS biv, so the %hi(D_800A3560) base
+  must be materialised in a register before the loop; the target re-does
+  `lui $at,%hi / addu $at,$at,$s2 / lbu %lo($at)` every iteration, i.e. it uses an OFFSET
+  giv. This is the same effect s4 recorded from the other direction.
+- EXPLICIT MODE ACCUMULATOR (`m = 0x50; ... prim.mode = m; ... m += 0x16C;`) is BYTE-
+  NEUTRAL against `prim.mode = 0x50 + var_s0 * 0x16C` (39/39, 194/194 insns). loop.c's
+  strength reduction already produces the target's `addiu $s3,$s3,0x16C`.
+- CARRYING THE TWO LOOP GLOBALS IN LOCALS re-assigned at the bottom of the body - the
+  literal C spelling of the target's loop-carried $a1/$a2 - is 55 (s32 locals) to 59
+  (u16/s16 locals with the sign-extend in the body) at 197 insns. Confirms s8's kill on
+  the new, much lower chassis.
+- `<=` BOUND without the explicit +1 = 43 at 192 insns; `0 <= ...` guard = 39; `>= 0`
+  guard = 39; guard `!(... <= 0)` = 38 (ties, byte-identical to L1).
+- DUPLICATE READ of `*(s32*)(ctx+N)` at the two pre-loop sites instead of a local = 44.
+- `prim.p_static` STORED BEFORE `prim.p_geom` = 40 (s8's result reproduced).
+- `||` OPERANDS IN THE TARGET'S ORDER (sum first) = 30 at 190 insns. The target really
+  does test the sum first; spelling it that way loses four insns elsewhere. Do not "fix"
+  this by inspection - it is measured worse at every chassis tried (39->40 at s6,
+  29->34 at s11-r1, 22->30 at s11-u1).
+
+### s11 tooling
+`tmp/grind/func_80070C70/s11/score.py` + `score.sh` - installs a body via the s9 installer
+and calls `engine.sandbox.sandbox_score(..., disable="all", strip_cheat_asm=True)`
+in-process, one line of `score= insns=/` per body, no PowerShell round-trip. Invoke as
+`bash tools/wsl.sh 'bash tmp/grind/func_80070C70/s11/score.sh <body.c> ...'` from the repo
+root (the Bash tool here is Git Bash, not WSL - `bash tools/wsl.sh` is the bridge).
+
+- [s11] CHASSIS CHECK: the brief reported 'measurement unavailable'. Re-measured first thing this session - the s10 candidate body scores exactly 39 at 194/194 insns on today's HEAD, so the chassis had not moved and every banked s10 conclusion was spendable.
+
+- [s11] NEW FLOOR 22 at 194/194 insns, frame still exact: '.frame $sp,128 # vars= 80, regs= 6/0, args= 24' with 0 spill slots (tmp/grind/func_80070C70/s10/probe.sh on the banked candidate). The chassis is UNCHANGED - still the if-guarded do/while; all four levers are statement-level spellings inside it.
+
+- [s11] The 39 -> 22 path is fully reproducible from the banked probe bodies: base 39 -> w7_paren_tailonly 38 -> z3_g_both_body 36 -> q3_linkfirst 31 -> r1_loop1_linkfirst 29 -> u1_t_both 22.
+
+- [s11] KILL RE-AUDIT PAID OFF, AND IT IS THE LESSON OF THIS SESSION: s7's kill of the parenthesised bound and s8's kill of the geom/static temp pair were both real, but the first was measured on the TOP-TEST chassis and the second in a reversed store order. Re-testing them on the current chassis in the target's own store order turned two 'dead' axes into 8 of this session's 17 points. Instance kills on this function have repeatedly been chassis- or spelling-relative.
+
+- [s11] THE RESIDUAL AT 22 IS NOW ESSENTIALLY ONE CLUSTER: about 18 of the 22 points are the loop-carried $a1/$a2 ('lhu $a2,%gp_rel(D_800A3558)' and 'lw $a1,%gp_rel(D_800A35B0)' loaded in the second loop's guard block and again in its tail, consumed by the body as sll/sra/addu instead of being re-loaded). This is the unchanged cse_set_around_loop frontier from s7-s10. The remaining ~4 are the prologue scheduler tie and the || operand order, both killed above.
+
+- [s11] The direct C spelling of that cluster is now measured dead on the LOW chassis too (55-59 at 197 insns), so the hoist has to come from cse, not from the source carrying the values.
+
+- [s11] s11 tooling for reuse: tmp/grind/func_80070C70/s11/score.py + score.sh installs a body via the s9 installer and calls engine.sandbox.sandbox_score(disable='all', strip_cheat_asm=True) in-process, printing one 'score= insns=/' line per body with no PowerShell round-trip. Note the Bash tool in this harness is Git Bash, not WSL - invoke as: bash tools/wsl.sh 'bash tmp/grind/func_80070C70/s11/score.sh <body.c> ...'.
+
+- [s11] src/text1b.c was restored to pristine (INCLUDE_ASM) at the end of the session; only memory/grind/func_80070C70/ and tmp/ carry changes.

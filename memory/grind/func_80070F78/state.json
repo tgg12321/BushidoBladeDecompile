@@ -42,10 +42,10 @@
   },
   {
    "from": "func_80070C70",
-   "floor": 39,
-   "session": 6,
-   "at": "2026-09-10T17:19:00.017435+00:00",
-   "headline": "Floor 53 -> 39 at 194 insns (== target) with an EXACT frame: the 0x18 overshoot was three reload spill slots proven by BB2_FRAME_DEBUG, and reverting s5's top-test for to an if-guarded do/while remove",
+   "floor": 22,
+   "session": 11,
+   "at": "2026-09-10T18:38:21.037804+00:00",
+   "headline": "Floor 39 -> 22 at 194/194 insns with the target's exact frame, on the UNCHANGED if-guarded do/while chassis: four ordinary-C statement-level spellings (tail-bound parenthesisation, a named geom/static",
    "consumed": null
   }
  ]
