@@ -1,37 +1,25 @@
-/* func_8005C6D0 - per-frame sound-request flush (grind s2; honest sandbox distance 0,
- * 118/118 instructions, full-build SHA1 == oracle).
+/* func_8005C6D0 - per-frame sound-request flush.
+ * STATUS (grind s2, permuter modality, 2026-09-10): honest sandbox distance 0,
+ * 118/118 instructions, on a chassis that NO LONGER carries the semantically-null
+ * `if ((s16)voice < 0x18)` guard the layer-1 reviewer FAILed on 2026-09-10 09:29.
+ * It still carries ONE construct that is pending a ruling: the byte offset i*8 is
+ * named TWICE - `off` for the pool-entry load, and `nv` (assigned `nv = off;` at the
+ * top of the voice-scan body, LICM-hoisted into the scan's preheader) for the two
+ * volume-byte reads.  DO NOT submit this as candidate-ready until that ruling lands;
+ * the driver's banned-construct tripwire covers `entry_off`/`vol_off`, and `nv` is the
+ * same intent respelled.
  *
- * Sweeps the 24-entry sound-request pool at D_800EFB78 (8 bytes per entry: +0 the s32
- * request pointer written by func_8005C650, +4 / +5 the two u8 volumes).  For every live
- * entry whose VAB slot D_800EFC38[*p] holds a KSEG0 pointer (negative as s32) it scans
- * the SPU voices, starting from where the previous key-on stopped (`next` deliberately
- * persists across pool entries), for the first voice SpuGetKeyStatus reports as not
- * keyed on; remaps VAB id 6 -> 3 while D_800EFC50 == D_800EFC44; unpacks the packed
- * note word (bits 0-6 prog, 7-10 tone, 11-17 note, 18-24 fine) and SsUtKeyOnV's it.
- * Every iteration ends by clearing the pool entry's +0 word.
+ * Why the second name is there (measured, not argued - s2 evidence.md):
+ * the target emits `addu $s2,$v1,$zero` at 0x8005C768, a REAL instruction in the
+ * shipped bytes: $v1 holds i*8 computed at the top of the outer loop for the pool
+ * load, and $s2 is a second, callee-saved copy of it that survives the
+ * SpuGetKeyStatus call and feeds the two `lbu %lo(D_800EFB7{C,D})` volume loads.
+ * All seven single-name spellings were measured on this chassis and none of them
+ * produces that copy (best 8 / 114 insns); the guard-free single-`off` form loses
+ * exactly the 4 insns of the duplicated exit test plus the copy.
  *
- * Spelling notes (all measured, s1 + s2 - see memory/grind/func_8005C6D0/evidence.md):
- *  - the pool and the two volume bytes are three INDEPENDENT symbols addressed as
- *    `(u8 *)&SYM + <byte offset>`, the same spelling the already-byte-matching writer
- *    func_8005C650 uses at src/text1b.c:2686-2689.  The target emits a separate
- *    lui %hi / addu $at / {lw,lbu,sw} %lo triple per symbol per use and never shares a
- *    base register between them; declaring the pool as an array instead makes loop.c
- *    hoist the symbol address into a callee-saved register (frame 0x60, 112 insns) -
- *    banked as rejected/array-decl-licm-hoist-frame-0x60.c.
- *  - `entry_off` (the pool byte offset) and `vol_off` (the volume byte offset, computed
- *    inside the voice-scan guard) are separate locals because folding them into one, or
- *    inlining either, changes three different GCC decisions: the LICM hoist above, the
- *    cross-jump of the loop-entry guard into the bottom test, and the recomputed
- *    sll/sra at the 4-way join.  Both single-local forms were re-measured on this
- *    chassis (105 and 99 insns) and are banked as rejected forms.
- *  - the inner scan is a top-tested `for` inside an explicit `if` guard: jump.c's
- *    duplicate_loop_exit_test rotation is what gives reorg.c a prediction > 0 on the
- *    `beq $v0,$s5` branch, so the branch delay slot is filled from the loop-continue
- *    thread with `addiu $v0,$s0,0x1` (as the target does) instead of stealing the
- *    `li $v0,6` constant out of the fall-through block.
- *  - `next = (s16)(voice + 1);` sits AFTER the SsUtKeyOnV call: the scheduler hoists it
- *    back above the call into the target's slot between the $a0 sign-extension and the
- *    $a1 shift.  Written before the call it is emitted one slot too early.
+ * Object model, LICM, argument-order and `next`-placement notes from s1/s2 are
+ * unchanged and still apply - see memory/grind/func_8005C6D0/hypotheses.md H1-H7.
  */
 extern s32 D_800EFC44;
 extern s32 D_800EFC50;
@@ -46,36 +34,34 @@ void func_8005C6D0(void) {
     s16 next;
     u16 vab;
     u16 *p;
-    s32 vol_off;
-    s32 entry_off;
+    s32 off;
+    s32 nv;
     u32 *ev;
 
     SpuGetAllKeysStatus(keys);
     next = 0;
     for (i = 0; (s16)i < 0x18; i = (s16)(i + 1)) {
-        entry_off = i * 8;
-        p = *(u16 **)((u8 *)&D_800EFB78 + entry_off);
+        off = i * 8;
+        p = *(u16 **)((u8 *)&D_800EFB78 + off);
         if (p != 0 && (s32)D_800EFC38[*p] < 0) {
             voice = next;
-            if ((s16)voice < 0x18) {
-                vol_off = i * 8;
-                for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) {
-                    if (SpuGetKeyStatus(1 << voice) != 1) {
-                        vab = *p;
-                        if (vab == 6 && D_800EFC50 == D_800EFC44) {
-                            vab = 3;
-                        }
-                        ev = &((u32 *)D_800EFC38[vab][0])[p[1]];
-                        SsUtKeyOnV((s16)voice, (s16)vab,
-                                   (s16)(*ev & 0x7F),
-                                   (s16)((*ev >> 7) & 0xF),
-                                   (s16)((*ev >> 11) & 0x7F),
-                                   (s16)((*ev >> 18) & 0x7F),
-                                   *((u8 *)&D_800EFB7D + vol_off),
-                                   *((u8 *)&D_800EFB7C + vol_off));
-                        next = (s16)(voice + 1);
-                        break;
+            for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) {
+                nv = off;
+                if (SpuGetKeyStatus(1 << voice) != 1) {
+                    vab = *p;
+                    if (vab == 6 && D_800EFC50 == D_800EFC44) {
+                        vab = 3;
                     }
+                    ev = &((u32 *)D_800EFC38[vab][0])[p[1]];
+                    SsUtKeyOnV((s16)voice, (s16)vab,
+                               (s16)(*ev & 0x7F),
+                               (s16)((*ev >> 7) & 0xF),
+                               (s16)((*ev >> 11) & 0x7F),
+                               (s16)((*ev >> 18) & 0x7F),
+                               *((u8 *)&D_800EFB7D + nv),
+                               *((u8 *)&D_800EFB7C + nv));
+                    next = (s16)(voice + 1);
+                    break;
                 }
             }
         }

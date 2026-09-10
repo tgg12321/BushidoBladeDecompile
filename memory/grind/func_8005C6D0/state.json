@@ -28,10 +28,11 @@
    "next_probe": "Run tools/ra_solver/inverse_compose.py classify on the residual and tools/sched_solver on the inner-loop block to get a ranked C-lever vector for the `li 6` / increment ordering."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Annotate the second offset local at its declaration/assignment with a `/* FAKE: ... */` comment naming the family (named-intermediate, no-new-park-categories \u00a7 SOTN-accepted + ordinary-c-judge-decidable Ruling 1), the mechanism (one C name = one pseudo, so GCC never emits the target's callee-saved copy at 0x8005C768), and the exhaustion pointer (evidence.md s2); replace the grind-status header with a normal function comment; change nothing else in the body."
+ ],
  "banned_constructs": [
-  "candidate.c:60-62 \u2014 `voice = next; if ((s16)voice < 0x18) { vol_off = i * 8; for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) { ... } }`",
-  "candidate.c:56 + 61 \u2014 `entry_off = i * 8;` and a second local `vol_off = i * 8;` holding the identical value, plus the clear site re-inlining `i * 8` at line 82"
+  "candidate.c:60-62 \u2014 `voice = next; if ((s16)voice < 0x18) { vol_off = i * 8; for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) { ... } }`"
  ],
  "kills": [],
  "ladder_skip": 2,

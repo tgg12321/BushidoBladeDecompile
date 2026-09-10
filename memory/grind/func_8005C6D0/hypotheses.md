@@ -124,3 +124,55 @@ cross-jumped). Single shared local also used at the clear site: 99 insns. The s1
 (pool load through its own local, volumes through a local declared inside the voice guard,
 clear site inline `i * 8`) is the only one of the three that reaches 118 insns, so the
 conclusion s1 banked on the do-while chassis holds unchanged on the matching chassis.
+
+## s2 (permuter, 2026-09-10) — the layer-1-banned guard is NOT load-bearing; the second offset name IS
+
+### H8 — the semantically-null `if ((s16)voice < 0x18)` guard the layer-1 reviewer FAILed is
+### NOT required to reach distance 0
+**CONFIRMED (measured, distance 0).** A guard-free chassis — `voice = next;` as a real
+statement inside the `if (p != 0 && ...)` block, followed by a top-tested
+`for (; (s16)voice < 0x18; voice = (s16)(voice + 1))` — reaches sandbox distance 0 at
+118/118 instructions, provided the pool byte offset is named a second time for the volume
+reads. Banked as memory/grind/func_8005C6D0/candidate.c. The reviewer's finding therefore
+disposes of one of the two banned constructs at zero cost: the guard can simply go.
+
+### H9 — the target's `addu $s2,$v1,$zero` (0x8005C768) requires TWO offset-valued pseudos;
+### no single-name spelling of the offset reproduces it
+**CONFIRMED (measured, nine points on the guard-free `for` chassis).** Score / build_insns:
+single `off` at load+volumes, clear inline i*8 = 8 / 114 (the floor); the same with the
+outer loop as a do-while = 8 / 114; folding `&& (s16)next < 0x18` into the outer condition
+= 16 / 117; `while` form with the increment at the body bottom = 18 / 116; `off = i * 8;`
+assigned inside the if-block with the load written inline = 21 / 117; single `off` used at
+the clear site too = 22 / 113; no offset local at all = 33 / 123; volumes written inline as
+`i * 8` (off only at the load) = 35 / 123 — this re-triggers the loop.c hoist of
+%hi(D_800EFB78) into a callee-saved register; volumes inline with the clear through `off`
+= 39 / 120. Every one of them is short of 118 and none emits the copy. Only a form that
+names the offset twice — `off` for the pool load and a second local read at the two volume
+sites — reaches 118 / distance 0.
+
+### H10 — a working full-TU decomp-permuter workspace for this function now exists
+**CONFIRMED.** tmp/perm_c6d0 (base.c = cpp of src/text1b.c, compile.sh = the exact
+buildconfig cc1 -mel -msoft-float | prologue_fix | maspsx | multu_pad chain with a
+per-function region extract, target.o assembled from asm/funcs/func_8005C6D0.s). Builder
+script tmp/grind/func_8005C6D0/s2/mkws.py + tmp/grind/func_8005C6D0/s2/extract_fn.py — both
+generic enough to re-point at another function by editing two constants. Campaign
+`w1-noguard` ran 6,562 iterations over 6 workers from the score-8 guard-free chassis
+(permuter base score 610) and produced a score-0 find at 231.6 s; harvested and stopped.
+The find's whole content is a second name for the offset (`new_var = off;` as the first
+statement of the voice-scan body, LICM-hoisted into the preheader) — i.e. the permuter
+independently rediscovered the construct the driver has banned, which is itself the
+strongest available evidence that the construct is what the bytes demand rather than a
+detector-evasion artifact.
+
+### Frontier for s3
+1. **The ruling.** The only thing between the ledger and a byte-proven pure-C body is the
+   classification of "the same byte offset named twice, each name feeding a different set of
+   use sites, materialising an instruction that is literally present in the target". Ask it;
+   do not respell it (respellings are the same construct and the driver discards them).
+2. If the ruling goes against the second name, the remaining untried axis is the OBJECT
+   MODEL at the volume sites: something other than `(u8 *)&SYM + <offset>` that still emits
+   `lui %hi / addu $at / lbu %lo` against a callee-saved index register — e.g. a declared
+   `extern u8 D_800EFB7C[]` indexed by a second induction variable that the C advances
+   independently of `i` (a genuinely different value, not a copy).
+3. The permuter workspace is live and cheap to re-seed: tmp/perm_c6d0 with a different
+   base.c is one `mkws.py` run.

@@ -232,3 +232,21 @@
   direction, and nothing this session produced is spelling-specific to them. The transferable
   asset for them is the s2 TOOLING entry above (minimal-TU probe + BB2_DBR_DEBUG reorg
   trace), not any C form.
+
+## [s2] [permuter 2026-09-10] The layer-1-banned voice-loop guard is not load-bearing: a guard-free chassis reaches distance 0.
+- mechanism: `voice = next;` as a real statement inside the `if (p != 0 && (s32)D_800EFC38[*p] < 0)` block separates the block from the loop top well enough that jump.c does not cross-jump the duplicated exit test, once a second offset-valued pseudo is also live into the scan's preheader.
+- probe: `tools/sweep_variants.py` over 15 hand-written guard-free arrangements plus a 6,562-iteration decomp-permuter campaign (tmp/perm_c6d0, label w1-noguard) seeded from the score-8 guard-free chassis.
+- result: distance 0, 118/118 instructions, banked as candidate.c. The `if ((s16)voice < 0x18)` guard is gone from the ledger's best form.
+- verdict: CONFIRMED
+
+## [s2] [permuter 2026-09-10] Nine guard-free single-offset-name spellings measured; the floor of that whole family is 8 / 114 insns.
+- mechanism: the target keeps i*8 in caller-saved $v1 for the pool load and in callee-saved $s2 for the two volume `lbu`s across the SpuGetKeyStatus call; one C name yields one pseudo, so GCC allocates it once (to $s2 directly) and the `addu $s2,$v1,$zero` copy plus the 4-insn duplicated exit test never appear.
+- probe: sweep_variants over v1/v2/v3/v4/v5/v6 and w1..w6 (offset local at load only / at load+volumes / at load+clear / everywhere / assigned inside the if-block / absent), plus x1..x3 (volumes written inline as `i * 8`).
+- result: 8, 8, 16, 18, 21, 22, 33, 35, 39 — every one short of 118 insns; the two 35s and the 33 additionally re-trigger the loop.c hoist of %hi(D_800EFB78) into a callee-saved register (123 insns).
+- verdict: CONFIRMED
+
+## [s2] [permuter 2026-09-10] A working full-TU permuter workspace for func_8005C6D0 exists at tmp/perm_c6d0 and found the score-0 form in 232 seconds.
+- mechanism: full-TU cc1 (correct codegen context, current -mel -msoft-float flags out of engine/buildconfig) + per-function region extraction, so the permuter's metric is the real per-function diff rather than a whole-TU one.
+- probe: tmp/grind/func_8005C6D0/s2/mkws.py builds base.c/compile.sh/target.o/settings.toml; smoke test showed target.o 118 insns vs base.o 114; `permuter_campaign.py launch --stop-on-zero -j 6`, then `wait`, then `harvest --stop`.
+- result: 14 novel finds in 6,562 iterations, best score 0 at 231.6 s. The score-0 find is `new_var = off;` at the top of the voice-scan body with the volume reads using `new_var` — a second name for the offset, i.e. the construct the driver's ban already covers under the `entry_off`/`vol_off` spelling.
+- verdict: CONFIRMED
