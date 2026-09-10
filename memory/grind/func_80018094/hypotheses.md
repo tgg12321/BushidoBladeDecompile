@@ -1012,3 +1012,70 @@ the numerator, which H48 shows is spelled out.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-09 (-mel -msoft-float), the s9b goto + do-while(0) chassis (m1/n13) with the sp_tmp[4] oversized-locals FAKE and both do-while(0) wraps present and the island operand list at its granted honest form
+
+## s10 (forensics, 2026-09-09) — the denominator/weight side of allocno_compare
+
+**H50 — KILLED (instance).** *The copy's live_length can be shortened from 7 to 6 by folding the
+LZC tail's `0x13 - shift_b` subtraction into `shift_b`'s own assignment, which would flip the
+priority sort (24/6 = 40000 > sum_sq's 36190) without parking the small arm's byte in `lut`.*
+- mechanism: allocno_compare's denominator is allocno_live_length; moving the subtraction ahead of
+  the `lbu` was expected to remove one insn from the interval between `lut`'s LZC-arm set (insn
+  169) and its `<<16` use (insn 171).
+- probe: tmp/grind/func_80018094/s10/a1.c (m1 chassis + the fold) and a2.c (the s9b winning
+  chassis + the fold), both measured with tools/sweep_variants.py, plus ALLOCDBG on a1/a2.
+- result: **13 and 4** (build_insns 153 both). The fold LENGTHENS the range instead: a1's ALLOCDBG
+  gives pseudo 80 nrefs 8, livelen **9**, pri 26666 — worse than m1's 34285. The sub is scheduled
+  where `shift_b` is set, which is BEFORE the copy's second birth, so the interval it lands in is
+  the one that already contained the copy.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s9b m1/n13 goto + do-while(0) chassis
+  with the sp_tmp[4] oversized-locals FAKE and both do-while(0) wraps present, honest island
+  operand list
+
+**H51 — KILLED (instance).** *Moving the `sum_sq < 0x400` branch test onto the copy — either as
+`if ((lut = sum_sq) < 0x400)` or as `lut = sum_sq; if (lut < 0x400);` — transfers one reference
+from `sum_sq` to `lut`, which is enough to flip the sort (27/7 = 38571 > 34285) on the m1 chassis.*
+- mechanism: allocno_compare's numerator is floor_log2(n_refs)*n_refs, and at n_refs 8 -> 9 the
+  numerator jumps 24 -> 27 while sum_sq's 19 -> 18 leaves floor_log2 at 4.
+- probe: tmp/grind/func_80018094/s10/b1.c and c1.c, measured with sweep_variants and ALLOCDBG.
+- result: **13 and 13**, and the ALLOCDBG arrays are IDENTICAL to m1's (80: 8/7/34285; 77:
+  19/21/36190). cse folds the test back onto `sum_sq` — the copy and the test are in the same
+  basic block, so the equivalence class rewrite happens before flow ever counts a reference. Not
+  one reference moved. Banked as rejected/s10-assign-in-branch-condition-*.c and
+  rejected/s10-branch-test-reads-copy-*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s9b m1 chassis (small arm's byte in its
+  own pseudo) with the sp_tmp[4] oversized-locals FAKE and both do-while(0) wraps present
+
+**H52 — CONFIRMED (the session's result — honest floor 7 -> 2 -> 0).** *`reg_n_refs` is
+loop-depth WEIGHTED, so a third `do { ... } while (0);` around the LZC arm's body raises
+allocno_n_refs[lut] without adding a single reference and without touching a seat — flipping
+global.c's priority sort while the small arm's LUT byte stays in its own short-lived pseudo.*
+- mechanism: flow.c partitions the insn stream and records `basic_block_loop_depth` by counting
+  NOTE_INSN_LOOP_BEG/END (tools/gcc-2.7.2/flow.c:440-471); every reference is then accumulated as
+  `reg_n_refs[regno] += loop_depth` (flow.c:2081). One `do{}while(0)` = one LOOP_BEG/END pair =
+  one extra weight unit for every reference inside. `lut` has 3 of its 4 references inside the LZC
+  arm (the island operand, the LUT-byte set, the `<<16` use) but `sum_sq` only 2, so the wrap is
+  differential: nrefs 8 -> 11 versus 19 -> 21, at unchanged live lengths 7 and 21.
+- probe: tmp/grind/func_80018094/s10/e1.c (built by wrapping the LZC arm body of s10/a0.c, which
+  is the s9b candidate with the small arm reverted to m1's own-pseudo spelling), measured with
+  sweep_variants and then directly with `sandbox func_80018094 --disable all` after splicing into
+  src/code6cac.c; ALLOCDBG in s10/e1.allocdbg.txt. Control s10/e2.c wraps only the LZC tail's two
+  statements (so the island operand stays at weight 2): **13**.
+- result: **0** — target_insns 153, build_insns 153, rules_dropped 0, cheat_asm_stripped 20.
+  ALLOCDBG: pseudo 80 nrefs 11, livelen 7, **pri 47142**, hardreg 4; pseudo 77 nrefs 21, livelen
+  21, **pri 40000**, hardreg 5. Both numbers were predicted from the m1 arrays before the form was
+  written and came out exact. Banked as memory/grind/func_80018094/candidate.c with all five FAKE
+  annotations, and vetted in memory/grind/func_80018094/self_vet.md.
+- verdict: CONFIRMED
+
+**H53 — CONFIRMED (minimality / nested-wrap prerequisite).** *Each of the three do-while(0) wraps
+and the oversized locals object is individually load-bearing on the zero chassis.*
+- probe: single-construct ablations of the zero body, all measured with sweep_variants.
+- result: drop the outer wrap -> **13** (s10/f1.c); drop the small-arm wrap -> **10** (s10/f3.c);
+  drop the LZC-arm wrap -> **13** (s10/a0.c); `s32 sp_tmp` scalar -> **8** (s10/f2.c). All at
+  build_insns 153. No single level and no pair substitutes for the three, which discharges the
+  do-while-zero-exception's "nested wraps need a single-level-insufficient justification".
+- verdict: CONFIRMED

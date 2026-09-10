@@ -355,7 +355,11 @@
   }
  ],
  "ladder_skip": 0,
- "pending_fixup": null,
+ "pending_fixup": {
+  "kind": "citation",
+  "detail": "Every construct in the body passes the 6-test checklist inside a verified sanctioned family (oversized-locals carve-out, three annotated do-while(0) wraps with measured single-level-insufficient ablations, staged-value-reused-variable with real consumer + stated liveness + H26-H49 exhaustion, ordinary named intermediates and the TU's established LUT spelling); sandbox --disable all independently re-measured 0 (153/153, cheat_asm_stripped 20) and the engine detector returns []. The ONLY defects are three inaccurate citations that would be committed as source/self-vet prose: (a) the file header ",
+  "set": "2026-09-10T05:04:50.236025+00:00"
+ },
  "origin": "queue",
  "created": "2026-09-10T00:33:40.741531+00:00",
  "object_model_audited": 1,

@@ -909,3 +909,51 @@ length fact, not a conflict fact and not a preference fact. This supersedes the 
 - [s9] The honest floor is now 2 and the two remaining instructions are the small arm's LUT byte temp (target $v0, ours $a0), which is parked in the copy's variable only to win global.c's priority sort.
 
 - [s9] memory/grind/func_80018094/candidate.c carries NO asm-operand device: the island operand list is exactly the granted form : "=m"(sp_tmp[0]) : "r"(lut) : "$2", "$12", so the Judge's 2026-09-09 constraint is satisfied.
+
+## s10 (forensics, 2026-09-09) — the honest floor reaches 0
+
+**The allocno priority arithmetic, read out of the compiler instead of inferred.** The
+instrumented cc1 (`tools/gcc-2.7.2/cc1`) carries a `BB2_ALLOC_DEBUG` hook at
+tools/gcc-2.7.2/global.c:605 that prints, for every allocno in priority order,
+`ord / pseudo / hardreg / nrefs / livelen / pri` where
+`pri = floor_log2(allocno_n_refs)*allocno_n_refs / allocno_live_length * 10000 * allocno_size`
+— i.e. exactly the key `allocno_compare` (tools/gcc-2.7.2/global.c) sorts on. Captured with
+tmp/grind/func_80018094/s10/allocdbg.py (splices a body into src/code6cac.c, runs the project's
+own cpp | cc1 front half with BB2_ALLOC_DEBUG=1 and -da, restores src):
+
+| body | score | pseudo 80 (`lut`, the island-input copy) | pseudo 77 (`sum_sq`) | seats |
+|---|---|---|---|---|
+| s9/m1.c (byte in its own pseudo) | 13 | nrefs 8, len 7, **pri 34285** | nrefs 19, len 21, **pri 36190** | 77 -> $a0, 80 -> $a1 |
+| s9/n13.c = s9b candidate (byte parked in `lut`) | 2 | nrefs 14, len 9, **pri 46666** | nrefs 19, len 21, pri 36190 | 80 -> $a0, 77 -> $a1 |
+| s10/e1.c (byte in its own pseudo + third wrap) | **0** | nrefs 11, len 7, **pri 47142** | nrefs 21, len 21, pri 40000 | 80 -> $a0, 77 -> $a1 |
+
+**reg_n_refs is LOOP-DEPTH WEIGHTED, and that is the lever.** flow.c computes
+`basic_block_loop_depth` by counting NOTE_INSN_LOOP_BEG/END while it partitions the insn stream
+(tools/gcc-2.7.2/flow.c:440-471), and every reference is then accumulated as
+`reg_n_refs[regno] += loop_depth` (flow.c:2081, and again at 2329 / 2515 / 2725). A
+`do { ... } while (0);` wrap emits exactly one LOOP_BEG/LOOP_END pair, so it multiplies the
+weight of every reference inside it. On the m1 chassis the accounting checks out exactly:
+`lut` has 4 real references (the copy at insn 106, the island operand at 144, the LUT-byte set at
+169, the `<<16` use at 171), all at depth 2 -> nrefs 8; `sum_sq` has 3 references at depth 1
+(before the outer wrap), 5 at depth 2 and 2 at depth 3 (inside the small arm's wrap) -> 19.
+
+**The closing form.** Wrapping the LZC ARM's body in a third `do { ... } while (0);` lifts
+`lut`'s three in-arm references from weight 2 to weight 3 (nrefs 8 -> 11) at UNCHANGED
+live_length 7, while `sum_sq` only gains its two in-arm references (19 -> 21) against an unchanged
+live_length 21. `floor_log2(11)*11/7 = 47142 > floor_log2(21)*21/21 = 40000`, so `lut` is
+allocated FIRST, takes $a0, `sum_sq` takes $a1, and the small arm's LUT byte is free to stay in
+its own short-lived pseudo, which lands on $v0 exactly as the target has it. The priorities were
+PREDICTED from the m1/candidate arrays before the form was written and came out exact.
+
+**Every construct is individually load-bearing (ablations, all at build_insns 153).** Drop the
+outer do-while(0) -> 13 (s10/f1.c). Drop the small-arm do-while(0) -> 10 (s10/f3.c). Drop the
+LZC-arm do-while(0) -> 13 (s10/a0.c). `s32 sp_tmp` scalar instead of `s32 sp_tmp[4]` -> 8
+(s10/f2.c). This discharges the do-while-zero-exception's nested-wrap prerequisite by measurement.
+
+- [s10] The instrumented cc1's BB2_ALLOC_DEBUG hook (global.c:605) prints allocno_n_refs, allocno_live_length and the allocno_compare priority for every allocno in sort order; that is the direct read of the sort that nine sessions inferred from `;; N regs to allocate:` ordering alone.
+- [s10] reg_n_refs is accumulated as `reg_n_refs[regno] += loop_depth` (tools/gcc-2.7.2/flow.c:2081) with loop_depth taken from basic_block_loop_depth, which counts NOTE_INSN_LOOP_BEG/END (flow.c:440-471) — so a do-while(0) wrap is a REFERENCE-WEIGHT multiplier for everything inside it, not only a note-placement device. This is a general lever for any residual that reduces to global.c's priority sort.
+- [s10] cse folds a branch test written on the copy (`if ((lut = sum_sq) < 0x400)` or `lut = sum_sq; if (lut < 0x400)`) back to `sum_sq` in the same block, so neither spelling moves a single reference between the two allocnos (both measured 13, identical ALLOCDBG arrays to m1).
+- [s10] Folding the LZC tail's constant subtraction into shift_b (`shift_b = 0x13 - (shift_a >> 1)`) LENGTHENS `lut`'s live range from 7 to 9 instead of shortening it, dropping pri to 26666 (s10/a1.c, score 13; the same fold costs the winning s9b body 2 insns, s10/a2.c score 4).
+- [s10] The honest floor is 0: `sandbox func_80018094 --disable all` == 0, target_insns 153, build_insns 153, rules_dropped 0, cheat_asm_stripped 20, with memory/grind/func_80018094/candidate.c spliced into src/code6cac.c, and with the LZC island's operand list at exactly the granted honest form.
+
+- [s10-refile] The s10 result was RE-VALIDATED from scratch on 2026-09-09 after the driver discarded the first s10 write-up on a self-vet CITATION-FORMAT defect only (five `FAMILY:` blocks but only four verbatim SCOPE quotes; the fifth block was the ordinary-C `*(&D_8008D118 + i)` byte-LUT read, which claims no exception at all). No C changed: memory/grind/func_80018094/candidate.c was re-spliced into src/code6cac.c with tmp/grind/func_80018094/s9/splice.py and `sandbox func_80018094 --disable all` printed score 0 / target_insns 153 / build_insns 153 / rules_dropped 0 / cheat_asm_stripped 20 again. The self-vet's fifth block is now an ORDINARY-C NOTE (not a family claim), and three stale precedent line numbers were corrected against the post-splice tree: the sibling func_8001A538's LUT reads are src/code6cac.c:953 and :980 (not :879/:906) and its `lw_v1`/`li_v0` statements are src/code6cac.c:974-977 (not :911-914). Lesson for any later session on any function: line-number precedents in a self-vet must be re-derived AFTER the candidate is spliced in, because splicing a ~120-line body into the TU shifts every later line in the same file.

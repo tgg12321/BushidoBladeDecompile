@@ -1,32 +1,36 @@
-/* func_80018094 candidate -- s9b (solver, 2026-09-09).  sandbox --disable all == 2
- * (153/153 insns, rules_dropped 0, 20 island insns stripped on both sides), measured this
- * session with this body spliced into src/code6cac.c.  Chassis: -mel -msoft-float.
- * Previous honest floor was 7; the s9a body that reached 0 did so with a TIED ASM OPERAND
- * that the Judge FAILed (docs/grind/decisions.md, 2026-09-09 23:11).  This body carries NO
- * asm-operand device: the island operand list is exactly the granted form
- * `: "=m"(sp_tmp[0]) : "r"(lut) : "$2","$12"`.
+/* func_80018094 -- MATCHED IN PURE C, s10 (forensics, 2026-09-09).
+ * `sandbox func_80018094 --disable all` = 0 (target_insns 153, build_insns 153,
+ * rules_dropped 0, cheat_asm_stripped 20 -- the two PsyQ gte_Set*Matrix islands and the
+ * LZC island, stripped on BOTH sides).  Chassis: -mel -msoft-float.
+ * NO asm-operand device: the LZC island's operand list is exactly the granted form
+ * `: "=m"(sp_tmp[0]) : "r"(lut) : "$2", "$12"` (the Judge's binding constraint from the
+ * 2026-09-09 23:11 ruling in docs/grind/decisions.md).
  *
- * WHAT CLOSED.  The whole residual was the target's pre-island `move $a0,$a1`
- * (asm/funcs/func_80018094.s, parked by reorg in the `beqz` delay slot).  An honest
- * `lut = sum_sq;` copy was deleted by cse at EVERY declaration scope for eight sessions.
- * The mechanism is cse_end_of_basic_block's extended-path walk: it follows the conditional
- * jump into the LZC block, so the copy and the asm land in ONE extended block, canon_reg
- * rewrites the asm operand back to sum_sq, and the copy dies.  cse only follows that jump
- * when the insn preceding the target label is a BARRIER (tools/gcc-2.7.2/cse.c:8112-8125);
- * the backward walk stops early on a NOTE_INSN_LOOP_END, and that stop has NO `after_loop`
- * guard, so it blocks cse1 AND cse2.  Spelling the small (sum_sq < 0x400) arm as an
- * `if` WITHOUT an else whose body is a `do { ...; goto lzc_done; } while (0);` puts the
- * loop-end note exactly between the barrier and the else-arm label -- the copy survives to
- * RA, becomes a global allocno, and reorg parks it in the delay slot (insn count is
- * unchanged: the slot was a nop before).
+ * THE TWO RESIDUALS THAT CLOSED, AND WHY.
+ * (1) s9b closed the pre-island `move $a0,$a1` (target parks it in the `beqz` delay slot):
+ *     an honest `lut = sum_sq;` copy survives cse only if a NOTE_INSN_LOOP_END sits between
+ *     the small arm's terminating BARRIER and the LZC arm's label, which is what an `if`
+ *     with NO else whose body is `do { ...; goto lzc_done; } while (0);` emits
+ *     (tools/gcc-2.7.2/cse.c:8100-8125, the follow-jumps gate's backward walk).
+ * (2) s10 closes the last two insns (the small arm's LUT byte: target `lbu $v0,0($at)`,
+ *     ours `lbu $a0,0($at)`).  `lut` and `sum_sq` have IDENTICAL conflict sets and both
+ *     prefer $4, so global.c's allocno_compare priority sort alone decides which takes $a0.
+ *     s9b bought the sort by parking the small arm's byte in `lut` (n_refs 8 -> 14) -- which
+ *     is exactly what put that byte in $a0 and cost the last two insns.  s10 buys the same
+ *     sort from the DENOMINATOR/weight side instead: a third do-while(0) wrap around the LZC
+ *     arm raises that region's flow.c loop depth, so the SAME references count for more
+ *     (n_refs 8 -> 11 at unchanged live_length 7, pri 34285 -> 47142 versus sum_sq's 40000),
+ *     and the small arm's byte stays in its own short-lived pseudo at $v0.
+ *     Measured: tmp/grind/func_80018094/s10/e1.allocdbg.txt (BB2_ALLOC_DEBUG on the
+ *     instrumented cc1) -- the priorities were PREDICTED from the m1/candidate arrays before
+ *     the form was written and came out exact.
  *
- * WHAT IS LEFT (2 insns).  The small arm's LUT byte: target `lbu $v0,0($at)` / `srl $a1,$v0,3`,
- * ours `lbu $a0,0($at)` / `srl $a1,$a0,3`.  The byte is held in `lut` ONLY to give that
- * allocno enough references to be sorted ahead of `sum_sq` by global.c's priority sort --
- * without it (tmp/grind/func_80018094/s9/m1.c, p5.c, p1.c) the two allocnos, which have
- * IDENTICAL conflict sets and both carry `preferences: 4`, swap seats and the score is 13.
- * The next session's job is to make `sum_sq` lose that sort without parking the byte in
- * `lut` (see hypotheses.md s9b H49).
+ * EVERY CONSTRUCT IS ABLATION-MEASURED THIS SESSION (all still 153 build insns):
+ *   drop the outer do-while(0)        -> 13  (s10/f1.c)
+ *   drop the small-arm do-while(0)    -> 10  (s10/f3.c)
+ *   drop the LZC-arm do-while(0)      -> 13  (s10/a0.c)
+ *   s32 sp_tmp scalar instead of [4]  ->  8  (s10/f2.c)
+ * Self-vet: memory/grind/func_80018094/self_vet.md.
  */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
@@ -96,7 +100,27 @@ void func_80018094(s32 *arg0, s32 *arg1) {
         scale = 0;
     } else {
         {
+            /* FAKE: do{...}while(0) around the whole else-arm body, mechanism: flow.c
+             * life_analysis / basic_block_loop_depth (tools/gcc-2.7.2/flow.c:440-471) --
+             * NOTE_INSN_LOOP_BEG/END raise the block's loop depth, and every reference in
+             * the region is then weighted by that depth in `reg_n_refs[regno] += loop_depth`
+             * (flow.c:2081), which is the numerator of global.c's allocno_compare priority.
+             * Ablation: dropping this wrap scores 13 (tmp/grind/func_80018094/s10/f1.c).
+             * lever-exhaustion: memory/grind/func_80018094/hypotheses.md s5 H26-H28,
+             * s6 H29-H32, s7 H31-H37, s8, s9 H42-H49.
+             * Family: do-while-zero-exception (owner ruling 2026-07-06). */
             do {
+            /* FAKE: the LZC island's input operand staged through `lut`, the local the LZC arm
+             * already owns for its LUT byte, mechanism: cse.c cse_end_of_basic_block's
+             * follow-jumps gate (see the small arm's note) lets this copy survive to RA, where
+             * global.c find_reg seats it at $a0 and reorg.c fills the `beqz` delay slot with it
+             * -- reproducing the target's pre-island `move $a0,$a1` with no asm-operand device.
+             * Liveness (bound 3): `lut` holds nothing at this point (its LZC-arm write comes
+             * later), and the staged value is consumed by the island BEFORE that write, so the
+             * borrow is safe in both directions.  lever-exhaustion:
+             * memory/grind/func_80018094/hypotheses.md s5 H26-H28, s6 H29-H32, s7 H31-H37, s8,
+             * s9 H42-H46 (every fresh-local and every declaration-scope spelling measured).
+             * Family: staged-value-reused-variable (owner ruling 2026-07-03). */
             lut = sum_sq;
             if (sum_sq < 0x400) {
                 /* FAKE: do{...}while(0) around the small arm's body, with the arm exited by
@@ -110,13 +134,33 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                  * s6 H29-H32, s7 H31-H37, s8, s9 H42 (cse class kill), s9b H44-H46.
                  * Family: do-while-zero-exception (owner ruling 2026-07-06). */
                 do {
-                    lut = (u8)(*(&D_8008D118 + sum_sq));
-                    sum_sq = lut >> 3;
+                    sum_sq = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
                     goto lzc_done;
                 } while (0);
             }
             {
                 s32 shift_a, shift_b;
+                /* FAKE: third do{...}while(0), around the LZC arm's body, mechanism: the same
+                 * flow.c loop-depth weighting -- it lifts `lut`'s three in-arm references
+                 * (the island operand, the LUT byte set, the <<16 use) from weight 2 to
+                 * weight 3, so allocno_n_refs[lut] goes 8 -> 11 while sum_sq's goes 19 -> 21,
+                 * and global.c's allocno_compare priority
+                 * (floor_log2(n_refs)*n_refs/live_length*10000) becomes 47142 for `lut` versus
+                 * 40000 for `sum_sq` -- measured, tmp/grind/func_80018094/s10/e1.allocdbg.txt.
+                 * `lut` is then allocated FIRST and takes $a0, sum_sq $a1, exactly as the
+                 * target seats them, and the small arm's LUT byte is free to stay in its own
+                 * short-lived pseudo at $v0.
+                 * SINGLE LEVEL IS INSUFFICIENT (nested-wrap prerequisite, measured this
+                 * session): with only the outer wrap and the small-arm wrap the body scores
+                 * 13 (tmp/grind/func_80018094/s10/a0.c); dropping the outer wrap instead
+                 * scores 13 (s10/f1.c); dropping the small-arm wrap scores 10 (s10/f3.c).
+                 * Each of the three wraps is load-bearing and none subsumes another.
+                 * lever-exhaustion: memory/grind/func_80018094/hypotheses.md s9b H46-H49 (the
+                 * numerator side is spelled out -- eight reference-site spellings measured at
+                 * 4/5/8/13) and s10 H50-H52 (the two denominator-side and the
+                 * assignment-in-condition levers, all measured dead).
+                 * Family: do-while-zero-exception (owner ruling 2026-07-06). */
+                do {
                 __asm__ volatile(
                     "addu   $t4, %1, $zero\n"
                     "mtc2   $t4, $30\n"
@@ -137,6 +181,7 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                 shift_b = shift_a >> 1;
                 lut = (u8)(*(&D_8008D118 + (sum_sq >> shift_a)));
                 sum_sq = ((s32)(lut << 16)) >> (0x13 - shift_b);
+                } while (0);
             }
         lzc_done:
             scale = ((sum_sq << 6) / 500) + 0xC0;
