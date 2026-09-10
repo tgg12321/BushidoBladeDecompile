@@ -1,37 +1,40 @@
-/* func_80018094 candidate -- s4 (permuter, 2026-09-09). sandbox --disable all == 7 (153/153 insns,
- * rules_dropped 0, 20 island insns stripped on both sides). Chassis: -mel -msoft-float. s2's v8a body
- * (floor 18) plus the OVERSIZED-LOCALS spelling of the LZC output local (s32 sp_tmp[4], only element 0
- * written and read), which closes the 8 frame-offset insns at ZERO insn cost (frame 40 -> 48, vars 8 -> 16).
- * Lineage: s1 v6a (scratchpad-in-struct + else-arm scale=0x100) + the COMPLETED sibling func_8001A67C's
- * LZCR-read statement block (src/code6cac.c:869-873) + this session's locals-object extension + the
- * permuter's log2_val staging of the LZCR-read result (`log2_val = li_v0; shift_a = 0x16 - log2_val;`,
- * campaign s4-v20g-framefixed output-230-1), which seats sum_sq in $a1 for every use and takes 10 -> 7.
- * Islands: gte_SetRotMatrix / gte_SetTransMatrix in the func_80019310 / func_800300B4 spelling,
- * LZCS/LZCR in the authorized func_8001A67C template (inline_asm_canonical.txt:266). No register pins.
- * Residual (7, tmp/grind/func_80018094/s4/v21a_pairdiff.txt): ALL of it is downstream of the single
- * s5 UPDATE: an EQUAL-floor (7) but structurally closer chassis now exists --
- * rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c adds a tied asm output
- * on the island (which materialises the missing copy, in the target's delay-slot position) plus
- * a do{...}while(0) wrap that pays back its 3-insn cost. There the residual is ONE register name
- * (our copy takes $v1, target's takes $a0). Read s5 in evidence.md before choosing a chassis.
- * s7 UPDATE (enumerate): this body is unchanged and still measures 7. 1,039 spellings were swept
- * this session (tools/spelling_enum.py + sweep_variants.py); 169 of them tie this body at 7 and
- * none beat it. The LZC arm's local naming / declaration-order / commutative-operand space is
- * EXHAUSTED (471 spellings, flat). The s6 frontier's `scale`-liveness lever is KILLED (15-47 insns
- * more expensive in every form). See evidence.md s7 and hypotheses.md H31-H37.
- * s8 UPDATE (synthesis): this body is unchanged and still measures 7 (re-measured by
- * tools/fake_ablate.py; ablating the log2_val staging costs 19 insns -> 26). The residual is
- * now reduced to ONE dump-level requirement: the island-input copy (greg allocno 99) must
- * CONFLICT with `scale` (allocno 78, seated at $v1) — then $3 closes, $2 is already closed by
- * the island clobber, and the ascending find_reg scan hands the copy the target's $a0. The
- * preference channel is mechanically closed for that pseudo (local-alloc.c:1860-1898 needs
- * hard-reg copy traffic in the block; global.c:838-871 needs a REG_DEAD note on the copy's
- * source, and sum_sq outlives it), so NO spelling of the copy itself can move its seat.
- * s8 also swept the pre-branch interleaved naming space (96 spellings, best 7) and killed the
- * scale/log2_val variable merge (17). See evidence.md s8.
- * missing island-input copy. The target reserves $a0 for a `move a0,a1` copy that reorg parks in the
- * `beqz v0` delay slot (ours: nop), which in turn pushes li_v0 to $v0 and log2_val to $a1; ours puts
- * both in $a0 and feeds the island $a1 directly. See memory/grind/func_80018094/{evidence,hypotheses}.md. */
+/* func_80018094 candidate -- s9 (solver, 2026-09-09).  sandbox --disable all == 0
+ * (153/153 insns, rules_dropped 0, 20 island insns stripped on both sides), measured this
+ * session with this body spliced into src/code6cac.c.  Chassis: -mel -msoft-float.
+ *
+ * LINEAGE: s4 candidate (scratchpad-in-struct + else-arm scale=0x100 + s32 sp_tmp[4] oversized
+ * locals) + s5's do{...}while(0) wrap and TIED island output, then this session's four steps:
+ *   b4  7 -> 5  the tied "=r" output is taken by an EXISTING allocno instead of a fresh local,
+ *               which turns the reload copy from a block-local qty ($v1) into a global allocno
+ *               that carries `preferences: 4` and is allocated first -> the copy lands on $a0,
+ *               the target's seat, and sum_sq stays at $a1.
+ *   d1  5 -> 5  the tied output is moved off log2_val onto a NEW named local `lut` that really
+ *               holds the LUT byte later in the arm (byte-neutral; splits the copy away from
+ *               log2_val without cost).
+ *   e1  5 -> 3  the s4 `log2_val` staging is DROPPED (`shift_a = 0x16 - li_v0;`): with the copy
+ *               already seated it is no longer load-bearing, and removing it frees log2_val's
+ *               allocno from its conflict with sum_sq.  One FAKE construct retired.
+ *   f1  3 -> 0  log2_val and sum_sq are spelled as ONE variable -- which is what the target's own
+ *               registers say ($a1 carries sum_sq, then the arm result, then feeds the
+ *               (x<<6)/500 + 0xC0 tail).  This is the last 3 insns.
+ *
+ * ABLATIONS MEASURED THIS SESSION (all three remaining devices are load-bearing at 0):
+ *   drop the tied "=r"(lut)/"1"(sum_sq) operand pair -> 10   (tmp/.../s9/g1.c)
+ *   s32 sp_tmp[4] -> s32 sp_tmp                      ->  8   (tmp/.../s9/g3.c)
+ *   drop the do{...}while(0) wrap                    -> 13   (tmp/.../s9/g4.c)
+ *   honest `lz_in = sum_sq;` copy instead of the tied operand, at three declaration scopes
+ *                                                    -> 10 x3 (h1/h2/h3) -- cse.c:8102 still
+ *   deletes it, re-confirming the s6 class kill on this new chassis.
+ *
+ * POLICY STATUS -- NOT submitted as candidate-ready.  The tied asm operand pair
+ * (`"=r"(lut)` + `"1"(sum_sq)`) declares an output the island template never writes; its only
+ * effect is to make reload materialise the target's `move $a0,$a1`.  No frozen SOTN family
+ * covers an inline-asm OPERAND device (docs/reference/sotn-construct-index.md has no
+ * inline-asm-operand class; s8 recorded the same negative), so s9 files a ruling-request
+ * instead of a submission.  If the ruling goes against the operand, everything from b4 to f1
+ * still stands: the residual is then exactly ONE insn-family (the pre-island copy) and the
+ * other four seats are closed for free.
+ */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
 void func_80018094(s32 *arg0, s32 *arg1) {
@@ -99,11 +102,17 @@ void func_80018094(s32 *arg0, s32 *arg1) {
         scale = 0;
     } else {
         {
-            s32 log2_val;
+            /* FAKE: do{...}while(0) wrap around the whole inner if/else + scale tail,
+             * mechanism: reorg.c delay-slot filling / jump2 block ordering (dropping the wrap
+             * costs 13 insns, measured tmp/grind/func_80018094/s9/g4.c), lever-exhaustion:
+             * memory/grind/func_80018094/hypotheses.md s5 H26-H28, s6 H29-H32, s7 H31-H37, s8.
+             * Family: do-while-zero-exception (owner ruling 2026-07-06). */
+            do {
             if (sum_sq < 0x400) {
-                log2_val = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
+                sum_sq = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
             } else {
                 s32 shift_a, shift_b;
+                s32 lut;
                 /* GTE LZCS/LZCR leading-zero-count island --- the authorized func_8001A67C
                  * template (inline_asm_canonical.txt:266), sp_tmp at 0x10($sp). */
                 __asm__ volatile(
@@ -114,31 +123,30 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                     "addiu  $v0, $sp, 0x10\n"
                     "addu   $t4, $v0, $zero\n"
                     "swc2   $31, 0($t4)\n"
-                    : "=m"(sp_tmp[0])
-                    : "r"(sum_sq)
+                    /* UNCLASSIFIED DEVICE -- s9 ruling-request subject.  The second output
+                     * `"=r"(lut)` tied to the input `"1"(sum_sq)` makes reload materialise the
+                     * target's `move $a0,$a1` (asm/funcs/func_80018094.s, the insn reorg parks in
+                     * the `beqz` delay slot) and seats it on $a0.  The island template does not
+                     * write that register, so this is an inline-asm OPERAND device with no frozen
+                     * SOTN family; dropping it costs 10 insns (s9/g1.c) and the honest
+                     * `lz_in = sum_sq;` copy is deleted by cse.c:8102 at every declaration scope
+                     * (s9/h1-h3, 10 each; s6 class kill re-confirmed).  DO NOT commit this body
+                     * until the ruling lands. */
+                    : "=m"(sp_tmp[0]), "=r"(lut)
+                    : "1"(sum_sq)
                     : "$2", "$12");
                 {
                     s32 lw_v1 = sp_tmp[0];
                     s32 li_v0 = -2;
                     li_v0 = lw_v1 & li_v0;
-                    /* FAKE: the LZCR-read result is staged through log2_val -- an existing
-                     * enclosing-block local that is dead at this point and is re-assigned with the
-                     * LUT result below -- which seats sum_sq in $a1 for every one of its uses,
-                     * mechanism: global.c find_reg / local-alloc allocno priority (the extra
-                     * reference on log2_val's allocno reorders the ascending first-free scan so the
-                     * sum_sq allocno no longer takes $a0), lever-exhaustion:
-                     * memory/grind/func_80018094/hypotheses.md s2 H13/H14/H18 + s3 H19-H22, plus
-                     * this session's 8,906- and 24,345-iteration permuter campaigns (the find itself
-                     * is s4 campaign s4-v20g-framefixed output-230-1, tmp/grind/func_80018094/s4/
-                     * perm_find_230.c). Family: staged-value-reused-variable (owner ruling
-                     * 2026-07-03). */
-                    log2_val = li_v0;
-                    shift_a = 0x16 - log2_val;
+                    shift_a = 0x16 - li_v0;
                 }
                 shift_b = shift_a >> 1;
-                log2_val = ((u8)(*(&D_8008D118 + (sum_sq >> shift_a))) << 16) >> (0x13 - shift_b);
+                lut = (u8)(*(&D_8008D118 + (sum_sq >> shift_a)));
+                sum_sq = (lut << 16) >> (0x13 - shift_b);
             }
-            scale = ((log2_val << 6) / 500) + 0xC0;
+            scale = ((sum_sq << 6) / 500) + 0xC0;
+            } while (0);
         }
     }
 

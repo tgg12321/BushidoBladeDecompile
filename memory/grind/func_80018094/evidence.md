@@ -730,3 +730,109 @@ the tied output at the LUT index, position ~18, where cse refolds it: sandbox 12
 - [s8] Tooling: sweep throughput this session was ~2.0 s/variant, not s7's 1.05 s. A 3,440-variant sweep is a ~2-hour job and does not fit one session; tmp/grind/func_80018094/s8/sweep_enum.sh chunks it so a kill preserves the partial histogram.
 
 - [s8] src/code6cac.c was restored with `git checkout --` after the killed sweep and re-verified at 7 with the updated candidate.c; git status shows only metrics/events.jsonl plus memory/grind ledger changes.
+
+## s9 (solver, 2026-09-09) — FLOOR 7 -> 0. The residual is fully decomposed; one construct is unclassified
+
+Chassis re-measured at dispatch (`tools/sweep_variants.py`): candidate.c (the s4 body) == **7**,
+rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c (the s5 w6 tied body) == **7**,
+both at build_insns 153. The brief's "measurement unavailable" resolves to 7 again.
+
+### 1. Triage (solver operational rule 1)
+
+`inverse_compose.py classify code6cac func_80018094 --target-object build/src/code6cac.o
+--ours-object tmp/sandbox/func_80018094/code6cac.o` on the w6 chassis returns **FIRST
+DIVERGENCE: RA** — 153 vs 153 insns, identical multiset, seven register substitutions. This is
+the first time the residual has been typed by the classifier rather than inferred; it licenses
+the whole session as an RA-model search and rules the pre-RA and scheduler models out.
+
+The seven, read off the aligned objdump (tmp/grind/func_80018094/s9/ours.txt vs tgt.txt):
+
+| i | ours | target | pseudo |
+|---|---|---|---|
+| 69 | `move v1,a1` | `move a0,a1` | island-input copy |
+| 74 | `srl a0,v0,0x3` | `srl a1,v0,0x3` | log2_val (small arm) |
+| 75 | `move t4,v1` | `move t4,a0` | island reads the copy |
+| 82 | `and a0,v1,v0` | `and v0,v1,v0` | the staged LZCR value |
+| 84 | `subu v1,v1,a0` | `subu v1,v1,v0` | consumer of the staged value |
+| 93 | `srav a0,a0,v0` | `srav a1,a0,v0` | log2_val (big arm) |
+| 96 | `sll v1,a0,0x6` | `sll v1,a1,0x6` | the scale tail reads log2_val |
+
+Reading the lreg/greg dumps (tmp/grind/func_80018094/s9/w6.lreg.txt, w6.greg.txt) named the
+pseudos exactly: the tied asm output is `reg/v:SI 107`, carrying `REG_UNUSED`, allocated by
+**local-alloc as blk 6 qty 0** (birth 4, death 5, refs 2) and given $v1; `log2_val` is global
+allocno **98** with `preferences: 4`; `sum_sq` is **77**. The s4 staging is what merges the
+staged LZCR value into 98, which is why 98 conflicts with 77 and cannot share $a1 with it —
+the target keeps them as two pseudos in two registers ($v0 and $a1).
+
+`inverse.py local ... --block 6 --goal {"0": 4} --depth 3` returns the same single minimal
+vector s5 saw: **[live_extend] qty 0 dies later (5 -> 9)**, i.e. the copy must still be live at
+the `li -2` / `and` insns.
+
+### 2. The four steps from 7 to 0
+
+Every step was measured with `tools/sweep_variants.py` (each score is `sandbox --disable all`
+with the body spliced into src/code6cac.c; build_insns 153 throughout).
+
+**b4 (7 -> 5) — the live_extend vector, spelled by giving the tied output to an EXISTING
+allocno.** `"=r"(log2_val)` instead of `"=r"(lz_in)`. The copy stops being a block-local qty
+(local-alloc, ascending scan, $2 clobbered -> $3) and becomes global allocno 98, which carries
+`preferences: 4`, has nrefs 12 / pri 40000 and is allocated FIRST — so the copy lands on the
+target's $a0, and 77 (which conflicts with 98) keeps $a1. Diffs i69 and i75 close.
+
+**d1 (5 -> 5, structurally decisive) — move the tied output off log2_val onto a real new local.**
+`s32 lut;` is named for the LUT byte the arm already computes
+(`lut = (u8)(*(&D_8008D118 + (sum_sq >> shift_a))); sum_sq = (lut << 16) >> ...`) and takes the
+tied output. Naming `lut` alone is byte-neutral (d5 == 5). `lut` is now global allocno 107 with
+`preferences: 4` at $a0; the copy is no longer fused with log2_val.
+
+**e1 (5 -> 3) — DROP the s4 log2_val staging.** With the copy seated, `log2_val = li_v0;
+shift_a = 0x16 - log2_val;` becomes `shift_a = 0x16 - li_v0;`. This RETIRES one of the body's
+three FAKE constructs (the staged-value-reused-variable) and closes diffs i82 and i84: the
+staged value becomes its own short local qty at $v0, exactly as the target has it. The s6/s7/s8
+finding that the staging is worth 19 insns was chassis-relative and is void here.
+
+**f1 (3 -> 0) — spell `log2_val` and `sum_sq` as ONE variable.** The remaining three diffs were
+all "our log2_val is $v1, the target's is $a1", and $a1 is the register `sum_sq` occupies and
+vacates one insn earlier in BOTH arms. Reusing the variable is what the target's own registers
+say. `inverse.py global --goal {"98": 5}` had returned exactly one minimal vector,
+`[pref_reroute] pseudo 98: preference ['$v1','$a0'] -> [$a1] (REPLACE the copy relationship)`;
+the variable merge is that reroute, because the two values become one allocno.
+
+**sandbox --disable all == 0, target_insns 153, build_insns 153, rules_dropped 0,
+cheat_asm_stripped 20** — measured with f1 spliced into src/code6cac.c this session.
+
+### 3. Ablations at the zero chassis (all three remaining devices are load-bearing)
+
+| ablation | score | file |
+|---|---|---|
+| drop the tied `"=r"(lut)` / `"1"(sum_sq)` operand pair | 10 | s9/g1.c |
+| `s32 sp_tmp[4]` -> `s32 sp_tmp` | 8 | s9/g3.c |
+| drop the `do{...}while(0)` wrap | 13 | s9/g4.c |
+| both of the last two | 21 | s9/g5.c |
+| honest `lz_in = sum_sq;` copy instead of the tied operand (3 declaration scopes) | 10, 10, 10 | s9/h1.c, h2.c, h3.c |
+
+### 4. Why this is a ruling-request and not a submission
+
+The tied operand pair declares an asm OUTPUT (`lut`) that the island template never writes; its
+only effect is to make reload emit the target's `move $a0,$a1`. No frozen SOTN family covers an
+inline-asm operand device, and `docs/reference/sotn-construct-index.md` carries no
+inline-asm-operand class at all (s8 recorded the same negative). Per the first-reach rule the
+correct move is a ruling-request, not a candidate-ready.
+
+The honest alternative is measured dead on this chassis too: a plain `lz_in = sum_sq;` copy is
+deleted by cse (`tools/gcc-2.7.2/cse.c:8102`, the s6 class kill) at all three declaration
+scopes, costing 10. And the copy cannot be part of the authorized island: reorg parks it in the
+`beqz` delay slot, which it could not do to an insn inside a volatile asm block, so it is a
+compiler-emitted schedulable insn, not island scaffolding.
+
+- [s9] classify (object path) types the whole residual as **RA**: 153/153 insns, same multiset, 7 register substitutions. Pre-RA and scheduler models are out.
+- [s9] The tied island output is `reg 107`, `REG_UNUSED`, blk 6 qty 0 in local-alloc (birth 4, death 5, refs 2) -> $v1. `inverse.py local --block 6` with the goal qty0 -> $a0 gives one minimal vector: extend its death 5 -> 9.
+- [s9] CONFIRMED by measurement: handing the tied output to an existing GLOBAL allocno (b4) is that live-extension and seats the copy at $a0 — floor 7 -> 5.
+- [s9] Naming the LUT byte `lut` is byte-neutral (d5 == 5); `lut` then carries the tied output without fusing it into log2_val (d1 == 5).
+- [s9] KILLED (instance): the s4 `log2_val` staging is NOT load-bearing once the copy is seated — dropping it takes 5 -> 3 (e1). The s6/s7/s8 "the staging is worth 19 insns" measurement was chassis-relative and is void on the b4/d1 chassis.
+- [s9] CONFIRMED: `log2_val` and `sum_sq` spelled as ONE variable closes the last three insns — sandbox 0, 153/153. (s8's `scale`/`log2_val` merge at +10 was the wrong pair.)
+- [s9] Ablations at 0: tied operand -> 10, scalar sp_tmp -> 8, no do-while(0) -> 13, both -> 21.
+- [s9] The s6 cse class kill (cse.c:8102) re-confirmed on the NEW chassis: an honest `lz_in = sum_sq;` copy scores 10 at all three declaration scopes (big-arm block, else-arm head, function top).
+- [s9] The target's `move $a0,$a1` is NOT island scaffolding: reorg parks it in the `beqz` delay slot, which reorg cannot do to an insn inside a volatile `__asm__` block. It is a compiler-emitted, schedulable insn, so the cop2-addressing-preamble-cluster island grant does not cover it.
+- [s9] Also measured and rejected: tied output on a fresh local reused as the `-2` carrier (9), as `shift_a` (11), on the dead pre-branch local `dz` (24); the sum_sq merge with the staging retained (12); a separate `res` variable for the arm result (11); dropping the staging on b4 without the `lut` split (11).
+- [s9] src/code6cac.c restored with `git checkout --` at session end; `git status --porcelain` shows only metrics/events.jsonl plus the memory/grind ledger changes.

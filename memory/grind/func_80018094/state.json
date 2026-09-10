@@ -70,7 +70,9 @@
    "next_probe": "Dump .lreg/.greg for candidate.c with `pwsh tools/grinder/dump.ps1 func_80018094`, find the single_set + REG_DEAD pair that seeds 98's preference for $4, and test the C-level spellings that remove that copy (this is the cosmetic half of the residual, worth attacking only after frontier item 1 or 2 has moved the copy's seat)."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "The LZC island's operand list must stay exactly the granted form (`: \"=m\"(sp_tmp[0]) : \"r\"(sum_sq) : \"$2\", \"$12\"`); no extra output, tied/matching (\"0\"/\"1\"), or clobber operand may be added to any __asm__ in this function to make the compiler materialise a copy. The pre-island `move $a0,$a1` must come from ordinary C or the function stays INCOMPLETE."
+ ],
  "banned_constructs": [],
  "kills": [
   {

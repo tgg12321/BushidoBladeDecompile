@@ -814,3 +814,82 @@ entire residual. A ruling on it would buy nothing.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c and the s5 w6 tied body, both FAKE constructs present
+
+## s9 (solver, 2026-09-09)
+
+**H38 — CONFIRMED.** *The island-input copy reaches the target's $a0 if the tied asm output is
+taken by an existing GLOBAL allocno rather than a fresh block-local, because that is the
+`live_extend` vector `inverse.py local --block 6` returns as the only minimal solution.*
+- mechanism: as a fresh local, the tied output is blk 6 qty 0 (birth 4, death 5, refs 2); local-alloc's
+  find_free_reg scans ascending, $2 is closed by the island's own clobber list, so it takes $3.
+  Handing the output to an allocno that lives past the block boundary removes it from local-alloc
+  entirely; global.c then allocates it first (nrefs 12, pri 40000) with `preferences: 4` and it
+  lands on $a0. `sum_sq` (77), which conflicts with it, keeps $a1.
+- probe: tmp/grind/func_80018094/s9/b4.c (`"=r"(log2_val)`) measured with sweep_variants.
+- result: **7 -> 5**, build_insns 153; objdump diffs i69 and i75 close (`move a0,a1` and
+  `move t4,a0` now byte-identical to the target).
+- verdict: CONFIRMED
+
+**H39 — CONFIRMED.** *The tied output can be moved off `log2_val` onto a new named local that
+really holds the LUT byte, at zero byte cost, which un-fuses the copy from log2_val.*
+- mechanism: naming the LUT byte gives the arm a second-use variable whose live range already
+  spans from the island to the final shift; it becomes global allocno 107 with `preferences: 4`.
+- probe: s9/d1.c (tied output on `lut`) and s9/d5.c (`lut` named but NOT tied — the control).
+- result: both **5**. Naming `lut` is byte-neutral; the split costs nothing.
+- verdict: CONFIRMED
+
+**H40 — KILLED (instance).** *The s4 `log2_val` staging (`log2_val = li_v0; shift_a = 0x16 -
+log2_val;`) is still load-bearing once the copy is seated.*
+- mechanism: s4-s8 measured the staging at 19 insns (fake_ablate on the s4 chassis) because it was
+  the only thing keeping `sum_sq` off $a0. With the copy at $a0 that job is done by the copy, and
+  the staging's only remaining effect is to merge the staged LZCR value into allocno 98, which
+  forces 98 to conflict with 77 and so bars log2_val from $a1.
+- probe: s9/e1.c = d1 with `shift_a = 0x16 - li_v0;`.
+- result: **5 -> 3**, build_insns 153; diffs i82 and i84 close. One FAKE construct retired from the
+  body. Banked at memory/grind/func_80018094/candidate.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s9 d1 body (sp_tmp[4] + do-while(0) +
+  tied `"=r"(lut)` present, log2_val staging under test)
+
+**H41 — CONFIRMED.** *`log2_val` and `sum_sq` are ONE variable in the original.*
+- mechanism: the last three diffs were all "ours $v1, target $a1", and $a1 is exactly the register
+  `sum_sq` vacates one insn earlier in both arms (`addu at,at,a1` then `srl a1,...`;
+  `srav v0,a1,v1` then `srav a1,a0,v0`). `inverse.py global --goal 98 -> $a1` returned one minimal
+  vector, `[pref_reroute] pseudo 98: preference ['$v1','$a0'] -> [$a1] (REPLACE the copy
+  relationship)`; merging the two values into one allocno IS that reroute.
+- probe: s9/f1.c — `log2_val` deleted, every occurrence spelled `sum_sq`.
+- result: **sandbox --disable all == 0** (target_insns 153, build_insns 153, rules_dropped 0,
+  cheat_asm_stripped 20), re-measured directly with the body spliced into src/code6cac.c.
+- verdict: CONFIRMED
+
+**H42 — KILLED (class, re-confirmation on a NEW chassis).** *An honest `lz_in = sum_sq;` copy
+survives to the island on the zero chassis.*
+- mechanism: unchanged from s6 — cse's extended-path walk (`tools/gcc-2.7.2/cse.c:8102`) rewrites
+  the asm operand back to `sum_sq` and the copy dies.
+- probe: s9/h1.c (copy declared in the big arm), h2.c (else-arm head), h3.c (function top), each
+  with the island reading `"r"(lz_in)` and the tied operand removed.
+- result: **10, 10, 10** — identical to the no-copy body (s9/g1.c == 10). The s6 class kill holds
+  on the merged-variable chassis.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s9 f1 zero body with the tied operand
+  replaced by an honest copy; sp_tmp[4] and do-while(0) present
+- predicate_cite: tools/gcc-2.7.2/cse.c:8102
+
+**H43 — CONFIRMED (negative, policy).** *The target's `move $a0,$a1` is part of the authorized
+cop2 island and could be spelled inside the asm template.*
+- mechanism/probe: read the target stream — reorg parks that copy in the `beqz` delay slot
+  (asm/funcs/func_80018094.s; objdump index 69, under `beqz v0,...` at 68). reorg cannot move an
+  insn out of a volatile `__asm__` block.
+- result: the copy is a compiler-emitted, schedulable insn, NOT island scaffolding. The
+  cop2-addressing-preamble-cluster grant does not cover it, and putting `move $a0,%1` in the
+  template would be hardcoded-$N injection. This is why s9 files a ruling-request on the tied
+  operand rather than widening the island.
+- verdict: CONFIRMED
+
+**Also measured and banked as rejected this session** (all with sweep_variants, build_insns 153):
+tied output on a fresh local reused as the `-2` carrier **9**; as `shift_a` **11**; on the dead
+pre-branch local `dz` **24**; the sum_sq merge with the staging retained **12**; a separate `res`
+variable for the arm result **11**; dropping the staging on b4 without the `lut` split **11**;
+`s32 sp_tmp` scalar on the zero chassis **8**; no do-while(0) on the zero chassis **13**; both **21**.
