@@ -1,3 +1,26 @@
+/* [s9 solver 2026-09-10] FLOOR UNCHANGED at 39; this do/while body is still the SCORE floor
+ * and is byte-for-byte the s8 body.  What s9 changed is the strategic ranking and one axis:
+ *   1. RE-MEASURED FIRST: this body scores exactly 39 at 194 insns on the current HEAD chassis.
+ *   2. THE SOLVER LAYER IS TYPED AND EMPTY.  tools/ra_solver/goal_from_tgt.py classify (the
+ *      object-based entry point - inverse_compose.py classify refuses zero-rule functions)
+ *      reports FIRST DIVERGENCE: PRE-RA / "next tool: none" for this body AND for both
+ *      top-test bodies.  No RA seat search and no scheduler search can move this function at
+ *      its present distance; the work is C-level structure.
+ *   3. THE 16-BIT-READ SPELLING AXIS IS NOW A CLASS KILL, not 30 coincidences.
+ *      tools/gcc-2.7.2/config/mips/mips.md:2346 - extendhisi2's expander does
+ *      `if (optimize && GET_CODE (operands[1]) == MEM) operands[1] = force_not_mem (...)`
+ *      and then emits ashl+ashr by 16.  Under -O the one-insn memory pattern that would emit
+ *      a bare `lh` is unreachable from expand, so the declared type and the per-site cast of
+ *      D_800A3558 (and of D_800A3590[]) never reach codegen.  Verified in the .rtl dump on a
+ *      body with `extern s16 D_800A3558;` read bare.  Do not re-run declaration sweeps.
+ *   4. THE TOP-TEST CHASSIS IS NOW THE SHORTER ROAD, and score was hiding it.  See
+ *      memory/grind/func_80070C70/chassis-toptest-shapeexact-49.c: it scores 49 (one WORSE
+ *      than chassis-toptest-cse-48.c) but its whole object-level shape residual is the 13
+ *      prologue/epilogue insns that differ only by the 24-byte frame overshoot plus one
+ *      `addiu #,#,12` against one `nop`.  The 48-point body still has `lw x2` where the
+ *      target has `lhu x2`.  Read the s9 F12 frontier in hypotheses.md before touching this
+ *      do/while body again.
+ */
 /* [s8 structural 2026-09-10] FLOOR UNCHANGED at 39; the body below is still the best form.
  * s8 spent the structural modality on frontier F7 (kill the three orphaned `(use (reg))`
  * pseudos that cost the top-test chassis 24 frame bytes) and on F8 (the two-live-register
