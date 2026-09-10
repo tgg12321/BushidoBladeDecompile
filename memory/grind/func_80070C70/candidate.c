@@ -22,6 +22,24 @@
  * induction pointer (dump: "giv at 319 reduced to (reg:SI 159)"), costing a 7th callee-saved
  * register target does not spend - that is the whole 0x88-vs-0x80 frame delta. The rest of the
  * 101 is a 5-seat callee-saved rotation.
+ *
+ * SESSION 2 (structural, 2026-09-10) - body UNCHANGED, floor re-measured at 101. What s2 added is
+ * the mechanism, quantified rather than guessed (details in hypotheses.md and in
+ * tmp/grind/func_80070C70/s2/licm_threshold_bracket.md):
+ *   - The gate is loop.c:1631 `(threshold * savings * m->lifetime) >= insn_count`, with
+ *     threshold bracketed to 26..29 for this build by five measured insn_count points
+ *     (50 moved, 52 moved, 60/64/73 not desirable). savings is 1 and m->lifetime is 2.
+ *   - Killing the hoist is SUFFICIENT: in the diagnostic build where loop.c rejected it, the read
+ *     came out as `lh $2,D_800A3590($2)` - the assembler macro for target's exact
+ *     lui %hi / addu / lh %lo at 80070E5C-80070E64 - with no `la` in the preheader.
+ *   - m->lifetime is 2 only because the index scale insn (ashift by 1) is emitted between the
+ *     symbol move and the address plus. At lifetime 1 the product is 26..29 against insn_count 50
+ *     and the movable is rejected. That is the live lever (hypotheses.md F1).
+ *   - Seven ordinary-C spellings were measured and all are byte-neutral: four re-associations /
+ *     pointer forms of the read, two array-bound declarations of D_800A3590, and an s16
+ *     re-declaration of D_800A3558. All banked under memory/grind/func_80070C70/rejected/.
+ *
+ * The IconC70 tail placeholder caveat above is UNCHANGED and still blocks submission.
  */
 void func_80070C70(s32 arg0) {
     s32 c60 = 0x60;

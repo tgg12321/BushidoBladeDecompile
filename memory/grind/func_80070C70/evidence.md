@@ -117,3 +117,98 @@
 - [s1] D_800A3560's access escapes strength reduction in OUR build too, keeping the fused lui/addu/lbu %lo form exactly like target, because its index ctx_or_var_s2 is itself a biv (const 3) rather than a giv of the loop counter. That asymmetry explains why the array-declaration fix corrected one access shape and left the other divergent.
 
 - [s1] SIBLING func_8006F97C (src/text1b.c, active, floor 513, 1 session) was checked as the brief requires: it has NO candidate.c, so there was no banked spelling to transplant and nothing could be measured from it. It does call func_80069898 with a stack struct, so it is both the best source for IconC70's real tail layout and a likely beneficiary of the IconC70 = 0x20 finding - its ledger should be told.
+
+- [s2 2026-09-10] CHASSIS RE-MEASURED. The s1 candidate.c body plus its three companion edits
+  (`extern u8 D_800A3560[];`, `extern s16 D_800A3590[];` at both occurrences each, and IconC70
+  sized 0x20) applied to a clean HEAD measures `sandbox --disable all` score 101 / target_insns 194
+  / build_insns 193 — identical to s1. The floor is reproducible and the ledger's 101 is current.
+
+- [s2 2026-09-10] THE LICM GATE IS QUANTIFIED. loop.c:1631 is
+  `(threshold * savings * m->lifetime) >= insn_count`, with threshold set at loop.c:532 to
+  `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`; this loop calls func_8007352C so the
+  multiplier is 1 and threshold is a per-build constant no C can move. For insn 312
+  (`(set (reg:SI 126) (symbol_ref "D_800A3590"))`) savings = 1 and m->lifetime = 2. Five measured
+  points on the SAME chassis, obtained by adding throwaway statements to the inner loop and reading
+  the .loop dump (full table + method in tmp/grind/func_80070C70/s2/licm_threshold_bracket.md):
+  insn_count 50 -> moved; 52 -> moved; 60 -> not desirable; 64 -> not desirable; 73 -> not
+  desirable. The life-1 movables in the same loop (insns 295/299) are "not desirable" at
+  insn_count 50. Those bracket **26 <= threshold <= 29** for this build.
+  Two exact consequences: (a) the insn_count route needs the inner loop to carry 53-59+ RTL insns
+  and is therefore UNREACHABLE by byte-faithful C, because the target's loop is SMALLER in RTL
+  terms than ours (it has neither the symbol move nor the separate address plus); (b) the
+  **lifetime route is live** — at m->lifetime == 1 the product is 26..29, comfortably below
+  insn_count 50, so the movable would be rejected outright.
+
+- [s2 2026-09-10] KILLING THE HOIST IS PROVEN SUFFICIENT (this is the causal step s1's frontier
+  was missing). In the 60-insn diagnostic build, where loop.c rejected insn 312, the emitted
+  assembly for the D_800A3590 read is `lh $2,D_800A3590($2)`
+  (tmp/grind/func_80070C70/dumps/text1b.s:16616) — the ASPSX/gas macro that expands to
+  `lui $at,%hi; addu $at,$at,$2; lh %lo($at)`, byte-for-byte the target's shape at
+  80070E5C-80070E64 — and the preheader carries no `la`/`lui+addiu` of D_800A3590 at all. So the
+  entire residual chain (hoist -> the giv's invariant `add (reg 126)` term -> the 317/319 combine
+  -> `giv at 319 reduced to (reg:SI 159)` -> a 7th callee-saved induction pointer -> frame 0x88 vs
+  target 0x80 -> the 5-seat rotation on top of it) hangs off this ONE decision. Fix insn 312 and
+  the rest is expected to follow.
+
+- [s2 2026-09-10] WHY m->lifetime IS 2, AND WHERE THE FUSION IS ACTUALLY LOST. Read from
+  tmp/grind/func_80070C70/dumps/text1b.cse (the pre-loop RTL), the two array reads in the same
+  loop expand differently:
+      insn 291: (set (reg/v:QI 118) (mem/s:QI (plus:SI (reg/v:SI 74) (symbol_ref "D_800A3560"))))
+      insn 312: (set (reg:SI 126) (symbol_ref "D_800A3590"))
+      insn 315: (set (reg:SI 128) (ashift:SI (reg/v:SI 75) (const_int 1)))
+      insn 317: (set (reg:SI 129) (plus:SI (reg:SI 128) (reg:SI 126)))
+      insn 319: (set (reg:HI 130) (mem/s:HI (reg:SI 129)))
+  D_800A3560 has element size 1, so its ARRAY_REF offset is a bare pseudo, the PLUS canonicalises
+  reg-first, `(plus reg symbol_ref)` is a legitimate MIPS address, and NO pseudo is ever created
+  for the symbol — which is exactly why s1 observed that access matching the target while the
+  other diverged. D_800A3590 has element size 2, so its offset is a `mult`, the PLUS comes out
+  symbol-first, memory_address (explow.c) cannot accept it, and force_reg'ing the whole address
+  materialises the symbol into reg 126. reg 126's lifetime is 2 for the precise reason that the
+  index scale (insn 315) is emitted BETWEEN the symbol move (312) and the address plus (317): make
+  the scaled index already available when the address is expanded and 312/317 become adjacent,
+  lifetime falls to 1, and the movable is rejected. That is the concrete, measured next lever.
+
+- [s2 2026-09-10] SEVEN ORDINARY-C SPELLINGS MEASURED, ALL NEUTRAL (details in hypotheses.md
+  K1/K2/K3). Four re-associations / pointer forms of the read
+  (`(D_800A3590[var_s0] << 4) + t`, `*(D_800A3590 + var_s0)`, the split-init
+  `prim.p_static = prim.p_geom + 0xC; prim.p_static += D_800A3590[var_s0] << 4;`, and
+  `D_800A3590[var_s0 + 0]`), plus the array-dimension declarations `extern s16 D_800A3590[64];`
+  and `[1]`, all measure 101 with the preheader `addiu s3,s3,%lo(D_800A3590)` (the hoisted `la`)
+  still present. Note that the split-init form is an equally natural source for the target's two
+  stores to prim.p_static at 80070E58 and 80070E74; it is byte-neutral against the `s32 t` form
+  candidate.c carries, so it is a free alternative spelling if a reviewer ever objects to the
+  two consecutive assignments, but it was NOT adopted this session because the `s32 t` form keeps
+  the second store's addend in a register instead of re-reading the escaped struct member.
+
+- [s2 2026-09-10] D_800A3558's TWO DISTINCT LOADS ARE NOT A CAST PROBLEM. The target reads
+  %gp_rel(D_800A3558) twice with different signedness in the same region — `lhu $a2` at 80070DF4
+  and 80070ECC (feeding `sll 16 / sra 16 / addu $a1` in the body) and `lh $v0` at 80070E08 and
+  80070ED0 (feeding the loop bound). Declaring `extern s16 D_800A3558;` and spelling the bound as
+  `(D_800A3558 + 1)` and the body as `(s16)(u16)D_800A3558` measured 101 and still emitted a
+  single `lh`: GCC 2.7.2's convert_to_integer folds `(short)(unsigned short)x` to `(short)x` for
+  both an s32-declared and an s16-declared x. So no cast spelling on a single integer declaration
+  of that symbol produces the pair. Whatever produces target's `lhu` is either a differently-typed
+  declaration (a u16 object) or an intermediate object of type u16 — worth one probe next session,
+  but it is a 2-3 insn shape issue, not the register residual.
+
+- [s2] Chassis reproducible: restoring s1's candidate.c body plus its three companion edits onto a clean HEAD measures score 101 / target_insns 194 / build_insns 193, identical to s1. src/text1b.c was reverted to HEAD at end of session; the tree carries only ledger changes.
+
+- [s2] loop.c:1631 is the gate: `(threshold * savings * m->lifetime) >= insn_count`. loop.c:532 sets threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); this loop calls func_8007352C so the multiplier is 1. Measured bracket for this build: 26 <= threshold <= 29.
+
+- [s2] Measured insn_count sweep on one chassis (diagnostic statements, each reverted): 50 -> insn 312 moved to 486; 52 -> moved to 491; 60 -> not desirable; 64 -> not desirable; 73 -> not desirable. Life-1 movables (insns 295, 299) are already 'not desirable' at insn_count 50.
+
+- [s2] The insn_count route is unreachable by byte-faithful C: the loop would need 53-59+ RTL insns and the target's own loop is smaller in RTL terms than ours, having neither the `(set reg (symbol_ref))` move nor a separate address plus.
+
+- [s2] The lifetime route is open by a wide margin: at m->lifetime == 1 the product is 26..29 against insn_count 50, so the movable is rejected. reg 126's lifetime is 2 solely because insn 315, the `(ashift (reg 75) (const_int 1))` index scale, sits between the symbol move at 312 and the address plus at 317.
+
+- [s2] Killing the hoist is sufficient, not merely necessary: in the 60-insn diagnostic build the read emits `lh $2,D_800A3590($2)` (tmp/grind/func_80070C70/dumps/text1b.s:16616), the assembler macro for target's exact lui %hi / addu / lh %lo at 80070E5C-80070E64, with no `la` of D_800A3590 in the preheader. The scale-1 control in the same loop is `lbu $3,D_800A3560($19)` (line 16595).
+
+- [s2] RTL root cause read from tmp/grind/func_80070C70/dumps/text1b.cse: D_800A3560 (element size 1) expands to the fused `(mem (plus (reg 74) (symbol_ref)))` at insn 291 and never creates a symbol pseudo; D_800A3590 (element size 2) expands to insn 312 symbol move / insn 315 ashift / insn 317 plus / insn 319 load, because a `mult` offset makes the PLUS come out symbol-first and memory_address (explow.c) has to force_reg the whole address. This is the mechanism behind s1's observed asymmetry between the two accesses.
+
+- [s2] Seven ordinary-C spellings measured byte-neutral this session: four re-associations / pointer forms of the D_800A3590 read, two completed array-bound declarations of D_800A3590, and an s16 re-declaration of D_800A3558 with recast use sites. All banked under memory/grind/func_80070C70/rejected/ with their reasons.
+
+- [s2] The split-init spelling `prim.p_static = prim.p_geom + 0xC; prim.p_static += D_800A3590[var_s0] << 4;` is byte-neutral against the `s32 t` form candidate.c carries, and is an equally natural source for the target's two stores to prim.p_static at 80070E58 and 80070E74. Recorded as a free alternative, not adopted.
+
+- [s2] IconC70's tail (`s16 sp50[12]`) is still the s1 placeholder and still blocks submission. Not touched this session; F3 in hypotheses.md carries it forward with the five func_80069898 callers to read.
+
+- [s2] Sibling check: func_800720FC (src/text1b.c, active, floor 688, 1 session) names this function but has no candidate.c, so there was again no banked spelling to transplant. It is one of the five func_80069898 callers named in F3, so it is the natural place to recover IconC70's tail alongside func_8006F97C.

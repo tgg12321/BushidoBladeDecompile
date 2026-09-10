@@ -99,3 +99,135 @@ and replace the placeholder. Propagate the corrected type to func_8006F97C's led
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-108 chassis (de-cheated body + array declarations, IconC70 still 8 bytes), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+---
+
+# Session 2 (structural, 2026-09-10) — floor unchanged at 101
+
+## CONFIRMED
+
+### H3-mech — the LICM gate on `&D_800A3590` is loop.c:1631 and its threshold is bracketed 26..29
+**Mechanism:** `move_movables` accepts a movable when
+`(threshold * savings * m->lifetime) >= insn_count` (loop.c:1631); `threshold` is
+`(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532) and this loop calls func_8007352C,
+so the multiplier is 1 and threshold is a build constant. For insn 312 savings = 1, lifetime = 2.
+**Probe:** added throwaway statements to the inner loop body to move `insn_count`, re-running
+`pwsh tools/grinder/dump.ps1 func_80070C70` and reading the decision line each time. Five points:
+insn_count 50 moved, 52 moved, 60 not desirable, 64 not desirable, 73 not desirable; and the
+life-1 movables at insns 295/299 are "not desirable" already at insn_count 50.
+**Result:** 26 <= threshold <= 29. CONFIRMED. Full table + arithmetic in
+`tmp/grind/func_80070C70/s2/licm_threshold_bracket.md`.
+
+### H3-suff — killing the hoist is SUFFICIENT to recover the target's addressing form
+**Mechanism:** without reg 126 the address giv loses its invariant `add` term, the 317/319 combine
+never happens, and the address is emitted in the fused `lui %hi / addu / lh %lo` shape.
+**Probe:** in the 60-insn diagnostic build (hoist rejected) read the emitted assembly.
+**Result:** `lh $2,D_800A3590($2)` at `tmp/grind/func_80070C70/dumps/text1b.s:16616` — the
+assembler macro for target's exact 80070E5C-80070E64 sequence — with no `la` of D_800A3590 anywhere
+in the preheader. The scale-1 control in the same loop reads `lbu $3,D_800A3560($19)` (line 16595).
+CONFIRMED: the whole 101 residual chain is downstream of the single decision on insn 312.
+
+### H3-life — reg 126's lifetime is 2 because the index scale is emitted between its set and its use
+**Mechanism:** read from `tmp/grind/func_80070C70/dumps/text1b.cse`: insn 312 sets reg 126 to the
+symbol, insn 315 is `(ashift (reg 75) (const_int 1))` (the element-size-2 scale), insn 317 is the
+address plus. LOOP_REG_LIFETIME therefore spans two luids. D_800A3560, whose element size is 1, has
+no scale insn and no symbol pseudo at all — its address is the fused
+`(mem (plus (reg 74) (symbol_ref)))` at insn 291.
+**Result:** CONFIRMED by direct RTL read. This is the actionable corollary: at lifetime 1 the
+product is 26..29, below insn_count 50, and the movable is rejected.
+
+## KILLED
+
+### K1 — the `lhu`/`lh` pair on D_800A3558 is reachable by re-typing the declaration and casting
+**Probe:** `extern s16 D_800A3558;` with the loop bound spelled `(s32)(D_800A35B0 + (D_800A3558 + 1))`
+and the body spelled `(D_800A35B0 + (s16)(u16)D_800A3558)`, to try to reproduce target's
+`lhu $a2` + `sll 16` + `sra 16` in the body against `lh $v0` in the bound.
+**Result:** 101 -> 101, and the body still emits a single `lh $a1,%gp_rel(D_800A3558)`. GCC 2.7.2's
+convert_to_integer folds `(short)(unsigned short)x` to `(short)x` whether x is declared s32 or s16,
+so the cast spelling cannot split the two loads. KILLED (instance).
+
+### K2 — a statement re-association or pointer spelling of the D_800A3590 read defeats the hoist
+**Probe:** four variants measured against the floor-101 chassis via
+`tmp/grind/func_80070C70/s2/probe.py`: `prim.p_static = (D_800A3590[var_s0] << 4) + t;`;
+`*(D_800A3590 + var_s0)`; the split-init pair `prim.p_static = prim.p_geom + 0xC;
+prim.p_static += D_800A3590[var_s0] << 4;`; and `D_800A3590[var_s0 + 0]`.
+**Result:** all four measure 101 and all four still emit the preheader
+`addiu s3,s3,%lo(D_800A3590)` hoist. The address expansion is decided in `memory_address` on the
+ARRAY_REF's `mult` offset and none of these spellings changes that tree. KILLED (instance).
+
+### K3 — giving D_800A3590 an explicit array bound changes the address expansion
+**Probe:** `extern s16 D_800A3590[64];` (both declaration sites) and `[1]`, measured on the
+floor-101 chassis; objdump-checked for the `la` form.
+**Result:** 101, and `9368: addiu s3,s3,0 / R_MIPS_LO16 D_800A3590` is still there — the hoist
+survives. A completed array type does not change `get_inner_reference`'s scale-2 offset.
+KILLED (instance).
+
+## OPEN FRONTIER (supersedes s1's H3 next-probe list, which is now spent)
+
+### F1 — drop reg 126's lifetime from 2 to 1 so loop.c:1631 rejects the movable
+This is the one lever the s2 measurements point at directly, and unlike the insn_count route it is
+not blocked by arithmetic: threshold is at most 29 and insn_count is 50, so lifetime 1 loses by a
+wide margin. reg 126's life is 2 solely because insn 315 (the `ashift` by 1 that scales the index)
+is emitted between insn 312 (the symbol move) and insn 317 (the address plus). Any C shape in which
+the scaled index is ALREADY in a pseudo when the address is expanded leaves 312 and 317 adjacent.
+Next probe, in order: (a) find a second, earlier use of `var_s0 * 2` or of `D_800A3590[var_s0]`'s
+address that the target's bytes also justify, so CSE has the scale available; (b) read
+`tools/gcc-2.7.2/explow.c` `memory_address` and `expand_expr`'s ARRAY_REF path end-to-end and
+identify which source shapes reach the reg-first PLUS that the scale-1 D_800A3560 access already
+gets — that access is a working in-function control, so the fused form is demonstrably reachable
+for this compiler in this loop; (c) if the answer turns out to require a construct outside ordinary
+C, emit a ruling-request rather than spelling around it.
+
+### F2 — the target's two differently-signed reads of D_800A3558
+Target reads %gp_rel(D_800A3558) as `lhu` (80070DF4, 80070ECC; feeding sll/sra/addu in the body)
+and as `lh` (80070E08, 80070ED0; feeding the loop bound). K1 killed the cast route. The remaining
+candidates are a `u16` declaration of the symbol with the bound spelled to force a signed load, or
+a `u16` intermediate object. Worth one measurement, but it is a 2-3 insn shape issue and it will
+stay invisible in the score while the register rotation saturates it.
+
+### F3 — IconC70's real tail layout (carried forward unchanged from s1)
+The 0x20 size is proven by frame arithmetic; `s16 sp50[12]` in candidate.c is still a placeholder
+and must be replaced from func_80069898's other callers (func_8006B120, func_8006CFBC,
+func_800720FC, func_80074488, func_8006F97C) before any submission. Untouched this session.
+
+## [s2] The hoist of &D_800A3590 into a loop-invariant pseudo is decided by loop.c:1631 `(threshold * savings * m->lifetime) >= insn_count`, and for this build threshold lies between 26 and 29 inclusive.
+- mechanism: loop.c:532 sets threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); the inner loop calls func_8007352C so the multiplier is 1 and threshold is a build constant no C can move. For insn 312, `(set (reg:SI 126) (symbol_ref "D_800A3590"))`, the dump reports savings 1 and m->lifetime 2, so the movable is accepted whenever 2*threshold >= insn_count.
+- probe: Added throwaway statements to the inner do/while body purely to move insn_count, re-running `pwsh tools/grinder/dump.ps1 func_80070C70` and reading both the 'Loop from 284 to NNN: K real insns.' header and the insn-312 decision line in tmp/grind/func_80070C70/dumps/text1b.loop. Every diagnostic was reverted after its reading; the chassis was restored and re-measured at 101 afterwards.
+- result: Five measured points on one chassis: insn_count 50 -> 'moved to 486'; 52 -> 'moved to 491'; 60 -> 'not desirable'; 64 -> 'not desirable'; 73 -> 'not desirable'. The life-1 movables in the same loop (insns 295 and 299) read 'not desirable' already at insn_count 50. Solving the inequality: moved at 52 gives threshold >= 26, rejected at 60 gives threshold <= 29. Two exact consequences follow. (a) The insn_count route needs 53-59+ RTL insns in the loop and is unreachable by byte-faithful C, because the target's own loop is SMALLER in RTL terms than ours - it has neither the symbol move nor a separate address plus. (b) The lifetime route is wide open: at m->lifetime == 1 the product is 26..29 against insn_count 50, so the movable would be rejected outright. Full table and arithmetic in tmp/grind/func_80070C70/s2/licm_threshold_bracket.md.
+- verdict: CONFIRMED
+
+## [s2] Rejecting the loop.c movable at insn 312 is by itself sufficient to make the D_800A3590 read come out in the target's fused lui %hi / addu / lh %lo form.
+- mechanism: Without reg 126 the address giv at insn 317 loses its loop-invariant `add (reg:SI 126)` term, so it can neither be recognised as a giv nor combine with the load's giv at 319; the reduction 'giv at 319 reduced to (reg:SI 159)' never happens and no induction pointer is created to occupy a 7th callee-saved register.
+- probe: Read the emitted assembly of the 60-insn diagnostic build, in which loop.c had printed 'not desirable' for insn 312, and compared it against the scale-1 D_800A3560 control in the same loop.
+- result: tmp/grind/func_80070C70/dumps/text1b.s:16616 emits `lh $2,D_800A3590($2)` - the ASPSX/gas macro that expands to `lui $at,%hi(D_800A3590); addu $at,$at,$2; lh $v0,%lo(D_800A3590)($at)`, byte-for-byte the target's shape at 80070E5C-80070E64 - and there is no `la` / `lui+addiu` of D_800A3590 anywhere in the preheader. Line 16595 shows the control, `lbu $3,D_800A3560($19)`. This closes the causal chain s1 left open: hoist -> invariant add term -> 317/319 giv combine -> reduced giv -> 7th callee-saved induction pointer -> frame 0x88 vs target 0x80 -> the 5-seat rotation stacked on top. All of it hangs off this one decision.
+- verdict: CONFIRMED
+
+## [s2] reg 126's m->lifetime is 2 because the element-size-2 index scale insn is emitted between the symbol move and the address plus, and the scale-1 sibling access in the same loop never creates a symbol pseudo at all.
+- mechanism: RTL expansion. A scale-1 ARRAY_REF offset is a bare pseudo, the PLUS canonicalises reg-first, `(plus reg symbol_ref)` is a legitimate MIPS address and no pseudo is created for the symbol. A scale-2 offset is a `mult`, the PLUS comes out symbol-first, memory_address (explow.c) cannot accept it, and force_reg'ing the whole address materialises the symbol into a pseudo whose live range then spans the intervening scale insn.
+- probe: Read the pre-loop RTL in tmp/grind/func_80070C70/dumps/text1b.cse for both accesses in the inner loop.
+- result: insn 291 is `(set (reg/v:QI 118) (mem/s:QI (plus:SI (reg/v:SI 74) (symbol_ref "D_800A3560"))))` - fused, no symbol pseudo. For D_800A3590 the sequence is insn 312 `(set (reg:SI 126) (symbol_ref "D_800A3590"))`, insn 315 `(set (reg:SI 128) (ashift:SI (reg/v:SI 75) (const_int 1)))`, insn 317 `(set (reg:SI 129) (plus:SI (reg:SI 128) (reg:SI 126)))`, insn 319 `(set (reg:HI 130) (mem/s:HI (reg:SI 129)))`. LOOP_REG_LIFETIME for reg 126 therefore spans exactly the two luids 312->317. This explains s1's unexplained asymmetry between the two array accesses, and it names the next lever precisely: make the scaled index already available when the address is expanded, 312 and 317 become adjacent, lifetime falls to 1, and loop.c:1631 rejects the movable.
+- verdict: CONFIRMED
+
+## [s2] Re-associating or re-spelling the D_800A3590 read - `(D_800A3590[var_s0] << 4) + t`, `*(D_800A3590 + var_s0)`, the split-init pair `prim.p_static = prim.p_geom + 0xC; prim.p_static += D_800A3590[var_s0] << 4;`, or `D_800A3590[var_s0 + 0]` - defeats the hoist on this chassis.
+- mechanism: Hypothesis was that the operand order of the address PLUS, or the point at which the array reference is expanded inside the enclosing expression, is what force_reg's the symbol, so changing the surrounding expression would reach the reg-first PLUS that the scale-1 access already gets.
+- probe: Four variants driven by tmp/grind/func_80070C70/s2/probe.py: each patched into src/text1b.c over the restored floor-101 chassis, measured with `sandbox func_80070C70 --disable all`, then checked by objdump for the preheader `la` of D_800A3590.
+- result: All four measured 101 and all four still emit the hoisted `addiu s3,s3,%lo(D_800A3590)` in the preheader. The decision is taken on the ARRAY_REF's `mult` offset inside memory_address, which none of these spellings alters. Banked as memory/grind/func_80070C70/rejected/reassociate-3590-read-no-hoist-change.c. Note the split-init variant is byte-neutral rather than harmful, so it remains a free alternative spelling of the two prim.p_static stores if a reviewer ever objects to the `s32 t` form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-101 chassis (s1 candidate.c body + `extern u8 D_800A3560[];` + `extern s16 D_800A3590[];` at both sites + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s2] Giving D_800A3590 a complete array type - `extern s16 D_800A3590[64];` or `[1]` at both declaration sites - changes the address expansion and removes the hoist.
+- mechanism: Hypothesis was that a completed array type would let get_inner_reference take a constant-bounds path and fold the scaling differently.
+- probe: Both declaration sites changed together over the restored floor-101 chassis, measured with `sandbox func_80070C70 --disable all`, then objdump-checked for the `la` form.
+- result: 101, and `9368: addiu s3,s3,0` with `R_MIPS_LO16 D_800A3590` is still present - the hoist survives. A completed array type does not change the scale-2 offset. Banked as memory/grind/func_80070C70/rejected/array-bound-decl-D_800A3590.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-101 chassis (s1 candidate.c body + both array declarations + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s2] Re-declaring D_800A3558 as `extern s16` and spelling the loop bound as `(D_800A3558 + 1)` against a body cast of `(s16)(u16)D_800A3558` reproduces the target's two differently-signed reads of that symbol.
+- mechanism: The target reads %gp_rel(D_800A3558) as `lhu $a2` at 80070DF4 and 80070ECC, feeding `sll 16 / sra 16 / addu $a1` in the body, and separately as `lh $v0` at 80070E08 and 80070ED0, feeding the loop bound. Hypothesis was that a halfword declaration plus a zero-extending cast in the body would split the two loads the way the target's bytes show.
+- probe: Changed the declaration in src/text1b.c and rewrote both loop-bound occurrences, then measured `sandbox func_80070C70 --disable all` and grepped the objdump for `lhu` / `sra`.
+- result: 101 -> 101, and the body still emits a single `lh $a1,%gp_rel(D_800A3558)`; no `lhu` and no `sra` anywhere in the function. GCC 2.7.2's convert_to_integer folds `(short)(unsigned short)x` to `(short)x` whether x is declared s32 or s16, so a cast spelling on a single integer declaration of that symbol cannot produce the pair. Banked as memory/grind/func_80070C70/rejected/s16-decl-D_800A3558-split-loads.c. What remains untried for this shape is a u16 declaration of the symbol, or a u16 intermediate object.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-101 chassis (s1 candidate.c body + both array declarations + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
