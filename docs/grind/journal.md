@@ -1961,3 +1961,5 @@
 - 2026-09-10 04:22 model-fallback layer1 claude-fable-5-1[1m]->claude-opus-5[1m] until 04:52
 - 2026-09-10 04:28 func_8006BB68 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-10 04:43 _spu_FwriteByIO s1 [recon] floor=3: psyz/PsyQ libspu transplant lands 113/115 instructions byte-identical; floor 115 -> 3, and the target's 8 phantom frame bytes turn out to be an ordinary `for (i = 0; ...)` loop, not a dead local.
+- 2026-09-10 04:59 model-fallback layer1 claude-fable-5-1[1m]->claude-opus-5[1m] until 05:29
+- 2026-09-10 05:03 _spu_FwriteByIO COMPLETED-C after 2 sessions (closer: s2 [structural]).
