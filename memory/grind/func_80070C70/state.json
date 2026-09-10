@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "synthesis",
+ "session_count": 8,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -45,22 +45,28 @@
    "floor": 39,
    "modality": "synthesis",
    "headline": "Synthesis reopened the chassis question: the target's second loop IS a top-test loop (its guard block is an insn-for-insn copy of its tail test), a top-test spelling of our current body MAKES cse_set_"
+  },
+  {
+   "session": 8,
+   "floor": 39,
+   "modality": "structural",
+   "headline": "Floor held at 39; identified pseudo 116 as the tail exit test's sign-extend ashift, named the combine.c/reload1.c mechanism that turns all three orphans into 24 frame bytes, and killed five structural"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Killing the three orphaned (use (reg)) pseudos 116/165/170 on the top-test chassis removes 24 frame bytes and takes that chassis well below the current floor of 39, since 14 of its 49 diffs are pure frame offsets.",
-   "mechanism": "jump.c:2244 only remaps an exit-test pseudo when regno_last_uid[REGNO(reg)] lies inside the exit code, so any exit-test sub-value the loop body also reads escapes the remap; combine then has no orphan REG_DEAD note to park on a (use (reg)) insn, and reload's alter_reg never allocates a slot.",
-   "next_probe": "In order, cheapest first: (a) give pseudo 170 (the lt result) or 165 (the ashift) a use outside the exit code by having the loop body read the same sub-expression the exit test computes; (b) shrink the exit test so combine has nothing to fold - a bound with no +1 (`var_s0 <= D_800A35B0 + (s16)D_800A3558`) removes pseudo 169 entirely, and s6's kill of the `<=` forms at 79 was measured on the pre-cse chassis and is void here, so re-measure it on tmp/grind/func_80070C70/s7/w/d32_b1_cy.c; (c) identify pseudo 116 (a reg/s pointer pseudo from the PRE-loop region, likely the prim.p_geom+0xC pointer, so possibly killable independently of the loop); (d) read tools/gcc-2.7.2/reload1.c alter_reg to confirm a refs-but-no-set pseudo can never win a hard register, before spending more on (a)/(b). Sweep with tmp/grind/func_80070C70/s7/sweep.py (about 2 seconds per variant) and confirm each hit with tmp/grind/func_80070C70/s7/framedbg.sh."
+   "hypothesis": "The exit test can be simultaneously complex enough for cse_set_around_loop and fold-free for combine, if the sign-extension and the `+1` leave the comparison and move into the induction variable itself.",
+   "mechanism": "cse_set_around_loop (cse.c:7909) only needs a MEM in the exit test that matches a REG_LOOP_TEST_P register in the hash table - it is the MEM's destination register that must carry the flag, not the comparison result. If the test were `var_s0 < D_800A35B0` with a bare MEM read and the sign-extended D_800A3558 folded into the counter's initial value and into every in-loop use of var_s0, the test would contain nothing for combine to fold, so pseudos 116/165 would never be orphaned, while the MEM that drives the cse hoist would remain.",
+   "next_probe": "First read tools/gcc-2.7.2/cse.c:7909-7960 and confirm which register in the exit test must carry REG_LOOP_TEST_P; that decides whether the +1 and the sign-extension can leave the test at all. Then re-spell the whole second loop with the offset folded into the counter - this changes the D_800A3560 index, the D_800A3590 index and the `0x50 + var_s0 * 0x16C` mode expression, so budget a full session and sweep with tmp/grind/func_80070C70/s8/sweep.py, confirming any hit with s8/fdrun.py (vars must reach 80)."
   },
   {
-   "hypothesis": "The `t = prim.p_geom + 0xC` sites emit into the same register as p_geom because our statement order lets the p_geom value die at the add; ordering the add BEFORE the p_geom store reproduces the target's two-live-register `addiu $v1,$v0,0xC`.",
-   "mechanism": "local-alloc coalesces an add's destination onto its source when the source dies at that insn. The target's first site is `lw $v0,4($s2) / addiu $v1,$v0,12 / sw $v0,0x18($sp) / sw $v1,0x1C($sp)` - the add precedes the p_geom store, so the loaded value is still live at the add.",
-   "next_probe": "Spell the pre-loop block as `s32 g = *(s32 *)(ctx_or_var_s2 + 4); prim.p_static = g + 0xC; prim.p_geom = g;` (and the analogous form at the +0x48 site) and check whether the scheduler restores the target's store order; read text1b.lreg for the qty coalescing decision at each of the three sites. This axis is worth about eight diffs and is independent of the loop chassis, so measure it on BOTH the 39 do/while chassis and the 49 top-test chassis."
+   "hypothesis": "The 39-point do/while chassis can acquire the target's loop-carried $a1/$a2 from its own if-GUARD rather than from cse_set_around_loop, keeping its already-exact frame.",
+   "mechanism": "The target's guard block loads `lhu $a2` and `lw $a1` before the `blez` and the loop body then consumes those registers. On a do/while chassis there is no duplicate_loop_exit_test and hence no 24-byte cost, so the only question is whether some spelling of the if-guard's own condition leaves its loads live into the loop body. s8 killed the C-local version of this (the locals get hoisted), but not the version where the guard's own expression is re-spelled.",
+   "next_probe": "Sweep if-guard condition spellings on the 39 chassis (currently `D_800A35B0 + (s16)D_800A3558 + 1 > 0`) against the target's guard insn order at 80070DF4-80070E18 - operand order, `>= 1`, comparing the counter, splitting the guard into two tests - and read the func_80070C70 region of the .cse dump for each hit to see whether the guard's loads survive into the loop body rather than being re-emitted."
   },
   {
-   "hypothesis": "IconC70's trailing 24 bytes have a real member list that the placeholder `s16 sp50[12]` only approximates, and recovering it is a prerequisite for any submission (the 0x20 SIZE is already proven twice: by frame arithmetic in s1 and by the BB2_FRAME_DEBUG census in s6).",
-   "mechanism": "Correctness of the submitted C, not codegen - the size is fixed but the field list is not evidence-backed.",
+   "hypothesis": "IconC70's trailing 24 bytes have a real member list that the placeholder `s16 sp50[12]` only approximates, and recovering it is a prerequisite for any submission (carried from s1/s2/s3, still unspent).",
+   "mechanism": "Correctness of the submitted C, not codegen - the 0x20 SIZE is proven twice (frame arithmetic in s1, the BB2_FRAME_DEBUG census in s6) but the field list is not evidence-backed.",
    "next_probe": "Read the $a1-relative stores in func_80069898's other callers (func_8006B120, func_8006CFBC, func_800720FC, func_80074488, func_8006F97C) and build the true field list; propagate the corrected type to func_8006F97C's ledger, which is an active queue sibling in the same TU."
   }
  ],
@@ -226,6 +232,38 @@
    "measured_on": "top-test for chassis where cse_set_around_loop fires (s7 toptest.c body, all four D_800A3558 declarations x 2 bound associations, + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0",
    "predicate_cite": "",
    "result": "Reversed on this chassis. The target's order (cy, sum first) wins everywhere: 49 vs 51-52 at b1 and 54 vs 57 at b2, and "
+  },
+  {
+   "session": 8,
+   "statement": "Computing the p_static value before the p_geom store (s32 g = *(s32 *)(ctx + 4); prim.p_static = g + 0xC; prim.p_geom = g;) reproduces the target's two-live-register `addiu $v1,$v0,0xC` at the pre-loo",
+   "kill_scope": "instance",
+   "measured_on": "both the floor-39 if-guarded do/while chassis (memory/grind/func_80070C70/candidate.c body) and the floor-49 top-test for chassis (tmp/grind/func_80070C70/s7/w/d32_b1_cy.c body), each with extern u8 D",
+   "predicate_cite": "",
+   "result": "Backwards on both chassis: do/while 39 -> 40 (one site) and 39 -> 41 (both sites); top-test 49 -> 50 and 49 -> 51. Instr"
+  },
+  {
+   "session": 8,
+   "statement": "An asymmetric D_800A3558 spelling - a signed-halfword declaration read bare in the loop bound (the target's `lh`) and double-cast (s16)(u16) in the loop body (the target's `lhu` plus `sll`/`sra`) - re",
+   "kill_scope": "instance",
+   "measured_on": "top-test for chassis where cse_set_around_loop fires (tmp/grind/func_80070C70/s7/w/d32_b1_cy.c body) and the floor-39 if-guarded do/while chassis, both with extern u8 D_800A3560[]; extern s16 D_800A35",
+   "predicate_cite": "",
+   "result": "Byte-neutral. Every s16-declared variant is exactly 49 at 194 insns (identical to the s32 baseline); the u16-declared on"
+  },
+  {
+   "session": 8,
+   "statement": "Carrying the loop's two memory values in ordinary C locals reproduces the target's loop-carried $a1/$a2 structure without duplicate_loop_exit_test's frame cost.",
+   "kill_scope": "instance",
+   "measured_on": "both the floor-39 if-guarded do/while chassis and the floor-49 top-test for chassis (bodies as above), each with extern u8 D_800A3560[]; extern s16 D_800A3590[]; IconC70 sized 0x20, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "All six are worse than their chassis baseline. do/while: 42 at 192 insns, 59, 42 at 191 insns (against 39 at 194). top-t"
+  },
+  {
+   "session": 8,
+   "statement": "Shrinking or hoisting the top-test loop's exit expression removes the orphaned spill pseudos at an acceptable cost (frontier F7 probes (a) and (b)).",
+   "kill_scope": "instance",
+   "measured_on": "top-test for chassis where cse_set_around_loop fires (tmp/grind/func_80070C70/s7/w/d32_b1_cy.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs prese",
+   "predicate_cite": "",
+   "result": "Every variant is far worse. `<=` and `!=` are 79 at 192 insns - the whole cse_set_around_loop structure collapses. The f"
   }
  ],
  "ladder_skip": 0,

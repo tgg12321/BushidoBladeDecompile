@@ -1,3 +1,30 @@
+/* [s8 structural 2026-09-10] FLOOR UNCHANGED at 39; the body below is still the best form.
+ * s8 spent the structural modality on frontier F7 (kill the three orphaned `(use (reg))`
+ * pseudos that cost the top-test chassis 24 frame bytes) and on F8 (the two-live-register
+ * `prim.p_geom + 0xC` sites).  Both are now measured dead on this chassis:
+ *   - F8 is BACKWARDS.  Computing p_static before storing p_geom (`s32 g = *(s32*)(ctx+4);
+ *     prim.p_static = g + 0xC; prim.p_geom = g;`) costs a point on BOTH chassis (39->40
+ *     do/while, 49->50 top-test) and doing it at both pre-loop sites costs two (41 / 51).
+ *     The target's insn order is not reachable by re-ordering these two source statements.
+ *   - The exit-test spelling axis is exhausted for the frame.  Every one of 13 further
+ *     D_800A3558 declaration x per-site-cast combinations (including the ASYMMETRIC forms
+ *     s7 never tried, which is what the target's `lhu $a2` + `lh $v0` pair looks like)
+ *     scores 49 with the IDENTICAL spill triple p116/p165/p170 at vars=104.
+ *   - Carrying the two loop values in C locals (read at the top of the body, read at the
+ *     bottom of the body, or used in the bound too) is 42/52/59/60/63 - all worse than 39.
+ *   - Partial hoists of the bound (n = (s16)D_800A3558 + 1, n = D_800A35B0 + 1, ...) are
+ *     54-62; the full hoist is 60 and buys a 7th callee-saved register.
+ * The best top-test variant is now 48, not 49: INLINING `t` in the body (writing
+ * prim.p_static = prim.p_geom + 0xC twice instead of through the named local `t`) is worth
+ * a point there - and costs two on the do/while chassis (39->41).  Banked as
+ * memory/grind/func_80070C70/chassis-toptest-cse-48.c.
+ * NOTE FOR THE NEXT SESSION: p116 is now IDENTIFIED (s7 only guessed).  It is the `ashift`
+ * intermediate of the (s16) sign-extension inside the loop's OWN tail exit test
+ * (.jump insn 267: `(set (reg/s:SI 116) (ashift (reg/s:SI 114) (const_int 16)))`), and 165
+ * is the same insn in the guard copy.  All three orphans are combine's distribute_notes
+ * emitting `(use (reg))` at a CODE_LABEL (combine.c:10834-10840) because the folded insn
+ * left a REG_DEAD note with nowhere to go.  See the s8 section of hypotheses.md.
+ */
 /* [s7 synthesis 2026-09-10] The body below is STILL the floor (39) and is unchanged.
  * BUT the strategic chassis changed: see memory/grind/func_80070C70/chassis-toptest-cse-49.c.
  * On a top-test `for` spelling of the second loop, cse_set_around_loop DOES fire and
