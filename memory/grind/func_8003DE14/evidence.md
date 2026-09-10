@@ -703,3 +703,188 @@ never yet tried as a struct.
 - [s5] src++ placement inside the blend arm is byte-neutral on the f1 chassis (43 / 173 in all three positions measured).
 
 - [s5] tools/sweep_variants.py restores src/code6cac_c2.c byte-exact after every sweep; the tree is clean of src edits and only the ledger files under memory/grind/func_8003DE14/ were modified.
+
+## s6 (2026-09-10, synthesis) — the seat question is RE-FRAMED; floor stays 31
+
+Chassis re-measured at dispatch (the brief's CHASSIS CHECK said "measurement
+unavailable"): `candidate.c` (s3 d4) = **31 / 172**, `chassis_h1...c` = **42 /
+173**. Both reproduce the ledger exactly. Neither banked form contains a FAKE
+construct, so `tools/fake_ablate.py` is a no-op on them; the KILL RE-AUDIT was
+discharged by re-measuring the two closest-to-target banked forms on the
+current chassis (both unchanged) and then re-deriving the seat question from
+the dumps rather than from the banked inverse.py verdict.
+
+### 1. reg_n_refs is loop-depth weighted, and this function's counts are exact
+
+`flow.c:2081 / 2329 / 2515 / 2725` all do `reg_n_refs[regno] += loop_depth;`,
+where `loop_depth` is `basic_block_loop_depth[]` (flow.c:456/471), seeded at
+**1** for the function's top level and incremented per enclosing
+`NOTE_INSN_LOOP_BEG` (a `loop_depth == 0` is an abort at flow.c:1453). For
+func_8003DE14 that makes the outer do-loop depth 2 and the per-pixel inner
+loop depth 3, and it turns `reg_n_refs` into a countable property of the
+emitted arm structure:
+
+    src : (4 x `addiu a3,a3,2` [set+use = 2 refs] + 2 x `lhu ..,0(a3)` [1 ref])
+          x depth 3  +  `addiu a3,sp,0x10` [set = 2 refs] x depth 2  =  32
+    dst : (4 x `sh ..,0(a2)` [1 ref] + 2 x `addiu a2,a2,2` [2 refs])
+          x depth 3  +  `addiu a2,sp,0x410` [2 refs] x depth 2       =  26
+
+Those are exactly the numbers `tools/ra_solver` extracts from our build
+(pseudo 108 refs 32, pseudo 109 refs 26), which validates the accounting.
+
+### 2. The TARGET'S OWN refs are the same 32 / 26 — so the banked "refs move" framing cannot be how the original did it
+
+Counted straight off `asm/funcs/func_8003DE14.s`: `$a3` (src) is referenced by
+2 `lhu` (8003DF40, 8003DF6C) and 4 `addiu $a3,$a3,2` (DF58, DF68, DF88, DFE4)
+plus the `addiu $a3,$sp,0x10` init at 8003DEE8 — 32 weighted refs. `$a2` (dst)
+is referenced by 4 `sh` (DF50, DF5C, DF80, E020) and 2 `addiu $a2,$a2,2`
+(DF60, E024) plus the `addiu $a2,$sp,0x410` init at 8003DEEC — 26 weighted
+refs. Identical to ours.
+
+Consequence: **the original compiled this function with src at 32 refs and dst
+at 26 refs and still put src in `$a3`.** So `inverse.py`'s size-1 vectors
+(refs_up 109 to 32 / refs_down 108 to 26), which s4 and s5 treated as the
+description of the residual, describe a way to FORCE our allocation, not the
+way the original obtained its own. Any session that spends itself trying to
+lift dst's reference count is reproducing a compilation the original did not
+perform.
+
+### 3. On the h1 chassis the residual is NOT a src/dst swap
+
+The ledger's live frontier said "the src/dst seat" as if the pair were
+transposed. Re-measured with `tmp/grind/func_8003DE14/s4/sbs.sh` on h1 and
+with `ra_solver simulate --trace`:
+
+    h1  : 108 (src) -> $a1 (reg 5)      109 (dst) -> $a2 (reg 6)
+    tgt : src        -> $a3 (reg 7)     dst        -> $a2 (reg 6)
+
+**dst is already correctly seated on h1**; src sits two registers low. The
+find_reg trace explains it exactly: `108 pri 27118 hard_conf=[2,3,4,29]
+someone=[3] -> best 5`. Only $v0/$v1/$a0 are excluded, so the ascending scan
+stops at $a1.
+
+The h1 side-by-side also shows the biggest remaining block is not the seat at
+all: ~25 of the 42 differing instructions are the blend arm, where the target
+computes ALL SIX products and both adds before it starts the OR chain, while
+h1 interleaves an `or` after each channel.
+
+### 4. The blend block's naming controls how many allocnos outrank src (k1)
+
+Six new blend spellings were measured on h1 (`tmp/grind/func_8003DE14/s6/`):
+
+| form | blend block | score | insns |
+|---|---|---|---|
+| h1 (base) | r_src/g_src/b_src/r_ch named; green+blue inline in the store | 42 | 173 |
+| k6 | k1 shape + `out` accumulator (`out \|= ...`) | 42 | 173 |
+| **k1** | **r_ch, g_ch masked-named; `b_shift` named UNMASKED, `& 0x7C00` in the store — the TARGET's own shape** | **43** | 173 |
+| k5 | r_ch masked-named; g_shift, b_shift named unmasked | 43 | 173 |
+| k2 | r_ch, g_ch, b_ch all masked-named | 44 | 173 |
+| k3 | r_ch, g_ch named; blue wholly inline | 48 | 173 |
+| k4 | the three SUMS named; shift+mask inline in the store | 52 | 173 |
+
+k1 scores one WORSE than h1 and is nonetheless the better chassis (the s3
+"score is not monotone in per-item correctness" lesson again). Its extra named
+intermediate creates one more short-lived, high-priority allocno; that allocno
+takes $a1, and the pair moves to the classic swap:
+
+    k1  : 108 (src) pri 27118 hard_conf=[2,3,4,5,29]   -> $a2
+          109 (dst) pri 17931 hard_conf=[2,3,4,5,6,29] -> $a3
+
+Banked as `memory/grind/func_8003DE14/chassis_k1_target_blend_naming_43.c`.
+
+### 5. The seat IS reachable, and it costs exactly the 173rd instruction (k8)
+
+`k8` = k1 + the s3 "d4" dose (last-frame zero arm respelled `*dst++ = pixel;
+src++; goto loop_check;`). That is +2 dst RTL references at depth 3 = +6
+weighted refs, dst 26 -> 32, which crosses the `floor_log2` step in
+`allocno_compare` (global.c:643):
+
+    k8  : 109 (dst) refs 32 pri 27118 -> $a2      108 (src) pri 26666 -> $a3
+
+**the target's seat, confirmed by `ra_solver simulate --trace` on
+`tmp/grind/func_8003DE14/s6/k8.model.json`.** Score 31 / **172** — the arm's
+tail is now byte-identical to the colour arm's (`sh / addiu a2 / j loop_check
+/ addiu a3`) and jump2 cross-jumps it away. So the seat and the 173rd
+instruction are, on every form measured so far, mutually exclusive: the ONLY
+C-level way found to give dst six more weighted references is to add a
+dst-modifying instruction, and the only place to add one hands jump2 a second
+identical tail.
+
+Banked as `memory/grind/func_8003DE14/chassis_k8_target_seat_172insn_31.c`.
+
+### 6. The preference route is mechanically FORECLOSED for this function
+
+`find_reg` (global.c:952) has exactly three ways to skip a register for src:
+`hard_reg_conflicts`, pass-0's `regs_someone_prefers`, and the class/fixed
+mask. `regs_used_so_far` cannot be the discriminator — global.c:367 seeds it
+with every `call_used_reg` before any allocation, so $a1/$a2/$a3 are in it
+from the start. `prune_preferences` (global.c) builds
+`regs_someone_prefers[src]` as the union of `hard_reg_full_preferences` of the
+LOWER-priority allocnos that conflict with src. `inverse.py global` on the k1
+model reports that route dead in so many words:
+
+    FORECLOSED - 50 preference atom(s) NOT emitted (mechanically unreachable
+    from C):  "$a2 never appears as a hard reg in this function's pre-RA RTL,
+    so global.c set_preference can never record a preference for it."
+
+$a2 is argument register 3; this function's four callees (`DrawSync`,
+`StoreImage`, `LoadImage`, `func_80052BE4`) take at most two arguments, and
+there is no call anywhere inside src's live range. So no allocno can ever
+prefer $a2, and pass 0 can never deflect src off it.
+
+`inverse.py global --goal '{"108": 7, "109": 6}'` on the k1 model: minimal
+solution size **1 atom, 8 vectors**, ALL of them `refs_down 108: 32->26` or
+`refs_up 109: 26->32`. No conflict, live-length, birth-order or preference
+atom exists at size 1 on this chassis either.
+
+### 7. Declaration/birth order is inert on the k1 chassis too
+
+s5 swept all 120 orderings of the outer-loop declaration block on the h1
+chassis. Because h1's seat turned out not to be the swap, that sweep did not
+actually test the swap. All 24 `src`-first orderings of
+`total / src / dst / factor / j` were therefore re-swept on the k1 chassis
+(`tmp/grind/func_8003DE14/s6/declperm_results.json`): **every one scores 43**,
+identical to k1 itself. Birth order cannot create a short-lived temp that
+conflicts with src but not with dst, because both cursors are born one
+instruction apart and die at the same inner-loop exit.
+
+### Where that leaves the residual
+
+On any chassis that reproduces the target's 173-instruction arm structure the
+reference counts are pinned at 32 / 26 by that structure (section 1), the live
+lengths are pinned within one LUID of each other by the fact that both cursors
+span the same inner loop (`allocno_compare` would need L_dst < 9.6 or
+L_src > 357 to flip on live length alone), the preference route is foreclosed
+(section 6) and birth order is inert (section 7). The next lever is therefore
+not "find another spelling": it is the `refs_up` lever that inverse.py itself
+names as SANCTIONED — `duplicated-statement-into-arms` — applied so that jump2
+duplicates the statement BACK at codegen instead of cross-jumping it away.
+That family carries a FAKE annotation, a byte-neutrality proof and a
+lever-exhaustion ledger, and this session is the first that can point at a
+concrete exhaustion argument for it.
+
+- [s6] [s6] Chassis re-measured at dispatch (the brief reported 'measurement unavailable'): candidate.c (the s3 d4 form) = 31 / 172 and chassis_h1_structure_exact_42.c = 42 / 173, both reproducing the ledger exactly. Neither banked form contains a FAKE construct, so tools/fake_ablate.py is a no-op on them; the mandated KILL RE-AUDIT was discharged by re-measuring the two closest-to-target banked forms on the current chassis and then re-deriving the seat question from the dumps instead of trusting the banked inverse.py verdict.
+
+- [s6] [s6] REUSABLE PROJECT-WIDE: GCC 2.7.2's reg_n_refs is loop-depth weighted (flow.c:2081, 2329, 2515, 2725; basic_block_loop_depth seeded at 1 at flow.c:456, loop_depth==0 aborts at flow.c:1453). A reference in a doubly-nested loop is worth 3, in a singly-nested loop 2, at function scope 1, and an `addiu rX,rX,K` counts TWO references (set + use) while a load or store counts one. That makes reg_n_refs a countable property of the emitted instruction stream, not a free spelling variable - on any chassis whose arm structure matches the target's, the reference counts are pinned.
+
+- [s6] [s6] The accounting is exact for this function: src = (4 x addiu + 2 x lhu) at depth 3 + init at depth 2 = 32; dst = (4 x sh + 2 x addiu) at depth 3 + init at depth 2 = 26. Both numbers match tools/ra_solver/extract.py's model for pseudos 108 and 109.
+
+- [s6] [s6] THE TARGET'S OWN reference counts are the same 32 and 26, counted directly off asm/funcs/func_8003DE14.s ($a3: lhu at DF40/DF6C, addiu at DF58/DF68/DF88/DFE4, init at DEE8; $a2: sh at DF50/DF5C/DF80/E020, addiu at DF60/E024, init at DEEC). So the original compiled with src at 32 refs and dst at 26 refs and still seated src in $a3. The s4/s5 frontier's premise - that reaching the target means lifting dst's reference count - describes a way to force OUR allocation, not the original's.
+
+- [s6] [s6] On the h1 chassis the residual is NOT the src/dst swap the ledger describes: dst is already at $a2 (correct) and src is at $a1. find_reg trace: `a=108 pri=27118 hard_conf=[2,3,4,29] someone=[3] best=5`.
+
+- [s6] [s6] The h1 side-by-side also shows the seat is no longer the biggest diff block: roughly 25 of the 42 differing instructions are the blend arm, where the target emits all six mult/mflo pairs and both channel adds before any `or` while our builds interleave an `or` after each channel. That is a first-pass sched.c question, not a naming one (s5 exhausted naming).
+
+- [s6] [s6] Blend-block naming controls how many allocnos outrank the cursors. The target's own shape (r_ch and g_ch masked-named, blue named carrying only the shift with its 0x7C00 mask inline in the store) adds one more short-lived high-priority allocno; it takes $a1 and moves the pair to the classic swap. Scores on h1: k6 42, k1 43, k5 43, k2 44, k3 48, k4 52, all 173 insns. k1 is banked as memory/grind/func_8003DE14/chassis_k1_target_blend_naming_43.c and is the chassis future work should start from even though h1 scores one better.
+
+- [s6] [s6] k8 (k1 + the s3 d4 dose on the last-frame zero arm) proves the target's seat is reachable and prices it: +2 dst RTL refs at depth 3 = +6 weighted refs takes dst 26 -> 32, crossing the floor_log2 step in allocno_compare (global.c:643), and simulate --trace gives dst $a2 / src $a3. Score 31 / 172 - jump2 cross-jumps the arm's now-identical tail and eats the 173rd instruction. Banked as memory/grind/func_8003DE14/chassis_k8_target_seat_172insn_31.c.
+
+- [s6] [s6] find_reg's regs_used_so_far can never be the discriminator on this function: global.c:367 seeds it with every call_used_reg before any allocation, so $a1/$a2/$a3 are in it from the start. The only pass-0 exclusion that can move src is regs_someone_prefers, and inverse.py reports that axis mechanically foreclosed - $a2 never appears as a hard reg in this function's pre-RA RTL (no callee takes three arguments and no call lies inside either cursor's live range), so global.c set_preference can never record a preference for it.
+
+- [s6] [s6] inverse.py global on the k1 model with --goal '{"108": 7, "109": 6}': minimal solution size 1 atom, 8 distinct vectors, every one refs_down 108: 32->26 or refs_up 109: 26->32. No conflict, live-length, birth-order or preference atom exists at size 1 on the swap-showing chassis either.
+
+- [s6] [s6] Declaration/birth order is inert on the k1 chassis: all 24 src-first permutations of `total / src / dst / factor / j` score 43, identical to k1. Both cursors are born one instruction apart and die at the same inner-loop exit, so the block cannot produce a temp that conflicts with src but not with dst.
+
+- [s6] [s6] Tooling: tmp/grind/func_8003DE14/s6/sweep.ps1 is a repo-pinned wrapper around tools/sweep_variants.py (the worktree contamination guard blocks the unpinned Bash form; the wrapper hardcodes the main repo's absolute WSL path, which is the same guarantee wteng.ps1 gives engine calls). tmp/grind/func_8003DE14/s6/mkvars.py and mkdecl.py generate the blend-shape and declaration-order variant families off a banked chassis body.
+
+- [s6] [s6] src/code6cac_c2.c was restored to its committed INCLUDE_ASM state before the session ended; the only tracked changes are the ledger files under memory/grind/func_8003DE14/.

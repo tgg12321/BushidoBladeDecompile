@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 5,
- "current_modality": "enumerate",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 31,
    "modality": "enumerate",
    "headline": "Enumerate modality: 4,488 spellings swept across four regions on three chassis, ZERO hit \u2014 the blend block's naming/order/operand space and the outer declaration block's ordering space are both exhaus"
+  },
+  {
+   "session": 6,
+   "floor": 31,
+   "modality": "synthesis",
+   "headline": "Seat question re-framed from the target's own asm: the TARGET compiles with the same weighted reg_n_refs we do (src 32 / dst 26), so the banked 'refs move on pseudo 109' framing is not how the origina"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The src/dst seat is bought by declaration SCOPE or BLOCK STRUCTURE above the blend block, not by any spelling inside it \u2014 e.g. declaring src and dst outside the outer do-loop (assigned rather than initialised each iteration), or splitting/merging the two arms' enclosing braces so dst's references land in different basic blocks.",
-   "mechanism": "s5 exhausted naming, declaration order and operand order inside the two blocks where the arithmetic lives, and s4 exhausted the reference-count spellings that the tree folds away. What was never varied is where src and dst are DECLARED relative to the outer do-loop and how the arm bodies are bracketed \u2014 both change the basic-block partition flow.c walks when it accumulates REG_N_REFS, and reg_n_refs is loop-depth weighted, so moving one dst reference into a deeper block is worth several units on its own.",
-   "next_probe": "On the h1 chassis (42 / 173), enumerate the DECLARATION-SCOPE axis rather than the spelling axis: (i) hoist 'u16 *src, *dst;' to function scope with 'src = src_buf; dst = dst_buf;' at the top of the outer do-body; (ii) the same but with only dst hoisted; (iii) wrap the two arms in a single shared brace and in two separate braces; (iv) move the 'advance_dst:' label's dst++ into each arm's own block. Measure each with sandbox --disable all AND re-run tools/ra_solver/extract.py + simulate.py, checking build_insns stays 173 and whether 108 -> $a3 / 109 -> $a2. Do NOT re-probe blend-arm spellings \u2014 enum1/enum3/enum4 covered them."
+   "hypothesis": "The refs_up atom on dst (26 -> 32) can be bought without losing the 173rd instruction if the duplicated statement lands in arms whose TAILS are not byte-identical, so jump2 has nothing to cross-jump.",
+   "mechanism": "inverse.py's own catalog names duplicated-statement-into-arms (SANCTIONED, .claude/rules/duplicated-statement-into-arms.md, FAKE-annotated) as the byte-free reg_n_refs lift for exactly this global-RA priority wall. Every dose measured so far (s3 d2/d3/d5/d6, s6 k8) duplicates the dst increment into an arm whose tail then matches the colour arm's `sh / addiu a2 / j loop_check / addiu a3` exactly, and jump2's cross_jump merges it. A duplication placed BEFORE the store, or into arms that jump to different labels, gives jump2 no common suffix.",
+   "next_probe": "On the k1 chassis, enumerate duplications that raise dst's weighted refs by 6 while leaving the four arm tails pairwise distinct: (i) duplicate the dst store (not the increment) into the blend main path and the colour arm with different following labels; (ii) put the extra dst reference before the `sh` rather than after it; (iii) split `advance_dst: dst++;` so the two zero arms reach it through different labels. Gate every form on `build_insns == 173` FIRST - a 172-insn result is the same dead end as k8 and needs no further analysis - then read the seat with tools/ra_solver simulate --trace. Only if a 173-insn form with dst refs >= 32 exists is the FAKE paperwork (scope sentence quoted from the rule, SOTN precedent, exhaustion ledger) worth writing."
   },
   {
-   "hypothesis": "The object model for 'rect' is wrong: it is currently a bare 's16 *' read through three different casts (s16*, u16*, s32*), and a struct-typed rect changes the addressing and the pressure at the LoadImage/StoreImage calls enough to move the src/dst seat.",
-   "mechanism": "The target's 0x214-0x234 block has never been checked against a struct-typed rect. A struct member read is one base register plus a constant offset, where the current casts force a fresh cast-and-index expression each time; that changes both the number of RTL references attributed to the pointer pseudos and what the calls clobber across the loop. This is the one structural axis the ledger has never touched.",
-   "next_probe": "Grep include/ for an existing PsyQ RECT declaration (x/y/w/h as s16) and for other BB2 callers that pass the same buffer to StoreImage/LoadImage; if a RECT type already exists in the TU, re-spell the parameter as 'RECT *rect' and measure on both the h1 and d4 chassis. Read tmp/grind/func_8003DE14/dumps/*.combine to confirm whether the cast chain survives to RTL before spending more than two measurements on it."
+   "hypothesis": "The mirror atom - src 32 -> 26 weighted refs - is buyable by removing exactly one `addiu a3,a3,2` from the inner loop while keeping 173 instructions, if the removal leaves the remaining arms' `j`s with delay-slot fillers.",
+   "mechanism": "s4 killed the two natural hoists (g1 = 61 / 162, g2 = 48 / 166) because moving the read and/or all four increments to the top of the do-body leaves reorg.c nothing to fill three `j` delay slots with, losing 7-11 instructions. That is an argument against hoisting ALL of them, not against removing ONE. Removing one increment is -2 RTL refs at depth 3 = -6 weighted, which is exactly the atom.",
+   "next_probe": "On the k1 chassis, measure forms that share ONE `src++` between exactly two arms while the other two keep their own: (i) `advance_dst: dst++; src++;` with the colour arm and the blend main path keeping their own increments; (ii) the last-frame branch's two arms sharing a single `u16 pixel = *src++;` while the blend branch keeps its two. Check `build_insns` before anything else; if a form holds 173, extract the model and check refs on pseudo 108 and the seat."
   },
   {
-   "hypothesis": "The DrawSync prototype width lead from s4 is real: the TU that compiled func_8003DE14 saw a wider return type for DrawSync than void/int, which widens the live set across the three DrawSync calls and moves the src/dst seat.",
-   "mechanism": "The f1-chassis permuter's only sub-base find (290 vs 300) was widening 'extern void DrawSync(s32);' to 'extern long long DrawSync(s32);'. A DImode return makes the call clobber a register pair. The prototype-contradiction norm (memory reference sotn-prototype-struct-precedent-2026-08-10) says the bytes decide the declaration \u2014 but a permuter score delta alone is not evidence.",
-   "next_probe": "Still OUT OF SCOPE for a func_8003DE14-only session, and it stays that way until the census is positive: grep the other DrawSync callers in src/code6cac_c2.c and check whether ANY of them shows a v0/v1 pair clobber that the current 'void' declaration does not predict. Only a positive census justifies a measurement; the declaration lives in the shared includes and would perturb every caller in the TU."
+   "hypothesis": "The blend arm's emission order - now the largest single block in the h1/k1 residual - is a first-pass sched.c ordering, not a spelling, and is separable from the seat.",
+   "mechanism": "The target emits all six mult/mflo pairs and both channel adds before it starts the OR chain (8003DF8C-8003E020); our builds interleave an `or` after each channel. sched.c's list scheduler runs before local/global allocation, so this ordering is also an input to the allocation that produces the seat - which is why k1's extra named intermediate moved the seat at all. s5 exhausted the naming/declaration-order/operand-order axes on this block, so more spellings are not the tool.",
+   "next_probe": "Run tools/sched_solver on the k1 chassis against the target's blend-arm order (it is order- and clock-exact and reproduces both scheduler passes), and use inverse_sched.py to get ranked C-lever vectors for the specific insn pairs that differ. Treat any verdict as a hypothesis until a spelled C form measures; the point of the run is to say whether the ordering is REACHABLE at all before another session spends itself on it."
   }
  ],
  "judge_constraints": [],
@@ -190,6 +196,38 @@
    "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs",
    "predicate_cite": "",
    "result": "All three measure 43 / 173 \u2014 identical. The increment's position inside this arm is byte-neutral, which makes it a free "
+  },
+  {
+   "session": 6,
+   "statement": "The residual on the h1 chassis (42 / 173) is the src/dst cursor pair transposed, so a lever that swaps the pair closes it.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), h1 chassis (42 / 173 insns), memory/grind/func_8003DE14/chassis_h1_structure_exact_42.c, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "On h1 dst is ALREADY correctly seated at $a2; src sits at $a1, two registers below the target's $a3. The find_reg trace "
+  },
+  {
+   "session": 6,
+   "statement": "One of the six blend-block naming shapes measured on the h1 chassis, including the target's own r_ch / g_ch / b_shift shape, seats src at $a3.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, h1 chassis (42 / 173 insns), forms tmp/grind/func_8003DE14/s6/body_k1.c .. body_k6.c, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "None of the six seats src at $a3. k1 and k5 reach the classic swap (src $a2 / dst $a3), k6 stays where h1 is (src $a1 / "
+  },
+  {
+   "session": 6,
+   "statement": "A hard-register preference held by another allocno can deflect src off $a2 in find_reg's pass 0 (the regs_someone_prefers exclusion), which would seat src at $a3 without any reference-count change.",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), model tmp/grind/func_8003DE14/s6/k1.model.json, no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1000",
+   "result": "inverse.py reports the whole preference axis dead in so many words: 'FORECLOSED - 50 preference atom(s) NOT emitted (mec"
+  },
+  {
+   "session": 6,
+   "statement": "Declaration/birth order in the outer-loop block moves the src/dst seat on the k1 chassis, which is the first chassis in this grind that actually shows the classic swap.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), 24 bodies tmp/grind/func_8003DE14/s6/body_m_*.c, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Every one of the 24 scores 43 - identical to k1 itself, and to each other. Both cursors are born one instruction apart a"
   }
  ],
  "ladder_skip": 0,

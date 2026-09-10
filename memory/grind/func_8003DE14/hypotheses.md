@@ -542,3 +542,157 @@ claim. There is no open family question on this function.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs
+
+## [s6] synthesis — merged attack, frontier reset
+
+- **CONFIRMED (H-s6-1).** `reg_n_refs` is loop-depth weighted (`flow.c:2081`,
+  `2329`, `2515`, `2725`; depth seeded at 1, `flow.c:456`), so for this
+  function an inner-loop reference is worth 3 and an outer-loop one 2. The
+  C-level accounting is exact: src = (4 `addiu` x2 + 2 `lhu` x1) x3 + 2 = 32,
+  dst = (4 `sh` x1 + 2 `addiu` x2) x3 + 2 = 26 — the same numbers ra_solver
+  extracts. Reusable project-wide: reference counts on a structurally-fixed
+  chassis are countable from the emitted arms, not a free spelling variable.
+
+- **CONFIRMED (H-s6-2).** The TARGET's own weighted reference counts are also
+  32 (src, `$a3`) and 26 (dst, `$a2`), counted directly off
+  `asm/funcs/func_8003DE14.s`. The original therefore allocated src to `$a3`
+  WITHOUT any reference-count advantage for dst. Everything in s4/s5 that
+  treated "the goal is a pure reference-count move on pseudo 109" as a
+  description of the target is a description of our chassis only.
+
+- **KILLED, instance (H-s6-3).** "The h1 (42/173) chassis' residual is the
+  src/dst seat transposed, so a lever that swaps the pair closes it."
+  Measured: on h1, dst is ALREADY at `$a2` (correct) and src sits at `$a1`;
+  the find_reg trace is `108 pri 27118 hard_conf=[2,3,4,29] someone=[3] ->
+  best 5`. A transposing lever applied to h1 moves dst OFF its correct seat.
+
+- **CONFIRMED (H-s6-4).** Naming one more blend intermediate (the target's own
+  shape: `r_ch`/`g_ch` masked-named, `b_shift` named unmasked with its
+  `& 0x7C00` inline in the store) creates one more short-lived high-priority
+  allocno, which takes `$a1` and moves the cursor pair to the classic swap
+  (src `$a2`, dst `$a3`). Chassis k1, 43 / 173, banked. Score got WORSE (42 ->
+  43) while the allocation got closer — the s3 non-monotonicity lesson holds.
+
+- **KILLED, instance (H-s6-5).** "Some blend-block naming/shape on the h1
+  chassis reaches the target's `$a3`/`$a2` seat directly." Six shapes measured
+  (k1 43, k2 44, k3 48, k4 52, k5 43, k6 42, all 173 insns); none seats src at
+  `$a3`. k1/k5 reach the swap, k6 stays where h1 is.
+
+- **CONFIRMED (H-s6-6).** The target's seat IS reachable in ordinary C and its
+  price is exactly the 173rd instruction. k8 (= k1 + the s3 d4 dose on the
+  last-frame zero arm) lifts dst 26 -> 32 weighted refs, crossing the
+  `floor_log2` step in `allocno_compare` (`global.c:643`); simulate --trace on
+  `tmp/grind/func_8003DE14/s6/k8.model.json` gives dst `$a2` / src `$a3` — the
+  target's seat — at 31 / **172**, because the arm's tail becomes identical to
+  the colour arm's and jump2 cross-jumps it.
+
+- **KILLED, class (H-s6-7).** "A hard-register PREFERENCE can deflect src off
+  `$a2` in find_reg's pass 0 (`regs_someone_prefers`)." `prune_preferences`
+  builds that set from the `hard_reg_full_preferences` of lower-priority
+  conflicting allocnos, and `set_preference` can only record a preference for
+  a hard reg that appears in the pre-RA RTL. `$a2` is argument register 3;
+  this function's four callees take at most two arguments and no call lies
+  inside either cursor's live range, so `$a2` never appears as a hard reg
+  before allocation. `inverse.py global` on the k1 model reports this
+  mechanically ("FORECLOSED — 50 preference atom(s) NOT emitted"). Predicate:
+  `tools/gcc-2.7.2/global.c:1000` (`IOR_HARD_REG_SET (used, regs_someone_prefers[allocno])`)
+  over a set that `prune_preferences` can only ever fill from hard regs the
+  RTL mentions.
+
+- **KILLED, instance (H-s6-8).** "Declaration/birth order in the outer-loop
+  block moves the seat on a chassis that actually shows the swap." All 24
+  `src`-first orderings of `total / src / dst / factor / j` measured on the k1
+  chassis: every one scores 43, identical to k1. (s5 swept 120 orderings on
+  h1, but h1's seat was not the swap, so that sweep never tested this.)
+
+### Frontier reset (strongest three, in order)
+
+1. **`duplicated-statement-into-arms` that jump2 duplicates BACK.** The only
+   size-1 atoms on the k1 model are `refs_up 109: 26->32` and
+   `refs_down 108: 32->26`, and inverse.py names
+   `duplicated-statement-into-arms` (SANCTIONED, FAKE-annotated,
+   `.claude/rules/duplicated-statement-into-arms.md`) as the byte-free way to
+   do the first. Every dose measured so far (s3 d2/d3/d5/d6, s6 k8) hands
+   jump2 a SECOND IDENTICAL TAIL and loses an instruction. Next probe: find a
+   duplication whose arms' tails are NOT byte-identical — e.g. duplicate the
+   `dst` store into arms that jump to DIFFERENT labels, or duplicate a
+   statement that sits BEFORE the store rather than after it — and verify
+   `build_insns == 173` before claiming anything. Do the byte-neutrality check
+   first; only if a 173-insn form with dst refs >= 32 exists is the FAKE
+   paperwork (scope quote + precedent + exhaustion ledger) worth writing.
+
+2. **`refs_down` on src via `hoist-shared-arm-computation-defeats-copy-pref`.**
+   The mirror atom: get src from 32 to 26 weighted refs, i.e. remove exactly
+   one `addiu a3,a3,2` from the inner loop while keeping 173 instructions. s4
+   killed the two natural hoists (g1 = 61/162, g2 = 48/166) because they
+   remove the delay-slot fillers reorg.c needs for the arms' `j`s. Untried:
+   move ONE `src++` to a shared tail that only two of the four arms reach
+   (e.g. `advance_dst: dst++; src++;` with the colour arm keeping its own),
+   which removes one increment from the count while leaving three `j` delay
+   slots fillable. Measure `build_insns` first; the seat is only worth
+   checking on a 173-insn result.
+
+3. **The blend arm's emission order (sched.c), now the largest diff block.**
+   On h1 ~25 of the 42 differing instructions are the blend arm: the target
+   emits all six `mult`/`mflo` pairs and both channel adds before any `or`,
+   while our builds interleave an `or` after each channel. k1/k5/k6 move it
+   but do not close it. This is a first-pass scheduler question, not a naming
+   one (s5 exhausted naming), so attack it with `tools/sched_solver` on the k1
+   chassis — order- and clock-exact — rather than with more spellings.
+
+## [s6] reg_n_refs in GCC 2.7.2 is loop-depth weighted, so this function's src/dst reference counts are exactly computable from the emitted arm structure rather than being a free spelling variable.
+- mechanism: flow.c:2081/2329/2515/2725 all do `reg_n_refs[regno] += loop_depth`, with basic_block_loop_depth seeded at 1 for function scope (flow.c:456, and loop_depth==0 aborts at flow.c:1453). For func_8003DE14 the outer do-loop is depth 2 and the per-pixel loop depth 3. Counting the emitted insns: src = (4 x `addiu a3,a3,2` [set+use = 2 refs] + 2 x `lhu ..,0(a3)` [1 ref]) x 3 + `addiu a3,sp,0x10` [2 refs] x 2 = 32; dst = (4 x `sh ..,0(a2)` [1 ref] + 2 x `addiu a2,a2,2` [2 refs]) x 3 + `addiu a2,sp,0x410` [2 refs] x 2 = 26.
+- probe: Read flow.c's four reg_n_refs sites and the basic_block_loop_depth seeding, then hand-count the arms in the h1 build and compare against tools/ra_solver/extract.py's model for pseudos 108/109.
+- result: The hand count reproduces ra_solver's extracted numbers exactly (108 refs 32, 109 refs 26) on the h1 chassis. CONFIRMED.
+- verdict: CONFIRMED
+
+## [s6] The target binary's own weighted reference counts for the src and dst cursors are 32 and 26 - identical to ours - so the original allocated src to $a3 with no reference-count advantage for dst.
+- mechanism: asm/funcs/func_8003DE14.s references $a3 with 2 `lhu` (8003DF40, 8003DF6C) and 4 `addiu $a3,$a3,2` (DF58, DF68, DF88, DFE4) inside the depth-3 inner loop plus the `addiu $a3,$sp,0x10` init at DEE8 (depth 2) = 32; it references $a2 with 4 `sh` (DF50, DF5C, DF80, E020) and 2 `addiu $a2,$a2,2` (DF60, E024) plus the `addiu $a2,$sp,0x410` init at DEEC = 26. Applying the H-s6-1 weighting to the target's own instruction stream is a direct measurement of the original compilation's allocno_compare inputs.
+- probe: grep every $a2/$a3 reference out of asm/funcs/func_8003DE14.s, classify each as set / use, and apply the loop-depth weights.
+- result: 32 and 26. Consequence recorded in the ledger: s4's and s5's treatment of `refs_up on 109 / refs_down on 108` as a DESCRIPTION of the target is wrong - those vectors force OUR chassis, they are not what the original did.
+- verdict: CONFIRMED
+
+## [s6] The residual on the h1 chassis (42 / 173) is the src/dst cursor pair transposed, so a lever that swaps the pair closes it.
+- mechanism: Every session since s3 has described the residual as 'src/dst swapped' and aimed levers at moving dst ahead of src. A side-by-side against the reference object plus the ra_solver find_reg trace shows what the allocation actually is on this chassis.
+- probe: Applied chassis_h1_structure_exact_42.c, ran tmp/grind/func_8003DE14/s4/sbs.sh against the reference object, and ran tools/ra_solver/extract.py + simulate.py --trace.
+- result: On h1 dst is ALREADY correctly seated at $a2; src sits at $a1, two registers below the target's $a3. The find_reg trace reads `a=108 pri=27118 hard_conf=[2,3,4,29] someone=[3] best=5` - only $v0/$v1/$a0 are excluded, so the ascending scan stops at $a1. A transposing lever applied to h1 moves dst OFF its correct seat.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), h1 chassis (42 / 173 insns), memory/grind/func_8003DE14/chassis_h1_structure_exact_42.c, no FAKE constructs
+
+## [s6] Naming one more blend intermediate creates one more short-lived high-priority allocno, which takes $a1 and moves the src/dst pair from h1's (src $a1, dst $a2) to the classic swap (src $a2, dst $a3).
+- mechanism: global.c's allocno_compare orders by floor_log2(refs)*refs/live_length; a short-lived named intermediate has few refs but a tiny live length, so it outranks the cursors and is allocated first, adding a hard-reg conflict to the cursors' exclusion sets. The target's own blend arm (8003DF8C-8003E020) shows exactly one more such intermediate than h1: r_ch and g_ch are masked-named, the blue channel is named with only the shift and its 0x7C00 mask is applied inline in the store.
+- probe: Six blend spellings measured on h1 with sandbox --disable all (bodies tmp/grind/func_8003DE14/s6/body_k{1..6}.c), then ra_solver extract + simulate --trace on the k1 result.
+- result: k1 (the target's own shape) = 43 / 173 with `108 pri 27118 hard_conf=[2,3,4,5,29] -> $a2` and `109 pri 17931 hard_conf=[2,3,4,5,6,29] -> $a3`. Scores: k6 42, k1 43, k5 43, k2 44, k3 48, k4 52 - all 173 insns. k1 scores one WORSE than h1 while being strictly closer to the target's allocation (the s3 score-is-not-monotone lesson). Banked as memory/grind/func_8003DE14/chassis_k1_target_blend_naming_43.c.
+- verdict: CONFIRMED
+
+## [s6] One of the six blend-block naming shapes measured on the h1 chassis, including the target's own r_ch / g_ch / b_shift shape, seats src at $a3.
+- mechanism: s5 swept naming x declaration order x operand order inside this block and never checked the resulting register seat, only the score. Since the seat is what the residual is, the six shapes were re-measured with the seat as the read-out.
+- probe: sandbox --disable all on body_k1..k6 (tmp/grind/func_8003DE14/s6/), plus ra_solver find_reg traces on k1.
+- result: None of the six seats src at $a3. k1 and k5 reach the classic swap (src $a2 / dst $a3), k6 stays where h1 is (src $a1 / dst $a2), k2/k3/k4 are worse. Blend naming alone moves the pair by one register, not two.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, h1 chassis (42 / 173 insns), forms tmp/grind/func_8003DE14/s6/body_k1.c .. body_k6.c, no FAKE constructs
+
+## [s6] The target's seat (src $a3 / dst $a2) is reachable in ordinary C, and on the k1 chassis its price is exactly the 173rd instruction.
+- mechanism: Adding one dst-modifying instruction inside the depth-3 inner loop adds 2 RTL references x depth 3 = +6 weighted refs, taking dst from 26 to 32. That crosses the floor_log2 step in allocno_compare (global.c:643): floor_log2(26)=4 gives dst 17931 while floor_log2(32)=5 gives 27118, which overtakes src. The instruction it costs is jump2's cross-jump of the arm's now-identical tail.
+- probe: k8 = k1 with the last-frame zero-pixel arm respelled `*dst++ = pixel; src++; goto loop_check;`. Measured with sandbox --disable all and re-extracted with tools/ra_solver.
+- result: k8 = 31 / 172. simulate --trace on tmp/grind/func_8003DE14/s6/k8.model.json: `109 pri 27118 -> $a2`, `108 pri 26666 -> $a3` - the target's seat, dispositions matching the dump. Banked as memory/grind/func_8003DE14/chassis_k8_target_seat_172insn_31.c. The seat and the 173rd instruction have been mutually exclusive on every dose measured so far (s3 d2/d3/d5/d6, s6 k8).
+- verdict: CONFIRMED
+
+## [s6] A hard-register preference held by another allocno can deflect src off $a2 in find_reg's pass 0 (the regs_someone_prefers exclusion), which would seat src at $a3 without any reference-count change.
+- mechanism: find_reg's pass 0 excludes regs_someone_prefers[allocno]; prune_preferences builds that set as the union of hard_reg_full_preferences over the LOWER-priority allocnos that conflict with this one. regs_used_so_far cannot be the discriminator because global.c:367 seeds it with every call_used_reg before any allocation. So the only pass-0 route to $a3 for src is some conflicting allocno preferring $a2.
+- probe: Read find_reg (global.c:952) and prune_preferences; then ran tools/ra_solver/inverse.py global on the k1 model with --goal '{"108": 7, "109": 6}'.
+- result: inverse.py reports the whole preference axis dead in so many words: 'FORECLOSED - 50 preference atom(s) NOT emitted (mechanically unreachable from C): $a2 never appears as a hard reg in this function's pre-RA RTL, so global.c set_preference can never record a preference for it.' $a2 is argument register 3; this function's four callees (DrawSync, StoreImage, LoadImage, func_80052BE4) take at most two arguments and no call lies inside either cursor's live range, so no C spelling of this function's body can put $a2 into the pre-RA RTL as a hard reg. inverse.py's minimal solution on k1 is 1 atom, 8 vectors, every one of them refs_down 108: 32->26 or refs_up 109: 26->32 - no conflict, live-length, birth-order or preference atom exists at size 1.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), model tmp/grind/func_8003DE14/s6/k1.model.json, no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/global.c:1000
+
+## [s6] Declaration/birth order in the outer-loop block moves the src/dst seat on the k1 chassis, which is the first chassis in this grind that actually shows the classic swap.
+- mechanism: s5 swept all 120 orderings of `total / src / dst / factor / j` on the h1 chassis, but h1's seat is not the swap (H-s6-3), so that sweep never tested the swap. Birth order changes which short-lived temps are live across each cursor's birth and therefore which hard-reg conflicts each cursor carries into find_reg.
+- probe: Generated the 24 src-first permutations of the five declarations off the k1 body (tmp/grind/func_8003DE14/s6/mkdecl.py) and scored every one with sandbox --disable all (tmp/grind/func_8003DE14/s6/declperm_results.json).
+- result: Every one of the 24 scores 43 - identical to k1 itself, and to each other. Both cursors are born one instruction apart and die at the same inner-loop exit, so no reordering of this block produces a temp that conflicts with src but not with dst.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), 24 bodies tmp/grind/func_8003DE14/s6/body_m_*.c, no FAKE constructs
