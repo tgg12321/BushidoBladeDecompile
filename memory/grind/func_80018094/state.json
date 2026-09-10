@@ -77,7 +77,8 @@
   }
  ],
  "judge_constraints": [
-  "The LZC island's operand list must stay exactly the granted form (`: \"=m\"(sp_tmp[0]) : \"r\"(sum_sq) : \"$2\", \"$12\"`); no extra output, tied/matching (\"0\"/\"1\"), or clobber operand may be added to any __asm__ in this function to make the compiler materialise a copy. The pre-island `move $a0,$a1` must come from ordinary C or the function stays INCOMPLETE."
+  "The LZC island's operand list must stay exactly the granted form (`: \"=m\"(sp_tmp[0]) : \"r\"(sum_sq) : \"$2\", \"$12\"`); no extra output, tied/matching (\"0\"/\"1\"), or clobber operand may be added to any __asm__ in this function to make the compiler materialise a copy. The pre-island `move $a0,$a1` must come from ordinary C or the function stays INCOMPLETE.",
+  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 3 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
  ],
  "banned_constructs": [],
  "kills": [
