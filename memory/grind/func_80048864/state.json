@@ -1,0 +1,24 @@
+{
+ "func": "func_80048864",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T08:21:11.362748+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "19362343b6ca2021",
+   "when": "2026-09-10T08:30:21.300512+00:00",
+   "summary": "final call: Body is ordinary C throughout: a 2-case switch on mode, per-arm source-pointer increments (*dst++ = *src++ / src++), and reassignment of live r/g/b locals for the luma path. No inline asm, no volatile"
+  }
+ ]
+}
