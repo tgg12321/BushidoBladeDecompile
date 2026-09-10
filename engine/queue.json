@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8006BB68",
-      "file": "text1b",
-      "distance": 112,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_spu_FwriteByIO",
       "file": "main",
       "distance": 115,
@@ -1338,14 +1330,14 @@
     }
   ],
   "counts": {
-    "total": 147,
-    "active": 140,
+    "total": 146,
+    "active": 139,
     "by_status": {
-      "active": 140,
+      "active": 139,
       "rotated": 7
     },
     "by_verdict": {
-      "C": 118,
+      "C": 117,
       "ASM-PARTIAL": 22
     }
   },
