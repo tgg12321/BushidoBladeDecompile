@@ -927,3 +927,67 @@ E-s6-5  **DESCRIPTOR-SIZE CENSUS WIDENED FROM 0x2C..0x2F TO 0x2C..0x37, ALL 36 C
 - [s6] The 0x34-descriptor body measures sandbox 0 AND verify-oracle build_matches true (SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa) on the current chassis, and it is NOT stripped by the sandbox, so it needs no engine/volatile_cheats.py row and no operator step.
 - [s6] Binary-wide interior-gap census: 272 functions carry an interior untouched run, 153 with this function's exact shape, 7 implemented in C - and all 7 are untouched TAILS of address-materialized objects. No accepted-C instance of a never-addressed interior reservation exists in this project; 22 INCLUDE_ASM functions share the shape.
 - [s6] Widened descriptor census (0x2C..0x37 over all 36 callers): func_8006BB68 (COMPLETED-C, byte-matching) has its next stack object at descriptor+0x30, so the shared type is 0x2C; the family's two post-descriptor objects are RECTs - func_8006A880 passes +0x30 to SetDrawArea and +0x38 to SetDrawOffset, func_800720FC passes +0x38 to SetDrawArea and +0x30 to func_80069898. func_8006DD94's target uses only the second of the two.
+
+## S6 — SYNTHESIS (2026-09-10): the Judge-cleared body is applied and bytes are proven on main
+
+The s5 `ruling-request` was answered PASS at 2026-09-10 08:40 (docs/grind/decisions.md:26632).
+That ruling is the whole content of this session: it identified the family that all five
+previous sessions and three prior FAIL rulings had missed, and it explicitly authorised the
+already-written body. There was nothing left to search, so s6 spent its budget applying the
+cleared body, re-measuring it on the CURRENT chassis, and proving bytes on main.
+
+WHAT WAS APPLIED. `memory/grind/func_8006DD94/pending-ruling-oversized-descriptor-0x34-oracle-match.c`
+verbatim (body hash b00f9e03c891cf0e, the hash the Judge cleared), spliced into
+src/text1b.c in place of `INCLUDE_ASM("asm/funcs", func_8006DD94);` at line 5948. It is now
+also `memory/grind/func_8006DD94/candidate.c` with a fresh, non-stale STATUS header (the
+consistency-warning about candidate.c asserting HEAD state under an INCLUDE_ASM
+representation is resolved: the header now states the measured facts and the clearance).
+
+MEASUREMENTS THIS SESSION, current chassis, no other tree edits:
+  - `sandbox func_8006DD94 --disable all` -> score 0, target_insns 117, build_insns 117,
+    scorable true, rules_dropped 0, cheat_asm_stripped 153 (that count is the file's other
+    INCLUDE_ASM bodies, not this function).
+  - `verify-oracle` -> ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+    expected, build_matches true. The full 606,208-byte executable is byte-identical to the
+    original with this body in place.
+This is the FIRST time this function has read honest 0: the previous score-0 forms were all
+sandbox-stripped (their reserved bytes came from an untouched object, so the scored .o lost
+the declaration while the linked build kept it, leaving the honest floor at 21). This form's
+descriptor is LIVE and partially written, so nothing is stripped and the 0 is real. No
+engine/volatile_cheats.py allowlist row is needed or added — the Judge REFUSED the
+two-separate-RECT alternative for exactly that reason.
+
+WHY THE FAMILY IS THE OVERSIZED-LOCALS CARVE-OUT AND NOT THE PAD FAMILY. The residual was
+never a pad question. The target's locals region is 0x40 bytes (frame 0x78 minus
+ALIGN8(28)=0x20 of callee-saves minus the 0x18 outgoing-args area) while only 52 bytes are
+touched — 0x2C descriptor at sp+0x18..0x43 plus the 8-byte rect at sp+0x50..0x57, with
+sp+0x44..0x4F never read, written or addressed. Sessions s1-s5 read that 12-byte hole as
+something to RESERVE with a new object, which is the phantom-frame-slot volatile-pad family;
+that family requires first-decl array position, and first-decl position is measured wrong
+here (rejected/first-decl-volatile-pad-displaces-descriptor-to-0x20-score45.c). The correct
+reading is that the ORIGINAL DECLARED the descriptor larger than it writes: the hole is the
+descriptor's own unwritten tail, not a separate object. That is prong 2 of the OVERSIZED-
+LOCALS carve-out (.claude/rules/dead-vars-local-array.md, owner ruling 2026-07-13, granted at
+docs/grind/decisions.md:443), whose live-object branch is exactly "extend the live object
+rather than add a dead pad", and whose in-tree exemplar sits in this very repo at
+src/text1a_post.c:387-400 (func_80041BF4's `s16 rect[8]`, accepted on main).
+
+THE SIZE IS A RANGE, AND THE ANNOTATION SAYS SO. 0x34 (pad2C, pad30) and 0x38 (pad2C, pad30,
+pad34) are byte-identical because the rect's slot is 8-aligned (stmt.c:3419 clamps a BLKmode
+automatic to BIGGEST_ALIGNMENT); 0x30 (pad2C alone) puts the rect back at sp+0x48 and scores
+21. 0x34 is submitted as the smallest member of the range. Extending the OTHER live object
+instead — `u16 rect[8]`, the func_80041BF4 exemplar's literal shape — reaches the target
+frame but leaves the rect base at sp+0x48 and scores 5
+(rejected/extend-live-rect-tail-rect8-frame-ok-base-still-0x48-score5.c).
+
+PROCESS LESSON WORTH CARRYING. Three FAIL rulings (layer-1 05:42, Judge 05:59, Judge 07:42)
+and a rotation instruction all adjudicated the WRONG family, because every submission framed
+the residual as "reserve these 12 bytes" and the reviewers answered the question as framed.
+The 08:40 ruling names this as the concrete omission that unbound the 07:42 constraint. The
+general form: when a residual is pure frame SIZE, ask first whether an existing LIVE object
+was declared bigger than it writes, before reaching for any construct that adds a new object.
+Sibling func_8006F97C carries the same 0x2C-descriptor-plus-hole layout and its inherited
+notes (memory/grind/func_8006F97C/evidence.md, "INHERITED FROM func_8006DD94") were written
+under the old, wrong framing — its next session should re-read them against this entry: the
+shared frame residual is now SOLVED, not open, and the same 0x34 descriptor should be tried
+there directly.

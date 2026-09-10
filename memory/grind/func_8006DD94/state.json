@@ -176,6 +176,13 @@
    "hash": "b00f9e03c891cf0e",
    "when": "2026-09-10T13:40:50.097543+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-10 08:40 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "b00f9e03c891cf0e",
+   "when": "2026-09-10T13:47:17.398161+00:00",
+   "summary": "final call: FINAL CALL, body b00f9e03c891cf0e - the exact body I cleared at 2026-09-10 08:40 (decisions.md:26632/26634); src/text1b.c body is comment-normalized identical to memory/grind/func_8006DD94/candidate.c"
   }
  ],
  "object_model_audited": 1,

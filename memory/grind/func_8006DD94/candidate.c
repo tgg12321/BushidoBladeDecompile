@@ -1,120 +1,18 @@
-/* s6 UPDATE (synthesis, 2026-09-10; dispatched as "session 5"): body UNCHANGED - this is still
- * the layer-1-clean, FAKE-free 0x2C-descriptor chassis, re-measured `sandbox func_8006DD94
- * --disable all` = 21 (117/117, rules_dropped 0).  MIGRATION STATUS: HEAD/main carries
- * `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948; this file is the in-progress
- * candidate only, spliced and reverted again this session.
- * BUT THIS IS NO LONGER THE BEST FORM ON FILE.  s6 found the frozen family that the 2026-09-10
- * 07:42 Judge ruling did not enumerate - the OVERSIZED-LOCALS carve-out of
- * .claude/rules/dead-vars-local-array.md:39-95 (owner ruling 2026-07-13), in live use on main at
- * src/text1a_post.c:387-400 (func_80041BF4, `s16 rect[8]`) - and measured that all five of its
- * prerequisites hold here when the LIVE descriptor is the extended object:
- *   prong 1  target frame 0x78 - 0x20 saves - 0x18 args = 0x40 = 64-byte locals region vs this
- *            body's vars= 56 (the fully-written form yields frame 0x70 != 0x78);
- *   prong 2  extending the descriptor moves the rect to sp+0x50 (target); extending the other
- *            live object instead (u16 rect[8]) reaches the frame but keeps the rect at sp+0x48,
- *            score 5;
- *   prong 3  range measured: descriptor 0x34 -> sandbox 0, 0x38 -> sandbox 0 (byte-identical),
- *            0x30 -> sandbox 21;
- *   prong 4  this ledger (1,080 spellings, 56k permuter iterations, 4 class kills);
- *   prong 5  the Judge.
- * The 0x34 form measures sandbox 0 AND verify-oracle build_matches true (SHA1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa) on this chassis, and the sandbox does NOT strip it,
- * so it needs no engine allowlist row.  It is held, FAKE-annotated, at
- * memory/grind/func_8006DD94/pending-ruling-oversized-descriptor-0x34-oracle-match.c and was NOT
- * submitted: the trailing-member spelling is on this function's BANNED list, so s6 returned
- * `ruling-request` naming the grant that supersedes the ban.  Do not re-run spelling search.
- */
-/* s5 UPDATE (enumerate, 2026-09-10; dispatched as "session 4"): body UNCHANGED - this is still
- * the layer-1-clean, FAKE-free 0x2C-descriptor chassis and it is still the best honest form.
- * MIGRATION STATUS: HEAD/main carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` at
- * src/text1b.c:5948; this file is the in-progress candidate only, spliced and reverted again
- * this session.  Re-measured s5: `sandbox func_8006DD94 --disable all` = 21 (117/117,
- * rules_dropped 0).
- * s5 spent the enumerate modality in full and banked three results:
- *   (1) 973 spellings of the render loop's linear tail (fully-named form, inline axis x
- *       def-before-use ordering axis) - best 25, ZERO at the floor.  The best of them is this
- *       body with the loop temp at BLOCK scope instead of function-top scope, which costs 4
- *       (rejected/enum-loop-tail-best-blockscope-hv-score25.c).
- *   (2) 42 declaration orders (every placement of the two stack-homed objects among the seven
- *       top-level declarations) - perfectly bimodal, {21: 21, 42: 21}: descriptor-first is 21,
- *       rect-first is 42, and the five scalar declarations change nothing in any position
- *       (stmt.c:3357-3364 - a register-eligible automatic has no frame footprint).  The target
- *       needs a THIRD stack-homed object between the two, which is the Judge-FAILed question.
- *   (3) the last live frontier item is empty: a BLKmode keep-temp is the only slot mechanism
- *       ordered BEFORE a later expand_decl, and every callee here returns a scalar or void, so
- *       no honest struct-valued expression exists to create one.
- * Do NOT re-run spelling search on this chassis: 1,080 spellings are now measured across three
- * exhaustive sweeps and none is below 21.
- */
-/* s4-RERUN UPDATE (enumerate, 2026-09-10): body UNCHANGED.  The previous s4 outcome was
- * DISCARDED by the driver for an invalid predicate_cite path; its findings were re-measured
- * and re-banked here.  MIGRATION STATUS: HEAD/main still carries
- * `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948 - this file is the
- * in-progress candidate only, spliced and reverted again this session.
- * Re-measured this session: sandbox func_8006DD94 --disable all = 21 (117/117, rules_dropped 0).
- * NEW this session: (a) the frozen pad family's FIRST-DECLARATION requirement is measured
- * incompatible with the target layout - `volatile u32 pad[2];` declared first gives the exact
- * target frame size but moves the descriptor from sp+0x18 to sp+0x20, sandbox 45
- * (rejected/first-decl-volatile-pad-displaces-descriptor-to-0x20-score45.c); only an INTERIOR
- * reservation reproduces sp+0x18 descriptor / sp+0x50 rect.  (b) the mandated systematic
- * spelling sweep of the rect block (65 spellings, swap axis included) has best 21, one at the
- * floor - the residual is not in that block's spelling space.
- */
-/* s4 UPDATE (enumerate, 2026-09-10): this file is UNCHANGED as the layer-1-clean chassis
- * (sandbox 21, vars= 56, rect at sp+0x48, 112 body insns).  MIGRATION STATUS: HEAD/main
- * still carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948 - this
- * file is the in-progress candidate only and was spliced/reverted again this session.
- * s4 measured the residual to be exactly `vars= 56` vs the target's `vars= 64`, enumerated
- * 41 spellings for a construct that closes that 8-byte gap without adding an instruction,
- * and found that all six hits reserve the bytes with an object no instruction touches.
- * The byte-proven form is rejected/two-separate-rect-arrays-oracle-match-sandbox-21.c
- * (verify-oracle build_matches true, re-verified s4); it is held there pending a Judge
- * ruling on its construct class, which s4 requested.  A byte-neutral variant of THIS
- * chassis with the rect in a trailing nested block is tmp/grind/func_8006DD94/s4/b1_nested.c
- * - use it if a future probe needs a stack temp to be allocated below the rect.
- */
-/* MIGRATION BANNER (s3, 2026-09-10): HEAD/main does NOT carry this body.  src/text1b.c:5948
- * carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` per [[asm-until-matched]]; this file is
- * the in-progress candidate only.  Re-measured s3 by splicing it in with
- * tmp/grind/func_8006DD94/s2/splice.py: sandbox func_8006DD94 --disable all = 21 (117/117,
- * rules_dropped 0).  src/ was reverted to HEAD afterwards.  s3 closed the last two mechanisms
- * that could have produced the sp+0x44..0x4F bytes without declaring an object there:
- * register-pressure spill homes (they land ABOVE the rect - FRAME_GROWS_DOWNWARD is undefined
- * on MIPS, mips.h:1645, so function.c:724 hands out increasing offsets in allocation order and
- * the rect's expand_decl slot always precedes any reload slot) and alignment (BIGGEST_ALIGNMENT
- * is 64 bits, mips.h:1082, and stmt.c:3419 clamps every BLKmode automatic to it, so sp+0x48 is
- * the first legal slot after a descriptor ending at sp+0x44).
- */
-/* func_8006DD94 - HONEST BEST FORM, sandbox 21, re-measured this session (s2, permuter).
- *
- * WHY THIS REPLACED THE PREVIOUS candidate.c (2026-09-10, session s2/permuter):
- * the previous candidate.c carried `u16 rects[2][4]` with row 0 never written and never
- * read.  That body was layer-1 FAILed (2026-09-10 06:36) and is now on this function's
- * BANNED CONSTRUCTS list, so it must never be used as a starting chassis again.  This file
- * is the layer-1-clean 0x2C-descriptor body (previously banked as
- * rejected/separate-rect-0x2C-score21.c): no pad, no dead local, no volatile, no FAKE
- * construct, no sanctioned-family claim.  It measures `sandbox func_8006DD94 --disable all`
- * = 21 (117/117, rules_dropped 0) and it is the chassis every future probe should start from.
- *
- * THE ENTIRE RESIDUAL IS ONE STACK SLOT.  The permuter workspace built this session
- * (tmp/grind/func_8006DD94/s2/mkws.sh -> tmp/perm_6dd94) shows base and target are both 117
- * instructions and differ ONLY in the frame: `addiu sp,sp,-112` vs `-120`, the seven register
- * saves, `addiu a1,sp,72` vs `80`, and the four rect `sh` at 72/74/76/78 vs 80/82/84/86.
- * The 0x2C descriptor fills sp+0x18..0x43; with nothing between it and the rect, the rect
- * (BLKmode, BIGGEST_ALIGNMENT) lands at sp+0x48 and cc1 prints `vars= 56`.  ONE additional
- * stack-homed local of ANY size declared before the rect moves it to sp+0x50 and prints
- * `vars= 64` - the target's frame.
- *
- * WHAT IS MEASURED DEAD (do not re-derive - full detail in hypotheses.md):
- *   - a wider shared descriptor type: killed three times; func_8006BB68 byte-matches on main
- *     with the 0x2C shape and zero hole, and so does func_800720FC.
- *   - a sibling that writes into its hole: none exists.  spmap.py mapped every $sp reference
- *     of all seven family members; func_80069F80 and func_8006A1A0 reserve 20 bytes above the
- *     descriptor and touch nothing above it at all - they have no rectangle whatsoever.
- *   - the phantom-frame-slot / HImode trigger, including the in-tree witness's verbatim
- *     spelling: seven probes, all `vars= 56`.
- *   - the permuter: 24k iterations on this chassis; every score-0 attractor it reaches is a
- *     `volatile` unused pad local in the interior position the Judge refused.
+/* CANDIDATE - func_8006DD94 (s6 synthesis, 2026-09-10).
+ * STATUS: bytes proven on main THIS session with this exact body spliced into
+ * src/text1b.c in place of INCLUDE_ASM("asm/funcs", func_8006DD94):
+ *   sandbox func_8006DD94 --disable all -> score 0 (117/117, rules_dropped 0)
+ *   verify-oracle -> ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+ *                    build_matches true
+ * CLEARED BY THE JUDGE: PASS ruling 2026-09-10 08:40 (docs/grind/decisions.md,
+ * body hash b00f9e03c891cf0e) explicitly states "The body in
+ * pending-ruling-oversized-descriptor-0x34-oracle-match.c, which I have read, MAY be
+ * submitted as candidate-ready", grants the OVERSIZED-LOCALS carve-out of
+ * .claude/rules/dead-vars-local-array.md (owner ruling 2026-07-13) as the governing
+ * family, and NARROWS ban entry 1 (the trailing-member spelling of the oversized
+ * descriptor).  The rects[2][4] bans remain in force and this body does not use them.
+ * Submitted VERBATIM - do not respell; the driver keys review verdicts by body.
+ * Self-vet: memory/grind/func_8006DD94/self_vet.md.
  */
 /* BEGIN func_8006DD94 */
 typedef struct EnvB {
@@ -131,10 +29,43 @@ typedef struct EnvB {
     u8   col_r;
     u8   col_g;
     u8   col_b;
+    s32  pad2C, pad30;
 } EnvB;
 extern s32 D_800A374C;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_8006DD94(s32 *arg0) {
+    /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
+       passed to func_8007352C every iteration; pad2C/pad30 are its unwritten tail.
+       mechanism: mips.c compute_frame_size / get_frame_size -
+       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  Frame-math proof from
+       the TARGET BYTES ALONE: target frame is 0x78 with seven callee-saves
+       ($s0-$s5,$ra at sp+0x58..0x70 => ALIGN8(28) = 0x20) and a 0x18 outgoing-args
+       area (the 5-arg func_8006D808 call stores at sp+0x10), so the locals region is
+       0x78 - 0x20 - 0x18 = 0x40 = 64 bytes, while the only stores into it are the
+       0x2C-byte descriptor at sp+0x18..0x43 and the 8-byte rect at sp+0x50..0x57
+       (52 bytes; sp+0x44..0x4F is never read, written or addressed anywhere in
+       asm/funcs/func_8006DD94.s).  The fully-written form (EnvB = 0x2C + u16 rect[4])
+       measures vars= 56 => ALIGN8(56)+0x18+0x20 = 0x70 != 0x78, so no fully-written
+       locals set can produce the target frame.
+       n.b.! the rect's slot is 8-aligned (stmt.c:3419 clamps a BLKmode automatic to
+       BIGGEST_ALIGNMENT = 64 bits, mips.h:1082), so the declared descriptor size is
+       recoverable only as a RANGE: 0x34 (pad2C, pad30) and 0x38 (pad2C, pad30, pad34)
+       are byte-identical (both sandbox 0, s5 probes B_desc34/C_desc38); 0x30 (pad2C
+       alone) puts the rect back at sp+0x48 and scores 21 (probe E_desc30).  0x34 is
+       chosen as the smallest member of the range.
+       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
+       (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object -
+       `s`'s address is passed to func_8007352C - rather than adding a dead pad, and
+       extending the OTHER live object instead (u16 rect[8], the func_80041BF4
+       exemplar's exact shape) is measured wrong here: it reaches the target frame but
+       leaves the rect base at sp+0x48 and scores 5 (probe D_rect8).
+       In-tree precedent for this carve-out: src/text1a_post.c:387-400 (func_80041BF4,
+       `s16 rect[8]`, accepted on main).
+       Lever-exhaustion: memory/grind/func_8006DD94/hypotheses.md - 5 sessions,
+       1,080 enumerated spellings (973 loop-tail + 65 rect-block + 42 declaration
+       orders), 56k permuter iterations over 2 campaigns, 4 class kills (spill homes
+       cannot land below the rect, function.c:724; alignment capped, stmt.c:3419;
+       no BLKmode keep-temp carrier; declaration-order space has exactly 2 points). */
     EnvB s;
     u16 rect[4];
     s16 i;

@@ -1040,3 +1040,33 @@ the outcome is an integration handoff (bytes proven; blocked only on the engine 
 the ruling refuses both, the remaining lead is sibling-first: func_800720FC (active, floor 688) and
 func_8006A880 USE the slot live, so decompiling either names the object honestly and supplies a
 live-use basis for func_8006DD94 and func_8006F97C.
+
+## S6 (synthesis, 2026-09-10) — FRONTIER CLOSED: cleared body applied, honest 0, oracle match
+
+H-S6-1 CONFIRMED. The 0x34-descriptor body cleared by the Judge's 2026-09-10 08:40 PASS
+ruling still measures honest 0 on the CURRENT chassis and still produces an oracle-identical
+executable, with no engine allowlist row and nothing stripped by the sandbox.
+  probe: splice pending-ruling-oversized-descriptor-0x34-oracle-match.c verbatim into
+    src/text1b.c at the INCLUDE_ASM site (line 5948); `sandbox --disable all`; `verify-oracle`.
+  result: sandbox score 0 (117/117, scorable true, rules_dropped 0); verify-oracle ok true,
+    build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+  This supersedes the s1-s5 floor of 21 in full. The 21 was an artifact of the earlier forms'
+  reserved bytes living in an UNTOUCHED object, which engine/volatile_cheats.py strips out of
+  the scored .o; this form's bytes live in the LIVE descriptor's declared tail, so the scored
+  object and the linked object agree.
+
+FRONTIER AFTER S6: empty for this function. The remaining ledger items are inheritance for
+others, restated here so they are not lost when this ledger closes:
+  1. func_8006F97C shares this exact frame layout (same 0x2C-written descriptor at
+     sp+0x18..0x43, same untouched 0x44..0x4F, same func_80069898 rect at sp+0x50, plus one
+     extra u16 at sp+0x58). Its inherited section was written under the pre-08:40 framing and
+     should be re-read against s6's evidence entry: try the 0x34-declared descriptor there
+     directly instead of repeating the pad search. Its floor is 513, so most of its work is
+     ordinary decompilation unrelated to the frame.
+  2. Project-level metric note (unchanged, still true and still worth acting on): a function
+     whose residual is pure frame size can report a FALSE non-zero honest floor, because the
+     sandbox's unwritten-object stripper removes from the SCORED object a declaration the
+     linked build keeps. This function sat at a reported 21 for five sessions for that reason.
+     Anyone auditing a pure-frame-size residual should cross-check with verify-oracle before
+     calling the axis dead — and, per s6, should first ask whether a LIVE object was declared
+     oversized, which reads honest 0 and needs no allowlist at all.
