@@ -1,3 +1,25 @@
+/* s5 UPDATE (enumerate, 2026-09-10; dispatched as "session 4"): body UNCHANGED - this is still
+ * the layer-1-clean, FAKE-free 0x2C-descriptor chassis and it is still the best honest form.
+ * MIGRATION STATUS: HEAD/main carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` at
+ * src/text1b.c:5948; this file is the in-progress candidate only, spliced and reverted again
+ * this session.  Re-measured s5: `sandbox func_8006DD94 --disable all` = 21 (117/117,
+ * rules_dropped 0).
+ * s5 spent the enumerate modality in full and banked three results:
+ *   (1) 973 spellings of the render loop's linear tail (fully-named form, inline axis x
+ *       def-before-use ordering axis) - best 25, ZERO at the floor.  The best of them is this
+ *       body with the loop temp at BLOCK scope instead of function-top scope, which costs 4
+ *       (rejected/enum-loop-tail-best-blockscope-hv-score25.c).
+ *   (2) 42 declaration orders (every placement of the two stack-homed objects among the seven
+ *       top-level declarations) - perfectly bimodal, {21: 21, 42: 21}: descriptor-first is 21,
+ *       rect-first is 42, and the five scalar declarations change nothing in any position
+ *       (stmt.c:3357-3364 - a register-eligible automatic has no frame footprint).  The target
+ *       needs a THIRD stack-homed object between the two, which is the Judge-FAILed question.
+ *   (3) the last live frontier item is empty: a BLKmode keep-temp is the only slot mechanism
+ *       ordered BEFORE a later expand_decl, and every callee here returns a scalar or void, so
+ *       no honest struct-valued expression exists to create one.
+ * Do NOT re-run spelling search on this chassis: 1,080 spellings are now measured across three
+ * exhaustive sweeps and none is below 21.
+ */
 /* s4-RERUN UPDATE (enumerate, 2026-09-10): body UNCHANGED.  The previous s4 outcome was
  * DISCARDED by the driver for an invalid predicate_cite path; its findings were re-measured
  * and re-banked here.  MIGRATION STATUS: HEAD/main still carries

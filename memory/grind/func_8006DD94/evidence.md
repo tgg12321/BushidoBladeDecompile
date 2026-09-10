@@ -713,3 +713,111 @@ mandate required — the form carries no FAKE construct, so there was nothing to
 - **E-s4r-5.** Citation correction for the whole ledger: the frame-offset predicate is
   `tools/gcc-2.7.2/function.c:724`, NOT `tools/gcc-2.7.2/gcc/function.c:724`. The bad path cost
   the previous session its entire outcome.
+
+## s5 (enumerate, 2026-09-10; dispatched as "session 4") - chassis re-measured 21
+
+E-s5-0  CHASSIS. HEAD carries `INCLUDE_ASM("asm/funcs", func_8006DD94);` at src/text1b.c:5948
+  (the dispatch brief could not measure a floor; this session did). candidate.c spliced in with
+  tmp/grind/func_8006DD94/s2/splice.py measures `sandbox func_8006DD94 --disable all` = **21**
+  (target_insns 117, build_insns 117, rules_dropped 0, cheat_asm_stripped 153). Unchanged from
+  s3/s4-rerun, so every banked chassis-relative conclusion in this ledger is still valid as
+  recorded. src/text1b.c is restored to HEAD at the end of this session.
+
+E-s5-1  THE LAST LIVE FRONTIER ITEM IS EMPTY BY A ONE-READ CENSUS. s3's frontier item 1
+  proposed that the sp+0x44..0x4F object might be an `assign_stack_temp` created with keep=1
+  while expanding a BLKmode-VALUED expression (a struct returned by value from a call, a block
+  move whose source is a call result, or a structure passed by value) sitting between the
+  descriptor's declaration and the rect's - the one slot-producing mechanism whose allocation
+  order is still EARLIER than the rect's `expand_decl`. It requires a struct-valued expression
+  to exist truthfully in this body. Every callee this function makes is declared returning a
+  SCALAR: `extern s32 func_8007352C(s32);` (src/text1b.c:2828, 5429, 5626, 6411, 6810 and the
+  definition `s32 func_8007352C(EnvA *env)` at src/text1b.c:6761), `extern s32
+  func_8006E480(s32, s32);` (2829, 5428, 5625, 6412; definition `s32 func_8006E480(u8 *a0,
+  s32 a1)` at 6172), `extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);` (3142, 5964),
+  `void func_80069898(GameObj *, u16 *, s32)` (definition 5348), plus rsin / SetDrawMode /
+  AddPrim (libgpu, scalar / void). A repo-wide scan of src/text1b.c for a function declared
+  with a non-scalar return type returns nothing. So there is no honest BLKmode-valued
+  expression available anywhere in this function; producing one would mean inventing a
+  struct-valued expression with no observable effect, which fails cheat-checklist T1
+  (semantic purpose) before any measurement. The axis is empty, not unmeasured.
+
+E-s5-2  SIBLING TRANSPLANT (func_80069AE4, COMPLETED-C, its s2 2026-07-20, never before read by
+  this ledger). Its accepted body ships `typedef struct { s32 sp18, sp1C, sp20, sp24, sp28,
+  sp2C, sp30, sp34, sp38, sp3C; s8 sp40; } S_69AE4;` (src/text1b.c:5423-5426) and passes the
+  descriptor as `func_8007352C((s32)&s.sp18)` (src/text1b.c:5498), with sp24/sp38/sp3C never
+  written. s3 recorded this as in-file precedent for "unwritten INTERIOR members in already-
+  accepted C". Read properly this session, it is NOT precedent for func_8006DD94's hole, and
+  the distinction is the whole point: `sp18` is the FIRST member, so `&s.sp18 == &s`, and
+  S_69AE4 is 10*4+1 = 41 -> 44 = 0x2C bytes. S_69AE4 *is* the 0x2C descriptor type spelled with
+  offset names; its unwritten members are fields of an object func_8007352C itself reads, i.e.
+  ordinary unset fields of a live struct - exactly what candidate.c already ships as EnvB's
+  pad0C/pad20/pad24. func_8006DD94's 12 bytes at sp+0x44..0x4F lie OUTSIDE every object any
+  callee reads (the descriptor ends at 0x43, the rect starts at 0x50), so they are reserved
+  frame bytes, not unset fields. The transplant therefore yields nothing new: applying
+  func_80069AE4's spelling to this chassis reproduces candidate.c's existing descriptor and
+  leaves the floor at 21. The only way to stretch it to cover the hole is to grow the
+  descriptor type past 0x2C, which is the axis killed three times (E3: func_8006BB68
+  byte-matches on main with the 0x2C shape; 35-caller census finds no read or write at
+  descriptor-relative 0x2C..0x2F).
+
+E-s5-3  ENUMERATION 1 - THE LOOP-TAIL DESCRIPTOR-FILL BLOCK: 973 spellings, best 25, ZERO at or
+  below the floor. Region (between the ENUM-BEGIN and ENUM-END markers in
+  tmp/grind/func_8006DD94/s4c/enum_src.c) is the whole linear tail of the render loop written in
+  fully-named form - `hv = q[i+8]`, `hp = (s32 *)hv`, `tp = (s8 *)(hv+0xC)`, `outv = arg0[5]`,
+  `ot = arg0[7]`, `prim = D_800A374C+0x28` - with the three descriptor stores, the three calls
+  and the OT advance as anchors. `tools/spelling_enum.py --no-swaps` emitted 973 distinct
+  spellings over the inline axis (2^6 subsets of the named locals) x the declaration-order axis
+  (every def-before-use permutation); all 973 were scored with the sweep driver
+  (tmp/grind/func_8006DD94/s4c/sweep.json, ~28 min).
+  **ENUMERATION: 973 spellings, best 25, 0 at the floor.** Histogram
+  {25: 1, 28: 2, 30: 2, 33: 6, 42: 7, 44: 2, 45: 44, 47: 6, 48: 100, 50: 22, 51: 24, 53: 94,
+  57: 5, 59: 3, 60: 19, 62: 102, 63: 30, 65: 504}. Best form banked at
+  rejected/enum-loop-tail-best-blockscope-hv-score25.c (v970: `hv` kept named at BLOCK scope
+  inside the loop, everything else inlined - semantically identical to candidate.c, which
+  declares the same temp as `s32 hdr;` at FUNCTION-TOP scope and scores 21). The 4-point gap
+  between those two is the session's one positive spelling finding: for this body a
+  function-top declaration of the loop temp beats a block-scope one, and candidate.c already
+  has the better side of it.
+
+E-s5-4  ENUMERATION 2 - THE DECLARATION-ORDER AXIS, WHICH IS WHERE THE RESIDUAL ACTUALLY LIVES:
+  42 spellings, PERFECTLY BIMODAL, nothing below 21. Every placement of the two stack-homed
+  objects (`EnvB s;` and `u16 rect[4];`) among the seven top-level declarations, with the five
+  scalars holding their relative order (tmp/grind/func_8006DD94/s4c/declorder/d000..d041.c,
+  scores in tmp/grind/func_8006DD94/s4c/declorder.json):
+  **ENUMERATION: 42 spellings, best 21, 21 at the floor.** Histogram {21: 21, 42: 21} - exactly
+  two outcomes. Every ordering with the descriptor declared before the rect scores 21
+  (descriptor sp+0x18, rect sp+0x48); every ordering with the rect first scores 42 (rect
+  sp+0x18, descriptor sp+0x20). The five scalar declarations make NO difference in any position,
+  which is the direct measurement of tools/gcc-2.7.2/stmt.c:3357-3364: a non-BLKmode,
+  non-volatile, non-addressable automatic gets a pseudo and no frame footprint at all, so it
+  cannot separate two stack objects. With only two stack-homed objects in the function the
+  declaration-order space has exactly two points, and neither is the target's layout.
+
+E-s5-5  KILL RE-AUDIT (mandated: floor flat 3 sessions). The banked instance kill whose form sits
+  closest to the target is `u16 rect0[4]; u16 rect[4];`
+  (rejected/two-separate-rect-arrays-oracle-match-sandbox-21.c). Re-measured this session on the
+  current chassis, with no FAKE construct present anywhere in the form (there is none to ablate -
+  tools/fake_ablate.py has zero units on it): `sandbox func_8006DD94 --disable all` = **21**
+  (rules_dropped 0) and `verify-oracle` = ok true, **build_sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true**. The kill stands exactly as
+  recorded in s2: this form has ZERO differing bytes against the original executable and the
+  honest sandbox still prints 21, because engine/volatile_cheats.py strips the untouched array
+  out of the SCORED object file only. Nothing about the chassis has drifted.
+
+- [s4] Chassis re-measured this session (the dispatch brief could not measure one): HEAD carries INCLUDE_ASM("asm/funcs", func_8006DD94); at src/text1b.c:5948, and candidate.c spliced in gives sandbox func_8006DD94 --disable all = 21 (target_insns 117, build_insns 117, rules_dropped 0, cheat_asm_stripped 153). Unchanged from s3, so every chassis-relative conclusion in this ledger is still valid as recorded.
+
+- [s4] ENUMERATION 1 (loop-tail descriptor-fill block): 973 spellings, best 25, 0 at the floor. Histogram {25:1, 28:2, 30:2, 33:6, 42:7, 44:2, 45:44, 47:6, 48:100, 50:22, 51:24, 53:94, 57:5, 59:3, 60:19, 62:102, 63:30, 65:504}.
+
+- [s4] ENUMERATION 2 (declaration order): 42 spellings, best 21, 21 at the floor, histogram {21:21, 42:21} - exactly two frame layouts exist for this body, descriptor-first (21) and rect-first (42), and the five scalar declarations are inert in every position.
+
+- [s4] Positive spelling finding: declaring the loop temp at BLOCK scope inside the loop instead of at function-top scope costs 4 points (25 vs 21) with identical semantics - candidate.c already holds the better side.
+
+- [s4] Across s4-rerun and s5 the function's expression-spelling space is now swept three times over - 65 spellings of the rect block, 973 of the loop tail, 42 declaration orders, 1,080 in total - and not one spelling is below 21.
+
+- [s4] The last live frontier item (a BLKmode keep-temp allocated below the rect) is empty: every callee returns a scalar or void and src/text1b.c declares no non-scalar-returning function, so no honest struct-valued expression exists to create such a temp.
+
+- [s4] Kill re-audit re-confirmed the decisive fact on the current chassis: the u16 rect0[4] + u16 rect[4] body scores 21 in the sandbox AND builds SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa with build_matches true - zero differing bytes against the original executable.
+
+- [s4] The Judge's 2026-09-10 07:42 ruling on this function contains an explicit disposition instruction: rotate func_8006DD94 and transplant its kills into func_8006F97C's ledger before that function repeats the search. The transplant was performed this session (memory/grind/func_8006F97C/evidence.md, section 'INHERITED FROM func_8006DD94', 7 numbered findings with mechanism cites).
+
+- [s4] src/text1b.c was restored to HEAD before this session ended; git status shows no dirt under src/. No campaign, watcher or background job is left running.

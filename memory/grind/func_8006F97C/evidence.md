@@ -21,3 +21,68 @@
 - [s1] [fable-blitz 2026-07-07] gp-rel/global inventory: D_800A35A8(s32 ptr), D_800A3554(s16, read lh AND lhu at :521 -- the lhu is for the u8 narrowing store), D_800A35B0(s32), D_800A35BC(u32 -- sltiu unsigned compares), D_800A35C4(s32 ptr to s16[] with a word at +8), D_800A3564(u8), D_800A32E8/E9(u8, gp-rel sb), arrays D_800A3588/D_800A358C(s16), D_800A3560(u8 stride 3); rodata LUTs D_8009BC40/D_8009BC7C(u8). Most already extern'd for the template at src/text1b.c:16475-16481.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference: tmp/blitz/m2c_func_8006F97C.c (274 lines, clean, no jtbl). Control-flow notes: the two scans exit via break-on-found (j to the common resume label); the animated-cell scan's found-path RE-ENTERS the post-scan code via j .L8006FF54 (loop-with-break, then shared tail); grid-cell skip uses the two-level sltiu window test on D_800A35BC -- expect `if (v >= 2 && v < 4) draw-all else if (col==4 && (row&1)) skip` sense inversion; check switch-vs-ifchain-branch-sense if the beqz/bnez senses fight.
+
+## INHERITED FROM func_8006DD94 (written by func_8006DD94's s5/enumerate session, 2026-09-10)
+
+Filed here on the Judge's explicit instruction in the 2026-09-10 07:42 ruling on func_8006DD94
+("Rotate func_8006DD94 (and transplant these kills into func_8006F97C's ledger before it repeats
+the search)"). func_8006F97C has func_8006DD94's EXACT stack layout - the same 0x2C descriptor at
+sp+0x18..0x43, the same 12 untouched bytes at sp+0x44..0x4F, the same func_80069898 rect at
+sp+0x50 - plus one extra u16 local at sp+0x58 (mapped in
+tmp/grind/func_8006DD94/s2/spmap.txt, seven family members). Do NOT re-derive any of the below.
+
+1. THE RESIDUAL IS ONE 8-BYTE FRAME DISPLACEMENT, not an expression problem. On func_8006DD94
+   the honest body and the target are both 117 instructions and differ ONLY in `addiu sp,sp,-112`
+   vs `-120`, the seven register saves, `addiu a1,sp,72` vs `80`, and the four rect `sh` offsets.
+   Frame equation (mips.c compute_frame_size): ALIGN8(vars)+ALIGN8(args)+ALIGN8(gp_regs);
+   target 64+24+32 = 120, honest body 56+24+32 = 112.
+
+2. NO SPILL AND NO ALIGNMENT TRICK CAN FILL THE HOLE (class kill, predicate
+   tools/gcc-2.7.2/function.c:724). MIPS leaves FRAME_GROWS_DOWNWARD undefined
+   (tools/gcc-2.7.2/config/mips/mips.h:1645), so assign_stack_local runs `frame_offset += size`
+   in ALLOCATION order; the rect's slot comes from expand_decl (tools/gcc-2.7.2/stmt.c:3392)
+   during RTL expansion and every reload/global-alloc spill home is allocated afterwards, so a
+   spill can only ever land ABOVE the rect. Measured on func_8006DD94: register-pressure probes
+   p2_hoist6/p3_hoist10 do reach vars= 64 with a genuine sw/lw spill pair - and the rect never
+   moves off sp+0x48. Alignment is closed too: BIGGEST_ALIGNMENT is 64 bits (mips.h:1082) and
+   expand_decl clamps every BLKmode automatic to it (stmt.c:3419), so sp+0x48 is the first legal
+   slot after a descriptor ending at 0x44.
+
+3. THE DESCRIPTOR TYPE IS NOT LARGER THAN 0x2C. func_8006BB68 is COMPLETED-C and byte-matches on
+   main with `S69E18 s; u16 rect[4];` and its rect at sp+0x48 (src/text1b.c:5754-5806); a 0x34
+   descriptor would break it. A 35-caller census of func_8007352C found no caller anywhere that
+   reads or writes descriptor-relative 0x2C..0x2F.
+
+4. THE PHANTOM-FRAME-SLOT ROUTE DOES NOT EXIST HERE. The byte-verified witness
+   (src/code6cac_c2.c:1290-1296, `s16 v1 = ...; s16 mask = ...; if ((v1 & ~mask) & 1)`)
+   transplanted VERBATIM into func_8006DD94 reserves nothing (vars= 56), as do six further
+   truthful HImode spellings, a long long multiply, a long long divide and a soft-float double.
+   The witness's mechanism is register pressure, and this family already saves seven registers.
+
+5. THE BLKmode keep-temp ROUTE IS EMPTY. It is the only slot mechanism ordered BEFORE a later
+   expand_decl, but it needs a struct-valued expression; every callee in this family
+   (func_8007352C, func_8006E480, func_8006D808, func_80069898, rsin, SetDrawMode, AddPrim)
+   returns a scalar or void, and src/text1b.c declares no function with a non-scalar return type.
+
+6. WHAT IS LEFT IS A POLICY QUESTION, ALREADY ANSWERED FAIL FOR func_8006DD94. The source must
+   declare, between the descriptor and the rect, a stack-homed object (BLKmode, volatile or
+   address-taken per tools/gcc-2.7.2/stmt.c:3357-3364) that no surviving instruction touches.
+   Every spelling is either stripped by the sandbox - so the honest floor does NOT move even
+   though the linked binary matches the oracle SHA1 (measured on func_8006DD94:
+   `u16 rect0[4]; u16 rect[4];` gives sandbox 21 AND build_sha1
+   62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true) - or it is a construct the Judge
+   has FAILed: trailing struct pads (layer-1 FAIL 2026-09-10 05:42), the merged frame-block
+   struct (Judge FAIL 05:59), `u16 rects[2][4]` (layer-1 FAIL 06:36), the interior `volatile`
+   pad (Judge FAIL 05:59 and 07:42). The frozen phantom-frame-slot pad family requires
+   FIRST-DECL position (.claude/rules/no-new-park-categories.md:422-431) and first-decl position
+   is measured to give the WRONG layout here (it displaces the descriptor from sp+0x18 to
+   sp+0x20, sandbox 45).
+
+7. DO NOT SPEND SESSIONS ON SPELLING SEARCH. Two exhaustive enumerations on func_8006DD94's
+   chassis (the rect block, 65 spellings; the loop-tail descriptor-fill block, 973 spellings)
+   found nothing below the floor. The residual is invariant to statement spelling by
+   construction: frame offsets are handed out by DECLARATION order in assign_stack_local, not by
+   how the consuming statements are written.
+
+Full ledger: memory/grind/func_8006DD94/{evidence.md,hypotheses.md}; artifacts under
+tmp/grind/func_8006DD94/.

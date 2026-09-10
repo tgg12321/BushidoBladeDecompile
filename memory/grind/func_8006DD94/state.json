@@ -1,8 +1,8 @@
 {
  "func": "func_8006DD94",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 21,
    "modality": "structural",
    "headline": "Structural: the spill-home frontier is closed by measurement plus a mechanism cite - register pressure does reach the target's vars=64 but the spill lands ABOVE the rect at sp+0x50, and alignment cann"
+  },
+  {
+   "session": 4,
+   "floor": 21,
+   "modality": "enumerate",
+   "headline": "Enumerate modality spent: 1,015 new spellings swept (973 loop-tail + 42 declaration orders), nothing below 21; the declaration-order space is measured to have exactly two points and the last non-decla"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The object in sp+0x44..0x4F is not a DECLARATION at all but a keep-temp allocated by assign_stack_temp during RTL expansion of a statement sitting between the descriptor's declaration and the rect's declaration - the one slot-producing mechanism still ordered BEFORE the rect's expand_decl and therefore still able to land below it.",
-   "mechanism": "expand_decl and assign_stack_temp draw from the same monotonically increasing frame_offset (function.c:724), so ordering is everything: a reload spill (killed in s3) is always too late, but a temp created while expanding a statement that precedes the rect's declaration is early enough. s1's E5 probed four expression classes (HImode bitwise pair, long long multiply, long long divide, soft-float double) and none left a surviving temp, but it did not probe the class GCC 2.7.2 allocates with keep=1: BLKmode-valued expressions - a struct returned by value from a call, a block move whose source is a call result, or a structure passed by value.",
-   "next_probe": "Forensics or rederive modality. First establish whether any BLKmode-valued expression exists truthfully in this body at all - func_8007352C, func_8006E480, SetDrawMode, AddPrim, func_8006D808 and func_80069898 all return scalars, so the honest answer may be no, which empties the axis in a single read and reduces the search entirely to the declared-object question. If a candidate exists, measure it with tmp/grind/func_8006DD94/s3/fp3.py with the rect in a trailing nested block: a surviving temp shows up as vars= 64 with the rect moved to sp+0x50."
+   "hypothesis": "Nothing sanctioned is left to spell on this chassis: the declared-object question is Judge-FAILed, both non-declaration slot mechanisms (reload spill homes, BLKmode keep-temps) are closed with predicate cites, and 1,080 enumerated spellings sit at or above 21. The next dispatch should be escalation modality so the ladder-exhaustion record can be filed and the item rotated.",
+   "mechanism": "The source must declare, between the descriptor and the rect, a stack-homed object (BLKmode, volatile or address-taken per tools/gcc-2.7.2/stmt.c:3357-3364) that no surviving instruction touches. Every spelling of that is either stripped by the sandbox - leaving the honest floor at 21 even though the linked binary matches the oracle SHA1 - or is a construct already FAILed for this function: trailing struct pads (layer-1 2026-09-10 05:42), the merged frame-block struct (Judge 05:59), u16 rects[2][4] (layer-1 06:36), the interior volatile pad (Judge 05:59 and 07:42). The frozen phantom-frame-slot pad family requires FIRST-DECL position (.claude/rules/no-new-park-categories.md:422-431) and first-decl position is measured to give the wrong layout here (descriptor displaced to sp+0x20, sandbox 45).",
+   "next_probe": "Escalation modality: run the cc1psx self-disproof, then file the proof-of-foreclosure record in docs/grind/decisions.md titled '## <date> - func_8006DD94 - OWNER-ESCALATION - **LADDER EXHAUSTED (non-endgame residual, floor 21): ROTATED**' (floor is 21 > 5, so the 2026-07-27 standing ruling is NOT its subject and no endgame-lock claim may be made), citing the Judge's 07:42 rotation instruction, the two class kills banked here, and the oracle-match control."
   },
   {
-   "hypothesis": "The honest floor of 21 is not a byte distance and never was, so no further spelling work on this chassis can move the number the queue records - the remaining question about this function is a disposition question, not a codegen question.",
-   "mechanism": "E-s2-6 measured that the plainest ordinary-C spelling of the same object model ('u16 rect0[4]; u16 rect[4];' with rect0 declared and never touched) builds byte-identical to the oracle - verify-oracle returned build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true - while the sandbox reported 21, because engine/volatile_cheats.py strips the untouched array out of the SCORED object file only. s3 now shows there is no mechanism left that produces those frame bytes WITHOUT a declared object, so every remaining preimage runs into that stripper or into a family this function has already been refused (trailing struct pads, the merged frame-block struct, rects[2][4], the interior volatile pad).",
-   "next_probe": "Do not re-probe spellings. The next session should choose between (a) a precise ruling-request that leads with the two class kills banked here plus the oracle-match control - asking whether an untouched sibling declaration in this family's shared block is ordinary C for THIS function, rather than re-asking whether a pad is allowed - and (b) an escalation-modality proof-of-foreclosure record, which is the driver's call and not a session's. Note the floor is 21 (> 5), so the 2026-07-27 standing ruling is not its subject and no endgame-lock claim may be made."
+   "hypothesis": "Whatever eventually closes func_8006DD94 closes func_8006F97C at the same time; that ledger now carries the whole inheritance and should not repeat the search.",
+   "mechanism": "func_8006F97C has this function's exact layout - the same 0x2C descriptor at sp+0x18..0x43, the same untouched 12 bytes at 0x44..0x4F, the same func_80069898 rect at sp+0x50 - plus one extra u16 local at sp+0x58 (tmp/grind/func_8006DD94/s2/spmap.txt). It is active in the queue at floor 513 after one session.",
+   "next_probe": "func_8006F97C's next session should start from memory/grind/func_8006F97C/evidence.md section 'INHERITED FROM func_8006DD94' and spend its budget on the parts of its body that are NOT the shared frame residual (its floor is 513, so ~490 of its insns are ordinary decompilation work that has nothing to do with the hole). Its extra u16 at sp+0x58 is a second, independent constraint on the shared declaration block and may name the object that func_8006DD94's target alone cannot."
   },
   {
-   "hypothesis": "Whatever closes func_8006DD94 closes func_8006F97C at the same time, so the next session should not treat this as a single-function problem.",
-   "mechanism": "tmp/grind/func_8006DD94/s2/spmap.txt maps seven family members: func_8006F97C has func_8006DD94's exact layout - the same 0x2C descriptor at sp+0x18..0x43, the same untouched 12 bytes at 0x44..0x4F, the same func_80069898 rect at sp+0x50 - plus one extra u16 local at sp+0x58. It is active in the queue at floor 513 after one session and its ledger has never heard any of this.",
-   "next_probe": "When a form for the hole is ruled on, transplant it to func_8006F97C immediately and measure; conversely, if func_8006F97C's own grind finds a truthful object for its identical hole, that answer transplants back here unchanged. Its extra u16 at sp+0x58 is a second, independent constraint on the shared declaration block and may name the block where func_8006DD94's target alone cannot."
+   "hypothesis": "Project-level: any function whose residual is pure frame size can be reported with a FALSE non-zero honest floor, because the sandbox's unwritten-object stripper removes a declaration the linked build keeps.",
+   "mechanism": "engine/volatile_cheats.py strips an untouched local out of the SCORED object file while the executable is built from the unstripped TU - re-confirmed on the current chassis this session (sandbox 21 with build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true). This is the converse of [[unannotated-fake-inflates-honest-floor]] and it is what keeps this function's queue number at 21 rather than 0.",
+   "next_probe": "Not a func_8006DD94 probe - a note for whoever next audits the honest-floor metric: cross-check any pure-frame-size residual with verify-oracle before calling its axis dead."
   }
  ],
  "judge_constraints": [
@@ -115,6 +121,30 @@
    "measured_on": "tools/gcc-2.7.2 source at HEAD plus the s3 probe sweep on the honest 0x2C-descriptor chassis (sandbox 21 re-measured this session); no FAKE construct.",
    "predicate_cite": "tools/gcc-2.7.2/stmt.c:3419",
    "result": "KILLED. GCC 2.7.2 clamps every BLKmode automatic to exactly BIGGEST_ALIGNMENT on this target and no mode wider than DImo"
+  },
+  {
+   "session": 4,
+   "statement": "Enumerating the render loop's linear tail (descriptor fill, the three calls, the OT advance) in fully-named form over the inline axis and the def-before-use ordering axis produces 973 distinct spellin",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis (INCLUDE_ASM at src/text1b.c:5948) with the honest 0x2C-descriptor candidate.c body spliced in; no FAKE construct present in any of the 973 variants.",
+   "predicate_cite": "tools/gcc-2.7.2/function.c:724",
+   "result": "ENUMERATION: 973 spellings, best 25, 0 at the floor. Histogram {25:1, 28:2, 30:2, 33:6, 42:7, 44:2, 45:44, 47:6, 48:100,"
+  },
+  {
+   "session": 4,
+   "statement": "Enumerating every placement of the two stack-homed objects (the EnvB descriptor and the u16 rect[4]) among this function's seven top-level declarations yields exactly two distinct scores - 21 with the",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis with the honest 0x2C-descriptor candidate.c body; no FAKE construct present in any of the 42 variants.",
+   "predicate_cite": "tools/gcc-2.7.2/stmt.c:3357",
+   "result": "ENUMERATION: 42 spellings, best 21, 21 at the floor. Histogram {21: 21, 42: 21}, perfectly bimodal. Descriptor-first giv"
+  },
+  {
+   "session": 4,
+   "statement": "s3's last live frontier item - that the untouched sp+0x44..0x4F object is an assign_stack_temp created with keep=1 while expanding a BLKmode-valued expression - has no truthful carrier in this body: e",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (INCLUDE_ASM at src/text1b.c:5948) with the honest 0x2C-descriptor candidate.c body; no FAKE construct present.",
+   "predicate_cite": "",
+   "result": "No honest BLKmode-valued expression is available in this function, so the axis can only be exercised by inventing a stru"
   }
  ],
  "ladder_skip": 13,
