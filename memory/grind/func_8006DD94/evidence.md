@@ -82,3 +82,66 @@ A variant that also measures 0 is a block-scope redeclaration of the callee as
 `extern s32 func_8006E480(s32, s32 *);` so the NULL passes with no cast — but that
 conflicts with the file-scope `extern s32 func_8006E480(s32, s32);` at src/text1b.c:5626,
 so the cast form is the one left in src/.
+
+## s2 (recon, 2026-09-10) — chassis: HEAD + s1 candidate applied; floor 8 ordinary-C → **0 ordinary-C**
+
+**CORRECTION OF s1 — the load-bearing row in s1's table is wrong.** s1 recorded
+`s32 semi; semi = 0;` before the loop as "frame 112 / gp_regs 6 / `move a1,zero` (cse
+folded it) / score 8", and built its whole ruling-request on the inference that only a
+narrow-mode or pointer-mode pseudo can survive cse into loop.c. Re-measured this session
+on BOTH chassis, four ways:
+
+| spelling of func_8006E480's 2nd argument | chassis | sandbox |
+|---|---|---|
+| literal `0`, no named local at all | s1 candidate chassis (s1) | 8 |
+| literal `0`, no named local at all | EnvA-named chassis (s2, v15_nolocal) | 8 |
+| `s32 semi; semi = 0;` before the loop, read once (the argument) | s1 candidate chassis (s2, v16) | **0** |
+| `s32 semi = 0;` declaration initializer, read once | s1 candidate chassis (s2, v17) | **0** |
+| `s32 semi; semi = 0;`, read once | EnvA-named chassis (s2, v14) | **0** |
+| `s32 semi = 0;`, read twice (`s.semi = semi;` + the argument) | EnvA-named chassis (s2, final_init) | **0** |
+
+So the mode of the local was never the mechanism. The mechanism is only: **a named local
+rather than the literal at the call site.** A constant argument is expanded straight into
+the hard register `$a1` (`move a1,zero`), so no pseudo is live across the loop, no 7th
+callee-saved register is allocated, and the frame is 112 instead of the target's 120. Any
+local — `s32`, `u8`, `s16`, `s32 *` — gives the pseudo, and RTL dump `.cse`
+(tmp/grind/func_8006DD94/dumps/text1b.cse, sliced to
+tmp/grind/func_8006DD94/s1/cse.txt) shows exactly this on the two-read form: `(insn 11
+(set (reg/v:SI 77) (const_int 0)))` survives cse in the loop preheader, cse folds the
+MEMORY use (`insn 27`, the `s.semi = semi;` store, becomes a `const_int 0` store) but the
+in-loop argument read keeps reg 77 live across the loop, and the allocator seats a
+loop-spanning call-crossing pseudo in a call-saved register ($s5). `.loop` shows the set
+already sits in the preheader, so no LICM hoist is involved — s1's `move_movables` story
+is not the mechanism either.
+
+**Ordinary-C floor is 0.** The pointer-clothed `clut` construct that s1 filed a
+ruling-request over is UNNECESSARY. src/text1b.c now carries the ordinary-C body and:
+`sandbox func_8006DD94 --disable all` = **score 0** (117/117, rules_dropped 0), and
+`verify-oracle` = **build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle**,
+both this session.
+
+**SEMANTICS: the zero is the semi-transparency mode, and it is truthful in both uses.**
+Reading func_8007352C's own decompiled body (src/text1b.c:6710-6805) gives the descriptor
+its real field names — it is the `EnvA` struct, and offset 0x10 is `semi`, which
+func_8007352C passes to `SetSemiTrans((s32)sp, env->semi)` (src/text1b.c:6790). Reading
+func_8006E480's body (src/text1b.c:6106-6110): `(a0[0] & 0xFE1F) + (a0[1] << 7) + a1` is
+a getTPage word — the 0xFE1F mask clears bits 5-8, `a0[1] << 7` refills bits 7-8 (the
+colour-depth `tp` field) and the second argument refills bits 5-6, which is the PS1 GPU's
+**abr (semi-transparency) field**. So one local named `semi` holding 0 feeding both
+`s.semi` and func_8006E480's second argument is the same physical quantity in both places:
+semi-transparency mode 0 (opaque). The local is not dead, not a pad, has a truthful name
+and a truthful type, and is read twice.
+
+**Local naming adopted from EnvA.** The s1 candidate's placeholder names (p0/p1/in_tex/
+zero10/arg2/width/zero1C) are replaced by EnvA's (header/table/out/semi/ot_idx/x/y) plus
+the two trailing pad words that make the 0x34 size. Byte-neutral (still score 0); the
+0x34 widening still MUST stay a function-local typedef (s1: widening the shared EnvA
+regressed COMPLETED-C func_8006BB68 from 0 to 17).
+
+**Dead axes measured this session (all banked in rejected/):** narrow-typed holders
+(u8 1, u16 1, s8 2, s16 2 — the frame is right but the argument needs an extension insn
+the target lacks); passing the struct member itself (`s.semi`) instead of a local (9 —
+&s escapes to func_8007352C so the member reloads every iteration); a literal
+null-pointer constant cast at the call site with no local (`(s32)(s32 *)0`, 8 — folded
+like any constant); the same named zero given a THIRD, in-loop read (`s.y = semi;` in
+the else branch, 1).

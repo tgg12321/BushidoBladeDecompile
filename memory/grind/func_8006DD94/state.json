@@ -8,10 +8,24 @@
  "judge_constraints": [
   "Do not submit the clut/NULL body without (a) a spent modality ladder recorded in hypotheses.md and (b) a /* FAKE: ... */ annotation at the holder naming the cse/loop.c mechanism; and do not re-type func_8006E480's parameters against its definition at src/text1b.c:6174."
  ],
- "banned_constructs": [],
+ "banned_constructs": [
+  "typedef struct EnvB { ... s32 pad2C, pad30; } EnvB;  /* the two TRAILING members, function-local at src/text1b.c:5949-5964 */"
+ ],
  "kills": [],
- "ladder_skip": 0,
+ "ladder_skip": 11,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-10T10:03:56.793010+00:00"
+ "created": "2026-09-10T10:03:56.793010+00:00",
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The function-local EnvB typedef's two TRAILING unwritten words (pad2C, pad30) are an un-annotated, un-allowlisted phantom-frame-slot pad in struct clothing \u2014 they reserve target frame bytes 0x44-0x4F that no instruction touches, and meet none of the sanctioned pad family's prerequisites. Next action: Do NOT commit. The rest of the body is not the objection: the named `s32 semi = 0;` local is fine as written \u2014 the target really does materialise it (`addu $s5,$zero,$zero` at asm/funcs/func_8006DD94.s:6, `sw $zero,0x28($sp)` = descriptor offset 0x10, `addu $a1,$s5,$ze"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "b00f9e03c891cf0e",
+   "when": "2026-09-10T10:42:43.682244+00:00",
+   "summary": "The function-local EnvB typedef's two TRAILING unwritten words (pad2C, pad30) are an un-annotated, un-allowlisted phantom-frame-slot pad in struct clothing \u2014 they reserve target frame bytes 0x44-0x4F that no instruction touches, and meet none of the sanctioned pad family's prerequisites."
+  }
+ ]
 }

@@ -1963,3 +1963,5 @@
 - 2026-09-10 04:43 _spu_FwriteByIO s1 [recon] floor=3: psyz/PsyQ libspu transplant lands 113/115 instructions byte-identical; floor 115 -> 3, and the target's 8 phantom frame bytes turn out to be an ordinary `for (i = 0; ...)` loop, not a dead local.
 - 2026-09-10 04:59 model-fallback layer1 claude-fable-5-1[1m]->claude-opus-5[1m] until 05:29
 - 2026-09-10 05:03 _spu_FwriteByIO COMPLETED-C after 2 sessions (closer: s2 [structural]).
+- 2026-09-10 05:39 model-fallback layer1 claude-fable-5-1[1m]->claude-opus-5[1m] until 06:09
+- 2026-09-10 05:42 func_8006DD94: LAYER-1 FAILED a sandbox-0 candidate — The function-local EnvB typedef's two TRAILING unwritten words (pad2C, pad30) are an un-annotated, un-allowlisted phantom-frame-slot pad in struct clothing — they reserve target frame bytes 0x44-0x4F that no instruction touches, and meet none of the sanctioned pad family's prerequisites.
