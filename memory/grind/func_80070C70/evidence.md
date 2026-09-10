@@ -838,3 +838,32 @@ root (the Bash tool here is Git Bash, not WSL - `bash tools/wsl.sh` is the bridg
 - [s12] The carried-locals family is chassis-sensitive, not flatly wrong: 55-59 against a floor of 39 in s11, 27-42 against a floor of 22 in s12. Its best member (D_800A35B0 alone in a local) is only 5 points behind.
 
 - [s12] s12 left src/text1b.c restored to pristine INCLUDE_ASM (tmp/grind/func_80070C70/s10/install.py --restore); no tracked build file is modified by this session.
+
+- [s13] The object at sp+0x48 in func_80070C70 is a `u16 rect[]` ARRAY, not the invented `IconC70` struct: func_80069898 is already decompiled at src/text1b.c:5413 with prototype `void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2)` reading arg1[0..3], and both callers already on main (func_8006BB68 at src/text1b.c:5822, func_8006DD94 at src/text1b.c:6065) pass a local `u16 rect[4]` written in the order rect[2], rect[0], rect[1], rect[3] - the exact store order and offsets func_80070C70's target asm uses at sp+0x4C/0x48/0x4A/0x4E.
+- [s13] The 24 bytes at sp+0x50..0x67 that s12 called a still-unidentified local are the UNWRITTEN TAIL of that array: `u16 rect[16]` spans 0x48..0x67 and measures 22/194 BYTE-IDENTICAL to the s12 IconC70+`s16 sp50[12]` body; `u16 rect[4]` (written size only) measures 36/194, so the tail is load-bearing. The declared length is a range - rect[15] and rect[16] are byte-identical because stmt.c:3419 8-aligns a BLKmode automatic - exactly the range caveat recorded for func_8006DD94 (src/text1b.c:6032).
+- [s13] This makes func_80070C70's oversized local the same accepted OVERSIZED-LOCALS shape as the two in-tree exemplars (src/text1b.c:6032 func_8006DD94; src/text1a_post.c:404 func_80041BF4 `s16 rect[8]`) - extending the LIVE address-taken object rather than adding a dead pad - and removes the last invented type from the candidate.
+- [s13] The scalar declaration-order axis is completely inert on the 22-point if-guarded do/while chassis: all 24 permutations of `s32 var_s0; s32 t; u8 code; s32 g;` are byte-identical at 22/194.
+- [s13] The first loop body's statement-order axis is exhaustively swept: all 6 orders x 2 increment orders; the candidate's order is the unique optimum (22 vs 24/24/29/30/30) and the two trailing increments are byte-neutral.
+- [s13] The pre-guard position of `prim.p_geom = *(s32 *)(ctx + 8)` has exactly three legal slots and the candidate holds the best (22 vs 25 and 26).
+- [s13] $a1/$a2 are caller-saved and the second loop body contains a `jal`, so the target's loop-carried $a1/$a2 are RELOADED in the tail every iteration (28ffc `lhu a2,0(gp)` / 29000 `lh v0,0(gp)` / 29004 `lw a1,0(gp)`); the guard block only supplies the entry copies. The target's tail therefore carries three gp loads where our re-read spelling carries two.
+- [s13] The target's mode test branches on the SUM first (28fb4 `bnez` on `$a1 + (s16)$a2`, then 28fc4 `bne` against 2), i.e. the source is `if (sum != 0 || D_800A35BC == 2)`; our 22-point incumbent emits the D_800A35BC-first order. The sum-first spelling is structurally correct and still scores worse (30, matching s11's banked kill) because it ripples $v1 -> $a1 onto the pre-loop `addiu #,#,72` / `sw #,28(sp)` pair.
+
+- [s13] func_80069898 is ALREADY DECOMPILED in the same TU (src/text1b.c:5413) with the prototype void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) and reads arg1[0], arg1[1], arg1[2], arg1[3] - its second parameter is a u16 POINTER, so the caller's object is an array, and the extern s32 func_80069898(s32 a0, s32 *p, s32 mode); re-declaration the grind body carried was shadowing the real prototype with a wrong pointer type.
+
+- [s13] Both on-main callers of func_80069898 declare a local u16 rect[4] and write it in the order rect[2], rect[0], rect[1], rect[3] (func_8006BB68 src/text1b.c:5822 writes 0xAF, 0xE8, 0x25, 1; func_8006DD94 src/text1b.c:6065). func_80070C70's target asm stores 0xE7, 0xCC, 0x25, 1 to sp+0x4C, sp+0x48, sp+0x4A, sp+0x4E - the same idiom, the same order.
+
+- [s13] u16 rect[16]; (spanning sp+0x48..0x67) measures 22/194 and is BYTE-IDENTICAL to the s12 IconC70 + s16 sp50[12] body over all 194 instructions; s16 rect[16] is 22; u16 rect[15] is 22 (declared length is a range because stmt.c:3419 8-aligns a BLKmode automatic); u16 rect[4] is 36/194.
+
+- [s13] That construct is the same OVERSIZED-LOCALS shape already accepted on main at src/text1b.c:6032 (func_8006DD94, EnvB s + u16 rect[4]) and src/text1a_post.c:404 (func_80041BF4, s16 rect[8]): the extended object is the LIVE address-taken one, not a dead pad. The sibling func_800720FC has the same idiom with 32 spare bytes.
+
+- [s13] All 24 permutations of the four body scalar declarations are byte-identical at 22/194 - the scalar declaration-order axis is inert on this chassis.
+
+- [s13] The first loop body's statement-order axis is exhaustively swept: 6 orders x 2 increment orders, the candidate's order uniquely optimal at 22 (others 24, 24, 29, 30, 30), increments byte-neutral.
+
+- [s13] The pre-guard position of prim.p_geom = *(s32 *)(ctx + 8) has exactly three legal slots; the candidate holds the best (22 vs 25 and 26).
+
+- [s13] $a1/$a2 are caller-saved and the second loop body contains a jal, so the target's loop-carried $a1/$a2 do NOT survive the call: the tail at 28ffc-29004 reloads all three values (lhu a2,0(gp), lh v0,0(gp), lw a1,0(gp)) every iteration and the guard block supplies only the entry copies. The target's tail carries three gp loads where our re-read spelling carries two - which is why the literal carried-locals transcription is 195 insns and 42 points (s12).
+
+- [s13] The target's mode test branches on the sum FIRST (28fb4 bnez on $a1 + (s16)$a2, then 28fc4 bne against 2), so the original source order is if (sum != 0 || D_800A35BC == 2); our 22-point incumbent emits the D_800A35BC-first order. s13 re-derived and re-measured this at 30, matching s11's banked kill: the structurally-correct spelling loses 2 points in the pre-loop block ($v1 -> $a1 on the addiu #,#,72 / sw #,28(sp) pair) plus loop-body scheduling.
+
+- [s13] Residual composition at 22, re-confirmed by objdump: 2 points are the prologue tie (addiu $a0,$sp,24 before vs after move $s0,$zero), the other ~20 are the single cse_set_around_loop cluster (cse.c:7933 REG_LOOP_TEST_P, set only by jump.c:2253 duplicate_loop_exit_test, which needs a top-test loop; the top-test chassis prices out at 31).

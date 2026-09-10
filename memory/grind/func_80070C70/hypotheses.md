@@ -1415,3 +1415,132 @@ dump into `s10/w/sec.<passname>` and lists every `(use (reg N))` in it.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the 22-point if-guarded do/while chassis (s12 candidate.c body), zero FAKE constructs beyond the inherited s32 c60, sandbox --disable all
+
+## s13 (structural, 2026-09-10) - floor 22, unchanged; the icon-record correctness frontier is CLOSED
+
+### H-s13-1 CONFIRMED - the sp+0x48 object is a `u16 rect[]` array, not a struct, and the 24 "mystery" bytes are its unwritten tail
+s12's frontier item #1 called the 24 bytes at sp+0x50..0x67 "a hard prerequisite for any
+submission" and its `IconC70 { s16 sp48, sp4A, sp4C, sp4E; s16 sp50[12]; }` placeholder
+"KNOWN WRONG".  It is resolved from code already on main, with no new probe needed to find it:
+**func_80069898 is already decompiled in this same TU** (src/text1b.c:5413) with the prototype
+`void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2)` - arg1 is a `u16 *` and the body reads
+arg1[0], arg1[1], arg1[2], arg1[3].  Both callers already on main pass a plain local ARRAY:
+func_8006BB68 (src/text1b.c:5822) declares `u16 rect[4];` and writes it in the order
+rect[2] = 0xAF; rect[0] = 0xE8; rect[1] = 0x25; rect[3] = 1; - and func_8006DD94
+(src/text1b.c:6065) does the same.  func_80070C70's target asm stores to sp+0x4C, sp+0x48,
+sp+0x4A, sp+0x4E in **exactly that order** with the values 0xE7, 0xCC, 0x25, 1.  So the local
+is a `u16 rect[]` whose address is passed, and the 24 trailing bytes are simply the array's
+UNWRITTEN TAIL - the same OVERSIZED-LOCALS shape already accepted on main for func_8006DD94
+(src/text1b.c:6032) and func_80041BF4 (src/text1a_post.c:404, `s16 rect[8]`).
+MEASURED: `u16 rect[16]` (0x48..0x67 exactly) = 22/194 and BYTE-IDENTICAL to the s12
+IconC70+sp50[12] body (opcode-column objdump diff empty over all 194 insns).  `s16 rect[16]` =
+22.  `u16 rect[15]` = 22 (declared length is a RANGE [15,16] because stmt.c:3419 8-aligns a
+BLKmode automatic - the same range caveat the func_8006DD94 record documents).
+`u16 rect[4]` (written size only) = 36/194, so the 24 bytes are load-bearing.  This is
+consistent with s12's measurement that an UNREFERENCED `s32 sp50[6]` is dropped: this tail is
+referenced because the whole array is address-taken at the func_80069898 call.
+CONSEQUENCE: the candidate no longer invents a type.  The `typedef struct IconC70` block and
+the local re-declaration `extern s32 func_80069898(s32 a0, s32 *p, s32 mode);` (which shadowed
+the real prototype with an `s32 *` second parameter) are both DELETED at submission - they are
+expressed as //@sub directives on lines 1-2 of candidate.c.
+Probe files: tmp/grind/func_80070C70/s13/p/R1_rect_u16_16.c, R2_rect_u16_4.c, R3_rect_s16_16.c,
+R4_rect_u16_15.c.  Negative control banked as rejected/s13-rect4-written-size-only-36.c.
+
+### H-s13-2 KILLED (instance) - the first loop body's statement-order axis is exhaustively swept and ABC is the unique optimum
+All 6 orders of {prim.mode = var_s0 << 6; prim.link = *(s32 *)(arg0 + 0x10); prim.code = 0xA;}
+crossed with both orders of the two trailing increments (var_s0 += 1 / prim.p_geom += 0xC) =
+12 bodies, measured on the 22-point if-guarded do/while chassis: ABC = 22 (the candidate),
+ACB = 24, CAB = 24, BAC = 29/193, BCA = 30/193, CBA = 30/193.  The increment order is
+byte-neutral in all six.  s12's frontier item #3 listed "the four statements of the FIRST loop
+body" as having had only two of six orders measured; all six are now measured and none beats
+the incumbent.  Files tmp/grind/func_80070C70/s13/p/L1_*.c; representative banked as
+rejected/s13-first-loop-body-order-sweep-29.c.
+
+### H-s13-3 KILLED (instance) - the pre-guard statement positions do not move the guard block
+The other half of s12's frontier item #3.  `prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);` has
+exactly three legal positions in the pre-guard run (it cannot precede the SetDrawMode call that
+reads prim.p_geom as an argument): after the AddPrim tail increment (the candidate) = 22/194,
+before that increment = 25/197, immediately after SetDrawMode = 26/196.  The guard block's
+instruction order is unchanged in all three.  Files p/PG_*.c; banked as
+rejected/s13-preguard-pgeom-position-25.c.
+
+### H-s13-4 KILLED (instance) - the scalar declaration-order axis is completely inert on this chassis
+All 24 permutations of the four body scalar declarations (`s32 var_s0; s32 t; u8 code; s32 g;`)
+are BYTE-IDENTICAL at 22/194.  This was the last cheap hypothesis for the prologue tie
+(`addiu $a0,$sp,24` before vs after `move $s0,$zero`): pseudo numbering / declaration LUID does
+not reach that sched1 priority tie.  Combined with s11's six source positions of `var_s0 = 0;`
+and s12's pointer-local (38) and hoist-above-guard (54) probes, the prologue tie has now
+resisted 33 distinct spellings.  Files p/DC_*.c; representative banked as
+rejected/s13-scalar-decl-order-24-perms-inert.c.
+
+### H-s13-5 KILLED (instance) - defeating LICM on the bound by reusing an existing local does not buy back the top-test chassis' orphan spill pseudos
+The variable-reuse family (.claude/rules/defeat-licm-hoist-var-reuse.md: a multi-set pseudo is
+not a loop.c movable, so the invariant is not hoisted) was the one untried route at making the
+top-test chassis' three combine-orphaned pseudos not exist without paying for a fresh carrier.
+Spelling the for-header bound as an assignment into an EXISTING body-written local -
+`for (var_s0 = 0; var_s0 < (t = D_800A35B0 + D_800A3558 + 1); var_s0++)` - measures 69/194 on
+the s12 31-point shape-exact top-test chassis, and 61/194 with `g` as the carrier.  Both are
+30-38 points worse than the 31 incumbent, i.e. the hoist was not what was costing the frame.
+On the 22-point do/while chassis the same construct is inert-to-worse (`g` 22 byte-identical,
+`t` 23).  Files p/LR_*.c; banked as rejected/s13-licm-defeat-bound-var-reuse-61.c.
+
+### H-s13-6 CONFIRMED (re-derivation, no new information) - two of s13's opening probes reproduced already-banked s11 kills
+Before reading hypotheses.md end-to-end s13 re-derived the `||` operand swap (the target's mode
+test branches on the sum first: `bnez` on `$a1 + (s16)$a2` at 28fb4, then `bne` against 2) and
+the guard-copy parenthesisation, measuring 30 and 25 - matching rejected/s11-or-operands-sum-
+first-30.c and rejected/s11-guard-bound-parenthesised-too-32.c.  Recorded so the next session
+does not spend the same three probes: the target's branch TOPOLOGY in the mode test is the
+sum-first order, our incumbent 22-point body emits the D_800A35BC-first order, and that
+structural divergence is nevertheless the CHEAPER of the two on the score metric because the
+sum-first spelling ripples into the pre-loop block ($v1 -> $a1 on the `addiu #,#,72` /
+`sw #,28(sp)` pair, 2 points) and loses the loop-body scheduling that currently aligns.
+
+### s13 OBJECT-LEVEL NOTE - why the carried-locals family cannot reach the target's $a1/$a2
+Recorded because s11/s12 both measured this family without stating the register-lifetime fact
+that explains the result.  $a1 and $a2 are CALLER-SAVED and the second loop body contains a
+`jal` (func_8007352C at 28fe8), so the target's $a1/$a2 do NOT survive the call: the tail at
+28ffc-29004 RELOADS all three values (`lhu a2,0(gp)`, `lh v0,0(gp)`, `lw a1,0(gp)`) every
+iteration, and the guard block supplies the entry copies.  The literal C transcription of that
+- two locals reassigned at the bottom of the body - is exactly what s12 measured at 42/195
+(and 27/194 carrying D_800A35B0 alone).  The reason it costs is not the reload but the extra
+insn: the target's shape needs three gp loads in the tail where our re-read spelling needs two,
+and it pays that back inside the loop body, a trade the C spelling cannot express because GCC
+CSEs the two locals' initialisers against the guard's own reads.
+
+## [s13] The object at sp+0x48 in func_80070C70 is a u16 rect[] array whose unwritten tail occupies the 24 bytes at sp+0x50..0x67, not the invented IconC70 struct with an s16 sp50[12] placeholder member.
+- mechanism: Not codegen - source correctness recovered from code already on main. func_80069898 is decompiled at src/text1b.c:5413 as void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) and reads arg1[0..3]; its two existing callers (func_8006BB68 src/text1b.c:5822, func_8006DD94 src/text1b.c:6065) each declare a local u16 rect[4] and write it in the order rect[2], rect[0], rect[1], rect[3] - the exact offsets (sp+0x4C, 0x48, 0x4A, 0x4E) and order func_80070C70's target asm uses. The trailing 24 bytes are the array's unwritten tail, referenced because the whole array is address-taken at the call, which is why GCC 2.7.2 keeps them (s12 measured that an UNREFERENCED s32 sp50[6] is dropped, frame 128 -> 104). stmt.c:3419 8-aligns the BLKmode automatic, so the declared length is a range.
+- probe: Replaced IconC70 icon; with u16 rect[N]; on the 22-point if-guarded do/while chassis and measured N = 4, 15, 16, with the sp50 member and the shadowing extern s32 func_80069898(s32,s32*,s32) re-declaration removed via //@sub. Byte-identity checked by diffing the objdump opcode column of the two text1b.o files over all 194 instructions.
+- result: u16 rect[16] = 22/194 and BYTE-IDENTICAL to the s12 IconC70+sp50[12] body (empty opcode-column diff, 194 lines). s16 rect[16] = 22. u16 rect[15] = 22 (declared length is a RANGE [15,16], the same caveat recorded for func_8006DD94). u16 rect[4] = 36/194, so the 24 tail bytes are load-bearing. The candidate now invents no type, and the construct is the same OVERSIZED-LOCALS shape already accepted on main at src/text1b.c:6032 and src/text1a_post.c:404 (extending the LIVE address-taken object, not adding a dead pad).
+- verdict: CONFIRMED
+
+## [s13] The first loop body's four statements have an order, among the six orders of its three struct stores crossed with both orders of its two trailing increments, that beats the candidate's ABC order on the if-guarded do/while chassis.
+- mechanism: sched1 / reorg outcome downstream of what else is ready in the same cycle; s12's frontier item 3 recorded that only two of the six orders had ever been measured and that the neighbouring duplicated prim.zero1C/prim.mode pair moved by 2 points when reordered.
+- probe: Generated all 12 bodies (6 statement orders x 2 increment orders) with tmp/grind/func_80070C70/s13/gen1.py and scored each with the s12 sandbox harness.
+- result: ABC (the candidate) = 22/194 is the unique optimum; ACB = 24, CAB = 24, BAC = 29/193, BCA = 30/193, CBA = 30/193. The two trailing increments (var_s0 += 1 / prim.p_geom += 0xC) are byte-neutral in all six. The axis is exhaustively swept.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 22-point if-guarded do/while chassis (memory/grind/func_80070C70/candidate.c body as inherited from s12), FAKE constructs present: the s32 c60 = 0x60; constant-holder local and the oversized icon/rect local; sandbox --disable all
+
+## [s13] Moving prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8); to one of its other two legal positions in the pre-guard run changes the guard block's instruction order in our favour.
+- mechanism: Same sched1 readiness question as the first-loop sweep; the statement's load is what the target issues as lw v1,8(s2) before the guard branch with the store sw v1,24(sp) in the delay slot, so its source position was the remaining unswept half of s12's frontier item 3.
+- probe: Enumerated the three legal positions (it cannot precede the SetDrawMode call that reads prim.p_geom as an argument) with tmp/grind/func_80070C70/s13/gen2.py and scored each.
+- result: After the AddPrim tail increment (the candidate) = 22/194; immediately before that increment = 25/197; immediately after SetDrawMode = 26/196. The guard block's instruction order is unchanged in all three.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 22-point if-guarded do/while chassis (s12 candidate.c body), FAKE constructs present: s32 c60 = 0x60; and the oversized icon/rect local; sandbox --disable all
+
+## [s13] Permuting the declaration order of the four body scalars (var_s0, t, code, g) moves the prologue tie between addiu $a0,$sp,24 and move $s0,$zero.
+- mechanism: Declaration order sets pseudo numbers and hence LUIDs, which is GCC 2.7.2 sched.c's tie-break when two ready insns carry equal INSN_PRIORITY - and the prologue divergence is exactly a two-insn swap of two independent ready insns in the same basic block.
+- probe: Generated all 24 permutations with tmp/grind/func_80070C70/s13/gen4.py and scored each on the 22-point chassis.
+- result: All 24 permutations are BYTE-IDENTICAL at 22/194. The scalar declaration-order axis is completely inert here. Combined with s11's six source positions of var_s0 = 0; and s12's pointer-local (38) and hoist-above-guard (54) probes, the prologue tie has now resisted 33 distinct spellings.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the 22-point if-guarded do/while chassis (s12 candidate.c body), FAKE constructs present: s32 c60 = 0x60; and the oversized icon/rect local; sandbox --disable all
+
+## [s13] Spelling the second loop's bound as an assignment into an existing body-written local, so the bound's pseudo is multi-set and loop.c cannot treat it as a movable, removes the three combine-orphaned spill pseudos that cost the top-test chassis 24 frame bytes.
+- mechanism: .claude/rules/defeat-licm-hoist-var-reuse.md - a multi-set pseudo is not a loop.c movable, so the invariant is not hoisted; s10's H-s10-4 had found that the only input shape that moves the orphan count on the top-test chassis is whether the bound's 16-bit read is sign-extended, which made the hoisted-and-split sign-extension the suspect carrier of the orphans.
+- probe: On the s12 31-point shape-exact top-test for chassis (tmp/grind/func_80070C70/s12/a/a3.c) rewrote the for-header bound as (t = D_800A35B0 + D_800A3558 + 1) and as (g = ...), reusing locals the loop body already writes; also measured both on the 22-point do/while chassis. tmp/grind/func_80070C70/s13/gen3.py.
+- result: Top-test chassis: t carrier = 69/194, g carrier = 61/194, against the 31 incumbent - 30 to 38 points worse, so the hoist was not what was buying the frame. do/while chassis: g = 22 (byte-identical, the store is dead), t = 23. The variable-reuse family has no purchase on this function's orphan pseudos.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: both the s12 31-point shape-exact top-test for chassis (tmp/grind/func_80070C70/s12/a/a3.c, which carries the extern s16 D_800A3558 //@sub) and the 22-point if-guarded do/while chassis; FAKE constructs present on both: s32 c60 = 0x60; and the oversized icon/rect local; sandbox --disable all

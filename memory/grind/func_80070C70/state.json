@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 12,
- "current_modality": "rederive",
+ "session_count": 13,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -75,23 +75,29 @@
    "floor": 22,
    "modality": "rederive",
    "headline": "Floor holds at 22 but the chassis question is closed with a number (top-test + s11's levers = 31, nine worse), one constant-holder local is retired at zero cost, and the IconC70 0x20 size is DISPROVEN"
+  },
+  {
+   "session": 13,
+   "floor": 22,
+   "modality": "structural",
+   "headline": "Floor holds at 22, but s12's #1 correctness frontier is CLOSED: the sp+0x48 local is a u16 rect[16] array (func_80069898 is already decompiled with a u16* parameter and two on-main callers use the ide"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The real 24-byte local at sp+0x50..0x67 is a referenced aggregate that the source declares after the 8-byte icon record, and recovering it is now a hard prerequisite for any submission - the current s16 sp50[12] inflation of IconC70 is KNOWN WRONG, contradicted by func_80069898's four-field contract and func_8006B120's frame.",
-   "mechanism": "Correctness of the submitted C, not codegen. GCC 2.7.2 drops an unreferenced local outright (s12 measured frame 128 -> 104), so whatever occupies those 24 bytes is read, written or address-taken somewhere in the function - which means the target's own instruction stream must touch it, or it is passed by address to one of the six callees (func_8007352C, func_8006E480, SetDrawMode, AddPrim, func_80070F78, func_8006ECF4, func_80072E10, func_80073200).",
-   "next_probe": "Disassemble asm/funcs/func_80070C70.s and enumerate EVERY $sp-relative access with an offset in 0x50..0x67 (there appear to be none in the objdump extract tmp/grind/func_80070C70/s12/tgt.txt, so check the raw .s for addiu $aN,$sp,0x50-style address materialisations feeding a call). Then do the same for func_800720FC, whose spare region is 32 bytes at 0x50..0x6F - two functions with the same idiom and different sizes should identify the type. Cross-check func_8006F97C (active queue sibling, same TU, same func_80069898 call) and propagate the corrected 8-byte IconC70 to its ledger either way."
+   "hypothesis": "With the icon/rect correctness question closed, the ONLY remaining blocker to a submission-shaped body is the ~20-point cse_set_around_loop cluster, and route (a) - making the top-test chassis' three combine-orphaned spill pseudos not exist - is still the only untried angle. s13 eliminated the variable-reuse/LICM-defeat approach to it, so what remains is the combine question s10 posed and never answered.",
+   "mechanism": "combine.c's newi2pat path emits an orphan (use (reg)) insn when distribute_notes cannot find a home for a REG_DEAD note; regclass types such a pseudo ST_REGS, so global_alloc can never give it a hard register and reload's alter_reg always allocates a fresh 8-byte stack slot (H-s10-1). The target has BOTH the guard copy AND vars=80, so its build did not take that path.",
+   "next_probe": "Regenerate the dumps for the 31-point a3 body first (pwsh tools/grinder/dump.ps1 func_80070C70 with tmp/grind/func_80070C70/s12/a/a3.c installed - every existing dump is of the 49-point body), then read tools/gcc-2.7.2/combine.c:2089 and 10730-10850 against tmp/grind/func_80070C70/s10/w/sec.combine and work out what property of the insn stream lets the REG_DEAD notes find homes. Do NOT re-try bound hoisting, bare-u16 bounds, != bounds, loop topology respellings, or variable-reuse carriers - all measured dead on that chassis."
   },
   {
-   "hypothesis": "The whole remaining 22 is still one cluster - the missing cse_set_around_loop hoist of the D_800A3558 and D_800A35B0 reads out of the second loop body - and the do/while chassis cannot reach it by any C spelling, so the only two live routes are (a) making the top-test chassis' three orphan spill pseudos not exist, or (b) finding a do/while spelling in which the guard's loads survive into the body through ordinary cse rather than cse_set_around_loop.",
-   "mechanism": "cse.c:7933 gates the transform on REG_LOOP_TEST_P, set only by jump.c:2253 in duplicate_loop_exit_test, which requires a top-test loop; the top-test loop in turn pays three combine-orphaned (use (reg)) pseudos typed ST_REGS (H-s10-1) worth 24 frame bytes. s12 priced that trade at 9 points against us with both chassis fully levered, and re-killed all three known orphan-removal levers on the improved chassis.",
-   "next_probe": "Route (a) is the only untried angle left and it is a combine question, not an RA one: read tools/gcc-2.7.2/combine.c:2089 and 10730-10850 with tmp/grind/func_80070C70/s10/w/sec.combine open, and work out what property of the target's insn stream let its REG_DEAD notes find homes (the target has the guard copy AND vars=80, so its build did NOT take the newi2pat path that orphans p116/p168/p173). Regenerate the dumps for the 31-point a3 body first via pwsh tools/grinder/dump.ps1 func_80070C70 - every existing dump is of the 49-point body."
+   "hypothesis": "The prologue tie (addiu $a0,$sp,24 vs move $s0,$zero) is not reachable from any source-level ordering or declaration lever and will only fall out of whatever fixes the cse cluster.",
+   "mechanism": "It is a sched1 ready-list tie between two independent insns in the same basic block; s13 proved the LUID/declaration-order tie-break does not reach it (24/24 permutations byte-identical) and s11/s12 proved the source position of var_s0 = 0; (6 positions) and the &prim materialisation spelling (pointer local, 38) do not either - 33 spellings total.",
+   "next_probe": "Stop spending probes on it directly. If a future session wants one more datum, read the .sched dump for the entry block and record the two insns' INSN_PRIORITY values - that turns the question into 'is it a priority difference or a tie-break?' in one read rather than another sweep."
   },
   {
-   "hypothesis": "The prologue tie (addiu $a0,$sp,24 against addu $s0,$zero,$zero) and the guard block's instruction order are reachable from the two remaining unswept statement-order axes: the four statements of the FIRST loop body, and the order of the three pre-guard statements (the AddPrim tail, prim.p_geom = ctx[8], and the guard test itself).",
-   "mechanism": "Both are sched1/reorg outcomes downstream of what else is ready in the same cycle. s11 swept six positions of var_s0 = 0; inside the guarded region and s12 swept the position outside it (54) plus a pointer local for &prim (38) and the ctx read hoist (60); the first loop's own four-statement order has still only had two of six orders measured, and it moved once already (between s11's q3 and r1).",
-   "next_probe": "Install memory/grind/func_80070C70/candidate.c, regenerate the objdump diff with tmp/grind/func_80070C70/s12/dis.sh, then enumerate the remaining four orders of the first loop's body statements (prim.mode, prim.link read, prim.code store, the func_8007352C call) and the three orders of the pre-guard statements, scoring with tmp/grind/func_80070C70/s12/score.sh. Note that s12's g3.c (the duplicated prim.zero1C/prim.mode pair reordered) is 24, i.e. that pair's order IS live at 2 points - the neighbouring statement orders are worth sweeping for the same reason."
+   "hypothesis": "The sibling func_800720FC (active queue, same TU, floor 688, never grinded past s1) carries the identical idiom - u16 rect[] oversized to fill a 32-byte spare region at sp+0x50..0x6F, plus the same prim/func_8007352C shape - so s13's rect finding should be propagated to it and to func_8006F97C before either is dispatched.",
+   "mechanism": "Shared TU, shared callee contract (func_80069898's u16 * parameter), shared frame idiom; a sibling ledger that never hears the finding re-derives it from scratch, which is the failure mode the cross-knowledge sweep exists to kill.",
+   "next_probe": "When func_800720FC or func_8006F97C is dispatched, start from u16 rect[N] sized to its own spare region (rect[20] for func_800720FC's frame 0x98 / $s0 at 0x70 / icon at 0x48) rather than inventing a struct; cite src/text1b.c:5413 (the prototype), 5822 and 6065 (the two on-main callers)."
   }
  ],
  "judge_constraints": [],
@@ -408,6 +414,38 @@
    "measured_on": "the 22-point if-guarded do/while chassis (s12 candidate.c body), zero FAKE constructs beyond the inherited s32 c60, sandbox --disable all",
    "predicate_cite": "",
    "result": "e1 = 54 at 193 insns, e2 = 71 at 194, g1 = g2 = 38 at 197, g3 = 24 at 194, g4 = 60 at 194. Every one is worse than 22; t"
+  },
+  {
+   "session": 13,
+   "statement": "The first loop body's four statements have an order, among the six orders of its three struct stores crossed with both orders of its two trailing increments, that beats the candidate's ABC order on th",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (memory/grind/func_80070C70/candidate.c body as inherited from s12), FAKE constructs present: the s32 c60 = 0x60; constant-holder local and the oversized icon/",
+   "predicate_cite": "",
+   "result": "ABC (the candidate) = 22/194 is the unique optimum; ACB = 24, CAB = 24, BAC = 29/193, BCA = 30/193, CBA = 30/193. The tw"
+  },
+  {
+   "session": 13,
+   "statement": "Moving prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8); to one of its other two legal positions in the pre-guard run changes the guard block's instruction order in our favour.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s12 candidate.c body), FAKE constructs present: s32 c60 = 0x60; and the oversized icon/rect local; sandbox --disable all",
+   "predicate_cite": "",
+   "result": "After the AddPrim tail increment (the candidate) = 22/194; immediately before that increment = 25/197; immediately after"
+  },
+  {
+   "session": 13,
+   "statement": "Permuting the declaration order of the four body scalars (var_s0, t, code, g) moves the prologue tie between addiu $a0,$sp,24 and move $s0,$zero.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s12 candidate.c body), FAKE constructs present: s32 c60 = 0x60; and the oversized icon/rect local; sandbox --disable all",
+   "predicate_cite": "",
+   "result": "All 24 permutations are BYTE-IDENTICAL at 22/194. The scalar declaration-order axis is completely inert here. Combined w"
+  },
+  {
+   "session": 13,
+   "statement": "Spelling the second loop's bound as an assignment into an existing body-written local, so the bound's pseudo is multi-set and loop.c cannot treat it as a movable, removes the three combine-orphaned sp",
+   "kill_scope": "instance",
+   "measured_on": "both the s12 31-point shape-exact top-test for chassis (tmp/grind/func_80070C70/s12/a/a3.c, which carries the extern s16 D_800A3558 //@sub) and the 22-point if-guarded do/while chassis; FAKE construct",
+   "predicate_cite": "",
+   "result": "Top-test chassis: t carrier = 69/194, g carrier = 61/194, against the 31 incumbent - 30 to 38 points worse, so the hoist"
   }
  ],
  "ladder_skip": 0,
