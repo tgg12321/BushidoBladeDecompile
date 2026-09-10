@@ -281,3 +281,158 @@ claim. There is no open family question on this function.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-10, form tmp/grind/func_8003DE14/s2/body_y1.c (score 52), no FAKE constructs
+
+## s3 (2026-09-10, structural)
+
+### H-s3-1 (CONFIRMED) — the OR-chain constant is aimed by writing it next to the OTHER term
+
+- statement: In `target_color = red | green | blue | (s32)-0x8000`, the term the
+  constant is written next to in C is the term it is NOT emitted on; writing
+  `((red) | (s32)-0x8000) | green | blue` therefore produces the target's
+  `red | (green | -0x8000)` tree and its exact instruction sequence.
+- mechanism: `fold` reaches `associate:` (fold-const.c:3685) for BIT_IOR_EXPR
+  and calls `split_tree` (fold-const.c:882); when arg0 is `(VAR|CON)` it
+  rebuilds `VAR | fold(ARG1|CON)` (fold-const.c:3729), and when arg1 is
+  `(VAR|CON)` it rebuilds `fold(ARG0|CON) | VAR` (fold-const.c:3778). Either
+  way the constant crosses to the other operand, in the TREE, before RTL
+  expansion — which is why the s2 `.rtl` dump already showed the constant on
+  the red term and why parentheses appeared to be ignored.
+- probe: `.rtl` dump on the s2 y1 chassis (insns 84-93, constant on red), then
+  the a1 spelling + `.rtl` re-dump (insns 84-93, constant on green) + the
+  emitted `.s` block vs 8003DEA0-8003DED0.
+- result: CONFIRMED. The emitted color block is byte-exact with a1, including
+  `li $3,-32768` before the three `lbu`s. Note the whole-function score got
+  WORSE (52 -> 60) because the same edit flipped the i/count allocation; the
+  item is nonetheless closed and every later form keeps this spelling.
+- verdict: CONFIRMED
+
+### H-s3-2 (CONFIRMED) — `i = 0;` placement decides the $s1/$s2 assignment
+
+- statement: Moving the `i = 0;` statement later in the prologue shortens `i`'s
+  live range enough to raise its allocno priority above `count`'s, giving `i`
+  $s1 and `count` $s2 as in the target.
+- mechanism: global.c allocno priority is
+  `floor_log2(refs)*refs*10000/live_length`; measured on the a1 chassis
+  `count` = 3277 (13 refs / 119) and `i` = 3243 (12 refs / 111), a 1% margin.
+  `tools/ra_solver/inverse.py global` returned REACHABLE at one atom with
+  `live_shrink` on `i` of only 2 LUIDs sufficient.
+- probe: four placements of `i = 0;` (before `if (count > 0)`, before
+  `r = color_info[0];`, before `saved_y = rect[1];`, before
+  `func_80052BE4(color_info)`), each measured with `sandbox --disable all`.
+- result: all four score 43 (from 52/60); the $s1/$s2 pair and the prologue
+  `move sN,zero` slot both leave the diff. Bodies b1-b4.
+- verdict: CONFIRMED
+
+### H-s3-3 (CONFIRMED) — one arm-local `*dst++` swaps the src/dst cursor registers
+
+- statement: Writing the `dst` increment inside the `i == count - 1`
+  zero-pixel arm (instead of routing that arm through the shared
+  `advance_dst: dst++;` tail) lifts `dst`'s reg_n_refs enough to overtake
+  `src` in allocno priority, so `src` lands in $a3 and `dst` in $a2 as in the
+  target.
+- mechanism: same global.c priority ordering; on the 43 chassis `src` had 32
+  refs / priority 27118 and `dst` 26 refs / 17931, and `inverse.py --goal
+  '{"108": 7, "109": 6}'` reported one-atom REACHABLE via `refs_up` on `dst`
+  by 6 (or `refs_down` on `src` by 6). Each arm that carries its own
+  `*dst++` adds references to that pseudo.
+- probe: five doses measured — one arm (d4, d3, d6), two arms (d5), three arms
+  (d2) — plus a re-extract of the ra_solver model on the winning chassis.
+- result: d4 = 31 and the model now reports 108 -> $a3, 109 -> $a2 (dispositions
+  25/25). Larger doses give jump2 a second identical tail and cost 1-2
+  instructions (171-172 vs 173).
+- verdict: CONFIRMED
+
+### H-s3-4 (KILLED, instance) — masking the blue channel in its own statement
+
+- statement: Computing `b_shift = ((b_src * complement + b * factor) >> 5) &
+  0x7C00;` in the assignment statement and then OR-ing the already-masked local
+  reproduces the target's `andi 0x7C00`-before-the-final-`or` order.
+- mechanism: the mask would become part of the `b_shift` pseudo's defining insn
+  rather than an operand of the final IOR, which should move it ahead of the
+  last `or` in sched.c's ready list.
+- probe: measured on two chassis — a3 (on the s2 y1 base) and d1 (on the b1
+  base).
+- result: a3 = 53 vs base 52; d1 = 44 vs b1 43. Both one point WORSE, and the
+  blend-arm interleave stayed in the diff. Not the lever for that item on
+  either chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, forms tmp/grind/func_8003DE14/s3/body_a3.c and body_d1.c, no FAKE constructs
+
+### H-s3-5 (KILLED, instance) — block-scoping `j` to shrink its live range
+
+- statement: Declaring `s32 j = 0;` inside the `if (total > 0)` block shrinks
+  `j`'s live range enough to swap the `j`/`complement` pair into the target's
+  $t4/$t5.
+- mechanism: `inverse.py` lists `live_shrink` on pseudo 115 (`j`) by 8 LUIDs as
+  a one-atom vector for that goal, and block-scoping the declaration is the
+  ordinary-C way to shorten a range.
+- probe: c1 (on the b1 chassis), c2 (`src`/`dst`/`j` all scoped in), d7 (on the
+  d4 chassis).
+- result: c1 = 44 (vs 43), c2 = 46, d7 = 33 (vs 31). Every scoped form is worse
+  and the $t4/$t5 pair stayed swapped, so the achieved shrink is smaller than
+  the 8 LUIDs the model needs. The remaining one-atom vectors for that goal
+  (`refs_down` on `complement` by 1, `live_extend` on `complement` by 8,
+  `refs_up` on `j` by 2) are untested.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, forms tmp/grind/func_8003DE14/s3/body_c1.c, body_c2.c, body_d7.c, no FAKE constructs
+
+### H-s3-6 (KILLED, instance) — s2's "no regrouping can move the constant" frontier
+
+- statement: s2's frontier claim that no remaining C-level regrouping of the
+  same three terms can move `-0x8000` onto the green term, so the fix would
+  have to change which term heads the chain at tree level or change what the
+  green term IS.
+- mechanism: it rested on seven measured spellings all producing
+  `li v0,-32768 / or <red>,<red>,v0` first.
+- probe: read fold-const.c's `associate:` block and `split_tree`, then measured
+  the one spelling family the seven had not covered (constant attached to RED).
+- result: DISPROVEN — a1 moves the constant onto green with no change to what
+  any term is. The seven earlier spellings all attached the constant to green
+  or to blue, which is exactly the set fold maps onto red.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, form tmp/grind/func_8003DE14/s3/body_a1.c + .rtl dump, no FAKE constructs
+
+## [s3] In target_color = red | green | blue | (s32)-0x8000, the term the constant is written next to in C is the term it is NOT emitted on, so spelling it `((red) | (s32)-0x8000) | green | blue` produces the target's `red | (green | -0x8000)` tree and its exact instruction sequence.
+- mechanism: fold reaches `associate:` (fold-const.c:3685) for BIT_IOR_EXPR and calls split_tree (fold-const.c:882): when arg0 is (VAR|CON) it rebuilds VAR | fold(ARG1|CON) (fold-const.c:3729); when arg1 is (VAR|CON) it rebuilds fold(ARG0|CON) | VAR (fold-const.c:3778). Either way the constant crosses to the other operand, in the tree, before RTL expansion.
+- probe: Read the .rtl dump on the s2 y1 chassis (insns 84-93: constant already on the red term), read fold-const.c's associate:/split_tree, then measured the untried spelling family (constant attached to RED) as body_a1.c and re-dumped .rtl + .s.
+- result: CONFIRMED. a1's .rtl carries (ior red (ior green -32768)) and the emitted block `li $3,-32768 / lbu $21,$20,$19 / srl $4,$21,3 / andi $2,$20,0xf8 / sll $2,$2,2 / or $2,$2,$3 / or $4,$4,$2` is byte-exact vs 8003DEA0-8003DEC0. Whole-function score went 52 -> 60 because the same edit flipped an unrelated 1%-margin allocno priority; the OR item itself is closed and every later form keeps this spelling.
+- verdict: CONFIRMED
+
+## [s3] Moving the `i = 0;` statement later in the prologue shortens i's live range enough to raise its global.c allocno priority above count's, giving i $s1 and count $s2 as in the target.
+- mechanism: global.c allocno priority = floor_log2(refs)*refs*10000/live_length; measured on the a1 chassis count = 3277 (13 refs / 119 LUIDs) vs i = 3243 (12 refs / 111), a 1% margin. tools/ra_solver/inverse.py global --goal '{"73": 18, "74": 17}' returned REACHABLE with 24 one-atom vectors, the cheapest a live_shrink on i of 2 LUIDs.
+- probe: Four late placements of `i = 0;` (before `if (count > 0)`, before `r = color_info[0];`, before `saved_y = rect[1];`, before `func_80052BE4(color_info)`) measured with sandbox --disable all (bodies b1-b4).
+- result: CONFIRMED — all four score 43 (from 52/60); the $s1/$s2 pair and the prologue `move sN,zero` slot both leave the side-by-side diff.
+- verdict: CONFIRMED
+
+## [s3] Writing the dst increment inside the `i == count - 1` zero-pixel arm, instead of routing that arm through the shared `advance_dst: dst++;` tail, lifts dst's reg_n_refs enough to overtake src in allocno priority so src lands in $a3 and dst in $a2 as in the target.
+- mechanism: Same global.c priority ordering: on the 43 chassis src had 32 refs / priority 27118 and dst 26 refs / 17931, and inverse.py --goal '{"108": 7, "109": 6}' reported one-atom REACHABLE via refs_up on dst by 6 (or refs_down on src by 6). Each arm carrying its own *dst++ adds references to that pseudo.
+- probe: Five doses measured — one arm (d4 = 31, d3 = 37, d6 = 33), two arms (d5 = 35), three arms (d2 = 35) — plus a re-extract of the ra_solver model on the d4 chassis.
+- result: CONFIRMED — d4 scores 31 and the re-extracted model reports 108 -> $a3, 109 -> $a2 with dispositions 25/25 matching the dump. Larger doses hand jump2 a second identical tail and cost 1-2 instructions (171-172 vs target 173); d4 is 172, one short.
+- verdict: CONFIRMED
+
+## [s3] Computing the blue channel's 0x7C00 mask inside the b_shift assignment and OR-ing the already-masked local reproduces the target's andi-0x7C00-before-the-final-or emission order.
+- mechanism: The mask would become part of the b_shift pseudo's defining insn rather than an operand of the final IOR, which should move it ahead of the last or in sched.c's ready list.
+- probe: Measured on two chassis: a3 (on the s2 y1 base) and d1 (on the b1 base).
+- result: a3 = 53 vs base 52; d1 = 44 vs b1 43. Both one point worse and the blend-arm interleave stayed in the diff, so on these two chassis this is not the lever for that item.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), forms tmp/grind/func_8003DE14/s3/body_a3.c and body_d1.c, no FAKE constructs
+
+## [s3] Declaring `s32 j = 0;` inside the `if (total > 0)` block shrinks j's live range enough to swap the j/complement pair into the target's $t4/$t5.
+- mechanism: inverse.py lists live_shrink on pseudo 115 (j) by 8 LUIDs as a one-atom vector for that goal, and block-scoping the declaration is the ordinary-C way to shorten a range.
+- probe: c1 (j scoped in, on the b1 chassis), c2 (src/dst/j all scoped in), d7 (j scoped in, on the d4 chassis).
+- result: c1 = 44 (vs 43), c2 = 46, d7 = 33 (vs 31); every scoped form is worse and $t4/$t5 stayed swapped, so the achieved shrink is smaller than the 8 LUIDs the model needs. The other one-atom vectors for that goal (refs_down on complement by 1, live_extend on complement by 8, refs_up on j by 2) remain untested.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, forms tmp/grind/func_8003DE14/s3/body_c1.c, body_c2.c, body_d7.c, no FAKE constructs
+
+## [s3] s2's frontier claim that no remaining C-level regrouping of the same three terms can move -0x8000 onto the green term, so the fix would have to change which term heads the chain at tree level or change what the green term IS.
+- mechanism: It rested on seven measured spellings that all produced `li v0,-32768` + `or <red>,<red>,v0` first, read as evidence that fold ignores the source grouping entirely.
+- probe: Read fold-const.c's associate: block and split_tree, then measured the one spelling family the seven had not covered — the constant attached to the RED term (body_a1.c).
+- result: DISPROVEN. a1 moves the constant onto green with no change to what any term is; the seven earlier spellings all attached the constant to green or to blue, which is exactly the set fold maps back onto red.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, form tmp/grind/func_8003DE14/s3/body_a1.c plus its .rtl dump, no FAKE constructs

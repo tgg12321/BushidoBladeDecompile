@@ -1,27 +1,44 @@
-/* func_8003DE14 - best form as of grind session 2 (structural), honest floor 52/173.
+/* func_8003DE14 - best form as of grind session 3 (structural), honest floor
+ * 31/173 (was 52 at the end of s2).  ORDINARY C THROUGHOUT: no /* FAKE *\/
+ * construct, no borrowed local, no sanctioned-family claim needed.
  *
- * ORDINARY C THROUGHOUT. No /* FAKE *\/ construct, no borrowed local, no
- * sanctioned-family claim needed. s1's `total = count - 1;` borrow is GONE:
- * see hypotheses.md C1 for the loop.c:1631 threshold mechanism that replaced it.
+ * Inherited from s2 and still load-bearing:
+ *   - `s32 complement = blend_base - factor;` DECLARED INSIDE the inner
+ *     do-body.  It is loop-invariant, so loop.c hoists it back to the
+ *     inner-loop preheader (the target's `subu $t5,$fp,$t3` at 8003DF30), but
+ *     it is now the FIRST movable, so move_movables spends the first move on
+ *     it and applies `threshold -= 3` (loop.c:1904); the `count - 1` comparand
+ *     then fails the movable test and stays INLINE the way the target has it.
  *
- * Two structural changes vs s1's 57-scoring candidate:
- *   1. `s32 complement = blend_base - factor;` is DECLARED INSIDE the inner
- *      do-body (it was outside, in the `if (total > 0)` prologue). It is still
- *      loop-invariant, so loop.c hoists it straight back to the inner-loop
- *      preheader - exactly where the target has `subu $t5,$fp,$t3` (8003DF30).
- *      The point is that it is now the FIRST movable in the inner loop's
- *      movables list, so move_movables spends the first move on it and applies
- *      `threshold -= 3` (loop.c:1904). The next movable - the `count - 1`
- *      comparand at insn 147 - then fails `threshold * savings * lifetime >=
- *      insn_count` (55 < 59) and is reported "not desirable", i.e. it stays
- *      INLINE at the top of the inner loop the way the target has it, and is no
- *      longer hoisted on out of the outer loop either.
- *   2. target_color is one flat single expression instead of `|=` accumulation.
+ * Three s3 changes, each measured on this chassis (see evidence.md s3):
+ *   1. target_color is spelled RED-OR-CONSTANT FIRST:
+ *        (((u32)r >> 3) | (s32)-0x8000) | ((g & 0xF8) << 2) | ((b & 0xF8) << 7)
+ *      fold-const.c's `associate:` block (split_tree, fold-const.c:882/3696)
+ *      rewrites `(VAR|CON) | ARG1` into `VAR | (ARG1|CON)`, so this source
+ *      spelling reaches RTL as `red | (green | -0x8000)` - the TARGET's tree.
+ *      Writing the constant next to the green term (s2's y1 form) is what
+ *      produced the build's wrong `(red|K)|green`.  The emitted color block is
+ *      now byte-exact vs 8003DEA0-8003DED0.
+ *   2. `i = 0;` is placed LATE (immediately before `if (count > 0)`) instead of
+ *      early.  This shortens pseudo `i`'s live range enough to lift its
+ *      global.c allocno priority above `count`'s (they sit 1% apart: 3277 vs
+ *      3243 before the move), so `i` takes $s1 and `count` takes $s2 as in the
+ *      target, and the `move sN,zero` also lands in the target's slot.
+ *   3. The i == count-1 zero-pixel arm writes `*dst++ = pixel;` and jumps
+ *      straight to the loop-check label instead of sharing the `advance_dst:
+ *      dst++;` tail.  That lifts `dst`'s reg_n_refs enough to swap the
+ *      src/dst cursor priorities, so src lands in $a3 and dst in $a2 as in the
+ *      target (ra_solver inverse: the goal needed refs_up on dst by ~6).
  *
- * Result: build_insns == target_insns == 173 (s1's best had 174, an extra
- * `move s6,a0`), r/g/b land in the target's s5/s4/s3 and target_color in s6.
+ * Residual 31 (three items, see hypotheses.md s3 frontier):
+ *   (a) build_insns 172 vs target 173 - jump2 cross-jumps that arm's tail one
+ *       instruction further than the target does;
+ *   (b) `j`/`complement` still swapped (build t5=j/t4=complement, target
+ *       t4=j/t5=complement) - ra_solver says REACHABLE with ONE atom;
+ *   (c) blend-arm emission order (the mflo/srl interleave on the blue channel
+ *       and the final or/andi pair) - a sched.c item, no count delta.
  *
- * Chassis: HEAD 2026-09-10 (post -mel / -msoft-float). Score measured with
+ * Chassis: HEAD 2026-09-10 (post -mel / -msoft-float).  Score measured with
  * `sandbox func_8003DE14 --disable all`.
  */
 void func_8003DE14(s16 *rect, s32 count) {
@@ -39,7 +56,6 @@ void func_8003DE14(s16 *rect, s32 count) {
     count--;
     StoreImage((s32 *)rect, src_buf);
     DrawSync(0);
-    i = 0;
     ((u16 *)rect)[1] -= ((u16 *)rect)[3];
     LoadImage((s32)rect, (s32)src_buf);
     saved_y = rect[1];
@@ -49,8 +65,9 @@ void func_8003DE14(s16 *rect, s32 count) {
     r = color_info[0];
     g = color_info[1];
     b = color_info[2];
-    target_color = ((u32)r >> 3) | (((g & 0xF8) << 2) | (s32)-0x8000) | ((b & 0xF8) << 7);
+    target_color = (((u32)r >> 3) | (s32)-0x8000) | ((g & 0xF8) << 2) | ((b & 0xF8) << 7);
 
+    i = 0;
     if (count > 0) {
         s32 blend_base = 0x1000;
         do {
@@ -66,9 +83,9 @@ void func_8003DE14(s16 *rect, s32 count) {
                     if (i == count - 1) {
                         u16 pixel = *src;
                         if (pixel == 0) {
-                            *dst = pixel;
+                            *dst++ = pixel;
                             src++;
-                            goto advance_dst;
+                            goto loop_check;
                         }
                         *dst++ = target_color;
                         src++;

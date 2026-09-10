@@ -304,3 +304,149 @@ from PowerShell). Both objects are 179 instructions.
 - [s2] [s2] Residual 52 decomposes into exactly four items (side-by-side diff, both objects 179 instructions, tmp/grind/func_8003DE14/s2/sidediff_y1.txt): (1) the OR chain still folds `-0x8000` into the RED term instead of the green one; (2) src/dst cursors swapped (target a3=src/a2=dst); (3) j/complement swapped (target t4=j/t5=complement) - the SAME relation as (2), one allocation decision with two symptoms; (4) two local ordering differences in the blend arm plus one prologue pair, scratch names only, no count delta.
 
 - [s2] [s2] Tooling note: tmp/grind/func_8003DE14/s1/sd2.py must be run from the Bash tool (it shells out to `wsl` directly). `bash tools/wsl.sh ...` invoked from the PowerShell tool fails with 'wsl: command not found'. The batch measurement driver written this session is tmp/grind/func_8003DE14/s2/measure.ps1 (applies body_<form>.c via tmp/grind/func_8003DE14/s1/apply.py with Windows python - safe because apply.py uses newline='' - then runs the sandbox and prints score/build_insns/target_insns); run it as `& tmp/grind/func_8003DE14/s2/measure.ps1 -Forms a,b,c` for one turn per batch.
+
+## s3 (2026-09-10, structural) — floor 52 -> 31; OR chain, i/count and src/dst all closed
+
+Three independent residual items from s2's list were closed this session, each
+with a measured ordinary-C lever, and each mechanism was read out of a dump or a
+solver model rather than guessed.
+
+### 1. The OR-chain constant: fold-const.c's `associate:` block, and how to aim it
+
+s2's live frontier said the constant absorption "is decided in the TREE before
+RTL". That is CONFIRMED by the `.rtl` dump on the y1 (52) chassis: insn 86/87
+already read `(set (reg 94) (const_int -32768))` / `(set (reg 93) (ior (reg 92
+= red) (reg 94)))`, i.e. the constant is on the RED term before any RTL pass
+runs. But the frontier's conclusion — that no remaining regrouping can move it —
+is WRONG, and the rule that decides it is short enough to aim:
+
+`fold-const.c:3685 associate:` calls `split_tree` (fold-const.c:882) on arg0 and
+then arg1. For `X | (VAR|CON)` (s2's y1 spelling) split_tree(arg0) fails,
+split_tree(arg1) succeeds, and the code at fold-const.c:3778 rebuilds
+`(ARG0 | CON) | VAR` — the constant migrates ONTO THE OTHER TERM. For
+`(VAR|CON) | ARG1` split_tree(arg0) succeeds and fold-const.c:3729 rebuilds
+`VAR | (ARG1 | CON)` — again the constant migrates onto the other term.
+
+So the rule is: **whichever term you write the constant next to in C, fold moves
+it to the OTHER term.** The target wants `-0x8000` on the GREEN term, therefore
+the C must attach it to the RED term:
+
+    target_color = (((u32)r >> 3) | (s32)-0x8000) | ((g & 0xF8) << 2) | ((b & 0xF8) << 7);
+
+That form (`a1`) reaches `.rtl` as `red | (green | -0x8000)` — the target's tree
+— and emits `li $3,-32768 / lbu $21,$20,$19 / srl $4,$21,3 / andi $2,$20,0xf8 /
+sll $2,$2,2 / or $2,$2,$3 / or $4,$4,$2`, byte-exact against 8003DEA0-8003DEC0
+including register names. This retires s2's item (1) and explains all seven
+earlier spellings: y1 (52) attaches K to green -> lands on red; z4 (53) attaches
+K to green and leads with it -> `green | (red|K)`; q2 right-associated -> same
+family. All consistent with the one rule above.
+
+**In isolation `a1` scores 60, WORSE than y1's 52** — it is a strict improvement
+that the score hides, because fixing the OR chain flipped the `i`/`count`
+callee-save assignment (see 2). Banked as
+`rejected/a1-or-chain-exact-but-i-count-callee-saves-swapped-60.c` for the
+record; it is the base every later s3 form is built on. Score is not monotone in
+correctness here: the sidediff, not the number, told us the OR item was closed.
+
+### 2. `i`/`count` in $s1/$s2 — a 1% allocno-priority margin, moved by statement placement
+
+`tools/ra_solver/extract.py` + `simulate.py` reproduce this function's global
+allocation 25/25 exactly. On the a1 chassis pseudo 73 (`count`) had
+refs=13/livelen=119 -> priority 3277 and pseudo 74 (`i`) refs=12/livelen=111 ->
+priority 3243, so `count` was allocated first and took $s1. Target wants `i` in
+$s1. `inverse.py global --goal '{"73": 18, "74": 17}'` returned REACHABLE with 24
+one-atom vectors, the cheapest being `live_shrink` on `i` by as little as 2
+LUIDs (36*10000/109 = 3302 > 3277).
+
+The ordinary-C lever for that is where the `i = 0;` STATEMENT sits. Moving it
+from its s2 position (early, between the second `DrawSync` and the rect fixup)
+to anywhere later — measured at four different sites: immediately before
+`if (count > 0)`, before `r = color_info[0];`, before `saved_y = rect[1];`,
+before `func_80052BE4(color_info)` — all score **43** and all fix both the
+$s1/$s2 assignment AND the `move sN,zero` slot in the prologue. 52 -> 43.
+
+### 3. `src`/`dst` in $a3/$a2 — a reg_n_refs gap closed by NOT sharing the tail
+
+On the 43 chassis `inverse.py --goal '{"108": 7, "109": 6}'` (src -> $a3,
+dst -> $a2) was REACHABLE at one atom: `refs_down` on src by 6 or `refs_up` on
+dst by 6 (src refs=32/pri 27118, dst refs=26/pri 17931 — dst must overtake).
+The C lever that lifts `dst`'s references is to stop routing an arm through the
+shared `advance_dst: dst++;` tail and write the increment in the arm:
+
+    if (pixel == 0) { *dst++ = pixel; src++; goto loop_check; }
+
+Doing this in the `i == count - 1` zero-pixel arm ONLY (`d4`) scores **31** and
+the a2/a3 pair disappears from the diff (re-extracted model confirms 108 -> $a3,
+109 -> $a2). Doing it in more arms over-merges: two arms (`d5`) or all three
+(`d2`) score 35 with build_insns 171 (jump2 cross-jumps two instructions away);
+the blend-arm-only variant `d3` is 37/172; the blend-zero-arm-only variant `d6`
+is 33/172. `d4` is the least-merged form that still moves the allocation, and it
+is one instruction short (172 vs 173).
+
+### Forms measured this session (HEAD chassis 2026-09-10, `sandbox --disable all`)
+
+| form | change | score | build_insns |
+|---|---|---|---|
+| base | s2 candidate (y1) | 52 | 173 |
+| a1 | red-or-constant-first target_color | 60 | 173 |
+| a3 | base + `b_shift` masked in its own statement | 53 | 173 |
+| a2 | a1 + a3 | 61 | 173 |
+| **b1** | **a1 + `i = 0;` moved late (before `if (count > 0)`)** | **43** | 173 |
+| b2/b3/b4 | a1 + `i = 0;` moved to three other late sites | 43 | 173 |
+| c1 | b1 + `j` declared inside `if (total > 0)` | 44 | 173 |
+| c2 | b1 + `src`/`dst`/`j` all declared inside the `if` | 46 | 173 |
+| c3 | b1 + `j` declared before `factor` | 43 | 173 |
+| d1 | b1 + `b_shift` masked in its own statement | 44 | 173 |
+| d2 | b1 + inline `*dst++` in all three arms | 35 | 171 |
+| d3 | b1 + inline `*dst++` in the blend-full arm only | 37 | 172 |
+| **d4** | **b1 + inline `*dst++` in the last-frame zero arm only** | **31** | 172 |
+| d5 | b1 + inline `*dst++` in both zero arms | 35 | 171 |
+| d6 | b1 + inline `*dst++` in the blend zero arm only | 33 | 172 |
+| d7 | d4 + `j` declared inside `if (total > 0)` | 33 | 172 |
+| d8 | d4 + `complement = 0x1000 - factor` (literal, no `blend_base`) | 31 | 172 |
+
+Bodies: `tmp/grind/func_8003DE14/s3/body_*.c`; side-by-side diffs
+`sidediff_a1.txt`, `sidediff_b1.txt`, `sidediff_d2.txt`, `sidediff_d4.txt`.
+
+### What the remaining 31 is (sidediff_d4.txt, target 179 / build 178 objdump lines)
+
+1. **One instruction short.** The target keeps `sh v0,0(a2) / j .L8003E024 /
+   addiu a3,a3,2` in the `i == count - 1` zero arm and a separate shared
+   `addiu a2,a2,2`; our d4 emits one `j` and lets jump2 merge one instruction
+   more than the target does. This is the price of the (3) lever, and it is the
+   first thing to attack next: a shape that lifts `dst`'s refs WITHOUT giving
+   jump2 a second identical tail.
+2. **`j`/`complement` still swapped** (build $t5=j/$t4=complement, target
+   $t4=j/$t5=complement). Re-extracted on the d4 chassis: pseudo 115 (`j`)
+   refs=11/livelen=58/pri 5689, pseudo 116 (`complement`) refs=11/livelen=53/
+   pri 6226. `inverse.py --goal '{"115": 12, "116": 13}'` -> REACHABLE, minimal
+   ONE atom, 9 vectors: `live_shrink` 115 by 8, `refs_down` 116 by 1,
+   `live_extend` 116 by 8, or `refs_up` 115 by 2.
+3. **Blend-arm emission order** — the `mflo`/`srl` interleave on the blue
+   channel and the final `or`/`andi 0x7C00` pair. No count delta; a sched.c
+   item.
+
+### Ledger lines
+
+- [s3] New honest floor **31/173** (was 52). Best form: `memory/grind/func_8003DE14/candidate.c` = `tmp/grind/func_8003DE14/s3/body_d4.c`. Still ordinary C end to end — no FAKE construct, no sanctioned-family claim.
+- [s3] **The fold-const aiming rule (reusable project-wide):** in GCC 2.7.2, for an associative operator with a constant operand, `fold`'s `associate:` block (fold-const.c:3685, via `split_tree` at fold-const.c:882) moves the constant OFF the term you wrote it next to and ONTO the other operand. To make the constant land on term X in the emitted code, write it next to term Y in the C. Parentheses do not protect the grouping; this is decided in the tree, before RTL.
+- [s3] **Score is not monotone in per-item correctness on this function.** Fixing the OR chain (a1) raised the score 52 -> 60 because it flipped an unrelated 1%-margin allocno priority; adding the `i = 0;` move on top took it to 43. Judge items by the sidediff, and re-test a "worse" spelling as a BASE before rejecting it.
+- [s3] **`i = 0;` placement is a live-range lever.** `i` and `count` sat 1% apart in global.c allocno priority (3243 vs 3277); moving the `i = 0;` statement later by ~15 LUIDs shrinks `i`'s live range enough to reverse the order. Four different late placements all score 43, so the lever is "late", not any particular site.
+- [s3] **Arm-local `*dst++` is a reg_n_refs lever, and it is dose-dependent.** Routing ONE arm around the shared `advance_dst: dst++;` tail lifts `dst`'s references enough to swap the src/dst cursor allocation (target $a3=src/$a2=dst); routing two or three arms costs 2 instructions to jump2 cross-jumping. Only the one-arm dose (d4) is both allocation-correct and within 1 instruction.
+- [s3] **`tools/ra_solver` reproduces this function 25/25** (extract.py + simulate.py on the d4 chassis, dispositions 25/25 match). Every RA claim in this ledger from s3 on is model-backed, and the two remaining goals it was asked about both came back REACHABLE at one atom — this function has no FORECLOSED allocation item.
+
+- [s3] Honest floor is now 31/173 (was 52), build_insns 172 vs target 173. Best form: memory/grind/func_8003DE14/candidate.c = tmp/grind/func_8003DE14/s3/body_d4.c. Ordinary C end to end — no /* FAKE */ construct, no sanctioned-family claim, no borrowed local.
+
+- [s3] REUSABLE PROJECT-WIDE: in GCC 2.7.2, fold's associate: block (fold-const.c:3685 via split_tree at fold-const.c:882) moves a constant operand OFF the term it is written next to and ONTO the other operand of an associative chain. To make a constant land on term X in the emitted code, write it next to term Y. Parentheses do not protect the grouping — the rewrite happens in the tree, before RTL.
+
+- [s3] Score is not monotone in per-item correctness on this function: fixing the OR chain alone raised the score 52 -> 60 (it flipped a 1%-margin allocno priority elsewhere), and only with the i = 0 move on top did it fall to 43. Items must be judged by the side-by-side diff, and a 'worse' spelling re-tested as a BASE before it is rejected.
+
+- [s3] `i = 0;` placement is a live-range lever: i and count sat 1% apart in global.c allocno priority (3243 vs 3277), and moving the statement later by ~15 LUIDs reverses the order. Four different late placements all score 43, so the lever is 'late', not any particular site.
+
+- [s3] Arm-local `*dst++` is a reg_n_refs lever and it is dose-dependent: routing ONE arm around the shared `advance_dst: dst++;` tail swaps the src/dst cursors into the target's $a3/$a2, while two or three arms hand jump2 a second identical tail and cost 2 instructions (171 vs 173).
+
+- [s3] tools/ra_solver reproduces this function's global allocation exactly (extract.py + simulate.py, dispositions 25/25 on the d4 chassis), so every RA claim from s3 on is model-backed. Both goals it was asked about — i/count and src/dst — came back REACHABLE at one atom and both were then closed in ordinary C; the remaining j/complement goal is also REACHABLE at one atom. No allocation item on this function is FORECLOSED.
+
+- [s3] The residual 31 is exactly three items (tmp/grind/func_8003DE14/s3/sidediff_d4.txt): (1) one instruction short — jump2 merges the last-frame zero arm's tail one instruction further than the target, the price of the dst-refs lever; (2) j/complement still swapped (build $t5=j/$t4=complement vs target $t4=j/$t5=complement); (3) blend-arm emission order (the mflo/srl interleave on the blue channel and the final or/andi 0x7C00 pair), a sched.c item with no count delta.
+
+- [s3] s2's item (4) 'prologue pair (addiu a1,sp,16 vs move s1,zero)' and its items (1) and (2) are all gone from the diff; the whole prologue through the color computation is now byte-exact.
