@@ -1,25 +1,7 @@
-/* func_8005C6D0 - per-frame sound-request flush.
- * STATUS (grind s2, permuter modality, 2026-09-10): honest sandbox distance 0,
- * 118/118 instructions, on a chassis that NO LONGER carries the semantically-null
- * `if ((s16)voice < 0x18)` guard the layer-1 reviewer FAILed on 2026-09-10 09:29.
- * It still carries ONE construct that is pending a ruling: the byte offset i*8 is
- * named TWICE - `off` for the pool-entry load, and `nv` (assigned `nv = off;` at the
- * top of the voice-scan body, LICM-hoisted into the scan's preheader) for the two
- * volume-byte reads.  DO NOT submit this as candidate-ready until that ruling lands;
- * the driver's banned-construct tripwire covers `entry_off`/`vol_off`, and `nv` is the
- * same intent respelled.
- *
- * Why the second name is there (measured, not argued - s2 evidence.md):
- * the target emits `addu $s2,$v1,$zero` at 0x8005C768, a REAL instruction in the
- * shipped bytes: $v1 holds i*8 computed at the top of the outer loop for the pool
- * load, and $s2 is a second, callee-saved copy of it that survives the
- * SpuGetKeyStatus call and feeds the two `lbu %lo(D_800EFB7{C,D})` volume loads.
- * All seven single-name spellings were measured on this chassis and none of them
- * produces that copy (best 8 / 114 insns); the guard-free single-`off` form loses
- * exactly the 4 insns of the duplicated exit test plus the copy.
- *
- * Object model, LICM, argument-order and `next`-placement notes from s1/s2 are
- * unchanged and still apply - see memory/grind/func_8005C6D0/hypotheses.md H1-H7.
+/* Per-frame sound-request flush: walk the 24-entry pending-sound pool, and for
+ * every entry whose VAB is loaded, find the first free SPU voice at or after the
+ * running `next` cursor and key the note on with the entry's stored volumes.
+ * Each pool slot is cleared as it is visited.
  */
 extern s32 D_800EFC44;
 extern s32 D_800EFC50;
@@ -46,6 +28,20 @@ void func_8005C6D0(void) {
         if (p != 0 && (s32)D_800EFC38[*p] < 0) {
             voice = next;
             for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) {
+                /* FAKE: second name for the pool byte offset i*8, feeding only the
+                 * two volume-byte reads (named-intermediate family, .claude/rules/
+                 * no-new-park-categories.md SOTN-accepted list as amended by
+                 * .claude/rules/ordinary-c-judge-decidable.md Ruling 1);
+                 * mechanism: GCC 2.7.2 local-alloc/global.c gives one C name one
+                 * pseudo, so a single name can never produce the target's second,
+                 * callee-saved copy of the offset that survives the SpuGetKeyStatus
+                 * call (`addu $s2,$v1,$zero`, asm/funcs/func_8005C6D0.s:41,
+                 * 0x8005C768); loop.c LICM hoists this copy into the scan preheader
+                 * exactly where the target emits it;
+                 * lever-exhaustion: memory/grind/func_8005C6D0/hypotheses.md H9 +
+                 * evidence.md s2 - nine single-name spellings (8..39, all short of
+                 * 118 insns), fifteen guard-free arrangements, and a 6,562-iteration
+                 * decomp-permuter campaign that converged independently on this form. */
                 nv = off;
                 if (SpuGetKeyStatus(1 << voice) != 1) {
                     vab = *p;

@@ -250,3 +250,21 @@
 - probe: tmp/grind/func_8005C6D0/s2/mkws.py builds base.c/compile.sh/target.o/settings.toml; smoke test showed target.o 118 insns vs base.o 114; `permuter_campaign.py launch --stop-on-zero -j 6`, then `wait`, then `harvest --stop`.
 - result: 14 novel finds in 6,562 iterations, best score 0 at 231.6 s. The score-0 find is `new_var = off;` at the top of the voice-scan body with the volume reads using `new_var` — a second name for the offset, i.e. the construct the driver's ban already covers under the `entry_off`/`vol_off` spelling.
 - verdict: CONFIRMED
+
+## [s3] The s2 candidate body, applied to src/text1b.c with the Judge-mandated `/* FAKE: ... */` annotation added at `nv = off;` and the grind-status header replaced by an ordinary function comment, measures sandbox distance 0 (118 target insns / 118 build insns, rules_dropped 0) on today's toolchain.
+- mechanism: Comments are stripped by cpp before cc1 sees the translation unit, so the annotation and header rewrite are byte-free by construction; the body itself is character-for-character the s2 candidate the Judge reviewed at 2026-09-10 09:49.
+- probe: `python3` splice of tmp/grind/func_8005C6D0/s2/body.c over the `INCLUDE_ASM("asm/funcs", func_8005C6D0);` line at src/text1b.c:2695, then `& tools/wteng.ps1 main sandbox func_8005C6D0 --disable all`.
+- result: {"score": 0, "target_insns": 118, "build_insns": 118, "scorable": true, "rules_dropped": 0}. `verify-oracle --rebuild` was NOT run: the engine refuses it on a dirty tree ("refused": "dirty-build-inputs") because a rebuild would overwrite the canonical build/ reference the sandbox scores against, and this session may not commit. Byte proof on main is the driver's step.
+- verdict: CONFIRMED
+
+## [s3] Judge disposition of record for the one FAKE construct in this body, quoted so no future session re-litigates it.
+- mechanism: docs/grind/decisions.md:26644 (2026-09-10 09:49) - "the second offset name IS sanctioned - no-new-park-categories SOTN-accepted -> named-intermediate, as amended by ordinary-c-judge-decidable Ruling 1 (once-written, ANY number of reads ...)". All five prongs verified by the Judge from the shipped bytes; exhaustion verified against evidence.md s2 rather than taken on the session's word; the layer-1 ban explicitly narrowed because its stated ground (the duplicated voice-loop guard) is gone from the body.
+- probe: Read docs/grind/decisions.md:26640-26646 and .claude/rules/no-new-park-categories.md:204-235 plus .claude/rules/ordinary-c-judge-decidable.md:60-80 for the current scope of the family and of the once-written relaxation.
+- result: SOLE DEFECT was the missing annotation. Fixed this session; self_vet.md rewritten around the single construct with the family scope sentence quoted verbatim from no-new-park-categories.md:204 and three precedents (that line, docs/reference/sotn-construct-index.md:1427 for the SOTN PSX `new_var_temp` class in src/dra/42398.c, and the ruling itself).
+- verdict: CONFIRMED
+
+## [s3] The sotn-construct-index line cited by .claude/rules/ordinary-c-judge-decidable.md:69 for the `new_var_temp` class has DRIFTED - index line 649 is now a [SATURN] entry (`src/saturn/sattypes.h:363`), which carries no weight for a GCC 2.7.2 question.
+- mechanism: docs/reference/sotn-construct-index.md is machine-generated at a pinned commit and is regenerated; absolute line numbers baked into rule prose do not survive regeneration.
+- probe: `sed -n '649p' docs/reference/sotn-construct-index.md` and `grep -n new_var_temp` over the same file.
+- result: The live PSX `new_var_temp` block is the section at docs/reference/sotn-construct-index.md:1423-1443 (20 hits; `src/dra/42398.c:254,257,259`, `src/dra/cd.c:520-522`, `src/dra/5087C.c:213`, `src/dra/menu.c:1281,1956`). Cite line 1427 (`src/dra/42398.c:254 - u32 new_var;`), not 649. Sessions on other functions citing the rule's baked-in 649 will hand the reviewer a SATURN entry and fail the citation-hygiene check for a reason that is not their fault.
+- verdict: CONFIRMED

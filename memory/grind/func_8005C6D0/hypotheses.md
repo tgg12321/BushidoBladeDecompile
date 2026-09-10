@@ -176,3 +176,46 @@ detector-evasion artifact.
    independently of `i` (a genuinely different value, not a copy).
 3. The permuter workspace is live and cheap to re-seed: tmp/perm_c6d0 with a different
    base.c is one `mkws.py` run.
+
+## s3 (permuter modality, 2026-09-10) - ANNOTATION DEFECT CLOSED, body re-measured at distance 0
+
+### H11 - the 2026-09-10 09:49 Judge ruling's SOLE DEFECT (missing `/* FAKE: ... */`
+### annotation on the second offset name) is a comment-only fix that does not perturb
+### the bytes
+**CONFIRMED (measured, distance 0).** The Judge PASSED every prong of the
+named-intermediate claim for `nv` (once-written; real value - it read
+asm/funcs/func_8005C6D0.s:41 `addu $s2,$v1,$zero` at 0x8005C768 directly; byte-neutral
+118==118; fresh local; destination not live-pre-initialized) and PASSED the exhaustion
+record, objecting only that candidate.c carried a grind-status header instead of the
+family's mandatory annotation at the construct. This session applied the s2 candidate
+body to src/text1b.c verbatim, replaced the grind-status header with an ordinary
+function comment describing what the function does, and added the three-element FAKE
+annotation (what / named GCC-pass mechanism / lever-exhaustion pointer) immediately
+above `nv = off;`. `sandbox func_8005C6D0 --disable all` prints score 0, target_insns
+118, build_insns 118, rules_dropped 0, cheat_asm_stripped 152 (that count is the
+file-wide INCLUDE_ASM population of text1b.c, not this function). Comments are
+whitespace to cc1, so this confirms what it should: the annotation costs nothing.
+The Judge also explicitly narrowed the layer-1 ban recorded for this function, whose
+stated ground (the semantically-null duplicated voice-loop guard) is absent from this
+body - see H8.
+
+### H12 - the driver-reported chassis floor of 5 is stale ledger state, not a chassis
+### regression
+**CONFIRMED (measured).** The dispatch brief reported "HEAD honest floor right now:
+measurement unavailable" and a last-recorded ledger floor of 5 (the s1 recon number);
+main carries `INCLUDE_ASM("asm/funcs", func_8005C6D0);` at src/text1b.c:2695, so there
+was no C body on HEAD to measure. Applying memory/grind/func_8005C6D0/candidate.c
+reproduces distance 0 on today's toolchain, so every chassis-relative conclusion banked
+in s1/s2 (H1-H10) stands unchanged and none of them needed re-derivation.
+
+### Frontier for s4 (only if this submission does not land)
+1. **Nothing structural is open.** The body is byte-exact and every prong of the
+   governing family has been adjudicated PASS by the Judge; the only failure mode left
+   is a review-process one. If layer-1 FAILs this body, the correct move is a
+   `ruling-request` quoting the 2026-09-10 09:49 ruling (docs/grind/decisions.md:26644)
+   and the narrowed ban - NOT a respelling, which the driver keys as the same body.
+2. If the annotation's WORDING is what draws an objection, the fix is again
+   comment-only and byte-free; do not touch the body to satisfy it.
+3. The permuter workspace tmp/perm_c6d0 remains live and re-seedable via
+   tmp/grind/func_8005C6D0/s2/mkws.py if a future ruling ever reopens the object model
+   at the volume sites (frontier item 2 of s2).

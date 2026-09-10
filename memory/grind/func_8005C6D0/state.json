@@ -50,6 +50,13 @@
    "hash": "de221c44dff2b149",
    "when": "2026-09-10T14:29:46.897028+00:00",
    "summary": "The inner scan's `if ((s16)voice < 0x18)` guard duplicates the top-tested `for`'s own condition exactly \u2014 semantically null \u2014 and the candidate's own header comment plus evidence.md justify it purely by jump.c duplicate_loop_exit_test / reorg.c delay-slot prediction, which the self-vet's T3 answer f"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "734278b1d600fbd9",
+   "when": "2026-09-10T14:58:39.236386+00:00",
+   "summary": "final call: One non-ordinary construct: `nv = off;` (candidate.c:45), a fresh once-written local giving the pool byte offset i*8 a second name for the two volume-byte reads. Filed under named-intermediate declara"
   }
  ]
 }
