@@ -621,3 +621,196 @@ spelling is oracle-proven project convention, not a use-site object-model invent
 - probe: grep -rn D_8008D118 src/*.c include/*.h
 - result: FALSE POSITIVE for this function. src/code6cac.c:19 already declares `extern u8 D_8008D118;`, and the COMPLETED-C sibling in the same file ships the byte-identical spelling at src/code6cac.c:756 and :783; src/code6cac_b.c uses it six more times. The spelling is oracle-proven project convention for this LUT, not something this candidate invented.
 - verdict: CONFIRMED
+
+## s8 (synthesis, 2026-09-09)
+
+Chassis: -mel -msoft-float, candidate.c body, sandbox 7 (re-measured by fake_ablate at dispatch).
+FAKE constructs present in every measurement below unless stated: the `log2_val = li_v0;` staging
+(worth 19 insns, re-measured this session) and the `s32 sp_tmp[4]` oversized-locals object.
+
+## Frontier (next session) — RESET
+
+The residual is now ONE requirement with a dump-level statement, and the two "spelling" directions
+(the LZC arm's locals, the pre-branch block's locals) are both swept flat. Ranked:
+
+1. **Extend the island-input copy's live range FORWARD into `scale`'s, instead of extending
+   `scale`'s backward.** s6/s7 attacked the 99<->78 conflict from `scale`'s side and every spelling
+   cost 15-47 insns (s8's variable-merge form is the cheapest at +10). The unattacked side is the
+   copy: s5's `inverse.py local --block 6 --goal '{"0": 4}'` returned exactly ONE minimal vector,
+   `[live_extend] qty 0 dies later (5 -> 9)`, and s5 only ever spelled it as an OVERSHOOT (the tied
+   output consumed at the LUT index, position ~18, where cse refolds the copy: sandbox 12). The
+   probe is a SHORT extension — a consumer of the island-input value between the LZCR read and the
+   `0x16 - li_v0` subtraction — measured on the s5 w6 tied chassis
+   (`rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c`), plus the same on the
+   `-fno-cse-follow-jumps` global-copy chassis (s6/v1.c) to separate "cse refolds it" from "it does
+   not conflict". Before spelling anything, re-run `inverse.py` on the CURRENT w6 body with the goal
+   restated as "99 conflicts with 78" rather than "qty 0 gets reg 4" — the two goals are the same
+   fact and the solver may return a different, cheaper vector for the conflict form.
+
+2. **Re-run the RA solver / greg dump with the merged-variable body (s8's +10 form) as the base.**
+   It is the closest form yet to the target's own pseudo structure (one variable carrying the arm
+   result and the `(x<<6)/500 + 0xC0` tail, as the target's $a1/$v1 do), it is ordinary C with no new
+   family risk, and its 10-insn cost has never been decomposed. If the 10 insns are a small number of
+   seat moves rather than a structural regression, the merged body may be a better chassis to drive
+   than candidate.c even though its raw score is worse — the s5 w6 body was adopted as "structurally
+   closer at equal floor" on exactly that reasoning.
+
+3. **The `log2_val`/98 half of the requirement, now that it is known to be COSMETIC for the copy.**
+   98 currently takes $a0 via `98 preferences: 4`; the target has it at $a1 sharing with `sum_sq`.
+   s6 framed this as requirement (ii) and s7+s8 swept both the staged and unstaged families flat, so
+   the remaining lever is 98's PREFERENCE, not its spelling: find what copy insn gives 98 its
+   preference for $4 (read `expand_preferences` propagation in the .greg/.lreg dumps with
+   `pwsh tools/grinder/dump.ps1 func_80018094`) and whether removing that copy moves 98 to $a1
+   without disturbing the seats that are already correct.
+
+DROPPED from the frontier (do not re-file): the s5/s7 item "grep sotn-construct-index.md for tied
+inline-asm operand precedent and file a ruling-request". sotn-construct-index.md has no inline-asm
+class, and s8's mechanism read shows the tied operand cannot affect the copy's SEAT, which is the
+entire residual. A ruling on it would buy nothing.
+
+## [s8] Re-audit: the floor-7 chassis and its FAKE constructs still measure as the ledger records
+
+- statement: candidate.c on the current chassis measures sandbox 7, and the `log2_val = li_v0;`
+  staging FAKE is load-bearing on this body.
+- probe: `python3 tools/fake_ablate.py --func func_80018094 --file code6cac --candidate
+  memory/grind/func_80018094/candidate.c --json` (tmp/grind/func_80018094/s8/ablate.json).
+- result: keep-all 7 (build_insns 153); drop-staging 26 (build_insns 152). The staging is worth 19
+  insns. Only one FAKE unit is detected — the `sp_tmp[4]` marker is a comment-body continuation line
+  and is not an ablatable unit, so the oversized-locals construct was not re-measured.
+- verdict: CONFIRMED.
+
+## [s8] The island-input copy reaches the target's $a0 if and only if its allocno conflicts with `scale`'s
+
+- statement: on the surviving-copy chassis the ONLY change needed for allocno 99 (the island-input
+  copy) to be assigned $a0 is that it conflict with allocno 78 (`scale`, seated at $v1); the second
+  change s6 identified (98 sharing $a1 with 77) moves `log2_val` only.
+- mechanism: `99 conflicts: 72 73 77 99 2 12 29` in tmp/grind/func_80018094/s6/d2_v1/v1.i.greg does
+  not include 78; 78 is assigned $3; $2 is closed by the island asm's own clobber list; global.c
+  `find_reg` scans hard regs ascending (no REG_ALLOC_ORDER on MIPS), so 99 takes $3. Closing $3 makes
+  $4 the first free register, and 99 may share $4 with 98 because they do not conflict.
+- probe: read of the banked s6 greg dump against the target bytes asm/funcs/func_80018094.s:60-114
+  (`.s:72 addu $a0,$a1,$zero`, `.s:91 srav $v0,$a1,$v1`, `.s:103 sll $v1,$a1,6`).
+- result: `sum_sq` ($a1) and `scale` ($v1) already match the target; only 98 and 99 differ. Sharpens
+  s6's "two simultaneous changes" to "one necessary-and-sufficient change plus one cosmetic one".
+- verdict: CONFIRMED.
+
+## [s8] No spelling of the island-input copy can move its seat, because the preference channel is closed for it
+
+- statement: neither local-alloc's suggested-register path nor global.c's preference propagation can
+  give the island-input copy a preference for $a0 on any spelling of this body, so its seat is
+  decided purely by its conflict set.
+- mechanism: local-alloc populates `qty_phys_copy_sugg`/`qty_phys_sugg` only from `combine_regs`
+  when one side of a copy is a HARD register (tools/gcc-2.7.2/local-alloc.c:1860-1898), and the LZC
+  block contains no hard-register traffic, so `find_free_reg`'s `just_try_suggested` path
+  (local-alloc.c:2206-2213) never fires for that quantity. global.c's `expand_preferences`
+  (tools/gcc-2.7.2/global.c:838-871) propagates a preference across a `single_set` only when the
+  SOURCE carries a REG_DEAD note; `sum_sq` outlives the copy (the target itself re-uses it as the
+  LUT index), so there is no note and no propagation.
+- probe: source read of both allocators plus the banked greg dump (99 has no `preferences:` line
+  while 98 does).
+- result: explains s6's refutation (a genuine cross-block GLOBAL copy also took $3) and retires the
+  whole "materialise the copy differently" family, including the tied `"=r"/"1"` operand lineage.
+- verdict: CONFIRMED.
+
+## [s8] The UNSTAGED LZC-arm family contains a form below the floor
+
+- statement: sweeping the pre-generated unstaged family (the LZC arm written with a fresh named
+  local carrying the LZCR read instead of reusing `log2_val`) finds a spelling below 7.
+- mechanism: the staged and unstaged families differ in whether pseudo 98 conflicts with pseudo 77 —
+  s6's conflict-set requirement (ii). The staged family is flat at 7; the unstaged family had never
+  been swept beyond its two endpoints.
+- probe: `tmp/grind/func_80018094/s8/sweep_enum.sh` over `tmp/grind/func_80018094/s7/enum/`, chunked
+  10 ways; chunk 0 = 344 spellings measured (tmp/grind/func_80018094/s8/res_chunk_00.json). The
+  remaining nine chunks were killed when throughput measured ~2 s/variant (2 h for the full set).
+- result: histogram 13x141, 15x105, 18x98. Best 13 — six insns above the floor and exactly the value
+  s7 measured for both sampled endpoints. Zero improvements in a 10% sample of the family.
+- verdict: KILLED.
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s7 enum/ bodies (which carry the
+  `sp_tmp[4]` oversized-locals FAKE but NOT the `log2_val` staging FAKE), 344 of 3,440 spellings
+
+## [s8] The pre-branch block's INTERLEAVED naming space contains a form below the floor
+
+- statement: enumerating the naming, association and diff/store shape of the pre-branch region while
+  KEEPING the three `SCRV->x/y/z` stores interleaved with the diffs (the shape s7's e4 sweep could
+  not reach) finds a spelling below 7.
+- mechanism: s7's `spelling_enum` treats a memory store as an anchor and moved all three stores to
+  the end of the region, so its 550-spelling e4 sweep only measured the deferred-store shape (best
+  42, ~35 insns worse to begin with). The interleaved shape is the one candidate.c uses and the block
+  in which the target's island-input copy must be born (s6).
+- probe: `tmp/grind/func_80018094/s8/gen_pre.py` generates 96 variants over five axes (name
+  `((s32 *)arg0[1])` as a pointer local; name the three `arg1[10..12]` reads; name the three squares;
+  four sum associations incl. split accumulation; three diff/store shapes incl. store-then-read-back
+  and squares-read-from-SCRV), swept with the s7 run_sweep.sh wrapper
+  (tmp/grind/func_80018094/s8/pre_results.json).
+- result: histogram 7x12, 9x12, 20x3, 23x3, 25x12, 26x12, 27x6, 28x3, 30x6, 36x6, 38x3, 39x6, 40x6,
+  41x6. Best 7 with twelve ties; zero improvements. The pre-branch block is naming/order/association-
+  insensitive exactly as the LZC arm is.
+- verdict: KILLED.
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with both FAKE
+  constructs present, 96 spellings
+
+## [s8] Spelling `scale` and `log2_val` as ONE variable reproduces the target's shared-seat pattern and improves the floor
+
+- statement: merging `scale` and `log2_val` into a single local — the shape the target's own seats
+  suggest, since its $a1 carries the arm result and feeds the `(x<<6)/500 + 0xC0` tail while $v1
+  carries `scale` — creates the copy<->`scale` conflict and improves on 7.
+- mechanism: one variable means one allocno, so 78 and 98 merge; if the merged allocno were live at
+  the island entry it would close $3 to the island-input copy (the s8 necessary-and-sufficient
+  requirement).
+- probe: the merge applied to candidate.c and to the s5 w6 tied body
+  (tmp/grind/func_80018094/s8/hand/h1_merge_scale_log2_plain.c, h3_merge_scale_log2_tied.c), swept
+  against the candidate.c baseline.
+- result: baseline 7 (153 insns); merged-plain **17** (153 insns); merged-tied **17** (153 insns).
+  Identical instruction count on all three, i.e. 10 insns of pure seat churn. The merged pseudo is
+  still DEFINED inside each arm, so it is not live at the island entry and the required conflict is
+  not created. Banked as rejected/merge-scale-and-log2val-one-variable-costs-10.c and its
+  -tied-chassis- twin. Notable anyway: at +10 it is the cheapest member of the scale-liveness family
+  measured to date (s7's cheapest was +15).
+- verdict: KILLED.
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c and the s5 w6 tied body, both
+  FAKE constructs present
+
+## [s8] candidate.c on the current chassis measures sandbox 7, and the `log2_val = li_v0;` staging FAKE is load-bearing on this body.
+- mechanism: Mandated kill re-audit: an instance kill is only as good as the chassis and FAKE state it was measured under, so the floor-7 body and its FAKE units were re-measured before any new probe.
+- probe: python3 tools/fake_ablate.py --func func_80018094 --file code6cac --candidate memory/grind/func_80018094/candidate.c --json (tmp/grind/func_80018094/s8/ablate.json)
+- result: keep-all 7 (build_insns 153); drop-staging 26 (build_insns 152) — the staging is worth 19 insns, not the 4 implied by the s6 note. Only one FAKE unit is detected: the sp_tmp[4] oversized-locals marker sits on a comment-body continuation line and is not an ablatable unit, so it was not re-measured. Every s7 kill therefore stands on an unchanged chassis.
+- verdict: CONFIRMED
+
+## [s8] On the surviving-copy chassis the only change needed for the island-input copy (greg allocno 99) to be assigned the target's $a0 is that it conflict with allocno 78 (`scale`, seated at $v1); the second change s6 identified (98 sharing $a1 with 77) moves `log2_val` only.
+- mechanism: tmp/grind/func_80018094/s6/d2_v1/v1.i.greg gives `99 conflicts: 72 73 77 99 2 12 29` — 78 is absent, 78 holds $3, $2 is closed by the island asm's own clobber list, and global.c find_reg scans hard regs ascending (no REG_ALLOC_ORDER on MIPS), so 99 takes $3. Closing $3 makes $4 the first free register, and 99 may share $4 with 98 because they do not conflict.
+- probe: Read of the banked s6 greg dump against the target bytes asm/funcs/func_80018094.s:60-114 (.s:72 `addu $a0,$a1,$zero` in the beqz delay slot; .s:91 `srav $v0,$a1,$v1`; .s:103 `sll $v1,$a1,6`; .s:109 `addiu $v1,$v0,0xC0`).
+- result: sum_sq ($a1) and scale ($v1) are ALREADY seated exactly as the target seats them; only log2_val (ours $a0, target $a1) and the copy (ours $v1, target $a0) differ. This sharpens s6's 'two simultaneous conflict-set changes' into one necessary-and-sufficient change plus one cosmetic one, and it re-prices the whole search: the residual is a single liveness fact about `scale`.
+- verdict: CONFIRMED
+
+## [s8] Neither local-alloc's suggested-register path nor global.c's preference propagation can give the island-input copy a preference for $a0 on any spelling of this body, so that pseudo's seat is decided purely by its conflict set.
+- mechanism: local-alloc populates qty_phys_copy_sugg / qty_phys_sugg only from combine_regs when one side of a copy is a HARD register (tools/gcc-2.7.2/local-alloc.c:1860-1898), and the LZC block contains no hard-register traffic, so find_free_reg's just_try_suggested path (tools/gcc-2.7.2/local-alloc.c:2206-2213) never fires for that quantity. global.c's expand_preferences (tools/gcc-2.7.2/global.c:838-871) propagates a preference across a single_set only when the SOURCE carries a REG_DEAD note, and sum_sq outlives the copy (the target itself re-uses it as the LUT index), so there is no note and no propagation.
+- probe: Source read of both allocators plus the banked greg dump, in which 98 carries a `preferences: 4` line and 99 carries none.
+- result: Explains s6's refutation (a genuine cross-block GLOBAL copy also took $3) and retires the entire 'materialise the copy differently' family, including the s5 tied "=r"/"1" operand lineage. Consequence for the ledger: the s5/s7 frontier item proposing a ruling-request on that tied operand is DROPPED — the operand fixes the copy's POSITION, which was never the residual, and docs/reference/sotn-construct-index.md has no inline-asm-operand class to cite for it anyway.
+- verdict: CONFIRMED
+
+## [s8] The unstaged LZC-arm family (the arm written with a fresh named local carrying the LZCR read instead of reusing log2_val) contains a spelling below 7.
+- mechanism: The staged and unstaged families differ in whether pseudo 98 conflicts with pseudo 77 — s6's conflict-set requirement (ii). The staged family is flat at 7; the unstaged family had never been swept beyond its two endpoints, both of which scored 13.
+- probe: tmp/grind/func_80018094/s8/sweep_enum.sh over the 3,440 pre-generated bodies in tmp/grind/func_80018094/s7/enum/, chunked ten ways; chunk 0 completed (344 spellings, tmp/grind/func_80018094/s8/res_chunk_00.json). The remaining nine chunks were killed once throughput measured ~2.0 s/variant (~2 h for the full set, which does not fit a session) and src/code6cac.c was restored with git checkout.
+- result: Histogram 13x141, 15x105, 18x98. Best 13 — six insns above the floor and exactly the value s7 measured for both sampled endpoints; zero improvements in a 10% sample. Taken with s7's staged-family sweep this is a two-family result: both sides of requirement (ii) are flat.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), the s7 enum/ bodies (carrying the sp_tmp[4] oversized-locals FAKE but NOT the log2_val staging FAKE), 344 of 3,440 spellings
+
+## [s8] The pre-branch block's INTERLEAVED naming space — the shape s7's e4 sweep could not reach because spelling_enum anchors memory stores — contains a spelling below 7.
+- mechanism: s7's e4 sweep moved all three SCRV->x/y/z stores to the end of the region, so its 550 spellings only measured the deferred-store shape (best 42, ~35 insns worse to begin with). The interleaved shape is candidate.c's, and it is the block in which the target's island-input copy must be born (s6).
+- probe: tmp/grind/func_80018094/s8/gen_pre.py generates 96 bodies over five axes (name ((s32 *)arg0[1]) as a pointer local; name the three arg1[10..12] reads; name the three squares; four sum associations including split accumulation; three diff/store shapes including store-then-read-back and squares-read-from-SCRV), swept with the s7 run_sweep.sh wrapper (tmp/grind/func_80018094/s8/pre_results.json).
+- result: Histogram 7x12, 9x12, 20x3, 23x3, 25x12, 26x12, 27x6, 28x3, 30x6, 36x6, 38x3, 39x6, 40x6, 41x6. Best 7 with twelve ties, zero improvements. The pre-branch block is naming/order/association-insensitive exactly as the LZC arm is, which closes s7's frontier item 1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with both FAKE constructs present, 96 spellings
+
+## [s8] Spelling `scale` and `log2_val` as ONE variable — the shape the target's own seats suggest, since its $a1 carries the arm result and feeds the (x<<6)/500 + 0xC0 tail while its $v1 carries scale — creates the copy-to-scale conflict and improves on 7.
+- mechanism: One variable means one allocno, merging 78 and 98; if the merged allocno were live at the island entry it would close $3 to the island-input copy, which is the necessary-and-sufficient requirement identified this session.
+- probe: The merge applied to candidate.c and to the s5 w6 tied body (tmp/grind/func_80018094/s8/hand/h1_merge_scale_log2_plain.c and h3_merge_scale_log2_tied.c), swept against the candidate.c baseline.
+- result: baseline 7 (build_insns 153); merged-plain 17 (153); merged-tied 17 (153) — identical instruction counts, i.e. 10 insns of pure seat churn. The merged pseudo is still DEFINED inside each arm, so it is not live at the island entry and the required conflict is not created. Ordinary C, never previously tried, and at +10 the cheapest member of the scale-liveness family measured so far (s7's cheapest was +15). Banked as rejected/merge-scale-and-log2val-one-variable-costs-10.c and its -tied-chassis- twin.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c and the s5 w6 tied body, both FAKE constructs present

@@ -1,37 +1,30 @@
-/* func_80018094 candidate -- s4 (permuter, 2026-09-09). sandbox --disable all == 7 (153/153 insns,
- * rules_dropped 0, 20 island insns stripped on both sides). Chassis: -mel -msoft-float. s2's v8a body
- * (floor 18) plus the OVERSIZED-LOCALS spelling of the LZC output local (s32 sp_tmp[4], only element 0
- * written and read), which closes the 8 frame-offset insns at ZERO insn cost (frame 40 -> 48, vars 8 -> 16).
- * Lineage: s1 v6a (scratchpad-in-struct + else-arm scale=0x100) + the COMPLETED sibling func_8001A67C's
- * LZCR-read statement block (src/code6cac.c:869-873) + this session's locals-object extension + the
- * permuter's log2_val staging of the LZCR-read result (`log2_val = li_v0; shift_a = 0x16 - log2_val;`,
- * campaign s4-v20g-framefixed output-230-1), which seats sum_sq in $a1 for every use and takes 10 -> 7.
- * Islands: gte_SetRotMatrix / gte_SetTransMatrix in the func_80019310 / func_800300B4 spelling,
- * LZCS/LZCR in the authorized func_8001A67C template (inline_asm_canonical.txt:266). No register pins.
- * Residual (7, tmp/grind/func_80018094/s4/v21a_pairdiff.txt): ALL of it is downstream of the single
- * s5 UPDATE: an EQUAL-floor (7) but structurally closer chassis now exists --
- * rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c adds a tied asm output
- * on the island (which materialises the missing copy, in the target's delay-slot position) plus
- * a do{...}while(0) wrap that pays back its 3-insn cost. There the residual is ONE register name
- * (our copy takes $v1, target's takes $a0). Read s5 in evidence.md before choosing a chassis.
- * s7 UPDATE (enumerate): this body is unchanged and still measures 7. 1,039 spellings were swept
- * this session (tools/spelling_enum.py + sweep_variants.py); 169 of them tie this body at 7 and
- * none beat it. The LZC arm's local naming / declaration-order / commutative-operand space is
- * EXHAUSTED (471 spellings, flat). The s6 frontier's `scale`-liveness lever is KILLED (15-47 insns
- * more expensive in every form). See evidence.md s7 and hypotheses.md H31-H37.
- * s8 UPDATE (synthesis): this body is unchanged and still measures 7 (re-measured by
- * tools/fake_ablate.py; ablating the log2_val staging costs 19 insns -> 26). The residual is
- * now reduced to ONE dump-level requirement: the island-input copy (greg allocno 99) must
- * CONFLICT with `scale` (allocno 78, seated at $v1) — then $3 closes, $2 is already closed by
- * the island clobber, and the ascending find_reg scan hands the copy the target's $a0. The
- * preference channel is mechanically closed for that pseudo (local-alloc.c:1860-1898 needs
- * hard-reg copy traffic in the block; global.c:838-871 needs a REG_DEAD note on the copy's
- * source, and sum_sq outlives it), so NO spelling of the copy itself can move its seat.
- * s8 also swept the pre-branch interleaved naming space (96 spellings, best 7) and killed the
- * scale/log2_val variable merge (17). See evidence.md s8.
- * missing island-input copy. The target reserves $a0 for a `move a0,a1` copy that reorg parks in the
- * `beqz v0` delay slot (ours: nop), which in turn pushes li_v0 to $v0 and log2_val to $a1; ours puts
- * both in $a0 and feeds the island $a1 directly. See memory/grind/func_80018094/{evidence,hypotheses}.md. */
+/* REJECTED s8 (2026-09-09): the same merge applied to the s5 w6 tied-copy chassis: sandbox == 17.
+ The merge is chassis-independent (17 on both the plain floor-7 body and the tied body). */
+/* func_80018094 -- s5 (permuter, 2026-09-09). sandbox --disable all == 7, i.e. EQUAL to the banked
+ * floor, not better -- kept because it is a STRUCTURALLY DIFFERENT chassis that the next session
+ * should seed from. Built on candidate.c (s32 sp_tmp[4] + the scale staging) by adding
+ *   (a) a TIED asm output on the LZC island (`: "=m"(sp_tmp[0]), "=r"(lz_in) : "1"(sum_sq)`), which
+ *       forces GCC to materialise the island-input COPY that candidate.c is missing, and
+ *   (b) a do{...}while(0) wrap around the inner if-chain + the `scale = ...` statement (the s5
+ *       permuter campaign s5-w1-tiedcopy find output-35-1, permuter score 55 -> 35), which recovers
+ *       the 3 insns the tied operand costs on its own (w1 = 10, w6 = 7).
+ * WHY IT IS NOT AN IMPROVEMENT: the copy is emitted, in the right place (reorg parks it in the
+ * `beqz v0` delay slot exactly as the target does) and sum_sq is correctly seated in $a1 -- but the
+ * copy takes $v1 where the target takes $a0, so the same 7 insns differ, only re-spelled:
+ *   ours 69 `move v1,a1` / 75 `move t4,v1`   vs target 69 `move a0,a1` / 75 `move t4,a0`
+ *   ours 74 `srl a0` 82/84 li_v0 in $a0 93/96 scale in $a0  vs target $a1 / $v0 / $a1.
+ * MEASURED CAUSE (tools/ra_solver, this session): the copy is a BLOCK-LOCAL quantity of the else
+ * block (code6cac.local.json func_80018094 blk 6 qty 0: birth 4, death 5, refs 2, got 3), and
+ * local_alloc's find_free_reg scans ascending over `fixed_reg_set | union(regs_live_at[4..5])`;
+ * $2 is in that set (the island clobbers it) and NOTHING else is, so $3 is the first free register.
+ * No local qty of block 6 overlaps [4,5] (next birth is 6), so no reordering of the block's own
+ * quantities can occupy $3 there. In the TARGET the same copy must therefore be a cross-block
+ * GLOBAL allocno (defined in the pre-branch block, used at the island), which is the one thing this
+ * spelling cannot produce: the tied operand always emits its copy immediately before the asm.
+ * tools/ra_solver/inverse.py local --block 6 --goal '{"0": 4}' returns exactly one minimal vector,
+ * [live_extend] qty 0 dies later (5 -> 9); the only honest spelling of it tried here (w8: feed the
+ * post-island LUT index from lz_in instead of sum_sq) extends the death to ~18 instead and CSE
+ * folds the copy away again, sandbox 12. */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
 void func_80018094(s32 *arg0, s32 *arg1) {
@@ -99,11 +92,12 @@ void func_80018094(s32 *arg0, s32 *arg1) {
         scale = 0;
     } else {
         {
-            s32 log2_val;
+            do {
             if (sum_sq < 0x400) {
-                log2_val = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
+                scale = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
             } else {
                 s32 shift_a, shift_b;
+                s32 lz_in;
                 /* GTE LZCS/LZCR leading-zero-count island --- the authorized func_8001A67C
                  * template (inline_asm_canonical.txt:266), sp_tmp at 0x10($sp). */
                 __asm__ volatile(
@@ -114,31 +108,32 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                     "addiu  $v0, $sp, 0x10\n"
                     "addu   $t4, $v0, $zero\n"
                     "swc2   $31, 0($t4)\n"
-                    : "=m"(sp_tmp[0])
-                    : "r"(sum_sq)
+                    : "=m"(sp_tmp[0]), "=r"(lz_in)
+                    : "1"(sum_sq)
                     : "$2", "$12");
                 {
                     s32 lw_v1 = sp_tmp[0];
                     s32 li_v0 = -2;
                     li_v0 = lw_v1 & li_v0;
-                    /* FAKE: the LZCR-read result is staged through log2_val -- an existing
+                    /* FAKE: the LZCR-read result is staged through scale -- an existing
                      * enclosing-block local that is dead at this point and is re-assigned with the
                      * LUT result below -- which seats sum_sq in $a1 for every one of its uses,
                      * mechanism: global.c find_reg / local-alloc allocno priority (the extra
-                     * reference on log2_val's allocno reorders the ascending first-free scan so the
+                     * reference on scale's allocno reorders the ascending first-free scan so the
                      * sum_sq allocno no longer takes $a0), lever-exhaustion:
                      * memory/grind/func_80018094/hypotheses.md s2 H13/H14/H18 + s3 H19-H22, plus
                      * this session's 8,906- and 24,345-iteration permuter campaigns (the find itself
                      * is s4 campaign s4-v20g-framefixed output-230-1, tmp/grind/func_80018094/s4/
                      * perm_find_230.c). Family: staged-value-reused-variable (owner ruling
                      * 2026-07-03). */
-                    log2_val = li_v0;
-                    shift_a = 0x16 - log2_val;
+                    scale = li_v0;
+                    shift_a = 0x16 - scale;
                 }
                 shift_b = shift_a >> 1;
-                log2_val = ((u8)(*(&D_8008D118 + (sum_sq >> shift_a))) << 16) >> (0x13 - shift_b);
+                scale = ((u8)(*(&D_8008D118 + (sum_sq >> shift_a))) << 16) >> (0x13 - shift_b);
             }
-            scale = ((log2_val << 6) / 500) + 0xC0;
+            scale = ((scale << 6) / 500) + 0xC0;
+            } while (0);
         }
     }
 

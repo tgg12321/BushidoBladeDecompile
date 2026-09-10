@@ -1,8 +1,8 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 7,
- "current_modality": "enumerate",
+ "session_count": 8,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 7,
    "modality": "enumerate",
    "headline": "Enumerate s7: 1,039 spellings swept, floor holds at 7 with 169 ties and zero improvements \u2014 the LZC arm's local naming/order/commutativity space is exhausted and the s6 frontier's scale-liveness lever"
+  },
+  {
+   "session": 8,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "Synthesis s8: the 7-insn residual reduces to ONE dump-level requirement (the island-input copy must conflict with `scale`); the copy's preference channel is proven closed, and three more spelling fami"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual does not live in the LZC arm's local spelling space (471 spellings, flat at 7) nor in scale's liveness (killed, 15-47 insns) nor in the copy's carrier identity (killed, cse folds either way). What is left, in priority order, is (a) the pre-branch block's naming space in the INTERLEAVED store shape, which s7's e4 sweep did NOT cover, and (b) the island's own operand plumbing.",
-   "mechanism": "spelling_enum treats a memory store as an anchor and moves it to the end of the region, so every e4 variant emitted the three SCRV stores after the whole diff+square+sum computation \u2014 a shape that is ~35 insns worse to begin with. The interleaved shape (candidate.c's) has never had its naming/order space enumerated, and it is the block where the target's island-input copy must be born (s6).",
-   "next_probe": "Build the interleaved pre-branch region by hand rather than with spelling_enum: keep `SCRV->x = dx;` immediately after each diff and enumerate only the diff/square/sum naming around them (name each `((s32 *)arg0[1])[5]` load, each `arg1[10]` load, each square; keep/inline each; order the declarations). ~200-600 hand-generated variants, swept with the s7 run_sweep.sh wrapper at ~1.05 s each. Alternatively teach spelling_enum a --stores-are-statements flag so `SCRV->x = dx;` is reorderable rather than anchored, which would make the region enumerable directly."
+   "hypothesis": "The residual closes by extending the island-input copy's live range FORWARD into `scale`'s range, rather than extending `scale`'s backward \u2014 the same 99-conflicts-78 requirement approached from the side no session has attacked.",
+   "mechanism": "s6/s7 attacked the conflict from scale's side and every spelling cost 15-47 insns (s8's variable merge is the cheapest at +10). s5's `inverse.py local --block 6 --goal '{\"0\": 4}' --depth 2` returned exactly ONE minimal vector \u2014 [live_extend] qty 0 dies later (5 -> 9) \u2014 and s5 only ever spelled it as an OVERSHOOT, consuming the tied output at the LUT index (position ~18) where cse refolds the copy (sandbox 12). A SHORT extension, to a consumer between the LZCR read and the `0x16 - li_v0` subtraction, has never been spelled.",
+   "next_probe": "Re-run tools/ra_solver's inverse.py on the CURRENT s5 w6 body with the goal restated as 'allocno 99 conflicts with allocno 78' rather than 'qty 0 gets reg 4' \u2014 the two are the same fact and the conflict form may return a cheaper vector. Then spell the short live-extension on the w6 tied chassis (rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c) AND on the -fno-cse-follow-jumps global-copy chassis (tmp/grind/func_80018094/s6/v1.c) so 'cse refolded it' and 'it did not conflict' are separable outcomes."
   },
   {
-   "hypothesis": "With the LZC arm exhausted, the remaining 7 insns are most likely a property of the LZC island's own operand plumbing rather than of any C statement around it \u2014 which is exactly the still-UNCLASSIFIED tied-output operand question the s5/s6 frontier left open.",
-   "mechanism": "s5's w6 lineage (rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c) reaches the same floor 7 but with the residual reduced to ONE register name, because a tied `\"=r\"/\"1\"` operand pair materialises the island-input copy in the target's delay-slot position. That operand declares an output the island's text never writes and is not covered by any family in .claude/rules/, so the lineage cannot be driven to a candidate-ready without a ruling.",
-   "next_probe": "Grep docs/reference/sotn-construct-index.md for tied / multi-output inline-asm operand precedent among PSX (untagged) entries. If there is none, emit a ruling-request asking whether an authorized canonical-asm island may carry a tied \"=r\"/\"1\" operand pair whose only effect is to materialise a copy the target itself contains. Do this BEFORE spending a session driving the w6 lineage to zero \u2014 it is the cheapest remaining unblocking move."
+   "hypothesis": "The merged-variable body (s8's scale/log2_val merge, +10) is a better chassis to drive than candidate.c despite its worse raw score, because its pseudo structure is the target's own.",
+   "mechanism": "The target carries the arm result and the (x<<6)/500 + 0xC0 tail in ONE register ($a1 -> $v1); the merged body carries them in one variable. Its 10-insn cost is pure seat churn (build_insns identical at 153), so it may be a small number of seat moves rather than a structural regression \u2014 the same reasoning under which s5's w6 body was adopted as 'structurally closer at equal floor'.",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_80018094` with tmp/grind/func_80018094/s8/hand/h1_merge_scale_log2_plain.c spliced in, read the .greg dispositions/conflicts, and decompose the 10 insns into named seat moves. If the merged allocno can be made live at the island entry at a cost the merge already pays for, the necessary-and-sufficient conflict falls out."
   },
   {
-   "hypothesis": "The unstaged spelling space (the whole LZC arm written with a FRESH named local carrying the LZCR read instead of reusing log2_val) is a 3,440-spelling family whose two sampled endpoints both score 13; sweeping it would either find the 6-insn win the staged space does not contain, or convert s7's instance kill of the arm into a much stronger statement.",
-   "mechanism": "The staged and unstaged families differ in whether pseudo 98 (log2_val) conflicts with pseudo 77 (sum_sq) \u2014 s6's conflict-set requirement (ii). The staged family is flat at 7; the unstaged family has never been swept beyond its two endpoints, and it is the only family in which (ii) is satisfied.",
-   "next_probe": "Sweep tmp/grind/func_80018094/s7/enum/ (already generated: 3,440 variants, ~63 min single-threaded at 1.05 s each) with the s7 run_sweep.sh wrapper. Launch it as the FIRST action of the session so it finishes in-turn, and bank the histogram; a zero-hit sweep converts H31 into a two-family exhaustion statement covering both sides of the (ii) conflict."
+   "hypothesis": "log2_val's misseat (ours $a0, target $a1) is a PREFERENCE fact, not a spelling fact, and removing the copy insn that gives allocno 98 its `preferences: 4` moves it to $a1 without disturbing the seats that already match.",
+   "mechanism": "s7 and s8 swept both the staged and unstaged spelling families of the LZC arm flat, so 98's seat is not reachable by renaming. The greg dump shows 98 carrying an explicit `preferences: 4` while 99 carries none, and global.c's expand_preferences (tools/gcc-2.7.2/global.c:838-871) propagates preferences only across copies whose source carries a REG_DEAD note \u2014 a small, identifiable set of insns.",
+   "next_probe": "Dump .lreg/.greg for candidate.c with `pwsh tools/grinder/dump.ps1 func_80018094`, find the single_set + REG_DEAD pair that seeds 98's preference for $4, and test the C-level spellings that remove that copy (this is the cosmetic half of the residual, worth attacking only after frontier item 1 or 2 has moved the copy's seat)."
   }
  ],
  "judge_constraints": [],
@@ -306,6 +312,30 @@
    "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present",
    "predicate_cite": "",
    "result": "All three score 7 \u2014 inert. Recorded so no later session re-derives them."
+  },
+  {
+   "session": 8,
+   "statement": "The unstaged LZC-arm family (the arm written with a fresh named local carrying the LZCR read instead of reusing log2_val) contains a spelling below 7.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), the s7 enum/ bodies (carrying the sp_tmp[4] oversized-locals FAKE but NOT the log2_val staging FAKE), 344 of 3,440 spellings",
+   "predicate_cite": "",
+   "result": "Histogram 13x141, 15x105, 18x98. Best 13 \u2014 six insns above the floor and exactly the value s7 measured for both sampled "
+  },
+  {
+   "session": 8,
+   "statement": "The pre-branch block's INTERLEAVED naming space \u2014 the shape s7's e4 sweep could not reach because spelling_enum anchors memory stores \u2014 contains a spelling below 7.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with both FAKE constructs present, 96 spellings",
+   "predicate_cite": "",
+   "result": "Histogram 7x12, 9x12, 20x3, 23x3, 25x12, 26x12, 27x6, 28x3, 30x6, 36x6, 38x3, 39x6, 40x6, 41x6. Best 7 with twelve ties,"
+  },
+  {
+   "session": 8,
+   "statement": "Spelling `scale` and `log2_val` as ONE variable \u2014 the shape the target's own seats suggest, since its $a1 carries the arm result and feeds the (x<<6)/500 + 0xC0 tail while its $v1 carries scale \u2014 crea",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c and the s5 w6 tied body, both FAKE constructs present",
+   "predicate_cite": "",
+   "result": "baseline 7 (build_insns 153); merged-plain 17 (153); merged-tied 17 (153) \u2014 identical instruction counts, i.e. 10 insns "
   }
  ],
  "ladder_skip": 0,

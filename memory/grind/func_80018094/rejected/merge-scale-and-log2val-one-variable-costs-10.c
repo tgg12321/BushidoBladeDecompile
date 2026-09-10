@@ -1,10 +1,16 @@
+/* REJECTED s8 (2026-09-09): sandbox --disable all == 17 (build_insns 153) vs the floor-7 baseline.
+ Spelling `scale` and `log2_val` as ONE variable (the shape the target's own seat pattern suggests:
+ $a1 carries the LZC/LUT result AND feeds the /500 tail) is ordinary C and costs 10 insns of pure
+ seat churn (identical instruction count). It does NOT create the copy<->scale conflict the greg
+ dump says the target needs, because the merged pseudo is still defined inside each arm and is
+ therefore not live at the island entry. */
 /* func_80018094 candidate -- s4 (permuter, 2026-09-09). sandbox --disable all == 7 (153/153 insns,
  * rules_dropped 0, 20 island insns stripped on both sides). Chassis: -mel -msoft-float. s2's v8a body
  * (floor 18) plus the OVERSIZED-LOCALS spelling of the LZC output local (s32 sp_tmp[4], only element 0
  * written and read), which closes the 8 frame-offset insns at ZERO insn cost (frame 40 -> 48, vars 8 -> 16).
  * Lineage: s1 v6a (scratchpad-in-struct + else-arm scale=0x100) + the COMPLETED sibling func_8001A67C's
  * LZCR-read statement block (src/code6cac.c:869-873) + this session's locals-object extension + the
- * permuter's log2_val staging of the LZCR-read result (`log2_val = li_v0; shift_a = 0x16 - log2_val;`,
+ * permuter's scale staging of the LZCR-read result (`scale = li_v0; shift_a = 0x16 - scale;`,
  * campaign s4-v20g-framefixed output-230-1), which seats sum_sq in $a1 for every use and takes 10 -> 7.
  * Islands: gte_SetRotMatrix / gte_SetTransMatrix in the func_80019310 / func_800300B4 spelling,
  * LZCS/LZCR in the authorized func_8001A67C template (inline_asm_canonical.txt:266). No register pins.
@@ -19,18 +25,8 @@
  * none beat it. The LZC arm's local naming / declaration-order / commutative-operand space is
  * EXHAUSTED (471 spellings, flat). The s6 frontier's `scale`-liveness lever is KILLED (15-47 insns
  * more expensive in every form). See evidence.md s7 and hypotheses.md H31-H37.
- * s8 UPDATE (synthesis): this body is unchanged and still measures 7 (re-measured by
- * tools/fake_ablate.py; ablating the log2_val staging costs 19 insns -> 26). The residual is
- * now reduced to ONE dump-level requirement: the island-input copy (greg allocno 99) must
- * CONFLICT with `scale` (allocno 78, seated at $v1) — then $3 closes, $2 is already closed by
- * the island clobber, and the ascending find_reg scan hands the copy the target's $a0. The
- * preference channel is mechanically closed for that pseudo (local-alloc.c:1860-1898 needs
- * hard-reg copy traffic in the block; global.c:838-871 needs a REG_DEAD note on the copy's
- * source, and sum_sq outlives it), so NO spelling of the copy itself can move its seat.
- * s8 also swept the pre-branch interleaved naming space (96 spellings, best 7) and killed the
- * scale/log2_val variable merge (17). See evidence.md s8.
  * missing island-input copy. The target reserves $a0 for a `move a0,a1` copy that reorg parks in the
- * `beqz v0` delay slot (ours: nop), which in turn pushes li_v0 to $v0 and log2_val to $a1; ours puts
+ * `beqz v0` delay slot (ours: nop), which in turn pushes li_v0 to $v0 and scale to $a1; ours puts
  * both in $a0 and feeds the island $a1 directly. See memory/grind/func_80018094/{evidence,hypotheses}.md. */
 typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
 #define SCRV ((ScrV *)0x1F800000)
@@ -99,9 +95,8 @@ void func_80018094(s32 *arg0, s32 *arg1) {
         scale = 0;
     } else {
         {
-            s32 log2_val;
             if (sum_sq < 0x400) {
-                log2_val = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
+                scale = (u8)(*(&D_8008D118 + sum_sq)) >> 3;
             } else {
                 s32 shift_a, shift_b;
                 /* GTE LZCS/LZCR leading-zero-count island --- the authorized func_8001A67C
@@ -121,24 +116,24 @@ void func_80018094(s32 *arg0, s32 *arg1) {
                     s32 lw_v1 = sp_tmp[0];
                     s32 li_v0 = -2;
                     li_v0 = lw_v1 & li_v0;
-                    /* FAKE: the LZCR-read result is staged through log2_val -- an existing
+                    /* FAKE: the LZCR-read result is staged through scale -- an existing
                      * enclosing-block local that is dead at this point and is re-assigned with the
                      * LUT result below -- which seats sum_sq in $a1 for every one of its uses,
                      * mechanism: global.c find_reg / local-alloc allocno priority (the extra
-                     * reference on log2_val's allocno reorders the ascending first-free scan so the
+                     * reference on scale's allocno reorders the ascending first-free scan so the
                      * sum_sq allocno no longer takes $a0), lever-exhaustion:
                      * memory/grind/func_80018094/hypotheses.md s2 H13/H14/H18 + s3 H19-H22, plus
                      * this session's 8,906- and 24,345-iteration permuter campaigns (the find itself
                      * is s4 campaign s4-v20g-framefixed output-230-1, tmp/grind/func_80018094/s4/
                      * perm_find_230.c). Family: staged-value-reused-variable (owner ruling
                      * 2026-07-03). */
-                    log2_val = li_v0;
-                    shift_a = 0x16 - log2_val;
+                    scale = li_v0;
+                    shift_a = 0x16 - scale;
                 }
                 shift_b = shift_a >> 1;
-                log2_val = ((u8)(*(&D_8008D118 + (sum_sq >> shift_a))) << 16) >> (0x13 - shift_b);
+                scale = ((u8)(*(&D_8008D118 + (sum_sq >> shift_a))) << 16) >> (0x13 - shift_b);
             }
-            scale = ((log2_val << 6) / 500) + 0xC0;
+            scale = ((scale << 6) / 500) + 0xC0;
         }
     }
 
