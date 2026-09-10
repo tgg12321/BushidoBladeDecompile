@@ -333,3 +333,53 @@
 - [s3] SIBLING CHECK as the brief requires: func_8006F97C (floor 513, 1 session) and func_800720FC (floor 688, 1 session) still carry no candidate.c, so there was again no banked spelling to transplant. Both are inheritors of this session's findings rather than sources for it: they share the TU, they are both callers of func_80069898 (so they bear on IconC70's tail, frontier F3), and func_8006F97C is one of D_800A3590's other consumers (so it bears on frontier F2'). The scale-2 COMPONENT_REF addressing lesson above applies to any array access they carry.
 
 - [s3] src/text1b.c was reverted to HEAD at end of session; the tree carries only memory/grind/func_80070C70 ledger changes (candidate.c, evidence.md, hypotheses.md, two new rejected/ files).
+
+## [s4] The extra induction register that s3 (H7) pinned as the residual is removed by giving var_s0 THREE source increment sites: `bl->biv_count` 3 drives the combined D_800A3590 address giv's benefit to 0 and loop.c:3824 rejects the reduction.
+- mechanism: tools/gcc-2.7.2/loop.c:3824 marks a giv "not worth while" when `v->lifetime * threshold * benefit < insn_count`, where the benefit used is the recorded benefit minus `add_cost * bl->biv_count` (add_cost = rtx_cost of a reg+reg PLUS = 2, loop.c:307) and threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs) (loop.c:3241), bracketed to 28..31 by s2/s3. `bl->biv_count` counts the induction INCREMENT insns recorded for the biv register, so the C source controls it directly by how many times it writes `var_s0 += 1`. biv_count 1 -> benefit 6-2 = 4 -> product 112..124 >= insn_count -> reduced (s3's chassis, and its 4th induction register `move sN,zero` / `addiu sN,sN,2`); biv_count 2 -> benefit 2 -> product 56..62 >= 48 -> still reduced; biv_count 3 -> benefit 0 -> product 0 < insn_count -> REJECTED, which is what the target requires (it recomputes `sll $a0, $s0, 1` in-loop at 80070E3C, in the delay slot of the first beq).
+- probe: Rewrote the loop so `var_s0 += 1;` appears in all three arms - both arms of the inner mode `if`, and a plain `else` on the `code != 5 && code != 16` test - while `var_s3 += 0x16C;` and `ctx_or_var_s2 += 3;` remain in a SINGLE shared fall-through block after the outer `if/else` (the target's .L80070EC4 shape). Measured `& tools/wteng.ps1 main sandbox func_80070C70 --disable all`; re-ran `pwsh tools/grinder/dump.ps1 func_80070C70` and re-read the `Loop from 284 to 460` section of tmp/grind/func_80070C70/dumps/text1b.loop; confirmed the emitted loop against `mipsel-linux-gnu-objdump -dr tmp/sandbox/func_80070C70/text1b.o`.
+- result: 99 -> 61, build_insns 194 -> 192. The dump prints `giv at 337 combined with giv at 331` then `giv of insn 331 not worth while, 0 vs 63`; s3's `giv at 313 reduced to (reg:SI 159)` is GONE, and insn 291's scale-1 D_800A3560 giv is rejected harder (`-124 vs 63`). WHICH statement is duplicated matters as much as the count: duplicating the whole call tail into the mode arms also reaches biv_count 3 but measures 88 at 200 insns, because `prim.code = 1` then appears twice in the loop and move_movables hoists the constant 1 into a SEVENTH callee-saved register (`li s4,1` in the preheader). Nine spellings were measured (88 / 88 / 93 / 93 / 97 / 77 / 98 / 98 / 65) before the 61 form; all banked in memory/grind/func_80070C70/rejected/over-duplicated-arms-at-biv3.c.
+- verdict: CONFIRMED
+
+## [s4] A permuter campaign on the biv_count-3 chassis, run with perm_inline = 0.0, produced two usable spelling proposals that take the floor 61 -> 56 - the first usable campaign output this function has had.
+- mechanism: Mandated modality. s3 banked two campaigns with no usable find (floor-101 and floor-99 chassis, 44k iterations) and recommended `perm_inline = 0.0` in settings.toml's `[weight_overrides]`, because the permuter's synthetic `inline_fn` helpers otherwise dominate the output stream with forms that are not decomp C. The 2026-09-01 chassis rule also forbids re-seeding a chassis that already banks a 0-find campaign, so this campaign was seeded on the structurally new biv_count-3 loop.
+- probe: `tools/permuter_campaign.py launch --func func_80070C70 --dir tmp/perm_70c70_s4 --label s4-biv3-chassis-floor61 -j 8`; waited in-turn via `permuter_campaign.py wait`; harvested with `--stop`. Base permuter score 4228 (vs 4778 at floor 99 and 5083 at floor 101), 25,626 iterations in 869 s, 288 new outputs, best 3325. The best find was read by hand and its two real changes re-spelled and measured individually (tmp/grind/func_80070C70/s4/probe6.py).
+- result: (i) `prim.link = *(s32 *)(arg0 + 0x10);` written BEFORE `prim.code = 1;` at the FIRST func_8007352C call site - plain statement reordering, ordinary C - measures 61 -> 58. (ii) reading `*(s32 *)(ctx_or_var_s2 + 8)` into a named intermediate `new_var` before the `*(arg0 + 0x18) += 0xC` store and assigning it to prim.p_geom after measures 59 alone (190 insns); both together measure 56 at 190 insns. The find's third change, `var_s0 = (unsigned long long) 0`, is a redundant width cast (forbidden family F2) and was discarded. Both adopted; candidate.c now carries them.
+- verdict: CONFIRMED
+
+## [s4] A u16 or s16 declaration of D_800A3558 reproduces the target's tail-block `lhu` plus in-body `sll 16` / `sra 16` pair on the biv_count-3 chassis (re-measurement of s3's K4, which was chassis-relative).
+- mechanism: s2's K1 showed convert_to_integer folds `(short)(unsigned short)x` to `(short)x`; s3's K4 measured the u16/s16 declaration route byte-neutral on the floor-99 chassis. Because kills are chassis-relative and this session changed the chassis, the route was re-measured.
+- probe: Four spellings on the floor-61 chassis via tmp/grind/func_80070C70/s4/probe5.py: `extern u16 D_800A3558;` with body `(D_800A35B0 + (s16)D_800A3558)`; the same with the bound spelled `(s32)(D_800A35B0 + (s16)(D_800A3558 + 1))`; `extern s16 D_800A3558;` with body `(D_800A35B0 + (s16)(u16)D_800A3558)`; and the u16 declaration with the loop-entry test unchanged.
+- result: 61 / 67 / 61 / 61 - every byte-neutral spelling still emits a single `lh` in the body block and none reproduces the target's pair. The structural fact the target shows is that its zero-extending load sits in a DIFFERENT basic block (the loop tail, 80070ECC) from its sign-extension (80070E78/E7C in the next iteration's body), which is what prevents combine from folding the sign_extend into the load; no declaration spelling moves a load across a basic-block boundary.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-61 chassis (s4 candidate.c loop + `extern u8 D_800A3560[];` + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, `sandbox --disable all`, 2026-09-10
+
+## [s4] SIBLING CHECK as the brief requires: func_8006F97C (floor 513), func_80070188 (696), func_80070F78 (808) and func_800720FC (688) still carry no candidate.c, so there was again no banked spelling to transplant onto this chassis. The transplant runs the OTHER way this session: the biv_count lever above is a general loop.c result that applies to any of them whose residual is a reduced address giv, and the RecC70 / IconC70 type questions (frontiers F6) are answered from their asm.
+- mechanism: Brief's SIBLING LEDGERS block; all four are active queue siblings in the same TU (src/text1b.c) and none has been through a grind session beyond its s1 recon.
+- probe: Re-read the brief's sibling table; no candidate.c exists for any of them.
+- result: Nothing to transplant in. Recorded for the next session: the s4 finding to propagate is "count the source increment sites of the loop counter before blaming the allocator - loop.c:3824's benefit term is `recorded_benefit - 2 * bl->biv_count`".
+- verdict: CONFIRMED
+
+## [s4] src/text1b.c was reverted to HEAD at end of session; the tree carries only memory/grind/func_80070C70 ledger changes (candidate.c, evidence.md, hypotheses.md, two new rejected/ files).
+
+- [s4] Honest floor moved 99 -> 61 -> 58 -> 56 this session, all measured with `& tools/wteng.ps1 main sandbox func_80070C70 --disable all`; build_insns 194 -> 192 -> 190 against target 194.
+
+- [s4] loop.c's giv gate has a term the C source controls directly: the benefit used at loop.c:3824 is the recorded benefit MINUS add_cost * bl->biv_count (add_cost = 2, loop.c:307), and bl->biv_count is the number of source-level increment sites of the biv. Three `var_s0 += 1;` sites take the combined D_800A3590 address giv from benefit 4 (reduced) to benefit 0 (rejected).
+
+- [s4] The dump line that proves it: text1b.loop's `Loop from 284 to 460` section now reads `giv at 337 combined with giv at 331` then `giv of insn 331 not worth while, 0 vs 63`, where s3's dump at the same site read `giv at 313 reduced to (reg:SI 159)`.
+
+- [s4] biv_count 2 is not enough and is actively worse (101/101/102 vs the 99 one-site chassis) - the gate needs benefit <= 1.
+
+- [s4] Duplicating more than `var_s0 += 1` costs: the call tail duplicated into the mode arms puts `prim.code = 1` in the loop twice, and move_movables then hoists the constant 1 into a seventh callee-saved register (`li s4,1` in the preheader).
+
+- [s4] The skip arm must be a plain `else`, not a `continue` carrying its own increments: with `else`, `var_s3 += 0x16C;` and `ctx_or_var_s2 += 3;` stay a single shared fall-through block, exactly the target's .L80070EC4 (65 at 195 insns vs 61 at 192 insns).
+
+- [s4] The permuter is useful on this function once the chassis is right and perm_inline is zeroed: base permuter score fell 5083 (floor 101) -> 4778 (99) -> 4228 (61), and this campaign's best find (3325) contained two adoptable changes, where s3's two campaigns on the pre-biv_count chassis contained none.
+
+- [s4] Remaining 2-insn shortfall at 190 vs 194: the target's `lhu $a2, %gp_rel(D_800A3558)` in the loop TAIL block (alongside the condition's own `lh $v0` of the same address) plus `sll $v0,$a2,16` / `sra $v0,$v0,16` in the NEXT iteration's body. Declaration retyping is spent across s2 K1, s3 K4 and s4 K7; the discriminator is basic-block placement, not type.
+
+- [s4] Callee-saved seats are still rotated at floor 56 (target: arg0=$s1, var_s0=$s0, var_s3=$s3, ctx_or_var_s2=$s2, c60=$s4, six saved slots incl. $ra, frame 0x80), but the spurious allocno is gone, so this is now a clean 5-seat permutation - ra_solver territory.
+
+- [s4] The RecC70 and IconC70 declarations are still codegen-motivated placeholders and still block submission independently of the floor (frontier F6, carried unspent from s1).
+
+- [s4] src/text1b.c was reverted to HEAD at end of session; the tree carries only memory/grind/func_80070C70 ledger changes.

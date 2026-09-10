@@ -58,10 +58,10 @@
   },
   {
    "from": "func_80070C70",
-   "floor": 99,
-   "session": 3,
-   "at": "2026-09-10T16:00:42.522689+00:00",
-   "headline": "Floor 101 -> 99 and build_insns 193 -> 194 (= target's 194): declaring D_800A3590 as an array of a 2-byte record routes the read through expand_expr's COMPONENT_REF/get_inner_reference offset path, wh",
+   "floor": 56,
+   "session": 4,
+   "at": "2026-09-10T16:29:40.807050+00:00",
+   "headline": "Floor 99 -> 56: giving var_s0 three source increment sites raises loop.c's bl->biv_count to 3, zeroing the D_800A3590 address giv's benefit so strength_reduce REJECTS the reduction that s3 pinned as t",
    "consumed": null
   }
  ]

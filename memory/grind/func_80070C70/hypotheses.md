@@ -374,3 +374,159 @@ if they show a bare halfword array, this needs a ruling-request before any submi
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-101 chassis (campaign A) and floor-99 chassis (campaign B), both with default permuter weights including perm_inline, --stack-diffs on by default, 8 jobs, 44,170 iterations combined, no FAKE constructs present, 2026-09-10
+
+---
+
+# Session 4 (permuter, 2026-09-10) — floor 99 -> 61
+
+## CONFIRMED
+
+### H8 — three source increment sites for var_s0 raise `bl->biv_count` to 3, which drives the D_800A3590 address giv's benefit to 0 and makes loop.c REJECT the reduction that s3 (H7) pinned as the residual
+**Mechanism:** tools/gcc-2.7.2/loop.c:3824 marks a giv "not worth while" when
+`v->lifetime * threshold * benefit < insn_count`, where the benefit used is the recorded benefit
+MINUS `add_cost * bl->biv_count` (add_cost = rtx_cost of a reg+reg PLUS = 2, loop.c:307) and
+`threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)` (loop.c:3241), bracketed by s2/s3 to
+28..31. `bl->biv_count` is the number of induction INCREMENT insns recorded for the biv register,
+so it is directly controlled by how many times the C source writes `var_s0 += 1`.
+  - biv_count 1 (s3 chassis): combined 313+319 giv benefit 6 - 2 = 4, product 112..124 >= insn_count
+    48 → REDUCED into a fourth induction register (`move sN,zero` / `addiu sN,sN,2`).
+  - biv_count 2: benefit 6 - 4 = 2, product 56..62 >= 48 → still reduced (and measured worse, 101).
+  - biv_count 3: benefit 6 - 6 = 0, product 0 < insn_count → REJECTED, which is what the target's
+    bytes require (target recomputes `sll $a0, $s0, 1` in-loop at 80070E3C).
+**Probe:** rewrote the loop so `var_s0 += 1;` appears in all three arms — both arms of the inner
+mode `if`, and a plain `else` arm on the `code != 5 && code != 16` test — while `var_s3 += 0x16C;`
+and `ctx_or_var_s2 += 3;` stay in a SINGLE shared fall-through block after the outer `if/else`.
+Measured `sandbox --disable all`; re-ran `pwsh tools/grinder/dump.ps1 func_80070C70` and re-read the
+`Loop from 284 to 460` section of tmp/grind/func_80070C70/dumps/text1b.loop.
+**Result:** 99 -> 61, build_insns 194 -> 192. The loop dump now prints
+`Insn 331: giv reg 127 src reg 75 benefit 2 ... mult 2 add 0`,
+`Insn 337: dest address src reg 75 benefit 4 ... mult 2 add (symbol_ref "D_800A3590")`,
+`giv at 337 combined with giv at 331`, then `giv of insn 331 not worth while, 0 vs 63` — the
+reduction is GONE (s3's dump printed `giv at 313 reduced to (reg:SI 159)` at the same site), and
+the scale-1 D_800A3560 giv at insn 291 is rejected harder than before (`-124 vs 63`). CONFIRMED.
+
+### H9 — WHICH statement is duplicated matters as much as the site count; only `var_s0 += 1` may be duplicated
+**Mechanism:** every extra duplicated statement is either paid for in emitted insns (cross-jump
+does not re-merge across the scheduler's hoisting of the increments into the arms) or creates a NEW
+loop-invariant movable. Duplicating the whole call tail puts `prim.code = 1` in the loop twice, and
+move_movables then hoists the constant 1 into a SEVENTH callee-saved register (`li s4,1` in the
+preheader) that the target does not spend.
+**Probe:** a 9-variant sweep at biv_count 3 (tmp/grind/func_80070C70/s4/probe2.py, probe3.py,
+probe4.py), all measured `sandbox --disable all`.
+**Result:** whole tail + all increments in both mode arms 88 (200 insns); the same with an `else`
+skip arm 88 (200); all three increments in the arms 93 (195); `prim.code = 1` shared with link+call
+duplicated 77 (198); only the call duplicated 98 (197); only `var_s0 += 1` duplicated but with a
+`continue`-style skip arm that still carries its own copies of the other two increments 65 (195);
+and the winner — only `var_s0 += 1` duplicated, skip arm spelled as a plain `else`, the other two
+increments shared — 61 (192). CONFIRMED.
+
+## KILLED
+
+### K6 — two source increment sites (biv_count 2) are enough to stop the giv reduction
+**Probe:** three 2-site spellings on the floor-99 chassis (tmp/grind/func_80070C70/s4/probe.py):
+a `continue`-style skip arm carrying all three increments plus the shared tail copy; the same with
+the skip arm as an `if/else`; and a `for (; cond; var_s3 += 0x16C, var_s0 += 1, ctx += 3)` control.
+**Result:** 101, 101 and 102 respectively — all WORSE than the 99 one-site chassis, and the loop
+dump still reduces the giv (benefit 6 - 2*2 = 2, product 56..62 >= insn_count 48). The arithmetic
+at loop.c:3824 needs benefit <= 1, i.e. biv_count >= 3. KILLED (instance).
+Banked as `rejected/two-increment-sites-biv-count-2.c`.
+**kill_scope:** instance
+**measured_on:** floor-99 chassis (s3 candidate.c body + `extern u8 D_800A3560[];` + the RecC70
+record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present,
+`sandbox --disable all`, 2026-09-10
+
+### K7 — a u16 / s16 declaration of D_800A3558 reproduces the target's `lhu` + `sll 16` + `sra 16`
+body read on the NEW biv_count-3 chassis (re-measurement of s3's K4, which was chassis-relative)
+**Probe:** four spellings on the floor-61 chassis (tmp/grind/func_80070C70/s4/probe5.py):
+`extern u16 D_800A3558;` with body `(D_800A35B0 + (s16)D_800A3558)`; the same with the bound
+spelled `(s32)(D_800A35B0 + (s16)(D_800A3558 + 1))`; `extern s16 D_800A3558;` with body
+`(D_800A35B0 + (s16)(u16)D_800A3558)`; and the u16 declaration with the loop-entry test unchanged.
+**Result:** 61 / 67 / 61 / 61 — every byte-neutral spelling still measures 61 and still emits a
+single `lh` in the body block; only the uncast-bound variant moves, and it moves the wrong way
+(67, 195 insns). s3's K4 therefore survives the chassis change. KILLED (instance).
+**kill_scope:** instance
+**measured_on:** floor-61 chassis (s4 candidate.c body + `extern u8 D_800A3560[];` + the RecC70
+record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present,
+`sandbox --disable all`, 2026-09-10
+
+## OPEN FRONTIER (supersedes s3's F1' — F1' is ANSWERED and spent)
+
+### F4 — the last two missing insns are the target's tail-block `lhu` of D_800A3558 plus its
+in-body `sll 16 / sra 16` sign-extension
+We emit 192 insns; the target emits 194. The pair we lack is at 80070ECC (`lhu $a2,
+%gp_rel(D_800A3558)`, in the loop TAIL block, alongside the condition's own `lh $v0` of the SAME
+address at 80070ED0) and 80070E78/E7C (`sll $v0,$a2,16` / `sra $v0,$v0,16` in the NEXT iteration's
+body). Declaration retyping is spent (K7 above, s3 K4, s2 K1): every u16/s16 spelling emits one
+`lh` because combine folds the sign_extend into the load when both live in the SAME basic block.
+The structural fact the target's bytes show is that its zero-extending load lives in a DIFFERENT
+basic block from its sign-extension, which is exactly what defeats that fold. Next probe: find a
+byte-faithful source shape that separates them — e.g. reading the value into a variable whose live
+range crosses the loop back-edge, or re-spelling the loop-continuation test so the body's read is
+the one CSE keeps in the tail block. Read the .combine dump for the fold before hand-spelling.
+
+### F5 — the callee-saved seat rotation at floor 61
+Target: arg0=$s1, var_s0=$s0, var_s3=$s3, ctx_or_var_s2=$s2, c60=$s4 (six saved slots incl. $ra,
+frame 0x80). The floor-61 build still rotates these. Now that the extra induction register is gone
+this is a clean 5-seat permutation with no spurious allocno, i.e. exactly the shape
+`tools/ra_solver/inverse_compose.py classify` is for. Do that BEFORE any more hand spelling.
+
+### F6 — recover the REAL types behind RecC70 and IconC70 (carried from s1/s2/s3, still unspent)
+Unchanged and still the thing that blocks submission independently of the floor. RecC70 from
+func_8006F100 / func_80070188 / func_80070F78 / src/text1b_b.c:271; IconC70's tail from
+func_80069898's other callers (func_8006B120, func_8006CFBC, func_800720FC, func_80074488,
+func_8006F97C).
+
+### H10 - the permuter campaign on the biv_count-3 chassis DID produce two usable proposals (61 -> 56)
+**Mechanism:** mandated modality, run per the 2026-09-01 chassis rule on a structurally NEW chassis
+(the biv_count-3 loop), and with `perm_inline = 0.0` in settings.toml's `[weight_overrides]` -
+s3's explicit recommendation, because otherwise the permuter's synthetic `inline_fn` helpers
+dominate the output stream with forms that fail the human-programmer test outright.
+**Probe:** `tools/permuter_campaign.py launch --func func_80070C70 --dir tmp/perm_70c70_s4
+--label s4-biv3-chassis-floor61 -j 8`; base permuter score 4228 (4778 at floor 99, 5083 at 101);
+25,626 iterations over 869 s; 288 new outputs; best 3325. Harvested with `--stop`. The best find
+(`output-3325-1`) was read by hand, its cheat-smelling part discarded (`var_s0 = (unsigned long
+long) 0` is a redundant width cast, forbidden family F2), and its two REAL changes were re-spelled
+by hand and measured individually with `sandbox --disable all`
+(tmp/grind/func_80070C70/s4/probe6.py).
+**Result:** (i) writing `prim.link = *(s32 *)(arg0 + 0x10);` BEFORE `prim.code = 1;` at the FIRST
+func_8007352C call site: 61 -> 58 (192 insns), plain statement reordering, ordinary C.
+(ii) reading `*(s32 *)(ctx_or_var_s2 + 8)` into a named intermediate `new_var` before the
+`*(arg0 + 0x18) += 0xC` store and assigning it to prim.p_geom after: 59 alone (190 insns);
+together with (i): 56 (190 insns). Both adopted into candidate.c. This is the first campaign on
+this function to yield a usable proposal - the difference from s3's two 0-find campaigns is the
+chassis (a basin that still had the extra induction register in it had nothing to offer) plus the
+`perm_inline = 0.0` override. CONFIRMED.
+
+## [s4] Three source increment sites for var_s0 raise bl->biv_count to 3, which drives the combined D_800A3590 address giv's benefit to 0 and makes loop.c strength_reduce reject the reduction that s3 (H7) identified as the whole 0x88-vs-0x80 frame delta.
+- mechanism: tools/gcc-2.7.2/loop.c:3824 marks a giv 'not worth while' when v->lifetime * threshold * benefit < insn_count, where the benefit used is the recorded benefit minus add_cost * bl->biv_count (add_cost = rtx_cost of a reg+reg PLUS = 2, loop.c:307) and threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs) (loop.c:3241) = 28..31 here. bl->biv_count counts the induction INCREMENT insns recorded for the biv register, so the C source controls it directly. biv_count 1 -> benefit 6-2=4 -> product 112..124 >= insn_count -> reduced; biv_count 3 -> benefit 6-6=0 -> product 0 < insn_count -> rejected.
+- probe: Rewrote the loop so `var_s0 += 1;` appears in all three arms (both arms of the inner mode if, plus a plain else on the code != 5 && code != 16 test) while `var_s3 += 0x16C;` and `ctx_or_var_s2 += 3;` stay in one shared fall-through block (the target's .L80070EC4 shape). Measured `sandbox --disable all`; regenerated the cc1 -da dumps with `pwsh tools/grinder/dump.ps1 func_80070C70` and re-read the `Loop from 284 to 460` section of text1b.loop; checked the emitted loop with `mipsel-linux-gnu-objdump -dr`.
+- result: 99 -> 61, build_insns 194 -> 192. text1b.loop now prints `giv at 337 combined with giv at 331` then `giv of insn 331 not worth while, 0 vs 63`; s3's `giv at 313 reduced to (reg:SI 159)` is gone and insn 291's scale-1 D_800A3560 giv is rejected harder (-124 vs 63). The extra induction register (`move sN,zero` / `addiu sN,sN,2`) is no longer emitted; we now recompute `sll $a0, var_s0, 1` in the loop like the target.
+- verdict: CONFIRMED
+
+## [s4] Which statement is duplicated matters as much as the number of increment sites: only `var_s0 += 1` may be duplicated, and the skip arm must be a plain else with no increments of its own.
+- mechanism: Every additional duplicated statement is either paid for in emitted insns (jump2 cross-jumping does not re-merge the copies, because the scheduler hoists the increments up into the arms ahead of the merge point) or creates a new loop-invariant movable. Duplicating the call tail puts `prim.code = 1` in the loop twice, and move_movables then hoists the constant 1 into a SEVENTH callee-saved register (`li s4,1` in the preheader) that the target does not spend.
+- probe: Nine biv_count-3 spellings measured with `sandbox --disable all` (tmp/grind/func_80070C70/s4/probe2.py, probe3.py, probe4.py).
+- result: whole call tail + all three increments in both mode arms 88 (200 insns); same with an else skip arm 88 (200); all three increments in the arms 93 (195); prim.code shared, link+call+increments duplicated 77 (198); only the call duplicated 98 (197); only `var_s0 += 1` duplicated but with a continue-style skip arm carrying its own copies of the other two increments 65 (195); only `var_s0 += 1` duplicated with an else skip arm and the other two increments shared 61 (192). Banked as rejected/over-duplicated-arms-at-biv3.c.
+- verdict: CONFIRMED
+
+## [s4] The permuter campaign on the biv_count-3 chassis, run with perm_inline = 0.0, produces usable spelling proposals.
+- mechanism: Mandated modality, seeded on a structurally new chassis per the 2026-09-01 chassis rule, with s3's recommended weight override so the permuter's synthetic inline_fn helpers stop dominating the output stream.
+- probe: tools/permuter_campaign.py launch --func func_80070C70 --dir tmp/perm_70c70_s4 --label s4-biv3-chassis-floor61 -j 8; waited in-turn with `permuter_campaign.py wait`; harvested with --stop. 25,626 iterations in 869 s, 288 new outputs, base permuter score 4228, best 3325. The best find was hand-read and its real changes re-spelled and measured individually (probe6.py).
+- result: Two usable proposals. (i) writing `prim.link = *(s32 *)(arg0 + 0x10);` BEFORE `prim.code = 1;` at the first func_8007352C call site (plain reordering, ordinary C): 61 -> 58. (ii) reading `*(s32 *)(ctx_or_var_s2 + 8)` into a named intermediate `new_var` before the `*(arg0 + 0x18) += 0xC` store and assigning it to prim.p_geom after: 59 alone. Together: 56 at 190 insns. The find's third change, `var_s0 = (unsigned long long) 0`, is a redundant width cast (forbidden family F2) and was discarded rather than adopted.
+- verdict: CONFIRMED
+
+## [s4] Two source increment sites for var_s0 (biv_count 2) stop the D_800A3590 address giv from being reduced.
+- mechanism: At biv_count 2 the combined giv's benefit is 6 - 2*2 = 2 and the loop.c:3824 product is 56..62 against insn_count 48, so the giv is still reduced; only benefit <= 1 (biv_count >= 3) rejects it.
+- probe: Three 2-site spellings on the floor-99 chassis (tmp/grind/func_80070C70/s4/probe.py): a continue-style skip arm carrying all three increments plus the shared copy; the same with the skip arm as an if/else; and a `for (; cond; var_s3 += 0x16C, var_s0 += 1, ctx += 3)` control.
+- result: 101, 101 and 102 - all worse than the 99 one-site chassis, and the loop dump still reduces the giv. Banked as rejected/two-increment-sites-biv-count-2.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-99 chassis (s3 candidate.c body + extern u8 D_800A3560[]; + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s4] A u16 or s16 declaration of D_800A3558 reproduces the target's tail-block lhu plus in-body sll 16 / sra 16 pair on the new biv_count-3 chassis (re-measurement of s3's chassis-relative K4).
+- mechanism: combine folds a sign_extend into a zero-extending load when both insns sit in the SAME basic block, so any declaration spelling collapses to one lh; the target's lhu at 80070ECC sits in the loop TAIL block and its sign-extension at 80070E78/E7C in the next iteration's body block, which is what defeats the fold.
+- probe: Four spellings on the floor-61 chassis (tmp/grind/func_80070C70/s4/probe5.py): extern u16 with body (s16)D_800A3558; the same with the bound spelled (s32)(D_800A35B0 + (s16)(D_800A3558 + 1)); extern s16 with body (s16)(u16)D_800A3558; and the u16 declaration with the loop-entry test unchanged.
+- result: 61 / 67 / 61 / 61 - every byte-neutral spelling still emits a single lh in the body block. s3's K4 survives the chassis change; the remaining 2-insn shortfall (190 vs 194) is this pair.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-61 chassis (s4 candidate.c loop + extern u8 D_800A3560[]; + the RecC70 record declaration of D_800A3590 at both sites + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
