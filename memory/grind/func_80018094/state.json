@@ -1,8 +1,8 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 6,
- "current_modality": "structural",
+ "session_count": 7,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Floor holds at 7; s5's central structural hypothesis is REFUTED by measurement - a cross-block GLOBAL island-input copy still takes $v1, because MIPS has no REG_ALLOC_ORDER; and cse.c:8102 is now the "
+  },
+  {
+   "session": 7,
+   "floor": 7,
+   "modality": "enumerate",
+   "headline": "Enumerate s7: 1,039 spellings swept, floor holds at 7 with 169 ties and zero improvements \u2014 the LZC arm's local naming/order/commutativity space is exhausted and the s6 frontier's scale-liveness lever"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is now a global.c CONFLICT-SET problem with a precise two-part target: the island-input copy's allocno must conflict with the `scale` allocno (seated $3) so $3 closes to it, and the `log2_val` allocno must stop conflicting with the `sum_sq` allocno so those two can share $5. Solving only one of the two moves a different insn and holds or worsens the floor (measured: dropping the staging solves the second alone and costs 4 insns).",
-   "mechanism": "global.c find_reg scans ascending with no REG_ALLOC_ORDER on MIPS, so a seat is decided purely by which hard regs the allocno's conflicting allocnos already hold; and the allocation order printed in the greg dump (`98 78 120 77 99 ...`) means log2_val's preference for $4 is honoured before sum_sq and the copy are considered.",
-   "next_probe": "Run tools/ra_solver/inverse.py global on the tied chassis (s6/t0.c / rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c) with a goal seating the copy at 4, log2_val at 5 and sum_sq at 5, --depth 3, and tools/ra_solver/inverse_compose.py classify with --target-object/--ours-object to confirm the residual is RA and not PRE-RA on this chassis. Then spell the top-ranked non-forbidden vector. Re-extract the model first (tools/ra_solver/extract.py + local_extract.py) because the pseudo numbering quoted in evidence.md comes from the s6 diagnostic build, not from the tied build."
+   "hypothesis": "The residual does not live in the LZC arm's local spelling space (471 spellings, flat at 7) nor in scale's liveness (killed, 15-47 insns) nor in the copy's carrier identity (killed, cse folds either way). What is left, in priority order, is (a) the pre-branch block's naming space in the INTERLEAVED store shape, which s7's e4 sweep did NOT cover, and (b) the island's own operand plumbing.",
+   "mechanism": "spelling_enum treats a memory store as an anchor and moves it to the end of the region, so every e4 variant emitted the three SCRV stores after the whole diff+square+sum computation \u2014 a shape that is ~35 insns worse to begin with. The interleaved shape (candidate.c's) has never had its naming/order space enumerated, and it is the block where the target's island-input copy must be born (s6).",
+   "next_probe": "Build the interleaved pre-branch region by hand rather than with spelling_enum: keep `SCRV->x = dx;` immediately after each diff and enumerate only the diff/square/sum naming around them (name each `((s32 *)arg0[1])[5]` load, each `arg1[10]` load, each square; keep/inline each; order the declarations). ~200-600 hand-generated variants, swept with the s7 run_sweep.sh wrapper at ~1.05 s each. Alternatively teach spelling_enum a --stores-are-statements flag so `SCRV->x = dx;` is reorderable rather than anchored, which would make the region enumerable directly."
   },
   {
-   "hypothesis": "`scale` can be made to conflict with the island-input copy by an ordinary-C change to WHERE scale is written, without adding an insn: e.g. writing the shared tail `scale = ((log2_val << 6) / 500) + 0xC0;` into both inner arms (duplicated-statement-into-arms, a sanctioned family) changes scale's live range and the merge structure.",
-   "mechanism": "global.c builds conflicts from allocno live ranges; scale is currently dead across the whole else arm (it is assigned only at the arm's end), which is exactly why the copy's allocno can share $3 with it. Any form that makes scale live at the island entry closes $3 to the copy.",
-   "next_probe": "On the s5 w6 chassis measure: (a) `scale = ...` duplicated into both inner arms with the merge label removed; (b) `scale` given a pre-chain default write; (c) `scale` split into a per-arm local copied out at the merge. Score each with `sandbox func_80018094 --disable all` and read the `;; NN conflicts:` line for the copy's allocno in the .greg dump after each - the conflict line, not the score, is the decision variable."
+   "hypothesis": "With the LZC arm exhausted, the remaining 7 insns are most likely a property of the LZC island's own operand plumbing rather than of any C statement around it \u2014 which is exactly the still-UNCLASSIFIED tied-output operand question the s5/s6 frontier left open.",
+   "mechanism": "s5's w6 lineage (rejected/tied-copy-dowhile-wrap-copy-seats-v1-not-a0-equal-floor-7.c) reaches the same floor 7 but with the residual reduced to ONE register name, because a tied `\"=r\"/\"1\"` operand pair materialises the island-input copy in the target's delay-slot position. That operand declares an output the island's text never writes and is not covered by any family in .claude/rules/, so the lineage cannot be driven to a candidate-ready without a ruling.",
+   "next_probe": "Grep docs/reference/sotn-construct-index.md for tied / multi-output inline-asm operand precedent among PSX (untagged) entries. If there is none, emit a ruling-request asking whether an authorized canonical-asm island may carry a tied \"=r\"/\"1\" operand pair whose only effect is to materialise a copy the target itself contains. Do this BEFORE spending a session driving the w6 lineage to zero \u2014 it is the cheapest remaining unblocking move."
   },
   {
-   "hypothesis": "The tied asm output operand (`: \"=m\"(sp_tmp[0]), \"=r\"(lz_in) : \"1\"(sum_sq)`) on the authorized canonical LZC island is still UNCLASSIFIED - it declares an output the island's text never writes, purely so GCC materialises the input copy. It is not covered by any family in .claude/rules/, so any candidate-ready on the w6 lineage needs a ruling first.",
-   "mechanism": "T1 (semantic purpose) and T2 (human-programmer) questions, not a family question: the operand has no observable effect on the function's output, and a reader would ask why the island declares an output register it never assigns.",
-   "next_probe": "Grep docs/reference/sotn-construct-index.md for tied / multi-output inline-asm operand precedent among PSX (untagged) entries. If there is none, emit a ruling-request asking whether an authorized canonical-asm island may carry a tied \"=r\"/\"1\" operand pair whose only effect is to materialise a copy the target itself contains. Do this BEFORE spending a session driving the w6 lineage to zero."
+   "hypothesis": "The unstaged spelling space (the whole LZC arm written with a FRESH named local carrying the LZCR read instead of reusing log2_val) is a 3,440-spelling family whose two sampled endpoints both score 13; sweeping it would either find the 6-insn win the staged space does not contain, or convert s7's instance kill of the arm into a much stronger statement.",
+   "mechanism": "The staged and unstaged families differ in whether pseudo 98 (log2_val) conflicts with pseudo 77 (sum_sq) \u2014 s6's conflict-set requirement (ii). The staged family is flat at 7; the unstaged family has never been swept beyond its two endpoints, and it is the only family in which (ii) is satisfied.",
+   "next_probe": "Sweep tmp/grind/func_80018094/s7/enum/ (already generated: 3,440 variants, ~63 min single-threaded at 1.05 s each) with the s7 run_sweep.sh wrapper. Launch it as the FIRST action of the session so it finishes in-turn, and bank the histogram; a zero-hit sweep converts H31 into a two-family exhaustion statement covering both sides of the (ii) conflict."
   }
  ],
  "judge_constraints": [],
@@ -260,6 +266,46 @@
    "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with the inner arms swapped",
    "predicate_cite": "",
    "result": "v3 emits 149 lines vs 148 for candidate.c (+1 insn) and moves 21 asm lines; the target's own shape is ours (asm/funcs/fu"
+  },
+  {
+   "session": 7,
+   "statement": "The residual's 7 insns can be moved by a different local spelling of the LZC arm (which sub-expressions are named, declaration order, commutative operand order) in the two sub-regions swept (arm suffi",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with both FAKE constructs present (sp_tmp[4] oversized locals object + the s4 log2_val staging)",
+   "predicate_cite": "",
+   "result": "471 spellings measured. Best 7 in every region; 169 spellings sit exactly at 7; zero improvements. Histograms: suffix/no"
+  },
+  {
+   "session": 7,
+   "statement": "Making `scale` live at the island entry \u2014 the s6 frontier's item 2, spelled as duplicated-statement-into-arms, as a pre-chain default write, as a per-arm local copied out at the merge, or as scale car",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present",
+   "predicate_cite": "",
+   "result": "54 / 41 / 38 / 30 / 22 / 54 respectively \u2014 every form that makes scale live earlier costs 15 to 47 insns over the floor."
+  },
+  {
+   "session": 7,
+   "statement": "The s4 log2_val staging reaches the floor because an extra reference exists on some dead local, so any currently-dead local (dx, dy, dz, scale) or a fresh named local can carry it equally well.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present",
+   "predicate_cite": "",
+   "result": "dx/dy/dz -> 14 (build_insns 154, an extra insn is emitted), scale -> 17, a fresh named local -> 13, log2_val -> 7. The c"
+  },
+  {
+   "session": 7,
+   "statement": "A pre-branch island-input copy survives cse if its carrier is an EXISTING dead local rather than a fresh one, i.e. s1 H7 was killed only because the carrier variable was freshly declared.",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present",
+   "predicate_cite": "",
+   "result": "dx and dz both score 7 with build_insns 153 \u2014 byte-identical to candidate.c, i.e. cse deletes the copy exactly as it doe"
+  },
+  {
+   "session": 7,
+   "statement": "Declaration scope and block structure around log2_val inside the else arm (hoisting its declaration to the function top, removing the redundant inner brace scope, spelling the LZCR mask ~1 instead of ",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All three score 7 \u2014 inert. Recorded so no later session re-derives them."
   }
  ],
  "ladder_skip": 0,

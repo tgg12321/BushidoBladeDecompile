@@ -468,3 +468,136 @@ follow-jumps path at all).
 - [s6] Declaration-order levers measured: hoisting `s32 li_v0 = -2;` above the island keeps the copy at $3 and pushes it out of the delay slot (worse); hoisting only its declaration is byte-identical; swapping the inner arms costs +1 insn and lets cse fold the copy without the follow-jumps path.
 
 - [s6] src/code6cac.c was reverted to its INCLUDE_ASM state at session end; the tree carries only memory/grind ledger changes and tmp/ scratch.
+
+## s7 (enumerate, 2026-09-09) — the LZC arm's local spelling space is SWEPT AND FLAT at 7; the s6 frontier's `scale`-liveness lever is KILLED
+
+Chassis re-measured at dispatch by every sweep's own baseline splice: candidate.c spliced into
+src/code6cac.c gives `sandbox func_80018094 --disable all` == **7** (build_insns 153). Unchanged
+from s4/s5/s6. (The dispatch brief's "measurement unavailable" is again resolved to 7.)
+
+**Method.** `tools/spelling_enum.py` + `tools/sweep_variants.py` per the systematic-spelling-sweep
+mandate. Five ENUM regions were marked on the floor-7 chassis (candidate.c body), each written in
+FULLY-NAMED form (every sub-expression that could be a local IS a local), and swept exhaustively.
+sweep_variants was run through a repo-pinned wrapper `tmp/grind/func_80018094/s7/run_sweep.sh`
+(absolute `git rev-parse --show-toplevel` cd inside the script) invoked via `bash tools/wsl.sh`,
+because `tools/wteng.ps1` only forwards to `engine.cli`/`make` and the contamination guard blocks an
+unpinned sweep invocation. src/code6cac.c is byte-restored by the tool after every sweep and the tree
+was verified clean (`git status --porcelain` shows only metrics/events.jsonl) at session end.
+
+**ENUMERATION RESULTS (1,039 measured spellings this session).**
+
+| region (ENUM source) | axis | N | best | at floor 7 | histogram |
+|---|---|---|---|---|---|
+| `s7/e1_src.c` — LZC arm SUFFIX (shift_a, shift_b, idx, lut, wide, rsh) on the STAGED chassis | decl-keep/inline + order | 161 | **7** | 79 | 7x79, 15x46, 12x36 |
+| `s7/e1_src.c` — same region | + commutative operand swaps | 296 | **7** | 79 | 7x79, 15x46, 27x46, 24x40, 12x36, 22x29, 28x16, 20x4 |
+| `s7/e2_src.c` — LZC arm PREFIX (`lw_v1`, `li_v0`, `lz` feeding the staging) | decl-keep/inline + order | 10 | **7** | 10 | 7x10 |
+| `s7/e3_src.c` — the shared `scale = ((log2_val << 6) / 500) + 0xC0;` tail | decl-keep/inline + order | 4 | **7** | 1 | 7x1 (the fully-inlined form = baseline), 54x3 |
+| `s7/e4_src.c` — PRE-BRANCH block (dx/dy/dz, the three squares, sum_sq) | decl-keep/inline + order | 550 | 42 | 0 | 50x296, 44x104, 42x69, 47x44, 45x28, 43x9 |
+| `s7/enum_src.c` — whole LZC arm, staging replaced by a FRESH named local `stage` | 2 endpoints sampled | 2 | 13 | 0 | 13x2 (fully-named and fully-inlined) |
+| `s7/hand/` — `scale`-liveness forms (the s6 frontier's item 2) | hand | 4 | 30 | 0 | see below |
+| `s7/hand2/` — declaration scope / arm order / staging-carrier identity | hand | 8 | **7** | 3 | see below |
+| `s7/hand3/` — pre-branch island-input copy carried by a REUSED local | hand | 4 | **7** | 2 | see below |
+
+**1. The LZC arm's local spelling space is EXHAUSTED and flat.** 471 spellings of the arm's two
+sub-regions (161 + 296 with swaps + 10 prefix + 4 tail) contain no form better than 7, and 169 of
+them sit exactly AT 7 — i.e. the residual is completely insensitive to which sub-expressions of the
+LZC arm are named, in what order the declarations sit, and which way round each commutative operand
+pair is written. Whatever the last 7 insns are, they are not a naming/ordering/commutativity fact
+about that block. This is the strongest evidence to date that the residual lives OUTSIDE the arm's
+local spelling space (block structure, the island's own operand plumbing, or the object model).
+
+**2. The s6 frontier's second item — make `scale` live at the island entry — is KILLED, and badly.**
+Every form that makes `scale` live earlier costs 15-47 insns over the floor:
+  * `scale = ((log2_val << 6)/500) + 0xC0;` duplicated into BOTH inner arms with the shared tail
+    removed (duplicated-statement-into-arms, a sanctioned family): **54**
+    (`rejected/scale-tail-duplicated-into-both-inner-arms-costs-47.c`)
+  * `scale = 0;` written before the outer if-chain: **41**
+    (`rejected/scale-prechain-default-write-costs-34.c`)
+  * `scale = 0x100;` written before the chain: **38**
+  * per-arm `s32 arm_scale;` copied out at the merge (`scale = arm_scale;`): **30**
+    (`rejected/per-arm-scale-local-merge-copy-costs-23.c`)
+  * `scale` used as the pre-branch carrier of the island input (`scale = sum_sq;` + `"r"(scale)`),
+    which is the cheapest possible way to make it live there: **22**
+    (`rejected/prebranch-island-input-carrier-scale-costs-15.c`)
+  * naming the scale tail's intermediates at all (`s32 sh6 = log2_val << 6; s32 dv = sh6/500;`): **54**
+    (`rejected/named-scale-tail-intermediates-cost-47.c`)
+So s6's conflict-set requirement (i) — "99 must conflict with 78 (`scale`, $3) so $3 closes to the
+copy" — is reachable in C, but every C form that reaches it restructures the merge and pays 15-47
+insns. The lever is real and the price is prohibitive on this chassis.
+
+**3. The staging carrier's IDENTITY is load-bearing, not just its presence.** Re-staging the LZCR
+read through a different currently-dead local instead of `log2_val` costs insns:
+`dx` / `dy` / `dz` -> **14** (build_insns 154, i.e. an extra insn is emitted);
+`scale` -> **17**; a FRESH named local (`stage`, the s7/enum_src.c family) -> **13**.
+Only `log2_val` gives 7. This sharpens s6's finding: the staging works because the carrier is the
+pseudo whose `preferences: 4` the greg dump shows, not merely because an extra reference exists.
+(`rejected/staging-carrier-dx-instead-of-log2val-costs-7.c`)
+
+**4. Declaration scope and block structure inside the else arm are INERT (all at 7).**
+`s32 log2_val;` hoisted to the function's top declaration list: 7. Removing the redundant inner
+`{ ... }` block that scopes `log2_val`: 7. Spelling the LZCR mask constant `~1` instead of `-2`: 7.
+Do not re-derive these.
+
+**5. Outer arm ORDER is not free.** Reordering the outer chain to `if (sum_sq < 0) ... else if
+(sum_sq > 250000) ... else ...` costs **20** (`rejected/outer-arm-order-swap-lt0-first-costs-13.c`).
+The target's chain order (`> 250000` first) is fixed.
+
+**6. The pre-branch diff/sum block: the INTERLEAVED store shape is worth ~35 insns and no spelling
+of the deferred shape recovers it.** spelling_enum classifies `SCRV->x = dx;` as an ANCHOR (it is
+not a bare `name = expr;`), so all 550 e4 variants emit the three scratchpad stores AFTER the whole
+diff+square+sum computation instead of interleaved with it as candidate.c does. Every one of those
+550 scores 42-50 (best 42, build_insns 155). CAVEAT for the next session: e4 therefore measured the
+DEFERRED-STORE block shape, not candidate.c's interleaved shape — the pre-branch block's naming
+space in the interleaved shape is still UNSWEPT and would need the stores pinned in place (either a
+spelling_enum change that treats a memory store as a reorderable statement, or hand-built variants).
+What e4 does prove is that the interleaved store placement is load-bearing to the tune of ~35 insns
+and is not recoverable by any renaming of the deferred form.
+(`rejected/prebranch-diff-block-deferred-scrv-stores-costs-35.c`)
+
+**7. A pre-branch island-input copy carried by a REUSED dead local is folded away exactly like the
+fresh-local spelling (s1 H7).** `dx = sum_sq;` / `dz = sum_sq;` before the outer chain with the
+island fed `"r"(dx)` / `"r"(dz)` both score **7 with build_insns 153** — identical to candidate.c,
+i.e. cse deletes the copy just as it does for a fresh local. The carrier being an existing local
+does not change cse's canon_reg substitution. `log2_val = sum_sq;` as carrier costs 9.
+
+**8. The DATA-MODEL "declaration pun" flag on `D_8008D118` is a FALSE POSITIVE for this function.**
+The dispatch brief flags candidate.c:89/124 (`*(&D_8008D118 + sum_sq)`) as a declaration pun that
+would FAIL layer-1. But `src/code6cac.c:19` already carries `extern u8 D_8008D118;` and the
+**COMPLETED-C** sibling in the same file uses the byte-identical spelling at src/code6cac.c:756 and
+:783 (`log2_val = ((u32)((u8)(*((&D_8008D118) + dist_sq)))) >> 3;`). src/code6cac_b.c does the same
+in six more places. The spelling is the project-established, oracle-proven form for this LUT; it is
+not a pun this function invented.
+
+- [s7] HEAD chassis: candidate.c == sandbox 7 (build_insns 153), unchanged from s4/s5/s6.
+- [s7] ENUMERATION: 1,039 spellings measured; best 7; 169 spellings sit at the floor; ZERO improvements.
+- [s7] ENUMERATION (LZC arm, both sub-regions, incl. commutative swaps): 471 spellings, best 7, 169 at the floor — the arm's local naming/order/commutativity space is exhausted and flat.
+- [s7] KILLED (s6 frontier item 2): every C form that makes `scale` live at the island entry costs 15-47 insns (duplicate-into-arms 54, prechain 0 -> 41, prechain 0x100 -> 38, per-arm local + merge copy 30, scale-as-island-carrier 22). Sanctioned family, prohibitive price.
+- [s7] The staging carrier must be `log2_val` specifically: dx/dy/dz -> 14, scale -> 17, a fresh local -> 13, log2_val -> 7.
+- [s7] Inert at 7 (do not re-derive): log2_val declared at function top; the inner `{}` scope block removed; `~1` for `-2`.
+- [s7] Outer arm order swap (`< 0` first) costs 20 — the target's chain order is fixed.
+- [s7] A pre-branch island-input copy carried by an existing dead local (dx, dz) is folded by cse exactly like the fresh-local spelling: 7, build_insns 153, byte-identical to candidate.c. Carrier identity does not defeat cse canon_reg.
+- [s7] The pre-branch block's 550-spelling sweep measured the DEFERRED-STORE shape (spelling_enum treats `SCRV->x = dx;` as an anchor and moves it last): best 42. The interleaved shape's naming space is still UNSWEPT.
+- [s7] The `D_8008D118` declaration-pun flag is a false positive: `extern u8 D_8008D118;` + `*(&D_8008D118 + i)` is the spelling the COMPLETED-C sibling at src/code6cac.c:756/783 ships.
+- [s7] src/code6cac.c restored byte-exact by sweep_variants; tree carries only memory/grind ledger changes and tmp/ scratch.
+
+- [s7] HEAD chassis re-measured this session by every sweep's own baseline splice: candidate.c spliced into src/code6cac.c gives sandbox func_80018094 --disable all == 7 (build_insns 153). Unchanged from s4/s5/s6; the brief's 'measurement unavailable' resolves to 7.
+
+- [s7] ENUMERATION: 1,039 spellings measured this session; best 7; 169 spellings sit exactly at the floor; ZERO improvements.
+
+- [s7] ENUMERATION (LZC arm, both sub-regions, with and without the commutative-swap axis, plus the shared scale tail): 471 spellings, best 7, 169 at the floor. The arm's local naming / declaration-order / commutativity space is exhausted and flat, so the residual is not a spelling fact about that block.
+
+- [s7] ENUMERATION (pre-branch diff/sum block, deferred-store shape): 550 spellings, best 42, worst 50. The interleaved SCRV store placement candidate.c uses is worth ~35 insns and is not recoverable by renaming.
+
+- [s7] The s6 frontier's scale-liveness lever is measured and prohibitively expensive: duplicated-statement-into-arms 54, pre-chain `scale = 0;` 41, pre-chain `scale = 0x100;` 38, per-arm local + merge copy 30, scale carrying the island input 22, naming the scale tail's intermediates 54.
+
+- [s7] The staging carrier must be log2_val specifically: dx/dy/dz -> 14, scale -> 17, a fresh named local -> 13, log2_val -> 7.
+
+- [s7] Inert at 7 (do not re-derive): log2_val declared at the function top; the redundant inner brace scope removed; `~1` spelled for `-2`.
+
+- [s7] Outer arm order swap (`sum_sq < 0` tested first) costs 20 — the target's chain order (`> 250000` first) is fixed.
+
+- [s7] A pre-branch island-input copy carried by an existing dead local (dx, dz) is folded by cse exactly like the fresh-local spelling of s1 H7: 7 with build_insns 153, byte-identical to candidate.c.
+
+- [s7] src/code6cac.c was restored byte-exact by sweep_variants after every sweep; git status --porcelain shows only metrics/events.jsonl plus the memory/grind ledger changes at session end.
+
+- [s7] Tooling note for later sessions: tools/wteng.ps1 only forwards to engine.cli/make, so sweep_variants cannot be pinned through it. The working pattern is a repo-pinned wrapper script (tmp/grind/<func>/sN/run_sweep.sh, absolute `cd "$(git rev-parse --show-toplevel)"` inside) invoked as `bash tools/wsl.sh 'bash tmp/.../run_sweep.sh --variants ...'`. Throughput is ~1.05 s per variant, single-threaded.

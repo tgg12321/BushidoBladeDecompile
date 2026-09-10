@@ -512,3 +512,112 @@ dropped).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with the inner arms swapped
+
+## s7 (enumerate, 2026-09-09)
+
+**H31 — KILLED (instance).** *The residual's 7 insns can be moved by a different local spelling of
+the LZC arm (which sub-expressions are named, declaration order, commutative operand order).*
+Probe: `tools/spelling_enum.py` on two ENUM regions of the floor-7 chassis — the arm SUFFIX
+(shift_a, shift_b, idx, lut, wide, rsh; `tmp/grind/func_80018094/s7/e1_src.c`) with and without the
+commutative-swap axis, and the arm PREFIX (lw_v1, li_v0, lz; `s7/e2_src.c`) — plus the shared
+`scale` tail (`s7/e3_src.c`); 471 spellings swept with `tools/sweep_variants.py`.
+Result: best 7 in every region, 169 spellings AT 7, zero improvements. Histograms in evidence.md s7.
+measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with both FAKE
+constructs present (sp_tmp[4] oversized locals object + the log2_val staging).
+
+**H32 — KILLED (instance).** *Making `scale` live at the island entry (s6 frontier item 2, via
+duplicated-statement-into-arms or a pre-chain default write or a per-arm local + merge copy) closes
+$3 to the island-input copy at acceptable cost.* Probe: five hand forms
+(`tmp/grind/func_80018094/s7/hand/`, `s7/hand3/k_prebranch_carrier_scale.c`, `s7/e3/v0.c`) scored
+with `sandbox --disable all`. Result: 54 / 41 / 38 / 30 / 22 / 54 — every form that makes `scale`
+live earlier costs 15-47 insns. The conflict-set change s6 asked for is reachable from ordinary C
+but the merge restructuring it forces is far more expensive than the 7 it would buy.
+measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE
+constructs present.
+
+**H33 — KILLED (instance).** *The s4 staging works because of the extra reference, so any dead local
+can carry it.* Probe: `s7/hand2/g6_stage_via_{dx,dy,dz}.c`, `g9_stage_via_scale.c`, and the
+`s7/enum_src.c` fresh-local (`stage`) family. Result: dx/dy/dz -> 14 (build_insns 154), scale -> 17,
+fresh local -> 13, log2_val -> 7. The carrier's identity is load-bearing; only `log2_val` reaches the
+floor. CONFIRMS-by-refinement s6's reading of the greg dump (`98 preferences: 4`).
+measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE
+constructs present.
+
+**H34 — KILLED (instance).** *A pre-branch island-input copy survives cse if its carrier is an
+EXISTING dead local rather than a fresh one (i.e. s1 H7 was killed only because the carrier was
+fresh).* Probe: `s7/hand3/k_prebranch_carrier_{dx,dz}.c` — `dx = sum_sq;` before the outer chain
+with the island fed `"r"(dx)`. Result: 7 with build_insns 153, i.e. byte-identical to candidate.c —
+cse's canon_reg substitutes through the reused carrier exactly as it does through a fresh one.
+`log2_val` as carrier: 9. measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at
+floor 7, both FAKE constructs present.
+
+**H35 — KILLED (instance).** *Declaration scope / block structure around `log2_val` inside the else
+arm moves the residual.* Probe: `s7/hand2/g1_log2val_function_top.c` (declared with sp_tmp at the
+function top), `g2_no_inner_block.c` (the redundant `{ }` scope removed), `g8_minus2_as_bitnot1.c`
+(`~1` for `-2`). Result: all three score 7 — inert. measured_on: chassis 2026-09-09
+(-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present.
+
+**H36 — CONFIRMED.** *The three `SCRV->x/y/z` stores being INTERLEAVED with the diff computation
+(rather than deferred to the end of the block) is load-bearing.* Probe: the 550-spelling
+`s7/e4_src.c` sweep — spelling_enum treats a memory store as an ANCHOR and moves all three to the
+end of the region, so the whole family is the deferred-store shape. Result: 42-50 across all 550
+(best 42, build_insns 155) vs 7 for the interleaved form. NOTE the sweep therefore did NOT cover the
+interleaved shape's naming space; that remains unswept.
+
+**H37 — CONFIRMED.** *The `D_8008D118` declaration-pun flag in the dispatch brief is a false
+positive.* Probe: `grep -rn D_8008D118 src/*.c include/*.h`. `src/code6cac.c:19` declares
+`extern u8 D_8008D118;` and the COMPLETED-C sibling in the same file uses the identical
+`*((&D_8008D118) + i)` spelling at :756 and :783; code6cac_b.c does the same six more times. The
+spelling is oracle-proven project convention, not a use-site object-model invention.
+
+## [s7] The residual's 7 insns can be moved by a different local spelling of the LZC arm (which sub-expressions are named, declaration order, commutative operand order) in the two sub-regions swept (arm suffix shift_a/shift_b/idx/lut/wide/rsh, arm prefix lw_v1/li_v0/lz) and the shared scale tail.
+- mechanism: spelling_enum enumerates the keep-vs-inline axis for every named local, every declaration order respecting def-before-use, and (second pass) every commutative operand orientation; each spelling changes which pseudos exist and in what order they are born, which is the input to local-alloc's qty numbering and global.c's allocation order.
+- probe: tools/spelling_enum.py on tmp/grind/func_80018094/s7/e1_src.c (--no-swaps: 161; with swaps: 296), s7/e2_src.c (10), s7/e3_src.c (4); all swept with tools/sweep_variants.py --func func_80018094 --file code6cac via the repo-pinned tmp/grind/func_80018094/s7/run_sweep.sh.
+- result: 471 spellings measured. Best 7 in every region; 169 spellings sit exactly at 7; zero improvements. Histograms: suffix/no-swaps 7x79, 15x46, 12x36; suffix/with-swaps 7x79, 15x46, 27x46, 24x40, 12x36, 22x29, 28x16, 20x4; prefix 7x10; scale tail 7x1 + 54x3. The residual is insensitive to the arm's local spelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7 with both FAKE constructs present (sp_tmp[4] oversized locals object + the s4 log2_val staging)
+
+## [s7] Making `scale` live at the island entry — the s6 frontier's item 2, spelled as duplicated-statement-into-arms, as a pre-chain default write, as a per-arm local copied out at the merge, or as scale carrying the island input — closes $3 to the island-input copy at a cost the 7-insn residual can absorb.
+- mechanism: global.c builds conflicts from allocno live ranges; scale is currently dead across the whole else arm, which is why the copy's allocno can share $3 with it. Any form that makes scale live at the island entry closes $3 to the copy (s6's conflict-set requirement (i)).
+- probe: Five hand forms scored with sandbox --disable all: tmp/grind/func_80018094/s7/hand/h1_scale_dup_arms.c, h2_scale_prechain_zero.c, h4_scale_prechain_100.c, h3_arm_scale_merge_copy.c; s7/hand3/k_prebranch_carrier_scale.c; plus s7/e3/v0.c (naming the scale tail's intermediates).
+- result: 54 / 41 / 38 / 30 / 22 / 54 respectively — every form that makes scale live earlier costs 15 to 47 insns over the floor. The conflict-set change is reachable from ordinary C, but the merge restructuring it forces is far more expensive than the 7 insns it would buy. Banked as rejected/scale-tail-duplicated-into-both-inner-arms-costs-47.c, rejected/scale-prechain-default-write-costs-34.c, rejected/per-arm-scale-local-merge-copy-costs-23.c, rejected/prebranch-island-input-carrier-scale-costs-15.c, rejected/named-scale-tail-intermediates-cost-47.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present
+
+## [s7] The s4 log2_val staging reaches the floor because an extra reference exists on some dead local, so any currently-dead local (dx, dy, dz, scale) or a fresh named local can carry it equally well.
+- mechanism: s4 attributed the staging's effect to local-alloc allocno priority (an extra reference reorders the ascending first-free scan). If that is the whole mechanism, the carrier's identity should be irrelevant.
+- probe: tmp/grind/func_80018094/s7/hand2/g6_stage_via_dx.c, g6_stage_via_dy.c, g6_stage_via_dz.c, g9_stage_via_scale.c, and the fresh-local family tmp/grind/func_80018094/s7/enum_src.c (2 endpoints of a 3,440-spelling enumeration).
+- result: dx/dy/dz -> 14 (build_insns 154, an extra insn is emitted), scale -> 17, a fresh named local -> 13, log2_val -> 7. The carrier's identity is load-bearing; only log2_val reaches the floor. This refines s6's reading of the greg dump (`98 preferences: 4`): the effect is about which pseudo gets its $4 preference honoured first, not about reference counts on an arbitrary local. Banked as rejected/staging-carrier-dx-instead-of-log2val-costs-7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present
+
+## [s7] A pre-branch island-input copy survives cse if its carrier is an EXISTING dead local rather than a fresh one, i.e. s1 H7 was killed only because the carrier variable was freshly declared.
+- mechanism: s6 dump-proved that cse_end_of_basic_block's follow-jumps arm (tools/gcc-2.7.2/cse.c:8102) extends cse's path through the beqz into the island block and canon_reg substitutes the copy's source for the copy. Whether the carrier is fresh or reused is not part of that predicate, but it was never measured.
+- probe: tmp/grind/func_80018094/s7/hand3/k_prebranch_carrier_dx.c and k_prebranch_carrier_dz.c: `dx = sum_sq;` (resp. dz) written before the outer if-chain with the island fed `"r"(dx)`; also k_prebranch_carrier_log2_val.c.
+- result: dx and dz both score 7 with build_insns 153 — byte-identical to candidate.c, i.e. cse deletes the copy exactly as it does for a fresh local. log2_val as carrier scores 9. Carrier identity does not defeat cse's canon_reg substitution.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present
+
+## [s7] Declaration scope and block structure around log2_val inside the else arm (hoisting its declaration to the function top, removing the redundant inner brace scope, spelling the LZCR mask ~1 instead of -2) moves the residual.
+- mechanism: Declaration scope changes where the pseudo is born relative to the island, which s5/s6 identified as an input to both allocators' scan order.
+- probe: tmp/grind/func_80018094/s7/hand2/g1_log2val_function_top.c, g2_no_inner_block.c, g8_minus2_as_bitnot1.c scored with sandbox --disable all.
+- result: All three score 7 — inert. Recorded so no later session re-derives them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 7, both FAKE constructs present
+
+## [s7] The three SCRV->x/y/z scratchpad stores being INTERLEAVED with the diff computation, rather than deferred to the end of the pre-branch block, is load-bearing.
+- mechanism: spelling_enum classifies `SCRV->x = dx;` as an ANCHOR (it is not a bare `name = expr;`) and moves every anchor to the end of the region, so the whole e4 family is the deferred-store shape; comparing its best against the interleaved baseline isolates the store placement.
+- probe: tools/spelling_enum.py on tmp/grind/func_80018094/s7/e4_src.c -> 550 spellings of the pre-branch block (dx, dy, dz, the three squares, sum_sq), all swept with sweep_variants.
+- result: All 550 score 42-50 (best 42, build_insns 155) against 7 for the interleaved form: the store placement is worth ~35 insns and no renaming of the deferred form recovers it. CAVEAT banked for the next session: the interleaved shape's own naming space is therefore still UNSWEPT — covering it needs the stores pinned in place. Best form banked as rejected/prebranch-diff-block-deferred-scrv-stores-costs-35.c.
+- verdict: CONFIRMED
+
+## [s7] The dispatch brief's DECLARATION-PUNS scan flags candidate.c:89/124 (`*(&D_8008D118 + sum_sq)`) as a use-site object-model pun that would fail layer-1 review.
+- mechanism: The scan looks for address-arithmetic on a splat D_ symbol at a use site, which normally indicates a missing aggregate declaration.
+- probe: grep -rn D_8008D118 src/*.c include/*.h
+- result: FALSE POSITIVE for this function. src/code6cac.c:19 already declares `extern u8 D_8008D118;`, and the COMPLETED-C sibling in the same file ships the byte-identical spelling at src/code6cac.c:756 and :783; src/code6cac_b.c uses it six more times. The spelling is oracle-proven project convention for this LUT, not something this candidate invented.
+- verdict: CONFIRMED
