@@ -52,5 +52,14 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T09:28:04.621761+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "f45b17612cc7dd9c",
+   "when": "2026-09-10T10:03:51.706069+00:00",
+   "summary": "final call: Constructs: (1) SpuCtrlRegs struct + SPU_CTRL volatile computed-MMIO cast, (2) ordinary loop/poll body, (3) deletion of a now-redundant forward decl. Family: mmio-volatile-type-level, prerequisites ve"
+  }
+ ]
 }

@@ -115,3 +115,101 @@ E7. Chassis note: everything above was measured on HEAD 66e2f1e6e with the curre
 - [s1] Applying candidate.c to src/main.c also means deleting the redundant forward declaration `extern void _spu_FwriteByIO(s32, s32);` (HEAD src/main.c:1898). Both call sites (src/main.c:1719 and src/main.c:1905) pass s32 values into the `(u8 *addr, u32 size)` prototype and compiled cleanly all session; neither call site's own bytes were disturbed.
 
 - [s1] Cross-knowledge reconciled: memory/closer/phase3-progress.md:349 records _spu_FwriteByIO 'BIT-EXACT 132/132' from the 2026-07-10 DispUpdateStatusMessage splice era, achieved with the volatile sp0/sp4 pads. That claim is real but its construct is stripped by today's sandbox (see above) and its splice context is gone — _spu_FiDMA and _spu_Fr_ are now separate matched C at src/main.c:1769 and :1794. The honest route found this session supersedes it and needs no policy exception.
+
+
+## Session 2 (2026-09-10, structural) - FLOOR 3 -> 0, BYTES PROVEN
+
+E8. THE RESIDUAL WAS TWO SEPARATE THINGS, not one, and the s1 frontier's framing
+    ("get the loop-invariant load below the guard branch") was only half of it.
+    Disassembling the s1 candidate's own sandbox object
+    (tmp/grind/_spu_FwriteByIO/s2/build.dis, insns at 0x2da4-0x2db8) showed our
+    build emitted TWO `blez $s0` branches where the target emits one:
+      ours:   blez $s0,.L / nop (delay)            <- source `if (num > 0)` guard
+              lui $a0,%hi(_spu_RXX) / lw %lo
+              blez $s0,.L / move $v1,$zero (delay) <- loop-entry test
+      target: blez $s0,.L80088A54 / addu $v1,$zero,$zero (delay)
+              lui $a0,%hi(_spu_RXX) / lw %lo(_spu_RXX)($a0)
+    The two extra words are the FIRST branch and its `nop`, not a misplaced load
+    plus a load-delay nop. Cause: the source-level `if (num > 0)` guard is
+    redundant with the loop-entry test GCC already emits for
+    `for (i = 0; i < num; i += 2)`, and 2.7.2 does not merge them.
+
+E9. DELETING THE GUARD FIXES THE BRANCH HALF, AND ONLY THAT HALF. With the guard
+    and the `b = _spu_RXX` base local both removed
+    (rejected/flat-cast-no-licm-hoist-score8.c) the build is 115/115 instructions
+    with a single `blez` whose delay slot carries `move $v1,$zero` - the target's
+    shape - but sandbox = 8, because the `lui/lw %hi/%lo(_spu_RXX)` is now emitted
+    INSIDE the loop and reloaded every iteration instead of sitting in the
+    preheader. So the base load genuinely does need loop.c to hoist it, and s1 was
+    right that the load placement is the second half of the residual.
+
+E10. THE HOIST IS BLOCKED BY GCC'S ALIAS TEST, AND THE GATE IS MEM_IN_STRUCT_P.
+    Read of the compiler source, not a guess: loop.c's invariant_p
+    (tools/gcc-2.7.2/loop.c:2760-2783) rejects a MEM if any recorded loop store is
+    `true_dependence`-conflicting with it; true_dependence
+    (tools/gcc-2.7.2/sched.c:817-840) returns 0 when the STORE is MEM_IN_STRUCT_P
+    at a varying (register) address in a non-QImode mode while the LOAD is
+    non-MEM_IN_STRUCT_P at a fixed (symbol) address. Our FIFO store is at a
+    register address (varying, HImode) and the `_spu_RXX` load is at a SYMBOL_REF
+    (fixed) - so the entire question is whether the store carries MEM_IN_STRUCT_P.
+    A flat `*(volatile u16 *)(_spu_RXX + 0x1A8)` cast is an INDIRECT_REF of
+    non-aggregate type, so expand_expr leaves MEM_IN_STRUCT_P clear and the hoist
+    is refused. A COMPONENT_REF - a struct member access - sets it, and the hoist
+    happens.
+
+E11. PASS ATTRIBUTION, DUMP-CONFIRMED (tmp/grind/_spu_FwriteByIO/dumps/, produced
+    by `pwsh tools/grinder/dump.ps1 _spu_FwriteByIO` with the final body applied).
+    The mover is loop.c LICM, not jump.c and not reorg.c:
+      main.cse  (pre-loop):  insn 67 `(set (reg:SI 88) (mem:SI (symbol_ref "_spu_RXX")))`
+                             sits INSIDE the loop, after code_label 63 / note 65.
+      main.loop (post-loop): that insn is gone from the loop body and reappears as
+                             insn 278, emitted between the loop-entry `jump_insn 273`
+                             and `NOTE_INSN_LOOP_BEG` note 56 - i.e. in the preheader,
+                             exactly the target's position.
+    The store prints as `(mem/s/v:HI (plus:SI (reg:SI 88) (const_int 424)))` - the
+    `/s` is MEM_IN_STRUCT_P and the `/v` is the MMIO volatile. Recorded so no future
+    session re-guesses this: reorg.c never moved anything here; the `i = 0` in the
+    delay slot is an ordinary backward fill of the loop-entry branch.
+
+E12. THE HONEST DATA MODEL IS THE FIX, AND IT IS THE ORIGINAL ONE. `_spu_RXX`
+    (0x800A2CDC) holds the SPU register-file base 0x1F801C00, so `_spu_RXX + 0x1A6`
+    is the SPU transfer/control register block at 0x1F801DA6: five consecutive
+    16-bit hardware registers - sound-RAM transfer address (0x1DA6), sound-RAM data
+    FIFO (0x1DA8), SPUCNT (0x1DAA), sound-RAM transfer control (0x1DAC), SPUSTAT
+    (0x1DAE). Sony's own libspu reaches them through `union SpuUnion *_spu_RXX`
+    with the SPUR()/SPUW() field macros (Xeeynamo/psyz decomp/src/libspu/spu.c),
+    which is a COMPONENT_REF and therefore MEM_IN_STRUCT_P. Typing the block as
+    that struct and routing all nine SPU accesses in the function through it gives
+    sandbox 0, 115/115.
+
+E13. FLOOR 3 -> 0, AND THE BYTES ARE PROVEN ON THE FULL BUILD.
+    `sandbox _spu_FwriteByIO --disable all` = {"score": 0, "target_insns": 115,
+    "build_insns": 115, "rules_dropped": 0, "cheat_asm_stripped": 11 (the file's
+    other, unrelated cheat-asm; none in this function)}. `verify-oracle` =
+    {"ok": true, "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+    "build_matches": true} - identical to the locked original SHA1. The body is in
+    src/main.c now and banked at memory/grind/_spu_FwriteByIO/candidate.c; the
+    self-vet is at memory/grind/_spu_FwriteByIO/self_vet.md.
+
+E14. SIDE FINDING worth carrying to other functions: an array-index spelling on a
+    cast pointer, `((volatile u16 *)_spu_RXX)[0xD4] = *cur++;`, ALSO produces the
+    hoist (measured this session, one compile, same preheader shape). That was not
+    adopted - a magic word index of 0xD4 standing in for byte offset 0x1A8 is worse
+    C than naming the register - but it means the LICM gate can be opened by more
+    than one spelling, which is useful the next time a base-address reload has to
+    be moved into a preheader.
+
+E15. CHASSIS: HEAD 73ce9a57d, CC_FLAGS
+    `-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin
+    -w -mel -msoft-float`. src/main.c is LEFT WITH THE MATCHING BODY APPLIED at end
+    of session (score 0, oracle-verified), unlike s1 which reverted.
+
+- [s2] The s1 frontier's premise was measurably incomplete: the 2-word residual was NOT one misplaced load plus a load-delay nop, it was a REDUNDANT SECOND GUARD BRANCH (`blez $s0` + `nop`) emitted because the source carried `if (num > 0)` in addition to the loop-entry test GCC already emits for `for (i = 0; i < num; i += 2)`. Disassembling the sandbox object (tmp/grind/_spu_FwriteByIO/s2/build.dis) rather than reasoning from the score is what showed it.
+
+- [s2] MECHANISM, read out of the compiler and then dump-confirmed: loop.c invariant_p (tools/gcc-2.7.2/loop.c:2760-2783) refuses to hoist a MEM whose address is fixed when a loop store `true_dependence`-conflicts with it, and true_dependence (tools/gcc-2.7.2/sched.c:817-840) clears that conflict only when the store is MEM_IN_STRUCT_P at a varying non-QImode address. A flat `*(volatile u16 *)(base + k)` cast is an INDIRECT_REF of scalar type and leaves MEM_IN_STRUCT_P clear; a struct member access sets it. This is a general BB2 lever, not a fact about this function.
+
+- [s2] PASS ATTRIBUTION IS SETTLED AND MUST NOT BE RE-GUESSED: the mover is loop.c LICM. main.cse has the `_spu_RXX` load as insn 67 inside the loop; main.loop has it as insn 278 between the loop-entry jump_insn 273 and NOTE_INSN_LOOP_BEG note 56. jump.c duplicate_loop_exit_test and reorg.c were both innocent - the `i = 0` in the branch delay slot is an ordinary backward fill.
+
+- [s2] `_spu_RXX` = SPU register-file base 0x1F801C00, so `_spu_RXX + 0x1A6` = 0x1F801DA6 = the SPU transfer/control register block (trans_addr / trans_fifo / SPUCNT / trans_ctrl / SPUSTAT, five consecutive u16 hardware registers). Sony libspu models it as `union SpuUnion *_spu_RXX` with SPUR()/SPUW(); typing it that way in BB2 is both the original data model and the thing that opens the LICM gate.
+
+- [s2] FLOOR 3 -> 0. sandbox --disable all score 0 (115/115, rules_dropped 0) and full-build verify-oracle SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == locked oracle. Body applied in src/main.c, banked at candidate.c, self-vet at self_vet.md.

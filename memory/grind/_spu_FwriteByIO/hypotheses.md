@@ -100,3 +100,88 @@ F3. Cheap parallel check: `num` / `i` / `size` type sweep (`s32` vs `u32` vs
 - probe: Seven-way spelling sweep of that one loop with the entire rest of the body held fixed, reading cc1's `.frame ... # vars=` after each compile (one compile per spelling, no sandbox runs), then a sandbox run on the winner.
 - result: do-while, while, `for (; i < num; i += 2)` with the init hoisted out, and `i = 0` moved inside the guard all give vars= 0. All three spellings that keep `for (i = 0; i < num; i += 2)` give vars= 8 and the target's `.frame $sp,48`. psyz spells this loop exactly that way, so the phantom bytes are ordinary Sony source. Sandbox floor dropped 12 -> 3.
 - verdict: CONFIRMED
+
+
+## Session 2 (2026-09-10, structural)
+
+H5 (KILLED, instance). The 2-word residual is a single misplaced loop-invariant
+    load: getting the `lui/lw %hi/%lo(_spu_RXX)` below the guard branch removes
+    both a load-delay nop and an empty delay slot (session 1 F1 framing).
+    Mechanism claimed: maspsx inserts a load-delay nop after the `lw`, and the
+    `i = 0` cannot reach the branch delay slot while the load is above it.
+    Probe: disassembled the s1 candidate own sandbox object
+    (tmp/grind/_spu_FwriteByIO/s2/build.dis, 0x2da4-0x2db8) instead of reasoning
+    from the score.
+    Result: there is no load-delay nop. The two extra words are a SECOND `blez
+    $s0` and its `nop` delay slot - the source `if (num > 0)` guard, which 2.7.2
+    does not merge with the loop-entry test it emits for the `for`. The load
+    placement is a real but separate defect. Superseded by H6+H7.
+    kill_scope: instance. measured_on: HEAD 73ce9a57d, CC_FLAGS
+    -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin
+    -w -mel -msoft-float, no FAKE constructs present (s1 candidate body).
+
+H6 (CONFIRMED). Deleting the redundant source-level `if (num > 0)` guard removes
+    one `blez` and its `nop`, leaving the loop-entry test as the only branch with
+    `i = 0` filling its delay slot - the target branch shape.
+    Mechanism: `for (i = 0; i < num; i += 2)` already gets an entry test from the
+    loop optimizer; the hand-written guard duplicates it and GCC 2.7.2 keeps both.
+    Probe: removed the guard and the `b` base local, compiled, sandboxed.
+    Result: 115 build insns vs 115 target (was 117), single `blez` with `move
+    $v1,$zero` in the delay slot. Score 3 -> 8, because removing `b` also un-did
+    the base-load placement - the branch half is fixed, the load half regressed.
+    Banked as rejected/flat-cast-no-licm-hoist-score8.c.
+
+H7 (CONFIRMED). The `_spu_RXX` base load lands in the FIFO loop preheader iff
+    the FIFO store is a struct member access, because MEM_IN_STRUCT_P is what
+    clears GCC store-vs-load dependence test.
+    Mechanism: invariant_p (tools/gcc-2.7.2/loop.c:2760-2783) rejects the MEM if
+    any loop store is true_dependence-conflicting; true_dependence
+    (tools/gcc-2.7.2/sched.c:817-840) returns 0 when the store is MEM_IN_STRUCT_P
+    at a varying non-QImode address and the load is non-MEM_IN_STRUCT_P at a fixed
+    address. A flat `*(volatile u16 *)(_spu_RXX + 0x1A8)` cast is an INDIRECT_REF
+    of scalar type -> flag clear -> no hoist. A COMPONENT_REF sets it.
+    Probe: typed the SPU transfer/control register block at `_spu_RXX + 0x1A6`
+    (0x1F801DA6) as the five-register struct Sony libspu already models it as,
+    routed the FIFO store through it, compiled, sandboxed; then ran
+    `pwsh tools/grinder/dump.ps1 _spu_FwriteByIO` and read main.cse vs main.loop.
+    Result: score 0. Dump confirms loop.c LICM is the mover - insn 67 (the load)
+    inside the loop in main.cse becomes insn 278 in main.loop, emitted between the
+    loop-entry jump_insn 273 and NOTE_INSN_LOOP_BEG note 56; the store prints
+    `(mem/s/v:HI ...)` with `/s` = MEM_IN_STRUCT_P set.
+
+H8 (CONFIRMED). Routing ALL nine SPU register accesses through that struct - not
+    just the FIFO store - keeps the match and is the better body.
+    Mechanism: the other eight accesses sit in the outer `while` loop and in the
+    two timeout loops. The outer loop contains `jal _spu_Fw1ts`, which sets
+    unknown_address_altered, so no MEM there is hoistable regardless of the flag;
+    the timeout loops re-read SPUSTAT every iteration by construction. So the
+    struct changes nothing for them.
+    Probe: converted every `*(volatile u16 *)(_spu_RXX + <off>)` in the function to
+    `SPU_CTRL-><member>`, compiled, sandboxed, then ran verify-oracle.
+    Result: score 0, 115/115, and full-build SHA1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa == locked oracle. Adopted: a struct
+    used for one of nine accesses to the same register block would be the odd
+    construct; used for all nine it is simply the register block type.
+
+H9 (CONFIRMED, side finding). The LICM gate can be opened by more than one
+    spelling: `((volatile u16 *)_spu_RXX)[0xD4] = *cur++;` also produces the
+    preheader hoist.
+    Mechanism: same MEM_IN_STRUCT_P gate reached by a different tree shape.
+    Probe: one compile, read the emitted preheader.
+    Result: identical `blez / move $3,$0 / lw $4,_spu_RXX / loop-top` shape as the
+    struct form. NOT adopted - a magic word index 0xD4 standing in for byte offset
+    0x1A8 is worse C than naming the register - but recorded because the next
+    function that needs a base-address reload moved into a preheader has two
+    spellings to try, not one.
+
+## Live frontier (for session 3)
+
+NONE - the function is MATCHED. sandbox --disable all = 0 (115/115, rules_dropped
+0) and `verify-oracle` reports build_sha1 == the locked oracle
+62efab4f73f992798c43e8c730aa43baa10bb4fa with the body applied to src/main.c.
+The remaining steps are review and integration, which belong to the driver: layer-1
+cheat-reviewer on the diff, then the Judge. If either bounces the struct, the
+correct next move is a ruling-request asking whether typing an MMIO register block
+as a struct (no splat symbol merged, `_spu_RXX` declaration untouched) sits inside
+[[mmio-volatile-type-level]] or needs its own grant - NOT a respelling, and NOT the
+`[0xD4]` array-index variant, which reaches the same bytes with strictly worse C.
