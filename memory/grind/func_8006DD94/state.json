@@ -1,0 +1,17 @@
+{
+ "func": "func_8006DD94",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "Do not submit the clut/NULL body without (a) a spent modality ladder recorded in hypotheses.md and (b) a /* FAKE: ... */ annotation at the holder naming the cse/loop.c mechanism; and do not re-type func_8006E480's parameters against its definition at src/text1b.c:6174."
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-10T10:03:56.793010+00:00"
+}
