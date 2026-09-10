@@ -1,3 +1,12 @@
+/* [s7 synthesis 2026-09-10] The body below is STILL the floor (39) and is unchanged.
+ * BUT the strategic chassis changed: see memory/grind/func_80070C70/chassis-toptest-cse-49.c.
+ * On a top-test `for` spelling of the second loop, cse_set_around_loop DOES fire and
+ * reproduces the target's loop-carried $a1/$a2 structure exactly (guard loads / body uses
+ * registers / tail reloads).  Its whole 49 is 14 prologue+epilogue diffs from the 24 extra
+ * frame bytes (three orphaned `(use (reg))` pseudos 116/165/170) plus ~4 seat diffs.  If
+ * those three slots die, that chassis goes well below 39.  Read the s7 section of
+ * hypotheses.md before spending anything on this do/while body.
+ */
 /* candidate.c - func_80070C70 - session 6 (enumerate). Honest floor 39 (was 53 at s5).
  *
  * FLOOR HISTORY: 194 (HEAD, no C body) -> 101 (s1) -> 99 (s3) -> 56 (s4) -> 53 (s5) -> 39 (s6).
@@ -13,7 +22,7 @@
  *   chassis) and it is what lets loop.c reduce D_800A3560's giv to an OFFSET instead of
  *   a full ADDRESS. Before any candidate-ready, vet it against the named-intermediate
  *   6 prongs (.claude/rules/narrow-byte-args-packed-call.md + the 2026-08-17 clarification
- *   in .claude/rules/no-new-park-categories.md); it needs a /* FAKE */ annotation if that
+ *   in .claude/rules/no-new-park-categories.md); it needs a FAKE annotation if that
  *   family is the right one. Measured alternatives: hoisting `ctx` to function scope is
  *   also 40 (still a named intermediate); a `u8 *p = D_800A3560 + var_s0 * 3;` pointer
  *   local is also 49 on the for chassis; INLINING it (`D_800A3560[var_s0 * 3]` or

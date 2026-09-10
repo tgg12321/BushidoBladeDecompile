@@ -682,3 +682,226 @@ chassis (a basin that still had the extra induction register in it had nothing t
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: both the floor-49 top-test for chassis and the floor-40 if-guarded do/while chassis (s6 candidate.c bodies + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all and the cc1 vars= gradient, 2026-09-10
+
+---
+
+# Session 7 (synthesis, 2026-09-10) - floor held at 39; the CHASSIS QUESTION IS REOPENED
+
+Chassis re-measured at dispatch: candidate.c + the three companion edits = 39 at 194 insns,
+identical to s6's record. Nothing in the ledger was stale.
+
+## THE MERGED PICTURE (this is the synthesis; read this before anything else)
+
+The target's second loop is a TOP-TEST loop on which jump.c's duplicate_loop_exit_test fired.
+Proof from the target's own bytes, not from inference: the guard block at 80070DF4-80070E18
+(`lhu $a2` / `lw $a1` / `lh $v0` / `addiu $v0,$v0,1` / `addu $v0,$a1,$v0` / `blez`) is an
+insn-for-insn COPY of the loop tail test at 80070ECC-80070EE4
+(`lhu $a2` / `lh $v0` / `lw $a1` / `addiu $v0,$v0,1` / `addu $v0,$a1,$v0` / `slt` / `bnez`),
+with the counter folded to zero so the `slt`+`bnez` collapses to `blez`. That is exactly what
+duplicate_loop_exit_test emits. The `lhu $a2` in BOTH blocks is used by neither test - it is
+the loop-BODY's read of D_800A3558 (consumed at 80070E78 by `sll $v0,$a2,16 / sra / addu
+$v0,$a1,$v0`), placed there by cse.c's cse_set_around_loop, whose gate REG_LOOP_TEST_P is set
+only inside duplicate_loop_exit_test. So the target's two headline features - the exact 0x80
+frame AND the loop-carried $a1/$a2 - COEXIST on a top-test chassis. s6's conclusion that they
+are mutually exclusive was drawn from our builds, not from the target, and is wrong.
+
+## CONFIRMED
+
+### H11 - cse_set_around_loop FIRES on a top-test spelling of the CURRENT (s6) body, and reproduces the target's loop-carried register structure exactly
+**Mechanism:** cse.c:7909 cse_set_around_loop, reached from cse.c:8581 after the basic block
+ending at NOTE_INSN_LOOP_END; it rewrites a loop-head SET whose SET_SRC is a MEM already in the
+hash table as equal to a REG_LOOP_TEST_P register, and inserts a copy after the matching
+pre-loop load. REG_LOOP_TEST_P is set at jump.c:2253 inside duplicate_loop_exit_test.
+**Probe:** rewrote candidate.c's if-guarded do/while as
+`for (var_s0 = 0; var_s0 < D_800A35B0 + (s16)D_800A3558 + 1; var_s0++)` with the body byte-for-byte
+unchanged (tmp/grind/func_80070C70/s7/v/toptest.c), measured, then dumped with
+`pwsh tools/grinder/dump.ps1 func_80070C70` and read tmp/grind/func_80070C70/dumps/text1b.s.
+**Result:** the emitted loop is the target's shape. Guard: `lw $5,D_800A3558 / lw $6,D_800A35B0
+/ lh $2,D_800A3558 / addu / addu 1 / blez`. Body: NO reload of either symbol - it consumes the
+carried registers with `sll $2,$5,16 / sra $2,$2,16 / addu $2,$2,$6`, which is the target's
+80070E78-80070E80 verbatim modulo register names. Tail: `lw $6 / lh $2 / lw $5 / addu / addu 1 /
+slt / bnez`, the target's 80070ECC-80070EE4 verbatim modulo `lhu`-vs-`lw`. This closes s6's
+frontier item (i) as a MECHANISM question: the transform is reachable and we have it.
+
+### H12 - the entire remaining cost of the top-test chassis is the 24 extra frame bytes
+**Mechanism:** score accounting, not inference. Aligned instruction diff of the best top-test
+variant (d32_b1_cy, 49 at 194 insns) against the target via tmp/grind/func_80070C70/s7/sbs.py.
+**Result:** 14 of the diffs are the six `sw`, six `lw`, `addiu $sp,$sp,-152` and `addiu
+$sp,$sp,152` prologue/epilogue offsets - pure consequences of vars=104 vs the target's vars=80.
+The rest is ~4 register-seat diffs in the body (a0/a2 vs a1/a2 on the carried pair, v0/v1 on the
+`t = prim.p_geom + 0xC` pair) plus the two known scheduling ties. On the do/while chassis at 39
+the frame is already exact but the ENTIRE carried-register structure is missing (T96-T157 in the
+same diff). So the top-test chassis is 24 frame bytes away from being far better than 39, and the
+do/while chassis is a whole pass away.
+
+### H13 - the three spill slots on the top-test chassis are pseudos 116, 165 and 170, and they are named
+**Mechanism:** duplicate_loop_exit_test remaps every exit-test pseudo whose first and last uid are
+both inside the exit code (jump.c:2229-2253) to a fresh pseudo in the copied guard; combine then
+folds the copies it can and parks the orphaned REG_DEAD notes on `(use (reg))` insns; reload's
+alter_reg gives each refs-but-never-set pseudo an 8-byte slot.
+**Probe:** BB2_FRAME_DEBUG census via tmp/grind/func_80070C70/s7/framedbg.sh + fd.py, plus a
+targeted read of the func_80070C70 region of text1b.jump and text1b.combine.
+**Result:** census is stack_temp 48 (prim) + stack_temp 32 (icon) + spill_new_p116 +
+spill_new_p165 + spill_new_p170 = 104. In .combine the three orphans are literally
+`(insn 541 (use (reg:SI 170)))`, `(insn 540 (use (reg:SI 165)))`, `(insn 542 (use (reg/s:SI 116)))`.
+In .jump the copied guard block is insns 478-485: 164 = `(mem:SI D_800A3558)`,
+165 = `(ashift (164) 16)`, 166 = `(ashiftrt (165) 16)` (REG_EQUAL sign_extend), 167 =
+`(mem:SI D_800A35B0)`, 168 = `(plus 167 166)`, 169 = `(plus 168 1)`, 170 = `(lt reg75 169)`.
+combine folds 164/165/166 into one `lh` (orphaning 165) and folds the `lt` into `blez`
+(orphaning 170). 116 is a `reg/s` pointer pseudo from the pre-loop region. The target's guard
+keeps six insns and no orphan, so in the target either these pseudos were never remapped (they
+had a use outside the exit code at jump time) or combine did not delete their copies.
+
+## KILLED
+
+### K8 - the declared type of D_800A3558 stops the ashift/ashiftrt fold that orphans pseudo 165
+**Probe:** all four declarations (`extern s32` + `(s16)` cast, `extern u16` + `(s16)` cast,
+`extern s16` bare, `extern s16` + `(s16)(u16)` double cast) crossed with 2 bound associations and
+2 `||` orders = 16 variants on the TOP-TEST chassis
+(tmp/grind/func_80070C70/s7/w/, swept by s7/sweep.py), plus a BB2_FRAME_DEBUG census on the s16
+variant.
+**Result:** every declaration is byte-neutral at each (bound, condition) point: 49/49/49/49 at
+b1_cy, 51/52/52/52 at b1_cx, 57 at b2_cx, 54 at b2_cy. The s16 census is spill_new_p116 +
+spill_new_p165 + spill_new_p170, identical pseudo numbers and identical vars=104. The RTL the
+front end builds for this expression does not depend on the declared type, which is the same
+finding K1/K7/s6 recorded on three earlier chassis - now re-confirmed on the chassis where
+cse_set_around_loop fires. KILLED (instance).
+
+### K9 - parenthesising the loop bound as `D_800A35B0 + (<read> + 1)` reproduces the target's `addiu $v0,$v0,1` before the `addu`
+**Probe:** the b2 half of the 16-variant s7/w sweep (the target's tail does
+`lh $v0 / addiu $v0,$v0,1 / addu $v0,$a1,$v0`, ours does `addu / addu 1`).
+**Result:** every b2 variant is WORSE - 57 at cx and 54 at cy against 51 and 49 - and adds an
+insn (195 vs 194). The re-association buys the right two insns and loses more elsewhere.
+KILLED (instance). Banked as rejected/toptest-bound-parenthesised-plus1-54.c.
+
+### K10 - the `||` operand order that wins on the do/while chassis also wins on the top-test chassis
+**Probe:** the cx/cy halves of the same sweep. cx = `(D_800A35BC == 2) || ((read + D_800A35B0) != 0)`
+(the s6 winner, 39 on do/while); cy = the operands swapped, which is the target's emission order
+(80070E78 tests the sum first, 80070E8C tests D_800A35BC second).
+**Result:** on the top-test chassis cy beats cx everywhere: 49 vs 51-52, and cy is the variant that
+reaches 194 insns while cx is 193. The winning `||` order is CHASSIS-DEPENDENT. KILLED (instance):
+the s6 conclusion that cx is the better order does not transfer.
+
+## OPEN FRONTIER (replaces s6's; s6 F(i) is now a solved mechanism, not a question)
+
+### F7 - kill the three orphaned `(use (reg))` pseudos on the top-test chassis
+This is now the WHOLE function. 116/165/170 are named and their RTL is in H13. Concrete probes,
+cheapest first: (a) give pseudo 170 a use outside the exit code - the remap at jump.c:2244 only
+happens when `regno_last_uid[REGNO(reg)]` lies inside the exit code, so any exit-test sub-value
+that the loop body also reads is left alone; (b) shrink the exit test so combine has nothing to
+fold: a bound with no `+1` (`var_s0 <= D_800A35B0 + (s16)D_800A3558`) removes pseudo 169 - s6
+measured `<=` at 79 on the OLD chassis, which is void here, so re-measure it on the top-test cse
+chassis; (c) find out what pseudo 116 is (a `reg/s` from the PRE-loop region - it may be the
+`prim.p_geom + 0xC` pointer and therefore killable independently of the loop); (d) read
+tools/gcc-2.7.2/reload1.c alter_reg to confirm a refs-but-no-set pseudo cannot be given a hard
+register by any C-level change, before spending more on (a)/(b).
+
+### F8 - the `t = prim.p_geom + 0xC` two-live-register site (carried, unchanged)
+Target emits `addiu $v1,$v0,0xC` (two live registers) at three sites where we emit
+`addiu $v0,$v0,0xC` (coalesced). At the first site the target's ORDER is the tell: it computes
+the add BEFORE storing prim.p_geom (`lw $v0,4($s2) / addiu $v1,$v0,12 / sw $v0,0x18($sp) /
+sw $v1,0x1C($sp)`), so the p_geom value is still live at the add; we store first, so the value
+dies at the add and local-alloc coalesces. Probe: spell the pre-loop block so the p_static value
+is computed before the p_geom store (`s32 g = *(s32 *)(ctx + 4); prim.p_static = g + 0xC;
+prim.p_geom = g;`) and see whether the scheduler puts the two stores back in the target's order.
+
+### F9 - IconC70's real tail layout (carried from s1/s2/s3, still unspent)
+`s16 sp50[12]` is a placeholder; the 0x20 SIZE is proven twice over (frame arithmetic + the
+BB2_FRAME_DEBUG census). Recover the real fields from func_80069898's other callers
+(func_8006B120, func_8006CFBC, func_800720FC, func_80074488, func_8006F97C) before submission.
+
+## [s7] The target's second loop is a TOP-TEST loop on which jump.c's duplicate_loop_exit_test fired, and its guard block is an insn-for-insn copy of its tail test.
+- mechanism: duplicate_loop_exit_test (jump.c:2161) copies the exit test in front of the loop; the copy's counter is the initial value so the `slt`+`bnez` folds to `blez`. The `lhu $a2` present in BOTH blocks is used by neither test - it is the loop body's read of D_800A3558, placed there by cse.c:7909 cse_set_around_loop, whose only gate (cse.c:7936 REG_LOOP_TEST_P) is set only at jump.c:2253 inside duplicate_loop_exit_test.
+- probe: Read asm/funcs/func_80070C70.s 80070DF0-80070EE8 directly and matched the guard block (lhu $a2 / lw $a1 / lh $v0 / addiu +1 / addu / blez) against the tail test (lhu $a2 / lh $v0 / lw $a1 / addiu +1 / addu / slt / bnez), then cross-checked the body's consumer at 80070E78-80070E80 (sll $v0,$a2,16 / sra / addu $v0,$a1,$v0).
+- result: The two blocks are the same six insns. The target therefore has the exact 0x80 frame AND the loop-carried $a1/$a2 on ONE chassis, so s6's structural conclusion that the frame and the tail-load CSE are mutually exclusive is a property of our builds, not of the compiler. The chassis question is reopened in favour of the top-test form.
+- verdict: CONFIRMED
+
+## [s7] Spelling the second loop as a top-test `for` on the CURRENT s6 body makes cse_set_around_loop fire and reproduces the target's loop-carried register structure exactly.
+- mechanism: cse.c:8581 calls cse_around_loop after the block ending at NOTE_INSN_LOOP_END; cse_set_around_loop (cse.c:7909) rewrites a loop-head SET whose SET_SRC is a MEM equal in the hash table to a REG_LOOP_TEST_P register, and inserts a copy after the matching pre-loop load.
+- probe: tmp/grind/func_80070C70/s7/v/toptest.c - candidate.c's if-guarded do/while rewritten as `for (var_s0 = 0; var_s0 < D_800A35B0 + (s16)D_800A3558 + 1; var_s0++)` with the body unchanged; measured with sandbox --disable all and dumped with pwsh tools/grinder/dump.ps1 func_80070C70.
+- result: 51 at 193 insns, and the emitted code is the target's structure: guard `lw $5,D_800A3558 / lw $6,D_800A35B0 / lh $2,D_800A3558 / addu / addu 1 / blez`; body with NO reload, consuming `sll $2,$5,16 / sra / addu $2,$2,$6`; tail `lw $6 / lh $2 / lw $5 / addu / addu 1 / slt / bnez`. The best variant of the family is 49 at 194 insns (d32_b1_cy, banked as memory/grind/func_80070C70/chassis-toptest-cse-49.c).
+- verdict: CONFIRMED
+
+## [s7] The entire remaining cost of the top-test chassis over the target is the 24 extra frame bytes.
+- mechanism: aligned instruction-level diff, not inference.
+- probe: tmp/grind/func_80070C70/s7/sbs.py (engine.score.normalized_insns + difflib) on the 49-point top-test variant against build/src/text1b.o.
+- result: 14 of the diffs are the six callee-saved `sw`, six `lw`, and the two `addiu $sp` insns - all pure vars=104-vs-80 offset differences. The remainder is ~4 register-seat diffs (a0/a2 vs a1/a2 on the carried pair, v0/v1 on the `prim.p_geom + 0xC` pair) plus the two known scheduling ties. The same diff on the do/while 39 chassis shows the frame already exact but the whole carried-register structure (target T96-T157) missing.
+- verdict: CONFIRMED
+
+## [s7] The three spill slots on the top-test chassis are pseudos 116, 165 and 170, orphaned by combine after duplicate_loop_exit_test remapped them.
+- mechanism: jump.c:2229-2253 remaps every exit-test pseudo whose first and last uid are inside the exit code; combine folds what it can and parks the orphaned REG_DEAD notes on `(use (reg))` insns; reload's alter_reg gives each refs-but-no-set pseudo an 8-byte slot.
+- probe: BB2_FRAME_DEBUG census (tmp/grind/func_80070C70/s7/framedbg.sh + fd.py) plus a targeted read of the func_80070C70 region of tmp/grind/func_80070C70/dumps/text1b.jump and .combine.
+- result: census = stack_temp 48 + stack_temp 32 + spill_new_p116 + spill_new_p165 + spill_new_p170 = vars 104. combine holds `(insn 541 (use (reg:SI 170)))`, `(insn 540 (use (reg:SI 165)))`, `(insn 542 (use (reg/s:SI 116)))`. jump's copied guard is insns 478-485: 164 = (mem:SI D_800A3558), 165 = (ashift 164 16), 166 = (ashiftrt 165 16) with a REG_EQUAL sign_extend, 167 = (mem:SI D_800A35B0), 168 = (plus 167 166), 169 = (plus 168 1), 170 = (lt reg75 169). combine folds 164/165/166 into one `lh` (orphaning 165) and folds the `lt` into `blez` (orphaning 170).
+- verdict: CONFIRMED
+
+## [s7] The declared type of D_800A3558 stops the ashift/ashiftrt fold that orphans pseudo 165 on the top-test chassis where cse_set_around_loop fires.
+- mechanism: the fold that orphans 165 is combine collapsing (mem:SI) + ashift + ashiftrt into one sign-extending halfword load; a halfword declaration should emit the sign_extend directly and leave nothing to fold.
+- probe: four declarations (extern s32 with an (s16) cast, extern u16 with an (s16) cast, extern s16 bare, extern s16 with an (s16)(u16) double cast) crossed with 2 bound associations and 2 `||` orders = 16 variants in tmp/grind/func_80070C70/s7/w/, swept by tmp/grind/func_80070C70/s7/sweep.py; plus a BB2_FRAME_DEBUG census on the s16 variant.
+- result: byte-neutral at every point - 49/49/49/49 at b1_cy, 51/52/52/52 at b1_cx, 57x4 at b2_cx, 54x4 at b2_cy - and the s16 census is the identical spill_new_p116 / p165 / p170 triple at vars=104. This is the fourth chassis on which the declaration has measured neutral (K1 s2, K7 s4, s6, s7).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: top-test for chassis where cse_set_around_loop fires (s7 toptest.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all + BB2_FRAME_DEBUG census, 2026-09-10
+
+## [s7] Parenthesising the loop bound as `D_800A35B0 + ((s16)D_800A3558 + 1)` reproduces the target's `addiu $v0,$v0,1`-before-`addu` tail order on the top-test chassis.
+- mechanism: the target's tail is `lh $v0 / addiu $v0,$v0,1 / addu $v0,$a1,$v0` (the +1 binds to the loaded halfword); ours is `addu / addu 1` (left-associated).
+- probe: the b2 half of the 16-variant tmp/grind/func_80070C70/s7/w sweep.
+- result: every b2 variant is worse and one insn longer - 57 at cx and 54 at cy against 51 and 49 at b1, at 194/195 insns. Banked as rejected/toptest-bound-parenthesised-plus1-54.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: top-test for chassis where cse_set_around_loop fires (s7 toptest.c body, all four D_800A3558 declarations, + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s7] The `||` operand order that wins on the if-guarded do/while chassis (D_800A35BC first) also wins on the top-test chassis.
+- mechanism: s6 measured `(D_800A35BC == 2) || ((read + D_800A35B0) != 0)` as the single live body axis, worth 1 point (40 -> 39) on the do/while chassis. The target's emission order is the opposite: it tests the sum first at 80070E78 and D_800A35BC second at 80070E8C.
+- probe: the cx/cy halves of the 16-variant tmp/grind/func_80070C70/s7/w sweep.
+- result: reversed. On the top-test chassis the target's order (cy, sum first) wins everywhere: 49 vs 51-52 at b1 and 54 vs 57 at b2, and cy is the half that reaches the target's 194 insns while cx sits at 193. The winning operand order is chassis-dependent, so s6's body-spelling histogram must be re-run if the chassis moves.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: top-test for chassis where cse_set_around_loop fires (s7 toptest.c body, all four D_800A3558 declarations x 2 bound associations, + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s7] The target's second loop is a top-test loop on which jump.c's duplicate_loop_exit_test fired: its guard block at 80070DF4-80070E18 is an insn-for-insn copy of its loop tail test at 80070ECC-80070EE4, and the `lhu $a2` present in both blocks is used by neither test but by the loop body at 80070E78, i.e. it was placed there by cse.c's cse_set_around_loop.
+- mechanism: duplicate_loop_exit_test (jump.c:2161) copies the exit test in front of the loop with the counter at its initial value, so the copy's slt+bnez folds to blez. cse_set_around_loop (cse.c:7909) rewrites a loop-head SET whose SET_SRC is a MEM equal in the hash table to a REG_LOOP_TEST_P register; REG_LOOP_TEST_P is set only at jump.c:2253 inside duplicate_loop_exit_test. The two target features s6 believed were mutually exclusive (the exact 0x80 frame and the loop-carried $a1/$a2) therefore coexist on one chassis in the target itself.
+- probe: Direct read of asm/funcs/func_80070C70.s 80070DF0-80070EE8, matching the guard block (lhu $a2 / lw $a1 / lh $v0 / addiu +1 / addu / blez) against the tail test (lhu $a2 / lh $v0 / lw $a1 / addiu +1 / addu / slt / bnez) and the body consumer (sll $v0,$a2,16 / sra / addu $v0,$a1,$v0), cross-read against tools/gcc-2.7.2/jump.c:2161-2260 and cse.c:7730-7960, 8565-8585.
+- result: The guard and the tail are the same six insns. s6's structural conclusion that the frame and the tail-load CSE are mutually exclusive is a property of our builds, not of the compiler, and the top-test chassis is back in play.
+- verdict: CONFIRMED
+
+## [s7] Spelling the second loop as a top-test `for` on the CURRENT (s6) body makes cse_set_around_loop fire on our build and reproduces the target's loop-carried register structure: guard loads, a body with no reload, and a tail that re-loads both symbols.
+- mechanism: cse.c:8581 calls cse_around_loop after the basic block ending at NOTE_INSN_LOOP_END; cse_set_around_loop then replaces the loop-head read with the REG_LOOP_TEST_P register and inserts a copy after the matching pre-loop load.
+- probe: tmp/grind/func_80070C70/s7/v/toptest.c (candidate.c's if-guarded do/while rewritten as `for (var_s0 = 0; var_s0 < D_800A35B0 + (s16)D_800A3558 + 1; var_s0++)`, body unchanged), measured with sandbox --disable all, then `pwsh tools/grinder/dump.ps1 func_80070C70` and a read of tmp/grind/func_80070C70/dumps/text1b.s.
+- result: 51 at 193 insns; the emitted guard is `lw $5,D_800A3558 / lw $6,D_800A35B0 / lh $2,D_800A3558 / addu / addu 1 / blez`, the body carries no reload and consumes `sll $2,$5,16 / sra / addu $2,$2,$6` (the target's 80070E78-E80 verbatim modulo register names), and the tail is `lw $6 / lh $2 / lw $5 / addu / addu 1 / slt / bnez` (the target's 80070ECC-EE4 verbatim modulo lhu-vs-lw). Best variant of the family is 49 at 194 insns, banked as memory/grind/func_80070C70/chassis-toptest-cse-49.c.
+- verdict: CONFIRMED
+
+## [s7] The entire remaining cost of the top-test chassis over the target is the 24 extra frame bytes: 14 of its 49 diffs are prologue/epilogue offset differences caused by vars=104 vs the target's vars=80.
+- mechanism: Score accounting from an aligned instruction diff, not inference. reload's alter_reg gives each refs-but-never-set pseudo an 8-byte stack slot, which moves every callee-saved save/restore offset and both `addiu $sp` insns.
+- probe: tmp/grind/func_80070C70/s7/sbs.py (engine.score.normalized_insns + difflib) on the 49-point variant against build/src/text1b.o, and the same diff on the 39-point do/while chassis for comparison.
+- result: Top-test chassis: 14 frame-offset diffs plus about four register-seat diffs (a0/a2 vs a1/a2 on the carried pair, v0/v1 on the prim.p_geom+0xC pair) plus the two known scheduling ties. do/while chassis at 39: frame exact, but the whole carried-register structure (target insns 96-157) missing. Killing the 24 bytes on the top-test chassis is worth more than any body spelling on the do/while chassis.
+- verdict: CONFIRMED
+
+## [s7] The three spill slots on the top-test chassis are pseudos 116, 165 and 170; they appear in .combine as literal `(use (reg))` insns, and their RTL origin is the copied guard block at .jump insns 478-485.
+- mechanism: jump.c:2229-2253 remaps every exit-test pseudo whose regno_first_uid and regno_last_uid both lie inside the exit code to a fresh pseudo in the copied guard; combine folds what it can and parks the orphaned REG_DEAD notes on `(use (reg))` insns at the following CODE_LABEL; reload's alter_reg then gives each an 8-byte slot.
+- probe: BB2_FRAME_DEBUG census via tmp/grind/func_80070C70/s7/framedbg.sh + fd.py, plus a targeted read of the func_80070C70 region of tmp/grind/func_80070C70/dumps/text1b.jump and text1b.combine.
+- result: Census = stack_temp 48 (prim) + stack_temp 32 (icon) + spill_new_p116 + spill_new_p165 + spill_new_p170 = vars 104. combine holds `(insn 541 (use (reg:SI 170)))`, `(insn 540 (use (reg:SI 165)))`, `(insn 542 (use (reg/s:SI 116)))`. jump's copied guard is 164=(mem:SI D_800A3558), 165=(ashift 164 16), 166=(ashiftrt 165 16), 167=(mem:SI D_800A35B0), 168=(plus 167 166), 169=(plus 168 1), 170=(lt reg75 169); combine folds 164/165/166 into one lh (orphaning 165) and folds the lt into blez (orphaning 170).
+- verdict: CONFIRMED
+
+## [s7] Changing the declared type of D_800A3558 (extern s32 with an (s16) cast, extern u16 with an (s16) cast, extern s16 bare, extern s16 with an (s16)(u16) double cast) removes the ashift/ashiftrt fold that orphans pseudo 165, on the top-test chassis where cse_set_around_loop fires.
+- mechanism: The fold that orphans 165 is combine collapsing (mem:SI) + ashift + ashiftrt into one sign-extending halfword load; a halfword declaration should emit the sign_extend directly and leave nothing for combine to delete.
+- probe: Four declarations x 2 bound associations x 2 `||` orders = 16 variants in tmp/grind/func_80070C70/s7/w/, swept by tmp/grind/func_80070C70/s7/sweep.py with sandbox --disable all, plus a BB2_FRAME_DEBUG census on the s16 variant.
+- result: Byte-neutral at every point: 49/49/49/49 at b1_cy, 51/52/52/52 at b1_cx, 57 four ways at b2_cx, 54 four ways at b2_cy. The s16 census is the identical spill_new_p116 / p165 / p170 triple at vars=104, so the RTL the front end builds does not depend on the declared type. This is the fourth distinct chassis on which this axis has measured dead (s2 K1, s4 K7, s6, s7). Banked as rejected/toptest-u16-decl-D_800A3558-byte-neutral-49.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: top-test for chassis where cse_set_around_loop fires (tmp/grind/func_80070C70/s7/v/toptest.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all plus the BB2_FRAME_DEBUG census, 2026-09-10
+
+## [s7] Parenthesising the loop bound as `D_800A35B0 + ((s16)D_800A3558 + 1)` to reproduce the target's `addiu $v0,$v0,1`-before-`addu` tail order improves the top-test chassis.
+- mechanism: The target's tail binds the +1 to the loaded halfword (lh $v0 / addiu $v0,$v0,1 / addu $v0,$a1,$v0); our left-associated bound emits addu then addu 1.
+- probe: The b2 half of the 16-variant tmp/grind/func_80070C70/s7/w sweep.
+- result: Every b2 variant is worse and one instruction longer: 57 at cx and 54 at cy against 51 and 49 at b1, at 194/195 insns against 193/194. The re-association buys the two right insns and loses more elsewhere. Banked as rejected/toptest-bound-parenthesised-plus1-54.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: top-test for chassis where cse_set_around_loop fires (s7 toptest.c body, all four D_800A3558 declarations, + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10
+
+## [s7] The `||` operand order that wins on the if-guarded do/while chassis (D_800A35BC tested first, s6's 39) also wins on the top-test chassis.
+- mechanism: s6 measured the operand order as the single live body axis on the do/while chassis, worth one point. The target's own emission order is the opposite: it tests the D_800A3558 sum first at 80070E78 and D_800A35BC second at 80070E8C.
+- probe: The cx/cy halves of the 16-variant tmp/grind/func_80070C70/s7/w sweep.
+- result: Reversed on this chassis. The target's order (cy, sum first) wins everywhere: 49 vs 51-52 at b1 and 54 vs 57 at b2, and cy is the half that reaches the target's 194 insns while cx sits at 193. The winning operand order is chassis-dependent, so s6's ten-variant body histogram must be re-run whenever the chassis moves.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: top-test for chassis where cse_set_around_loop fires (s7 toptest.c body, all four D_800A3558 declarations x 2 bound associations, + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present, sandbox --disable all, 2026-09-10

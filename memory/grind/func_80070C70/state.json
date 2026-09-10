@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "enumerate",
+ "session_count": 7,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 39,
    "modality": "enumerate",
    "headline": "Floor 53 -> 39 at 194 insns (== target) with an EXACT frame: the 0x18 overshoot was three reload spill slots proven by BB2_FRAME_DEBUG, and reverting s5's top-test for to an if-guarded do/while remove"
+  },
+  {
+   "session": 7,
+   "floor": 39,
+   "modality": "synthesis",
+   "headline": "Synthesis reopened the chassis question: the target's second loop IS a top-test loop (its guard block is an insn-for-insn copy of its tail test), a top-test spelling of our current body MAKES cse_set_"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last four points are the target holding $a1 = D_800A35B0 and $a2 = lhu D_800A3558 live across the loop (loaded in the guard block at 80070DF4/DFC, re-loaded in the loop TAIL at 80070ECC-ED4, consumed by sll $v0,$a2,16 / sra / addu $v0,$a1,$v0 at 80070E78-E80). We re-load both inside the body every iteration. Reaching that WITHOUT the top-test loop's 24 frame bytes is the whole remaining problem.",
-   "mechanism": "cse.c:7909 cse_set_around_loop needs REG_LOOP_TEST_P (cse.c:7936), set only by jump.c:2253 in duplicate_loop_exit_test, which needs a top-test loop -- and that same routine's gen_reg_rtx (jump.c:2246) is what leaves the three dead pseudos. So EITHER find a top-test spelling in which every copied exit-test insn SURVIVES combine (the target's guard block keeps all six of its insns: lhu, lw, lh, addiu, addu, blez -- ours collapses a load plus sign-extend into one lh and orphans the REG_DEAD notes), OR find a non-cse_around_loop route to the same register reuse.",
-   "next_probe": "On the top-test for chassis (tmp/grind/func_80070C70/s6/struct/i2_m1_d32.c, score 49), dump with pwsh tools/grinder/dump.ps1 func_80070C70 and read text1b.combine for WHICH copied guard insns combine deletes and which REG_DEAD notes it orphans; then sweep guard-block spellings that stop that fold -- in particular forms in which the guard's two reads of D_800A3558 cannot be folded into a single lh (a separate function-scope local holding one of them, the two reads at different widths, or the guard expression written so the sign-extension and the load land in different insns). Verify each with the 1-second vars= gradient (tmp/grind/func_80070C70/s6/varsweep.sh) before spending a sandbox measurement: the target is vars= 80."
+   "hypothesis": "Killing the three orphaned (use (reg)) pseudos 116/165/170 on the top-test chassis removes 24 frame bytes and takes that chassis well below the current floor of 39, since 14 of its 49 diffs are pure frame offsets.",
+   "mechanism": "jump.c:2244 only remaps an exit-test pseudo when regno_last_uid[REGNO(reg)] lies inside the exit code, so any exit-test sub-value the loop body also reads escapes the remap; combine then has no orphan REG_DEAD note to park on a (use (reg)) insn, and reload's alter_reg never allocates a slot.",
+   "next_probe": "In order, cheapest first: (a) give pseudo 170 (the lt result) or 165 (the ashift) a use outside the exit code by having the loop body read the same sub-expression the exit test computes; (b) shrink the exit test so combine has nothing to fold - a bound with no +1 (`var_s0 <= D_800A35B0 + (s16)D_800A3558`) removes pseudo 169 entirely, and s6's kill of the `<=` forms at 79 was measured on the pre-cse chassis and is void here, so re-measure it on tmp/grind/func_80070C70/s7/w/d32_b1_cy.c; (c) identify pseudo 116 (a reg/s pointer pseudo from the PRE-loop region, likely the prim.p_geom+0xC pointer, so possibly killable independently of the loop); (d) read tools/gcc-2.7.2/reload1.c alter_reg to confirm a refs-but-no-set pseudo can never win a hard register, before spending more on (a)/(b). Sweep with tmp/grind/func_80070C70/s7/sweep.py (about 2 seconds per variant) and confirm each hit with tmp/grind/func_80070C70/s7/framedbg.sh."
   },
   {
-   "hypothesis": "`t = prim.p_geom + 0xC` is emitted into the SAME register as p_geom (addiu $v0,$v0,12) at three sites where the target keeps two live registers (addiu $v1,$v0,12).",
-   "mechanism": "local-alloc coalesces the add's destination onto its source when the source dies at that insn. The target's p_geom read stays live past the add, which means in the original source the read feeding the add is used again afterwards (or is a different pseudo).",
-   "next_probe": "Sweep the three sites (the pre-loop prim.p_static = prim.p_geom + 0xC, the pre-do/while prim.p_geom + 0x48, and the loop body's t) for spellings that keep p_geom live: reading prim.p_geom again after the add, computing the addend from ctx_or_var_s2 instead of from prim.p_geom, and naming the p_geom read in its own local. Read text1b.lreg for the qty coalescing decision on each."
+   "hypothesis": "The `t = prim.p_geom + 0xC` sites emit into the same register as p_geom because our statement order lets the p_geom value die at the add; ordering the add BEFORE the p_geom store reproduces the target's two-live-register `addiu $v1,$v0,0xC`.",
+   "mechanism": "local-alloc coalesces an add's destination onto its source when the source dies at that insn. The target's first site is `lw $v0,4($s2) / addiu $v1,$v0,12 / sw $v0,0x18($sp) / sw $v1,0x1C($sp)` - the add precedes the p_geom store, so the loaded value is still live at the add.",
+   "next_probe": "Spell the pre-loop block as `s32 g = *(s32 *)(ctx_or_var_s2 + 4); prim.p_static = g + 0xC; prim.p_geom = g;` (and the analogous form at the +0x48 site) and check whether the scheduler restores the target's store order; read text1b.lreg for the qty coalescing decision at each of the three sites. This axis is worth about eight diffs and is independent of the loop chassis, so measure it on BOTH the 39 do/while chassis and the 49 top-test chassis."
   },
   {
-   "hypothesis": "`s32 ctx = var_s0 * 3;` is a named intermediate that must clear that family's 6 prongs (or be replaced by an ordinary-C equivalent) before this function can be submitted.",
-   "mechanism": "Family-selection table: FRESH local, once-written once-read, real consumed value -> named-intermediate, .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification in .claude/rules/no-new-park-categories.md; 6 prongs, FAKE annotation plus dumps required.",
-   "next_probe": "Before candidate-ready, read that rule end to end and answer the six prongs in self_vet.md, or measure whether the `u8 *p = D_800A3560 + var_s0 * 3;` pointer-local spelling (identical score) clears an easier bar. If neither is clearly inside a sanctioned family, emit ruling-request naming both spellings rather than submitting."
+   "hypothesis": "IconC70's trailing 24 bytes have a real member list that the placeholder `s16 sp50[12]` only approximates, and recovering it is a prerequisite for any submission (the 0x20 SIZE is already proven twice: by frame arithmetic in s1 and by the BB2_FRAME_DEBUG census in s6).",
+   "mechanism": "Correctness of the submitted C, not codegen - the size is fixed but the field list is not evidence-backed.",
+   "next_probe": "Read the $a1-relative stores in func_80069898's other callers (func_8006B120, func_8006CFBC, func_800720FC, func_80074488, func_8006F97C) and build the true field list; propagate the corrected type to func_8006F97C's ledger, which is an active queue sibling in the same TU."
   }
  ],
  "judge_constraints": [],
@@ -196,6 +202,30 @@
    "measured_on": "both the floor-49 top-test for chassis and the floor-40 if-guarded do/while chassis (s6 candidate.c bodies + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE construct",
    "predicate_cite": "",
    "result": "Byte-neutral everywhere: all 9 bound x condition pairs score identically for d32 / du16 / ds16 on the do/while chassis ("
+  },
+  {
+   "session": 7,
+   "statement": "Changing the declared type of D_800A3558 (extern s32 with an (s16) cast, extern u16 with an (s16) cast, extern s16 bare, extern s16 with an (s16)(u16) double cast) removes the ashift/ashiftrt fold tha",
+   "kill_scope": "instance",
+   "measured_on": "top-test for chassis where cse_set_around_loop fires (tmp/grind/func_80070C70/s7/v/toptest.c body + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Byte-neutral at every point: 49/49/49/49 at b1_cy, 51/52/52/52 at b1_cx, 57 four ways at b2_cx, 54 four ways at b2_cy. T"
+  },
+  {
+   "session": 7,
+   "statement": "Parenthesising the loop bound as `D_800A35B0 + ((s16)D_800A3558 + 1)` to reproduce the target's `addiu $v0,$v0,1`-before-`addu` tail order improves the top-test chassis.",
+   "kill_scope": "instance",
+   "measured_on": "top-test for chassis where cse_set_around_loop fires (s7 toptest.c body, all four D_800A3558 declarations, + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20), no FAKE construct",
+   "predicate_cite": "",
+   "result": "Every b2 variant is worse and one instruction longer: 57 at cx and 54 at cy against 51 and 49 at b1, at 194/195 insns ag"
+  },
+  {
+   "session": 7,
+   "statement": "The `||` operand order that wins on the if-guarded do/while chassis (D_800A35BC tested first, s6's 39) also wins on the top-test chassis.",
+   "kill_scope": "instance",
+   "measured_on": "top-test for chassis where cse_set_around_loop fires (s7 toptest.c body, all four D_800A3558 declarations x 2 bound associations, + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0",
+   "predicate_cite": "",
+   "result": "Reversed on this chassis. The target's order (cy, sum first) wins everywhere: 49 vs 51-52 at b1 and 54 vs 57 at b2, and "
   }
  ],
  "ladder_skip": 0,

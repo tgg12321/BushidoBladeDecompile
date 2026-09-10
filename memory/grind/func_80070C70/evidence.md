@@ -530,3 +530,41 @@
 - [s6] The `||` operand order in the mode test is not byte-neutral: (D_800A35BC == 2) first is 39 at 194 insns, the D_800A3558 term first is 40 at 190.
 
 - [s6] Everything measured this session is ordinary C except the one named intermediate: no dead store, no pad, no volatile, no asm, no duplicated arms, no record wrapper.
+
+- [s7] The chassis was re-measured at dispatch and matched the ledger exactly: candidate.c + `extern u8 D_800A3560[];` + `extern s16 D_800A3590[];` + IconC70 sized 0x20 scores 39 at 194 insns with `sandbox --disable all`. No banked conclusion was stale on arrival.
+
+- [s7] THE TARGET'S SECOND LOOP IS A TOP-TEST LOOP. Its guard block at 80070DF4-80070E18 (lhu $a2 / lw $a1 / lh $v0 / addiu $v0,$v0,1 / addu $v0,$a1,$v0 / blez) is an insn-for-insn copy of its loop tail test at 80070ECC-80070EE4 (lhu $a2 / lh $v0 / lw $a1 / addiu +1 / addu / slt / bnez) with the counter constant-folded, which is precisely what jump.c's duplicate_loop_exit_test emits. s6's structural conclusion that the exact 0x80 frame and the loop-carried $a1/$a2 registers are mutually exclusive is therefore FALSE OF THE TARGET; it was only true of our builds.
+
+- [s7] The `lhu $a2` that appears in both the target's guard block and its loop tail is used by NEITHER test. It is the loop body's read of D_800A3558, consumed at 80070E78-80070E80 by `sll $v0,$a2,16 / sra / addu $v0,$a1,$v0`, and it is there because cse.c:7909 cse_set_around_loop moved the body's read into the exit-test register. That transform's only gate is REG_LOOP_TEST_P (cse.c:7936), set only at jump.c:2253 inside duplicate_loop_exit_test.
+
+- [s7] Rewriting the s6 body's if-guarded do/while as a top-test `for` MAKES CSE_SET_AROUND_LOOP FIRE ON OUR BUILD. The emitted code carries the same structure as the target: guard `lw $5,D_800A3558 / lw $6,D_800A35B0 / lh $2,D_800A3558 / addu / addu 1 / blez`, a body with no reload of either symbol that consumes `sll $2,$5,16 / sra / addu $2,$2,$6`, and a tail `lw $6 / lh $2 / lw $5 / addu / addu 1 / slt / bnez`. Best variant of that family: 49 at 194 insns, banked as memory/grind/func_80070C70/chassis-toptest-cse-49.c.
+
+- [s7] The whole remaining cost of the top-test chassis is the frame. Of its 49, fourteen diffs are the six callee-saved `sw`, the six `lw` and the two `addiu $sp` insns, all pure vars=104-vs-80 offset differences; the rest is about four register-seat diffs plus the two known scheduling ties. The do/while chassis at 39 has the frame exact but is missing the entire carried-register structure. Killing 24 frame bytes on the top-test chassis is therefore worth far more than any body spelling on the do/while chassis.
+
+- [s7] The three spill slots on the top-test chassis are pseudos 116, 165 and 170, present in .combine as literal `(use (reg:SI 170))`, `(use (reg:SI 165))` and `(use (reg/s:SI 116))` insns. In .jump the copied guard is insns 478-485: 164=(mem:SI D_800A3558), 165=(ashift 164 16), 166=(ashiftrt 165 16), 167=(mem:SI D_800A35B0), 168=(plus 167 166), 169=(plus 168 1), 170=(lt reg75 169). combine folds 164/165/166 into one `lh` (orphaning 165) and folds the `lt` into `blez` (orphaning 170); 116 is a `reg/s` pointer pseudo from the pre-loop region.
+
+- [s7] The declared type of D_800A3558 is byte-neutral on the cse-firing top-test chassis too - all four declarations (s32+cast, u16+cast, s16 bare, s16 with an (s16)(u16) double cast) tie at every (bound, condition) point, and the s16 BB2_FRAME_DEBUG census is the identical p116/p165/p170 triple at vars=104. That is the fourth distinct chassis on which this axis has measured dead.
+
+- [s7] The winning `||` operand order in the mode test is CHASSIS-DEPENDENT. On the do/while chassis `(D_800A35BC == 2)` first is best (39); on the top-test chassis the target's own order (the D_800A3558 sum first) is best everywhere (49 vs 51-52) and is the half that reaches the target's 194 insns. Any body-spelling histogram must be re-run when the chassis moves.
+
+- [s7] Parenthesising the loop bound as `D_800A35B0 + (<read> + 1)` to reproduce the target's `addiu $v0,$v0,1`-before-`addu` costs 5-8 points and an extra instruction on the top-test chassis (57/54 vs 51/49).
+
+- [s7] Everything measured this session is ordinary C. The only non-ordinary construct anywhere in the ledger's live forms remains s6's `s32 ctx = var_s0 * 3;` named intermediate, which is unchanged and still un-vetted.
+
+- [s7] Chassis re-measured at dispatch and matched the ledger exactly: candidate.c + extern u8 D_800A3560[]; + extern s16 D_800A3590[]; + IconC70 sized 0x20 = 39 at 194 insns with sandbox --disable all. No banked conclusion was stale on arrival, and the session ends with src/text1b.c restored to that form and re-measured at 39.
+
+- [s7] The target's guard block at 80070DF4-80070E18 and its loop tail test at 80070ECC-80070EE4 are the same six insns (lhu $a2 / lw $a1 / lh $v0 / addiu +1 / addu / branch), which is the signature of jump.c's duplicate_loop_exit_test. The target's second loop is therefore a TOP-TEST loop, and it has vars=80, so the exact frame and the loop-carried registers are NOT mutually exclusive.
+
+- [s7] The lhu $a2 in both of those blocks is used by neither test; it is the loop body's read of D_800A3558, consumed at 80070E78-80070E80 by sll $v0,$a2,16 / sra / addu $v0,$a1,$v0. Only cse.c:7909 cse_set_around_loop places a loop-head read there, and its gate REG_LOOP_TEST_P (cse.c:7936) is set only at jump.c:2253.
+
+- [s7] Rewriting the s6 body's if-guarded do/while as a top-test for makes cse_set_around_loop fire on our build: the emitted body carries no reload of D_800A3558 or D_800A35B0 and consumes sll $2,$5,16 / sra / addu $2,$2,$6, with both symbols loaded in the guard and re-loaded in the loop tail, exactly as the target does.
+
+- [s7] Of the top-test chassis' 49 points, 14 diffs are the six callee-saved sw, the six lw and the two addiu $sp insns, i.e. pure vars=104-vs-80 offsets; the rest is about four register-seat diffs and the two known scheduling ties. The do/while 39 chassis has the frame exact and the entire carried-register structure missing.
+
+- [s7] The three spill slots are pseudos 116, 165 and 170: .combine holds (insn 541 (use (reg:SI 170))), (insn 540 (use (reg:SI 165))) and (insn 542 (use (reg/s:SI 116))). The copied guard in .jump is insns 478-485 with 164=(mem:SI D_800A3558), 165=(ashift 164 16), 166=(ashiftrt 165 16), 167=(mem:SI D_800A35B0), 168=(plus 167 166), 169=(plus 168 1), 170=(lt reg75 169).
+
+- [s7] The declared type of D_800A3558 is byte-neutral on this chassis too (four declarations tie at every bound x condition point, and the s16 frame census is the identical p116/p165/p170 triple at vars=104) - the fourth chassis on which that axis has measured dead.
+
+- [s7] The winning || operand order is chassis-dependent: D_800A35BC-first wins on the do/while chassis (39), the target's sum-first order wins on the top-test chassis (49 vs 51-52) and is the half that reaches 194 insns.
+
+- [s7] Everything measured this session is ordinary C; the only non-ordinary construct in any live form remains s6's `s32 ctx = var_s0 * 3;` named intermediate, unchanged and still un-vetted.
