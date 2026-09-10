@@ -2316,3 +2316,53 @@ moves in the pre-sched chain (LUID > 43).
 - [s21] s18's G1 boost chassis re-dumped (s21/g1_sched1_block6.txt): the boosted base carrier is picked at clock 60, i.e. BEFORE the store group, so it is emitted after the stores - the +2 overshoot that scores 8/176. The birth boost makes the base win as soon as it is ready, which is nine cycles too early.
 
 - [s21] s12's third-argument form is RTL-identical to the control (same UIDs, same LUIDs 28..49, same picks), so a CSE-shared third argument creates no expand_call argument-move insn.
+
+
+## s22 (rederive, 2026-09-09) - measurements
+
+Chassis: control candidate.c re-measured 6/176 on HEAD main @ 8d423e0f (sweep baseline).
+Kill re-audit: fake_ablate on rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c
+reports "no FAKE-annotated constructs found" (eleventh consecutive session).
+
+sweepA (tmp/grind/func_8005D554/s22/vars, sweepA.json) - store-group + chassis, 11 forms:
+  V00_control 6/176 | V03_zero1C_first 6/176 | V06_byte28_in_group 10/176 |
+  V08_ret_first_in_group 10/176 | V09_one14_before_zero10 10/176 | V04_c20c24_in_group 12/177 |
+  V05_p1_in_group 13/176 | V10_p0_in_group 23/176 | V07_zero18_in_group 28/178 |
+  V01_wide_pointer_store 42/179 | V02_inline_helper 59/173
+
+sweepB (tmp/grind/func_8005D554/s22/varsB) - the LICM-source-invariance axis, 4 forms:
+  W2_r4_init_in_loop 26/179  (fresh single-set b1/b2 + r4 set in loop)  <-- target rotation
+  W3_r4_init_in_loop_multiset 32/179 (same chassis, multi-set a2_offset) <-- control rotation
+  W0_fresh_single_set_base 54/178 (fresh single-set base, r4 invariant -> both bases hoisted)
+  W1_r4r5_init_in_loop 61/176 (both r5 and r4 moved into the loop)
+
+sweepC (tmp/grind/func_8005D554/s22/varsC) - cheaper spellings of r4 non-invariance, 5 forms:
+  C6_while_chassis 26/179 | C5_copy_from_preheader_temp 28/178 |
+  C3_cond_init_at_body_end 32/178 | C2_cond_init_before_a2 32/181 | C4_a0_fresh_too 68/182
+
+Disassembly evidence: tmp/grind/func_8005D554/s21/dumps/s22W2/text1b.s (cc1 -da output for the
+W2 body) - both call windows emit
+  addu $4,$sp,16 / move $5,$0 / lw $3,D_800A3418 / addu $6,$20,-12 (-25) / sw / sw / sw
+which is the target's 4DEB4-4DECC and 4DF6C-4DF84 verbatim in order and operand form.
+
+Target fact established this session: $s4 and $s5 are each written exactly once in the whole
+function, in the pre-loop straight line (4DDE0 srl $s5 / 4DE1C srl $s4), and never inside the
+loop body 4DE50-4DFCC. The original's a2 base therefore escaped LICM with a LOOP-INVARIANT
+source register, so the r4-non-invariance route measured here reproduces the target's schedule
+by a mechanism the original did not use.
+
+- [s22] Chassis check: memory/grind/func_8005D554/candidate.c re-measures 6/176 on HEAD main @ 8d423e0f, and re-measures 6/176 again after this session's header edit (the s9 comment-delimiter trap was checked for).
+
+- [s22] Kill re-audit passes for the eleventh consecutive session: tools/fake_ablate.py reports 'no FAKE-annotated constructs found' in rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c.
+
+- [s22] loop.c's movable acceptance has FIVE conjuncts, not the two the ledger has been attacking. Sessions s13-s16 falsified n_times_set of the DEST (loop.c:705) and enumerated the three-way OR (loop.c:695-700). The FIRST conjunct is invariant_p(SET_SRC) (loop.c:702), whose REG case is 'return n_times_set[REGNO (x)] == 0' -- i.e. the base insn stops being hoistable the moment its SOURCE register is set inside the loop, with no second write and no label.
+
+- [s22] Measured consequence: W2_r4_init_in_loop.c (fresh once-written b1/b2 + r4 set in the loop) emits BOTH call windows as the target's rotation -- [addu $4,$sp,16][move $5,$0][lw $3,D_800A3418][addu $6,$20,-12 / -25][sw][sw][sw], matching 4DEB4-4DECC and 4DF6C-4DF84 -- at 26/179. The identical chassis with the base carried by the multi-set a2_offset scores 32/179, exactly six worse.
+
+- [s22] The original did NOT use this route: $s4 and $s5 are each written exactly once in the whole target function, at 4DDE0 and 4DE1C in the pre-loop straight line, and never inside the loop body 4DE50-4DFCC. So the original's a2 base escaped LICM with a LOOP-INVARIANT source, which leaves may_not_optimize (an explicit standalone (clobber (reg)), set by count_loop_regs_set at loop.c:2989, gating the whole analysis at loop.c:649) and reg_in_basic_block_p's regno_first_uid test (loop.c:1068) as the only two remaining escapes for a single-set invariant base.
+
+- [s22] rtlanal.c's may_trap_p FALLS THROUGH from the DIV/MOD/UDIV/UMOD cases into 'case EXPR_LIST: return 1;' -- there is no break after the constant-divisor tests -- so any div/mod rtx makes may_trap_p true. Since call_passed is already 1 at the a2 statement (three rand calls precede it), loop.c:715's '! ((maybe_never || call_passed) && may_trap_p (src))' is a real, never-enumerated falsifier of movability; it needs a div or a trapping MEM in the base insn's own SET_SRC.
+
+- [s22] In GCC 2.7.2 the only emitter of a standalone (clobber (reg)) for a pseudo that is not a multi-word/DImode path is store_constructor for a UNION built into a register (expr.c:2996); expr.c:1991 and expr.c:913 are the multi-word paths and belong to the banned DImode family.
+
+- [s22] The a0 side must be left alone: converting the two a0 bases to fresh single-set locals on the same chassis costs six points (68/182 vs 26/179). The a0 windows already match the target with the multi-set a0_offset.

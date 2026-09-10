@@ -2560,3 +2560,128 @@ chassis, no FAKE constructs present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.
+
+
+## s22 (rederive, 2026-09-09, HEAD main @ 8d423e0f) - THE ROTATION IS PRODUCED WITHOUT A CARRIER
+
+Chassis re-measured: candidate.c = 6/176. Kill re-audit passes for an ELEVENTH session
+(fake_ablate finds no FAKE-annotated construct in
+rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c).
+
+### H55 - CONFIRMED. A fresh SINGLE-SET base local whose source register is non-invariant
+produces the target's four-insn rotation in BOTH halves at once.
+
+Statement: with `r4` (the register the a2 base subtracts from, $s4 in the target) set INSIDE the
+loop, a fresh once-written once-read local per half (`b1 = (s32)r4 - 0xC; a2_offset = b1 + m;`)
+is not hoisted by loop.c, keeps reg_n_sets == 1, and the sched1 window is emitted as the
+TARGET's rotation.
+
+Probe: tmp/grind/func_8005D554/s22/varsB/W2_r4_init_in_loop.c - the second rand and r4's
+computation moved from the pre-loop straight line into the loop body under `if (i == 0)`, plus
+fresh single-set b1/b2 for the two a2 bases. Score 26/179. Disassembled from the instrumented
+cc1 (tmp/grind/func_8005D554/s21/dumps/s22W2/text1b.s):
+
+    half 1                          half 2                          target (4DEB4 / 4DF6C)
+    addu  $4,$sp,16                 addu  $4,$sp,16                 addiu $a0,$sp,0x10
+    move  $5,$0                     move  $5,$0                     addu  $a1,$zero,$zero
+    lw    $3,D_800A3418             lw    $3,D_800A3418             lw    $v1,%gp_rel(...)
+    addu  $6,$20,-12                addu  $6,$20,-25                addiu $a2,$s4,-0xC / -0x19
+    sw    $0,32($sp)                sw    $0,32($sp)                sw    $zero,0x20($sp)
+    sw    $22,36($sp)               sw    $22,36($sp)               sw    $s6,0x24($sp)
+    sw    $17,28($sp)               sw    $17,28($sp)               sw    $s1,0x1C($sp)
+
+This is the first time in twenty-two sessions that `addiu <reg>,s4,-K` has been emitted AFTER
+the two expand_call argument moves, the first time it has happened in BOTH halves, and the
+first time it has happened without the Judge-FAILed fresh multi-write carrier.
+
+Mechanism (read out of the compiler source, not inferred):
+  * loop.c's movable acceptance (the `else if` at loop.c:702-717) begins with
+    `(tem = invariant_p (src))`. invariant_p's REG case is `return n_times_set[REGNO (x)] == 0;`
+    where n_times_set counts sets WITHIN THE LOOP RANGE ONLY (count_loop_regs_set, loop.c:2989).
+    So the moment r4 is set inside the loop, the base insn's source `(plus (reg r4) (const -K))`
+    stops being invariant and the insn is never made a movable - no label, no second write, no
+    block split needed. This is the conjunct s13/s14/s15/s16 never falsified: they attacked
+    n_times_set of the DEST (loop.c:705) and the three-way OR (loop.c:695-700), never the
+    invariance of the SOURCE.
+  * with the insn still in the loop and its dest written exactly once in the whole function,
+    reg_n_sets == 1, so birthing_insn_p (sched.c:2505) is true for it and adjust_priority
+    (sched.c:2584) raises INSN_PRIORITY to max_priority - the same LAUNCH boost s13 measured on
+    the banked score-0 body, reached from a legal direction.
+
+Discriminator: W3_r4_init_in_loop_multiset.c is the SAME chassis with the base left in the
+multi-set a2_offset. It scores 32/179 - exactly six points worse, i.e. the two 3-insn rotations
+are back. So the operative term is the fresh single-set base, not the r4 restructuring, and the
++3 instructions are the restructuring's own cost.
+
+### H56 - KILLED (instance). Every measured spelling of "make r4 non-invariant" costs at least
+two extra instructions.
+Six spellings (tmp/grind/func_8005D554/s22/varsB, varsC): conditional init at the loop top
+26/179; guard-duplicated while chassis 26/179; conditional COPY from a pre-loop temp 28/178;
+conditional init at the body end 32/178; conditional init immediately before the a2 statements
+32/181; the same with the a0 bases also given fresh single-set locals 68/182. The a0 side must
+NOT be converted: it already matches, and converting it costs six more points.
+
+### H57 - KILLED (instance). The pre-call store GROUP axis (s21 frontier item 2) is flat.
+Eight spellings on the control chassis (tmp/grind/func_8005D554/s22/vars, sweepA.json):
+zero1C stored first in the group 6/176 (byte-inert); byte28 moved into the group 10/176;
+s.ret written first 10/176; one14 before zero10 10/176; c20/c24 moved in 12/177; p1 moved in
+13/176; p0 moved in 23/176; zero18 moved in 28/178. Nothing below 6 - which field carries which
+value and where the group starts does not reach the clock-64 pick.
+
+### H58 - KILLED (instance). Two structurally different rederive chassis are worse.
+The half body extracted into a `static __inline__` helper called twice with the four constants
+(the halves' constants are almost exactly 2x each other) builds 173 instructions - three BELOW
+the target - and scores 59. Routing every struct field store and the call argument through a
+pre-loop `S46C *ps = &s;` scores 42/179.
+
+### New compiler-source facts worth carrying
+  * rtlanal.c's may_trap_p FALLS THROUGH from the DIV/MOD/UDIV/UMOD cases straight into
+    `case EXPR_LIST: return 1;` - there is no break after the constant-divisor tests. So ANY
+    div/mod rtx makes may_trap_p true, and since `call_passed` is already 1 at the a2 statement
+    (three rand calls precede it), loop.c:715's `! ((maybe_never || call_passed) && may_trap_p
+    (src))` conjunct is a REAL, never-enumerated falsifier of movability for an invariant
+    single-set source. It needs a div or a trapping MEM in the base insn's own SET_SRC, which
+    `(plus (reg) (const_int))` never is - but it is the second escape route on the list.
+  * count_loop_regs_set (loop.c:2989) sets may_not_move[regno] on an explicit standalone
+    `(clobber (reg))`, and may_not_optimize gates the WHOLE movable analysis at loop.c:649. The
+    only non-DImode emitter of a standalone CLOBBER of a pseudo in GCC 2.7.2 is
+    store_constructor for a UNION built into a register (expr.c:2996); expr.c:1991 and
+    expr.c:913 are multi-word/DImode paths (a banned family).
+  * reg_in_basic_block_p (loop.c:1062) returns 0 immediately when
+    regno_first_uid[regno] != INSN_UID (the set) - i.e. when the register is mentioned anywhere
+    EARLIER in the function than its set.
+  * The target proves r4 is loop-INVARIANT in the original: $s4 is written only once, at
+    4DE1C (srl $s4,$v0,15) in the pre-loop straight line, and never inside 4DE50-4DFCC
+    (grep of asm/funcs/func_8005D554.s). So the original's base escaped LICM with an INVARIANT
+    source, which leaves exactly two mechanisms: may_not_optimize (a CLOBBER, or two sets in two
+    basic blocks) or the regno_first_uid test above.
+
+## [s22] With r4 (the register the a2 base subtracts from, $s4 in the target) set inside the loop, a fresh once-written once-read base local per half is not hoisted by loop.c, keeps reg_n_sets == 1, and sched1 emits both call windows in the target's rotation.
+- mechanism: loop.c's movable acceptance (the else-if chain at loop.c:702-717) begins with invariant_p(SET_SRC), and invariant_p's REG case is 'return n_times_set[REGNO (x)] == 0', where n_times_set counts sets WITHIN THE LOOP RANGE ONLY (count_loop_regs_set, loop.c:2989). Setting r4 inside the loop makes the base insn's source (plus (reg r4) (const -K)) non-invariant, so the insn is never made a movable -- no label, no second write, no basic-block split. The insn therefore stays in the loop with a dest written exactly once in the whole function, so birthing_insn_p (sched.c:2505) is true and adjust_priority (sched.c:2584) raises INSN_PRIORITY to max_priority -- the same LAUNCH boost s13 measured on the Judge-FAILed score-0 body, reached from a direction that needs no multi-write carrier.
+- probe: tmp/grind/func_8005D554/s22/varsB/W2_r4_init_in_loop.c: the second rand and r4's computation moved from the pre-loop straight line into the loop body under 'if (i == 0)', plus fresh single-set b1/b2 for the two a2 bases. Swept for score, then compiled with the instrumented cc1 (tools/gcc-2.7.2/cc1 -da) and the emitted assembly read insn by insn.
+- result: 26/179. Both call windows emit [addu $4,$sp,16][move $5,$0][lw $3,D_800A3418][addu $6,$20,-12 / -25][sw $0,32($sp)][sw $22,36($sp)][sw $17,28($sp)] -- the target's 4DEB4-4DECC and 4DF6C-4DF84 verbatim in order and operand form. First time in 22 sessions that 'addiu <reg>,s4,-K' has been emitted AFTER the two expand_call argument moves, first time in both halves, and first time without a fresh multi-write carrier. Discriminator banked: the identical chassis with the base left in the multi-set a2_offset (W3) scores 32/179, exactly six points worse -- the two 3-insn rotations return -- so the fresh single-set base is the operative term and the +3 instructions are the restructuring's own cost.
+- verdict: CONFIRMED
+
+## [s22] Six measured spellings that make r4 non-invariant inside the loop each add at least two instructions to the build: conditional init at the loop top 26/179, guard-duplicated while chassis 26/179, conditional copy from a pre-loop temp 28/178, conditional init at the body end 32/178, conditional init immediately before the a2 statements 32/181, and the same with the a0 bases also converted to fresh single-set locals 68/182.
+- mechanism: Every spelling measured needs a branch to run the initialisation once, and the branch plus its test costs 2-3 instructions against the target's 176; the a0 variant additionally converts a window that already matches, so its two a0 bases pick up the same boost and move out of their matching slots.
+- probe: tools/sweep_variants.py over tmp/grind/func_8005D554/s22/varsB and varsC (9 forms total), gating on build_insns as well as score.
+- result: Cheapest is +2 instructions (C5_copy_from_preheader_temp, 28/178). None reaches 176.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis with fresh single-set b1/b2 bases; control re-measured 6/176; no FAKE constructs present in any variant
+
+## [s22] The pre-call store GROUP axis (s21 frontier item 2 -- which struct field carries which value, the group's membership, and where the group starts) does not reach the clock-64 pick: eight spellings on the control chassis score 6, 10, 10, 10, 12, 13, 23 and 28, with the only 6 being byte-inert.
+- mechanism: schedule_select prefers the largest potential_hazard inside a maximal equal-priority group (sched.c:2717) and potential_hazard is 0 for every insn_unit < 0 (sched.c:1334), so on MIPS only the loads and stores carry a hazard. Changing which stores are in the group changes which clocks the group occupies but leaves the a2 base facing the same two argument moves under the same INSN_LUID tie-break (sched.c:2464).
+- probe: tmp/grind/func_8005D554/s22/vars (V03 zero1C first, V04 c20/c24 moved in, V05 p1 moved in, V06 byte28 moved in, V07 zero18 moved in, V08 s.ret written first, V09 one14 before zero10, V10 p0 moved in), swept in one call; histogram in tmp/grind/func_8005D554/s22/vars.json.
+- result: Best is V03_zero1C_first at 6/176, byte-identical to the control. Nothing below 6.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present
+
+## [s22] Two structurally different rederive chassis measured worse than the control: the half body extracted into a static __inline__ helper called twice with the four constants scores 59 at 173 instructions, and routing every struct field store plus the call argument through a pre-loop S46C pointer local scores 42 at 179 instructions.
+- mechanism: The inline expansion lets GCC fold the two halves' shared constant structure and drops three instructions below the target's 176; the wide pointer local is loop-invariant and live across both calls, so its preheader addiu is pure cost and expand_call's a0 copy is not coalescable (the same effect s11 measured on the narrow form).
+- probe: tmp/grind/func_8005D554/s22/vars/V02_inline_helper.c and V01_wide_pointer_store.c, swept with the store-group round.
+- result: 59/173 and 42/179 respectively.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present

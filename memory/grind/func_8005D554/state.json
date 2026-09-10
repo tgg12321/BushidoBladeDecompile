@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 21,
- "current_modality": "forensics",
+ "session_count": 22,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Reload is live on this function (3 created insns, $a3 globally spilled) but not in the half-1 window; sched2 is a strict descending-LUID identity there, and the argument-move ready-clock route is clos"
+  },
+  {
+   "session": 22,
+   "floor": 6,
+   "modality": "rederive",
+   "headline": "The target's four-insn call window was produced in BOTH halves with no carrier: setting the a2 base's SOURCE register non-invariant inside the loop stops loop.c making a fresh once-written base local "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "LUID is the only rank term left that can make the a2 base beat insn 242 at clock 64, and expand_call is the only insn-creation site that emits after the two argument moves; a third argument that is the BASE value and is NOT CSE-shared with the value stored to s.zero1C would force expand_call to emit addiu a2,s4,-K itself at LUID 44.",
-   "mechanism": "expand_call emits the hard-register argument moves after every argument pseudo is computed, which is why 240/242 hold LUIDs 42/43 and no earlier statement can out-LUID them (s19's 102 unspellable depth-1 vectors). An argument whose value is not already seated in the destination hard register forces a real move insn at the highest LUID in the block. H54 shows the CSE-shared spelling is a complete no-op, so the variant must keep the base pseudo distinct from the stored offset.",
-   "next_probe": "Build call forms where the third argument expression is the base ((s32)r4 - K) while s.zero1C is fed by an expression GCC will not CSE into the same pseudo, dump each under BB2_SCHED_DEBUG=1 and read the node LUIDs of the argument moves BEFORE looking at the score; gate every variant on build_insns == 176 and reject any that adds a move insn."
+   "hypothesis": "The target's own escape from LICM keeps the base's source register INVARIANT, so it must be may_not_optimize or the regno_first_uid test -- not source non-invariance. may_not_optimize is set by count_loop_regs_set on an explicit standalone (clobber (reg)) and gates the entire movable analysis at loop.c:649, while leaving reg_n_sets at 1 if the clobber is not counted as a set.",
+   "mechanism": "count_loop_regs_set (loop.c:2989) sets may_not_move[REGNO] = 1 when it sees a CLOBBER pattern whose operand is a REG; loop.c:649 skips the whole movable analysis for such a reg. If reg_n_sets (regclass.c reg_scan / flow.c life_analysis) counts only SETs, the base local would still satisfy birthing_insn_p's reg_n_sets == 1 (sched.c:2505) and take the LAUNCH boost with an invariant source and no extra instruction.",
+   "next_probe": "First determine empirically whether a CLOBBER bumps reg_n_sets (grep reg_scan_mark_refs in tools/gcc-2.7.2/regclass.c and mark_set_1 in flow.c). Then hunt an ORDINARY-C construct that makes GCC 2.7.2 emit a standalone (clobber (reg)) for an SImode pseudo inside the loop; expr.c:2996 (store_constructor for a UNION built into a register) is the only non-DImode emitter found, so a nested block holding a union-typed local with an initializer is the shape to try. If the only reachable spelling is a construct a reader would ask 'why is this here?' about, emit a ruling-request rather than a candidate -- this is not a sanctioned family."
   },
   {
-   "hypothesis": "Which struct field carries which value decides the LUID order inside the half-1 store group (228/231/234, all pri 3 / unit 0), and therefore which insn occupies clock 63 and what the base faces at clock 64 - an axis distinct from the statement-placement axis s6 closed.",
-   "mechanism": "schedule_select prefers the largest potential_hazard, which selects the unit-0 stores as a block; inside that block rank_for_schedule falls through to the LUID tie-break, so the store written first in source is picked last (clock 63). Changing the group's membership or its internal LUID order changes the clock at which the group empties and hence the state of the ready list at the decisive clock.",
-   "next_probe": "Sweep the source order and membership of the s.zero10 / s.one14 / s.ret stores and the position of the s.zero1C store as a GROUP axis (not as a2-base placement), gating on build_insns == 176, and read the sched1 PICK clocks 61-64 for each rather than only the score."
+   "hypothesis": "The other escape for an invariant single-set base is reg_in_basic_block_p returning 0 through its first test, which fires when the base register is MENTIONED anywhere earlier in the function than its set; combined with maybe_never (any label or jump earlier in the loop) and the dest being a user variable, all three disjuncts of loop.c:695-700 go false with a single set and no label between the set and its use.",
+   "mechanism": "reg_in_basic_block_p (loop.c:1062) opens with 'if (regno_first_uid[regno] != INSN_UID (insn)) return 0;'. regno_first_uid is filled by reg_scan before loop_optimize, so an earlier mention of the register anywhere in the function falsifies disjunct 3 without needing a CODE_LABEL between the set and the last use -- which is what made s16's split-p0-if escape put the base in a predecessor block and cost 66/178. maybe_never only needs one label or jump EARLIER in the loop, which can sit at the top of the body and leave the base, the stores and the call in one block.",
+   "next_probe": "Construct a form where the a2 base local is referenced earlier in the function than its set while still being SET only once (e.g. a genuinely used earlier read whose value comes from the previous iteration, or a mention that reg_scan counts but that emits no insn), put a single conditional earlier in the loop body to raise maybe_never, and confirm with cc1 -da that the base is still in the call's block and that greg/sched show reg_n_sets == 1 with ADJPRI birth=1. Gate on build_insns == 176."
   },
   {
-   "hypothesis": "(carried) The object model of D_8009B2E0 and the pair D_8009B388/D_8009B390 is still the last untried non-spelling axis; candidate.c still carries the declaration pun p_b2e0 = (u8 *)&D_8009B2E0.",
-   "mechanism": "Which callee-saved register holds which loop base is decided by allocno priority driven by reg_n_refs; a different declared object model changes the number of references to the pointer locals - and this session showed the function is register-pressure-bound (three pseudos unallocated, $a3 globally spilled), so the object model has real leverage over the allocation.",
-   "next_probe": "Enumerate header-canonical aggregate declarations for the 0x3C-stride table at D_8009B2E0 and the pair D_8009B388/D_8009B390 (aggregate-merge prong (a) satisfied by the 0x3C stride and the p_b2ec + stride addressing), applied through an integration handoff for the header edit, and sweep the loop's pointer-local spellings against each; gate on build_insns == 176."
+   "hypothesis": "The birthing_insn_p boost on the W2 chassis has been inferred from the assembly and from the six-point W2-vs-W3 delta, not read out of the compiler; confirming it directly would let the next session gate variants on the trace instead of the score.",
+   "mechanism": "sched.c:2584's adjust_priority prints 'SCHEDDBG ADJPRI insn=<uid> deaths=0 birth=<0|1> maxpri=... pri=...' under BB2_SCHED_DEBUG=1, and sched.c:2505's birthing_insn_p is true exactly when the dest is live and reg_n_sets == 1.",
+   "next_probe": "Re-run pwsh tools/grinder/dump.ps1 / tmp/grind/func_8005D554/s21/dump.sh on W2_r4_init_in_loop.c, isolate func_8005D554's sched1 block-6 trace out of the 10 MB TU-wide log (split on the per-function SCHEDDBG banner rather than grepping the whole file), and read the ADJPRI line for the two base insns plus the clock-64 SELBEST line."
   }
  ],
  "judge_constraints": [
@@ -153,30 +159,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 5,
-   "statement": "On the current candidate chassis the 4-local chassis (separate a0a/a2a and a0b/a2b offset locals per loop half) measures 6/176, and the three early-birth placements measured on top of it (base at the ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis (floor re-measured 6/176 this session); no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "q2_late_none 6/176 (control), q4_late_none 6/176, q2_late_b390 18/175, q4_late_b390 18/175, q2_posta0/prerand_b390 29/17"
-  },
-  {
-   "session": 5,
-   "statement": "Eighteen bodies crossing three a2-base carriers (the shared a2_offset, one fresh local shared by both halves, two fresh per-half locals) x accumulate vs direct-store consumption x three positions of t",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "Nothing in the measured set sits below the floor. Naming or freshening the accumulate-shape carrier is a byte-level no-o"
-  },
-  {
-   "session": 5,
-   "statement": "Nine bodies reproducing the permuter's sandbox-3 shape from tmp/perm_5d554_z3/output-160-1/source.c (a carrier holding one half's a2 base and re-written to 0 in the other half to feed s.zero10) with t",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "The sanctioned staged-value / dead-param quadrant does not reach 176 instructions on this chassis, so the permuter's onl"
-  },
   {
    "session": 5,
    "statement": "Twenty bodies crossing four loop chassis (the candidate's do-while, the s2 z3 guard-duplicated while, a for(;;) with a trailing if(!cond) break, and an explicit label + goto loop) x three a2-site arit",
@@ -632,6 +614,30 @@
    "measured_on": "HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "Score re-measures 6/176. Nodes 205..258 carry LUIDs 28..49 exactly as in the control, and the window picks are identical"
+  },
+  {
+   "session": 22,
+   "statement": "Six measured spellings that make r4 non-invariant inside the loop each add at least two instructions to the build: conditional init at the loop top 26/179, guard-duplicated while chassis 26/179, condi",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis with fresh single-set b1/b2 bases; control re-measured 6/176; no FAKE constructs present in any variant",
+   "predicate_cite": "",
+   "result": "Cheapest is +2 instructions (C5_copy_from_preheader_temp, 28/178). None reaches 176."
+  },
+  {
+   "session": 22,
+   "statement": "The pre-call store GROUP axis (s21 frontier item 2 -- which struct field carries which value, the group's membership, and where the group starts) does not reach the clock-64 pick: eight spellings on t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Best is V03_zero1C_first at 6/176, byte-identical to the control. Nothing below 6."
+  },
+  {
+   "session": 22,
+   "statement": "Two structurally different rederive chassis measured worse than the control: the half body extracted into a static __inline__ helper called twice with the four constants scores 59 at 173 instructions,",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "59/173 and 42/179 respectively."
   }
  ],
  "ladder_skip": 0,

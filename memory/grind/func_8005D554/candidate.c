@@ -414,6 +414,35 @@
  * 61-63 to the stores' potential_hazard, and win clock 64 against 242 (luid 43) and 240 (luid 42).
  * LUID is the ONLY rank term left, and expand_call is the only insn-creation site that emits after
  * the argument moves.  See hypotheses.md H51-H54 and evidence.md s21.
+ *
+ * s22 (rederive, 2026-09-09, HEAD main @ 8d423e0f): floor RE-MEASURED at 6/176 on this body; the
+ * kill re-audit passes for an ELEVENTH session (fake_ablate finds no FAKE-annotated construct in
+ * rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c).  THE FOUR-INSN ROTATION WAS
+ * PRODUCED THIS SESSION, IN BOTH HALVES, WITHOUT ANY CARRIER -- see hypotheses.md H55.  The lever
+ * is a conjunct of loop.c's movable test that s13-s16 never touched: the acceptance at
+ * loop.c:702-717 starts with invariant_p(SET_SRC), and invariant_p's REG case returns
+ * n_times_set[regno] == 0 where n_times_set counts sets INSIDE THE LOOP ONLY.  Set the base's
+ * SOURCE register r4 inside the loop and the base insn (plus (reg r4) (const -K)) is not
+ * invariant, so a FRESH ONCE-WRITTEN base local is never made a movable, is not hoisted, keeps
+ * reg_n_sets == 1, and therefore gets the birthing_insn_p LAUNCH boost (sched.c:2505 /
+ * adjust_priority sched.c:2584) that s13 could previously reach only through the Judge-FAILed
+ * fresh multi-write carrier.  Measured: rejected/r4-noninvariant-fresh-single-set-base-target-
+ * window-both-halves-scores-26.c = 26/179, and its disassembly
+ * (tmp/grind/func_8005D554/s21/dumps/s22W2/text1b.s) emits BOTH windows as
+ * [addu a0,sp,16][move a1,zero][lw v1,D_800A3418][addu a2,s4,-12 / -25][sw][sw][sw] -- the
+ * target's 4DEB4-4DECC and 4DF6C-4DF84 verbatim.  The discriminator is banked too: the identical
+ * chassis with the base left in the MULTI-SET a2_offset scores 32/179, exactly six points worse,
+ * i.e. the two 3-insn rotations return.  The whole 26 is now the +3 instructions that the
+ * restructuring itself costs, and the cheapest of six measured r4-non-invariance spellings still
+ * costs +2 (28/178).  ALSO MEASURED DEAD: the pre-call store GROUP axis (8 forms, best 6/176
+ * byte-inert), a static __inline__ half-body helper (59/173), and a wide pointer-local for every
+ * field store (42/179).  AND A TARGET FACT THAT BOUNDS THE NEXT SESSION: $s4 and $s5 are each
+ * written exactly ONCE in the whole target function, in the pre-loop straight line (4DDE0,
+ * 4DE1C), and never inside the loop -- so the ORIGINAL's base escaped LICM with an INVARIANT
+ * source, and the two remaining escapes for that are may_not_optimize (an explicit
+ * (clobber (reg)), count_loop_regs_set loop.c:2989) and reg_in_basic_block_p's
+ * regno_first_uid test (loop.c:1068).  Do NOT re-sweep the store-group axis or the a0-side
+ * bases (converting a0 to fresh single-set locals costs six points).
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);
