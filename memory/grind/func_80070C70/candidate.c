@@ -1,6 +1,32 @@
 //@sub     s16 sp50[12];
 |||
 //@sub extern s32 func_80069898(s32 a0, s32 *p, s32 mode);|||
+/* REPRESENTATION BANNER (s14): this file is a CANDIDATE, not the state of main.  On main
+ * func_80070C70 is committed as INCLUDE_ASM("asm/funcs", func_80070C70) per the 2026-08-19
+ * asm-until-matched ruling; every "on main" reference below is to the SIBLING functions in
+ * src/text1b.c (func_8006BB68, func_8006DD94) whose matched C bodies are on main and supply
+ * the rect[] precedent, not to this function.  Install with
+ * tmp/grind/func_80070C70/s14/setup.py (or s10/install.py) to reproduce the 22.
+ *
+ * S14 (enumerate) - BODY UNCHANGED, floor still 22/194.  220 spellings measured across six
+ * EXHAUSTIVE axes, and this body is the UNIQUE optimum on every one of them:
+ *   - 128-cell cross product of guard-bound spelling (4) x tail-bound spelling (4) x mode-test
+ *     spelling (8).  The axes are additive: guard 0/+1/+3/+4, tail 0/0/+1/+1, mode-test
+ *     35BC-first 0 vs sum-first +8; `!= 0` vs bare truthiness is byte-neutral.
+ *   - 20-cell invariant-hoist cross product (bound / mode-test sum / D_800A35BC into fresh
+ *     locals): every hoist is worse (31-41); closes on the do/while chassis what s8 closed on
+ *     the top-test one.
+ *   - 21-cell declaration-signedness RE-AUDIT of the s2/s3 kill: under an s16 or u16 extern for
+ *     D_800A3558 all seven cast spellings are byte-identical at 22; the kill holds.
+ *   - 15-cell HImode-carrier sweep: `u16 h; h = D_800A3558;` + `(s16)h` DOES emit the target's
+ *     `sll 16 / sra 16` shape but costs 25/194 (48 raw insn diffs vs this body's 44).
+ *   - 12 mode-test branch structures (ternary, duplicated arms, goto, De Morgan, store-then-
+ *     override): the target's sum-first topology is +8 in every dress.
+ *   - all 24 statement orders of the second loop body: PMLC (this one) is the unique optimum.
+ * CONCLUSION: the residual is not a spelling of these statements.  Both signature divergences
+ * (sum-first mode test, lhu/lh read pair) are downstream of the target holding D_800A3558 in
+ * $a2 and D_800A35B0 in $a1 across the loop back edge.
+ */
 /* candidate.c - func_80070C70 - session 13 (structural). Honest floor 22 (unchanged from
  * s11/s12), but the body is BYTE-IDENTICAL to the s12 candidate while replacing its single
  * biggest correctness defect: the invented `IconC70` struct with the known-wrong `s16 sp50[12]`

@@ -1,8 +1,8 @@
 {
  "func": "func_80070C70",
  "file": "text1b",
- "session_count": 13,
- "current_modality": "structural",
+ "session_count": 14,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,29 @@
    "floor": 22,
    "modality": "structural",
    "headline": "Floor holds at 22, but s12's #1 correctness frontier is CLOSED: the sp+0x48 local is a u16 rect[16] array (func_80069898 is already decompiled with a u16* parameter and two on-main callers use the ide"
+  },
+  {
+   "session": 14,
+   "floor": 22,
+   "modality": "enumerate",
+   "headline": "Floor holds at 22/194, but the second loop's LOCAL SPELLING SPACE is exhausted: 220 spellings swept across six exhaustive axes, the incumbent body is the unique optimum on every one, and both signatur"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With the icon/rect correctness question closed, the ONLY remaining blocker to a submission-shaped body is the ~20-point cse_set_around_loop cluster, and route (a) - making the top-test chassis' three combine-orphaned spill pseudos not exist - is still the only untried angle. s13 eliminated the variable-reuse/LICM-defeat approach to it, so what remains is the combine question s10 posed and never answered.",
+   "hypothesis": "The ~20-point cse_set_around_loop cluster is only reachable on the TOP-TEST chassis, and route (a) - making that chassis' three combine-orphaned spill pseudos not exist - is now the ONLY untried angle. s13 eliminated the variable-reuse/LICM-defeat approach; s14 eliminates the entire local spelling space of the loop on the do/while side.",
    "mechanism": "combine.c's newi2pat path emits an orphan (use (reg)) insn when distribute_notes cannot find a home for a REG_DEAD note; regclass types such a pseudo ST_REGS, so global_alloc can never give it a hard register and reload's alter_reg always allocates a fresh 8-byte stack slot (H-s10-1). The target has BOTH the guard copy AND vars=80, so its build did not take that path.",
-   "next_probe": "Regenerate the dumps for the 31-point a3 body first (pwsh tools/grinder/dump.ps1 func_80070C70 with tmp/grind/func_80070C70/s12/a/a3.c installed - every existing dump is of the 49-point body), then read tools/gcc-2.7.2/combine.c:2089 and 10730-10850 against tmp/grind/func_80070C70/s10/w/sec.combine and work out what property of the insn stream lets the REG_DEAD notes find homes. Do NOT re-try bound hoisting, bare-u16 bounds, != bounds, loop topology respellings, or variable-reuse carriers - all measured dead on that chassis."
+   "next_probe": "Regenerate the dumps for the 31-point a3 body first (pwsh tools/grinder/dump.ps1 func_80070C70 with tmp/grind/func_80070C70/s12/a/a3.c installed - every existing dump is of the 49-point body), then read tools/gcc-2.7.2/combine.c:2089 and 10730-10850 against tmp/grind/func_80070C70/s10/w/sec.combine and work out what property of the insn stream lets the REG_DEAD notes find homes. Do NOT re-try bound hoisting, bare-u16 bounds, != bounds, loop topology respellings, variable-reuse carriers, or (new this session) HImode carriers, mode-test branch structures or loop-2 statement orders."
   },
   {
-   "hypothesis": "The prologue tie (addiu $a0,$sp,24 vs move $s0,$zero) is not reachable from any source-level ordering or declaration lever and will only fall out of whatever fixes the cse cluster.",
-   "mechanism": "It is a sched1 ready-list tie between two independent insns in the same basic block; s13 proved the LUID/declaration-order tie-break does not reach it (24/24 permutations byte-identical) and s11/s12 proved the source position of var_s0 = 0; (6 positions) and the &prim materialisation spelling (pointer local, 38) do not either - 33 spellings total.",
-   "next_probe": "Stop spending probes on it directly. If a future session wants one more datum, read the .sched dump for the entry block and record the two insns' INSN_PRIORITY values - that turns the question into 'is it a priority difference or a tie-break?' in one read rather than another sweep."
+   "hypothesis": "The residual is a REGISTER-SEAT question - $a1/$a2 (caller-saved) held live across the second loop's back edge and reloaded after the jal - which is exactly the shape tools/ra_solver + inverse_compose.py classify was built to type, and it has never been run against THIS formulation of the residual (s9's solver session typed the residual PRE-RA on every chassis, before s11 moved the floor to 22 and before s14 proved the spelling space empty).",
+   "mechanism": "global.c allocno priority and the caller-saved/callee-saved split decide whether an invariant MEM read is re-materialised inside the loop or seated in a caller-saved hard register that survives to the call and is reloaded after it; the C-level lever vector for a seat is what inverse.py ranks.",
+   "next_probe": "In a solver modality: run inverse_compose.py classify on the 22-point body's second loop with the target seat assignment ($a1 = D_800A35B0, $a2 = D_800A3558 across the back edge) as the goal state, and see whether it types REACHABLE with a ranked C lever vector or FORECLOSED. A FORECLOSED verdict here would be the strongest evidence yet that the do/while chassis cannot host the target's allocation at all and that the whole remaining budget belongs on the top-test/combine route."
   },
   {
-   "hypothesis": "The sibling func_800720FC (active queue, same TU, floor 688, never grinded past s1) carries the identical idiom - u16 rect[] oversized to fill a 32-byte spare region at sp+0x50..0x6F, plus the same prim/func_8007352C shape - so s13's rect finding should be propagated to it and to func_8006F97C before either is dispatched.",
+   "hypothesis": "The sibling func_800720FC (active queue, same TU, floor 688, never grinded past s1) carries the identical idiom - u16 rect[] oversized to fill a 32-byte spare region at sp+0x50..0x6F, plus the same prim/func_8007352C shape - so s13's rect finding and s14's spelling-space histogram should be propagated to it and to func_8006F97C before either is dispatched.",
    "mechanism": "Shared TU, shared callee contract (func_80069898's u16 * parameter), shared frame idiom; a sibling ledger that never hears the finding re-derives it from scratch, which is the failure mode the cross-knowledge sweep exists to kill.",
-   "next_probe": "When func_800720FC or func_8006F97C is dispatched, start from u16 rect[N] sized to its own spare region (rect[20] for func_800720FC's frame 0x98 / $s0 at 0x70 / icon at 0x48) rather than inventing a struct; cite src/text1b.c:5413 (the prototype), 5822 and 6065 (the two on-main callers)."
+   "next_probe": "When func_800720FC or func_8006F97C is dispatched, start from u16 rect[N] sized to its own spare region (rect[20] for func_800720FC's frame 0x98 / $s0 at 0x70 / icon at 0x48) rather than inventing a struct; cite src/text1b.c:5413 (the prototype), 5822 and 6065 (the two on-main callers). And run tools/sweep_variants.py over the loop-body statement orders FIRST - on this function that axis alone separated 22 from 94."
   }
  ],
  "judge_constraints": [],
@@ -446,6 +452,54 @@
    "measured_on": "both the s12 31-point shape-exact top-test for chassis (tmp/grind/func_80070C70/s12/a/a3.c, which carries the extern s16 D_800A3558 //@sub) and the 22-point if-guarded do/while chassis; FAKE construct",
    "predicate_cite": "",
    "result": "Top-test chassis: t carrier = 69/194, g carrier = 61/194, against the 31 incumbent - 30 to 38 points worse, so the hoist"
+  },
+  {
+   "session": 14,
+   "statement": "The second loop's bound + mode-test EXPRESSION spelling space (guard parenthesisation x tail parenthesisation x mode-test operand order and zero-test) contains a spelling below 22 on the if-guarded do",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (memory/grind/func_80070C70/candidate.c body; FAKE constructs present: s32 c60 = 0x60 and the oversized u16 rect[16]); sandbox --disable all",
+   "predicate_cite": "",
+   "result": "Histogram {22:4, 23:12, 24:12, 25:8, 26:12, 27:12, 28:4, 30:8, 31:16, 32:8, 33:8, 34:16, 35:8} - nothing below the incum"
+  },
+  {
+   "session": 14,
+   "statement": "Hoisting the second loop's invariants (the bound, the mode-test sum, D_800A35BC) into fresh locals reaches the target's register-carried shape on the if-guarded do/while chassis.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s13 candidate.c body; FAKE constructs present: s32 c60 = 0x60 and u16 rect[16]); sandbox --disable all",
+   "predicate_cite": "",
+   "result": "The incumbent (no hoist) at 22 is the unique optimum; every hoist is worse. Sum hoist alone 31 at 192 insns, md hoist al"
+  },
+  {
+   "session": 14,
+   "statement": "MANDATED KILL RE-AUDIT of the s2/s3 declaration-signedness kill on the CURRENT chassis: re-typing D_800A3558 (s32/s16/u16) crossed with seven cast spellings of its two use sites splits the read into t",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis with the D_800A3558 extern re-typed in src/text1b.c for each of the three runs; FAKE constructs present: s32 c60 = 0x60 and u16 rect[16]; sandbox --disable all",
+   "predicate_cite": "",
+   "result": "The kill HOLDS at floor 22 and is now stronger than s2/s3 stated it. Under an s16 or u16 extern ALL SEVEN cast spellings"
+  },
+  {
+   "session": 14,
+   "statement": "A HImode carrier LOCAL for D_800A3558 - the one construct convert_to_integer cannot fold away - buys the target's lhu plus sll 16 / sra 16 shape at an acceptable cost.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s13 candidate.c body; FAKE constructs present: s32 c60 = 0x60 and u16 rect[16]); sandbox --disable all",
+   "predicate_cite": "",
+   "result": "The construct works SHAPE-wise and still loses. `u16 h; h = D_800A3558;` at the top of the body with `(s16)h` in the mod"
+  },
+  {
+   "session": 14,
+   "statement": "Some BRANCH STRUCTURE for the mode test other than the incumbent if (A || B) X; else Y; reaches the target's sum-first topology without paying the 8 points the plain operand swap costs.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s13 candidate.c body; FAKE constructs present: s32 c60 = 0x60 and u16 rect[16]); sandbox --disable all",
+   "predicate_cite": "",
+   "result": "The incumbent is the unique optimum at 22 and the target's sum-first topology is +8 in EVERY structural dress: if/else 3"
+  },
+  {
+   "session": 14,
+   "statement": "The SECOND loop body's four independent statement groups have an order that beats the incumbent PMLC, as s13 found for the first loop.",
+   "kill_scope": "instance",
+   "measured_on": "the 22-point if-guarded do/while chassis (s13 candidate.c body; FAKE constructs present: s32 c60 = 0x60 and u16 rect[16]); sandbox --disable all",
+   "predicate_cite": "",
+   "result": "PMLC (the incumbent) = 22 is the unique optimum. PLMC 26, PMCL 27, PLCM 29; every order that lifts C or L ahead of P is "
   }
  ],
  "ladder_skip": 0,

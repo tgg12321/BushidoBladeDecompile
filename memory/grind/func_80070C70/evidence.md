@@ -867,3 +867,47 @@ root (the Bash tool here is Git Bash, not WSL - `bash tools/wsl.sh` is the bridg
 - [s13] The target's mode test branches on the sum FIRST (28fb4 bnez on $a1 + (s16)$a2, then 28fc4 bne against 2), so the original source order is if (sum != 0 || D_800A35BC == 2); our 22-point incumbent emits the D_800A35BC-first order. s13 re-derived and re-measured this at 30, matching s11's banked kill: the structurally-correct spelling loses 2 points in the pre-loop block ($v1 -> $a1 on the addiu #,#,72 / sw #,28(sp) pair) plus loop-body scheduling.
 
 - [s13] Residual composition at 22, re-confirmed by objdump: 2 points are the prologue tie (addiu $a0,$sp,24 before vs after move $s0,$zero), the other ~20 are the single cse_set_around_loop cluster (cse.c:7933 REG_LOOP_TEST_P, set only by jump.c:2253 duplicate_loop_exit_test, which needs a top-test loop; the top-test chassis prices out at 31).
+
+- [s14] [enumerate] The second loop's LOCAL SPELLING SPACE IS EXHAUSTED on the 22-point
+  if-guarded do/while chassis: 220 spellings measured across six exhaustive axes (128-cell
+  bound x mode-test expression cross product; 20-cell invariant-hoist cross product; 21-cell
+  declaration-signedness re-audit; 15-cell HImode-carrier sweep; 12 mode-test branch structures;
+  all 24 loop-2 statement orders). The incumbent body is the UNIQUE optimum on every axis; the
+  only ties are byte-identical. JSONs: tmp/grind/func_80070C70/s14/enum{1,2,4,5,6}.json and
+  enum3.{s32,s16,u16}.json.
+- [s14] The three expression axes are ADDITIVE and separable, which is why hand-probing them one
+  at a time (s6, s11, s13) kept finding "+1 here, +8 there": guard-bound spelling contributes
+  0/+1/+3/+4, tail-bound spelling 0/0/+1/+1, mode-test order 0 (35BC-first) or +8 (sum-first),
+  and `!= 0` vs bare truthiness is byte-neutral. A cell's score is the incumbent 22 plus the sum
+  of its three axis penalties, exactly, in all 128 cells.
+- [s14] The target's sum-first mode-test topology costs +8 in EVERY structural dress (plain
+  if/else, ternary, duplicated-arm else-if chain, goto/label, De Morgan inversion) - so the
+  divergence is NOT a branch-shape choice the C can make. It follows from the target holding
+  D_800A3558 in $a2 and D_800A35B0 in $a1 across the loop back edge.
+- [s14] The lhu/lh question is now fully characterised. The DECLARATION selects the signedness
+  of ALL reads together (u16 decl + bare reads => all three of our reads become `lhu`, still 22;
+  s16/u16 decl makes all seven cast spellings byte-identical), confirming s2's convert_to_integer
+  folding argument on the current chassis. The ONE construct that does emit the target's
+  `sll 16 / sra 16` sign-extension is a HImode carrier LOCAL (`u16 h; h = D_800A3558;` then
+  `(s16)h`) - and it measures 25/194 with 48 raw differing instructions vs the incumbent's 44,
+  so the shape is reachable and is not what is costing the points.
+- [s14] Raw instruction-diff count for the incumbent 22-point body against the target is 44
+  differing lines of 194 (tmp/grind/func_80070C70/s14/ours.txt vs s13/tgt.txt) - a useful
+  second metric alongside the weighted score: the HImode-carrier form scores +3 AND diffs +4,
+  so the two metrics agree on this chassis.
+
+- [s14] Chassis re-verified this session: the s13 candidate body installed into src/text1b.c with its two companion extern edits measures score 22, target_insns 194, build_insns 194 under sandbox --disable all. The ledger floor of 22 is current, not stale.
+
+- [s14] 220 spellings measured in one session across six exhaustive axes (128 + 20 + 21 + 15 + 12 + 24). The incumbent body is the UNIQUE optimum on every axis; the only cells that tie it are byte-identical to it. The second loop's local spelling space is exhausted on this chassis.
+
+- [s14] The three expression axes are ADDITIVE and separable, and this explains the confusing hand-probe history (s6 'the || order is worth 1 point', s13 'the || swap is worth 8'): a cell's score is 22 plus the sum of guard-spelling (0/+1/+3/+4), tail-spelling (0/0/+1/+1) and mode-test-order (0/+8) penalties, exactly, in all 128 cells. Per-axis penalties are chassis-dependent, which is why s6's number differed.
+
+- [s14] The target's sum-first mode-test topology costs +8 in EVERY structural dress (plain if/else, ternary, duplicated-arm else-if, goto/label, De Morgan inversion, nested if), so it is not a branch-shape the C chooses.
+
+- [s14] The lhu/lh question is now fully characterised. The DECLARATION selects the signedness of all reads together (a u16 extern with bare reads turns all three of our loads into lhu, still 22; under an s16 or u16 extern all seven cast spellings are byte-identical), re-confirming s2's convert_to_integer folding argument on the current chassis. The ONE construct that does emit the target's sll 16 / sra 16 sign-extension is a HImode carrier LOCAL, and it measures 25/194 - so the shape is reachable and is not what costs the points.
+
+- [s14] Raw instruction-diff count for the incumbent against the target is 44 differing lines of 194 (tmp/grind/func_80070C70/s14/ours.txt vs s13/tgt.txt). This is a useful second metric: the HImode-carrier form is +3 on score AND +4 on raw diff, so the two metrics agree here rather than masking shape progress.
+
+- [s14] Both remaining signature divergences reduce to ONE fact: the target keeps D_800A3558 (lhu) in $a2 and D_800A35B0 in $a1 live across the second loop's back edge, reloading both in the tail after the jal, and supplies the entry copies from a guard block that is an insn-for-insn copy of the tail test. No local C spelling on the if-guarded do/while chassis reaches that, because a C local is hoisted (measured: every hoist 31-41) and a re-read is CSE'd against the guard's own reads.
+
+- [s14] src/text1b.c was restored byte-exact to its pristine INCLUDE_ASM state at the end of the session; git status shows only metrics/events.jsonl modified.
