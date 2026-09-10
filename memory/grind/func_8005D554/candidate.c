@@ -443,6 +443,22 @@
  * (clobber (reg)), count_loop_regs_set loop.c:2989) and reg_in_basic_block_p's
  * regno_first_uid test (loop.c:1068).  Do NOT re-sweep the store-group axis or the a0-side
  * bases (converting a0 to fresh single-set locals costs six points).
+ *
+ * s23 (escalation/disposition, 2026-09-09, HEAD main @ 465f9fd0): floor RE-MEASURED at 6/176 on
+ * this body; fake_ablate reports no FAKE constructs to ablate, so this floor is FAKE-free and no
+ * banked kill is carrier-contaminated.  Kill re-audit reproduced three banked forms exactly
+ * (G1 birth-boost 8/176, zero10-dep 8/176, maximal-pre-call-birth 6/176).  BOTH remaining LICM
+ * escapes named in the paragraph above are now CLOSED.  (1) The explicit-CLOBBER route:
+ * count_loop_regs_set increments n_times_set for a CLOBBER pattern exactly as for a SET
+ * (loop.c:3024-3049) while regclass.c's reg_scan_mark_refs counts only SETs, so a clobber
+ * suppresses the hoist but KEEPS birthing_insn_p -- i.e. it lands on the score-8 boost chassis,
+ * not the score-0 one; measured with the only SImode standalone-CLOBBER emitter reachable from C
+ * (expr.c:2996 store_constructor, spelled as a one-member union with a non-constant initialiser)
+ * at 54/178 (both halves) and 35/178 (half 1) -- the union carrier costs +2 insns instead of
+ * folding.  (2) The regno_first_uid route (loop.c:1062) needs the base MENTIONED at a lower uid
+ * than its set, which is either a second set (Judge-banned fresh multi-write carrier, or the
+ * s17-swept existing-local borrow) or a read before the only set (uninitialised first iteration
+ * = a semantic change, not a spelling).  Disposition filed at docs/grind/decisions.md:26228.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

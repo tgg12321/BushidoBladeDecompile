@@ -2685,3 +2685,39 @@ pre-loop `S46C *ps = &s;` scores 42/179.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present
+
+## s23 (escalation) — hypotheses
+
+- H-s23-1 KILLED (instance): a fresh single-set a2 base carrier whose LICM escape comes from an explicit `(clobber (reg))` (`may_not_move`, loop.c:3018) instead of source non-invariance. Spelled with the only C-reachable SImode standalone-CLOBBER emitter (expr.c:2996 store_constructor, one-member union with a non-constant initialiser): 54/178 both halves, 35/178 half-1 only, on candidate.c chassis @ 465f9fd0 with no FAKE constructs present. Mechanism note: even had it folded, count_loop_regs_set increments n_times_set for a CLOBBER exactly as for a SET (loop.c:3024-3049) while reg_scan_mark_refs counts only SETs, so the boost still fires -> the score-8 chassis.
+- H-s23-2 CONFIRMED: reg_n_sets is incremented ONLY under `case SET:` in reg_scan_mark_refs (regclass.c:1736 ff.); a CLOBBER updates regno_first_uid/regno_last_uid but not reg_n_sets. loop.c n_times_set is a DIFFERENT counter and does count CLOBBERs.
+- H-s23-3 KILLED (class, predicate loop.c:1062): every escape through disjunct 3 of loop.c:695-700 requires regno_first_uid[base] to point at an insn earlier than the base set, i.e. a second set of the base (Judge-banned fresh multi-write carrier / s17-swept existing-local borrow) or a read before the only set (uninitialised first iteration = semantic change). No new spelling space.
+- H-s23-4 CONFIRMED: the banked kills are chassis-current and FAKE-free. fake_ablate finds nothing to ablate on candidate.c; the three closest banked forms re-measure at their banked scores (8/176, 8/176, 6/176).
+
+## [s23] A fresh single-set a2 base carrier can escape loop.c's movable analysis through may_not_move (an explicit standalone (clobber (reg))) instead of through source non-invariance, spelled with the only SImode standalone-CLOBBER emitter reachable from C (expr.c:2996 store_constructor, a one-member union with a non-constant initialiser).
+- mechanism: count_loop_regs_set (loop.c:3018) sets may_not_move[regno]=1 for an explicit CLOBBER, which gates the whole movable analysis at loop.c:649/700; reg_scan_mark_refs (regclass.c:1736 ff.) increments reg_n_sets only under case SET:, so the clobbered pseudo would still satisfy birthing_insn_p's reg_n_sets==1 (sched.c:2505).
+- probe: Two spellings measured with sandbox func_8005D554 --disable all on the candidate.c chassis at HEAD main @ 465f9fd0: union carrier in both loop halves (tmp/grind/func_8005D554/s23/P1_union_clobber_both.c) and in half 1 only (P2_union_clobber_half1.c).
+- result: 54/178 and 35/178 respectively, against a control of 6/176. The union carrier materialises +2 instructions instead of folding away and scrambles the allocation. Separately, reading the source settled the mechanism against the route even if it had folded: loop.c:3024-3049 increments n_times_set for a CLOBBER pattern exactly as for a SET, so the clobber suppresses the hoist while leaving reg_n_sets==1 and the birthing_insn_p LAUNCH boost intact -- i.e. it lands on the s18 G1 score-8 boost chassis, not the score-0 one. Also outside the frozen sanctioned-family list (AUTO-REJECT class, owner ruling 2026-08-24). Banked as rejected/union-constructor-clobber-carrier-costs-2-insns-scores-54.c and rejected/union-constructor-clobber-half1-only-scores-35.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: memory/grind/func_8005D554/candidate.c chassis, HEAD main @ 465f9fd0, control re-measured 6/176; no FAKE constructs present (fake_ablate reports nothing to ablate)
+
+## [s23] Escapes through disjunct 3 of loop.c:695-700 (reg_in_basic_block_p returning 0 on its first test) require regno_first_uid[base] to point at an insn earlier than the base's set, which in compiled C comes only from a second set of the base or from a read of the base before its only set.
+- mechanism: reg_in_basic_block_p opens with `if (regno_first_uid[regno] != INSN_UID (insn)) return 0;` (loop.c:1062); regno_first_uid is filled by reg_scan_mark_refs from any REG occurrence (regclass.c case REG:), and every REG occurrence in a compiled function originates from a read or a set of the C object.
+- probe: Source read of loop.c:1062 and loop.c:695-700 plus regclass.c reg_scan_mark_refs, enumerating the two source-level origins of a lower-uid mention and matching each against the ledger's existing dispositions.
+- result: A second set is exactly the Judge-banned fresh multi-write staging carrier (decisions.md:26224) or the existing-local borrow quadrant s17 swept flat (66 spellings, best 19). A read before the only set reads an uninitialised value on the first iteration, which changes the program's semantics rather than its spelling. The disjunct-3 escape therefore opens no search space that is not already disposed of.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source predicate read at HEAD main @ 465f9fd0; candidate.c chassis, no FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/loop.c:1062
+
+## [s23] reg_n_sets (the counter birthing_insn_p reads) is incremented only for SET patterns, while loop.c's separate n_times_set counter also counts CLOBBER patterns.
+- mechanism: reg_scan_mark_refs increments reg_n_sets[REGNO(dest)] inside `case SET:` only (regclass.c:1736 ff.); a CLOBBER's REG operand reaches `case REG:` through the generic fmt recursion and updates regno_first_uid/regno_last_uid alone. count_loop_regs_set increments n_times_set under `if (GET_CODE (PATTERN (insn)) == SET || GET_CODE (PATTERN (insn)) == CLOBBER)` (loop.c:3024-3049).
+- probe: Direct read of tools/gcc-2.7.2/regclass.c reg_scan_mark_refs and tools/gcc-2.7.2/loop.c count_loop_regs_set.
+- result: Confirmed as stated. This corrects the s22 frontier's framing, which assumed a CLOBBER would leave BOTH counters at 1: the two counters diverge, and the loop.c one does see the clobber.
+- verdict: CONFIRMED
+
+## [s23] The banked instance kills closest to the target are chassis-current and were not measured under a FAKE carrier occupying the contested pseudo.
+- mechanism: An instance kill is chassis- and FAKE-relative (func_8002EA24 s8); tools/fake_ablate.py reports whether any FAKE-annotated construct sits in the measured body.
+- probe: fake_ablate.py on candidate.c, then re-measurement of rejected/fresh-single-set-base-gap1-birth-boost-fires-scores-8.c, rejected/zero10-dep-folded-by-combine-byte-identical-to-boost-ctl-scores-8.c and rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c on HEAD main @ 465f9fd0.
+- result: fake_ablate: 'no FAKE-annotated constructs found; nothing to ablate'. Re-measurements 8/176, 8/176, 6/176 -- all three reproduce their banked scores exactly. The floor is a clean FAKE-free 6/176 (target_insns 176, build_insns 176, rules_dropped 0).
+- verdict: CONFIRMED

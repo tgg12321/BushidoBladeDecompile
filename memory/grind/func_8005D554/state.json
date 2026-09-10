@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 22,
- "current_modality": "rederive",
+ "session_count": 23,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -135,23 +135,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "The target's four-insn call window was produced in BOTH halves with no carrier: setting the a2 base's SOURCE register non-invariant inside the loop stops loop.c making a fresh once-written base local "
+  },
+  {
+   "session": 23,
+   "floor": 6,
+   "modality": "escalation",
+   "headline": "Disposition filed (decisions.md:26228, LADDER EXHAUSTED non-endgame residual floor 6: ROTATED): both gates FAIL (scan LOW 0/8; SOTN precedent census negative), and both remaining LICM escapes for an i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's own escape from LICM keeps the base's source register INVARIANT, so it must be may_not_optimize or the regno_first_uid test -- not source non-invariance. may_not_optimize is set by count_loop_regs_set on an explicit standalone (clobber (reg)) and gates the entire movable analysis at loop.c:649, while leaving reg_n_sets at 1 if the clobber is not counted as a set.",
-   "mechanism": "count_loop_regs_set (loop.c:2989) sets may_not_move[REGNO] = 1 when it sees a CLOBBER pattern whose operand is a REG; loop.c:649 skips the whole movable analysis for such a reg. If reg_n_sets (regclass.c reg_scan / flow.c life_analysis) counts only SETs, the base local would still satisfy birthing_insn_p's reg_n_sets == 1 (sched.c:2505) and take the LAUNCH boost with an invariant source and no extra instruction.",
-   "next_probe": "First determine empirically whether a CLOBBER bumps reg_n_sets (grep reg_scan_mark_refs in tools/gcc-2.7.2/regclass.c and mark_set_1 in flow.c). Then hunt an ORDINARY-C construct that makes GCC 2.7.2 emit a standalone (clobber (reg)) for an SImode pseudo inside the loop; expr.c:2996 (store_constructor for a UNION built into a register) is the only non-DImode emitter found, so a nested block holding a union-typed local with an initializer is the shape to try. If the only reachable spelling is a construct a reader would ask 'why is this here?' about, emit a ruling-request rather than a candidate -- this is not a sanctioned family."
+   "hypothesis": "The construct measured at distance 0 (a fresh local written twice purely as a staging carrier for the a2-site base) is the only known closer, and it is Judge-banned. Re-activation depends on an owner class grant covering that shape, or on an exhibited sotn-decomp master body showing it shipping on PSX/GCC 2.7.2.",
+   "mechanism": "reg_scan counts two sets -> the pseudo is not a loop.c movable and birthing_insn_p (sched.c:2505) does not fire the LAUNCH boost; combine.c then erases the redundant set so no instruction is materialised, leaving the base born last in the pre-call group.",
+   "next_probe": "Do NOT re-spell it. If a future session has access to a sotn-decomp master checkout, resolve the new_var_temp hits at docs/reference/sotn-construct-index.md:1423-1442 (e.g. src/dra/cd.c:520-522, src/dra/42398.c:254-259, src/main/psxsdk/libsnd/vmanager.c:352) and check whether any of those temporaries is WRITTEN MORE THAN ONCE. A single exhibited multi-write staging temp converts gate (b) and is the cheapest path back to an active disposition."
   },
   {
-   "hypothesis": "The other escape for an invariant single-set base is reg_in_basic_block_p returning 0 through its first test, which fires when the base register is MENTIONED anywhere earlier in the function than its set; combined with maybe_never (any label or jump earlier in the loop) and the dest being a user variable, all three disjuncts of loop.c:695-700 go false with a single set and no label between the set and its use.",
-   "mechanism": "reg_in_basic_block_p (loop.c:1062) opens with 'if (regno_first_uid[regno] != INSN_UID (insn)) return 0;'. regno_first_uid is filled by reg_scan before loop_optimize, so an earlier mention of the register anywhere in the function falsifies disjunct 3 without needing a CODE_LABEL between the set and the last use -- which is what made s16's split-p0-if escape put the base in a predecessor block and cost 66/178. maybe_never only needs one label or jump EARLIER in the loop, which can sit at the top of the body and leave the base, the stores and the call in one block.",
-   "next_probe": "Construct a form where the a2 base local is referenced earlier in the function than its set while still being SET only once (e.g. a genuinely used earlier read whose value comes from the previous iteration, or a mention that reg_scan counts but that emits no insn), put a single conditional earlier in the loop body to raise maybe_never, and confirm with cc1 -da that the base is still in the call's block and that greg/sched show reg_n_sets == 1 with ADJPRI birth=1. Gate on build_insns == 176."
+   "hypothesis": "The residual may be attackable from the CALLEE side rather than from this function: func_80073728's declaration/prototype shape determines how the argument group is expanded, and no session has varied it.",
+   "mechanism": "expand_call emits the argument moves in an order derived from the callee's declared parameter list and from whether the call is expanded through a prototype; the a2 base is the third argument slot in the group whose rotation is the whole residual.",
+   "next_probe": "Vary the visible declaration of func_80073728 at file scope (prototyped vs unprototyped, parameter types, a struct-pointer first parameter instead of s32) and re-measure the 4-insn call window in both halves. Gate on build_insns == 176 and read cc1 -da .sched to see whether the a2 move's LUID changes relative to the a0/a1/v1 group. Note s21 already killed the three-argument call form specifically (the third argument being the already-computed a2_offset), so vary the DECLARATION, not the call site."
   },
   {
-   "hypothesis": "The birthing_insn_p boost on the W2 chassis has been inferred from the assembly and from the six-point W2-vs-W3 delta, not read out of the compiler; confirming it directly would let the next session gate variants on the trace instead of the score.",
-   "mechanism": "sched.c:2584's adjust_priority prints 'SCHEDDBG ADJPRI insn=<uid> deaths=0 birth=<0|1> maxpri=... pri=...' under BB2_SCHED_DEBUG=1, and sched.c:2505's birthing_insn_p is true exactly when the dest is live and reg_n_sets == 1.",
-   "next_probe": "Re-run pwsh tools/grinder/dump.ps1 / tmp/grind/func_8005D554/s21/dump.sh on W2_r4_init_in_loop.c, isolate func_8005D554's sched1 block-6 trace out of the 10 MB TU-wide log (split on the per-function SCHEDDBG banner rather than grepping the whole file), and read the ADJPRI line for the two base insns plus the clock-64 SELBEST line."
+   "hypothesis": "The struct S46C's declared shape (member order/types of the object whose address is the first call argument) has never been varied, and it is what fixes the store group's addressing and therefore the pre-call insn set.",
+   "mechanism": "Field offsets drive the addiu a0,sp,16 base and the store offsets; a different member layout changes which stores share a base register and can move the a2 base's position within the group without adding any local.",
+   "next_probe": "Enumerate declaration-level permutations of S46C that leave every field at its target byte offset (padding vs explicit members, u32 vs s32 vs pointer typing) and re-measure. Header edits go through an integration handoff, so measure with a TU-local copy first and only escalate a shape that reaches 0."
   }
  ],
  "judge_constraints": [
@@ -159,22 +165,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 5,
-   "statement": "Twenty bodies crossing four loop chassis (the candidate's do-while, the s2 z3 guard-duplicated while, a for(;;) with a trailing if(!cond) break, and an explicit label + goto loop) x three a2-site arit",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "s5 frontier Q3's loop-structure half is retired: the three normalising chassis are indistinguishable at the floor. Form "
-  },
-  {
-   "session": 5,
-   "statement": "Five bodies attacking the argument-setup side of the sched1 tie -- a c0 = 0 constant holder initialised in the guard block and used as the second call argument (19/179), used for the s.zero10 stores (",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ 4f43e5cf, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "The a1 = 0 argument insn is already target-shaped; re-spelling the literal only adds instructions. Form banked at memory"
-  },
   {
    "session": 6,
    "statement": "No ordering of the eight source statements in the half-1 window produces the target instruction order: all 420 dependence-legal permutations, replayed through sched1 and then through sched2 with its L",
@@ -638,6 +628,22 @@
    "measured_on": "HEAD main @ 8d423e0f, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present",
    "predicate_cite": "",
    "result": "59/173 and 42/179 respectively."
+  },
+  {
+   "session": 23,
+   "statement": "A fresh single-set a2 base carrier can escape loop.c's movable analysis through may_not_move (an explicit standalone (clobber (reg))) instead of through source non-invariance, spelled with the only SI",
+   "kill_scope": "instance",
+   "measured_on": "memory/grind/func_8005D554/candidate.c chassis, HEAD main @ 465f9fd0, control re-measured 6/176; no FAKE constructs present (fake_ablate reports nothing to ablate)",
+   "predicate_cite": "",
+   "result": "54/178 and 35/178 respectively, against a control of 6/176. The union carrier materialises +2 instructions instead of fo"
+  },
+  {
+   "session": 23,
+   "statement": "Escapes through disjunct 3 of loop.c:695-700 (reg_in_basic_block_p returning 0 on its first test) require regno_first_uid[base] to point at an insn earlier than the base's set, which in compiled C com",
+   "kill_scope": "class",
+   "measured_on": "source predicate read at HEAD main @ 465f9fd0; candidate.c chassis, no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1062",
+   "result": "A second set is exactly the Judge-banned fresh multi-write staging carrier (decisions.md:26224) or the existing-local bo"
   }
  ],
  "ladder_skip": 0,

@@ -26224,3 +26224,154 @@ Body is ordinary C: goto/label dispatch renders the asm's beq/slti compare chain
 ## 2026-09-08 22:31 — func_8005D554 — ruling: func_8005D554 reaches honest distance 0 (176/176 instructions, register allocati — **FAIL**
 
 The closing carriers nv/nw (candidate.c: `nv = (s32)r4 - 0xC; ... a2_offset = nv; ... nv = ret; s.ret = nv;`, mirrored as nw) are FRESH locals written twice so reg_n_sets > 1 defeats sched.c birthing_insn_p. That shape is a settled non-member of every frozen family: staged-value-reused-variable bound 2 excludes an invented carrier; the named-intermediate entry (no-new-park-categories.md:225-226) says verbatim multi-WRITE carriers are NOT this entry; ordinary-c-judge-decidable Ruling 1 (owner, 2026-08-31) reaffirms 'Multi-WRITE carriers remain banned' and that the y1 FAIL (decisions.md:1838, fresh local written twice for set_preference) and the func_80045878 `c` FAIL (decisions.md:16472) stand. defeat-licm-hoist-var-reuse does not reach it: that family is loop.c movable admission (an invariant the target recomputes inline that GCC would otherwise hoist); the ledger itself concedes the mechanism here is sched.c:2505 priority, and loop.c does not hoist on this chassis (evidence.md s1: 'not desirable', threshold 29 vs insn_count 98). Real, consumed values do not lift the ban (y1's staging jobs were also real). Independently verified: rule texts, both precedent entries, the candidate text; the sandbox-0 claim was NOT re-scored (src/text1b.c holds INCLUDE_ASM and I am read-only). Exhaustion evidence (evidence.md s3 ablation table, rejected/) is genuine but is a prerequisite inside a family, not a substitute for membership. Non-membership is FAIL(CONSTRUCT), not a packet.
+
+## 2026-09-09 — func_8005D554 (src/text1b.c) — OWNER-ESCALATION — **LADDER EXHAUSTED (non-endgame residual, floor 6): ROTATED**
+
+PROOF-OF-FORECLOSURE RECORD (owner ruling 2026-08-31,
+`.claude/rules/ordinary-c-judge-decidable.md` — a recorded disposition, never a
+question to the owner; rotation per the 2026-09-08 ruling
+`.claude/rules/rotation-not-foreclosure.md`, which retires the foreclosed
+state). Filed by grind session s23 in the driver-assigned `escalation` modality.
+Nothing here claims that policy blocks the function: a pure-C preimage exists by
+construction, and this record exists so the next attempt starts from the measured
+frontier instead of re-deriving it.
+
+The honest floor is **6**, above `ENDGAME_LOCK_MAX_FLOOR = 5`, so the 2026-07-27
+standing endgame-lock ruling is NOT this function's subject (owner ruling
+2026-09-02) and no endgame-lock status is claimed here.
+
+**Ladder accounting.** s1–s23: twenty-three sessions with the honest floor flat
+at 6 from s1 onward, across EIGHT distinct modalities — recon, structural,
+permuter, enumerate, synthesis, solver, forensics, rederive — plus this
+escalation session. Roughly 2,500 complete spellings have been measured and
+histogrammed (s4 alone swept 1,224; s5b 55; s15 61; s16 44; s17 66; s22's
+group/chassis sweeps). 102 disproven forms were banked in
+`memory/grind/func_8005D554/rejected/` before this session; this session adds two
+more (104). The kill ledger carries 45 instance kills and 15 predicate-cited
+class kills.
+
+**State on main.** `src/text1b.c:2692` carries
+`INCLUDE_ASM("asm/funcs", func_8005D554);` — the function has never had a cheat
+committed on main, and no byte-match is being held up by a cheat construct: there
+is no admissible candidate at distance 0. The sandbox's `cheat_asm_stripped: 155`
+is the INCLUDE_ASM body itself, not a coercion.
+
+**Floor re-measured this session.** `memory/grind/func_8005D554/candidate.c`
+applied to `src/text1b.c` and measured with
+`sandbox func_8005D554 --disable all`: **score 6, target_insns 176,
+build_insns 176, rules_dropped 0**. `tools/fake_ablate.py --func func_8005D554
+--file text1b --candidate memory/grind/func_8005D554/candidate.c` reports "no
+FAKE-annotated constructs found; nothing to ablate" — the floor is a clean,
+FAKE-free floor, so no banked kill is contaminated by a carrier occupying the
+contested pseudo.
+
+**The residual, stated exactly.** 176/176 instructions, frame 120 == target,
+register allocation byte-identical to the target. The whole distance is two
+identical 3-instruction rotations, one per loop half. We emit
+`[addiu a2,s4,-K] [addiu a0,sp,16] [lw v1,gp] [move a1,zero]`; the target emits
+`[addiu a0,sp,16] [addu a1,zero,zero] [lw v1,gp] [addiu a2,s4,-K]`
+(`asm/funcs/func_8005D554.s`, 0x4DEB4–0x4DEC0). The target births the a2 base
+LAST in the pre-call group; every admissible C spelling births it FIRST.
+
+**Why the only known route to 0 is closed.** The single body ever measured at
+distance 0 (`rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c`)
+wins by giving the a2-site base a FRESH local that is WRITTEN TWICE in the
+source: `reg_scan` counts two sets, so the pseudo is not a `loop.c` movable and
+`sched.c:2505 birthing_insn_p` does not fire the LAUNCH boost, and `combine.c`
+then erases the redundant set so no instruction is materialised. The Judge FAILed
+that body at FINAL CALL on 2026-09-08 (decisions.md:26224) and made the ban
+binding: "No fresh (invented) local may be written more than once to act as a
+staging carrier for the a2-site base `(s32)r4 - K` or for any other value in this
+function, under any name." Both legal ways to reach `reg_n_sets >= 2` without a
+fresh multi-write local were then swept flat: borrowing an existing local (s17,
+66 spellings, best 19 — every existing carrier is born too early and costs
++2/+3) and borrowing a parameter (s5b, retired together with the
+zero-constant-holder lever). At `reg_n_sets == 1` the pseudo is either hoisted by
+LICM (+2 insns) or, when the def-to-use LUID gap is <= 3, escapes the hoist and
+takes the birthing_insn_p boost, which measures 8
+(`rejected/fresh-single-set-base-gap1-birth-boost-fires-scores-8.c`, re-measured
+at 8 this session on the current chassis).
+
+**Gate (a) — canonical-asm scan: FAIL.**
+`python3 tools/scan_hand_coded.py --single func_8005D554` →
+`HAND_CODED: tier=LOW score=0/8 (176 insns)`, "no strong hand-coded indicators";
+all of S1–S8 unchecked (0 multu/mflo pairs, no empty-body branches, 29 spills
+over 14 distinct registers, max load burst 2, no high-similarity siblings, no
+BIOS jumptable, no unsaved $sN, no redundant mask-before-shift). This is
+compiler-shaped code; the canonical-asm grant path does not apply.
+
+**Gate (b) — SOTN-master precedent census: FAIL.** The closing construct is a
+fresh local written more than once purely as a staging carrier to control
+call-argument emission order. `docs/reference/sotn-construct-index.md`
+(sotn-decomp master `aa535002`) has no entry for it: greps for multi-write /
+staging-carrier / reassignment shapes return exactly one hit
+(`src/st/rcat/e_frozen_half.c:451`), and that is a comment marking a *program
+bug*, not a codegen carrier. The nearest class, `new_var_temp` ("RA / scheduling
+temporaries", 20 PSX hits at index lines 1423–1442), is a DECLARATION-shape
+index: it records the declaration line only, so it cannot be shown that any of
+those temporaries is written more than once, and no sotn-decomp checkout is
+available here to exhibit one. Per the owner's standing bar, "genre-adjacent" and
+"same spirit" do not qualify — a negative census is a FAILED gate, not an open
+question.
+
+**cc1psx self-disproof (banked by the driver in `state.json.cc1psx_check`,
+2026-09-10T00:24Z).** Our candidate scores 6; the period-correct PsyQ cc1psx
+scores 18 on the same body; `closer: false`. The residual is not a
+compiler-provenance artifact.
+
+**New measurements this session (s23).**
+
+1. Kill re-audit on the current chassis (HEAD main @ 465f9fd0), FAKE-free:
+   `fresh-single-set-base-gap1-birth-boost-fires-scores-8.c` → 8/176,
+   `zero10-dep-folded-by-combine-byte-identical-to-boost-ctl-scores-8.c` → 8/176,
+   `a2-statements-at-maximal-pre-call-birth-point-scores-6.c` → 6/176. All three
+   reproduce their banked scores exactly; no banked kill was measured under a
+   FAKE carrier.
+
+2. Frontier item 1 (the `may_not_optimize` / standalone-CLOBBER LICM escape) was
+   settled both in the compiler source and by measurement. Source: `reg_n_sets`
+   is incremented ONLY under `case SET:` in `reg_scan_mark_refs`
+   (`tools/gcc-2.7.2/regclass.c:1736` ff.), so a CLOBBER leaves
+   `reg_n_sets == 1` — but `count_loop_regs_set` (`tools/gcc-2.7.2/loop.c:3018`)
+   both sets `may_not_move[regno] = 1` for an explicit CLOBBER AND increments
+   `n_times_set[regno]` for a CLOBBER pattern exactly as for a SET
+   (`loop.c:3024`–`3049`). So the construct would suppress LICM while KEEPING the
+   birthing_insn_p boost that is what costs — it lands on the score-8 chassis,
+   not the score-0 one. Measured anyway with the only ordinary-ish emitter of a
+   standalone CLOBBER for an SImode pseudo (`expr.c:2996` `store_constructor`
+   into a register, spelled as a one-member union with a non-constant
+   initialiser): both halves → **54/178**, half-1 only → **35/178**. The union
+   carrier materialises +2 instructions instead of folding away. Banked as
+   `rejected/union-constructor-clobber-carrier-costs-2-insns-scores-54.c` and
+   `rejected/union-constructor-clobber-half1-only-scores-35.c`. Independently,
+   that construct is outside the frozen family list and would be an AUTO-REJECT
+   under the owner's 2026-08-24 ruling, so it is not argued for here beyond the
+   negative measurement.
+
+3. Frontier item 2 (the `reg_in_basic_block_p` first-uid escape) is closed on the
+   source predicate: `loop.c:1062` returns 0 only when
+   `regno_first_uid[regno] != INSN_UID (insn)`, i.e. only when the base register
+   is MENTIONED at a lower uid than its set. `reg_scan_mark_refs` fills
+   `regno_first_uid` from any REG occurrence, so the mention must be a real read
+   or a real second set of the same local. A second set is the Judge-banned fresh
+   multi-write carrier (or the s17-swept existing-local borrow); a read before the
+   only set reads an uninitialised value on the first iteration, which is a
+   semantic change, not a spelling. Both disjunct-3 routes therefore reduce to
+   constructs already disposed of.
+
+**Evidence pointers.** `memory/grind/func_8005D554/evidence.md` (2,370 lines),
+`hypotheses.md` (2,687 lines), `state.json` floor_history s1–s23 (flat at 6),
+`rejected/` (104 forms), this session's artifacts in
+`tmp/grind/func_8005D554/s23/`, and the Judge's 2026-09-08 22:31 FAIL at
+`docs/grind/decisions.md:26224`.
+
+**Re-activation triggers.** (i) An owner class grant that covers a fresh local
+written more than once purely as a staging carrier for call-argument emission
+order — the one construct measured to reach 0 here; (ii) an exhibited
+sotn-decomp master body (file+line, with the write count visible) showing that
+construct shipping on PSX/GCC 2.7.2, which would convert gate (b); (iii) any
+toolchain-fingerprint change (the driver re-measures candidates on one);
+(iv) movement on the coupled sibling `src/ings.c` family or on any other
+`text1b.c` function whose residual is the same pre-call argument-group rotation.
+Rotation is not terminal: the item returns automatically on queue drain,
+toolchain change, or sibling movement.

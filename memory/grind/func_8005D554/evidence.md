@@ -2368,3 +2368,135 @@ by a mechanism the original did not use.
 - [s22] The a0 side must be left alone: converting the two a0 bases to fresh single-set locals on the same chassis costs six points (68/182 vs 26/179). The a0 windows already match the target with the multi-set a0_offset.
 
 - [s22] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 56267f85ffea scores 6 under our cc1 and 18 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+## s23 (escalation / disposition) — 2026-09-09, HEAD main @ 465f9fd0
+
+Modality: `escalation` (driver-assigned; floor flat at 6 across s1–s22 and eight
+distinct modalities). Outcome: `owner-gated`, disposition entry filed at
+`docs/grind/decisions.md:26228` ("LADDER EXHAUSTED (non-endgame residual,
+floor 6): ROTATED"). The item is rotated to the back of the active worklist and
+returns automatically on queue drain / toolchain change / sibling movement.
+
+### Chassis re-measurement (mandatory, brief said "measurement unavailable")
+`memory/grind/func_8005D554/candidate.c` applied to `src/text1b.c`, then
+`sandbox func_8005D554 --disable all`: **score 6, target_insns 176,
+build_insns 176, rules_dropped 0, cheat_asm_stripped 155** (the stripped 155 is
+the INCLUDE_ASM body on main, not a coercion). `tools/fake_ablate.py --func
+func_8005D554 --file text1b --candidate memory/grind/func_8005D554/candidate.c`
+→ "no FAKE-annotated constructs found; nothing to ablate". **The floor is
+FAKE-free**, so the mandated "kill measured under a FAKE carrier" contamination
+check comes back clean for the whole ledger: no banked kill on this chassis had a
+FAKE carrier occupying the contested pseudo.
+
+### Kill re-audit (mandatory — floor flat, instance kills exist)
+The three banked forms that sit closest to the target were re-measured on the
+current chassis:
+
+| form | banked | re-measured s23 |
+|---|---|---|
+| `rejected/fresh-single-set-base-gap1-birth-boost-fires-scores-8.c` | 8 | **8 / 176** |
+| `rejected/zero10-dep-folded-by-combine-byte-identical-to-boost-ctl-scores-8.c` | 8 | **8 / 176** |
+| `rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c` | 6 | **6 / 176** |
+
+All three reproduce exactly. No banked instance kill on this function is void
+through chassis drift or FAKE contamination.
+
+### Frontier item 1 CLOSED — the explicit-CLOBBER / `may_not_optimize` escape
+The s18–s22 frontier proposed making the a2 base a fresh single-set local that
+escapes LICM via `may_not_move` rather than via source non-invariance, on the
+theory that `may_not_move` is set by an explicit `(clobber (reg))` while
+`reg_n_sets` stays 1 (keeping `birthing_insn_p`'s precondition).
+
+Read out of the compiler source this session:
+
+- `tools/gcc-2.7.2/regclass.c`, `reg_scan_mark_refs` (function head at
+  `regclass.c:1736`): `reg_n_sets[REGNO (dest)]++` happens ONLY under
+  `case SET:`. A CLOBBER's REG operand is reached through the generic `fmt`
+  recursion and lands in `case REG:`, which updates `regno_first_uid` /
+  `regno_last_uid` but never `reg_n_sets`. **So the premise is true for
+  `reg_n_sets`.**
+- BUT `count_loop_regs_set` (`tools/gcc-2.7.2/loop.c:3018`) does two separate
+  things with a CLOBBER: it sets `may_not_move[regno] = 1` (loop.c:3018–3022,
+  "Don't move a reg that has an explicit clobber"), AND — in the very next block,
+  `if (GET_CODE (PATTERN (insn)) == SET || GET_CODE (PATTERN (insn)) == CLOBBER)`
+  at `loop.c:3024`–`3049` — it increments `n_times_set[regno]` exactly as for a
+  SET.
+
+Consequence: the clobber route suppresses the hoist but leaves
+`reg_n_sets == 1`, so `sched.c:2505 birthing_insn_p` still fires the LAUNCH
+boost — which is precisely what the s18 G1 chassis measured at **8**. The route
+lands on the score-8 chassis by construction, not on the score-0 one. It was
+measured anyway, using the only emitter of a standalone `(clobber (reg))` for an
+SImode pseudo that is reachable from C source (`expr.c:2996`,
+`store_constructor` building an aggregate into a register — the others are
+`expr.c:1991` multi-word moves i.e. the forbidden DImode-chain family,
+`stmt.c:2794` BLKmode return copies, and `optabs.c` libcall expansion):
+
+| probe | spelling | score / insns |
+|---|---|---|
+| `tmp/grind/func_8005D554/s23/P1_union_clobber_both.c` | one-member `union { s32 i; }` with a non-constant initialiser carrying `(s32)r4 - K` in BOTH halves | **54 / 178** |
+| `tmp/grind/func_8005D554/s23/P2_union_clobber_half1.c` | same, half 1 only | **35 / 178** |
+
+The union carrier does not fold away — it materialises +2 instructions (178 vs
+the target's 176) and scrambles the allocation. Banked as
+`rejected/union-constructor-clobber-carrier-costs-2-insns-scores-54.c` and
+`rejected/union-constructor-clobber-half1-only-scores-35.c`. Independently of the
+measurement, the construct is outside the frozen sanctioned-family list and would
+be an AUTO-REJECT under the owner's 2026-08-24 ruling, so it is not a candidate
+route under any score.
+
+### Frontier item 2 CLOSED — the `reg_in_basic_block_p` first-uid escape
+`loop.c:1062` opens with `if (regno_first_uid[regno] != INSN_UID (insn)) return
+0;`. Disjunct 3 of `loop.c:695`–`700` therefore goes false only when the base
+register is MENTIONED at a lower uid than its set. `reg_scan_mark_refs` fills
+`regno_first_uid` from ANY REG occurrence, and every REG occurrence in a compiled
+function comes from either a read or a set of the C object. So the escape needs
+either (a) a second set of the base — the Judge-banned fresh multi-write staging
+carrier, or the existing-local borrow that s17 swept flat at best 19 — or (b) a
+read of the base before its only set, which reads an uninitialised value on the
+first iteration and is a semantic change rather than a spelling. Both routes
+reduce to constructs already disposed of; the disjunct-3 escape carries no new
+search space.
+
+### Disposition gates
+- **Gate (a) canonical-asm scan: FAIL.** `python3 tools/scan_hand_coded.py
+  --single func_8005D554` → `tier=LOW score=0/8`, "no strong hand-coded
+  indicators"; S1–S8 all unchecked. Compiler-shaped code; no grant path.
+- **Gate (b) SOTN-master precedent: FAIL.** The closing construct (a fresh local
+  written more than once purely as a staging carrier for call-argument emission
+  order) has no entry in `docs/reference/sotn-construct-index.md`. The only
+  reassignment hit is `src/st/rcat/e_frozen_half.c:451`, a comment marking a
+  program BUG. The nearest class `new_var_temp` (20 PSX hits, index lines
+  1423–1442) is declaration-shape only — the index cannot show write
+  multiplicity and no sotn-decomp checkout is available here to exhibit one.
+- **cc1psx self-disproof** (driver-banked `state.json.cc1psx_check`,
+  2026-09-10T00:24Z): ours 6, cc1psx 18, `closer: false`.
+
+### What a future session should NOT redo
+The LICM-escape axis is finished: both source-level escapes for an invariant
+single-set base (`may_not_move` via CLOBBER, `regno_first_uid` via earlier
+mention) are now closed with source citations and, for the first, a measurement.
+Do not re-derive them. The only construct ever measured at distance 0 remains the
+Judge-FAILed fresh multi-write carrier; re-activation requires an owner class
+grant or an exhibited sotn-decomp master body for that shape (see the
+re-activation triggers in `docs/grind/decisions.md:26228`).
+
+- [s23] Chassis re-measured this session: candidate.c applied to src/text1b.c scores 6 with target_insns 176, build_insns 176, rules_dropped 0, cheat_asm_stripped 155 (the stripped 155 is the INCLUDE_ASM body on main, not a coercion). The brief's chassis check said 'measurement unavailable'; the ledger's floor of 6 is confirmed.
+
+- [s23] The floor body carries no FAKE construct at all (fake_ablate: nothing to ablate), so no banked kill for this function is contaminated by a carrier occupying the contested pseudo.
+
+- [s23] Gate (a) FAILS: tools/scan_hand_coded.py --single func_8005D554 -> HAND_CODED tier=LOW score=0/8, 'no strong hand-coded indicators', S1-S8 all unchecked (0 multu/mflo pairs, no empty-body branches, 29 spills over 14 distinct regs, max load burst 2, no high-similarity siblings, no BIOS jumptable, no unsaved $sN, no redundant mask-before-shift).
+
+- [s23] Gate (b) FAILS: docs/reference/sotn-construct-index.md (sotn-decomp master aa535002) has no entry for a fresh local written more than once as a staging carrier for call-argument emission order. The only reassignment hit is src/st/rcat/e_frozen_half.c:451, a comment marking a program BUG. The nearest class new_var_temp (20 PSX hits, index lines 1423-1442) records declaration lines only, so write multiplicity cannot be shown, and no sotn-decomp checkout is available locally to exhibit one.
+
+- [s23] cc1psx self-disproof banked by the driver in state.json.cc1psx_check (2026-09-10T00:24Z): ours 6, cc1psx 18, closer=false. The residual is not a compiler-provenance artifact.
+
+- [s23] Exhaustion accounting: 23 sessions, floor flat at 6 since s1, eight distinct modalities (recon, structural, permuter, enumerate, synthesis, solver, forensics, rederive) plus this escalation session; ~2,500 spellings measured; 104 banked rejected forms (two added this session); 45 instance kills and 15 predicate-cited class kills.
+
+- [s23] The residual is two identical 3-instruction rotations, one per loop half: we emit [addiu a2,s4,-K][addiu a0,sp,16][lw v1,gp][move a1,zero], the target emits [addiu a0,sp,16][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K] (asm/funcs/func_8005D554.s 0x4DEB4-0x4DEC0). Registers and frame are byte-identical to the target at 176/176.
+
+- [s23] The only body ever measured at distance 0 is rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c, FAILed by the Judge at FINAL CALL on 2026-09-08 (docs/grind/decisions.md:26224) with a binding ban on fresh multi-write staging carriers; the driver rejects that body on resubmission without review.
+
+- [s23] Disposition entry filed this session at docs/grind/decisions.md:26228, titled '2026-09-09 - func_8005D554 (src/text1b.c) - OWNER-ESCALATION - LADDER EXHAUSTED (non-endgame residual, floor 6): ROTATED' (floor 6 > ENDGAME_LOCK_MAX_FLOOR 5, so the 2026-07-27 standing ruling is not this function's subject, per owner ruling 2026-09-02).
+
+- [s23] src/text1b.c was restored to its pristine INCLUDE_ASM state at the end of the session; the only modified surfaces are docs/grind/decisions.md and memory/grind/func_8005D554/.
