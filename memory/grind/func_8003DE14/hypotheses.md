@@ -1010,3 +1010,111 @@ callee-saved set entirely (global.c:970-975).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s10/d_f1/
+
+## [s11] The +12 weighted-reference lift on the dst pseudo that seats the cursors like the target has an ordinary-C spelling: `dst++` duplicated into each of the three inner-loop arms instead of a shared `advance_dst:` label reached by goto.
+- mechanism: flow.c:2081 does `reg_n_refs[regno] += loop_depth`, and the pixel loop is at depth 3, so one `dst++` (a read and a write of pseudo 109) is 6 weighted references. Replacing the single shared copy with three arm-local copies takes that 6 to 18, i.e. dst's weighted reg_n_refs from 26 to 38 - exactly the count the s10 `dst++; dst--;` round-trip produced. allocno_compare (global.c:635) then ranks dst 38/60 above src 32/61 and find_reg's ascending scan hands the first-allocated cursor $a2. The lift is free of emitted cost because jump2's cross-jump tail-merges the three copies back: the shared tail is `addiu dst,1 / addiu j,1 / slt / bne`, four matching insns against the two-insn minimum at jump.c:2020.
+- probe: tmp/grind/func_8003DE14/s11/a1.c (the s10 chassis with the label and both gotos deleted and `dst++` written into each arm), `sandbox func_8003DE14 --disable all`, plus BB2_ALLOC_DEBUG=1 on the instrumented cc1 (tmp/grind/func_8003DE14/s11/d_a1/stderr.log).
+- result: CONFIRMED. Score 29 / build_insns 173 / target_insns 173 - the same floor and the same instruction count as the s10 form. ALLOCDBG: ord=3 pseudo=109 hardreg=6 nrefs=38 livelen=60 pri=31666 (dst -> $a2) and ord=4 pseudo=108 hardreg=7 nrefs=32 livelen=61 pri=26229 (src -> $a3). No net-zero statement, no dead store, and nothing FAKE-family remains anywhere in the body; the construct is the sanctioned duplicated-statement-into-arms shape (.claude/rules/duplicated-statement-into-arms.md). candidate.c is now this form; the s10 round-trip is retired.
+- verdict: CONFIRMED
+
+## [s11] Compressing the zero-pixel arms to `*dst++ = pixel;` is not a neutral rewrite of `*dst = pixel; src++; dst++;`.
+- mechanism: the post-increment form lets combine fold the store's address and the increment into one addressing computation per arm, which removes the two insns cross-jump would otherwise have merged.
+- probe: tmp/grind/func_8003DE14/s11/a2.c, sandbox --disable all.
+- result: KILLED. 171 build_insns against the target's 173, score 35 (worse than a1's 29). The split store/increment is load-bearing for the instruction budget. Banked as rejected/s11-star-dst-plusplus-in-zero-arms-folds-two-insns-35.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/a2.c
+
+## [s11] Hoisting `complement` out of the inner loop in the C source lowers neither its reference count nor its allocation rank, because loop.c had already hoisted the set into the preheader.
+- mechanism: `blend_base - factor` is loop-invariant in the pixel loop, so LICM moves its set to the preheader before flow_analysis runs; the weighted reference count that reaches allocno_compare is therefore already the hoisted one (set at depth 2 = 2, three multiplies at depth 3 = 9, total 11) whether or not the C writes it outside.
+- probe: tmp/grind/func_8003DE14/s11/b1.c (complement declared after `s32 j = 0;`) and b2.c (declared before it); sandbox plus BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s11/d_b1/stderr.log).
+- result: KILLED. Both score 45 (against a1's 29) at 173 insns. ALLOCDBG on b1 shows complement (pseudo 116) still at nrefs 11, with the live lengths moving to j 56 / complement 55 - the gap narrows to one insn but the order does not flip, and the preheader arithmetic moves enough to cost 16 score. Banked as rejected/s11-complement-hoisted-out-of-inner-loop-45.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1-derived b1/b2 chassis (45 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s11/d_b1/
+
+## [s11] Shortening j's live range by moving `j = 0;` inside `if (total > 0)` closes the j/complement priority gap to one insn but does not flip the seat, and costs two instructions of score elsewhere.
+- mechanism: with j and complement both pinned at nrefs 11, allocno_compare (global.c:635) reduces to a pure live-length comparison, and the tie-break at global.c:652-653 is ascending allocno (j is pseudo 115, complement 116), so j needs only to TIE. Moving the initialisation past the `total > 0` test removes the preheader insns from j's range.
+- probe: tmp/grind/func_8003DE14/s11/jc/C1.c (plus C4 j-declared-first, C6 both, D2 C1 with `while (++j < ...)`); sandbox and BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s11/d_C1/stderr.log).
+- result: KILLED for these spellings. C1 moves j's live_length 59 -> 55 against complement's 54, i.e. pri 6000 vs 6111 - one insn short of the tie that would seat j first - and the score regresses 29 -> 31 because the preheader `move t4,zero` shifts. C4 and C6 also score 31, D2 scores 31. Banked as rejected/s11-j-init-inside-if-livelen-55-still-one-short-31.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s11/d_C1/
+
+## [s11] Duplicating `j++` into the three arms the way `dst++` now is does not reproduce the dst result: cross-jump cannot re-merge the copies.
+- mechanism: the dst duplication merges because everything below `dst++` is identical on all three paths (`addiu j,1 / slt / bne`), which clears the two-matching-insn minimum at jump.c:2020. Once `j++` is itself duplicated, the arms' tails diverge above the increment and the merge window collapses.
+- probe: tmp/grind/func_8003DE14/s11/jd/D3.c, sandbox --disable all.
+- result: KILLED. 175 build_insns against the target's 173 and score 47. Also confirms the lift would have overshot: j at 23 weighted refs prices to 15593, far above complement's 6111 and above several unrelated allocnos, so even a free spelling would have moved j out of the $t4/$t5 band. Banked as rejected/s11-j-increment-duplicated-into-arms-175-insns-47.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/jd/D3.c
+
+## [s11] Reusing j as the outer tail's `new_y` carrier lengthens j's live range past the inner loop but breaks the outer-loop codegen.
+- mechanism: j is dead after the inner loop, so borrowing it for the `((u16*)rect)[1] + ((u16*)rect)[3]` value is a real, sanctioned variable reuse; the intent was to add depth-2 references and extend j's live_length past complement's.
+- probe: tmp/grind/func_8003DE14/s11/jd/D1.c, sandbox --disable all.
+- result: KILLED. Score 41 at 172 build_insns - one instruction short of the target and 12 score worse than a1. Banked as rejected/s11-j-reused-as-new-y-carrier-outer-tail-41.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/jd/D1.c
+
+## [s11] Reshaping the blend arm at source level does not move the residual on the corrected-cursor-seat chassis.
+- mechanism: the blend residual (target insns 88-123) is a register-naming and emission-order difference - the target holds `px` in $a0, the red product in $a1 and the blue product in $t7 where we use $v1/$a1/$v1, and it runs the blue channel's srl/andi/mult before the mflo we run first. If that were an expand-order consequence of the C, permuting the C's channel order, temp naming, staging and operand order would move it.
+- probe: twelve structurally distinct blend bodies swept in one sweep_variants call (tmp/grind/func_8003DE14/s11/bl/B1..B12.c): extractions inlined into the multiplies, products staged into named temps then shifted in the OR, b_src extracted first, b channel computed first, g channel computed first, an OR accumulator (`out |= ...`), `src++` moved to the end of the arm, b's extraction inlined only, `px` instead of `pixel` in the red extraction, a pre-masked `b_ch`, a re-associated OR, and `ch * factor + x_src * complement` operand order.
+- result: KILLED for this spelling space. Best = 29, i.e. no variant beat the incumbent; B1/B3/B7/B8 tie at 29, B9/B10/B11 are 30, and the rest run 34-53. This re-confirms s5's negative blend sweep, now on the chassis where the cursors are correctly seated, and points the blend residual at the scheduler / allocation order rather than at the source shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s11/bl/B1..B12.c
+
+## [s11] The +12 weighted-reference lift on the dst pseudo that seats the cursors like the target has an ordinary-C spelling: dst++ duplicated into each of the three inner-loop arms instead of a shared advance_dst: label reached by goto.
+- mechanism: flow.c:2081 does reg_n_refs[regno] += loop_depth and the pixel loop is at depth 3, so one dst++ (a read and a write of pseudo 109) is 6 weighted references. Replacing the single shared copy with three arm-local copies takes that 6 to 18, i.e. dst's weighted reg_n_refs from 26 to 38 - exactly the count the s10 dst++/dst-- round-trip produced. allocno_compare (global.c:635) then ranks dst 38/60 above src 32/61 and find_reg's ascending scan hands the first-allocated cursor $a2. The lift is free of emitted cost because jump2's cross-jump tail-merges the three copies back: the shared tail is addiu dst,1 / addiu j,1 / slt / bne, four matching insns against the two-insn minimum at jump.c:2020.
+- probe: tmp/grind/func_8003DE14/s11/a1.c (the s10 chassis with the label and both gotos deleted and dst++ written into each arm), sandbox func_8003DE14 --disable all, plus BB2_ALLOC_DEBUG=1 on the instrumented cc1 (tmp/grind/func_8003DE14/s11/d_a1/stderr.log).
+- result: CONFIRMED. Score 29 / build_insns 173 / target_insns 173 - the same floor and the same instruction count as the s10 form. ALLOCDBG: ord=3 pseudo=109 hardreg=6 nrefs=38 livelen=60 pri=31666 (dst -> $a2) and ord=4 pseudo=108 hardreg=7 nrefs=32 livelen=61 pri=26229 (src -> $a3). No net-zero statement, no dead store and nothing FAKE-family remains anywhere in the body; the construct is the sanctioned duplicated-statement-into-arms shape (.claude/rules/duplicated-statement-into-arms.md). memory/grind/func_8003DE14/candidate.c is now this form and the s10 round-trip is retired.
+- verdict: CONFIRMED
+
+## [s11] Compressing the zero-pixel arms to *dst++ = pixel; is not a neutral rewrite of *dst = pixel; src++; dst++; on the a1 chassis.
+- mechanism: The post-increment form lets combine fold the store's address and the increment into one addressing computation per arm, which removes the two insns cross-jump would otherwise have merged, so the emitted stream falls two instructions below the target's 173.
+- probe: tmp/grind/func_8003DE14/s11/a2.c, sandbox --disable all.
+- result: KILLED. 171 build_insns against the target's 173, score 35 (a1 is 29). The split store/increment is load-bearing for the instruction budget. Banked as memory/grind/func_8003DE14/rejected/s11-star-dst-plusplus-in-zero-arms-folds-two-insns-35.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/a2.c
+
+## [s11] Hoisting complement out of the inner loop in the C source lowers neither its reference count nor its allocation rank on the a1 chassis, because loop.c had already hoisted the set into the preheader.
+- mechanism: blend_base - factor is loop-invariant in the pixel loop, so LICM moves its set to the preheader before flow_analysis runs; the weighted reference count that reaches allocno_compare is therefore already the hoisted one (set at depth 2 = 2, three multiplies at depth 3 = 9, total 11) whether or not the C writes it outside.
+- probe: tmp/grind/func_8003DE14/s11/b1.c (complement declared after s32 j = 0;) and b2.c (declared before it); sandbox plus BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s11/d_b1/stderr.log).
+- result: KILLED. Both score 45 (a1 is 29) at 173 insns. ALLOCDBG on b1 shows complement (pseudo 116) still at nrefs 11, with the live lengths moving to j 56 / complement 55 - the gap narrows to one insn but the order does not flip, and the preheader arithmetic moves enough to cost 16 score. Banked as rejected/s11-complement-hoisted-out-of-inner-loop-45.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1-derived b1/b2 chassis (45 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s11/d_b1/
+
+## [s11] Shortening j's live range by moving j = 0; inside if (total > 0) closes the j/complement priority gap to one insn but does not flip the seat, and costs two instructions of score elsewhere.
+- mechanism: With j and complement both pinned at nrefs 11, allocno_compare (global.c:635) reduces to a pure live-length comparison, and the tie-break at global.c:652-653 is ascending allocno (j is pseudo 115, complement 116), so j needs only to TIE. Moving the initialisation past the total > 0 test removes the preheader insns from j's range.
+- probe: tmp/grind/func_8003DE14/s11/jc/C1.c, plus C4 (j declared first), C6 (both) and D2 (C1 with while (++j < ...)); sandbox and BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s11/d_C1/stderr.log).
+- result: KILLED for these spellings. C1 moves j's live_length 59 -> 55 against complement's 54, i.e. pri 6000 vs 6111 - one insn short of the tie that would seat j first - and the score regresses 29 -> 31 because the preheader move t4,zero shifts. C4, C6 and D2 all score 31. Banked as rejected/s11-j-init-inside-if-livelen-55-still-one-short-31.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s11/d_C1/
+
+## [s11] Duplicating j++ into the three arms the way dst++ now is does not reproduce the dst result on the a1 chassis: cross-jump cannot re-merge the copies.
+- mechanism: The dst duplication merges because everything below dst++ is identical on all three paths (addiu j,1 / slt / bne), which clears the two-matching-insn minimum at jump.c:2020. Once j++ is itself duplicated the arms' tails diverge above the increment and the merge window collapses.
+- probe: tmp/grind/func_8003DE14/s11/jd/D3.c, sandbox --disable all.
+- result: KILLED. 175 build_insns against the target's 173 and score 47. It also confirms the lift would have overshot: j at 23 weighted refs prices to 15593, far above complement's 6111 and above several unrelated allocnos, so even a free spelling would have moved j out of the $t4/$t5 band. Banked as rejected/s11-j-increment-duplicated-into-arms-175-insns-47.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/jd/D3.c
+
+## [s11] Reusing j as the outer tail's new_y carrier lengthens j's live range past the inner loop but breaks the outer-loop codegen on the a1 chassis.
+- mechanism: j is dead after the inner loop, so borrowing it for the ((u16*)rect)[1] + ((u16*)rect)[3] value is a real, sanctioned variable reuse; the intent was to add depth-2 references and push j's live_length past complement's so the pair flips.
+- probe: tmp/grind/func_8003DE14/s11/jd/D1.c, sandbox --disable all.
+- result: KILLED. Score 41 at 172 build_insns - one instruction short of the target and 12 score worse than a1. Banked as rejected/s11-j-reused-as-new-y-carrier-outer-tail-41.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/jd/D1.c
+
+## [s11] Reshaping the blend arm at source level does not move the residual on the corrected-cursor-seat 29 chassis: twelve structurally distinct spellings all score 29 or worse.
+- mechanism: The blend residual (target insns 88-123) is a register-naming and emission-order difference - the target holds px in $a0, the red product in $a1 and the blue product in $t7 where we use $v1/$a1/$v1, and it runs the blue channel's srl/andi/mult before the mflo we run first. If that were an expand-order consequence of the C, permuting the C's channel order, temp naming, staging and operand order would move it.
+- probe: Twelve blend bodies swept in one sweep_variants call (tmp/grind/func_8003DE14/s11/bl/B1..B12.c): extractions inlined into the multiplies, products staged into named temps then shifted in the OR, b_src extracted first, b channel computed first, g channel computed first, an OR accumulator, src++ moved to the end of the arm, b's extraction inlined only, px instead of pixel in the red extraction, a pre-masked b_ch, a re-associated OR, and ch * factor + x_src * complement operand order.
+- result: KILLED for this spelling space. Best = 29, i.e. no variant beat the incumbent; B1/B3/B7/B8 tie at 29, B9/B10/B11 are 30 and the rest run 34-53. This re-confirms s5's negative blend sweep, now on the chassis where the cursors are correctly seated, and points the blend residual at the scheduler / allocation order rather than at the source shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s11/bl/B1..B12.c

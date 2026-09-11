@@ -1331,3 +1331,139 @@ for the new floor).
 - [s10] sbs2.py aligned diff of the new candidate against the target object: target insns 0-69 and 134-172 are byte-exact. The whole residual is the blend block - the j/complement pair seated $t5/$t4 where the target has $t4/$t5, plus the blend arm's temp naming ($a0/$a1/$v0/$v1) and the mflo/srl interleave (the target runs the blue channel's srl/andi/mult before the first mflo; we run it after).
 
 - [s10] src/code6cac_c2.c was restored to HEAD (INCLUDE_ASM) before the session ended; the only working-tree changes are under memory/grind/func_8003DE14/ and tmp/.
+
+## s11 (rederive) — the reference lift has an ordinary-C spelling; the j/complement seat is priced to a single insn
+
+### THE HEADLINE: the s10 FAKE round-trip is retired
+
+`memory/grind/func_8003DE14/candidate.c` is now form `a1`
+(`tmp/grind/func_8003DE14/s11/a1.c`, also banked as
+`chassis_a1_ordinary_arms_29.c`): the f1 chassis with the shared
+`advance_dst: dst++;` label REPLACED by an arm-local `dst++` in each of the
+three inner-loop arms. No label, no goto to it, no net-zero statement pair.
+
+    score 29 / build_insns 173 / target_insns 173   (identical to the s10 form)
+    ALLOCDBG (tmp/grind/func_8003DE14/s11/d_a1/stderr.log):
+      ord=3 pseudo=109 hardreg=6 nrefs=38 livelen=60 pri=31666   (dst -> $a2)
+      ord=4 pseudo=108 hardreg=7 nrefs=32 livelen=61 pri=26229   (src -> $a3)
+
+Mechanism, measured not guessed: flow.c:2081 weights each reference by
+loop_depth and the pixel loop is depth 3, so ONE `dst++` is 2 occurrences x 3 =
+6 weighted refs. One shared copy (6) becomes three arm-local copies (18), i.e.
+dst's weighted `reg_n_refs` goes 26 -> 38 — bit-for-bit the count the s10
+`dst++; dst--;` round-trip produced. jump2's cross-jump then tail-merges the
+three copies back (jump.c:2020 needs >= 2 matching insns; the merged tail here
+is `addiu dst,1 / addiu j,1 / slt / bne`, so it qualifies) and the emitted
+stream stays at 173 insns. This is the sanctioned duplicated-statement-into-arms
+shape (.claude/rules/duplicated-statement-into-arms.md), not the dead-store
+family the round-trip fell into.
+
+The obvious compression of the same body is NOT equivalent: writing the zero
+arms as `*dst++ = pixel;` instead of `*dst = pixel; src++; dst++;` folds two
+insns away — 171 insns, score 35
+(`rejected/s11-star-dst-plusplus-in-zero-arms-folds-two-insns-35.c`). The split
+store/increment is load-bearing.
+
+### The j/complement seat, priced exactly
+
+`allocno_compare` (global.c:635-648) is
+`pri = floor_log2(nrefs) * nrefs / live_length * 10000 * size`, and the
+tie-break at global.c:652-653 is `*v1 - *v2` — ascending allocno, i.e. ascending
+pseudo number. j is pseudo 115 and complement is pseudo 116, so **a TIE seats j
+first, which is the target's order.**
+
+Measured across every form tried this session, j and complement ALWAYS carry the
+same `nrefs` (11) and j's `live_length` is ALWAYS 1..5 greater than
+complement's:
+
+    form          j (115)          complement (116)     seat
+    a1            11 / 59  5593    11 / 54  6111        wrong ($t5/$t4)
+    b1            11 / 56  5892    11 / 55  6000        wrong, score 45
+    C1            11 / 55  6000    11 / 54  6111        wrong, score 31
+
+nrefs 11 decomposes as: set at depth 2 (weight 2) + `j++` read/write at depth 3
+(6) + trip test at depth 3 (3) for j; set at depth 2 (2) + three multiplies at
+depth 3 (9) for complement. Both are pinned there by the arithmetic, and every
+single-step change is a multiple of 3 (depth-3) or 2 (preheader):
+  - j nrefs 12 -> 3*12/59 = 6101, still BELOW complement's 6111 (10 short);
+  - j nrefs 13 -> 6610, ABOVE — needs exactly +2 weighted, i.e. one preheader
+    occurrence, and no ordinary-C preheader reference of j is known that is not
+    a dead store;
+  - j nrefs 14 (one more depth-3 occurrence) -> 7118, above;
+  - complement nrefs 10 -> 5555, below j — needs -1 weighted, which no
+    depth-multiple can deliver;
+  - live_length: j needs to REACH complement's, i.e. lose one more insn than C1
+    already did, or complement needs to gain 5 over a1.
+
+So the whole sub-problem is now a **one-insn live-length gap or a +2 weighted
+reference**, and it is arithmetic, not guesswork.
+
+### What was measured and did not move it
+
+  - complement hoisted out of the inner loop in C (b1/b2): LICM had already
+    hoisted it, so nrefs stays 11; live lengths become 56/55 (gap 1, still
+    wrong) and the score REGRESSES to 45 because the preheader arithmetic moves.
+    `rejected/s11-complement-hoisted-out-of-inner-loop-45.c`.
+  - `s32 j;` at the top with `j = 0;` moved inside `if (total > 0)` (C1):
+    j live_length 59 -> 55, gap down to ONE insn, but the score regresses to 31
+    (the preheader `move t4,zero` shifts).
+    `rejected/s11-j-init-inside-if-livelen-55-still-one-short-31.c`.
+  - C1 + `while (++j < ...)` (D2): 31. `while (++j < ...)` alone (C3): 29, seat
+    unchanged.
+  - j declared first among the outer-body locals (C4) / C4+C1 (C6): 31.
+  - j reused as the outer tail's `new_y` carrier (D1): 41 / 172 insns.
+    `rejected/s11-j-reused-as-new-y-carrier-outer-tail-41.c`.
+  - `j++` duplicated into the three arms the way `dst++` now is (D3): cross-jump
+    does NOT re-merge (the arms diverge above the increment) — 175 insns,
+    score 47. `rejected/s11-j-increment-duplicated-into-arms-175-insns-47.c`.
+  - `blend_base` literalised to 0x1000 (C5): 29, neutral.
+  - complement declared in the outer body and assigned inside the loop (D4): 29,
+    neutral. Multiplies written `complement * x_src` (D6): 29, neutral.
+
+### The blend block is not a source-shape question at this level
+
+Twelve structurally distinct spellings of the blend arm were swept on the NEW
+(correct-cursor-seat) 29 chassis — inlined extractions, staged products,
+channel reorder (b-first, g-first, b-computed-first), an OR accumulator, `pixel`
+vs `px` in the red extraction, a pre-masked `b_ch`, re-associated OR, and
+swapped `ch*factor + x_src*complement` operand order
+(`tmp/grind/func_8003DE14/s11/bl/`, sweep_variants). **Best = 29, i.e. nothing
+beat the incumbent; four spellings tie at 29 and the rest are 30-53.** This
+re-confirms s5's negative sweep on the corrected-seat chassis: the blend
+residual (target 88-123, the $a0/$a1/$v0/$v1/$t7 naming plus the mflo/srl
+interleave) does not move under source-level reshaping of that block and is a
+scheduler / allocation-order question.
+
+### s11 facts
+
+- [s11] The +12 weighted-reference lift on the dst pseudo that seats the cursors like the target has an ORDINARY-C spelling: `dst++` duplicated into each of the three inner-loop arms in place of the shared `advance_dst:` label. Score 29 / 173 insns, ALLOCDBG dst(109) -> $a2 nrefs 38 and src(108) -> $a3 nrefs 32 — identical seat and identical instruction count to the s10 `dst++; dst--;` round-trip, with no net-zero statement anywhere in the body. candidate.c is now this form.
+- [s11] jump2's cross-jump re-merges the three arm-local `dst++` tails (the merged tail is 4 matching insns, well over the jump.c:2020 minimum of 2), which is why the reference lift is free of emitted cost. The same duplication applied to `j++` (D3) does NOT re-merge — the arms diverge above the increment — and costs 2 insns (175, score 47).
+- [s11] `*dst++ = pixel;` in the zero-pixel arms is NOT a neutral rewrite of `*dst = pixel; src++; dst++;`: it folds two insns away (171 insns, score 35). The split store/increment is load-bearing for the 173-insn budget.
+- [s11] allocno_compare (global.c:635-648) is pri = floor_log2(nrefs)*nrefs/live_length*10000*size, and its tie-break (global.c:652-653) is ascending allocno, i.e. ascending pseudo number. j is pseudo 115 and complement is pseudo 116, so an exact TIE on (nrefs, live_length) seats j first — which is the target's $t4/$t5 order. The sub-problem does not need j to WIN, only to TIE.
+- [s11] j and complement carry the same nrefs (11) on every form measured, and j's live_length is always 1..5 longer than complement's: a1 59/54, b1 56/55, C1 55/54. The C1 spelling (`s32 j;` outer, `j = 0;` inside `if (total > 0)`) closes the gap to ONE insn but costs 2 score elsewhere.
+- [s11] The reference arithmetic for the j/complement flip is exact: j at nrefs 12 gives 6101 and still loses to complement's 6111; j at 13 (one preheader occurrence, +2 weighted) gives 6610 and wins; j at 14 (one depth-3 occurrence) gives 7118 and wins; complement at 10 gives 5555 and loses. Every depth-3 change is a multiple of 3 and every preheader change a multiple of 2, so the reachable lifts are +2, +3, +6, ... — +2 is reachable in principle but no ordinary-C preheader reference of j is known that is not a dead store.
+- [s11] Hoisting `complement` out of the inner loop in C does not change its reg_n_refs (LICM had already hoisted the set into the preheader; nrefs stays 11) and regresses the score to 45 by moving the preheader arithmetic.
+- [s11] Twelve structurally distinct blend-arm spellings swept on the corrected-seat 29 chassis (tmp/grind/func_8003DE14/s11/bl/): best 29, i.e. none beat the incumbent. This re-confirms s5's negative blend sweep on the new chassis — the blend residual is a scheduler/allocation-order question, not a source-shape one.
+- [s11] src/code6cac_c2.c was restored to HEAD (INCLUDE_ASM) before the session ended; the only working-tree changes are under memory/grind/func_8003DE14/ and tmp/.
+
+- [s11] The floor stays at 29 / 173 insns but the FORM changed: memory/grind/func_8003DE14/candidate.c is now form a1, which carries no net-zero statement pair, no dead store and no FAKE-family construct. The s10 candidate's dst++/dst-- round-trip is retired and banked knowledge only.
+
+- [s11] The construct that replaces it is one real statement (dst++) written into each of the three inner-loop arms instead of a shared advance_dst: label - the duplicated-statement-into-arms shape described verbatim in .claude/rules/duplicated-statement-into-arms.md, including its 'cross-jump re-merges the copies to identical bytes and the effect is a reg_n_refs priority lift' clause. A submitting session must still read that rule end-to-end for its annotation prerequisites.
+
+- [s11] ALLOCDBG on a1 (tmp/grind/func_8003DE14/s11/d_a1/stderr.log): ord=3 pseudo=109 hardreg=6 nrefs=38 livelen=60 pri=31666 (dst -> $a2); ord=4 pseudo=108 hardreg=7 nrefs=32 livelen=61 pri=26229 (src -> $a3). The target's cursor seat at the target's own instruction count, from ordinary C.
+
+- [s11] allocno_compare is pri = floor_log2(nrefs) * nrefs / live_length * 10000 * size (tools/gcc-2.7.2/global.c:635-648) and its tie-break is *v1 - *v2, i.e. ascending allocno = ascending pseudo number (global.c:652-653). j is pseudo 115 and complement is pseudo 116, so an exact TIE on (nrefs, live_length) seats j first - which is the target's $t4/$t5 order. The j/complement sub-problem does not need j to win, only to tie.
+
+- [s11] j and complement carry identical nrefs (11) on every form measured this session, and j's live_length is always 1..5 longer than complement's: a1 59/54 (pri 5593 vs 6111), b1 56/55 (5892 vs 6000), C1 55/54 (6000 vs 6111). nrefs 11 decomposes as set-at-depth-2 (2) + j++ read/write at depth 3 (6) + trip test at depth 3 (3) for j, and set-at-depth-2 (2) + three multiplies at depth 3 (9) for complement.
+
+- [s11] The reference arithmetic for the j/complement flip is exact: j at nrefs 12 gives 6101 and STILL loses to complement's 6111; j at 13 (one preheader occurrence, +2 weighted) gives 6610 and wins; j at 14 (one depth-3 occurrence) gives 7118 and wins; complement at 10 gives 5555 and loses. Every depth-3 change is a multiple of 3 and every preheader change a multiple of 2, so the reachable lifts are +2, +3, +6, ...
+
+- [s11] jump2's cross-jump re-merges the three arm-local dst++ tails (four matching insns against the two-insn minimum at jump.c:2020), which is exactly why the reference lift is free of emitted cost. The same duplication applied to j++ does NOT re-merge - the arms diverge above the increment - and costs two insns (175 build_insns, score 47).
+
+- [s11] *dst++ = pixel; in the zero-pixel arms folds two insns away (171 build_insns, score 35). The split *dst = pixel; ... dst++; is load-bearing for the 173-insn budget.
+
+- [s11] Hoisting complement out of the inner loop in C does not change its reg_n_refs (LICM had already hoisted the set; nrefs stays 11) and regresses the score to 45 by moving the preheader arithmetic.
+
+- [s11] Twelve structurally distinct blend-arm spellings on the corrected-seat 29 chassis all score 29 or worse - four tie at 29, the rest are 30-53. Combined with s5's earlier negative sweep on the old chassis, the blend residual is not a source-shape question at this level.
+
+- [s11] src/code6cac_c2.c was restored to HEAD (INCLUDE_ASM) before the session ended; the only working-tree changes are under memory/grind/func_8003DE14/ and tmp/.
