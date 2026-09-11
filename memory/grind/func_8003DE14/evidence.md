@@ -3952,3 +3952,117 @@ extender-free chassis at 8; the best body with only #1 is 5 - either the control
 - [s31] FAKE inventory of the 4-point candidate: (1) s21 j chain extender `((s32)dst_buf + j) - j` (3 pts), (2) the new `h` latch-bound stage (1 pt). Both now carry /* FAKE: what + mechanism + lever-exhaustion */ annotations in candidate.c; the s21 extender was previously un-annotated.
 
 - [s31] METHOD: tools/ra_solver/inverse_compose.py classify prints its 'same instructions, different registers' rows as a sorted multiset, not in program order - order must be read from objdump of tmp/sandbox/<func>/<stem>.o.
+
+## s32 (FORENSICS) - floor 4 -> 2; the latch group is CLOSED, the pass was `sched`, not local-alloc
+
+Chassis at dispatch: memory/grind/func_8003DE14/candidate.c (s29 target map +
+s21 j chain extender + s31 `h` latch stage) re-measured at 4/173 this session
+before any edit.  Final body: 2/173, verified with the annotated candidate
+applied to src/code6cac_c2.c (`sandbox func_8003DE14 --disable all` -> score 2,
+build_insns 173).
+
+### s31's pass attribution was wrong, and the dump says so in one read
+s31 banked "emission order == RTL birth order end to end; no pass reorders the
+two latch loads".  That is true only of the bodies s31 happened to compile.
+Body c04 of this session (`w = rect[2]; total = rect[3];` staged as two
+statements in TARGET order, then `j < w * total`) has, in .combine:
+
+    (insn 298 ... (sign_extend (mem/s:HI (plus (reg 72) (const_int 4)))))   ; rect[2]
+    (insn 303 ... (sign_extend (mem/s:HI (plus (reg 72) (const_int 6)))))   ; rect[3]
+    (insn 308 ... (mult (reg 117) (reg 101)))
+
+and in .lreg (the next dump, i.e. after the FIRST scheduling pass and after
+local-alloc) the chain is 303 -> 298 -> 308.  The FIRST scheduling pass
+(tools/gcc-2.7.2/sched.c, `schedule_block`/`rank_for_schedule`) reorders them;
+the second pass, reorg and gas all preserve whatever sched produced.  Dumps:
+tmp/grind/func_8003DE14/s32/dumps/code6cac_c2.{combine,sched,lreg,greg,sched2,dbr}.
+
+### The real lever: block-locality of the destination pseudo
+Measured on the 4-point chassis, with the latch written as a multiply of two
+halfword reads, the outcome is decided by WHICH operand's destination pseudo is
+referenced in more than one basic block (local-alloc.c:470-476 skips any pseudo
+with reg_basic_block < 0; global.c seats it after local-alloc):
+
+    rect[3] escapes, rect[2] block-local  -> regs TARGET ($v0 on off4, $v1 on
+                                              off6, `mult $v0,$v1`), order WRONG
+                                              (off6 emitted first)          = 4
+    rect[2] escapes, rect[3] block-local  -> order TARGET (off4 emitted first),
+                                              regs WRONG ($v1 on off4)      = 5
+    both block-local                      -> the s30/s31 shapes             = 5
+    both escape via the row epilogue      -> loop.c/CSE delete the latch load
+                                              (163 insns)                   = 28
+
+The escaping pseudo's load is emitted FIRST and the block-local one takes $v0.
+The target needs off4 emitted first AND in $v0 - i.e. the OTHER pseudo (off6 /
+rect[3]) escaped while its load stays inside the latch block.
+
+### What closes it: a staging local whose second reference is inside the loop
+`h` carries two values: the fast arm's `target_color` on its way to the store
+(`h = target_color; *dst++ = h;`) and the latch bound's rect[3]
+(`} while (j < rect[2] * (h = rect[3]));`).  Both references are inside the
+inner loop (two blocks at loop depth 3), so `h` is non-block-local without the
+latch load ever leaving the latch and without any loop-invariant initialiser for
+loop.c to hoist.  4 -> 2: the two `lh` rows AND the `mult` row are all target.
+
+Distinguishing measurements (all on the 4-point chassis, 173 insns unless noted):
+  - e05 (fast-arm `h` + `(h = rect[3])` inline in the test)              = 2
+  - e04 (same, multiply operands reversed)                               = 4
+  - e06 (fast-arm `h`, rect[2] staged through `total` instead)           = 5
+  - e01/e02/e03 (fast-arm or zero-arm `h` PLUS rect[2] staged)           = 6
+  - h01 (the EXISTING local `total` borrowed instead of a fresh `h`)     = 4
+  - h02 (`h` staged in the blend path's zero-pixel arm instead)          = 3
+  - a03/a07/b01/b06/b07/c01/c04/c05 (other escape spellings)             = 4
+  - a01 (h reused as the ROW-TOP height carrier) = 7: it flips the ROW-TOP pair
+    the same way, costing 3 rows there while the latch is unchanged.
+  - a02 (h split decl/assign at row top) = 124 at 68 insns (loop collapse).
+  - b02 (h carrying `total` across the guard) = 123 at 64 insns.
+
+### Side-effect operands are evaluated FIRST (a fresh, reusable fact)
+`j < rect[2] * (total = rect[3])` emits the `total = rect[3]` load BEFORE the
+rect[2] load: expand evaluates the operand carrying the side effect first, so an
+inline assignment cannot be used to make an operand "born second".  Two inline
+assignments (`(w = rect[2]) * (h = rect[3])`) do evaluate left to right.
+
+### The red group did not move under the new lever
+The remaining 2 rows are the unchanged red shift (`sra $v0,$v0,15` /
+`andi $a1,$v0,31` vs target `sra $a1,$v0,15` / `andi $a1,$a1,31`).  On the
+2-point chassis: hoisting `sum`'s declaration to the guard block is FREE (still
+2); making `sum` cross-block through the blend path's zero-pixel arm = 3, the
+fast arm's zero branch = 3, `rp` cross-block = 3 - and in every case the `sra`
+still writes $v0, i.e. the combine_regs tie to the dying `sum` survives the
+escape.  Routing the shift's own destination through a cross-block carrier
+costs far more: `h` = 20, `total` = 16, shift-then-mask through `h` = 20,
+`total` chain = 35, red sum carried by `total` = 5.
+
+- [s32] Chassis re-measured at dispatch (the brief printed "measurement
+  unavailable"): s31 candidate.c = 4/173 on HEAD 2026-09-11; the s32 body =
+  2/173 with the annotated candidate applied to src.
+
+- [s32] METHOD: tmp/grind/func_8003DE14/s32/rowdiff.py renders the target
+  asm/funcs/*.s and the sandbox object into one normalised instruction list and
+  prints a POSITIONAL difflib diff - the missing tool behind s31's sorted-multiset
+  misreading.  Use it (not inverse_compose classify) whenever order is in question.
+
+- [s32] The instrumented cc1 with BB2_PRIO_DEBUG / BB2_RANK_DEBUG is
+  tools/gcc-2.7.2/cc1; engine/buildconfig.py's B.CC1 points at
+  tools/gcc-2.7.2/build/cc1 (uninstrumented), so a dump script that uses B.CC1
+  prints no diagnostics - override the path explicitly
+  (tmp/grind/func_8003DE14/s32/run_dump_prio.sh does).
+
+- [s32] Chassis re-measured at dispatch (the brief printed 'measurement unavailable'): the s31 candidate is 4/173 on HEAD 2026-09-11; the s32 body is 2/173, verified with the annotated candidate applied to src/code6cac_c2.c (sandbox func_8003DE14 --disable all -> score 2, build_insns 173).
+
+- [s32] PASS ATTRIBUTION (dumps, not inference): the two latch halfword loads are reordered by the FIRST scheduling pass. For body c04 the .combine dump has insn 298 (offset 4) before insn 303 (offset 6) and the .lreg dump has 303 before 298; .sched, .sched2, .greg and .dbr all carry sched's order onward. This overturns s31's banked 'emission order == birth order end to end'.
+
+- [s32] The order/seat outcome of the latch is a function of ONE property - whether the operand's destination pseudo is referenced in more than one basic block (local-alloc.c:470-476). rect[3] escaping gives target registers with wrong order (4); rect[2] escaping gives target order with inverted registers (5); both block-local is the s30/s31 5; both escaping via the epilogue collapses the loop (28 at 163 insns).
+
+- [s32] The closing form gives rect[3]'s carrier its second reference INSIDE the inner loop: `h = target_color; *dst++ = h;` in the i == count-1 fast arm, and `} while (j < rect[2] * (h = rect[3]));` as the latch. 2/173, with both `lh` rows and the `mult` row target-identical.
+
+- [s32] Reusable codegen fact: an operand carrying a side effect (an embedded assignment) is EXPANDED FIRST regardless of operand position, so `a * (x = b)` emits b's load before a's; two embedded assignments expand left to right.
+
+- [s32] The remaining 2 rows are the unchanged red shift pair (ours `sra $v0,$v0,15` / `andi $a1,$v0,31`; target `sra $a1,$v0,15` / `andi $a1,$a1,31`). Hoisting `sum`'s declaration to the guard block is byte-free on this chassis, which is a free structural degree of freedom for the next session.
+
+- [s32] METHOD: tmp/grind/func_8003DE14/s32/rowdiff.py normalises asm/funcs/func_8003DE14.s and the sandbox object into one instruction list and prints a POSITIONAL difflib diff - the tool that was missing when s31 misread inverse_compose classify's sorted multiset as program order.
+
+- [s32] TOOLING: the instrumented cc1 carrying BB2_PRIO_DEBUG / BB2_RANK_DEBUG is tools/gcc-2.7.2/cc1, but engine/buildconfig.py's B.CC1 is tools/gcc-2.7.2/build/cc1 (uninstrumented), so any dump script that takes cc1 from B.CC1 prints no diagnostics; tmp/grind/func_8003DE14/s32/run_dump_prio.sh overrides it.
+
+- [s32] FAMILY QUESTION LEFT OPEN (not a submission this session): the 2-point body's `h` is an INVENTED local borrowed for a second value, which the family-selection table excludes from plain variable-reuse (bound 2) and places closest to staged-value-reused-variable (.claude/rules/staged-value-reused-variable.md); the existing-local spelling (borrowing `total`) measures 4, not 2.

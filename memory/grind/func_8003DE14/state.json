@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 31,
- "current_modality": "structural",
+ "session_count": 32,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -189,68 +189,34 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Floor 5 -> 4: the latch group splits into TWO questions (birth order decides which load owns $v0; source operand order decides what the multiply prints), and staging rect[3] through a local at the row"
+  },
+  {
+   "session": 32,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Floor 4 -> 2: the latch group is CLOSED. The pass that orders the two halfword loads is the FIRST scheduling pass (not birth order, as s31 banked), and the lever is block-locality of the destination p"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's latch seats its FIRST-born load in $v0, which means the rect[3] load escaped local-alloc: find the C form in which the rect[3] halfword pseudo is referenced in a second block (or dies twice) WHILE its load insn stays inside the latch block.",
-   "mechanism": "local-alloc.c:470-476 gives reg_qty = -1 (skip) to any pseudo with reg_basic_block < 0 or reg_n_deaths > 1; global.c then seats it after local-alloc has already handed the block's surviving quantity $v0 - which is exactly the target's pairing (off4 = $v0 born first, off6 = $v1). s31 killed the two obvious spellings: staging the value at the top of the do-body moves the load out of the block (10), and consuming it in the epilogue needs a loop-invariant initialiser that loop.c hoists (115).",
-   "next_probe": "Run tools/ra_solver/extract.py + local_alloc.py on the 4-point body and confirm pseudo 152's reg_basic_block / reg_n_deaths, then spell forms where the staged `h` is written in the latch block but read on a path that does NOT require a dominating initialiser: `h` assigned in BOTH the guard-skip path and the latch via the existing epilogue statement (e.g. the epilogue's new_y computed from h only inside the `total > 0` half of an if/else whose other half already re-reads rect[3]), and forms where h is written twice inside the loop (two assignments -> reg_n_deaths 2) with the second write consumed by the exit test. The signal to read is whether pseudo 152 still appears in local_alloc.py's block-11 rows, not the score."
+   "hypothesis": "The red pair closes if the `sra`'s destination is the quantity combine_regs ties to a DIFFERENT dying source - i.e. if the shift consumes a value whose pseudo dies there while the three-way `sum` stays live past it without re-carriering a channel.",
+   "mechanism": "combine_regs (local-alloc.c:1854-1897) ties a destination to its dying source; ours inherits $v0 from the shared `sum`, the target's `sra` writes $a1 (r_src's seat). s30 measured that every re-carriering of a channel costs ~30; s32 measured that making `sum`, `rp` or the destination cross-block costs 1-20 and never moves the seat.",
+   "next_probe": "On the 2-point chassis (where hoisting `sum`'s declaration is free), sweep forms that give the RED channel's `sum` one extra reference that is consumed AFTER the shift without a new insn - e.g. the blue channel's accumulation written as `sum = px * complement + b * factor` reusing the red sum's register-dead slot, or the red mask folded so the sum's last read is the andi - and capture BB2_QTY_DEBUG on each to see which quantity the shift's destination is combined into."
   },
   {
-   "hypothesis": "The red group's two rows move if the three-way `sum` does not die at the red `sra` - and the s31 staging lever is a new way to ask that question, since staging changes which pseudo is the dying source combine_regs sees.",
-   "mechanism": "combine_regs (local-alloc.c:1854-1897) ties the sra's destination to its dying source; ours is the shared `sum` (owner of $v0), the target's is r_src's dead seat $a1. s30 killed ten forms that break the tie by re-carriering a channel (each ~30 pts because the three-way sum is load-bearing); staging does not re-carrier anything, it only adds a statement boundary.",
-   "next_probe": "On the 4-point chassis, sweep forms that stage the red channel's operands rather than its result - `t = sum >> 15;` with the mask left in the or-chain, `rp` staged after the multiply, and the red product staged so the sum's last read is the andi rather than the sra - and capture BB2_QTY_DEBUG on each to see which quantity the shift's destination is combined into."
+   "hypothesis": "The 2-point body can be re-spelled with an EXISTING local as the staging carrier (or with the staged value being the one the fast arm already needs), which would move it out of the invented-local-borrow quadrant and into a sanctioned family.",
+   "mechanism": "The family-selection table's bound 2 excludes inventing a local to borrow; staged-value-reused-variable (.claude/rules/staged-value-reused-variable.md) sanctions a real, immediately-used value staged through an EXISTING currently-dead local, FAKE-annotated with lever exhaustion.",
+   "next_probe": "Read .claude/rules/staged-value-reused-variable.md end to end, then sweep carriers that already exist at the fast-arm store (target_color's own local, the `total` borrow measured at 4, `factor`/`complement` where dead) with the latch spelled `(X = rect[3])`; if no existing-local spelling reaches 2, emit a ruling-request asking whether the fresh-`h` two-site stage is staged-value-reused-variable or a first-reach family."
   },
   {
-   "hypothesis": "A third source-level reference to the rect[2] latch pseudo inside block 11 (refs 6 -> 9, priority 90000) would win $v0 for the FIRST-born load without any local-alloc escape, if one can be spelled without adding an instruction.",
-   "mechanism": "pri = floor_log2(refs)*refs*size/(death-birth)*10000 (local-alloc.c:1660): 3 references at loop depth 3 give 9 weighted refs and 3*9/2 = 135000, above the second-born's 120000. s30 named this escape; s31 confirmed the block contains only j++, the two loads, the mult, mflo, slt and bnez, so there is no existing insn to carry the extra reference.",
-   "next_probe": "Enumerate exit-test spellings in which the rect[2] value appears twice in ONE insn or in an insn the target already has - e.g. bounds written as a single comparison whose RTL folds two uses into one pattern - and check reg_n_refs in the .lreg header (`used N times`) rather than the score; abandon the route if no spelling reaches 9 without changing the insn count."
+   "hypothesis": "The s21 j chain extender (3 pts, FAKE) is removable on the s32 chassis, because the block-locality lever may also be what the extender was emulating for the $t4/$t5 seat pair.",
+   "mechanism": "The extender lifts j's allocno priority via reg_n_refs counted before combine folds the +j/-j pair; the new lever manipulates reg_basic_block instead, which global.c also consults when ordering allocnos.",
+   "next_probe": "Measure the 2-point body with the extender removed (the extender-free chassis was 8 at s29), then sweep staging spellings that give `j` a second in-loop reference in another block the way `h` got one - e.g. `j` staged through the fast arm's store index - and read the $t4/$t5 rows with rowdiff.py rather than the score alone."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 14,
-   "statement": "The target's three channel sums all landing in $v0 (rows 111, 114, 118) come from one reused C variable carrying the three sums in turn.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/N1.c N3.c N4.c",
-   "predicate_cite": "",
-   "result": "N1 = 53, N3 = 45, N4 = 46, all at 173 insns, against the incumbent 26. A single long-lived sum pseudo conflicts with the"
-  },
-  {
-   "session": 14,
-   "statement": "Deriving the b channel source from the g channel's shifted intermediate removes one px reference and lowers px's priority below g_src's.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s14/Q1.c",
-   "predicate_cite": "",
-   "result": "combine refolds the shift chain back to a single srl 7 from px, the object is byte-identical to the incumbent at 26, and"
-  },
-  {
-   "session": 15,
-   "statement": "The blend arm's residual is reachable by re-ordering the nine channel assignment statements, in particular by writing them in the order the target's own instruction stream lays them out (all three pro",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_il/I_*.c",
-   "predicate_cite": "",
-   "result": "ZERO HIT. The 1680 spellings collapse onto eight scores {26:196, 30:84, 31:84, 33:280, 34:476, 40:392, 41:84, 43:84}; th"
-  },
-  {
-   "session": 15,
-   "statement": "The 4-insn head residual (the blez delay slot) is reachable by hoisting j = 0 and/or complement out of the if (total > 0) guard, crossed with the order of the four per-iteration statements.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_head/H_*.c",
-   "predicate_cite": "",
-   "result": "ZERO HIT. Histogram {26:24, 28:20, 29:40, 30:84, 40:60, 44:360}. Every spelling that hoists j = 0 above the guard scores"
-  },
-  {
-   "session": 15,
-   "statement": "Declaring the src / dst cursors at function scope and assigning them inside the outer loop denies reorg the addiu a2,sp,1040 delay-slot candidate.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_head2/H2_*.c",
-   "predicate_cite": "",
-   "result": "ZERO HIT. Only the all-declared-in-loop combination ties the baseline (40 spellings at 26); hoisting either cursor's dec"
-  },
   {
    "session": 15,
    "statement": "Respelling the last-pass arm test i == count - 1 removes or re-prices pseudo 118, the pri-90000 allocno that blocks $v0 for px.",
@@ -690,6 +656,46 @@
    "measured_on": "HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present",
    "predicate_cite": "",
    "result": "v05 = 7 and v06 = 7, both at 173 insns: the row-top swap costs exactly 2 rows of its own and the latch rows are unchange"
+  },
+  {
+   "session": 32,
+   "statement": "The two remaining latch rows are welded to RTL birth order, because no pass between combine and the object file reorders the two halfword loads (s31's standing attribution).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender + s31 h stage present",
+   "predicate_cite": "",
+   "result": "DISPROVEN. .combine has insn 298 = sign_extend of offset 4 then insn 303 = offset 6 (target order); .lreg - the next dum"
+  },
+  {
+   "session": 32,
+   "statement": "An inline assignment inside the exit test (`j < rect[2] * (total = rect[3])`) makes that operand born second, so it can be used to choose emission order.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender present",
+   "predicate_cite": "",
+   "result": "KILLED. The operand carrying the side effect is evaluated first: b01 emits the offset-6 load first and is byte-identical"
+  },
+  {
+   "session": 32,
+   "statement": "Applying the escape to the rect[2] operand instead (`(total = rect[2]) * rect[3]`) lands the target's latch.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender present",
+   "predicate_cite": "",
+   "result": "KILLED at 5/173 both. The ORDER is the target's, but the registers invert: the escapee is seated by global.c after local"
+  },
+  {
+   "session": 32,
+   "statement": "The latch pseudo's second-block reference can come from the row top or from the row-loop epilogue.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender present",
+   "predicate_cite": "",
+   "result": "KILLED. Row top: a01 = 7 (the row-top load pair flips the same way, costing 3 rows there while the latch is unchanged), "
+  },
+  {
+   "session": 32,
+   "statement": "The red group's `sra` seat moves if the dying `sum`, the `rp` product or the shift's own destination escapes local-alloc the way the latch load did.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s32 2-point chassis memory/grind/func_8003DE14/candidate.c (s21 j chain extender + s32 `h` staging local present)",
+   "predicate_cite": "",
+   "result": "KILLED. Hoisting `sum`'s declaration to the guard block is free (still 2), but g01/g02/g03 all cost 1 (= 3) and in every"
   }
  ],
  "ladder_skip": 0,

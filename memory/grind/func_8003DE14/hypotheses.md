@@ -3020,3 +3020,95 @@ already exact.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present
+
+## [s32] The two remaining latch rows are an RA/birth-order fact that no C spelling can reach (s31's standing attribution).
+- mechanism: s31 read .combine/.sched/.sched2/.dbr for two bodies and concluded emission order == RTL birth order at every stage, so qty_compare_1 (local-alloc.c:1660) welds order to seats.
+- probe: body c04 (`w = rect[2]; total = rect[3];` staged in TARGET order, `j < w * total`) compiled with -da; .combine shows insn 298 = offset 4 then insn 303 = offset 6, .lreg (after the first scheduling pass) shows 303 -> 298 -> 308.
+- result: DISPROVEN. The first scheduling pass (tools/gcc-2.7.2/sched.c) reorders the two loads; s31's claim held only for the bodies it compiled, in which RTL order already matched sched's preference. Order is decided by whether the destination pseudo is block-local, not by statement position.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender + s31 h stage present
+
+## [s32] Giving the latch's rect[3] pseudo a reference in a SECOND basic block, with both references inside the inner loop, makes it escape local-alloc and lands the target's latch exactly (order + seats + multiply).
+- mechanism: local-alloc.c:470-476 skips any pseudo with reg_basic_block < 0, so local-alloc seats only the block-local rect[2] load - which takes $v0, the target's seat - and global.c seats the escapee afterwards ($v1). The first scheduling pass emits the escaped pseudo's load FIRST, giving the target's `lh $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1`. Keeping the second reference INSIDE the loop is what avoids the two s31 failure modes: the load never leaves the latch block, and there is no loop-invariant initialiser for loop.c to hoist.
+- probe: 33 bodies in eight sweeps (tmp/grind/func_8003DE14/s32/v1..v8) via tools/sweep_variants.py, each read back positionally with tmp/grind/func_8003DE14/s32/rowdiff.py.
+- result: e05 - `h = target_color; *dst++ = h;` in the fast arm plus `} while (j < rect[2] * (h = rect[3]));` - measures 2/173, and the entire latch group (both `lh` rows and the `mult` row) is target-identical; the only residual is the red shift pair. Nearby spellings: e04 (operands reversed) 4, e06 5, e01/e02/e03 6, h01 (borrowing the existing `total` instead of a fresh `h`) 4, h02 (staged in the zero-pixel arm) 3.
+- verdict: CONFIRMED
+
+## [s32] An inline assignment inside the exit test (`j < rect[2] * (total = rect[3])`) can be used to make an operand born SECOND.
+- mechanism: the hope was that expand walks MULT_EXPR operand 0 first, so the plain read would be emitted before the assignment.
+- probe: b01/b05/b06/c05/c06 (single inline assignment in each operand position) plus c01/c03 (both operands inline-assigned), swept on the 4-point chassis.
+- result: KILLED. The operand carrying the side effect is always evaluated first: b01 (`rect[2] * (total = rect[3])`) emits the offset-6 load first and is byte-identical to the two-statement staging (4). Two inline assignments do evaluate left to right (c01 = 4, c03 = 5), so the construct is only useful for choosing WHICH pseudo escapes, not for ordering.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s31 4-point chassis, s21 j chain extender present
+
+## [s32] Making the rect[2] operand the escaping pseudo (`(total = rect[2]) * rect[3]`) lands the target's latch.
+- mechanism: symmetric application of the escape lever - if the escapee's load is emitted first, escaping rect[2] should give the target's `lh ...,4($s0)` first.
+- probe: c02 and c06 on the 4-point chassis, read positionally with rowdiff.py.
+- result: KILLED at 5/173 both. The order IS the target's (off4 first), but the registers invert: the escapee is seated by global.c AFTER local-alloc has given $v0 to the surviving block-local quantity, so off4 gets $v1 and the multiply prints `mult $v1,$v0` - three wrong rows instead of two. The escape must be applied to the rect[3] operand.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender present
+
+## [s32] The latch pseudo can be given its second-block reference from the row loop's epilogue or row top.
+- mechanism: any second reference makes the pseudo non-block-local; the row top and the epilogue are the two cheapest sites outside the inner loop.
+- probe: a01/a02/a04 (row-top carrier), b02 (row-top via the guard), d01-d06 (epilogue carrier), swept on the 4-point chassis.
+- result: KILLED. Row top: a01 = 7 - the row-top pair flips the same way the latch does, costing 3 rows there; a02 = 124 at 68 insns and b02 = 123 at 64 insns (loop collapse). Epilogue: every d-form is 27-28 at 163 insns, because a row-scope carrier read after the loop lets loop.c/CSE delete the latch load entirely; even the bare epilogue stage costs 2 rows (d04 = 6). The second reference must sit INSIDE the inner loop.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s31 4-point chassis, s21 j chain extender present
+
+## [s32] The red group's `sra` seat moves if the dying `sum` (or the shift's destination) escapes local-alloc, the way the latch's load did.
+- mechanism: combine_regs (local-alloc.c:1854-1897) ties the shift's destination quantity to its dying source; if the source or the destination is not a local-alloc quantity at all, the tie cannot be formed and the destination should fall to global.c ($a1 in the target).
+- probe: on the new 2-point chassis, g00-g03 (hoist `sum`'s declaration; make `sum` cross-block via the blend path's zero-pixel arm, via the fast arm's zero branch; make `rp` cross-block) and f01-f05 (route the shift's destination or the whole red chain through the cross-block `h` / `total`).
+- result: KILLED. Hoisting `sum`'s declaration to the guard block is free (2), but every escape spelling costs: g01/g02/g03 = 3 and the `sra` still writes $v0 in each, so the tie survives the escape; routing the destination costs 16-35 (f02 16, f01/f04 20, f05 35) and the red-sum-in-`total` form is 5. The red pair is not reachable through the block-locality lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s32 2-point chassis memory/grind/func_8003DE14/candidate.c (s21 j chain extender + s32 `h` staging local present)
+
+## [s32] The two remaining latch rows are welded to RTL birth order, because no pass between combine and the object file reorders the two halfword loads (s31's standing attribution).
+- mechanism: s31 compared .combine/.sched/.sched2/.dbr/.s for two bodies and concluded order is preserved end to end, so qty_compare_1 (local-alloc.c:1660) welds emission order to the seats.
+- probe: Body c04 (`w = rect[2]; total = rect[3];` staged as two statements in TARGET order, then `j < w * total`) compiled with the instrumented cc1 -da; read .combine and .lreg positionally.
+- result: DISPROVEN. .combine has insn 298 = sign_extend of offset 4 then insn 303 = offset 6 (target order); .lreg - the next dump, after the first scheduling pass - has 303 -> 298 -> 308. sched reorders them. s31's claim held only for bodies whose RTL order already matched sched's preference.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender + s31 h stage present
+
+## [s32] Giving the latch's rect[3] pseudo a reference in a second basic block, with both references inside the inner loop, makes it escape local-alloc and lands the target's latch (order, seats and multiply).
+- mechanism: local-alloc.c:470-476 skips any pseudo with reg_basic_block < 0; local-alloc then seats only the block-local rect[2] load, which takes $v0 (the target's seat), and global.c seats the escapee afterwards ($v1). The first scheduling pass emits the escaped pseudo's load FIRST, producing the target's `lh $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1`. Keeping the second reference inside the loop avoids both s31 failure modes: the load never leaves the latch block and there is no loop-invariant initialiser for loop.c to hoist.
+- probe: 33 bodies in eight sweeps (tmp/grind/func_8003DE14/s32/v1..v8) with tools/sweep_variants.py, each read back positionally with the new tmp/grind/func_8003DE14/s32/rowdiff.py.
+- result: CONFIRMED at 2/173: `h = target_color; *dst++ = h;` in the fast arm plus `} while (j < rect[2] * (h = rect[3]));` in the latch. The whole latch group is target-identical; the only residual is the red shift pair. Nearby spellings: operands reversed 4, rect[2] also staged 5-6, borrowing the existing `total` instead of a fresh `h` 4, staging in the zero-pixel arm 3.
+- verdict: CONFIRMED
+
+## [s32] An inline assignment inside the exit test (`j < rect[2] * (total = rect[3])`) makes that operand born second, so it can be used to choose emission order.
+- mechanism: expand walks MULT_EXPR operand 0 first, so a plain read written first should be emitted before an assignment written second.
+- probe: b01/b05/b06/c05/c06 (one inline assignment per operand position) and c01/c03 (both operands inline-assigned), swept on the 4-point chassis and read positionally.
+- result: KILLED. The operand carrying the side effect is evaluated first: b01 emits the offset-6 load first and is byte-identical to two-statement staging (4). Two inline assignments do evaluate left to right (c01 = 4, c03 = 5), so the construct only chooses WHICH pseudo escapes, never the order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender present
+
+## [s32] Applying the escape to the rect[2] operand instead (`(total = rect[2]) * rect[3]`) lands the target's latch.
+- mechanism: Symmetric use of the same lever - the escapee's load is emitted first, and the target emits the offset-4 load first.
+- probe: c02 and c06 on the 4-point chassis, read positionally with rowdiff.py.
+- result: KILLED at 5/173 both. The ORDER is the target's, but the registers invert: the escapee is seated by global.c after local-alloc has already given $v0 to the surviving block-local quantity, so offset 4 gets $v1 and the multiply prints `mult $v1,$v0` - three wrong rows instead of two.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender present
+
+## [s32] The latch pseudo's second-block reference can come from the row top or from the row-loop epilogue.
+- mechanism: Any second reference makes the pseudo non-block-local; the row top and the epilogue are the cheapest sites outside the inner loop.
+- probe: a01/a02/a04 (row-top carrier), b02 (row-top consumed by the guard), d01-d06 (epilogue carrier), swept on the 4-point chassis.
+- result: KILLED. Row top: a01 = 7 (the row-top load pair flips the same way, costing 3 rows there while the latch is unchanged), a02 = 124 at 68 insns, b02 = 123 at 64 insns (loop collapse). Epilogue: every d-form is 27-28 at 163 insns because a row-scope carrier read after the loop lets loop.c/CSE delete the latch load; the bare epilogue stage alone costs 2 rows (d04 = 6). The second reference has to sit inside the inner loop.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender present
+
+## [s32] The red group's `sra` seat moves if the dying `sum`, the `rp` product or the shift's own destination escapes local-alloc the way the latch load did.
+- mechanism: combine_regs (local-alloc.c:1854-1897) ties the shift's destination quantity to its dying source; if either end is not a local-alloc quantity, the tie cannot form and the destination should fall to global.c ($a1 in the target).
+- probe: On the new 2-point chassis: g00-g03 (hoist `sum`'s declaration; make `sum` cross-block via the blend path's zero-pixel arm and via the fast arm's zero branch; make `rp` cross-block) and f01-f05 (route the shift's destination or the whole red chain through the cross-block `h` / `total`).
+- result: KILLED. Hoisting `sum`'s declaration to the guard block is free (still 2), but g01/g02/g03 all cost 1 (= 3) and in every one the `sra` still writes $v0, so the tie survives the escape; routing the destination costs far more (f02 16, f01/f04 20, f05 35) and carrying the red sum in `total` is 5.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s32 2-point chassis memory/grind/func_8003DE14/candidate.c (s21 j chain extender + s32 `h` staging local present)

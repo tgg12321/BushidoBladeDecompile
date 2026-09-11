@@ -1,45 +1,43 @@
-/* func_8003DE14 - candidate (grind session 31, STRUCTURAL modality).
+/* func_8003DE14 - candidate (grind session 32, FORENSICS modality).
  *
- * SCORE 4 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
+ * SCORE 2 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
  * FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12 (s23-s28) -> 5 (s29,
- * s30) -> 4 (this session).  The fully-ordinary-C (extender-free) best is still
- * 8 (chassis_s29_targetmap_ordinary_8.c); the ORDINARY-C best on THIS chassis is
- * 5 (`} while (j < rect[3] * rect[2]);`, s31 v04 - see below).
+ * s30) -> 4 (s31) -> 2 (this session).  THE ENTIRE LATCH GROUP IS NOW MATCHED;
+ * the only residual is the red-shift pair.
  *
- * WHAT CHANGED IN s31 - the row loop's latch.  s30 typed the whole residual as
- * RA and closed the latch group in closed form (qty_compare_1 prices the
- * SECOND-born of two equal-refs block-local quantities higher, so the second
- * load takes $v0).  s31 read that as a statement about C: the latch's two
- * halfword loads are born in SOURCE OPERAND ORDER, so which load owns $v0 is
- * chosen by which operand of the exit test's multiply is written first.
+ * WHAT s32 FOUND.  s31 left the latch's two `lh` rows differing only in ORDER and
+ * attributed the order to RTL birth order (statement order).  That attribution is
+ * wrong: the dumps show the FIRST SCHEDULING PASS reorders them.  Body c04 of this
+ * session puts the rect[2] load first in .combine (insn 298 = offset 4, insn 303 =
+ * offset 6) and the .lreg dump - i.e. after `sched`, before local-alloc - has them
+ * swapped.  The lever that decides the order is not statement position but whether
+ * the destination pseudo is BLOCK-LOCAL:
+ *   - the operand whose destination pseudo escapes local-alloc has its load emitted
+ *     FIRST and is seated by global.c;
+ *   - the remaining block-local quantity is seated by local-alloc and takes $v0.
+ * So the target's `lh $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1` is exactly
+ * "rect[2] block-local, rect[3] escaped": the rect[3] value must be carried by a
+ * pseudo referenced in a SECOND basic block, with its load still inside the latch.
+ * Every s31 way of doing that moved the load out of the latch or let loop.c/CSE
+ * delete it; the way that works is a staging local whose other reference is also
+ * INSIDE the inner loop - here the fast arm's `h = target_color; *dst++ = h;`.
  *
- *   - `} while (j < rect[3] * rect[2]);` (s31 v04) flips the births and lands
- *     BOTH target seats (lh $v0,4 / lh $v1,6) - the two `lh` register rows are
- *     gone - but the multiply then reaches RTL as mult(off6, off4) and prints
- *     `mult $v1,$v0` where the target has `mult $v0,$v1`.  Net: still 5.
- *   - Staging rect[3] through `h` at the bottom of the row loop and testing
- *     `j < rect[2] * h` decouples the two: h's load is emitted (and born) FIRST,
- *     so the rect[2] load is the shorter-span quantity and takes $v0, while the
- *     multiply keeps its (rect[2], h) operand order and prints `mult $v0,$v1`.
- *     That is the target's multiply AND the target's two seats: 5 -> 4.
- *
- * THE RESIDUAL IS 4 ROWS, in two independent groups:
- *   latch  ours `lh $v1,6($s0)` / `lh $v0,4($s0)`; target `lh $v0,4($s0)` /
- *          `lh $v1,6($s0)`.  REGISTERS AND MULTIPLY NOW MATCH; only the two
- *          loads' ORDER differs.  Emission order == RTL birth order (verified:
- *          .sched/.sched2/.dbr/.s all carry the same order and gas does not
- *          reorder), and the first-born loses $v0 by qty_compare_1.  The target
- *          therefore has its FIRST-born load in $v0, which local-alloc cannot
- *          produce for two equal-refs block-local quantities - one of the loads
- *          must escape local-alloc (local-alloc.c:470-476) and be seated by
- *          global.c.  That is the top frontier item.
+ * THE RESIDUAL IS 2 ROWS:
  *   red    ours `sra $v0,$v0,15` / `andi $a1,$v0,31`; target `sra $a1,$v0,15` /
- *          `andi $a1,$a1,31` - unchanged from s29/s30 (combine_regs ties the
- *          shift's destination to the dying three-way `sum`).
+ *          `andi $a1,$a1,31` - unchanged since s29.  combine_regs
+ *          (local-alloc.c:1854-1897) ties the shift's destination to its dying
+ *          source, the three-way shared `sum` that owns $v0.  s32 measured the new
+ *          escape lever against it: making `sum`, `rp` or the shift's own
+ *          destination cross-block costs 1-18 points and never moves the sra seat.
  *
  * FAKE CONSTRUCTS PRESENT: (1) the s21 j chain extender `((s32)dst_buf + j) - j`
- * in the LoadImage call (worth 3 points), (2) the new `h` latch-bound stage
- * (worth 1 point).  Both are annotated in the body.
+ * in the LoadImage call (3 pts), (2) the `h` staging local (2 pts: it closes both
+ * latch rows).  FAMILY QUESTION FOR THE NEXT SESSION: `h` is an INVENTED local
+ * borrowed for a second value, which the family-selection table puts outside plain
+ * variable-reuse (bound 2) and closest to staged-value-reused-variable
+ * (.claude/rules/staged-value-reused-variable.md).  Read that rule end to end - and
+ * consider a spelling in which an EXISTING local is the carrier (s32's h01 borrowed
+ * `total` and measured 4) - before any candidate-ready submission.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -78,14 +76,18 @@ void func_8003DE14(s16 *rect, s32 count) {
             s32 j = 0;
             if (total > 0) {
                 s32 complement = blend_base - factor;
-                /* FAKE: `h` stages the latch bound's rect[3] halfword so the row loop's
-                 * exit test reaches RTL as mult(rect[2]_load, h) with h's load BORN FIRST;
-                 * mechanism: local-alloc.c:1660 qty_compare_1 prices the shorter-span
-                 * (second-born) quantity higher, so staging rect[3] is what seats the
-                 * rect[2] load in $v0 and keeps the multiply's operand order (off4,off6);
-                 * lever-exhaustion: memory/grind/func_8003DE14/hypotheses.md s31 (latch
-                 * operand-order, guard-shape, for-loop, cross-block-staging and
-                 * epilogue-linkage waves) + s30 H-s30-4. */
+                /* FAKE: `h` is a single staging local used twice - it carries the
+                 * fast arm's target_color into its store, and it carries the latch
+                 * bound's rect[3] halfword.  Having BOTH references inside the inner
+                 * loop (two basic blocks at loop depth 3) is what makes the latch's
+                 * rect[3] pseudo non-block-local; mechanism: local-alloc.c:470-476
+                 * skips any pseudo with reg_basic_block < 0, so local-alloc seats only
+                 * the block-local rect[2] load ($v0, target) and global.c seats h
+                 * afterwards ($v1, target), while the first scheduling pass emits the
+                 * escaped pseudo's load SECOND - the target's `lh $v0,4` / `lh $v1,6`
+                 * order; lever-exhaustion: memory/grind/func_8003DE14/hypotheses.md
+                 * s24-s31 (operand order, birth order, epilogue linkage, for-loop and
+                 * pointer-alias waves) + s32 waves a-h. */
                 s32 h;
                 do {
                     if (i == count - 1) {
@@ -96,7 +98,8 @@ void func_8003DE14(s16 *rect, s32 count) {
                             dst++;
                             goto loop_check;
                         }
-                        *dst++ = target_color;
+                        h = target_color;
+                        *dst++ = h;
                         src++;
                         goto loop_check;
                     }
@@ -134,8 +137,7 @@ void func_8003DE14(s16 *rect, s32 count) {
                     dst++;
                 loop_check:
                     j++;
-                    h = rect[3];
-                } while (j < rect[2] * h);
+                } while (j < rect[2] * (h = rect[3]));
             }
 
             {
