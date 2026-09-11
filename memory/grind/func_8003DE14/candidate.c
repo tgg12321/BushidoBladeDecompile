@@ -188,6 +188,33 @@
  *     depth-3 reg_n_refs site (h9/h10, 45), hoisting complement with j (h7/h8,
  *     44 - the factor division moves ahead of the total multiply), and the
  *     while-loop + LICM preheader rewrite (h4, 59).
+ *
+ * S19 (rederive) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
+ * unchanged as the best known form.  s19 turned the h1 seat residual into a
+ * CLOSED-FORM ARITHMETIC WINDOW and eliminated most of the ways to reach it:
+ *   - The target's register assignment (factor $t3, j $t4, complement $t5) is
+ *     reachable iff pri(factor) > pri(j) > pri(complement) = 6111, with
+ *     pri(factor) = 6964 fixed, i.e. pri(j) must land strictly inside the OPEN
+ *     window (6111, 6964).  Measured h1 table: factor nrefs 13 / livelen 56 /
+ *     6964 -> $t3; complement nrefs 11 / livelen 54 / 6111 -> $t4; j nrefs 11 /
+ *     livelen 59 / 5593 -> $t5.
+ *   - Only two (nrefs, livelen) pairs solve it: nrefs(j) = 13 at livelen 59-61
+ *     (pri 6610 / 6393), or nrefs(j) = 14 at livelen 61 (pri 6885).  flow.c's
+ *     loop-depth weighting means +2 = one extra DEPTH-2 reference and +3 = one
+ *     extra DEPTH-3 reference.
+ *   - livelen(j) is controllable (59 with `s32 j = 0;` last in the head, 61 with
+ *     it first -- see chassis_s19_f1_jfirst_livelen61_30.c, score 30);
+ *     livelen(complement) (54) and livelen(factor) (56) are pinned in all five
+ *     head spellings.
+ *   - KILLED: every depth-2 reference spelling (redundant `j = 0;` inside the
+ *     guard, `(blend_base - factor) + j`) is removed by cse2 BEFORE flow.c counts
+ *     refs, because j is provably 0 at every pre-loop site -- the alloc tables come
+ *     back identical to h1's.  KILLED: duplicating the `j++` latch into the exit
+ *     arms is not re-merged by cross-jumping here (174/175 insns, 44-47) and
+ *     overshoots to nrefs 17 / pri 11333 / $t1.  KILLED (class): global.c's
+ *     regs_someone_prefers cannot steer the seat, because find_reg's pass 0 also
+ *     excludes every register not yet used (global.c:1000) and both $t4 and $t5 are
+ *     first-time assignments.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];

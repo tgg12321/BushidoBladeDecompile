@@ -2288,3 +2288,102 @@ it: it is complement, not j, that costs the 16 points.
 - [s18] Ten forms measured this session, all on HEAD 2026-09-10 with no FAKE constructs: base 26, h1 28, h2 28, h3 30, h4 59, h5 28, h6 28, h7 44, h8 44, h9 45, h10 45.
 
 - [s18] The livelen route to the flip is arithmetically bounded: j's def is already the last insn of the head block (it is the delay-slot insn) and its last use is the latch, so livelen(j) cannot drop to 54 without moving the def back inside the guard; complement's def is already the first insn of the preheader and its last use is 3 insns before j's, and the blend arm cannot push it 6 insns later because each channel's complement product must precede the `X_src = X * factor` overwrite of that channel's carrier.
+
+## S19 (rederive) — the t4/t5 seat problem is now a closed-form arithmetic window
+
+Chassis re-measured at dispatch: `memory/grind/func_8003DE14/candidate.c` (the s13
+body) scores **26 / 173 insns** on HEAD 2026-09-10, and
+`chassis_s18_h1_head_exact_28.c` scores **28 / 173**. Both numbers reproduce
+exactly; nothing in the ledger was chassis-void this session.
+
+### The full h1 allocation table around the seat (BB2_ALLOC_DEBUG, s19/alloc_a1)
+
+    ord=14 pseudo=111/110 (factor)     nrefs=13 livelen=56 pri=6964 -> $t3 (11)
+    ord=15 pseudo=116 (complement)     nrefs=11 livelen=54 pri=6111 -> $t4 (12)
+    ord=16 pseudo=110/101 (j)          nrefs=11 livelen=59 pri=5593 -> $t5 (13)
+
+The target wants `factor=$t3, j=$t4, complement=$t5` (asm/funcs/func_8003DE14.s:75-76,
+104/112/120, 148-150). global.c allocates in DESCENDING `allocno_pri` and hands each
+allocno the lowest free hard register, so the target's register assignment is
+reachable **iff**
+
+    pri(factor) > pri(j) > pri(complement) = 6111           (and pri(factor) <= 6964
+                                                              unless factor also moves)
+
+i.e. **pri(j) must land strictly inside the open window (6111, 6964)**.
+`pri = floor_log2(nrefs) * nrefs * 10000 / livelen`, and flow.c weights
+`reg_n_refs` by loop depth (+1 per ref at function level, +2 inside the outer
+do-while, +3 inside the inner do-while). With j's measured livelen of 59-61 that
+admits exactly two solutions:
+
+    nrefs(j) = 13  (one extra DEPTH-2 reference)  -> pri 6610 (LL 59) / 6393 (LL 61)
+    nrefs(j) = 14  (one extra DEPTH-3 reference)  -> pri 7118 (LL 59, TOO HIGH)
+                                                     pri 6885 (LL 61, IN WINDOW)
+
+Every other reachable `nrefs` overshoots: duplicating the `j++` latch into the arms
+moves nrefs to 17 / 23 / 29 (pri 11333+), and the livelen needed to bring those back
+into the window (98-150) exceeds the whole loop's live length (~60).
+
+### livelen(j) IS a controllable quantity; livelen(complement) and livelen(factor) are not
+
+Measured by moving the `s32 j = 0;` statement through the five head statements
+(`total / src / dst / factor / j=0`), all 173 insns:
+
+    j=0 last   (= h1)        score 28   livelen(j)=59  pri 5593
+    j=0 4th (before factor)  score 28   livelen(j)=59  pri 5593   (s19/f4.c)
+    j=0 3rd                  score 29   livelen(j)=60-61
+    j=0 2nd                  score 30   livelen(j)=61
+    j=0 1st                  score 30   livelen(j)=61  pri 5409   (s19/f1.c, banked as
+                                                       chassis_s19_f1_jfirst_livelen61_30.c)
+
+complement stays at livelen 54 / pri 6111 and factor at livelen 56 / pri 6964 in ALL
+five spellings — their defs are pinned by the guard branch and by the div/mflo pair.
+So the ONLY free variable in the window equation is j's, and the LL-61 chassis
+(f1, score 30) is the one that pairs with `nrefs(j) = 14`.
+
+### global.c's preference machinery cannot be used to steer this seat (new, structural)
+
+`regs_someone_prefers[]` (global.c:911-929) collects the registers preferred by
+LOWER-priority conflicting allocnos, and find_reg excludes them — but ONLY in pass 0,
+and pass 0 also ORs in `~regs_used_so_far` (global.c:1000-1001), i.e. "we never
+allocate a register for the first time in pass 0". $t4 and $t5 are both first-time
+assignments at ord 15/16, so pass 0 cannot assign either and pass 1 uses `used1`,
+which does not contain `regs_someone_prefers`. Conclusion: no copy-preference or
+conflict construct can make complement skip $t4 — `allocno_pri` is the sole lever.
+(The complementary route, "make some allocno X occupy $t4 before complement's turn
+while not conflicting with j", is empty by construction: j's live range strictly
+CONTAINS complement's, so every allocno conflicting with complement also conflicts
+with j.)
+
+### Where the missing reference cannot come from (all measured this session)
+
+DEPTH-2 sites (+2 refs, the nrefs=13 solution) partition into two classes and both
+are eliminated before flow.c counts anything:
+  * pre-loop (head block or inner-loop preheader): j is provably 0 there, so cse2
+    folds a read (`complement = (blend_base - factor) + j`, s19/c4.c) and deletes a
+    redundant store (`j = 0;` repeated inside the guard, s19/c2.c). BOTH produce an
+    alloc table byte-identical to h1's — nrefs stays 11 — and both score 28/173.
+  * post-loop: j is dead, so a store is a dead store (flow.c deletes it before
+    mark_used_regs) and a read needs a consumer, which materialises bytes.
+
+DEPTH-3 sites (+3 refs, the nrefs=14 solution) need a read of j inside the inner loop
+whose consumer survives cse2 but is removed later. cse2 already does copy propagation,
+so every plain staging copy (`jt = j; ... jt ...`) is folded and deleted pre-flow;
+every non-copy extender that cse2 cannot simplify (shift pairs, masks) materialises
+bytes. Duplicating the `j++` latch into the exit arms does NOT get re-merged by
+cross-jumping on this chassis (build_insns 174/175 vs 173 — see the kills), so it is
+both an overshoot and a byte cost.
+
+- [s19] Chassis re-measured at dispatch: memory/grind/func_8003DE14/candidate.c = 26 / 173 insns, chassis_s18_h1_head_exact_28.c = 28 / 173, both on HEAD 2026-09-10. No banked conclusion was chassis-void.
+
+- [s19] h1 alloc table around the seat: factor nrefs 13 / livelen 56 / pri 6964 -> $t3; complement nrefs 11 / livelen 54 / pri 6111 -> $t4; j nrefs 11 / livelen 59 / pri 5593 -> $t5. The target needs factor $t3, j $t4, complement $t5 (asm/funcs/func_8003DE14.s:75-76, 104/112/120, 148-150).
+
+- [s19] Closed form for the whole remaining h1 residual: global.c allocates in descending allocno_pri and hands each allocno the lowest free hard register, so the target seats are reachable iff pri(j) lands strictly inside the OPEN window (6111, 6964).
+
+- [s19] Complete solution set for that window, given pri = floor_log2(nrefs)*nrefs*10000/livelen and flow.c's loop-depth weighting (+1 function level, +2 outer loop, +3 inner loop): nrefs(j) = 13 at livelen 59-61 (pri 6610 / 6393), or nrefs(j) = 14 at livelen 61 (pri 6885). nrefs 17 / 23 / 29 (the arm-duplication ladder) would need livelen 98-150, which exceeds the whole loop's live length (~60).
+
+- [s19] Depth-2 reference sites for j partition into pre-loop (j is provably 0, so cse2 folds reads and deletes redundant stores before flow.c counts - measured, alloc tables unchanged) and post-loop (j is dead, so a store is a dead store flow.c deletes and a read needs a consumer that materialises bytes).
+
+- [s19] The tension that makes this the last residual: reorg's delay-slot fill wants j's def to be the last pre-branch insn (h1, head byte-exact), but whichever of j / complement is defined FIRST gets the longer live range and hence the LOWER priority, so the def order that wins the slot is exactly the one that loses the seat. The incumbent 26 form takes the opposite trade (seats right, 4-insn head residual).
+
+- [s19] target and build are both 173 insns in every form measured this session except the arm-duplication ladder (174/175), which confirms the residual remains purely register-naming plus the one reorg rotation.

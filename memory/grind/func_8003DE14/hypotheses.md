@@ -1752,3 +1752,54 @@ two short-lived trip-test pseudos - plus (b) one reorg.c delay-slot choice.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis re-measured this session at 26 / 173, no FAKE constructs present, form tmp/grind/func_8003DE14/s18/h4.c
+
+## [s19] Duplicating the inner loop's `j++` latch into the exit arms lifts reg_n_refs enough to re-seat j, and cross-jumping re-merges the copies to identical bytes (the s11 `dst++` precedent).
+- mechanism: .claude/rules/duplicated-statement-into-arms.md — a real statement duplicated into 2+ arms is counted by flow.c once per copy (loop-depth weighted, +6 per extra copy at depth 3), lifting allocno_pri, and jump2's cross-jump merges the copies back to one insn so the bytes are unchanged. s11 used exactly this for the `dst++` cursor bump on this function.
+- probe: On the h1 chassis (28 / 173), three routings: b2 (all four exit paths increment j themselves, shared label empty), b3 (blend-else path increments, the three early exits share one copy), b4 (blend-else + both last-frame arms separate). sandbox --disable all on each plus BB2_ALLOC_DEBUG on b3 (tmp/grind/func_8003DE14/s19/alloc_b3/stderr.log).
+- result: KILLED. b3 44 at **174** insns, b2 45 at **175**, b4 47 at 174 — cross-jumping does NOT re-merge the duplicated `j++` here (unlike the `dst++` case, whose copies end blocks that already share a tail), so every copy costs a real insn. The alloc table also shows the lift OVERSHOOTS the needed window: j (pseudo 115) goes to nrefs 17 / livelen 60 / pri 11333, is allocated at ord=10 and takes $t1 (hardreg 9) instead of $t4, while complement correctly lands on $t5. Banked as rejected/s19-j-inc-duplicated-into-arms-not-crossjump-merged-44.c and rejected/s19-j-inc-duplicated-four-arms-45.c.
+
+## [s19] A DEPTH-2 reference to `j` added in the head or the inner-loop preheader buys the +2 reg_n_refs that prices j above complement (nrefs 11 -> 13, pri 6610 > 6111).
+- mechanism: pri = floor_log2(nrefs)*nrefs*10000/livelen; flow.c weights reg_n_refs by loop depth, so one extra reference at depth 2 (outer-do-while body) is worth +2. nrefs 13 at livelen 59 gives 6610, which sits inside the (6111, 6964) window between complement and factor.
+- probe: Two spellings on the h1 chassis: c2 = a redundant `j = 0;` as the first statement inside the `if (total > 0)` guard (depth-2 WRITE); c4 = `s32 complement = (blend_base - factor) + j;` (depth-2 READ, value-neutral because j == 0 there). sandbox --disable all plus BB2_ALLOC_DEBUG tables at tmp/grind/func_8003DE14/s19/alloc_c2 and alloc_c4.
+- result: KILLED for both spellings. Each scores 28 / 173 — byte-identical to h1 — and the alloc tables are IDENTICAL to h1's line for line (j still nrefs=11 livelen=59 pri=5593 -> $t5). cse2 runs before flow.c's life_analysis and knows `j == 0` at every pre-loop site, so it folds the read and deletes the redundant store before any reference is counted. Banked as rejected/s19-redundant-depth2-j-store-cse2-deletes-28.c and rejected/s19-complement-plus-j-depth2-read-cse2-folds-28.c.
+
+## [s19] livelen(j) is a controllable quantity on the h1 chassis: moving the `s32 j = 0;` statement earlier among the five head statements lengthens j's live range, which re-prices it.
+- mechanism: reg_live_length is computed by flow.c on the pre-scheduling RTL, so j's live range starts where expand emits its initialiser. complement's def is pinned to the first insn after the guard branch and factor's to the div/mflo pair, so neither moves.
+- probe: All five positions of `s32 j = 0;` in the head statement list (f1 = first, f2 = 2nd, f3 = 3rd, f4 = 4th/just before factor, h1 = last); sandbox --disable all on each + BB2_ALLOC_DEBUG (s19/alloc_f1 .. alloc_f4).
+- result: CONFIRMED. livelen(j) = 59 (h1 and f4, both score 28), 60-61 (f3, 29), 61 (f1 and f2, 30); all five at 173 insns. complement holds livelen 54 / pri 6111 and factor livelen 56 / pri 6964 in every spelling. This makes the f1 chassis (livelen 61, pri 5409, banked as chassis_s19_f1_jfirst_livelen61_30.c) the one that pairs with a +3 depth-3 reference: nrefs 14 at livelen 61 is pri 6885, inside the (6111, 6964) window, whereas nrefs 14 at livelen 59 is 7118 and would steal factor's $t3.
+
+## [s19] global.c's register-preference machinery (`regs_someone_prefers`) can be used to make `complement` skip $t4 and leave it for the later-allocated `j`.
+- mechanism: prune_preferences (global.c:911-929) records, for each allocno, the registers preferred by every LOWER-priority allocno that conflicts with it, and find_reg excludes that set.
+- probe: read find_reg's two-pass structure (tools/gcc-2.7.2/global.c:994-1080) against the h1 alloc table.
+- result: KILLED (class). The exclusion applies only in pass 0, and pass 0 additionally ORs in `~regs_used_so_far` with the comment "we never allocate a register for the first time in pass 0" (global.c:998-1001). $t4 and $t5 are both first-time assignments at ord 15/16, so pass 0 cannot assign either; pass 1 copies `used1`, which does not contain regs_someone_prefers. The complementary conflict route is empty too: j's live range strictly contains complement's, so no allocno can conflict with complement without also conflicting with j. `allocno_pri` is therefore the sole lever on this seat.
+
+## [s19] Duplicating the inner loop's `j++` latch into the exit arms lifts reg_n_refs enough to re-seat j on $t4, and cross-jumping re-merges the copies to identical bytes (the s11 `dst++` precedent on this same function).
+- mechanism: duplicated-statement-into-arms: flow.c counts each copy separately with loop-depth weighting (+6 per extra copy at depth 3), lifting global.c's allocno_pri; jump2's cross-jump was expected to merge the copies back so the bytes are unchanged.
+- probe: h1 chassis (chassis_s18_h1_head_exact_28.c, 28/173). Three routings: b2 all four exit paths increment j themselves, b3 only the blend-else path, b4 blend-else plus both last-frame arms. sandbox --disable all on each; BB2_ALLOC_DEBUG table for b3.
+- result: b3 44 at 174 insns, b2 45 at 175, b4 47 at 174. Cross-jumping does NOT re-merge these copies (unlike the dst++ case), so every copy costs a real instruction. The alloc table also shows the lift overshoots: j goes to nrefs 17 / livelen 60 / pri 11333, is allocated at ord=10 and takes $t1 instead of $t4 (complement does land on $t5). Banked as rejected/s19-j-inc-duplicated-into-arms-not-crossjump-merged-44.c and rejected/s19-j-inc-duplicated-four-arms-45.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis re-measured this session at 28/173, no FAKE constructs present in any of the three forms
+
+## [s19] A depth-2 reference to `j` added in the head block or the inner-loop preheader buys the +2 reg_n_refs that prices j above complement (nrefs 11 -> 13, pri 6610 > 6111), restoring the target's $t4 seat on the h1 chassis.
+- mechanism: pri = floor_log2(nrefs)*nrefs*10000/livelen and flow.c weights reg_n_refs by loop depth, so one extra reference in the outer-do-while body is worth +2 refs; nrefs 13 at livelen 59 is pri 6610, inside the (6111, 6964) window between complement and factor.
+- probe: Two spellings on the h1 chassis: c2 = a redundant `j = 0;` as the first statement inside the `if (total > 0)` guard (depth-2 write); c4 = `s32 complement = (blend_base - factor) + j;` (depth-2 read, value-neutral since j == 0 there). sandbox --disable all plus BB2_ALLOC_DEBUG alloc tables (tmp/grind/func_8003DE14/s19/alloc_c2, alloc_c4).
+- result: Both score 28 / 173, byte-identical to h1, and both alloc tables are identical to h1's line for line (j stays nrefs=11 livelen=59 pri=5593 -> $t5). cse2 runs before flow.c's life_analysis and knows j == 0 at every pre-loop site, so it folds the read and deletes the redundant store before any reference is counted. Banked as rejected/s19-redundant-depth2-j-store-cse2-deletes-28.c and rejected/s19-complement-plus-j-depth2-read-cse2-folds-28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis at 28/173, no FAKE constructs present
+
+## [s19] global.c's register-preference machinery (regs_someone_prefers) can be used to make `complement` skip $t4 and leave it for the later-allocated `j`.
+- mechanism: prune_preferences (global.c:911-929) records for each allocno the registers preferred by every lower-priority conflicting allocno, and find_reg excludes that set when choosing a hard register.
+- probe: Read find_reg's two-pass structure (tools/gcc-2.7.2/global.c:994-1080) against the measured h1 alloc table (complement ord=15 -> hardreg 12, j ord=16 -> hardreg 13).
+- result: The exclusion applies only in pass 0, and pass 0 additionally ORs in the complement of regs_used_so_far with the comment 'we never allocate a register for the first time in pass 0' (global.c:997-1001); pass 1 copies used1, which does not contain regs_someone_prefers. $t4 and $t5 are both first-time assignments at ord 15/16, so no preference construct can reach this decision. The complementary conflict route is empty as well: j's live range strictly contains complement's, so every allocno conflicting with complement also conflicts with j. allocno_pri is the sole lever on this seat.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis alloc table at 28/173, no FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/global.c:1000
+
+## [s19] livelen(j) is a controllable quantity on the h1 chassis: moving the `s32 j = 0;` statement earlier among the five head statements lengthens j's live range and re-prices it, while complement's and factor's live lengths stay pinned.
+- mechanism: reg_live_length is computed by flow.c on the pre-scheduling RTL, so j's range starts where expand emits its initialiser; complement's def is pinned to the first insn after the guard branch and factor's to the div/mflo pair.
+- probe: All five positions of `s32 j = 0;` in the head list (f1 first, f2 2nd, f3 3rd, f4 4th i.e. just before factor, h1 last); sandbox --disable all on each plus BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s19/alloc_f1 .. alloc_f4).
+- result: CONFIRMED. livelen(j) = 59 for h1 and f4 (both 28), 60-61 for f3 (29), 61 for f1 and f2 (30); all five at 173 insns. complement holds livelen 54 / pri 6111 and factor livelen 56 / pri 6964 in every spelling. The f1 chassis (livelen 61, pri 5409) is therefore the one that pairs with a +3 depth-3 reference: nrefs 14 at livelen 61 is pri 6885 (inside the window), whereas nrefs 14 at livelen 59 is 7118 and would steal factor's $t3. Banked as chassis_s19_f1_jfirst_livelen61_30.c.
+- verdict: CONFIRMED
