@@ -2855,3 +2855,156 @@ On the d2 body the g_src extender is worth 9 (c2 = 23) and the j extender 7
 - [s22] The trip-test register pair is positional, not expression-driven: `rect[3] * rect[2]` swaps the two load offsets but still puts $v1 on the first load and $v0 on the second.
 
 - [s22] s21's frontier item 1 (enumerate source shapes that put a MULTI-referenced value in $v0 across rows 106-118 without adding an insn) is now answered: the shapes exist (d1/f1/d2), they are byte-neutral, and only the green+blue split avoids the allocno-shift tax. s21's frontier item 3 (latch spellings decide the trip test) is killed.
+
+## s23 (2026-09-11) — REDERIVE — floor 14 -> 12
+
+Chassis re-measured at session start: s22's `d2` body scores **14 / 173** on HEAD
+2026-09-11 (build 173, target 173), both s21 F1 chain extenders present. The
+brief's "measurement unavailable" is therefore resolved: the ledger floor of 14
+was accurate.
+
+### NEW FLOOR: 12 — `px` reused as the blue carrier (form `p2`)
+
+The blue channel's `b_src` local is DELETED. `px` (the `pixel & 0xFFFF` carrier,
+dead immediately after the green source shift) carries both the blue source byte
+and the blue complement product:
+
+```c
+px = ((u32)px >> 7) & 0xF8;
+px = px * complement;
+sum = px + b * factor;
+b_shift = ((sum + g_src) - g_src) >> 5;
+```
+
+That is exactly what the target's bytes say: t106 `andi $a0,$v0,0xF8`,
+t107 `mult $a0,$t5`, t108 `mflo $a0` — the blue source AND its product live in
+px's own register `$a0`, which no separate `b_src` local reproduces.
+
+Ablation, every form 173 build / 173 target, both s21 extenders present:
+
+| form | shape | score |
+|---|---|---|
+| d2 | s22 incumbent, separate `b_src` local | 14 |
+| p1 | px reused for the blue SOURCE only | **12** |
+| p2 | px reused for the source AND the product | **12** (kept) |
+| p3 | source+product folded into one statement | 14 |
+| p4 | px also carries the blue SUM | 23 |
+| p5 | `sum` carries the product, px the sum | 46 |
+
+p1 and p2 tie at 12, but p1 still emits `mflo $v0` where the target has
+`mflo $a0` (t108) — the edit distance absorbs it elsewhere. p2 makes t106-t108
+byte-exact, so p2 is the banked candidate.
+
+**A s22 kill is now VOID.** s22 banked "`px` reused as the blue carrier"
+(forms b1 43, c1 15) as KILLED — but measured on the u3 and a2 chassis, i.e.
+before d2's shared `sum` local existed. The kill was instance-scoped and does
+not survive the chassis change: on the d2 chassis the identical construct is
+worth -2.
+
+### The residual is ONE register seat — all 12 rows
+
+```
+t111/t112  addu $v0,$t2,$a1 / sra $a1,$v0,15   ours: addu $a1,$t2,$a1 / sra $a1,$a1,15
+t114/t115  addu $v0,$t1,$v1 / sra $v1,$v0,10   ours: addu $v1,$t1,$v1 / sra $v1,$v1,10
+t117-t119  mflo $t7 / addu $v0,$a0,$t7 / sra $a0,$v0,5
+           ours: mflo $v0 / addu $a0,$a0,$v0 / sra $a0,$a0,5
+t123/t124  andi $v1,$a0,0x7C00 / or $v0,$v0,$v1   ours: andi $a0,... / or $v0,$v0,$a0
+t127/t128/t130  lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1   ours: $v1/$v0 swapped
+```
+
+In the TARGET `$v0` is free scratch across the whole inner-loop block: each
+channel sum is born in `$v0` and dies one insn later, and the latch's first load
+takes `$v0` as well. In OUR build `$v0` is held for the whole block by ONE
+global allocno, and everything below it shifts one seat. The latch rows move
+with the blend rows (v2/v3 below), which is why all 12 are one decision.
+
+### PASS ATTRIBUTION — read out of the s23 `.lreg` dump, not inferred
+
+`pwsh tools/grinder/dump.ps1 func_8003DE14` on the p2 body,
+`tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg`, function region starting at
+line 15386:
+
+* **The `$v0` occupant is the `b * factor` mulsi3 result** — RTL insn 253,
+  pseudo `reg:SI 138`. The dump's register table says:
+  `Register 138 used 6 times across 9 insns in block 10; pref LO_REG, else GR_REGS.`
+  `reg_preferred_class` is `LO_REG`; `CLASS_LIKELY_SPILLED_P(LO_REG)` is true and
+  its `reg_alternate_class` is `GR_REGS` (not `NO_REGS`), so
+  **`tools/gcc-2.7.2/local-alloc.c:472`** sets `reg_qty[138] = -1`. Local-alloc
+  therefore never seats it; it becomes a GLOBAL allocno, and BB2_ALLOC_DEBUG
+  prints it at `ord=10 nrefs=6 livelen=10 pri=12000 hardreg=2`. `global.c`'s
+  `find_reg` first-fit hands it regno 2 because neither 2 nor 4 is in its
+  conflict set. Every mulsi3 result in the arm is a global allocno for the same
+  reason (`rp` -> `$t2`, `gp` -> `$t1`).
+* **Why the sums are tied to their sources.** `r_src` (reg 123), `g_src` (126),
+  `px` (122) and `pixel` (121) all print `dies in 2 places` — they are exactly
+  the C variables we REUSE, and a second `REG_DEAD` note fails the
+  `reg_n_deaths[i] == 1` test on the same local-alloc.c:472 line, so they are
+  global allocnos too. `combine_regs`
+  (`tools/gcc-2.7.2/local-alloc.c:1784`) bails on any operand with
+  `reg_qty < 0`, so the `addu` dests are NOT combined with their operands; they
+  are fresh LOCAL quantities that simply cannot get `$v0` — the b*factor global
+  allocno's block-level liveness covers the whole block.
+* RTL identities for the p2 body (useful next session):
+  121 `pixel` · 122 `px` · 123 `r_src` · 126 `g_src` · 129 `rp` · 130 `gp` ·
+  138 `b*factor` · 134 red sum · 128 `sum` (green) · 140 blue sum ·
+  131 `r_ch` · 132 `g_ch` · 133 `b_shift`.
+
+### Measured and dead on the p2 chassis (all 173/173 unless noted)
+
+* **Naming `b * factor` as a C local is the wrong direction** — it converts the
+  pseudo from a LO_REG-preferring global allocno into an ordinary local that
+  dies once, and the whole arm re-seats: `s1` (staged at the top of the arm) 47
+  and only 171 build insns; `s2` (after red) 41; `s3` (after green) 41; `s4`
+  (`bf + px` operand order) 41; `s5` (all three `*factor` products staged up
+  front) 49 / 167 insns.
+* **`sum` re-partitioning across channels, on the px chassis**: `r1` all three
+  channels 44 · `r2` red+blue 28 · `r3` blue only 23 · `r4` distinct `sum`/`sum2`
+  23 · `r5` `b*factor` named and added to `sum` 12 (tie, no new rows).
+  On the pre-px chassis: `q1` blue only 15 · `q2` red+blue 17 · `q3` two locals
+  15 · `q6` three sums staged with the shifts pulled later 30.
+* **`b_src` declaration site / late init** (`q4`, `q5`): 14 each — byte-identical
+  residual to d2. Declaration order does not reach this seat.
+* **Output-word accumulator `out` on the px chassis** (`u1`): 70. The e-family
+  kill from s22 survives the chassis change.
+* **Named blue mask** (`u2`) 13 · **or-chain re-association** (`u3`) 42 ·
+  **r_ch masked at use instead of at definition** (`u4`) 12 (tie) ·
+  **blue sum inlined into b_shift, `sum` dropped** (`u5`) 23.
+* **Latch respellings** (all leave the residual rows byte-identical — verified by
+  a full opcode diff, not just the score): `v1` `j != rect[2]*rect[3]` 14 and
+  172 build insns (drops an insn) · `v2` `while (++j < rect[2]*rect[3])` 12 ·
+  `v3` dropping the `total` local and testing `rect[2]*rect[3] > 0` inline 12 ·
+  `v4` `(s32)` cast on the product 12 · `v5` `rect[2]*rect[3] - j > 0` 14.
+  v2 and v3 print the SAME 12 rows as p2 — the latch's `$v0`/`$v1` swap is not
+  decidable from the latch expression; it is downstream of the same block-wide
+  `$v0` reservation.
+
+### Ordinary-C status — unchanged
+
+Both s21 F1 chain extenders are still present and still load-bearing:
+`((sum + g_src) - g_src)` and `((s32)dst_buf + j) - j`. This body is NOT
+submittable. `sum` is an ordinary named intermediate; the `px` reuse is the
+sanctioned variable-reuse-for-codegen-control family and carries no annotation.
+
+- [s23] Chassis re-measured at dispatch: s22's d2 body scores 14/173 on HEAD 2026-09-11 (build 173, target 173), so the ledger's recorded floor of 14 was accurate and the brief's 'measurement unavailable' is resolved.
+
+- [s23] New floor 12/173 with form p2: the blue channel has no `b_src` local at all - `px` carries the blue source byte and the blue complement product (`px = ((u32)px >> 7) & 0xF8; px = px * complement; sum = px + b * factor;`).
+
+- [s23] p2 makes target rows t106/t107/t108 (`andi $a0,$v0,0xF8` / `mult $a0,$t5` / `mflo $a0`) byte-exact - the target keeps the blue source and its product in px's own register $a0.
+
+- [s23] s22's instance kill of 'px reused as the blue carrier' (b1 43, c1 15) is VOID on the current chassis: it was measured on u3 and a2, before d2's shared `sum` local; on the d2 chassis the identical construct is worth -2.
+
+- [s23] The 12 remaining rows are t111,t112,t114,t115,t117,t118,t119,t123,t124 (blend) and t127,t128,t130 (latch) - all register-seat replacements, no missing or extra instructions (173 build / 173 target).
+
+- [s23] PASS ATTRIBUTION from tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg (s23 dump of the p2 body, function region from line 15386): the $v0 occupant is RTL insn 253's mulsi3 result `reg:SI 138` - 'Register 138 used 6 times across 9 insns in block 10; pref LO_REG, else GR_REGS'.
+
+- [s23] Because reg_preferred_class is LO_REG (CLASS_LIKELY_SPILLED_P true) and reg_alternate_class is GR_REGS, tools/gcc-2.7.2/local-alloc.c:472 sets reg_qty=-1 for that pseudo, so local-alloc never seats it; it becomes global allocno ord=10 nrefs=6 livelen=10 pri=12000 and global.c find_reg first-fits it to regno 2.
+
+- [s23] The same local-alloc.c:472 predicate explains the sums: r_src(123), g_src(126), px(122) and pixel(121) all print 'dies in 2 places' because they are the reused C variables, so they are global allocnos too and combine_regs (local-alloc.c:1784) bails on every operand - the sums are fresh LOCAL quantities that cannot reach $v0 while the b*factor allocno holds it for the block.
+
+- [s23] RTL pseudo map for the p2 body (for s24): 121 pixel, 122 px, 123 r_src, 126 g_src, 129 rp, 130 gp, 138 b*factor, 134 red sum, 128 `sum` (green), 140 blue sum, 131 r_ch, 132 g_ch, 133 b_shift.
+
+- [s23] The latch's $v0/$v1 swap is NOT a latch-expression question: v2 (`while (++j < rect[2]*rect[3])`) and v3 (no `total` local) both score 12 and print exactly the same 12 rows as p2.
+
+- [s23] Naming `b * factor` as a C local is counterproductive - it strips the LO_REG preference and the 'dies twice' status, converting a global allocno into an ordinary local and re-seating the whole arm (s1 47/171 insns, s2-s4 41, s5 49/167 insns).
+
+- [s23] The candidate is NOT submittable: both s21 F1 combine-foldable chain extenders - `((sum + g_src) - g_src)` and `((s32)dst_buf + j) - j` - are still present and load-bearing on this body.

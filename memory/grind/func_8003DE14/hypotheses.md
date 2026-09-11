@@ -2085,3 +2085,126 @@ two short-lived trip-test pseudos - plus (b) one reorg.c delay-slot choice.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; d2 chassis 14/173 with both s21 FAKE chain extenders present
+
+## s23 (2026-09-11) — REDERIVE
+
+### CONFIRMED
+
+**H-s23-1 — Reusing `px` as the blue channel's carrier (source byte and
+complement product) lands the target's `$a0` blue seat and drops the floor.**
+Mechanism: the target keeps the blue source and its `mult` result in px's own
+register (`andi $a0,$v0,0xF8` / `mult $a0,$t5` / `mflo $a0`, rows t106-t108); a
+separate `b_src` local is a distinct pseudo that local-alloc/global-alloc has no
+reason to co-locate with px. Probe: `p1`/`p2` on the d2 chassis.
+Result: d2 14 -> p1 12 -> p2 12 with t106-t108 byte-exact. VERDICT CONFIRMED.
+NOTE: this VOIDS s22's instance kill of the same construct (forms b1 43 / c1 15,
+measured on the u3 and a2 chassis before the shared `sum` local existed).
+
+**H-s23-2 — All 12 remaining rows, including the 3 latch rows, are downstream of
+ONE register seat: the `b * factor` global allocno holding `$v0` across the whole
+inner-loop block.** Mechanism: `reg_preferred_class` of a mulsi3 result is
+`LO_REG`, which is `CLASS_LIKELY_SPILLED_P`, so `local-alloc.c:472` refuses it a
+quantity (`reg_qty = -1`) and it becomes a global allocno; `global.c` `find_reg`
+first-fit gives it regno 2 (conflicts = {3,5,6,7,8,16,29}, someone_prefers = {}).
+Probe: the s23 `.lreg` dump plus the v2/v3 latch respellings, which leave the 12
+rows byte-identical. VERDICT CONFIRMED.
+
+### KILLED (all instance scope, measured on HEAD 2026-09-11, p2 chassis at 12/173
+unless stated, both s21 F1 chain extenders present)
+
+**H-s23-3 — Staging `b * factor` into a named C local re-prices the allocno and
+seats it off `$v0`.** Probes `s1` (top of arm) 47 / 171 insns, `s2` 41, `s3` 41,
+`s4` (`bf + px` operand order) 41, `s5` (all three `*factor` products staged up
+front) 49 / 167 insns. Naming the product makes it an ordinary local that dies
+once and loses the `LO_REG` preference, so local-alloc seats it and the whole arm
+re-seats around it. KILLED, instance.
+
+**H-s23-4 — Re-partitioning the shared `sum` local across the channels reaches
+the `$v0` seat on the px chassis.** Probes `r1` (all three) 44, `r2` (red+blue)
+28, `r3` (blue only) 23, `r4` (distinct `sum`/`sum2`) 23, `r5` 12 (tie).
+The s22 partition (`sum` for green+blue) remains the best. KILLED, instance.
+
+**H-s23-5 — `b_src`'s declaration site or a late initialiser moves the blue
+seat.** Probes `q4` (declared last among the source locals) 14, `q5` (declared
+uninitialised, assigned immediately before its use) 14, both on the d2 chassis
+with a byte-identical residual to d2. KILLED, instance.
+
+**H-s23-6 — The 3-row latch residual (`lh $v0,4($s0)` / `lh $v1,6($s0)` /
+`mult $v0,$v1`) is decidable from the latch expression.** Probes on the p2
+chassis: `v1` `j != rect[2]*rect[3]` 14 / 172 insns, `v2`
+`while (++j < rect[2]*rect[3])` 12, `v3` dropping the `total` local entirely and
+testing `rect[2]*rect[3] > 0` inline 12, `v4` `(s32)`-cast product 12, `v5`
+`rect[2]*rect[3] - j > 0` 14. v2 and v3 print exactly the same 12 rows as p2 —
+the latch seat moves only with the block-wide `$v0` reservation. KILLED,
+instance. (This extends s22's h1-h4 latch kill to the px chassis and to the
+`!=`, `++j`, and no-`total` shapes.)
+
+**H-s23-7 — An output-word accumulator or an or-chain re-association reaches the
+seat on the new chassis.** Probes `u1` (`out` opened before the red channel) 70,
+`u2` (named blue mask) 13, `u3` (or-chain re-associated) 42, `u4` (r_ch masked at
+use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
+
+### LIVE FRONTIER (for s24)
+
+1. **Get regno 2 out of the `b*factor` allocno's first-fit reach.** The cheapest
+   measured-plausible route is a LOCAL quantity that local-alloc seats on `$v0`
+   and whose range overlaps RTL insns 253-260 (the b*factor def-to-use window).
+   The channel sums ARE local quantities in the p2 body but land on `$a1`/`$v1`/
+   `$a0`; find the C shape that makes one of them the first local quantity
+   local-alloc seats in block 10. Accept only forms with build_insns 173 whose
+   BB2_ALLOC_DEBUG row for the b*factor allocno prints hardreg != 2.
+2. **Drop the b*factor allocno's priority below the allocnos that would then take
+   `$v0`.** `pri = floor_log2(nrefs)*nrefs*10000/livelen`; it is currently
+   ord=10, nrefs=6, livelen=10, pri=12000, ahead of `gp` (10909) and `rp`
+   (10000). A shape that lengthens its livelen without adding a reference (the
+   `mult` emitted earlier, the `mflo` consumed later) pushes it down the order.
+   Note s1-s5 show that NAMING the product is the wrong way to do this.
+3. **Re-measure the two s21 F1 chain extenders on the p2 chassis.** The ablation
+   numbers in s22's header (d2 minus g_src extender = 23, minus j extender = 21,
+   neither = 28) are d2-relative; the px reuse changed the arm's allocation, so
+   the g_src price may now be reachable in ordinary C. `tools/fake_ablate.py` on
+   p2 is the first probe of s24 before any new spelling work.
+
+## [s23] Reusing the existing `px` local as the blue channel's carrier - for both the source byte and the complement product - reproduces the target's blue seat ($a0) and lowers the honest floor below s22's d2 body.
+- mechanism: The target keeps the blue source AND its mult result in px's own register: t106 `andi $a0,$v0,0xF8`, t107 `mult $a0,$t5`, t108 `mflo $a0`. A separate `b_src` local is a distinct pseudo with no reason to co-locate with px, and in our build it forced the blue product onto $v0. C-level variable reuse (the sanctioned variable-reuse-for-codegen-control family) is what merges the two live ranges before allocation sees them.
+- probe: Built p1 (px carries the source only) and p2 (px carries the source and the product) on s22's d2 chassis, plus counter-ablations p3/p4/p5; scored each with `sandbox func_8003DE14 --disable all` and diffed the normalized opcode streams against build/src/code6cac_c2.o.
+- result: d2 14 -> p1 12 -> p2 12 (all 173 build / 173 target). p2 makes t106-t108 byte-exact where p1 still emits `mflo $v0`; p3 (source+product folded into one statement) 14, p4 (px also carries the blue sum) 23, p5 46. p2 is the new banked candidate. This also VOIDS s22's instance kill of 'px reused as the blue carrier' (forms b1 43, c1 15), which was measured on the u3 and a2 chassis before d2's shared `sum` local existed.
+- verdict: CONFIRMED
+
+## [s23] All 12 remaining divergent rows - the three channel sums, the blue mask, and the three latch rows - are downstream of one register seat: the `b * factor` mulsi3 result is a GLOBAL allocno that takes $v0 and holds it across the whole inner-loop basic block.
+- mechanism: A mulsi3 result has reg_preferred_class LO_REG; CLASS_LIKELY_SPILLED_P(LO_REG) is true and its reg_alternate_class is GR_REGS (not NO_REGS), so tools/gcc-2.7.2/local-alloc.c:472 sets reg_qty = -1 and local-alloc never seats it. It becomes a global allocno (BB2_ALLOC_DEBUG ord=10 nrefs=6 livelen=10 pri=12000) and global.c's find_reg first-fit hands it regno 2, because neither 2 nor 4 is in its conflict set and someone_prefers is empty. In the target $v0 is instead free scratch: each channel sum is born in $v0 and dies one insn later, and the latch's first load takes $v0 too.
+- probe: pwsh tools/grinder/dump.ps1 func_8003DE14 on the p2 body; read the register table and the RTL of block 10 in tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg (function region from line 15386) - reg 138 is the b*factor product ('used 6 times across 9 insns in block 10; pref LO_REG, else GR_REGS'), reg 134/128/140 are the three sums. Cross-checked with five latch respellings (v1-v5) whose full opcode diffs leave the 12 rows byte-identical.
+- result: Confirmed by the dump plus the latch probes: v2 (`while (++j < rect[2]*rect[3])`) and v3 (drop the `total` local, test the product inline) both score 12 and print EXACTLY the same 12 rows as p2, so the latch's $v0/$v1 swap is not decidable from the latch expression - it moves only with the block-wide $v0 reservation. The dump also explains why the sums are tied to their sources: r_src, g_src, px and pixel all print 'dies in 2 places' (they are the reused C variables), failing the same local-alloc.c:472 reg_n_deaths==1 test, so combine_regs (local-alloc.c:1784) bails on every operand and the sums are fresh LOCAL quantities that cannot reach $v0.
+- verdict: CONFIRMED
+
+## [s23] Staging `b * factor` into a named C local re-prices its allocno and seats it off $v0.
+- mechanism: Giving the product a C name was expected to change its reference count and live length and so its find_reg order; instead it converts the pseudo from a LO_REG-preferring global allocno into an ordinary local that dies once, which local-alloc seats directly and the whole arm re-seats around it.
+- probe: Five placements of a named `bf = b * factor` on the p2 chassis: s1 at the top of the arm, s2 after the red channel, s3 after the green channel, s4 with `bf + px` operand order, s5 with all three `*factor` products staged up front. Scored with sandbox --disable all.
+- result: s1 47 (and only 171 build insns), s2 41, s3 41, s4 41, s5 49 (167 build insns). Every form is far worse than the 12 baseline and several change the instruction count, so none is a partial win.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); p2 chassis at 12/173, with both s21 F1 chain extenders present
+
+## [s23] Re-partitioning the shared `sum` local across the three channels reaches the $v0 seat on the px-reuse chassis.
+- mechanism: The target's three sums all occupy $v0, which suggested one reused C carrier; the s22 partition (green+blue) was chosen before the px reuse existed, so the optimum partition could have moved with the chassis.
+- probe: r1 `sum` for all three channels, r2 red+blue, r3 blue only, r4 two distinct locals `sum`/`sum2`, r5 `b*factor` named and added through `sum` - all on the p2 chassis; plus q1/q2/q3/q6 on the pre-px d2 chassis.
+- result: r1 44, r2 28, r3 23, r4 23, r5 12 (tie, no new rows); q1 15, q2 17, q3 15, q6 30. The s22 green+blue partition remains optimal on both chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173 (r-series) and d2 chassis 14/173 (q-series), both s21 F1 chain extenders present
+
+## [s23] The 3-row latch residual (lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1) is decidable from the shape of the loop-latch expression or from whether the trip count is held in a `total` local.
+- mechanism: The two loads are short local quantities; the order in which local-alloc seats them would ordinarily follow the expression's operand order, so a different latch spelling should swap them.
+- probe: v1 `j != rect[2]*rect[3]`, v2 `while (++j < rect[2]*rect[3])` with the increment moved into the latch, v3 dropping the `total` local entirely and testing `rect[2]*rect[3] > 0` inline in the guard, v4 `(s32)`-cast product, v5 `rect[2]*rect[3] - j > 0`. Scored, and the full normalized opcode diff read for v2 and v3.
+- result: v1 14 (172 build insns - drops an instruction), v2 12, v3 12, v4 12, v5 14. v2 and v3 print exactly the same 12 divergent rows as p2, including the latch rows, so the latch seat does not move with the latch expression. This extends s22's h1-h4 latch kill to the px chassis and to the `!=`, `++j` and no-`total` shapes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s23] An output-word accumulator, an or-chain re-association, a named blue mask, or `b_src`'s declaration site reaches the blue/sum seats on the px-reuse chassis.
+- mechanism: Each of these changes which pseudo is live across the b*factor product's def-to-use window, which is the window that would have to contain a $v0-seated local quantity for the product to be excluded from regno 2.
+- probe: u1 `out` accumulator opened before the red channel, u2 named blue mask local, u3 or-chain re-associated as ((c|r)|(g|b)), u4 r_ch masked at its use instead of at its definition, u5 blue sum inlined into b_shift with `sum` dropped; q4 `b_src` declared last among the source locals and q5 `b_src` declared uninitialised and assigned immediately before its use (both on the d2 chassis).
+- result: u1 70, u2 13, u3 42, u4 12 (tie, same rows), u5 23; q4 14 and q5 14 with a residual byte-identical to d2. None of these live ranges lands inside the b*factor window in a way that changes the seat.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173 (u-series) and d2 chassis 14/173 (q-series), both s21 F1 chain extenders present

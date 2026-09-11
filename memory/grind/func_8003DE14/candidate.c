@@ -1,70 +1,77 @@
-/* func_8003DE14 - candidate (grind session 22, REDERIVE modality).
+/* func_8003DE14 - candidate (grind session 23, REDERIVE modality).
  *
- * SCORE 14 / 173 insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
- * NEW FLOOR: 26 (s13-s20) -> 16 (s21) -> 14 (this session).
+ * SCORE 12 / 173 insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
+ * FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12 (this session).
  *
- * CHASSIS.  s21's u3 body (the s18 head-exact chassis + the two F1
- * combine-foldable chain extenders) with the BLEND ARM RE-DERIVED: the blue
- * channel no longer reuses its source variable for the second product, and the
- * GREEN and BLUE channel sums are staged through one shared `sum` local.
+ * WHAT CHANGED vs s22's d2.  The BLUE channel no longer has a `b_src` local at
+ * all: `px` (the `pixel & 0xFFFF` carrier, dead after the green source shift)
+ * is REUSED to carry both the blue source byte and the blue complement product:
  *
- * THE TWO STRUCTURAL CHANGES (ablation, every form 173 build / 173 target):
- *     u3   s21 incumbent (blue reuses b_src for b*factor) ....... 16
- *     a2   u3, blue written as one expression, `bp` dropped ..... 15
- *     d2   a2 + shared `sum` local for the GREEN and BLUE sums .. 14   <- this
- *   counter-ablations: d1 `sum` for all three channels 30; f1 `sum` for red +
- *   green 30; f2 `sum` for red only 15 (single-use, combine folds it back);
- *   a1 blue product reuses b_src 38; a3 all three products reuse their source
- *   38/50; b1 fully inline arm, no channel locals 43; g1/g2 blue chained
- *   through ONE variable all the way to the mask 31/55; e1-e3 the output word
- *   accumulated into a named `out` 48/41/36.
+ *      px = ((u32)px >> 7) & 0xF8;      <- blue source, reusing px
+ *      px = px * complement;            <- blue complement product, same carrier
+ *      sum = px + b * factor;
  *
- * LEVER ACCOUNTING on this body (both s21 FAKE extenders still load-bearing):
- *     d2 as written ............................. 14
- *     d2 minus the g_src chain extender (c2) .... 23
- *     d2 minus the j chain extender (c3) ........ 21
- *     neither extender (c5) ..................... 28
+ * That is the sanctioned "variable reuse for codegen control" shape, and it
+ * lands the target's t106/t107/t108 exactly (`andi $a0,$v0,0xF8` / `mult $a0,$t5`
+ * / `mflo $a0`): the target keeps the blue source AND its product in px's own
+ * register $a0, and only a C-level reuse of px produces that.
  *
- * WHAT IS LEFT - 14 insns, and s22 proved they are ONE decision plus the trip
- * test.  Rows 106,107,108,111,112,114,115,118,119,123,124 are all downstream of
- * a single register choice: the blue temp (pseudo 139: `b_src` and the
- * b_src*complement product, which share a register in BOTH builds) takes $v0 in
- * ours and $a0 in the target.  With it on $a0 the three channel sums all fall to
- * $v0 (the target's rows 111/114/118) and b_shift keeps $a0.
- *   MECHANISM, read out of global.c with BB2_FINDREG_DEBUG=139 (the exact sets
- *   are in tmp/grind/func_8003DE14/s22/findreg_d2_139/stderr.log):
- *     conflicts(139)   = {3,5,6,7,8,16,29}   - 2 ($v0) and 4 ($a0) both absent
- *     someone_prefers  = {}                  - empty
- *     pass0_used       = conflicts + the not-yet-used regs; 2 is free, so
- *                        find_reg's first-fit loop returns 2.
- *   To land 4, regno 2 must enter pass0_used, i.e. EITHER some allocno holding
- *   $v0 must conflict with 139, OR a later-allocated allocno must *prefer* $v0
- *   (global.c set_preference only fires on a reg-reg copy where one side is
- *   already hard-numbered, so the preference route needs a locally-allocated
- *   $v0 pseudo copied into a global allocno).
- *   The cheap version of the conflict route is MEASURED DEAD: making the sums a
- *   multi-write global allocno (d1/f1) does put the sum on $v0 and does fix rows
- *   111/112, but it adds one allocno to the ordered list and every
- *   lower-priority allocno shifts one register (complement $t5->$t6, factor
- *   $t3->$t4, rp $t2->$t3), costing more than the 11 insns it buys.  The target
- *   therefore does NOT have an extra global allocno there: its sums are LOCAL
- *   quantities that local-alloc seats on $v0 BEFORE global alloc runs, which is
- *   what makes $v0 a hard-reg conflict for the blue temp.  In our build the red
- *   sum is instead merged by local-alloc's combine_regs into r_src's quantity
- *   (pseudo 123, nrefs 12 / livelen 13, $a1) - that merge is the thing to break.
+ *   ABLATION on this chassis (every form 173 build / 173 target):
+ *      d2   s22 incumbent (separate `b_src` local) ................ 14
+ *      p1   px reused for the blue SOURCE only ................... 12
+ *      p2   px reused for the source AND the product (this) ...... 12   <- kept
+ *      p3   source+product folded into one statement ............. 14
+ *      p4   px also carries the blue SUM ......................... 23
+ *      p5   sum carries the product, px the sum .................. 46
+ *   p2 is kept over p1 because p1 still emits `mflo $v0` at t108 (one extra
+ *   wrong row absorbed by the edit distance); p2 makes t106-t108 byte-exact and
+ *   leaves a strictly smaller, cleaner residual.
  *
- * TRIP TEST - 3 of the 14 (rows 127/128/130).  Target lh $v0,4($s0) /
- * lh $v1,6($s0) / mult $v0,$v1; ours lh $v1,4 / lh $v0,6 / mult $v1,$v0.  s22
- * measured that the register pair is POSITIONAL, not expression-driven:
- * `rect[3] * rect[2]` (h1) swaps the two offsets but leaves $v1 on the first
- * load and $v0 on the second; `rect[2]*rect[3] > j` (h3) and `(s32)rect[2]*...`
- * (h2) are byte-identical to the incumbent latch; re-reading `total` in the
- * latch (h4) costs 2.
+ *   NOTE FOR THE LEDGER: s22 banked "px reused as the blue carrier" as KILLED
+ *   (forms b1/c1, 43 and 15) - but that was measured on the u3 and a2 chassis,
+ *   BEFORE d2's shared `sum` local existed.  The kill was instance-scoped and it
+ *   is now VOID: on the d2 chassis the same construct is worth -2.
  *
- * ORDINARY-C STATUS UNCHANGED.  The two F1 chain extenders are still present and
- * still require the 2026-07-01 grant plus their annotations; this body is NOT
- * submittable as-is.  `sum` itself is an ordinary named intermediate (a real
- * value, written twice and read twice, no annotation needed).
+ * THE RESIDUAL IS ONE REGISTER SEAT - all 12 rows.
+ *   t111/t112  addu $v0,$t2,$a1 / sra $a1,$v0,15   (ours: addu $a1,$t2,$a1 ...)
+ *   t114/t115  addu $v0,$t1,$v1 / sra $v1,$v0,10   (ours: addu $v1,$t1,$v1 ...)
+ *   t117-t119  mflo $t7 / addu $v0,$a0,$t7 / sra $a0,$v0,5
+ *   t123/t124  andi $v1,$a0,0x7C00 / or $v0,$v0,$v1
+ *   t127/t128/t130  lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1
+ *   In the TARGET $v0 is a free scratch across the whole inner-loop block: each
+ *   channel sum is born in $v0 and dies one insn later, and the latch's first
+ *   load takes $v0 too.  In OUR build $v0 is OCCUPIED for the whole block by ONE
+ *   global allocno, and every value below it shifts one seat.
+ *
+ *   PASS ATTRIBUTION (read out of tmp/grind/func_8003DE14/dumps/*.lreg for this
+ *   exact body, s23 - not inferred):
+ *     - The $v0 occupant is the `b * factor` mulsi3 result (insn 253, reg 138):
+ *       "Register 138 used 6 times across 9 insns in block 10; pref LO_REG, else
+ *       GR_REGS".  Because reg_preferred_class is LO_REG and
+ *       CLASS_LIKELY_SPILLED_P(LO_REG) is true, local-alloc.c:472 sets
+ *       reg_qty = -1 for it, so local-alloc NEVER seats it; it becomes a global
+ *       allocno (BB2_ALLOC_DEBUG ord=10, nrefs=6, livelen=10, pri=12000) and
+ *       global.c's find_reg first-fit hands it regno 2.
+ *     - The same line explains why the sums combine with their sources: r_src,
+ *       g_src, px and pixel all print "dies in 2 places" (they are the reused
+ *       C variables), so reg_n_deaths != 1 and they too are global allocnos;
+ *       the channel sums are the only LOCAL quantities in sight, and they end up
+ *       on whatever local-alloc has free - never $v0, because the global
+ *       allocno's block-level liveness has already claimed it by the time the
+ *       seats are printed.
+ *   THE ONE THING TO BREAK: get regno 2 out of the b*factor allocno's reach,
+ *   either by a LOCAL quantity that local-alloc seats on $v0 and that overlaps
+ *   insns 253-260, or by dropping that allocno's priority below the allocnos
+ *   that would then take $v0.  Naming `b * factor` as a C local does NOT do it -
+ *   it turns the pseudo into an ordinary local (dies once, no LO_REG pref) and
+ *   the whole arm re-seats: s1 47, s2/s3/s4 41, s5 49.
+ *
+ * ORDINARY-C STATUS UNCHANGED.  The two s21 F1 chain extenders are still
+ * present and still load-bearing; this body is NOT submittable as-is.
+ *   `((sum + g_src) - g_src)`  - the g_src price extender
+ *   `((s32)dst_buf + j) - j`   - the j price extender
+ * `sum` remains an ordinary named intermediate; the px reuse is the sanctioned
+ * variable-reuse family and needs no annotation.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -128,7 +135,6 @@ void func_8003DE14(s16 *rect, s32 count) {
                         {
                             s32 r_src = (pixel & 0x1F) << 3;
                             s32 g_src = ((u32)px >> 2) & 0xF8;
-                            s32 b_src = ((u32)px >> 7) & 0xF8;
                             s32 sum;
                             s32 rp;
                             s32 gp;
@@ -143,7 +149,9 @@ void func_8003DE14(s16 *rect, s32 count) {
                             g_src = g * factor;
                             sum = gp + g_src;
                             g_ch = (sum >> 10) & 0x3E0;
-                            sum = b_src * complement + b * factor;
+                            px = ((u32)px >> 7) & 0xF8;
+                            px = px * complement;
+                            sum = px + b * factor;
                             b_shift = ((sum + g_src) - g_src) >> 5;
                             *dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);
                         }
