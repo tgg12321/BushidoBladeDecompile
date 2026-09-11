@@ -3366,3 +3366,140 @@ the arm's locals relative to the two enclosing blocks.
 - [s26] The output-word or-chain axis (11 bodies) bottoms at 12; only a named high bit (s32 hi = pixel & 0x8000) ties. Associativity is worth up to +33, so the incumbent's flat left-association is already the optimum.
 
 - [s26] The channel-result carrier axis (8 bodies), untouched by s25's 1,496-body sweep, bottoms at 12; every reuse costs +4 to +25.
+
+## [s27 SOLVER] The residual's causal chain is now closed end-to-end, and both target seats have been PRODUCED (at a cost elsewhere)
+
+Chassis re-measured at dispatch: the p2 candidate is **12 / 173 build / 173 target**
+on HEAD 2026-09-11 (post -mel, post -msoft-float). All measurements below are on
+that chassis with both s21 F1 chain extenders present unless stated.
+
+### 1. Stage triage (solver rule 1) — the residual is RA, at the OBJECT level
+`python3 tools/ra_solver/goal_from_tgt.py classify code6cac_c2 func_8003DE14`
+(object mode, since src is INCLUDE_ASM-routed on main) prints
+**FIRST DIVERGENCE: RA**, ours 173 / target 173, 12 renamed pairs:
+`$v1->$v0 x4, $a1->$v0 x2, $v0->$t7 x2, $a0->$v0 x2, $a0->$v1 x2, $v0->$v1 x2`.
+No PRE-RA multiset difference and no scheduler difference: every one of the 12
+residual rows is a register rename on an identical instruction.
+
+### 2. The pseudo-level goal (solver rule 3 — FULL disposition, not a subset)
+Read off tmp/ra_solver_work/code6cac_c2.i.lreg for the p2 body (insns 230-263
+are the blend arm; the numbering is stable for this body):
+
+| value | pseudo | ours | target |
+|---|---|---|---|
+| red sum `rp + r_src` | 134 | $a1 (5) | **$v0 (2)** |
+| red shift / r_ch | 135 / 131 | $a1 | $a1 (unchanged) |
+| green sum | 128 (`sum` var) | $v1 (3) | **$v0** |
+| green shift / g_ch | 136 / 132 | $v1 | $v1 (unchanged) |
+| `b * factor` mflo | 138 | $v0 (2) | **$t7 (15)** |
+| blue sum | 140 | $a0 (4) | **$v0** |
+| blue mask `& 0x7C00` | 149 | $a0 | **$v1** |
+| latch `lh 4(s0)` / `lh 6(s0)` | 154 / 157 | $v1 / $v0 | **$v0 / $v1** |
+
+Everything else (122 px -> $a0, 123 r_src -> $a1, 126 g_src -> $v1, 109 dst -> $a2,
+108 src -> $a3, 121 -> $t0, 130 -> $t1, 129 -> $t2, 110 -> $t3, 115 -> $t4,
+116 -> $t5, 72 -> $s0 ...) already matches the target exactly.
+
+### 3. Why OUR build puts $v0 where it does — the reload retry, dumped not inferred
+`.greg` for the p2 body: global.c seats **138 in LO (hardreg 65)** at ord 9
+(nrefs 6, livelen 9, pri 13333), because its preferred class is LO_REG
+(`.lreg`: "Register 138 ... pref LO_REG, else GR_REGS"). Insn 260
+(`140 = 122 + 138`) then needs a GR operand, so reload spills 65:
+
+    ;; Need 1 reg of class GR_REGS (for insn 260).
+    Spilling reg 14.  Spilling reg 65.
+     Register 138 now in 2.
+
+`reload_sim.py --show code6cac_c2 func_8003DE14` prints the retry in full:
+`RETRY pseudo=138 had=65 spillreg=65 nrefs=6 livelen=9 calls=0 -> got=2`, with
+the alt=1 scan leaving exactly `{2, 15, 24, 25}` free — **$v0 and $t7 are both
+free and the ascending scan takes $v0**. That single seat is what displaces the
+three channel sums, the blue mask and the latch loads: 12 rows from one cause.
+
+### 4. The global model REPRODUCES the p2 allocation exactly, and says 138 cannot
+be moved by any modelled input
+`simulate.py` on the extracted model returns the ALLOCDBG dispositions with
+**zero diffs** (24 allocnos). `inverse.py global --goal <full disposition with
+138:15> --depth 2` returns a **validated NEGATIVE**: no perturbation of refs /
+live span / birth order / conflicts / preferences / calls-crossed reaches it,
+and the tool itself names reload's spill-retry as the owning mechanism.
+Hand counterfactuals on the simulator confirm why: removing 138's LO preference,
+adding a 138<->159 conflict, or stretching its live length all give 138
+**$v0 (2)** at global time and cascade 129/130/110/115/116 down one seat each.
+So "deny 138 the LO seat" is the wrong lever - the seat it then takes is $v0.
+
+### 5. THE MECHANISM, and the C form that produces both target seats
+$t7 is not something 138 is steered into; it is what the retry's ascending scan
+returns **once $v0 is already occupied**. So the target's `mflo $t7` is a
+CONSEQUENCE of the sums owning $v0, not an independent fact.
+
+A pseudo owns $v0 across the whole arm only if it is a global allocno there, and
+local-alloc.c:470-476 makes a pseudo ineligible (reg_qty = -1) when
+`reg_n_deaths != 1`. One C variable carrying ALL THREE channel sums is exactly
+that: three defs, three deaths.
+
+Measured (tmp/grind/func_8003DE14/s27/v/s3_ext_none.c, banked as
+`chassis_s27_threeway_sum_42.c`):
+
+    sum = rp + r_src;     r_ch = (sum >> 15) & 0x1F;
+    sum = gp + g_src;     g_ch = (sum >> 10) & 0x3E0;
+    sum = px + b*factor;  b_shift = sum >> 5;
+
+`.lreg` for that body: **"Register 128 used 18 times across 8 insns in block 10;
+dies in 3 places"** - one pseudo, ineligible, global. Its dispositions:
+
+* **128 (all three sums) -> hardreg 2 = $v0**  (ord 1, nrefs 18, livelen 8, pri 90000)
+* **137 (= the old 138, `b * factor`) -> hardreg 15 = $t7**, via the SAME reload
+  retry, which now cannot take $v0 because 128 holds it.
+
+Both target seats, produced by ordinary C (a reused local), verified in the dump.
+The three shift results split off into their own pseudos (134/135/133) exactly as
+the target has them (`sra $a1,$v0,15` / `sra $v1,$v0,10` / `sra $a0,$v0,5`).
+
+### 6. Why that body still scores 42 — the g_src ref-lift goes INERT on it
+The three-way share is only reachable with the blue-path F1 extender removed
+(`((sum + g_src) - g_src) >> 5` splits the blue sum into its own pseudo 140,
+which is precisely what prevents the third death). Removing it drops pseudo 126
+(`g_src`) from nrefs 18 to 12, so its priority falls 60000 -> 32727 and it moves
+from ord 1 to ord 4; the whole seat bank then rotates by one:
+122 $a0->$a2, 126 $v1->$a3, 123 $a1->$v1, 109 $a2->$t0, 108 $a3->$t1,
+121 $t0->$t2, 130 $t1->$a0, 129 $t2->$a1. That rotation, not the sums, is the 42.
+
+Seven alternative placements of the same ref-lift on the three-way chassis
+(on `b_shift`, on `g_ch`'s mask, inside the sum expression on either operand,
+on the or-chain's g_ch term, on the whole or-chain, on b_shift inside the or)
+**all score exactly 42 or worse** - i.e. every one of them is folded before
+flow.c counts references, so none of them restores 126's 18 refs.
+
+### 7. Kill re-audit (mandated) — the s26 2x2 reproduces on today's chassis
+s2_ext_blue (= incumbent) **12**, s2_ext_none (g_src extender removed) **40** -
+identical to s26's 2x2 entry for "g_src removed". The banked extender prices are
+re-confirmed, not stale.
+
+### 8. The three-way chassis's 42 rows are a REGISTER-BANK ROTATION, not arm damage
+`tmp/grind/func_8003DE14/s24/ed2.py` on the s27 three-way body (sandbox object,
+score 42, 173/173) shows the blend arm's disputed rows are now **target-exact**:
+`t117 addu $v0,$t2,$a1` matches as `addu $v0,...`, `t118 sra $a1,$v0,15`,
+`t123 mflo $t7` and `t124 addu $v0,...,$t7` are all gone from the diff. What
+remains is a consistent one-position rotation of the surrounding bank -
+`a3<->t1` (src cursor), `a2<->t0` (dst cursor), `t2<->a1`, `t1<->a0`,
+`v1<->a3`, `a0<->a2` - i.e. every pointer/product moved one seat because
+pseudo 126 lost its reference lift. The instruction stream, the arm's structure
+and the two disputed seats are all correct on that chassis; only the pricing of
+the OTHER allocnos is wrong. That is the whole remaining task.
+
+- [s27] Chassis re-measured at dispatch: the p2 candidate is 12 / 173 build / 173 target on HEAD 2026-09-11, which resolves the brief's 'measurement unavailable'.
+
+- [s27] Stage triage (object mode, since src is INCLUDE_ASM-routed on main): FIRST DIVERGENCE = RA. Renames $v1->$v0 x4, $a1->$v0 x2, $v0->$t7 x2, $a0->$v0 x2, $a0->$v1 x2, $v0->$v1 x2.
+
+- [s27] Pseudo-level goal read off the .lreg for the p2 body: 134 (red sum) $a1->$v0, 128 (green sum) $v1->$v0, 140 (blue sum) $a0->$v0, 138 (b*factor mflo) $v0->$t7, 149 (blue mask) $a0->$v1, 154/157 (latch lh pair) swapped. Every other allocno already matches the target.
+
+- [s27] The .greg dump for p2 names the cause explicitly: ';; Need 1 reg of class GR_REGS (for insn 260). Spilling reg 14. Spilling reg 65. Register 138 now in 2.' - the $v0 seat is a reload spill-retry outcome, not a global.c choice.
+
+- [s27] simulate.py reproduces the p2 global allocation with zero diffs over 24 allocnos, validating the model on this function before any search result is credited.
+
+- [s27] inverse.py global with the full disposition goal (138:15) at depth 2 returns a validated NEGATIVE and names reload's spill-retry as the owning mechanism.
+
+- [s27] The three-way-shared-sum body produces 128 -> $v0 and 137 -> $t7 in the dump, and its residual diff shows the blend arm's disputed rows are target-exact; its 42 is a one-position rotation of the surrounding pointer/product bank caused by pseudo 126 dropping from 18 to 12 references.
+
+- [s27] Seven relocations of the `(X + g_src) - g_src` reference lift on that chassis are inert (42/42/42/42/42, plus 45 and 47): each folds before flow.c counts references.

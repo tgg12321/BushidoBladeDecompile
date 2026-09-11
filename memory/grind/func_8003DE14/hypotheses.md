@@ -2518,3 +2518,90 @@ use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s27] The 12 residual rows are one register-allocation fact - the target's $v0 is owned across the blend arm by a pseudo our build does not have - and the `mflo $t7` is a consequence of that ownership rather than an independent seat.
+- mechanism: global.c seats pseudo 138 (`b * factor`) in LO (its preferred class is LO_REG); insn 260 needs a GR operand, so reload spills 65 and `retry_global_alloc` re-seats 138 by the Phase-6 closed form `got = min{r not in base|forbidden|~class|conflicts}`. reload_sim.py prints the scan leaving {2, 15, 24, 25} free, so ours takes $v0 and the target's $t7 is simply the next free register once $v0 is taken.
+- probe: goal_from_tgt.py classify/goal (object mode) for the stage verdict and the 12 renames; extract.py + simulate.py (0 diffs vs ALLOCDBG) for the forward model; inverse.py global with the FULL 24-allocno goal at depth 2; reload_harvest.sh + reload_extract.py + reload_sim.py --show for the retry; hand counterfactuals in tmp/grind/func_8003DE14/s27/cf.py.
+- result: stage = RA (no multiset or ordering difference). inverse.py returns a validated NEGATIVE for 138->15 at depth 2, and names reload spill-retry as the owner. Every counterfactual that denies 138 the LO seat (no LO preference / conflict with 159 / longer live length) gives it $v0 anyway and rotates 129/130/110/115/116 down a seat. So the seat cannot be moved by pricing 138; it moves only if $v0 is already occupied.
+- verdict: CONFIRMED
+
+## [s27] Carrying ALL THREE channel sums in ONE local makes that pseudo a three-death (local-alloc-ineligible) global allocno, which takes $v0 across the arm and thereby forces the `b * factor` reload retry into $t7 - both of the target's disputed seats at once.
+- mechanism: local-alloc.c:470-476 sets reg_qty = -1 when reg_n_deaths != 1, so a variable written and read three times in the block is never a local quantity and never a combine_regs usedreg; it becomes a global allocno holding one hard register over the whole arm. With $v0 held, reload's ascending retry scan (which had {2,15,24,25} free) returns 15 = $t7.
+- probe: tmp/grind/func_8003DE14/s27/v/s3_ext_none.c (banked as memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c) applied to src, then extract.py + the .lreg register header lines + the model's dispositions.
+- result: `.lreg` prints "Register 128 used 18 times across 8 insns in block 10; dies in 3 places"; dispositions give 128 -> hardreg 2 ($v0) at ord 1 (nrefs 18, livelen 8, pri 90000) and 137 (the b*factor mflo) -> hardreg 15 ($t7) through the same reload retry. The three shift results split into their own pseudos, matching the target's `sra $a1,$v0,15 / sra $v1,$v0,10 / sra $a0,$v0,5` shape. Both target seats are produced by ordinary C.
+- verdict: CONFIRMED
+
+## [s27] The g_src reference-lift that the incumbent gets from `((sum + g_src) - g_src) >> 5` can be relocated onto another value so that it survives on the three-way-shared-sum chassis.
+- mechanism: the blue-path extender is what splits the blue sum into its own pseudo (140), which is exactly what prevents the shared `sum` from reaching three deaths; so the three-way share and that extender are mutually exclusive by construction. The extender's only job is lifting pseudo 126's reg_n_refs from 12 to 18 (priority 32727 -> 60000, ord 4 -> ord 1), so any other placement that flow.c still counts would do.
+- probe: seven complete bodies in tmp/grind/func_8003DE14/s27/v2/ placing `(X + g_src) - g_src` on b_shift, on g_ch's mask, on either operand inside the sum expression, on the or-chain's g_ch term, on the whole or-chain word, and on b_shift inside the or-chain; scored in one tools/sweep_variants.py call.
+- result: p1/p3/p8/p9/p10 all score exactly 42 - the same as removing the extender entirely - and p4 45, p11 47. Every placement folds before flow.c counts references, so none restores 126 to 18 refs. The three-way chassis therefore sits at 42, with its seat bank rotated one position from the target (122 $a0->$a2, 126 $v1->$a3, 123 $a1->$v1, 109 $a2->$t0, 108 $a3->$t1, 121 $t0->$t2, 130 $t1->$a0, 129 $t2->$a1).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; three-way-shared-sum chassis (tmp/grind/func_8003DE14/s27/v/s3_ext_none.c), j extender present, g_src blue-path extender removed by construction
+
+## [s27] KILL RE-AUDIT: the s26 2x2 extender prices still hold on today's chassis.
+- mechanism: mandated re-audit of the closest banked instance kill before new probing; an extender's price is a function of the whole arm's allocation and the chassis has been re-dumped since s26.
+- probe: s2_ext_blue (= the incumbent p2 body) and s2_ext_none (g_src extender removed, j extender kept) in the same tools/sweep_variants.py call as the s27 sweep.
+- result: 12 and 40 respectively, both at 173 build insns - identical to s26's 2x2 entries. The banked prices are current, not stale.
+- verdict: CONFIRMED
+
+### LIVE FRONTIER (for s28)
+
+1. **Lift pseudo 126 (`g_src`) back to 18 refs on the three-way-shared-sum
+   chassis WITHOUT re-splitting the blue sum.** That chassis already produces
+   BOTH target seats (128 -> $v0, 137 -> $t7); the entire 42-point gap is the
+   one-position seat rotation caused by 126 falling from ord 1 to ord 4. Seven
+   `(X + g_src) - g_src` placements are dead (all fold pre-flow). Untried and
+   ordinary: give the green channel a genuinely extra READ of `g_src` that
+   survives to flow.c - e.g. compute the green source from `g_src` twice
+   (duplicate-read into branch arms, .claude/rules/split-read-defeats-hoist.md),
+   or re-order so `g_src` is also the carrier of a second real value in the arm
+   (variable reuse), or lift 126's priority the other way: SHORTEN its live
+   length (pri = floor_log2(refs)*refs/livelen*10000, so livelen 11 -> 6 gives
+   60000 without touching refs). The live-length route has never been tried and
+   needs no extra construct at all.
+
+2. **Ask the solver the inverse question on the s27 model instead of guessing.**
+   Re-run `python3 tools/ra_solver/extract.py func_8003DE14 code6cac_c2` with
+   `chassis_s27_threeway_sum_42.c` applied, then
+   `inverse.py global <model> --goal` with the FULL target disposition
+   {118:2, 128:2, 126:3, 122:4, 123:5, 109:6, 108:7, 121:8, 130:9, 129:10,
+   110:11, 115:12, 116:13, 137:15, 72:16, 74:17, 73:18, 78:19, 77:20, 76:21,
+   79:22, 75:23, 100:30, 156:65} at depth 2-3. On the p2 chassis that goal was
+   unreachable because it needed reload to move 138; on THIS chassis the reload
+   outcome is already correct, so the question reduces to pure allocno pricing -
+   exactly what the model is validated for. A vector there is a directly
+   spellable C lever.
+
+3. **The blue mask and the latch load pair may follow for free.** Rows
+   t123/t129/t133/t134 (149 -> $v1, 154/157 swapped) were never separately
+   attacked; they are downstream of the same $v0 ownership. Re-read the residual
+   with tmp/grind/func_8003DE14/s24/ed2.py on the s27 chassis before treating
+   them as independent - if they already match there, the remaining work is
+   only frontier 1.
+
+## [s27] The 12 residual rows are one register-allocation fact - in the target a pseudo owns $v0 across the blend arm, and the `mflo $t7` is what reload's ascending retry scan returns once $v0 is occupied, not an independently steerable seat.
+- mechanism: global.c seats pseudo 138 (`b * factor`) in LO because reg_preferred_class is LO_REG; insn 260 needs a GR operand, so reload spills 65 and retry_global_alloc re-seats it by the Phase-6 closed form got = min{r not in base|forbidden|~class|conflicts}. reload_sim.py prints that scan with exactly {2,15,24,25} free, so ours takes $v0 (2) and the target's $t7 (15) is simply the next free seat.
+- probe: goal_from_tgt.py classify/goal in object mode (build/src/code6cac_c2.o vs tmp/sandbox/func_8003DE14/code6cac_c2.o); extract.py + simulate.py forward check; inverse.py global with the FULL 24-allocno goal at depth 2; reload_harvest.sh + reload_extract.py + reload_sim.py --show; hand counterfactuals in tmp/grind/func_8003DE14/s27/cf.py.
+- result: Stage verdict RA (173/173, 12 renames, no multiset or ordering difference). simulate.py reproduces the p2 allocation with ZERO diffs across 24 allocnos. inverse.py returns a validated NEGATIVE for 138->15 at depth 2 and names reload spill-retry as the owner. Counterfactuals removing 138's LO preference, adding a 138<->159 conflict, or stretching its live length all give 138 $v0 anyway and rotate 129/130/110/115/116 down one seat each.
+- verdict: CONFIRMED
+
+## [s27] Carrying all three channel sums in ONE local makes that pseudo a three-death, local-alloc-ineligible global allocno which takes $v0 across the arm and thereby forces the b*factor reload retry into $t7, producing both of the target's disputed seats with ordinary C.
+- mechanism: local-alloc.c:470-476 sets reg_qty = -1 when reg_n_deaths != 1, so a local written and read three times in the block is never a local quantity and never a combine_regs usedreg; it becomes a global allocno holding one hard register over the whole arm. With $v0 held, reload's ascending retry scan returns 15 = $t7.
+- probe: tmp/grind/func_8003DE14/s27/v/s3_ext_none.c (banked as memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c) applied to src, then tools/ra_solver/extract.py + the .lreg register header lines + the model dispositions, and tmp/grind/func_8003DE14/s24/ed2.py on the sandbox object.
+- result: The .lreg prints 'Register 128 used 18 times across 8 insns in block 10; dies in 3 places'; dispositions give 128 -> hardreg 2 ($v0) at ord 1 (nrefs 18, livelen 8, pri 90000) and 137 (the b*factor mflo) -> hardreg 15 ($t7) through the same reload retry. The residual diff on that body shows t117/t118/t123/t124 (addu $v0 / sra $a1 / mflo $t7) are target-exact, and the three shift results split into their own pseudos exactly as the target has them.
+- verdict: CONFIRMED
+
+## [s27] On the three-way-shared-sum chassis the g_src reference lift can be relocated onto another value - b_shift, g_ch's mask, either operand inside the sum expression, the or-chain's g_ch term, the whole or-chain word, or b_shift inside the or-chain - so that flow.c still counts it and pseudo 126 keeps 18 references.
+- mechanism: The blue-path extender `((sum + g_src) - g_src) >> 5` is what splits the blue sum into its own pseudo, which is exactly what prevents the shared `sum` from reaching three deaths, so the share and that extender are mutually exclusive. The extender's only job is lifting pseudo 126's reg_n_refs from 12 to 18 (priority 32727 -> 60000, ord 4 -> ord 1), so another placement that survives to flow.c would serve.
+- probe: Seven complete bodies in tmp/grind/func_8003DE14/s27/v2/ scored in one tools/sweep_variants.py call against the 12/173 baseline.
+- result: p1_bshift / p3_gch / p8_orall / p9_sumpx / p10_sumbf all score exactly 42 - identical to removing the extender entirely - and p4_orgch 45, p11_orbsh 47, all at 173 build insns. Every placement folds before flow.c counts references, so none restores 126 to 18 refs. The three-way chassis therefore stays at 42 with its seat bank rotated one position (122 $a0->$a2, 126 $v1->$a3, 123 $a1->$v1, 109 $a2->$t0, 108 $a3->$t1, 121 $t0->$t2, 130 $t1->$a0, 129 $t2->$a1).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; three-way-shared-sum chassis (tmp/grind/func_8003DE14/s27/v/s3_ext_none.c), j extender present, blue-path g_src extender absent by construction
+
+## [s27] KILL RE-AUDIT (mandated): the s26 2x2 extender prices reproduce on today's chassis.
+- mechanism: An extender's price is a function of the whole arm's allocation, so a price recorded on an earlier dump is not transferable; the re-audit re-measures the incumbent and the g_src-removed body in the same sweep as this session's new bodies.
+- probe: s2_ext_blue (= the incumbent p2 body) and s2_ext_none (g_src extender removed, j extender kept) inside the s27 tools/sweep_variants.py call, plus the driver-style dispatch measurement of the incumbent.
+- result: 12 and 40 respectively, both at 173 build insns - identical to s26's 2x2 entries for 'both present' and 'g_src removed'. The banked prices are current; the incumbent chassis is independently confirmed at 12/173 by the dispatch measurement.
+- verdict: CONFIRMED

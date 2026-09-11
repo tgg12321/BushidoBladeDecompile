@@ -133,7 +133,25 @@
  *       the reg_n_deaths!=1 route and it does not pay here.
  *   => The lever for s27 is BLOCK STRUCTURE (make a sum live across a block
  *      boundary), not spelling.  See hypotheses.md's s27 frontier.
+ * [s27 SOLVER - the residual's cause is now proven, and a DIFFERENT chassis
+ *  already produces both disputed seats]
+ *   The 12 rows are one fact: in the target a pseudo owns $v0 across the blend
+ *   arm, and `mflo $t7` is merely what reload's ascending retry scan returns
+ *   once $v0 is taken (reload_sim: the scan leaves {2,15,24,25} free; ours takes
+ *   2).  inverse.py global returns a validated NEGATIVE for moving 138 by any
+ *   modelled input, and every counterfactual that denies 138 the LO seat gives
+ *   it $v0 anyway.  The lever is therefore OCCUPYING $v0, not re-pricing 138.
+ *   Carrying all three channel sums in ONE local makes that pseudo a three-death
+ *   (local-alloc-ineligible) global allocno: measured, it takes $v0 and pushes
+ *   the b*factor retry to $t7 - BOTH target seats - and the arm's rows become
+ *   target-exact.  See memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c.
+ *   It scores 42 only because the three-way share is incompatible with the
+ *   blue-path g_src extender, and losing that extender drops pseudo 126 from 18
+ *   to 12 refs, rotating the whole surrounding register bank one seat.  s28's
+ *   job is to restore 126's priority on THAT chassis (more refs that survive to
+ *   flow.c, or a shorter live length), not to keep grinding this 12.
  */
+
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];

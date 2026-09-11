@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 26,
- "current_modality": "synthesis",
+ "session_count": 27,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -159,36 +159,34 @@
    "floor": 12,
    "modality": "synthesis",
    "headline": "Floor holds at 12; synthesis answers s24's open pass question - the wrong seats are local-alloc combine_regs CHAINS (3-4 pseudos merged into one quantity), not mispriced allocnos - and sweeps out two "
+  },
+  {
+   "session": 27,
+   "floor": 12,
+   "modality": "solver",
+   "headline": "Solver closed the causal chain: the 12 rows are one $v0-ownership fact, and a three-way-shared `sum` local provably produces BOTH disputed target seats ($v0 sums, mflo $t7); the 42 on that chassis is "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The sum-shift-mask combine chains (qty16/qty17/qty15) are breakable only by BLOCK STRUCTURE, because the local-alloc.c:470-476 gate turns on reg_basic_block and reg_n_deaths - properties no spelling of the arm can change.",
-   "mechanism": "In the target each chain is split: the sum is born in $v0 and dies one insn later while the shift writes back into the operand's register. Our build merges 3-4 pseudos per chain. A C form breaks the chain only if the sum pseudo fails the eligibility gate where block_alloc reaches the shift, i.e. the sum is live across a basic-block boundary or dies more than once. s25 (1,496 bodies) and s26 (11 or-chain + 8 channel-result bodies) exhaust the spelling routes.",
-   "next_probe": "Extend tmp/grind/func_8003DE14/s25/gen.py's head/tail split outward one block so the generator can vary the `if (i == count - 1)` split (early-out vs if/else vs hoisting the test out of the inner loop), the `px == 0` early-out shape (goto vs if/else vs continue), the `goto loop_check` exits, and the declaration scope of the arm's locals relative to the two enclosing blocks. ~1.8 s per body, so ~1,000 bodies is ~30 minutes. Screen mechanically: accept only 173-build-insn forms whose QTYDBG block-10 table prints MORE than 7 real quantities - the signature of a broken chain, checkable without reading the residual."
+   "hypothesis": "Pseudo 126 (g_src) can be restored to ord 1 on the three-way-shared-sum chassis by a reference lift that survives to flow.c, or - never tried on this function - by SHORTENING its live length instead of raising its reference count.",
+   "mechanism": "Allocno priority is floor_log2(refs)*refs*size/livelen*10000. 126 prints nrefs 12 livelen 11 = 32727 on that chassis and needs >= 48000 to precede 122. refs 12 with livelen 6 gives 60000 - the same priority the extender bought - with no extra construct at all, and moving `g_src = g * factor` closer to its single use is ordinary C.",
+   "next_probe": "On chassis_s27_threeway_sum_42.c, sweep the statement position of `g_src = g * factor` and `gp = g_src * complement` through the arm (and the red pair likewise) with tools/sweep_variants.py, reading nrefs/livelen for 126 out of tools/ra_solver/extract.py's model on each promising hit. Accept only 173-build-insn forms."
   },
   {
-   "hypothesis": "The two F1 extenders compete for the same seats, so the arm's spelling optimum derived with BOTH present is not necessarily the optimum with one - and a body needing only ONE extender is worth strictly more than the incumbent even at an equal score, because every F1 construct must be justified under lever-exhaustion.",
-   "mechanism": "a1 (g_src extender removed, j extender kept) scores 40 while a3 (neither) scores 38: the j extender's sign flips depending on the g_src extender's presence. That is only possible if both are steering the same allocnos.",
-   "next_probe": "On the a2 chassis (tmp/grind/func_8003DE14/s26/ab/a2_no_j.c, j extender removed, 19) re-run the eight floor bodies of s25's arm sweep plus the o9 named-high-bit tie, using tools/sweep_variants.py. If any of them beats 19 by more than the incumbent beats 12, the pair should be re-derived from the one-extender chassis instead."
+   "hypothesis": "The full target disposition is reachable from the three-way chassis by allocno pricing alone, because the reload outcome there is already correct.",
+   "mechanism": "On the p2 chassis the goal required reload to move pseudo 138, which inverse.py proved no modelled input can do. On the s27 chassis 128 -> $v0 and 137 -> $t7 are already right, so the question reduces to the refs / livelen / birth-order / conflict pricing the global model is validated for (forward check: 24/24, zero diffs).",
+   "next_probe": "Apply chassis_s27_threeway_sum_42.c, re-run tools/ra_solver/extract.py func_8003DE14 code6cac_c2, then inverse.py global on that model with the full goal {118:2, 128:2, 126:3, 122:4, 123:5, 109:6, 108:7, 121:8, 130:9, 129:10, 110:11, 115:12, 116:13, 137:15, 72:16, 74:17, 73:18, 78:19, 77:20, 76:21, 79:22, 75:23, 100:30, 156:65} at --depth 3 --top 12 (pass the goal from a file as in tmp/grind/func_8003DE14/s27/inv.sh), then spell the top vectors as C."
   },
   {
-   "hypothesis": "qty18 owns $v0 (pri 96000, refs 24, life 10) and the only untried term in qty_compare_1 is its LIFE: separating the or-chain's first and last insn by one unrelated statement drops its priority below qty16's 68571 and hands $v0 to a different quantity.",
-   "mechanism": "pri = floor_log2(refs)*refs*size/(death-birth)*10000. The or-chain axis (s26) moved refs and failed; life has never been varied independently. o9 proves that hoisting the high-bit mask to its own statement at the top of the arm is byte-neutral (12/173), which gives a legal starting point with the chain's endpoints already separable.",
-   "next_probe": "With tmp/grind/func_8003DE14/s26/orv/o9_hi_named.c as the chassis, walk the declaration of `hi` and the `*dst =` store apart one ordinary-C statement at a time, re-running tmp/grind/func_8003DE14/s26/alloc.sh on each and reading the QTYDBG pri column for qty18 - stop at the first form where qty18 is no longer ord0."
+   "hypothesis": "The blue mask and the latch load pair (149 -> $v1, 154/157 swapped) need no separate lever - they are downstream of the same $v0 ownership.",
+   "mechanism": "All four rows sit after the blue sum in the same block and take whatever local-alloc has free; with $v0 owned by the shared-sum allocno the free set changes for all of them at once.",
+   "next_probe": "Re-read the residual with tmp/grind/func_8003DE14/s24/ed2.py on any improved s28 chassis before treating those rows as independent work; on the s27 chassis they are already absorbed into the bank rotation rather than appearing as separate seats."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 11,
-   "statement": "Duplicating j++ into the three arms the way dst++ now is does not reproduce the dst result on the a1 chassis: cross-jump cannot re-merge the copies.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/jd/D3.c",
-   "predicate_cite": "",
-   "result": "KILLED. 175 build_insns against the target's 173 and score 47. It also confirms the lift would have overshot: j at 23 we"
-  },
   {
    "session": 11,
    "statement": "Reusing j as the outer tail's new_y carrier lengthens j's live range past the inner loop but breaks the outer-loop codegen on the a1 chassis.",
@@ -660,6 +658,14 @@
    "measured_on": "HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present",
    "predicate_cite": "",
    "result": "Minimum 12 = the incumbent; nothing improves. r_ch reusing r_src costs 4 (16); g_ch reusing g_src 27; r_ch and b_shift t"
+  },
+  {
+   "session": 27,
+   "statement": "On the three-way-shared-sum chassis the g_src reference lift can be relocated onto another value - b_shift, g_ch's mask, either operand inside the sum expression, the or-chain's g_ch term, the whole o",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; three-way-shared-sum chassis (tmp/grind/func_8003DE14/s27/v/s3_ext_none.c), j extender present, blue-path g_src extender absent by construction",
+   "predicate_cite": "",
+   "result": "p1_bshift / p3_gch / p8_orall / p9_sumpx / p10_sumbf all score exactly 42 - identical to removing the extender entirely "
   }
  ],
  "ladder_skip": 0,
