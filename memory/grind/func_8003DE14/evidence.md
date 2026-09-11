@@ -2726,3 +2726,132 @@ pure global.c ordering changes bought with references that combine deletes.
 - [s21] Statement order inside the blend arm was inert for live ranges across four placements of the b_src computation (t1-t4), with the declaration pinned: alloc tables identical row for row including livelen(px) = 11.
 
 - [s21] Both new levers are F1 combine-foldable chain extenders (owner ruling 2026-07-01) and are /* FAKE */-annotated in candidate.c with mechanism and lever-exhaustion pointers. No ordinary-C carrier for either price has been found; six carriers were swept for the j lift and only the LoadImage dst argument lands the window.
+
+
+## s22 (rederive) - floor 16 -> 14
+
+### Measurements (all on HEAD 2026-09-11, post -mel / post -msoft-float; every
+### form 173 build insns against 173 target insns, so all of these are
+### byte-neutral restructurings of the blend arm)
+
+    u3   s21 incumbent (blue reuses b_src for b*factor)            16
+    a1   blue PRODUCT reuses b_src, b*factor into bp               38
+    a2   blue written as one expression, `bp` local dropped        15   <- -1
+    a3   all three channels invert the reuse                       50
+    b1   fully inline arm, no channel locals at all                43
+    c1   `px` reused as the blue carrier                           23
+    c2   a2 minus the g_src chain extender                         23
+    c3   a2 minus the j chain extender                             21
+    c5   neither chain extender                                    28
+    d1   shared `sum` local for ALL THREE channel sums             30
+    d2   shared `sum` for the GREEN and BLUE sums only             14   <- -1
+    d4   d1 minus the g_src extender                               43
+    e1   output word accumulated into a named `out` before blue    48
+    e2   `out` opened after red                                    41
+    e3   `out` opened at the top of the arm                        36
+    f1   shared `sum` for RED and GREEN                            30
+    f2   `sum` for RED only (single-use)                           15
+    f3   `sum` for red and blue                                    17
+    g1   blue chained through ONE variable to the mask             31
+    g2   g1 + the shared sum                                       55
+    g4   g1 minus the g_src extender                               31
+    h1   latch `rect[3] * rect[2]`                                 14
+    h2   latch `(s32)rect[2] * rect[3]`                            14
+    h3   latch `rect[2] * rect[3] > j`                             14
+    h4   `total` re-read inside the latch                          16
+    i1   red sum operand flip                                      14
+    i2   green sum operand flip                                    14
+    i3   blue sum operand flip                                     30
+    i4   all three flipped                                         30
+
+Logs: tmp/grind/func_8003DE14/s22/batch_results.json, per-form allocno tables in
+tmp/grind/func_8003DE14/s22/alloc_<tag>/stderr.log.
+
+### FACT 1 - the incumbent's blue-channel variable reuse was costing 1 insn.
+s21's body wrote `bp = b_src * complement; b_src = b * factor;` - reusing b_src
+for the second product.  Dropping `bp` and writing the channel as one expression
+(`b_shift = (b_src * complement + b * factor) >> 5`) is worth 1 insn (16 -> 15)
+and makes our rows 106-108 structurally identical to the target's (b_src and the
+complement product share one register in both builds; only WHICH register
+differs).  Inverting the reuse instead (product into b_src, b*factor into bp,
+form a1) costs 22.
+
+### FACT 2 - the target's channel sums are in $v0 because they are LOCAL
+### quantities, not because of any global priority.
+Target rows 111/114/118 are `addu $v0,...` with the shift moving the value to a
+different register (`sra $a1,$v0,0xf`).  Ours coalesces each sum into the dying
+channel register (`addu $a1,$t2,$a1` / `sra $a1,$a1,0xf`).  Naming the sums
+changes this, but only when the name is written MORE THAN ONCE: a single-use
+`sum` (f2, red only) is folded back by combine and the alloc table is unchanged,
+while a multi-write `sum` survives as a global allocno.  A shared sum across red
+and green (f1) or all three (d1) DOES reproduce the target's `addu $v0` /
+`sra $a1,$v0` pair on rows 111-112 - but it adds one entry to the allocno order,
+and every lower-priority allocno shifts one hard register (complement
+$t5 -> $t6, factor $t3 -> $t4, rp $t2 -> $t3), which costs more than the rows it
+buys (30 vs 14).  Sharing only GREEN and BLUE (d2) is the one split that buys a
+row without adding an allocno: 14.
+
+### FACT 3 - the remaining 11 blend insns are ONE register choice, read directly
+### out of global.c.
+`BB2_FINDREG_DEBUG=139` on the d2 body (tmp/grind/func_8003DE14/s22/
+findreg_d2_139/stderr.log) prints, for the blue temp's last find_reg call:
+    conflicts:        3 5 6 7 8 16 29          (neither 2 nor 4)
+    someone_prefers:  (empty)
+    used_so_far:      0..16 24..29 31
+    pass0_used:       0 1 3 5 6 7 8 16 17..23 26..31
+Regno 2 ($v0) is absent from pass0_used, so find_reg's first-fit loop
+(global.c:1053-1080) returns 2; the target's seat is 4 ($a0), the register px
+vacates at row 105.  Only two routes put 2 into pass0_used:
+  (a) an allocno already assigned $v0 that CONFLICTS with the blue temp.  The
+      only $v0 holder today is pseudo 118 (the or-chain accumulator, pri 90000,
+      rows 120-125), which does not overlap the blue temp's 106-118 range.
+      Extending the accumulator backwards by naming it (`out`, forms e1-e3)
+      breaks the px/g_src/r_src triple instead (g_src leaves $v1) and costs
+      22-34.  Making the sums a $v0-holding global allocno (d1/f1) works but
+      pays the allocno-shift tax above.
+  (b) `regs_someone_prefers` - but global.c set_preference (global.c:1671) only
+      fires on a reg-reg copy where one side is already hard-numbered
+      (`reg_renumber[x] >= 0`), i.e. it needs a LOCALLY-allocated $v0 pseudo
+      copied into a global allocno.  There is no such copy in the arm today.
+The structural reading: the target has no extra global allocno here, so its sums
+must be local quantities that local-alloc seats on $v0 BEFORE global_alloc runs,
+which is exactly what makes 2 a hard-reg conflict for the blue temp.  In our
+build the red sum is instead merged by local-alloc's combine_regs into r_src's
+quantity - pseudo 123 carries nrefs 12 / livelen 13 and sits on $a1, i.e. it is
+the merged {r_src, red sum, r_ch} quantity.  Breaking that merge, without adding
+a global allocno, is the next lever.
+
+### FACT 4 - the 3-insn trip-test residual is POSITIONAL, not expression-driven.
+Target `lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1`; ours `lh $v1,4 /
+lh $v0,6 / mult $v1,$v0`.  Writing the latch as `rect[3] * rect[2]` (h1) swaps
+which OFFSET each load carries but leaves $v1 on the first load and $v0 on the
+second - so the register pair is attached to the emission slot, not to the
+operand.  `rect[2] * rect[3] > j` (h3) and `(s32)rect[2] * rect[3]` (h2) are
+byte-identical to the incumbent latch.  Re-reading `total` in the latch (h4)
+costs 2.  Operand flips on the three channel adds are inert for red and green
+(i1/i2, 14) and cost 16 on blue (i3/i4, 30).
+
+### FACT 5 - both s21 chain extenders are still load-bearing on the new chassis.
+On the d2 body the g_src extender is worth 9 (c2 = 23) and the j extender 7
+(c3 = 21); with neither, the body is back at the s18 head-exact 28 (c5).  So the
+14 floor is still FAKE-carrying and this body is NOT submittable.
+
+- [s22] NEW FLOOR 14/173 on HEAD 2026-09-11 (d2 body, saved as memory/grind/func_8003DE14/candidate.c): the s18 head-exact chassis + the two s21 F1 chain extenders + a re-derived blend arm in which the blue channel does not reuse its source variable and the green and blue channel sums are staged through one shared `sum` local.
+
+- [s22] Every form measured this session built 173 insns against 173 target insns, so all 30 of them are byte-neutral restructurings and the whole sweep is a pure register/ordering comparison.
+
+- [s22] Lever accounting on the new chassis: d2 14; d2 minus the g_src chain extender (c2) 23; d2 minus the j chain extender (c3) 21; neither extender (c5) 28 = the s18 head-exact body. Both s21 FAKE extenders are still load-bearing, so the 14 floor is FAKE-carrying and NOT submittable.
+
+- [s22] A named sum carrier only survives if it is written more than once: f2 (red only, once-written/once-read) is folded back by combine and leaves the allocno table and the score unchanged, while d1/f1/d2 (two or three writes) become real carriers.
+
+- [s22] A shared sum that becomes a GLOBAL allocno reproduces the target's rows 111-112 exactly (`addu $v0,$t3,$a1` / `sra $a1,$v0,0xf`) but adds one entry to allocno_order, shifting every lower-priority allocno one hard register (complement $t5 -> $t6, factor $t3 -> $t4, rp $t2 -> $t3); net 30 vs 14. The target therefore cannot have an extra global allocno there - its sums must be local quantities local-alloc seats on $v0 before global_alloc runs.
+
+- [s22] In our build the red sum is merged by local-alloc's combine_regs into r_src's quantity: pseudo 123 carries nrefs 12 / livelen 13 on $a1 and emits `addu $a1,$t2,$a1` / `sra $a1,$a1,0xf` where the target emits `addu $v0,$t2,$a1` / `sra $a1,$v0,0xf`.
+
+- [s22] BB2_FINDREG_DEBUG=139 on d2 (tmp/grind/func_8003DE14/s22/findreg_d2_139/stderr.log): conflicts {3,5,6,7,8,16,29}, regs_someone_prefers EMPTY, regs_used_so_far {0..16,24..29,31}, pass0_used {0,1,3,5,6,7,8,16,17..23,26..31}. Regno 2 is free, so find_reg's first-fit loop returns $v0; the target's seat is 4 ($a0).
+
+- [s22] global.c set_preference (tools/gcc-2.7.2/global.c:1671) only fires when one side of a reg-reg copy is already hard-numbered (reg_renumber >= 0), so the regs_someone_prefers route into pass0_used requires a LOCALLY-allocated $v0 pseudo copied into a global allocno - there is no such copy in the blend arm today.
+
+- [s22] The trip-test register pair is positional, not expression-driven: `rect[3] * rect[2]` swaps the two load offsets but still puts $v1 on the first load and $v0 on the second.
+
+- [s22] s21's frontier item 1 (enumerate source shapes that put a MULTI-referenced value in $v0 across rows 106-118 without adding an insn) is now answered: the shapes exist (d1/f1/d2), they are byte-neutral, and only the green+blue split avoids the allocno-shift tax. s21's frontier item 3 (latch spellings decide the trip test) is killed.

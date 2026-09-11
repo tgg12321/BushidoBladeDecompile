@@ -1984,3 +1984,104 @@ two short-lived trip-test pseudos - plus (b) one reorg.c delay-slot choice.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; q3 chassis (23/173) with the q3 j-lift FAKE construct present
+
+
+## s22 (rederive) - hypotheses
+
+### CONFIRMED
+- H22-1  The s21 incumbent's blue-channel variable reuse (`bp = b_src *
+  complement; b_src = b * factor;`) is worth -1 insn when dropped: writing the
+  blue channel as a single expression with no `bp` local (a2) scores 15 and makes
+  rows 106-108 structurally identical to the target, with only the register
+  differing.  MEASURED ON: HEAD 2026-09-11, u3 chassis re-measured 16/173, both
+  s21 FAKE extenders present.
+- H22-2  A shared `sum` local for the GREEN and BLUE channel sums (d2) is worth a
+  further -1: 14/173.  The split matters - red+green (f1) and all three (d1) both
+  score 30 because they add a global allocno and shift every lower-priority
+  allocno one hard register; red only (f2) is single-use and combine folds it
+  back (15, alloc table unchanged).  MEASURED ON: HEAD 2026-09-11, a2 chassis
+  15/173, both s21 FAKE extenders present.
+- H22-3  The remaining 11 blend insns are downstream of exactly one find_reg
+  decision.  BB2_FINDREG_DEBUG=139 prints conflicts {3,5,6,7,8,16,29}, empty
+  someone_prefers and a pass0_used that does not contain regno 2, so
+  global.c's first-fit loop returns $v0 where the target uses $a0.
+
+### KILLED (all instance kills, HEAD 2026-09-11, chassis as stated)
+- H22-4  Inverting the blue channel's reuse so the PRODUCT lands back in b_src
+  and b*factor goes to a fresh local reproduces the target's a0<-a0 pair.
+  KILLED: a1 scores 38; applying the same inversion to all three channels (a3)
+  scores 50.
+- H22-5  A fully inline blend arm with no named channel locals reproduces the
+  target's three-$v0-sums shape.  KILLED: b1 scores 43 - without the named
+  carriers px/r_src/g_src lose their $a0/$a1/$v1 seats entirely.
+- H22-6  Reusing `px` as the blue channel's carrier seats the blue temp on px's
+  vacated $a0.  KILLED: c1 scores 23.
+- H22-7  Accumulating the output word into a named `out` opened before the blue
+  channel makes the $v0 accumulator conflict with the blue temp and pushes it to
+  $a0.  KILLED in three spellings: e1 48, e2 41, e3 36 - the new allocno takes
+  $v1 or $a1 and scatters g_src / px / r_src off the target's blend triple.
+- H22-8  A multi-write shared sum that takes $v0 as a global allocno is a net
+  win.  KILLED: it does fix rows 111-112 exactly (f1/d1 emit the target's
+  `addu $v0,$t3,$a1` / `sra $a1,$v0,0xf`) but the extra allocno shifts
+  complement $t5->$t6, factor $t3->$t4 and rp $t2->$t3; both score 30.
+- H22-9  Chaining the whole blue channel through ONE variable (source, product
+  and shifted result) extends its live range past row 120 so it conflicts with
+  the or-chain accumulator on $v0.  KILLED: g1 31, g2 55, g4 31.
+- H22-10  The 3-insn trip-test residual is decidable by the latch's expression
+  shape.  KILLED: the $v1/$v0 pair is positional - `rect[3] * rect[2]` (h1)
+  swaps the two offsets but not the registers; `rect[2]*rect[3] > j` (h3) and
+  `(s32)rect[2] * rect[3]` (h2) are byte-identical to the incumbent latch;
+  `total` re-read in the latch (h4) costs 2.
+- H22-11  Operand order inside the three channel adds moves the sum's register.
+  KILLED: red (i1) and green (i2) flips are byte-identical at 14; the blue flip
+  (i3/i4) costs 16.
+
+## [s22] The s21 incumbent's blue-channel variable reuse (bp = b_src * complement; b_src = b * factor;) costs one insn: writing the blue channel as a single expression with no bp local scores 15 instead of 16 and makes rows 106-108 structurally identical to the target, with only the register differing.
+- mechanism: The reuse makes b_src a two-segment pseudo (written at the andi, re-written at the mflo of b*factor) whose second write forces the complement product into a separate register, so the mflo lands on a fresh temp instead of on b_src's own register. Without the reuse, b_src and the complement product share one register exactly as the target does (target andi $a0 / mult $a0 / mflo $a0; ours andi $v0 / mult $v0 / mflo $v0).
+- probe: a2 = u3 with `b_shift = (((b_src * complement + b * factor) + g_src) - g_src) >> 5;` and the `bp` declaration deleted; honest sandbox score plus BB2_ALLOC_DEBUG table, side-by-side objdump rows 88-140.
+- result: a2 = 15 / 173 build insns / 173 target insns. u3 re-measured this session at 16/173. Counter-ablations: a1 (invert the reuse so the product lands back in b_src) 38; a3 (invert all three channels) 50.
+- verdict: CONFIRMED
+
+## [s22] A shared `sum` local staging the GREEN and BLUE channel sums takes the a2 body from 15 to 14 at 173 insns, and the choice of which channels share the name is decisive: red+green and all-three both score 30, red-only is folded back by combine and scores 15.
+- mechanism: A multi-write name survives combine and becomes a real carrier; a single-write name is once-written/once-read and combine folds it into the following shift, leaving the allocno table unchanged. A carrier that spans red as well becomes a global allocno high in the priority order, which adds one entry to allocno_order so every lower-priority allocno shifts one hard register (complement $t5 -> $t6, factor $t3 -> $t4, rp $t2 -> $t3). Sharing only green and blue keeps the carrier out of the global table.
+- probe: d2 (green+blue), d1 (all three), f1 (red+green), f2 (red only), f3 (red+blue), d4 (d1 minus the g_src extender); each installed, scored with the honest sandbox and dumped with BB2_ALLOC_DEBUG.
+- result: d2 = 14/173 (new floor); d1 = 30; f1 = 30; f2 = 15; f3 = 17; d4 = 43. f1/d1 DO emit the target's `addu $v0,$t3,$a1` / `sra $a1,$v0,0xf` pair on rows 111-112, so the mechanism is right and only the allocno-shift tax makes them lose.
+- verdict: CONFIRMED
+
+## [s22] On the d2 body the remaining 11 blend-arm insns (rows 106,107,108,111,112,114,115,118,119,123,124) are downstream of exactly one global.c find_reg decision: the blue temp's seat, $v0 in our build and $a0 in the target.
+- mechanism: BB2_FINDREG_DEBUG=139 prints conflicts {3,5,6,7,8,16,29} (neither 2 nor 4), an empty regs_someone_prefers, and a pass0_used that omits regno 2, so find_reg's first-fit loop returns 2. With the blue temp on $a0 instead, $v0 becomes the lowest free register for all three channel sums - the target's rows 111/114/118 - and b_shift keeps $a0. Only two sets can put regno 2 into pass0_used: a conflicting allocno already holding $v0, or a later-allocated allocno that prefers $v0 (global.c set_preference fires only on a reg-reg copy where one side is already hard-numbered).
+- probe: tmp/grind/func_8003DE14/s22/findreg.py d2 139 (BB2_FINDREG_DEBUG on the instrumented cc1 tools/gcc-2.7.2/cc1), plus row-by-row side-by-side of d2 against build/src/code6cac_c2.o.
+- result: The three exclusion sets are banked in tmp/grind/func_8003DE14/s22/findreg_d2_139/stderr.log. Both escape routes are now named and one of them (a $v0-holding global allocno) is measured to cost more than it buys.
+- verdict: CONFIRMED
+
+## [s22] Accumulating the output word into a named `out` local opened before the blue channel makes the $v0 or-chain accumulator conflict with the blue temp and moves it to $a0.
+- mechanism: Pseudo 118 (the or-chain accumulator) is allocated first at pri 90000 and holds $v0, but its live range is rows 120-125 and the blue temp's is 106-118, so they do not conflict. Naming the accumulator and opening it earlier should extend it backwards across the blue temp.
+- probe: e1 (`out = (pixel & 0x8000) | r_ch | g_ch;` before the blue sum), e2 (`out` opened after red, compound-or per channel), e3 (`out = pixel & 0x8000;` at the top of the arm); each scored and dumped with BB2_ALLOC_DEBUG.
+- result: e1 = 48, e2 = 41, e3 = 36. The new allocno outranks the blend triple: in e1 g_src moves off $v1 to $a1 and in e3 it moves to $a0, so px / g_src / r_src all lose the target's seats. The accumulator's live range was not extended onto the blue temp in any of the three.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); d2 chassis re-measured this session at 14/173, with both s21 FAKE chain extenders present in all three forms
+
+## [s22] Chaining the whole blue channel through one variable - source, complement product and shifted result - extends its live range past row 120 so it conflicts with the or-chain accumulator on $v0 and is pushed to $a0.
+- mechanism: In the target the blue value and b_shift share $a0 and b_shift is still live at row 123, which is after the accumulator's first def at 120; making them one C variable should make that overlap a single allocno's conflict.
+- probe: g1 (a2 base, b_src carries source, product and shifted result, b_shift declaration deleted), g2 (same on the d2 base with the shared sum), g4 (g1 minus the g_src chain extender).
+- result: g1 = 31, g2 = 55, g4 = 31. The merged variable lengthens the arm's critical live range and re-orders the blend allocnos instead of only adding the $v0 conflict.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; a2 chassis 15/173 and d2 chassis 14/173, both s21 FAKE chain extenders present
+
+## [s22] A fully inline blend arm with no named channel locals, or `px` reused as the blue carrier, reproduces the target's three-$v0-sums shape.
+- mechanism: Without named carriers every channel value is a short-lived temp, which is what the target's sums look like; reusing px for blue would seat the blue value on the register px vacates at row 105.
+- probe: b1 (single `*dst = ...` expression, no channel locals at all) and c1 (`px = (((u32)px >> 7) & 0xF8) * complement;` with the b_src declaration deleted).
+- result: b1 = 43: without the named carriers px / r_src / g_src lose the $a0 / $a1 / $v1 seats the s21 levers bought. c1 = 23: px's own allocno is re-priced and the blend pair inverts again.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; u3 chassis 16/173 (b1) and a2 chassis 15/173 (c1), both s21 FAKE chain extenders present
+
+## [s22] The 3-insn trip-test residual (rows 127/128/130) is decidable by the latch's expression shape, as the s21 frontier proposed.
+- mechanism: The two loads of rect[2] and rect[3] are short-lived locally-allocated temps, so local-alloc should decide them from the order in which the quantities are born within the latch block, and an operand swap or a staged read should flip them.
+- probe: h1 `while (j < rect[3] * rect[2])`, h2 `while (j < (s32)rect[2] * rect[3])`, h3 `while (rect[2] * rect[3] > j)`, h4 `total = rect[2] * rect[3]; } while (j < total);` - each scored and the rows 127-131 read out side by side, not just the score.
+- result: h1 = 14, h2 = 14, h3 = 14, h4 = 16. h1 swaps which OFFSET each load carries (lh $v1,6 then lh $v0,4) but leaves $v1 on the first load and $v0 on the second, so the register pair is attached to the emission slot rather than to the operand; h2 and h3 are byte-identical to the incumbent latch; h4 costs 2. Operand flips inside the channel adds are inert for red and green (i1/i2 = 14) and cost 16 on blue (i3/i4 = 30).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; d2 chassis 14/173 with both s21 FAKE chain extenders present

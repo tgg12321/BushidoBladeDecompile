@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 21,
- "current_modality": "forensics",
+ "session_count": 22,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -129,60 +129,34 @@
    "floor": 16,
    "modality": "forensics",
    "headline": "Floor 26 -> 16: a post-inner-loop chain extender on j (cse2 cannot fold it there) restores the target's $t4/$t5 seats on the head-exact chassis, and a depth-3 lift on g_src flips the px/g_src blend pa"
+  },
+  {
+   "session": 22,
+   "floor": 14,
+   "modality": "rederive",
+   "headline": "Floor 16 -> 14 by re-deriving the blend arm (blue channel written without variable reuse, plus one shared sum local for green+blue), and BB2_FINDREG_DEBUG reduces the remaining 11 blend insns to a sin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last 13 of the 16 residual insns are one seat: b_src must land on $a0 instead of $v0, and since a priority lift cannot move it (v1), the only route is to create a CONFLICTING allocno that holds $v0 across b_src's live range - which is what the target has, since its $v0 carries all three channel sums.",
-   "mechanism": "global.c find_reg gives an allocno the lowest-numbered hard register not in its conflict set. b_src (p128) spans combine insns 221..255 and conflicts with g_src (218..244) but with nothing holding $v0, so it takes 2. In the target, px dies at row 105 and b_src is defined at row 106 on the SAME register $a0, which is only reachable if 2 and 3 are both blocked for b_src at allocation time.",
-   "next_probe": "Enumerate source shapes that put a MULTI-referenced value in $v0 across rows 106-118 without adding an insn. w1's shared sum is the right allocno but the wrong live range (it spans all three channels and conflicts with r_src and g_src too); try instead a shared sum used for only the GREEN and BLUE channels, or a shared sum whose first def is after r_ch is consumed, and read the alloc table for a p13x allocno at hardreg 2 whose conflicts include p128 but not p123. Score only forms whose alloc row for p128 prints hardreg=4."
+   "hypothesis": "The last 11 blend insns fall if the three channel sums are LOCAL quantities that local-alloc seats on $v0 before global_alloc runs - which requires breaking local-alloc's combine_regs merge of the red sum into r_src's quantity (pseudo 123, $a1) without creating a new global allocno.",
+   "mechanism": "local_alloc runs before global_alloc; a pseudo it assigns is hard-numbered, so global_conflicts records it as a HARD-REG conflict for overlapping allocnos. A red sum locally seated on $v0 therefore puts regno 2 into the blue temp's conflict set, which is the only measured-cheap way to get regno 2 into pass0_used and make find_reg return 4 ($a0). Today combine_regs ties the sum's quantity to r_src's because r_src dies in the add, and the merged quantity spans blocks and becomes global allocno 123.",
+   "next_probe": "Read tmp/grind/func_8003DE14/dumps/*.lreg for the blend block (pwsh tools/grinder/dump.ps1 func_8003DE14 on the d2 body) and identify the quantity numbers for the red sum and r_src; then sweep source shapes that keep r_src live past the add (so combine_regs cannot merge) WITHOUT adding a reference that combine cannot fold - e.g. deriving r_ch from r_src rather than from the sum, or ordering the arm so the red sum's def and r_src's last use are separated by the green channel's mult. Accept only forms with build_insns 173 whose BB2_FINDREG_DEBUG=<blue temp> prints 2 inside conflicts and whose alloc row for px still prints hardreg=4."
   },
   {
-   "hypothesis": "Both new levers are F1 chain extenders, so the 16 floor is currently FAKE-carrying; an ordinary-C carrier may exist for the g_src lift specifically, because its requirement is weak (any pricing above px's 32727, i.e. nrefs >= 14 at livelen 12) compared with the j lift's narrow (6111, 6964) window.",
-   "mechanism": "pri = floor_log2(nrefs)*nrefs*10000/livelen. g_src at nrefs 14 / livelen 12 prices at 35000 > px's 32727, which is all the ordering needs - and unlike the j window there is no upper bound to respect, since px's pri is the only thing g_src must beat.",
-   "next_probe": "Sweep ordinary-C spellings that give g_src one extra real reference at inner-loop depth 3 (weight +3 each), e.g. splitting g_ch = (g_sum >> 10) & 0x3E0 so g_src is read twice, deriving b_src from g_src's pre-shift value, or writing the green product as a compound assignment chain. Accept only forms with build_insns 173 whose alloc row for p126 prints pri > 32727 and hardreg=3."
+   "hypothesis": "The regs_someone_prefers route is reachable: a later-allocated global allocno with a hard-reg preference for $v0 excludes $v0 from the blue temp's pass-0 set without adding a register-pressure shift, because a preference costs nothing in the allocno order that the blue temp sees.",
+   "mechanism": "find_reg's pass 0 ORs regs_someone_prefers[allocno] into `used` (global.c:1001), and prune_preferences builds that set from the hard_reg_full_preferences of allocnos LATER in allocno_order that do not conflict. set_preference (global.c:1671) creates such a preference when a reg-reg copy has one hard-numbered side, so a locally-allocated $v0 value copied into a lower-priority named local would do it.",
+   "next_probe": "On the d2 body, introduce a named local in the blend arm (or in the latch, which is the same loop body) that is a PLAIN COPY of a value local-alloc has already seated on $v0 - the cheapest candidate is the or-chain accumulator's `pixel & 0x8000` staged into a local that is read once after the blue channel - and dump BB2_FINDREG_DEBUG for the blue temp to see whether regno 2 appears in someone_prefers. Score only forms with build_insns 173."
   },
   {
-   "hypothesis": "The 3-insn trip-test residual (rows 127/128/130, target lh v0,4(s0) / lh v1,6(s0) / mult v0,v1 against ours lh v1 / lh v0 / mult v1,v0) is two locally-allocated temps named the other way round, and is decidable by the latch's expression shape.",
-   "mechanism": "the two loads are short-lived pseudos that never reach the global allocno table (they are absent from the BB2_ALLOC_DEBUG rows), so local-alloc.c decides them from the order in which the quantities are born within the block.",
-   "next_probe": "On the u3 chassis, sweep latch spellings that keep 173 insns and keep the slt shape: while (j < rect[2] * rect[3]) (current), a named local re-read per iteration, (s32)rect[2] * rect[3], and the product staged through the existing total variable re-assigned in the loop. Read rows 127-130 of the tmp/grind/func_8003DE14/s21/sxs.py output, not the score alone."
+   "hypothesis": "An ordinary-C carrier exists for the g_src price (the weaker of the two FAKE extenders): g_src needs any pricing above px's 32727, i.e. nrefs >= 14 at livelen 12, with no upper bound to respect, and the new d2 shape gives g_src a second real consumer it did not have in s21.",
+   "mechanism": "pri = floor_log2(nrefs)*nrefs*10000/livelen, and the only thing g_src must beat is px's 32727 so that global.c allocates g_src first and seats it on $v1 while px falls to $a0. In d2 the green sum is already staged through `sum`, so a spelling that reads g_src twice at inner-loop depth 3 (weight +3 each) is one real extra reference away from 35000.",
+   "next_probe": "Sweep ordinary-C spellings on the d2 body that give g_src one extra REAL reference at depth 3 - deriving b_src from g_src's pre-shift value, splitting `g_ch = (sum >> 10) & 0x3E0` so g_src is re-read, writing the green product as a compound-assignment chain - and accept only forms with build_insns 173 whose alloc row for pseudo 126 prints pri > 32727 and hardreg=3 with NO chain extender present. c2 (d2 minus the extender) is the 23 baseline to beat."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 6,
-   "statement": "One of the six blend-block naming shapes measured on the h1 chassis, including the target's own r_ch / g_ch / b_shift shape, seats src at $a3.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, h1 chassis (42 / 173 insns), forms tmp/grind/func_8003DE14/s6/body_k1.c .. body_k6.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "None of the six seats src at $a3. k1 and k5 reach the classic swap (src $a2 / dst $a3), k6 stays where h1 is (src $a1 / "
-  },
-  {
-   "session": 6,
-   "statement": "A hard-register preference held by another allocno can deflect src off $a2 in find_reg's pass 0 (the regs_someone_prefers exclusion), which would seat src at $a3 without any reference-count change.",
-   "kill_scope": "class",
-   "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), model tmp/grind/func_8003DE14/s6/k1.model.json, no FAKE constructs",
-   "predicate_cite": "tools/gcc-2.7.2/global.c:1000",
-   "result": "inverse.py reports the whole preference axis dead in so many words: 'FORECLOSED - 50 preference atom(s) NOT emitted (mec"
-  },
-  {
-   "session": 6,
-   "statement": "Declaration/birth order in the outer-loop block moves the src/dst seat on the k1 chassis, which is the first chassis in this grind that actually shows the classic swap.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), 24 bodies tmp/grind/func_8003DE14/s6/body_m_*.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "Every one of the 24 scores 43 - identical to k1 itself, and to each other. Both cursors are born one instruction apart a"
-  },
-  {
-   "session": 7,
-   "statement": "Moving j's birth later drives its live_length from 57 to 53 and stops there: all six forms that additionally move src, dst and/or factor into the `if (total > 0)` guard ahead of j measure j livelen 53",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), k1 chassis (43 / 173 insns), forms tmp/grind/func_8003DE14/s7/q_j_late.c and r1_sd_in.c .. r6_s_in.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "q_j_late: j livelen 53 pri 6226 vs complement 52 pri 6346, score 44/173. All six r-forms: j livelen 53 regardless of wha"
-  },
   {
    "session": 7,
    "statement": "Writing `complement` in the outer body ahead of `j = 0` (the live_extend 116 atom) leaves the emitted $t4/$t5 pair byte-identical to k1's and costs the `count - 1` inline property.",
@@ -630,6 +604,38 @@
    "measured_on": "HEAD 2026-09-11; q3 chassis (23/173) with the q3 j-lift FAKE construct present",
    "predicate_cite": "",
    "result": "Both restructure the blend arm - 116 build insns against 173 target insns - and score 100. The declaration could not be "
+  },
+  {
+   "session": 22,
+   "statement": "Accumulating the output word into a named `out` local opened before the blue channel makes the $v0 or-chain accumulator conflict with the blue temp and moves it to $a0.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); d2 chassis re-measured this session at 14/173, with both s21 FAKE chain extenders present in all three forms",
+   "predicate_cite": "",
+   "result": "e1 = 48, e2 = 41, e3 = 36. The new allocno outranks the blend triple: in e1 g_src moves off $v1 to $a1 and in e3 it move"
+  },
+  {
+   "session": 22,
+   "statement": "Chaining the whole blue channel through one variable - source, complement product and shifted result - extends its live range past row 120 so it conflicts with the or-chain accumulator on $v0 and is p",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; a2 chassis 15/173 and d2 chassis 14/173, both s21 FAKE chain extenders present",
+   "predicate_cite": "",
+   "result": "g1 = 31, g2 = 55, g4 = 31. The merged variable lengthens the arm's critical live range and re-orders the blend allocnos "
+  },
+  {
+   "session": 22,
+   "statement": "A fully inline blend arm with no named channel locals, or `px` reused as the blue carrier, reproduces the target's three-$v0-sums shape.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; u3 chassis 16/173 (b1) and a2 chassis 15/173 (c1), both s21 FAKE chain extenders present",
+   "predicate_cite": "",
+   "result": "b1 = 43: without the named carriers px / r_src / g_src lose the $a0 / $a1 / $v1 seats the s21 levers bought. c1 = 23: px"
+  },
+  {
+   "session": 22,
+   "statement": "The 3-insn trip-test residual (rows 127/128/130) is decidable by the latch's expression shape, as the s21 frontier proposed.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; d2 chassis 14/173 with both s21 FAKE chain extenders present",
+   "predicate_cite": "",
+   "result": "h1 = 14, h2 = 14, h3 = 14, h4 = 16. h1 swaps which OFFSET each load carries (lh $v1,6 then lh $v0,4) but leaves $v1 on t"
   }
  ],
  "ladder_skip": 0,
