@@ -930,3 +930,154 @@ concrete exhaustion argument for it.
 - [s7] New reusable tooling under tmp/grind/func_8003DE14/s7/: models.py (splice a body into src, run extract.py, print refs/livelen/pri/hardreg/allocation-order for chosen pseudos), tie_test.py and cursor_thresh.py (perturb ONE model input and re-run simulate.Sim.simulate(overrides=...) - the way to price an atom that falls between inverse.py's grid points), sbs.py (splice + sandbox + positional side-by-side against build/src/code6cac_c2.o).
 
 - [s7] src/code6cac_c2.c was restored to its committed INCLUDE_ASM state; the only tracked changes are the ledger files under memory/grind/func_8003DE14/.
+
+## s8 (2026-09-10, forensics) — the cursor seat is a STATEMENT-COUNT question, and reorg cannot manufacture the 173rd instruction
+
+### Chassis re-audit (mandated: floor flat 3 sessions)
+
+Re-measured on HEAD 2026-09-10 with `sweep_variants.py` before any new probe.
+No drift, and no FAKE construct exists anywhere in the bank (every banked form is
+ordinary C, so `fake_ablate.py` has nothing to ablate — the ablation half of the
+re-audit is vacuous here, not skipped):
+
+| form | score | build_insns |
+|---|---|---|
+| `candidate.c` (s3/d4 lineage) | 31 | 172 |
+| `chassis_k8_target_seat_172insn_31.c` | 31 | 172 |
+| `chassis_k1_target_blend_naming_43.c` | 43 | 173 |
+
+### reg_n_refs, counted exactly (flow.c:2081)
+
+`reg_n_refs[regno] += loop_depth` — every reference is weighted by the loop depth
+of the block holding it, and the per-pixel loop sits at depth 3. That makes the
+whole cursor question arithmetic on STATEMENTS:
+
+    src (k1) = (2 reads + 4 `src++` x 2 RTL refs) * 3 + 2 (the outer-loop init) = 32
+    dst (k1) = (4 stores + 2 `dst++` x 2 RTL refs) * 3 + 2                       = 26
+
+One `src++` statement inside the inner loop is worth **6 weighted refs**. s7's
+`cursor_thresh.py` measured the allocno_compare (global.c:643) threshold as
+"src 32 -> 26 or dst 26 -> 32"; in statement terms that is "**exactly three
+pre-RA `src++` statements**" or "one extra dst-touching statement" (= k8).
+
+### The three-statement door is REAL and it is ordinary C — chassis q1
+
+`q1` (banked as `chassis_q1_target_seat_refs26_172insn_37.c`) is k1 with both
+zero-pixel arms routed through a shared
+
+    advance_src:
+        src++;
+    advance_dst:
+        dst++;
+    loop_check:
+        j++;
+
+tail, and the blend arm given an explicit `goto advance_dst;` so it does not fall
+through the shared increment. Three `src++` statements remain (blend arm, colour
+arm, shared tail). Measured:
+
+    k1: src refs=32 live=59 pri=27118 -> $a2 | dst refs=26 live=58 pri=17931 -> $a3
+    q1: src refs=26 live=58 pri=17931 -> $a3 | dst refs=26 live=57 pri=18245 -> $a2
+
+**q1 is the first chassis in this grind to reach the target's cursor seat without
+k8's extra dst reference.** It scores 37 / 172 — six WORSE than the floor, which
+is why the read-out is the disposition, not the score (the s3/s6 lesson again).
+
+Two earlier forms from the same sweep are SEMANTICALLY BROKEN and are banked only
+as the measurement that established the rule: `p1`/`p2`/`p3` inserted the shared
+`advance_src:` block without giving the blend arm a way past it, so the blend arm
+increments src twice (`rejected/s8-p1-shared-src-blend-double-increments-semantics-broken.c`).
+Their RA numbers are still valid (the RTL is what it is) and they agree with q1.
+
+### Why k8 is one instruction short — jump.c's find_cross_jump, read not guessed
+
+Instrumented cc1 (`tools/gcc-2.7.2/cc1`) with `BB2_XJUMP_DEBUG=1`, plus the
+`.greg` RTL (post-reload, pre-jump2) for k8:
+
+    (insn 160) sh   pixel -> (mem (a2))     (insn 175) sh   s6 -> (mem (a2))
+    (insn 161) a2 = a2 + 2                  (insn 176) a2 = a2 + 2
+    (insn 164) a3 = a3 + 2                  (insn 179) a3 = a3 + 2
+    (jump 166) j 277 (loop_check)           (jump 181) j 277 (loop_check)
+
+Both last-frame arms end in the SAME two insns and jump to the SAME label, so
+`find_cross_jump (insn, target, 2, ...)` (jump.c:2020, minimum = 2) matches two
+insns and `do_cross_jump` deletes them: 174 pre-jump2 -> **172** emitted.
+
+The TARGET's two arms survive the same pass because their tails match on only ONE
+insn: `.L8003DF54` is `sh $v0,0($a2); j; addiu $a3` and `.L8003DF5C` is
+`sh $s6,0($a2); addiu $a2,$a2,2; j; addiu $a3` — the `addiu $a3` matches, the next
+insn back (`sh $v0` vs `addiu $a2`) does not, and 1 < minimum 2.
+
+### The reorg "steal the shared increment into the delay slot" route is CLOSED
+
+This was s7's frontier-2 mechanism (three `src++` statements pre-RA, a fourth
+`addiu $a3` manufactured by reorg's delay-slot fill). reorg.c DOES have that code
+— reorg.c:3169-3202, "If there are slots left to fill and our search was stopped
+by an unconditional branch, try the insn at the branch target", which literally
+does `add_to_delay_list (copy_rtx (next_trial), ...)` and then
+`reorg_redirect_jump (trial, new_label)` — i.e. a genuine post-count instruction
+copy. But the whole block is gated at **reorg.c:3057-3061**:
+
+    if (slots_filled != slots_to_fill
+        && (GET_CODE (insn) != JUMP_INSN
+            || ((condjump_p (insn) || condjump_in_parallel_p (insn))
+                && ! simplejump_p (insn)
+                && JUMP_LABEL (insn) != 0)))
+
+An UNCONDITIONAL jump (`simplejump_p`) never enters it: its delay slot can only be
+filled by the backward scan over its own block (reorg.c:2954 onward). Measured
+consequence on all three shared-tail forms — every `j advance_src` slot is filled
+with that arm's own `sh`, never with the shared `addiu $a3`:
+
+    target : sh $v0,0($a2) / j .L8003E024 / addiu $a3,$a3,2   (3 insns)
+    q1     :                 j L          / sh $v0,0($a2)     (2 insns)
+
+So the target's four `addiu $a3` were four pre-RA instructions in its own C, which
+puts the target's own src reference count at 32 — the same number k1 has. The s6
+"same refs, different seat" contradiction therefore stands, and it is now sharper:
+BOTH measured doors to the seat land exactly one instruction short of 173, from
+opposite sides (q1: three statements, 172; k8: four statements plus an extra dst
+insn, 174 pre-jump2 - 2 cross-jumped = 172).
+
+### Sweep results (all ordinary C, `sandbox --disable all`, HEAD 2026-09-10)
+
+| form | what changed vs k1 | score | insns | src | dst |
+|---|---|---|---|---|---|
+| p1 | both zero arms share (blend double-increments: BROKEN) | 36 | 170 | refs 26 -> $a3 | -> $a2 |
+| p2 | last-frame zero arm shares only | 44 | 170 | refs 32 -> $a2 | -> $a3 |
+| p3 | mid-frame zero arm shares only | 44 | 170 | — | — |
+| p4 | zero arms + blend share (2 statements) | 43 | 169 | refs 20 -> $t0 | -> $a2 |
+| q1 | p1 + blend `goto advance_dst` (correct) | 37 | 172 | refs 26 -> $a3 | -> $a2 |
+| q2 | shared block after the latch, jumps back | 37 | 174 | refs 26 -> $a3 | -> $a2 |
+| q3 | q1 with the blend arm's `src++` written early | 39 | 172 | refs 26 -> $a3 | -> $a2 |
+
+Note p2/p3: sharing ONE arm leaves the statement count at four (three arms + the
+shared tail), so refs stay 32 and the seat does not move — the count that matters
+is the number of `src++` STATEMENTS, not the number of arms that share.
+
+### Artifacts
+
+`tmp/grind/func_8003DE14/s8/` — `sbs2.py` (length-tolerant aligned side-by-side vs
+the target object; s7's sbs.py assumed equal length and is unusable at 172 vs 173),
+`rtl.py` (one-line-per-insn view of one function out of a cc1 -da dump), `dump.sh`
+(instrumented-cc1 dump with an arbitrary `BB2_*_DEBUG` env knob), `show.py`,
+`mkp.py`/`mkq.py` (form generators), `d_k8/` (full -da dump set + the
+`BB2_XJUMP_DEBUG` trace for k8).
+
+- [s8] Chassis re-audit on HEAD 2026-09-10: candidate.c 31/172, chassis_k8 31/172, chassis_k1 43/173 - no drift. No FAKE construct exists in this function's bank, so the fake_ablate half of the re-audit is vacuous rather than skipped.
+
+- [s8] flow.c:2081 is 'reg_n_refs[regno] += loop_depth'; the per-pixel loop is at depth 3, so one in-loop src++ statement = 6 weighted refs. k1's numbers decompose exactly: src (2 reads + 4 incs x 2 RTL refs) x 3 + 2 = 32, dst (4 stores + 2 incs x 2) x 3 + 2 = 26.
+
+- [s8] NEW CHASSIS q1 (memory/grind/func_8003DE14/chassis_q1_target_seat_refs26_172insn_37.c): 37 / 172, ordinary C, src refs 26 -> $a3 and dst -> $a2 - the target's cursor seat WITHOUT k8's duplicated *dst++ statement. The read-out is the disposition, not the score.
+
+- [s8] p2/p3 measured refs 32 with the seat unmoved: routing ONE arm through a shared tail leaves four src++ statements (three arms + the tail). The seat tracks the STATEMENT count, not how many arms share.
+
+- [s8] p1/p2/p3 are semantically broken (the blend arm falls through the inserted shared increment and advances src twice); banked as rejected/s8-p1-shared-src-blend-double-increments-semantics-broken.c. q1 fixes this with an explicit 'goto advance_dst;' in the blend arm.
+
+- [s8] jump.c:2020 find_cross_jump minimum is 2: k8's two last-frame arms share [a2+=2],[a3+=2] before a jump to the same label, so do_cross_jump eats both (174 pre-jump2 -> 172). The target's arms share only [addiu $a3] and survive.
+
+- [s8] reorg.c:3057-3061 gates the entire steal-from-branch-target copy path (reorg.c:3169-3202) on the insn NOT being a simplejump, so an unconditional 'j advance_src' can never copy the shared increment into its delay slot - measured on q1/q2/p1, every such slot holds the arm's own store.
+
+- [s8] Consequence: the target's four addiu $a3 were four pre-RA insns, so the TARGET's own src reference count is 32, identical to k1's. s6's same-refs-different-seat contradiction is unresolved and now sharper - the remaining decoupling channels are passes that DELETE a counted insn (jump2, measured) or CREATE one for a conditional branch (reorg fill_slots_from_thread, reorg.c:3528, untested here).
+
+- [s8] New reusable tooling: tmp/grind/func_8003DE14/s8/sbs2.py (length-tolerant aligned side-by-side - s7's sbs.py assumes equal length and is unusable at 172 vs 173), s8/rtl.py (one-line-per-insn view of one function out of a cc1 -da dump), s8/dump.sh (instrumented-cc1 dump with an arbitrary BB2_*_DEBUG knob).

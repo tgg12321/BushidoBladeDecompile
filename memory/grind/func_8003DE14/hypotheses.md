@@ -792,3 +792,69 @@ claim. There is no open family question on this function.
 - probe: Read asm/funcs/func_8003DE14.s 8003DF38-8003E02C and classified every $a3 reference and every delay-slot fill against its branch target's first insn.
 - result: DF58 fills `j .L8003E024`, DF68 fills `j .L8003E028`, DF88 fills `j .L8003E024`, DFE4 is inline mid-blend-arm. .L8003E024 begins `addiu $a2,$a2,2` and .L8003E028 begins the loop latch, so none of the three fills is a target-first-insn duplication; each is consistent with reorg sinking its own arm's preceding insn. The decoupling that would resolve the contradiction therefore has to be a C shape with fewer `src++` statements pre-RA than `addiu $a3` insns post-reorg - the three-way shared advance tail, which is untested.
 - verdict: CONFIRMED
+
+## [s8] Re-audit: the banked floor forms still measure what the ledger says on HEAD 2026-09-10 — candidate.c and k8 both 31 / 172, k1 43 / 173.
+- mechanism: Kill re-audit mandated after three flat sessions. Every banked form on this function is ordinary C with zero FAKE constructs, so the ablation half of the re-audit (`tools/fake_ablate.py`) has nothing to strip; the chassis half is a straight re-measure.
+- probe: `tools/sweep_variants.py --func func_8003DE14 --file code6cac_c2` over memory/grind/func_8003DE14/{candidate.c, chassis_k8_target_seat_172insn_31.c, chassis_k1_target_blend_naming_43.c}.
+- result: 31/172, 31/172, 43/173 — identical to the ledger. No chassis drift; every s6/s7 conclusion measured on k1 remains chassis-valid.
+- verdict: CONFIRMED
+
+## [s8] The src/dst seat is decided by the NUMBER OF `src++` STATEMENTS in the inner loop: exactly three gives src refs 26 and the target's $a3/$a2 seat, in ordinary C, with no extra dst reference.
+- mechanism: flow.c:2081 counts `reg_n_refs[regno] += loop_depth`, and the per-pixel loop is at depth 3, so each `src++` statement (2 RTL refs: one use, one set) is worth 6 weighted refs. k1: src = (2 reads + 4 incs x 2) x 3 + 2 = 32, dst = (4 stores + 2 incs x 2) x 3 + 2 = 26. allocno_compare (global.c:643) then gives src floor_log2(32)*32/59 = 27118 vs dst floor_log2(26)*26/58 = 17931, so src is allocated first and takes $a2. Dropping to three `src++` statements takes src to 26, i.e. pri 17931 vs dst 18245 — dst is allocated first and takes $a2, src takes $a3.
+- probe: q1 = k1 with both zero-pixel arms routed through a shared `advance_src: src++;` tail placed just above `advance_dst:`, and the blend arm given an explicit `goto advance_dst;` so every path still advances src exactly once (three statements remain: blend arm, colour arm, shared tail). Scored with sandbox --disable all and modelled with tmp/grind/func_8003DE14/s8/models.py. Also p1..p4 (partial/over-shared variants) and q2/q3.
+- result: q1 = 37 / 172 with `src refs=26 live=58 pri=17931 -> $a3` and `dst refs=26 live=57 pri=18245 -> $a2` — THE TARGET'S SEAT, reached in ordinary C without k8's duplicated `*dst++` statement. q2 (shared block after the latch) and q3 (blend `src++` written early) reach the same seat at 174 and 172 insns. p2/p3 (only ONE arm shares) leave four statements and measure refs 32 with the seat unmoved, confirming that the count is over STATEMENTS, not arms. Banked as memory/grind/func_8003DE14/chassis_q1_target_seat_refs26_172insn_37.c.
+- verdict: CONFIRMED
+
+## [s8] k8 loses its 173rd instruction to jump2's find_cross_jump merging the two last-frame arms' two-insn tails, and the target's arms survive the same pass because their tails match on only ONE insn.
+- mechanism: jump.c:2020 calls `find_cross_jump (insn, target, 2, ...)` for each other jump to the same label — minimum 2 matching insns. k8's .greg RTL has arm1 = [sh pixel],[a2+=2],[a3+=2],[j 277] and arm2 = [sh s6],[a2+=2],[a3+=2],[j 277]: two matching insns, so do_cross_jump deletes them (174 pre-jump2 -> 172 emitted). The target's arms are [sh $v0],[addiu $a3],[j] and [sh $s6],[addiu $a2],[addiu $a3],[j]: the `addiu $a3` matches, the next insn back does not, 1 < 2, no merge.
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_XJUMP_DEBUG=1 over the k8 body (tmp/grind/func_8003DE14/s8/d_k8/stderr.log), plus the .greg dump read with tmp/grind/func_8003DE14/s8/rtl.py, plus the aligned side-by-side (sbs2.py) that localises the missing instruction to exactly that arm.
+- result: k8's emitted last-frame zero arm is `j L / sh $v0,0($a2)` where the target has `sh $v0,0($a2) / j .L8003E024 / addiu $a3,$a3,2`. The one missing instruction is that arm's own `addiu $a3`, deleted by the cross-jump.
+- verdict: CONFIRMED
+
+## [s8] reorg.c's delay-slot fill cannot manufacture the target's fourth `addiu $a3` by copying a shared `advance_src:` block's first insn into an unconditional jump's slot.
+- mechanism: The copy path exists — reorg.c:3169-3202 ("If there are slots left to fill and our search was stopped by an unconditional branch, try the insn at the branch target") does `add_to_delay_list (copy_rtx (next_trial), delay_list)` and then `reorg_redirect_jump (trial, new_label)`, which is a genuine instruction CREATED after flow.c counted reg_n_refs. But the enclosing `if` at reorg.c:3057-3061 admits only `GET_CODE (insn) != JUMP_INSN` or a CONDITIONAL jump (`condjump_p && ! simplejump_p`). An unconditional `j` can fill its slot only from the backward scan over its own block (reorg.c:2954 onward), which always finds the arm's own store first.
+- probe: read reorg.c:3040-3210 and jump.c:1996-2032, then measured the three shared-tail forms (p1 170, q1 172, q2 174) and read their emitted arms with tmp/grind/func_8003DE14/s8/sbs2.py.
+- result: In every shared-tail form the arm's jump carries that arm's own `sh` in its delay slot and the shared `addiu $a3` stays where it is, single-instanced: `j L / sh $v0,0($a2)` (2 insns) against the target's `sh $v0,0($a2) / j .L8003E024 / addiu $a3,$a3,2` (3 insns). No form gained an instruction from the steal path. Consequence: the target's four `addiu $a3` were four pre-RA instructions, so the TARGET's own src reference count is 32 — the same as k1's — and s6's "same refs, different seat" contradiction stands.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), q1/q2/p1 chassis (172/174/170 insns), no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/reorg.c:3059
+
+## [s8] Both measured doors to the target cursor seat land exactly one instruction short of 173, from opposite sides.
+- mechanism: Door A (k8): keep four `src++` statements and add a fourth dst-touching statement, taking dst to refs 32; that arm's tail then matches its sibling's on two insns and jump2 deletes both (174 -> 172). Door B (q1): drop to three `src++` statements, taking src to refs 26; the emitted stream then has three `addiu $a3` where the target has four (173 -> 172). The two doors are the only ones inside the searched atom bounds (s7's inverse.py: refs_down 108 or refs_up 109).
+- probe: k8 and q1 both measured this session with sandbox --disable all, modelled with extract.py/ALLOCDBG, and diffed against the target object with sbs2.py.
+- result: k8 = 31 / 172 (seat correct, missing its own arm's `addiu $a3`); q1 = 37 / 172 (seat correct, missing the fourth `addiu $a3`). Neither is a scoring regression to be explained away — they are two structurally different chassis with the SAME 172-vs-173 gap at the SAME instruction.
+- verdict: CONFIRMED
+
+## [s8] Re-audit: the banked floor forms still measure what the ledger says on HEAD 2026-09-10 - candidate.c and k8 both 31 / 172, k1 43 / 173.
+- mechanism: Kill re-audit mandated after three flat sessions. Every banked form on this function is ordinary C with zero FAKE constructs, so tools/fake_ablate.py has nothing to strip; the chassis half is a straight re-measure with sweep_variants.py.
+- probe: tools/sweep_variants.py --func func_8003DE14 --file code6cac_c2 over memory/grind/func_8003DE14/{candidate.c, chassis_k8_target_seat_172insn_31.c, chassis_k1_target_blend_naming_43.c}.
+- result: 31/172, 31/172, 43/173 - identical to the ledger. No chassis drift, so every s6/s7 conclusion measured on k1 remains chassis-valid and no banked kill is void.
+- verdict: CONFIRMED
+
+## [s8] The src/dst seat is decided by the number of src++ STATEMENTS in the inner loop: exactly three gives src refs 26 and the target's $a3/$a2 seat, in ordinary C, with no extra dst reference.
+- mechanism: flow.c:2081 counts reg_n_refs[regno] += loop_depth and the per-pixel loop sits at depth 3, so one src++ statement (2 RTL refs) is worth 6 weighted refs. k1: src = (2 reads + 4 incs x 2) x 3 + 2 = 32, dst = (4 stores + 2 incs x 2) x 3 + 2 = 26; allocno_compare (global.c:643) gives src 27118 vs dst 17931 so src is allocated first and takes $a2. Three statements take src to 26 (pri 17931) against dst 18245, so dst goes first and takes $a2.
+- probe: q1 = k1 with both zero-pixel arms routed through a shared 'advance_src: src++;' tail above 'advance_dst:', and the blend arm given an explicit 'goto advance_dst;' so every path advances src exactly once. Scored with sandbox --disable all, modelled with tmp/grind/func_8003DE14/s8/models.py (extract.py + ALLOCDBG). Plus p1..p4, q2, q3.
+- result: q1 = 37 / 172 with src refs=26 live=58 pri=17931 -> $a3 and dst refs=26 live=57 pri=18245 -> $a2: the target's seat, reached in ordinary C without k8's duplicated *dst++ statement. p2/p3 (only ONE arm shares) keep four statements, measure refs 32 and do not move the seat - the count is over statements, not arms. Banked as memory/grind/func_8003DE14/chassis_q1_target_seat_refs26_172insn_37.c.
+- verdict: CONFIRMED
+
+## [s8] k8 loses its 173rd instruction to jump2's find_cross_jump merging the two last-frame arms' two-insn tails, and the target's arms survive the same pass because their tails match on only one insn.
+- mechanism: jump.c:2020 calls find_cross_jump(insn, target, 2, ...) for each other jump to the same label - minimum 2 matching insns. k8's .greg RTL: arm1 = [sh pixel],[a2+=2],[a3+=2],[j 277] and arm2 = [sh s6],[a2+=2],[a3+=2],[j 277] -> two matching insns -> do_cross_jump deletes them (174 pre-jump2 -> 172 emitted). The target's arms are [sh $v0],[addiu $a3],[j] vs [sh $s6],[addiu $a2],[addiu $a3],[j]: one match, below the minimum.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_XJUMP_DEBUG=1 on the k8 body (tmp/grind/func_8003DE14/s8/d_k8/stderr.log), the .greg RTL read with s8/rtl.py, and the aligned side-by-side s8/sbs2.py.
+- result: k8's emitted last-frame zero arm is 'j L / sh $v0,0($a2)' where the target has 'sh $v0,0($a2) / j .L8003E024 / addiu $a3,$a3,2'. The single missing instruction is that arm's own addiu $a3, deleted by the cross-jump.
+- verdict: CONFIRMED
+
+## [s8] reorg.c's delay-slot fill cannot manufacture the target's fourth addiu $a3 by copying a shared advance_src: block's first insn into an unconditional jump's delay slot.
+- mechanism: The copy path exists at reorg.c:3169-3202 (add_to_delay_list (copy_rtx (next_trial)) + reorg_redirect_jump) and would be a genuine instruction created after flow.c counted reg_n_refs, but the enclosing if at reorg.c:3057-3061 admits only non-jump insns and CONDITIONAL jumps (condjump_p && ! simplejump_p). An unconditional j can only fill its slot from the backward scan over its own block (reorg.c:2954 onward), which always finds the arm's own store first.
+- probe: Read reorg.c:3040-3210 and jump.c:1996-2032, then measured the three shared-tail forms (p1 170, q1 172, q2 174) and read their emitted arms with s8/sbs2.py against the target object.
+- result: Every shared-tail form emits the arm's own sh in the jump's delay slot and leaves the shared addiu $a3 single-instanced: ours 'j L / sh $v0,0($a2)' (2 insns) vs the target's 'sh $v0,0($a2) / j .L8003E024 / addiu $a3,$a3,2' (3 insns). No form gained an instruction from the steal path, so the target's four addiu $a3 were four pre-RA instructions and the target's own src reference count is 32, the same as k1's.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), q1 (172 insns), q2 (174), p1 (170), no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/reorg.c:3059
+
+## [s8] Both measured doors to the target cursor seat land exactly one instruction short of 173, at the same instruction, from opposite sides.
+- mechanism: Door A (k8): four src++ statements plus a fourth dst-touching statement takes dst to refs 32; that arm's tail then matches its sibling's on two insns and jump2 deletes both (174 -> 172). Door B (q1): three src++ statements takes src to refs 26; the emitted stream then carries three addiu $a3 where the target has four (173 -> 172). s7's inverse.py bounds these as the only cursor atoms (refs_down 108 / refs_up 109).
+- probe: k8 and q1 both measured this session with sandbox --disable all, modelled with extract.py/ALLOCDBG, and diffed against build/src/code6cac_c2.o with s8/sbs2.py.
+- result: k8 = 31 / 172 (seat correct, missing its own arm's addiu $a3); q1 = 37 / 172 (seat correct, missing the fourth addiu $a3). Two structurally different chassis with the same one-instruction gap at the same place.
+- verdict: CONFIRMED

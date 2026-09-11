@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 31,
    "modality": "solver",
    "headline": "Solver: the residual is FOUR pseudos (src/dst AND j/complement) and the two pairs are independent 1-atom sub-problems; the j/complement half needs j's live_length to merely TIE complement's (52, not 4"
+  },
+  {
+   "session": 8,
+   "floor": 31,
+   "modality": "forensics",
+   "headline": "Forensics: the cursor seat is a STATEMENT-COUNT question (flow.c:2081, depth-3 weighting) - three pre-RA src++ statements give src refs 26 and the target's $a3/$a2 seat in ordinary C (new chassis q1, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "j's live_length reaches 52 - the exact tie that hands it $t4 - if the first-pass scheduler emits loop.c's hoisted `complement` subu BEFORE `j = 0` in the inner-loop preheader, since both are independent insns in the same basic block and flow's life analysis runs after that scheduling pass.",
-   "mechanism": "On the q_j_late chassis j is live 53 and complement 52, and the whole difference is one preheader insn: `move $t5,zero` then `subu $t4,$s8,$t3`. sched.c's list scheduler orders that block by INSN_PRIORITY, and the subu feeds three mults (a long critical path) while the li feeds only the latch addiu - so the ordering is a scheduler question, not a spelling one, and it is exactly the layer tools/sched_solver models order- and clock-exactly.",
-   "next_probe": "Apply q_j_late, run tools/sched_solver on the inner-loop preheader block with --target pinned to the target head, and use inverse_sched.py to get ranked C-lever vectors for the (move, subu) pair specifically. Verify any candidate with tmp/grind/func_8003DE14/s7/models.py: the read-out is j livelen == 52 and 115 -> $t4, NOT the score (q_j_late itself scores 44, one worse than k1, while being one insn from the pair)."
+   "hypothesis": "A three-statement src++ layout exists that emits 173 instructions: q1 shares the two ZERO arms, but the other ways of choosing which two of the four arms share the tail (and where the shared block sits) place the increments differently and one of them may keep all four emitted addiu $a3.",
+   "mechanism": "The seat needs exactly three pre-RA statements (flow.c:2081 accounting, measured this session); which arms own them is free. Emitted instruction count then depends on jump.c's cross-jump (minimum 2 matching tail insns, jump.c:2020) and on which insn each arm has left to sink into its jump's delay slot - both change with the pairing.",
+   "next_probe": "On the q1 chassis, generate every semantically-correct pairing (zero+zero = q1; zero+colour; zero+blend; colour+blend) x shared-block placement (above advance_dst, after the latch with a jump back), score each, and gate FIRST on build_insns == 173, THEN read src refs == 26 and the $a3/$a2 disposition with tmp/grind/func_8003DE14/s8/models.py. The score is not the read-out (q1 is 37 against a floor of 31 while being structurally closer)."
   },
   {
-   "hypothesis": "The cursor seat is reachable with src refs 32 -> 26 rather than dst 26 -> 32, if a C shape exists whose pre-RA RTL holds three `src++` statements while reorg.c's delay-slot fills restore the fourth `addiu $a3` - giving the target's 173 instructions with a lower reference count and no duplicated-statement construct.",
-   "mechanism": "reg_n_refs is counted by flow.c pre-RA; reorg.c runs post-allocation, so a fill that COPIES the branch target's first insn adds an uncounted instruction (the opposite sign to jump2's cross-jump, which is what costs k8 its 173rd insn). cursor_thresh.py measures that src refs 26 alone flips the pair, since floor_log2(26)*26/59 falls below dst's 104/58.",
-   "next_probe": "On the k1 chassis, spell forms where the three non-blend arms reach a shared `advance_src: src++;` tail through distinct continuations (the blend arm keeps its own inline increment), and forms where the shared tail's first insn is the increment so reorg can steal it into each `j`'s slot. Gate on build_insns == 173 FIRST, then read refs on pseudo 108 with models.py - the target is refs 26, not the seat directly."
+   "hypothesis": "The j/complement $t4/$t5 pair is still open on the NEW q1 chassis, where j is live 56 and complement 51, and q1 is now the chassis worth fixing it on because it already carries the target's cursor seat.",
+   "mechanism": "s7 established the pair is decided by live_length alone (both refs 11) and that an exact TIE suffices, because j is the lower allocno and allocno_compare falls through to 'return *v1 - *v2' (global.c:653). On q1 the gap is 5 insns, the same shape as k1's 57/52, and the whole difference is the preheader ordering of 'move $t5,zero' and the hoisted subu - the sched.c question tools/sched_solver models order- and clock-exactly.",
+   "next_probe": "Extract the q1 model (tools/ra_solver/extract.py), re-run s7's tie_test.py against it to confirm the threshold, then run tools/sched_solver / inverse_sched.py on q1's inner-loop preheader block for the (move, subu) pair. Read out j livelen and the $t4 disposition, not the sandbox score."
   },
   {
-   "hypothesis": "The two residual pairs being independent means a 173-insn chassis that fixes ONLY the j/complement pair is worth banking even though it scores worse, because the cursor atom composes onto it unchanged.",
-   "mechanism": "inverse.py's 72 minimal vectors are all products of one atom from each pair, so no cursor lever interacts with the j/complement lever. Score is not monotone in distance-to-target on this function (the s3 lesson, repeated by k1 at 43 vs h1 at 42 with k1 strictly closer), so the read-out for a j/complement chassis is the disposition 115 -> $t4, not the sandbox number.",
-   "next_probe": "If the sched_solver route lands j at $t4 with 173 insns, bank it as chassis_<name>_t4t5_fixed.c alongside k1 regardless of score, then re-run inverse.py on ITS model with the cursor-only goal to confirm the remaining atom is still refs_down 108 / refs_up 109 and nothing new appeared."
+   "hypothesis": "The 173rd instruction must come from a pass that changes the emitted count AFTER flow.c counted reg_n_refs, and with reorg's unconditional-jump steal class-killed the untested channels are reorg's fill_slots_from_thread copy for CONDITIONAL branches (reorg.c:3528 'temp = own_thread ? trial : copy_rtx (trial)') and reload-created insns.",
+   "mechanism": "reg_n_refs is fixed at flow time; jump2 deletes counted insns (measured: k8) and reorg can duplicate an insn from a non-owned thread into a CONDITIONAL branch's delay slot, which would add an uncounted instruction. The target's arms are entered through conditional branches (bnez $v0, bnez $a0) whose slots currently hold nops, so the thread-copy path is reachable in principle.",
+   "next_probe": "On the q1 chassis, dump with BB2_DBR_DEBUG=1 (tmp/grind/func_8003DE14/s8/dump.sh q1 BB2_DBR_DEBUG=1) and read which candidate insns reorg rejected for the two bnez slots; then spell forms that make the shared advance_src: block the conditional branch's non-owned thread head (the zero test branching directly to the shared tail rather than to an arm that jumps there)."
   }
  ],
  "judge_constraints": [],
@@ -258,6 +264,14 @@
    "measured_on": "HEAD chassis 2026-09-10, k1 chassis (43 / 173 insns), model tmp/grind/func_8003DE14/s6/k1.model.json, no FAKE constructs",
    "predicate_cite": "",
    "result": "dst livelen 38 -> 108=$a3 109=$a2 (first hit descending from 58); src livelen 90 -> 108=$a3 109=$a2 (first hit ascending"
+  },
+  {
+   "session": 8,
+   "statement": "reorg.c's delay-slot fill cannot manufacture the target's fourth addiu $a3 by copying a shared advance_src: block's first insn into an unconditional jump's delay slot.",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), q1 (172 insns), q2 (174), p1 (170), no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/reorg.c:3059",
+   "result": "Every shared-tail form emits the arm's own sh in the jump's delay slot and leaves the shared addiu $a3 single-instanced:"
   }
  ],
  "ladder_skip": 0,
