@@ -1584,3 +1584,87 @@ nrefs=12 livelen=11 pri=32727 ord=2. Reference count cannot be lowered this way.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/tie/T_*.c
+
+## s17 (solver)
+
+### H17.1 - KILLED (instance)
+**Statement.** On the incumbent chassis, an emission order for the outer-loop
+head basic block in which both cursor `addiu`s precede the `mflo` is obtainable
+from sched1/sched2 by an INSN_PRIORITY delta (s16 frontier item 3's next probe).
+
+**Mechanism tested.** `tools/sched_solver` models both scheduling passes
+order- and clock-exactly (6978/6978 blocks). If our head block's pick order
+differed from the target's, perturb would print that block with a goal and
+search `luid` / `luid_move` atoms for the priority perturbation that reaches it.
+
+**Probe.** `extract.py code6cac_c2` (parity=True, 750 blocks / 3989 picks);
+`s17/perturb2.py ... --func func_8003DE14 --pass {1,2} --goal-from-target
+code6cac_c2 --target-object build/src/code6cac_c2.o --ours-object
+tmp/sandbox/func_8003DE14/code6cac_c2.o --atoms luid,luid_move --depth 2`.
+
+**Result.** Neither pass flags the head block at all: its goal equals ours. The
+only block flagged in either pass is block 10 (the blend arm), and it is
+reported as a non-topological goal - an alignment artifact. So there is no
+priority disagreement to perturb: our head block already emits the target's
+order, and the rows-54..71 rotation is created after sched2, in reorg.c's
+delay-slot fill (documented as out of the model's scope). Measured on HEAD
+2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present.
+Logs `s17/perturb_pass1.log`, `s17/perturb_pass2.log`.
+
+### H17.2 - KILLED (instance)
+**Statement.** The insns sched1 interleaves into the blend arm (the `src++` bump
+at row 110 and the trip-test `mflo` at row 117) can be moved out of g_src's
+second live segment by a scheduler lever, shortening g_src's live length from 12
+to <= 10 and lifting its allocno priority to >= 36000 (s16 frontier item 1's
+next probe).
+
+**Mechanism tested.** Same solver run; block 10 IS the blend arm (its node table
+carries the six unit-1 `mult` / partner pairs 227/397 ... 252/412).
+
+**Result.** The solver reports block 10's target-derived goal as NOT a
+topological order (8 violations in pass 2, 3 in pass 1) - the aligner mis-paired
+duplicate instruction text, which is the same difflib artifact s13 identified by
+raw index-by-index comparison. Our blend-arm order IS the target's, so there is
+no alternative legal schedule to steer toward and no INSN_PRIORITY delta to
+find. g_src's live length must be attacked through its live RANGE (references
+and their positions), not through the pick order. Measured on HEAD 2026-09-10,
+C2/candidate chassis (26 / 173 insns), no FAKE constructs present.
+
+### H17.3 - CONFIRMED
+**Statement.** The entire 26-point residual is downstream of the RTL multiset:
+our 173-insn stream and the target's 173-insn stream contain the same
+instructions modulo register names.
+
+**Probe.** `inverse_compose.py classify code6cac_c2 func_8003DE14
+--target-object build/src/code6cac_c2.o --ours-object
+tmp/sandbox/func_8003DE14/code6cac_c2.o` -> `FIRST DIVERGENCE: RA`, honest 173 /
+target 173 (`s17/classify.log`).
+
+**Result.** The register-blanked multisets are identical, so the PRE-RA test
+passes. No front-end / cse / combine / loop hypothesis can be the explanation
+for any part of this residual, and any future session proposing one is
+proposing something already measured false on this chassis. The residual is
+(a) register assignment - global.c's seat for px / g_src / b_src / r_src and the
+two short-lived trip-test pseudos - plus (b) one reorg.c delay-slot choice.
+
+## [s17] On the incumbent chassis, an emission order for the outer-loop head basic block in which both cursor addiu's precede the mflo is obtainable from sched1/sched2 by an INSN_PRIORITY delta (the s16 frontier's head-region next probe).
+- mechanism: tools/sched_solver replicates both scheduling passes order- and clock-exactly (6978/6978 blocks project-wide). If our head block's pick order differed from the target's, perturb would print that block with a derived goal and search the luid / luid_move atoms for the priority perturbation that reaches it.
+- probe: extract.py code6cac_c2 (parity=True, 82 funcs, 750 blocks, 3989 picks) on the candidate body spliced into src; then tmp/grind/func_8003DE14/s17/perturb2.py tmp/sched_solver_work/code6cac_c2.sched.json --func func_8003DE14 --pass 1 and --pass 2 --goal-from-target code6cac_c2 --target-object build/src/code6cac_c2.o --ours-object tmp/sandbox/func_8003DE14/code6cac_c2.o --atoms luid,luid_move --depth 2.
+- result: Neither pass flags the head block: its target-derived goal equals ours. The only block flagged in either pass is block 10, the blend arm, and it is reported SKIPPED because its goal is not a topological order (8 violations in pass 2, 3 in pass 1 - the aligner mis-paired register-renamed duplicate instruction text). There is therefore no priority disagreement to perturb in the head block: our sched2 output is already the target's order, and the rows-54..71 rotation (addiu a2,sp,1040 at target row 54 vs our blez delay slot at row 69) is created downstream of the model, in reorg.c's fill_simple_delay_slots, which the sched_solver README explicitly excludes from its scope. The next probe for that residual is reorg ELIGIBILITY - making the last pre-branch insn one reorg cannot hoist (the target has an mflo there) - not a scheduler priority delta.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (score 26 / 173 insns, re-measured this session), no FAKE constructs present (fake_ablate: nothing to ablate); logs tmp/grind/func_8003DE14/s17/perturb_pass1.log and perturb_pass2.log
+
+## [s17] The insns sched1 interleaves into the blend arm - the src++ cursor bump at row 110 and the trip-test mflo at row 117 - can be moved out of g_src's second live segment by a scheduler lever, shortening g_src's live length from 12 to 10 or less and lifting its allocno priority to 36000 or more (the s16 frontier's blend-arm next probe).
+- mechanism: live_length is counted over the post-sched1 chain, so the claim requires an alternative legal emission order for the blend basic block. Block 10 of the extracted model IS the blend arm: its node table carries the twelve unit-1 insns, six mult at icost 12 with their six paired icost-1 partners (uids 227/397, 230/400, 238/403, 241/406, 249/409, 252/412).
+- probe: Same two perturb runs (pass 1 and pass 2), goal derived from the target object.
+- result: The solver reports block 10's target-derived goal as NOT a topological order and skips it - the difflib aligner mis-paired the blend arm's duplicate instruction texts, which differ only in register names. That is the same artifact s13 identified by raw index-by-index comparison, and it means our blend-arm emission order IS the target's. There is no alternative schedule to steer toward and no INSN_PRIORITY delta to find, so g_src's live length cannot be shortened from the pick order. If g_src's priority is to be lifted, it must come from its live RANGE - the number and position of its references - which is an RA/front-end question, not a scheduler one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (score 26 / 173 insns, re-measured this session), no FAKE constructs present; logs tmp/grind/func_8003DE14/s17/perturb_pass1.log and perturb_pass2.log
+
+## [s17] The entire 26-point residual is downstream of the RTL instruction multiset: our 173-insn stream and the target's 173-insn stream contain exactly the same instructions modulo register names.
+- mechanism: inverse_compose.py's classify funnel tests PRE-RA first by comparing register-BLANKED instruction multisets; only if those match does it fall through to the RA (same instructions, different registers) verdict. Object mode is the only legal mode for an INCLUDE_ASM-routed function - both sides are objdump renderings in the same language.
+- probe: python3 tools/ra_solver/inverse_compose.py classify code6cac_c2 func_8003DE14 --target-object build/src/code6cac_c2.o --ours-object tmp/sandbox/func_8003DE14/code6cac_c2.o (log tmp/grind/func_8003DE14/s17/classify.log).
+- result: FIRST DIVERGENCE: RA; honest 173 insns, target 173 insns; next tool tools/ra_solver/inverse.py (global / local). The register-blanked multisets are identical, so no front-end / cse / combine / loop divergence exists anywhere in this function. Every one of the 26 points is a register name or a placement, never a different or missing instruction. The residual decomposes into (a) global.c's seats for px / g_src / b_src / r_src and the two short-lived trip-test pseudos, and (b) one reorg.c delay-slot choice in the outer-loop head.
+- verdict: CONFIRMED

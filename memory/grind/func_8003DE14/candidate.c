@@ -124,6 +124,46 @@
  * The open question is now narrow: raise pri(g_src) above 32727 (livelen <= 10 at
  * nrefs 12, or nrefs >= 15 at livelen <= 13) WITHOUT touching the AAA value->variable
  * mapping - which means the change has to come from outside the blend arm.
+ *
+ * S17 (solver) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
+ * unchanged as the best known form.  s17 ran the full solver triage and closed
+ * the SCHEDULER axis outright:
+ *   - inverse_compose.py classify (object mode, target = build/src/code6cac_c2.o,
+ *     ours = the cheat-stripped sandbox .o) returns FIRST DIVERGENCE: RA.  The
+ *     register-BLANKED instruction multisets of the two 173-insn streams are
+ *     IDENTICAL, so there is no pre-RA (front end / cse / combine / loop) insn
+ *     difference anywhere in the function - every one of the 26 points is a
+ *     register name or a placement, never a different instruction.
+ *   - tools/sched_solver (model extracted for code6cac_c2 at parity=True, 750
+ *     blocks / 3989 picks) with the goal derived from the TARGET OBJECT reports
+ *     exactly ONE block of func_8003DE14 whose goal differs from ours in either
+ *     pass: block 10, the blend arm - and it reports that goal as NOT a
+ *     topological order (8 violations in pass 2, 3 in pass 1), i.e. the target
+ *     alignment mis-paired duplicate instruction text.  That is the same difflib
+ *     artifact s13 identified by raw index-by-index comparison; there is no real
+ *     order divergence in the blend arm.  Every other block - INCLUDING the
+ *     outer-loop head block that carries the 4-insn blez-delay-slot residual -
+ *     already schedules to the target's order in both sched1 and sched2.
+ *   - Consequence for the s16 frontier: the head residual is NOT a sched1
+ *     INSN_PRIORITY question (that probe is answered and dead), and the blend
+ *     arm's interleaved cursor-bump / trip-test insns cannot be moved by any
+ *     scheduler lever because our schedule already IS the target's.  The head
+ *     rotation (`addiu a2,sp,1040` at target row 54 vs our blez delay slot at
+ *     row 69) is produced downstream of the scheduler, in reorg.c's delay-slot
+ *     fill, which the sched model explicitly does not cover.
+ *
+ * TOOLING NOTE (s17, reusable).  tools/sched_solver/mkasm.sh cannot be used on
+ * this function: it predates --prefill-label-funcs (2026-09-04) and it runs the
+ * FULL prologue_fix, so its .hon.s is not the sandbox's source state.  And even
+ * the correct honest stream trips goalmap's same-source checksum, because maspsx
+ * emits mult/mflo interlock nop PAIRS that objdump renders as `...` and
+ * engine.score.normalized_insns therefore drops from BOTH streams (179 text
+ * lines vs 173 object insns; verified symmetric - target and ours both carry
+ * them at 0x25c8/0x25cc).  tmp/grind/func_8003DE14/s17/mkasm3.py rebuilds the
+ * streams through engine.pipeline.c_pipeline_cmd with the sandbox's own
+ * overrides, and tmp/grind/func_8003DE14/s17/perturb2.py wraps perturb.py with
+ * the one-line goalmap patch (a nop inside a RUN of nops expands to 0 object
+ * insns).  Use those two, not mkasm.sh, for any further solver work here.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];

@@ -1998,3 +1998,154 @@ s16/analyze.py.
 - [s16] Seat reachability is proven: 4 forms hit r_src $a1 + g_src $v1 + px $a0, and C_FFFgSFrG reproduces s14's predicted px = nrefs 12 / livelen 13 / pri 27692 route. Affordability is disproven on this chassis: 38 for the seat-correct forms, 34 for tie+renumber, 26 for the incumbent.
 
 - [s16] Mechanistic conclusion for the next session: inside the blend arm, g_src's live length and the arm's sched1 priorities are the SAME knob - every carrier change that moves one moves the other. pri(g_src) must exceed 32727 (livelen <= 10 at nrefs 12, or nrefs >= 15 at livelen <= 13) while the AAA value->variable mapping is left alone, so the change has to originate outside the arm.
+
+## s17 (solver) - the scheduler axis is closed; the residual is 100% RA + one reorg.c choice
+
+Chassis re-measured first: candidate.c spliced into `src/code6cac_c2.c`,
+`sandbox func_8003DE14 --disable all` -> **score 26, build_insns 173,
+target_insns 173** on HEAD 2026-09-10 (post -mel, post -msoft-float). The
+ledger floor is confirmed, not inherited.
+
+KILL RE-AUDIT (mandated by the flat-floor rule). `tools/fake_ablate.py --func
+func_8003DE14 --file code6cac_c2 --candidate memory/grind/func_8003DE14/candidate.c`
+prints *"no FAKE-annotated constructs found ... nothing to ablate"*
+(tmp/grind/func_8003DE14/s17/fake_ablate.log). The incumbent is ordinary C end to
+end, so every instance kill s13-s16 recorded was measured with ZERO FAKE carriers
+occupying any pseudo - the "a lever measured inert while a FAKE carrier sat on its
+target pseudo is not a kill" failure mode cannot apply to this ledger. The
+re-audit is therefore satisfied by the chassis re-measurement above, and the
+banked kills stand as written.
+
+### 1. `inverse_compose.py classify` - FIRST DIVERGENCE: **RA**
+
+Run in object mode (the only legal mode for an INCLUDE_ASM-routed function):
+
+    python3 tools/ra_solver/inverse_compose.py classify code6cac_c2 func_8003DE14 \
+      --target-object build/src/code6cac_c2.o \
+      --ours-object   tmp/sandbox/func_8003DE14/code6cac_c2.o
+
+    func_8003DE14 (code6cac_c2): honest 173 insns, target 173 insns
+    FIRST DIVERGENCE: RA
+      next tool: tools/ra_solver/inverse.py  (global / local)
+
+(log: `tmp/grind/func_8003DE14/s17/classify.log`.) The classifier's PRE-RA test
+is the register-BLANKED multiset comparison, and it passes: our 173-insn stream
+and the target's 173-insn stream contain exactly the same instructions modulo
+register names. **There is no front-end / cse / combine / loop divergence
+anywhere in this function.** Every one of the 26 points is a register name or a
+placement - never a different instruction, never a different count. That closes
+the whole "is some expression being materialised differently?" family of
+hypotheses without a single compile.
+
+### 2. `tools/sched_solver` - ONE flagged block, and it is an alignment artifact
+
+Model extracted cleanly for the incumbent body:
+
+    python3 tools/sched_solver/extract.py code6cac_c2
+    code6cac_c2: parity=True funcs=82 (pass1=41 pass2=41) blocks=750 picks=3989
+
+Goal derived from the target OBJECT (`--target-object build/src/code6cac_c2.o`,
+`--ours-object tmp/sandbox/func_8003DE14/code6cac_c2.o`), atoms `luid,luid_move`,
+depth 2, run for **both** passes. Both runs print the same one-line verdict:
+
+    pass 2:  block 10: 34 insns, goal differs from ours
+             SKIPPED -- goal is not a topological order (8 violations):
+             the target alignment mis-paired duplicate instruction text here
+    pass 1:  block 10: 28 insns, goal differs from ours
+             SKIPPED -- goal is not a topological order (3 violations): ...
+
+(logs: `s17/perturb_pass1.log`, `s17/perturb_pass2.log`.)
+
+Block 10 is the blend arm: its `nodes` table carries the twelve unit-1 insns
+(six `mult` at icost 12 and their six paired icost-1 partners, uids
+227/397, 230/400, 238/403, 241/406, 249/409, 252/412). "Goal is not a topological
+order" means the target-vs-ours alignment could not produce a self-consistent
+order for it - which is exactly the difflib mis-pairing s13 diagnosed by raw
+index-by-index comparison, and it happens here for the same reason: the blend
+arm's instruction TEXTS differ only in register names, so the aligner pairs the
+wrong `mult`/`mflo`/`andi` copies with each other. **There is no real order
+divergence in the blend arm**, and the solver has nothing to solve there.
+
+**Every other block of func_8003DE14 matched the target's order in both passes.**
+That includes the outer-loop head block - the one carrying the 4-insn
+blez-delay-slot residual (target rows 54-71 vs ours). So:
+
+  * s16 frontier item 3 ("run sched_solver on the outer-loop head basic block ...
+    ask whether an emission order exists in which both cursor addiu's precede
+    the mflo, and what INSN_PRIORITY delta it requires") is **answered and
+    dead**: our head block already emits the target's order out of sched2. No
+    INSN_PRIORITY delta is required because there is no priority disagreement.
+  * s16 frontier item 1 ("ask which emission orders are legal for the
+    interleaved cursor bump and trip-test insns and what INSN_PRIORITY delta
+    moves them out of rows 110-117") is **dead on the same evidence**: the
+    interleaving of the `src++` bump (row 110) and the trip-test `mflo` (row
+    117) into g_src's second live segment is what the TARGET's schedule does
+    too. g_src's 12-long live length cannot be shortened by re-scheduling,
+    because there is no alternative schedule to reach - ours is already the
+    target's. If g_src's live length is to fall, the change must come from the
+    live range itself (fewer / earlier references), not from the pick order.
+
+### 3. What the head residual actually is: reorg.c, not sched
+
+Raw index-by-index diff (`s17/sxs_diff.txt`), rows 53-71:
+
+    53  addiu a3,sp,16                    | addiu a3,sp,16
+    54  addiu a2,sp,1040                  | mflo v1
+    ...
+    68  mflo t3                           | blez v1,...
+    69  blez v1,...                       | addiu a2,sp,1040     <- our delay slot
+    70  move t4,zero                      | subu t5,s8,t3
+    71  subu t5,s8,t3                     | move t4,zero
+
+One instruction - `addiu a2,sp,1040`, the `dst = dst_buf` cursor init - accounts
+for the entire rows-54..71 rotation. The target emits it inside the multiply
+latency shadow next to the `src` cursor and then fills the `blez` delay slot
+with `move t4,zero` taken from the FALL-THROUGH thread; we leave the slot to be
+filled with the `addiu` itself. Since the sched model (order- AND clock-exact,
+6978/6978 blocks project-wide) says our head block's emission order equals the
+target's, the divergence is created after sched2 - in `reorg.c`'s
+`fill_simple_delay_slots`, which prefers an independent insn from BEFORE the
+branch over one from the fall-through. The sched_solver README is explicit that
+`reorg.c` is "downstream of this model and out of its scope", so the solver
+cannot rank this; the lever is reorg ELIGIBILITY, i.e. making the last
+pre-branch insn something reorg cannot hoist into the slot (an `mflo` is
+ineligible - which is precisely what sits there in the target).
+
+### 4. Tooling: how to run the solver on this function (reusable)
+
+Two obstacles, both now solved in `tmp/grind/func_8003DE14/s17/`:
+
+1. `tools/sched_solver/mkasm.sh` produces the wrong honest stream here. It
+   predates `--prefill-label-funcs=maspsx_prefill_label_funcs.txt` (owner ruling
+   2026-09-04) and it runs the FULL `prologue_fix`, whereas the sandbox builds
+   with `cheats.empty_overrides` (empty prologue config) and a cheat-stripped
+   src. `s17/mkasm3.py` regenerates `tmp/sched_map/code6cac_c2.{cc1,hon,tgt}.s`
+   by calling `engine.pipeline.c_pipeline_cmd` with the sandbox's own override
+   dict and dropping the final `as` stage - guaranteed same source state.
+2. `goalmap.build_map`'s same-source checksum rejects the function even then:
+   the honest text body has 179 lines against 173 object insns. The six extra
+   lines are maspsx's mult/mflo interlock `nop` PAIRS. `objdump` renders a run
+   of zero words as `...`, so `engine.score.normalized_insns` drops them - from
+   BOTH streams symmetrically (checked with `objdump -z`: target and ours both
+   carry `nop; nop` at 0x25c8/0x25cc, 0x25e8/0x25ec, ...). `s17/perturb2.py`
+   wraps `perturb.py` and patches `goalmap._macro_expand_counts` so that a `nop`
+   which is part of a RUN of nops expands to 0 object insns (an ISOLATED nop
+   still counts 1 - there are two of those in this body, and 179 - 6 = 173
+   checks out). `tools/` is not an editable surface for a grind session, so the
+   patch lives in scratch; a future operator-side fix belongs in `goalmap.py`.
+
+- [s17] Chassis re-measured this session: memory/grind/func_8003DE14/candidate.c spliced into src/code6cac_c2.c gives sandbox --disable all score 26, build_insns 173, target_insns 173 on HEAD 2026-09-10. The ledger's floor of 26 is confirmed, not inherited. src/ was restored to HEAD before the session ended.
+
+- [s17] KILL RE-AUDIT satisfied: tools/fake_ablate.py --func func_8003DE14 --file code6cac_c2 --candidate memory/grind/func_8003DE14/candidate.c reports 'no FAKE-annotated constructs found ... nothing to ablate'. The incumbent is ordinary C end to end, so no instance kill in this ledger was ever measured with a FAKE carrier occupying a target pseudo; the s13-s16 kills stand as written.
+
+- [s17] inverse_compose.py classify (object mode) returns FIRST DIVERGENCE: RA with honest 173 / target 173 and identical register-blanked multisets - the PRE-RA axis is closed for this function.
+
+- [s17] tools/sched_solver/extract.py code6cac_c2 reports parity=True, 82 funcs (41 pass1 / 41 pass2), 750 blocks, 3989 picks - the model is valid on this TU with the candidate body in place.
+
+- [s17] perturb with the goal derived from the target OBJECT flags exactly one block of func_8003DE14 in each pass: block 10 (34 insns in pass 2, 28 in pass 1), the blend arm, and skips it because the goal is not a topological order (8 / 3 violations) - the aligner mis-paired register-renamed duplicate instruction text. Every other block, including the outer-loop head block, has goal == ours.
+
+- [s17] The head residual is one instruction: addiu a2,sp,1040 (dst = dst_buf). The target emits it at row 54 inside the multiply latency shadow next to addiu a3,sp,16 and fills the blez delay slot at row 70 with move t4,zero from the fall-through thread; we leave the slot for the addiu itself at row 69, pushing subu t5,s8,t3 to 70 and move t4,zero to 71. Rows 55-68 are a pure shift artifact of that one move.
+
+- [s17] TOOLING: tools/sched_solver/mkasm.sh cannot be used on this function - it predates --prefill-label-funcs (owner ruling 2026-09-04) and runs the FULL prologue_fix, while the sandbox builds with cheats.empty_overrides and a cheat-stripped src. tmp/grind/func_8003DE14/s17/mkasm3.py rebuilds the three sched_map streams through engine.pipeline.c_pipeline_cmd with the sandbox's own override dict.
+
+- [s17] TOOLING: goalmap.build_map's same-source checksum rejects this function even with the correct streams (179 honest text lines vs 173 object insns). The six extra lines are maspsx mult/mflo interlock nop PAIRS that objdump renders as '...' and engine.score.normalized_insns drops - symmetrically from BOTH streams (objdump -z confirms target and ours both carry nop;nop at 0x25c8/0x25cc and 0x25e8/0x25ec). tmp/grind/func_8003DE14/s17/perturb2.py patches goalmap._macro_expand_counts so a nop inside a RUN of nops expands to 0 object insns while an isolated nop still counts 1 (179 - 6 = 173). A permanent fix belongs in tools/sched_solver/goalmap.py, which a grind session may not edit.

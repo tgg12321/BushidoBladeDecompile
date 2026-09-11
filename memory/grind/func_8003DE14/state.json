@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 16,
- "current_modality": "synthesis",
+ "session_count": 17,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -99,44 +99,34 @@
    "floor": 26,
    "modality": "synthesis",
    "headline": "Synthesis: the target's blend seats (g_src $v1, px $a0, r_src $a1) ARE reachable in ordinary C - 4 of 1,483 liveness-checked cross-channel carrier spellings hit them - but every spelling that reaches "
+  },
+  {
+   "session": 17,
+   "floor": 26,
+   "modality": "solver",
+   "headline": "Solver triage closes the SCHEDULER axis: classify says FIRST DIVERGENCE = RA (register-blanked multisets identical, 173 vs 173), and sched_solver flags exactly one block of func_8003DE14 in either pas"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "g_src's live length can be shortened from 12 to <= 10 (pri >= 36000) by changing the insns sched1 INTERLEAVES INTO the blend arm rather than the arm's own statements: the cursor bump lands at row 110 and one mflo at row 117, both from the latch/trip-test region, and they sit inside g_src's second live segment.",
-   "mechanism": "live_length is counted over the post-sched1 chain, so any insn scheduled between g_src's mflo (row 104) and the g sum (row 114) lengthens it. Those interleaved insns come from outside the arm - the src++ bump and the trip-test multiply - so their placement is decided by the LOOP's dependence graph, not by the nine channel statements s14/s15/s16 have exhaustively permuted.",
-   "next_probe": "Run tools/sched_solver on the blend basic block of the candidate chassis to ask which emission orders are legal for the interleaved cursor bump and trip-test insns and what INSN_PRIORITY delta moves them out of rows 110-117; then look for C forms in the LATCH region (the trip test, the cursor bump, the j increment) that produce that delta, scoring each with sandbox --disable all and dumping with tmp/grind/func_8003DE14/s16/batch_alloc.py to read g_src's livelen directly rather than inferring it from the score."
+   "hypothesis": "The 4-insn head residual is decided in reorg.c's fill_simple_delay_slots, not in sched: our blez's delay slot is filled from BEFORE the branch (the addiu a2,sp,1040 that sched2 leaves last in the block) while the target's is filled from the FALL-THROUGH thread (move t4,zero). A C form that makes the last pre-branch insn ineligible for the slot - the target has an mflo there, and reorg cannot hoist an mflo into a delay slot - restores the target's rows 54-71 in one step.",
+   "mechanism": "reorg.c's fill_simple_delay_slots scans backwards from the branch for an independent insn in the same basic block and only falls through to the branch target / fall-through thread when it finds none. Our block ends ... mflo t3, addiu a2,sp,1040, blez; the target's ends ... addiu a2 (row 54), mflo t3, blez. So the question is not which order sched2 emits (s17 measured those equal) but which insn is LAST before the branch.",
+   "next_probe": "Dump .dbr and .sched2 for the incumbent (pwsh tools/grinder/dump.ps1 func_8003DE14) and read the head block's insn chain immediately before jump_insn 96 in both - confirming that addiu a2 sits last pre-reorg and that reorg moved it. Then look for C forms that place the dst cursor's materialisation earlier in the block's dependence order, e.g. giving dst a use inside the head region, or making the total = rect[2]*rect[3] multiply the last thing computed before the guard, so that the mflo is the final pre-branch insn. Score each with sandbox --disable all."
   },
   {
-   "hypothesis": "The target's $v0 is free of global allocnos because b_src is excluded from it by a conflict our build does not have; producing that exclusion reseats b_src on $a0 and drops px and g_src one rank each without touching the arm's schedule.",
-   "mechanism": "global.c hands each allocno the lowest-numbered free hard register that does not conflict. b_src (p128, pri 32727) takes $v0 in our build, meaning it conflicts with nothing there; the target's b_src sits on $a0, so in the original the $v0 slot was unavailable at that point - a conflict-set difference, which is a flow.c liveness question and therefore a different lever from priority arithmetic.",
-   "next_probe": "Dump .flow/.lreg conflict information for p128 on the incumbent (tmp/grind/func_8003DE14/s16/d_base) and identify which live range would have to overlap b_src to exclude $v0; then search the carrier_alloc.json corpus (already banked) for spellings in which b_src is seated on $a0 while px, g_src and r_src keep the incumbent's priorities, and score those."
+   "hypothesis": "g_src's allocno priority can only be lifted through its live RANGE, not its schedule: with the pick order proven equal to the target's, the remaining levers are the NUMBER of g_src references (nrefs >= 15 at livelen <= 13 gives pri >= 35000) or an earlier last reference (livelen <= 10 gives pri 36000). Both are decided before sched1 by where the g-channel value is read.",
+   "mechanism": "global.c prices an allocno at nrefs * 10000 * something / livelen; s14 derived the exact arithmetic (px pri 32727 at nrefs 12 / livelen 11, g_src pri 30000). s17 removes the schedule from the set of things that can move livelen, so only the C-level reference pattern remains.",
+   "next_probe": "Use tmp/grind/func_8003DE14/s16/batch_alloc.py to read nrefs and livelen for g_src directly (not inferred from the score) over a family of forms that vary ONLY how many times the g-channel source value is read and where its last read sits - e.g. folding the g sum's second operand through g_src, or deriving a later value from g_src instead of from px. Reject any form whose alloc table shows px's priority moving too, since s16 measured that steering the seat re-prices the arm."
   },
   {
-   "hypothesis": "The 4-insn head residual (the blez delay slot) is independent of the blend seat and is a sched1 priority question, not a source-order question - s15 killed the source-order axis over 588 + 96 spellings.",
-   "mechanism": "reorg.c fills the guard branch's delay slot from the closest movable preceding insn; the target has both cursor addiu's consumed inside the mult latency window (target rows 53/54) and so falls back to filling with move t4,zero from the fall-through thread, while our build schedules only src there and leaves dst as reorg's candidate.",
-   "next_probe": "Run tools/sched_solver (order- and clock-exact for this pass) on the outer-loop head basic block of the candidate chassis and ask whether an emission order exists in which both cursor addiu's precede the mflo, and what INSN_PRIORITY delta it requires; only then hunt for a C form producing that delta."
+   "hypothesis": "The b_src / $v0 conflict-set difference (s16 frontier item 2) is now the only remaining RA lever with an untested mechanism: the target's $v0 is free of global allocnos because b_src is excluded from it by a conflict our build does not have.",
+   "mechanism": "global.c hands each allocno the lowest-numbered free hard register that does not conflict. b_src (p128, pri 32727) takes $v0 in our build, so it conflicts with nothing there; the target seats b_src on $a0, meaning $v0 was unavailable at that point - a flow.c liveness question, a different lever from priority arithmetic, and one s17's scheduler result does not touch.",
+   "next_probe": "Dump .flow/.lreg conflict information for p128 on the incumbent (tmp/grind/func_8003DE14/s16/d_base) and identify which live range would have to overlap b_src to exclude $v0; then search the already-banked s16/carrier_alloc.json corpus for spellings in which b_src is seated on $a0 while px, g_src and r_src keep the incumbent's priorities, and score those with sandbox --disable all."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 1,
-   "statement": "GCC hoists the three loop-invariant `channel * factor` multiplies out of the per-pixel loop, so an anti-LICM lever is needed to keep them inline the way the target does.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, cc1 -da dumps of src/code6cac_c2.c with the s1 best form applied; no FAKE constructs in the dumped body",
-   "predicate_cite": "",
-   "result": "The .loop dump reports `Loop from 145 to 303: 57 real insns` and `Insn 226/235/244: regno 131/135/139 (life 1), savings "
-  },
-  {
-   "session": 1,
-   "statement": "func_8003DE14 needs a multu_pad_funcs.txt entry because asm/funcs/func_8003DE14.s shows 179 instructions (three 2-nop mult/mflo pads) while the build shows 173.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, sandbox object vs build/src/code6cac_c2.o, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "The pads are present in BOTH objects \u2014 GNU as in reorder mode already inserts the mult/mflo hazard nops. The 179-vs-173 "
-  },
   {
    "session": 1,
    "statement": "Declaring `dst` before `src` flips the build's a2=src / a3=dst cursor registers to the target's a3=src / a2=dst.",
@@ -600,6 +590,22 @@
    "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/tie/T_*.c",
    "predicate_cite": "",
    "result": "ZERO HIT. Scores run 34 to 56; best is 34 (T_FFrGrSgSbS), then six at 36. Creating the tie costs the schedule exactly as"
+  },
+  {
+   "session": 17,
+   "statement": "On the incumbent chassis, an emission order for the outer-loop head basic block in which both cursor addiu's precede the mflo is obtainable from sched1/sched2 by an INSN_PRIORITY delta (the s16 fronti",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (score 26 / 173 insns, re-measured this session), no FAKE constructs present (fake_ablate: nothing to ablate); logs tmp/grind/func_",
+   "predicate_cite": "",
+   "result": "Neither pass flags the head block: its target-derived goal equals ours. The only block flagged in either pass is block 1"
+  },
+  {
+   "session": 17,
+   "statement": "The insns sched1 interleaves into the blend arm - the src++ cursor bump at row 110 and the trip-test mflo at row 117 - can be moved out of g_src's second live segment by a scheduler lever, shortening ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (score 26 / 173 insns, re-measured this session), no FAKE constructs present; logs tmp/grind/func_8003DE14/s17/perturb_pass1.log an",
+   "predicate_cite": "",
+   "result": "The solver reports block 10's target-derived goal as NOT a topological order and skips it - the difflib aligner mis-pair"
   }
  ],
  "ladder_skip": 0,
