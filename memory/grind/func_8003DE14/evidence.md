@@ -1582,3 +1582,132 @@ rather than an independent sub-problem: fix the blend naming first.
 - [s12] Equivalent 28-scoring spellings this session: W2, W5, W7, H1, H3, and four of the rebased blend bodies (B1w, B3w, B7w, B8w). The floor is a plateau of equivalent placements, not a single fragile form.
 
 - [s12] Target head for the next session (objdump insn index): 49 `lh v1,4(s0)`, 50 `lh v0,6(s0)`, 52 `mult v1,v0`, 53 `addiu a3,sp,16` (src), 54 `addiu a2,sp,1040` (dst), 55 `mflo v1` (total), 56-68 the `((i+1)<<12)/count` divide ending `mflo t3`, 69 `blez v1` with 70 `move t4,zero` in the slot, 71 `subu t5,s8,t3`, 72-73 the `i == count - 1` test.
+
+## s13 (structural) — floor 28 -> 26
+
+Chassis at dispatch: HEAD 2026-09-10, s12 candidate (W5) re-measured **28 / 173
+insns / 173 target insns** — unchanged, so every s12 conclusion is still
+chassis-valid.
+
+### E1. The blend arm has NO scheduling residual — s12's frontier item was a difflib artifact
+`tmp/grind/func_8003DE14/s13/sxs.py` prints a raw index-by-index side-by-side of
+the target object stream against the sandbox object stream (no SequenceMatcher).
+On the s12 chassis, target[84..131] and ours[84..131] carry **identical opcodes
+in identical slots**; the only differences are register names. The s12 frontier
+entry "the target runs the blue channel's srl/andi/mult before its first mflo
+(104-107) where we run it after (109-112)" came from `sbs2.py`'s difflib
+alignment inserting a del/ins block around a pure rename, and is WRONG. There is
+nothing in the blend arm for `tools/sched_solver` to solve; the whole blend
+residual is register allocation.
+
+### E2. A C local is one pseudo — reusing the src variable for the factor product fixes the r channel
+Target insns 94/95/98 are `sll a1,v0,0x3` / `mult a1,t5` / `mflo a1`: ONE hard
+register ($a1) carries both the shifted r component and the `r * factor`
+product. The s12 body spelled those as two distinct expressions inside one
+statement, so they became two pseudos and landed in $v0 and $a1. GCC 2.7.2 gives
+a non-address-taken C local exactly one pseudo for its whole scope, so writing
+both values into one C variable forces them to share a hard register:
+
+    s32 rp;
+    rp    = r_src * complement;
+    r_src = r * factor;            /* same variable, second value */
+    r_ch  = ((rp + r_src) >> 15) & 0x1F;
+
+That is form **C2**, measured **26** (173 insns), rows 94/95 now byte-exact.
+This is ordinary C: `rp` is once-written/once-read and its value is consumed in
+the target's bytes, and `r_src` carries two real, consecutively-live values —
+no dead code, no annotation-bearing construct.
+
+The reuse only pays when it is spelled per channel with the *complement product
+named*. Every neighbouring spelling is worse (all 173 insns, all this chassis):
+
+| form | shape | score |
+|---|---|---|
+| C1 | C2 but the three sums folded inline into the final `or` chain | 43 |
+| C2 | per-channel `rp/gp/bp` + `X_src` reused for `X*factor` | **26** |
+| C3 | `r_src *= complement;` (self-multiply, keep the factor product inline) | 44 |
+| C4 | r,g reuse for the factor product; b self-multiplies | 40 |
+| C5 | full accumulate `r_src = r_src*complement + r*factor;` | 38 |
+| C6 | C3 with `src++` after the multiplies | 44 |
+| C7 | the `X*factor` products named first, src vars left alone | 54 |
+| F1 | C2 but the b channel self-multiplies (target's $a0 shape) | 40 |
+| F2 | C2 but the g channel self-multiplies | 27 |
+| F3 | C2 with the sums folded into the `or` chain | 43 |
+| F4 | C2 with g_src/b_src declared lazily at first use | 26 |
+| F5 | factor product first, then `X_src *= complement` | 59 |
+
+### E3. `px` as a user variable vs a CSE temp is byte-neutral
+Hypothesis: the target's zero-extended pixel is a compiler temp, not a user
+variable, and that is why it seats differently. **Disproved.** Form **D1**
+deletes `s32 px = pixel & 0xFFFF;` entirely, tests `if (pixel == 0)` and writes
+`(pixel >> 2) & 0xF8` / `(pixel >> 7) & 0xF8` on the u16 directly — the
+zero-extend then exists only as a CSE temp. D1 measures **26** and its aligned
+diff is row-for-row IDENTICAL to C2's. D5 (same with explicit `(u32)` casts) is
+also 26. So `px`'s pseudo class does not move its seat.
+
+Two spellings that change px's reference count DO move it, both the wrong way:
+`(px & 0x1F) << 3` for the r extraction (D3) = 27, `px & 0x8000` for the alpha
+mask (D2) = 40 **and 174 insns**.
+
+### E4. The head residual is a fall-through delay-slot fill, not a backward steal
+Raw side-by-side of insns 48-80 (sxs.py 48 80):
+
+    target                              ours
+     53 addiu a3,sp,16   (src=src_buf)   53 addiu a3,sp,16
+     54 addiu a2,sp,1040 (dst=dst_buf)   -- (absent)
+     ...  div/mflo sequence identical ...
+     69 blez v1,...                      68 blez v1,...
+     70 move t4,zero     <- delay slot   69 addiu a2,sp,1040  <- delay slot
+     71 subu t5,s8,t3                    70 subu t5,s8,t3
+                                         71 move t4,zero
+
+So in the target `dst = dst_buf` STAYS at 54 and the slot is filled with `j = 0`
+from the fall-through side of the branch, with `complement` (the subu) landing
+below it. Our build hands reorg `addiu a2,sp,1040` instead. The two facts are in
+tension with the j/complement seat: for `j` to keep $t4 its set must be BELOW
+complement's set (s12's mechanism, global.c:635-653 — equal nrefs, so the
+shorter live length wins), but for reorg to fill the slot with `move t4,zero`
+the j = 0 store must be the FIRST insn of the fall-through thread, i.e. ABOVE
+complement's set. Six statement-order spellings were measured (all 173 insns):
+
+| form | shape | score |
+|---|---|---|
+| E1 | `j = 0;` first, `complement` second, both inside the guard | 30 |
+| E2 | C2 + `dst = dst_buf;` moved inside the guard | 28 |
+| E3 | E1 + `dst = dst_buf;` inside the guard | 32 |
+| E4 | `total` computed after src/dst/factor | 26 |
+| E5 | dst declared before src | 26 |
+| E6 | `total` deleted; guard written `if (rect[2] * rect[3] > 0)` | 26 |
+
+E4/E5/E6 are byte-identical to C2 — moving or deleting `total` and swapping the
+src/dst declaration order does not change which insn reorg picks. E2 (denying
+reorg the `addiu a2` candidate by sinking dst into the guard) costs 2 rather
+than gaining: the slot then takes something else.
+
+### E5. Pass attribution for the surviving blend residual
+`pwsh`-equivalent dump of the s12 chassis (`tmp/grind/func_8003DE14/s13/d_base/`,
+instrumented `tools/gcc-2.7.2/cc1`, BB2_ALLOC_DEBUG=1). `px` is pseudo 122, a
+**global** allocno (it is live across the `bnez` at 89), `nrefs 12 / livelen 11 /
+pri 32727`, allocated 3rd (ord=2) and taking hardreg 3 = `$v1`. The target has it
+in `$a0`. ord=0 (pseudo 118) takes `$v0`, ord=1 is a special reg, so px simply
+takes the lowest register still free. Note that the other global allocno holding
+hardreg 3 is pseudo 101 (ord=10) — it does NOT conflict with px, so re-ordering
+those two cannot change px's seat. For px to land on `$a0`, some allocno that
+CONFLICTS with px must hold `$v1` before px is seated; in the target that role is
+played by the g-channel value (target rows 100/104 both write `$v1`).
+
+- [s13] Chassis re-measured at dispatch: the s12 candidate (W5) still scores 28 / 173 insns / 173 target insns on HEAD 2026-09-10, so all s12 conclusions remain chassis-valid.
+
+- [s13] New floor 26, form C2, saved to memory/grind/func_8003DE14/candidate.c with a full header. Ordinary C: the only change from s12 is that the three channel sums are staged through named per-channel locals (rp/gp/bp) and each X_src local is reused to hold that channel's X*factor product. No annotation-bearing construct anywhere in the body.
+
+- [s13] The blend arm carries ZERO scheduling residual: target[84..131] and ours[84..131] are opcode-identical, only register names differ (tmp/grind/func_8003DE14/s13/sxs.py). s12 frontier item 3 (feed the blend block to tools/sched_solver) is retired as based on a difflib alignment artifact.
+
+- [s13] The whole surviving 19-insn blend residual cascades from ONE seat: the zero-extended pixel (px, pseudo 122) is a GLOBAL allocno with nrefs 12 / livelen 11 / pri 32727, allocated 3rd (ord=2) and taking hardreg 3 = $v1 because ord=0 took $v0 and ord=1 is a special register; the target has px in $a0. Dump: tmp/grind/func_8003DE14/s13/d_base/stderr.log (instrumented tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1).
+
+- [s13] The other global allocno holding hardreg 3 in our build is pseudo 101 (ord=10, nrefs 4 / livelen 7) and it does NOT conflict with px, so reordering those two allocnos cannot move px's seat. For px to reach $a0 an allocno that CONFLICTS with px must hold $v1 before px is seated - in the target that role is played by the g-channel value, which occupies $v1 at target rows 100 and 104.
+
+- [s13] Head residual re-derived from a raw side-by-side of insns 48-80: the target's slot fill comes from the FALL-THROUGH side of the blez (move t4,zero = j = 0) with dst = dst_buf left in place at insn 54, not from a backward steal. Our build's slot fill (addiu a2,sp,1040) is a backward steal of dst = dst_buf.
+
+- [s13] The j/complement seat and the delay slot are provably in tension on this chassis: j needs its set BELOW complement's to win $t4 on live length (s12's mechanism), while the delay slot needs j = 0 to be the first insn of the fall-through thread, i.e. ABOVE complement's set. Six spellings measured; none satisfies both.
+
+- [s13] Every form measured this session held build_insns == 173 except D2 (px used for the 0x8000 alpha mask), which inflated to 174.

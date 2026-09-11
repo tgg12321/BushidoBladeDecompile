@@ -1,69 +1,71 @@
-/* func_8003DE14 - candidate (grind session 12, structural modality).
+/* func_8003DE14 - candidate (grind session 13, structural modality).
  *
- * SCORE 28 / 173 insns on HEAD 2026-09-10 (post -mel, post -msoft-float).
- * This is the s11 body (score 29) with ONE structural change, and it drops the
- * floor by one AND retires the whole j/complement half of the residual:
+ * SCORE 26 / 173 insns on HEAD 2026-09-10 (post -mel, post -msoft-float).
+ * This is the s12 body (score 28) with ONE structural change inside the blend
+ * arm: the r/g/b channel sums are staged through named per-channel variables
+ * and each `X_src` variable is REUSED to hold that channel's `X * factor`
+ * product.  Ordinary C throughout - no annotation-bearing construct anywhere in
+ * the body.
  *
- *   s11:  s32 j = 0;                       <- in the outer do-body
- *         if (total > 0) {
- *             do {
- *                 s32 complement = blend_base - factor;   <- LICM-hoisted
+ *   s12:  s32 r_src = (pixel & 0x1F) << 3;      (and g_src, b_src)
+ *         r_ch = ((r_src * complement + r * factor) >> 15) & 0x1F;
  *
- *   s12:  if (total > 0) {
- *             s32 complement = blend_base - factor;       <- written where LICM
- *             s32 j = 0;                                     put it anyway
- *             do {
+ *   s13:  s32 r_src = (pixel & 0x1F) << 3;      (and g_src, b_src)
+ *         s32 rp;                                (and gp, bp)
+ *         rp    = r_src * complement;
+ *         r_src = r * factor;                    <- same C variable reused
+ *         r_ch  = ((rp + r_src) >> 15) & 0x1F;
  *
- * WHY IT WORKS (pass attribution, BB2_ALLOC_DEBUG on tools/gcc-2.7.2/cc1,
- * tmp/grind/func_8003DE14/s12/d_W5/stderr.log):
- *   j (pseudo 115) and complement (pseudo 116) both carry nrefs 11, so
- *   allocno_compare (global.c:635-648) reduces to a pure live-length race and
- *   global.c:652-653 breaks an exact tie on ascending allocno.  Both pseudos are
- *   live across the whole pixel loop (each is used on every iteration and set
- *   only in the preheader), so their live LENGTHS differ by exactly the distance
- *   between their two set insns in the preheader - nothing inside the loop body
- *   can move either number.  LICM always appends a hoisted set at the END of the
- *   preheader (loop.c scan_loop emits before loop_start), so as long as
- *   complement's set is hoisted it is strictly BELOW `j = 0` and complement wins
- *   the race:  s11 measured j 59 / complement 54, i.e. complement seated first
- *   and taking $t4 where the target has j.
- *   Writing the subtraction inside `if (total > 0)` gives LICM nothing to hoist
- *   (it is already in the inner loop's preheader block) and lets ordinary
- *   statement order put `j = 0` BELOW it:
- *       ord=15 pseudo=115 hardreg=12 nrefs=11 livelen=54 pri=6111   (j -> $t4)
- *       ord=16 pseudo=116 hardreg=13 nrefs=11 livelen=55 pri=6000   (complement -> $t5)
- *   which is the target's seat.  Insns 70/71, 131 and 133 of the aligned diff
- *   are now byte-exact.
+ * WHY IT WORKS.  In GCC 2.7.2 a non-address-taken C local is exactly ONE pseudo
+ * for its whole scope, so writing a second value into `r_src` forces the
+ * shifted source component and the `r * factor` product to share one hard
+ * register.  That is precisely what the target does: target insns 94/95 are
+ * `sll a1,v0,0x3 / mult a1,t5` and target insn 98 is `mflo a1` - one register
+ * ($a1) carrying both r-channel values.  s12's body spelled the shifted
+ * component and the product as two distinct expressions, so they became two
+ * pseudos and landed in $v0 and $a1.  Making them one variable makes rows 94
+ * and 95 byte-exact and drops the floor 28 -> 26.
  *
- * ORDINARY C: the only change is where two locals are declared and initialised.
- * There is no annotation-bearing construct in this body at all.  (The inner
- * loop's three arm-local `dst++` copies are the s11 duplicated-statement shape,
- * .claude/rules/duplicated-statement-into-arms.md - unchanged from s11.)
+ * THE MOST IMPORTANT FINDING OF THIS SESSION (correcting the s12 frontier):
+ * the blend arm's instruction ORDER is already byte-for-byte the target's.
+ * s12's frontier claimed "the target runs the blue channel's srl/andi/mult
+ * before its first mflo (104-107) where we run it after (109-112)" - that was a
+ * difflib alignment artifact.  A raw index-by-index side-by-side
+ * (tmp/grind/func_8003DE14/s13/sxs.py) shows target[84..131] and ours[84..131]
+ * carry IDENTICAL opcodes in identical slots; only the register NAMES differ.
+ * There is no scheduling problem in the blend arm and nothing for
+ * tools/sched_solver to solve there.
  *
- * EQUIVALENT SPELLINGS, all measured 28 this session (tmp/grind/.../s12):
- *   W2  - `s32 j;` left in the outer do-body, `j = 0;` moved inside the if
- *   W7  - `s32 j;` declared at the top of the do-body
- *   H1  - dst declared before src
- *   H3  - total computed last in the outer body
- *   B1w/B3w/B7w/B8w - four of s11's blend reshapings on top of this chassis
+ * WHAT IS LEFT (26, tmp/grind/func_8003DE14/s13):
+ *   (a) HEAD, 4 insns.  Target: `addiu a2,sp,1040` (dst = dst_buf) is emitted
+ *       at insn 54 next to `addiu a3,sp,16` (src = src_buf), and the `blez`
+ *       delay slot at 70 is filled with `move t4,zero` (j = 0) taken from the
+ *       FALL-THROUGH side of the branch; `subu t5,s8,t3` (complement) follows
+ *       at 71.  Ours: reorg pulls `addiu a2,sp,1040` into the slot instead and
+ *       `move t4,zero` lands at 71.  Six statement-order spellings were
+ *       measured this session (E1..E6) and none restores the target's slot
+ *       without losing the j/complement seat.
+ *   (b) BLEND ARM, 19 insns: pure register naming, all of it cascading from ONE
+ *       seat.  The zero-extended pixel (`px`, pseudo 122, a GLOBAL allocno with
+ *       nrefs 12 / livelen 11 / pri 32727, allocated 3rd) takes $v1 in our
+ *       build and $a0 in the target; every later channel register is whatever
+ *       the free pool hands out around that choice.  See the frontier below.
+ *   (c) TRIP TEST, 3 insns (target 127-130): `lh v0,4(s0) / lh v1,6(s0) /
+ *       mult v0,v1` against our `lh v1 / lh v0 / mult v1,v0` - same loads in
+ *       the same order, the two short-lived pseudos named the other way round.
  *
- * WHAT IS LEFT (28, sbs2.py aligned diff, tmp/grind/func_8003DE14/s12):
- *   (a) HEAD, 4 insns: the target initialises dst at insn 54 and fills the
- *       `blez` delay slot at 70 with `move t4,zero`; we sink `addiu a2,sp,1040`
- *       into that slot (reorg.c takes the closest movable insn before the
- *       branch, and `j = 0` is no longer that insn - it now lives below the
- *       branch).  This is the price of the flip and it is DIRECTLY COUPLED:
- *       H2 (j declared before complement inside the if) restores the target's
- *       delay slot and loses the seat, scoring 31.
- *   (b) BLEND ARM, target 88-123: register naming ($a0/$a1/$t7 vs our
- *       $v1/$a1/$v1) plus the blue channel's srl/andi/mult running at target
- *       104-107 where we run it at 109-112.  Twelve source reshapings were
- *       re-measured on THIS chassis (B1w..B12w) and none beat 28.
- *   (c) TRIP TEST, target 127-130: `lh v0,4(s0) / lh v1,6(s0) / mult v0,v1`
- *       against our `lh v1 / lh v0 / mult v1,v0` - the same two loads in the
- *       same order, with the two short-lived pseudos named the other way round.
+ * EQUIVALENT SPELLINGS, all measured 26 this session (tmp/grind/.../s13):
+ *   D1  - the `px` user variable deleted entirely (u16 `pixel` used directly,
+ *         the zero-extend becomes a CSE temp).  Byte-identical output to C2:
+ *         whether the zero-extend is a user variable or a compiler temp does
+ *         NOT move px's seat.
+ *   D5  - D1 with explicit (u32) casts on the two shifts.
+ *   E4  - `total` computed after src/dst/factor.
+ *   E5  - dst declared before src.
+ *   E6  - `total` deleted, the guard written `if (rect[2] * rect[3] > 0)`.
+ *   F4  - g_src / b_src declared lazily at their first use.
  *
- * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 28, build_insns 173,
+ * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 26, build_insns 173,
  * target_insns 173.
  */
 void func_8003DE14(s16 *rect, s32 count) {
@@ -129,13 +131,22 @@ void func_8003DE14(s16 *rect, s32 count) {
                             s32 r_src = (pixel & 0x1F) << 3;
                             s32 g_src = ((u32)px >> 2) & 0xF8;
                             s32 b_src = ((u32)px >> 7) & 0xF8;
+                            s32 rp;
+                            s32 gp;
+                            s32 bp;
                             s32 r_ch;
                             s32 g_ch;
                             s32 b_shift;
                             src++;
-                            r_ch = ((r_src * complement + r * factor) >> 15) & 0x1F;
-                            g_ch = ((g_src * complement + g * factor) >> 10) & 0x3E0;
-                            b_shift = (b_src * complement + b * factor) >> 5;
+                            rp = r_src * complement;
+                            r_src = r * factor;
+                            r_ch = ((rp + r_src) >> 15) & 0x1F;
+                            gp = g_src * complement;
+                            g_src = g * factor;
+                            g_ch = ((gp + g_src) >> 10) & 0x3E0;
+                            bp = b_src * complement;
+                            b_src = b * factor;
+                            b_shift = (bp + b_src) >> 5;
                             *dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);
                         }
                     }

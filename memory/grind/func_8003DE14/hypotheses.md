@@ -1194,3 +1194,84 @@ callee-saved set entirely (global.c:970-975).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-10, W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/T1.c T2.c T3.c
+
+## s13 (structural) — floor 28 -> 26
+
+**CONFIRMED — the blend arm has no scheduling residual.** Raw index-by-index
+comparison (tmp/grind/func_8003DE14/s13/sxs.py) of target vs build shows
+identical opcodes in identical slots across 84..131; only register names differ.
+s12's frontier claim of a mis-ordered blue channel was a difflib alignment
+artifact. Do NOT spend a session on tools/sched_solver for this block.
+
+**CONFIRMED — one C variable = one hard register (GCC 2.7.2, no SSA).**
+Reusing each `X_src` local to hold that channel's `X * factor` product forces the
+shifted source component and the product into one register, which is what the
+target does ($a1 for the r channel at insns 94/95/98). Spelled with a named
+per-channel `rp/gp/bp` for the complement product, this measures 26 (form C2) —
+a 2-point drop and the first movement on the blend arm in three sessions.
+
+**KILLED (instance) — `px` as a user variable vs a compiler temp.** Deleting the
+`s32 px = pixel & 0xFFFF;` local entirely (D1: `if (pixel == 0)`,
+`(pixel >> 2) & 0xF8`, `(pixel >> 7) & 0xF8`) produces a byte-identical object to
+C2 at 26. D5 (explicit `(u32)` casts) likewise 26. Measured on HEAD 2026-09-10,
+C2 chassis (26 / 173 insns), no FAKE constructs present.
+
+**KILLED (instance) — changing px's reference count from the source.** Using
+`px` for the 0x1F extraction (D3) scores 27; using `px` for the 0x8000 alpha
+mask (D2) scores 40 and inflates the build to 174 insns. Same chassis, no FAKE.
+
+**KILLED (instance) — eleven neighbouring spellings of the channel-variable
+reuse.** C1/C3/C4/C5/C6/C7/F1/F2/F3/F5 score 43/44/40/38/44/54/40/27/43/59; only
+C2's exact shape (named complement product + src-var reused for the factor
+product, per channel, sequential) reaches 26. F4 (lazy g_src/b_src declarations)
+ties at 26. Same chassis, no FAKE.
+
+**KILLED (instance) — six statement-order spellings for the head delay slot.**
+E1 (j=0 before complement inside the guard) 30, E2 (dst initialised inside the
+guard) 28, E3 32, E4 (total computed last) 26, E5 (dst declared before src) 26,
+E6 (`if (rect[2] * rect[3] > 0)`) 26 — E4/E5/E6 byte-identical to C2. Measured on
+HEAD 2026-09-10, C2 chassis, no FAKE constructs present.
+
+## [s13] The blend arm's instruction order already matches the target exactly; the entire blend residual is register naming, not scheduling.
+- mechanism: A raw index-by-index side-by-side of the target object stream against the sandbox object stream (tmp/grind/func_8003DE14/s13/sxs.py, no difflib) shows target[84..131] and ours[84..131] carrying identical opcodes in identical slots. s12's frontier claim that the blue channel's srl/andi/mult runs at target 104-107 where we run it at 109-112 came from sbs2.py's SequenceMatcher inserting a del/ins block around a pure rename.
+- probe: sxs.py 84 132 on the s12 (W5) chassis and again on the s13 (C2) chassis.
+- result: Opcode-for-opcode identical across the whole blend arm on both chassis. Confirms there is nothing for tools/sched_solver to solve in this block and retires s12 frontier item 3.
+- verdict: CONFIRMED
+
+## [s13] Writing a channel's shifted source component and that channel's X*factor product into ONE C local forces them into one hard register, matching the target's per-channel register reuse.
+- mechanism: GCC 2.7.2 has no SSA: a non-address-taken C local is exactly one pseudo for its whole scope, so a second assignment to r_src makes the product share r_src's hard register. Target insns 94/95/98 are sll a1,v0,0x3 / mult a1,t5 / mflo a1 - one register ($a1) carrying both r-channel values, where the s12 body produced two pseudos in $v0 and $a1.
+- probe: Form C2 (tmp/grind/func_8003DE14/s13/C2.c): per-channel 'rp = r_src * complement; r_src = r * factor; r_ch = ((rp + r_src) >> 15) & 0x1F;' for r, g and b.
+- result: score 26 (was 28), build_insns 173, target_insns 173. Target rows 94 and 95 are now byte-exact. First movement on the blend arm in three sessions. Saved as memory/grind/func_8003DE14/candidate.c.
+- verdict: CONFIRMED
+
+## [s13] Deleting the px user variable so the zero-extended pixel exists only as a compiler temp changes px's register seat.
+- mechanism: px is pseudo 122, a global allocno (live across the bnez at 89) with nrefs 12 / livelen 11 / pri 32727, allocated 3rd and taking hardreg 3 ($v1) where the target has $a0. The hypothesis was that a user-variable pseudo (reg/v) versus a CSE temp changes its birth order and therefore its priority.
+- probe: Form D1: 's32 px = pixel & 0xFFFF;' deleted, 'if (pixel == 0)', '(pixel >> 2) & 0xF8', '(pixel >> 7) & 0xF8' written on the u16 directly. Form D5: D1 with explicit (u32) casts.
+- result: D1 scores 26 with an aligned diff row-for-row IDENTICAL to C2's; D5 also 26. The pseudo's user-variable status is byte-neutral here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/D1.c and D5.c
+
+## [s13] Changing px's source-level reference count moves its seat toward the target's $a0.
+- mechanism: px's global allocno priority is nrefs*K/livelen; adding or removing a use changes nrefs and could sink px below an allocno that would then take $v1.
+- probe: D3 uses px for the 0x1F red extraction (one more ref); D2 uses px for the 0x8000 alpha mask (one more ref, longer live range).
+- result: D3 = 27, D2 = 40 AND inflates the build to 174 insns. Both worse; neither moves px off $v1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/D2.c and D3.c
+
+## [s13] A neighbouring spelling of the channel-variable reuse beats C2's exact shape.
+- mechanism: The reuse can be spelled several ways: self-multiply into the src var, full accumulate, naming the factor product instead of the complement product, folding the sums into the final or-chain, or mixing per channel to imitate the target's r=$a1 / g=$v1 / b=$a0 assignment.
+- probe: Eleven forms measured on the C2 chassis: C1 (sums inline in the or chain), C3 (r_src *= complement), C4 (r,g reuse + b self-multiply), C5 (full accumulate), C6 (C3 with src++ late), C7 (factor products named first), F1 (b self-multiply only), F2 (g self-multiply only), F3 (C2 sums inlined), F4 (lazy g_src/b_src declarations), F5 (factor first then self-multiply).
+- result: 43 / 44 / 40 / 38 / 44 / 54 / 40 / 27 / 43 / 26 / 59 respectively, all at 173 insns. Only F4 ties C2 at 26; every other spelling is worse. C2's shape (named complement product, src var reused for the factor product, per channel, sequential) is the local optimum.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/{C1,C3,C4,C5,C6,C7,F1,F2,F3,F4,F5}.c
+
+## [s13] A statement-order change in the outer do-body restores the target's blez delay slot without losing the j/complement seat.
+- mechanism: Target keeps 'addiu a2,sp,1040' (dst = dst_buf) at insn 54 and fills the blez delay slot at 70 with 'move t4,zero' (j = 0) taken from the fall-through thread, with 'subu t5,s8,t3' (complement) at 71. Our build hands reorg 'addiu a2,sp,1040' instead. For reorg to take j = 0 from the fall-through it must be the FIRST insn after the branch, i.e. above complement's set; but for j to keep $t4 its set must be BELOW complement's (equal nrefs, so the shorter live length wins the global.c priority race).
+- probe: Six forms: E1 (j = 0 first, complement second, both inside the guard), E2 (C2 + dst initialised inside the guard), E3 (E1 + dst inside the guard), E4 (total computed after src/dst/factor), E5 (dst declared before src), E6 (total deleted, guard written 'if (rect[2] * rect[3] > 0)').
+- result: E1 = 30, E2 = 28, E3 = 32, E4 = 26, E5 = 26, E6 = 26 - all at 173 insns. E4/E5/E6 are byte-identical to C2, so moving or deleting 'total' and swapping the src/dst declaration order does not change reorg's pick. E2, which denies reorg the addiu a2 candidate by sinking dst into the guard, costs 2 rather than gaining.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/E1.c..E6.c
