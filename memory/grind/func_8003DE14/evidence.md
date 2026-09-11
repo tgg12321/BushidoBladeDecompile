@@ -3150,3 +3150,67 @@ the sum to its operand) is not yet confirmed and may be wrong.
 - [s24] The c1 body (rp carrying two channels' complement products, so rp dies in two places and its reg_qty goes negative) STILL emits the tied red add `addu $a1,$t5,$a1` and the tied green add `addu $v1,$t5,$v1`. The combine_regs model for the tie is therefore unconfirmed - s25 must decide it from the dump before spelling anything.
 
 - [s24] tmp/grind/func_8003DE14/s24/ed2.py is the corrected residual reader (objdump -dz, branch-target masking, objdump-spelling canonicalisation, 1:1 difflib alignment); tmp/grind/func_8003DE14/s23/sxs.py has the zero-eliding mis-alignment bug and should not be copied forward.
+
+## E-s25-1 - EXHAUSTIVE SPELLING SWEEP OF THE BLEND ARM (enumerate modality)
+
+1,496 complete function bodies scored on HEAD 2026-09-11 (p2 chassis, both s21
+F1 chain extenders present).  Generator: tmp/grind/func_8003DE14/s25/gen.py
+(9 axes, 3,888 distinct bodies; the 1,296-point product of axes 1-8 at
+src++=aftersrc was swept in full, plus 300 bodies covering all three src++
+positions for 100 axis points).  Driver: tools/sweep_variants.py in 100-variant
+chunks (tmp/grind/func_8003DE14/s25/sweep.sh), ~1.8 s per body.
+
+SCORE HISTOGRAM (score: count), 32 distinct scores, min 12, max 60:
+  12:8  14:4  15:32  17:2  23:72  28:48  29:6  30:32  31:57  32:8  33:15
+  34:8  35:2  36:26  37:58  (tail omitted - full data in scores*.txt)
+
+PER-AXIS MINIMA (the value that must be held to stay at the floor is first):
+  r*factor carrier      reuse r_src 12   |  fresh rf 28
+  g*factor carrier      reuse g_src 12   |  fresh gf 31
+  channel block order   RGB 12           |  GRB 28    |  GBR 30
+  blue source carrier   reuse px 12      |  fresh b_src 14
+  green sum             shared `sum` 12  |  inline 15 |  fresh 15
+  blue sum              shared `sum` 12  |  inline 15 |  fresh 15
+  blue product carrier  FREE (same 12, fresh bp 12)
+  red sum               FREE (inline 12, fresh rsum 12; shared `sum` 15)
+  src++ position        FREE (top / bottom / aftersrc identical in all 100 triples)
+
+The eight floor bodies are v0117-v0119, v0144-v0146 (red sum inlined) and
+v1415, v1442 (red sum a fresh local), i.e. the free-axis cross product.  All
+1,496 bodies at the floor build 173 insns and print the SAME 12 residual rows.
+
+## E-s25-2 - THE LATCH'S LOOP BOUND IS NOT THE LEVER FOR ITS THREE ROWS
+
+20 bodies on the v0119 chassis (tmp/grind/func_8003DE14/s25/latch/): minimum 12,
+`lh` rows present in all of them.  Two structural facts banked:
+  * `while (j < total)` (the named bound, no re-read) builds 169-170 insns and
+    scores 32-34 - THREE INSTRUCTIONS SHORT of the target, so the target really
+    does re-read rect[2] and rect[3] at the bottom of the inner loop.
+  * the while-condition's own operand order is canonicalised away (c_ab == c_ba
+    at every point); the operand order of the EARLIER `total = rect[2]*rect[3]`
+    is NOT (swapping it costs +2), and naming w/h for the two halves is neutral.
+
+## E-s25-3 - NO LICM DIVERGENCE IN THIS FUNCTION
+
+tmp/grind/func_8003DE14/dumps/code6cac_c2.loop lines 11426-12360 (v0119 body,
+canonical cc1 -da).  Inner loop = "Loop from 140 to 317: 62 real insns", with
+NO `moved to` line.  loop.c considered and rejected exactly the three `*factor`
+multiplies: `Insn 145: regno 117 (life 1), savings 1 not desirable`,
+`Insn 174: regno 120 ...`, `Insn 254: regno 138 ...` (print at
+tools/gcc-2.7.2/loop.c:1977).  Our build recomputes all three products in the
+inner loop exactly as the target does; the defeat-licm-hoist-var-reuse family
+has nothing to bite on here.
+
+- [s25] 1,496 complete function bodies scored this session; score histogram 12:8 14:4 15:32 17:2 23:72 28:48 29:6 30:32 31:57 32:8 33:15 34:8 35:2 36:26 37:58 (32 distinct scores, min 12, max 60).
+
+- [s25] The eight floor bodies are v0117-v0119, v0144-v0146, v1415 and v1442 - the cross product of the two free axes (blue product carrier, red sum naming) with the p2 held values.
+
+- [s25] Held-at-floor values: r*factor reuses r_src, g*factor reuses g_src, channel order RGB, blue source reuses px, green and blue sums share one `sum` local. Departing from any one of them costs +2 (blue source) to +19 (g*factor fresh).
+
+- [s25] src++'s position inside the blend arm is byte-neutral: all three positions scored identically in every one of the 100 axis points measured with all three.
+
+- [s25] The target re-reads rect[2] and rect[3] at the bottom of the inner loop: every body that uses the named `total` as the loop bound builds 169-170 insns against the target's 179 (engine-visible 173).
+
+- [s25] No LICM divergence exists in this function - loop.c prints 'not desirable' for all three *factor multiplies (regnos 117, 120, 138) in our build, matching the target's in-loop recomputation.
+
+- [s25] Two sweep-tool notes for later sessions: tools/wsl.sh does not expand $(...) safely inside its command string (expand file lists on the Windows side first), and sweep_variants.py leaves src/<stem>.c spliced if it is killed mid-chunk (git checkout -- src/<stem>.c restores it).

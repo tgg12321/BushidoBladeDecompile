@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 24,
- "current_modality": "structural",
+ "session_count": 25,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -147,52 +147,34 @@
    "floor": 12,
    "modality": "structural",
    "headline": "Floor holds at 12; the residual is re-measured EXACTLY (objdump -z: both streams are 179 insns, the nop pairs already match) and resolves into one shape - the target routes each sum through a fresh re"
+  },
+  {
+   "session": 25,
+   "floor": 12,
+   "modality": "enumerate",
+   "headline": "Floor holds at 12: an exhaustive 1,496-body sweep of the blend arm's carrier/naming/order space and 20 spellings of the loop bound all bottom at 12 with the same 12 rows, and the .loop dump closes the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The sum-to-operand tie is NOT local-alloc's combine_regs but find_free_reg's scan order over the block-10 quantities - which would make the lever the quantity ORDER (qty_compare), not the operands' death counts.",
-   "mechanism": "combine_regs (tools/gcc-2.7.2/local-alloc.c:1784) bails when the source pseudo's reg_qty is negative, which is exactly what c1 produced for rp - yet c1's red add stayed tied. If the sum and its operand merely landed on the same hard register by find_free_reg's first-fit rather than sharing a quantity, every death-count lever tried in s23/s24 was aimed at the wrong predicate.",
-   "next_probe": "Re-run tmp/grind/func_8003DE14/s24/alloc.sh with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 on the p2 body and map block-10 qty18/reg152, qty16/reg132, qty17/reg149, qty15/reg131 onto the red sum, the green sum, rp, gp and px by cross-reading the RTL in tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg. Same qty => combine_regs; different qty, same hard reg => scan order. Only then spell C."
+   "hypothesis": "The residual is not in the blend arm's SPELLING but in its block STRUCTURE or the surrounding chassis - the `if (i == count - 1)` split, the `px == 0` early-out, the `goto loop_check` exits, the declaration scope of the arm's locals relative to the two enclosing blocks, and the outer per-row block's contents were all held fixed by this sweep.",
+   "mechanism": "1,496 exhaustive spellings of the arm and 20 of the latch all bottom at 12 with the identical 12 rows, so every axis the generator varies is exhausted; the only remaining C-level degrees of freedom in the region are structural.",
+   "next_probe": "Move the head/tail split in tmp/grind/func_8003DE14/s25/gen.py outward one block (head ends before the `if (i == count - 1)` test), add axes for the early-out shape and for declaration scope, regenerate and re-sweep with tools/sweep_variants.py; ~1.8 s per body, so a 1,000-body space is ~30 minutes."
   },
   {
-   "hypothesis": "Row t123 (mflo $t7 vs mflo $v0) is decided in reload's retry_global_alloc, not in global.c's first pass, so the lever is whatever keeps pseudo 138's LO seat satisfiable or changes the retry's forbidden/used set.",
-   "mechanism": "BB2_ALLOC_DEBUG shows pseudo 138 seated at hardreg 65 (LO) with ord=9 pri=13333; the .greg then reports 'Register 138 now in 2'. The target's $t7 is a register global.c never hands out in our build at all, so the retry's first-fit order is what has to move.",
-   "next_probe": "Run the instrumented cc1 with BB2_RELOAD_DEBUG=1 on the p2 body and read the RETRYDBG forbidden / conflicts / used_so_far sets for allocno 138; then sweep C shapes that change reg 138's nrefs/livelen WITHOUT naming it as a local (s23 s1-s5 killed naming) - e.g. consuming the blue sum one statement later - accepting only forms whose BB2_ALLOC_DEBUG row for 138 changes ord or pri."
+   "hypothesis": "The two FREE axes at the floor are the cheapest place to introduce an extra pseudo without paying, which is exactly what s24 frontier item 2 (change reg 138's nrefs/livelen without naming it) needs.",
+   "mechanism": "A fresh `bp` for the blue complement product and a fresh named red sum each hold the floor at 12/173, so an added ordinary-C use sited there does not trigger the collateral re-seating that killed every earlier nrefs/livelen attempt.",
+   "next_probe": "Starting from v1442 (both free axes taken), sweep ordinary-C shapes that consume the blue sum one statement later or give the blue channel an extra use of an already-live value, reading the BB2_ALLOC_DEBUG ord/pri row for pseudo 138 on each form that scores <= 12."
   },
   {
-   "hypothesis": "The LICM axis is un-probed on this chassis: r*factor, g*factor and b*factor are all invariant with respect to the INNER loop, yet the target recomputes all three inside it (t95-t115).",
-   "mechanism": "If GCC 2.7.2 hoists any of the three out of the inner loop in our build and the target does not, the whole arm's allocno set differs from the target's for a reason no register-seat lever can reach, and .claude/rules/defeat-licm-hoist-var-reuse.md (whose line 43 already cites this very function) names the ordinary-C counter-shape.",
-   "next_probe": "Read tmp/grind/func_8003DE14/dumps/code6cac_c2.loop for the inner loop's movables and whether any *factor multiply is hoisted; if one is, apply the var-reuse counter-shape from that rule to the hoisted product only and re-measure."
+   "hypothesis": "s24 frontier item 1 is still un-run: the sum-to-operand tie is either local-alloc's combine_regs or merely find_free_reg's scan order, and the two imply different levers.",
+   "mechanism": "s24's c1 result (a carrier dying in two places did NOT untie the red add) argues against combine_regs (tools/gcc-2.7.2/local-alloc.c:1784); if the sum and its operand merely got the same hard register by first-fit, the lever is the quantity ORDER (qty_compare), not any death count, and every death-count lever tried in s23/s24 aimed at the wrong predicate.",
+   "next_probe": "Re-run tmp/grind/func_8003DE14/s24/alloc.sh with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 on the p2 body and map block-10 qty18/reg152, qty16/reg132, qty17/reg149, qty15/reg131 onto the red sum, the green sum, rp, gp and px by cross-reading tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg. Same qty => combine_regs; different qty, same hard reg => scan order. Only then spell C."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 10,
-   "statement": "Diverting src off $a2 inside find_reg's pass 0, by getting hard reg 6 into regs_someone_prefers[108], is not reachable from C in func_8003DE14 because hard reg $a2 is never a register-copy endpoint in",
-   "kill_scope": "class",
-   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs present, BB2_FINDREG_DEBUG=108 trace",
-   "predicate_cite": "tools/gcc-2.7.2/global.c:1717",
-   "result": "KILLED. The trace prints conflicts {2,3,4,5,29}, someone_prefers EMPTY, own_copy_prefs EMPTY, own_full_prefs {30}, and p"
-  },
-  {
-   "session": 10,
-   "statement": "Leaving the cursors' reference counts at 32/26 and moving only their live lengths does not flip the seat on the f1 chassis: the required ratio L_src > 1.538 x L_dst exceeds what the two cursors' share",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s10/d_f1/",
-   "predicate_cite": "",
-   "result": "KILLED for this chassis. Measured pre-scheduler lives are src 70 / dst 67 against a requirement of L_src >= 1.538 x L_ds"
-  },
-  {
-   "session": 11,
-   "statement": "Compressing the zero-pixel arms to *dst++ = pixel; is not a neutral rewrite of *dst = pixel; src++; dst++; on the a1 chassis.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), a1 chassis (29 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s11/a2.c",
-   "predicate_cite": "",
-   "result": "KILLED. 171 build_insns against the target's 173, score 35 (a1 is 29). The split store/increment is load-bearing for the"
-  },
   {
    "session": 11,
    "statement": "Hoisting complement out of the inner loop in the C source lowers neither its reference count nor its allocation rank on the a1 chassis, because loop.c had already hoisted the set into the preheader.",
@@ -648,6 +630,30 @@
    "measured_on": "HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present",
    "predicate_cite": "",
    "result": "b1 12 (tie, same rows), b6 12 (tie, same rows), b2 33 (174 build insns), b3 41, b4 50 (174 build insns), b5 43 (174 buil"
+  },
+  {
+   "session": 25,
+   "statement": "The blend arm's residual is reachable by some spelling in the carrier / naming / statement-order space of the arm itself (which value is a named local, which local carries it, which channel block come",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present; all floor bodies 173 build insns",
+   "predicate_cite": "",
+   "result": "MINIMUM 12, reached by exactly 8 of the 1,496 bodies; 32 distinct scores, worst 60; every floor body builds 173 insns an"
+  },
+  {
+   "session": 25,
+   "statement": "Three of the twelve residual rows (the latch's lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1) are reachable from the spelling of the loop bound - the operand order of rect[2] * rect[3], whether the bou",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; p2 chassis 12/173 (v0119 body), both s21 F1 chain extenders present",
+   "predicate_cite": "",
+   "result": "Minimum 12 (8 bodies), with the two lh rows present in every one. The while-condition's own operand order is canonicalis"
+  },
+  {
+   "session": 25,
+   "statement": "s24 frontier item 3: GCC 2.7.2 hoists one or more of r*factor, g*factor, b*factor out of the INNER loop in our build while the target recomputes all three inside it, which would put the arm's allocno ",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-11; v0119 (= p2) body applied to src, canonical cc1 -da dump",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1977",
+   "result": "The inner loop is 'Loop from 140 to 317: 62 real insns' and contains NO 'moved to' line. loop.c names and rejects exactl"
   }
  ],
  "ladder_skip": 0,

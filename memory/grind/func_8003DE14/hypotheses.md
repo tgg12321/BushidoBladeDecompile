@@ -2333,3 +2333,78 @@ use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s25] The blend arm's residual is reachable by some spelling in the carrier / naming / statement-order space of the arm itself (which value is a named local, which local carries it, which channel block comes first, where `src++` sits).
+- mechanism: Every earlier session probed this space by hand, a few forms at a time (s24's b/c/d/e series is 20 forms). The enumerate modality searches it exhaustively: a generator (tmp/grind/func_8003DE14/s25/gen.py) emits a complete function body for every point of a 9-axis product space, each variant semantics-preserving by construction (each channel chain keeps its internal order; the green `*factor` carrier always precedes the blue F1 extender that reads it). Axes: (1) `r * factor` reuses `r_src` or takes a fresh `rf`; (2) the red sum is inlined into its shift / named fresh / carried by the shared `sum`; (3)+(4) the same two axes for green; (5) the blue source reuses `px` or takes a fresh `b_src`; (6) the blue complement product reuses its own source carrier or takes a fresh `bp`; (7) the blue sum inlined / shared / fresh; (8) channel block order RGB / GRB / GBR; (9) `src++` at the top of the arm, at the bottom, or after the second block's source read.
+- probe: 3,888 distinct bodies generated; 1,496 scored with `tools/sweep_variants.py --func func_8003DE14 --file code6cac_c2` (the full 1,296-point product of axes 1-8 at `src++`=aftersrc, plus 300 bodies covering all three `src++` positions for 100 axis points). Scores in tmp/grind/func_8003DE14/s25/scores_phase1.txt + scores.txt, axis roll-up by tmp/grind/func_8003DE14/s25/analyze.py.
+- result: MINIMUM 12, reached by exactly 8 of the 1,496 bodies; 32 distinct scores, worst 60; every 12 keeps the same 12 residual rows. Per-axis minima: rf_reuse True 12 / False 28; gf_reuse True 12 / False 31; channel order RGB 12 / GRB 28 / GBR 30; blue source px-reuse 12 / fresh local 14; green sum shared 12 / inline 15 / fresh 15; blue sum shared 12 / inline 15 / fresh 15. TWO axes turn out to be FREE at the floor (new): the blue complement product may take a fresh `bp` local instead of reusing `px` (12), and the red sum may be a FRESH named local instead of being inlined into its shift (v1415, 12, banked as rejected/s25-enum-red-sum-fresh-local-ties-12.c) - so the incumbent p2 spelling is one of an 8-member plateau, not a unique optimum. `src++`'s position is byte-neutral in all 100 triples measured (all three positions score identically every time).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present, all 1,496 bodies 173 build insns at the floor
+
+## [s25] Three of the twelve residual rows (the latch's `lh $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1`) are reachable from the spelling of the loop bound - the operand order of `rect[2] * rect[3]`, whether the bound re-reads `rect` or uses the named `total`, whether the guard tests `total` or the expression, or whether the two halves are named.
+- mechanism: our build emits the two `lh`s into the opposite registers from the target's, and the latch's multiply is the only residual row outside the blend arm; the loop bound is re-read from memory at the bottom of the inner loop, so its C spelling is what feeds cse2/local-alloc there.
+- probe: 20 bodies on the v0119 (= p2) chassis crossing {`total = rect[2]*rect[3]`, `total = rect[3]*rect[2]`, `w = rect[2]; h = rect[3]; total = w*h`} x {`if (total > 0)`, `if (rect[2]*rect[3] > 0)`} x {`while (j < rect[2]*rect[3])`, `... rect[3]*rect[2]`, `... total`, `... w*h`}; scored in one sweep (tmp/grind/func_8003DE14/s25/latch/raw.json, index.txt).
+- result: minimum 12 (8 bodies), and the two `lh` rows are present in every one of them. The while-condition's own operand order is byte-neutral (c_ab and c_ba tie at 12 for every `total` spelling) - GCC canonicalises it before cse2. Using the named `total` as the bound removes the loop's re-read entirely (32-34 at 169-170 build insns: three instructions SHORT of the target, so the target genuinely re-reads `rect[2]` and `rect[3]` at the bottom of the loop). Swapping the operands of the EARLIER `total` computation costs +2 (L06 14), and naming `w`/`h` is neutral (L12 12). The latch rows are not spelled from the bound.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173 (v0119 body), both s21 F1 chain extenders present
+
+## [s25] The LICM axis (s24 frontier item 3): GCC 2.7.2 hoists one or more of `r * factor`, `g * factor`, `b * factor` out of the INNER loop in our build while the target recomputes all three inside it, which would put the whole arm's allocno set out of reach of any register-seat lever.
+- mechanism: .claude/rules/defeat-licm-hoist-var-reuse.md (whose line 43 cites this very function) names the ordinary-C counter-shape for a hoist the target does not perform; loop.c's move_movables decides it.
+- probe: `pwsh tools/grinder/dump.ps1 func_8003DE14` with the v0119 body applied to src/code6cac_c2.c, then read the func_8003DE14 section of tmp/grind/func_8003DE14/dumps/code6cac_c2.loop (lines 11426-12360).
+- result: the inner loop is "Loop from 140 to 317: 62 real insns" and it contains NO `moved to` line at all. The three multiply candidates are named and REJECTED by loop.c's own savings test: `Insn 145: regno 117 (life 1), savings 1 not desirable`, `Insn 174: regno 120 ... not desirable`, `Insn 254: regno 138 ... not desirable` (the print is tools/gcc-2.7.2/loop.c:1977). Our build recomputes all three products inside the inner loop exactly as the target does (asm/funcs/func_8003DE14.s t95-t115). There is no LICM divergence in this function, so the defeat-licm family has nothing to bite on here and s24's frontier item 3 closes negative.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-11; v0119 (= p2) body applied to src, canonical cc1 -da dump
+- predicate_cite: tools/gcc-2.7.2/loop.c:1977
+
+### LIVE FRONTIER (for s26)
+
+1. **The residual is not in the blend arm's SPELLING - it is in the arm's block
+   STRUCTURE or in the surrounding chassis.** 1,496 exhaustive spellings of the
+   arm and 20 of the latch all bottom at 12 with the same 12 rows. What the sweep
+   did NOT vary: the arm's block structure (the `if (i == count - 1)` split, the
+   `px == 0` early-out, the `goto loop_check` exits), the declaration SCOPE of the
+   arm's locals relative to the two enclosing blocks, and the outer per-row
+   block's contents. That is the next enumeration axis, and it is cheap: move the
+   head/tail split in tmp/grind/func_8003DE14/s25/gen.py outward one block and
+   re-generate.
+2. **Two axes are FREE at the floor - a lever the next session gets for free.**
+   The blue complement product may live in a fresh `bp` local and the red sum may
+   be a fresh named local, both at 12 with 173 build insns. A free axis is a place
+   where an extra pseudo can be introduced WITHOUT paying, i.e. the cheapest place
+   to change reg 138's nrefs/livelen (s24 frontier item 2) without the collateral
+   re-seating that killed every earlier attempt.
+3. **Frontier item 1 of s24 is still un-run** (is the sum-to-operand tie
+   combine_regs or find_free_reg scan order?): re-run
+   tmp/grind/func_8003DE14/s24/alloc.sh with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 on
+   the p2 body and map block-10 qty18/reg152, qty16/reg132, qty17/reg149,
+   qty15/reg131 onto the red sum, the green sum, `rp`, `gp` and `px`. Same qty =>
+   combine_regs; different qty, same hard reg => find_free_reg scan order, and the
+   lever is the quantity ORDER (qty_compare), not any death count.
+
+## [s25] The blend arm's residual is reachable by some spelling in the carrier / naming / statement-order space of the arm itself (which value is a named local, which local carries it, which channel block comes first, where src++ sits).
+- mechanism: Earlier sessions probed this space by hand a few forms at a time (s24's b/c/d/e series is 20 forms). The enumerate modality searches it exhaustively with a generator (tmp/grind/func_8003DE14/s25/gen.py) that emits a complete function body for every point of a 9-axis product space, each variant semantics-preserving by construction: each channel chain keeps its internal order and the green *factor carrier always precedes the blue F1 extender that reads it. Axes: r*factor carrier (reuse r_src / fresh rf), red sum (inline / fresh / shared `sum`), the same two for green, blue source carrier (reuse px / fresh b_src), blue product carrier (same / fresh bp), blue sum (inline / fresh / shared), channel block order (RGB / GRB / GBR), src++ position (top / bottom / after the second block's source read).
+- probe: 3,888 distinct bodies generated; 1,496 scored with tools/sweep_variants.py --func func_8003DE14 --file code6cac_c2 in 100-variant chunks (the full 1,296-point product of axes 1-8 at src++=aftersrc, plus 300 bodies covering all three src++ positions for 100 axis points). Scores in tmp/grind/func_8003DE14/s25/scores_phase1.txt and scores.txt; axis roll-up by analyze.py.
+- result: MINIMUM 12, reached by exactly 8 of the 1,496 bodies; 32 distinct scores, worst 60; every floor body builds 173 insns and prints the SAME 12 residual rows. Per-axis minima: r*factor must reuse r_src (fresh 28); g*factor must reuse g_src (fresh 31); order must be RGB (GRB 28, GBR 30); the blue source must reuse px (fresh 14); the green and blue sums must share one `sum` local (inline 15, fresh 15). NEW: two axes are FREE at the floor - the blue complement product may take a fresh `bp` local (12) and the red sum may be a fresh named local instead of being inlined into its shift (v1415, 12) - so the incumbent p2 spelling is one of an 8-member plateau, not a unique optimum. src++'s position is byte-neutral in all 100 triples measured.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present; all floor bodies 173 build insns
+
+## [s25] Three of the twelve residual rows (the latch's lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1) are reachable from the spelling of the loop bound - the operand order of rect[2] * rect[3], whether the bound re-reads rect or uses the named total, whether the guard tests total or the expression, or whether the two halves are named.
+- mechanism: Our build emits the two lh's into the opposite registers from the target's, and the latch's multiply is the only residual row outside the blend arm; the loop bound is re-read from memory at the bottom of the inner loop, so its C spelling is what feeds cse2/local-alloc there.
+- probe: 20 bodies on the v0119 (= p2) chassis crossing three `total` spellings x two guard spellings x four while-condition spellings, scored in one sweep (tmp/grind/func_8003DE14/s25/latch/raw.json, index.txt).
+- result: Minimum 12 (8 bodies), with the two lh rows present in every one. The while-condition's own operand order is canonicalised away (c_ab ties c_ba at every point). Using the named `total` as the bound removes the re-read entirely: 169-170 build insns, score 32-34 - three instructions SHORT of the target, so the target genuinely re-reads rect[2] and rect[3] at the latch. Swapping the operands of the EARLIER `total = rect[2]*rect[3]` costs +2 (14); naming w/h for the two halves is neutral (12).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173 (v0119 body), both s21 F1 chain extenders present
+
+## [s25] s24 frontier item 3: GCC 2.7.2 hoists one or more of r*factor, g*factor, b*factor out of the INNER loop in our build while the target recomputes all three inside it, which would put the arm's allocno set out of reach of any register-seat lever.
+- mechanism: loop.c's move_movables decides the hoist; .claude/rules/defeat-licm-hoist-var-reuse.md (line 43 cites this very function) names the ordinary-C counter-shape for a hoist the target does not perform.
+- probe: pwsh tools/grinder/dump.ps1 func_8003DE14 with the v0119 body applied to src/code6cac_c2.c, then the func_8003DE14 section of tmp/grind/func_8003DE14/dumps/code6cac_c2.loop (lines 11426-12360).
+- result: The inner loop is 'Loop from 140 to 317: 62 real insns' and contains NO 'moved to' line. loop.c names and rejects exactly the three multiply candidates by its own savings test: 'Insn 145: regno 117 (life 1), savings 1 not desirable', 'Insn 174: regno 120 ... not desirable', 'Insn 254: regno 138 ... not desirable'. Our build recomputes all three products inside the inner loop exactly as the target does (asm/funcs/func_8003DE14.s t95-t115), so there is no LICM divergence for the defeat-licm family to act on.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-11; v0119 (= p2) body applied to src, canonical cc1 -da dump
+- predicate_cite: tools/gcc-2.7.2/loop.c:1977

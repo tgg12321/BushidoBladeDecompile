@@ -90,6 +90,22 @@
  *       2").  And BB2_QTY_DEBUG shows four block-10 LOCAL quantities already
  *       get $v0.  So "no local quantity can reach $v0" is false, and the
  *       find_reg first-fit story in the paragraph above names the wrong pass.
+
+ * [s25 ENUMERATE - the arm's spelling space is swept out]
+ *   1,496 complete bodies (9 axes: carrier choice per channel, which values are
+ *   named locals, channel block order, src++ position) all bottom at THIS score,
+ *   12, with the SAME 12 residual rows; 8 of them tie.  Held values: r*factor
+ *   must reuse r_src (fresh 28), g*factor must reuse g_src (fresh 31), order must
+ *   be RGB (GRB 28 / GBR 30), the blue source must reuse px (fresh 14), and the
+ *   green AND blue sums must share one `sum` local (inline/fresh 15).  FREE at the
+ *   floor: the blue complement product may take a fresh `bp`, the red sum may be a
+ *   fresh named local, and src++ may sit anywhere in the arm.  Also swept: 20
+ *   spellings of the loop bound (all 12; `while (j < total)` loses the re-read and
+ *   builds 3 insns short, so the target re-reads rect[2]/rect[3] at the latch).
+ *   And the .loop dump shows NO LICM divergence (loop.c calls all three *factor
+ *   hoists "not desirable" in our build too).  The residual is therefore NOT in
+ *   this arm's spelling - look at block structure / declaration scope / the
+ *   allocator question in hypotheses.md's s26 frontier.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
