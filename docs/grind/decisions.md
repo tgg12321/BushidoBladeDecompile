@@ -26672,3 +26672,152 @@ RULING REQUEST: the body in memory/grind/func_8003DE14/candidate.c MAY be submit
 ## 2026-09-11 06:10 — func_8003DE14 — final call — **PASS**
 
 Same body (2852b631a415e9ee) my 2026-09-11 06:05 RULING REQUEST PASS cleared; that ruling binds and I found no defect it did not consider. Re-verified now: src body == candidate.c body modulo comments; the only candidate.c change is a comment refresh; diff touches src/code6cac_c2.c only (no pipeline/config/rule surface, zero __asm__/glabel); s38/v2/b1.c is the committed body and differs from b2.c in exactly the one s21 line (0/173 vs 7/173). Three FAKEs: bound `+rect[2]-rect[2]` and s21 `((s32)dst_buf+j)-j` are combine-foldable chain-extenders (dead-store-fake-exception, owner 2026-07-01) with annotations, named mechanisms (qty_compare_1 / allocno_compare, dumped logs) and s21-s38b exhaustion; `gm` is a semantically truthful named intermediate, not a cheat (ordinary-c-judge-decidable 2026-08-31). judge_constraints satisfied: no `h`, no carrier at all. Evidence: memory/grind/func_8003DE14/evidence.md s38b/s38c, hypotheses.md s21-s38b, rejected/s38b-*.c.
+
+## 2026-09-11 — _spu_gcSPU (src/main.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven; blocked only by `maspsx_label_nop_funcs.txt`, a surface a grind session may not stage)**
+
+This is **not** an exhaustion claim and **not** an endgame lock. The function is
+solved in ordinary C with zero cheat constructs. What is missing is a one-line
+grant in a build-input file the Grinder does not stage.
+
+Filed by the recon session of 2026-09-11 (session 1 on the asm-until-matched
+chassis). A prior run reached the same result and was **discarded by the driver
+as a SCOPE VIOLATION** because it left `maspsx_label_nop_funcs.txt` modified in
+the worktree. This session deliberately did **not** touch that file: the proof
+below was reproduced with a *scratch copy* of the list
+(`tmp/grind/_spu_gcSPU/s1/label_nop_plus.txt`) passed to maspsx via
+`--label-nop-funcs=`, so no tracked build input was edited at any point.
+
+### What was measured this session
+
+| form (all `sandbox _spu_gcSPU --disable all`) | score | build_insns |
+|---|---|---|
+| dispatch state, `INCLUDE_ASM("asm/funcs", _spu_gcSPU);` | 194 | 0 (`no_c_body`) |
+| candidate body in src/main.c (ordinary C, no cheats) | **2** | 192 |
+
+Independent pipeline replay (exact Makefile stage order: `cpp | cc1 |
+prologue_fix | maspsx | sed align | multu_pad | as`, flags copied verbatim from
+`Makefile:154` / `engine/buildconfig.py:43`), same candidate body, differing
+only in which label-nop list maspsx was handed:
+
+| maspsx `--label-nop-funcs` | emitted insns | vs `asm/funcs/_spu_gcSPU.s` |
+|---|---|---|
+| `maspsx_label_nop_funcs.txt` (HEAD, unmodified) | 192 | two `nop`s missing |
+| scratch copy + the single line `_spu_gcSPU` | **194** | **identical** |
+
+The 194-insn build was compared word-for-word against the 194 target
+instructions of `asm/funcs/_spu_gcSPU.s`: every opcode and every register field
+matches; the only 37 differing 32-bit words are unrelocated `%hi/%lo` immediates
+and intra-function branch/jump displacements in an unlinked `.o`, i.e. exactly
+the fields `engine/score.py` masks. Artifacts:
+`tmp/grind/_spu_gcSPU/s1/{main.base.s,main.gate.s,fn.base.txt,fn.gate.txt,pipeline.sh,label_nop_plus.txt}`.
+
+### What the two missing instructions are
+
+Both are load-delay `nop`s the ORIGINAL binary contains:
+
+1. `lui $v0,%hi(_spu_AllocLastNum); lw $v0,%lo(...)($v0); `**`nop`**`; bltz $v0,.L80089780`
+   (target index 56 — branch consumer)
+2. `lui $v1,%hi(_spu_memList); lw $v1,%lo(...)($v1); `**`nop`**`; lw $v0,0x4($v1)`
+   (target index 64 — load consumer)
+
+Cause: `tools/maspsx/maspsx.py` `is_label()` recognises only `$L`-prefix local
+labels, while this GCC fork emits `.L`-prefix, so a load whose destination is
+consumed across a `.L` merge label is not seen as a hazard and its `nop` is
+dropped ([[maspsx-is-label-dot-prefix]]).
+
+The sanctioned remedy is the **per-function** gate
+`maspsx_label_nop_funcs.txt` — `.claude/rules/maspsx-label-nop-gate.md`
+describes it verbatim as "a pure-C RETIREMENT path, not a park". It is scoped
+per function on purpose (enabling it globally shifts maspsx output indices).
+Two siblings **in this same translation unit** are already listed: `SpuFree`
+and `_spu_init` (`maspsx_label_nop_funcs.txt:16,20`). The only in-source
+alternative is a `__asm__("nop")`, which is precisely the cheat that rule
+exists to retire.
+
+### Why a grind session cannot land it
+
+The candidate scope is one build input, `src/<stem>.c`, widened only by
+`tools/grinder/scope_allow.txt` — and that file is itself inside the surface a
+grind session may not edit. `maspsx_label_nop_funcs.txt` is not in the staged
+set, so a session edit to it is either dropped from the Match commit (producing
+a committed Match that fails a fresh rebuild) or, as happened to the prior run,
+flagged as a scope violation and the whole session discarded.
+
+### Exact operator steps
+
+1. Apply `memory/grind/_spu_gcSPU/candidate.c` to `src/main.c`, replacing
+   `INCLUDE_ASM("asm/funcs", _spu_gcSPU);` **and** the three dead lines
+   immediately above it (`typedef struct Entry { s32 w0; s32 w1; } Entry;` plus
+   the duplicate `extern s32 _spu_AllocLastNum; extern s32 _spu_memList;` pair —
+   the latter sits *below* `#define _spu_memList ((SpuMemRec *)_spu_memList)`
+   and macro-expands to a cc1 parse error the front end error-recovers past).
+   Both removals were measured byte-neutral.
+2. Append the single line `_spu_gcSPU` to `maspsx_label_nop_funcs.txt`.
+3. `engine sandbox _spu_gcSPU --disable all` -> expect `"score": 0`.
+4. `engine verify-oracle --rebuild` -> expect
+   `build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+5. Fresh layer-2 `cheat-reviewer` on the C (self-vet at
+   `memory/grind/_spu_gcSPU/self_vet.md`), then `queue done _spu_gcSPU`.
+
+Alternatively, grant the scope once and let the pipeline finish it:
+`_spu_gcSPU maspsx_label_nop_funcs.txt` in `tools/grinder/scope_allow.txt`
+(same shape as `SioSyncroRead volatile_extern_allowlist.txt` at
+`tools/grinder/scope_allow.txt:32`), after which a normal `candidate-ready`
+session closes the function with no manual work.
+
+### The C itself (for the reviewer)
+
+`memory/grind/_spu_gcSPU/candidate.c` is a transcription of Sony's shipped
+`libspu/s_m_int.c` (Xeeynamo/psyz, PsyQ 4.0 — the library version BB2 links),
+five array-indexed `for` phases, two induction locals, no FAKE, no volatile, no
+asm, no dead locals. The single non-psyz edit is phase 1's inner-scan exit:
+`goto scanned;` instead of `break;`. Mechanism (read out of the compiler, not
+guessed): `stmt.c:expand_end_loop` rolls a leading conditional exit to the
+bottom of the loop only when that exit jumps to the loop's own
+`end_label`/`alt_end_label`, which is what `break` compiles to; the rotation
+then feeds `jump.c:2163 duplicate_loop_exit_test`, peeling a guard copy above
+the loop (+8 insns). A `goto` to a user label after the loop is not such a jump,
+so no rotation and no peel occur — the target's shape. Measured 22 -> 2; phases
+2-5 were instruction-exact on first compile. This is an ordinary-C mixed-exit
+form (`.claude/rules/cross-jump-store-tail-merge.md`), not a carve-out.
+
+`src/main.c` was restored to its committed HEAD body before this entry was
+written; the only worktree changes this session are `docs/grind/` and
+`memory/grind/_spu_gcSPU/`.
+
+## 2026-09-11 06:34 — _spu_gcSPU — ruling: INTEGRATION HANDOFF filed for _spu_gcSPU : docs/grind/decisions.md -- '2026-09-1 — **ESCALATE**
+
+WHAT WAS BUILT. _spu_gcSPU is Sony's SPU memory-garbage-collector from the PsyQ libspu library that this game links. The grind session transcribed it from the version-correct public Sony source (Xeeynamo/psyz, libspu/s_m_int.c) as five ordinary array-indexed for-loops with two counter variables. The only judgement call in the whole body is that one inner scan loop exits with `goto scanned;` instead of `break;`. Both spellings are plain, everyday C and both do exactly the same thing; the agent picked `goto` because a `break` makes this 1997 compiler rotate the loop and duplicate its test (it reads out of tools/gcc-2.7.2/stmt.c and jump.c, and I confirmed the resulting shape matches the original). Choosing between two truthful spellings by looking at what the compiler emits is the method of matching decomp, not a cheat (owner ruling 2026-08-31, ordinary-c-judge-decidable). There is no inline assembly, no `volatile`, no fake padding, no dead variables, no register pinning, and no /* FAKE */ annotation anywhere in the body. It is honest C a human could have written from the spec — indeed, the human who wrote it at Sony did.
+
+WHAT I VERIFIED MYSELF (I did not take the ledger's word for it). I re-decoded all 194 machine words of the original function from asm/funcs/_spu_gcSPU.s and compared them, one by one, against the 194 words the session's build produced. Using my own comparator (tmp/judge_cmp2.py) — strict on every register field and on every non-address instruction — there are ZERO differences. The only words that differ at all are address fields that are, by construction, not yet filled in at this stage of the build (they get their values at link time). That is a perfect match of the function. I also diffed the two assembly outputs the session produced with and without the one-line build-config change: the difference is exactly two `nop` instructions, both inside this function, and every other function in that 113,000-line source file is byte-for-byte unchanged. So the change cannot disturb anything else.
+
+WHY IT ISN'T FINISHED. Two instructions of the original are single-cycle waits ("nop") that the PlayStation's original assembler inserted automatically after a memory load. Our modern replacement for that assembler (maspsx) has a known, documented bug: it recognises one style of internal label name and our compiler emits the other, so at two spots it fails to notice the hazard and omits the wait. No C code can fix this — the instruction is inserted by the assembler, not the compiler. The project already has the sanctioned remedy: a per-function opt-in list, maspsx_label_nop_funcs.txt, with its own rule document calling it "a pure-C RETIREMENT path, not a park", eight functions already listed, two of them (SpuFree, _spu_init) siblings in this very same source file. Adding the single line `_spu_gcSPU` to that list takes the build from 192 to 194 instructions and completes the match. The session proved this WITHOUT editing the tracked file, by replaying the build by hand with a scratch copy of the list — a good, reusable technique.
+
+THE OTHER SIDE, STATED FAIRLY. Two honest caveats. (1) The full-executable SHA1 check was run by an earlier run of this session that the driver threw away (it had left the tracked list file modified, a scope violation); the re-run could not repeat it without committing the same violation. What the re-run proved instead is stronger than nothing and weaker than a SHA1: the function's own bytes are provably identical, and no other function's bytes move. If the SHA1 somehow disagreed, the normal completion gate would catch it and the function would simply stay in the queue — nothing bad reaches the finished tree. (2) Turning on a per-function build-config gate is, in principle, the same shape as the per-function output-rewriting rule system this project deliberately deleted. I looked at that hard. It is not the same class: this gate cannot inject arbitrary bytes, it only restores a hazard wait the real 1998 assembler genuinely emitted at a pattern-matched site, it has a standing owner-adjudicated classification as a FIDELITY shim (.claude/rules/maspsx-gate-lists.md, 2026-07-13 audit), and functions already completed through it stand as COMPLETED-C.
+
+THE PRECISE QUESTION, AND WHY IT ISN'T MINE. The remedy is a one-line addition to maspsx_label_nop_funcs.txt. That exact file sits on the driver's hard-coded owner-only denylist (tools/grinder/grindlib.py:466, "_SCOPE_GRANT_DENY ... assembler fidelity gates: substrate-adjacent, owner-only"). I am therefore NOT granting it and cannot: the driver will refuse this scope path mechanically, which is the correct behaviour and the reason I am filing the packet rather than a PASS. The work is sound and complete; the last step is reserved to the owner by standing design. The function should rotate with the candidate preserved and this packet logged to docs/grind/borderline.md.
+
+FOR THE OWNER, THE WHOLE ACTION IS: (1) append the line `_spu_gcSPU` to maspsx_label_nop_funcs.txt; (2) apply memory/grind/_spu_gcSPU/candidate.c into src/main.c, replacing the INCLUDE_ASM line and the three dead lines above it (a leftover `typedef struct Entry` and a duplicated pair of extern declarations — one of which currently macro-expands into a genuine syntax error the old compiler silently recovers from); (3) run the normal verify and `queue done`. Tag that commit [infra-rule: maspsx-label-nop] citing the two target sites (original instruction indices 56 and 64), which the growth guard on that file requires. Alternatively, if the owner prefers the pipeline to close this itself, the one-word change is to drop maspsx_label_nop_funcs.txt from _SCOPE_GRANT_DENY — but that is an architecture decision, and it is the owner's, not mine.
+
+## 2026-09-11 — _spu_gcSPU — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-11)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT WAS BUILT. _spu_gcSPU is Sony's SPU memory-garbage-collector from the PsyQ libspu library that this game links. The grind session transcribed it from the version-correct public Sony source (Xeeynamo/psyz, libspu/s_m_int.c) as five ordinary array-indexed for-loops with two counter variables. The only judgement call in the whole body is that one inner scan loop exits with `goto scanned;` instead of `break;`. Both spellings are plain, everyday C and both do exactly the same thing; the agent picked `goto` because a `break` makes this 1997 compiler rotate the loop and duplicate its test (it reads out of tools/gcc-2.7.2/stmt.c and jump.c, and I confirmed the resulting shape matches the original). Choosing between two truthful spellings by looking at what the compiler emits is the method of matching decomp, not a cheat (owner ruling 2026-08-31, ordinary-c-judge-decidable). There is no inline assembly, no `volatile`, no fake padding, no dead variables, no register pinning, and no /* FAKE */ annotation anywhere in the body. It is honest C a human could have written from the spec — indeed, the human who wrote it at Sony did.
+
+WHAT I VERIFIED MYSELF (I did not take the ledger's word for it). I re-decoded all 194 machine words of the original function from asm/funcs/_spu_gcSPU.s and compared them, one by one, against the 194 words the session's build produced. Using my own comparator (tmp/judge_cmp2.py) — strict on every register field and on every non-address instruction — there are ZERO differences. The only words that differ at all are address fields that are, by construction, not yet filled in at this stage of the build (they get their values at link time). That is a perfect match of the function. I also diffed the two assembly outputs the session produced with and without the one-line build-config change: the difference is exactly two `nop` instructions, both inside this function, and every other function in that 113,000-line source file is byte-for-byte unchanged. So the change cannot disturb anything else.
+
+WHY IT ISN'T FINISHED. Two instructions of the original are single-cycle waits ("nop") that the PlayStation's original assembler inserted automatically after a memory load. Our modern replacement for that assembler (maspsx) has a known, documented bug: it recognises one style of internal label name and our compiler emits the other, so at two spots it fails to notice the hazard and omits the wait. No C code can fix this — the instruction is inserted by the assembler, not the compiler. The project already has the sanctioned remedy: a per-function opt-in list, maspsx_label_nop_funcs.txt, with its own rule document calling it "a pure-C RETIREMENT path, not a park", eight functions already listed, two of them (SpuFree, _spu_init) siblings in this very same source file. Adding the single line `_spu_gcSPU` to that list takes the build from 192 to 194 instructions and completes the match. The session proved this WITHOUT editing the tracked file, by replaying the build by hand with a scratch copy of the list — a good, reusable technique.
+
+THE OTHER SIDE, STATED FAIRLY. Two honest caveats. (1) The full-executable SHA1 check was run by an earlier run of this session that the driver threw away (it had left the tracked list file modified, a scope violation); the re-run could not repeat it without committing the same violation. What the re-run proved instead is stronger than nothing and weaker than a SHA1: the function's own bytes are provably identical, and no other function's bytes move. If the SHA1 somehow disagreed, the normal completion gate would catch it and the function would simply stay in the queue — nothing bad reaches the finished tree. (2) Turning on a per-function build-config gate is, in principle, the same shape as the per-function output-rewriting rule system this project deliberately deleted. I looked at that hard. It is not the same class: this gate cannot inject arbitrary bytes, it only restores a hazard wait the real 1998 assembler genuinely emitted at a pattern-matched site, it has a standing owner-adjudicated classification as a FIDELITY shim (.claude/rules/maspsx-gate-lists.md, 2026-07-13 audit), and functions already completed through it stand as COMPLETED-C.
+
+THE PRECISE QUESTION, AND WHY IT ISN'T MINE. The remedy is a one-line addition to maspsx_label_nop_funcs.txt. That exact file sits on the driver's hard-coded owner-only denylist (tools/grinder/grindlib.py:466, "_SCOPE_GRANT_DENY ... assembler fidelity gates: substrate-adjacent, owner-only"). I am therefore NOT granting it and cannot: the driver will refuse this scope path mechanically, which is the correct behaviour and the reason I am filing the packet rather than a PASS. The work is sound and complete; the last step is reserved to the owner by standing design. The function should rotate with the candidate preserved and this packet logged to docs/grind/borderline.md.
+
+FOR THE OWNER, THE WHOLE ACTION IS: (1) append the line `_spu_gcSPU` to maspsx_label_nop_funcs.txt; (2) apply memory/grind/_spu_gcSPU/candidate.c into src/main.c, replacing the INCLUDE_ASM line and the three dead lines above it (a leftover `typedef struct Entry` and a duplicated pair of extern declarations — one of which currently macro-expands into a genuine syntax error the old compiler silently recovers from); (3) run the normal verify and `queue done`. Tag that commit [infra-rule: maspsx-label-nop] citing the two target sites (original instruction indices 56 and 64), which the growth guard on that file requires. Alternatively, if the owner prefers the pipeline to close this itself, the one-word change is to drop maspsx_label_nop_funcs.txt from _SCOPE_GRANT_DENY — but that is an architecture decision, and it is the owner's, not mine.
+
+**Constraint recorded for any future session:** Do not respell the two missing load-delay nops in C (a source __asm__("nop") is the exact cheat .claude/rules/maspsx-label-nop-gate.md exists to retire); the only remaining step is the owner-only maspsx_label_nop_funcs.txt line, and whoever lands it must tag the commit [infra-rule: maspsx-label-nop] with the target-site evidence (idx 56 / idx 64) per .claude/rules/maspsx-gate-lists.md.

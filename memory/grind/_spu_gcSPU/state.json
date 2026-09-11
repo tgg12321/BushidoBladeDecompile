@@ -1,0 +1,45 @@
+{
+ "func": "_spu_gcSPU",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "_spu_gcSPU solved in ordinary C: floor 194 -> 2 measured this session; the last 2 are maspsx .L-label load-delay nops proved fixable by the per-function gate (194/194 word-identical, scratch-copy proo"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "With `_spu_gcSPU maspsx_label_nop_funcs.txt` added to tools/grinder/scope_allow.txt, a routine session closes the function: sandbox 0 and full-build SHA1 == oracle.",
+   "mechanism": "The gate restores the two .L-label load-delay nops maspsx drops; the C is already instruction- and register-exact at 194/194 without any other change.",
+   "next_probe": "After the grant lands: apply memory/grind/_spu_gcSPU/candidate.c, append the gate line, `sandbox _spu_gcSPU --disable all` (expect 0), `verify-oracle --rebuild` (expect 62efab4f73f992798c43e8c730aa43baa10bb4fa), then candidate-ready."
+  },
+  {
+   "hypothesis": "If the scope grant is declined, the only in-source route to the two nops is a statement rearrangement that removes the .L merge label sitting between each load and its consumer (a source __asm__(\"nop\") is the cheat the maspsx-label-nop-gate rule exists to retire and is not an option).",
+   "mechanism": "maspsx is_label() misses .L-prefix locals, so the hazard is invisible only when a .L label sits between the load and the consumer; an arrangement that puts the load and its consumer in one basic block would make maspsx see the hazard natively.",
+   "next_probe": "Re-spell the heads of phase 1 and phase 4 so the `lw _spu_AllocLastNum` / `lw _spu_memList` and their consumers land in one basic block, and measure with `sandbox --disable all` -- expect this to perturb the emitted stream elsewhere and cost more than 2, so only worth running if the grant is refused."
+  }
+ ],
+ "judge_constraints": [
+  "Do not respell the two missing load-delay nops in C (a source __asm__(\"nop\") is the exact cheat .claude/rules/maspsx-label-nop-gate.md exists to retire); the only remaining step is the owner-only maspsx_label_nop_funcs.txt line, and whoever lands it must tag the commit [infra-rule: maspsx-label-nop] with the target-site evidence (idx 56 / idx 64) per .claude/rules/maspsx-gate-lists.md."
+ ],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Neither DATA MODEL-flagged symbol needs a declaration change: _spu_AllocLastNum as `extern s32` (src/main.c:57) and _spu_memList as `extern s32` viewed through `#define _spu_memList ((SpuMemRec *)_spu",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-11, src/main.c with candidate.c body applied, zero FAKE constructs present, zero rules; sandbox --disable all = 2.",
+   "predicate_cite": "",
+   "result": "score 2 (build_insns 192, target_insns 194, rules_dropped 0) with the declarations untouched, and the aligned diff (tmp/"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-11T11:10:40.119639+00:00",
+ "object_model_audited": 1
+}

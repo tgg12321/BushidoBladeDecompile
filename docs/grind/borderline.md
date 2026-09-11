@@ -692,3 +692,8 @@ disposition taken: REFUSED under the current frozen policy; ROTATED to the back 
 category: policy-question
 evidence: session-filed disposition: docs/grind/decisions.md 2026-09-10 — func_8002EBDC (src/code6cac_b.c) — blocked at the operator registry row (bytes PROVEN 0/182, Judge PASS 1b44e6afef0b58e6 on record, scan tier LOW; the whole remedy is one row in tools/grinder/owner_cluster_grants.txt, then queue unpark + resubmit candidate.c exactly)
 disposition taken: ROTATED (owner ruling 2026-09-08 rotation-not-foreclosure — no pending states, no packets; returns automatically).
+
+## 2026-09-11 — _spu_gcSPU — integration-handoff (REFUSED: no executable remedy in verdict)
+category: integration-handoff (REFUSED: no executable remedy in verdict)
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-11 — _spu_gcSPU — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: REFUSED under the current frozen policy; ROTATED to the back of the active worklist (owner ruling 2026-09-08, rotation-not-foreclosure; returns automatically); candidate preserved at memory/grind/_spu_gcSPU/candidate.c.
