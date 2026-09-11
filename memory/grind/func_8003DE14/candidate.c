@@ -150,6 +150,25 @@
  *   to 12 refs, rotating the whole surrounding register bank one seat.  s28's
  *   job is to restore 126's priority on THAT chassis (more refs that survive to
  *   flow.c, or a shorter live length), not to keep grinding this 12.
+ * [s28 FORENSICS - the never-tried live-length lever is dead, and why]
+ *   This body is UNCHANGED and re-measures 12 / 173 on HEAD 2026-09-11.
+ *   s27's frontier item 1 (shorten pseudo 126's live length by moving the green
+ *   source computation down to its use) was measured on the three-way chassis:
+ *   three reorderings all score 42, the `.lreg` line for the green carrier is
+ *   character-identical ("12 times across 11 insns; dies in 2 places"), and the
+ *   emitted assembly is BYTE-IDENTICAL.  Per-pass RTL capture names the pass:
+ *   the bodies differ in insn order through `combine` and are position-for-
+ *   position identical at `sched` - the FIRST scheduling pass runs before
+ *   local-alloc and re-emits the arm in one canonical order, with
+ *   `priority()` (tools/gcc-2.7.2/sched.c:1434) deriving INSN_PRIORITY from
+ *   LOG_LINKS alone.  So statement POSITION can never move a live length here;
+ *   only a dependence-graph change can (relocating `src++` does, and gives a
+ *   169-insn body at 58).
+ *   The three-way basin moved instead: reusing `g_src` as the blue source AND
+ *   blue product lifts that carrier to 24 refs / 12 insns / 3 deaths (priority
+ *   80000) and takes that chassis 42 -> 36
+ *   (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c).  s29 should
+ *   decide between the basins before grinding either - see hypotheses.md.
  */
 
 void func_8003DE14(s16 *rect, s32 count) {

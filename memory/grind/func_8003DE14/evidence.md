@@ -3503,3 +3503,111 @@ the OTHER allocnos is wrong. That is the whole remaining task.
 - [s27] The three-way-shared-sum body produces 128 -> $v0 and 137 -> $t7 in the dump, and its residual diff shows the blend arm's disputed rows are target-exact; its 42 is a one-position rotation of the surrounding pointer/product bank caused by pseudo 126 dropping from 18 to 12 references.
 
 - [s27] Seven relocations of the `(X + g_src) - g_src` reference lift on that chassis are inert (42/42/42/42/42, plus 45 and 47): each folds before flow.c counts references.
+
+## [s28 FORENSICS] The first scheduling pass normalizes the blend arm's statement order, so SOURCE POSITION is not a live-length lever — and the three-way chassis drops 42 -> 36
+
+Chassis re-measured at dispatch (the brief printed "measurement unavailable"):
+the p2 candidate is unchanged at **12 / 173 build insns** on HEAD 2026-09-11; the
+s27 three-way-shared-sum chassis re-measures at **42 / 173** (control body in the
+same sweep), so both banked floors are current.
+
+### 1. The s27 frontier's headline lever (SHORTEN pseudo 126's live length by
+moving `g_src = ((u32)px >> 2) & 0xF8` down to its use) is INERT, and the dumps
+say why in one read
+
+Six bodies swept on the three-way chassis
+(tmp/grind/func_8003DE14/s28/v1/): `v01_gsrc_late` (green source def moved down
+to immediately before `gp = g_src * complement`), `v02_both_late` (both channel
+source defs moved down), `v05_rsrc_late`, and the unchanged control all score
+**exactly 42 at 173 build insns**. Inlining the source into the product
+(`v03_gsrc_inline_src`) or scoping it into a block (`v04_gsrc_block_src`) scores
+60 at 167 insns (it deletes a real insn).
+
+The `.lreg` register header line for the green carrier is **character-identical**
+across all three of base / v01 / v02:
+
+    Register <g_src> used 12 times across 11 insns in block 10; dies in 2 places
+
+i.e. nrefs 12, livelen 11, priority 32727 — exactly the s27 number the frontier
+set out to change. And the generated assembly is **byte-identical**:
+`diff tmp/grind/func_8003DE14/s28/asm_v06_base_control.s
+tmp/grind/func_8003DE14/s28/asm_v0{1,2}_*.s` are both empty (3429 bytes each).
+
+### 2. PASS ATTRIBUTION — sched.c, not local-alloc, decides the live length
+Per-pass RTL captured for the base body and for `v02_both_late`
+(tmp/grind/func_8003DE14/s28/d_base/, d_v02/; one file per pass, function region
+only) and compared with a UID-stripped normalizer
+(tmp/grind/func_8003DE14/s28/norm.py):
+
+* Through **combine** the two bodies genuinely differ in insn ORDER: in the arm's
+  30-insn window, records 3-12 are a different sequence (base emits the green
+  `lshiftrt 2` / `and 248` pair before the red multiplies; v02 emits the red
+  multiplies and the red sum first).
+* At **sched** (the FIRST scheduling pass, which in GCC 2.7.2 runs *before*
+  local-alloc) the two sequences are **position-for-position identical** — every
+  remaining textual difference is a pseudo number or an `insn_list` UID.
+* Therefore `.lreg`'s "used N times across M insns" is measured on the SCHEDULED
+  order, and the source statement position never reaches the allocator.
+
+The predicate is `priority()` at tools/gcc-2.7.2/sched.c:1434: `INSN_PRIORITY` is
+computed by walking `LOG_LINKS` (the dependence graph) only, so two bodies with
+the same dependence graph get the same priorities and `schedule_block` emits the
+same order regardless of the order the insns arrived in.
+
+The scheduled order of the arm is: red source (`andi 31`, `sll 3`) -> **all six
+multiplies front-loaded** -> `src++` -> the three sums and their shifts -> the
+masks -> the or-chain. That is why the green carrier's span is fixed at 11: it is
+born at the green `and 248` (scheduled position 8) and dies at the green `plus`
+(position 18), and no statement permutation can change either endpoint.
+
+### 3. The boundary of the finding (measured, not assumed)
+Position is inert only while the dependence graph is unchanged. Moving `src++`
+past the pixel load (`x02_srcpp_late`, `x03_srcpp_mid`) DOES change the graph and
+produces a different, 169-insn body scoring 58. So the live lever on this chassis
+is the dependence graph / block structure, never statement order.
+
+### 4. NEW FLOOR ON THE THREE-WAY CHASSIS: 42 -> 36 by giving the green carrier
+the blue channel as well
+`w01_gsrc_blue_both` (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c)
+keeps the three-way shared `sum` and additionally reuses `g_src` — instead of
+`px` — as the blue source AND the blue complement product:
+
+    g_src = ((u32)px >> 7) & 0xF8;
+    g_src = g_src * complement;
+    sum = g_src + b * factor;
+
+Measured **36 / 173**, a 6-point drop on that chassis, and the `.lreg` shows the
+intended pricing change: the green carrier goes from `12 refs / 11 insns /
+dies in 2` to **`24 refs / 12 insns / dies in 3` (priority 80000)**, the shared
+`sum` prints `18 refs / 13 insns / dies in 3` (55384), and `px` falls to 12 refs
+and leaves block 10 entirely. Routing only the blue SOURCE through `g_src`
+(`w02`, 54) or only through a fresh `bp` (`w08`, 36 — ties w01) or putting the
+blue channel on `r_src` instead (`w06`, 45) are all worse or equal; one carrier
+for all three sources (`w07`) is 52 and GRB order on this chassis is 47.
+
+### 5. Wave-3 refinements on the 36 body are all neutral or worse
+`x04_gsrc_from_pixel` and `x05_blue_from_pixel` (reading the channel source from
+`pixel` rather than the `px` copy) tie at 36; a named high bit (`x06`) is 56,
+routing the output word's high bit through `px` (`x01`) is 43 at 174 insns, and
+the two `src++` relocations are 58 at 169 insns.
+
+- [s28] Chassis re-measured at dispatch: p2 candidate 12/173 (unchanged); s27 three-way chassis 42/173 (control in the same sweep).
+- [s28] Source statement position of the arm's channel-source computations does not reach the register allocator: three orderings produce byte-identical assembly (3429 bytes) and a character-identical `.lreg` line for the green carrier (12 refs / 11 insns).
+- [s28] Pass attribution by per-pass RTL capture: base and v02 differ in insn order through `combine` and are position-for-position identical at `sched`; `priority()` (tools/gcc-2.7.2/sched.c:1434) derives INSN_PRIORITY from LOG_LINKS only.
+- [s28] The scheduled arm order front-loads all six multiplies before any sum, which pins the green carrier's live span at 11 insns (birth at the green `and 248`, death at the green `plus`).
+- [s28] Three-way chassis floor 42 -> 36: reusing `g_src` as the blue source AND blue product lifts that carrier to 24 refs / 12 insns / 3 deaths (priority 80000) and drops `px` out of block 10.
+- [s28] Moving `src++` changes the dependence graph (not just the order) and produces a 169-insn body at 58 - the measured boundary of the position-is-inert finding.
+
+- [s28] Chassis re-measured at dispatch (the brief printed 'measurement unavailable'): the p2 candidate is unchanged at 12 / 173 build insns on HEAD 2026-09-11, and the s27 three-way chassis re-measures at 42 / 173 as the control of this session's first sweep.
+
+- [s28] Source statement position of the arm's channel-source computations never reaches the register allocator: three orderings produce byte-identical assembly (3429 bytes) and a character-identical .lreg line for the green carrier (12 refs, 11 insns, dies in 2 places).
+
+- [s28] Pass attribution by per-pass RTL capture, not inference: the control and v02_both_late differ in insn order through combine and are position-for-position identical at sched; priority() (tools/gcc-2.7.2/sched.c:1434) derives INSN_PRIORITY from LOG_LINKS only.
+
+- [s28] The scheduled order of the blend arm front-loads all six multiplies before any sum, which pins the green carrier's live span at 11 insns and makes the s27 'livelen 11 -> 6' plan unreachable by any statement permutation.
+
+- [s28] Three-way chassis floor 42 -> 36: reusing g_src as the blue source AND the blue complement product lifts that carrier to 24 refs / 12 insns / 3 deaths (priority 80000) and drops px out of block 10 entirely.
+
+- [s28] Moving src++ changes the dependence graph rather than only the order, and produces a 169-insn body at 58 - the measured boundary of the position-is-inert finding.
+
+- [s28] The w01 residual (ed2.py on the sandbox object) now contains genuine ORDER rows - two target rows deleted and two inserted around the third multiply - so the 36 is part RA, part scheduler, which makes tools/sched_solver applicable to this basin for the first time.

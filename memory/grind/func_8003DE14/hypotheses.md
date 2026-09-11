@@ -2605,3 +2605,87 @@ use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
 - probe: s2_ext_blue (= the incumbent p2 body) and s2_ext_none (g_src extender removed, j extender kept) inside the s27 tools/sweep_variants.py call, plus the driver-style dispatch measurement of the incumbent.
 - result: 12 and 40 respectively, both at 173 build insns - identical to s26's 2x2 entries for 'both present' and 'g_src removed'. The banked prices are current; the incumbent chassis is independently confirmed at 12/173 by the dispatch measurement.
 - verdict: CONFIRMED
+
+## [s28] Pseudo 126 (the green carrier) can be lifted above pseudo 122 on the three-way-shared-sum chassis by SHORTENING its live length - moving `g_src = ((u32)px >> 2) & 0xF8` down to its use, so priority floor_log2(12)*12/livelen*10000 rises from 32727 to ~60000.
+- mechanism: qty/allocno priority is floor_log2(refs)*refs*size/(death-birth)*10000 (local-alloc.c:1660 and the global analogue); with refs held at 12 a livelen of 6 instead of 11 gives 60000, which is above 122's 48000, and moving a definition closer to its single use is ordinary C needing no construct at all.
+- probe: six complete bodies in tmp/grind/func_8003DE14/s28/v1/ (green source late, both sources late, red source late, source inlined into the product, source scoped into a block, unchanged control) swept in one tools/sweep_variants.py call; then the `.lreg` register header lines and the emitted `.s` captured for base / v01 / v02 via tmp/grind/func_8003DE14/s28/regs.sh and asmcap.sh.
+- result: all three reordered bodies score exactly 42 at 173 build insns, identical to the control. The `.lreg` line for the green carrier is character-identical in all three ("used 12 times across 11 insns in block 10; dies in 2 places") and the emitted assembly is byte-identical (3429 bytes, empty diff). The two bodies that inline or re-scope the source drop a real insn (167) and score 60.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s27 three-way-shared-sum chassis (memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c), j extender present, blue-path g_src extender absent by construction
+
+## [s28] The reason source statement position cannot move a pseudo's live length here is the FIRST scheduling pass: sched.c re-emits the blend arm in one canonical order before local-alloc ever measures a span.
+- mechanism: In GCC 2.7.2 the first `schedule_insns` runs between combine and local-alloc. `priority()` (tools/gcc-2.7.2/sched.c:1434) computes INSN_PRIORITY by walking LOG_LINKS - the dependence graph - and nothing else, so two bodies whose arms have the same dependence graph get identical priorities and `schedule_block` emits them in the same order whatever order they arrived in. `.lreg`'s "used N times across M insns" is therefore a property of the scheduled order, not of the C.
+- probe: per-pass RTL for the function region captured for the control and for `v02_both_late` (tmp/grind/func_8003DE14/s28/d_base/, d_v02/) and compared with a UID-stripping normalizer (s28/norm.py) pass by pass: rtl, jump, cse, loop, cse2, flow, combine, sched, lreg, greg.
+- result: through `combine` the two bodies differ in real insn ORDER (records 3-12 of the 30-insn arm window are a different sequence); at `sched` they are position-for-position identical, with only pseudo numbers and insn_list UIDs differing. The scheduled arm order front-loads all six multiplies ahead of every sum, which fixes the green carrier's span at 11 insns. The boundary was measured too: relocating `src++` DOES change the dependence graph and yields a different 169-insn body at 58.
+- verdict: CONFIRMED
+
+## [s28] On the three-way-shared-sum chassis the surrounding bank rotation can be bought back by raising the green carrier's reference count with a REAL second job instead of the dead `(X + g_src) - g_src` extender - carry the blue channel in `g_src` too.
+- mechanism: The s27 rotation is priced: 126 fell to 12 refs / livelen 11 (32727) and lost ord 1 to 122 (px, 24 refs / livelen 20, 48000). Making `g_src` also the blue source and blue complement product gives it three real defs and three real uses in the arm, which raises reg_n_refs honestly (the references survive to flow.c because the values are consumed) instead of relying on a fold-prone identity.
+- probe: nine complete bodies in tmp/grind/func_8003DE14/s28/v2/ (blue on g_src both ways, blue source only, split green carrier two ways, GRB order, blue on r_src, one carrier for all three sources, control) swept in one call; then `.lreg` register lines for the winner via s28/regs.sh and the residual via tmp/grind/func_8003DE14/s24/ed2.py.
+- result: `w01_gsrc_blue_both` scores 36 / 173 - a 6-point drop from the chassis's 42 - and `w08_gsrc_blue_bp` ties it. The `.lreg` confirms the pricing: the green carrier goes 12 refs / 11 insns / 2 deaths -> 24 refs / 12 insns / 3 deaths (priority 80000), the shared `sum` prints 18 / 13 / 3, and `px` drops to 12 refs and out of block 10. Alternatives: blue source only on g_src 54, blue on r_src 45, split green carrier 45 (174 insns), GRB order 47, one carrier for all three sources 52. Banked as memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c.
+- verdict: CONFIRMED
+
+## [s28] The 36 body can be improved further by cheap spelling refinements around the output word and the source reads.
+- mechanism: With the carrier pricing fixed, the remaining rows are the surrounding bank; the untried cheap axes were reading the channel sources from `pixel` instead of the `px` copy, giving `px` a real job in the output word, naming the high bit, and relocating `src++`.
+- probe: seven bodies in tmp/grind/func_8003DE14/s28/v3/ swept against the 36 control.
+- result: reading either source from `pixel` ties at 36; routing the high bit through `px` is 43 at 174 insns; a named `hi` is 56; both `src++` relocations are 58 at 169 insns. No refinement improves on 36.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s28 three-way + blue-on-g_src chassis (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c), j extender present
+
+### LIVE FRONTIER (for s29)
+
+1. **Close the last 36 on the w01 three-way chassis by dependence-graph edits, not
+   statement order** (s28 proved order is normalized by sched.c). The residual on
+   w01 now contains genuine ORDER rows (ed2.py shows `addu v1,a1,v1` / `sra a1`
+   hoisted ahead of the third multiply, i.e. two target rows deleted and two
+   inserted), which is a scheduler-visible difference and therefore attackable by
+   changing LOG_LINKS: split the blue channel's dependence chain (e.g. compute
+   `b * factor` into its own named local so the mult is no longer a direct
+   operand of the shared sum), or re-associate `sum = g_src + b * factor` so the
+   sum depends on the mult through one more insn. Use tools/sched_solver on the
+   w01 body first - the residual is now part RA, part order, and the solver is
+   order- and clock-exact.
+
+2. **Decide which basin to spend on.** p2 is 12 with two F1 extenders (not
+   submittable); the three-way basin is now 36 but is ORDINARY C end to end except
+   for the j extender, and it owns both disputed seats. Before more grinding, run
+   `goal_from_tgt.py classify` on the w01 body to get its stage verdict - if it is
+   RA-only, re-run extract.py + inverse.py global on the w01 model with the full
+   disposition goal (s27 frontier item 2 was never run on a 36-point body) and
+   spell the top vectors.
+
+3. **Price the j extender on the w01 chassis.** Its price has only ever been
+   measured on the p2 chassis (-7 with the g_src extender present, +2 without).
+   The w01 body carries it; a 2x2 on w01 (j present/absent x blue-on-g_src
+   present/absent) would say whether the 36 is an ordinary-C floor or still
+   extender-propped, which decides whether this basin can ever be submitted.
+
+## [s28] Pseudo 126 (the green carrier) can be lifted above pseudo 122 on the three-way-shared-sum chassis by shortening its live length - moving `g_src = ((u32)px >> 2) & 0xF8` down to its use, so priority floor_log2(12)*12/livelen*10000 rises from 32727 to about 60000.
+- mechanism: Allocno/quantity priority is floor_log2(refs)*refs*size/(death-birth)*10000 (local-alloc.c:1660 and the global analogue). With refs held at 12, a livelen of 6 instead of 11 gives 60000, above pseudo 122's 48000, and moving a definition closer to its single use is ordinary C requiring no construct.
+- probe: Six complete bodies in tmp/grind/func_8003DE14/s28/v1/ (green source late, both sources late, red source late, source inlined into the product, source scoped into a block, unchanged control) swept in one tools/sweep_variants.py call; then .lreg register header lines and the emitted .s captured for base / v01 / v02 via tmp/grind/func_8003DE14/s28/regs.sh and asmcap.sh.
+- result: All three reordered bodies score exactly 42 at 173 build insns, identical to the control. The .lreg line for the green carrier is character-identical in all three ('used 12 times across 11 insns in block 10; dies in 2 places'), and the emitted assembly is byte-identical (3429 bytes, empty diff). The two bodies that inline or re-scope the source delete a real insn (167 build insns) and score 60.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s27 three-way-shared-sum chassis (memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c), j extender present, blue-path g_src extender absent by construction
+
+## [s28] The reason source statement position does not move a pseudo's live length on this chassis is the first scheduling pass: sched.c re-emits the blend arm in one canonical order before local-alloc measures any span.
+- mechanism: In GCC 2.7.2 the first schedule_insns runs between combine and local-alloc. priority() (tools/gcc-2.7.2/sched.c:1434) computes INSN_PRIORITY by walking LOG_LINKS - the dependence graph - and nothing else, so two bodies whose arms have the same dependence graph get identical priorities and schedule_block emits them in the same order whatever order they arrived in. The .lreg 'used N times across M insns' line is therefore a property of the scheduled order, not of the C.
+- probe: Per-pass RTL for the function region captured for the control and for v02_both_late (tmp/grind/func_8003DE14/s28/d_base/, d_v02/) and compared with a UID-stripping normalizer (s28/norm.py) pass by pass: rtl, jump, cse, loop, cse2, flow, combine, sched, lreg, greg.
+- result: Through combine the two bodies differ in real insn ORDER (records 3-12 of the 30-insn arm window are a different sequence: base emits the green lshiftrt/and pair before the red multiplies, v02 emits the red multiplies and red sum first). At sched they are position-for-position identical, with only pseudo numbers and insn_list UIDs differing. The scheduled arm order front-loads all six multiplies ahead of every sum, which pins the green carrier's span at 11 insns (birth at the green `and 248`, death at the green `plus`). Boundary measured: relocating src++ DOES change the dependence graph and yields a different 169-insn body at 58.
+- verdict: CONFIRMED
+
+## [s28] On the three-way-shared-sum chassis the surrounding bank rotation can be bought back by raising the green carrier's reference count with a REAL second job instead of the fold-prone `(X + g_src) - g_src` identity - carry the blue channel in `g_src` too.
+- mechanism: The s27 rotation is priced: pseudo 126 fell to 12 refs / livelen 11 (32727) and lost ord 1 to 122 (px, 24 refs / livelen 20, 48000). Making g_src also the blue source and the blue complement product gives it three real defs and three real uses in the arm, so reg_n_refs rises honestly - the references survive to flow.c because the values are consumed - instead of depending on an identity that combine folds.
+- probe: Nine complete bodies in tmp/grind/func_8003DE14/s28/v2/ (blue on g_src both ways, blue source only, split green carrier two ways, GRB order, blue on r_src, one carrier for all three sources, control) swept in one call; then .lreg register lines for the winner via s28/regs.sh and the residual via tmp/grind/func_8003DE14/s24/ed2.py.
+- result: w01_gsrc_blue_both scores 36 / 173 - a 6-point drop from that chassis's 42 - and w08_gsrc_blue_bp ties it. The .lreg confirms the intended pricing change: the green carrier goes 12 refs / 11 insns / 2 deaths -> 24 refs / 12 insns / 3 deaths (priority 80000), the shared sum prints 18 / 13 / 3 (55384), and px falls to 12 refs and leaves block 10. Alternatives: blue source only on g_src 54, blue on r_src 45, split green carrier 45 (174 insns), GRB order 47, one carrier for all three sources 52. Banked as memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c.
+- verdict: CONFIRMED
+
+## [s28] The 36 body improves further under cheap spelling refinements around the output word and the channel source reads.
+- mechanism: With the carrier pricing fixed by w01, the remaining rows are the surrounding bank; the untried cheap axes were reading the channel sources from `pixel` instead of the `px` copy, giving px a real job in the output word, naming the high bit, and relocating src++.
+- probe: Seven complete bodies in tmp/grind/func_8003DE14/s28/v3/ swept against the 36 control.
+- result: Reading either channel source from `pixel` ties at 36; routing the output word's high bit through px is 43 at 174 insns; a named `hi` local is 56; both src++ relocations are 58 at 169 insns. No refinement beats 36.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s28 three-way + blue-on-g_src chassis (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c), j extender present
