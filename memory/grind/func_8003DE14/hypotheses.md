@@ -2208,3 +2208,128 @@ use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; p2 chassis 12/173 (u-series) and d2 chassis 14/173 (q-series), both s21 F1 chain extenders present
+
+## [s24] The engine's honest score is computed on objdump output WITHOUT `-z`, so runs of two-or-more consecutive zero words are elided on BOTH sides; the real streams are 179 instructions each and, aligned 1:1, the residual is EXACTLY 12 rows.
+- mechanism: engine/score.py's normalized_insns() calls `objdump -dr --start-address/--stop-address`. GNU objdump's default (no `-z`) prints `...` in place of a run of identical zero words, so the three `nop; nop` pairs the target carries after each `mflo` (asm/funcs/func_8003DE14.s rows t97/98, t105/106, t113/114) never enter the instruction list - and neither do ours. Both objects are 0x2cc = 716 bytes = 179 words (objdump -t on build/src/code6cac_c2.o and on tmp/sandbox/func_8003DE14/code6cac_c2.o), so the nop padding is ALREADY identical and is not part of the residual. A naive side-by-side that reads asm/funcs/*.s on one side (nops present) and plain `objdump -d` on the other (nops elided) mis-aligns by 6 rows from t97 onward and invents a phantom scheduling / multu-pad divergence; s24 chased exactly that for four turns before `objdump -dz` resolved it. func_8003DE14 is NOT in multu_pad_funcs.txt and does not need to be.
+- probe: objdump -t / objdump -dz row counts on both objects; tmp/grind/func_8003DE14/s24/ed2.py (a `-dz`, branch-target-masked, 1:1 difflib alignment) on the p2 body.
+- result: 179 vs 179, 29 raw edits of which 17 are objdump spellings (`move` vs `addu x,y,zero`, `li` vs `addiu x,zero,N`, `fp` vs `s8`, hex vs decimal) and EXACTLY 12 are real: t117 t118 t120 t121 t123 t124 t125 t129 t130 t133 t134 t136. This is the same 12 the engine scores.
+- verdict: CONFIRMED
+
+## [s24] All 12 residual rows are one register-allocation pattern: the target routes every channel sum through a scratch register and puts the `b*factor` mflo in $t7, while our build ties each sum's destination to one of its own source operands' registers and puts that mflo in $v0.
+- mechanism: Target rows: `addu $v0,$t2,$a1` / `sra $a1,$v0,15` (red), `addu $v0,$t1,$v1` / `sra $v1,$v0,10` (green), `mflo $t7` / `addu $v0,$a0,$t7` / `sra $a0,$v0,5` (blue), `andi $v1,$a0,0x7C00` / `or $v0,$v0,$v1` (blue mask), `lh $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1` (latch). Ours: `addu $a1,$t2,$a1` / `sra $a1,$a1,15`, `addu $v1,$t1,$v1` / `sra $v1,$v1,10`, `mflo $v0` / `addu $a0,$a0,$v0` / `sra $a0,$a0,5`, `andi $a0,$a0,0x7C00` / `or $v0,$v0,$a0`, `lh $v1,4($s0)` / `lh $v0,6($s0)` / `mult $v1,$v0`. In every case the target consumes a fresh register for the intermediate and writes the final channel value back into the operand's register one insn later; ours collapses the two steps onto the operand's register.
+- probe: the s24 ed2.py alignment above, on the p2 body.
+- result: The 12 rows are 4 independent seats - the red sum, the green sum, the blue mflo + sum, and the latch's two loads - all with the same shape. No row is a scheduling or instruction-count difference, and the whole residual is confined to the last 20 instructions of the blend arm plus the latch.
+- verdict: CONFIRMED
+
+## [s24] The s23 attribution "global.c's find_reg first-fit hands the b*factor allocno regno 2" is imprecise: global.c's FIRST pass gives it LO (hardreg 65); it reaches $v0 only through reload's retry_global_alloc. And local quantities in the blend block DO already reach $v0.
+- mechanism: BB2_ALLOC_DEBUG on the p2 body prints `ord=9 pseudo=138 hardreg=65 nrefs=6 livelen=9 pri=13333`; hardreg 65 is LO_REG on this MIPS config (64=HI, 65=LO). The .greg dump then prints `Register 138 now in 2`, which is the retry path (tools/gcc-2.7.2/global.c:1317, retry_global_alloc, reached from reload1 when the LO seat is not satisfiable for every use). Separately BB2_QTY_DEBUG for block 10 prints `ord=0 qty=18 ... got=2`, `ord=2 qty=0 ... got=2`, `ord=3 qty=5 ... got=2`, `ord=4 qty=10 ... got=2`: four local quantities are seated on $v0 by local-alloc in the very block the residual lives in, and three of them (the `srl $v0,$a0,2` / `srl $v0,$a0,7` / `andi $v0,$t0,0x1F` source extractions) already match the target byte-for-byte.
+- probe: tmp/grind/func_8003DE14/s24/alloc.sh (instrumented cc1 = tools/gcc-2.7.2/cc1) with BB2_ALLOC_DEBUG=1, then again with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1; output in tmp/grind/func_8003DE14/s24/alloc.txt and alloc_fn.txt.
+- result: The full global ord table is banked in evidence.md. The practical consequence: s23's frontier item 1 ("find a C shape that makes a local quantity reach $v0") is already satisfied and is NOT the lever - the sums are losing $v0 to a tie with their own operand, not to the b*factor allocno's first-fit.
+- verdict: CONFIRMED
+
+## [s24] Both s21 F1 chain extenders are still load-bearing on the p2 (px-reuse) chassis; the g_src extender's price did NOT collapse when the blue channel lost its `b_src` pseudo.
+- mechanism: s22's ablation numbers (d2 minus the g_src extender = 23, minus the j extender = 21, neither = 28) were d2-relative, and s23's frontier item 3 predicted the px reuse might have made the g_src price reachable in ordinary C.
+- probe: a1 (`b_shift = sum >> 5;`), a2 (`LoadImage((s32)rect, (s32)dst_buf);`), a3 (both), each applied to memory/grind/func_8003DE14/candidate.c and scored with `sandbox func_8003DE14 --disable all`.
+- result: a1 40, a2 19, a3 38, against the 12 baseline - so on this chassis the g_src extender is worth 28 and the j extender 7. Frontier item 3 of s23 is closed negative: the ordinary-C sweep for g_src's price does not reopen on the px chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, ablating each s21 F1 chain extender in turn
+
+## [s24] Sharing ONE C carrier across channels for the complement products or for the `*factor` products unties the sum-to-operand register tie.
+- mechanism: local-alloc.c:1784 combine_regs refuses to merge a destination with a source whose `reg_qty` is negative - which is what a pseudo that dies in more than one place gets - so making `rp` (or the `*factor` holder) carry two or three channels' values should have made the red/green adds allocate a fresh destination.
+- probe: c1 `rp` carries the red AND green complement products (gp dropped); c2 `r_src` carries the red AND green `*factor` products; c3 both; c4 `rp` carries all three complement products; c5 `rp` also carries the green source byte. Scored, and the c1 body's full -dz alignment read.
+- result: c1 33, c2 53 (175 build insns), c3 51, c4 53, c5 87 (166 build insns). The c1 diff shows the red add is STILL tied (`addu $a1,$t5,$a1`) and the green add likewise (`addu $v1,$t5,$v1`), so the tie survives a multi-death carrier; the extra 21 points come from the collateral re-seating of $t1/$t3/$t5 in the outer loop. Cross-channel carrier sharing is dead on this chassis for the second time (s16 measured the same family across 1,483 spellings).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s24] The sum-to-operand tie is decidable by the sum expression's operand order, by the declaration scope of the product locals, or by splitting the shift and the mask into separate statements.
+- mechanism: the add's operand order determines which operand combine_regs is offered first, and moving `rp`/`gp` out of the innermost block changes their birth index in local-alloc's quantity ordering.
+- probe: d1 `(r_src + rp)`, d2 `(g_src + gp)`, d3 all three sums' operands swapped (including `b * factor + px`); e1 `rp`/`gp` declared at the per-row outer scope; e2 the red channel routed through `sum` then shifted; e3 the green mask split off into its own statement.
+- result: d1 12, d2 12, d3 12, e1 12 - all four print a byte-identical 12-row residual to p2 (the tree is canonicalised before local-alloc sees it, and an arm-local vs per-row declaration of a pseudo only ever live inside the arm does not move its birth index). e2 44, e3 25.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s24] Re-ordering the blend arm at statement granularity - hoisting the `*factor` products to the per-row block, moving the blue source above the green channel, swapping the blue and green channel blocks, or reversing the arm's declaration order - reaches the $v0 seats.
+- mechanism: each of these changes the RTL emission order of the blend arm, which is what fixes both the local-alloc quantity ordering and global.c's allocno priority order.
+- probe: b1 `sum = b * factor + px;`; b2 the two blue-source statements moved above the green channel; b3 `s32 bf = b * factor;` hoisted into the per-row block next to `complement`; b4 all three products hoisted there; b5 the whole blue channel block moved above the green one; b6 the arm's six `s32` declarations reversed.
+- result: b1 12 (tie), b6 12 (tie), b2 33 (174 build insns), b3 41, b4 50 (174 build insns), b5 43 (174 build insns). Every form that actually moves a multiply out of the arm also changes the instruction count, so none is a partial win; the two ties leave the same 12 rows.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+### LIVE FRONTIER (for s25)
+
+1. **Decide whether the sum-to-operand tie is combine_regs or merely find_free_reg
+   order.** The c1 result (a carrier dying in two places did NOT untie the red add)
+   argues it is NOT combine_regs, which would make s23's and s24's working model wrong.
+   NEXT PROBE, before any new spelling: re-run tmp/grind/func_8003DE14/s24/alloc.sh with
+   BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 on the p2 body and map the block-10 qty numbers
+   (qty18/reg152, qty16/reg132, qty17/reg149, qty15/reg131) onto the red sum, the green
+   sum, `rp`, `gp` and `px` by cross-reading the .lreg RTL. If a sum shares a qty with its
+   operand it is combine_regs; if they merely got the same hard reg it is find_free_reg's
+   scan order and the lever is the quantity ORDER (qty_compare), not the death counts.
+2. **`mflo $t7` (t123).** The b*factor product reaches $v0 only via reload's
+   retry_global_alloc; the target's $t7 is a register global.c never hands out in our
+   build. Probe shapes that change reg 138's nrefs/livelen WITHOUT naming it as a C local
+   (s23 s1-s5 killed naming) - e.g. consuming the blue sum one statement later, or giving
+   the blue channel an extra ordinary use of an already-live value - and read the
+   BB2_ALLOC_DEBUG ord/pri row for pseudo 138 each time.
+3. **The LICM axis is un-probed on this chassis.** `r * factor`, `g * factor` and
+   `b * factor` are all loop-invariant with respect to the INNER loop, yet the target
+   recomputes all three inside it (t95-t115). Read tmp/grind/func_8003DE14/dumps/*.loop for
+   whether GCC 2.7.2 hoists any of them out of the inner loop in our build; if it does and
+   the target does not, the defeat-licm-hoist-var-reuse family (which is exactly what this
+   function's ledger is cited for at .claude/rules/defeat-licm-hoist-var-reuse.md:43) may
+   apply to the `*factor` products and change the whole arm's allocno set.
+
+## [s24] The engine's honest score is computed on objdump output without -z, so runs of two or more consecutive zero words are elided on BOTH sides; the real instruction streams are 179 each and, aligned 1:1, the residual is exactly 12 rows.
+- mechanism: engine/score.py:183 normalized_insns() runs `objdump -dr --start-address/--stop-address`; GNU objdump's default collapses a run of identical zero words into a single `...` line, so the three `nop; nop` pairs the target carries after each mflo (asm/funcs/func_8003DE14.s t97/98, t105/106, t113/114) never enter the list, and neither do ours. objdump -t reports 0x2cc = 716 bytes = 179 words for func_8003DE14 in BOTH build/src/code6cac_c2.o and tmp/sandbox/func_8003DE14/code6cac_c2.o.
+- probe: objdump -t and objdump -dz row counts on both objects; then tmp/grind/func_8003DE14/s24/ed2.py, a -dz + branch-target-masked + spelling-canonicalised 1:1 difflib alignment, on the p2 body.
+- result: 179 vs 179. 29 raw edits, of which 17 are objdump spellings (move vs addu x,y,zero; li vs addiu x,zero,N; fp vs s8; hex vs decimal) and exactly 12 are real: t117 t118 t120 t121 t123 t124 t125 t129 t130 t133 t134 t136 - the same 12 the engine scores. The nop padding already matches; func_8003DE14 does not belong in multu_pad_funcs.txt. s23's sxs.py mis-aligns by 6 rows from t97 onward and fabricates a scheduling divergence.
+- verdict: CONFIRMED
+
+## [s24] All 12 residual rows are one register-allocation pattern: the target routes every channel sum, the blue mask and the latch's first load through a fresh scratch register and puts the b*factor mflo in $t7, while our build ties each of those destinations to one of its own source operands' registers and puts the mflo in $v0.
+- mechanism: Target: addu $v0,$t2,$a1 / sra $a1,$v0,15 (red); addu $v0,$t1,$v1 / sra $v1,$v0,10 (green); mflo $t7 / addu $v0,$a0,$t7 / sra $a0,$v0,5 (blue); andi $v1,$a0,0x7C00 / or $v0,$v0,$v1; lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1. Ours writes each of those into the operand's own register instead (a1, v1, a0), and swaps the two latch loads.
+- probe: The corrected -dz alignment (ed2.py) on the p2 body, read row by row.
+- result: Four independent seats, one shape; no row is a scheduling or instruction-count difference, and the whole residual is confined to the last 20 instructions of the blend arm plus the latch. Rows t0-t116, t119, t122, t126-t128, t131, t132, t135, t137-t140 all match.
+- verdict: CONFIRMED
+
+## [s24] s23's attribution 'global.c find_reg first-fit hands the b*factor allocno regno 2' names the wrong pass: global.c's first pass seats pseudo 138 in LO (hardreg 65) at ord=9 pri=13333, and it reaches $v0 only through reload's retry_global_alloc; separately, four block-10 LOCAL quantities already reach $v0.
+- mechanism: BB2_ALLOC_DEBUG prints the full allocno order/seat/priority table; hardreg 64=HI and 65=LO on this MIPS config. The .greg dump then prints 'Register 138 now in 2', which is the tools/gcc-2.7.2/global.c:1317 retry path reached from reload1. BB2_QTY_DEBUG for block 10 prints got=2 for qty18/reg152, qty0/reg125, qty5/reg127 and qty10/reg137.
+- probe: tmp/grind/func_8003DE14/s24/alloc.sh against the instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_ALLOC_DEBUG=1, then with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1; full tables banked in evidence.md E-s24-3.
+- result: Three of those four $v0 local quantities (srl $v0,$a0,2 / srl $v0,$a0,7 / andi $v0,$t0,0x1F) already match the target byte-for-byte. s23's frontier item 1 - 'find a C shape that makes a local quantity reach $v0' - is therefore already satisfied and is not the lever; the sums lose $v0 to a tie with their own operand, not to the b*factor allocno.
+- verdict: CONFIRMED
+
+## [s24] Both s21 F1 chain extenders are still load-bearing on the p2 px-reuse chassis: the g_src extender's price did not collapse when the blue channel lost its b_src pseudo.
+- mechanism: s22's ablation numbers (d2 minus g_src extender 23, minus j extender 21, neither 28) were d2-relative; s23's frontier item 3 predicted the px reuse might make the g_src price reachable in ordinary C.
+- probe: a1 (b_shift = sum >> 5), a2 (LoadImage((s32)rect, (s32)dst_buf)), a3 (both), each applied to memory/grind/func_8003DE14/candidate.c and scored with sandbox --disable all.
+- result: a1 40, a2 19, a3 38 against the 12 baseline - the g_src extender is worth 28 on this chassis and the j extender 7. s23 frontier item 3 closes negative.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); p2 chassis 12/173, ablating each s21 F1 chain extender in turn
+
+## [s24] Sharing one C carrier across channels for the complement products or for the *factor products unties the sum-to-operand register tie.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:1784 combine_regs returns 0 when the used (source) pseudo has reg_qty < 0, which is what a pseudo dying in more than one place gets - so a carrier used by two or three channels should force the red/green adds to take a fresh destination.
+- probe: c1 rp carries the red and green complement products (gp dropped); c2 r_src carries the red and green *factor products; c3 both; c4 rp carries all three complement products; c5 rp also carries the green source byte. Scored, and the c1 body's full -dz alignment read row by row.
+- result: c1 33, c2 53 (175 build insns), c3 51, c4 53, c5 87 (166 build insns). Crucially the c1 diff shows the red add STILL tied (addu $a1,$t5,$a1) and the green add likewise (addu $v1,$t5,$v1), so the tie survives the multi-death carrier - which means the combine_regs model inherited from s23 is not confirmed and may be the wrong mechanism. The extra 21 points are collateral re-seating of $t1/$t3/$t5 in the outer loop.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s24] The sum-to-operand tie is decidable by the sum expression's operand order, by the declaration scope of the product locals, or by splitting the shift and the mask into separate statements.
+- mechanism: The add's operand order determines which operand local-alloc is offered first, and moving rp/gp out of the innermost block changes their birth index in the quantity ordering.
+- probe: d1 (r_src + rp); d2 (g_src + gp); d3 all three sums' operands swapped including b * factor + px; e1 rp/gp declared at the per-row outer scope; e2 the red channel routed through the shared `sum` then shifted; e3 the green mask split into its own statement.
+- result: d1 12, d2 12, d3 12, e1 12 - all four print a byte-identical 12-row residual to p2. e2 44, e3 25. Operand order is canonicalised before local-alloc sees it, and an arm-local vs per-row declaration of a pseudo only ever live inside the arm does not move its birth index.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s24] Re-ordering the blend arm at statement granularity - hoisting the *factor products to the per-row block, moving the blue source above the green channel, swapping the blue and green channel blocks, or reversing the arm's declaration order - reaches the $v0 seats.
+- mechanism: Each of these changes the RTL emission order of the blend arm, which fixes both the local-alloc quantity ordering and global.c's allocno priority order.
+- probe: b1 sum = b * factor + px; b2 the two blue-source statements moved above the green channel; b3 s32 bf = b * factor hoisted into the per-row block next to complement; b4 all three products hoisted there; b5 the whole blue channel block moved above the green one; b6 the arm's six s32 declarations reversed.
+- result: b1 12 (tie, same rows), b6 12 (tie, same rows), b2 33 (174 build insns), b3 41, b4 50 (174 build insns), b5 43 (174 build insns). Every form that actually moves a multiply out of the arm also changes the instruction count, so none is a partial win.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present

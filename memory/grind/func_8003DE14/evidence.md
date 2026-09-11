@@ -3008,3 +3008,145 @@ sanctioned variable-reuse-for-codegen-control family and carries no annotation.
 - [s23] Naming `b * factor` as a C local is counterproductive - it strips the LO_REG preference and the 'dies twice' status, converting a global allocno into an ordinary local and re-seating the whole arm (s1 47/171 insns, s2-s4 41, s5 49/167 insns).
 
 - [s23] The candidate is NOT submittable: both s21 F1 combine-foldable chain extenders - `((sum + g_src) - g_src)` and `((s32)dst_buf + j) - j` - are still present and load-bearing on this body.
+
+## s24 (structural) — HEAD 2026-09-11, p2 chassis, floor 12 unchanged
+
+### E-s24-1 The measurement instrument, corrected
+`engine/score.py:183 normalized_insns()` shells out to `objdump -dr --start-address=… --stop-address=…`
+WITHOUT `-z`. GNU objdump's default behaviour is to collapse a run of two or more
+identical zero words into a single `...` line, so every `nop; nop` pair is invisible to
+the score — on BOTH the reference and the candidate. Consequences, all measured:
+
+* `objdump -t build/src/code6cac_c2.o | grep -w func_8003DE14` → size `0x2cc` = 716 bytes
+  = **179 instructions**. The sandbox object
+  `tmp/sandbox/func_8003DE14/code6cac_c2.o` reports the **same 0x2cc**. The engine's
+  `target_insns: 173` / `build_insns: 173` are the zero-elided counts, not the real ones.
+* The target's nop padding (`mflo` → 2 nops → next `mult`, three times, at
+  asm/funcs/func_8003DE14.s rows t97/98, t105/106, t113/114) is ALREADY reproduced by our
+  build. `func_8003DE14` is not in `multu_pad_funcs.txt` and does not need to be —
+  `tools/multu_pad.py` pads the mult→mflo gap, which is a different hazard and is not the
+  shape here.
+* A side-by-side that reads `asm/funcs/func_8003DE14.s` on one side (nops present) and
+  plain `objdump -d` on the other (nops elided) mis-aligns by 6 rows from t97 onward and
+  fabricates a scheduling divergence. `tmp/grind/func_8003DE14/s23/sxs.py` has this bug;
+  `tmp/grind/func_8003DE14/s24/ed2.py` is the corrected tool (uses `-dz`, masks branch
+  targets, canonicalises objdump spellings, difflib 1:1 alignment) and should be the one
+  future sessions copy forward.
+
+### E-s24-2 The exact 12-row residual, 1:1 aligned (p2 body)
+```
+row   TARGET                    OURS
+t117  addu $v0,$t2,$a1          addu $a1,$t2,$a1        red sum
+t118  sra  $a1,$v0,15           sra  $a1,$a1,15
+t120  addu $v0,$t1,$v1          addu $v1,$t1,$v1        green sum
+t121  sra  $v1,$v0,10           sra  $v1,$v1,10
+t123  mflo $t7                  mflo $v0                b*factor product
+t124  addu $v0,$a0,$t7          addu $a0,$a0,$v0        blue sum
+t125  sra  $a0,$v0,5            sra  $a0,$a0,5
+t129  andi $v1,$a0,0x7C00       andi $a0,$a0,0x7C00     blue mask
+t130  or   $v0,$v0,$v1          or   $v0,$v0,$a0
+t133  lh   $v0,4($s0)           lh   $v1,4($s0)         latch loads
+t134  lh   $v1,6($s0)           lh   $v0,6($s0)
+t136  mult $v0,$v1              mult $v1,$v0
+```
+Rows t119, t122, t126–t128, t131, t132, t135, t137–t140 already match, as does the whole
+of t0–t116. The 17 other raw edits the aligner prints are objdump spellings only
+(`move` vs `addu x,y,zero`, `li` vs `addiu x,zero,N`, `fp` vs `s8`, hex vs decimal).
+
+Pattern: in the TARGET every intermediate goes to a fresh scratch register and the final
+channel value is written back into the operand's register one instruction later; in OURS
+the two steps collapse onto the operand's register. Four independent seats, one shape.
+
+### E-s24-3 Allocation dump for the p2 body (instrumented cc1, tools/gcc-2.7.2/cc1)
+`BB2_ALLOC_DEBUG=1` — global.c allocno order, seat, refs, live length, priority:
+```
+ord=0  pseudo=118 hardreg=2  nrefs=9  livelen=3   pri=90000
+ord=1  pseudo=126 hardreg=3  nrefs=18 livelen=12  pri=60000
+ord=2  pseudo=122 hardreg=4  nrefs=24 livelen=22  pri=43636
+ord=3  pseudo=159 hardreg=65 nrefs=6  livelen=3   pri=40000
+ord=4  pseudo=109 hardreg=6  nrefs=38 livelen=60  pri=31666
+ord=5  pseudo=123 hardreg=5  nrefs=12 livelen=13  pri=27692
+ord=6  pseudo=108 hardreg=7  nrefs=32 livelen=61  pri=26229
+ord=7  pseudo=121 hardreg=8  nrefs=15 livelen=26  pri=17307
+ord=8  pseudo=72  hardreg=16 nrefs=35 livelen=122 pri=14344
+ord=9  pseudo=138 hardreg=65 nrefs=6  livelen=9   pri=13333   <- b*factor product
+ord=10 pseudo=130 hardreg=9  nrefs=6  livelen=11  pri=10909
+ord=11 pseudo=101 hardreg=3  nrefs=4  livelen=8   pri=10000
+ord=12 pseudo=129 hardreg=10 nrefs=6  livelen=12  pri=10000
+ord=13 pseudo=110 hardreg=11 nrefs=13 livelen=56  pri=6964
+ord=14 pseudo=115 hardreg=12 nrefs=15 livelen=73  pri=6164
+ord=15 pseudo=116 hardreg=13 nrefs=11 livelen=54  pri=6111
+ord=16..23: pseudos 74,73,78,77,76,75,100 on 17..23,30
+```
+hardreg 64 = HI, 65 = LO on this config. So pseudo 138 (the `b * factor` mulsi3 result,
+`pref LO_REG, else GR_REGS` in the .lreg register table) is seated in **LO** by global.c's
+first pass; it reaches `$v0` only through reload's retry path — the .greg dump prints
+`Register 138 now in 2` (tools/gcc-2.7.2/global.c:1317 `retry_global_alloc`). s23's
+"find_reg first-fit hands it regno 2" is therefore the wrong pass.
+
+`BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1` — local-alloc quantities in block 10 (the blend arm):
+```
+ord=0  qty=18 reg1=152 birth=46 death=56 refs=24 got=2   ($v0)
+ord=1  qty=16 reg1=132 birth=36 death=50 refs=24 got=3   ($v1)
+ord=2  qty=0  reg1=125 birth=4  death=6  refs=6  got=2   ($v0)
+ord=3  qty=5  reg1=127 birth=12 death=14 refs=6  got=2   ($v0)
+ord=4  qty=10 reg1=137 birth=20 death=22 refs=6  got=2   ($v0)
+ord=5  qty=17 reg1=149 birth=42 death=54 refs=18 got=4   ($a0)
+ord=6  qty=15 reg1=131 birth=30 death=48 refs=18 got=5   ($a1)
+ord=7..18: qty 1-14 (the HI/LO halves of the six multiplies), got=64/66
+```
+Four local quantities already reach `$v0` inside the residual's own block, three of them
+matching the target byte-for-byte (`srl $v0,$a0,2`, `srl $v0,$a0,7`, `andi $v0,$t0,0x1F`).
+s23's frontier item 1 ("make a local quantity reach $v0") is therefore already satisfied
+and is not the lever.
+
+### E-s24-4 Scores measured this session (all on the p2 chassis, `sandbox --disable all`)
+```
+baseline p2 = memory/grind/func_8003DE14/candidate.c ............ 12  (173/173 elided)
+FAKE ablation
+  a1 drop the g_src chain extender (b_shift = sum >> 5) ......... 40   (cost 28)
+  a2 drop the j chain extender (LoadImage((s32)dst_buf)) ........ 19   (cost 7)
+  a3 drop both .................................................. 38
+statement re-ordering / hoists
+  b1 sum = b * factor + px ...................................... 12  (tie, same rows)
+  b2 blue source statements above the green channel ............. 33  (174 insns)
+  b3 s32 bf = b * factor hoisted to the per-row block ........... 41
+  b4 all three *factor products hoisted to the per-row block .... 50  (174 insns)
+  b5 whole blue channel block above the green one ............... 43  (174 insns)
+  b6 arm declaration order reversed ............................. 12  (tie, same rows)
+cross-channel carrier sharing
+  c1 rp carries red+green complement products ................... 33
+  c2 r_src carries red+green *factor products ................... 53  (175 insns)
+  c3 both .......................................................  51
+  c4 rp carries all three complement products ................... 53
+  c5 rp also carries the green source byte ...................... 87  (166 insns)
+operand order / scope / statement splits
+  d1 (r_src + rp) ............................................... 12  (tie, same rows)
+  d2 (g_src + gp) ............................................... 12  (tie, same rows)
+  d3 all three sums' operands swapped ........................... 12  (tie, same rows)
+  e1 rp/gp declared at the per-row outer scope .................. 12  (tie, same rows)
+  e2 red channel routed through `sum` then shifted .............. 44
+  e3 green mask split into its own statement .................... 25
+```
+The c1 body's aligned diff was read in full: the red add is still tied
+(`addu $a1,$t5,$a1`) and the green add likewise (`addu $v1,$t5,$v1`) even though `rp` now
+dies in two places — i.e. the tie SURVIVES the `reg_qty < 0` condition that
+`combine_regs` (tools/gcc-2.7.2/local-alloc.c:1784) bails on. That is the single most
+useful negative of the session: the working model inherited from s23 (combine_regs ties
+the sum to its operand) is not yet confirmed and may be wrong.
+
+- [s24] engine/score.py:183 normalized_insns() calls objdump WITHOUT -z, so runs of two or more identical zero words are elided as '...' on both the reference and the candidate; the engine's target_insns/build_insns of 173 are zero-elided counts. objdump -t reports size 0x2cc = 716 bytes = 179 instructions for func_8003DE14 in BOTH build/src/code6cac_c2.o and tmp/sandbox/func_8003DE14/code6cac_c2.o.
+
+- [s24] The target's three `nop; nop` pairs (after each mflo, asm/funcs/func_8003DE14.s rows t97/98, t105/106, t113/114) are ALREADY reproduced by our build; func_8003DE14 is not in multu_pad_funcs.txt and does not need to be - tools/multu_pad.py pads the mult-to-mflo gap, which is a different hazard.
+
+- [s24] The exact 12-row residual on the p2 body (target | ours): t117 addu $v0,$t2,$a1 | addu $a1,$t2,$a1 ; t118 sra $a1,$v0,15 | sra $a1,$a1,15 ; t120 addu $v0,$t1,$v1 | addu $v1,$t1,$v1 ; t121 sra $v1,$v0,10 | sra $v1,$v1,10 ; t123 mflo $t7 | mflo $v0 ; t124 addu $v0,$a0,$t7 | addu $a0,$a0,$v0 ; t125 sra $a0,$v0,5 | sra $a0,$a0,5 ; t129 andi $v1,$a0,0x7C00 | andi $a0,$a0,0x7C00 ; t130 or $v0,$v0,$v1 | or $v0,$v0,$a0 ; t133 lh $v0,4($s0) | lh $v1,4($s0) ; t134 lh $v1,6($s0) | lh $v0,6($s0) ; t136 mult $v0,$v1 | mult $v1,$v0.
+
+- [s24] BB2_ALLOC_DEBUG on the p2 body: ord=0 pseudo=118 hardreg=2 nrefs=9 livelen=3 pri=90000; ord=9 pseudo=138 (b*factor) hardreg=65 (LO) nrefs=6 livelen=9 pri=13333; ord=10 pseudo=130 hardreg=9 pri=10909; ord=12 pseudo=129 hardreg=10 pri=10000. The .greg dump prints 'Register 138 now in 2' - it reaches $v0 only through reload's retry_global_alloc (tools/gcc-2.7.2/global.c:1317), not through global.c's first-pass find_reg.
+
+- [s24] BB2_QTY_DEBUG for block 10 (the blend arm): ord=0 qty=18 reg1=152 birth=46 death=56 got=2; ord=2 qty=0 reg1=125 birth=4 death=6 got=2; ord=3 qty=5 reg1=127 birth=12 death=14 got=2; ord=4 qty=10 reg1=137 birth=20 death=22 got=2; ord=1 qty=16 got=3; ord=5 qty=17 got=4; ord=6 qty=15 got=5. Local quantities DO reach $v0 in the residual's own block, and three of them already match the target byte-for-byte.
+
+- [s24] Session score table (all sandbox --disable all, p2 chassis, baseline 12): a1 40, a2 19, a3 38; b1 12, b2 33, b3 41, b4 50, b5 43, b6 12; c1 33, c2 53, c3 51, c4 53, c5 87; d1 12, d2 12, d3 12, e1 12, e2 44, e3 25.
+
+- [s24] The c1 body (rp carrying two channels' complement products, so rp dies in two places and its reg_qty goes negative) STILL emits the tied red add `addu $a1,$t5,$a1` and the tied green add `addu $v1,$t5,$v1`. The combine_regs model for the tie is therefore unconfirmed - s25 must decide it from the dump before spelling anything.
+
+- [s24] tmp/grind/func_8003DE14/s24/ed2.py is the corrected residual reader (objdump -dz, branch-target masking, objdump-spelling canonicalisation, 1:1 difflib alignment); tmp/grind/func_8003DE14/s23/sxs.py has the zero-eliding mis-alignment bug and should not be copied forward.

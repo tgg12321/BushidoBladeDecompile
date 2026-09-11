@@ -72,6 +72,24 @@
  *   `((s32)dst_buf + j) - j`   - the j price extender
  * `sum` remains an ordinary named intermediate; the px reuse is the sanctioned
  * variable-reuse family and needs no annotation.
+
+ * [s24 CORRECTION - read before spending the pass attribution above]
+ *   (1) The engine's 173/173 counts are objdump ZERO-ELIDED counts.  Both this
+ *       object and the reference are 0x2cc = 716 bytes = 179 instructions; the
+ *       three `nop; nop` pairs after the mflo's already match.  Use
+ *       tmp/grind/func_8003DE14/s24/ed2.py (objdump -dz, 1:1 aligned) to read
+ *       the residual - s23's sxs.py mis-aligns by 6 rows from t97 onward.
+ *   (2) The residual is exactly 12 rows and they are 4 seats of ONE shape: the
+ *       target routes each channel sum (and the blue mask, and the latch's
+ *       first load) through a FRESH register and writes the final value back
+ *       into the operand's register one insn later; ours collapses both steps
+ *       onto the operand's register.
+ *   (3) BB2_ALLOC_DEBUG on THIS body shows pseudo 138 (b*factor) is seated in
+ *       LO (hardreg 65) by global.c's first pass, ord=9 pri=13333; it reaches
+ *       $v0 only via reload's retry_global_alloc (.greg "Register 138 now in
+ *       2").  And BB2_QTY_DEBUG shows four block-10 LOCAL quantities already
+ *       get $v0.  So "no local quantity can reach $v0" is false, and the
+ *       find_reg first-fit story in the paragraph above names the wrong pass.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];

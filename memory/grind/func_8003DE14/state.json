@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 23,
- "current_modality": "rederive",
+ "session_count": 24,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -141,60 +141,34 @@
    "floor": 12,
    "modality": "rederive",
    "headline": "Floor 14 -> 12: reusing `px` as the blue channel's carrier lands the target's $a0 blue seat, and the .lreg dump names the single remaining cause of all 12 rows - the `b * factor` mulsi3 result is a LO"
+  },
+  {
+   "session": 24,
+   "floor": 12,
+   "modality": "structural",
+   "headline": "Floor holds at 12; the residual is re-measured EXACTLY (objdump -z: both streams are 179 insns, the nop pairs already match) and resolves into one shape - the target routes each sum through a fresh re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 12-row residual falls if regno 2 leaves the `b * factor` allocno's first-fit reach - specifically if a LOCAL quantity is seated on $v0 by local-alloc and its range overlaps RTL insns 253-260 (that allocno's def-to-use window).",
-   "mechanism": "global.c's find_reg ORs into `used` every hard reg that global_conflicts recorded, and a pseudo local-alloc has already hard-numbered is recorded as a HARD-REG conflict for every overlapping allocno. The three channel sums ARE local quantities in the p2 body and two of them (red sum, insns 230-231; green sum, 241-243) already lie inside the window - they simply land on $a1/$v1 instead of $v0 because local-alloc seats them in quantity order without a suggestion.",
-   "next_probe": "On the p2 body, sweep C shapes that change which local quantity local-alloc seats FIRST in block 10 - e.g. lengthening the red sum's live range so it outranks the other local quantities in qty_compare order, or giving r_ch/g_ch a copy-suggestion via a plain reg-reg copy. Accept only forms with build_insns 173 whose BB2_ALLOC_DEBUG row for the b*factor allocno prints hardreg != 2; re-read tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg for the qty seats of regs 134/128/140 before spelling anything."
+   "hypothesis": "The sum-to-operand tie is NOT local-alloc's combine_regs but find_free_reg's scan order over the block-10 quantities - which would make the lever the quantity ORDER (qty_compare), not the operands' death counts.",
+   "mechanism": "combine_regs (tools/gcc-2.7.2/local-alloc.c:1784) bails when the source pseudo's reg_qty is negative, which is exactly what c1 produced for rp - yet c1's red add stayed tied. If the sum and its operand merely landed on the same hard register by find_free_reg's first-fit rather than sharing a quantity, every death-count lever tried in s23/s24 was aimed at the wrong predicate.",
+   "next_probe": "Re-run tmp/grind/func_8003DE14/s24/alloc.sh with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 on the p2 body and map block-10 qty18/reg152, qty16/reg132, qty17/reg149, qty15/reg131 onto the red sum, the green sum, rp, gp and px by cross-reading the RTL in tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg. Same qty => combine_regs; different qty, same hard reg => scan order. Only then spell C."
   },
   {
-   "hypothesis": "Dropping the b*factor allocno's priority below `gp` (10909) and `rp` (10000) makes it allocate late enough that regno 2 is already taken.",
-   "mechanism": "pri = floor_log2(nrefs)*nrefs*10000/livelen; the allocno is currently ord=10 with nrefs=6, livelen=10, pri=12000, i.e. ahead of both other mult results. Lengthening its livelen without adding a reference (the `mult` emitted earlier or the `mflo` consumed later) lowers pri, and a lower ord means find_reg sees a fuller `used` set.",
-   "next_probe": "Sweep source orderings that move the `b * factor` multiplication earlier or its consumption later WITHOUT naming it as a local (s1-s5 proved naming it is fatal) - e.g. reordering the blue sum's operands, or interleaving the blue source computation between the red and green channels so the scheduler hoists the mult. Score only forms with build_insns 173 and read the BB2_ALLOC_DEBUG ord/pri row for the allocno each time."
+   "hypothesis": "Row t123 (mflo $t7 vs mflo $v0) is decided in reload's retry_global_alloc, not in global.c's first pass, so the lever is whatever keeps pseudo 138's LO seat satisfiable or changes the retry's forbidden/used set.",
+   "mechanism": "BB2_ALLOC_DEBUG shows pseudo 138 seated at hardreg 65 (LO) with ord=9 pri=13333; the .greg then reports 'Register 138 now in 2'. The target's $t7 is a register global.c never hands out in our build at all, so the retry's first-fit order is what has to move.",
+   "next_probe": "Run the instrumented cc1 with BB2_RELOAD_DEBUG=1 on the p2 body and read the RETRYDBG forbidden / conflicts / used_so_far sets for allocno 138; then sweep C shapes that change reg 138's nrefs/livelen WITHOUT naming it as a local (s23 s1-s5 killed naming) - e.g. consuming the blue sum one statement later - accepting only forms whose BB2_ALLOC_DEBUG row for 138 changes ord or pri."
   },
   {
-   "hypothesis": "One of the two s21 F1 chain extenders may no longer be needed on the px-reuse chassis - the g_src price extender is the weaker of the two and the blend arm's allocation changed materially this session.",
-   "mechanism": "The s22 ablation numbers (d2 minus the g_src extender = 23, minus the j extender = 21, neither = 28) are d2-relative, and the px reuse removed an entire pseudo (b_src) from the arm, changing both the allocno order and g_src's competition for $v1.",
-   "next_probe": "Run tools/fake_ablate.py on memory/grind/func_8003DE14/candidate.c (the p2 body) as the FIRST probe of s24, before any new spelling work; if the g_src extender's ablation cost has collapsed, the ordinary-C sweep for g_src's price (frontier item 3 of s22) reopens on a much cheaper chassis."
+   "hypothesis": "The LICM axis is un-probed on this chassis: r*factor, g*factor and b*factor are all invariant with respect to the INNER loop, yet the target recomputes all three inside it (t95-t115).",
+   "mechanism": "If GCC 2.7.2 hoists any of the three out of the inner loop in our build and the target does not, the whole arm's allocno set differs from the target's for a reason no register-seat lever can reach, and .claude/rules/defeat-licm-hoist-var-reuse.md (whose line 43 already cites this very function) names the ordinary-C counter-shape.",
+   "next_probe": "Read tmp/grind/func_8003DE14/dumps/code6cac_c2.loop for the inner loop's movables and whether any *factor multiply is hoisted; if one is, apply the var-reuse counter-shape from that rule to the hoisted product only and re-measure."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 9,
-   "statement": "Moving dst's birth as late as C allows shrinks its live_length by only 5 insns (58 -> 53) against the 20 the seat needs, measured in C rather than in the model.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), forms tmp/grind/func_8003DE14/s9/c1.c c2.c c3.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "c1 src 32/59 -> $a2, dst 26/57 -> $a3, 43. c2 dst 26/59 -> $a3, src 32/57 -> $a2, 43. c3 src 32/59 -> $a2, dst 26/53 -> "
-  },
-  {
-   "session": 9,
-   "statement": "Declaring dst in an inner scope creates the first allocno that conflicts with src but not with dst - the precondition for an $a2 blocker - but the only such allocno sits at priority 11428 against the ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, f1 / c1 / c3 chassis (43 / 43 / 44, 173 insns), no FAKE constructs",
-   "predicate_cite": "",
-   "result": "f1 and c1 are perfectly symmetric (no src-only and no dst-only conflicts). c3 breaks the symmetry for the first time: ps"
-  },
-  {
-   "session": 9,
-   "statement": "Index-addressed cursors (src_buf[j] / dst_buf[j], no pointer variables) are the wrong shape class: loop.c strength-reduces both into single-update givs and the emitted stream loses eight instructions.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, f1-derived ix1 chassis (56 / 165 insns), form tmp/grind/func_8003DE14/s9/ix1.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "56 / 165 instructions - eight short of the target's 173 and the worst score of any structurally complete form on this fu"
-  },
-  {
-   "session": 10,
-   "statement": "Spelling the same reference lift as a self-assign of dst at the same inner-loop site leaves dst's reg_n_refs at 26 and the allocation unchanged.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), f1 chassis (43 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s10/r1.c",
-   "predicate_cite": "",
-   "result": "KILLED. Score 43 / build_insns 173 - bit-identical to the unmodified f1 chassis. Banked as memory/grind/func_8003DE14/re"
-  },
   {
    "session": 10,
    "statement": "Diverting src off $a2 inside find_reg's pass 0, by getting hard reg 6 into regs_someone_prefers[108], is not reachable from C in func_8003DE14 because hard reg $a2 is never a register-copy endpoint in",
@@ -642,6 +616,38 @@
    "measured_on": "HEAD 2026-09-11; p2 chassis 12/173 (u-series) and d2 chassis 14/173 (q-series), both s21 F1 chain extenders present",
    "predicate_cite": "",
    "result": "u1 70, u2 13, u3 42, u4 12 (tie, same rows), u5 23; q4 14 and q5 14 with a residual byte-identical to d2. None of these "
+  },
+  {
+   "session": 24,
+   "statement": "Both s21 F1 chain extenders are still load-bearing on the p2 px-reuse chassis: the g_src extender's price did not collapse when the blue channel lost its b_src pseudo.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); p2 chassis 12/173, ablating each s21 F1 chain extender in turn",
+   "predicate_cite": "",
+   "result": "a1 40, a2 19, a3 38 against the 12 baseline - the g_src extender is worth 28 on this chassis and the j extender 7. s23 f"
+  },
+  {
+   "session": 24,
+   "statement": "Sharing one C carrier across channels for the complement products or for the *factor products unties the sum-to-operand register tie.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present",
+   "predicate_cite": "",
+   "result": "c1 33, c2 53 (175 build insns), c3 51, c4 53, c5 87 (166 build insns). Crucially the c1 diff shows the red add STILL tie"
+  },
+  {
+   "session": 24,
+   "statement": "The sum-to-operand tie is decidable by the sum expression's operand order, by the declaration scope of the product locals, or by splitting the shift and the mask into separate statements.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present",
+   "predicate_cite": "",
+   "result": "d1 12, d2 12, d3 12, e1 12 - all four print a byte-identical 12-row residual to p2. e2 44, e3 25. Operand order is canon"
+  },
+  {
+   "session": 24,
+   "statement": "Re-ordering the blend arm at statement granularity - hoisting the *factor products to the per-row block, moving the blue source above the green channel, swapping the blue and green channel blocks, or ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present",
+   "predicate_cite": "",
+   "result": "b1 12 (tie, same rows), b6 12 (tie, same rows), b2 33 (174 build insns), b3 41, b4 50 (174 build insns), b5 43 (174 buil"
   }
  ],
  "ladder_skip": 0,
