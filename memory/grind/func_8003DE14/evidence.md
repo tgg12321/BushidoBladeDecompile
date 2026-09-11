@@ -2387,3 +2387,203 @@ both an overshoot and a byte cost.
 - [s19] The tension that makes this the last residual: reorg's delay-slot fill wants j's def to be the last pre-branch insn (h1, head byte-exact), but whichever of j / complement is defined FIRST gets the longer live range and hence the LOWER priority, so the def order that wins the slot is exactly the one that loses the seat. The incumbent 26 form takes the opposite trade (seats right, 4-insn head residual).
 
 - [s19] target and build are both 173 insns in every form measured this session except the arm-duplication ladder (174/175), which confirms the residual remains purely register-naming plus the one reorg rotation.
+
+
+## S20 (forensics) — the seat model is now complete, and two of s19's premises were wrong
+
+Chassis re-measured at dispatch (all three reproduce, all 173 / 173 insns):
+`candidate.c` = **26**, `chassis_s18_h1_head_exact_28.c` = **28**,
+`chassis_s19_f1_jfirst_livelen61_30.c` = **30**.  Nothing was chassis-void.
+
+### CORRECTION 1 — s19 labelled the incumbent's pseudos backwards
+
+s19 recorded "complement pri 6111 -> $t4, j pri 5593 -> $t5" as if the *incumbent*
+shared h1's seat inversion.  It does not.  Pseudo numbers follow **declaration
+order**, and the incumbent declares `complement` BEFORE `j` inside the guard, so in
+the incumbent p115 = complement and p116 = j — the opposite of h1, where `j` is a
+head declaration (p115) and `complement` the guard declaration (p116).  Both alloc
+tables print "p115 -> hardreg 12, p116 -> hardreg 13"-shaped rows, but they mean
+opposite things:
+
+    incumbent (26): ord=15 p116 = j          nrefs 11 LL 54 pri 6111 -> hardreg 12 = $t4  CORRECT
+                    ord=16 p115 = complement nrefs 11 LL 55 pri 6000 -> hardreg 13 = $t5  CORRECT
+    h1        (28): ord=15 p116 = complement nrefs 11 LL 54 pri 6111 -> hardreg 12 = $t4  WRONG
+                    ord=16 p115 = j          nrefs 11 LL 59 pri 5593 -> hardreg 13 = $t5  WRONG
+
+global.c allocates in DESCENDING allocno_pri and hands each allocno the lowest free
+hard register, so the HIGHER-priced member of the pair takes $t4.  (tmp/grind/
+func_8003DE14/s20/alloc_base26, alloc_h1, alloc_e2, alloc_e3, alloc_e4.)
+
+Note for future probes: `allocno_compare` (tools/gcc-2.7.2/global.c:650-654) breaks an
+exact priority TIE by lower allocno number, i.e. by declaration order — so the
+declaration-site renumbering lever s16 proved byte-neutral WOULD decide this pair if
+the two priorities were ever equal.  At nrefs 11/11 that requires equal live lengths,
+and the two defs are adjacent by construction (see below), so a tie is not reachable.
+
+### CORRECTION 2 — declaration order and ASSIGNMENT order are INDEPENDENT levers
+
+s18's h5/h6 probe concluded "declaration-order respelling does not reach this pair".
+That is true for the pseudo NUMBER, but the pair is decided by `allocno_pri`, and
+**`reg_live_length` follows the ASSIGNMENT order** while the pseudo number follows the
+DECLARATION order.  Measured, all 173 insns:
+
+    e2  decl j,complement  / assign j,complement        score 30  (j LL 55, comp LL 54)
+    e3  decl complement,j  / assign j,complement        score 30  (j LL 55, comp LL 54)
+    e4  decl j,complement  / assign complement,j        score 26  (j LL 54, comp LL 55)
+    base26 decl complement,j / assign complement,j      score 26  (j LL 54, comp LL 55)
+
+So the rule is simply: **whichever of the pair is ASSIGNED first gets the longer live
+range and therefore the LOWER priority**, and at equal nrefs the later-assigned one
+takes $t4.  e4 is banked as `chassis_s20_e4_decl_assign_split_26.c` — a second,
+independent 26 with the declaration/assignment orders split, which is the form to
+perturb if a future probe needs the incumbent's seats with h1's pseudo numbering.
+
+### The target's head block is SPLIT BY THE DIVISION'S TRAP CHECKS (new, decisive)
+
+Reading asm/funcs/func_8003DE14.s:50-80 rather than the score: `factor`'s `div`
+expands to `div $zero,$v0,$s2` followed by PsyQ's divide-by-zero / INT_MIN trap
+checks (`bnez $s2` + `break 7`, `bne $s2,$at` + `lui` + `bne $v0,$at` + `break 6`),
+each of which is a BRANCH.  The block that ends in `blez $v1` therefore contains
+exactly TWO insns in the target: `mflo $t3` and the `blez` itself.  Consequences:
+
+  * reorg.c's backward scan inside `fill_simple_delay_slots` has almost nothing to
+    choose from in the target; the slot insn `addu $t4,$zero,$zero` is j's def and
+    `subu $t5,$fp,$t3` (complement) immediately follows it at row 76.
+  * in h1 our `move j,zero` sits in that same two-insn block (it is emitted after
+    `factor` and before the guard compare), which is why the backward scan takes it
+    and the head becomes byte-exact — confirming s18's attribution.
+  * in the incumbent / e4 that block holds no eligible insn of its own, so reorg's
+    backward scan (which runs BEFORE any fall-through attempt) walks further back and
+    takes `addiu a2,sp,1040`, which is the 4-insn head residual.  e2/e3 (j assigned first inside the guard, so `move j,zero` IS the
+    first fall-through insn) still score 30, i.e. reorg does NOT take it from the
+    fall-through either — the fall-through route is not available here.
+
+This makes the h1-vs-incumbent trade structural, not accidental: **j's def must sit
+in the blez's own basic block to win the delay slot, and any def in that block
+necessarily precedes complement's def, which necessarily makes LL(j) > LL(complement)
+and hence pri(j) < pri(complement) at equal nrefs.**  Minimum observed gap is 1
+insn (e2/e3: 55 vs 54, pri 6000 vs 6111), so even the tightest spelling loses.
+
+### The target's own reference counts are IDENTICAL to ours (11 / 11)
+
+asm/funcs/func_8003DE14.s: $t4 (j) appears exactly 3 times — row 75 `addu $t4,$zero,$zero`
+(def, depth 2), row 148 `addiu $t4,$t4,1` (set+use, depth 3), row 150 `slt $v0,$t4,$t6`
+(use, depth 3) = 2 + 6 + 3 = 11.  $t5 (complement) appears 4 times — row 76 `subu`
+(def, depth 2) and rows 104 / 112 / 120 `mult` (depth 3) = 2 + 9 = 11.  So the ORIGINAL
+source's post-combine reference structure is exactly ours; any difference must be in
+references that existed before `flow.c` ran and were removed afterwards.
+
+### THE BYTE-NEUTRAL reg_n_refs ADDER EXISTS, AND IT IS QUANTIZED AT +2*loop_depth
+
+`toplev.c:2984` runs `flow_analysis` (which fills `reg_n_refs` / `reg_live_length`)
+BEFORE `combine_instructions` at `toplev.c:3004`, and life analysis is never re-run —
+so a reference on an insn that combine later folds away is counted permanently.
+Measured this session with the `(S + P) - P` passenger form, where S is the real
+subject and P the passenger whose count we want to lift:
+
+    d3  `b_shift = (((bp + j) - j) + b_src) >> 5;`  (depth 3)
+          build_insns 173  (BYTE-NEUTRAL)   nrefs(j) 11 -> 17, LL(j) 59 unchanged,
+          pri 11525, j allocated at ord=11 and takes hardreg 9 ($t1).  score 33.
+    d2  `jt = j + factor; jt = jt - factor;` on the latch operand (depth 3)
+          build_insns 173  (BYTE-NEUTRAL)   nrefs(factor) 13 -> 19 (pri 13333),
+          nrefs(j) UNCHANGED at 11.  score 34.
+    d5  d3 on the f1 chassis: 173, nrefs(j) 17, LL 61, pri 11147.  score 35.
+
+Two rules fall out, and they are the whole story of this axis:
+  (a) the pattern is **ref-conserving for the subject and ref-DOUBLING for the
+      passenger** — d2 proves it: spelling the chain with j as the subject moved j's
+      latch reference onto the chain insn and left nrefs(j) at 11, while `factor`
+      (the passenger) gained +6.  So to lift X, X must ride as the passenger.
+  (b) the lift is **+2 per reference-pair times the loop depth**, i.e. +2 at depth 1,
+      +4 at depth 2, +6 at depth 3.  There is no ODD lift: every identity that
+      cancels a passenger reads it twice.
+
+### …AND IT IS UNAVAILABLE FOR `j`, BECAUSE cse2 KNOWS `j == 0` EVERYWHERE OUTSIDE THE INNER LOOP
+
+The window from s19 stands (pri(j) must land strictly inside (6111, 6964)).  Combined
+with (b), the reachable prices for j are:
+
+    nrefs 11          pri 330000/LL   window needs LL 48..53   (LL >= 55 forced, see above)
+    nrefs 13 (+2 passenger) pri 390000/LL   window needs LL 56..63   <-- h1's LL 59 = 6610 HITS
+    nrefs 15 (+4 passenger) pri 450000/LL   window needs LL 65..73
+    nrefs 17 (+6 passenger) pri 680000/LL   window needs LL 98..111  (> whole loop)
+
+The bullseye is therefore a DEPTH-1 passenger (+2) on the h1 chassis.  Measured dead:
+every passenger site outside the inner loop is folded by cse2 before flow.c counts,
+because `j` is a known constant 0 at every such point.  Three spellings, all 173 insns
+with alloc tables byte-identical to h1's (nrefs(j) 11, LL 59, pri 5593, score 28):
+
+    p1  `s32 complement = ((blend_base - factor) + j) - j;`   (depth 2, inside guard)
+    p5  `if (((total + j) - j) > 0) {`                        (depth 2, the guard test)
+    p8  `s32 blend_base = (0x1000 + j) - j;` with `s32 j = 0;` hoisted to the
+        `if (count > 0)` block                                (depth 1)
+
+and `(j - j)` (d4) is folded by fold-const at tree level before cse2 even sees it.
+This closes the gap s19 left open: the +2/+4 lifts are not merely "hard to spell",
+they are removed by the same cse2 constant-propagation that killed s19's c2/c4, and
+the only depth at which a j passenger survives is depth 3, where the quantum is +6.
+
+### The livelen side of the window is pinned in both directions
+
+  * `factor` LL is 56 in EVERY head spelling measured across s19 and s20 — including
+    factor first / second / third in the head (g1/g2/g3, all 28) and splitting the
+    numerator into a named `s32 num = (i + 1) << 12;` local (g4, 28).  Its def is the
+    `mflo` that the trap-check blocks pin immediately before the `blez`.
+  * `complement` LL is 54 whenever it is assigned second and 55 whenever assigned
+    first; it cannot exceed that because complement's live range is a strict SUBSET
+    of j's whenever j's def is in the blez block, and extending it past the inner
+    loop needs a post-loop USE (a def does not extend a range, and a dead store is
+    deleted by flow.c:1490 before `mark_used_regs` runs, so it is never counted).
+  * padding j's live range with byte-neutral neutral-passenger insns inside the guard
+    (p6 `dst = (dst + total) - total;`, p7 also on `src`) does lengthen BOTH ranges
+    (j 62 / 63, complement 55 / 56) but lifts the padded variables' own counts and
+    re-prices the whole blend arm: 50 / 50, both 173 insns.
+
+### Raw numbers, all measured on HEAD 2026-09-10, all 173 build / 173 target insns
+
+    base26 26 | h1 28 | f1 30 | g1 28 | g2 28 | g3 28 | g4 28
+    d1 28 | d2 34 | d3 33 | d4 28 | d5 35
+    e2 30 | e3 30 | e4 26
+    p1 28 | p2 30 | p5 28 | p6 50 | p7 50 | p8 28
+
+- [s20] Chassis re-measured at dispatch: candidate.c 26/173, chassis_s18_h1_head_exact_28.c 28/173, chassis_s19_f1_jfirst_livelen61_30.c 30/173, all on HEAD 2026-09-10. No banked conclusion was chassis-void.
+- [s20] s19's pseudo->variable mapping for the INCUMBENT was inverted: pseudo numbers follow DECLARATION order, so the incumbent (complement declared first) has p115 = complement and p116 = j, while h1 (j declared in the head) has p115 = j and p116 = complement. The incumbent's seats are correct (j pri 6111 -> $t4), h1's are not.
+- [s20] reg_live_length follows ASSIGNMENT order and the pseudo number follows DECLARATION order, and the two are independent levers: e3 (decl complement,j / assign j,complement) = 30 and e4 (decl j,complement / assign complement,j) = 26. Whichever of the pair is assigned FIRST gets the longer live range and the lower priority.
+- [s20] The target's `blez $v1` sits in a TWO-INSN basic block (`mflo $t3` + the blez), because `factor`'s division expands to PsyQ trap checks (`bnez $s2`/`break 7`, `bne $s2,$at`/`bne $v0,$at`/`break 6`) that split the head into four blocks (asm/funcs/func_8003DE14.s:50-80).
+- [s20] Therefore j's def must sit in the blez's own block to win the delay slot, and any insn in that block precedes complement's def, so LL(j) > LL(complement) in every head-exact spelling; the minimum observed gap is 1 insn (e2/e3: 55 vs 54 -> pri 6000 vs 6111).
+- [s20] The TARGET's own reference counts equal ours exactly: $t4 = 3 occurrences (def depth 2, addiu set+use depth 3, slt use depth 3) = 11 weighted; $t5 = 4 occurrences (def depth 2, three mults depth 3) = 11 weighted.
+- [s20] flow_analysis (toplev.c:2984) runs once, BEFORE combine_instructions (toplev.c:3004), and is never re-run, so references on insns that combine later folds away are counted permanently in reg_n_refs and reg_live_length.
+- [s20] The `(S + P) - P` chain extender is BYTE-NEUTRAL here (d2, d3, d5 all build 173 insns) and lifts the PASSENGER's reg_n_refs by 2 per loop-depth level while leaving the SUBJECT's count unchanged: d3 took nrefs(j) 11 -> 17 at depth 3, d2 took nrefs(factor) 13 -> 19 and left nrefs(j) at 11.
+- [s20] The lift quantum is even by construction (every cancelling identity reads the passenger twice), so nrefs(j) can only be 11, 13, 15 or 17 — and 13 (depth 1) / 15 (depth 2) are unreachable because cse2 constant-folds any j-reading expression outside the inner loop, where j is provably 0: p1 (depth 2 on complement), p5 (depth 2 on the guard test) and p8 (depth 1 on blend_base) all return alloc tables byte-identical to h1's.
+- [s20] nrefs(j) = 17 at LL 59-61 prices j at 11147-11525, which lifts it to ord=11 and hands it hardreg 9 ($t1) (d3, d5) — above the 10000/10909 allocnos that must stay ahead of it for the $t4 seat.
+- [s20] livelen(factor) is 56 in every head spelling measured (g1 factor first, g2 second, g3 third, g4 numerator split into a named local) — its def is the `mflo` pinned before the blez by the trap-check blocks, so the window's upper bound 6964 cannot be raised from the head.
+- [s20] Byte-neutral live-range padding inside the guard (p6 `dst = (dst + total) - total;`, p7 plus the same on `src`) lengthens j to 62/63 and complement to 55/56 but re-prices the blend arm: both score 50 at 173 insns.
+- [s20] flow.c:1490 (`if (final && insn_is_dead)` -> PUT_CODE NOTE, `goto flushed`) is the predicate that makes every dead store invisible to reg_n_refs: the deletion happens before mark_set_regs / mark_used_regs run for that insn.
+
+- [s20] Chassis re-measured at dispatch: candidate.c 26/173, chassis_s18_h1_head_exact_28.c 28/173, chassis_s19_f1_jfirst_livelen61_30.c 30/173, all on HEAD 2026-09-10; nothing was chassis-void.
+
+- [s20] Pseudo numbers follow DECLARATION order and reg_live_length follows ASSIGNMENT order; the two are independent levers (e3 = decl complement,j / assign j,complement scores 30; e4 = decl j,complement / assign complement,j scores 26).
+
+- [s20] s19's pseudo-to-variable mapping for the incumbent was inverted: the incumbent has p115 = complement and p116 = j, so its seats are already the target's; only h1's are inverted.
+
+- [s20] The target's blez $v1 sits in a TWO-INSN basic block (mflo $t3 + the blez) because factor's division expands to PsyQ trap checks - bnez $s2 + break 7, bne $s2,$at, bne $v0,$at + break 6 - which split the head into four blocks (asm/funcs/func_8003DE14.s:50-80).
+
+- [s20] The target's own reference counts equal ours exactly: $t4 (j) occurs 3 times (def depth 2, addiu set+use depth 3, slt use depth 3) = 11 weighted; $t5 (complement) occurs 4 times (def depth 2, three mults depth 3) = 11 weighted. Any difference from the original must therefore lie in references that existed before flow.c ran and were removed afterwards.
+
+- [s20] flow_analysis (toplev.c:2984) runs once, before combine_instructions (toplev.c:3004), and is never re-run, so references on insns combine later folds away are permanent in reg_n_refs and reg_live_length.
+
+- [s20] The (S + P) - P chain extender is byte-neutral here (d2, d3, d5 all 173 insns) and lifts the PASSENGER by +2 per loop-depth level while leaving the SUBJECT unchanged: d3 took nrefs(j) 11 -> 17, d2 took nrefs(factor) 13 -> 19 and left nrefs(j) at 11.
+
+- [s20] The lift quantum is even because every cancelling identity reads the passenger twice, so nrefs(j) can only be 11, 13, 15 or 17; the window (6111, 6964) is hit by 13 at livelen 56-63 and by 15 at livelen 65-73, and missed by 17 (needs livelen 98-111).
+
+- [s20] Every passenger site outside the inner loop is constant-folded by cse2 before flow.c counts, because j is provably 0 there: p1 (depth 2 on complement), p5 (depth 2 on the guard test) and p8 (depth 1 on blend_base) all return alloc tables byte-identical to their baseline and score 28 / 28 / 28.
+
+- [s20] nrefs(j) = 17 at livelen 59-61 prices j at 11147-11525, which lifts it to ord=11 and hands it hardreg 9 ($t1) (d3, d5), above the 10000 / 10909 / 12000 allocnos that must stay ahead of it for the $t4 seat.
+
+- [s20] livelen(factor) is 56 in every head spelling measured (g1 factor first, g2 second, g3 third, g4 numerator named as a local), because its defining mflo is pinned into the pre-blez block by the trap-check blocks.
+
+- [s20] Byte-neutral live-range padding inside the guard (p6 `dst = (dst + total) - total;`, p7 also on src) lengthens j to 62/63 and complement to 55/56 but re-prices the blend arm: both 50 at 173 insns.
+
+- [s20] allocno_compare (tools/gcc-2.7.2/global.c:650-654) breaks an exact priority TIE by lower allocno number, i.e. by declaration order - so s16's byte-neutral declaration-site renumbering lever decides any tied pair, and the newly-isolated assignment-order lever is what creates or destroys ties.
+
+- [s20] Raw scores this session, all 173 build / 173 target insns: base26 26, e4 26, h1 28, g1 28, g2 28, g3 28, g4 28, d1 28, d4 28, p1 28, p5 28, p8 28, e2 30, e3 30, f1 30, p2 30, d3 33, d2 34, d5 35, p6 50, p7 50.

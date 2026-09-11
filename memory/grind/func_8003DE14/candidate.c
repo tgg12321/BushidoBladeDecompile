@@ -215,6 +215,39 @@
  *     regs_someone_prefers cannot steer the seat, because find_reg's pass 0 also
  *     excludes every register not yet used (global.c:1000) and both $t4 and $t5 are
  *     first-time assignments.
+ *
+ * S20 (forensics) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
+ * unchanged as the best known form.  s20 COMPLETED the seat model and corrected two
+ * s19 premises:
+ *   - s19 read the incumbent's alloc table with the pseudos swapped.  Pseudo numbers
+ *     follow DECLARATION order and reg_live_length follows ASSIGNMENT order, and the
+ *     two are INDEPENDENT levers (measured: e2 30, e3 30, e4 26, base26 26).  The
+ *     incumbent's seats are already the target's: j is p116, nrefs 11 / livelen 54 /
+ *     pri 6111 -> $t4; complement is p115, livelen 55 / pri 6000 -> $t5.  Only h1's
+ *     are inverted.  The alternative 26 with the orders split is banked as
+ *     chassis_s20_e4_decl_assign_split_26.c.
+ *   - The head-exact chassis and the target's seats are MUTUALLY EXCLUSIVE at nrefs
+ *     11.  factor's division expands to PsyQ trap checks that split the head into four
+ *     basic blocks, leaving `blez $v1` in a two-insn block (asm/funcs/func_8003DE14.s
+ *     :50-80), so the ONLY delay-slot candidate is j's own def - and any def in that
+ *     block precedes complement's, which makes livelen(j) > livelen(complement) and
+ *     inverts the priority compare.  The minimum gap is 1 insn (e2/e3: 55 vs 54, pri
+ *     6000 vs 6111) and still loses.
+ *   - NEW, REUSABLE TOOL: `(S + P) - P` is a BYTE-NEUTRAL reg_n_refs adder here
+ *     (flow_analysis at toplev.c:2984 runs before combine at toplev.c:3004 and is never
+ *     re-run).  It is ref-CONSERVING for the subject S and ref-DOUBLING for the
+ *     passenger P: d3 took nrefs(j) 11 -> 17 at 173 insns, d2 took nrefs(factor)
+ *     13 -> 19 and left j at 11.  The quantum is +2 per loop-depth level, so nrefs(j)
+ *     can only be 11 / 13 / 15 / 17.
+ *   - But 13 and 15 are UNREACHABLE: cse2 runs before flow.c and knows j == 0 at every
+ *     point outside the inner loop, so every depth-1 / depth-2 passenger folds away
+ *     (p1, p5, p8 all 28 with alloc tables identical to h1's).  Only depth 3 survives,
+ *     and +6 prices j at 11525, lifting it to ord=11 and hardreg 9 ($t1).
+ *   - Also killed: livelen(factor) is 56 in EVERY head spelling (g1/g2/g3 factor first/
+ *     second/third, g4 numerator named) - its `mflo` is pinned into the pre-blez block;
+ *     byte-neutral live-range padding (p6/p7) re-prices the blend arm (50/50); and a
+ *     dead store can never lift reg_n_refs (flow.c:1490 deletes it before
+ *     mark_used_regs runs - class kill).
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];

@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 19,
- "current_modality": "rederive",
+ "session_count": 20,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -117,60 +117,34 @@
    "floor": 26,
    "modality": "rederive",
    "headline": "Seat residual reduced to a closed-form window: pri(j) must land in (6111, 6964); three of the four ways to get there measured dead, livelen(j) proved controllable (59 -> 61)."
+  },
+  {
+   "session": 20,
+   "floor": 26,
+   "modality": "forensics",
+   "headline": "Forensics completed the j/complement seat model: the head-exact chassis and the target's seats are mutually exclusive at nrefs 11 (the division's trap checks leave the blez in a two-insn block), and t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C construct that adds exactly ONE depth-3 read of `j` inside the inner loop, paired with the f1 chassis (livelen 61), lands pri(j) at 6885 and produces the target's factor/$t3 + j/$t4 + complement/$t5 assignment - a 22-or-better form.",
-   "mechanism": "flow.c's life_analysis counts reg_n_refs BEFORE combine runs, so a reference whose carrying insn is removed by combine (not by cse2 and not by flow's own dead-store deletion) lifts nrefs without costing a byte. At depth 3 j is not a known constant, so cse2's constant folding - the thing that killed every depth-2 spelling this session - does not apply.",
-   "next_probe": "Install chassis_s19_f1_jfirst_livelen61_30.c (score 30, livelen(j)=61) and enumerate depth-3 j readers whose consumer cse2 cannot simplify but combine can: ((j << 1) >> 1), (j & ~0), a staged `jt = j` consumed by the trip test, and j read through a narrower type. After EACH build read the alloc table first (tmp/grind/func_8003DE14/s18/alloc.sh) and check nrefs for j - accept only nrefs 14 with build_insns still 173, and only then look at the score. Every spelling that materialises an insn is dead on arrival; if all of them do, the finding is that the +3 is unreachable in ordinary C and the next step is a ruling-request about the sanctioned F1 combine-foldable chain-extender (owner ruling 2026-07-01) applied to this pseudo."
+   "hypothesis": "The surviving route to the target's seats on the head-exact chassis is to keep the +6 depth-3 passenger lift on j (nrefs 17, pri 11525, byte-neutral and already measured) and simultaneously lift the three small allocnos that currently sit at ord 12-14 (pri 10000, 10909, 12000) above 11525 with their own byte-neutral passengers, so that the allocation ORDER keeps j at ord 15 where hardreg 12 is the lowest free register.",
+   "mechanism": "global.c allocates in descending allocno_pri and gives each allocno the lowest free hard register, so a seat is determined by ordinal position, not by priority magnitude. d3 showed that lifting j alone moves it to ord=11 where hardreg 9 is free; the fix is to lift everything that must precede it by the same kind of byte-neutral chain. The (S + P) - P extender is now a measured, byte-neutral, per-variable ref multiplier (+2 per loop-depth level), so the ord ladder is directly programmable.",
+   "next_probe": "Identify the variables behind pseudos p130 / p131 / p132 (nrefs 6, livelen 10-12) in tmp/grind/func_8003DE14/s20/alloc_h1/stderr.log by cross-referencing the .lreg dump, then sweep depth-3 passenger chains on each so their pri exceeds 11525 while j stays at ord 15. Read the alloc table after EVERY build (the ord column, not the score) and accept only tables whose ord 15 row is j with hardreg 12; build_insns must stay 173. Note that every such chain is an F1 combine-foldable chain-extender and would need a FAKE annotation plus the lever-exhaustion ledger, so if a table lands the seats the correct next step is a ruling-request naming the 2026-07-01 F1 grant, not a candidate-ready."
   },
   {
-   "hypothesis": "factor's priority ceiling (6964) can be raised by shortening livelen(factor) below 56, which widens the window to admit nrefs(j) = 14 on the cheaper h1/f4 chassis (score 28) instead of f1 (score 30).",
-   "mechanism": "pri(factor) = 3*13*10000/livelen; livelen 54 gives 7222 > 7118 = pri(j) at nrefs 14 / livelen 59. factor's def is the div/mflo pair, and s19 measured its livelen pinned at 56 across all five head orders - but those orders only moved `j = 0`, never the division itself relative to the cursor inits or the guard.",
-   "next_probe": "On the h1 chassis, sweep the position of the `factor` statement (and of the `(i + 1) << 12` numerator as a separate named local) through the head, reading livelen(factor) from BB2_ALLOC_DEBUG after each build rather than the score. Any spelling with livelen(factor) <= 54 that keeps the head's blez delay slot is the chassis on which a +3 depth-3 j reference pays at score 28 rather than 30."
+   "hypothesis": "The blend arm's 19-insn seat residual (px / g_src / b_src / r_src, s14-s16) is decidable by the newly-isolated ASSIGNMENT-order lever, because its pair is an exact 32727 priority TIE and global.c:654 breaks ties by declaration order - s16 only ever varied declaration sites, never the assignment order that sets livelen.",
+   "mechanism": "s14/s16 measured px at nrefs 12 / livelen 11 / pri 32727 tied with r_src, with the tie decided by the lower pseudo number, and found declaration-site renumbering byte-neutral across all 384 spellings. s20 proved livelen is set by assignment order independently of the pseudo number, so ties between the blend arm's carriers can be CREATED (by equalising livelen) and then steered by declaration order - a two-dimensional lattice s16 never explored, worth 19 of the remaining 26 points.",
+   "next_probe": "Re-run the s16 carrier harness (tmp/grind/func_8003DE14/s16/batch_alloc.py, carrier_alloc.json) on the chassis_s20_e4_decl_assign_split_26.c body, this time sweeping the declaration order and the assignment order of pixel / px / r_src / g_src / b_src as TWO independent axes. Filter on the alloc table first: keep only spellings where px and g_src print equal pri (a tie), then check which of them has the lower pseudo, and score only those."
   },
   {
-   "hypothesis": "The blend arm's 19-insn seat residual (px / g_src / r_src, s14-s16) prices differently on the h1 and f1 chassis than on the incumbent's, because the hoisted `j = 0` shifts the pseudo numbering and the head block's live ranges that the s16 1,483-form carrier lattice was measured against.",
-   "mechanism": "s16's carrier lattice and carrier_alloc.json were captured with j defined inside the guard. s19 confirmed that moving `j = 0` renumbers the pseudos (j is 115 / 110 / 101 depending on the head order) and changes livelen(j), which changes the seed of regs_used_so_far and the conflict sets global.c sees when it reaches the 32727 pair.",
-   "next_probe": "Re-run the s16 batch_alloc.py / carrier lattice harness (tmp/grind/func_8003DE14/s16/) against the h1 and f1 chassis and compare the alloc tables for the pseudos now holding px / g_src / b_src / r_src with s16/carrier_alloc.json. Any form whose blend seats improve there is worth scoring even though it was rejected at 34-38 on the incumbent chassis."
+   "hypothesis": "The 4-insn head residual the incumbent pays can be removed without touching the j / complement pair, by making `dst = dst_buf` ineligible for reorg's backward scan so the blez's slot is filled from the fall-through with j's def instead.",
+   "mechanism": "s18's BB2_DBR_DEBUG trace shows the backward scan rejecting trials 128 / 125 / 124 / 394 and accepting insn 121, `addiu a2,sp,1040`. In the target that insn sits at row 57, early in the head, and is NOT used for the slot - so in the original something between it and the branch made it ineligible. Eligibility is decided by refset / setset / setneed on the insn's destination, i.e. by whether $a2 is read or written between the insn and the jump, which is a source-side property of where the dst cursor is initialised and first used.",
+   "next_probe": "Re-run tools/grinder/dump.ps1 plus the s18 BB2_DBR_DEBUG harness on the INCUMBENT body (s18 traced it on h1) and read the trial list for the blez; then enumerate spellings that put a read or a write of the dst cursor between its initialisation and the guard branch without adding an insn - e.g. initialising dst from a second cursor, or deriving src from dst. s15's 96-form cursor declaration-site sweep only moved the declaration site and never targeted reorg eligibility, so it does not cover this."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 3,
-   "statement": "Declaring `s32 j = 0;` inside the `if (total > 0)` block shrinks j's live range enough to swap the j/complement pair into the target's $t4/$t5.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, forms tmp/grind/func_8003DE14/s3/body_c1.c, body_c2.c, body_d7.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "c1 = 44 (vs 43), c2 = 46, d7 = 33 (vs 31); every scoped form is worse and $t4/$t5 stayed swapped, so the achieved shrink"
-  },
-  {
-   "session": 3,
-   "statement": "s2's frontier claim that no remaining C-level regrouping of the same three terms can move -0x8000 onto the green term, so the fix would have to change which term heads the chain at tree level or chang",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, form tmp/grind/func_8003DE14/s3/body_a1.c plus its .rtl dump, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "DISPROVEN. a1 moves the constant onto green with no change to what any term is; the seven earlier spellings all attached"
-  },
-  {
-   "session": 4,
-   "statement": "Adding C-level references to dst in the zero-pixel arm (store-then-increment, indexed store, or the same split in the colour arm) raises reg_n_refs on the d4 chassis.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), d4 chassis (score 31/172), forms tmp/grind/func_8003DE14/s4/body_e1.c, body_e2.c, body_e3.c, body_e4.c, body_e6.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "KILLED. e1/e2/e4/e6 all measure 31 / 172, byte-identical to candidate.c: REG_N_REFS is counted by flow.c over RTL, and t"
-  },
-  {
-   "session": 4,
-   "statement": "Reducing src's reference count by hoisting the read and/or the increment out of the arms \u2014 the refs_down-on-108 half of the inverse.py solution \u2014 reaches the src/dst goal on the f1 chassis.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (score 43 / 173 insns), forms tmp/grind/func_8003DE14/s4/body_g1.c and body_g2.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "KILLED. g1 = 61 / 162 and g2 = 48 / 166 against a target of 173. The four `addiu a3,a3,2` the target carries in its arm "
-  },
   {
    "session": 4,
    "statement": "decomp-permuter, seeded on the d4 chassis and again on the f1 chassis, finds a semantics-preserving form below the banked floor of 31.",
@@ -618,6 +592,38 @@
    "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis alloc table at 28/173, no FAKE constructs present",
    "predicate_cite": "tools/gcc-2.7.2/global.c:1000",
    "result": "The exclusion applies only in pass 0, and pass 0 additionally ORs in the complement of regs_used_so_far with the comment"
+  },
+  {
+   "session": 20,
+   "statement": "On this chassis the head-exact (h1) delay-slot fill and the target's j=$t4 seat cannot both be had at nrefs 11, because factor's division splits the head into four basic blocks and leaves the blez in ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float); incumbent chassis re-measured this session at 26/173 and h1 at 28/173; no FAKE constructs present in e2/e3/e4",
+   "predicate_cite": "",
+   "result": "KILLED. The smallest live-range gap the pair can be spelled with is 1 insn (e2/e3: j 55 vs complement 54), which still p"
+  },
+  {
+   "session": 20,
+   "statement": "A +2 (depth-1) or +4 (depth-2) passenger lift on j lands pri(j) inside the (6111, 6964) window and restores the target's seats on the head-exact chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float); h1 chassis re-measured this session at 28/173 and f1 at 30/173; the passenger chains are un-annotated probes, never proposed as candidates, and no other",
+   "predicate_cite": "",
+   "result": "KILLED for every site outside the inner loop. p1 28, p5 28, p8 28, p2 30, all 173 insns, and every alloc table is byte-i"
+  },
+  {
+   "session": 20,
+   "statement": "livelen(factor) = 56 can be shortened below 54 by moving the factor statement through the head or by naming the numerator, raising the window's upper bound so a bigger lift on j still pays (s19 fronti",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float); h1 chassis re-measured this session at 28/173; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "KILLED. All four score 28 / 173 and all four report factor at nrefs 13 / livelen 56 / pri 6964, identical to h1. The div"
+  },
+  {
+   "session": 20,
+   "statement": "A dead store to j is a byte-free way to add references, because flow.c counts reg_n_refs on the RTL it is handed.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float); incumbent and h1 chassis; no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/flow.c:1490",
+   "result": "KILLED as a class. insn_is_dead is computed before any reference bookkeeping, and on the final pass a dead insn is turne"
   }
  ],
  "ladder_skip": 0,
