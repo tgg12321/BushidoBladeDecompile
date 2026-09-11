@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 15,
- "current_modality": "enumerate",
+ "session_count": 16,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -93,36 +93,34 @@
    "floor": 26,
    "modality": "enumerate",
    "headline": "Enumerate: 3,966 valid spellings across six exhaustive families (blend-arm interleaving, head-region hoisting, cursor declaration site, arm test, latch, the whole no-reuse blend lattice) - ZERO hit; t"
+  },
+  {
+   "session": 16,
+   "floor": 26,
+   "modality": "synthesis",
+   "headline": "Synthesis: the target's blend seats (g_src $v1, px $a0, r_src $a1) ARE reachable in ordinary C - 4 of 1,483 liveness-checked cross-channel carrier spellings hit them - but every spelling that reaches "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The px/g_src seat is not reachable from any spelling of the blend arm or the head on this chassis; the remaining 26 points need a different OBJECT MODEL for the pixel value (how the u16 is read and zero-extended), not a different spelling of the same reads.",
-   "mechanism": "px (pseudo 122, nrefs 12 / livelen 11 / pri 32727) is priced by four depth-3-weighted source references. s14 killed the reference-count attack (combine refolds the shift chain); s15 has now killed the live-length attack from statement order (1680 spellings), head placement (588) and declaration site (96). What has never been varied is the TYPE and READ shape of the pixel itself.",
-   "next_probe": "Enumerate the pixel-read family on the current chassis: {u16 pixel = *src; s16 read; s32 read through a cast; two separate *src reads} x {px = pixel & 0xFFFF; px = (u32)pixel; no px at all, each channel masking *src directly}. Score each with sandbox --disable all and dump BB2_ALLOC_DEBUG (tools/gcc-2.7.2/cc1) on any form whose px nrefs or livelen differs from 12/11. The dump, not the score, is the datum: the goal is px pri below 30000 or g_src pri above 32727."
+   "hypothesis": "g_src's live length can be shortened from 12 to <= 10 (pri >= 36000) by changing the insns sched1 INTERLEAVES INTO the blend arm rather than the arm's own statements: the cursor bump lands at row 110 and one mflo at row 117, both from the latch/trip-test region, and they sit inside g_src's second live segment.",
+   "mechanism": "live_length is counted over the post-sched1 chain, so any insn scheduled between g_src's mflo (row 104) and the g sum (row 114) lengthens it. Those interleaved insns come from outside the arm - the src++ bump and the trip-test multiply - so their placement is decided by the LOOP's dependence graph, not by the nine channel statements s14/s15/s16 have exhaustively permuted.",
+   "next_probe": "Run tools/sched_solver on the blend basic block of the candidate chassis to ask which emission orders are legal for the interleaved cursor bump and trip-test insns and what INSN_PRIORITY delta moves them out of rows 110-117; then look for C forms in the LATCH region (the trip test, the cursor bump, the j increment) that produce that delta, scoring each with sandbox --disable all and dumping with tmp/grind/func_8003DE14/s16/batch_alloc.py to read g_src's livelen directly rather than inferring it from the score."
   },
   {
-   "hypothesis": "The residual is set above the function body: the pseudo NUMBERING fixed by the function-scope declaration block (three arrays plus six scalars) decides the px/g_src tie, and that region has never been enumerated.",
-   "mechanism": "global.c:652-653 breaks equal-priority ties on ascending pseudo number, and s14 showed the px/g_src flip is decidable by exactly such a tie (px at livelen 13 would tie r_src at 27692 and win on 122 < 123). Re-ordering the function-scope declarations renumbers every pseudo without changing a statement.",
-   "next_probe": "Enumerate the function-scope declaration block with tools/sweep_variants.py: the six scalars in every def-before-use order (720) at fixed array order, plus the six array orders separately; read BB2_ALLOC_DEBUG on any form that changes px's ord or hardreg, not just on the score."
+   "hypothesis": "The target's $v0 is free of global allocnos because b_src is excluded from it by a conflict our build does not have; producing that exclusion reseats b_src on $a0 and drops px and g_src one rank each without touching the arm's schedule.",
+   "mechanism": "global.c hands each allocno the lowest-numbered free hard register that does not conflict. b_src (p128, pri 32727) takes $v0 in our build, meaning it conflicts with nothing there; the target's b_src sits on $a0, so in the original the $v0 slot was unavailable at that point - a conflict-set difference, which is a flow.c liveness question and therefore a different lever from priority arithmetic.",
+   "next_probe": "Dump .flow/.lreg conflict information for p128 on the incumbent (tmp/grind/func_8003DE14/s16/d_base) and identify which live range would have to overlap b_src to exclude $v0; then search the carrier_alloc.json corpus (already banked) for spellings in which b_src is seated on $a0 while px, g_src and r_src keep the incumbent's priorities, and score those."
   },
   {
-   "hypothesis": "The 4-insn head residual is independent of the blend residual and closes by making dst's addiu non-movable rather than by moving j.",
-   "mechanism": "reorg.c prefers filling a delay slot from a movable preceding insn; the target has none available because BOTH cursor addiu's are already consumed in the mult latency window (target rows 53/54), while our build schedules only src there and leaves dst as reorg's candidate. That is a sched1 priority question, and s15 proved source order cannot move it.",
-   "next_probe": "Run tools/sched_solver (order- and clock-exact for this pass) on the outer-loop head basic block of the candidate chassis and ask whether an emission order exists in which both cursor addiu's precede the mflo, and what INSN_PRIORITY delta it needs; only then look for a C form that produces that delta."
+   "hypothesis": "The 4-insn head residual (the blez delay slot) is independent of the blend seat and is a sched1 priority question, not a source-order question - s15 killed the source-order axis over 588 + 96 spellings.",
+   "mechanism": "reorg.c fills the guard branch's delay slot from the closest movable preceding insn; the target has both cursor addiu's consumed inside the mult latency window (target rows 53/54) and so falls back to filling with move t4,zero from the fall-through thread, while our build schedules only src there and leaves dst as reorg's candidate.",
+   "next_probe": "Run tools/sched_solver (order- and clock-exact for this pass) on the outer-loop head basic block of the candidate chassis and ask whether an emission order exists in which both cursor addiu's precede the mflo, and what INSN_PRIORITY delta it requires; only then hunt for a C form producing that delta."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 1,
-   "statement": "The 119 floor recorded in migration_pin.json is the honest floor of the banked pre-migration body on the current chassis.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), src/code6cac_c2.c, no FAKE constructs present in the measured body",
-   "predicate_cite": "",
-   "result": "Score 66, with target_insns == build_insns == 173. The frame layout (0x858; src_buf +0x10, dst_buf +0x410, color_info +0"
-  },
   {
    "session": 1,
    "statement": "GCC hoists the three loop-invariant `channel * factor` multiplies out of the per-pixel loop, so an anti-LICM lever is needed to keep them inline the way the target does.",
@@ -578,6 +576,30 @@
    "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_ssa/v*.c",
    "predicate_cite": "",
    "result": "ZERO HIT. Histogram {28:37, 33:37, 34:37, 35:37, 41:74, 44:37, 45:83, 54:67, 55:104, 56:37}; best 28 (37 spellings), equ"
+  },
+  {
+   "session": 16,
+   "statement": "Moving the channel locals' DECLARATIONS (not their assignments) renumbers the pseudos and flips the global.c:652-653 tie-break, which is enough to reseat px and g_src.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/renum3/R_*.c",
+   "predicate_cite": "",
+   "result": "All 384 score 26 at 173 insns. The renumbering is real - in R_gbr_000 g_src becomes p121 (was p126) while px stays p122,"
+  },
+  {
+   "session": 16,
+   "statement": "Some cross-channel carrier spelling that reaches the target's seats also reaches or beats the incumbent's 26.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/carrier/*.c with alloc tables in s16/carrier_alloc.json and scores in s16/top.json",
+   "predicate_cite": "",
+   "result": "ZERO HIT. The seat-correct forms score 38 at 173 insns; the best of the top 25 is 34; the whole 1,483-form lattice botto"
+  },
+  {
+   "session": 16,
+   "statement": "A px/g_src priority TIE combined with the byte-neutral renumbering lever hands g_src the seat by pseudo number and closes the blend residual.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/tie/T_*.c",
+   "predicate_cite": "",
+   "result": "ZERO HIT. Scores run 34 to 56; best is 34 (T_FFrGrSgSbS), then six at 36. Creating the tie costs the schedule exactly as"
   }
  ],
  "ladder_skip": 0,

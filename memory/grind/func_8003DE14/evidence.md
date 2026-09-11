@@ -1894,3 +1894,107 @@ alone).
 - [s15] [s15] The per-channel variable reuse introduced in s13 is worth exactly 2 points against the ENTIRE no-reuse naming/order lattice (550 spellings, best 28).
 
 - [s15] [s15] TOOLING: an ENUM region that begins with declarations must not be preceded by a statement in the same block - GCC 2.7.2 is C89, so every such variant is a parse error that measures as a degenerate score (549 of 550 at 100 / 116 insns). Cost this session: one 550-variant sweep re-run (s15/enumc_base.c vs enumc_base2.c).
+
+## s16 (synthesis) - the seat is REACHABLE; it is the schedule that is not
+
+Chassis re-measured first: the incumbent body (memory/grind/func_8003DE14/candidate.c)
+scores **26 at 173 insns** on HEAD 2026-09-10, and so do the two closest banked kills
+(s14's AAC, s15's target-shaped interleave `rrggbbrgb`). The body carries no
+annotation-bearing construct, so there is nothing for tools/fake_ablate.py to ablate;
+the kill re-audit is a chassis re-measurement and both kills stand.
+
+### 1. The residual's pseudo map, corrected
+
+The instrumented cc1 (`tools/gcc-2.7.2/cc1`, BB2_ALLOC_DEBUG=1) plus the `.lreg` RTL
+names every allocno in the blend arm:
+
+| pseudo | variable | nrefs | livelen | pri | ours | TARGET |
+|---|---|---|---|---|---|---|
+| p121 | pixel   | 15 | 26 | 17307 | $t0 | $t0 |
+| p122 | px      | 12 | 11 | 32727 | **$v1** | **$a0** |
+| p128 | b_src   | 12 | 11 | 32727 | **$v0** | **$a0** (reuses px's reg after px dies) |
+| p126 | g_src   | 12 | 12 | 30000 | **$a0** | **$v1** |
+| p123 | r_src   | 12 | 13 | 27692 | $a1 | $a1 |
+
+s13/s14 recorded this as a two-way px/g_src swap and believed b_src was a
+local-alloc quantity. It is not: b_src is the SECOND member of the 32727 tie, and
+it is b_src - not the target's scratch - that occupies $v0 in our build. The
+target leaves $v0 to local-alloc entirely (the srl temps and the three channel
+sums) and parks b_src on $a0 after px dies.
+
+### 2. Declaration-site renumbering is a real, byte-neutral lever (384/384 = 26)
+
+global.c:635-653 sorts allocnos by `pri = weighted nrefs * 30000 / live_length` and
+breaks EQUAL priorities on ascending pseudo number; pseudo numbers follow
+DECLARATION order. Splitting a channel local into (declaration, assignment) and
+moving only the declaration renumbers pseudos without moving a statement or
+changing a live range. All 384 spellings of that axis score 26 at 173 insns, and
+the dumps prove the renumbering is not a no-op: in `R_gbr_000` g_src becomes p121
+(was p126) and the 32727 pair swaps seats ($v1 <-> $v0). It cannot reach the target
+seat on its own because px (32727) and g_src (30000) are never tied.
+
+### 3. The cross-channel carrier lattice: 1,483 spellings, alloc tables for all of them
+
+s14 swept the 27 WITHIN-channel spellings. This session swept the cross-channel
+lattice - which local carries each of the six products, restricted by a simulated
+liveness so every emitted body is semantics-preserving (`s16/gen_carrier.py`), then
+compiled all 1,483 with the instrumented cc1 and recorded the allocno table plus
+the pseudo->variable map for each (`s16/batch_alloc.py`, `s16/carrier_alloc.json`).
+
+  * **4 forms hit three of the four target seats exactly** (r_src $a1, g_src $v1,
+    px $a0): `C_FFrSgSgSF`, `C_FFrSgSgSbS`, `C_FFrSgSgSrG`, `C_FFrSgSgSrP`. All four
+    make g_src carry two products (nrefs 18, pri 45000) and drop px to livelen 10.
+  * 89 forms hit two seats; 108 forms produce a px/g_src PRIORITY TIE.
+  * s14's arithmetic is independently confirmed: `C_FFFgSFrG` puts px at exactly
+    nrefs 12 / livelen 13 / pri 27692 and does seat g_src on $v1 and px on $a0.
+
+**But none of them pays.** Scored: the seat-correct forms are 38 (173 insns); the
+best of the 25 top-ranked is 34; the lattice minimum is 26, reached only by
+incumbent-shaped spellings. The side-by-side (s13/sxs.py, rows 94-131) of the best
+seat-correct form shows why - giving g_src a second product re-prices the arm for
+sched1, the products and sums re-interleave, and even the loop's own registers move
+(complement $t5->$t4, factor $t3->$t2, j $t4->$t3). The seat win is real and is
+swamped by the re-schedule.
+
+### 4. Tie + renumber (the conjunction nobody had tried): best 34
+
+All 108 tie forms were given the byte-neutral declaration hoist so that g_src would
+win the tie-break by pseudo number (`s16/gen_tie.py`, `s16/tie.json`). Zero hit;
+histogram 34..56. The renumbering lever is free on the incumbent and worthless on
+every form that creates a tie, because creating the tie costs the schedule.
+
+### What this session changes about the frontier
+
+Before s16 the open question was "is the px/g_src seat reachable at all?" It is -
+in ordinary C, four different ways. The question is now strictly narrower:
+
+> Is there a change that raises pri(g_src) above 32727 (livelen <= 10 at nrefs 12,
+> or nrefs >= 15 at livelen <= 13) while leaving the AAA value->variable mapping,
+> and therefore the sched1 priorities of the nine arm statements, untouched?
+
+Every knob INSIDE the arm that moves g_src's live length also moves the arm's
+schedule; the two are the same knob. So the next probe has to come from OUTSIDE the
+arm: the insns sched1 interleaves INTO the arm (the cursor bump at row 110 and the
+`mflo` at row 117 come from the latch/trip-test region), the loop structure around
+it, or the conflict set that excludes $v0 (in the target, nothing global sits in
+$v0 at all - which is itself a measurable sub-goal: find a form where b_src is
+excluded from $v0).
+
+Artifacts: tmp/grind/func_8003DE14/s16/{audit,renum3,carrier,tie,top}*.json,
+s16/carrier_alloc.json (3.0 MB, every allocno table), s16/d_base, s16/d_gbr000,
+s16/gen_carrier.py, s16/gen_renum2.py, s16/gen_tie.py, s16/batch_alloc.py,
+s16/analyze.py.
+
+- [s16] HEAD honest floor for func_8003DE14 on 2026-09-10 is 26 at 173 insns (target 173); the incumbent body in memory/grind/func_8003DE14/candidate.c is unchanged and is ordinary C with no annotation-bearing construct.
+
+- [s16] Corrected pseudo map from the .lreg RTL: p121 = pixel, p122 = px, p123 = r_src, p126 = g_src, p128 = b_src. b_src is a GLOBAL allocno (nrefs 12 / livelen 11 / pri 32727) and is what holds $v0 in our build; s14's note that it is a local-alloc quantity is wrong.
+
+- [s16] Our seats vs the target's: px $v1 vs $a0; b_src $v0 vs $a0 (target reuses px's register after px dies at row 118); g_src $a0 vs $v1; r_src $a1 vs $a1. The target has NO global allocno in $v0 at all.
+
+- [s16] Declaration-site renumbering (declaration split from assignment, assignment left in place) is byte-neutral across all 384 spellings and demonstrably moves pseudo numbers and the seats of the tied 32727 pair - a free lever available to any future form that produces a px/g_src tie.
+
+- [s16] The cross-channel carrier lattice is 1,483 liveness-checked spellings; allocation tables for every one of them are banked in tmp/grind/func_8003DE14/s16/carrier_alloc.json, together with tools (gen_carrier.py, batch_alloc.py, analyze.py) that regenerate and re-rank them on any future chassis.
+
+- [s16] Seat reachability is proven: 4 forms hit r_src $a1 + g_src $v1 + px $a0, and C_FFFgSFrG reproduces s14's predicted px = nrefs 12 / livelen 13 / pri 27692 route. Affordability is disproven on this chassis: 38 for the seat-correct forms, 34 for tie+renumber, 26 for the incumbent.
+
+- [s16] Mechanistic conclusion for the next session: inside the blend arm, g_src's live length and the arm's sched1 priorities are the SAME knob - every carrier change that moves one moves the other. pri(g_src) must exceed 32727 (livelen <= 10 at nrefs 12, or nrefs >= 15 at livelen <= 13) while the AAA value->variable mapping is left alone, so the change has to originate outside the arm.

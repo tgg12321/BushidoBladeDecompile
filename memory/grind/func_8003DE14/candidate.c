@@ -104,6 +104,26 @@
  *   - the full 550-spelling no-reuse (SSA) blend lattice: best 28, i.e. the
  *     per-channel variable reuse in this body is worth 2 points that naming and
  *     ordering alone never buy.
+ *
+ * S16 (synthesis) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
+ * unchanged as the best known form.  s16 corrected the residual's pseudo map and
+ * proved the target's seats are REACHABLE but not affordable:
+ *   - p121 = pixel, p122 = px, p123 = r_src, p126 = g_src, p128 = b_src.  b_src is
+ *     NOT a local quantity (s14's reading): it is the second allocno of the 32727
+ *     tie and it is what holds $v0, which the target leaves to local-alloc.
+ *     Target seats: g_src $v1, px $a0, b_src $a0 (after px dies), r_src $a1.
+ *   - Declaration-site RENUMBERING (declaration split from assignment) is a real,
+ *     byte-neutral lever: all 384 spellings score 26, and the dumps show the pseudo
+ *     numbers and the 32727 pair's seats really do move.  It cannot decide px vs
+ *     g_src because those two are never tied (32727 vs 30000).
+ *   - The CROSS-channel carrier lattice (1,483 liveness-checked spellings, alloc
+ *     tables for every one in s16/carrier_alloc.json): 4 forms hit three of the four
+ *     target seats exactly, 108 forms tie px and g_src.  None pays - seat-correct
+ *     forms score 38, tie+renumber forms 34, and the lattice minimum is the
+ *     incumbent's 26.  Steering the seat re-prices sched1 and re-interleaves the arm.
+ * The open question is now narrow: raise pri(g_src) above 32727 (livelen <= 10 at
+ * nrefs 12, or nrefs >= 15 at livelen <= 13) WITHOUT touching the AAA value->variable
+ * mapping - which means the change has to come from outside the blend arm.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];

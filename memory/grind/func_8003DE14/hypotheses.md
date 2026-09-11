@@ -1500,3 +1500,87 @@ nrefs=12 livelen=11 pri=32727 ord=2. Reference count cannot be lowered this way.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_ssa/v*.c
+
+## [s16] KILL RE-AUDIT: the two closest-to-target banked kills (s14 AAC, s15 target-shaped interleave rrggbbrgb) still measure 26 on today's chassis.
+- mechanism: an instance kill is only valid on the chassis and FAKE state it was measured under. The incumbent body carries NO annotation-bearing construct anywhere (ordinary C throughout), so tools/fake_ablate.py has nothing to ablate; the re-audit is therefore a pure chassis re-measurement.
+- probe: tmp/grind/func_8003DE14/s16/audit/{A0_incumbent,A1_aac,A2_targetorder}.c swept in one tools/sweep_variants.py call (s16/audit.json).
+- result: all three score 26 at 173 insns on HEAD 2026-09-10, identical to their s14/s15 measurements. The chassis has not moved and both kills stand. (The driver's dispatch line said "measurement unavailable"; the real HEAD honest floor for this body is 26.)
+- verdict: CONFIRMED
+
+## [s16] The pseudo map behind the seat residual, CORRECTED: p121 = pixel, p122 = px, p123 = r_src, p126 = g_src, p128 = b_src - and b_src is a GLOBAL allocno at pri 32727 sitting on $v0, not a local-alloc quantity.
+- mechanism: read directly out of the .lreg RTL of the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1): `(set (reg/v:SI 122) (zero_extend:SI (reg/v:HI 121)))` names px and pixel; the two `(and:SI ... (const_int 248))` defs that are also mult destinations name g_src and b_src; the `(ashift:SI ... (const_int 3))` def names r_src.
+- probe: tmp/grind/func_8003DE14/s16/d_base/ (dump of the incumbent) plus tmp/grind/func_8003DE14/s16/batch_alloc.py, which recovers the same mapping automatically for a whole directory of forms.
+- result: the incumbent's global table is px p122 (nrefs 12 / livelen 11 / pri 32727) -> $v1, b_src p128 (12 / 11 / 32727) -> $v0, g_src p126 (12 / 12 / 30000) -> $a0, r_src p123 (12 / 13 / 27692) -> $a1. The target's seats, read off asm/funcs/func_8003DE14.s rows 94-124, are g_src -> $v1, px -> $a0, b_src -> $a0 (reusing px's register after px dies at row 118) and r_src -> $a1. So the residual is a THREE-way seat difference, not the two-way px/g_src swap s13/s14 recorded, and s14's reading that b_src is a local quantity was wrong: b_src is the second allocno in the 32727 tie and is what takes $v0 away from the target's scratch.
+- verdict: CONFIRMED
+
+## [s16] Moving the channel locals' DECLARATIONS (not their assignments) renumbers the pseudos and flips the global.c:652-653 tie-break, which is enough to reseat px and g_src.
+- mechanism: global.c:635-653 sorts allocnos by pri and breaks EQUAL priorities on ascending pseudo number; pseudo numbers follow declaration order. A declaration-only hoist changes no statement and no live range, so it is a free renumbering knob - the one axis s5/s15's declaration sweeps never isolated (they moved initialisers, i.e. statements).
+- probe: 384 bodies (every subset/order of {r_src, g_src, b_src} declared at 4 sites: above `u16 pixel`, between pixel and px, after px, or in the inner block) from tmp/grind/func_8003DE14/s16/gen_renum2.py, swept in one call (s16/renum3.json); ALLOCDBG dumps of the baseline and of R_gbr_000 (s16/d_base, s16/d_gbr000).
+- result: ALL 384 score 26 at 173 insns. The renumbering is real and visible - in R_gbr_000 g_src becomes p121 (was p126) while px stays p122 - and it DOES move hard registers inside the 32727 tie (px $v1 -> $v0, b_src $v0 -> $v1). It never reaches the target seat because px (32727) and g_src (30000) are not tied, so the tie-break never arbitrates between them. Renumbering is a live, byte-neutral lever that only pays off once some other change equalises the two priorities.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/renum3/R_*.c
+
+## [s16] The target's three key seats (r_src $a1, g_src $v1, px $a0) are reachable in ordinary C - the question is not whether the allocator can be steered there, but what the steering costs elsewhere.
+- mechanism: which C local carries each of the six blend products decides each channel pseudo's reg_n_refs and live_length, i.e. both inputs to the global.c priority. s14 swept only the 27 WITHIN-channel spellings; this session swept the CROSS-channel lattice (a product may be carried by any local that is provably dead at that point, liveness simulated in the generator), 1,483 legal spellings.
+- probe: tmp/grind/func_8003DE14/s16/gen_carrier.py emitted the lattice; tmp/grind/func_8003DE14/s16/batch_alloc.py compiled every one of them with the instrumented cc1 and recorded the global-allocno table plus the pseudo->variable map (s16/carrier_alloc.json, 3.0 MB); s16/analyze.py ranked them by how many of the four target seats they hit.
+- result: 4 forms hit three of the four target seats exactly (r_src $a1, g_src $v1, px $a0): C_FFrSgSgSF, C_FFrSgSgSbS, C_FFrSgSgSrG, C_FFrSgSgSrP - all of them make g_src carry TWO products (nrefs 18) and drop px to livelen 10 / pri 36000. 89 further forms hit two seats. The s14 prediction is independently confirmed too: C_FFFgSFrG has px at exactly nrefs 12 / livelen 13 / pri 27692 and does seat g_src on $v1 and px on $a0.
+- verdict: CONFIRMED
+
+## [s16] Some cross-channel carrier spelling that reaches the target's seats also reaches or beats the incumbent's 26.
+- mechanism: the seat residual is 19 of the 26 points, so a spelling that fixes the seats should be able to pay for a fair amount of collateral damage elsewhere.
+- probe: the 25 best seat-matching forms scored with tools/sweep_variants.py (s16/top.json), and the best one (C_FFrSgSgSbS, three seats correct) disassembled side-by-side against the target (tmp/grind/func_8003DE14/s13/sxs.py, rows 94-131).
+- result: ZERO HIT. Best of the seat-correct forms is 38 at 173 insns; the 25-form best is 34. The side-by-side shows why: making g_src carry a second product re-prices the whole arm for sched1, so the products and sums re-interleave (our rows 97-118 no longer line up opcode-for-opcode with the target's), and the loop's own registers move too (complement $t5 -> $t4, factor $t3 -> $t2, j $t4 -> $t3). The seat win is real but is swamped by a wholesale re-schedule. The full 1,483-form lattice's minimum is 26, reached only by incumbent-shaped spellings.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/carrier/*.c (alloc tables in s16/carrier_alloc.json, scores for the top 25 in s16/top.json)
+
+## [s16] A px/g_src PRIORITY TIE plus the renumbering lever hands g_src the seat by pseudo number and closes the blend residual.
+- mechanism: the conjunction no previous session tried. 108 of the 1,483 carrier spellings tie px and g_src at one priority (27692, 30000, 32727 or higher) with g_src numbered ABOVE px; hoisting g_src's declaration above `u16 pixel` makes it the lower-numbered allocno, so global.c:652-653 allocates g_src first and it should take px's seat.
+- probe: tmp/grind/func_8003DE14/s16/gen_tie.py applied the (byte-neutral, phase-1-proven) declaration hoist to all 108 tie forms; swept in one call (s16/tie.json).
+- result: ZERO HIT. Histogram runs 34..56; best is 34 (T_FFrGrSgSbS), then six at 36. Every tie form pays the same re-schedule tax as the rest of the carrier lattice, so the renumbering lever - which is genuinely free on the incumbent - has nothing cheap to arbitrate. A priority tie and the incumbent instruction sequence have not been made to coexist.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/tie/T_*.c
+
+## [s16] KILL RE-AUDIT: the two closest-to-target banked kills (s14's AAC form, s15's target-shaped interleave rrggbbrgb) still measure 26 at 173 insns on the current chassis, and the incumbent body still measures 26.
+- mechanism: An instance kill is only valid on the chassis and FAKE state it was measured under. The incumbent carries no annotation-bearing construct at all (ordinary C throughout), so tools/fake_ablate.py has nothing to ablate and the re-audit reduces to a chassis re-measurement of the two closest forms.
+- probe: tmp/grind/func_8003DE14/s16/audit/{A0_incumbent,A1_aac,A2_targetorder}.c scored in one tools/sweep_variants.py call (s16/audit.json).
+- result: All three score 26 / 173 on HEAD 2026-09-10, identical to their s14/s15 measurements. Both kills stand and the chassis has not moved (the dispatch brief's 'measurement unavailable' is resolved: the HEAD honest floor for this body is 26).
+- verdict: CONFIRMED
+
+## [s16] The blend residual's pseudo map is p121 = pixel, p122 = px, p123 = r_src, p126 = g_src, p128 = b_src, and b_src is a GLOBAL allocno at pri 32727 holding $v0 - so the residual is a three-way seat difference, not the two-way px/g_src swap s13/s14 recorded.
+- mechanism: The .lreg RTL of the instrumented cc1 names each allocno: (set (reg/v:SI 122) (zero_extend:SI (reg/v:HI 121))) is px from pixel; the two (and:SI ... (const_int 248)) defs that are also mult destinations are g_src and b_src; the (ashift:SI ... (const_int 3)) def is r_src. BB2_ALLOC_DEBUG=1 then gives each one's nrefs/livelen/pri/hardreg.
+- probe: tmp/grind/func_8003DE14/s16/d_base (incumbent dump) and tmp/grind/func_8003DE14/s16/batch_alloc.py, which recovers the mapping automatically for a whole directory of forms.
+- result: Ours: px p122 (12/11/32727) $v1, b_src p128 (12/11/32727) $v0, g_src p126 (12/12/30000) $a0, r_src p123 (12/13/27692) $a1. Target (asm/funcs/func_8003DE14.s rows 94-124): g_src $v1, px $a0, b_src $a0 (reusing px's register after px dies at row 118), r_src $a1, with NOTHING global in $v0 - the target leaves $v0 to local-alloc for the srl temps and the three channel sums.
+- verdict: CONFIRMED
+
+## [s16] Moving the channel locals' DECLARATIONS (not their assignments) renumbers the pseudos and flips the global.c:652-653 tie-break, which is enough to reseat px and g_src.
+- mechanism: global.c:635-653 sorts allocnos by pri = weighted reg_n_refs * 30000 / live_length and breaks EQUAL priorities on ascending pseudo number; pseudo numbers follow declaration order. Splitting a local into (declaration, assignment) and moving only the declaration renumbers without moving a statement or changing a live range - the axis s5/s15's declaration sweeps never isolated, because those moved initialisers, i.e. statements.
+- probe: 384 bodies (every subset and order of {r_src, g_src, b_src} declared at four sites: above u16 pixel, between pixel and px, after px, or in the inner block) from tmp/grind/func_8003DE14/s16/gen_renum2.py, swept in one call (s16/renum3.json); ALLOCDBG dumps of the baseline and of R_gbr_000 (s16/d_base, s16/d_gbr000).
+- result: All 384 score 26 at 173 insns. The renumbering is real - in R_gbr_000 g_src becomes p121 (was p126) while px stays p122, and the two tied 32727 allocnos swap seats (px $v1 -> $v0, b_src $v0 -> $v1) - but it never arbitrates px against g_src, because those two are not tied (32727 vs 30000). Renumbering is a live, byte-neutral lever with nothing to decide until some other change equalises the two priorities.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/renum3/R_*.c
+
+## [s16] The target's three key blend seats (r_src $a1, g_src $v1, px $a0) are reachable in ordinary C by changing which dead local carries each of the six blend products.
+- mechanism: The carrier assignment decides each channel pseudo's reg_n_refs and live_length, i.e. both inputs to the global.c priority that orders the allocnos. s14 swept only the 27 within-channel spellings; the cross-channel lattice (any local that is provably dead at that point may carry a product) had never been enumerated.
+- probe: tmp/grind/func_8003DE14/s16/gen_carrier.py emitted 1,483 liveness-checked spellings; tmp/grind/func_8003DE14/s16/batch_alloc.py compiled every one with the instrumented cc1 and recorded its global-allocno table plus pseudo->variable map (s16/carrier_alloc.json, 3.0 MB); s16/analyze.py ranked by target-seat hits.
+- result: Four forms hit three of the four target seats exactly (C_FFrSgSgSF, C_FFrSgSgSbS, C_FFrSgSgSrG, C_FFrSgSgSrP), all by making g_src carry two products (nrefs 18, pri 45000) and dropping px to livelen 10; 89 forms hit two seats; 108 forms tie px and g_src. s14's predicted route is confirmed too: C_FFFgSFrG puts px at exactly nrefs 12 / livelen 13 / pri 27692 and seats g_src on $v1 and px on $a0.
+- verdict: CONFIRMED
+
+## [s16] Some cross-channel carrier spelling that reaches the target's seats also reaches or beats the incumbent's 26.
+- mechanism: The seat difference accounts for 19 of the 26 residual points, so a spelling that fixes the seats has a large budget for collateral damage elsewhere.
+- probe: The 25 best seat-matching forms scored with tools/sweep_variants.py (tmp/grind/func_8003DE14/s16/top.json); the best seat-correct form (C_FFrSgSgSbS) disassembled index-by-index against the target with tmp/grind/func_8003DE14/s13/sxs.py (rows 94-131).
+- result: ZERO HIT. The seat-correct forms score 38 at 173 insns; the best of the top 25 is 34; the whole 1,483-form lattice bottoms out at 26, reached only by incumbent-shaped spellings. The side-by-side shows the cost: giving g_src a second product re-prices the arm for sched1, so products and sums re-interleave (our rows 97-118 stop lining up opcode-for-opcode with the target's) and the loop's own registers move too (complement $t5 -> $t4, factor $t3 -> $t2, j $t4 -> $t3).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/carrier/*.c with alloc tables in s16/carrier_alloc.json and scores in s16/top.json
+
+## [s16] A px/g_src priority TIE combined with the byte-neutral renumbering lever hands g_src the seat by pseudo number and closes the blend residual.
+- mechanism: The conjunction no previous session tried: 108 carrier spellings tie px and g_src at one priority with g_src numbered above px, and a declaration-only hoist makes g_src the lower-numbered allocno, so global.c:652-653 allocates g_src first and it takes px's seat.
+- probe: tmp/grind/func_8003DE14/s16/gen_tie.py applied the phase-1-proven byte-neutral declaration hoist to all 108 tie forms; swept in one call (s16/tie.json).
+- result: ZERO HIT. Scores run 34 to 56; best is 34 (T_FFrGrSgSbS), then six at 36. Creating the tie costs the schedule exactly as the rest of the lattice does, so the renumbering lever - free on the incumbent - has nothing cheap to arbitrate. A priority tie and the incumbent instruction sequence have not been made to coexist.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/tie/T_*.c
