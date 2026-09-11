@@ -232,7 +232,9 @@
    "next_probe": "Measure candidate.c with the extender removed, run tmp/grind/func_8003DE14/s35/al.sh on it, read j's and complement's nrefs/livelen/pri and the winning margin, then solve for the smallest ordinary-C change that clears it - the same method that produced this session's seat inequality. Repeat for `h` against the latch pseudo."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Remove `h`; if a staging carrier is needed, borrow the existing dead `total` under staged-value-reused-variable (per-site liveness stated in the FAKE annotation) \u2014 never a fresh multi-written local."
+ ],
  "banned_constructs": [],
  "kills": [
   {

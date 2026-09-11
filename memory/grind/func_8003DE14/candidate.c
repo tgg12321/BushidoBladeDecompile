@@ -1,55 +1,82 @@
-/* func_8003DE14 - candidate (grind session 33, REDERIVE modality).
+/* func_8003DE14 - MATCHING candidate (grind session 36, ENUMERATE modality).
  *
- * SCORE 1 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
- * FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12 (s23-s28) -> 5 (s29,
- * s30) -> 4 (s31) -> 2 (s32) -> 1 (this session).  The red shift pair that had
- * been the standing residual since s29 is CLOSED; ONE row remains.
+ * SCORE 0 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float),
+ * measured with `sandbox func_8003DE14 --disable all` (cheat-stripped honest
+ * distance).  FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12
+ * (s23-s28) -> 5 (s29, s30) -> 4 (s31) -> 2 (s32) -> 1 (s33-s35) -> 0 (this
+ * session).
  *
- * WHAT s33 FOUND (the red pair was never an RA-tie problem).  s29-s32 all read
- * the red residual - ours `sra $v0,$v0,15` / `andi $a1,$v0,31` vs the target's
- * `sra $a1,$v0,15` / `andi $a1,$a1,31` - as combine_regs tying the shift's
- * destination to the dying three-way `sum`, and spent four sessions trying to
- * break that tie by making `sum` / `rp` / the destination escape local-alloc.
- * The actual cause is one level up: `r_src = (sum >> 15) & 0x1F;` is a SINGLE
- * expression, so expand creates a fresh single-set temp for the shift, and that
- * temp is what combine_regs ties to `sum`.  Splitting it into two statements -
- *     r_src = sum >> 15;
- *     r_src = r_src & 0x1F;
- * - makes the shift's destination the ALREADY-MULTI-SET pseudo r_src (it is
- * written twice before this, by the sll and by the mflo), so no tie can be
- * formed and both insns print into r_src's own seat.  That is byte-exactly the
- * target's shape, and our GREEN channel had been carrying it all along
- * (`g_src = sum >> 10;` with the mask deferred to the OR chain prints
- * `sra $v1,$v0,10` / `andi $v1,$v1,0x3E0`, which is the same two-register form).
+ * WHAT CLOSED IT.  s35 proved the entire residual was one inequality in
+ * global.c's allocno ordering: with the red source read taken off `pixel` (the
+ * target's own shape) the blend block's three channel pseudos compete for
+ * $a0/$a1/$v1, and px keeps $a0 iff pri(px) > pri(red), i.e. red must reach
+ * live length 22 at its pinned 24 references while px stays at 30/27.  s35
+ * reached that with an OR re-association (2/173, red's `or` emitted one slot
+ * late) and with a cross-block hoist of the red source read (3/173, the `sll`
+ * emitted pre-branch).  This session enumerated the OR-chain region
+ * exhaustively instead of hand-spelling it: the region was written in
+ * fully-named form (sign / gm / bm / sr / srg) between ENUM markers,
+ * tools/spelling_enum.py generated all 104 inline/declaration-order spellings
+ * and tools/sweep_variants.py scored them in one pass.  18 of the 104 score
+ * ZERO.  The minimal member of that family - and the one kept here - names
+ * exactly ONE intermediate:
  *
- * THE PRICE, AND HOW IT IS PAID.  The split adds two references to r_src (6 -> 8,
- * weighted 18 -> 24 at loop depth 3), which flips the $a0/$a1 seats of `px` and
- * `r_src` in global.c's allocno ordering.  BB2_ALLOC_DEBUG, red-split chassis
- * with nothing else changed:
- *     px    pseudo 123  nrefs=30 livelen=27 pri=44444   -> $a1   (WRONG)
- *     r_src pseudo 124  nrefs=24 livelen=21 pri=45714   -> $a0   (WRONG)
- * a 2.8% margin the wrong way, and the whole body scores 17.  Handing px ONE
- * more real reference restores the order and the score drops to 1.  This body
- * spends that reference on the red channel's source read: `(px & 0x1F) << 3`
- * instead of `(pixel & 0x1F) << 3` - px and pixel carry the same value there, so
- * it is ordinary C, and px goes to nrefs=33 / pri=61111, comfortably above r_src.
+ *     gm   = g_src & 0x3E0;
+ *     *dst = (pixel & 0x8000) | r_src | gm | (px & 0x7C00);
  *
- * THE RESIDUAL IS 1 ROW: target `andi $v0,$t0,0x1F` (the red source is read out
- * of `pixel`, $t0) against our `andi $v0,$a0,0x1F` (read out of `px`, $a0).  It
- * is the very reference we spent to win the seat, so the last point is exactly
- * "find a FREE way to give px one more reference (or r_src one more unit of live
- * length) and put the red source read back on `pixel`".
- *   - chassis_s33_pxsplit_1.c is the OTHER 1-point body: it keeps
- *     `(pixel & 0x1F) << 3` and buys the reference by splitting px's birth
- *     (`s32 px = pixel; px = px & 0xFFFF;`).  Its single wrong row is the mirror
- *     image - combine proves the 0xFFFF mask redundant against the lhu's
- *     nonzero_bits and folds the pair into `move $a0,$t0` where the target keeps
- *     `andi $a0,$t0,0xFFFF`.  Two independent 1-point forms, two different rows.
+ * i.e. the target's own OR order (sign, red, green, blue) with the green mask
+ * named.  BB2_ALLOC_DEBUG rows (tmp/grind/func_8003DE14/s36/alloc.log):
+ *     with gm:     green 127 18/16 pri=45000 -> $v1   (target)
+ *                  px    123 30/27 pri=44444 -> $a0   (target)
+ *                  red   124 24/22 pri=43636 -> $a1   (target)
+ *     without gm:  red   124 24/21 pri=45714 -> $a0   (WRONG, 17/173)
+ *                  px    123 30/27 pri=44444 -> $a1
+ * Naming the mask ends green's live range one insn earlier and pushes red's
+ * last reference one insn later; that is the single unit of live length the
+ * s35 inequality needed, bought without moving any expression across a block
+ * boundary (so the pre-branch block keeps the target's lone
+ * `andi $v0,$t0,0x1F`, which reorg.c fills into the `bnez` delay slot).
  *
- * FAKE CONSTRUCTS PRESENT: (1) the s21 j chain extender `((s32)dst_buf + j) - j`
- * in the LoadImage call (3 pts), (2) the s32 `h` staging local (2 pts, both latch
- * rows).  NOTHING s33 added is FAKE: the red split is a plain two-statement
- * spelling and `(px & 0x1F)` is a read of an in-scope local holding that value.
+ * BORROWS DO NOT WORK (s36 wave x, all measured this session): routing the
+ * mask through an existing dead local - gp (22), rp (24), sum (43) - or
+ * writing it back into g_src itself, `g_src = g_src & 0x3E0;` (17) or
+ * `g_src &= 0x3E0;` (17), all fail.  The carrier must be a FRESH pseudo, which
+ * is precisely prong (4) of the named-intermediate entry.
+ *
+ * FAKE CONSTRUCTS PRESENT (3, all inside frozen SOTN-sanctioned families; see
+ * memory/grind/func_8003DE14/self_vet.md for the per-construct vet):
+ *   (1) `gm` - named intermediate (this session, 17 pts).
+ *
+ * THE OR CHAIN IS ORDINARY C, NOT AN ENUMERATED ORDER.  The kept spelling is
+ * plain left-to-right `sign | red | green | blue` with NO parentheses - the
+ * natural channel order (the same order as the function's own r/g/b locals and
+ * color_info[0..2]), and the order the target's own bytes were emitted in
+ * (`andi $v0,$t0,0x8000` / `or $v0,$v0,$a1`(red) / `or $v0,$v0,$v1`(green) /
+ * `andi $v1,$a0,0x7C00` / `or $v0,$v0,$v1`, asm/funcs/func_8003DE14.s:134-139).
+ * [[or-tree-shape-shift]] "What IS allowed" lets a worker freely choose any
+ * natural ordering; the parenthesised `(((v|R)|G)|B)` form the enumerator
+ * emitted was verified byte-identical to the paren-free form, so no
+ * non-natural grouping is committed and the 2026-08-20 carve-out is not needed.
+ *
+ * OPEN RULING QUESTION (why this session did NOT return candidate-ready).
+ * The inherited `h` local (s32) is a FRESH local used as a staging carrier at
+ * TWO sites - `h = target_color; *dst++ = h;` in the fast arm and
+ * `while (j < rect[2] * (h = rect[3]))` in the latch - with BOTH staged values
+ * real and immediately consumed (the latch assignment's value is the
+ * multiplicand).  Zero dead code.  It is excluded from
+ * [[staged-value-reused-variable]] by bound 2 (the carrier must be an EXISTING
+ * variable; inventing one is not that family) and from the named-intermediate
+ * entry by its multi-WRITE property (no-new-park-categories.md:204 ff).  It is
+ * load-bearing: every alternative measured this session scores 2-43 (borrowing
+ * the genuinely-dead existing `total` = 2; splitting h into two once-written
+ * locals = 3; dropping either reference = 3; nine ordinary latch-expression
+ * spellings = 3-5; hoisting sum/rp/gp/px/g_src/r_src to carry the latch =
+ * 3-100).  The session therefore returns `ruling-request`; the body below is
+ * the exact form to submit if the ruling allows `h`.
+ *   (2) `h`  - staged value through a single local (s32, 3 pts; both of its
+ *       references are load-bearing: dropping either measures 3/173).
+ *   (3) the s21 `((s32)dst_buf + j) - j` chain extender (7 pts; plain
+ *       `(s32)dst_buf` measures 7/173).
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -125,11 +152,25 @@ void func_8003DE14(s16 *rect, s32 count) {
                             goto loop_check;
                         }
                         {
-                            s32 r_src = (px & 0x1F) << 3;
+                            s32 r_src = (pixel & 0x1F) << 3;
                             s32 g_src = ((u32)px >> 2) & 0xF8;
                             s32 sum;
                             s32 rp;
                             s32 gp;
+                            /* FAKE: `gm` names the green channel's masked result so that
+                             * g_src dies at the mask instead of at the store; mechanism:
+                             * global.c allocno priority (prio = nrefs*40000/live_length,
+                             * dumped via BB2_ALLOC_DEBUG) - naming gm takes green from
+                             * 18 refs/livelen 18 to 18/16 and red from 24/21 to 24/22, so
+                             * pri(px)=44444 > pri(red)=43636 and px is allocated $a0 with
+                             * red $a1 and green $v1, the target's seat map; without the
+                             * name red is 24/21=45714, outranks px, steals $a0 and the body
+                             * scores 17.  lever-exhaustion:
+                             * memory/grind/func_8003DE14/hypotheses.md s29-s35 (seat
+                             * inequality, OR re-association, cross-block hoist, red-tail
+                             * splits) + s36 waves x (borrowed carriers gp/sum/rp and the
+                             * in-place `g_src = g_src & 0x3E0;` split all measured 17-43). */
+                            s32 gm;
                             src++;
                             rp = r_src * complement;
                             r_src = r * factor;
@@ -144,7 +185,8 @@ void func_8003DE14(s16 *rect, s32 count) {
                             px = px * complement;
                             sum = px + b * factor;
                             px = sum >> 5;
-                            *dst = (pixel & 0x8000) | r_src | (g_src & 0x3E0) | (px & 0x7C00);
+                            gm = g_src & 0x3E0;
+                            *dst = (pixel & 0x8000) | r_src | gm | (px & 0x7C00);
                         }
                     }
                     dst++;

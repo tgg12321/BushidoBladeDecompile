@@ -4371,3 +4371,82 @@ Banked: memory/grind/func_8003DE14/chassis_s35_hoist_seats_3.c (= g1).
 - [s35] Deferring the red mask to the OR chain (s35/v3/d1) reproduces the target's in-place `sra`/`andi` SHAPE but swaps green and red registers at priorities identical to the working c3 body (px 44444, green 40000, red 36000), proving the seat at that point is decided by the conflict graph and not by priority order alone.
 
 - [s35] Five structurally distinct 2-point bodies now exist on the pixel-read chassis (i1, i3, i5, k5, k9), each with a two-row residual confined to the three-`or` tail of the store expression.
+
+## s36 (ENUMERATE) — the honest floor reached 0; one construct needs a ruling
+
+**FLOOR 1 -> 0.** `sandbox func_8003DE14 --disable all` prints score 0,
+build_insns 173 == target_insns 173, with `memory/grind/func_8003DE14/candidate.c`
+spliced into src/code6cac_c2.c. The body is banked unchanged as
+`chassis_s36_match_0.c`.
+
+**HOW IT CLOSED.** s35 had reduced the whole residual to one inequality in
+global.c's allocno ordering (prio = nrefs*40000/live_length): px keeps $a0 only
+if pri(px) > pri(red), i.e. red must reach live length 22 at its pinned 24
+references while px stays at 30/27. This session did not hand-spell that; it
+enumerated. The OR chain at the end of the blend block was rewritten in
+fully-named form (`sign`, `gm`, `bm`, `sr`, `srg`) between ENUM markers,
+`tools/spelling_enum.py --no-swaps` generated all 104 inline/declaration-order
+spellings, and `tools/sweep_variants.py` scored them in one pass:
+
+    ENUMERATION: 104 spellings, best 0, 18 at the floor
+    histogram: 18 x 0, 58 x 3, 24 x 17, 4 x 18
+
+The minimal zero names exactly ONE intermediate — the green mask:
+
+    gm   = g_src & 0x3E0;
+    *dst = (pixel & 0x8000) | r_src | gm | (px & 0x7C00);
+
+BB2_ALLOC_DEBUG rows (tmp/grind/func_8003DE14/s36/alloc.log), gm present vs the
+same chain with the mask inline:
+
+    with gm:     green 127 18/16 pri=45000 -> $v1   (target)
+                 px    123 30/27 pri=44444 -> $a0   (target)
+                 red   124 24/22 pri=43636 -> $a1   (target)
+    without gm:  red   124 24/21 pri=45714 -> $a0   (WRONG; body scores 17)
+                 px    123 30/27 pri=44444 -> $a1
+
+Naming the mask ends green's live range one insn earlier and pushes red's last
+reference one insn later — the single unit of live length s35's inequality
+needed, bought without moving any expression across a block boundary, so the
+pre-branch block keeps the target's lone `andi $v0,$t0,0x1F` (reorg.c fills it
+into the `bnez` delay slot).
+
+**THE OR ORDER IS NATURAL, NOT ENUMERATED-TO-MINIMUM.** The enumerator emitted
+`(((pixel & 0x8000) | r_src) | gm) | (px & 0x7C00)`; the paren-free
+`(pixel & 0x8000) | r_src | gm | (px & 0x7C00)` is byte-identical (0/173,
+tmp/grind/func_8003DE14/s36/fin/noparen.c) and is what the candidate keeps. That
+is plain left-to-right sign|red|green|blue — the natural channel order (the same
+order as the function's own r/g/b locals and color_info[0..2]) and the order the
+target's bytes were emitted in (asm/funcs/func_8003DE14.s:134-139:
+`andi $v0,$t0,0x8000` / `or` red / `or` green / `andi $v1,$a0,0x7C00` / `or`).
+[[or-tree-shape-shift]] "What IS allowed" permits any natural ordering, so no
+non-natural grouping is committed and the 2026-08-20 carve-out is not invoked.
+
+**FRESHNESS OF THE gm CARRIER IS MEASURED, NOT ASSERTED** (s36 wave x): borrowing
+an existing dead local gives gp 22, rp 24, sum 43; writing the mask back into
+g_src gives 17 (`g_src = g_src & 0x3E0;`) and 17 (`g_src &= 0x3E0;`); splitting
+the mask into the green tail gives 17. Only a fresh carrier reaches 0 — prong (4)
+of the named-intermediate entry.
+
+**THE TWO INHERITED FAKEs ARE STILL LOAD-BEARING** (s36 waves y, z, q, L, m, n):
+- `h` (s32): dropping either of its two references = 3; splitting it into two
+  once-written locals = 3; renaming it onto the existing, genuinely-dead `total`
+  = 2; nine ordinary latch-expression spellings on an h-free chassis = 3 or 5;
+  hoisting sum/rp/gp/px/g_src/r_src to inner-loop scope to carry the latch write
+  = 3, 10, 12, 20, 41, 100. `*dst++ = h = target_color;` is 0 (same construct).
+- the s21 j chain extender: plain `(s32)dst_buf` = 7; the operand-swapped
+  extender `((s32)dst_buf - j) + j` = 0 (same construct).
+
+**WHY THIS SESSION RETURNED ruling-request AND NOT candidate-ready.** `h` is a
+FRESH local used as a staging carrier at TWO sites, both staging a real,
+immediately-consumed value (`h = target_color; *dst++ = h;`, and
+`while (j < rect[2] * (h = rect[3]))` where the assignment's value IS the
+multiplicand). Zero dead code. It is excluded from
+[[staged-value-reused-variable]] by bound 2 ("Inventing a new variable just to
+have something to borrow is NOT this rule") and from the named-intermediate
+entry by its multi-WRITE property (no-new-park-categories.md:204 ff, "Multi-WRITE
+carriers remain NOT this entry"). Each exclusion is a single technicality and the
+construct is milder than either family's sanctioned shape, but no family covers
+it as written, so the honest move is a ruling rather than a self-approved
+submission. `gm` (named-intermediate) and the j chain extender (F1) are vetted in
+memory/grind/func_8003DE14/self_vet.md; only the `h` block is unresolved.
