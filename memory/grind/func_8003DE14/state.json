@@ -247,9 +247,7 @@
  "judge_constraints": [
   "Remove `h`; if a staging carrier is needed, borrow the existing dead `total` under staged-value-reused-variable (per-site liveness stated in the FAKE annotation) \u2014 never a fresh multi-written local."
  ],
- "banned_constructs": [
-  "LoadImage((s32)rect, ((s32)dst_buf + j) - j);  /* FAKE: j chain extender (s21) */"
- ],
+ "banned_constructs": [],
  "kills": [
   {
    "session": 20,
@@ -748,6 +746,21 @@
    "hash": "2852b631a415e9ee",
    "when": "2026-09-11T10:42:33.631175+00:00",
    "summary": "Bound detour and `gm` verify clean inside their sanctioned families, but the s21 `((s32)dst_buf + j) - j` detour has NO necessity measurement on this s38 no-carrier chassis and the ledger's own nearest measurement (s37 u1) found it inert."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "2852b631a415e9ee",
+   "when": "2026-09-11T11:05:13.408423+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-11 06:05 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "2852b631a415e9ee",
+   "when": "2026-09-11T11:05:13.408423+00:00",
+   "ref": "decisions.md 2026-09-11 06:05 ruling PASS",
+   "justification": "RULING REQUEST: the body in memory/grind/func_8003DE14/candidate.c MAY be submitted with the s21 extender present. Verified myself: v2/b1.c is byte-for-byte the candidate body (comment-stripped compare), b1 vs b2 differ in ONLY that one line, and qty_b1.log:649-650 / qty_b2.log:649-650 print the claimed allocno_compare rows verbatim (with: j 15/73=6164 > complement 6111; without: j 11/59=5593 < 6111) - so the construct is necessary on this no-carrier chassis, which is the ONE thing the 2026-09-11 05:42 layer-1 FAIL asked for and the only ground its auto-ban recorded. Layer-1 findings are revie"
   }
  ]
 }

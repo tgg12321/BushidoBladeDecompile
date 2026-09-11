@@ -4755,3 +4755,31 @@ floor of 2 (g0, g2, g7), 4 at 3. No hit.
   (named intermediate). The s36 Judge-FAILed `h` is absent, and so is the `total` staging borrow that
   ruling granted — `total` is back to being an ordinary local doing only its real job (the row-area
   guard). Self-vet: memory/grind/func_8003DE14/self_vet.md.
+
+## s38b (2026-09-11, structural) — necessity of the s21 chain extender, measured
+
+- **One sweep, four bodies differing only in FAKE-construct presence** (all 173 build insns,
+  `sandbox func_8003DE14 --disable all`, rules_dropped 0):
+  `b1` (committed body) **0**; `b2` (ONLY the s21 `((s32)dst_buf + j) - j` extender removed) **7**;
+  `b3` (ONLY `gm` removed) **17**; `b4` (both removed) **22**.
+  Files: `tmp/grind/func_8003DE14/s38/v2/b1..b4.c`.
+  This supersedes the s37 `u1` datum ("the extender is inert, 7 with and without"), which was taken
+  on the h-carrier chassis that this body no longer uses.
+- **Closed form for the 7** (dumped, not inferred). `b2`'s residual is a pure $t4 <-> $t5 exchange
+  between `j` and `complement` on six rows. `global.c`'s `allocno_compare` sorts by
+  `floor_log2(n_refs) * n_refs / live_length * 10000`:
+  | body | `j` | `complement` | $t4 goes to |
+  |---|---|---|---|
+  | b2 (no extender) | 11 refs / livelen 59 -> **5593** | 11 / 54 -> **6111** | `complement` (wrong) |
+  | b1 (extender)    | 15 refs / livelen 73 -> **6164** | 11 / 54 -> **6111** | `j` (target) |
+  Artifacts: `s38/qty_b1.log` and `s38/qty_b2.log`, ord=15/16 lines. Winning margin 0.87%.
+- **Why the chassis is forced**: `reorg.c:2963`'s backward delay-slot scan for the inner loop's
+  guarding `blez` takes the nearest non-conflicting insn. With `j = 0` at row scope that insn is
+  `j = 0` — the target's `addu $t4,$zero,$zero` in the slot. Declare `j` inside the guard and the
+  scan instead reaches insn 121, the `dst = dst_buf` init, and hoists it out of the row-top block
+  (target keeps `addiu $a2,$sp,0x410` at row 54). Trace: `s38/dbr_c2.log:2185-2191`.
+- **Exhaustion**: 56 further bodies measured this session (23 declaration-order permutations, 8
+  declaration placements, 7 `complement` hoists/splits, 7 `complement` bookkeeping forms, 5
+  `duplicated-statement-into-arms` spellings of `j++`, 6 in-latch `j` detours). Best without the
+  s21 extender: **3** (`j` declared inside the guard — seats correct, `dst` init row broken).
+  Banked under `rejected/s38b-*.c`.

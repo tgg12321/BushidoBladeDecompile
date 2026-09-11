@@ -3671,3 +3671,95 @@ compound-assignment split) survive but land the extra refs on `j`'s allocno and 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); the s37/v2/g6.c no-carrier chassis (candidate.c with the latch carrier removed); FAKE constructs present: gm named intermediate, s21 j chain extender; no latch carrier.
+
+## s38b (structural, second run after the 2026-09-11 05:42 layer-1 FAIL) hypotheses
+
+The layer-1 FAIL asked for exactly one thing — "One measurement, not a re-grind" — a necessity
+measurement for the s21 `((s32)dst_buf + j) - j` chain extender on the no-carrier chassis, because
+the ledger's nearest measurement (s37 u1) had found it inert on the *h-carrier* chassis. That
+measurement is now banked (H38b-1), together with the closed-form arithmetic that explains it
+(H38b-2), the reorg mechanism that forces the chassis (H38b-3), and a 56-spelling exhaustion sweep
+of every ordinary-C and sanctioned-family alternative (H38b-4).
+
+## [s38b] The s21 `((s32)dst_buf + j) - j` chain extender is worth 7 points on the current
+no-carrier chassis, not 0 — the s37 `u1` measurement layer-1 relied on was taken on the h-carrier
+chassis, which this body no longer uses.
+- mechanism: The extender's two extra reads of `j` sit in the OUTER row loop, so flow.c weights
+  them x2 and `j`'s reg_n_refs goes 11 -> 15; they also extend `j`'s live range across the row's
+  LoadImage call (livelen 59 -> 73). global.c's allocno_compare key
+  (floor_log2(n_refs)*n_refs/live_length*10000) therefore goes 3*11/59 = 5593 -> 3*15/73 = 6164,
+  crossing `complement`'s fixed 3*11/54 = 6111 and taking $t4 from it.
+- probe: One sweep of four bodies differing only in which FAKE construct is present
+  (tmp/grind/func_8003DE14/s38/v2/b1..b4.c), then BB2_ALLOC_DEBUG dumps of b1 and b2
+  (s38/qty_b1.log, s38/qty_b2.log) and a rowdiff of b2.
+- result: b1 (the committed body) 0/173; b2 (ONLY the s21 detour removed) 7/173; b3 (ONLY `gm`
+  removed) 17/173; b4 (both removed) 22/173 — all at 173 build insns. b2's residual is a pure
+  $t4 <-> $t5 exchange between `j` and `complement` on six rows (71 `subu $t5,$s8,$t3`,
+  95/103/111 `mult ...,$t5`, 137 `addiu $t4,$t4,1`, 139 `slt $v0,$t4,$t6`). The allocno dumps print
+  the predicted priorities verbatim: qty_b1.log ord=15 `pseudo=115 hardreg=12 nrefs=15 livelen=73
+  pri=6164` / ord=16 `pseudo=116 hardreg=13 nrefs=11 livelen=54 pri=6111`; qty_b2.log ord=15
+  `pseudo=116 hardreg=12 nrefs=11 livelen=54 pri=6111` / ord=16 `pseudo=115 hardreg=13 nrefs=11
+  livelen=59 pri=5593`. Margin at the win: 53 parts in 6111 (0.87%).
+- verdict: CONFIRMED
+
+## [s38b] `j`'s initialiser must be emitted BEFORE the inner loop's guarding `blez`, because
+reorg.c's backward delay-slot scan takes the nearest non-conflicting insn and, when `j = 0` is not
+there, reaches the `dst = dst_buf` init instead and hoists it out of the row-top block.
+- mechanism: tools/gcc-2.7.2/reorg.c:2963 (fill_simple_delay_slots, the backward scan) walks back
+  from the jump accumulating `set`/`needed`; the div, the two shift/add insns feeding it and the
+  `mflo` that feeds the branch all conflict, so the first eligible trial is whichever independent
+  insn sits furthest back in that block. With `j` at row scope that is `j = 0` (the target's
+  `addu $t4,$zero,$zero` in the slot at func_8003DE14.s:8003DF2C, with `addiu $a2,$sp,0x410`
+  staying at row 54). With `j` declared inside the guard, `j = 0` moves after the branch and the
+  scan reaches insn 121, the `dst` init, which is eligible.
+- probe: BB2_DBR_DEBUG=1 cc1 -da on the j-in-guard body (tmp/grind/func_8003DE14/s38/dbr.sh,
+  artifact s38/dbr_c2.log) plus its objdump.
+- result: dbr_c2.log:2185-2191 prints the whole scan for the guard branch: `simp insn=131
+  trial=128 elig=0` (the div, too long for a slot), `trial=125 refset=1 setset=1 setneed=1`,
+  `trial=124 setset=1 setneed=1`, `trial=410 refset=1 setneed=1`, then `trial=121 refset=0
+  setset=0 setneed=0` followed by `trial=121 elig=1` — insn 121 is
+  `(set (reg a2) (plus (reg sp) (const_int 1040)))`, the `dst` init. The resulting body scores
+  3/173 with the $t4/$t5 seats CORRECT: fixing the seats this way just moves the defect.
+- verdict: CONFIRMED
+
+## [s38b] With `j` initialised before the guard, no declaration-order, declaration-placement,
+`complement`-bookkeeping, duplicated-statement-into-arms or in-latch detour spelling measured this
+session raises pri(j) above pri(complement).
+- mechanism: `j` is the latch variable, so its live range starts before `complement`'s set (the
+  preheader `subu`) and ends after `complement`'s last use (the blue channel's mult); livelen(j) >
+  livelen(complement) holds for every spelling on this chassis, and with both at 11 refs the ratio
+  can only be crossed by adding references to `j` (12 refs is still short: 3*12/59 = 6101 < 6111;
+  13 is the first winner at 6610) or removing them from `complement` (10 refs -> 5555 is the first
+  loser, and `complement`'s 11 = 2 for the depth-2 set + 3 uses x3 in the inner loop, none of them
+  removable without changing the arithmetic).
+- probe: 56 bodies in one session, all swept with tools/sweep_variants.py:
+  all 23 permutations of the four row-scope declarations (s38/v4/d*.c); 8 declaration-placement
+  forms for `j` and `complement` (s38/v3/c1..c8.c); 7 forms hoisting or splitting `complement`
+  (s38/v5/e1..e7.c); 7 `complement` bookkeeping forms — inlined at all three use sites, inlined
+  without `blend_base`, recomputed inside the loop for LICM to hoist, split-init, negated-operand,
+  and a renamed counter (s38/v6/f1..f7.c); 5 `j++` duplications into the inner loop's arms
+  (s38/v7/h1..h5.c); 6 in-latch `j` detour spellings (s38/v8/i1..i6.c).
+- result: declaration-order permutations are completely inert (all 23 = 3, identical to c2);
+  declaration placement 7-58; `complement` hoisted out of the guard 23-29 (it reproduces s37's
+  H37-4 finding that `complement`'s hoist position alone is worth ~25); `complement` bookkeeping
+  7-11 (inlining it at all three sites is byte-identical to naming it — CSE makes one pseudo
+  either way); `j++` duplicated into the arms 13-25 (h1/h2 fail to cross-jump-merge and emit 175
+  insns; h3/h5 stay at 173 but the ref lift overshoots — `j` jumps a floor_log2 step and the seat
+  map moves further from the target, 13/173); in-latch `j` detours 3-12 — putting the lift inside
+  the inner loop instead of on the LoadImage argument does NOT produce it, so the two detours
+  cannot be merged into one construct. Best non-s21 result this session: 3/173 (c2).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); the s38 no-carrier chassis
+  (memory/grind/func_8003DE14/candidate.c) with the s21 LoadImage chain extender removed; FAKE
+  constructs present in the sweep base: `gm` named intermediate and the `+ rect[2] - rect[2]` bound
+  detour; no latch carrier.
+
+## [s38b] `gm`'s necessity on this chassis, re-measured in the same sweep.
+- mechanism: as banked at s36 — naming the green channel's masked result shortens `g_src`'s live
+  range so that pri(px) = 44444 > pri(red) = 43636.
+- probe: tmp/grind/func_8003DE14/s38/v2/b3.c (this body with ONLY the `gm` name removed) and b4.c
+  (with both `gm` and the s21 detour removed).
+- result: b3 = 17/173, b4 = 22/173 (vs b1 = 0). `gm` is worth 17 points on the no-carrier chassis,
+  and the two constructs are close to additive (0 -> 7 -> 17 -> 22).
+- verdict: CONFIRMED

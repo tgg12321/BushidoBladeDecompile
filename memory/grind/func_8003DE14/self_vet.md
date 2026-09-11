@@ -141,3 +141,42 @@ ANNOTATION-CONFORMANCE:
    * lever-exhaustion: memory/grind/func_8003DE14/hypotheses.md s29-s35 + s36
    * waves x */
    (present in candidate.c)
+
+## s38b ADDENDUM (2026-09-11) - the necessity measurement layer-1 asked for
+
+Layer-1 FAILed this body on 2026-09-11 05:42 on one ground only: "the s21
+`((s32)dst_buf + j) - j` detour has NO necessity measurement on this s38
+no-carrier chassis and the ledger's own nearest measurement (s37 u1) found it
+inert". The body is UNCHANGED; what follows is that measurement.
+
+MEASURED, one sweep, four bodies differing only in which FAKE construct is
+present (tmp/grind/func_8003DE14/s38/v2/b1..b4.c, all 173 build insns,
+rules_dropped 0):
+  b1 = the committed body                                -> 0/173
+  b2 = b1 with ONLY the s21 extender removed             -> 7/173
+  b3 = b1 with ONLY `gm` removed                         -> 17/173
+  b4 = both removed                                      -> 22/173
+The s37 `u1` datum layer-1 relied on ("still 7 without it") was taken on the
+h-CARRIER chassis, which this body does not use; that chassis no longer exists.
+
+CLOSED FORM for the 7 (BB2_ALLOC_DEBUG dumps, not inference). b2's residual is a
+pure $t4 <-> $t5 exchange between `j` and `complement`. global.c's
+`allocno_compare` key is floor_log2(n_refs)*n_refs/live_length*10000:
+  b2: j 11 refs/livelen 59 -> 5593 ; complement 11/54 -> 6111 -> complement takes $t4 (wrong)
+  b1: j 15 refs/livelen 73 -> 6164 ; complement 11/54 -> 6111 -> j takes $t4 (target)
+Artifacts: s38/qty_b2.log and s38/qty_b1.log, ord=15/16 lines. Margin 0.87%.
+
+WHY NO ORDINARY-C FORM REACHES IT (56 bodies measured this session, banked under
+rejected/s38b-*.c): `j`'s initialiser must be emitted before the inner loop's
+guarding `blez`, because reorg.c:2963's backward delay-slot scan otherwise
+reaches the `dst = dst_buf` init and hoists it out of the row-top block
+(BB2_DBR_DEBUG trace s38/dbr_c2.log:2185-2191; that body scores 3 with the seats
+CORRECT - it just moves the defect). With `j` initialised there, livelen(j) >
+livelen(complement) for every spelling, so at equal refs `complement` always
+wins; 12 refs is still short (3*12/59 = 6101 < 6111). Swept and failed: 23
+declaration-order permutations (all inert), 8 declaration placements, 7
+`complement` hoists/splits (23-29), 7 `complement` bookkeeping forms (7-11), 5
+`duplicated-statement-into-arms` spellings of `j++` - the sanctioned family whose
+own rule names a reg_n_refs lift as its effect - (13-25; the two that stay at 173
+insns overshoot a floor_log2 step), and 6 in-latch `j` detours (3-12, so the two
+detours cannot be merged into one construct).
