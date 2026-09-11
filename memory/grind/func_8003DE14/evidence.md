@@ -2149,3 +2149,142 @@ Two obstacles, both now solved in `tmp/grind/func_8003DE14/s17/`:
 - [s17] TOOLING: tools/sched_solver/mkasm.sh cannot be used on this function - it predates --prefill-label-funcs (owner ruling 2026-09-04) and runs the FULL prologue_fix, while the sandbox builds with cheats.empty_overrides and a cheat-stripped src. tmp/grind/func_8003DE14/s17/mkasm3.py rebuilds the three sched_map streams through engine.pipeline.c_pipeline_cmd with the sandbox's own override dict.
 
 - [s17] TOOLING: goalmap.build_map's same-source checksum rejects this function even with the correct streams (179 honest text lines vs 173 object insns). The six extra lines are maspsx mult/mflo interlock nop PAIRS that objdump renders as '...' and engine.score.normalized_insns drops - symmetrically from BOTH streams (objdump -z confirms target and ours both carry nop;nop at 0x25c8/0x25cc and 0x25e8/0x25ec). tmp/grind/func_8003DE14/s17/perturb2.py patches goalmap._macro_expand_counts so a nop inside a RUN of nops expands to 0 object insns while an isolated nop still counts 1 (179 - 6 = 173). A permanent fix belongs in tools/sched_solver/goalmap.py, which a grind session may not edit.
+
+
+## s18 (forensics, 2026-09-10) - the head residual is reorg.c's backward scan, and it is now CLOSED as a structure question
+
+Chassis re-measured at dispatch: candidate.c (s13 body) installed in
+src/code6cac_c2.c scores 26 / 173 insns on HEAD 2026-09-10 (post -mel, post
+-msoft-float).  Unchanged from s13-s17.
+
+### 1. PASS ATTRIBUTION, from the pass's own instrumentation (not inferred)
+
+`tools/gcc-2.7.2/cc1` with `BB2_DBR_DEBUG=1`
+(tmp/grind/func_8003DE14/s18/dbr/stderr.log:2185-2191) prints the entire
+backward scan of `fill_simple_delay_slots` for the head block's `blez`
+(jump_insn 131):
+
+    DBRDBG simp insn=131 trial=128 refset=0 setset=0 setneed=0
+    DBRDBG simp insn=131 trial=128 elig=0
+    DBRDBG simp insn=131 trial=125 refset=1 setset=1 setneed=1
+    DBRDBG simp insn=131 trial=124 refset=0 setset=1 setneed=1
+    DBRDBG simp insn=131 trial=394 refset=1 setset=0 setneed=1
+    DBRDBG simp insn=131 trial=121 refset=0 setset=0 setneed=0
+    DBRDBG simp insn=131 trial=121 elig=1
+
+Reading it against reorg.c:2963-3020: insn 128 is the divmod parallel, resource-
+clean but `eligible_for_delay` = 0 (multi-insn template); 125 (`sll v0`), 124
+(`addiu v0,s1,1`) and 394 (`mflo v1`) all collide with the accumulated
+set/needed sets; insn 121 - `(set (reg a2) (plus (reg sp) (const_int 1040)))`,
+i.e. `dst = dst_buf` - is clean AND eligible, so reorg deletes it from the block
+and puts it in the slot.  THE SCHEDULER IS INNOCENT: the .sched2 dump
+(tmp/grind/func_8003DE14/dumps/code6cac_c2.sched2, function region lines
+18900-20509) already emits 118 (`addiu a3,sp,16`) immediately followed by 121
+(`addiu a2,sp,1040`) - exactly the target's rows 56/57.  reorg is what moves it.
+This confirms the s17 solver verdict from the other direction.
+
+### 2. THE PASS-INPUT ENUMERATION THAT FOLLOWED
+
+reorg takes the CLOSEST eligible insn before the branch.  The only source-side
+input that changes the outcome is therefore WHICH insn is last in the head block
+before the `blez`.  Hoisting `s32 j = 0;` out of the `if (total > 0)` guard and
+writing it as a sibling declaration-initialiser after `factor` (form h1,
+memory/grind/func_8003DE14/chassis_s18_h1_head_exact_28.c) makes `move j,zero`
+the last pre-branch insn - and reorg takes it, exactly as the target does.
+
+Result (tmp/grind/func_8003DE14/s18/h1.txt against asm/funcs/func_8003DE14.s):
+
+    target 55-57  mult v1,v0 | addiu a3,sp,0x10 | addiu a2,sp,0x410
+    h1     2514-  mult v1,v0 | addiu a3,sp,16   | addiu a2,sp,1040     IDENTICAL
+    target 73-77  mflo t3 | blez v1 | [slot] addu t4,zero,zero | subu t5,fp,t3 | addiu v0,s2,-1
+    h1     2554-  mflo t3 | blez v1 | [slot] move t5,zero      | subu t4,s8,t3 | addiu v0,s2,-1
+
+The 4-insn head residual that has been on the frontier since s13 is GONE in h1.
+What replaces it is a pure two-register NAME swap: h1 seats j on $t5 and
+complement on $t4; the target and the incumbent seat j on $t4 and complement on
+$t5.  Because complement is read three times in the blend arm and j twice in the
+latch, the swap costs ~6 rows, so h1 scores 28 against the incumbent's 26.
+
+### 3. THE SEAT IS ONE global.c PRIORITY COMPARE, WITH THE ARITHMETIC IN HAND
+
+`BB2_ALLOC_DEBUG=1` on the h1/h6 chassis
+(tmp/grind/func_8003DE14/s18/alloc_h6/stderr.log):
+
+    ord=15 pseudo=116 (complement) hardreg=12 ($t4) nrefs=11 livelen=54 pri=6111
+    ord=16 pseudo=115 (j)          hardreg=13 ($t5) nrefs=11 livelen=59 pri=5593
+
+pri = floor_log2(nrefs) * nrefs * 10000 / livelen (global.c:605-612 is the dump
+site).  Both pseudos carry nrefs 11 because reg_n_refs is loop-depth weighted in
+flow.c: complement = def at depth 2 + three reads at depth 3 = 2 + 9; j = def at
+depth 2 + `j++` (a read and a write) at depth 3 + the trip compare at depth 3 =
+2 + 6 + 3.  The ONLY term that differs is livelen, and it differs by exactly the
+5 insns by which hoisting `j = 0` lengthens j's live range.  In the incumbent the
+same pair prices the other way round, which is why the incumbent has the seats
+right and the structure wrong.
+
+Three flips exist arithmetically and s18 measured all three families:
+  (a) nrefs(j) >= 14 (one extra depth-3 read of j: +3) => pri 7118 > 6111.  No
+      byte-neutral spelling found: `if (j < total)` and `if (j < rect[2]*rect[3])`
+      as the guard both defeat the blez (slt + branch) and score 45.
+  (b) livelen(j) <= 54.  j's def is already the last insn of the head block (it
+      IS the delay-slot insn) and its last use is the latch; the range cannot be
+      shortened without moving the def back inside the guard, i.e. the incumbent.
+  (c) livelen(complement) >= 60.  complement's def is already the first insn of
+      the preheader and its last use (the b-channel complement product) is 3
+      insns before j's last use.  The blend arm's statement order cannot push it
+      6 insns later: each channel's complement product must precede the
+      `X_src = X * factor` overwrite of that channel's carrier, so the current
+      r/g/b-in-full order already places complement's last use as late as the
+      per-channel reuse allows.
+
+### 4. WHY IT IS WORTH 4 POINTS, NOT 2
+
+The incumbent's 26 decomposes head 4 + blend-arm seats 19 + trip test 3.  h1's 28
+decomposes head 0 + blend 19 + trip 3 + t4/t5 swap 6.  A form with h1's head AND
+the incumbent's j/complement seats scores 22 - a 4-point drop and the first
+movement of this floor since s13.
+
+### 5. FORMS MEASURED THIS SESSION (all on HEAD 2026-09-10, no FAKE constructs)
+
+    base (candidate.c, s13 body)                                   26
+    h1  j=0 hoisted above the guard as a decl-initialiser          28   head EXACT
+    h2  j declared bare, `j = 0;` as a statement above the guard    28
+    h3  `s32 j = 0;` declared before `total`                        30
+    h4  inner loop rewritten `while (j < rect[2]*rect[3])`,
+        complement inside the body for LICM                        59
+    h5  complement+j declared (uninitialised) above the guard,
+        assigned in place, complement first                        28
+    h6  same, j declared first                                     28
+    h7  complement AND j hoisted above the guard, complement first 44
+    h8  same, j first                                              44
+    h9  h1 with the guard spelled `if (j < total)`                 45
+    h10 h1 with the guard spelled `if (j < rect[2] * rect[3])`     45
+
+h5/h6 also kill the declaration-order lever for THIS pair: splitting the
+declarations from the assignments and swapping their order leaves the score at
+28 and does not move the $t4/$t5 seats, so the pair's seat is decided purely by
+the priority compare above and not by pseudo numbering (contrast s16, where
+renumbering did move the 32727-tie pair).
+
+h7/h8's 44 has a named cause: making complement live before the guard forces the
+factor division ahead of the total multiply, so the head block emits
+addiu v0,s1,1 / sll / div / mflo t3 BEFORE lh/lh/mult and `total` lands in $t6
+instead of $v1 (tmp/grind/func_8003DE14/s18/h7.txt:2508-255c).  This reproduces
+s15's "every hoisted-j spelling is 40+" result on the s18 chassis and localises
+it: it is complement, not j, that costs the 16 points.
+
+- [s18] Chassis re-measured at dispatch: the s13 candidate.c body installed in src/code6cac_c2.c scores 26 / 173 insns on HEAD 2026-09-10; src was restored to INCLUDE_ASM before the session ended.
+
+- [s18] reorg.c's fill_simple_delay_slots backward scan for the head blez (jump_insn 131) is printed verbatim by the instrumented cc1: trial=128 refset=0 setset=0 setneed=0 but elig=0; trial=125 refset=1 setset=1 setneed=1; trial=124 setset=1 setneed=1; trial=394 refset=1 setneed=1; trial=121 clean and elig=1 -> taken (tmp/grind/func_8003DE14/s18/dbr/stderr.log:2185-2191).
+
+- [s18] The .sched2 dump for func_8003DE14 (tmp/grind/func_8003DE14/dumps/code6cac_c2.sched2, function region lines 18900-20509) emits insn 118 `addiu a3,sp,16` immediately followed by insn 121 `addiu a2,sp,1040` - the target's rows 56/57 - so the head residual is entirely downstream of sched2.
+
+- [s18] Form h1 (j=0 hoisted out of the guard) makes the head region byte-identical to the target: rows 55-57 and 73-77 match opcode-for-opcode, with only the j/complement pair exchanging $t4 and $t5 (tmp/grind/func_8003DE14/s18/h1.txt).
+
+- [s18] The j/complement seat is decided by one global.c priority compare: ord=15 pseudo=116 (complement) hardreg=12 nrefs=11 livelen=54 pri=6111, ord=16 pseudo=115 (j) hardreg=13 nrefs=11 livelen=59 pri=5593 (tmp/grind/func_8003DE14/s18/alloc_h6/stderr.log). Both carry nrefs 11 under flow.c's loop-depth weighting; only livelen differs, by exactly the 5 insns the hoist costs.
+
+- [s18] Score decomposition: the incumbent's 26 = head 4 + blend-arm seats 19 + trip test 3; h1's 28 = head 0 + blend 19 + trip 3 + 6 rows of t4/t5 naming. A form carrying h1's head and the incumbent's seats therefore scores 22.
+
+- [s18] Ten forms measured this session, all on HEAD 2026-09-10 with no FAKE constructs: base 26, h1 28, h2 28, h3 30, h4 59, h5 28, h6 28, h7 44, h8 44, h9 45, h10 45.
+
+- [s18] The livelen route to the flip is arithmetically bounded: j's def is already the last insn of the head block (it is the delay-slot insn) and its last use is the latch, so livelen(j) cannot drop to 54 without moving the def back inside the guard; complement's def is already the first insn of the preheader and its last use is 3 insns before j's, and the blend arm cannot push it 6 insns later because each channel's complement product must precede the `X_src = X * factor` overwrite of that channel's carrier.

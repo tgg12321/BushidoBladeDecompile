@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 17,
- "current_modality": "solver",
+ "session_count": 18,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -105,60 +105,34 @@
    "floor": 26,
    "modality": "solver",
    "headline": "Solver triage closes the SCHEDULER axis: classify says FIRST DIVERGENCE = RA (register-blanked multisets identical, 173 vs 173), and sched_solver flags exactly one block of func_8003DE14 in either pas"
+  },
+  {
+   "session": 18,
+   "floor": 26,
+   "modality": "forensics",
+   "headline": "Forensics: BB2_DBR_DEBUG names reorg.c fill_simple_delay_slots (not sched) as the head residual's producer, and hoisting j=0 out of the guard makes the head region byte-exact - leaving one global.c pr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 4-insn head residual is decided in reorg.c's fill_simple_delay_slots, not in sched: our blez's delay slot is filled from BEFORE the branch (the addiu a2,sp,1040 that sched2 leaves last in the block) while the target's is filled from the FALL-THROUGH thread (move t4,zero). A C form that makes the last pre-branch insn ineligible for the slot - the target has an mflo there, and reorg cannot hoist an mflo into a delay slot - restores the target's rows 54-71 in one step.",
-   "mechanism": "reorg.c's fill_simple_delay_slots scans backwards from the branch for an independent insn in the same basic block and only falls through to the branch target / fall-through thread when it finds none. Our block ends ... mflo t3, addiu a2,sp,1040, blez; the target's ends ... addiu a2 (row 54), mflo t3, blez. So the question is not which order sched2 emits (s17 measured those equal) but which insn is LAST before the branch.",
-   "next_probe": "Dump .dbr and .sched2 for the incumbent (pwsh tools/grinder/dump.ps1 func_8003DE14) and read the head block's insn chain immediately before jump_insn 96 in both - confirming that addiu a2 sits last pre-reorg and that reorg moved it. Then look for C forms that place the dst cursor's materialisation earlier in the block's dependence order, e.g. giving dst a use inside the head region, or making the total = rect[2]*rect[3] multiply the last thing computed before the guard, so that the mflo is the final pre-branch insn. Score each with sandbox --disable all."
+   "hypothesis": "On the h1 chassis, ONE extra loop-depth-3 reference to `j` anywhere inside the inner loop lifts pri(j) from 5593 to >= 7118 and hands j the $t4 seat, producing a 22 form. s18 only disproved the guard-comparison spelling of that extra reference.",
+   "mechanism": "global.c prices allocnos at floor_log2(nrefs)*nrefs*10000/livelen and allocates in descending priority, each taking the lowest free hard register. flow.c weights reg_n_refs by loop depth, so a single read of j inside the inner loop (depth 3) adds 3 to nrefs: 11 -> 14 gives 3*14*10000/59 = 7118 > complement's 6111, while a depth-2 read only adds 2 (11 -> 13, pri 6610 - also sufficient).",
+   "next_probe": "Install chassis_s18_h1_head_exact_28.c and enumerate ordinary-C spellings that read j once more without adding an instruction: the latch rewritten as `j = j + 1;` vs `++j` vs `j += 1` (confirm whether GCC counts the read/write pair differently); the trip test with the operands exchanged (`rect[2] * rect[3] > j`); j reused as the loop-check label's fall-through value; and the outer-loop `i == count - 1` arm reading j. After each build, read the alloc table directly with BB2_ALLOC_DEBUG=1 through tmp/grind/func_8003DE14/s18/alloc.sh and check pseudo 115's nrefs/pri BEFORE trusting the score - the alloc table tells you whether the reference survived to flow.c even when the score does not move."
   },
   {
-   "hypothesis": "g_src's allocno priority can only be lifted through its live RANGE, not its schedule: with the pick order proven equal to the target's, the remaining levers are the NUMBER of g_src references (nrefs >= 15 at livelen <= 13 gives pri >= 35000) or an earlier last reference (livelen <= 10 gives pri 36000). Both are decided before sched1 by where the g-channel value is read.",
-   "mechanism": "global.c prices an allocno at nrefs * 10000 * something / livelen; s14 derived the exact arithmetic (px pri 32727 at nrefs 12 / livelen 11, g_src pri 30000). s17 removes the schedule from the set of things that can move livelen, so only the C-level reference pattern remains.",
-   "next_probe": "Use tmp/grind/func_8003DE14/s16/batch_alloc.py to read nrefs and livelen for g_src directly (not inferred from the score) over a family of forms that vary ONLY how many times the g-channel source value is read and where its last read sits - e.g. folding the g sum's second operand through g_src, or deriving a later value from g_src instead of from px. Reject any form whose alloc table shows px's priority moving too, since s16 measured that steering the seat re-prices the arm."
+   "hypothesis": "The blend arm's 19-insn seat residual (px/g_src/r_src, s14-s16) may price differently on the h1 chassis than on the incumbent's, because hoisting j=0 changes the pseudo numbering and the head block's live ranges that s16's 1,483-form carrier lattice was measured against.",
+   "mechanism": "s16's carrier lattice and its carrier_alloc.json alloc tables were all captured with j defined inside the guard. The h1 hoist shifts the head block's liveness and therefore the seed of regs_used_so_far and the conflict sets that global.c sees when it reaches the 32727 pair.",
+   "next_probe": "Re-run the s16 batch_alloc.py / carrier lattice harness (tmp/grind/func_8003DE14/s16/) against the h1 chassis rather than the incumbent, and compare the resulting alloc tables for pseudos 121/122/123/126/128 with s16/carrier_alloc.json. Any form whose blend seats improve on the h1 chassis is worth scoring even if it was rejected at 34-38 on the old chassis - the banked kills there are chassis-relative."
   },
   {
-   "hypothesis": "The b_src / $v0 conflict-set difference (s16 frontier item 2) is now the only remaining RA lever with an untested mechanism: the target's $v0 is free of global allocnos because b_src is excluded from it by a conflict our build does not have.",
-   "mechanism": "global.c hands each allocno the lowest-numbered free hard register that does not conflict. b_src (p128, pri 32727) takes $v0 in our build, so it conflicts with nothing there; the target seats b_src on $a0, meaning $v0 was unavailable at that point - a flow.c liveness question, a different lever from priority arithmetic, and one s17's scheduler result does not touch.",
-   "next_probe": "Dump .flow/.lreg conflict information for p128 on the incumbent (tmp/grind/func_8003DE14/s16/d_base) and identify which live range would have to overlap b_src to exclude $v0; then search the already-banked s16/carrier_alloc.json corpus for spellings in which b_src is seated on $a0 while px, g_src and r_src keep the incumbent's priorities, and score those with sandbox --disable all."
+   "hypothesis": "A source shape that leaves BOTH `dst = dst_buf` and `src = src_buf` in the head block but makes neither resource-clean at the blez would force reorg past the backward scan into its forward 'insns beyond the branch' section, which takes the first insn of the fall-through block - giving the target's slot WITHOUT lengthening j's live range.",
+   "mechanism": "reorg.c:3040+ only reaches the forward section when the backward scan returns nothing. The backward scan's three predicates are printed per-trial by BB2_DBR_DEBUG (refset / setset / setneed), so the exact condition to defeat is measurable: some insn between the cursor init and the branch must reference or set $a2.",
+   "next_probe": "Enumerate head-region shapes that give `dst` a real use before the guard (for example computing the guard's `total` or the `factor` numerator through an expression that reads dst, or ordering the cursor inits so the later one feeds the earlier), rebuild with BB2_DBR_DEBUG=1 and read the DBRDBG lines for jump_insn 131: the probe SUCCEEDS when trial=121 prints setneed=1 and no trial prints elig=1. Only then score it."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 1,
-   "statement": "Declaring `dst` before `src` flips the build's a2=src / a3=dst cursor registers to the target's a3=src / a2=dst.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, form v5 (tmp/grind/func_8003DE14/s1/body_v5.c), no FAKE constructs",
-   "predicate_cite": "",
-   "result": "Score 57 \u2014 identical to the unswapped form, and the same a2/a3 assignment in the diff. Declaration order is not the disc"
-  },
-  {
-   "session": 1,
-   "statement": "A fresh multi-set scratch local carrying the div numerator `(i+1)<<12` and then `count - 1` is a better carrier than borrowing the existing `total` local.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, forms v2/v3 in tmp/grind/func_8003DE14/s1/, both un-annotated (no /* FAKE */ present at measurement time)",
-   "predicate_cite": "",
-   "result": "v3 = 58, v2 = 57. The fresh scratch is worse and would also need the harder family justification (inventing a local to b"
-  },
-  {
-   "session": 1,
-   "statement": "Introducing a named intermediate `s32 gc = ((g & 0xF8) << 2) | (s32)-0x8000;` restores the target's OR association for target_color.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, form v4 (tmp/grind/func_8003DE14/s1/body_v4.c), no FAKE constructs",
-   "predicate_cite": "",
-   "result": "Score 62, five WORSE than the 57 baseline. The named intermediate perturbs the callee-save allocation of r/g/b without f"
-  },
-  {
-   "session": 2,
-   "statement": "Re-associating the target_color OR chain at the C level - writing the `(s32)-0x8000` constant physically inside the green term, with or without `|=` accumulation - reproduces the target's `or v0,v0,v1",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), src/code6cac_c2.c, bodies in tmp/grind/func_8003DE14/s2/body_{w1,w2,w3,w4,w5,y1,y3,y4,y7,z4,z5,q1,q2}.c, no FAKE constructs present in any measu",
-   "predicate_cite": "",
-   "result": "Every spelling still emits `li v0,-32768` followed by `or <red>,<red>,v0` as the first OR of the chain; none reproduced "
-  },
   {
    "session": 2,
    "statement": "Declaration order fixes the two swapped register pairs: swapping the `src`/`dst` cursor declarations, or moving `j` to the head of the outer-loop block, flips the build's a2=src/a3=dst and t5=j/t4=com",
@@ -606,6 +580,38 @@
    "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (score 26 / 173 insns, re-measured this session), no FAKE constructs present; logs tmp/grind/func_8003DE14/s17/perturb_pass1.log an",
    "predicate_cite": "",
    "result": "The solver reports block 10's target-derived goal as NOT a topological order and skips it - the difflib aligner mis-pair"
+  },
+  {
+   "session": 18,
+   "statement": "On the h1 chassis, moving the declarations of `j` and `complement` (declaration split from assignment, either order) exchanges their $t4/$t5 hard registers.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h5.c and h6.c",
+   "predicate_cite": "",
+   "result": "h5 = 28, h6 = 28; the alloc table shows ord=15 pseudo=116 hardreg=12 pri=6111 and ord=16 pseudo=115 hardreg=13 pri=5593 "
+  },
+  {
+   "session": 18,
+   "statement": "Spelling the guard as a comparison that reads j (`if (j < total)` or `if (j < rect[2] * rect[3])`, both equivalent since j == 0 there) buys j the extra loop-depth-3 reg_n_refs site that would price it",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h9.c and h10.c",
+   "predicate_cite": "",
+   "result": "Both score 45. The comparison no longer folds to `blez`: GCC emits slt + branch, which costs far more than the seat is w"
+  },
+  {
+   "session": 18,
+   "statement": "Hoisting `complement` out of the `if (total > 0)` guard alongside `j` gives complement the longer live range and so restores the target's j=$t4 / complement=$t5 seats on top of h1's head structure.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis re-measured this session at 26 / 173, no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h7.c and h8.c",
+   "predicate_cite": "",
+   "result": "Both score 44. Making complement live before the guard drags its dependence chain with it: the head block emits `addiu v"
+  },
+  {
+   "session": 18,
+   "statement": "Rewriting the inner do-while as `while (j < rect[2] * rect[3])` with `complement` moved inside the loop body, so loop.c hoists it into the preheader, reproduces the target's head + preheader shape.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis re-measured this session at 26 / 173, no FAKE constructs present, form tmp/grind/func_8003DE14/s18/h4.c",
+   "predicate_cite": "",
+   "result": "Score 59. loop.c does not produce the target's preheader from this source and the whole blend arm is re-scheduled around"
   }
  ],
  "ladder_skip": 0,

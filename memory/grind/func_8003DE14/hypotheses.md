@@ -1668,3 +1668,87 @@ two short-lived trip-test pseudos - plus (b) one reorg.c delay-slot choice.
 - probe: python3 tools/ra_solver/inverse_compose.py classify code6cac_c2 func_8003DE14 --target-object build/src/code6cac_c2.o --ours-object tmp/sandbox/func_8003DE14/code6cac_c2.o (log tmp/grind/func_8003DE14/s17/classify.log).
 - result: FIRST DIVERGENCE: RA; honest 173 insns, target 173 insns; next tool tools/ra_solver/inverse.py (global / local). The register-blanked multisets are identical, so no front-end / cse / combine / loop divergence exists anywhere in this function. Every one of the 26 points is a register name or a placement, never a different or missing instruction. The residual decomposes into (a) global.c's seats for px / g_src / b_src / r_src and the two short-lived trip-test pseudos, and (b) one reorg.c delay-slot choice in the outer-loop head.
 - verdict: CONFIRMED
+
+
+## s18 (forensics, 2026-09-10)
+
+- CONFIRMED - The head block's 4-insn residual is produced by reorg.c's
+  `fill_simple_delay_slots` backward scan, not by sched1/sched2 and not by
+  allocation.  BB2_DBR_DEBUG prints the scan rejecting insns 128/125/124/394 and
+  accepting insn 121 (`addiu a2,sp,1040`, the `dst = dst_buf` init) for the
+  blez's delay slot, while .sched2 already emits 121 adjacent to 118 exactly as
+  the target does.  (tmp/grind/func_8003DE14/s18/dbr/stderr.log:2185-2191;
+  reorg.c:2963-3020)
+
+- CONFIRMED - Making `move j,zero` the last insn before the blez gives reorg the
+  target's delay slot and restores the target's rows 56/57 and 73-77 exactly.
+  The C spelling is `s32 j = 0;` hoisted out of the `if (total > 0)` guard into
+  the per-outer-iteration declaration list (form h1, score 28; head region
+  byte-identical to the target modulo one register-name swap).
+
+- KILLED (instance) - On the h1 chassis, moving the DECLARATIONS of `j` and
+  `complement` (declaration split from assignment, either order, h5/h6) flips the
+  $t4/$t5 seats of the pair.  Both score 28 and the alloc table shows the same
+  pri 6111 / 5593 pair in the same order.  Measured on HEAD 2026-09-10, h1
+  chassis (28 / 173), no FAKE constructs.
+
+- KILLED (instance) - Spelling the guard as a comparison that reads `j`
+  (`if (j < total)`, `if (j < rect[2] * rect[3])`) buys j the extra depth-3
+  reg_n_refs site that would price it above complement.  Both score 45: the
+  comparison no longer folds to `blez` and GCC emits slt + branch.  Measured on
+  HEAD 2026-09-10, h1 chassis, no FAKE constructs.
+
+- KILLED (instance) - Hoisting `complement` out of the guard alongside `j`
+  (h7/h8, either declaration order) prices the pair the target's way.  Both score
+  44: complement's dependence on `factor` drags the whole factor division ahead
+  of the total multiply and `total` lands in $t6 instead of $v1.  Measured on
+  HEAD 2026-09-10, no FAKE constructs.
+
+- KILLED (instance) - Rewriting the inner do-while as
+  `while (j < rect[2]*rect[3])` with `complement` inside the body for LICM to
+  place in the preheader reproduces the target's preheader shape.  Score 59.
+  Measured on HEAD 2026-09-10, no FAKE constructs.
+
+## [s18] The head block's 4-insn residual is produced by reorg.c's fill_simple_delay_slots backward scan choosing insn 121 (`addiu a2,sp,1040`, the dst = dst_buf init) for the blez's delay slot, not by sched1/sched2 emission order.
+- mechanism: fill_simple_delay_slots (reorg.c:2963-3020) scans backwards from the branch accumulating set/needed resources and takes the first insn that is resource-clean AND eligible_for_delay. The instrumented cc1's DBRDBG trace prints the whole scan for jump_insn 131: trial 128 (the divmod parallel) is resource-clean but elig=0 (multi-insn template); 125, 124 and 394 all collide with set/needed; 121 is clean and elig=1, so reorg deletes it from the block and puts it in the slot. The .sched2 dump already emits 121 immediately after 118 (`addiu a3,sp,16`), i.e. exactly the target's rows 56/57, so the scheduler produces the target's order and reorg is what breaks it.
+- probe: pwsh tools/grinder/dump.ps1 func_8003DE14 (read the .sched2 function region, lines 18900-20509) plus a re-run of cpp|cc1 through tools/gcc-2.7.2/cc1 with BB2_DBR_DEBUG=1; trace at tmp/grind/func_8003DE14/s18/dbr/stderr.log:2185-2191.
+- result: Confirmed by the pass's own instrumentation. This closes the s17 frontier item 1 question 'is it sched or reorg' with a direct measurement rather than an inference, and it identifies the single source-side input that matters: which insn is LAST in the head block before the blez.
+- verdict: CONFIRMED
+
+## [s18] Hoisting `s32 j = 0;` out of the `if (total > 0)` guard into the per-outer-iteration declaration list makes `move j,zero` the last pre-branch insn, so reorg fills the blez delay slot with it and the head region becomes byte-identical to the target apart from the j/complement register-name swap.
+- mechanism: reorg takes the CLOSEST eligible insn before the branch. With j=0 emitted at the end of the head block it sits closer than insn 121, so the backward scan takes j=0 and leaves `addiu a2,sp,1040` at the target's row 57. The guarded block then begins with the complement subu, matching the target's preheader.
+- probe: Form h1 (tmp/grind/func_8003DE14/s18/h1.c, banked as memory/grind/func_8003DE14/chassis_s18_h1_head_exact_28.c); sandbox --disable all = 28 / 173; objdump stream at tmp/grind/func_8003DE14/s18/h1.txt compared index-by-index with asm/funcs/func_8003DE14.s rows 55-57 and 73-77.
+- result: target 55-57 `mult v1,v0 / addiu a3,sp,0x10 / addiu a2,sp,0x410` == h1 2514-251c; target 73-77 `mflo t3 / blez v1 / [slot] addu t4,zero,zero / subu t5,fp,t3 / addiu v0,s2,-1` == h1 2554-2564 with t4 and t5 exchanged. The 4-insn head residual that has stood since s13 is gone; h1's 28 decomposes head 0 + blend 19 + trip 3 + the 6-row t4/t5 swap, so a form carrying h1's head and the incumbent's seats scores 22.
+- verdict: CONFIRMED
+
+## [s18] On the h1 chassis, moving the declarations of `j` and `complement` (declaration split from assignment, either order) exchanges their $t4/$t5 hard registers.
+- mechanism: s16 established declaration-site renumbering as a real byte-neutral lever for the 32727-priority TIE pair. This pair is not tied: global.c prices complement at 6111 (nrefs 11 / livelen 54) and j at 5593 (nrefs 11 / livelen 59), allocates in descending priority order, and hands each allocno the lowest free hard register, so pseudo numbering never enters the decision.
+- probe: Forms h5 (complement declared first) and h6 (j declared first), both with bare declarations above the guard and plain assignments in place; sandbox --disable all on each; BB2_ALLOC_DEBUG=1 alloc table at tmp/grind/func_8003DE14/s18/alloc_h6/stderr.log.
+- result: h5 = 28, h6 = 28; the alloc table shows ord=15 pseudo=116 hardreg=12 pri=6111 and ord=16 pseudo=115 hardreg=13 pri=5593 in both. The renumbering lever does not reach this pair.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h5.c and h6.c
+
+## [s18] Spelling the guard as a comparison that reads j (`if (j < total)` or `if (j < rect[2] * rect[3])`, both equivalent since j == 0 there) buys j the extra loop-depth-3 reg_n_refs site that would price it above complement.
+- mechanism: pri = floor_log2(nrefs) * nrefs * 10000 / livelen and reg_n_refs is loop-depth weighted in flow.c, so one extra depth-3 read of j is worth +3 refs: 3*14*10000/59 = 7118 > complement's 6111, which would hand j the $t4 seat.
+- probe: Forms h9 and h10 (h1 with the guard rewritten); sandbox --disable all on each.
+- result: Both score 45. The comparison no longer folds to `blez`: GCC emits slt + branch, which costs far more than the seat is worth. The reference-count route to the flip has no byte-neutral spelling at the guard.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h9.c and h10.c
+
+## [s18] Hoisting `complement` out of the `if (total > 0)` guard alongside `j` gives complement the longer live range and so restores the target's j=$t4 / complement=$t5 seats on top of h1's head structure.
+- mechanism: complement's def would precede j's, making livelen(complement) > livelen(j) and inverting the global.c priority compare that h1 loses.
+- probe: Forms h7 (complement declared first) and h8 (j first); sandbox --disable all; objdump stream at tmp/grind/func_8003DE14/s18/h7.txt.
+- result: Both score 44. Making complement live before the guard drags its dependence chain with it: the head block emits `addiu v0,s1,1 / sll / div / mflo t3` BEFORE `lh / lh / mult`, and `total` lands in $t6 instead of $v1 (h7.txt:2508-255c). This reproduces s15's 'every hoisted-j spelling is 40+' result on the s18 chassis and localises the cost to complement, not to j.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis re-measured this session at 26 / 173, no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h7.c and h8.c
+
+## [s18] Rewriting the inner do-while as `while (j < rect[2] * rect[3])` with `complement` moved inside the loop body, so loop.c hoists it into the preheader, reproduces the target's head + preheader shape.
+- mechanism: GCC 2.7.2 rotates a while loop into `init; if (!cond) goto end; preheader; do { body } while (cond);`, which is the target's exact shape (entry blez at row 74, preheader subu at 76 and count-1 at 77), and LICM would place the loop-invariant complement in that preheader.
+- probe: Form h4 (tmp/grind/func_8003DE14/s18/h4.c); sandbox --disable all.
+- result: Score 59. loop.c does not produce the target's preheader from this source and the whole blend arm is re-scheduled around the moved complement. Banked as memory/grind/func_8003DE14/rejected/s18-while-loop-form-59.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis re-measured this session at 26 / 173, no FAKE constructs present, form tmp/grind/func_8003DE14/s18/h4.c

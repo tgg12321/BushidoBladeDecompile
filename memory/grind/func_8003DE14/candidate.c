@@ -164,6 +164,30 @@
  * overrides, and tmp/grind/func_8003DE14/s17/perturb2.py wraps perturb.py with
  * the one-line goalmap patch (a nop inside a RUN of nops expands to 0 object
  * insns).  Use those two, not mkasm.sh, for any further solver work here.
+ *
+ * S18 (forensics) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left
+ * it unchanged as the best SCORING form - but s18 found a strictly better
+ * CHASSIS for the head region and banked it separately as
+ * memory/grind/func_8003DE14/chassis_s18_h1_head_exact_28.c (score 28).
+ *   - The 4-insn head residual is reorg.c `fill_simple_delay_slots`, proved with
+ *     the pass's own BB2_DBR_DEBUG trace: the backward scan from the blez
+ *     (jump_insn 131) rejects 128/125/124/394 and accepts insn 121,
+ *     `addiu a2,sp,1040` (the `dst = dst_buf` init), for the delay slot.  .sched2
+ *     already emits 121 adjacent to 118 exactly as the target does, so the
+ *     scheduler is innocent and the s17 solver verdict is confirmed.
+ *   - Hoisting `s32 j = 0;` out of the `if (total > 0)` guard makes `move j,zero`
+ *     the last pre-branch insn; reorg then takes IT, and the head region becomes
+ *     byte-identical to the target (rows 55-57 and 73-77) except that the
+ *     j / complement pair swaps $t4 and $t5.
+ *   - That swap is ONE global.c priority compare: complement pri 6111
+ *     (nrefs 11 / livelen 54) beats j pri 5593 (nrefs 11 / livelen 59), where the
+ *     5-insn livelen gap is exactly what the hoist costs.  A form with h1's head
+ *     and this body's seats scores 22.
+ *   - Measured dead on the h1 chassis: declaration-order / declaration-split
+ *     respellings of the pair (h5/h6, 28), a j-reading guard to buy the extra
+ *     depth-3 reg_n_refs site (h9/h10, 45), hoisting complement with j (h7/h8,
+ *     44 - the factor division moves ahead of the total multiply), and the
+ *     while-loop + LICM preheader rewrite (h4, 59).
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
