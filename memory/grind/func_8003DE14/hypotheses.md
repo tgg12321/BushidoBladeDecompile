@@ -3348,3 +3348,79 @@ s32 `h` staging local present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; tmp/grind/func_8003DE14/s34/v2/b8.c chassis, s21 j chain extender + s32 `h` staging local present
+
+## [s35] On the pixel-read chassis (the target's own red source shape), the red result pseudo's allocno priority can be pushed below px's by taking the red channel's `r * factor` product off r_src (6 raw refs instead of 8).
+- mechanism: pri = nrefs*40000/livelen; dropping a def/use pair takes red from 24 refs to 18, which at livelen ~20 is 36000, well under px's 44444.
+- probe: six bodies tmp/grind/func_8003DE14/s35/v1/a1..a6 - the factor product staged through `sum`, through `gp`, through `rp`, and the sum accumulated in `rp` rather than `sum`, each scored with `sandbox func_8003DE14 --disable all`.
+- result: KILLED as a route. 21 (a3), 26 (a2), 35 (a4), 40 (a5), 41 (a1), 42 (a6) - all far above the 17 baseline of the un-modified pixel-read chassis. Taking the factor product off r_src re-orders the two multiply groups in the emitted stream (the `mflo` of `r*factor` no longer lands between the green source read and the green product), which costs more rows than the seat fix is worth.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); tmp/grind/func_8003DE14/s35/base.c with the red source read on `pixel` (= s34's b8 chassis, 17/173), s21 j chain extender + s32 `h` staging local present
+
+## [s35] Re-associating the final OR chain is a LIVE lever on the blend block's allocno live lengths (not byte-inert), and it alone takes the pixel-read chassis from 17 to 2.
+- mechanism: the OR chain is the last use of all three channel results and of px, so the textual position of each term fixes where that pseudo dies; flow.c's REG_LIVE_LENGTH (recomputed after the first scheduling pass) therefore moves with the association, and global.c's priority = nrefs*40000/livelen moves with it.
+- probe: seventeen OR spellings, tmp/grind/func_8003DE14/s35/v7/i1..i6 and s35/v8/k3..k15, each scored, with BB2_ALLOC_DEBUG rows read for i1 and i3 via tmp/grind/func_8003DE14/s35/al.sh.
+- result: CONFIRMED. Moving the red term from 2nd to 3rd place (`(pixel&0x8000) | (g_src&0x3E0) | r_src | (px&0x7C00)`, s35/v7/i1) takes red from nrefs=24/livelen=21/pri=45714 to 24/23/41739 and green from 18/18/40000 to 18/17/42352, which seats px $a0, green $v1, red $a1 - ALL THREE target seats - and scores 2/173 with a residual of exactly two rows (our `or` of the green term is emitted one slot before the `or` of the red term; the target has red's `or` first). Four more spellings reach 2-3 the same way: i3 (`v|G|B|R`, px 30/26=46153, red 24/25=38400), i5 (`(v|R)|(G|B)`), k5 (`v|R|(G|B)`), k9 (`R|(v|G)|B`), k10. This REFINES s33's kill of OR re-association: that kill was measured against px's live range on the px-read chassis and is correct there, but the lever is not inert - it is the cheapest known control on the red/green live lengths.
+- verdict: CONFIRMED
+
+## [s35] The whole remaining residual on the pixel-read chassis is the single inequality pri(px) > pri(red), i.e. red's live length must be >= 22 at 24 refs while px stays at 30 refs / livelen 27.
+- mechanism: px is pinned at 30 refs (10 raw: the 0xFFFF birth, the zero test, the green and blue source reads, the blue product and result, the blue mask) and red at 24 refs (8 raw: source read, complement product, r*factor, the sum, the shift, the mask, the OR use) - both counts are exactly what the target's $a0 and $a1 carry, verified insn by insn against asm/funcs/func_8003DE14.s lines 96-138. With nrefs pinned on both sides the ONLY free variable is live length: 24*40000/21 = 45714 > 44444 (red steals $a0, score 17), 24*40000/22 = 43636 < 44444 (all three seats correct).
+- probe: BB2_ALLOC_DEBUG rows for every body measured this session (s35/al.sh over v2, v3, v5, v7, v8, v11, v12), cross-checked against the register each pseudo actually received and against the row diff (s35/rowdiff.py).
+- result: CONFIRMED, and it is a sufficient condition, not just necessary: EVERY body this session whose red row landed at livelen >= 22 with px at 30/27 came out with all three disputed seats target-correct (s35/v5/g1 at 24/22=43636, s35/v7/i1 at 24/23=41739, s35/v11/q2 at 24/23=41739, s35/v12/r4, r5), and every body with red at 24/21 came out with red in $a0 (17/173). The green/red priority ORDER does not matter (g1 has red above green and is correct; i1 has green above red and is correct) - only px above both.
+- verdict: CONFIRMED
+
+## [s35] Declaring the red source read ABOVE the `px == 0` test makes r_src live across the block boundary and buys exactly the one unit of live length the seat inequality needs.
+- mechanism: a pseudo assigned in the pre-branch block and used in the blend block is live at the block boundary, so flow.c counts the boundary insns; this is the one live-length lever that survives the first scheduling pass (s34 killed every in-block statement move as livelen-inert, and this session's s35/v10/p3, p4, p5 - named sign-bit local, named store result, blue source read off `pixel` - all re-measured byte-neutral at 17 with identical ALLOCDBG rows, confirming that kill).
+- probe: tmp/grind/func_8003DE14/s35/v5/g1 (`s32 r_src = (pixel & 0x1F) << 3;` hoisted above the test), g3, g4, s35/v6/h5, s35/v12/r5 (`* 8` instead of `<< 3`), scored and dumped.
+- result: CONFIRMED for the seat. g1 gives red 24/22 = 43636 and px 30/27 = 44444, all three seats target-correct, 3/173. The residual is PLACEMENT, not allocation: because the whole expression now lives in the pre-branch block, GCC emits `andi $v0,$t0,0x1F` AND `sll $a1,$v0,3` before the branch, while the target has only the `andi` there (reorg.c put it in the `bnez` delay slot) and the `sll` at the top of the blend block. r5 (`* 8`) is byte-identical to g1; q2/r4 (mask hoisted alone, shift folded into the complement product as `(r_src * 8) * complement`) also reach 3/173 with all seats correct but reassociate to `sll $v0,$t5,3` / `mult $a1,$v0` - GCC moves the scale onto `complement`.
+- verdict: CONFIRMED
+
+## [s35] Splitting the hoist - the MASK hoisted above the test into its own local and the SHIFT applied inside the blend block - keeps the target's pre-branch block shape AND the cross-block live length.
+- mechanism: the target's pre-branch insn `andi $v0,$t0,0x1F` writes a temp, not $a1, so the red allocno should be born at the `sll` inside the blend block while still being live-in from the mask temp.
+- probe: s35/v6/h1 (`s32 rm = pixel & 0x1F;` hoisted, `s32 r_src = rm << 3;` inside), s35/v6/h2 (`rp = (rm << 3) * complement;`), s35/v11/q1 and q3 (mask hoisted into r_src itself, shift re-applied in-block as `r_src = r_src << 3;`), s35/v12/r2, r3, r6 (operand-order and parenthesisation variants of the folded product).
+- result: KILLED. h1 = 17 (the split puts r_src's birth back inside the block, so its live length returns to 21 and red retakes $a0); h2 = 13 at 174 insns (an extra insn); q3 = 18 (the in-block `r_src = r_src << 3;` adds a def/use pair, taking red to 30 refs, which overshoots px again); q1/r3/r6 = 33-35 (a whole-function pointer-register reshuffle - $a3/$t0 swap in the row loop); r2 = 33. A separate carrier for the mask does not transfer the boundary liveness to r_src, and re-applying the shift in-block costs the reference budget the inequality depends on.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; tmp/grind/func_8003DE14/s35/base.c pixel-read chassis, s21 j chain extender + s32 `h` staging local present
+
+## [s35] On the pixel-read chassis (the target's own red source shape), the red result pseudo's allocno priority can be pushed below px's by taking the red channel's `r * factor` product off r_src (6 raw refs instead of 8).
+- mechanism: global.c priority = nrefs*40000/live_length; dropping one def/use pair takes red from 24 refs to 18, which at live length ~20 is 36000, well under px's 44444.
+- probe: Six bodies tmp/grind/func_8003DE14/s35/v1/a1..a6 - the factor product staged through `sum`, through `gp`, accumulated in `rp` instead of `sum`, and two operand-order variants - each scored with `sandbox func_8003DE14 --disable all`.
+- result: 21 (a3), 26 (a2), 35 (a4), 40 (a5), 41 (a1), 42 (a6), against the 17/173 of the unmodified pixel-read chassis. Taking the factor product off r_src re-orders the two multiply groups in the emitted stream (the `mflo` of `r*factor` no longer lands between the green source read and the green product), which costs far more rows than the seat fix buys.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); tmp/grind/func_8003DE14/s35/base.c, i.e. s34's b8 chassis with the red source read on `pixel`, s21 j chain extender + s32 `h` staging local present
+
+## [s35] Re-associating the final OR chain is a live lever on the blend block's allocno live lengths, and it alone takes the pixel-read chassis from 17 to 2.
+- mechanism: The OR chain is the last use of all three channel results and of px, so each term's textual position fixes where that pseudo dies; flow.c's REG_LIVE_LENGTH (recomputed after the first scheduling pass) moves with the association, and global.c's priority moves with it.
+- probe: Seventeen OR spellings - tmp/grind/func_8003DE14/s35/v7/i1..i6 and s35/v8/k3..k15 - each scored, with BB2_ALLOC_DEBUG rows read for i1 and i3 through tmp/grind/func_8003DE14/s35/al.sh and row diffs through s35/rowdiff.py.
+- result: Moving the red term from 2nd to 3rd place, `(pixel&0x8000) | (g_src&0x3E0) | r_src | (px&0x7C00)` (s35/v7/i1), takes red from nrefs=24/livelen=21/pri=45714 to 24/23/41739 and green from 18/18/40000 to 18/17/42352, seating px $a0, green $v1 and red $a1 - all three target seats - at 2/173, residual exactly two rows (our `or` of the green term is emitted one slot before the `or` of the red term; the target has red's `or` first). i3 (`v|G|B|R`) also 2/173 with px 30/26=46153 and red 24/25=38400; i5, k5, k9, k10 reach 2-3 the same way. This REFINES s33's kill of OR re-association, which was measured against px's live range on the px-read chassis: the lever is not byte-inert, it is the cheapest known control on the channel live lengths. Banked as memory/grind/func_8003DE14/chassis_s35_or_reassoc_2.c.
+- verdict: CONFIRMED
+
+## [s35] The whole remaining residual on the pixel-read chassis is the single inequality pri(px) > pri(red): red must reach live length 22 or more at its pinned 24 references while px stays at 30 references / live length 27.
+- mechanism: px's 10 raw references and red's 8 raw references were counted insn by insn out of asm/funcs/func_8003DE14.s lines 96-138 and both already match what our C emits, so the only free variable is live length: 24*40000/21 = 45714 > px's 44444 (red is allocated first and steals $a0), 24*40000/22 = 43636 < 44444 (px keeps $a0).
+- probe: BB2_ALLOC_DEBUG rows for every body measured this session (s35/al.sh over v2, v3, v5, v7, v8, v11, v12), cross-checked against the hard register each pseudo actually received and against the row diff.
+- result: Sufficient, not merely necessary: every body with red at live length >= 22 and px at 30/27 came out with all three disputed seats target-correct (s35/v5/g1 at 24/22=43636, s35/v7/i1 at 24/23, s35/v11/q2 and s35/v12/r4, r5 at 24/23), and every body with red at 24/21 put red in $a0 at 17/173. The green-versus-red priority ORDER does not matter (g1 has red above green and is correct, i1 has green above red and is correct) - only px above both. Also answers s34's frontier probe 2 with a NO: the fast arm (asm lines 78-92) carries no $a1 at all, so the red allocno is not cross-arm.
+- verdict: CONFIRMED
+
+## [s35] Declaring the red source read above the `px == 0` test makes r_src live across the block boundary and buys exactly the one unit of live length the seat inequality needs.
+- mechanism: A pseudo assigned in the pre-branch block and used in the blend block is live at the block boundary, so flow.c counts the boundary insns; this is the one live-length lever that survives the first scheduling pass, whereas s34's kill of in-block statement moves was re-confirmed here by three more byte-neutral rewrites (s35/v10/p3 named sign-bit local, p4 named store result, p5 blue source read off `pixel`), all 17/173 with numerically identical ALLOCDBG rows.
+- probe: tmp/grind/func_8003DE14/s35/v5/g1, g3, g4, s35/v6/h5, s35/v12/r5, s35/v11/q2 and s35/v12/r4, plus s35/v13/t1..t4 (declaration-order and OR-combination variants of the hoist), scored and dumped.
+- result: g1 gives red 24/22 = 43636 against px 30/27 = 44444, all three seats target-correct, 3/173. The residual is PLACEMENT, not allocation: with the whole expression in the pre-branch block GCC emits both `andi $v0,$t0,0x1F` and `sll $a1,$v0,3` before the branch, while the target has only the `andi` there (reorg.c delay-slot fill) and the `sll` at the top of the blend block. r5 (`* 8` instead of `<< 3`) is byte-identical to g1; q2/r4 (mask hoisted alone, scale folded into the complement product) also reach 3/173 with all seats correct but reassociate the scale onto `complement` (`sll $v0,$t5,3` / `mult $a1,$v0`). t1 (red declared before px) and t3 (hoisted read off px) also 3; t2 (hoist plus the i1 OR order) is 5. Banked as memory/grind/func_8003DE14/chassis_s35_hoist_seats_3.c.
+- verdict: CONFIRMED
+
+## [s35] Splitting the hoist - the red MASK hoisted above the test into its own local and the SHIFT applied inside the blend block - keeps both the target's pre-branch block shape and the cross-block live length.
+- mechanism: The target's pre-branch insn `andi $v0,$t0,0x1F` writes a temp, not $a1, so the red allocno should be born at the `sll` inside the blend block while still being live-in from the mask temp.
+- probe: s35/v6/h1 (`s32 rm = pixel & 0x1F;` hoisted, `s32 r_src = rm << 3;` inside), s35/v6/h2, s35/v11/q1 and q3 (mask hoisted into r_src itself, shift re-applied in-block), s35/v12/r2, r3, r6 (operand-order and parenthesisation variants of the folded product).
+- result: h1 = 17 (a separate carrier does not transfer the boundary liveness, so red's live length returns to 21 and it retakes $a0); h2 = 13 at 174 insns; q3 = 18 (the in-block `r_src = r_src << 3;` adds a def/use pair, taking red to 30 refs and overshooting px again); q1/r3/r6 = 33-35 (a whole-function pointer-register reshuffle, $a3/$t0 swapped in the row loop); r2 = 33.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; tmp/grind/func_8003DE14/s35/base.c pixel-read chassis, s21 j chain extender + s32 `h` staging local present
+
+## [s35] Giving px its one missing reference in the zero-pixel arm, by storing `*dst = px;` instead of `*dst = pixel;` (px and pixel hold the same value there), lifts px above red without costing a row.
+- mechanism: px needs nrefs 33 (pri 48888 at live length 27) to clear red's 45714; the zero-arm store is the only remaining site where px and pixel are interchangeable in ordinary C.
+- probe: tmp/grind/func_8003DE14/s35/v2/b1.c, scored with `sandbox func_8003DE14 --disable all`.
+- result: 18/173, one worse than the 17 baseline: the store prints `sh $a0,0($a2)` where the target has `sh $t0,0($a2)`, so the reference costs exactly the row it buys.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; tmp/grind/func_8003DE14/s35/base.c pixel-read chassis, s21 j chain extender + s32 `h` staging local present
