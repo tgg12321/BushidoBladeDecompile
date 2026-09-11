@@ -753,6 +753,13 @@
    "hash": "2852b631a415e9ee",
    "when": "2026-09-11T11:05:13.408423+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-11 06:05 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "2852b631a415e9ee",
+   "when": "2026-09-11T11:10:28.867058+00:00",
+   "summary": "final call: Same body (2852b631a415e9ee) my 2026-09-11 06:05 RULING REQUEST PASS cleared; that ruling binds and I found no defect it did not consider. Re-verified now: src body == candidate.c body modulo comments"
   }
  ],
  "judge_clearances": [

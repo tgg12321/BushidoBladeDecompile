@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003DE14",
-      "file": "code6cac_c2",
-      "distance": 119,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_spu_gcSPU",
       "file": "main",
       "distance": 121,
@@ -1298,14 +1290,14 @@
     }
   ],
   "counts": {
-    "total": 142,
-    "active": 135,
+    "total": 141,
+    "active": 134,
     "by_status": {
-      "active": 135,
+      "active": 134,
       "rotated": 7
     },
     "by_verdict": {
-      "C": 113,
+      "C": 112,
       "ASM-PARTIAL": 22
     }
   },

@@ -3763,3 +3763,29 @@ session raises pri(j) above pri(complement).
 - result: b3 = 17/173, b4 = 22/173 (vs b1 = 0). `gm` is worth 17 points on the no-carrier chassis,
   and the two constructs are close to additive (0 -> 7 -> 17 -> 22).
 - verdict: CONFIRMED
+
+## s38c (structural, third run — Judge-cleared body applied to main) hypotheses
+
+## [s38c] The Judge-cleared body (decisions.md 2026-09-11 06:05, body hash 2852b631a415e9ee) still byte-matches when applied to src/code6cac_c2.c on the CURRENT HEAD chassis, and the whole tree still links to the oracle SHA1 with it in place.
+- mechanism: The 2026-09-11 06:05 ruling PASSed the candidate body with the s21 chain extender
+  present, discharging the only ground of the 05:42 layer-1 FAIL (a necessity measurement on the
+  no-carrier chassis, banked at s38b as b1=0 / b2=7 / b3=17 / b4=22 at 173 insns). The ruling asked
+  for exactly one further change, explicitly cosmetic and comment-only: the s21 annotation's
+  lever-exhaustion pointer still read "the extender-free chassis floors at 8" (an h-carrier-era
+  number) instead of the s38b b1/b2 measurement. Review verdicts are keyed by body with comments
+  and whitespace ignored, so refreshing that comment leaves the cleared body intact.
+- probe: Spliced candidate.c's body over `INCLUDE_ASM("asm/funcs", func_8003DE14);` at
+  src/code6cac_c2.c:1388 (binary splice, LF preserved, no other line touched), refreshed the s21
+  annotation's exhaustion pointer, then ran `sandbox func_8003DE14 --disable all` and a full-tree
+  `verify-oracle`.
+- result: sandbox 0 / 173 build insns against 173 target insns, rules_dropped 0, scorable true,
+  cheat_asm_stripped 6 (the file's pre-existing canonical GTE islands in OTHER functions; this
+  function contributes none). verify-oracle ok=true, build_sha1 =
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked
+  (tmp/grind/func_8003DE14/s38/verify_oracle_s38c.log:3-4). The function is matched in pure C with
+  three FAKE-annotated constructs, all inside frozen SOTN-sanctioned families: the bound detour and
+  the s21 detour under the combine-foldable chain-extender clause
+  (.claude/rules/dead-store-fake-exception.md:51-70) and `gm` under named-intermediate declaration
+  order (.claude/rules/no-new-park-categories.md:204-215). Self-vet written to
+  memory/grind/func_8003DE14/self_vet.md.
+- verdict: CONFIRMED

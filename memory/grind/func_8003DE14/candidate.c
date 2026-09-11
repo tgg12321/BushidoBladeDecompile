@@ -195,7 +195,13 @@ void func_8003DE14(s16 *rect, s32 count) {
              * combine.c folds the +j/-j pair away but flow.c's reg_n_refs for j is
              * counted before it, lifting j's allocno priority so the $t4/$t5 seat
              * pair matches; lever-exhaustion: memory/grind/func_8003DE14/
-             * hypotheses.md s21-s30 (the extender-free chassis floors at 8). */
+             * hypotheses.md s21-s38b - on THIS no-carrier chassis the
+             * extender-free body measures 7/173 against this body's 0/173
+             * (tmp/grind/func_8003DE14/s38/v2/b1.c vs b2.c, one sweep, both at
+             * 173 build insns), and the s38b sweep of 56 ordinary-C and
+             * sanctioned-family alternatives (declaration order/placement,
+             * `complement` hoists and bookkeeping, duplicated-statement-into-arms
+             * `j++`, in-latch detours) bottoms out at 3/173. */
             LoadImage((s32)rect, ((s32)dst_buf + j) - j);
             DrawSync(0);
             i++;

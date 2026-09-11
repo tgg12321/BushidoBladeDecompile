@@ -4783,3 +4783,18 @@ floor of 2 (g0, g2, g7), 4 at 3. No hit.
   `duplicated-statement-into-arms` spellings of `j++`, 6 in-latch `j` detours). Best without the
   s21 extender: **3** (`j` declared inside the guard — seats correct, `dst` init row broken).
   Banked under `rejected/s38b-*.c`.
+
+## s38c — the cleared body is on main and byte-matches (2026-09-11)
+
+- src/code6cac_c2.c:1388 now carries the full C body (candidate.c verbatim, modulo the
+  comment-only refresh of the s21 annotation's lever-exhaustion pointer); the INCLUDE_ASM line is
+  gone. No other file, and no pipeline/config surface, touched.
+- `& tools/wteng.ps1 main sandbox func_8003DE14 --disable all` -> score 0, target_insns 173,
+  build_insns 173, rules_dropped 0, scorable true. (cheat_asm_stripped 6 counts the file's
+  pre-existing canonical GTE islands in other functions.)
+- `& tools/wteng.ps1 main verify-oracle` -> ok true, build_sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_now == original_sha1_locked.
+  Log: tmp/grind/func_8003DE14/s38/verify_oracle_s38c.log.
+- Judge clearance in force for this body: state.json judge_clearances hash 2852b631a415e9ee,
+  decisions.md 2026-09-11 06:05 ruling PASS. judge_constraints (remove `h`, never a fresh
+  multi-written carrier) are satisfied: the body has NO carrier at all.
