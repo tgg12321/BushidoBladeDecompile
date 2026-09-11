@@ -3611,3 +3611,145 @@ the two `src++` relocations are 58 at 169 insns.
 - [s28] Moving src++ changes the dependence graph rather than only the order, and produces a 169-insn body at 58 - the measured boundary of the position-is-inert finding.
 
 - [s28] The w01 residual (ed2.py on the sandbox object) now contains genuine ORDER rows - two target rows deleted and two inserted around the third multiply - so the 36 is part RA, part scheduler, which makes tools/sched_solver applicable to this basin for the first time.
+
+## [s29 SYNTHESIS] The target's register map is a C-level construct, and spelling it drops the floor 12 -> 5 (8 with zero FAKE constructs)
+
+Chassis re-measured at dispatch (the brief again printed "measurement unavailable"):
+the s23 p2 candidate is **12 / 173 build insns** and the s28 w01 three-way body is
+**36 / 173** on HEAD 2026-09-11 (post -mel, post -msoft-float). Both banked floors
+are current.
+
+### 1. KILL RE-AUDIT (mandated) - the j chain extender is INERT on the s28 w01 chassis
+2x2 in one sweep (tmp/grind/func_8003DE14/s29/v1/, all 173 build insns):
+
+| body | blue-on-g_src | j extender | score |
+|---|---|---|---|
+| a0 w01 control | yes | present | 36 |
+| a1 w01 no-jext | yes | removed  | **36** |
+| a2 s27 three-way control | no | present | 42 |
+| a3 s27 three-way no-jext | no | removed | 46 |
+| a4 p2 control | n/a | present | 12 |
+| a5 p2 no-jext | n/a | removed | 19 |
+
+So the j extender is worth -7 on p2, -4 on the s27 three-way chassis and **0** on
+w01: the blue-on-g_src reuse already buys whatever the extender was buying there.
+`a1_w01_nojext` is therefore a 36-point body with NO FAKE construct at all, which
+already retired the s26 "honest ordinary-C floor is 38" number before any new
+probe - and it is superseded twice over later in this session.
+
+### 2. The s27/s28 ref-lift frontier is closed NEGATIVE: a "real third job" for g_src
+Nine bodies on the s27 three-way chassis gave the green carrier a second real,
+consumed value instead of the dead `(X + g_src) - g_src` identity: the `b * factor`
+product (46), the blue complement product (46), the pixel's high bit (45), the blue
+mask term (44), the whole output word (43), b*factor + high bit together (56), and
+the same jobs relocated to `r_src` / `rp` / `gp` (44-56). **Every one is worse than
+the 42 control.** Raising reg_n_refs on the green carrier is not, by itself, the
+lever; WHICH value it carries is what matters.
+
+### 3. THE SYNTHESIS - reading s24's own residual sentence as C
+s24 described the residual as: "in the TARGET every intermediate goes to a fresh
+scratch register and the final channel value is written back into the operand's
+register one instruction later". That is not only an allocator fact. Written as C
+it is two ordinary constructs:
+  (a) one variable carries all three channel SUMS (s27's three-way `sum`), and
+  (b) each channel RESULT is written back into ITS OWN SOURCE CARRIER.
+(b) had never been spelled: s25's 1,496-body sweep always gave `r_ch`/`g_ch`/
+`b_shift` fresh locals, and s26 tested single result-carrier reuses on the p2
+chassis (best 16) - never all three at once on the three-way chassis.
+
+    rp = r_src * complement;  r_src = r * factor;
+    sum = rp + r_src;         r_src = (sum >> 15) & 0x1F;     <- target sra $a1,$v0,15
+    gp = g_src * complement;  g_src = g * factor;
+    sum = gp + g_src;         g_src = sum >> 10;              <- target sra $v1,$v0,10
+    px = ((u32)px >> 7) & 0xF8; px = px * complement;
+    sum = px + b * factor;    px = sum >> 5;                  <- target sra $a0,$v0,5
+    *dst = (pixel & 0x8000) | r_src | (g_src & 0x3E0) | (px & 0x7C00);
+
+Measured, all at 173 build insns: **27 with no FAKE construct at all, 22 with the
+red mask moved into the or-chain, and 5 once the red/green mask placement is made
+asymmetric** (red masks in the shift statement, green masks in the or).
+
+### 4. The mask-placement cross product (32 bodies, tmp/grind/func_8003DE14/s29/v3/)
+red result carrier {r_src, fresh r_ch} x green result carrier {g_src, fresh g_ch} x
+red mask {in the shift statement, in the or} x green mask {shift, or} x j extender
+{present, absent}:
+
+  r_src + g_src, red-mask-in-shift, green-mask-in-or ....  5 (jext) / 12 (no jext)
+  r_src + g_ch , red-mask-in-shift, green-mask-in-or ....  5 / 12
+  r_src + g_ch , red-mask-in-shift, green-mask-in-shift..  5 / 12
+  r_ch  + g_src, any mask placement .................... 17 / 22
+  r_src + g_src, red-mask-in-OR (symmetric) ............ 17 / 22
+  r_ch  + g_ch  (both results fresh) ................... 42-48
+
+The asymmetry is load-bearing: with both channels masked the SAME way the red and
+green source carriers swap seats ($a1 <-> $v1), which is exactly the pattern the
+residual of `d_r_src_g_src_rmor_gmor_j` prints (t94/t100/t102/t108/t117-t122 all
+register-mirrored). The red result MUST reuse `r_src`; a fresh `r_ch` costs 12.
+
+### 5. The .lreg confirms the mechanism on the 5-point body
+`Register 122 used 30 times across 27 insns in block 10; dies in 3 places` (px),
+`Register 123 used 18 times across 20 insns ... dies in 3 places` (r_src),
+`Register 126 used 18 times across 18 insns ... dies in 3 places` (g_src),
+`Register 128 used 18 times across 6 insns ... dies in 3 places` (the shared sum).
+Every one of the four is a three-death, local-alloc-INELIGIBLE global allocno
+(local-alloc.c:470-476), and the reference counts that the s21 F1 g_src chain
+extender used to buy are now bought by real write-backs. **The g_src chain extender
+is gone from the candidate.**
+
+### 6. The 5-row residual (tmp/grind/func_8003DE14/s24/ed2.py, 1:1 aligned)
+```
+row   TARGET                 OURS
+t118  sra  $a1,$v0,15        sra  $v0,$v0,15     red shift seated on the sum's reg
+t119  andi $a1,$a1,31        andi $a1,$v0,31
+t133  lh   $v0,4($s0)        lh   $v1,4($s0)     latch loads swapped
+t134  lh   $v1,6($s0)        lh   $v0,6($s0)
+t136  mult $v0,$v1           mult $v1,$v0
+```
+Everything else - the whole blend arm, both cursors, the $t4/$t5 pair, the or-chain,
+the multiplies, the frame - is byte-exact.
+
+### 7. The j extender's honest substitute, and its one cost
+Without the j extender the same body is 12, and the 7 extra rows are the $t4/$t5
+pair (j vs complement) plus their users. Declaring `s32 j = 0;` INSIDE the
+`if (total > 0)` block (after `complement`) buys those seats honestly: **8 / 173**,
+the best FAKE-free body this function has ever had (the previous number was 38).
+Its remaining extra row group is `addiu $a2,$sp,1040` - GCC sinks the dst cursor
+init past the guard. All 24 permutations of the four per-row declarations score 8,
+so that sink is not a declaration-order effect; moving the cursors inside the guard
+too is 11, and reusing the dead `total` as the complement carrier is 18.
+
+### 8. Spelling axes swept out on the 5-point chassis (all ties, all 173 insns)
+Latch condition: operand swap, `>` reversed, `!= 0` wrapper, signed casts - all 5;
+`j <= w*h - 1` is 8 at 174 insns. `total` spelling: named w/h locals, no `total`
+local at all, recomputing `total` in the latch (7), operand swap at the top (7).
+Red statement: `(u32)sum >> 15`, `& 31`, `(sum & 0xF8000) >> 15`, red sum inlined,
+red sum in a fresh local, a fresh local for the shift stage - all 5. Splitting the
+red mask into its own statement is 20 (it swaps the carriers, see section 4).
+
+- [s29] Kill re-audit 2x2: the s21 j chain extender is worth -7 on the p2 chassis, -4 on the s27 three-way chassis and EXACTLY 0 on the s28 w01 chassis (36 with and without), so w01 was already a FAKE-free 36 before this session's new work.
+- [s29] Nine bodies giving the green carrier a real second job on the s27 three-way chassis (b*factor 46, blue complement product 46, high bit 45, blue mask 44, output word 43, two jobs 56, the same jobs on r_src/rp/gp 44-56) are all worse than the 42 control: raising reg_n_refs is not the lever, the identity of the carried value is.
+- [s29] FLOOR 12 -> 5. The target's register map is the C shape "one variable carries all three channel sums, and each channel RESULT is written back into its own source carrier" (r_src = (sum>>15)&0x1F, g_src = sum>>10, px = sum>>5); it reproduces the target's sra $a1,$v0,15 / sra $v1,$v0,10 / sra $a0,$v0,5 directly.
+- [s29] The red and green mask placements must be ASYMMETRIC (red masks inside the shift statement, green masks in the or-chain). Making them symmetric either way swaps the red/green source carriers $a1 <-> $v1 and costs 12 points; giving the red result a fresh local instead of reusing r_src costs 12.
+- [s29] On the 5-point body the .lreg prints four three-death, local-alloc-ineligible global allocnos in block 10 - px (30 refs/27 insns), r_src (18/20), g_src (18/18) and the shared sum (18/6) - so the reference counts the s21 F1 g_src chain extender used to buy are now bought by real write-backs, and that extender is deleted from the candidate.
+- [s29] The 5-row residual is two independent groups: the red shift's intermediate seated on the sum's register instead of r_src's dead seat (t118/t119), and the latch's two lh destinations swapped (t133/t134/t136).
+- [s29] NEW FAKE-FREE FLOOR 8 (was 38): declaring `s32 j = 0;` inside the `if (total > 0)` block replaces the s21 j chain extender's $t4/$t5 seat fix honestly; its only cost is GCC sinking the dst cursor init `addiu $a2,$sp,1040` past the guard.
+- [s29] All 24 permutations of the four per-row declarations (total / src / dst / factor) score 8 on the extender-free chassis - declaration order is byte-inert there, consistent with s28's sched.c normalization finding.
+- [s29] Latch-condition spelling is inert on the 5-point chassis (operand swap, reversed >, != 0 wrapper, signed casts all tie at 5), and so are eight spellings of the red channel statement; the two surviving row groups are seat facts, not spelling facts.
+
+- [s29] Chassis re-measured at dispatch (the brief printed 'measurement unavailable'): the s23 p2 candidate is 12 / 173 build insns and the s28 w01 body is 36 / 173 on HEAD 2026-09-11.
+
+- [s29] Kill re-audit 2x2: the s21 j chain extender is worth -7 on the p2 chassis, -4 on the s27 three-way chassis and exactly 0 on the s28 w01 chassis (36 with, 36 without).
+
+- [s29] FLOOR 12 -> 5. The target's register map is the C shape 'one variable carries all three channel sums, and each channel RESULT is written back into its own source carrier' (r_src = (sum >> 15) & 0x1F; g_src = sum >> 10; px = sum >> 5), which reproduces the target's sra $a1,$v0,15 / sra $v1,$v0,10 / sra $a0,$v0,5 directly.
+
+- [s29] The red and green mask placements must be asymmetric (red inside the shift statement, green in the or-chain); symmetric either way swaps the red/green source carriers $a1 <-> $v1 and costs 12 points, and a fresh local for the red result costs 12.
+
+- [s29] On the 5-point body the .lreg prints four three-death, local-alloc-ineligible global allocnos in block 10 - px (30 refs / 27 insns), r_src (18 / 20), g_src (18 / 18) and the shared sum (18 / 6) - so the references the s21 F1 g_src chain extender used to buy are now bought by real write-backs, and that extender is deleted from the candidate.
+
+- [s29] The 5-row residual is two independent groups: the red shift's intermediate seated on the sum's register instead of r_src's dead seat (t118 sra $a1,$v0,15 / t119 andi $a1,$a1,31), and the latch's two lh destinations swapped (t133 lh $v0,4($s0) / t134 lh $v1,6($s0) / t136 mult $v0,$v1).
+
+- [s29] NEW FAKE-FREE FLOOR 8 (the standing number was 38): declaring `s32 j = 0;` inside the `if (total > 0)` block replaces the s21 j chain extender's $t4/$t5 seat fix honestly; its only cost is GCC sinking the dst cursor init addiu $a2,$sp,1040 past the guard.
+
+- [s29] Nine bodies giving the green carrier a real second job on the s27 three-way chassis (b*factor 46, blue complement product 46, high bit 45, blue mask 44, output word 43, two jobs 56, the same jobs on r_src/rp/gp 44-56) are all worse than the 42 control - raising reg_n_refs is not the lever; the identity of the carried value is.
+
+- [s29] All 24 permutations of the four per-row declarations score 8 on the extender-free chassis, and latch-condition spelling plus eight red-statement spellings all tie at 5 - the two surviving row groups are seat facts, not spelling facts.

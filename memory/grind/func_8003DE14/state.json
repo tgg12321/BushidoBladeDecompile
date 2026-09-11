@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 28,
- "current_modality": "forensics",
+ "session_count": 29,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -171,68 +171,34 @@
    "floor": 12,
    "modality": "forensics",
    "headline": "Forensics killed s27's headline live-length lever and named the pass: the FIRST scheduling pass re-emits the blend arm in one canonical order before local-alloc, so statement position is byte-inert (t"
+  },
+  {
+   "session": 29,
+   "floor": 5,
+   "modality": "synthesis",
+   "headline": "Floor 12 -> 5 (and the FAKE-free floor 38 -> 8): the target's register map is the C shape 'one variable carries all three channel sums, each channel RESULT is written back into its own source carrier'"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last 36 on the w01 three-way chassis is closable by dependence-graph edits, since s28 proved statement order is normalized away and the w01 residual now contains scheduler-visible order rows.",
-   "mechanism": "sched.c's schedule_block emits by INSN_PRIORITY computed from LOG_LINKS; changing the arm's dependence chain (not its statement order) is the only source-side input that changes what the pass sees. Splitting `b * factor` into its own named local, or re-associating `sum = g_src + b * factor`, inserts an insn between the mflo and the sum and changes the chain's height.",
-   "next_probe": "Run tools/sched_solver on the w01 body (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c) applied to src, get the order-exact verdict for the arm's block, then sweep the two dependence-chain edits above with tools/sweep_variants.py; accept only 173-build-insn forms."
+   "hypothesis": "The 5-point body's j chain extender can be dropped without paying the three dst-cursor rows, because the 8-point body already fixes $t4/$t5 honestly and only mis-places the cursor init.",
+   "mechanism": "In the 8-point body GCC sinks `addiu $a2,$sp,1040` past the guard because the dst cursor's first real use is inside the guarded block while j's birth moved in there too. Anything that gives the dst cursor an earlier birth or an earlier real use restores the target's t54 position without touching the j/complement ordering.",
+   "next_probe": "On chassis_s29_targetmap_ordinary_8.c sweep: `u16 *dst = &dst_buf[0];`, the cursors declared at function scope and re-initialised per row, a dst write before the guard, the guard rewritten as an early `goto`/`continue` instead of an `if`, and the guard's condition moved into the do-while. Read the .lreg birth points for both cursors (tmp/grind/func_8003DE14/s29/regs.sh) on every body whose score moves."
   },
   {
-   "hypothesis": "The three-way basin, not the p2 basin, is the one that can actually be submitted - it owns both disputed seats and is ordinary C except for the j extender.",
-   "mechanism": "p2's 12 is propped by two F1 chain extenders whose honest ordinary-C floor is 38 (s26 2x2); the three-way basin's 36 carries only the j extender. A basin whose extender-free floor is lower is the one worth grinding even at a higher current score.",
-   "next_probe": "Run a 2x2 on the w01 chassis (j extender present/absent x blue-on-g_src present/absent) to price the j extender there, then goal_from_tgt.py classify on the w01 body; if the verdict is RA-only, re-run tools/ra_solver/extract.py + inverse.py global on the w01 model with the full disposition goal (never run on a 36-point body) and spell the top vectors."
+   "hypothesis": "The red shift's seat (t118/t119) is decided by which quantity combine_regs ties the shift's intermediate to, not by the red statement's spelling.",
+   "mechanism": "Eight spellings of the red statement are inert, so the source-level input is not the statement shape. combine_regs (local-alloc.c:1295 -> :1784) ties the sra's destination to its dying source operand - the shared `sum` - which seats it on $v0; the target instead has it on r_src's dead seat.",
+   "next_probe": "Capture BB2_QTY_DEBUG + BB2_SUGG_DEBUG on the 5-point body (tmp/grind/func_8003DE14/s26/alloc.sh pattern), identify the quantity holding the red shift intermediate, then attack the condition that decides the tie - whether the sum pseudo is still live at the sra - e.g. by a form in which the red sum is read once more after the shift, or in which the red sum uses a carrier with a different death count."
   },
   {
-   "hypothesis": "The green carrier's reference count can be raised further, past 24, with another real job in the arm, without lengthening its span.",
-   "mechanism": "w01 measured the pricing response directly: 12 refs -> 24 refs moved priority 32727 -> 80000 and bought 6 points. The remaining bank rows are priced against px (now 12 refs) and the shared sum (18 refs), so a further real use of g_src - or a real use that raises px back - re-orders that bank again.",
-   "next_probe": "On the w01 chassis sweep bodies that give px a second real job that is not the output word's high bit (43) - e.g. px as the latch's cursor arithmetic carrier or as the blue mask's carrier - reading the .lreg refs/livelen line for each carrier on every body that changes the score."
+   "hypothesis": "The latch's two lh seats are reachable by changing the two loads' relative span, not their order.",
+   "mechanism": "qty_compare_1 prices the first load 40000 (span 3) and the second 60000 (span 2), so the second takes $v0; the target has the first there, which means in the target's stream those two quantities are not priced that way.",
+   "next_probe": "Run tools/ra_solver/extract.py + inverse.py on the block-11 model of the 5-point body with the goal disposition (first load -> $v0), and only then spell the top-ranked vectors; candidate shapes include a body that also reads rect[2] inside the loop and one in which the two loads are born one insn apart."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 12,
-   "statement": "Writing `complement` in the outer do-body above `j = 0` also flips the seat but scores 45, because it puts the subtraction above the `blez` guard where the target emits it below, and stretches factor'",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/W9.c and W10.c",
-   "predicate_cite": "",
-   "result": "KILLED. W9 scores 45 and W10 42, both at 173 insns, against W5's 28. W9's ALLOCDBG confirms the seat DOES flip (j 115 at"
-  },
-  {
-   "session": 12,
-   "statement": "On this chassis the remaining head residual and the correct counter seat are directly coupled: the spellings that give reorg back the target's `blez` delay slot are the spellings that lose the seat.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/H1.c H2.c H3.c W6.c W11.c",
-   "predicate_cite": "",
-   "result": "KILLED for these spellings. H2 restores the target's delay slot and loses the seat, scoring 31. H1 and H3 both hold the "
-  },
-  {
-   "session": 12,
-   "statement": "Re-running s11's twelve blend-arm reshapings on top of the corrected-seat 28 chassis does not move the blend residual, so the blend difference is independent of the cursor and counter seats.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/B1w..B12w.c",
-   "predicate_cite": "",
-   "result": "KILLED. B1w/B3w/B7w/B8w tie the incumbent at 28, B9w/B10w/B11w are 29, B2w/B4w/B5w/B6w/B12w run 33-54. No variant beats "
-  },
-  {
-   "session": 12,
-   "statement": "The trip-test residual (target 127-130) does not respond to the C spelling of `rect[2] * rect[3]`: the $v0/$v1 naming on the two lh destinations is invariant under operand order, comparison direction ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/T1.c T2.c T3.c",
-   "predicate_cite": "",
-   "result": "KILLED for these spellings. All three score 28 and none beats the incumbent. T2 and T3 reproduce the incumbent's `lh v1,"
-  },
-  {
-   "session": 13,
-   "statement": "Deleting the px user variable so the zero-extended pixel exists only as a compiler temp changes px's register seat.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/D1.c and D5.c",
-   "predicate_cite": "",
-   "result": "D1 scores 26 with an aligned diff row-for-row IDENTICAL to C2's; D5 also 26. The pseudo's user-variable status is byte-n"
-  },
   {
    "session": 13,
    "statement": "Changing px's source-level reference count moves its seat toward the target's $a0.",
@@ -672,6 +638,46 @@
    "measured_on": "HEAD 2026-09-11; s28 three-way + blue-on-g_src chassis (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c), j extender present",
    "predicate_cite": "",
    "result": "Reading either channel source from `pixel` ties at 36; routing the output word's high bit through px is 43 at 174 insns;"
+  },
+  {
+   "session": 29,
+   "statement": "KILL RE-AUDIT (mandated): the s21 j chain extender changes the score on the s28 w01 chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); s28 three-way + blue-on-g_src chassis (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c), j chain extender the only FAKE construct present",
+   "predicate_cite": "",
+   "result": "w01 36 with the extender and 36 without - the extender is worth exactly 0 there, so w01 was already a FAKE-free 36. The "
+  },
+  {
+   "session": 29,
+   "statement": "Giving the green carrier a real second job other than the blue channel - the b*factor product, the blue complement product, the pixel's high bit, the blue mask term, or the whole output word - restore",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s27 three-way-shared-sum chassis (memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c), j chain extender present, blue-path g_src extender absent by construction",
+   "predicate_cite": "",
+   "result": "43 to 56 - every one is worse than the control. Which value the carrier holds, not how many references it has, is what m"
+  },
+  {
+   "session": 29,
+   "statement": "The red channel's two remaining rows (the shift's intermediate seated on the sum's register instead of r_src's dead seat) can be moved by respelling the red statement.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_5.c), j chain extender present, g_src chain extender absent",
+   "predicate_cite": "",
+   "result": "Six tie at 5 and the two split forms are 20 - the split does produce the target's two-insn shape but swaps the red/green"
+  },
+  {
+   "session": 29,
+   "statement": "The latch's three rows (the two `lh` destinations swapped) can be moved by respelling the loop condition or the `total` computation.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_5.c), j chain extender present",
+   "predicate_cite": "",
+   "result": "Every inert form ties at 5; the forms that change anything are worse (top-level operand swap 7, `total` recomputed in th"
+  },
+  {
+   "session": 29,
+   "statement": "The per-row declaration order (total / src / dst / factor) reaches the allocator on the extender-free 8-point chassis and can pull the sunk dst cursor init back above the guard.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 extender-free target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c), no FAKE construct present",
+   "predicate_cite": "",
+   "result": "All 24 score exactly 8 at 173 build insns. Byte-inert, consistent with s28's finding that sched.c normalizes statement o"
   }
  ],
  "ladder_skip": 0,

@@ -2689,3 +2689,139 @@ use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; s28 three-way + blue-on-g_src chassis (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c), j extender present
+
+## [s29] The 12 residual rows of the p2 chassis are the C-level shape "each channel RESULT is written back into its own source carrier", combined with s27's three-way shared `sum`; spelled that way the floor drops from 12 to 5.
+- mechanism: the three-way `sum` has three defs and three deaths, so local-alloc.c:470-476 gives it reg_qty = -1 and it becomes a global allocno owning $v0 across the arm (s27); writing each channel result back into r_src / g_src / px puts each shift's destination on the source's dead seat, which is literally the target's `sra $a1,$v0,15` / `sra $v1,$v0,10` / `sra $a0,$v0,5`, and simultaneously gives each source carrier three real defs and three real deaths, so the reference counts the s21 F1 g_src chain extender was buying are bought by real code instead.
+- probe: eight bodies in tmp/grind/func_8003DE14/s29/v2/ then a 32-body cross product in tmp/grind/func_8003DE14/s29/v3/ (red result carrier x green result carrier x red mask placement x green mask placement x j extender), swept with tools/sweep_variants.py; residuals read with tmp/grind/func_8003DE14/s24/ed2.py; .lreg register header lines captured via tmp/grind/func_8003DE14/s29/regs.sh.
+- result: 5 / 173 with the j extender and 12 / 173 without it, from a 12-point chassis. Banked as memory/grind/func_8003DE14/candidate.c and chassis_s29_targetmap_5.c. The g_src chain extender is deleted from the body.
+- verdict: CONFIRMED
+
+## [s29] The red and green channels must mask ASYMMETRICALLY - the red result masked inside its shift statement, the green result masked in the or-chain.
+- mechanism: the two channel source carriers are symmetric allocnos; making their statement shapes symmetric makes the tie-break in local-alloc swap them, and the residual of the symmetric body prints $a1 <-> $v1 mirrored on every red/green row (t94, t100, t102, t108, t117-t122).
+- probe: the same 32-body cross product (tmp/grind/func_8003DE14/s29/v3/).
+- result: asymmetric 5; both-in-the-or 17; both-in-the-shift 22; red result in a fresh r_ch 17 (any mask placement); both results fresh 42-48.
+- verdict: CONFIRMED
+
+## [s29] The s21 j chain extender `((s32)dst_buf + j) - j` has an ORDINARY substitute: declaring `s32 j = 0;` inside the `if (total > 0)` block.
+- mechanism: the extender's whole job is the $t4 = j / $t5 = complement seat pair. Declaring j after `complement` inside the guard changes j's birth point relative to complement's, which re-orders the two allocnos without any dead code.
+- probe: seven bodies in tmp/grind/func_8003DE14/s29/v6/ and five in v7/ against the extender-free 12-point control.
+- result: 8 / 173 - the best FAKE-free body this function has had (the standing number was 38). Its one remaining row group is the dst cursor init `addiu $a2,$sp,1040` sunk past the guard; moving the cursors inside the guard as well is 11, and all 24 per-row declaration permutations are 8.
+- verdict: CONFIRMED
+
+## [s29] KILL RE-AUDIT (mandated): the s21 j chain extender is worth nothing on the s28 w01 chassis.
+- mechanism: w01's blue-on-g_src reuse already supplies the reference lift the extender was buying, so the two levers are redundant with each other.
+- probe: the 2x2 in tmp/grind/func_8003DE14/s29/v1/ (w01 and the s27 three-way body, each with and without the extender, plus the p2 controls), one sweep.
+- result: w01 36 with the extender and 36 without; three-way 42 / 46; p2 12 / 19. The banked p2 price is re-confirmed and w01 is re-classified as a FAKE-free body.
+- verdict: CONFIRMED
+
+## [s29] Giving the green carrier a REAL second job other than the blue channel (the b*factor product, the blue complement product, the pixel's high bit, the blue mask term, or the whole output word) restores its reference count and undoes the s27 bank rotation.
+- mechanism: s28 showed the rotation is priced by reg_n_refs on pseudo 126; if the count is what matters, any real consumed value carried in g_src should buy it back.
+- probe: nine complete bodies in tmp/grind/func_8003DE14/s29/v1/ (b1-b9) swept in one call against the 42-point s27 three-way control.
+- result: 43 to 56 - every one is WORSE than the control. Which value the carrier holds, not how many references it has, is what moves the bank. Two banked in rejected/ (s29-bfactor-on-gsrc-threeway-46.c, s29-outword-on-gsrc-threeway-43.c).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s27 three-way-shared-sum chassis (memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c), j extender present, blue-path g_src extender absent by construction
+
+## [s29] The red channel's two remaining rows (the shift's intermediate seated on the sum's register instead of r_src's dead seat) can be moved by respelling the red statement.
+- mechanism: the target emits `sra $a1,$v0,15` then `andi $a1,$a1,31`, i.e. the shift's destination is r_src's seat and the mask is applied in place; our build emits the shift in place on the sum's register and the mask into r_src.
+- probe: eight red spellings on the 5-point chassis (tmp/grind/func_8003DE14/s29/v4/ and v9/): a two-statement split, a compound-assignment split, a fresh local for the shift stage, `(u32)sum >> 15`, `& 31`, `(sum & 0xF8000) >> 15`, the red sum inlined, the red sum in a fresh local.
+- result: six tie at 5 and the two split forms are 20 (the split produces the target's two-insn shape but swaps the red/green carriers, banked as rejected/s29-red-mask-split-two-statements-20.c). No spelling of the red statement alone moves those two rows.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_5.c), j chain extender present, g_src chain extender absent
+
+## [s29] The latch's three rows (the two `lh` destinations swapped) can be moved by respelling the loop condition or the `total` computation.
+- mechanism: qty_compare_1 (local-alloc.c:1660) prices the first load's quantity at floor_log2(6)*6/3*10000 = 40000 and the second at 2*6/2*10000 = 60000, so the shorter-span SECOND load takes $v0; the target has the FIRST load there.
+- probe: nine bodies on the 5-point chassis (tmp/grind/func_8003DE14/s29/v5/ and v9/): operand swap in the latch, reversed `>`, `!= 0` wrapper, `<=` with a -1, signed casts on both halves, named w/h locals, no `total` local at all, `total` recomputed in the latch, operand swap at the top.
+- result: every inert form ties at 5; the two that change anything are worse (top-level operand swap 7, `total` recomputed in the latch 7, `<=` form 8 at 174 insns). Condition spelling does not reach that seat pair.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_5.c), j chain extender present
+
+## [s29] The per-row declaration order (total / src / dst / factor) reaches the allocator on the extender-free 8-point chassis.
+- mechanism: with `s32 j = 0;` moved inside the guard, GCC sinks the dst cursor init past the guard; if declaration order reached the allocator, some permutation should pull it back.
+- probe: all 24 permutations generated by tmp/grind/func_8003DE14/s29/gen8.py and swept in one call.
+- result: all 24 score exactly 8 at 173 build insns. Byte-inert, consistent with s28's finding that sched.c normalizes statement order before local-alloc measures anything.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 extender-free target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c)
+
+### LIVE FRONTIER (for s30)
+1. **Reconcile the two halves of the j/dst seat problem.** The 5-point body has the
+   dst cursor init in the right place but needs the j chain extender; the 8-point
+   body needs no FAKE at all but sinks `addiu $a2,$sp,1040` past the guard. Probe:
+   on the 8-point chassis, sweep forms that give the dst cursor an earlier real
+   use or an earlier birth - `u16 *dst = &dst_buf[0];`, the cursors declared at the
+   function scope and re-initialised per row, `dst` written through before the
+   guard, the guard rewritten as an early `goto` / `continue` instead of an if -
+   and read the .lreg birth points for the two cursors on every body that moves.
+2. **The red shift's seat (t118/t119).** Eight spellings of the red statement are
+   inert, so the input is not the statement - it is which quantity combine_regs
+   ties the shift's intermediate to. Probe: capture BB2_QTY_DEBUG on the 5-point
+   body, find the quantity that holds the shift intermediate, and attack the tie
+   at the level that decides it (whether the sum pseudo is still live at the sra),
+   e.g. by giving the red sum a carrier that is read once more after the shift.
+3. **The latch's two `lh` seats (t133/t134/t136).** The priority arithmetic favours
+   the second load; the target has the first. Probe: make the FIRST load's quantity
+   shorter-spanned or higher-priced - e.g. a form in which `rect[2]` is also read
+   by the loop body, or in which the multiply's operands are born one insn apart -
+   and confirm with tools/ra_solver/inverse.py on the block-11 model rather than by
+   spelling guesses.
+
+## [s29] The 12 residual rows of the p2 chassis are the C-level shape 'each channel RESULT is written back into its own source carrier' combined with s27's three-way shared `sum` local.
+- mechanism: The three-way `sum` has three defs and three deaths, so local-alloc.c:470-476 gives it reg_qty = -1 and it becomes a global allocno owning $v0 across the blend arm (s27's result). Writing each channel result back into r_src / g_src / px then puts each shift's destination on the source's dead seat, which is literally the target's `sra $a1,$v0,15` / `sra $v1,$v0,10` / `sra $a0,$v0,5`, and at the same time gives each source carrier three real defs and three real deaths, so the reference counts the s21 F1 g_src chain extender was buying with a dead identity are bought by real code instead.
+- probe: Eight bodies in tmp/grind/func_8003DE14/s29/v2/ and then a 32-body cross product in tmp/grind/func_8003DE14/s29/v3/ (red result carrier x green result carrier x red mask placement x green mask placement x j extender), swept with tools/sweep_variants.py; residuals read with tmp/grind/func_8003DE14/s24/ed2.py; .lreg register header lines captured via tmp/grind/func_8003DE14/s29/regs.sh.
+- result: 5 / 173 build insns with the j extender present and 12 / 173 without it, from a chassis that had been flat at 12 for six sessions. The .lreg on the 5-point body prints four three-death local-alloc-ineligible allocnos in block 10 (px 30 refs/27 insns, r_src 18/20, g_src 18/18, sum 18/6). The g_src chain extender is deleted from the candidate. Banked as memory/grind/func_8003DE14/candidate.c and chassis_s29_targetmap_5.c.
+- verdict: CONFIRMED
+
+## [s29] The red and green channels must mask asymmetrically - the red result masked inside its shift statement, the green result masked in the or-chain.
+- mechanism: The two channel source carriers are symmetric allocnos; making their statement shapes symmetric makes local-alloc's tie-break swap them, and the symmetric body's residual prints $a1 <-> $v1 mirrored on every red/green row (t94, t100, t102, t108, t117-t122).
+- probe: The 32-body cross product in tmp/grind/func_8003DE14/s29/v3/.
+- result: Asymmetric 5; both masks in the or 17; both masks in the shift statement 22; the red result in a fresh r_ch local 17 at any mask placement; both results fresh 42-48. Banked as rejected/s29-both-channels-mask-in-or-17.c.
+- verdict: CONFIRMED
+
+## [s29] The s21 j chain extender `((s32)dst_buf + j) - j` has an ordinary substitute: declaring `s32 j = 0;` inside the `if (total > 0)` block after `complement`.
+- mechanism: The extender's whole job is the $t4 = j / $t5 = complement seat pair. Declaring j after complement inside the guard changes j's birth point relative to complement's, re-ordering the two allocnos with no dead code anywhere.
+- probe: Seven bodies in tmp/grind/func_8003DE14/s29/v6/ and five in v7/ swept against the extender-free 12-point control, then the residual via ed2.py.
+- result: 8 / 173 - the best body this function has ever had that carries zero FAKE constructs (the standing number was 38, set in s26). Its one remaining row group is the dst cursor init `addiu $a2,$sp,1040` sunk past the guard. Banked as chassis_s29_targetmap_ordinary_8.c.
+- verdict: CONFIRMED
+
+## [s29] KILL RE-AUDIT (mandated): the s21 j chain extender changes the score on the s28 w01 chassis.
+- mechanism: s26/s27 priced the extender at -7 on p2 and s28 inherited that price onto the w01 chassis without re-measuring it there; if w01's blue-on-g_src reuse already supplies the reference lift, the two levers are redundant.
+- probe: A 2x2 in tmp/grind/func_8003DE14/s29/v1/ (w01 and the s27 three-way body, each with and without the extender) plus the p2 controls, all in one tools/sweep_variants.py call.
+- result: w01 36 with the extender and 36 without - the extender is worth exactly 0 there, so w01 was already a FAKE-free 36. The other prices re-confirm: three-way 42 / 46, p2 12 / 19. This retired the s26 'honest ordinary-C floor is 38' number before any new probe ran.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); s28 three-way + blue-on-g_src chassis (memory/grind/func_8003DE14/chassis_s28_threeway_w01_36.c), j chain extender the only FAKE construct present
+
+## [s29] Giving the green carrier a real second job other than the blue channel - the b*factor product, the blue complement product, the pixel's high bit, the blue mask term, or the whole output word - restores its reference count and undoes the s27 bank rotation.
+- mechanism: s28 showed the rotation is priced by reg_n_refs on pseudo 126, so if the count is what matters, any real consumed value carried in g_src should buy it back without displacing px the way w01's blue-on-g_src does.
+- probe: Nine complete bodies (b1-b9) in tmp/grind/func_8003DE14/s29/v1/ swept in one call against the 42-point s27 three-way control, including the same jobs relocated to r_src, rp and gp.
+- result: 43 to 56 - every one is worse than the control. Which value the carrier holds, not how many references it has, is what moves the bank. Two banked in rejected/ (s29-bfactor-on-gsrc-threeway-46.c, s29-outword-on-gsrc-threeway-43.c). This closes the s27/s28 'raise the green carrier's refs past 24' frontier item negatively, and the session's real progress came from the opposite direction.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s27 three-way-shared-sum chassis (memory/grind/func_8003DE14/chassis_s27_threeway_sum_42.c), j chain extender present, blue-path g_src extender absent by construction
+
+## [s29] The red channel's two remaining rows (the shift's intermediate seated on the sum's register instead of r_src's dead seat) can be moved by respelling the red statement.
+- mechanism: The target emits `sra $a1,$v0,15` then `andi $a1,$a1,31` - the shift's destination is r_src's seat and the mask is applied in place - while our build emits the shift in place on the sum's register and the mask into r_src.
+- probe: Eight red spellings on the 5-point chassis (tmp/grind/func_8003DE14/s29/v4/ and v9/): a two-statement split, a compound-assignment split, a fresh local for the shift stage, `(u32)sum >> 15`, `& 31`, `(sum & 0xF8000) >> 15`, the red sum inlined, and the red sum in a fresh local.
+- result: Six tie at 5 and the two split forms are 20 - the split does produce the target's two-insn shape but swaps the red/green source carriers, so it trades two rows for twelve. Banked as rejected/s29-red-mask-split-two-statements-20.c. No spelling of the red statement alone moves those two rows.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_5.c), j chain extender present, g_src chain extender absent
+
+## [s29] The latch's three rows (the two `lh` destinations swapped) can be moved by respelling the loop condition or the `total` computation.
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) prices the first load's quantity at floor_log2(6)*6/3*10000 = 40000 and the second at 2*6/2*10000 = 60000, so the shorter-span second load takes $v0 while the target has the first load there.
+- probe: Nine bodies on the 5-point chassis (tmp/grind/func_8003DE14/s29/v5/ and v9/): latch operand swap, reversed `>`, `!= 0` wrapper, `<=` with a -1, signed casts on both halves, named w/h locals, no `total` local at all, `total` recomputed inside the latch, and the top-level `total` operand order swapped.
+- result: Every inert form ties at 5; the forms that change anything are worse (top-level operand swap 7, `total` recomputed in the latch 7, the `<=` form 8 at 174 build insns). Condition spelling does not reach that seat pair.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_5.c), j chain extender present
+
+## [s29] The per-row declaration order (total / src / dst / factor) reaches the allocator on the extender-free 8-point chassis and can pull the sunk dst cursor init back above the guard.
+- mechanism: With `s32 j = 0;` moved inside the guard GCC sinks `addiu $a2,$sp,1040` past it; if declaration order reached the allocator some permutation should restore the earlier birth point.
+- probe: All 24 permutations generated by tmp/grind/func_8003DE14/s29/gen8.py and swept in one tools/sweep_variants.py call.
+- result: All 24 score exactly 8 at 173 build insns. Byte-inert, consistent with s28's finding that sched.c normalizes statement order before local-alloc measures any span. Moving the cursor initialisations inside the guard as well is 11 (rejected/s29-cursors-inside-guard-11.c) and reusing the dead `total` as the complement carrier is 18.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 extender-free target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c), no FAKE construct present
