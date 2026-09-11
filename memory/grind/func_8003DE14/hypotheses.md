@@ -2825,3 +2825,106 @@ use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; s29 extender-free target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c), no FAKE construct present
+
+## s30 (SOLVER) — hypotheses
+
+### H-s30-1 — KILLED (instance)
+**Statement.** On the extender-free 8-point chassis, giving the dst cursor an
+earlier birth or an earlier real use (or reshaping the `if (total > 0)` guard)
+restores the target's `addiu $a2,$sp,1040` position, closing the three-row
+dst-cursor group.
+**Probe.** Ten bodies in `tmp/grind/func_8003DE14/s30/v1/`, sweeping s29's own
+next-probe list plus five more.
+**Result.** Six are byte-identical to the 8 control (`&dst_buf[0]`, both cursors
+as `&x[0]`, guard as an early `goto`, `LoadImage(..., &dst_buf[0])`, cursors
+after `factor`, guard as `while … break`); four are worse (9, 10, 14, 22); the
+function-scope-cursor form collapses the loop to 124 insns and scores 108.
+**Verdict.** KILLED, instance — measured on the s29 extender-free target-map
+chassis (`chassis_s29_targetmap_ordinary_8.c`), no FAKE constructs present,
+HEAD 2026-09-11.
+
+### H-s30-2 — KILLED (instance)
+**Statement.** The red shift's seat (t118/t119) moves if the shared `sum`'s tie
+to the shift is broken by giving the red channel its own sum carrier, by
+reordering the channels, or by keeping the red sum live past the shift.
+**Mechanism.** `combine_regs` (local-alloc.c:1854-1897) ties the `sra` dest to
+its dying source; the dying source is the three-way `sum`, which owns $v0.
+**Probe.** Ten bodies in `tmp/grind/func_8003DE14/s30/v2/` on the 5-point chassis.
+**Result.** Two ties at 5 (`(u32)sum >> 15`, red sum inlined into the shift) and
+eight regressions: 11, 29, 32, 34, 34, 34, 35, 45. Every form that takes the red
+sum out of the three-way carrier costs ~30 points.
+**Verdict.** KILLED, instance — measured on `memory/grind/func_8003DE14/candidate.c`
+(5 points, the s21 j chain extender present), HEAD 2026-09-11.
+
+### H-s30-3 — CONFIRMED
+**Statement.** The whole remaining residual of the 5-point body is register
+allocation and nothing else: the register-blanked instruction multisets of our
+stream and the target's are identical.
+**Probe.** `inverse_compose.py classify code6cac_c2 func_8003DE14
+--target-object build/src/code6cac_c2.o --ours-object
+tmp/sandbox/func_8003DE14/code6cac_c2.o`.
+**Result.** `FIRST DIVERGENCE: RA`, honest 173 insns / target 173 insns, with the
+five differing rows printed as same-instruction/different-register pairs.
+**Verdict.** CONFIRMED.
+
+### H-s30-4 — KILLED (class)
+**Statement.** While the latch emits `lh rect[2]` then `lh rect[3]` then `mult`
+with both loads dying at that `mult` and carrying equal `qty_n_refs` and equal
+`qty_size` as block-local quantities, `qty_compare_1` always prices the second
+load strictly higher than the first, so the second load always takes $v0 and the
+first always takes $v1 — the target's seating (first load in $v0) is not produced
+by any latch-expression spelling with those inputs.
+**Mechanism.** `pri = floor_log2(refs)*refs*size/(death-birth)*10000`
+(tools/gcc-2.7.2/local-alloc.c:1660). Measured block-11 inputs: qty0 (lh 4($s0))
+birth 4 death 8 refs 6 -> 30000; qty1 (lh 6($s0)) birth 6 death 8 refs 6 ->
+60000. Both deaths coincide, so span(qty0) = span(qty1) + 2 identically, and
+`find_free_reg`'s ascending scan gives the first-allocated quantity $v0 while the
+second is excluded from $v0 over its strictly containing span.
+**Probe.** `local_alloc.py` ground truth (order 8/8, assign 26/27 on this
+function) plus six latch spellings in `tmp/grind/func_8003DE14/s30/v3/`.
+**Result.** Four spellings tie at 5 byte-for-byte (operand swap, `!(j >= …)`,
+`(s32)` casts, `rect[3]*rect[2] > j`); the two that move (`… - j > 0` = 7,
+`j != …` = 7 at 172 insns) move by changing the instruction stream, not the
+seats. Exactly what the formula predicts.
+**Verdict.** KILLED, class. Predicate: tools/gcc-2.7.2/local-alloc.c:1660.
+**What it leaves open (the next probe).** The kill is conditioned on the two
+loads being equal-refs, equal-size, block-local quantities. Escapes, in
+decreasing plausibility: (a) a third source-level reference to the `rect[2]`
+pseudo inside block 11 (refs 6 -> 9 gives 67500 > 60000 outright, refs 8 ties and
+the tie-break takes the LOWER qty number, which is qty0); (b) the `rect[2]`
+pseudo acquiring a reference outside block 11 or a third death, which makes
+local-alloc skip it entirely (local-alloc.c:470-476) and hands it to global.c;
+(c) `qty_size` 2 (DImode). (a) and (b) are C-expressible; the difficulty is doing
+either without adding an instruction, since classify proves the multiset is
+already exact.
+
+## [s30] The whole remaining residual of the 5-point body is register allocation and nothing else: the register-blanked instruction multisets of our stream and the target's are identical.
+- mechanism: inverse_compose.py's funnel triage - the front end / cse / combine / loop passes build the insn multiset, RA renames a fixed multiset, sched.c orders a fixed allocated stream. Comparing the two objdump renderings in the same language tells you which stage first diverges.
+- probe: python3 tools/ra_solver/inverse_compose.py classify code6cac_c2 func_8003DE14 --target-object build/src/code6cac_c2.o --ours-object tmp/sandbox/func_8003DE14/code6cac_c2.o
+- result: FIRST DIVERGENCE: RA. honest 173 insns, target 173 insns. The five differing rows print as same-instruction/different-register pairs: andi a1,v0,0x1f vs andi a1,a1,0x1f; lh v0,6(s0)/lh v1,4(s0) vs lh v0,4(s0)/lh v1,6(s0); mult v1,v0 vs mult v0,v1; sra v0,v0,0xf vs sra a1,v0,0xf. No pre-RA work and no scheduler work remains on this body.
+- verdict: CONFIRMED
+
+## [s30] While the latch emits lh rect[2], lh rect[3], mult with both loads dying at that mult and carrying equal qty_n_refs and equal qty_size as block-local quantities, qty_compare_1 prices the second load strictly higher, so the second load takes $v0 and the first takes $v1 - no latch-expression spelling with those inputs produces the target's seating (first load in $v0).
+- mechanism: pri = floor_log2(refs)*refs*size/(death-birth)*10000. Measured block-11 inputs from tools/ra_solver/local_alloc.py (order 8/8 blocks, assign 26/27 qtys on this function): qty0 = lh 4($s0), pseudo 149, birth 4, death 8, refs 6 -> 30000, got $v1; qty1 = lh 6($s0), pseudo 152, birth 6, death 8, refs 6 -> 60000, got $v0. Both deaths coincide at the mult, so span(qty0) = span(qty1) + 2 identically; the higher-priority quantity is allocated first and find_free_reg's ascending scan gives it $v0, after which the first load is excluded from $v0 across its own strictly-containing span. The suggested-register pass cannot intervene: qty_phys_sugg / qty_phys_copy_sugg are set only by a hard-register tie (local-alloc.c:1854-1897) and neither load touches a hard register, so both enter the main pass with nsugg = ncopysugg = 0.
+- probe: local_extract.py --suggest + local_alloc.py --func func_8003DE14 for ground truth, then six latch spellings in tmp/grind/func_8003DE14/s30/v3/ measured against the prediction.
+- result: Four spellings tie at 5 byte-for-byte (operand swap, !(j >= ...), (s32) casts, rect[3]*rect[2] > j) - exactly what the formula requires, since none of them can move refs, span or size. The two that move do so by changing the instruction stream rather than the seats: rect[2]*rect[3] - j > 0 is 7, and j != rect[2]*rect[3] is 7 at 172 insns (it deletes an insn the target has). The escapes the kill leaves open are named in hypotheses.md H-s30-4: a third source-level reference to the rect[2] pseudo inside block 11 (refs 6 -> 9 gives 67500 outright; refs 8 ties at 60000 and qty_compare_1 breaks ties by LOWER qty number, which is qty0), the rect[2] pseudo acquiring a reference outside block 11 or a third death so local-alloc skips it (local-alloc.c:470-476) and global.c seats it, or qty_size 2.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1660
+
+## [s30] On the 5-point target-map chassis, the ten C forms tried in s30 that break the shared sum's combine_regs tie to the red shift - giving the red or green channel its own sum carrier, rotating the channel order, reusing the red sum as the green accumulator, or relocating the red sum-and-shift pair - do not move the red shift's seat off $v0.
+- mechanism: combine_regs (local-alloc.c:1854-1897) ties the sra's destination to its dying source. The dying source is the three-way shared sum, which owns $v0 across the blend arm, so the shift's intermediate inherits $v0; the target instead seats it on $a1, r_src's dead seat. Breaking the tie requires the sum pseudo to be live past the shift.
+- probe: Ten bodies in tmp/grind/func_8003DE14/s30/v2/ swept with tools/sweep_variants.py on the 5-point chassis.
+- result: Two ties at 5 ((u32)sum >> 15, red sum inlined into the shift statement) and eight regressions: red sum+shift moved between green and blue 11, channel order G,R,B 29, red sum+shift after blue 32, green given its own sum carrier 34, red sum reused as the green accumulator 34, channel order B,R,G 34 (174 insns), red given its own sum carrier rp 35, red and green both given their own carriers 45. Every form that takes a channel's sum out of the three-way carrier costs about 30 points, which is the s29 finding that the three-way shared sum is load-bearing, now measured from the opposite direction.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c (5/173), s21 j chain extender present
+
+## [s30] On the extender-free 8-point chassis, the ten cursor-birth and guard-shape spellings tried in s30 (including every shape s29's frontier named) restore the target's addiu $a2,$sp,1040 position and close the three-row dst-cursor group.
+- mechanism: s29's reading was that GCC sinks the dst cursor init past the guard because the cursor's first real use is inside the guarded block, so anything giving the cursor an earlier birth or an earlier real use should restore the target's position.
+- probe: Ten bodies in tmp/grind/func_8003DE14/s30/v1/ swept on chassis_s29_targetmap_ordinary_8.c.
+- result: Six are byte-identical to the 8 control - u16 *dst = &dst_buf[0], both cursors as &x[0], the guard rewritten as if (total <= 0) goto row_done, LoadImage(..., &dst_buf[0]), the cursors declared after factor, and the guard as while (total > 0) { ... break; }. Four are worse: if (total != 0) 9, dst declared inside the guard 10, j declared before complement 14, complement hoisted to per-row scope 22. The function-scope-cursor form collapses the loop to 124 insns and scores 108. Together with s29's 24 declaration-order permutations (all 8), the sink is insensitive to cursor-birth and guard-shape spelling on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 extender-free target-map chassis memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c (8/173), zero FAKE constructs present

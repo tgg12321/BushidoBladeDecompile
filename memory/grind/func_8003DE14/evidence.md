@@ -3753,3 +3753,98 @@ red mask into its own statement is 20 (it swaps the carriers, see section 4).
 - [s29] Nine bodies giving the green carrier a real second job on the s27 three-way chassis (b*factor 46, blue complement product 46, high bit 45, blue mask 44, output word 43, two jobs 56, the same jobs on r_src/rp/gp 44-56) are all worse than the 42 control - raising reg_n_refs is not the lever; the identity of the carried value is.
 
 - [s29] All 24 permutations of the four per-row declarations score 8 on the extender-free chassis, and latch-condition spelling plus eight red-statement spellings all tie at 5 - the two surviving row groups are seat facts, not spelling facts.
+
+## s30 (SOLVER) — the residual is typed RA-only, and both row groups are closed-form
+
+- [s30] Chassis re-measured at dispatch (the brief again printed "measurement
+  unavailable"): candidate.c = 5 / 173 build insns and
+  chassis_s29_targetmap_ordinary_8.c = 8 / 173 on HEAD 2026-09-11. Both s29
+  numbers reproduce exactly; nothing in the chassis moved.
+
+- [s30] `inverse_compose.py classify --target-object build/src/code6cac_c2.o
+  --ours-object tmp/sandbox/func_8003DE14/code6cac_c2.o` returns **FIRST
+  DIVERGENCE: RA** with register-blanked multisets IDENTICAL (173 vs 173). There
+  is no pre-RA work and no scheduler work left on this body: every remaining row
+  is a register seat on a fixed, correctly-ordered stream. A future session
+  proposing "the target computes X differently" for this body is searching the
+  wrong layer.
+
+- [s30] The local-alloc model is ground truth on this function:
+  `local_alloc.py code6cac_c2 --func func_8003DE14` scores **order 8/8 blocks,
+  assign 26/27 qtys** (19 rows skipped as `mdreg` = $hi/$lo).
+
+- [s30] THE LATCH GROUP IS A CLOSED-FORM LOCAL-ALLOC FACT. Block 11 holds three
+  GR quantities: qty0 = `lh 4($s0)` (pseudo 149, birth 4, death 8, refs 6, got
+  $v1), qty1 = `lh 6($s0)` (pseudo 152, birth 6, death 8, refs 6, got $v0),
+  qty4 = the `slt` result (birth 12, death 14, refs 6, got $v0).
+  `qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1660) prices them
+  `floor_log2(refs)*refs*size/(death-birth)*10000` = 30000 vs 60000. Both loads
+  die at the same `mult`, so the SECOND load's span is always exactly 2 shorter
+  than the first's; with equal refs and size it always wins $v0 and the first is
+  then excluded from $v0 across its own (strictly containing) span. The target
+  has the FIRST load in $v0, so the target's C cannot present these two loads as
+  a pair of equal-refs, equal-size, block-local quantities.
+
+- [s30] The inputs that would flip the latch, read off the formula and the
+  tie-break: refs(qty0) >= 8 (ties at 60000, and `qty_compare_1` breaks ties by
+  LOWER qty number = qty0), refs(qty0) >= 9 (67500, outright), size(qty0) >= 2
+  (DImode), or qty0 ceasing to be block-local at all (3+ deaths or a reference
+  outside block 11 -> local-alloc.c:470-476 skips it and global.c seats it).
+  `refs` is loop-depth-weighted REG_N_REFS (2 references x depth 3 = 6), so the
+  refs route needs a THIRD source-level reference to that pseudo inside block 11.
+
+- [s30] The suggested-register pass is NOT a latch lever: `qty_phys_sugg` /
+  `qty_phys_copy_sugg` are set only by a hard-register tie
+  (local-alloc.c:1854-1897) and neither halfword load touches a hard register,
+  so both quantities enter the main pass with nsugg = ncopysugg = 0.
+
+- [s30] Six latch spellings measured against that prediction and all behaved as
+  the model requires: operand swap 5, `!(j >= …)` 5, `(s32)` casts 5,
+  `rect[3]*rect[2] > j` 5 (byte-identical ties); `rect[2]*rect[3] - j > 0` is 7
+  and `j != rect[2]*rect[3]` is 7 at 172 insns (it deletes an insn the target
+  has).
+
+- [s30] THE RED-SHIFT GROUP IS THE combine_regs TIE, AND EVERY C FORM THAT
+  BREAKS IT COSTS 30 POINTS. Ten bodies on the 5-point chassis: `(u32)sum >> 15`
+  5 and the red sum inlined into the shift 5 (ties); red sum+shift moved between
+  green and blue 11; channel order G,R,B 29; red sum+shift after blue 32; green
+  given its own sum carrier 34; the red sum reused as the green accumulator 34;
+  channel order B,R,G 34 (174 insns); red given its own sum carrier `rp` 35;
+  red AND green given their own carriers 45. Our `sra` dest inherits $v0 because
+  `combine_regs` ties it to its dying source (the three-way shared `sum`);
+  breaking the tie needs the sum pseudo LIVE past the shift, and every form that
+  keeps it live either adds an instruction (the multiset is already exact) or
+  hands a channel its own carrier.
+
+- [s30] s29's ENTIRE dst-cursor frontier probe list is SPENT and inert. On the
+  extender-free 8-point chassis: `u16 *dst = &dst_buf[0];` 8, both cursors as
+  `&x[0]` 8, the guard rewritten as `if (total <= 0) goto` 8,
+  `LoadImage(..., &dst_buf[0])` 8, cursors declared after `factor` 8, guard as
+  `while (total > 0) { … break; }` 8 — all byte-identical to the control.
+  Worse: `if (total != 0)` 9, `dst` declared inside the guard 10, `j` declared
+  before `complement` 14, `complement` hoisted to per-row scope 22, cursors at
+  function scope re-initialised per row 108 (124 insns — it collapses the loop).
+  With s29's 24 declaration-order permutations (all 8), the `addiu $a2,$sp,1040`
+  sink is spelling-insensitive on this chassis.
+
+- [s30] Chassis re-measured at dispatch (the brief printed 'measurement unavailable'): candidate.c = 5 / 173 build insns and chassis_s29_targetmap_ordinary_8.c = 8 / 173 on HEAD 2026-09-11. Both s29 numbers reproduce exactly.
+
+- [s30] inverse_compose.py classify (object mode) types the entire 5-point residual as RA with IDENTICAL register-blanked multisets - there is no pre-RA or scheduler work left on this body, and any future 'the target computes X differently' hypothesis for it is searching the wrong layer.
+
+- [s30] The local-alloc model is ground truth on this function: local_alloc.py code6cac_c2 --func func_8003DE14 scores order 8/8 blocks and assign 26/27 qtys (19 rows skipped as mdreg = $hi/$lo).
+
+- [s30] Block 11 (the latch) holds exactly three general-register quantities: qty0 = lh 4($s0) (pseudo 149, birth 4, death 8, refs 6, got $v1), qty1 = lh 6($s0) (pseudo 152, birth 6, death 8, refs 6, got $v0), qty4 = the slt result (birth 12, death 14, refs 6, got $v0). qty_compare_1 prices them 30000 vs 60000.
+
+- [s30] Because both latch loads die at the same mult, the second load's span is ALWAYS exactly 2 insns shorter than the first's; with equal refs and size the second always wins $v0 and the first is excluded from $v0 across its own strictly-containing span. The target has the first load in $v0, so the target's C cannot present these two loads as a pair of equal-refs, equal-size, block-local quantities.
+
+- [s30] The named escapes for the latch, read off the formula and the tie-break: refs(qty0) >= 8 ties at 60000 and qty_compare_1 breaks ties by LOWER qty number (= qty0); refs(qty0) >= 9 wins outright at 67500; qty_size 2 ties; or qty0 ceasing to be block-local (a reference outside block 11, or a third death -> local-alloc.c:470-476 skips it and global.c seats it). refs is loop-depth-weighted REG_N_REFS (2 references x depth 3 = 6 here), so the refs route needs a THIRD source-level reference to that pseudo inside block 11.
+
+- [s30] The suggested-register pass is not a latch lever: qty_phys_sugg / qty_phys_copy_sugg are set only by a hard-register tie (local-alloc.c:1854-1897), and neither halfword load touches a hard register.
+
+- [s30] Six latch spellings behaved exactly as the model predicts: operand swap 5, !(j >= ...) 5, (s32) casts 5, rect[3]*rect[2] > j 5 (byte-identical ties); rect[2]*rect[3] - j > 0 is 7 and j != rect[2]*rect[3] is 7 at 172 insns (it deletes an insn the target has).
+
+- [s30] The red-shift group is the combine_regs tie to the three-way shared sum, and every C form that breaks it costs about 30 points: ten bodies measured 5, 5, 11, 29, 32, 34, 34, 34, 35, 45.
+
+- [s30] s29's entire dst-cursor frontier probe list is spent and inert on the 8-point chassis: six shapes tie at 8 byte-for-byte, four are worse (9, 10, 14, 22), and function-scope cursors collapse the loop (124 insns, 108).
+
+- [s30] Six new rejected forms banked under memory/grind/func_8003DE14/rejected/ (153 files total); candidate.c is unchanged at 5 and carries an s30 header stamp recording the RA-only typing.

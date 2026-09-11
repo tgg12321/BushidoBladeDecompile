@@ -54,6 +54,14 @@
  * init past the guard (3 rows).  Reconciling those two is the top frontier item.
  * Everything else in this body is the sanctioned variable-reuse family plus
  * ordinary named intermediates.
+ *
+ * s30 (SOLVER) re-measured this body at 5/173 and TYPED the residual:
+ * inverse_compose classify returns FIRST DIVERGENCE: RA with IDENTICAL
+ * register-blanked multisets, so both surviving row groups are pure register
+ * seats - there is no pre-RA or scheduler work left here.  The latch group is
+ * closed-form (qty_compare_1, local-alloc.c:1660; see hypotheses.md H-s30-4)
+ * and the red-shift group is the combine_regs tie to the shared `sum`.
+ * 26 further bodies measured in s30 are all ties or regressions.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];

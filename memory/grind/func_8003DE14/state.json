@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 29,
- "current_modality": "synthesis",
+ "session_count": 30,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -177,52 +177,34 @@
    "floor": 5,
    "modality": "synthesis",
    "headline": "Floor 12 -> 5 (and the FAKE-free floor 38 -> 8): the target's register map is the C shape 'one variable carries all three channel sums, each channel RESULT is written back into its own source carrier'"
+  },
+  {
+   "session": 30,
+   "floor": 5,
+   "modality": "solver",
+   "headline": "Solver typed the whole 5-point residual as RA-only (identical register-blanked multisets) and closed the latch group in closed form: qty_compare_1 always seats the second halfword load in $v0 while bo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 5-point body's j chain extender can be dropped without paying the three dst-cursor rows, because the 8-point body already fixes $t4/$t5 honestly and only mis-places the cursor init.",
-   "mechanism": "In the 8-point body GCC sinks `addiu $a2,$sp,1040` past the guard because the dst cursor's first real use is inside the guarded block while j's birth moved in there too. Anything that gives the dst cursor an earlier birth or an earlier real use restores the target's t54 position without touching the j/complement ordering.",
-   "next_probe": "On chassis_s29_targetmap_ordinary_8.c sweep: `u16 *dst = &dst_buf[0];`, the cursors declared at function scope and re-initialised per row, a dst write before the guard, the guard rewritten as an early `goto`/`continue` instead of an `if`, and the guard's condition moved into the do-while. Read the .lreg birth points for both cursors (tmp/grind/func_8003DE14/s29/regs.sh) on every body whose score moves."
+   "hypothesis": "The latch's rect[2] load can be made a NON-block-local quantity - referenced outside block 11 or carrying a third death - so local-alloc skips it (local-alloc.c:470-476) and global.c seats it in $v0, without adding an instruction.",
+   "mechanism": "H-s30-4's kill is conditioned on both loads being equal-refs, equal-size, block-local quantities. A pseudo that local-alloc declines leaves qty1 alone in the block-local contest and is seated by global.c's allocno priority instead, which is a completely different pricing. The classify result forbids adding an instruction, so the extra reference or death must be absorbed by an insn the target already has.",
+   "next_probe": "Run tools/ra_solver/extract.py on the 5-point body and read the .flow nrefs / .lreg death counts for pseudos 149 and 152; then spell forms in which the row-loop latch's rect[2] value is the SAME C expression as one read in a neighbouring block - e.g. the per-row `total = rect[2] * rect[3]` computed at the top of the row loop reaching the latch, the `((u16 *)rect)[2]` read in the epilogue block spelled as a signed rect[2], or the latch's multiply written so its first operand is the loop-carried `total`. Check after each whether pseudo 149 still appears in local_alloc.py's block-11 rows at all; that, not the score, is the signal."
   },
   {
-   "hypothesis": "The red shift's seat (t118/t119) is decided by which quantity combine_regs ties the shift's intermediate to, not by the red statement's spelling.",
-   "mechanism": "Eight spellings of the red statement are inert, so the source-level input is not the statement shape. combine_regs (local-alloc.c:1295 -> :1784) ties the sra's destination to its dying source operand - the shared `sum` - which seats it on $v0; the target instead has it on r_src's dead seat.",
-   "next_probe": "Capture BB2_QTY_DEBUG + BB2_SUGG_DEBUG on the 5-point body (tmp/grind/func_8003DE14/s26/alloc.sh pattern), identify the quantity holding the red shift intermediate, then attack the condition that decides the tie - whether the sum pseudo is still live at the sra - e.g. by a form in which the red sum is read once more after the shift, or in which the red sum uses a carrier with a different death count."
+   "hypothesis": "The red shift's seat moves if the shared `sum` stays live past the `sra` while STILL carrying all three channel sums - i.e. the extra read is absorbed by an instruction the target already emits rather than added.",
+   "mechanism": "combine_regs ties the sra dest to its dying source; the tie is what puts the intermediate on $v0. Ten s30 forms that break the tie by re-carriering a channel cost ~30 points because the three-way sum is load-bearing, so the only remaining route is a form where the red sum's last read is NOT the shift.",
+   "next_probe": "Capture BB2_QTY_DEBUG + BB2_SUGG_DEBUG on the 5-point body (tmp/grind/func_8003DE14/s26/alloc.sh pattern) and identify the quantity number holding the red shift intermediate and its refs/birth/death, then spell forms in which the final `*dst = ...` or-chain reads the red sum rather than a mask of it (so the sum's death moves to the or), and forms in which the blue channel's `sum = px + b * factor` reads the previous sum value as part of a real computation."
   },
   {
-   "hypothesis": "The latch's two lh seats are reachable by changing the two loads' relative span, not their order.",
-   "mechanism": "qty_compare_1 prices the first load 40000 (span 3) and the second 60000 (span 2), so the second takes $v0; the target has the first there, which means in the target's stream those two quantities are not priced that way.",
-   "next_probe": "Run tools/ra_solver/extract.py + inverse.py on the block-11 model of the 5-point body with the goal disposition (first load -> $v0), and only then spell the top-ranked vectors; candidate shapes include a body that also reads rect[2] inside the loop and one in which the two loads are born one insn apart."
+   "hypothesis": "The three-row dst-cursor group on the extender-free 8-point chassis is an insn-ORDER effect at a pass upstream of the spelling levers, not a cursor-birth effect.",
+   "mechanism": "Ten cursor-birth and guard-shape spellings plus s29's 24 declaration-order permutations are all byte-identical at 8, which is the signature s28 already recorded for this function - the first scheduling pass re-emits the arm in one canonical order, making statement position byte-inert.",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_8003DE14 on chassis_s29_targetmap_ordinary_8.c and diff the .sched dump's block for the guard region against the 5-point body's, then take the result to tools/sched_solver perturb.py --atoms luid,luid_move with the target pinned via --target; the question to answer is whether the addiu sink is decided before or after the first scheduling pass."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 13,
-   "statement": "Changing px's source-level reference count moves its seat toward the target's $a0.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/D2.c and D3.c",
-   "predicate_cite": "",
-   "result": "D3 = 27, D2 = 40 AND inflates the build to 174 insns. Both worse; neither moves px off $v1."
-  },
-  {
-   "session": 13,
-   "statement": "A neighbouring spelling of the channel-variable reuse beats C2's exact shape.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/{C1,C3,C4,C5,C6,C7,F1,F2,F3,F4,F5}.c",
-   "predicate_cite": "",
-   "result": "43 / 44 / 40 / 38 / 44 / 54 / 40 / 27 / 43 / 26 / 59 respectively, all at 173 insns. Only F4 ties C2 at 26; every other "
-  },
-  {
-   "session": 13,
-   "statement": "A statement-order change in the outer do-body restores the target's blez delay slot without losing the j/complement seat.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/E1.c..E6.c",
-   "predicate_cite": "",
-   "result": "E1 = 30, E2 = 28, E3 = 32, E4 = 26, E5 = 26, E6 = 26 - all at 173 insns. E4/E5/E6 are byte-identical to C2, so moving or"
-  },
   {
    "session": 14,
    "statement": "Some combination of the three per-channel product/reuse spellings beats the incumbent shape.",
@@ -678,6 +660,30 @@
    "measured_on": "HEAD 2026-09-11; s29 extender-free target-map chassis (memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c), no FAKE construct present",
    "predicate_cite": "",
    "result": "All 24 score exactly 8 at 173 build insns. Byte-inert, consistent with s28's finding that sched.c normalizes statement o"
+  },
+  {
+   "session": 30,
+   "statement": "While the latch emits lh rect[2], lh rect[3], mult with both loads dying at that mult and carrying equal qty_n_refs and equal qty_size as block-local quantities, qty_compare_1 prices the second load s",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1660",
+   "result": "Four spellings tie at 5 byte-for-byte (operand swap, !(j >= ...), (s32) casts, rect[3]*rect[2] > j) - exactly what the f"
+  },
+  {
+   "session": 30,
+   "statement": "On the 5-point target-map chassis, the ten C forms tried in s30 that break the shared sum's combine_regs tie to the red shift - giving the red or green channel its own sum carrier, rotating the channe",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c (5/173), s21 j chain extender present",
+   "predicate_cite": "",
+   "result": "Two ties at 5 ((u32)sum >> 15, red sum inlined into the shift statement) and eight regressions: red sum+shift moved betw"
+  },
+  {
+   "session": 30,
+   "statement": "On the extender-free 8-point chassis, the ten cursor-birth and guard-shape spellings tried in s30 (including every shape s29's frontier named) restore the target's addiu $a2,$sp,1040 position and clos",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 extender-free target-map chassis memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c (8/173), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Six are byte-identical to the 8 control - u16 *dst = &dst_buf[0], both cursors as &x[0], the guard rewritten as if (tota"
   }
  ],
  "ladder_skip": 0,
