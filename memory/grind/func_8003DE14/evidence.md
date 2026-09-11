@@ -3848,3 +3848,107 @@ red mask into its own statement is 20 (it swaps the carriers, see section 4).
 - [s30] s29's entire dst-cursor frontier probe list is spent and inert on the 8-point chassis: six shapes tie at 8 byte-for-byte, four are worse (9, 10, 14, 22), and function-scope cursors collapse the loop (124 insns, 108).
 
 - [s30] Six new rejected forms banked under memory/grind/func_8003DE14/rejected/ (153 files total); candidate.c is unchanged at 5 and carries an s30 header stamp recording the RA-only typing.
+
+## s31 (STRUCTURAL) - floor 5 -> 4; the latch group is now ORDER-ONLY
+
+Chassis at dispatch: memory/grind/func_8003DE14/candidate.c (s29 target map,
+s21 j chain extender) re-measured at 5/173 this session before any edit.
+
+### The latch is two independent questions, not one
+s30 banked the latch group as a single closed-form kill ("no latch-expression
+spelling with those inputs produces the target's seating"). That is true of the
+inputs it measured, but the group is actually TWO questions and they have
+different answers:
+
+1. WHICH LOAD OWNS $v0 is decided by BIRTH ORDER. expand walks the multiply's
+   operand 0 first, so the exit test's first operand is the first insn of the
+   latch block; qty_compare_1 (local-alloc.c:1660) prices the SECOND-born load
+   higher (equal refs 6, equal size, spans 2 vs 1 -> 60000 vs 120000) and
+   find_free_reg's ascending scan hands it $v0. Writing the test as
+   `rect[3] * rect[2]` therefore lands BOTH target seats.
+2. WHICH REGISTER PAIR THE MULTIPLY PRINTS is decided by the source operand
+   order alone (mult(op0, op1) survives to the emitted `mult $x,$y`).
+
+On the original body those two are welded together (operand 0 is both the
+first-born and the multiply's first operand), which is why every s30 latch
+spelling tied at 5. Staging one operand through a local at the bottom of the row
+loop splits them:
+
+    loop_check:
+        j++;
+        h = rect[3];                 /* born first  -> $v1 (target) */
+    } while (j < rect[2] * h);       /* rect[2] born second -> $v0 (target),
+                                        multiply prints mult $v0,$v1 (target) */
+
+Measured 4/173. The symmetric form (`w = rect[2]` staged, `j < rect[3] * w`) is
+also 4. Staging the operand that is ALREADY first (w born first, `j < w * h`)
+is 5 - the stage only helps when it re-orders the births.
+
+### The 4-row residual
+    latch  ours   lh $v1,6($s0) ; lh $v0,4($s0) ; nop ; mult $v0,$v1
+           target lh $v0,4($s0) ; lh $v1,6($s0) ; nop ; mult $v0,$v1
+           -> registers and multiply MATCH; only the two loads' ORDER differs.
+    red    ours   sra $v0,$v0,15 ; andi $a1,$v0,31
+           target sra $a1,$v0,15 ; andi $a1,$a1,31      (unchanged since s29)
+
+### Emission order == birth order, verified pass by pass
+The order the loads are emitted in is the order they are born in, at EVERY
+stage: .combine, .sched, .sched2, .dbr, the emitted .s and the object file all
+agree, for the control body and for v04/w01 alike. sched.c's rank_for_schedule
+(tools/gcc-2.7.2/sched.c:2408) breaks the two loads' equal-priority tie by
+INSN_LUID, i.e. original order, and gas does not reorder. Consequence: the
+target's latch has its FIRST-born load in $v0, and qty_compare_1 cannot do that
+for two equal-refs, equal-size, block-local quantities that die at the same
+insn. One of the target's two loads must escape local-alloc entirely
+(local-alloc.c:470-476 skips any pseudo with reg_basic_block < 0 or
+reg_n_deaths > 1) and be seated by global.c after local-alloc has already given
+the surviving block-local quantity $v0.
+
+METHOD NOTE for future sessions: inverse_compose.py classify prints its
+"same instructions, different registers" rows as a SORTED multiset, NOT in
+program order. Reading order out of it produced a wrong "some pass swaps the
+loads" theory in this session that cost three dump cycles to unwind - read
+order from objdump of tmp/sandbox/<func>/<stem>.o instead.
+
+### What the escape is NOT (measured this session)
+- Staging the rect[3] read at the TOP of the inner do-body does make the pseudo
+  cross-block, but it also moves the load out of the latch block: 10/173.
+- Consuming the staged value in the row epilogue (so it is live out of the
+  latch) needs a row-top initialisation to stay defined on the guard-skip path;
+  that initialisation is loop-invariant, loop.c hoists it and the inner loop
+  collapses to 69 insns: 115.
+- Spelling the epilogue's `((u16 *)rect)[3]` as signed `rect[3]` does NOT share
+  the latch's pseudo (the epilogue block has two predecessors - the guard's
+  `blez` at 8003DF28 jumps straight to it - so it never continues the latch's
+  extended basic block for CSE): 6/173, and the only change is the epilogue's
+  own lhu -> lh row. The rect[2] version of the same edit is byte-identical to
+  the control (combine keeps the zero-extending load because only the low half
+  is consumed), i.e. a free no-op.
+- for-loop spellings of the row loop: 69 at 174 insns (loop.c emits a separate
+  top test). A local `s16 *` alias for the latch only: 22 at 174 insns.
+- Swapping the ROW-TOP `total = rect[2] * rect[3]` operands costs 2 rows (7) and
+  does not touch the latch - the two blocks' orders are independent.
+
+### FAKE inventory on the 4-point body
+1. s21 j chain extender `((s32)dst_buf + j) - j` in the LoadImage call (3 pts).
+2. s31 `h` latch-bound stage (1 pt).
+Both are annotated in candidate.c. The best body with NEITHER is still the s29
+extender-free chassis at 8; the best body with only #1 is 5 - either the control
+(s29 target map) or chassis_s31_latch_swap_ordinary_5.c, which is a DIFFERENT 5
+(its two `lh` rows are correct and its multiply row is wrong).
+
+- [s31] Chassis re-measured at dispatch: memory/grind/func_8003DE14/candidate.c (s29 target map + s21 j chain extender) = 5/173 on HEAD 2026-09-11; the new s31 body = 4/173, verified after the final candidate.c (with both FAKE annotations) was applied to src.
+
+- [s31] The 4-row residual: latch ours `lh $v1,6($s0) ; lh $v0,4($s0) ; nop ; mult $v0,$v1` vs target `lh $v0,4($s0) ; lh $v1,6($s0) ; nop ; mult $v0,$v1` (registers and multiply MATCH, only order differs), plus the unchanged red group `sra $v0,$v0,15 / andi $a1,$v0,31` vs `sra $a1,$v0,15 / andi $a1,$a1,31`.
+
+- [s31] local-alloc ground truth for the latch block on the 5-point body (.lreg): Register 149 used 6 times across 3 insns in block 11, Register 152 used 6 times across 2 insns in block 11 - equal refs, equal size, spans 3 and 2, so qty_compare_1 (local-alloc.c:1660) always prefers the second-born.
+
+- [s31] Emission order == birth order at every stage (.combine/.sched/.sched2/.dbr/.s/object) for both orderings tested; sched.c:2408 breaks the equal-priority tie by INSN_LUID.
+
+- [s31] The row-loop epilogue block has two predecessors (the guard's `blez $v1, .L8003E04C` at 8003DF28 jumps straight to it), so CSE cannot propagate a latch value into it - the epilogue-linkage route to a cross-block latch pseudo is closed by control flow, not by spelling.
+
+- [s31] Ordinary-C reference points on this chassis: the best body with NO staged local is 5 (two distinct 5s - the s29 control and chassis_s31_latch_swap_ordinary_5.c, whose lh rows are correct and whose multiply row is wrong); the best body with no FAKE construct at all is still the s29 extender-free chassis at 8.
+
+- [s31] FAKE inventory of the 4-point candidate: (1) s21 j chain extender `((s32)dst_buf + j) - j` (3 pts), (2) the new `h` latch-bound stage (1 pt). Both now carry /* FAKE: what + mechanism + lever-exhaustion */ annotations in candidate.c; the s21 extender was previously un-annotated.
+
+- [s31] METHOD: tools/ra_solver/inverse_compose.py classify prints its 'same instructions, different registers' rows as a sorted multiset, not in program order - order must be read from objdump of tmp/sandbox/<func>/<stem>.o.

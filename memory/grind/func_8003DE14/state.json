@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 30,
- "current_modality": "solver",
+ "session_count": 31,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -183,60 +183,34 @@
    "floor": 5,
    "modality": "solver",
    "headline": "Solver typed the whole 5-point residual as RA-only (identical register-blanked multisets) and closed the latch group in closed form: qty_compare_1 always seats the second halfword load in $v0 while bo"
+  },
+  {
+   "session": 31,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Floor 5 -> 4: the latch group splits into TWO questions (birth order decides which load owns $v0; source operand order decides what the multiply prints), and staging rect[3] through a local at the row"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The latch's rect[2] load can be made a NON-block-local quantity - referenced outside block 11 or carrying a third death - so local-alloc skips it (local-alloc.c:470-476) and global.c seats it in $v0, without adding an instruction.",
-   "mechanism": "H-s30-4's kill is conditioned on both loads being equal-refs, equal-size, block-local quantities. A pseudo that local-alloc declines leaves qty1 alone in the block-local contest and is seated by global.c's allocno priority instead, which is a completely different pricing. The classify result forbids adding an instruction, so the extra reference or death must be absorbed by an insn the target already has.",
-   "next_probe": "Run tools/ra_solver/extract.py on the 5-point body and read the .flow nrefs / .lreg death counts for pseudos 149 and 152; then spell forms in which the row-loop latch's rect[2] value is the SAME C expression as one read in a neighbouring block - e.g. the per-row `total = rect[2] * rect[3]` computed at the top of the row loop reaching the latch, the `((u16 *)rect)[2]` read in the epilogue block spelled as a signed rect[2], or the latch's multiply written so its first operand is the loop-carried `total`. Check after each whether pseudo 149 still appears in local_alloc.py's block-11 rows at all; that, not the score, is the signal."
+   "hypothesis": "The target's latch seats its FIRST-born load in $v0, which means the rect[3] load escaped local-alloc: find the C form in which the rect[3] halfword pseudo is referenced in a second block (or dies twice) WHILE its load insn stays inside the latch block.",
+   "mechanism": "local-alloc.c:470-476 gives reg_qty = -1 (skip) to any pseudo with reg_basic_block < 0 or reg_n_deaths > 1; global.c then seats it after local-alloc has already handed the block's surviving quantity $v0 - which is exactly the target's pairing (off4 = $v0 born first, off6 = $v1). s31 killed the two obvious spellings: staging the value at the top of the do-body moves the load out of the block (10), and consuming it in the epilogue needs a loop-invariant initialiser that loop.c hoists (115).",
+   "next_probe": "Run tools/ra_solver/extract.py + local_alloc.py on the 4-point body and confirm pseudo 152's reg_basic_block / reg_n_deaths, then spell forms where the staged `h` is written in the latch block but read on a path that does NOT require a dominating initialiser: `h` assigned in BOTH the guard-skip path and the latch via the existing epilogue statement (e.g. the epilogue's new_y computed from h only inside the `total > 0` half of an if/else whose other half already re-reads rect[3]), and forms where h is written twice inside the loop (two assignments -> reg_n_deaths 2) with the second write consumed by the exit test. The signal to read is whether pseudo 152 still appears in local_alloc.py's block-11 rows, not the score."
   },
   {
-   "hypothesis": "The red shift's seat moves if the shared `sum` stays live past the `sra` while STILL carrying all three channel sums - i.e. the extra read is absorbed by an instruction the target already emits rather than added.",
-   "mechanism": "combine_regs ties the sra dest to its dying source; the tie is what puts the intermediate on $v0. Ten s30 forms that break the tie by re-carriering a channel cost ~30 points because the three-way sum is load-bearing, so the only remaining route is a form where the red sum's last read is NOT the shift.",
-   "next_probe": "Capture BB2_QTY_DEBUG + BB2_SUGG_DEBUG on the 5-point body (tmp/grind/func_8003DE14/s26/alloc.sh pattern) and identify the quantity number holding the red shift intermediate and its refs/birth/death, then spell forms in which the final `*dst = ...` or-chain reads the red sum rather than a mask of it (so the sum's death moves to the or), and forms in which the blue channel's `sum = px + b * factor` reads the previous sum value as part of a real computation."
+   "hypothesis": "The red group's two rows move if the three-way `sum` does not die at the red `sra` - and the s31 staging lever is a new way to ask that question, since staging changes which pseudo is the dying source combine_regs sees.",
+   "mechanism": "combine_regs (local-alloc.c:1854-1897) ties the sra's destination to its dying source; ours is the shared `sum` (owner of $v0), the target's is r_src's dead seat $a1. s30 killed ten forms that break the tie by re-carriering a channel (each ~30 pts because the three-way sum is load-bearing); staging does not re-carrier anything, it only adds a statement boundary.",
+   "next_probe": "On the 4-point chassis, sweep forms that stage the red channel's operands rather than its result - `t = sum >> 15;` with the mask left in the or-chain, `rp` staged after the multiply, and the red product staged so the sum's last read is the andi rather than the sra - and capture BB2_QTY_DEBUG on each to see which quantity the shift's destination is combined into."
   },
   {
-   "hypothesis": "The three-row dst-cursor group on the extender-free 8-point chassis is an insn-ORDER effect at a pass upstream of the spelling levers, not a cursor-birth effect.",
-   "mechanism": "Ten cursor-birth and guard-shape spellings plus s29's 24 declaration-order permutations are all byte-identical at 8, which is the signature s28 already recorded for this function - the first scheduling pass re-emits the arm in one canonical order, making statement position byte-inert.",
-   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_8003DE14 on chassis_s29_targetmap_ordinary_8.c and diff the .sched dump's block for the guard region against the 5-point body's, then take the result to tools/sched_solver perturb.py --atoms luid,luid_move with the target pinned via --target; the question to answer is whether the addiu sink is decided before or after the first scheduling pass."
+   "hypothesis": "A third source-level reference to the rect[2] latch pseudo inside block 11 (refs 6 -> 9, priority 90000) would win $v0 for the FIRST-born load without any local-alloc escape, if one can be spelled without adding an instruction.",
+   "mechanism": "pri = floor_log2(refs)*refs*size/(death-birth)*10000 (local-alloc.c:1660): 3 references at loop depth 3 give 9 weighted refs and 3*9/2 = 135000, above the second-born's 120000. s30 named this escape; s31 confirmed the block contains only j++, the two loads, the mult, mflo, slt and bnez, so there is no existing insn to carry the extra reference.",
+   "next_probe": "Enumerate exit-test spellings in which the rect[2] value appears twice in ONE insn or in an insn the target already has - e.g. bounds written as a single comparison whose RTL folds two uses into one pattern - and check reg_n_refs in the .lreg header (`used N times`) rather than the score; abandon the route if no spelling reaches 9 without changing the insn count."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 14,
-   "statement": "Some combination of the three per-channel product/reuse spellings beats the incumbent shape.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/G_AAA.c .. G_CCC.c",
-   "predicate_cite": "",
-   "result": "Minimum is 26, reached only by AAA (the incumbent) and AAC; the other 25 combinations score 27 to 44 at 173 insns. AAC i"
-  },
-  {
-   "session": 14,
-   "statement": "Splitting a channel's source variable in two makes the short-lived source a competing global allocno that can take $v1 ahead of px.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s14/G_ACA.c",
-   "predicate_cite": "",
-   "result": "ACA scores 38 and its allocation table contains no short-lived g_src allocno at all: born and dead inside one basic bloc"
-  },
-  {
-   "session": 14,
-   "statement": "Reordering the three channel blocks in the source shortens g_src's live range enough to reorder it against px.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/O_rgb.c .. O_bgr.c",
-   "predicate_cite": "",
-   "result": "r,g,b (incumbent) 26; g,r,b 33; r,b,g 34; b,r,g 34; g,b,r 40; b,g,r 40. All at 173 insns. The incumbent ordering is uniq"
-  },
-  {
-   "session": 14,
-   "statement": "Moving the src++ cursor bump inside the blend arm shifts LUIDs enough to change a channel pseudo's live length by one or two.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/P_s0.c .. P_s5.c",
-   "predicate_cite": "",
-   "result": "All six score 26 with identical bytes. sched1 normalises the cursor bump to the same slot (row 110) regardless of where "
-  },
   {
    "session": 14,
    "statement": "The target's three channel sums all landing in $v0 (rows 111, 114, 118) come from one reused C variable carrying the three sums in turn.",
@@ -684,6 +658,38 @@
    "measured_on": "HEAD 2026-09-11; s29 extender-free target-map chassis memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c (8/173), zero FAKE constructs present",
    "predicate_cite": "",
    "result": "Six are byte-identical to the 8 control - u16 *dst = &dst_buf[0], both cursors as &x[0], the guard rewritten as if (tota"
+  },
+  {
+   "session": 31,
+   "statement": "The two remaining latch rows can be closed by giving the rect[3] latch pseudo a reference outside the latch block while its load stays inside it (staging it at the top of the inner do-body, or consumi",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender + s31 h stage present",
+   "predicate_cite": "",
+   "result": "x01 = 10/173 - making the pseudo cross-block also MOVES its load out of the latch block, and the target's load is in the"
+  },
+  {
+   "session": 31,
+   "statement": "Spelling the row epilogue's `((u16 *)rect)[N]` reads as signed `rect[N]` makes CSE share the latch's halfword pseudos, turning them into cross-block (global) quantities.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present",
+   "predicate_cite": "",
+   "result": "v01 = 6/173 - the epilogue's `lhu $v1,6($s0)` becomes `lh` (one new row) and nothing else changes, so no value was share"
+  },
+  {
+   "session": 31,
+   "statement": "Re-spelling the row loop as a `for` statement, or routing the latch's rect[] reads through a local `s16 *` alias, reaches the same latch RTL as the do-while chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 target-map chassis (5/173) and s31 staged-h chassis (4/173), s21 j chain extender present",
+   "predicate_cite": "",
+   "result": "Both for-loop forms = 69 at 174 insns (loop.c emits a separate top test, changing both the guard and the latch); the poi"
+  },
+  {
+   "session": 31,
+   "statement": "Swapping the ROW-TOP `total = rect[2] * rect[3]` operands moves the latch's seats too, because both blocks read the same expression.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present",
+   "predicate_cite": "",
+   "result": "v05 = 7 and v06 = 7, both at 173 insns: the row-top swap costs exactly 2 rows of its own and the latch rows are unchange"
   }
  ],
  "ladder_skip": 0,

@@ -2928,3 +2928,95 @@ already exact.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; s29 extender-free target-map chassis memory/grind/func_8003DE14/chassis_s29_targetmap_ordinary_8.c (8/173), zero FAKE constructs present
+
+## [s31] The latch's two halfword loads are born in SOURCE OPERAND ORDER, so writing the exit test as `rect[3] * rect[2]` flips which load local-alloc prices higher and lands BOTH target seats (lh $v0,4 / lh $v1,6).
+- mechanism: expand walks MULT_EXPR operand 0 first, so op0's load is the first insn of the latch block and the longer-span quantity; qty_compare_1 (local-alloc.c:1660) then prices the second-born load higher (2*6/1 vs 2*6/2) and find_free_reg's ascending scan gives IT $v0. s30 measured the inputs but read the operand swap as inert because it only ever compared total scores.
+- probe: v04 (`} while (j < rect[3] * rect[2]);`) compiled, dumped (tmp/grind/func_8003DE14/dumps .combine/.lreg/.sched2) and classified; the .combine dump shows insn 300 = sign_extend of offset 6 and insn 304 = offset 4 (the reverse of the control), and .lreg shows 149 "used 6 times across 3 insns in block 11" / 152 "across 2 insns".
+- result: The two `lh` REGISTER rows disappear - classify's residual drops from 5 rows to 3 (andi a1,v0 / mult v1,v0 / sra v0,v0) - but the multiply now reaches RTL as mult(off6, off4) and prints `mult $v1,$v0` where the target prints `mult $v0,$v1`, and the loads are emitted in the reverse of the target's order. Net score unchanged at 5. s30's "operand swap ties at 5" is TRUE but not inert: it is a DIFFERENT 5.
+- verdict: CONFIRMED
+
+## [s31] Staging the latch bound's rect[3] through a fresh local assigned at the bottom of the row loop (`h = rect[3];` then `} while (j < rect[2] * h);`) decouples birth order from multiply-operand order and drops the floor 5 -> 4.
+- mechanism: the staged assignment emits rect[3]'s load as its own statement BEFORE the exit test, so h is the first-born (span 2) and the rect[2] load inside the test is the second-born (span 1); qty_compare_1 gives the rect[2] load $v0 (target) and h $v1 (target), while the multiply keeps its source operand order (rect[2], h) and prints `mult $v0,$v1` (target).
+- probe: tmp/grind/func_8003DE14/s31/v2 + v3 sweeps (13 bodies) via tools/sweep_variants.py, then objdump of tmp/sandbox/func_8003DE14/code6cac_c2.o (tmp/grind/func_8003DE14/s31/ours.txt).
+- result: w01 (`h` staged, `j < rect[2] * h`) = 4/173 and w03 (`w = rect[2]` staged, `j < rect[3] * w`) = 4/173; w02/x03 (the staged value born SECOND) = 5; x02 (both values staged, rect[3] first) = 4; x05 (h declared at row scope) = 4. The 4-point residual is the unchanged red group (`sra $v0,$v0,15` / `andi $a1,$v0,31`) plus the two `lh` rows, which now differ ONLY in ORDER - registers and multiply match the target.
+- verdict: CONFIRMED
+
+## [s31] The final emission order of the latch's two loads is the RTL birth order end-to-end - no pass between local-alloc and the object file reorders them - so the target's `lh $v0,4` FIRST with $v0 on the FIRST-born load cannot come from any birth-order spelling.
+- mechanism: reading the passes instead of inferring them. sched.c's rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) breaks equal-priority ties by INSN_LUID (original order), and both loads feed the same mult with equal priority; .sched, .sched2 and .dbr all show the same order as .combine, the emitted .s carries it, and the object file agrees. (s31's first reading that "something swaps the loads" came from treating inverse_compose classify's SORTED row list as positional - it is not.)
+- probe: dumps captured for the control body and for v04 (tmp/grind/func_8003DE14/dumps/*), plus objdump of each measured body.
+- result: control: .combine/.sched/.sched2/.dbr/.s all = (off4, off6) and the object = (off4 in $v1, off6 in $v0); v04 and w01: every stage = (off6, off4) and the object agrees. Order is preserved by every pass. Therefore the target's latch has its FIRST-born load in $v0, which qty_compare_1 cannot produce for two equal-refs, equal-size, block-local quantities dying at the same insn - one of the two loads must escape local-alloc (local-alloc.c:470-476) and be seated by global.c afterwards.
+- verdict: CONFIRMED
+
+## [s31] The remaining two latch rows (load ORDER) can be closed by giving the rect[3] latch pseudo a reference outside the latch block while its load stays inside it.
+- mechanism: local-alloc.c:470-476 skips any pseudo with reg_basic_block < 0 (used in >1 block) or reg_n_deaths > 1; the skipped pseudo is seated by global.c AFTER local-alloc has already given the block's remaining quantity $v0. With the rect[3] load skipped, the rect[2] load is the only block-local quantity in block 11 and takes $v0 even when born first - the target's shape.
+- probe: x01 (stage `h = rect[3]` at the TOP of the inner do-body, so the pseudo spans blocks) and x04 (stage h at the bottom but consume it in the row epilogue's new_y, with a row-top initialisation so it is always defined), swept on the 4-point chassis.
+- result: Both fail, for different reasons. x01 = 10/173: making the pseudo cross-block also MOVES its load out of the latch block (the target's load is in the latch), costing 6 points. x04 = 115/69 insns: the row-top initialisation makes the inner assignment loop-invariant, loop.c hoists it and the inner loop collapses. Every other s31 shape (x02/x03/x05, v01-v10) leaves both loads block-local.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender + s31 h stage present
+
+## [s31] Linking the latch's halfword loads to the row epilogue's reads by spelling the epilogue's `((u16 *)rect)[N]` accesses as signed `rect[N]` makes the latch pseudos cross-block (CSE propagating the latch value into the epilogue).
+- mechanism: CSE in 2.7.2 works on extended basic blocks; if the epilogue continued the latch's path, the epilogue's rect[2]/rect[3] reads would reuse the latch pseudos, making them non-block-local and pushing them to global.c.
+- probe: v01 (epilogue rect[3] signed), v02 (epilogue rect[2] signed), v03 (both) swept on the 5-point chassis.
+- result: v01 = 6/173 - the epilogue's `lhu $v1,6($s0)` becomes `lh` (one new row) and NOTHING else changes, so no value was shared; v02 = 5/173 byte-identical to the control (combine keeps the zero-extending load because only the low half is consumed); v03 = 6. The row-loop epilogue block has TWO predecessors (the guard's `blez` at 8003DF28 branches straight to it), so it is never a continuation of the latch's extended basic block and CSE cannot propagate across that edge.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present
+
+## [s31] Re-spelling the row loop as a `for` statement, or routing the latch's rect[] reads through a local `s16 *` alias, reaches the same latch RTL as the do-while chassis.
+- mechanism: structural-modality sweep of the loop's chassis-level spellings (declaration order / statement re-association), on the theory that the exit-test expansion might differ.
+- probe: w05/w06 (for-loop, both operand orders) and v08 (local `s16 *rp = rect;` used only by the latch), swept on the 5- and 4-point chassis.
+- result: Both for-loop forms = 69 at 174 insns (loop.c emits a separate top test, so the guard and the latch both change shape), and the pointer alias = 22 at 174 insns (the alias keeps `rect` live and adds an insn). Neither is near the target's shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis (5/173) and s31 staged-h chassis (4/173), s21 j chain extender present
+
+## [s31] The latch's two halfword loads are born in SOURCE OPERAND ORDER, so writing the exit test as `rect[3] * rect[2]` flips which load local-alloc prices higher and lands BOTH target seats (lh $v0,4 / lh $v1,6).
+- mechanism: expand walks MULT_EXPR operand 0 first, so op0's load is the first insn of the latch block and the longer-span quantity; qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) prices the second-born load higher (equal refs 6, equal size, spans 2 vs 1 -> 60000 vs 120000) and find_free_reg's ascending scan hands IT $v0.
+- probe: v04 (`} while (j < rect[3] * rect[2]);`) compiled and dumped (tmp/grind/func_8003DE14/dumps .combine/.lreg/.sched2), then classified with tools/ra_solver/inverse_compose.py.
+- result: The .combine dump shows insn 300 = sign_extend of offset 6 and insn 304 = offset 4 - the reverse of the control - and both `lh` REGISTER rows disappear (classify residual 5 rows -> 3). The multiply then reaches RTL as mult(off6, off4) and prints `mult $v1,$v0` where the target prints `mult $v0,$v1`, so the net score stays 5. s30's banked 'operand swap ties at 5' is true but it is a DIFFERENT 5.
+- verdict: CONFIRMED
+
+## [s31] Staging the latch bound's rect[3] through a fresh local assigned at the bottom of the row loop (`h = rect[3];` then `} while (j < rect[2] * h);`) decouples birth order from multiply-operand order and drops the floor 5 -> 4.
+- mechanism: the staged assignment emits rect[3]'s load as its own statement BEFORE the exit test, so h is the first-born (span 2) and the rect[2] load inside the test is the second-born (span 1); qty_compare_1 gives the rect[2] load $v0 (target) and h $v1 (target), while the multiply keeps its source operand order (rect[2], h) and prints `mult $v0,$v1` (target).
+- probe: 13 bodies swept with tools/sweep_variants.py (tmp/grind/func_8003DE14/s31/v2, v3), each measured with `sandbox func_8003DE14 --disable all` and read back from objdump of tmp/sandbox/func_8003DE14/code6cac_c2.o.
+- result: w01 (`h` staged, `j < rect[2] * h`) = 4/173 and w03 (`w = rect[2]` staged, `j < rect[3] * w`) = 4/173; w02/x03 (the staged value born SECOND) = 5; x02 (both staged, rect[3] first) = 4; x05 (h declared at row scope) = 4. Residual is now the unchanged red group plus the two `lh` rows, which differ ONLY in order.
+- verdict: CONFIRMED
+
+## [s31] The final emission order of the latch's two loads is the RTL birth order end to end - no pass between local-alloc and the object file reorders them - so the target's `lh $v0,4` first with $v0 on the FIRST-born load does not come from any birth-order spelling.
+- mechanism: sched.c's rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) breaks the two loads' equal-priority tie by INSN_LUID, i.e. original order, and gas does not reorder; so birth order, emission order and the qty_compare_1 verdict are welded together.
+- probe: dumps captured for the control body and for v04 (.combine, .sched, .sched2, .dbr, .s in tmp/grind/func_8003DE14/dumps/), compared against objdump of the sandbox object for each body.
+- result: control: every stage = (off4, off6) and the object = off4 in $v1 / off6 in $v0; v04 and w01: every stage = (off6, off4) and the object agrees. Consequence: the target's latch has its first-born load in $v0, which qty_compare_1 cannot produce for two equal-refs, equal-size, block-local quantities dying at the same insn - one load must escape local-alloc (local-alloc.c:470-476) and be seated by global.c afterwards. METHOD NOTE: inverse_compose classify prints its row list SORTED, not in program order; reading order out of it produced a wrong 'a pass swaps the loads' theory this session.
+- verdict: CONFIRMED
+
+## [s31] The two remaining latch rows can be closed by giving the rect[3] latch pseudo a reference outside the latch block while its load stays inside it (staging it at the top of the inner do-body, or consuming the staged value in the row epilogue).
+- mechanism: local-alloc.c:470-476 skips any pseudo with reg_basic_block < 0 or reg_n_deaths > 1; the skipped pseudo is seated by global.c AFTER local-alloc has given the block's surviving quantity $v0, so the rect[2] load would take $v0 even when born first.
+- probe: x01 (stage `h = rect[3]` at the TOP of the inner do-body) and x04 (stage h at the bottom, consume it in the row epilogue's new_y with a row-top initialisation so it is always defined), swept on the 4-point chassis.
+- result: x01 = 10/173 - making the pseudo cross-block also MOVES its load out of the latch block, and the target's load is in the latch (6 points). x04 = 115 at 69 insns - the row-top initialisation is loop-invariant, loop.c hoists it and the inner loop collapses. Both forms are banked in memory/grind/func_8003DE14/rejected/.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); s31 4-point chassis memory/grind/func_8003DE14/candidate.c, s21 j chain extender + s31 h stage present
+
+## [s31] Spelling the row epilogue's `((u16 *)rect)[N]` reads as signed `rect[N]` makes CSE share the latch's halfword pseudos, turning them into cross-block (global) quantities.
+- mechanism: CSE in 2.7.2 works on extended basic blocks; if the epilogue continued the latch's path, its rect[2]/rect[3] reads would reuse the latch pseudos and push them out of local-alloc.
+- probe: v01 (epilogue rect[3] signed), v02 (epilogue rect[2] signed), v03 (both), swept on the 5-point chassis.
+- result: v01 = 6/173 - the epilogue's `lhu $v1,6($s0)` becomes `lh` (one new row) and nothing else changes, so no value was shared; v02 = 5/173 byte-identical to the control (combine keeps the zero-extending load because only the low half is consumed); v03 = 6. The row-loop epilogue block has TWO predecessors (the guard's `blez` at 8003DF28 branches straight to it), so it never continues the latch's extended basic block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present
+
+## [s31] Re-spelling the row loop as a `for` statement, or routing the latch's rect[] reads through a local `s16 *` alias, reaches the same latch RTL as the do-while chassis.
+- mechanism: structural-modality sweep of the loop's chassis-level spellings (declaration order, statement re-association), on the theory that the exit-test expansion might differ.
+- probe: w05/w06 (for-loop, both operand orders) and v08 (local `s16 *rp = rect;` used only by the latch), swept on the 5- and 4-point chassis.
+- result: Both for-loop forms = 69 at 174 insns (loop.c emits a separate top test, changing both the guard and the latch); the pointer alias = 22 at 174 insns (the alias keeps `rect` live and adds an insn). Neither is near the target's shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis (5/173) and s31 staged-h chassis (4/173), s21 j chain extender present
+
+## [s31] Swapping the ROW-TOP `total = rect[2] * rect[3]` operands moves the latch's seats too, because both blocks read the same expression.
+- mechanism: if CSE or a canonical ordering linked the two computations, the row top's operand order would fix the latch's as well.
+- probe: v05 (row top swapped only) and v06 (row top and latch both swapped), swept on the 5-point chassis.
+- result: v05 = 7 and v06 = 7, both at 173 insns: the row-top swap costs exactly 2 rows of its own and the latch rows are unchanged by it. The two blocks' load orders are independent, which is why the latch had to be attacked in its own statement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s29 target-map chassis memory/grind/func_8003DE14/candidate.c at 5/173, s21 j chain extender present

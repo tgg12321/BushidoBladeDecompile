@@ -1,67 +1,45 @@
-/* func_8003DE14 - candidate (grind session 29, SYNTHESIS modality).
+/* func_8003DE14 - candidate (grind session 31, STRUCTURAL modality).
  *
- * SCORE 5 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
- * FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12 (s23-s28) -> 5 (this
- * session).  The extender-free (fully ordinary-C) best on the same chassis is 8
- * (chassis_s29_targetmap_ordinary_8.c), down from the 38 that stood since s26.
+ * SCORE 4 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
+ * FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12 (s23-s28) -> 5 (s29,
+ * s30) -> 4 (this session).  The fully-ordinary-C (extender-free) best is still
+ * 8 (chassis_s29_targetmap_ordinary_8.c); the ORDINARY-C best on THIS chassis is
+ * 5 (`} while (j < rect[3] * rect[2]);`, s31 v04 - see below).
  *
- * WHAT CHANGED - the target's register map was read off the residual and spelled
- * directly.  s24 banked the p2 residual as "in the TARGET every intermediate goes
- * to a fresh scratch register and the final channel value is written back into the
- * operand's register one instruction later".  Read as C rather than as allocator
- * behaviour, that sentence describes TWO ordinary C constructs at once:
+ * WHAT CHANGED IN s31 - the row loop's latch.  s30 typed the whole residual as
+ * RA and closed the latch group in closed form (qty_compare_1 prices the
+ * SECOND-born of two equal-refs block-local quantities higher, so the second
+ * load takes $v0).  s31 read that as a statement about C: the latch's two
+ * halfword loads are born in SOURCE OPERAND ORDER, so which load owns $v0 is
+ * chosen by which operand of the exit test's multiply is written first.
  *
- *   (a) ONE variable carries all three channel SUMS  (s27's three-way `sum`:
- *       three defs / three deaths -> local-alloc.c:470-476 makes it ineligible,
- *       so it is a global allocno and owns $v0 across the arm, which is what
- *       forces `b * factor` into $t7 through reload's ascending retry scan), and
- *   (b) each channel RESULT is written back into ITS OWN SOURCE CARRIER -
- *       `r_src = (sum >> 15) & 0x1F`, `g_src = sum >> 10`, `px = sum >> 5` -
- *       which is exactly the target's `sra $a1,$v0,15` / `sra $v1,$v0,10` /
- *       `sra $a0,$v0,5` (the shift lands in the source's dead seat).
+ *   - `} while (j < rect[3] * rect[2]);` (s31 v04) flips the births and lands
+ *     BOTH target seats (lh $v0,4 / lh $v1,6) - the two `lh` register rows are
+ *     gone - but the multiply then reaches RTL as mult(off6, off4) and prints
+ *     `mult $v1,$v0` where the target has `mult $v0,$v1`.  Net: still 5.
+ *   - Staging rect[3] through `h` at the bottom of the row loop and testing
+ *     `j < rect[2] * h` decouples the two: h's load is emitted (and born) FIRST,
+ *     so the rect[2] load is the shorter-span quantity and takes $v0, while the
+ *     multiply keeps its (rect[2], h) operand order and prints `mult $v0,$v1`.
+ *     That is the target's multiply AND the target's two seats: 5 -> 4.
  *
- * (b) is also the honest replacement for the s21 F1 g_src chain extender: the
- * write-back gives r_src / g_src / px three real defs and three real deaths each
- * (.lreg: 123 "18 times across 20 insns ... dies in 3 places", 126 "18 across 18
- * ... dies in 3", 122 "30 across 27 ... dies in 3"), so the reference counts that
- * the dead `((sum + g_src) - g_src)` identity used to buy are now bought by real
- * code.  THE g_src CHAIN EXTENDER IS GONE FROM THIS BODY.
+ * THE RESIDUAL IS 4 ROWS, in two independent groups:
+ *   latch  ours `lh $v1,6($s0)` / `lh $v0,4($s0)`; target `lh $v0,4($s0)` /
+ *          `lh $v1,6($s0)`.  REGISTERS AND MULTIPLY NOW MATCH; only the two
+ *          loads' ORDER differs.  Emission order == RTL birth order (verified:
+ *          .sched/.sched2/.dbr/.s all carry the same order and gas does not
+ *          reorder), and the first-born loses $v0 by qty_compare_1.  The target
+ *          therefore has its FIRST-born load in $v0, which local-alloc cannot
+ *          produce for two equal-refs block-local quantities - one of the loads
+ *          must escape local-alloc (local-alloc.c:470-476) and be seated by
+ *          global.c.  That is the top frontier item.
+ *   red    ours `sra $v0,$v0,15` / `andi $a1,$v0,31`; target `sra $a1,$v0,15` /
+ *          `andi $a1,$a1,31` - unchanged from s29/s30 (combine_regs ties the
+ *          shift's destination to the dying three-way `sum`).
  *
- * The green channel deliberately masks in the OR (`g_src = sum >> 10;` then
- * `(g_src & 0x3E0)`) while the red channel masks in the shift statement.  The
- * asymmetry is load-bearing and measured: making both symmetric (either both in
- * the shift statement or both in the or) swaps the red and green source carriers
- * $a1 <-> $v1 and costs 12-17 points (s29 wave 3, 32-body cross product).
- *
- * THE RESIDUAL IS 5 ROWS, in two independent groups:
- *   t118/t119  sra $a1,$v0,15 / andi $a1,$a1,31   (ours: sra $v0,$v0,15 /
- *              andi $a1,$v0,31) - the red shift's intermediate is seated on the
- *              sum's own register instead of on r_src's dead seat.  Eight
- *              spellings of the red statement tie at 5; splitting it into
- *              `r_src = sum >> 15; r_src = r_src & 0x1F;` produces the target's
- *              two-insn shape but swaps the red/green carriers (20).
- *   t133/t134/t136  lh $v0,4($s0) / lh $v1,6($s0) / mult $v0,$v1  (ours: the two
- *              lh destinations swapped).  Latch-condition spelling is inert here
- *              (>, != 0, operand swap, signed casts all tie at 5); the priority
- *              arithmetic in qty_compare_1 favours the SHORTER-span second load
- *              for $v0 (2*6/2 = 60000 vs 2*6/3 = 40000).
- *
- * ORDINARY-C STATUS.  One FAKE construct remains, the s21 j chain extender
- * `((s32)dst_buf + j) - j` in the LoadImage call, worth 3 points here (5 vs 8).
- * Its whole job is the $t4/$t5 seat pair (j vs complement).  s29 found an ORDINARY
- * substitute - declaring `s32 j = 0;` inside the `if (total > 0)` block - which
- * fixes those two seats for free but sinks the `addiu $a2,$sp,1040` dst-cursor
- * init past the guard (3 rows).  Reconciling those two is the top frontier item.
- * Everything else in this body is the sanctioned variable-reuse family plus
- * ordinary named intermediates.
- *
- * s30 (SOLVER) re-measured this body at 5/173 and TYPED the residual:
- * inverse_compose classify returns FIRST DIVERGENCE: RA with IDENTICAL
- * register-blanked multisets, so both surviving row groups are pure register
- * seats - there is no pre-RA or scheduler work left here.  The latch group is
- * closed-form (qty_compare_1, local-alloc.c:1660; see hypotheses.md H-s30-4)
- * and the red-shift group is the combine_regs tie to the shared `sum`.
- * 26 further bodies measured in s30 are all ties or regressions.
+ * FAKE CONSTRUCTS PRESENT: (1) the s21 j chain extender `((s32)dst_buf + j) - j`
+ * in the LoadImage call (worth 3 points), (2) the new `h` latch-bound stage
+ * (worth 1 point).  Both are annotated in the body.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -100,6 +78,15 @@ void func_8003DE14(s16 *rect, s32 count) {
             s32 j = 0;
             if (total > 0) {
                 s32 complement = blend_base - factor;
+                /* FAKE: `h` stages the latch bound's rect[3] halfword so the row loop's
+                 * exit test reaches RTL as mult(rect[2]_load, h) with h's load BORN FIRST;
+                 * mechanism: local-alloc.c:1660 qty_compare_1 prices the shorter-span
+                 * (second-born) quantity higher, so staging rect[3] is what seats the
+                 * rect[2] load in $v0 and keeps the multiply's operand order (off4,off6);
+                 * lever-exhaustion: memory/grind/func_8003DE14/hypotheses.md s31 (latch
+                 * operand-order, guard-shape, for-loop, cross-block-staging and
+                 * epilogue-linkage waves) + s30 H-s30-4. */
+                s32 h;
                 do {
                     if (i == count - 1) {
                         u16 pixel = *src;
@@ -147,7 +134,8 @@ void func_8003DE14(s16 *rect, s32 count) {
                     dst++;
                 loop_check:
                     j++;
-                } while (j < rect[2] * rect[3]);
+                    h = rect[3];
+                } while (j < rect[2] * h);
             }
 
             {
@@ -158,6 +146,11 @@ void func_8003DE14(s16 *rect, s32 count) {
                     ((u16 *)rect)[0] += ((u16 *)rect)[2];
                 }
             }
+            /* FAKE: j chain extender on the dst_buf argument (s21); mechanism:
+             * combine.c folds the +j/-j pair away but flow.c's reg_n_refs for j is
+             * counted before it, lifting j's allocno priority so the $t4/$t5 seat
+             * pair matches; lever-exhaustion: memory/grind/func_8003DE14/
+             * hypotheses.md s21-s30 (the extender-free chassis floors at 8). */
             LoadImage((s32)rect, ((s32)dst_buf + j) - j);
             DrawSync(0);
             i++;
