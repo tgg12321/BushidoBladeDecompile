@@ -4556,3 +4556,150 @@ dumps_h,dumps_b5,dumps_tot,ord2.py,show.py,rd.sh,rdmulti.sh,sw.sh,last.json}.
 - [s36] ENUMERATION: 48 spellings across five waves, best 2, 21 at the floor - the 2 is a flat plateau over the latch/loop-tail/declaration spelling space, not one lucky form.
 
 - [s36] Kill re-audit (mandated, floor flat): the s36 hoisted-carrier kill re-measured on the h-free chassis holds - the declaration hoist of gp/rp/sum is byte-neutral (3/173) but the carrier use costs +7/+9/+38.
+
+## s37 (enumerate) — the s36 "rule R1" resolved into TWO named GCC predicates; the latch reaches the target exactly, for the first time without a multi-write carrier
+
+Chassis re-measured at dispatch: `memory/grind/func_8003DE14/candidate.c` (the `total`-borrow
+body) = **2/173**, confirmed this session as variant `g0` of wave g. Floor unchanged at 2.
+
+### 1. What the residual actually is, re-stated from the two-block comparison in the target
+
+The target computes `rect[2] * rect[3]` in TWO places and allocates them INDEPENDENTLY:
+
+    row top  .L8003DED8:  lh $v1,4($s0) ; lh $v0,6($s0) ; nop ; mult $v1,$v0   (off4 -> $v1)
+    latch    .L8003E028:  lh $v0,4($s0) ; lh $v1,6($s0) ; nop ; mult $v0,$v1   (off4 -> $v0)
+
+Same emission order (offset 4 first), OPPOSITE seats. Our row top already matches; only the
+latch does not. Three levers, measured this session, decide the latch.
+
+### 2. Lever A — local-alloc's qty_compare_1 forbids "first-emitted load gets $v0" (CLASS)
+
+`BB2_QTY_DEBUG=1` (artifact `tmp/grind/func_8003DE14/s37/qty_g6.log`) on the NO-CARRIER body
+(`tmp/grind/func_8003DE14/s37/v2/g6.c`, score 3) prints the latch block verbatim:
+
+    QTYDBG blk=11 ord=0 qty=1 reg1=150 birth=6 death=8 refs=6 got=2     <- rect[3] (off 6) -> $v0
+    QTYDBG blk=11 ord=1 qty=4 reg1=153 birth=12 death=14 refs=6 got=2
+    QTYDBG blk=11 ord=2 qty=0 reg1=147 birth=4 death=8 refs=6 got=3     <- rect[2] (off 4) -> $v1
+
+`qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1669-1684) sorts by
+`floor_log2(n_refs) * n_refs * size / (death - birth)`:
+
+    off4: floor_log2(6)*6*1 / (8-4) = 12/4 = 3 -> 30000
+    off6: floor_log2(6)*6*1 / (8-6) = 12/2 = 6 -> 60000
+
+Both loads die at the SAME insn (the `mult`) and the first-emitted is born strictly earlier, so
+its denominator is strictly larger; with equal `n_refs` the later-born load ALWAYS sorts first and
+takes the first free hard reg ($v0). Ties go to the lower qty number (= the earlier birth), so a
+TIE would suffice — but a tie needs `floor_log2(r0)*r0 >= 24` while `r0` is quantised to multiples
+of 3 by loop-depth weighting (2 refs -> 6 -> 12; 3 refs -> 9 -> 27), i.e. the first-emitted load
+needs a THIRD in-block reference, which is an extra instruction. **Conclusion: on any latch whose
+two loop-bound halfword loads are both block-local pseudos, the target's `lh $v0,4` / `lh $v1,6`
+cannot be produced.** One of the two MUST be non-block-local.
+
+### 3. Lever B — sched.c's birthing_insn_p decides the emission ORDER, and it keys on reg_n_sets
+
+s36 banked this as the opaque "rule R1" (escaped carrier's load emitted FIRST when the carrier's
+other set is in the outer row block, SECOND when both sets are inside the inner loop). It is
+neither about blocks nor about loops. `BB2_PRIO_DEBUG=1 BB2_SCHED_DEBUG=1`
+(`tmp/grind/func_8003DE14/s37/prio_g0.log`, `prio_hh.log`) on the two s36 bodies, latch loads
+insn 300/304 (g0, pseudos 147/101) and 303/307 (hh, pseudos 148/117):
+
+    g0 (carrier = `total`, TWO sets: row top + latch)  SCHEDDBG ADJPRI insn=304 deaths=0 birth=0
+    hh (carrier = `h`,     the s36 body)               SCHEDDBG ADJPRI insn=303 deaths=0 birth=1
+                                                       SCHEDDBG ADJPRI insn=307 deaths=0 birth=1
+
+`adjust_priority` (tools/gcc-2.7.2/sched.c:2542-2592) raises an insn's priority to `max_priority`
+only when the insn has 0 REG_DEAD notes AND `birthing_insn_p` is true, and `birthing_insn_p`
+(tools/gcc-2.7.2/sched.c:2505-2537) is literally `return (reg_n_sets[i] == 1);` for a live REG
+destination. So: **a carrier assigned more than ONCE anywhere in the function is not a birthing
+insn, does not get the priority lift, and the first scheduling pass moves its load ahead of the
+other.** That is the whole mechanism behind the `total`-borrow chassis's swapped order, and it
+explains why the Judge-banned multi-write `h` nevertheless worked while the sanctioned `total`
+borrow cannot: `total` has a second set at the row top, so `reg_n_sets != 1` by construction.
+
+### 4. Lever C — escape is "live at the end of some basic block", per flow.c:1428
+
+`propagate_block` marks every pseudo live at a block end `REG_BLOCK_GLOBAL`
+(tools/gcc-2.7.2/flow.c:1420-1430); local-alloc then skips it (local-alloc.c:194) and global.c
+seats it after local-alloc has already taken $v0 for the block-local rect[2] load. A latch carrier
+whose only use is the in-block `mult` is dead at block end and therefore NOT escaped (measured:
+`tmp/grind/func_8003DE14/s37/v3/p0.c`, a fresh SINGLE-set `h` with no other reference, scores 3 —
+identical to the no-carrier body). **The carrier needs a reference in another basic block.**
+
+### 5. A + B + C together: the first bodies this session whose latch is byte-exact
+
+Combining them — a carrier with exactly ONE set (at the latch) plus one cross-block read —
+produces, in EVERY case measured, the target latch verbatim (rowdiff rows 133 `lh $v0,4($s0)`,
+134 `lh $v1,6($s0)`, 136 `mult $v0,$v1` all MATCH). What varies is the collateral cost of the
+carrier's extra live range:
+
+  * read NOT dominated by the latch set (row tail `new_y`, the `>=0x200` arm, any inner-loop arm,
+    the `LoadImage` chain-extender argument): the guard-skip path leaves the carrier live across
+    the outer row and therefore across `LoadImage`/`DrawSync`, so global.c gives it callee-saved
+    $s1 and rotates every s-register ($s1->$s2, $s2->$s3, $s7->$s8).
+    **34-40** (`v3/p1..p5`, `v4/q1,q2,q5,q8`, `v5/r1..r8`, `v6/s7`).
+  * read DOMINATED by the latch set (inside `if (total > 0)`, immediately after the inner loop):
+    latch byte-exact, residual is a pure **$t4 <-> $t5 swap between `j` and `complement`**
+    (rows 71 `subu $t5,$s8,$t3`, 95/103/111 `mult ...,$t5`, 137 `addiu $t4,$t4,1`,
+    139 `slt $v0,$t4,$t6`). **7** — flat across `v6/s4`, `v7/t1,t2,t6,t7,t9`,
+    `v8/u1,u3,u5,u8`, `v9/v1,v5,v6,v7`: 10 read-target spellings, 8 chain-extender spellings and
+    8 `complement`/`j`/`factor` declaration spellings.
+  * `x += h; x -= h;` and `x = x + (h - h);` fold at the TREE level (no surviving reference) and
+    fall back to 3; `total = total + h - h;` is dead-store-eliminated (total is dead after the
+    inner loop) and also falls back to 3. The surviving spelling is `x = x + h - h;`.
+
+### 6. Side finding — the s21 `j` chain extender is NOT load-bearing on the h-escape chassis
+
+`tmp/grind/func_8003DE14/s37/v8/u1.c` is `v6/s4.c` with
+`LoadImage((s32)rect, ((s32)dst_buf + j) - j)` reduced to plain `LoadImage((s32)rect, (s32)dst_buf)`
+and still scores **7**. On the 2/173 `total`-borrow chassis the extender is still worth 7 points
+(s21), so this is chassis-specific — but it means the h-escape family would carry one FAKE
+construct fewer than the banked candidate if its last 6 rows close.
+
+### 7. Removing `total` altogether (the for-loop reading of the source) is expensive
+
+`lh $v1,4` / `lh $v0,6` / `mult` at BOTH the row top and the latch is exactly what GCC 2.7.2's
+loop inversion emits for `for (j = 0; j < rect[2] * rect[3]; j++)`, so the for-loop reading of the
+original source looked canonical. Measured on the current chassis it is not: `for`/`while` with
+`total` deleted and `complement` promoted to row scope = **46** (`v1/f1..f5`); with an explicit
+inline `if (rect[2]*rect[3] > 0)` guard and a do-while = **27** (`v1/f7`); the `for` nested inside
+the explicit guard = **80 at 174 insns** (`v1/f6`). The 44-point gap is `complement`'s hoist
+position, not the latch. The `total` local is load-bearing for at least 25 points here.
+
+### 8. Latch-spelling sweep on the 2/173 chassis (wave g/m, 12 spellings)
+
+    g0  } while (j < rect[2] * (total = rect[3]));      2   order wrong, seats right  [banked candidate]
+    g2  } while (j < rect[3] * (total = rect[2]));      2   order right, seats wrong
+    g7  } while (rect[2] * (total = rect[3]) > j);      2
+    g1  } while (j < (total = rect[2]) * rect[3]);      3
+    g3  } while (j < (total = rect[3]) * rect[2]);      3
+    g6  } while (j < rect[2] * rect[3]);                3   no carrier; order right, seats+mult wrong
+    g8  } while (rect[2] * rect[3] > j);                3
+    m3  total = rect[2] * (total = rect[3]); ...        4
+    g4  } while (j < (total = rect[2] * rect[3]));      5
+    g5  } while ((total = rect[2] * rect[3]) > j);      5
+    m1  area recomputed into total at the latch         5
+    m2  total = rect[2]*rect[3]; } while (j < total);   5
+
+ENUMERATION: 63 spellings measured across 9 waves (f, g/m, p, q, r, s, t, u, v), best 2, 3 at the
+floor of 2 (g0, g2, g7), 4 at 3. No hit.
+
+- [s37] Chassis confirmed: memory/grind/func_8003DE14/candidate.c re-measures 2/173 this session (wave variant g0). Floor unchanged at 2; candidate.c is untouched and remains the best known Judge-permissible body.
+
+- [s37] ENUMERATION: 63 spellings measured across 9 waves (f whole-body for/while rebuilds, g/m latch spellings, p/q/r/s/t/u/v carrier-escape spellings), best 2, 3 spellings at the floor of 2 (g0 `j < rect[2]*(total=rect[3])`, g2 `j < rect[3]*(total=rect[2])`, g7 `rect[2]*(total=rect[3]) > j`), 4 at 3. No hit.
+
+- [s37] The target allocates its two copies of rect[2]*rect[3] independently and OPPOSITELY: row top (func_8003DE14.s .L8003DED8) is `lh $v1,4` / `lh $v0,6` / `mult $v1,$v0`, the latch (.L8003E028) is `lh $v0,4` / `lh $v1,6` / `mult $v0,$v1`. Our row top already matches; the no-carrier latch reproduces the row top's seating, which is why it is a pure $v0/$v1 rename of the target's latch.
+
+- [s37] Order predicate (measured, not inferred): sched.c:2526 birthing_insn_p == (reg_n_sets[dest] == 1). g0's `total` load prints birth=0, the s36 `h` body's two latch loads print birth=1. This supersedes s36's rule R1.
+
+- [s37] Seat predicate (measured): flow.c:1428 marks any pseudo live at a block end REG_BLOCK_GLOBAL, which is what local-alloc.c:194 skips. A single-set carrier with no cross-block reference stays block-local and scores 3 (v3/p0.c).
+
+- [s37] Closed-form class result: local-alloc.c:1669-1684 qty_compare_1 gives the LATER-born of two block-local loads that die at a shared mult strictly higher priority (measured 60000 vs 30000 at blk=11 of g6), so a two-block-local latch can never put the first-emitted load in $v0.
+
+- [s37] Pass-ordering fact that makes byte-neutral escape possible at all: reg_basic_block and reg_n_refs are both computed in flow, which runs BEFORE combine, so a `+ h - h` reference folded away by combine still escapes the pseudo without emitting an instruction.
+
+- [s37] Every body satisfying both predicates reproduces the target latch EXACTLY (rowdiff rows 133/134/136 all match) — the first time this ledger reaches the target latch without the Judge-banned multi-write carrier. The cost is entirely collateral: 34-40 if the carrier's read is not dominated by its set, 7 if it is.
+
+- [s37] The s21 `j` chain-extender FAKE is chassis-specific: worth 7 points on the 2/173 `total`-borrow chassis, worth 0 on the h-escape chassis (u1 = 7 with it removed).
+
+- [s37] The `total` local is load-bearing for at least 25 points: the for-loop reading of the source with `total` deleted scores 27-80.

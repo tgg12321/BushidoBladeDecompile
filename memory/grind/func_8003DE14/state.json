@@ -1,7 +1,7 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 36,
+ "session_count": 37,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -219,23 +219,29 @@
    "floor": 2,
    "modality": "enumerate",
    "headline": "Rebuilt the body on the Judge's `total` grant (h removed, ONE staging site) at 2/173, and closed the residual in dumped closed form: the first scheduling pass orders the two loop-bound halfword loads,"
+  },
+  {
+   "session": 37,
+   "floor": 2,
+   "modality": "enumerate",
+   "headline": "s36's opaque 'rule R1' resolved into two named GCC predicates (sched.c birthing_insn_p = reg_n_sets==1 for the load ORDER, flow.c:1428 live-at-block-end for the SEAT); 63 spellings swept, the target l"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last two rows fall to any construct that gives the loop-bound's height read an escaped carrier whose OTHER set is inside the inner loop, which is the one property the rejected `h` had and `total` cannot have.",
-   "mechanism": "Rule R1, dumped this session: the first scheduling pass emits the escaped carrier's load SECOND (the target's order) exactly when both of the carrier's sets live inside the inner loop, and FIRST when the other set is in the outer row block. `total`'s other set is its real job and is outer by construction; gp/rp/sum have inner sets but cost +7..+38 when used (wave E).",
-   "next_probe": "Look for a restructuring that gives `total` a REAL second job inside the inner loop rather than a staged one - e.g. move the `if (total > 0)` area guard's computation so the area is recomputed per row inside the inner loop, or find a reading of the original source in which the guard and the bound share one variable. Score with the s36b sweep harness and confirm with tmp/grind/func_8003DE14/s36b/ord2.py that the .sched order is R2-then-R3 BEFORE scoring."
+   "hypothesis": "The h-escape chassis (7/173, latch already byte-exact) closes if global.c can be made to seat `j` in $t4 and `complement` in $t5 instead of the reverse \u2014 6 rows, no scheduling or ordering component left.",
+   "mechanism": "The carrier adds one global allocno live from the latch to the loop-exit block, which shifts the allocno-priority ordering of the two long-lived inner-loop pseudos `j` and `complement`. Note reg_n_refs on `j` is NOT the lever here: u1 removes the s21 chain extender entirely and still scores 7.",
+   "next_probe": "Run `bash tmp/grind/func_8003DE14/s37/qty.sh tmp/grind/func_8003DE14/s37/v6/s4.c s4` (it exports BB2_ALLOC_DEBUG and BB2_QTY_DEBUG and writes -da dumps) and read the allocno priorities and hard-reg preferences of `j` and `complement`; then classify with tools/ra_solver's global.c model + inverse_compose.py classify for a typed REACHABLE/FORECLOSED verdict BEFORE spelling more C. rejected/s37-single-set-h-escape-latch-exact-t4t5-swap-7.c is the chassis."
   },
   {
-   "hypothesis": "On the complementary width-carrier chassis (chassis_s36b_borrow_regs_2.c, order and mult already correct) the last two rows fall if local-alloc seats the block-local rect[3] load in $v1 instead of $v0, which would push the escaped carrier onto $v0.",
-   "mechanism": "local-alloc runs before global.c, so the block-local load's seat is fixed first and global.c must take what is left; ALLOCDBG shows pseudo 101 at ord=7 pri=27272 forced onto hardreg 3. Changing the block-local quantity's priority or its conflict set (local-alloc.c qty_compare_1, the s30 solver result) is the only way to move it.",
-   "next_probe": "Run tools/ra_solver's local-alloc model (and inverse_compose.py classify) on the latch block of chassis_s36b_borrow_regs_2.c to get a typed REACHABLE/FORECLOSED verdict for 'block-local halfword load seated in $v1', then spell whatever C lever the solver ranks first. This is the one axis this session did not touch."
+   "hypothesis": "A carrier that is single-set and non-block-local WITHOUT being a fresh local exists in the body, which would satisfy both predicates inside the sanctioned families rather than needing a new ruling.",
+   "mechanism": "H37-1 shows the Judge-granted `total` borrow can never satisfy the order predicate because `total`'s row-top assignment is its second set \u2014 so the current candidate's 2-row residual is not closable by any spelling of that borrow. The predicate needs exactly one set in the whole function plus one reference in another basic block.",
+   "next_probe": "Enumerate the body's variables for 'assigned exactly once and legitimately readable after the inner loop'; and test the combination this session did not reach \u2014 the guard spelled inline (f7's 27-point chassis) so that `total` itself becomes single-set at the latch, with a dominated post-loop read, to see whether the 25-point guard cost and the 5-point carrier cost overlap rather than add."
   },
   {
-   "hypothesis": "The 2-row plateau is an artefact of the loop-bound being spelled as a product of two array reads at all, and the original C computed the bound from a different pair of expressions.",
-   "mechanism": "Both 2-point families keep the target's `lh $v0,4` / `lh $v1,6` / `nop` / `mult` shape but disagree with it in exactly one dimension each, which is the signature of a chassis that is one structural step away rather than one spelling away.",
-   "next_probe": "Re-derive the loop bound from the asm: read asm/funcs/func_8003DE14.s lines 142-152 and check whether the `addiu $a2,$a2,2` between the store and the two loads implies the increments sit in a different block than ours, then rebuild the inner loop with that block split (the wave C label-position variant c11 scored 7, so the split must be made without moving `dst++` out of the arms)."
+   "hypothesis": "A byte-neutral, latch-dominated cross-block read exists whose consumer is already allocated to a register free on the latch-to-exit edge, so the carrier costs no extra allocno and the 7-chassis drops straight to 0.",
+   "mechanism": "All 26 spellings measured cost the $t4/$t5 rotation because the carrier must stay live from the latch to the read. A read consumed by a pseudo that global.c already seats in the register the carrier would take (or a read GCC sinks back into the latch block after flow has recorded it) would be free.",
+   "next_probe": "Widen the enumerate region to the guard block and the loop-exit block with tools/spelling_enum.py (ENUM-BEGIN/ENUM-END around `if (total > 0) { ... }` plus the first statement after the inner loop) and sweep WITH the operand-swap axis; the generators tmp/grind/func_8003DE14/s37/gen6.py and gen9.py already parameterise the read target and the complement/j declarations."
   }
  ],
  "judge_constraints": [
@@ -243,38 +249,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 18,
-   "statement": "Rewriting the inner do-while as `while (j < rect[2] * rect[3])` with `complement` moved inside the loop body, so loop.c hoists it into the preheader, reproduces the target's head + preheader shape.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis re-measured this session at 26 / 173, no FAKE constructs present, form tmp/grind/func_8003DE14/s18/h4.c",
-   "predicate_cite": "",
-   "result": "Score 59. loop.c does not produce the target's preheader from this source and the whole blend arm is re-scheduled around"
-  },
-  {
-   "session": 19,
-   "statement": "Duplicating the inner loop's `j++` latch into the exit arms lifts reg_n_refs enough to re-seat j on $t4, and cross-jumping re-merges the copies to identical bytes (the s11 `dst++` precedent on this sa",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis re-measured this session at 28/173, no FAKE constructs present in any of the three forms",
-   "predicate_cite": "",
-   "result": "b3 44 at 174 insns, b2 45 at 175, b4 47 at 174. Cross-jumping does NOT re-merge these copies (unlike the dst++ case), so"
-  },
-  {
-   "session": 19,
-   "statement": "A depth-2 reference to `j` added in the head block or the inner-loop preheader buys the +2 reg_n_refs that prices j above complement (nrefs 11 -> 13, pri 6610 > 6111), restoring the target's $t4 seat ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis at 28/173, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "Both score 28 / 173, byte-identical to h1, and both alloc tables are identical to h1's line for line (j stays nrefs=11 l"
-  },
-  {
-   "session": 19,
-   "statement": "global.c's register-preference machinery (regs_someone_prefers) can be used to make `complement` skip $t4 and leave it for the later-allocated `j`.",
-   "kill_scope": "class",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis alloc table at 28/173, no FAKE constructs present",
-   "predicate_cite": "tools/gcc-2.7.2/global.c:1000",
-   "result": "The exclusion applies only in pass 0, and pass 0 additionally ORs in the complement of regs_used_so_far with the comment"
-  },
   {
    "session": 20,
    "statement": "On this chassis the head-exact (h1) delay-slot fill and the target's j=$t4 seat cannot both be had at nrefs 11, because factor's division splits the head into four basic blocks and leaves the blez in ",
@@ -722,6 +696,38 @@
    "measured_on": "HEAD 2026-09-11; the h-free `total`-borrow chassis (memory/grind/func_8003DE14/candidate.c), s21 j chain extender and s36 `gm` named intermediate present",
    "predicate_cite": "",
    "result": "The s36 kill HOLDS on the h-free chassis. The declaration hoist alone is byte-neutral (e_gp_none, e_rp_none, e_sum_none "
+  },
+  {
+   "session": 37,
+   "statement": "On a latch whose two loop-bound halfword loads are both block-local pseudos with equal reg_n_refs and a common death at the shared mult, qty_compare_1 gives the later-born load strictly higher priorit",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); tmp/grind/func_8003DE14/s37/v2/g6.c, the 2/173 candidate chassis with the latch carrier removed; FAKE constructs present: gm named intermediate, s21 j c",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1669",
+   "result": "blk=11 prints qty=1 reg1=150 (off 6) birth=6 death=8 refs=6 -> pri 60000 -> ord=0 -> got=2 ($v0); qty=0 reg1=147 (off 4)"
+  },
+  {
+   "session": 37,
+   "statement": "Deleting the `total` local and spelling the inner loop as a for/while over the inline product rect[2]*rect[3] \u2014 the reading of the original source that GCC 2.7.2's loop inversion would naturally produ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; the 2/173 candidate chassis with the guard and latch rebuilt; FAKE constructs present: gm named intermediate, s21 j chain extender; the `total` staging FAKE removed by construction.",
+   "predicate_cite": "",
+   "result": "f7 (explicit inline `if (rect[2]*rect[3] > 0)` guard + do-while) = 27/173; f1..f4 (for and while forms, complement at ro"
+  },
+  {
+   "session": 37,
+   "statement": "Giving a single-set latch carrier its cross-block reference at a site NOT dominated by the latch set \u2014 the row tail new_y expression, the `>= 0x200` arm, any of the inner loop's fast/zero/blend arms, ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; the 2/173 candidate chassis with the latch carrier replaced by a fresh single-set `h`; FAKE constructs present: gm named intermediate, s21 j chain extender, the single-set h carrier a",
+   "predicate_cite": "",
+   "result": "34-40/173 in every case. The latch itself is correct (rowdiff row 133 `lh $v0,4($s0)` matches) but the carrier takes $s1"
+  },
+  {
+   "session": 37,
+   "statement": "With the cross-block read placed inside `if (total > 0)` immediately after the inner loop, so the read is dominated by the latch set, the latch becomes byte-exact and the residual collapses to a $t4 <",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; the 2/173 candidate chassis with the latch carrier replaced by a fresh single-set `h` read once inside the area guard; FAKE constructs present: gm named intermediate, the single-set h",
+   "predicate_cite": "",
+   "result": "7/173 for s4, t1, t2, t6, t7, t9, u1, u3, u5, u8, v1, v5, v6, v7 \u2014 14 distinct bodies at the same 6 rows (71 `subu $t5,$"
   }
  ],
  "ladder_skip": 0,

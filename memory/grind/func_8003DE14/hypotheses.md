@@ -3522,3 +3522,124 @@ s32 `h` staging local present.
 - probe: tmp/grind/func_8003DE14/s36b/waveC/c07.c, c09.c and waveD/d1_c07.c, d8_c07_swapmul.c, rowdiffed with s36b/rdmulti.sh and dumped with the s36 ALLOCDBG script.
 - result: `while (j < rect[3] * (total = rect[2]));` scores 2 with rows `lh $v1,0x4` / `lh $v0,0x6` against the target's `lh $v0,0x4` / `lh $v1,0x6` - order correct, `mult $v0,$v1` correct, only the two destination registers swapped. The `(total = rect[2]) * rect[3]` spellings score 3 because they also print `mult $v1,$v0`. ALLOCDBG on d1 puts pseudo 101 at nrefs=10 livelen=11 pri=27272 taking hardreg 3 ($v1) at ord=7 while $v0 is already held in that block by the local-alloc-seated block-local load, so the register split is a local-alloc-before-global.c fact, not a priority race global.c can win. Banked as chassis_s36b_borrow_regs_2.c - exactly complementary to candidate.c.
 - verdict: CONFIRMED
+
+## s37 (enumerate) hypotheses
+
+**H37-1 CONFIRMED (class-level mechanism, closed form).** The latch's emission ORDER is decided by
+`birthing_insn_p` in the first scheduling pass, and that predicate is exactly
+`reg_n_sets[dest] == 1` (tools/gcc-2.7.2/sched.c:2526, reached from `adjust_priority`,
+sched.c:2542-2592). A latch carrier with two or more sets anywhere in the function loses the
+priority lift and its load is emitted FIRST; a single-set carrier keeps the lift, ties with the
+other load, and LUID order (= combine's order, offset 4 first) survives. Measured with
+BB2_SCHED_DEBUG on the two s36 bodies: `total` carrier -> `birth=0`, `h` carrier -> `birth=1`.
+This REPLACES s36's rule R1 ("both sets inside the inner loop"), which was a coincidence of the
+two bodies compared: the relevant property is the COUNT of sets, not their location.
+
+**H37-2 CONFIRMED.** The latch's SEATS are decided by whether the height pseudo is block-local.
+Escape means "live at the end of some basic block" (tools/gcc-2.7.2/flow.c:1428, in
+`propagate_block`), which requires a reference in another basic block; local-alloc then skips it
+(local-alloc.c:194) and seats only the block-local rect[2] load, which takes $v0, leaving global.c
+to give the height $v1 — the target's map. A single-set carrier with NO cross-block reference is
+still block-local and scores 3 (v3/p0.c), identical to the no-carrier body.
+
+**H37-3 KILLED (class).** On a latch whose two loop-bound halfword loads are both block-local
+pseudos, the target's `lh $v0,4($s0)` first / `lh $v1,6($s0)` second cannot be produced.
+`qty_compare_1` (local-alloc.c:1669-1684) ranks by
+`floor_log2(n_refs)*n_refs*size/(death-birth)`; both loads die at the shared `mult`, so the
+first-emitted load has the strictly larger denominator and, at equal `n_refs`, strictly lower
+priority — it is sorted second and never gets $v0. Measured: blk=11 of v2/g6.c, off4 pri 30000 vs
+off6 pri 60000 (qty_g6.log). A tie (which the qty-number tiebreak would resolve in the first
+load's favour) needs `floor_log2(r0)*r0 >= 24`, i.e. a third in-block reference to the rect[2]
+value = an extra instruction.
+
+**H37-4 KILLED (instance).** Deleting the `total` local and spelling the inner loop as a genuine
+`for`/`while` over the inline product — the reading of the original source that GCC 2.7.2's loop
+inversion would naturally produce, given the target re-reads both halfwords at the row top AND at
+the latch — costs 25 to 78 points on the current chassis (f7 = 27 with an inline guard and a
+do-while; f1..f5 = 46-48; f6 = 80 at 174 insns). The damage is `complement`'s hoist position, not
+the latch.
+
+**H37-5 KILLED (instance).** Giving the single-set carrier its cross-block reference at any site
+NOT dominated by the latch set (the row tail `new_y`, the `>= 0x200` arm, the fast/zero/blend arms
+of the inner loop, the `LoadImage` chain-extender argument, the `factor`/`px`/`r_src` initialisers)
+makes the carrier live on the guard-skip path, hence live across the outer row's
+`LoadImage`/`DrawSync`; global.c then seats it callee-saved ($s1) and rotates every s-register.
+34-40 across 18 spellings (p1-p5, q1/q2/q5/q8, r1-r8, s7).
+
+**H37-6 KILLED (instance).** With the cross-block read placed inside `if (total > 0)` immediately
+after the inner loop (dominated by the latch set), the latch becomes byte-exact but the carrier's
+extra live range costs a $t4 <-> $t5 swap between `j` and `complement`: 6 rows, score 7, FLAT
+across 10 read targets (`i`, `j`, `r`, `g`, `b`, `count`, `saved_y`, `blend_base`,
+`target_color`, two-statement `+=`/`-=` forms), 8 chain-extender spellings including removing the
+s21 extender entirely, and 8 `complement`/`j`/`factor` declaration and split-init spellings.
+
+### Frontier left for s38
+
+1. **Close the $t4 <-> $t5 swap on the h-escape chassis (7 -> 0).** The latch is already exact;
+   the whole residual is that `j` wants $t4 and `complement` wants $t5 in the target, and we
+   produce the reverse. This is a global.c allocno-priority question between two long-lived
+   inner-loop pseudos, not a scheduling one. Probe: `BB2_ALLOC_DEBUG=1` via
+   `tmp/grind/func_8003DE14/s37/qty.sh tmp/grind/func_8003DE14/s37/v6/s4.c s4`, read the allocno
+   priorities of `j` and `complement`, and use `tools/ra_solver`'s global.c model +
+   `inverse_compose.py classify` for a typed REACHABLE/FORECLOSED verdict before spelling more C.
+   Note that on this chassis the s21 `j` chain extender is inert (u1 = 7 without it), so j's
+   reg_n_refs is NOT the live lever it was on the `total`-borrow chassis.
+2. **Find a byte-neutral, latch-dominated cross-block READ of the carrier that adds no live
+   range.** Every read measured this session costs the $t4/$t5 rotation because the carrier must
+   stay live from the latch to the read. A read whose consumer is already allocated to a register
+   free on that edge (or a read that GCC sinks back into the latch block after flow has recorded
+   it) would be free. Note the ordering that makes this possible at all: `reg_basic_block` and
+   `reg_n_refs` are both computed in flow (before combine), so a `+ h - h` reference that combine
+   later folds away still escapes the pseudo without emitting an instruction.
+3. **A carrier that is single-set WITHOUT being a fresh local.** The Judge's standing constraint
+   bans a fresh multi-written local and grants the `total` borrow — but H37-1 shows the `total`
+   borrow can never satisfy the order predicate, because `total`'s row-top assignment is its
+   second set. Candidates: restructure so `total` itself has exactly one set (guard spelled
+   inline, which costs 25 on its own — f7) while retaining a dominated cross-block read; or find
+   an existing variable in the body that is assigned exactly once and is legitimately readable
+   after the inner loop.
+
+## [s37] The first scheduling pass's choice of which loop-bound halfword load to emit first is decided by birthing_insn_p, which is literally reg_n_sets[dest]==1 — a latch carrier with two or more sets anywhere in the function loses adjust_priority's lift and has its load emitted FIRST, a single-set carrier keeps the lift, ties, and lets LUID order (combine's order, offset 4 first) survive.
+- mechanism: tools/gcc-2.7.2/sched.c:2505-2537 birthing_insn_p returns (reg_n_sets[i] == 1) for a live REG destination; sched.c:2542-2592 adjust_priority raises such an insn's priority to max_priority when it has 0 REG_DEAD notes. Both latch loads have 0 deaths (the base register $s0 does not die), so the predicate alone decides the tie.
+- probe: BB2_PRIO_DEBUG=1 BB2_SCHED_DEBUG=1 cc1 -da on the two s36 bodies (tmp/grind/func_8003DE14/s37/prio.sh). Latch load insns identified from the .combine dumps: g0 = insn 300 (off 4, pseudo 147) and insn 304 (off 6, pseudo 101 = total); hh = insn 303 (off 4, pseudo 148) and insn 307 (off 6, pseudo 117 = h).
+- result: g0 (the `total` borrow, two sets) prints `SCHEDDBG ADJPRI insn=304 deaths=0 birth=0` — not birthing, no lift, order swapped. hh (the s36 `h` body) prints `birth=1` for BOTH latch loads — both lifted, tie, combine order preserved. This replaces s36's rule R1 ('escaped carrier's load is emitted second when both of its sets live inside the inner loop'), which was a coincidence of the two bodies compared: the property that matters is the COUNT of sets, not their location. Corollary the next session must not miss: the Judge-granted `total` borrow can NEVER satisfy this predicate, because `total`'s row-top assignment is its second set.
+- verdict: CONFIRMED
+
+## [s37] The latch's register seats are decided by whether the height pseudo is non-block-local, and a pseudo becomes non-block-local exactly when it is live at the end of some basic block, which requires a reference in another basic block.
+- mechanism: tools/gcc-2.7.2/flow.c:1420-1430 (propagate_block) marks every pseudo live at a block end REG_BLOCK_GLOBAL; local-alloc.c:194 then skips it, so local-alloc seats only the block-local rect[2] load (it takes the first free hard reg, $v0) and global.c seats the height afterwards ($v1) — the target's map.
+- probe: tmp/grind/func_8003DE14/s37/v3/p0.c: a FRESH, SINGLE-set carrier `h` at the latch with no other reference anywhere.
+- result: 3/173, identical to the no-carrier body g6 — the carrier stayed block-local and bought nothing. Adding exactly one cross-block read of the same single-set carrier flipped both the order and the seats to the target's in every spelling measured (rowdiff rows 133 `lh $v0,4($s0)`, 134 `lh $v1,6($s0)`, 136 `mult $v0,$v1` all MATCH). Supporting pass-ordering fact: reg_basic_block and reg_n_refs are both computed in flow, which runs BEFORE combine, so a `+ h - h` reference that combine later folds away still escapes the pseudo without emitting an instruction.
+- verdict: CONFIRMED
+
+## [s37] On a latch whose two loop-bound halfword loads are both block-local pseudos with equal reg_n_refs and a common death at the shared mult, qty_compare_1 gives the later-born load strictly higher priority, so the first-emitted load is sorted second and cannot receive $v0.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:1669-1684 ranks quantities by floor_log2(qty_n_refs)*qty_n_refs*qty_size/(qty_death-qty_birth). Both loads die at the mult, so the first-emitted load's denominator is strictly larger; the qty-number tiebreak (which would favour the earlier birth) is only reached on an exact tie.
+- probe: BB2_QTY_DEBUG=1 on tmp/grind/func_8003DE14/s37/v2/g6.c (the no-carrier latch), artifact tmp/grind/func_8003DE14/s37/qty_g6.log.
+- result: blk=11 prints qty=1 reg1=150 (off 6) birth=6 death=8 refs=6 -> pri 60000 -> ord=0 -> got=2 ($v0); qty=0 reg1=147 (off 4) birth=4 death=8 refs=6 -> pri 30000 -> ord=2 -> got=3 ($v1). A tie would need floor_log2(r0)*r0 >= 24 while loop-depth weighting quantises r0 to multiples of 3 (2 refs -> 6 -> 12, 3 refs -> 9 -> 27), i.e. a third in-block reference to the rect[2] value, which is an extra instruction the target does not have. This is why the no-carrier body g6 scores 3 with its latch a pure $v0/$v1 rename of the target's.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); tmp/grind/func_8003DE14/s37/v2/g6.c, the 2/173 candidate chassis with the latch carrier removed; FAKE constructs present: gm named intermediate, s21 j chain extender; no latch carrier.
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1669
+
+## [s37] Deleting the `total` local and spelling the inner loop as a for/while over the inline product rect[2]*rect[3] — the reading of the original source that GCC 2.7.2's loop inversion would naturally produce, given the target re-reads both halfwords at the row top AND at the latch — costs 25 to 78 points on the current chassis.
+- mechanism: With `total` gone the `if (total > 0)` block disappears and `complement = blend_base - factor` has to be declared at row scope, which moves its computation ahead of the loop guard instead of into the loop preheader the target uses (subu $t5,$fp,$t3 sits AFTER the blez at func_8003DE14.s:8003DF28).
+- probe: Wave f, 7 whole-body rewrites (tmp/grind/func_8003DE14/s37/v1/f1..f7.c), swept with tools/sweep_variants.py.
+- result: f7 (explicit inline `if (rect[2]*rect[3] > 0)` guard + do-while) = 27/173; f1..f4 (for and while forms, complement at row scope) = 46; f5 (bound operands swapped) = 48; f6 (for nested inside the explicit guard) = 80 at 174 insns. The `total` local is load-bearing for at least 25 points on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; the 2/173 candidate chassis with the guard and latch rebuilt; FAKE constructs present: gm named intermediate, s21 j chain extender; the `total` staging FAKE removed by construction.
+
+## [s37] Giving a single-set latch carrier its cross-block reference at a site NOT dominated by the latch set — the row tail new_y expression, the `>= 0x200` arm, any of the inner loop's fast/zero/blend arms, the LoadImage chain-extender argument, or the factor/px/r_src initialisers — makes the carrier live on the guard-skip path and therefore live across the outer row's LoadImage and DrawSync calls.
+- mechanism: flow's liveness sees the read reachable without the latch set (when `total <= 0` the inner loop never runs), so the carrier is live at the row-loop back edge; global.c counts the calls crossed and seats it callee-saved.
+- probe: Waves p, q, r and s7: 18 spellings placing the surviving `+ h - h` read at those sites (tmp/grind/func_8003DE14/s37/v3, v4, v5, v6).
+- result: 34-40/173 in every case. The latch itself is correct (rowdiff row 133 `lh $v0,4($s0)` matches) but the carrier takes $s1 and rotates every s-register: $s1->$s2, $s2->$s3, $s7->$s8, and the blend arm's mult scheduling shifts with it. Also banked: `x += h; x -= h;` and `x = x + (h - h);` fold at the TREE level and leave no reference (back to 3), and `total = total + h - h;` is dead-store-eliminated because total is dead after the inner loop (also 3) — the only spelling that survives to flow is `x = x + h - h;`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; the 2/173 candidate chassis with the latch carrier replaced by a fresh single-set `h`; FAKE constructs present: gm named intermediate, s21 j chain extender, the single-set h carrier and its fold-away read.
+
+## [s37] With the cross-block read placed inside `if (total > 0)` immediately after the inner loop, so the read is dominated by the latch set, the latch becomes byte-exact and the residual collapses to a $t4 <-> $t5 swap between `j` and `complement`, which is flat at 7 across 26 read-target, chain-extender and declaration spellings.
+- mechanism: The carrier is now live only from the latch to the loop-exit block, crosses no call, and global.c gives it a caller-saved temp — but it still consumes one more global allocno inside the inner loop's register pressure, and `j` and `complement` exchange $t4 and $t5 relative to the target.
+- probe: Waves s, t, u, v: read targets i/j/r/g/b/count/saved_y/blend_base/target_color and two-statement forms; chain-extender spellings including its complete removal; complement/j/factor declaration, split-init and inlining spellings (tmp/grind/func_8003DE14/s37/v6, v7, v8, v9).
+- result: 7/173 for s4, t1, t2, t6, t7, t9, u1, u3, u5, u8, v1, v5, v6, v7 — 14 distinct bodies at the same 6 rows (71 `subu $t5,$s8,$t3`, 95/103/111 `mult ...,$t5`, 137 `addiu $t4,$t4,1`, 139 `slt $v0,$t4,$t6`). Reading into j costs 3 more (10) because it perturbs j's own refs; blend_base/count/saved_y/target_color cost 11-15 more. Side finding: u1 removes the s21 `j` chain extender entirely and is still 7, so on this chassis that FAKE construct is inert — it is worth 7 points only on the `total`-borrow chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; the 2/173 candidate chassis with the latch carrier replaced by a fresh single-set `h` read once inside the area guard; FAKE constructs present: gm named intermediate, the single-set h carrier and its fold-away read, s21 j chain extender (present in 13 of the 14, absent in u1).
