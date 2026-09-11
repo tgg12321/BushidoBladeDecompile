@@ -4066,3 +4066,80 @@ costs far more: `h` = 20, `total` = 16, shift-then-mask through `h` = 20,
 - [s32] TOOLING: the instrumented cc1 carrying BB2_PRIO_DEBUG / BB2_RANK_DEBUG is tools/gcc-2.7.2/cc1, but engine/buildconfig.py's B.CC1 is tools/gcc-2.7.2/build/cc1 (uninstrumented), so any dump script that takes cc1 from B.CC1 prints no diagnostics; tmp/grind/func_8003DE14/s32/run_dump_prio.sh overrides it.
 
 - [s32] FAMILY QUESTION LEFT OPEN (not a submission this session): the 2-point body's `h` is an INVENTED local borrowed for a second value, which the family-selection table excludes from plain variable-reuse (bound 2) and places closest to staged-value-reused-variable (.claude/rules/staged-value-reused-variable.md); the existing-local spelling (borrowing `total`) measures 4, not 2.
+
+## s33 (REDERIVE) - floor 2 -> 1; the red shift pair is CLOSED
+
+**Chassis at dispatch.** memory/grind/func_8003DE14/candidate.c (the s32 body)
+re-measured 2/173 on HEAD 2026-09-11, residual rows 118/119 only:
+target `sra $a1,$v0,15` / `andi $a1,$a1,0x1F` vs ours `sra $v0,$v0,15` /
+`andi $a1,$v0,31`.
+
+**The re-derivation.** Read against our own GREEN channel rather than against the
+target: green is already byte-exact and prints `sra $v1,$v0,10` /
+`andi $v1,$v1,0x3E0` - structurally identical to the target's RED. The only
+difference in the C is that green is spelled `g_src = sum >> 10;` with its mask
+deferred, while red was spelled `r_src = (sum >> 15) & 0x1F;` as one expression.
+The single expression makes expand allocate a fresh single-set temp for the
+shift, and combine_regs (local-alloc.c:1854-1897) ties that temp to the dying
+three-way `sum` ($v0). Writing the shift straight into `r_src` - a pseudo already
+set by the sll and by the mflo, so not tie-eligible - prints the target's form.
+This closes the lever s29-s32 spent four sessions on: the tie was never the thing
+to break, the temp was the thing to remove.
+
+**The price.** The split takes r_src from 6 to 8 references (weighted 18 -> 24 at
+loop depth 3) and inverts the $a0/$a1 seats of `px` and `r_src`. BB2_ALLOC_DEBUG
+(tools/gcc-2.7.2/cc1, tmp/grind/func_8003DE14/s33/alloc.log), red-split chassis:
+
+    px    pseudo 123  nrefs=30 livelen=27 pri=44444  -> hardreg 5 ($a1)  WRONG
+    r_src pseudo 124  nrefs=24 livelen=21 pri=45714  -> hardreg 4 ($a0)  WRONG
+
+Both printed priorities are exactly nrefs*40000/livelen, so the thresholds are
+arithmetic: px wins with nrefs >= 31 (one more source reference, weighted +3) or
+livelen <= 26; r_src loses with livelen >= 22. The margin is 1270 points, 2.8%.
+
+**Reference census against the target.** Counting the target's own asm, $a0 (px)
+carries 10 references and $a1 (r_src) carries 8 - the same counts our red-split
+body has. So the target does NOT win the seat on reference count; its advantage
+is a live-length difference of at least one insn. That is the shape of the last
+point, and it is why every reference-buying spelling below leaves exactly one row.
+
+**Two independent 1-point bodies.**
+  - candidate.c (v5/d1): red split + the red source read moved from `pixel` to
+    `px` (`(px & 0x1F) << 3`). px goes to nrefs=33 / pri=61111. Residual: one row,
+    target `andi $v0,$t0,0x1F` vs ours `andi $v0,$a0,0x1F`.
+  - chassis_s33_pxsplit_1.c (v3/b1): red split + px's birth split
+    (`s32 px = pixel; px = px & 0xFFFF;`). Residual: one row, target
+    `andi $a0,$t0,0xFFFF` vs ours `move $a0,$t0` - combine proves the mask
+    redundant against the lhu's nonzero_bits and folds copy+and into a move.
+Everything else in both bodies is byte-exact, 173/173 insns.
+
+**What was swept and killed (33 bodies, tmp/grind/func_8003DE14/s33/v1..v8).**
+Reference sites for px: blue source split 2 (breaks the blue srl/andi pair, whose
+target srl writes a temp), blue final-mask split 3, blue sum staging 17-33,
+zero-arm `*dst = px` 18, alpha mask on px 25 at 175 insns, redundant `& 0xFFFF`
+in the guard test or the green source 17 (folded, buys nothing). Live-length
+sites for r_src: born before the zero guard 3 (flips the seats but denies reorg.c
+the `andi $v0,$t0,0x1F` delay-slot filler), `r*factor` inlined into the addu 26,
+decl/order permutations and the green-mask split 17, masked red result carried in
+`rp` 24, channel-block reorderings 24-31. OR-chain work: all seven
+parenthesisations measured - re-association flips the seats (e5/f7 = 2) but
+re-emits the chain tail, every operand reordering is 24-27.
+
+**Artefacts.** tmp/grind/func_8003DE14/s33/{alloc.log, alloc.sh, gen1..gen8.py,
+rows.sh, sw.sh, apply.py, v1..v8/}.
+
+- [s33] The s32 candidate re-measured 2/173 at dispatch; residual rows 118/119 only (target `sra $a1,$v0,15` / `andi $a1,$a1,0x1F` vs ours `sra $v0,$v0,15` / `andi $a1,$v0,31`).
+
+- [s33] Reading red against our own already-matching GREEN channel - not against the target - is what produced the fix: green's `g_src = sum >> 10;` with a deferred mask prints the same two-register form the target's red uses.
+
+- [s33] New floor 1/173 with 173 build insns == 173 target insns; the only differing row is target `andi $v0,$t0,0x1F` vs ours `andi $v0,$a0,0x1F`.
+
+- [s33] TWO independent 1-point bodies exist with DIFFERENT single wrong rows: memory/grind/func_8003DE14/candidate.c (red source read from px) and memory/grind/func_8003DE14/chassis_s33_pxsplit_1.c (px birth split; combine folds `& 0xFFFF` into `move $a0,$t0`).
+
+- [s33] Measured global.c priorities on the red-split chassis: px pseudo 123 nrefs=30 livelen=27 pri=44444 -> $a1; r_src pseudo 124 nrefs=24 livelen=21 pri=45714 -> $a0. Both fit nrefs*40000/livelen exactly, so the flip thresholds are px nrefs>=31 or px livelen<=26 or r_src livelen>=22.
+
+- [s33] Reference census of the TARGET's own asm: $a0 (px) has 10 references, $a1 (r_src) has 8 - identical to our red-split body. The target therefore wins px's seat on LIVE LENGTH, not on reference count; the last point is a one-insn live-length difference.
+
+- [s33] A redundant mask added purely to buy a reference (`(px & 0xFFFF) == 0` in the guard, `(u32)(px & 0xFFFF) >> 2` in the green source) is folded by combine before flow.c recounts, so it buys nothing: both measure 17, unchanged from the un-augmented red-split body.
+
+- [s33] s33 added no FAKE construct. The two carried in from earlier sessions are unchanged: the s21 j chain extender in the LoadImage call and the s32 `h` staging local.

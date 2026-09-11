@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 32,
- "current_modality": "forensics",
+ "session_count": 33,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -195,44 +195,34 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Floor 4 -> 2: the latch group is CLOSED. The pass that orders the two halfword loads is the FIRST scheduling pass (not birth order, as s31 banked), and the lever is block-locality of the destination p"
+  },
+  {
+   "session": 33,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Floor 2 -> 1: the red shift pair is CLOSED - it was an expand-level temp, not a combine_regs tie - and the whole remaining residual is ONE row, quantified in closed form as a 2.8% global.c allocno-pri"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The red pair closes if the `sra`'s destination is the quantity combine_regs ties to a DIFFERENT dying source - i.e. if the shift consumes a value whose pseudo dies there while the three-way `sum` stays live past it without re-carriering a channel.",
-   "mechanism": "combine_regs (local-alloc.c:1854-1897) ties a destination to its dying source; ours inherits $v0 from the shared `sum`, the target's `sra` writes $a1 (r_src's seat). s30 measured that every re-carriering of a channel costs ~30; s32 measured that making `sum`, `rp` or the destination cross-block costs 1-20 and never moves the seat.",
-   "next_probe": "On the 2-point chassis (where hoisting `sum`'s declaration is free), sweep forms that give the RED channel's `sum` one extra reference that is consumed AFTER the shift without a new insn - e.g. the blue channel's accumulation written as `sum = px * complement + b * factor` reusing the red sum's register-dead slot, or the red mask folded so the sum's last read is the andi - and capture BB2_QTY_DEBUG on each to see which quantity the shift's destination is combined into."
+   "hypothesis": "The last row closes if `r_src`'s pre-scheduling live length is one insn longer (or px's one insn shorter) while the red source read stays on `pixel` - the target's own reference counts prove this is the shape of its advantage, since its $a0/$a1 reference counts equal ours exactly.",
+   "mechanism": "global.c priority = nrefs*40000/live_length, measured this session: px 30/27 = 44444 vs r_src 24/21 = 45714. r_src loses at livelen >= 22, px wins at livelen <= 26. live_length is the LUID span on the insn chain as it stands at global alloc, i.e. after the first scheduling pass, so the lever is which insns sit between r_src's sll and its `or`, and between px's birth andi and its 0x7C00 mask.",
+   "next_probe": "On the red-split chassis (tmp/grind/func_8003DE14/s33/v1/r2.c, 17/173) sweep spellings that move exactly one EXISTING insn inside r_src's span or outside px's span without changing the emitted stream - candidates: the `src++` statement's position relative to the red block, the `s32 g_src = ((u32)px >> 2) & 0xF8;` source computation relocated between red's sll and red's mult, the `complement`/`factor` reads re-sited, and the `*dst` store address computation. Capture BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s33/alloc.sh) on each and read livelen for pseudos 123/124 directly rather than scoring blind - the target is livelen 22+ for r_src or 26- for px."
   },
   {
-   "hypothesis": "The 2-point body can be re-spelled with an EXISTING local as the staging carrier (or with the staged value being the one the fast arm already needs), which would move it out of the invented-local-borrow quadrant and into a sanctioned family.",
-   "mechanism": "The family-selection table's bound 2 excludes inventing a local to borrow; staged-value-reused-variable (.claude/rules/staged-value-reused-variable.md) sanctions a real, immediately-used value staged through an EXISTING currently-dead local, FAKE-annotated with lever exhaustion.",
-   "next_probe": "Read .claude/rules/staged-value-reused-variable.md end to end, then sweep carriers that already exist at the fast-arm store (target_color's own local, the `total` borrow measured at 4, `factor`/`complement` where dead) with the latch spelled `(X = rect[3])`; if no existing-local spelling reaches 2, emit a ruling-request asking whether the fresh-`h` two-site stage is staged-value-reused-variable or a first-reach family."
+   "hypothesis": "The px-birth body (chassis_s33_pxsplit_1.c) closes if the `& 0xFFFF` mask is made non-redundant to combine's nonzero_bits analysis while still emitting `andi $a0,$t0,0xFFFF`.",
+   "mechanism": "combine.c folds `(set px (and pixel 0xffff))` into a copy because nonzero_bits(pixel) <= 0xFFFF is provable from the lhu. If the value reaching the mask has unknown high bits at that point in RTL, the andi survives and px keeps its two extra references with the red source read still on `pixel`.",
+   "next_probe": "Sweep spellings of px's birth where the source's high bits are not provably clear at combine time but the emitted stream is unchanged - e.g. px born from the fast arm's cross-block `h`-style carrier, or from a value whose definition sits in another basic block, or the mask applied to a value that has passed through a multi-set pseudo. Read the .combine dump (pwsh tools/grinder/dump.ps1 func_8003DE14) to confirm whether the and survives BEFORE scoring."
   },
   {
-   "hypothesis": "The s21 j chain extender (3 pts, FAKE) is removable on the s32 chassis, because the block-locality lever may also be what the extender was emulating for the $t4/$t5 seat pair.",
-   "mechanism": "The extender lifts j's allocno priority via reg_n_refs counted before combine folds the +j/-j pair; the new lever manipulates reg_basic_block instead, which global.c also consults when ordering allocnos.",
-   "next_probe": "Measure the 2-point body with the extender removed (the extender-free chassis was 8 at s29), then sweep staging spellings that give `j` a second in-loop reference in another block the way `h` got one - e.g. `j` staged through the fast arm's store index - and read the $t4/$t5 rows with rowdiff.py rather than the score alone."
+   "hypothesis": "The s21 j chain extender (3 pts, FAKE) may be removable now that the red and latch groups are matched, since its stated job - lifting j's allocno priority for the $t4/$t5 seat pair - is the same reg_n_refs/live_length arithmetic this session measured in closed form.",
+   "mechanism": "The extender lifts j's reg_n_refs before combine folds the +j/-j pair. With the exact priority formula now known (nrefs*40000/livelen, verified against printed values), the required j priority can be computed from a dump instead of bought with a FAKE construct.",
+   "next_probe": "Measure the s33 candidate with the extender removed, capture BB2_ALLOC_DEBUG, read j's and complement's nrefs/livelen/pri and the winning margin, then solve for the smallest ordinary-C reference or live-length change that clears it - the same method that closed the red pair this session."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 15,
-   "statement": "Respelling the last-pass arm test i == count - 1 removes or re-prices pseudo 118, the pri-90000 allocno that blocks $v0 for px.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_test/T*.c",
-   "predicate_cite": "",
-   "result": "ZERO HIT. count - 1 == i 27; count - i == 1 32 (174 insns); i - count == -1 32 (174); i >= count - 1 34 (174); !(i < cou"
-  },
-  {
-   "session": 15,
-   "statement": "The 3-insn trip-test residual is fixable from the inner-loop latch's own spelling (operand order, comparison form, or a hoisted product).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_latch/L*.c",
-   "predicate_cite": "",
-   "result": "ZERO HIT. The four operand-order / comparison-direction forms are byte-identical at 26 (the axis is inert); j != rect[2]"
-  },
   {
    "session": 15,
    "statement": "Some spelling of the blend arm WITHOUT the s13 per-channel variable reuse reaches or beats 26 somewhere in the full inline-subset x declaration-order lattice of the no-reuse form.",
@@ -696,6 +686,22 @@
    "measured_on": "HEAD 2026-09-11; s32 2-point chassis memory/grind/func_8003DE14/candidate.c (s21 j chain extender + s32 `h` staging local present)",
    "predicate_cite": "",
    "result": "KILLED. Hoisting `sum`'s declaration to the guard block is free (still 2), but g01/g02/g03 all cost 1 (= 3) and in every"
+  },
+  {
+   "session": 33,
+   "statement": "Every other site for px's extra reference, and every tried way of lengthening r_src's live range, costs more rows than it buys on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); s33 red-split chassis tmp/grind/func_8003DE14/s33/v1/r2.c at 17/173, with the s21 j chain extender and the s32 `h` staging local present",
+   "predicate_cite": "",
+   "result": "KILLED for every site except the two banked ones. px sites: blue source split 2 (flips the seats but breaks the blue srl"
+  },
+  {
+   "session": 33,
+   "statement": "Re-associating or re-ordering the final OR chain shortens px's live range enough to flip the seats without spending a reference, but re-emits the chain tail.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; s33 red-split chassis at 17/173, with the s21 j chain extender and the s32 `h` staging local present",
+   "predicate_cite": "",
+   "result": "KILLED. Re-association does flip the seats - e5 (`(A|r) | (G|P)`) and the identical f7 both reach 2 - but the chain tail"
   }
  ],
  "ladder_skip": 0,

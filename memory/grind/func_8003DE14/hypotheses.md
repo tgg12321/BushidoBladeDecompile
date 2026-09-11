@@ -3112,3 +3112,83 @@ already exact.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; s32 2-point chassis memory/grind/func_8003DE14/candidate.c (s21 j chain extender + s32 `h` staging local present)
+
+## [s33] The red shift pair is not a combine_regs tie to be broken but an EXPAND-LEVEL artefact of writing the shift and its mask as one expression; splitting `r_src = (sum >> 15) & 0x1F;` into two statements makes the shift's destination the already-multi-set `r_src` pseudo and prints the target's two-register form.
+- mechanism: expand creates a fresh single-set temp for the inner `sum >> 15`, and combine_regs (local-alloc.c:1854-1897) ties THAT temp to the dying `sum` ($v0), so the shift prints `sra $v0,$v0,15` and the mask lands in r_src's seat. If the shift's destination is written directly to `r_src` - a pseudo already set twice in the block (the sll and the mflo) - combine_regs cannot form the tie and both insns print into r_src's own seat, which is the target's `sra $a1,$v0,15` / `andi $a1,$a1,0x1F`. The GREEN channel has carried this exact shape since s29 (`g_src = sum >> 10;` with the mask deferred), which is why green was already byte-exact while red was not.
+- probe: tmp/grind/func_8003DE14/s33/v1/{r1,r2,r3,r4}.c on the s32 2-point chassis, read positionally with the s32 rowdiff.py.
+- result: CONFIRMED for the SHAPE. r2 (`r_src = sum >> 15; r_src = r_src & 0x1F;`) prints `sra $a0,$v0,15` / `andi $a0,$a0,31` - the target's two-register form - and the WHOLE remaining residual collapses to one clean $a0<->$a1 swap between `px` and `r_src`. r3 (`r_src &= 0x1F;`) is byte-identical to r2. Moving the mask into the OR chain instead (r1/r4, `| (r_src & 0x1F)`) is 14 and does NOT produce the form. Score of r2 alone is 17 (the swap), banked as rejected/s33-red-split-alone-px-rsrc-a0a1-swap-17.c.
+- verdict: CONFIRMED
+
+## [s33] The $a0/$a1 swap the red split causes is a global.c allocno-priority inversion with a 2.8% margin, and handing `px` one more real reference (or `r_src` one more unit of live length) reverses it.
+- mechanism: global.c orders allocnos by reg_n_refs/live_length. The split adds two references to r_src (6 -> 8 refs, weighted 18 -> 24 at loop depth 3) and nothing to px, so r_src overtakes px and takes $a0 first.
+- probe: BB2_ALLOC_DEBUG=1 via tools/gcc-2.7.2/cc1 on the r2 body and on the d1 body (tmp/grind/func_8003DE14/s33/alloc.sh, log at tmp/grind/func_8003DE14/s33/alloc.log).
+- result: CONFIRMED with exact numbers. r2: px = pseudo 123 nrefs=30 livelen=27 pri=44444 -> hardreg 5 ($a1, wrong); r_src = pseudo 124 nrefs=24 livelen=21 pri=45714 -> hardreg 4 ($a0, wrong). The printed priorities fit nrefs*40000/livelen exactly for both, so the thresholds are arithmetic: px wins at nrefs>=31 (i.e. +1 source reference, weighted +3) or livelen<=26, and r_src loses at livelen>=22. Reference counting confirmed against the target itself: the target's $a0 has 10 refs and its $a1 has 8, matching our px/r_src exactly - so the target's advantage for px is a LIVE-LENGTH difference, not a reference-count difference.
+- verdict: CONFIRMED
+
+## [s33] Spending px's extra reference on the red channel's source read (`(px & 0x1F) << 3` instead of `(pixel & 0x1F) << 3`) restores the seats and drops the floor to 1.
+- mechanism: px and pixel hold the same value at that point, so the read is ordinary C; it moves one reference from pixel to px, taking px to nrefs=33 / pri=61111, far above r_src's 45714.
+- probe: tmp/grind/func_8003DE14/s33/v5/d1.c, scored and read positionally.
+- result: CONFIRMED at 1/173. Every row of the function is byte-exact except target `andi $v0,$t0,0x1F` vs our `andi $v0,$a0,0x1F` - the red source is read out of $a0 (px) where the target reads $t0 (pixel). This is memory/grind/func_8003DE14/candidate.c.
+- verdict: CONFIRMED
+
+## [s33] The same reference can be bought by splitting px's birth (`s32 px = pixel; px = px & 0xFFFF;`), which also reaches 1 but loses the target's redundant birth mask.
+- mechanism: the split gives px two extra references without touching the red source read, so `(pixel & 0x1F) << 3` is preserved.
+- probe: tmp/grind/func_8003DE14/s33/v3/b1.c plus the fold-resistance variants v8/{i2,i3,i5}.c.
+- result: CONFIRMED at 1/173, banked as memory/grind/func_8003DE14/chassis_s33_pxsplit_1.c. Its single wrong row is the mirror of the candidate's: combine proves `& 0xFFFF` redundant against the lhu's nonzero_bits and folds the copy+and into `move $a0,$t0`, where the target keeps `andi $a0,$t0,0xFFFF`. i2 (`s32 px = *src;`) and i3 (`(s32)pixel`) fold identically; i5 (`px = pixel & 0xFFFF; px = px & 0xFFFF;`) also reaches 1 but is a dead self-assign and is NOT a usable form.
+- verdict: CONFIRMED
+
+## [s33] Other sites for px's extra reference, and the alternative of lengthening r_src's live range, all cost more than they buy.
+- mechanism: any of the levers in the arithmetic above should flip the seats; the question is whether the lever is byte-free.
+- probe: 33 bodies in eight sweeps (tmp/grind/func_8003DE14/s33/v1..v8) with tools/sweep_variants.py, each candidate re-read positionally with the s32 rowdiff.py.
+- result: KILLED for every site except the two banked ones. Splitting the BLUE source (`px = (u32)px >> 7; px = px & 0xF8;`, v2/a1) flips the seats and reaches 2, but the target's blue srl writes a temp ($v0) so the split breaks that pair. The alpha mask on px (`(px & 0x8000)`, d2/d6) costs 25 at 175 insns. The zero-arm store `*dst = px` is 18. Staging the blue sum (`sum = px; sum = sum + b*factor;`, d7 / b2) is 17-33. Splitting the blue final mask (b3) is 3. A redundant `& 0xFFFF` inside the guard test (i4) or inside the green source (i7) is folded away and buys nothing (17, unchanged). On r_src's side: born before the zero guard (e1) is 3 - it flips the seats but denies reorg.c the `andi $v0,$t0,0x1F` delay-slot filler the target uses; inlining `r * factor` into the addu (c1) is 26; decl-order and rp/gp-order permutations (c3/c4/c6) and the green-mask split (c7) are all 17 (no flip); carrying the masked red result in `rp` (c8) is 24. Channel-block reorderings (c5, e6, e7) are 24-31.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s33 red-split chassis (tmp/grind/func_8003DE14/s33/v1/r2.c, 17/173), s21 j chain extender + s32 `h` staging local present
+
+## [s33] Re-associating or re-ordering the final OR chain can shorten px's live range enough to flip the seats without spending a reference.
+- mechanism: px's live range ends at its mask in the OR chain and r_src's ends at its `or`; changing the association or the operand order moves those endpoints, and the arithmetic above needs only one unit.
+- probe: v6/{e2,e3,e4,e5} (operand reorderings and one re-association) and v7/{f1..f7} (all seven parenthesisations of the four-term chain) on the red-split chassis.
+- result: KILLED. Re-association DOES flip the seats - e5 (`(A|r) | (G|P)`) and the identical f7 (`A | r | (G|P)`) both reach 2 - but it re-emits the tail of the chain: our `andi $a0,$a0,31744` / `or $v1,$v1,$a0` against the target's `or $v0,$v0,$v1` / `andi $v1,$a0,31744`, two wrong rows, no better than s32's floor. Every other parenthesisation is 28-40, and every operand REORDERING is 24-27. Banked as rejected/s33-or-chain-reassoc-tail-rows-2.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s33 red-split chassis (17/173), s21 j chain extender + s32 `h` staging local present
+
+## [s33] The red shift pair is an expand-level artefact of writing the shift and its mask as one expression; splitting `r_src = (sum >> 15) & 0x1F;` into `r_src = sum >> 15; r_src = r_src & 0x1F;` makes the shift's destination the already-multi-set r_src pseudo and prints the target's two-register form.
+- mechanism: The single expression makes expand allocate a fresh single-set temp for the inner shift, and combine_regs (local-alloc.c:1854-1897) ties THAT temp to the dying three-way `sum` ($v0), so the shift prints `sra $v0,$v0,15`. Writing the shift straight into `r_src` - a pseudo already set twice in the block, by the sll and by the mflo - leaves no tie-eligible destination, so both insns print into r_src's own seat. Our GREEN channel has carried exactly this shape since s29 (`g_src = sum >> 10;`, mask deferred) and has been byte-exact all along, which is the evidence that pointed at the spelling rather than at the tie.
+- probe: tmp/grind/func_8003DE14/s33/v1/{r1,r2,r3,r4}.c on the s32 2-point chassis, scored with tools/sweep_variants.py and read positionally with tmp/grind/func_8003DE14/s32/rowdiff.py.
+- result: CONFIRMED for the shape. r2 prints `sra $a0,$v0,15` / `andi $a0,$a0,31` - the target's two-register form - and the entire remaining residual collapses to one clean $a0<->$a1 swap between px and r_src. r3 (`r_src &= 0x1F;`) is byte-identical. Moving the mask into the OR chain instead (r1/r4) is 14 and does not produce the form. This supersedes the s29-s32 reading of the red pair as a combine_regs tie to be broken.
+- verdict: CONFIRMED
+
+## [s33] The $a0/$a1 swap the red split causes is a global.c allocno-priority inversion with a measured 2.8% margin, and one more px reference (or one more unit of r_src live length) reverses it.
+- mechanism: global.c orders allocnos by reg_n_refs/live_length. The split takes r_src from 6 to 8 references (weighted 18 -> 24 at loop depth 3) and gives px nothing, so r_src overtakes px and takes $a0 first.
+- probe: BB2_ALLOC_DEBUG=1 through the instrumented tools/gcc-2.7.2/cc1 (tmp/grind/func_8003DE14/s33/alloc.sh) on the red-split body and on the winning body; log at tmp/grind/func_8003DE14/s33/alloc.log.
+- result: CONFIRMED with exact numbers. Red-split chassis: px = pseudo 123 nrefs=30 livelen=27 pri=44444 -> hardreg 5 ($a1, wrong); r_src = pseudo 124 nrefs=24 livelen=21 pri=45714 -> hardreg 4 ($a0, wrong). Both printed priorities fit nrefs*40000/livelen exactly, so the thresholds are arithmetic: px wins at nrefs>=31 (one more source reference, weighted +3) or livelen<=26; r_src loses at livelen>=22. Counting the target's own asm, its $a0 carries 10 references and its $a1 carries 8 - identical to our counts - so the target's advantage for px is a LIVE-LENGTH difference of at least one insn, not a reference-count difference.
+- verdict: CONFIRMED
+
+## [s33] Spending px's extra reference on the red channel's source read (`(px & 0x1F) << 3` instead of `(pixel & 0x1F) << 3`) restores the seats and drops the floor to 1.
+- mechanism: px and pixel hold the same value at that point, so the read is ordinary C; it moves one reference from pixel to px, taking px to nrefs=33 / pri=61111, far above r_src's 45714.
+- probe: tmp/grind/func_8003DE14/s33/v5/d1.c, scored with tools/sweep_variants.py and read positionally with rowdiff.py; re-measured after banking as memory/grind/func_8003DE14/candidate.c.
+- result: CONFIRMED at 1/173 build insns, 173 target insns. Every row of the function is byte-exact except target `andi $v0,$t0,0x1F` vs our `andi $v0,$a0,0x1F` - the red source is read out of $a0 (px) where the target reads $t0 (pixel). This is the new candidate.c and it adds no FAKE construct (the two carried over from s21/s32 are unchanged).
+- verdict: CONFIRMED
+
+## [s33] The same reference can be bought by splitting px's birth (`s32 px = pixel; px = px & 0xFFFF;`), which also reaches 1 while keeping the red source read on `pixel`.
+- mechanism: The split gives px two extra references without touching the red source read.
+- probe: tmp/grind/func_8003DE14/s33/v3/b1.c plus the fold-resistance variants v8/{i2,i3,i5}.c.
+- result: CONFIRMED at 1/173, banked as memory/grind/func_8003DE14/chassis_s33_pxsplit_1.c. Its single wrong row is the mirror image of the candidate's: combine proves the 0xFFFF mask redundant against the lhu's nonzero_bits and folds copy+and into `move $a0,$t0` where the target keeps `andi $a0,$t0,0xFFFF`. i2 (`s32 px = *src;`) and i3 (`(s32)pixel`) fold identically; i5 (`px = pixel & 0xFFFF; px = px & 0xFFFF;`) also reaches 1 but is a dead self-assign and is not a usable form.
+- verdict: CONFIRMED
+
+## [s33] Every other site for px's extra reference, and every tried way of lengthening r_src's live range, costs more rows than it buys on this chassis.
+- mechanism: Any of the levers in the measured priority arithmetic should flip the seats; the question is whether the lever is byte-free.
+- probe: 33 bodies in eight sweeps (tmp/grind/func_8003DE14/s33/v1..v8) via tools/sweep_variants.py, each re-read positionally with rowdiff.py.
+- result: KILLED for every site except the two banked ones. px sites: blue source split 2 (flips the seats but breaks the blue srl/andi pair, whose target srl writes a temp), blue final-mask split 3, blue sum staging 17-33, zero-arm `*dst = px` 18, alpha mask on px 25 at 175 insns, redundant `& 0xFFFF` inside the guard test (i4) or the green source (i7) 17 - both folded away, buying no reference. r_src sites: born before the zero guard 3 (flips the seats but denies reorg.c the `andi $v0,$t0,0x1F` delay-slot filler the target uses), `r*factor` inlined into the addu 26, decl-order and rp/gp-order permutations and the green-mask split 17 (no flip), masked red result carried in `rp` 24, channel-block reorderings 24-31.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); s33 red-split chassis tmp/grind/func_8003DE14/s33/v1/r2.c at 17/173, with the s21 j chain extender and the s32 `h` staging local present
+
+## [s33] Re-associating or re-ordering the final OR chain shortens px's live range enough to flip the seats without spending a reference, but re-emits the chain tail.
+- mechanism: px's live range ends at its mask in the OR chain and r_src's ends at its `or`; changing association or operand order moves those endpoints, and the measured arithmetic needs only one unit.
+- probe: tmp/grind/func_8003DE14/s33/v6/{e2,e3,e4,e5}.c (operand reorderings plus one re-association) and v7/{f1..f7}.c (all seven parenthesisations of the four-term chain) on the red-split chassis.
+- result: KILLED. Re-association does flip the seats - e5 (`(A|r) | (G|P)`) and the identical f7 both reach 2 - but the chain tail comes out as our `andi $a0,$a0,31744` / `or $v1,$v1,$a0` against the target's `or $v0,$v0,$v1` / `andi $v1,$a0,31744`, two wrong rows, no better than the s32 floor. Every other parenthesisation is 28-40 and every operand reordering is 24-27.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; s33 red-split chassis at 17/173, with the s21 j chain extender and the s32 `h` staging local present

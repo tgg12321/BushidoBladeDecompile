@@ -1,43 +1,55 @@
-/* func_8003DE14 - candidate (grind session 32, FORENSICS modality).
+/* func_8003DE14 - candidate (grind session 33, REDERIVE modality).
  *
- * SCORE 2 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
+ * SCORE 1 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
  * FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12 (s23-s28) -> 5 (s29,
- * s30) -> 4 (s31) -> 2 (this session).  THE ENTIRE LATCH GROUP IS NOW MATCHED;
- * the only residual is the red-shift pair.
+ * s30) -> 4 (s31) -> 2 (s32) -> 1 (this session).  The red shift pair that had
+ * been the standing residual since s29 is CLOSED; ONE row remains.
  *
- * WHAT s32 FOUND.  s31 left the latch's two `lh` rows differing only in ORDER and
- * attributed the order to RTL birth order (statement order).  That attribution is
- * wrong: the dumps show the FIRST SCHEDULING PASS reorders them.  Body c04 of this
- * session puts the rect[2] load first in .combine (insn 298 = offset 4, insn 303 =
- * offset 6) and the .lreg dump - i.e. after `sched`, before local-alloc - has them
- * swapped.  The lever that decides the order is not statement position but whether
- * the destination pseudo is BLOCK-LOCAL:
- *   - the operand whose destination pseudo escapes local-alloc has its load emitted
- *     FIRST and is seated by global.c;
- *   - the remaining block-local quantity is seated by local-alloc and takes $v0.
- * So the target's `lh $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1` is exactly
- * "rect[2] block-local, rect[3] escaped": the rect[3] value must be carried by a
- * pseudo referenced in a SECOND basic block, with its load still inside the latch.
- * Every s31 way of doing that moved the load out of the latch or let loop.c/CSE
- * delete it; the way that works is a staging local whose other reference is also
- * INSIDE the inner loop - here the fast arm's `h = target_color; *dst++ = h;`.
+ * WHAT s33 FOUND (the red pair was never an RA-tie problem).  s29-s32 all read
+ * the red residual - ours `sra $v0,$v0,15` / `andi $a1,$v0,31` vs the target's
+ * `sra $a1,$v0,15` / `andi $a1,$a1,31` - as combine_regs tying the shift's
+ * destination to the dying three-way `sum`, and spent four sessions trying to
+ * break that tie by making `sum` / `rp` / the destination escape local-alloc.
+ * The actual cause is one level up: `r_src = (sum >> 15) & 0x1F;` is a SINGLE
+ * expression, so expand creates a fresh single-set temp for the shift, and that
+ * temp is what combine_regs ties to `sum`.  Splitting it into two statements -
+ *     r_src = sum >> 15;
+ *     r_src = r_src & 0x1F;
+ * - makes the shift's destination the ALREADY-MULTI-SET pseudo r_src (it is
+ * written twice before this, by the sll and by the mflo), so no tie can be
+ * formed and both insns print into r_src's own seat.  That is byte-exactly the
+ * target's shape, and our GREEN channel had been carrying it all along
+ * (`g_src = sum >> 10;` with the mask deferred to the OR chain prints
+ * `sra $v1,$v0,10` / `andi $v1,$v1,0x3E0`, which is the same two-register form).
  *
- * THE RESIDUAL IS 2 ROWS:
- *   red    ours `sra $v0,$v0,15` / `andi $a1,$v0,31`; target `sra $a1,$v0,15` /
- *          `andi $a1,$a1,31` - unchanged since s29.  combine_regs
- *          (local-alloc.c:1854-1897) ties the shift's destination to its dying
- *          source, the three-way shared `sum` that owns $v0.  s32 measured the new
- *          escape lever against it: making `sum`, `rp` or the shift's own
- *          destination cross-block costs 1-18 points and never moves the sra seat.
+ * THE PRICE, AND HOW IT IS PAID.  The split adds two references to r_src (6 -> 8,
+ * weighted 18 -> 24 at loop depth 3), which flips the $a0/$a1 seats of `px` and
+ * `r_src` in global.c's allocno ordering.  BB2_ALLOC_DEBUG, red-split chassis
+ * with nothing else changed:
+ *     px    pseudo 123  nrefs=30 livelen=27 pri=44444   -> $a1   (WRONG)
+ *     r_src pseudo 124  nrefs=24 livelen=21 pri=45714   -> $a0   (WRONG)
+ * a 2.8% margin the wrong way, and the whole body scores 17.  Handing px ONE
+ * more real reference restores the order and the score drops to 1.  This body
+ * spends that reference on the red channel's source read: `(px & 0x1F) << 3`
+ * instead of `(pixel & 0x1F) << 3` - px and pixel carry the same value there, so
+ * it is ordinary C, and px goes to nrefs=33 / pri=61111, comfortably above r_src.
+ *
+ * THE RESIDUAL IS 1 ROW: target `andi $v0,$t0,0x1F` (the red source is read out
+ * of `pixel`, $t0) against our `andi $v0,$a0,0x1F` (read out of `px`, $a0).  It
+ * is the very reference we spent to win the seat, so the last point is exactly
+ * "find a FREE way to give px one more reference (or r_src one more unit of live
+ * length) and put the red source read back on `pixel`".
+ *   - chassis_s33_pxsplit_1.c is the OTHER 1-point body: it keeps
+ *     `(pixel & 0x1F) << 3` and buys the reference by splitting px's birth
+ *     (`s32 px = pixel; px = px & 0xFFFF;`).  Its single wrong row is the mirror
+ *     image - combine proves the 0xFFFF mask redundant against the lhu's
+ *     nonzero_bits and folds the pair into `move $a0,$t0` where the target keeps
+ *     `andi $a0,$t0,0xFFFF`.  Two independent 1-point forms, two different rows.
  *
  * FAKE CONSTRUCTS PRESENT: (1) the s21 j chain extender `((s32)dst_buf + j) - j`
- * in the LoadImage call (3 pts), (2) the `h` staging local (2 pts: it closes both
- * latch rows).  FAMILY QUESTION FOR THE NEXT SESSION: `h` is an INVENTED local
- * borrowed for a second value, which the family-selection table puts outside plain
- * variable-reuse (bound 2) and closest to staged-value-reused-variable
- * (.claude/rules/staged-value-reused-variable.md).  Read that rule end to end - and
- * consider a spelling in which an EXISTING local is the carrier (s32's h01 borrowed
- * `total` and measured 4) - before any candidate-ready submission.
+ * in the LoadImage call (3 pts), (2) the s32 `h` staging local (2 pts, both latch
+ * rows).  NOTHING s33 added is FAKE: the red split is a plain two-statement
+ * spelling and `(px & 0x1F)` is a read of an in-scope local holding that value.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -113,7 +125,7 @@ void func_8003DE14(s16 *rect, s32 count) {
                             goto loop_check;
                         }
                         {
-                            s32 r_src = (pixel & 0x1F) << 3;
+                            s32 r_src = (px & 0x1F) << 3;
                             s32 g_src = ((u32)px >> 2) & 0xF8;
                             s32 sum;
                             s32 rp;
@@ -122,7 +134,8 @@ void func_8003DE14(s16 *rect, s32 count) {
                             rp = r_src * complement;
                             r_src = r * factor;
                             sum = rp + r_src;
-                            r_src = (sum >> 15) & 0x1F;
+                            r_src = sum >> 15;
+                            r_src = r_src & 0x1F;
                             gp = g_src * complement;
                             g_src = g * factor;
                             sum = gp + g_src;
