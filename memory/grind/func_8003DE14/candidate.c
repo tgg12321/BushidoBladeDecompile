@@ -175,3 +175,26 @@ void func_8003DE14(s16 *rect, s32 count) {
  * spelling the tree folds.  Look at declaration SCOPE, block structure, or the
  * object model (rect as a struct), not at how the arithmetic is spelled.
  */
+
+/* s9 ADDENDUM (rederive modality, 2026-09-10).  candidate.c is UNCHANGED and
+ * still the lowest-scoring form (31 / 172); the floor did not move.  What s9
+ * settled:
+ *
+ *   - A fresh m2c decompile of asm/funcs/func_8003DE14.s reproduces the f1
+ *     chassis' arm topology statement for statement, so f1 (and not this file)
+ *     is the target's emitted SHAPE.  The extra `count - 1` m2c shows at the
+ *     bottom of the inner loop is reorg's delay-slot copy of the loop-top insn,
+ *     not a source statement.
+ *   - Compiling the f1 body through the ORIGINAL PsyQ cc1psx produces the SAME
+ *     transposed cursor seat our cc1 does (src -> $a2).  The s6 "same refs,
+ *     different seat" contradiction is therefore a property of the C, not a
+ *     divergence between decompals/mips-gcc-2.7.2 and GCC 2.7.2.SN.1.
+ *   - Declaration placement moves the cursors' live_lengths by at most 5 insns
+ *     (dst 58 -> 53) against the 20 the seat needs, measured in C.
+ *   - Index-addressed cursors (src_buf[j] / dst_buf[j]) are the wrong shape
+ *     class: loop.c strength-reduces them into single-update givs, 165 insns.
+ *
+ * The instruction-budget identity in evidence.md s9 is the thing to read before
+ * proposing anything here: the cursor seat is fully determined by the EMITTED
+ * stream, so no re-spelling that reproduces the target's stream can move it.
+ */

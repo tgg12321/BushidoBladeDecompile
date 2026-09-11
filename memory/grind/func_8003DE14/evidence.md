@@ -1081,3 +1081,101 @@ the target object; s7's sbs.py assumed equal length and is unusable at 172 vs 17
 - [s8] Consequence: the target's four addiu $a3 were four pre-RA insns, so the TARGET's own src reference count is 32, identical to k1's. s6's same-refs-different-seat contradiction is unresolved and now sharper - the remaining decoupling channels are passes that DELETE a counted insn (jump2, measured) or CREATE one for a conditional branch (reorg fill_slots_from_thread, reorg.c:3528, untested here).
 
 - [s8] New reusable tooling: tmp/grind/func_8003DE14/s8/sbs2.py (length-tolerant aligned side-by-side - s7's sbs.py assumes equal length and is unusable at 172 vs 173), s8/rtl.py (one-line-per-insn view of one function out of a cc1 -da dump), s8/dump.sh (instrumented-cc1 dump with an arbitrary BB2_*_DEBUG knob).
+
+## s9 (rederive, 2026-09-10)
+
+**Chassis re-audit.** candidate.c 31/172, k8 31/172, q1 37/172, f1 43/173 —
+all identical to s8. No drift, no FAKE constructs anywhere on this function, so
+`fake_ablate` has nothing to strip and every banked kill stays chassis-valid.
+
+**Fresh m2c decompile (rederive deliverable 1).**
+`tmp/grind/func_8003DE14/s9/m2c.c`. m2c reconstructs the arm topology
+independently of everything this ledger assumes, and it lands on the f1 chassis
+statement for statement: the `i == count - 1` test first, the last-frame zero arm
+doing `*dst = pixel; src++; goto advance_dst;`, the last-frame colour arm
+INLINING `dst++` and jumping past the shared tail, the blend-zero arm sharing the
+tail, the blend arm falling into it. **f1 is the target's emitted shape.** The one
+thing m2c shows that f1 does not spell is the second `count - 1` at the bottom of
+the loop body; the emitted stream carries `addiu $v0,$s2,-0x1` at BOTH 8003DF34
+and 8003E048 with the loop label `.L8003DF38` between them, which is reorg's
+steal-and-redirect copy of the loop-top insn into the loop-back branch's delay
+slot (reorg.c:3169 `add_to_delay_list (copy_rtx (next_trial))`, reached because
+the loop-back insn is a CONDITIONAL branch and so passes the reorg.c:3057-3061
+gate), not a source statement. See [[reorg-peel-is-not-a-source-statement]].
+
+**cc1psx self-disproof (rederive deliverable 2).** The s6 contradiction — the
+target's own weighted reference counts are src 32 / dst 26, the same as ours, yet
+the target seats src at `$a3` while every chassis we build seats it at `$a2` —
+has stood unexplained for three sessions. The one premise nobody had tested is
+that our decompals cc1 allocates the way PsyQ's cc1psx did. Compiling the f1 body
+through `tools/cc1psx_wrapper.sh` gives `addu $6,$sp,16` (src_buf -> `$a2`) and
+`addu $7,$sp,1040` (dst_buf -> `$a3`): **the original compiler produces the same
+transposed seat from this C.** The contradiction is a property of the C, not of
+the toolchain, and the s6/s7/s8 allocator modelling is modelling the right
+allocator. Artifact: `tmp/grind/func_8003DE14/s9/f1.psx.s`.
+
+**The instruction-budget identity (new, and the reason both doors are closed).**
+Counting the target's own emitted stream:
+
+    src ($a3): 1 set at depth 2 (2) + 2 `lhu` at depth 3 (6) + 4 `addiu` x 2 refs
+               at depth 3 (24)                                            = 32
+    dst ($a2): 1 set at depth 2 (2) + 4 `sh` at depth 3 (12) + 2 `addiu` x 2 refs
+               at depth 3 (12)                                            = 26
+
+`allocno_compare` (global.c:643) then gives src 27118 and dst 17931, so src is
+allocated first, and because src and dst carry byte-identical conflict sets
+(hard [2,3,4,5,29,64,65,66]) `find_reg`'s pass-1 scan hands the first-allocated
+one `$a2`. To flip that, one of these must hold:
+
+  (a) dst reaches 32 weighted refs -> +6 -> one more depth-3 dst statement ->
+      pre-RA 174 -> the only pass that can give an instruction back is jump2's
+      cross-jump, whose minimum is TWO matching insns (jump.c:2020) -> 172. This
+      is exactly k8.
+  (b) src drops to 26 weighted refs -> -6 -> one fewer `src++` statement ->
+      three emitted `addiu $a3` against the target's four -> 172, unless a pass
+      CREATES the fourth after flow. reorg's copy path is the only such pass and
+      it is class-killed for unconditional jumps (reorg.c:3059, s8); all three of
+      the target's delay-slot `addiu $a3` sit in UNCONDITIONAL `j` slots and are
+      backward-scan moves of the arm's own insn, not copies. This is exactly q1.
+  (c) live_length moves: dst 58 -> <=38 or src 59 -> >=90. Measured in C this
+      session (not just in the model): the largest C-reachable shrink is
+      dst 58 -> 53 (declaring `dst` inside the `if (total > 0)` block), because
+      both cursors are re-read across the inner loop's back edge and so are live
+      over its whole block span. 5 against the 20 needed.
+  (d) a blocker allocno takes `$a2` before either cursor. NEW this session, and
+      the first route that does not need the priority order to flip: it needs an
+      allocno X with pri > 27118 that conflicts with src but NOT dst and that
+      cannot reach $v0/$v1/$a0/$a1. c3 produces the first src-only conflicting
+      allocno this function has ever shown (pseudo 101), but at pri 11428; and
+      for X to be pushed as far down as `$a2` there would have to be five
+      simultaneously-live high-priority short-lived pseudos in the outer-loop
+      preheader, which the target's seven-insn preheader does not contain.
+
+Doors (a) and (b) are the two the ledger already knew, each landing one
+instruction short from opposite sides. (c) and (d) are now measured rather than
+inferred. What the identity says is that the seat is fully determined by the
+EMITTED stream, which is fixed by the target — so the resolution cannot be a
+re-spelling of the same emitted stream. Either one of the four accountings above
+is wrong, or the target's pre-RA stream differed from its emitted stream by more
+than the single reorg copy we have identified.
+
+**Shape class killed.** Index-addressed cursors (`src_buf[j]`, `dst_buf[j]`, no
+pointer variables) measure 56 / 165: loop.c strength-reduces both into single-
+update givs, so the four `addiu $a3` the target spreads across its arms cannot
+exist. `memory/grind/func_8003DE14/rejected/s9-indexed-no-cursor-givs-165insn-56.c`.
+
+- [s9] Honest floor unchanged at 31 / 172 (memory/grind/func_8003DE14/candidate.c and chassis_k8_target_seat_172insn_31.c); f1/k1 remain 43 / 173; q1 37 / 172.
+
+- [s9] m2c's independent decompile lands on the f1 arm topology exactly, including dst++ inlined on the last-frame COLOUR arm only - f1 IS the target's emitted shape, so no further control-flow rederivation is owed.
+
+- [s9] The emitted target carries addiu $v0,$s2,-0x1 at BOTH 8003DF34 and 8003E048 with the loop label .L8003DF38 between them: reorg's steal-and-redirect copy (reorg.c:3169) into the loop-back CONDITIONAL branch's delay slot. That is the one post-flow instruction-creating event identified in this function, and it creates the comparand, not a cursor increment.
+
+- [s9] cc1psx (the original PsyQ GCC 2.7.2.SN.1) compiles the f1 body to addu $6,$sp,16 / addu $7,$sp,1040 - src in $a2, dst in $a3, the same transposed seat our cc1 produces. The allocator model this ledger has been using is the right allocator.
+
+- [s9] Instruction-budget identity for the target's own stream: src = 1 depth-2 set (2) + 2 lhu (6) + 4 addiu x 2 refs (24) = 32; dst = 1 depth-2 set (2) + 4 sh (12) + 2 addiu x 2 refs (12) = 26. allocno_compare (global.c:643) gives 27118 vs 17931 and find_reg's pass-1 scan hands the first-allocated cursor $a2, because the two carry byte-identical conflict sets.
+
+- [s9] Consequence of the identity: the cursor seat is fully determined by the EMITTED stream. Door (a) dst 26->32 costs a pre-RA insn that only jump2's 2-insn-minimum cross-jump can give back (k8, 172). Door (b) src 32->26 costs the fourth emitted addiu $a3, which only a reorg copy could restore and reorg.c:3059 forecloses that for unconditional jumps (q1, 172). Door (c) live_length is 5 C-reachable against 20 needed. Door (d) an $a2 blocker allocno needs pri > 27118 plus five simultaneously-live preheader pseudos.
+
+- [s9] src and dst hard_conflicts are [2,3,4,5,29,64,65,66] on every chassis measured - $v0,$v1,$a0,$a1,$sp,hi,lo,fake - which is why the first-allocated cursor lands on $a2 and not on a lower argument register.
+
+- [s9] mips.h defines no REG_ALLOC_ORDER, so find_reg's scan is plain ascending hard-reg number: the first-allocated of two allocnos with identical conflicts always takes the lower register.

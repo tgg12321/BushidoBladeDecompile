@@ -858,3 +858,91 @@ claim. There is no open family question on this function.
 - probe: k8 and q1 both measured this session with sandbox --disable all, modelled with extract.py/ALLOCDBG, and diffed against build/src/code6cac_c2.o with s8/sbs2.py.
 - result: k8 = 31 / 172 (seat correct, missing its own arm's addiu $a3); q1 = 37 / 172 (seat correct, missing the fourth addiu $a3). Two structurally different chassis with the same one-instruction gap at the same place.
 - verdict: CONFIRMED
+
+## [s9] Re-audit: the banked floor is unchanged on the current chassis — candidate.c and k8 both 31 / 172, q1 37 / 172, f1/k1 43 / 173.
+- mechanism: Mandated kill re-audit (floor flat since s3). Every banked form on this function is ordinary C with zero FAKE constructs, so `tools/fake_ablate.py` has nothing to strip and the audit reduces to a straight chassis re-measure.
+- probe: `tools/sweep_variants.py --func func_8003DE14 --file code6cac_c2 --variants memory/grind/func_8003DE14/{candidate.c, chassis_k8_target_seat_172insn_31.c, chassis_q1_target_seat_refs26_172insn_37.c}` plus the f1 baseline.
+- result: 31/172, 31/172, 37/172, baseline f1 43/173 — identical to the s8 ledger. No chassis drift; every s6/s7/s8 conclusion remains chassis-valid and no banked kill is void.
+- verdict: CONFIRMED
+
+## [s9] A fresh m2c decompile of asm/funcs/func_8003DE14.s reproduces the f1 chassis' control flow statement for statement, so f1 IS the target's emitted shape and the residual is not a control-flow rederivation problem.
+- mechanism: rederive modality — m2c reconstructs the arm/label graph directly from the branch structure, independent of every assumption this ledger has accumulated. If the ledger's chassis had the wrong arm topology, m2c would show a different one.
+- probe: `python3 tools/m2c/m2c.py --target mipsel-ido-c -f func_8003DE14 asm/funcs/func_8003DE14.s` -> tmp/grind/func_8003DE14/s9/m2c.c.
+- result: m2c emits exactly f1's topology: `if (var_s1 == var_v0)` first with the zero arm doing `*var_a2 = temp_v0; var_a3 += 2; goto block_11;` and the colour arm doing `*var_a2 = COLOUR; var_a2 += 2; var_a3 += 2;` (dst++ INLINED on the colour arm only), the blend arm falling into the shared `block_11: var_a2 += 2;`. The only m2c-visible artefact not in f1 is the second `var_v0 = temp_s2 - 1;` at the bottom of the loop body, which is reorg's delay-slot copy of the loop-top insn (the emitted stream has `addiu $v0,$s2,-1` at both 8003DF34 and 8003E048, with the loop label .L8003DF38 between them), not a source statement.
+- verdict: CONFIRMED
+
+## [s9] The s6 "same refs, different seat" contradiction is NOT a divergence between our cc1 port and PsyQ's original cc1psx: the original compiler seats the f1 chassis' cursors exactly the way ours does.
+- mechanism: cc1psx calibration/self-disproof (.claude/rules/cc1psx-calibration-only). If SN's GCC 2.7.2.SN.1 had a different `allocno_compare`, `floor_log2` or `find_reg` than decompals/mips-gcc-2.7.2, the identical C would seat src/dst differently under the two compilers, and three sessions of allocator modelling would be measuring the wrong allocator.
+- probe: `tmp/grind/func_8003DE14/s9/psx.sh` — preprocess src/code6cac_c2.c carrying the f1 body with the canonical CPP flags, pipe into `tools/cc1psx_wrapper.sh -quiet -O2 -mcpu=3000 -mips1 -msoft-float -funsigned-char -w -G0`, read the cursor initialisations out of the emitted `func_8003DE14`.
+- result: cc1psx emits `addu $6,$sp,16` (src_buf -> $a2) and `addu $7,$sp,1040` (dst_buf -> $a3) — the SAME transposed seat our build produces, against the target's `addiu $a3,$sp,0x10` / `addiu $a2,$sp,0x410`. Both compilers agree, so the contradiction is a property of the C we are feeding them, not of the toolchain.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), f1 chassis (43 / 173 insns), no FAKE constructs, artifact tmp/grind/func_8003DE14/s9/f1.psx.s
+
+## [s9] Moving `dst`'s birth as late as C allows shrinks its live_length by only 5 insns (58 -> 53) against the 20 the seat needs, measured in C rather than in the model.
+- mechanism: s7 killed the live-length door by sweeping the k1 MODEL one input at a time (dst 58 -> 38 or src 59 -> 90 needed). That is an inference about C, not a measurement of it, so the re-audit re-ran it as source edits. Both cursors are set in the outer-loop body and re-read across the inner loop's back edge, so each one's live range is pinned to the whole inner-loop block span; only the preheader window between the two births is free.
+- probe: three f1 variants measured with tmp/grind/func_8003DE14/s8/models.py (ALLOCDBG via tools/ra_solver/extract.py) and scored with sweep_variants — c1 (`dst` last in the outer declaration block), c2 (`dst` first / `src` last), c3 (`dst` declared inside the `if (total > 0)` block, the latest scope that still dominates the loop).
+- result: c1 src 32/59 -> $a2, dst 26/57 -> $a3, score 43. c2 dst 26/59 -> $a3, src 32/57 -> $a2, score 43. c3 src 32/59 -> $a2, dst 26/53 -> $a3, score 44 — the biggest C-reachable shrink is 5 insns, giving pri(dst) 19622 against pri(src) 27118. The threshold is live 38 (pri 27368). Declaration placement also never moves the ORDER, only the two lengths by +/-1..5.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), forms tmp/grind/func_8003DE14/s9/c1.c c2.c c3.c, no FAKE constructs
+
+## [s9] Declaring `dst` in an inner scope DOES create the first allocno that conflicts with `src` but not with `dst` — the precondition for a $a2 blocker — but the only such allocno has priority 11428 against the 27118 it needs.
+- mechanism: find_reg (global.c:952) allocates in priority order and, in pass 1, takes the LOWEST non-conflicting hard reg; src and dst carry byte-identical conflict sets on every chassis measured so far (hard [2,3,4,5,29,64,65,66], identical pseudo-conflict lists), so whichever is allocated first necessarily takes $a2. A third route to the target seat therefore exists that does not need the priority order to flip at all: an allocno X with pri > pri(src) that conflicts with src but NOT with dst, and that cannot reach $v0/$v1/$a0/$a1, would take $a2 itself; src would then fall to $a3 and dst could re-use $a2 in pass 0 (`IOR_COMPL_HARD_REG_SET (used, regs_used_so_far)` admits an already-used reg when there is no conflict).
+- probe: diffed the `conflicts` and `hard_conflicts` sets of the src and dst pseudos in the f1 / c1 / c3 extraction models.
+- result: f1 and c1 are perfectly symmetric (src-only conflicts: none; dst-only: none). c3 breaks the symmetry for the first time: pseudo 101 conflicts with src and not dst, and dst additionally drops hard reg 65. But 101 sits at pri 11428 / ord 10, far below src's 27118, so it is allocated long after src and takes no useful seat. For X to take $a2 it would additionally have to be locked out of $v0/$v1/$a0/$a1, i.e. there would have to be five simultaneously-live high-priority short-lived pseudos in the outer-loop preheader window, which the target's lean preheader (two `lh`, `mult`, `mflo`, `addiu`, `sll`, `div`, `mflo`) does not contain.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1 / c1 / c3 chassis (43/43/44, 173 insns), models tmp/grind/func_8003DE14/s8/{f1,c1,c3}.model.json, no FAKE constructs
+
+## [s9] Index-addressed cursors (`src_buf[j]` / `dst_buf[j]`, no pointer variables) are the wrong shape class: loop.c strength-reduces both into single-update givs and the emitted stream loses eight instructions.
+- mechanism: rederive modality — the one inner-loop shape class this ledger had never spelled. With no explicit cursors, loop.c's biv/giv machinery owns the addressing and emits ONE update per giv at the latch, so the four `addiu $a3` / two `addiu $a2` the target spreads across the arms cannot appear, and the reference counts that decide the seat are generated by loop.c rather than by source statements.
+- probe: tmp/grind/func_8003DE14/s9/ix1.c (f1 with every `*src` / `*dst` rewritten as `src_buf[j]` / `dst_buf[j]` and all the cursor increments deleted), scored with sweep_variants.
+- result: 56 / 165 instructions — eight short of the target's 173 and the worst score of any structurally-complete form on this function. The arm topology is unchanged; the whole delta is the cursor addressing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1-derived ix1 chassis (56 / 165 insns), form tmp/grind/func_8003DE14/s9/ix1.c, no FAKE constructs
+
+## [s9] Re-audit: the banked floor is unchanged on the current chassis - candidate.c and k8 both 31 / 172, q1 37 / 172, f1 43 / 173.
+- mechanism: Mandated kill re-audit (floor flat since s3). Every banked form on this function is ordinary C with zero FAKE constructs, so tools/fake_ablate.py has nothing to strip and the audit reduces to a straight chassis re-measure.
+- probe: tools/sweep_variants.py --func func_8003DE14 --file code6cac_c2 --variants memory/grind/func_8003DE14/{candidate.c,chassis_k8_target_seat_172insn_31.c,chassis_q1_target_seat_refs26_172insn_37.c} plus the f1 baseline.
+- result: 31/172, 31/172, 37/172, f1 43/173 - identical to the s8 ledger. No chassis drift; no banked kill is void.
+- verdict: CONFIRMED
+
+## [s9] A fresh m2c decompile of asm/funcs/func_8003DE14.s reproduces the f1 chassis' control flow statement for statement, so f1 is the target's emitted shape and the residual is not a control-flow rederivation problem.
+- mechanism: rederive modality - m2c reconstructs the arm/label graph from the branch structure alone, independent of every assumption this ledger has accumulated. A wrong arm topology would show up here.
+- probe: python3 tools/m2c/m2c.py --target mipsel-ido-c -f func_8003DE14 asm/funcs/func_8003DE14.s -> tmp/grind/func_8003DE14/s9/m2c.c
+- result: m2c emits exactly f1's topology: the i == count-1 test first, the last-frame zero arm doing *dst = pixel / src++ / goto advance_dst, the last-frame colour arm INLINING dst++ and jumping past the shared tail, the blend-zero arm sharing the tail, the blend arm falling into it. The only extra m2c shows is a second 'count - 1' at the bottom of the loop body, which is reorg's delay-slot copy of the loop-top insn (emitted addiu $v0,$s2,-1 at both 8003DF34 and 8003E048 with the loop label between them), not a source statement.
+- verdict: CONFIRMED
+
+## [s9] The s6 same-refs-different-seat contradiction is not a divergence between our cc1 port and PsyQ's original cc1psx: cc1psx seats the f1 chassis' cursors exactly the way our build does.
+- mechanism: cc1psx calibration/self-disproof (.claude/rules/cc1psx-calibration-only). If GCC 2.7.2.SN.1 had a different allocno_compare / floor_log2 / find_reg than decompals/mips-gcc-2.7.2, the identical C would seat src/dst differently under the two compilers and three sessions of allocator modelling would be modelling the wrong allocator.
+- probe: tmp/grind/func_8003DE14/s9/psx.sh - canonical CPP of src/code6cac_c2.c carrying the f1 body, piped into tools/cc1psx_wrapper.sh -quiet -O2 -mcpu=3000 -mips1 -msoft-float -funsigned-char -w -G0; cursor initialisations read out of the emitted func_8003DE14.
+- result: cc1psx emits addu $6,$sp,16 (src_buf -> $a2) and addu $7,$sp,1040 (dst_buf -> $a3) - the same transposed seat our build produces, against the target's addiu $a3,$sp,0x10 / addiu $a2,$sp,0x410. Both compilers agree; the contradiction is a property of the C being fed to them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), f1 chassis (43 / 173 insns), no FAKE constructs, artifact tmp/grind/func_8003DE14/s9/f1.psx.s
+
+## [s9] Moving dst's birth as late as C allows shrinks its live_length by only 5 insns (58 -> 53) against the 20 the seat needs, measured in C rather than in the model.
+- mechanism: s7 killed the live-length door by sweeping the k1 MODEL one input at a time (dst 58 -> 38 or src 59 -> 90 needed) - an inference about C, not a measurement of it. Both cursors are set in the outer-loop body and re-read across the inner loop's back edge, so each live range is pinned to the whole inner-loop block span; only the preheader window between the two births is free.
+- probe: Three f1 variants modelled with tmp/grind/func_8003DE14/s8/models.py (ALLOCDBG via tools/ra_solver/extract.py) and scored with sweep_variants: c1 (dst last in the outer declaration block), c2 (dst first / src last), c3 (dst declared inside the if (total > 0) block).
+- result: c1 src 32/59 -> $a2, dst 26/57 -> $a3, 43. c2 dst 26/59 -> $a3, src 32/57 -> $a2, 43. c3 src 32/59 -> $a2, dst 26/53 -> $a3, 44 - the biggest C-reachable shrink is 5 insns, pri(dst) 19622 against pri(src) 27118, threshold live 38. Declaration placement never moves the ORDER, only the lengths by 1..5.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), forms tmp/grind/func_8003DE14/s9/c1.c c2.c c3.c, no FAKE constructs
+
+## [s9] Declaring dst in an inner scope creates the first allocno that conflicts with src but not with dst - the precondition for an $a2 blocker - but the only such allocno sits at priority 11428 against the 27118 it needs.
+- mechanism: find_reg (global.c:952) allocates in priority order and in pass 1 takes the LOWEST non-conflicting hard reg; src and dst carry byte-identical conflict sets on every chassis measured (hard [2,3,4,5,29,64,65,66]), so whichever is allocated first necessarily takes $a2. A third route exists that does not need the priority order to flip: an allocno X with pri > pri(src) conflicting with src but NOT dst and locked out of $v0/$v1/$a0/$a1 would take $a2 itself, src would fall to $a3, and dst could re-use $a2 in pass 0 (IOR_COMPL_HARD_REG_SET (used, regs_used_so_far) admits an already-used reg when there is no conflict).
+- probe: Diffed the conflicts and hard_conflicts sets of the src and dst pseudos across the f1 / c1 / c3 extraction models (tmp/grind/func_8003DE14/s8/f1.model.json, c1.model.json, c3.model.json).
+- result: f1 and c1 are perfectly symmetric (no src-only and no dst-only conflicts). c3 breaks the symmetry for the first time: pseudo 101 conflicts with src and not dst, and dst additionally drops hard reg 65 - but 101 is pri 11428 / ord 10, allocated long after src. For X to be pushed down to $a2 there would have to be five simultaneously-live high-priority short-lived pseudos in the outer-loop preheader, which the target's seven-insn preheader does not contain.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1 / c1 / c3 chassis (43 / 43 / 44, 173 insns), no FAKE constructs
+
+## [s9] Index-addressed cursors (src_buf[j] / dst_buf[j], no pointer variables) are the wrong shape class: loop.c strength-reduces both into single-update givs and the emitted stream loses eight instructions.
+- mechanism: rederive modality - the one inner-loop shape class this ledger had never spelled. With no explicit cursors loop.c's biv/giv machinery owns the addressing and emits ONE update per giv at the latch, so the four addiu $a3 / two addiu $a2 the target spreads across its arms cannot appear, and the reference counts that decide the seat are generated by loop.c rather than by source statements.
+- probe: tmp/grind/func_8003DE14/s9/ix1.c (f1 with every *src / *dst rewritten as src_buf[j] / dst_buf[j] and all cursor increments deleted), scored with sweep_variants.
+- result: 56 / 165 instructions - eight short of the target's 173 and the worst score of any structurally complete form on this function. The arm topology is unchanged; the whole delta is the cursor addressing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1-derived ix1 chassis (56 / 165 insns), form tmp/grind/func_8003DE14/s9/ix1.c, no FAKE constructs

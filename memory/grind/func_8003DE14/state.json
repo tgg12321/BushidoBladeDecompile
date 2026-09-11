@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 8,
- "current_modality": "forensics",
+ "session_count": 9,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 31,
    "modality": "forensics",
    "headline": "Forensics: the cursor seat is a STATEMENT-COUNT question (flow.c:2081, depth-3 weighting) - three pre-RA src++ statements give src refs 26 and the target's $a3/$a2 seat in ordinary C (new chassis q1, "
+  },
+  {
+   "session": 9,
+   "floor": 31,
+   "modality": "rederive",
+   "headline": "rederive: m2c confirms f1 IS the target's emitted shape, and the ORIGINAL cc1psx seats f1's cursors the same way ours does - the 3-session 'same refs, different seat' contradiction is the C, not the t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A three-statement src++ layout exists that emits 173 instructions: q1 shares the two ZERO arms, but the other ways of choosing which two of the four arms share the tail (and where the shared block sits) place the increments differently and one of them may keep all four emitted addiu $a3.",
-   "mechanism": "The seat needs exactly three pre-RA statements (flow.c:2081 accounting, measured this session); which arms own them is free. Emitted instruction count then depends on jump.c's cross-jump (minimum 2 matching tail insns, jump.c:2020) and on which insn each arm has left to sink into its jump's delay slot - both change with the pairing.",
-   "next_probe": "On the q1 chassis, generate every semantically-correct pairing (zero+zero = q1; zero+colour; zero+blend; colour+blend) x shared-block placement (above advance_dst, after the latch with a jump back), score each, and gate FIRST on build_insns == 173, THEN read src refs == 26 and the $a3/$a2 disposition with tmp/grind/func_8003DE14/s8/models.py. The score is not the read-out (q1 is 37 against a floor of 31 while being structurally closer)."
+   "hypothesis": "Door (b) is still open if reorg can copy a shared advance_src block's insn into one of the two CONDITIONAL branches that currently carry NOP delay slots (bne $s1,$v0 at 8003DF38, bnez $v0 at 8003DF48) - the target proves the copy path fires in this function, just on the loop-back branch.",
+   "mechanism": "reorg.c:3057-3061 admits non-jump insns and CONDITIONAL jumps into the steal-from-branch-target path at reorg.c:3169 (add_to_delay_list (copy_rtx (next_trial)) + reorg_redirect_jump), which is a genuine instruction created after flow.c fixed reg_n_refs. s8's class kill covers UNCONDITIONAL jumps only (reorg.c:3059). q1 already carries the target seat at src refs 26 and is exactly one addiu $a3 short.",
+   "next_probe": "On the q1 chassis, dump with BB2_DBR_DEBUG=1 via tmp/grind/func_8003DE14/s8/dump.sh and read which candidate insns reorg considered and rejected for the two NOP-slot conditional branches; then spell forms in which the zero test's fall-through runs into an unconditional jump whose target is the shared src++ block, so next_trial is the addiu $a3 itself. Gate on build_insns == 173 first, then read the $a3/$a2 disposition."
   },
   {
-   "hypothesis": "The j/complement $t4/$t5 pair is still open on the NEW q1 chassis, where j is live 56 and complement 51, and q1 is now the chassis worth fixing it on because it already carries the target's cursor seat.",
-   "mechanism": "s7 established the pair is decided by live_length alone (both refs 11) and that an exact TIE suffices, because j is the lower allocno and allocno_compare falls through to 'return *v1 - *v2' (global.c:653). On q1 the gap is 5 insns, the same shape as k1's 57/52, and the whole difference is the preheader ordering of 'move $t5,zero' and the hoisted subu - the sched.c question tools/sched_solver models order- and clock-exactly.",
-   "next_probe": "Extract the q1 model (tools/ra_solver/extract.py), re-run s7's tie_test.py against it to confirm the threshold, then run tools/sched_solver / inverse_sched.py on q1's inner-loop preheader block for the (move, subu) pair. Read out j livelen and the $t4 disposition, not the sandbox score."
+   "hypothesis": "The four-door accounting assumes the target's pre-RA stream equals its emitted stream minus the single reorg comparand copy; a pre-RA stream of 175 whose cross-jump deletes a [sh dst],[addiu dst] pair would give dst 35 weighted refs (pri 30172 > src 27118) and land on 173.",
+   "mechanism": "jump.c:2020 find_cross_jump requires >= 2 matching insns and do_cross_jump deletes them from the redirected arm; if the matched pair is a dst store plus a dst increment, dst pre-RA = 5 sh x3 + 3 addiu x6 + 2 = 35 while src stays 32, flipping the allocation order without touching src at all. This session's objection is that the redirected arm would then emit as a bare j, which the target does not contain - but that was reasoned from tail alignment, not measured against do_cross_jump's actual redirect placement.",
+   "next_probe": "Read do_cross_jump (jump.c) for where the new label is planted and whether the redirected arm keeps its own store; then spell an f1 variant with five *dst = stores and three dst++ where two arms store the SAME pseudo and jump to the same label, and measure build_insns plus the ALLOCDBG refs for dst."
   },
   {
-   "hypothesis": "The 173rd instruction must come from a pass that changes the emitted count AFTER flow.c counted reg_n_refs, and with reorg's unconditional-jump steal class-killed the untested channels are reorg's fill_slots_from_thread copy for CONDITIONAL branches (reorg.c:3528 'temp = own_thread ? trial : copy_rtx (trial)') and reload-created insns.",
-   "mechanism": "reg_n_refs is fixed at flow time; jump2 deletes counted insns (measured: k8) and reorg can duplicate an insn from a non-owned thread into a CONDITIONAL branch's delay slot, which would add an uncounted instruction. The target's arms are entered through conditional branches (bnez $v0, bnez $a0) whose slots currently hold nops, so the thread-copy path is reachable in principle.",
-   "next_probe": "On the q1 chassis, dump with BB2_DBR_DEBUG=1 (tmp/grind/func_8003DE14/s8/dump.sh q1 BB2_DBR_DEBUG=1) and read which candidate insns reorg rejected for the two bnez slots; then spell forms that make the shared advance_src: block the conditional branch's non-owned thread head (the zero test branching directly to the shared tail rather than to an arm that jumps there)."
+   "hypothesis": "s7 swept the cursor model ONE input at a time; a JOINT (refs, live_length) move is unsearched and the combined thresholds are much closer than either alone - e.g. src refs 29 (one shared pixel lhu) with src live 65 puts pri(src) at 17846 against dst's 17931.",
+   "mechanism": "pri = floor_log2(refs) * refs / live * 10000, so dropping src across the floor_log2(32)=5 -> floor_log2(29)=4 step costs only 3 weighted refs instead of 6, and the residual gap can then be closed by a 6-insn live-length extension instead of the 31 a pure live move needs. tools/ra_solver/inverse.py has only ever been run with single-atom bounds on this pair.",
+   "next_probe": "Re-run inverse.py global on the f1 model with depth 2 restricted to the cursor pair and joint atoms (refs_down 108 combined with live_extend 108 / live_shrink 109), then check whether any joint vector has a C spelling that preserves the target's two lhu and four addiu $a3."
   }
  ],
  "judge_constraints": [],
@@ -272,6 +278,38 @@
    "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), q1 (172 insns), q2 (174), p1 (170), no FAKE constructs",
    "predicate_cite": "tools/gcc-2.7.2/reorg.c:3059",
    "result": "Every shared-tail form emits the arm's own sh in the jump's delay slot and leaves the shared addiu $a3 single-instanced:"
+  },
+  {
+   "session": 9,
+   "statement": "The s6 same-refs-different-seat contradiction is not a divergence between our cc1 port and PsyQ's original cc1psx: cc1psx seats the f1 chassis' cursors exactly the way our build does.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), f1 chassis (43 / 173 insns), no FAKE constructs, artifact tmp/grind/func_8003DE14/s9/f1.psx.s",
+   "predicate_cite": "",
+   "result": "cc1psx emits addu $6,$sp,16 (src_buf -> $a2) and addu $7,$sp,1040 (dst_buf -> $a3) - the same transposed seat our build "
+  },
+  {
+   "session": 9,
+   "statement": "Moving dst's birth as late as C allows shrinks its live_length by only 5 insns (58 -> 53) against the 20 the seat needs, measured in C rather than in the model.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), forms tmp/grind/func_8003DE14/s9/c1.c c2.c c3.c, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "c1 src 32/59 -> $a2, dst 26/57 -> $a3, 43. c2 dst 26/59 -> $a3, src 32/57 -> $a2, 43. c3 src 32/59 -> $a2, dst 26/53 -> "
+  },
+  {
+   "session": 9,
+   "statement": "Declaring dst in an inner scope creates the first allocno that conflicts with src but not with dst - the precondition for an $a2 blocker - but the only such allocno sits at priority 11428 against the ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, f1 / c1 / c3 chassis (43 / 43 / 44, 173 insns), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "f1 and c1 are perfectly symmetric (no src-only and no dst-only conflicts). c3 breaks the symmetry for the first time: ps"
+  },
+  {
+   "session": 9,
+   "statement": "Index-addressed cursors (src_buf[j] / dst_buf[j], no pointer variables) are the wrong shape class: loop.c strength-reduces both into single-update givs and the emitted stream loses eight instructions.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, f1-derived ix1 chassis (56 / 165 insns), form tmp/grind/func_8003DE14/s9/ix1.c, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "56 / 165 instructions - eight short of the target's 173 and the worst score of any structurally complete form on this fu"
   }
  ],
  "ladder_skip": 0,
