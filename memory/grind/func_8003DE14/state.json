@@ -1,7 +1,7 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 33,
+ "session_count": 34,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -201,60 +201,34 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Floor 2 -> 1: the red shift pair is CLOSED - it was an expand-level temp, not a combine_regs tie - and the whole remaining residual is ONE row, quantified in closed form as a 2.8% global.c allocno-pri"
+  },
+  {
+   "session": 34,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Floor holds at 1; the last row is re-typed as closed-form arithmetic (the red result pseudo must sit in the allocno-priority window (40000,44444), which no even-raw-ref C spelling reaches) and a NEW 2"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last row closes if `r_src`'s pre-scheduling live length is one insn longer (or px's one insn shorter) while the red source read stays on `pixel` - the target's own reference counts prove this is the shape of its advantage, since its $a0/$a1 reference counts equal ours exactly.",
-   "mechanism": "global.c priority = nrefs*40000/live_length, measured this session: px 30/27 = 44444 vs r_src 24/21 = 45714. r_src loses at livelen >= 22, px wins at livelen <= 26. live_length is the LUID span on the insn chain as it stands at global alloc, i.e. after the first scheduling pass, so the lever is which insns sit between r_src's sll and its `or`, and between px's birth andi and its 0x7C00 mask.",
-   "next_probe": "On the red-split chassis (tmp/grind/func_8003DE14/s33/v1/r2.c, 17/173) sweep spellings that move exactly one EXISTING insn inside r_src's span or outside px's span without changing the emitted stream - candidates: the `src++` statement's position relative to the red block, the `s32 g_src = ((u32)px >> 2) & 0xF8;` source computation relocated between red's sll and red's mult, the `complement`/`factor` reads re-sited, and the `*dst` store address computation. Capture BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s33/alloc.sh) on each and read livelen for pseudos 123/124 directly rather than scoring blind - the target is livelen 22+ for r_src or 26- for px."
+   "hypothesis": "chassis_s34_sumshift_2.c (2/173, all seats target-correct) closes if the red shift's destination stops being tied to the dying `sum` WITHOUT adding a def/use pair to the red result pseudo - i.e. the shift must write a multi-set pseudo that is not the red result's own allocno and not a fresh single-set temp.",
+   "mechanism": "combine_regs (local-alloc.c:1854-1897) ties a single-set temp to the dying quantity, which is why writing the shift into `sum` prints `sra $v0,$v0,15`; s33 showed a pseudo with two or more sets is not tie-eligible. Every two-carrier split measured this session (s34/v6, v8, v9) instead removed the mask statement's reference pair and pushed the red result to 6 raw refs, below green's 40000.",
+   "next_probe": "On chassis_s34_sumshift_2.c, look for an EXISTING multi-set pseudo whose live range is free across rows 118/119 and whose extra def/use the target already contains, and route the shift through it - candidates are `rp` (already dead at that point but single-set, so first make it multi-set by a real second value), the `h` staging local, and the green carrier before its own shift. Read the .lreg dump (pwsh tools/grinder/dump.ps1 func_8003DE14) to confirm the tie is gone BEFORE scoring, and read al.sh to confirm r_src stayed at 18/20."
   },
   {
-   "hypothesis": "The px-birth body (chassis_s33_pxsplit_1.c) closes if the `& 0xFFFF` mask is made non-redundant to combine's nonzero_bits analysis while still emitting `andi $a0,$t0,0xFFFF`.",
-   "mechanism": "combine.c folds `(set px (and pixel 0xffff))` into a copy because nonzero_bits(pixel) <= 0xFFFF is provable from the lhu. If the value reaching the mask has unknown high bits at that point in RTL, the andi survives and px keeps its two extra references with the red source read still on `pixel`.",
-   "next_probe": "Sweep spellings of px's birth where the source's high bits are not provably clear at combine time but the emitted stream is unchanged - e.g. px born from the fast arm's cross-block `h`-style carrier, or from a value whose definition sits in another basic block, or the mask applied to a value that has passed through a multi-set pseudo. Read the .combine dump (pwsh tools/grinder/dump.ps1 func_8003DE14) to confirm whether the and survives BEFORE scoring."
+   "hypothesis": "The target's own red result pseudo has 7 raw references, which is the one row of the priority table that lands inside (40000, 44444) and which no even-parity C statement reaches; if so the original C splits one of the red statements across a boundary that contributes a def without its use (or vice versa) in ordinary form - e.g. the red result is live into the next loop iteration, or one of its references sits in a different basic block.",
+   "mechanism": "priority = nrefs*40000/livelen with nrefs quantised in steps of 3; 7 raw refs at livelen 19-20 gives 44210 / 42000, both inside the window, while 6 raw gives 36000-37894 and 8 raw gives 45714.",
+   "next_probe": "Count the target's own $a1 references directly out of asm/funcs/func_8003DE14.s across BOTH arms of the inner loop (the fast arm and the zero arm as well as the blend arm) rather than in the blend arm alone - if $a1 carries a value in another arm the red allocno is cross-block and its livelen/nrefs are not what the blend arm alone predicts. Then try ordinary C shapes that give the red result a cross-arm life (e.g. a red accumulator declared at the inner-loop scope)."
   },
   {
-   "hypothesis": "The s21 j chain extender (3 pts, FAKE) may be removable now that the red and latch groups are matched, since its stated job - lifting j's allocno priority for the $t4/$t5 seat pair - is the same reg_n_refs/live_length arithmetic this session measured in closed form.",
-   "mechanism": "The extender lifts j's reg_n_refs before combine folds the +j/-j pair. With the exact priority formula now known (nrefs*40000/livelen, verified against printed values), the required j priority can be computed from a dump instead of bought with a FAKE construct.",
-   "next_probe": "Measure the s33 candidate with the extender removed, capture BB2_ALLOC_DEBUG, read j's and complement's nrefs/livelen/pri and the winning margin, then solve for the smallest ordinary-C reference or live-length change that clears it - the same method that closed the red pair this session."
+   "hypothesis": "The s21 j chain extender (3 pts, FAKE) may be removable now that the priority formula is known in closed form and the seat arithmetic has been verified against printed values twice.",
+   "mechanism": "The extender lifts j's reg_n_refs before combine folds the +j/-j pair, buying j's allocno priority for the $t4/$t5 seat pair. With pri = nrefs*40000/livelen verified exactly, the required j priority can be computed from an ALLOCDBG dump and then bought with an ordinary reference instead.",
+   "next_probe": "Measure candidate.c with the extender removed, run tmp/grind/func_8003DE14/s34/al.sh on it, read j's and complement's nrefs/livelen/pri and the winning margin, then solve for the smallest ordinary-C reference change that clears it - the same method that produced H34.3's table this session."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 15,
-   "statement": "Some spelling of the blend arm WITHOUT the s13 per-channel variable reuse reaches or beats 26 somewhere in the full inline-subset x declaration-order lattice of the no-reuse form.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s15/enum_ssa/v*.c",
-   "predicate_cite": "",
-   "result": "ZERO HIT. Histogram {28:37, 33:37, 34:37, 35:37, 41:74, 44:37, 45:83, 54:67, 55:104, 56:37}; best 28 (37 spellings), equ"
-  },
-  {
-   "session": 16,
-   "statement": "Moving the channel locals' DECLARATIONS (not their assignments) renumbers the pseudos and flips the global.c:652-653 tie-break, which is enough to reseat px and g_src.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/renum3/R_*.c",
-   "predicate_cite": "",
-   "result": "All 384 score 26 at 173 insns. The renumbering is real - in R_gbr_000 g_src becomes p121 (was p126) while px stays p122,"
-  },
-  {
-   "session": 16,
-   "statement": "Some cross-channel carrier spelling that reaches the target's seats also reaches or beats the incumbent's 26.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/carrier/*.c with alloc tables in s16/carrier_alloc.json and scores in s16/top.json",
-   "predicate_cite": "",
-   "result": "ZERO HIT. The seat-correct forms score 38 at 173 insns; the best of the top 25 is 34; the whole 1,483-form lattice botto"
-  },
-  {
-   "session": 16,
-   "statement": "A px/g_src priority TIE combined with the byte-neutral renumbering lever hands g_src the seat by pseudo number and closes the blend residual.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s16/tie/T_*.c",
-   "predicate_cite": "",
-   "result": "ZERO HIT. Scores run 34 to 56; best is 34 (T_FFrGrSgSbS), then six at 36. Creating the tie costs the schedule exactly as"
-  },
   {
    "session": 17,
    "statement": "On the incumbent chassis, an emission order for the outer-loop head basic block in which both cursor addiu's precede the mflo is obtainable from sched1/sched2 by an INSN_PRIORITY delta (the s16 fronti",
@@ -702,6 +676,38 @@
    "measured_on": "HEAD 2026-09-11; s33 red-split chassis at 17/173, with the s21 j chain extender and the s32 `h` staging local present",
    "predicate_cite": "",
    "result": "KILLED. Re-association does flip the seats - e5 (`(A|r) | (G|P)`) and the identical f7 both reach 2 - but the chain tail"
+  },
+  {
+   "session": 34,
+   "statement": "On the s33 red-split chassis with the red source read on `pixel`, moving one existing statement inside the blend block (src++ resited, the green source read moved after the red product, r_src declared",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); tmp/grind/func_8003DE14/s34/v2/b8.c chassis (s33 red split + red source read on `pixel`), with the s21 j chain extender and the s32 `h` staging local pr",
+   "predicate_cite": "",
+   "result": "g1/g3/g7 broke the stream (93-96 at 115-119 insns). g5/g6/g8 are byte-neutral at 17/173 and their ALLOCDBG rows are nume"
+  },
+  {
+   "session": 34,
+   "statement": "Shortening px's live range (to livelen <= 26 at nrefs 30) by giving the blue channel its own carrier, or by removing the px variable entirely, wins px the $a0 seat on the pixel-read chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; tmp/grind/func_8003DE14/s34/v2/b8.c and the s33 candidate chassis, s21 j chain extender + s32 `h` staging local present",
+   "predicate_cite": "",
+   "result": "Every px-shortening that keeps the stream byte-neutral scores 17, unchanged from the un-shortened body. BB2_ALLOC_DEBUG "
+  },
+  {
+   "session": 34,
+   "statement": "Routing the red shift and the red mask through two different carriers (a fresh rr, the dead rp or gp, sum, or two alternating multi-set red carriers) keeps the red result inside the (40000,44444) wind",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; tmp/grind/func_8003DE14/s34/v2/b8.c and the s33 candidate chassis, s21 j chain extender + s32 `h` staging local present",
+   "predicate_cite": "",
+   "result": "Best is 11 (p4); the cluster sits at 14 with green taking $a1 and red $v1 - ALLOCDBG on n1 gives red 18/19 pri=37894 -> "
+  },
+  {
+   "session": 34,
+   "statement": "The px variable's existence or birth spelling is what produces the target's `andi $a0,$t0,0xFFFF`, so re-deriving the body without a px variable (or with a plain widening) changes the seat outcome.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; tmp/grind/func_8003DE14/s34/v2/b8.c chassis, s21 j chain extender + s32 `h` staging local present",
+   "predicate_cite": "",
+   "result": "All three measure 17/173 with the andi present and correct - byte-identical in that row to `s32 px = pixel & 0xFFFF;`. p"
   }
  ],
  "ladder_skip": 0,

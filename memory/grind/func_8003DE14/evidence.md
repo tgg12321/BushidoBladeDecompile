@@ -4143,3 +4143,126 @@ rows.sh, sw.sh, apply.py, v1..v8/}.
 - [s33] A redundant mask added purely to buy a reference (`(px & 0xFFFF) == 0` in the guard, `(u32)(px & 0xFFFF) >> 2` in the green source) is folded by combine before flow.c recounts, so it buys nothing: both measure 17, unchanged from the un-augmented red-split body.
 
 - [s33] s33 added no FAKE construct. The two carried in from earlier sessions are unchanged: the s21 j chain extender in the LoadImage call and the s32 `h` staging local.
+
+## s34 (REDERIVE) - floor holds at 1; the seat question is re-typed and a NEW 2-point body with ALL SEATS CORRECT is banked
+
+**Chassis at dispatch.** The brief printed "measurement unavailable".
+memory/grind/func_8003DE14/candidate.c re-measured **1/173 on HEAD 2026-09-11**
+(sweep_variants, `sandbox func_8003DE14 --disable all`), residual row 96 only:
+target `andi $v0,$t0,0x1F` (red source read out of `pixel`) vs ours
+`andi $v0,$a0,0x1F` (out of `px`).  Every s33 number reproduced exactly, so the
+chassis is unchanged.
+
+**The re-derivation that was tried.** Read the target's blend arm as if the C had
+NO `px` variable at all: `lhu $t0` is a `u16 pixel`, `andi $a0,$t0,0xFFFF` is the
+zero-extend GCC must emit for `pixel`'s SImode uses, `srl $v0,$a0,2` /
+`srl $v0,$a0,7` are the green/blue source reads off that extend, and
+`andi $v0,$t0,0x1F` is the red source read folded straight onto the HImode
+pseudo (0x1F is a subset of 0xFFFF, so the extend disappears).  That body
+(tmp/grind/func_8003DE14/s34/v1/a1.c, with a fresh `b_src` blue carrier) measures
+17 - identical to the px-carrying body with the red read on `pixel`.  So the
+presence or absence of the `px` C variable is byte-inert; the seat is not decided
+there.
+
+**The decisive measurement: live length is STREAM-determined, not
+statement-determined.**  Eight byte-neutral statement reorderings of the blend
+block (src++ resited, the green source read moved after the red product, r_src
+declared after g_src, the blue source read hoisted, `sum` hoisted into the guard
+block, all three source reads computed up front) were run through
+BB2_ALLOC_DEBUG.  In EVERY byte-neutral case px stayed at nrefs=30 livelen=27
+pri=44444 and r_src at nrefs=24 livelen=21 pri=45714 - the numbers did not move
+by one unit.  The reason is s28's finding generalised: the FIRST scheduling pass
+re-emits the block in one canonical order before flow.c recomputes
+REG_LIVE_LENGTH, so a pseudo's live length is a function of the emitted insn
+stream and of the pseudo STRUCTURE, never of source statement position.  This
+KILLS s33's frontier probe 1 ("sweep spellings that move exactly one EXISTING
+insn inside r_src's span"): no statement move can do that while the stream is
+held target-identical.  The only lever on livelen/nrefs is how many C variables
+the channel's value passes through.
+
+**The priority window, in closed form.**  On the chassis where the red source
+read is on `pixel` (the target's shape, tmp/.../s34/v2/b8.c, score 17), px is
+fixed at nrefs=30 livelen=27 pri=44444 and green (g_src) at nrefs=18 livelen=18
+pri=40000.  For the target's seat assignment (px $a0, red $a1, green $v1) the red
+RESULT pseudo must be seated between them, i.e. **pri strictly inside
+(40000, 44444)**.  Weighted nrefs at this loop depth are 3 x raw refs, so the
+attainable priorities are quantised: 6 raw refs (18) needs livelen 17; 7 raw refs
+(21) needs livelen 19-20; 8 raw refs (24) needs livelen 22-23.  Every C spelling
+measured lands on an EVEN raw-ref count, because a C statement adds a def and a
+use together:
+
+    8 raw / livelen 21 -> 45714   (s33 split `r_src = sum>>15; r_src = r_src & 0x1F;`)  red steals $a0
+    6 raw / livelen 20 -> 36000   (mask deferred to the OR chain)                        green steals $a1
+    6 raw / livelen 19 -> 37894   (shift into r_src, mask into a fresh `rr`)             green steals $a1
+
+The 7-raw-ref row - the one that lands inside the window - has no even-parity C
+spelling; reaching it by construction would mean adding a def without its use or
+a use without its def, which is the dead-store / dead-read shape and NOT a route
+this session took.
+
+**THE NEW 2-POINT BODY (all three disputed seats correct).**
+memory/grind/func_8003DE14/chassis_s34_sumshift_2.c (= tmp/.../s34/v7/m2.c): the
+red source read is on `pixel` (target shape) and the red tail is spelled
+
+    sum = rp + r_src;
+    sum = sum >> 15;          /* the shift stays in the sum carrier */
+    r_src = sum & 0x1F;
+
+BB2_ALLOC_DEBUG on it: px pseudo 123 30/27 pri=44444 -> hardreg 4 ($a0, TARGET),
+g_src 127 18/18 pri=40000 -> hardreg 3 ($v1, TARGET), r_src 124 18/20 pri=36000
+-> hardreg 5 ($a1, TARGET).  All 173 insns, and the ONLY two differing rows are
+118/119: target `sra $a1,$v0,15` / `andi $a1,$a1,31` vs ours `sra $v0,$v0,15` /
+`andi $a1,$v0,31`.  This is a structurally DIFFERENT 2-point body from s32's
+(that one's residual was the latch; here the latch, the red source read and every
+seat are already target-exact and only the shift's DESTINATION is wrong).  Note
+the counter-intuitive conflict-graph fact it exposes: at 36000 red is seated
+AFTER green, yet it still receives $a1, because green's shorter interval takes
+$v1 first - whereas in the 6-raw/19 body (s34/v8/n1.c) green takes $a1 and red
+$v1.  Seat order is NOT a pure function of priority order here.
+
+**What was swept and killed (37 bodies, tmp/grind/func_8003DE14/s34/v1..v9).**
+px live-range shortening at the tail (final shift into a fresh `bl`, into `rp`,
+into `gp`, product+result both out of px, blue source read off `pixel`): 39, 43,
+9, 39, 40.  Separate blue carrier with px kept as a variable (px drops to
+nrefs=12 livelen=11 pri=32727): 17, unchanged - px's own priority is not the
+binding constraint.  Red mask deferred to the OR chain (green's own shape): 14,
+red and green seats swap.  Separate red-result carrier `rr`: 14.  Shift into
+r_src with the mask into `rr`/`rp`/`gp`/`sum`: 14, 24, 41, 45.  Alternating
+two-carrier red chain: 34, 55, 13, 11.  `r*factor` inlined into the addu: 26.
+Red source read inlined into the product: 14.  `s32 px = pixel;` (plain widening,
+no explicit mask): 17 - byte-identical to the explicit `& 0xFFFF`, so px's birth
+spelling is free.
+
+- [s34] candidate.c re-measured 1/173 at dispatch on HEAD 2026-09-11; s33's alloc numbers (px 33/27 pri=61111, r_src 24/21 pri=45714, g_src 18/18 pri=40000) reproduced exactly.
+
+- [s34] METHOD/TOOLING: tmp/grind/func_8003DE14/s34/{apply.py,sw.sh,rows.sh,al.sh,alloc.sh,gen1..gen9.py}. al.sh applies a variant and prints that variant's ALLOCDBG rows, so a wave can be read as priorities instead of scores - this is what turned the residual from a guessing game into arithmetic. apply.py now handles the INCLUDE_ASM stub as well as an existing C body.
+
+- [s34] KILL (s33 frontier probe 1): statement position inside the blend block cannot change a pseudo's live length. Eight byte-neutral reorderings all left px at 30/27 and r_src at 24/21 exactly. Mechanism: the first scheduling pass canonicalises the block before flow.c recomputes REG_LIVE_LENGTH (the same pass s28 named for the latch loads), so livelen is a function of the emitted stream plus the pseudo structure only.
+
+- [s34] The red RESULT pseudo's allocno priority must land strictly inside (40000, 44444) for the target seat map, and weighted nrefs are quantised in steps of 3 (raw refs x loop-depth weight 3). Attainable rows: 6 raw refs need livelen 17, 7 raw refs need livelen 19-20, 8 raw refs need livelen 22-23. Every ordinary C statement adds a def AND a use, so every spelling measured this session has an EVEN raw-ref count and lands outside the window.
+
+- [s34] NEW 2-point body memory/grind/func_8003DE14/chassis_s34_sumshift_2.c: red read on `pixel` plus `sum = sum >> 15; r_src = sum & 0x1F;`. All three disputed seats are target-correct (px $a0, r_src $a1, g_src $v1); the only residual is the shift's destination - `sra $v0,$v0,15` where the target has `sra $a1,$v0,15`, i.e. the combine_regs tie to the dying `sum` (local-alloc.c:1854-1897) that s29-s32 fought, reintroduced deliberately here by writing the shift into `sum` itself.
+
+- [s34] Seat order is not a pure function of priority order on this chassis: at pri 36000 (seated after green's 40000) the red pseudo still receives $a1 and green $v1 (chassis_s34_sumshift_2.c), while at pri 37894 with a one-insn-shorter interval green receives $a1 and red $v1 (s34/v8/n1.c, 14). The conflict graph, not the ordering, decides between those two.
+
+- [s34] `s32 px = pixel;` (plain widening of the u16) emits the same `andi $a0,$t0,0xFFFF` as `s32 px = pixel & 0xFFFF;` and measures identically (17 on the b8 chassis). A body with NO px variable at all (pixel used for all three source reads, fresh blue carrier) also measures 17. px's existence and birth spelling are byte-inert.
+
+- [s34] s34 added no FAKE construct and adopted no new form; candidate.c is unchanged from s33. The two FAKEs carried in from earlier sessions (s21 j chain extender, s32 `h` staging local) are untouched.
+
+- [s34] candidate.c re-measured 1/173 on HEAD 2026-09-11 at dispatch (the brief printed 'measurement unavailable'); s33's alloc numbers reproduced exactly (px 33/27 pri=61111, r_src 24/21 pri=45714, g_src 18/18 pri=40000), so the chassis has not moved.
+
+- [s34] Live length is STREAM-determined, not statement-determined: eight byte-neutral statement reorderings of the blend block left px at nrefs=30 livelen=27 and r_src at nrefs=24 livelen=21 to the unit. The first scheduling pass canonicalises the block before flow.c recomputes REG_LIVE_LENGTH.
+
+- [s34] Closed-form statement of the last row: with the red source read on `pixel`, px is pinned at pri 44444 and green at 40000, so the red result pseudo must be seated strictly between them. Weighted nrefs are 3 x raw refs, so the attainable rows are 6 raw/livelen 17, 7 raw/livelen 19-20, 8 raw/livelen 22-23; ordinary C statements add a def and a use together and every spelling measured lands on an even raw-ref count.
+
+- [s34] NEW 2-point body memory/grind/func_8003DE14/chassis_s34_sumshift_2.c (red read on `pixel` plus `sum = sum >> 15; r_src = sum & 0x1F;`): px -> $a0, r_src -> $a1, g_src -> $v1, all target-correct at 173/173 insns; the only residual is the shift's destination (`sra $v0,$v0,15` vs the target's `sra $a1,$v0,15`), i.e. the combine_regs tie to the dying `sum` at local-alloc.c:1854-1897.
+
+- [s34] Seat order is not a pure function of priority order on this chassis: at pri 36000 (seated AFTER green's 40000) the red pseudo still receives $a1 and green $v1, while at pri 37894 with a one-insn-shorter interval green receives $a1 and red $v1. The conflict graph decides between those two, so a priority target alone is not sufficient evidence for a seat.
+
+- [s34] px's birth spelling is byte-inert: `s32 px = pixel & 0xFFFF;`, `s32 px = pixel;` and having no px variable at all (pixel carrying all three source reads) all emit the same `andi $a0,$t0,0xFFFF` and all score 17 on the pixel-read chassis.
+
+- [s34] px live-range shortening is a dead axis: giving blue its own carrier drops px to nrefs=12 livelen=11 pri=32727 and the score stays 17, because the freed blue carrier becomes a new 45000-priority allocno and r_src is untouched.
+
+- [s34] TOOLING for the next session: tmp/grind/func_8003DE14/s34/al.sh applies a variant and prints that variant's ALLOCDBG rows, so a wave can be read as allocno priorities instead of blind scores; tmp/grind/func_8003DE14/s34/apply.py now handles the INCLUDE_ASM stub as well as an existing C body. Both are what converted this residual from guessing into arithmetic.
+
+- [s34] s34 added no FAKE construct and adopted no new form. candidate.c is byte-for-byte the s33 body; the only FAKEs present anywhere are the s21 j chain extender and the s32 `h` staging local, both inherited.
