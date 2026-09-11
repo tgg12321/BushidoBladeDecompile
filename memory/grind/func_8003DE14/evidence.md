@@ -4450,3 +4450,109 @@ construct is milder than either family's sanctioned shape, but no family covers
 it as written, so the honest move is a ruling rather than a self-approved
 submission. `gm` (named-intermediate) and the j chain extender (F1) are vetted in
 memory/grind/func_8003DE14/self_vet.md; only the `h` block is unresolved.
+
+## [s36b] ENUMERATE - the Judge-sanctioned `total` borrow, and the 2-row wall stated in closed form
+
+CHASSIS.  The Judge FAILed the s36 body on its fresh multi-written local `h`
+(docs/grind/decisions.md, 2026-09-11 04:48) and in the same ruling ANSWERED the
+session's second question: staging through the EXISTING, genuinely-dead-at-that-
+point `total` IS inside [[staged-value-reused-variable]] (bound 2 satisfied - a
+real job, not invented; bounds 1/3 hold - the staged value is consumed
+immediately and the prior value is dead), provided each site carries its own
+liveness sentence in the FAKE annotation.  This session rebuilt the body on that
+grant and ground it.
+
+MEASUREMENTS (all `sandbox func_8003DE14 --disable all`, HEAD 2026-09-11, post
+-mel, post -msoft-float; sweeps via tools/sweep_variants.py):
+  * `total` borrowed at BOTH sites (fast arm + latch), i.e. the s36 body with
+    `h` renamed onto `total`:                           2/173
+  * `total` borrowed at the LATCH ONLY, fast arm back to the plain
+    `*dst++ = target_color;`:                           2/173   <- candidate.c
+  * `total` borrowed at the FAST ARM only:              3/173
+  * no carrier anywhere (fully ordinary C):             3/173
+  * `total` recomputed as the area in the latch
+    (`while (j < (total = rect[2] * rect[3]));`):       5/173
+So the fast-arm staging site the s36 body carried is NOT load-bearing; one site
+suffices, and the construct is now a single-site borrow of a single existing
+dead local.
+
+THE RESIDUAL.  rowdiff (tmp/grind/func_8003DE14/s32/rowdiff.py) puts both
+differing rows on the two halfword loads of the loop bound:
+    target:  lh $v0,0x4($s0) ; lh $v1,0x6($s0) ; nop ; mult $v0,$v1
+    ours:    lh $v1,0x6($s0) ; lh $v0,0x4($s0) ; nop ; mult $v0,$v1
+The REGISTERS are already the target's; only the emission ORDER is swapped.
+
+PASS ATTRIBUTION (dumped, not guessed - tmp/grind/func_8003DE14/s36b/dumps_h,
+dumps_b5, dumps_tot, extracted with s36b/ord2.py):
+    .combine   h: R2 then R3      total: R2 then R3     (identical)
+    .sched     h: R2 then R3      total: R3 then R2     (SWAPPED)
+    .lreg/.greg/.sched2/.dbr: unchanged from .sched in both.
+The two RTL insns are byte-identical between the two bodies apart from the
+carrier's pseudo number (reg 117 for `h`, reg 101 for `total`) - same
+dependencies (insn_list 300/303 + 304/307 on the mult), same REG_DEAD notes,
+same patterns.  So the FIRST scheduling pass is what orders the two loads, and
+it makes a different choice purely on which pseudo the rect[3] load writes.
+
+THE WALL, AS TWO RULES.  Every body measured this session obeys both:
+  (R1) the escaped carrier's load is scheduled FIRST when the carrier's other
+       set lives in the OUTER row block (`total`, whose other set is its real
+       job `total = rect[2] * rect[3]` feeding the `if (total > 0)` guard), and
+       SECOND when both of its sets live inside the inner loop (`h`, the
+       rejected s36 form, which is why that form reached 0);
+  (R2) local-alloc seats the block-local load in $v0 and global.c seats the
+       escaped carrier in $v1 (ALLOCDBG: pseudo 101 hardreg=3 on every borrow
+       body, whichever operand it carries).
+The target needs the FIRST load in $v0 - i.e. the block-local load first - i.e.
+an escaped carrier whose other set is inside the inner loop.  `total`'s other
+set is necessarily outer, because that set IS its real job.
+
+THE COMPLEMENT.  Carrying the WIDTH instead of the height,
+`while (j < rect[3] * (total = rect[2]));`
+(memory/grind/func_8003DE14/chassis_s36b_borrow_regs_2.c), also scores 2 - but
+its two rows are the two lh DESTINATION REGISTERS (ours lh $v1,4 / lh $v0,6),
+with the emission order AND the `mult $v0,$v1` operand order both already the
+target's.  The two 2-point bodies are exactly complementary: one has the right
+registers with the wrong order, the other the right order with the wrong
+registers.
+
+ENUMERATION EVIDENCE.  48 spellings measured this session in five waves, all on
+HEAD with the s21 chain extender and the s36 `gm` named intermediate present:
+  wave A (18): latch expression x fast-arm spelling on the both-sites borrow -
+    ENUMERATION: 18 spellings, best 2, 9 at the floor (2,2,2,2,2,2,2,2,2,
+    3,3,3,3,3,3,4,4,5).
+  wave B (13): carrier semantics, guard spelling, declaration placement -
+    best 2 (b10 guard `>= 1`, b5 latch-only, b8 decl after `j`), then 3,3,4,
+    5,5,5,5,5,6,123(invalid: C89 decl-after-statement).
+  wave C (18): loop-tail structure on the latch-only chassis (increment
+    placement, comma operator, break-form, subtraction-form, ++j in the
+    condition, label position) - ENUMERATION: 18 spellings, best 2, 10 at the
+    floor; histogram 10 x 2, 5 x 3, 1 x 4, 1 x 5, 1 x 7.
+  wave D (11): the width-carrier chassis x fast-arm staging x declaration
+    scope - best 2 (d8, d10), then 3 x 5, 4, 3 x invalid.
+  wave E (12): KILL RE-AUDIT of the s36 wave m/n hoisted-carrier kill on the
+    h-free chassis - hoisting the blend block's dead gp/rp/sum to inner-loop
+    scope is byte-neutral by itself (e_*_none = 3, same as the no-carrier body)
+    but using the hoisted local as the latch carrier costs +7 (gp=10), +9
+    (rp=12), +38 (sum=41), independent of the latch spelling.  The s36 kill
+    holds with `h` removed.
+No spelling of the latch expression, the loop tail, the guard, or the
+declaration placement moves the floor below 2.
+
+ARTIFACTS: tmp/grind/func_8003DE14/s36b/{base.c,waveA,waveB,waveC,waveD,waveE,
+dumps_h,dumps_b5,dumps_tot,ord2.py,show.py,rd.sh,rdmulti.sh,sw.sh,last.json}.
+
+- [s36] The Judge's 2026-09-11 04:48 ruling rejected the fresh multi-written `h` but granted staging through the existing genuinely-dead `total` under staged-value-reused-variable; this session spent that grant and the resulting body measures 2/173 with the sandbox.
+
+- [s36] candidate.c is now the latch-only borrow: `while (j < rect[2] * (total = rect[3]));` with the fast arm back to the plain `*dst++ = target_color;`. One staging site, one existing local, per-site liveness written into the FAKE annotation as the ruling requires.
+
+- [s36] The whole residual is the two loop-bound halfword loads. In the kept body the REGISTERS are already the target's and only the emission ORDER is swapped; in the complementary width-carrier body the order and the `mult $v0,$v1` are already the target's and only the two destination registers are swapped.
+
+- [s36] Pass attribution is dumped, not inferred: .combine RTL is byte-identical between the `h` body and the `total` body apart from the carrier's pseudo number, and the FIRST scheduling pass keeps the target order for `h` and swaps it for `total`; every later dump inherits that order.
+
+- [s36] Two rules hold on every body measured: (R1) the escaped carrier's load is scheduled FIRST when its other set is in the outer row block and SECOND when both sets are inside the inner loop; (R2) local-alloc seats the block-local load in $v0 and global.c seats the escaped carrier in $v1. The target needs the block-local load first, which under R1 needs a carrier whose other set is inside the inner loop - and `total`'s other set is its real job (the row area feeding the `if (total > 0)` guard), which is necessarily outer.
+
+- [s36] The fully ordinary-C body with no staging carrier anywhere scores 3/173 (rejected/s36b-plain-no-carrier-3.c); `total` recomputed as the area in the latch, which needs no FAKE at all, scores 5/173.
+
+- [s36] ENUMERATION: 48 spellings across five waves, best 2, 21 at the floor - the 2 is a flat plateau over the latch/loop-tail/declaration spelling space, not one lucky form.
+
+- [s36] Kill re-audit (mandated, floor flat): the s36 hoisted-carrier kill re-measured on the h-free chassis holds - the declaration hoist of gp/rp/sum is byte-neutral (3/173) but the carrier use costs +7/+9/+38.

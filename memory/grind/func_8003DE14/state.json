@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 35,
- "current_modality": "structural",
+ "session_count": 36,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -213,23 +213,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor holds at 1; the last row is now a closed-form inequality (pri(px) > pri(red): red must reach live length 22 at its pinned 24 refs) and TWO independent structural levers were measured to satisfy "
+  },
+  {
+   "session": 36,
+   "floor": 2,
+   "modality": "enumerate",
+   "headline": "Rebuilt the body on the Judge's `total` grant (h removed, ONE staging site) at 2/173, and closed the residual in dumped closed form: the first scheduling pass orders the two loop-bound halfword loads,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pixel-read chassis closes if r_src becomes live across a block boundary WITHOUT its defining expression moving into the pre-branch block - i.e. the blend block must be entered with r_src already live, but the `sll` must still be emitted inside it.",
-   "mechanism": "flow.c counts boundary insns for a pseudo live at a block edge, which is worth the one unit of live length the inequality pri(px) > pri(red) needs (24 refs at 22 rather than 21); s35/v5/g1 proves the +1 and the seat, and its only defect is that the hoisted expression is emitted pre-branch. The target's pre-branch `andi $v0,$t0,0x1F` is a reorg.c delay-slot fill of a blend-block insn, so at allocation time that insn was still in the blend block.",
-   "next_probe": "Invert the zero test so the BLEND path is the fall-through (`if (px != 0) { blend } else { *dst = pixel; src++; }`, with the shared `dst++`/`j++` tail preserved) on the hoisted chassis - a fall-through successor may let the first scheduling pass sink the `sll` back below the branch while r_src stays live-in. Also try entering the blend block from the loop back edge instead: declare r_src at the inner-loop scope and give it a real use before its def in the block. Read the .lreg dump (pwsh tools/grinder/dump.ps1 func_8003DE14) to confirm red's live length is 22 BEFORE scoring, and s35/al.sh to confirm px stayed at 30/27."
+   "hypothesis": "The last two rows fall to any construct that gives the loop-bound's height read an escaped carrier whose OTHER set is inside the inner loop, which is the one property the rejected `h` had and `total` cannot have.",
+   "mechanism": "Rule R1, dumped this session: the first scheduling pass emits the escaped carrier's load SECOND (the target's order) exactly when both of the carrier's sets live inside the inner loop, and FIRST when the other set is in the outer row block. `total`'s other set is its real job and is outer by construction; gp/rp/sum have inner sets but cost +7..+38 when used (wave E).",
+   "next_probe": "Look for a restructuring that gives `total` a REAL second job inside the inner loop rather than a staged one - e.g. move the `if (total > 0)` area guard's computation so the area is recomputed per row inside the inner loop, or find a reading of the original source in which the guard and the bound share one variable. Score with the s36b sweep harness and confirm with tmp/grind/func_8003DE14/s36b/ord2.py that the .sched order is R2-then-R3 BEFORE scoring."
   },
   {
-   "hypothesis": "s35/v7/i1's two-row residual (our `or` of the green term is emitted one slot before the `or` of the red term) can be removed while keeping the red term's late death that produces red 24/23.",
-   "mechanism": "The three `or`s are emitted in source-association order, so moving the red term later to lengthen its live range necessarily moves its `or` later too. Breaking that coupling needs a form whose VALUE order is (sign, red, green, blue) - the target's `or $v0,$v0,$a1` first - while red's last REFERENCE still sits after green's.",
-   "next_probe": "Stage the partial sums: `s32 t = (pixel & 0x8000) | r_src;` early, then `*dst = t | (g_src & 0x3E0) | (px & 0x7C00);` - this puts red's `or` first but adds a pseudo; measure whether the extra pseudo is byte-neutral and where red's live range ends. Also try the mirror on the green side, and combine i1's association with the s35/v5/g1 hoist at reduced strength (t2 measured 5, so the two levers over-correct; look for a half-step)."
+   "hypothesis": "On the complementary width-carrier chassis (chassis_s36b_borrow_regs_2.c, order and mult already correct) the last two rows fall if local-alloc seats the block-local rect[3] load in $v1 instead of $v0, which would push the escaped carrier onto $v0.",
+   "mechanism": "local-alloc runs before global.c, so the block-local load's seat is fixed first and global.c must take what is left; ALLOCDBG shows pseudo 101 at ord=7 pri=27272 forced onto hardreg 3. Changing the block-local quantity's priority or its conflict set (local-alloc.c qty_compare_1, the s30 solver result) is the only way to move it.",
+   "next_probe": "Run tools/ra_solver's local-alloc model (and inverse_compose.py classify) on the latch block of chassis_s36b_borrow_regs_2.c to get a typed REACHABLE/FORECLOSED verdict for 'block-local halfword load seated in $v1', then spell whatever C lever the solver ranks first. This is the one axis this session did not touch."
   },
   {
-   "hypothesis": "The s21 j chain extender (3 pts, FAKE) and the s32 `h` staging local (2 pts, FAKE) may both be removable now that the priority formula and the seat inequality are known in closed form.",
-   "mechanism": "Both FAKEs buy allocno priority for pseudos outside the blend block. With pri = nrefs*40000/livelen verified exactly and live-length levers now catalogued (cross-block liveness works, in-block statement position does not), the required priorities can be computed from an ALLOCDBG dump and bought with ordinary references or a cross-block extension instead.",
-   "next_probe": "Measure candidate.c with the extender removed, run tmp/grind/func_8003DE14/s35/al.sh on it, read j's and complement's nrefs/livelen/pri and the winning margin, then solve for the smallest ordinary-C change that clears it - the same method that produced this session's seat inequality. Repeat for `h` against the latch pseudo."
+   "hypothesis": "The 2-row plateau is an artefact of the loop-bound being spelled as a product of two array reads at all, and the original C computed the bound from a different pair of expressions.",
+   "mechanism": "Both 2-point families keep the target's `lh $v0,4` / `lh $v1,6` / `nop` / `mult` shape but disagree with it in exactly one dimension each, which is the signature of a chassis that is one structural step away rather than one spelling away.",
+   "next_probe": "Re-derive the loop bound from the asm: read asm/funcs/func_8003DE14.s lines 142-152 and check whether the `addiu $a2,$a2,2` between the store and the two loads implies the increments sit in a different block than ours, then rebuild the inner loop with that block split (the wave C label-position variant c11 scored 7, so the split must be made without moving `dst++` out of the arms)."
   }
  ],
  "judge_constraints": [
@@ -237,22 +243,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 18,
-   "statement": "Spelling the guard as a comparison that reads j (`if (j < total)` or `if (j < rect[2] * rect[3])`, both equivalent since j == 0 there) buys j the extra loop-depth-3 reg_n_refs site that would price it",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), h1 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h9.c and h10.c",
-   "predicate_cite": "",
-   "result": "Both score 45. The comparison no longer folds to `blez`: GCC emits slt + branch, which costs far more than the seat is w"
-  },
-  {
-   "session": 18,
-   "statement": "Hoisting `complement` out of the `if (total > 0)` guard alongside `j` gives complement the longer live range and so restores the target's j=$t4 / complement=$t5 seats on top of h1's head structure.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis re-measured this session at 26 / 173, no FAKE constructs present, forms tmp/grind/func_8003DE14/s18/h7.c and h8.c",
-   "predicate_cite": "",
-   "result": "Both score 44. Making complement live before the guard drags its dependence chain with it: the head block emits `addiu v"
-  },
   {
    "session": 18,
    "statement": "Rewriting the inner do-while as `while (j < rect[2] * rect[3])` with `complement` moved inside the loop body, so loop.c hoists it into the preheader, reproduces the target's head + preheader shape.",
@@ -716,6 +706,22 @@
    "measured_on": "HEAD 2026-09-11; tmp/grind/func_8003DE14/s35/base.c pixel-read chassis, s21 j chain extender + s32 `h` staging local present",
    "predicate_cite": "",
    "result": "18/173, one worse than the 17 baseline: the store prints `sh $a0,0($a2)` where the target has `sh $t0,0($a2)`, so the re"
+  },
+  {
+   "session": 36,
+   "statement": "Some spelling of the latch expression, the loop-tail structure, the guard, or the declaration placement puts the two halfword loads in the target's order while the carrier is `total`.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); the s36 zero chassis with `h` replaced by the Judge-granted `total` borrow, s21 j chain extender and s36 `gm` named intermediate present",
+   "predicate_cite": "",
+   "result": "ENUMERATION: 48 spellings, best 2, 21 at the floor. Nothing reaches 1 or 0. The floor is flat rather than sitting on one"
+  },
+  {
+   "session": 36,
+   "statement": "Hoisting one of the blend block's dead locals (gp, rp, sum) to inner-loop scope to carry the latch read reproduces the rejected `h` shape with an EXISTING variable, now that `h` itself is gone.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; the h-free `total`-borrow chassis (memory/grind/func_8003DE14/candidate.c), s21 j chain extender and s36 `gm` named intermediate present",
+   "predicate_cite": "",
+   "result": "The s36 kill HOLDS on the h-free chassis. The declaration hoist alone is byte-neutral (e_gp_none, e_rp_none, e_sum_none "
   }
  ],
  "ladder_skip": 0,

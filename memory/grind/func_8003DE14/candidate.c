@@ -1,82 +1,53 @@
-/* func_8003DE14 - MATCHING candidate (grind session 36, ENUMERATE modality).
+/* func_8003DE14 - best banked form (grind session 36b, ENUMERATE modality).
  *
- * SCORE 0 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float),
- * measured with `sandbox func_8003DE14 --disable all` (cheat-stripped honest
- * distance).  FLOOR HISTORY: 26 (s13-s20) -> 16 (s21) -> 14 (s22) -> 12
- * (s23-s28) -> 5 (s29, s30) -> 4 (s31) -> 2 (s32) -> 1 (s33-s35) -> 0 (this
- * session).
+ * SCORE 2 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float),
+ * `sandbox func_8003DE14 --disable all`.  This is the best JUDGE-PERMISSIBLE
+ * body known.  FLOOR HISTORY: 26 -> 16 (s21) -> 14 (s22) -> 12 (s23) -> 5
+ * (s29) -> 4 (s31) -> 2 (s32) -> 1 (s33-s35) -> 0 with the `h` carrier (s36,
+ * REJECTED by the Judge 2026-09-11 04:48) -> 2 here with `h` replaced by the
+ * ruling-sanctioned `total` borrow.
  *
- * WHAT CLOSED IT.  s35 proved the entire residual was one inequality in
- * global.c's allocno ordering: with the red source read taken off `pixel` (the
- * target's own shape) the blend block's three channel pseudos compete for
- * $a0/$a1/$v1, and px keeps $a0 iff pri(px) > pri(red), i.e. red must reach
- * live length 22 at its pinned 24 references while px stays at 30/27.  s35
- * reached that with an OR re-association (2/173, red's `or` emitted one slot
- * late) and with a cross-block hoist of the red source read (3/173, the `sll`
- * emitted pre-branch).  This session enumerated the OR-chain region
- * exhaustively instead of hand-spelling it: the region was written in
- * fully-named form (sign / gm / bm / sr / srg) between ENUM markers,
- * tools/spelling_enum.py generated all 104 inline/declaration-order spellings
- * and tools/sweep_variants.py scored them in one pass.  18 of the 104 score
- * ZERO.  The minimal member of that family - and the one kept here - names
- * exactly ONE intermediate:
+ * WHAT CHANGED FROM THE REJECTED BODY.  The Judge FAILed the fresh multi-written
+ * local `h` (docs/grind/decisions.md, 2026-09-11 04:48) and ANSWERED the second
+ * question in the same ruling: staging through the EXISTING, genuinely-dead-at-
+ * that-point `total` IS inside [[staged-value-reused-variable]], provided each
+ * site carries its own liveness sentence in the /* FAKE *\/ annotation.  This
+ * body does exactly that, and this session additionally proved the FAST-ARM
+ * staging site is unnecessary: `total` is borrowed at ONE site, the latch.
+ * (Both sites staged = 2 as well; tmp/grind/func_8003DE14/s36b/base.c.)
  *
- *     gm   = g_src & 0x3E0;
- *     *dst = (pixel & 0x8000) | r_src | gm | (px & 0x7C00);
+ * THE REMAINING 2 ROWS, IN CLOSED FORM.  They are the two halfword loads of the
+ * loop bound.  Target: `lh $v0,4($s0)` then `lh $v1,6($s0)` then `mult $v0,$v1`.
+ * Ours: `lh $v1,6($s0)` then `lh $v0,4($s0)` - the REGISTERS are already the
+ * target's, only the emission ORDER is swapped.  Pass attribution is dumped,
+ * not guessed (tmp/grind/func_8003DE14/s36b/dumps_{h,b5,tot}): after .combine
+ * BOTH bodies have the rect[2] load first and the rect[3] load second, with
+ * byte-identical RTL apart from the carrier's pseudo number (117 for `h`, 101
+ * for `total`); the FIRST scheduling pass leaves that order alone when the
+ * carrier is `h` and swaps it when the carrier is `total`.
  *
- * i.e. the target's own OR order (sign, red, green, blue) with the green mask
- * named.  BB2_ALLOC_DEBUG rows (tmp/grind/func_8003DE14/s36/alloc.log):
- *     with gm:     green 127 18/16 pri=45000 -> $v1   (target)
- *                  px    123 30/27 pri=44444 -> $a0   (target)
- *                  red   124 24/22 pri=43636 -> $a1   (target)
- *     without gm:  red   124 24/21 pri=45714 -> $a0   (WRONG, 17/173)
- *                  px    123 30/27 pri=44444 -> $a1
- * Naming the mask ends green's live range one insn earlier and pushes red's
- * last reference one insn later; that is the single unit of live length the
- * s35 inequality needed, bought without moving any expression across a block
- * boundary (so the pre-branch block keeps the target's lone
- * `andi $v0,$t0,0x1F`, which reorg.c fills into the `bnez` delay slot).
+ * THE WALL, STATED AS TWO RULES THAT CANNOT BOTH BE SATISFIED BY THIS BORROW.
+ *   (R1) the escaped carrier's load is scheduled FIRST when the carrier's other
+ *        set lives in the OUTER row block (`total`), and SECOND when both of its
+ *        sets live inside the inner loop (`h`);
+ *   (R2) local-alloc seats the block-local load in $v0 and global.c seats the
+ *        escaped carrier in $v1 (measured on every body this session).
+ * The target needs the FIRST load in $v0, i.e. the block-local one first, i.e.
+ * an escaped carrier whose other set is inside the inner loop.  `total`'s only
+ * other set is its real job (the row area, read by the `if (total > 0)` guard),
+ * which is necessarily in the outer block.  Carrying the OTHER operand instead
+ * (`while (j < rect[3] * (total = rect[2]));`,
+ * tmp/grind/func_8003DE14/s36b/waveD/d8_c07_swapmul.c) is the exact complement:
+ * it scores 2 with the ORDER and the `mult $v0,$v1` correct and only the two lh
+ * destination registers swapped.
  *
- * BORROWS DO NOT WORK (s36 wave x, all measured this session): routing the
- * mask through an existing dead local - gp (22), rp (24), sum (43) - or
- * writing it back into g_src itself, `g_src = g_src & 0x3E0;` (17) or
- * `g_src &= 0x3E0;` (17), all fail.  The carrier must be a FRESH pseudo, which
- * is precisely prong (4) of the named-intermediate entry.
- *
- * FAKE CONSTRUCTS PRESENT (3, all inside frozen SOTN-sanctioned families; see
- * memory/grind/func_8003DE14/self_vet.md for the per-construct vet):
- *   (1) `gm` - named intermediate (this session, 17 pts).
- *
- * THE OR CHAIN IS ORDINARY C, NOT AN ENUMERATED ORDER.  The kept spelling is
- * plain left-to-right `sign | red | green | blue` with NO parentheses - the
- * natural channel order (the same order as the function's own r/g/b locals and
- * color_info[0..2]), and the order the target's own bytes were emitted in
- * (`andi $v0,$t0,0x8000` / `or $v0,$v0,$a1`(red) / `or $v0,$v0,$v1`(green) /
- * `andi $v1,$a0,0x7C00` / `or $v0,$v0,$v1`, asm/funcs/func_8003DE14.s:134-139).
- * [[or-tree-shape-shift]] "What IS allowed" lets a worker freely choose any
- * natural ordering; the parenthesised `(((v|R)|G)|B)` form the enumerator
- * emitted was verified byte-identical to the paren-free form, so no
- * non-natural grouping is committed and the 2026-08-20 carve-out is not needed.
- *
- * OPEN RULING QUESTION (why this session did NOT return candidate-ready).
- * The inherited `h` local (s32) is a FRESH local used as a staging carrier at
- * TWO sites - `h = target_color; *dst++ = h;` in the fast arm and
- * `while (j < rect[2] * (h = rect[3]))` in the latch - with BOTH staged values
- * real and immediately consumed (the latch assignment's value is the
- * multiplicand).  Zero dead code.  It is excluded from
- * [[staged-value-reused-variable]] by bound 2 (the carrier must be an EXISTING
- * variable; inventing one is not that family) and from the named-intermediate
- * entry by its multi-WRITE property (no-new-park-categories.md:204 ff).  It is
- * load-bearing: every alternative measured this session scores 2-43 (borrowing
- * the genuinely-dead existing `total` = 2; splitting h into two once-written
- * locals = 3; dropping either reference = 3; nine ordinary latch-expression
- * spellings = 3-5; hoisting sum/rp/gp/px/g_src/r_src to carry the latch =
- * 3-100).  The session therefore returns `ruling-request`; the body below is
- * the exact form to submit if the ruling allows `h`.
- *   (2) `h`  - staged value through a single local (s32, 3 pts; both of its
- *       references are load-bearing: dropping either measures 3/173).
+ * FAKE CONSTRUCTS PRESENT (3, all inside frozen SOTN-sanctioned families):
+ *   (1) `total` staged at the latch - [[staged-value-reused-variable]], granted
+ *       for this exact site by the Judge ruling of 2026-09-11 04:48.
+ *   (2) `gm` - named intermediate for the green mask (s36, worth 15 pts: the
+ *       same body with the mask inline scores 17).
  *   (3) the s21 `((s32)dst_buf + j) - j` chain extender (7 pts; plain
- *       `(s32)dst_buf` measures 7/173).
+ *       `(s32)dst_buf` measures 7/173 worse).
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -115,19 +86,6 @@ void func_8003DE14(s16 *rect, s32 count) {
             s32 j = 0;
             if (total > 0) {
                 s32 complement = blend_base - factor;
-                /* FAKE: `h` is a single staging local used twice - it carries the
-                 * fast arm's target_color into its store, and it carries the latch
-                 * bound's rect[3] halfword.  Having BOTH references inside the inner
-                 * loop (two basic blocks at loop depth 3) is what makes the latch's
-                 * rect[3] pseudo non-block-local; mechanism: local-alloc.c:470-476
-                 * skips any pseudo with reg_basic_block < 0, so local-alloc seats only
-                 * the block-local rect[2] load ($v0, target) and global.c seats h
-                 * afterwards ($v1, target), while the first scheduling pass emits the
-                 * escaped pseudo's load SECOND - the target's `lh $v0,4` / `lh $v1,6`
-                 * order; lever-exhaustion: memory/grind/func_8003DE14/hypotheses.md
-                 * s24-s31 (operand order, birth order, epilogue linkage, for-loop and
-                 * pointer-alias waves) + s32 waves a-h. */
-                s32 h;
                 do {
                     if (i == count - 1) {
                         u16 pixel = *src;
@@ -137,8 +95,7 @@ void func_8003DE14(s16 *rect, s32 count) {
                             dst++;
                             goto loop_check;
                         }
-                        h = target_color;
-                        *dst++ = h;
+                        *dst++ = target_color;
                         src++;
                         goto loop_check;
                     }
@@ -192,7 +149,24 @@ void func_8003DE14(s16 *rect, s32 count) {
                     dst++;
                 loop_check:
                     j++;
-                } while (j < rect[2] * (h = rect[3]));
+                /* FAKE: the inner loop's bound re-reads rect[3] each iteration and the
+                 * read is staged through the EXISTING local `total` instead of a compiler
+                 * temp, so that the bound's height pseudo escapes its basic block.
+                 * Per-site liveness (the one site, the latch): `total` last held the row
+                 * area rect[2]*rect[3], whose only reader is the `if (total > 0)` guard
+                 * ABOVE this loop; at the latch that value is dead, and `total` is
+                 * re-assigned from rect[2]*rect[3] at the top of every outer row before
+                 * anything reads it again, so no live value is clobbered and the staged
+                 * value (rect[3]) is consumed immediately by the multiply that is the
+                 * loop bound.  Zero dead code.  Mechanism: local-alloc.c:470-476 skips
+                 * any pseudo with reg_basic_block < 0, so local-alloc seats only the
+                 * block-local rect[2] load ($v0, target) and global.c seats the escaped
+                 * height pseudo afterwards ($v1, target).  Lever-exhaustion:
+                 * memory/grind/func_8003DE14/hypotheses.md s24-s32 (operand order, birth
+                 * order, epilogue linkage, for-loop and pointer-alias waves) + s36 waves
+                 * y/z/q/L/m/n + this session's waves A-E (48 latch/tail/declaration
+                 * spellings, all >= 2). */
+                } while (j < rect[2] * (total = rect[3]));
             }
 
             {
