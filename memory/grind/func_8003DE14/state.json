@@ -1,7 +1,7 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -81,23 +81,29 @@
    "floor": 26,
    "modality": "structural",
    "headline": "Floor 28 -> 26: reusing each channel's X_src local to hold that channel's X*factor product forces the target's one-register-per-channel blend allocation; and the blend arm's instruction ORDER was alre"
+  },
+  {
+   "session": 14,
+   "floor": 26,
+   "modality": "structural",
+   "headline": "Floor holds at 26; the entire blend + trip-test residual is now pinned to one global.c allocation-order fact (px pri 32727 vs g_src pri 30000) with the exact flip arithmetic derived, and five structur"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The entire 19-insn blend residual and the 3-insn trip-test residual are one problem: px (pseudo 122) must be seated on $a0 instead of $v1, and that requires a CONFLICTING allocno to hold $v1 with a higher priority than px's 32727.",
-   "mechanism": "global.c:635-653 orders allocnos by nrefs*K/livelen and hands each the lowest free hard register. px is seated 3rd and simply takes $v1. Sinking px in the order does not help unless the allocno that overtakes it conflicts with px; pseudo 101 (the current other $v1 holder) does not. In the target, $v1 is held across px's range by the g-channel value (target rows 100/104), which in our build lands on $a0.",
-   "next_probe": "Re-dump BB2_ALLOC_DEBUG on the C2 chassis and identify which pseudo is the g-channel carrier and whether it is a local-alloc quantity or a global allocno. If it is LOCAL in our build, the lever is to make the g-channel value span a basic-block boundary so local-alloc seats it (local alloc runs before global alloc and its choices are hard conflicts for px); candidate spellings: compute g_src only in the non-zero arm, or duplicate the g-channel read into both arms (.claude/rules/split-read-defeats-hoist.md, .claude/rules/duplicated-statement-into-arms.md). Gate every form on build_insns == 173 and on rows 94/95 staying byte-exact."
+   "hypothesis": "px is seated on the target's $a0 exactly when g_src's global.c priority exceeds px's 32727, or px's drops below g_src's 30000; with the incumbent's nrefs of 12 each that means g_src at live_length <= 10, or px at live_length >= 13.",
+   "mechanism": "global.c:635-653 orders allocnos by nrefs*30000/live_length and hands each the lowest free non-conflicting hard register; $v0 is blocked for px by p118 (count - 1, pri 90000). If g_src is allocated first it takes $v1 and px falls to $a0; if px falls below 30000 it lands at 27692, ties r_src, wins the tie on ascending pseudo number (122 < 123, global.c:652-653), and the order becomes g_src, px, r_src -> $v1, $a0, $a1, which is the target exactly.",
+   "next_probe": "Attack live_length rather than reference count - s14 proved reference count is immovable here (Q1's extra reference is refolded by combine; s13's D2/D3 are worse). g_src's range runs from its andi (row 100) to the g sum (row 114) and needs to lose 2. Read tmp/grind/func_8003DE14/s14/d_aac/code6cac_c2.sched and .lreg for the exact LUIDs of g_src's birth and death insns, then ask tools/sched_solver (order- and clock-exact for this pass) whether a two-slot lift of the g sum is reachable WITHOUT moving the r sum, before spelling any more C."
   },
   {
-   "hypothesis": "The head residual (4 insns) is reachable if j and complement can be made to TIE on allocation priority, because global.c:652-653 breaks an exact tie on ascending allocno number and j is the lower pseudo - it would take $t4 even with the earlier set, freeing j = 0 to be reorg's fall-through slot fill.",
-   "mechanism": "With j = 0 above complement's set, livelen(j) = livelen(complement) + 1 (base dump shows 54 vs 55 with the sets in the other order), so complement wins on priority and takes $t4. Equal nrefs is already the case (11 each). A one-unit change in either nrefs or livelen flips or ties the race.",
-   "next_probe": "On the E1 chassis (j = 0 first, score 30) dump BB2_ALLOC_DEBUG and read the exact nrefs/livelen/pri pair for the j and complement pseudos, so the required delta is known rather than guessed. Then look for an ordinary-C spelling that changes reg_n_refs(complement) or reg_n_refs(j) by one without changing the emitted insns."
+   "hypothesis": "The residual rows that would survive the px/g_src swap - the three channel sums, the b source register and the trip test - are all one local-alloc coalescing decision: our build merges a dying source quantity with its destination quantity where the target keeps two quantities.",
+   "mechanism": "local-alloc (local-alloc.c combine_regs / qty preference, instrumented at local-alloc.c:1437, 1518, 2215) ties a destination quantity to a source quantity that dies in the same insn, which is why our sums overwrite an operand ($a1, $a0, $v1) instead of landing in the scratch $v0 the target uses at rows 111/114/118. Local-alloc runs before global-alloc and its choices are hard conflicts, so this also feeds back into the px seat.",
+   "next_probe": "Run BB2_QTY_DEBUG=1 and BB2_SUGG_DEBUG=1 on the candidate chassis (tmp/grind/func_8003DE14/s14/dump.sh takes ENVVAR=1 arguments) and read which quantities local-alloc combines in the blend arm and what suggestion drives each. Do NOT spell a shared sum variable - s14 measured that at 53. The question the dump must answer is whether the coalescing is suggestion-driven (and therefore steerable by which value dies where) or unconditional."
   },
   {
-   "hypothesis": "The trip test (target 127-130) is a free indicator of the px seat and should not be probed on its own.",
-   "mechanism": "s12 measured three source spellings of 'rect[2] * rect[3]' (T1/T2/T3) with no movement, and this session's twenty-plus forms all left rows 127/128/130 unchanged at every score from 26 to 59 - the two short-lived load pseudos are named the other way round in every single one. That invariance under source shape is the signature of a downstream consequence of the register pool state left by the blend arm.",
-   "next_probe": "Do not sweep it. Re-check rows 127/128/130 after ANY blend-arm change as a zero-cost indicator that the px seat has moved."
+   "hypothesis": "The 4-insn head residual (the blez delay slot, target row 70 'move t4,zero' vs our 'addiu a2,sp,1040') is still open and is independent of the blend arm.",
+   "mechanism": "reorg.c fills the guard branch's delay slot with the closest movable preceding insn; the spellings that hand it j = 0 are exactly the ones that lose the j/complement $t4/$t5 seat (measured in s12 and again in s13 E1-E6).",
+   "next_probe": "Unchanged from s13: on the E1 chassis (j = 0 first, score 30) dump BB2_ALLOC_DEBUG and read the exact nrefs/livelen pair for the j and complement pseudos so the required delta is known rather than guessed, then look for an ordinary-C spelling that changes reg_n_refs of one of them by one without changing the emitted insns."
   }
  ],
  "judge_constraints": [],
@@ -470,6 +476,54 @@
    "measured_on": "HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/E1.c..E6.c",
    "predicate_cite": "",
    "result": "E1 = 30, E2 = 28, E3 = 32, E4 = 26, E5 = 26, E6 = 26 - all at 173 insns. E4/E5/E6 are byte-identical to C2, so moving or"
+  },
+  {
+   "session": 14,
+   "statement": "Some combination of the three per-channel product/reuse spellings beats the incumbent shape.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/G_AAA.c .. G_CCC.c",
+   "predicate_cite": "",
+   "result": "Minimum is 26, reached only by AAA (the incumbent) and AAC; the other 25 combinations score 27 to 44 at 173 insns. AAC i"
+  },
+  {
+   "session": 14,
+   "statement": "Splitting a channel's source variable in two makes the short-lived source a competing global allocno that can take $v1 ahead of px.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s14/G_ACA.c",
+   "predicate_cite": "",
+   "result": "ACA scores 38 and its allocation table contains no short-lived g_src allocno at all: born and dead inside one basic bloc"
+  },
+  {
+   "session": 14,
+   "statement": "Reordering the three channel blocks in the source shortens g_src's live range enough to reorder it against px.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/O_rgb.c .. O_bgr.c",
+   "predicate_cite": "",
+   "result": "r,g,b (incumbent) 26; g,r,b 33; r,b,g 34; b,r,g 34; g,b,r 40; b,g,r 40. All at 173 insns. The incumbent ordering is uniq"
+  },
+  {
+   "session": 14,
+   "statement": "Moving the src++ cursor bump inside the blend arm shifts LUIDs enough to change a channel pseudo's live length by one or two.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/P_s0.c .. P_s5.c",
+   "predicate_cite": "",
+   "result": "All six score 26 with identical bytes. sched1 normalises the cursor bump to the same slot (row 110) regardless of where "
+  },
+  {
+   "session": 14,
+   "statement": "The target's three channel sums all landing in $v0 (rows 111, 114, 118) come from one reused C variable carrying the three sums in turn.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/N1.c N3.c N4.c",
+   "predicate_cite": "",
+   "result": "N1 = 53, N3 = 45, N4 = 46, all at 173 insns, against the incumbent 26. A single long-lived sum pseudo conflicts with the"
+  },
+  {
+   "session": 14,
+   "statement": "Deriving the b channel source from the g channel's shifted intermediate removes one px reference and lowers px's priority below g_src's.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s14/Q1.c",
+   "predicate_cite": "",
+   "result": "combine refolds the shift chain back to a single srl 7 from px, the object is byte-identical to the incumbent at 26, and"
   }
  ],
  "ladder_skip": 0,

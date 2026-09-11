@@ -65,6 +65,25 @@
  *   E6  - `total` deleted, the guard written `if (rect[2] * rect[3] > 0)`.
  *   F4  - g_src / b_src declared lazily at their first use.
  *
+ * S14 (structural) re-measured this body at 26 / 173 insns on HEAD 2026-09-10
+ * and left it unchanged as the best known form.  What s14 added is the exact
+ * arithmetic of the remaining seat (BB2_ALLOC_DEBUG, s14/d_aac/stderr.log):
+ * px = pseudo 122, nrefs 12 / livelen 11 / pri 32727, allocated 3rd, takes $v1
+ * because p118 (`count - 1`, pri 90000) conflicts with it and already holds
+ * $v0.  g_src = pseudo 126 at pri 30000 follows and takes $a0.  The target has
+ * them the other way round, and r_src (pseudo 123, $a1) is already correct.
+ * To flip: g_src needs livelen <= 10 (pri 36000) or nrefs >= 14 (35000), or px
+ * needs livelen >= 13 (pri 27692 - which ties r_src, and global.c:652-653 gives
+ * the tie to the lower pseudo number 122, producing exactly the target order
+ * g_src, px, r_src).
+ *
+ * S14 measured dead: the whole 3x3 per-channel product/reuse lattice (27 forms,
+ * min 26 at this shape and at AAC), all six channel-block orderings, all six
+ * `src++` placements (byte-identical - sched1 normalises it), a single shared
+ * `sum` local for the three channel totals (53), and deriving the b source from
+ * the g source's shift to cut a px reference (combine refolds it; identical
+ * bytes).  Forms in tmp/grind/func_8003DE14/s14/.
+ *
  * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 26, build_insns 173,
  * target_insns 173.
  */

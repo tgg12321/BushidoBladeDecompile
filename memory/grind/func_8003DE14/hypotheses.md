@@ -1275,3 +1275,132 @@ HEAD 2026-09-10, C2 chassis, no FAKE constructs present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-10, C2 chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s13/E1.c..E6.c
+
+## s14 (structural) — floor 26, unchanged; the px seat is now mechanically located
+
+**The px/g_src swap is the WHOLE blend residual, and it is a global.c ordering
+question with an exact arithmetic.** ALLOCDBG on the C2 (candidate) chassis,
+tmp/grind/func_8003DE14/s14/d_aac/stderr.log:
+
+    ord=0 pseudo=118 hardreg=2  ($v0) nrefs=9  livelen=3  pri=90000   <- count-1
+    ord=1 pseudo=160 hardreg=65 (LO)
+    ord=2 pseudo=122 hardreg=3  ($v1) nrefs=12 livelen=11 pri=32727   <- px
+    ord=3 pseudo=109 hardreg=6  ($a2)                                  <- dst
+    ord=4 pseudo=126 hardreg=4  ($a0) nrefs=12 livelen=12 pri=30000   <- g_src
+    ord=5 pseudo=123 hardreg=5  ($a1) nrefs=12 livelen=13 pri=27692   <- r_src
+
+pri = nrefs*30000/livelen (global.c:635-653); nrefs is the depth-3-weighted
+reg_n_refs, so ONE source reference is worth 3. px is allocated 3rd, finds $v0
+already taken by a CONFLICTING allocno (p118, `count - 1`), and takes $v1.
+r_src already sits on the target's $a1. The target's seats are px=$a0,
+g_src=$v1, r_src=$a1 — i.e. exactly "g_src allocated before px".
+
+The arithmetic for that flip is now exact: g_src needs pri > 32727, i.e.
+livelen <= 10 at nrefs 12 (36000) or nrefs >= 14 at livelen 12 (35000); or px
+needs pri < 30000, i.e. livelen >= 13 at nrefs 12 (27692, and the resulting tie
+with r_src is won by px because allocno order breaks ties on ascending pseudo
+number, 122 < 123 — which is the target's order g_src, px, r_src).
+
+**KILLED (instance) — the full 3x3 per-channel reuse lattice.** Each channel
+independently spelled A (named complement product + src var reused for the
+factor product = the C2 shape), B (src var self-multiplied by complement +
+named factor product) or C (both products named, no reuse); all 27 combinations
+measured. Minimum is 26 at AAA (the incumbent) and AAC; everything else is
+27-44. AAC is byte-DIFFERENT from AAA but scores the same, and it reproduces the
+target's b-channel REGISTER pattern (bp lands in b_src's register, the factor
+product lands elsewhere) — so the b channel's remaining rows are pure naming
+too. Forms tmp/grind/func_8003DE14/s14/G_*.c.
+
+**KILLED (instance) — splitting a channel's source variable does NOT make it a
+competing global allocno.** ACA (g spelled C) scores 38 and its ALLOCDBG
+(s14/d_aca/stderr.log) shows NO short-lived g_src allocno at all: born and dead
+inside one basic block, it becomes a local-alloc QUANTITY, and local-alloc seats
+it on $v0 (coalesced with the dying `srl` temp that feeds it) rather than on
+$v1. px is still ord=2 on $v1. The surviving global (p128, the g*factor product)
+takes $v0. So "make the g source short-lived" does not put a conflicting holder
+on $v1.
+
+**KILLED (instance) — all six channel-block orderings.** r,g,b (incumbent) = 26;
+r,b,g = 34; g,r,b = 33; g,b,r = 40; b,r,g = 34; b,g,r = 40. Forms s14/O_*.c.
+
+**KILLED (instance) — every placement of `src++` inside the blend arm.** Six
+placements (before the products, between each channel block, after all three,
+and inside the r block between its two mults) all score 26 with identical
+bytes: sched1 normalises the cursor bump, so it is not a LUID/live-length lever.
+Forms s14/P_s0.c..P_s5.c.
+
+**KILLED (instance) — one shared `sum` local for the three channel totals.**
+The target writes all three channel sums into $v0 (rows 111/114/118), which
+looks like one reused C variable; spelled that way it scores 53 (N1), 45 (N3,
+with the b channel split) and 46 (N4, r+g only). A single long-lived `sum`
+pseudo conflicts with the channel variables and re-prices the arm. The target's
+shared $v0 is therefore local-alloc reusing a dead register, NOT a shared C
+variable.
+
+**KILLED (instance) — deriving the b source from the g source's shift to drop a
+px reference.** `shifted = (u32)px >> 2; g_src = shifted & 0xF8;
+b_src = ((u32)shifted >> 5) & 0xF8;` (Q1) was meant to cut px from 4 source
+references (weighted 12) to 3 (weighted 9, pri 24545, which would sort px below
+g_src). combine refolds the shift chain back to `px >> 7`, the object is
+byte-identical to the incumbent at 26, and ALLOCDBG still prints px at
+nrefs=12 livelen=11 pri=32727 ord=2. Reference count cannot be lowered this way.
+
+## [s14] The remaining 19-insn blend residual plus the 3-insn trip-test residual are a single global.c allocation-order fact: px (pseudo 122, pri 32727) is allocated before g_src (pseudo 126, pri 30000), so px takes $v1 and g_src takes $a0, where the target has them the other way round.
+- mechanism: global.c:635-653 sorts allocnos by pri = weighted reg_n_refs * 30000 / live_length and hands each the lowest free hard register that does not conflict. $v0 is blocked for px by p118 (`count - 1`, pri 90000, allocated first), so px falls to $v1. Every other differing register in the blend arm and the trip test is downstream of that one seat: r_src already sits on the target's $a1, and a v1<->a0 rename of our stream makes rows 88, 89, 99, 100, 101, 104, 105, 116 and 122 byte-exact.
+- probe: BB2_ALLOC_DEBUG=1 dumps on the C2/candidate chassis (s14/d_aac), on the g-split chassis (s14/d_aca) and on the shift-chain chassis (s14/d_q1), read against the raw index-by-index object comparison (s14/sxs.py).
+- result: CONFIRMED. The three dumps agree on px = pseudo 122, nrefs 12, livelen 11, pri 32727, ord 2, hardreg 3 ($v1) across every spelling measured this session, including the ones that score 26, 38 and 45. The seat is invariant under all 27 per-channel reuse spellings, all 6 channel orderings, all 6 src++ placements and the shift-chain rewrite.
+- verdict: CONFIRMED
+
+## [s14] The remaining 19-insn blend residual and the 3-insn trip-test residual are a single global.c allocation-order fact: px (pseudo 122, pri 32727) is ordered before g_src (pseudo 126, pri 30000), so px takes $v1 and g_src takes $a0 where the target has them the other way round.
+- mechanism: global.c:635-653 sorts allocnos by pri = depth-weighted reg_n_refs * 30000 / live_length and hands each the lowest free non-conflicting hard register. $v0 is blocked for px by p118 (the `count - 1` value, pri 90000, allocated first and conflicting), so px falls to $v1. r_src (pseudo 123, pri 27692) already sits on the target's $a1, and a v1<->a0 rename of our stream makes target rows 88, 89, 99, 100, 101, 104, 105, 116 and 122 byte-exact.
+- probe: BB2_ALLOC_DEBUG=1 dumps of the instrumented cc1 (tools/gcc-2.7.2/cc1) on three different chassis - the candidate/C2 body, the g-split ACA form and the shift-chain Q1 form - read against a raw index-by-index object comparison (tmp/grind/func_8003DE14/s14/sxs.py).
+- result: All three dumps print px identically: pseudo 122, nrefs 12, livelen 11, pri 32727, ord 2, hardreg 3 ($v1). The seat is invariant across all 27 per-channel reuse spellings, all 6 channel-block orderings, all 6 src++ placements and the shift-chain rewrite, at scores ranging from 26 to 53. The flip arithmetic is now exact: g_src needs pri above 32727, i.e. live_length <= 10 at nrefs 12 (36000) or nrefs >= 14 at live_length 12 (35000); or px needs pri below 30000, i.e. live_length >= 13 at nrefs 12 (27692) - that value ties r_src and is won by px on ascending pseudo number (122 < 123, global.c:652-653), producing exactly the target order g_src, px, r_src -> $v1, $a0, $a1.
+- verdict: CONFIRMED
+
+## [s14] Some combination of the three per-channel product/reuse spellings beats the incumbent shape.
+- mechanism: Each channel can be spelled A (named complement product, src var reused for the factor product), B (src var self-multiplied by complement, named factor product) or C (both products named, no reuse). The target's b channel shows a different register pattern from its r and g channels, which suggested a mixed spelling.
+- probe: All 27 combinations generated by tmp/grind/func_8003DE14/s14/gen_all.py and measured one at a time with sandbox func_8003DE14 --disable all (forms s14/G_AAA.c .. G_CCC.c).
+- result: Minimum is 26, reached only by AAA (the incumbent) and AAC; the other 25 combinations score 27 to 44 at 173 insns. AAC is byte-different from AAA at the same score and reproduces the target's b-channel register pattern (the complement product lands in b_src's register, the factor product elsewhere), which confirms the b-channel rows are register naming rather than source shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float), C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/G_AAA.c .. G_CCC.c
+
+## [s14] Splitting a channel's source variable in two makes the short-lived source a competing global allocno that can take $v1 ahead of px.
+- mechanism: A source value that dies at its own multiply has a very short live length and therefore a very high global.c priority, so it would be allocated before px and would block $v1, pushing px to $a0.
+- probe: Form ACA (g channel spelled C, r and b left as A), scored with sandbox --disable all and dumped with BB2_ALLOC_DEBUG=1 (tmp/grind/func_8003DE14/s14/d_aca/stderr.log).
+- result: ACA scores 38 and its allocation table contains no short-lived g_src allocno at all: born and dead inside one basic block, it becomes a local-alloc quantity, and local-alloc coalesces it with the dying srl temp that feeds it, seating it on $v0. px is still ord=2 on $v1 with nrefs 12 / livelen 11 / pri 32727. The surviving global (the g*factor product, pseudo 128) takes $v0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s14/G_ACA.c
+
+## [s14] Reordering the three channel blocks in the source shortens g_src's live range enough to reorder it against px.
+- mechanism: g_src's live range runs from its andi to the g sum; moving the g block relative to the r and b blocks changes where the scheduler places its birth and death and therefore its live_length, the denominator of the global.c priority.
+- probe: All six permutations of the r/g/b channel blocks on the incumbent shape (tmp/grind/func_8003DE14/s14/O_rgb.c .. O_bgr.c), one sandbox --disable all each.
+- result: r,g,b (incumbent) 26; g,r,b 33; r,b,g 34; b,r,g 34; g,b,r 40; b,g,r 40. All at 173 insns. The incumbent ordering is uniquely optimal among the six.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/O_rgb.c .. O_bgr.c
+
+## [s14] Moving the src++ cursor bump inside the blend arm shifts LUIDs enough to change a channel pseudo's live length by one or two.
+- mechanism: live_length is counted over the scheduled insn chain, so putting the cursor bump at a different point in the arm would shift the births and deaths of the channel pseudos relative to each other and re-price them in global.c.
+- probe: Six placements measured (before the products, between each pair of channel blocks, after all three, and inside the r block between its two multiplies): tmp/grind/func_8003DE14/s14/P_s0.c .. P_s5.c.
+- result: All six score 26 with identical bytes. sched1 normalises the cursor bump to the same slot (row 110) regardless of where the source puts it, so it is not a live-length lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/P_s0.c .. P_s5.c
+
+## [s14] The target's three channel sums all landing in $v0 (rows 111, 114, 118) come from one reused C variable carrying the three sums in turn.
+- mechanism: GCC 2.7.2 has no SSA, so one non-address-taken local is one pseudo and therefore one hard register; a single sum local written three times would reproduce the target's single $v0, exactly as s13's per-channel variable reuse reproduced the target's $a1.
+- probe: N1 (shared sum for all three channels), N3 (shared sum with the b channel's products both named) and N4 (shared sum for r and g only): tmp/grind/func_8003DE14/s14/N1.c, N3.c, N4.c.
+- result: N1 = 53, N3 = 45, N4 = 46, all at 173 insns, against the incumbent 26. A single long-lived sum pseudo conflicts with the channel variables and re-prices the whole arm. The target's shared $v0 is local-alloc reusing a dead scratch register, not a shared C variable.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s14/N1.c N3.c N4.c
+
+## [s14] Deriving the b channel source from the g channel's shifted intermediate removes one px reference and lowers px's priority below g_src's.
+- mechanism: px's priority numerator is its depth-3-weighted reg_n_refs (four source references = 12). Cutting the px >> 7 to a shift of the already-computed px >> 2 would leave three references (weighted 9, pri 24545), sorting px below g_src (30000) and r_src (27692) and handing px $a0.
+- probe: Form Q1 (shifted = (u32)px >> 2; g_src = shifted & 0xF8; b_src = ((u32)shifted >> 5) & 0xF8), measured with sandbox --disable all and dumped with BB2_ALLOC_DEBUG=1 (tmp/grind/func_8003DE14/s14/d_q1/stderr.log).
+- result: combine refolds the shift chain back to a single srl 7 from px, the object is byte-identical to the incumbent at 26, and ALLOCDBG still prints px at nrefs 12 / livelen 11 / pri 32727 ord 2 hardreg 3. A new pseudo (128) appears for the named shift at pri 32727 and takes $v0 without conflicting with px. px's reference count cannot be reduced this way.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-10, C2/candidate chassis (26 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s14/Q1.c

@@ -1711,3 +1711,89 @@ played by the g-channel value (target rows 100/104 both write `$v1`).
 - [s13] The j/complement seat and the delay slot are provably in tension on this chassis: j needs its set BELOW complement's to win $t4 on live length (s12's mechanism), while the delay slot needs j = 0 to be the first insn of the fall-through thread, i.e. ABOVE complement's set. Six spellings measured; none satisfies both.
 
 - [s13] Every form measured this session held build_insns == 173 except D2 (px used for the 0x8000 alpha mask), which inflated to 174.
+
+## s14 (structural) — the px seat has an exact priority arithmetic
+
+Chassis re-measured at dispatch: the s13 candidate applied to src/code6cac_c2.c
+scores 26 at build_insns 173 / target_insns 173 on HEAD 2026-09-10. Floor
+unchanged this session.
+
+### The allocation table (tmp/grind/func_8003DE14/s14/d_aac/stderr.log)
+`BB2_ALLOC_DEBUG=1` on the candidate chassis prints, for func_8003DE14:
+
+| ord | pseudo | what it is | hardreg | nrefs | livelen | pri |
+|-----|--------|-----------|---------|-------|---------|-----|
+| 0 | 118 | `count - 1` | 2 ($v0) | 9 | 3 | 90000 |
+| 1 | 160 | LO (mult result) | 65 | 6 | 3 | 40000 |
+| 2 | 122 | **px** (zero-extended pixel) | 3 ($v1) | 12 | 11 | 32727 |
+| 3 | 109 | dst cursor | 6 ($a2) | 38 | 60 | 31666 |
+| 4 | 126 | **g_src** | 4 ($a0) | 12 | 12 | 30000 |
+| 5 | 123 | **r_src** | 5 ($a1) | 12 | 13 | 27692 |
+| 6 | 108 | src cursor | 7 ($a3) | 32 | 61 | 26229 |
+
+pri = weighted-reg_n_refs * 30000 / live_length (global.c:635-653). The weight
+is the loop depth (3 here), so one C-level reference is worth 3 nrefs. px has
+four source references (its set, `px == 0`, `px >> 2`, `px >> 7`) = 12.
+
+The target's seats are px = $a0, g_src = $v1, r_src = $a1. r_src is already
+right. So the entire blend residual is "g_src must be allocated before px".
+The two ways to get there, with the exact numbers:
+  * raise g_src above 32727 -> livelen <= 10 at nrefs 12 (36000), or nrefs >= 14
+    at livelen 12 (35000);
+  * drop px below 30000 -> livelen >= 13 at nrefs 12 (27692). That value ties
+    r_src, and global.c:652-653 breaks an exact tie on ascending allocno number
+    (122 < 123), so px still precedes r_src: the resulting order is g_src, px,
+    r_src -> $v1, $a0, $a1, which is exactly the target.
+$v0 is unavailable to px in every spelling because p118 (`count - 1`) conflicts
+with px and is allocated first at pri 90000.
+
+### What the rename would buy
+A raw v1<->a0 rename of our stream makes target rows 88, 89, 99, 100, 101, 104,
+105, 116 and 122 byte-exact (verified by hand against s14/sxs.py output). The
+rows that would still differ after the rename are the three channel sums
+(111/112, 114/115, 118/119), the b source register (106/107/108/117) and the
+trip test (127/128/130) — all of which are the same local-alloc phenomenon
+described below.
+
+### Local-alloc coalescing is the second-order difference
+Our build systematically coalesces a dying source register with its
+destination where the target does not:
+  * target `srl v0,a0,0x2` / `andi v1,v0,0xf8` vs ours `srl v0,v1,0x2` /
+    `andi v0,v0,0xf8` (form ACA);
+  * target `addu v0,t2,a1` / `sra a1,v0,0xf` vs ours `addu a1,t2,a1` /
+    `sra a1,a1,0xf`;
+  * likewise at the g and b sums.
+In the target the sums all land in $v0 and are then shifted into the channel
+register; in ours they overwrite an operand. Spelling that as a shared C
+variable is measured wrong (N1 = 53), so it is a local-alloc quantity decision,
+not a source-level one.
+
+### Structural axes measured dead this session
+* the full 3x3 per-channel product/reuse lattice (27 forms, s14/G_*.c): min 26
+  at AAA (incumbent) and AAC; AAC reproduces the target's b-channel register
+  PATTERN and still scores 26;
+* all six channel-block orderings (s14/O_*.c): 26 / 33 / 34 / 34 / 40 / 40;
+* all six `src++` placements inside the blend arm (s14/P_s*.c): all 26,
+  byte-identical — sched1 normalises the cursor bump;
+* one shared `sum` local for the three channel totals (s14/N1,N3,N4): 53/45/46;
+* deriving the b source from the g source's shift to cut a px reference
+  (s14/Q1.c): combine refolds it, byte-identical at 26, px unchanged at
+  nrefs 12 / livelen 11 / pri 32727.
+
+- [s14] Chassis re-measured at dispatch: the s13 candidate applied to src/code6cac_c2.c scores 26 at build_insns 173 / target_insns 173 on HEAD 2026-09-10. The floor did not move this session.
+
+- [s14] global.c priority is pri = depth-weighted reg_n_refs * 30000 / live_length; at loop depth 3 one C-level reference is worth 3 nrefs. Verified against six allocnos in the dump (e.g. p118: nrefs 9 / livelen 3 -> 90000).
+
+- [s14] The candidate chassis allocation order is p118 ($v0, count-1, pri 90000), the LO pseudo, px = p122 ($v1, 32727), dst = p109 ($a2), g_src = p126 ($a0, 30000), r_src = p123 ($a1, 27692), src = p108 ($a3).
+
+- [s14] px cannot take $v0 in any spelling measured this session: p118 (count - 1) conflicts with px and is allocated first at pri 90000.
+
+- [s14] r_src is ALREADY on the target's $a1 in the incumbent; only px and g_src are swapped relative to the target.
+
+- [s14] A v1<->a0 rename of our stream would make target rows 88, 89, 99, 100, 101, 104, 105, 116 and 122 byte-exact; the rows that would still differ are the three channel sums (111/112, 114/115, 118/119), the b source register (106/107/108/117) and the trip test (127/128/130).
+
+- [s14] Our local-alloc systematically coalesces a dying source register with its destination where the target keeps them apart: target 'srl v0,a0,0x2 / andi v1,v0,0xf8' vs our 'srl v0,v1,0x2 / andi v0,v0,0xf8' (form ACA); target 'addu v0,t2,a1 / sra a1,v0,0xf' vs our 'addu a1,t2,a1 / sra a1,a1,0xf'. That is the second-order difference behind the sum rows.
+
+- [s14] Form AAC (b channel with both products named) scores 26 like the incumbent but is byte-different, and it reproduces the target's b-channel register pattern, so the b-channel rows are naming, not shape.
+
+- [s14] sched1 normalises the src++ cursor bump: six different source placements produce byte-identical objects.
