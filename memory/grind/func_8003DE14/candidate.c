@@ -106,6 +106,33 @@
  *   hoists "not desirable" in our build too).  The residual is therefore NOT in
  *   this arm's spelling - look at block structure / declaration scope / the
  *   allocator question in hypotheses.md's s26 frontier.
+
+ * [s26 SYNTHESIS - the residual is a combine_regs CHAINING difference]
+ *   Chassis re-measured today: this body is 12 / 173 build / 173 target.
+ *   (1) KILL RE-AUDIT of the two F1 extenders, re-measured on this chassis:
+ *       both present 12 | j removed 19 | g_src removed 40 | neither 38.  Both
+ *       are still load-bearing, the ordinary-C floor of this chassis is 38, and
+ *       the two INTERACT with opposite sign (removing only the g_src extender is
+ *       worse than removing both), so never quote a single-lever delta again.
+ *   (2) s24 frontier item 1 is ANSWERED: the sum-to-operand tie is
+ *       local-alloc's combine_regs (local-alloc.c:1295 -> :1784) merging pseudos
+ *       into ONE quantity, not find_free_reg scan order.  Block 10 has 21
+ *       pseudos, 16 local-alloc-eligible, but only 7 real quantities; qty18
+ *       prints refs=24 while its reg1=152 has only 6 refs - a four-pseudo merge.
+ *   (3) local-alloc.c:470-476 is the gate: NONE of the arm's six products is a
+ *       local quantity (the three complement products are "pref LO_REG" =
+ *       CLASS_LIKELY_SPILLED_P; the three *factor products live in reused C
+ *       variables that "die in 2 places").  Every local quantity in block 10 is
+ *       a DERIVED value, and the three wrong seats ($v1/$a0/$a1) are exactly the
+ *       three MULTI-pseudo merged quantities qty16/qty17/qty15.  Short
+ *       single-pseudo quantities (qty0/5/10) ALREADY get $v0.
+ *   (4) Two more spelling axes swept out at 12: the output-word or-chain (11
+ *       bodies, min 12, only a named `hi = pixel & 0x8000` ties; associativity
+ *       changes cost up to +33) and the channel-RESULT carriers (8 bodies, min
+ *       12, every reuse costs +4 to +25) - the latter was the direct C attempt at
+ *       the reg_n_deaths!=1 route and it does not pay here.
+ *   => The lever for s27 is BLOCK STRUCTURE (make a sum live across a block
+ *      boundary), not spelling.  See hypotheses.md's s27 frontier.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];

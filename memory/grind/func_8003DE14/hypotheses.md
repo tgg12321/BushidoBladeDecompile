@@ -2408,3 +2408,113 @@ use) 12 (tie), `u5` (blue sum inlined, `sum` dropped) 23. KILLED, instance.
 - kill_scope: class
 - measured_on: HEAD 2026-09-11; v0119 (= p2) body applied to src, canonical cc1 -da dump
 - predicate_cite: tools/gcc-2.7.2/loop.c:1977
+
+## [s26] KILL RE-AUDIT: the two s21 F1 chain extenders are still load-bearing on the p2 chassis as measured TODAY, and their prices are not the ones s22/s24 recorded.
+- mechanism: both extenders are F1-family combine-foldable chain extenders that lift `reg_n_refs` on `g_src` and on `j`; s24 measured them on the p2 chassis and recorded 23/21/28, but the chassis has been re-dumped since and an extender's price is a function of the whole arm's allocation, so it must be re-measured before any conclusion rests on it.
+- probe: four complete bodies (both extenders / j removed / g_src removed / neither) in tmp/grind/func_8003DE14/s26/ab/, scored in one `tools/sweep_variants.py` call on HEAD 2026-09-11.
+- result: 12 (both) / 19 (no j) / 40 (no g_src) / 38 (neither); all four build 173 insns. Both extenders are confirmed load-bearing and the ordinary-C floor of this chassis is 38. NEW and important: the two interact non-additively and with opposite sign - removing only the g_src extender (40) is worse than removing both (38), so the j extender is worth -7 with the g_src extender present and +2 without it. Single-lever ablation deltas on this body are meaningless; use the 2x2.
+- verdict: CONFIRMED
+
+## [s26] The sum-to-operand register tie in the blend arm is local-alloc's combine_regs merging several pseudos into ONE quantity, not find_free_reg handing two separate quantities the same hard register by scan order (s24 frontier item 1).
+- mechanism: block_alloc (tools/gcc-2.7.2/local-alloc.c:1295) scans an insn's operands and calls combine_regs(operand, dest) for the first one that succeeds, breaking on the first win; combine_regs (:1784) merges the two pseudos' quantities so they are guaranteed the same hard register. The alternative explanation was that each value keeps its own quantity and merely gets the same register from find_free_reg's first fit.
+- probe: tmp/grind/func_8003DE14/s26/alloc.sh (the s24 allocator script with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 BB2_ALLOC_DEBUG=1) on the p2 body -> tmp/grind/func_8003DE14/s26/alloc.txt; cross-read against a freshly regenerated tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg for the SAME body.
+- result: block 10 has 21 pseudos of which 16 are local-alloc-eligible, but block_alloc ends with only 7 real quantities (12 of the 19 printed are reg1=-1 HI/LO ranges). The merge is explicit in the counts: qty18 prints reg1=152 refs=24 while "Register 152 used 6 times" - one quantity carrying four 6-ref pseudos; qty16 refs=24, qty17 refs=18, qty15 refs=18 are the same shape. Same quantity, therefore combine_regs. s24's frontier item 1 is closed.
+- verdict: CONFIRMED
+
+## [s26] None of the blend arm's six products is a local-alloc quantity: the three complement products are excluded by CLASS_LIKELY_SPILLED_P(LO_REG) and the three *factor products by reg_n_deaths != 1, so every local quantity in block 10 is a DERIVED value (sum / shift / mask / or-chain) and the wrong seats are multi-pseudo combine chains, not mispriced allocnos.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:470-476 sets reg_qty[i] = -2 (eligible) only if reg_basic_block[i] >= 0 AND reg_n_deaths[i] == 1 AND (reg_alternate_class == NO_REGS OR !CLASS_LIKELY_SPILLED_P(reg_preferred_class)); otherwise -1. combine_regs:1825 additionally rejects any usedreg whose reg_qty is < 0.
+- probe: the .lreg header lines for this exact body, cross-read with the QTYDBG table.
+- result: registers 129/130/138 print "pref LO_REG, else GR_REGS" (the three complement products) and registers 123/126 print "dies in 2 places" (the reused C variables carrying the *factor products); px is not block-local at all. All six fail the gate. The seven real quantities and their priorities (pri = floor_log2(refs)*refs*size/(death-birth)*10000) are ord0 qty18 refs24 life10 pri96000 got $v0; ord1 qty16 refs24 life14 pri68571 got $v1; ord2/3/4 qty0/5/10 refs6 life2 pri60000 all got $v0; ord5 qty17 refs18 life12 pri60000 got $a0; ord6 qty15 refs18 life18 pri40000 got $a1. Short single-pseudo quantities ALREADY reach $v0; the three wrong seats are precisely the three MULTI-pseudo merged quantities.
+- verdict: CONFIRMED
+
+## [s26] The output-word or-chain's shape - associativity, operand order, a named blue mask or high bit, an accumulator local, an accumulator reusing sum or px, or folding the 0x7C00 mask into the shift statement - reaches the $v0 seats on the p2 chassis.
+- mechanism: qty18 (the tail chain, pri 96000) is the quantity that takes $v0 and holds it for the block's last five insns; the or-chain is what that quantity is made of, so its C shape is the direct handle on qty18's refs and life, which is what qty_compare_1 sorts on. Earlier sessions' w1/y3/z5 or-chain rejects were measured on long-superseded chassis and were therefore void.
+- probe: 11 complete bodies in tmp/grind/func_8003DE14/s26/orv/, scored in one tools/sweep_variants.py call.
+- result: minimum 12, reached only by the incumbent and by o9 (a named high bit, s32 hi = pixel & 0x8000, a tie at 12/173). Everything else is strictly worse, with a very wide spread: o1 named blue mask 13, o11 mask folded into the shift 13, o3 reversed operand order 25, o8 high bit last 31, o4 accumulator local 36, o6 sub-parenthesised (r_ch | g_ch) 36, o5 accumulator reusing sum 40, o7 blue mask into b_shift 41 (174 insns), o2 pairwise association 42, o10 accumulator reusing px 45 (174 insns). The incumbent's flat left-association is already optimal and the or-chain axis is exhausted on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s26] Giving a channel RESULT (r_ch, g_ch, b_shift) a reused carrier instead of a fresh local breaks the sum-shift-mask combine chain, because a carrier that dies twice fails the local-alloc.c:470-476 eligibility gate and cannot be a combine_regs usedreg.
+- mechanism: this is the direct C-level attempt at the reg_n_deaths != 1 route identified this session. s25's 1,496-body sweep enumerated carriers for the channel SOURCES, the complement PRODUCTS and the SUMS but always gave the three channel results fresh locals, so this axis was untouched.
+- probe: 8 complete bodies in tmp/grind/func_8003DE14/s26/cv/ (r_ch reusing r_src or rp; g_ch reusing gp or g_src with the g_src extender then collapsed; b_shift reusing px, gp or rp; and r_ch+b_shift together), scored in one tools/sweep_variants.py call.
+- result: minimum 12 = the incumbent; no variant improves. r_ch reusing r_src costs 4 (16); g_ch reusing g_src (which forces the g_src extender to collapse) 27; r_ch+b_shift together 29 at 174 insns; r_ch reusing rp 32; b_shift reusing gp 33; b_shift reusing px 35 at 174; b_shift reusing rp 36 at 174; g_ch reusing gp 37. Making a channel result die twice does break chains, but it also re-seats the arm's globals and pays more than it earns on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present
+
+### LIVE FRONTIER (for s27)
+
+1. **Break the sum -> shift -> mask combine CHAINS via block structure, not via
+   spelling.** The three wrong seats are qty16/qty17/qty15, each a 3-4 pseudo
+   merged quantity; in the target each of those chains is split (the sum is born
+   in $v0 and dies one insn later). Per local-alloc.c:470-476 a C form breaks the
+   chain only if the SUM pseudo fails the eligibility gate where block_alloc
+   reaches the shift - i.e. the sum is live across a basic-block boundary
+   (reg_basic_block < 0) or dies more than once. Spelling cannot produce either
+   (s25: 1,496 bodies; s26: 11 or-chain + 8 channel-result bodies). Block
+   structure can. Next probe: extend tmp/grind/func_8003DE14/s25/gen.py's
+   head/tail split outward one block so the generator can vary the
+   `if (i == count - 1)` split (early-out vs if/else vs hoisting the test out of
+   the inner loop), the `px == 0` early-out shape (goto vs if/else vs continue),
+   the `goto loop_check` exits, and the declaration scope of the arm's locals
+   relative to the two enclosing blocks; ~1.8 s per body, so a 1,000-body space
+   is ~30 minutes. Accept only forms at 173 build insns whose QTYDBG block-10
+   table prints MORE than 7 real quantities - that is the mechanical signature of
+   a broken chain, and it is checkable without reading the residual.
+
+2. **The 2x2 extender interaction is a lever in its own right.** a1 (g_src
+   extender removed, j extender kept) scores 40 while a3 (neither) scores 38: the
+   j extender is worth -7 in one context and +2 in the other. The two extenders
+   are competing for the same seats, which makes the PAIR - not either one alone
+   - the thing to re-derive. Since the final body must justify every F1 construct
+   under lever-exhaustion, a form that needs only ONE extender is worth strictly
+   more than the incumbent even at an equal score. Next probe: on the a2 chassis
+   (j extender removed, 19) re-run the s25 arm sweep's eight floor bodies - the
+   arm's optimum was derived with BOTH extenders present and may not be the
+   optimum with one.
+
+3. **qty18 is the quantity that owns $v0 (pri 96000, life 10, refs 24) and the
+   or-chain axis cannot move it.** What has never been tried is lengthening its
+   LIFE without adding refs, which is the only other term in qty_compare_1. A
+   form that separates the or-chain's first and last insn by one unrelated
+   statement drops pri below qty16's 68571 and hands $v0 to a different quantity.
+   Next probe: with the o9 tie body (named high bit hoisted to the top of the
+   arm, 12/173) as the chassis, walk the declaration of `hi` and the `*dst =`
+   store apart one statement at a time and read the QTYDBG pri column for qty18
+   on each - an ordinary-C statement-order move, and o9's existence proves the
+   hoist itself is byte-neutral.
+
+## [s26] The two s21 F1 chain extenders are still load-bearing on the p2 chassis as measured today, and their individual prices differ from the ones s22/s24 recorded: the pair interacts non-additively and with opposite sign.
+- mechanism: Both are F1-family combine-foldable chain extenders lifting reg_n_refs on g_src and on j. An extender's price is a function of the whole arm's allocation, so a price recorded on an earlier chassis is not transferable; the mandated kill re-audit re-measures the full 2x2 rather than a single-lever delta.
+- probe: Four complete bodies (both extenders / j removed / g_src removed / neither) generated into tmp/grind/func_8003DE14/s26/ab/ and scored in one tools/sweep_variants.py call on HEAD 2026-09-11.
+- result: 12 (both) / 19 (no j) / 40 (no g_src) / 38 (neither), all four at 173 build insns. Both extenders remain load-bearing. The honest ordinary-C floor of this chassis is 38, not the 28 the ledger carried. Removing ONLY the g_src extender (40) is worse than removing both (38): the j extender is worth -7 with the g_src extender present and +2 without it, so the two compete for the same seats and single-lever ablation deltas on this body are meaningless.
+- verdict: CONFIRMED
+
+## [s26] The sum-to-operand register tie in the blend arm is local-alloc's combine_regs merging several pseudos into one quantity, not find_free_reg handing two separate quantities the same hard register by scan order.
+- mechanism: block_alloc (tools/gcc-2.7.2/local-alloc.c:1295) scans an insn's operands and calls combine_regs(operand, dest) for the first one that succeeds, breaking on the first win; combine_regs (:1784) merges the two pseudos' quantities so they are guaranteed the same hard register. The competing explanation (s24 frontier item 1) was that each value keeps its own quantity and merely gets the same register by first fit.
+- probe: tmp/grind/func_8003DE14/s26/alloc.sh - the s24 allocator script re-run with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 BB2_ALLOC_DEBUG=1 on the p2 body (1,773 lines to tmp/grind/func_8003DE14/s26/alloc.txt) - cross-read against a freshly regenerated tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg for the SAME body.
+- result: Block 10 holds 21 pseudos, 16 of them local-alloc-eligible, yet block_alloc ends with only 7 real quantities (the other 12 of the 19 printed rows are reg1=-1 HI/LO hard-reg ranges). The merge is explicit in the reference counts: qty18 prints reg1=152 refs=24 while the .lreg line for register 152 reads 'used 6 times' - one quantity carrying four 6-ref pseudos. qty16 refs=24, qty17 refs=18 and qty15 refs=18 have the same shape. Same quantity, therefore combine_regs; s24's frontier item 1 is closed.
+- verdict: CONFIRMED
+
+## [s26] None of the blend arm's six products is a local-alloc quantity: the three complement products are excluded by CLASS_LIKELY_SPILLED_P(LO_REG) and the three *factor products by reg_n_deaths != 1, so every local quantity in block 10 is a derived value and the three wrong seats are exactly the three multi-pseudo merged quantities.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:470-476 sets reg_qty[i] = -2 (eligible) only when reg_basic_block[i] >= 0 AND reg_n_deaths[i] == 1 AND (reg_alternate_class == NO_REGS OR !CLASS_LIKELY_SPILLED_P(reg_preferred_class)); otherwise -1. combine_regs:1825 additionally rejects any usedreg whose reg_qty is below zero.
+- probe: The .lreg per-register header lines for this exact body, cross-read with the QTYDBG block-10 quantity table and qty_compare_1's priority formula (local-alloc.c:1660).
+- result: Registers 129/130/138 print 'pref LO_REG, else GR_REGS' (the three complement products) and registers 123/126 print 'dies in 2 places' (the reused C variables carrying the *factor products); px is not block-local at all. All six fail the gate. The seven real quantities, in allocation order: qty18 refs24 life10 pri96000 got $v0; qty16 refs24 life14 pri68571 got $v1; qty0/qty5/qty10 refs6 life2 pri60000 all got $v0; qty17 refs18 life12 pri60000 got $a0; qty15 refs18 life18 pri40000 got $a1. Short single-pseudo quantities already reach $v0 - so the residual is not a priority problem - and the three wrong seats are precisely the three multi-pseudo merged quantities.
+- verdict: CONFIRMED
+
+## [s26] The output-word or-chain's shape - associativity, operand order, a named blue mask or high bit, an accumulator local, an accumulator reusing sum or px, or folding the 0x7C00 mask into the shift statement - lowers the score below 12 on the p2 chassis.
+- mechanism: qty18 (the tail chain, pri 96000) is the quantity that takes $v0 and holds it across the block's last five insns, and the or-chain is what that quantity is made of, so its C shape is the direct handle on the refs and life terms qty_compare_1 sorts on. Earlier sessions' w1/y3/z5 or-chain rejects were measured on long-superseded chassis and were void.
+- probe: 11 complete bodies in tmp/grind/func_8003DE14/s26/orv/, scored in one tools/sweep_variants.py call against the 12/173 baseline.
+- result: Minimum 12, reached only by the incumbent and by o9 (a named high bit, s32 hi = pixel & 0x8000, tying at 12/173). Everything else is strictly worse over a wide spread: named blue mask 13, mask folded into the shift 13, reversed operand order 25, high bit last 31, accumulator local 36, sub-parenthesised (r_ch | g_ch) 36, accumulator reusing sum 40, blue mask into b_shift 41 at 174 insns, pairwise association 42, accumulator reusing px 45 at 174 insns. The incumbent's flat left-association is already optimal on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); p2 chassis 12/173, both s21 F1 chain extenders present
+
+## [s26] Giving a channel result (r_ch, g_ch, b_shift) a reused carrier instead of a fresh local breaks the sum-shift-mask combine chain and lowers the score, because a carrier that dies twice fails the local-alloc.c:470-476 eligibility gate and cannot be a combine_regs usedreg.
+- mechanism: This is the direct C-level attempt at the reg_n_deaths != 1 route identified this session. s25's 1,496-body sweep enumerated carriers for the channel sources, the complement products and the sums, but always gave the three channel results fresh locals, so this axis was untouched.
+- probe: 8 complete bodies in tmp/grind/func_8003DE14/s26/cv/ - r_ch reusing r_src or rp; g_ch reusing gp or g_src (with the g_src extender then collapsed); b_shift reusing px, gp or rp; and r_ch plus b_shift together - scored in one tools/sweep_variants.py call.
+- result: Minimum 12 = the incumbent; nothing improves. r_ch reusing r_src costs 4 (16); g_ch reusing g_src 27; r_ch and b_shift together 29 at 174 insns; r_ch reusing rp 32; b_shift reusing gp 33; b_shift reusing px 35 at 174; b_shift reusing rp 36 at 174; g_ch reusing gp 37. Making a channel result die twice does break chains, but it re-seats the arm's globals and pays more than it earns here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present

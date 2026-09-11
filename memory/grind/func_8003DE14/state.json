@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 25,
- "current_modality": "enumerate",
+ "session_count": 26,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -153,44 +153,34 @@
    "floor": 12,
    "modality": "enumerate",
    "headline": "Floor holds at 12: an exhaustive 1,496-body sweep of the blend arm's carrier/naming/order space and 20 spellings of the loop bound all bottom at 12 with the same 12 rows, and the .loop dump closes the"
+  },
+  {
+   "session": 26,
+   "floor": 12,
+   "modality": "synthesis",
+   "headline": "Floor holds at 12; synthesis answers s24's open pass question - the wrong seats are local-alloc combine_regs CHAINS (3-4 pseudos merged into one quantity), not mispriced allocnos - and sweeps out two "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is not in the blend arm's SPELLING but in its block STRUCTURE or the surrounding chassis - the `if (i == count - 1)` split, the `px == 0` early-out, the `goto loop_check` exits, the declaration scope of the arm's locals relative to the two enclosing blocks, and the outer per-row block's contents were all held fixed by this sweep.",
-   "mechanism": "1,496 exhaustive spellings of the arm and 20 of the latch all bottom at 12 with the identical 12 rows, so every axis the generator varies is exhausted; the only remaining C-level degrees of freedom in the region are structural.",
-   "next_probe": "Move the head/tail split in tmp/grind/func_8003DE14/s25/gen.py outward one block (head ends before the `if (i == count - 1)` test), add axes for the early-out shape and for declaration scope, regenerate and re-sweep with tools/sweep_variants.py; ~1.8 s per body, so a 1,000-body space is ~30 minutes."
+   "hypothesis": "The sum-shift-mask combine chains (qty16/qty17/qty15) are breakable only by BLOCK STRUCTURE, because the local-alloc.c:470-476 gate turns on reg_basic_block and reg_n_deaths - properties no spelling of the arm can change.",
+   "mechanism": "In the target each chain is split: the sum is born in $v0 and dies one insn later while the shift writes back into the operand's register. Our build merges 3-4 pseudos per chain. A C form breaks the chain only if the sum pseudo fails the eligibility gate where block_alloc reaches the shift, i.e. the sum is live across a basic-block boundary or dies more than once. s25 (1,496 bodies) and s26 (11 or-chain + 8 channel-result bodies) exhaust the spelling routes.",
+   "next_probe": "Extend tmp/grind/func_8003DE14/s25/gen.py's head/tail split outward one block so the generator can vary the `if (i == count - 1)` split (early-out vs if/else vs hoisting the test out of the inner loop), the `px == 0` early-out shape (goto vs if/else vs continue), the `goto loop_check` exits, and the declaration scope of the arm's locals relative to the two enclosing blocks. ~1.8 s per body, so ~1,000 bodies is ~30 minutes. Screen mechanically: accept only 173-build-insn forms whose QTYDBG block-10 table prints MORE than 7 real quantities - the signature of a broken chain, checkable without reading the residual."
   },
   {
-   "hypothesis": "The two FREE axes at the floor are the cheapest place to introduce an extra pseudo without paying, which is exactly what s24 frontier item 2 (change reg 138's nrefs/livelen without naming it) needs.",
-   "mechanism": "A fresh `bp` for the blue complement product and a fresh named red sum each hold the floor at 12/173, so an added ordinary-C use sited there does not trigger the collateral re-seating that killed every earlier nrefs/livelen attempt.",
-   "next_probe": "Starting from v1442 (both free axes taken), sweep ordinary-C shapes that consume the blue sum one statement later or give the blue channel an extra use of an already-live value, reading the BB2_ALLOC_DEBUG ord/pri row for pseudo 138 on each form that scores <= 12."
+   "hypothesis": "The two F1 extenders compete for the same seats, so the arm's spelling optimum derived with BOTH present is not necessarily the optimum with one - and a body needing only ONE extender is worth strictly more than the incumbent even at an equal score, because every F1 construct must be justified under lever-exhaustion.",
+   "mechanism": "a1 (g_src extender removed, j extender kept) scores 40 while a3 (neither) scores 38: the j extender's sign flips depending on the g_src extender's presence. That is only possible if both are steering the same allocnos.",
+   "next_probe": "On the a2 chassis (tmp/grind/func_8003DE14/s26/ab/a2_no_j.c, j extender removed, 19) re-run the eight floor bodies of s25's arm sweep plus the o9 named-high-bit tie, using tools/sweep_variants.py. If any of them beats 19 by more than the incumbent beats 12, the pair should be re-derived from the one-extender chassis instead."
   },
   {
-   "hypothesis": "s24 frontier item 1 is still un-run: the sum-to-operand tie is either local-alloc's combine_regs or merely find_free_reg's scan order, and the two imply different levers.",
-   "mechanism": "s24's c1 result (a carrier dying in two places did NOT untie the red add) argues against combine_regs (tools/gcc-2.7.2/local-alloc.c:1784); if the sum and its operand merely got the same hard register by first-fit, the lever is the quantity ORDER (qty_compare), not any death count, and every death-count lever tried in s23/s24 aimed at the wrong predicate.",
-   "next_probe": "Re-run tmp/grind/func_8003DE14/s24/alloc.sh with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 on the p2 body and map block-10 qty18/reg152, qty16/reg132, qty17/reg149, qty15/reg131 onto the red sum, the green sum, rp, gp and px by cross-reading tmp/grind/func_8003DE14/dumps/code6cac_c2.lreg. Same qty => combine_regs; different qty, same hard reg => scan order. Only then spell C."
+   "hypothesis": "qty18 owns $v0 (pri 96000, refs 24, life 10) and the only untried term in qty_compare_1 is its LIFE: separating the or-chain's first and last insn by one unrelated statement drops its priority below qty16's 68571 and hands $v0 to a different quantity.",
+   "mechanism": "pri = floor_log2(refs)*refs*size/(death-birth)*10000. The or-chain axis (s26) moved refs and failed; life has never been varied independently. o9 proves that hoisting the high-bit mask to its own statement at the top of the arm is byte-neutral (12/173), which gives a legal starting point with the chain's endpoints already separable.",
+   "next_probe": "With tmp/grind/func_8003DE14/s26/orv/o9_hi_named.c as the chassis, walk the declaration of `hi` and the `*dst =` store apart one ordinary-C statement at a time, re-running tmp/grind/func_8003DE14/s26/alloc.sh on each and reading the QTYDBG pri column for qty18 - stop at the first form where qty18 is no longer ord0."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 11,
-   "statement": "Hoisting complement out of the inner loop in the C source lowers neither its reference count nor its allocation rank on the a1 chassis, because loop.c had already hoisted the set into the preheader.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, a1-derived b1/b2 chassis (45 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s11/d_b1/",
-   "predicate_cite": "",
-   "result": "KILLED. Both score 45 (a1 is 29) at 173 insns. ALLOCDBG on b1 shows complement (pseudo 116) still at nrefs 11, with the "
-  },
-  {
-   "session": 11,
-   "statement": "Shortening j's live range by moving j = 0; inside if (total > 0) closes the j/complement priority gap to one insn but does not flip the seat, and costs two instructions of score elsewhere.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s11/d_C1/",
-   "predicate_cite": "",
-   "result": "KILLED for these spellings. C1 moves j's live_length 59 -> 55 against complement's 54, i.e. pri 6000 vs 6111 - one insn "
-  },
   {
    "session": 11,
    "statement": "Duplicating j++ into the three arms the way dst++ now is does not reproduce the dst result on the a1 chassis: cross-jump cannot re-merge the copies.",
@@ -654,6 +644,22 @@
    "measured_on": "HEAD 2026-09-11; v0119 (= p2) body applied to src, canonical cc1 -da dump",
    "predicate_cite": "tools/gcc-2.7.2/loop.c:1977",
    "result": "The inner loop is 'Loop from 140 to 317: 62 real insns' and contains NO 'moved to' line. loop.c names and rejects exactl"
+  },
+  {
+   "session": 26,
+   "statement": "The output-word or-chain's shape - associativity, operand order, a named blue mask or high bit, an accumulator local, an accumulator reusing sum or px, or folding the 0x7C00 mask into the shift statem",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); p2 chassis 12/173, both s21 F1 chain extenders present",
+   "predicate_cite": "",
+   "result": "Minimum 12, reached only by the incumbent and by o9 (a named high bit, s32 hi = pixel & 0x8000, tying at 12/173). Everyt"
+  },
+  {
+   "session": 26,
+   "statement": "Giving a channel result (r_ch, g_ch, b_shift) a reused carrier instead of a fresh local breaks the sum-shift-mask combine chain and lowers the score, because a carrier that dies twice fails the local-",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; p2 chassis 12/173, both s21 F1 chain extenders present",
+   "predicate_cite": "",
+   "result": "Minimum 12 = the incumbent; nothing improves. r_ch reusing r_src costs 4 (16); g_ch reusing g_src 27; r_ch and b_shift t"
   }
  ],
  "ladder_skip": 0,
