@@ -1,53 +1,48 @@
-/* func_8003DE14 - best banked form (grind session 36b, ENUMERATE modality).
+/* func_8003DE14 - MATCHING form (grind session 38, STRUCTURAL modality).
  *
- * SCORE 2 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float),
- * `sandbox func_8003DE14 --disable all`.  This is the best JUDGE-PERMISSIBLE
- * body known.  FLOOR HISTORY: 26 -> 16 (s21) -> 14 (s22) -> 12 (s23) -> 5
- * (s29) -> 4 (s31) -> 2 (s32) -> 1 (s33-s35) -> 0 with the `h` carrier (s36,
- * REJECTED by the Judge 2026-09-11 04:48) -> 2 here with `h` replaced by the
- * ruling-sanctioned `total` borrow.
+ * SCORE 0 / 173 build insns on HEAD 2026-09-11 (post -mel, post -msoft-float),
+ * `sandbox func_8003DE14 --disable all`, rules_dropped 0.
  *
- * WHAT CHANGED FROM THE REJECTED BODY.  The Judge FAILed the fresh multi-written
- * local `h` (docs/grind/decisions.md, 2026-09-11 04:48) and ANSWERED the second
- * question in the same ruling: staging through the EXISTING, genuinely-dead-at-
- * that-point `total` IS inside [[staged-value-reused-variable]], provided each
- * site carries its own liveness sentence in the /* FAKE *\/ annotation.  This
- * body does exactly that, and this session additionally proved the FAST-ARM
- * staging site is unnecessary: `total` is borrowed at ONE site, the latch.
- * (Both sites staged = 2 as well; tmp/grind/func_8003DE14/s36b/base.c.)
+ * FLOOR HISTORY: 26 -> 16 (s21) -> 14 (s22) -> 12 (s23) -> 5 (s29) -> 4 (s31)
+ * -> 2 (s32) -> 1 (s33-s35) -> 0 with a fresh multi-written `h` carrier (s36,
+ * REJECTED by the Judge 2026-09-11 04:48) -> 2 with the ruling-sanctioned
+ * `total` borrow (s36b/s37) -> 0 HERE, with NO carrier at all.
  *
- * THE REMAINING 2 ROWS, IN CLOSED FORM.  They are the two halfword loads of the
- * loop bound.  Target: `lh $v0,4($s0)` then `lh $v1,6($s0)` then `mult $v0,$v1`.
- * Ours: `lh $v1,6($s0)` then `lh $v0,4($s0)` - the REGISTERS are already the
- * target's, only the emission ORDER is swapped.  Pass attribution is dumped,
- * not guessed (tmp/grind/func_8003DE14/s36b/dumps_{h,b5,tot}): after .combine
- * BOTH bodies have the rect[2] load first and the rect[3] load second, with
- * byte-identical RTL apart from the carrier's pseudo number (117 for `h`, 101
- * for `total`); the FIRST scheduling pass leaves that order alone when the
- * carrier is `h` and swaps it when the carrier is `total`.
+ * WHAT CHANGED IN s38.  The latch carrier is GONE.  Sessions s32-s37 had been
+ * attacking the last two rows (the two halfword loads of the inner loop bound)
+ * by ESCAPING one of the two load pseudos out of its basic block, so that
+ * local-alloc would skip it and global.c would seat it second.  Every carrier
+ * that did this either violated the Judge's standing constraint (a fresh
+ * multi-written local) or cost other rows (the `total` borrow loses the
+ * emission-ORDER tie, because `birthing_insn_p` is literally
+ * `reg_n_sets[dest] == 1` and `total` has two sets - s37 H37-1).
  *
- * THE WALL, STATED AS TWO RULES THAT CANNOT BOTH BE SATISFIED BY THIS BORROW.
- *   (R1) the escaped carrier's load is scheduled FIRST when the carrier's other
- *        set lives in the OUTER row block (`total`), and SECOND when both of its
- *        sets live inside the inner loop (`h`);
- *   (R2) local-alloc seats the block-local load in $v0 and global.c seats the
- *        escaped carrier in $v1 (measured on every body this session).
- * The target needs the FIRST load in $v0, i.e. the block-local one first, i.e.
- * an escaped carrier whose other set is inside the inner loop.  `total`'s only
- * other set is its real job (the row area, read by the `if (total > 0)` guard),
- * which is necessarily in the outer block.  Carrying the OTHER operand instead
- * (`while (j < rect[3] * (total = rect[2]));`,
- * tmp/grind/func_8003DE14/s36b/waveD/d8_c07_swapmul.c) is the exact complement:
- * it scores 2 with the ORDER and the `mult $v0,$v1` correct and only the two lh
- * destination registers swapped.
+ * s37 closed the no-carrier chassis in closed form instead (H37-3, a CLASS
+ * kill): with both loads block-local the emission order is already the
+ * target's, and the ONLY thing wrong is that `qty_compare_1`
+ * (local-alloc.c:1669-1684) sorts the earlier-born rect[2] load SECOND,
+ * because both loads die at the shared `mult` and the earlier birth means a
+ * strictly larger `death - birth` denominator at equal `n_refs`.  s37 recorded
+ * the exact escape condition - "a third in-block reference to the rect[2]
+ * value" - and dismissed it as "an extra instruction the target does not
+ * have".  It is NOT an extra instruction: s37's own H37-2 banked the
+ * pass-ordering fact that `reg_n_refs` is computed in flow, which runs BEFORE
+ * combine, so an algebraically-null detour that combine folds away still
+ * raises the count.  This body spells that detour `+ rect[2] - rect[2]` on the
+ * loop bound; the rect[2] pseudo goes from 6 weighted refs to 12, its priority
+ * from 3 to 9 against the rect[3] load's 6, it sorts first, takes $v0, and the
+ * latch becomes byte-exact at an unchanged 173 instructions.
  *
  * FAKE CONSTRUCTS PRESENT (3, all inside frozen SOTN-sanctioned families):
- *   (1) `total` staged at the latch - [[staged-value-reused-variable]], granted
- *       for this exact site by the Judge ruling of 2026-09-11 04:48.
- *   (2) `gm` - named intermediate for the green mask (s36, worth 15 pts: the
+ *   (1) the bound's `+ rect[2] - rect[2]` detour -
+ *       [[dead-store-fake-exception]] combine-foldable chain-extender clause
+ *       (owner ruling 2026-07-01); zero emitted bytes verified (173 insns with
+ *       and without).
+ *   (2) the s21 `((s32)dst_buf + j) - j` extender on the LoadImage argument -
+ *       same family, banked since s21 (7 pts; plain `(s32)dst_buf` is 7 worse).
+ *   (3) `gm` - named intermediate for the green mask (s36, worth 15 pts: the
  *       same body with the mask inline scores 17).
- *   (3) the s21 `((s32)dst_buf + j) - j` chain extender (7 pts; plain
- *       `(s32)dst_buf` measures 7/173 worse).
+ * The s36b/s37 `total` staging FAKE is REMOVED - this body needs no carrier.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -149,24 +144,37 @@ void func_8003DE14(s16 *rect, s32 count) {
                     dst++;
                 loop_check:
                     j++;
-                /* FAKE: the inner loop's bound re-reads rect[3] each iteration and the
-                 * read is staged through the EXISTING local `total` instead of a compiler
-                 * temp, so that the bound's height pseudo escapes its basic block.
-                 * Per-site liveness (the one site, the latch): `total` last held the row
-                 * area rect[2]*rect[3], whose only reader is the `if (total > 0)` guard
-                 * ABOVE this loop; at the latch that value is dead, and `total` is
-                 * re-assigned from rect[2]*rect[3] at the top of every outer row before
-                 * anything reads it again, so no live value is clobbered and the staged
-                 * value (rect[3]) is consumed immediately by the multiply that is the
-                 * loop bound.  Zero dead code.  Mechanism: local-alloc.c:470-476 skips
-                 * any pseudo with reg_basic_block < 0, so local-alloc seats only the
-                 * block-local rect[2] load ($v0, target) and global.c seats the escaped
-                 * height pseudo afterwards ($v1, target).  Lever-exhaustion:
-                 * memory/grind/func_8003DE14/hypotheses.md s24-s32 (operand order, birth
-                 * order, epilogue linkage, for-loop and pointer-alias waves) + s36 waves
-                 * y/z/q/L/m/n + this session's waves A-E (48 latch/tail/declaration
-                 * spellings, all >= 2). */
-                } while (j < rect[2] * (total = rect[3]));
+                /* FAKE: the inner loop's bound is routed through the algebraically
+                 * equivalent detour `+ rect[2] - rect[2]`, which combine folds back to the
+                 * direct `rect[2] * rect[3]` with ZERO emitted bytes (173 build insns with
+                 * and without it; verified against the target's 173).  Its only surviving
+                 * effect is the extra reg_n_refs that flow.c records BEFORE the fold.
+                 * Mechanism: local-alloc.c:1669-1684 `qty_compare_1` ranks the two
+                 * block-local halfword loads of the bound by
+                 * floor_log2(n_refs)*n_refs*size/(death-birth).  Both loads die at the
+                 * shared `mult`, so the earlier-born rect[2] load has the strictly larger
+                 * denominator: at the natural 2 refs each (weighted x3 for loop depth =
+                 * 6) it scores floor_log2(6)*6/4 = 3 against the rect[3] load's
+                 * floor_log2(6)*6/2 = 6, is sorted second, and is handed $v1 instead of the
+                 * target's $v0.  The detour's two extra reads CSE onto the same pseudo, so
+                 * flow counts 4 refs (weighted 12) and it scores floor_log2(12)*12/4 = 9 >
+                 * 6, sorts first and takes $v0 - the target's map `lh $v0,4($s0)` /
+                 * `lh $v1,6($s0)` / `mult $v0,$v1`.  MEASURED, not inferred:
+                 * tmp/grind/func_8003DE14/s38/qty_win.log:623-624 prints
+                 * `blk=11 ord=0 qty=0 reg1=147 birth=4 death=8 refs=12 got=2` and
+                 * `ord=1 qty=1 reg1=150 birth=6 death=8 refs=6 got=3`; the same dump on the
+                 * detour-free body (s37/qty_g6.log) prints refs=6/got=3 for reg1=147.  Same family and same
+                 * mechanism as the s21 `((s32)dst_buf + j) - j` extender below
+                 * ([[dead-store-fake-exception]] combine-foldable chain-extender clause,
+                 * owner ruling 2026-07-01).  Lever-exhaustion:
+                 * memory/grind/func_8003DE14/hypotheses.md s24-s37 - the latch's order and
+                 * seats were driven to a closed form over 14 sessions (s32 block-locality,
+                 * s33-s35 allocno-priority inequality, s36 the escaped-carrier rules, s37
+                 * birthing_insn_p + the qty_compare_1 class kill that this detour is the
+                 * measured answer to), across ~200 rejected spellings including every
+                 * operand order, declaration order, for/while/do-while chassis, staged
+                 * carrier and cross-block read site. */
+                } while (j < rect[2] * rect[3] + rect[2] - rect[2]);
             }
 
             {

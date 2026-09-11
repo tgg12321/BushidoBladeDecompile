@@ -4703,3 +4703,55 @@ floor of 2 (g0, g2, g7), 4 at 3. No hit.
 - [s37] The s21 `j` chain-extender FAKE is chassis-specific: worth 7 points on the 2/173 `total`-borrow chassis, worth 0 on the h-escape chassis (u1 = 7 with it removed).
 
 - [s37] The `total` local is load-bearing for at least 25 points: the for-loop reading of the source with `total` deleted scores 27-80.
+
+## s38 (structural) evidence — THE FUNCTION MATCHES
+
+- [s38] **func_8003DE14 MATCHES IN PURE C.** `sandbox func_8003DE14 --disable all` = score 0,
+  build_insns 173 == target_insns 173, rules_dropped 0; and `verify-oracle` on the whole tree with
+  the body applied to src/code6cac_c2.c prints `"ok": true`,
+  `build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected`
+  (tmp/grind/func_8003DE14/s38/verify_oracle.log). The matching body is
+  memory/grind/func_8003DE14/candidate.c.
+
+- [s38] The winning move was NOT a new carrier — it was DELETING the carrier idea entirely. s32-s37
+  all attacked the last two rows (the two halfword loads of the inner-loop bound) by ESCAPING one
+  load pseudo out of its basic block so local-alloc would skip it. s37's H37-3 had already closed the
+  no-carrier chassis in closed form as a CLASS kill and, in the same breath, stated the exact escape
+  condition: `qty_compare_1` (local-alloc.c:1669-1684) ranks by
+  floor_log2(n_refs)*n_refs*size/(death-birth); both loads die at the shared `mult`, so the
+  earlier-born rect[2] load carries the larger denominator and sorts second at equal refs — "a tie
+  needs floor_log2(r0)*r0 >= 24, i.e. a third in-block reference to the rect[2] value, which is an
+  extra instruction the target does not have." That last clause was the error. s37's OWN H37-2 had
+  banked the pass-ordering fact that refutes it: `reg_n_refs` is computed in flow, which runs BEFORE
+  combine, so an algebraically-null detour that combine folds away raises the count for FREE.
+
+- [s38] Spelling the bound as `while (j < rect[2] * rect[3] + rect[2] - rect[2])` supplies that
+  reference. The two extra reads CSE onto the same pseudo, so flow counts 4 refs (12 after the x3
+  loop-depth weighting) instead of 2 (6). Measured priorities, blk=11
+  (tmp/grind/func_8003DE14/s38/qty_win.log:623-624):
+  `ord=0 qty=0 reg1=147 birth=4 death=8 refs=12 got=2` (the rect[2] load, offset 4, now FIRST and
+  seated $v0) and `ord=1 qty=1 reg1=150 birth=6 death=8 refs=6 got=3` (rect[3], $v1). The
+  detour-free body (s37/qty_g6.log) prints refs=6 / got=3 for reg1=147 — the same load in the wrong
+  seat. Arithmetic: 3*12/4 = 9 > 2*6/2 = 6 (was 2*6/4 = 3 < 6). The target's
+  `lh $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1` falls out.
+
+- [s38] Zero bytes materialize: build_insns is 173 with the detour (score 0) and 173 without it
+  (s37/v2/g6.c, score 3). This satisfies the combine-foldable chain-extender clause's own extra
+  prerequisite (.claude/rules/dead-store-fake-exception.md:51) — the family the body's s21
+  `((s32)dst_buf + j) - j` extender already sits in.
+
+- [s38] SPELLING SENSITIVITY of the detour (8 spellings, tmp/grind/func_8003DE14/s38/v1/, swept with
+  tools/sweep_variants.py): 0 for `A + rect[2] - rect[2]` (a1), `A - rect[2] + rect[2]` (a2) and
+  `(j + rect[2] - rect[2]) < A` (a7); 3 (i.e. inert — folded before flow) for the parenthesised
+  `A + (rect[2] - rect[2])` (a6), the inside-the-operand `(rect[2] + rect[2] - rect[2]) * rect[3]`
+  (a5) and the same detour spelled on rect[3] instead of rect[2] (a8 — it raises the WRONG load's
+  count); 12 for the two-statement forms `j = j + rect[2] - rect[2];` (a3) and
+  `j = j + rect[2]; j = j - rect[2];` (a4), which perturb `j`'s own allocno. The tree-level fold
+  boundary is the same one s37 found for the carrier read: a flat left-to-right `x + y - y` survives,
+  a parenthesised or compound-assignment form does not.
+
+- [s38] The final body carries THREE FAKE constructs, all in frozen sanctioned families, and NO
+  carrier: the bound detour (F1 chain-extender), the s21 LoadImage-argument detour (F1), and `gm`
+  (named intermediate). The s36 Judge-FAILed `h` is absent, and so is the `total` staging borrow that
+  ruling granted — `total` is back to being an ordinary local doing only its real job (the row-area
+  guard). Self-vet: memory/grind/func_8003DE14/self_vet.md.

@@ -3643,3 +3643,31 @@ s21 extender entirely, and 8 `complement`/`j`/`factor` declaration and split-ini
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-11; the 2/173 candidate chassis with the latch carrier replaced by a fresh single-set `h` read once inside the area guard; FAKE constructs present: gm named intermediate, the single-set h carrier and its fold-away read, s21 j chain extender (present in 13 of the 14, absent in u1).
+
+## s38 (structural) hypotheses
+
+**H38-1 CONFIRMED — the function matches.** Supplying the third in-block reference to the rect[2]
+load pseudo that s37's H37-3 class kill named as the escape condition, via a combine-foldable
+detour on the loop bound (`while (j < rect[2] * rect[3] + rect[2] - rect[2])`), flips
+`qty_compare_1`'s ordering of the two halfword loads and produces the target latch with NO carrier
+of any kind. Score 0/173, rules_dropped 0, full-tree `verify-oracle` SHA1 == oracle.
+
+**H38-2 KILLED (instance).** Three of the eight detour spellings are folded before flow and are
+inert (score 3, identical to the detour-free chassis): the parenthesised `A + (rect[2] - rect[2])`,
+the inside-the-multiplicand `(rect[2] + rect[2] - rect[2]) * rect[3]`, and the detour written on
+rect[3] instead of rect[2]. Two more (the two-statement `j = j + rect[2] - rect[2];` and its
+compound-assignment split) survive but land the extra refs on `j`'s allocno and cost 12.
+
+## [s38] Supplying a third in-block reference to the rect[2] load pseudo through an algebraically-null detour that combine folds away raises its flow-counted reg_n_refs without emitting an instruction, flipping qty_compare_1's ranking so the earlier-born load is sorted first and seated $v0 — the target's latch — on the no-carrier chassis.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:1669-1684 qty_compare_1 ranks quantities by floor_log2(qty_n_refs)*qty_n_refs*qty_size/(qty_death-qty_birth). Both bound loads die at the shared mult, so the earlier-born rect[2] load has the larger denominator: at 2 refs each (weighted x3 = 6) it scores 2*6/4 = 3 against the rect[3] load's 2*6/2 = 6 and is sorted second. The detour's two extra reads CSE onto the same pseudo before flow (reg_n_refs is computed in flow, which runs before combine — s37 H37-2), giving 4 refs (weighted 12) and 3*12/4 = 9 > 6.
+- probe: 8 spellings in tmp/grind/func_8003DE14/s38/v1/ swept with tools/sweep_variants.py, then the winner applied to src/code6cac_c2.c and dumped with BB2_QTY_DEBUG/BB2_ALLOC_DEBUG (tmp/grind/func_8003DE14/s38/qty.sh -> qty_win.log).
+- result: a1/a2/a7 = 0/173 at 173 build insns (target 173), rules_dropped 0; `verify-oracle` on the whole tree prints ok=true with build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (tmp/grind/func_8003DE14/s38/verify_oracle.log). qty_win.log:623-624 confirms the predicted flip: reg1=147 (offset 4) refs=12 -> ord=0 -> got=2 ($v0); reg1=150 (offset 6) refs=6 -> ord=1 -> got=3 ($v1); the detour-free s37/qty_g6.log has reg1=147 refs=6 -> got=3. Zero bytes materialize (173 with and without the detour), satisfying the combine-foldable chain-extender clause's extra prerequisite.
+- verdict: CONFIRMED
+
+## [s38] Three of the eight detour spellings are folded at the tree level (before flow) and are inert, and the two statement-form spellings land their extra references on `j`'s allocno instead of the rect[2] load's.
+- mechanism: GCC 2.7.2's fold() collapses a parenthesised `x - x` sub-expression and a compound-assignment round trip at the tree level, so no reference ever reaches flow; and a detour written as a separate statement assigning to `j` adds the refs to `j`'s quantity, changing the $t4/$t5 seat pair the s21 extender is tuned for.
+- probe: tmp/grind/func_8003DE14/s38/v1/a1-a8.c, swept with tools/sweep_variants.py in one call.
+- result: a6 (`A + (rect[2] - rect[2])`) = 3, a5 (`(rect[2] + rect[2] - rect[2]) * rect[3]`) = 3, a8 (detour on rect[3]) = 3 — all identical to the detour-free chassis; a3 (`j = j + rect[2] - rect[2];`) = 12 and a4 (the two-statement split) = 12. Only the flat left-to-right in-expression form survives to flow, which is the same fold boundary s37 measured for the carrier read (`x = x + h - h` survives, `x += h; x -= h;` does not). Banked as rejected/s38-*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); the s37/v2/g6.c no-carrier chassis (candidate.c with the latch carrier removed); FAKE constructs present: gm named intermediate, s21 j chain extender; no latch carrier.

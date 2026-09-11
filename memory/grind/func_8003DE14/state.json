@@ -247,7 +247,9 @@
  "judge_constraints": [
   "Remove `h`; if a staging carrier is needed, borrow the existing dead `total` under staged-value-reused-variable (per-site liveness stated in the FAKE annotation) \u2014 never a fresh multi-written local."
  ],
- "banned_constructs": [],
+ "banned_constructs": [
+  "LoadImage((s32)rect, ((s32)dst_buf + j) - j);  /* FAKE: j chain extender (s21) */"
+ ],
  "kills": [
   {
    "session": 20,
@@ -730,10 +732,22 @@
    "result": "7/173 for s4, t1, t2, t6, t7, t9, u1, u3, u5, u8, v1, v5, v6, v7 \u2014 14 distinct bodies at the same 6 rows (71 `subu $t5,$"
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 11,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T20:34:10.685944+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Bound detour and `gm` verify clean inside their sanctioned families, but the s21 `((s32)dst_buf + j) - j` detour has NO necessity measurement on this s38 no-carrier chassis and the ledger's own nearest measurement (s37 u1) found it inert. Next action: One measurement, not a re-grind. Take the exact committed body and remove ONLY the s21 detour (`LoadImage((s32)rect, (s32)dst_buf);`), then `sandbox func_8003DE14 --disable all`. If the score is still 0 \u2014 as s37/u1's inertness finding predicts \u2014 DELETE the construct and resubmit the two-construct body (the bound detou"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "2852b631a415e9ee",
+   "when": "2026-09-11T10:42:33.631175+00:00",
+   "summary": "Bound detour and `gm` verify clean inside their sanctioned families, but the s21 `((s32)dst_buf + j) - j` detour has NO necessity measurement on this s38 no-carrier chassis and the ledger's own nearest measurement (s37 u1) found it inert."
+  }
+ ]
 }
