@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 29,
    "modality": "rederive",
    "headline": "The floor-29 form is now ORDINARY C: the dst reference lift that seats the cursors like the target is spelled as an arm-local dst++ in each of three arms (cross-jump re-merges them), retiring the s10 "
+  },
+  {
+   "session": 12,
+   "floor": 28,
+   "modality": "structural",
+   "headline": "Floor 29 -> 28: writing `complement` inside the `if (total > 0)` guard ABOVE `j = 0` takes it out of LICM's hands and flips the j/complement seat to the target's $t4/$t5 - the counter half of the resi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The j/complement pair ($t5/$t4 where the target has $t4/$t5) is now a ONE-INSN problem: j (pseudo 115) needs its live_length to merely TIE complement's (pseudo 116), because allocno_compare's tie-break seats the lower pseudo first.",
-   "mechanism": "global.c:635-648 gives pri = floor_log2(nrefs)*nrefs/live_length*10000*size with both pseudos pinned at nrefs 11, and global.c:652-653 breaks ties on ascending allocno. The C1 spelling (s32 j; declared in the outer body, j = 0; moved inside if (total > 0)) already takes j from 59 to 55 against complement's 54 - one insn short - but pays 2 score because the preheader move t4,zero shifts. The task is to find the same live-range shortening WITHOUT disturbing the preheader, or to lengthen complement's range by one insn without moving its set.",
-   "next_probe": "Enumerate spellings that move j's birth one insn later or complement's death one insn later while leaving the preheader emission identical: (i) compute `total` after `factor` so the `if (total > 0)` test sits adjacent to the loop; (ii) express the trip test so complement's last use falls below the blue multiply; (iii) sink `u16 *dst = dst_buf;` or `s32 factor = ...` around `j = 0` to shift only j's birth insn. Read j/complement live_length straight from BB2_ALLOC_DEBUG on the a1 chassis after each, and gate every variant on build_insns == 173 AND on dst still reading hardreg=6 in ALLOCDBG."
+   "hypothesis": "The trip-test cluster (target 127-130) and the blend arm's $v0/$v1 naming (target 122-123) are ONE sub-problem in the local allocator, not two: three source spellings of the trip test leave both unchanged, so the trip test should be treated as a dependent of the blend fix rather than attacked on its own.",
+   "mechanism": "Both pseudos in the trip test are born and die inside the loop-bottom block, so they are local-alloc quantities (local-alloc.c), and the register left free for the first of them is decided by what the blend arm above is still holding in $v0/$v1. That is consistent with T1/T2/T3 all scoring 28 with identical 122/123 rows.",
+   "next_probe": "Do not re-sweep the trip test. Instead dump .lreg/.greg for the W5 chassis (pwsh tools/grinder/dump.ps1 func_8003DE14) and read which quantity holds $v0 across the blend arm's tail; then re-check the trip-test rows after ANY blend-arm change, as a free indicator of whether the blend fix is working."
   },
   {
-   "hypothesis": "The blend arm's mflo/srl interleave is a scheduler decision on the a1 chassis, not an expand-order consequence of the C, so tools/sched_solver can decide it rather than another source sweep.",
-   "mechanism": "Twelve source reshapings of that block all failed to move it, and sched.c:5106 is already known to be the pass that both orders these insns and sets the live lengths feeding allocation. The target runs the blue channel's srl/andi/mult before its first mflo (target 104-107) while we run it after (ours 109-112) - a 4-insn deletion against a 4-insn insertion in the aligned diff, with the surrounding $a0/$a1/$v0/$v1/$t7 naming following as a consequence.",
-   "next_probe": "Dump the .sched RTL for a1 (bash tmp/grind/func_8003DE14/s11/dump.sh <tag>), feed the blend basic block to tools/sched_solver, and ask it for the C-lever vectors that put the blue channel's mult ahead of the first mflo. Classify the result with tools/ra_solver/inverse_compose.py classify before spending measurements, then gate each spelled form on build_insns == 173 and on the cursor seat still reading dst -> hardreg 6."
+   "hypothesis": "The head residual (4 insns) is a reorg delay-slot exchange currently coupled to the seat, but the coupling may be breakable by removing `addiu a2,sp,1040` from reorg's candidate set WITHOUT moving `j = 0` back above the branch.",
+   "mechanism": "reorg.c takes the closest movable insn before the branch. `dst = dst_buf` is that insn only because it is the last cursor initialisation emitted before the guard. If some other real statement the target also emits in 49-68 were scheduled last before the `blez`, reorg would take that instead and `addiu a2` would stay at 54 - though the slot then holds the wrong insn unless the chosen statement is itself dead on the taken path.",
+   "next_probe": "H1 (dst before src), H3 (total last) and W11 (dst inside the guard) all failed at 28/30; the untried directions are (i) computing the outer-tail values in the outer do-body so a different insn is last before the guard, (ii) expressing the guard as `if (rect[2] * rect[3] > 0)` so the mult/mflo pair sits adjacent to the branch with nothing movable between, and (iii) reading the actual candidate list out of the .reorg / .jump2 dumps (pwsh tools/grinder/dump.ps1 func_8003DE14) instead of inferring it."
   },
   {
-   "hypothesis": "The blend arm's register NAMING residual (target holds px in $a0, the red product in $a1 and the blue product in $t7; we use $v1/$a1/$v1) is a separate allocation-order sub-problem from the j/complement pair and should be priced with tools/nrefs_census.py the way the cursors were.",
-   "mechanism": "The blend temps are allocnos ord 7-13 on the a1 chassis (pseudos 133, 134, 137, 138, 141, 142, 162 at nrefs 6 and live lengths 9-12, priorities 10000-13333 - a tight cluster where a single weighted reference reorders several of them at once). The target reaching $t7 at all means more allocnos were seated before it than in our order.",
-   "next_probe": "Run tools/nrefs_census.py --func func_8003DE14 --file code6cac_c2 --above on each adjacent pair in the ord 7-13 cluster to get the exact per-pair lift, then check which pairs' lifts are individually reachable from ordinary C. Because the cluster is dense, verify after every candidate that the cursor seat (dst -> hardreg 6) and the j/complement rows are unchanged before scoring."
+   "hypothesis": "The blend arm's residual (target 88-123) is now the only large cluster and is confirmed seat-independent, so it should be decided with tools/sched_solver rather than another source sweep.",
+   "mechanism": "Twelve structurally distinct blend bodies score 28 or worse on the corrected-seat chassis, exactly as they scored 29 or worse on the s11 chassis - the difference is invariant under the source shape. sched.c:5106 both orders these insns and sets the live lengths feeding allocation, and the target runs the blue channel's srl/andi/mult before its first mflo (104-107) where we run it after (109-112).",
+   "next_probe": "Dump the .sched RTL for the W5 chassis (bash tmp/grind/func_8003DE14/s12/dump.sh W5), feed the blend basic block to tools/sched_solver, and ask for the C-lever vectors that put the blue channel's mult ahead of the first mflo; classify with tools/ra_solver/inverse_compose.py classify before spending measurements, and gate each spelled form on build_insns == 173 and on the j/complement/dst seat rows being unchanged."
   }
  ],
  "judge_constraints": [],
@@ -394,6 +400,38 @@
    "measured_on": "HEAD chassis 2026-09-10, a1 chassis (29 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s11/bl/B1..B12.c",
    "predicate_cite": "",
    "result": "KILLED for this spelling space. Best = 29, i.e. no variant beat the incumbent; B1/B3/B7/B8 tie at 29, B9/B10/B11 are 30 "
+  },
+  {
+   "session": 12,
+   "statement": "Writing `complement` in the outer do-body above `j = 0` also flips the seat but scores 45, because it puts the subtraction above the `blez` guard where the target emits it below, and stretches factor'",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/W9.c and W10.c",
+   "predicate_cite": "",
+   "result": "KILLED. W9 scores 45 and W10 42, both at 173 insns, against W5's 28. W9's ALLOCDBG confirms the seat DOES flip (j 115 at"
+  },
+  {
+   "session": 12,
+   "statement": "On this chassis the remaining head residual and the correct counter seat are directly coupled: the spellings that give reorg back the target's `blez` delay slot are the spellings that lose the seat.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/H1.c H2.c H3.c W6.c W11.c",
+   "predicate_cite": "",
+   "result": "KILLED for these spellings. H2 restores the target's delay slot and loses the seat, scoring 31. H1 and H3 both hold the "
+  },
+  {
+   "session": 12,
+   "statement": "Re-running s11's twelve blend-arm reshapings on top of the corrected-seat 28 chassis does not move the blend residual, so the blend difference is independent of the cursor and counter seats.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/B1w..B12w.c",
+   "predicate_cite": "",
+   "result": "KILLED. B1w/B3w/B7w/B8w tie the incumbent at 28, B9w/B10w/B11w are 29, B2w/B4w/B5w/B6w/B12w run 33-54. No variant beats "
+  },
+  {
+   "session": 12,
+   "statement": "The trip-test residual (target 127-130) does not respond to the C spelling of `rect[2] * rect[3]`: the $v0/$v1 naming on the two lh destinations is invariant under operand order, comparison direction ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, W5 chassis (28 / 173 insns), no FAKE constructs present, forms tmp/grind/func_8003DE14/s12/T1.c T2.c T3.c",
+   "predicate_cite": "",
+   "result": "KILLED for these spellings. All three score 28 and none beats the incumbent. T2 and T3 reproduce the incumbent's `lh v1,"
   }
  ],
  "ladder_skip": 0,

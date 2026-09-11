@@ -1467,3 +1467,118 @@ scheduler / allocation-order question.
 - [s11] Twelve structurally distinct blend-arm spellings on the corrected-seat 29 chassis all score 29 or worse - four tie at 29, the rest are 30-53. Combined with s5's earlier negative sweep on the old chassis, the blend residual is not a source-shape question at this level.
 
 - [s11] src/code6cac_c2.c was restored to HEAD (INCLUDE_ASM) before the session ended; the only working-tree changes are under memory/grind/func_8003DE14/ and tmp/.
+
+## s12 (structural) - floor 29 -> 28; the j/complement seat is SOLVED
+
+**The one-line change.** The s11 body wrote `s32 j = 0;` in the outer do-body and
+`s32 complement = blend_base - factor;` as the first statement of the pixel
+loop. The s12 body writes both inside the guard, complement first:
+
+```c
+if (total > 0) {
+    s32 complement = blend_base - factor;
+    s32 j = 0;
+    do { ... } while (j < rect[2] * rect[3]);
+}
+```
+
+Score 29 -> 28 at 173 build_insns / 173 target_insns, and target insns 70/71,
+131 and 133 become byte-exact: j is seated in $t4 and complement in $t5, the
+target's assignment. `memory/grind/func_8003DE14/candidate.c` is this body.
+
+**The model that predicted it (and that closes the axis).** j (pseudo 115) and
+complement (pseudo 116) both carry weighted nrefs 11, so allocno_compare
+(tools/gcc-2.7.2/global.c:635-648) collapses to `pri = 33/live_length`, with
+global.c:652-653 breaking an exact tie on ascending allocno number. Both pseudos
+are set only in the inner loop's preheader and read on every iteration, so each
+is live across the WHOLE loop body; the loop body contributes the same constant
+to both live lengths and the only variable is the distance between their two set
+insns in the preheader. That is why s5's and s11's large blend/ordering sweeps
+could never move this pair: nothing inside the loop body is capable of moving
+either number.
+
+loop.c's scan_loop appends a hoisted invariant at the END of the preheader (just
+before loop_start), so a LICM-hoisted `complement` set always lands BELOW
+`j = 0` and complement always wins the race. Writing the subtraction inside the
+guard removes it from LICM's hands - it is already in the block LICM would have
+put it in - and lets ordinary statement order place `j = 0` below it.
+
+**Measured live lengths (BB2_ALLOC_DEBUG=1 on tools/gcc-2.7.2/cc1, dumps in
+tmp/grind/func_8003DE14/s12/d_*/stderr.log):**
+
+| form | placement | j | complement | seat |
+|---|---|---|---|---|
+| base (s11) | complement in loop body, `j = 0` in outer body | 59 | 54 | complement $t4 - WRONG |
+| W6 | complement inside the guard, `j = 0` still outside | 59 | 54 | WRONG |
+| H2 | `j = 0` then complement, both inside the guard | 55 | 54 | WRONG (31) |
+| W2 | complement inside the guard, then `j = 0` (j declared outer) | 54 | 55 | **j $t4 - RIGHT (28)** |
+| W5 | both declared inside the guard, complement first | 55 | 54* | **RIGHT (28)** |
+| W7 | as W2 with `s32 j;` at the top of the do-body | 54 | 55 | **RIGHT (28)** |
+| W9 | complement in the outer body above `j = 0` | 55 | 56 | RIGHT but 45 |
+
+(*W5 swaps the pseudo NUMBERS too - complement becomes 115 and j 116 - so its
+rows read complement 54 / j 55 by pseudo; the seat is the same as W2/W7.)
+
+**The coupling that bounds the head residual.** reorg.c fills the guard `blez`'s
+delay slot with the closest movable insn preceding the branch. In the s11 body
+that was `move t4,zero`, which is exactly what the target emits at insn 70.
+Moving `j = 0` below the branch - the move that flips the seat - leaves
+`addiu a2,sp,1040` (the `dst = dst_buf` init the target emits at insn 54) as the
+closest candidate, so reorg sinks it into the slot. The whole four-insn head
+difference is that exchange, and it is directly coupled to the seat: H2 buys the
+delay slot back and loses the seat, scoring 31. H1 (dst declared before src) and
+H3 (total computed last) both stay at 28, so neither denying reorg the `addiu a2`
+candidate nor moving the guard's operand computation recovers the slot.
+
+**Residual at 28 (tmp/grind/func_8003DE14/s12/sbs.sh aligned diff).** Target
+insns 0-53, 55-69, 72-87, 90-93, 96-98, 102-103, 108-110, 113, 120-121, 124-126,
+129 and 131-172 are byte-exact. What is left:
+
+  (a) head, 4 insns: target `addiu a2,sp,1040` at 54 and `move t4,zero` in the
+      delay slot at 70, against our `addiu a2,sp,1040` in the slot at 70 and
+      `subu t5,s8,t3` at 71 ahead of `move t4,zero`;
+  (b) the blend arm, target 88-123: register naming (target holds px in $a0, the
+      red product in $a1 and the blue product in $t7 where we use $v1/$a1/$v1)
+      plus the blue channel's `srl/andi/mult` at target 104-107 against ours at
+      109-112. Twelve source reshapings re-measured on THIS chassis (B1w..B12w)
+      all score 28 or worse, so the blend residual is not seat-dependent and is
+      still a scheduler/allocation-order question;
+  (c) the trip test, target 127-130: `lh v0,4(s0) / lh v1,6(s0) / mult v0,v1`
+      against our `lh v1,4(s0) / lh v0,6(s0) / mult v1,v0` - the same two loads
+      in the same order with the two short-lived pseudos named the other way
+      round. This is a NEW, small, previously-invisible residual: it only became
+      readable once the counter seat stopped dominating the diff.
+
+**Target head, for the next session (objdump insn index):** 49 `lh v1,4(s0)`,
+50 `lh v0,6(s0)`, 52 `mult v1,v0`, 53 `addiu a3,sp,16` (src), 54 `addiu a2,sp,1040`
+(dst), 55 `mflo v1` (total), 56-68 the `((i+1)<<12)/count` divide ending
+`mflo t3`, 69 `blez v1` with 70 `move t4,zero` in the slot, 71 `subu t5,s8,t3`,
+72-73 the `i == count - 1` test.
+
+**Trip-test cluster (c) probed and closed for source spelling (s12).** Three
+spellings of `while (j < rect[2] * rect[3])` - operands swapped, comparison
+reversed, operands explicitly widened - all score 28 and none changes the
+$v0/$v1 naming on the two `lh` destinations. T1 (`rect[3] * rect[2]`) does change
+the LOAD order, and moves it away from the target's. The two rows immediately
+above it (target 122 `or v0,v0,v1` / 123 `andi v1,a0,K` against our
+`or v0,v0,a0` / `andi v1,v1,K`) are identical across all three variants, so this
+cluster reads as a downstream consequence of the blend arm's $v0/$v1 pressure
+rather than an independent sub-problem: fix the blend naming first.
+
+- [s12] FLOOR 29 -> 28 on HEAD 2026-09-10, 173 build_insns / 173 target_insns. The whole change is where two locals are declared: `if (total > 0) { s32 complement = blend_base - factor; s32 j = 0; do { ... } }` instead of `s32 j = 0;` in the outer do-body with the subtraction written inside the loop. Ordinary C; no FAKE-family construct anywhere in the body.
+
+- [s12] The j/complement pair is no longer a residual: j is seated in $t4 and complement in $t5, the target's assignment, and target insns 70/71, 131 and 133 are byte-exact.
+
+- [s12] Structural model, now measured rather than inferred: two pseudos that are set only in a loop's preheader and read every iteration are both live over the whole loop body, so the body contributes an identical constant to both live lengths and ONLY the preheader distance between their set insns can move their allocno priorities. This is why every previous in-loop sweep (s5's 4,488 spellings, s11's twelve blend bodies) was structurally incapable of moving this pair.
+
+- [s12] loop.c's scan_loop appends a hoisted invariant at the END of the preheader, immediately before loop_start, so a LICM-hoisted set is always below anything the C wrote in the preheader. Writing a loop invariant explicitly inside the loop's guard is therefore the lever that puts it ABOVE an initialisation GCC would otherwise place first - a reusable structural technique, not a func_8003DE14 quirk.
+
+- [s12] Measured live lengths (BB2_ALLOC_DEBUG=1, tools/gcc-2.7.2/cc1) for j/complement across seven placements: base 59/54, W6 59/54, H2 55/54, W2 54/55, W5 55/54 (pseudo numbers swapped by declaration order), W7 54/55, W9 55/56. Only W2/W5/W7/W9 flip the seat; only W2/W5/W7 do it for free.
+
+- [s12] Residual at 28 is three clusters: (a) 4 insns in the head - the target emits `addiu a2,sp,1040` at 54 and fills the `blez` delay slot at 70 with `move t4,zero`, we sink `addiu a2` into the slot and emit `subu t5,s8,t3` ahead of `move t4,zero`; (b) the blend arm, target 88-123, register naming ($a0/$a1/$t7 vs our $v1/$a1/$v1) plus the blue channel's srl/andi/mult at 104-107 vs our 109-112; (c) a NEW small one at target 127-130, `lh v0,4(s0) / lh v1,6(s0) / mult v0,v1` against our `lh v1 / lh v0 / mult v1,v0` - same loads, same order, the two short-lived pseudos named the other way round.
+
+- [s12] (a) is directly coupled to the seat and priced: H2 (j declared before complement inside the guard) buys the delay slot back for 3 score and loses the seat. H1 (dst before src) and H3 (total computed last) hold the seat at 28 without recovering the slot.
+
+- [s12] Equivalent 28-scoring spellings this session: W2, W5, W7, H1, H3, and four of the rebased blend bodies (B1w, B3w, B7w, B8w). The floor is a plateau of equivalent placements, not a single fragile form.
+
+- [s12] Target head for the next session (objdump insn index): 49 `lh v1,4(s0)`, 50 `lh v0,6(s0)`, 52 `mult v1,v0`, 53 `addiu a3,sp,16` (src), 54 `addiu a2,sp,1040` (dst), 55 `mflo v1` (total), 56-68 the `((i+1)<<12)/count` divide ending `mflo t3`, 69 `blez v1` with 70 `move t4,zero` in the slot, 71 `subu t5,s8,t3`, 72-73 the `i == count - 1` test.

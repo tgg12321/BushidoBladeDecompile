@@ -1,57 +1,69 @@
-/* func_8003DE14 - candidate (grind session 11, rederive modality).
+/* func_8003DE14 - candidate (grind session 12, structural modality).
  *
- * SCORE 29 / 173 insns on HEAD 2026-09-10 (post -mel, post -msoft-float).
- * Same floor as the s10 candidate, but the s10 candidate's FAKE-family
- * `dst++; dst--;` round-trip is GONE: the +12 weighted-reference lift on the
- * dst pseudo that seats the cursors the way the target seats them is spelled
- * here as an ARM-LOCAL `dst++` in each of the three inner-loop arms, instead of
- * a shared `advance_dst:` label reached by goto from two of them.
+ * SCORE 28 / 173 insns on HEAD 2026-09-10 (post -mel, post -msoft-float).
+ * This is the s11 body (score 29) with ONE structural change, and it drops the
+ * floor by one AND retires the whole j/complement half of the residual:
  *
- * WHAT CHANGED vs memory/grind/func_8003DE14/candidate.c (the s10 form):
- *   - the `advance_dst:` label and both `goto advance_dst;` are deleted;
- *   - each of the two zero-pixel arms ends `*dst = pixel; src++; dst++;
- *     goto loop_check;`
- *   - the blend arm falls through to a plain `dst++;` before `loop_check:`.
- *   Three copies of one real statement, where s10 had one copy plus a
- *   two-statement net-zero round-trip.
+ *   s11:  s32 j = 0;                       <- in the outer do-body
+ *         if (total > 0) {
+ *             do {
+ *                 s32 complement = blend_base - factor;   <- LICM-hoisted
  *
- * WHY IT REACHES THE SAME SEAT (pass attribution, ALLOCDBG read this session):
- *   flow_analysis (toplev.c:2983) counts reg_n_refs on the PRE-jump2 stream and
- *   weights each occurrence by loop_depth (flow.c:2081); the pixel loop is at
- *   depth 3, so one `dst++` is 2 occurrences x 3 = 6 weighted refs.  Replacing
- *   one shared copy with three arm-local copies is 18 instead of 6, i.e. dst's
- *   weighted reg_n_refs goes 26 -> 38 - exactly the count the s10 round-trip
- *   produced.  jump2's cross-jump (jump.c:2020, minimum-2-matching-insn tail
- *   merge) then re-merges the three tails, so the emitted stream is unchanged
- *   at 173 instructions.  Measured (BB2_ALLOC_DEBUG, tools/gcc-2.7.2/cc1,
- *   tmp/grind/func_8003DE14/s11/d_a1/stderr.log):
- *       ord=3 pseudo=109 hardreg=6 nrefs=38 livelen=60 pri=31666   (dst -> $a2)
- *       ord=4 pseudo=108 hardreg=7 nrefs=32 livelen=61 pri=26229   (src -> $a3)
- *   i.e. the TARGET's cursor seat, at the target's own instruction count.
+ *   s12:  if (total > 0) {
+ *             s32 complement = blend_base - factor;       <- written where LICM
+ *             s32 j = 0;                                     put it anyway
+ *             do {
  *
- * FAMILY: this is the duplicated-statement-into-arms shape
- * (.claude/rules/duplicated-statement-into-arms.md - "duplicating a REAL
- * statement into 2+ arms (instead of label-sharing) ... incl. when cross-jump
- * re-merges the copies to identical bytes and the effect is a reg_n_refs
- * priority lift").  A submitting session must read that rule end-to-end and
- * carry whatever annotation it mandates; it is NOT the dead-store family the
- * s10 round-trip fell into, and no net-zero / dead statement remains anywhere
- * in this body.
+ * WHY IT WORKS (pass attribution, BB2_ALLOC_DEBUG on tools/gcc-2.7.2/cc1,
+ * tmp/grind/func_8003DE14/s12/d_W5/stderr.log):
+ *   j (pseudo 115) and complement (pseudo 116) both carry nrefs 11, so
+ *   allocno_compare (global.c:635-648) reduces to a pure live-length race and
+ *   global.c:652-653 breaks an exact tie on ascending allocno.  Both pseudos are
+ *   live across the whole pixel loop (each is used on every iteration and set
+ *   only in the preheader), so their live LENGTHS differ by exactly the distance
+ *   between their two set insns in the preheader - nothing inside the loop body
+ *   can move either number.  LICM always appends a hoisted set at the END of the
+ *   preheader (loop.c scan_loop emits before loop_start), so as long as
+ *   complement's set is hoisted it is strictly BELOW `j = 0` and complement wins
+ *   the race:  s11 measured j 59 / complement 54, i.e. complement seated first
+ *   and taking $t4 where the target has j.
+ *   Writing the subtraction inside `if (total > 0)` gives LICM nothing to hoist
+ *   (it is already in the inner loop's preheader block) and lets ordinary
+ *   statement order put `j = 0` BELOW it:
+ *       ord=15 pseudo=115 hardreg=12 nrefs=11 livelen=54 pri=6111   (j -> $t4)
+ *       ord=16 pseudo=116 hardreg=13 nrefs=11 livelen=55 pri=6000   (complement -> $t5)
+ *   which is the target's seat.  Insns 70/71, 131 and 133 of the aligned diff
+ *   are now byte-exact.
  *
- * NOTE: the natural-looking compression `*dst++ = pixel;` in the zero arms is
- * NOT equivalent here - it folds two insns away (171 insns, score 35) and is
- * banked as rejected/s11-star-dst-plusplus-in-zero-arms-folds-two-insns-35.c.
- * The split `*dst = pixel; ... dst++;` is load-bearing.
+ * ORDINARY C: the only change is where two locals are declared and initialised.
+ * There is no annotation-bearing construct in this body at all.  (The inner
+ * loop's three arm-local `dst++` copies are the s11 duplicated-statement shape,
+ * .claude/rules/duplicated-statement-into-arms.md - unchanged from s11.)
  *
- * WHAT IS LEFT (whole residual, unchanged from s10, sbs2.py aligned diff):
- *   target insns 0-69 and 134-172 byte-exact.  Residual is
- *     (b) j / complement seated $t5/$t4 where the target has $t4/$t5
- *         (target 70/71, 131, 133);
- *     (c) the blend arm's temp naming ($a0/$a1/$v0/$v1/$t7 vs our
- *         $v0/$v1/$a0/$a1) and the mflo/srl interleave (target 104-107 vs our
- *         109-112).
+ * EQUIVALENT SPELLINGS, all measured 28 this session (tmp/grind/.../s12):
+ *   W2  - `s32 j;` left in the outer do-body, `j = 0;` moved inside the if
+ *   W7  - `s32 j;` declared at the top of the do-body
+ *   H1  - dst declared before src
+ *   H3  - total computed last in the outer body
+ *   B1w/B3w/B7w/B8w - four of s11's blend reshapings on top of this chassis
  *
- * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 29, build_insns 173,
+ * WHAT IS LEFT (28, sbs2.py aligned diff, tmp/grind/func_8003DE14/s12):
+ *   (a) HEAD, 4 insns: the target initialises dst at insn 54 and fills the
+ *       `blez` delay slot at 70 with `move t4,zero`; we sink `addiu a2,sp,1040`
+ *       into that slot (reorg.c takes the closest movable insn before the
+ *       branch, and `j = 0` is no longer that insn - it now lives below the
+ *       branch).  This is the price of the flip and it is DIRECTLY COUPLED:
+ *       H2 (j declared before complement inside the if) restores the target's
+ *       delay slot and loses the seat, scoring 31.
+ *   (b) BLEND ARM, target 88-123: register naming ($a0/$a1/$t7 vs our
+ *       $v1/$a1/$v1) plus the blue channel's srl/andi/mult running at target
+ *       104-107 where we run it at 109-112.  Twelve source reshapings were
+ *       re-measured on THIS chassis (B1w..B12w) and none beat 28.
+ *   (c) TRIP TEST, target 127-130: `lh v0,4(s0) / lh v1,6(s0) / mult v0,v1`
+ *       against our `lh v1 / lh v0 / mult v1,v0` - the same two loads in the
+ *       same order, with the two short-lived pseudos named the other way round.
+ *
+ * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 28, build_insns 173,
  * target_insns 173.
  */
 void func_8003DE14(s16 *rect, s32 count) {
@@ -88,11 +100,10 @@ void func_8003DE14(s16 *rect, s32 count) {
             u16 *src = src_buf;
             u16 *dst = dst_buf;
             s32 factor = ((i + 1) << 12) / count;
-            s32 j = 0;
-
             if (total > 0) {
+                s32 complement = blend_base - factor;
+                s32 j = 0;
                 do {
-                    s32 complement = blend_base - factor;
                     if (i == count - 1) {
                         u16 pixel = *src;
                         if (pixel == 0) {
