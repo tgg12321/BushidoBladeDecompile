@@ -1179,3 +1179,155 @@ exist. `memory/grind/func_8003DE14/rejected/s9-indexed-no-cursor-givs-165insn-56
 - [s9] src and dst hard_conflicts are [2,3,4,5,29,64,65,66] on every chassis measured - $v0,$v1,$a0,$a1,$sp,hi,lo,fake - which is why the first-allocated cursor lands on $a2 and not on a lower argument register.
 
 - [s9] mips.h defines no REG_ALLOC_ORDER, so find_reg's scan is plain ascending hard-reg number: the first-allocated of two allocnos with identical conflicts always takes the lower register.
+
+## s10 (forensics, 2026-09-10) - FLOOR 31 -> 29, and the cursor seat is SOLVED
+
+**Chassis re-audit.** `chassis_f1_structure_exact_43.c` re-measured on HEAD
+2026-09-10: 43 / 173, allocation bit-identical to s8/s9 (ALLOCDBG rows below).
+No drift. Still no FAKE construct in the ordinary-C bank, so the `fake_ablate`
+half of the mandated re-audit remains vacuous rather than skipped.
+
+### The pass-order correction - this is what unblocked the function
+
+`tools/gcc-2.7.2/toplev.c` runs, in this order:
+`flow_analysis` (toplev.c:2983) -> `combine_instructions` (toplev.c:3004) ->
+`schedule_insns` pass 1 (toplev.c:3033) -> `regclass`/`local_alloc`
+(toplev.c:3049-3052) -> `global_alloc` (toplev.c:3080).
+
+Consequences, each measured on the f1 dump set
+(`tmp/grind/func_8003DE14/s10/d_f1/`):
+
+- **`reg_n_refs` is counted on the PRE-COMBINE stream.** The f1 `.flow` dump
+  holds 140 insns for this function; the `.combine` dump holds 121. **Combine
+  deletes 19 insns AFTER the allocator's reference counts have been taken.**
+  That is 19 insns of decoupling between "what reg_n_refs saw" and "what the
+  target emits", and it is the premise the s8/s9 instruction-budget identity
+  did not have: s9 derived the target's reg_n_refs from the target's EMITTED
+  asm, which is only sound if combine deleted nothing.
+- **`reg_live_length` is NOT a flow output.** `schedule_insns` pass 1
+  recomputes it and overwrites flow's value wholesale
+  (`sched.c:5106  reg_live_length[regno] = sched_reg_live_length[regno]`).
+  The f1 `.sched` dump prints the deltas verbatim for this function:
+  `;; register 108 life shortened from 70 to 59` and
+  `;; register 109 life shortened from 67 to 58`. So 59/58 are SCHEDULER
+  outputs over the post-combine stream, not insn counts of the emitted stream.
+- `reg_n_refs` survives combine unchanged for the cursors: combine only zeroes
+  a pseudo's refs when its SOLE set was combined away (combine.c:2309-2314 /
+  2331-2337), which cannot apply to a multi-set multi-block cursor; and the
+  scheduler is barred from moving insns across LOOP_BEG/LOOP_END notes
+  precisely so the loop_depth weighting stays correct (sched.c:2076-2079).
+  Counted directly in the dumps: `(reg 108)` occurs 11 times in `.flow` and 11
+  times in `.combine`; `(reg 109)` 9 and 9.
+
+### The allocator forensics, read not guessed (BB2_FINDREG_DEBUG=108, f1)
+
+    FINDREGDBG pseudo=108 alt=0 acc=0 retry=0
+      conflicts:        2 3 4 5 29
+      someone_prefers:  (empty)
+      used_so_far:      0..15 24..29 31
+      pass0_used:       0 1 2 3 4 5 16..23 26..31
+      own_copy_prefs:   (empty)
+      own_full_prefs:   30
+      pass1_used:       0 1 2 3 4 5 26 27 28 29 31   class=1 mode=4 size=1
+
+- src is seated in **pass 0** of find_reg: `regs_used_so_far` is seeded with
+  every call-used register (global.c:364-367), so $a2 is a pass-0 candidate,
+  and 6 is the lowest hard reg outside src's conflict set. There is no cost
+  model - find_reg's scan is plain ascending hard-reg number (mips.h defines
+  no REG_ALLOC_ORDER), so **whichever cursor is allocated first takes $a2.**
+- `regs_someone_prefers[108]` is EMPTY. The only way to divert src off $a2 in
+  pass 0 (global.c:1001) is for a LOWER-priority conflicting allocno to carry
+  hard reg 6 in its `hard_reg_full_preferences`, and those bits are created
+  only by `set_preference` on a register-to-register copy with a hard reg on
+  one side (global.c:1717-1735). In func_8003DE14 hard $a2 is never a copy
+  endpoint: the function takes two parameters ($a0,$a1) and every call it makes
+  takes at most two arguments (DrawSync 1, StoreImage 2, LoadImage 2,
+  func_80052BE4 1). The pass-0 divert route is closed for this call graph.
+- NEW, previously unrecorded asymmetry: `own_full_prefs` for src is {30} and
+  dst has none. `src_buf` sits at virtual-frame offset 0, so its address
+  expands as a plain `(set p (reg 30 $fp))` copy and set_preference fires;
+  `dst_buf` expands as `(plus (reg 30) 1024)` and does not. It is inert today
+  ($fp is not in `regs_used_so_far`, so pass 0 excludes it and the
+  preference-override loop at global.c:1133 clears the bit), but it is a real
+  declaration-order-sensitive asymmetry a future session should know about.
+
+### THE FIX: dst's reference count lifted through a combine-folded round-trip
+
+The census tool prices the lift exactly
+(`python3 tools/nrefs_census.py --func func_8003DE14 --file code6cac_c2
+--above 109:108`): **pseudo 109 must gain +6 weighted refs to rank above 108.**
+Because flow weights each reference by loop_depth (flow.c:2081) and the pixel
+loop is at depth 3, +6 means two more occurrences of dst inside the inner loop.
+
+Form `r2` = f1 with the shared inner-loop tail changed from a single `dst++`
+to `dst++;` followed by a `dst++; dst--;` round-trip.
+
+**Measured: score 29 / build_insns 173 / target_insns 173 - a NEW FLOOR (was
+31, and that 31 form was 172 insns, one short).** ALLOCDBG on r2:
+
+    ord=2 pseudo=109 hardreg=6 nrefs=38 livelen=58 pri=32758   (dst -> $a2)
+    ord=4 pseudo=108 hardreg=7 nrefs=32 livelen=59 pri=27118   (src -> $a3)
+
+i.e. **the target's cursor seat**, reached for the first time in this grind at
+the target's own instruction count. The extra pair contributes 4 occurrences x
+depth 3 = +12 (26 -> 38); combine then folds `(dst+2)-2` back to `dst` and the
+emitted stream is unchanged at 173 instructions. +6 (refs 32) would have
+sufficed arithmetically (160/58 = 27586 > 27118); no ordinary-C spelling that
+adds exactly two depth-3 dst occurrences at zero emitted cost is known yet.
+
+The self-assign spelling does NOT work: it is deleted before flow_analysis,
+refs stay 26, and the allocation and score are bit-identical to f1 (43 / 173).
+Banked as `rejected/s10-dst-self-assign-deleted-before-flow-43.c`.
+
+### What the 29 now is (sbs2.py aligned diff of r2 against the target object)
+
+    ... 70 equal (tgt 0-69)                <- prologue, outer loop, BOTH cursors
+    rep  70  move t4,zero        | move t5,zero      <- j / complement swapped
+    rep  71  subu t5,s8,t3       | subu t4,s8,t3
+    ... 16 equal
+    rep  88..123   blend-arm temp naming ($a0/$a1/$v0/$v1) and the mflo/srl
+                   interleave: the target runs the BLUE channel's
+                   srl/andi/mult before the first mflo, we run it after
+    rep 127-133    the loop-bottom lh/lh/mult operand order + the j register
+    ... 39 equal (tgt 134-172)
+
+Both cursor halves are byte-exact. The residual is exactly the two sub-problems
+s7 already isolated as independent: the j/complement seat pair, and the blend
+arm's temp naming/order. **The cursor sub-problem, which consumed s6-s9, is
+closed.**
+
+### Artifacts
+
+`tmp/grind/func_8003DE14/s10/` - `apply.py` (apply a body over the
+INCLUDE_ASM line), `dump.sh` (instrumented-cc1 -da dump with an arbitrary
+BB2_*_DEBUG knob), `nref.sh`, `bank.py`, `r1.c`, `r2.c`, `d_f1/` (full -da dump
+set + ALLOCDBG), `d_fr108/` (BB2_FINDREG_DEBUG=108 trace), `d_r2/` (ALLOCDBG
+for the new floor).
+
+- [s10] toplev.c:2983 flow_analysis runs BEFORE toplev.c:3004 combine_instructions, so reg_n_refs is counted on the PRE-COMBINE stream; measured on f1, combine deletes 19 of 140 insns in this function. The s8/s9 instruction-budget identity, which derived the target's reg_n_refs from its EMITTED asm, is only valid if combine deleted nothing, and is therefore not a sound foreclosure of doors (a)/(b).
+- [s10] sched.c:5106 overwrites reg_live_length with the scheduler's own recomputation; the f1 .sched dump prints ";; register 108 life shortened from 70 to 59" and ";; register 109 life shortened from 67 to 58". The 59/58 that feed allocno_compare are scheduler outputs over the post-combine stream.
+- [s10] BB2_FINDREG_DEBUG=108 on f1: conflicts {2,3,4,5,29}, regs_someone_prefers EMPTY, $a2 taken in pass 0 because regs_used_so_far is seeded with every call-used reg (global.c:364-367). find_reg has no cost model and mips.h defines no REG_ALLOC_ORDER, so the first-allocated cursor always takes $a2.
+- [s10] hard-reg preferences are created only by set_preference on a reg-to-reg copy with a hard reg on one side (global.c:1717-1735); hard $a2 is never a copy endpoint in func_8003DE14 (2 params, every call <= 2 args), so regs_someone_prefers can never contain bit 6 and the pass-0 divert route is closed here.
+- [s10] src's own_full_prefs = {30} and dst's is empty, because src_buf is at virtual-frame offset 0 (plain (set p (reg 30)) copy) while dst_buf expands as (plus (reg 30) 1024). Inert today but declaration-order sensitive.
+- [s10] NEW FLOOR 29 / 173 (memory/grind/func_8003DE14/candidate.c): f1 plus a two-statement dst round-trip in the shared inner-loop tail. dst nrefs 26 -> 38, pri 32758 > src 27118, so dst is allocated first and takes $a2 while src takes $a3 - the TARGET's cursor seat, at the target's instruction count.
+- [s10] The self-assign spelling of the same lift is deleted before flow_analysis (cse / delete_trivially_dead_insns): refs stay 26 and the score is bit-identical to f1 at 43 / 173. Only a spelling that survives to flow AND is folded by combine lifts the count.
+- [s10] tools/nrefs_census.py --above 109:108 prices the lift at exactly +6 weighted refs (two depth-3 occurrences); refs 32 would suffice (160/58 = 27586 > 27118). The +12 the round-trip delivers is more than needed, which leaves room for a cheaper ordinary-C spelling.
+- [s10] After the seat flip the residual is entirely the blend block: insns 0-69 and 134-172 of the target are byte-exact. What is left is (b) j/complement seated $t5/$t4 instead of $t4/$t5 and (c) the blend arm temp naming plus the mflo/srl interleave (target does the blue channel's srl/andi/mult before the first mflo).
+
+- [s10] Pass order read from tools/gcc-2.7.2/toplev.c: flow_analysis at 2983, combine_instructions at 3004, schedule_insns pass 1 at 3033, regclass/local_alloc at 3049-3052, global_alloc at 3080. reg_n_refs is therefore counted on the PRE-COMBINE stream, and in this function combine deletes 19 of 140 insns - 19 insns of decoupling that the s8/s9 instruction-budget identity (which read the target's reg_n_refs off its EMITTED asm) did not account for.
+
+- [s10] reg_live_length is overwritten by the scheduler: sched.c:5106 assigns reg_live_length[regno] = sched_reg_live_length[regno], and the f1 .sched dump prints ';; register 108 life shortened from 70 to 59' and ';; register 109 life shortened from 67 to 58'. The 59/58 that feed allocno_compare are scheduler outputs, not emitted-stream insn counts.
+
+- [s10] reg_n_refs is safe from both later passes for these pseudos: combine zeroes a pseudo's refs only when its SOLE set was combined away (combine.c:2309-2314 / 2331-2337), and the scheduler is barred from moving insns across LOOP_BEG/LOOP_END notes precisely so the loop_depth weighting stays valid (sched.c:2076-2079). Counted in the dumps: (reg 108) appears 11 times in .flow and 11 in .combine; (reg 109) 9 and 9.
+
+- [s10] BB2_FINDREG_DEBUG=108 on f1: conflicts {2,3,4,5,29}, regs_someone_prefers EMPTY, own_copy_prefs EMPTY, own_full_prefs {30}, pass0_used excludes 6. src is seated in pass 0 because regs_used_so_far is seeded with every call-used register (global.c:364-367); find_reg has no cost model and mips.h defines no REG_ALLOC_ORDER, so the first-allocated cursor always takes $a2.
+
+- [s10] New asymmetry: src's hard_reg_full_preferences is {30} ($fp) while dst's is empty, because src_buf sits at virtual-frame offset 0 and expands as a plain (set p (reg 30)) copy that set_preference fires on, whereas dst_buf expands as (plus (reg 30) 1024). Inert today but sensitive to local declaration order.
+
+- [s10] tools/nrefs_census.py --func func_8003DE14 --file code6cac_c2 --above 109:108 prices the flip at exactly +6 weighted refs on pseudo 109 (two depth-3 occurrences); refs 32 suffices arithmetically (160/58 = 27586 > 27118). The banked candidate delivers +12, so there is headroom for a cheaper spelling.
+
+- [s10] NEW FLOOR 29 / 173 (memory/grind/func_8003DE14/candidate.c), with ALLOCDBG confirming dst -> $a2 (nrefs 38, pri 32758) and src -> $a3 (nrefs 32, pri 27118). The previous best was 31 at 172 insns; the ordinary-C best remains 31 and is preserved as memory/grind/func_8003DE14/chassis_s3d4_ordinary_c_31.c.
+
+- [s10] sbs2.py aligned diff of the new candidate against the target object: target insns 0-69 and 134-172 are byte-exact. The whole residual is the blend block - the j/complement pair seated $t5/$t4 where the target has $t4/$t5, plus the blend arm's temp naming ($a0/$a1/$v0/$v1) and the mflo/srl interleave (the target runs the blue channel's srl/andi/mult before the first mflo; we run it after).
+
+- [s10] src/code6cac_c2.c was restored to HEAD (INCLUDE_ASM) before the session ended; the only working-tree changes are under memory/grind/func_8003DE14/ and tmp/.

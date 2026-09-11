@@ -946,3 +946,67 @@ claim. There is no open family question on this function.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-10, f1-derived ix1 chassis (56 / 165 insns), form tmp/grind/func_8003DE14/s9/ix1.c, no FAKE constructs
+
+## s10 hypotheses (forensics, 2026-09-10)
+
+**H-s10-1 (CONFIRMED).** Because flow_analysis precedes combine_instructions,
+two extra depth-3 occurrences of the dst pseudo can be paid for in reg_n_refs
+and then reclaimed by combine, so dst can outrank src in allocno_compare
+without changing the emitted instruction count. Probe: the f1 chassis with a
+two-statement dst round-trip appended to the shared inner-loop tail. Result:
+dst nrefs 26 -> 38, pri 32758 > src 27118, dst -> $a2 and src -> $a3,
+score 43 -> 29 at build_insns 173. Banked as candidate.c.
+
+**H-s10-2 (KILLED, instance).** The same lift spelled as a self-assign leaves
+reg_n_refs at 26. Measured on the f1 chassis, HEAD 2026-09-10, no other change:
+43 / 173, allocation bit-identical to f1. The insn is gone before
+flow_analysis sees it.
+
+**H-s10-3 (KILLED, class).** Diverting src off $a2 inside find_reg's pass 0 by
+seeding regs_someone_prefers[108] with hard reg 6 cannot be reached from C in
+this function: those bits come only from set_preference on a reg-to-reg copy
+with a hard reg on one side (tools/gcc-2.7.2/global.c:1717), and $a2 is never a
+copy endpoint here (two parameters, every call takes at most two arguments).
+Measured on f1 with BB2_FINDREG_DEBUG=108: someone_prefers empty, $a2 selected
+in pass 0.
+
+**H-s10-4 (KILLED, instance).** The pure live-length route (door (c)) does not
+flip the seat on this chassis. With refs pinned at 32/26 the flip needs
+L_src > 1.538 x L_dst; measured pre-scheduler lives on f1 are src 70 / dst 67
+(sched then compresses them to 59/58, sched.c:5106), and both cursors are live
+across the whole inner-loop body because both are set and used on its back
+edge, so their separation is bounded by the outer-loop preheader (about a dozen
+pre-combine insns). Extending src past the inner loop would make it cross the
+outer loop's LoadImage/DrawSync calls, which pushes find_reg onto the
+callee-saved set entirely (global.c:970-975).
+
+## [s10] Because flow_analysis computes reg_n_refs BEFORE combine_instructions runs, extra depth-3 occurrences of the dst pseudo can be paid for in the allocator's reference count and then reclaimed by combine, letting dst outrank src in allocno_compare without changing the emitted instruction count.
+- mechanism: toplev.c:2983 calls flow_analysis (flow.c:2081 reg_n_refs[regno] += loop_depth) and only afterwards, at toplev.c:3004, calls combine_instructions; measured on the f1 chassis combine deletes 19 of the 140 post-flow insns in this function. A two-statement dst round-trip in the shared inner-loop tail adds 4 occurrences of pseudo 109 at pixel-loop depth 3 (+12 weighted, 26 -> 38); combine folds (dst+2)-2 back to dst so nothing is emitted. allocno_compare (global.c:635) then ranks dst 38/58 = 32758 above src 32/59 = 27118, dst is allocated first, and find_reg's plain ascending scan (mips.h defines no REG_ALLOC_ORDER) hands the first-allocated cursor $a2.
+- probe: f1 chassis + the round-trip = tmp/grind/func_8003DE14/s10/r2.c, banked as memory/grind/func_8003DE14/candidate.c. sandbox --disable all: score 29, build_insns 173, target_insns 173. ALLOCDBG (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1, tmp/grind/func_8003DE14/s10/d_r2/stderr.log): ord=2 pseudo=109 hardreg=6 nrefs=38 livelen=58 pri=32758; ord=4 pseudo=108 hardreg=7 nrefs=32 livelen=59 pri=27118.
+- result: CONFIRMED. Score 43 (f1) -> 29, a new floor below the previous 31 and, unlike that 31 form, at the target's own instruction count. The sbs2.py aligned diff shows target insns 0-69 and 134-172 now byte-exact: both cursor halves are correct and the whole 29 sits in the blend block. NOTE FOR THE NEXT SESSION: the round-trip is a net-zero pair of dead stores to a LOCAL, i.e. a FAKE-family construct that is NOT submittable as written - see the frontier.
+- verdict: CONFIRMED
+
+## [s10] Spelling the same reference lift as a self-assign of dst at the same inner-loop site leaves dst's reg_n_refs at 26 and the allocation unchanged.
+- mechanism: A no-op register move is removed by cse's delete_trivially_dead_insns, which runs before flow_analysis (toplev.c orders cse2 ahead of flow at 2983), so flow never counts the occurrences.
+- probe: tmp/grind/func_8003DE14/s10/r1.c (f1 with the self-assign, nothing else changed), sandbox --disable all.
+- result: KILLED. Score 43 / build_insns 173 - bit-identical to the unmodified f1 chassis. Banked as memory/grind/func_8003DE14/rejected/s10-dst-self-assign-deleted-before-flow-43.c. Only a spelling that survives to flow AND is folded later by combine moves the count.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10 (post -mel, post -msoft-float), f1 chassis (43 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s10/r1.c
+
+## [s10] Diverting src off $a2 inside find_reg's pass 0, by getting hard reg 6 into regs_someone_prefers[108], is not reachable from C in func_8003DE14 because hard reg $a2 is never a register-copy endpoint in this function.
+- mechanism: find_reg ORs regs_someone_prefers into the pass-0 exclusion set (global.c:1001), and prune_preferences fills it only from the hard_reg_full_preferences of lower-priority conflicting allocnos (global.c:920-928). Those preference bits exist only where set_preference sees a register-to-register copy with a hard reg on one side (global.c:1717). func_8003DE14 has two parameters ($a0, $a1) and every call it makes takes at most two arguments (DrawSync 1, StoreImage 2, LoadImage 2, func_80052BE4 1), so no RTL copy ever names hard reg 6.
+- probe: Instrumented cc1 with BB2_FINDREG_DEBUG=108 on the f1 chassis; tmp/grind/func_8003DE14/s10/d_fr108/stderr.log.
+- result: KILLED. The trace prints conflicts {2,3,4,5,29}, someone_prefers EMPTY, own_copy_prefs EMPTY, own_full_prefs {30}, and pass0_used excluding 6 - src takes $a2 in pass 0 as the lowest hard reg outside its conflict set. Recorded alongside a new asymmetry worth knowing: src carries a $fp preference (src_buf is at virtual-frame offset 0, so its address expands as a plain reg copy) while dst carries none.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs present, BB2_FINDREG_DEBUG=108 trace
+- predicate_cite: tools/gcc-2.7.2/global.c:1717
+
+## [s10] Leaving the cursors' reference counts at 32/26 and moving only their live lengths does not flip the seat on the f1 chassis: the required ratio L_src > 1.538 x L_dst exceeds what the two cursors' shared inner-loop residency allows.
+- mechanism: allocno_compare (global.c:635) divides floor_log2(refs)*refs by live_length, so with refs pinned the flip needs 160/L_src < 104/L_dst. reg_live_length is not a flow output - schedule_insns pass 1 overwrites it (sched.c:5106) - and the f1 .sched dump prints the actual values: register 108 life shortened from 70 to 59, register 109 from 67 to 58. Both cursors are set and used on the inner loop's back edge, so both are live over its whole body and their live lengths can differ only by the outer-loop preheader span; pushing src's range past the inner loop would make it cross the outer loop's LoadImage/DrawSync calls, at which point find_reg starts from call_used_reg_set (global.c:970-975) and neither $a2 nor $a3 is reachable at all.
+- probe: f1 -da dump set, tmp/grind/func_8003DE14/s10/d_f1/code6cac_c2.sched (life shortened/extended lines) and .flow / .combine insn counts.
+- result: KILLED for this chassis. Measured pre-scheduler lives are src 70 / dst 67 against a requirement of L_src >= 1.538 x L_dst = 103 at dst 67. This closes the s9 door (c) with the right units (scheduler-recomputed lives over the post-combine stream) rather than s9's emitted-stream estimate - and it is superseded in practice by the reference-count route, which flipped the seat this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s10/d_f1/

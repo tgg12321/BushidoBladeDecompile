@@ -1,8 +1,8 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 31,
    "modality": "rederive",
    "headline": "rederive: m2c confirms f1 IS the target's emitted shape, and the ORIGINAL cc1psx seats f1's cursors the same way ours does - the 3-session 'same refs, different seat' contradiction is the C, not the t"
+  },
+  {
+   "session": 10,
+   "floor": 29,
+   "modality": "forensics",
+   "headline": "Floor 31 -> 29 at the target's own 173 insns: flow_analysis runs BEFORE combine (toplev.c:2983 vs 3004), so two extra depth-3 dst references bought in reg_n_refs and refunded by combine flip the curso"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Door (b) is still open if reorg can copy a shared advance_src block's insn into one of the two CONDITIONAL branches that currently carry NOP delay slots (bne $s1,$v0 at 8003DF38, bnez $v0 at 8003DF48) - the target proves the copy path fires in this function, just on the loop-back branch.",
-   "mechanism": "reorg.c:3057-3061 admits non-jump insns and CONDITIONAL jumps into the steal-from-branch-target path at reorg.c:3169 (add_to_delay_list (copy_rtx (next_trial)) + reorg_redirect_jump), which is a genuine instruction created after flow.c fixed reg_n_refs. s8's class kill covers UNCONDITIONAL jumps only (reorg.c:3059). q1 already carries the target seat at src refs 26 and is exactly one addiu $a3 short.",
-   "next_probe": "On the q1 chassis, dump with BB2_DBR_DEBUG=1 via tmp/grind/func_8003DE14/s8/dump.sh and read which candidate insns reorg considered and rejected for the two NOP-slot conditional branches; then spell forms in which the zero test's fall-through runs into an unconditional jump whose target is the shared src++ block, so next_trial is the addiu $a3 itself. Gate on build_insns == 173 first, then read the $a3/$a2 disposition."
+   "hypothesis": "The banked 29 form's reference lift is spelled as a net-zero increment/decrement pair on a local, which is a FAKE-family construct and is NOT submittable as written; the same +6 lift may have an ORDINARY-C spelling, and if it does the whole cursor result becomes free.",
+   "mechanism": "Only +6 weighted refs are needed (two depth-3 occurrences of pseudo 109), not the +12 the round-trip delivers. Any construct that survives to flow_analysis and is then removed or absorbed by combine_instructions qualifier - and combine's own log for this function shows it routinely eats (set p (plus base K)) address computations and HI-load + ashift extension pairs. The sanctioned duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md) is the other candidate route, since sinking the shared dst++ into arms adds (N-1) x 6 refs, but it costs emitted instructions unless jump2's cross-jump (minimum 2 matching insns, jump.c:2020) re-merges them.",
+   "next_probe": "Enumerate ordinary-C statements that put two more depth-3 occurrences of dst into the pre-combine RTL at zero emitted cost - candidates: expressing the inner loop's trip test or the LoadImage argument in terms of dst rather than dst_buf, and an arm-local dst-based address that combine folds into an existing store. Measure each with sandbox and read dst's nrefs from BB2_ALLOC_DEBUG (target: 32-37, keeping livelen 58). If none reaches 32, file a ruling-request asking whether a net-zero increment/decrement pair on a local sits inside the dead-store family (.claude/rules/dead-store-fake-exception.md, whose text describes a same-value re-store / self-assign) - that classification, not the bytes, is what gates this candidate."
   },
   {
-   "hypothesis": "The four-door accounting assumes the target's pre-RA stream equals its emitted stream minus the single reorg comparand copy; a pre-RA stream of 175 whose cross-jump deletes a [sh dst],[addiu dst] pair would give dst 35 weighted refs (pri 30172 > src 27118) and land on 173.",
-   "mechanism": "jump.c:2020 find_cross_jump requires >= 2 matching insns and do_cross_jump deletes them from the redirected arm; if the matched pair is a dst store plus a dst increment, dst pre-RA = 5 sh x3 + 3 addiu x6 + 2 = 35 while src stays 32, flipping the allocation order without touching src at all. This session's objection is that the redirected arm would then emit as a bare j, which the target does not contain - but that was reasoned from tail alignment, not measured against do_cross_jump's actual redirect placement.",
-   "next_probe": "Read do_cross_jump (jump.c) for where the new label is planted and whether the redirected arm keeps its own store; then spell an f1 variant with five *dst = stores and three dst++ where two arms store the SAME pseudo and jump to the same label, and measure build_insns plus the ALLOCDBG refs for dst."
+   "hypothesis": "The j/complement pair ($t5/$t4 where the target has $t4/$t5) is the same allocno-order question the cursors just were, and the reg_n_refs / pre-combine framing that solved the cursors should price it directly.",
+   "mechanism": "On f1 the census rows are pseudo 116 (nrefs 11, livelen 52, pri 6346) and pseudo 115 (nrefs 11, livelen 57, pri 5789), allocated at ord 15 and 16 into $t4 and $t5. They are adjacent in the order, so a single reference or a five-insn live-length move swaps them - and s7's kill of this pair was measured before the pre-combine framing existed, so it should be re-measured on the new 29 chassis rather than trusted.",
+   "next_probe": "Run tools/nrefs_census.py --above on the new candidate for the j/complement pair to get the exact lift, then re-measure the s7 forms (tmp/grind/func_8003DE14/s7/u1_c_before_j.c .. u4_f) on the 29 chassis. Confirm with BB2_ALLOC_DEBUG that the cursor seat survives each variant before scoring it."
   },
   {
-   "hypothesis": "s7 swept the cursor model ONE input at a time; a JOINT (refs, live_length) move is unsearched and the combined thresholds are much closer than either alone - e.g. src refs 29 (one shared pixel lhu) with src live 65 puts pri(src) at 17846 against dst's 17931.",
-   "mechanism": "pri = floor_log2(refs) * refs / live * 10000, so dropping src across the floor_log2(32)=5 -> floor_log2(29)=4 step costs only 3 weighted refs instead of 6, and the residual gap can then be closed by a 6-insn live-length extension instead of the 31 a pure live move needs. tools/ra_solver/inverse.py has only ever been run with single-atom bounds on this pair.",
-   "next_probe": "Re-run inverse.py global on the f1 model with depth 2 restricted to the cursor pair and joint atoms (refs_down 108 combined with live_extend 108 / live_shrink 109), then check whether any joint vector has a C spelling that preserves the target's two lhu and four addiu $a3."
+   "hypothesis": "The blend arm's temp naming and the mflo/srl interleave are a scheduler question, and sched.c's decisions are now known to be the pass that also sets the live lengths feeding allocation - so tools/sched_solver can be pointed at the new 29 chassis directly.",
+   "mechanism": "The target runs the blue channel's srl/andi/mult before its first mflo while we run it after; sbs2.py shows this as a 4-insn deletion at target 104-107 against a 4-insn insertion at ours 109-112, with the surrounding temps renamed as a consequence. sched.c:5106 means any reordering here also perturbs live lengths, so the two effects must be read together rather than modelled separately.",
+   "next_probe": "Dump the .sched RTL for the new candidate, feed the blend block to tools/sched_solver, and enumerate the source-side orderings of the three channel computations (r, g, b) that put the blue channel's mult ahead of the first mflo. Gate every variant on build_insns == 173 and on the cursor seat still reading dst -> $a2 in ALLOCDBG."
   }
  ],
  "judge_constraints": [],
@@ -310,6 +316,30 @@
    "measured_on": "HEAD chassis 2026-09-10, f1-derived ix1 chassis (56 / 165 insns), form tmp/grind/func_8003DE14/s9/ix1.c, no FAKE constructs",
    "predicate_cite": "",
    "result": "56 / 165 instructions - eight short of the target's 173 and the worst score of any structurally complete form on this fu"
+  },
+  {
+   "session": 10,
+   "statement": "Spelling the same reference lift as a self-assign of dst at the same inner-loop site leaves dst's reg_n_refs at 26 and the allocation unchanged.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), f1 chassis (43 / 173 insns), no FAKE constructs present, form tmp/grind/func_8003DE14/s10/r1.c",
+   "predicate_cite": "",
+   "result": "KILLED. Score 43 / build_insns 173 - bit-identical to the unmodified f1 chassis. Banked as memory/grind/func_8003DE14/re"
+  },
+  {
+   "session": 10,
+   "statement": "Diverting src off $a2 inside find_reg's pass 0, by getting hard reg 6 into regs_someone_prefers[108], is not reachable from C in func_8003DE14 because hard reg $a2 is never a register-copy endpoint in",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs present, BB2_FINDREG_DEBUG=108 trace",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1717",
+   "result": "KILLED. The trace prints conflicts {2,3,4,5,29}, someone_prefers EMPTY, own_copy_prefs EMPTY, own_full_prefs {30}, and p"
+  },
+  {
+   "session": 10,
+   "statement": "Leaving the cursors' reference counts at 32/26 and moving only their live lengths does not flip the seat on the f1 chassis: the required ratio L_src > 1.538 x L_dst exceeds what the two cursors' share",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs present, dumps tmp/grind/func_8003DE14/s10/d_f1/",
+   "predicate_cite": "",
+   "result": "KILLED for this chassis. Measured pre-scheduler lives are src 70 / dst 67 against a requirement of L_src >= 1.538 x L_ds"
   }
  ],
  "ladder_skip": 0,
