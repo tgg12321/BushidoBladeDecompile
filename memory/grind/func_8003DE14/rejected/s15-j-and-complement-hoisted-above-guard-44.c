@@ -86,24 +86,6 @@
  *
  * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 26, build_insns 173,
  * target_insns 173.
- *
- * S15 (enumerate) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left
- * it unchanged as the best known form.  s15 swept SIX exhaustive spelling
- * families, 3,966 valid spellings, ZERO hit (tmp/grind/func_8003DE14/s15/):
- *   - all 1680 interleavings of the blend arms nine channel assignments
- *     (best 26, 196 byte-identical ties) - INCLUDING the order the targets own
- *     instruction stream exhibits (all three products, then the three sums),
- *     which ties rather than beats;
- *   - all 588 head-region spellings (hoisting j = 0 and/or complement out of
- *     the if (total > 0) guard x every def-before-use order of the four
- *     per-iteration statements): best 26, and every hoisted-j spelling is 40+;
- *   - all 96 cursor declaration-site spellings (src/dst at function scope):
- *     best 26, hoisting either cursor costs 33 to 97 points;
- *   - 7 respellings of i == count - 1 (best 27) and 8 of the inner-loop latch
- *     (best 26, operand order inert);
- *   - the full 550-spelling no-reuse (SSA) blend lattice: best 28, i.e. the
- *     per-channel variable reuse in this body is worth 2 points that naming and
- *     ordering alone never buy.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -135,13 +117,13 @@ void func_8003DE14(s16 *rect, s32 count) {
     if (count > 0) {
         s32 blend_base = 0x1000;
         do {
-            s32 total = rect[2] * rect[3];
-            u16 *src = src_buf;
             u16 *dst = dst_buf;
             s32 factor = ((i + 1) << 12) / count;
+            s32 complement = blend_base - factor;
+            s32 j = 0;
+            u16 *src = src_buf;
+            s32 total = rect[2] * rect[3];
             if (total > 0) {
-                s32 complement = blend_base - factor;
-                s32 j = 0;
                 do {
                     if (i == count - 1) {
                         u16 pixel = *src;

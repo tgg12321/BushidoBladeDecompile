@@ -1797,3 +1797,100 @@ not a source-level one.
 - [s14] Form AAC (b channel with both products named) scores 26 like the incumbent but is byte-different, and it reproduces the target's b-channel register pattern, so the b-channel rows are naming, not shape.
 
 - [s14] sched1 normalises the src++ cursor bump: six different source placements produce byte-identical objects.
+
+## S15 (enumerate) — six exhaustive spelling families, 3,966 valid spellings, ZERO hit
+
+Chassis re-measured at dispatch: `memory/grind/func_8003DE14/candidate.c` =
+**26 / 173 insns** on HEAD 2026-09-10 (`tools/sweep_variants.py`), so every s13/s14
+conclusion remains chassis-valid and the floor did not move this session.
+
+Design + generators: `tmp/grind/func_8003DE14/s15/README.md`.  Every variant is a
+complete function body spliced into `src/code6cac_c2.c` and scored with the honest
+`sandbox func_8003DE14 --disable all`.  Per-variant scores in `s15/<family>.json`.
+
+| family | region | axis enumerated | n | histogram | best |
+|---|---|---|---|---|---|
+| enum_il | blend arm, the nine channel assignment statements | every interleaving of the three per-channel chains, 9!/(3!^3) | 1680 | {26:196, 30:84, 31:84, 33:280, 34:476, 40:392, 41:84, 43:84} | **26 = baseline** |
+| enum_head | outer-loop declaration block + guard | hoist subsets of {complement, j} above the `if (total > 0)` guard x every def-before-use order | 588 | {26:24, 28:20, 29:40, 30:84, 40:60, 44:360} | **26 = baseline** |
+| enum_head2 | same block | src/dst declared at function scope and merely ASSIGNED in-loop (4 combos) x 24 orders | 96 | {26:40, 59:8, 108:8, 109:8, 116:16, 123:16} | **26 = baseline** |
+| enum_test | the last-pass arm test `i == count - 1` | algebraic respellings of the comparison | 7 | {27:1, 32:2, 34:2, 51:2} | 27 |
+| enum_latch | the inner-loop latch `j < rect[2] * rect[3]` | operand order / hoisted `total` / comparison form | 8 | {26:4, 28:1, 36:2, 40:1} | **26 = baseline** |
+| enum_ssa | blend arm in NO-REUSE (SSA) form | tools/spelling_enum.py inline-subset x declaration-order lattice | 550 | see S15.6 | — |
+
+### S15.1 The blend arm's statement-interleaving space is flat at the floor
+All 1680 interleavings of the nine channel assignments (per-channel order fixed by
+data dependence: product, reuse-write, sum) collapse onto EIGHT distinct scores,
+and 196 of them — 11.7% — are byte-identical ties at 26.  The incumbent
+`r,r,r,g,g,g,b,b,b` is one of them.  Crucially the TARGET'S OWN statement order,
+read off `asm/funcs/func_8003DE14.s` rows 103-131 (`r` product pair, `g` product
+pair, `b` product pair, then the three sums = tag `rrggbbrgb`), is also in the
+tie-band at 26, NOT below it: writing the arm exactly the way the target's own
+insn stream is laid out buys nothing.  sched1 normalises this entire axis.
+
+### S15.2 The head region (delay-slot residual) has no spelling below 26 either
+588 spellings covering everything s12/s13's hand-probed E-series did NOT: hoisting
+`j = 0` and/or `complement` OUT of the guard entirely (480 of the 588 are novel),
+crossed with every def-before-use order of `total / src / dst / factor`.  The two
+bands that contain every hoisted-`j` spelling are 40 and 44 (420 of 588); hoisting
+`complement` alone lands at 29/30.  The 24 ties at 26 are exactly the spellings
+that keep BOTH `complement` and `j` inside the guard in that order — i.e. the
+incumbent's shape, with the four per-iteration statements in any order (confirming
+s13's E4/E5/E6 byte-identity result across the full 24-order space, not just 3 of it).
+
+### S15.3 The cursor declaration-SITE axis is strictly worse
+Declaring `src` and/or `dst` at function scope and assigning them in the loop
+costs 33 to 97 points (59 / 108 / 109 / 116 / 123 bands).  Only the all-in-loop
+combination (40 spellings) ties 26.  The `src`/`dst` pseudos must be born inside
+the outer loop body for the $a3/$a2 seat.
+
+### S15.4 The `i == count - 1` comparison spelling is not a lever on p118
+p118 (`count - 1`, pri 90000) is the allocno that blocks `$v0` for `px`.  Seven
+respellings measured: `count - 1 == i` 27, `count - i == 1` 32 (174 insns),
+`i - count == -1` 32 (174), `i >= count - 1` 34 (174), `!(i < count - 1)` 34 (174),
+`i + 1 == count` 51, `count == i + 1` 51.  Nothing reaches 26, and the three forms
+that change the arithmetic shape all ADD an instruction.
+
+### S15.5 The latch's operand order is inert; `!=` changes the instruction count
+`j < rect[3] * rect[2]`, `j < (rect[2] * rect[3])`, `rect[2] * rect[3] > j` and
+`rect[3] * rect[2] > j` are all byte-identical to the incumbent at 26.
+`j != rect[2] * rect[3]` drops to 172 insns (28).  `j < total` (the hoisted
+product) is 40, and the `((u16 *)rect)[2] * ((u16 *)rect)[3]` sub-word forms are
+36 — the target's `lh` pair is what the incumbent already emits.  So the 3-insn
+trip-test residual is NOT reachable from the latch's own spelling: it is downstream
+register naming, exactly as s13 recorded.
+
+### S15.6 enum_ssa: generator defect found and corrected mid-session
+The first enum_ssa chassis put `src++;` immediately BEFORE the region, so every
+spelling that keeps at least one declaration is a declaration-after-statement in
+the same block — a C89 parse error under GCC 2.7.2.  549 of 550 variants therefore
+measured a degenerate 100 / 116 insns (only the fully-inlined v549, which has no
+declarations at all, compiled: 45 / 173).  Corrected chassis
+(`s15/enumc_base2.c`) moves `src++;` AFTER the region — s14 measured all six
+`src++` placements byte-identical on this chassis, so the move is free.  RESULT
+OF THE CORRECTED SWEEP: see the s15 outcome JSON / the line below.
+
+**Lesson for future enumerate sessions on this function: an ENUM region that
+begins with declarations must not be preceded by a statement in the same block.**
+
+### S15.6 result (corrected chassis) — the no-reuse blend lattice tops out at 28
+550 spellings, histogram {28:37, 33:37, 34:37, 35:37, 41:74, 44:37, 45:83, 54:67,
+55:104, 56:37}.  Best = **28**, reached by 37 spellings — exactly the s12 shape.
+Nothing in the entire inline-subset x declaration-order lattice of the NO-REUSE
+blend arm reaches the reuse form's 26, which independently re-confirms s13's
+finding (one C variable carrying both a channel's shifted source and its
+`X * factor` product is worth 2 points and is not reachable by naming/ordering
+alone).
+
+- [s15] [s15] Chassis re-measured at dispatch: memory/grind/func_8003DE14/candidate.c = 26 / 173 insns on HEAD 2026-09-10 (tools/sweep_variants.py), so every s13/s14 conclusion remains chassis-valid and the floor did not move this session.
+
+- [s15] [s15] 3,966 valid spellings measured across six families; the global minimum over all of them is 26, reached only by bodies byte-identical to the incumbent. Four of the six families contain byte-identical ties at 26 (196 + 24 + 40 + 4 spellings) - large flat plateaus, not near-misses.
+
+- [s15] [s15] The TARGET'S OWN blend statement order is now known and measured. asm/funcs/func_8003DE14.s rows 103-131 run r's product pair, then g's, then b's, and only then the three sums - source order r,r,g,g,b,b,r,g,b. Written that way our build emits BYTE-IDENTICAL code to the incumbent (26), so the residual is provably not a statement-order fact in the blend arm.
+
+- [s15] [s15] The head region's two constraints are now measured over their whole space rather than sampled: hoisting j = 0 above the guard costs 14-18 points in every one of the 420 spellings that do it, and all 24 spellings at the floor keep complement-then-j inside the guard. s13's tension finding (j must sit below complement for the seat but above it for the delay slot) survives the exhaustive sweep.
+
+- [s15] [s15] The cursor pseudos must be born inside the outer loop body: all 56 function-scope declaration spellings cost 33-97 points.
+
+- [s15] [s15] The per-channel variable reuse introduced in s13 is worth exactly 2 points against the ENTIRE no-reuse naming/order lattice (550 spellings, best 28).
+
+- [s15] [s15] TOOLING: an ENUM region that begins with declarations must not be preceded by a statement in the same block - GCC 2.7.2 is C89, so every such variant is a parse error that measures as a degenerate score (549 of 550 at 100 / 116 insns). Cost this session: one 550-variant sweep re-run (s15/enumc_base.c vs enumc_base2.c).

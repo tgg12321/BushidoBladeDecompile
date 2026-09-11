@@ -86,24 +86,6 @@
  *
  * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 26, build_insns 173,
  * target_insns 173.
- *
- * S15 (enumerate) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left
- * it unchanged as the best known form.  s15 swept SIX exhaustive spelling
- * families, 3,966 valid spellings, ZERO hit (tmp/grind/func_8003DE14/s15/):
- *   - all 1680 interleavings of the blend arms nine channel assignments
- *     (best 26, 196 byte-identical ties) - INCLUDING the order the targets own
- *     instruction stream exhibits (all three products, then the three sums),
- *     which ties rather than beats;
- *   - all 588 head-region spellings (hoisting j = 0 and/or complement out of
- *     the if (total > 0) guard x every def-before-use order of the four
- *     per-iteration statements): best 26, and every hoisted-j spelling is 40+;
- *   - all 96 cursor declaration-site spellings (src/dst at function scope):
- *     best 26, hoisting either cursor costs 33 to 97 points;
- *   - 7 respellings of i == count - 1 (best 27) and 8 of the inner-loop latch
- *     (best 26, operand order inert);
- *   - the full 550-spelling no-reuse (SSA) blend lattice: best 28, i.e. the
- *     per-channel variable reuse in this body is worth 2 points that naming and
- *     ordering alone never buy.
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -177,12 +159,12 @@ void func_8003DE14(s16 *rect, s32 count) {
                             src++;
                             rp = r_src * complement;
                             r_src = r * factor;
-                            r_ch = ((rp + r_src) >> 15) & 0x1F;
                             gp = g_src * complement;
                             g_src = g * factor;
-                            g_ch = ((gp + g_src) >> 10) & 0x3E0;
                             bp = b_src * complement;
                             b_src = b * factor;
+                            r_ch = ((rp + r_src) >> 15) & 0x1F;
+                            g_ch = ((gp + g_src) >> 10) & 0x3E0;
                             b_shift = (bp + b_src) >> 5;
                             *dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);
                         }
