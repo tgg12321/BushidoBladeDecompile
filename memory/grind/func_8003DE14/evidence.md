@@ -2587,3 +2587,142 @@ the only depth at which a j passenger survives is depth 3, where the quantum is 
 - [s20] allocno_compare (tools/gcc-2.7.2/global.c:650-654) breaks an exact priority TIE by lower allocno number, i.e. by declaration order - so s16's byte-neutral declaration-site renumbering lever decides any tied pair, and the newly-isolated assignment-order lever is what creates or destroys ties.
 
 - [s20] Raw scores this session, all 173 build / 173 target insns: base26 26, e4 26, h1 28, g1 28, g2 28, g3 28, g4 28, d1 28, d4 28, p1 28, p5 28, p8 28, e2 30, e3 30, f1 30, p2 30, d3 33, d2 34, d5 35, p6 50, p7 50.
+
+
+## s21 (forensics) - THE FLOOR MOVES 26 -> 16 (first drop since s13)
+
+### Chassis re-measure at dispatch (kill re-audit)
+candidate.c (s13 body) 26/173, chassis_s18_h1_head_exact_28.c 28/173, both on
+HEAD 2026-09-11.  No banked conclusion was chassis-void.
+
+### THE s20 DEPTH-1/DEPTH-2 KILL WAS AN INSTANCE KILL AND IT IS NOW OVERTURNED
+s20 measured p1 / p5 / p8 (passenger sites on `complement`, the guard test, and
+`blend_base`) and concluded the +2 / +4 lift on `j` is unavailable because cse2
+constant-folds any j-reading expression outside the inner loop, where j is
+provably 0.  That is true of every site s20 tried - and every one of them sits
+BEFORE the inner loop.  AFTER the inner loop, j is the loop-EXIT value: it is
+not a known constant, cse2 cannot fold the chain, and flow.c counts it.
+
+    q3  `LoadImage((s32)rect, ((s32)dst_buf + j) - j);`   on the h1 chassis
+        build_insns 173 (BYTE-NEUTRAL), nrefs(j) 11 -> 15, livelen(j) 59 -> 73,
+        pri 5593 -> 6164 - INSIDE the s19 window (6111, 6964).
+        alloc: ord=15 pseudo=115 (j) hardreg=12 ($t4)
+               ord=16 pseudo=116 (complement) hardreg=13 ($t5)   = TARGET SEATS
+        score 28 -> 23, and rows 0..87 of the function are now byte-identical
+        to asm/funcs/func_8003DE14.s.  The head residual that has been on the
+        frontier since s13 is CLOSED.
+
+Carrier sweep for the same lift (all 173 insns, h1 chassis):
+    q1  `new_y = (((u16*)rect)[1] + j) - j + ((u16*)rect)[3];`  nrefs 15 LL 62
+        pri 7258 -> ord 14, ahead of factor.  31
+    q4  same on the other addend                                31
+    q2  `i = ((i + j) - j) + 1;`  nrefs 15 LL 73 pri 6164 but re-prices the
+        whole outer loop                                        60
+    q3  the LoadImage dst argument                              23   <-- winner
+    r1  j REUSED as the new_y carrier (sanctioned variable-reuse family):
+        nrefs 17 LL 62 pri 10967 -> ord 11, 172 insns            39
+    r3  j REUSED to stage the LoadImage argument: nrefs 15 LL 59
+        pri 7627 -> ord 14                                       31
+The window is narrow in BOTH directions: the lift must be exactly +4 at
+loop-depth 2 AND must extend livelen far enough that 450000/LL lands under
+factor's 6964.  Only the LoadImage-argument site does both.
+
+### THE BLEND ARM'S 19-INSN SEAT RESIDUAL IS ALSO A PRIORITY ORDERING, AND IT
+### YIELDS TO THE SAME LEVER
+px = pseudo 122 (nrefs 12 / livelen 11 / pri 32727) is allocated at ord=2 and
+takes hardreg 3 ($v1); g_src = pseudo 126 (nrefs 12 / livelen 12 / pri 30000)
+follows at ord=5 and takes hardreg 4 ($a0).  The target has them the other way
+round.  A depth-3 passenger on g_src prices it at 60000:
+
+    u3  `b_shift = (((bp + b_src) + g_src) - g_src) >> 5;`   on the q3 chassis
+        build_insns 173 (BYTE-NEUTRAL), nrefs(g_src) 12 -> 18, pri 60000
+        alloc: ord=1 p126 (g_src) hardreg=3 ($v1)   = target
+               ord=3 p122 (px)    hardreg=4 ($a0)   = target
+               ord=6 p123 (r_src) hardreg=5 ($a1)   = target (unchanged)
+        score 23 -> 16.
+
+### ABLATION MATRIX (every form 173 build / 173 target insns, HEAD 2026-09-11)
+    base26  s13 incumbent, no lift .......... 26
+    h1      s18 head-exact body, no lift .... 28
+    q3      h1 + j lift ..................... 23
+    y1      h1 + g_src lift ................. 22
+    y2      base26 + g_src lift ............. 19
+    u3      h1 + BOTH lifts ................. 16   <- new candidate.c
+The two levers are independent and compose.
+
+### PSEUDO -> VARIABLE MAP, read from the .combine dump (not inferred)
+Insn numbers are combine-pass numbers (tmp/grind/func_8003DE14/dumps/*.combine):
+    p118 = `pixel` in the i == count-1 ARM (insns 151/155/159), nrefs 9, LL 3
+    p121 = `pixel` in the blend arm (190/192/199/214/258)
+    p122 = px      (192/195/217/220)
+    p123 = r_src   (215/227/230/233)
+    p126 = g_src   (218/238/241/244)
+    p128 = b_src   (221/249/252/255)
+    p130 = rp (227/233)  p131 = gp (238/244)  p132 = bp (249/255)
+    p115 = j (h1 numbering), p116 = complement (h1 numbering)
+This corrects the standing assumption that p118 is `count - 1`: it is the FIRST
+arm's pixel load, and it is what blocks $v0 for px and g_src.
+
+### WHAT THE REMAINING 16 IS
+13 insns of b_src seat cascade (rows 106-108, 114-119, 122, 123) + 3 insns of
+trip test (rows 127/128/130).  b_src takes hardreg 2 ($v0) because $v0 is free
+and non-conflicting at its allocation point; the target seats it on $a0, the
+register px vacates one insn earlier (px dies row 105, b_src is defined row
+106 - they do not conflict and CAN share, which is exactly what the target
+does).  Forcing $a0 requires a CONFLICTING allocno to be holding $v0 across
+b_src's range.
+
+Measured dead this session for that seat (all on the u3 chassis unless noted):
+    v1  depth-3 passenger on b_src itself: pri 65454, ord=1 - STILL hardreg 2.
+        b_src's seat is not a priority question, it is a conflict question.  16
+    v2  passenger on px (pri 65454, ord=1)                              23
+    v3  passenger on r_src (pri 55384, ord=2; px -> 5, b_src -> 2)      23
+    v4  passenger on bp (p132 -> ord=3, spilled to local alloc)         16
+    w1/w2  ONE shared `sum` local for all three channel sums: it DOES become a
+        global allocno (p136, nrefs 18, pri 90000) and DOES take hardreg 2, and
+        it DOES push b_src off $v0 - but it conflicts with all three channels
+        and scatters g_src to $a2 / b_src to $a3.                       52 / 52
+    x1/x2  three per-channel `r_sum` / `g_sum` / `b_sum` locals: once-written,
+        once-read, so combine folds them back into the shift; they never appear
+        in the allocno table and the alloc table + score are unchanged. 16 / 23
+    t1..t4  moving the b_src COMPUTATION later in the arm (four sites, from
+        immediately after `r_src = r * factor` to immediately before
+        `bp = b_src * complement`) with the DECLARATION pinned so pseudo
+        numbers do not move: all four produce alloc tables that are identical
+        to q3's row for row, including livelen(px) = 11.  Statement order
+        inside the blend arm does not move any live range.            23 x4
+    u1/u2  hoisting the g_src (and b_src) DECLARATION out of the blend arm to
+        sit before `px` (to win the global.c:654 lower-pseudo tie-break):
+        restructures the arm, 116 build insns.                        100 / 100
+
+### MECHANISM, NAMED
+flow_analysis (toplev.c:2984) -> combine_instructions (toplev.c:3004), life
+analysis never re-run.  reg_n_refs is loop-depth weighted; global.c
+allocno_compare (tools/gcc-2.7.2/global.c:650-654) orders by descending
+pri = floor_log2(nrefs)*nrefs*10000/livelen and find_reg gives each allocno the
+lowest-numbered non-conflicting hard register.  Both levers this session are
+pure global.c ordering changes bought with references that combine deletes.
+
+- [s21] Chassis re-measured at dispatch: candidate.c (s13 body) 26/173 and chassis_s18_h1_head_exact_28.c 28/173 on HEAD 2026-09-11; no banked conclusion was chassis-void.
+
+- [s21] NEW FLOOR 16/173, the first drop since s13 (eight sessions at 26). Ablation matrix, every form 173 build / 173 target: base26 26, h1 28, q3 (h1 + j lift) 23, y1 (h1 + g_src lift) 22, y2 (incumbent + g_src lift) 19, u3 (both lifts) 16.
+
+- [s21] s20's kill of the +2/+4 depth-1/depth-2 passenger lift on j was an INSTANCE kill and is overturned: every site s20 measured sits BEFORE the inner loop, where cse2 proves j == 0 and folds the chain. A site AFTER the inner loop reads the loop-EXIT value, which cse2 cannot fold.
+
+- [s21] q3 (LoadImage((s32)rect, ((s32)dst_buf + j) - j);) takes nrefs(j) 11 -> 15, livelen(j) 59 -> 73, pri 5593 -> 6164 - inside the s19 window (6111, 6964) - and seats j on $t4 (ord 15) and complement on $t5 (ord 16) while keeping 173 build insns.
+
+- [s21] On the q3 chassis the whole head region is closed: rows 0..87 of the built function are byte-identical to asm/funcs/func_8003DE14.s, including the blez delay slot move t4,zero and subu t5,s8,t3. The 4-insn head residual that has been on the frontier since s13 no longer exists.
+
+- [s21] u3 adds b_shift = (((bp + b_src) + g_src) - g_src) >> 5;: nrefs(g_src) 12 -> 18, pri 60000, so global.c allocates g_src at ord=1 (hardreg 3, $v1) and px at ord=3 (hardreg 4, $a0) - the target's pair - with r_src unchanged at $a1. Score 23 -> 16.
+
+- [s21] PSEUDO -> VARIABLE MAP read from the .combine dump (not inferred): p118 = the pixel load in the i == count-1 ARM (insns 151/155/159, nrefs 9, livelen 3), p121 = pixel in the blend arm, p122 = px (192/195/217/220), p123 = r_src (215/227/230/233), p126 = g_src (218/238/241/244), p128 = b_src (221/249/252/255), p130/131/132 = rp/gp/bp. This corrects the standing assumption that p118 is count - 1; p118 is what blocks $v0 for px and g_src.
+
+- [s21] The remaining 16 insns are 13 of b_src seat cascade (rows 106-108, 114-119, 122, 123) plus 3 of trip test (rows 127/128/130). b_src (p128) takes hardreg 2 ($v0) because $v0 is free and non-conflicting at its allocation point; the target seats it on $a0, the register px vacates one insn earlier - px dies at row 105, b_src is defined at row 106, so they do not conflict and CAN share, which is exactly what the target does.
+
+- [s21] b_src's seat is a CONFLICT question, not a priority question: v1 lifts b_src to pri 65454 / ord=1 and it still takes hardreg 2. Forcing $a0 requires a conflicting allocno holding $v0 across b_src's range - the target's $v0 holds all three channel sums (rows 111, 114, 118).
+
+- [s21] Once-written / once-read named locals for the channel sums are folded back by combine and never become allocnos (x1/x2: alloc table and score unchanged); a single shared sum local DOES become an allocno at $v0 but conflicts with all three channels and scores 52.
+
+- [s21] Statement order inside the blend arm was inert for live ranges across four placements of the b_src computation (t1-t4), with the declaration pinned: alloc tables identical row for row including livelen(px) = 11.
+
+- [s21] Both new levers are F1 combine-foldable chain extenders (owner ruling 2026-07-01) and are /* FAKE */-annotated in candidate.c with mechanism and lever-exhaustion pointers. No ordinary-C carrier for either price has been found; six carriers were swept for the j lift and only the LoadImage dst argument lands the window.

@@ -1894,3 +1894,93 @@ two short-lived trip-test pseudos - plus (b) one reorg.c delay-slot choice.
 - kill_scope: class
 - measured_on: HEAD 2026-09-10 (post -mel, post -msoft-float); incumbent and h1 chassis; no FAKE constructs present
 - predicate_cite: tools/gcc-2.7.2/flow.c:1490
+
+
+## s21 (forensics) - hypotheses
+
+### CONFIRMED
+- H21-1  A `(S + j) - j` chain extender placed AFTER the inner loop (where j is
+  the loop-exit value, not a cse2-known constant) survives cse2, is counted by
+  flow.c, and is folded away by combine - lifting nrefs(j) 11 -> 15 and
+  livelen(j) 59 -> 73, pricing j at 6164, inside the s19 window (6111, 6964).
+  On the head-exact h1 chassis this restores the target's j=$t4 /
+  complement=$t5 seats and takes the score 28 -> 23 at 173 insns, with rows
+  0..87 byte-identical to asm/funcs.  Best site measured: the LoadImage `dst`
+  argument (q3).  MEASURED ON: HEAD 2026-09-11, h1 chassis re-measured 28/173.
+- H21-2  A depth-3 `(S + g_src) - g_src` chain extender on the blue sum lifts
+  nrefs(g_src) 12 -> 18 / pri 30000 -> 60000, which makes global.c allocate
+  g_src before px: g_src takes $v1 and px takes $a0 (the target's pair) while
+  r_src keeps $a1.  Worth 23 -> 16 on the q3 chassis and 26 -> 19 on the s13
+  incumbent (y2).  MEASURED ON: HEAD 2026-09-11, both chassis re-measured.
+- H21-3  The two lifts are independent and compose: h1 28, +j 23, +g_src 22,
+  +both 16.
+
+### KILLED (all instance kills, HEAD 2026-09-11, chassis as stated)
+- H21-4  Moving the b_src computation later in the blend arm changes px's
+  livelen and re-orders the blend allocnos.  KILLED: four placements (t1-t4),
+  declaration pinned so pseudo numbers do not move, all produce alloc tables
+  identical to q3's row for row (livelen(px) = 11 in every one) and all score
+  23.  Statement order inside the blend arm does not move a live range.
+- H21-5  b_src's $v0 seat is a priority question that a passenger lift can
+  move.  KILLED: v1 lifts b_src to pri 65454 / ord=1 and it STILL takes
+  hardreg 2.  The seat is decided by find_reg's lowest-free rule over the
+  conflict set, not by ordinal position.
+- H21-6  A named local for the channel sum becomes the $v0-holding allocno the
+  target has and pushes b_src to $a0.  KILLED in both spellings: one shared
+  `sum` (w1/w2) does take $v0 but conflicts with all three channels and scores
+  52; three per-channel sums (x1/x2) are once-written/once-read, so combine
+  folds them back and they never reach the allocno table (score unchanged).
+- H21-7  Hoisting the g_src / b_src declarations above `px` wins the
+  global.c:654 lower-pseudo tie-break.  KILLED: u1/u2 restructure the arm into
+  116 build insns and score 100.
+- H21-8  `j` reused (sanctioned variable-reuse family) as the carrier for the
+  post-loop lift lands the same window.  KILLED: r1 (j carries new_y) prices j
+  at 10967 / ord=11 and loses an insn (172); r3 (j stages the LoadImage
+  argument) prices it at 7627 / ord=14.  Both are outside (6111, 6964).
+- H21-9  Any post-loop carrier will do.  KILLED: of six carriers only the
+  LoadImage dst argument lands the window - q1/q4 (new_y addends) price j at
+  7258, q2 (the i latch) lands 6164 but re-prices the outer loop to 60.
+
+## [s21] A combine-foldable (S + j) - j chain extender placed AFTER the inner loop - where j is the loop-exit value rather than the cse2-known constant 0 - survives cse2, is counted by flow.c, and lifts nrefs(j) 11 -> 15 with livelen(j) 59 -> 73, pricing j at 6164 inside the s19 window (6111, 6964) and seating j on $t4 / complement on $t5 on the head-exact h1 chassis.
+- mechanism: flow_analysis (toplev.c:2984) fills reg_n_refs / reg_live_length ONCE and is never re-run before combine_instructions (toplev.c:3004) deletes the chain, so the references are priced by global.c allocno_compare but cost zero bytes. s20 killed the depth-1/depth-2 lift on j, but every site it measured (p1 on complement, p5 on the guard test, p8 on blend_base) sits BEFORE the inner loop where cse2 proves j == 0 and folds the expression away.
+- probe: q3 = h1 + LoadImage((s32)rect, ((s32)dst_buf + j) - j); built with BB2_ALLOC_DEBUG and scored with the honest sandbox; alloc table read row by row (ord 15 = pseudo 115 j, hardreg 12; ord 16 = pseudo 116 complement, hardreg 13).
+- result: score 23, build_insns 173, target_insns 173 (byte-neutral). Rows 0..87 of the function are byte-identical to asm/funcs/func_8003DE14.s - the 4-insn head residual that has been on the frontier since s13 is closed. Carrier sweep: q1/q4 (new_y addends) price j at 7258 -> ord 14; q2 (the i latch) lands 6164 but re-prices the outer loop, score 60; r1 (j reused for new_y) 10967 / 172 insns / 39; r3 (j staging the LoadImage arg) 7627 / 31.
+- verdict: CONFIRMED
+
+## [s21] A depth-3 chain extender on the blue sum lifts nrefs(g_src) 12 -> 18 and pri 30000 -> 60000, which makes global.c allocate g_src before px so g_src takes $v1 and px takes $a0 - the target's pair - while r_src keeps $a1.
+- mechanism: global.c:650-654 orders allocnos by descending pri = floor_log2(nrefs)*nrefs*10000/livelen and find_reg hands each the lowest-numbered non-conflicting hard register; px (pseudo 122, pri 32727) previously preceded g_src (pseudo 126, pri 30000). The lift is priced by flow.c and deleted by combine, so it is byte-neutral.
+- probe: u3 = q3 + b_shift = (((bp + b_src) + g_src) - g_src) >> 5; plus the independent ablations y1 (h1 + g_src lift only) and y2 (s13 incumbent + g_src lift only).
+- result: u3 score 16 / 173 insns; y1 22; y2 19. Alloc table: ord=1 p126 g_src hardreg 3 ($v1), ord=3 p122 px hardreg 4 ($a0), ord=6 p123 r_src hardreg 5 ($a1). The j lever and the g_src lever are independent and compose (28 -> 23 -> 16).
+- verdict: CONFIRMED
+
+## [s21] Moving the b_src computation later inside the blend arm lengthens px's live range and re-orders the blend allocnos.
+- mechanism: px's last use is the >> 7 shift that feeds b_src; if that shift moved two insns later, livelen(px) would go 11 -> 13, pricing px at 27692 and letting g_src be allocated first without any chain extender.
+- probe: t1-t4: the b_src assignment placed at four sites between r_src = r * factor and bp = b_src * complement, with s32 b_src; pinned at the original declaration site so pseudo numbers do not move. Alloc tables compared row by row against q3.
+- result: All four alloc tables are identical to q3's, including livelen(px) = 11, and all four score 23 at 173 insns. Statement order inside the blend arm did not move any live range in these four placements.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11 (post -mel, post -msoft-float); q3 chassis re-measured this session at 23/173; the q3 j-lift FAKE construct was present in all four forms
+
+## [s21] b_src's $v0 seat is a priority question, so a passenger lift on b_src (or on px, r_src or bp) moves it onto the target's $a0.
+- mechanism: if b_src's ordinal position changed, find_reg would be choosing from a different free set and could land hardreg 4.
+- probe: v1 (depth-3 passenger on b_src, pri 65454 -> ord=1), v2 (on px), v3 (on r_src), v4 (on bp), each built with BB2_ALLOC_DEBUG on the u3 chassis.
+- result: v1 puts b_src at ord=1 and it STILL takes hardreg 2 ($v0); score stays 16. v2 and v3 push px or r_src around and regress to 23; v4 spills bp to local alloc and stays 16. b_src's seat is decided by find_reg's lowest-free rule over its conflict set, not by ordinal position - $v0 is simply free and non-conflicting at that point, while the target has a conflicting allocno holding $v0 across b_src's range.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; u3 chassis re-measured this session at 16/173, with both s21 FAKE chain extenders present
+
+## [s21] Naming the channel sums as C locals creates the $v0-holding allocno the target has and pushes b_src off $v0 onto $a0.
+- mechanism: the target uses $v0 for all three channel sums (rows 111, 114, 118); a named local would become a global allocno that conflicts with b_src and would take $v0 before it.
+- probe: w1/w2 - one shared sum local reused for all three channel sums; x1/x2 - three per-channel locals r_sum / g_sum / b_sum, each once-written and once-read.
+- result: The shared sum DOES become pseudo 136 (nrefs 18, pri 90000, hardreg 2) and DOES push b_src off $v0, but it conflicts with all three channel values and scatters g_src to $a2 and b_src to $a3: score 52 on both chassis. The three per-channel locals are folded back into the shift by combine, never appear in the allocno table, and leave both the alloc table and the score unchanged (16 / 23).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; u3 (16/173) and q3 (23/173) chassis, both s21 FAKE chain extenders present in the u3-derived forms
+
+## [s21] Hoisting the g_src and b_src declarations above px wins the global.c:654 lower-pseudo tie-break for the blend pair without a chain extender.
+- mechanism: pseudo numbers follow declaration order and allocno_compare breaks an exact priority tie by lower allocno number, so a renumbered g_src would precede px if their priorities were equalised.
+- probe: u1 (g_src declared uninitialised at the px block level, assigned in place), u2 (same for g_src and b_src).
+- result: Both restructure the blend arm - 116 build insns against 173 target insns - and score 100. The declaration could not be hoisted out of the inner block in these two spellings without changing what the arm compiles to.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-11; q3 chassis (23/173) with the q3 j-lift FAKE construct present

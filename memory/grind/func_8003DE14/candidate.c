@@ -1,253 +1,66 @@
-/* func_8003DE14 - candidate (grind session 13, structural modality).
+/* func_8003DE14 - candidate (grind session 21, forensics modality).
  *
- * SCORE 26 / 173 insns on HEAD 2026-09-10 (post -mel, post -msoft-float).
- * This is the s12 body (score 28) with ONE structural change inside the blend
- * arm: the r/g/b channel sums are staged through named per-channel variables
- * and each `X_src` variable is REUSED to hold that channel's `X * factor`
- * product.  Ordinary C throughout - no annotation-bearing construct anywhere in
- * the body.
+ * SCORE 16 / 173 insns on HEAD 2026-09-11 (post -mel, post -msoft-float).
+ * This is a NEW FLOOR: the ledger stood at 26 for eight sessions (s13-s20).
  *
- *   s12:  s32 r_src = (pixel & 0x1F) << 3;      (and g_src, b_src)
- *         r_ch = ((r_src * complement + r * factor) >> 15) & 0x1F;
+ * CHASSIS: the s18 h1 body (head region byte-exact, score 28) plus TWO
+ * combine-foldable chain extenders (the sanctioned F1 family, owner ruling
+ * 2026-07-01), each annotated in place below.  Both exploit the SAME measured
+ * window: flow_analysis (toplev.c:2984) fills reg_n_refs / reg_live_length
+ * ONCE, before combine_instructions (toplev.c:3004), and life analysis is
+ * never re-run - so a reference on an insn combine later folds away is priced
+ * permanently by global.c and costs zero bytes.
  *
- *   s13:  s32 r_src = (pixel & 0x1F) << 3;      (and g_src, b_src)
- *         s32 rp;                                (and gp, bp)
- *         rp    = r_src * complement;
- *         r_src = r * factor;                    <- same C variable reused
- *         r_ch  = ((rp + r_src) >> 15) & 0x1F;
+ * ABLATION MATRIX (this session, every form 173 build / 173 target insns):
+ *     base26  incumbent s13 body, no lift .................... 26
+ *     h1      s18 head-exact body, no lift .................... 28
+ *     q3      h1 + j lift (LoadImage arg) ..................... 23
+ *     y1      h1 + g_src lift (blue sum) ...................... 22
+ *     y2      base26 + g_src lift ............................. 19
+ *     u3      h1 + BOTH lifts  <-- this body .................. 16
+ * The two levers are independent and their effects compose.
  *
- * WHY IT WORKS.  In GCC 2.7.2 a non-address-taken C local is exactly ONE pseudo
- * for its whole scope, so writing a second value into `r_src` forces the
- * shifted source component and the `r * factor` product to share one hard
- * register.  That is precisely what the target does: target insns 94/95 are
- * `sll a1,v0,0x3 / mult a1,t5` and target insn 98 is `mflo a1` - one register
- * ($a1) carrying both r-channel values.  s12's body spelled the shifted
- * component and the product as two distinct expressions, so they became two
- * pseudos and landed in $v0 and $a1.  Making them one variable makes rows 94
- * and 95 byte-exact and drops the floor 28 -> 26.
+ * WHAT EACH LEVER BUYS
+ *  (1) j lift.  s19 derived the window pri(j) must land in: (6111, 6964).
+ *      s20 measured every depth-1 / depth-2 passenger site it could find and
+ *      KILLED them - correctly, but only for sites BEFORE the inner loop,
+ *      where cse2 knows j == 0 and folds the chain at tree/cse level.  The
+ *      site AFTER the inner loop (j is the loop-exit value, not a constant)
+ *      survives cse2: nrefs(j) 11 -> 15, livelen 59 -> 73, pri 5593 -> 6164,
+ *      which is inside the window.  j takes ord=15 / hardreg 12 ($t4) and
+ *      complement ord=16 / hardreg 13 ($t5) - the target's seats - while the
+ *      head region stays byte-exact.  Residual falls 28 -> 23, and the ENTIRE
+ *      head, prologue and guard are now byte-identical to asm/funcs.
+ *  (2) g_src lift.  The blend arm's residual is one global.c ordering fact:
+ *      px (pseudo 122, nrefs 12 / livelen 11 / pri 32727) is allocated before
+ *      g_src (pseudo 126, nrefs 12 / livelen 12 / pri 30000), so px takes $v1
+ *      and g_src takes $a0; the target has them the other way round.  A
+ *      depth-3 passenger on g_src prices it at 60000, so g_src is allocated
+ *      first and takes $v1 while px falls to $a0 and r_src keeps $a1.
+ *      Residual falls 23 -> 16.
  *
- * THE MOST IMPORTANT FINDING OF THIS SESSION (correcting the s12 frontier):
- * the blend arm's instruction ORDER is already byte-for-byte the target's.
- * s12's frontier claimed "the target runs the blue channel's srl/andi/mult
- * before its first mflo (104-107) where we run it after (109-112)" - that was a
- * difflib alignment artifact.  A raw index-by-index side-by-side
- * (tmp/grind/func_8003DE14/s13/sxs.py) shows target[84..131] and ours[84..131]
- * carry IDENTICAL opcodes in identical slots; only the register NAMES differ.
- * There is no scheduling problem in the blend arm and nothing for
- * tools/sched_solver to solve there.
+ * WHAT IS LEFT (16 insns, tmp/grind/func_8003DE14/s21/u3_sxs.txt)
+ *  (a) b_src SEAT, 13 insns (rows 106-108, 114-119, 122, 123).  b_src
+ *      (pseudo 128, pri 32727) takes hardreg 2 ($v0); the target seats it on
+ *      $a0 - the register px has just vacated (px dies at row 105, b_src is
+ *      defined at row 106, so they do not conflict and CAN share).  In our
+ *      build $v0 is free at b_src's allocation point, so global.c's
+ *      lowest-free rule takes it.  Forcing $a0 needs a CONFLICTING allocno to
+ *      hold $v0 across b_src's range.  Measured dead this session: lifting
+ *      b_src itself (v1, still $v0 at ord=1), lifting px (v2), lifting r_src
+ *      (v3), lifting bp (v4), one shared `sum` local across all three channels
+ *      (w1/w2 - it DOES take $v0 but conflicts with everything and scores 52),
+ *      and three per-channel `r_sum/g_sum/b_sum` locals (x1/x2 - combine folds
+ *      them back, alloc table and score unchanged).
+ *  (b) TRIP TEST, 3 insns (rows 127/128/130): target `lh v0,4(s0) /
+ *      lh v1,6(s0) / mult v0,v1` vs ours `lh v1 / lh v0 / mult v1,v0` - two
+ *      short-lived locally-allocated temps named the other way round.
  *
- * WHAT IS LEFT (26, tmp/grind/func_8003DE14/s13):
- *   (a) HEAD, 4 insns.  Target: `addiu a2,sp,1040` (dst = dst_buf) is emitted
- *       at insn 54 next to `addiu a3,sp,16` (src = src_buf), and the `blez`
- *       delay slot at 70 is filled with `move t4,zero` (j = 0) taken from the
- *       FALL-THROUGH side of the branch; `subu t5,s8,t3` (complement) follows
- *       at 71.  Ours: reorg pulls `addiu a2,sp,1040` into the slot instead and
- *       `move t4,zero` lands at 71.  Six statement-order spellings were
- *       measured this session (E1..E6) and none restores the target's slot
- *       without losing the j/complement seat.
- *   (b) BLEND ARM, 19 insns: pure register naming, all of it cascading from ONE
- *       seat.  The zero-extended pixel (`px`, pseudo 122, a GLOBAL allocno with
- *       nrefs 12 / livelen 11 / pri 32727, allocated 3rd) takes $v1 in our
- *       build and $a0 in the target; every later channel register is whatever
- *       the free pool hands out around that choice.  See the frontier below.
- *   (c) TRIP TEST, 3 insns (target 127-130): `lh v0,4(s0) / lh v1,6(s0) /
- *       mult v0,v1` against our `lh v1 / lh v0 / mult v1,v0` - same loads in
- *       the same order, the two short-lived pseudos named the other way round.
- *
- * EQUIVALENT SPELLINGS, all measured 26 this session (tmp/grind/.../s13):
- *   D1  - the `px` user variable deleted entirely (u16 `pixel` used directly,
- *         the zero-extend becomes a CSE temp).  Byte-identical output to C2:
- *         whether the zero-extend is a user variable or a compiler temp does
- *         NOT move px's seat.
- *   D5  - D1 with explicit (u32) casts on the two shifts.
- *   E4  - `total` computed after src/dst/factor.
- *   E5  - dst declared before src.
- *   E6  - `total` deleted, the guard written `if (rect[2] * rect[3] > 0)`.
- *   F4  - g_src / b_src declared lazily at their first use.
- *
- * S14 (structural) re-measured this body at 26 / 173 insns on HEAD 2026-09-10
- * and left it unchanged as the best known form.  What s14 added is the exact
- * arithmetic of the remaining seat (BB2_ALLOC_DEBUG, s14/d_aac/stderr.log):
- * px = pseudo 122, nrefs 12 / livelen 11 / pri 32727, allocated 3rd, takes $v1
- * because p118 (`count - 1`, pri 90000) conflicts with it and already holds
- * $v0.  g_src = pseudo 126 at pri 30000 follows and takes $a0.  The target has
- * them the other way round, and r_src (pseudo 123, $a1) is already correct.
- * To flip: g_src needs livelen <= 10 (pri 36000) or nrefs >= 14 (35000), or px
- * needs livelen >= 13 (pri 27692 - which ties r_src, and global.c:652-653 gives
- * the tie to the lower pseudo number 122, producing exactly the target order
- * g_src, px, r_src).
- *
- * S14 measured dead: the whole 3x3 per-channel product/reuse lattice (27 forms,
- * min 26 at this shape and at AAC), all six channel-block orderings, all six
- * `src++` placements (byte-identical - sched1 normalises it), a single shared
- * `sum` local for the three channel totals (53), and deriving the b source from
- * the g source's shift to cut a px reference (combine refolds it; identical
- * bytes).  Forms in tmp/grind/func_8003DE14/s14/.
- *
- * Chassis: HEAD 2026-09-10.  sandbox --disable all => score 26, build_insns 173,
- * target_insns 173.
- *
- * S15 (enumerate) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left
- * it unchanged as the best known form.  s15 swept SIX exhaustive spelling
- * families, 3,966 valid spellings, ZERO hit (tmp/grind/func_8003DE14/s15/):
- *   - all 1680 interleavings of the blend arms nine channel assignments
- *     (best 26, 196 byte-identical ties) - INCLUDING the order the targets own
- *     instruction stream exhibits (all three products, then the three sums),
- *     which ties rather than beats;
- *   - all 588 head-region spellings (hoisting j = 0 and/or complement out of
- *     the if (total > 0) guard x every def-before-use order of the four
- *     per-iteration statements): best 26, and every hoisted-j spelling is 40+;
- *   - all 96 cursor declaration-site spellings (src/dst at function scope):
- *     best 26, hoisting either cursor costs 33 to 97 points;
- *   - 7 respellings of i == count - 1 (best 27) and 8 of the inner-loop latch
- *     (best 26, operand order inert);
- *   - the full 550-spelling no-reuse (SSA) blend lattice: best 28, i.e. the
- *     per-channel variable reuse in this body is worth 2 points that naming and
- *     ordering alone never buy.
- *
- * S16 (synthesis) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
- * unchanged as the best known form.  s16 corrected the residual's pseudo map and
- * proved the target's seats are REACHABLE but not affordable:
- *   - p121 = pixel, p122 = px, p123 = r_src, p126 = g_src, p128 = b_src.  b_src is
- *     NOT a local quantity (s14's reading): it is the second allocno of the 32727
- *     tie and it is what holds $v0, which the target leaves to local-alloc.
- *     Target seats: g_src $v1, px $a0, b_src $a0 (after px dies), r_src $a1.
- *   - Declaration-site RENUMBERING (declaration split from assignment) is a real,
- *     byte-neutral lever: all 384 spellings score 26, and the dumps show the pseudo
- *     numbers and the 32727 pair's seats really do move.  It cannot decide px vs
- *     g_src because those two are never tied (32727 vs 30000).
- *   - The CROSS-channel carrier lattice (1,483 liveness-checked spellings, alloc
- *     tables for every one in s16/carrier_alloc.json): 4 forms hit three of the four
- *     target seats exactly, 108 forms tie px and g_src.  None pays - seat-correct
- *     forms score 38, tie+renumber forms 34, and the lattice minimum is the
- *     incumbent's 26.  Steering the seat re-prices sched1 and re-interleaves the arm.
- * The open question is now narrow: raise pri(g_src) above 32727 (livelen <= 10 at
- * nrefs 12, or nrefs >= 15 at livelen <= 13) WITHOUT touching the AAA value->variable
- * mapping - which means the change has to come from outside the blend arm.
- *
- * S17 (solver) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
- * unchanged as the best known form.  s17 ran the full solver triage and closed
- * the SCHEDULER axis outright:
- *   - inverse_compose.py classify (object mode, target = build/src/code6cac_c2.o,
- *     ours = the cheat-stripped sandbox .o) returns FIRST DIVERGENCE: RA.  The
- *     register-BLANKED instruction multisets of the two 173-insn streams are
- *     IDENTICAL, so there is no pre-RA (front end / cse / combine / loop) insn
- *     difference anywhere in the function - every one of the 26 points is a
- *     register name or a placement, never a different instruction.
- *   - tools/sched_solver (model extracted for code6cac_c2 at parity=True, 750
- *     blocks / 3989 picks) with the goal derived from the TARGET OBJECT reports
- *     exactly ONE block of func_8003DE14 whose goal differs from ours in either
- *     pass: block 10, the blend arm - and it reports that goal as NOT a
- *     topological order (8 violations in pass 2, 3 in pass 1), i.e. the target
- *     alignment mis-paired duplicate instruction text.  That is the same difflib
- *     artifact s13 identified by raw index-by-index comparison; there is no real
- *     order divergence in the blend arm.  Every other block - INCLUDING the
- *     outer-loop head block that carries the 4-insn blez-delay-slot residual -
- *     already schedules to the target's order in both sched1 and sched2.
- *   - Consequence for the s16 frontier: the head residual is NOT a sched1
- *     INSN_PRIORITY question (that probe is answered and dead), and the blend
- *     arm's interleaved cursor-bump / trip-test insns cannot be moved by any
- *     scheduler lever because our schedule already IS the target's.  The head
- *     rotation (`addiu a2,sp,1040` at target row 54 vs our blez delay slot at
- *     row 69) is produced downstream of the scheduler, in reorg.c's delay-slot
- *     fill, which the sched model explicitly does not cover.
- *
- * TOOLING NOTE (s17, reusable).  tools/sched_solver/mkasm.sh cannot be used on
- * this function: it predates --prefill-label-funcs (2026-09-04) and it runs the
- * FULL prologue_fix, so its .hon.s is not the sandbox's source state.  And even
- * the correct honest stream trips goalmap's same-source checksum, because maspsx
- * emits mult/mflo interlock nop PAIRS that objdump renders as `...` and
- * engine.score.normalized_insns therefore drops from BOTH streams (179 text
- * lines vs 173 object insns; verified symmetric - target and ours both carry
- * them at 0x25c8/0x25cc).  tmp/grind/func_8003DE14/s17/mkasm3.py rebuilds the
- * streams through engine.pipeline.c_pipeline_cmd with the sandbox's own
- * overrides, and tmp/grind/func_8003DE14/s17/perturb2.py wraps perturb.py with
- * the one-line goalmap patch (a nop inside a RUN of nops expands to 0 object
- * insns).  Use those two, not mkasm.sh, for any further solver work here.
- *
- * S18 (forensics) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left
- * it unchanged as the best SCORING form - but s18 found a strictly better
- * CHASSIS for the head region and banked it separately as
- * memory/grind/func_8003DE14/chassis_s18_h1_head_exact_28.c (score 28).
- *   - The 4-insn head residual is reorg.c `fill_simple_delay_slots`, proved with
- *     the pass's own BB2_DBR_DEBUG trace: the backward scan from the blez
- *     (jump_insn 131) rejects 128/125/124/394 and accepts insn 121,
- *     `addiu a2,sp,1040` (the `dst = dst_buf` init), for the delay slot.  .sched2
- *     already emits 121 adjacent to 118 exactly as the target does, so the
- *     scheduler is innocent and the s17 solver verdict is confirmed.
- *   - Hoisting `s32 j = 0;` out of the `if (total > 0)` guard makes `move j,zero`
- *     the last pre-branch insn; reorg then takes IT, and the head region becomes
- *     byte-identical to the target (rows 55-57 and 73-77) except that the
- *     j / complement pair swaps $t4 and $t5.
- *   - That swap is ONE global.c priority compare: complement pri 6111
- *     (nrefs 11 / livelen 54) beats j pri 5593 (nrefs 11 / livelen 59), where the
- *     5-insn livelen gap is exactly what the hoist costs.  A form with h1's head
- *     and this body's seats scores 22.
- *   - Measured dead on the h1 chassis: declaration-order / declaration-split
- *     respellings of the pair (h5/h6, 28), a j-reading guard to buy the extra
- *     depth-3 reg_n_refs site (h9/h10, 45), hoisting complement with j (h7/h8,
- *     44 - the factor division moves ahead of the total multiply), and the
- *     while-loop + LICM preheader rewrite (h4, 59).
- *
- * S19 (rederive) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
- * unchanged as the best known form.  s19 turned the h1 seat residual into a
- * CLOSED-FORM ARITHMETIC WINDOW and eliminated most of the ways to reach it:
- *   - The target's register assignment (factor $t3, j $t4, complement $t5) is
- *     reachable iff pri(factor) > pri(j) > pri(complement) = 6111, with
- *     pri(factor) = 6964 fixed, i.e. pri(j) must land strictly inside the OPEN
- *     window (6111, 6964).  Measured h1 table: factor nrefs 13 / livelen 56 /
- *     6964 -> $t3; complement nrefs 11 / livelen 54 / 6111 -> $t4; j nrefs 11 /
- *     livelen 59 / 5593 -> $t5.
- *   - Only two (nrefs, livelen) pairs solve it: nrefs(j) = 13 at livelen 59-61
- *     (pri 6610 / 6393), or nrefs(j) = 14 at livelen 61 (pri 6885).  flow.c's
- *     loop-depth weighting means +2 = one extra DEPTH-2 reference and +3 = one
- *     extra DEPTH-3 reference.
- *   - livelen(j) is controllable (59 with `s32 j = 0;` last in the head, 61 with
- *     it first -- see chassis_s19_f1_jfirst_livelen61_30.c, score 30);
- *     livelen(complement) (54) and livelen(factor) (56) are pinned in all five
- *     head spellings.
- *   - KILLED: every depth-2 reference spelling (redundant `j = 0;` inside the
- *     guard, `(blend_base - factor) + j`) is removed by cse2 BEFORE flow.c counts
- *     refs, because j is provably 0 at every pre-loop site -- the alloc tables come
- *     back identical to h1's.  KILLED: duplicating the `j++` latch into the exit
- *     arms is not re-merged by cross-jumping here (174/175 insns, 44-47) and
- *     overshoots to nrefs 17 / pri 11333 / $t1.  KILLED (class): global.c's
- *     regs_someone_prefers cannot steer the seat, because find_reg's pass 0 also
- *     excludes every register not yet used (global.c:1000) and both $t4 and $t5 are
- *     first-time assignments.
- *
- * S20 (forensics) re-measured this body at 26 / 173 on HEAD 2026-09-10 and left it
- * unchanged as the best known form.  s20 COMPLETED the seat model and corrected two
- * s19 premises:
- *   - s19 read the incumbent's alloc table with the pseudos swapped.  Pseudo numbers
- *     follow DECLARATION order and reg_live_length follows ASSIGNMENT order, and the
- *     two are INDEPENDENT levers (measured: e2 30, e3 30, e4 26, base26 26).  The
- *     incumbent's seats are already the target's: j is p116, nrefs 11 / livelen 54 /
- *     pri 6111 -> $t4; complement is p115, livelen 55 / pri 6000 -> $t5.  Only h1's
- *     are inverted.  The alternative 26 with the orders split is banked as
- *     chassis_s20_e4_decl_assign_split_26.c.
- *   - The head-exact chassis and the target's seats are MUTUALLY EXCLUSIVE at nrefs
- *     11.  factor's division expands to PsyQ trap checks that split the head into four
- *     basic blocks, leaving `blez $v1` in a two-insn block (asm/funcs/func_8003DE14.s
- *     :50-80), so the ONLY delay-slot candidate is j's own def - and any def in that
- *     block precedes complement's, which makes livelen(j) > livelen(complement) and
- *     inverts the priority compare.  The minimum gap is 1 insn (e2/e3: 55 vs 54, pri
- *     6000 vs 6111) and still loses.
- *   - NEW, REUSABLE TOOL: `(S + P) - P` is a BYTE-NEUTRAL reg_n_refs adder here
- *     (flow_analysis at toplev.c:2984 runs before combine at toplev.c:3004 and is never
- *     re-run).  It is ref-CONSERVING for the subject S and ref-DOUBLING for the
- *     passenger P: d3 took nrefs(j) 11 -> 17 at 173 insns, d2 took nrefs(factor)
- *     13 -> 19 and left j at 11.  The quantum is +2 per loop-depth level, so nrefs(j)
- *     can only be 11 / 13 / 15 / 17.
- *   - But 13 and 15 are UNREACHABLE: cse2 runs before flow.c and knows j == 0 at every
- *     point outside the inner loop, so every depth-1 / depth-2 passenger folds away
- *     (p1, p5, p8 all 28 with alloc tables identical to h1's).  Only depth 3 survives,
- *     and +6 prices j at 11525, lifting it to ord=11 and hardreg 9 ($t1).
- *   - Also killed: livelen(factor) is 56 in EVERY head spelling (g1/g2/g3 factor first/
- *     second/third, g4 numerator named) - its `mflo` is pinned into the pre-blez block;
- *     byte-neutral live-range padding (p6/p7) re-prices the blend arm (50/50); and a
- *     dead store can never lift reg_n_refs (flow.c:1490 deletes it before
- *     mark_used_regs runs - class kill).
+ * ORDINARY-C STATUS.  Both lifts are F1 chain extenders and therefore require
+ * the 2026-07-01 grant plus these annotations; a ruling-request is the correct
+ * next step BEFORE any candidate-ready that carries them.  No ordinary-C
+ * carrier for either price has been found (see the lever-exhaustion pointers
+ * on each annotation).
  */
 void func_8003DE14(s16 *rect, s32 count) {
     u16 src_buf[0x200];
@@ -283,9 +96,9 @@ void func_8003DE14(s16 *rect, s32 count) {
             u16 *src = src_buf;
             u16 *dst = dst_buf;
             s32 factor = ((i + 1) << 12) / count;
+            s32 j = 0;
             if (total > 0) {
                 s32 complement = blend_base - factor;
-                s32 j = 0;
                 do {
                     if (i == count - 1) {
                         u16 pixel = *src;
@@ -327,7 +140,17 @@ void func_8003DE14(s16 *rect, s32 count) {
                             g_ch = ((gp + g_src) >> 10) & 0x3E0;
                             bp = b_src * complement;
                             b_src = b * factor;
-                            b_shift = (bp + b_src) >> 5;
+                            /* FAKE: combine-foldable chain extender on the
+                             * blue sum; passenger `g_src`.  mechanism: the
+                             * same flow.c-counts-then-combine-folds window -
+                             * reg_n_refs(g_src) 12 -> 18 at loop-depth 3, so
+                             * global.c prices g_src at 60000 (> px's 32727),
+                             * allocates it first and seats it on $v1 while px
+                             * falls to $a0, the target's pair.
+                             * lever-exhaustion: s16 (1,483 carrier spellings),
+                             * s21 t1-t4 (statement order inert), u1/u2 (decl
+                             * hoist), w1/w2 + x1/x2 (named sums fold away). */
+                            b_shift = (((bp + b_src) + g_src) - g_src) >> 5;
                             *dst = (pixel & 0x8000) | r_ch | g_ch | (b_shift & 0x7C00);
                         }
                     }
@@ -345,7 +168,16 @@ void func_8003DE14(s16 *rect, s32 count) {
                     ((u16 *)rect)[0] += ((u16 *)rect)[2];
                 }
             }
-            LoadImage((s32)rect, (s32)dst_buf);
+            /* FAKE: combine-foldable chain extender on the LoadImage dst
+             * argument; passenger `j`.  mechanism: flow.c life analysis
+             * (toplev.c:2984) counts the two extra `j` references at
+             * loop-depth 2 and extends REG_LIVE_LENGTH(j) 59 -> 73 BEFORE
+             * combine_instructions (toplev.c:3004) folds the chain away, so
+             * global.c prices j at 6164 instead of 5593 and seats it on $t4.
+             * lever-exhaustion: memory/grind/func_8003DE14/hypotheses.md s15
+             * (3,966 spellings), s16, s19, s20 (p1/p5/p8 depth-1/2 sites all
+             * cse2-folded), s21 (q1/q2/q4/r1/r3 carriers all out of window). */
+            LoadImage((s32)rect, ((s32)dst_buf + j) - j);
             DrawSync(0);
             i++;
         } while (i < count);

@@ -1,7 +1,7 @@
 {
  "func": "func_8003DE14",
  "file": "code6cac_c2",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -123,60 +123,34 @@
    "floor": 26,
    "modality": "forensics",
    "headline": "Forensics completed the j/complement seat model: the head-exact chassis and the target's seats are mutually exclusive at nrefs 11 (the division's trap checks leave the blez in a two-insn block), and t"
+  },
+  {
+   "session": 21,
+   "floor": 16,
+   "modality": "forensics",
+   "headline": "Floor 26 -> 16: a post-inner-loop chain extender on j (cse2 cannot fold it there) restores the target's $t4/$t5 seats on the head-exact chassis, and a depth-3 lift on g_src flips the px/g_src blend pa"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The surviving route to the target's seats on the head-exact chassis is to keep the +6 depth-3 passenger lift on j (nrefs 17, pri 11525, byte-neutral and already measured) and simultaneously lift the three small allocnos that currently sit at ord 12-14 (pri 10000, 10909, 12000) above 11525 with their own byte-neutral passengers, so that the allocation ORDER keeps j at ord 15 where hardreg 12 is the lowest free register.",
-   "mechanism": "global.c allocates in descending allocno_pri and gives each allocno the lowest free hard register, so a seat is determined by ordinal position, not by priority magnitude. d3 showed that lifting j alone moves it to ord=11 where hardreg 9 is free; the fix is to lift everything that must precede it by the same kind of byte-neutral chain. The (S + P) - P extender is now a measured, byte-neutral, per-variable ref multiplier (+2 per loop-depth level), so the ord ladder is directly programmable.",
-   "next_probe": "Identify the variables behind pseudos p130 / p131 / p132 (nrefs 6, livelen 10-12) in tmp/grind/func_8003DE14/s20/alloc_h1/stderr.log by cross-referencing the .lreg dump, then sweep depth-3 passenger chains on each so their pri exceeds 11525 while j stays at ord 15. Read the alloc table after EVERY build (the ord column, not the score) and accept only tables whose ord 15 row is j with hardreg 12; build_insns must stay 173. Note that every such chain is an F1 combine-foldable chain-extender and would need a FAKE annotation plus the lever-exhaustion ledger, so if a table lands the seats the correct next step is a ruling-request naming the 2026-07-01 F1 grant, not a candidate-ready."
+   "hypothesis": "The last 13 of the 16 residual insns are one seat: b_src must land on $a0 instead of $v0, and since a priority lift cannot move it (v1), the only route is to create a CONFLICTING allocno that holds $v0 across b_src's live range - which is what the target has, since its $v0 carries all three channel sums.",
+   "mechanism": "global.c find_reg gives an allocno the lowest-numbered hard register not in its conflict set. b_src (p128) spans combine insns 221..255 and conflicts with g_src (218..244) but with nothing holding $v0, so it takes 2. In the target, px dies at row 105 and b_src is defined at row 106 on the SAME register $a0, which is only reachable if 2 and 3 are both blocked for b_src at allocation time.",
+   "next_probe": "Enumerate source shapes that put a MULTI-referenced value in $v0 across rows 106-118 without adding an insn. w1's shared sum is the right allocno but the wrong live range (it spans all three channels and conflicts with r_src and g_src too); try instead a shared sum used for only the GREEN and BLUE channels, or a shared sum whose first def is after r_ch is consumed, and read the alloc table for a p13x allocno at hardreg 2 whose conflicts include p128 but not p123. Score only forms whose alloc row for p128 prints hardreg=4."
   },
   {
-   "hypothesis": "The blend arm's 19-insn seat residual (px / g_src / b_src / r_src, s14-s16) is decidable by the newly-isolated ASSIGNMENT-order lever, because its pair is an exact 32727 priority TIE and global.c:654 breaks ties by declaration order - s16 only ever varied declaration sites, never the assignment order that sets livelen.",
-   "mechanism": "s14/s16 measured px at nrefs 12 / livelen 11 / pri 32727 tied with r_src, with the tie decided by the lower pseudo number, and found declaration-site renumbering byte-neutral across all 384 spellings. s20 proved livelen is set by assignment order independently of the pseudo number, so ties between the blend arm's carriers can be CREATED (by equalising livelen) and then steered by declaration order - a two-dimensional lattice s16 never explored, worth 19 of the remaining 26 points.",
-   "next_probe": "Re-run the s16 carrier harness (tmp/grind/func_8003DE14/s16/batch_alloc.py, carrier_alloc.json) on the chassis_s20_e4_decl_assign_split_26.c body, this time sweeping the declaration order and the assignment order of pixel / px / r_src / g_src / b_src as TWO independent axes. Filter on the alloc table first: keep only spellings where px and g_src print equal pri (a tie), then check which of them has the lower pseudo, and score only those."
+   "hypothesis": "Both new levers are F1 chain extenders, so the 16 floor is currently FAKE-carrying; an ordinary-C carrier may exist for the g_src lift specifically, because its requirement is weak (any pricing above px's 32727, i.e. nrefs >= 14 at livelen 12) compared with the j lift's narrow (6111, 6964) window.",
+   "mechanism": "pri = floor_log2(nrefs)*nrefs*10000/livelen. g_src at nrefs 14 / livelen 12 prices at 35000 > px's 32727, which is all the ordering needs - and unlike the j window there is no upper bound to respect, since px's pri is the only thing g_src must beat.",
+   "next_probe": "Sweep ordinary-C spellings that give g_src one extra real reference at inner-loop depth 3 (weight +3 each), e.g. splitting g_ch = (g_sum >> 10) & 0x3E0 so g_src is read twice, deriving b_src from g_src's pre-shift value, or writing the green product as a compound assignment chain. Accept only forms with build_insns 173 whose alloc row for p126 prints pri > 32727 and hardreg=3."
   },
   {
-   "hypothesis": "The 4-insn head residual the incumbent pays can be removed without touching the j / complement pair, by making `dst = dst_buf` ineligible for reorg's backward scan so the blez's slot is filled from the fall-through with j's def instead.",
-   "mechanism": "s18's BB2_DBR_DEBUG trace shows the backward scan rejecting trials 128 / 125 / 124 / 394 and accepting insn 121, `addiu a2,sp,1040`. In the target that insn sits at row 57, early in the head, and is NOT used for the slot - so in the original something between it and the branch made it ineligible. Eligibility is decided by refset / setset / setneed on the insn's destination, i.e. by whether $a2 is read or written between the insn and the jump, which is a source-side property of where the dst cursor is initialised and first used.",
-   "next_probe": "Re-run tools/grinder/dump.ps1 plus the s18 BB2_DBR_DEBUG harness on the INCUMBENT body (s18 traced it on h1) and read the trial list for the blez; then enumerate spellings that put a read or a write of the dst cursor between its initialisation and the guard branch without adding an insn - e.g. initialising dst from a second cursor, or deriving src from dst. s15's 96-form cursor declaration-site sweep only moved the declaration site and never targeted reorg eligibility, so it does not cover this."
+   "hypothesis": "The 3-insn trip-test residual (rows 127/128/130, target lh v0,4(s0) / lh v1,6(s0) / mult v0,v1 against ours lh v1 / lh v0 / mult v1,v0) is two locally-allocated temps named the other way round, and is decidable by the latch's expression shape.",
+   "mechanism": "the two loads are short-lived pseudos that never reach the global allocno table (they are absent from the BB2_ALLOC_DEBUG rows), so local-alloc.c decides them from the order in which the quantities are born within the block.",
+   "next_probe": "On the u3 chassis, sweep latch spellings that keep 173 insns and keep the slt shape: while (j < rect[2] * rect[3]) (current), a named local re-read per iteration, (s32)rect[2] * rect[3], and the product staged through the existing total variable re-assigned in the loop. Read rows 127-130 of the tmp/grind/func_8003DE14/s21/sxs.py output, not the score alone."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 4,
-   "statement": "decomp-permuter, seeded on the d4 chassis and again on the f1 chassis, finds a semantics-preserving form below the banked floor of 31.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, d4 chassis (score 31) and f1 chassis (score 43), campaigns tmp/perm_3DE14_s4a (27,747 it) and tmp/perm_3DE14_s4b (7,009 it), no FAKE constructs",
-   "predicate_cite": "",
-   "result": "KILLED for both seeds. s4a's best find (permuter 300) is `dst = dst++; *dst = pixel;` \u2014 an unsequenced self-assignment t"
-  },
-  {
-   "session": 5,
-   "statement": "The remaining residual on the structurally-exact (173-insn) chassis lives in the blend block's spelling space: which sub-expressions are named locals, in what order those declarations sit, and which w",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), three chassis measured: f1/f1_srcup (43 / 173 insns), h1 (42 / 173), d4 (31 / 172). No FAKE constructs in any variant; every spelling is ordinar",
-   "predicate_cite": "",
-   "result": "ZERO HIT in all four sweeps; no spelling in any region reached distance 0 and none beat its own chassis baseline except "
-  },
-  {
-   "session": 5,
-   "statement": "Moving the 'src++' statement within the blend arm \u2014 before the innermost brace, between the declarations and the channel arithmetic, or after the store \u2014 changes the emitted bytes on the f1 chassis.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10, f1 chassis (43 / 173 insns), no FAKE constructs",
-   "predicate_cite": "",
-   "result": "All three measure 43 / 173 \u2014 identical. The increment's position inside this arm is byte-neutral, which makes it a free "
-  },
-  {
-   "session": 6,
-   "statement": "The residual on the h1 chassis (42 / 173) is the src/dst cursor pair transposed, so a lever that swaps the pair closes it.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-10 (post -mel, post -msoft-float), h1 chassis (42 / 173 insns), memory/grind/func_8003DE14/chassis_h1_structure_exact_42.c, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "On h1 dst is ALREADY correctly seated at $a2; src sits at $a1, two registers below the target's $a3. The find_reg trace "
-  },
   {
    "session": 6,
    "statement": "One of the six blend-block naming shapes measured on the h1 chassis, including the target's own r_ch / g_ch / b_shift shape, seats src at $a3.",
@@ -624,6 +598,38 @@
    "measured_on": "HEAD 2026-09-10 (post -mel, post -msoft-float); incumbent and h1 chassis; no FAKE constructs present",
    "predicate_cite": "tools/gcc-2.7.2/flow.c:1490",
    "result": "KILLED as a class. insn_is_dead is computed before any reference bookkeeping, and on the final pass a dead insn is turne"
+  },
+  {
+   "session": 21,
+   "statement": "Moving the b_src computation later inside the blend arm lengthens px's live range and re-orders the blend allocnos.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11 (post -mel, post -msoft-float); q3 chassis re-measured this session at 23/173; the q3 j-lift FAKE construct was present in all four forms",
+   "predicate_cite": "",
+   "result": "All four alloc tables are identical to q3's, including livelen(px) = 11, and all four score 23 at 173 insns. Statement o"
+  },
+  {
+   "session": 21,
+   "statement": "b_src's $v0 seat is a priority question, so a passenger lift on b_src (or on px, r_src or bp) moves it onto the target's $a0.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; u3 chassis re-measured this session at 16/173, with both s21 FAKE chain extenders present",
+   "predicate_cite": "",
+   "result": "v1 puts b_src at ord=1 and it STILL takes hardreg 2 ($v0); score stays 16. v2 and v3 push px or r_src around and regress"
+  },
+  {
+   "session": 21,
+   "statement": "Naming the channel sums as C locals creates the $v0-holding allocno the target has and pushes b_src off $v0 onto $a0.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; u3 (16/173) and q3 (23/173) chassis, both s21 FAKE chain extenders present in the u3-derived forms",
+   "predicate_cite": "",
+   "result": "The shared sum DOES become pseudo 136 (nrefs 18, pri 90000, hardreg 2) and DOES push b_src off $v0, but it conflicts wit"
+  },
+  {
+   "session": 21,
+   "statement": "Hoisting the g_src and b_src declarations above px wins the global.c:654 lower-pseudo tie-break for the blend pair without a chain extender.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-11; q3 chassis (23/173) with the q3 j-lift FAKE construct present",
+   "predicate_cite": "",
+   "result": "Both restructure the blend arm - 116 build insns against 173 target insns - and score 100. The declaration could not be "
   }
  ],
  "ladder_skip": 0,
