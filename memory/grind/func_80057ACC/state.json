@@ -1,0 +1,24 @@
+{
+ "func": "func_80057ACC",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-14T22:09:34.553353+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "7a81d3492a9a4b18",
+   "when": "2026-09-14T22:16:57.728527+00:00",
+   "summary": "final call: Ordinary C, no sanctioned-family claim needed. The body is a nearest-edge-intersection search: two counted loops, a wrap index, a call to func_8005763C with two address-taken out-params, SquareRoot0 o"
+  }
+ ]
+}
