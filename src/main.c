@@ -2188,10 +2188,92 @@ s32 SpuMalloc(s32 size) {
     return -1;
 }
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
-typedef struct Entry { s32 w0; s32 w1; } Entry;
-extern s32 _spu_AllocLastNum;
-extern s32 _spu_memList;
-INCLUDE_ASM("asm/funcs", _spu_gcSPU);
+/* Shape note: phase 1's inner scan exits by `goto`, not `break`.
+   stmt.c:expand_end_loop rolls a leading conditional exit to the bottom of the
+   loop only when that exit jumps to the loop's own end_label/alt_end_label
+   (the `last_test_insn` scan). A `break` qualifies, so the loop gets rotated
+   and jump.c:duplicate_loop_exit_test then peels a guard copy (+8 insns). A
+   `goto` to a user label after the loop does not target end_label, so
+   last_test_insn stays 0, no rotation happens, and the emitted loop has the
+   target's shape: test at top, unconditional `j` back-edge, `j++` in its delay
+   slot.
+   Depends on the maspsx .L-label load-delay nop gate
+   (maspsx_label_nop_funcs.txt) for two hazard nops the assembler emits and
+   maspsx's $L-only is_label() misses — as for siblings SpuFree and _spu_init
+   in this same translation unit. */
+/* PsyQ 4.0 LIBSPU s_m_int.c: _spu_gcSPU -- verbatim-linked Sony object
+   (census 2026-07-09); C ref: Xeeynamo/psyz decomp/src/libspu/s_m_int.c */
+void _spu_gcSPU(void) {
+    s32 i;
+    s32 j;
+
+    for (i = 0; i <= _spu_AllocLastNum;) {
+        if (_spu_memList[i].addr & 0x80000000) {
+            for (j = i + 1;; j++) {
+                if (_spu_memList[j].addr != 0x2FFFFFFF) {
+                    goto scanned;
+                }
+            }
+        scanned:
+            if ((_spu_memList[j].addr & 0x80000000) &&
+                ((_spu_memList[j].addr & 0x0FFFFFFF) ==
+                 (_spu_memList[i].addr & 0x0FFFFFFF) + _spu_memList[i].size)) {
+                _spu_memList[j].addr = 0x2FFFFFFF;
+                _spu_memList[i].size += _spu_memList[j].size;
+                continue;
+            }
+        }
+        i++;
+    }
+
+    for (i = 0; i <= _spu_AllocLastNum; i++) {
+        if (_spu_memList[i].size == 0) {
+            _spu_memList[i].addr = 0x2FFFFFFF;
+        }
+    }
+
+    for (i = 0; i <= _spu_AllocLastNum; i++) {
+        if (_spu_memList[i].addr & 0x40000000) {
+            break;
+        }
+        for (j = i + 1; j <= _spu_AllocLastNum; j++) {
+            if (_spu_memList[j].addr & 0x40000000) {
+                break;
+            }
+            if ((_spu_memList[j].addr & 0x0FFFFFFF) <
+                (_spu_memList[i].addr & 0x0FFFFFFF)) {
+                u32 swapAddr = _spu_memList[i].addr;
+                u32 swapSize = _spu_memList[i].size;
+                _spu_memList[i].addr = _spu_memList[j].addr;
+                _spu_memList[i].size = _spu_memList[j].size;
+                _spu_memList[j].addr = swapAddr;
+                _spu_memList[j].size = swapSize;
+            }
+        }
+    }
+
+    for (i = 0; i <= _spu_AllocLastNum; i++) {
+        if (_spu_memList[i].addr & 0x40000000) {
+            break;
+        }
+        if (_spu_memList[i].addr == 0x2FFFFFFF) {
+            _spu_memList[i].addr = _spu_memList[_spu_AllocLastNum].addr;
+            _spu_memList[i].size = _spu_memList[_spu_AllocLastNum].size;
+            _spu_AllocLastNum = i;
+            break;
+        }
+    }
+
+    for (i = _spu_AllocLastNum - 1; i >= 0; i--) {
+        if (!(_spu_memList[i].addr & 0x80000000)) {
+            break;
+        }
+        _spu_memList[i].addr &= 0x0FFFFFFF;
+        _spu_memList[i].addr |= 0x40000000;
+        _spu_memList[i].size += _spu_memList[_spu_AllocLastNum].size;
+        _spu_AllocLastNum = i;
+    }
+}
 /* kengo:HIGH  |  md_game/exec_game  |  194i */
 extern s32 _spu_AllocBlockNum;
 extern void _spu_gcSPU(void);
