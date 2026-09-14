@@ -1279,25 +1279,14 @@
       "rotation": "ROTATED (logged to borderline.md; owner ruling 2026-09-08 \u2014 returns automatically): docs/grind/decisions.md 2026-09-10 \u2014 func_8002EBDC (src/code6cac_b.c) \u2014 blocked at the operator registry row (bytes PROVEN 0/182, Judge PASS 1b44e6afef0b58e6 on record, scan tier LOW; the whole remedy is one row in tools/grinder/owner_cluster_grants.txt, then queue unpark + resubmit candidate.c exactly)",
       "rotated_at": "2026-09-10T08:47:37+00:00",
       "rotation_count": 1
-    },
-    {
-      "func": "_spu_gcSPU",
-      "file": "main",
-      "distance": 121,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-11 \u2014 _spu_gcSPU \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "rotated_at": "2026-09-11T11:34:18+00:00",
-      "rotation_count": 1
     }
   ],
   "counts": {
-    "total": 141,
+    "total": 140,
     "active": 133,
     "by_status": {
       "active": 133,
-      "rotated": 8
+      "rotated": 7
     },
     "by_verdict": {
       "C": 111,
