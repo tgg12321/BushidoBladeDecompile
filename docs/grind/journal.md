@@ -2039,3 +2039,4 @@
 - 2026-09-14 16:50 func_80018094 JUDGE ESCALATE (final call, integration-handoff (REFUSED: no executable remedy in verdict)) — refused + ROTATED (returns automatically; owner ruling 2026-09-08).
 - 2026-09-14 17:09 func_8006D3DC COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-14 17:16 func_80057ACC COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-14 17:28 func_8005C2A8: LAYER-1 FAILED a sandbox-0 candidate — The candidate fabricates a callee prototype that contradicts snd_VabOpen's definition in the SAME translation unit (src/text1b.c:2707 defines it returning s16; the diff declares it returning s32) for the sole, self-documented purpose of relocating a sign-extension instruction — a false declaration with no truthful semantic reading, in a family that was proposed and WITHDRAWN with no rule entry.

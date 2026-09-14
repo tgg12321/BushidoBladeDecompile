@@ -6,10 +6,25 @@
  "floor_history": [],
  "frontier": [],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "extern s32 snd_VabOpen(s32 *, s16);  (added ~src/text1b.c:2666, ahead of the in-TU definition `s16 snd_VabOpen(s32 *a0, s16 a1)` at src/text1b.c:2707)",
+  "s16 vab; ... vab = vabid;  \u2014 a second name bound to the unmodified value of the parameter vabid, feeding func_8005C074(vab, arg2), printf(D_800158CC, vab), D_800EFB38[vab] and SsUtGetVBaddrInSB(vab)"
+ ],
  "kills": [],
- "ladder_skip": 0,
+ "ladder_skip": 11,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-14T22:17:03.111762+00:00"
+ "created": "2026-09-14T22:17:03.111762+00:00",
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The candidate fabricates a callee prototype that contradicts snd_VabOpen's definition in the SAME translation unit (src/text1b.c:2707 defines it returning s16; the diff declares it returning s32) for the sole, self-documented purpose of relocating a sign-extension instruction \u2014 a false declaration with no truthful semantic reading, in a family that was proposed and WITHDRAWN with no rule entry. Next action: Do not commit. Revert the fabricated prototype: declare the callee truthfully as `extern s16 snd_VabOpen(s32 *, s16);` (or drop the local extern entirely and le"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "86a89ac0986d0a1a",
+   "when": "2026-09-14T22:28:45.986683+00:00",
+   "summary": "The candidate fabricates a callee prototype that contradicts snd_VabOpen's definition in the SAME translation unit (src/text1b.c:2707 defines it returning s16; the diff declares it returning s32) for the sole, self-documented purpose of relocating a sign-extension instruction \u2014 a false declaration w"
+  }
+ ]
 }
