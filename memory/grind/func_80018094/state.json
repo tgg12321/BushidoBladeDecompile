@@ -365,5 +365,8 @@
  "origin": "queue",
  "created": "2026-09-10T00:33:40.741531+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "exhaustion_base": 9,
+ "last_unpark_reason": "auto-return: toolchain change re-measure floor 2 -> 0 (fingerprint 37ce530ca1e21a9e -> 2046c403e76d0fe5)",
+ "last_unpark_at": "2026-09-14T21:36:03.650630+00:00"
 }
