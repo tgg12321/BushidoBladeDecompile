@@ -5940,7 +5940,80 @@ void func_8006D338(s32 arg0, s32 arg1) {
     r = func_8006CFBC(sp10);
     func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
-INCLUDE_ASM("asm/funcs", func_8006D3DC);
+extern s16 D_800A3528;
+extern s32 D_800A374C;
+extern s32 func_8006E480(s32, s32);
+extern s32 func_8007352C(s32);
+/* EnvA: the 0x2C-byte draw descriptor func_8007352C consumes.  Same field
+   layout as EnvB (func_8006DD94) and S69E18 (func_80069E18); this call site
+   declares only the fields through col_b, which is what the target frame
+   (locals 0x18..0x4F = EnvA 0x2C + 8-aligned u16 rect[4]) accounts for. */
+typedef struct EnvA {
+    s32 *header;
+    s8  *table;
+    s32  out;
+    s32  pad0C;
+    s32  semi;
+    u32  ot_idx;
+    s32  x;
+    s32  y;
+    s32  pad20, pad24;
+    u8   has_color;
+    u8   col_r;
+    u8   col_g;
+    u8   col_b;
+} EnvA;
+void func_8006D3DC(s32 *arg0) {
+    EnvA s;
+    u16 rect[4];
+    s32 *q;
+    s32 c;
+    s32 hdr;
+    s32 semi = 0;
+    s16 i = 0;
+    u8 dim = 0x40;
+
+    s.ot_idx = 0xA;
+    q = *(s32 **)(arg0[1] + 0x38);
+    s.x = 0;
+    s.has_color = 1;
+
+    for (; i < 6; i++) {
+        s.has_color = 1;
+        if (i == 0) {
+            s.y = 0;
+            s.has_color = 0;
+            s.semi = 0;
+        } else if (i == D_800A3528 + 1) {
+            s.y = *(s16 *)(D_800A34FC + 0xE);
+            c = ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+            s.col_r = s.col_g = s.col_b = c;
+            s.semi = 0;
+        } else if (i != 1 && i != 2 && i != 3 && i == D_800A3528 + 4) {
+            s.col_r = s.col_g = s.col_b = 0x80;
+            s.y = 0;
+            s.semi = 0;
+        } else {
+            s.col_r = s.col_g = s.col_b = dim;
+            s.y = 0;
+            s.semi = 1;
+        }
+        hdr = q[i];
+        s.header = (s32 *)hdr;
+        s.table = (s8 *)(hdr + 0xC);
+        s.out = arg0[5];
+        arg0[5] = func_8007352C((s32)&s);
+        SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, semi), 0);
+        AddPrim(D_800A374C + 0x28, arg0[7]);
+        arg0[7] += 0xC;
+    }
+
+    rect[0] = 0xDA;
+    rect[1] = 0x25;
+    rect[2] = 0xCB;
+    rect[3] = 1;
+    func_80069898((GameObj *)arg0, rect, 0x11);
+}
 extern s32 D_800A350C;
 extern void *D_800A3524;
 extern u16 D_800A3528;
