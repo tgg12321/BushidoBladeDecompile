@@ -2063,3 +2063,4 @@
 - 2026-09-15 10:33 _clr COMPLETED-C after 2 sessions (closer: s2 [permuter]).
 - 2026-09-15 10:56 func_80054604 s1 [recon] floor=26: recon: 160 -> 26 with a TU-local StageCtrl struct + pointer local; residual is ONLY the callee-saved register permutation (a6/a1/ret and a4/a5), attributed to global.c priorities (REG_EQUIV live-length doubling of the stack params + sched1 lw placement)
 - 2026-09-15 11:42 func_80054604 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80054604 include/game.h src/text1b_b.c undefined_syms_auto.txt), function stays active.
+- 2026-09-15 11:49 func_80054604 COMPLETED-C after 3 sessions (closer: s3 [structural]).
