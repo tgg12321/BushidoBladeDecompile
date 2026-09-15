@@ -82,6 +82,13 @@
    "hash": "163e84a9ed9ef0e9",
    "when": "2026-09-15T06:39:15.028174+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-15 01:39 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "163e84a9ed9ef0e9",
+   "when": "2026-09-15T06:48:44.410560+00:00",
+   "summary": "final call: Same body I cleared at 2026-09-15 01:39 (hash 163e84a9ed9ef0e9, decisions.md:27049); the only delta is the prong-3 annotation my constraint required, and I found no defect that ruling did not consider"
   }
  ],
  "judge_clearances": [

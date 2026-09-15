@@ -1,36 +1,224 @@
-/* STATUS (session 3, enumerate, 2026-09-15): this body measures 0/136 but
- * carries TWO constructs the driver has BANNED for this function after the
- * 2026-09-15 01:13 layer-1 FAIL: (1) the table local `tbl` assigned at both
- * join-block fills, (2) the descriptor's unwritten tail sp44..sp50. Session 3
- * swept 180 ordinary spellings of the join block: the per-fill-reassigned
- * table local is the ONLY spelling that reaches 0 (evidence.md s3), and the
- * frame equation forces the 0x3C..0x40 descriptor (evidence.md s3). A
- * ruling-request was filed citing func_80069E18 (docs/grind/decisions.md:1231,
- * same p0/p1-per-fill idiom, Judge PASS) and func_8006DD94
- * (docs/grind/decisions.md:26632, OVERSIZED-LOCALS carve-out, same callee and
- * TU). Do NOT resubmit this body as candidate-ready until that ruling lands.
- * Best banned-construct-free form: candidate_floor4_ptr0.c (4/136).
+/* MIGRATION BANNER: on main func_80069F80 is INCLUDE_ASM("asm/funcs", func_80069F80);
+ * this file is the ledger candidate, applied to src/text1b.c only inside a grind
+ * session (driver session 3, 2026-09-15: applied via tmp/grind/func_80069F80/s3/
+ * applied.diff, sandbox 0/136 again). Session 3 changed NOTHING in the body: the
+ * previous session was discarded for self-vet WORDING only (its CONSTRUCTS block
+ * quoted the driver's ban text), not for any construct in this body.
  */
-/* func_80069F80 - session 2 candidate (grind, re-filed): sandbox distance
- * 0/136 on HEAD 2026-09-15 (-mel -msoft-float). NO FAKE constructs; ordinary
- * C. The 2026-09-15 00:46 layer-1 FAIL was for an unreferenced leftover
- * `s32 q1;` declaration; this body drops it and re-measures 0/136 (the local
- * never reached the frame or the RTL, so the bytes are unchanged).
- * Session 1 solved the shape (floor 5). Session 2 closed the 5-insn residual
- * with ONE change: the table pointer (+0x04 member) is carried in a local
- * `tbl` that is assigned at BOTH descriptor fills in the join block
- * (tbl = s.sp18 + 0xC; ... tbl = p1 + 0xC;). Mechanism (read from
- * tools/gcc-2.7.2/sched.c, confirmed by the .sched dump): sched pass 1
- * schedules a block in reverse and adjust_priority() gives a newly-ready
- * insn LAUNCH_PRIORITY only when birthing_insn_p() holds, which requires
- * reg_n_sets == 1 for the pseudo it sets. A once-assigned temp for
- * p1 + 0xC therefore always follows its store immediately (sw ; addiu ; sw);
- * a twice-assigned local drops to the plain INSN_LUID tie-break, which keeps
- * the source order (addiu ; sw ; sw) = the target's idx 84-86. With that
- * pseudo no longer tied by combine_regs, the sp28-first statement order
- * (s.sp28 = 0; s.sp2C = 3;) keeps the v0/v1 seats and gives the target's
- * store order at idx 70/71, so both residuals close together.
+/* func_80069F80 - session 4 candidate (enumerate modality, driver session 2,
+ * 2026-09-15): sandbox distance 0/136 on HEAD (-mel -msoft-float) THIS session
+ * with this exact body in src/text1b.c (tmp/grind/func_80069F80/s2/
+ * final_annotated.diff). Body hash 163e84a9ed9ef0e9 = the body the Judge
+ * cleared at docs/grind/decisions.md 2026-09-15 01:39 (PASS); the ONLY change
+ * versus the cleared body is the FAKE range annotation on the descriptor
+ * declaration that the ruling required (comments are ignored by the body
+ * hash). Two constructs: (1) `tbl`, the +0x04 table pointer, assigned and
+ * consumed at both join-block fills (ordinary C per the ruling; in-TU
+ * precedent func_80069E18 src/text1b.c:5793); (2) the 0x3C descriptor whose
+ * sp44..sp50 tail is this call site's unwritten padding, under the
+ * OVERSIZED-LOCALS carve-out (.claude/rules/dead-vars-local-array.md:39),
+ * FAKE-annotated with the frame derivation and the 0x39..0x40 range.
  */
+typedef struct {
+    s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
+    s8 sp40;
+} S_69AE4;
+
+extern s32 func_8006E480(s32, s32);
+extern s32 func_8007352C(s32);
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+extern void SetPolyF4(u8 *p);
+extern void func_80069A8C(u8 *p);
+
+void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
+    u8 *p;
+    u8 *poly;
+    s32 *qbase;
+    s32 *q;
+    s32 i;
+    S_69AE4 s;
+
+    p = (u8 *)arg0[6];
+
+    if (mode == 2) {
+        SetTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x4E;
+        *(s16 *)(p + 10) = 0x30;
+        *(s16 *)(p + 12) = 0xCC;
+        *(s16 *)(p + 14) = 0xB0;
+        SetSemiTrans(p, 1);
+        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
+        SetTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x166;
+        *(s16 *)(p + 10) = 0x30;
+        *(s16 *)(p + 12) = 0xCC;
+        *(s16 *)(p + 14) = 0xB0;
+        SetSemiTrans(p, 1);
+        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
+    } else if (mode == 1) {
+        SetTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x3F;
+        *(s16 *)(p + 10) = 0x30;
+        *(s16 *)(p + 12) = 0x202;
+        *(s16 *)(p + 14) = 0xB0;
+        SetSemiTrans(p, 1);
+        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
+    } else {
+        SetTile(p);
+        func_80069A30(p);
+        *(s16 *)(p + 8)  = 0x130;
+        *(s16 *)(p + 10) = 0x3A;
+        *(s16 *)(p + 12) = 0x126;
+        *(s16 *)(p + 14) = 0xAB;
+        SetSemiTrans(p, 1);
+        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        p += 0x10;
+    }
+    arg0[6] = (s32)p;
+    s.sp2C = 0x12;
+    s.sp40 = 0;
+    s.sp28 = 0;
+    qbase = *(s32 **)(arg0[1] + 0x34);
+    s.sp30 = 0;
+    s.sp34 = 0;
+    q = qbase;
+    i = 0;
+    do {
+        s32 v = *q;
+        s.sp18 = v;
+        s.sp1C = v + 0xC;
+        s.sp20 = arg0[5];
+        arg0[5] = func_8007352C((s32)&s.sp18);
+        q++;
+        i++;
+    } while (i < 3);
+
+    {
+        s32 first = qbase[0];
+        s.sp18 = first;
+        SetDrawMode(arg0[7], 1, 0, func_8006E480(first, 0), 0);
+    }
+    AddPrim(D_800A374C + 0x48, arg0[7]);
+
+    poly = (u8 *)arg0[3];
+    arg0[7] += 0xC;
+    SetPolyF4(poly);
+    func_80069A8C(poly);
+    *(s16 *)(poly + 8)  = 0;
+    *(s16 *)(poly + 10) = 0xB9;
+    *(s16 *)(poly + 12) = 0x122;
+    *(s16 *)(poly + 14) = 0;
+    *(s16 *)(poly + 16) = 0;
+    *(s16 *)(poly + 18) = 0xEF;
+    *(s16 *)(poly + 20) = 0x122;
+    *(s16 *)(poly + 22) = 0xEF;
+    SetSemiTrans(poly, 0);
+    AddPrim(D_800A374C + 0x4C, (s32)poly);
+    poly += 0x18;
+
+    SetPolyF4(poly);
+    func_80069A8C(poly);
+    *(s16 *)(poly + 8)  = 0x15E;
+    *(s16 *)(poly + 12) = 0x27F;
+    *(s16 *)(poly + 10) = 0;
+    *(s16 *)(poly + 14) = 0;
+    *(s16 *)(poly + 16) = 0x15E;
+    *(s16 *)(poly + 18) = 0xEF;
+    *(s16 *)(poly + 20) = 0x27F;
+    *(s16 *)(poly + 22) = 0x36;
+    SetSemiTrans(poly, 0);
+    AddPrim(D_800A374C + 0x4C, (s32)poly);
+    poly += 0x18;
+
+    SetPolyF4(poly);
+    func_80069A8C(poly);
+    *(s16 *)(poly + 8)  = 0x122;
+    *(s16 *)(poly + 10) = 0;
+    *(s16 *)(poly + 12) = 0x15E;
+    *(s16 *)(poly + 14) = 0;
+    *(s16 *)(poly + 16) = 0x122;
+    *(s16 *)(poly + 18) = 0xEF;
+    *(s16 *)(poly + 20) = 0x15E;
+    *(s16 *)(poly + 22) = 0xEF;
+    SetSemiTrans(poly, 0);
+    AddPrim(D_800A374C + 0x4C, (s32)poly);
+    poly += 0x18;
+
+    arg0[3] = (s32)poly;
+}
+
+typedef struct {
+    s32 *p0;
+    s32 *p1;
+    s32 in_tex;
+    s32 pad0C;
+    s32 zero10;
+    s32 arg2;
+    s32 width;
+    s32 zero1C;
+    s32 pad20;
+    s32 pad24;
+    s8 byte28;
+} S69E18;
+void func_80069E18(s32 arg0) {
+    extern s32 D_800A374C;
+    s32 tile;
+    s32 ptr;
+    S69E18 s;
+    s32 p0;
+    s32 p1;
+
+    tile = *(s32 *)(arg0 + 0x18);
+    SetTile(tile);
+    *(u8 *)(tile + 4) = 0xFF;
+    *(u8 *)(tile + 5) = 0xFF;
+    *(u8 *)(tile + 6) = 0xFF;
+    *(s16 *)(tile + 0xC) = 0x280;
+    *(s16 *)(tile + 8) = 0;
+    *(s16 *)(tile + 0xA) = 0;
+    *(s16 *)(tile + 0xE) = 0xF0;
+    SetSemiTrans(tile, 0);
+    AddPrim(D_800A374C + 0x50, tile);
+    *(s32 *)(arg0 + 0x18) = tile + 0x10;
+
+    ptr = *(s32 *)(*(s32 *)(arg0 + 4) + 0x14);
+    s.arg2 = 0x10;
+    s.zero10 = 0;
+    s.width = 0;
+    s.zero1C = 0;
+    s.byte28 = 0;
+
+    s.p0 = (s32 *)*(s32 *)ptr;
+    SetDrawMode(*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.p0, 0), 0);
+    AddPrim(D_800A374C + 0x44, *(s32 *)(arg0 + 0x1C));
+    *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
+
+    p0 = (s32)s.p0;
+    p1 = p0 + 0xC;
+    s.p1 = (s32 *)p1;
+    s.in_tex = *(s32 *)(arg0 + 0x14);
+    *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
+
+    p0 = *(s32 *)(ptr + 4);
+    p1 = p0 + 0xC;
+    s.p0 = (s32 *)p0;
+    s.p1 = (s32 *)p1;
+    s.in_tex = *(s32 *)(arg0 + 0x14);
+    *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
+
+    p0 = *(s32 *)(ptr + 8);
+    p1 = p0 + 0xC;
+    s.p0 = (s32 *)p0;
+    s.p1 = (s32 *)p1;
+    s.in_tex = *(s32 *)(arg0 + 0x14);
+    *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
+}
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
     s8 sp40, sp41, sp42, sp43;
@@ -49,6 +237,37 @@ extern s32 AddPrim(s32, s32);
 extern s32 rsin();
 
 void func_80069F80(s32 *arg0, s32 arg1) {
+    /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
+       passed to func_80073728 and func_8007352C (addiu $a0,$sp,0x18 at three
+       sites); sp44/sp48/sp4C/sp50 are this call site's UNWRITTEN PADDING tail.
+       They are NOT asserted to be fields of a shared descriptor type: nothing in
+       this function or its callees' asm reads them (the session-1 evidence.md
+       claim that they are members of a shared 0x3C type is withdrawn).
+       mechanism: mips.c compute_frame_size / get_frame_size -
+       frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs).  Frame-math proof
+       from the TARGET BYTES ALONE (asm/funcs/func_80069F80.s): target frame is
+       0x70 with five callee-saves ($s0-$s3,$ra at sp+0x58..0x68 => ALIGN8(20) =
+       0x18) and a 0x18 outgoing-args area (the 5-arg SetDrawMode call stores at
+       sp+0x10), so the locals region is 0x70 - 0x18 - 0x18 = 0x40 = 64 bytes,
+       while the only bytes ever read, written or addressed in that region are
+       sp+0x18..0x43 (the 0x2C-byte descriptor; sp+0x44..0x57 is untouched
+       anywhere in the target).  The fully-written form (a 0x2C descriptor) gives
+       ALIGN8(44)+0x18+0x18 = 0x60 != 0x70 (measured: 24 -> 12 when the tail was
+       added, hypotheses.md s1 H2), so no fully-written locals set can produce the
+       target frame.
+       n.b.! ALIGN8 makes the declared descriptor size recoverable only as a
+       RANGE: 0x39..0x40 bytes all give vars = 0x40; 0x3C is the smallest whole-word
+       (s32-member) size in that range and is the one declared here.
+       Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
+       (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object
+       (`s`, address passed to both descriptor callees) rather than adding a dead
+       pad local.  In-tree precedent for this carve-out: func_8006DD94 in this TU
+       (same callee func_8007352C; Judge PASS docs/grind/decisions.md:26632) and
+       src/text1a_post.c:387-400 (func_80041BF4, accepted on main).
+       Lever-exhaustion: memory/grind/func_80069F80/hypotheses.md - s1 H2 (0x2C
+       form scores 12, every save/restore offset wrong), s3 180-variant sweep of
+       the join block with the 0x3C descriptor held fixed, frame equation
+       re-derived by the Judge (decisions.md 2026-09-15 01:39 ruling). */
     S_69F80 s;
     s32 *ptr;
     s32 x0;
