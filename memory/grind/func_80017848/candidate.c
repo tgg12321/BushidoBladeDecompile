@@ -1,3 +1,23 @@
+/* [s59 SYNTHESIS - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
+ * chassis; fake_ablate: no FAKE construct).  Two facts change how to read it:
+ *  1. The target's loop-1 exit-path `lw a0,0xC(s2); sll a1,s4,6` are NOT a
+ *     tail copy: reorg (reorg.c:3442-3460, redundant_insn on an un-owned
+ *     thread) retargets loop 1's blez past loop 2's ordinary join-block
+ *     loads.  K2's dumps keep those loads inside the join block through
+ *     sched2 and still print the target's bytes.  So the `p = q;` tail below
+ *     is a device the target does not have; loop 1 matches by coincidence.
+ *     K2 (candidate_alt_s56_k2_..., 4 at 127/127, both loops symmetric) is
+ *     the faithful chassis; the residual is the copy-dest seat, twice.
+ *  2. The copy-dest seat is conflict/order-decided and CAN leave v0: with the
+ *     copy in the guard block and q live past the branch (W2), loop 1 prints
+ *     `addu a2,a0,zero; lw a3,16(s2); addu a0,a1,a2` (a3 missed only because
+ *     p is allocated before lnk).  But a guard-block copy lands in the blez
+ *     delay slot; the target's copy sits after it, in the preheader.  s57 cell
+ *     B died to cse's copy-swap (cse.c:7454, shared p canonical), and V1-V4
+ *     (per-loop p) die to optimize_reg_copy_1 (local-alloc.c:700, q dead
+ *     before the JUMP_INSN).  Frontier + details: hypotheses.md s59,
+ *     evidence.md E-s59-1..7.
+ */
 /* [s58 ENUMERATE - body below UNCHANGED (BASE, 3 at 127/127, re-measured on the
  * HEAD chassis this session; tools/fake_ablate.py: no FAKE construct).  The
  * systematic spelling sweep (owner ruling 2026-09-08, tools/spelling_enum.py +

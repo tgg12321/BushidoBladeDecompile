@@ -5329,3 +5329,66 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - kill_scope: class
 - measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt)
 - predicate_cite: tools/spelling_enum.py:26
+
+## s59 (2026-09-15, synthesis - merged attack after s55-s58; kills re-audited; frontier reset)
+
+## [s59] Chassis / kill re-audit: BASE 3 at 127/127, K2 4 at 127/127, s57 cell B 4 at 125/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c.
+- mechanism: instance kills are chassis-relative; the two closest-to-target kills (K2's seat residual, cell B) were re-measured with dumps.
+- probe: s59/run.ps1 BASE,K2,B; s59/diff_*.txt; tools/fake_ablate.py on candidate.c.
+- result: unchanged; ledger floor 3 stands. Cell B's mechanism corrected (E-s59-3).
+- verdict: CONFIRMED
+
+## [s59] The target's loop-1 exit-path loads (`lw a0,0xC(s2); sll a1,s4,6` before the join label) are produced from ordinary join-block statements by reorg retargeting the guard's blez past redundant insns.
+- mechanism: reorg.c:3442-3460 fill_slots_from_thread: redundant_insn() matches the target thread's first insns against insns executed before the branch; on an un-owned thread it sets new_thread past them and redirects the branch.
+- probe: K2 applied; tools/grinder/dump.ps1; s59/skel_*_K2.txt show insns 151/145 inside the join block through sched2 while the bytes match the target there.
+- result: CONFIRMED. The target's C needs no tail copy after loop 1; BASE's loop-1 match is a coincidence of bytes, K2 is the faithful chassis. The residual is exactly the two copy-dest seats.
+- verdict: CONFIRMED
+
+## [s59] Giving each loop its own copy variable (p, p2) on the cell-B chassis (copy in the guard block) keeps the copy through cse and combine and reaches the a3 seat.
+- mechanism: cse.c:844-857 keeps q canonical when p's last use is earlier, so cse.c:7454's copy-swap cannot fire; combine.c:914 blocks the merge because q is set in the preheader.
+- probe: s59/body_V1..V4.c (four placements of the copy inside the guard block), sandbox, s59/diff_V*.txt, dumps for V4 (skel_rtl/cse/combine_V4.txt).
+- result: all four = 4 at 125/127, both copies gone. The copy does survive cse and combine (V4 insn 72, add reads r78) and is folded by local-alloc's optimize_reg_copy_1 (local-alloc.c:700-790) because q's REG_DEAD precedes the JUMP_INSN where the scan stops. Banked rejected/s59_V1..V4_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s59/body_V1..V4.c applied (K2-derived chassis, copy in the guard block, q dead before the branch); no FAKE construct in any body
+
+## [s59] Keeping q live past loop 1's branch (loop 2's guard reads q/sh; the exit path re-assigns `q = *(u8 **)(ctx + 0xC); sh = slot_a << 6;` inside the if) makes both guard-block copies survive to the bytes with the copy dest seated in a3.
+- mechanism: no REG_DEAD for q before the JUMP_INSN, so optimize_reg_copy_1's forward scan (local-alloc.c:721-725) stops without rewriting; the copy dest then overlaps the guard's v0 temporaries and q (a0), and global.c's scan must skip v0/a0.
+- probe: s59/body_W1 (shared p), W2 (p/p2), W3 (copy after the count load), W4/W5 (copy adjacent to the load; sh/i moved), sandbox, s59/diff_W*.txt.
+- result: W1 = 16 at 127/127 (both copies present; loop-1 seats p=a1, lnk=a3, sh=a2), W2 = 12 at 126/127 (loop 1: p=a2, lnk=a3, sh=a1; loop 2's copy folds because q has no use after its guard), W3 = 16 at 126, W4 = W5 = 12 at 126 byte-identical to W2. The seat moved off v0 for the first time in the ledger, and a3 is missed only by allocation order (p before lnk). But the copy is emitted in the blez delay slot (reorg fill_simple_delay_slots takes the last guard-block insn), while the target's copy follows the delay slot, i.e. lives in the preheader block; and the exit-path `sh` re-assignment duplicates `sll` into the early-return load-delay slots. Banked rejected/s59_W1..W5_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s59/body_W1..W5.c applied (K2-derived chassis, copy in the guard block, q live past the branch via loop 2's guard + exit-path re-assignment); no FAKE construct in any body
+
+## [s59] Frontier reset (strongest 3):
+1. PREHEADER copy whose add operand reaches reload as a MEM / unallocated pseudo (reload1.c:5843-5853 find_equiv_reg copy into the first potential spill reg a3 = the target's exact `addu a3,a0,zero` / `addu a0,a1,a3`): the only unallocated-pseudo producer left under global.c:414-431 is a REG_EQUIV-mem pseudo whose init reload deletes (reload1.c:1955-1966). Probe: spell the add's operand as a pseudo set ONCE from `*(u8 **)(ctx + 0xC)` in the preheader with no other set and check the .lreg dump for a REG_EQUIV note and the .greg dump for its disposition (BB2_FINDREG_DEBUG on the instrumented cc1). If global allocates it, measure whether validate_equiv_mem rejects the equivalence because of the post-loop stores.
+2. On the W2 chassis, lnk allocated BEFORE p gives a3 for loop 1 (order lever: p's priority = refs/live-length; lnk's rises with an extra in-loop reference or p's falls with a longer range) - use only as a MEASUREMENT of the order model (the guard-block placement itself is dead, E-s59-5); then look for a PREHEADER-block spelling that inherits the same conflicts: a preheader statement that keeps a v0 local and the q value live across the copy without bytes (e.g. the guard count variable consumed in the preheader).
+3. Loop 2 symmetric to loop 1 under any chassis needs q live past loop 2's guard too: the only post-loop-2 consumer the target allows is a re-load into a1 for the call (`lw a1,0xC(s2)`), so q's post-guard use must be byte-free - measure `slots = q;` / `rec_a = q + sh` style consumers on the W2 chassis to see whether the fold moves rather than the copy.
+
+## [s59] BASE (candidate.c) re-measures 3 at 127/127, K2 4 at 127/127 and s57 cell B 4 at 125/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c.
+- mechanism: instance kills are chassis-relative; the two closest kills (K2 residual, cell B) re-measured with dumps
+- probe: tmp/grind/func_80017848/s59/run.ps1 BASE,K2,B; tools/fake_ablate.py --func func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c
+- result: unchanged; floor 3 stands; cell B's mechanism corrected to cse's copy-swap (cse.c:7440-7470)
+- verdict: CONFIRMED
+
+## [s59] The target's loop-1 exit-path lw a0,0xC(s2) and sll a1,s4,6 before the join label are produced from ordinary join-block statements by reorg retargeting loop 1's guard blez past redundant insns.
+- mechanism: reorg.c:3442-3460 fill_slots_from_thread: redundant_insn matches the target thread's first insns against insns executed before the branch; on an un-owned thread new_thread = next_active_insn(trial) and the branch is redirected past them
+- probe: K2 applied, tools/grinder/dump.ps1; s59/skel_{jump,cse,loop,combine,flow,greg,jump2,sched2}_K2.txt show insns 151/145 inside the join block (after label 143) through sched2 while the bytes match the target there
+- result: CONFIRMED: the target's C needs no tail copy after loop 1; K2 is the structurally faithful chassis and the residual is exactly the two copy-dest seats
+- verdict: CONFIRMED
+
+## [s59] On the cell-B chassis (copy in the guard block), a distinct copy variable per loop (p, p2) keeps the copy through cse and combine and reaches the a3 seat in the bytes.
+- mechanism: cse.c:844-857 keeps q canonical when p's last use is earlier, so the cse.c:7454 copy-swap cannot fire; combine.c:914 blocks the merge since q is set in the preheader
+- probe: s59/body_V1..V4.c (four copy placements inside the guard block), sandbox, s59/diff_V*.txt, V4 dumps skel_rtl/cse/combine_V4.txt
+- result: all four = 4 at 125/127 with both copies gone; the copy survives cse and combine (V4 insn 72, the add reads r78) and is folded by local-alloc's optimize_reg_copy_1 (local-alloc.c:700-790) because q's REG_DEAD precedes the JUMP_INSN where its scan stops (:721-725); banked rejected/s59_V1..V4_*.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s59/body_V1..V4.c applied (K2-derived chassis, copy in the guard block, q dead before the branch); no FAKE construct in any body
+
+## [s59] Keeping q live past loop 1's branch (loop 2's guard reads q and sh; the exit path re-assigns q = *(u8 **)(ctx + 0xC) and sh = slot_a << 6 inside the if) makes both guard-block copies survive to the bytes with the copy dest seated in a3.
+- mechanism: no REG_DEAD for q before the JUMP_INSN, so optimize_reg_copy_1 stops without rewriting; the copy dest then conflicts with the guard's v0 temporaries and q (a0) and global.c's scan must skip v0/a0
+- probe: s59/body_W1 (shared p), W2 (p/p2), W3 (copy after the count load), W4/W5 (copy adjacent to the load), sandbox, s59/diff_W*.txt
+- result: W1 = 16 at 127/127 with both copies present (loop-1 seats p=a1, lnk=a3, sh=a2); W2 = 12 at 126/127 (loop 1: p=a2, lnk=a3, sh=a1 - a3 missed only because p is allocated before lnk; loop 2's copy folds since q has no use after its guard); W3 = 16 at 126; W4 = W5 = 12 at 126 byte-identical to W2. The seat leaves v0 for the first time, but the copy is emitted in the blez delay slot (reorg fill_simple_delay_slots takes the last guard-block insn) whereas the target's copy follows the delay slot (a preheader-block insn), and the exit-path sh re-assignment duplicates sll into the early-return load-delay slots; banked rejected/s59_W1..W5_*.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s59/body_W1..W5.c applied (K2-derived chassis, copy in the guard block, q live past the branch via loop 2's guard read + exit-path re-assignment); no FAKE construct in any body
