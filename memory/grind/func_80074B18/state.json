@@ -36,5 +36,9 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T06:35:37.536597+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "exhaustion_base": 1,
+ "last_unpark_reason": "auto-return: toolchain change re-measure floor 1 -> 0 (fingerprint 2046c403e76d0fe5 -> a04b7a59487234ab)",
+ "last_unpark_at": "2026-09-15T04:55:29.740541+00:00",
+ "escalation_deferrals": 0
 }
