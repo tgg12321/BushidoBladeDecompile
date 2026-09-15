@@ -204,3 +204,58 @@ not launched: there is no residual to permute.
 - probe: V4.c minus the `s32 q1;` line applied to src/text1b.c; `sandbox func_80069F80 --disable all`.
 - result: score 0, 136/136 instructions. Body re-filed as candidate.c with the self-vet enumerating every construct.
 - verdict: CONFIRMED
+
+## Session 3 (enumerate, 2026-09-15) - honest floor 5 -> 4; 0 only via a banned respelling
+
+### H7 - KILLED (instance). An ordinary spelling of the join block that does NOT
+### reassign a table-pointer local at both fills reaches the target's
+### idx 84-86 order (addiu ; sw 0x18 ; sw 0x1C) on this chassis.
+Mechanism: sched.c:2505 birthing_insn_p returns reg_n_sets == 1 for the addiu
+pseudo; adjust_priority (sched.c:2546) then lifts the addiu to max_priority so
+it is scheduled (in reverse) first, i.e. emitted last before its store. Any
+spelling that leaves the addiu pseudo with one set after combine keeps
+(sw ; addiu ; sw).
+Probe: 180-variant sweep (tmp/grind/func_80069F80/s3/gen.py, results in
+memory/grind/func_80069F80/s3_enum_results_180.txt): 15 schemes (plain,
+single-site split-init, struct-member split-init, split-init after the header
+store, header-local reuse across 2 and 3 fills, tbl in fill 1 only, in-place
+`p1 += 0xC`, memory re-read, ptr[1] re-read, ptr[0] in fill 1, fill 3 without
+mutation) x 6 fill-1 orders x 2 fill-2 store orders.
+Result: every scheme without a two-site table local floors at 4 (y_ptr0,
+lateral - wrong load operand) or 5-7; the only 0s are i_split2, the banned
+two-site carrier respelled as split-init. Single-site split-init is folded by
+combine (reg_n_sets decremented, combine.c:2309/2332) and measures exactly
+like the plain form (8 / 5).
+kill_scope: instance. measured_on: HEAD 2026-09-15 chassis (-mel
+-msoft-float), 0x3C descriptor present, NO FAKE constructs, 180 variants.
+
+### H8 - CONFIRMED. Fill 1 written through the object pointer
+### (`s.sp1C = ptr[0] + 0xC;`, order sp1C/sp28/sp2C) fixes idx 68-73
+### completely (seats AND store order) without any carrier local.
+Mechanism: the fill-1 header value becomes a fresh load pseudo that is not
+memory-dependent on the preceding sp-relative stores, so its local-alloc
+quantity and the constant-3 quantity sort into the target's v1/v0 seats under
+the sp28-first store order.
+Probe: y_ptr0__1C282C__343040__HT measured 4; objdump diff shows idx 68-73
+identical and idx 84-86 plus the idx 66 load operand (`lw 0($s2)` vs the
+target's `lw 0x18($sp)`) remaining.
+Result: honest floor 4 with no banned construct (candidate_floor4_ptr0.c).
+Lateral, not on the path to 0: the target re-reads s.sp18.
+
+## Live frontier for session 4
+1. RULING (filed this session): may the per-fill-reassigned table local
+   (V4 body, candidate.c) be submitted under the func_80069E18 precedent
+   (docs/grind/decisions.md:1231), and may the 0x3C descriptor be submitted
+   under the OVERSIZED-LOCALS carve-out with the func_8006DD94 annotation
+   shape (docs/grind/decisions.md:26632)? If both PASS, the V4 body is
+   byte-proven (0/136, session 2b, and again this session as i_split2's
+   sibling at rejected/split-init-tbl-both-fills-score0-banned-respelling.c).
+2. If the ruling refuses the carrier: the residual is the sched.c:2505
+   predicate itself. Read tmp/grind/func_80069F80/dumps/text1b.sched for the
+   fill-2 addiu and enumerate consumers that could give the addiu a second
+   use inside block 9 (none exist in the target's C shape; expect a class
+   kill citing sched.c:2505).
+3. If the ruling refuses the descriptor tail: read cc1's `.frame` line
+   (vars=) for a real second 16-byte live object; no callee in this function
+   takes a second pointer, so expect the func_8006DD94 D_rect8 result (frame
+   right, offsets wrong) and a class kill citing mips.c compute_frame_size.

@@ -122,3 +122,79 @@ cross-products ZE/ZG/ZF/ZH/ZK = 8/8/9/8/8.
 - The 2026-09-15 00:46 layer-1 FAIL was solely the unreferenced `s32 q1;` leftover; removing it re-measures 0/136 (sandbox, --disable all, HEAD chassis -mel -msoft-float). No other change to the V4 body.
 - Applied body: tmp/grind/func_80069F80/s2/V5_noq1_full.c (whole text1b.c); diff vs main: tmp/grind/func_80069F80/s2/final_noq1.diff (101 lines, confined to the INCLUDE_ASM line).
 - No permuter campaign launched (distance already 0); no FAKE constructs; no sanctioned-family claim.
+
+## Session 3 (enumerate, 2026-09-15) - systematic join-block sweep
+Chassis: HEAD 2026-09-15 (-mel -msoft-float); every variant keeps the 0x3C
+descriptor so the frame is isolated; no FAKE constructs anywhere.
+Generator: tmp/grind/func_80069F80/s3/gen.py; sweep loop
+tmp/grind/func_80069F80/s3/sweep.ps1 (splice + `sandbox --disable all`).
+
+Axes: 15 variable-carrying schemes for the table pointer x 6 orders of
+(sp28, sp2C, sp1C) in fill 1 x 2 orders of the (sp18, sp1C) stores in fill 2
+= 180 variants (memory/grind/func_80069F80/s3_enum_results_180.txt). A
+further 25 variants over the fill-2 (sp34, sp30, sp40) order axis were
+measured before that axis was dropped (all 7..11, worse than the target order;
+s3_enum_results_partial_o2axis.txt).
+
+ENUMERATION: 180 spellings, best 0, 3 at 0, 28 at the old floor 5, histogram
+0:3 2:6 4:4 5:28 6:43 7:10 8:45 9:26 10:13 11:2.
+
+Per-scheme minimum (12 variants each):
+| scheme | fill-1 table | fill-2 table | min |
+|---|---|---|---|
+| a_plain | s.sp18 + 0xC | s.sp1C = p1 + 0xC | 5 |
+| b_split | s.sp18 + 0xC | tbl = p1; tbl += 0xC | 5 |
+| c_memsplit | s.sp18 + 0xC | s.sp1C = p1; s.sp1C += 0xC | 5 |
+| e_hdrreuse | s.sp18 + 0xC | p1 + 0xC, p1 reused as fill-3 header | 6 |
+| i_split2 | tbl = s.sp18; tbl += 0xC | tbl = p1; tbl += 0xC | **0** |
+| j_splitafter | s.sp18 + 0xC | (after header store) tbl = p1; tbl += 0xC | 5 |
+| r_p1fill1 | p1 = s.sp18; p1 + 0xC | p1 + 0xC | 6 |
+| s_p1all | p1 = s.sp18 | p1 in all three fills | 6 |
+| t_tblfill1 | tbl = s.sp18 + 0xC (fill 1 only) | p1 + 0xC | 5 |
+| u_tblf1_p1all | p1 = s.sp18; tbl = p1 + 0xC | p1 + 0xC, p1 all fills | 6 |
+| v_kmut | s.sp18 + 0xC | p1 += 0xC; s.sp1C = p1 | 5 |
+| w_memre | s.sp18 + 0xC | s.sp1C = s.sp18 + 0xC | 5 |
+| x_ptrre | s.sp18 + 0xC | s.sp1C = ptr[1] + 0xC | 7 |
+| y_ptr0 | ptr[0] + 0xC | p1 + 0xC | **4** |
+| z_hdrmut3 | s.sp18 + 0xC | p1 + 0xC, fill 3 `p2 + 0x14` no mutation | 5 |
+
+- [s3] The ONLY scheme reaching 0 is i_split2: the table local assigned at
+  BOTH join-block fills, respelled as split-init. That is the banned two-site
+  `tbl` carrier by another spelling (same intent: reg_n_sets == 2 on the
+  addiu pseudo so sched.c:2505 birthing_insn_p is false). NOT submitted;
+  banked at rejected/split-init-tbl-both-fills-score0-banned-respelling.c.
+- [s3] Single-site split-init (b_split, j_splitafter) and struct-member
+  split-init (c_memsplit) do NOT reproduce the effect: combine merges the
+  copy into the add and decrements reg_n_sets (combine.c:2309/2332), so the
+  addiu is back to one set and is deferred to just before its store. Measured
+  8 (sp28-first) / 5 (sp2C-first), identical to the plain form.
+- [s3] y_ptr0 (fill 1 reads the header through `ptr[0] + 0xC` instead of
+  re-reading s.sp18, order sp1C/sp28/sp2C) is a NEW honest floor of 4 with no
+  tbl carrier: idx 68-73 all match (seats and store order), leaving idx 84-86
+  (3) plus one operand diff the diff helper does not flag, target
+  `lw $v1,0x18($sp)` vs ours `lw $v1,0($s2)`. It is lateral: the target
+  provably re-reads s.sp18 and every s.sp18-re-read spelling floors at 5.
+  Saved as memory/grind/func_80069F80/candidate_floor4_ptr0.c.
+- [s3] Header-reuse schemes (e, r, s, u: one pointer local carried across
+  fills) are all WORSE (6): the extra sets change the local-alloc quantity
+  order in block 9 and lose the fill-1 seats.
+- [s3] Frame equation for the ruling request, from the target bytes alone
+  (tools/gcc-2.7.2/config/mips/mips.c compute_frame_size: var_size =
+  ALIGN8(vars), args_size = ALIGN8(outgoing), gp_reg_size = ALIGN8(saves)):
+  frame 0x70; saves $s0-$s3,$ra = 20 -> 0x18; outgoing args for the 5-arg
+  SetDrawMode call = 20 -> 0x18; locals region = 0x70 - 0x18 - 0x18 = 0x40 =
+  64 bytes. Bytes actually touched in sp+0x18..0x57: 0x18..0x43 (the 0x2C
+  descriptor, address taken by `addiu $a0,$sp,0x18`); 0x44..0x57 never read,
+  written or addressed (grep of asm/funcs/func_80069F80.s). Fully-written
+  form: ALIGN8(44) = 48 -> frame 0x60 != 0x70 (measured: 24 -> 12 when the
+  tail was added, session 1). So no fully-written locals set reaches the
+  target frame; the declared descriptor size is recoverable only as the range
+  0x39..0x40 (s32 members: 0x3C and 0x40 byte-identical). Same shape as
+  func_8006DD94 (Judge PASS docs/grind/decisions.md:26632 and :26636,
+  live-object prong 2, same callee func_8007352C, same TU).
+- [s3] In-tree precedent for the per-fill-reassigned pointer locals:
+  func_80069E18 (src/text1b.c:5786-5809), Judge final-call PASS
+  docs/grind/decisions.md:1231, commit 220b9c97b: `p0 = <hdr>; p1 = p0 + 0xC;
+  s.p0 = p0; s.p1 = p1;` repeated at three func_8007352C fills, each local
+  assigned three times - the exact idiom the 01:13 layer-1 FAIL named a
+  multi-write carrier here.

@@ -1,3 +1,16 @@
+/* STATUS (session 3, enumerate, 2026-09-15): this body measures 0/136 but
+ * carries TWO constructs the driver has BANNED for this function after the
+ * 2026-09-15 01:13 layer-1 FAIL: (1) the table local `tbl` assigned at both
+ * join-block fills, (2) the descriptor's unwritten tail sp44..sp50. Session 3
+ * swept 180 ordinary spellings of the join block: the per-fill-reassigned
+ * table local is the ONLY spelling that reaches 0 (evidence.md s3), and the
+ * frame equation forces the 0x3C..0x40 descriptor (evidence.md s3). A
+ * ruling-request was filed citing func_80069E18 (docs/grind/decisions.md:1231,
+ * same p0/p1-per-fill idiom, Judge PASS) and func_8006DD94
+ * (docs/grind/decisions.md:26632, OVERSIZED-LOCALS carve-out, same callee and
+ * TU). Do NOT resubmit this body as candidate-ready until that ruling lands.
+ * Best banned-construct-free form: candidate_floor4_ptr0.c (4/136).
+ */
 /* func_80069F80 - session 2 candidate (grind, re-filed): sandbox distance
  * 0/136 on HEAD 2026-09-15 (-mel -msoft-float). NO FAKE constructs; ordinary
  * C. The 2026-09-15 00:46 layer-1 FAIL was for an unreferenced leftover

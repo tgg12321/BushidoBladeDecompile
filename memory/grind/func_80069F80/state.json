@@ -28,11 +28,11 @@
    "next_probe": "Import memory/grind/func_80069F80/candidate.c into a permuter workspace and run a fresh-seed campaign with tools/permuter_campaign.py, waiting and harvesting in-turn (never ending the turn on a live campaign)."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Before resubmission, add to the descriptor declaration a /* FAKE: ... */ range annotation in the func_8006DD94 shape (src/text1b.c:6228-6256): name the OVERSIZED-LOCALS carve-out and prong 2, give the frame derivation (0x70 - 0x18 saves - 0x18 args = 0x40 locals; written 0x18..0x43; fully-written form = 0x60), state the range 0x39..0x40 with 0x3C the smallest whole-word member, and state that the tail is this call site's unwritten padding \u2014 do NOT assert it is a field of a shared descriptor type (withdraw that claim from evidence.md [s1]); no other change to the V4 body."
+ ],
  "banned_constructs": [
-  "s32 q1;  (declared in func_80069F80's local block; grep over the whole function body shows the identifier appears ONLY on its declaration line \u2014 never written, never read)",
-  "s32 tbl; written at two sites in the join block (`tbl = s.sp18 + 0xC; s.sp1C = tbl;` and `tbl = p1 + 0xC; ... s.sp1C = tbl;`)",
-  "typedef struct { ... s32 sp44, sp48, sp4C, sp50; } S_69F80; - four trailing members that are never written or read anywhere in the function (grep of candidate.c finds the identifiers only on the declaration line)"
+  "s32 q1;  (declared in func_80069F80's local block; grep over the whole function body shows the identifier appears ONLY on its declaration line \u2014 never written, never read)"
  ],
  "kills": [
   {
@@ -75,6 +75,21 @@
    "hash": "163e84a9ed9ef0e9",
    "when": "2026-09-15T06:13:26.428624+00:00",
    "summary": "The closing lever is an INVENTED fresh local `tbl` written twice solely to push reg_n_sets above 1 and defeat sched.c birthing_insn_p - the settled y1/`c`/`p`/`nv`-`nw`/`h` multi-write-carrier class that is excluded from every frozen family; independently, the struct's four trailing unwritten words "
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "163e84a9ed9ef0e9",
+   "when": "2026-09-15T06:39:15.028174+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-15 01:39 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "163e84a9ed9ef0e9",
+   "when": "2026-09-15T06:39:15.028174+00:00",
+   "ref": "decisions.md 2026-09-15 01:39 ruling PASS",
+   "justification": "Both constructs clear. (1) `tbl` is not the y1/`c` multi-write-carrier class: that ban is scoped to a DEAD extra write (ordinary-c-judge-decidable.md Ruling 4, 2026-09-02 \u2014 the latest word, postdating the 2026-07-28 y1 FAIL), and both of tbl's writes are consumed by the very next descriptor store. It is semantically truthful (the +0x04 table pointer, hdr+0xC) so Ruling 1 bars failing it on allocation motive. Decisive: I read the identical idiom shipped on main in the SAME TU for the SAME callee func_8007352C \u2014 src/text1b.c:5786-5809, p0/p1 reassigned at three fills (Judge PASS decisions.md:123"
   }
  ]
 }
