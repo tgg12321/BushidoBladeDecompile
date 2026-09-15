@@ -1,3 +1,32 @@
+/* [s57 STRUCTURAL - READ THIS FIRST.  Body below UNCHANGED (BASE, 3 at 127/127;
+ * K2 re-measured 4 at 127/127 on the HEAD chassis this session).  s57 read
+ * global.c end to end for the copy destination's seat and CLOSED every
+ * allocator route to a3 for a copy dest whose live range is [copy, base add]:
+ *   - pass-0 scan (global.c:985-1078): a3 needs v0,v1,a0,a1,a2 all in `used`.
+ *     a0 can enter `used` only as a conflict (impossible: q dies at the copy,
+ *     base is born at the add, global.c:755-790) or as regs_someone_prefers
+ *     (impossible: the only a0-preference holder is the ctx param pseudo, which
+ *     must cross the call to seat in s2 and prune_preferences global.c:900
+ *     strips call-used prefs from call-crossing allocnos).
+ *   - preference override (global.c:1097-1160): needs an a3 event.  The only
+ *     hard-a3 insn is the incoming-argument copy; measured (cell A, param
+ *     reused as the copy dest) combine folds it into its single use, so the
+ *     preference lands on a call-crossing pseudo and is pruned.
+ *   - local-alloc (K1 shape): `used` = hard regs live in the block only ->
+ *     v0.  reload's find_equiv_reg copy route (reload1.c:5843-5853, first
+ *     spill reg = a3 = the only unused call-used a-reg, reload1.c:3766) would
+ *     print EXACTLY the target's `addu a3,a0,zero`, but needs the copy dest
+ *     UNALLOCATED, and global.c never leaves a GR_REGS allocno unallocated
+ *     (find_reg fails only on class exhaustion, global.c:586-598).
+ *   The v0 preference on the copy dest (s56 frontier item 2) is traced:
+ *   expand_preferences (global.c:829) merges base's v0 preference (from the
+ *   body's `(set v0-local (plus base i))`) into p at the add where p dies.
+ * Consequence: on every chassis where the copy dest is an expanded C copy of
+ * the guard's pointer with range [copy, add], global.c seats it in v0 (or
+ * coalesces it into a0).  The next session must attack the RANGE assumption
+ * or the pass that emits the copy, not the allocator.  Details: hypotheses.md
+ * s57, evidence.md E-s57-1..7.
+ */
 /* [s56 REDERIVE - READ THIS FIRST.  Body below UNCHANGED (BASE, 3 at 127/127,
  * re-audited on the HEAD chassis this session, no FAKE construct).  It is still
  * the lowest-SCORING form but NOT the most advanced one:

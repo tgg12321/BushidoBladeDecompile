@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 56,
- "current_modality": "rederive",
+ "session_count": 57,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -339,23 +339,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "Rederive closes s55's two-gate conflict: feeding combine.c:914 with a set of the copy source that combine itself later deletes (`q = *(u8 **)(ctx + 0x10); lnk = q;`) makes BOTH preheader copies surviv"
+  },
+  {
+   "session": 57,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "Structural s57: the a3 seat of the preheader copy is closed under every global.c/local-alloc route for a [copy, add]-ranged copy dest (source-read, cited); the v0 preference is traced to expand_prefer"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the K2 chassis the residual is purely the copy destination's seat; a3 needs p to be live past the base add (conflicting with base=a0 and a loop-body v0 temporary) via a reader that leaves no bytes, with combine survival now paid by the K device so the reader no longer needs to defeat combine.",
-   "mechanism": "global.c find_reg pass-0 scan + global_conflicts death-before-store ordering (E-s56-4); the only post-flow deleters are combine merge/fold, optimize_reg_copy_2 self-copies, no-op moves (reload/sched2/jump2/final), jump2 find_equiv_reg-redundant moves and reorg redundant_insn.",
-   "next_probe": "On tmp/grind/func_80017848/s56/body_K2.c, try readers that jump2 deletes as REDUNDANT via find_equiv_reg (jump.c:455-490: a copy `X = p` is deleted when X already holds p's value within the same label-free run) - e.g. re-copy p into the pointer variable q on the loop-exit path only where q was just set from p's source - and readers that become same-register no-op moves; score each and read the .greg conflicts of pseudo 78 with BB2_FINDREG_DEBUG=78 (instrumented tools/gcc-2.7.2/cc1) to confirm v0 and a0 enter hard_conf."
+   "hypothesis": "The residual is not decidable by global.c on any chassis where the copy dest is an ordinary expanded copy with range [copy, add]; the original must differ in the copy dest's RANGE (a byte-free second segment overlapping a v0 local and an a0 holder, deleted only after global as a no-op move whose consumer is the base add itself, or a segment ending AT the copy) or in the PASS that emits the copy (reload).",
+   "mechanism": "E-s57-6: scan needs a0 excluded (impossible), preferences need an a3 event (impossible), reload needs an unallocated pseudo (global.c never leaves one).",
+   "next_probe": "On body_K2.c spell the copy dest as a variable whose PREVIOUS value is live into the preheader and dies at the copy insn itself (so its earlier segment overlaps the guard's v0 temporaries and q in a0 while the copy still writes it): e.g. `p` also carries the guard's count/address temp or the loop-1 base into loop 2's preheader, and check with BB2_FINDREG_DEBUG=<pseudo> (instrumented tools/gcc-2.7.2/cc1) that a0 and v0 enter hard_conf; then price the bytes of the extra segment's real uses."
   },
   {
-   "hypothesis": "The prefs={v0} entry on pseudo 78 in sim_K2.txt has an untraced source; if it comes from a set whose first source operand is a local-alloc'd pseudo in v0, the same set_preference path (global.c:1671) could be steered to give p an a3 copy preference from a local pseudo seated in a3.",
-   "mechanism": "set_preference converts reg_renumber'd (local-alloc'd) pseudos to hard regs and records copy/full preferences; find_reg overrides the scan result with an unused copy preference of a compatible class (global.c:1090-1115).",
-   "next_probe": "Run pwsh tools/grinder/dump.ps1 with body_K2.c applied, grep the .greg dump for pseudo 78's preference line and its source insn; then look for a local pseudo that local-alloc could seat in a3 in a block where v0..a2 are hard-live (the call block after jal, or function entry while a0-a3 hold incoming args) and copy p from/to it byte-free."
+   "hypothesis": "A spelling that leaves the base add's pointer operand as a MEM-equivalent UNALLOCATED pseudo at reload time makes reload emit the target's exact `addu a3,a0,zero` (find_equiv_reg from a0 into the first spill reg a3) and delete the pseudo's own load (equiv-init deletion).",
+   "mechanism": "reload1.c:5843-5853 + :3766-3772 + :1955-1966; blocked today because global.c allocates every GR_REGS allocno (global.c:414-431, :586-598) and update_equiv_regs cannot substitute a MEM into addsi3 (local-alloc.c:1090-1111, arith_operand).",
+   "next_probe": "Run BB2_ALLOC_DEBUG=1 with the instrumented cc1 on body_K2.c and list every pseudo left with hardreg=-1 (the ST_REGS pseudos 99/111 are the known phantom-slot ones); then test whether a pointer pseudo with reg_preferred_class narrower than GR_REGS (regclass.c:935-960) or with reg_alternate_class NO_REGS can be produced by ordinary C (e.g. an address used only in a load/store whose constraints regclass scores) so that find_reg's class scan fails for it."
   },
   {
-   "hypothesis": "The two remaining seat diffs may be reachable from the K2 side by tools/ra_solver/perturb.py, now that the copy dest is a GLOBAL allocno (pseudo 78) in the model for the first time with the whole opcode stream exact.",
-   "mechanism": "perturb.py searches minimal input perturbations (refs, live length, conflicts, prefs) that move one allocno to a goal register; each vector maps to a C-level phenomenon.",
-   "next_probe": "bash tools/wsl.sh 'python3 tools/ra_solver/perturb.py tmp/grind/func_80017848/s56/ra_K2.json --goal {\"78\": 7}' (check perturb.py's argument names first) and translate any REACHABLE vector into a K2 spelling."
+   "hypothesis": "The two remaining seat diffs are reachable from the K2 side by tools/ra_solver/perturb.py (s56 frontier item 3, still unmeasured).",
+   "mechanism": "perturb.py searches minimal input perturbations (refs, live length, conflicts, prefs) that move one allocno to a goal register; E-s57-6 predicts every vector will require an a0 conflict or a live length >= 33.",
+   "next_probe": "bash tools/wsl.sh 'python3 tools/ra_solver/perturb.py tmp/grind/func_80017848/s56/ra_K2.json --goal {\"78\": 7}' (check the argument names first) and confirm the returned vectors are exactly the E-s57-6 preconditions; any vector that is NOT (a0 conflict or length >= 33 or a3 preference) is a gap in this session's reading and must be read from global.c before spelling."
   }
  ],
  "judge_constraints": [],
@@ -369,30 +375,6 @@
  "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
  "last_unpark_at": "2026-09-15T20:48:37.414727+00:00",
  "kills": [
-  {
-   "session": 38,
-   "statement": "One of the jump.c or flow.c emit_move_insn sites left unread by the s31 census produces a plain reg-reg copy after combine on this target.",
-   "kill_scope": "class",
-   "measured_on": "source reading of the frozen cc1 tree and mips target files; no FAKE constructs involved",
-   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2937",
-   "result": "jump.c:907/951/1008 are gated on ! reload_completed && BRANCH_COST >= 3 (resp. 4) and BRANCH_COST is 1 for -mcpu=3000; :"
-  },
-  {
-   "session": 39,
-   "statement": "Frontier item 1: an insn between the preheader copy and the base add that reads the copy destination redirects flow's reg_next_use so the add has no LOG_LINK to the copy, combine's copy->interposer at",
-   "kill_scope": "class",
-   "measured_on": "standalone scratch TUs under the exact project CC_FLAGS (canonical cc1) plus J1 on the P4 join chassis over the HEAD src/ings.c:820 anchor; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "tools/gcc-2.7.2/flow.c:2101",
-   "result": "m8a: add has no LOG_LINK, combine leaves insn 71, final move $8,$3 ; addu $2,$5,$8 plus the interposer lw $3,8($8) as a "
-  },
-  {
-   "session": 39,
-   "statement": "reload's input-reload path emits target's preheader copy via find_equiv_reg (a hard register already holding P's value becomes oldequiv and reload emits gen_move_insn(reloadreg, oldequiv)), a producer",
-   "kill_scope": "class",
-   "measured_on": "source reading of the frozen cc1 tree plus target prologue/instruction census; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "tools/gcc-2.7.2/reload1.c:5851",
-   "result": "The gate needs an unallocated pseudo; this function has none, so the reload copy producer cannot be target's producer."
-  },
   {
    "session": 39,
    "statement": "Writing the round-trip p = q between the cse-produced copy and the base add (add reads p) in both loops of the join chassis keeps each preheader copy in target's position.",
@@ -848,6 +830,30 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s56/body_K3.c applied; no FAKE construct; BASE re-audited at 3 (127/127) in the same session",
    "predicate_cite": "",
    "result": "6 at 127/127, byte-identical to K1. Banked rejected/s56_k3_shared_q_lnk_t_sh_across_loops_on_k1_costs_6.c."
+  },
+  {
+   "session": 57,
+   "statement": "Reusing the dead parameter slot_b as the copy destination (cell A: `b = slot_b;` first, all slot_b uses through b, `slot_b = (s32)q; q = (u8 *)(sh + slot_b);` in both preheaders) gives the copy dest t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s57/body_A.c applied (K2 chassis + entry copy + param reuse); no FAKE construct in any s57 body; K2 re-audited at 4 (127/127) this s",
+   "predicate_cite": "",
+   "result": "4 at 127/127, byte-identical to K2. .greg: `;; 75 conflicts: 72 73 74 75 79 81 84 85 88 90 29`, `;; 75 preferences: 2`: "
+  },
+  {
+   "session": 57,
+   "statement": "The copy destination can obtain an a3 copy or hard-reg preference (set_preference or an expand_preferences chain) from the incoming-argument register a3.",
+   "kill_scope": "class",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s57/body_A.c applied; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1671",
+   "result": "No form of this route survives combine without adding an a3-reading instruction; the target reads a3 only in the two bas"
+  },
+  {
+   "session": 57,
+   "statement": "Placing the copy `p = q` in the guard block before the guard temporaries (cell B) makes p overlap the guard's v0 temporaries and q so global.c records v0 and a0 conflicts for it.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s57/body_B.c applied; no FAKE construct",
+   "predicate_cite": "",
+   "result": "4 at 125/127: both copies vanish (`addu a0,a1,a0`); cse's path following into the single-predecessor preheader canonical"
   }
  ],
  "escalation_deferrals": 0,
