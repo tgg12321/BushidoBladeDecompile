@@ -34,3 +34,12 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: v4 chassis (index loop 1, u8 count, base copy), no FAKE constructs, HEAD 205b551bb -mel -msoft-float
+
+## s2 (structural, 2026-09-15)
+
+- H6 CONFIRMED (was frontier #2) - The running write pointer must be the same pseudo as the one used for `hdr[12]` and in loop 2, with `base` a 2-ref saved copy: v6 (param advanced in place) 67 -> 42; the `move s2,s3` vanished, base became the spill victim, arg3 got $fp. Mechanism: cse.c make_regs_eqv canonical-head rule (cse.c:826) - see evidence.
+- H7 CONFIRMED - The three VabEnt copies are per-field scalar copies, not struct assignments: v9 = v6 + per-field copies 42 -> 11, insn count 164 -> 169 (the target count). Mechanism: struct assignment -> movstrsi block-move insn (interleaved lw/lw/sw/sw from the output routine); scalar copies -> true_dependence store->load (sched.c:817) -> lw/nop/sw pairs.
+- H8 CONFIRMED - The a0 param is copied into a local cursor `u8 *p` at function entry (param declared s32 like the neighbouring obj_InitTaskCamera); every use goes through p. v10 = v9 + entry copy: 11 -> 0. Two effects from one insn: (a) prologue order - sched2's backward LUID tie-break emits the four param moves in RTL order, and the surviving a0 move is now the later p=hdr copy, so `sw $s5; move $s5,$a1` leads and `sw $s3; move $s3,$a0` is fourth; (b) arg1 (pseudo 73) live length +1 insn -> priority below &D_800EFC38 (89) -> 89 takes $s4, 73 takes $s5, exactly the single atom inverse.py named.
+- H5 RESOLVED WITHOUT A DEDICATED LEVER - The 80-vs-212 order flip from s1 disappeared once H6/H7 changed the pseudo population (v9 already has i in $s2 and the loop-2 len giv in $s1). No probe of frontier #1 (a)-(c) was needed; do not re-open it.
+- H9 KILLED (instance) - Giving loop 3 its own counter k on the v6 chassis (score 54 vs 42). measured_on: v6 chassis (u8 * param advanced in place, u8 count, base copy, struct-assignment copies), no FAKE constructs, HEAD 35777ac64 -mel -msoft-float.
+- H10 KILLED (instance) - Giving loop 1 its own counter k on the v6 chassis (score 46 vs 42): the loop-1 final value and the loop-2/3 counter must be one pseudo. measured_on: v6 chassis, no FAKE constructs, HEAD 35777ac64 -mel -msoft-float.
