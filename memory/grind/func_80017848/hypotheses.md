@@ -5073,3 +5073,75 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 anchor and scored with 'sandbox func_80017848 --disable all'.
 - result: 3 at 127/127, identical to its s52/s53/s54 value.
 - verdict: CONFIRMED
+
+## s56 (2026-09-15, rederive - forced sibling transplant from func_8005BA8C)
+
+## [s56] Forced sibling transplant: func_8005BA8C's s2 finding H8 (copy the pointer parameter into a local cursor at entry and route every access through it) applied to this function's best chassis.
+- mechanism: the sibling's closed ledger (its CROSS-KNOWLEDGE line) states that func_80017848 shares no code block with it; the only transplantable content is its general lever H8 (param -> entry-copied local cursor, which in the sibling fixed prologue order and one allocno priority) and H6 (param advanced in place, not applicable here because ctx is never advanced).
+- probe: cell K4 = cell K2 with `u8 *c; c = ctx;` as the first statement and every `ctx` use rewritten to `c` (tmp/grind/func_80017848/s56/body_K4.c), applied at the HEAD src/ings.c:820 INCLUDE_ASM anchor and scored with `sandbox func_80017848 --disable all`; normalised objdump diff in s56/diff_K4.txt.
+- result: 8 at 127/127. The only change against K2 is that the `sw s2,40(sp)` / `addu s2,a0,zero` prologue pair moves from slots 2-3 to slots 9-10 (the ctx pseudo's first use shifts, so the prologue order changes); the copy-dest seat residual is unchanged. Banked as rejected/s56_k4_sibling_8005BA8C_entry_cursor_c_eq_ctx_moves_s2_prologue_pair_costs_8.c. The owner directive (auto-return on func_8005BA8C's completion) is executed and measured.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s56/body_K4.c applied (K2 chassis + entry cursor); no FAKE construct in any s56 body; BASE re-audited at 3 (127/127) in the same session
+
+## [s56] combine.c:914's clobber gate can be fed by a set of the copy's source that combine itself later deletes, because reg_last_set[] is written only at combine.c:9804 and never cleared when an i2 is merged away; so the lnk load can be spelled INTO the pointer variable and copied straight out again (`q = *(u8 **)(ctx + 0x10); lnk = q;`), which keeps s55-U1's exact seat map while making both preheader copies survive with no second reader.
+- mechanism: combine scans insns in order and records reg_last_set[q] = the lnk-load insn when it passes it; at `lnk = q` it merges the load into the copy (q's second value has one use and dies there) and turns the load into a NOTE, but the NOTE keeps its INSN_CUID and reg_last_set[q] still points at it; at the base add `q = sh + p`, can_combine_p calls use_crosses_set_p (q, CUID(copy)), finds INSN_CUID (reg_last_set[q]) > CUID(copy) and returns 1, so the copy `p = q` is not merged (combine.c:914). Read this session at tools/gcc-2.7.2/combine.c:860-960 (gates), :9804 (the only reg_last_set writer), :10107-10131 (use_crosses_set_p).
+- probe: cell K1 = s55's U1 with `lnk = *(u8 **)(ctx + 0x10);` replaced by `q = *(u8 **)(ctx + 0x10); lnk = q;` in loop 1 and the same for q2/lnk2 in loop 2 (tmp/grind/func_80017848/s56/body_K1.c); applied at the HEAD anchor, scored, diffed (s56/diff_K1.txt); RA solver `extract.py func_80017848 ings` + `simulate.py --trace` on the same source (s56/ra_K1.json, s56/sim_K1.txt).
+- result: 6 at 127/127. BOTH copies are present (`addu v0,a0,zero` / `addu a0,a1,v0` in each preheader), the lnk load sits between them exactly as in the target, and the remaining 123 instructions match register-for-register. The only residual is the copy destination's seat: v0 where the target has a3. The RA model reproduces the build exactly (sort order MATCH, 14/14 dispositions); the copy dests p/p2 are absent from the global allocno list, i.e. they are LOCAL quantities seated by local-alloc's ascending scan (the s48 mechanism). This is the first form in 56 sessions with both copies, no reader, and a U1-exact seat map everywhere else.
+- verdict: CONFIRMED
+
+## [s56] Making the two copy destinations ONE variable (`p` in both loops) turns the copy dest into a global allocno (two sets in two blocks) without adding bytes, and global.c's pass-0 scan still seats it in v0 because nothing excludes v0, a0, a1 or a2 at its allocation time.
+- mechanism: global.c find_reg pass 0 (global.c:985-1078) takes the lowest regno not in hard_reg_conflicts, not outside regs_used_so_far and not in regs_someone_prefers; p (pseudo 78) sorts at pri 13333 (4 refs, live length 6), above sh (3750) and lnk (2500) so they do not constrain it, below i (26000 -> v1) and q/q2 (16666 -> a0); q never overlaps p (q dies at the copy and is reborn at the add where p dies, and global_conflicts processes deaths before stores, global.c:755-790), so a0 is not a conflict. Scan -> v0.
+- probe: cell K2 (tmp/grind/func_80017848/s56/body_K2.c) scored and diffed (s56/diff_K2.txt); RA solver extract + simulate --trace (s56/ra_K2.json, s56/sim_K2.txt).
+- result: 4 at 127/127 (the score improves from K1's 6 because the two seats are now one consistently renamed pseudo). TRACE for pseudo 78: `pri=13333 hard_conf=[3, 29] someone=[] best=2 prefs=[2]`; sort order MATCH, 15/15 dispositions. Banked as memory/grind/func_80017848/candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c, the most advanced form on file.
+- verdict: CONFIRMED
+
+## [s56] Sharing q, lnk, t and sh across both loops on the K1 chassis changes nothing.
+- mechanism: the copy dest seat is decided by the copy dest's own live range and allocno class, not by which pointer/lnk/count/shift variable feeds it.
+- probe: cell K3 (tmp/grind/func_80017848/s56/body_K3.c: K1 with q2/lnk2/t2/sh2 folded into q/lnk/t/sh), scored and diffed.
+- result: 6 at 127/127, byte-identical to K1. Banked as rejected/s56_k3_shared_q_lnk_t_sh_across_loops_on_k1_costs_6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with s56/body_K3.c applied; no FAKE construct; BASE re-audited at 3 (127/127) in the same session
+
+## [s56] The mandatory chassis/kill re-audit: BASE re-measures 3 at 127/127 on the HEAD chassis (the dispatch brief reported the measurement as unavailable), U1 re-measures 4 at 125/127; no FAKE construct exists in candidate.c or any s55/s56 body, so no ablation applies.
+- mechanism: instance kills are chassis-relative; the closest banked forms are re-measured before new probes.
+- probe: body_BASE.c and body_U1.c (extracted from candidate.c and candidate_alt_s55_u1_seat_exact_two_copies_missing_4.c) applied at the HEAD src/ings.c:820 anchor and scored (s56/diff_BASE.txt, s56/diff_U1.txt).
+- result: BASE = 3 at 127/127 with the s54 three-instruction transposition; U1 = 4 at 125/127 with the two copies missing. Both identical to s55. Ledger floor 3 is the correct chassis number.
+- verdict: CONFIRMED
+
+## [s56] Frontier restated after K2: the seat question is isolated for the first time from the copy-survival question. From tools/gcc-2.7.2/global.c read end to end this session, the copy dest reaches a3 only if, at its allocation, v0 AND a0 AND a1 AND a2 are excluded (hard_reg_conflicts or regs_someone_prefers) or it carries an a3 copy preference. Both the v0 and the a0 exclusion require the copy dest to be live past the base add (a0's holder base is born there; v0's holders are the loop-body temporaries), i.e. a reader after the add that leaves no bytes - E-s44-3's requirement, now with combine survival already paid by the K device so the reader no longer has to defeat combine. Post-flow deleters enumerated this session (combine merge/fold, local-alloc optimize_reg_copy_2 self-copies, update_equiv_regs init deletion, reload no-op moves, sched2 no-op moves, jump2 no-op or find_equiv_reg-redundant moves and dead code, reorg redundant_insn, final no-op moves); none has yet been spelled from ordinary C for this reader. The alternative, a copy preference for a3, needs a hard-reg copy (set_preference, global.c:1671), i.e. a 4th call argument or a local-alloc'd pseudo seated in a3, both previously measured dead (s40).
+
+## [s56] Forced sibling transplant: func_8005BA8C's H8 (copy the pointer parameter into a local cursor at entry, route every access through it) applied to this function's K2 chassis.
+- mechanism: The sibling's closed ledger states this function shares no code block with it; H8 is its only general lever (in the sibling it fixed prologue order and one allocno priority). H6 (param advanced in place) is inapplicable because ctx is never advanced.
+- probe: Cell K4 = K2 + `u8 *c; c = ctx;` first statement, every ctx use through c (tmp/grind/func_80017848/s56/body_K4.c), applied at the HEAD src/ings.c:820 INCLUDE_ASM anchor, sandbox func_80017848 --disable all, normalised objdump diff s56/diff_K4.txt.
+- result: 8 at 127/127: the sw s2 / addu s2,a0 prologue pair moves from slots 2-3 to 9-10 on top of K2's unchanged copy-dest seat residual. Banked rejected/s56_k4_sibling_8005BA8C_entry_cursor_c_eq_ctx_moves_s2_prologue_pair_costs_8.c. Owner directive executed and measured.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s56/body_K4.c applied (K2 chassis + entry cursor); no FAKE construct in any s56 body; BASE re-audited at 3 (127/127) in the same session
+
+## [s56] combine.c:914's clobber gate can be fed by a set of the copy's source that combine later deletes, because reg_last_set[] is written only at combine.c:9804 and never cleared when an i2 is merged away; spelling the lnk load into the pointer variable and copying it straight out (`q = *(u8 **)(ctx + 0x10); lnk = q;`) keeps U1's seat map and makes both preheader copies survive with no second reader.
+- mechanism: combine records reg_last_set[q] at the lnk-load insn, merges that load into `lnk = q` (the load becomes a NOTE but keeps its CUID), then at the base add `q = sh + p` use_crosses_set_p (q, CUID(copy)) still sees a later set and can_combine_p refuses the copy merge (combine.c:860-960, :9804, :10107-10131 read this session). optimize_reg_copy_1/2 do not fire on this shape (local-alloc.c:874, :1005-1015).
+- probe: Cell K1 = s55 U1 with the lnk load rewritten in both loops (s56/body_K1.c); sandbox + diff (s56/diff_K1.txt); tools/ra_solver extract.py + simulate.py --trace (s56/ra_K1.json, s56/sim_K1.txt).
+- result: 6 at 127/127. Both copies present, the lnk load between copy and add as in the target, 123 other instructions register-exact; the only residual is the copy dest seat (v0 vs a3). RA model exact (sort MATCH, 14/14); the copy dests p/p2 are local quantities (absent from the global list) seated by local-alloc's ascending scan.
+- verdict: CONFIRMED
+
+## [s56] Using ONE copy-destination variable for both loops makes the copy dest a global allocno (two sets in two blocks) at no byte cost, and global.c's pass-0 scan still seats it in v0 because nothing excludes v0, a0, a1 or a2 at its allocation time.
+- mechanism: find_reg pass 0 (global.c:985-1078) takes the lowest regno outside hard_reg_conflicts / someone_prefers; global_conflicts (global.c:755-790) processes deaths before stores so p (born where q dies, dying where base is born) never overlaps a0; sh/lnk sort below p (pri 13333) so they do not constrain it.
+- probe: Cell K2 (s56/body_K2.c) sandbox + diff (s56/diff_K2.txt); RA solver extract + simulate --trace (s56/ra_K2.json, s56/sim_K2.txt).
+- result: 4 at 127/127, same four seat-only diff lines. Pseudo 78 (p): pri=13333 hard_conf=[3,29] someone=[] best=2 prefs=[2]; sort MATCH, 15/15 dispositions. Banked as memory/grind/func_80017848/candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c (most advanced form on file).
+- verdict: CONFIRMED
+
+## [s56] Sharing q, lnk, t and sh across both loops on the K1 chassis changes the copy-dest seat.
+- mechanism: The seat is decided by the copy dest's own live range and allocno class, not by which pointer/lnk/count/shift variable feeds it.
+- probe: Cell K3 (s56/body_K3.c: K1 with q2/lnk2/t2/sh2 folded into q/lnk/t/sh), sandbox + diff.
+- result: 6 at 127/127, byte-identical to K1. Banked rejected/s56_k3_shared_q_lnk_t_sh_across_loops_on_k1_costs_6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s56/body_K3.c applied; no FAKE construct; BASE re-audited at 3 (127/127) in the same session
+
+## [s56] Chassis and kill re-audit: BASE and U1 re-measure unchanged on the HEAD chassis and carry no FAKE construct.
+- mechanism: Instance kills are chassis-relative; the dispatch brief reported the HEAD measurement as unavailable.
+- probe: body_BASE.c / body_U1.c applied at the HEAD src/ings.c:820 anchor and scored (s56/diff_BASE.txt, s56/diff_U1.txt).
+- result: BASE = 3 at 127/127 (the s54 three-instruction transposition), U1 = 4 at 125/127 (both copies missing), identical to s55. Ledger floor 3 is the correct chassis number.
+- verdict: CONFIRMED

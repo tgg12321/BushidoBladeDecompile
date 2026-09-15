@@ -6332,3 +6332,38 @@ a fresh read / slots) = 11 / 11 / 12.
 - [s55] Twelve new bodies banked; memory/grind/func_80017848/rejected/ is now 333 forms, and the U1 body is saved as candidate_alt_s55_u1_seat_exact_two_copies_missing_4.c.
 
 - [s55] src/ings.c was restored to its HEAD INCLUDE_ASM state at end of session; the tree carries no source edits.
+
+## s56 (2026-09-15, rederive - forced sibling transplant from func_8005BA8C)
+
+### E-s56-1 - Chassis re-audit + sibling transplant
+- src/ings.c at HEAD 36c413969 carries `INCLUDE_ASM("asm/funcs", func_80017848);` at line 820; s56 tooling (apply.py / run.ps1 / dis.py / norm.py copied from s54) in tmp/grind/func_80017848/s56/. BASE (candidate.c body) = 3 at 127/127, U1 = 4 at 125/127, both identical to s55.
+- func_8005BA8C's closed ledger (git show 526e3facc^:memory/grind/func_8005BA8C/evidence.md, CROSS-KNOWLEDGE line) records that this function shares NO code block with it ("max overlap 0.120 ... nothing to transplant"). Its H8 lever (entry-cursor copy of the pointer param) transplanted onto K2 as cell K4 = 8 at 127/127: the s2 prologue pair moves from slots 2-3 to 9-10, seat residual unchanged. KILLED (instance). Owner directive executed.
+
+### E-s56-2 - NEW MECHANISM, MEASURED: combine.c:914 fed by a set that combine later deletes
+- tools/gcc-2.7.2/combine.c:9804 is the only writer of reg_last_set[]; try_combine never clears it when i2 becomes a NOTE, and use_crosses_set_p (combine.c:10107-10131) compares INSN_CUID (reg_last_set[regno]) > from_cuid, which a deleted insn still satisfies. So `p = q; q = *(u8 **)(ctx + 0x10); lnk = q; q = (u8 *)(sh + (s32)p);` yields: load merged into `lnk = q` (one insn, `lw a2,16(s2)`), copy `p = q` kept (gate 914 at the base add), base add reads p, q's ranges exactly U1's.
+- Cell K1 = 6 at 127/127 (s56/diff_K1.txt): both preheader copies present, only the copy-dest seat differs (v0 vs a3), 4 diff lines, all seat. RA solver: ra_K1.json / sim_K1.txt, 14 global pseudos, sort MATCH, 14/14; the copy dests are NOT among them (local quantities).
+- optimize_reg_copy_2 (local-alloc.c:874) does not fire on this shape (it needs the exact pair `dest = src; ...; src = dest` with no set of src between), and optimize_reg_copy_1 is not called because q is dead at the copy (local-alloc.c:1005-1015 read this session).
+
+### E-s56-3 - K2: one copy-dest variable for both loops = 4 at 127/127 (best-structured form on file)
+- Same 4 seat-only diff lines as K1 (s56/diff_K2.txt). RA solver sim_K2.txt: pseudo 78 (p) is now a GLOBAL allocno: `pri=13333 calls=0 hard_conf=[3, 29] someone=[] best=2 prefs=[2]`; sort order MATCH, 15/15 dispositions. The prefs {v0} entry's source was not traced (candidate: hard_reg_preferences via set_preference on a set whose first source operand is a local-alloc'd pseudo in v0; read it from the .greg dump next session, it is harmless here because v0 is also the scan result).
+- Banked: memory/grind/func_80017848/candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c.
+
+### E-s56-4 - Why v0, and what a3 needs (global.c read end to end this session)
+- find_reg (global.c:952-1135): pass 0 excludes hard_reg_conflicts, the complement of regs_used_so_far (all call-used regs are pre-seeded, global.c:340-372) and regs_someone_prefers (prune_preferences: full prefs of LOWER-priority conflicting allocnos); the scan is ascending regno (no REG_ALLOC_ORDER); after best_reg, an unused hard_reg_copy_preferences entry of a compatible class overrides it.
+- global_conflicts (global.c:755-790) processes REG_DEAD notes BEFORE note_stores, so a copy dest born where its source dies never conflicts with the source, and a pseudo dying at the base add never conflicts with base. Hence in K1/K2 p conflicts with neither a0 holder. For a3 the copy dest must overlap base (live past the add) AND a loop-body v0 temporary - the E-s44-3 byte-free-reader requirement, unchanged - or hold an a3 copy preference (set_preference global.c:1671: only hard regs or local-alloc'd pseudos give preferences).
+- A short GLOBAL copy dest of priority above slot_b's allocno (3970) would also find a3 in regs_someone_prefers (slot_b prefers a3 from its incoming-argument copy) and land in t0 even with v0..a2 excluded; a3 therefore also needs priority below 3970 (live length >= 6 at 2 refs), which a live-through-the-loop range satisfies automatically.
+- Post-flow deleters enumerated (grep this session): combine (merge/fold), local-alloc optimize_reg_copy_2 (turns a copy PAIR into self-moves), update_equiv_regs (deletes a REG_EQUIV init insn for a twice-referenced pseudo, local-alloc.c:1090-1111), reload (no-op moves), sched2 (no-op moves, sched.c:4955-4975), jump2 (same-reg moves and find_equiv_reg-redundant moves, jump.c:437-490; dead code), reorg (redundant_insn), final (no-op moves). USE insns for pseudos exist only under obey_regdecls (-O0), stmt.c:3271/3499, function.c:5177/5346.
+- Reload's find_equiv_reg copy route (reload1.c:5835-5853 emits `move reloadreg, equivreg` instead of a load when a MEM or unallocated-pseudo input's value is already in a hard reg; reload's first spill reg would be a3 if a3 had zero uses, reload1.c:3756-3790) was examined and closed: global.c allocates every allocno here (find_reg fails only when a class is exhausted), regclass never returns NO_REGS as prefclass (regclass.c:935-960 scans classes ALL_REGS-1..1), and no insn carries a MEM operand needing a register after combine.
+
+### E-s56-5 - Artifacts
+- tmp/grind/func_80017848/s56/: body_{BASE,U1,K1,K2,K3,K4}.c, diff_*.txt, raw_*.txt, B_*.txt, T.txt, ra_K1.json, ra_K2.json, sim_K1.txt, sim_K2.txt, run.ps1, dis.py, apply.py, ra.sh, bank.py.
+
+- [s56] E-s56-2: tools/gcc-2.7.2/combine.c:9804 is the only writer of reg_last_set[]; a merged-away i2 keeps its CUID, so use_crosses_set_p (combine.c:10107-10131) still reports a crossing set - the combine.c:914 gate is satisfiable at zero instruction cost by the lnk load written into the pointer variable and copied out.
+
+- [s56] E-s56-3: cell K2 = 4 at 127/127 with both copies present and no reader; the residual is exactly two register seats (copy dest v0 vs a3, once per loop), RA solver 15/15 exact.
+
+- [s56] E-s56-4: global_conflicts processes REG_DEAD before note_stores (global.c:755-790), so a copy dest born where its source dies and dying where base is born conflicts with neither a0 holder; target's a3 requires the copy dest to be live past the base add (conflicting with base and a loop-body v0 temporary) with priority below slot_b's 3970 (else a3 is someone-preferred and t0 results), or an a3 copy preference from a hard-reg move (set_preference global.c:1671).
+
+- [s56] E-s56-4: post-flow deleters enumerated (combine merge/fold, optimize_reg_copy_2 self-copies, update_equiv_regs init deletion local-alloc.c:1090-1111, reload / sched2 (sched.c:4955-4975) / jump2 (jump.c:437-490) / final no-op moves, jump2 find_equiv_reg-redundant moves, reorg redundant_insn); pseudo USE insns exist only under obey_regdecls (stmt.c:3271/3499). The reload find_equiv_reg copy route (reload1.c:5835-5853) is closed: global.c allocates every allocno here and regclass never returns NO_REGS (regclass.c:935-960).
+
+- [s56] E-s56-1: func_8005BA8C's closed ledger records zero shared blocks with this function; its H8 lever measured 8 on K2 (prologue pair moves).

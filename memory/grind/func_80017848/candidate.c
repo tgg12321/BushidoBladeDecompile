@@ -1,3 +1,19 @@
+/* [s56 REDERIVE - READ THIS FIRST.  Body below UNCHANGED (BASE, 3 at 127/127,
+ * re-audited on the HEAD chassis this session, no FAKE construct).  It is still
+ * the lowest-SCORING form but NOT the most advanced one:
+ *
+ *   memory/grind/func_80017848/candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c
+ *   (cell K2) measures 4 at 127/127 with BOTH preheader copies present and
+ *   every instruction target-exact except the copy destination's seat
+ *   (v0 for a3, twice).  It supersedes s55's U1 (4 at 125, copies missing).
+ *   Start there.  Its header carries the mechanism (combine.c:914 gate fed by a
+ *   merged-away set of the copy source: `q = *(u8 **)(ctx + 0x10); lnk = q;`),
+ *   the RA-solver readout of the residual (pseudo 78: global, pri 13333,
+ *   hard_conf {v1,sp}, pass-0 scan -> v0) and what the a3 seat still needs
+ *   (the copy dest must outlive the base add with no bytes, OR carry an a3 copy
+ *   preference from a no-op'd hard-reg move).  Full detail: hypotheses.md s56,
+ *   evidence.md E-s56-1..5.
+ */
 /* [s55 ESCALATION - READ THIS FIRST.  The body below is UNCHANGED (BASE, 3 at
  * 127/127, re-audited on the HEAD chassis this session, no FAKE construct).  It
  * is still the lowest-SCORING form, but it is NO LONGER the most advanced one:
