@@ -26983,3 +26983,61 @@ Ordinary C throughout: no FAKE, no volatile, no __asm__, no pin, no dead store, 
 ## 2026-09-15 00:46 — func_80069F80 — layer-1 review — **FAIL**
 
 Undisclosed unreferenced local `s32 q1;` — a leftover from rejected variants E/F carried into the winning body, with zero semantic reading, no FAKE annotation, and no mention in the self-vet CONSTRUCTS block, in a function whose own rejected/ ledger proves frame size is byte-relevant.
+
+## 2026-09-15 — OWNER RULING — the candidate-path no-progress tripwire + a registry row for func_80018094
+
+Owner (Trenton), verbatim, on being shown that func_80018094 had been MERGE REFUSED four times in
+46 minutes on an unchanged, Judge-PASSed body: **"Go ahead and fix the loop and be sure future
+agents can't get stuck in any such loop again."** Two rulings, one package.
+
+**The loop, mechanically.** `Invoke-CandidatePath` in `tools/grinder/grind.ps1` has six exits that
+bank a constraint and `return` WITHOUT calling `grindlib apply`. Three of them
+(`byte-fail`, `merge-refused-islands`, `queue-done-refused`) also change no other dispatch state:
+no `floor_history` entry, no `session_count` increment, no modality advance, no ban. The 2026-09-08
+exhaustion machinery — flat-window, ladder rotation, escalation backstop — reads exactly those
+fields, so a function looping on one of these three exits is INVISIBLE to every guard the project
+has. func_80018094 looped at 22:58, 23:17, 23:30 and 23:44 on 2026-09-14, each cycle spending a
+full execution session plus a Judge cycle to reach the identical refusal, because the only missing
+artifact was a row in `tools/grinder/owner_cluster_grants.txt` — a file grind sessions may never
+write by construction. This is the failure the owner named in the 2026-09-08 ruling ("I don't want
+an agent just looping infinitely and eating tokens overnight, making no progress because it feels
+it is deadlocked by policies somehow"), landing in the one path that ruling could not observe.
+
+**Ruling 1 — the tripwire (mechanical, ground-agnostic).** Every non-merging candidate-path exit
+records a block keyed by `(ground class, body hash, gate fingerprint)`, where the gate fingerprint
+is a digest of the files that decide the refusal (`inline_asm_canonical.txt`, the two
+`tools/grinder/` registries, the maspsx/pipeline gate lists — naming files are excluded so a naming
+wave cannot silently clear a live blocker). The SECOND occurrence of an identical key means nothing
+that could change the outcome has changed: the driver ROTATES the function (never terminal, returns
+automatically per `rotation-not-foreclosure`) instead of re-dispatching it, and records an OWNER
+ACTION. The counter is persistent and is reset by NOTHING — not unpark, not a floor drop — so a
+function that auto-returns and re-submits the same body under the same gates trips on its first
+session back. Worst case per blocking condition: two sessions initially, one per auto-return cycle,
+versus unbounded today.
+
+**Ruling 2 — the owner-action surface.** `docs/grind/owner_actions.md` collects blockers whose
+remedy is outside every session's reach, with the remedy text and a DONE marker, and
+`status.ps1` prints the OPEN ones. Informational only, exactly like `borderline.md`: nothing waits
+on it and the pipeline keeps grinding the next item. This is what actually ends a loop in practice
+— the four refusals above were only discovered by reading the journal by hand.
+
+**Ruling 3 — func_80018094 gets its registry row.** The function is enumerated BY NAME in the
+landed 2026-08-17 owner cluster ruling's census
+(`.claude/rules/cop2-addressing-preamble-cluster.md:60`, SetRotMatrix/long-vector sub-family), its
+bytes are proven on main, and the Judge has PASSed the body three times
+(2026-09-14 23:55 entry and its two predecessors). The 2026-08-30 ruling limited registry rows to
+the proven-or-near-floor set named at that time, and func_80018094 then sat at distance 103; it is
+now at floor 0. It therefore earns a row on exactly the terms func_80019310 got one in the
+2026-09-06 foreclosed-bucket review. The row is added by the operator (this entry), NOT by a
+session; every other gate — bytes re-proven on main, layer-1, default-FAIL Judge, full-build SHA1 —
+applies unchanged, and the honest finished bucket stays COMPLETED-INLINE-ASM-CANONICAL, not
+COMPLETED-C.
+
+**Explicitly NOT ruled.** The Judge's second suggestion — widening the driver's grantable path
+classes so the pipeline could write `owner_cluster_grants.txt` itself — is REFUSED. The registry is
+the operator's evidence door precisely because sessions cannot reach it; making it session-writable
+would collapse the 2026-08-30 door into self-authorization. The tripwire solves the looping problem
+without touching that boundary.
+
+**Unchanged.** The anti-cheat wall, the frozen construct list, the default-FAIL Judge as sole gate,
+rotation-not-foreclosure, and the rule that no cheat reaches main.
