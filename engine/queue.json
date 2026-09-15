@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_drs",
-      "file": "display",
-      "distance": 161,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80076D74",
       "file": "text1b",
       "distance": 161,
@@ -1202,14 +1194,14 @@
     }
   ],
   "counts": {
-    "total": 130,
-    "active": 124,
+    "total": 129,
+    "active": 123,
     "by_status": {
-      "active": 124,
+      "active": 123,
       "rotated": 6
     },
     "by_verdict": {
-      "C": 102,
+      "C": 101,
       "ASM-PARTIAL": 22
     }
   },
