@@ -20,7 +20,8 @@
  ],
  "judge_constraints": [
   "The DR_ENV merge may ONLY be spelled as the header-canonical GpuDrEnv declaration in include/gpu.h with the twelve alias-suffixed undefined_syms_auto.txt rows retained; a TU-local aggregate or any incomplete merge stays rejected.",
-  "integration-handoff EXECUTED (pipeline, 2026-09-15): scope grant: _clr include/gpu.h undefined_syms_auto.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+  "integration-handoff EXECUTED (pipeline, 2026-09-15): scope grant: _clr include/gpu.h undefined_syms_auto.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged.",
+  "Delete the 12 D_800F185C..D_800F1888 rows from undefined_syms_auto.txt (no built referrer remains once _clr's INCLUDE_ASM goes) and re-prove the oracle; the C body and the GpuDrEnv header merge stay exactly as banked."
  ],
  "banned_constructs": [],
  "kills": [
@@ -41,7 +42,7 @@
    "result": "the only differing lines are the REFERENCE side's unresolved `lui v0,0x0 / lw v0,0(v0)` for D_8009BF48 (a dlabel in asm/"
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-15T08:13:25.074106+00:00",
