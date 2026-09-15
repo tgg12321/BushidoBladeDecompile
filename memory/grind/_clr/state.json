@@ -1,0 +1,46 @@
+{
+ "func": "_clr",
+ "file": "display",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "_clr SOLVED in pure C (psyz transplant + DR_ENV aggregate): sandbox 0/151 and full-tree oracle SHA1 == expected; filed INTEGRATION HANDOFF for scope (include/gpu.h + undefined_syms_auto.txt) per aggre"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "apply memory/grind/_clr/candidate_merge.patch to a clean HEAD once scope_allow.txt carries `_clr include/gpu.h undefined_syms_auto.txt`; sandbox 0/151; candidate-ready",
+   "mechanism": "the C is finished; only the filing route was blocked (aggregate-merge prongs (c)/(d) require header + alias rows)",
+   "next_probe": "git apply memory/grind/_clr/candidate_merge.patch; sandbox _clr --disable all -> expect 0/151; self_vet.md already drafted; return candidate-ready"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "thirteen per-word `extern u32 D_800F1858..D_800F1888` scalars (splat's names) reproduce the packet-buffer stores on this chassis with no FAKE constructs",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f577f3ea5, -mel -msoft-float chassis, no FAKE constructs, per-word scalar declarations TU-local in display.c",
+   "predicate_cite": "",
+   "result": "23/152 (one extra instruction vs the 151-insn target)"
+  },
+  {
+   "session": 1,
+   "statement": "reading the GPU status word as `*g_gpu_stat_reg` instead of `*D_8009BF48` (same address 0x8009BF48) changes the generated code for _clr on this chassis",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f577f3ea5, no FAKE constructs, TU-local GpuDrEnv form",
+   "predicate_cite": "",
+   "result": "the only differing lines are the REFERENCE side's unresolved `lui v0,0x0 / lw v0,0(v0)` for D_8009BF48 (a dlabel in asm/"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-15T08:13:25.074106+00:00",
+ "object_model_audited": 1
+}

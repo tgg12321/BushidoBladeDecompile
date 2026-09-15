@@ -1,0 +1,123 @@
+diff --git a/include/gpu.h b/include/gpu.h
+index 01d4c5279..dd5179bcf 100644
+--- a/include/gpu.h
++++ b/include/gpu.h
+@@ -87,4 +87,20 @@ typedef struct GpuQueueItem {
+ 
+ extern volatile GpuQueueItem _que[64];
+ 
++/* PsyQ libgpu sys.c DR_ENV packet buffer (the `_clr` split-clear / fill
++ * packet): one tag word + up to 15 command words at 0x800F1858.  Evidence for
++ * the aggregate from the ORIGINAL code of _clr: it materialises &code[8]
++ * (0x800F187C) into a base register and stores 0x03FFFFFF through it, and
++ * the tag word carries that same address -- one object addressed by base +
++ * offset, not thirteen adjacent scalars.  Replaces splat's per-word names
++ * D_800F185C..D_800F1888 (rows stay in the symbol config as aliases while
++ * asm/funcs/_clr.s references them).  Stock PsyQ DR_ENV is 0x40 bytes;
++ * the next object (g_gpu_color_table, 0x800F189C) starts at +0x44. */
++typedef struct GpuDrEnv {
++    /* 0x00 */ u32 tag;
++    /* 0x04 */ u32 code[15];
++} GpuDrEnv; /* size 0x40 */
++
++extern GpuDrEnv D_800F1858;
++
+ #endif /* GPU_H */
+diff --git a/src/display.c b/src/display.c
+index 710c22772..0c390773b 100644
+--- a/src/display.c
++++ b/src/display.c
+@@ -679,7 +679,6 @@ s32 _otc(s32 arg0, s32 arg1) {
+     }
+     return arg1;
+ }
+-INCLUDE_ASM("asm/funcs", _clr);
+ /* The GPU rectangle Sony's libgpu passes to _clr / _dws / _drs.  Evidence:
+  * the target loads/stores halfwords at +0x4 (w) and +0x6 (h) and reads the
+  * two packed 32-bit GPU packet words at +0x0 (x,y) and +0x4 (w,h). */
+@@ -690,6 +689,50 @@ typedef struct {
+     /* 0x6 */ s16 h;
+ } GpuRect;
+ 
++/* 0x8009BF48 (= g_gpu_stat_reg, display.c:18) spelled by its splat name here,
++ * as _addque2/_reset (display.c:773/842) already do for the same word. */
++extern volatile s32 *D_8009BF48;
++void _cwc(u32 a0);
++u32 _param(u32 a0);
++
++/* PsyQ libgpu sys.c `_clr` - the GPU-side body of ClearImage(): clamp the
++ * rect to the VRAM page, build either a 12-word unaligned (mono rectangle)
++ * or 5-word aligned (VRAM fill) packet in the DR_ENV buffer, and DMA it.
++ * Spelling follows psyz decomp/src/libgpu/sys.c:706-741 (PsyQ 4.0). */
++s32 _clr(GpuRect *rect, u32 color) {
++    u32 ptr;
++
++    rect->w = rect->w < 0 ? 0 : (rect->w > D_8009BE78 - 1 ? D_8009BE78 - 1 : rect->w);
++    rect->h = rect->h < 0 ? 0 : (rect->h > D_8009BE7A - 1 ? D_8009BE7A - 1 : rect->h);
++    if (rect->x & 0x3F || rect->w & 0x3F) {
++        /* unaligned clear: split in two packets */
++        ptr = (u32)&D_800F1858.code[8];
++        D_800F1858.tag = (ptr & 0xFFFFFF) | 0x08000000;
++        D_800F1858.code[0] = 0xE3000000;
++        D_800F1858.code[1] = 0xE4FFFFFF;
++        D_800F1858.code[2] = 0xE5000000;
++        D_800F1858.code[3] = 0xE6000000;
++        D_800F1858.code[4] = 0xE1000000 | *D_8009BF48 & 0x7FF | (color >> 0x1F) << 10;
++        D_800F1858.code[5] = (color & 0xFFFFFF) | 0x60000000;
++        D_800F1858.code[6] = *(s32 *)&rect->x;
++        D_800F1858.code[7] = *(s32 *)&rect->w;
++        D_800F1858.code[8] = 0xFFFFFF | 0x03000000;
++        D_800F1858.code[9] = _param(3) | 0xE3000000;
++        D_800F1858.code[10] = _param(4) | 0xE4000000;
++        D_800F1858.code[11] = _param(5) | 0xE5000000;
++    } else {
++        /* aligned clear */
++        D_800F1858.tag = 0xFFFFFF | 0x05000000;
++        D_800F1858.code[0] = 0xE6000000;
++        D_800F1858.code[1] = 0xE1000000 | *D_8009BF48 & 0x7FF | (color >> 0x1F) << 10;
++        D_800F1858.code[2] = (color & 0xFFFFFF) | 0x02000000;
++        D_800F1858.code[3] = *(s32 *)&rect->x;
++        D_800F1858.code[4] = *(s32 *)&rect->w;
++    }
++    _cwc((u32)&D_800F1858);
++    return 0;
++}
++
+ /* PsyQ libgpu sys.c `_dws` - "data write short", the GPU-side body of
+  * LoadImage(): clamp the destination rect to the VRAM page, push the
+  * CPU->VRAM copy command plus the odd (non-multiple-of-16) leading words
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index 2b34dd7eb..9be46302e 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -534,18 +534,18 @@ D_800F1844 = 0x800F1844;
+ D_800F1848 = 0x800F1848;
+ D_800F1850 = 0x800F1850;
+ D_800F1858 = 0x800F1858;
+-D_800F185C = 0x800F185C;
+-D_800F1860 = 0x800F1860;
+-D_800F1864 = 0x800F1864;
+-D_800F1868 = 0x800F1868;
+-D_800F186C = 0x800F186C;
+-D_800F1870 = 0x800F1870;
+-D_800F1874 = 0x800F1874;
+-D_800F1878 = 0x800F1878;
+-D_800F187C = 0x800F187C;
+-D_800F1880 = 0x800F1880;
+-D_800F1884 = 0x800F1884;
+-D_800F1888 = 0x800F1888;
++D_800F185C = 0x800F185C;  /* alias of D_800F1858+0x4; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1860 = 0x800F1860;  /* alias of D_800F1858+0x8; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1864 = 0x800F1864;  /* alias of D_800F1858+0xC; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1868 = 0x800F1868;  /* alias of D_800F1858+0x10; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F186C = 0x800F186C;  /* alias of D_800F1858+0x14; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1870 = 0x800F1870;  /* alias of D_800F1858+0x18; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1874 = 0x800F1874;  /* alias of D_800F1858+0x1C; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1878 = 0x800F1878;  /* alias of D_800F1858+0x20; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F187C = 0x800F187C;  /* alias of D_800F1858+0x24; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1880 = 0x800F1880;  /* alias of D_800F1858+0x28; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1884 = 0x800F1884;  /* alias of D_800F1858+0x2C; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1888 = 0x800F1888;  /* alias of D_800F1858+0x30; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
+ D_800F189C = 0x800F189C;
+ D_800F19A0 = 0x800F19A0;
+ D_800F19A8 = 0x800F19A8;
