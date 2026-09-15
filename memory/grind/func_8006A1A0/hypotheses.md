@@ -1,7 +1,0 @@
-# Hypothesis ledger — func_8006A1A0
-
-## s1 (recon, 2026-09-15)
-- H1 CONFIRMED — the function is the sibling func_80069F80's shape with swapped gate bits / descriptor sources. Probe: transplant the sibling's matched body with the bit/offset substitutions read from asm/funcs/func_8006A1A0.s. Result: v1 score 26 (2 source-level residuals), v2 score 0.
-- H2 KILLED (instance) — a fully-written 0x2C descriptor (`S_A1A0_probe2C`, members sp18..sp43 only) produces the target frame. Probe: swap the local's type, sandbox --disable all. Result: score 14; frame 0x60 (`addiu sp,sp,-96`), every callee-save slot 0x10 low (tmp/grind/func_8006A1A0/s1/pairdiff_probe2C.txt). Measured on the s1 v2 chassis with no other FAKE construct present. Mechanism: mips.c compute_frame_size — ALIGN8(44)+0x18+0x18 = 0x60 != 0x70. This is the lever-exhaustion record for the OVERSIZED-LOCALS annotation on the final body.
-- H3 KILLED (instance) — the `& 8` test with the sibling's polarity (`if (x & 8) {0x70 arm} else {rsin arm}`) reproduces the target branch. Probe: v1. Result: beqz emitted where the target has bnez, arms swapped (22 of the 26 v1 diffs). Fix: `if (!(x & 8)) {rsin arm} else {0x70 arm}` (v2, score 0).
-- H4 KILLED (instance) — `s.sp18 = p2; p2 += 0xC; s.sp1C = p2;` (sibling shape) reproduces the second fill's store sequence. Probe: v1. Result: `sw v0; addiu v0,v0,12; sw v0` vs target `addiu v1,v0,12; sw v0; sw v1` (4 diffs). Fix: `tbl = p2 + 0xC; s.sp18 = p2; s.sp1C = tbl;` (v2, score 0).
