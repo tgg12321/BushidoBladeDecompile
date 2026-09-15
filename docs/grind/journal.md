@@ -2059,3 +2059,4 @@
 - 2026-09-15 03:03 func_80063BD0 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80063BD0 include/game.h src/text1b_b.c undefined_syms_auto.txt; cleared 1 superseded ban(s)), function stays active.
 - 2026-09-15 03:13 func_80063BD0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-15 10:09 _clr JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: _clr include/gpu.h undefined_syms_auto.txt), function stays active.
+- 2026-09-15 10:19 _clr: judge FAILED a bytes-proven candidate — The C body itself is clean: ordinary PsyQ sys.c _clr (clamp + packet build + _cwc), no pins/asm/FAKE/dead stores, names 
