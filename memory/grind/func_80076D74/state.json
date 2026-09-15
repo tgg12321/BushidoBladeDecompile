@@ -23,9 +23,10 @@
    "next_probe": "measure 2-3 structures; watch that the draw code stays single-copy and s3 stays a variable"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Declare the 0x8009BCF8 table exactly once, header-canonically in include/game.h as `typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record; extern Unk8009BCF8Record D_8009BCF8[20];` (operator-applied patch), delete the D_8009BCF9 row from undefined_syms_auto.txt rather than suffixing it, keep the D_8009BCF8 row, and emit the S_80076D74 typedef once."
+ ],
  "banned_constructs": [
-  "src/text1b.c:2227  extern u8 D_8009BCF8[][2];  used as D_8009BCF8[idx][1] (src/text1b.c:8015)",
   "src/text1b.c:7941-7984 - the identical 'typedef struct { u8 cells[2][5][2]; u32 pad10:10; ... } S_80076D74;' block repeated FIVE times"
  ],
  "kills": [
@@ -61,6 +62,21 @@
    "hash": "8ae4eb34ab04826c",
    "when": "2026-09-15T17:46:05.186655+00:00",
    "summary": "The do-while(0) wrap passes (sanctioned family, single level, FAKE-annotated, mechanism named, citations verified), but the re-declaration of the splat scalar D_8009BCF8 as an unbounded u8[][2] pair table fails prongs (a), (b), (c) and (d) of the per-word-splat-to-aggregate family, and the diff ship"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "ffd478b35c7a6afd",
+   "when": "2026-09-15T18:47:10.444798+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-15 13:47 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "ffd478b35c7a6afd",
+   "when": "2026-09-15T18:47:10.444798+00:00",
+   "ref": "decisions.md 2026-09-15 13:47 ruling PASS",
+   "justification": "Q1 YES. The record table clears all five prongs of the per-word-splat -> aggregate merge family (no-new-park-categories.md:238-262) and is the same shape as the accepted Unk800F0EC8Record precedent (include/game.h:63-77). Verified independently, not taken from the ledger: asm/data/7D920.data.s:23762-23808 gives exactly 0x28 bytes from D_8009BCF8 to D_8009BD20 = 20 two-byte records; func_800759D0.s:107-108 forms the table base in $s6 (lui/addiu) and :142-144 reads column 0 at 2-byte stride; func_80075F80.s:165-167 reads column 0 at 2-byte stride; func_80076D74.s:91-93 reads column 1 at 2-byte s"
   }
  ]
 }

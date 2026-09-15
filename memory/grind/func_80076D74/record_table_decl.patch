@@ -1,0 +1,54 @@
+diff --git a/include/game.h b/include/game.h
+index 1e37214db..dbfa566ac 100644
+--- a/include/game.h
++++ b/include/game.h
+@@ -76,6 +76,23 @@ typedef struct {
+ 
+ extern Unk800F0EC8Record D_800F0EC8[][10];
+ 
++/* 0x8009BCF8: 40-byte table of 20 two-byte records (0x8009BCF8..0x8009BD1F;
++ * D_8009BD20 follows). Object model evidence, independent of and predating any
++ * byte-chasing session, from the original binary: func_800759D0 takes the table
++ * base into a register (`lui $s6,%hi(D_8009BCF8); addiu $s6,$s6,%lo(D_8009BCF8)`)
++ * and reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 (2-byte-stride) index;
++ * func_80075F80 reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 index;
++ * func_80076D74 reads byte 1 of the record (`lbu %lo(D_8009BCF9)($at)`) through a
++ * shift-1 index. Data: the unk1 column is the identity sequence 0x00..0x15.
++ * Replaces the splat per-word scalars D_8009BCF8 / D_8009BCF9 (per-word splat
++ * symbol -> aggregate merge family, owner ruling 2026-08-17). */
++typedef struct {
++    u8 unk0;
++    u8 unk1;
++} Unk8009BCF8Record;
++
++extern Unk8009BCF8Record D_8009BCF8[20];
++
+ /* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
+  * (independent of and predating any byte-chasing): the original binary
+  * addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
+diff --git a/src/text1b_b.c b/src/text1b_b.c
+index bb74d7e87..ba6da9589 100644
+--- a/src/text1b_b.c
++++ b/src/text1b_b.c
+@@ -234,8 +234,6 @@ extern u16 D_8009BCC6;
+ extern s16 D_8009BCD0;
+ extern s16 D_8009BCD2;
+ extern u8 D_8009BCE4;
+-extern u8 D_8009BCF8;
+-extern u8 D_8009BCF9;
+ extern u8 D_8009BD20;
+ extern u8 D_8009BD21;
+ extern s32 D_8009BD38;
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index 34955ffe8..3b12e9480 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -76,7 +76,7 @@ D_8009BC76 = 0x8009BC76;
+ D_8009BC96 = 0x8009BC96;
+ D_8009BCC6 = 0x8009BCC6;
+ D_8009BCD2 = 0x8009BCD2;
+-D_8009BCF9 = 0x8009BCF9;
++D_8009BCF9 = 0x8009BCF9;  /* alias of D_8009BCF8+1 (Unk8009BCF8Record[20].unk1, include/game.h); retire with func_80076D74 (asm/funcs/func_80076D74.s is its only referrer) */
+ D_8009BD21 = 0x8009BD21;
+ D_8009BD41 = 0x8009BD41;
+ D_8009BD43 = 0x8009BD43;

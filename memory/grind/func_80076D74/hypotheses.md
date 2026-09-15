@@ -66,3 +66,34 @@
 
 ## Live frontier
 - none: sandbox 0 with the FAKE-annotated single-level wrap. If the Judge FAILs the wrap, the remaining ordinary-C axis is a block structure that places a label between the increment and the return copy (no natural geometry found in s2: the if-join sits before the draw code, the tail has no branches).
+
+## s2 (permuter, 2026-09-15 re-run; the first s2 pass was DISCARDED for a scope violation - its measurements are re-taken here) - measured
+- H9 CONFIRMED (re-measured this session): 2-byte record table `typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record; extern Unk8009BCF8Record D_8009BCF8[20];` read as `D_8009BCF8[idx].unk1` reproduces the in-loop table read: 5 without the wrap, 0 with the do-while(0) wrap (codegen identical to the BANNED `u8 [][2]` + `[idx][1]` spelling). Decl placed TU-local in text1b.c ONLY for measurement (grind surface excludes include/); canonical placement = memory/grind/func_80076D74/record_table_decl.patch (include/game.h).
+- H10 KILLED (instance): permuter campaign on the no-FAKE floor-5 record-table chassis (s32 ret seed), 34,745 iterations / 942 s (discarded first pass, log kept at tmp/grind/func_80076D74/s2/perm_record-table-nofake-floor5/campaign.log): no ordinary-C tail find; both finds are do-while(0) forms.
+- H11 KILLED (instance): permuter campaign seeded on the `u8 ret` (two-copy chain) record-table chassis, label u8ret-record-table-floor5 (tmp/perm_76D74_s2b) - result in the H11 block below.
+
+## [s2-permuter] A record-table declaration (typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record; extern Unk8009BCF8Record D_8009BCF8[20];) read as D_8009BCF8[idx].unk1 reproduces the target's in-loop lui $at/addu $at/lbu %lo(D_8009BCF9) form exactly like the banned [..][1] pair-table spelling
+- mechanism: expr.c COMPONENT_REF over a variable-index ARRAY_REF goes through get_inner_reference: the offset idx*2 is forced into a register, the address is plus(symbol, reg) and the .unk1 byte position folds into the symbol constant -> `lbu $v0,%lo(D_8009BCF8+1)($at)` == %lo(D_8009BCF9); there is no separate `reg = symbol` insn for loop.c to hoist (the 1-D `D_8009BCF9[idx*2]` spelling builds *(&array + idx*2) via the expr.c ARRAY_REF nonconstant-index path, which force_operand splits and loop.c hoists - s1 H1, 53)
+- probe: sandbox --disable all on body_p5_record.c (no wrap) and body_p0_record.c (single-level do-while(0) wrap), TU-local decl via tmp/grind/func_80076D74/s2/decl.py, HEAD chassis
+- result: 5 / 0 - identical to the s1/s2 numbers for the [..][1] spelling; the linked byte is the same %lo(D_8009BCF9)
+- verdict: CONFIRMED
+
+## [s2-permuter] A random-mutation permuter campaign seeded on the no-FAKE floor-5 record-table chassis (s32 ret) finds an ordinary-C spelling that schedules the return copy after the arg0[6] store
+- mechanism: sched.c priority(): the copy needs a dependence on the lw/addiu/sw chain or a block boundary; the permuter's reorder / temp-split / cast / self-assign / do-while passes could expose one
+- probe: tools/permuter_campaign.py launch/harvest, label record-table-nofake-floor5, -j 8, 34,745 iterations, 942 s (first s2 pass; log + finds preserved under tmp/grind/func_80076D74/s2/perm_record-table-nofake-floor5/ and perm_find_output-*.c)
+- result: two finds only - output-10-1 (permuter score 10) = an empty `do { } while (0);` inserted between the increment and `return ret;` (the s2 H8 form, sanctioned family); output-130-1 (130) = the whole draw block wrapped in do-while(0) plus a dead `j = 0` (worse; the dead store is not a sanctioned shape for that use). No non-do-while find in 34.7k iterations.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main chassis (-mel -msoft-float), record-table decl, s32 ret, no FAKE constructs in the seed
+
+## [s2-permuter] A random-mutation permuter campaign seeded on the `u8 ret` (promoted-subreg two-copy return chain) record-table chassis finds an ordinary-C spelling that schedules the return copy after the arg0[6] store
+- mechanism: same sched.c priority() gap as H10; the two-copy chain gives the permuter a second copy insn to perturb (temp splits / reorders around the return), a structurally different tail from campaign 1's single-copy seed
+- probe: tools/permuter_campaign.py launch/wait/harvest, label u8ret-record-table-floor5, workspace tmp/perm_76D74_s2b (base.c = campaign 1 base with `u8 ret;` at the func_80076D74 decl only), -j 8, 43,339 iterations, 1,169 s, two in-turn wait windows (398 s + 530 s), harvest --stop
+- result: three finds, all the do-while(0) attractor: output-10-1 (score 10) = empty `do { } while (0);` before `return ret;` plus permuter noise (`D_8009BCF8 = D_8009BCF8;` dead global self-assign, `(0, arg0[5])` comma, decl reorder); output-170-1 (170) = draw block from `p+5` on wrapped in do-while(0) plus `j = 5; arg0[j]`; output-70-1 (70) = tail four statements wrapped in do-while(0) plus a `new_var = &arg0[6]` pointer temp. No find without a do-while(0). Diffs saved as tmp/grind/func_80076D74/s2/perm_u8ret_find_output-{10,170,70}-1.diff.txt, log perm_u8ret-record-table-floor5.campaign.log
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main chassis (-mel -msoft-float), record-table decl, u8 ret two-copy tail, no FAKE constructs in the seed
+
+## Live frontier (after s2-permuter re-run)
+- RULING NEEDED (this session's outcome): does the record-table declaration `typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record; extern Unk8009BCF8Record D_8009BCF8[20];` (include/game.h) with the evidence in evidence.md s2 satisfy prongs (a)-(e) of the per-word-splat -> aggregate merge family and supersede the 2026-09-15 12:46 layer-1 ban on the `u8 [][2]` pair table? If yes, body_p0_record.c (sandbox 0) + record_table_decl.patch is the candidate; the header/text1b_b.c/undefined_syms_auto.txt edits are outside the grind surface and need an operator/driver integration step.
+- Ordinary-C tail fix (would remove the FAKE wrap): two permuter basins (34.7k + 43.3k iterations, s32 and u8 ret seeds) yield only do-while(0). Remaining untried ordinary-C axis: a block structure with a second predecessor of the tail (a label before the return copy); no natural geometry identified in s1-s2 - the if-join sits before the draw code and the tail has no branches.

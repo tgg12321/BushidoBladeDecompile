@@ -1,14 +1,28 @@
-/* func_80076D74 - session 2 (structural) FINAL form, sandbox --disable all = 0 (161 target insns).
- * REQUIRES the file-scope declaration change in src/text1b.c line 2227:
- *     extern u8 D_8009BCF8;   -->   extern u8 D_8009BCF8[][2];
- * (D_8009BCF8/D_8009BCF9 are one u8 pair table; [x][1] == the target's %lo(D_8009BCF9)(at) byte.)
- * s1 residual (5, epilogue) closed by a single-level do { } while (0) wrap of the final
- * arg0[6] += 0xC statement (sanctioned family, .claude/rules/do-while-zero-exception.md,
- * FAKE-annotated inline). Mechanism: sched.c sched_analyze attaches NOTE_INSN_LOOP_END to the
- * next insn (the return copy) as loop_notes, which makes that insn depend on every earlier
- * set/use in the block; the copy therefore cannot be hoisted into the lw load-delay slot,
- * the increment temp takes $v0, and the tail becomes lw/nop/addiu/sw/move exactly as target.
- * Ordinary-C alternatives measured dead: u8 ret (two-copy chain) = 5; s32 arg0 + cast offsets = 5 (s1).
+/* func_80076D74 - best form after session 2 (permuter re-run, 2026-09-15): sandbox --disable all = 0 (161 target insns),
+ * re-measured THIS session as tmp/grind/func_80076D74/s2/body_p0_record.c.
+ *
+ * REQUIRES the record-table declaration (per-word-splat -> aggregate merge family, .claude/rules/no-new-park-categories.md:238-262),
+ * canonical placement include/game.h, prepared as memory/grind/func_80076D74/record_table_decl.patch:
+ *     typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record;
+ *     extern Unk8009BCF8Record D_8009BCF8[20];
+ * together with removal of `extern u8 D_8009BCF8; extern u8 D_8009BCF9;` from src/text1b.c:2227-2228 AND src/text1b_b.c:237-238,
+ * and retirement of the `D_8009BCF9 = 0x8009BCF9;` row in undefined_syms_auto.txt:79 (its only referrer is asm/funcs/func_80076D74.s,
+ * which goes away when this lands; delete the row in the same commit, or keep it suffixed per the 2026-09-03 amendment).
+ * Evidence (evidence.md s2): 0x8009BCF8..0x8009BD1F = 20 two-byte records (D_8009BD20 follows); func_800759D0 takes the table base
+ * into $s6 (lui/addiu) and reads it with a shift-1 stride index; func_80075F80 and this function read with shift-1 stride indexes;
+ * byte 1 of each record is the identity sequence 0,1,2,3,... The BANNED `extern u8 D_8009BCF8[][2]` + `[idx][1]` pair table is NOT
+ * used here; the record-table `.unk1` read produces the same bytes through expr.c get_inner_reference (offset idx*2 in a reg, the
+ * .unk1 byte folded into the symbol constant -> lbu %lo(D_8009BCF8+1)($at) == %lo(D_8009BCF9)).
+ * The header / text1b_b.c / undefined_syms_auto.txt edits are OUTSIDE the grind surface: a ruling-request was filed (s2) asking whether
+ * this declaration clears prongs (a)-(e) and how the out-of-surface edits land. For sandbox MEASUREMENT only, the decl can be placed
+ * TU-local via tmp/grind/func_80076D74/s2/decl.py (same codegen; not the proposed final form).
+ *
+ * Tail (s1 residual 5, epilogue) closed by a single-level do { } while (0) wrap of the final arg0[6] += 0xC statement (sanctioned
+ * family, .claude/rules/do-while-zero-exception.md, FAKE-annotated inline; layer-1 PASSED this construct 2026-09-15 12:46).
+ * Mechanism: sched.c loop_notes attach NOTE_INSN_LOOP_END to the next insn (the return copy), which then depends on every earlier
+ * set/use in the block, so it cannot be hoisted into the lw load-delay slot; the increment temp takes $v0; tail = lw/nop/addiu/sw/move.
+ * Ordinary-C alternatives measured dead: u8 ret two-copy chain = 5 (s2); s32 arg0 + cast offsets = 5 (s1); permuter campaigns on the
+ * s32-ret (34.7k iters) and u8-ret (43.3k iters) no-FAKE chassis find only do-while(0) forms (s2).
  * See evidence.md / hypotheses.md.
  */
 typedef struct {
@@ -49,7 +63,7 @@ s32 func_80076D74(s32 *arg0) {
         hdr->f15 = *(u8 *)(D_800A36A0 + 0x68) + *(u8 *)(D_800A36A0 + 0x69) * 2;
         for (i = 0; i < 2; i++) {
             for (j = 0; j < *(u8 *)(D_800A36A0 + 0x65) + 3; j++) {
-                hdr->cells[i][j][0] = D_8009BCF8[*(s16 *)(D_800A36A0 + i * 10 + (j << 1) + 0x6A)][1];
+                hdr->cells[i][j][0] = D_8009BCF8[*(s16 *)(D_800A36A0 + i * 10 + (j << 1) + 0x6A)].unk1;
                 hdr->cells[i][j][1] = *(u16 *)(D_800A36A0 + i * 10 + (j << 1) + 0x7E);
             }
         }
