@@ -25,6 +25,13 @@
    "hash": "86a89ac0986d0a1a",
    "when": "2026-09-14T22:28:45.986683+00:00",
    "summary": "The candidate fabricates a callee prototype that contradicts snd_VabOpen's definition in the SAME translation unit (src/text1b.c:2707 defines it returning s16; the diff declares it returning s32) for the sole, self-documented purpose of relocating a sign-extension instruction \u2014 a false declaration w"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "5e8f577ff70c9761",
+   "when": "2026-09-15T05:13:42.928077+00:00",
+   "summary": "final call: Ordinary C throughout: no FAKE, no volatile, no __asm__, no pin, no dead store, no pad, no alias local; no sanctioned-family exception claimed or needed, and no build-time output rewriting (diff touch"
   }
  ]
 }

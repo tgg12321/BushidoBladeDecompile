@@ -76,3 +76,63 @@ returns 0, else records the header in D_800EFC38[opened_id], advances the
 watermark by hdr[3], stores SsUtGetVBaddrInSB(id) into D_800EFB38[id], and
 returns hdr[2] - (s32)hdr (the header's byte size, which callers add to their
 running pointer — see src/text1b.c:1128, 2510, 2516).
+
+## s2 (recon, 2026-09-15) — re-matched WITHOUT either banned construct
+
+CHASSIS: HEAD floor re-measured at dispatch = 134 (whole-function INCLUDE_ASM at
+src/text1b.c:2662). The s1 ledger's "MATCHED" status did NOT survive: the s1 body
+layer-1 FAILed (docs/grind/decisions.md, 2026-09-14 17:28) and main was reverted
+to INCLUDE_ASM, so this session started from 134, not from 0.
+
+OBJECT MODEL: the three DATA-MODEL-flagged symbols, re-resolved on the s2
+chassis with the final body in place.
+- D_800EFC38 @800EFC38 — MATCHES (measured: score 0 with this declaration).
+  Declared `extern s32 *D_800EFC38[];`, identical to the pre-existing
+  declaration at src/text1b.c:2645 used by func_8005BF78. It is the 16-entry
+  VAB-header pointer table indexed by vab id (the census prose "second effect
+  state struct" does not describe this use site); element [3] is the VAB body
+  size in SPU bytes.
+- D_800EFB38 @800EFB38 — MATCHES (measured: score 0). Declared
+  `extern s32 D_800EFB38[];`, same as src/text1b.c:2646. Parallel 16-entry s32
+  array of SsUtGetVBaddrInSB results indexed by the same vab id.
+- D_800158CC @800158CC — MATCHES (measured: score 0). Already a real C object,
+  `const char D_800158CC[20] = "vab id:%d mistake\n";` at
+  src/text1a_b_pre_rodata.c:359; declared here `extern const char D_800158CC[];`
+  and used as the printf format string.
+No declaration fix was required for any of the three and none remained a
+MISMATCH once the body matched.
+
+FACT (measured, s2): the `vab` alias local banned after s1 was NEVER load-bearing.
+Deleting `s16 vab; ... vab = vabid;` and reading the parameter directly at all
+four former use sites holds `sandbox func_8005C2A8 --disable all` = 0.
+Body banked at memory/grind/func_8005C2A8/candidate.c.
+
+FACT (measured, s2): the second s1 construct — a prototype declaring the in-TU
+VAB-open wrapper (defined at src/text1b.c:2707, glabel snd_VabOpen @8005C5A8) as
+returning s32 while its definition said s16 — is removable as a CONTRADICTION
+without losing the codegen it bought, because that callee's return type is not
+decidable from its own bytes. Its body is
+`return (s16)SsVabTransBody(a0[2], a1);` — the sll/sra $v0 at 8005C5F4 is emitted
+by the EXPLICIT CAST, not by the return type. Measured: changing the definition's
+return type s16 -> s32 (cast kept) leaves `sandbox snd_VabOpen --disable all` = 0.
+So the definition and the forward prototype can both say s32, they agree, and
+func_8005C2A8 still measures 0.
+
+FACT (measured, s2): three probes, all `sandbox func_8005C2A8 --disable all` on
+the s2 chassis with `verify-oracle` re-run on the last one.
+  V1 = s1 body + definition widened to s32              -> score 0 (callee 0)
+  V2 = V1 with the `vab` alias deleted                  -> score 0
+  V3 = V2 with the `id = vabid` reuse also deleted      -> score 0
+V3 is the banked candidate: `id` now carries ONLY the open call's result, every
+vab-id use reads the parameter, and no local is bound to another local's value.
+Full build with V3 in place: build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa
+== oracle, build_matches = true, 134/134 instructions.
+
+FACT (methodological, s2): the s1 ledger recorded H2 as "the CALLEE's declared
+return type places the sign-extension", which is true, but s1 never asked whether
+that declared type could be made TRUE instead of fabricated. The check is one
+command — read the callee's own asm and see whether the truncation is already
+written in its C body. It was. This is the generalisable move for any layer-1
+"fabricated prototype" FAIL in this project: a return type that both spellings
+compile identically is not a fabrication question, it is a declaration choice the
+CALL SITE's bytes decide.

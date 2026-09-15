@@ -1,78 +1,88 @@
 # SELF-VET — func_8005C2A8
 
-CONSTRUCTS: none. The diff is an ordinary C function body plus ordinary extern
-declarations (callee prototypes, two global array declarations copied verbatim
-from the pre-existing declarations at src/text1b.c:2645-2646, and one
-const-char-array declaration for the printf format string already defined at
-src/text1a_b_pre_rodata.c:359). No FAKE construct, no dead store, no dead local,
-no pad, no volatile, no goto, no asm, no register pin, no pointer alias, no
-do/while(0) wrap, no duplicated statement, no reused or borrowed local.
+CONSTRUCTS: none — the body is ordinary C throughout (two 16-bit locals, one
+32-bit pointer parameter, a counted loop, four calls, two returns). No FAKE
+annotation, no volatile, no __asm__, no register pin, no scheduling barrier, no
+dead store, no self-assign, no pad, no unread local, no address-of coercion, no
+extra local bound to a parameter. One declaration change accompanies the body
+and is analysed in T1-T6 below.
 
-## T1 semantic purpose: Every construct in the diff is semantically load-bearing.
-Each statement computes or stores a value the function observably needs: the
-mode check and early return, the VAB-slot close/zero path, the 16-slot SPU
-address accumulation loop, the D_800A3404 / D_800A3408 / D_800A340C bookkeeping,
-the three header self-relocations (hdr[0], hdr[1], hdr[2] += (s32)hdr), the
-snd_VabOpen call, the error printf, the two table stores, and the returned byte
-offset. Delete any one of them and the function does something different. The
-only two spelling choices made this session are (a) the `s32` return type on the
-local snd_VabOpen prototype and (b) which arm of the `id != -1` test carries the
-success tail. Both are choices about how to write ordinary C — a prototype and
-an if/else orientation — not constructs added to the program. (b) in particular
-REMOVES an instruction (a redundant `j` to the shared epilogue) rather than
-adding one.
+## T1 semantic purpose
+Every statement in the body has observable effect: the early-out reads
+func_80077D00()[5], the slot-clear path calls SsVabClose and zeroes the two
+tables, the 16-iteration loop recomputes the SPU watermark D_800A3404, the three
+`hdr[n] += (s32)hdr` statements self-relocate the header's internal offsets, the
+open call and SsVabTransCompleted(1) do the work, and the two exits return
+different values. Remove any one of them and the function's behaviour changes.
+Locals: `i` is the loop induction variable; `id` carries the open call's result
+and is read three times (the -1 test, the table index, nothing else). There is
+no local whose removal leaves behaviour unchanged.
 
-## T2 human-programmer: Yes. A human writing this function from its
-specification writes exactly this: check the mode, close any previously loaded
-VAB in this slot, recompute the SPU allocation watermark, relocate the header's
-three internal offsets to absolute addresses, open the VAB, then either report
-"vab id:%d mistake" or record the new slot and return the header size. The
-`if (id != -1) { ...success path...; return size; } printf(...); return 0;`
-shape — success path in the arm, error report trailing — is one of the two
-completely ordinary ways to spell an error check, and it is the more readable
-one here because the success path is ten lines and the error path is two.
-Nothing in the body would make a reader ask "why is this here?".
+The declaration change: the in-TU VAB-open wrapper defined at 0x8005C5A8 has its
+return type changed from `s16` to `s32`, and the forward prototype ahead of this
+body declares the same `s32`. Its body keeps its explicit `(s16)` cast on the
+SsVabTransBody result, so the VALUE it returns is bit-for-bit the same object it
+returned before — the change is a type-spelling decision, not a semantic edit,
+and I measured that callee's own bytes: `sandbox <wrapper> --disable all` = 0
+both before and after. The sll/sra at 0x8005C5F4 is emitted by the cast inside
+its body, not by its return type.
 
-## T3 GCC-internals justification: No construct is justified by a GCC internal.
-evidence.md records the MEASURED codegen consequence of the two spelling choices
-(where the sign-extension lands; the physical order of the two exit blocks)
-because that is this session's finding and the next session's inheritance — but
-neither construct exists FOR that reason in the sense this test targets: both
-are normal C with a normal reading, and both remain the natural spelling if you
-delete every word of codegen commentary. No GCC pass is the mechanism of
-anything here: no allocator lever, no scheduling barrier, no DCE-defeating
-value, no reg_n_refs manipulation, no LUID / label_num / INSN_PRIORITY
-reasoning, no reorg.c or combine.c dependency.
+## T2 human-programmer
+Yes. The body reads as what the function is: "free the slot if occupied,
+recompute the SPU watermark, relocate the header, open the VAB, report failure
+or record success". Nothing in it makes a reader ask "why is this here?".
+For the declaration: the callee's return type is genuinely NOT decidable from
+its own bytes (both spellings compile to the identical 26 instructions, measured
+above), because the truncation is written explicitly in its body. It IS decidable
+from this call site's bytes. A human decompiler who found that the call site's
+shipped instructions require an `int`-returning callee would declare it `int` and
+keep the explicit cast — that is the ordinary "bytes decide the declaration"
+practice, and it makes prototype and definition AGREE rather than conflict.
 
-## T4 permuter/search provenance: No permuter, no auto-search, no randomized
-search of any kind ran this session. The body was derived by reading
-asm/funcs/func_8005C2A8.s instruction by instruction; the two refinements came
-from reading the objdump diff and reasoning about C semantics (a callee's
-declared return type determines where a narrowing conversion happens; source arm
-order determines emitted block order). Nothing in the diff is present because a
-detector failed to catch a particular spelling.
+## T3 GCC-internals justification
+The body needs no GCC-internals story: it is the function's logic. The
+declaration change does have a measured codegen consequence (with an `s32`
+callee the narrowing lives in the assignment and GCC 2.7.2 sign-extends in the
+destination pseudo; with an `s16` callee each read re-extends into a scratch),
+but that consequence is the EVIDENCE for which type the original source had, not
+the purpose of the change — the purpose is to state the callee's real interface
+once, consistently, in both places. No allocator/scheduler/DCE/RTL-order
+mechanism is invoked, no lever is named, and nothing in the diff exists to steer
+a pass.
 
-## T5 family check: No construct matches any forbidden family, by analogy or
-otherwise, because there is no extra construct at all. Checked explicitly
-against the catalog: no register-asm pin, no hardcoded-$N asm injection, no
-scheduling barrier, no INLINE_MOVE_ALIASING, no volatile in any spelling
-(alias-rename, cast, plain extern, or (void) discard), no unused local array or
-frame coercion, no dead-param-assign, no dead conditional store, no empty-body
-if, no `if (1)` wrapper, no dead goto label pad, no DImode chain, no
-goto-end-with-ret-val accumulator, no param-local alias declaration-order trick,
-no opaque `s32 one = 1;`, no lowercase asm block, no build-time assembly
-rewriting, no `asm("sym")` alias rename, no redundant width cast (the two
-`(s32) hdr` casts convert a pointer to the integer the header arithmetic
-actually stores, and the `s16` locals are the function's real narrow values),
-no linker-script or rodata reorder. Consequently I claim NO sanctioned family
-either — this is plain C.
+## T4 permuter/search provenance
+No permuter, no search tool, no auto-generated form. Every variant this session
+measured was hand-written from the asm and the prior ledger; the two probes were
+(a) delete the extra parameter-copy local, (b) make the callee's definition and
+prototype agree at `s32`. Both were measured directly with
+`sandbox func_8005C2A8 --disable all`.
 
-## T6 naming-announces-intent: No name in the diff announces coercion intent.
-The locals are `i` (loop counter), `id` (the VAB slot id), `vab` (the
-caller-supplied vab id), and the parameters `hdr`, `vabid`, `arg2`. Every one is
-read for its value in the emitted code; none is a pad/dummy/unused/spill/slack/
-tail/buf, none is unused, none is only address-taken, and none is discarded.
+## T5 family check
+No forbidden family applies, and none is claimed. Checked explicitly against the
+catalog: no register-asm pin, no hardcoded-$N asm, no scheduling barrier, no
+INLINE_MOVE_ALIASING, no volatile in any spelling, no unused local array or
+frame coercion, no dead parameter assign, no dead conditional store, no empty-body
+if, no `if (1)`, no dead goto label, no DImode chain, no goto-end accumulator, no
+opaque constant variable, no asm() alias rename, no redundant width cast, no
+linker-script reordering.
 
-SANCTIONED-FAMILY-CLAIMS: none — the diff is ordinary C and claims no exception.
+Against the two standing bans for this function specifically:
+- The ban on a second local bound to the unmodified parameter: that local is
+  DELETED in this body. Every one of its former use sites now reads the parameter
+  itself. This is a removal, not a respelling — I measured that the removal holds
+  score 0, so nothing was moved elsewhere to compensate.
+- The ban on a prototype that CONTRADICTS the in-TU definition: the contradiction
+  is what was banned, and the contradiction no longer exists. The definition is
+  edited in the same diff so the two agree. I did not keep a false declaration
+  and re-word it; I made the declaration true. If the reviewer reads the ban as
+  covering the agreeing pair as well, that is a question I want ruled rather than
+  dodged — but on its text the banned object (a declaration with "no truthful
+  semantic reading", contradicting its own definition) is not present here.
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct in the diff.
+## T6 naming-announces-intent
+Names are `hdr`, `vabid`, `arg2`, `i`, `id`. None is `pad`/`dummy`/`unused`/
+`spill`/`tail`/`slack`/`_buf`. Each names what it holds, and each is read.
+
+SANCTIONED-FAMILY-CLAIMS: none
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct
