@@ -64,3 +64,77 @@
 - [s1] sched1 (reverse list scheduling, LUID tie-break sched.c:2460) places a6's lw between a4's and a5's in block 0 (load-delay slot before beqz takes a5), which is why L(a4) = L(a5) + 1 and a5 wins s7.
 
 - [s1] body v2 is instruction-identical to the target apart from register names in s2/s3/s4/s7/fp and the prologue lw order; the /360 magic multiply, *t++ triple, and both if-arms match.
+
+## s2 (2026-09-15, structural) -- honest floor 26 -> 0 (sandbox --disable all = 0; oracle SHA1 match)
+
+- RE-RUN NOTE: the first s2 attempt reached this same body and was DISCARDED for a scope violation
+  (it edited undefined_syms_auto.txt for aggregate-merge prong (c)). This re-run reproduces its
+  integration WITHOUT that edit (tmp/grind/func_80054604/s2/integrate2.py) and names the config
+  edit as an integration handoff instead. The discarded attempt's probes are banked below from its
+  scratch files (tmp/grind/func_80054604/s2/p_*.c + .dis) and rejected/ headers.
+- CLOSING FORM (three changes on the s1 v2 body, all in candidate.c):
+  1. `a6 += ret; game_StageCleanup(n, a6);` in place of `game_StageCleanup(n, a6 + ret)`. This is
+     the ordinary-C compound-assignment split (Ruling 4, .claude/rules/ordinary-c-judge-decidable.md:167)
+     and it is what fixes BOTH register mechanisms at once: the buffer param's pseudo gets a second
+     SET that is live (its value is read by the call), so reg_n_sets != 1 -> local-alloc.c:1064 no
+     longer doubles its live length (REG_EQUIV replacement is off), the prologue lw is no longer a
+     "birthing" load in sched1, and global.c ranks it above a1 -> s2 = a6, s3 = a1, s4 = ret; with
+     a6's lw no longer between them a4 ties/beats a5 -> s7 = a4, fp = a5; sched2 then interleaves
+     the sw/lw pairs in the target order (lw a6, a4, a5). The addu operand order `addu a1,s2,s4`
+     matches because the compound form adds ret INTO a6.
+  2. `if (s->unk4 >= 0)` (s1 had `< 0`, wrong polarity: target `bltz` SKIPS the store).
+  3. The data base typed as an INTEGER (`s32 p = s->unk2C; *(s32 *)(*(s32 *)(p + 4) + p)`),
+     offset + base operand order, giving `addu $v0,$v0,$v1` (pointer-typed p gave `addu v0,v1,v0`).
+  compound-assign-with-s1-body-3.c records that the compound form alone on the unfixed s1 body
+  scored 3 = exactly items 2 and 3.
+- OBJECT MODEL (aggregate merge, header-canonical): `Unk800EFAE8Ctrl` (0x4C bytes) declared in
+  include/game.h with the base-register evidence quoted in its comment (asm/funcs/func_80054604.s
+  forms $s1 once and reaches 15 offsets from it; asm/funcs/func_8005490C.s addresses the same block
+  the same way; func_80054FDC relocates the 0x2C..0x40 word group together). Consumers converted:
+  func_80054FDC (`s32 *p = &D_800EFAE8.unk2C;` + unk30..unk40) and func_8005507C
+  (`return &D_800EFAE8.unk24;`); src/text1b_b.c's seven unused per-word externs removed. Every
+  consumer byte-neutral: verify-oracle --rebuild --allow-dirty -> ok true, build_sha1 ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa. The stores to D_800EFAE8.unk2C are spelled through the
+  GLOBAL (lui $at / sw %lo(D_800EFAE8+0x2C), matching the target's separate-symbol store) while
+  the reads go through the pointer local `s` (lw 0x2C($s1)) -- the two-handle shape is the
+  pointer-alias family's own definition ("second C handle"), annotated FAKE at the declaration.
+- PER-WORD ROWS (prong (c) config half, NOT done here -- outside the grind surface):
+  undefined_syms_auto.txt:359-365. Linked referrers measured with
+  tmp/grind/func_80054604/s2/still_asm.txt: D_800EFB14/18/1C/20 are referenced by
+  asm/funcs/func_8005490C.s (still INCLUDE_ASM) -> rows STAY with the amendment-2026-09-03 suffix;
+  D_800EFB0C/24/28 have no linked referrer -> rows can be deleted. No C code names any of the
+  seven (grep clean after integration).
+- PROBE BANK from the discarded attempt (all on the s1 v2 body, this chassis, scores from sandbox,
+  allocation read from the prologue lw/move lines of the .dis files):
+  * `a6 = 0;` in the ELSE arm (a6 is already 0 there): 4 -- the surviving second set undoubles the
+    live length and gives the FULL target allocation + lw order; the 4 is the extra `move s2,zero`.
+    Mechanism confirmation only; T2 fail (no-op store) -> rejected/a6-eq-zero-in-else-arm-4.c.
+  * `a6 = a6;` in the else arm: 26 unchanged (deleted before flow counts sets) -> rejected.
+  * `s32 buf = a6;` param alias (first / mid / last declaration): 10 -- a6 lands in s2 but a4/a5
+    stay swapped (the alias has one set, so its lw is still birthing in sched1). FAKE-gated family
+    anyway; superseded -> rejected/param-local-alias-buf-first-10.c.
+  * do { } while (0) around the a6 != 0 arm: 21, allocation still wrong -> rejected.
+  * compound form on the unfixed s1 body: 3 (= the polarity + addu-order bugs above).
+- Artifacts: tmp/grind/func_80054604/s2/final_integrated.dis (0 differences vs target after hex/
+  decimal normalisation, cmp.py), s2/p_*.c + .dis probe pairs, s2/dumps_base + s2/dumps_a6zero
+  (cc1 -da dumps of the base body and the mechanism probe), s2/integrate2.py.
+
+- [s2 re-run 2, 2026-09-15 16:36Z] BYTES RE-PROVEN ON HEAD c700d9136 WITHOUT the undefined_syms_auto.txt edit: candidate_merge.patch
+  (include/game.h + src/text1b.c + src/text1b_b.c, 219 lines, `git apply --check` clean) -> sandbox --disable all = 0
+  (160/160, rules_dropped 0); verify-oracle --rebuild --allow-dirty -> ok=true, build_sha1 == oracle
+  (metrics/events.jsonl 2026-09-15T16:36:44Z). Tree reverted clean afterwards. Referrers re-measured: D_800EFB14/18/1C/20
+  are named by asm/funcs/func_8005490C.s, still built via src/text1b.c:1658 INCLUDE_ASM -> rows STAY (alias suffix);
+  D_800EFB0C/24/28 are named only by the unbuilt .s of the already-C func_8005507C / func_80054FDC -> rows DELETE.
+  Disposition: INTEGRATION HANDOFF filed in docs/grind/decisions.md (scope grant needed: include/game.h src/text1b_b.c
+  undefined_syms_auto.txt; precedent lines func_80062020 / func_80063BD0). Next session: apply candidate_merge.patch,
+  edit the 7 rows, re-measure, candidate-ready.
+
+- [s2] Bytes proven THIS session on HEAD c700d9136: sandbox func_80054604 --disable all = 0 (160/160, rules_dropped 0); verify-oracle --rebuild --allow-dirty ok=true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (metrics/events.jsonl 2026-09-15T16:36:44Z, session 9d1e9c4f).
+
+- [s2] Full integration saved as memory/grind/func_80054604/candidate_merge.patch (219 lines: include/game.h, src/text1b.c, src/text1b_b.c; git apply --check clean). Tree reverted to clean and the clean reference rebuilt (verify-oracle --rebuild ok=true).
+
+- [s2] Scope blocker only: tools/grinder/scope_allow.txt has no func_80054604 line; the needed triple `include/game.h src/text1b_b.c undefined_syms_auto.txt` is exactly the func_80062020 / func_80063BD0 precedent lines (scope_allow.txt:49, :70).
+
+- [s2] The first s2 attempt was discarded for editing undefined_syms_auto.txt (out of scope); this re-run proves the bytes need no such edit -- the row edits (4 alias suffixes, 3 deletions) are prong (c) housekeeping for the next session under the grant.
+
+- [s2] Constructs in the diff: aggregate merge (header-canonical, 5 prongs in self_vet.md), pointer-alias local (FAKE-annotated, .claude/rules/pointer-alias-fake-exception.md), compound-assignment split (ordinary C, .claude/rules/ordinary-c-judge-decidable.md:167). No banned constructs (state has none).

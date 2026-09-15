@@ -717,3 +717,8 @@ disposition taken: driver-executed per integration-handoff-self-serve (owner rul
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-15 — _clr — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: _clr include/gpu.h undefined_syms_auto.txt; function stays ACTIVE.
+
+## 2026-09-15 — func_80054604 — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-15 — func_80054604 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80054604 include/game.h src/text1b_b.c undefined_syms_auto.txt; function stays ACTIVE.
