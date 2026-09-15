@@ -44,3 +44,25 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main chassis, body_v4E form otherwise, no FAKE constructs
+
+## s2 (structural) - measured
+- H6 KILLED (instance): `u8 ret` two-copy return chain - 5, unchanged; copies stay at priority 8 (anti-dep on the call only), hoisted into the load-delay slot.
+- H7 CONFIRMED: single-level `do { arg0[6] += 0xC; } while (0);` (FAKE, do-while-zero family) - 5 -> 0. sched.c loop_notes make the return copy depend on the sw.
+- H8 CONFIRMED: empty `do { } while (0);` between the increment and `return ret;` - also 0 (same mechanism); not banked as the candidate (H7 preferred, wraps the controlled statement).
+
+## [s2] Declaring ret as u8 so `return ret` expands to a promoted-subreg two-copy chain schedules the return copy after the sw
+- mechanism: expr.c convert_move on a SUBREG_PROMOTED_VAR_P source emits copy-to-pseudo then copy-to-v0; if either copy gained priority >= 9 it would sort after the sw
+- probe: sandbox on body_vA_u8ret.c
+- result: 5 - residual byte-identical to the s32 form; both copies depend only on the call (priority 8) and are hoisted before the addiu
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main chassis (-mel -msoft-float), s1 candidate body otherwise, no FAKE constructs
+
+## [s2] Wrapping the final `arg0[6] += 0xC;` in a single-level do { } while (0) pins the return copy after the sw
+- mechanism: sched.c:2287 loop_notes - the first insn after NOTE_INSN_LOOP_END (the return copy) gets dependences on every earlier set/use in the block, so it is not ready while the sw is unscheduled; the increment temp then takes $v0
+- probe: sandbox on body_vC_wrap_incr.c; fresh .sched dump of the form
+- result: 0 - tail lw/nop/addiu/sw/move v0,s3 matches; new dump T-2 ready list = the copy alone
+- verdict: CONFIRMED
+
+## Live frontier
+- none: sandbox 0 with the FAKE-annotated single-level wrap. If the Judge FAILs the wrap, the remaining ordinary-C axis is a block structure that places a label between the increment and the return copy (no natural geometry found in s2: the if-join sits before the draw code, the tail has no branches).

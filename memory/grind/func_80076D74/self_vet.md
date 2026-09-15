@@ -1,0 +1,15 @@
+# SELF-VET - func_80076D74
+CONSTRUCTS: (1) single-level do { arg0[6] += 0xC; } while (0); wrap with inline /* FAKE */ annotation at the construct site; (2) file-scope declaration extern u8 D_8009BCF8[][2]; (pair-table data model, ordinary C); (3) typedef struct with u8 cells[2][5][2] + bitfield word (record data model, ordinary C); (4) (j << 1) index arithmetic (ordinary C)
+## T1 semantic purpose: (1) none beyond the wrapped statement - the wrap executes the increment exactly once; it is a codegen device and is declared as such by the FAKE annotation, which is the sanctioned do-while-zero family's own condition. (2)(3)(4) are the program's data model and arithmetic; every access is a real read/write the target performs (bytes prove it).
+## T2 human-programmer: (1) a reader would ask why the wrap is there - the FAKE annotation answers it; the do-while(0) body idiom is the era's macro-expansion shape and SOTN master ships 18 instances incl. empty bodies. (2)(3)(4) are what a programmer writes for a [x][2] byte table, a record with packed flags, and a halfword index.
+## T3 GCC-internals justification: (1) yes - the wrap works through sched.c loop_notes (NOTE_INSN_LOOP_END dependence on the next insn). This is exactly the case the owner's 2026-07-06 ruling sanctions for this family ("ANY codegen effect"), with the mechanism named in the annotation as the family requires. (2)(3)(4) have program-logic explanations (table layout, record layout, index scaling).
+## T4 permuter/search provenance: none - no permuter run; every form was hand-derived from the .sched dump and sched.c and measured by sandbox (5 -> 0 in one edit).
+## T5 family check: (1) matches the sanctioned do-while(0) family exactly (single level, non-nested, FAKE-annotated); it is not a for/while/if equivalent. (2)(3)(4) are ordinary C, no family needed. No banned_constructs entries exist for this function.
+## T6 naming-announces-intent: no pad/dummy/unused/spill names; locals are p, hdr, cnt, v, i, j, sel, ret; struct fields pad10/f10/f12/f14/f15 name real bit ranges of a word the target writes through bitfields (pad10 is the untouched low 10 bits, layout only, never referenced by a statement).
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: do-while(0) wrap (do-while-zero-exception)
+  SCOPE: "`do { <any body> } while (0);` - including empty bodies - is a sanctioned pure-C match device for ANY codegen effect, including register allocation."
+  PRECEDENT: .claude/rules/do-while-zero-exception.md:29
+  PRECEDENT: docs/reference/sotn-construct-index.md:594
+  PRECEDENT: .claude/rules/no-new-park-categories.md:263
+ANNOTATION-CONFORMANCE: /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: memory/grind/func_80076D74/hypotheses.md s1-s2 */ - carries what (pins the return copy / v0 seat), mechanism (sched.c loop_notes, sched1), and the lever-exhaustion pointer (hypotheses.md H5 s1 cast-offset form = 5, H6 s2 u8 ret = 5; the rule's prerequisite 2 states exhaustion is not a hard gate for single-level wraps).

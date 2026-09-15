@@ -24,7 +24,10 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "src/text1b.c:2227  extern u8 D_8009BCF8[][2];  used as D_8009BCF8[idx][1] (src/text1b.c:8015)",
+  "src/text1b.c:7941-7984 - the identical 'typedef struct { u8 cells[2][5][2]; u32 pad10:10; ... } S_80076D74;' block repeated FIVE times"
+ ],
  "kills": [
   {
    "session": 1,
@@ -43,9 +46,21 @@
    "result": "5, byte-identical residual to body_v4E \u2014 the tail diff does not depend on the in-struct flag"
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-15T16:56:05.338464+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The do-while(0) wrap passes (sanctioned family, single level, FAKE-annotated, mechanism named, citations verified), but the re-declaration of the splat scalar D_8009BCF8 as an unbounded u8[][2] pair table fails prongs (a), (b), (c) and (d) of the per-word-splat-to-aggregate family, and the diff ships the S_80076D74 typedef five times. Next action: Do NOT commit. The do { arg0[6] += 0xC; } while (0); wrap is fine as written - keep it verbatim (single level, inline /* FAKE */ with mechanism, do-while-zero-exception.md:29 and no-new-park-categories.md:263 both verifie"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "8ae4eb34ab04826c",
+   "when": "2026-09-15T17:46:05.186655+00:00",
+   "summary": "The do-while(0) wrap passes (sanctioned family, single level, FAKE-annotated, mechanism named, citations verified), but the re-declaration of the splat scalar D_8009BCF8 as an unbounded u8[][2] pair table fails prongs (a), (b), (c) and (d) of the per-word-splat-to-aggregate family, and the diff ship"
+  }
+ ]
 }
