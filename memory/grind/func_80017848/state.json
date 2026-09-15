@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 59,
- "current_modality": "synthesis",
+ "session_count": 60,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -357,23 +357,29 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "Synthesis s59: reorg (redundant_insn retargeting) proves the target's loop-1 exit-path loads are ordinary join-block statements, so K2 is the faithful chassis and BASE's tail copy is a coincidence; th"
+  },
+  {
+   "session": 60,
+   "floor": 3,
+   "modality": "solver",
+   "headline": "Solver s60: classify(K2)=RA seat-only, model exact 15/15; inverse global with the full 13-seat goal (depth 2+3, 403 atoms) yields ONE vector (78 pref {v0}->{a3}) which is class-killed by the RTL (a3 e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's preheader copy is a reload-generated input reload (reload1.c:5843-5853, find_equiv_reg copying a0 into the first potential spill reg a3) of an add operand that reaches reload as a REG_EQUIV-mem pseudo whose init reload deleted (reload1.c:1955-1966) - the only unallocated-pseudo route left under global.c:414-431.",
-   "mechanism": "update_equiv_regs (local-alloc.c:1090-1111) attaches REG_EQUIV to a pseudo set once from an unchanging MEM; if the pseudo's init is deleted and it has no hard reg, reload substitutes the MEM and find_equiv_reg finds its value already in a0",
-   "next_probe": "spell the add's operand as a pseudo set ONCE from *(u8 **)(ctx + 0xC) in the preheader (no other set, no explicit copy) on the K2 chassis; read .lreg for a REG_EQUIV note and .greg / BB2_FINDREG_DEBUG for its disposition; if validate_equiv_mem rejects it, test whether the post-loop stores' pointer derivations are what rejects it"
+   "hypothesis": "A copy dest live >= 8 insns past the copy can have its downstream reader deleted after global alloc without bytes, giving the a3 seat for loop 1 without BASE's join copy.",
+   "mechanism": "the only post-global deleters of a use are jump2 (jump.c:437-490: same-register moves and find_equiv_reg-redundant moves), sched2/final no-op moves and reorg's owned-thread redundant_insn (reorg.c:3442-3460; no owned thread exists here)",
+   "next_probe": "on a per-loop-p K2 variant spell `x = p1;` after loop 1 with x consumed by loop 2's guard so that x and p1 share a seat (copy-preferred), read .jump2/.dbr for the deleted move and the seats; if x cannot share p1's seat without displacing the guard's lw a0,0xC(s2), the loop-1 range route reduces to BASE's join copy and is dead"
   },
   {
-   "hypothesis": "A PREHEADER-block statement can give the copy dest the same v0/a0 conflicts W2 obtained from the guard block (a v0 local and the q value live across the copy with no bytes), which with lnk allocated before p yields a3.",
-   "mechanism": "global.c pass-0 scan excludes hard_reg_conflicts; conflicts come from local quantities / allocnos live across the copy (global.c:755-790)",
-   "next_probe": "first replicate W2 with lnk allocated before p (raise lnk's refs) to confirm the order model prints a3 in loop 1; then on K2 consume the guard count variable in the preheader as a real use and read .greg conflicts for p (BB2_FINDREG_DEBUG)"
+   "hypothesis": "Loop 2's `addu a3,a0,zero` is printed by reload as a reload register (find_equiv_reg copy into the first spill reg a3) for some constrained-operand or secondary-reload shape, not as an allocno seat - since under global.c loop 2 has no reader slot, the pref route is class-killed and no unallocated pseudo exists.",
+   "mechanism": "reload1.c:5843-5853 emits move reloadreg,equivreg when an input reload's value is already in a hard reg; potential_reload_regs lists unused call-used regs first (reload1.c:3766-3772), a3 being the only unused a-reg",
+   "next_probe": "run the instrumented cc1 with BB2_RELOAD_DEBUG on K2 and enumerate every insn that requests an input reload in this function; then test whether any MIPS pattern reachable from pointer arithmetic (a plus with a MEM or constrained operand, a call-argument output reload) asks for a reload of the add's second operand immediately before the lnk load"
   },
   {
-   "hypothesis": "Loop 2's copy can survive optimize_reg_copy_1 on the W2 chassis only if q has a byte-free use after loop 2's guard; the target's post-loop-2 lw a1,0xC(s2) is a re-load into a1, so any such use must fold to nothing.",
-   "mechanism": "optimize_reg_copy_1 needs q's REG_DEAD before the JUMP_INSN; a use after the branch removes it",
-   "next_probe": "on W2, add slots = q; / rec_a = q + (slot_a << 6); style post-loop-2 consumers and measure whether the fold moves (insn count 127 vs 126) rather than the copy"
+   "hypothesis": "If frontier 1 yields a byte-free reader, applying it symmetrically to loop 2 lets loop 2's guard keep its lw a0,0xC(s2) while p2 dies downstream, closing BASE's transposed loop-2 residual.",
+   "mechanism": "BASE already has loop 1 exact via the join read; the residual is the loop-2 transposition (E-s54)",
+   "next_probe": "only after frontier 1 measures: transplant the reader shape into loop 2 on BASE and re-measure"
   }
  ],
  "judge_constraints": [],
@@ -387,22 +393,6 @@
  "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
  "last_unpark_at": "2026-09-15T20:48:37.414727+00:00",
  "kills": [
-  {
-   "session": 42,
-   "statement": "On the symmetric chassis, a two-step loop-2 guard through the SAME local t that loop 1's guard uses reproduces target's guard/base pair (cells U3/U3b).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U3.c / body_U3b.c; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "32 at 127/125 for both: shared t becomes a long-lived global allocno outranking i/p/sh (t->v1, i->a0, p->v0), the s9 t-r"
-  },
-  {
-   "session": 42,
-   "statement": "The natural symmetric chassis (no exit tail, unconditional reload, distinct two-step local t2 for loop 2's guard, q = p copies) reproduces target except for the two preheader copies (cells U4/U4b).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U4.c / body_U4b.c; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "6 at 127/125 for both. Diff vs target is exactly both addu a3,a0,zero absent, both base adds reading a0, loop 2's links "
-  },
   {
    "session": 42,
    "statement": "Writing the reload p = *(u8 **)(ctx + 0xC) directly after BASE's p = q exit tail keeps q's flow-time read (loop 1's copy) while making the tail target's lw a0,12(s2) (cell U5).",
@@ -866,6 +856,22 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s59/body_W1..W5.c applied (K2-derived chassis, copy in the guard block, q live past the branch via loop 2's guard read + exit-path r",
    "predicate_cite": "",
    "result": "W1 = 16 at 127/127 with both copies present (loop-1 seats p=a1, lnk=a3, sh=a2); W2 = 12 at 126/127 (loop 1: p=a2, lnk=a3"
+  },
+  {
+   "session": 60,
+   "statement": "The copy dest can acquire an a3 copy or hard-register preference (the solver's only in-bounds vector) from some C spelling of this function.",
+   "kill_scope": "class",
+   "measured_on": "K2 chassis (candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c) applied at HEAD src/ings.c:820, cc1 -da flow/greg dumps + ra_solver model; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1097",
+   "result": "a3 appears in the pre-RA RTL exactly twice: slot_b's incoming copy (set (reg/v:SI 75) (reg:SI 7 a3)) and its REG_DEAD; 7"
+  },
+  {
+   "session": 60,
+   "statement": "The s59 frontier item 1 (a REG_EQUIV-mem copy-dest pseudo whose init reload deletes at reload1.c:1955-1966, feeding find_equiv_reg's a3 copy) has a producer in this function.",
+   "kill_scope": "class",
+   "measured_on": "K2 chassis applied at HEAD src/ings.c:820, read against the frozen tools/gcc-2.7.2 sources; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/reload1.c:1956",
+   "result": "no producer: the item presupposes the unallocated pseudo it was meant to create; reload's find_equiv_reg copy route stay"
   }
  ],
  "escalation_deferrals": 0,

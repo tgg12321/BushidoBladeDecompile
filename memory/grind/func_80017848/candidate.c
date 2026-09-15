@@ -1,3 +1,28 @@
+/* [s60 SOLVER - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD chassis;
+ * fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4 at 127/127)
+ * remains the faithful chassis for the seat residual.  What s60 established:
+ *  1. classify (object path) on K2 = RA, seat-only; the global.c model is
+ *     exact (15/15).  The shared copy dest (pseudo 78) has hard conflicts
+ *     {v1, sp} only, does NOT conflict with q/base (79/81) and carries a v0
+ *     full preference, so pass 0 hands it v0.
+ *  2. inverse global with the FULL 13-seat goal, depth 2 and 3, 403 atoms:
+ *     exactly one vector - reroute 78's preference {v0} -> {a3}.  That vector
+ *     is CLASS-KILLED: a3 appears in the pre-RA RTL only as slot_b's incoming
+ *     copy (pseudo 75, call-crossing so pruned, dying at the `ior` into a
+ *     local temp), so set_preference/expand_preferences (global.c:829-870,
+ *     1645-1700) have no path to 78.
+ *  3. Model variants pin the ONLY in-model route to a3 with every other seat
+ *     intact: 78 must conflict with base (79/81) AND a v0 local AND have
+ *     priority < lnk's 2500 (livelen >= 9 for a per-loop p, >= 33 for the
+ *     shared p) = a reader >= 8 insns after the copy, past the loop bottom.
+ *     BASE does this for loop 1 (loop 2's guard reads p -> a3) and pays the
+ *     join copy; loop 2 has no reader slot before the jal at all.
+ *  4. No unallocated pseudo can exist (find_reg fails only on a full `used`;
+ *     REG_EQUIV only from stack parms / block-local pseudos), so the s59
+ *     frontier item 1 is void and reload's find_equiv_reg copy stays closed.
+ * Frontier: hypotheses.md s60 (jump2-deleted reader; loop 2's copy as a
+ * reload register rather than an allocno seat).  Evidence: E-s60-1..7.
+ */
 /* [s59 SYNTHESIS - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
  * chassis; fake_ablate: no FAKE construct).  Two facts change how to read it:
  *  1. The target's loop-1 exit-path `lw a0,0xC(s2); sll a1,s4,6` are NOT a

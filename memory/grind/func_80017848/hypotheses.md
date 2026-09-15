@@ -5392,3 +5392,85 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s59/body_W1..W5.c applied (K2-derived chassis, copy in the guard block, q live past the branch via loop 2's guard read + exit-path re-assignment); no FAKE construct in any body
+
+## s60 (2026-09-15, solver - classify + inverse global on K2; seat residual typed; pref route class-killed)
+
+## [s60] Chassis / kill re-audit: BASE 3 at 127/127, K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; the owner directive (func_8005BA8C auto-return) was executed in s56 (K4 = 8).
+- mechanism: instance kills are chassis-relative; the closest kill (K2's two copy-dest seats) re-measured with dumps
+- probe: s60/run.ps1 BASE; s60/apply.py body_K2.c + sandbox; tools/fake_ablate.py --candidate candidate.c
+- result: unchanged (3 / 4 at 127/127); no FAKE carrier anywhere; directive needs no further action
+- verdict: CONFIRMED
+
+## [s60] The K2 residual is a register-allocation residual and the global.c model reproduces the build exactly, so an inverse search over the model's inputs is meaningful for it.
+- mechanism: inverse_compose.py classify (object path, the supported path for INCLUDE_ASM-routed functions); extract.py/simulate.py forward fidelity
+- probe: classify with --target-object build/src/ings.o --ours-object tmp/sandbox/func_80017848/ings.o; extract + simulate --trace (s60/classify_K2.txt, ra_K2.json, sim_K2.txt)
+- result: FIRST DIVERGENCE: RA, exactly the four seat lines; 15/15 dispositions, sort MATCH; pseudo 78 (shared copy dest) pri 13333, hard_conflicts {v1,sp}, no conflict with 79/81, full pref {v0}
+- verdict: CONFIRMED
+
+## [s60] Within the solver's atom space (403 atoms, 10 classes, refs +12/-6, live length +/-8, depth <= 3) exactly one perturbation of the K2 model seats 78 in a3 with every other seat pinned: replacing 78's v0 preference by an a3 preference.
+- mechanism: find_reg's copy/hard preference override (global.c:1097-1160) takes the lowest free preferred register after the ascending scan; a3 is free over 78's range, so an a3 pref (with no v0 pref) wins
+- probe: inverse.py global with the full 13-seat goal at depth 2 and depth 3 (s60/inverse_global_K2_d2.txt, _d3.txt)
+- result: minimal solution size 1, one distinct vector (pref_reroute 78 {v0} -> {a3}); 81 preference atoms foreclosed by the tool; no conflict/order vector inside the bounds
+- verdict: CONFIRMED
+
+## [s60] The copy dest can acquire an a3 copy or hard-register preference (the solver's only in-bounds vector) from some C spelling of this function.
+- mechanism: set_preference (global.c:1645-1700) records a preference only from a SET whose other side is a hard register or an already-renumbered pseudo; expand_preferences (global.c:829-870) propagates copy prefs only along pure copies whose source dies and hard/full prefs along dying operands; prune_preferences (global.c:880-915) strips call-used regs from call-crossing allocnos first
+- probe: K2 flow dump (s60/K2_flow_slice.txt) census of hard registers; model prefs/copy_prefs/full_prefs (s60/ra_K2.json); death insn of slot_b's pseudo 75
+- result: a3 appears in the pre-RA RTL exactly twice, as slot_b's incoming copy `(set (reg/v:SI 75) (reg:SI 7 a3))` and its REG_DEAD; 75 crosses the call (a3 pruned) and dies at insn 272 `(set (reg:SI 139) (ior (reg:SI 138) (reg/v:SI 75)))` whose dest is a local-alloc'd temp with no allocno, so no expand_preferences edge leaves 75; every other hard reg in the RTL is v0 (return sets), a0/a1/a2 (parameters, call arguments). A fresh a3 appearance needs a 4-argument call or a five-deep block-local overlap that pushes local-alloc to a3 - bytes the target does not contain. The vector has no C preimage on this signature.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/global.c:1097
+- measured_on: K2 chassis (candidate_alt_s56_k2...) applied at HEAD src/ings.c:820, flow/greg dumps + ra_solver model; no FAKE construct
+
+## [s60] In the global.c model the a3 seat for the copy dest is reachable, with every other seat unchanged, exactly when 78 conflicts with the base pseudos (79/81), hard-conflicts with a v0 local, and has priority strictly below lnk's 2500.
+- mechanism: pass-0 `used` = hard_reg_conflicts | regs_someone_prefers | ~regs_used_so_far; with v0 (local temp), v1 (i), a0 (base) as hard conflicts and a1/a2 taken by sh/lnk allocated EARLIER (priority order), a3 is the first free register; at priority >= 2500 sh or lnk are still unallocated and 78 lands in a1/a2 instead
+- probe: simulate.py on edited models s60/ra_K2_M1..M6.json (s60/sim_M*.txt)
+- result: M1 (conflicts + v0 + pri 1666) -> a3, 14/15 with 78 the only change; M6 (pri 3333) -> a2 with lnk displaced to a3; M2 (pri 4000) -> a1; M3 (conflicts only) -> a1; M4 (priority only) -> v0. Requirement in C terms: the copy dest must stay live from the copy through >= 8 further insns (per-loop p, nrefs 2; >= 32 for a shared p, nrefs 4), i.e. past the loop's bottom test, and overlap base and the loop's v0 temporaries - a reader at or after the loop bottom. BASE realises this for loop 1 (reader = loop 2's guard) at the cost of the join copy; loop 2 has no reader slot between its bottom test and the jal.
+- verdict: CONFIRMED
+
+## [s60] Frontier reset (strongest 3):
+1. The seat residual is now a one-line spec (E-s60-5): each copy dest needs a reader >= 8 insns downstream that leaves no bytes. Under the frozen compiler a reader disappears after global alloc only in jump2 (jump.c:437-490: same-register moves and find_equiv_reg-redundant moves), sched2/final no-op moves, or reorg's owned-thread redundant_insn deletion (reorg.c:3442-3460, no owned thread exists here). Probe: on a per-loop-p K2 variant, spell `x = p1;` after loop 1 with x consumed by loop 2's guard so that x and p1 are copy-preferred into the same seat (jump2 then deletes the move), and read .jump2/.dbr for the deleted insn and the resulting seats; if x cannot share p1's seat without displacing the guard's `lw a0`, the loop-1 range route reduces to BASE's join copy and is dead.
+2. Loop 2's copy dest has NO downstream reader slot (only `sll s0 / lw a1 / sll s1` before the jal, and post-call readers force a callee-saved seat), so under global.c its a3 seat cannot come from the range route, the pref route is class-killed (s60), and no unallocated pseudo exists (E-s60-6). The remaining premise to attack is that loop 2's copy is a `(set pseudo pseudo)` at global time at all: check with the instrumented cc1 whether ANY MIPS pattern (reload of a constrained operand, secondary reload, output reload of a call-argument register, mips.c's move expanders) can print `addu a3,a0,zero` immediately before `lw a2,0x10(s2)` with a3 as a reload register (BB2_RELOAD_DEBUG) rather than an allocno seat - and if so what operand shape asks for it.
+3. Only after 1-2: revisit BASE's loop-2 side. BASE has loop 1 exact via the join read and loop 2 transposed; if a jump2-deleted reader exists (frontier 1), apply it symmetrically so loop 2's guard reloads `lw a0,0xC(s2)` while p1 still dies downstream.
+
+## [s60] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; the owner directive (func_8005BA8C auto-return) was executed in s56 (cell K4 = 8) and needs no further action.
+- mechanism: instance kills are chassis-relative; the closest kill (K2's two copy-dest seats) re-measured with dumps
+- probe: s60/run.ps1 BASE; s60/apply.py body_K2.c + sandbox --disable all; tools/fake_ablate.py --func func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c
+- result: unchanged: 3 / 4 at 127/127; no FAKE-annotated construct; sibling shares no block (max overlap 0.120), K4 lever killed in s56
+- verdict: CONFIRMED
+
+## [s60] The K2 residual is a register-allocation residual and the ra_solver global.c model reproduces the build exactly, so an inverse search over the model's inputs is meaningful for it.
+- mechanism: inverse_compose.py classify on the object path (the supported path for INCLUDE_ASM-routed functions); extract.py/simulate.py forward fidelity
+- probe: classify ings func_80017848 --target-object build/src/ings.o --ours-object tmp/sandbox/func_80017848/ings.o; extract.py + simulate.py --trace (s60/classify_K2.txt, ra_K2.json, sim_K2.txt)
+- result: FIRST DIVERGENCE: RA, exactly the four seat lines (move v0,a0 x2 / addu a0,a1,v0 x2 vs a3); 15/15 dispositions, sort MATCH; copy dest pseudo 78: nrefs 4, livelen 6, pri 13333, hard_conflicts {v1,sp}, no conflict with q/base 79/81, full pref {v0}, no copy prefs
+- verdict: CONFIRMED
+
+## [s60] Within the solver's atom space (403 atoms over 10 classes, refs +12/-6, live length +/-2,4,8, depth <= 3) exactly one perturbation of the K2 model seats 78 in a3 with every other seat pinned: replacing 78's v0 preference by an a3 preference.
+- mechanism: find_reg's copy/hard preference override (global.c:1097-1160) takes the lowest free preferred register after the ascending scan; a3 is free over 78's range, so an a3 pref with no v0 pref wins
+- probe: inverse.py global s60/ra_K2.json --goal {89:3,79:4,81:4,78:7,72:18,77:3,75:19,85:5,86:5,80:6,82:6,74:20,73:21} --depth 2 and --depth 3 (s60/inverse_global_K2_d2.txt, _d3.txt)
+- result: minimal solution size 1, one distinct vector: [pref_reroute] pseudo 78 {v0} -> {a3}; 81 preference atoms foreclosed by the tool's RTL check; no conflict/order/live-length vector inside the bounds
+- verdict: CONFIRMED
+
+## [s60] The copy dest can acquire an a3 copy or hard-register preference (the solver's only in-bounds vector) from some C spelling of this function.
+- mechanism: set_preference (global.c:1645-1700) records a preference only from a SET whose other side is a hard register or an already-renumbered pseudo; expand_preferences (global.c:829-870) propagates copy prefs only along pure copies whose source dies and hard/full prefs along dying non-conflicting operands; prune_preferences (global.c:880-915) strips call-used regs from call-crossing allocnos before regs_someone_prefers is built
+- probe: hard-register census of the K2 flow dump (s60/K2_flow_slice.txt); model prefs/copy_prefs/full_prefs (s60/ra_K2.json); the death insn of slot_b's pseudo 75
+- result: a3 appears in the pre-RA RTL exactly twice: slot_b's incoming copy (set (reg/v:SI 75) (reg:SI 7 a3)) and its REG_DEAD; 75 crosses the call (a3 pruned) and dies at insn 272 (set (reg:SI 139) (ior (reg:SI 138) (reg/v:SI 75))) whose dest is a local-alloc'd temp with no allocno, so no expand_preferences edge leaves 75; all other hard regs are v0 (return sets) and a0/a1/a2 (params, call args). A fresh a3 appearance needs a 4-argument call or a five-deep block-local overlap forcing local-alloc to a3 - bytes the target does not contain
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis (candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c) applied at HEAD src/ings.c:820, cc1 -da flow/greg dumps + ra_solver model; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:1097
+
+## [s60] In the global.c model the a3 seat for the copy dest is reachable with every other seat unchanged exactly when 78 conflicts with the base pseudos 79/81, hard-conflicts with a v0 local, and has priority strictly below lnk's 2500.
+- mechanism: pass-0 used = hard_reg_conflicts | regs_someone_prefers | ~regs_used_so_far; with v0 (local temp), v1 (i), a0 (base) as hard conflicts and a1/a2 taken by sh/lnk allocated earlier in priority order, a3 is the first free register; at priority >= 2500 sh or lnk are still unallocated and 78 lands in a1/a2
+- probe: simulate.py on edited models s60/ra_K2_M1..M6.json (s60/sim_M*.txt)
+- result: M1 (conflicts + v0 hard-conflict + livelen 48 -> pri 1666) = a3 with 14/15 dispositions and 78 the only change; M6 (pri 3333) = a2 with lnk displaced to a3; M2 (pri 4000) = a1; M3 (conflicts only) = a1; M4 (priority only) = v0. In C terms: per-loop p (nrefs 2) needs livelen >= 9, shared p (nrefs 4) >= 33 (flow.c:1685/2087 count one per insn live), i.e. a reader at or after the loop bottom that leaves no bytes; BASE realises it for loop 1 via loop 2's guard read and pays the join copy; loop 2 has no reader slot before the jal (only sll s0 / lw a1 / sll s1) and post-call readers force a callee-saved seat (s52 cell G)
+- verdict: CONFIRMED
+
+## [s60] The s59 frontier item 1 (a REG_EQUIV-mem copy-dest pseudo whose init reload deletes at reload1.c:1955-1966, feeding find_equiv_reg's a3 copy) has a producer in this function.
+- mechanism: reload1.c:1955 requires reg_renumber < 0; global.c:414-431 makes an allocno for every referenced pseudo with reg_live_length != -1 (flow.c:1240/1260 setjmp only) and find_reg (global.c:1052-1075, ascending, no REG_ALLOC_ORDER in mips.h) fails only on a full `used`; REG_EQUIV notes come only from function.c:3838-3854 (stack parms) and local-alloc.c:1051-1055 (block-local pseudos)
+- probe: source reading of global.c:414-431, :586-598, :1052-1075, flow.c:1240/1260, reload1.c:865-900 and :1955-1966; grep of REG_EQUIV producers across tools/gcc-2.7.2/*.c
+- result: no producer: the item presupposes the unallocated pseudo it was meant to create; reload's find_equiv_reg copy route stays closed (E-s42, E-s57-6)
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis applied at HEAD src/ings.c:820, read against the frozen tools/gcc-2.7.2 sources; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/reload1.c:1956
