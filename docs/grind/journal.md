@@ -2070,3 +2070,4 @@
 - 2026-09-15 14:18 func_80076D74 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80076D74 include/game.h src/text1b_b.c undefined_syms_auto.txt), function stays active.
 - 2026-09-15 14:19 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 14:20
 - 2026-09-15 14:26 func_80076D74 COMPLETED-C after 3 sessions (closer: s3 [permuter]).
+- 2026-09-15 15:00 func_800753D8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
