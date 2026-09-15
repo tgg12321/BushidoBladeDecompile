@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80074B18",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-10T07:12:22+00:00",
-      "rotation_count": 1,
-      "unparked_from": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-10 \u2014 func_80074B18 \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "unpark_reason": "auto-return: toolchain change re-measure floor 1 -> 0 (fingerprint 2046c403e76d0fe5 -> a04b7a59487234ab)",
-      "returned_at": "2026-09-15T03:46:21+00:00"
-    },
-    {
       "func": "func_8005C2A8",
       "file": "text1b",
       "distance": 134,
@@ -1271,14 +1258,14 @@
     }
   ],
   "counts": {
-    "total": 138,
-    "active": 132,
+    "total": 137,
+    "active": 131,
     "by_status": {
-      "active": 132,
+      "active": 131,
       "rotated": 6
     },
     "by_verdict": {
-      "C": 110,
+      "C": 109,
       "ASM-PARTIAL": 22
     }
   },

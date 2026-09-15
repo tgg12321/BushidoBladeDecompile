@@ -40,5 +40,14 @@
  "exhaustion_base": 1,
  "last_unpark_reason": "auto-return: toolchain change re-measure floor 1 -> 0 (fingerprint 2046c403e76d0fe5 -> a04b7a59487234ab)",
  "last_unpark_at": "2026-09-15T04:55:29.740541+00:00",
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "0d6785ef0735398f",
+   "when": "2026-09-15T05:02:13.987624+00:00",
+   "summary": "final call: Ordinary C: two nested for loops over a tile table, two u8* cursors, a column count (5/8) and an OT index (0xB/0x15) selected by the flag args, cursor written back to arg0[5]. No __asm__, no volatile,"
+  }
+ ]
 }

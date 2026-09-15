@@ -1,13 +1,20 @@
-/* func_80074B18 â€” candidate (s1, 2026-09-10). Honest sandbox --disable all = 1 on the
- * HEAD chassis (-mel -msoft-float). The single residual is the ASPSX load-delay nop at
- * 0x80074CF0 (`lw $a3,0x10($sp)` / `.L80074CF0:` / `nop` / `sw $s3,0x14($a3)`): a
- * maspsx `.L`-label blind spot retired by the per-function opt-in in
- * maspsx_label_nop_funcs.txt (fidelity gate, operator surface). With that entry the
- * object is byte-identical and the full relink SHA1 == oracle
- * (tmp/grind/func_80074B18/s1/gated_sha1.txt). Zero constructs: no FAKE, no volatile,
- * no asm, no pins. `s16 n` is load-bearing: it keeps GCC from folding the hoisted
- * inner-loop entry test (see evidence.md). Apply with
- *   python3 tmp/grind/func_80074B18/s1/splice.py memory/grind/func_80074B18/candidate.c
+/* func_80074B18 — candidate (s2, 2026-09-14). MEASURED THIS SESSION: honest
+ * `sandbox func_80074B18 --disable all` = 0 (133/133 insns), and a full clean-driver
+ * `engine build` relink produced SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+ *
+ * History: on the s1 chassis this body scored 1. The single residual was the ASPSX
+ * load-delay nop at 0x80074CF0 (`lw $a3,0x10($sp)` / `.L80074CF0:` / `nop` /
+ * `sw $s3,0x14($a3)`) — a maspsx `.L`-label blind spot that then required a
+ * per-function opt-in in maspsx_label_nop_funcs.txt (operator-only surface), which is
+ * why s1 ended as an INTEGRATION HANDOFF. That gate was RETIRED 2026-09-14
+ * (.claude/rules/maspsx-label-nop-gate.md): the label load-delay nop is now emitted
+ * GLOBALLY with the same $at/$gp expansion guards the non-label path always had, and
+ * maspsx_label_nop_funcs.txt / --label-nop-funcs are DELETED. The toolchain fingerprint
+ * change (2046c403e76d0fe5 -> a04b7a59487234ab) is exactly that retirement, and it drops
+ * this body from 1 to 0 with NO change to the C.
+ *
+ * Zero constructs: no FAKE, no volatile, no asm, no pins, no dead locals. `s16 n` is
+ * load-bearing: it keeps GCC from folding the hoisted inner-loop entry test (evidence.md).
  */
 void func_80074B18(s32 *arg0, s32 arg1, s32 arg2) {
     u8 *p;

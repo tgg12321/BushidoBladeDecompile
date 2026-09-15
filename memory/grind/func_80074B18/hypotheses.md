@@ -43,3 +43,33 @@ maspsx_label_nop_funcs.txt line (fidelity gate, add-scope-allow denylist).
 - probe: tmp/grind/func_80074B18/s1/build_gated.sh (scratch copy of the list) + pdiff + link_gated.sh
 - result: gated object: 0 differing instructions; relink SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
 - verdict: CONFIRMED
+
+## s2 (2026-09-14) — owner directive executed: toolchain-change re-measure
+
+**Directive:** `auto-return: toolchain change re-measure floor 1 -> 0 (fingerprint
+2046c403e76d0fe5 -> a04b7a59487234ab)`.
+
+**What the fingerprint change was.** `.claude/rules/maspsx-label-nop-gate.md` was RETIRED
+2026-09-14: the maspsx `.L`-label load-delay nop is now emitted GLOBALLY with the same
+`$at`/`$gp` expansion guards the non-label path always had, and both
+`maspsx_label_nop_funcs.txt` and the `--label-nop-funcs` flag are DELETED. The per-function
+scoping never protected ASPSX fidelity — it contained a missing-guard bug.
+
+**Consequence for this function.** s1's entire residual was that one nop at 0x80074CF0, and
+s1's only open step was the operator-lane line in the now-deleted gate list. With the nop
+global, the s1 body needs no gate and no edit.
+
+**Measured this session (HEAD, -mel -msoft-float, no FAKE constructs):**
+- `sandbox func_80074B18 --disable all` -> **score 0**, 133/133 insns, rules_dropped 0.
+- full clean-driver `engine build` -> SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa`
+  == oracle, MATCH.
+
+**Status of the s1 Judge constraint.** The binding constraint was "C-axis CLOSED; the
+candidate.c body (sha1 a00d6744) is final; the only remaining step is the owner-lane line
+in maspsx_label_nop_funcs.txt." That constraint is satisfied in the strongest possible way:
+the body was submitted EXACTLY as banked, byte-for-byte, and the gate step is moot because
+the gate no longer exists. No respelling, no FAKE, no volatile, no asm, no pins, and
+`tools/maspsx`/`maspsx_label_nop_funcs.txt` were not touched by this session.
+
+**No new hypotheses were opened.** With the floor at 0 there is no residual to attack; the
+structural lever catalog was not spent because there was nothing left to measure.
