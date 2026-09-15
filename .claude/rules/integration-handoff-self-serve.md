@@ -57,9 +57,17 @@ grant path:
 
 - `inline_asm_canonical.txt` — has its own evidence-gated grant path
   (scan_hand_coded STRONG tier, [[canonical-asm-authorization-recipe]]).
-- The maspsx fidelity-gate lists (`maspsx_label_nop_funcs.txt`,
+- The maspsx fidelity-gate lists (`maspsx_prefill_label_funcs.txt`,
   `expand_lb_funcs.txt`, `expand_dest_funcs.txt`, `multu_funcs.txt`,
   `multu_pad_funcs.txt`) — assembler-behavior gates are substrate-adjacent.
+  (`maspsx_label_nop_funcs.txt` was on this denylist until it was retired and
+  deleted on 2026-09-14 — [[maspsx-label-nop-gate]].)
+  **This list is a doc/code pair with `_SCOPE_GRANT_DENY` in
+  `tools/grinder/grindlib.py`; they must be kept in sync.** They drifted once:
+  `maspsx_prefill_label_funcs.txt` was created by the 2026-09-04 owner ruling
+  but never added to the code set, so from then until 2026-09-14 the driver
+  could have self-granted scope into a live fidelity gate
+  (`_SCOPE_GRANT_ALLOWED_RE` matches any root-level `*.txt`). Closed 2026-09-14.
 - Anything under `tools/`, `engine/`, `.claude/`, `docs/`, `memory/`, `asm/`,
   `disc/`; `Makefile`, `*.ld`, `splat.yaml` — enforced by path-class regex.
 

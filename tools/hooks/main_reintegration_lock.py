@@ -80,7 +80,7 @@ BUILD_INPUT_RE = re.compile(
     r"(?:^|[\\/])(?:"
     r"src[\\/].*\.c|include[\\/].*\.h|.*\.h"
     r"|regfix(?:_stage2)?\.txt|asmfix\.txt|.*\.ld"
-    r"|prologue_config\.json|inline_asm_canonical\.txt|maspsx_label_nop_funcs\.txt"
+    r"|prologue_config\.json|inline_asm_canonical\.txt"
     r"|sdata\w*\.txt|named_syms\.txt|expand_lb_funcs\.txt"
     r")$",
     re.IGNORECASE,

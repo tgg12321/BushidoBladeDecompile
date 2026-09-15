@@ -47,7 +47,6 @@ FRAME_FIX = "tools/frame_fix_funcs.txt"
 #   cheat-pathway — a C spelling EXISTS (e.g. unsigned types for multu);
 #                   gating a C function through it is a cheat by config.
 MASPSX_GATE_LISTS: dict[str, str] = {
-    "maspsx_label_nop_funcs.txt": "fidelity",      # ASPSX load-delay nop; fork .L-prefix blind spot
     "maspsx_prefill_label_funcs.txt": "fidelity",  # ASPSX "retarget iff filled" label placement (owner ruling 2026-09-04)
     "expand_lb_funcs.txt": "fidelity",             # lb->lbu+sll+sra; all C spellings fold to lb (probe 2026-07-13)
     "expand_dest_funcs.txt": "fidelity",           # $rdest-vs-$at macro-expansion temp; assembler-internal choice

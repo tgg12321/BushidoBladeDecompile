@@ -513,7 +513,6 @@ class MaspsxProcessor:
         expand_lh_func_list=None,
         multu_func_list=None,
         expand_dest_func_list=None,
-        label_nop_func_list=None,
         prefill_label_func_list=None,
         sdata_sym_list=None,
         sdata_func_list=None,
@@ -532,12 +531,6 @@ class MaspsxProcessor:
         self.expand_lh_func_set = set(expand_lh_func_list) if expand_lh_func_list else set()
         self.multu_func_set = set(multu_func_list) if multu_func_list else set()
         self.expand_dest_func_set = set(expand_dest_func_list) if expand_dest_func_list else set()
-        # Functions that opt in to the .L-label load-delay nop for the LOAD-CONSUMER
-        # case (load -> .L-label -> load-from-same-reg). Per-function-scoped because
-        # broadening this globally shifts maspsx indices and breaks other functions'
-        # index-anchored regfix/asmfix rules (the saTan4FireDisp cascade). The jalr-
-        # consumer case below is always-on (it doesn't cascade).
-        self.label_nop_func_set = set(label_nop_func_list) if label_nop_func_list else set()
         # Functions that opt in to the ASPSX "retarget iff filled" prefill-label
         # gate (apply_prefill_label_gate above; owner ruling 2026-09-04, `main`).
         self.prefill_label_func_set = set(prefill_label_func_list) if prefill_label_func_list else set()
@@ -808,11 +801,12 @@ class MaspsxProcessor:
         res: List[str] = []
 
         # is_label() only recognizes $L-prefix locals, but this GCC fork emits
-        # .L-prefix. So a load whose pointer is consumed by an indirect call
-        # across a single .L merge label -- `lw $rN; .L<n>:; jalr $rN` (maspsx
-        # renders jalr as `jal $31,$rN`) -- is not seen as a load-delay hazard
-        # and loses its nop. Handle ONLY this jalr-consumer case; broadening
-        # label-skip cascades through index-anchored regfix rules elsewhere.
+        # .L-prefix. So a load whose result is consumed across a single .L merge
+        # label is not seen as a load-delay hazard and loses its nop, which the
+        # target has (ASPSX emitted it). Two arms, BOTH global since 2026-09-14:
+        # the jalr-consumer case immediately below (`lw $rN; .L<n>:; jalr $rN`,
+        # which maspsx renders as `jal $31,$rN`), and the load/branch/store-value
+        # consumer case after it.
         if re.match(r"\.L\d+:$", next_instruction):
             after_label = self.get_next_instruction(
                 skip=1, ignore_nop=True, ignore_set=True
@@ -824,19 +818,42 @@ class MaspsxProcessor:
                     f"nop # DEBUG: load-delay across .L-label before jalr {r_dest}"
                 )
                 return res
-            # LOAD-CONSUMER variant: `lw $rN; .L<n>:; lw $rM,0($rN)` -- the loaded
-            # base reg is consumed by another load across the .L merge label. Same
-            # blind spot, but PER-FUNCTION-SCOPED (self.label_nop_func_set): emitting
-            # this nop shifts downstream maspsx indices, so enabling it globally
-            # breaks other functions' index-anchored rules (see __init__ note).
-            if (self.current_func in self.label_nop_func_set
-                    and line_loads_from_reg(after_label, r_dest)):
-                res.append(next_instruction)   # keep the merge label in place
-                self.skip_instructions = 1      # don't re-emit it downstream
-                res.append(
-                    f"nop # DEBUG: load-delay across .L-label before load-consumer {r_dest}"
-                )
-                return res
+            # LOAD/BRANCH/STORE-VALUE-CONSUMER variant: e.g.
+            # `lw $rN; .L<n>:; lw $rM,0($rN)`, a branch on $rN, or a store whose
+            # VALUE operand is $rN (line_loads_from_reg covers all three). Same
+            # blind spot as the jalr arm, and global like it since 2026-09-14.
+            #
+            # This was per-function-scoped via maspsx_label_nop_funcs.txt on the
+            # rationale that emitting the nop shifts downstream maspsx indices
+            # and breaks other functions' index-anchored regfix/asmfix rules.
+            # That rationale died with those rules (gone since 2026-08-25); the
+            # list was retired after the guards below were added. Full record:
+            # .claude/rules/maspsx-label-nop-gate.md.
+            if line_loads_from_reg(after_label, r_dest):
+                # Mirror the $at/$gp expansion guards the NON-label path below
+                # applies. A consumer that expands through $at (e.g.
+                # `sh $v0,SYM` -> `lui $at,%hi(SYM); sh $v0,%lo(SYM)($at)`)
+                # has its load-delay slot filled by the generated `lui $at`,
+                # so no nop is required. This arm previously emitted
+                # unconditionally -- masked while it was per-function scoped
+                # (no opted-in function had an $at-expanding consumer), but a
+                # false positive the moment it applies generally: it put a
+                # spurious nop in func_8003ACB8 (oracle RED) until these
+                # guards were added.
+                nop_required = False
+                if not uses_at(after_label):
+                    nop_required = True
+                if self._uses_gp(after_label):
+                    nop_required = True
+                if uses_at(after_label) and self.nop_at_expansion:
+                    nop_required = True
+                if nop_required:
+                    res.append(next_instruction)   # keep the merge label in place
+                    self.skip_instructions = 1      # don't re-emit it downstream
+                    res.append(
+                        f"nop # DEBUG: load-delay across .L-label before load-consumer {r_dest}"
+                    )
+                    return res
 
         if line_loads_from_reg(next_instruction, r_dest):
             nop_required = False

@@ -29,8 +29,7 @@ tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 \
       --sdata-exclude=sdata_exclude.txt --expand-lb \
       --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt \
       --expand-dest-funcs=expand_dest_funcs.txt \
-      --label-nop-funcs=maspsx_label_nop_funcs.txt \
-  | python3 tools/multu_pad.py --funcs multu_pad_funcs.txt > "$TMPS"
+       | python3 tools/multu_pad.py --funcs multu_pad_funcs.txt > "$TMPS"
 # extract marionation_Exec's region: from its glabel/ent to the next .end/.ent
 awk '
 /^\t\.ent\tmarionation_Exec$|^glabel marionation_Exec$|^marionation_Exec:$/ {p=1}

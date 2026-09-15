@@ -464,13 +464,20 @@ def preview_superseded_bans(root, func, needles):
 # denylist — stays owner-only (the "most severe blockers" list).
 _SCOPE_GRANT_ALLOWED_RE = re.compile(r"^(include/[\w.\-/]+\.h|src/[\w.\-/]+\.c|[\w\-]+\.txt)$")
 _SCOPE_GRANT_DENY = {
-    "inline_asm_canonical.txt",       # has its own evidence-gated grant path
-    "maspsx_label_nop_funcs.txt",     # assembler fidelity gates: substrate-adjacent,
-    "expand_lb_funcs.txt",            # owner-only
+    "inline_asm_canonical.txt",          # has its own evidence-gated grant path
+    "maspsx_prefill_label_funcs.txt",    # assembler fidelity gates: substrate-adjacent,
+    "expand_lb_funcs.txt",               # owner-only
     "expand_dest_funcs.txt",
     "multu_funcs.txt",
     "multu_pad_funcs.txt",
 }
+# NB: maspsx_prefill_label_funcs.txt was MISSING from this set between its
+# creation (owner ruling 2026-09-04) and 2026-09-14 — a live assembler-fidelity
+# gate the driver could have self-granted scope into, since
+# _SCOPE_GRANT_ALLOWED_RE matches any root-level *.txt. Added 2026-09-14 with
+# the label-nop retirement (which removed the now-deleted
+# maspsx_label_nop_funcs.txt row). Keep this set in sync with the denylist in
+# .claude/rules/integration-handoff-self-serve.md — they are a doc/code pair.
 
 
 def add_scope_allow(root, func, paths, date):

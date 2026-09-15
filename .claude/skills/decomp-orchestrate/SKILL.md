@@ -220,10 +220,12 @@ what closed sys_VSync after 7 cold-start worker sessions), bulk variant sweeps
   rodata): the pure-C path needs a rodata re-attribution — an architecture
   decision. Log it as a `policy-question` borderline entry; it executes only
   on a landed owner ruling.
-- **maspsx `.L`-label load-delay nop** (sole cheat-asm is one `__asm__("nop")` for a
-  load-consumer-across-`.L`-label): now a **pure-C retirement path** — add the
-  function to `maspsx_label_nop_funcs.txt`, delete the source nop, verify, done.
-  Per-function-scoped (broadening it globally cascades). [[maspsx-label-nop-gate]]
+- **maspsx `.L`-label load-delay nop**: NOT A CATEGORY ANYMORE. The gate went
+  global on 2026-09-14 and `maspsx_label_nop_funcs.txt` was deleted, so there is
+  nothing to opt into and no park to auto-handle. A source `__asm__("nop")` for a
+  load-consumer-across-`.L`-label is now just cheat-asm: delete it and the gate
+  emits the nop. If one is genuinely missing or spurious, that is a maspsx bug to
+  fix, never a new list. [[maspsx-label-nop-gate]]
 
 ## 7. Footguns learned (don't repeat them)
 

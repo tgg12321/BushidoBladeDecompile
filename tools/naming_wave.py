@@ -76,7 +76,6 @@ LIST_FILES = [
     "sdata_funcs.txt",
     "sdata_exclude.txt",
     "inline_asm_canonical.txt",
-    "maspsx_label_nop_funcs.txt",
     "maspsx_prefill_label_funcs.txt",
     "expand_lb_funcs.txt",
     "expand_dest_funcs.txt",

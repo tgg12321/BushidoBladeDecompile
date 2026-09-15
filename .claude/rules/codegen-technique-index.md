@@ -115,7 +115,7 @@ have NO auto-load glob and must be read directly when relevant:
 - **canonical-asm-authorization-recipe** — writing whole-body `__asm__("glabel ...")` (user-authorized only).
 - **canonical-gate-distance-not-evidence** — a big distance is NOT evidence for ASM routing.
 - **jtbl-rodata-split-infrastructure** — historical rodata-split jump-table carve-out (cluster resolved 2026-06-09).
-- **maspsx-label-nop-gate** — single `__asm__("nop")` before a load in a loop → per-function maspsx gate, don't park.
+- **maspsx-label-nop-gate** — RETIRED 2026-09-14 (gate is global; the per-function list is deleted). Read only as a retirement record if a `.L`-label load-delay nop looks wrong.
 - **maspsx-noreorder-stripping** — glabel-form asm MUST duplicate TAB-form `.set` directives with SPACE-form.
 - **compiler-flags-canonical** — do not flag-hunt; flags were settled project-wide 2026-05-20.
 - **permuter-directives** — bridge from a technique-index rule to PERM_* macros (decomp-permuter manual mutations); use when a rule lists 2+ alternative spellings, when you need to sweep candidate registers / orderings, or after you've measurably lowered the floor and want exhaustive cross-product validation. Closing forms are PROPOSALS and must clear the cheat-vetting checklist + layer-2 cheat-reviewer.
