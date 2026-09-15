@@ -1,15 +1,25 @@
-/* memory/grind/func_80063BD0/candidate.c -- session s1 (2026-09-15), honest 0/144.
- * Body below is the func_80063BD0 definition now in src/text1b.c.  It also
- * depends on three file-scope declaration edits in src/text1b.c (see s1/final.diff):
- *   extern s32 D_800A344C;  ->  extern u32 D_800A344C[];   (both file-scope copies)
- *   D_800A344C = 0;         ->  D_800A344C[0] = 0;         (func_80060C60, measured 0/22)
- *   extern s32 D_800F0EC8; / D_800F0ECC; / D_800F0ED0;  ->  extern s32 D_800F0EC8[][10][3];
+/* memory/grind/func_80063BD0/candidate.c -- 2026-09-15 re-dispatch (driver session 1,
+ * recon) after the 2026-09-15 02:51 layer-1 FAIL.  Honest 0/144 + full-tree oracle
+ * SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa measured THIS session with
+ * memory/grind/func_80063BD0/candidate_merge.patch applied to a clean HEAD.  The
+ * patch touches exactly: include/game.h (Unk800F0EC8Record typedef + `extern
+ * Unk800F0EC8Record D_800F0EC8[][10];`), src/text1b.c (this body; TU-local
+ * `extern s32 D_800F0EC8[][10][3];` and the three scalar externs removed;
+ * `extern u32 D_800A344C[]` widening x2; func_80060C60 `D_800A344C[0] = 0;`),
+ * src/text1b_b.c (three unused scalar externs D_800F0EC8/ECC/ED0 removed),
+ * undefined_syms_auto.txt (D_800F0ECC / D_800F0ED0 rows suffixed `alias of
+ * D_800F0EC8+N; retire with func_80063E10`).  The last two files and the header
+ * are outside the default grind scope -> INTEGRATION HANDOFF via ruling-request.
  */
 extern s32 D_800A3478;
 extern SVECTOR D_800F1000[][10];
 /* func_80063BD0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 144
  * (sandbox --disable all, zero cheat-asm, zero rules) measured in grind
- * session s1 (2026-09-15, recon modality) with this exact body in place.
+ * session s1 (2026-09-15, recon modality) with this exact body in place, and
+ * re-measured 0/144 + full-tree oracle SHA1 in the 2026-09-15 re-dispatch with
+ * the record table declared header-canonically (include/game.h
+ * Unk800F0EC8Record D_800F0EC8[][10]; the TU-local flat `[][10][3]` spelling
+ * was layer-1 FAILed 2026-09-15 02:51 and is banned for this function).
  *
  * Slot allocator for lane `idx`: D_800A344C[idx] counts live entries, and
  * D_800A3454[idx] is the per-slot in-use bitmask.  While fewer than 10
@@ -46,9 +56,9 @@ u8 func_80063BD0(s32 idx) {
                 D_800A3454[idx] |= mask;
                 D_800F1000[idx][i].vy = ((u16 *)D_800A3478)[1];
                 D_800F1000[idx][i].vx = D_800F1000[idx][i].vz = 0;
-                D_800F0EC8[idx][i][0] = ((s32 *)D_800A347C)[0];
-                D_800F0EC8[idx][i][1] = ((s32 *)D_800A347C)[1];
-                D_800F0EC8[idx][i][2] = ((s32 *)D_800A347C)[2];
+                D_800F0EC8[idx][i].unk0 = ((s32 *)D_800A347C)[0];
+                D_800F0EC8[idx][i].unk4 = ((s32 *)D_800A347C)[1];
+                D_800F0EC8[idx][i].unk8 = ((s32 *)D_800A347C)[2];
                 break;
             }
         }
@@ -56,9 +66,9 @@ u8 func_80063BD0(s32 idx) {
         D_800A344C[idx] = (D_800A344C[idx] + 1) % 10 + 10;
         D_800F1000[idx][D_800A344C[idx] - 10].vy = ((u16 *)D_800A3478)[1];
         D_800F1000[idx][D_800A344C[idx] - 10].vx = D_800F1000[idx][D_800A344C[idx] - 10].vz = 0;
-        D_800F0EC8[idx][D_800A344C[idx] - 10][0] = ((s32 *)D_800A347C)[0];
-        D_800F0EC8[idx][D_800A344C[idx] - 10][1] = ((s32 *)D_800A347C)[1];
-        D_800F0EC8[idx][D_800A344C[idx] - 10][2] = ((s32 *)D_800A347C)[2];
+        D_800F0EC8[idx][D_800A344C[idx] - 10].unk0 = ((s32 *)D_800A347C)[0];
+        D_800F0EC8[idx][D_800A344C[idx] - 10].unk4 = ((s32 *)D_800A347C)[1];
+        D_800F0EC8[idx][D_800A344C[idx] - 10].unk8 = ((s32 *)D_800A347C)[2];
     }
     return 1;
 }

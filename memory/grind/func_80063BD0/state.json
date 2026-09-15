@@ -5,10 +5,11 @@
  "current_modality": null,
  "floor_history": [],
  "frontier": [],
- "judge_constraints": [],
- "banned_constructs": [
-  "src/text1b.c:2255 `extern s32 D_800F0EC8[][10][3];` replacing the three per-word externs D_800F0EC8 / D_800F0ECC / D_800F0ED0"
+ "judge_constraints": [
+  "The D_800F0EC8 merge may ONLY be spelled as the header-canonical Unk800F0EC8Record record table in include/game.h with the two alias-suffixed undefined_syms_auto.txt rows; the flat TU-local `extern s32 D_800F0EC8[][10][3];` spelling stays rejected.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-15): scope grant: func_80063BD0 include/game.h src/text1b_b.c undefined_syms_auto.txt; cleared 1 superseded ban(s). Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
+ "banned_constructs": [],
  "kills": [],
  "ladder_skip": 11,
  "pending_fixup": null,

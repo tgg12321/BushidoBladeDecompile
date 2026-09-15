@@ -18,3 +18,10 @@
 | H13 v13 | v12 respelled: `bits = D_800A3454[idx]; mask = 1 << i; if (!(bits & mask)) { D_800A3454[idx] |= mask; ... break; }` | 0 | CONFIRMED -- adopted |
 | H14 v14 | v13 with `D_800A3454[idx] = bits | mask;` | 0 | CONFIRMED (alternate) |
 All kills are instance kills on this chassis (GCC 2.7.2 -O2 -mel -msoft-float, no FAKE constructs anywhere).
+
+## 2026-09-15 re-dispatch (driver session 1, recon) -- floor 0 -> 0 (declaration spelling only)
+| id | form | distance | verdict |
+|---|---|---|---|
+| H15 | s1 candidate re-applied (flat `[][10][3]`, BANNED spelling) | 0/144 | CONFIRMED chassis unchanged (measurement only, not submitted) |
+| H16 | header-canonical `Unk800F0EC8Record D_800F0EC8[][10]` in include/game.h + members `.unk0/.unk4/.unk8`, scalar externs removed from text1b.c and text1b_b.c, alias-suffixed undefined_syms_auto.txt rows | 0/144, oracle ok=true | CONFIRMED -- adopted (candidate_merge.patch); needs scope grant -> ruling-request / integration handoff |
+Frontier: none on the C -- the body is solved; the only open item is the scope grant + Judge ruling on the aggregate-merge family (all five prongs documented in evidence.md).
