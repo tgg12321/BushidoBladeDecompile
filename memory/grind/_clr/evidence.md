@@ -27,3 +27,8 @@
 - [s1] canonical _clr: C (pure-C target). _cwc/_param are defined after _clr in display.c; the candidate adds prototypes above it. GpuRect typedef moved above _clr unchanged.
 
 - [s1] Scope: the header-canonical merge needs include/gpu.h and undefined_syms_auto.txt (12 alias-suffixed rows retained because asm/funcs/_clr.s references them); INTEGRATION HANDOFF entry filed in docs/grind/decisions.md requesting `_clr include/gpu.h undefined_syms_auto.txt` in scope_allow.txt.
+
+## s2 (2026-09-15, structural) -- re-verified, route corrected
+- [s2] candidate_merge.patch applied to clean HEAD 8423e1cbe: sandbox _clr --disable all = 0 / 151 / rules_dropped 0 (metrics/events.jsonl 2026-09-15T15:05:53Z); verify-oracle --rebuild --allow-dirty ok=true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa. Applied diff identical to the banked patch. Tree reverted to clean afterwards; clean reference rebuilt.
+- [s2] scope_allow.txt has no _clr grant; the grant is driver-written only on a Judge ESCALATE(integration-handoff) verdict, reachable via a ruling-request (func_80063BD0 route, decisions.md:27091 -> journal.md:2059). s1's driver died before ruling (8423e1cbe). s2 returns ruling-request citing the s1 handoff entry (decisions.md:27134).
+- Artifacts: tmp/grind/_clr/s2/{sandbox.txt,verify_oracle.txt,display_diff.patch,candidate_merge_s2.patch}.

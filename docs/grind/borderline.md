@@ -712,3 +712,8 @@ disposition taken: REFUSED under the current frozen policy; ROTATED to the back 
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-15 — func_80063BD0 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80063BD0 include/game.h src/text1b_b.c undefined_syms_auto.txt; cleared 1 superseded ban(s); function stays ACTIVE.
+
+## 2026-09-15 — _clr — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-15 — _clr — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: _clr include/gpu.h undefined_syms_auto.txt; function stays ACTIVE.

@@ -68,3 +68,6 @@ func_800335D8 include/code6cac.h undefined_syms_auto.txt named_syms.txt
 # func_80063BD0: pipeline scope grant 2026-09-15 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 func_80063BD0 include/game.h src/text1b_b.c undefined_syms_auto.txt
+# _clr: pipeline scope grant 2026-09-15 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+_clr include/gpu.h undefined_syms_auto.txt

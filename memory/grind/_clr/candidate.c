@@ -1,4 +1,4 @@
-/* _clr candidate (s1, 2026-09-15): sandbox 0/151 with this body in src/display.c PLUS
+/* _clr candidate (s1 2026-09-15; re-verified s2 2026-09-15 on HEAD 8423e1cbe: sandbox 0/151 + oracle SHA1 ok): sandbox 0/151 with this body in src/display.c PLUS
  * the GpuDrEnv typedef+extern in include/gpu.h and the 12 alias-row suffixes in
  * undefined_syms_auto.txt -- the exact tree is memory/grind/_clr/candidate_merge.patch
  * (apply to a clean HEAD with git apply). TU-local GpuDrEnv also scores 0 but fails

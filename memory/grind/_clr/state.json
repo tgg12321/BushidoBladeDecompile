@@ -18,7 +18,10 @@
    "next_probe": "git apply memory/grind/_clr/candidate_merge.patch; sandbox _clr --disable all -> expect 0/151; self_vet.md already drafted; return candidate-ready"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "The DR_ENV merge may ONLY be spelled as the header-canonical GpuDrEnv declaration in include/gpu.h with the twelve alias-suffixed undefined_syms_auto.txt rows retained; a TU-local aggregate or any incomplete merge stays rejected.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-15): scope grant: _clr include/gpu.h undefined_syms_auto.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+ ],
  "banned_constructs": [],
  "kills": [
   {
