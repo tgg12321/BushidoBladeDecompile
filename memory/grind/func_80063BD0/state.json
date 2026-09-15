@@ -1,0 +1,29 @@
+{
+ "func": "func_80063BD0",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [
+  "src/text1b.c:2255 `extern s32 D_800F0EC8[][10][3];` replacing the three per-word externs D_800F0EC8 / D_800F0ECC / D_800F0ED0"
+ ],
+ "kills": [],
+ "ladder_skip": 11,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-15T07:08:50.168075+00:00",
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Body is ordinary C and the D_800A344C widening is precedented, but the D_800F0EC8/ECC/ED0 per-word->aggregate merge is spelled TU-local and left incomplete (three live scalar handles in src/text1b_b.c), and the self-vet never discloses it as a family construct. Next action: Keep the function body as-is (the for-loop / bits / mask / break / single trailing `return 1` form is ordinary C, every local read and load-bearing, no FAKE, no asm, no pads, no dead stores, and the loop and wrap arms render asm/funcs/func_80063BD0.s faithfully; the D_800A344C u32-array widening"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "6439c917bdf8c9d5",
+   "when": "2026-09-15T07:51:44.241020+00:00",
+   "summary": "Body is ordinary C and the D_800A344C widening is precedented, but the D_800F0EC8/ECC/ED0 per-word->aggregate merge is spelled TU-local and left incomplete (three live scalar handles in src/text1b_b.c), and the self-vet never discloses it as a family construct."
+  }
+ ]
+}

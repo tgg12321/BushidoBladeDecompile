@@ -2055,3 +2055,4 @@
 - 2026-09-15 01:48 func_80069F80 COMPLETED-C after 2 sessions (closer: s2 [enumerate]).
 - 2026-09-15 01:58 func_8006A1A0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-15 02:08 func_8005C074 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-15 02:51 func_80063BD0: LAYER-1 FAILED a sandbox-0 candidate — Body is ordinary C and the D_800A344C widening is precedented, but the D_800F0EC8/ECC/ED0 per-word->aggregate merge is spelled TU-local and left incomplete (three live scalar handles in src/text1b_b.c), and the self-vet never discloses it as a family construct.
