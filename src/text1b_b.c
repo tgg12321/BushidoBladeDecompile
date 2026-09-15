@@ -234,8 +234,6 @@ extern u16 D_8009BCC6;
 extern s16 D_8009BCD0;
 extern s16 D_8009BCD2;
 extern u8 D_8009BCE4;
-extern u8 D_8009BCF8;
-extern u8 D_8009BCF9;
 extern u8 D_8009BD20;
 extern u8 D_8009BD21;
 extern s32 D_8009BD38;

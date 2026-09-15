@@ -22,6 +22,10 @@
  * Lever exhaustion (ordinary C, all 5 unless noted): u8 ret two-copy chain (s2); s32 arg0 + cast offsets (s1); slot pointer `s32 *dm` (s3);
  * packet-pointer round trip (s3, 21); branch-on-ret return (s3); permuter campaigns on s32-ret (34.7k), u8-ret (43.3k) and branch-on-ret
  * (31.6k) no-FAKE chassis find only do-while(0) forms (s2, s3). FAKE ablation this session (wrap removed, nothing else) = 5.
+ * s3 LANDING (2026-09-15, driver session 3): scope grant in force (tools/grinder/scope_allow.txt:79); record_table_decl.patch applied to HEAD b67c82f88, text1b.c:2227-2228
+ * scalar externs deleted, this body applied via s2/apply2.py; tmp full link (text1b.o + text1b_b.o rebuilt) SHA1 == oracle (s3/land/fullbuild.log); verify-oracle --rebuild
+ * --allow-dirty green; sandbox 0 at 161/161. NOTE: against the stale INCLUDE_ASM reference the sandbox prints a FALSE 2 (engine/score.py cannot resolve the
+ * deleted D_8009BCF9 row on the reference side; s3/land/rescore.py proves seeding it gives 0) - refresh build/ first. Edits left in place; candidate-ready.
  * See evidence.md / hypotheses.md.
  */
 typedef struct {

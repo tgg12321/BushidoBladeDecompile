@@ -76,6 +76,13 @@
    "hash": "ffd478b35c7a6afd",
    "when": "2026-09-15T18:47:10.444798+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-15 13:47 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "ffd478b35c7a6afd",
+   "when": "2026-09-15T19:26:50.114973+00:00",
+   "summary": "final call: Two constructs, both inside sanctioned families. (1) Unk8009BCF8Record[20] aggregate merge: my own 2026-09-15 13:47 PASS on this exact body (ffd478b35c7a6afd) binds and I found no defect it did not co"
   }
  ],
  "judge_clearances": [

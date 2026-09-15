@@ -162,3 +162,13 @@
 - probe: s2/decl.py + s2/apply2.py candidate.c; sandbox func_80076D74 --disable all; s2/handoff/fullbuild.py tmp-only full link
 - result: sandbox score 0, target_insns 161, build_insns 161, rules_dropped 0; SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (tmp/grind/func_80076D74/s2/handoff/fullbuild.log)
 - verdict: CONFIRMED
+
+## s3 (permuter modality, 2026-09-15, driver session 3) - measured
+
+## [s3-land] Applying record_table_decl.patch (game.h header-canonical Unk8009BCF8Record[20], text1b_b.c and text1b.c scalar externs deleted, undefined_syms_auto.txt D_8009BCF9 row deleted) plus the Judge-cleared candidate.c body verbatim lands COMPLETED-C on clean HEAD b67c82f88
+- Mechanism: declaration placement is byte-neutral for the same text1b.o; the removed D_8009BCF9 row has no remaining C or .s referrer except its own dlabel in asm/data/7D920.data.s, so the link resolves identically.
+- Probe: git apply + sed + s2/apply2.py; sandbox --disable all; s3/land/fullbuild.py tmp-only full link; verify-oracle --rebuild --allow-dirty; sandbox again; verify-oracle.
+- Result: CONFIRMED. tmp full link SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle; after the reference refresh sandbox = 0 at 161/161 rules_dropped 0; verify-oracle ok. The first sandbox (stale reference) printed a FALSE 2 traced to engine/score.py `_symtab()` not knowing the deleted D_8009BCF9 row (seeding it re-scores the same objects at 0; s3/land/rescore.py). Verdict: CONFIRMED (bytes proven on main with the final-form declarations; candidate-ready filed).
+
+## Live frontier (after s3-land)
+- None for the match itself: the body in src/text1b.c is the Judge-cleared hash ffd478b35c7a6afd, bytes proven, edits in place. If the driver's FINAL CALL rejects the do-while(0) wrap, the only remaining ordinary-C axis is the tail data-dependence hypothesis (H7-H16 banked at 5; do not reseed the same chassis).

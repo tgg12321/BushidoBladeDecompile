@@ -76,6 +76,23 @@ typedef struct {
 
 extern Unk800F0EC8Record D_800F0EC8[][10];
 
+/* 0x8009BCF8: 40-byte table of 20 two-byte records (0x8009BCF8..0x8009BD1F;
+ * D_8009BD20 follows). Object model evidence, independent of and predating any
+ * byte-chasing session, from the original binary: func_800759D0 takes the table
+ * base into a register (`lui $s6,%hi(D_8009BCF8); addiu $s6,$s6,%lo(D_8009BCF8)`)
+ * and reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 (2-byte-stride) index;
+ * func_80075F80 reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 index;
+ * func_80076D74 reads byte 1 of the record (`lbu %lo(D_8009BCF9)($at)`) through a
+ * shift-1 index. Data: the unk1 column is 0x00..0x09 then 0x0C..0x15 (20 entries).
+ * Replaces the splat per-word scalars D_8009BCF8 / D_8009BCF9 (per-word splat
+ * symbol -> aggregate merge family, owner ruling 2026-08-17). */
+typedef struct {
+    u8 unk0;
+    u8 unk1;
+} Unk8009BCF8Record;
+
+extern Unk8009BCF8Record D_8009BCF8[20];
+
 /* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
  * (independent of and predating any byte-chasing): the original binary
  * addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
