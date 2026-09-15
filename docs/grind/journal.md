@@ -2044,3 +2044,4 @@
 - 2026-09-14 22:46 func_80074B18 AUTO-RETURNED to active — auto-return: toolchain change re-measure floor 1 -> 0 (fingerprint 2046c403e76d0fe5 -> a04b7a59487234ab)
 - 2026-09-14 22:58 func_80018094: MERGE REFUSED after judge PASS — 3 unallowlisted inline-asm island(s), no grant door; constraint banked.
 - 2026-09-14 23:17 func_80018094: MERGE REFUSED after judge PASS — 3 unallowlisted inline-asm island(s), no grant door; constraint banked.
+- 2026-09-14 23:30 func_80018094: MERGE REFUSED after judge PASS — 3 unallowlisted inline-asm island(s), no grant door; constraint banked.
