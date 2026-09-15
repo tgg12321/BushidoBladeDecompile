@@ -1,0 +1,51 @@
+{
+ "func": "func_80076D74",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 5,
+   "modality": "recon",
+   "headline": "func_80076D74 decompiled from scratch: 161-insn target, honest floor 5 (epilogue only) via u8 pair-table decl, record struct with bitfields, and (j<<1) index form; residual = return-copy scheduled int"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The target's return copy carries a dependence on the arg0[6] store (or sits after a BB boundary) that ordinary C can spell \u2014 e.g. a two-copy return chain or a control-flow join before return ret",
+   "mechanism": "sched.c ready-list: with only the anti-dep on the call, the copy is ready in the load-delay cycle and is always hoisted; an extra true dependence on the sw or a label boundary pins it",
+   "next_probe": "run tools/sched_solver on the tail BB (insns 391..402 in tmp/grind/func_80076D74/dumps/text1b.sched) to obtain the minimal dependence set giving the target order, then spell it; measure candidate spellings of the return/flag with sandbox"
+  },
+  {
+   "hypothesis": "A different but natural block structure (setup branch rejoining after the increment, or cross-jumped tails) places a label before the return copy",
+   "mechanism": "jump.c cross-jumping / BB boundary keeps the copy out of sched1's tail block",
+   "next_probe": "measure 2-3 structures; watch that the draw code stays single-copy and s3 stays a variable"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Table byte spelled as (&D_8009BCF9)[idx*2], as extern u8 D_8009BCF9[] indexed [idx*2], or as *(u8*)((u8*)&D_8009BCF9 + idx*2) reproduces the target's in-loop lui $at/addu $at/lbu %lo form",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main chassis (-mel -msoft-float), raw-mask word ops, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "53 / 53 / 53 \u2014 lui/addiu $t3 hoisted before the loop, addu $v0,$v0,$t3; lbu $v0,0($v0) inside; rtl dump insn 228 (set (r"
+  },
+  {
+   "session": 1,
+   "statement": "Spelling the packet-list argument as s32 arg0 with *(s32*)(arg0+0x18) cast offsets (clearing MEM_IN_STRUCT on the tail lw/sw) moves the return copy after the store",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main chassis, body_v4E form otherwise, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "5, byte-identical residual to body_v4E \u2014 the tail diff does not depend on the in-struct flag"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-15T16:56:05.338464+00:00",
+ "object_model_audited": 1
+}
