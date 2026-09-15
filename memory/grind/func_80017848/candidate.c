@@ -1,3 +1,25 @@
+/* [s58 ENUMERATE - body below UNCHANGED (BASE, 3 at 127/127, re-measured on the
+ * HEAD chassis this session; tools/fake_ablate.py: no FAKE construct).  The
+ * systematic spelling sweep (owner ruling 2026-09-08, tools/spelling_enum.py +
+ * tools/sweep_variants.py) ran over SEVEN regions/chassis, 1,420 spellings in
+ * total (1,298 after discarding the tool's `u8 * x` swap-bug outputs):
+ *   loop-2 joint region (guard + preheader + body), guard via p ... 403: 8 at 3, none below
+ *   same region, guard via a fresh ctx+0xC local ................ 302: flat 31-32
+ *   K2 chassis loop-2 region (sh2/t2a/t2, q2 kept) ...............  12: flat 4
+ *   commutative swaps on the 28 best loop-2 forms ................  56 valid: 16 at 3
+ *   loop-1 region, decls above the guard .......................... 403: best 15
+ *   loop-1 in-preheader region (q1/lnk1/b1 + tail copy, swaps) ...  60 valid: 6 at 3
+ *   loop-2 in-preheader region (q2/lnk2/b2, swaps) ...............  60 valid: 24 at 3
+ * ZERO hits below 3.  Every form at 3 is byte-identical to this body (naming
+ * a guard sub-expression sh2n/ga/gc is inert).  The gradient inside the region
+ * is monotone: naming lnk2 above the guard = 5; naming q2 above the guard
+ * (the target's own lw-a0-in-guard-block shape) = 6 at 126; naming the base
+ * add as well = 33.  CLASS KILL for the naming/declaration-order/commutative-
+ * swap spelling space of both loop regions on this chassis: the residual is
+ * not a spelling of these regions, it lives in variable identity / scope /
+ * the object model (s57's RANGE frontier stands).  Histograms:
+ * tmp/grind/func_80017848/s58/sweep_*.json; evidence.md E-s58-1..5.
+ */
 /* [s57 STRUCTURAL - READ THIS FIRST.  Body below UNCHANGED (BASE, 3 at 127/127;
  * K2 re-measured 4 at 127/127 on the HEAD chassis this session).  s57 read
  * global.c end to end for the copy destination's seat and CLOSED every

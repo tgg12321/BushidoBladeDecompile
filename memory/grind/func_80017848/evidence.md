@@ -6416,3 +6416,33 @@ a fresh read / slots) = 11 / 11 / 12.
 - [s57] E-s57-6: reload's find_equiv_reg copy route (reload1.c:5843-5853) with the first spill reg a3 (reload1.c:3766-3772, unused call-used regs first; a3 is the only unused a-reg here) would print exactly `addu a3,a0,zero` / `addu a0,a1,a3`, but needs reg_renumber[p] < 0, and global.c allocates every GR_REGS allocno it creates (global.c:414-431 allocno creation, :586-598 find_reg fails only on class exhaustion; reg_n_refs is zeroed only when the pseudo leaves every insn, combine.c:2313/2336, local-alloc.c:1104).
 
 - [s57] jump1 deletes `p = p` self-assignments before flow (jump.c:437-456), so a self-copy cannot extend the copy dest's flow-time live range.
+
+## s58 (2026-09-15, enumerate) - systematic spelling sweep, 1,420 spellings, zero below 3
+
+### E-s58-1  Chassis re-audit
+BASE 3 at 127/127, K2 4 at 127/127 on HEAD (src/ings.c:820 anchor); fake_ablate: no FAKE construct in either. A bare block + fresh block-scoped local for the loop-2 guard address is byte-neutral (3); reusing outer `t` for it is 17.
+
+### E-s58-2  Loop-2 joint region, guard via p (tmp/grind/func_80017848/s58/sweep_base_p.json, sweep_swaps.json)
+ENUMERATION: 403 spellings (+56 valid swap variants), best 3, 8 (+16) at the floor, 0 below. Histogram: 8@3/127, 20@5/127, 96@6/126, 50@33/126, 145@34/126, 84@35/127. Determinant is WHICH loads sit above the guard: none -> 3; lnk2 -> 5; q2 -> 6 at 126; base add -> 33-35. Naming sh2n / ga / gc and any def-before-use order of them is byte-inert.
+
+### E-s58-3  Loop-2 region, guard via a fresh ctx+0xC local (sweep_base_q.json)
+ENUMERATION: 302 spellings, best 31 at 124, 0 at the floor. The loop-1 tail copy device dies when loop 2's guard does not read p.
+
+### E-s58-4  K2 chassis loop-2 region (sweep_k2.json)
+ENUMERATION: 12 spellings, all 4 at 127/127. The v0 seat of both preheader copies is invariant under naming/order of the guard sub-expressions.
+
+### E-s58-5  Loop-1 regions (sweep_loop1b.json, sweep_loop1c.json) and loop-2 in-preheader region (sweep_loop2c.json)
+loop1b (decls above the guard): 403 spellings, best 15, 0 at the floor - the placement cannot express the base's in-preheader q + tail copy. loop1c (in-preheader, with swaps): 60 valid, 6 at 3, 0 below. loop2c (in-preheader, with swaps): 60 valid, 24 at 3, 0 below.
+
+### E-s58-6  Tool quirks (do not edit tools/; record only)
+tools/spelling_enum.py's swap axis matches `u8 * lnk2 = ...` as a commutative product and emits `lnk2 * u8 = ...` (invalid C); those variants score 46/107 or 86/109 and are discarded (40 in swaps, 42 each in loop1c/loop2c). The decl regex needs a space between `*` and the name (`u8 * q2`), and `TYPE name = expr;` declarations must sit at a block start for GCC 2.7.2 (a mid-block decl compiled to 89 at 117 - garbage). sweep_variants.py scores ~0.85 s per variant on this machine.
+
+- [s58] ENUMERATION SUMMARY: 7 sweeps, 1,420 spellings (1,298 valid), 2 chassis (BASE, K2), 3 region placements, best 3, 0 below. CLASS KILL for the naming / declaration-order / commutative-swap spelling space of both loop regions on the BASE chassis. The residual lives outside that space: variable identity, scope/object model - s57's RANGE frontier is unchanged.
+
+- [s58] ENUMERATION: 1420 spellings (1298 valid), 7 sweeps, best 3, 0 below; 8 at the floor in the loop-2 joint region, 16 in its swap set, 6 in loop-1 in-preheader, 24 in loop-2 in-preheader; every floor form is byte-identical to candidate.c
+
+- [s58] Gradient inside the loop-2 region is monotone toward the base: hoisting the lnk load above the guard costs +2, hoisting the ctx+0xC load (the target's own lw a0,0xC(s2)-in-guard shape) costs +3 at 126, hoisting the base add costs +30
+
+- [s58] Variable reuse is not an enumerator axis and is the one spelling change that moves the score without changing statements (outer t reused for the guard address: 3 -> 17); the residual is variable identity / scope / object model, i.e. s57's RANGE frontier, not a spelling of these regions
+
+- [s58] Tool quirks: spelling_enum.py's swap axis rewrites `u8 * name = ...` into `name * u8 = ...` (invalid; 124 such variants discarded at 46/107 and 86/109); its decl regex needs `u8 * name` spacing; decls must open a block for GCC 2.7.2 (mid-block decl -> 89 at 117); sweep_variants scores ~0.85 s/variant

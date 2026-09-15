@@ -5241,3 +5241,91 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - probe: s57/body_K2.c applied and scored; s57/diff_K2.txt.
 - result: 4 at 127/127, same four seat-only lines. Ledger floor 3 stands.
 - verdict: CONFIRMED
+
+## s58 (2026-09-15, enumerate - systematic spelling sweep per owner ruling 2026-09-08)
+
+## [s58] Chassis re-audit: BASE (candidate.c) re-measures 3 at 127/127 on the HEAD chassis; K2 alt re-measures 4 at 127/127; tools/fake_ablate.py reports no FAKE construct in either. A block-scoped fresh local for the loop-2 guard address (`{ s32 tt = (slot_a << 6) + (s32)p; ... }`) is byte-neutral (3 at 127), which licenses placing the enumerator's declaration region at a bare-block start; reusing the outer `t` for that address instead costs 17 at 127 (variable reuse is not a free axis).
+- mechanism: instance kills are chassis-relative; the enumerator emits `TYPE name = expr;` declarations at the region top, so the region must open a block.
+- probe: tmp/grind/func_80017848/s58/base.c, block_tt_test.c, outer_t_test.c, k2.c via tools/sweep_variants.py; fake_ablate on k2.c.
+- result: 3 / 3 / 17 / 4 respectively, all at 127. Ledger floor 3 stands; owner directive (func_8005BA8C auto-return) was executed and measured in s56 (K4, 8) and needs no further action.
+- verdict: CONFIRMED
+
+## [s58] The loop-2 joint region (guard + preheader + body, guard read through the loop-1-carried `p`) contains a naming / declaration-order / commutative-swap spelling that scores below 3.
+- mechanism: owner ruling 2026-09-08 enumerate modality: every sub-expression that could be a local is a local (sh2n, q2, ga, gc, lnk2, b2), tools/spelling_enum.py emits every inline-subset x def-before-use order (x swap subset), tools/sweep_variants.py scores each with the engine.
+- probe: tmp/grind/func_80017848/s58/enum_base_p.c -> enum_base_p/ (403 no-swap variants) -> sweep_base_p.json; then swaps on the 28 forms at <= 5 -> enum_swaps/ (96, 56 valid) -> sweep_swaps.json.
+- result: histogram (score, insns): 8 at (3,127), 20 at (5,127), 96 at (6,126), 50 at (33,126), 145 at (34,126), 84 at (35,127). Swaps: 16 at 3, 40 at 5, 40 invalid (tool swapped `u8 * lnk2` as a product). ZERO below 3. Cross-tab by which locals stay named: every form with q2, b2 and lnk2 all inlined is 3 (naming sh2n/ga/gc is inert); lnk2 named above the guard = 5; q2 named above the guard (the target's own lw-a0-in-guard-block shape) = 6 at 126; b2 named (base add hoisted above the guard) = 33-35. Banked rejected/s58_enum_l2_lnk2_named_before_guard_costs_5.c, s58_enum_l2_q2_named_above_guard_costs_6_or_33.c.
+- verdict: KILLED (class: the region's naming/order/swap spelling space is exhausted by construction of the enumerator; predicate tools/spelling_enum.py:26)
+
+## [s58] The same loop-2 region with the guard read through a fresh ctx+0xC local (q2) instead of `p` contains a spelling at or below 3.
+- mechanism: same enumerator; this is the s9 "q direct into l2 guard" chassis re-swept exhaustively.
+- probe: enum_base_q.c -> 302 variants -> sweep_base_q.json.
+- result: 60 at (31,124), 242 at (32,123). Flat; the loop-1 tail copy `p = q` becomes dead and both preheader devices collapse. Banked rejected/s58_enum_l2_guard_through_fresh_load_flat_31.c.
+- verdict: KILLED (instance: this chassis, no FAKE construct, 302 spellings measured)
+
+## [s58] On the K2 chassis (both preheader copies present, seats v0 for a3) a naming/order/swap spelling of the loop-2 region (sh2, t2a, t2; q2 kept named because it is re-assigned) moves the copy-dest seat.
+- mechanism: local-alloc / global.c seat choice is insensitive to the naming of the guard's sub-expressions if their pseudos' live ranges do not change; the sweep tests that empirically.
+- probe: enum_k2.c -> 12 variants -> sweep_k2.json.
+- result: all 12 at 4 (127/127). Banked rejected/s58_enum_k2_l2_region_flat_4.c.
+- verdict: KILLED (instance: K2 chassis, no FAKE construct, 12 spellings measured)
+
+## [s58] A loop-1 region spelling (guard through p; q1, lnk1, b1, ga1, gc1, sh1 declared ABOVE the guard, tail `(p) = q1`) reaches 3 or below, i.e. a loop-1 respelling that changes loop 2's residual.
+- mechanism: the residual is the loop-1 tail device's join copy (s54); a loop-1 spelling that keeps the copy but seats it differently could move loop 2.
+- probe: enum_loop1b.c -> 403 variants -> sweep_loop1b.json.
+- result: best 15 at 125/126, 34 forms; 16-37 otherwise. NOT a faithful enumeration of the base's loop 1: with all decls above the guard, q1 named hoists the ctx+0xC load above the guard and q1 inlined turns the tail into a reload (`(p) = (*(u8 **)(ctx + 0xC))`, 15 at 126 - the s9 no-tail-reload result). The base's in-preheader `q` + tail copy is expressible only with the region INSIDE the if-body, done next. Banked rejected/s58_enum_l1_decls_above_guard_flat_15.c.
+- verdict: KILLED (instance: this region placement on the BASE chassis, no FAKE construct, 403 spellings measured)
+
+## [s58] An in-preheader region spelling of loop 1 (q1 / lnk1 / b1 declared at the top of the if-body, tail `(p) = q1`, with swaps) or of loop 2 (q2 / lnk2 / b2 at the top of its if-body, with swaps) scores below 3.
+- mechanism: same enumerator with the region opening the existing if-body block, which reproduces the base's own declaration placement exactly (v000 of each set IS the base modulo names).
+- probe: enum_loop1c.c / enum_loop2c.c -> 102 variants each (60 valid each; 42 each are the `u8 * x` swap-bug outputs at 46/107 and 86/109) -> sweep_loop1c.json, sweep_loop2c.json.
+- result: loop1c: 6 at (3,127), 6 at (4,126), 4 at 5, 4 at 6, 4 at 7, 8 at 14, 6 at 16, 8 at 17, 14 at 20. loop2c: 24 at (3,127), 8 at (7,126), 28 at (17,125). ZERO below 3 in either.
+- verdict: KILLED (class: in-preheader naming/order/swap spelling space of both loops exhausted by construction; predicate tools/spelling_enum.py:26)
+
+## [s58] Frontier restated after the enumeration: seven sweeps, 1,420 spellings (1,298 valid), best 3, never below, on two chassis (BASE and K2) and three region placements. The naming / declaration-order / commutative-swap spelling space of the loop-1 and loop-2 regions is CLOSED; the gradient inside it is monotone toward the base (every deviation from "q2, b2, lnk2 inlined" costs 2-30). What the enumerator cannot express - and where the residual therefore lives - is exactly s57's RANGE frontier: variable IDENTITY (which C variable carries the pointer across the copy; the enumerator only names fresh locals, never reuses one, and `t` reuse alone moves the score 3 -> 17), declaration SCOPE (block vs function scope changes nothing here, measured byte-neutral), and the object model (a struct-typed ctx / slot record, never tried because the splat names are per-word). Two tool findings for the next session: (1) tools/spelling_enum.py's swap axis treats `u8 * name = ...` as a product and emits invalid `name * u8 = ...` files - discard the 46/107 and 86/109 buckets; (2) the enumerator cannot place a named local inside a nested block, so a region must open at a block start (a bare block is byte-neutral on this chassis).
+
+## [s58] Chassis re-audit: BASE re-measures 3 at 127/127 and the K2 alt 4 at 127/127 on HEAD; fake_ablate finds no FAKE construct; a bare block with a fresh block-scoped guard-address local is byte-neutral (3) while reusing outer t for it costs 17.
+- mechanism: instance kills are chassis-relative; the enumerator needs a block-start region
+- probe: tmp/grind/func_80017848/s58/base.c, block_tt_test.c, outer_t_test.c, k2.c via sweep_variants; fake_ablate on k2.c
+- result: 3 / 3 / 17 / 4 at 127. Owner directive (func_8005BA8C auto-return) already executed and measured in s56 (K4, 8).
+- verdict: CONFIRMED
+
+## [s58] The loop-2 joint region (guard + preheader + body, guard via the loop-1-carried p) has a naming / declaration-order / commutative-swap spelling that scores below 3.
+- mechanism: spelling_enum.py enumerates every inline subset x def-before-use order x swap subset of the fully-named region; sweep_variants scores each with the engine
+- probe: enum_base_p (403) + enum_swaps (96, 56 valid) -> sweep_base_p.json, sweep_swaps.json
+- result: 8+16 at 3/127, 20+40 at 5, 96 at 6/126, 50 at 33, 145 at 34, 84 at 35; zero below 3. Determinant: which loads sit above the guard (none 3, lnk2 5, q2 6, base add 33+); naming sh2n/ga/gc inert.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt)
+- predicate_cite: tools/spelling_enum.py:26
+
+## [s58] The loop-2 region with the guard read through a fresh ctx+0xC local instead of p has a spelling at or below 3 (302 spellings measured).
+- mechanism: s9 q-direct-into-guard chassis re-swept exhaustively
+- probe: enum_base_q -> sweep_base_q.json
+- result: 60 at 31/124, 242 at 32/123; the loop-1 tail copy device dies.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt); guard-via-fresh-load chassis
+
+## [s58] On the K2 chassis a naming/order spelling of the loop-2 region (sh2, t2a, t2 with q2 kept) moves the copy-dest seat (12 spellings measured).
+- mechanism: seat choice insensitive to naming when live ranges do not change
+- probe: enum_k2 -> sweep_k2.json
+- result: all 12 at 4/127.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2 chassis (candidate_alt_s56_k2...), HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt)
+
+## [s58] A loop-1 region spelling with q1/lnk1/b1/ga1/gc1/sh1 declared above the guard and tail (p) = q1 reaches 3 or below (403 spellings measured).
+- mechanism: loop-1 tail join copy is the residual device (s54); a loop-1 respelling could re-seat it
+- probe: enum_loop1b -> sweep_loop1b.json
+- result: best 15 at 125/126 (34 forms), 16-37 otherwise; this placement cannot express the base's in-preheader q + tail copy (q1 inlined = tail reload = the s9 result).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt); decls-above-guard region placement
+
+## [s58] An in-preheader region spelling of loop 1 (q1/lnk1/b1 + tail copy, swaps) or loop 2 (q2/lnk2/b2, swaps) scores below 3.
+- mechanism: region opens the existing if-body block, reproducing the base's own declaration placement
+- probe: enum_loop1c, enum_loop2c (102 each, 60 valid each) -> sweep_loop1c.json, sweep_loop2c.json
+- result: loop1c 6 at 3/127 then 4..20; loop2c 24 at 3/127, 8 at 7, 28 at 17; zero below 3.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt)
+- predicate_cite: tools/spelling_enum.py:26

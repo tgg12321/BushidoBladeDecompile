@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 57,
- "current_modality": "structural",
+ "session_count": 58,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -345,23 +345,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "Structural s57: the a3 seat of the preheader copy is closed under every global.c/local-alloc route for a [copy, add]-ranged copy dest (source-read, cited); the v0 preference is traced to expand_prefer"
+  },
+  {
+   "session": 58,
+   "floor": 3,
+   "modality": "enumerate",
+   "headline": "Enumerate s58: systematic spelling sweep of 1,420 spellings (7 sweeps, BASE + K2 chassis, loop-1 and loop-2 regions at three placements, naming/order/commutative-swap axes) - best 3, ZERO below the fl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is not decidable by global.c on any chassis where the copy dest is an ordinary expanded copy with range [copy, add]; the original must differ in the copy dest's RANGE (a byte-free second segment overlapping a v0 local and an a0 holder, deleted only after global as a no-op move whose consumer is the base add itself, or a segment ending AT the copy) or in the PASS that emits the copy (reload).",
-   "mechanism": "E-s57-6: scan needs a0 excluded (impossible), preferences need an a3 event (impossible), reload needs an unallocated pseudo (global.c never leaves one).",
-   "next_probe": "On body_K2.c spell the copy dest as a variable whose PREVIOUS value is live into the preheader and dies at the copy insn itself (so its earlier segment overlaps the guard's v0 temporaries and q in a0 while the copy still writes it): e.g. `p` also carries the guard's count/address temp or the loop-1 base into loop 2's preheader, and check with BB2_FINDREG_DEBUG=<pseudo> (instrumented tools/gcc-2.7.2/cc1) that a0 and v0 enter hard_conf; then price the bytes of the extra segment's real uses."
+   "hypothesis": "Variable-identity sweep: the enumerator never REUSES a local, and t-reuse alone moves the score 3 -> 17, so the unexplored axis is which existing variable (p, q, base, t, sh, lnk, i, slots) carries each named sub-expression of the loop-2 region; a small scripted sweep (tmp/, not tools/) substituting each region local by each same-typed existing variable is ~8^3 forms on the BASE chassis.",
+   "mechanism": "reuse changes pseudo live ranges (s57: the copy dest's RANGE is the residual), which naming/order cannot",
+   "next_probe": "generate from tmp/grind/func_80017848/s58/enum_base_p/v356.c by mapping {sh2n,ga,gc} onto {sh,t,q,base,slots,p} pairwise, score with sweep_variants, bank the histogram"
   },
   {
-   "hypothesis": "A spelling that leaves the base add's pointer operand as a MEM-equivalent UNALLOCATED pseudo at reload time makes reload emit the target's exact `addu a3,a0,zero` (find_equiv_reg from a0 into the first spill reg a3) and delete the pseudo's own load (equiv-init deletion).",
-   "mechanism": "reload1.c:5843-5853 + :3766-3772 + :1955-1966; blocked today because global.c allocates every GR_REGS allocno (global.c:414-431, :586-598) and update_equiv_regs cannot substitute a MEM into addsi3 (local-alloc.c:1090-1111, arith_operand).",
-   "next_probe": "Run BB2_ALLOC_DEBUG=1 with the instrumented cc1 on body_K2.c and list every pseudo left with hardreg=-1 (the ST_REGS pseudos 99/111 are the known phantom-slot ones); then test whether a pointer pseudo with reg_preferred_class narrower than GR_REGS (regclass.c:935-960) or with reg_alternate_class NO_REGS can be produced by ordinary C (e.g. an address used only in a load/store whose constraints regclass scores) so that find_reg's class scan fails for it."
+   "hypothesis": "Object-model spelling: a struct-typed ctx (slots pointer at +0xC, links at +0x10, counter at +0x6) and a 64-byte slot record make the guard/preheader loads member reads whose REG_EQUIV/alias behaviour differs from u8* casts at reload time (s57 frontier item 2: an unallocated MEM-equivalent pseudo feeding the base add).",
+   "mechanism": "update_equiv_regs (local-alloc.c:1090-1111) keys on MEM equivalence; struct member MEMs carry different MEM_IN_STRUCT_P / alias sets than cast-arithmetic MEMs",
+   "next_probe": "spell the K2 body with typedef'd Ctx/Slot structs (header-canonical, complete), measure, and read .lreg for REG_EQUIV notes on the copy source"
   },
   {
-   "hypothesis": "The two remaining seat diffs are reachable from the K2 side by tools/ra_solver/perturb.py (s56 frontier item 3, still unmeasured).",
-   "mechanism": "perturb.py searches minimal input perturbations (refs, live length, conflicts, prefs) that move one allocno to a goal register; E-s57-6 predicts every vector will require an a0 conflict or a live length >= 33.",
-   "next_probe": "bash tools/wsl.sh 'python3 tools/ra_solver/perturb.py tmp/grind/func_80017848/s56/ra_K2.json --goal {\"78\": 7}' (check the argument names first) and confirm the returned vectors are exactly the E-s57-6 preconditions; any vector that is NOT (a0 conflict or length >= 33 or a3 preference) is a gap in this session's reading and must be read from global.c before spelling."
+   "hypothesis": "The s57 next-probe on the copy dest's second live segment (p also carrying a value live into loop 2's preheader that dies at the copy) is still unmeasured.",
+   "mechanism": "E-s57-6: a0 and v0 must enter hard_conf for the copy dest",
+   "next_probe": "BB2_FINDREG_DEBUG=<pseudo> on body_K2.c with p carrying the guard count temp; check a0/v0 in hard_conf"
   }
  ],
  "judge_constraints": [],
@@ -375,46 +381,6 @@
  "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
  "last_unpark_at": "2026-09-15T20:48:37.414727+00:00",
  "kills": [
-  {
-   "session": 39,
-   "statement": "Writing the round-trip p = q between the cse-produced copy and the base add (add reads p) in both loops of the join chassis keeps each preheader copy in target's position.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_J1.c and body_P4.c; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "J1 = 4 at 127/125, byte-identical to P4 = 4; cse2 removes the round-trip before flow (m8e: insn 74 absent at .cse2). Ban"
-  },
-  {
-   "session": 40,
-   "statement": "A pseudo passed to the function's only call as a 3rd/4th argument gives loop 2's cse-produced preheader copy a byte-free second reader (arg move tied to a2/a3 by hard-reg copy preference), so the copy",
-   "kill_scope": "instance",
-   "measured_on": "standalone scratch TU m9a under the exact project CC_FLAGS (canonical build/cc1), plus BASE re-audited at 3 (127/127) on the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs",
-   "predicate_cite": "",
-   "result": "Pass-level shape reproduced (move $9,$5 / lw $8,16($18) / addu $3,$2,$9 = target's copy, links load, add-reads-copy) but"
-  },
-  {
-   "session": 40,
-   "statement": "Frontier item 1: a real statement in each loop's return arm that reads the copy destination is merged by jump2's cross-jump into the shared return-0 tail and thereby disappears without bytes, giving t",
-   "kill_scope": "class",
-   "measured_on": "scratch TU m9c under project flags plus HEAD src/ings.c:820 anchor with body_M9C.c; BASE 3 at 127/127; no FAKE constructs",
-   "predicate_cite": "jump.c:2525",
-   "result": "m9c .s cross-jumps both arms into one tail .L19: j .L17 / move $2,$5 - the read survives in the merged tail. Chassis: 15"
-  },
-  {
-   "session": 41,
-   "statement": "A same-value re-store p = q placed in the preheader directly after the base add (loop 1 only in M1, both loops in M2) is a flow-time reader of q that keeps the cse-produced copy alive past the add and",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_M1.c / body_M2.c; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "M1 = 12 at 127/125, M2 = 14 at 127/125. cse deletes the re-store before flow (q is known equal to p in that extended blo"
-  },
-  {
-   "session": 41,
-   "statement": "Both scan loops written as for (i = 0;; i++) { if (i >= count) break; ... } (exit test at the loop top, no rotation, no duplicated exit test) reproduce target's guard-add / base-add pair and the per-i",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_F1.c; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "22 at 127/119. The loop is not rotated, the bound test sits at the top and only one address add survives. Banked as reje"
-  },
   {
    "session": 41,
    "statement": "Both scan loops written as i = 0; goto testK; do { body; i++; testK:; } while (i < count); (a jump into the loop that makes loop.c mark the loop invalid, so no LICM and no VTOP) keep the bound in the ",
@@ -854,10 +820,50 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s57/body_B.c applied; no FAKE construct",
    "predicate_cite": "",
    "result": "4 at 125/127: both copies vanish (`addu a0,a1,a0`); cse's path following into the single-predecessor preheader canonical"
+  },
+  {
+   "session": 58,
+   "statement": "The loop-2 joint region (guard + preheader + body, guard via the loop-1-carried p) has a naming / declaration-order / commutative-swap spelling that scores below 3.",
+   "kill_scope": "class",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt)",
+   "predicate_cite": "tools/spelling_enum.py:26",
+   "result": "8+16 at 3/127, 20+40 at 5, 96 at 6/126, 50 at 33, 145 at 34, 84 at 35; zero below 3. Determinant: which loads sit above "
+  },
+  {
+   "session": 58,
+   "statement": "The loop-2 region with the guard read through a fresh ctx+0xC local instead of p has a spelling at or below 3 (302 spellings measured).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt); guard-via-fresh-load chassis",
+   "predicate_cite": "",
+   "result": "60 at 31/124, 242 at 32/123; the loop-1 tail copy device dies."
+  },
+  {
+   "session": 58,
+   "statement": "On the K2 chassis a naming/order spelling of the loop-2 region (sh2, t2a, t2 with q2 kept) moves the copy-dest seat (12 spellings measured).",
+   "kill_scope": "instance",
+   "measured_on": "K2 chassis (candidate_alt_s56_k2...), HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt)",
+   "predicate_cite": "",
+   "result": "all 12 at 4/127."
+  },
+  {
+   "session": 58,
+   "statement": "A loop-1 region spelling with q1/lnk1/b1/ga1/gc1/sh1 declared above the guard and tail (p) = q1 reaches 3 or below (403 spellings measured).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt); decls-above-guard region placement",
+   "predicate_cite": "",
+   "result": "best 15 at 125/126 (34 forms), 16-37 otherwise; this placement cannot express the base's in-preheader q + tail copy (q1 "
+  },
+  {
+   "session": 58,
+   "statement": "An in-preheader region spelling of loop 1 (q1/lnk1/b1 + tail copy, swaps) or loop 2 (q2/lnk2/b2, swaps) scores below 3.",
+   "kill_scope": "class",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE construct in any body (fake_ablate confirmed on candidate.c and the K2 alt)",
+   "predicate_cite": "tools/spelling_enum.py:26",
+   "result": "loop1c 6 at 3/127 then 4..20; loop2c 24 at 3/127, 8 at 7, 28 at 17; zero below 3."
   }
  ],
  "escalation_deferrals": 0,
- "object_model_audited": 52,
+ "object_model_audited": 58,
  "sibling_progress": [
   {
    "from": "func_8005BA8C",
