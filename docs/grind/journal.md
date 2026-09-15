@@ -2069,3 +2069,4 @@
 - 2026-09-15 12:46 func_80076D74: LAYER-1 FAILED a sandbox-0 candidate — The do-while(0) wrap passes (sanctioned family, single level, FAKE-annotated, mechanism named, citations verified), but the re-declaration of the splat scalar D_8009BCF8 as an unbounded u8[][2] pair table fails prongs (a), (b), (c) and (d) of the per-word-splat-to-aggregate family, and the diff ships the S_80076D74 typedef five times.
 - 2026-09-15 14:18 func_80076D74 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80076D74 include/game.h src/text1b_b.c undefined_syms_auto.txt), function stays active.
 - 2026-09-15 14:19 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 14:20
+- 2026-09-15 14:26 func_80076D74 COMPLETED-C after 3 sessions (closer: s3 [permuter]).
