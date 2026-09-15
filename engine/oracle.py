@@ -112,7 +112,10 @@ def dirty_build_inputs() -> list[str]:
     state IS the intended new reference).
     """
     out = _git(["status", "--porcelain", "--untracked-files=no"])
-    watch_prefixes = ("src/", "include/")
+    # tools/maspsx/ added 2026-09-14: the assembler is a build input like any
+    # other, and the label-nop retirement moved behavior OUT of a watched gate
+    # list and INTO maspsx source, so a dirty maspsx must refuse --rebuild too.
+    watch_prefixes = ("src/", "include/", "tools/maspsx/")
     watch_files = set(CONFIG_FILES) | {"Makefile",
                                        "maspsx_prefill_label_funcs.txt"}
     dirty = []

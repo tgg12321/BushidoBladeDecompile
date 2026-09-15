@@ -557,7 +557,7 @@ for nm, addrs in sorted(by_prop.items()):
 # collides with an existing key silently re-points a gate ([[name-keyed-gates-in-tool-source]]).
 KEYFILES = ["regfix.txt", "asmfix.txt", "inline_asm_canonical.txt",
             "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt",
-            "multu_pad_funcs.txt", "sdata.txt"]
+            "multu_pad_funcs.txt", "maspsx_prefill_label_funcs.txt", "sdata.txt"]
 keys = collections.defaultdict(list)
 for fn in KEYFILES:
     p = os.path.join(REPO, fn)
