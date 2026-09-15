@@ -359,9 +359,9 @@
  "origin": "queue",
  "created": "2026-08-18T16:50:40.473817+00:00",
  "owner_continue_until_session": 23,
- "exhaustion_base": 46,
- "last_unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
- "last_unpark_at": "2026-09-08T01:58:36.569292+00:00",
+ "exhaustion_base": 55,
+ "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
+ "last_unpark_at": "2026-09-15T20:48:37.414727+00:00",
  "kills": [
   {
    "session": 38,
