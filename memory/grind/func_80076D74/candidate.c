@@ -1,28 +1,27 @@
-/* func_80076D74 - best form after session 2 (permuter re-run, 2026-09-15): sandbox --disable all = 0 (161 target insns),
- * re-measured THIS session as tmp/grind/func_80076D74/s2/body_p0_record.c.
+/* func_80076D74 - Judge-CLEARED body (decisions.md 2026-09-15 13:47 ruling PASS, review-ledger hash ffd478b35c7a6afd). Submit VERBATIM.
+ * s3 (permuter, 2026-09-15): re-measured sandbox --disable all = 0 on HEAD, and BYTES PROVEN ON MAIN - a full clean link with this body
+ * in src/text1b.c (record-table declaration TU-local at text1b.c:2227-2235 for the measurement) gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+ * == oracle (tmp/grind/func_80076D74/s3/fullbuild.log). Declaration placement is byte-neutral.
  *
- * REQUIRES the record-table declaration (per-word-splat -> aggregate merge family, .claude/rules/no-new-park-categories.md:238-262),
- * canonical placement include/game.h, prepared as memory/grind/func_80076D74/record_table_decl.patch:
- *     typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record;
- *     extern Unk8009BCF8Record D_8009BCF8[20];
- * together with removal of `extern u8 D_8009BCF8; extern u8 D_8009BCF9;` from src/text1b.c:2227-2228 AND src/text1b_b.c:237-238,
- * and retirement of the `D_8009BCF9 = 0x8009BCF9;` row in undefined_syms_auto.txt:79 (its only referrer is asm/funcs/func_80076D74.s,
- * which goes away when this lands; delete the row in the same commit, or keep it suffixed per the 2026-09-03 amendment).
- * Evidence (evidence.md s2): 0x8009BCF8..0x8009BD1F = 20 two-byte records (D_8009BD20 follows); func_800759D0 takes the table base
- * into $s6 (lui/addiu) and reads it with a shift-1 stride index; func_80075F80 and this function read with shift-1 stride indexes;
- * byte 1 of each record is the identity sequence 0,1,2,3,... The BANNED `extern u8 D_8009BCF8[][2]` + `[idx][1]` pair table is NOT
- * used here; the record-table `.unk1` read produces the same bytes through expr.c get_inner_reference (offset idx*2 in a reg, the
- * .unk1 byte folded into the symbol constant -> lbu %lo(D_8009BCF8+1)($at) == %lo(D_8009BCF9)).
- * The header / text1b_b.c / undefined_syms_auto.txt edits are OUTSIDE the grind surface: a ruling-request was filed (s2) asking whether
- * this declaration clears prongs (a)-(e) and how the out-of-surface edits land. For sandbox MEASUREMENT only, the decl can be placed
- * TU-local via tmp/grind/func_80076D74/s2/decl.py (same codegen; not the proposed final form).
+ * FINAL FORM per the 13:47 Judge ruling (operator-applied, outside the grind surface; see docs/grind/decisions.md s3 INTEGRATION HANDOFF entry):
+ *   include/game.h (after the Unk800F0EC8Record decl):  typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record;  extern Unk8009BCF8Record D_8009BCF8[20];
+ *   src/text1b.c:2227-2228 and src/text1b_b.c:237-238: delete `extern u8 D_8009BCF8;` / `extern u8 D_8009BCF9;`
+ *   undefined_syms_auto.txt:79: DELETE the `D_8009BCF9 = 0x8009BCF9;` row (not suffix); keep line 1252 `D_8009BCF8 = 0x8009BCF8;`
+ *   memory/grind/func_80076D74/record_table_decl.patch carries all three hunks (game.h add, text1b_b.c delete, undefined_syms_auto.txt:79 DELETE) - corrected per the ruling.
+ * s2-rerun (2026-09-15, driver session 2, third dispatch): bytes RE-PROVEN from clean HEAD 493ad9e97 - sandbox 0 at 161/161 (tmp/grind/func_80076D74/s2/handoff/
+ * candidate_head.sandbox.txt) and full tmp-only link SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (s2/handoff/fullbuild.log). Filed as
+ * OWNER-ESCALATION - INTEGRATION HANDOFF in docs/grind/decisions.md (scope grant: include/game.h src/text1b_b.c undefined_syms_auto.txt).
+ * Object-model evidence (Judge-verified): asm/data/7D920.data.s:23762-23808 = 0x28 bytes = 20 two-byte records; func_800759D0.s:107-108 base in $s6,
+ * :142-144 column 0 at 2-byte stride; func_80075F80.s:165-167 column 0 at 2-byte stride; func_80076D74.s:91-93 column 1 at 2-byte stride.
+ * The BANNED `extern u8 D_8009BCF8[][2]` pair table is NOT used; the S_80076D74 typedef is emitted exactly ONCE (apply with tmp/grind/func_80076D74/s2/apply2.py).
  *
- * Tail (s1 residual 5, epilogue) closed by a single-level do { } while (0) wrap of the final arg0[6] += 0xC statement (sanctioned
- * family, .claude/rules/do-while-zero-exception.md, FAKE-annotated inline; layer-1 PASSED this construct 2026-09-15 12:46).
+ * Tail (s1 residual 5, epilogue) closed by a single-level do { } while (0) wrap of the final arg0[6] += 0xC statement (sanctioned family,
+ * .claude/rules/do-while-zero-exception.md, FAKE-annotated inline; layer-1 PASSED 2026-09-15 12:46, Judge PASS 13:47).
  * Mechanism: sched.c loop_notes attach NOTE_INSN_LOOP_END to the next insn (the return copy), which then depends on every earlier
  * set/use in the block, so it cannot be hoisted into the lw load-delay slot; the increment temp takes $v0; tail = lw/nop/addiu/sw/move.
- * Ordinary-C alternatives measured dead: u8 ret two-copy chain = 5 (s2); s32 arg0 + cast offsets = 5 (s1); permuter campaigns on the
- * s32-ret (34.7k iters) and u8-ret (43.3k iters) no-FAKE chassis find only do-while(0) forms (s2).
+ * Lever exhaustion (ordinary C, all 5 unless noted): u8 ret two-copy chain (s2); s32 arg0 + cast offsets (s1); slot pointer `s32 *dm` (s3);
+ * packet-pointer round trip (s3, 21); branch-on-ret return (s3); permuter campaigns on s32-ret (34.7k), u8-ret (43.3k) and branch-on-ret
+ * (31.6k) no-FAKE chassis find only do-while(0) forms (s2, s3). FAKE ablation this session (wrap removed, nothing else) = 5.
  * See evidence.md / hypotheses.md.
  */
 typedef struct {

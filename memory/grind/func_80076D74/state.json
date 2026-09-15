@@ -1,30 +1,37 @@
 {
  "func": "func_80076D74",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
    "floor": 5,
    "modality": "recon",
    "headline": "func_80076D74 decompiled from scratch: 161-insn target, honest floor 5 (epilogue only) via u8 pair-table decl, record struct with bitfields, and (j<<1) index form; residual = return-copy scheduled int"
+  },
+  {
+   "session": 2,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "func_80076D74 INTEGRATION HANDOFF re-filed under the validator-required OWNER-ESCALATION title: Judge-cleared body re-proven this session (sandbox 0 at 161/161, full-link SHA1 == oracle); needs the sc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's return copy carries a dependence on the arg0[6] store (or sits after a BB boundary) that ordinary C can spell \u2014 e.g. a two-copy return chain or a control-flow join before return ret",
-   "mechanism": "sched.c ready-list: with only the anti-dep on the call, the copy is ready in the load-delay cycle and is always hoisted; an extra true dependence on the sw or a label boundary pins it",
-   "next_probe": "run tools/sched_solver on the tail BB (insns 391..402 in tmp/grind/func_80076D74/dumps/text1b.sched) to obtain the minimal dependence set giving the target order, then spell it; measure candidate spellings of the return/flag with sandbox"
+   "hypothesis": "With the scope grant (include/game.h src/text1b_b.c undefined_syms_auto.txt) applied, record_table_decl.patch + candidate.c verbatim + deletion of text1b.c:2227-2228 lands COMPLETED-C",
+   "mechanism": "declaration placement is byte-neutral (same text1b.o); the Judge-cleared body hash ffd478b35c7a6afd skips layer-1 and goes to bytes + FINAL CALL",
+   "next_probe": "apply record_table_decl.patch to clean HEAD, delete the two scalar externs in text1b.c, run s2/apply2.py candidate.c, sandbox --disable all (expect 0/161), verify-oracle --rebuild, self_vet.md refresh, candidate-ready"
   },
   {
-   "hypothesis": "A different but natural block structure (setup branch rejoining after the increment, or cross-jumped tails) places a label before the return copy",
-   "mechanism": "jump.c cross-jumping / BB boundary keeps the copy out of sched1's tail block",
-   "next_probe": "measure 2-3 structures; watch that the draw code stays single-copy and s3 stays a variable"
+   "hypothesis": "An ordinary-C tail spelling gives the return copy a real data dependence on the arg0[6] store so the do-while(0) wrap can be dropped",
+   "mechanism": "sched.c priority(): the copy is hoisted into the lw delay slot unless something after the store depends on it",
+   "next_probe": "only if a natural relation between the return flag and the packet cursor is found; six hand tails and three permuter basins are banked at 5 (hypotheses.md H7-H16) - do not re-seed the same chassis"
   }
  ],
  "judge_constraints": [
-  "Declare the 0x8009BCF8 table exactly once, header-canonically in include/game.h as `typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record; extern Unk8009BCF8Record D_8009BCF8[20];` (operator-applied patch), delete the D_8009BCF9 row from undefined_syms_auto.txt rather than suffixing it, keep the D_8009BCF8 row, and emit the S_80076D74 typedef once."
+  "Declare the 0x8009BCF8 table exactly once, header-canonically in include/game.h as `typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record; extern Unk8009BCF8Record D_8009BCF8[20];` (operator-applied patch), delete the D_8009BCF9 row from undefined_syms_auto.txt rather than suffixing it, keep the D_8009BCF8 row, and emit the S_80076D74 typedef once.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-15): scope grant: func_80076D74 include/game.h src/text1b_b.c undefined_syms_auto.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
  "banned_constructs": [
   "src/text1b.c:7941-7984 - the identical 'typedef struct { u8 cells[2][5][2]; u32 pad10:10; ... } S_80076D74;' block repeated FIVE times"
@@ -78,5 +85,6 @@
    "ref": "decisions.md 2026-09-15 13:47 ruling PASS",
    "justification": "Q1 YES. The record table clears all five prongs of the per-word-splat -> aggregate merge family (no-new-park-categories.md:238-262) and is the same shape as the accepted Unk800F0EC8Record precedent (include/game.h:63-77). Verified independently, not taken from the ledger: asm/data/7D920.data.s:23762-23808 gives exactly 0x28 bytes from D_8009BCF8 to D_8009BD20 = 20 two-byte records; func_800759D0.s:107-108 forms the table base in $s6 (lui/addiu) and :142-144 reads column 0 at 2-byte stride; func_80075F80.s:165-167 reads column 0 at 2-byte stride; func_80076D74.s:91-93 reads column 1 at 2-byte s"
   }
- ]
+ ],
+ "escalation_deferrals": 0
 }

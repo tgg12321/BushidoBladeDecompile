@@ -2067,3 +2067,4 @@
 - 2026-09-15 11:56 _drs COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-15 12:28 func_80076D74 s1 [recon] floor=5: func_80076D74 decompiled from scratch: 161-insn target, honest floor 5 (epilogue only) via u8 pair-table decl, record struct with bitfields, and (j<<1) index form; residual = return-copy scheduled into the load-delay slot
 - 2026-09-15 12:46 func_80076D74: LAYER-1 FAILED a sandbox-0 candidate — The do-while(0) wrap passes (sanctioned family, single level, FAKE-annotated, mechanism named, citations verified), but the re-declaration of the splat scalar D_8009BCF8 as an unbounded u8[][2] pair table fails prongs (a), (b), (c) and (d) of the per-word-splat-to-aggregate family, and the diff ships the S_80076D74 typedef five times.
+- 2026-09-15 14:18 func_80076D74 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80076D74 include/game.h src/text1b_b.c undefined_syms_auto.txt), function stays active.

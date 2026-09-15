@@ -74,3 +74,6 @@ _clr include/gpu.h undefined_syms_auto.txt
 # func_80054604: pipeline scope grant 2026-09-15 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 func_80054604 include/game.h src/text1b_b.c undefined_syms_auto.txt
+# func_80076D74: pipeline scope grant 2026-09-15 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+func_80076D74 include/game.h src/text1b_b.c undefined_syms_auto.txt

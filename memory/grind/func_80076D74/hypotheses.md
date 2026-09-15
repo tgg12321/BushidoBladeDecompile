@@ -97,3 +97,68 @@
 ## Live frontier (after s2-permuter re-run)
 - RULING NEEDED (this session's outcome): does the record-table declaration `typedef struct { u8 unk0; u8 unk1; } Unk8009BCF8Record; extern Unk8009BCF8Record D_8009BCF8[20];` (include/game.h) with the evidence in evidence.md s2 satisfy prongs (a)-(e) of the per-word-splat -> aggregate merge family and supersede the 2026-09-15 12:46 layer-1 ban on the `u8 [][2]` pair table? If yes, body_p0_record.c (sandbox 0) + record_table_decl.patch is the candidate; the header/text1b_b.c/undefined_syms_auto.txt edits are outside the grind surface and need an operator/driver integration step.
 - Ordinary-C tail fix (would remove the FAKE wrap): two permuter basins (34.7k + 43.3k iterations, s32 and u8 ret seeds) yield only do-while(0). Remaining untried ordinary-C axis: a block structure with a second predecessor of the tail (a label before the return copy); no natural geometry identified in s1-s2 - the if-join sits before the draw code and the tail has no branches.
+
+## s3 (permuter, 2026-09-15) - measured
+- H12 CONFIRMED: the Judge-cleared body + TU-local record-table decl gives sandbox 0 AND a full-link SHA1 == oracle on HEAD (bytes proven on main; declaration placement is byte-neutral).
+- H13 KILLED (instance): pointer-to-slot tail `s32 *dm = &arg0[6]; ... *dm += 0xC;` - 5, combine folds it back to the plain form.
+- H14 KILLED (instance): typed packet pointer round trip `u8 *q = (u8 *)arg0[6]; ... arg0[6] = (s32)(q + 0xC)` - 21, pointer held across the calls.
+- H15 KILLED (instance): branch-on-ret tail `if (ret) { return 1; } return 0;` - 5, folded back to `move v0,s3`, same hoisted copy.
+- H16 KILLED (instance): permuter campaign seeded on the branch-on-ret chassis (31,554 iterations) - only do-while(0) forms and semantic noise.
+
+## [s3-permuter] The Judge-cleared candidate body with the Unk8009BCF8Record[20] declaration TU-local in text1b.c compiles and links to the oracle executable (bytes proven on main, declaration placement byte-neutral)
+- mechanism: the record-table extern + typedef produce the same RTL wherever the declaration sits (expr.c get_inner_reference path, evidence.md s1/s2); the linker resolves D_8009BCF8 from undefined_syms_auto.txt:1252; the stale D_8009BCF9 row is unreferenced once asm/funcs/func_80076D74.s is not assembled
+- probe: decl.py + apply2.py candidate.c on src/text1b.c, sandbox --disable all, then tmp-only full build (fullbuild.py: copy of build/, rebuild text1b.o via engine.pipeline.build_c_object, link via a tmp copy of bb2.ld, objcopy, make_psexe, SHA1)
+- result: sandbox 0; SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE (tmp/grind/func_80076D74/s3/fullbuild.log)
+- verdict: CONFIRMED
+
+## [s3-permuter] Spelling the drawmode-packet tail through a pointer local to the slot (`s32 *dm = &arg0[6]; SetDrawMode(*dm,..); AddPrim(.., *dm); *dm += 0xC;`) changes the tail RTL enough to schedule the return copy after the store
+- mechanism: a separate address pseudo could give the lw/addiu/sw chain or the copy a different dependence shape in sched1
+- probe: sandbox --disable all on body_v1_dmptr.c
+- result: 5 - residual byte-identical to the plain `arg0[6] += 0xC` tail; combine folds the address pseudo into the MEMs before sched1 runs
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main chassis (-mel -msoft-float), record-table decl TU-local, s32 ret, no FAKE constructs
+
+## [s3-permuter] Loading the drawmode packet pointer once (`u8 *q = (u8 *)arg0[6];`), passing it to both calls and storing `arg0[6] = (s32)(q + 0xC)` reproduces the target tail
+- mechanism: a single load with the increment applied to the loaded value would make the store depend on a value computed before the calls, possibly re-ordering the tail
+- probe: sandbox --disable all on body_v2_qptr.c
+- result: 21 - q is held in a callee-saved register across SetDrawMode/AddPrim; the target reloads lw 24($s1) after the calls. Worse than the plain tail
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main chassis (-mel -msoft-float), record-table decl TU-local, s32 ret, no FAKE constructs
+
+## [s3-permuter] Spelling the return as a branch (`if (ret) { return 1; } return 0;`) after `arg0[6] = arg0[6] + 0xC;` places a basic-block boundary before the return copy
+- mechanism: a conditional return creates extra blocks; if the copy of ret into v0 lands in a block after the store, sched1 cannot hoist it into the load-delay slot
+- probe: sandbox --disable all on body_v3_retbranch.c
+- result: 5 - jump.c / cse fold the branch to the same `move v0,s3` in the same block; residual byte-identical to the plain tail
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main chassis (-mel -msoft-float), record-table decl TU-local, s32 ret, no FAKE constructs
+
+## [s3-permuter] A random-mutation permuter campaign seeded on the branch-on-ret tail chassis (structurally different from the s2 s32-ret and u8-ret seeds) finds an ordinary-C spelling that schedules the return copy after the arg0[6] store
+- mechanism: same sched.c priority() gap as H10/H11; the conditional-return seed exposes if/return statement mutations (reorder, temp-for-expr, split) the single-return seeds did not
+- probe: tools/permuter_campaign.py launch/wait/harvest --stop, label retbranch-record-table-floor5, workspace tmp/grind/func_80076D74/s3/perm_ws_retbranch, -j 8, 31,554 iterations / 865 s, base permuter score 190
+- result: four finds, none an ordinary-C tail fix: output-115-1 semantically broken (constant return / fall-off), output-70-1 do-while(0) around the last five statements, output-10-1 empty do-while(0) before the return (= s2 H8), output-190-1 base-score noise. No novel find in the last 545 s
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main chassis (-mel -msoft-float), record-table decl TU-local, branch-on-ret tail, no FAKE constructs in the seed
+
+## Live frontier (after s3)
+- INTEGRATION HANDOFF (docs/grind/decisions.md 2026-09-15 s3 entry): bytes are proven on main; the only remaining delta is the operator-applied declaration placement (include/game.h) + two byte-neutral deletions (src/text1b_b.c:237-238, undefined_syms_auto.txt:79) per the 13:47 ruling. Once applied, the next session's candidate-ready is candidate.c verbatim (Judge-cleared body hash ffd478b35c7a6afd) with the scalar externs at text1b.c:2227-2228 removed.
+- Ordinary-C removal of the do-while(0) wrap: three permuter basins (109.6k iterations) and six hand tails (s32/u8 ret, cast offsets, slot pointer, packet-pointer round trip, branch-on-ret) all leave the return copy at sched.c priority 8; still-untried: a tail spelling where the store to arg0[6] and the return value share a pseudo through a real data dependence (no natural form identified - the function's semantics give the return value no relation to the packet cursor).
+
+## [s2-rerun-permuter] The Judge-cleared candidate body (hash ffd478b35c7a6afd) with the Unk8009BCF8Record[20] declaration TU-local re-measures sandbox 0 and links to the oracle executable from clean HEAD 493ad9e97
+- mechanism: same as the s3 H12 entry - the record-table extern/typedef produce the same RTL wherever the declaration sits; the linker resolves D_8009BCF8 from undefined_syms_auto.txt:1252
+- probe: s2/decl.py + s2/apply2.py candidate.c; `sandbox func_80076D74 --disable all`; s2/handoff/fullbuild.py tmp-only full link
+- result: sandbox score 0 (161/161, rules_dropped 0); SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (tmp/grind/func_80076D74/s2/handoff/fullbuild.log)
+- verdict: CONFIRMED
+
+## Live frontier (after s2-rerun)
+- INTEGRATION HANDOFF filed with the validator-required title (docs/grind/decisions.md `2026-09-15 - func_80076D74 (src/text1b.c) - OWNER-ESCALATION - INTEGRATION HANDOFF`). Expected driver path: Judge ESCALATE(integration-handoff, scope_paths=[include/game.h, src/text1b_b.c, undefined_syms_auto.txt]) -> scope_allow.txt grant -> function stays ACTIVE -> next session applies record_table_decl.patch (corrected: game.h add, text1b_b.c delete, undefined_syms_auto.txt:79 delete), deletes text1b.c:2227-2228, applies candidate.c VERBATIM via s2/apply2.py, re-measures 0/161, returns candidate-ready (layer-1 skipped under the 13:47 clearance; driver bytes + FINAL CALL).
+- Ordinary-C removal of the do-while(0) wrap: unchanged from the s3 frontier (three basins + six hand tails all leave the return copy at sched.c priority 8; no natural data dependence between the return value and the packet cursor has been identified).
+
+## [s2] The Judge-cleared candidate body (hash ffd478b35c7a6afd) with the Unk8009BCF8Record[20] declaration TU-local re-measures sandbox 0 and links to the oracle executable from clean HEAD 493ad9e97
+- mechanism: record-table extern/typedef produce the same RTL wherever the declaration sits; linker resolves D_8009BCF8 from undefined_syms_auto.txt:1252; the D_8009BCF9 row is unreferenced once asm/funcs/func_80076D74.s is not assembled
+- probe: s2/decl.py + s2/apply2.py candidate.c; sandbox func_80076D74 --disable all; s2/handoff/fullbuild.py tmp-only full link
+- result: sandbox score 0, target_insns 161, build_insns 161, rules_dropped 0; SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (tmp/grind/func_80076D74/s2/handoff/fullbuild.log)
+- verdict: CONFIRMED

@@ -13,7 +13,7 @@ index 1e37214db..dbfa566ac 100644
 + * and reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 (2-byte-stride) index;
 + * func_80075F80 reads `lbu %lo(D_8009BCF8)($at)` through a shift-1 index;
 + * func_80076D74 reads byte 1 of the record (`lbu %lo(D_8009BCF9)($at)`) through a
-+ * shift-1 index. Data: the unk1 column is the identity sequence 0x00..0x15.
++ * shift-1 index. Data: the unk1 column is 0x00..0x09 then 0x0C..0x15 (20 entries).
 + * Replaces the splat per-word scalars D_8009BCF8 / D_8009BCF9 (per-word splat
 + * symbol -> aggregate merge family, owner ruling 2026-08-17). */
 +typedef struct {
@@ -40,15 +40,13 @@ index bb74d7e87..ba6da9589 100644
  extern u8 D_8009BD21;
  extern s32 D_8009BD38;
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index 34955ffe8..3b12e9480 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
-@@ -76,7 +76,7 @@ D_8009BC76 = 0x8009BC76;
+@@ -76,7 +76,6 @@ D_8009BC76 = 0x8009BC76;
  D_8009BC96 = 0x8009BC96;
  D_8009BCC6 = 0x8009BCC6;
  D_8009BCD2 = 0x8009BCD2;
 -D_8009BCF9 = 0x8009BCF9;
-+D_8009BCF9 = 0x8009BCF9;  /* alias of D_8009BCF8+1 (Unk8009BCF8Record[20].unk1, include/game.h); retire with func_80076D74 (asm/funcs/func_80076D74.s is its only referrer) */
  D_8009BD21 = 0x8009BD21;
  D_8009BD41 = 0x8009BD41;
  D_8009BD43 = 0x8009BD43;
