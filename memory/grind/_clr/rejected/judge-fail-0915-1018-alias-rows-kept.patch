@@ -1,5 +1,5 @@
 diff --git a/include/gpu.h b/include/gpu.h
-index 01d4c5279..1a4709f27 100644
+index 01d4c5279..dd5179bcf 100644
 --- a/include/gpu.h
 +++ b/include/gpu.h
 @@ -87,4 +87,20 @@ typedef struct GpuQueueItem {
@@ -12,8 +12,8 @@ index 01d4c5279..1a4709f27 100644
 + * (0x800F187C) into a base register and stores 0x03FFFFFF through it, and
 + * the tag word carries that same address -- one object addressed by base +
 + * offset, not thirteen adjacent scalars.  Replaces splat's per-word names
-+ * D_800F185C..D_800F1888 (retired from the symbol config; this aggregate is
-+ * the sole handle).  Stock PsyQ DR_ENV is 0x40 bytes;
++ * D_800F185C..D_800F1888 (rows stay in the symbol config as aliases while
++ * asm/funcs/_clr.s references them).  Stock PsyQ DR_ENV is 0x40 bytes;
 + * the next object (g_gpu_color_table, 0x800F189C) starts at +0x44. */
 +typedef struct GpuDrEnv {
 +    /* 0x00 */ u32 tag;
@@ -87,10 +87,10 @@ index 710c22772..0c390773b 100644
   * LoadImage(): clamp the destination rect to the VRAM page, push the
   * CPU->VRAM copy command plus the odd (non-multiple-of-16) leading words
 diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
-index 2b34dd7eb..0f1453144 100644
+index 2b34dd7eb..9be46302e 100644
 --- a/undefined_syms_auto.txt
 +++ b/undefined_syms_auto.txt
-@@ -534,18 +534,6 @@ D_800F1844 = 0x800F1844;
+@@ -534,18 +534,18 @@ D_800F1844 = 0x800F1844;
  D_800F1848 = 0x800F1848;
  D_800F1850 = 0x800F1850;
  D_800F1858 = 0x800F1858;
@@ -106,6 +106,18 @@ index 2b34dd7eb..0f1453144 100644
 -D_800F1880 = 0x800F1880;
 -D_800F1884 = 0x800F1884;
 -D_800F1888 = 0x800F1888;
++D_800F185C = 0x800F185C;  /* alias of D_800F1858+0x4; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1860 = 0x800F1860;  /* alias of D_800F1858+0x8; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1864 = 0x800F1864;  /* alias of D_800F1858+0xC; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1868 = 0x800F1868;  /* alias of D_800F1858+0x10; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F186C = 0x800F186C;  /* alias of D_800F1858+0x14; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1870 = 0x800F1870;  /* alias of D_800F1858+0x18; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1874 = 0x800F1874;  /* alias of D_800F1858+0x1C; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1878 = 0x800F1878;  /* alias of D_800F1858+0x20; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F187C = 0x800F187C;  /* alias of D_800F1858+0x24; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1880 = 0x800F1880;  /* alias of D_800F1858+0x28; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1884 = 0x800F1884;  /* alias of D_800F1858+0x2C; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
++D_800F1888 = 0x800F1888;  /* alias of D_800F1858+0x30; retire with _clr (asm/funcs/_clr.s is its only built referrer) */
  D_800F189C = 0x800F189C;
  D_800F19A0 = 0x800F19A0;
  D_800F19A8 = 0x800F19A8;

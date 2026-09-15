@@ -87,4 +87,20 @@ typedef struct GpuQueueItem {
 
 extern volatile GpuQueueItem _que[64];
 
+/* PsyQ libgpu sys.c DR_ENV packet buffer (the `_clr` split-clear / fill
+ * packet): one tag word + up to 15 command words at 0x800F1858.  Evidence for
+ * the aggregate from the ORIGINAL code of _clr: it materialises &code[8]
+ * (0x800F187C) into a base register and stores 0x03FFFFFF through it, and
+ * the tag word carries that same address -- one object addressed by base +
+ * offset, not thirteen adjacent scalars.  Replaces splat's per-word names
+ * D_800F185C..D_800F1888 (retired from the symbol config; this aggregate is
+ * the sole handle).  Stock PsyQ DR_ENV is 0x40 bytes;
+ * the next object (g_gpu_color_table, 0x800F189C) starts at +0x44. */
+typedef struct GpuDrEnv {
+    /* 0x00 */ u32 tag;
+    /* 0x04 */ u32 code[15];
+} GpuDrEnv; /* size 0x40 */
+
+extern GpuDrEnv D_800F1858;
+
 #endif /* GPU_H */

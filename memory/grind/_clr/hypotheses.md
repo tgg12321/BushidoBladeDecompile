@@ -36,3 +36,10 @@
 
 ## Frontier
 - After the Judge ESCALATE(integration-handoff) grants `_clr include/gpu.h undefined_syms_auto.txt`: `git apply memory/grind/_clr/candidate_merge.patch`; `sandbox _clr --disable all` -> 0/151; self_vet.md is already conformant; return candidate-ready with the three files dirty (all granted + staged).
+
+## s3 (2026-09-15, permuter modality; driver session 2)
+- H5 **deleting the 12 alias rows D_800F185C..D_800F1888 from undefined_syms_auto.txt (the Judge's prong-(c) remedy) leaves the full build byte-identical to the oracle** -- CONFIRMED: `git apply` of the s1 patch + drop_rows.py; sandbox 151/151 insns (score 34 = 17 reference-side unresolved hi/lo pairs on the deleted names, tmp/grind/_clr/s2/normalized_diff.txt; scorer artifact); `verify-oracle --rebuild --allow-dirty` ok=true, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. Nothing but asm/funcs/_clr.s (unbuilt after the patch) referenced the deleted names.
+- H6 **a permuter campaign has a gradient on this chassis** -- not run (floor already 0 by oracle; the frontier item was a symbol-config edit the permuter cannot express). Recorded as a modality note, not a hypothesis with a verdict.
+
+## Frontier
+- candidate-ready this session (tree dirty with the three granted files). If layer-1 or the Judge objects to the sandbox's FALSE 34, the answer is tmp/grind/_clr/s2/normalized_diff.txt + the oracle log: the engine's scorer does not resolve names that were removed from LD_SYM_FILES on the reference side; an engine fix (resolve reference-side relocs against the linked map) would make it read 0, but engine/ is outside the grind surface.

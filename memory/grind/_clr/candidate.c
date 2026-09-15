@@ -1,7 +1,12 @@
-/* _clr candidate (s1 2026-09-15; re-verified s2 2026-09-15 on HEAD 8423e1cbe: sandbox 0/151 + oracle SHA1 ok): sandbox 0/151 with this body in src/display.c PLUS
- * the GpuDrEnv typedef+extern in include/gpu.h and the 12 alias-row suffixes in
- * undefined_syms_auto.txt -- the exact tree is memory/grind/_clr/candidate_merge.patch
- * (apply to a clean HEAD with git apply). TU-local GpuDrEnv also scores 0 but fails
+/* _clr candidate (s1 2026-09-15; re-verified s2 2026-09-15 on HEAD fe991b07e: sandbox
+ * 151/151 insns + full-tree oracle SHA1 == 62efab4f... ok=true). This body in src/display.c
+ * PLUS the GpuDrEnv typedef+extern in include/gpu.h, WITH the 12 per-word rows
+ * D_800F185C..D_800F1888 DELETED from undefined_syms_auto.txt (Judge final-call remedy,
+ * decisions.md 2026-09-15 10:19) -- the exact tree is memory/grind/_clr/candidate_merge.patch
+ * (apply to a clean HEAD with git apply). NOTE: with the rows deleted the sandbox prints a
+ * FALSE 34 (17 reference-side hi/lo pairs on the deleted names no longer resolve in
+ * engine/score.py's symtab; tmp/grind/_clr/s2/normalized_diff.txt shows only those pairs);
+ * the oracle rebuild is the truth. TU-local GpuDrEnv also scores 0 but fails
  * aggregate-merge prong (d). Spelling *g_gpu_stat_reg instead of *D_8009BF48 is the
  * same address (0x8009BF48) but scores a FALSE 4 (scorer symtab blind spot). */
 /* The GPU rectangle Sony's libgpu passes to _clr / _dws / _drs.  Evidence:
