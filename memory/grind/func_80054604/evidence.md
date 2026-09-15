@@ -138,3 +138,10 @@
 - [s2] The first s2 attempt was discarded for editing undefined_syms_auto.txt (out of scope); this re-run proves the bytes need no such edit -- the row edits (4 alias suffixes, 3 deletions) are prong (c) housekeeping for the next session under the grant.
 
 - [s2] Constructs in the diff: aggregate merge (header-canonical, 5 prongs in self_vet.md), pointer-alias local (FAKE-annotated, .claude/rules/pointer-alias-fake-exception.md), compound-assignment split (ordinary C, .claude/rules/ordinary-c-judge-decidable.md:167). No banned constructs (state has none).
+
+## s3 (2026-09-15, structural) -- landed under the scope grant
+- Scope grant present: tools/grinder/scope_allow.txt:76 `func_80054604 include/game.h src/text1b_b.c undefined_syms_auto.txt`.
+- candidate_merge.patch applied clean on HEAD 776294a65. undefined_syms_auto.txt: D_800EFB14/18/1C/20 suffixed `/* alias of D_800EFAE8+0x2C/0x30/0x34/0x38; retire with func_8005490C (asm/funcs/func_8005490C.s is a live INCLUDE_ASM referrer) */`; D_800EFB0C/24/28 deleted (script tmp/grind/func_80054604/s3/edit_syms.py).
+- sandbox func_80054604 --disable all: score 0, 160/160, rules_dropped 0.
+- verify-oracle --rebuild --allow-dirty: ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- self_vet.md refreshed: prong (c) config half now recorded as landed (was an integration-handoff note in s2).

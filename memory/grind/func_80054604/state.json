@@ -59,5 +59,14 @@
  "origin": "queue",
  "created": "2026-09-15T15:33:27.407418+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "22097b915091040e",
+   "when": "2026-09-15T16:49:57.414060+00:00",
+   "summary": "final call: Three constructs, all inside frozen families with prerequisites verified by me, not read off self_vet.md. (1) Pointer alias `Unk800EFAE8Ctrl *s = &D_800EFAE8;` -> pointer-alias-fake-exception.md:13; a"
+  }
+ ]
 }

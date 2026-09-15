@@ -76,4 +76,46 @@ typedef struct {
 
 extern Unk800F0EC8Record D_800F0EC8[][10];
 
+/* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
+ * (independent of and predating any byte-chasing): the original binary
+ * addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
+ * forms $s1 = %hi/%lo(D_800EFAE8) once in its prologue and reaches offsets
+ * 0x00/0x02/0x04/0x08/0x0C/0x10/0x14/0x1C/0x1E/0x20/0x2C/0x44/0x46/0x48/0x4A as
+ * displacements off that single register (`lw $v1, 0x2C($s1)`, `sh $s5, 0x44($s1)`,
+ * ...), and the still-asm per-frame handler asm/funcs/func_8005490C.s addresses
+ * the same block the same way. The relocator func_80054FDC bumps the 0x2C..0x40
+ * word group together by one base offset. Base+offset addressing of one object,
+ * not symbol adjacency. Replaces the splat per-word scalars D_800EFAE8 /
+ * D_800EFB0C / D_800EFB14 / D_800EFB18 / D_800EFB1C / D_800EFB20 / D_800EFB24 /
+ * D_800EFB28. */
+typedef struct {
+    /* 0x00 */ s16 unk0;    /* phase (func_8005490C: -1 = done, 0 = init) */
+    /* 0x02 */ s16 unk2;
+    /* 0x04 */ s32 unk4;    /* stage flags (bit31/bit30 tests, low 6 bits = cleanup index + 1) */
+    /* 0x08 */ s16 unk8;
+    /* 0x0A */ s16 unkA;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s16 unk1C;
+    /* 0x1E */ s16 unk1E;
+    /* 0x20 */ s16 unk20;
+    /* 0x22 */ s16 unk22;
+    /* 0x24 */ s32 unk24;   /* returned by address from func_8005507C */
+    /* 0x28 */ s32 unk28;
+    /* 0x2C */ s32 unk2C;   /* loaded data base (census g_snd_data_buf_base); relocated by func_80054FDC */
+    /* 0x30 */ s32 unk30;   /* relocated by func_80054FDC */
+    /* 0x34 */ s32 unk34;   /* relocated by func_80054FDC when nonzero */
+    /* 0x38 */ s32 unk38;   /* relocated by func_80054FDC when nonzero */
+    /* 0x3C */ s32 unk3C;   /* relocated by func_80054FDC when nonzero */
+    /* 0x40 */ s32 unk40;   /* relocated by func_80054FDC when nonzero */
+    /* 0x44 */ s16 unk44;
+    /* 0x46 */ s16 unk46;
+    /* 0x48 */ s16 unk48;
+    /* 0x4A */ s16 unk4A;
+} Unk800EFAE8Ctrl;
+
+extern Unk800EFAE8Ctrl D_800EFAE8;
+
 #endif /* GAME_H */

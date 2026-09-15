@@ -1551,9 +1551,99 @@ s16 func_80054434(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80054440);
 INCLUDE_ASM("asm/funcs", func_800545F4);
-INCLUDE_ASM("asm/funcs", func_80054604);
+extern s32 D_800A3770;
+extern const char D_80015840[];
+extern s32 func_80044FA0(s32, s32);
+extern s32 func_80045080(s32);
+extern void snd_StopBgm(void);
+extern s32 *snd_LoadSelection(s32);
+extern s16 *stage_GetDataPtr(void);
+extern s32 stage_GetId(void);
+extern s32 func_8004153C(s32);
+extern void func_8003FFC4(s32);
+extern void game_SetPlayerCount(s32);
+extern s32 disp_CalcFov(s32);
+extern void SetGeomScreen(s32);
+extern void gpu_EnableDisplay(void);
+extern void game_StageCleanup(s32, s32);
+extern void func_8004659C(s32);
+s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
+    /* FAKE: second C handle to the global ctrl block (pointer-alias family);
+       mechanism: expand/cse address materialisation -- the pointer local seats
+       %hi/%lo(D_800EFAE8) in one callee-saved base register ($s1) for the whole
+       body, whereas the direct D_800EFAE8.field form re-materialises the address
+       per extended basic block; lever-exhaustion: direct-global form measured 82
+       vs 26 (memory/grind/func_80054604/evidence.md s1,
+       rejected/direct-global-no-pointer-local-82.c). */
+    Unk800EFAE8Ctrl *s = &D_800EFAE8;
+    s32 id = a0 + 0x131;
+    s32 ret;
+    s16 *t;
+    s32 p;
+    s32 v;
+    s32 n;
+
+    if (a6 != 0) {
+        ret = func_80044FA0(id, a6);
+        D_800EFAE8.unk2C = a6;
+    } else {
+        if (func_80045080(id) < 0) {
+            snd_StopBgm();
+            printf(D_80015840);
+        }
+        D_800EFAE8.unk2C = (s32)snd_LoadSelection(id);
+        ret = 0;
+    }
+    p = s->unk2C;
+    s->unk4 = *(s32 *)(*(s32 *)(p + 4) + p);
+    p = s->unk2C;
+    s->unk2 = *(u16 *)(*(s32 *)(p + 8) + p);
+    s->unk0 = 0;
+    t = stage_GetDataPtr();
+    t += stage_GetId() * 24 + a1 * 6;
+    s->unkC = *t++;
+    s->unk10 = *t++;
+    s->unk14 = *t++;
+    s->unk1C = 0;
+    s->unk20 = 0;
+    s->unk44 = a2;
+    s->unk46 = a3;
+    s->unk48 = a4;
+    s->unk4A = a5;
+    s->unk1E = (((s->unk4 >> 8) & 0x7F) << 14) / 360;
+    if (s->unk4 >= 0) {
+        s->unk44 = -1;
+    }
+    if (!(s->unk4 & 0x40000000)) {
+        s->unk46 = -1;
+    }
+    v = func_8004153C(0);
+    if (v != 0) {
+        func_8003FFC4(v);
+    }
+    v = func_8004153C(1);
+    if (v != 0) {
+        func_8003FFC4(v);
+    }
+    s->unk8 = a1;
+    game_SetPlayerCount(0);
+    SetGeomScreen(disp_CalcFov(0x2D));
+    if (s->unk4 & 0x3F) {
+        n = (s->unk4 & 0x3F) - 1;
+        if (a6 != 0) {
+            a6 += ret;
+            game_StageCleanup(n, a6);
+        } else {
+            gpu_EnableDisplay();
+            game_StageCleanup(n, (s32)&D_800A3770);
+        }
+    }
+    if (s->unk4 & 0x8000) {
+        func_8004659C(-1);
+    }
+    return ret;
+}
 extern s16 InfoPosYTbl1[];
-extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
 void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
     func_80054604(InfoPosYTbl1[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
@@ -1585,32 +1675,25 @@ s32 func_80054F68(void) {
     func_800444E0();
     return s0;
 }
-extern s32 D_800EFB14;
-extern s32 D_800EFB18;
-extern s32 D_800EFB1C;
-extern s32 D_800EFB20;
-extern s32 D_800EFB24;
-extern s32 D_800EFB28;
 void func_80054FDC(s32 a0) {
-    s32 *p = &D_800EFB14;
+    s32 *p = &D_800EFAE8.unk2C;
     *p = a0 + *p;
-    D_800EFB18 = a0 + D_800EFB18;
-    if (D_800EFB1C) {
-        D_800EFB1C = a0 + D_800EFB1C;
+    D_800EFAE8.unk30 = a0 + D_800EFAE8.unk30;
+    if (D_800EFAE8.unk34) {
+        D_800EFAE8.unk34 = a0 + D_800EFAE8.unk34;
     }
-    if (D_800EFB20) {
-        D_800EFB20 = a0 + D_800EFB20;
+    if (D_800EFAE8.unk38) {
+        D_800EFAE8.unk38 = a0 + D_800EFAE8.unk38;
     }
-    if (D_800EFB24) {
-        D_800EFB24 = a0 + D_800EFB24;
+    if (D_800EFAE8.unk3C) {
+        D_800EFAE8.unk3C = a0 + D_800EFAE8.unk3C;
     }
-    if (D_800EFB28) {
-        D_800EFB28 = a0 + D_800EFB28;
+    if (D_800EFAE8.unk40) {
+        D_800EFAE8.unk40 = a0 + D_800EFAE8.unk40;
     }
 }
-extern s32 D_800EFB0C;
 s32* func_8005507C(void) {
-    return &D_800EFB0C;
+    return &D_800EFAE8.unk24;
 }
 extern s32 D_80101E1C;
 s32* func_8005508C(void) {

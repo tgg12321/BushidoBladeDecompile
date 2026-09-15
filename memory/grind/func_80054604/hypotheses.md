@@ -97,3 +97,9 @@ H3 (dependent): once s2=a6,s7=a4,fp=a5, sched2 should emit lw a6,a4,a5 interleav
 - probe: grep -l for each symbol across asm/funcs/*.s; grep INCLUDE_ASM func_8005490C in src/*.c; grep the seven names in src/ include/ after integration (clean).
 - result: D_800EFB14: func_80054604.s, func_8005490C.s, func_80054FDC.s; D_800EFB18/1C/20: func_8005490C.s, func_80054FDC.s; D_800EFB0C: func_8005507C.s only; D_800EFB24/28: func_80054FDC.s only. func_8005490C is INCLUDE_ASM (src/text1b.c:1658); func_80054FDC and func_8005507C are C. No C names any of the seven after the patch.
 - verdict: CONFIRMED
+
+## [s3] Under the executed scope grant (tools/grinder/scope_allow.txt:76), applying candidate_merge.patch plus the seven undefined_syms_auto.txt row edits (suffix D_800EFB14/18/1C/20 with the alias comment; delete D_800EFB0C/24/28) lands func_80054604 at sandbox 0 with the full-tree oracle passing.
+- mechanism: integration-handoff-self-serve (owner ruling 2026-08-19): the Judge ESCALATE(integration-handoff) verdict of s2 was executed by the driver as a scope grant; codegen is unchanged from s2, and the config half of aggregate-merge prong (c) is link-neutral because D_800EFAE8's own row supplies the base for the merged struct.
+- probe: git apply memory/grind/func_80054604/candidate_merge.patch (clean); python tmp/grind/func_80054604/s3/edit_syms.py; sandbox func_80054604 --disable all; verify-oracle --rebuild --allow-dirty.
+- result: sandbox score 0, target_insns 160, build_insns 160, rules_dropped 0; verify-oracle ok true, build_matches true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa. Dirty set = include/game.h, src/text1b.c, src/text1b_b.c, undefined_syms_auto.txt (all in scope) + pre-existing metrics/events.jsonl. No C names D_800EFB0C/14/18/1C/20/24/28 after the edit (only the include/game.h explanatory comment). Outcome: candidate-ready.
+- verdict: CONFIRMED
