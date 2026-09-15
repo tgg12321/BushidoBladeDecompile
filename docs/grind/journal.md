@@ -2072,3 +2072,5 @@
 - 2026-09-15 14:26 func_80076D74 COMPLETED-C after 3 sessions (closer: s3 [permuter]).
 - 2026-09-15 15:00 func_800753D8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-15 15:23 func_8005BA8C s1 [recon] floor=67: recon s1: from INCLUDE_ASM to a full pure-C body at honest distance 67 (169->67); every residual line is a callee-saved seat rename rooted in one global.c order flip (i vs loop-3 entptr giv), solver-validated 29/29
+- 2026-09-15 15:48 func_8005BA8C COMPLETED-C after 2 sessions (closer: s2 [structural]).
+- 2026-09-15 15:48 func_8005BA8C completed — ROTATED SIBLING func_80017848 (floor 3, src/ings.c) ΓÇö func_8005BA8C just reached floor 0; its body on main is an unspent transplant. The driver's `queue auto-return` brings it back on this sibling notice.

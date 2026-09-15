@@ -845,5 +845,15 @@
   }
  ],
  "escalation_deferrals": 0,
- "object_model_audited": 52
+ "object_model_audited": 52,
+ "sibling_progress": [
+  {
+   "from": "func_8005BA8C",
+   "floor": 0,
+   "session": 2,
+   "at": "2026-09-15T20:48:32.628730+00:00",
+   "headline": "func_8005BA8C COMPLETED-C",
+   "consumed": null
+  }
+ ]
 }
