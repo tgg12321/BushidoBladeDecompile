@@ -2040,3 +2040,5 @@
 - 2026-09-14 17:09 func_8006D3DC COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-14 17:16 func_80057ACC COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-14 17:28 func_8005C2A8: LAYER-1 FAILED a sandbox-0 candidate — The candidate fabricates a callee prototype that contradicts snd_VabOpen's definition in the SAME translation unit (src/text1b.c:2707 defines it returning s16; the diff declares it returning s32) for the sole, self-documented purpose of relocating a sign-extension instruction — a false declaration with no truthful semantic reading, in a family that was proposed and WITHDRAWN with no rule entry.
+- 2026-09-14 22:46 func_80018094 AUTO-RETURNED to active — auto-return: toolchain change re-measure floor 2 -> 0 (fingerprint 2046c403e76d0fe5 -> a04b7a59487234ab)
+- 2026-09-14 22:46 func_80074B18 AUTO-RETURNED to active — auto-return: toolchain change re-measure floor 1 -> 0 (fingerprint 2046c403e76d0fe5 -> a04b7a59487234ab)
