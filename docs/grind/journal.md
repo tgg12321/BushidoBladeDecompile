@@ -2071,3 +2071,4 @@
 - 2026-09-15 14:19 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 14:20
 - 2026-09-15 14:26 func_80076D74 COMPLETED-C after 3 sessions (closer: s3 [permuter]).
 - 2026-09-15 15:00 func_800753D8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-15 15:23 func_8005BA8C s1 [recon] floor=67: recon s1: from INCLUDE_ASM to a full pure-C body at honest distance 67 (169->67); every residual line is a callee-saved seat rename rooted in one global.c order flip (i vs loop-3 entptr giv), solver-validated 29/29
