@@ -29,10 +29,14 @@ There is NO compiler-modification path on this project.
    Even surgical patches to `reorg.c` / `global.c` / `sched.c` / `combine.c` /
    `flow.c` are off the table. Read the GCC source to UNDERSTAND what shape the
    C must have — never to change what GCC does.
-2. **Patching `tools/maspsx/`** beyond bug-fix scope (the per-function gates
-   in `maspsx_label_nop_funcs.txt` are the established mechanism; new global
-   behaviour changes require user policy sign-off — see
-   [[maspsx-label-nop-gate]]).
+2. **Patching `tools/maspsx/`** beyond bug-fix scope. The remaining
+   per-function gates (`maspsx_prefill_label_funcs.txt`, `expand_lb_funcs.txt`,
+   `expand_dest_funcs.txt`) are the established mechanism for assembler-fidelity
+   gaps; new GLOBAL behaviour changes require owner policy sign-off. Bug-fix
+   scope IS permitted and has been exercised: on 2026-09-14 the owner signed off
+   on globalizing the `.L`-label load-delay arm after a missing `$at`/`$gp`
+   expansion guard was found in it, which retired `maspsx_label_nop_funcs.txt`
+   entirely — see [[maspsx-label-nop-gate]].
 3. **Switching the build to cc1psx**, or per-function cc1psx opt-in. cc1psx is
    diagnostic-only ([[cc1psx-calibration-only]] / [[cc1psx-calibration]]).
 4. **Forking** anything in the toolchain (cc1, ld, as, maspsx) into a new

@@ -26870,3 +26870,63 @@ Ordinary C, no sanctioned-family claim needed. The body is a nearest-edge-inters
 ## 2026-09-14 17:28 — func_8005C2A8 — layer-1 review — **FAIL**
 
 The candidate fabricates a callee prototype that contradicts snd_VabOpen's definition in the SAME translation unit (src/text1b.c:2707 defines it returning s16; the diff declares it returning s32) for the sole, self-documented purpose of relocating a sign-extension instruction — a false declaration with no truthful semantic reading, in a family that was proposed and WITHDRAWN with no rule entry.
+
+## 2026-09-14 — maspsx `.L`-label load-delay arm — **OWNER RULING (substrate / global maspsx behavior change)**
+
+Owner sign-off for a GLOBAL maspsx behavior change, reserved to the owner by
+[[no-compiler-divergence]] §2 and by the "What STILL pends the owner" list in
+[[integration-handoff-self-serve]]. Recorded here as the audit surface; the
+ruling record is the `rules:` commit, and the code that spends it is the
+following `cheat-cleanup:` commit.
+
+**What the owner was shown, before deciding:**
+
+1. The `.L`-label load-delay arm was gated per function by
+   `maspsx_label_nop_funcs.txt` (9 entries). The documented reason for that
+   scoping was that emitting the nop shifts maspsx output indices and breaks
+   other functions' index-anchored regfix/asmfix rules — rules that have not
+   existed since 2026-08-25 ([[rules-to-zero-complete]]). The stated constraint
+   was already moot.
+2. Making the arm global on its own turns the oracle **RED**
+   (`912917bed4bd4c239dfba39c9300de33d81da08c`) on exactly one function,
+   `func_8003ACB8` (+1 nop at insn idx 90; the other 7 functions flagged in that
+   object were pure downstream address shifts). Cause: the arm never applied the
+   `$at`/`$gp` expansion guards its sibling non-label path has always applied, so
+   it fired on `lh $v0,SYM; .L:; sh $v0,SYM2` where the expansion's generated
+   `lui $at` already fills the delay slot.
+3. Adding those guards makes the arm global **and** the entire per-function list
+   redundant — oracle GREEN with zero entries.
+
+**Options offered, verbatim in substance:** (a) full removal — guard fix, global
+arm, delete the list and all its plumbing; (b) keep the flag and file but empty
+the list; (c) don't land it, document the finding only.
+
+**Owner chose (a), full removal.**
+
+**Scope of the grant.** Globalizing the `.L`-label load/branch/store-value
+consumer arm with the `$at`/`$gp` guards, and deleting
+`maspsx_label_nop_funcs.txt` with its flag and plumbing. It does NOT grant any
+other maspsx behavior change; future global maspsx changes still need their own
+sign-off. Bug-fix scope on maspsx is unchanged.
+
+**Layer-2 adversarial review (fresh `cheat-reviewer`, default-FAIL).** FAILed the
+first draft on four counts — a doc/code denylist disagreement, two stale
+substrate comments, a garbled comment splice, and the bundled ruling record —
+all fixed before the commit landed. On the substance it independently verified:
+the change is NOT a cheat-by-config (function-agnostic, strictly narrows the
+fabrication surface); the guard is semantically correct rather than fitted to
+`func_8003ACB8` (a label emits no bytes, so the generated `lui $at` still lands
+in the delay slot; a path that branches *to* the label has no preceding load and
+no hazard; disarming the arm entirely yields MISMATCH
+`97313d7cb102eed8ee590452aa3efdf4b640a13a`, proving the guard narrowed rather
+than neutered it); and nothing of value was lost by deleting the list.
+
+It also recorded, correctly, that a layer-2 agent **cannot verify an
+agent-relayed account of owner approval** (unsigned commits, identical git
+authorship for human and agent). This entry exists so a later audit has the
+granted scope written down to check against.
+
+**Filed as follow-up, not a blocker:** `engine/oracle.py::dirty_build_inputs`
+watches the Makefile and the gate lists but NOT `tools/maspsx/**`, so a dirty
+maspsx source does not refuse a `--rebuild` while a dirty Makefile does. This
+change makes maspsx source strictly more load-bearing than it was.
