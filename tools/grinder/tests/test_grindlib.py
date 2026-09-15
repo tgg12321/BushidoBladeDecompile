@@ -1904,3 +1904,108 @@ class TestRotationRuling(unittest.TestCase):
     def test_no_candidate_needs_no_check(self):
         G.init_ledger(self.root, "func_N", "s")
         self.assertFalse(G.cc1psx_check_needed(self.root, "func_N"))
+
+
+class TestCandidateBlockTripwire(unittest.TestCase):
+    """Owner ruling 2026-09-15 — the candidate-path no-progress tripwire.
+
+    Before this guard, the three non-merging candidate-path exits changed no
+    dispatch state at all, so a refused candidate was re-dispatched forever
+    (func_80018094: four identical MERGE REFUSED cycles in 46 minutes)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        os.makedirs(os.path.join(self.root, "docs", "grind"), exist_ok=True)
+        G.init_ledger(self.root, "func_X", "code6cac")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _gate(self, text):
+        with open(os.path.join(self.root, "inline_asm_canonical.txt"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            f.write(text)
+
+    def test_first_refusal_does_not_trip(self):
+        n, tripped = G.record_candidate_block(self.root, "func_X",
+                                              "merge-refused-islands", "abc123")
+        self.assertEqual(n, 1)
+        self.assertFalse(tripped)
+
+    def test_second_identical_refusal_trips(self):
+        G.record_candidate_block(self.root, "func_X", "merge-refused-islands", "abc123")
+        n, tripped = G.record_candidate_block(self.root, "func_X",
+                                              "merge-refused-islands", "abc123")
+        self.assertEqual(n, 2)
+        self.assertTrue(tripped)
+
+    def test_a_different_body_is_a_fresh_block(self):
+        G.record_candidate_block(self.root, "func_X", "merge-refused-islands", "abc123")
+        n, tripped = G.record_candidate_block(self.root, "func_X",
+                                              "merge-refused-islands", "def456")
+        self.assertEqual(n, 1)
+        self.assertFalse(tripped, "a respelled body must get a fresh chance")
+
+    def test_a_different_ground_is_a_fresh_block(self):
+        G.record_candidate_block(self.root, "func_X", "merge-refused-islands", "abc123")
+        n, tripped = G.record_candidate_block(self.root, "func_X", "byte-fail", "abc123")
+        self.assertEqual(n, 1)
+        self.assertFalse(tripped)
+
+    def test_gate_file_change_retires_the_block(self):
+        self._gate("# empty\n")
+        G.record_candidate_block(self.root, "func_X", "merge-refused-islands", "abc123")
+        self._gate("# empty\nfunc_X  # pipeline grant\n")   # the remedy lands
+        n, tripped = G.record_candidate_block(self.root, "func_X",
+                                             "merge-refused-islands", "abc123")
+        self.assertEqual(n, 1)
+        self.assertFalse(tripped, "a gate edit must let the candidate be measured fresh")
+
+    def test_naming_files_do_not_retire_a_block(self):
+        # A naming wave rewrites symbol_addrs/named_syms constantly; it must not
+        # silently clear a live blocker.
+        with open(os.path.join(self.root, "symbol_addrs.txt"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            f.write("func_X = 0x80018094;\n")
+        G.record_candidate_block(self.root, "func_X", "merge-refused-islands", "abc123")
+        with open(os.path.join(self.root, "symbol_addrs.txt"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            f.write("renamed = 0x80018094;\n")
+        n, tripped = G.record_candidate_block(self.root, "func_X",
+                                             "merge-refused-islands", "abc123")
+        self.assertTrue(tripped)
+
+    def test_counter_survives_unpark(self):
+        # The whole point: an auto-returned function that re-submits the same
+        # body under the same gates must trip on its FIRST session back.
+        G.record_candidate_block(self.root, "func_X", "merge-refused-islands", "abc123")
+        st = G.load_state(self.root, "func_X")
+        st["last_unpark_reason"] = "auto-return: active queue drained"
+        G.save_state(self.root, "func_X", st)
+        G.sync_unpark(self.root, "func_X")
+        n, tripped = G.record_candidate_block(self.root, "func_X",
+                                             "merge-refused-islands", "abc123")
+        self.assertTrue(tripped, "unpark must NOT reset the no-progress counter")
+
+    def test_owner_action_round_trips(self):
+        G.log_owner_action(self.root, "func_X", "merge-refused-islands",
+                           "add a func_X row to tools/grinder/owner_cluster_grants.txt",
+                           "2026-09-15")
+        open_items = G.open_owner_actions(self.root)
+        self.assertEqual(len(open_items), 1)
+        date, func, ground, remedy = open_items[0]
+        self.assertEqual(func, "func_X")
+        self.assertEqual(ground, "merge-refused-islands")
+        self.assertIn("owner_cluster_grants.txt", remedy)
+
+    def test_owner_action_marked_done_is_not_open(self):
+        G.log_owner_action(self.root, "func_X", "merge-refused-islands", "do the thing",
+                           "2026-09-15")
+        p = os.path.join(self.root, "docs", "grind", "owner_actions.md")
+        txt = open(p, encoding="utf-8").read().replace(
+            "status: OPEN — function ROTATED, returns automatically; the pipeline is not waiting",
+            "status: DONE 2026-09-15")
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(txt)
+        self.assertEqual(G.open_owner_actions(self.root), [])

@@ -631,6 +631,49 @@ function Get-ExtraScope([string]$func) {
     return @()
 }
 
+# ── Candidate-path no-progress tripwire (owner ruling 2026-09-15) ───────────
+# Three exits from Invoke-CandidatePath bank a constraint and return while
+# changing NO dispatch state: no floor_history entry (so the flat window never
+# grows), no session_count increment, no modality advance, no ban. The
+# 2026-09-08 exhaustion machinery reads exactly those fields, so before this
+# guard a function looping on one of them was invisible to every backstop the
+# project has — func_80018094 took four identical MERGE REFUSED cycles in 46
+# minutes on a body the Judge had PASSed three times, because the only missing
+# artifact was a row in a file no session may write.
+#
+# Every such exit now routes through here. grindlib keys the refusal by
+# (ground, body hash, gate fingerprint); the SECOND identical key means nothing
+# that could change the outcome has changed, so the driver ROTATES (never
+# terminal — returns automatically per rotation-not-foreclosure) and records an
+# OWNER ACTION with the remedy instead of spending another session. The
+# pipeline does not wait on it: the next queue item is picked up immediately.
+function Bank-CandidateRefusal {
+    param([string]$func, [string]$ground, [string]$reason, [string]$bodyHash,
+          [string]$remedy = '', [string]$commitMsg = '')
+    python tools/grinder/grindlib.py constrain . $func $reason | Out-Null
+    $bk = ''
+    try { $bk = (python tools/grinder/grindlib.py candidate-block . $func $ground $bodyHash $remedy 2>$null | Out-String).Trim() } catch { }
+    $paths = @('memory/grind', 'docs/grind', 'metrics/events.jsonl')
+    if ($bk -match 'TRIPPED') {
+        $date = Get-Date -Format 'yyyy-MM-dd'
+        $rem  = if ($remedy) { $remedy } else { $reason }
+        python tools/grinder/grindlib.py owner-action . $func $ground $rem $date | Out-Null
+        $rot = "ROTATED (no-progress tripwire, owner ruling 2026-09-15: '$ground' repeated on an unchanged body with unchanged gate inputs — no session can change this outcome; returns automatically): $rem"
+        if ($rot.Length -gt 500) { $rot = $rot.Substring(0, 500) }
+        Invoke-Eng @('queue', 'rotate', $func, '--reason', $rot) | Out-Null
+        # engine/queue.json MUST be staged with the rotation or the next session's
+        # scope check reverts it and the function bounces straight back to the top
+        # (grinder-park-queue-dirt-deadlock).
+        $paths += 'engine/queue.json'
+        Log "${func}: NO-PROGRESS TRIPWIRE — '$ground' repeated on an unchanged body ($bk); ROTATED + owner action recorded (returns automatically)."
+        Journal "${func}: NO-PROGRESS TRIPWIRE ($ground, body $bodyHash) — ROTATED, owner action filed: $rem"
+        Add-Decision $func 'gate' 'ROTATED (no-progress tripwire)' "'$ground' repeated on body $bodyHash with unchanged gate inputs; no session can clear it. Remedy: $rem"
+    }
+    git -C $Root add -- $paths 2>$null
+    $msg = if ($commitMsg) { $commitMsg } else { "grind: $func $ground constraint banked" }
+    git -C $Root commit -m "$msg [skip-park-src-guard]" 2>$null | Out-Null
+}
+
 function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $o) {
     # 1) bytes first — driver-verified, never trusted from the session
     $sb = Invoke-Eng @('sandbox', $func, '--disable', 'all')
@@ -797,9 +840,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/ (2026-08-11: stale red build/ here false-tripped the post-session circuit-break)
-        python tools/grinder/grindlib.py constrain . $func "candidate form failed full-build SHA1 on main (masked-0 register diff class) — reg-alloc gap is real" | Out-Null
-        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
-        git -C $Root commit -m "grind: $func byte-fail constraint banked [skip-park-src-guard]" 2>$null | Out-Null
+        Bank-CandidateRefusal $func 'byte-fail' "candidate form failed full-build SHA1 on main (masked-0 register diff class) — reg-alloc gap is real" $bodyHash '' "grind: $func byte-fail constraint banked"
         return
     }
     # 2) bytes proven — now the Judge rules on the C
@@ -880,10 +921,9 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
                 git -C $Root add -- metrics/events.jsonl 2>$null
                 git -C $Root checkout -- . 2>$null
                 Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
-                python tools/grinder/grindlib.py constrain . $func $reason | Out-Null
-                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
-                git -C $Root commit -m "grind: $func merge refused — unallowlisted islands, constraint banked [skip-park-src-guard]" 2>$null | Out-Null
+                $remedy = "Either respell the $nIsl island(s) in C, or — if this function is enumerated by name in a LANDED owner cluster ruling — add a row for it to tools/grinder/owner_cluster_grants.txt citing that ruling (operator-only; sessions cannot reach that file)."
                 Journal "${func}: MERGE REFUSED after judge PASS — $nIsl unallowlisted inline-asm island(s), no grant door; constraint banked."
+                Bank-CandidateRefusal $func 'merge-refused-islands' $reason $bodyHash $remedy "grind: $func merge refused — unallowlisted islands, constraint banked"
                 return
             }
             Log "${func}: judge PASS on an island-carrying body — canonical-asm grant executed via the PASS path (tier $tier)."
@@ -908,10 +948,8 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
             git -C $Root add -- metrics/events.jsonl 2>$null
             git -C $Root checkout -- . 2>$null
             Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
-            python tools/grinder/grindlib.py constrain . $func $reason | Out-Null
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
-            git -C $Root commit -m "grind: $func queue-done-refusal constraint banked [skip-park-src-guard]" 2>$null | Out-Null
             Journal "${func}: queue done refused a bytes-proven candidate — un-retired config cheat; constraint banked."
+            Bank-CandidateRefusal $func 'queue-done-refused' $reason $bodyHash 'A config-level cheat the retire step could not drop is still registered for this function — clear its pipeline gate-list entry (expand_lb/multu/prefill-label/prologue_fix) or respell the construct.' "grind: $func queue-done-refusal constraint banked"
             return
         }
         # Stage the per-function ledger INTO the Match commit so its exhaustion

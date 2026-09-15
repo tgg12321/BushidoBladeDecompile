@@ -63,6 +63,17 @@ if ($top -and $top.func) {
     } else { Write-Host "(no ledger yet — grind not started on this target)" }
 }
 
+# Owner actions (owner ruling 2026-09-15): blockers the no-progress tripwire
+# found to be outside every session's reach. The pipeline is NOT waiting on
+# these — the item was rotated and returns automatically — but each one is a
+# one-line operator edit that unblocks a function, so surface them FIRST.
+$oa = @()
+try { $oa = @(python (Join-Path $Root 'tools\grinder\grindlib.py') owner-actions $Root 2>$null | Where-Object { $_ }) } catch { }
+if ($oa.Count) {
+    Write-Host "`n=== OPEN owner actions ($($oa.Count)) — one-line operator edits, nothing is blocked on them ===" -ForegroundColor Yellow
+    $oa | ForEach-Object { Write-Host "  $_" }
+}
+
 Write-Host "`n=== completions (grinder Match: commits) ===" -ForegroundColor Cyan
 git -C $Root log --oneline --grep='(grinder' -n 10
 Write-Host "`n=== recent judge decisions ===" -ForegroundColor Cyan

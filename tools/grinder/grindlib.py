@@ -1636,6 +1636,146 @@ evidence.md + hypotheses.md for the per-session kill record). {tail}
     return ref
 
 
+
+# ── Owner ruling 2026-09-15: the candidate-path no-progress tripwire ────────
+# The 2026-09-08 exhaustion machinery (flat floor over sessions/modalities) can
+# only see outcomes that go through `apply_outcome` — it reads floor_history and
+# session_count. Every NON-MERGING exit from the driver's candidate path
+# (Invoke-CandidatePath) banks a constraint and `return`s WITHOUT calling apply:
+# no floor_history entry, no session_count increment, no modality advance. So a
+# candidate that is bytes-proven and Judge-PASSed but refused at the merge gate
+# is re-dispatched forever at the same rung with the same body, and every
+# flat-window / ladder / escalation guard stays dark.
+#
+# Observed 2026-09-14/15: func_80018094 took FOUR identical MERGE REFUSED cycles
+# in 46 minutes (22:58, 23:17, 23:30, 23:44) on a body the Judge had PASSed
+# three times, because the only missing artifact was a row in
+# tools/grinder/owner_cluster_grants.txt — a file no grind session may write.
+# This is precisely the failure the owner named in the 2026-09-08 ruling ("I
+# don't want an agent just looping infinitely and eating tokens overnight,
+# making no progress because it feels it is deadlocked by policies somehow"),
+# landing in the one code path that ruling's machinery cannot observe.
+#
+# The tripwire is mechanical and ground-agnostic: a refusal is keyed by
+# (ground class, body hash, gate fingerprint). The SECOND occurrence of an
+# identical key means nothing that could change the outcome has changed — the
+# driver rotates the function (never terminal; returns automatically per
+# rotation-not-foreclosure) and records an OWNER ACTION with the remedy, so the
+# blocker is visible without anyone reading the journal by hand. Rotation costs
+# the pipeline nothing: it keeps grinding the next item.
+CANDIDATE_BLOCK_MAX = 2
+
+# The files whose contents decide whether a candidate-path refusal would come
+# out the same way again: the canonical-asm allowlist, the two operator
+# registries, and the maspsx/pipeline gate lists `queue done` consults. Naming
+# files (symbol_addrs, named_syms, undefined_*) are deliberately EXCLUDED — a
+# naming wave must not silently clear a live blocker.
+GATE_FILES = (
+    "inline_asm_canonical.txt",
+    os.path.join("tools", "grinder", "owner_cluster_grants.txt"),
+    os.path.join("tools", "grinder", "scope_allow.txt"),
+    "expand_dest_funcs.txt",
+    "expand_lb_funcs.txt",
+    "maspsx_prefill_label_funcs.txt",
+    "multu_funcs.txt",
+    "multu_pad_funcs.txt",
+    "sdata_funcs.txt",
+    "volatile_extern_allowlist.txt",
+)
+
+
+def gate_fingerprint(root):
+    """12-hex digest of every GATE_FILES body (missing files hash as absent).
+
+    Any edit to a gate list — an owner registry row, a new allowlist entry, a
+    maspsx gate change — changes this digest and therefore RETIRES every
+    recorded block: the next candidate is measured fresh rather than assumed
+    still-blocked."""
+    h = hashlib.sha1()
+    for rel in GATE_FILES:
+        p = os.path.join(root, rel)
+        h.update(rel.encode("utf-8"))
+        try:
+            with open(p, "rb") as fh:
+                h.update(fh.read())
+        except OSError:
+            h.update(b"\0ABSENT")
+    return h.hexdigest()[:12]
+
+
+def record_candidate_block(root, func, ground, body_hash, remedy=""):
+    """Record one non-merging candidate-path exit; return (count, tripped).
+
+    `ground` is a short refusal class ('merge-refused-islands', 'byte-fail',
+    'queue-done-refused'). `tripped` is True once an identical
+    (ground, body, gate fingerprint) key has been seen CANDIDATE_BLOCK_MAX
+    times — the driver then rotates instead of re-dispatching. The counter is
+    persistent and is never reset by unpark or by a floor drop: a returning
+    function that re-submits the same body under the same gates trips on its
+    FIRST session back, so an auto-return cycle costs one session, not four."""
+    st = load_state(root, func) or {}
+    fp = gate_fingerprint(root)
+    key = "|".join([str(ground), str(body_hash or ""), fp])
+    blocks = st.setdefault("candidate_blocks", {})
+    rec = blocks.get(key) or {"ground": str(ground), "body_hash": str(body_hash or ""),
+                              "gate_fingerprint": fp, "count": 0, "first_seen": _now()}
+    rec["count"] = int(rec.get("count", 0)) + 1
+    rec["last_seen"] = _now()
+    if remedy:
+        rec["remedy"] = str(remedy)[:600]
+    blocks[key] = rec
+    save_state(root, func, st)
+    return rec["count"], rec["count"] >= CANDIDATE_BLOCK_MAX
+
+
+def log_owner_action(root, func, ground, remedy, date):
+    """Append an OWNER ACTION to docs/grind/owner_actions.md (owner ruling
+    2026-09-15). Informational, exactly like the borderline ledger: NOTHING
+    waits on it, the pipeline rotates the item and grinds on. It exists so a
+    blocker whose remedy is outside every session's reach is visible in one
+    place instead of only in the journal — surfaced by status.ps1.
+    LF-enforced (never appended from PowerShell)."""
+    entry = f"""
+## {date} — {func} — {ground}
+remedy: {remedy}
+recorded by: candidate-path no-progress tripwire (owner ruling 2026-09-15)
+status: OPEN — function ROTATED, returns automatically; the pipeline is not waiting
+"""
+    p = os.path.join(root, "docs", "grind", "owner_actions.md")
+    new = not os.path.isfile(p)
+    with open(p, "a", encoding="utf-8", newline="\n") as f:
+        if new:
+            f.write("# Owner actions — blockers no grind session can clear\n\n"
+                    "Appended by the candidate-path no-progress tripwire (owner ruling\n"
+                    "2026-09-15). Each entry is a function whose candidate was refused twice\n"
+                    "on an identical body with identical gate inputs, i.e. the remedy lies in\n"
+                    "a file outside session scope. The pipeline never waits on these — the\n"
+                    "item is rotated and returns automatically. Clearing one is a one-line\n"
+                    "operator edit; mark it DONE here when you do.\n")
+        f.write(entry)
+
+
+def open_owner_actions(root):
+    """The OPEN owner-action entries, newest first: (date, func, ground, remedy)."""
+    p = os.path.join(root, "docs", "grind", "owner_actions.md")
+    if not os.path.isfile(p):
+        return []
+    out, cur = [], None
+    with open(p, encoding="utf-8") as f:
+        for ln in f:
+            ln = ln.rstrip("\n")
+            if ln.startswith("## "):
+                parts = [x.strip() for x in ln[3:].split("—")]
+                cur = {"date": parts[0] if parts else "", "func": parts[1] if len(parts) > 1 else "",
+                       "ground": parts[2] if len(parts) > 2 else "", "remedy": "", "open": True}
+                out.append(cur)
+            elif cur is not None and ln.startswith("remedy: "):
+                cur["remedy"] = ln[8:]
+            elif cur is not None and ln.startswith("status: ") and not ln.startswith("status: OPEN"):
+                cur["open"] = False
+    return [(e["date"], e["func"], e["ground"], e["remedy"]) for e in reversed(out) if e["open"]]
+
+
 def log_borderline(root, func, category, evidence, disposition, date):
     """Append an entry to docs/grind/borderline.md (owner ruling 2026-08-18,
     judge-sole-gate). Entries are informational — nothing pending, nothing
@@ -2879,6 +3019,10 @@ if __name__ == "__main__":
     #   grindlib.py review-disposition <root> <func> <hash>          -> judge-cleared|judge-failed|layer1-repeat|fresh
     #   grindlib.py review-context <root> <func> [hash]              -> brief block
     #   grindlib.py grant-canonical-asm <root> <func> <tier> <date>   -> prints allowlist line / exit 1 refused
+    #   grindlib.py candidate-block <root> <func> <ground> <body_hash> [remedy]
+    #                                                                -> "count=<n> TRIPPED" | "count=<n> ok"
+    #   grindlib.py owner-action <root> <func> <ground> <remedy> <date>
+    #   grindlib.py owner-actions <root>                             -> one OPEN line each
     #   grindlib.py log-borderline <root> <func> <category> <evidence> <disposition> <date>
     #   grindlib.py rule-scopes <root> <func>                        -> prints the current-scope block
     #   grindlib.py supersede-bans <root> <func> <superseded_by> <needle> [needles...]  -> prints count moved
@@ -2983,6 +3127,23 @@ if __name__ == "__main__":
         # autoescalate <root> <func> <file_stem> <scan_tier> <rule_count> <date>
         print(autoescalate(sys.argv[2], sys.argv[3], sys.argv[4],
                            sys.argv[5], sys.argv[6], sys.argv[7]))
+    elif cmd == "candidate-block":
+        # candidate-block <root> <func> <ground> <body_hash> [remedy]
+        # Owner ruling 2026-09-15: records a non-merging candidate-path exit.
+        # "TRIPPED" means an identical (ground, body, gate fingerprint) has now
+        # been seen CANDIDATE_BLOCK_MAX times -> the driver rotates instead of
+        # re-dispatching identical work.
+        _n, _trip = record_candidate_block(
+            sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
+            sys.argv[6] if len(sys.argv) > 6 else "")
+        print(f"count={_n} " + ("TRIPPED" if _trip else "ok"))
+    elif cmd == "owner-action":
+        # owner-action <root> <func> <ground> <remedy> <date>
+        log_owner_action(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+    elif cmd == "owner-actions":
+        # owner-actions <root> -> the OPEN entries, newest first
+        for _d, _f, _g, _r in open_owner_actions(sys.argv[2]):
+            print(f"{_d}  {_f}  [{_g}]  {_r}")
     elif cmd == "grant-canonical-asm":
         # grant-canonical-asm <root> <func> <tier> <date>
         line = grant_canonical_asm(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
