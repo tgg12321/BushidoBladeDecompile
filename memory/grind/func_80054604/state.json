@@ -1,0 +1,64 @@
+{
+ "func": "func_80054604",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 26,
+   "modality": "recon",
+   "headline": "recon: 160 -> 26 with a TU-local StageCtrl struct + pointer local; residual is ONLY the callee-saved register permutation (a6/a1/ret and a4/a5), attributed to global.c priorities (REG_EQUIV live-lengt"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "a6's pseudo must rank above a1 (860): needs >= 8 refs while doubled (24/204 -> 1176) or must escape the REG_EQUIV doubling via reg_n_sets != 1 with a set that survives to flow.",
+   "mechanism": "global.c:642 allocno_compare; local-alloc.c:1024/1064 REG_EQUIV live-length doubling; function.c:3824 REG_EQUIV on stack parm copies.",
+   "next_probe": "Enumerate natural source forms that give the buffer param a surviving second assignment or two extra uses (e.g. the a6==0 arm assigning the loaded buffer, or the buffer being advanced), reading the .lreg 'Register 78 used N times across L insns' line for each before scoring."
+  },
+  {
+   "hypothesis": "a4 must tie or beat a5: post-sched1 order must not put a6's lw between a4's and a5's lw, or an independent insn must separate the a4/a5 stores.",
+   "mechanism": "sched.c reverse list scheduling, LUID tie-break (sched.c:2460), hazard pick in schedule_select; live length per sched.c finish_sometimes_live.",
+   "next_probe": "Try block-0 shapes (a natural statement occupying the slot before beqz; store order variants around the a4/a5 sh's) and verify with tmp/grind/func_80054604/s1/schedpos.py on the .sched dump before scoring."
+  },
+  {
+   "hypothesis": "With s2=a6, s7=a4, fp=a5 the sched2 prologue interleave (sw sN; lw sN) will reproduce the target lw order a6,a4,a5.",
+   "mechanism": "sched2 anti-dependence of lw sN on the prologue sw sN; LUID tie-break.",
+   "next_probe": "Confirm on the first form that fixes the allocation; do not assume."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Sharing one local between the two func_8004153C result tests and the cleanup index (which crosses gpu_EnableDisplay) forces that pseudo into s0 and inserts move s0,v0 at both test sites on this chassi",
+   "kill_scope": "instance",
+   "measured_on": "post -mel -msoft-float chassis, TU-local StageCtrl typedef + pointer local, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "v1 = 32 with move s0,v0 / move a0,s0 at both sites; v2 = 26 with v0 used directly as in the target."
+  },
+  {
+   "session": 1,
+   "statement": "A dead store to the buffer param after its last use (a6 = 0 before return) undoubles a6's live length and lifts it above a1 in global.c allocation on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "post -mel -msoft-float chassis, body_v2 base, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 26, allocation unchanged (a6 still s4, a1 s2, ret s3): flow deletes the dead set before local-alloc counts sets. A"
+  },
+  {
+   "session": 1,
+   "statement": "Typing a4/a5 (or a1) as s16 changes the parameter copy path enough to reorder the callee-saved assignment toward the target on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "post -mel -msoft-float chassis, body_v2 base, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "a4/a5 s16 = 32: the prologue copies disappear entirely (loads move to the use site) and a2/a3 take s7/fp \u2014 wrong shape. "
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-15T15:33:27.407418+00:00",
+ "object_model_audited": 1
+}
