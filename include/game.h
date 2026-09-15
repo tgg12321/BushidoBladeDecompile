@@ -55,4 +55,25 @@ typedef struct {
 
 extern Unk800A9CF8Header D_800A9CF8;
 
+/* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one
+ * 3-word record (12 bytes; lane stride 120). Object model evidence
+ * (independent of and predating any byte-chasing): the original binary
+ * addresses all three words through ONE offset register per access site --
+ * asm/funcs/func_80063E10.s computes lane*120 (`sll $a0,$s7,4; subu $a0,$a0,$s7;
+ * sll $a0,$a0,3`), adds the slot offset held in $s6, and reads
+ * %lo(D_800F0EC8/ECC/ED0)($at) with that same $a0 added to each base; the
+ * writer asm/funcs/func_80063BD0.s forms lane*120 + slot*12 the same way and
+ * stores the three words at displacements 0/4/8 of that offset. Record stride
+ * and base+offset addressing, not symbol adjacency. The slot bitmask
+ * D_800A3454[lane] and the sibling SVECTOR table D_800F1000[lane][10] index the
+ * same lane/slot pair. Replaces the splat per-word scalars D_800F0EC8 /
+ * D_800F0ECC / D_800F0ED0. */
+typedef struct {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+} Unk800F0EC8Record;
+
+extern Unk800F0EC8Record D_800F0EC8[][10];
+
 #endif /* GAME_H */

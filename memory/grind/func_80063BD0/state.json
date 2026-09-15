@@ -25,6 +25,13 @@
    "hash": "6439c917bdf8c9d5",
    "when": "2026-09-15T07:51:44.241020+00:00",
    "summary": "Body is ordinary C and the D_800A344C widening is precedented, but the D_800F0EC8/ECC/ED0 per-word->aggregate merge is spelled TU-local and left incomplete (three live scalar handles in src/text1b_b.c), and the self-vet never discloses it as a family construct."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "4ff2428fc50844c2",
+   "when": "2026-09-15T08:13:19.138567+00:00",
+   "summary": "final call: Body is ordinary C: first-free-bit slot allocator with wrap fallback; locals bits/mask/i all load-bearing; no FAKE, no asm, no volatile, no dead stores, no pads. The one family construct is the per-wo"
   }
  ]
 }
