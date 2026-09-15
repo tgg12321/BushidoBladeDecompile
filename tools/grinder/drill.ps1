@@ -12,8 +12,10 @@
   0 = GO, 1 = a drill failed, 2 = preflight refused (dirty tree).
 #>
 [CmdletBinding()]
-# JudgeModel default tracks grind.ps1's (owner directive 2026-09-10: every lane
-# on Opus 5 after Fable 5.1's allowance was exhausted).
+# JudgeModel default tracks grind.ps1's (owner directive 2026-09-15: the Judge
+# and layer-1 GATE lanes stay on Opus 5 while the execution/recon REASONING
+# lanes run Fable 5.1 — so this default is unchanged by that split, but it must
+# still be re-checked whenever grind.ps1's -JudgeModel moves).
 # Drill C spends a real Judge cycle, so a stale default here would drill a model
 # the driver no longer uses.
 param([switch]$WithJudge, [string]$JudgeModel = 'claude-opus-5[1m]')

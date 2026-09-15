@@ -20,24 +20,40 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    # LANE MODELS — owner directive 2026-09-10 (supersedes the 2026-09-07
-    # evening split): ALL lanes on Opus 5. Fable 5.1's allowance was exhausted,
-    # so every Fable-pinned lane was spending its first spawn discovering the
-    # limit and then falling back to Opus anyway.
+    # LANE MODELS — owner directive 2026-09-15 (supersedes the 2026-09-10
+    # all-Opus pin): Fable allowance is available again, so the two REASONING
+    # lanes (execution + recon/object-model) go to Fable 5.1 and the two GATE
+    # lanes (Judge + layer-1 cheat-reviewer) stay on Opus 5.
     #
-    # History that shaped this: four Fable-allowance outages (2026-08-12 judge
-    # 429 x5 over 2.5 h; 2026-09-06 execution lane 429 x5; 2026-09-07 recon lane
-    # 429 x16, ~7 h of backoff on func_800238C4; 2026-09-10 owner report) each
-    # stalled the pipeline because a lane was HARD-pinned to a model with its
-    # own exhaustible allowance. The runtime fallback (Invoke-GrindAgent /
-    # Get-LaneModel) stays in place for whichever model is limited next: any
-    # lane pinned to a non-$FallbackModel model falls back to $FallbackModel for
-    # the rest of that limit window the moment a spawn dies on a 429.
+    # Why this split and not the 2026-09-07 one (which put the gates on Fable):
+    #   - The gates run a FROZEN default-FAIL rubric. Extra capability headroom
+    #     buys least against a fixed rubric, and they are the HIGH-VOLUME lanes
+    #     (every candidate-ready pays layer-1 + Judge, retries included) — so
+    #     pinning them is what actually burns an allowance. The 2026-09-10
+    #     collapse was triggered by exactly that: the layer-1 lane 429'd four
+    #     times in one morning (journal 2026-09-10 04:22/04:59/05:39/06:35).
+    #   - Execution and recon are the OPEN-ENDED reasoning lanes, where the
+    #     residual work is long-horizon register-allocation/scheduler modelling.
+    #     Recon is also the lowest-volume, highest-leverage lane (one shot, and
+    #     its quality decides whether a function rotates — cf. the 2026-09-03
+    #     func_80033550 post-mortem that created the object-model modality).
     #
-    # To split lanes again, pass e.g. -JudgeModel 'claude-fable-5-1[1m]'
-    # explicitly ('claude-fable-5[1m]' resolves to Fable 5, not 5.1).
-    [string]$Model = 'claude-opus-5[1m]',              # execution sessions
-    [string]$ReconModel = 'claude-opus-5[1m]',         # recon + object-model sessions
+    # History that shaped the mechanism: four Fable-allowance outages
+    # (2026-08-12 judge 429 x5 over 2.5 h; 2026-09-06 execution lane 429 x5;
+    # 2026-09-07 recon lane 429 x16, ~7 h of backoff on func_800238C4;
+    # 2026-09-10 layer-1 lane) each stalled the pipeline because a lane was
+    # HARD-pinned to a model with its own exhaustible allowance. NOTE: every one
+    # of the six historical lane flip-flops was driven by allowance exhaustion,
+    # never by a quality finding. The runtime fallback (Invoke-GrindAgent /
+    # Get-LaneModel) is what makes a pin survivable: any lane pinned to a
+    # non-$FallbackModel model falls back to $FallbackModel for the rest of that
+    # limit window the moment a spawn dies on a 429. $FallbackModel is Opus 5,
+    # so total Fable exhaustion degrades to EXACTLY the 2026-09-10 config.
+    #
+    # To re-collapse to all-Opus, pass -Model / -ReconModel 'claude-opus-5[1m]'
+    # explicitly. ('claude-fable-5[1m]' resolves to Fable 5, not 5.1.)
+    [string]$Model = 'claude-fable-5-1[1m]',            # execution sessions
+    [string]$ReconModel = 'claude-fable-5-1[1m]',       # recon + object-model sessions
     [string]$JudgeModel = 'claude-opus-5[1m]',         # the default-FAIL Judge
     [string]$Layer1Model = 'claude-opus-5[1m]',        # pre-Judge cheat-reviewer gate
     # Fallback for ANY lane whose model hits a usage-limit 429 (see above).
