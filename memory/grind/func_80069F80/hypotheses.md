@@ -112,3 +112,74 @@ dump tmp/grind/func_80069F80/dumps/text1b.sched.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-15 chassis (-mel -msoft-float), candidates E and G, NO FAKE constructs present, floor 5; dump tmp/grind/func_80069F80/dumps/text1b.sched
+
+## Session 2 (structural, 2026-09-15) - floor 5 -> 0
+
+### H5 - CONFIRMED. The idx 84-86 residual (sw ; addiu ; sw instead of
+### addiu ; sw ; sw) is decided by sched pass 1's adjust_priority(), and it
+### flips when the pseudo holding p1 + 0xC is set MORE THAN ONCE.
+Mechanism (read from tools/gcc-2.7.2/sched.c this session, not inferred):
+sched.c schedules each block in reverse. When an insn is scheduled, every
+predecessor whose ref_count drops to zero goes through adjust_priority();
+with reload not yet done n_deaths is always 0 (REG_DEAD notes were stripped),
+so the insn has INSN_PRIORITY raised to max_priority (= LAUNCH_PRIORITY
+0x7f000001 of the insn just scheduled) IF birthing_insn_p() holds, and
+birthing_insn_p() returns `reg_n_sets[REGNO] == 1`. In the session-1 body the
+addiu `reg119 = reg77 + 12` sets a once-written pseudo, so the moment
+`sw reg119` is scheduled the addiu is boosted above the pending `sw reg77`
+(priority 4) and is placed immediately before its store: sw ; addiu ; sw. If
+the destination pseudo has two sets the boost is skipped, the addiu stays at
+priority 4, rank_for_schedule falls through to the INSN_LUID tie-break, and
+the RTL order (addiu first, as the source already had it) is preserved:
+addiu ; sw ; sw = target. The session-1 dump shows the boost directly:
+ready list at T-9 is `212 (4) 215 (7f000001)` (tmp/grind/func_80069F80/s2/f.sched).
+Probe: `s32 tbl;` assigned at both fills inside the join block (`tbl =
+s.sp18 + 0xC; s.sp1C = tbl;` and `tbl = p1 + 0xC; s.sp18 = p1; s.sp1C = tbl;`),
+everything else as the session-1 body (V1).
+Result: 5 -> 2. The idx 84-86 diff is gone; the remaining 2 is the idx 70/71
+store order.
+
+### H6 - CONFIRMED. With the two-set `tbl` in place, the sp28-first statement
+### order (`s.sp28 = 0; s.sp2C = 3;`) fixes idx 70/71 WITHOUT losing the
+### v0/v1 seat that H3 measured it losing on the session-1 body.
+Mechanism: H3's coupling ran through local-alloc's combine_regs tying the
+once-set +0xC pseudo into the loaded pointer's quantity, which changed the
+block's quantity ordering when the constant-3 pseudo's lifetime moved. A
+twice-set pseudo is its own quantity and is not tied, so the constant-3
+quantity keeps its seat under either statement order.
+Probe: V4 = V1 + `s.sp28 = 0;` moved ahead of `s.sp2C = 3;`.
+Result: **sandbox distance 0/136** (136/136 insns), confirmed twice this
+session with V4 in src/text1b.c. Diff: tmp/grind/func_80069F80/s2/final.diff.
+
+### H7 - KILLED (instance). Carrying `tbl` across the join block AND the
+### `arg1 & 1` block (second and/or third fill) also closes the residual.
+Mechanism hypothesised: the same reg_n_sets > 1 effect with the arg1&1 fill
+as the second writer instead of the first fill.
+Probe: V2 (`tbl` at fills 2 and 3, first fill inline) = 7; V3 (`tbl` at all
+three fills) = 9.
+Result: worse than the floor-5 base. A pseudo referenced in two basic blocks
+leaves local-alloc for global.c, and the third fill needs the in-place
+`p2 += 0x14` mutation (anti-dependence sw ; addiu ; sw) that session 1 found,
+not the shared local. Both writers must sit in the join block.
+kill_scope: instance. measured_on: HEAD 2026-09-15 chassis (-mel
+-msoft-float), V2/V3 bodies, NO FAKE constructs present, base floor 5.
+
+## [s2] The +0xC table pointer must be a local assigned at both fills of the join block; a once-assigned temp (or the inline expression) always schedules after its store.
+- mechanism: tools/gcc-2.7.2/sched.c adjust_priority() boosts a newly-ready insn to LAUNCH_PRIORITY only when birthing_insn_p() holds, i.e. reg_n_sets == 1 for the pseudo it sets; a twice-set pseudo falls through to the INSN_LUID tie-break in rank_for_schedule and keeps the RTL order (addiu ; sw ; sw).
+- probe: V1 = session-1 body + `s32 tbl` assigned at both fills in the join block (`tbl = s.sp18 + 0xC; s.sp1C = tbl;` / `tbl = p1 + 0xC; s.sp18 = p1; s.sp1C = tbl;`).
+- result: 5 -> 2; the idx 84-86 diff disappeared, leaving only the idx 70/71 store order. Same spelling as the matched in-TU function func_80069E18 (src/text1b.c:5793).
+- verdict: CONFIRMED
+
+## [s2] With the two-set `tbl`, writing `s.sp28 = 0;` before `s.sp2C = 3;` fixes the idx 70/71 store order without losing the v0/v1 seat.
+- mechanism: the session-1 coupling came from combine_regs tying the once-set +0xC pseudo to the loaded pointer's quantity; a twice-set pseudo is its own local quantity, so the constant-3 quantity keeps its seat under the sp28-first order.
+- probe: V4 = V1 with `s.sp28 = 0;` moved ahead of `s.sp2C = 3;`; measured with `sandbox func_80069F80 --disable all`.
+- result: distance 0/136, 136/136 instructions, confirmed twice with V4 in src/text1b.c. No FAKE constructs, no sanctioned-family claim.
+- verdict: CONFIRMED
+
+## [s2] Carrying `tbl` into the `arg1 & 1` fill (fills 2+3, or all three) closes the residual as well.
+- mechanism: hypothesised the same reg_n_sets > 1 effect with a different second writer.
+- probe: V2 (fills 2 and 3) = 7; V3 (all three fills) = 9.
+- result: both worse than the floor-5 base; a pseudo live in two basic blocks leaves local-alloc, and the third fill needs session 1's in-place `p2 += 0x14` mutation. Both writers must sit in the join block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-15 chassis (-mel -msoft-float), V2/V3 bodies, NO FAKE constructs present, base floor 5

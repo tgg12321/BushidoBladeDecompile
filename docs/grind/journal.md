@@ -2050,3 +2050,4 @@
 - 2026-09-15 00:02 func_80074B18 COMPLETED-C after 2 sessions (closer: s2 [structural]).
 - 2026-09-15 00:13 func_8005C2A8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-15 00:30 func_80069F80 s1 [recon] floor=5: Recon solved the whole shape from sibling func_8006D3DC: honest floor 136 -> 5, residual is 5 insns in one basic block (a sched1 tie plus a coupled local-alloc seat).
+- 2026-09-15 00:46 func_80069F80: LAYER-1 FAILED a sandbox-0 candidate — Undisclosed unreferenced local `s32 q1;` — a leftover from rejected variants E/F carried into the winning body, with zero semantic reading, no FAKE annotation, and no mention in the self-vet CONSTRUCTS block, in a function whose own rejected/ ledger proves frame size is byte-relevant.

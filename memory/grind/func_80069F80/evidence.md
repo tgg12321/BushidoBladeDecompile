@@ -103,3 +103,17 @@ cross-products ZE/ZG/ZF/ZH/ZK = 8/8/9/8/8.
 - [s1] The two residual sites share one basic block (block 9 in the cc1 dumps), so their local-alloc quantities are sorted together and any fix for one perturbs the other - measured, not inferred: every sp28-first spelling scored 8 or 9 while every sp2C-first spelling scored 5 or 6.
 
 - [s1] Signature: func_80069F80(s32 *arg0, s32 arg1) - only $a0 and $a1 are read. arg0[1] -> +0x1C gives the object pointer; arg0[2], arg0[5] and arg0[7] are the three chain slots the function updates.
+
+## Session 2 (structural, 2026-09-15) - floor 5 -> 0
+| form | score | what it fixed |
+|---|---|---|
+| G (session-1 candidate, re-measured at dispatch) | 5 | baseline |
+| V1: `s32 tbl` assigned at both join-block fills | 2 | idx 84-86 (addiu ; sw ; sw) |
+| V2: `tbl` at fills 2+3 only | 7 | rejected |
+| V3: `tbl` at all three fills | 9 | rejected |
+| **V4 = V1 + `s.sp28 = 0;` before `s.sp2C = 3;`** | **0** | idx 70/71 store order; MATCH |
+
+- [s2] PASS ATTRIBUTION, read from source: the idx 84-86 order is set by tools/gcc-2.7.2/sched.c adjust_priority() (called from schedule_insn for each predecessor whose ref_count reaches zero). Pre-reload n_deaths is always 0, so a newly-ready insn is raised to LAUNCH_PRIORITY iff birthing_insn_p(PATTERN) holds, and birthing_insn_p returns `reg_n_sets[regno] == 1`. That is why every once-set temp for p1 + 0xC (session-1 spellings E/F/G/H/K) scheduled directly before its own store, and why a local set at two sites does not. The .sched dump of the session-1 body (tmp/grind/func_80069F80/s2/f.sched, block 9) shows it: the ready list at T-9 is `212 (4) 215 (7f000001)`, 215 being the addiu carrying the launch bonus.
+- [s2] The matched body contains NO FAKE construct and claims no sanctioned family: a `tbl` local written and read at two fills (the same spelling the matched func_80069E18 uses at src/text1b.c:5793) plus a plain statement order. Diff vs the session-1 body: tmp/grind/func_80069F80/s2/final.diff.
+- [s2] Session 1's H3 "coupling" was an artefact of the once-set pseudo: combine_regs tied it into the loaded pointer's quantity, and that tie is what made the sp28-first order lose the v0/v1 seat. With the two-set local the seat is stable under both orders (V1=2 with sp2C-first, V4=0 with sp28-first).
+- [s2] `tbl` must be confined to the join block: extending it into the `arg1 & 1` fill (V2=7, V3=9) moves the pseudo out of local-alloc and the third fill still needs the in-place `p2 += 0x14` mutation.

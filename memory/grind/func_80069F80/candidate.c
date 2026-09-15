@@ -1,20 +1,19 @@
-/* func_80069F80 - session 1 candidate (grind), honest sandbox floor 5/136.
- * Chassis: HEAD 2026-09-15 (-mel -msoft-float). NO FAKE constructs; ordinary C.
- * Shape derived from sibling func_8006D3DC (EnvA descriptor) + func_80069AE4
- * (S_69AE4 flat sp-named descriptor, the house style in text1b.c).
- * Struct S_69F80 is the 0x3C-byte descriptor consumed by func_80073728 /
- * func_8007352C; the trailing sp44..sp50 words are what makes the target
- * frame 0x70 (locals 0x18..0x57) instead of 0x60 - dropping them costs 12.
- * Residual 5 insns, all in basic block 9 (the join block after the
- * D_800A3524 if/else):
- *   idx 70/71: target emits `sw zero,0x28` before `sw v0,0x2C`; this form
- *              emits them swapped (source order s.sp2C=3 then s.sp28=0).
- *   idx 84-86: target keeps p1 and p1+0xC simultaneously live
- *              (addiu $v1,$v0,0xC ; sw $v0,0x18 ; sw $v1,0x1C); every source
- *              spelling tried lets local-alloc combine them into one reg
- *              (sw ; addiu ; sw).
- * The two are COUPLED: putting s.sp28=0 first fixes the store order but flips
- * the v0/v1 assignment at idx 68-73 (score 5 -> 8). See hypotheses.md H3.
+/* func_80069F80 - session 2 candidate (grind): sandbox distance 0/136 on
+ * HEAD 2026-09-15 (-mel -msoft-float). NO FAKE constructs; ordinary C.
+ * Session 1 solved the shape (floor 5). Session 2 closed the 5-insn residual
+ * with ONE change: the table pointer (+0x04 member) is carried in a local
+ * `tbl` that is assigned at BOTH descriptor fills in the join block
+ * (tbl = s.sp18 + 0xC; ... tbl = p1 + 0xC;). Mechanism (read from
+ * tools/gcc-2.7.2/sched.c, confirmed by the .sched dump): sched pass 1
+ * schedules a block in reverse and adjust_priority() gives a newly-ready
+ * insn LAUNCH_PRIORITY only when birthing_insn_p() holds, which requires
+ * reg_n_sets == 1 for the pseudo it sets. A once-assigned temp for
+ * p1 + 0xC therefore always follows its store immediately (sw ; addiu ; sw);
+ * a twice-assigned local drops to the plain INSN_LUID tie-break, which keeps
+ * the source order (addiu ; sw ; sw) = the target's idx 84-86. With that
+ * pseudo no longer tied by combine_regs, the sp28-first statement order
+ * (s.sp28 = 0; s.sp2C = 3;) keeps the v0/v1 seats and gives the target's
+ * store order at idx 70/71, so both residuals close together.
  */
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
@@ -41,6 +40,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
     s32 p1;
     s32 q1;
     s32 p2;
+    s32 tbl;
 
     if (arg1 & 2) {
         ptr = *(s32 **)(arg0[1] + 0x1C);
@@ -72,17 +72,19 @@ void func_80069F80(s32 *arg0, s32 arg1) {
             s.sp38 = 0x80;
             s.sp34 = 0xA;
         }
-        s.sp2C = 3;
-        s.sp1C = s.sp18 + 0xC;
         s.sp28 = 0;
+        s.sp2C = 3;
+        tbl = s.sp18 + 0xC;
+        s.sp1C = tbl;
         s.sp24 = arg0[2];
         arg0[2] = func_80073728((s32)&s, 0);
         s.sp34 = 0;
         s.sp30 = x0;
         s.sp40 = 0;
         p1 = ptr[1];
+        tbl = p1 + 0xC;
         s.sp18 = p1;
-        s.sp1C = p1 + 0xC;
+        s.sp1C = tbl;
         s.sp20 = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         if (arg1 & 1) {
