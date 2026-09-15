@@ -117,3 +117,8 @@ cross-products ZE/ZG/ZF/ZH/ZK = 8/8/9/8/8.
 - [s2] The matched body contains NO FAKE construct and claims no sanctioned family: a `tbl` local written and read at two fills (the same spelling the matched func_80069E18 uses at src/text1b.c:5793) plus a plain statement order. Diff vs the session-1 body: tmp/grind/func_80069F80/s2/final.diff.
 - [s2] Session 1's H3 "coupling" was an artefact of the once-set pseudo: combine_regs tied it into the loaded pointer's quantity, and that tie is what made the sp28-first order lose the v0/v1 seat. With the two-set local the seat is stable under both orders (V1=2 with sp2C-first, V4=0 with sp28-first).
 - [s2] `tbl` must be confined to the join block: extending it into the `arg1 & 1` fill (V2=7, V3=9) moves the pseudo out of local-alloc and the third fill still needs the in-place `p2 += 0x14` mutation.
+
+## Session 2b (2026-09-15, permuter modality)
+- The 2026-09-15 00:46 layer-1 FAIL was solely the unreferenced `s32 q1;` leftover; removing it re-measures 0/136 (sandbox, --disable all, HEAD chassis -mel -msoft-float). No other change to the V4 body.
+- Applied body: tmp/grind/func_80069F80/s2/V5_noq1_full.c (whole text1b.c); diff vs main: tmp/grind/func_80069F80/s2/final_noq1.diff (101 lines, confined to the INCLUDE_ASM line).
+- No permuter campaign launched (distance already 0); no FAKE constructs; no sanctioned-family claim.

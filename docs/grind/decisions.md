@@ -27041,3 +27041,7 @@ without touching that boundary.
 
 **Unchanged.** The anti-cheat wall, the frozen construct list, the default-FAIL Judge as sole gate,
 rotation-not-foreclosure, and the rule that no cheat reaches main.
+
+## 2026-09-15 01:13 — func_80069F80 — layer-1 review — **FAIL**
+
+The closing lever is an INVENTED fresh local `tbl` written twice solely to push reg_n_sets above 1 and defeat sched.c birthing_insn_p - the settled y1/`c`/`p`/`nv`-`nw`/`h` multi-write-carrier class that is excluded from every frozen family; independently, the struct's four trailing unwritten words (sp44..sp50) are untouched-frame coercion whose object-model claim is contradicted by the callees' own asm.

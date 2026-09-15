@@ -30,7 +30,9 @@
  ],
  "judge_constraints": [],
  "banned_constructs": [
-  "s32 q1;  (declared in func_80069F80's local block; grep over the whole function body shows the identifier appears ONLY on its declaration line \u2014 never written, never read)"
+  "s32 q1;  (declared in func_80069F80's local block; grep over the whole function body shows the identifier appears ONLY on its declaration line \u2014 never written, never read)",
+  "s32 tbl; written at two sites in the join block (`tbl = s.sp18 + 0xC; s.sp1C = tbl;` and `tbl = p1 + 0xC; ... s.sp1C = tbl;`)",
+  "typedef struct { ... s32 sp44, sp48, sp4C, sp50; } S_69F80; - four trailing members that are never written or read anywhere in the function (grep of candidate.c finds the identifiers only on the declaration line)"
  ],
  "kills": [
   {
@@ -50,13 +52,14 @@
    "result": "Disproven at the pass level, not merely empirically. In the E chassis the pre-schedule RTL order already was insn 212 (r"
   }
  ],
- "ladder_skip": 2,
+ "ladder_skip": 4,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-15T05:13:48.469295+00:00",
  "object_model_audited": 1,
  "reviewer_history": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: Undisclosed unreferenced local `s32 q1;` \u2014 a leftover from rejected variants E/F carried into the winning body, with zero semantic reading, no FAKE annotation, and no mention in the self-vet CONSTRUCTS block, in a function whose own rejected/ ledger proves frame size is byte-relevant. Next action: Delete the `s32 q1;` declaration and re-run `& tools/wteng.ps1 main sandbox func_80069F80 --disable all`. If the score stays 0, resubmit that body (it is the simplest known byte-exact form under Ruling 1(4)) with the self-vet's CONSTRUCTS block amended to enumerate EVERY "
+  "LAYER-1 CHEAT-REVIEWER FAIL: Undisclosed unreferenced local `s32 q1;` \u2014 a leftover from rejected variants E/F carried into the winning body, with zero semantic reading, no FAKE annotation, and no mention in the self-vet CONSTRUCTS block, in a function whose own rejected/ ledger proves frame size is byte-relevant. Next action: Delete the `s32 q1;` declaration and re-run `& tools/wteng.ps1 main sandbox func_80069F80 --disable all`. If the score stays 0, resubmit that body (it is the simplest known byte-exact form under Ruling 1(4)) with the self-vet's CONSTRUCTS block amended to enumerate EVERY ",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The closing lever is an INVENTED fresh local `tbl` written twice solely to push reg_n_sets above 1 and defeat sched.c birthing_insn_p - the settled y1/`c`/`p`/`nv`-`nw`/`h` multi-write-carrier class that is excluded from every frozen family; independently, the struct's four trailing unwritten words (sp44..sp50) are untouched-frame coercion whose object-model claim is contradicted by the callees' own asm. Next action: Do not commit. Two separate repairs, both with a concrete legitimate route. (1) The idx 84-86 scheduler residual must be closed WITHOUT an invented mu"
  ],
  "review_ledger": [
   {
@@ -65,6 +68,13 @@
    "hash": "de2250b4cf9bb5b6",
    "when": "2026-09-15T05:46:05.107072+00:00",
    "summary": "Undisclosed unreferenced local `s32 q1;` \u2014 a leftover from rejected variants E/F carried into the winning body, with zero semantic reading, no FAKE annotation, and no mention in the self-vet CONSTRUCTS block, in a function whose own rejected/ ledger proves frame size is byte-relevant."
+  },
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "163e84a9ed9ef0e9",
+   "when": "2026-09-15T06:13:26.428624+00:00",
+   "summary": "The closing lever is an INVENTED fresh local `tbl` written twice solely to push reg_n_sets above 1 and defeat sched.c birthing_insn_p - the settled y1/`c`/`p`/`nv`-`nw`/`h` multi-write-carrier class that is excluded from every frozen family; independently, the struct's four trailing unwritten words "
   }
  ]
 }

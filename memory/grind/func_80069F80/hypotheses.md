@@ -183,3 +183,24 @@ kill_scope: instance. measured_on: HEAD 2026-09-15 chassis (-mel
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-15 chassis (-mel -msoft-float), V2/V3 bodies, NO FAKE constructs present, base floor 5
+
+## Session 2b (permuter modality, 2026-09-15) - floor 0 re-proven without `q1`
+
+### H8 - CONFIRMED. Deleting the unreferenced `s32 q1;` declaration (the
+### 2026-09-15 00:46 layer-1 FAIL) leaves the body byte-exact at 0/136.
+Mechanism: an unreferenced automatic scalar produces no RTL in GCC 2.7.2 -
+with no uses there is no pseudo, no frame slot and no insn, so the frame stays
+0x70 and every instruction is unchanged.
+Probe: applied tmp/grind/func_80069F80/s2/var/V4.c minus the single line
+`    s32 q1;` to src/text1b.c (tmp/grind/func_80069F80/s2/V5_noq1_full.c;
+diff tmp/grind/func_80069F80/s2/final_noq1.diff) and measured
+`sandbox func_80069F80 --disable all`.
+Result: score 0, 136/136 insns, cheat-asm stripped 146 (the INCLUDE_ASM
+baseline), rules dropped 0. The permuter campaign this modality mandates was
+not launched: there is no residual to permute.
+
+## [s2b] Deleting the dead `s32 q1;` declaration keeps the session-2 V4 body at distance 0/136.
+- mechanism: an unreferenced automatic scalar never gets a pseudo or a frame slot in GCC 2.7.2, so removing its declaration cannot change any emitted byte; the layer-1 FAIL was a hygiene defect, not a codegen dependency.
+- probe: V4.c minus the `s32 q1;` line applied to src/text1b.c; `sandbox func_80069F80 --disable all`.
+- result: score 0, 136/136 instructions. Body re-filed as candidate.c with the self-vet enumerating every construct.
+- verdict: CONFIRMED

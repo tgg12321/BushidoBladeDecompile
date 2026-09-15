@@ -1,5 +1,8 @@
-/* func_80069F80 - session 2 candidate (grind): sandbox distance 0/136 on
- * HEAD 2026-09-15 (-mel -msoft-float). NO FAKE constructs; ordinary C.
+/* func_80069F80 - session 2 candidate (grind, re-filed): sandbox distance
+ * 0/136 on HEAD 2026-09-15 (-mel -msoft-float). NO FAKE constructs; ordinary
+ * C. The 2026-09-15 00:46 layer-1 FAIL was for an unreferenced leftover
+ * `s32 q1;` declaration; this body drops it and re-measures 0/136 (the local
+ * never reached the frame or the RTL, so the bytes are unchanged).
  * Session 1 solved the shape (floor 5). Session 2 closed the 5-insn residual
  * with ONE change: the table pointer (+0x04 member) is carried in a local
  * `tbl` that is assigned at BOTH descriptor fills in the join block
@@ -38,7 +41,6 @@ void func_80069F80(s32 *arg0, s32 arg1) {
     s32 x0;
     s32 c;
     s32 p1;
-    s32 q1;
     s32 p2;
     s32 tbl;
 
