@@ -912,3 +912,11 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s51] A malformed splice attempt this session (outer 0..1 counter form) produced a syntactically broken body (build_insns=8, unbalanced braces) -- discarded as a non-measurement, not banked as a kill; the underlying C shape (decoupling `i` from an outer counter) remains genuinely untried if re-spliced correctly.
 
 - [s51] git status confirmed clean (src/text1b.c reverted to INCLUDE_ASM stub) after every probe this session.
+
+- [s52] HEAD src/text1b.c is unchanged from prior sessions (INCLUDE_ASM("asm/funcs", func_80056CB8);) -- confirmed via grep before and after this session's work; the tree was left clean (git status --short src/text1b.c empty at session end).
+
+- [s52] The auto-return directive noted at dispatch (func_8006CCC8 sibling movement to floor 39) was already acknowledged and measured by s49 per hypotheses.md's s49 entry re-checking the same stamp -- no new action required this session; func_8006CCC8's own body (a different function, different file region) shares no transplantable block with func_80056CB8's loop residual.
+
+- [s52] Both genuinely-untried structural items named across s49, s50, and s51 (the outer 0..1-counter loop restructuring; do-while-chassis combinations with the limit-removal and shared-idx-local levers) are now measured and closed -- the rederive-modality mandate for this session is fulfilled.
+
+- [s52] No FAKE constructs were introduced or present in any probe this session; every measurement used git checkout -- src/text1b.c to cleanly revert between probes, verified via git status --short.

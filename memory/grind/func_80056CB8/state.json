@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 51,
- "current_modality": "forensics",
+ "session_count": 52,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -309,47 +309,29 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s51 forensics: named the exact global_alloc spill (limit=start+2, spilled sp+104) via the .greg dump; two new C levers derived from it both KILLED on the current chassis (inline-bound 38->42, shared-i"
+  },
+  {
+   "session": 52,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s52 rederive: re-confirmed 38/204 fresh; closed both genuinely-untried structural items from s49-s51 (valid brace-balanced outer-ncounter loop, and two do-while-chassis combinations) -- all three KILL"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Reuse the `limit`-holding pseudo (or a variable that would occupy the same storage) for a second, USED, loop-VARIANT value near the `i < limit` compare, so the pseudo becomes multi-set and loop.c's invariant-motion no longer treats it as a movable -- this is the [[defeat-licm-hoist-var-reuse]] mechanism applied to the loop BOUND rather than the table INDEX (which is what all four 'share i*2' probes, now killed on three chassis generations, actually tested).",
-   "mechanism": "loop.c's strength_reduce / find_and_verify_loops only treats a pseudo as a movable invariant if it has exactly one set reaching every use inside the loop; a genuinely multi-set pseudo is excluded from the movable-pseudo set and is not hoisted-then-spilled the same way.",
-   "next_probe": "Identify a loop-variant value computed near the `limit` use (the `i < limit` compare site, or immediately before/after it) that could plausibly share ONE C variable with `limit` under a truthful semantic reading (not an invented alias) -- e.g. restructuring the loop guard/increment so the same local is legitimately reassigned inside the loop body. If no truthful reuse candidate exists, this lever may not be reachable without inventing a value, in which case the next forensics step is a fresh `.lreg`/`.rtl` dump specifically of the post-spill reload sequence to see what ELSE conflicts with reg 11 in the loop body (the conflict list at line ~14790-14810 of text1b.greg, not yet cross-referenced against source-level candidates)."
+   "hypothesis": "Find a loop-VARIANT value near the limit/i<limit compare site that could legitimately share ONE C variable with limit under a truthful semantic reading (multi-set pseudo, not deletion or inline) -- the defeat-licm-hoist-var-reuse mechanism applied to the loop BOUND rather than the table INDEX.",
+   "mechanism": "loop.c's find_and_verify_loops/strength_reduce only treats a pseudo as a movable invariant if it has exactly one set reaching every use inside the loop; a genuinely multi-set pseudo is excluded from the movable set and is not hoisted-then-spilled.",
+   "next_probe": "Search the loop body for any value computed near the limit use that could plausibly share storage with limit under a truthful semantic reading; if none exists, the next step is the fresh .lreg/.rtl dump of the post-spill reload sequence (text1b.greg ~line 14790-14810) to find what ELSE conflicts with reg 11, not yet cross-referenced against source-level candidates."
   },
   {
-   "hypothesis": "Re-attempt the outer 0..1-counter loop restructuring (`for (n = 0; n < 2; n++) { i = start + n; ... }`) with a correctly brace-balanced splice -- this session's attempt was a tooling artifact (build_insns=8, syntax error), not a real measurement, so this C shape is genuinely untried.",
-   "mechanism": "Decoupling the loop-carried `i` (used for both indexing and the bound compare) from a fresh, single-purpose counter `n` might change which pseudo global_alloc treats as the loop-invariant/loop-variant split, potentially avoiding the reg-11 spill path entirely by giving the bound test a trivially-constant (`n < 2`) comparison instead of a computed `limit`.",
-   "next_probe": "Rewrite tmp/grind/func_80056CB8/s51/splice_ncount.py by hand (not via blind string-replace) to preserve brace balance and the full loop body, then measure via sandbox --disable all."
+   "hypothesis": "Cross-reference the reg-11 conflict list in text1b.greg (lines ~14790-14810, not yet read this ledger) against source-level candidate values to identify a concrete C-level conflict source beyond limit itself.",
+   "mechanism": "global_alloc's find_reg spill decision is driven by the FULL conflict set of the pseudo, not just its single-set status; the s51 forensics session named the spilled pseudo but has not yet enumerated everything it conflicts with.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_80056CB8, then grep/read the reg-11 conflict list in the .greg dump at the cited line range."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 17,
-   "statement": "s16's closest-to-target instance kill (the flags==4 y-compare single abs-value form) still fails on the current chassis (mandatory kill re-audit).",
-   "kill_scope": "instance",
-   "measured_on": "s17 chassis (42/197, s16-banked body unmodified), single fresh sandbox measurement, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score 42 -> 45/204 (build_insns unchanged at 197) -- reproduces the s16 result exactly."
-  },
-  {
-   "session": 17,
-   "statement": "The s13/s15/s16 'reg 11/reg 65 double-bind' frontier item (asking a solver to name which C-level object occupies pseudo 11 and pseudo 65) is unanswerable because neither number is a pseudo.",
-   "kill_scope": "class",
-   "measured_on": "s17 chassis (42/197, s16-banked body unmodified), fresh .greg dump this session, no FAKE constructs",
-   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:1181",
-   "result": "The premise that pseudo 11/65 are nameable spilled C objects is factually false; no C-level lever follows from further p"
-  },
-  {
-   "session": 18,
-   "statement": "No C-level re-spelling of how the i*2 byte-table index is named or carried (fresh int local, loop-carried int induction variable, fresh pointer, loop-carried pointer) can close this residual's missing",
-   "kill_scope": "class",
-   "measured_on": "s18 chassis (42/197, s17-banked candidate.c body unmodified except the tested idx2 substitution, reverted after measurement), single fresh sandbox measurement, no FAKE constructs present in either bas",
-   "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
-   "result": "idx2 variant measured 42 -> 50 (build_insns 197 -> 200), WORSE, on the current 42/197 chassis -- reproducing the s10 (58"
-  },
   {
    "session": 19,
    "statement": "The classify-flagged 'target only: li #,4' instructions (unattributed since s8) are reorg.c's fill_simple_delay_slots reusing one constant preload across two converging branch delay slots, not an inde",
@@ -805,6 +787,30 @@
    "measured_on": "s51 fresh chassis (candidate.c s22-s50-banked body + shared-offset-local edit), sandbox --disable all, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "score REGRESSED 38 -> 51 (build_insns 198 -> 200). Banked: memory/grind/func_80056CB8/rejected/shared-offset-local-s51-r"
+  },
+  {
+   "session": 52,
+   "statement": "The 'outer 0..1-counter loop restructuring' (for (n = 0; n < 2; n++) { i = start + n; ... }, no limit local), which s51 could only attempt via a brace-unbalanced (broken) splice, is a real, worse spel",
+   "kill_scope": "instance",
+   "measured_on": "s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, loop restructured to for(n=0;n<2;n++){i=start+n;...} with limit local removed, zero FAKE constructs pr",
+   "predicate_cite": "",
+   "result": "score REGRESSED 38 -> 68, build_insns 198 -> 199 (+1 real instruction). Valid measurement (not a syntax-error artifact)."
+  },
+  {
+   "session": 52,
+   "statement": "The do-while loop rewrite (s34-confirmed 46/195 alone) combined with dropping the limit local and inlining the bound as i < start + 2 (s51-confirmed 42/197 alone on the for-loop chassis) -- an untried",
+   "kill_scope": "instance",
+   "measured_on": "s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, do-while loop with limit local removed and bound inlined, zero FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score REGRESSED 38 -> 45, build_insns 198 -> 194. Banked at memory/grind/func_80056CB8/rejected/dowhile-nolimit-worse.c"
+  },
+  {
+   "session": 52,
+   "statement": "The do-while loop rewrite (limit retained, s34-confirmed 46/195 alone) combined with the shared 'off = i * 2' index-local family (previously killed only on the for-loop chassis across three generation",
+   "kill_scope": "instance",
+   "measured_on": "s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, do-while loop with limit retained + off shared-index local, zero FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score REGRESSED 38 -> 66 (do-while-alone baseline: 46), build_insns 198 -> 197. Banked at memory/grind/func_80056CB8/rej"
   }
  ],
  "ladder_skip": 0,

@@ -1347,6 +1347,26 @@
  * the shared-i*2-offset probes above tested sharing a DIFFERENT pseudo
  * (the table index, not the loop bound); this is a distinct, still-open
  * lever. Full writeup: hypotheses.md [s51].
+ * ---------------------------------------------------------------------
+ * s52 (rederive modality). Re-confirmed 38/204 fresh. Closed the two
+ * genuinely-untried items s49-s51 kept flagging: (1) the "outer 0..1
+ * counter" loop restructuring (`for (n=0;n<2;n++) { i=start+n; ... }`,
+ * no `limit` local) -- s51's attempt broke on a brace-unbalanced splice;
+ * this session hand-wrote a valid one and measured 68/204 (build_insns
+ * 199), WORSE. (2) the do-while chassis (s34's 46/195, never previously
+ * combined with any other lever) x two combos: do-while+no-limit-inlined-
+ * bound measured 45/204 (build_insns 194, the LOWEST real-insn count yet
+ * for this residual, still a worse weighted score); do-while+shared-idx-
+ * local measured 66/204, confirming the shared-idx family dead on a
+ * FOURTH chassis generation (for-loop @81/@48-58/@38x3, now do-while @46).
+ * All three banked to rejected/. FRONTIER for the next session is now the
+ * SAME open lever s51 named and no session has yet attempted: find a
+ * loop-VARIANT value near the `limit`/`i<limit` compare site that could
+ * legitimately share ONE C variable with `limit` (multi-set pseudo, not a
+ * deletion or inline) -- or a fresh `.lreg`/`.rtl` dump of the post-spill
+ * reload sequence's OTHER conflicts with reg 11 (text1b.greg ~line
+ * 14790-14810), not yet cross-referenced against source-level candidates.
+ * Full writeup: hypotheses.md [s52].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;

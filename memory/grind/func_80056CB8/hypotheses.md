@@ -2405,3 +2405,63 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - probe: Applied tmp/grind/func_80056CB8/s49/splice.py to fresh src/text1b.c, measured via sandbox --disable all before running any new probe this session.
 - result: score 38, target_insns 204, build_insns 198, scorable true -- exact match to ledger.
 - verdict: CONFIRMED
+
+## [s52, rederive] Fresh re-splice of the s22-s51-banked candidate.c body onto current src/text1b.c HEAD reproduces the ledger's recorded 38/204 floor exactly, confirming the chassis is unchanged (seventh consecutive session: s41, s46, s48, s49, s50, s51, s52) before any new edit.
+- mechanism: n/a -- direct re-measurement per the ledger's mandatory kill-re-audit instruction.
+- probe: Applied tmp/grind/func_80056CB8/s49/splice.py to fresh src/text1b.c, measured via sandbox --disable all.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact match to ledger.
+- verdict: CONFIRMED
+
+## [s52, rederive] Genuinely-measured (brace-balanced) version of the "outer 0..1-counter loop restructuring" (`for (n = 0; n < 2; n++) { i = start + n; ... }`, no `limit` local) that s51 could only attempt via a broken string-replace is a real, worse spelling of the loop.
+- mechanism: Decoupling the loop-carried `i` (indexing + bound compare) into a trivially-constant-bounded counter `n` plus a per-iteration derived `i = start + n;` does not remove register pressure -- it relocates it: `start + n` still needs to be held live for both the array-index use and the tail `arg0 + i` store-address computation, so the reg-11-class spill this residual's forensics (s51 .greg dump) identified is not avoided, and the trivially-constant `n < 2` bound test itself costs an extra insn relative to the computed `limit` compare.
+- probe: Hand-wrote tmp/grind/func_80056CB8/s52/splice.py-style edits (moved decl-before-statement per C89 rules, unlike s51's broken attempt) onto the s22-s51-banked chassis; measured via sandbox --disable all; reverted with `git checkout -- src/text1b.c` (clean revert verified via `git status --short`).
+- result: score REGRESSED 38 -> 68, build_insns 198 -> 199 (+1 real instruction). This is a VALID measurement (not a syntax-error artifact like s51's attempt) -- closes the one item s49-s51 repeatedly flagged as "genuinely untried". Full form banked at memory/grind/func_80056CB8/rejected/outer-ncounter-loop-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, loop restructured to `for (n=0;n<2;n++) { i=start+n; ... }` with `limit` local removed, no FAKE constructs present)
+
+## [s52, rederive] Untried combination: the s34-confirmed do-while loop rewrite (empirically 46/195 alone) COMBINED WITH the s51-confirmed "drop the `limit` local, inline the bound as `i < start + 2`" edit (empirically 42/197 alone on the for-loop chassis) is worse than either alone and worse than baseline.
+- mechanism: Both individual levers reduce real instruction count (do-while alone: 198->195; inline-bound alone: 198->197) via different, apparently non-additive routes through global_alloc/loop.c; combined they reach the lowest build_insns of any variant measured for this residual (194) but the weighted sandbox score is still worse than baseline, meaning the removed instructions are still not the ones separating build from target on either axis.
+- probe: Hand-spliced tmp/grind/func_80056CB8/s52/splice_dowhile_nolimit.py onto the s22-s51-banked chassis (do-while syntax + no `limit` local, bound `i < start + 2` evaluated in the while-clause); measured via sandbox --disable all; reverted via `git checkout -- src/text1b.c`.
+- result: score REGRESSED 38 -> 45, build_insns 198 -> 194 (lowest real-insn count measured for this residual to date, still worse weighted score). Full form banked at memory/grind/func_80056CB8/rejected/dowhile-nolimit-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, do-while loop with `limit` local removed and bound inlined, no FAKE constructs present)
+
+## [s52, rederive] Untried combination: the s34-confirmed do-while loop rewrite (limit RETAINED, 46/195 alone) COMBINED WITH the s6/s11-13/s51-killed "shared `off = i*2` index local" family (previously only measured on the for-loop chassis, killed 3 chassis generations running) is worse than the do-while-alone chassis, confirming the shared-idx family is dead independent of loop control-flow shape.
+- mechanism: Same register-pressure mechanism as every prior shared-idx-local kill (the local's live range spans the intervening ratan2 call and flags/obj computation between the two table-lookup sites) -- this session confirms it is a property of the SHARED LOCAL, not an interaction with the for-loop's specific RTL shape, since it regresses the do-while chassis by the same qualitative amount.
+- probe: Applied tmp/grind/func_80056CB8/s52/splice_dowhile_idx.py onto the s22-s51-banked chassis (do-while syntax, `limit` retained, `off` local added replacing both `i*2` occurrences -- declared after the per-iteration locals per C89 decl-before-statement rules); measured via sandbox --disable all; reverted via `git checkout -- src/text1b.c` (clean revert verified).
+- result: score REGRESSED 38 -> 66 (do-while-alone baseline: 46), build_insns 198 -> 197. Full form banked at memory/grind/func_80056CB8/rejected/dowhile-shared-idx-worse.c. This CLOSES the do-while chassis as a combination substrate for the shared-idx family -- fourth chassis generation confirming this family dead (for-loop @81, @48-58, @38 x3; now do-while @46).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, do-while loop with `limit` retained + `off` shared-index local, no FAKE constructs present)
+
+## [s52] Fresh re-splice of the s22-s51-banked candidate.c body onto current src/text1b.c HEAD reproduces the ledger's recorded 38/204 floor exactly, confirming the chassis is unchanged (seventh consecutive confirming session).
+- mechanism: n/a -- direct re-measurement per the ledger's mandatory kill-re-audit instruction
+- probe: Applied tmp/grind/func_80056CB8/s49/splice.py to fresh src/text1b.c, measured via sandbox --disable all
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact match to ledger
+- verdict: CONFIRMED
+
+## [s52] The 'outer 0..1-counter loop restructuring' (for (n = 0; n < 2; n++) { i = start + n; ... }, no limit local), which s51 could only attempt via a brace-unbalanced (broken) splice, is a real, worse spelling of the loop when correctly written.
+- mechanism: Decoupling the loop-carried i into a trivially-constant-bounded counter n plus a per-iteration derived i = start + n does not remove register pressure -- it relocates it, since start+n must still be held live for both the array-index use and the tail arg0+i store-address computation; the reg-11-class spill this residual's s51 forensics identified is not avoided, and the n < 2 bound test costs an extra insn relative to the computed limit compare.
+- probe: Hand-wrote brace-balanced edits (C89 decl-before-statement order preserved, unlike s51's broken attempt) onto the s22-s51-banked chassis, measured via sandbox --disable all, reverted via git checkout -- src/text1b.c (clean revert verified via git status --short)
+- result: score REGRESSED 38 -> 68, build_insns 198 -> 199 (+1 real instruction). Valid measurement (not a syntax-error artifact). Banked at memory/grind/func_80056CB8/rejected/outer-ncounter-loop-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, loop restructured to for(n=0;n<2;n++){i=start+n;...} with limit local removed, zero FAKE constructs present)
+
+## [s52] The do-while loop rewrite (s34-confirmed 46/195 alone) combined with dropping the limit local and inlining the bound as i < start + 2 (s51-confirmed 42/197 alone on the for-loop chassis) -- an untried combination -- is worse than either lever alone and worse than baseline, despite reaching the lowest real-instruction count measured for this residual to date.
+- mechanism: Both individual levers reduce real instruction count via apparently non-additive routes through global_alloc/loop.c; combined they reach 194 build_insns (lowest yet) but the weighted sandbox score is still worse than baseline, meaning the removed instructions are not the ones separating build from target on either axis.
+- probe: Hand-spliced do-while syntax + inlined bound (no limit local) onto the s22-s51-banked chassis, measured via sandbox --disable all, reverted via git checkout -- src/text1b.c
+- result: score REGRESSED 38 -> 45, build_insns 198 -> 194. Banked at memory/grind/func_80056CB8/rejected/dowhile-nolimit-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, do-while loop with limit local removed and bound inlined, zero FAKE constructs present)
+
+## [s52] The do-while loop rewrite (limit retained, s34-confirmed 46/195 alone) combined with the shared 'off = i * 2' index-local family (previously killed only on the for-loop chassis across three generations) is worse than the do-while-alone chassis, confirming the shared-idx family is dead independent of loop control-flow shape.
+- mechanism: Same register-pressure mechanism as every prior shared-idx-local kill (the local's live range spans the intervening ratan2 call and flags/obj computation between the two table-lookup sites) -- this session confirms it is a property of the shared local itself, not an interaction with the for-loop's specific RTL shape.
+- probe: Applied do-while syntax (limit retained) + off shared-index local (declared after per-iteration locals per C89 rules) replacing both i*2 occurrences onto the s22-s51-banked chassis, measured via sandbox --disable all, reverted via git checkout -- src/text1b.c
+- result: score REGRESSED 38 -> 66 (do-while-alone baseline: 46), build_insns 198 -> 197. Banked at memory/grind/func_80056CB8/rejected/dowhile-shared-idx-worse.c. Confirms shared-idx family dead on a FOURTH chassis generation (for-loop @81, @48-58, @38 x3; now do-while @46).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, do-while loop with limit retained + off shared-index local, zero FAKE constructs present)
