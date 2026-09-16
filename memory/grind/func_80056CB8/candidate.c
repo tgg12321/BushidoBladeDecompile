@@ -1,6 +1,13 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60) — floor 38/204, NOT YET 0.
+ * s60 (enumerate modality, 2026-09-16): Body UNCHANGED (16th consecutive
+ * session confirming 38/204 fresh). Hand-tested 3 spellings of the
+ * type-dispatch if/else block (the s37/s38-flagged tooling-gap block
+ * spelling_enum.py cannot represent) -- OR-operand swap, hoisted
+ * repeated-field-read local, negated-arm swap -- all measured WORSE
+ * (40/204, 58/204, 46/204). Sibling func_8006CCC8 re-checked, still
+ * disjoint, no transplant. See hypotheses.md/evidence.md [s60].
  * s57 (structural modality, 2026-09-16): Body UNCHANGED (9th consecutive
  * session confirming 38/204 fresh). New structural probe this session:
  * type-narrowed start/limit/i (all provably [0,6]-valued) to s16 in 3

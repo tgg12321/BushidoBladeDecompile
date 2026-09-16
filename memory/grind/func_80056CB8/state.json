@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 59,
+ "session_count": 60,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -357,6 +357,12 @@
    "floor": 38,
    "modality": "enumerate",
    "headline": "s59 enumerate: fresh 38/204 re-confirmed (13th consecutive flat session); extended s3's obj/flags declaration-order kill to the full 7-local loop-scoped set (3 orderings, all tied) -- no untried block"
+  },
+  {
+   "session": 60,
+   "floor": 38,
+   "modality": "enumerate",
+   "headline": "16th consecutive flat session at 38/204; killed 3 more spellings of the s37/38 tooling-gap dispatch block, sibling re-checked disjoint"
   }
  ],
  "frontier": [
@@ -364,43 +370,16 @@
    "hypothesis": "One of the ~20 OTHER pseudos simultaneously live with limit in global_alloc's conflict graph (per the s51 .greg dump) -- a compiler-internal pseudo without a stable declared C name -- has a source-level handle that could legitimately narrow its live range, shifting the spill-cost comparison away from limit.",
    "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the FULL conflict graph's relative costs, not any single pseudo's isolated properties.",
    "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output via a fresh -da cc1 run on the current chassis, to NAME a specific non-named pseudo before proposing any declaration-scope edit. Forensics/solver modality, not enumerate/structural."
+  },
+  {
+   "hypothesis": "The s37/s38 tooling-gap block (interior if/else, obj/flags/type-dispatch) may still have untried statement-level restructurings beyond the 3 tested this session -- e.g. computing obj via a ternary bound to the 0x1000 check, or reordering the two independent if-blocks relative to each other where their dependencies allow.",
+   "mechanism": "spelling_enum.py's region format still cannot mechanically enumerate this block; only hand-generated variants can cover it, and only 3 of an unbounded space have been tried.",
+   "next_probe": "A future enumerate session could extend spelling_enum.py to support a single level of interior if/else (bounded scope, not a general rewrite), OR continue hand-generating variants of this specific block -- the two if-blocks' relative statement order (flags-read/obj-check before vs. after the type-dispatch) is the remaining untried sub-axis."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 26,
-   "statement": "Narrowing sin_p/cos_p's live range (capturing *sin_p/*cos_p into fresh sin_v/cos_v scalars immediately after their computation, before the first func_80053614 call, instead of re-dereferencing the poi",
-   "kill_scope": "instance",
-   "measured_on": "s26 chassis (s22/s23/s24-banked 38/198 body, unmodified except the sin_v/cos_v capture-and-substitute), single fresh sandbox measurement, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score 38 -> 76/204, build_insns 198 -> 194 (-4 real instructions, moving away from target's 204). Reverted; 38/204 re-co"
-  },
-  {
-   "session": 26,
-   "statement": "Giving each func_80053614 call site its own distinct block-scoped local (addr1/addr2, each declared and assigned immediately before its own call) for the 0x1F8002B8 literal, instead of the bare repeat",
-   "kill_scope": "instance",
-   "measured_on": "s26 chassis (s22/s23/s24-banked 38/198 body, unmodified except the two distinct per-call-site addr locals), single fresh sandbox measurement, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score 38 -> 43/204, build_insns 198 -> 198 (unchanged instruction count -- pure register-identity churn, same signature "
-  },
-  {
-   "session": 26,
-   "statement": "A fresh read of tools/gcc-2.7.2/loop.c:3760-3830 (the strength_reduce giv-worth rejection loop) shows the loop.c:3823 predicate `v->lifetime * threshold * benefit < insn_count` uses insn_count as the ",
-   "kill_scope": "instance",
-   "measured_on": "n/a (mechanism/predicate analysis of frozen compiler source, not a fresh source-level spelling test this session); relies on the s22 idx2-on-limit sandbox measurement (55/204) as its empirical anchor",
-   "predicate_cite": "",
-   "result": "Mechanism record corrected: insn_count is chassis-variable (not a compile-time constant, correcting a possible over-read"
-  },
-  {
-   "session": 27,
-   "statement": "The s26-named untried combination -- promoting i*2 to a loop-carried idx2 accumulator TOGETHER WITH spelling the two 0x1F8002B8 literal occurrences as textually-distinct expressions (0x1F8002B8 vs 0x1",
-   "kill_scope": "instance",
-   "measured_on": "s27 chassis (s22-s26-banked 38/198 body, idx2 for-statement promotion + two-spelling literal), no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score 38 -> 55/204, build_insns 198 -> 201 (+3, wrong direction). Identical to every prior isolated idx2 measurement (s2"
-  },
   {
    "session": 27,
    "statement": "Spelling one of the two identical-value 0x1F8002B8 call-argument literals as an arithmetically-equal but textually-distinct expression (0x1F800000 + 0x2B8) cannot change the compiled instruction strea",
@@ -848,6 +827,38 @@
    "measured_on": "s59 read-only cross-reference of this session's + all prior sessions' enumerate-modality findings (no new chassis measurement beyond the declaration-order test above)",
    "predicate_cite": "",
    "result": "No new spelling axis identified beyond the declaration-order extension already tested this session."
+  },
+  {
+   "session": 60,
+   "statement": "Swapping the OR-operand order in the type-dispatch condition (`*(u16*)(arg0+0x6A)==6||==0x13` instead of `==0x13||==6`) measures worse than the 38/204 baseline on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "s60 chassis (candidate.c's s22-s59-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, OR-operand swap applied and reverted, zero FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 40/204, build_insns 198 (same insn count, worse RA residual). Worse than baseline; banked to rejected/dispatch-con"
+  },
+  {
+   "session": 60,
+   "statement": "Hoisting the twice-read `*(u16*)(arg0+0x6A)` field into a named local (`u16 type = ...;` read twice) instead of re-reading it at each comparison measures dramatically worse than the 38/204 baseline.",
+   "kill_scope": "instance",
+   "measured_on": "s60 chassis (candidate.c's s22-s59-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, field-read hoist applied and reverted, zero FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 58/204, build_insns 180 (-18 insns vs the 198-insn baseline) -- confirms the eliminated re-read was load-bearing, "
+  },
+  {
+   "session": 60,
+   "statement": "Negating the type-dispatch condition and swapping the if/else arm bodies (ratan2 branch first, direct-angle branch second) measures worse than the 38/204 baseline.",
+   "kill_scope": "instance",
+   "measured_on": "s60 chassis (candidate.c's s22-s59-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, arm-swap applied and reverted, zero FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 46/204, build_insns 199 (+1 insn vs baseline). Worse than baseline; banked to rejected/dispatch-condition-spelling"
+  },
+  {
+   "session": 60,
+   "statement": "Sibling func_8006CCC8 (the owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block.",
+   "kill_scope": "instance",
+   "measured_on": "s60 read-only cross-reference (no new sandbox measurement of the sibling needed, its floor/structure unchanged since the last full read)",
+   "predicate_cite": "",
+   "result": "No transplant available; sibling floor and structure unchanged since last check."
   }
  ],
  "ladder_skip": 0,

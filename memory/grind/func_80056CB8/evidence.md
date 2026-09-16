@@ -1021,3 +1021,17 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s59] The residual's mechanism was pinned at s51 via a .greg dump: pseudo for `limit` is spilled in global_alloc's conflict graph, live across virtually the whole function body alongside ~20 other pseudos; 8 of those have stable C names (obj/i/flags/scale/sin_p/cos_p/x/z) and are all closed as narrowing/reorder targets (s57/s58/s59); the remaining ~20 are compiler-internal pseudos with no stable declared C handle.
 
 - [s59] src/text1b.c reverted to clean INCLUDE_ASM state after every measurement this session; git status confirms no residual diff except the pre-existing metrics/events.jsonl noise.
+
+- [s60] Fresh 38/204 re-confirmation (16th consecutive flat session, s37-s60). Tested 3 hand-written spellings of the type-dispatch if/else block (flagged at s37/s38 as untested due to a spelling_enum.py tooling gap: it can't represent regions with interior if/else bodies): OR-operand swap (40/204), hoisted repeated-field-read local (58/204 -- NOT neutral, target genuinely re-reads the field twice so caching it changes the program), negated-condition arm swap (46/204). All worse; banked to rejected/dispatch-condition-spellings-worse.c. This closes the most obvious hand-derived readings of the s37/s38 tooling-gap block; a fully mechanical enumeration of that block still requires either a spelling_enum.py extension (interior-anchor support) or further hand-generated variants -- concrete next step for a future enumerate session.
+- [s60] Sibling func_8006CCC8 re-checked: floor unchanged (39, since its s4) and structure unchanged (field28-dispatch record-update loop, disjoint from this function's collision-detection loop) since s54/s56/s57 -- no transplant.
+- [s60] src/text1b.c reverted to clean INCLUDE_ASM state after every measurement this session; git status confirms no residual diff except the pre-existing metrics/events.jsonl noise.
+
+- [s60] Fresh 38/204 re-confirmation, 16th consecutive flat session (s37-s60) across 10+ distinct modalities.
+
+- [s60] The s37/s38-flagged tooling gap (spelling_enum.py's ENUM-BEGIN/END format cannot represent a region with interior if/else bodies) now has 3 of its most obvious hand-derived spellings closed by direct measurement: OR-operand order, field-read caching, and if/else arm order are all worse than the natural form.
+
+- [s60] The field-read-hoist result (58/204, -18 build_insns) is affirmative evidence the target genuinely performs two separate reads of arg0+0x6A -- caching is not a neutral respelling for this residual, it removes required target behavior.
+
+- [s60] The live frontier (naming one of the ~20 OTHER compiler-internal pseudos in the global_alloc conflict graph via the s51 .greg / s55 nrefs_census cross-reference) remains unaddressed -- it requires forensics/solver modality, not enumerate.
+
+- [s60] src/text1b.c reverted to clean INCLUDE_ASM state after every measurement this session; no residual diff except the pre-existing unrelated metrics/events.jsonl noise.

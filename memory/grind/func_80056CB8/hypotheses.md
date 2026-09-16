@@ -2715,3 +2715,63 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s59 read-only cross-reference of this session's + all prior sessions' enumerate-modality findings (no new chassis measurement beyond the declaration-order test above)
+
+## [s60, enumerate] The s22-s59-banked candidate.c body, applied fresh to src/text1b.c, reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session (16th consecutive confirming session).
+- probe: Applied candidate.c's full function body (extern header block + func_80056CB8) plus the func_80053614 void->s32 return-type prerequisite to src/text1b.c via direct Edit, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor, zero drift since s22.
+- verdict: CONFIRMED
+
+## [s60, enumerate] Three previously-untried spellings of the type-dispatch if/else block (the `*(u16*)(arg0+0x6A)==0x13||==6` check selecting between a direct `*(s16*)(obj+0x1CA)` angle read and a `ratan2(...)` fallback) all measure WORSE than the 38/204 baseline: OR-operand swap (40/204), hoisting the twice-read `arg0+0x6A` halfword into a named local (58/204, -18 build_insns -- this is not a neutral respelling, the target genuinely re-reads the field twice), and negating+swapping the if/else arms (46/204, +1 insn, branch-sense flip). This block was flagged at s37/s38 as untested because spelling_enum.py's ENUM-BEGIN/END format cannot represent a region with interior if/else bodies (a tooling gap, not a coverage gap) -- these three hand-written variants close the most obvious readings of that gap by direct measurement instead of the automated tool.
+- mechanism: (1) OR-operand order affects which comparison result jump.c's branch-folding treats as the primary test, shifting a downstream RA/sched tie; (2) the u16 field at arg0+0x6A is read twice in the ORIGINAL/target code (once per condition test) -- caching it into a local eliminates a real re-read the target performs, so this is a semantically-different program, not just a differently-scheduled one, and the 18-insn drop confirms the eliminated re-read was doing real work upstream (feeding a different addressing mode or CSE opportunity elsewhere); (3) swapping if/else arms changes which basic block cc1's branch-prediction-agnostic layout treats as fall-through, a genuine branch-sense-dependent scheduling difference.
+- probe: Each variant hand-applied to src/text1b.c via direct Edit on top of the fresh s60-confirmed 38/204 chassis, measured via `sandbox func_80056CB8 --disable all`, reverted to the s22-s59 baseline before the next variant.
+- result: (1) 40/204 build_insns 198; (2) 58/204 build_insns 180; (3) 46/204 build_insns 199. All three worse than the 38/204 baseline. Banked to rejected/dispatch-condition-spellings-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s60 chassis (candidate.c's s22-s59-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs; each of 3 dispatch-block spellings applied and reverted in turn, zero FAKE constructs present), engine/sandbox.py --disable all
+
+## [s60] Sibling func_8006CCC8 re-checked (owner directive: auto-return at floor 39, unchanged since its s4 2026-09-16 08:44) -- still structurally disjoint from func_80056CB8 (field28-dispatch record-update loop vs. this function's func_80053614/hit0/hit1/pt0/pt1 collision-detection loop), no transplantable block. Same conclusion as s54/s56/s57, not re-derived in depth this session to avoid redundant ledger bloat (sibling floor has not moved since last full check).
+- mechanism: n/a -- sibling-ledger cross-reference per the brief's SIBLING LEDGERS mandate.
+- probe: Compared this session's dispatch brief sibling line (func_8006CCC8, floor 39 since its s4) against the s54/s56/s57-recorded structural summary; no new commits or floor movement to re-derive.
+- result: No transplant available; sibling unchanged since last check.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s60 read-only cross-reference (no new sandbox measurement of the sibling itself needed, its floor and structure are unchanged since the last full read)
+
+## [s60] The s22-s59-banked candidate.c body, applied fresh to src/text1b.c, reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session.
+- probe: Applied candidate.c's full function body + func_80053614 s32-return prerequisite to src/text1b.c via direct Edit, ran sandbox func_80056CB8 --disable all.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger floor, zero drift since s22.
+- verdict: CONFIRMED
+
+## [s60] Swapping the OR-operand order in the type-dispatch condition (`*(u16*)(arg0+0x6A)==6||==0x13` instead of `==0x13||==6`) measures worse than the 38/204 baseline on the current chassis.
+- mechanism: OR-operand order affects which comparison jump.c's branch-folding treats as the primary test, shifting a downstream register-allocation/scheduling tiebreaker.
+- probe: Hand-edited src/text1b.c to swap the OR operands, measured via sandbox func_80056CB8 --disable all, reverted.
+- result: score 40/204, build_insns 198 (same insn count, worse RA residual). Worse than baseline; banked to rejected/dispatch-condition-spellings-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s60 chassis (candidate.c's s22-s59-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, OR-operand swap applied and reverted, zero FAKE constructs present)
+
+## [s60] Hoisting the twice-read `*(u16*)(arg0+0x6A)` field into a named local (`u16 type = ...;` read twice) instead of re-reading it at each comparison measures dramatically worse than the 38/204 baseline.
+- mechanism: The target genuinely re-reads the field twice (once per comparison) -- caching it into a local eliminates a real re-read the target performs, changing the compiled program's memory-access pattern, not merely its scheduling.
+- probe: Hand-edited src/text1b.c to hoist the field read into a local `type`, measured via sandbox func_80056CB8 --disable all, reverted.
+- result: score 58/204, build_insns 180 (-18 insns vs the 198-insn baseline) -- confirms the eliminated re-read was load-bearing, not a neutral respelling. Worse than baseline; banked to rejected/dispatch-condition-spellings-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s60 chassis (candidate.c's s22-s59-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, field-read hoist applied and reverted, zero FAKE constructs present)
+
+## [s60] Negating the type-dispatch condition and swapping the if/else arm bodies (ratan2 branch first, direct-angle branch second) measures worse than the 38/204 baseline.
+- mechanism: Swapping if/else arms changes which basic block cc1's layout treats as fall-through, a genuine branch-sense-dependent scheduling difference.
+- probe: Hand-edited src/text1b.c to negate the condition and swap the arms, measured via sandbox func_80056CB8 --disable all, reverted.
+- result: score 46/204, build_insns 199 (+1 insn vs baseline). Worse than baseline; banked to rejected/dispatch-condition-spellings-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s60 chassis (candidate.c's s22-s59-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, arm-swap applied and reverted, zero FAKE constructs present)
+
+## [s60] Sibling func_8006CCC8 (the owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block.
+- mechanism: n/a -- sibling-ledger cross-reference per the brief's SIBLING LEDGERS mandate.
+- probe: Compared this session's dispatch brief sibling line against the s54/s56/s57-recorded structural summary (field28-dispatch record-update loop vs. this function's func_80053614/hit0/hit1/pt0/pt1 collision-detection loop); no new commits or floor movement to re-derive.
+- result: No transplant available; sibling floor and structure unchanged since last check.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s60 read-only cross-reference (no new sandbox measurement of the sibling needed, its floor/structure unchanged since the last full read)
