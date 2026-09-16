@@ -6565,3 +6565,97 @@ tools/spelling_enum.py's swap axis matches `u8 * lnk2 = ...` as a commutative pr
 - [s61] E-s61-4: set_preference operand-0 rule (global.c:1682) + pointer-first PLUS (c-typeck.c:1986-1988) + expand_preferences merge (global.c:867-869) make 78's v0 preference structural; prune_preferences (global.c:925-926) strips own prefs from someone_prefers - v0 exclusion needs a hard conflict; a0 has no conflicting preference holder (ctx pref pruned at global.c:900).
 
 - [s61] E-s61-5: local-alloc find_free_reg has no used-so-far restriction (block-local dest -> v0); REG_EQUIV-mem substitution needs reg_renumber < 0 (reload1.c:1955), which global.c:417/583 never leaves for a live allocno.
+
+## s62 (2026-09-15, synthesis - merged attack after s55-s61; allocator inputs never examined closed; tail-vs-join settled)
+
+### E-s62-0  Chassis / kill re-audit (mandated)
+BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis (src/ings.c:820
+INCLUDE_ASM anchor); tmp/grind/func_80017848/s62/results.txt.  K2's diff is byte-for-byte
+the s60/s61 diff (two `addu a3,a0,zero` printed as `addu v0,a0,zero`, two `addu a0,a1,a3`
+printed as `addu a0,a1,v0`).  tools/fake_ablate.py: "no FAKE-annotated constructs found in
+candidate.c; nothing to ablate".  The owner directive (func_8005BA8C auto-return,
+2026-09-15T20:48) was executed and measured in s56 (cell K4 = 8 at 127/127); s60/s61
+re-confirmed the sibling shares no code block (max overlap 0.120); nothing further to do.
+
+### E-s62-1  find_reg pass-0 sets for q (79) and base (81) on K2 (s61 frontier item 1)
+BB2_FINDREG_DEBUG=79 / =81 on K2 (s62/K2fr79/stderr.txt, s62/K2fr81/stderr.txt):
+both allocnos report `conflicts: 2 3 29` (v0, v1, sp), `someone_prefers:` empty,
+no own copy or full preferences, `pass0_used: 0 1 2 3 18-23 26-31`, so a0 is the first
+free register for both.  q is pushed off v0 by the guard temporary t (local-alloc, v0,
+born while q is live) and off v1 by i; base is pushed off v0 by the loop's element
+temporaries and off v1 by i.  Neither q nor base carries an a0 PREFERENCE - they land in
+a0 purely by the ascending scan.  Consequence for the copy dest (78): a0 can never enter
+78's exclusion set through regs_someone_prefers (no conflicting allocno prefers a0); it
+can only enter as a hard conflict, i.e. 78 must overlap q's or base's live range.  This
+completes E-s61-3: for the target's a3, ALL FOUR of v0 (hard conflict with a v0-seated
+value), a0 (overlap with q or base), a1 and a2 (sh and lnk allocated first, i.e. 78's
+priority below theirs) must hold simultaneously.
+
+### E-s62-2  Frontier item 3 (index and pointer share one variable) - measured dead
+Cell I1 (s62/body_I1.c): loop 1's guard reads `w = (s32)*(u8 **)(ctx + 0xC)`, then
+`p = (u8 *)w; w = 0;` so the copy's source pseudo is set between the copy and the base
+add by the `i = 0` insn (combine.c:914 gate) and w is then the loop index.
+Result: 27 at 126/127 (rejected/s62_I1_index_and_pointer_share_one_variable_costs_27.c).
+Analytic reason it cannot be otherwise: one pseudo has one seat, and the target needs the
+guard's slots value in a0 and the index in v1.  s61 frontier item 3 is closed.
+
+### E-s62-3  Explicit exit-tail statements are byte-equivalent to K2's join block
+Cell K3b (s62/body_K3b.c): K2 with loop 1's if-block ending in
+`q = *(u8 **)(ctx + 0xC); sh = slot_a << 6;` and loop 2's guard reading the SAME
+variables q and sh (no q2/sh2), i.e. the s59 "reorg retargets past the join block's
+loads" reading replaced by real tail statements.  Result: 4 at 127/127 with EXACTLY K2's
+residual (s62/diff_K3b.txt).  So the tail-statement and join-block interpretations of
+the target's exit path `lw a0,0xC(s2); sll a1,s4,6` are indistinguishable at the byte
+level and the residual is the copy-dest seat either way.  Cell K3 (an else arm
+`q2 = q; sh2 = sh;` to unify the paths) = 10 at 128 (join copies materialise).
+Banked: rejected/s62_K3b_k2_explicit_exit_tail_statements_same_seat_residual_4.c,
+rejected/s62_K3_k2_plus_else_arm_join_copies_costs_10.c.
+
+### E-s62-4  regs_may_share - the one global.c input no session had examined
+global.c:401-424 merges two pseudos into ONE allocno when they appear in the
+`regs_may_share` list (they then share conflicts and seat).  The list has exactly one
+producer in the frozen tree: loop.c:1659, inside move_movables' `m->partial && m->match`
+branch, i.e. only for PARTIAL movables (loop.c:862: a `(set R 0)` followed by a
+`(set (strict_low_part (subreg R)) ...)` zero-extension idiom).  tools/gcc-2.7.2/config/
+mips/mips.md contains no strict_low_part pattern (grep count 0), so no partial movable
+exists on this target and regs_may_share is always empty here.  Class kill.
+
+### E-s62-5  local-alloc's find_free_reg for a block-local copy dest
+local-alloc.c:2135 find_free_reg builds `used` from fixed_reg_set (no calls crossed)
+plus regs_live_at[born..dead) - which block_alloc fills only with HARD registers
+mentioned or live in the block and with qtys already allocated in the same block - then
+scans ascending.  The loop preheader block contains no hard-register mention, no hard
+register live at its start except sp, and no other block-local qty (i, sh, lnk, q, base
+all span blocks), so a block-local copy dest always receives v0 from local-alloc.
+Together with E-s57/E-s61 (global.c pass 0) this closes BOTH allocators for a copy dest
+whose references lie in the preheader block alone: the target's a3 REQUIRES a reference
+to the copy dest in another basic block.
+
+### E-s62-6  Zero-byte cross-block references: census of emitters and post-RA deleters
+Emitters of `(use (reg))` in the frozen tree (grep): stmt.c:750-752 (nonlocal-goto
+hard regs), stmt.c:2532 (return register), expr.c:1810/8231/8463 (call fusage, inline
+return), function.c:3071-3090; the only pseudo-variable USE emitter, use_variable at
+stmt.c:3266/3498, is gated on obey_regdecls (-O0 only).  Post-global deleters that
+remove an insn without bytes: jump2's no-op-move deletion (needs source and dest in the
+SAME hard register, so a chain of copies must end in an insn that really reads a3 - the
+target has none after the prologue except the two base adds, which read the copy just
+made), reload's REG_EQUIV init deletion (needs an unallocated pseudo, E-s60-6), reorg's
+redundant-insn SKIP (retargets a branch, deletes nothing, E-s59).  No ordinary-C
+statement produces a byte-free reference to the copy dest in another block; the
+combine-fold route (an arithmetic identity such as `x - x` read cross-block that combine
+cancels after flow computed liveness) exists mechanically but is a fabricated dead
+expression - forbidden family, not a candidate.
+
+- [s62] E-s62-0: BASE 3 / K2 4 at 127/127 on HEAD; no FAKE construct; sibling directive already executed (s56 K4 = 8).
+
+- [s62] E-s62-1: find_reg sets for q (79) and base (81) on K2: conflicts {v0,v1,sp}, no preferences, a0 by ascending scan; a0 enters the copy dest's exclusion set only as a hard conflict.
+
+- [s62] E-s62-2: I1 (index and pointer as one variable, i = 0 as the copy-source clobber) = 27 at 126; frontier item 3 closed.
+
+- [s62] E-s62-3: K3b (explicit exit-tail statements, single q/sh) = 4 at 127 with exactly K2's residual; tail-vs-join byte-equivalent. K3 (else-arm copies) = 10 at 128.
+
+- [s62] E-s62-4: regs_may_share (global.c:401-424) is produced only at loop.c:1659 for partial movables; mips.md has no strict_low_part pattern -> unreachable.
+
+- [s62] E-s62-5: local-alloc find_free_reg (local-alloc.c:2135) gives a preheader-local copy dest v0 (only sp live, no other qty); both allocators closed -> the target's a3 needs a cross-block reference to the copy dest.
+
+- [s62] E-s62-6: no ordinary-C emitter of a byte-free cross-block reference exists at -O2 (USE insns only under obey_regdecls; jump2 no-op chains must end in an a3 read the target lacks; reload REG_EQUIV deletion needs an unallocated pseudo; reorg skips, never deletes).

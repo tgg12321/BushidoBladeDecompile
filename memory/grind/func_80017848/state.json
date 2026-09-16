@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 61,
- "current_modality": "forensics",
+ "session_count": 62,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -369,23 +369,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "Forensics s61: instrumented-cc1 census closes both s60 frontier items - reload requests ZERO reloads in this function and its spill order puts t0..t7 ahead of a3 (class, reload1.c:3771); the post-loop"
+  },
+  {
+   "session": 62,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Synthesis s62: both allocators closed for a preheader-local copy dest (local-alloc find_free_reg and regs_may_share class-killed with cites), q/base pass-0 sets measured (a0 by scan, no prefs), fronti"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The v0 conflict the a3 seat needs is the guard temporary t (local, v0): reading find_reg's sets for q (79) and base (81) will show whether t is what pushes q to a0, and a guard spelled so that t stays live past the copy point gives 78 the v0 hard conflict if the extra consumer is byte-free.",
-   "mechanism": "hard_reg_conflicts from local-alloc'd v0 temporaries live across the copy-to-add window (global.c record_conflicts); E-s61-3/4 close every preference route",
-   "next_probe": "BB2_FINDREG_DEBUG=79 and =81 on K2 (s61/dump_fr.sh); then one form where the guard value t is consumed after the copy (e.g. the do-while bound) and read the .greg conflicts of 78"
+   "hypothesis": "The post-global deletion census in the dumps closes the byte-free-reader class by measurement: the only insns deleted after global on BASE/K2 are jump2 no-op moves of already-equal hard registers.",
+   "mechanism": "jump.c after reload deletes (set r r); reload deletes REG_EQUIV inits; nothing else removes an insn between global and final",
+   "next_probe": "instrumented cc1 -da on BASE and K2 (s62/dump.sh), diff the func_80017848 insn UIDs of .greg vs .jump2 vs .dbr; list every deleted insn and its pattern"
   },
   {
-   "hypothesis": "The a0 conflict has no producer: q dies at the copy and base is born at the add in every chassis; the only q2 readers after loop 2 in the target are the three lw ?,0xC(s2) reloads that cross the jal (callee-saved seat, s52 cell G).",
-   "mechanism": "conflict requires 78 live past base's birth or q live past the copy; a downstream reader crossing the call forces a callee-saved seat",
-   "next_probe": "census the post-loop-2 target statements for a q2 reader that is a memory load in the target and a register read in C at zero bytes; if negative, the seat residual lives outside the [guard, add] window (variable identity across the whole function)"
+   "hypothesis": "An integrate.c parameter copy (set parm actual) from a static inline helper wrapping loop 1's preheader+loop puts the copy dest's references in the inlined body's blocks, so the copy survives combine and spans the loop - the conflict set the a3 seat needs.",
+   "mechanism": "expand_inline_function copies each argument into a fresh parm pseudo whose uses are inside the inlined body (other blocks); combine has no LOG_LINK across blocks; global.c then sees a loop-spanning range",
+   "next_probe": "on K2, move loop 1's preheader+do-while into a static inline helper taking (slots, sh, lnk, slot_b); dump .loop/.combine/.greg and read the parm copy's block and seat before scoring"
   },
   {
-   "hypothesis": "Under the U1 identity (pointer == base variable, all 125 seats exact) a combine.c:914 clobber other than the lnk load exists: the delay-slot i = 0 is the only other target insn between copy and add.",
-   "mechanism": "combine.c:914 use_crosses_set_p blocks the copy merge when the copy's source pseudo is set between copy and add",
-   "next_probe": "measure once a form where i and the pointer share a pseudo through a cast (expect bytes); if it fails, the U1/K2 conflict of s55 is complete and the residual is a live-range question only"
+   "hypothesis": "The do { } while (0) wrap (sanctioned for register-allocation effects) is inert on the K2 chassis because it cannot create the v0/a0 hard conflicts the seat spec needs.",
+   "mechanism": "the wrap changes loop_depth-weighted reg_n_refs and block boundaries but adds no live v0/a0 value across the copy-to-add window",
+   "next_probe": "two K2 cells: wrap around the preheader statements, wrap around the do-while body; sandbox --disable all and .greg seats"
   }
  ],
  "judge_constraints": [],
@@ -399,46 +405,6 @@
  "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
  "last_unpark_at": "2026-09-15T20:48:37.414727+00:00",
  "kills": [
-  {
-   "session": 43,
-   "statement": "A C self-assignment `q = q;` of the copy destination inside the loop body is a loop-carried flow-time reader that keeps q live across the body and vanishes as a no-op move after allocation.",
-   "kill_scope": "class",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_W2.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "tools/gcc-2.7.2/expr.c:2845",
-   "result": "6 at 127/125, object identical to U4; zero (set (reg N) (reg N)) insns in .rtl or any later dump. expr.c:2845 store_expr"
-  },
-  {
-   "session": 43,
-   "statement": "The sanctioned do { } while (0); wrap placed around the preheader copy alone (X1), the whole guard then-block (X2), or the three preheader statements (X4), in both loops, keeps the use-once copy or mo",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_X1.c / body_X2.c / body_X4.c (U4-derived); BASE re-audited at 3 (127/127); wraps unannotated measurement cells, no other FAKE constructs",
-   "predicate_cite": "",
-   "result": "X1 = X2 = X4 = 6 at 127/125; X2 and X4 raw objdumps byte-identical to each other and to U4's residual. The while(0) test"
-  },
-  {
-   "session": 43,
-   "statement": "The do { } while (0); wrap around the inner scan loop only, with the preheader outside the wrap, changes global's allocation order enough to seat the copy destination in a3.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_X3.c (U4-derived); BASE re-audited at 3 (127/127); wrap unannotated measurement cell, no other FAKE constructs",
-   "predicate_cite": "",
-   "result": "10 at 127/125: loop 1's sh seats a2 and lnk a1 (sll a2,s4,6 / addu v0,a2,a0 / lw a1,16(s2) / addu a0,a2,a0), loop 2's li"
-  },
-  {
-   "session": 44,
-   "statement": "Placing the copy q = p in the guard block immediately after the guard load and before the two-step address (frontier item 1) keeps the copy and seats q in a3 by conflicts alone, measured as cells F1a ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_F1a.c / body_F1b.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "6 at 127/125 for both, same residual as U4; the copy never reaches combine. Banked as rejected/s44_frontier1_copy_in_gua"
-  },
-  {
-   "session": 44,
-   "statement": "Guard 1 loading into q with p = q in the preheader and base = sh + p (roles swapped, frontier item 2), with and without loop 2's guard reading q, keeps a copy or moves the copy destination's seat towa",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_F2.c / body_F2b.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "F2 = 6 at 127/125 (identical to U4). F2b = 12 at 127/124: addu a0,a0,a1 reads q, q in a1, sh in a0 in both guards, loop-"
-  },
   {
    "session": 44,
    "statement": "The instrument spellings M2 (ashiftrt of the lbu value feeding a jump), M3 (constant-condition conditional jump guarding the reader) and M4 (single-expression and-chain) produce a byte-free combine-fo",
@@ -878,6 +844,46 @@
    "measured_on": "K2 chassis at HEAD src/ings.c:820, instrumented cc1 BB2_FINDREG_DEBUG=78; no FAKE construct",
    "predicate_cite": "tools/gcc-2.7.2/global.c:925",
    "result": "with [copy, add] as 78's range the v0 preference is always merged in, so v0 never enters someone_prefers[78]; the only r"
+  },
+  {
+   "session": 62,
+   "statement": "Sharing one C variable between the guard's slots value and the loop index, so that the i = 0 insn is the combine.c:914 clobber of the copy's source, reaches the floor or below on the K2 chassis (s61 f",
+   "kill_scope": "instance",
+   "measured_on": "K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s62/body_I1.c applied; no FAKE construct",
+   "predicate_cite": "",
+   "result": "27 at 126/127: the copy survives but one pseudo has one seat while the target needs a0 for the slots value and v1 for th"
+  },
+  {
+   "session": 62,
+   "statement": "Spelling loop 1's exit path as explicit tail statements (q = *(u8 **)(ctx + 0xC); sh = slot_a << 6; with single q/sh variables feeding loop 2's guard) moves the copy-dest seats relative to K2's join-b",
+   "kill_scope": "instance",
+   "measured_on": "K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s62/body_K3b.c and body_K3.c applied; no FAKE construct",
+   "predicate_cite": "",
+   "result": "K3b = 4 at 127/127 with exactly K2's residual (copy dest v0 twice); K3 (else-arm q2 = q; sh2 = sh) = 10 at 128. Tail-sta"
+  },
+  {
+   "session": 62,
+   "statement": "The copy dest can share an allocno, and hence conflicts and seat, with a longer-lived pseudo through global.c's regs_may_share merge.",
+   "kill_scope": "class",
+   "measured_on": "source reading of the frozen tools/gcc-2.7.2 tree; K2 chassis at HEAD src/ings.c:820; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1659",
+   "result": "no partial movable can exist on this target, so regs_may_share is always empty; no C spelling reaches the merge"
+  },
+  {
+   "session": 62,
+   "statement": "A copy dest whose only references are the copy and the base add in the preheader block can be seated in a3 by local-alloc's find_free_reg.",
+   "kill_scope": "class",
+   "measured_on": "K2 chassis at HEAD src/ings.c:820 (copy dest measured v0) plus source reading of the frozen tree; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:2135",
+   "result": "local-alloc always yields v0 for such a copy dest, matching K2; with E-s57/E-s61 (global.c pass 0 also yields v0) both a"
+  },
+  {
+   "session": 62,
+   "statement": "A zero-byte (use (reg)) insn referencing the copy dest in another block can be produced by ordinary C at -O2, extending its live range without instructions.",
+   "kill_scope": "class",
+   "measured_on": "source reading of the frozen tree; K2 chassis at HEAD src/ings.c:820; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/stmt.c:3498",
+   "result": "no pseudo-variable USE is reachable at -O2; the byte-free cross-block reference the seat needs has no emitter"
   }
  ],
  "escalation_deferrals": 0,

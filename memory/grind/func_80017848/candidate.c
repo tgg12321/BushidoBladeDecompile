@@ -1,3 +1,25 @@
+/* [s62 SYNTHESIS - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
+ * chassis; fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4
+ * at 127/127) remains the faithful chassis.  What s62 measured / closed:
+ *  1. find_reg sets for q (79) and base (81) on K2: conflicts {v0,v1,sp},
+ *     no preferences -> a0 by the ascending scan.  So a0 can enter the copy
+ *     dest's exclusion set ONLY as a hard conflict (overlap with q or base).
+ *  2. s61 frontier item 3 (index and pointer as one variable, `i = 0` as the
+ *     combine.c:914 clobber) = 27 at 126: one pseudo, one seat.  Dead.
+ *  3. K3b (K2 with explicit exit-tail statements `q = *(u8**)(ctx+0xC);
+ *     sh = slot_a << 6;`, single q/sh feeding loop 2's guard) = 4 at 127 with
+ *     EXACTLY K2's residual: tail-vs-join is byte-equivalent.
+ *  4. CLASS KILLS (source-read, cited): regs_may_share (global.c:401-424) is
+ *     produced only for partial movables (loop.c:1659) and mips.md has no
+ *     strict_low_part pattern; local-alloc's find_free_reg (local-alloc.c:
+ *     2135) gives a block-local copy dest v0 (no hard reg but sp live in the
+ *     preheader, no other qty); pseudo USE insns exist only at -O0
+ *     (stmt.c:3498).  BOTH allocators are closed: the target's a3 needs a
+ *     reference to the copy dest in another basic block, and no byte-free
+ *     emitter of such a reference exists (evidence.md E-s62-6).
+ * Frontier: hypotheses.md s62 (post-global deletion census in the dumps;
+ * integrate.c parameter-copy route on K2; do-while(0) wrap on K2).
+ */
 /* [s61 FORENSICS - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
  * chassis; fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4
  * at 127/127) remains the faithful chassis.  What s61 measured with the

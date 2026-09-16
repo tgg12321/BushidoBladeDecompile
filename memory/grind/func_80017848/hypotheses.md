@@ -5557,3 +5557,120 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - kill_scope: class
 - measured_on: K2 chassis at HEAD src/ings.c:820, instrumented cc1 BB2_FINDREG_DEBUG=78; no FAKE construct
 - predicate_cite: tools/gcc-2.7.2/global.c:925
+
+## s62 (2026-09-15, synthesis - frontier items 1 and 3 measured, both allocators closed for a block-local copy dest, tail-vs-join settled)
+
+## [s62] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; the owner directive (func_8005BA8C auto-return, 2026-09-15T20:48) was executed and measured in s56 (K4 = 8) and re-confirmed s60/s61; nothing further to do.
+- mechanism: instance kills are chassis-relative; the two closest forms (BASE, K2) re-measured with s62/run.ps1; ablate.sh on candidate.c
+- probe: tmp/grind/func_80017848/s62/run.ps1 -Bodies BASE,K2; s62/ablate.sh; s62/results.txt
+- result: BASE 3 / K2 4, both 127/127, K2 diff identical to s61/diff_K2.txt; "no FAKE-annotated constructs found"
+- verdict: CONFIRMED
+
+## [s62] On K2, q (79) and base (81) take a0 by the ascending pass-0 scan after hard conflicts with v0 and v1 only; neither carries an a0 preference, so a0 can enter the copy dest's exclusion set only as a hard conflict (overlap with q or base), never through regs_someone_prefers (s61 frontier item 1).
+- mechanism: find_reg pass 0 (global.c:998-1000): used = hard_reg_conflicts | ~regs_used_so_far | regs_someone_prefers; regs_someone_prefers is built from the full preferences of conflicting later allocnos (global.c:920-928)
+- probe: instrumented cc1 BB2_FINDREG_DEBUG=79 and =81 on K2 (s62/dump_fr.sh; s62/K2fr79/stderr.txt, s62/K2fr81/stderr.txt)
+- result: both: conflicts {2,3,29}, someone_prefers empty, own_copy_prefs none, own_full_prefs none, pass0_used {0,1,2,3,18-23,26-31} -> a0. The v0 conflict of q is the guard temporary t (local-alloc v0), of base the loop's element temporaries; v1 is i in both cases
+- verdict: CONFIRMED
+
+## [s62] Sharing one C variable between the guard's slots value and the loop index (so the `i = 0` insn is the combine.c:914 clobber of the copy's source) reaches the floor or below on the K2 chassis (s61 frontier item 3).
+- mechanism: use_crosses_set_p (combine.c:914) blocks the copy merge when the copy's source pseudo is set between copy and add; the delay-slot `addu v1,zero,zero` is the only target insn between them besides the lnk load
+- probe: s62/body_I1.c (`w = (s32)*(u8 **)(ctx + 0xC)` feeds the guard, `p = (u8 *)w; w = 0;` in the preheader, w is loop 1's index); sandbox --disable all
+- result: 27 at 126/127. One pseudo has one seat and the target needs the slots value in a0 and the index in v1; the copy does survive but every loop-1 seat rotates. Banked rejected/s62_I1_index_and_pointer_share_one_variable_costs_27.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s62/body_I1.c applied; no FAKE construct
+
+## [s62] Spelling loop 1's exit path as explicit tail statements (`q = *(u8 **)(ctx + 0xC); sh = slot_a << 6;` inside the if-block, loop 2's guard reading the same q and sh) changes the copy-dest seats relative to K2's join-block reading.
+- mechanism: with single multi-set q/sh variables the join block's loads become ordinary tail statements of loop 1's exit block; if the pseudo structure differed for global.c the seats could move
+- probe: s62/body_K3b.c (and K3: an else arm `q2 = q; sh2 = sh;`); sandbox --disable all; s62/diff_K3b.txt
+- result: K3b = 4 at 127/127 with EXACTLY K2's residual (copy dest v0 twice); K3 = 10 at 128 (else-arm copies materialise). The tail-statement and join-block interpretations are byte-equivalent; the residual is the seat either way. Banked rejected/s62_K3b_k2_explicit_exit_tail_statements_same_seat_residual_4.c and rejected/s62_K3_k2_plus_else_arm_join_copies_costs_10.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s62/body_K3b.c / body_K3.c applied; no FAKE construct
+
+## [s62] The copy dest can share an allocno (and hence conflicts and seat) with a longer-lived pseudo through global.c's regs_may_share merge (global.c:401-424), an allocator input no earlier session examined.
+- mechanism: global.c:423-424 gives a pseudo its partner's allocno when the pair is on the regs_may_share list; the list's only producer is loop.c:1659 (move_movables, `m->partial && m->match` branch), reached only for partial movables (loop.c:862: `(set R 0)` + `(set (strict_low_part (subreg R)) ...)` zero-extend idiom)
+- probe: grep of regs_may_share/reg_may_share across tools/gcc-2.7.2/*.c; grep of strict_low/movstrict in tools/gcc-2.7.2/config/mips/mips.md (0 hits)
+- result: no partial movable can exist on this target (no strict_low_part pattern), so regs_may_share is always empty and no C spelling reaches the merge
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/loop.c:1659
+- measured_on: source reading against the frozen tools/gcc-2.7.2 tree; K2 chassis at HEAD src/ings.c:820; no FAKE construct
+
+## [s62] A copy dest whose only references are the copy and the base add in the preheader block can be seated in a3 by local-alloc (the block-local allocator, which s57 covered only by inference).
+- mechanism: local-alloc.c:2135 find_free_reg: used = fixed_reg_set (no call crossed) | regs_live_at[born..dead), then an ascending scan without REG_ALLOC_ORDER; regs_live_at holds only hard registers mentioned/live in the block and qtys already allocated in the block
+- probe: source reading of local-alloc.c:2135-2210 and block_alloc's regs_live_at construction; the K2 preheader block's contents (i = 0, copy, lnk load, base add, all other operands global pseudos)
+- result: the only hard register live in the preheader is sp and there is no other block-local qty, so v0 is always the first free register; K2's measured v0 seat is exactly this. Combined with E-s57/E-s61 (global.c pass 0 gives v0 too), BOTH allocators are closed: the target's a3 requires a reference to the copy dest in another basic block
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2135
+- measured_on: K2 chassis at HEAD src/ings.c:820 (copy dest measured v0), source reading of the frozen tree; no FAKE construct
+
+## [s62] A `(use (reg))` insn (zero bytes) referencing the copy dest in another block can be produced by ordinary C at -O2, extending its live range without instructions.
+- mechanism: use_variable (stmt.c:3266, :3498) emits USEs for scoped variables only under obey_regdecls (-O0); every other USE emitter (stmt.c:750-752, :2532; expr.c:1810/8231/8463; function.c:3071-3090) is for hard registers, the return register, call fusage or inline-function returns
+- probe: grep of gen_rtx (USE / use_variable across tools/gcc-2.7.2/stmt.c, expr.c, function.c, c-decl.c, c-typeck.c
+- result: no pseudo-variable USE is reachable at -O2; the byte-free cross-block reference the seat needs has no emitter
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/stmt.c:3498
+- measured_on: source reading of the frozen tree; K2 chassis at HEAD src/ings.c:820; no FAKE construct
+
+## [s62] Frontier reset (strongest 3):
+1. The seat question is now closed on every allocator input (pass-0 sets E-s61-3/E-s62-1, preferences E-s60/E-s61, reload E-s61-1, local-alloc E-s62-5, regs_may_share E-s62-4) and every zero-byte reference emitter (E-s62-6). What remains untested EMPIRICALLY is the post-global deletion census: run the instrumented cc1 (-da) on BASE and K2 and diff the insn sets of .greg, .jump2 (after reload) and .dbr for func_80017848 to list every insn deleted after global allocation; if the only deletions are jump2 no-op moves of already-equal hard registers, the "byte-free downstream reader" class is closed by measurement, and the next session must attack the premise that the a3 write is `(set P q)` at all - the only remaining pre-RA producers of `move rD,rS` are expand-level copies (parameter/inline-argument copies, integrate.c) and cse's register substitution.
+2. integrate.c route (never dumped; s30 measured only 30-45 on a retired chassis): an inline-expanded static helper receives its pointer argument by a parameter copy `(set parm actual)` emitted by expand_inline_function; the parm pseudo's references lie inside the inlined body (other blocks after the guard) so combine cannot merge the copy, and its live range spans the loop, which is exactly the conflict set the a3 seat needs. Probe: on K2, move loop 1's preheader+loop into a `static inline` helper taking (slots, sh, lnk, slot_b) and read the .loop/.combine/.greg dumps for the parameter copy, its block and its seat before scoring.
+3. Only after 1-2: the `do { } while (0)` wrap family (sanctioned for register-allocation effects, owner ruling 2026-07-06) measured on the K2 chassis for the first time - the s43/s47 cells were on retired chassis. Expectation per E-s61-3/E-s62-1: the wrap cannot create the v0/a0 hard conflicts, so it should be inert; one measurement each on the preheader and on the loop body settles it.
+
+## [s62] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct; the owner directive (func_8005BA8C auto-return) was executed in s56 (K4 = 8) and needs no further action.
+- mechanism: instance kills are chassis-relative; closest forms re-measured with s62/run.ps1; ablate.sh on candidate.c
+- probe: tmp/grind/func_80017848/s62/run.ps1 -Bodies BASE,K2; s62/ablate.sh; s62/results.txt
+- result: BASE 3, K2 4, both 127/127, K2 diff identical to s61; no FAKE-annotated constructs
+- verdict: CONFIRMED
+
+## [s62] On K2, q (79) and base (81) take a0 by the ascending pass-0 scan after hard conflicts with v0 and v1 only and carry no a0 preference, so a0 can enter the copy dest's exclusion set only as a hard conflict (overlap with q or base), never via regs_someone_prefers.
+- mechanism: find_reg pass 0 (global.c:998-1000); regs_someone_prefers built from full preferences of conflicting later allocnos (global.c:920-928)
+- probe: instrumented cc1 BB2_FINDREG_DEBUG=79 and =81 on K2 (s62/K2fr79/stderr.txt, s62/K2fr81/stderr.txt)
+- result: both: conflicts {v0,v1,sp}, someone_prefers empty, no own prefs, pass0_used {0,1,2,3,18-23,26-31} -> a0; q's v0 conflict is the guard temporary, base's is the element temporaries
+- verdict: CONFIRMED
+
+## [s62] Sharing one C variable between the guard's slots value and the loop index, so that the i = 0 insn is the combine.c:914 clobber of the copy's source, reaches the floor or below on the K2 chassis (s61 frontier item 3).
+- mechanism: use_crosses_set_p (combine.c:914) blocks the copy merge when the source pseudo is set between copy and add
+- probe: s62/body_I1.c applied; sandbox --disable all
+- result: 27 at 126/127: the copy survives but one pseudo has one seat while the target needs a0 for the slots value and v1 for the index; every loop-1 seat rotates. Banked rejected/s62_I1_index_and_pointer_share_one_variable_costs_27.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s62/body_I1.c applied; no FAKE construct
+
+## [s62] Spelling loop 1's exit path as explicit tail statements (q = *(u8 **)(ctx + 0xC); sh = slot_a << 6; with single q/sh variables feeding loop 2's guard) moves the copy-dest seats relative to K2's join-block reading.
+- mechanism: single multi-set q/sh pseudos turn the join block's loads into loop 1's exit-block statements; a different pseudo structure could change global.c's conflicts
+- probe: s62/body_K3b.c and s62/body_K3.c applied; sandbox --disable all; s62/diff_K3b.txt
+- result: K3b = 4 at 127/127 with exactly K2's residual (copy dest v0 twice); K3 (else-arm q2 = q; sh2 = sh) = 10 at 128. Tail-statement and join-block readings are byte-equivalent. Banked rejected/s62_K3b_... and rejected/s62_K3_...
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s62/body_K3b.c and body_K3.c applied; no FAKE construct
+
+## [s62] The copy dest can share an allocno, and hence conflicts and seat, with a longer-lived pseudo through global.c's regs_may_share merge.
+- mechanism: global.c:423-424 merges allocnos for pairs on regs_may_share; the list's only producer is loop.c:1659 in move_movables' partial-movable branch, reached only for the (set R 0) + strict_low_part zero-extend idiom (loop.c:862)
+- probe: grep of regs_may_share/reg_may_share over tools/gcc-2.7.2/*.c; grep strict_low/movstrict in tools/gcc-2.7.2/config/mips/mips.md (0 hits)
+- result: no partial movable can exist on this target, so regs_may_share is always empty; no C spelling reaches the merge
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen tools/gcc-2.7.2 tree; K2 chassis at HEAD src/ings.c:820; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/loop.c:1659
+
+## [s62] A copy dest whose only references are the copy and the base add in the preheader block can be seated in a3 by local-alloc's find_free_reg.
+- mechanism: local-alloc.c:2135 find_free_reg: used = fixed_reg_set | regs_live_at[born..dead) (hard registers mentioned or live in the block plus qtys already allocated there), then an ascending scan; the preheader block has only sp live and no other block-local qty, so v0 is the first free register
+- probe: source reading of local-alloc.c:2135-2210 and block_alloc; K2's preheader block contents; K2's measured v0 seat
+- result: local-alloc always yields v0 for such a copy dest, matching K2; with E-s57/E-s61 (global.c pass 0 also yields v0) both allocators are closed and the a3 seat requires a reference to the copy dest in another basic block
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis at HEAD src/ings.c:820 (copy dest measured v0) plus source reading of the frozen tree; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2135
+
+## [s62] A zero-byte (use (reg)) insn referencing the copy dest in another block can be produced by ordinary C at -O2, extending its live range without instructions.
+- mechanism: use_variable (stmt.c:3266, :3498) emits USEs for scoped variables only under obey_regdecls (-O0); all other USE emitters are for hard registers, the return register, call fusage or inline returns
+- probe: grep of gen_rtx (USE / use_variable over tools/gcc-2.7.2/stmt.c, expr.c, function.c, c-decl.c, c-typeck.c
+- result: no pseudo-variable USE is reachable at -O2; the byte-free cross-block reference the seat needs has no emitter
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen tree; K2 chassis at HEAD src/ings.c:820; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/stmt.c:3498
