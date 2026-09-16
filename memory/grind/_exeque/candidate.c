@@ -33,6 +33,17 @@
  * Everything else (s2's H5b final-callback pointer, s3's direct-assignment
  * field spellings now living INSIDE the do-while bodies) is unchanged.
  *
+ * s6 (structural, 2026-09-16): re-confirmed floor 2/187 unchanged. Ran the
+ * instrumented cc1 .dbr (reorg.c) dump for pass-attribution due diligence,
+ * confirming the exact mechanism (RTL insn 311, the `*p=0` store with its
+ * address cached in hard reg v1, is reorg.c's delay-slot fill for the
+ * jalr call_insn). Four fresh structural probes around the residual (final
+ * -block guard && order, outer-guard && order, SetIntrMask relocation into
+ * both if/else arms, outer loop spelled as plain `while` instead of
+ * if+do-while) all measured WORSE or NO-EFFECT, never better -- see
+ * hypotheses.md [s6] for all four. This body (unchanged from s4/s5) is
+ * still the best known chassis.
+ *
  * Remaining floor-2 residual (1 site, unchanged mechanism from s2's H6):
  *   The final "clear D_8009BE7C and invoke the D_8009BE80 callback" block's
  *   `jalr $v0` — target keeps `sw $zero,0($v1)` (D_8009BE7C = 0;) BEFORE the

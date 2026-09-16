@@ -388,3 +388,87 @@ chain regardless of which local (if any) carries the value.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis (both FAKE-annotated wraps present, no other cheat/volatile constructs), jalr-delay-slot-targeted permuter search space only
+
+## [s6] Ran the instrumented-cc1 .dbr dump (pass-attribution discipline) on the s4/s5 floor-2/187 chassis to re-confirm the jalr-delay-slot mechanism before probing further, per role-prompt requirement.
+
+- probe: `pwsh tools/grinder/dump.ps1 _exeque`, then grepped/read `tmp/grind/_exeque/dumps/display.dbr` (reorg.c delay-branch-reorg pass output — the correct dump for delay-slot fill, distinct from `.sched`/`.sched2` which are the two list-scheduler passes before reorg) around `D_8009BE7C`/`D_8009BE80`.
+- result: confirmed the exact mechanism the ledger already identified: RTL insn 311 (`(set (mem:SI (reg/v:SI 3 v1)) (const_int 0))` — the `*p = 0;` store, address pre-materialized in hard reg v1 by insn 298) is folded by reorg.c into a `(sequence [call_insn 316 ... insn 311])` — the call_insn (jalr through v0, calling D_8009BE80) followed by the store as its delay-slot fill. No new information beyond what H6/s4/s5 already established; this was pass-attribution due diligence before spending probes, not a new finding.
+- verdict: n/a (confirmatory read, not a hypothesis)
+
+## [s6] Three fresh structural respellings of the final-callback block/outer-guard/SetIntrMask-placement, none of which were previously measured, all regress the sandbox floor from 2/187 — the jalr-delay-slot residual is not reachable by statement/operand reordering in the surrounding region either.
+
+- probe 1: swapped the final block's inner guard `&&` operand order (`if (*p != 0 && D_8009BE80 != 0)` -> `if (D_8009BE80 != 0 && *p != 0)`) on the s4/s5 floor-2 chassis; sandbox _exeque --disable all.
+- result 1: score 2 -> 8. Reverted. Banked: memory/grind/_exeque/rejected/final-block-cond-swap-worse.c
+- probe 2: swapped the OUTER post-loop guard's `&&` operand order (`if (D_8009BF78 == D_8009BF7C && !(*D_8009BF54 & 0x01000000))` -> `if (!(*D_8009BF54 & 0x01000000) && D_8009BF78 == D_8009BF7C)`) on the identical chassis; sandbox.
+- result 2: score 2 -> 14 (worse than probe 1). Reverted. Banked: memory/grind/_exeque/rejected/outer-guard-cond-swap-worse.c
+- probe 3: moved the unconditional `SetIntrMask(D_8009BF84);` call (currently BEFORE the outer post-loop guard `if`) to be duplicated into both arms of that guard instead (once at the top of the `if` block adjacent to the final callback code, once alone in a new `else` arm) — testing whether relocating the call closer to the jalr changes the reorg.c resource-conflict computation for the DIFFERENT (later) call_insn; sandbox.
+- result 3: score 2 -> 18 (worst of the three). Reverted. Banked: memory/grind/_exeque/rejected/setintrmask-duplicated-into-arms-worse.c
+- (control) probe 4: converted the final block's fall-through return into a mixed-exit form (`return ...;` inlined at the end of the `if` block, duplicated `return ...;` after it) — the SOTN-sanctioned mixed-exit-forms family, own known-neutral construct — as a sanity check that the surrounding region isn't otherwise perturbable; sandbox.
+- result 4: score unchanged at 2 (neither better nor worse). Not adopted (adds a construct for zero benefit; simplest-known-form stays candidate.c's plain single return).
+- verdict: KILLED (all three, individually)
+- kill_scope: instance (each) — the exact respelling named, on the s4/s5 do-while(0)-wrapped floor-2/187 chassis, both FAKE-annotated wraps present, no other construct changed
+- measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis, one respelling applied at a time, reverted to the unmodified chassis (re-confirmed score 2) between each probe
+
+## Frontier update [s6]
+
+The jalr-delay-slot residual (H6, s2) remains the sole remaining gap. This
+session's three fresh structural probes (final-block condition order,
+outer-guard condition order, SetIntrMask relocation/duplication) all
+regressed the score, adding to s4/s5's already-exhausted permuter search
+(~24k iterations) and hand-derived variants (do-while wrap: no effect;
+cb-local hoist: worse). Every lever tried in the *local region surrounding*
+the residual — statement order, operand order, call placement — either has
+no effect or actively worsens the score; none reaches the delay-slot fill
+itself. Per the pass-attribution read this session confirmed (`.dbr` dump),
+the mechanism is exactly reorg.c's `fill_simple_delay_slots` choosing RTL
+insn 311 (the `*p=0` store, address cached in hard reg v1) as the jalr's
+delay-slot fill because no resource conflict is detected between the store
+and the call — and no C-level restructuring found so far changes that
+resource-conflict computation. The two live frontier items from s4/s5
+(ruling-request on H6's volatile form; and "try restructuring the
+surrounding do-while loop's exit path, or moving SetIntrMask relative to
+the guard") both remain the honest next steps — this session executed the
+SetIntrMask-relocation half of the second item (worse) and the loop-exit
+restructuring half is still genuinely untried (this session's probes were
+all downstream of/adjacent to the loop, not the loop's own exit-condition
+structure).
+
+## [s6] Respelling the outer if+do-while loop as a plain `while` loop (previously-untried loop-geometry spelling) has NO effect on the jalr-delay-slot residual.
+
+- probe: rewrote `if (cond) { do { body } while (cond); }` as `while (cond) { body }` (removing the duplicated top-of-loop guard, keeping the identical body) on the s4/s5 floor-2/187 chassis; sandbox _exeque --disable all.
+- result: score unchanged at 2/187. GCC 2.7.2's loop.c performs the same loop-rotation on a plain `while` as the source already spelled explicitly, so this respelling is codegen-neutral here — confirms the if+do-while spelling already in candidate.c is not itself contributing to (or masking) the jalr-delay-slot residual; the residual is fully local to the final callback block regardless of the enclosing loop's C-level spelling. Reverted to the simpler/already-banked if+do-while form (no reason to prefer either at equal score; kept candidate.c unchanged to avoid an unreviewed diff from the s4/s5-verified chassis).
+- verdict: KILLED (instance)
+- kill_scope: instance
+- measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis, outer loop spelling changed only, reverted after measurement
+
+## [s6] Swapping the final callback block's inner guard `&&` operand order (`if (*p != 0 && D_8009BE80 != 0)` -> `if (D_8009BE80 != 0 && *p != 0)`) on the s4/s5 do-while(0)-wrapped floor-2/187 chassis does not close or improve the jalr-delay-slot residual.
+- mechanism: reorg.c fill_simple_delay_slots resource-conflict computation for the D_8009BE80 jalr call_insn
+- probe: Applied the operand-order swap to src/display.c's final guard only; ran sandbox _exeque --disable all.
+- result: Score regressed 2 -> 8. Reverted. Banked memory/grind/_exeque/rejected/final-block-cond-swap-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis, both FAKE-annotated wraps present, only the named guard operand order changed
+
+## [s6] Swapping the outer post-loop guard's `&&` operand order (`if (D_8009BF78 == D_8009BF7C && !(*D_8009BF54 & 0x01000000))` -> `if (!(*D_8009BF54 & 0x01000000) && D_8009BF78 == D_8009BF7C)`) on the identical chassis does not close or improve the residual.
+- mechanism: reorg.c fill_simple_delay_slots resource-conflict computation for the D_8009BE80 jalr call_insn
+- probe: Applied the operand-order swap to src/display.c's outer post-loop guard only; ran sandbox _exeque --disable all.
+- result: Score regressed 2 -> 14 (worse than the inner-guard swap). Reverted. Banked memory/grind/_exeque/rejected/outer-guard-cond-swap-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis, both FAKE-annotated wraps present, only the named guard operand order changed
+
+## [s6] Relocating the unconditional `SetIntrMask(D_8009BF84);` call (moving it from before the outer post-loop guard to duplicated inside both if/else arms of that guard, adjacent to the final callback block) does not close or improve the residual.
+- mechanism: reorg.c fill_simple_delay_slots resource-conflict computation for the D_8009BE80 jalr call_insn
+- probe: Restructured src/display.c to duplicate the SetIntrMask call into both arms of the final guard if/else; ran sandbox _exeque --disable all.
+- result: Score regressed 2 -> 18 (worst of the three probes). Reverted. Banked memory/grind/_exeque/rejected/setintrmask-duplicated-into-arms-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis, both FAKE-annotated wraps present, only the named SetIntrMask relocation/duplication applied
+
+## [s6] Respelling the outer `if (cond) { do { body } while (cond); }` loop as a plain `while (cond) { body }` loop (removing the C-level duplicated top-of-loop guard) has no effect on the jalr-delay-slot residual.
+- mechanism: GCC 2.7.2 loop.c's automatic while-to-do-while rotation makes the two C spellings RTL-equivalent
+- probe: Rewrote the outer loop as a plain while loop with the identical body on the s4/s5 chassis; ran sandbox _exeque --disable all.
+- result: Score unchanged at 2/187. Reverted to the already-banked if+do-while spelling (equal score, no reason to prefer the diff).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis, only the outer loop's C-level spelling changed, reverted after measurement

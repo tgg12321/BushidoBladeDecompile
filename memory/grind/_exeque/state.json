@@ -1,8 +1,8 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "_exeque held at floor 2/187 (s4's do-while(0) chassis re-confirmed); s5 permuter session KILLED two hand-derived structural variants of the final-callback block and pushed the jalr-delay-slot permuter"
+  },
+  {
+   "session": 6,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Floor held at 2/187 (s4/s5 chassis re-confirmed); s6 structural session killed 4 fresh local respellings around the jalr-delay-slot residual, none closing or improving it."
   }
  ],
  "frontier": [
   {
    "hypothesis": "The floor-2 residual (final-callback jalr delay-slot fill) is the SAME site s2's H6 found closable only via `volatile s32 *p` -- an IRQ-callback-installed function's own single-read test-and-clear of a flag it owns could qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, closing the last 2 instructions with zero further search once ruled on.",
    "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque) IRQ-install site, and the fact that the floor has been at 2/187 (down from 12) for two consecutive sessions with the permuter search space now exhausted (>=20k iterations, 0 finds)."
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque) IRQ-install site, and the fact that the floor has been flat at 2/187 for three consecutive sessions (s4/s5/s6) across permuter (~24k iterations) and structural (this session's four probes) modalities with zero improvement found by any non-volatile lever."
   },
   {
-   "hypothesis": "A non-volatile pure-C lever for the jalr-delay-slot fill may still exist outside plain-C statement reordering of the final block or random permuter mutation -- e.g. restructuring the surrounding do-while loop's exit path, or moving the guard-and-clear block relative to the SetIntrMask(D_8009BF84) call that precedes it.",
-   "mechanism": "GCC 2.7.2 reorg.c fill_simple_delay_slots (tools/gcc-2.7.2/reorg.c:2861-3027) excludes a trial insn only via ordinary resource-conflict analysis (mark_set_resources/mark_referenced_resources) between the jalr and the candidate store -- volatile forces a conflict by treating the MEM as touching all memory; the open question is whether any OTHER C-level restructuring changes the resource-conflict computation without volatile",
-   "next_probe": "Read tools/gcc-2.7.2/reorg.c's mark_set_resources/mark_referenced_resources (called from fill_simple_delay_slots) to find what non-volatile conditions could make the jalr's own resource footprint (mark_set_resources on a CALL_INSN, reorg.c ~3072-3079) conflict with the preceding store; try moving SetIntrMask(D_8009BF84) or restructuring the enclosing if to change what the jalr's CALL_INSN resource set includes."
+   "hypothesis": "A non-volatile pure-C lever for the jalr-delay-slot fill may still exist in a region this session and s4/s5 have not yet tried: restructuring how the STORE's address is materialized (e.g. a struct/field-access spelling of D_8009BE7C instead of a raw pointer local) so the compiler picks a different hard register for the address, one that DOES conflict with the call_insn's resource footprint.",
+   "mechanism": "GCC 2.7.2 reorg.c mark_set_resources/mark_referenced_resources (called from fill_simple_delay_slots) computes conflicts between the trial insn's used/set hard registers and the call_insn's own resource set; if the store's address register happened to be one the call_insn's resource set includes (e.g. a return-value or argument register), the fill would be excluded",
+   "next_probe": "Read tools/gcc-2.7.2/reorg.c's mark_set_resources for CALL_INSN (~reorg.c:3072-3079) to enumerate exactly which hard regs a MIPS call_insn's resource set includes, then try C-level spellings of the final block designed to force the store's address into one of those specific registers (e.g. introducing an intervening call-adjacent read that pressures register allocation) rather than random reordering."
   },
   {
-   "hypothesis": "The do-while(0)-wrapped chassis in candidate.c (unchanged since s4, re-confirmed this session) remains the best known starting point for any future session on this function -- re-deriving it from scratch would waste a session, and re-seeding its jalr-delay-slot permuter search space without a structural change first would also waste a session per the ledger's CHASSIS RULE.",
-   "mechanism": "n/a (tooling/chassis reuse + anti-waste note)",
-   "next_probe": "Next session should apply memory/grind/_exeque/candidate.c verbatim (sandbox floor 2/187, confirmed this session), then EITHER file the ruling-request above OR attempt a genuinely different structural rewrite of the final-callback block (not yet tried: restructuring around the loop-exit condition, or moving SetIntrMask relative to the guard) before any further permuter campaign on this exact residual."
+   "hypothesis": "The do-while(0)-wrapped chassis in candidate.c (unchanged since s4, re-confirmed s5 and this session) remains the best known starting point for any future session -- re-deriving it would waste a session, and this session's four new negative structural probes (all reverted, all banked as rejected/) further narrow what's worth trying: local statement/operand reordering in the final-block/outer-guard/SetIntrMask region is now measured exhausted across 7 distinct spellings (3 from s2/s4, 4 from this session) with zero improvements.",
+   "mechanism": "n/a (chassis reuse + anti-waste note)",
+   "next_probe": "Next session should apply memory/grind/_exeque/candidate.c verbatim (sandbox floor 2/187, re-confirmed this session), then EITHER file the ruling-request above OR pursue the reorg.c resource-set-targeted register-forcing probe (frontier item 2) -- a genuinely new axis, not another reordering variant."
   }
  ],
  "judge_constraints": [],
@@ -142,6 +148,38 @@
    "measured_on": "s4/s5 do-while(0)-wrapped floor-2/187 chassis (both FAKE-annotated wraps present, no other cheat/volatile constructs), jalr-delay-slot-targeted permuter search space only",
    "predicate_cite": "",
    "result": "0 novel finds after 15356 iterations this session. Combined with s4 campaign 3's 9096 iterations on the identical residu"
+  },
+  {
+   "session": 6,
+   "statement": "Swapping the final callback block's inner guard `&&` operand order (`if (*p != 0 && D_8009BE80 != 0)` -> `if (D_8009BE80 != 0 && *p != 0)`) on the s4/s5 do-while(0)-wrapped floor-2/187 chassis does no",
+   "kill_scope": "instance",
+   "measured_on": "s4/s5 do-while(0)-wrapped floor-2/187 chassis, both FAKE-annotated wraps present, only the named guard operand order changed",
+   "predicate_cite": "",
+   "result": "Score regressed 2 -> 8. Reverted. Banked memory/grind/_exeque/rejected/final-block-cond-swap-worse.c"
+  },
+  {
+   "session": 6,
+   "statement": "Swapping the outer post-loop guard's `&&` operand order (`if (D_8009BF78 == D_8009BF7C && !(*D_8009BF54 & 0x01000000))` -> `if (!(*D_8009BF54 & 0x01000000) && D_8009BF78 == D_8009BF7C)`) on the identi",
+   "kill_scope": "instance",
+   "measured_on": "s4/s5 do-while(0)-wrapped floor-2/187 chassis, both FAKE-annotated wraps present, only the named guard operand order changed",
+   "predicate_cite": "",
+   "result": "Score regressed 2 -> 14 (worse than the inner-guard swap). Reverted. Banked memory/grind/_exeque/rejected/outer-guard-co"
+  },
+  {
+   "session": 6,
+   "statement": "Relocating the unconditional `SetIntrMask(D_8009BF84);` call (moving it from before the outer post-loop guard to duplicated inside both if/else arms of that guard, adjacent to the final callback block",
+   "kill_scope": "instance",
+   "measured_on": "s4/s5 do-while(0)-wrapped floor-2/187 chassis, both FAKE-annotated wraps present, only the named SetIntrMask relocation/duplication applied",
+   "predicate_cite": "",
+   "result": "Score regressed 2 -> 18 (worst of the three probes). Reverted. Banked memory/grind/_exeque/rejected/setintrmask-duplicat"
+  },
+  {
+   "session": 6,
+   "statement": "Respelling the outer `if (cond) { do { body } while (cond); }` loop as a plain `while (cond) { body }` loop (removing the C-level duplicated top-of-loop guard) has no effect on the jalr-delay-slot res",
+   "kill_scope": "instance",
+   "measured_on": "s4/s5 do-while(0)-wrapped floor-2/187 chassis, only the outer loop's C-level spelling changed, reverted after measurement",
+   "predicate_cite": "",
+   "result": "Score unchanged at 2/187. Reverted to the already-banked if+do-while spelling (equal score, no reason to prefer the diff"
   }
  ],
  "ladder_skip": 0,
