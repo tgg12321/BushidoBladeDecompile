@@ -1,0 +1,34 @@
+{
+ "func": "func_8006A564",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 137,
+   "modality": "recon",
+   "headline": "First C body written (was INCLUDE_ASM/no-c-body, distance 199) -- sandbox score 137, build_insns 204 vs target 199; srl-vs-sra byte diff killed, residual is a register-allocation mapping (extra callee"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 137-point residual is closable by steering GCC's global allocator to the target's 5-register mapping (drop the extra 6th callee-save) via declaration order and/or splitting the reused `tile` pointer's live range at its mid-function reassignment (asm reuses $s0 for two logically distinct objects).",
+   "mechanism": "GCC 2.7.2 global.c allocno-priority ordering is sensitive to first-use order and live-range length; a long-lived reused pseudo may be forcing an extra spill-to-callee-save.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_8006A564; read the .greg/.lreg dump for which pseudo lands in the extra register; try declaration-order swap + split-naming the tile reassignment; re-measure via sandbox --disable all."
+  },
+  {
+   "hypothesis": "If declaration-order/split-naming levers don't close it, a directed permuter run against a clean single-function target (per difficult-is-not-impossible.md recipe) focused on register-mapping variants may find the closing form.",
+   "mechanism": "Exhaustive structural search over local declaration order / call-argument evaluation order affecting allocno priority.",
+   "next_probe": "Build target.o from asm/funcs/func_8006A564.s + prelude.inc at offset 0; run decomp-permuter with --stop-on-zero against candidate.c."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-16T17:39:11.382406+00:00",
+ "object_model_audited": 1
+}
