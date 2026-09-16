@@ -1,6 +1,32 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65) — floor 38/204, NOT YET 0.
+ * NOTE: this file is a CANDIDATE, not HEAD state. src/text1b.c on main
+ * (and at every session's start/end) carries INCLUDE_ASM("asm/funcs",
+ * func_80056CB8) per the asm-until-matched policy -- this body is applied
+ * to src/text1b.c TEMPORARILY, per-session, for measurement only, and
+ * reverted before the session ends. Do not read this file's presence as
+ * evidence of HEAD/main state.
+ * s65 (forensics modality, 2026-09-16): Body UNCHANGED (22nd consecutive
+ * session confirming 38/204 fresh). CORRECTED a misattribution standing
+ * since s54: pseudo 149 is NOT `limit` -- it is the 0x1F8002B8
+ * scratchpad-address constant (LICM-moved by move_movables, allocated
+ * hard $fp, never spilled), confirmed by reading the fresh `.loop` dump's
+ * actual RTL (its sole SET is `(insn 461 ... (const_int 528483000))`,
+ * 528483000 = 0x1F8002B8, positioned immediately before
+ * NOTE_INSN_LOOP_BEG -- i.e. AFTER hoisting, with a fresh insn UID, which
+ * is why s51/s62's greps for a literal "insn 210" came up empty). The
+ * TRUE `limit` is pseudo 74 (already confirmed s63: insn 21, `reg74 =
+ * reg75+2`, genuinely spilled, absent from the .greg disposition table)
+ * -- and pseudo 74 was NEVER eligible for move_movables at all (its def
+ * precedes the loop's scanned insn range entirely). Every prior session's
+ * evidence.md/hypotheses.md references to "the spill of pseudo 149
+ * (limit)" as the residual mechanism are superseded by this correction;
+ * see evidence.md/hypotheses.md [s65] for the full RTL trace. No new
+ * lever surfaced -- both pseudos' own axes were already independently
+ * exhausted (149's scratch-address family: s8/s9/s63; 74/limit's
+ * type-narrow/index-share/do-while-elision family: s6-s22/s27/s30/s33/
+ * s46/s57/s58). This closes a standing ambiguity for future sessions.
  * s60 (enumerate modality, 2026-09-16): Body UNCHANGED (16th consecutive
  * session confirming 38/204 fresh). Hand-tested 3 spellings of the
  * type-dispatch if/else block (the s37/s38-flagged tooling-gap block

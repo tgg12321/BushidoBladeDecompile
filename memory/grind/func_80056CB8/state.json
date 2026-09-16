@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 64,
+ "session_count": 65,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -387,16 +387,22 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s64 forensics: 20th consecutive flat 38/204; corrected a stale s8/s13 mechanism claim (single not double 0x1F8002B8 materialization on current chassis) via fresh .s-pass diff; sibling + fake_ablate re"
+  },
+  {
+   "session": 65,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s65 forensics: 22nd consecutive 38/204 re-confirmation; corrected a standing pseudo-149/limit misattribution dating to s54 via direct fresh-dump RTL read (pseudo 149 = 0x1F8002B8 scratch-address const"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is register-pressure-bound on the loop body's 9 call-spanning resident values ($s0-$s7 + $fp), not further reducible by any spelling-level lever identified so far; a genuinely new axis would need to either shrink one of the 8 named residents' live range or find a real (non-invented) duplication site the nrefs-census campaign (s49-s63, exhausted) missed.",
-   "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c; s42 confirmed the do-while chassis's -3-insn win does not touch this conflict graph's shape for the 9 contended pseudos at all.",
-   "next_probe": "Not yet identified -- the s49-s63 nrefs-lift census and the s22-s46 loop-shape sweep both closed clean; a future session should look for a structurally different lever class (e.g. re-examine whether any of the 8 named residents' declared TYPE or scope could legitimately narrow without changing semantics, an axis distinct from both nrefs-lift and loop-shape)."
+   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~20 other pseudos in a near-fully-connected conflict clique per the .greg conflict-list dump), not further reducible by any spelling-level lever identified so far across 22 flat sessions and 6+ modalities.",
+   "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c; this session's correction clarifies WHICH pseudo is which (149=scratch-const/$fp, 74=limit/spilled) but does not change that both axes are independently exhausted.",
+   "next_probe": "A future session should look for a structurally different lever class entirely -- not a respelling of the now-corrected limit/scratch-constant identities, but e.g. re-examining whether any of the OTHER ~18 conflict-graph-live pseudos (the obj/flags/scale/sin_p/cos_p/x/z per-iteration values, not yet individually forensically identified the way 74 and 149 now are) has an untried scope-narrowing or duplication lever."
   },
   {
-   "hypothesis": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) may develop a transplantable block if its own grind progresses further; currently structurally disjoint (field28-dispatch vs collision-detection loop).",
+   "hypothesis": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) may develop a transplantable block if its own grind progresses further; still structurally disjoint (field28-dispatch vs. collision-detection loop) as of this session's check.",
    "mechanism": "n/a -- sibling-ledger cross-reference per the brief's mandate.",
    "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session; no action needed until its structure or floor changes."
   }
@@ -404,14 +410,6 @@
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 32,
-   "statement": "On the CURRENT 38/204 chassis, sharing i*2 into ONE local (`idx = i*2;` used at both table reads) does widen the merged giv's lifetime enough to flip loop.c's strength-reduction decision (dump-proven:",
-   "kill_scope": "instance",
-   "measured_on": "s32 chassis (s22-s31-banked 38/204 body + a single shared `idx = i*2` local substituted at both table-index reads), no FAKE constructs present, single fresh sandbox measurement plus a confirmatory .lo",
-   "predicate_cite": "",
-   "result": "score=51, build_insns=200 (baseline this session: score=38, build_insns=198, target_insns=204). Dump confirms promotion "
-  },
   {
    "session": 33,
    "statement": "Adding a fresh, separately-named local (idxB = i * 2;, assigned right after the flags-table i*2 read) and using ONLY that local at the scale-table read (leaving the flags read's own i*2 untouched) let",
@@ -883,6 +881,14 @@
    "measured_on": "s64 chassis (candidate.c's s22-s63-banked 38/204 body applied fresh to src/text1b.c, confirmed sandbox 38/204 before this probe; fresh dump.ps1 .s pass regeneration), cross-referenced against s22/s30/",
    "predicate_cite": "",
    "result": "Zero new C-level lever identified. Corrects a stale mechanism claim carried since s8/s13/s16/s30: on the current (s22+) "
+  },
+  {
+   "session": 65,
+   "statement": "s54's identification of pseudo 149 as `limit` (echoed uncorrected through s56/candidate.c's headers s54-s64) is a misattribution; direct RTL read of a fresh dump.ps1 pass shows pseudo 149 is actually ",
+   "kill_scope": "instance",
+   "measured_on": "s65 chassis (s22-s61-banked candidate.c body + func_80053614 s32-return prerequisite applied fresh to src/text1b.c; sandbox 38/204 confirmed before and after; zero FAKE constructs present; src/text1b.",
+   "predicate_cite": "",
+   "result": "Pseudo 149 = the 0x1F8002B8 scratchpad-address 5th-arg constant to func_80053614 (same family as pseudos 148/146, alread"
   }
  ],
  "ladder_skip": 0,
