@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 50,
- "current_modality": "solver",
+ "session_count": 51,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -303,34 +303,29 @@
    "floor": 38,
    "modality": "solver",
    "headline": "s50 solver: classify reconfirms PRE-RA residual (RA/sched tooling class-killed for it), corrects the misdirected s45-s49 RA-conflict frontier, and surfaces an untried shared-offset lever for D_8009A82"
+  },
+  {
+   "session": 51,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s51 forensics: named the exact global_alloc spill (limit=start+2, spilled sp+104) via the .greg dump; two new C levers derived from it both KILLED on the current chassis (inline-bound 38->42, shared-i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A single shared plain-integer offset local (e.g. `s32 off = i * 2;` written once per iteration, read at both D_8009A821[off] and D_8009A820[off]) will let GCC reuse one register across both table lookups the way target's asm does, closing part of the PRE-RA multiset gap without the register-pressure regression that killed the raw shared-INDEX variant (s6) or the UB-avoidant concern that stopped the per-table-pointer variant (s7) from testing a merged form.",
-   "mechanism": "cse.c / local register allocation: a single-write, multi-read local for the offset expression gives the front end one RTL set to reuse across both %hi(D_8009A821)+off and %hi(D_8009A820)+off address computations, instead of two independently-emitted sll+addu pairs.",
-   "next_probe": "Splice candidate.c onto src/text1b.c, introduce `s32 off = i * 2;` immediately before the D_8009A821 lookup (replacing both `i * 2` occurrences with `off`), measure via sandbox --disable all, and bank CONFIRMED/KILLED with the measured score."
+   "hypothesis": "Reuse the `limit`-holding pseudo (or a variable that would occupy the same storage) for a second, USED, loop-VARIANT value near the `i < limit` compare, so the pseudo becomes multi-set and loop.c's invariant-motion no longer treats it as a movable -- this is the [[defeat-licm-hoist-var-reuse]] mechanism applied to the loop BOUND rather than the table INDEX (which is what all four 'share i*2' probes, now killed on three chassis generations, actually tested).",
+   "mechanism": "loop.c's strength_reduce / find_and_verify_loops only treats a pseudo as a movable invariant if it has exactly one set reaching every use inside the loop; a genuinely multi-set pseudo is excluded from the movable-pseudo set and is not hoisted-then-spilled the same way.",
+   "next_probe": "Identify a loop-variant value computed near the `limit` use (the `i < limit` compare site, or immediately before/after it) that could plausibly share ONE C variable with `limit` under a truthful semantic reading (not an invented alias) -- e.g. restructuring the loop guard/increment so the same local is legitimately reassigned inside the loop body. If no truthful reuse candidate exists, this lever may not be reachable without inventing a value, in which case the next forensics step is a fresh `.lreg`/`.rtl` dump specifically of the post-spill reload sequence to see what ELSE conflicts with reg 11 in the loop body (the conflict list at line ~14790-14810 of text1b.greg, not yet cross-referenced against source-level candidates)."
+  },
+  {
+   "hypothesis": "Re-attempt the outer 0..1-counter loop restructuring (`for (n = 0; n < 2; n++) { i = start + n; ... }`) with a correctly brace-balanced splice -- this session's attempt was a tooling artifact (build_insns=8, syntax error), not a real measurement, so this C shape is genuinely untried.",
+   "mechanism": "Decoupling the loop-carried `i` (used for both indexing and the bound compare) from a fresh, single-purpose counter `n` might change which pseudo global_alloc treats as the loop-invariant/loop-variant split, potentially avoiding the reg-11 spill path entirely by giving the bound test a trivially-constant (`n < 2`) comparison instead of a computed `limit`.",
+   "next_probe": "Rewrite tmp/grind/func_80056CB8/s51/splice_ncount.py by hand (not via blind string-replace) to preserve brace balance and the full loop body, then measure via sandbox --disable all."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 16,
-   "statement": "Replacing the banked flags==4 y-compare nested if/else with a single absolute-value form (`s32 dy = y - hit1[1]; s32 ady = (dy>=0)?dy:-dy; if (ady>=0x3E9) flags=5;`) does not lower the honest distance",
-   "kill_scope": "instance",
-   "measured_on": "s16 chassis (s15-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "score 42 -> 45/204 (build_insns unchanged at 197 -- same real instruction count, worse register/ordering diff). Reverted"
-  },
-  {
-   "session": 16,
-   "statement": "Re-testing s10's loop-carried-idx2 induction variable (idx2 = start*2 initialized in the for-init clause, idx2 += 2 in the for-increment clause, replacing both (&D_x)[i*2] byte-table reads with (&D_x)",
-   "kill_scope": "instance",
-   "measured_on": "s16 chassis (s15-banked candidate.c body, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "score 42 -> 50/204 (build_insns 197 -> 200, 3 more real instructions). Reverted; re-confirmed 42/197 reproduces exactly "
-  },
   {
    "session": 17,
    "statement": "s16's closest-to-target instance kill (the flags==4 y-compare single abs-value form) still fails on the current chassis (mandatory kill re-audit).",
@@ -794,6 +789,22 @@
    "measured_on": "s50 re-audit of the s45-s49 frontier wording against this session's fresh classify output; no build measurement needed",
    "predicate_cite": "",
    "result": "Frontier item retired as misdirected. Replaced with a new structural lead: target's asm shares ONE offset register ($fp,"
+  },
+  {
+   "session": 51,
+   "statement": "Removing the separately-named `limit` local and writing the loop guard as `i < start + 2` directly (recomputed inline at the compare) removes the global_alloc spill of the loop-invariant bound pseudo ",
+   "kill_scope": "instance",
+   "measured_on": "s51 fresh chassis (candidate.c s22-s50-banked body + limit-removal edit), sandbox --disable all, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score REGRESSED 38 -> 42 (build_insns 198 -> 197). Banked: memory/grind/func_80056CB8/rejected/inline-loop-bound-no-limi"
+  },
+  {
+   "session": 51,
+   "statement": "MANDATORY KILL RE-AUDIT: the s6/s12-13-established 'shared i*2 offset local' family (single `off = i * 2;` local read at both D_8009A821[off]/D_8009A820[off] sites), which the s50 frontier had reframe",
+   "kill_scope": "instance",
+   "measured_on": "s51 fresh chassis (candidate.c s22-s50-banked body + shared-offset-local edit), sandbox --disable all, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score REGRESSED 38 -> 51 (build_insns 198 -> 200). Banked: memory/grind/func_80056CB8/rejected/shared-offset-local-s51-r"
   }
  ],
  "ladder_skip": 0,

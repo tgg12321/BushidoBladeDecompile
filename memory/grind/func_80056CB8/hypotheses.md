@@ -2349,3 +2349,59 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s50 re-audit of the s45-s49 frontier wording against this session's fresh classify output; no build measurement needed
+
+## [s51, forensics] PASS ATTRIBUTION: instrumented cc1 `.greg` dump (tmp/grind/func_80056CB8/dumps/text1b.greg, function slice at line 14788, generated 2026-09-16 07:44 from the then-spliced candidate.c body) names global_alloc's two spills for this function explicitly: "Spilling reg 11" and "Spilling reg 65". Reg 11 (hard reg `t3`) is `limit = start + 2;`, computed ONCE at insn 21 (`(insn:HI 21 ... (set (reg:SI 11 t3) (plus:SI (reg/v:SI 22 s6) (const_int 2))))`, right after the "Need 1 reg of class GR_REGS (for insn 21)" / "ALL_REGS" pressure messages) and immediately spilled to the stack at sp+104 (insn 469). Reg 65 is the fixed MD_REGS/LO_REG hardware multiply-result register, needed transiently at insn 143 (one of the `(scale * *sin_p) >> 12`-style multiplies) -- a routine per-multiply LO-register contention, not a standalone frame slot.
+- mechanism: global.c's `global_alloc` (specifically its `find_reg` / `retry_global` spill path) forces a pseudo that cannot get any hard register in its needed class (GR_REGS/ALL_REGS pressure noted at insn 21) into a stack slot; reload's `alter_reg` (reload1.c) later materializes the actual sp-relative load/store pair. This is a genuine extra 8-byte frame slot exactly matching the frame-size delta (176 vs 168 bytes) the s50 classify session's multiset diff surfaced, now attributed to a NAMED value (`limit`) instead of left as an unexplained frame-size number.
+- probe: grep'd tmp/grind/func_80056CB8/dumps/text1b.greg for the func_80056CB8 slice, read the RTL insns around "Spilling reg 11"/"Spilling reg 65" and cross-referenced insn 21/469 against candidate.c's `limit = start + 2;` statement (the only `+2` constant-add present before the loop).
+- result: named the exact GCC pass (global_alloc) and the exact pseudo (reg 11 = `limit`) responsible for the extra frame slot the s50 classify session's frame-size-delta finding (176 vs 168) had flagged but not attributed. This supersedes the vague framing and gives the next probe a concrete target.
+- verdict: CONFIRMED
+
+## [s51, forensics] Removing the separately-named `limit` local and writing the loop guard as `i < start + 2` (recomputed inline at the compare instead of precomputed+spilled) does NOT remove the global_alloc spill identified above, and regresses the honest floor.
+- mechanism: GCC 2.7.2's `loop.c` strength-reduction / invariant-motion (the SAME loop.c movable-pseudo mechanism [[defeat-licm-hoist-var-reuse]] documents) treats a single-set (once-written) pseudo as a movable regardless of whether its C-level spelling is a named local or an inline sub-expression re-evaluated at each syntactic occurrence -- so `start + 2` written directly in the loop guard still gets hoisted to one pseudo outside the loop and still contends for a hard register the same way `limit` did.
+- probe: Spliced tmp/grind/func_80056CB8/s51/splice_nolimit.py (drops the `limit` decl + `limit = start + 2;` statement; for-loop guard becomes `for (i = start; i < start + 2; i++)`) onto fresh src/text1b.c, measured via `sandbox --disable all`, reverted with `git checkout -- src/text1b.c` (clean revert confirmed via git status).
+- result: score REGRESSED 38 -> 42, build_insns 198 -> 197 (note: build_insns count actually DROPPED, i.e. the divergence moved in a different direction, not simply "further off" on a single axis). Full form banked at memory/grind/func_80056CB8/rejected/inline-loop-bound-no-limit-var-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s51 fresh chassis (candidate.c s22-s50-banked body + `limit`-removal edit), sandbox --disable all, zero FAKE constructs present
+
+## [s51, forensics] MANDATORY KILL RE-AUDIT: re-measured the s6 "shared idx local" form (single `off = i * 2;` local read at both D_8009A821[off]/D_8009A820[off] sites) on the CURRENT chassis (floor 38), per the ledger's standing kill-re-audit instruction -- this form was previously measured only on two now-superseded chassis (s6 @floor 81, s11-13 @floor 48-58) and the s50 frontier had (incorrectly) reframed it as "untried".
+- mechanism: local-alloc / global_alloc register-pressure regression -- the shared local's live range spans the intervening ratan2 call (and the flags/obj/ang computation between the two table-lookup sites), which the s6 writeup already identified as the cost driver; this session confirms the SAME mechanism still applies on the current, much-improved chassis.
+- probe: Spliced tmp/grind/func_80056CB8/s51/splice_off.py (adds `s32 off;`, sets `off = i * 2;` once per iteration, replaces both `i * 2` occurrences with `off`) onto fresh src/text1b.c, measured via `sandbox --disable all`, reverted with `git checkout -- src/text1b.c` (clean revert confirmed).
+- result: score REGRESSED 38 -> 51, build_insns 198 -> 200. Full form banked at memory/grind/func_80056CB8/rejected/shared-offset-local-s51-refresh-worse.c. This closes the s50 frontier item cleanly -- it was a stale re-proposal of an already-KILLED family (candidate.c's own s12/s13 write-up, ~line 1060, explicitly states "this closes the entire 'one C handle carries i*2' family for this residual"), now confirmed dead on a THIRD chassis generation as well.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s51 fresh chassis (candidate.c s22-s50-banked body + shared-offset-local edit), sandbox --disable all, zero FAKE constructs present
+
+## [s51, forensics] NON-MEASUREMENT (not a hypothesis result): a malformed splice variant (replacing the `for (i = start; i < limit; i++)` loop with a `for (n = 0; n < 2; n++) { i = start + n; ...` outer-counter form) via a naive string-replace produced a syntactically broken body (unbalanced braces) that measured build_insns=8 -- an artifact of a compile/link failure, NOT a real measurement of that C structure. Discarded, not banked as CONFIRMED or KILLED; reverted immediately with `git checkout -- src/text1b.c`.
+- mechanism: n/a -- tooling mistake in this session's splice script (the string-replace introduced a brace-nesting error), not a codegen finding.
+- probe: n/a (caught by the degenerate build_insns=8 output before further analysis; no cc1/codegen conclusion can be drawn from a syntax error).
+- result: No valid measurement obtained for the "outer 0..1 counter + i = start + n" loop restructuring. This shape remains GENUINELY UNTRIED -- recorded here only so a future session does not waste a turn re-discovering the same splice bug before re-attempting it with correct brace balancing.
+- verdict: n/a (no verdict -- not a completed measurement, intentionally omitted from the outcome JSON hypotheses list)
+
+## [s51] The instrumented cc1 .greg dump for func_80056CB8 (tmp/grind/func_80056CB8/dumps/text1b.greg, function slice at line 14788) shows global_alloc spilling reg 11 (hard reg t3), which is the loop-invariant `limit = start + 2;` pseudo computed once at insn 21 and stored to the stack at sp+104 by insn 469; reg 65 is the routine per-multiply LO hardware register, not a standalone frame slot.
+- mechanism: global.c global_alloc's spill path (retry_global / find_reg) forces a pseudo with no available hard register in its needed class into a stack slot; reload1.c's alter_reg later materializes the sp-relative store/load pair. Names the exact pseudo behind the frame-size delta (176 vs 168 bytes) the s50 classify session flagged without attribution.
+- probe: grep + read of tmp/grind/func_80056CB8/dumps/text1b.greg around the 'Spilling reg 11'/'Spilling reg 65' lines, cross-referenced insn 21/469 against candidate.c's `limit = start + 2;` statement.
+- result: Attribution confirmed: reg 11 = limit, spilled to sp+104 by global_alloc. This is new, actionable evidence beyond the s50 classify session's unattributed frame-size-delta finding.
+- verdict: CONFIRMED
+
+## [s51] Removing the separately-named `limit` local and writing the loop guard as `i < start + 2` directly (recomputed inline at the compare) removes the global_alloc spill of the loop-invariant bound pseudo and closes part of the 38/204 gap.
+- mechanism: loop.c strength-reduction / invariant motion treats a single-set (once-written) pseudo as a movable candidate for hoisting regardless of whether its C-level spelling is a named local or an inline sub-expression re-evaluated at each syntactic occurrence, so the hoisted invariant still needs the same hard register / spill slot.
+- probe: Spliced tmp/grind/func_80056CB8/s51/splice_nolimit.py (drops the `limit` decl + assignment; loop guard becomes `for (i = start; i < start + 2; i++)`) onto fresh src/text1b.c, measured via `sandbox --disable all`, reverted with `git checkout -- src/text1b.c`.
+- result: score REGRESSED 38 -> 42 (build_insns 198 -> 197). Banked: memory/grind/func_80056CB8/rejected/inline-loop-bound-no-limit-var-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s51 fresh chassis (candidate.c s22-s50-banked body + limit-removal edit), sandbox --disable all, zero FAKE constructs present
+
+## [s51] MANDATORY KILL RE-AUDIT: the s6/s12-13-established 'shared i*2 offset local' family (single `off = i * 2;` local read at both D_8009A821[off]/D_8009A820[off] sites), which the s50 frontier had reframed as untried, remains KILLED when re-measured fresh on the current (floor-38) chassis.
+- mechanism: local-alloc/global_alloc register-pressure regression -- the shared local's live range spans the intervening ratan2 call and flags/obj computation between the two table-lookup sites, raising register pressure enough to cost more than the sll+addu pair it removes (same mechanism as s6's original finding).
+- probe: Spliced tmp/grind/func_80056CB8/s51/splice_off.py (adds `s32 off;`, `off = i * 2;` once per iteration, both `i * 2` occurrences replaced with `off`) onto fresh src/text1b.c, measured via `sandbox --disable all`, reverted with `git checkout -- src/text1b.c`.
+- result: score REGRESSED 38 -> 51 (build_insns 198 -> 200). Banked: memory/grind/func_80056CB8/rejected/shared-offset-local-s51-refresh-worse.c. Confirms this family dead across THREE chassis generations now (s6 @81, s11-13 @48-58, s51 @38); the s50 frontier item is retired.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s51 fresh chassis (candidate.c s22-s50-banked body + shared-offset-local edit), sandbox --disable all, zero FAKE constructs present
+
+## [s51] Fresh re-splice of the s22-s50-banked candidate.c body onto current src/text1b.c HEAD reproduces the ledger's recorded 38/204 floor exactly before any new edit, confirming the chassis is unchanged and zero FAKE constructs are present for tools/fake_ablate.py to act on.
+- mechanism: n/a -- direct re-measurement per the ledger's mandatory kill-re-audit instruction, sixth consecutive session (s41, s46, s48, s49, s50, s51) to independently confirm this.
+- probe: Applied tmp/grind/func_80056CB8/s49/splice.py to fresh src/text1b.c, measured via sandbox --disable all before running any new probe this session.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact match to ledger.
+- verdict: CONFIRMED

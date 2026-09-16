@@ -1318,6 +1318,35 @@
  *
  * See hypotheses.md [s44] and evidence.md [s44 OBJECT MODEL] for the
  * full per-symbol verdict table.
+ * ---------------------------------------------------------------------
+ * s51 (forensics modality). Re-confirmed 38/204 fresh (mandatory kill
+ * re-audit, zero FAKE constructs). PASS ATTRIBUTION via the instrumented
+ * cc1 .greg dump (tmp/grind/func_80056CB8/dumps/text1b.greg, line 14788):
+ * global_alloc's "Spilling reg 11" is the loop-invariant `limit = start +
+ * 2;` pseudo (insn 21), spilled to sp+104 at insn 469 -- this NAMES the
+ * exact extra 8-byte frame slot the s50 classify session's frame-size
+ * delta (176 vs 168) had flagged without attribution. Two probes this
+ * session, both KILLED (instance, re-measured on the CURRENT chassis):
+ * (1) inlining the loop bound as `i < start + 2` (dropping the `limit`
+ * local) -- global_alloc still materializes and spills the SAME invariant
+ * pseudo (loop.c's movable-pseudo test doesn't care about C-level naming);
+ * 38 -> 42. (2) re-measuring the s6/s12-13 "shared i*2 offset local" family
+ * on this chassis (the s50 frontier had misidentified this as untried) --
+ * still regresses via register pressure across the intervening ratan2/
+ * func_80053614 calls, now confirmed dead on a THIRD chassis generation;
+ * 38 -> 51. FRONTIER for the next session: the spill is real and named,
+ * but "delete the local" is the wrong lever per
+ * [[defeat-licm-hoist-var-reuse]] -- the documented fix for a hoisted
+ * loop-invariant the target keeps live differently is to make the SAME
+ * pseudo carry a second, USED, loop-VARIANT value (multi-set pseudos are
+ * not loop.c movables), not to delete or inline the invariant's C-level
+ * name. Concretely: find a loop-variant value near `limit`'s use (the
+ * `i < limit` compare) that could share ITS storage with `limit` under a
+ * single reused local, forcing global_alloc to treat it as multi-set and
+ * skip the invariant-hoist-then-spill path entirely. Not yet attempted --
+ * the shared-i*2-offset probes above tested sharing a DIFFERENT pseudo
+ * (the table index, not the loop bound); this is a distinct, still-open
+ * lever. Full writeup: hypotheses.md [s51].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;

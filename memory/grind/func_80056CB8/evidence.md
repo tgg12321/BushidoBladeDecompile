@@ -902,3 +902,13 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s50] Manual read of asm/funcs/func_80056CB8.s lines 1-75 confirms the classify diff's 'target only: lw #,104(#) / lw #,96(#)' are stack-frame-relative reloads of pt0/pt1-equivalent stack-array pointers stored earlier in the prologue, NOT unread object fields -- ruling out a false 'extra field read' lead before it could mislead a future session.
 
 - [s50] Target's loop shares ONE offset register across both D_8009A820/D_8009A821 byte-table lookups (addu into two different symbol bases with the same shared register, stride +2/iteration); our candidate recomputes i*2 independently at each lookup site (3 sll total per iteration pair).
+
+- [s51] tmp/grind/func_80056CB8/dumps/text1b.greg line 14788 (func_80056CB8 slice): global_alloc spills reg 11 (t3, the `limit = start + 2;` invariant, insn 21) to sp+104 at insn 469, and reg 65 (fixed LO hardware register) transiently at insn 143 for a multiply.
+
+- [s51] The frame-size delta (176 vs 168 bytes) the s50 classify session's instruction-multiset diff surfaced is now attributable to this specific spilled pseudo, not an unnamed frame difference.
+
+- [s51] Both concrete C-level levers derived from this attribution (delete-the-named-local / inline the bound; share the table-index offset) measured worse on the current chassis -- the lever the frame-slot finding actually calls for is a multi-set-pseudo LICM defeat ([[defeat-licm-hoist-var-reuse]] mechanism: reuse the SAME pseudo for a second, used, loop-variant value so it is no longer a loop.c movable), which is distinct from and untested by any prior session's probes.
+
+- [s51] A malformed splice attempt this session (outer 0..1 counter form) produced a syntactically broken body (build_insns=8, unbalanced braces) -- discarded as a non-measurement, not banked as a kill; the underlying C shape (decoupling `i` from an outer counter) remains genuinely untried if re-spliced correctly.
+
+- [s51] git status confirmed clean (src/text1b.c reverted to INCLUDE_ASM stub) after every probe this session.
