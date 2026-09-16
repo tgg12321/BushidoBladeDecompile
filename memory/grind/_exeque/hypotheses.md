@@ -498,3 +498,36 @@ This narrows (does not eliminate) the frontier: the jalr-delay-slot residual is 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s4/s5/s6 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c), final-callback block only, all 19 enumerated {p,flag,cb} spellings/orderings/swaps, swept via tools/sweep_variants.py against the real sandbox _exeque --disable all engine, forward-decl fixups applied to src/display.c for the duration of the sweep and reverted before session end
+
+## [s8] SYNTHESIS re-audit: applying memory/grind/_exeque/candidate.c verbatim to src/display.c this session (chassis check at dispatch reported "measurement unavailable" because src was in its committed INCLUDE_ASM state) re-confirms sandbox score 2/187 exactly, matching every prior session s4-s7. No drift.
+- mechanism: n/a (chassis re-confirmation)
+- probe: Applied candidate.c's function body + both forward-declaration fixups (`extern s32 _exeque(void);` at both call-site forward decls, `extern s32 D_8009BF84;` added near the D_8009BE7C/D_8009BE80 externs) to src/display.c; ran `& tools/wteng.ps1 main sandbox _exeque --disable all`.
+- result: score 2, target_insns 187, build_insns 186. Identical to s4-s7.
+- verdict: CONFIRMED
+
+## [s8] KILL RE-AUDIT (mandatory per the driver's flat-floor trigger): ran `tools/fake_ablate.py --func _exeque --file display --candidate memory/grind/_exeque/candidate.c` on the current chassis to verify neither `/* FAKE */` do-while(0) wrap is an inert carrier sitting on a pseudo a real lever needs (the func_8002EA24 s8 failure mode named in the driver's KILL RE-AUDIT REQUIRED instructions).
+- mechanism: reorg.c list-scheduler / rank_for_schedule ordering effect of each wrap, per their existing FAKE annotations
+- probe: `bash tools/wsl.sh 'source .venv/bin/activate && python3 tools/fake_ablate.py --func _exeque --file display --candidate memory/grind/_exeque/candidate.c --json'` — sweeps all 2^2 subsets of the two FAKE wraps (keep-all, drop outer, drop nested, drop both) against the real sandbox.
+- result: keep-all (both wraps present) = 2/187 (186 build insns); drop nested only = 7/187; drop outer only = 7/187 (185 build insns); drop both = 12/187 (185 build insns). Both wraps are independently load-bearing (each alone recovers only floor 7, not 2) and their combination is required to reach floor 2 — this is the SAME shape as s4's original single-vs-nested A/B measurement, now re-verified via the dedicated ablation tool rather than by hand. No inert-carrier pattern found: this is NOT a func_8002EA24-style false kill.
+- verdict: CONFIRMED
+- artifacts: tmp/grind/_exeque/s8/ablate/ (fake_ablate.py's variant .c files + tmp/sw2.json-equivalent scoring, written under tmp/grind/_exeque/ablate/ by the tool itself)
+
+## [s8] SYNTHESIS: merged frontier assessment. Across s4 (permuter, 2 campaigns), s5 (permuter, re-confirm + 2nd campaign), s6 (structural, 4 fresh respellings), s7 (enumerate, 19-way systematic sweep), and s8 (synthesis, fake-ablation re-audit), the floor-2/187 chassis has been re-confirmed FIVE times with zero improvement from any non-volatile pure-C lever. The residual is a single, well-understood mechanism (s2/s6 dump-proven: reorg.c's fill_simple_delay_slots fills the `D_8009BE80` jalr's delay slot with the `*p = 0;` (D_8009BE7C-clear) store, where target keeps that store BEFORE the jalr with an explicit unfilled nop). Two genuinely distinct axes remain untried at the STRUCTURAL level (not spelling-level, which s6+s7 together closed): (1) the legitimate-volatile-interrupt-touched ruling-request (H6, frontier item 1, unchanged since s2) and (2) forcing the store address's hard-register choice into one that reorg.c's mark_set_resources(CALL_INSN, include_delayed_effects=1) (reorg.c:573-604) marks as SET by the call — i.e. a call_used_reg ($v0/$v1/$a0-$a3/$t0-$t9) that the call itself also needs live across the jalr (the callee-address register), which would exclude the store from the delay slot on a genuine resource conflict rather than a scheduling preference. s7's cb-naming enumeration already falsified the most obvious spelling of axis (2) (naming the callback pointer as a fresh local, in all 19 combinations, only ever regressed) — the remaining un-falsified form of axis (2) is restructuring D_8009BE7C's address computation itself (e.g. a field-access/struct spelling instead of `&D_8009BE7C`) rather than the callback pointer, which s7 did NOT enumerate (s7 enumerated {p, flag, cb} where p already IS the D_8009BE7C address local — it varied whether p/flag/cb are named, not how p's address is computed).
+- mechanism: policy question (axis 1) / reorg.c mark_set_resources CALL_INSN resource-conflict computation (axis 2)
+- probe: n/a (synthesis — no new code measured beyond the s8 re-confirmation and fake-ablation entries above)
+- result: Frontier narrowed to exactly these two axes; both remain open (not killed) and are carried to the next session per the ladder.
+- verdict: n/a (synthesis entry, not a hypothesis test)
+
+## [s8] Applying memory/grind/_exeque/candidate.c verbatim to src/display.c reproduces sandbox _exeque --disable all == 2/187 (186 build insns vs 187 target), identical to every prior session s4-s7.
+- mechanism: n/a (chassis re-confirmation)
+- probe: Applied candidate.c's body + both forward-decl fixups (extern s32 _exeque(void); at both call sites, extern s32 D_8009BF84;) to src/display.c; ran tools/wteng.ps1 main sandbox _exeque --disable all.
+- result: score 2, target_insns 187, build_insns 186. No drift from s4-s7.
+- verdict: CONFIRMED
+
+## [s8] On the current floor-2/187 chassis, neither of the two /* FAKE */ do-while(0) wraps is an inert carrier occupying a pseudo that a live lever needs (the func_8002EA24 s8 false-kill pattern) — both are independently load-bearing.
+- mechanism: reorg.c list-scheduler / rank_for_schedule ordering effect of each wrap, per their existing FAKE annotations
+- probe: tools/fake_ablate.py --func _exeque --file display --candidate memory/grind/_exeque/candidate.c --json, sweeping all 2^2 subsets of the two FAKE wraps against the real sandbox.
+- result: keep-all (both wraps)=2/187 (186 insns); drop-nested-only=7/187; drop-outer-only=7/187 (185 insns); drop-both=12/187 (185 insns). Confirms s4's original single-vs-nested A/B measurement via the dedicated ablation tool.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4/s5/s6/s7/s8 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c), both FAKE-annotated wraps present at baseline, ablated singly and jointly

@@ -1,8 +1,8 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 7,
- "current_modality": "enumerate",
+ "session_count": 8,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,24 @@
    "floor": 2,
    "modality": "enumerate",
    "headline": "Re-confirmed floor 2/187 on the s4/s5/s6 do-while(0) chassis; corrected the prior session's outcome-JSON wording violation (class-worded statement on an instance kill) without re-deriving any evidence"
+  },
+  {
+   "session": 8,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "_exeque re-confirmed at floor 2/187 (s4-s7 chassis unchanged); mandatory fake-ablation kill re-audit confirms both do-while(0) FAKE wraps are genuinely load-bearing (not a false-kill/inert-carrier art"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The floor-2 jalr-delay-slot residual is the same site s2's H6 found closable only via `volatile s32 *p`; the guard-clear-and-invoke shape may qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, closing the last 2 instructions once ruled on.",
+   "hypothesis": "The final callback block's jalr-delay-slot residual (D_8009BE7C-clear store filled into the D_8009BE80 jalr's delay slot instead of target's explicit pre-jalr store + unfilled nop) may qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched (guard-clear-and-invoke), closing the last 2/187 instructions once ruled on.",
    "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque) IRQ-install site, and the fact that the floor has been flat at 2/187 for four consecutive sessions (s4/s5/s6/s7) across permuter, structural, and enumerate modalities with zero improvement found by any non-volatile lever."
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque) IRQ-install site, and that the floor has now been flat at 2/187 for five consecutive sessions (s4-s8) across permuter, structural, enumerate, and synthesis modalities with zero improvement found by any non-volatile lever."
   },
   {
-   "hypothesis": "A non-volatile pure-C lever may still exist by restructuring how the STORE's address is materialized (e.g. a struct/field-access spelling of D_8009BE7C instead of a raw pointer local) so the compiler picks a hard register that DOES conflict with the call_insn's resource footprint, excluding the delay-slot fill.",
-   "mechanism": "GCC 2.7.2 reorg.c mark_set_resources/mark_referenced_resources (called from fill_simple_delay_slots) computes conflicts between the trial insn's used/set hard registers and the call_insn's own resource set.",
-   "next_probe": "Read tools/gcc-2.7.2/reorg.c's mark_set_resources for CALL_INSN (~reorg.c:3072-3079) to enumerate exactly which hard regs a MIPS call_insn's resource set includes, then try C-level spellings of the final block designed to force the store's address into one of those specific registers."
-  },
-  {
-   "hypothesis": "The do-while(0)-wrapped chassis in candidate.c (unchanged since s4, re-confirmed s5/s6/s7/this session) remains the best known starting point; local statement/operand reordering AND the three-local named-intermediate space of the final block/outer-guard/SetIntrMask region are now measured exhausted across 7 distinct structural spellings plus a 19-way enumeration sweep, all instance-scoped to this exact chassis.",
-   "mechanism": "n/a (chassis reuse + anti-waste note)",
-   "next_probe": "Next session should apply memory/grind/_exeque/candidate.c verbatim (sandbox floor 2/187, re-confirmed this session), then EITHER file the ruling-request above OR pursue the reorg.c resource-set-targeted register-forcing probe \u2014 a genuinely new axis, not another reordering or enumeration variant."
+   "hypothesis": "A non-volatile pure-C lever may still exist by restructuring how D_8009BE7C's ADDRESS is computed (not the callback pointer, which s7 already falsified as a fresh local across 19 combinations) so the store's address pseudo lands in a call_used_reg the D_8009BE80 jalr itself needs live across the jump, excluding the store from reorg.c's delay-slot fill on a genuine resource conflict.",
+   "mechanism": "GCC 2.7.2 reorg.c mark_set_resources for CALL_INSN with include_delayed_effects=1 (reorg.c:573-604): marks every call_used_reg ($v0/$v1/$a0-$a3/$t0-$t9) as SET by the call; a delay-slot candidate must not need a resource the call needs (e.g. the callee-address register) to be excluded from the fill.",
+   "next_probe": "Read the .sched/.combine dump (pwsh tools/grinder/dump.ps1 _exeque) for the exact hard register the D_8009BE80 indirect-call target materializes into, then try C-level spellings of D_8009BE7C's address expression (e.g. field/struct-access instead of &D_8009BE7C, or computing it via a path that shares register pressure with the callback-address load) designed to force the store's address pseudo into that same register class."
   }
  ],
  "judge_constraints": [],
@@ -194,6 +195,14 @@
    "measured_on": "s4/s5/s6 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c), final-callback block only, all 19 enumerated {p,flag,cb} spellings/orderings/swaps, swept via tools/sweep_variants.",
    "predicate_cite": "",
    "result": ""
+  },
+  {
+   "session": 8,
+   "statement": "On the current floor-2/187 chassis, neither of the two /* FAKE */ do-while(0) wraps is an inert carrier occupying a pseudo that a live lever needs (the func_8002EA24 s8 false-kill pattern) \u2014 both are ",
+   "kill_scope": "instance",
+   "measured_on": "s4/s5/s6/s7/s8 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c), both FAKE-annotated wraps present at baseline, ablated singly and jointly",
+   "predicate_cite": "",
+   "result": "keep-all (both wraps)=2/187 (186 insns); drop-nested-only=7/187; drop-outer-only=7/187 (185 insns); drop-both=12/187 (18"
   }
  ],
  "ladder_skip": 0,

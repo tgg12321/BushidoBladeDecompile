@@ -55,6 +55,19 @@
  * `cb` as a real local scores 5-27 (worse). Class-killed (instance scope)
  * this enumeration space -- see hypotheses.md [s7]. This body unchanged.
  *
+ * s8 (synthesis, 2026-09-16): re-confirmed floor 2/187 unchanged (src had
+ * drifted back to INCLUDE_ASM; re-applied this body verbatim). Ran the
+ * mandatory kill re-audit via tools/fake_ablate.py on this exact body:
+ * keep-both-wraps=2, drop-either-wrap=7, drop-both=12 -- both FAKE wraps
+ * independently load-bearing, no inert-carrier/false-kill pattern (the
+ * func_8002EA24 s8 failure mode). Synthesized the frontier down to two
+ * untried STRUCTURAL axes (see hypotheses.md [s8] synthesis entry): the
+ * H6 volatile ruling-request, and forcing D_8009BE7C's address into a
+ * call-clobbered register via the *address computation* itself (not the
+ * callback pointer -- s7 already enumerated and killed naming the
+ * callback pointer as a fresh local in all 19 combinations). This body
+ * unchanged.
+ *
  * Remaining floor-2 residual (1 site, unchanged mechanism from s2's H6):
  *   The final "clear D_8009BE7C and invoke the D_8009BE80 callback" block's
  *   `jalr $v0` — target keeps `sw $zero,0($v1)` (D_8009BE7C = 0;) BEFORE the
