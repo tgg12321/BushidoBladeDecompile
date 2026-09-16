@@ -2097,3 +2097,4 @@
 - 2026-09-15 23:50 func_8002D780 JUDGE ESCALATE (final call, canonical-asm-grant (REFUSED: tier LOW, not STRONG-class and not owner-cluster-enumerated)) — refused + ROTATED (returns automatically; owner ruling 2026-09-08).
 - 2026-09-16 00:12 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 00:20
 - 2026-09-16 00:34 _exeque s1 [recon] floor=15: _exeque written in pure C for the first time (was INCLUDE_ASM, floor 187) using the already-merged GpuQueueItem struct; found+fixed a genuine missing extern (D_8009BF84) that was silently miscompiled; floor now 15/187, residual is a pure instruction-scheduling ordering issue in one isolated post-call triple-store block.
+- 2026-09-16 00:49 _exeque s2 [structural] floor=12: Structural session dropped _exeque from floor 15 to 12: pre-computing a pointer to D_8009BE7C closed the final-callback block byte-exact; the triple-store residual survives two more reordering probes (both KILLED, instance).

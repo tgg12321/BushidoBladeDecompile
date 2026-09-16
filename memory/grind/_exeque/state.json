@@ -1,26 +1,37 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 15,
    "modality": "recon",
    "headline": "_exeque written in pure C for the first time (was INCLUDE_ASM, floor 187) using the already-merged GpuQueueItem struct; found+fixed a genuine missing extern (D_8009BF84) that was silently miscompiled;"
+  },
+  {
+   "session": 2,
+   "floor": 12,
+   "modality": "structural",
+   "headline": "Structural session dropped _exeque from floor 15 to 12: pre-computing a pointer to D_8009BE7C closed the final-callback block byte-exact; the triple-store residual survives two more reordering probes "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The post-call triple-store scheduling gap closes via a pure C statement-order/structure change (no volatile, no FAKE), once the .sched dump shows why cc1's list scheduler defers the two non-func stores.",
-   "mechanism": "GCC 2.7.2 sched.c list scheduler INSN_PRIORITY / dependency-height ordering, or a cse.c block-extension effect",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 _exeque`, read tmp/grind/_exeque/dumps/*.sched for the triple-store region, then try reordering the three field-assignment statements or restructuring the idx-increment placement relative to them."
+   "hypothesis": "The triple-store block's residual is a GCC 2.7.2 sched.c rank_for_schedule dependency-class tie (sched-rank-class-tie-wall shape) between the field-store chain and the idx-increment/loop-condition reloads, not fixable by statement reordering.",
+   "mechanism": "sched.c INSN_PRIORITY / rank_for_schedule dependence-class tiebreak",
+   "next_probe": "Read tmp/grind/_exeque/dumps/display.sched around the basic-block-11 region (insns 103-222, already dumped this session at hash matching the H5a+H5b chassis) for the exact tie, or run a directed permuter scoped to just this ~16-instruction region (much cheaper now that the base floor is 12, not 15)."
   },
   {
-   "hypothesis": "If pure reordering doesn't close it, a directed permuter run scoped to just the 16-instruction triple-store region will find the exact closing statement form quickly given how small and isolated the residual is.",
-   "mechanism": "auto-search (decomp-permuter PERM_* macros)",
-   "next_probe": "Build a clean single-function permuter target from asm/funcs/_exeque.s per the difficult-is-not-impossible playbook, run with --stop-on-zero, vet any closing form against the cheat catalog before accepting."
+   "hypothesis": "An IRQ-callback-installed function's own single-read test-and-clear of a flag it owns qualifies as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, which would close 2 more instructions (floor 12 -> 10) with zero further search.",
+   "mechanism": "policy/ruling question, not a GCC pass",
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and src/display.c:915 (the DMACallback(2, _exeque) IRQ-install site)."
+  },
+  {
+   "hypothesis": "Re-running pwsh tools/grinder/dump.ps1 _exeque fresh on the H5a+H5b chassis (current candidate.c) will show updated .sched/.greg insn numbering for the still-open triple-store region, since this session's chassis differs from s1's dumped chassis.",
+   "mechanism": "n/a (tooling freshness)",
+   "next_probe": "Re-dump before further RA/scheduler-specific probing on the triple-store block."
   }
  ],
  "judge_constraints": [],
@@ -33,11 +44,36 @@
    "measured_on": "struct-based _que[idx].field chassis (this session's candidate.c), no FAKE/cheat constructs present",
    "predicate_cite": "",
    "result": "Not independently re-measured with volatile added on this candidate; the existing cross-function grant evidence for the "
+  },
+  {
+   "session": 2,
+   "statement": "Swapping the source order of the D_8009BF6C=arg / D_8009BF70=count statements changes the scheduler's register/timing choice for the triple-store residual.",
+   "kill_scope": "instance",
+   "measured_on": "struct-based _que[idx].field chassis, s1 form (no mask reuse), no FAKE/cheat constructs present",
+   "predicate_cite": "",
+   "result": "Score unchanged at 15; objdump diff identical in shape, only which register (a0 vs a1) loaded which offset changed."
+  },
+  {
+   "session": 2,
+   "statement": "Moving the D_8009BF7C increment statement to between the count load and its store (instead of after both field stores) changes the scheduler's output for the triple-store residual.",
+   "kill_scope": "instance",
+   "measured_on": "struct-based _que[idx].field chassis with mask-reuse triple-store (H5a), no FAKE/cheat constructs present",
+   "predicate_cite": "",
+   "result": "Score unchanged at 15; objdump diff byte-identical to the pre-move mask-reuse form."
+  },
+  {
+   "session": 2,
+   "statement": "Marking the D_8009BE7C pointer volatile closes one more instruction by preventing the jalr delay-slot filler from moving the clear-store into the call's delay slot, but this construct does not qualify",
+   "kill_scope": "instance",
+   "measured_on": "H5b chassis (candidate.c with s32 *p promoted to volatile s32 *p), no other FAKE/cheat constructs present",
+   "predicate_cite": "",
+   "result": "Score 12 -> 10 (build_insns 186, target 187); the store now sits before jalr with an explicit nop in the delay slot, byt"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T04:50:43.697974+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }

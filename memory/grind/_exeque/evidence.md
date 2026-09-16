@@ -128,3 +128,13 @@ answers).
 - [s1] _addque2 (src/display.c:892-930), the sibling function writing the SAME GpuQueueItem struct, is already pure C and not INCLUDE_ASM - corroborates the struct object model is correct project-wide, not just hypothesized.
 
 - [s1] volatile_extern_allowlist.txt:75 (D_8009BF68 grant) explicitly documents D_8009BF6C and D_8009BF70 as the non-volatile siblings in the same debug-record triple, ruling out a volatile fix for the remaining residual.
+
+- [s2] sandbox --disable all on the applied candidate.c (H5a+H5b, no volatile) measures score 12, build_insns 185, target_insns 187 -- confirmed floor drop from the s1-banked 15.
+
+- [s2] tmp/grind/_exeque/s1/diagdiff.py (existing s1 tool) does a normalized-instruction SequenceMatcher diff between build/src/display.o and tmp/sandbox/_exeque/display.o for _exeque; used repeatedly this session to localize exactly which instructions differ after each edit.
+
+- [s2] tmp/grind/_exeque/s2/fulldump.py (new this session) dumps the full objdump -d listing for _exeque from both build/src/display.o (target) and tmp/sandbox/_exeque/display.o (mine) so the two can be read side-by-side without SequenceMatcher's opcode-level truncation -- this is what revealed the pointer-reuse mechanism for D_8009BE7C.
+
+- [s2] _exeque is installed as an asynchronous DMA-interrupt callback at src/display.c:915/927 (`DMACallback(2, _exeque);`), confirmed by reading the surrounding _addque2 source -- this is the IRQ-writer citation for the H6 ruling-request candidate.
+
+- [s2] The remaining floor-12 residual is exactly two sites: (a) the post-call triple-store block (D_8009BF68[0]/D_8009BF6C/D_8009BF70), unchanged in shape from the s1-banked residual and confirmed immune to pure statement/declaration reordering this session (H4a, H4b); (b) a single jalr delay-slot fill difference in the final-callback block, closable only via an unsanctioned volatile spelling (H6).
