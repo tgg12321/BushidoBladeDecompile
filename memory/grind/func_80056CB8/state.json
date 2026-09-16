@@ -800,5 +800,8 @@
    "headline": "Chassis restructure (nested if/else + named-intermediate constants) drops honest floor 77 -> 39 (measured this session); mandated permuter campaign blocked by a maspsx import-pipeline exception, logge",
    "consumed": null
   }
- ]
+ ],
+ "exhaustion_base": 45,
+ "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8006CCC8 -> floor 39 (2026-09-16T13:44)",
+ "last_unpark_at": "2026-09-16T13:44:24.537994+00:00"
 }
