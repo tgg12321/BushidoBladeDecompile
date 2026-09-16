@@ -2090,3 +2090,4 @@
 - 2026-09-15 21:32 func_8002CA8C: judge FAILED a bytes-proven candidate — The C itself is legitimate. One no-semantic-purpose construct: the AABB reject flag staged through the existing `hit` st
 - 2026-09-15 21:40 func_8002CA8C COMPLETED-C after 2 sessions (closer: s2 [annotation-fix]).
 - 2026-09-15 21:40 func_8002CA8C completed — ROTATED SIBLING func_8002D780 (floor 2, src/code6cac_b.c) ΓÇö func_8002CA8C just reached floor 0; its body on main is an unspent transplant. The driver's `queue auto-return` brings it back on this sibling notice.
+- 2026-09-15 21:40 func_8002D780 AUTO-RETURNED to active — auto-return: coupled sibling moved after rotation — func_8002CA8C -> floor 0 (2026-09-16T02:40)
