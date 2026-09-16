@@ -27752,3 +27752,87 @@ grinder sessions).
 
 A pure-C preimage of `_exeque` exists by construction; nothing here claims
 otherwise. This is a rotation record, not a question to the owner.
+
+## 2026-09-16 — func_80056CB8 — OWNER-ESCALATION — **LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED**
+
+Driver-assigned `escalation` modality (session 45) per the flat-floor +
+>=4-distinct-modality trigger. Both endgame-lock AND-gates evaluated fresh
+this session:
+
+**Gate (a) — canonical-asm scan tier.** `python3 tools/scan_hand_coded.py
+--single func_80056CB8` this session: `tier=LOW score=1/8` (204 insns) — only
+S4 (front-loads) fires; no S1/S2/S6 strong signal. **FAILS** — no STRONG scan
+evidence to support a canonical-asm grant.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct.** The
+ledger's live frontier (hypotheses.md/state.json) carries two open items: (1)
+a semantically-truthful for-loop bound rewrite (`i < start + 2` /
+`i - start < 2`) to let cc1's `expand_exit_loop_if_false` (stmt.c) elide the
+3-insn pre-header guard the for-loop chassis currently emits (mechanism
+pinned s42/s43: NOT an RA/loop.c effect); (2) a structural insn-count
+reduction to flip the `loop.c:3823` strength-reduce rejection inequality so
+`i*2` promotes to a strength-reduced accumulator (target's asm shape,
+confirmed independently by the s41 `ra_solver` object-mode classify:
+PRE-RA/rtl_shape). Both are ORDINARY C restructuring attempts, not coercion
+constructs needing a sanctioned-family precedent — so gate (b) as framed
+("precedent for the closing construct") does not strictly apply; there is no
+FAKE/coercion construct in the banked 38/204 candidate to seek precedent
+for. Searched `docs/reference/sotn-construct-index.md` for
+`expand_exit_loop_if_false` / for-loop-guard / strength-reduce shapes: zero
+hits. **No precedent found either way** — this residual is an unclosed
+ordinary-C structural search, not a coercion-family question.
+
+Both gates fail to authorize either an asm grant or a family-precedent
+close. Per the owner's 2026-07-27 standing ruling as amended 2026-08-24
+(`ENDGAME_LOCK_MAX_FLOOR = 5`) and 2026-09-08
+([[rotation-not-foreclosure]]): floor 38 > 5, so this is **NOT** an
+endgame-lock disposition — it is a non-endgame residual whose 51-instance /
+9-class kill ledger across 9+ distinct modalities (permuter, structural,
+enumerate, synthesis, solver, forensics, object-model, rederive, escalation)
+over 45 sessions has not found the closing spelling yet.
+
+**cc1psx self-disproof (banked in state.json `cc1psx_check`,
+2026-09-16T12:58:20Z, candidate_sha `d5ef7d924e4d`):** `ours: 134, psx: 145,
+closer: false, ok: true`. cc1psx is NOT closer than our cc1 on the current
+candidate — this residual is a spelling-search problem, not a compiler-
+fidelity lead. (Note: this session's fresh sandbox measurement of the
+splice-applied candidate returned 134/204, not the ledger's banked 38/204 —
+this reproduces the KNOWN tooling defect flagged in the ledger's frontier
+since s43/s44, `engine/sandbox.py --disable all` mis-scoring this
+function's non-trivial candidate body; the driver's own cc1psx-check ran
+against the same broken measurement. The 38/204 floor is the value banked
+across s22-s44 via the `ra_solver` object-mode workaround and is the number
+this record's floor citation uses. This tooling defect is outside the grind
+session's allowed edit surface (`engine/` is off-limits) and is carried
+forward as a standing flag for the operator, not resolved here.)
+
+**Exhaustion (ledger-sourced):** 45 sessions total; floor flat at 38/204
+since s22 (24 consecutive sessions), across at minimum: permuter, structural,
+enumerate (s37 exhaustive 32/32 sweep, s38 6-variant hand sweep), synthesis
+(s39/s40, maximal cross-call merge killed), solver (s41, ra_solver
+inverse_compose object-mode classify), forensics (s42/s43, do-while chassis
+fully disproven and mechanism pinned), object-model (s44, declaration-pun
+fix, byte-neutral), escalation (this session). 9 class kills / 51 instance
+kills banked. The do-while chassis alternative is FULLY closed (s42/s43:
+its -3-insn apparent win is exactly the for-loop's pre-header guard, not an
+independent RA/scheduler win, and it scores worse overall: 46/204 vs 38/204).
+
+**Re-activation triggers:** (1) either live frontier item closing (the
+for-loop bound-proof rewrite or a structural insn-count reduction crossing
+the loop.c:3823 threshold) — both are grindable ordinary-C probes, carried
+forward as this ledger's frontier; (2) a fix to the `engine/sandbox.py`
+`--disable all` scoring defect for this function, enabling direct
+measurement instead of the `ra_solver` object-mode workaround; (3) a
+toolchain-fingerprint change re-measuring the candidate; (4) a sibling
+function in `text1b.c` closing the same for-loop-guard or strength-reduce
+shape by a novel pure-C lever (sibling-ledger propagation would transplant
+it here).
+
+**Candidate on disk:** `memory/grind/func_80056CB8/candidate.c` (floor
+38/204 per s22-s44 banked measurement; NOT applied to `src/text1b.c`, which
+carries `INCLUDE_ASM("asm/funcs", func_80056CB8);` per
+[[asm-until-matched]] — reverted to this state at the end of this session
+after a splice-and-measure attempt).
+
+A pure-C preimage of `func_80056CB8` exists by construction; nothing here
+claims otherwise. This is a rotation record, not a question to the owner.

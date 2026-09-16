@@ -811,3 +811,17 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s44] engine/sandbox.py's cheat-disabled ('--disable all') build path is currently broken for func_80056CB8/text1b.c -- independently reproduced this session, root-caused to the documented sibling index-based reorder-rule truncation mode, and confirmed NOT a candidate-content defect (the same candidate body compiles cleanly under a plain build-c).
 
 - [s44] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate d5ef7d924e4d scores 134 under our cc1 and 145 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+- [s45] canonical gate (fresh, s45): verdict=C, asm_insns=0, total=204, distance=204 (raw, INCLUDE_ASM stub state), hand_coded_tier=LOW.
+
+- [s45] scan_hand_coded --single func_80056CB8: tier=LOW score=1/8, only S4 (front-loads) fires.
+
+- [s45] docs/reference/sotn-construct-index.md census for the two frontier constructs returned zero hits.
+
+- [s45] state.json cc1psx_check (2026-09-16T12:58:20Z, candidate_sha d5ef7d924e4d): ours=134, psx=145, closer=false, ok=true -- not a compiler-fidelity lead.
+
+- [s45] Ledger's banked floor (s22-s44, via ra_solver object-mode workaround) is 38/204 (198 build insns); this session's direct engine/sandbox.py measurement of the same candidate body returned 134/204, confirming the previously-flagged sandbox tooling defect is still present and unresolved.
+
+- [s45] src/text1b.c reverted to the committed INCLUDE_ASM("asm/funcs", func_80056CB8); state at session end -- no C landed, per asm-until-matched.
+
+- [s45] Filed docs/grind/decisions.md entry '2026-09-16 -- func_80056CB8 -- OWNER-ESCALATION -- LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED' citing both gate evaluations, the cc1psx self-disproof, the 45-session/9+-modality exhaustion history, and re-activation triggers.

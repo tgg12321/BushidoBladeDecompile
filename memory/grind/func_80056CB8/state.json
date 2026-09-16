@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 44,
- "current_modality": "object-model",
+ "session_count": 45,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -267,60 +267,34 @@
    "floor": 38,
    "modality": "object-model",
    "headline": "s44 re-file: fixed the missing OBJECT MODEL: evidence-format prefix (prior s44 content was correct but wrongly tagged); re-verified src has no new mismatch; found the dispatch's 'measurement unavailab"
+  },
+  {
+   "session": 45,
+   "floor": 38,
+   "modality": "escalation",
+   "headline": "s45 escalation disposition: both endgame-lock gates FAIL (scan tier LOW, no SOTN precedent for the two ordinary-C frontier items) and cc1psx is not closer (banked); filed LADDER EXHAUSTED (non-endgame"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A semantically-truthful C rewrite that lets cc1 prove the for-loop's trip count is nonzero (e.g. `for (i = start; i < start + 2; i++)` or `i - start < 2`) would drop the 3-instruction pre-header guard on the for-loop chassis without the do-while rewrite's overall-worse score.",
-   "mechanism": "cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) only omits the guard when it can statically prove the bound relationship; an opaque separately-assigned `limit` local two statements earlier may be defeating that proof.",
-   "next_probe": "Try both direct-bound spellings on the s22-s43-banked for-loop chassis; measure via sandbox once the engine's disable-all pipeline defect is fixed (or work around it by measuring build-c + manual score.py invocation against build/src/text1b.o if the sandbox wrapper stays broken)."
+   "hypothesis": "A semantically-truthful for-loop bound rewrite (e.g. `for (i = start; i < start + 2; i++)` or `i - start < 2`) lets cc1's expand_exit_loop_if_false statically prove the trip count nonzero and elide the 3-insn pre-header guard (addu;slt;beq) the for-loop chassis currently emits, without the do-while rewrite's overall-worse score.",
+   "mechanism": "cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) only omits the guard when it can statically prove the bound relationship from the loop header text; an opaque separately-assigned `limit` local two statements earlier may be defeating that proof.",
+   "next_probe": "Try both direct-bound spellings on the s22-s44-banked for-loop chassis; measure via the ra_solver object-mode workaround (or engine/sandbox.py directly once its scoring defect for this function is fixed)."
   },
   {
-   "hypothesis": "engine/sandbox.py's --disable all path needs a fix (or a documented workaround) for text1b.c/func_80056CB8 specifically, since it currently cannot produce ANY fresh honest-distance number for this function's non-trivial candidate bodies.",
-   "mechanism": "n/a -- tooling defect, not a codegen hypothesis.",
-   "next_probe": "This is outside the grind session's allowed edit surface (engine/ is off-limits); flag for the operator/driver-level fix, or investigate whether a specific sibling function's regfix/asmfix reorder rule in text1b.c is the culprit (per sandbox.py:86-89's own diagnosis) so it can be identified precisely without editing engine code."
+   "hypothesis": "A structural rewrite shrinking the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 on the for-loop chassis, per s41 solver classify) without touching the i*2 index expressions' lifetime could let strength_reduce promote i*2 the way the target's asm shows (addiu s8,s8,2 + addu accumulator, vs our sll i*2 x3).",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried so far (s37-s40 enumeration/synthesis) fails due to register pressure from the intervening func_80053614 calls.",
+   "next_probe": "With the do-while chassis mechanism now fully understood and closed (s42/s43), determine whether any OTHER structural change can shrink real-insn count enough to flip the inequality while leaving i*2's live range and guard structure untouched."
   },
   {
-   "hypothesis": "A structural rewrite shrinking the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 on the for-loop chassis) without touching the i*2 index expressions' lifetime could let strength_reduce promote i*2 the way the target's asm shows.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried so far fails due to register pressure from the intervening func_80053614 calls.",
-   "next_probe": "With the do-while -3-insn mechanism now fully understood (s42/s43: pre-header guard, not RA/loop.c), determine whether any OTHER structural change can shrink real-insn count enough to flip the inequality while leaving i*2's live range and guard structure untouched."
+   "hypothesis": "engine/sandbox.py's --disable all path needs a fix for text1b.c/func_80056CB8's non-trivial candidate bodies -- it currently returns 134/204 on the same candidate the ra_solver object-mode workaround and prior sessions' m2c/greg-dump cross-checks consistently place at 38/204.",
+   "mechanism": "n/a -- tooling defect, not a codegen hypothesis. sandbox.py:86-89 self-diagnoses a possible per-function regfix/asmfix reorder-rule interaction in this TU as a candidate root cause (per the s44 ledger frontier), but this was not investigated further this session (out of the grind session's allowed edit surface).",
+   "next_probe": "Outside this session's edit surface (engine/ is off-limits); flag for the operator/driver-level fix, or a future session could identify which sibling function's regfix/asmfix rule in text1b.c is implicated without editing engine code."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 10,
-   "statement": "Sharing the byte-table index value i*2 between the D_8009A821 and D_8009A820 lookups via a FRESH local declared inside the loop body each iteration (s32 idx2 = i*2; used at both sites) improves the fl",
-   "kill_scope": "instance",
-   "measured_on": "s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh in-body local idx2 = i*2 replacing both [i*2] byte-table index sites, zero FAKE/cheat constr",
-   "predicate_cite": "",
-   "result": "Score REGRESSED 58 -> 68 (build_insns 198 -> 200). Reverted. Confirms s6's kill is chassis-independent -- the regression"
-  },
-  {
-   "session": 10,
-   "statement": "Promoting idx2 to a genuine LOOP-CARRIED induction variable (declared in the outer function scope, initialized in the for-statement's init-clause as start*2, incremented in the increment-clause as idx",
-   "kill_scope": "instance",
-   "measured_on": "s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), idx2 promoted to a loop-carried induction variable in the for-statement's init/increment clauses, zero FA",
-   "predicate_cite": "",
-   "result": "Score REGRESSED 58 -> 73 (build_insns 198 -> 201) -- WORSE than even the fresh-in-body-local variant. Reverted. This is "
-  },
-  {
-   "session": 11,
-   "statement": "Making the doubled byte-table index j the loop's PRIMARY induction variable (with i recomputed each iteration as a fresh j>>1 local) does not reproduce target's $fp accumulator and is worse than keepi",
-   "kill_scope": "instance",
-   "measured_on": "s11 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, loop control variable changed from i to the doubled value j with i computed as a fresh per-iteration j>>1 local), zero FAKE/chea",
-   "predicate_cite": "",
-   "result": "Score REGRESSED 58 -> 86 (build_insns 198 -> 202). Reverted; re-confirmed floor 58 exactly reproduces after revert. Bank"
-  },
-  {
-   "session": 11,
-   "statement": "dx/dz/y in the code==4 tail have no register-reuse opportunity in target's own asm (frontier item 2 from s7-s10, now fully explored).",
-   "kill_scope": "instance",
-   "measured_on": "s11 chassis (target asm read directly; no C change made or measured for this specific hypothesis -- a negative read-only finding).",
-   "predicate_cite": "",
-   "result": "Confirms no register-reuse lever exists for these three values; closes frontier item 2 from s7-s10 (r1/r2 was the only r"
-  },
   {
    "session": 12,
    "statement": "Rewriting the flags==3/flags==4 tail so the final byte store *(s8*)(arg0+0x444+i)=flags is duplicated as a real statement at every leaf of the if/else-if/nested-if chain (mirroring the fresh m2c recon",
@@ -768,6 +742,38 @@
    "measured_on": "s43 chassis (candidate.c's s22-s42-banked 38/204 for-loop body vs a do-while rewrite of the same body, both with func_80053614 s32-return prerequisite + 5-line header externs, no FAKE constructs prese",
    "predicate_cite": "",
    "result": "The diff shows the do-while prologue runs the loop-invariant scratchpad-literal setup (addu/sw/addu/li/ori/sw for the $f"
+  },
+  {
+   "session": 45,
+   "statement": "func_80056CB8 qualifies for a canonical-asm grant via scan_hand_coded STRONG tier evidence.",
+   "kill_scope": "instance",
+   "measured_on": "func_80056CB8 asm/funcs/func_80056CB8.s this session, s45, no FAKE constructs involved (scanner evidence check, not a candidate measurement)",
+   "predicate_cite": "",
+   "result": "tier=LOW score=1/8 (204 insns); only S4 front-loads fires, no S1/S2/S6. Gate (a) FAILS -- no STRONG evidence for a canon"
+  },
+  {
+   "session": 45,
+   "statement": "An in-hand SOTN-master precedent exists for the two live frontier constructs (for-loop bound-proof rewrite to elide the pre-header guard; structural insn-count reduction to cross the loop.c:3823 stren",
+   "kill_scope": "instance",
+   "measured_on": "docs/reference/sotn-construct-index.md census this session, s45",
+   "predicate_cite": "",
+   "result": "zero hits for either shape. Gate (b) as framed (precedent for a closing construct) FAILS by negative census -- though bo"
+  },
+  {
+   "session": 45,
+   "statement": "cc1psx (the original PsyQ compiler) lands strictly closer to the target than our cc1 on the current candidate, indicating a compiler-fidelity lead rather than a spelling problem.",
+   "kill_scope": "instance",
+   "measured_on": "s45 cc1psx-check against the spliced candidate body (same chassis as the sandbox --disable-all defect below), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "ours: 134, psx: 145, closer: false, ok: true (candidate_sha d5ef7d924e4d). cc1psx is NOT closer -- rules out a compiler-"
+  },
+  {
+   "session": 45,
+   "statement": "The ledger's banked 38/204 floor can be freshly reproduced this session via engine/sandbox.py --disable all with the candidate.c body spliced into src/text1b.c.",
+   "kill_scope": "instance",
+   "measured_on": "s45 fresh splice of the s44-banked candidate body onto src/text1b.c HEAD, no FAKE constructs, engine/sandbox.py --disable all pipeline",
+   "predicate_cite": "",
+   "result": "Returned 134/204 (build_insns 171), not the ledger's banked 38/204. This reproduces the KNOWN tooling defect already fla"
   }
  ],
  "ladder_skip": 0,

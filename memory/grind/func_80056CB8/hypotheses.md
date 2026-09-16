@@ -2108,3 +2108,35 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - probe: Reverted src/text1b.c to clean INCLUDE_ASM, ran sandbox --disable all: succeeded (score 204, no_c_body true, baseline sane). Applied candidate.c's unchanged s22-s43-banked body via the INCLUDE_ASM substitution, re-ran sandbox --disable all: FAILED with 'func_80056CB8 not found in tmp/sandbox/func_80056CB8/text1b.o'. Ran the plain (non-disabled) build-c text1b on the identical patched src: SUCCEEDED (sha1 07524f64e2f6a7ffd145473fbecef23e84c950b7), proving the candidate C itself is valid and produces a real func_80056CB8 symbol -- the failure is confined to the cheat-stripped pipeline only, not the source. Reverted src/text1b.c and rebuilt to restore the clean artifact (sha1 b20f5eeae59ef69e6c1ede4c5a98d7a2b6966d62).
 - result: Could not obtain a NEW fresh sandbox number this session due to this tooling defect (out of the grind session's allowed edit surface -- engine/ is off-limits). The last known-good fresh measurement of this exact chassis remains the one banked across s22-s43 (38/204, 198 build insns), which this session's independent plain-build check corroborates is still a syntactically/semantically valid candidate. Filed as a standing chassis-availability fact, not a KILLED code hypothesis.
 - verdict: CONFIRMED
+
+## [s45] func_80056CB8 qualifies for a canonical-asm grant via scan_hand_coded STRONG tier evidence.
+- mechanism: n/a -- scanner evidence check, not a codegen hypothesis.
+- probe: python3 tools/scan_hand_coded.py --single func_80056CB8
+- result: tier=LOW score=1/8 (204 insns); only S4 front-loads fires, no S1/S2/S6. Gate (a) FAILS -- no STRONG evidence for a canonical-asm grant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_80056CB8 asm/funcs/func_80056CB8.s this session, s45, no FAKE constructs involved (scanner evidence check, not a candidate measurement)
+
+## [s45] An in-hand SOTN-master precedent exists for the two live frontier constructs (for-loop bound-proof rewrite to elide the pre-header guard; structural insn-count reduction to cross the loop.c:3823 strength-reduce threshold).
+- mechanism: n/a -- precedent census, not a codegen hypothesis.
+- probe: grep -ni 'expand_exit_loop_if_false|for-loop.*guard|trip.count|strength.reduc' docs/reference/sotn-construct-index.md
+- result: zero hits for either shape. Gate (b) as framed (precedent for a closing construct) FAILS by negative census -- though both frontier items are ordinary-C restructuring, not coercion constructs, so no family precedent is actually needed to close them; the gap is a spelling search, not a policy question.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: docs/reference/sotn-construct-index.md census this session, s45
+
+## [s45] cc1psx (the original PsyQ compiler) lands strictly closer to the target than our cc1 on the current candidate, indicating a compiler-fidelity lead rather than a spelling problem.
+- mechanism: n/a -- self-disproof comparison, per rotation-not-foreclosure Ruling 2.
+- probe: engine cc1psx-check func_80056CB8 (driver-run this session, banked in state.json cc1psx_check)
+- result: ours: 134, psx: 145, closer: false, ok: true (candidate_sha d5ef7d924e4d). cc1psx is NOT closer -- rules out a compiler-fidelity lead; Ruling 2's prerequisite for rotation is satisfied.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s45 cc1psx-check against the spliced candidate body (same chassis as the sandbox --disable-all defect below), no FAKE constructs
+
+## [s45] The ledger's banked 38/204 floor can be freshly reproduced this session via engine/sandbox.py --disable all with the candidate.c body spliced into src/text1b.c.
+- mechanism: n/a -- tooling defect reproduction, not a codegen hypothesis.
+- probe: Spliced memory/grind/func_80056CB8/candidate.c's function body (lines 1271-1359, the s44-banked declaration-pun-fixed form) into src/text1b.c replacing the INCLUDE_ASM stub, then ran `sandbox func_80056CB8 --disable all`.
+- result: Returned 134/204 (build_insns 171), not the ledger's banked 38/204. This reproduces the KNOWN tooling defect already flagged in the ledger's frontier since s43/s44 (engine/sandbox.py mis-scoring this function's non-trivial candidate body) -- build-c succeeded with no compile errors, so this is a scoring-pipeline defect, not a candidate regression. Reverted src/text1b.c to the committed INCLUDE_ASM state afterward (git checkout --) so no dirt was left on the tree.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s45 fresh splice of the s44-banked candidate body onto src/text1b.c HEAD, no FAKE constructs, engine/sandbox.py --disable all pipeline
