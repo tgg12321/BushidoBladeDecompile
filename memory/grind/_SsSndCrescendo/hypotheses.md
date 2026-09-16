@@ -445,3 +445,41 @@ candidate and run a fresh-seed campaign per [[permuter-fresh-seed-discipline]].
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s6 chassis, each spelling substituted for the clear sites of the banked s6 body; no FAKE constructs present
+
+## s7 (synthesis, 2026-09-16) - MATCHED
+
+## [s7] Chassis re-verify: the banked s6 candidate reproduces score 10 (199/200) on this session's HEAD.
+- verdict: CONFIRMED
+- result: measured 10 / build_insns 199 / target_insns 200.
+
+## [s7] The score-10 residual is a CSE substitution at the goto-shared `unk40 < 0` block (parameter pseudo 72/$s5 vs the raw SImode copy 73/$a3), not a register-allocation problem, and it resolves when that block is duplicated into both arms instead of shared via goto.
+- mechanism: cse.c starts a fresh basic block at a multi-predecessor label and loses the `72 == subreg(73)` equivalence established by assign_parms; global.c then coalesces 73 onto $a0 because its conflict set lacks hard reg 4 (read from .lreg/.greg).
+- verdict: CONFIRMED
+- result: the duplicated forms emit `addu $a3,$a0,$zero` and read $a3 at all three pre-call key builds, matching target.
+
+## [s7] GCC 2.7.2's post-reload cross_jump merges the duplicated handler/tail blocks when and only when the two copies are register-identical; s6's "GCC will not cross-jump these" kill was chassis-relative to the a1_off local.
+- verdict: CONFIRMED
+- result: 212 insns with a1_off present (one copy uses pseudo 78/$s1, the other 93/$s2); 200 insns without it.
+
+## [s7] Every SINGLE-EXPRESSION spelling of the bank-table address preamble leaves the `la $v1,_ss_score` insn on the wrong side of the folded ashiftrt:14.
+- mechanism: combine.c try_combine emits the ashiftrt:16 + ashift:2 fold at the later insn's slot; sched.c rank_for_schedule preserves RTL/LUID order; fold() moves the constant ADDR_EXPR to operand 1 of a pointer sum.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s7 chassis (the score-0 candidate.c body with only the bank preamble substituted), no FAKE constructs present in the substituted preambles
+- result: 13 spellings measured, all score 2 / 200 insns - see rejected/single-expression-preamble-s7.md.
+
+## [s7] Splitting the preamble into `bank_no = a0;` then `score_tbl = (s32 *)&_ss_score;` then `bank = score_tbl + bank_no;` places the address insn between the two halves of the index shift and closes the function.
+- verdict: CONFIRMED
+- result: score 0, build_insns 200 == target_insns 200.
+
+## Live frontier after s7
+None - the function is MATCHED at the honest cheat-free distance 0. The
+remaining work is review: the two preamble locals are claimed under the
+pointer-alias and named-intermediate sanctioned families with FAKE
+annotations (see self_vet.md). If layer-1 or the Judge rejects either family
+for this shape, the next session's frontier is to find an ordinary-C
+statement that naturally materialises the _ss_score address between the
+ashift:16 and the scale; the only structural candidate left is a different
+declaration of _ss_score itself (`extern s32 _ss_score[];` or a 2-D table
+type), which changes the other ~10 already-matched call sites in this TU and
+must be measured TU-wide before it is spent.

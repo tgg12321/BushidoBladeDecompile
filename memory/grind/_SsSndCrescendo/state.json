@@ -123,5 +123,14 @@
  "origin": "queue",
  "created": "2026-09-16T19:51:55.162027+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "c200ecbe0e4f6f76",
+   "when": "2026-09-16T21:24:31.569155+00:00",
+   "summary": "final call: Pure C, no asm/volatile/pins/gotos/dead stores; the body is the SOTN cres.c shape with four measured BB2 divergences. Only two constructs need a family: `s32 *score_tbl = (s32 *)&_ss_score;` under C-l"
+  }
+ ]
 }

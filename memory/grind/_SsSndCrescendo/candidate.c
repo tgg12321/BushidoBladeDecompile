@@ -1,124 +1,117 @@
-/* _SsSndCrescendo candidate - s6 (2026-09-16), SYNTHESIS modality.
- * NOT byte-matched. sandbox --disable all score = 10 (build_insns=199,
- * target_insns=200) - down from the s2-s5 plateau of 130 (build_insns 213).
- * To apply: replace the line
- *     INCLUDE_ASM("asm/funcs", _SsSndCrescendo);
- * with the body below, in src/main.c (right before
- * INCLUDE_ASM("asm/funcs", _SsSndDecrescendo);). Requires the existing
- * `extern s32 _ss_score;`, `extern void func_80087770(s32,s32,s32,s32);`,
- * `extern s16 _SsVmGetSeqVol(s32,s16*,s16*);` declarations (main.c:37/40/41).
- * NOTE: this form no longer uses the SS_SCORE_FLAG macro at all - see the
- * s6 findings below; re-introducing the macro at the clear sites measures
- * 89/223 on this chassis (rejected/macro-clear-sites-s6.md).
+/* _SsSndCrescendo candidate - s7 (2026-09-16), SYNTHESIS modality.
+ * sandbox --disable all score = 0 (build_insns 200 == target_insns 200),
+ * measured THIS session with this exact body in src/main.c.
+ * Previous floor: 10 (s6). To apply: replace
+ *   INCLUDE_ASM("asm/funcs", _SsSndCrescendo);
+ * in src/main.c with the body below.
  *
- * WHAT S6 CHANGED (all five changes measured individually; see evidence.md):
- *  1. NO cached field locals. s2-s5 cached `unk42`, `unk40` and `key` in s16
- *     locals; target re-reads every one of those fields from the struct at
- *     each use (lh 0x4C(s0) / lh 0x4A(s0) after each call, and a fresh
- *     `sll a1,8; or a0; sll 16; sra 16` key build per block). Direct field
- *     reads + an inline key expression at every call site: 130 -> 84.
- *  2. voll/volr are u16, not s16 (target uses `lhu` + `andi ,0xFFFF`), and
- *     the two computed func_80087770 calls pass (u16)-truncated arguments
- *     (target's `andi $a1,$a1,0xFFFF` / `andi $a2,$a2,0xFFFF` before/at the
- *     shared jal). SOTN's cres.c also declares these u16.
- *  3. The channel address is carried as TWO ordinary locals - `bank`
- *     (a pointer to the bank-table slot, = &_ss_score + ((a0<<16)>>14)) and
- *     `a1_off` (= (s16)a1 * 0xB0) - exactly target's $s3 / $s2. The clear
- *     sites reload `*bank` (memory is clobbered by the intervening calls,
- *     so the reload is real and matches H3's fresh-re-derive finding) and
- *     re-add a1_off. 84 -> 69.
- *  4. The tail check's second disjunct is `unk40 <= 0`, not `== 0`
- *     (target `bgtz $v0, .L800844C0` at 0x80084470; cres.c has `==0`).
- *     A 4.1-build divergence, same class as H1/H2. 69 -> 68.
- *  5. CONTROL FLOW: the two arms share their `unk40 < 0` handler and their
- *     `(unk98==0 || unk40<=0)` tail check via `goto neg40;` / `goto tail;`
- *     into single blocks placed before the common final call, and the outer
- *     guard is written in its ASM-ORDER polarity (`if (--unk98 < 0) clear;
- *     else { ... }`). Target emits exactly one copy of each of those blocks
- *     (.L8008441C and .L80084458/.L8008447C) reached by branches from both
- *     arms; GCC 2.7.2 would NOT cross-jump our duplicated copies (measured:
- *     duplicated tail = 233 insns, duplicated neg40 handler = 212 insns).
- *     68 -> 50 (shared tail) -> 20 (polarity + operand order + u16 casts)
- *     -> 10 (shared neg40 handler).
- *     This is the `cross-jump-store-tail-merge` shape (ordinary C - goto to
- *     a shared tail label, no FAKE annotation, nothing dead).
- *  6. One deliberate spelling asymmetry, forced by the bytes: the five
- *     clear sites inside the arms use the cached bank/a1_off pair, while
- *     the SHARED TAIL clear re-derives the whole address inline from
- *     _ss_score. Target does exactly this (`.L8008447C` rebuilds
- *     `sll a0,s5,16; sra a0,14; ...; lui at,%hi(_ss_score)` while
- *     .L8008441C/.L800844AC use `lw 0x0($s3)` + `addu $s2`). Using the
- *     cached pair at the tail too under-counts by 14 insns (186 vs 200).
+ * STRUCTURE: this is the SOTN reference body verbatim in shape
+ * (tmp/sotn-decomp/src/main/psxsdk/libsnd/cres.c, the matched PSX
+ * _SsSndCrescendo of the same Sony LIBSND CRES module BB2 links) - the same
+ * nested if / else-if chain, the same `if (unk40 >= 0) {...} else {...}`
+ * handler written out in BOTH arms, the same tail check duplicated in both
+ * arms, and no gotos at all. s6's goto-shared blocks turn out to have been
+ * an artifact of the then-unfixed preamble: with the preamble spelled as
+ * below, GCC 2.7.2's post-reload cross_jump merges the duplicated handlers
+ * and tails by itself, exactly as it did for the original.
  *
- * RESIDUAL at score 10 / 199 insns (the whole remaining diff, from
- * tmp/grind/_SsSndCrescendo/s6/diff.py output banked this session):
- *   - target opens with `addu $a3, $a0, $zero` - a SECOND live copy of
- *     param a0 (a third, $s5, is made later). Every pre-call key build in
- *     target reads $a3/$a1 (the incoming param regs); every post-call one
- *     reads $s5/$s4. Our build has only the $s5 copy and reads $a0
- *     directly, so it is exactly ONE instruction short (199 vs 200) and
- *     the register names at 6 sites differ. What C shape gives GCC 2.7.2
- *     two distinct pseudos for the same parameter here is the open
- *     question - see hypotheses.md H5.
- *   - two delay slots target fills with `sll $a0,$s4,8` (a reorg.c peel of
- *     the final call's key build, see [[reorg-peel-is-not-a-source-statement]])
- *     are `nop` in ours; a consequence of the same register split, not an
- *     independent problem.
- *   - `sra $v0,$v0,14` sits one slot later in target's preamble (after the
- *     lui/addiu of %hi/%lo(_ss_score)) - pure scheduling.
+ * The four documented BB2-4.1-build divergences from cres.c are unchanged
+ * from s1-s6: (H1) the outer `if (--unk98 < 0) clear; else {...}` guard,
+ * (H2) the literal 1 as func_80087770's 4th argument, (s6) the tail
+ * disjunct `unk40 <= 0` rather than `== 0`, and (s6) the (u16) truncation
+ * of the two computed volume argument pairs.
  *
- * Everything from s1-s5 that is still load-bearing (field offset table,
- * H1 outer guard, H2 literal-1 4th arg, H3 fresh re-derive at the clear
- * sites, the extra clear in the unk42<0 arm) is unchanged and still
- * correct; see evidence.md.
+ * WHAT S7 CHANGED (10 -> 0), two independent findings:
+ *
+ * 1. The handler and the tail check must be DUPLICATED into both arms
+ *    (cres.c's own shape), not shared via goto. s6 measured the duplicated
+ *    form at 212/233 insns and concluded GCC would not cross-jump it; that
+ *    measurement was taken while the arms still carried an `a1_off` local,
+ *    and CSE reached one copy's clear site with the temp pseudo and the
+ *    other with the variable pseudo, so the two copies were NOT
+ *    register-identical and jump.c's cross_jump correctly refused them.
+ *    Dropping that local (writing `(s16)a1 * 0xB0` at the clear sites)
+ *    makes the copies identical, and they merge: 212 -> 200 insns.
+ *
+ * 2. The bank-table address preamble must be THREE statements, in the
+ *    order index-conversion, table-address, pointer-add (see the body).
+ *    Target's first insns after the frame setup are
+ *      sll $v0,$a3,16  /  la $v1,_ss_score  /  sra $v0,$v0,14
+ *    i.e. the `_ss_score` address insn sits BETWEEN the two halves of the
+ *    index shift. 13 single-expression spellings were measured this
+ *    session and every one of them puts it after both halves (score 2).
+ *    Mechanism, read from the cc1 -da dumps, not guessed: expand emits the
+ *    s16->int conversion as `ashift:16` + `ashiftrt:16`; combine.c's
+ *    try_combine folds that `ashiftrt:16` with the scale-by-4 `ashift:2`
+ *    into one `ashiftrt:14` placed at the LATER insn's slot; sched.c's
+ *    rank_for_schedule leaves the two independent insns in RTL/LUID order.
+ *    So whatever is emitted between the conversion and the scale ends up
+ *    between the surviving `ashift:16` and the folded `ashiftrt:14`, and
+ *    only a separate statement for the table address, ordered after the
+ *    index conversion, can land there: fold() moves the constant ADDR_EXPR
+ *    to operand 1 of a pointer sum, so a single expression always
+ *    evaluates the entire index (both shifts plus the scale) first.
+ *
+ * The two preamble locals carry their FAKE annotations in the body.
+ * Nothing here is stripped by the sandbox (no asm, no volatile, no pin):
+ * the 0 is the honest cheat-free distance.
  */
 void _SsSndCrescendo(s16 a0, s16 a1) {
-    u8 *base;
-    s32 *bank;
-    s32 a1_off;
+    /* FAKE: named intermediate for the bank index, mechanism: combine.c
+       try_combine folds the s16->int `ashiftrt:16` together with the scale
+       `ashift:2` into one `ashiftrt:14` and emits it at the LATER insn's slot,
+       and sched.c rank_for_schedule leaves the independent insns in RTL/LUID
+       order - so the index conversion must be its own statement ahead of the
+       table-address statement; lever-exhaustion: hypotheses.md H8 - 13
+       single-expression spellings of this preamble measured, all score 2
+       (v5,v6,v7,wa-we,x1,x2,y1-y4 in tmp/grind/_SsSndCrescendo/s7/). */
+    s32 bank_no = a0;
+    /* FAKE: C-level pointer alias to the _ss_score global, mechanism: the
+       `movsi` of the symbol_ref has to be emitted BETWEEN the surviving
+       `ashift:16` and combine.c's folded `ashiftrt:14`; fold() moves the
+       constant ADDR_EXPR to operand 1 of any single pointer-sum expression,
+       which therefore evaluates the whole index first; lever-exhaustion:
+       hypotheses.md H8 - the same 13 measured spellings, all score 2. */
+    s32 *score_tbl = (s32 *)&_ss_score;
+    s32 *bank = score_tbl + bank_no;
+    u8 *base = (u8 *)(*bank + (s16)a1 * 0xB0);
     u16 voll, volr;
 
-    bank = (s32 *)((u8 *)&_ss_score + ((s32)(a0 << 16) >> 14));
-    a1_off = (s16)a1 * 0xB0;
-    base = (u8 *)(*bank + a1_off);
-
     if (--(*(s32 *)(base + 0xA0)) < 0) {
-        *(s32 *)(a1_off + *bank + 0x98) &= ~0x10;
-    } else {
-        if (*(s16 *)(base + 0x4C) > 0) {
-            if ((*(s32 *)(base + 0xA0) % *(s16 *)(base + 0x4C)) == 0) {
-                *(u16 *)(base + 0x4A) = *(u16 *)(base + 0x4A) - 1;
-                if (*(s16 *)(base + 0x4A) < 0)
-                    goto neg40;
+        *(s32 *)(((s16)a1 * 0xB0) + *bank + 0x98) &= ~0x10;
+    } else if (*(s16 *)(base + 0x4C) > 0) {
+        if ((*(s32 *)(base + 0xA0) % *(s16 *)(base + 0x4C)) == 0) {
+            *(u16 *)(base + 0x4A) = *(u16 *)(base + 0x4A) - 1;
+            if (*(s16 *)(base + 0x4A) >= 0) {
                 _SsVmGetSeqVol((s16)(a0 | (a1 << 8)), (s16 *)&voll, (s16 *)&volr);
                 if ((voll + 1) <= (voll + *(s16 *)(base + 0x4A)))
                     func_80087770((s16)(a0 | (a1 << 8)), (u16)(voll + 1), (u16)(volr + 1), 1);
-                goto tail;
+            } else {
+                func_80087770((s16)(a0 | (a1 << 8)), 0x7F, 0x7F, 1);
+                *(s32 *)(((s16)a1 * 0xB0) + *bank + 0x98) &= ~0x10;
             }
-        } else if (*(s16 *)(base + 0x4C) < 0) {
-            *(u16 *)(base + 0x4A) = *(u16 *)(base + 0x4A) + *(s16 *)(base + 0x4C);
-            if (*(s16 *)(base + 0x4A) < 0)
-                goto neg40;
+            if ((*(s32 *)(base + 0xA0) == 0) || (*(s16 *)(base + 0x4A) <= 0))
+                *(s32 *)(((s32 *)&_ss_score)[a0] + (s16)a1 * 0xB0 + 0x98) &= ~0x10;
+        }
+    } else if (*(s16 *)(base + 0x4C) < 0) {
+        *(u16 *)(base + 0x4A) = *(u16 *)(base + 0x4A) + *(s16 *)(base + 0x4C);
+        if (*(s16 *)(base + 0x4A) >= 0) {
             _SsVmGetSeqVol((s16)(a0 | (a1 << 8)), (s16 *)&voll, (s16 *)&volr);
             if (((voll - *(s16 *)(base + 0x4C)) >= 0x7F) &&
                 ((volr - *(s16 *)(base + 0x4C)) >= 0x7F)) {
                 func_80087770((s16)(a0 | (a1 << 8)), 0x7F, 0x7F, 1);
-                *(s32 *)(a1_off + *bank + 0x98) &= ~0x10;
+                *(s32 *)(((s16)a1 * 0xB0) + *bank + 0x98) &= ~0x10;
             }
             if (((*(s32 *)(base + 0x9C) - *(s32 *)(base + 0xA0)) * -*(s16 *)(base + 0x4C)) <
                 *(s16 *)(base + 0x48))
                 func_80087770((s16)(a0 | (a1 << 8)), (u16)(voll - *(s16 *)(base + 0x4C)),
                               (u16)(volr - *(s16 *)(base + 0x4C)), 1);
-            goto tail;
+        } else {
+            func_80087770((s16)(a0 | (a1 << 8)), 0x7F, 0x7F, 1);
+            *(s32 *)(((s16)a1 * 0xB0) + *bank + 0x98) &= ~0x10;
         }
+        if ((*(s32 *)(base + 0xA0) == 0) || (*(s16 *)(base + 0x4A) <= 0))
+            *(s32 *)(((s32 *)&_ss_score)[a0] + (s16)a1 * 0xB0 + 0x98) &= ~0x10;
     }
-    goto done;
-neg40:
-    func_80087770((s16)(a0 | (a1 << 8)), 0x7F, 0x7F, 1);
-    *(s32 *)(a1_off + *bank + 0x98) &= ~0x10;
-tail:
-    if ((*(s32 *)(base + 0xA0) == 0) || (*(s16 *)(base + 0x4A) <= 0))
-        *(s32 *)(*(s32 *)((u8 *)&_ss_score + ((s32)(a0 << 16) >> 14)) + (s16)a1 * 0xB0 + 0x98) &= ~0x10;
-done:
     _SsVmGetSeqVol((s16)(a0 | (a1 << 8)), (s16 *)(base + 0x5C), (s16 *)(base + 0x5E));
 }

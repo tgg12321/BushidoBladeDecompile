@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_SsSndCrescendo",
-      "file": "main",
-      "distance": 200,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_SsVmInit",
       "file": "main",
       "distance": 200,
@@ -1135,14 +1127,14 @@
     }
   ],
   "counts": {
-    "total": 121,
-    "active": 114,
+    "total": 120,
+    "active": 113,
     "by_status": {
-      "active": 114,
+      "active": 113,
       "rotated": 7
     },
     "by_verdict": {
-      "C": 92,
+      "C": 91,
       "ASM-PARTIAL": 22
     }
   },

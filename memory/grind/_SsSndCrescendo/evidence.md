@@ -463,3 +463,73 @@ Final measurement this session: **score 10, build_insns 199, target_insns
 - [s6] New floor: score 10, build_insns 199, target_insns 200. The entire remaining diff is one missing `addu $a3,$a0,$zero` (target keeps three live copies of param a0 - $a0 incoming, $a3 for pre-call key builds, $s5 for post-call ones - and two of a1; ours has two and one), six consequent register-name diffs, and two delay slots target fills with a reorg.c peel of `sll $a0,$s4,8` that are nops in ours.
 
 - [s6] s4/s5's instance kills on the bank_off/a1_off lever are superseded rather than wrong: the lever was being measured on a chassis that still carried the cached-field error, which dominated the residual. This is the KILL RE-AUDIT paying off exactly as the rule predicts.
+
+## s7 (synthesis, 2026-09-16) - MATCHED: 10 -> 0 (200/200 insns)
+
+Chassis re-verified first: the banked s6 candidate reproduced **score 10,
+build_insns 199, target_insns 200** exactly on this session's HEAD.
+
+The session ran the s6 differ (tmp/grind/_SsSndCrescendo/s6/diff.py) against
+the s6 body, then followed the H5 contract literally - `pwsh
+tools/grinder/dump.ps1 _SsSndCrescendo` and a read of .lreg/.greg - before
+hypothesising any pass. That read is what unlocked the function.
+
+**Dump finding (H5 resolved, and it was NOT an allocation problem).** The
+function's parameters produce four pseudos: 73/75 are the raw SImode copies
+of $a0/$a1 made by assign_parms, and 72/74 are the HImode reg/v parameter
+variables set from them (`insn 6: (set (reg/v:HI 72) (subreg:HI (reg:SI 73)
+0))`). CSE substitutes 73 for subreg(72) in the blocks it reaches from the
+entry path; every remaining register-name difference at score 10 came from
+ONE key-build site (the goto-shared `unk40 < 0` handler) reading 72 ($s5)
+where target reads 73 ($a3). In the s6 body that block was a goto-shared
+block, so cse.c resets its table at the multi-predecessor label and the
+substitution never happens. 73's greg record also explains the missing
+`addu $a3,$a0,$zero`: at score 10 `73 preferences: 4` and its conflict set
+does NOT contain hard reg 4, so global.c coalesces it onto $a0; in the
+duplicated-handler forms the conflict set gains 4 and it is allocated $a3,
+materialising target's copy insn.
+
+**Finding 1 - the duplicated blocks DO cross-jump; s6's kill was
+chassis-relative.** Writing the `unk40 < 0` handler out in both arms (s6
+measured 212 insns and concluded GCC would not merge it) measures **200
+insns** on the s7 chassis. Reading v1/v2's disassembly side by side shows why
+s6 saw no merge: while the arms still carried an `a1_off` local, CSE reached
+one copy's clear site with the CSE temp pseudo (93, $s2) and the other with
+the variable pseudo (78, $s1), so the two copies were not register-identical
+and jump.c's cross_jump correctly refused them. Dropping the a1_off local and
+writing `(s16)a1 * 0xB0` at the clear sites removes the split (v5: 200 insns,
+score 2). With that done the duplicated TAIL check merges too, and the final
+body needs no goto at all - it is the SOTN reference's literal structure
+(tmp/sotn-decomp/src/main/psxsdk/libsnd/cres.c).
+
+**Finding 2 - the last 2 points are an RTL EMISSION-ORDER question, not a
+scheduling one.** Target's first three insns after the frame are
+`sll $v0,$a3,16` / `la $v1,_ss_score` / `sra $v0,$v0,14`: the _ss_score
+address insn sits BETWEEN the two halves of the index shift. Thirteen
+single-expression spellings of the preamble were measured
+(rejected/single-expression-preamble-s7.md) and every one scores 2. The dumps
+name the mechanism: expand emits the s16->int conversion as ashift:16 +
+ashiftrt:16; combine.c try_combine folds that ashiftrt:16 with the
+scale-by-4 ashift:2 into one ashiftrt:14 placed at the LATER insn's slot;
+sched.c rank_for_schedule then leaves the two independent insns in RTL/LUID
+order (verified: the ashiftrt precedes the symbol_ref set identically in
+.combine, .sched, .greg and .sched2, so no scheduler pass ever moves them).
+fold() moves the constant ADDR_EXPR to operand 1 of a pointer sum, so a
+single expression always evaluates the entire index first; putting the alias
+statement first instead (x1) puts the address before the ashift:16. Only the
+ordered triple
+
+    s32  bank_no   = a0;
+    s32 *score_tbl = (s32 *)&_ss_score;
+    s32 *bank      = score_tbl + bank_no;
+
+lands it between the two halves. That reaches **score 0, build_insns 200 ==
+target_insns 200**.
+
+- [s7] Chassis re-verify: the banked s6 candidate reproduces score 10 (199/200) on this session's HEAD.
+- [s7] The score-10 residual was ONE CSE substitution, not register allocation: the goto-shared neg40 block read the HImode parameter pseudo 72 ($s5) where target reads the raw SImode copy 73 ($a3), because a goto-shared block starts a fresh CSE basic block and the `72 == subreg(73)` equivalence is lost at the label.
+- [s7] Duplicating the `unk40 < 0` handler into both arms measures 200 insns (score 52 for the then-inline shape; 212 insns / score 19-20 for the else shape while an a1_off local is still present). GCC 2.7.2's post-reload cross_jump DOES merge the two copies - but only when they are register-identical, which is the condition s6's 212-insn measurement silently failed.
+- [s7] Removing the a1_off local (writing `(s16)a1 * 0xB0` at the clear sites) removes the 78/93 pseudo split that blocked the merge: 212 -> 200 insns, score 19 -> 2. The `bank` local must STAY (inlining it as well measures 205 insns / score 16).
+- [s7] With the preamble fixed the duplicated tail check merges too, so the matched body has NO gotos and is structurally identical to SOTN's cres.c; s6's `goto neg40` / `goto tail` sharing was an artifact of the unfixed preamble, not a requirement.
+- [s7] Thirteen single-expression spellings of the bank-address preamble all measure exactly score 2 / 200 insns; the residual is the position of the `la $v1,_ss_score` insn relative to the folded ashiftrt:14, fixed at RTL emission (combine.c try_combine places the fold at the later insn's slot; sched.c rank_for_schedule never reorders them afterwards).
+- [s7] FINAL: score 0, build_insns 200, target_insns 200, measured with the annotated candidate.c body in src/main.c. No asm, no volatile, no pins in the body; the sandbox strips nothing from it.
