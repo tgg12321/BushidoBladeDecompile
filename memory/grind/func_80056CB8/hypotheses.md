@@ -2481,3 +2481,51 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s53 chassis (s22-s52-banked 38/204 body + header externs + func_80053614 s32-return prerequisite, zero FAKE constructs present); the 'no shared-storage candidate for limit' claim is a property of the current source's dataflow (which insn defines limit's live range, which unrelated multiply happens to overlap it in program order) and would need re-derivation if the loop body's structure changes.
+
+## [s54, forensics] loop_movables.py confirms pseudo 149 (`limit`) is classified as a genuine move_movables LICM invariant (insn 210, life=40, threshold*savings*lifetime=2080 >= insn_count=163, decision "moved"), not merely a register-pressure artifact -- resolving the s50/s51-named live-frontier item about whether `limit` is "correctly excluded from the strength-reduction movable set for structural reasons" by showing the premise was about the wrong pass: `limit` IS a move_movables movable (ordinary LICM), which is the upstream reason it lives across the whole loop and later becomes global_alloc's spill choice. strength_reduce (bivs/givs) is a separate pass this tool does not model and was never the mechanism at play for `limit` (it is a simple invariant sum, not an induction variable).
+- mechanism: loop.c's move_movables (loop.c:1626-1631) admits a movable when threshold*savings*lifetime >= insn_count OR already_moved OR a done forces-predecessor with n_times_used==1; `limit`'s long in-loop lifetime (40 LUIDs, from its definition at insn 21 to its final use at the loop-back-edge compare, insn 28) trivially satisfies the inequality (52*1*40=2080 >= 163).
+- probe: `python3 tools/loop_movables.py --func func_80056CB8 --file text1b --dumps tmp/grind/func_80056CB8/dumps` (artifact: tmp/grind/func_80056CB8/s54/loop_movables_output.txt), cross-referenced against the s53 .greg manual read (pseudo 149, hard reg 11, spilled at insn 469, reloaded at insn 493).
+- result: Confirms (does not change) the s51/s53 chassis: `limit`'s hoisting-then-long-liveness-then-spill chain is the correct causal story; no new C-level lever is implied by this alone (a movable's hoist decision is not something ordinary C source structure can veto once the value is genuinely loop-invariant -- the only way to change it is to make `limit` NOT invariant, which s51's "inline the bound as i < start+2" (no separate limit local) already tried and measured WORSE, 38->42).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 chassis (s22-s53-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, zero FAKE constructs present); the "limit is a genuine LICM movable, not a register-pressure-only artifact" finding is a property of this loop's actual dataflow (limit = start + 2, compared every iteration) and would need re-derivation only if the loop's bound computation itself changed.
+
+## [s54, forensics] The s53 live-frontier item "reuse hit1's storage for hit0 between the two func_80053614 calls, if semantically valid" is semantically INVALID: hit0 is read (flags==4 arm: `hit0[0]`, `hit0[2]`) AFTER hit1 has already been written by the second func_80053614 call, in the same control-flow region that also reads hit1[1] -- hit0 is never dead before hit1's write, so sharing storage would corrupt hit0's still-needed values and produce an incorrect program, not merely a different-codegen one.
+- mechanism: n/a -- this is a program-correctness/dataflow finding from direct source reading, not a GCC-pass claim. No construct was proposed or measured because the construct would be semantically wrong before any codegen question is reachable.
+- probe: Read candidate.c's function body (lines ~1439-1471: `flags = func_80053614(pt0, pt1, (s32)hit0, ...)` at ~1439, `flags = (flags | (func_80053614(pt0, pt1, (s32)hit1, ...) << 1)) + 1` at ~1452, `hit1[1] - *(s32*)(obj+0xBC)` at ~1454 for flags==3, `dx = hit0[0] - ...; dz = hit0[2] - ...; ... y - hit1[1] ...` at ~1458-1467 for flags==4) with the body applied to src/text1b.c this session (then reverted).
+- result: hit0's last reads (flags==4 arm) occur strictly after hit1's write (the second func_80053614 call), and both hit0 and hit1 are read within the same nested-if region -- confirmed simultaneously live, not sequential/non-overlapping. No sandbox measurement taken (the construct is disqualified on correctness grounds, independent of score).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 source-level dataflow read of candidate.c's s22-s53-banked body (the same body re-confirmed fresh at 38/204 this session); this is a property of the current source's call/read ordering for hit0/hit1 and would need re-derivation only if that ordering changed.
+
+## [s54, forensics] Sibling-ledger check (mandatory per this session's brief): func_8006CCC8 (unspent, src/text1b.c, floor 39 since its s4) shares no data, callee, or control-flow shape with func_80056CB8 -- no transplantable block exists between the two ledgers.
+- mechanism: n/a -- ledger-comparison finding, not a codegen claim.
+- probe: Read memory/grind/func_8006CCC8/evidence.md and hypotheses.md tail (s3/s4 entries): its object is a field28-dispatch record-update loop over D_800A34FC-relative pointers via func_8006CBD4, entirely disjoint from func_80056CB8's func_80053614/hit0/hit1/D_8009A820/pt0/pt1 collision-detection loop.
+- result: No shared block. func_80055B60 has only a 1-session ledger with no candidate.c to transplant from. No sibling transplant applied this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 ledger read (no chassis measurement applicable -- this is a "nothing to transplant" finding, not a spelling probe).
+
+## [s54] loop.c's move_movables pass classifies pseudo 149 (`limit`) as a genuine LICM invariant (insn 210, life=40, threshold*savings*lifetime=2080 >= insn_count=163, decision 'moved'), resolving the s50/s51-named question about whether limit is correctly excluded from the strength-reduction movable set: the premise targeted the wrong pass -- limit is a move_movables (ordinary LICM) movable, not a strength_reduce biv/giv, and this hoist is the upstream cause of its whole-loop liveness and later global_alloc spill.
+- mechanism: loop.c:1626-1631 move_movables inequality: threshold*savings*lifetime >= insn_count admits the movable; limit's 40-LUID lifetime (definition at insn 21 to final use at the loop-back-edge compare, insn 28) trivially satisfies it (52*1*40=2080>=163).
+- probe: python3 tools/loop_movables.py --func func_80056CB8 --file text1b --dumps tmp/grind/func_80056CB8/dumps, cross-referenced against the s53 .greg manual read (pseudo 149, hard reg 11, spilled insn 469, reloaded insn 493).
+- result: Confirms (does not change) the s51/s53 causal chain; no new C-level lever implied since a value that is genuinely loop-invariant cannot be kept un-hoisted by source restructuring alone (s51's 'inline the bound, no separate limit local' already tried this exact idea and measured worse: 38->42).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 chassis (s22-s53-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, zero FAKE constructs present)
+
+## [s54] The s53 live-frontier item 'reuse hit1's storage for hit0 between the two func_80053614 calls, if semantically valid' is semantically INVALID for this function: hit0 is read in the flags==4 arm (hit0[0], hit0[2]) strictly AFTER hit1 has already been written by the second func_80053614 call, within the same control-flow region that also reads hit1[1] -- hit0 is never dead before hit1's write, so sharing storage would corrupt hit0's still-needed values and produce an incorrect program.
+- mechanism: n/a -- program-correctness/dataflow finding from direct source reading, not a GCC-pass claim.
+- probe: Read candidate.c's function body (flags = func_80053614(pt0,pt1,(s32)hit0,...) at line ~1439; flags = (flags | (func_80053614(pt0,pt1,(s32)hit1,...)<<1))+1 at ~1452; flags==3 arm reads hit1[1] at ~1454; flags==4 arm reads hit0[0]/hit0[2] then hit1[1] at ~1458-1467) with the body applied to src/text1b.c this session (then reverted).
+- result: hit0's last reads occur strictly after hit1's write; both are simultaneously live in the flags==4 region. No sandbox measurement taken -- disqualified on correctness grounds before any codegen question is reachable. This also closes the narrower-scope half of the same frontier item, already measured byte-neutral at s24 (function-scope vs loop-block-scope for hit0/hit1/work).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 source-level dataflow read of candidate.c's s22-s53-banked body (the same body re-confirmed fresh at 38/204 this session)
+
+## [s54] Sibling-ledger check (mandatory this session): func_8006CCC8 (unspent, src/text1b.c, floor 39 since its s4) shares no data, callee, or control-flow shape with func_80056CB8 -- its object is a field28-dispatch record-update loop over D_800A34FC-relative pointers via func_8006CBD4, entirely disjoint from func_80056CB8's func_80053614/hit0/hit1/D_8009A820/pt0/pt1 collision-detection loop. No transplantable block exists.
+- mechanism: n/a -- ledger-comparison finding.
+- probe: Read memory/grind/func_8006CCC8/evidence.md and hypotheses.md tail (s3/s4 entries).
+- result: No shared block; func_80055B60 has only a 1-session ledger with no candidate.c. No sibling transplant applied.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 ledger read (no chassis measurement applicable)

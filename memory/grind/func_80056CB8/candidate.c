@@ -1,6 +1,23 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54) — floor 38/204, NOT YET 0.
+ * s54 (forensics modality, 2026-09-16): re-confirmed 38/204 fresh (6th
+ * consecutive independent confirmation). Ran tools/loop_movables.py for
+ * the first time -- confirms pseudo 149 (`limit`) IS a genuine
+ * move_movables LICM invariant (insn 210, decision "moved", inequality
+ * 2080>=163), resolving the s50/s51 open question about which loop.c
+ * pass governs it: ordinary LICM, not strength_reduce; this is the
+ * upstream cause of limit's whole-loop liveness and its later
+ * global_alloc spill, not a separate register-pressure-only artifact.
+ * Closed the s53 live-frontier item #2 (hit0/hit1 storage reuse):
+ * source-level read confirms hit0 is read (flags==4 arm) AFTER hit1 is
+ * written by the second func_80053614 call, in the same control-flow
+ * region -- reusing hit1's storage for hit0 would corrupt still-needed
+ * values (an INCORRECT program), disqualified on correctness grounds
+ * before any codegen question applies. Both s53 frontier items are now
+ * closed with no new C-level lever surfaced; see hypotheses.md [s54] +
+ * evidence.md [s54]. Body UNCHANGED. Sibling ledgers checked
+ * (func_8006CCC8, func_80055B60): nothing transplantable.
  * s53 (forensics modality, 2026-09-16): re-confirmed 38/204 fresh (re-
  * derived the header-extern + func_80053614 s32-return chassis trap
  * fresh: omitting header externs alone silently miscompiles to 141/204
