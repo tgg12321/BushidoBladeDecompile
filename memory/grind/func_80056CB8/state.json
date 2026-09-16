@@ -1,38 +1,49 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 204,
    "modality": "recon",
    "headline": "Recon complete on from-scratch 204-insn function: object model resolved (D_800F6608.w8, Judge-table idiom both match matched in-TU siblings), outer-loop byte-table indexing stride is the open structur"
+  },
+  {
+   "session": 2,
+   "floor": 106,
+   "modality": "structural",
+   "headline": "First-ever C draft applied (204->126) + work[4] frame fix (126->106); structure fully matches target region-by-region, residual is pure register allocation"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A first full-body C draft applying hypotheses 1+2 (D_800F6608.w8, the Judge idiom) plus a literal transcription of the outer loop / dual func_80053614 calls / gate chain will sandbox well below 204, even before hypothesis 3 is resolved.",
-   "mechanism": "Ordinary compiled C reconstruction - no coercion needed for the two resolved sub-questions.",
-   "next_probe": "Write the draft in src/text1b.c (replacing the INCLUDE_ASM line), sandbox --disable all, read the residual."
+   "hypothesis": "Reading the .greg/.lreg dumps (generated this session, not yet analyzed in detail) will reveal WHY GCC's global allocator assigns obj/flags/z/cos_p/loop-i/r1 to the specific hard registers it does, pointing at a concrete register-alloc-pure-c lever (block-local split, narrow type, loop-local precompute, or RA-steering dead store) rather than more blind source-order guessing.",
+   "mechanism": "global.c allocno priority + conflict-graph-driven hard register assignment, per the register-alloc-pure-c playbook.",
+   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.greg and .lreg for the ';; Register dispositions:' section and each contended pseudo's conflict list; cross-reference against .claude/rules/register-alloc-pure-c.md's Levers A-D before writing any new C."
   },
   {
-   "hypothesis": "The fp+=2/iter byte-table indexing resolves to a simple C array-index expression once the region's cc1 dump or m2c output is read directly, rather than reverse-engineered from raw MIPS.",
-   "mechanism": "m2c reconstructs probable source shape; -da loop/greg dumps show cc1's actual induction-variable arithmetic.",
-   "next_probe": "pwsh tools/grinder/dump.ps1 func_80056CB8 (once a C draft exists to compile) or m2c asm/funcs/func_80056CB8.s for an initial structural guess before any draft exists."
-  },
-  {
-   "hypothesis": "The mid-loop angle-blend fallback block (only taken when the first func_80053614 call fails) uses a *125 or similar scale factor derived from a shift/subtract/shift/add chain (sll 5; subu; sll 2; addu) that needs an exact algebraic re-derivation before transcription.",
-   "mechanism": "Unverified arithmetic identity - do not transcribe a guessed multiplier into the C draft without checking it reproduces the exact asm shape when compiled.",
-   "next_probe": "Algebraically re-derive the shift/subtract/shift/add sequence by hand or via a small standalone test compile before writing the surrounding C."
+   "hypothesis": "Once the conflict graph is understood, applying the matching lever from register-alloc-pure-c (most likely a block-local variable split or a loop-local precompute given the loop-counter/local mismatch) will close some or all of the remaining 106-instruction gap.",
+   "mechanism": "Standard RA-lever application per .claude/rules/register-alloc-pure-c.md.",
+   "next_probe": "Apply the indicated lever to candidate.c, re-run sandbox func_80056CB8 --disable all, re-dump and re-compare register assignments."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 2,
+   "statement": "Swapping the source order of `obj = arg0;` and `flags = (&D_8009A821)[i*2] << 8;` (computing obj first instead of flags first) changes which of the two receives the lower hard register ($s0 vs $s1), m",
+   "kill_scope": "instance",
+   "measured_on": "s2 chassis (candidate.c as banked: authored-draft-2026-08-18.c body + work[4] + func_80053614 s32-return fix), zero FAKE/cheat constructs present in the diff",
+   "predicate_cite": "",
+   "result": "No change: score stayed 106, and the dump showed obj still assigned to $16(=$s0) and flags still assigned to $17(=$s1), "
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-16T07:19:13.663722+00:00"
+ "created": "2026-09-16T07:19:13.663722+00:00",
+ "escalation_deferrals": 0
 }

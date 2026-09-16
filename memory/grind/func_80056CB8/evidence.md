@@ -149,3 +149,84 @@ tells.
 - [s1] outer loop runs exactly twice (s6 starts at (arg0[0x3E8]&3)<<1, increments by 1, loop test s6 < initial+2); fp (byte-table index base) increments by 2/iter - open structural question, see hypothesis 3
 
 - [s1] zero GTE/cop2 opcodes, zero redundant pre-shift masks (packed-multiply-cluster S8 signal absent) anywhere in the 204-insn body - ordinary ALU/mult/branch/call code
+
+## [s2] structural 2026-09-16
+
+**First C draft applied.** The s1 ledger's inherited
+`authored-draft-2026-08-18.c` (from a PRE-asm-until-matched authoring
+session that never got applied to src/ — the function was still
+`INCLUDE_ASM` going into this session) was applied to `src/text1b.c`
+verbatim, plus one prerequisite fix: `func_80053614`'s declared return
+type in this TU was `void` but the target's two calls to it in
+`func_80056CB8` consume `$v0`. Changed to `s32 func_80053614(...)` with
+`return func_80052D00(arg2, arg3);` as its last statement.
+**Verified byte-neutral**: `sandbox func_80053614 --disable all` still
+scores `0/32` after the change (func_80053614's own asm falls through
+$v0 to the epilogue regardless of the C-level return type, so this was
+never actually a behavior change — just fixing a signature that
+happened not to matter for the void-caller case).
+
+`sandbox func_80056CB8 --disable all` progression this session:
+- 204 (no_c_body) -> 126 (first draft applied, `work[2]`)
+- 126 -> 106 (`work` widened to `s32 work[4]`, resolving
+  authored-notes-2026-08-18.md [S7]: `work` is 16 bytes not 8. Confirmed
+  via the `.frame` dump: `vars=104, frame=168(0xA8)` now EXACTLY matches
+  target's frame size, computed independently from the asm's saved-reg
+  offsets (0x80-0xA7) + spill slots (0x60-0x7F) + 5 local blocks
+  (0x18-0x5F) = 0xA8 total.)
+
+**Structural match confirmed via side-by-side dump comparison**
+(`tmp/grind/func_80056CB8/dumps/text1b.s` vs `asm/funcs/func_80056CB8.s`):
+every region — the obj-select branch, the type-gated angle source
+(facing angle vs ratan2 fallback), both Judge-table lookups, the pt0/pt1
+fill including the DOUBLE reads of `obj+0xB8` and `obj+0xC0` (our C
+already double-reads these the same way target does, at the same
+points), the `*0x7D` (125) fallback expansion via
+`sll5;subu;sll2;addu;sra8` (identical to target, confirming the
+authored-notes [S3] guess was correct — GCC's own constant-multiply
+strength reduction reproduces the exact target shape from
+`(v * 0x7D) >> 8`), both `func_80053614` calls, and the disposition gate
+chain (`code` in {0,3,4,5}) all match target's mnemonic sequence and
+branch structure region-by-region. `hand_coded_tier` stays LOW; no
+GTE/cop2 signal appeared anywhere in the build.
+
+**Residual is register allocation, not structure.** Mapping the s0-s7
+role assignment: target has `flags`/`r1` sharing `$s0`, `obj=$s1`,
+`x=$s2`, `z=$s3`, `cos_p=$s4`, `sin_p=$s5`, loop-`i`=`$s6`, `arg0=$s7`.
+Our build has `obj=$s0`, `flags`/`z` sharing `$s1`, `x=$s2` (MATCHES),
+`cos_p=$s3`, loop-`i`=`$s4`, `sin_p=$s5` (MATCHES), `r1=$s6`,
+`arg0=$s7` (MATCHES). Only 3 of 8 roles land in the same hard register;
+the rest are systematically shifted. This produces per-instruction byte
+diffs even where the mnemonic sequence is identical (different `sw
+$sN,...` register field), which is almost certainly the bulk of the
+106-instruction sandbox score.
+
+**KILLED: statement-order swap does not affect this allocation** — see
+hypotheses.md. Tried computing `obj = arg0;` before `flags = ...;`
+(the reverse of the authored draft's order, which computed `flags`
+first) hypothesizing that GCC's pseudo-register numbering (and thus
+hard-register assignment) follows source assignment order closely
+enough that swapping which local is assigned-to first would flip which
+of `obj`/`flags` gets the lower-numbered pseudo and thus (plausibly) a
+different hard register. Measured: ZERO change in the dumped register
+assignment (`obj` stayed `$s0`, `flags` stayed `$s1`) and ZERO change in
+sandbox score (stayed 106). This is an INSTANCE kill on this specific
+statement-order lever for this specific pair of variables — it does
+not prove no C-level lever exists, only that this one didn't move
+these two pseudos' hard-register assignment on this chassis.
+
+- [s2] func_80053614 (matched, in-TU) return type void->s32 fix is byte-neutral (sandbox 0/32 before and after) - was a pure signature correction, not a behavior change
+- [s2] first full draft (authored-draft-2026-08-18.c + the func_80053614 fix) drops honest floor 204 -> 126
+- [s2] widening `work` from 8 to 16 bytes (`s32 work[4]`) drops floor 126 -> 106 and makes the function's `.frame` size (168/0xA8) match target exactly - resolves authored-notes [S7]
+- [s2] side-by-side dump comparison confirms full structural match (branch shape, double-reads, *0x7D expansion, disposition gate chain) - residual is register-allocation only, not missing/wrong structure
+- [s2] KILLED (instance): swapping the `obj`/`flags` first-assignment order does not change either variable's hard-register assignment or the sandbox score - global allocation for this shape is not driven by this statement-order lever
+
+- [s2] func_80056CB8 had no candidate.c and was still INCLUDE_ASM going into this session, despite an unapplied authored-draft-2026-08-18.c sitting in the ledger from a pre-asm-until-matched authoring pass -- applying it was the session's first and highest-value move.
+
+- [s2] func_80053614 (matched, in-TU, called twice by func_80056CB8) was declared void in src/text1b.c but the target's calls to it consume $v0; changing its return type to s32 with an explicit return statement is verified byte-neutral (sandbox func_80053614 --disable all: 0/32 both before and after) because its own asm falls through $v0 to the epilogue regardless of declared type.
+
+- [s2] Side-by-side comparison of tmp/grind/func_80056CB8/dumps/text1b.s against asm/funcs/func_80056CB8.s shows the candidate's instruction sequence, branch structure, double-reads of obj+0xB8/obj+0xC0, the *0x7D fallback expansion (sll5;subu;sll2;addu;sra8), both func_80053614 call sites, and the full disposition gate chain all match target region-by-region -- the remaining 106-instruction sandbox score is attributable to register allocation (which s0-s7 slot each pseudo lands in), not missing or incorrectly-shaped C structure.
+
+- [s2] Frame size now matches target exactly: 168 bytes (0xA8), vars=104, with pt0/pt1/hit0/hit1/work at the same relative offsets (0x18/0x28/0x38/0x48/0x58) as the target's implied layout.
+
+- [s2] hand_coded_tier stays LOW; zero GTE/cop2 instructions anywhere in the candidate or the target asm -- this remains an ordinary pure-C register-allocation problem, not a canonical-asm candidate.

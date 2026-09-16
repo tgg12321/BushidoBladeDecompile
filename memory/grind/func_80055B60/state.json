@@ -30,5 +30,15 @@
  ],
  "judge_constraints": [],
  "origin": "queue",
- "created": "2026-07-07T16:19:29.525788+00:00"
+ "created": "2026-07-07T16:19:29.525788+00:00",
+ "sibling_progress": [
+  {
+   "from": "func_80056CB8",
+   "floor": 106,
+   "session": 2,
+   "at": "2026-09-16T07:31:46.016137+00:00",
+   "headline": "First-ever C draft applied (204->126) + work[4] frame fix (126->106); structure fully matches target region-by-region, residual is pure register allocation",
+   "consumed": null
+  }
+ ]
 }
