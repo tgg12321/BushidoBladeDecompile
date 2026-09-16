@@ -651,6 +651,14 @@
    "at": "2026-09-08T18:29:16.501710+00:00",
    "headline": "func_8002E6B0 COMPLETED-C",
    "consumed": 14
+  },
+  {
+   "from": "func_8002CA8C",
+   "floor": 0,
+   "session": 2,
+   "at": "2026-09-16T02:40:20.218807+00:00",
+   "headline": "func_8002CA8C COMPLETED-C",
+   "consumed": null
   }
  ],
  "exhaustion_base": 13,

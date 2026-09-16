@@ -2088,3 +2088,5 @@
 - 2026-09-15 20:53 func_8006BEC4 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-15 21:15 func_8002CA8C s1 [recon] floor=5: func_8002CA8C recon: empty stub 177 -> 5/179 (179==179 insns) via walking rec pointer + &SCR[id].j[i+4] call arg (fold/loop.c hoist mechanism read in the .loop dump) + shared seen tail; residual = rejected-flag seat ($a1 vs $s0) and one lhu reorder
 - 2026-09-15 21:32 func_8002CA8C: judge FAILED a bytes-proven candidate — The C itself is legitimate. One no-semantic-purpose construct: the AABB reject flag staged through the existing `hit` st
+- 2026-09-15 21:40 func_8002CA8C COMPLETED-C after 2 sessions (closer: s2 [annotation-fix]).
+- 2026-09-15 21:40 func_8002CA8C completed — ROTATED SIBLING func_8002D780 (floor 2, src/code6cac_b.c) ΓÇö func_8002CA8C just reached floor 0; its body on main is an unspent transplant. The driver's `queue auto-return` brings it back on this sibling notice.
