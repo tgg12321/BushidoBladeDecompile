@@ -275,3 +275,78 @@ ledger and the driver's dispatch-time floor exactly.
 - [s3] Confirmed via asm/funcs/func_8006A564.s:31 that target's tile[6] store sits at the shared post-if/else merge label (.L8006A5D0), not duplicated into both arms -- ruling out 'the value never crosses the branch in target's original C' as an alternative explanation; the cross-block pseudo is real and target's own compiler still colored it $v0.
 
 - [s3] The 68->60 improvement's mechanism was NOT isolated this session: a register-normalized objdump diff of the post-fix build against target (tmp/grind/func_8006A564/s3/diff.py output) still shows the identical v0<->v1 swap pattern at all 4 sites, so whatever closed 8 points of score is a different, unattributed diff -- next session should diff session-2's build.dis.txt directly against session-3's (not each against target) to pin down exactly which instructions changed.
+
+## Session 4 (permuter)
+
+- Re-verified chassis: applied candidate.c (session 3, floor 60) to
+  src/text1b.c, measured via `sandbox --disable all` -- confirmed floor 60,
+  build_insns 199==199 target_insns, matching the ledger's last recorded
+  floor exactly (dispatch's "measurement unavailable" chassis check was
+  just a transient at dispatch time, not a chassis drift).
+- Read `tmp/grind/func_8006A564/dumps/text1b.greg` (function func_8006A564,
+  line 51553+) fresh this session and confirmed the v0/v1 coloring swap
+  precisely: insns 25/26 (the inlined `D_800A34F8 & 0xF` load+and) both
+  land in hardreg 2 (v0) -- so the mask-compute pseudo IS getting v0, as
+  expected (it's block-local, dies at the branch insn 28). The DIFFERENT,
+  cross-block arm-value pseudo (first defined at insn 33,
+  `v0 = *(u8*)(arg1+0x29)` inside the if-arm) lands in hardreg 3 (v1)
+  instead of v0 -- confirmed against target
+  (`asm/funcs/func_8006A564.s:18` `lbu $v0,0x29($s1)` -- target keeps this
+  SAME arm-value chain in v0 throughout). The conflict list for this
+  pseudo (`;; 72 conflicts: ... 2 3 4 5 6 7 29`) shows it DOES conflict
+  with hardreg 2, which is why global-alloc can't put it there -- the
+  question left open (why does the pseudo conflict with v0 despite v0
+  dying at the branch) needs a `.lreg`/liveness-focused read, not yet done
+  this session (budget).
+- Built a from-scratch permuter workspace at
+  `tmp/grind/func_8006A564/s4/perm/` (base.c = the floor-60 candidate body
+  + its extern block; compile.sh replicates the exact Makefile pipeline for
+  text1b.c: cc1 -O2 -G0 ... -mel -msoft-float | prologue_fix | maspsx
+  --expand-div --aspsx-version=2.34 (+ full sdata/expand-lb/multu/prefill
+  flag set) | multu_pad | mipsel-linux-gnu-as -march=r3000 -no-pad-sections
+  -O1 -G0; target.o built from asm/funcs/func_8006A564.s + a gp=64-stripped
+  prelude.inc so the function sits at offset 0 like base.o, per
+  [[difficult-is-not-impossible]]'s clean-single-function-target
+  guidance). Verified base.o's opening instructions byte-match target.o's
+  before launching (both start `addiu sp,-48; sw s2,32; move s2,a0; ...`).
+  No permuter campaign existed yet for this function (state.json showed 0
+  prior permuter sessions), so this is campaign #1 of the R3 2-session cap.
+- Launched via `tools/permuter_campaign.py launch --func func_8006A564
+  --dir tmp/grind/func_8006A564/s4/perm --label coloring-swap-s4 -j 4
+  --stop-on-zero`. base_score (permuter's own weighted metric, NOT the
+  sandbox score) = 530. Ran ~4439 iterations over ~183s wall time (4
+  workers), harvested 25 output dirs, best_new_score 330 (down from 530),
+  but PLATEAUED at 520 for the large majority of finds (12 of 25 finds sit
+  exactly at 520) -- no zero, no discovery of the actual register-coloring
+  fix. Harvested + stopped per fresh-seed discipline (a firmly-plateaued
+  metric after several dozen distinct mutation attempts, well before the
+  literal 20-30 min real-time mark, but the finds show the search
+  converged to a local optimum of trivial statement-shape mutations, not
+  further progress).
+- Inspected the two most-improved finds (`output-330-1`,
+  `output-420-1` area): the score drop came from RANDOM, semantically-void
+  permuter mutations unrelated to program logic -- e.g.
+  `output-330-1/diff.txt` shows `short v0;` (type-narrowing a pseudo that
+  is genuinely `s32`-typed per the target's `lw`/full-word loads) plus a
+  fabricated `s32 new_var; new_var = v0; *(...)=new_var; *(...)=new_var;`
+  split of the two final `else`-arm byte stores in the 4th (record-copy)
+  block. Hand-applied JUST the `new_var` split (the type-narrowing part is
+  wrong per the object's actual s32 width, so excluded) to
+  src/text1b.c and re-measured via `sandbox --disable all`: **KILLED,
+  unchanged (60 -> 60)**. The permuter's 330 score improvement was
+  entirely an artifact of the (excluded) incorrect `short` retype
+  combined with the new_var split; the new_var split alone contributes
+  nothing to the honest metric. Reverted immediately; confirmed back at
+  60.
+
+- [s4] Re-verified chassis: applying candidate.c (session 3 body) to src/text1b.c and running `sandbox --disable all` reproduces floor 60 exactly, build_insns 199==199 target_insns -- confirms the ledger's last recorded floor is still the live HEAD-equivalent floor (the dispatch-time 'measurement unavailable' chassis check was a transient, not chassis drift).
+
+- [s4] Read tmp/grind/func_8006A564/dumps/text1b.greg (function func_8006A564, starts line 51553) fresh this session: confirmed the v0/v1 coloring swap precisely -- the inlined `D_800A34F8 & 0xF` load+and (insns 25/26) both land in hardreg 2 (v0, block-local, dies at the branch), but the cross-block arm-value pseudo (first defined at insn 33, `v0 = *(u8*)(arg1+0x29)` inside the if-arm) lands in hardreg 3 (v1) instead of v0. Target (asm/funcs/func_8006A564.s:18, `lbu $v0,0x29($s1)`) keeps this same arm-value chain in v0 throughout.
+
+- [s4] The arm-value pseudo's conflict list (`;; 72 conflicts: ... 2 3 4 5 6 7 29`) shows it DOES conflict with hardreg 2 despite the mask-compute pseudo dying at the branch -- the source of that conflict is unexplained and is the next diagnostic step (a .lreg/liveness-focused read), not yet done this session.
+
+- [s4] Built a from-scratch permuter workspace (tmp/grind/func_8006A564/s4/perm/) replicating the exact Makefile pipeline for text1b.c (cc1 -O2 -G0 -mel -msoft-float | prologue_fix | maspsx with the full flag set incl. --prefill-label-funcs | multu_pad | mipsel-linux-gnu-as -march=r3000 -no-pad-sections); target.o built from asm/funcs/func_8006A564.s + a gp=64-stripped prelude so the function sits at offset 0 like base.o. Verified base.o's opening instructions byte-match target.o's before launching. This is campaign #1 of the R3 2-permuter-session cap (state.json showed 0 prior permuter sessions).
+
+- [s4] Campaign ran ~4439 iterations / ~183s wall / 4 workers (tools/permuter_campaign.py launch/wait/harvest, label coloring-swap-s4). Permuter's own weighted score (NOT the sandbox score) started at base_score 530 and PLATEAUED at 520 (12 of 25 harvested finds sit at exactly 520); best_new_score 330 was a false-positive artifact traced to an incorrect type-narrowing mutation, not a real fix (see the KILLED hypothesis above). No zero found; no discovery of a construct that touches the actual coloring residual.
+
+- [s4] This plateau is evidence the coloring-swap residual is not reachable by decomp-permuter's default random-mutation search from this chassis -- consistent with the mandated-modality brief's note that the permuter cannot express chassis-level structural rewrites (this residual needs restructuring WHICH C-level pseudo crosses the if/else boundary, not a local expression mutation).

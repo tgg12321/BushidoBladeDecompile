@@ -241,3 +241,72 @@ constructs present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c s3 chassis (floor 60), zero FAKE constructs present
+
+## H7 (session 4) — KILLED: the permuter-found `new_var` split of the
+final else-arm's two byte stores (record-copy block) does not affect the
+honest score
+**Statement:** splitting `*(u8*)(arg1+0x2A) = v0; *(u8*)(arg1+0x29) = v0;`
+into `s32 new_var = v0; *(u8*)(arg1+0x2A) = new_var; *(u8*)(arg1+0x29) =
+new_var;` in the 4th block's else arm (the record-copy block, `arg1+0x28`
+region) — found by a directed permuter campaign as part of a combined
+mutation (paired with an incorrect `short v0` retype) that dropped the
+permuter's own weighted score 530 -> 330.
+**Mechanism:** Not a real mechanism — hand-isolating just the `new_var`
+split (excluding the incorrect retype, since the pseudo is genuinely
+`s32`-width per the target's full-word `lw`s) and re-measuring showed the
+permuter's own score improvement was ENTIRELY attributable to the
+(excluded) retype, not the split.
+**Probe:** Applied the `new_var` split alone to src/text1b.c, measured via
+`sandbox --disable all`.
+**Result:** Score unchanged (60 -> 60). Reverted immediately.
+**verdict:** KILLED
+**kill_scope:** instance
+**measured_on:** candidate.c s3/s4 chassis (floor 60), single site, zero
+FAKE constructs present
+
+## Session 4 permuter campaign — plateau evidence (not a hypothesis, a
+process record)
+A from-scratch permuter workspace (`tmp/grind/func_8006A564/s4/perm/`,
+first campaign ever for this function) ran ~4439 iterations / ~183s
+wall / 4 workers before being harvested + stopped. The permuter's own
+weighted score plateaued hard at 520 (12 of 25 harvested finds sit at
+exactly that value) despite dozens of distinct random mutations tried;
+the one outlier drop to 330 was purely a false-positive combination (see
+H7) with zero honest-score effect. This is evidence the coloring-swap
+residual is NOT reachable by decomp-permuter's default random-mutation
+search from this chassis — consistent with the ledger's own note that
+"the permuter cannot express... chassis swaps" for a residual whose fix
+requires restructuring which C-level pseudo crosses the if/else block
+boundary (a semantic/structural rewrite, not a local expression
+mutation). Per the CHASSIS RULE, a same-chassis re-seed is not a valid
+future probe; the next permuter attempt (1 remaining under the R3
+2-session cap) should target a STRUCTURALLY DIFFERENT chassis — e.g. one
+of the frontier's untried per-arm-local restructurings — not this same
+base.c.
+
+## Frontier for next session
+1. **(unchanged, still top priority)** Restructure the arm-value variable
+   (`v0`, used inside/after each if/else) so it is NOT itself a single
+   pseudo crossing the branch. The `.greg` conflict list this session
+   showed the arm-value pseudo (e.g. pseudo 72) DOES conflict with
+   hardreg 2 (v0) despite v0's mask-compute use dying at the branch --
+   the source of that conflict is still unexplained and needs a
+   `.lreg`/liveness-focused read (not yet done) before the next
+   structural attempt, since blindly trying "genuinely separate per-arm
+   locals" without understanding WHY v0 is already excluded risks
+   repeating session 3's H4 dead end (a fresh local name alone does
+   nothing -- combine/RA look at value flow, not declaration identity).
+2. Diff session-2's build.dis.txt against session-3/4's (both already-built
+   binaries, not each against target) to finally isolate exactly which
+   instructions the 68->60 win touched -- still not done across 2
+   sessions now.
+3. The single block3 scheduling tie (unchanged, low priority, revisit
+   after coloring is understood).
+
+## [s4] The permuter-found `new_var` split of the final else-arm's two byte stores in the 4th (record-copy) block (`s32 new_var = v0; *(u8*)(arg1+0x2A) = new_var; *(u8*)(arg1+0x29) = new_var;` instead of two direct `v0` stores) improves the honest score.
+- mechanism: None confirmed -- the permuter's own weighted score improvement (530 -> 330) for the combined mutation this was extracted from was entirely attributable to an accompanying incorrect `short v0` retype (wrong: the pseudo is genuinely s32-width per target's full-word lw loads), not to the new_var split itself.
+- probe: Hand-applied the new_var split alone (excluding the incorrect retype) to src/text1b.c, measured via `sandbox --disable all`.
+- result: Score unchanged, 60 -> 60. Reverted immediately; confirmed back at 60.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c s3/s4 chassis (floor 60), single site, zero FAKE constructs present
