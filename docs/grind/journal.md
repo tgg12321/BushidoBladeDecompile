@@ -2210,3 +2210,4 @@
 - 2026-09-16 16:24 _SsSndCrescendo COMPLETED-C after 7 sessions (closer: s7 [synthesis]).
 - 2026-09-16 16:39 _SsVmInit s1 [recon] floor=38: Re-ran discarded s1 recon: applied inherited candidate.c to src/main.c, re-measured honest floor 38 (was claimed 37 pre-discard), banked explicit per-symbol OBJECT MODEL verdicts for both flagged SPLIT-AGGREGATE signals.
 - 2026-09-16 16:48 _SsVmInit s2 [structural] floor=19: s1's recorded floor of 38 was false (8 undeclared-identifier implicit-int bugs); fixing declaration order drops the honest floor to 19; a u16-mask lever for the per-voice loop exit was tried and killed.
+- 2026-09-16 17:03 _SsVmInit s3 [structural] floor=19: Re-confirmed floor 19; killed the s2-carried 0xFF named-intermediate hoist (19->21); pass-attributed the residual to a local-alloc-death-count-class wall on the D_8010280A HImode store (reg 112, dies-in-0-places).

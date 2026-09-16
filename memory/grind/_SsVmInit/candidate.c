@@ -1,7 +1,14 @@
-/* _SsVmInit candidate — session s2 (structural).
- * Honest sandbox floor at end of s2: 19 (was 38 at end of s1 — see s2
- * evidence: the s1 floor was FALSE, produced by a declaration-order bug,
- * not a real codegen residual; see hypotheses.md s2 H5).
+/* _SsVmInit candidate — unchanged since s2 (structural); re-verified at s2
+ * AND s3. Honest sandbox floor: 19 (unchanged across s2/s3 — six isolated
+ * structural levers tried and killed across s2 (H7/H8/H9) and s3 (H10, the
+ * shared-0xFF named-intermediate hoist), all measured WORSE than this
+ * baseline; see hypotheses.md). Was 38 at end of s1 (a false floor from a
+ * declaration-order bug; see hypotheses.md s2 H5). s3 PASS ATTRIBUTION
+ * identified the residual as a local-alloc-death-count-class-wall on the
+ * per-iteration `D_8010280A = i;` HImode store (pseudo reg 112 in
+ * tmp/grind/_SsVmInit/dumps/main.greg/.lreg — "dies in 0 places; crosses 2
+ * calls"); see hypotheses.md s3 PASS ATTRIBUTION entry before re-guessing
+ * spellings at that store site.
  * Apply verbatim in place of `INCLUDE_ASM("asm/funcs", _SsVmInit);` in
  * src/main.c. Several of these externs duplicate declarations already in
  * scope LATER in the same TU (main.c) with identical types — harmless

@@ -1,7 +1,7 @@
 {
  "func": "_SsVmInit",
  "file": "main",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,24 @@
    "floor": 19,
    "modality": "structural",
    "headline": "s1's recorded floor of 38 was false (8 undeclared-identifier implicit-int bugs); fixing declaration order drops the honest floor to 19; a u16-mask lever for the per-voice loop exit was tried and kille"
+  },
+  {
+   "session": 3,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "Re-confirmed floor 19; killed the s2-carried 0xFF named-intermediate hoist (19->21); pass-attributed the residual to a local-alloc-death-count-class wall on the D_8010280A HImode store (reg 112, dies-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Read the .greg/.sched dump content (not just cc1 stderr) for the floor-19 body's _SsVmInit region and pass-attribute the remaining ~19-insn residual before proposing further specific-register-seat levers.",
-   "mechanism": "n/a -- diagnostic step, mandated by the PASS ATTRIBUTION contract before further guessing.",
-   "next_probe": "pwsh tools/grinder/dump.ps1 _SsVmInit already regenerates tmp/grind/_SsVmInit/dumps/main.greg and main.sched (whole-TU); grep/extract just the _SsVmInit region (search for the function's label/LUID range) and read it before hypothesizing further."
+   "hypothesis": "The D_8010280A store's pseudo (reg 112) is punted to global allocation because local-alloc.c cannot recognize a local death for it within the loop body; per the local-alloc-death-count-class-wall rule's own precedent, ordinary reordering/casting at this exact store site is unlikely to flip it further -- the next un-tried avenue is checking whether moving the D_8010280A store to a DIFFERENT position relative to the two per-iteration calls (still consistent with target's confirmed store-order-matches-target finding from s2/s3) changes the death-count recognition, without changing byte-visible statement order.",
+   "mechanism": "local-alloc.c death-count heuristic (documented in codegen-technique-index local-alloc-death-count-class-wall)",
+   "next_probe": "Read local-alloc.c's death-recognition logic directly (tools/gcc-2.7.2/local-alloc.c) to find the EXACT structural condition that would let reg 112 register a local death (e.g., a narrower live range, a different consuming statement shape) before proposing any further C-level rewrite; do not re-guess spellings without first understanding that specific gate."
   },
   {
-   "hypothesis": "Explicitly hoist the shared 0xFF constant (currently written as the literal 0xFF at both the D_800F4E18 and D_800F4E2E store sites) into a single local variable set once before the per-voice loop and read twice inside it, matching target's single-materialization-in-$s1-before-the-loop shape.",
-   "mechanism": "Named-intermediate / staged-value family (a fresh or loop-hoisted local reused across two same-value stores) -- if this closes bytes, it needs the family's prerequisites (no-new-park-categories.md) checked before banking; if it's simply what GCC 2.7.2 naturally does when the value is loop-invariant and used twice, no annotation is needed at all (ordinary C, Ruling 1 in ordinary-c-judge-decidable.md).",
-   "next_probe": "Declare a local (e.g. `s16 ff = 0xFF;`) before the per-voice do-while, replace both literal 0xFF stores with reads of it, re-measure sandbox --disable all."
-  },
-  {
-   "hypothesis": "Target hoists the buf-array address ($a0 = sp+0x10) once before the per-voice loop rather than re-deriving it per func_8008B488 call; check whether this already happens naturally in our build or is a symptom of the register-pressure difference behind the residual.",
-   "mechanism": "n/a until the .greg/.sched dump (frontier item 1) is read -- this is exactly the kind of allocation/scheduling question that dump answers directly rather than needing a guessed C lever.",
-   "next_probe": "After reading the .greg/.sched dump for this function, check whether buf's address is already live across the whole loop in our RTL or gets recomputed; if recomputed, look for a C-level reason (e.g. an intervening statement that appears to clobber a0's preferred register)."
+   "hypothesis": "func_8008B488's buf-array address hoist (a0 = sp+0x10) question from s2/s3's frontier remains formally open but was CLOSED as a non-issue in s3 (already matches target's delay-slot-recompute shape) -- drop this item; do not re-open without new evidence.",
+   "mechanism": "n/a -- already resolved, retained here only so a future session doesn't re-spend a turn re-deriving the closure",
+   "next_probe": "None -- confirmed closed; see hypotheses.md s3 note under the 'CLOSED (s3)' heading."
   }
  ],
  "judge_constraints": [],
@@ -52,6 +53,14 @@
    "measured_on": "HEAD s2 floor-19 candidate.c chassis, casts applied/reverted in isolation, no FAKE constructs present",
    "predicate_cite": "",
    "result": "score regressed 19 -> 21 with either the loop-exit mask alone or combined with the shift-amount mask; reverting both res"
+  },
+  {
+   "session": 3,
+   "statement": "Hoisting the shared 0xFF constant (written to D_800F4E18 and D_800F4E2E each per-voice iteration) into a single fresh local `s16 ff = 0xFF;` declared once before the per-voice loop, read twice in plac",
+   "kill_scope": "instance",
+   "measured_on": "HEAD s3 floor-19 candidate.c chassis, s16 ff local added/reverted in isolation, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score regressed 19 -> 21 with the ff local present; reverting restores 19 exactly (both measured this session)"
   }
  ],
  "ladder_skip": 0,
