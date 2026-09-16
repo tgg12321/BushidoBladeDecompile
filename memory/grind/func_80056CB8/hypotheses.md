@@ -1682,3 +1682,94 @@ s35 [structural] floor=38 (unchanged) — killed the shared-idx and idxB index-n
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s36 chassis (candidate.c's s22-s35-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block2 pt0/pt1 stores reordered to m2c's exact sequence, block1 left at baseline order, no FAKE constructs present)
+
+## s37 (enumerate modality, 2026-09-16)
+
+**Systematic spelling sweep of the sin_p/scale/x/cos_p/z assignment block
+(candidate.c current lines ~1173-1177, the pointer-arithmetic block right
+after the flags/ratan2 computation) — CLASS KILL, zero hits.**
+
+Applied the s22-s36-banked candidate.c body verbatim to src/text1b.c (with
+the func_80053614 void->s32 return-type prerequisite) and re-confirmed the
+CURRENT chassis floor fresh: 38/204, build_insns 198 — matches the ledger
+exactly, no drift.
+
+Marked the block
+
+    sin_p = &Judge + (flags & 0xFFF);
+    scale = (&D_8009A820)[i * 2] << 8;
+    x = *(s32 *)(obj + 0xB8) + ((scale * *sin_p) >> 12);
+    cos_p = &Judge + ((flags + 0x400) & 0xFFF);
+    z = *(s32 *)(obj + 0xC0) + ((scale * *cos_p) >> 12);
+
+with ENUM-BEGIN/END markers (tmp/grind/func_80056CB8/s37/enum_candidate.c)
+and ran `tools/spelling_enum.py` (no named-local decls to inline in this
+block — all 5 targets are pre-declared loop locals assigned here, so the
+tool's only axes are (a) def-before-use statement reordering among the 5
+assignments and (b) the commutative-swap axis on the two `scale * *sin_p`
+/ `scale * *cos_p` products): **32 distinct spellings** (6 valid orderings
+x 2 swap-bit combinations x ... collapsed to 32 after dedup). Swept all 32
+with `tools/sweep_variants.py --func func_80056CB8 --file text1b`
+(tmp/grind/func_80056CB8/s37/sweep_out.json):
+
+  - v00 (== the banked original spelling, order sin_p,scale,x,cos_p,z, no
+    swaps) and 3 other reorderings score 38/204 (198 insns) — TIED with
+    baseline, not better.
+  - 4 more reorderings score 39/204 (198 insns) — worse.
+  - the remaining 24 variants (every ordering that puts an operand-swap
+    on either product, and/or moves cos_p/z ahead of x's dependency chain)
+    score 46-75/204 (197-199 insns) — substantially worse.
+  - **Zero of the 32 variants scored below 38.** No variant closes any
+    part of the residual; the ordering+swap spelling space for this exact
+    block is exhausted.
+
+**KILL: the statement-ordering + commutative-swap spelling space for the
+sin_p/scale/x/cos_p/z block is CLASS-dead** — every one of the 32
+def-before-use-respecting spellings (with or without the two commutative
+swaps) fails to improve on 38/204, confirmed by exhaustive enumeration
+(not sampling). This rules out "the residual is a mis-ordered or
+mis-commutated spelling of this specific block" as a hypothesis; the next
+session should NOT re-try local reorderings inside this block. Per the
+tool's own architecture (`tools/spelling_enum.py`'s `orderings()` +
+`swap_variants()` generate every def-before-use ordering x every subset of
+commutative swaps with no sampling — this is a complete enumeration, not a
+random search), a zero-hit result here is a real class boundary, not
+"we didn't find it yet."
+
+**Tool-shape note for future sessions:** `spelling_enum.py`'s region format
+requires the ENUM-BEGIN/END span to end in a single trailing run of
+"anchor" lines (bare `if (...)` / `return` conditions, body text OUTSIDE
+the markers) — it does NOT support a region containing multiple interior
+if/else blocks with braced multi-statement bodies (our obj/flags
+computation block at candidate.c ~1160-1171 has exactly that shape: two
+separate if-statements with braced bodies in the middle of the region).
+Attempting to mark that block would need either (a) a tool extension to
+handle nested-anchor bodies, or (b) manually unrolling both branches into
+explicit variants by hand (not attempted this session — out of scope for
+one enumerate session; flagging for a future session or a tool patch).
+
+Frontier UNCHANGED from s36 otherwise — the s31/s32-banked loop.c:3823
+insn-count-threshold mechanism (frontier item 1) and the do-while-chassis
+resident-footprint probe (frontier item 2) remain the two live avenues;
+neither was touched this session (this was a dedicated spelling-space
+closure of a THIRD frontier candidate — "restructure the flags
+computation chain / pointer-arithmetic expressions with fewer real RTL
+insns" — which is now closed for the ordering/swap axis specifically,
+though a structural rewrite that changes the EXPRESSIONS themselves
+(not just their order) is still untried).
+
+src/text1b.c reverted to `INCLUDE_ASM("asm/funcs", func_80056CB8);` and
+func_80053614 reverted to `void` before ending the session — no draft C
+left on main (asm-until-matched).
+
+## [s37] The s22-s36-banked candidate.c body reproduces the ledger's recorded floor when spliced into src/text1b.c with the func_80053614 void->s32 return-type prerequisite and the 5-line extern header block.
+- mechanism: n/a (reproduction check, not a codegen hypothesis)
+- probe: Applied candidate.c body + func_80053614 signature fix to src/text1b.c, ran `sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198 -- exact match to the ledger's last-recorded floor, no chassis drift since s36.
+- verdict: CONFIRMED
+
+## [s37] Reordering the sin_p/scale/x/cos_p/z pointer-arithmetic assignment block (candidate.c ~lines 1173-1177), including every commutative-swap combination of the two scale*sin_p / scale*cos_p products, cannot close any part of the 38/204 residual on the current chassis.
+- mechanism: tools/spelling_enum.py enumerates every def-before-use-respecting statement ordering (6 valid orderings for this dependency graph: x depends on scale+sin_p, z depends on scale+cos_p) crossed with every subset of the 2 commutative-swap axes (tools/spelling_enum.py:162 swap_variants), producing 32 distinct spellings after dedup; tools/sweep_variants.py scored each via the same sandbox --disable all gradient used throughout this ledger.
+- probe: python3 tools/spelling_enum.py --candidate tmp/grind/func_80056CB8/s37/enum_candidate.c --out tmp/grind/func_80056CB8/s37/enum (32 variants written); python3 tools/sweep_variants.py --func func_80056CB8 --file text1b --variants tmp/grind/func_80056CB8/s37/enum --json (tmp/grind/func_80056CB8/s37/sweep_out.json)
+- result: 4/32 variants (incl. v00, the banked original spelling) tie the baseline at 38/204 (198 insns); 4/32 score 39/204 (198 insns, worse); the remaining 24/32 (every variant with a product swap and/or cos_p/z hoisted ahead of x's dependency chain) score 46-75/204 (197-199 insns, substantially worse). No variant scored below 38.
+- verdict: ?

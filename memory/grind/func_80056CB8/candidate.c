@@ -1,6 +1,14 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37) — floor 38/204, NOT YET 0.
+ * s37 (enumerate modality): body UNCHANGED. Fresh 38/204 re-confirmed.
+ * Ran tools/spelling_enum.py + sweep_variants.py over the
+ * sin_p/scale/x/cos_p/z pointer-arithmetic block (all 32 def-before-use
+ * orderings x commutative-swap combinations): CLASS KILL, zero hits below
+ * 38 (best tied at 38, most 39-75). See hypotheses.md [s37] for the full
+ * histogram + the tool-shape note (spelling_enum.py can't currently
+ * enumerate the obj/flags if/else block — needs a tool extension or
+ * manual unrolling in a future session).
  * s36 (structural, KILL RE-AUDIT): re-measured the s20-banked m2c block1
  * interleave-with-xz-computation kill (38->88/204, +5 insns, worse than the
  * stale-chassis 42->87 result) and the s20-banked m2c block2 permuted-store-

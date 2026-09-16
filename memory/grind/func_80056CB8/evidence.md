@@ -675,3 +675,11 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s36] asm/funcs/func_80056CB8.s:124-138 (block2, the second func_80053614 call's argument setup) emits pt0/pt1 stores in the order pt0[0], pt0[2], pt1[0], pt0[1], pt1[2], pt1[1] -- genuinely different from source-declaration order -- but transplanting that exact order as literal C statement order measures worse (see hypothesis 2 above), confirming (as s20 already found) that the RTL-level store order is not directly recoverable as source order.
 
 - [s36] The two frontier items named at the end of s35 (shrink loop-body insn_count below loop.c:3823's threshold via non-index restructuring; restructure a non-index resident's footprint specifically on the do-while chassis) remain untried this session -- this session's turns went to the mandated re-audit of stale-chassis kills instead, which is a legitimate and necessary session per the KILL RE-AUDIT REQUIRED instruction, but does not advance those two frontier items.
+
+- [s37] Chassis reproduction: candidate.c + func_80053614 void->s32 fix gives fresh sandbox score 38, target_insns 204, build_insns 198 -- matches ledger exactly.
+
+- [s37] spelling_enum.py --list on the marked region: '0 named locals (), 5 assignments, 0 anchors -> 32 distinct spellings (with commutative swaps)' -- confirms no decl-inlining axis exists here (all 5 targets are pre-declared loop locals, only assigned in this block), so the swept space (ordering x swaps) is genuinely exhaustive for this block, not a sample.
+
+- [s37] The tool's ENUM-BEGIN/END region format requires the marked span to end in a single trailing run of anchor (if/return-condition) lines with bodies OUTSIDE the markers -- it cannot currently represent a region containing interior if/else blocks with braced multi-statement bodies. The obj/flags computation block (candidate.c ~1160-1171, two separate if-statements with braced bodies) does not fit this format without either a tool extension or manual unrolling; neither was attempted this session.
+
+- [s37] src/text1b.c and func_80053614's signature were reverted to their committed HEAD state (INCLUDE_ASM("asm/funcs", func_80056CB8); / void return) before ending the session -- git status confirms src/text1b.c clean, no draft C left on main (asm-until-matched).
