@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_80056CB8",
-   "floor": 48,
-   "session": 11,
-   "at": "2026-09-16T09:15:53.595588+00:00",
-   "headline": "forensics s11: root-caused the missing $fp accumulator to loop.c's strength-reduction benefit threshold (named, non-source-facing); killed the loop-inversion frontier hypothesis; found + banked a new ",
+   "floor": 42,
+   "session": 14,
+   "at": "2026-09-16T09:41:43.097253+00:00",
+   "headline": "s14 enumerate: systematic spelling_enum.py+sweep_variants.py sweep of the never-before-targeted sin_p/cos_p/scale/x/z block found a real reordering win, dropping the honest floor 48 -> 42/204 (build_i",
    "consumed": null
   }
  ]

@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 13,
- "current_modality": "structural",
+ "session_count": 14,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -81,13 +81,29 @@
    "floor": 48,
    "modality": "structural",
    "headline": "s13 structural: re-confirmed floor 48/204 fresh (sandbox measured this session), named the s12 frame-delta pseudo (reg149 = 0x3D0900 flags==4 threshold constant, spilled per .greg dump), found the dou"
+  },
+  {
+   "session": 14,
+   "floor": 42,
+   "modality": "enumerate",
+   "headline": "s14 enumerate: systematic spelling_enum.py+sweep_variants.py sweep of the never-before-targeted sin_p/cos_p/scale/x/z block found a real reordering win, dropping the honest floor 48 -> 42/204 (build_i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The double-bind means the next lever is NOT another respelling of the threshold comparison (that family is now closed -- 3/3 killed this session, consistent with the i*2 index family's 6 prior kills) but a C change that reduces register PRESSURE elsewhere in the loop body (lowering `n_non_fixed_regs`, and hence loop.c:532's `threshold`) without touching insn_count or the threshold comparison at all.",
-   "mechanism": "loop.c:532 computes threshold = (loop_has_call?1:2)*(1+n_non_fixed_regs); lowering n_non_fixed_regs shrinks threshold directly, which could flip move_movables:1631's `threshold*savings*lifetime >= insn_count` comparison to reject the constant hoist WITHOUT perturbing insn_count (and thus without touching strength_reduce's separate, insn_count-gated $fp-accumulator decision at loop.c:3823).",
-   "next_probe": "Read the .greg dump's conflict list (tmp/grind/func_80056CB8/dumps/text1b.greg lines ~14791-14812) for which of the ~20 pseudos in this loop (obj/sin_p/cos_p/scale/x/z/flags and the two func_80053614 call results) has the largest conflict set, and try narrowing/shortening its live range (earlier death, narrower type, or splitting a multi-role pseudo) as a genuine, semantically-motivated C change -- then re-check BOTH the reg149 spill (still 'Spilling reg 11'/'Spilling reg 65'?) and the strength-reduction verdict (does classify's PRE-RA verdict on the i*2 givs change?) in the same session, since the double-bind means either could move."
+   "hypothesis": "The s13 double-bind evidence (loop.c move_movables vs strength_reduce, both gated on insn_count=164) may have shifted now that insn_count dropped by 1 real instruction (198 -> 197) from the s14 reorder win.",
+   "mechanism": "loop.c:532 threshold formula and loop.c:1631/3823's insn_count-gated cost comparisons, both keyed to the SAME insn_count quantity per s13's finding",
+   "next_probe": "Re-run pwsh tools/grinder/dump.ps1 func_80056CB8 fresh against the new 42/197 chassis (v04 body applied) and re-check both double-bind indicators: does the .greg dump still show 'Spilling reg 11'/'Spilling reg 65'? Does inverse_compose.py classify's PRE-RA verdict on the i*2 givs change?"
+  },
+  {
+   "hypothesis": "The pt0/pt1 array-fill blocks (currently opaque to spelling_enum.py because 'pt0[0] = ...;' doesn't match the tool's bare-identifier assign regex, so they parse as fixed-order anchors) may have their own untried reorder/pairing gradient.",
+   "mechanism": "same statement-order-dependent codegen class as the s14 win, unmeasured for indexed-LHS statements",
+   "next_probe": "Either teach spelling_enum.py to parse 'name[idx] = expr;' as a reorderable assign (tool enhancement), or hand-sweep the two 3-store pt0/pt1 blocks' relative statement order (interleaved vs batched, pt0-then-pt1 vs pt1-then-pt0) via direct sandbox measurements."
+  },
+  {
+   "hypothesis": "The dx/dz/y flags==4-tail declarations, exhaustively killed for spelling gradient by s9, were measured on the OLD 58/198 chassis -- re-verify flatness now that insn_count moved with the s14 win.",
+   "mechanism": "same insn_count-linked double-bind concern as frontier item 1, applied to the s9 kill instead of a new probe",
+   "next_probe": "Re-run the s9 5-variant dx/dz-declaration-order sweep (or its spelling_enum.py equivalent) against the s14 42/197 chassis and confirm the kill still holds before spending further sessions on that region."
   }
  ],
  "judge_constraints": [],
@@ -260,6 +276,14 @@
    "measured_on": "s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement",
    "predicate_cite": "",
    "result": "score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline. No gradient."
+  },
+  {
+   "session": 14,
+   "statement": "Re-sweeping the same sin_p/cos_p/scale/x/z region with the commutative-operand-swap axis added (32 variants) finds no further improvement below 42/197 -- the order+swap spelling space for this specifi",
+   "kill_scope": "instance",
+   "measured_on": "s14 chassis (v04-applied sin_p/scale/x/cos_p/z reordering + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh in-session sweep of all 32 order+swap variants for this exact reg",
+   "predicate_cite": "",
+   "result": "Best score across all 32 variants (plus baseline) is 42/197, tied by 4 variants including the already-adopted v04 shape;"
   }
  ],
  "ladder_skip": 0,

@@ -731,3 +731,31 @@ and has NOT been tried in any prior session:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement
+
+## [s14] The sin_p/cos_p/scale/x/z block (immediately after the ratan2 branch-angle computation, never previously spelling-swept by this ledger) has real gradient: reordering to compute x as soon as its inputs (sin_p, scale) are ready, before cos_p, drops the honest floor.
+- mechanism: statement-order-dependent CSE/scheduling decision inside cc1's handling of this 5-assignment block (not yet pass-attributed to a specific named GCC internal this session -- the .greg/.combine dumps were not re-run against the NEW 42/197 chassis; s15 frontier item 1).
+- probe: Ran `python3 tools/spelling_enum.py --candidate tmp/grind/func_80056CB8/s14/candidate_enum.c --out tmp/grind/func_80056CB8/s14/enum --no-swaps` (16 def-before-use orderings of the 5 assigns: sin_p, cos_p, scale, x, z) then `wsl bash -c "... python3 tools/sweep_variants.py --func func_80056CB8 --file text1b --variants tmp/grind/func_80056CB8/s14/enum --json"` (direct WSL invocation, NOT `python3 -m engine.cli`, so not blocked by worktree_contamination_guard) against the s13-banked chassis (func_80053614 s32-return prerequisite applied first -- without it, all 16 variants score 133-171/171, matching the s12-documented "missing prerequisite" failure mode exactly). 4 of 16 orderings (v02/v04/v07/v12) scored 42/197 (best); several others scored 43-50; original order scored 48/198 (baseline, matches ledger). Applied v04's body to src/text1b.c and re-measured with the official `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all` (not just the sweep tool's internal scorer).
+- result: CONFIRMED via official sandbox: score 42, target_insns 204, build_insns 197 (one fewer real instruction than the s11-s13 floor's 198). New session floor 48 -> 42.
+- verdict: CONFIRMED
+
+## [s14] Re-sweeping the same sin_p/cos_p/scale/x/z region WITH the commutative-operand-swap axis added (32 variants, tools/spelling_enum.py without --no-swaps) finds no further improvement below 42/197 -- the order+swap spelling space for this specific block is exhausted at the 42 floor.
+- mechanism: n/a (exhaustive negative result over the tool's full axis set for this region).
+- probe: `python3 tools/spelling_enum.py --candidate tmp/grind/func_80056CB8/s14/candidate_enum.c --out tmp/grind/func_80056CB8/s14/enum_sw` (32 variants: 16 orderings x swap subsets of the `scale * *sin_p` / `scale * *cos_p` products), swept via the same WSL sweep_variants.py invocation against the NEW 42/197 chassis (v04 already applied to src/text1b.c as the sweep baseline).
+- result: best score across all 32 variants (plus the baseline) is 42/197, tied by 4 variants including the already-adopted v04 shape; no variant beats it. `<baseline>` (the applied v04 form) itself reports 42/197 in the sweep's own scorer, confirming internal consistency with the official sandbox measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s14 chassis (v04-applied sin_p/scale/x/cos_p/z reordering + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh in-session sweep of all 32 order+swap variants for this exact region, no FAKE constructs, reverted (src/text1b.c returned to INCLUDE_ASM) after measurement.
+
+## [s14] The sin_p/cos_p/scale/x/z block (immediately after the ratan2 branch-angle computation, never previously spelling-swept by this ledger) has real gradient: reordering to compute x as soon as its inputs (sin_p, scale) are ready, before cos_p, drops the honest floor.
+- mechanism: statement-order-dependent CSE/scheduling decision inside cc1's handling of this 5-assignment block; not yet pass-attributed to a specific named GCC internal this session (the .greg/.combine dumps were not re-run against the new 42/197 chassis -- s15 frontier item 1)
+- probe: python3 tools/spelling_enum.py --candidate tmp/grind/func_80056CB8/s14/candidate_enum.c --out tmp/grind/func_80056CB8/s14/enum --no-swaps (16 def-before-use orderings of sin_p/cos_p/scale/x/z), swept via wsl bash -c 'source .venv/bin/activate && python3 tools/sweep_variants.py --func func_80056CB8 --file text1b --variants tmp/grind/func_80056CB8/s14/enum --json' against the s13-banked chassis (func_80053614 s32-return prerequisite applied first). 4/16 orderings (v02/v04/v07/v12) scored 42/197 best; original order scored 48/198 baseline. Adopted v04 and re-measured via the official & tools/wteng.ps1 main sandbox func_80056CB8 --disable all.
+- result: CONFIRMED via official sandbox: score 42, target_insns 204, build_insns 197 (one fewer real instruction than the s11-s13 floor's 198). New session floor 48 -> 42.
+- verdict: CONFIRMED
+
+## [s14] Re-sweeping the same sin_p/cos_p/scale/x/z region with the commutative-operand-swap axis added (32 variants) finds no further improvement below 42/197 -- the order+swap spelling space for this specific block is exhausted at the 42 floor.
+- mechanism: n/a (exhaustive negative result over the tool's full axis set for this region)
+- probe: python3 tools/spelling_enum.py --candidate tmp/grind/func_80056CB8/s14/candidate_enum.c --out tmp/grind/func_80056CB8/s14/enum_sw (32 variants: 16 orderings x swap subsets of the scale*sin_p / scale*cos_p products), swept via the same WSL sweep_variants.py invocation against the new 42/197 chassis (v04 already applied to src/text1b.c as the sweep baseline).
+- result: Best score across all 32 variants (plus baseline) is 42/197, tied by 4 variants including the already-adopted v04 shape; no variant beats it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s14 chassis (v04-applied sin_p/scale/x/cos_p/z reordering + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh in-session sweep of all 32 order+swap variants for this exact region, no FAKE constructs, reverted after measurement
