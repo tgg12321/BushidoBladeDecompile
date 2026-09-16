@@ -1391,11 +1391,28 @@ while ($true) {
     # and contaminated templates cost whole sessions (s5 func_80017848; the
     # 27-vs-22 / 57-vs-26 stale-queue exhibits). Best-effort: a failed
     # measurement degrades to 'unavailable', never blocks dispatch.
+    # 2026-09-16: this check was INERT from the day it shipped. It grepped for a
+    # `"distance"` key that `sandbox` has never emitted (that key belongs to
+    # queue.py / canonical.py; sandbox emits `"score"`), so $headFloor was always
+    # '' and every brief for four weeks read "measurement unavailable" under a
+    # heading that says "trust THIS number".
+    #
+    # Worse, its PREMISE expired one day after it was built: asm-until-matched
+    # (2026-08-19) made main carry INCLUDE_ASM for every incomplete function, so
+    # measuring main now answers "how big is this function", not "is the ledger's
+    # floor still real" — the two always differ and a naive fix would false-alarm
+    # on every dispatch. So measure the LEDGER'S OWN candidate.c instead, against
+    # a copy of the src (main is never touched). That is the number the ledger
+    # floor claims, and comparing them is what catches a void chassis:
+    # _SsVmInit s2+s3 both ground toward a banked floor of 19 that s4 found did
+    # not reproduce (fresh chassis measured 38).
     $headFloor = ''
+    $candPath = Join-Path $Root "memory/grind/$func/candidate.c"
     try {
-        $sb = (& tools/wteng.ps1 main sandbox $func --disable all 2>&1 | Out-String)
-        if ($sb -match '"distance"\s*:\s*(\d+)') { $headFloor = $Matches[1] }
-        elseif ($sb -match 'distance[^0-9]*([0-9]+)') { $headFloor = $Matches[1] }
+        $sbArgs = @('sandbox', $func, '--disable', 'all')
+        if (Test-Path $candPath) { $sbArgs += @('--candidate', "memory/grind/$func/candidate.c") }
+        $sb = (& tools/wteng.ps1 main @sbArgs 2>&1 | Out-String)
+        if ($sb -match '"score"\s*:\s*(\d+)') { $headFloor = $Matches[1] }
     } catch { }
     python tools/grinder/grindlib.py brief . $func $modality $outPath $headFloor | Set-Content $briefPath -Encoding utf8
     # Respawn feedback (2026-08-07 circuit-break class fix): a discarded session's

@@ -1727,6 +1727,54 @@ def test_prologue_cheat() -> None:
             cheats.PROLOGUE_CONFIG, cheats.DELAY_SLOT_RA, cheats.FRAME_FIX = orig
 
 
+def test_substitute_body() -> None:
+    """Swapping a candidate body into a copy of the source — the mechanism the
+    chassis check needs to re-measure a banked floor.
+
+    Motivation: the driver's chassis check shipped 2026-08-18 grepping for a
+    `"distance"` key sandbox never emitted, AND its premise expired the next day
+    when asm-until-matched made main carry INCLUDE_ASM for every incomplete
+    function. Scoring main answers 'how big is this function'; only scoring the
+    candidate answers 'is the ledger floor still real'."""
+    body = "s32 func_X(void)\n{\n    return 1;\n}\n"
+
+    # 1. The asm-until-matched representation: the INCLUDE_ASM line AND its
+    #    trailing semicolon are replaced, leaving no stray `;`.
+    src = 'extern int g;\nINCLUDE_ASM("asm/funcs", func_X);\nvoid after(void) {}\n'
+    out = inlineasm.substitute_body(src, "func_X", body)
+    check("substitute_body: INCLUDE_ASM line is gone", "INCLUDE_ASM" not in out)
+    check("substitute_body: candidate body is present", "return 1;" in out)
+    check("substitute_body: no orphaned semicolon", ";\nvoid after" not in out)
+    check("substitute_body: surrounding text survives",
+          out.startswith("extern int g;") and out.rstrip().endswith("void after(void) {}"))
+
+    # 2. Only the NAMED function is replaced when several are present.
+    two = ('INCLUDE_ASM("asm/funcs", func_A);\n'
+           'INCLUDE_ASM("asm/funcs", func_X);\n')
+    out = inlineasm.substitute_body(two, "func_X", body)
+    check("substitute_body: sibling INCLUDE_ASM untouched",
+          'INCLUDE_ASM("asm/funcs", func_A);' in out and "func_X);" not in out)
+
+    # 3. An existing C definition is replaced whole, with nothing eaten after
+    #    the closing brace (the _match_brace span end is EXCLUSIVE — an
+    #    off-by-one here silently deletes the next character).
+    csrc = "s32 func_X(void)\n{\n    return 0;\n}\nint tail = 7;\n"
+    out = inlineasm.substitute_body(csrc, "func_X", body)
+    check("substitute_body: old C body replaced", "return 0;" not in out)
+    check("substitute_body: new body present", "return 1;" in out)
+    eq("substitute_body: trailing declaration intact (no off-by-one)",
+       out.count("int tail = 7;"), 1)
+    check("substitute_body: no truncated tail", out.rstrip().endswith("int tail = 7;"))
+
+    # 4. A function that is in NEITHER form must raise, not silently no-op —
+    #    a silent no-op would score main and report it as the candidate's floor.
+    try:
+        inlineasm.substitute_body("int unrelated;\n", "func_X", body)
+        check("substitute_body: absent function raises", False)
+    except KeyError:
+        check("substitute_body: absent function raises", True)
+
+
 def test_include_asm_whole_body() -> None:
     """A whole-body INCLUDE_ASM must never read as clean, pure-C, or complete.
 
@@ -2787,6 +2835,7 @@ def main() -> int:
     test_memo_and_rule_index_caches()
     test_lowercase_asm_cheats()
     test_macro_asm_strip_round_trip()
+    test_substitute_body()
     test_include_asm_whole_body()
     test_canonical_completion_is_the_drop()
     test_volatile_unused_locals()

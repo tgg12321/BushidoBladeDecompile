@@ -97,6 +97,12 @@ def main() -> int:
     sbp.add_argument("--keep-cheat-asm", action="store_true",
                      help="do NOT strip cheat-asm pins/inline-asm (default: stripped, "
                           "so the score is the honest pure-C COMPLETED-C distance)")
+    sbp.add_argument("--candidate", default="", metavar="FILE",
+                     help="score FILE's body substituted in for <func>, against a "
+                          "COPY of the src (main is never touched). Since "
+                          "asm-until-matched, main carries INCLUDE_ASM for every "
+                          "incomplete function, so this is how a banked "
+                          "candidate.c floor is re-measured")
     sbp.add_argument("--diff", action="store_true",
                      help="also print WHERE it differs: the target-vs-ours instruction "
                           "diff, each hunk classed operand-only (reg-alloc) or "
@@ -209,7 +215,8 @@ def main() -> int:
 
     if a.cmd == "sandbox":
         r = SB.sandbox_score(a.func, disable=a.disable,
-                             strip_cheat_asm=not a.keep_cheat_asm)
+                             strip_cheat_asm=not a.keep_cheat_asm,
+                             candidate=a.candidate)
         print(json.dumps(r, indent=2))
         # The diff is printed, never folded into `r`: metrics.record_event
         # persists `payload: result` verbatim into the committed

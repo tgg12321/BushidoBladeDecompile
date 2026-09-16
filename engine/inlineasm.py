@@ -381,14 +381,49 @@ def strip_cheat_asm_file(text: str) -> tuple[str, int]:
     return text, n_cheat_asm + n_vol
 
 
-def write_stripped(stem: str, out_path: str) -> int:
+def write_stripped(stem: str, out_path: str, source_text: str | None = None) -> int:
     """Write src/<stem>.c with cheat-asm, register hints, and volatile coercion
-    cheats stripped to out_path. Returns the count of stripped constructs."""
-    text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
+    cheats stripped to out_path. Returns the count of stripped constructs.
+
+    `source_text` overrides what is read from disk, so a caller can substitute a
+    candidate body first and still get the cheat-strip applied to the RESULT —
+    the order matters: a candidate carrying cheats must not score as if it had
+    none."""
+    text = (source_text if source_text is not None
+            else Path(f"src/{stem}.c").read_text(encoding="utf-8"))
     stripped, n = strip_cheat_asm_file(text)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     Path(out_path).write_text(stripped)
     return n
+
+
+def substitute_body(text: str, func: str, new_body: str) -> str:
+    """Return `text` with `func`'s definition replaced by `new_body`.
+
+    Handles both representations a function can have on main: the
+    `INCLUDE_ASM("asm/funcs", func);` line that every INCOMPLETE function
+    carries since asm-until-matched (owner ruling 2026-08-19), and an existing
+    C definition. Raises KeyError when neither is present, because silently
+    appending or no-op'ing would produce a score for something other than what
+    the caller asked about — the exact class of lie this exists to detect."""
+    for name, start, end in include_asm_spans(text):
+        if name == func:
+            # The macro invocation carries a trailing `;` the span excludes.
+            tail = end
+            while tail < len(text) and text[tail] in " \t":
+                tail += 1
+            if tail < len(text) and text[tail] == ";":
+                end = tail + 1
+            return text[:start] + new_body.rstrip("\n") + text[end:]
+    span = _func_body_span(text, func)
+    if span is None:
+        raise KeyError(
+            f"{func} has neither an INCLUDE_ASM line nor a C definition in this "
+            f"source — cannot substitute a candidate body for it")
+    # _match_brace returns the index JUST PAST '}', so span[1] is exclusive
+    # (pinned by func_cheat_asm_count's `lo <= s < hi`). Slicing at span[1]+1
+    # would swallow the character after the body.
+    return text[:span[0]] + new_body.rstrip("\n") + text[span[1]:]
 
 
 def _func_body_span(text: str, func: str) -> tuple[int, int] | None:

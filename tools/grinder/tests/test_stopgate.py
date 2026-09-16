@@ -124,5 +124,45 @@ class StopGateCase(unittest.TestCase):
         self.assertIn("REJECTED by the driver", self.gate())
 
 
+class ChassisCheckParseCase(unittest.TestCase):
+    """The driver parses `sandbox` stdout for the chassis check. NOTHING ever
+    checked that the two agreed, and they didn't: grind.ps1 grepped for a
+    `"distance"` key sandbox has never emitted (it emits `"score"`), so
+    $headFloor was always empty and every brief from 2026-08-18 to 2026-09-16
+    read 'measurement unavailable' under a heading saying 'trust THIS number'.
+
+    These pin the contract from both ends so it cannot rot again silently.
+    """
+
+    def test_sandbox_result_carries_the_key_the_driver_greps(self):
+        sys.path.insert(0, ROOT)
+        from engine import sandbox  # noqa: E402
+        import inspect
+        src = inspect.getsource(sandbox.sandbox_score)
+        self.assertIn('"score"', src.replace("'", '"'),
+                      "sandbox_score must produce a 'score' key")
+        self.assertNotIn('"distance"', src.replace("'", '"'),
+                         "sandbox has no 'distance' key -- if that changes, "
+                         "grind.ps1's chassis-check regex must change with it")
+
+    def test_driver_regex_matches_real_sandbox_output(self):
+        import re
+        grind_ps1 = os.path.join(ROOT, "tools", "grinder", "grind.ps1")
+        with open(grind_ps1, encoding="utf-8") as f:
+            driver = f.read()
+        self.assertIn(r'''if ($sb -match '"score"\s*:\s*(\d+)')''', driver,
+                      "the chassis check must grep the key sandbox emits")
+        # A representative sandbox stdout, banner included.
+        out = (r'[wteng] target=main  root=C:\repo' + '\n'
+               '{\n  "score": 38,\n  "scorable": true,\n  "target_insns": 200,\n'
+               '  "func": "_SsVmInit",\n  "file": "main"\n}\n')
+        m = re.search(r'"score"\s*:\s*(\d+)', out)
+        self.assertIsNotNone(m, "the regex must match real sandbox stdout")
+        self.assertEqual(m.group(1), "38")
+        self.assertIsNone(re.search(r'"distance"\s*:\s*(\d+)', out),
+                          "the OLD regex must be shown not to match -- this is "
+                          "the bug being regressed")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

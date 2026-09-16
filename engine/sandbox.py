@@ -42,7 +42,16 @@ def func_file(func: str) -> str:
 
 
 def sandbox_score(func: str, disable: str = "lost-codegen",
-                  strip_cheat_asm: bool = False, workdir: str = "tmp/sandbox") -> dict:
+                  strip_cheat_asm: bool = False, workdir: str = "tmp/sandbox",
+                  candidate: str = "") -> dict:
+    """`candidate` = a file holding a replacement body for `func`. It is
+    substituted into a COPY of src/<stem>.c in the workdir — main is never
+    touched — so a banked candidate can be measured without mutating the tree.
+
+    This is what makes the ledger floor auditable: since asm-until-matched
+    (2026-08-19) main carries INCLUDE_ASM for every incomplete function, so
+    scoring main answers "how big is the function", not "does the banked
+    candidate still measure its recorded floor"."""
     stem = func_file(func)
     wd = Path(workdir) / func
     if disable == "all" and strip_cheat_asm:
@@ -62,11 +71,24 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
     else:
         ov = cheats.make_overrides(func, disable, str(wd / "cfg"))
     cheat_asm_stripped = 0
+    cand_text = None
+    if candidate:
+        from . import inlineasm
+        base = Path(f"src/{stem}.c").read_text(encoding="utf-8")
+        body = Path(candidate).read_text(encoding="utf-8")
+        cand_text = inlineasm.substitute_body(base, func, body)
     if strip_cheat_asm:
         from . import inlineasm
         src_ovr = str(wd / "src" / f"{stem}.c")
-        cheat_asm_stripped = inlineasm.write_stripped(stem, src_ovr)
+        # Substitute FIRST, strip SECOND: a candidate carrying cheat-asm must
+        # not score as though it were clean.
+        cheat_asm_stripped = inlineasm.write_stripped(stem, src_ovr, cand_text)
         ov["src_override"] = src_ovr
+    elif cand_text is not None:
+        src_ovr = Path(wd / "src" / f"{stem}.c")
+        src_ovr.parent.mkdir(parents=True, exist_ok=True)
+        src_ovr.write_text(cand_text)
+        ov["src_override"] = str(src_ovr)
     disabled_o = str(wd / f"{stem}.o")
     pipeline.build_c_object(stem, disabled_o, cheat_overrides=ov)
     reference_o = f"build/src/{stem}.o"
@@ -88,7 +110,11 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
         #     stripping shifted maspsx indices (see
         #     .claude/rules/jtbl-rodata-split-infrastructure.md). Unscorable.
         no_c_body = False
-        if strip_cheat_asm:
+        # With a candidate substituted the function DOES have C — reading
+        # src/<stem>.c here would see main's INCLUDE_ASM and wrongly report the
+        # full instruction count as an honest score, hiding a broken candidate
+        # behind a plausible number.
+        if strip_cheat_asm and cand_text is None:
             from . import inlineasm
             try:
                 src_text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
@@ -110,6 +136,10 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
     res.update(func=func, file=stem, disable=disable, strip_cheat_asm=strip_cheat_asm,
                rules_dropped=ov["dropped"], cheat_asm_stripped=cheat_asm_stripped,
                disabled_o=disabled_o)
+    if candidate:
+        # Provenance: a score measured against a substituted body must never be
+        # mistaken for a score of what is on main.
+        res["candidate"] = candidate
     return res
 
 

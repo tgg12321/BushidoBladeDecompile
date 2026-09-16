@@ -3005,12 +3005,21 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
         sib_progress = ""
     last_floor = next((e.get("floor") for e in reversed(st["floor_history"])
                        if isinstance(e.get("floor"), int)), None)
+    chassis_warn = ""
+    if head_floor and last_floor is not None and str(head_floor) != str(last_floor):
+        chassis_warn = (
+            f"*** CHASSIS DISCONTINUITY: the banked candidate measures {head_floor}, "
+            f"the ledger claims {last_floor}. ***\n"
+            f"The ledger floor is VOID. Every banked spelling conclusion is "
+            f"chassis-relative, so the\nkills and frontier below were reasoned against a "
+            f"chassis that no longer reproduces —\nre-measure before spending any of them, "
+            f"and work from {head_floor}.\n")
     chassis = (f"\n## CHASSIS CHECK (driver-measured at dispatch — trust THIS number)\n"
-               f"HEAD honest floor right now: {head_floor or 'measurement unavailable'}\n"
+               f"memory/grind/{func}/candidate.c measures RIGHT NOW: "
+               f"{head_floor or 'measurement unavailable'}\n"
                f"Ledger's last recorded floor: {last_floor if last_floor is not None else '(none)'}\n"
-               f"If these differ, the chassis has changed since the ledger entry: every banked\n"
-               f"spelling conclusion is chassis-relative and MUST be re-measured before it is\n"
-               f"spent. Do not quote the ledger floor to the Judge; quote this one.\n")
+               f"{chassis_warn}"
+               f"Do not quote the ledger floor to the Judge; quote the measured one.\n")
     try:
         scopes = render_rule_scopes(cited_rule_scopes(root, func))
     except Exception:
