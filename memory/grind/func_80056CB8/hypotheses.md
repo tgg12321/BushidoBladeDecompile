@@ -2226,3 +2226,47 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s47 re-audit of s46's func_8006CCC8 cross-reference check, no build measurement needed (structural non-overlap already established by grep)
+
+## [s48, enumerate] Swapping the statement order of the two post-call `if (flags != 0) { x += ...; z += ...; }` adjustments (z-then-x instead of x-then-z) changes codegen and is worse than the baseline order.
+- mechanism: statement-order-dependent scheduling/allocation decision inside cc1 for this two-statement independent-adjustment block; untested axis (grepped the ledger for "x +=" / "z +=" order tests before running -- none found across s1-s47).
+- probe: Applied the s22-s47-banked candidate.c body to src/text1b.c (func_80053614 s32-return prerequisite + array-form D_8009A820/D_8009A821 externs, scalar externs at :2183-2184 temporarily dropped for the measurement) with the block reordered to `z += (*cos_p * 0x7D) >> 8; x += (*sin_p * 0x7D) >> 8;`; measured via `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`; reverted and re-measured the original x-then-z order to confirm the baseline reproduces exactly.
+- result: z-then-x scores 45/204 (198 build insns, same instruction count as baseline) vs the original x-then-z order's 38/204 (198 build insns) -- confirmed baseline reproduction, then the swap measured strictly worse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s48 chassis: candidate.c s22-s47-banked body + func_80053614 s32-return prerequisite + D_8009A820/D_8009A821 array-form externs (scalar externs at text1b.c:2183-2184 temporarily removed for this measurement only, restored before session end), zero FAKE constructs present, engine/sandbox.py --disable all
+
+## [s48, enumerate] Introducing a named intermediate `s32 dy0 = hit1[1] - *(s32 *)(obj + 0xBC);` for the flags==3 arm's guard condition (replacing the inline expression) is byte-neutral but confers no advantage.
+- mechanism: named-intermediate declaration-order axis (per the SOTN new_var_temp class, [[no-new-park-categories]] SOTN-accepted list) applied to a block never previously tested this way in this ledger (grepped for "hit1[1]" + "flags == 3" order/naming tests before running -- none found).
+- probe: Applied the s22-s47-banked candidate.c body to src/text1b.c with the flags==3 guard rewritten as `s32 dy0 = hit1[1] - *(s32 *)(obj + 0xBC); if (dy0 < 5) { flags = 0; }`; measured via sandbox --disable all on the same chassis as the x/z-order probe above.
+- result: score 38/204 (198 build insns) -- exact tie with the inline-form baseline. Ordinary C, no FAKE needed (real value, once-written, single read), but no closing advantage; not adopted into candidate.c (kept the simpler inline form per the pipeline's simplest-known-form tiebreak, [[ordinary-c-judge-decidable]] Ruling 1(4)).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s48 chassis: candidate.c s22-s47-banked body + func_80053614 s32-return prerequisite + D_8009A820/D_8009A821 array-form externs (scalar externs temporarily removed for the measurement, restored before session end), zero FAKE constructs present, engine/sandbox.py --disable all
+
+## [s48, enumerate] MANDATORY KILL RE-AUDIT: the s22-s47-banked candidate.c body, freshly re-spliced onto the current src/text1b.c HEAD, reproduces the ledger's recorded 38/204 floor exactly, with no FAKE construct present to ablate.
+- mechanism: n/a -- direct re-measurement per the ledger's KILL RE-AUDIT REQUIRED instruction, since no FAKE-annotated construct exists in this candidate for tools/fake_ablate.py to act on (same situation the s17 re-audit already documented for this ledger).
+- probe: Re-spliced the candidate.c body + func_80053614 s32-return prerequisite + array-form externs onto a fresh src/text1b.c checkout, measured via sandbox --disable all before running any new probe this session.
+- result: score 38/204 (198 build insns), exact match to the ledger's recorded floor.
+- verdict: CONFIRMED
+
+## [s48] The s22-s47-banked candidate.c body, freshly re-spliced onto the current src/text1b.c HEAD (func_80053614 s32-return prerequisite + array-form D_8009A820/D_8009A821 externs), reproduces the ledger's recorded 38/204 floor exactly, with no FAKE construct present to ablate.
+- mechanism: n/a -- direct re-measurement per the ledger's mandatory kill re-audit instruction; no FAKE-annotated construct exists in this candidate for tools/fake_ablate.py to act on (same situation as the s17 precedent).
+- probe: Re-spliced candidate.c onto a fresh src/text1b.c checkout and measured via & tools/wteng.ps1 main sandbox func_80056CB8 --disable all before running any new probe this session.
+- result: score 38/204 (198 build insns), exact match to the ledger's recorded floor.
+- verdict: CONFIRMED
+
+## [s48] Swapping the statement order of the two post-call adjustments (`if (flags != 0) { x += (*sin_p*0x7D)>>8; z += (*cos_p*0x7D)>>8; }`) to z-then-x instead of x-then-z changes codegen and is worse than the baseline order.
+- mechanism: statement-order-dependent scheduling/allocation decision inside cc1 for this two-statement independent-adjustment block; untested axis (grepped the ledger for x+=/z+= order tests before running -- none found across s1-s47).
+- probe: Applied the s22-s47-banked candidate.c body to src/text1b.c with the block reordered z-then-x, measured via sandbox --disable all; reverted to x-then-z and re-measured to confirm baseline reproduction.
+- result: z-then-x scores 45/204 (198 build insns, same instruction count) vs the original x-then-z order's confirmed 38/204 (198 build insns) -- strictly worse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s48 chassis: candidate.c s22-s47-banked body + func_80053614 s32-return prerequisite + D_8009A820/D_8009A821 array-form externs (scalar externs at text1b.c:2183-2184 temporarily removed for the measurement only, restored before session end), zero FAKE constructs present, engine/sandbox.py --disable all
+
+## [s48] Introducing a named intermediate `s32 dy0 = hit1[1] - *(s32 *)(obj + 0xBC);` for the flags==3 arm's guard condition (replacing the inline expression) is byte-neutral but confers no advantage over the simpler inline form.
+- mechanism: named-intermediate declaration-order axis (SOTN new_var_temp class, no-new-park-categories.md SOTN-accepted list) applied to a block never previously tested this way in this ledger (grepped for hit1[1]/flags==3 order/naming tests before running -- none found).
+- probe: Applied the s22-s47-banked candidate.c body with the flags==3 guard rewritten as `s32 dy0 = hit1[1] - *(s32 *)(obj + 0xBC); if (dy0 < 5) { flags = 0; }`, measured via sandbox --disable all on the same chassis as the x/z-order probe.
+- result: score 38/204 (198 build insns) -- exact tie with the inline-form baseline; ordinary C, no FAKE needed, but no closing advantage. Not adopted into candidate.c (kept simpler inline form per the pipeline's simplest-known-form tiebreak).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s48 chassis: candidate.c s22-s47-banked body + func_80053614 s32-return prerequisite + D_8009A820/D_8009A821 array-form externs (scalar externs temporarily removed for the measurement, restored before session end), zero FAKE constructs present, engine/sandbox.py --disable all

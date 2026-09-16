@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 47,
- "current_modality": "structural",
+ "session_count": 48,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -285,39 +285,24 @@
    "floor": 38,
    "modality": "structural",
    "headline": "s47 structural: re-confirmed fresh floor 38/204; two new dispatch-restructure probes on the s46 frontier item both KILLED (scalar-cache sin_p/cos_p worse at 76; angle/flags split byte-neutral tie at 3"
+  },
+  {
+   "session": 48,
+   "floor": 38,
+   "modality": "enumerate",
+   "headline": "s48 enumerate: mandatory kill re-audit reproduced 38/204 fresh; two new spelling probes (x/z post-call order swap; flags==3 named-intermediate) both killed/tied, exhausting the identified spelling spa"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural change elsewhere in the loop body (not the index arithmetic, not the loop bound, and evidently not a pointer-vs-scalar swap on the Judge-table results or a rename-split of the reused flags variable) could still shrink real-insn count or register pressure enough to flip loop.c:3823's strength-reduce rejection inequality.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried through s47 (loop-bound rewrites, sin_p/cos_p scalar-caching, flags/angle split) failed or tied, all constrained by register pressure from the two func_80053614 calls (class-killed as unremovable, s41).",
-   "next_probe": "No new candidate C shape identified this session. The two general axes now explored (loop-bound spelling s46; pointer-vs-scalar and variable-split dispatch restructuring s47) are exhausted for this frontier item without closing it. A future session should pull a fresh RTL/.greg dump (per PASS ATTRIBUTION guidance) on the CURRENT baseline chassis specifically around the func_80053614 call sites to see which pseudo(s) are actually conflicting, rather than continuing to guess restructuring shapes blind."
-  },
-  {
-   "hypothesis": "The s45 LADDER EXHAUSTED / ROTATED disposition (floor 38, non-endgame residual) should be re-evaluated given the sandbox fix (s46) plus this session's two additional negative structural results.",
-   "mechanism": "n/a -- process note, not a codegen hypothesis.",
-   "next_probe": "A future `escalation`-modality session should note both the sandbox fix and this session's two structural kills in its gate re-evaluation; neither closes either endgame-lock gate on its own (scan tier is still LOW per s45, no SOTN precedent found for the ordinary-C restructuring still needed) -- but the negative evidence continues to narrow the frontier for whoever eventually re-runs the RTL-dump-guided probe above."
+   "hypothesis": "A structural change elsewhere in the loop body (not the index arithmetic, not the loop bound, not the pointer-vs-scalar Judge-table axis, not the flags/angle split, not the x/z post-call order, not the flags==3 named-intermediate) could still shrink real-insn count or register pressure enough to flip loop.c:3823's strength-reduce rejection inequality.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried through s48 has failed or tied, constrained by register pressure from the two func_80053614 calls (class-killed as unremovable, s41).",
+   "next_probe": "A future forensics/solver-modality session should pull a fresh RTL/.greg dump on the CURRENT baseline chassis specifically around the func_80053614 call sites to identify which pseudo(s) are actually conflicting, rather than continuing to guess restructuring shapes blind (this session's enumerate probes exhausted the currently-identified spelling space without closing it)."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 14,
-   "statement": "Re-sweeping the same sin_p/cos_p/scale/x/z region with the commutative-operand-swap axis added (32 variants) finds no further improvement below 42/197 -- the order+swap spelling space for this specifi",
-   "kill_scope": "instance",
-   "measured_on": "s14 chassis (v04-applied sin_p/scale/x/cos_p/z reordering + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh in-session sweep of all 32 order+swap variants for this exact reg",
-   "predicate_cite": "",
-   "result": "Best score across all 32 variants (plus baseline) is 42/197, tied by 4 variants including the already-adopted v04 shape;"
-  },
-  {
-   "session": 15,
-   "statement": "Reordering the pt0[]/pt1[] array-fill statements in the pre-func_80053614-call blocks (batch-pt0-then-pt1 vs pt1-then-pt0, interleaved pt0/pt1-first, or reversed intra-triple order, applied to either ",
-   "kill_scope": "instance",
-   "measured_on": "s15 chassis (s14-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh sandbox measurement per variant, no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "All 10 variants scored >= 44 (worst 79), strictly worse than the 42/197 baseline; 2 variants raised build_insns to 199. "
-  },
   {
    "session": 15,
    "statement": "The dx/dz declaration-order spelling space in the flags==4 tail (inline vs named, both declaration orders \u2014 5 distinct spellings) is still flat at 42/204 on the s14-derived 42/197 chassis, re-verified",
@@ -781,6 +766,22 @@
    "measured_on": "s47 re-audit of s46's func_8006CCC8 cross-reference check, no build measurement needed (structural non-overlap already established by grep)",
    "predicate_cite": "",
    "result": "No new grep or evidence contradicts s46's finding this session; directive remains acknowledged with nothing to transplan"
+  },
+  {
+   "session": 48,
+   "statement": "Swapping the statement order of the two post-call adjustments (`if (flags != 0) { x += (*sin_p*0x7D)>>8; z += (*cos_p*0x7D)>>8; }`) to z-then-x instead of x-then-z changes codegen and is worse than th",
+   "kill_scope": "instance",
+   "measured_on": "s48 chassis: candidate.c s22-s47-banked body + func_80053614 s32-return prerequisite + D_8009A820/D_8009A821 array-form externs (scalar externs at text1b.c:2183-2184 temporarily removed for the measur",
+   "predicate_cite": "",
+   "result": "z-then-x scores 45/204 (198 build insns, same instruction count) vs the original x-then-z order's confirmed 38/204 (198 "
+  },
+  {
+   "session": 48,
+   "statement": "Introducing a named intermediate `s32 dy0 = hit1[1] - *(s32 *)(obj + 0xBC);` for the flags==3 arm's guard condition (replacing the inline expression) is byte-neutral but confers no advantage over the ",
+   "kill_scope": "instance",
+   "measured_on": "s48 chassis: candidate.c s22-s47-banked body + func_80053614 s32-return prerequisite + D_8009A820/D_8009A821 array-form externs (scalar externs temporarily removed for the measurement, restored before",
+   "predicate_cite": "",
+   "result": "score 38/204 (198 build insns) -- exact tie with the inline-form baseline; ordinary C, no FAKE needed, but no closing ad"
   }
  ],
  "ladder_skip": 0,

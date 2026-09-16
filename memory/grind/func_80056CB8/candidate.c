@@ -1,6 +1,18 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48) — floor 38/204, NOT YET 0.
+ * s48 (enumerate modality, 2026-09-16): mandatory kill re-audit reproduced
+ * 38/204 fresh (no FAKE construct to ablate). Two genuinely new spelling
+ * probes, both previously untested in this ledger: (1) swapping the
+ * x+=/z+= post-call adjustment order to z-then-x -- KILLED, 45/204 (worse);
+ * (2) a named intermediate `dy0 = hit1[1] - obj->0xBC` for the flags==3
+ * guard -- byte-neutral tie at 38/204, not adopted (simpler inline form
+ * kept). Body UNCHANGED. The systematic spelling-space search across every
+ * identified block (loop bound, obj/flags dispatch + combinations,
+ * sin_p/cos_p/scale/x/z ordering+swaps, both pt0/pt1 store-order blocks,
+ * dx/dz declaration-order+inlining, the x/z post-call order, flags==3
+ * named-intermediate) is now exhaustive with zero hits below 38. See
+ * hypotheses.md/evidence.md [s48] for the full writeup.
  * s46 (structural modality, 2026-09-16, auto-returned via func_8006CCC8
  * sibling movement -- checked that sibling's ledger, no transplantable
  * lever found, its H2 is an unrelated LICM-hoist-var-reuse case). Body
