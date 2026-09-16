@@ -276,3 +276,67 @@ chain regardless of which local (if any) carries the value.
 - probe: Built tmp/grind/_exeque/s3/rankdbg_run.py (preprocesses src/display.c, invokes tools/gcc-2.7.2/cc1 -- the instrumented binary, not build/cc1 -- with BB2_RANK_DEBUG=1, -da dump flags); captured stderr; grepped for insn UIDs 189/207 identified from a fresh dump.ps1 .sched dump read at tmp/grind/_exeque/dumps/display.sched:16542-16583.
 - result: RANKDBG last=204 y=198 cls=3 x=189 cls2=3 val=0 -- confirms the exact class+priority tie. This is diagnostic evidence explaining why five independently measured spellings (this session's 3 + s2's H4a/H4b) all produced byte-identical output; it does not by itself close the residual.
 - verdict: CONFIRMED
+
+## [s4] H9 — CONFIRMED: wrapping the post-call triple-store block (D_8009BF68[0]/D_8009BF6C/D_8009BF70) in a single `do { ... } while (0);` breaks the rank_for_schedule LUID tie that H7/H8 (s3) proved was invariant across five plain statement/variable respellings, dropping the sandbox floor from 12 to 7.
+- mechanism: do-while(0) wrap (SOTN-sanctioned family, [[do-while-zero-exception]], owner ruling 2026-07-06 -- sanctioned for ANY codegen effect including register/scheduling); the wrap changes the compound-statement's RTL boundary structure, which is exactly the axis H8's diagnostic traced as invariant to same-boundary statement reordering. A directed decomp-permuter campaign found this construct; it was NOT hand-derived first.
+- probe: Directed decomp-permuter campaign 1 on a clean single-function workspace (tmp/grind/_exeque/s4/perm_ws/, base permuter score 980, target = asm/funcs/_exeque.s assembled standalone). `tools/permuter_campaign.py launch --func _exeque -j4 --stop-on-zero`, waited via `permuter_campaign.py wait` (two ~15-70s windows, 4696 iterations total). Applied the found form (output-615-1/source.c) to src/display.c; measured via `sandbox _exeque --disable all`.
+- result: sandbox score 12 -> 7 (build_insns 185 -> 186, target 187). Confirmed via direct objdump -dr diff of tmp/sandbox/_exeque/display.o against a freshly rebuilt target.o that the ENTIRE triple-store region now matches target byte-for-byte; the sole remaining residual is a different, previously-known site (H6's final-callback jalr delay slot).
+- verdict: CONFIRMED
+
+## [s4] H10 — CONFIRMED: nesting a SECOND do-while(0) inside the first, wrapped around only the first two stores (D_8009BF68[0]/D_8009BF6C, leaving D_8009BF70's store and the D_8009BF7C increment outside both wraps), drops the floor further from 7 to 2. Single-level wrap (H9) is measurably insufficient on its own -- satisfies [[do-while-zero-exception]]'s prerequisite for nested wraps.
+- mechanism: same reorg.c/rank_for_schedule ordering axis as H9, applied to a narrower RTL compound-statement boundary nested one level deeper.
+- probe: Directed decomp-permuter campaign 2, re-seeded from the H9 chassis (base.c updated to the do-while-wrapped src/display.c, base permuter score 615). ~2888 iterations. Applied the found form (output-200-1/source.c) to src/display.c; measured via sandbox.
+- result: sandbox score 7 -> 2 (build_insns 186, unchanged -- pure reschedule, no insn count change). Direct A/B on the identical surrounding chassis: single-level wrap = floor 7, nested wrap = floor 2 -- this IS the single-level-insufficient justification the rule requires for a nested wrap, not an assertion.
+- verdict: CONFIRMED
+
+## [s4] Directed permuter campaign 1 also surfaced `extern volatile int/short/char D_8009BF6C`/`D_8009BF70` coercion forms (output-715-1, output-765-1, output-915-1) scoring between the do-while form and the unwrapped baseline.
+- mechanism: n/a -- these are volatile-coercion CHEATS, not a legitimate lever; recorded as a KILL of the "just mark it volatile" temptation, not a proposal.
+- probe: Read each output-*/diff.txt from campaign 1's workspace; checked D_8009BF6C/D_8009BF70 against [[legitimate-volatile-interrupt-touched]]'s two-prong gate and the volatile_extern_allowlist.txt precedent already banked in this ledger's s1 evidence (D_8009BF68's own grant explicitly names D_8009BF6C/D_8009BF70 as the NON-volatile siblings).
+- result: REJECTED without measurement beyond reading the diff -- these globals have no identifiable IRQ writer independent of _exeque's own queue-draining loop and no catalogued use-site shape; volatile coercion on them contradicts the get_alarm-derived allowlist evidence already in this ledger. Not applied to src.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: campaign-1 permuter search space (do-while-unwrapped baseline chassis); construct itself never applied to src/display.c
+
+## [s4] Directed permuter campaign 1 also surfaced `output-905-1`: moving `SetIntrMask(D_8009BF84)` from after the loop to inside the loop body (between the two triple-store fields).
+- mechanism: n/a -- this changes RUNTIME BEHAVIOR (re-arms the interrupt mask every loop iteration instead of once after the loop exits), not just codegen. The permuter's mutation search does not verify semantic equivalence, only byte score.
+- probe: Read output-905-1/diff.txt; traced the moved statement's control-flow position against the surrounding do/while loop structure.
+- result: REJECTED as not a candidate at all (behavior-changing, not a respelling) -- not measured further, not applied to src.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: campaign-1 permuter search space; construct never applied to src/display.c
+
+## [s4] Wrapping the post-call triple-store block (D_8009BF68[0]/D_8009BF6C/D_8009BF70) in a single do { ... } while (0); breaks the rank_for_schedule INSN_LUID tie that s3's H7/H8 proved was invariant across five plain statement/variable respellings.
+- mechanism: do-while(0) wrap changing the compiled RTL compound-statement boundary, per GCC 2.7.2 rank_for_schedule (tools/gcc-2.7.2/sched.c:2417-2464) as diagnosed in s3 H8
+- probe: Directed decomp-permuter campaign 1 on a clean single-function workspace (tmp/grind/_exeque/s4/perm_ws/, base permuter score 980); applied the found form (output-615-1) to src/display.c; measured via sandbox _exeque --disable all
+- result: sandbox score 12 -> 7 (build_insns 185 -> 186, target 187)
+- verdict: CONFIRMED
+
+## [s4] Nesting a second do-while(0) inside the first, wrapped around only the first two stores (D_8009BF68[0]/D_8009BF6C), drops the floor further from 7 to 2; the single-level wrap alone is measurably insufficient, satisfying do-while-zero-exception's nested-wrap prerequisite.
+- mechanism: same reorg.c/rank_for_schedule RTL-boundary ordering axis as the outer wrap, applied one level deeper on a narrower compound statement
+- probe: Directed decomp-permuter campaign 2, re-seeded from the campaign-1 chassis (base permuter score 615); applied the found form (output-200-1) to src/display.c; measured via sandbox
+- result: sandbox score 7 -> 2 (build_insns 186, unchanged insn count -- pure reschedule); direct A/B on the identical chassis: single-level = floor 7, nested = floor 2
+- verdict: CONFIRMED
+
+## [s4] Marking D_8009BF6C and/or D_8009BF70 volatile (permuter campaign-1 finds output-715-1/765-1/915-1) is not a legitimate lever for this residual.
+- mechanism: n/a -- volatile-coercion cheat, not a program-logic construct; rejected on catalog + banked-evidence grounds without a sandbox measurement
+- probe: Read each output-*/diff.txt from campaign 1; checked against legitimate-volatile-interrupt-touched's two-prong gate and the s1-banked volatile_extern_allowlist.txt:75 evidence naming D_8009BF6C/D_8009BF70 as the non-volatile control case for the D_8009BF68 grant
+- result: REJECTED without src application -- no identifiable IRQ writer independent of _exeque's own loop, no catalogued use-site shape, and direct contradiction of already-banked project evidence
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: campaign-1 permuter search space (do-while-unwrapped baseline chassis); construct never applied to src/display.c
+
+## [s4] Moving SetIntrMask(D_8009BF84) from after the loop to inside the loop body (permuter campaign-1 find output-905-1) is a valid respelling.
+- mechanism: n/a -- the move changes runtime behavior (re-arms the interrupt mask every loop iteration instead of once after the loop exits), which the permuter's byte-score search does not itself verify
+- probe: Read output-905-1/diff.txt; traced the moved statement's control-flow position
+- result: REJECTED as not a valid candidate at all (behavior-changing, not a respelling); never applied to src/display.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: campaign-1 permuter search space; construct never applied to src/display.c
+
+## [s4] A third directed permuter campaign (base permuter score 200, sandbox floor 2/187) targeting the sole remaining residual -- the final IRQ-callback block's jalr delay-slot fill, where target keeps sw $zero,0($v1) (D_8009BE7C = 0;) BEFORE jalr with an explicit unfilled nop while our build's reorg.c filler moves the store into the jalr delay slot -- can find a non-volatile C-level lever that s2's H6 did not.
+- mechanism: exhaustive PERM_* random search over the now much smaller (2-instruction) residual
+- probe: tools/permuter_campaign.py launch --func _exeque -j4 --stop-on-zero on the do-while(0)-wrapped chassis; waited via permuter_campaign.py wait/harvest across ~9100 iterations with zero novel finds below score 200 (the chassis's own base score)
+- result: 0 novel finds below 200 after 9096 iterations -- the campaign never found any spelling closer to 0 than the do-while chassis itself. This corroborates (does not newly prove, since s2 already identified the mechanism) that the residual is the same jalr-delay-slot site s2's H6 found closable only via volatile, which random C-statement mutation cannot reach because reorg.c's fill_simple_delay_slots exclusion of volatile-marked memory accesses is not expressible as a plain-C statement reordering.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: do-while(0)-wrapped chassis (this session's candidate.c, both FAKE-annotated wraps present), s2's H5b final-callback pointer in place, no volatile/cheat constructs present

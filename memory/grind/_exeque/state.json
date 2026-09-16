@@ -1,8 +1,8 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 12,
    "modality": "structural",
    "headline": "Floor held at 12/187; exhausted pure-C respelling of the triple-store block (5 measured spellings, all byte-identical) and traced the exact rank_for_schedule LUID tie with the instrumented cc1's BB2_R"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Directed permuter campaigns dropped _exeque's honest floor 12 -> 2/187 via two SOTN-sanctioned do-while(0) wraps (single-level around the triple-store block, then nested around its first two stores); "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An IRQ-callback-installed function's own single-read test-and-clear of a flag it owns (the D_8009BE7C guard-and-clear in the final callback block) qualifies as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, which would close 2 more instructions (floor 12 -> 10) with zero further search.",
+   "hypothesis": "The floor-2 residual (final-callback jalr delay-slot fill) is the SAME site s2's H6 found closable only via `volatile s32 *p` -- an IRQ-callback-installed function's own single-read test-and-clear of a flag it owns could qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, closing the last 2 instructions with zero further search once ruled on.",
    "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and src/display.c:915 (the DMACallback(2, _exeque); IRQ-install site). Highest-value untried lever -- unspent since s2."
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque); IRQ-install site, and this session's confirmation that the floor is now ONLY 2/187 (down from 12), all concentrated at this single site."
   },
   {
-   "hypothesis": "A directed permuter run scoped to just the ~16-instruction triple-store region could find a C-level lever that breaks the rank_for_schedule LUID tie that five independent manual spellings (this session's 3 + s2's H4a/H4b) did not.",
-   "mechanism": "exhaustive PERM_* search over the block per [[permuter-directives]], now cheap since the base floor is 12/187",
-   "next_probe": "Build a clean single-function target.o from asm/funcs/_exeque.s (per [[difficult-is-not-impossible]] permuter guidance), run decomp-permuter with --stop-on-zero, directed at the triple-store block only."
+   "hypothesis": "A non-volatile pure-C lever for the jalr-delay-slot fill may still exist outside plain-C statement reordering (e.g. a restructuring of the guard-and-clear block's control flow, or a different placement of the pointer/dereference relative to the call) that this session's single directed permuter campaign (9096 iterations, one chassis) did not surface.",
+   "mechanism": "GCC 2.7.2 reorg.c fill_simple_delay_slots (excludes volatile-marked memory from delay-slot motion candidacy) -- the question is whether some OTHER C restructuring (not volatile) can independently make the store ineligible for delay-slot motion",
+   "next_probe": "Read tools/gcc-2.7.2/reorg.c's fill_simple_delay_slots and its callers to see what OTHER conditions (besides MEM_VOLATILE_P) block a candidate insn from filling a jalr's delay slot; try a restructuring that trips one of those conditions without volatile."
   },
   {
-   "hypothesis": "Re-running pwsh tools/grinder/dump.ps1 _exeque after any future edit to the triple-store block will need a fresh RANKDBG trace via tmp/grind/_exeque/s3/rankdbg_run.py (reusable harness banked this session) to verify whether a new spelling actually changes the LUID relationship, rather than re-guessing from objdump alone.",
-   "mechanism": "n/a (tooling reuse note)",
-   "next_probe": "Rerun tmp/grind/_exeque/s3/rankdbg_run.py with BB2_RANK_DEBUG=1 via tools/gcc-2.7.2/cc1 (NOT build/cc1) after editing the block; grep for the relevant insn UIDs from a fresh .sched dump."
+   "hypothesis": "The do-while(0) wraps banked this session (candidate.c) are a stable improved chassis for any future session on this function -- re-deriving them from scratch would waste a session.",
+   "mechanism": "n/a (tooling/chassis reuse note)",
+   "next_probe": "Next session should apply memory/grind/_exeque/candidate.c verbatim as its starting point (sandbox floor 2/187, confirmed this session) before attempting any new lever."
   }
  ],
  "judge_constraints": [],
@@ -82,6 +88,30 @@
    "measured_on": "struct-based _que[idx].field chassis with the s2 H5b final-callback pointer in place; no FAKE/cheat constructs present in any of the three variants",
    "predicate_cite": "",
    "result": "All three variants: sandbox score 12, build_insns 185, byte-identical objdump in the triple-store region (both stores la"
+  },
+  {
+   "session": 4,
+   "statement": "Marking D_8009BF6C and/or D_8009BF70 volatile (permuter campaign-1 finds output-715-1/765-1/915-1) is not a legitimate lever for this residual.",
+   "kill_scope": "instance",
+   "measured_on": "campaign-1 permuter search space (do-while-unwrapped baseline chassis); construct never applied to src/display.c",
+   "predicate_cite": "",
+   "result": "REJECTED without src application -- no identifiable IRQ writer independent of _exeque's own loop, no catalogued use-site"
+  },
+  {
+   "session": 4,
+   "statement": "Moving SetIntrMask(D_8009BF84) from after the loop to inside the loop body (permuter campaign-1 find output-905-1) is a valid respelling.",
+   "kill_scope": "instance",
+   "measured_on": "campaign-1 permuter search space; construct never applied to src/display.c",
+   "predicate_cite": "",
+   "result": "REJECTED as not a valid candidate at all (behavior-changing, not a respelling); never applied to src/display.c"
+  },
+  {
+   "session": 4,
+   "statement": "A third directed permuter campaign (base permuter score 200, sandbox floor 2/187) targeting the sole remaining residual -- the final IRQ-callback block's jalr delay-slot fill, where target keeps sw $z",
+   "kill_scope": "instance",
+   "measured_on": "do-while(0)-wrapped chassis (this session's candidate.c, both FAKE-annotated wraps present), s2's H5b final-callback pointer in place, no volatile/cheat constructs present",
+   "predicate_cite": "",
+   "result": "0 novel finds below 200 after 9096 iterations -- the campaign never found any spelling closer to 0 than the do-while cha"
   }
  ],
  "ladder_skip": 0,

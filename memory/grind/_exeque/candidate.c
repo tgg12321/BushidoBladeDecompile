@@ -1,72 +1,42 @@
-/* _exeque candidate — session 3 (structural), sandbox --disable all score
- * 12/187 (unchanged from the s2-banked floor of 12/187). Apply this body to
+/* _exeque candidate — session 4 (permuter), sandbox --disable all score
+ * 2/187 (dropped from the s2/s3-banked floor of 12/187). Apply this body to
  * src/display.c in place of the `INCLUDE_ASM("asm/funcs", _exeque);` line.
  *
- * Forward-declaration fixups needed (already applied in src/display.c
- * since s1; unchanged this session):
+ * Forward-declaration fixups (unchanged since s1/s3):
  *   - `void _exeque();` -> `extern s32 _exeque(void);` (correct return type)
- *   - the stray second `extern void _exeque();` redeclaration before _sync
- *     was deleted (wrong type, redundant)
  *   - `extern s32 D_8009BF84;` added near the other D_8009BE7C/D_8009BE80
  *     externs (was completely undeclared before s1 — see s1 evidence)
  *
- * s3 change (pure C, no FAKE/cheat constructs): the post-call triple-store
- * block's `mask`-reuse spelling (s2's H5a) was REPLACED with a direct,
- * mask-free assignment:
+ * s4 change (pure C, TWO do-while(0) wraps, both /* FAKE * / annotated per
+ * [[do-while-zero-exception]]): a directed decomp-permuter campaign
+ * (memory/grind/_exeque/evidence.md [s4]) found that wrapping the post-call
+ * triple-store block in a single `do { ... } while (0);` drops floor 12 -> 7,
+ * and NESTING a second do-while(0) around just the first two stores
+ * (D_8009BF68[0]/D_8009BF6C) — leaving D_8009BF70's store and the
+ * D_8009BF7C increment outside — drops floor 7 -> 2. Both wraps are
+ * sanctioned per the frozen SOTN family (ANY codegen effect including
+ * register/scheduling, owner ruling 2026-07-06); the nested wrap's
+ * mandatory "single-level-insufficient" justification is the direct A/B
+ * measurement (single-level: floor 7; nested: floor 2) on the identical
+ * surrounding chassis.
  *
- *     D_8009BF6C = (s32)_que[D_8009BF7C].arg;
- *     D_8009BF70 = _que[D_8009BF7C].count;
+ * Everything else (s2's H5b final-callback pointer, s3's direct-assignment
+ * field spellings now living INSIDE the do-while bodies) is unchanged.
  *
- * This session measured THREE variants of this block on the identical
- * surrounding chassis — (a) s2's `mask`-reuse form, (b) two freshly-named
- * locals `arg_val`/`count_val` loaded before either store, (c) this direct
- * assignment with no intermediate local at all — and all three produced
- * BYTE-IDENTICAL object code for the whole function (sandbox score 12,
- * build_insns 185 in every case; objdump of the triple-store region is
- * identical down to register numbers). Kept (c) because it is the
- * simplest of the three byte-equivalent forms (no reused/staged locals to
- * justify) per [[ordinary-c-judge-decidable]] Ruling 1(4) ("simplest-known-
- * form: when multiple byte-exact forms are known, the one with the fewest
- * no-semantic-purpose constructs lands"). See hypotheses.md H7 (CONFIRMED)
- * for the three-way measurement.
- *
- * The final "clear D_8009BE7C and invoke the D_8009BE80 callback" block
- * (s2's H5b) is unchanged: it pre-computes a pointer to D_8009BE7C
- * (`s32 *p = &D_8009BE7C;`) used for BOTH the guard read and the clear
- * store. Ordinary C, no FAKE needed — closes that whole block to a
- * byte-exact match. See hypotheses.md H5b (CONFIRMED, s2).
- *
- * Remaining floor-12 residual (2 sites — see hypotheses.md frontier for
- * s4, updated this session with dump-verified rank_for_schedule evidence):
- *   a. The triple-store block still schedules both field-stores later than
- *      target (target: strict load-store-load-store per field, each with
- *      its own %hi/%lo recompute; ours: both loads/recomputes happen, then
- *      both stores are deferred to just before the loop-continuation
- *      branch). This session traced the EXACT compiler decision with the
- *      instrumented cc1's BB2_RANK_DEBUG hook (tools/gcc-2.7.2/cc1, NOT
- *      tools/gcc-2.7.2/build/cc1 — see [[instrumented-cc1-location]]):
- *      `RANKDBG last=204 y=198 cls=3 x=189 cls2=3 val=0` — the D_8009BF6C
- *      store (insn 189) ties in BOTH priority (8) AND dependency class
- *      (3 = independent of last-scheduled-insn) against insn 198 (part of
- *      the .count field's address recompute), so GCC's rank_for_schedule
- *      (tools/gcc-2.7.2/sched.c:2417-2464) falls through to the final
- *      INSN_LUID tiebreak, which is fixed by RTL-generation (= C
- *      statement) order — and every C-level respelling this session and
- *      s2 tried (mask-reuse, fresh two-locals, direct assignment,
- *      statement-order swap [s2 H4a], increment-position move [s2 H4b])
- *      leaves that LUID relationship unchanged, because the store is
- *      always generated in the same relative position vs. the recompute
- *      chain for the OTHER field. Five independently-measured spellings,
- *      byte-identical every time. See hypotheses.md H7/H8 for the full
- *      evidence chain and the CLASS-scope kill this now supports.
- *   b. The final callback's `jalr v0` — target keeps the `D_8009BE7C = 0;`
- *      store BEFORE the call with an unfilled delay-slot nop; our build's
- *      scheduler fills the jalr's delay slot with that same store instead.
- *      Marking the pointer `volatile s32 *p` closes this one instruction
- *      (score 12 -> 10) but does NOT qualify under the current
- *      `legitimate-volatile-interrupt-touched` two-prong carve-out (s2 H6,
- *      KILLED instance, NOT submittable) — still a `ruling-request`
- *      candidate for a future session, unchanged since s2.
+ * Remaining floor-2 residual (1 site, unchanged mechanism from s2's H6):
+ *   The final "clear D_8009BE7C and invoke the D_8009BE80 callback" block's
+ *   `jalr $v0` — target keeps `sw $zero,0($v1)` (D_8009BE7C = 0;) BEFORE the
+ *   jalr with an explicit unfilled delay-slot nop; our build's reorg.c
+ *   delay-slot filler moves that store INTO the jalr's delay slot instead.
+ *   s2 already identified this and found that marking the pointer
+ *   `volatile s32 *p` closes it (floor -> 0 in that session's numbering)
+ *   but is NOT submittable: the guard-and-clear single-read-test-and-clear
+ *   use-site shape is not one of legitimate-volatile-interrupt-touched's
+ *   three catalogued shapes (H6, KILLED instance, rejected form banked at
+ *   memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c).
+ *   s4's campaign 3 (this session) re-targeted this exact residual with a
+ *   directed permuter run on the now much-smaller floor-2 chassis; see
+ *   hypotheses.md for the outcome.
  */
 s32 _exeque(void) {
     s32 mask;
@@ -83,10 +53,30 @@ s32 _exeque(void) {
             }
             while (!(*D_8009BF48 & 0x04000000)) {
             }
-            _que[D_8009BF7C].func(_que[D_8009BF7C].arg, _que[D_8009BF7C].count);
-            D_8009BF68[0] = (s32)_que[D_8009BF7C].func;
-            D_8009BF6C = (s32)_que[D_8009BF7C].arg;
-            D_8009BF70 = _que[D_8009BF7C].count;
+            /* FAKE: do-while(0) wrap, mechanism: reorg.c list-scheduler
+             * ordering of the post-call debug-record triple-store
+             * (D_8009BF68[0]/D_8009BF6C/D_8009BF70), lever-exhaustion:
+             * memory/grind/_exeque/hypotheses.md H7/H8 (five independent
+             * statement/variable respellings of this block measured
+             * byte-identical, s2-s3) */
+            do {
+                _que[D_8009BF7C].func(_que[D_8009BF7C].arg, _que[D_8009BF7C].count);
+                /* FAKE: NESTED do-while(0) wrap, mechanism: same
+                 * reorg.c/rank_for_schedule ordering as the outer wrap, on
+                 * a narrower sub-block; lever-exhaustion: single-level
+                 * wrap around the whole triple-store (this file's outer
+                 * do-while) measurably left floor at 7/187 -- nesting a
+                 * second level around just the first two stores measured
+                 * floor 2/187 on the identical surrounding chassis
+                 * (memory/grind/_exeque/evidence.md [s4] campaign 1 vs 2),
+                 * satisfying do-while-zero-exception's
+                 * single-level-insufficient prerequisite for nested wraps */
+                do {
+                    D_8009BF68[0] = (s32)_que[D_8009BF7C].func;
+                    D_8009BF6C = (s32)_que[D_8009BF7C].arg;
+                } while (0);
+                D_8009BF70 = _que[D_8009BF7C].count;
+            } while (0);
             D_8009BF7C = (D_8009BF7C + 1) & 0x3F;
         } while (D_8009BF78 != D_8009BF7C && !(*D_8009BF54 & 0x01000000));
     }

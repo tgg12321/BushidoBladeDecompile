@@ -148,3 +148,83 @@ answers).
 - [s3] The three s3 triple-store spellings (mask-reuse, fresh two-locals, direct assignment) plus s2's H4a/H4b statement reorderings are five total independently-measured C-level respellings of this specific block, all byte-identical in the triple-store region -- this is now a well-evidenced (though still instance-scoped per this session's kill_scope discipline) wall for pure statement/variable respelling WITHIN that block.
 
 - [s3] target asm (asm/funcs/_exeque.s lines corresponding to addresses 8007D860-8007D8E4) shows a strict load-store-load-store-load-store interleave per field (recompute -> load .arg -> store D_8009BF6C -> recompute -> load .count -> store D_8009BF70 -> recompute -> increment+store D_8009BF7C) that our build's list scheduler does not reproduce regardless of tested C-level spelling; the deferred-store shape is a scheduling decision, not an addressing/object-model gap (the object model itself, established in s1 H1, remains correct).
+
+## [s4] PERMUTER — floor 12 -> 2 via TWO do-while(0) wraps (SOTN-sanctioned family, both FAKE-annotated)
+
+Built a clean single-function permuter workspace (`tmp/grind/_exeque/s4/build_perm_workspace.sh`,
+`tmp/grind/_exeque/s4/perm_ws/`) using the real project pipeline (cpp with the
+Makefile's CPP_FLAGS/CPP_DEFS, `tools/gcc-2.7.2/build/cc1` with the mandatory
+`-mel -msoft-float`, `prologue_fix.py`, `maspsx.py` with the real
+`MASPSX_FLAGS`, `multu_pad.py`), extracting just `_exeque`'s region from the
+full-TU compile (awk on `.globl\t_exeque` ... `.end\t_exeque`) so the permuter
+score reflects only this function, matched against `asm/funcs/_exeque.s`
+assembled with `tools/decomp-permuter/prelude.inc` (r3000, no gp=64). This
+supersedes the s3 frontier item "directed permuter run" — it was run this
+session, not merely proposed.
+
+Two consecutive campaigns (`tools/permuter_campaign.py launch/harvest`, `-j4
+--stop-on-zero`, `--stack-diffs` default ON), each re-seeded from the
+previous campaign's best find (chassis discipline: base.c updated to the
+current src/display.c state before each relaunch):
+
+1. **Campaign 1** (base permuter score 980, sandbox floor 12/187): within
+   ~4700 iterations (waited via `permuter_campaign.py wait`, two windows)
+   found `output-615-1` — wrapping the triple-store block
+   (`D_8009BF68[0]=...; D_8009BF6C=...; D_8009BF70=...;`) in a single
+   `do { ... } while (0);`. Applied to `src/display.c` and measured via
+   `sandbox _exeque --disable all`: **floor 12 -> 7** (build_insns 185 ->
+   186). All other novel finds in this campaign (`output-715/765/915-*`)
+   were `extern volatile int/short/char D_8009BF6C/70` coercions on
+   non-IRQ, non-MMIO game-state globals — REJECTED per
+   [[legitimate-volatile-interrupt-touched]] (these globals are plain
+   debug-record scalars, no IRQ writer, no qualifying use-site shape) and
+   [[inline-asm-policy]]'s volatile-coercion catalog entry. `output-905-1`
+   (moving `SetIntrMask(D_8009BF84)` inside the loop) was REJECTED as not
+   even semantically equivalent — it changes runtime behavior (re-arms the
+   interrupt mask every loop iteration instead of once after the loop),
+   which the permuter's mutation search does not itself verify.
+   `output-837-1` (a `new_var` staged intermediate) scored worse (837) than
+   the do-while wrap and was not pursued.
+2. **Campaign 2** (base permuter score 615, sandbox floor 7/187, chassis =
+   campaign 1's do-while form applied to src): within ~2900 iterations
+   found `output-200-1` — a SECOND, NESTED `do { ... } while (0);` wrapping
+   just the `D_8009BF68[0]=...; D_8009BF6C=...;` pair (leaving
+   `D_8009BF70=...;` and the `D_8009BF7C` increment outside, i.e. splitting
+   the single-level wrap from campaign 1 into two nested levels around a
+   narrower sub-block). Applied to `src/display.c` and measured: **floor
+   7 -> 2** (build_insns 186, unchanged insn count — pure reschedule).
+   This is a NESTED wrap, which [[do-while-zero-exception]] requires a
+   "single-level-insufficient" justification for: campaign 1's single-level
+   wrap around the WHOLE triple-store block measurably left 5 more
+   instructions unmatched (floor 7) than nesting a second level around
+   just the first two stores (floor 2) — direct A/B measurement on the
+   SAME surrounding chassis is the required justification.
+3. **Campaign 3** (base permuter score 200, sandbox floor 2/187, chassis =
+   campaign 2's nested-do-while form): launched, targeting the single
+   remaining residual (identified via direct objdump diff of
+   `tmp/sandbox/_exeque/display.o` vs a freshly-rebuilt `target.o`): the
+   final IRQ-callback block's `jalr $v0` — target keeps
+   `sw $zero,0($v1)` (`D_8009BE7C = 0;`) BEFORE the `jalr`, with an
+   explicit unfilled `nop` in the delay slot; our build's `reorg.c`
+   delay-slot filler moves the store INTO the jalr's delay slot instead
+   (`jalr $v0` / `sw $zero,0($v1)` swapped vs target). This is the EXACT
+   same residual s2 already identified and KILLED as only closable via an
+   unsanctioned `volatile s32 *p` respelling (H6, rejected — the
+   guard-and-clear use-site shape is not one of
+   [[legitimate-volatile-interrupt-touched]]'s three catalogued shapes).
+   Campaign 3's outcome is recorded in the frontier / kill ledger below.
+
+**Both do-while(0) wraps are FAKE-annotated in candidate.c** per
+[[do-while-zero-exception]]'s mandatory-annotation prerequisite; the
+nested wrap's justification (single-level insufficient, per direct
+A/B floor measurement 7 vs 2) is recorded in the annotation comment.
+
+- [s4] Built a clean single-function permuter workspace (tmp/grind/_exeque/s4/perm_ws/, script tmp/grind/_exeque/s4/build_perm_workspace.sh) using the real project pipeline (cpp with Makefile CPP_FLAGS/CPP_DEFS, tools/gcc-2.7.2/build/cc1 with the mandatory -mel -msoft-float, prologue_fix.py, maspsx.py with the real MASPSX_FLAGS, multu_pad.py), extracting only _exeque's region from the full-TU compile so the permuter score reflects one function, matched against asm/funcs/_exeque.s assembled standalone via tools/decomp-permuter/prelude.inc.
+
+- [s4] Three sequential campaigns, each re-seeded from the previous best chassis (base.c updated to the improved src/display.c before relaunch): campaign 1 (base 980 -> found 615, sandbox floor 12->7), campaign 2 (base 615 -> found 200, sandbox floor 7->2), campaign 3 (base 200, 9096 iterations, 0 novel finds, sandbox floor unchanged at 2).
+
+- [s4] Direct objdump -dr diff of tmp/sandbox/_exeque/display.o against a freshly rebuilt target.o after each floor drop confirmed exactly which region closed each time: campaign 1 closed the entire triple-store region; campaign 2 closed it further with no visible remaining diff in that region; the floor-2 residual is entirely the final-callback jalr $v0 delay-slot fill (target: sw $zero,0($v1) then jalr with unfilled nop delay; ours: jalr with the store in its delay slot) -- the exact same site s2's H6 already identified and could only close via an unsanctioned volatile pointer.
+
+- [s4] All src/display.c edits were reverted to the committed INCLUDE_ASM("asm/funcs", _exeque); state before this session ended, per asm-until-matched -- this is a progress outcome (floor 2, not 0), so no C lands on main.
+
+- [s4] memory/grind/_exeque/candidate.c, evidence.md, hypotheses.md, and self_vet.md were all updated this session with the full campaign trace, the two applied FAKE-annotated do-while(0) constructs, and the two rejected permuter proposals (volatile coercion, behavior-changing statement move).
