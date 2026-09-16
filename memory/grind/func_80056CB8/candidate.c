@@ -1,6 +1,29 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43) — floor 38/204, NOT YET 0.
+ * s43 (forensics modality): body UNCHANGED (38/204/198 re-confirmed fresh).
+ * Two findings: (1) CLASS KILL -- both func_80053614() calls in the loop
+ * are unguarded, unconditional-per-iteration collision-probe calls whose
+ * results feed the disposition dispatch; neither can be removed or
+ * conditionalized without changing program semantics, closing the s41
+ * "loop_has_call could become false, doubling loop.c's threshold"
+ * frontier item for good. (2) Pinned the EXACT mechanism behind the
+ * do-while chassis's -3-insn reduction (open since s34, RA picture ruled
+ * out by s42): a fresh `.s` diff between freshly-rebuilt for-loop and
+ * do-while chassis dumps shows the for-loop chassis emits a 3-insn
+ * pre-header guard (`addu;slt;beq`) testing `start < limit` before the
+ * first iteration, which the do-while chassis never needs (do-while
+ * always executes >=1 time by construction). This is cc1's for-loop
+ * lowering (expand_start_loop/stmt.c), NOT an RA/loop.c effect. New
+ * untried frontier: whether inlining `limit` away (`i < start + 2` or
+ * `i - start < 2` instead of a separate `limit` local) lets cc1 prove
+ * the trip count nonzero and drop the guard on the FOR-loop chassis
+ * itself (preserving its otherwise-closer instruction mix, unlike the
+ * do-while rewrite which the ledger has repeatedly measured worse
+ * overall despite fewer instructions). Artifacts:
+ * tmp/grind/func_80056CB8/s43/text1b_s_forloop.s,
+ * text1b_s_dowhile.s (diffed), text1b_greg_forloop_slice.txt,
+ * text1b_greg_dowhile_full.txt.
  * s41 (solver modality): body UNCHANGED. Fresh chassis-reproduction
  * confirmed 38/204 (198 insns). Ran tools/ra_solver/inverse_compose.py
  * classify in OBJECT MODE (the zero-rule/INCLUDE_ASM-routed escape:

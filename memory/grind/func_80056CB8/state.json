@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -255,13 +255,19 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s42 forensics: fresh .greg dump of the s34-rejected do-while chassis proves the 0x1F8002B8-literal-vs-fp allocation is IDENTICAL to the for-loop chassis (same 8 s0-s7 residents + fp), killing the s34/"
+  },
+  {
+   "session": 43,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s43 forensics: class-killed the 'remove one func_80053614 call' loop.c-threshold frontier item (both calls are unguarded per-iteration collision probes, no static lever); pinned the exact mechanism be"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 real insns on the for-loop chassis) without touching the i*2 index expressions or forcing their lifetime through a call-spanning pseudo would let strength_reduce promote i*2 to a compiler-built accumulator the way target's asm shows.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; shrinking insn_count works exactly as well as raising the left side, and every left-side lever tried so far (s32/s33's shared/separately-named idx locals) has failed due to register pressure from spanning the intervening ratan2() call, not from the arithmetic itself.",
-   "next_probe": "Identify which SPECIFIC insns the do-while chassis's -3 reduction removed (compare a fresh for-loop-chassis .greg dump slice against this session's do-while slice insn-by-insn, not just the register-disposition table) to see whether that removal mechanism could be pushed further or combined with a second, different structural change to close the remaining 39-insn (124 vs 163) gap without perturbing i*2's own live range."
+   "hypothesis": "A semantically-truthful C rewrite that lets cc1 prove the for-loop's trip count is nonzero (e.g. inlining `limit` away as `i < start + 2` or `i - start < 2` instead of routing through a separate `limit` local) would drop the 3-instruction pre-header guard on the FOR-LOOP chassis itself, without the do-while rewrite's overall-worse score.",
+   "mechanism": "cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) only omits the guard when it can statically prove the bound relationship; whether a more syntactically-direct bound expression (vs. an opaque separately-assigned local two statements earlier) changes that decision is untested.",
+   "next_probe": "Try `for (i = start; i < start + 2; i++)` and `for (i = start; i - start < 2; i++)` on the s22-s42-banked for-loop chassis (dropping the separate `limit` local or keeping it only for readability elsewhere); measure via `wteng sandbox func_80056CB8 --disable all`; if either drops the guard while preserving the for-loop chassis's otherwise-closer instruction mix, dump-verify via a fresh .s diff against this session's text1b_s_forloop.s baseline."
   },
   {
    "hypothesis": "Extend tools/spelling_enum.py to treat a bracketed if/else block as one opaque reorderable anchor, so the obj/flags region (and future similar regions) can be swept exhaustively instead of by hand-picked variants.",
@@ -269,30 +275,14 @@
    "next_probe": "Patch spelling_enum.py's anchor classification (tools/spelling_enum.py:76-91) then re-run a full mechanical sweep over the obj/flags region."
   },
   {
-   "hypothesis": "loop.c's threshold formula's n_non_fixed_regs term is compile-time-fixed (s21-confirmed) and loop_has_call's multiplier is already pinned at its smaller value (1, since two calls exist in the loop) -- but no session has yet checked whether REMOVING one of the two func_80053614 calls from the loop's dynamic path (e.g. if the second call's precondition can be proven statically false for some argument shapes) is even a semantically-valid restructuring; this has not been investigated at all and may be a dead end, but is untried.",
-   "mechanism": "loop.c:3241 threshold=(loop_has_call?1:2)*(3+n_non_fixed_regs) -- if loop_has_call could legitimately become false, threshold would double (to 62), trivially flipping the i*2 promotion decision (2*62*2=248 >= 163) without needing any lifetime change at all.",
-   "next_probe": "Re-read the two func_80053614 call sites' semantics (target asm + candidate.c) to determine whether either call is genuinely unconditional per-iteration or could be restructured without changing program behavior; if both calls are truly unconditional and required, this axis is a class kill and should be recorded as such next session."
+   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 real insns on the for-loop chassis) without touching the i*2 index expressions' lifetime would let strength_reduce promote i*2 the way target's asm shows.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; shrinking insn_count works as well as raising the left side; every left-side lever tried so far has failed due to register pressure from the intervening func_80053614 calls, not the arithmetic itself.",
+   "next_probe": "With the do-while -3-insn mechanism now fully understood (pre-header guard, not RA/loop.c), determine whether any OTHER structural change (not the do-while rewrite, which the ledger shows is net-worse) can shrink real-insn count enough to flip the loop.c:3823 inequality while leaving i*2's own live range and the guard structure untouched."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 9,
-   "statement": "Hoisting the 0x1F8002B8 scratchpad-address literal ABOVE the for-loop entirely (single fresh local declared once before the loop, shared across both loop iterations and both func_80053614 call sites) ",
-   "kill_scope": "instance",
-   "measured_on": "s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local scratch declared above the loop replacing both call-site 0x1F8002B8 literals, zero FAKE",
-   "predicate_cite": "",
-   "result": "Score 58 -> 60 (WORSE), build_insns unchanged at 198 -- identical delta to s8's in-loop attempt. Reverted immediately; f"
-  },
-  {
-   "session": 9,
-   "statement": "The code==4 tail's dx/dz distance-check sub-expression (dx*dx + dz*dz compared against 0x3D0900) has a reachable spelling that closes some of the floor-58 gap.",
-   "kill_scope": "instance",
-   "measured_on": "s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix), each of the 5 exhaustively-enumerated dx/dz spellings applied one at a time, zero FAKE/cheat constructs, reverted after measurem",
-   "predicate_cite": "",
-   "result": "All 5 variants (v0..v4, tmp/grind/func_80056CB8/s9/enum/) scored 58/198, byte-identical to the s7-banked baseline -- zer"
-  },
   {
    "session": 10,
    "statement": "Sharing the byte-table index value i*2 between the D_8009A821 and D_8009A820 lookups via a FRESH local declared inside the loop body each iteration (s32 idx2 = i*2; used at both sites) improves the fl",
@@ -756,6 +746,22 @@
    "measured_on": "s42 chassis (do-while rewrite of the s22-s41-banked 38/204 for-loop body, func_80053614 s32-return prerequisite + 5-line header externs, no FAKE constructs present)",
    "predicate_cite": "",
    "result": "Register dispositions on the do-while chassis are shape-identical to the s29-banked for-loop-chassis picture: the same 8"
+  },
+  {
+   "session": 43,
+   "statement": "Both func_80053614() calls in the loop body are unconditional per iteration -- neither can be statically removed without changing program semantics; the 'remove one of the two calls from the loop's dy",
+   "kill_scope": "class",
+   "measured_on": "candidate.c source reading (no build change needed -- the source itself decides this, not codegen)",
+   "predicate_cite": "memory/grind/func_80056CB8/candidate.c:1254 and memory/grind/func_80056CB8/candidate.c:1267 (both func_80053614 calls, u",
+   "result": "Neither call has any static precondition (constant argument, always-false branch, provably-redundant recomputation) that"
+  },
+  {
+   "session": 43,
+   "statement": "The do-while chassis's -3 real-insn reduction vs the for-loop chassis is precisely the for-loop's pre-loop entry guard (addu; slt; beq testing start < limit before the first iteration) -- a do-while n",
+   "kill_scope": "instance",
+   "measured_on": "s43 chassis (candidate.c's s22-s42-banked 38/204 for-loop body vs a do-while rewrite of the same body, both with func_80053614 s32-return prerequisite + 5-line header externs, no FAKE constructs prese",
+   "predicate_cite": "",
+   "result": "The diff shows the do-while prologue runs the loop-invariant scratchpad-literal setup (addu/sw/addu/li/ori/sw for the $f"
   }
  ],
  "ladder_skip": 0,
