@@ -59,12 +59,17 @@
   }
  ],
  "ladder_skip": 0,
- "pending_fixup": {
-  "kind": "annotation",
-  "detail": "Splice the candidate.c FAKE annotation block verbatim above `hit = 0;` in src/code6cac_b.c; change nothing else in the body.",
-  "set": "2026-09-16T02:32:37.409669+00:00"
- },
+ "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T01:53:12.929071+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "74f08c2c70c26b61",
+   "when": "2026-09-16T02:40:18.176418+00:00",
+   "summary": "final call: One FAKE construct: the AABB reject flag staged through the existing per-iteration `hit` status local. It sits inside the frozen SOTN-accepted family 'Variable reuse for codegen control' (.claude/rule"
+  }
+ ]
 }

@@ -29,3 +29,10 @@
 - [s1] residual at 5: rejected flag seated in $a1 (target $s0, the same seat as hit) and lhu a3,-6(s2) ordered after the x-load (target before)
 
 - [s1] candidate.c = s1 form v8a; 6 rejected forms banked with their scores in memory/grind/func_8002CA8C/rejected/; src/code6cac_b.c restored to HEAD
+
+## s2 (annotation-fix, 2026-09-15)
+- [s2] Judge final call 2026-09-15 21:32 FAILED on ONE defect: the mandated /* FAKE */ block above `hit = 0;` was in candidate.c but absent from the staged src/code6cac_b.c (docs/grind/decisions.md:27436). The C itself was accepted: variable-reuse family for the `hit` borrow, everything else ordinary C under ordinary-c-judge-decidable ruling 3.
+- [s2] The first s2 attempt's ledger prose (hypotheses/evidence) was never committed: commit 6daaf01a6 banked only rejected/*.c, self_vet.md, state.json. candidate.c on disk was still the s1 `rejected`-variable form; the real body survived as tmp/grind/func_8002CA8C/s2/v12_final.c. Restored this session: hypotheses.md s2-H1..H6, candidate.c = v13 (v12 + comment byte fix).
+- [s2] v12_final.c's FAKE comment contained a raw cp1252 0x97 (em-dash) byte, not valid UTF-8. Replaced by an ASCII hyphen (comment-only change). Body spliced into src via tmp/grind/func_8002CA8C/s2/apply.py (LF, zero CR bytes in the file).
+- [s2] `sandbox func_8002CA8C --disable all` with the annotated body in src: score 0, target_insns 179, build_insns 179 (this session). Bytes are identical to the Judge-reviewed body; review verdicts are keyed by body, so this is the annotation re-splice the Judge asked for.
+- [s2] global.c citations in the annotation re-verified against tools/gcc-2.7.2/global.c: :972 (`allocno_calls_crossed == 0` -> `fixed_reg_set`), :1000 (`IOR_COMPL_HARD_REG_SET (used, regs_used_so_far)`), :1058-1076 (lowest free regno loop). sched.c:2505 `birthing_insn_p`.

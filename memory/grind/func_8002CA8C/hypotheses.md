@@ -64,3 +64,19 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: v3a and v8a chassis, no FAKE constructs
+
+## s2 (structural + annotation-fix, 2026-09-15) — floor 5 -> 0
+The structural work was measured in the first s2 attempt (Judge FAIL 2026-09-15 21:32 on annotation
+presence only; docs/grind/decisions.md:27436) whose ledger entries were never banked here — only its
+rejected/ forms, self_vet.md and tmp/grind/func_8002CA8C/s2/diff_*.txt survived. This section restores
+them from those artifacts so the FAKE annotation's lever-exhaustion pointer (s1-H5..s2-H3) resolves.
+Chassis for every row: s1 v8a (walking `rec` IV, `&SCR[id].j[i+4]` call arg, shared seen tail), 179 insns.
+
+| id | hypothesis | measured | verdict |
+|---|---|---|---|
+| s2-H1 | `rejected = (max < c - r OR c + r < min OR ...)` as an expression value (ordinary C) moves the flag to $s0 | 13/185 (tmp/grind/func_8002CA8C/s2/diff_v9a_rejexpr.txt; rejected/rejected-as-expression-value-13.c): 0/1 materialization + 6 extra insns, seat still $a1 | KILLED (instance: v8a chassis, no FAKE) |
+| s2-H2 | a separate `rejected` flag pseudo (no call crossed) can be seated in $s0 by declaration placement: block scope (v8a) and function scope (v9b) | both 5/179, byte-identical (diff_v8a_base.txt, diff_v9b_rejfnscope.txt; rejected/separate-rejected-var-takes-a1-seat-5.c, rejected-declared-at-function-scope-neutral-5.c). Mechanism read in global.c: an allocno with `allocno_calls_crossed == 0` starts from `fixed_reg_set` (global.c:972), `used` adds the complement of `regs_used_so_far` (global.c:1000), and find_reg pass 0 takes the lowest-numbered free register in that set (global.c:1058-1076) = $a1 here; a callee-saved seat is reached only by a call-crossing allocno (`call_used_reg_set`, global.c:974), which in this function is `hit`. .greg dump (tmp/grind/func_8002CA8C/dumps/code6cac_b.greg:2768): the flag pseudo 102 conflicts only with {73, 97, 2, 3, 29}. | KILLED (class: every separate non-call-crossing flag pseudo fails the global.c:972 predicate; predicate_cite tools/gcc-2.7.2/global.c:972) |
+| s2-H3 | one status local for both values (`hit = 0; AABB fail -> hit = 1; if (hit) continue; hit = callX(...)`), variable-reuse family, FAKE-annotated | 2/179 (diff_v9c_onevar.txt; rejected/one-status-var-but-multiset-c-load-2.c): seat fixed ($s0), residual = the lhu/lw order | CONFIRMED (seat), FAKE construct |
+| s2-H4 | the remaining lhu-after-x-load reorder is sched.c `birthing_insn_p` (sched.c:2505): a three-times-set `c` never gets the single-set LAUNCH_PRIORITY bump; per-axis once-written `x`/`y`/`z` locals do | 0/179 (diff_v10a_xyz.txt; tmp/grind/func_8002CA8C/s2/sched_v9c_fn.txt) | CONFIRMED (ordinary C, semantic reading: three coordinates) |
+| s2-H5 | `extern u8 D_800F5F68[]` + `&D_800F5F68[id * 0x1B8]` (byte-array declaration, removes the scalar-address pun) is byte-neutral | 0/179 (diff_v11a_xyz_arraydecl.txt, diff_v12_final.txt) | CONFIRMED (neutral) |
+| s2-H6 | (annotation-fix) the FAKE comment spliced above `hit = 0;` in src is byte-neutral; the cp1252 0x97 byte in the comment replaced by ASCII `-` | 0/179 this session, sandbox with the edits in place in src/code6cac_b.c | CONFIRMED |

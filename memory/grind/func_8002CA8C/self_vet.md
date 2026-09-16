@@ -1,6 +1,6 @@
-# SELF-VET — func_8002CA8C  (s2, 2026-09-15, structural — filed WITH a `candidate-ready`)
+# SELF-VET — func_8002CA8C  (s2 annotation-fix, 2026-09-15, re-filed WITH a `candidate-ready` after the 21:32 Judge FAIL on annotation presence)
 
-Body under vet: `memory/grind/func_8002CA8C/candidate.c` (= tmp/grind/func_8002CA8C/s2/v12_final.c),
+Body under vet: `memory/grind/func_8002CA8C/candidate.c` (= tmp/grind/func_8002CA8C/s2/v13_ascii_comment.c; same body as the Judge-reviewed v12_final.c, only the FAKE comment text differs: a cp1252 0x97 byte replaced by an ASCII hyphen),
 spliced into src/code6cac_b.c replacing the `INCLUDE_ASM("asm/funcs", func_8002CA8C);` line. Measured
 THIS session with the edits in place: `sandbox func_8002CA8C --disable all` == **0**
 (target_insns 179, build_insns 179), on the -mel -msoft-float chassis. `git diff src/code6cac_b.c` is
@@ -89,6 +89,12 @@ SANCTIONED-FAMILY-CLAIMS:
   PRECEDENT: docs/reference/sotn-construct-index.md:113
   PRECEDENT: .claude/rules/staged-value-reused-variable.md:58
 
-ANNOTATION-CONFORMANCE: one FAKE line, emitted verbatim in candidate.c / src/code6cac_b.c immediately above `hit = 0;`:
-  /* FAKE: the AABB reject flag is staged through the existing `hit` status local (hit = 1 on reject, read once by the `continue` test below, then overwritten by the callee result), mechanism: global.c find_reg pass 0 — a separate non-call-crossing flag pseudo takes the lowest free already-used caller-saved reg ($a1), while the target seats it in $s0 = the call-crossing `hit` pseudo, lever-exhaustion: memory/grind/func_8002CA8C/hypotheses.md s1-H5..s2-H3 */
-  It carries what (the staged reject flag through `hit`), mechanism (global.c find_reg pass 0), and lever-exhaustion (hypotheses.md s1-H5..s2-H3 + rejected/ forms).
+ANNOTATION-CONFORMANCE: one FAKE block, present THIS session in BOTH memory/grind/func_8002CA8C/candidate.c and src/code6cac_b.c (verified by `grep -n "FAKE:" src/code6cac_b.c` after the splice; the Judge's 21:32 defect was its absence from src), immediately above `hit = 0;`, spelled verbatim as:
+  /* FAKE: the AABB reject flag is staged through the existing `hit`
+   * status local (hit = 1 on reject, read once by the `continue` test
+   * below, then overwritten by the callee result), mechanism: global.c
+   * find_reg pass 0 - a separate non-call-crossing flag pseudo takes
+   * the lowest free already-used caller-saved reg ($a1), while the
+   * target seats it in $s0 = the call-crossing `hit` pseudo,
+   * lever-exhaustion: memory/grind/func_8002CA8C/hypotheses.md s1-H5..s2-H3 */
+  It carries what (the reject flag staged through `hit`), mechanism (global.c find_reg pass 0, lines :972/:1000/:1058-1076 re-verified this session), and lever-exhaustion (hypotheses.md s1-H5..s2-H3; the s2 rows were banked into hypotheses.md THIS session from the measured diffs and rejected/ forms, s2-H2 being the class kill with predicate global.c:972). Comments are byte-neutral: sandbox 0/179 with the annotated body in src.
