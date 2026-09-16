@@ -1,0 +1,39 @@
+{
+ "func": "_SsSndCrescendo",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 200,
+   "modality": "recon",
+   "headline": "Recon: found exact SOTN precedent (cres.c) + mapped 4 BB2 struct offsets; identified real outer-guard divergence as the frontier"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1: outer unk98(0xA0)-sign guard wraps the entire unk42(0x4C)-sign block; negative unk98 skips straight to the tail clear+final-call, unlike SOTN's unconditional version",
+   "mechanism": "Real control-flow divergence between BB2's 4.1 LIBSND build and sotn-decomp's reference build, not a GCC codegen artifact",
+   "next_probe": "Write C using the evidence.md offset mapping with this outer guard, sandbox _SsSndCrescendo --disable all, read the resulting distance"
+  },
+  {
+   "hypothesis": "H2: func_80087770's 4th call argument (literal 1 in BB2 vs literal 0 in SOTN's SpuVmSetSeqVol) reflects either a real 4.1 API change or a wrong function identity",
+   "mechanism": "N/A - object/API identity question",
+   "next_probe": "grep func_80087770 across src/main.c for other call sites and check if its own body is already COMPLETED-C to read what the 4th param controls"
+  },
+  {
+   "hypothesis": "H3: the two mid-function 'clear unk90 bit 0x10' sites both recompute the channel base fresh from _ss_score rather than reusing the live s0/score pointer - need to confirm whether both clears target the SAME channel as s0 or a distinct one before writing the C",
+   "mechanism": "N/A - addressing/aliasing question, resolved by close asm read next session",
+   "next_probe": "Read asm/funcs/_SsSndCrescendo.s lines 117-123 and 190-194 side by side against the s0/s3/s2 register values live at each point"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-16T19:51:55.162027+00:00",
+ "object_model_audited": 1
+}
