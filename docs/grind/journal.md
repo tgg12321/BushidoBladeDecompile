@@ -2199,3 +2199,4 @@
 - 2026-09-16 14:07 func_8006A564 s7 [structural] floor=29: Structural: applied the s5-proven full-inline transplant to block 4's four single-use v0/v1 groups, dropping floor 45 -> 29 (exact 199==199 insn parity held throughout); two multi-use/dead-read groups measured non-improvable and reverted.
 - 2026-09-16 14:16 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 14:46
 - 2026-09-16 14:34 func_8006A564 s8 [solver] floor=3: Floor 29(ledger)/7(actual) -> 3: banked an unbanked score-7 body left by a discarded s8 process, then closed residual cluster A with a compound-assignment split that also removed the body's last two dead reads; the remaining residual is 3 insns in one group, pass-attributed to sched1 LAUNCH_PRIORITY.
+- 2026-09-16 14:51 func_8006A564 COMPLETED-C after 9 sessions (closer: s9 [forensics]).
