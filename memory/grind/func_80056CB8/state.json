@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 28,
- "current_modality": "forensics",
+ "session_count": 29,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -171,13 +171,19 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s28 forensics: re-confirmed true floor 38/204 fresh (chassis check showed 'measurement unavailable' because HEAD is INCLUDE_ASM); documented and independently rediscovered the s25 reproduction trap (e"
+  },
+  {
+   "session": 29,
+   "floor": 38,
+   "modality": "synthesis",
+   "headline": "s29 synthesis: floor re-confirmed 38/204 fresh; quantified the fp-spill mechanism from real .greg register-disposition data (all 8 s0-s7 occupied, fp is the only free slot the literal takes by default"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The literal-vs-idx2 register-pressure gap can only be closed by raising overall register pressure on some OTHER already-s-register-resident value (not idx2, which is class-killed, and not the literal itself via naming, which s28 killed) enough that global_alloc's benefit computation is forced to spill the literal exactly as target does.",
-   "mechanism": "global.c's global_alloc awards callee-saved hard registers by a benefit/conflict-count computation; the literal currently wins a free slot because the competing pseudo set (obj/s1, table pointers s4/s5, pt-coordinate accumulators s2/s3, loop index s6, self-pointer s7) leaves exactly enough s-registers free. Target's allocation implies its competing pseudo set is one register tighter.",
-   "next_probe": "Read a fresh .greg dump (pwsh tools/grinder/dump.ps1 func_80056CB8) for the CURRENT 38/198 chassis and enumerate every pseudo's conflict-list size to find which live value is closest to the spill threshold; try genuinely new C shapes for the obj/self-pointer or pt0/pt1 accumulator handling (not the idx2 axis, not the literal's own spelling) that could plausibly add one more live-across-call conflict."
+   "hypothesis": "Closing the fp-spill residual requires either a 9th genuinely-real call-spanning value (not idx2, class-killed; not a named literal-holder, now killed in 3 distinct placements) that competes for a callee-saved register at unchanged insn_count, or a restructuring of one of the 8 existing s0-s7 residents (obj/self-ptr, loop index i, flags/scale/sin_p/cos_p/x/z) that changes ITS OWN conflict/priority footprint without changing insn_count.",
+   "mechanism": "global.c global_alloc's priority-ordered coloring: with exactly 9 pseudos live across the whole loop and only 9 callee-saved-class registers total ($s0-$s7 + $fp), the literal's fp assignment is a byproduct of having zero competition for the one free slot, not a close priority tie -- so the fix must change WHICH pseudos are live-across-the-loop, not merely how the literal itself is spelled.",
+   "next_probe": "Run tools/ra_solver (global.c allocation model + inverse_compose.py classify, per the role brief's solver suite) against this specific 9-pseudo/9-register seat to get a typed REACHABLE/FORECLOSED verdict on whether any C-reachable restructuring of the 8 named residents' live ranges can force a spill of pseudo 149, before spending further sessions on hand-guessed C shapes for a 9th value."
   }
  ],
  "judge_constraints": [],
@@ -598,6 +604,14 @@
    "measured_on": "s28 chassis (s22-s27-banked 38/198 body + s28-restored header externs/func_80053614 fix, hit_flag_arg pre-loop named-local substitution only), single fresh sandbox measurement, no FAKE constructs pres",
    "predicate_cite": "",
    "result": "45/204 (build_insns 199, one MORE instruction than baseline's 198) -- wrong direction. Reverted immediately."
+  },
+  {
+   "session": 29,
+   "statement": "Declaring `s32 hit_flag_arg = 0x1F8002B8;` INSIDE the loop body (re-assigned each iteration) instead of s28's pre-loop/outside-loop placement, with both func_80053614 call sites reading it instead of ",
+   "kill_scope": "instance",
+   "measured_on": "s29 chassis (s22-s28-banked 38/198 body, hit_flag_arg declared+assigned inside the loop body instead of pre-loop), single fresh sandbox measurement, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score=42, build_insns=200 (worse than baseline 38/198, and a different delta than s28's pre-loop variant's 45/199) -- co"
   }
  ],
  "ladder_skip": 0,

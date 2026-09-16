@@ -1,7 +1,31 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21;
- * 48/204 s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this session.
+ * s23/s24/s25/s26/s27/s28/s29) — floor 38/204, NOT YET 0. (Prior: 42/204
+ * s14-s21; 48/204 s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this
+ * session.
+ * ---------------------------------------------------------------------
+ * s29 (synthesis modality, 2026-09-16). Body UNCHANGED (re-confirmed
+ * 38/204 fresh, build_insns 198). Decoded the s28-dumped .greg
+ * "Register dispositions:" table directly (script + writeup:
+ * memory/grind/func_80056CB8/../../../tmp/grind/func_80056CB8/s29/conflict_map.txt,
+ * i.e. tmp/grind/func_80056CB8/s29/conflict_map.txt) to QUANTIFY the
+ * s26/s28 register-pressure mechanism: pseudos 72/75/82/83/85/86/87/88
+ * occupy ALL EIGHT of $s0-$s7 (obj/self-ptr, loop index i, and the
+ * already-merged flags/scale/sin_p/cos_p/x/z values), and these 8 plus
+ * pseudo 149 (the 0x1F8002B8 literal, in $fp) share an identical
+ * 32-entry conflict set. $fp is the ONLY unclaimed callee-saved
+ * register in the function, so 149 gets it by default — not a close
+ * priority race. Closing this residual (target spills the literal to a
+ * stack slot and reloads via a caller-saved temp instead) needs either
+ * a 9th genuinely-real call-spanning value competing for a
+ * callee-saved register at unchanged insn_count (none found — every
+ * hand-guessed candidate, idx2 in 5+ shapes and a named hit_flag_arg
+ * local in both pre-loop and in-loop placements, regresses insn_count
+ * instead of being neutral), or a restructuring of one of the 8
+ * existing residents' own conflict footprint (unexplored). Frontier for
+ * next session: this residual is now precise enough to be a good
+ * `solver` modality target (tools/ra_solver global_alloc priority-order
+ * model) rather than further hand-guessed C shapes.
  * ---------------------------------------------------------------------
  * s28 (forensics modality, 2026-09-16). Body UNCHANGED (re-confirmed
  * 38/204 fresh, build_insns 198). Since 2026-08-19 asm-until-matched,
