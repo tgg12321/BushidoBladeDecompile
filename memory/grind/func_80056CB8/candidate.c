@@ -1,6 +1,29 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40) — floor 38/204, NOT YET 0.
+ * s40 (synthesis modality): body UNCHANGED. Full ledger re-read; fresh
+ * chassis-reproduction confirmed 38/204 (198 insns), no drift since s39.
+ * Extended s39's "share the duplicate *(s32*)(obj+0xBC) expression" find
+ * to its maximal scope: merged ALL SIX occurrences (block1 x2, block2 x2,
+ * the flags==3 comparison, the flags==4 `y`) into one call-spanning local
+ * `by`. WORSE: 38->95/204, build_insns 198->177 (-21 insns, the largest
+ * single-lever insn-count drop on this ledger, yet a substantially worse
+ * score) -- confirms count and mix are independent axes and that target
+ * genuinely re-reads/re-derives obj+0xBC at (most of) these sites rather
+ * than caching it across the two func_80053614 calls. Saved
+ * rejected/cross-call-shared-by-local-worse.c. This closes the
+ * "share/merge any repeated obj+0xBC read, any scope" axis entirely (s39
+ * narrow form + s40 maximal form both worse, worse scaling with scope).
+ * No sibling ledger had transplantable material (func_80055B60 has no
+ * candidate.c; func_80057CC8/func_80056FE8 are COMPLETED-C but structurally
+ * unrelated). No stale kill needed a fake_ablate.py re-audit -- every
+ * banked kill was already measured on the current chassis with zero FAKE
+ * constructs present. See hypotheses.md [s40] for full detail. FRONTIER:
+ * the s31/s32-banked loop.c:3823 insn-count-threshold structural rewrite
+ * and the do-while-chassis resident-footprint probe (both untouched since
+ * s32/s34) are now the ONLY genuinely untried avenues -- the spelling/
+ * ordering/sharing search space (38 measured variants, s33-s40) is
+ * exhausted for this chassis shape.
  * s39 (enumerate modality): body UNCHANGED. Extended s38's isolated obj/flags
  * hand-variants to COMBINATIONS (A=ternary obj-assignment, B=kind-local-
  * after, C=ang intermediate, D=dx/dz intermediates): A+B, A+C, A+D, A+B+C+D,

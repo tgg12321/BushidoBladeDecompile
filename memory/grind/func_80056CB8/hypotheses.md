@@ -1881,3 +1881,93 @@ instead).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block1's duplicate expression replaced by shared y0 local, no FAKE constructs present)
+
+## s40 (synthesis modality, 2026-09-16)
+
+**Re-read the full ledger (evidence.md, hypotheses.md, candidate.c) end to
+end. Chassis-reproduction re-confirmed fresh (38/204, build_insns 198,
+target_insns 204) before any probe -- no drift since s39; the dispatch
+brief's "measurement unavailable" chassis-check placeholder was stale, the
+ledger's 38 holds exactly.**
+
+No sibling ledger had unspent transplantable material: func_80055B60
+(same file, same region-map note in its evidence.md) has no candidate.c
+to transplant; func_80057CC8 and func_80056FE8 are COMPLETED-C siblings
+in the same file but their bodies (angle/motion helpers) share no
+structural shape with this hit-detection loop. No KILL RE-AUDIT was owed
+-- every banked instance kill in this ledger was already measured on the
+CURRENT (s22-vintage) chassis with no FAKE constructs present (verified
+by reading every "measured_on" line s33-s39 in full); there is no
+stale-chassis or stale-FAKE kill for `tools/fake_ablate.py` to re-test.
+
+**New probe (extending s39's "shared duplicate expression" finding to a
+larger scope):** block1 shares one duplicate `*(s32*)(obj+0xBC) - 0x320`
+(2 occurrences, s39, KILLED-worse: 38->73/204). The full function
+actually reads `*(s32*)(obj+0xBC)` **six** times total across the two
+`func_80053614` call sites: block1 x2 (`-0x320`), block2 x2
+(`-0x834`/`+0x1004`), the flags==3 comparison, and the flags==4 `y`
+local. Tested merging ALL SIX into one `s32 by = *(s32*)(obj+0xBC);`
+declared once immediately after `obj` is resolved, surviving BOTH
+`func_80053614` calls -- a strictly larger version of s39's
+within-block-only merge, and the first test of whether a call-spanning
+shared carrier behaves differently from the intra-block case.
+- statement: Merging all six `*(s32*)(obj+0xBC)` reads (spanning both
+  func_80053614 call sites) into one call-surviving local `by` produces
+  substantially worse codegen than the baseline, despite cutting real
+  instruction count by 21.
+- mechanism: same as s39's y0 finding, now confirmed at cross-call scope
+  -- GCC's own combine/CSE decides per-occurrence whether to fold or
+  re-materialize `obj + 0xBC`; target's own 204-instruction body
+  evidently re-reads (or re-derives) this value at most of these six
+  sites rather than caching it in one register/stack slot across two
+  intervening calls. Forcing a single explicit carrier picks call-safe
+  storage (spill or a callee-saved register) that diverges further from
+  target's actual per-site allocation than the naturally-duplicated
+  source does.
+- probe: Applied the s22-s39-banked candidate.c body + func_80053614
+  s32-return prerequisite + 5-line header externs to src/text1b.c, then
+  replaced all six `*(s32*)(obj+0xBC)` occurrences with the shared `by`
+  local. Measured via `& tools/wteng.ps1 main sandbox func_80056CB8
+  --disable all`. Reverted via `git checkout -- src/text1b.c`.
+- result: score 38 -> 95/204, build_insns 198 -> 177 (-21 real
+  instructions, yet substantially WORSE score -- the largest single-lever
+  insn-count drop measured on this ledger, and also one of its worst
+  scores, confirming instruction COUNT and instruction MIX are
+  independent axes here). Baseline 38/204 reconfirmed after revert.
+  Saved
+  memory/grind/func_80056CB8/rejected/cross-call-shared-by-local-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s40 chassis (candidate.c's s22-s39-banked 38/204 body +
+  func_80053614 s32-return prerequisite + header externs, all six
+  `*(s32*)(obj+0xBC)` reads merged into one call-spanning `by` local, no
+  FAKE constructs present)
+
+**Frontier reset.** This closes the "share any of the repeated
+`*(s32*)(obj+0xBC)` reads, at any scope from within-block to
+cross-call" axis entirely -- both the narrow (s39, 2 occurrences,
+38->73) and the maximal (s40, all 6 occurrences, 38->95) forms measured
+WORSE, and worse scales with scope. Combined with s37's exhaustive
+ordering/swap class-kill and s38/s39's exhaustive obj/flags-block
+hand-variant + combination sweep, the "respell an existing
+expression/statement without changing the loop's real structure" search
+space for this function is now thoroughly covered (38 total measured
+spelling/sharing variants across s33-s40). The items carried forward
+from s31/s32/s34/s37 remain the only genuinely untried STRUCTURAL axes
+(they change what the loop computes or how it is organized, not just how
+an existing computation is named, ordered, or shared) -- see the reset
+Live frontier in candidate.c's header and this session's outcome JSON.
+
+## [s40] The s22-s39-banked candidate.c body reproduces the ledger's recorded 38/204 floor when spliced into src/text1b.c with the func_80053614 void->s32 return-type prerequisite and the 5-line extern header block.
+- mechanism: n/a (reproduction check, not a codegen hypothesis)
+- probe: Applied candidate.c body + func_80053614 signature fix to src/text1b.c, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198 -- exact match to the ledger's last-recorded floor, no chassis drift since s39. The dispatch brief's chassis-check line read 'measurement unavailable' (a driver-side pre-measurement gap this session), but the true chassis is unchanged.
+- verdict: CONFIRMED
+
+## [s40] Merging all six occurrences of `*(s32 *)(obj + 0xBC)` (block1's two -0x320 reads, block2's -0x834/+0x1004 reads, the flags==3 comparison, and the flags==4 `y` local) into a single call-spanning local `by` produces substantially worse codegen than the baseline, despite cutting real instruction count by 21 -- the largest single-lever insn-count drop measured on this ledger.
+- mechanism: Same mechanism as s39's narrower y0 finding (block1-shared-y0-worse.c), now confirmed at cross-call scope: GCC's combine/CSE passes decide independently, per occurrence, whether to fold or re-materialize the `obj + 0xBC` address/value; forcing one explicit carrier that must survive two `func_80053614` calls picks a call-safe allocation (spill slot or callee-saved register) that diverges further from target's own per-site re-reads than the naturally-duplicated source does. Instruction COUNT and instruction MIX are independent axes for this residual.
+- probe: Applied the s22-s39-banked candidate.c body + func_80053614 s32-return prerequisite + header externs to src/text1b.c, declared `s32 by = *(s32*)(obj+0xBC);` immediately after `obj` is resolved, replaced all six read sites with `by`. Measured via `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`. Reverted via `git checkout -- src/text1b.c`.
+- result: score 38 -> 95/204, build_insns 198 -> 177 (-21 real instructions, yet substantially worse score). Baseline 38/204 reconfirmed after revert. Saved memory/grind/func_80056CB8/rejected/cross-call-shared-by-local-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s40 chassis (candidate.c's s22-s39-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, all six *(s32*)(obj+0xBC) reads merged into one call-spanning `by` local, no FAKE constructs present)

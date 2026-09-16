@@ -697,3 +697,13 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s39] s38's 4 individually-tied obj/flags-block hand-variants (ternary obj, kind-local-after, ang intermediate, dx/dz intermediates) show no interaction effect when combined in any of 5 tested groupings -- the obj/flags block's spelling space is now exhausted both individually (s38) and combinatorially (s39) for these variant axes.
 
 - [s39] A genuinely new spelling axis in block1 (sharing the textually-duplicated *(obj+0xBC)-0x320 expression into one local) was tried for the first time and scored worse (73/204) despite fewer real instructions (196 vs 198), demonstrating GCC's CSE already achieves the instruction-count reduction at baseline without a named carrier -- the explicit local only perturbs register/scheduling choice, negatively.
+
+- [s40] Chassis-check reproduction procedure (candidate.c body + func_80053614 void->s32 fix + 5-line header externs spliced into src/text1b.c) is load-bearing and was re-verified fresh this session before any probe -- splicing only the function body gives a false floor of 153/204.
+
+- [s40] No sibling ledger had unspent transplantable material this session: func_80055B60 (same file) carries no candidate.c; func_80057CC8 and func_80056FE8 are COMPLETED-C in the same TU but structurally unrelated (angle/motion helpers, not hit-detection loops) -- nothing to transplant.
+
+- [s40] Every banked instance kill in this ledger (s33-s39) was already re-verified as: measured on the current s22-vintage chassis, with zero FAKE constructs present in any tested variant. No stale-chassis or stale-FAKE kill existed for tools/fake_ablate.py to re-test this session.
+
+- [s40] Extending s39's narrow (2-occurrence, within-block) shared-expression finding to its maximal (6-occurrence, cross-call) form reproduces and strengthens the same conclusion: worse scales with scope (73/204 at 2 merged occurrences -> 95/204 at 6), and the insn-count drop scales too (-2 -> -21) while the score gets worse, not better -- strong confirming evidence that target's own instruction budget includes genuine per-site re-reads/re-derivations of obj+0xBC that an explicit shared carrier cannot reproduce.
+
+- [s40] Combined across s33-s40, 38 distinct spelling/ordering/sharing/combination variants of this function's non-index residual have now been measured; none scored below 38/204. The spelling-space search for this chassis shape is exhausted; the only untried axes are structural (loop.c:3823 insn-count threshold, do-while chassis resident-footprint).
