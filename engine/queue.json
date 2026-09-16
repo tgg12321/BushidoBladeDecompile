@@ -4,6 +4,19 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80056CB8",
+      "file": "text1b",
+      "distance": 188,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-16T13:02:38+00:00",
+      "rotation_count": 1,
+      "unparked_from": "ROTATED (ladder exhausted, non-endgame residual \u2014 owner ruling 2026-09-02 wording; 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md: '2026-09-16 -- func_80056CB8 -- OWNER-ESCALATION -- LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED'",
+      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8006CCC8 -> floor 39 (2026-09-16T13:44)",
+      "returned_at": "2026-09-16T13:44:22+00:00"
+    },
+    {
       "func": "func_8006CCC8",
       "file": "text1b",
       "distance": 189,
@@ -1148,28 +1161,17 @@
       "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md 2026-09-16 -- _exeque -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): ROTATED",
       "rotated_at": "2026-09-16T07:19:10+00:00",
       "rotation_count": 1
-    },
-    {
-      "func": "func_80056CB8",
-      "file": "text1b",
-      "distance": 188,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "ROTATED (ladder exhausted, non-endgame residual \u2014 owner ruling 2026-09-02 wording; 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md: '2026-09-16 -- func_80056CB8 -- OWNER-ESCALATION -- LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED'",
-      "rotated_at": "2026-09-16T13:02:38+00:00",
-      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 124,
-    "active": 116,
+    "active": 117,
     "by_status": {
-      "active": 116,
-      "rotated": 8
+      "active": 117,
+      "rotated": 7
     },
     "by_verdict": {
-      "C": 94,
+      "C": 95,
       "ASM-PARTIAL": 22
     }
   },
