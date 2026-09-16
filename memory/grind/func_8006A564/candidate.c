@@ -1,139 +1,108 @@
 /* func_8006A564 -- src/text1b.c
- * Session 6 (enumerate). Chassis UNCHANGED from session 5: sandbox
- * --disable all score = 45, target_insns 199, build_insns 199 -- EQUAL.
- * Pure C, zero cheat constructs, zero FAKE annotations.
+ * Session 7 (structural). Chassis at session start: sandbox --disable all
+ * score = 45, target_insns 199, build_insns 199 (EXACT parity), matching
+ * s5/s6's recorded floor. This session's edits drop it to 29 (same exact
+ * parity throughout). Pure C, zero cheat constructs, zero FAKE annotations.
  *
- * SESSION 6 (no floor movement -- two CLASS-shaped instance kills banked):
- * Per the s5 frontier ("blocks 2/3 only got block 1's hand-transplanted
- * winner, not their own independent sweep"), ran spelling_enum.py --no-swaps
- * on block 2's tail (65 variants) and block 3's tail (65 variants)
- * INDEPENDENTLY. Both sweeps show the SAME shape: several spellings score
- * BELOW 45 (down to 40-41), but every one of them breaks the exact
- * target_insns==199 build_insns parity (191-196 insns instead of 199) --
- * the identical failure mode s5's H8 already found for block 2's
- * separate-locals form. Only the ALREADY-APPLIED fully-inlined transplant
- * (from block 1's s5 winner) preserves exact parity, at score 45, in BOTH
- * blocks independently. This means blocks 2 and 3's local spelling space
- * (inline-subset x decl-order, no operand swaps -- neither block's tail has
- * a swappable commutative pair) is EXHAUSTED at the current form; it is not
- * a partial/hand-derived guess, it is the true minimum under the
- * exact-parity constraint. See hypotheses.md [s6] for the full histograms.
+ * SESSION 7 METHOD: the s5/s6 frontier's item #3 -- block 4 (the
+ * obj2->field_1C->field_28 record-copy block, the ONLY block that never
+ * got the "drop the reused single-scope v0, write inline expressions at
+ * each single-use site" transplant that closed blocks 1-3's register
+ * coloring in session 5 -- was still carrying its original session-2/3
+ * chassis untouched. Applied the SAME proven pattern to block 4's
+ * single-use v0 occurrences (never to a value used 2+ times, since
+ * duplicating a load risks breaking build_insns exact parity -- confirmed
+ * by two negative measurements this session, see KILLED below):
  *
- * Also re-ran `pwsh tools/grinder/dump.ps1 func_8006A564` (the s5 dump had
- * gone stale in tmp/ scratch) and read block 1's basic-block-1 .sched trace
- * directly: the tie-break that keeps block 1's remaining diff alive is NOT
- * the dependence-class compare [[sched-rank-class-tie-wall]] describes --
- * the dump's own comment says `insn 36 has a greater potential hazard, now
- * 36 46`, i.e. a function-unit/load-latency HAZARD heuristic decided the
- * tie, not a dependence-class fallback. This refines (does not merely
- * confirm) the s5 frontier item; see hypotheses.md [s6] third entry.
+ *   1. Top-of-block: `v0 = *(tile+0x28); *(arg1+0)=v0;` (single use)
+ *      -> `*(arg1+0) = *(tile+0x28);`.                          45 -> ...
+ *   2. The if-arm's halving pair (v0/v1 each used once: load, shift,
+ *      store) -> fully inlined `*(arg1+0x29) = (u32)(*(arg1+0x29))>>1;`
+ *      style (no named locals at all).                          45 -> 39
+ *   3. The else-arm's 0x28 literal broadcast (was `v0=0x28; store;
+ *      store; store;`) -> each store writes the literal directly.
+ *                                                                 39 -> 35
+ *   4. The two `v0 = *(arg0+0x14); *(arg1+8)=v0;` single-use loads
+ *      (one before each func_8007352C call) -> inlined directly.
+ *                                                                 35 -> 29
  *
- * Structure unchanged from session 3/4 (see below for the original
- * narrative) -- draws 3 TILE primitives whose color bytes are chosen by
- * (D_800A34F8 & 0xF == arg2), then loads a second object's field_1C->
- * field_28 into arg1's packet, halves/sets its color bytes under the same
- * condition, advances two fields, calls func_8007352C(arg1) twice, and
- * finishes with a SetDrawMode/AddPrim of *(arg0+0x1C).
+ * Measured via `& tools/wteng.ps1 main sandbox func_8006A564 --disable all`
+ * after EACH individual edit (not as one combined diff) -- every one of
+ * the 4 wins above is independently confirmed, build_insns held at
+ * 199==199 (target) throughout all 4.
  *
- * SESSION 5 METHOD (owner-mandated systematic spelling sweep, 60 -> 45):
- * `tools/spelling_enum.py` + a hand-rolled sweep loop (`sweep_variants.py`
- * itself is blocked by `worktree_contamination_guard.py` for not having a
- * `wteng.ps1`-passthrough form; a local `tmp/grind/func_8006A564/s5/
- * run_sweep.ps1` loop calling `& tools/wteng.ps1 main sandbox func_8006A564
- * --disable all` per variant was used instead -- same effect, sanctioned
- * path). Enumerated the FIRST tile-block's flat tail (the 4
- * post-if/else stores that each reused the single block-scoped `v0` for a
- * load-then-store): named each value as a distinct fresh local (valA..valE)
- * between ENUM-BEGIN/END markers, ran spelling_enum.py --no-swaps-implicit
- * (150 spellings: every subset of the 5 locals inlined x every valid
- * def-before-use declaration order x commutative-operand swaps), swept all
- * 150 against the sandbox. HISTOGRAM: 47(1) 49(7) 51(14) 52(26) 54(102) --
- * i.e. every non-trivial named-local spelling scored >= 49; only the FULLY
- * INLINED form (v149.c, every value written as an anonymous expression
- * directly at its one use site, no named locals at all in the tail) hit 47.
+ * KILLED THIS SESSION (both instance, both measured, both reverted):
+ * 1. Inlining the FIRST group's tail (`v0=*(arg1+0)+0xC; ...; *(arg1+4)=v0;`
+ *    -> `*(arg1+4) = *(arg1+0)+0xC;`) while leaving the two preceding DEAD
+ *    reads (`v0=*(arg1+0);` `v0=*(arg1+0x1C);`) untouched: MEASURED WORSE,
+ *    29 -> 34 (and in an earlier combined-with-other-changes form, 45 -> 47).
+ *    Reverted both times. The dead reads apparently participate in the
+ *    same pseudo-liveness/coloring picture as the inlined tail would if
+ *    touched; this group is NOT a clean single-use case like the 4 wins
+ *    above and needs a different (not yet found) lever, or is already at
+ *    its local minimum. Reordering the 3 statements among themselves
+ *    (dead reads before/after the `*(arg1+0x18)=0` store) measured NO
+ *    CHANGE either way (still 29) -- this group's statement ORDER is not
+ *    the lever, only inlining vs not, and inlining measured strictly worse.
+ * 2. Fully inlining the `v0 = *(tile+0x2C); *(arg1+0)=v0; *(arg1+4)=v0+0xC;`
+ *    group (v0 used TWICE) as two separate `*(tile+0x2C)` reads: MEASURED
+ *    WORSE on build_insns (199 -> 201, duplicate load not commoned by
+ *    CSE across the intervening store) -- confirms the "never inline a
+ *    multi-use value" boundary condition that s5/s6's H8/block2/block3
+ *    sweeps already established for blocks 2/3. Reverted.
  *
- * Applying v149's inlining pattern to block 1's tail: 60 -> 47.
- * Manually applying the SAME "drop the reused single-scope v0, write each
- * value as an inline expression at its one use site" pattern to block 2's
- * and block 3's tails (same shape: `v0 = load; store; v0 = load2; ...;
- * v0 = v0+K; store;` all collapsed to `store = load; store = const; store =
- * const; store = (load2 + K);`): 47 -> 45.
- *
- * Register-normalized objdump diff after this change
- * (tmp/grind/func_8006A564/s5/diff2.py against
- * tmp/grind/func_8006A564/s5/build2.dis.txt) shows block 1's v0/v1
- * coloring swap (the entire residual identified in sessions 2-4) is NOW
- * FULLY RESOLVED for that block -- every `lbu`/`lw`/`sh`/`sb` in block 1
- * uses the SAME register as target (v0 throughout). Block 1's remaining
- * diff lines are pure INSTRUCTION-ORDER (scheduling), not register choice:
- * target computes+stores tile+0xA before tile+0xE/tile+0xC; our build's
- * list scheduler interleaves the independent `li v1,1; sh v1,0xE(s0)` store
- * between the tile+0xA load and its `addiu` -- same registers, different
- * cycle. This is a NEW, more specific frontier than the vague "v0/v1
- * coloring swap" sessions 2-4 chased.
- *
- * Blocks 2 and 3 (tile blocks 2 and 3) did NOT fully resolve the same way:
- * inlining flipped which of the block's TWO loaded values (the `arg1+0x18`-
- * based one and the `arg1+0x1C`-based one) gets v0 vs v1 -- before the edit
- * BOTH got v1 (both wrong); after, one gets v0 and the other v1 (still one
- * wrong, but a different one). Net still an improvement (removes one
- * register diff per block) but not a full block-level fix the way block 1
- * got. See KILLED below for the "two separate fresh locals" alternative
- * that was tried and made this WORSE (broke build_insns parity, 199->194).
+ * Register-normalized dump work this session: NONE (structural modality;
+ * pass-attribution reads were not needed since every hypothesis this
+ * session was tested by direct measurement, not RTL inspection).
  *
  * NOT yet attempted / frontier for next session:
- * 1. Enumerate block 2's and block 3's tails the SAME way spelling_enum
- *    was used on block 1's (mark ENUM-BEGIN/END around the 4-statement
- *    flat tail, sweep all inline/decl-order/swap combinations) -- only
- *    block 1 got the full systematic sweep this session; blocks 2/3 only
- *    got the ONE hand-derived "full inline" spelling transplanted from
- *    block 1's winner, not their own independent sweep. Their winning
- *    spelling may differ (they have a genuinely two-value liveness overlap
- *    block 1's did not -- block 1's tail values did not overlap in
- *    liveness the same way).
- * 2. Block 1's residual is now a SCHEDULING tie (delay-slot / list-
- *    scheduler insn order), not RA -- read the .sched dump
- *    (pwsh tools/grinder/dump.ps1 func_8006A564) for block 1's region to
- *    identify the exact rank_for_schedule tie per [[sched-rank-class-tie-
- *    wall]] before trying further statement-order variants there.
- * 3. Block 4 (obj2->field_1C->field_28 record-copy block, lines 6509-6547)
- *    still carries the ORIGINAL session-2/3 v0/v1-reuse chassis untouched
- *    this session -- it also shows a residual v0/v1 swap in the diff
- *    (lines 129-166 of the s5 diff). Same enumerate treatment (ENUM-mark
- *    its flat non-branching sub-sequences, e.g. lines 6530-6535's
- *    load/store chain which has a DEAD read at line 6531 pre-dating this
- *    session -- `v0 = *(s32 *)(arg1 + 0x1C);` immediately overwritten by
- *    line 6533 before any read -- that dead read is untouched original
- *    chassis, not introduced this session) should be tried next.
+ * 1. Block 1's remaining residual is STILL the s6-identified scheduling
+ *    HAZARD tie (`insn 36 has a greater potential hazard, now 36 46` in
+ *    the .sched dump, NOT the dependence-class fallback originally
+ *    guessed) -- untouched this session, still needs a read of sched.c's
+ *    hazard/insn_cost estimation logic to find a C-level lever (operand
+ *    order / an intervening independent computation) that could change
+ *    the estimate. See hypotheses.md [s6] for the full dump citation.
+ * 2. Blocks 2 and 3 are EXHAUSTED at their current local-spelling minimum
+ *    under the exact-parity constraint (s6's 65-variant sweeps each,
+ *    confirmed) -- their residual (if any remains after this session's
+ *    block-4 work closed points elsewhere) needs either a genuinely new
+ *    axis (not inline-subset/decl-order/swap) or is inherent.
+ * 3. Block 4's remaining residual (still ~ nonzero after this session's
+ *    4 wins) is now concentrated in the KILLED-this-session group (the
+ *    dead-reads + arg1+4 tail) and the necessarily-two-use tile+0x2C
+ *    group -- BOTH measured NOT improvable by simple inlining/duplication.
+ *    A register-normalized objdump diff of the CURRENT (floor-29) build
+ *    against target (not yet run this session -- budget) would show
+ *    exactly which insns remain mismatched and whether it's still a
+ *    v0/v1-class coloring issue or something else (e.g. a scheduling tie
+ *    like block 1's). This is the single highest-value next probe: read
+ *    `pwsh tools/grinder/dump.ps1 func_8006A564` fresh against this
+ *    session's floor-29 body before trying more spelling variants blind.
+ * 4. Given blocks 2/3/4 are all now either exhausted or need dump-guided
+ *    work rather than more blind inlining, the next session should
+ *    PASS-ATTRIBUTE (read the dumps) before any further structural edit,
+ *    per the session brief's PASS ATTRIBUTION contract.
  *
- * KILLED THIS SESSION:
- * 1. Block 2 tail as TWO SEPARATE fresh named locals (`o18`, `o1c`,
- *    each written once and read once) instead of full inlining: MEASURED
- *    WORSE on both axes -- score 45 -> 42 but build_insns DROPPED to 194
- *    (target 199), i.e. combine folded something differently and broke
- *    exact instruction-count parity. Reverted; the full-inline form (which
- *    keeps 199==199 parity) is the correct chassis to build on next
- *    session. See rejected/block2-separate-locals-breaks-parity.c.
- *
- * SESSION 2-4 HISTORY (retained from the prior candidate.c; still
- * applicable to the unchanged parts of the function -- see
- * memory/grind/func_8006A564/hypotheses.md and evidence.md for full detail):
+ * SESSION 2-6 HISTORY (retained; still applicable to the unchanged parts
+ * of the function -- see memory/grind/func_8006A564/hypotheses.md and
+ * evidence.md for full detail):
  * Session 1: first C body, floor 137. Session 2: block-local var split +
  * delay-slot fixes, floor 137 -> 68 (build_insns EXACT parity, 199==199).
  * Session 3: removed the named `v0 = mask; if (v0==arg2)` two-statement
  * form at all 4 sites, wrote the mask directly in the if-condition,
  * floor 68 -> 60. Session 4: permuter campaign, re-confirmed floor 60,
- * zero progress after ~4.4k iterations (random search did not find the
- * ENUM-derived full-inline spelling this session's SYSTEMATIC sweep found).
+ * zero progress after ~4.4k iterations. Session 5: systematic
+ * spelling_enum.py sweep found the "fully inline, no named locals" form
+ * for block 1's tail (150 variants), transplanted to blocks 2/3,
+ * floor 60 -> 45. Session 6: independent 65-variant sweeps of blocks 2
+ * and 3's own tails confirmed the block-1-transplanted form is already
+ * their score-minimizing spelling under exact-parity; re-dumped block 1's
+ * .sched trace and refined the s5 frontier's scheduling-tie mechanism
+ * from "dependence-class compare" to "hazard estimate" (floor unchanged
+ * at 45, two CLASS-shaped instance kills banked).
  */
 extern s32 D_800A34F8;
-extern s32 D_800A374C;
-extern void SetTile(void *);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, void *);
-extern s32 func_8007352C(s32);
-extern s32 func_8006E480(s32, s32);
 void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
     u8 *tile;
     u8 *obj2;
@@ -219,23 +188,16 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
     tile = *(u8 **)(obj2 + 0x1C);
     {
         s32 v0;
-        v0 = *(s32 *)(tile + 0x28);
-        *(s32 *)(arg1 + 0) = v0;
+        *(s32 *)(arg1 + 0) = *(s32 *)(tile + 0x28);
 
         if ((D_800A34F8 & 0xF) == arg2) {
-            s32 v1;
-            v0 = *(u8 *)(arg1 + 0x29);
-            v1 = *(u8 *)(arg1 + 0x2B);
             *(u8 *)(arg1 + 0x2A) = 0;
-            v0 = (u32)v0 >> 1;
-            v1 = (u32)v1 >> 1;
-            *(u8 *)(arg1 + 0x29) = v0;
-            *(u8 *)(arg1 + 0x2B) = v1;
+            *(u8 *)(arg1 + 0x29) = (u32)(*(u8 *)(arg1 + 0x29)) >> 1;
+            *(u8 *)(arg1 + 0x2B) = (u32)(*(u8 *)(arg1 + 0x2B)) >> 1;
         } else {
-            v0 = 0x28;
-            *(u8 *)(arg1 + 0x2B) = v0;
-            *(u8 *)(arg1 + 0x2A) = v0;
-            *(u8 *)(arg1 + 0x29) = v0;
+            *(u8 *)(arg1 + 0x2B) = 0x28;
+            *(u8 *)(arg1 + 0x2A) = 0x28;
+            *(u8 *)(arg1 + 0x29) = 0x28;
         }
 
         v0 = *(s32 *)(arg1 + 0);
@@ -245,15 +207,13 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
         *(s32 *)(arg1 + 0x1C) = *(s32 *)(arg1 + 0x1C) + 0xF;
         *(s32 *)(arg1 + 4) = v0;
 
-        v0 = *(s32 *)(arg0 + 0x14);
-        *(s32 *)(arg1 + 8) = v0;
+        *(s32 *)(arg1 + 8) = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C((s32)arg1);
 
         v0 = *(s32 *)(tile + 0x2C);
         *(s32 *)(arg1 + 0) = v0;
         *(s32 *)(arg1 + 4) = v0 + 0xC;
-        v0 = *(s32 *)(arg0 + 0x14);
-        *(s32 *)(arg1 + 8) = v0;
+        *(s32 *)(arg1 + 8) = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C((s32)arg1);
     }
 

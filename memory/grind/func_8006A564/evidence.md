@@ -413,3 +413,79 @@ ledger and the driver's dispatch-time floor exactly.
 - [s6] Both sibling ledgers (func_8007352C, main/src/ings.c) re-checked: both COMPLETED-C and closed; func_8007352C is called by this function as an ordinary extern (not a shared code block), and main/ings.c shares no code or data with this function. Nothing to transplant; no ledger drift since s5.
 
 - [s6] Neither block 2's nor block 3's tail has a swappable commutative operand pair (spelling_enum.py --list reported the identical variant count with and without the --swaps axis for both regions), so the axis-3 sweep was skipped as genuinely inapplicable, not merely unexplored.
+
+## Session 7 (structural, 2026-09-16)
+
+- Chassis check at dispatch: HEAD had no measurable floor (function is
+  INCLUDE_ASM per asm-until-matched, dispatch printed "measurement
+  unavailable"); applied candidate.c (session 5/6 form) to src/text1b.c
+  first and re-confirmed sandbox score 45, build_insns 199==199 before
+  any new work -- matches the ledger exactly.
+- Read hypotheses.md + evidence.md in full (all 6 prior sessions) before
+  starting, per the ledger-inheritance mandate. Both sibling ledgers
+  (func_8007352C, main/src/ings.c) re-checked as COMPLETED-C/closed with
+  nothing to transplant, consistent with s5/s6's own re-checks -- no
+  ledger drift.
+- [s7] Applied the s5-proven "fully inline single-use values, never
+  inline a multi-use value" pattern to block 4 (the ONLY tile-draw/record
+  block untouched by s5's transplant or s6's independent sweeps).
+  Measured 4 independent wins, each via `& tools/wteng.ps1 main sandbox
+  func_8006A564 --disable all` immediately after the edit:
+    45 -> 39 (if-arm's two single-use halving values inlined)
+    39 -> 35 (else-arm's 0x28 literal broadcast inlined)
+    35 -> 29 (both single-use `*(arg0+0x14)` loads before the two
+              func_8007352C calls inlined)
+  (The top-of-block `*(tile+0x28)` inline was folded into the same batch
+  as the if-arm edit in the actual edit sequence; re-verified as its own
+  independently-scored step: applying JUST the top-of-block inline atop
+  the un-touched-else-arm chassis also measured a real drop, confirming
+  it is not free-riding on the other edits.) build_insns stayed
+  199==199 (target) after every single edit -- exact parity never broke
+  for any of the 4 CONFIRMED wins.
+- [s7] KILLED (instance): inlining the `v0=*(arg1+0)+0xC; ...;
+  *(arg1+4)=v0;` group (with its two preceding dead reads left untouched)
+  measured WORSE: 29 -> 34, build_insns held at 199==199 (a pure
+  register/scheduling regression, not a parity break). Reverted,
+  reconfirmed 29.
+- [s7] KILLED (instance): reordering that same group's 3 statements
+  (moving the `*(arg1+0x18)=0` store before vs after the two dead reads)
+  measured NO CHANGE in either order (stays 29) -- statement order is not
+  a lever here; only the inline-vs-not axis matters and inlining already
+  measured worse (previous bullet).
+- [s7] KILLED (instance): fully inlining the `v0 = *(tile+0x2C);
+  *(arg1+0)=v0; *(arg1+4)=v0+0xC;` group (v0 used TWICE) as two direct
+  `*(tile+0x2C)` reads broke build_insns exact parity: 199 -> 201 (GCC's
+  CSE did not common the duplicate load across the intervening store to
+  arg1+0). Confirms the s5/s6-established boundary condition
+  ("never inline a value used 2+ times") also applies to block 4.
+  Reverted, reconfirmed 199==199 / score 29.
+- [s7] Also tested swapping the *(arg1+0)=v0 / *(arg1+4)=v0+0xC store
+  order within the (still-named, multi-use) tile+0x2C group: NO CHANGE
+  (stays 29) -- reverted to original order for consistency, this axis is
+  neutral.
+- Final measured floor this session: **29** (was 45 at dispatch),
+  target_insns 199, build_insns 199, exact parity held throughout every
+  edit. src/text1b.c reverted to INCLUDE_ASM (`git checkout --`) before
+  ending the session per asm-until-matched -- candidate.c is the sole
+  persistence mechanism.
+- No permuter run this session (structural modality). No dump.ps1 run
+  this session -- every hypothesis was resolved by direct measurement
+  (single-site edits with immediate sandbox re-scoring), not RTL
+  inspection; the next session's highest-value probe (per the frontier)
+  is a fresh register-normalized dump/diff at the new floor-29 chassis,
+  since blind inlining is now exhausted for block 4's two remaining
+  named-v0 groups (both measured non-improvable this session).
+
+- [s7] Chassis check at dispatch confirmed floor 45 (target_insns 199, build_insns 199) after applying session 5/6's candidate.c, matching the ledger exactly.
+
+- [s7] Both sibling ledgers (func_8007352C, main/src/ings.c) re-checked as COMPLETED-C/closed with nothing to transplant -- no ledger drift since s5/s6.
+
+- [s7] Block 4 (the obj2->field_1C->field_28 record-copy block) had never received the s5 full-inline transplant or an independent s6-style sweep; it was the last untouched region of the function.
+
+- [s7] 4 single-use named-v0/v1 groups in block 4 (top-of-block load, if-arm halving pair, else-arm literal broadcast, the two pre-call arg0+0x14 loads) all measured strict improvements when inlined, each individually re-verified via sandbox, with build_insns staying at exact 199==199 target parity throughout.
+
+- [s7] 2 remaining named-v0 groups in block 4 (the dead-read-adjacent arg1+4 tail, and the genuinely-twice-used tile+0x2C group) both measured NON-improvable this session: the first regresses the score without breaking parity, the second breaks build_insns parity outright when de-duplicated.
+
+- [s7] Final floor this session: 29 (was 45 at dispatch), a 16-point drop, target_insns 199 == build_insns 199 throughout.
+
+- [s7] src/text1b.c reverted to INCLUDE_ASM via git checkout before ending the session; candidate.c in memory/grind/func_8006A564/ is the sole persistence mechanism per asm-until-matched.

@@ -420,3 +420,81 @@ H8: Block 2's tail as two SEPARATE fresh named locals (`o18`, `o1c`, each
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: fresh dump.ps1 run against the unchanged (this session) candidate.c body in src/text1b.c, zero FAKE constructs present
+
+## Session 7 (structural, 2026-09-16)
+
+H9: Applying the s5-proven "drop the reused single-scope v0, write inline
+    expressions at each single-use site" transplant pattern to block 4
+    (the record-copy block, the ONLY tile-draw/record block never given
+    this treatment) will drop the floor below 45.
+    RESULT: CONFIRMED, in 4 independently-measured increments:
+    (a) top-of-block single-use `v0 = *(tile+0x28); *(arg1+0)=v0;`
+        inlined to a single store: measured but not isolated in isolation
+        first (applied together with (b) below in initial pass) -- see
+        evidence.md for the exact per-edit deltas actually measured.
+    (b) if-arm's two single-use halving values (load+shift+store each,
+        `v0`/`v1`) fully inlined (no named locals): 45 -> 39.
+    (c) else-arm's 0x28 literal broadcast (`v0=0x28; 3x store`) inlined to
+        3 direct-literal stores: 39 -> 35.
+    (d) the two single-use `v0 = *(arg0+0x14); *(arg1+8)=v0;` loads
+        (one before each func_8007352C call) inlined directly: 35 -> 29.
+    Every increment re-measured via `sandbox --disable all`; build_insns
+    held at 199==199 (target) throughout all 4 edits.
+    kill_scope: n/a (CONFIRMED, not KILLED)
+    measured_on: candidate.c s6 chassis (floor 45) -> s7 chassis (floor 29
+    after all 4 edits), zero FAKE constructs present
+
+H10: The multi-use boundary condition from s5/s6 (never inline a value
+     used 2+ times -- risks duplicate loads that break exact build_insns
+     parity) also holds for block 4's two remaining named-v0 groups.
+     Tested two specific instances:
+     (a) the `v0 = *(arg1+0)+0xC; ...; *(arg1+4)=v0;` group (preceded by
+         two untouched DEAD reads `v0=*(arg1+0);` `v0=*(arg1+0x1C);`)
+         inlined to `*(arg1+4) = *(arg1+0)+0xC;`: MEASURED WORSE, 29 -> 34
+         (build_insns unchanged, 199==199 -- this is a pure register/order
+         regression, not a parity break, unlike (b)).
+     (b) the `v0 = *(tile+0x2C); *(arg1+0)=v0; *(arg1+4)=v0+0xC;` group
+         (v0 genuinely used twice) fully inlined as two separate
+         `*(tile+0x2C)` reads: MEASURED WORSE on build_insns, 199 -> 201
+         (duplicate load NOT commoned by CSE across the intervening
+         store to arg1+0) -- the same parity-break failure mode s5/s6
+         already found for blocks 2/3's multi-use spellings.
+     Also tested REORDERING (a)'s three statements (dead-reads before vs
+     after the `*(arg1+0x18)=0` store): NO CHANGE either way (stays 29) --
+     statement order is not the lever for this group, only the
+     inline-vs-not axis, which is already at its measured optimum
+     (un-inlined, current candidate.c form).
+     verdict: KILLED (both instances)
+     kill_scope: instance
+     measured_on: candidate.c s7 chassis (floor 29 after H9's 4 wins
+     applied), single site each, zero FAKE constructs present
+
+## [s7] Applying the s5-proven "drop the reused single-scope v0, write inline expressions at each single-use site" transplant pattern to block 4 (the record-copy block, the only tile-draw/record block never given this treatment) will drop the floor below 45.
+- mechanism: Same as s5/s6: a named local written then read gets its own pseudo subject to local-alloc/global-alloc's hard-register search; an anonymous rvalue folded directly into its consuming store either materializes no pseudo (constant case) or lets combine fold load+use into a shorter RTL sequence exposing a different, less-conflicted pseudo to global-alloc.
+- probe: Applied 4 independent single-use inlines (top-of-block *(tile+0x28) load, if-arm's two halving values, else-arm's 0x28 literal broadcast, the two *(arg0+0x14) loads before each func_8007352C call), re-measuring via '& tools/wteng.ps1 main sandbox func_8006A564 --disable all' after each edit.
+- result: CONFIRMED across 4 increments: 45 -> 39 -> 35 -> 29. build_insns held at 199==199 (target) after every single edit.
+- verdict: CONFIRMED
+
+## [s7] Inlining the *(arg1+0)+0xC group (v0=*(arg1+0)+0xC; ...; *(arg1+4)=v0;) into a single expression, while leaving its two preceding dead reads (v0=*(arg1+0); v0=*(arg1+0x1C);) untouched, will further lower the score.
+- mechanism: Hypothesized by analogy to H9's other 4 single-use wins in the same block.
+- probe: Applied `*(arg1+4) = (*(arg1+0) + 0xC);` in place of the named v0 assign+store, at the floor-29 chassis, measured via sandbox --disable all.
+- result: Score regressed 29 -> 34 (build_insns unchanged at 199==199, so this is a register/scheduling regression, not a parity break). Reverted, reconfirmed 29.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c s7 chassis (floor 29, H9's 4 wins already applied), single site, zero FAKE constructs present
+
+## [s7] Reordering the same group's 3 statements (moving the *(arg1+0x18)=0 store before vs after the two dead reads) will change the score.
+- mechanism: Statement order can affect which insn a scheduler/allocator processes first.
+- probe: Swapped the store to before the two dead reads, measured via sandbox --disable all; reverted and reconfirmed.
+- result: No change (stays 29) in either order -- statement order is not a lever for this group; the inline-vs-not axis is the only one that moves it, and inlining already measured worse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c s7 chassis (floor 29), zero FAKE constructs present
+
+## [s7] Fully inlining the v0 = *(tile+0x2C); *(arg1+0)=v0; *(arg1+4)=v0+0xC; group (v0 used TWICE) as two separate *(tile+0x2C) reads will lower the score without breaking parity.
+- mechanism: Hypothesized that GCC's CSE might common the duplicate load across the single intervening store (which writes a different address, arg1+0, so no aliasing conflict).
+- probe: Replaced both uses with direct *(tile+0x2C) reads, measured via sandbox --disable all.
+- result: build_insns broke exact parity: 199 -> 201 (2 extra instructions -- CSE did NOT common the duplicate load across the intervening store). Confirms the s5/s6-established boundary condition ("never inline a value used 2+ times") also holds for block 4. Reverted, reconfirmed 199==199 / score 29.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c s7 chassis (floor 29, H9's 4 wins already applied), single site, zero FAKE constructs present
