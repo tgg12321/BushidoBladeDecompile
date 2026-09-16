@@ -28,7 +28,9 @@
    "next_probe": "write self_vet.md (constructs expected: none \u2014 all ordinary C), then candidate-ready for the driver's byte verification"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Splice the candidate.c FAKE annotation block verbatim above `hit = 0;` in src/code6cac_b.c; change nothing else in the body."
+ ],
  "banned_constructs": [],
  "kills": [
   {
@@ -57,7 +59,11 @@
   }
  ],
  "ladder_skip": 0,
- "pending_fixup": null,
+ "pending_fixup": {
+  "kind": "annotation",
+  "detail": "Splice the candidate.c FAKE annotation block verbatim above `hit = 0;` in src/code6cac_b.c; change nothing else in the body.",
+  "set": "2026-09-16T02:32:37.409669+00:00"
+ },
  "origin": "queue",
  "created": "2026-09-16T01:53:12.929071+00:00",
  "object_model_audited": 1
