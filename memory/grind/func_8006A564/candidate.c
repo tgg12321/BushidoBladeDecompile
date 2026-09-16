@@ -1,106 +1,80 @@
 /* func_8006A564 -- src/text1b.c
- * Session 7 (structural). Chassis at session start: sandbox --disable all
- * score = 45, target_insns 199, build_insns 199 (EXACT parity), matching
- * s5/s6's recorded floor. This session's edits drop it to 29 (same exact
- * parity throughout). Pure C, zero cheat constructs, zero FAKE annotations.
+ * Session 8 (solver). Chassis at session start: the working tree's
+ * src/text1b.c already carried an UNBANKED body from a discarded earlier
+ * session-8 process (its scratch is tmp/grind/func_8006A564/s8/, artifacts
+ * timestamped 2026-09-16 14:08-14:16, no candidate.c / outcome written).
+ * That inherited body measured `sandbox --disable all` score 7 (target_insns
+ * 199, build_insns 199, exact parity) -- i.e. the ledger's recorded floor of
+ * 29 was already stale at dispatch. This session BANKS that body and takes it
+ * from 7 to 3 (exact parity held, 199 == 199, throughout).
  *
- * SESSION 7 METHOD: the s5/s6 frontier's item #3 -- block 4 (the
- * obj2->field_1C->field_28 record-copy block, the ONLY block that never
- * got the "drop the reused single-scope v0, write inline expressions at
- * each single-use site" transplant that closed blocks 1-3's register
- * coloring in session 5 -- was still carrying its original session-2/3
- * chassis untouched. Applied the SAME proven pattern to block 4's
- * single-use v0 occurrences (never to a value used 2+ times, since
- * duplicating a load risks breaking build_insns exact parity -- confirmed
- * by two negative measurements this session, see KILLED below):
+ * What the inherited (unbanked) body had changed relative to the s7
+ * candidate.c: store-order reshuffles inside blocks 1-3 (the tile+0xC /
+ * tile+0xE pair ordering), tile[6] = v0 moved inside both arms of block 3,
+ * and the final record-copy region split into two separate `{ s32 v0; ... }`
+ * scopes (one per func_8007352C call). It is preserved verbatim here except
+ * for this session's one edit.
  *
- *   1. Top-of-block: `v0 = *(tile+0x28); *(arg1+0)=v0;` (single use)
- *      -> `*(arg1+0) = *(tile+0x28);`.                          45 -> ...
- *   2. The if-arm's halving pair (v0/v1 each used once: load, shift,
- *      store) -> fully inlined `*(arg1+0x29) = (u32)(*(arg1+0x29))>>1;`
- *      style (no named locals at all).                          45 -> 39
- *   3. The else-arm's 0x28 literal broadcast (was `v0=0x28; store;
- *      store; store;`) -> each store writes the literal directly.
- *                                                                 39 -> 35
- *   4. The two `v0 = *(arg0+0x14); *(arg1+8)=v0;` single-use loads
- *      (one before each func_8007352C call) -> inlined directly.
- *                                                                 35 -> 29
+ * SESSION 8 METHOD (solver modality, pass-attributed):
+ *   1. `inverse_compose.py classify` (from the discarded process's run,
+ *      tmp/grind/func_8006A564/s8/classify.txt) typed the residual as RA:
+ *      same instructions, different registers, concentrated in the tail.
+ *   2. A register-normalized objdump diff (tmp/grind/func_8006A564/s8/
+ *      objdiff.sh, ours vs build/src/text1b.o) localized the whole score-7
+ *      residual to exactly two adjacent clusters in the final block, 4 + 3
+ *      mismatched instructions:
+ *        A) ours  lw v0,28(s1) / lw v1,0(s1) / sw zero,24(s1) /
+ *                 addiu v0,v0,15 / addiu v1,v1,12
+ *           tgt   lw v1,0(s1)  / lw v0,28(s1) / sw zero,24(s1) /
+ *                 addiu v1,v1,12 / addiu v0,v0,15
+ *        B) ours  sw v0,0(s1) / addiu v0,v0,12 / sw v0,4(s1)
+ *           tgt   addiu v1,v0,12 / sw v0,0(s1) / sw v1,4(s1)
+ *   3. Cluster A CLOSED by rewriting its group as a compound-assignment
+ *      split with the arg1+0x18 store hoisted to the head of the group:
+ *        *(arg1+0x18) = 0; v0 = *(arg1+0); v0 += 0xC;
+ *        *(arg1+0x1C) += 0xF; *(arg1+4) = v0;
+ *      This is ordinary C under .claude/rules/ordinary-c-judge-decidable.md
+ *      Ruling 4 (compound-assignment splits on the same variable). It also
+ *      DELETED the two dead reads (`v0 = *(arg1+0); v0 = *(arg1+0x1C);`)
+ *      that every body since session 2 had carried -- the current body has
+ *      zero dead stores and zero FAKE constructs.  7 -> 3.
+ *   4. Cluster B (3 insns) survives: 28 measured spellings of that group all
+ *      score 3 (see hypotheses.md [s8] H-B1..H-B4 for the enumeration).
  *
- * Measured via `& tools/wteng.ps1 main sandbox func_8006A564 --disable all`
- * after EACH individual edit (not as one combined diff) -- every one of
- * the 4 wins above is independently confirmed, build_insns held at
- * 199==199 (target) throughout all 4.
+ * PASS ATTRIBUTION for cluster B (read, not guessed -- dumps regenerated this
+ * session from this body via `pwsh tools/grinder/dump.ps1 func_8006A564`):
+ *   - .rtl and .combine keep the add BEFORE the store when the C names the
+ *     +0xC value (`v1 = v0 + 0xC;` then the two stores): insn order
+ *     436(lw) 439(add) 442(sw 0) 445(sw 4) -- i.e. TARGET's order already
+ *     exists at combine time.
+ *   - sched1 (.sched) reorders it to 436 442 439 445. Its trace:
+ *       ;; ready list at T-25: 442 (4) 445 (4), now 445 442
+ *       ;; ready list at T-26: 442 (4) 439 (7f000001), now 439 442
+ *     0x7f000001 is sched.c's LAUNCH_PRIORITY (sched.c:187, set at
+ *     sched.c:4049). The add is released by the scheduling of its consumer
+ *     (sw 4(s1)) and enters the ready list carrying that boost, so
+ *     rank_for_schedule's FIRST test (INSN_PRIORITY, sched.c:2418) picks it
+ *     over the equal-class store -- the dependence-class and LUID tests
+ *     (sched.c:2420-2463) are never reached. Because schedule_block is a
+ *     BACKWARD scheduler, being picked at T-26 places the add AFTER the
+ *     store in program order.
+ *   - Post-reload (sched2) the two values have been coalesced into v0, so
+ *     `addiu v0,v0,12` carries a REG_DEP_ANTI on `sw v0,0(s1)` and the order
+ *     is then dependence-FORCED (every sched2 ready list in that region has
+ *     exactly one member). The register coalescing is a CONSEQUENCE of the
+ *     sched1 order, not an independent RA decision -- which is why every
+ *     two-named-locals spelling is inert.
  *
- * KILLED THIS SESSION (both instance, both measured, both reverted):
- * 1. Inlining the FIRST group's tail (`v0=*(arg1+0)+0xC; ...; *(arg1+4)=v0;`
- *    -> `*(arg1+4) = *(arg1+0)+0xC;`) while leaving the two preceding DEAD
- *    reads (`v0=*(arg1+0);` `v0=*(arg1+0x1C);`) untouched: MEASURED WORSE,
- *    29 -> 34 (and in an earlier combined-with-other-changes form, 45 -> 47).
- *    Reverted both times. The dead reads apparently participate in the
- *    same pseudo-liveness/coloring picture as the inlined tail would if
- *    touched; this group is NOT a clean single-use case like the 4 wins
- *    above and needs a different (not yet found) lever, or is already at
- *    its local minimum. Reordering the 3 statements among themselves
- *    (dead reads before/after the `*(arg1+0x18)=0` store) measured NO
- *    CHANGE either way (still 29) -- this group's statement ORDER is not
- *    the lever, only inlining vs not, and inlining measured strictly worse.
- * 2. Fully inlining the `v0 = *(tile+0x2C); *(arg1+0)=v0; *(arg1+4)=v0+0xC;`
- *    group (v0 used TWICE) as two separate `*(tile+0x2C)` reads: MEASURED
- *    WORSE on build_insns (199 -> 201, duplicate load not commoned by
- *    CSE across the intervening store) -- confirms the "never inline a
- *    multi-use value" boundary condition that s5/s6's H8/block2/block3
- *    sweeps already established for blocks 2/3. Reverted.
+ * Matched-sibling ground truth for cluster B's target shape: func_8006A1A0
+ * (same file, COMPLETED-C) emits `lw v0,12(s3); addiu v1,v0,12; sw v0,24(sp);
+ * sw v1,28(sp)` from `p1 = ptr[3]; tbl = p1 + 0xC; s.sp18 = p1; s.sp1C = tbl;`
+ * -- the same source shape as our b01/d01..d05 variants. The difference is
+ * that the sibling's destination is a STACK STRUCT (sw ...(sp), fixed
+ * address) while ours is a pointer parameter (sw ...(s1)); transplanting the
+ * sibling's spelling onto our chassis measured 3 (no change) in 5 variants.
  *
- * Register-normalized dump work this session: NONE (structural modality;
- * pass-attribution reads were not needed since every hypothesis this
- * session was tested by direct measurement, not RTL inspection).
- *
- * NOT yet attempted / frontier for next session:
- * 1. Block 1's remaining residual is STILL the s6-identified scheduling
- *    HAZARD tie (`insn 36 has a greater potential hazard, now 36 46` in
- *    the .sched dump, NOT the dependence-class fallback originally
- *    guessed) -- untouched this session, still needs a read of sched.c's
- *    hazard/insn_cost estimation logic to find a C-level lever (operand
- *    order / an intervening independent computation) that could change
- *    the estimate. See hypotheses.md [s6] for the full dump citation.
- * 2. Blocks 2 and 3 are EXHAUSTED at their current local-spelling minimum
- *    under the exact-parity constraint (s6's 65-variant sweeps each,
- *    confirmed) -- their residual (if any remains after this session's
- *    block-4 work closed points elsewhere) needs either a genuinely new
- *    axis (not inline-subset/decl-order/swap) or is inherent.
- * 3. Block 4's remaining residual (still ~ nonzero after this session's
- *    4 wins) is now concentrated in the KILLED-this-session group (the
- *    dead-reads + arg1+4 tail) and the necessarily-two-use tile+0x2C
- *    group -- BOTH measured NOT improvable by simple inlining/duplication.
- *    A register-normalized objdump diff of the CURRENT (floor-29) build
- *    against target (not yet run this session -- budget) would show
- *    exactly which insns remain mismatched and whether it's still a
- *    v0/v1-class coloring issue or something else (e.g. a scheduling tie
- *    like block 1's). This is the single highest-value next probe: read
- *    `pwsh tools/grinder/dump.ps1 func_8006A564` fresh against this
- *    session's floor-29 body before trying more spelling variants blind.
- * 4. Given blocks 2/3/4 are all now either exhausted or need dump-guided
- *    work rather than more blind inlining, the next session should
- *    PASS-ATTRIBUTE (read the dumps) before any further structural edit,
- *    per the session brief's PASS ATTRIBUTION contract.
- *
- * SESSION 2-6 HISTORY (retained; still applicable to the unchanged parts
- * of the function -- see memory/grind/func_8006A564/hypotheses.md and
- * evidence.md for full detail):
- * Session 1: first C body, floor 137. Session 2: block-local var split +
- * delay-slot fixes, floor 137 -> 68 (build_insns EXACT parity, 199==199).
- * Session 3: removed the named `v0 = mask; if (v0==arg2)` two-statement
- * form at all 4 sites, wrote the mask directly in the if-condition,
- * floor 68 -> 60. Session 4: permuter campaign, re-confirmed floor 60,
- * zero progress after ~4.4k iterations. Session 5: systematic
- * spelling_enum.py sweep found the "fully inline, no named locals" form
- * for block 1's tail (150 variants), transplanted to blocks 2/3,
- * floor 60 -> 45. Session 6: independent 65-variant sweeps of blocks 2
- * and 3's own tails confirmed the block-1-transplanted form is already
- * their score-minimizing spelling under exact-parity; re-dumped block 1's
- * .sched trace and refined the s5 frontier's scheduling-tie mechanism
- * from "dependence-class compare" to "hazard estimate" (floor unchanged
- * at 45, two CLASS-shaped instance kills banked).
+ * KILLED THIS SESSION (all instance kills, all measured on this chassis with
+ * zero FAKE constructs present) -- see hypotheses.md [s8] for the full grids.
  */
 extern s32 D_800A34F8;
 void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
@@ -127,8 +101,8 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
         tile[6] = v0;
         *(s16 *)(tile + 8) = (0x5F);
         *(s16 *)(tile + 0xA) = ((*(s32 *)(arg1 + 0x1C)) + 0xF);
-        *(s16 *)(tile + 0xE) = 1;
         *(s16 *)(tile + 0xC) = ((*(s32 *)(arg1 + 0x18)) + 0x19);
+        *(s16 *)(tile + 0xE) = 1;
     }
     SetSemiTrans(tile, *(s32 *)(arg1 + 0x10));
     AddPrim(D_800A374C + (*(s32 *)(arg1 + 0x14) << 2), tile);
@@ -150,9 +124,9 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
             tile[6] = v0;
         }
         *(s16 *)(tile + 8) = (*(s32 *)(arg1 + 0x18));
+        *(s16 *)(tile + 0xA) = ((*(s32 *)(arg1 + 0x1C)) + 0xE);
         *(s16 *)(tile + 0xC) = 0x78;
         *(s16 *)(tile + 0xE) = 1;
-        *(s16 *)(tile + 0xA) = ((*(s32 *)(arg1 + 0x1C)) + 0xE);
     }
     SetSemiTrans(tile, 1);
     AddPrim(D_800A374C + (*(s32 *)(arg1 + 0x14) << 2), tile);
@@ -168,16 +142,17 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
             tile[4] = v0;
             v0 = *(u8 *)(arg1 + 0x2B);
             v0 = (u32)v0 >> 1;
+            tile[6] = v0;
         } else {
             v0 = 0x10;
             tile[4] = v0;
             tile[5] = v0;
+            tile[6] = v0;
         }
-        tile[6] = v0;
         *(s16 *)(tile + 8) = ((*(s32 *)(arg1 + 0x18)) + 0x40);
+        *(s16 *)(tile + 0xA) = ((*(s32 *)(arg1 + 0x1C)) + 0xD);
         *(s16 *)(tile + 0xC) = 0x38;
         *(s16 *)(tile + 0xE) = 1;
-        *(s16 *)(tile + 0xA) = ((*(s32 *)(arg1 + 0x1C)) + 0xD);
     }
     SetSemiTrans(tile, 1);
     AddPrim(D_800A374C + (*(s32 *)(arg1 + 0x14) << 2), tile);
@@ -200,16 +175,17 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
             *(u8 *)(arg1 + 0x29) = 0x28;
         }
 
-        v0 = *(s32 *)(arg1 + 0);
-        v0 = *(s32 *)(arg1 + 0x1C);
         *(s32 *)(arg1 + 0x18) = 0;
-        v0 = *(s32 *)(arg1 + 0) + 0xC;
-        *(s32 *)(arg1 + 0x1C) = *(s32 *)(arg1 + 0x1C) + 0xF;
+        v0 = *(s32 *)(arg1 + 0);
+        v0 += 0xC;
+        *(s32 *)(arg1 + 0x1C) += 0xF;
         *(s32 *)(arg1 + 4) = v0;
 
         *(s32 *)(arg1 + 8) = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C((s32)arg1);
-
+    }
+    {
+        s32 v0;
         v0 = *(s32 *)(tile + 0x2C);
         *(s32 *)(arg1 + 0) = v0;
         *(s32 *)(arg1 + 4) = v0 + 0xC;

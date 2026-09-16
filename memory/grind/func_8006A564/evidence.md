@@ -489,3 +489,103 @@ ledger and the driver's dispatch-time floor exactly.
 - [s7] Final floor this session: 29 (was 45 at dispatch), a 16-point drop, target_insns 199 == build_insns 199 throughout.
 
 - [s7] src/text1b.c reverted to INCLUDE_ASM via git checkout before ending the session; candidate.c in memory/grind/func_8006A564/ is the sole persistence mechanism per asm-until-matched.
+
+## [s8] 2026-09-16 — solver — floor 29 (ledger) / 7 (actual chassis) -> 3
+
+### Chassis correction (read this before trusting any earlier floor number)
+At dispatch the driver reported "HEAD honest floor: measurement unavailable" and
+the ledger's last recorded floor was 29. Both were stale: the working tree's
+`src/text1b.c` already carried an UNBANKED func_8006A564 body left behind by a
+discarded earlier session-8 process (its scratch survives in
+`tmp/grind/func_8006A564/s8/`, files timestamped 2026-09-16 14:08-14:16; it
+wrote no `candidate.c`, no ledger update and no outcome JSON, so the driver
+treated it as if it never ran). Measured at the start of THIS session:
+`sandbox func_8006A564 --disable all` = **score 7**, target_insns 199,
+build_insns 199 (exact parity). That body is now banked in `candidate.c`
+(its diff vs the s7 candidate: store-order reshuffles in blocks 1-3, `tile[6] =
+v0` moved inside both arms of block 3, and the final record-copy region split
+into two separate `{ s32 v0; ... }` scopes, one per `func_8007352C` call).
+
+### Residual localization (register-normalized objdump diff)
+`tmp/grind/func_8006A564/s8/objdiff.sh` renders ours
+(`tmp/sandbox/func_8006A564/text1b.o`) beside the target
+(`build/src/text1b.o`) instruction-for-instruction. On the score-7 chassis the
+ENTIRE residual was 7 instructions in two adjacent clusters of the final block
+(all other mismatched lines are branch/jump displacement text, which the engine
+score masks):
+
+    A)  ours: lw v0,28(s1) | lw v1,0(s1)  | sw zero,24(s1) | addiu v0,v0,15 | addiu v1,v1,12 | sw v0,28(s1) | sw v1,4(s1)
+        tgt : lw v1,0(s1)  | lw v0,28(s1) | sw zero,24(s1) | addiu v1,v1,12 | addiu v0,v0,15 | sw v0,28(s1) | sw v1,4(s1)
+    B)  ours: lw v0,44(s0) | sw v0,0(s1)     | addiu v0,v0,12 | sw v0,4(s1)
+        tgt : lw v0,44(s0) | addiu v1,v0,12  | sw v0,0(s1)    | sw v1,4(s1)
+
+Both are pure ORDERING differences (cluster A: which of the two loads/adds goes
+first; cluster B: whether the add precedes the first store), and cluster B's
+register difference (v1 vs a second write of v0) is a consequence of the order,
+not an independent allocation decision.
+
+### Cluster A CLOSED (7 -> 3)
+A 12-variant sweep of that group (`tmp/grind/func_8006A564/s8/gen.py` +
+`sweep.ps1`, results in `sweep_A.txt`) found two forms at score 3; the clean one
+is a compound-assignment split with the arg1+0x18 store hoisted to the head:
+
+    *(s32 *)(arg1 + 0x18) = 0;
+    v0 = *(s32 *)(arg1 + 0);
+    v0 += 0xC;
+    *(s32 *)(arg1 + 0x1C) += 0xF;
+    *(s32 *)(arg1 + 4) = v0;
+
+This is ordinary C (compound-assignment split on one variable — owner Ruling 4,
+`.claude/rules/ordinary-c-judge-decidable.md`). It also removed the two dead
+reads (`v0 = *(arg1+0); v0 = *(arg1+0x1C);`) that every body since session 2
+carried: **the current candidate has zero dead stores, zero pads, zero FAKE
+constructs, zero annotations.** The other score-3 form (a10) keeps the dead
+reads and only moves the arg1+0x18 store to the end; it was rejected in favour
+of the dead-read-free spelling per the simplest-known-form rule
+(ordinary-c-judge-decidable.md Ruling 1.4).
+
+### Cluster B — pass attribution (dumps READ, not guessed)
+Dumps regenerated this session from this body (`pwsh tools/grinder/dump.ps1
+func_8006A564`, tmp/grind/func_8006A564/dumps/):
+
+* `.rtl` and `.combine` already carry TARGET's order when the C names the +0xC
+  value (`v1 = v0 + 0xC;` before the two stores): insn chain 436(lw) 439(add)
+  442(sw 0(s1)) 445(sw 4(s1)).
+* **sched1 is the pass that breaks it.** Its trace for that region:
+      ;; ready list at T-25: 442 (4) 445 (4), now 445 442
+      ;; ready list at T-26: 442 (4) 439 (7f000001), now 439 442
+  `0x7f000001` is `LAUNCH_PRIORITY` (`tools/gcc-2.7.2/sched.c:187`, assigned at
+  `sched.c:4049`). The add enters the ready list carrying that boost the moment
+  its consumer (`sw 4(s1)`) is scheduled, so `rank_for_schedule`'s FIRST test —
+  the raw `INSN_PRIORITY` difference at `sched.c:2418` — decides, and the
+  dependence-CLASS and INSN_LUID tests (`sched.c:2420-2463`) are never reached.
+  `schedule_block` is BACKWARD, so being chosen at T-26 puts the add AFTER the
+  store in program order. This is a DIFFERENT wall from
+  `.claude/rules/sched-rank-class-tie-wall.md` (that rule's wall is the class
+  compare on an equal-priority tie; here the priorities are not equal at all).
+* Post-reload `sched2` shows the region fully dependence-forced (every ready
+  list has exactly one member) because the two values are already coalesced into
+  `v0`, giving `addiu v0,v0,12` a REG_DEP_ANTI on `sw v0,0(s1)`. That coalescing
+  is downstream of the sched1 order — which is why every "two named locals"
+  spelling is inert.
+
+### Matched-sibling ground truth for cluster B
+`func_8006A1A0` (same file, COMPLETED-C, src/text1b.c:6280) emits exactly the
+target shape — `lw v0,12(s3); addiu v1,v0,12; sw v0,24(sp); sw v1,28(sp)` —
+from `p1 = ptr[3]; tbl = p1 + 0xC; s.sp18 = p1; s.sp1C = tbl;`. Its destination
+is a STACK STRUCT (fixed-address `sw ...(sp)`); ours is a pointer parameter
+(`sw ...(s1)`). Transplanting the sibling's exact spelling (function-scope
+`tbl`, block-scope pair, `s32 *rec` indexing) onto our chassis: 5 variants, all
+score 3, all exact parity. Banked as instance kills below.
+
+- [s8] The ledger's floor of 29 was stale at dispatch: the working tree already carried an unbanked func_8006A564 body from a discarded earlier session-8 process (scratch in tmp/grind/func_8006A564/s8/, timestamps 2026-09-16 14:08-14:16, no candidate.c and no outcome written) that measured score 7 with exact parity. This session banked it to memory/grind/func_8006A564/candidate.c before editing anything.
+
+- [s8] The whole score-7 residual was 7 instructions in two adjacent clusters of the final block; everything else in the register-normalized objdump diff is branch/jump displacement text that the engine score masks.
+
+- [s8] Cluster A (4 insns) is closed. The banked candidate measures 3 with build_insns 199 == target_insns 199 and contains zero dead stores, zero pads, zero volatile and zero FAKE annotations: it is entirely ordinary C.
+
+- [s8] Cluster B's mechanism is named and dump-proven: sched1's LAUNCH_PRIORITY boost (sched.c:187 / sched.c:4049) wins rank_for_schedule's first test (sched.c:2418), so the dependence-class and LUID tie-breaks (sched.c:2420-2463) never run. This is a different wall from .claude/rules/sched-rank-class-tie-wall.md, which describes the equal-priority class-compare case.
+
+- [s8] Post-reload sched2 shows cluster B fully dependence-forced (REG_DEP_ANTI from the coalesced `addiu v0,v0,12` onto `sw v0,0(s1)`, every ready list single-membered), so the v1-vs-v0 register difference is a consequence of the sched1 order rather than an independent RA decision. That is why all two-named-local spellings are inert.
+
+- [s8] 28 distinct spellings of cluster B's 4-statement group were measured this session (b/c/d/e sweeps); every one scores 3 or worse, tabulated in tmp/grind/func_8006A564/s8/sweep_results.txt.

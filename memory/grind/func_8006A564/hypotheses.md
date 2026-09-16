@@ -498,3 +498,128 @@ H10: The multi-use boundary condition from s5/s6 (never inline a value
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c s7 chassis (floor 29, H9's 4 wins already applied), single site, zero FAKE constructs present
+
+## [s8] 2026-09-16 — solver
+
+Chassis: the working tree's unbanked score-7 body (see evidence.md [s8]);
+zero FAKE constructs present in every measurement below; exact insn parity
+(build_insns 199 == target_insns 199) held in every variant unless noted.
+Sweep harness: `tmp/grind/func_8006A564/s8/{gen,genb,genc,gend,gene}.py`
+generate whole-file variants into `s8/variants/`, `s8/sweep.ps1` swaps each into
+`src/text1b.c`, runs `sandbox --disable all`, and restores the baseline.
+
+### CONFIRMED
+
+**H-A1 (CONFIRMED, floor 7 -> 3).** Rewriting cluster A's group as
+`*(arg1+0x18) = 0; v0 = *(arg1+0); v0 += 0xC; *(arg1+0x1C) += 0xF;
+*(arg1+4) = v0;` closes all four of cluster A's mismatched instructions.
+Mechanism: the compound-assignment split plus the hoisted constant store changes
+the sched1 LUID/readiness order of the two load->add->store chains, so the
+arg1+0 chain is emitted first exactly as in the target. Measured 7 -> 3, exact
+parity, on the chassis above with zero FAKE constructs. A second form (a10 —
+dead reads retained, arg1+0x18 store moved to the END of the group) also
+measures 3; the banked candidate uses the dead-read-free form.
+
+**H-A2 (CONFIRMED).** The two dead reads carried since s2
+(`v0 = *(arg1+0); v0 = *(arg1+0x1C);`) are NOT load-bearing: a02/a03 (both dead
+reads deleted) measure 7 on the score-7 chassis, identical to the control a00/a01
+(dead reads present, either order). The candidate therefore drops them, leaving
+the body with no dead stores at all.
+
+### KILLED (all INSTANCE, all measured on the s8 chassis, zero FAKE constructs)
+
+**H-B1.** Naming cluster B's `+0xC` value in a fresh block-scope local
+(`v0 = *(tile+0x2C); v1 = v0 + 0xC; *(arg1+0) = v0; *(arg1+4) = v1;`) does not
+move cluster B's 3-instruction residual: measured 3 (unchanged), exact parity.
+Also measured unchanged at 3: a same-variable compound split (`*(arg1+0) = v0;
+v0 += 0xC;`), a copy-then-compound (`v1 = v0; v1 += 0xC;`), a re-read from
+memory (`*(arg1+4) = *(arg1+0) + 0xC;`), the a11-shaped variant, and
+reversed-declaration `v1`/`v0` naming. 8 variants (b00..b07), all 3.
+Mechanism (dump-read, not inferred): `.rtl`/`.combine` already emit the add
+before the store for these spellings; sched1 moves it, because the add is
+released with `LAUNCH_PRIORITY` (`sched.c:187`, set `sched.c:4049`) when its
+consumer is scheduled and therefore wins `rank_for_schedule`'s first test
+(`sched.c:2418`) against the equal-class store.
+
+**H-B2.** Moving cluster B's `*(arg1+8) = *(arg0+0x14);` store relative to the
+two record stores measures strictly worse AND breaks exact parity: ahead of both
+stores (c01, c08) = score 8 / build_insns 197; between them (c02, c06) = score 6
+/ build_insns 198. cse commons the `arg0+0x14` read across the moved store.
+
+**H-B3.** Transplanting the matched sibling func_8006A1A0's spelling of the
+identical shape (`p2 = tile[0x2C]; tbl = p2 + 0xC; dst0 = p2; dst4 = tbl;`) onto
+this chassis does not reproduce the sibling's instruction order: function-scope
+`tbl`, function-scope `p2 + tbl`, `tbl`/`p2` declared first, block-scope pair,
+and an `s32 *rec` view of `tile` — 5 variants (d01..d05), all measured 3, exact
+parity. The sibling's destination is a stack struct at a fixed frame address;
+ours is a pointer parameter, so the store's alias/dependence position differs.
+
+**H-B4.** Giving cluster B's destination stores `MEM_IN_STRUCT_P` shape (a `s32
+*dst = (s32 *)arg1;` local with `dst[0]`/`dst[1]`, an inline `((s32 *)arg1)[i]`
+index, a `u8 *d = arg1;` re-base, and a combined dst-pointer + named-`v1` form)
+does not move cluster B: 5 variants (e01..e05), all 3, exact parity. Extending
+the same pointer view to the third store (`dst[2]`, c05) measures 4 — worse.
+
+### Frontier for s9 (cluster B, 3 insns, the entire remaining residual)
+
+1. The sched1 LAUNCH_PRIORITY release is the named mechanism. The add is boosted
+   *because its only consumer is the very insn just scheduled*. Untried axis: a
+   second, later consumer of the `+0xC` value (one that appears in the target's
+   own bytes — e.g. if the value stored at arg1+4 is genuinely re-read further
+   down), or a spelling in which the arg1+0 store is itself released in the same
+   cycle so both carry the boost and the LUID tie-break (`sched.c:2463`,
+   higher-LUID-first) decides. Read `schedule_insn` (`sched.c:3650-3880`) to see
+   exactly which released insns inherit the boost before spelling more variants.
+2. Nothing in the local spelling space of that 4-statement group is left
+   untried (28 measured spellings across b/c/d/e sweeps, all 3 or worse); the
+   next lever has to change the DEPENDENCE STRUCTURE around the group, not its
+   text. Candidates: what the second `func_8007352C` call's argument is, and
+   whether `tile` (the `obj2->0x1C` record pointer) is re-derived rather than
+   held live across the first call.
+3. Blocks 1-3 and cluster A now match instruction-for-instruction; the score-3
+   residual is entirely cluster B. Any future edit outside that group is a
+   regression risk, not an opportunity — re-run `s8/objdiff.sh` after any change.
+
+## [s8] Rewriting the final block's first record group as `*(arg1+0x18)=0; v0=*(arg1+0); v0+=0xC; *(arg1+0x1C)+=0xF; *(arg1+4)=v0;` closes all four mismatched instructions of residual cluster A (the two-load / two-add ordering pair).
+- mechanism: The compound-assignment split plus hoisting the constant store to the head of the group changes the sched1 readiness/LUID order of the two load->add->store chains, so the arg1+0 chain is emitted first, as in the target. Ordinary C per ordinary-c-judge-decidable.md Ruling 4.
+- probe: 12-variant sweep of that group (tmp/grind/func_8006A564/s8/gen.py + sweep.ps1), each measured with `sandbox func_8006A564 --disable all`.
+- result: score 7 -> 3, target_insns 199 == build_insns 199 throughout. Two variants reach 3 (a10 keeps the dead reads and moves the arg1+0x18 store to the end; a11, adopted, deletes them). The register-normalized objdump diff confirms cluster A is now instruction-identical to target; the only remaining mismatches are cluster B's 3 insns (tmp/grind/func_8006A564/s8/final_objdiff.txt).
+- verdict: CONFIRMED
+
+## [s8] The two dead reads carried in this body since session 2 (`v0 = *(arg1+0); v0 = *(arg1+0x1C);`) do not affect the emitted bytes on this chassis.
+- mechanism: Both are CSE'd into the real loads that follow, so deleting them leaves the same RTL. Removing them makes the candidate free of dead stores, pads and FAKE constructs entirely.
+- probe: Variants a02/a03 (both dead reads deleted) vs a00/a01 (present, in both orders), measured on the score-7 chassis.
+- result: all four measure score 7 with exact parity 199==199; the adopted score-3 form (a11) carries no dead read at all.
+- verdict: CONFIRMED
+
+## [s8] Naming or re-spelling the +0xC value inside cluster B's group (fresh block-scope local, same-variable compound split, copy-then-compound, memory re-read, reversed declaration order, pointer-local destination) leaves cluster B's 3-instruction residual at score 3 on this chassis.
+- mechanism: Dump-read: .rtl/.combine already emit the add before the store for these spellings (insn chain 436 lw, 439 add, 442 sw 0(s1), 445 sw 4(s1)); sched1 moves it because the add is released carrying LAUNCH_PRIORITY (tools/gcc-2.7.2/sched.c:187, assigned at sched.c:4049) when its consumer is scheduled, so rank_for_schedule's first test (INSN_PRIORITY, sched.c:2418) picks it and the class/LUID tests are never reached. schedule_block is backward, so the pick places the add after the store.
+- probe: 8-variant sweep b00..b07 (tmp/grind/func_8006A564/s8/genb.py) plus a fresh `pwsh tools/grinder/dump.ps1 func_8006A564` whose .rtl/.combine/.sched/.sched2 traces for block 12 were read directly.
+- result: all 8 variants measure score 3 with build_insns 199; sched2 shows the region dependence-forced after coalescing (every ready list single-membered).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s8 chassis (candidate.c as banked this session, floor 3, cluster A closed), zero FAKE constructs present
+
+## [s8] Moving cluster B's `*(arg1+8) = *(arg0+0x14);` store ahead of or between the two record stores measures worse than the control on this chassis.
+- mechanism: cse commons the arg0+0x14 read across the relocated store, dropping real instructions and breaking exact parity.
+- probe: Variants c01/c08 (store first) and c02/c06 (store between) from tmp/grind/func_8006A564/s8/genc.py.
+- result: c01/c08 score 8 with build_insns 197; c02/c06 score 6 with build_insns 198; control 3 with 199. Rejected form saved to memory/grind/func_8006A564/rejected/blockB-arg8-store-hoisted-breaks-parity.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s8 chassis (floor 3), zero FAKE constructs present
+
+## [s8] Transplanting the matched sibling func_8006A1A0's spelling of the same load/+0xC/two-store shape (function-scope tbl, function-scope p2+tbl, tbl-declared-first, block-scope pair, s32* view of the record) onto this chassis leaves cluster B at score 3.
+- mechanism: func_8006A1A0 emits the target shape (lw v0,12(s3); addiu v1,v0,12; sw v0,24(sp); sw v1,28(sp)) from that C, but its destination is a stack struct at a fixed frame address while ours is a store through the pointer parameter arg1, so the store's dependence position in sched1 differs.
+- probe: 5-variant sibling transplant sweep d01..d05 (tmp/grind/func_8006A564/s8/gend.py), plus an objdump read of func_8006A1A0 in build/src/text1b.o to establish the sibling's emitted shape.
+- result: all 5 measure score 3 with build_insns 199 and an identical objdiff residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s8 chassis (floor 3), zero FAKE constructs present
+
+## [s8] Giving cluster B's destination stores a MEM_IN_STRUCT_P shape (s32* local with dst[0]/dst[1], inline ((s32*)arg1)[i] indexing, u8* re-base, dst-pointer combined with a named +0xC local) leaves cluster B at score 3 on this chassis.
+- mechanism: INDIRECT_REF over PLUS sets MEM_IN_STRUCT_P and changes the alias exemption at sched.c:834-839, but the add's LAUNCH_PRIORITY release is unaffected, so the same pick order results.
+- probe: 5-variant sweep e01..e05 (tmp/grind/func_8006A564/s8/gene.py); the extended form applying the pointer view to the third store (c05) was measured separately.
+- result: e01..e05 all score 3 with build_insns 199; c05 (pointer view extended to dst[2]) measured 4, i.e. worse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s8 chassis (floor 3), zero FAKE constructs present
