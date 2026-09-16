@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 18,
- "current_modality": "solver",
+ "session_count": 19,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -111,13 +111,19 @@
    "floor": 42,
    "modality": "solver",
    "headline": "s18 solver: classify re-confirms PRE-RA/rtl_shape (out of RA/sched-solver scope); read target asm to confirm $fp is a genuine loop-carried i*2 accumulator; re-tested the closest rejected spelling on t"
+  },
+  {
+   "session": 19,
+   "floor": 42,
+   "modality": "forensics",
+   "headline": "s19 forensics: fresh floor 42/204 re-confirmed; fully attributed the previously-unexplained classify li#,4/lw-96/104(sp) target-only instructions to downstream shadows of the s18 loop.c:3823 insn_coun"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining PRE-RA rtl_shape residual requires shrinking or reshaping the loop body's total instruction count enough to cross loop.c:3823's strength-reduction threshold, rather than any re-spelling of the i*2 index itself -- the two unattributed target-only instructions (`li ?,4`, extra `lw` loads at offsets 104/96(sp)) may be part of a different, still-unexplained structural difference that changes insn_count as a side effect.",
-   "mechanism": "loop.c:3823's `v->lifetime * threshold * benefit < insn_count` predicate is the actual gate; insn_count is the loop body's total instruction count as GCC computes it internally post-optimization, so any C restructuring that genuinely shrinks or reshapes that count (not just renames the index) could in principle cross the threshold.",
-   "next_probe": "A structural or rederive-modality session should trace what the classify target-only `li ?,4` and the two extra `lw` loads at 96/104(sp) actually represent in the target's C -- they are still unattributed after s17 and s18 -- and separately, whether any UNRELATED simplification elsewhere in the loop body (not touching the i*2 index at all) measurably shrinks build_insns enough to approach the loop.c:3823 threshold. Do NOT re-open any spelling of 'i*2 in one C handle' -- that family is now class-killed."
+   "hypothesis": "The remaining PRE-RA rtl_shape residual (42/204, build_insns 197 vs target 204, a 7-insn body deficit) can only close by genuinely adding/reshaping real instructions in the loop body -- not by respelling the i*2 index (class-killed s18), the y-compare tail (closed s16, correct structural mirror), the scratchpad literal (killed s15), or the store-duplication tail (killed s12) -- so the next probe must look OUTSIDE this loop's already-examined blocks for a genuinely different C-level shape that legitimately grows insn_count past the loop.c:3823 threshold.",
+   "mechanism": "loop.c:3823's giv-worth predicate is purely a function of the compiled loop body's total instruction count (insn_count) vs the giv's lifetime*threshold*benefit; nothing about re-spelling an EXISTING value's C handle changes insn_count in the needed direction (it only adds register pressure/increment insns, moving the wrong way). Only a genuine, semantically-motivated additional/differently-shaped computation in the loop body can shift insn_count past 164 (current) toward whatever the target's real value is.",
+   "next_probe": "A rederive-modality session should m2c-decompile the target func_80056CB8 fresh and diff its overall statement shape (not just the already-examined i*2/y-compare/scratchpad/store-dup blocks) against the current 730-line candidate.c body for any block m2c reconstructs with MORE real computation than the current C expresses -- particularly around the two func_80053614 call-argument setup blocks (pt0/pt1 fills) which s15 only tested for REORDER, never for a missing/different VALUE."
   }
  ],
  "judge_constraints": [],
@@ -370,6 +376,22 @@
    "measured_on": "s18 chassis (42/197, s17-banked candidate.c body unmodified except the tested idx2 substitution, reverted after measurement), single fresh sandbox measurement, no FAKE constructs present in either bas",
    "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
    "result": "idx2 variant measured 42 -> 50 (build_insns 197 -> 200), WORSE, on the current 42/197 chassis -- reproducing the s10 (58"
+  },
+  {
+   "session": 19,
+   "statement": "The classify-flagged 'target only: li #,4' instructions (unattributed since s8) are reorg.c's fill_simple_delay_slots reusing one constant preload across two converging branch delay slots, not an inde",
+   "kill_scope": "class",
+   "measured_on": "s19 chassis (42/197, s18-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified -- read-only attribution, no new C spelling tested), fresh sandbox + fresh instrumented-cc1 .loop d",
+   "predicate_cite": "tools/gcc-2.7.2/reorg.c:2861",
+   "result": "Floor re-confirmed 42/204 fresh this session (score=42, build_insns=197, target_insns=204, sandbox func_80056CB8 --disab"
+  },
+  {
+   "session": 19,
+   "statement": "The classify-flagged 'target only: lw #,96(#)/104(#)' instructions are ordinary per-iteration stack-reload offset drift caused by our 197-insn frame differing in size/layout from target's 204-insn fra",
+   "kill_scope": "class",
+   "measured_on": "s19 chassis (42/197, s18-banked candidate.c body unmodified), fresh sandbox + fresh instrumented-cc1 .loop dump this session, no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
+   "result": "No independently-fixable C-level construct found in this tail. Both previously-unattributed classify categories (li#,4 a"
   }
  ],
  "ladder_skip": 0,

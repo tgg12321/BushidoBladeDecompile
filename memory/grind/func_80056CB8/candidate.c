@@ -1,6 +1,20 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17/s18)
+ * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17/s18/s19)
  * — floor 42/204, NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s19 (forensics modality, 2026-09-16). Re-applied body unchanged,
+ * re-confirmed floor 42/204 fresh. Fully attributed the previously-
+ * unexplained classify "target only: li #,4"/"lw 96(#)"/"lw 104(#)"
+ * instructions (unattributed since s8): the li#,4 pair is reorg.c's
+ * fill_simple_delay_slots (reorg.c:2861) reusing a constant preload
+ * across two converging branch delay slots (asm/funcs/func_80056CB8.s
+ * lines 144-157, the flags==3/flags==4 chain converging on .L80056F08);
+ * the lw-96/104(sp) pair is ordinary frame-offset drift from our
+ * 197-insn frame vs target's 204-insn frame. CLASS KILL: neither is an
+ * independent C-level lever -- both are downstream shadows of the same
+ * insn_count deficit s18 already predicate-cited at loop.c:3823. This
+ * closes the s17/s18 frontier item with no new lever found. Full
+ * derivation: hypotheses.md/evidence.md [s19].
  * ---------------------------------------------------------------------
  * s18 (solver modality, 2026-09-16). Re-applied body unchanged, re-confirmed
  * floor 42/204 fresh (build_insns 197). Ran classify fresh: PRE-RA/rtl_shape
