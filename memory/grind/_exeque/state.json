@@ -1,8 +1,8 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 8,
- "current_modality": "synthesis",
+ "session_count": 9,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -51,18 +51,24 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "_exeque re-confirmed at floor 2/187 (s4-s7 chassis unchanged); mandatory fake-ablation kill re-audit confirms both do-while(0) FAKE wraps are genuinely load-bearing (not a false-kill/inert-carrier art"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "solver",
+   "headline": "s9 (solver): sched_solver formally proves zero sched1/sched2 order vectors exist for _exeque's floor-2/187 residual \u2014 it is entirely a reorg.c delay-slot-fill decision, out of scope for both ra_solver"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The final callback block's jalr-delay-slot residual (D_8009BE7C-clear store filled into the D_8009BE80 jalr's delay slot instead of target's explicit pre-jalr store + unfilled nop) may qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched (guard-clear-and-invoke), closing the last 2/187 instructions once ruled on.",
-   "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque) IRQ-install site, and that the floor has now been flat at 2/187 for five consecutive sessions (s4-s8) across permuter, structural, enumerate, and synthesis modalities with zero improvement found by any non-volatile lever."
+   "hypothesis": "Restructuring D_8009BE7C's ADDRESS computation (not the callback pointer, which s7 already falsified in all 19 combinations) may force the store's address pseudo into a call_used_reg ($v0/$v1/$a0-$a3/$t0-$t9) that the D_8009BE80 jalr itself needs live across the call, excluding the store from reorg.c's delay-slot fill on a genuine resource conflict rather than a scheduling preference.",
+   "mechanism": "GCC 2.7.2 reorg.c mark_set_resources for CALL_INSN with include_delayed_effects=1 (reorg.c:573-604): marks every call_used_reg as SET by the call; a delay-slot candidate must not need a resource the call needs to be excluded from the fill.",
+   "next_probe": "Read the .sched/.combine dump (pwsh tools/grinder/dump.ps1 _exeque) for the exact hard register the D_8009BE80 indirect-call target materializes into, then try C-level spellings of D_8009BE7C's address expression (field/struct access instead of &D_8009BE7C, or a path sharing register pressure with the callback-address load) designed to force the store's address pseudo into that same register. This is a structural-modality probe (not solver), since neither ra_solver nor sched_solver can search a reorg.c resource-conflict question."
   },
   {
-   "hypothesis": "A non-volatile pure-C lever may still exist by restructuring how D_8009BE7C's ADDRESS is computed (not the callback pointer, which s7 already falsified as a fresh local across 19 combinations) so the store's address pseudo lands in a call_used_reg the D_8009BE80 jalr itself needs live across the jump, excluding the store from reorg.c's delay-slot fill on a genuine resource conflict.",
-   "mechanism": "GCC 2.7.2 reorg.c mark_set_resources for CALL_INSN with include_delayed_effects=1 (reorg.c:573-604): marks every call_used_reg ($v0/$v1/$a0-$a3/$t0-$t9) as SET by the call; a delay-slot candidate must not need a resource the call needs (e.g. the callee-address register) to be excluded from the fill.",
-   "next_probe": "Read the .sched/.combine dump (pwsh tools/grinder/dump.ps1 _exeque) for the exact hard register the D_8009BE80 indirect-call target materializes into, then try C-level spellings of D_8009BE7C's address expression (e.g. field/struct-access instead of &D_8009BE7C, or computing it via a path that shares register pressure with the callback-address load) designed to force the store's address pseudo into that same register class."
+   "hypothesis": "The jalr-delay-slot residual may qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched (guard-clear-and-invoke), closing the last 2/187 instructions once ruled on.",
+   "mechanism": "policy/ruling question, not a GCC pass",
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and that the floor has now been flat at 2/187 for six consecutive sessions (s4-s9) across permuter, structural, enumerate, synthesis, and solver modalities, with the solver session additionally proving the residual is unreachable by either RA or scheduling-order search."
   }
  ],
  "judge_constraints": [],
@@ -203,6 +209,14 @@
    "measured_on": "s4/s5/s6/s7/s8 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c), both FAKE-annotated wraps present at baseline, ablated singly and jointly",
    "predicate_cite": "",
    "result": "keep-all (both wraps)=2/187 (186 insns); drop-nested-only=7/187; drop-outer-only=7/187 (185 insns); drop-both=12/187 (18"
+  },
+  {
+   "session": 9,
+   "statement": "On the current floor-2/187 do-while(0)-wrapped chassis (memory/grind/_exeque/candidate.c, both FAKE wraps present), sched_solver's validated sched1+sched2 model of _exeque finds ZERO blocks, in either",
+   "kill_scope": "instance",
+   "measured_on": "s4-s8 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged this session), sched_solver's full sched1+sched2 model of display.c (parity=True vs build/cc1), goal derived f",
+   "predicate_cite": "",
+   "result": "Both passes print only the header alignment stats (align honobj->tgtobj: |A|=186 |B|=187 {'equal': 185, 'replace': 1, 'd"
   }
  ],
  "ladder_skip": 0,

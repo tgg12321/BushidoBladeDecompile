@@ -82,6 +82,22 @@
  *   s4's campaign 3 (this session) re-targeted this exact residual with a
  *   directed permuter run on the now much-smaller floor-2 chassis; see
  *   hypotheses.md for the outcome.
+ *
+ * s9 (solver, 2026-09-16): re-confirmed floor 2/187 unchanged (src had
+ * drifted back to INCLUDE_ASM; re-applied this body verbatim). Ran
+ * tools/ra_solver/inverse_compose.py classify (object-level path) and
+ * tools/sched_solver/perturb.py (both sched1/sched2 passes,
+ * --goal-from-target via the object-level --target-object escape --
+ * the asm/funcs/_exeque.s text escape is unusable, its parser skips every
+ * `/* offset addr bytes */`-prefixed disassembly line). classify confirms
+ * SCHED/nop-only (no RA component anywhere in the function); perturb.py
+ * then found ZERO blocks in either pass where target's required pre-reorg
+ * order differs from our own pick order -- the search space for a
+ * scheduling-order lever is EMPTY, not merely exhausted. This formally
+ * upgrades s6's dump-based diagnosis: the floor-2 residual is entirely a
+ * reorg.c fill_simple_delay_slots decision, a pass neither ra_solver nor
+ * sched_solver models (documented out-of-scope in both tools' READMEs).
+ * See hypotheses.md [s9] for the full evidence chain. This body unchanged.
  */
 s32 _exeque(void) {
     s32 mask;
