@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 30,
- "current_modality": "solver",
+ "session_count": 31,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -183,23 +183,29 @@
    "floor": 38,
    "modality": "solver",
    "headline": "s30 solver: object-level inverse_compose classify + a full target-asm read prove $fp is target's genuine loop-carried i*2 accumulator (not the literal); the exact untried idx2-without-limit-hoist comb"
+  },
+  {
+   "session": 31,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s31 forensics: fresh 38/204 reconfirmed; instrumented .loop dump gives EXACT loop.c:3823 giv-worth numbers for the i*2 axis (124 vs 163, gap 39) replacing s26's qualitative claim with a measurable tar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some OTHER structural change to the function body (not touching the index arithmetic at all) raises this loop's own per-loop insn_count/benefit ratio enough that GCC's OWN loop.c strength_reduce promotes the literal `[i * 2]` expression automatically into a compiler-built giv register -- reproducing target's fp-accumulator shape without any hand-written idx2 variable.",
-   "mechanism": "loop.c:3823's giv-worth predicate (v->lifetime * threshold * benefit < insn_count) rejects strength reduction of i*2 on every chassis measured in this ledger; the predicate is sensitive to the loop's own per-loop insn_count, which changes with other structural edits to the loop body (as s22's `limit`-local addition already demonstrated for a different, unrelated value).",
-   "next_probe": "Read tools/gcc-2.7.2/loop.c's strength_reduce/find_life_time functions to identify exactly what raises the LHS (lifetime*threshold*benefit) for the i*2 giv candidate specifically (not just insn_count), then look for a C-level lever elsewhere in the loop body (not the index arithmetic itself) that could shift that specific term without regressing insn_count in the wrong direction."
+   "hypothesis": "A structural C change elsewhere in the loop body (not touching the i*2 index expressions or their live ranges) that reduces the loop's real-insn count from 163 to <=124 would flip loop.c:3823's inequality (124 >= new lower insn_count) and let strength_reduce automatically promote the merged i*2 giv into a compiler-built accumulator register, reproducing target's fp shape without any hand-written idx2 variable.",
+   "mechanism": "loop.c:3823 giv-worth test; insn_count is 'Loop from 25 to 444: 163 real insns' printed directly in the .loop dump for this exact chassis.",
+   "next_probe": "Identify which currently-unmerged/unoptimized statements in the loop body (the pt0/pt1 store blocks, the sin_p/cos_p table lookups, the flags dispatch tail) could be restructured to emit fewer real RTL insns without changing byte output, then re-run the .loop dump after each candidate change and read the new insn_count + the new giv-worth product for insn 130 directly (do not guess -- the dump prints both numbers exactly)."
   },
   {
-   "hypothesis": "A restructuring of one of the 8 OTHER named residents' own live-range/conflict footprint (obj/self-ptr, obj2, flags/code, sin_p, cos_p, x, z) -- not the loop index or the literal -- could independently free $fp for a genuinely different value while still leaving the 0x1F8002B8 literal without a register (forced to spill by a different competing value than idx2).",
-   "mechanism": "global.c global_alloc's priority-ordered coloring; s29's conflict-map decode showed exactly 9 pseudos live across the loop competing for 9 callee-saved registers on OUR chassis (8 named + the literal). If a DIFFERENT 9th value (not idx2) could be found among the function's own dataflow, it might change which pseudo is pushed to spill without the idx2 axis's insn_count regression.",
-   "next_probe": "Re-run the s29 conflict_map.py decode against the s30 chassis's fresh .greg dump to verify the 8-named/1-literal picture is unchanged (it should be, since the body is unmodified from s22-s29), then search each of the 8 named residents' declaration/use sites for a genuinely different live-range-narrowing or live-range-widening C spelling not yet tried (sin_p/cos_p narrowing via sin_v/cos_v was tried and killed at s26; obj/obj2 and the pt-coordinate accumulators x/z have not yet been swept for this specific axis)."
+   "hypothesis": "Alternatively, raising the merged giv's own lifetime or benefit term (rather than shrinking insn_count) could close the 124->163 gap -- e.g. if a third genuine use of the i*2 expression existed in the loop body, combine_givs might merge it in and raise the combined benefit/lifetime product past the threshold.",
+   "mechanism": "loop.c 3776-3801 benefit computation + combine_givs; the dump shows exactly 2 uses (insn 43, insn 130) combined into the rejected giv, with each pre-combine value being 'benefit 2 used 1 lifetime 1' -- the combined values feeding the 124 product are not separately printed and would need an intermediate dump read (adding print statements is off-limits per no-compiler-divergence, but the EXISTING dump output at combine time, if any, should be checked first).",
+   "next_probe": "Re-read the full .loop dump slice (not just the grep) around lines 36-43 (tmp/grind/func_80056CB8/dumps/text1b.loop, function slice from line 13251) for any additional combine_givs diagnostic output between the two 'giv reg ... benefit 2' lines and the 'not worth while' line that would reveal the combined benefit/lifetime values directly, before assuming they need cc1 instrumentation."
   },
   {
-   "hypothesis": "Because loop.c's own strength-reduction never promotes i*2 on any chassis measured so far, the ORIGINAL source almost certainly used a literal `[i * 2]` (or `[idx * 2]`) expression -- not a hand-carried variable -- and GCC's automatic promotion depended on the ORIGINAL function's full 204-instruction context (a context this ledger has never fully reconstructed, since every candidate so far is 6 instructions short of target). Closing the remaining 6-instruction gap through means OTHER than the index/literal axes might be a precondition for the giv-promotion to activate naturally.",
-   "mechanism": "n/a -- structural inference from the exhausted idx2/literal axes plus the still-open 6-instruction gap (198 vs 204).",
-   "next_probe": "Systematically account for target's remaining ~6-instruction excess elsewhere in the function body (the pt0/pt1 store-order and dx/dz axes are already class-killed per s15/s25; re-examine the y-compare tail (.L80056F80-.L80056F98) and the flags==3/flags==4 dispatch structure, which this ledger has not yet swept as thoroughly as the sin_p/cos_p/scale/x/z block)."
+   "hypothesis": "A restructuring of one of the 8 OTHER named residents' (obj/self-ptr, obj2, flags/code, sin_p, cos_p, x, z) live-range/conflict footprint could independently free $fp for a genuinely different value while leaving the 0x1F8002B8 literal spilled by a different competing value than idx2 -- carried forward unmeasured from s29/s30.",
+   "mechanism": "global.c global_alloc priority-ordered coloring; s29's conflict-map decode showed 9 pseudos live across the loop competing for 9 callee-saved registers.",
+   "next_probe": "Re-run the s29 conflict_map.py decode against this session's fresh .greg dump (tmp/grind/func_80056CB8/dumps/text1b.greg) to verify the 8-named/1-literal picture is unchanged, then search each of the 8 named residents' declaration/use sites for a not-yet-tried live-range-narrowing or live-range-widening spelling (sin_p/cos_p narrowing was killed at s26; obj/obj2 and x/z have not been swept for this specific axis)."
   }
  ],
  "judge_constraints": [],

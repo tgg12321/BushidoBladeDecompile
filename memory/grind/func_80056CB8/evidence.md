@@ -629,3 +629,11 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s30] asm/funcs/func_80056CB8.s lines 20/198-201: target spills the INITIAL `start` value to 0x60($sp) and reloads + re-adds 2 to it FRESH every loop iteration for the bound comparison, rather than hoisting a stable invariant `limit` register -- a structural difference from our s22-banked chassis (which DOES hoist a stable `limit` local, and that hoist is what dropped the floor 42->38 when it was added).
 
 - [s30] Both known C spellings for 'a value that becomes target's fp accumulator' (idx2-on-top-of-hoisted-limit: s22/s27, 55/204; idx2-without-any-limit-hoist: s30, 52/204) measure worse than the current 38/204 baseline -- the hand-authored-accumulator axis is exhausted in both combinations this ledger has been able to construct.
+
+- [s31] HEAD is INCLUDE_ASM for func_80056CB8 (chassis-check 'measurement unavailable' at dispatch was expected, matching the s28-documented cause).
+
+- [s31] The candidate.c file interleaves large prose header comments containing literal-looking C snippets (e.g. 'extern s16 Judge; extern s32 ratan2(s32,s32); ...' appears verbatim inside a comment block before the real declaration) -- a naive string-search extraction of the real extern header picks the WRONG (comment-embedded) occurrence and silently truncates the applied body, producing a false 'func_80056CB8 not found in text1b.o' sandbox error that looks like a chassis break but is a tooling mistake. Future sessions must extract by LINE RANGE (this session used candidate.c lines 1083-1171) or verify the extracted text has no leading '*' comment-continuation characters, not by naive substring search on the extern text.
+
+- [s31] func_80052D00 (called by func_80053614) is already declared 's32 func_80052D00(s32, s32);' elsewhere in text1b.c, so func_80053614's void->s32 signature fix requires no additional cast -- `return func_80052D00(arg2, arg3);` compiles cleanly.
+
+- [s31] The function's loop calls ratan2 (confirmed via call_insn 109 in the .loop dump) in addition to the two func_80053614 calls already known from the target-asm read -- this means loop_has_call is TRUE for strength_reduce's threshold formula, which was not previously stated explicitly in this ledger.
