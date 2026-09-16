@@ -337,3 +337,15 @@ about `D_800F4E22`'s register reuse. Findings:
 - [s6] Register 94 is the compare's masked value (zero_extend:SI(subreg:QI(reg 72))) at insn 131, feeding the ltu compare at insn 133 where it dies (REG_DEAD) and is never referenced again in either baseline or the explicit-duplicate-cast variant.
 
 - [s6] The else-arm store at insn 148 is (mem:QI SsVmMaxVoice) = (subreg:QI (reg/v:SI 72) 0) -- i.e. it already sources reg 72 directly, matching our C's plain `a0` in the else arm; this is front-end output, prior to local-alloc, so the a0-vs-v0 hard-register choice downstream is not resolvable purely by finding a shared-value C expression -- the RTL objects are already distinct.
+
+- [s7] Systematic spelling enumeration (tools/spelling_enum.py + tools/sweep_variants.py) of the if/else clamp region: 2 spellings on the mask-only axis (score 3, 20), 5 spellings on the widened mask+limit axis (score 3 once, 13 x3, 20 once). Only the fully-inlined form (already in candidate.c) reproduces the floor; every named-local variant regresses. Full histogram in hypotheses.md s7.
+
+- [s7] `sandbox _SsVmInit --disable all --diff` re-confirmed unchanged at s7 dispatch: score 3, target_insns=200, build_insns=200, 8 hunks, same 2 operand-only hunks (andi/sltiu/sb a0-vs-v0/s1) as every prior session since s4 — chassis is stable, no discontinuity this session.
+
+- [s7] sandbox _SsVmInit --disable all --diff re-confirmed unchanged at s7 dispatch: score 3, target_insns=200, build_insns=200, 8 hunks (0 source-level, 2 operand-only, 6 not-scored), identical to every session since s4 — chassis stable, no discontinuity.
+
+- [s7] tools/spelling_enum.py mask-only axis (1 named local, no products): 2 distinct spellings, scores {3, 20}.
+
+- [s7] tools/spelling_enum.py widened mask+limit axis (2 named locals): 5 distinct spellings, scores {3 x1, 13 x3, 20 x1}.
+
+- [s7] The 2 operand-only hunks (score-3 residual) are unchanged: target keeps the masked parameter value in $a0 (andi a0,.../sb a0,...) while ours keeps it in $v0/$s1 (andi v0,.../sb s1,...) — a register-allocation seat tie, not a source-level diff.

@@ -728,3 +728,50 @@ Two infra bugs found and fixed while building it:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD s6 floor-3 candidate.c chassis with the if/else replaced by a ternary, applied/reverted in isolation, no FAKE constructs present
+
+## s7 (enumerate session)
+
+### H — KILLED (instance): systematic declaration/inlining spelling sweep of the if/else clamp region finds no spelling better than the current fully-inlined form
+Statement: enumerating every named-local / inlining / declaration-order
+spelling of the `(u8)a0 >= 0x18` clamp's mask value (and, in a second widened
+pass, the `0x18` limit constant too) over the exact `if (...) { _SsVmMaxVoice
+= 0x18; } else { _SsVmMaxVoice = a0; }` region finds exactly ONE spelling
+that reproduces the floor-3 score (the fully-inlined form already in
+candidate.c) out of 2 (mask-only axis) + 5 (mask+limit axis) = 7 total
+distinct spellings enumerated; every other spelling REGRESSES (13-20 vs 3).
+Mechanism: n/a (this is an empirical sweep result, not a compiler-internals
+claim) — matches and extends s4/s6's individually-hand-tried forms (explicit
+u8 temp, duplicate cast, ternary, unconditional-store) which all regressed
+for the same reason: any named intermediate for the mask/limit values
+disturbs the front-end RTL shape enough to change which basic blocks/insns
+survive, per s6's confirmed provenance (compare's masked pseudo, reg 94,
+dies at the compare and is architecturally distinct from the else-arm's
+reg 72 store before local-alloc even runs).
+Probe: `python3 tools/spelling_enum.py --candidate
+tmp/grind/_SsVmInit/s7/enum_candidate.c --out tmp/grind/_SsVmInit/s7/enum
+--no-swaps` (2 variants) and a widened second pass adding the `0x18` limit
+as a second named local
+(tmp/grind/_SsVmInit/s7/enum_candidate2.c -> tmp/grind/_SsVmInit/s7/enum2,
+5 variants), both swept with `python3 tools/sweep_variants.py --func
+_SsVmInit --file main --variants <dir> --json`.
+Result: ENUMERATION: 7 spellings total (2 + 5), best 3 (tied with baseline,
+1 spelling: the fully-inlined form), 1 at the floor. No swap axis applies
+(no commutative products in this region). This CLOSES the pure
+declaration-order/inlining spelling space for this exact if/else shape —
+the s4/s6 hand-tried forms were not a partial sample, they (plus 3 more not
+previously tried: named `masked` alone, named `limit` alone, named `masked`
+declared after `limit`) are now the COMPLETE enumerated set for this region
+under this shape.
+Verdict: KILLED
+kill_scope: instance
+measured_on: HEAD s7 floor-3 candidate.c chassis (src/main.c with
+candidate.c applied verbatim), sweep_variants.py restoring src/main.c after
+each variant, no FAKE constructs present in any swept form
+
+## [s7] Enumerating every named-local / inlining / declaration-order spelling of the (u8)a0>=0x18 clamp's mask value, and (widened) the 0x18 limit constant, over the exact if/else region reproduces the floor-3 score in exactly 1 of 7 total spellings (the fully-inlined form already in candidate.c); every other spelling regresses to 13-20.
+- mechanism: n/a — empirical enumeration result, not a compiler-internals claim; consistent with s6's confirmed RTL provenance (the compare's masked pseudo, reg 94, dies at the compare and is architecturally distinct from the else-arm's reg 72 store before local-alloc runs, so no C-level spelling of the mask/limit values can force a shared RTL object at front-end expansion time).
+- probe: tools/spelling_enum.py on two ENUM-marked regions (mask-only: 2 variants; mask+limit: 5 variants) swept with tools/sweep_variants.py --func _SsVmInit --file main --json.
+- result: ENUMERATION: 7 spellings, best 3, 1 at the floor (the baseline fully-inlined form). Full histogram in hypotheses.md s7.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s7 floor-3 candidate.c chassis (src/main.c with candidate.c applied verbatim), sweep_variants.py restoring src/main.c after each variant, no FAKE constructs present in any swept form

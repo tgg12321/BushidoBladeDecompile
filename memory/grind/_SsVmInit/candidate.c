@@ -38,6 +38,22 @@
  * dump used was cc1's -da whole-TU output which does NOT include a decodable
  * per-instruction combine/cse trace).
  *
+ * s7 UPDATE (enumerate modality): re-confirmed floor 3 / 200==200, chassis
+ * unchanged (identical 8-hunk diff to s4-s6). Ran a SYSTEMATIC spelling
+ * enumeration (tools/spelling_enum.py) of the if/else clamp region: every
+ * declaration-order / inlining spelling of the mask value (and, widened,
+ * the 0x18 limit constant too) — 7 distinct spellings total across two
+ * passes. Only the fully-inlined form already below reproduces the floor;
+ * every named-local variant regresses (13-20 vs 3) — see hypotheses.md s7.
+ * This closes the pure C-spelling axis for this exact region: the s4/s6
+ * hand-tried forms (duplicate cast, ternary, unconditional-store, u32
+ * param) were not a partial sample of this space, they are now a complete
+ * enumeration of it. The residual is NOT a declaration/inlining spelling
+ * question — it is the register-preferencing mechanism s6 already pointed
+ * at (local-alloc.c allocno priority for a parameter-homed pseudo vs a
+ * fresh compare temp). NEXT: the .cse-dump comparison and local-alloc.c
+ * hand-derivation from s6's frontier remain untried.
+ *
  * CHASSIS DISCONTINUITY (s4, load-bearing for every prior session's
  * conclusions): the CHASSIS CHECK at s4 dispatch found HEAD honest floor
  * mismatched the ledger's recorded floor 19. Applying this exact candidate

@@ -1,8 +1,8 @@
 {
  "func": "_SsVmInit",
  "file": "main",
- "session_count": 6,
- "current_modality": "structural",
+ "session_count": 7,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "Floor re-confirmed at 3 (200==200); read the actual RTL provenance of the a0/v0 residual from a fresh -da dump (compare's masked pseudo dies before the else-arm store, which already sources the raw pa"
+  },
+  {
+   "session": 7,
+   "floor": 3,
+   "modality": "enumerate",
+   "headline": "Systematic spelling enumeration of the if/else clamp region (7 spellings, 2 axes) finds no C form below floor 3 \u2014 only the already-banked fully-inlined form matches; residual is a register-preferencin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Diff a .cse (or .cse2) dump of the explicit-duplicate-cast variant against baseline's, to see whether cse1 even attempts the reg-72/reg-94 unification across the label-144 boundary and rejects it for a mode/cost reason, or never reaches it at all.",
-   "mechanism": "cse.c's cse_end_of_basic_block extended-block tracking and its equivalence-table lookup (canon_reg) for a SImode zero_extend result vs a QImode store target.",
-   "next_probe": "Re-apply the s6 explicit-duplicate-cast form, re-run tools/grinder/dump.ps1 _SsVmInit, and read the .cse/.cse2 dump's entries for the else-arm store insn and the compare's zero_extend insn side by side."
+   "hypothesis": "Diff a .cse (or .cse2) dump of the s6 explicit-duplicate-cast variant against baseline's to see whether cse1 even attempts unification of reg 72 and reg 94 across the label-144 boundary and rejects it for a mode/cost reason, or never reaches it.",
+   "mechanism": "cse.c's cse_end_of_basic_block extended-block tracking and canon_reg equivalence-table lookup for a SImode zero_extend result vs a QImode store target.",
+   "next_probe": "Re-apply the s6 explicit-duplicate-cast form, run tools/grinder/dump.ps1 _SsVmInit, and read the .cse/.cse2 dump entries for the else-arm store insn and the compare's zero_extend insn side by side (untried in s6 or s7)."
   },
   {
-   "hypothesis": "Hand-derive local-alloc.c's block_alloc/find_reg preference computation for reg 72 (crosses 2 calls, callee-saved candidate) vs the compare's transient pseudo, to determine whether target's choice of $a0 for the store is a preferencing artifact of reg 72's own allocation (once reg 72 is assigned $s1, is $a0 then preferred for ANY value that was live at the same point as the original a0-in-$a0, even a different pseudo)?",
-   "mechanism": "local-alloc.c's qty/allocno preferencing tables (~line 1283 'two priorities for hard register preferences', ~line 1632-1691 quantity priority ordering) for a value whose life overlaps a parameter's original hard-reg home.",
-   "next_probe": "Read tools/gcc-2.7.2/local-alloc.c around lines 1283 and 1632-1700 with this function's actual .greg dump register/quantity numbers in hand (not yet cross-referenced this session)."
+   "hypothesis": "Hand-derive local-alloc.c's block_alloc/find_reg allocno-priority computation for reg 72 (crosses 2 calls, callee-saved candidate) vs the compare's transient pseudo (reg 94), to determine whether target's $a0 choice for the else-arm store is a preferencing artifact tied to reg 72's own allocation once it is assigned $s1.",
+   "mechanism": "local-alloc.c's qty/allocno preferencing tables (~line 1283, ~line 1632-1700) for a value whose life overlaps a parameter's original hard-reg home.",
+   "next_probe": "Read tools/gcc-2.7.2/local-alloc.c around those lines against this function's actual register/quantity numbers from tmp/grind/_SsVmInit/dumps/main.lreg (lines 16251-17172, reg 72 / reg 94) \u2014 untried across s6/s7."
   },
   {
-   "hypothesis": "A directed PERM_* permuter macro (per .claude/rules/permuter-directives.md) sweeping specifically whether the else-arm store expression is spelled as bare `a0`, `(u8)a0`, or a cast-to-the-store's-own-type form, using the s5 hand-built workspace (tmp/grind/_SsVmInit/s5/perm_ws/, confirmed reusable) may find a spelling variant not yet tried by hand.",
-   "mechanism": "same allocno-priority tiebreak; a directed sweep narrows the permuter's search to exactly this axis instead of the whole-function random space that already ran ~26k iterations with zero finds.",
-   "next_probe": "Reuse tmp/grind/_SsVmInit/s5/perm_ws/, hand-annotate base.c's else-arm store line with PERM_GENERAL alternatives for the stored expression, launch a short directed campaign."
+   "hypothesis": "A directed PERM_* permuter macro sweeping specifically whether the else-arm store expression is spelled bare a0 / (u8)a0 / a store-type-matched cast, reusing the s5 hand-built workspace (tmp/grind/_SsVmInit/s5/perm_ws/, confirmed reusable), may find a non-declaration-order spelling axis the enumerator's scope (decls/assigns/inlining/commutative-swap only, no cast-form axis) cannot express.",
+   "mechanism": "same allocno-priority tiebreak; a directed sweep narrows the permuter's search to exactly the cast-form axis instead of the whole-function random space (already run ~26k iterations with zero finds in s5) or the declaration-spelling axis (now closed by s7's enumeration).",
+   "next_probe": "Reuse tmp/grind/_SsVmInit/s5/perm_ws/, hand-annotate base.c's else-arm store line with PERM_GENERAL alternatives for the stored expression's cast form, launch a short directed campaign."
   }
  ],
  "judge_constraints": [],
@@ -140,6 +146,14 @@
    "measured_on": "HEAD s6 floor-3 candidate.c chassis with the if/else replaced by a ternary, applied/reverted in isolation, no FAKE constructs present",
    "predicate_cite": "",
    "result": "score 5. Reverted immediately."
+  },
+  {
+   "session": 7,
+   "statement": "Enumerating every named-local / inlining / declaration-order spelling of the (u8)a0>=0x18 clamp's mask value, and (widened) the 0x18 limit constant, over the exact if/else region reproduces the floor-",
+   "kill_scope": "instance",
+   "measured_on": "HEAD s7 floor-3 candidate.c chassis (src/main.c with candidate.c applied verbatim), sweep_variants.py restoring src/main.c after each variant, no FAKE constructs present in any swept form",
+   "predicate_cite": "",
+   "result": "ENUMERATION: 7 spellings, best 3, 1 at the floor (the baseline fully-inlined form). Full histogram in hypotheses.md s7."
   }
  ],
  "ladder_skip": 0,
