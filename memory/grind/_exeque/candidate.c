@@ -119,6 +119,38 @@
  * axis 1 (H6 volatile ruling-request) plus a newly-identified axis 3
  * (RTL-shape restructuring beyond register assignment, unexplored). This
  * body unchanged.
+ *
+ * s11 (rederive, 2026-09-16): re-confirmed floor 2/187 unchanged (src had
+ * drifted back to INCLUDE_ASM; re-applied this body verbatim). Ran a
+ * fresh m2c --target=mipsel-ido-c --valid-syntax decompile of
+ * asm/funcs/_exeque.s from scratch (tools/m2c/m2c.py — no venv m2c
+ * package installed, invoked the vendored script directly) to look for
+ * a structurally different C shape per the rederive modality, rather than
+ * tweaking the existing chassis. m2c's fresh reconstruction differs from
+ * this candidate in exactly two places: (1) the top-level guard uses a
+ * single-exit accumulator (`ret = 1; if (!cond) { ...; ret = result; }
+ * return ret;`) instead of the early `if (cond) return 1;`, and (2) the
+ * final guard/clear/call block is ONE merged `&&` condition with direct
+ * `D_8009BE7C` reads/writes, no pointer local. Transplanted each onto the
+ * s4-s10 chassis independently (do-while(0) wraps unchanged): (1) scored
+ * 7/187 (build_insns 188), (2) scored 5/187 (build_insns 187) — both
+ * WORSE than the banked 2/187. Also tested a THIRD variant isolating just
+ * the pointer-local question (kept the nested if/if two-level structure
+ * from this candidate, dropped only `s32 *p = &D_8009BE7C;` in favor of
+ * direct D_8009BE7C access): also 5/187. This confirms S2's H5b pointer-
+ * local `p` indirection is independently load-bearing for the floor-2
+ * result, not an inert stylistic artifact — removing it costs 3
+ * instructions regardless of whether the surrounding condition is merged
+ * or stays nested. All three rejected forms banked in
+ * memory/grind/_exeque/rejected/ (m2c-single-exit-toplevel.c,
+ * m2c-final-block-merged-condition.c, nested-if-no-pointer-local.c). This
+ * body (unchanged from s4/s5/s6/s7/s8/s9/s10) is still the best known
+ * chassis; m2c's fresh reconstruction did not surface a structurally
+ * different closing form and instead corroborates the candidate's own
+ * final-block shape as the (locally) optimal spelling. The floor-2
+ * residual remains axis 1 (H6 volatile ruling-request) / axis 3 (RTL-shape
+ * restructuring of the guard/clear/call block itself, still unexplored
+ * beyond the three m2c-derived spellings just killed).
  */
 s32 _exeque(void) {
     s32 mask;

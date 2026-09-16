@@ -601,3 +601,27 @@ This narrows (does not eliminate) the frontier: the jalr-delay-slot residual is 
 - probe: Ran `& tools/wteng.ps1 main sandbox _exeque --disable all` at session start against the untouched src/display.c (confirming no_c_body=true, score=187, i.e. src carries no draft C, consistent with asm-until-matched); read candidate.c in full and confirmed its body (lines 123-174) and its s10 header note match what the prior discarded session banked, with no drift.
 - result: sandbox on the committed baseline scores 187/187 (as expected for INCLUDE_ASM with no C body); candidate.c's chassis is unchanged from the prior s10 attempt, so the banked floor of 2/187 (last measured fresh at s9 and re-derived by source-proof this session) stands without needing a redundant sandbox re-run of an unmodified candidate body.
 - verdict: CONFIRMED
+
+## [s11] A fresh m2c --target=mipsel-ido-c decompile of asm/funcs/_exeque.s reconstructs the top-level guard as a single-exit accumulator (`ret = 1; if (!cond) { ...; ret = result; } return ret;`) instead of the candidate's early `if (cond) return 1;` two-exit form; transplanting only this restructuring onto the s4-s10 floor-2/187 chassis (do-while(0) wraps and final block unchanged) closes the gap further.
+- mechanism: reorg.c / cross-jump exit-form selection (mixed-exit-forms family)
+- probe: Edited src/display.c to replace the early-return guard with the m2c single-exit accumulator shape, kept the rest of the floor-2 chassis (both FAKE do-while(0) wraps, pointer-local final block) unchanged, ran `sandbox _exeque --disable all`.
+- result: Score 7/187 (build_insns 188) vs the banked 2/187 (build_insns 186) — worse. Reverted; banked as memory/grind/_exeque/rejected/m2c-single-exit-toplevel.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the top-level guard/return form changed
+
+## [s11] The same m2c decompile reconstructs the final guard/clear/call block as ONE merged `&&` condition reading/writing D_8009BE7C directly, with no pointer-local indirection (`if (a && b && D_8009BE7C != 0 && D_8009BE80 != 0) { D_8009BE7C = 0; ((s32(*)(void))D_8009BE80)(); }`) instead of the candidate's nested if/if with `s32 *p = &D_8009BE7C;`; transplanting only this onto the floor-2 chassis closes the residual.
+- mechanism: reorg.c fill_simple_delay_slots delay-slot-fill candidate selection (RTL-shape restructuring, frontier axis 3)
+- probe: Edited only the final block in src/display.c to the m2c merged-condition, no-pointer-local form, kept everything else (both do-while(0) wraps, top-level early return) unchanged, ran `sandbox _exeque --disable all`.
+- result: Score 5/187 (build_insns 187) vs the banked 2/187 — worse. Reverted; banked as memory/grind/_exeque/rejected/m2c-final-block-merged-condition.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the final guard/clear/call block's condition-merging and pointer-local removed
+
+## [s11] Isolating the pointer-local question alone (keeping the candidate's nested if/if two-level control-flow structure for the final block, but dropping ONLY `s32 *p = &D_8009BE7C;` in favor of direct `D_8009BE7C` reads/writes) is inert -- i.e. the pointer local is a stylistic artifact, not load-bearing for the floor-2 result.
+- mechanism: canon_rtx / reg_known_value address resolution for the store's target operand (reorg.c mark_set_resources / sched.c alias analysis)
+- probe: Edited only the final block's pointer declaration, keeping the nested if/if shape and merging nothing, ran `sandbox _exeque --disable all`.
+- result: Score 5/187 (build_insns 187) vs the banked 2/187 -- worse, identical to the merged-condition variant's score. This DISPROVES the inertness hypothesis: the pointer-local `p` indirection (S2's H5b) is independently load-bearing for reaching floor 2, regardless of whether the surrounding condition stays nested or gets merged. Reverted; banked as memory/grind/_exeque/rejected/nested-if-no-pointer-local.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the pointer-local declaration removed from the final block

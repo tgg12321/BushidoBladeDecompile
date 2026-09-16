@@ -347,3 +347,13 @@ CONCLUSION (formal, from the compiler source, not a measurement): a plain memory
 - [s10] src/display.c was left untouched at its committed INCLUDE_ASM("asm/funcs", _exeque); state throughout this session -- no edits were made to it, so no revert was needed at session end.
 
 - [s10] The frontier is now down to exactly one un-falsified item: axis 1, the H6 legitimate-volatile-interrupt-touched ruling-request (unchanged since s2), plus a newly-identified, wholly unexplored axis 3 (RTL-shape restructuring that changes which insns reorg.c even considers as delay-slot trial candidates, distinct from axis 2's narrower register-steering claim, which this session's kill does not touch).
+
+- [s11] Chassis check confirmed: re-applying memory/grind/_exeque/candidate.c to src/display.c (forward-decl fixups: `extern s32 _exeque(void);`, added `extern s32 D_8009BF84;`) and running `sandbox _exeque --disable all` reproduces the ledger's banked floor exactly: score 2, target_insns 187, build_insns 186, cheat_asm_stripped 143.
+
+- [s11] tools/m2c/m2c.py is the correct invocation for a fresh m2c decompile in this repo -- there is no installed `m2c` pip package in .venv (`pip show m2c` reports not found); the vendored script at tools/m2c/m2c.py works directly: `python3 tools/m2c/m2c.py --target=mipsel-ido-c --valid-syntax asm/funcs/_exeque.s`.
+
+- [s11] m2c's fresh reconstruction of the WHOLE function (not just the floor-2 residual) differs from the s4-banked candidate in exactly two structural places (top-level exit form, final-block condition/pointer shape) and is otherwise identical in control-flow structure (same outer if+do-while loop, same triple-store block, same DMACallback/SetIntrMask placement) -- corroborating that the candidate's overall shape is already the natural one and the search space for a DIFFERENT top-level structure is narrow.
+
+- [s11] Both m2c-derived alternate shapes, AND the isolated pointer-local ablation, score strictly worse (5 or 7) than the banked chassis (2) -- three independent measurements agreeing that the candidate's specific final-block spelling (nested if/if + pointer-local `p`) and its early-return top-level guard are both individually load-bearing, not just accidentally co-occurring with the floor-2 result.
+
+- [s11] No sibling ledger (_addque2, main, get_alarm, func_8002EA24) offered a transplantable construct for this specific residual -- all four are COMPLETED-C with closed ledgers on unrelated function shapes (record-copy struct merges, MIDI dispatch, register-alloc walls) that don't share _exeque's reorg.c delay-slot-fill mechanism.

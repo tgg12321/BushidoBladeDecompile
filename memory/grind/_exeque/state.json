@@ -1,8 +1,8 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 10,
- "current_modality": "forensics",
+ "session_count": 11,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -63,18 +63,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s10 (forensics, corrected resubmission): floor re-confirmed 2/187; formal reorg.c source proof (not measurement) that frontier axis 2 (register-steering D_8009BE7C's store address to force a delay-slo"
+  },
+  {
+   "session": 11,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "_exeque re-confirmed at honest floor 2/187 (s4-s10 do-while(0) chassis unchanged); rederive session's fresh m2c decompile surfaced two structurally different top-level/final-block shapes, both measure"
   }
  ],
  "frontier": [
   {
    "hypothesis": "The jalr-delay-slot residual may qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched (guard-clear-and-invoke), closing the last 2/187 instructions once ruled on.",
    "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and that the floor has now been flat at 2/187 for seven consecutive sessions (s4-s10) across permuter, structural, enumerate, synthesis, solver, and forensics modalities, with axis 2 (register-steering) now formally class-killed by reorg.c source proof rather than just measured dead."
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and that the floor has now been flat at 2/187 for eight consecutive sessions (s4-s11) across permuter, structural, enumerate, synthesis, solver, forensics, and rederive modalities, with axis 2 (register-steering) formally class-killed by reorg.c source proof and three fresh m2c-derived structural alternatives (s11) also killed."
   },
   {
-   "hypothesis": "Axis 3 (unexplored): restructure the RTL SHAPE of the guard/clear/call block itself (e.g. splitting it into more or fewer basic blocks, or changing which insn reorg.c treats as the delay-slot-fill 'trial' candidate at all) rather than steering register assignment within the existing shape.",
-   "mechanism": "reorg.c fill_simple_delay_slots's backward-scan loop (reorg.c:2960-2985) only considers trial=prev_nonnote_insn(insn) walking backward from the call; changing basic-block boundaries or insn count in the source block changes what stop_search_p and the backward scan even see as candidates, independent of the now-closed register-conflict question.",
-   "next_probe": "Structural-modality session: try C-level spellings that add/remove intervening statements or reorder the guard-read/clear/call sequence (e.g., moving the *p!=0 test into a separate helper-shaped block, or introducing a genuinely separate statement between the clear and the call) and re-measure sandbox score for each, watching for a spelling that changes reorg.c's trial-candidate set rather than just register homes."
+   "hypothesis": "Axis 3 (RTL-shape restructuring) is narrowed but not closed: s11 killed the m2c-derived merged-condition and no-pointer-local spellings, but has NOT tried restructuring the block boundary itself -- e.g. hoisting the guard test into a separate helper-shaped statement, or introducing a genuinely separate intervening statement between the D_8009BE7C clear and the jalr call that changes what reorg.c's backward scan sees as the delay-slot-fill trial candidate.",
+   "mechanism": "reorg.c fill_simple_delay_slots's backward-scan loop (reorg.c:2960-2985), trial=prev_nonnote_insn(insn)",
+   "next_probe": "Structural-modality session: try inserting a genuinely separate (non-dead, real) statement between the D_8009BE7C=0 store and the D_8009BE80() call -- e.g. a duplicated-statement-into-arms-sanctioned re-read of a guard value -- and re-measure; or try the opposite ordering (call the function first via a staged function pointer, then clear the flag) if semantically equivalent given the original's read-before-write ordering constraints."
   }
  ],
  "judge_constraints": [],
@@ -231,6 +237,30 @@
    "measured_on": "s4-s9 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c, both FAKE wraps present, unchanged); this is a reorg.c source-code proof independent of chassis/register-allocation sta",
    "predicate_cite": "tools/gcc-2.7.2/reorg.c:690",
    "result": "For a plain memory-store insn (D_8009BE7C's clear), mark_set_resources's MEM case (reorg.c:663-671) always visits the ad"
+  },
+  {
+   "session": 11,
+   "statement": "A fresh m2c --target=mipsel-ido-c decompile of asm/funcs/_exeque.s reconstructs the top-level guard as a single-exit accumulator (`ret = 1; if (!cond) { ...; ret = result; } return ret;`) instead of t",
+   "kill_scope": "instance",
+   "measured_on": "s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the top-level guard/return form changed",
+   "predicate_cite": "",
+   "result": "Score 7/187 (build_insns 188) vs the banked 2/187 (build_insns 186) \u2014 worse. Reverted; banked as memory/grind/_exeque/re"
+  },
+  {
+   "session": 11,
+   "statement": "The same m2c decompile reconstructs the final guard/clear/call block as ONE merged `&&` condition reading/writing D_8009BE7C directly, with no pointer-local indirection (`if (a && b && D_8009BE7C != 0",
+   "kill_scope": "instance",
+   "measured_on": "s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the final guard/clear/call block's condition-merging and ",
+   "predicate_cite": "",
+   "result": "Score 5/187 (build_insns 187) vs the banked 2/187 \u2014 worse. Reverted; banked as memory/grind/_exeque/rejected/m2c-final-b"
+  },
+  {
+   "session": 11,
+   "statement": "Isolating the pointer-local question alone (keeping the candidate's nested if/if two-level control-flow structure for the final block, but dropping ONLY `s32 *p = &D_8009BE7C;` in favor of direct `D_8",
+   "kill_scope": "instance",
+   "measured_on": "s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the pointer-local declaration removed from the final bloc",
+   "predicate_cite": "",
+   "result": "Score 5/187 (build_insns 187) vs the banked 2/187 -- worse, identical to the merged-condition variant's score. This DISP"
   }
  ],
  "ladder_skip": 0,
