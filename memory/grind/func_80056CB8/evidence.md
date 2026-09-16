@@ -600,3 +600,9 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s27] Fresh tmp/grind/func_80056CB8/dumps/text1b.s (this session) confirms the exact register/store shape around the 0x1F8002B8 literal and both func_80053614 calls.
 
 - [s27] src/text1b.c reverted to clean INCLUDE_ASM state after this session (git checkout -- src/text1b.c, verified zero diff).
+
+- [s28] The brief's chassis check showed 'measurement unavailable' because HEAD (src/text1b.c) carries INCLUDE_ASM per asm-until-matched -- the driver cannot auto-apply candidate.c, so every session must hand-apply it (body + header externs + the separate func_80053614 prerequisite) before any fresh measurement is meaningful.
+
+- [s28] A normalized objdump diff (target vs a fresh 38/204 build, tmp/grind/func_80056CB8/s28/target_insns.txt vs mybuild_insns.txt) confirms the two builds are structurally near-identical region-by-region: same control flow, same branch count, same call sites, same disposition-gate chain. The residual is register-allocation choices, not missing/wrong C structure.
+
+- [s28] The residual's clearest signature: the 0x1F8002B8 literal is held in a callee-saved register for the whole function in every candidate tried so far (my s28 build: $s8, two bare sw before the two jal's with no reload), while target spills it to a stack slot once and reloads it via a caller-saved temp ($t3) immediately before each call -- consistent with the s26-named register-pressure hypothesis (idx2 vs the cached literal contesting $s8/$fp), now sharpened: it is specifically a spill-vs-hold decision, not the idx2 axis itself (which stays independently class-killed per s21/s26/s27).

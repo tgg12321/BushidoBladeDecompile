@@ -1,7 +1,40 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21;
+ * s23/s24/s25/s26/s27/s28) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21;
  * 48/204 s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this session.
+ * ---------------------------------------------------------------------
+ * s28 (forensics modality, 2026-09-16). Body UNCHANGED (re-confirmed
+ * 38/204 fresh, build_insns 198). Since 2026-08-19 asm-until-matched,
+ * HEAD (src/text1b.c) carries INCLUDE_ASM, not this body -- the driver's
+ * chassis-check could not auto-measure the floor this session
+ * ("measurement unavailable"). Reproducing 38/204 from this file requires
+ * copying ALL THREE of: (1) the function body below, (2) the 5-line
+ * extern header block immediately above it (Judge/ratan2/D_8009A820/
+ * D_8009A821/D_800F6610 -- outside a naive body-only extraction), AND
+ * (3) changing func_80053614's declared return type from void to s32
+ * with an explicit return statement (src/text1b.c:1513-1519) -- this
+ * third prerequisite lives OUTSIDE this file and is easy to miss even
+ * after restoring the header externs. Omitting (2) and/or (3) silently
+ * miscompiles via K&R implicit-int (no build error) to a STRUCTURALLY
+ * SHORTER, wrong function: body-only -> 153/204 (152 insns); + externs
+ * but func_80053614 still void -> 134/204 (171 insns); + both -> the
+ * true 38/204 (198 insns), byte-identical to every s22-s27 measurement.
+ * Independently rediscovered the s25 evidence.md trap fresh before
+ * reading it (see hypotheses.md [s28]).
+ * KILLED the live-frontier item ("target's SECOND 0x1F8002B8 use is a
+ * bare lui with no ori, implying a non-literal second call argument"):
+ * direct re-read of asm/funcs/func_80056CB8.s shows exactly ONE lui/ori
+ * pair for 0x1F8002B8 in the whole function, materialized once pre-loop
+ * and reused via two stack lw/sw reload pairs -- the frontier item's
+ * premise was a misreading, not a real residual. NEW replacement
+ * frontier (see hypotheses.md [s28] for full detail): target SPILLS
+ * the literal to a stack slot and reloads it via a caller-saved temp
+ * ($t3) before each func_80053614 call, while every candidate tried
+ * (including this one) keeps it live in a callee-saved register for the
+ * whole function -- a register-pressure/global_alloc allocation gap, not
+ * a value-identity gap. Tried naming it as a pre-loop local
+ * (`hit_flag_arg`) to see if that changed the allocation decision:
+ * WORSE (45/204, build_insns 199) -- reverted, KILLED as instance.
  * ---------------------------------------------------------------------
  * s27 (solver modality, 2026-09-16). Body UNCHANGED (re-confirmed
  * 38/204 fresh, build_insns 198, before and after every probe). Ran the

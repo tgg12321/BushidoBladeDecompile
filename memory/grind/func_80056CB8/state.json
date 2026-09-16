@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 27,
- "current_modality": "solver",
+ "session_count": 28,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -165,18 +165,19 @@
    "floor": 38,
    "modality": "solver",
    "headline": "s27 solver: killed the s26-named idx2+literal-CSE-defeat combination (55/204, worse) and class-killed literal respelling in isolation via fold-const.c constant folding; floor holds at 38/204 fresh."
+  },
+  {
+   "session": 28,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s28 forensics: re-confirmed true floor 38/204 fresh (chassis check showed 'measurement unavailable' because HEAD is INCLUDE_ASM); documented and independently rediscovered the s25 reproduction trap (e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's SECOND 0x1F8002B8 use is a bare lui with no ori (single half-word constant, not the full 0x1F8002B8 value written twice) -- suggesting the original source may pass a DIFFERENT, non-literal expression at the second func_80053614 call site (e.g. relative to a base already in a register, or a named scratchpad symbol) rather than the same literal constant repeated.",
-   "mechanism": "If the original C never wrote the literal 0x1F8002B8 twice at all, there is no CSE-unification decision to make in the first place -- dissolving this half of the residual entirely rather than requiring any CSE-defeat trick (which this session showed is unreachable at the C level anyway, per the fold-const.c class kill).",
-   "next_probe": "Grep asm/funcs and src/*.c for other callers of func_80053614 or sibling collision-check functions for a non-literal fifth argument spelling; check include/*.h and the naming census for a named scratchpad symbol at or near 0x1F8002B8 that would motivate a symbolic (not literal) argument at the second call site."
-  },
-  {
-   "hypothesis": "The i*2 loop-carried idx2 promotion axis is now exhaustively class-analyzed (s21's insn_count-direction finding, corroborated by every s6/s10/s12/s18/s21/s22/s27 measurement landing at 55/204) but not yet a full class kill with a crossing-predicate proof across all C shapes -- a genuinely new loop-restructuring (not a declaration-order or literal variant) that shrinks insn_count enough to flip loop.c:3823's inequality has not been tried.",
-   "mechanism": "loop.c:3823's rejection predicate compares lifetime*threshold*benefit against the loop's own compiled insn_count; every variant tried so far either changes register spelling (no insn_count effect) or grows insn_count (wrong direction). A structural change that genuinely SHRINKS the loop body's instruction count while still computing i*2 as a byte-table index has not been attempted.",
-   "next_probe": "Structural-modality session: look for a way to fold the two [i*2] table reads (D_8009A820/D_8009A821) into fewer total instructions (e.g. reading both bytes via one combined access) that would lower insn_count without changing program behavior, then re-test idx2 promotion on that shrunk chassis."
+   "hypothesis": "The literal-vs-idx2 register-pressure gap can only be closed by raising overall register pressure on some OTHER already-s-register-resident value (not idx2, which is class-killed, and not the literal itself via naming, which s28 killed) enough that global_alloc's benefit computation is forced to spill the literal exactly as target does.",
+   "mechanism": "global.c's global_alloc awards callee-saved hard registers by a benefit/conflict-count computation; the literal currently wins a free slot because the competing pseudo set (obj/s1, table pointers s4/s5, pt-coordinate accumulators s2/s3, loop index s6, self-pointer s7) leaves exactly enough s-registers free. Target's allocation implies its competing pseudo set is one register tighter.",
+   "next_probe": "Read a fresh .greg dump (pwsh tools/grinder/dump.ps1 func_80056CB8) for the CURRENT 38/198 chassis and enumerate every pseudo's conflict-list size to find which live value is closest to the spill threshold; try genuinely new C shapes for the obj/self-pointer or pt0/pt1 accumulator handling (not the idx2 axis, not the literal's own spelling) that could plausibly add one more live-across-call conflict."
   }
  ],
  "judge_constraints": [],
@@ -581,6 +582,22 @@
    "measured_on": "n/a (dump/mechanism reading against the frozen ABI/compiler, not a source-level spelling test)",
    "predicate_cite": "tools/gcc-2.7.2/fold-const.c:3536",
    "result": "Confirmed one li+ori materialization (line 34-35 of the span) reused at both call sites, with a sw $fp,16($sp) immediate"
+  },
+  {
+   "session": 28,
+   "statement": "The live-frontier claim 'target's SECOND 0x1F8002B8 use is a bare lui with no ori, suggesting a non-literal second func_80053614 argument' is a misreading of the target assembly: asm/funcs/func_80056C",
+   "kill_scope": "instance",
+   "measured_on": "s28 chassis (target asm itself, not a candidate build) -- re-testable by re-reading asm/funcs/func_80056CB8.s, which does not change",
+   "predicate_cite": "",
+   "result": "Only one lui ($t3, 0x1F8002B8>>16) / ori ($t3, ...&0xFFFF) pair exists (lines 25-26), stored once to 0x78($sp) before th"
+  },
+  {
+   "session": 28,
+   "statement": "Naming the 0x1F8002B8 literal as a pre-loop-declared local (hit_flag_arg, read at both func_80053614 call sites instead of the bare literal at each site) does not reproduce target's stack-spill-and-re",
+   "kill_scope": "instance",
+   "measured_on": "s28 chassis (s22-s27-banked 38/198 body + s28-restored header externs/func_80053614 fix, hit_flag_arg pre-loop named-local substitution only), single fresh sandbox measurement, no FAKE constructs pres",
+   "predicate_cite": "",
+   "result": "45/204 (build_insns 199, one MORE instruction than baseline's 198) -- wrong direction. Reverted immediately."
   }
  ],
  "ladder_skip": 0,
