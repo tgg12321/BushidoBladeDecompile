@@ -2189,3 +2189,4 @@
 - 2026-09-16 11:56 func_80056CB8 COMPLETED-C after 72 sessions (closer: s72 [synthesis]).
 - 2026-09-16 12:06 func_8006CCC8 s6 [rederive] floor=18: rederive: array-index D_800A34FC addressing + update-clause reorder drop the honest floor 23 -> 18 (2 confirmed levers, 3 instance kills, sibling transplant re-confirmed disjoint)
 - 2026-09-16 12:25 func_8006CCC8: LAYER-1 FAILED a sandbox-0 candidate — Body is otherwise ordinary C, but `nib = 0xF` is a constant-holder local squarely inside [[named-local-fake-exception]] and ships un-annotated with the vet declaring SANCTIONED-FAMILY-CLAIMS: none — the mandatory /* FAKE: ... */ prerequisite is unmet.
+- 2026-09-16 12:39 func_8006CCC8 COMPLETED-C after 7 sessions (closer: s7 [solver]).
