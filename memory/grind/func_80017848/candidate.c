@@ -1,3 +1,33 @@
+/* [s61 FORENSICS - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
+ * chassis; fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4
+ * at 127/127) remains the faithful chassis.  What s61 measured with the
+ * instrumented cc1 (dumps + hook output in tmp/grind/func_80017848/s61/):
+ *  1. RELOAD ROUTE CLOSED (class, reload1.c:3771): BB2_RELOAD_DEBUG on K2
+ *     reports zero reload needs in this function, and the spill order puts
+ *     t0..t7 (zero uses) ahead of a3 (239 uses from the parameter copy), so a
+ *     find_equiv_reg copy could only ever print `$t0`.  s60 frontier 2 dead.
+ *  2. POST-LOOP READER CLOSED (instance): J1 (`x = q` before the guard,
+ *     `x = p` after loop 1, loop 2's guard through x) = 9 at 126 - x takes a1,
+ *     the join prints `addu a0,a1,zero` where the target has `lw a0,0xC(s2)`.
+ *     The target's fall-through join DEFINES a0 by a load, so no reader of p
+ *     feeding loop 2's guard can share p's seat.  s60 frontier 1 dead.
+ *  3. PASS-0 SETS FOR THE COPY DEST (pseudo 78) READ FROM find_reg
+ *     (BB2_FINDREG_DEBUG=78): conflicts {v1, sp}; someone_prefers EMPTY;
+ *     used_so_far contains a0..a3 (parameter copies) so the used-so-far
+ *     complement excludes nothing useful; own_full_prefs {v0}.  The v0 pref
+ *     is STRUCTURAL: set_preference's operand-0 rule (global.c:1682) hands
+ *     base a v0 pref from the body's `(set elem[v0] (plus base i))` (pointer
+ *     arithmetic is always pointer-first, c-typeck.c:1986-1988), and
+ *     expand_preferences (global.c:867-869) merges it into 78 at the add.
+ *     prune_preferences strips an allocno's own prefs from its someone-
+ *     prefers set (global.c:925-926), so v0 can NEVER be refused by
+ *     preference; and no allocno conflicting with 78 holds an a0 pref.
+ *     => the s60 M1 spec is exact and exhaustive: a3 needs HARD conflicts
+ *     with a v0-seated pseudo AND with q/base, plus priority < 2500.
+ * Frontier: hypotheses.md s61 (FINDREG on q/base to learn what pushes q to
+ * a0; census of post-loop-2 q2 readers; the delay-slot `i = 0` as a
+ * combine.c:914 clobber).  Evidence: E-s61-0..5.
+ */
 /* [s60 SOLVER - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD chassis;
  * fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4 at 127/127)
  * remains the faithful chassis for the seat residual.  What s60 established:

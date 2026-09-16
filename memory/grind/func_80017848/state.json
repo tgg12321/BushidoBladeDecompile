@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 60,
- "current_modality": "solver",
+ "session_count": 61,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -363,23 +363,29 @@
    "floor": 3,
    "modality": "solver",
    "headline": "Solver s60: classify(K2)=RA seat-only, model exact 15/15; inverse global with the full 13-seat goal (depth 2+3, 403 atoms) yields ONE vector (78 pref {v0}->{a3}) which is class-killed by the RTL (a3 e"
+  },
+  {
+   "session": 61,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Forensics s61: instrumented-cc1 census closes both s60 frontier items - reload requests ZERO reloads in this function and its spill order puts t0..t7 ahead of a3 (class, reload1.c:3771); the post-loop"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A copy dest live >= 8 insns past the copy can have its downstream reader deleted after global alloc without bytes, giving the a3 seat for loop 1 without BASE's join copy.",
-   "mechanism": "the only post-global deleters of a use are jump2 (jump.c:437-490: same-register moves and find_equiv_reg-redundant moves), sched2/final no-op moves and reorg's owned-thread redundant_insn (reorg.c:3442-3460; no owned thread exists here)",
-   "next_probe": "on a per-loop-p K2 variant spell `x = p1;` after loop 1 with x consumed by loop 2's guard so that x and p1 share a seat (copy-preferred), read .jump2/.dbr for the deleted move and the seats; if x cannot share p1's seat without displacing the guard's lw a0,0xC(s2), the loop-1 range route reduces to BASE's join copy and is dead"
+   "hypothesis": "The v0 conflict the a3 seat needs is the guard temporary t (local, v0): reading find_reg's sets for q (79) and base (81) will show whether t is what pushes q to a0, and a guard spelled so that t stays live past the copy point gives 78 the v0 hard conflict if the extra consumer is byte-free.",
+   "mechanism": "hard_reg_conflicts from local-alloc'd v0 temporaries live across the copy-to-add window (global.c record_conflicts); E-s61-3/4 close every preference route",
+   "next_probe": "BB2_FINDREG_DEBUG=79 and =81 on K2 (s61/dump_fr.sh); then one form where the guard value t is consumed after the copy (e.g. the do-while bound) and read the .greg conflicts of 78"
   },
   {
-   "hypothesis": "Loop 2's `addu a3,a0,zero` is printed by reload as a reload register (find_equiv_reg copy into the first spill reg a3) for some constrained-operand or secondary-reload shape, not as an allocno seat - since under global.c loop 2 has no reader slot, the pref route is class-killed and no unallocated pseudo exists.",
-   "mechanism": "reload1.c:5843-5853 emits move reloadreg,equivreg when an input reload's value is already in a hard reg; potential_reload_regs lists unused call-used regs first (reload1.c:3766-3772), a3 being the only unused a-reg",
-   "next_probe": "run the instrumented cc1 with BB2_RELOAD_DEBUG on K2 and enumerate every insn that requests an input reload in this function; then test whether any MIPS pattern reachable from pointer arithmetic (a plus with a MEM or constrained operand, a call-argument output reload) asks for a reload of the add's second operand immediately before the lnk load"
+   "hypothesis": "The a0 conflict has no producer: q dies at the copy and base is born at the add in every chassis; the only q2 readers after loop 2 in the target are the three lw ?,0xC(s2) reloads that cross the jal (callee-saved seat, s52 cell G).",
+   "mechanism": "conflict requires 78 live past base's birth or q live past the copy; a downstream reader crossing the call forces a callee-saved seat",
+   "next_probe": "census the post-loop-2 target statements for a q2 reader that is a memory load in the target and a register read in C at zero bytes; if negative, the seat residual lives outside the [guard, add] window (variable identity across the whole function)"
   },
   {
-   "hypothesis": "If frontier 1 yields a byte-free reader, applying it symmetrically to loop 2 lets loop 2's guard keep its lw a0,0xC(s2) while p2 dies downstream, closing BASE's transposed loop-2 residual.",
-   "mechanism": "BASE already has loop 1 exact via the join read; the residual is the loop-2 transposition (E-s54)",
-   "next_probe": "only after frontier 1 measures: transplant the reader shape into loop 2 on BASE and re-measure"
+   "hypothesis": "Under the U1 identity (pointer == base variable, all 125 seats exact) a combine.c:914 clobber other than the lnk load exists: the delay-slot i = 0 is the only other target insn between copy and add.",
+   "mechanism": "combine.c:914 use_crosses_set_p blocks the copy merge when the copy's source pseudo is set between copy and add",
+   "next_probe": "measure once a form where i and the pointer share a pseudo through a cast (expect bytes); if it fails, the U1/K2 conflict of s55 is complete and the residual is a live-range question only"
   }
  ],
  "judge_constraints": [],
@@ -393,30 +399,6 @@
  "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
  "last_unpark_at": "2026-09-15T20:48:37.414727+00:00",
  "kills": [
-  {
-   "session": 42,
-   "statement": "Writing the reload p = *(u8 **)(ctx + 0xC) directly after BASE's p = q exit tail keeps q's flow-time read (loop 1's copy) while making the tail target's lw a0,12(s2) (cell U5).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U5.c; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "4 at 127/126: the tail is target's lw but p = q is a dead store deleted by flow before its read counts, so loop 1's copy"
-  },
-  {
-   "session": 42,
-   "statement": "Reload's input-reload copy producer (find_equiv_reg supplying a hard register already holding the addend value, emitted as gen_move_insn (reloadreg, oldequiv)) cannot fire for either preheader copy in",
-   "kill_scope": "class",
-   "measured_on": "GCC 2.7.2 source under tools/gcc-2.7.2; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "local-alloc.c:1079",
-   "result": "The producer s39 named is closed by predicate: no C spelling of this function presents reload with a MEM addend or an un"
-  },
-  {
-   "session": 43,
-   "statement": "Writing loop 1's exit tail (reload of p and recompute of sh) inside the guard's then-block instead of an unconditional join-block reload keeps U4's seats and target's join geometry.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_W1.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "12 at 127/125: both guards swap to lw a1,12(s2) / sll a0,s4,6 / addu v0,a0,a1, both preheaders addu a0,a0,a1 with no cop"
-  },
   {
    "session": 43,
    "statement": "A C self-assignment `q = q;` of the copy destination inside the loop body is a loop-carried flow-time reader that keeps q live across the body and vanishes as a no-op move after allocation.",
@@ -872,6 +854,30 @@
    "measured_on": "K2 chassis applied at HEAD src/ings.c:820, read against the frozen tools/gcc-2.7.2 sources; no FAKE construct",
    "predicate_cite": "tools/gcc-2.7.2/reload1.c:1956",
    "result": "no producer: the item presupposes the unallocated pseudo it was meant to create; reload's find_equiv_reg copy route stay"
+  },
+  {
+   "session": 61,
+   "statement": "Loop 2's addu a3,a0,zero is printed by reload as a reload register (find_equiv_reg copy into the first spill register) for some constrained-operand or secondary-reload shape rather than as an allocno ",
+   "kill_scope": "class",
+   "measured_on": "K2 chassis (candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c) at HEAD src/ings.c:820, instrumented cc1 BB2_RELOAD_DEBUG; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/reload1.c:3771",
+   "result": "RELOADDBG needs func=func_80017848 pass=1 new_bb_needs=0 changed=0 - no insn requests any reload; spill order prr=8,9,.."
+  },
+  {
+   "session": 61,
+   "statement": "On a per-loop-p K2 variant, a post-loop reader x = p (x pre-defined as x = q before loop 1's guard) consumed by loop 2's guard extends p's range to the loop bottom with no bytes because x and p share ",
+   "kill_scope": "instance",
+   "measured_on": "K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s61/body_J1.c applied; no FAKE construct",
+   "predicate_cite": "",
+   "result": "9 at 126/127: x seats in a1 (sh -> a2, lnk -> a3), addu a1,a0,zero prints in loop 1's preheader, the join prints addu a0"
+  },
+  {
+   "session": 61,
+   "statement": "The copy dest's v0 seat can be refused in pass 0 through regs_someone_prefers (a conflicting lower-priority allocno such as lnk or sh carrying a v0 full preference) without a hard v0 conflict.",
+   "kill_scope": "class",
+   "measured_on": "K2 chassis at HEAD src/ings.c:820, instrumented cc1 BB2_FINDREG_DEBUG=78; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:925",
+   "result": "with [copy, add] as 78's range the v0 preference is always merged in, so v0 never enters someone_prefers[78]; the only r"
   }
  ],
  "escalation_deferrals": 0,

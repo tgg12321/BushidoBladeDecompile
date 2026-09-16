@@ -5474,3 +5474,86 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - kill_scope: class
 - measured_on: K2 chassis applied at HEAD src/ings.c:820, read against the frozen tools/gcc-2.7.2 sources; no FAKE construct
 - predicate_cite: tools/gcc-2.7.2/reload1.c:1956
+
+## s61 (2026-09-15, forensics - reload-route census, pass-0 exclusion sets, preference provenance)
+
+## [s61] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis (src/ings.c:820 INCLUDE_ASM anchor); tools/fake_ablate.py finds no FAKE-annotated construct in candidate.c; the owner directive (func_8005BA8C auto-return, 2026-09-15T20:48) was executed and measured in s56 (cell K4 = 8 at 127/127) and needs no further action.
+- mechanism: instance kills are chassis-relative; the two closest forms (BASE, K2) re-measured with the s61 run helper
+- probe: tmp/grind/func_80017848/s61/run.ps1 -Bodies J1,K2,BASE (sandbox --disable all); tmp/grind/func_80017848/s61/ablate.sh
+- result: BASE 3 / K2 4, both 127/127, byte-for-byte the s60 diffs (s61/diff_BASE.txt, s61/diff_K2.txt); "No FAKE-annotated constructs found ... nothing to ablate"; the sibling func_8005BA8C shares no code block (its ledger: max overlap 0.120) and its only lever (H8 entry cursor) is banked KILLED at K4 = 8
+- verdict: CONFIRMED
+
+## [s61] Loop 2's `addu a3,a0,zero` is printed by reload as a reload register (find_equiv_reg copy of the guard's a0 into the first spill register) for some constrained-operand or secondary-reload shape rather than as an allocno seat (s60 frontier item 2).
+- mechanism: reload1.c:5843-5853 emits `move reloadreg,equivreg` only for an insn that REQUESTS an input reload; the reload register is taken from potential_reload_regs, which order_regs_for_reload fills first with call-used registers whose hard_reg_n_uses is ZERO (reload1.c:3771), then by ascending use count
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) on K2 with BB2_RELOAD_DEBUG=1 (tmp/grind/func_80017848/s61/dump.sh K2 -> s61/K2/stderr.txt, function slice s61/K2/dbg_func.txt)
+- result: for func_80017848 reload reports `needs pass=1 new_bb_needs=0 changed=0` - NOT ONE insn in the function requests any reload (input, output or secondary), so no find_equiv_reg copy is ever emitted. Independently, the spill order is `prr=8,9,10,11,12,13,14,15,24,25,22,23,21,20,16,17,19,18,3,7,...` with `uses` 8..15 = 0 and a3 (7) = 239: a3 is the TWENTIETH candidate because the incoming-parameter copy `addu s3,a3,zero` gives it a nonzero use count in every chassis, while t0..t7 are unused. A reload-register copy in this function would print `addu $t0,...`, never `$a3`. Both prongs kill the premise.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis (candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c) applied at HEAD src/ings.c:820, instrumented cc1 BB2_RELOAD_DEBUG; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/reload1.c:3771
+
+## [s61] On a per-loop-p K2 variant, a post-loop reader `x = p` (x pre-defined as `x = q` before loop 1's guard so it is initialised on the blez path) consumed by loop 2's guard extends p's range to the loop bottom with no bytes, because x and p share a seat and jump2 deletes the same-register move (s60 frontier item 1).
+- mechanism: jump.c:437-490 deletes `(set r r)` after reload; for the move to vanish x must be seated with p, but loop 2's guard reads x on the blez-taken path where x holds q (a0 in the target), so x must be a0 on one path and p's seat on the other
+- probe: s61/body_J1.c (K2 + `x = q;` before the guard, `x = p;` after loop 1 inside the if-block, loop 2's guard `t2 = sh2 + (s32)x`, `p = x` in loop 2's preheader); sandbox --disable all; s61/diff_J1.txt
+- result: 9 at 126/127. x is seated in a1 (sh moves to a2, lnk to a3), the guard-block copy `x = q` prints as `addu a1,a0,zero` in loop 1's preheader, the join block prints `addu a0,a1,zero` where the target has the fresh `lw a0,0xC(s2)`, and loop 2's copy collapses (`addu a0,a1,a0`, 126 insns). Exactly the predicted contradiction: the target's fall-through join DEFINES a0 by a memory load, so no reader of p that feeds loop 2's guard can be seated with p and be byte-free.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s61/body_J1.c applied; no FAKE construct
+
+## [s61] Pass-0 exclusion sets for the copy dest (pseudo 78) on K2, read directly from find_reg: the ONLY way v0 is refused is a hard conflict, because 78 always carries the v0 full preference itself.
+- mechanism: find_reg pass 0 (global.c:998-1000) excludes `used1` (fixed + hard_reg_conflicts) | ~regs_used_so_far | regs_someone_prefers; prune_preferences (global.c:920-928) builds regs_someone_prefers from the full preferences of CONFLICTING lower-priority allocnos and then REMOVES the allocno's own full preferences (global.c:925-926, `AND_COMPL_HARD_REG_SET (temp, hard_reg_full_preferences[allocno])`); 78's own v0 full preference comes from set_preference's operand-0 rule (global.c:1682: `if (GET_RTX_FORMAT (GET_CODE (src))[0] == 'e') src = XEXP (src, 0)`), which gives base a v0 non-copy preference from the body's `(set elem[v0] (plus base i))`, and expand_preferences (global.c:867-869) merges base's full preferences into 78 at the add `(set base (plus sh 78))` where 78 dies non-conflicting; pointer arithmetic always places the pointer as operand 0 (c-typeck.c:1986-1988 pointer_int_sum), so base is operand 0 whatever the source order
+- probe: instrumented cc1 BB2_FINDREG_DEBUG=78 on K2 (tmp/grind/func_80017848/s61/dump_fr.sh K2fr 78 -> s61/K2fr/findreg_78.txt); source reading of global.c:829-870, :880-930, :985-1000, :1671-1700
+- result: `conflicts: 3 29` (v1, sp); `someone_prefers:` EMPTY; `used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 24 25 26 27 28 29 31` (a0..a3 are in regs_used_so_far from the incoming-parameter copies, so a1/a2 are NOT excluded by the used-so-far complement - correcting a mid-session guess); `pass0_used: 0 1 3 18 19 20 21 22 23 26 27 28 29 30 31`; `own_full_prefs: 2` (v0); `own_copy_prefs:` none. The first free register in pass 0 is v0 and 78 also prefers it. For a3, ALL of v0, a0, a1, a2 must sit in pass0_used: a1/a2 only as hard conflicts (sh/lnk allocated before 78, i.e. 78's priority below 2500) or via someone_prefers; a0 only as a conflict with q/base (someone_prefers cannot supply it: no allocno that conflicts with 78 carries an a0 full preference - the only a0 preference holders are the call-crossing ctx pseudo, pruned at global.c:900, and the block-local call-argument read, which local-alloc already seated); v0 ONLY as a hard conflict, because someone_prefers strips 78's own v0 preference and that preference is structural. This sharpens the s60 M1 spec: not merely "a v0 local and base must conflict with 78" but "no preference-based route exists for v0 or a0 at all".
+- verdict: CONFIRMED
+
+## [s61] The copy dest's v0 seat can be refused in pass 0 through regs_someone_prefers (a conflicting lower-priority allocno such as lnk or sh carrying a v0 full preference) without a hard v0 conflict.
+- mechanism: prune_preferences removes the allocno's own full preferences from the someone-prefers set (global.c:925-926); 78 acquires base's v0 full preference at the add where it dies (expand_preferences, global.c:867-869), and base's preference is fixed by the operand-0 rule on a pointer-first PLUS (global.c:1682, c-typeck.c:1986-1988)
+- probe: s61/K2fr/findreg_78.txt (`own_full_prefs: 2`, `someone_prefers:` empty) + source reading; the alternative of flipping the elem insn to `(plus i base)` requires INTEGER arithmetic with i first, which hands the v0 preference to i (allocated first at priority 26000) and moves i off v1
+- result: with [copy, add] as 78's range the v0 preference is always merged in, so v0 is never in someone_prefers for 78; the only remaining v0 exclusion is a hard conflict with a v0-seated pseudo live across the copy-to-add window (s60 M1). No form measured this session; the kill is by the frozen predicate
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis at HEAD src/ings.c:820, instrumented cc1 BB2_FINDREG_DEBUG=78; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:925
+
+## [s61] Frontier reset (strongest 3):
+1. The pass-0 sets are now measured, not modelled (E-s61-3): for the target's a3 the copy dest needs hard conflicts with a v0-seated pseudo AND with q/base (a0), plus priority below sh/lnk (2500). Every preference route is closed (E-s61-4), reload is closed (E-s61-1), local-alloc always yields v0 for a block-local dest (E-s57). The open question is therefore purely a LIVE-RANGE question in the preheader window: which C statement makes a v0-seated value and an a0-seated value live across `copy; lw lnk; add` at zero bytes. Probe next: run BB2_FINDREG_DEBUG for q (79) and base (81) on K2 to read WHY q takes a0 rather than v0 (its own conflicts set) - if the guard temporary t (local, v0) is what pushes q to a0, then a guard spelled so that t stays live past the copy (e.g. the guard value consumed again after the loop-2-independent copy point) is the v0 conflict the spec needs, provided the consumer is byte-free.
+2. The a0 conflict: q dies at the copy and base is born at the add in every measured chassis. A spelling where the add reads q while the copy dest is live past it is BASE's loop-1 device (optimize_reg_copy_1 then rewrites the add, local-alloc.c:700-760, needs a downstream reader). Enumerate the post-loop-2 statements of the TARGET for a q2 reader that is a genuine memory load in the target and could be a register read in C without changing bytes - the only candidates are the three `lw ?,0xC(s2)` reloads after the call, all of which cross the jal (s52 cell G: callee-saved seat). If that census is negative, the a0 conflict has no producer and the seat residual lives outside the [guard, add] window entirely.
+3. Only after 1-2: the U1 identity (pointer variable == base variable, all 125 seats exact) with a combine.c:914 clobber that is NOT the lnk load - a set of the pointer pseudo between copy and add that the target already emits: the only candidates are `lw a2,0x10(s2)` (spent, K2) and the `addu v1,zero,zero` delay-slot insn (i = 0), which would require i and the pointer to share a pseudo (type-incompatible without a cast; measure once, expect bytes).
+
+## [s61] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; the owner directive (func_8005BA8C auto-return) was executed in s56 (K4 = 8) and needs no further action.
+- mechanism: instance kills are chassis-relative; closest forms re-measured with tmp/grind/func_80017848/s61/run.ps1; tools/fake_ablate.py on candidate.c; sibling ledger shares no code block (max overlap 0.120)
+- probe: s61/run.ps1 -Bodies J1,K2,BASE; s61/ablate.sh
+- result: BASE 3, K2 4, both 127/127, diffs identical to s60; 'No FAKE-annotated constructs found'; sibling lever K4 banked KILLED at 8
+- verdict: CONFIRMED
+
+## [s61] Loop 2's addu a3,a0,zero is printed by reload as a reload register (find_equiv_reg copy into the first spill register) for some constrained-operand or secondary-reload shape rather than as an allocno seat.
+- mechanism: reload1.c:5843-5853 emits move reloadreg,equivreg only for an insn that requests an input reload; order_regs_for_reload fills potential_reload_regs first with call-used registers whose hard_reg_n_uses is zero (reload1.c:3771)
+- probe: instrumented cc1 BB2_RELOAD_DEBUG=1 on K2 (s61/dump.sh K2; s61/K2/dbg_func.txt)
+- result: RELOADDBG needs func=func_80017848 pass=1 new_bb_needs=0 changed=0 - no insn requests any reload; spill order prr=8,9,...,15,24,25,22,23,21,20,16,17,19,18,3,7,... with uses t0..t7 = 0 and a3 = 239 (parameter copy), so a reload-register copy would print $t0, never $a3
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis (candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c) at HEAD src/ings.c:820, instrumented cc1 BB2_RELOAD_DEBUG; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/reload1.c:3771
+
+## [s61] On a per-loop-p K2 variant, a post-loop reader x = p (x pre-defined as x = q before loop 1's guard) consumed by loop 2's guard extends p's range to the loop bottom with no bytes because x and p share a seat and jump2 deletes the same-register move.
+- mechanism: jump.c:437-490 deletes (set r r) after reload; loop 2's guard reads x on the blez-taken path where x holds q (a0), so x must be a0 on one path and p's seat on the other
+- probe: s61/body_J1.c applied; sandbox --disable all; s61/diff_J1.txt
+- result: 9 at 126/127: x seats in a1 (sh -> a2, lnk -> a3), addu a1,a0,zero prints in loop 1's preheader, the join prints addu a0,a1,zero where the target loads lw a0,0xC(s2), loop 2's copy folds; banked rejected/s61_J1_post_loop_reader_x_eq_p_into_loop2_guard_costs_9.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s61/body_J1.c applied; no FAKE construct
+
+## [s61] Pass-0 exclusion sets for the copy dest (pseudo 78) on K2, read directly from find_reg: v0 can only be refused by a hard conflict, because 78 always carries the v0 full preference itself and prune_preferences strips an allocno's own preferences from its someone-prefers set.
+- mechanism: find_reg pass 0 (global.c:998-1000) excludes used1 | ~regs_used_so_far | regs_someone_prefers; prune_preferences (global.c:920-928) removes own full prefs (global.c:925-926); set_preference operand-0 rule (global.c:1682) gives base a v0 pref from (set elem[v0] (plus base i)), pointer arithmetic is pointer-first (c-typeck.c:1986-1988); expand_preferences (global.c:867-869) merges it into 78 at the add
+- probe: instrumented cc1 BB2_FINDREG_DEBUG=78 on K2 (s61/dump_fr.sh K2fr 78; s61/K2fr/findreg_78.txt) + source reading
+- result: conflicts: 3 29; someone_prefers: empty; used_so_far includes a0..a3 (parameter copies); pass0_used: 0 1 3 18-23 26-31; own_full_prefs: 2 (v0). For a3 all of v0, a0, a1, a2 must be excluded: a1/a2 as hard conflicts (priority < 2500), a0 only as a conflict with q/base (no conflicting a0-pref holder exists), v0 only as a hard conflict. The s60 M1 spec is exact and exhaustive.
+- verdict: CONFIRMED
+
+## [s61] The copy dest's v0 seat can be refused in pass 0 through regs_someone_prefers (a conflicting lower-priority allocno such as lnk or sh carrying a v0 full preference) without a hard v0 conflict.
+- mechanism: prune_preferences removes the allocno's own full preferences from the someone-prefers set (global.c:925-926); 78 acquires base's v0 full preference at the add where it dies (expand_preferences global.c:867-869), fixed by the operand-0 rule on a pointer-first PLUS (global.c:1682, c-typeck.c:1986-1988)
+- probe: s61/K2fr/findreg_78.txt (own_full_prefs: 2, someone_prefers empty) + source reading; flipping the elem insn to (plus i base) needs integer arithmetic with i first, which hands the v0 preference to i (allocated first, priority 26000) and moves i off v1
+- result: with [copy, add] as 78's range the v0 preference is always merged in, so v0 never enters someone_prefers[78]; the only remaining v0 exclusion is a hard conflict with a v0-seated pseudo live across the copy-to-add window
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis at HEAD src/ings.c:820, instrumented cc1 BB2_FINDREG_DEBUG=78; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:925
