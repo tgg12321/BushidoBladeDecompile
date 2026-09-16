@@ -1,6 +1,16 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57) — floor 38/204, NOT YET 0.
+ * s57 (structural modality, 2026-09-16): Body UNCHANGED (9th consecutive
+ * session confirming 38/204 fresh). New structural probe this session:
+ * type-narrowed start/limit/i (all provably [0,6]-valued) to s16 in 3
+ * combinations -- all measured WORSE (39/204, 45/204, 48/204; i-narrowing
+ * costs real instructions since MIPS has no native halfword ALU ops).
+ * Closes the "narrow start/limit/i's own type" reading of the s53 live
+ * frontier item; the still-open reading (narrow one of the OTHER ~20
+ * conflict-graph-live pseudos) needs the s55-named forensics/solver
+ * pseudo cross-reference, out of scope for structural modality. See
+ * hypotheses.md/evidence.md [s57].
  * s56 (rederive modality, 2026-09-16): Body UNCHANGED (8th consecutive
  * session confirming/covering the 38/204 floor without new C-level
  * movement). Three rederive actions this session, all negative/covering

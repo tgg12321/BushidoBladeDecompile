@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 56,
- "current_modality": "rederive",
+ "session_count": 57,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -339,26 +339,24 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s56 rederive: fresh m2c decompile + decomp.me corpus search + sibling re-check all converge on already-explored territory; floor holds at 38/204 (8th consecutive confirming session), no new structural"
+  },
+  {
+   "session": 57,
+   "floor": 38,
+   "modality": "structural",
+   "headline": "s57 structural: fresh 38/204 re-confirmed (9th consecutive); new type-narrowing axis (start/limit/i -> s16) tried in 3 combos, all measured worse (39/45/48), closing that reading of the s53 frontier i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the ~20 other pseudos simultaneously live with limit in global_alloc's conflict graph has a declared C-level type/scope that could legitimately narrow ITS OWN live range, shifting the spill-cost comparison away from limit without attacking limit's genuine LICM-invariant status directly.",
-   "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the full conflict graph's relative costs, not any single pseudo's isolated properties.",
-   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output (fresh -da run on the same chassis) before proposing any specific declaration-scope edit -- this is a forensics/solver-modality task, not a rederive one."
+   "hypothesis": "One of the ~20 OTHER pseudos simultaneously live with limit in global_alloc's conflict graph (per the s51 .greg dump) has a declared C-level type/scope that could legitimately narrow ITS OWN live range, shifting the spill-cost comparison away from limit -- without attacking limit's genuine LICM-invariant status directly.",
+   "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the full conflict graph's relative costs, not any single pseudo's isolated properties; start/limit/i themselves are now ruled out as the narrowing target (this session).",
+   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output via a fresh `-da` cc1 run on the current chassis, to name a SPECIFIC non-start/limit/i pseudo before proposing any declaration-scope edit. Forensics/solver modality, not structural."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 24,
-   "statement": "Declaring start/limit/i before the pt0/pt1/hit0/hit1/work arrays (reversing the candidate's current top-of-function declaration order) is byte-identical to the current 38/198 baseline on this chassis,",
-   "kill_scope": "instance",
-   "measured_on": "s24 chassis (s22-banked 38/198 body, unmodified except the top-level declaration-order swap), single fresh sandbox measurement, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score 38/204 unchanged, build_insns 198 unchanged, byte-identical. Reverted."
-  },
   {
    "session": 24,
    "statement": "Moving hit0[4]/hit1[4]/work[4] from function scope into the loop's block scope (they are read only within a single iteration, unlike pt0/pt1 whose pre-loop address materialization target itself hoists",
@@ -830,6 +828,14 @@
    "measured_on": "s56 corpus search against the current local cache",
    "predicate_cite": "",
    "result": "Best match similarity 0.068 (func_800B788C, gcc2.7.2-cdk), next four <=0.063; no scratch shares this function's shape cl"
+  },
+  {
+   "session": 57,
+   "statement": "Type-narrowing start/limit/i (all provably small-valued, [0,6]) from s32 to s16, in three combinations, measures WORSE than the 38/204 baseline on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "s57 chassis (candidate.c's s22-s56-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, start/limit/i individually and jointly narrowed to s16, zero FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "i-alone: 45/204 (build_insns 206, +8 insns). start+limit: 39/204 (build_insns 198, same insn count, 1-point-worse RA res"
   }
  ],
  "ladder_skip": 0,

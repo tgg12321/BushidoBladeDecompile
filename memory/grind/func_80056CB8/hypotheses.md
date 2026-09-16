@@ -2605,3 +2605,25 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s56 corpus search against the current local cache
+
+## [s57, structural] Fresh chassis re-confirmation (9th consecutive session) plus a genuinely new, previously-untried structural axis: type-narrowing `start`/`limit`/`i` from `s32` to `s16` (individually and combined) all measure WORSE than the 38/204 baseline, closing this axis of the s53-named "narrow some OTHER live pseudo's declared type/scope" frontier item.
+- mechanism: `start`/`limit`/`i` all hold small values (`(x&3)*2` in [0,6], `+2` bound), so a genuine C-level narrowing to `s16` is semantically truthful (no value ever exceeds an s16 range) and was hypothesized to shrink these pseudos' live-range/spill-cost footprint in global_alloc's conflict graph without touching `limit`'s own LICM-invariant status directly — the exact "some OTHER pseudo's declared type could legitimately narrow" axis the s53 live frontier named (this ledger's exhaustive per-locals declaration-order sweeps at s3/s22-s24 never varied TYPE, only order/position).
+- probe: Re-applied the s22-s56-banked candidate.c body (func_80053614 s32-return prerequisite + header externs) fresh to src/text1b.c, confirmed 38/204 (build_insns 198) BEFORE any edit. Then three variants, each measured via `sandbox func_80056CB8 --disable all` and reverted via `git checkout -- src/text1b.c` before the next: (a) `i` alone -> `s16`: 45/204 (build_insns 206, +8 real insns) — s16 loop induction variable forces extra sign-extension/widening around every `i*2` index computation and the `(s8*)` store cast at the tail, since MIPS has no native halfword arithmetic. (b) `start`+`limit` -> `s16` (i stays s32): 39/204 (build_insns 198, same insn count as baseline but a 1-point-worse register-assignment residual — a genuine RA-shape change, not an insn-count regression). (c) all three -> `s16`: 48/204 (build_insns 208, +10 real insns) — compounds both effects.
+- result: All three variants score WORSE than 38/204 (39, 45, 48 respectively). This closes the type-narrowing sub-axis for `start`/`limit`/`i` specifically — narrowing these three genuinely-small-valued locals does not relieve `limit`'s spill (variant b still spills, just with one extra register-assignment mismatch) and narrowing `i` actively costs real instructions via MIPS's lack of native halfword ALU ops. The broader s53 frontier item (narrowing ONE of the ~20 OTHER live pseudos, not start/limit/i) remains genuinely open and still requires the forensics/solver pseudo cross-reference named at s55 before any further specific pseudo can be targeted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s57 chassis (candidate.c's s22-s56-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, start/limit/i individually and jointly narrowed to s16, zero FAKE constructs present); 3 separate measurements, each reverted before the next
+
+## [s57] The s22-s56-banked candidate.c body (func_80053614 s32-return prerequisite + header externs), applied fresh to src/text1b.c, reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session.
+- probe: Applied candidate.c's body verbatim to src/text1b.c via tmp/grind/func_80056CB8/s57/splice.py baseline, ran `sandbox func_80056CB8 --disable all`.
+- result: score 38/204, build_insns 198 -- matches the ledger's last recorded floor exactly.
+- verdict: CONFIRMED
+
+## [s57] Type-narrowing start/limit/i (all provably small-valued, [0,6]) from s32 to s16, in three combinations, measures WORSE than the 38/204 baseline on the current chassis.
+- mechanism: s16 loop induction/bound variables force extra MIPS sign-extend/widen instructions around every i*2 index computation and the (s8*) store cast, since MIPS has no native halfword ALU ops; the start+limit-only variant keeps insn count identical but shifts to a worse register-assignment residual (limit still spills, plus one extra mismatch).
+- probe: tmp/grind/func_80056CB8/s57/splice.py narrow16_i_only / narrow16_start_limit / narrow16, each measured via `sandbox func_80056CB8 --disable all` then reverted via `git checkout -- src/text1b.c` before the next variant.
+- result: i-alone: 45/204 (build_insns 206, +8 insns). start+limit: 39/204 (build_insns 198, same insn count, 1-point-worse RA residual). all three: 48/204 (build_insns 208, +10 insns). All three worse than baseline 38/204. Banked to rejected/type-narrow-{i-s16,start-limit-s16,all-s16}-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s57 chassis (candidate.c's s22-s56-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, start/limit/i individually and jointly narrowed to s16, zero FAKE constructs present)
