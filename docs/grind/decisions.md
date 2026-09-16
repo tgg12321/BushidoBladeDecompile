@@ -27452,3 +27452,79 @@ Answer: (b). The clobber-footprint family (.claude/rules/reload-spill-reg-reveal
 ## 2026-09-15 23:16 — func_8002D780 — final call — **FAIL**
 
 Bytes re-verified myself: sandbox --disable all = 0/202, rules_dropped 0; verify-oracle SHA1 == oracle; the src body is code-identical to candidate.c and to the measured s23/r3/G_granted.c with all four FAKE annotations present. Constructs (B) `ax = pz - z0` (borrow of an existing, dead local - staged-value bounds hold), (C) `m = dist` (dead-store-fake-exception), and (D) the cop2 islands with the granted LZCS clobber list "$12","$14","$15" ($13 absent; judge_constraints satisfied) are all legitimate - do not respell them. THE DEFECT is (A): the function-scope `tmp` is a fresh, single-purpose local written twice, and its own annotation names the two-write/two-block property AS the mechanism (local-alloc.c:472 admission); self_vet.md T1 concedes the split-local form measures 32/34, i.e. only the merged multi-write carrier reaches 0. That is the y1 shape refused at docs/grind/decisions.md 2026-07-28 01:47, and the refusal is NOT stale - the later owner grants that relaxed the named-intermediate entry (no-new-park-categories.md 2026-08-17, ordinary-c-judge-decidable.md 2026-08-31) both keep prong (1) once-written and name the y1 FAIL as standing. staged-value-reused-variable bound 2 excludes an invented carrier ('Inventing a new variable just to have something to borrow is NOT this rule'), and 'Variable reuse for codegen control' is backed by reuse of a variable with its own job (SOTN `i`/`j`, randy), not a fresh dual-write scratch. Non-membership in the frozen list is a clean FAIL(CONSTRUCT). My 22:59 ruling was scoped to the LZCS clobber question and did not consider `tmp`; layer-1's 'the three FAKE constructs check out' is reviewer opinion. Secondary, not the ground: the header comment's 'every single drop >= 32' contradicts its own cited ablate_G.txt (single drops 32/42/4/26) - fix that wording in whatever body next lands. Evidence: memory/grind/func_8002D780/self_vet.md T1/T5, hypotheses.md s14-s23, tmp/grind/func_8002D780/s23/r3/ablate_G.txt.
+
+## 2026-09-16 — func_8002D780 — OWNER-ESCALATION — **INTEGRATION HANDOFF (bytes proven 0/202 + oracle SHA1, Judge PASS 2026-09-16 04:31): blocked ONLY by the operator-only registry row in tools/grinder/owner_cluster_grants.txt**
+
+**This is not an exhaustion record and not a policy question.** Every technical gate has
+already passed on one exact body; the only missing piece is a one-line row in a file no
+session may write. Per .claude/rules/integration-handoff-self-serve.md this is a
+pipeline-executable handoff, and per the same rule's denylist the driver cannot self-grant
+scope into `tools/`, so the row is the operator's.
+
+**What is proven (all on the same body, hash 45e0221bc2dba1f8 =
+`memory/grind/func_8002D780/candidate.c` = `tmp/grind/func_8002D780/s23/r4/final_body.c`).**
+- `sandbox func_8002D780 --disable all` -> 0/202, 202 build insns, "0 differing
+  instructions": s23 third run on HEAD 2023082f8 (s23/r4/score_final.json, pairdiff_final.txt)
+  and re-measured by the s23 fourth run on HEAD e4ad73836 (s23/r5/score_chassis_e4ad738.json,
+  pairdiff_chassis_e4ad738.txt).
+- verify-oracle with the body applied: build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  (s23/r4/verify_oracle.txt; also re-verified by the Judge, below).
+- Layer-1 cheat-reviewer PASS and Judge **PASS** 2026-09-16 04:31 (tmp/grind/judge_func_8002D780.json;
+  metrics/events.jsonl "review" layer=judge verdict=PASS): "the single faulted construct ...
+  is GONE, not respelled ... staged-value-reused-variable bounds 1-5 all hold ... No
+  intent-announcing names, no pins, no barriers." The three FAKE constructs (`flag` borrow,
+  `ax` borrow, `m` re-store) and the cop2 islands with the "$12","$14","$15" LZCR clobber list
+  were cleared by that PASS and by the 2026-09-15 22:59 / 23:16 rulings. self_vet.md is
+  current for this body.
+- Then MERGE REFUSED by the driver (journal 2026-09-15 23:31; state.json candidate_blocks
+  `merge-refused-islands|45e0221bc2dba1f8`): 4 non-whitelist cop2 islands, scan_hand_coded
+  tier LOW 1/8, no registry row.
+
+**Why the registry door is the right door and why func_8002D780 qualifies.**
+- The islands are gte_ldlv0 / gte_rtv0 (`.word 0x4A486012` mvmva) / gte_stlvnl and gte_Lzc
+  (`mtc2 $t4,$30` / `swc2 $31`) with the `addu $t4,%N,$zero` addressing preamble — cop2
+  instructions with no C form, so the driver's alternative remedy ("respell in C") does not
+  exist for them. The identical LZCS/LZCR island is already authorized for func_8002BC68,
+  func_8002BEA0, func_8002D518 and func_8002EA24 (inline_asm_canonical.txt:368-371) and the
+  identical lwc2/mvmva/swc2 pair for func_8002EA24 / func_8002E838 (:371, :373).
+- The registry's admission test (owner ruling 2026-08-30 ruling 4, docs/grind/decisions.md:14814)
+  is enumeration BY NAME in a LANDED owner cluster ruling. func_8002D780 is enumerated at
+  `.claude/rules/cop2-addressing-preamble-cluster.md:75` (2026-08-17 cluster ruling census,
+  1 idiom site, `L141 addu $t4,$a0,$zero -> mtc2 $t4,$30`). It has no row only because the
+  2026-08-30 seed list was limited to members "with proven-or-near floors" at that date;
+  func_8002FF20, func_80031890 (2026-09-02) and func_80019310 (2026-09-06) were added by the
+  operator when they reached proof, which is exactly func_8002D780's position now.
+- The per-function mechanical check of the cluster rule (:102-127) holds: (1) sandbox 0;
+  (2) zero pins / aliasing blocks / barriers; (3) in-island GPR = the addressing preamble
+  only; (4) layer-1 + Judge PASS and verify-oracle done — the driver re-runs all four before
+  `queue done`. Honest bucket on integration: COMPLETED-INLINE-ASM-CANONICAL (islands
+  authorized, head/tail ordinary C with three annotated FAKEs), the same bucket as the four
+  siblings above.
+
+**Exact operator steps (one edit; nothing else changes).**
+1. Append to `tools/grinder/owner_cluster_grants.txt`:
+   `func_8002D780 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17, census row :75; registry door per ruling 2026-08-30; proven 0/202 + Judge PASS 2026-09-16, decisions.md 2026-09-16 INTEGRATION HANDOFF entry)`
+2. That edit changes the driver's gate_fingerprint (grindlib.py:1687), which retires the
+   recorded `merge-refused-islands` block. The next grind session submits
+   `memory/grind/func_8002D780/candidate.c` EXACTLY (the Judge PASS is keyed to the body;
+   layer-1 is skipped for a Judge-cleared body), the driver re-proves bytes on main,
+   `grant_canonical_asm` now returns the OWNER-CLUSTER line for inline_asm_canonical.txt,
+   and `queue done` runs its full checks. The operator may additionally run a fresh layer-2
+   cheat-reviewer on the diff, as for every completion.
+
+**Re-activation triggers if the row is not added.** The function stays as it is (floor 0,
+candidate banked); it returns to work automatically on any registry/allowlist change (gate
+fingerprint), a toolchain change (candidates re-measured), or an owner ruling that respells
+the cluster door. No pure-C axis is open or needed: the residual is zero.
+
+**Evidence pointers.** memory/grind/func_8002D780/{candidate.c, self_vet.md, evidence.md s23
+(four runs), hypotheses.md s23}; tmp/grind/func_8002D780/s23/r4/ (F1-F4, final_body.c,
+score_*.json, pairdiff_*.txt, verify_oracle.txt, ablate_final.txt); tmp/grind/func_8002D780/
+s23/r5/ (chassis re-measurement); tmp/grind/judge_func_8002D780.json; docs/grind/journal.md
+2026-09-15 23:31; rejected/{flag-carries-both-jobs-redundant-second-borrow-0.c,
+threshold-param-as-block7-carrier-28.c, flag-carries-table-byte-only-fresh-dz-9.c,
+flag-block7-plus-fresh-once-written-tb-0.c}.
+
+## 2026-09-15 23:43 — func_8002D780 — ruling: INTEGRATION HANDOFF filed for func_8002D780 : docs/grind/decisions.md 2026-09-16 — **PASS**
+
+This body may be submitted. Bytes verified from driver-written records, not the session's prose: metrics/events.jsonl sandbox func_8002D780 --disable all = 0/202 (202 build insns, rules_dropped 0) at 04:29:58 on 2023082f8 and again 04:35/04:39 on e4ad73836, plus verify_oracle.txt ok:true build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; layer-1 PASS 04:28 and Judge PASS 04:31 on this exact body (hash 45e0221bc2dba1f8). The construct my 23:16 FAIL banned is gone, not respelled: there is no `tmp` in candidate.c; block 7's carrier is now the `flag` PARAMETER, borrowed after its own job (the `if (flag == 0)` entry test; grep confirms no later read), which is the frozen 'Variable reuse for codegen control' family with staged-value-reused-variable bounds 1-5 met (annotated, ablate_final.txt drop-100 = 32, in-TU precedent func_8002CA8C's `hit`). (B) `ax`, (C) `m = dist` and (D) the islands with the granted "$12","$14","$15" LZCR list ($13 absent) were cleared 2026-09-15 22:59/23:16 and I find no new defect. I verified the cluster claim myself: func_8002D780 is enumerated by name in the landed 2026-08-17 ruling census (.claude/rules/cop2-addressing-preamble-cluster.md:75, L141 addu $t4,$a0,$zero -> mtc2 $t4,$30), all four islands in candidate.c are addressing-preamble + cop2 only (no pins, no aliasing move, no barrier), and asm/funcs/func_8002D780.s:32-42/141-147 carries those exact instructions, two tagged 'handwritten instruction'. BUT I am NOT filing an integration-handoff: the remedy the session asks for is a row in tools/grinder/owner_cluster_grants.txt, and 'anything under tools/' is on the add-scope-allow denylist in .claude/rules/integration-handoff-self-serve.md (mirrored by _SCOPE_GRANT_DENY) precisely so a session can never widen its own surface into the registry that authorizes it. inline_asm_canonical.txt is denylisted for the same reason, and canonical-asm-grant is unavailable on evidence (scan_hand_coded LOW 1/8, not STRONG/S1-S2-S6). No driver-executable grant exists, so ESCALATE would be manufactured authority; the islands have no C form, so FAIL would ban legitimate constructs on a proven body. The correct handling is the pipeline's own: on resubmission the merge gate admits the body if the operator has added the registry row, and otherwise records the identical (merge-refused-islands, 45e0221bc2dba1f8, gate-fingerprint) key a second time, which trips CANDIDATE_BLOCK_MAX and rotates the function with the remedy surfaced as an OWNER ACTION - one session spent, no loop. The honest bucket on integration is COMPLETED-INLINE-ASM-CANONICAL. Evidence: memory/grind/func_8002D780/{candidate.c, self_vet.md, hypotheses.md s14-s23, rejected/}, tmp/grind/func_8002D780/s23/r4-r5/, docs/grind/decisions.md 2026-09-16 entry.

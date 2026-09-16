@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 22,
- "current_modality": "escalation",
+ "session_count": 23,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -135,13 +135,19 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Disposition s23: floor re-measured 2/202 and both endgame gates re-run and FAILED (scan LOW 1/8, no SOTN precedent); the owner directive's sibling transplant and s21's last frontier item (symmetric kp"
+  },
+  {
+   "session": 23,
+   "floor": 0,
+   "modality": "rederive",
+   "headline": "func_8002D780: Judge-passed body re-measured 0/202 on HEAD e4ad73836; the only blocker is the operator-only owner_cluster_grants.txt row (func is census row 75 of the landed 2026-08-17 cluster ruling)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No sanctioned pure-C axis remains open on this chassis; the item is rotated and returns automatically on queue drain, toolchain change, or movement of a DIFFERENT coupled sibling in src/code6cac_b.c that shares block 7's shape.",
-   "mechanism": "The two comparators that decide the residual (qty_compare_1 and allocno_compare) read opposite values of one positional quantity in block 7; every C-level handle on that quantity enumerated so far \u2014 declaration order, declaration scope, gap fillers, staging, statement order, split-init, operand order, reference count, block structure, computation hoisting \u2014 is measured dead.",
-   "next_probe": "On re-activation, re-measure the chassis first (the floor and all instance kills are chassis-relative), then attack the positional quantity from a lever class not yet enumerated: a change in what block 7's CALLER shape forces into the register file at entry, or a toolchain finding that alters rank_for_schedule's tie-break inputs."
+   "hypothesis": "Once the operator appends the func_8002D780 row to tools/grinder/owner_cluster_grants.txt, resubmitting memory/grind/func_8002D780/candidate.c EXACTLY (body hash 45e0221bc2dba1f8) integrates to COMPLETED-INLINE-ASM-CANONICAL through the normal gates.",
+   "mechanism": "the registry edit changes gate_fingerprint and retires the merge-refused block; grant_canonical_asm then returns the OWNER-CLUSTER allowlist line; the Judge PASS is keyed to the body so layer-1 is skipped.",
+   "next_probe": "splice candidate.c over src/code6cac_b.c:1404, sandbox --disable all (expect 0/202), verify-oracle, candidate-ready with the current self_vet.md; do not change a byte of the body."
   }
  ],
  "judge_constraints": [
@@ -664,7 +670,7 @@
    "session": 2,
    "at": "2026-09-16T02:40:20.218807+00:00",
    "headline": "func_8002CA8C COMPLETED-C",
-   "consumed": null
+   "consumed": 23
   }
  ],
  "exhaustion_base": 22,
@@ -680,6 +686,13 @@
    "hash": "709b9c7d6ba640fd",
    "when": "2026-09-16T03:37:43.581572+00:00",
    "summary": "The three FAKE constructs check out, but the candidate also carries an UNDISCLOSED, load-bearing (4 insns) inline-asm hard-register footprint \u2014 the \"$13\",\"$14\",\"$15\" clobbers on the LZCS swc2 statement \u2014 extended by analogy from a grant scoped to two other named functions, and this function's target"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "45e0221bc2dba1f8",
+   "when": "2026-09-16T04:43:22.760571+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-15 23:43 ruling PASS)"
   }
  ],
  "candidate_blocks": {
@@ -692,5 +705,13 @@
    "last_seen": "2026-09-16T04:31:28.440329+00:00",
    "remedy": "Either respell the 4 island(s) in C, or \u2014 if this function is enumerated by name in a LANDED owner cluster ruling \u2014 add a row for it to tools/grinder/owner_cluster_grants.txt citing that ruling (operator-only; sessions cannot reach that file)."
   }
- }
+ },
+ "judge_clearances": [
+  {
+   "hash": "45e0221bc2dba1f8",
+   "when": "2026-09-16T04:43:22.760571+00:00",
+   "ref": "decisions.md 2026-09-15 23:43 ruling PASS",
+   "justification": "This body may be submitted. Bytes verified from driver-written records, not the session's prose: metrics/events.jsonl sandbox func_8002D780 --disable all = 0/202 (202 build insns, rules_dropped 0) at 04:29:58 on 2023082f8 and again 04:35/04:39 on e4ad73836, plus verify_oracle.txt ok:true build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; layer-1 PASS 04:28 and Judge PASS 04:31 on this exact body (hash 45e0221bc2dba1f8). The construct my 23:16 FAIL banned is gone, not respelled: there is no `tmp` in candidate.c; block 7's carrier is now the `flag` PARAMETER, borrowed after its own job (the"
+  }
+ ]
 }

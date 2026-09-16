@@ -2642,3 +2642,77 @@ A_noclob.c,B_merged.c,C_noclob_firstout.c,score_A.json,score_B.json,score_K.json
 pairdiff_A.txt,pairdiff_B.txt,ablate_A.txt,trA/trace.txt,trK/trace.txt,dumpsA/}.
 
 **Correction to the artifact list.** C_noclob_firstout.c (first island also naming `sp_var` as an output) did not compile - the added output shifted the asm operand numbering - so score_C.json holds a traceback, not a score; the variant was not measured and claims nothing.
+
+### s23 third run (2026-09-15/16, rederive) — reconstructed by the fourth run
+
+The third run took the Judge's 2026-09-15 23:16 final call literally: keep the cleared
+constructs (the `ax` borrow, the `m` re-store, the islands with the granted "$12","$14","$15"
+LZCR clobber list) and remove the one FAILed construct, the fresh twice-written scratch.
+Block 7's `z2 - z0` moved into the `flag` parameter (dead after the entry test, arrives in
+$a0 — the seat the target uses) and the sqrt block went back to the s14 chassis's inline
+table-byte read. Measurements (tmp/grind/func_8002D780/s23/r4/): F2a (flag carries block 7
+only) 0/202; F1 (flag carries both jobs) 0/202, redundant; F2b (F2a + fresh once-written
+`tb`) 0/202, byte-neutral; F3 (threshold carrier) 28/202; F4 (flag carries the table byte
+only, fresh dz) 9/202; G0 (the r3 granted body, re-check) as before. final_body.c = F2a with
+the annotations rewritten (mkfinal.py). verify-oracle: build SHA1 == oracle
+(verify_oracle.txt). fake_ablate: keep-all 0, drops 32/40/4 (ablate_final.txt). Submitted
+candidate-ready; layer-1 PASS; Judge PASS 2026-09-16 04:31 (tmp/grind/judge_func_8002D780.json:
+"the single faulted construct ... is GONE, not respelled ... staged-value-reused-variable
+bounds 1-5 all hold"). The driver then refused the merge at the registry gate (journal
+2026-09-15 23:31: "4 unallowlisted inline-asm island(s), no grant door"), banked the four
+rejected forms and the candidate block, and did NOT commit candidate.c / hypotheses.md /
+evidence.md — which is why this section is written by the fourth run.
+
+### s23 fourth run (2026-09-16, rederive; HEAD e4ad73836)
+
+**Sibling notice.** func_8002CA8C (caller, COMPLETED-C) shares no block; the notice was
+already measured inert in runs one and two and is consumed by this run's re-measurement.
+
+**Chassis re-measurement.** r4/final_body.c spliced over src/code6cac_b.c:1404 (s23/
+src_backup.c is diff-identical to HEAD): sandbox --disable all -> score 0, 202/202, pairdiff
+"0 differing instructions" (r5/score_chassis_e4ad738.json, r5/pairdiff_chassis_e4ad738.txt).
+src restored; `git status` clean apart from metrics/events.jsonl.
+
+**Why the merge is refused, precisely.** grind.ps1:915-926 runs island-count on the applied
+body (4 non-whitelist cop2 islands) and grindlib.grant_canonical_asm: scan_hand_coded tier
+LOW 1/8 (s22, whole-function scanner artifact for GTE-island bodies — the same 1/8 the Judge
+noted for func_8002FF20 at decisions.md:19971) and no registry row -> returns None ->
+"grant REFUSED". The registry (tools/grinder/owner_cluster_grants.txt) is operator-only by
+construction (grindlib.py:1806-1810). Its admission test is by-name enumeration in a landed
+owner cluster ruling; func_8002D780 is census row .claude/rules/cop2-addressing-preamble-
+cluster.md:75 of the 2026-08-17 ruling. The 2026-08-30 ruling 4 seeded the registry with the
+members "with proven-or-near floors" at that date (func_8002FC80, func_80032314,
+func_8002D320, func_8002D518, func_8002E838, func_800300B4, func_800325E0); func_8002FF20
+and func_80031890 were added by the operator on 2026-09-02 once they were proven, and
+func_80019310 on 2026-09-06. func_8002D780 is now in the same position those three were.
+
+**Why "respell the islands in C" does not apply.** The islands are gte_ldlv0 / gte_rtv0
+(mvmva .word 0x4A486012) / gte_stlvnl and gte_Lzc (mtc2 $t4,$30 ; swc2 $31) — cop2
+instructions with no C form (CLAUDE.md "GTE ops have no C analog"; inline-asm-allowed). The
+identical LZCS/LZCR island is the authorized form in inline_asm_canonical.txt:368-371 for
+func_8002BC68, func_8002BEA0, func_8002D518 and func_8002EA24, and the identical
+lwc2/mvmva/swc2 pair is authorized for func_8002EA24 (:371) and func_8002E838 (:373).
+
+**Disposition.** INTEGRATION HANDOFF entry filed in docs/grind/decisions.md (2026-09-16,
+OWNER-ESCALATION heading naming func_8002D780) with the single operator step. Outcome
+owner-gated with escalation_ref citing it (legal in any modality per grindlib.validate_outcome:
+"Integration handoffs and gate-PASSING escalations stay legal anywhere").
+
+**Artifacts.** tmp/grind/func_8002D780/s23/r5/{meas.sh,bank.py,score_chassis_e4ad738.json,
+pairdiff_chassis_e4ad738.txt}; tmp/grind/func_8002D780/s23/r4/{final_body.c,score_final.json,
+pairdiff_final.txt,verify_oracle.txt,ablate_final.txt,F1.c,F2a.c,F2b.c,F3.c,F4.c,score_F*.json};
+tmp/grind/judge_func_8002D780.json.
+
+- [s23] Judge-passed body (hash 45e0221bc2dba1f8) restored to memory/grind/func_8002D780/candidate.c with a fourth-run header; self_vet.md rewritten for it (no fresh multi-write local; the banned scratch is gone, not respelled).
+
+- [s23] Re-measured this session on HEAD e4ad73836: sandbox --disable all = 0/202, 202 build insns, pairdiff 0 differing instructions (tmp/grind/func_8002D780/s23/r5/).
+
+- [s23] Third run: verify-oracle SHA1 == oracle with the body applied (s23/r4/verify_oracle.txt); fake_ablate keep-all 0, single drops 32/40/4 (s23/r4/ablate_final.txt); Judge PASS 2026-09-16 04:31 (tmp/grind/judge_func_8002D780.json).
+
+- [s23] Merge refused 2026-09-15 23:31 solely by the registry gate: 4 non-whitelist cop2 islands, scan tier LOW 1/8, no owner_cluster_grants.txt row (state.json candidate_blocks merge-refused-islands|45e0221bc2dba1f8|ccd5c7d5c8af).
+
+- [s23] func_8002D780 is census row .claude/rules/cop2-addressing-preamble-cluster.md:75 of the landed 2026-08-17 cluster ruling; the registry admission test is by-name enumeration in a landed owner cluster ruling (decisions.md:14814 ruling 4).
+
+- [s23] The four islands (gte_ldlv0/gte_rtv0 mvmva .word 0x4A486012/gte_stlvnl, gte_Lzc mtc2 $30 + swc2 $31) are identical to the authorized islands of func_8002BC68/func_8002BEA0/func_8002D518/func_8002EA24/func_8002E838 (inline_asm_canonical.txt:368-373).
+
+- [s23] The third run's ledger writes (candidate.c, hypotheses.md, evidence.md) were never committed by the driver's merge-refusal path; this run reconstructed them from tmp/grind/func_8002D780/s23/r4/.

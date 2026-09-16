@@ -1,48 +1,48 @@
-/* func_8002D780 - grind candidate (s23 rederive, second run, 2026-09-15).  Honest sandbox
- * floor 4/202, build_insns == target_insns == 202, measured THIS session with these exact
- * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 4;
- * tmp/grind/func_8002D780/s23/r2/score_A.json, pairdiff_A.txt).  Chassis: HEAD a638b10b6
- * (-mel -msoft-float), matched caller func_8002CA8C in the TU.
+/* func_8002D780 - grind candidate (s23 fourth run, 2026-09-16).  Honest sandbox floor 0/202,
+ * build_insns == target_insns == 202, RE-MEASURED THIS RUN with these exact edits spliced
+ * into src/code6cac_b.c on HEAD e4ad73836 (-mel -msoft-float, matched caller func_8002CA8C
+ * in the TU): `sandbox func_8002D780 --disable all` -> 0, pairdiff "0 differing
+ * instructions" (tmp/grind/func_8002D780/s23/r5/score_chassis_e4ad738.json,
+ * pairdiff_chassis_e4ad738.txt).  This is BYTE-FOR-BYTE the body of the s23 third run
+ * (tmp/grind/func_8002D780/s23/r4/final_body.c, body hash 45e0221bc2dba1f8): it scored 0/202
+ * there too, verify-oracle returned build SHA1 == oracle (s23/r4/verify_oracle.txt), and the
+ * Judge PASSed it at 2026-09-16 04:31 (tmp/grind/judge_func_8002D780.json; metrics event
+ * "review" layer=judge verdict=PASS at 04:31:03).  The merge was then REFUSED by the
+ * owner-cluster registry gate, not by any review: the body carries 4 GTE islands that are
+ * not on the cop2 whitelist, scan_hand_coded scores the function LOW 1/8, and
+ * tools/grinder/owner_cluster_grants.txt has no row for func_8002D780 (grind.ps1:915-926,
+ * grindlib.grant_canonical_asm).  That row is operator-only (tools/ is outside session
+ * scope), so the s23 fourth run filed an INTEGRATION HANDOFF entry in
+ * docs/grind/decisions.md (2026-09-16) with the exact operator step; nothing in this body
+ * needs to change once the row lands - resubmit it EXACTLY (the Judge PASS is keyed to the
+ * body, comments ignored).
  *
- * THIS IS THE 0/202 BODY OF THE FIRST s23 RUN WITH THE BANNED CONSTRUCT REMOVED.  That body
- * (banked as rejected/lzcs-clobbers-t5-t7-banned-layer1-0.c) carried "$13","$14","$15" on the
- * LZCS swc2 statement; layer-1 FAILed it 2026-09-15 22:37 and the driver now bans that
- * clobber list for this function.  With the statement clobbering only "$12" the score is 4,
- * every one of the 4 residual instructions being a register seat decided in reload1.c /
- * retry_global_alloc, NOT in any pass a C spelling reaches (hypotheses.md s23 second run):
- *
- *   ours[88]  mflo t6 / subu v1,v1,t6   target  mflo s1 / subu v1,v1,s1   (pseudo 128 = x2*pz,
- *             test 2: kicked out of LO by reload, retry_global_alloc pass 0 takes the first
- *             free register >= 2 that is used-so-far and not forbidden: t6 here, s1 in target
- *             because t6 and t7 were forbidden = regs_explicitly_used there)
- *   ours[116] mflo t7 / subu s1,a1,t7   target  mflo t8 / subu s1,a1,t8   (pseudo 142 = y*y:
- *             reload's GR spill register = potential_reload_regs[0] = the lowest call-used
- *             register with zero pseudo uses; t7 here, t8 in target because t7 had
- *             hard_reg_n_uses = large+1 / bad_spill_regs there, i.e. it was explicitly
- *             mentioned in the RTL - the target has no t7 instruction at all)
- *
- * Both seats are the SAME signature the 2026-07-28 judge ruling (docs/grind/decisions.md:1852)
- * granted func_8002BC68 / func_8002BEA0 the $12-$15 clobber list for; this session's outcome is
- * a ruling-request on whether that deduction extends here (it is not self-approved and the
- * banned list is not re-declared in this file).
- *
- * The four FAKE constructs are unchanged from the first s23 run and all four are load-bearing
- * in this no-clobber form too (fake_ablate: keep-all 4; single drops 8 / 28 / 34 / 44;
- * tmp/grind/func_8002D780/s23/r2/ablate_A.txt): (1) `tmp = z2 - z0` / `tmp = *LUT` - one
- * scratch local reused for two real consumed values (staged-value-reused-variable family,
+ * Construct summary (unchanged from the Judge-passed third-run body).  Three FAKE
+ * constructs, all load-bearing (fake_ablate: keep-all 0, single drops 32 / 40 / 4,
+ * tmp/grind/func_8002D780/s23/r4/ablate_final.txt): (1) `flag = z2 - z0` - block 7's edge
+ * difference staged through the `flag` PARAMETER, a variable with its own real job (the
+ * entry mode test) that is dead from that test onward (staged-value-reused-variable family,
  * .claude/rules/staged-value-reused-variable.md; frozen list "variable reuse for codegen
- * control"); (2) `ax = pz - z0` staged through the existing dead local `ax` (same family);
- * (3) `m = dist` same-value re-store (dead-store family,
- * .claude/rules/dead-store-fake-exception.md; in-TU precedent src/code6cac_b.c:1330).
- * Mechanisms and lever-exhaustion pointers are at each annotation.  The rest of the body is
- * the s14 chassis (split cop2 islands, canonical LZCS/LZCR + mvmva idiom per
- * .claude/rules/cop2-addressing-preamble-cluster.md).  Full derivation: evidence.md and
- * hypotheses.md s23 (both runs). */
+ * control"; in-TU precedent: func_8002CA8C's `hit` borrow in this file); (2) `ax = pz - z0`
+ * - the same family, borrowing the block-7 local `ax` after its value died (Judge-cleared
+ * 2026-09-15 23:16); (3) `m = dist` same-value re-store (dead-store family,
+ * .claude/rules/dead-store-fake-exception.md; Judge-cleared the same ruling).  Mechanisms
+ * and lever-exhaustion pointers are at each annotation.  The rest of the body is the s14
+ * chassis: split cop2 islands with the canonical LZCS/LZCR + mvmva idiom per
+ * .claude/rules/cop2-addressing-preamble-cluster.md (func_8002D780 is census row
+ * `.claude/rules/cop2-addressing-preamble-cluster.md:75`); the LZCS swc2 island carries the
+ * Judge-granted "$12","$14","$15" clobber list (docs/grind/decisions.md 2026-09-15 22:59,
+ * reload1.c / global.c derivation in hypotheses.md s23 second run; "$13" deliberately absent
+ * per that ruling).  Alternatives measured in the third run (tmp/grind/func_8002D780/s23/r4):
+ * `flag` carrying both block 7 and the table byte is also 0/202 but needs a second borrow for
+ * nothing (rejected/flag-carries-both-jobs-redundant-second-borrow-0.c); `threshold` as the
+ * carrier scores 28 (it arrives in $a3, so global_alloc seats it there, not $a0;
+ * rejected/threshold-param-as-block7-carrier-28.c); `flag` carrying only the table byte with
+ * a fresh block-local dz scores 9 (rejected/flag-carries-table-byte-only-fresh-dz-9.c); a
+ * fresh once-written `tb` for the table byte is byte-neutral at 0 and therefore dropped
+ * (rejected/flag-block7-plus-fresh-once-written-tb-0.c).  Full derivation: evidence.md and
+ * hypotheses.md s23 (all four runs). */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
-    /* One scratch local shared by two distant jobs: the third edge test's `z2 - z0`
-     * (block 7) and the sqrt block's table byte.  See the FAKE notes at both stores. */
-    s32 tmp;
-
     if (flag == 0) {
         s32 *vin;
         s32 *vout;
@@ -91,31 +91,40 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 s32 ax = cx - x0;
                 s32 dx;
                 s32 az;
-                /* FAKE: the edge difference z2 - z0 is staged through the function-scope
-                 * scratch `tmp` (also assigned the sqrt table byte below) instead of a fresh
-                 * block-local, mechanism: local-alloc.c local_alloc admission
-                 * (local-alloc.c:472 REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1) - a pseudo
-                 * referenced in two blocks is left to global.c, so block 7's local-alloc
-                 * table seats dx first in $v1 and global_alloc gives tmp $a0 (the target's
-                 * seats; a block-local dz ties dx in qty_compare_1 and takes $v1 itself),
-                 * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s14-s22
+                /* FAKE: the third edge test's edge difference z2 - z0 is staged through the
+                 * `flag` parameter (its own job, the mode test at entry, is finished: nothing
+                 * reads `flag` after `if (flag == 0)`, and this value is consumed by the two
+                 * products below and never needed again), instead of through a fresh
+                 * block-local, mechanism: local-alloc.c local_alloc admission (local-alloc.c:472
+                 * REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1) - a pseudo referenced in two basic
+                 * blocks (the entry test and this block) is left to global.c, so block 7's
+                 * local-alloc quantity table seats dx first in $v1 and global_alloc, reaching the
+                 * parameter's pseudo fourth in allocno order, seats it in $a0, the lowest free
+                 * register at that turn (tmp/grind/func_8002D780/s23/r4 greg: "72 in 4"; the
+                 * entry copy from $a0 is folded away by combine AFTER flow has fixed the
+                 * pseudo's REG_BASIC_BLOCK as global) (the target's seats; a block-local dz
+                 * ties dx in qty_compare_1 and takes $v1 itself),
+                 * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s14-s23
                  * (declaration order/scope, statement order, staging, hoisting, sign flips,
-                 * 2,080 + 816 + 528 enumerated block-local spellings, all >= 2/202). */
-                tmp = z2 - z0;
+                 * 2,080 + 816 + 528 enumerated block-local spellings, all >= 2/202; a fresh
+                 * function-scope scratch shared with the sqrt block reaches 0 but was
+                 * Judge-FAILed 2026-09-15 23:16 as an invented multi-write carrier; the
+                 * `threshold` parameter as carrier scores 28; s23 third run). */
+                flag = z2 - z0;
                 dx = x2 - x0;
                 az = cz - z0;
-                kc = (tmp * ax) - (dx * az);
+                kc = (flag * ax) - (dx * az);
                 /* FAKE: the query difference pz - z0 is staged through the existing, now-dead
                  * local `ax` (its cx - x0 value was consumed by the kc line above; this value
                  * is consumed on the next line), mechanism: sched.c adjust_priority ->
                  * birthing_insn_p (reg_n_sets == 1): a once-assigned `ax` gets max priority in
-                 * sched1 and is emitted AFTER the twice-assigned `tmp`, transposing the
-                 * target's `ax` (delay slot) / `tmp` order; a twice-assigned `ax` ties and
+                 * sched1 and is emitted AFTER the twice-assigned `flag`, transposing the
+                 * target's `ax` (delay slot) / `flag` order; a twice-assigned `ax` ties and
                  * rank_for_schedule falls through to source order, lever-exhaustion:
                  * memory/grind/func_8002D780/hypotheses.md s23 (sh_tt/sh_ttB/tb_tt: 5, 3, 2;
                  * ax reused for px - x0: 23; both reused: 23; tmp first in source: 2). */
                 ax = pz - z0;
-                kp = (tmp * (px - x0)) - (dx * ax);
+                kp = (flag * (px - x0)) - (dx * ax);
                 if ((kc ^ kp) >= 0)
                     return 1;
             }
@@ -156,18 +165,12 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 __asm__ volatile(
                     "addu $t4, %1, $zero\n"
                     "swc2 $31, 0($t4)"
-                    : "=m"(sp_var) : "r"(&sp_var) : "$12");
+                    : "=m"(sp_var) : "r"(&sp_var) : "$12", "$14", "$15");
                 lzcr = sp_var;
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                /* FAKE: the table byte is staged through the existing, now-dead scratch
-                 * `tmp` (block 7's z2 - z0 died at its last multiply; this value is consumed
-                 * on the next line) - the second job that makes `tmp` a two-block pseudo, see
-                 * the block-7 note for the mechanism (local-alloc.c:472 admission) and
-                 * lever-exhaustion. */
-                tmp = *((&D_8008D118) + ((u32)m >> shift));
-                sqrt_val = (u32)(tmp << 16) >> (0x13 - ((u32)shift >> 1));
+                sqrt_val = (u32)(*((&D_8008D118) + ((u32)m >> shift)) << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
 

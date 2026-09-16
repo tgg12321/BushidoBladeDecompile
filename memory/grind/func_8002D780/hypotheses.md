@@ -2326,3 +2326,55 @@ dx wins the seat with the emission order untouched.
 - probe: `python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate tmp/grind/func_8002D780/s23/r2/A_noclob.c` (tmp/grind/func_8002D780/s23/ablate.sh), output tmp/grind/func_8002D780/s23/r2/ablate_A.txt.
 - result: CONFIRMED. keep-all 4/202; drop the `m` re-store 8/202; drop the table-byte staging 28/198; drop `tmp = z2 - z0` 34/201; drop `ax = pz - z0` 44/200; all combinations 29-48. The 4-instruction pair (mflo t6 / mflo t7 seats) is present in every ablation state; the FAKE constructs neither cause nor mask it.
 - verdict: CONFIRMED
+
+### s23 third run (2026-09-15/16, rederive — the run that reached the Judge PASS; its ledger writes were never committed because the driver refused the merge at the registry gate, so the fourth run reconstructs them here from tmp/grind/func_8002D780/s23/r4/)
+
+## [s23] Staging block 7's `z2 - z0` through the `flag` PARAMETER (an existing variable whose own job, the entry mode test, is finished) instead of through a fresh function-scope scratch reaches 0/202 at 202 build insns, and the resulting body passed the Judge.
+- mechanism: same as the second run's shared-scratch mechanism — the pseudo is referenced in two basic blocks (the entry test and block 7), so local-alloc.c:472 leaves it to global_alloc; block 7's local-alloc table seats dx first in $v1 and global_alloc seats the parameter's pseudo in $a0 (r4 greg: "72 in 4"), the target's seats — but the carrier is now a variable with its own real job, which is what the y1 ban and staged-value bound 2 require.
+- probe: tmp/grind/func_8002D780/s23/r4/F2a.c spliced into src/code6cac_b.c on HEAD 2023082f8; sandbox --disable all; pairdiff; verify-oracle; fake_ablate.
+- result: 0/202, "0 differing instructions" (score_final.json, pairdiff_final.txt); verify-oracle build SHA1 == oracle (verify_oracle.txt); fake_ablate keep-all 0, single drops 32 (flag borrow) / 40 (ax borrow) / 4 (m re-store) (ablate_final.txt). Layer-1 PASS and Judge PASS 2026-09-16 04:31 (tmp/grind/judge_func_8002D780.json; metrics "review" layer=judge verdict=PASS). Then MERGE REFUSED by the driver: 4 non-whitelist cop2 islands, scan tier LOW, no owner_cluster_grants.txt row (journal 2026-09-15 23:31; state.json candidate_blocks merge-refused-islands|45e0221bc2dba1f8).
+- verdict: CONFIRMED
+
+## [s23] The other three parameter/fresh-local carriers for block 7 measured in the third run: `flag` carrying BOTH block 7 and the sqrt table byte is 0/202 (a second borrow that buys nothing — dropped); `threshold` as the block-7 carrier is 28/202 (it arrives in $a3, so global_alloc seats it there, not $a0); `flag` carrying only the table byte with a fresh block-local dz is 9/202; a fresh once-written `tb` for the table byte on top of the flag borrow is 0/202 and byte-neutral (dropped as a no-effect named intermediate).
+- mechanism: the carrier must arrive in $a0 (the target's seat) and must be dead across the entry test; only `flag` satisfies both.
+- probe: tmp/grind/func_8002D780/s23/r4/{F1,F2b,F3,F4}.c via meas.sh.
+- result: F1 (flag both jobs) 0/202; F3 (threshold) 28/202; F4 (flag table-byte only, fresh dz) 9/202; F2b (fresh tb) 0/202 byte-identical to F2a. Banked: rejected/flag-carries-both-jobs-redundant-second-borrow-0.c, rejected/threshold-param-as-block7-carrier-28.c, rejected/flag-carries-table-byte-only-fresh-dz-9.c, rejected/flag-block7-plus-fresh-once-written-tb-0.c.
+- verdict: CONFIRMED
+
+### s23 fourth run (2026-09-16, rederive — forced by the still-unconsumed func_8002CA8C sibling notice; chassis HEAD e4ad73836)
+
+## [s23] The forced-rederive sibling func_8002CA8C (this function's caller, COMPLETED-C at its s2) still shares no block with this function, and with its matched body in the TU the Judge-passed third-run body re-measures exactly 0/202 on the current chassis.
+- mechanism: func_8002CA8C is a caller (two call sites at src/code6cac_b.c:1074/1078) with no edge test, no sqrt block and no cop2 island; its only effect on this function is the `extern` prototype and the TU layout, both already present when the third run measured.
+- probe: tmp/grind/func_8002D780/s23/r5/meas.sh splices r4/final_body.c over the INCLUDE_ASM line at src/code6cac_b.c:1404 on HEAD e4ad73836 (src_backup.c diff-identical to HEAD), runs sandbox --disable all and pairdiff, restores src.
+- result: score 0, target_insns 202, build_insns 202, "0 differing instructions" (r5/score_chassis_e4ad738.json, r5/pairdiff_chassis_e4ad738.txt). The sibling notice is consumed: there is no spelling to transplant and the floor is 0.
+- verdict: CONFIRMED
+
+## [s23] The only thing between the Judge-passed body and COMPLETED status is the owner-cluster registry row, an operator-only surface: grindlib.grant_canonical_asm refuses because scan_hand_coded is LOW (1/8, s22) and tools/grinder/owner_cluster_grants.txt has no func_8002D780 row, and the driver's alternative remedy ("respell the islands in C") is not available because all four islands are GTE cop2 operations with no C form.
+- mechanism: tools/grinder/grindlib.py grant_canonical_asm (the OWNER-CLUSTER door, owner ruling 2026-08-30 ruling 4, docs/grind/decisions.md:14814) reads the registry by exact function name; grind.ps1:915-926 banks merge-refused-islands with the operator remedy; gate_fingerprint (grindlib.py:1687) hashes the registry, so appending the row retires the recorded block and the next candidate-ready is measured fresh. The islands are gte_ldlv0/gte_rtv0 (.word 0x4A486012 mvmva), gte_stlvnl, gte_Lzc (mtc2 $30 / swc2 $31) — canonical cop2 per .claude/rules/inline-asm-policy and CLAUDE.md ("GTE ops have no C analog").
+- probe: read of grindlib.py:1800-1835 and :3151, grind.ps1:915-926, the registry file (30 lines, rows for func_8002D518/func_8002D320/func_8002FF20 and siblings), inline_asm_canonical.txt:368-371 (func_8002BC68/func_8002BEA0/func_8002D518/func_8002EA24 carry the identical LZCS/LZCR island), and the census row .claude/rules/cop2-addressing-preamble-cluster.md:75 naming func_8002D780.
+- result: func_8002D780 IS enumerated by name in the landed 2026-08-17 cluster ruling (census row 75) — the registry's stated admission test — but has no row because the 2026-08-30 first-entries list was limited to members proven-or-near-floor at that date (func_8002D780 was at 2 with a banned clobber list). Every other gate has already passed on this exact body (bytes 0/202, oracle SHA1, layer-1, Judge). Disposition: INTEGRATION HANDOFF filed in docs/grind/decisions.md 2026-09-16; the operator step is one registry row.
+- verdict: CONFIRMED
+
+## [s23] Staging block 7's z2 - z0 through the flag parameter (existing variable, dead after the entry test) instead of a fresh function-scope scratch reaches 0/202 and the body passed the Judge (third run, reconstructed).
+- mechanism: local-alloc.c:472 admission - a two-block pseudo is left to global_alloc; dx takes $v1 first in block 7's local-alloc table and the parameter's pseudo is seated in $a0 (r4 greg '72 in 4'), the target's seats, with a carrier that has its own real job.
+- probe: tmp/grind/func_8002D780/s23/r4/F2a.c -> final_body.c spliced on HEAD 2023082f8; sandbox --disable all; pairdiff; verify-oracle; fake_ablate; candidate-ready.
+- result: 0/202 at 202 build insns, 0 differing instructions (r4/score_final.json); verify-oracle SHA1 == oracle (r4/verify_oracle.txt); fake_ablate keep-all 0, drops 32/40/4; layer-1 PASS; Judge PASS 2026-09-16 04:31 (tmp/grind/judge_func_8002D780.json). Merge then refused at the registry gate.
+- verdict: CONFIRMED
+
+## [s23] Of the other block-7 carriers measured in the third run, flag-carrying-both-jobs is 0/202 but redundant, threshold is 28/202, flag-table-byte-only with fresh dz is 9/202, and a fresh once-written tb on top of the flag borrow is byte-neutral at 0/202.
+- mechanism: the carrier must arrive in $a0 and be dead across the entry test; threshold arrives in $a3 so global_alloc seats it there.
+- probe: tmp/grind/func_8002D780/s23/r4/{F1,F3,F4,F2b}.c via meas.sh.
+- result: F1 0/202, F3 28/202, F4 9/202, F2b 0/202 identical bytes to F2a; banked in rejected/ (flag-carries-both-jobs-redundant-second-borrow-0.c, threshold-param-as-block7-carrier-28.c, flag-carries-table-byte-only-fresh-dz-9.c, flag-block7-plus-fresh-once-written-tb-0.c).
+- verdict: CONFIRMED
+
+## [s23] The forced-rederive sibling func_8002CA8C (caller, COMPLETED-C at its s2) shares no block with this function, and with its matched body in the TU the Judge-passed body re-measures 0/202 on the current chassis HEAD e4ad73836.
+- mechanism: func_8002CA8C is a caller with no edge test, sqrt block or cop2 island; its only effect on this function is the extern prototype and TU layout already present in the third run.
+- probe: tmp/grind/func_8002D780/s23/r5/meas.sh: splice r4/final_body.c over src/code6cac_b.c:1404 on HEAD e4ad73836 (src_backup.c diff-identical to HEAD), sandbox --disable all, pairdiff, restore.
+- result: score 0, target_insns 202, build_insns 202, 0 differing instructions (r5/score_chassis_e4ad738.json, r5/pairdiff_chassis_e4ad738.txt). Sibling notice consumed: nothing to transplant, floor 0.
+- verdict: CONFIRMED
+
+## [s23] The only blocker between the Judge-passed body and completion is the owner-cluster registry row: grant_canonical_asm refuses because scan_hand_coded is LOW 1/8 and tools/grinder/owner_cluster_grants.txt has no func_8002D780 row, while the four islands are GTE cop2 operations with no C form so the 'respell in C' remedy does not apply.
+- mechanism: grindlib.grant_canonical_asm OWNER-CLUSTER door (owner ruling 2026-08-30 ruling 4, decisions.md:14814) reads the registry by exact name; grind.ps1:915-926 banks merge-refused-islands; gate_fingerprint (grindlib.py:1687) hashes the registry so a new row retires the block.
+- probe: read grindlib.py:1800-1835/3151, grind.ps1:915-926, owner_cluster_grants.txt (30 lines), inline_asm_canonical.txt:368-373, .claude/rules/cop2-addressing-preamble-cluster.md:75 and :102-127.
+- result: func_8002D780 is enumerated by name in the landed 2026-08-17 cluster ruling (census row 75) - the registry's admission test - but the 2026-08-30 seed list covered only members proven-or-near-floor at that date (7 rows), and 3 later rows (func_8002FF20, func_80031890, func_80019310) were added by the operator when proven. Identical islands are authorized at inline_asm_canonical.txt:368-371/373. INTEGRATION HANDOFF entry filed 2026-09-16 with the one-line operator step.
+- verdict: CONFIRMED
