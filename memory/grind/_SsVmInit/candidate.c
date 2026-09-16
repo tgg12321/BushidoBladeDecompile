@@ -1,6 +1,20 @@
 /* _SsVmInit candidate — s4 (permuter modality; primarily manual hypothesis
  * testing this session, not an automated campaign — see s4 notes below).
  *
+ * s5 UPDATE (permuter modality): re-confirmed floor 3 / 200==200 insns / same
+ * single a0-vs-v0 register-allocation residual as s4 (see hypotheses.md s5).
+ * s4's permuter blocker (import.py whole-TU prune choking on pre-existing
+ * harmless conflicting-type warnings elsewhere in main.c) is FIXED — a
+ * hand-built workspace at tmp/grind/_SsVmInit/s5/perm_ws/ (mirroring
+ * tools/mar_perm_workspace.sh's full-TU-compile + per-function-extraction
+ * recipe) compiles and scores correctly; reusable for a future session.
+ * A real campaign (~26k iterations, ~18min, default random+structural
+ * mutators, --stack-diffs, --stop-on-zero) found ZERO novel forms — see
+ * hypotheses.md s5 for the full kill record. NEXT: PERM_* directed macros
+ * targeting the if/else clamp specifically, or hand-derive GCC 2.7.2's
+ * local-alloc.c find_reg/allocno-priority choice for a parameter-homed
+ * pseudo vs. a fresh v0 temp (untried).
+ *
  * CHASSIS DISCONTINUITY (s4, load-bearing for every prior session's
  * conclusions): the CHASSIS CHECK at s4 dispatch found HEAD honest floor
  * mismatched the ledger's recorded floor 19. Applying this exact candidate

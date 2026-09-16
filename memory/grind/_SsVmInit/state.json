@@ -1,7 +1,7 @@
 {
  "func": "_SsVmInit",
  "file": "main",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,17 +27,28 @@
    "floor": 3,
    "modality": "permuter",
    "headline": "Chassis discontinuity found (ledger's floor-19/174-insn chassis is void; fresh floor was 38/200-insn); re-testing the same two families the old chassis had killed now WINS, plus three new structural f"
+  },
+  {
+   "session": 5,
+   "floor": 3,
+   "modality": "permuter",
+   "headline": "Floor re-confirmed at 3 (200/200 insns); fixed s4's permuter workspace blocker and ran a real ~26k-iteration directed campaign on the a0/v0 clamp residual \u2014 0 novel finds this configuration."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The score-3 $a0-vs-$v0 register tie for the (u8)a0 clamp value can be closed either by hand-deriving GCC 2.7.2's find_reg/allocno-priority choice for a parameter-homed pseudo vs a fresh temp (read local-alloc.c directly), or by fixing the permuter workspace and running a real directed campaign over that narrow region.",
-   "mechanism": "local-alloc.c / global.c register allocation priority for a value already resident in an argument register vs one freshly computed",
-   "next_probe": "Read tools/gcc-2.7.2/local-alloc.c's find_reg and the allocno priority computation for a value that originates as a parameter register (a0) that is still 'live' in the RTL sense at the point of use, vs. a value combine/expand materializes fresh into a pseudo; alternatively fix the permuter workspace (try --no-prune on the import, or hand-trim base.c to remove the unrelated conflicting-type declarations) and run a real campaign scoped to just this residual."
+   "hypothesis": "A PERM_* directed macro (per .claude/rules/permuter-directives.md) targeting specifically the if/else clamp's temp-variable structure (e.g. sweeping whether the masked value is bound to a named local vs. used inline, or the branch-sense of the if/else) may reach the a0-homing that plain random mutation did not find in ~26k iterations.",
+   "mechanism": "local-alloc.c/global.c allocno priority for a parameter-homed pseudo vs. a freshly computed one; directed mutation narrows the search to exactly the C-structure axis that affects this tiebreak instead of exploring the whole function.",
+   "next_probe": "Use tools/permuter_annotate.py (or hand-annotate) the clamp region in tmp/grind/_SsVmInit/s5/perm_ws/base.c with PERM_GENERAL alternatives for the if/else body and temp binding, then re-launch a short directed campaign against the now-working workspace."
   },
   {
-   "hypothesis": "The root cause of the chassis discontinuity (target_insns 174 -> 200 between s3 and s4 with no src edits) is worth a brief look in a future session, since it may affect other functions' ledgers the same way.",
-   "mechanism": "n/a \u2014 likely a toolchain/asm-derivation/scoring-side change, not isolated this session",
+   "hypothesis": "Hand-deriving GCC 2.7.2's find_reg/allocno-priority computation directly from local-alloc.c for this exact case (a value that both originates as a live parameter register AND is the sole live value at the branch) may show which C-level spelling change makes local-alloc prefer a0 over the first-free v0, without needing the permuter at all.",
+   "mechanism": "local-alloc.c's REG_LIVE_LENGTH / regno-preferencing (reg_preferred_or_nothing / basic-block-local allocation) for a pseudo whose live range starts at a hard-reg-homed parameter.",
+   "next_probe": "Read tools/gcc-2.7.2/local-alloc.c's block_alloc / find_reg and the preference-computation around REGNO(parameter) for a pseudo consumed once immediately after; identify whether a specific block-local liveness shape (e.g. avoiding the extra sltiu-only use of s1 elsewhere) would flip the allocation to a0."
+  },
+  {
+   "hypothesis": "The chassis-discontinuity root cause from s3->s4 (target_insns 174->200 with no src edits) is still unexplained and may recur on sibling functions' ledgers.",
+   "mechanism": "n/a -- likely a toolchain/asm-derivation/scoring-side change, not isolated to this function",
    "next_probe": "git log between the s3 commit and now for anything touching engine/score.py, splat config, or asm/funcs/_SsVmInit.s; compare target_insns via canonical/diagnose if it recurs on other functions."
   }
  ],
@@ -83,6 +94,14 @@
    "measured_on": "tools/decomp-permuter/import.py default (whole-TU, no --no-prune) against the current main.c; not yet tried with --no-prune or a hand-trimmed base.c",
    "predicate_cite": "",
    "result": "campaign never started (0 iterations); log at tmp/grind/_SsVmInit/s4/perm_ws/campaign.log"
+  },
+  {
+   "session": 5,
+   "statement": "A real permuter campaign (decomp-permuter's default random + built-in structural mutators, --stack-diffs on by default, -j 4, --stop-on-zero) against the narrow-scope tmp/grind/_SsVmInit/s5/perm_ws wo",
+   "kill_scope": "instance",
+   "measured_on": "tmp/grind/_SsVmInit/s5/perm_ws, default random+structural permuter mutators, -j 4, --stack-diffs, --stop-on-zero, s4/s5's floor-3 candidate.c chassis, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "0 finds, campaign harvested and stopped cleanly (no orphan)."
   }
  ],
  "ladder_skip": 0,

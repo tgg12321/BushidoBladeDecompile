@@ -317,3 +317,11 @@ about `D_800F4E22`'s register reuse. Findings:
 - [s4] The remaining residual is a single register-allocation tie ($a0 vs $v0 for a masked parameter value) spanning 2 real scored instructions, plus 6 not-scored branch-target-only hunks that sandbox --diff explicitly says not to chase
 
 - [s4] The permuter workspace at tmp/grind/_SsVmInit/s4/perm_ws/ is importable (import.py succeeds) but not yet buildable standalone due to unrelated main.c declaration conflicts surfaced by the prune step
+
+- [s5] sandbox _SsVmInit --disable all --diff: score=3, target_insns=200, build_insns=200, 8 hunks (0 source-level, 2 operand-only, 6 not-scored/masked); the 2 operand-only hunks are both the same a0-vs-v0 residual (andi a0,s1,0xff / sltiu v0,a0,24 / sb a0,0(at) in target vs andi v0,s1,0xff / sltiu v0,v0,24 / sb s1,0(at) in ours).
+
+- [s5] The 6 not-scored hunks are branch-target-address diffs (bnez/beqz/j to different absolute addresses) -- masked cascade artifacts of the score, confirmed not worth chasing per the diff classification.
+
+- [s5] main.c already carries pre-existing, non-fatal conflicting-type warnings for several unrelated globals/functions (D_800163D8/D_800163E8/_spu_IRQCallback/SpuFree/SpuSetReverb) that the real Makefile build silently tolerates (cc1 -w suppresses the warning class, build proceeds); these are NOT related to _SsVmInit and are not a lever -- they only mattered because import.py's prune step treated them as fatal.
+
+- [s5] tools/permuter_campaign.py's own preprocess step runs a bare host `cpp -P -nostdinc -DPERMUTER` with no include path, so any hand-built permuter base.c must already be fully preprocessed (zero #include lines) before being handed to the campaign.

@@ -547,3 +547,96 @@ not the body-relative-to-target region).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: tools/decomp-permuter/import.py default (whole-TU, no --no-prune) against the current main.c; not yet tried with --no-prune or a hand-trimmed base.c
+
+## s5 (permuter session)
+
+### H — chassis re-confirmed at floor 3, 200/200 insns, diff unchanged from s4
+- Applied s4's candidate.c verbatim to src/main.c, ran `sandbox _SsVmInit --disable all --diff`.
+- Result: score 3, target_insns=200, build_insns=200, 8 hunks (0 source-level,
+  2 operand-only, 6 not-scored/masked). The 2 operand-only hunks are both the
+  SAME residual s4 identified: target computes `(u8)a0` into `$a0` itself
+  (`andi a0,s1,0xff` / `sltiu v0,a0,24` / later `sb a0,0(at)`), ours computes it
+  into `$v0` (`andi v0,s1,0xff` / `sltiu v0,v0,24` / `sb s1,0(at)`).
+- verdict: CONFIRMED (re-measurement, not a new finding).
+- measured_on: HEAD s5, s4's floor-3 candidate.c chassis, unchanged.
+
+### H — a real, narrow-scope permuter campaign for the a0/v0 residual is now infra-viable (fixes s4's blocker), but 0 novel finds after ~26k iterations
+Statement: s4's directed-permuter attempt was blocked before any iteration ran
+by `import.py`'s whole-TU prune choking on pre-existing (harmless, pre-`-w`-
+suppressed) conflicting-type redeclarations elsewhere in main.c (e.g.
+`extern s32 D_800163D8;` at main.c:91 vs its real `const char D_800163D8[16]`
+definition at main.c:1830 — this pairing is ALREADY in committed main.c and
+the real Makefile build tolerates it as a non-fatal warning; only
+`import.py`'s pruning path treated it as fatal). Rather than fight import.py,
+this session hand-built a workspace mirroring `tools/mar_perm_workspace.sh`'s
+recipe (full-TU compile for correct codegen context + per-function objdump
+extraction for the target/score), scoped to `_SsVmInit`:
+tmp/grind/_SsVmInit/s5/perm_ws/{base.c,compile.sh,target.o,settings.toml}.
+Two infra bugs found and fixed while building it:
+  1. `base.c` must be a fully preprocessed, self-contained C file (no
+     `#include` lines) because decomp-permuter's own `preprocess.py` runs a
+     bare host `cpp -P -nostdinc -DPERMUTER` with no include path — so
+     `#include "common.h"` fails immediately. Fix: generate `base.c` via our
+     real `mipsel-linux-gnu-cpp -P -Iinclude ... -DPERMUTER src/main.c`
+     (the `-DPERMUTER` define makes `INCLUDE_ASM`/`INCLUDE_RODATA` expand to
+     nothing per `include/include_asm.h`, dropping every still-unmatched
+     sibling's asm-include without touching declarations).
+  2. `compile.sh` must feed the mutated file to `cc1` via STDIN
+     (`cat "$IN" | cc1 ...`), not as a positional file argument — passing it
+     positionally makes cc1 silently write its `.s` output to a
+     default-named file instead of stdout, so the `| maspsx` stage received
+     an empty pipe and failed with "MASPSX: Error, no input file found!".
+     This (not the conflicting-types warnings, which are harmless) was the
+     actual reason the first hand-built compile.sh attempt failed.
+- Validated the fixed workspace: `bash compile.sh base.c -o base.o` then
+  per-function objdump-diff against `target.o` (built from
+  `tools/decomp-permuter/prelude.inc` with `.set gp=64` stripped +
+  `asm/funcs/_SsVmInit.s`) shows base==target at 200/200 insns with the
+  SAME single a0/v0 diff as the sandbox — confirms the workspace reproduces
+  the real residual faithfully.
+- Launched `tools/permuter_campaign.py launch --func _SsVmInit --dir
+  tmp/grind/_SsVmInit/s5/perm_ws -j 4 --stop-on-zero` (base_score=15,
+  permuter's own weighted metric). Waited in-turn across two ~9-10min
+  windows (`permuter_campaign.py wait`): 12,321 iters then 25,898 iters
+  cumulative, zero novel finds either window. Harvested + stopped per
+  fresh-seed discipline (~18 total minutes, ~26k iterations, 0 finds).
+- Mechanism: the residual is GCC 2.7.2's `local-alloc.c`/`global.c`
+  allocno-priority choice between a value already resident in the parameter
+  register (`a0`, dead after the `andi`) vs a value materializing fresh into
+  the first-free pseudo (`v0`) — the ledger's H1/frontier item from s4. The
+  permuter's structural mutation space (which doesn't include "prefer the
+  parameter register for a computed value" as a mutation class — it
+  permutes statement structure, not register-allocation heuristics directly)
+  found nothing in ~26k iterations of the default random+structural mutation
+  set over this narrow function.
+- verdict: KILLED (the workspace-blocker from s4) / KILLED (this specific
+  campaign configuration finding a win)
+- kill_scope: instance
+- measured_on: tmp/grind/_SsVmInit/s5/perm_ws (hand-built, full-TU-compile +
+  per-function-extraction workspace, `--stack-diffs` default on, `-j 4`,
+  `--stop-on-zero`), s4/s5's floor-3 candidate.c chassis on HEAD main.c,
+  no FAKE constructs present in the compiled body. NOT a class kill: this is
+  one campaign configuration (random + decomp-permuter's built-in structural
+  mutators) on one chassis; a differently-seeded run, `PERM_*` directed
+  macros targeting the if/else clamp specifically, or hand-derivation from
+  `local-alloc.c`'s `find_reg`/allocno priority computation remain untried.
+
+## [s5] Applying s4's candidate.c verbatim to src/main.c on current HEAD reproduces the same floor-3 chassis (target_insns=200, build_insns=200, 8 hunks: 0 source-level, 2 operand-only, 6 not-scored/masked), with the operand-only pair being the single a0-vs-v0 register-allocation tie on the (u8)a0 clamp value that s4 identified.
+- mechanism: n/a — re-measurement
+- probe: sandbox _SsVmInit --disable all --diff after applying candidate.c
+- result: Confirmed identical to s4's recorded residual; no chassis drift this session.
+- verdict: CONFIRMED
+
+## [s5] s4's directed-permuter blocker (tools/decomp-permuter/import.py's whole-TU prune fatally choking on pre-existing conflicting-type declarations elsewhere in main.c, e.g. extern s32 D_800163D8 at main.c:91 vs its real const char D_800163D8[16] definition at main.c:1830 -- a pairing already in committed main.c that the real Makefile build tolerates as a non-fatal warning) is avoidable by hand-building a workspace instead of using import.py: a full-TU-compile-for-context + per-function-objdump-extraction workspace (mirroring tools/mar_perm_workspace.sh) compiles cleanly and reproduces the sandbox's exact residual (200/200 insns, identical single a0/v0 diff).
+- mechanism: import.py's --no-prune-lacking default prune path treats any conflicting-type redeclaration as fatal even though cc1 itself only warns (non-fatal, suppressed by -w); a hand-built workspace sidesteps import.py's prune step entirely by compiling the whole TU (as the real build does) and extracting only the target function's asm region for scoring.
+- probe: Built tmp/grind/_SsVmInit/s5/perm_ws/{base.c,compile.sh,target.o,settings.toml} by hand; base.c generated via mipsel-linux-gnu-cpp -P -Iinclude ... -DPERMUTER src/main.c (flattens all #includes, and -DPERMUTER makes INCLUDE_ASM/INCLUDE_RODATA expand to nothing per include/include_asm.h, dropping every still-INCLUDE_ASM sibling's asm body without touching declarations); compile.sh feeds the mutated file to cc1 via stdin (cat "$IN" | cc1 ...) -- discovered a second bug where passing the file as a positional cc1 argument makes cc1 silently write to a default-named output file instead of stdout, breaking the | maspsx pipe stage ("MASPSX: Error, no input file found!"). Validated base.o vs target.o objdump diff matches the sandbox's exact single-hunk residual.
+- result: Workspace builds and scores correctly; reusable by a future session (or a future permuter attempt this session) without re-deriving the fix.
+- verdict: CONFIRMED
+
+## [s5] A real permuter campaign (decomp-permuter's default random + built-in structural mutators, --stack-diffs on by default, -j 4, --stop-on-zero) against the narrow-scope tmp/grind/_SsVmInit/s5/perm_ws workspace found zero novel closing or improving forms for the a0-vs-v0 register-allocation residual after ~25,996 iterations across ~18 minutes (two wait windows: 12,321 then 25,898 cumulative iterations, 0 novel finds in either).
+- mechanism: GCC 2.7.2 local-alloc.c/global.c allocno-priority tiebreak between a value already resident in a parameter register (a0, dead after the andi mask) vs. a value materializing fresh into the first-free pseudo (v0) -- the permuter's default mutation set (statement reordering, expression restructuring, literal/cast sweeps) does not include a mutation class that directly targets register-allocation-affecting C structure for this specific if/else clamp shape, so it explored the space without finding one.
+- probe: ?
+- result: 0 finds, campaign harvested and stopped cleanly (no orphan).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/_SsVmInit/s5/perm_ws, default random+structural permuter mutators, -j 4, --stack-diffs, --stop-on-zero, s4/s5's floor-3 candidate.c chassis, no FAKE constructs present
