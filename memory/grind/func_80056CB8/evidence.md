@@ -289,3 +289,11 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s4] The plateaued 4103 form is type-broken (unused alias pointer + dropped pointer cast), not a usable intermediate lever -- inspected directly in output-4103-1/diff.txt.
 
 - [s4] Campaign stopped and harvested in-session (no orphan); working tree left clean at session end (src/text1b.c reverted to committed INCLUDE_ASM state).
+
+- [s5] Chassis re-verified at session start: candidate.c (s2/s3/s4-banked body + work[4] + func_80053614 s32-return fix) reproduces score 106 (build_insns 201, target_insns 204) before any s5 change, matching the ledger exactly.
+
+- [s5] Dump comparison (tmp/grind/func_80056CB8/dumps/text1b.s vs asm/funcs/func_80056CB8.s .L80056D94-.L80056E38) shows target ALSO keeps t0=obj->0xB8 and t1=obj->0xC0 live across the whole pt0/x/z/pt1 block (feeding both the pt0 store and the x/z base-add) while separately re-reading obj->0xC0 for pt0[2] and obj->0xBC for pt1[1] a second time -- the classic split-read-defeats-hoist duplicate-read pattern (already SOTN-sanctioned). Our C source already writes these as separate literal *(s32*)(obj+0xC0) expressions rather than through a shared named variable, and the s5 dump confirms GCC does NOT CSE-merge them in the built object -- this part of the structure already matches target and is not the source of the remaining 81-point residual.
+
+- [s5] The remaining residual after the s5 improvement is build_insns 197 vs target 204 (a 7-insn shortfall) plus whatever weighted register/reorder diffs make up the rest of score 81 -- still register allocation, not structure; the s3-recorded pseudo->hardreg map is now STALE (the statement reorder renumbers pseudos) and must be re-derived from the freshly regenerated tmp/grind/func_80056CB8/dumps/text1b.greg/.lreg before the next session hypothesizes about specific pseudo assignments.
+
+- [s5] The diff introduces zero new locals, zero dead code, zero annotations, zero asm -- it is a pure reorder of statements already present in the s2-banked candidate, vetted in memory/grind/func_80056CB8/self_vet.md against the full 6-test cheat checklist.

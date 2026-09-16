@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 106,
    "modality": "permuter",
    "headline": "s4 permuter: chassis re-confirmed at floor 106; first-ever directed campaign (44,294 iters) plateaued at 4103/5235 via a type-broken mutation -- killed as instance evidence permuter-as-primary-lever d"
+  },
+  {
+   "session": 5,
+   "floor": 81,
+   "modality": "enumerate",
+   "headline": "enumerate modality: systematic spelling sweep of the pt0/pt1 point-store block drops the floor 106 -> 81 by batching the output stores after the sin_p/cos_p/scale/x/z computations (pure statement reor"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "obj's live range (read ~10x across the loop body) is wider than target's equivalent value, explaining why global.c's priority-based coloring picks obj for a low register over flags in our build but not target's.",
-   "mechanism": "global.c allocno priority is driven by live-range weight (spill cost x use frequency), not source order -- consistent with all three prior order-probe kills (s2, s3x2) plus this session's permuter-as-lever kill.",
-   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.lreg for pseudo 82 (obj), 83 (flags), 90 (r1) live-range extents and conflict counts; cross-reference against a hand-reconstructed target live-range from asm/funcs/func_80056CB8.s to find a read of obj that target's asm has but the candidate's C structure doesn't reproduce at the corresponding point."
+   "hypothesis": "Re-reading the freshly-regenerated .greg/.lreg dumps for the NEW (81-floor) chassis's pseudo->hardreg map, and diffing the new build's asm instruction-by-instruction against asm/funcs/func_80056CB8.s to locate the exact 7 missing/extra instructions, will reveal the next concrete register-alloc lever.",
+   "mechanism": "global.c allocno priority (spill cost x use frequency) plus the specific conflict graph shape now current after the s5 statement reorder -- the pre-s5 pseudo numbers (obj=82, flags=83, etc.) are stale and must not be reused.",
+   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.greg's disposition table at line 14788 in full (currently only partially read this session) and cross-reference against tmp/grind/func_80056CB8/dumps/text1b.s vs asm/funcs/func_80056CB8.s side by side for the pt0/pt1/r1/r2 region."
   },
   {
-   "hypothesis": "Target gives z its own standalone register ($s3) while the candidate shares z's register with flags ($s1) -- possibly from an extra/duplicated read of *(obj+0xC0) in target extending z's live range.",
-   "mechanism": "split-read-defeats-hoist family mechanism (duplicate a read into a branch arm changes a pseudo's live range/conflict set), applied to register-sharing rather than instruction count.",
-   "next_probe": "Diff target asm's .L80056DDC-.L80056E1C region instruction-by-instruction against the candidate's assembled output, checking which reads of *(obj+0xB8)/*(obj+0xC0)/*(obj+0xBC) are duplicated vs cached in each."
+   "hypothesis": "The dx/dz/y block in the code==4 branch near the end of the function (reading *(obj+0xB8)/*(obj+0xC0)/*(obj+0xBC) again) may have the same untried batched-store-ordering lever available.",
+   "mechanism": "Same spelling_enum.py assign/anchor batching mechanism that produced this session's win, applied to a different straight-line sub-block.",
+   "next_probe": "Mark that block with ENUM-BEGIN/END and run the same spelling_enum.py + sweep_variants.py pipeline once the register-alloc dump reading above is done first (this block is smaller and less likely to be the primary residual, so it's third priority)."
   },
   {
-   "hypothesis": "flags's declared type (s32) may need to be u16/s16 to match the target's actual store/load width, changing its live-range/conflict shape.",
-   "mechanism": "register-alloc-pure-c Lever B (narrow-type) -- narrowing a value's declared type can shrink its live-range footprint and change allocation priority.",
-   "next_probe": "Check asm/funcs/func_80056CB8.s for the actual load/store width used for the D_8009A821-derived flags value (lbu/lhu/lw) before attempting a type change, to avoid a semantically-incorrect guess (sign-extension risk on the `ang = flags + ...` addition)."
+   "hypothesis": "The 16/32 unchanged-at-106 variants from this session's sweep are compile-time-invalid pointer-arithmetic swaps, not real neutral measurements -- a future session should not re-run the same swap axis on &Judge-style pointer expressions expecting new information.",
+   "mechanism": "spelling_enum.py's generic commutative-swap regex does not special-case address-of/pointer-arithmetic operands.",
+   "next_probe": "If tools/spelling_enum.py is used again on a region containing &GLOBAL + expr pointer arithmetic, either exclude that product from the swap axis (--keep-inlined does not cover this; would need a tool enhancement) or manually inspect each swap variant's validity before trusting its score."
   }
  ],
  "judge_constraints": [],
@@ -80,6 +86,14 @@
    "measured_on": "s4 chassis == s2/s3 candidate.c body verbatim (obj/flags/r1 in original statement+declaration order, work[4] frame fix, func_80053614 s32-return prerequisite fix), zero FAKE/cheat constructs present; ",
    "predicate_cite": "",
    "result": "Best score found 4103/5235 (21.6% reduction), plateaued for the back half of the run with no further novel-and-better fi"
+  },
+  {
+   "session": 5,
+   "statement": "Several swap-axis variants generated by spelling_enum.py's commutative-swap logic (e.g. v01.c: `&Judge + (ang & 0xFFF)` rewritten as `&(ang & 0xFFF) + Judge`) produce ill-formed C for this region's po",
+   "kill_scope": "instance",
+   "measured_on": "s5 chassis, enum2/v01.c (one of the 16 ill-formed-swap variants) as generated by tools/spelling_enum.py's default swap axis applied to this region's &Judge pointer-arithmetic expressions",
+   "predicate_cite": "",
+   "result": "16/32 of the swept variants that reported the pre-session baseline score of 106 are this artifact, not a real measuremen"
   }
  ],
  "ladder_skip": 0,
