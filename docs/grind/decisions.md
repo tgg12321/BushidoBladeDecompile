@@ -27352,3 +27352,75 @@ Independently verified: `sandbox func_800753D8 --disable all` = 0 (166/166, rule
 ## 2026-09-15 15:48 — func_8005BA8C — final call — **PASS**
 
 Pure C, no FAKE constructs, no asm/volatile/register pins, no pipeline-file edits (git diff --name-only: only src/text1b.c + ledger + metrics). I independently verified the src body equals candidate.c and scanned it for cheat markers (none). Every construct has a truthful semantic reading and is load-bearing: `p` is the write cursor (mutated in loop 3, argument to snd_VabFakeOpen, stored back into loc.ent[i].off), `base` is the start address the return `p - base` is measured from, `count` selects 2-vs-3 entries, and the per-field VabEnt copies load the table the function then relocates in place. Choosing the param-copy cursor and per-field copies after observing cse.c/sched.c behaviour is the sanctioned method (.claude/rules/ordinary-c-judge-decidable.md, owner ruling 2026-08-31), not a cheat; mechanisms banked at evidence.md s2 (make_regs_eqv, movstrsi vs scalar copies, sched2 LUID order) with the 67->42->11->0 ladder and two banked rejects. judge_constraints and banned_constructs are both empty, so no stale ban or regression diagnosis applies. No sanctioned-family claim was needed.
+
+## 2026-09-15 — func_80017848 (src/ings.c) — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**
+
+Filed by grind session s64 (modality `escalation`, driver-assigned after the honest floor sat flat at 3
+across 10 distinct modalities). This is a rotation RECORD under the owner's standing ruling
+(2026-07-27, `.claude/rules/endgame-lock-disposition.md`) as retuned by the 2026-09-08 ruling
+(`.claude/rules/rotation-not-foreclosure.md`): not a question, not a decision packet, and not a claim
+that policy blocks the function — a pure-C preimage exists by construction. The driver rotates the
+item to the back of the active worklist; it returns automatically on queue drain, toolchain change or
+sibling movement. Supersedes the 2026-09-07 auto-filed FORECLOSED entry (foreclosure is retired).
+
+### The residual (re-measured this session on HEAD, `sandbox func_80017848 --disable all`)
+
+- BASE (`memory/grind/func_80017848/candidate.c`) = **3** at 127/127; K2 (the faithful chassis,
+  `candidate_alt_s56_k2_combine914_clobber_both_copies_seat_v0_4.c`) = **4** at 127/127
+  (`tmp/grind/func_80017848/s64/diff_BASE.txt`, `diff_K2.txt`). `fake_ablate.py`: no FAKE construct
+  in candidate.c. The driver's dispatch-time floor read "measurement unavailable"; the measured floor is 3.
+- The whole K2 residual is one hard-register seat, twice: the target prints the loop preheader copy as
+  `addu a3,a0,zero` / `addu a0,a1,a3`; every pure-C chassis prints `addu v0,a0,zero` / `addu a0,a1,v0`.
+  Instruction stream, order and every other seat are target-exact.
+
+### Gate evidence
+
+- **Gate (a), canonical-asm — FAILS.** `python3 tools/scan_hand_coded.py --single func_80017848` =
+  `tier=LOW score=0/8`, "no strong hand-coded indicators"; S1/S2/S6 all unset
+  (`tmp/grind/func_80017848/s64/scan_hand_coded.txt`). Ordinary GCC 2.7.2 register-allocation output.
+- **Gate (b), SOTN-master precedent — FAILS.** The closing construct would be a byte-free live-range
+  extension of a reg-reg copy destination that moves its seat from v0 to a3 without lifting its
+  allocation priority. `docs/reference/sotn-construct-index.md` (1,365 entries) has zero entries for a
+  seat-only / allocation-order device (greps: register seat, reg-reg copy, copy dest, preheader copy,
+  redundant move, allocat, $a3). The closest class, `new_var_temp` (index:1423-1448, 16 PSX hits), is
+  named intermediates carrying real values — the named-intermediate family this ledger has already
+  measured dead on this geometry (s57 RANGE class kill, s58 1,420-spelling enumeration, s61 J1 = 9,
+  s62 I1 = 27: every extra variable materialises bytes). Negative census = failed gate.
+- **cc1psx self-disproof (driver-banked, `state.json` `cc1psx_check`, 2026-09-16T01:21Z):** ours = 3,
+  cc1psx = 5, `closer: false`, `ok: true`. The period compiler is not closer on the same body.
+
+### Exhaustion (from `memory/grind/func_80017848/`)
+
+- 64 sessions; floor flat at 3 since s9; modalities: recon 1, structural 13, permuter 4, forensics 13,
+  rederive 10, synthesis 8, escalation 9, solver 4, object-model 1, enumerate 1.
+- Permuter: >= 180,472 iterations (s4/s5/s13/s14 campaigns). Systematic spelling enumeration: 1,420
+  spellings over 7 regions (s58), zero below 3.
+- RA solver: inverse global with the full 13-seat goal, depth 2-3, 403 atoms — exactly one vector
+  (78's preference v0 -> a3), class-killed against the RTL (s60; s63 global.c:842).
+  Instrumented-cc1 censuses: zero reloads (s61, reload1.c:3771), find_reg pass-0 sets read directly
+  (s61/s62), post-global deletion census empty (s63).
+- 13 class kills, 48 instance kills, 362 rejected forms banked.
+- This session's probe (s63 frontier item 2, the only open mechanism's last untried placement): a
+  combine-erased reader of the copy dest on the found-path exit tail (cells P2/P2b on K2) = 12 at
+  127/127 — the mechanism fires (p leaves v0) but seats a1 with sh a2 / lnk a3, the exact s44 M5
+  allocation-order residual. Banked as `rejected/s64_p2*_costs_12.c`; hypotheses.md s64.
+- Owner directive on the queue item (func_8005BA8C auto-return): executed s56 (K4 = 8), sibling
+  shares no code block; re-acknowledged this session.
+
+### Evidence pointers
+
+`memory/grind/func_80017848/evidence.md` E-s64-0..7 (this session), E-s44-3/E-s44-4 (the only open
+mechanism and its order residual), E-s61-3 (find_reg sets), E-s62-6 (both allocators closed),
+E-s63 (a3-preference route closed, global.c:842); `hypotheses.md` s64 frontier reset;
+`tmp/grind/func_80017848/s64/`.
+
+### Re-activation triggers
+
+1. A toolchain-fidelity finding that changes global.c's priority ordering or preference propagation
+   for this geometry (candidates re-measure automatically on fingerprint change).
+2. An owner class grant covering a byte-free live-range extension of a copy destination (none exists;
+   no SOTN precedent to request one from).
+3. A sibling scan-loop function reaching COMPLETED-C with a preheader copy seated in an a-register
+   (the driver's sibling-movement auto-return).
+4. The open frontier (hypotheses.md s64): a depth-0 reader that flow counts and combine erases without
+   lifting the copy dest's priority above lnk's 2500 — grindable on return, not exhausted as a class.

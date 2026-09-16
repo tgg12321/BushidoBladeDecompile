@@ -1,3 +1,19 @@
+/* [s64 ESCALATION - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
+ * chassis; fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4
+ * at 127/127) remains the faithful chassis.  Disposition session:
+ *  1. s63 frontier item 2 measured DEAD (instance, K2): a combine-erased
+ *     reader of p on the found-path return-0 tail (P2 loop 1 / P2b both) =
+ *     12 at 127/127, the exact s44 M5 residual - p leaves v0 but seats a1
+ *     (sh a2, lnk a3): the loop-spanning range that buys the conflicts also
+ *     lifts p's global.c:615 priority above sh/lnk.  Tail placement is not
+ *     distinct from in-body placement.
+ *  2. Gates: scan_hand_coded LOW 0/8; sotn-construct-index has no seat-only
+ *     device (closest class new_var_temp = named intermediates, spent s57/s58);
+ *     cc1psx ours 3 vs psx 5 (not closer).  Filed ROTATED entry in
+ *     docs/grind/decisions.md (2026-09-15).  Evidence E-s64-0..7.
+ * Frontier: hypotheses.md s64 (a byte-free reader that adds live length at
+ * depth 0 without lifting priority above lnk's 2500).
+ */
 /* [s63 SOLVER - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
  * chassis; fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4
  * at 127/127) remains the faithful chassis.  What s63 measured / closed:

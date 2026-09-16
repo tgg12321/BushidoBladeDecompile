@@ -5761,3 +5761,48 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - kill_scope: class
 - measured_on: source reading of the frozen tools/gcc-2.7.2 tree against the K2 chassis RTL (s63/K2 dumps) at HEAD src/ings.c:820; no FAKE construct
 - predicate_cite: tools/gcc-2.7.2/global.c:842
+
+## [s64] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; the owner directive (func_8005BA8C auto-return) was executed in s56 and needs no further action.
+- mechanism: instance kills are chassis-relative; the two closest forms re-measured before any probe
+- probe: tmp/grind/func_80017848/s64/run.ps1 -Bodies BASE,K2; fake_ablate on candidate.c (s64/ablate.txt)
+- result: BASE 3, K2 4, both 127/127, diffs identical to s61-s63 (s64/diff_BASE.txt, diff_K2.txt); no FAKE construct to ablate
+- verdict: CONFIRMED
+
+## [s64] A reader of the copy dest p placed only on the found-path exit of the scan loop (the return-0 tail that jump2 cross-jumps), spelled so combine erases it (`return ((s32)p << 4) & 0xF;`, simplify_and_const_int via nonzero_bits), seats the copy dest in a3 on the K2 chassis (s63 frontier item 2).
+- mechanism: flow counts p live through the loop before combine deletes the reader; global.c then sees hard conflicts with the v0-seated body temps and with q/base and must skip v0 (E-s44-3); the tail placement keeps the reader off the loop-body path
+- probe: cells P2 (loop-1 tail only) and P2b (both loops) generated from body_K2.c; sandbox --disable all each; s64/diff_P2.txt, diff_P2b.txt
+- result: P2 = P2b = 12 at 127/127, identical diffs: the target's exact instruction stream, the copy dest leaves v0 - but seats a1, with sh in a2 and lnk in a3 in both loops (P2 affects both loops because K2's p is one shared pseudo). This is exactly s44's M5 residual (E-s44-4): the loop-spanning live range that buys the conflicts also raises p's allocation priority above sh (5555) and lnk (2500), so p is seated first and takes the lowest free a-register. Tail placement is not distinct from in-body placement for either liveness or priority. Banked rejected/s64_p2_found_path_combine_erased_p_reader_seat_a1_order_costs_12.c and s64_p2b_*.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s64/body_P2.c / body_P2b.c applied; the dead-algebra return expression is the only FAKE construct present (measurement instrument, never a candidate)
+
+## [s64] Endgame-lock gates (escalation modality): gate (a) canonical-asm needs a STRONG scan tier; gate (b) needs an in-hand SOTN-master precedent for a seat-only closing construct.
+- mechanism: owner standing ruling 2026-07-27 (.claude/rules/endgame-lock-disposition.md), rotation per 2026-09-08 (rotation-not-foreclosure)
+- probe: tools/scan_hand_coded.py --single func_80017848 (s64/scan_hand_coded.txt); grep census of docs/reference/sotn-construct-index.md for register-seat / copy / allocation devices; state.json cc1psx_check
+- result: gate (a) FAILS: tier=LOW 0/8, S1/S2/S6 unset. Gate (b) FAILS: zero index entries for a seat-only device; the closest class (new_var_temp, index:1423) is the named-intermediate family already class-killed on this geometry (s57 RANGE, s58 enumeration). cc1psx: ours 3 vs psx 5, not closer. Disposition filed in docs/grind/decisions.md (2026-09-15 ROTATED entry).
+- verdict: CONFIRMED
+
+## [s64] Frontier reset (strongest 3, for the session that inherits this after rotation):
+1. E-s44-3 remains the ONLY open mechanism, now with a sharper constraint from P2/P2b + M5: the byte-free reader must keep p live through the loop (for the v0/a0 hard conflicts) WITHOUT lifting p's global.c:615 priority above sh's and lnk's - i.e. the reader must add live LENGTH in a way flow's reg_live_length counts but reg_n_refs does not weight above lnk's 2500 (a reader outside the loop's depth, e.g. after the loop's NOTE_INSN_LOOP_END but before loop 2's guard, that combine still erases). Read flow.c:2081 (loop_depth weighting) and enumerate which post-loop positions the K2 join block offers; spell one, read .flow/.greg for 78's priority and conflicts before scoring.
+2. If the priority constraint cannot be met by placement: a natural shape whose reader has FEWER refs than the copy itself (priority = refs-weighted / length), e.g. the copy dest read once at depth 0 after the loop (loop 2's guard through p already measured: J1 = 9, the join defines a0 by a load) - the only unmeasured variant is a depth-0 reader that combine folds into an insn the target already has (the ctx+0xC reload at the join).
+3. Only then: tools/sched_solver perturb.py --atoms luid,luid_move on the K2 preheader block against the target's head.s, to confirm the pre-sched2 preheader order the target's bytes admit.
+
+## [s64] BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; the owner directive (func_8005BA8C auto-return) was executed in s56 (K4 = 8) and the sibling shares no code block, so nothing remains to transplant.
+- mechanism: instance kills are chassis-relative; the two closest banked forms re-measured before any probe; sibling-transplant directive acknowledged
+- probe: tmp/grind/func_80017848/s64/run.ps1 -Bodies BASE,K2; tools/fake_ablate.py --candidate memory/grind/func_80017848/candidate.c (s64/ablate.txt)
+- result: BASE 3, K2 4, both 127/127, diffs identical to s61-s63 (s64/diff_BASE.txt, diff_K2.txt); 'No FAKE-annotated constructs found'; directive already measured s56
+- verdict: CONFIRMED
+
+## [s64] A reader of the copy dest p placed only on the found-path exit of the scan loop, spelled so combine erases it (return ((s32)p << 4) & 0xF; simplify_and_const_int via nonzero_bits), seats the copy dest in a3 on the K2 chassis (s63 frontier item 2).
+- mechanism: flow counts p live through the loop before combine deletes the reader (E-s44-3); global.c then sees hard conflicts with the v0-seated body temps and q/base and must skip v0; tail placement keeps the reader off the loop-body path
+- probe: cells P2 (loop-1 tail only) and P2b (both loops) generated from body_K2.c; sandbox func_80017848 --disable all each; s64/diff_P2.txt, diff_P2b.txt
+- result: P2 = P2b = 12 at 127/127 with identical diffs: the target's exact instruction stream, the copy dest leaves v0 but seats a1 while sh takes a2 and lnk a3 in both loops (P2 hits both loops because K2's p is one shared pseudo). This is exactly s44's M5 residual (E-s44-4): the loop-spanning range that buys the conflicts also lifts p's global.c:615 priority above sh 5555 / lnk 2500, so p is allocated first and takes the lowest free a-register. Tail placement is not distinct from in-body placement. Banked rejected/s64_p2_*.c and s64_p2b_*.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s64/body_P2.c / body_P2b.c applied; the dead-algebra return expression is the only FAKE construct present (measurement instrument, never a candidate)
+
+## [s64] Endgame-lock gates in escalation modality: gate (a) canonical-asm needs a STRONG scan tier; gate (b) needs an in-hand SOTN-master precedent for a seat-only closing construct; the cc1psx self-disproof must not be closer.
+- mechanism: owner standing ruling 2026-07-27 (.claude/rules/endgame-lock-disposition.md), rotation per 2026-09-08 (.claude/rules/rotation-not-foreclosure.md)
+- probe: python3 tools/scan_hand_coded.py --single func_80017848 (s64/scan_hand_coded.txt); grep census of docs/reference/sotn-construct-index.md for register-seat / copy / allocation devices; state.json cc1psx_check
+- result: Gate (a) FAILS: tier=LOW score=0/8, S1/S2/S6 unset. Gate (b) FAILS: zero index entries for a seat-only / allocation-order device; the closest class new_var_temp (index:1423-1448) is the named-intermediate family already class-killed on this geometry (s57 RANGE, s58 1,420-spelling enumeration, s61 J1 = 9, s62 I1 = 27). cc1psx: ours 3 vs psx 5, closer=false. ROTATED entry filed at docs/grind/decisions.md:27356
+- verdict: CONFIRMED

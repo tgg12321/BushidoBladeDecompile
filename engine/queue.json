@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
-      "unparked_from": "FORECLOSED (standing ruling 2026-07-27, auto-filed backstop; silent per owner ruling 2026-08-31): 2026-09-07 \u0393\u00c7\u00f6 func_80017848 \u0393\u00c7\u00f6 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
-      "rotated_from_legacy": "foreclosed",
-      "rotated_at": "2026-09-08T16:33:08+00:00",
-      "returned_at": "2026-09-15T20:48:34+00:00"
-    },
-    {
       "func": "func_8006BEC4",
       "file": "text1b",
       "distance": 169,
@@ -1121,6 +1108,21 @@
       "rotation": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-14 \u2014 func_80018094 \u2014 JUDGE ESCALATE on final call (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
     },
     {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27, auto-filed backstop; silent per owner ruling 2026-08-31): 2026-09-07 \u0393\u00c7\u00f6 func_80017848 \u0393\u00c7\u00f6 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
+      "rotated_from_legacy": "foreclosed",
+      "rotated_at": "2026-09-16T01:28:09+00:00",
+      "returned_at": "2026-09-15T20:48:34+00:00",
+      "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md:27356 \u2014 2026-09-15 \u2014 func_80017848 (src/ings.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): ROTATED",
+      "rotation_count": 1
+    },
+    {
       "func": "func_800204C0",
       "file": "code6cac",
       "distance": 52,
@@ -1171,13 +1173,13 @@
   ],
   "counts": {
     "total": 126,
-    "active": 121,
+    "active": 120,
     "by_status": {
-      "active": 121,
-      "rotated": 5
+      "active": 120,
+      "rotated": 6
     },
     "by_verdict": {
-      "C": 99,
+      "C": 98,
       "ASM-PARTIAL": 22
     }
   },

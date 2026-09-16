@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 63,
- "current_modality": "solver",
+ "session_count": 64,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -381,23 +381,29 @@
    "floor": 3,
    "modality": "solver",
    "headline": "Solver s63: s62's three frontier items measured dead on K2 (post-global deletion census empty by -da UID diff; do-while(0) wraps W1=12 / W2=W3=4 byte-identical to K2; integrate.c void by s30 + emissio"
+  },
+  {
+   "session": 64,
+   "floor": 3,
+   "modality": "escalation",
+   "headline": "Escalation s64: floor re-measured 3 (BASE) / 4 (K2) at 127/127 on HEAD; s63 frontier item 2 (found-path combine-erased reader of the copy dest) measured dead at 12 = s44 M5 order residual; scan LOW 0/"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A natural scan-loop expression through p (the copy dest) survives cse1/loop/cse2/flow and is erased by one of combine's operand-erasing folds, giving p the loop-spanning stale liveness (v0/a0 conflicts, priority < lnk's 2500) that seats it in a3 with zero bytes - the E-s44-3 mechanism with a non-instrument spelling.",
-   "mechanism": "global.c reads flow's basic_block_live_at_start / reg_live_length and never recomputes them after combine; combine's simplify_and_const_int (nonzero_bits), num_sign_bit_copies and simplify_comparison can drop an operand entirely",
-   "next_probe": "enumerate combine.c's fold sites that erase an operand; for each list the natural C shape over u8 indices / u16-s16 link fields; spell it through p in the loop body on K2; read .flow (p live at loop top), .combine (reader gone), .greg (78 conflicts v0/a0) before scoring"
+   "hypothesis": "A byte-free reader of the copy dest that keeps p live through the loop (for the v0/a0 hard conflicts) WITHOUT lifting p's global.c:615 priority above sh's and lnk's 2500 - i.e. a reader that adds live length at loop depth 0 (after NOTE_INSN_LOOP_END, before loop 2's guard) that combine still erases.",
+   "mechanism": "flow.c:2081 weights reg_n_refs by loop_depth while reg_live_length counts raw insns; a depth-0 reader raises length without raising refs, so priority falls below lnk's while the conflicts from E-s44-3 remain",
+   "next_probe": "enumerate the K2 join-block positions between loop 1's NOTE_INSN_LOOP_END and loop 2's guard; spell one combine-foldable read of p there; read .flow (p live at loop top), .greg (78's priority and conflicts) before scoring"
   },
   {
-   "hypothesis": "A reader of p placed only on the found-path exit (the beq v0,s3 hit path, cross-jumped into one shared return-0 block) can be folded by combine before global while flow still counts it, leaving stale liveness behind.",
-   "mechanism": "the census shows jump2 deletes exactly those tails after global; a combine-folded reader in the tail is counted by flow and gone by global",
-   "next_probe": "spell the found-path exit as a combine-foldable read of p on K2; dump .flow/.combine/.greg and check 78's conflict set and seat"
+   "hypothesis": "A natural depth-0 reader of p that combine folds INTO an insn the target already emits (the ctx+0xC reload at the join), giving the copy dest fewer refs than the copy itself.",
+   "mechanism": "combine's 3-insn merge can absorb a reader into an existing load; priority = weighted refs / length so a single absorbed ref keeps p below sh/lnk while still counted by flow",
+   "next_probe": "spell loop 2's guard base as a p-derived expression that combine merges with the join's lw a0,0xC(s2); compare against s61 J1 (= 9, join defined a0 by a load) in .combine and .greg"
   },
   {
    "hypothesis": "The pre-sched2 order of the preheader triple (copy / lnk load / add) admitted by the target's bytes is unique, so no later chassis can change the copy's block or its conflict window.",
    "mechanism": "sched2 list scheduling with the order-exact tools/sched_solver model",
-   "next_probe": "tools/sched_solver perturb.py --atoms luid,luid_move on the K2 preheader block with --target the target's head.s; only after items 1-2"
+   "next_probe": "tools/sched_solver perturb.py --atoms luid,luid_move on the K2 preheader block against the target's head.s; only after items 1-2"
   }
  ],
  "judge_constraints": [],
@@ -411,14 +417,6 @@
  "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
  "last_unpark_at": "2026-09-15T20:48:37.414727+00:00",
  "kills": [
-  {
-   "session": 45,
-   "statement": "The s30 struct-typed-record cell B kill (7) is stale on the HEAD chassis (mandated kill re-audit).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus s30 body_B.c; BASE re-audited at 3 (127/127); no FAKE constructs",
-   "predicate_cite": "",
-   "result": "7 at 127/127, tying s30 exactly; fake_ablate reports no FAKE-annotated construct to ablate (no form of this function has"
-  },
   {
    "session": 46,
    "statement": "KILL RE-AUDIT: the s15 hoisted-copy form (rejected/s15_hoisted_copy_plus_base_combine_deletes_copy_costs_3.c) measures below 3 on the HEAD chassis or with FAKE constructs ablated.",
@@ -890,6 +888,14 @@
    "measured_on": "source reading of the frozen tools/gcc-2.7.2 tree against the K2 chassis RTL (s63/K2 dumps) at HEAD src/ings.c:820; no FAKE construct",
    "predicate_cite": "tools/gcc-2.7.2/global.c:842",
    "result": "a3 appears pre-RA only in the entry copy (set 75 (reg a3)); 75's sole REG_DEAD partner is the epilogue ior into a block-"
+  },
+  {
+   "session": 64,
+   "statement": "A reader of the copy dest p placed only on the found-path exit of the scan loop, spelled so combine erases it (return ((s32)p << 4) & 0xF; simplify_and_const_int via nonzero_bits), seats the copy dest",
+   "kill_scope": "instance",
+   "measured_on": "K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s64/body_P2.c / body_P2b.c applied; the dead-algebra return expression is the only FAKE construct present (measurement instrument",
+   "predicate_cite": "",
+   "result": "P2 = P2b = 12 at 127/127 with identical diffs: the target's exact instruction stream, the copy dest leaves v0 but seats "
   }
  ],
  "escalation_deferrals": 0,
