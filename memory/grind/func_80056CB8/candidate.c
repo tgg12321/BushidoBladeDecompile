@@ -1,6 +1,20 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66/s67) — floor 38/204, NOT YET 0.
+ * s67 (rederive modality, 2026-09-16): Body UNCHANGED (24th consecutive
+ * session confirming 38/204 fresh). Cross-TU precedent check: other
+ * in-tree functions materializing the identical 0x1F8002B8 scratchpad
+ * literal as a named local (src/code6cac.c:2661 `lim`, :2979
+ * `scratchpad`) do NOT offer an untried spelling -- their placement
+ * (single call site inside a goto-based retry loop) doesn't map onto
+ * this target's per-iteration dual-call-site shape, and doesn't reopen
+ * the s15/s41 "single named intermediate" kill (already measured worse,
+ * 42-46/204). Confirms the baseline's bare-literal-at-both-call-sites
+ * spelling is correct: GCC already performs the single-materialization
+ * unification itself via move_movables (per s65's RTL finding), so no
+ * source-level named local is needed or helpful. Mandatory fake_ablate.py
+ * re-audit clean (3rd such audit, matches s58/s61). See
+ * hypotheses.md/evidence.md [s67] for full detail.
  * s66 (rederive modality, 2026-09-16): Body UNCHANGED (23rd consecutive
  * session confirming 38/204 fresh, re-spliced + re-measured this
  * session). Closed a genuinely never-tried angle: the Kengo-transplant

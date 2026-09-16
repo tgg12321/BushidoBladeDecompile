@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 66,
+ "session_count": 67,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -399,36 +399,34 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s66 rederive: 23rd consecutive 38/204 re-confirmation; closed the never-tried Kengo-transplant angle (ambiguous match, no usable precedent) and re-confirmed sibling func_8006CCC8 disjoint at the signa"
+  },
+  {
+   "session": 67,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s67 rederive: 24th consecutive 38/204 re-confirmation; killed the cross-TU 0x1F8002B8-named-local precedent (code6cac.c lim/scratchpad) as non-transplantable (single-call-site non-loop shape vs our pe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~20 other conflict-clique pseudos), not reducible by any spelling-level lever found across 23 flat sessions and 7+ modalities (structural, enumerate, synthesis, solver, forensics, rederive).",
+   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 24 flat sessions and 7+ modalities.",
    "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c",
-   "next_probe": "A future session should target one of the ~18 still-unidentified conflict-graph-live pseudos (obj/flags/scale/sin_p/cos_p/x/z per-iteration values) with the same forensics-level individual identification s63/s65 gave pseudo 74 and 149, looking for an untried scope-narrowing or duplication lever on THOSE specific pseudos."
+   "next_probe": "A future session should target one of the still-unidentified conflict-graph-live pseudos (obj/flags/scale/sin_p/cos_p/x/z per-iteration values) with the same forensics-level individual identification s63/s65 gave pseudo 74 and 149, looking for an untried scope-narrowing or duplication lever on those specific pseudos."
   },
   {
-   "hypothesis": "Sibling func_8006CCC8 remains structurally and now signature-level disjoint; re-check only if its own grind changes its shape.",
+   "hypothesis": "Sibling func_8006CCC8 remains structurally and signature-level disjoint; re-check only if its own grind changes its shape.",
    "mechanism": "n/a -- sibling-ledger cross-reference",
    "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session per the owner-directive auto-return trigger; no action needed until its structure or floor changes."
   },
   {
-   "hypothesis": "A higher-confidence Kengo match (not this function's own ambiguous row) could still be useful groundwork for OTHER BB2 functions, but this specific function's Kengo lever is closed.",
-   "mechanism": "n/a",
-   "next_probe": "n/a for func_80056CB8 -- no further Kengo action warranted for this function absent a kengo_matches.csv update that resolves the ambiguity."
+   "hypothesis": "The rederive-modality mandate (fresh m2c, decomp.me corpus, sibling/Kengo transplant, cross-TU precedent) has now been exhaustively executed across s56/s66/s67 with zero surviving leads; a future rederive session should look at NEWLY-COMPLETED sibling functions (ones that reach COMPLETED-C after this session) for fresh transplant material, since the existing candidate pool is exhausted.",
+   "mechanism": "n/a -- coverage/process finding",
+   "next_probe": "Check whether any new COMPLETED-C functions have landed in src/text1b.c or src/code6cac*.c since this session that weren't previously available as transplant sources."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 34,
-   "statement": "Duplicating the real store statement `*(s8 *)(arg0+0x444+i) = (s8)flags;` into each of the five exit arms of the flags==3/flags==4 tail (matching target asm's repeated `addu $v0,$s7,$s6` at .L80056F0C",
-   "kill_scope": "instance",
-   "measured_on": "s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, tail rewritten with the store statement duplicated into 5 exit arms with goto next;, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score=72, build_insns=200 (baseline 38/204, build_insns=198). Worse by +2 real instructions. Reverted via git checkout. "
-  },
   {
    "session": 34,
    "statement": "Rewriting the loop as an explicit `i = start; do { ...unchanged body...; i++; } while (i < limit);` instead of `for (i = start; i < limit; i++) { ... }` is worse than the 38/204 baseline, but REFUTES ",
@@ -900,6 +898,14 @@
    "measured_on": "s66 chassis, func_8006CCC8/candidate.c as committed (floor 39 per dispatch brief)",
    "predicate_cite": "",
    "result": "func_8006CCC8 is s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) -- 3-arg, pointer-taking, s32-returning -- against ou"
+  },
+  {
+   "session": 67,
+   "statement": "Cross-TU precedent check: other in-tree functions that materialize the same 0x1F8002B8 scratchpad-address literal as a named local (src/code6cac.c:2661 `lim`, src/code6cac.c:2979 `scratchpad`) do NOT ",
+   "kill_scope": "instance",
+   "measured_on": "s67 chassis (candidate.c's s22-s66-banked 38/204 body, unmodified -- read-only cross-reference against src/code6cac.c as committed at HEAD, no sandbox re-measurement needed since no new C form was pro",
+   "predicate_cite": "",
+   "result": "code6cac.c's `lim` is declared with the function's other locals and assigned ONCE before a goto-based retry loop, read a"
   }
  ],
  "ladder_skip": 0,

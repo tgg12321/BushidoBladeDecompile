@@ -1149,3 +1149,21 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s66] memory/grind/func_8006CCC8/candidate.c:106 declares s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2), a different signature shape entirely from func_80056CB8's void func_80056CB8(s32 arg0) -- disjointness confirmed at signature level, stronger than prior region-level checks.
 
 - [s66] Grepped hypotheses.md + evidence.md for 'Kengo' before this session: zero hits across 22 prior sessions and multiple prior 'rederive' modality dispatches -- this session closes that standing gap in the ledger's coverage of its own mandated modality.
+
+- [s67] Cross-TU precedent check: src/code6cac.c:2661 (`lim = 0x1F8002B8;`) and :2979 (`scratchpad = 0x1F8002B8;`) are the only other in-tree named-local materializations of the 0x1F8002B8 scratchpad-address literal. Both are single-call-site, non-loop (goto-retry) shapes -- structurally disjoint from func_80056CB8's per-iteration dual-call-site loop shape. No transplant applies; does not reopen s15/s41's already-KILLED "single named intermediate" lever. Sibling ledgers re-checked (func_80055B60 disjoint object per s54; func_8006CCC8 disjoint per s54/s64/s66).
+- [s67] fake_ablate.py re-audit: zero FAKE constructs in candidate.c (3rd audit, consistent with s58/s61).
+- [s67] Chassis re-confirmed 38/204 (198 build insns) fresh via splice+sandbox; 24th consecutive flat session.
+
+- [s67] Chassis floor is 38/204 (198 build insns vs 204 target) as of s67, unchanged since s37/s38 -- 24 consecutive flat sessions across structural/enumerate/synthesis/solver/forensics/rederive modalities.
+
+- [s67] src/code6cac.c:2661 and :2979 are the only other in-tree named-local materializations of the 0x1F8002B8 literal; both are single-call-site goto-retry shapes, disjoint from this target's per-iteration dual-call-site loop shape.
+
+- [s67] Sibling func_80055B60 (same file) remains a disjoint object (per-player CPU input decision function, no shared data/callee/control-flow) -- re-checked, no candidate.c to transplant.
+
+- [s67] Sibling func_8006CCC8 (same file) remains signature-level disjoint (3-arg pointer-taking s32-return vs our 1-arg void) -- re-checked per owner-directive auto-return trigger.
+
+- [s67] Kengo transplant lever remains closed (size-only-ambiguous match, 18 candidates, similarity 0.22) per s66.
+
+- [s67] m2c and decomp.me corpus re-derivations remain closed (converge on already-KILLED do-while-nolimit shape / no usable precedent) per s56.
+
+- [s67] The live frontier is unchanged: register-pressure-bound loop-body residual over ~18 still-unidentified conflict-graph-live pseudos, not reducible by any spelling-level lever found across 24 flat sessions and 7+ modalities.

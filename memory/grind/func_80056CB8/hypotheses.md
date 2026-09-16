@@ -3041,3 +3041,43 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - probe: tmp/grind/func_80056CB8/s66/splice.py baseline; tools/wteng.ps1 main sandbox func_80056CB8 --disable all
 - result: 38/204, 198 build insns, 137 cheat-asm insns stripped, 0 rules dropped -- 23rd consecutive flat confirmation. src/text1b.c reverted to committed INCLUDE_ASM state after measurement.
 - verdict: CONFIRMED
+
+## [s67, rederive] Cross-TU precedent check: other in-tree functions that materialize the same 0x1F8002B8 scratchpad-address literal as a named local (`lim = 0x1F8002B8;` in src/code6cac.c:2661, `scratchpad = 0x1F8002B8;` in src/code6cac.c:2979) do NOT offer an untried spelling for this target -- their placement is structurally different from every already-tried form here.
+- mechanism: n/a -- provenance/precedent check, not a codegen hypothesis.
+- probe: `grep -rn "0x1F8002B8" src/*.c` (excluding text1b.c) surfaced 9 hits across src/code6cac.c and src/code6cac_b.c. Read src/code6cac.c:2654-2679 (func_8002304C) in full: `lim` is declared with the function's other locals and assigned ONCE, unconditionally, before the function's `loop:` label (a goto-based retry loop, not a for/while), and is read at exactly ONE func_8005344C() call site inside that loop. This is neither of our target's two already-tried and KILLED placements: (a) s15/s41's "declared once per loop iteration, at loop-body top, read at both call sites" (rejected/named-intermediate-scratchpad-literal-worse.c, 42-46/204 both times), nor (b) the natural baseline (bare literal at both of our two per-iteration func_80053614() call sites). code6cac.c's shape has only ONE call site per materialization -- it doesn't correspond to our two-call-sites-per-iteration shape at all, so transplanting its exact spelling isn't a coherent probe (there is nothing to unify across two sites when the source itself only has one).
+- result: No new spelling axis surfaced. The precedent's structural context (single call site, non-loop retry construct) does not map onto this target's per-iteration dual-call-site shape, so it does not reopen the s15/s41 "single named intermediate" kill, and it correctly predicts that GCC's actual behavior (per s65's RTL-confirmed finding: pseudo 149 is already LICM-hoisted to a single materialization by move_movables, homed in $fp for the loop's whole duration) is what the baseline already exhibits structurally -- the compiler performs the "single materialization" unification on its own from the bare-literal source, without needing a source-level named local to force it. This closes the "is there an untried spelling of the scratchpad-literal family from sibling code" reading of this session's rederive mandate.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s67 chassis (candidate.c's s22-s66-banked 38/204 body, unmodified -- this was a read-only cross-reference against src/code6cac.c as committed at HEAD; no sandbox re-measurement needed since no new C form was proposed)
+
+## [s67] The banked s22-s66 candidate.c body re-measures 38/204 (198 build insns) on the current chassis this session, via a fresh splice and a fresh sandbox invocation.
+- mechanism: n/a -- re-confirmation
+- probe: tmp/grind/func_80056CB8/s67/splice.py baseline; & tools/wteng.ps1 main sandbox func_80056CB8 --disable all
+- result: 38/204, 198 build insns, 137 cheat-asm insns stripped, 0 rules dropped -- 24th consecutive flat confirmation. src/text1b.c reverted to committed INCLUDE_ASM state after measurement (git status clean).
+- verdict: CONFIRMED
+
+## [s67] Mandatory kill-re-audit: fresh `tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c` run this session confirms zero FAKE-annotated constructs in the banked candidate body (3rd such audit, matches s58/s61).
+- mechanism: n/a -- audit tool run, not a codegen hypothesis.
+- probe: tools/fake_ablate.py invocation as above.
+- result: "no FAKE-annotated constructs found ... nothing to ablate" -- candidate.c carries zero FAKE constructs, consistent with every prior audit.
+- verdict: CONFIRMED
+
+## [s67] Cross-TU precedent check: other in-tree functions that materialize the same 0x1F8002B8 scratchpad-address literal as a named local (src/code6cac.c:2661 `lim`, src/code6cac.c:2979 `scratchpad`) do NOT offer an untried spelling for this target -- their placement is structurally different from every already-tried form here.
+- mechanism: n/a -- provenance/precedent check, not a codegen hypothesis
+- probe: grep -rn 0x1F8002B8 src/*.c (excluding text1b.c); read src/code6cac.c:2654-2679 (func_8002304C) in full
+- result: code6cac.c's `lim` is declared with the function's other locals and assigned ONCE before a goto-based retry loop, read at exactly ONE func_8005344C() call site -- neither of our target's already-tried placements (s15/s41's per-iteration loop-body-top single local read at both call sites, rejected worse at 42-46/204; or the natural bare-literal baseline). The shapes don't correspond, so transplant isn't a coherent probe. Also correctly predicts, per s65's RTL finding, that GCC already performs single-materialization unification itself via move_movables without needing a source-level named local.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s67 chassis (candidate.c's s22-s66-banked 38/204 body, unmodified -- read-only cross-reference against src/code6cac.c as committed at HEAD, no sandbox re-measurement needed since no new C form was proposed)
+
+## [s67] The banked s22-s66 candidate.c body re-measures 38/204 (198 build insns) on the current chassis this session, via a fresh splice and a fresh sandbox invocation.
+- mechanism: n/a -- re-confirmation
+- probe: tmp/grind/func_80056CB8/s67/splice.py baseline; & tools/wteng.ps1 main sandbox func_80056CB8 --disable all
+- result: 38/204, 198 build insns, 137 cheat-asm insns stripped, 0 rules dropped -- 24th consecutive flat confirmation. src/text1b.c reverted to committed INCLUDE_ASM state after measurement (git status clean).
+- verdict: CONFIRMED
+
+## [s67] Mandatory kill-re-audit: fresh fake_ablate.py run confirms zero FAKE-annotated constructs in the banked candidate body.
+- mechanism: n/a -- audit tool run
+- probe: python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c
+- result: "no FAKE-annotated constructs found ... nothing to ablate" -- 3rd such audit, matches s58/s61.
+- verdict: CONFIRMED
