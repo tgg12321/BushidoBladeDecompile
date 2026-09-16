@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 54,
- "current_modality": "forensics",
+ "session_count": 55,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -327,31 +327,29 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s54 forensics: fresh 38/204 re-confirmed (6th consecutive); loop_movables.py formally confirms limit is a genuine move_movables LICM invariant (not a register-pressure-only artifact); hit0/hit1 storag"
+  },
+  {
+   "session": 55,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s55 rederive: fresh 38/204 re-confirmed (7th consecutive); pt0/pt1 shared-buffer merge KILLED (103/204); nrefs_census run (first time) seeding the s53 conflict-graph sweep for next session"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With both s53 frontier items now closed (limit confirmed as an ordinary LICM movable via the formal tool; hit0/hit1 storage reuse ruled out on correctness grounds), the remaining live axis is the OTHER 20 simultaneously-live pseudos in the loop body's conflict graph (per the s53 .greg read, limit/149 conflicts with 72,74,75,82,83,85,86,87,88,97,116,126,137,146,148,149,191,192,196,197,198,2-9,29,64,66) -- a systematic sweep of which of those pseudos' declared TYPE or SCOPE could legitimately narrow (not eliminate) its own live range, rather than limit's, to relieve global_alloc's overall pressure at insn 21's spill decision.",
-   "mechanism": "global_alloc's find_reg spill choice at insn 21 is a function of the FULL conflict graph size at that point, not any single pseudo's own properties; narrowing an UNRELATED pseudo's live range (not limit's) could shift which pseudo is cheapest to spill without touching limit's genuinely-invariant status.",
-   "next_probe": "Use tools/nrefs_census.py (not yet run this ledger) to get reg_n_refs / allocno order + what-if lifts for the specific pseudos in limit's conflict list, focusing on ones with scope-narrowable C-level identities (e.g. the obj/flags/scale/sin_p/cos_p/x/z per-iteration locals), and cross-reference against tools/label_census.py for branch-target/predecessor context before proposing any new declaration-scope spelling."
+   "hypothesis": "One of the ~20 other pseudos simultaneously live with limit in global_alloc's conflict graph (72,74,75,82,83,85,86,87,88,97,116,126,137,146,148,149,191,192,196,197,198,2-9,29,64,66 per the s51 .greg read) has a declared C-level TYPE or SCOPE that could legitimately narrow ITS OWN live range (not limit's), shifting global_alloc's spill-cost comparison away from limit without eliminating limit's genuine LICM-invariant status (s54 confirmed via loop_movables.py that limit IS a genuine move_movables invariant, so attacking limit itself is closed).",
+   "mechanism": "global_alloc's find_reg spill choice at insn ~21 (original numbering) is a function of the FULL conflict graph's relative costs, not any single pseudo's own properties in isolation -- narrowing an unrelated pseudo's live range could change which pseudo is cheapest to spill.",
+   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's ';; Register dispositions:' pseudo-to-symbol map and this session's .lreg-based nrefs_census 'first def' column (same chassis, `-da` dump vs nrefs_census.py output) before proposing any specific declaration-scope edit -- the numbering mismatch flagged this session must be resolved first, or any C lever derived from raw pseudo numbers risks targeting the wrong object."
   },
   {
-   "hypothesis": "Re-derive whether the pt0/pt1 arrays (s32 pt0[4], pt1[4]) -- written twice per iteration as 3-element coordinate triples immediately before each func_80053614 call -- could be restructured (e.g. combined into a single reused buffer between the two calls, since pt0/pt1's FIRST-call values are fully consumed before the second call's pt0/pt1 writes overwrite them) the same way the now-killed hit0/hit1 idea was attempted, but checked for correctness FIRST this time.",
-   "mechanism": "Unlike hit0/hit1 (which must both survive to the flags==4 arm), pt0/pt1 are locally scoped per-call inputs: verify whether pt0/pt1's first-call values are fully dead by the time the second call's pt0/pt1 writes happen, which would make this a live, correctness-safe candidate for the same class of live-range-narrowing probe the s53 item was reaching for.",
-   "next_probe": "Read candidate.c lines ~1432-1450 carefully for pt0/pt1's write/read ordering across both func_80053614 calls; if genuinely dead between calls, measure a scope-narrowed or shared-buffer spelling via sandbox --disable all (this is a genuinely untried, not-yet-measured axis)."
+   "hypothesis": "(Closed this session, listed for completeness) pt0/pt1 shared-buffer merge -- KILLED, see hypotheses above. No further action needed on this specific axis; do not re-propose.",
+   "mechanism": "n/a (closed)",
+   "next_probe": "n/a (closed) -- if a future session is tempted to retry any variant of merging pt0/pt1 storage, read rejected/pt0-pt1-shared-buffer-worse.c first."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 21,
-   "statement": "The s20 live-frontier hypothesis (reducing register pressure elsewhere in the loop body could shrink n_non_fixed_regs and flip strength_reduce's giv-worth threshold at loop.c:3823, without perturbing ",
-   "kill_scope": "class",
-   "measured_on": "n/a (mechanism/predicate analysis of frozen compiler source, not a source-level spelling test); fresh sandbox re-confirmation of the s14-s20 42/197 chassis this session as context, no FAKE constructs ",
-   "predicate_cite": "tools/gcc-2.7.2/regclass.c:380",
-   "result": "Fresh sandbox: score=42, build_insns=197, target_insns=204 -- exact reproduction of the s14-s20 floor. Fresh .greg dump "
-  },
   {
    "session": 22,
    "statement": "Combining the s22 `limit` win with an s10/s18-style `idx2` (loop-carried i*2) promotion on the SAME improved chassis is worse -- the idx2 axis is independently dead even after the limit change, not me",
@@ -823,6 +821,14 @@
    "measured_on": "s54 ledger read (no chassis measurement applicable)",
    "predicate_cite": "",
    "result": "No shared block; func_80055B60 has only a 1-session ledger with no candidate.c. No sibling transplant applied."
+  },
+  {
+   "session": 55,
+   "statement": "Merging pt0[4] and pt1[4] into one shared 8-word buffer (pt0 = pts+0, pt1 = pts+4), a correctness-safe restructuring per the s53/s54 dataflow analysis (pt0's first-call values are fully dead before pt",
+   "kill_scope": "instance",
+   "measured_on": "s55 chassis (candidate.c's s22-s54-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, pt0/pt1 declared as pointers into one shared 8-word buffer instead of two separate 4-wor",
+   "predicate_cite": "",
+   "result": "score 38 -> 103/204 (build_insns 198 -> 207), substantially worse. Banked to rejected/pt0-pt1-shared-buffer-worse.c."
   }
  ],
  "ladder_skip": 0,

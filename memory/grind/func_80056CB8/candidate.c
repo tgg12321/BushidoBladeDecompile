@@ -1399,6 +1399,18 @@
  * reload sequence's OTHER conflicts with reg 11 (text1b.greg ~line
  * 14790-14810), not yet cross-referenced against source-level candidates.
  * Full writeup: hypotheses.md [s52].
+ * ---------------------------------------------------------------------
+ * s55 (rederive modality). Re-confirmed 38/204 fresh (7th consecutive
+ * session). Closed the s53/s54-named "pt0/pt1 shared-buffer merge" item:
+ * measured 103/204 (build_insns 207), substantially worse — pointer-
+ * indirected slices cost real address arithmetic vs fixed-offset stack
+ * arrays. Banked to rejected/pt0-pt1-shared-buffer-worse.c. Ran
+ * tools/nrefs_census.py (first time this ledger) to seed the s53
+ * conflict-graph sweep; raw allocno-order data gathered but NOT yet
+ * cross-referenced against the s51 .greg dump's pseudo numbering (the
+ * two dumps come from different passes and may renumber) — that
+ * cross-reference is the concrete next step, not yet a C hypothesis.
+ * Full writeup: hypotheses.md [s55].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;
