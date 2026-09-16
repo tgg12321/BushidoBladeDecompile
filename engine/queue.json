@@ -4,20 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002D780",
-      "file": "code6cac_b",
-      "distance": 56,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "rotated_from_legacy": "foreclosed",
-      "rotated_at": "2026-09-08T22:13:36+00:00",
-      "unparked_from": "ROTATED (logged to borderline.md; owner ruling 2026-09-08 \u2014 returns automatically): docs/grind/decisions.md:26057",
-      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8002CA8C -> floor 0 (2026-09-16T02:40)",
-      "returned_at": "2026-09-16T02:40:22+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "_exeque",
       "file": "display",
       "distance": 187,
@@ -1132,6 +1118,21 @@
       "rotated_at": "2026-09-08T16:33:08+00:00"
     },
     {
+      "func": "func_8002D780",
+      "file": "code6cac_b",
+      "distance": 56,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "rotated",
+      "rotated_from_legacy": "foreclosed",
+      "rotated_at": "2026-09-16T04:50:40+00:00",
+      "unparked_from": "ROTATED (logged to borderline.md; owner ruling 2026-09-08 \u2014 returns automatically): docs/grind/decisions.md:26057",
+      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8002CA8C -> floor 0 (2026-09-16T02:40)",
+      "returned_at": "2026-09-16T02:40:22+00:00",
+      "rotation_count": 2,
+      "rotation": "ROTATED (judge ESCALATE canonical-asm-grant (REFUSED: tier LOW, not STRONG-class and not owner-cluster-enumerated) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-15 \u2014 func_8002D780 \u2014 JUDGE ESCALATE on final call (canonical-asm-grant) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
+    },
+    {
       "func": "func_8005D554",
       "file": "text1b",
       "distance": 65,
@@ -1156,14 +1157,14 @@
   ],
   "counts": {
     "total": 124,
-    "active": 119,
+    "active": 118,
     "by_status": {
-      "active": 119,
-      "rotated": 5
+      "active": 118,
+      "rotated": 6
     },
     "by_verdict": {
-      "ASM-PARTIAL": 23,
-      "C": 96
+      "C": 96,
+      "ASM-PARTIAL": 22
     }
   },
   "toolchain_fingerprint": "a04b7a59487234ab"

@@ -727,3 +727,8 @@ disposition taken: driver-executed per integration-handoff-self-serve (owner rul
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-15 — func_80076D74 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80076D74 include/game.h src/text1b_b.c undefined_syms_auto.txt; function stays ACTIVE.
+
+## 2026-09-15 — func_8002D780 — canonical-asm-grant (REFUSED: tier LOW, not STRONG-class and not owner-cluster-enumerated)
+category: canonical-asm-grant (REFUSED: tier LOW, not STRONG-class and not owner-cluster-enumerated)
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-15 — func_8002D780 — JUDGE ESCALATE on final call (canonical-asm-grant) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: REFUSED under the current frozen policy; ROTATED to the back of the active worklist (owner ruling 2026-09-08, rotation-not-foreclosure; returns automatically); candidate preserved at memory/grind/func_8002D780/candidate.c.
