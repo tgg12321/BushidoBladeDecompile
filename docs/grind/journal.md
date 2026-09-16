@@ -2207,3 +2207,4 @@
 - 2026-09-16 15:32 _SsSndCrescendo s5 [enumerate] floor=130: s5 enumerate: exhaustive 16-spelling sweep of the base/key preamble (tools/spelling_enum.py) ties the banked 130 floor but finds no improvement — class-kills the preamble's spelling space and sharpens the frontier to the SS_SCORE_FLAG clear sites.
 - 2026-09-16 15:32 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 16:02
 - 2026-09-16 15:49 _SsSndCrescendo s6 [synthesis] floor=10: Four-session 130 plateau broken to 10 (199 vs 200 insns): the never-run full objdump diff showed 12 of the 13 surplus instructions were source-level divergences, not register allocation.
+- 2026-09-16 16:24 _SsSndCrescendo COMPLETED-C after 7 sessions (closer: s7 [synthesis]).
