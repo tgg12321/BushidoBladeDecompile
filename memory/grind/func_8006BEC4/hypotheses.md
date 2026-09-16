@@ -24,3 +24,13 @@ Killed spellings (instance, this chassis): `D_800A3900 - (i - 0x7C)` (3 on struc
 is the forbidden F2 redundant-width-cast family — rejected on policy, not needed.
 
 Frontier: none — candidate.c scores 0; awaiting layer-1 / Judge.
+
+## s2 (2026-09-15, recon after layer-1 FAIL)
+
+H6 — the block-scoped `Tile *p = D_800A36DC;` aliases (banned by layer-1) are unnecessary on the
+struct-typed chassis: writing the `sh` field stores and the prim call argument directly through
+the global yields the same single-load a1/a0 seating. CONFIRMED (v10 = 0, same as v9). The
+aliases were only load-bearing on the s1 `u8 *`-cast chassis (v2-v5), where the non-struct stores
+forced a reload between each store. Banned construct absent from candidate.c.
+
+Frontier: none — candidate.c scores 0 with ordinary C only; submitted candidate-ready.

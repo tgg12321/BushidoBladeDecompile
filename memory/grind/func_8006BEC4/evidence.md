@@ -63,3 +63,34 @@ Mechanisms (read from tools/gcc-2.7.2 source, not guessed):
 
 Tooling: tmp/grind/func_8006BEC4/s1/fdiff.py (objdump of sandbox .o vs asm/funcs/*.s, normalized
 move/li/jal/gp-rel) and try.ps1 (apply variant -> sandbox -> keep .o) — reusable for siblings.
+
+## s2 (2026-09-15, recon, second dispatch after the layer-1 FAIL) — aliases removed, still score 0
+
+Chassis: HEAD main (6b2e04a15), canonical CC_FLAGS (-mel -msoft-float), sandbox
+`func_8006BEC4 --disable all`. canonical gate: verdict C ("pure-C distance 0 <= 50").
+Sibling check: func_8006BB68 / func_80060768 (both COMPLETED-C on main, text1b.c) share only the
+`AddPrim(D_800A374C + 0x28/0x20, …)` OT-argument shape, already used identically here; nothing
+else to transplant. `main` (ings.c) names this function only as a caller.
+
+Layer-1 FAIL 2026-09-15 20:46 banned both block-scoped `Tile *p = D_800A36DC;` aliases. The
+measurement the s1 ladder never took: the struct-typed chassis WITHOUT any alias. s1 introduced
+the aliases at v2 (on the `u8 *`-cast chassis, where every `*(s16 *)(p+0xA)` store lacks
+MEM_IN_STRUCT_P and so forced a reload of D_800A36DC between stores) and simply carried them
+into the struct chassis at v6-v9 without re-testing whether they were still needed.
+
+| form | score | what changed |
+|---|---|---|
+| v9 (s1 candidate, layer-1 FAILed) | 0 | struct Tile + two alias blocks |
+| **v10 (candidate.c)** | **0** | v9 with both alias blocks deleted; every `sh` field store and the AddPrim / SetSemiTrans prim argument written as `D_800A36DC->field` / `D_800A36DC` directly |
+
+Mechanism (why the alias was never needed on the struct chassis): with the stores typed as
+`Tile` members, cse.c keeps the `lw D_800A36DC` value alive across the four `sh` stores (a
+MEM_IN_STRUCT_P store with a varying address does not invalidate a fixed-address non-struct
+scalar), so the four stores and the following call argument all read one pseudo that lives in a
+single basic block; local-alloc ties that pseudo to the outgoing argument register (a1 for
+AddPrim's second arg in the loop, a0 for SetSemiTrans's first arg in the tail), which is exactly
+the target's seating. The `sb` r0/g0/b0 stores (QImode) still reload before each store, matching
+the target. Score 0 with zero pointer aliases.
+
+`git diff src/text1b.c` for the candidate: 80 added lines, one INCLUDE_ASM line removed, no
+`Tile *p` anywhere, no bare `{` blocks.

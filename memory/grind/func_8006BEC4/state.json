@@ -26,6 +26,13 @@
    "hash": "df4880db6ca476d2",
    "when": "2026-09-16T01:46:21.887190+00:00",
    "summary": "Both block-scoped `Tile *p = D_800A36DC;` aliases are un-annotated second handles to a global-held object, introduced (by the session's own flow.c REG_BASIC_BLOCK evidence) purely to seat a register; the self-vet denies the family instead of meeting its mandatory /* FAKE */ prong."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "87f3618123c719cb",
+   "when": "2026-09-16T01:53:07.421414+00:00",
+   "summary": "final call: The one construct layer-1 objected to is GONE, not respelled: state.json banned_constructs lists both block-scoped `Tile *p = D_800A36DC;` alias blocks; I grepped the committed body in src/text1b.c an"
   }
  ]
 }

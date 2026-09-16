@@ -55,14 +55,11 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
             D_800A36DC->r0 = r;
             D_800A36DC->g0 = 0;
             D_800A36DC->b0 = 0;
-            {
-            Tile *p = D_800A36DC;
-            p->y0 = D_800A3900 + 0x7C - i;
-            p->x0 = x0;
-            p->w = w;
-            p->h = 1;
-            AddPrim(D_800A374C + 0x20, p);
-            }
+            D_800A36DC->y0 = D_800A3900 + 0x7C - i;
+            D_800A36DC->x0 = x0;
+            D_800A36DC->w = w;
+            D_800A36DC->h = 1;
+            AddPrim(D_800A374C + 0x20, D_800A36DC);
             D_800A36DC++;
         }
     }
@@ -70,14 +67,11 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC->r0 = 0;
     D_800A36DC->g0 = 0;
     D_800A36DC->b0 = 0;
-    {
-    Tile *p = D_800A36DC;
-    p->x0 = 0x140 - (pos->x >> 1);
-    p->y0 = 0x78 - (pos->y >> 1);
-    p->w = pos->x;
-    p->h = pos->y + h;
-    SetSemiTrans(p, 1);
-    }
+    D_800A36DC->x0 = 0x140 - (pos->x >> 1);
+    D_800A36DC->y0 = 0x78 - (pos->y >> 1);
+    D_800A36DC->w = pos->x;
+    D_800A36DC->h = pos->y + h;
+    SetSemiTrans(D_800A36DC, 1);
     AddPrim(D_800A374C + 0x20, D_800A36DC);
     D_800A36DC++;
 }
