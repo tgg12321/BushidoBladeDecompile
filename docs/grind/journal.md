@@ -2201,3 +2201,4 @@
 - 2026-09-16 14:34 func_8006A564 s8 [solver] floor=3: Floor 29(ledger)/7(actual) -> 3: banked an unbanked score-7 body left by a discarded s8 process, then closed residual cluster A with a compound-assignment split that also removed the body's last two dead reads; the remaining residual is 3 insns in one group, pass-attributed to sched1 LAUNCH_PRIORITY.
 - 2026-09-16 14:51 func_8006A564 COMPLETED-C after 9 sessions (closer: s9 [forensics]).
 - 2026-09-16 14:57 _SsSndCrescendo s1 [recon] floor=200: Recon: found exact SOTN precedent (cres.c) + mapped 4 BB2 struct offsets; identified real outer-guard divergence as the frontier
+- 2026-09-16 15:16 _SsSndCrescendo s2 [structural] floor=130: s3 structural: re-verified s2 floor (136), improved to 130 via inlined base-address expr, and CONFIRMED H4's pass attribution (combine.c fold blocked by shared SS_SCORE_FLAG re-derivation liveness) via .combine dump read
