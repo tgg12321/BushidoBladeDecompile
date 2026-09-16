@@ -2815,3 +2815,53 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s61 read-only cross-reference of this session's re-confirmation + all prior enumerate-modality sessions' findings (candidate.c's s22-s60-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, zero FAKE constructs present per the fake_ablate.py audit above), engine/sandbox.py --disable all
+
+## [s62, synthesis] The s22-s61-banked candidate.c body, applied fresh to src/text1b.c (func_80053614 void->s32 return-type prerequisite + 5-line header externs + full loop body), reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session (18th consecutive confirming session).
+- probe: Applied tmp/grind/func_80056CB8/s61/apply_candidate.py's splice to src/text1b.c, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`, reverted via `git checkout -- src/text1b.c`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor, zero drift since s22.
+- verdict: CONFIRMED
+
+## [s62, synthesis] Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block, re-confirmed on this session's dispatch data.
+- mechanism: n/a -- sibling-ledger cross-reference per the brief's SIBLING LEDGERS mandate.
+- probe: Read tmp of func_8006CCC8's candidate.c header (field28-dispatch record-update loop over D_800A34FC-relative pointers) and compared against this function's func_80053614/hit0/hit1/pt0/pt1 collision-detection loop structure; same conclusion as s54/s56/s57/s60.
+- result: No shared data, callee, or control-flow shape; no transplant available.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s62 read-only cross-reference (no new sandbox measurement of the sibling needed; its floor/structure unchanged since s4/last full read)
+
+## [s62, synthesis] FIRST EXECUTION of the s49-s61-deferred pseudo-naming frontier item: nrefs_census.py run fresh against the current candidate, quantifying the lift needed for the spilled-class pseudo whose first-def (insn 21, `reg75 + const_int 2`) textually matches the s51-cited `limit = start + 2` computation.
+- mechanism: global.c:615's allocno_compare priority ranking determines which pseudos get a hard register in local/global allocation; nrefs_census.py computes this exactly from the .lreg-sourced RTL. Pseudo 74 (nrefs=4, livelen=144, pri=555) sits just below pseudo 149 (pri=724, hard=$fp) in the ranking; the tool's `--above` lift calculator reports the minimum nrefs delta to invert that ranking.
+- probe: `python3 tools/nrefs_census.py --func func_80056CB8 --file text1b` (full census) then `--above 74:149` (lift calculator), both against the s61-banked candidate spliced fresh this session.
+- result: Pseudos {148, 146, 74, 116} are hard=-1 (excluded from hard-reg assignment) with pri 719/714/555/354. `--above 74:149` reports pseudo 74 needs +2 nrefs to outrank pseudo 149 and (per the tool's model) plausibly gain a hard register instead of spilling. NOT YET converted to a source-level lever or measured as a candidate -- this is a quantified target for the next probe, not a confirmed win.
+- verdict: CONFIRMED (as an evidence-gathering measurement; no codegen claim yet to KILL or otherwise validate)
+
+## [s62, synthesis] Attempted to resolve whether nrefs_census.py's pseudo 74/149 numbering is the SAME object space as s51/s54's insn-21/insn-210 citations (from dump.ps1's plain -da .greg dump and loop_movables.py's .loop/.cse dump) -- INCONCLUSIVE this session; the two tools' underlying cc1 invocations are structurally independent (nrefs_census.py always triggers its own `ra_solver.extract.run_dumps` compile with no dumps-dir override) and a fresh matched dump.ps1 regeneration this session did not turn up a literal `(insn 21 ...)` entry inside func_80056CB8's dump section to compare against.
+- mechanism: n/a -- tooling/numbering-space investigation, not a codegen hypothesis.
+- probe: Regenerated `pwsh tools/grinder/dump.ps1 func_80056CB8` fresh (same session, same candidate already spliced), then searched the func_80056CB8 slice of tmp/grind/func_80056CB8/dumps/text1b.greg (lines 14788-16003) for `(insn 21 ...)` / `(insn 20 ...)` / `(insn 22 ...)` -- none found in that range.
+- result: Cannot confirm or refute whether pseudo 74 (nrefs_census numbering) == the pseudo s51 called "limit" (dump.ps1/.greg numbering, insn 21) or whether pseudo 149 in EACH tool's own numbering refers to the same C object. This is now a NAMED, SPECIFIC open question (not the vague "cross-reference not yet done" framing of s55-s61) for the next forensics/solver session: either instrument nrefs_census.py's underlying extract call to consume the SAME dump.ps1-produced dump files loop_movables.py already reads (eliminating the double-compile numbering-independence risk), or independently verify pseudo 74's true identity by reading the full .lreg RTL body (not just the disposition-header cross-reference attempted this session) for its use sites (is it read in the loop-guard compare? in an address computation?).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s62 chassis (candidate.c's s22-s61-banked 38/204 body, fresh dump.ps1 regeneration this session, zero FAKE constructs present) -- this KILLS this session's SPECIFIC cross-reference attempt (disposition-header + insn-21 text match) as inconclusive, not the underlying pseudo-naming question itself, which remains open
+
+## [s62] The s22-s61-banked candidate.c body, applied fresh to src/text1b.c (func_80053614 void->s32 return-type prerequisite + header externs + full loop body), reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before any new probe.
+- probe: Applied tmp/grind/func_80056CB8/s61/apply_candidate.py's splice to src/text1b.c, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`, reverted via `git checkout -- src/text1b.c`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor, zero drift since s22.
+- verdict: CONFIRMED
+
+## [s62] Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block.
+- mechanism: n/a -- sibling-ledger cross-reference per the brief's SIBLING LEDGERS mandate.
+- probe: Compared func_8006CCC8's candidate.c header (field28-dispatch record-update loop) against this function's func_80053614/hit0/hit1/pt0/pt1 collision-detection loop.
+- result: No shared data, callee, or control-flow shape; no transplant available. Same conclusion as s54/s56/s57/s60.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s62 read-only cross-reference (no new sandbox measurement of the sibling needed; its floor/structure unchanged since s4)
+
+## [s62] This session's specific cross-reference attempt (dump.ps1/.greg disposition-header + insn-21 text match) to confirm nrefs_census.py's pseudo 74 is the same object as s51/s54's insn-21/pseudo-149 'limit' citation is inconclusive -- a fresh matched-timestamp dump.ps1 regeneration on the current candidate shows no literal `(insn 21 ...)` entry in func_80056CB8's own .greg dump slice, and nrefs_census.py always triggers its own independent instrumented-cc1 compile with no dumps-dir override, so its numbering is not confirmed to share an object space with dump.ps1's plain -da numbering.
+- mechanism: nrefs_census.py (tools/ra_solver/extract.run_dumps) and dump.ps1 (plain cc1 -da) are two structurally independent cc1 invocations; pseudo/insn numbering is not guaranteed identical across separate compiles even of byte-identical source, and this session could not verify it is.
+- probe: Ran `python3 tools/nrefs_census.py --func func_80056CB8 --file text1b` and `--above 74:149` against the freshly spliced s61-banked candidate, then regenerated `pwsh tools/grinder/dump.ps1 func_80056CB8` on the same candidate and grepped for `(insn 20/21/22 ...)` within func_80056CB8's dump slice (lines 14788-16003 of tmp/grind/func_80056CB8/dumps/text1b.greg).
+- result: nrefs_census reports pseudos {148,146,74,116} as hard=-1 (spilled from hard-reg assignment) with pri 719/714/555/354; pseudo 149 (pri=724, hard=$fp) is pseudo 74's nearest ranked neighbor; --above 74:149 reports +2 nrefs needed. The matched dump.ps1 regeneration found no `(insn 21 ...)` entry in that number range within the function's section, so the s51-cited insn-21 'limit = start+2' text could not be located for a direct comparison this session. The underlying pseudo-naming question remains open, now with a specific, named blocker (cross-tool numbering independence) instead of a vague 'not yet cross-referenced' framing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s62 chassis (candidate.c's s22-s61-banked 38/204 body, fresh dump.ps1 regeneration + fresh nrefs_census.py run this session, zero FAKE constructs present) -- kills THIS session's specific disposition-header+insn-text cross-reference attempt, not the underlying pseudo-identity question

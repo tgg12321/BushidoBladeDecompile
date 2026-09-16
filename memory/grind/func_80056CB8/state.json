@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 61,
- "current_modality": "enumerate",
+ "session_count": 62,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -369,39 +369,34 @@
    "floor": 38,
    "modality": "enumerate",
    "headline": "s61 enumerate: fresh 38/204 re-confirmed (17th consecutive flat session); mandatory fake_ablate.py kill re-audit clean (zero FAKE constructs, 2nd such audit, matches s58); full enumerate-modality cros"
+  },
+  {
+   "session": 62,
+   "floor": 38,
+   "modality": "synthesis",
+   "headline": "s62 synthesis: 38/204 re-confirmed (18th consecutive flat session); first actual execution of the s49-s61-deferred pseudo-naming frontier item via nrefs_census.py quantifies a +2-nrefs lift target for"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the ~20 OTHER pseudos simultaneously live with `limit` in global_alloc's conflict graph (per the s51 .greg dump) -- a compiler-internal pseudo without a stable declared C name -- has a source-level handle that could legitimately narrow its live range, shifting the spill-cost comparison away from limit.",
-   "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the FULL conflict graph's relative costs, not any single pseudo's isolated properties.",
-   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output via a fresh -da cc1 run on the current chassis, to NAME a specific non-named pseudo before proposing any declaration-scope edit. Forensics/solver modality, not enumerate/structural -- spelling_enum.py cannot search an unnamed pseudo's space."
+   "hypothesis": "Pseudo 74 in nrefs_census.py's numbering IS the `limit` local (s51/s54's spilled pseudo), and gaining it +2 nrefs within its existing live range (via a sanctioned duplicated-real-statement-into-arms spelling, per [[duplicated-statement-into-arms]]) would flip global_alloc's priority ranking and let it take a hard register instead of spilling.",
+   "mechanism": "global.c:615 allocno_compare priority ranking; flow.c adds loop_depth per reference on each duplicated real read, per nrefs_census.py's own free-lift documentation.",
+   "next_probe": "First resolve the pseudo-identity question (either patch nrefs_census.py's extract call to consume dump.ps1's existing dump files instead of a fresh independent compile, or read pseudo 74's full .lreg RTL use-sites -- not just its first-def -- to confirm it participates in the loop-guard compare the way `limit` should). Only then attempt a real +2-reference duplication of whatever statement pseudo 74 actually is, measuring via sandbox --disable all. Forensics/solver modality."
   },
   {
-   "hypothesis": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) may develop a transplantable block if its own grind progresses further; currently still structurally disjoint (field28-dispatch record-update loop vs. this function's func_80053614/hit0/hit1/pt0/pt1 collision-detection loop).",
-   "mechanism": "n/a -- sibling-ledger cross-reference per the brief's SIBLING LEDGERS mandate.",
+   "hypothesis": "Pseudos 148/146 (fp-relative address computations, likely &pt0/&pt1 stack-slot addresses per s17's original reading of hard-reg spills) and 116 (the `Judge` symbol_ref) are three more spilled-class candidates each with their own quantifiable lift target, independent of the limit/pseudo-74 question.",
+   "mechanism": "Same global.c:615 ranking; each has a distinct first-def insn and pri already printed by this session's census.",
+   "next_probe": "Run `--above 148:149`, `--above 146:149`, `--above 116:149` to get their individual lift numbers, then evaluate whether any has a natural (non-FAKE, real-statement) duplication site before spending a session on limit specifically -- may be a shorter path to closing the residual."
+  },
+  {
+   "hypothesis": "Sibling func_8006CCC8 may develop a transplantable block if its own grind progresses further; currently still structurally disjoint.",
+   "mechanism": "n/a -- sibling-ledger cross-reference per the brief's mandate.",
    "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session per the mandate; no action needed until its structure or floor changes."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 27,
-   "statement": "The current chassis's two sw $fp,16($sp) instructions before the two func_80053614 calls are mandatory o32-ABI stack-argument stores for the 5th (stack-passed) integer argument, not a register-pressur",
-   "kill_scope": "class",
-   "measured_on": "n/a (dump/mechanism reading against the frozen ABI/compiler, not a source-level spelling test)",
-   "predicate_cite": "tools/gcc-2.7.2/fold-const.c:3536",
-   "result": "Confirmed one li+ori materialization (line 34-35 of the span) reused at both call sites, with a sw $fp,16($sp) immediate"
-  },
-  {
-   "session": 28,
-   "statement": "The live-frontier claim 'target's SECOND 0x1F8002B8 use is a bare lui with no ori, suggesting a non-literal second func_80053614 argument' is a misreading of the target assembly: asm/funcs/func_80056C",
-   "kill_scope": "instance",
-   "measured_on": "s28 chassis (target asm itself, not a candidate build) -- re-testable by re-reading asm/funcs/func_80056CB8.s, which does not change",
-   "predicate_cite": "",
-   "result": "Only one lui ($t3, 0x1F8002B8>>16) / ori ($t3, ...&0xFFFF) pair exists (lines 25-26), stored once to 0x78($sp) before th"
-  },
   {
    "session": 28,
    "statement": "Naming the 0x1F8002B8 literal as a pre-loop-declared local (hit_flag_arg, read at both func_80053614 call sites instead of the bare literal at each site) does not reproduce target's stack-spill-and-re",
@@ -865,6 +860,22 @@
    "measured_on": "s61 read-only cross-reference of this session's re-confirmation + all prior enumerate-modality sessions' findings (candidate.c's s22-s60-banked 38/204 body + func_80053614 s32-return prerequisite + 5-",
    "predicate_cite": "",
    "result": "The spelling-enumeration space for every block this ledger has identified is exhausted on the current chassis. Live fron"
+  },
+  {
+   "session": 62,
+   "statement": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block.",
+   "kill_scope": "instance",
+   "measured_on": "s62 read-only cross-reference (no new sandbox measurement of the sibling needed; its floor/structure unchanged since s4)",
+   "predicate_cite": "",
+   "result": "No shared data, callee, or control-flow shape; no transplant available. Same conclusion as s54/s56/s57/s60."
+  },
+  {
+   "session": 62,
+   "statement": "This session's specific cross-reference attempt (dump.ps1/.greg disposition-header + insn-21 text match) to confirm nrefs_census.py's pseudo 74 is the same object as s51/s54's insn-21/pseudo-149 'limi",
+   "kill_scope": "instance",
+   "measured_on": "s62 chassis (candidate.c's s22-s61-banked 38/204 body, fresh dump.ps1 regeneration + fresh nrefs_census.py run this session, zero FAKE constructs present) -- kills THIS session's specific disposition-",
+   "predicate_cite": "",
+   "result": "nrefs_census reports pseudos {148,146,74,116} as hard=-1 (spilled from hard-reg assignment) with pri 719/714/555/354; ps"
   }
  ],
  "ladder_skip": 0,

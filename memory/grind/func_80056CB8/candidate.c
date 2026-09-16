@@ -1505,6 +1505,27 @@
  * pseudos live with `limit` in global_alloc's conflict graph (s51 .greg
  * / s55 nrefs_census cross-reference) -- forensics/solver modality, not
  * further enumerate. Full writeup: hypotheses.md [s61].
+ * ---------------------------------------------------------------------
+ * s62 (synthesis modality). Re-confirmed 38/204 fresh (18th consecutive
+ * session). Body UNCHANGED. FIRST ACTUAL EXECUTION of the s49-s61
+ * deferred pseudo-naming frontier item: `tools/nrefs_census.py --func
+ * func_80056CB8 --file text1b` (fresh, this candidate) quantifies pseudo
+ * 74 (nrefs=4, livelen=144, pri=555, hard=-1 i.e. spilled from hard-reg
+ * assignment in the .lreg-based census) needing +2 nrefs to outrank
+ * pseudo 149 (pri=724, hard=$fp) per `--above 74:149`. Pseudo 74's
+ * first-def (insn 21, `reg75 + const_int 2`) textually matches s51's
+ * `limit = start + 2` citation, BUT this session could NOT confirm that
+ * match against a matched-timestamp dump.ps1 regeneration (no literal
+ * `(insn 21 ...)` found in func_80056CB8's own .greg dump slice) --
+ * nrefs_census.py always triggers its OWN independent instrumented-cc1
+ * compile (no dumps-dir override), so its pseudo numbering is NOT
+ * confirmed to share an object space with dump.ps1/.greg's numbering
+ * (s51/s54's citations). This is a SHARPER, NAMED open question for the
+ * next forensics/solver session (see hypotheses.md [s62] for the two
+ * concrete resolution paths) -- not another restatement of "cross-
+ * reference not yet done". No C-level lever attempted or measured this
+ * session; the quantified +2-nrefs target is not yet spent. Full
+ * writeup: hypotheses.md [s62].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;
