@@ -1562,6 +1562,29 @@
  * statement touching one of these pseudos would reopen it). fake_ablate.py
  * re-audit clean (3rd consecutive, matches s58/s61). See hypotheses.md /
  * evidence.md [s63] for full detail.
+ * ---------------------------------------------------------------------
+ * s64 (forensics modality, 2026-09-16): Re-confirmed 38/204 fresh (20th
+ * consecutive flat session). Body UNCHANGED. Sibling func_8006CCC8
+ * re-checked, still structurally disjoint. fake_ablate.py re-audit clean
+ * (4th consecutive). Did a direct instrumented-cc1 `.s`-pass forensic
+ * comparison of the CURRENT chassis's loop prologue+tail
+ * (tmp/grind/func_80056CB8/dumps/text1b.s:4713-4980) against target
+ * (asm/funcs/func_80056CB8.s:1-28,180-217). CORRECTED a stale mechanism
+ * claim carried since s8/s13: the old ledger said "our stream materializes
+ * the 0x1F8002B8 scratchpad literal TWICE"; on the current (s22+) chassis
+ * it is materialized ONCE into $fp and REUSED BY REGISTER across both
+ * func_80053614 calls (`sw $fp,16($sp)` appears twice, same register) --
+ * closer to target's single lui/ori than the old framing implied. Beyond
+ * that correction, every other element the classify tool historically
+ * flagged (3x `addu obj,i` address materialization in the flags==4 branch
+ * arms; the start-spilled/limit-recomputed-per-iteration reload shape) is
+ * already reproduced or already class-exhausted by name: naming `limit`
+ * (s22, ADOPTED), inlining the bound away (`i<start+2`/`i-start<2`, s46,
+ * WORSE), do-while entry-guard elision (s34/s42/s43, WORSE despite fewer
+ * real insns), every i*2/idx2 accumulator spelling (s6/s7/s10/s12/s18/
+ * s21/s22/s27/s30/s33, all WORSE). No new C-level lever identified or
+ * measured this session -- this was a correction pass, not a search-space
+ * opener. Full writeup: hypotheses.md [s64].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;

@@ -2894,3 +2894,59 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s63 chassis (candidate.c's s22-s62-banked 38/204 body + func_80053614 void->s32 return-type prerequisite applied to src/text1b.c, confirmed sandbox 38/204 before this probe), fresh dump.ps1 .lreg/.greg regeneration + nrefs_census.py --above runs for pseudos 148 and 116, cross-referenced with prior sessions' own-chassis measurements for the analogous idx-sharing and scratch-merge levers; zero FAKE constructs present in candidate.c (fake_ablate.py re-audit clean, 3rd consecutive)
+
+## [s64, forensics] Fresh chassis reproduction: the s22-s63-banked candidate.c body (+ func_80053614 void->s32 return-type prerequisite) reproduces the ledger's recorded 38/204 (build_insns 198) floor when spliced into src/text1b.c, 20th consecutive confirming session, no chassis drift.
+- mechanism: n/a (reproduction check, mandatory before any new probe).
+- probe: Applied `tmp/grind/func_80056CB8/s61/apply_candidate.py`'s splice to src/text1b.c, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction.
+- verdict: CONFIRMED
+
+## [s64, forensics] Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block, re-confirmed on this session's dispatch data.
+- mechanism: n/a -- sibling-ledger cross-reference per the brief's SIBLING LEDGERS mandate.
+- probe: Read func_8006CCC8's candidate.c header (field28-dispatch record-update loop over D_800A34FC-relative pointers, `memory/grind/func_8006CCC8/candidate.c` lines 10-80) and compared against this function's func_80053614/hit0/hit1/pt0/pt1 collision-detection loop structure; same conclusion as s54/s56/s57/s60/s62.
+- result: No shared data, callee, or control-flow shape; no transplant available.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s64 read-only cross-reference (no new sandbox measurement of the sibling needed; its floor/structure unchanged since its s4)
+
+## [s64, forensics] MANDATORY KILL RE-AUDIT: tools/fake_ablate.py run fresh against the current banked candidate.c reports zero FAKE-annotated constructs to ablate -- the banked 38/204 floor carries no FAKE-carrier artifact, 4th consecutive clean audit (matches s58/s61/s63).
+- mechanism: n/a -- mechanical audit per the brief's KILL RE-AUDIT REQUIRED mandate (floor flat 20+ consecutive sessions).
+- probe: `python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c --json`
+- result: "no FAKE-annotated constructs found ... nothing to ablate" -- re-confirms s58/s61/s63.
+- verdict: CONFIRMED
+
+## [s64, forensics] Direct forensic re-derivation of the target's loop prologue+tail (asm/funcs/func_80056CB8.s lines 1-28 and 193-217) against a fresh instrumented-cc1 `.s` pass-dump of the CURRENT 38/204 chassis (`tmp/grind/func_80056CB8/dumps/text1b.s:4713-4980`) finds NO new untried structural axis: every element the classify tool historically flagged as a PRE-RA multiset mismatch is now EITHER already reproduced on the current chassis (the 3x `addu obj,i` address materialization across the flags==4 branch arms; the SINGLE $fp-resident 0x1F8002B8 literal, reused via register across both func_80053614 calls -- NOT "materialized twice" as the old s8/s13 framing claimed, which was stale relative to the s22-banked `limit`-local improvement) OR already class-exhausted by name (the `start`-spilled/`limit`-recomputed-each-iteration reload pattern IS target's genuine shape, and every C-level lever that could produce it -- naming `limit` (s22, ADOPTED), inlining the bound away entirely (`i < start + 2` / `i - start < 2`, s46, both WORSE), the do-while entry-guard-elision rewrite (s34/s42/s43, WORSE despite fewer real insns), and every i*2/idx2 accumulator spelling (s6/s7/s10/s12/s18/s21/s22/s27/s30/s33, all WORSE) -- is already measured on this or a prior chassis generation. No new C-source shape was identified this session; this forensics pass corrects a stale mechanism claim (single vs double literal materialization) rather than opening new search space.
+- mechanism: cc1's `expand_start_loop`/`expand_exit_loop_if_false` (stmt.c) for-loop lowering (the loop-entry guard, closed s43) and `global_alloc`'s priority-ordered coloring (the $fp-literal residency, closed s42) are the two GCC passes governing this residual; both were independently re-confirmed exhausted this session via direct dump comparison rather than re-derived from scratch.
+- probe: Ran `pwsh tools/grinder/dump.ps1 func_80056CB8` fresh against the s61-splice chassis; read `tmp/grind/func_80056CB8/dumps/text1b.s:4713-4980` (the full function's final `.s` pass output) side-by-side with `asm/funcs/func_80056CB8.s:1-28,180-217` (target); cross-referenced every observed difference against the existing kill ledger (s22/s30/s34/s42/s43/s46) before concluding no axis was untried.
+- result: Zero new C-level lever identified. Corrects the ledger's stale "our stream materializes the scratchpad literal twice" framing (s8/s13/s16/s30's classify-output paraphrase) -- on the CURRENT (s22+) chassis it is materialized once, in `$fp`, and reused by register across both calls, matching target's single `lui/ori` more closely than the old framing implied; the remaining gap is register-pressure / loop-entry-guard shape, both independently class-exhausted per the mechanism line above.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s64 chassis (candidate.c's s22-s63-banked 38/204 body applied fresh to src/text1b.c, confirmed sandbox 38/204 before this probe; fresh dump.ps1 `.s` pass regeneration), cross-referenced against s22/s30/s34/s42/s43/s46's own-chassis measurements; zero FAKE constructs present (fake_ablate.py re-audit clean, 4th consecutive)
+
+## [s64] The s22-s63-banked candidate.c body, applied fresh to src/text1b.c (func_80053614 void->s32 return-type prerequisite), reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session.
+- probe: Applied tmp/grind/func_80056CB8/s61/apply_candidate.py's splice to src/text1b.c, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`, reverted with `git checkout -- src/text1b.c` after measurement.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor.
+- verdict: CONFIRMED
+
+## [s64] Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block, re-confirmed on this session's dispatch data.
+- mechanism: n/a -- sibling-ledger cross-reference per the brief's SIBLING LEDGERS mandate.
+- probe: Read func_8006CCC8's candidate.c header (field28-dispatch record-update loop over D_800A34FC-relative pointers) and compared against this function's func_80053614/hit0/hit1/pt0/pt1 collision-detection loop structure; same conclusion as s54/s56/s57/s60/s62.
+- result: No shared data, callee, or control-flow shape; no transplant available.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s64 read-only cross-reference (no new sandbox measurement of the sibling needed; its floor/structure unchanged since its s4)
+
+## [s64] MANDATORY KILL RE-AUDIT: tools/fake_ablate.py run fresh against the current banked candidate.c reports zero FAKE-annotated constructs to ablate.
+- mechanism: n/a -- mechanical audit per the brief's KILL RE-AUDIT REQUIRED mandate (floor flat 20+ consecutive sessions).
+- probe: python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c --json
+- result: "no FAKE-annotated constructs found in memory/grind/func_80056CB8/candidate.c; nothing to ablate" -- re-confirms s58/s61/s63 (4th consecutive clean audit).
+- verdict: CONFIRMED
+
+## [s64] Direct forensic re-derivation of the target's loop prologue+tail against a fresh instrumented-cc1 .s pass-dump of the CURRENT 38/204 chassis finds no new untried structural axis; the entire PRE-RA-multiset residual the classify tool has flagged since s8 is either already reproduced on the current chassis or already class-exhausted by name.
+- mechanism: cc1's expand_start_loop/expand_exit_loop_if_false (stmt.c) for-loop lowering (the loop-entry guard, closed s43) and global_alloc's priority-ordered coloring (the $fp-literal residency, closed s42) are the two GCC passes governing this residual; both independently re-confirmed exhausted this session via direct dump comparison.
+- probe: Ran `pwsh tools/grinder/dump.ps1 func_80056CB8` fresh against the s61-splice chassis; read tmp/grind/func_80056CB8/dumps/text1b.s:4713-4980 (final .s pass output) side-by-side with asm/funcs/func_80056CB8.s:1-28,180-217 (target); cross-referenced every observed difference against the existing kill ledger (s22/s30/s34/s42/s43/s46).
+- result: Zero new C-level lever identified. Corrects a stale mechanism claim carried since s8/s13/s16/s30: on the current (s22+) chassis the 0x1F8002B8 scratchpad literal is materialized ONCE into $fp and reused BY REGISTER across both func_80053614 calls (sw $fp,16($sp) appears twice with the same source register), not 'twice' as the old classify-output paraphrase implied -- closer to target's single lui/ori. The remaining gap is register-pressure / loop-entry-guard shape, both independently class-exhausted (naming limit s22 ADOPTED; inlining the bound away s46 WORSE; do-while entry-guard elision s34/s42/s43 WORSE despite fewer real insns; every i*2/idx2 spelling s6/s7/s10/s12/s18/s21/s22/s27/s30/s33 all WORSE).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s64 chassis (candidate.c's s22-s63-banked 38/204 body applied fresh to src/text1b.c, confirmed sandbox 38/204 before this probe; fresh dump.ps1 .s pass regeneration), cross-referenced against s22/s30/s34/s42/s43/s46's own-chassis measurements; zero FAKE constructs present

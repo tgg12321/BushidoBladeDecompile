@@ -1082,3 +1082,9 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s63] src/text1b.c reverted cleanly to committed INCLUDE_ASM state at session end (git status --short clean); no src/engine/tools/rules changes persist on the tree.
 
 - [s63] fake_ablate.py re-audit on candidate.c: zero FAKE-annotated constructs (3rd consecutive clean audit, matches s58/s61).
+
+- [s64] Fresh dump.ps1 run this session confirms the current 38/204 chassis's final .s pass materializes the 0x1F8002B8 scratchpad literal into $fp exactly once (li $fp,0x1f800000; ori $fp,$fp,0x02b8) and reuses that same register at both func_80053614 call sites (sw $fp,16($sp) x2), correcting the ledger's stale s8/s13 'materializes twice' framing which predates the s22 limit-local improvement.
+
+- [s64] The 3x `addu obj,i`-style address materialization across the flags==4 branch arms (taken-path delay slot / bnez-false-path delay slot / fallthrough) already matches target's shape on the current chassis, consistent with s16's finding that the old 'beqz+bltz+j triple vs our bgez' framing was misdiagnosed delay-slot fill, not a real structural gap.
+
+- [s64] Every C-level lever this ledger has tried for the loop-entry-guard / start-spilled-limit-recomputed-per-iteration residual is now enumerated as exhausted in one place: naming limit (s22, adopted, the only win), inlining the bound away via i<start+2 or i-start<2 (s46, both worse), do-while rewrite to elide the guard entirely (s34/s42/s43, worse despite -3 real insns), and every spelling of an i*2/idx2 shared or loop-carried index (s6/s7/s10/s12/s18/s21/s22/s27/s30/s33, all worse).

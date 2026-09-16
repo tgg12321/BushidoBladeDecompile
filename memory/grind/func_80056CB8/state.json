@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 63,
- "current_modality": "solver",
+ "session_count": 64,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -381,16 +381,22 @@
    "floor": 38,
    "modality": "solver",
    "headline": "s63 solver: 38/204 re-confirmed (19th consecutive flat); resolved s62's pseudo-identity question (nrefs_census pseudo 74 == dump.ps1 reg 74 == `limit`, genuinely spilled) and closed the whole s49-s62 "
+  },
+  {
+   "session": 64,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s64 forensics: 20th consecutive flat 38/204; corrected a stale s8/s13 mechanism claim (single not double 0x1F8002B8 materialization on current chassis) via fresh .s-pass diff; sibling + fake_ablate re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The PRE-RA structural residual (target's single-materialized 0x1F8002B8 literal via a loop-carried $fp-style byte-table index accumulator, vs our two separate materializations plus the code==4 y-compare branch-topology mismatch: addiu s8,s8,2 / sll s8,#,0x2 *4-stride / two addu / beqz+bltz+j triple) remains the only live structural axis; it is upstream of both RA and scheduler models per inverse_compose.py and requires a genuinely different C expression, not a register/lifetime lever.",
-   "mechanism": "loop.c:3823 strength_reduce giv-worth rejection (lifetime*threshold*benefit < insn_count) for the merged i*2 giv, precisely quantified at s31: combined benefit=2, lifetime=2, threshold=31, product 124 vs insn_count 163 -- promoting the giv needs lifetime>=3 (measured WORSE via register pressure across the ratan2 call, s6/s10/s12/s22/s54) or a 3rd genuine i*2 use (architecturally unavailable, only 2 byte-tables exist).",
-   "next_probe": "Direct restructuring of the code==4 y-compare tail's branch topology (the addiu/sll-*4/addu/beqz+bltz+j vs our bgez shape) has not been tried as a standalone lever independent of the i*2 sharing question -- read asm/funcs/func_80056CB8.s lines ~195-217 (the y-compare tail) fresh and derive what C control-flow shape would naturally produce a beqz+bltz+j triple instead of GCC's folded bgez, without touching the i*2/limit axis at all. Forensics/structural modality."
+   "hypothesis": "The residual is register-pressure-bound on the loop body's 9 call-spanning resident values ($s0-$s7 + $fp), not further reducible by any spelling-level lever identified so far; a genuinely new axis would need to either shrink one of the 8 named residents' live range or find a real (non-invented) duplication site the nrefs-census campaign (s49-s63, exhausted) missed.",
+   "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c; s42 confirmed the do-while chassis's -3-insn win does not touch this conflict graph's shape for the 9 contended pseudos at all.",
+   "next_probe": "Not yet identified -- the s49-s63 nrefs-lift census and the s22-s46 loop-shape sweep both closed clean; a future session should look for a structurally different lever class (e.g. re-examine whether any of the 8 named residents' declared TYPE or scope could legitimately narrow without changing semantics, an axis distinct from both nrefs-lift and loop-shape)."
   },
   {
-   "hypothesis": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) may develop a transplantable block if its own grind progresses; currently structurally disjoint (field28-dispatch vs collision-detection loop).",
+   "hypothesis": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) may develop a transplantable block if its own grind progresses further; currently structurally disjoint (field28-dispatch vs collision-detection loop).",
    "mechanism": "n/a -- sibling-ledger cross-reference per the brief's mandate.",
    "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session; no action needed until its structure or floor changes."
   }
@@ -398,22 +404,6 @@
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 29,
-   "statement": "Declaring `s32 hit_flag_arg = 0x1F8002B8;` INSIDE the loop body (re-assigned each iteration) instead of s28's pre-loop/outside-loop placement, with both func_80053614 call sites reading it instead of ",
-   "kill_scope": "instance",
-   "measured_on": "s29 chassis (s22-s28-banked 38/198 body, hit_flag_arg declared+assigned inside the loop body instead of pre-loop), single fresh sandbox measurement, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score=42, build_insns=200 (worse than baseline 38/198, and a different delta than s28's pre-loop variant's 45/199) -- co"
-  },
-  {
-   "session": 30,
-   "statement": "The specific untried combination the s30 asm read identified -- a hand-carried idx2 accumulator (idx2 = start*2 before the loop, idx2 += 2 in the for-statement increment clause, loop guard rewritten a",
-   "kill_scope": "instance",
-   "measured_on": "s30 chassis (s22-s29-banked 38/198 body, limit local removed + idx2 for-statement-carried accumulator added + loop guard rewritten as i < start + 2, both table-index reads substituted), single fresh s",
-   "predicate_cite": "",
-   "result": "score=52, build_insns=201 (+3 real instructions vs baseline's 198) -- worse, in the same direction and nearly the same m"
-  },
   {
    "session": 32,
    "statement": "On the CURRENT 38/204 chassis, sharing i*2 into ONE local (`idx = i*2;` used at both table reads) does widen the merged giv's lifetime enough to flip loop.c's strength-reduction decision (dump-proven:",
@@ -877,6 +867,22 @@
    "measured_on": "s63 chassis (candidate.c's s22-s62-banked 38/204 body + func_80053614 void->s32 return-type prerequisite applied to src/text1b.c, confirmed sandbox 38/204 before this probe), fresh dump.ps1 .lreg/.gre",
    "predicate_cite": "",
    "result": "pseudo 148 needs +1, pseudo 116 needs +3 nrefs to outrank pseudo 149 (hard=$fp); pseudo 148/146 are the two per-call-sit"
+  },
+  {
+   "session": 64,
+   "statement": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) remains structurally disjoint from func_80056CB8 -- no transplantable block, re-confirmed on this session's dispatch ",
+   "kill_scope": "instance",
+   "measured_on": "s64 read-only cross-reference (no new sandbox measurement of the sibling needed; its floor/structure unchanged since its s4)",
+   "predicate_cite": "",
+   "result": "No shared data, callee, or control-flow shape; no transplant available."
+  },
+  {
+   "session": 64,
+   "statement": "Direct forensic re-derivation of the target's loop prologue+tail against a fresh instrumented-cc1 .s pass-dump of the CURRENT 38/204 chassis finds no new untried structural axis; the entire PRE-RA-mul",
+   "kill_scope": "instance",
+   "measured_on": "s64 chassis (candidate.c's s22-s63-banked 38/204 body applied fresh to src/text1b.c, confirmed sandbox 38/204 before this probe; fresh dump.ps1 .s pass regeneration), cross-referenced against s22/s30/",
+   "predicate_cite": "",
+   "result": "Zero new C-level lever identified. Corrects a stale mechanism claim carried since s8/s13/s16/s30: on the current (s22+) "
   }
  ],
  "ladder_skip": 0,
