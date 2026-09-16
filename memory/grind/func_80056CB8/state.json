@@ -915,8 +915,8 @@
  "escalation_deferrals": 0,
  "object_model_audited": 44,
  "cc1psx_check": {
-  "at": "2026-09-16T12:58:20.128889+00:00",
-  "candidate_sha": "d5ef7d924e4d",
+  "at": "2026-09-16T15:35:48.435231+00:00",
+  "candidate_sha": "e941127fedbf",
   "ours": 134,
   "psx": 145,
   "closer": false,

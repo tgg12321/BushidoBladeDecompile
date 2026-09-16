@@ -1167,3 +1167,5 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s67] m2c and decomp.me corpus re-derivations remain closed (converge on already-KILLED do-while-nolimit shape / no usable precedent) per s56.
 
 - [s67] The live frontier is unchanged: register-pressure-bound loop-body residual over ~18 still-unidentified conflict-graph-live pseudos, not reducible by any spelling-level lever found across 24 flat sessions and 7+ modalities.
+
+- [s67] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate e941127fedbf scores 134 under our cc1 and 145 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
