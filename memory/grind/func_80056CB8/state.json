@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "enumerate",
+ "session_count": 7,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 81,
    "modality": "enumerate",
    "headline": "s6 (enumerate): fixed a real D_800F6608/D_800F6610 object-model mismatch (objdiff-confirmed, score-neutral); killed a shared-idx-local RA hypothesis (worse, 81->90); killed a goto-vs-nested-if hypothe"
+  },
+  {
+   "session": 7,
+   "floor": 58,
+   "modality": "structural",
+   "headline": "Structural s7: reusing the EXISTING flags local for ang and code (matching target's own $s0 register reuse, read directly from asm/funcs/func_80056CB8.s) drops the honest floor 81 -> 58/204; re-killed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The code==4 tail's reorg.c delay-slot-duplication difference (4 extra addu v0,s7,s6 in exit-branch delay slots, bltz+beqz vs our bgez) is gated by register pressure or scheduling earlier in the function, not this tail's own C shape (goto-vs-nested-if measured neutral this session).",
-   "mechanism": "reorg.c profitable-duplication-into-delay-slot heuristic; likely tied to how many free/fillable delay slots exist earlier in the function, which depends on the register-rotation residual elsewhere.",
-   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.sched (regenerated this session) around the code==4 tail's RTL insns to see the actual delay-slot-fill decisions reorg made for THIS build, and compare against what would need to change earlier in the function (not in this tail) to make 4 more delay slots available/profitable."
+   "hypothesis": "The remaining named residual is a loop-counter register rotation ($s3 in our build vs a $s6/$s7-entangled role in target for the outer loop index and its derived store-address computations), and the code==4 tail's branch-topology difference is very likely downstream of this SAME rotation rather than an independent lever.",
+   "mechanism": "global.c allocno priority / conflict-graph shape for the loop-counter pseudo, re-entangled with the register-rotation-infrastructure class (no-new-park-categories.md) -- needs a fresh .greg/.lreg disposition read on the s7 (floor-58) chassis, not a reuse of any earlier session's stale pseudo map.",
+   "next_probe": "Re-dump via `pwsh tools/grinder/dump.ps1 func_80056CB8` on the s7 chassis (apply candidate.c first) and read the `;; Register dispositions:` table plus the conflict lists for the loop-counter pseudo and its immediate neighbors, cross-referenced against tmp/grind/func_80056CB8/s7/objdiff_s7.txt's specific register-name lines -- best suited to rederive/solver modality rather than more structural guessing."
   },
   {
-   "hypothesis": "Target's single materialized $s8 (i*2, reused across the flags-index and scale-index reads via a call boundary) is reachable via a shared BASE POINTER local instead of a shared index local (which measured worse this session).",
-   "mechanism": "If the original C held a pointer into the D_8009A821/D_8009A820 arrays (or a combined struct) rather than re-indexing by a shared scalar, the pointer's live range across the ratan2 call might cost less than the shared idx did, or GCC may not even need to keep it live across the call if the two reads are restructured relative to the call.",
-   "next_probe": "Try restructuring so the two array reads happen adjacently (both before or both after the ratan2 call) instead of straddling it, OR try a pointer local `u8 *pf = &D_8009A821 + i*2;`/`u8 *ps = &D_8009A820 + i*2;` pattern and measure both against the s6 chassis."
+   "hypothesis": "Other existing locals (r1/r2, dx/dz/y) may have an analogous borrow-for-reuse opportunity, but ONLY if target's own asm shows the same register being reused for them -- the flags/ang/code win came from reading the target bytes first, not from guessing.",
+   "mechanism": "Same SOTN variable-reuse-for-codegen-control family as the confirmed win this session, applied only where directly observed in asm/funcs/func_80056CB8.s.",
+   "next_probe": "Before proposing any further merge, grep asm/funcs/func_80056CB8.s for the hardware registers holding r1/r2/dx/dz/y's values across their live ranges and check whether target reuses any of them for an unrelated later value; only then draft the corresponding C merge and measure it."
   },
   {
-   "hypothesis": "The remaining register-rotation cluster (s3/s6/s0/s1/... renaming) needs a fresh .greg/.lreg pseudo->hardreg map read on the CURRENT (s6) chassis before further RA-lever hypotheses are proposed -- prior sessions' pseudo numbers are stale after each structural edit.",
-   "mechanism": "global.c allocno priority (spill cost x use frequency) + the current conflict-graph shape, which changes every time the C body's statement order or local set changes.",
-   "next_probe": "Re-dump (pwsh tools/grinder/dump.ps1 func_80056CB8) on the s6 chassis and read tmp/grind/func_80056CB8/dumps/text1b.greg's disposition table for the pt0/pt1/obj/flags/ang region, cross-referenced against the objdiff_full2.txt register-substitution list already captured this session."
+   "hypothesis": "Do not re-try the goto-vs-nested-if rewrite on the code==4 tail's y-compare a third time -- killed twice now on two materially different chassis.",
+   "mechanism": "n/a (a closed-off axis, recorded so a future session does not re-derive and re-spend a probe on it).",
+   "next_probe": "n/a"
   }
  ],
  "judge_constraints": [],
@@ -116,6 +122,22 @@
    "measured_on": "s6 chassis (candidate.c body + D_800F6610 fix + func_80053614 s32-return fix), goto-based rewrite of the code==3/code==4 tail only, zero FAKE constructs, reverted after measurement.",
    "predicate_cite": "",
    "result": "Score and build_insns IDENTICAL before and after (81/197) -- our fork produces byte-identical output for the goto form a"
+  },
+  {
+   "session": 7,
+   "statement": "Rewriting the code==4 tail's y-compare (`y - hit1[1] >= 0` / `>= 0x3E9` nested if/else) with explicit `goto store;`/`goto neg;` early exits mirroring target's bltz+beqz two-branch topology, on the NEW",
+   "kill_scope": "instance",
+   "measured_on": "s7 chassis (candidate.c body with the flags/ang/code merge applied), goto-based rewrite of the code==4 tail's y-compare only, zero FAKE constructs, reverted after measurement.",
+   "predicate_cite": "",
+   "result": "58/198 both before and after the rewrite -- byte-identical. Second independent confirmation of this exact axis being neu"
+  },
+  {
+   "session": 7,
+   "statement": "Replacing the two `(&D_8009A821)[i*2]` / `(&D_8009A820)[i*2]` byte-table array-index reads with two per-table pointer locals (`u8 *pf = &D_8009A821 + i*2; u8 *ps = &D_8009A820 + i*2;`) measures worse ",
+   "kill_scope": "instance",
+   "measured_on": "s6/s7-baseline chassis (candidate.c body before the flags/ang/code merge), two per-table pointer locals replacing the array-index reads, zero FAKE constructs, reverted after measurement.",
+   "predicate_cite": "",
+   "result": "Score 81 -> 83 (WORSE), build_insns 197 -> 196. Reverted; banked as memory/grind/func_80056CB8/rejected/per-table-pointe"
   }
  ],
  "ladder_skip": 0,

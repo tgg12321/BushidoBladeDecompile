@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_80056CB8",
-   "floor": 81,
-   "session": 5,
-   "at": "2026-09-16T08:25:05.642723+00:00",
-   "headline": "enumerate modality: systematic spelling sweep of the pt0/pt1 point-store block drops the floor 106 -> 81 by batching the output stores after the sin_p/cos_p/scale/x/z computations (pure statement reor",
+   "floor": 58,
+   "session": 7,
+   "at": "2026-09-16T08:49:13.600176+00:00",
+   "headline": "Structural s7: reusing the EXISTING flags local for ang and code (matching target's own $s0 register reuse, read directly from asm/funcs/func_80056CB8.s) drops the honest floor 81 -> 58/204; re-killed",
    "consumed": null
   }
  ]

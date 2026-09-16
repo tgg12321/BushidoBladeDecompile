@@ -329,3 +329,121 @@ measured hypotheses.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s6 chassis (candidate.c body + D_800F6610 fix + func_80053614 s32-return fix), goto-based rewrite of the code==3/code==4 tail only, zero FAKE constructs, reverted after measurement.
+
+## [s7] structural 2026-09-16 — variable-reuse win
+
+### CONFIRMED: reusing the EXISTING `flags` local for `ang` and for `code` (instead of three separate freshly-declared locals) drops the score from 81/204 to 58/204.
+- mechanism: SOTN-sanctioned "variable reuse for codegen control"
+  ([[defeat-licm-hoist-var-reuse]]; family-selection bound 2 — BORROWING
+  an existing local, not inventing one). Direct read of
+  `asm/funcs/func_80056CB8.s` (not a stale dump) shows target computes
+  `ang` in place over `flags`'s own register (`addu $s0,$s0,$v0` at
+  `.L80056D60`/`.L80056D90` — literally `flags += ...;`, never a second
+  register), and later reuses the SAME register for the disposition
+  `code` (`or $s0,$s0,$v0; addiu $s0,$s0,0x1` at `.L80056ED0-ED4`). The
+  prior candidate (s2 through s6) declared `ang` and `code` as fresh
+  `s32` locals, forcing GCC to allocate two extra pseudos across live
+  ranges that in target are the identical hardware register.
+- probe: Deleted the `ang` and `code` declarations; changed
+  `ang = flags + *(s16*)(obj+0x1CA);` to `flags += *(s16*)(obj+0x1CA);`
+  (and the `ratan2` arm identically), changed
+  `sin_p = &Judge + (ang & 0xFFF);`/`cos_p = ... (ang+0x400) ...;` to
+  read `flags` instead of `ang`, and changed every `code = ...` /
+  `code == N` / `code = N` (the disposition accumulator and its 0/3/4/5
+  tail) to read/write `flags` instead, with the final store reading
+  `(s8)flags`. Ran `sandbox func_80056CB8 --disable all` before and
+  after.
+- result: score 81 -> 58 (build_insns 197 -> 198 — one MORE raw
+  instruction, but the weighted score dropped 23 points, confirming the
+  win is register-identity quality, not instruction count). Reproduced
+  twice in-session (once on the initial edit, once again after an
+  unrelated tail experiment was tried and reverted).
+- verdict: CONFIRMED
+
+### KILLED (instance, RE-CONFIRMED on the new s7 chassis): rewriting the code==4 tail's y-compare with explicit `goto` early exits (mirroring target's `bltz`+`beqz` two-branch topology) instead of nested if/else measures byte-identical.
+- statement: On the s7 (floor-58) chassis, rewriting
+  `if (y - hit1[1] >= 0) { if (... >= 0x3E9) flags = 5; } else { if
+  (hit1[1] - y >= 0x3E9) flags = 5; }` as `if (y - hit1[1] < 0) goto
+  neg; if (y - hit1[1] < 0x3E9) goto store; flags = 5; goto store; neg:
+  if (hit1[1] - y < 0x3E9) goto store; flags = 5;` produces IDENTICAL
+  build_insns and score (58/198) to the nested-if form.
+- mechanism: Same as s6's original finding — reorg.c's decision to keep
+  the y-compare as two separate branches (vs our fork's single merged
+  `bgez`) is not gated by this tail's own C control-flow shape; it must
+  be gated by something upstream (register pressure/scheduling earlier
+  in the function).
+- probe: Edited the tail to the goto form described above, re-ran
+  sandbox func_80056CB8 --disable all, compared score/build_insns
+  against the nested-if baseline on the SAME s7 chassis, then reverted.
+- result: 58/198 both before and after — byte-identical. This is the
+  SECOND independent session (s6, s7) to measure this exact axis neutral
+  on two materially different chassis (pre- and post- the flags/ang/code
+  merge). Do not re-try goto-vs-nested-if on this specific tail a third
+  time.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s7 chassis (candidate.c body with the flags/ang/code
+  merge applied), goto-based rewrite of the code==4 tail's y-compare
+  only, zero FAKE constructs, reverted after measurement.
+
+### KILLED (instance): replacing the two `[i*2]` byte-table array-index reads with two per-table pointer locals (`u8 *pf`, `u8 *ps`) measures worse.
+- statement: `u8 *pf = &D_8009A821 + i*2; u8 *ps = &D_8009A820 + i*2;`
+  used in place of `(&D_8009A821)[i*2]` / `(&D_8009A820)[i*2]` array-
+  index syntax.
+- mechanism: Hypothesized (now refuted for this chassis): a pointer
+  local might reduce address-recompute overhead relative to repeated
+  array-index syntax. Instead the weighted register match got worse
+  even though raw instruction count dropped by one.
+- probe: Applied the two pointer locals, ran sandbox func_80056CB8
+  --disable all on the pre-merge (s6/s7-baseline) chassis, then
+  reverted before applying the flags/ang/code merge.
+- result: score 81 -> 83 (WORSE), build_insns 197 -> 196. Reverted;
+  banked as memory/grind/func_80056CB8/rejected/per-table-pointer-locals-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6/s7-baseline chassis (candidate.c body before the
+  flags/ang/code merge), two per-table pointer locals replacing the
+  array-index reads, zero FAKE constructs, reverted after measurement.
+
+## Frontier for s8 (rederive/solver modality recommended)
+1. **Re-dump `.greg`/`.lreg` on the s7 (floor-58) chassis and read the
+   disposition table before proposing any further register-alloc
+   lever.** Pseudo numbers renumber on every structural edit; the s3-era
+   map (obj=82, flags=83, ...) is stale and was ALSO already stale going
+   into s7 (the s5/s6 store-batching had already renumbered it once).
+   The remaining named residual is the loop-counter register rotation
+   ($s3 in our build vs a $s6/$s7-entangled role in target) plus the
+   code==4 tail's branch topology, which two sessions now show is NOT
+   gated by that tail's own C shape — it is very likely downstream of
+   the SAME loop-counter/register-pressure question.
+2. **Check whether `r1`/`r2` or `dx`/`dz`/`y` have an analogous reuse
+   opportunity in target's own asm** before inventing any merge for
+   them — the flags/ang/code win came from OBSERVING target's actual
+   register reuse in `asm/funcs/func_80056CB8.s`, not from guessing;
+   apply the same method (read the asm first, only merge if target's
+   own bytes show the reuse) rather than repeating the borrow pattern
+   speculatively.
+3. Do NOT re-try the goto-vs-nested-if axis on the code==4 tail a third
+   time — killed twice now, on two different chassis.
+
+## [s7] Reusing the EXISTING `flags` local for `ang` and for the final disposition `code` (deleting both fresh-local declarations, every former ang/code read/write becomes a flags read/write) drops the sandbox score from 81/204 to 58/204.
+- mechanism: SOTN-sanctioned variable-reuse-for-codegen-control family (defeat-licm-hoist-var-reuse.md; family-selection bound 2, borrowing an existing local, never inventing one). Direct read of asm/funcs/func_80056CB8.s shows target computes ang in place over flags's own register (addu $s0,$s0,$v0 at .L80056D60/.L80056D90) and later reuses the same $s0 for code (or $s0,$s0,$v0; addiu $s0,$s0,1 at .L80056ED0-ED4) -- three roles, one hardware register, in target's own bytes.
+- probe: Applied candidate.c through s6 (D_800F6610 fix + s5 store-batching + func_80053614 s32-return fix) to src/text1b.c, confirmed floor 81 (build_insns 197). Then deleted the `ang`/`code` local declarations, rewrote every use to read/write `flags` instead, and re-ran sandbox func_80056CB8 --disable all.
+- result: Score dropped 81 -> 58 (build_insns 197 -> 198 -- one MORE raw instruction, but the weighted score dropped 23 points, confirming the win is register-identity quality not instruction count). Reproduced twice in-session (once on the initial edit, once again after an unrelated tail experiment was tried and reverted). objdiff (tmp/grind/func_80056CB8/s7/objdiff_s7.txt) confirms func_80056CB8 remains the ONLY changed function in text1b.o and the diff region shrank to 112 lines, now purely a register-name/loop-counter rotation plus the code==4 tail branch-topology difference.
+- verdict: CONFIRMED
+
+## [s7] Rewriting the code==4 tail's y-compare (`y - hit1[1] >= 0` / `>= 0x3E9` nested if/else) with explicit `goto store;`/`goto neg;` early exits mirroring target's bltz+beqz two-branch topology, on the NEW post-merge (floor-58) chassis, measures byte-identical to the nested-if form.
+- mechanism: Same as the s6 session's original finding on the pre-merge chassis: reorg.c's decision to keep the y-compare as two separate branches (vs our fork's single merged bgez) is not gated by this tail's own C control-flow shape; it is gated by something upstream (register pressure/scheduling earlier in the function) that the flags/ang/code merge did not change enough to flip.
+- probe: Edited the code==4 tail to the goto form on the s7 (floor-58) chassis, ran sandbox func_80056CB8 --disable all, compared against the nested-if baseline on the identical chassis, then reverted.
+- result: 58/198 both before and after the rewrite -- byte-identical. Second independent confirmation of this exact axis being neutral, now measured on two materially different chassis (pre- and post- the flags/ang/code merge).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s7 chassis (candidate.c body with the flags/ang/code merge applied), goto-based rewrite of the code==4 tail's y-compare only, zero FAKE constructs, reverted after measurement.
+
+## [s7] Replacing the two `(&D_8009A821)[i*2]` / `(&D_8009A820)[i*2]` byte-table array-index reads with two per-table pointer locals (`u8 *pf = &D_8009A821 + i*2; u8 *ps = &D_8009A820 + i*2;`) measures worse than the array-index syntax.
+- mechanism: Hypothesized (now refuted for this chassis): a pointer local might reduce address-recompute overhead relative to repeated array-index syntax. Instead the raw instruction count dropped by one but the weighted register-allocation match got worse.
+- probe: Applied the two pointer locals on the pre-merge (s6/s7-baseline) chassis, ran sandbox func_80056CB8 --disable all, then reverted before applying the flags/ang/code merge.
+- result: Score 81 -> 83 (WORSE), build_insns 197 -> 196. Reverted; banked as memory/grind/func_80056CB8/rejected/per-table-pointer-locals-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6/s7-baseline chassis (candidate.c body before the flags/ang/code merge), two per-table pointer locals replacing the array-index reads, zero FAKE constructs, reverted after measurement.

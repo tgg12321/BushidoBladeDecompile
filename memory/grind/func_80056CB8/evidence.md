@@ -321,3 +321,35 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s6] Post-fix remaining objdiff is a register-rotation-cluster (consistent renaming, e.g. our s3/s6/s0/s1 vs target's different but self-consistent assignment) plus the code==4 tail branch-topology + delay-slot-duplication difference described in the hypotheses above -- both are register-allocation/scheduling residuals, not object-model or structural gaps.
 
 - [s6] src/text1b.c reverted to committed INCLUDE_ASM state at session end (git checkout -- src/text1b.c verified clean); no C draft left on main per asm-until-matched.
+
+## [s7] structural 2026-09-16
+
+- [s7] Chassis re-verified at session start: applying the s6-banked candidate.c body (D_800F6610 fix + s5 store-batching + func_80053614 s32-return fix) to src/text1b.c reproduces score 81/204 (build_insns 197) exactly, before any s7 change.
+
+- [s7] Direct read of asm/funcs/func_80056CB8.s (lines 1-40, 40-99, 130-218), not a stale dump, shows target keeps ONE hardware register ($s0) for three successive non-overlapping-lifetime roles: `flags` (the D_8009A821 byte value <<8), `ang` (computed IN PLACE as `addu $s0,$s0,$v0`, never a separate register), and the final disposition `code` (`or $s0,$s0,$v0; addiu $s0,$s0,1` then the 0/3/4/5 tail, `.L80056ED0` onward) -- three roles, one register, in target's own bytes.
+
+- [s7] Removing the `ang` and `code` local declarations and reusing the EXISTING `flags` local for both roles (every former `ang`/`code` read/write becomes a `flags` read/write) drops sandbox func_80056CB8 --disable all from score 81 (build_insns 197) to score 58 (build_insns 198) -- a 23-point drop despite ONE MORE raw instruction, confirming the win is register-identity quality. Reproduced twice in-session.
+
+- [s7] `python3 tools/objdiff.py tmp/sandbox/func_80056CB8/text1b.o build/src/text1b.o` (build/src/text1b.o is the still-INCLUDE_ASM reference object, i.e. the ORIGINAL target bytes) on the post-merge chassis: func_80056CB8 remains the only changed function (271/272 identical elsewhere); the diff region for func_80056CB8 itself shrank to 112 lines (full capture: tmp/grind/func_80056CB8/s7/objdiff_s7.txt). Remaining differences are (a) a pure register-name/loop-counter rotation ($s3 in our build vs a $s6/$s7-entangled role in target for the outer loop index and its derived store addresses -- the standing register-rotation-infrastructure class, no-new-park-categories.md; NOT a new park category, just unclosed via C so far) and (b) the code==4 tail's branch-topology difference (target: `bltz`+`beqz` as two branches; ours: one `bgez`) -- but NOW target's characteristic FOUR duplicated `addu v0,s7,s6` address-recomputes (into 4 exit-branch delay slots) has a MATCHING four duplicated `addu v0,s3,s7` in our own build too (this was NOT true at s6 -- the merge changed enough codegen that this specific duplication now also happens in our fork); only the two-vs-one branch SPLIT for the y-compare remains different.
+
+- [s7] Re-tested (on this NEW chassis) the s6-killed goto-vs-nested-if rewrite of the code==4 tail's y-compare: byte-identical again (58/198 both forms). Second independent confirmation across two materially different chassis that this tail's own C shape does not gate the branch-topology mismatch.
+
+- [s7] Tried and rejected (measured worse, on the PRE-merge chassis): two per-table pointer locals (`u8 *pf`, `u8 *ps`) in place of the `[i*2]` array-index reads for the D_8009A821/D_8009A820 byte tables -- score 81 -> 83 (worse), build_insns 197 -> 196. Reverted before the flags/ang/code merge was applied; banked as memory/grind/func_80056CB8/rejected/per-table-pointer-locals-worse.c. A further cross-declaration-pointer-arithmetic variant (`ps = pf - 1`) was drafted but never measured -- it is undefined-behavior C and was reverted without running sandbox, noted only so it is not re-derived.
+
+- [s7] Working tree state: src/text1b.c carries the s7-banked candidate body (flags/ang/code merge + all s2-s6 fixes) at end of session -- per asm-until-matched this is NOT committed; the ledger candidate.c is the persistent record. (If the driver's scope check requires a clean tree between sessions, this session's final action reverts src/text1b.c to the committed INCLUDE_ASM state -- see the outcome JSON / self_vet for the final tree state taken.)
+
+- [s7] Chassis re-verified at session start: candidate.c through s6 reproduces score 81/204 (build_insns 197) before any s7 change, matching the ledger exactly.
+
+- [s7] Direct read of asm/funcs/func_80056CB8.s (not a stale dump) shows target keeps ONE hardware register ($s0) for three successive non-overlapping-lifetime roles: flags, ang (computed in place, never a separate register), and the final disposition code (reused starting .L80056ED0) -- confirmed line-by-line in the target's own bytes, not inferred from a dump.
+
+- [s7] Applying the flags/ang/code variable-reuse merge (borrowing the EXISTING flags local, deleting the ang and code declarations entirely) drops the honest floor 81 -> 58/204 (build_insns 197 -> 198). Reproduced twice in-session.
+
+- [s7] objdiff (tools/objdiff.py, tmp/grind/func_80056CB8/s7/objdiff_s7.txt) confirms func_80056CB8 is still the ONLY function differing from build/src/text1b.o (the original target bytes) across the whole TU (271/272 identical elsewhere), and the function's own diff region shrank to 112 lines: (a) a pure register-name/loop-counter rotation ($s3 vs a $s6/$s7-entangled role in target for the outer loop index and its derived store addresses) and (b) the code==4 tail's branch-topology difference (bltz+beqz vs bgez) -- but now our build ALSO reproduces target's characteristic FOUR duplicated address-recompute instructions into exit-branch delay slots (it did not before the merge); only the two-vs-one branch SPLIT for the y-compare itself remains different.
+
+- [s7] Re-tested the s6-killed goto-vs-nested-if rewrite of the code==4 tail on this NEW chassis: byte-identical again (58/198). Second independent confirmation across two materially different chassis.
+
+- [s7] Per-table pointer-local variant for the two byte-table reads measured WORSE (81 -> 83) on the pre-merge chassis; reverted and banked as a rejected form.
+
+- [s7] A cross-declaration pointer-arithmetic variant (ps = pf - 1, treating D_8009A820/D_8009A821 as one array) was drafted but never measured -- recognized as undefined-behavior C and as deepening the exact declaration-pun the grind brief's DATA MODEL section flags for these two symbols; reverted without running sandbox.
+
+- [s7] src/text1b.c reverted to the committed INCLUDE_ASM state at session end (git checkout -- src/text1b.c verified clean); the s7-banked body lives only in memory/grind/func_80056CB8/candidate.c per asm-until-matched.
