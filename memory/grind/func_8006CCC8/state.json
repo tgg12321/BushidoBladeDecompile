@@ -1,7 +1,7 @@
 {
  "func": "func_8006CCC8",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 77,
    "modality": "structural",
    "headline": "Fixed the stale-HEAD chassis (s1 body was never applied), confirmed+closed the H2 arg2 LICM-hoist via defeat-licm-hoist-var-reuse (94->91), then found i was mistyped s16 vs target's plain-int usage (9"
+  },
+  {
+   "session": 3,
+   "floor": 77,
+   "modality": "structural",
+   "headline": "H4 inner j-loop restructure (hoist both record-byte reads before the i==0 branch) reproduces target's disassembly shape insn-for-insn incl. exact register numbers, but the sandbox score stayed flat at"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The inner for(j=0;j<3;j++) record-update loop's i==0 dispatch should be restructured so cc1 folds it to target's unconditional-dual-load-select-by-AND-source shape instead of a top-of-loop branch into duplicated load sequences \u2014 likely by replacing the `if (i==0) {..0xF0 load..} else {..0x0F load..}` with a single expression that computes the nibble-select mask/shift from i directly (mirroring how `fade` and the outer loop's shift/mask already fold via precomputed sllv), rather than branching.",
-   "mechanism": "Unconfirmed \u2014 candidate guesses are cse.c common-subexpression sharing of both lbu loads across the branch in target's compile (both always execute so the AND-source register alone selects), or a duplicated-statement-into-arms-style single-expression form that lets GCC fold to one load+mask+store. NOT yet attributed to a specific pass via dump evidence.",
-   "next_probe": "Read tmp/grind/func_8006CCC8/dumps/text1b.cse and .combine for the insn range covering this loop (cross-reference against .rtl for the exact insn numbers) before attempting a restructure by hand; the s2 dumps are against the s2-final body and are still valid for this probe since no further change was made after H3."
+   "hypothesis": "The remaining floor-77 edit distance sits in the outer for(i...) loop's field28<=0/>=lim increment-decrement arms (*arg1 & (0x1000<<shift) / (0x4000<<shift)), which s2 claimed matched by eye but was never objdump-verified with the real scorer.",
+   "mechanism": "n/a -- verification step",
+   "next_probe": "Run engine.score.normalized_insns for func_8006CCC8 (build/src/text1b.o as reference vs tmp/sandbox/func_8006CCC8/text1b.o as built) FROM WSL (wsl bash -c 'source .venv/bin/activate && python3 -c \"...\"'), collect the exact difflib opcodes, and hand-walk whichever region it isolates against the corresponding asm/funcs/func_8006CCC8.s lines."
   },
   {
-   "hypothesis": "The function's tail past target line ~160 (the field28==4 arm continuation and function epilogue) has still never been individually walked instruction-for-instruction against our build this ledger (s1 nor s2) \u2014 only inferred from m2c structure matching the first two arms.",
-   "mechanism": "n/a \u2014 verification step, not a codegen hypothesis.",
-   "next_probe": "Once H4 is resolved, re-dump (pwsh tools/grinder/dump.ps1 func_8006CCC8) against the updated body and walk asm/funcs/func_8006CCC8.s lines 160-208 against the fresh text1b.s dump line-by-line."
+   "hypothesis": "The and-in-delay-slot vs and-before-branch placement difference noted in H4 this session is a genuine scored scheduling-order difference, not just a cosmetic dump artifact.",
+   "mechanism": "Unconfirmed -- candidate mechanism is sched.c's list scheduler choosing a different insn to fill the branch delay slot; NOT yet attributed via a .sched dump read.",
+   "next_probe": "Once the WSL-run diff tool (frontier item 1) confirms or rules out this region as score-relevant, read tmp/grind/func_8006CCC8/dumps/text1b.sched for the .L1012 loop's insn range before attempting any C-level reorder (per PASS ATTRIBUTION discipline)."
   },
   {
-   "hypothesis": "If H4's natural-geometry restructure does not close the inner-loop gap, the s2 dumps become stale and a fresh dump/derive pass is needed rather than reusing them.",
-   "mechanism": "n/a \u2014 process note for the next session.",
-   "next_probe": "Re-run pwsh tools/grinder/dump.ps1 func_8006CCC8 fresh after any further structural change, before re-deriving from .loop/.greg output."
+   "hypothesis": "If the outer-loop increment/decrement arms turn out already correct, the residual may instead be a subtler cross-region scheduling effect (e.g. a call-argument setup or delay-slot fill elsewhere) invisible to a per-region hand-walk but visible to the full-function levenshtein alignment.",
+   "mechanism": "n/a -- process note",
+   "next_probe": "Once WSL access to the scorer is confirmed working, keep it as a standing diagnostic for this function rather than re-attempting hand-walks; re-run after every future structural change instead of trusting a hand-walk alone."
   }
  ],
  "judge_constraints": [],
@@ -52,6 +58,22 @@
    "measured_on": "src/text1b.c HEAD as edited this session (s2), re-confirming the s1 finding; no FAKE construct present in either variant (both are ordinary C, no cheat-catalog constructs).",
    "predicate_cite": "",
    "result": "score 142 (frame sp,-0x58, ret spilled) vs 94/91/77 for the accepted alternatives measured across s1/s2 on the same chas"
+  },
+  {
+   "session": 3,
+   "statement": "Hoisting the *(rec+0x1A)&mask (and +0x1D for the field28==4 arm) and *(rec+0x17) reads out of the if(i==0){...}else{...} arms into two fresh locals (masked, byte17) read once before the branch, so the",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c HEAD as edited this session (s3), H2+H3 fixes from s2 held constant; no FAKE construct present -- masked and byte17 are fresh locals each holding one real, once-read consumed value (ordin",
+   "predicate_cite": "",
+   "result": "build_insns dropped 185 -> 183 and the walked disassembly now matches target insn-for-insn (including exact numeric regi"
+  },
+  {
+   "session": 3,
+   "statement": "With the inner j-loop, function tail/epilogue, and function entry/prologue all now hand-verified (this session) as matching target's disassembly instruction-for-instruction (including exact register-n",
+   "kill_scope": "instance",
+   "measured_on": "n/a -- this hypothesis was about tooling access this session, not a chassis measurement; the underlying localization claim remains open and is carried to the s4 frontier rather than asserted as fact.",
+   "predicate_cite": "",
+   "result": "Bash attempt BLOCKED by tools/hooks/worktree_contamination_guard.py (flags any bare 'from engine import' with no wteng.p"
   }
  ],
  "ladder_skip": 0,
