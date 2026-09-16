@@ -1,6 +1,16 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66/s67) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66/s67/s68) — floor 38/204, NOT YET 0.
+ * s68 (escalation modality, 2026-09-16): DISPOSITION SESSION (47th
+ * consecutive flat session at 38/204, dispatched after the sibling
+ * func_8006CCC8 auto-return trigger). Body UNCHANGED. Fresh chassis
+ * re-verification: this body + the func_80053614 void->s32 return-type
+ * prerequisite (independently re-verified byte-neutral, 0/32) reproduces
+ * 38/204 exactly; fake_ablate.py clean (zero FAKE constructs). Both
+ * endgame-lock gates evaluated and FAILED (scan_hand_coded tier=LOW
+ * score=1/8; no in-hand SOTN precedent for any identified closing
+ * construct). Filed docs/grind/decisions.md "LADDER EXHAUSTED (non-endgame
+ * residual, floor 38): ROTATED". See hypotheses.md/evidence.md [s68].
  * s67 (rederive modality, 2026-09-16): Body UNCHANGED (24th consecutive
  * session confirming 38/204 fresh). Cross-TU precedent check: other
  * in-tree functions materializing the identical 0x1F8002B8 scratchpad

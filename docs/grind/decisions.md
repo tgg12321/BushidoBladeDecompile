@@ -27836,3 +27836,71 @@ after a splice-and-measure attempt).
 
 A pure-C preimage of `func_80056CB8` exists by construction; nothing here
 claims otherwise. This is a rotation record, not a question to the owner.
+
+## 2026-09-16 — func_80056CB8 — OWNER-ESCALATION — **LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED**
+
+**Session:** s68 (escalation modality, dispatched after the 2026-09-16T13:44
+auto-return trigger: coupled sibling `func_8006CCC8` moved to floor 39). This
+re-evaluates the standing disposition filed earlier the same day (s66/s67
+window, same heading) under the fresh dispatch — the driver's auto-return
+is not itself new evidence; this session re-confirmed that and re-files the
+record with today's re-measurement so the rotation basis stays current.
+
+**Chassis re-verification (this session, fresh):** the dispatch brief's
+"measurement unavailable" HEAD floor was resolved by applying
+`memory/grind/func_80056CB8/candidate.c`'s body to `src/text1b.c` plus its
+documented prerequisite (`func_80053614`'s return type `void`→`s32`,
+independently re-verified byte-neutral for that sibling: `sandbox
+func_80053614 --disable all` → 0/32) — `sandbox func_80056CB8 --disable all`
+→ **38/204** (build_insns 198), exactly matching the ledger's s22-s67-banked
+floor. Without the prerequisite fix the same body measures 134/204
+(build_insns 171) — confirms the prerequisite is still load-bearing and
+unchanged since s2. `fake_ablate.py` reports zero FAKE-annotated constructs
+in the candidate (consistent with every prior audit, s58/s61/s64/s67). Both
+edits reverted; `src/text1b.c` restored to `INCLUDE_ASM("asm/funcs",
+func_80056CB8);` before this session ends, per [[asm-until-matched]].
+
+**Gate (a) — canonical-asm scan:** `python3 tools/scan_hand_coded.py --single
+func_80056CB8` this session: `tier=LOW score=1/8` (204 insns) — only S4
+(front-loads) fires; S1/S2/S3/S5/S6/S7/S8 all absent. FAILS the STRONG-tier
+bar for a canonical-asm grant.
+
+**Gate (b) — SOTN-master precedent for the closing construct:** the live
+frontier (register-pressure-bound loop body; pseudo 74/`limit` spilled by
+`global_alloc`, ~18 other conflict-clique pseudos) has no identified closing
+construct to cite precedent for in the first place — every named-intermediate
+/ duplicated-statement / nrefs-lift avenue that WAS tried (s6-s63) measured
+worse or was disqualified on correctness grounds (s58), and the cross-TU
+scratchpad-literal precedent census (s67, re-confirmed unchanged this
+session) returned negative (structurally disjoint single-call-site vs.
+per-iteration dual-call-site shape). No in-hand precedent exists. FAILS.
+
+**Both endgame-lock AND-gates fail** (scan LOW + no precedent) → per the
+owner's 2026-07-27 standing ruling (as amended 2026-09-02 for floor > 5,
+[[ordinary-c-judge-decidable]] amendment 2026-09-02) this is the
+non-endgame-residual rotation, not an endgame-lock claim.
+
+**Exhaustion basis:** 68 sessions total (s1-s68); floor flat at 38/204 for
+47 consecutive sessions (s22-s68) across at least 9 distinct modalities
+(enumerate, synthesis, solver, rederive ×3, forensics ×2, structural ×2,
+object-model, escalation). `cc1psx_check` (driver-banked self-disproof,
+per [[rotation-not-foreclosure]]) already on record from the prior s66/s67
+window — no divergence from our fork found; not re-run this session (no new
+compiler-related evidence to disprove). Full enumerate/rederive/forensics/
+solver history and every individually-named kill: see
+`memory/grind/func_80056CB8/hypotheses.md` and `evidence.md` [s1]-[s67],
+and the KILL LEDGER (58 instance kills, 2 class kills) in the ledger digest.
+
+**Re-activation triggers (unchanged from the s66/s67 filing):** a future
+owner class grant covering register-pressure-bound spill residuals with no
+natural duplication site; a toolchain-fidelity finding affecting
+`global_alloc`/`reload`'s spill-reg selection; or a genuinely new transplant
+source — a sibling function in `src/text1b.c` or `src/code6cac*.c` reaching
+COMPLETED-C after this session, per the ledger's live frontier item #3.
+Sibling `func_8006CCC8` (the trigger for this dispatch) re-checked again
+this session and remains structurally and signature-level disjoint (3-arg
+pointer-taking s32-return vs. this function's 1-arg void) — its movement to
+floor 39 supplies no new material.
+
+A pure-C preimage of `func_80056CB8` exists by construction; nothing here
+claims otherwise. This is a rotation record, not a question to the owner.

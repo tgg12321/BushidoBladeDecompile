@@ -1169,3 +1169,19 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s67] The live frontier is unchanged: register-pressure-bound loop-body residual over ~18 still-unidentified conflict-graph-live pseudos, not reducible by any spelling-level lever found across 24 flat sessions and 7+ modalities.
 
 - [s67] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate e941127fedbf scores 134 under our cc1 and 145 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+- [s68, escalation] DISPOSITION SESSION. Chassis re-verified fresh: candidate.c body + func_80053614 void->s32 prerequisite (independently re-verified 0/32 for that sibling) reproduces 38/204 (build_insns 198) exactly, matching the ledger's s22-s67 floor. Without the prerequisite the same body measures 134/204 (build_insns 171) -- confirms the fix remains load-bearing. fake_ablate.py: zero FAKE constructs (consistent with every prior audit). scan_hand_coded.py --single func_80056CB8: tier=LOW score=1/8 (only S4 fires) -- gate (a) FAILS. Gate (b): no closing construct has been identified to seek precedent for; the s67 cross-TU scratchpad-literal census (re-confirmed unchanged) is the closest attempt and it is negative. Both endgame-lock AND-gates fail. Filed docs/grind/decisions.md 2026-09-16 "LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED" entry (47 consecutive flat sessions s22-s68, 9+ modalities). Sibling func_8006CCC8 (this session's auto-return dispatch trigger, moved to floor 39) re-checked, still disjoint -- supplies no new transplant material. src/text1b.c reverted to INCLUDE_ASM before session end.
+
+- [s68] sandbox func_80056CB8 --disable all with raw INCLUDE_ASM src (no candidate applied) measures 204/204 (score 204) -- confirms the dispatch brief's 'measurement unavailable' HEAD floor and that the 38/204 floor is only reachable with the candidate.c body + the func_80053614 prerequisite fix applied.
+
+- [s68] func_80053614 (src/text1b.c:1513, a matched COMPLETED-C sibling in the same TU) required changing its declared return type from void to s32 as part of applying the candidate; re-verified 0/32 byte-neutral with the fix, so this prerequisite does not put the sibling's own match at risk when applied for measurement (and is reverted along with the target's body at session end).
+
+- [s68] fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c reports zero FAKE-annotated constructs -- the 38/204 floor is a clean instance kill, not a FAKE-carrier artifact (matches every prior audit: s58/s61/s64/s67).
+
+- [s68] 47 consecutive flat sessions (s22-s68) across at least 9 distinct modalities (enumerate, synthesis, solver, rederive x3, forensics x2, structural x2, object-model, escalation) with 58 banked instance kills and 2 class kills; no untried block-local spelling axis, register-pressure lever, or nrefs-lift target remains identified in the ledger.
+
+- [s68] Sibling func_8006CCC8 (this session's auto-return dispatch trigger, moved to floor 39 at 2026-09-16T13:44) re-checked this session: remains structurally and signature-level disjoint (3-arg pointer-taking s32-return vs. this function's 1-arg void) -- its movement supplies no new transplant material.
+
+- [s68] src/text1b.c was restored to INCLUDE_ASM("asm/funcs", func_80056CB8); before this session ended; no cheat or draft C is present on main.
+
+- [s68] docs/grind/decisions.md 2026-09-16 entry 'func_80056CB8 -- OWNER-ESCALATION -- LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED' filed this session, naming func_80056CB8, both gate evaluations, the chassis re-verification, and the re-activation triggers.

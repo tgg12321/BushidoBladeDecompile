@@ -3081,3 +3081,25 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - probe: python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c
 - result: "no FAKE-annotated constructs found ... nothing to ablate" -- 3rd such audit, matches s58/s61.
 - verdict: CONFIRMED
+
+## [s68] The s22-s67-banked candidate.c body, plus the func_80053614 void->s32 return-type prerequisite, reproduces 38/204 on the current chassis.
+- mechanism: Ordinary compiled C; func_80053614's asm falls through $v0 to its epilogue regardless of declared return type, so changing its C return type is behavior-neutral for that function while making the value available to the new caller in func_80056CB8.
+- probe: Applied candidate.c body to src/text1b.c, changed func_80053614's declared return type from void to s32 (returning func_80052D00's result), ran `sandbox func_80056CB8 --disable all` and `sandbox func_80053614 --disable all`.
+- result: func_80056CB8: 38/204 (build_insns 198), exactly matching the ledger's s22-s67 floor. func_80053614: 0/32, confirming the sibling stays byte-neutral with the fix. Without the prerequisite, the same body measures 134/204 (build_insns 171) -- the fix remains load-bearing, unchanged mechanism since s2.
+- verdict: CONFIRMED
+
+## [s68] Gate (a) canonical-asm scan does not support a canonical-asm grant for this function on the current chassis.
+- mechanism: tools/scan_hand_coded.py's S1-S8 heuristic signal set for hand-written-asm detection.
+- probe: python3 tools/scan_hand_coded.py --single func_80056CB8
+- result: tier=LOW score=1/8 (204 insns); only S4 (front-loads) fires. S1/S2/S3/S5/S6/S7/S8 all absent.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s68 chassis (candidate.c body + func_80053614 prerequisite applied), zero FAKE constructs present
+
+## [s68] Gate (b) no in-hand SOTN-master precedent exists for a closing construct on this residual, on the current chassis.
+- mechanism: n/a -- precedent-census cross-reference (s67's cross-TU 0x1F8002B8 scratchpad-literal search, re-confirmed unchanged this session) against docs/reference/sotn-construct-index.md and in-tree matched siblings.
+- probe: Re-read s67's cross-TU precedent finding (src/code6cac.c:2661,2979 named-local materializations of the same literal) and confirmed no new precedent search was warranted this session (no newly-identified closing construct to search for).
+- result: The only candidate precedent search on record (s67) remains negative: those two occurrences are single-call-site, non-loop (goto-retry) shapes, structurally disjoint from this function's per-iteration dual-call-site loop shape. No transplant applies.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s67 chassis, re-confirmed unchanged on s68 chassis (candidate.c body + func_80053614 prerequisite), zero FAKE constructs present

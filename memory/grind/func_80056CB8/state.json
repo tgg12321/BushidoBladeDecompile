@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 67,
- "current_modality": "rederive",
+ "session_count": 68,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -405,44 +405,29 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s67 rederive: 24th consecutive 38/204 re-confirmation; killed the cross-TU 0x1F8002B8-named-local precedent (code6cac.c lim/scratchpad) as non-transplantable (single-call-site non-loop shape vs our pe"
+  },
+  {
+   "session": 68,
+   "floor": 38,
+   "modality": "escalation",
+   "headline": "s68 disposition: 47th consecutive flat session (s22-s68) at 38/204; both endgame-lock gates FAIL (scan LOW, no precedent); filed LADDER EXHAUSTED ROTATED entry"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 24 flat sessions and 7+ modalities.",
+   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 47 flat sessions and 9+ modalities.",
    "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c",
-   "next_probe": "A future session should target one of the still-unidentified conflict-graph-live pseudos (obj/flags/scale/sin_p/cos_p/x/z per-iteration values) with the same forensics-level individual identification s63/s65 gave pseudo 74 and 149, looking for an untried scope-narrowing or duplication lever on those specific pseudos."
+   "next_probe": "A future session (post-rotation, on new evidence) should target one of the still-unidentified conflict-graph-live pseudos with the same forensics-level individual identification s63/s65 gave pseudo 74 and 149, looking for an untried scope-narrowing or duplication lever on those specific pseudos."
   },
   {
-   "hypothesis": "Sibling func_8006CCC8 remains structurally and signature-level disjoint; re-check only if its own grind changes its shape.",
-   "mechanism": "n/a -- sibling-ledger cross-reference",
-   "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session per the owner-directive auto-return trigger; no action needed until its structure or floor changes."
-  },
-  {
-   "hypothesis": "The rederive-modality mandate (fresh m2c, decomp.me corpus, sibling/Kengo transplant, cross-TU precedent) has now been exhaustively executed across s56/s66/s67 with zero surviving leads; a future rederive session should look at NEWLY-COMPLETED sibling functions (ones that reach COMPLETED-C after this session) for fresh transplant material, since the existing candidate pool is exhausted.",
+   "hypothesis": "A newly-COMPLETED-C sibling in src/text1b.c or src/code6cac*.c (landing after this session) could supply fresh transplant material; the current candidate pool (func_80055B60, func_8006CCC8, func_80057094, func_80057CC8, code6cac.c's lim/scratchpad sites) is exhausted.",
    "mechanism": "n/a -- coverage/process finding",
-   "next_probe": "Check whether any new COMPLETED-C functions have landed in src/text1b.c or src/code6cac*.c since this session that weren't previously available as transplant sources."
+   "next_probe": "Check for newly-COMPLETED-C functions in the same TUs each future dispatch before re-deriving from scratch."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 34,
-   "statement": "Rewriting the loop as an explicit `i = start; do { ...unchanged body...; i++; } while (i < limit);` instead of `for (i = start; i < limit; i++) { ... }` is worse than the 38/204 baseline, but REFUTES ",
-   "kill_scope": "instance",
-   "measured_on": "s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, loop rewritten from for to do-while, no other change, no FAKE constructs present)",
-   "predicate_cite": "",
-   "result": "score=46, build_insns=195 (down from 198; target_insns=204 unchanged; overall weighted score still worse than 38 despite"
-  },
-  {
-   "session": 34,
-   "statement": "Applying the previously-killed idx2 hand-carried accumulator (idx2 = start*2 before the loop, idx2 += 2 in the increment step, both [i*2] reads replaced with [idx2]) on top of the NEW do-while chassis",
-   "kill_scope": "instance",
-   "measured_on": "s34 chassis (do-while chassis body + idx2 accumulator substituted at both table-index reads, func_80053614 s32-return fix + header externs unchanged, no FAKE constructs present)",
-   "predicate_cite": "",
-   "result": "score=66, build_insns=198 (up from the do-while-alone chassis's 195, back to parity with the for-loop+idx2 combination's"
-  },
   {
    "session": 35,
    "statement": "On the s34-banked do-while chassis (195 real insns), sharing the i*2 index computation into ONE local (`s32 idx = i * 2;`, consumed at both the flags-table and scale-table reads) produces worse codege",
@@ -906,6 +891,22 @@
    "measured_on": "s67 chassis (candidate.c's s22-s66-banked 38/204 body, unmodified -- read-only cross-reference against src/code6cac.c as committed at HEAD, no sandbox re-measurement needed since no new C form was pro",
    "predicate_cite": "",
    "result": "code6cac.c's `lim` is declared with the function's other locals and assigned ONCE before a goto-based retry loop, read a"
+  },
+  {
+   "session": 68,
+   "statement": "Gate (a) canonical-asm scan does not support a canonical-asm grant for this function on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "s68 chassis (candidate.c body + func_80053614 prerequisite applied), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "tier=LOW score=1/8 (204 insns); only S4 (front-loads) fires. S1/S2/S3/S5/S6/S7/S8 all absent."
+  },
+  {
+   "session": 68,
+   "statement": "Gate (b) no in-hand SOTN-master precedent exists for a closing construct on this residual, on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "s67 chassis, re-confirmed unchanged on s68 chassis (candidate.c body + func_80053614 prerequisite), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The only candidate precedent search on record (s67) remains negative: those two occurrences are single-call-site, non-lo"
   }
  ],
  "ladder_skip": 0,
