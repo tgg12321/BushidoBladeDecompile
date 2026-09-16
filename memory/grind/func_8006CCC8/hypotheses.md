@@ -409,3 +409,73 @@ restructuring, not a no-semantic-purpose device).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c HEAD, both the floor-39 pre-fix chassis and floor-23 post-fix chassis, permuter's own weighted scorer; no FAKE construct present in either chassis measured.
+
+## [s6, rederive] Sibling func_80056CB8 reached COMPLETED-C at its s72; re-checked and confirmed still signature/struct-idiom disjoint from func_8006CCC8 (dispatch brief's forced-rederive transplant probe).
+- mechanism: n/a -- transplant-applicability check, not a codegen-pass hypothesis.
+- probe: Read src/text1b.c:1813 (func_80056CB8's matched, committed body) -- `void func_80056CB8(s32 arg0)`, a hit-detection routine over pt0/pt1/hit0/hit1 stack arrays, no D_800A34FC/D_800A3524 reference.
+- result: Confirmed disjoint (1-arg void hit-detection vs our 3-arg s32-return D_800A34FC/D_800A3524 record-update function). No transplantable construct; consistent with every prior cross-check since func_80056CB8's own s54.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: n/a -- this is a signature/object-model comparison, not a chassis measurement.
+
+## [s6, rederive] Rewriting the repeated `*(s16 *)(mask + (u8 *)D_800A34FC + 0x28)` byte-pointer address expression as typed s16-array indexing `((s16 *)((u8 *)D_800A34FC + 0x28))[i]` (using the outer loop counter `i` directly instead of a separately-tracked `mask` local incremented by 2/iteration) flips the emitted addu operand order at all three D_800A34FC-relative address computations to index-first, matching target, and drops the honest floor from 23 to 20.
+- mechanism: GCC's commutative-add operand-order canonicalization differs between a direct pointer-int PLUS (`base + mask`, s4's byte-pointer-arithmetic spelling -- canonicalizes to base-first regardless of C source order, confirmed dead as a lever in s4) and the MULT-then-PLUS shape array-subscript lowering produces (`base + i*sizeof(s16)`) -- the latter preserves index-first operand order into the emitted addu. `mask` was semantically always `i * sizeof(s16)`; this is a more direct, equally truthful spelling of the same value, not a coercion (mask variable is removed, not hidden).
+- probe: sandbox --disable all before/after; pwsh tools/grinder/dump.ps1 func_8006CCC8 + hand-read of tmp/grind/func_8006CCC8/dumps/text1b.s at the three address-computation sites (all three now emit `addu $reg,$idx,$base` matching asm/funcs/func_8006CCC8.s's `addu $a0,$s3,$v0` shape).
+- result: 23 -> 20 (target_insns=189, build_insns 188 unchanged)
+- verdict: CONFIRMED
+
+## [s6, rederive] Reordering the outer for-loop's update clause from `i++, shift += 0x10` to `shift += 0x10, i++` (pure statement-order swap of two independent compound assignments, both still execute every iteration) drops the honest floor from 20 to 18.
+- mechanism: target's tail sequence (asm/funcs/func_8006CCC8.s:189-193) updates shift's register ($s2) BEFORE i's register ($s1), with the (now-eliminated) mask-tracking register's update in the loop-back-edge branch's delay slot -- strong evidence the original source's for-loop update-clause listed shift's update before i's. With the mask variable eliminated by the s6 array-index fix (FIX 1 above), matching the relative order of the two REMAINING update terms was the available lever.
+- probe: sandbox --disable all before/after; WSL engine.score.normalized_insns masked-opcode diff (tmp/grind/func_8006CCC8/s6/diff_probe.py) confirmed the addiu-order mismatch this fix targeted (target[170:171]='addiu s2,s2,16' vs ours[169:170]='addiu s3,s3,2' at floor 20) is gone at floor 18.
+- result: 20 -> 18 (target_insns=189, build_insns 188 unchanged)
+- verdict: CONFIRMED
+
+## [s6, rederive] Re-hoisting the byte17 named intermediate (s3-style single read of *(rec+0x17) before the i==0/else branch) on the floor-20 chassis regresses to 36; a flat if/else-if dispatch chain in target's literal compare order (==3, <4, ==4) on the same chassis regresses to 54.
+- mechanism: byte17 hoist -- n/a, register-allocation trade-off (see candidate.c header + rejected/byte17-hoist-on-floor20-chassis.c for full detail); the split-read-into-arms form (s5) remains strictly better on every chassis tested in this ledger, now including floor-20/18. Flat dispatch chain -- n/a; GCC 2.7.2's nested-if/else block-LAYOUT convention (which arm falls through vs is a forward jump), not the literal source compare order, is what the s4 nested form actually matches; restated in literal target compare order it does NOT reproduce target's physical layout.
+- probe: sandbox --disable all, each variant applied in isolation to the floor-20 chassis, immediately reverted after measurement.
+- result: byte17 hoist: 20 -> 36 (build_insns 188 -> 184). Flat literal-order chain: 20 -> 54 (build_insns unchanged at 188). Both reverted; candidate.c keeps the s5 split-read + s4 nested nested-if forms. Side-probed the mirror nested form (outer test field!=3 instead of field!=4) on the floor-18 chassis: scored an identical 18 (neutral).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD s6, floor-20 chassis (both regression probes) and floor-18 chassis (the neutral field!=3 side-probe); no FAKE construct present in any variant tested (all ordinary C restructurings).
+
+## Frontier for s7 (<=3, mechanism-grounded)
+
+1. **Field28-dispatch-chain residual (~8 of the remaining 18 floor points).** The masked-opcode diff (tmp/grind/func_8006CCC8/s6/diff_probe.py output, saved this session) shows target inserts extra insns around the field==4 compare / field>4 "skip" tail (`li v0,0x40; j @; addiu s5,s5,4`) that our nested-if layout doesn't reproduce verbatim, even though overall block ordering matches. Re-run PASS ATTRIBUTION against the s6 dumps (already fresh in tmp/grind/func_8006CCC8/dumps/, generated this session) and read `.jump`/`.jump2` for this region -- cross-jump block merging is the leading candidate mechanism (target's "j @; addiu s5,s5,4" tail looks like a cross-jump-merged shared exit, per [[cross-jump-store-tail-merge]]).
+2. **j-loop split-read-vs-hoisted-read RA trade-off (~10 of the remaining 18 points).** Confirmed AGAIN this session (2nd confirmation, s5 was the 1st) that split-read-into-arms beats the hoisted-single-read form despite the hoisted form matching target's literal asm shape insn-for-insn. This is a genuine local-alloc.c register-preference question, not a simple shape-match fix -- run `tools/ra_solver` / `inverse_compose.py classify` on this specific loop's register-conflict graph in a future solver-modality session (carried forward unchanged from s4/s5's own diagnosis, now with 2 independent confirmations instead of 1).
+3. Re-verify the function's prologue/epilogue and outer-loop increment-decrement arms (the `field<=0`/`>=lim` arms) haven't drifted from their s3-verified matching shape now that the address-computation spelling changed function-wide -- s3's hand-walk predates the s6 addressing rewrite and should be re-confirmed against the fresh dumps before assuming it's still exact.
+
+## [s6] Sibling func_80056CB8 (this session's forced-rederive trigger, reached COMPLETED-C at its own s72) is confirmed still signature/struct-idiom disjoint from func_8006CCC8 via its matched body at src/text1b.c:1813 -- no transplantable construct.
+- mechanism: n/a -- transplant-applicability check, not a codegen-pass hypothesis.
+- probe: Read src/text1b.c:1813, func_80056CB8's matched committed body.
+- result: 1-arg void hit-detection routine over pt0/pt1/hit0/hit1, no D_800A34FC/D_800A3524 reference -- disjoint from func_8006CCC8's 3-arg s32-return record-update body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: n/a -- signature/object-model comparison, not a chassis measurement
+
+## [s6] Rewriting the repeated *(s16 *)(mask + (u8 *)D_800A34FC + 0x28) byte-pointer address expression as typed s16-array indexing ((s16 *)((u8 *)D_800A34FC + 0x28))[i] (eliminating the separate mask local) flips all three D_800A34FC-relative addu operand orders to index-first, matching target, and drops the honest floor from 23 to 20.
+- mechanism: Array-subscript lowering produces a MULT(index,scale)-then-PLUS RTL shape rather than a direct pointer-int PLUS; GCC's commutative-add canonicalization preserves index-first operand order for that shape where it did not for the byte-pointer-arithmetic PLUS shape s4 had measured dead.
+- probe: sandbox --disable all before/after; pwsh tools/grinder/dump.ps1 func_8006CCC8 + hand-read of tmp/grind/func_8006CCC8/dumps/text1b.s at the three address-computation sites.
+- result: 23 -> 20 (target_insns=189, build_insns 188 unchanged); all three addu sites now emit addu $reg,$idx,$base matching target's addu $a0,$s3,$v0 shape.
+- verdict: CONFIRMED
+
+## [s6] Reordering the outer for-loop's update clause from i++, shift += 0x10 to shift += 0x10, i++ (pure statement-order swap, both terms still execute every iteration) drops the honest floor from 20 to 18.
+- mechanism: Target's tail sequence updates shift's register ($s2) before i's register ($s1), with the now-eliminated mask-tracking register's update in the loop-back-edge branch's delay slot -- evidence the original source's update-clause listed shift before i.
+- probe: sandbox --disable all before/after; WSL engine.score.normalized_insns masked-opcode diff (tmp/grind/func_8006CCC8/s6/diff_probe.py) confirmed the targeted addiu-order mismatch is gone at floor 18.
+- result: 20 -> 18 (target_insns=189, build_insns 188 unchanged)
+- verdict: CONFIRMED
+
+## [s6] Re-hoisting the s3-style byte17 named intermediate (single read of *(rec+0x17) before the i==0/else branch, matching target's own unconditional-both-loads asm shape) on the floor-20 chassis regresses the honest floor to 36.
+- mechanism: n/a -- register-allocation trade-off; the split-read-into-arms form (s5) folds to fewer insns when hoisted (184 vs 188) but scores worse by the levenshtein metric, re-confirming s5's original 39-vs-23 finding on a materially more-advanced chassis.
+- probe: sandbox --disable all, hoisted-byte17 variant applied in isolation to the floor-20 chassis, then reverted.
+- result: 20 -> 36 (build_insns 188 -> 184); reverted. Saved to memory/grind/func_8006CCC8/rejected/byte17-hoist-on-floor20-chassis.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD s6, floor-20 chassis; no FAKE construct present (ordinary C restructuring)
+
+## [s6] Rewriting the field28 dispatch as a flat if/else-if chain in target's literal runtime compare order (==3 first, <4 second, ==4 third) on the floor-20 chassis regresses the honest floor to 54.
+- mechanism: GCC 2.7.2's nested-if/else block-LAYOUT convention (which arm falls through vs. is a forward jump), not the literal C-level compare order, is what the s4 nested form actually matches; restated in literal target compare order the C no longer reproduces target's physical block layout.
+- probe: sandbox --disable all, flat-chain variant applied in isolation to the floor-20 chassis, then reverted. Also side-probed the mirror nested form (outer test field != 3 instead of field != 4) on the floor-18 chassis.
+- result: Flat literal-order chain: 20 -> 54 (build_insns unchanged at 188); reverted. Saved to memory/grind/func_8006CCC8/rejected/flat-target-literal-compare-order-dispatch.c. Mirror nested form (field != 3 outer): scored an identical 18 (neutral, not separately saved).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD s6, floor-20 chassis (flat-chain probe) and floor-18 chassis (neutral field!=3 side-probe); no FAKE construct present in any variant

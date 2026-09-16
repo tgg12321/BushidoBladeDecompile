@@ -1,8 +1,8 @@
 {
  "func": "func_8006CCC8",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -33,18 +33,29 @@
    "floor": 23,
    "modality": "permuter",
    "headline": "s5 (permuter): built a hand-crafted full-TU permuter workspace (the s4-blocked import.py path is still broken); a directed campaign found the SOTN-sanctioned duplicate-read-into-branch-arms fix (drop "
+  },
+  {
+   "session": 6,
+   "floor": 18,
+   "modality": "rederive",
+   "headline": "rederive: array-index D_800A34FC addressing + update-clause reorder drop the honest floor 23 -> 18 (2 confirmed levers, 3 instance kills, sibling transplant re-confirmed disjoint)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The floor-23 residual is the addu operand-order canonicalization (3 sites) plus a local-alloc.c register-preference tie in the for(j) record loop, both carried forward unchanged from s4's diagnosis.",
-   "mechanism": "GCC's fold-const.c re-canonicalizes the commutative pointer-plus-int add independent of source spelling (measured dead in s4); the RA tie is unconfirmed pass attribution (candidate: local-alloc.c's register-preference/conflict-graph resolution).",
-   "next_probe": "Run PASS ATTRIBUTION fresh (tools/grinder/dump.ps1 func_8006CCC8) against the NEW floor-23 chassis (the s4 dumps in tmp/grind/func_8006CCC8/dumps/ are stale, from the floor-39 chassis) before assuming the diagnosis is unchanged; classify the for(j) loop's register-conflict graph via tools/ra_solver / inverse_compose.py classify in a future solver-modality session."
+   "hypothesis": "The remaining ~8-point field28-dispatch-chain mismatch (target inserts extra insns around the field==4 compare / field>4 skip tail that our nested-if layout doesn't reproduce verbatim) is a cross-jump block-suffix merge target performs that our build doesn't.",
+   "mechanism": "Candidate: jump2's find_cross_jump merging target's field>4 skip tail with another exit path (per [[cross-jump-store-tail-merge]]) -- NOT yet confirmed via a pass dump this session.",
+   "next_probe": "Read .jump/.jump2 in the freshly-regenerated tmp/grind/func_8006CCC8/dumps/ for this region specifically before attempting any further C-level restructure."
   },
   {
-   "hypothesis": "The permuter's own workspace (now validated and reusable) could find further levers with more directed PERM_* macro annotation on the for(j) loop specifically, rather than blind random mutation over the whole function.",
-   "mechanism": "n/a -- tooling capability, not a codegen claim.",
-   "next_probe": "tools/permuter_annotate.py --func func_8006CCC8 --hint <rule-slug> once the RA-solver classification (above) names a specific lever shape to annotate toward."
+   "hypothesis": "The j-loop split-read-vs-hoisted-read residual (~10 of the remaining 18 points) is a genuine local-alloc.c register-preference tie, not a simple shape-match fix -- now confirmed twice (s5, s6) that split-read wins despite NOT matching target's literal asm shape.",
+   "mechanism": "Candidate: local-alloc.c's register-preference/conflict-graph resolution differs between the two C shapes in a way that favors the split-read form's register assignment even though it emits more instructions.",
+   "next_probe": "Classify this loop's register-conflict graph via tools/ra_solver / inverse_compose.py classify in a future solver-modality session."
+  },
+  {
+   "hypothesis": "The s3-verified prologue/epilogue and outer-loop increment-decrement arm structural match may have drifted since the s6 address-computation rewrite changed the function's register allocation function-wide.",
+   "mechanism": "n/a -- verification/localization question, not a codegen-pass hypothesis.",
+   "next_probe": "Re-hand-walk the fresh s6 dumps against asm/funcs/func_8006CCC8.s for these regions before assuming s3's structural-match claim still holds unchanged."
   }
  ],
  "judge_constraints": [],
@@ -113,6 +124,30 @@
    "measured_on": "src/text1b.c HEAD, both the floor-39 pre-fix chassis and floor-23 post-fix chassis, permuter's own weighted scorer; no FAKE construct present in either chassis measured.",
    "predicate_cite": "",
    "result": "floor-39 chassis: base 1480, best find 870 (the accepted fix), no sub-870 result. floor-23 chassis (post-fix): base 1190"
+  },
+  {
+   "session": 6,
+   "statement": "Sibling func_80056CB8 (this session's forced-rederive trigger, reached COMPLETED-C at its own s72) is confirmed still signature/struct-idiom disjoint from func_8006CCC8 via its matched body at src/tex",
+   "kill_scope": "instance",
+   "measured_on": "n/a -- signature/object-model comparison, not a chassis measurement",
+   "predicate_cite": "",
+   "result": "1-arg void hit-detection routine over pt0/pt1/hit0/hit1, no D_800A34FC/D_800A3524 reference -- disjoint from func_8006CC"
+  },
+  {
+   "session": 6,
+   "statement": "Re-hoisting the s3-style byte17 named intermediate (single read of *(rec+0x17) before the i==0/else branch, matching target's own unconditional-both-loads asm shape) on the floor-20 chassis regresses ",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c HEAD s6, floor-20 chassis; no FAKE construct present (ordinary C restructuring)",
+   "predicate_cite": "",
+   "result": "20 -> 36 (build_insns 188 -> 184); reverted. Saved to memory/grind/func_8006CCC8/rejected/byte17-hoist-on-floor20-chassi"
+  },
+  {
+   "session": 6,
+   "statement": "Rewriting the field28 dispatch as a flat if/else-if chain in target's literal runtime compare order (==3 first, <4 second, ==4 third) on the floor-20 chassis regresses the honest floor to 54.",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c HEAD s6, floor-20 chassis (flat-chain probe) and floor-18 chassis (neutral field!=3 side-probe); no FAKE construct present in any variant",
+   "predicate_cite": "",
+   "result": "Flat literal-order chain: 20 -> 54 (build_insns unchanged at 188); reverted. Saved to memory/grind/func_8006CCC8/rejecte"
   }
  ],
  "ladder_skip": 0,
@@ -128,7 +163,7 @@
    "session": 72,
    "at": "2026-09-16T16:56:41.455153+00:00",
    "headline": "func_80056CB8 COMPLETED-C",
-   "consumed": null
+   "consumed": 6
   }
  ]
 }

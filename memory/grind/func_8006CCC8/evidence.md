@@ -356,3 +356,129 @@ change.
 - [s5] Hand-built full-TU permuter workspace (tmp/grind/func_8006CCC8/s5/perm_ws) mirroring tools/mar_perm_workspace.sh's marionation_Exec precedent: flatten src/text1b.c via the project's own cpp+CC_FLAGS pipeline with -DPERMUTER (so INCLUDE_ASM/INCLUDE_RODATA expand to no-ops per include/include_asm.h's PERMUTER guard, avoiding sibling-.s inclusion entirely); compile.sh runs the real cc1|prologue_fix|maspsx(full flags incl --prefill-label-funcs)|RODATA_ALIGN2_FILES-sed|multu_pad|as pipeline and extracts the func_8006CCC8 region by .globl/.end markers (the maspsx-processed stream uses raw ELF-style directives, not the glabel/endlabel asm-macro form asm/funcs/*.s uses); target.o assembled from asm/funcs/func_8006CCC8.s + prelude.inc. Validated against the engine sandbox's own build_insns count both before (184) and after (188) the fix.
 
 - [s5] Sandbox --disable all confirms floor 23 (target_insns=189, build_insns=188) with the candidate applied to src/text1b.c as of end of session; no cheat_asm introduced (cheat_asm_stripped unchanged at 137, all from other still-INCLUDE_ASM functions in the same TU, not this one).
+
+## s6 (rederive — forced by sibling func_80056CB8 reaching floor 0)
+
+CHASSIS RE-CONFIRMATION: src/text1b.c still carried
+`INCLUDE_ASM("asm/funcs", func_8006CCC8);` at s6 dispatch (repeating the
+s1->s2->s3->s4 stale-HEAD pattern). Re-applied the s5 candidate.c body
+verbatim (fixing the extern forward-declaration to
+`extern s32 func_8006CCC8(s32 *, s32 *, s16);` again) and confirmed
+`sandbox --disable all` == 23 before making any new change — matches the
+ledger's recorded floor exactly.
+
+SIBLING TRANSPLANT PROBE (mandated first move this session per the
+forced-rederive dispatch): read `src/text1b.c:1813`, func_80056CB8's
+matched, committed body (`void func_80056CB8(s32 arg0)` — a hit-detection
+routine over `pt0`/`pt1`/`hit0`/`hit1` stack arrays with no reference to
+`D_800A34FC` or `D_800A3524`). Confirmed still signature- and
+struct-idiom-level disjoint from func_8006CCC8, consistent with every
+prior cross-check in this ledger since func_80056CB8's own s54. No
+transplantable construct — the two fixes below were independently
+re-derived, not sourced from the sibling.
+
+FIX 1 (23 -> 20): the s4 evidence had already identified and measured DEAD
+(as a source-level lever) that swapping the C-level operand order of
+`mask + (u8 *)D_800A34FC + 0x28` vs `(u8 *)D_800A34FC + mask + 0x28`
+produced no change in the emitted `addu`'s operand order (GCC's
+commutative-add canonicalization ignored source spelling for that
+byte-pointer-arithmetic shape). This session re-examined the underlying
+value: `mask` was semantically ALWAYS `i * sizeof(s16)` (incremented by 2
+each outer-loop iteration in lockstep with `i`), so it was rewritten as
+direct typed-array indexing: `((s16 *)((u8 *)D_800A34FC + 0x28))[i]` at
+all 7 use sites, and the now-dead `mask` local (declaration, init, and
+per-iteration increment) removed entirely. `sandbox --disable all`:
+score 20 (down from 23), build_insns unchanged at 188. Re-dumped
+(`pwsh tools/grinder/dump.ps1 func_8006CCC8`) and confirmed in
+`tmp/grind/func_8006CCC8/dumps/text1b.s` (lines ~16886-16958 at dump time)
+that all three `D_800A34FC`-relative `addu`s now emit index-register-first
+(`addu $4,$19,$2`), matching target's own `addu $a0,$s3,$v0`
+(asm/funcs/func_8006CCC8.s:76 and two further occurrences) — the exact
+operand order s4 could not reach via the byte-pointer-arithmetic spelling.
+Mechanism: array-subscript lowering produces a MULT(index, scale)-then-PLUS
+RTL shape rather than a direct pointer-int PLUS, and GCC's canonicalization
+of THAT shape preserves index-first ordering where the direct-PLUS shape
+did not.
+
+FIX 2 (20 -> 18): with `mask` eliminated by FIX 1, the outer for-loop's
+update-clause had only two remaining independent terms (`i++`,
+`shift += 0x10`). Target's tail (asm/funcs/func_8006CCC8.s:189-193) updates
+`shift`'s register (`$s2`) BEFORE `i`'s register (`$s1`), with the (now-
+eliminated) mask-tracking register's own update pushed into the loop-back-
+edge branch's delay slot — evidence the original source's update-clause
+listed the shift term before the i term. Reordered the C from
+`i++, shift += 0x10` to `shift += 0x10, i++` (pure statement-order swap,
+both terms still execute every iteration, no semantic change).
+`sandbox --disable all`: score 18 (down from 20), build_insns unchanged at
+188. Confirmed via a WSL-side masked-opcode diff
+(`tmp/grind/func_8006CCC8/s6/diff_probe.py`, adapted from s4's own script)
+that the specific mismatch this fix targeted (`target 'addiu s2,s2,16' vs
+ours 'addiu s3,s3,2'` at the equivalent position, floor 20) is gone at
+floor 18.
+
+TWO REJECTED PROBES this session (full detail in
+`memory/grind/func_8006CCC8/rejected/`):
+- Re-hoisting the s3-style `byte17` named intermediate (single read of
+  `*(rec+0x17)` before the i==0/else branch, matching target's own
+  unconditional-both-loads asm shape insn-for-insn) on the floor-20
+  chassis: REGRESSED to 36 (build_insns 188 -> 184 — cc1 DOES fold the
+  loads, but the resulting register allocation scores worse by the
+  levenshtein metric). This re-confirms s5's original 39-vs-23 finding
+  on a materially different, more-advanced chassis — the split-read form
+  is robustly better, not a chassis-specific fluke.
+- Rewriting the field28 dispatch as a FLAT if/else-if chain in target's
+  literal runtime compare order (==3 first, <4 second, ==4 third, read
+  directly off the asm's beq/slti/beq sequence) on the floor-20 chassis:
+  REGRESSED to 54. Confirms (again) that GCC 2.7.2's nested-if/else
+  block-LAYOUT convention — which arm falls through vs. which is a
+  forward jump — is the lever that matches target here, NOT the literal
+  source-level compare order; the s4 nested form (`if (field != 4) { if
+  (field != 3) { if (field < 4) {...} } else {...} } else {...}`) tests
+  field==4 FIRST at the RTL/asm level despite not matching target's
+  apparent runtime compare order. Side-probed the mirror nested form
+  (outer test `field != 3`) on the floor-18 chassis: scored an IDENTICAL
+  18 (neutral, not separately saved) — kept `field != 4` for s4-lineage
+  continuity.
+
+REMAINING GAP AT FLOOR 18 (from the WSL masked-opcode diff, saved as
+`tmp/grind/func_8006CCC8/s6/diff_probe.py` output, reproducible any time):
+(a) a ~8-insn field28-dispatch mismatch around the field==4 compare / the
+field>4 "skip" tail (target inserts `li v0,0x40; j @; addiu s5,s5,4` in a
+shape our nested-if layout doesn't reproduce verbatim — candidate mechanism:
+cross-jump block-suffix merging, NOT yet confirmed via `.jump`/`.jump2`
+this session); (b) the j-loop split-read-vs-hoisted-read RA trade-off,
+now confirmed twice (s5, s6) that split-read wins despite not matching
+target's literal asm shape — a genuine `local-alloc.c` register-preference
+question, candidate for `tools/ra_solver` in a future solver-modality
+session.
+
+## Artifacts
+
+- `tmp/grind/func_8006CCC8/s6/diff_probe.py` — copy of s4's WSL masked-
+  opcode diff script (reused verbatim, no changes needed); run at floor 20
+  and floor 18, output captured in this evidence entry.
+- `tmp/grind/func_8006CCC8/dumps/` — fresh `pwsh tools/grinder/dump.ps1
+  func_8006CCC8` output for the floor-20 chassis (regenerated once this
+  session; the floor-18 chassis's addu/addiu shapes were confirmed via the
+  diff_probe.py masked-opcode diff rather than a second full re-dump, since
+  the fix was localized to two known instructions).
+
+- [s6] Sibling func_80056CB8 (this session's forced-rederive trigger, reached COMPLETED-C at its own s72, 2026-09-16) confirmed still signature/struct-idiom disjoint from func_8006CCC8 via its matched body at src/text1b.c:1813 -- no transplantable construct.
+
+- [s6] Array-index addressing rewrite (`((s16*)((u8*)D_800A34FC+0x28))[i]` replacing `*(s16*)(mask+(u8*)D_800A34FC+0x28)`, mask variable eliminated) flips all three D_800A34FC-relative addu operand orders to index-first matching target, dropping the floor 23 -> 20 -- closes the exact residual s4 had measured dead under the old byte-pointer-arithmetic spelling.
+
+- [s6] For-loop update-clause reorder (`shift += 0x10, i++` replacing `i++, shift += 0x10`, matching target's own tail-instruction order) drops the floor 20 -> 18.
+
+- [s6] Two rejected probes (byte17 re-hoist, flat literal-compare-order dispatch chain) both regressed the floor when tested on the floor-20 chassis -- confirms the s4/s5 findings about these specific construct choices generalize to the more-advanced s6 chassis, not just the chassis they were originally measured on.
+
+- [s6] src/text1b.c still carried INCLUDE_ASM at s6 dispatch (repeat of the s1-s5 stale-HEAD pattern); re-applied the s5 candidate.c body and confirmed sandbox --disable all == 23 before making any new change.
+
+- [s6] Sibling func_80056CB8's matched body (src/text1b.c:1813) has no D_800A34FC/D_800A3524 reference and a disjoint 1-arg void signature -- consistent with every prior cross-check since its own s54.
+
+- [s6] Array-index addressing fix (mask variable eliminated, replaced with ((s16*)((u8*)D_800A34FC+0x28))[i]) flips all three D_800A34FC-relative addu operand orders to index-first, matching target -- closes the exact residual s4 had measured dead under the old byte-pointer-arithmetic spelling.
+
+- [s6] For-loop update-clause reorder (shift += 0x10, i++) matches target's own tail-instruction order (shift register updated before i register, per asm/funcs/func_8006CCC8.s:189-193) and drops the floor further.
+
+- [s6] Both rejected probes (byte17 re-hoist, flat literal-compare-order dispatch) regressed when tested on the floor-20 chassis, confirming the s4/s5 findings about these specific construct choices generalize to the more-advanced s6 chassis rather than being chassis-specific artifacts.
+
+- [s6] Final resident src/text1b.c state measures sandbox --disable all score 18 (target_insns=189, build_insns=188), confirmed as the last action this session.

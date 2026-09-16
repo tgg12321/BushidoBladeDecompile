@@ -2187,3 +2187,4 @@
 - 2026-09-16 11:11 func_80056CB8 s70 [enumerate] floor=38: s70 enumerate: 32nd consecutive flat 38/204 re-confirmation; closed the last untried hand-derived combo (OR-swap + arm-negate) in the s37/38/60-flagged interior-if/else dispatch block at 48/204 (worse than either alone); sibling auto-return already resolved non-transplantable at s69.
 - 2026-09-16 11:15 func_80056CB8 s71 [structural] floor=38: s71 structural: 33rd consecutive flat 38/204; killed 4 untried pairwise inter-array declaration-order swaps (all worse: 85/52/44/44), confirming the baseline order is a local optimum.
 - 2026-09-16 11:56 func_80056CB8 COMPLETED-C after 72 sessions (closer: s72 [synthesis]).
+- 2026-09-16 12:06 func_8006CCC8 s6 [rederive] floor=18: rederive: array-index D_800A34FC addressing + update-clause reorder drop the honest floor 23 -> 18 (2 confirmed levers, 3 instance kills, sibling transplant re-confirmed disjoint)

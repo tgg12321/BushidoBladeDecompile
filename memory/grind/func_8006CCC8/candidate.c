@@ -1,93 +1,123 @@
-/* func_8006CCC8 — src/text1b.c — session s5 (permuter modality)
- * Sandbox --disable all floor at end of s5: 23 (target_insns=189, build_insns=188).
- * DOWN FROM 39 (s4 floor) via one structural fix this session, found by a
- * DIRECTED decomp-permuter campaign on a hand-built full-TU workspace
- * (tmp/grind/func_8006CCC8/s5/perm_ws — see below for why a hand-built
- * workspace was required; the s4-blocked `import.py` path is still broken).
+/* func_8006CCC8 — src/text1b.c — session s6 (rederive modality)
+ * Sandbox --disable all floor at end of s6: 18 (target_insns=189, build_insns=188).
+ * DOWN FROM 23 (s5 floor) via two structural fixes this session, both pure
+ * C, no FAKE constructs, no new sanctioned-family claims.
  *
- * This candidate IS applied to src/text1b.c as of end of s5 (2026-09-16) — it
+ * This candidate IS applied to src/text1b.c as of end of s6 (2026-09-16) — it
  * is the resident WORKING-TREE body (never committed; asm-until-matched keeps
  * main as INCLUDE_ASM until sandbox reaches 0).
  *
- * s5 change from the s4 body (measured this session, both arms):
+ * s6 changes from the s5 body (measured this session):
  *
- * DROPPED the `byte17` named intermediate (`byte17 = *(rec + 0x17);` read once
- * before the i==0/else branch, then reused in both arms) and instead read
- * `*(rec + 0x17)` DIRECTLY at each of the two use sites inside the branch arms.
- * This is the SOTN-sanctioned "duplicate-read into branch arms"
- * ([[split-read-defeats-hoist]]) family — ordinary C, ordinary semantics
- * (the record byte read has no side effects, so reading it once vs. reading
- * it twice — once per arm, each execution taking exactly one of the two arms
- * — is behaviorally identical), no FAKE annotation needed (this family carries
- * no annotation prerequisite, unlike the constant-holder/dead-store carve-outs).
- * Applied symmetrically to BOTH the field28==3 (+0x1A) and field28==4 (+0x1D)
- * inner `for(j...)` record loops, since they are structurally identical
- * (verified: same masked/byte17/i==0 shape in both arms since s4).
+ * FIX 1 (23 -> 20): rewrote the repeated `*(s16 *)(mask + (u8 *)D_800A34FC +
+ * 0x28)` byte-pointer-arithmetic address expression (at all 7 use sites) as
+ * `((s16 *)((u8 *)D_800A34FC + 0x28))[i]` — typed s16-array indexing by the
+ * outer loop counter `i` directly, instead of a separately-tracked `mask`
+ * local incremented by 2 each iteration. `mask` was semantically ALWAYS
+ * `i * sizeof(s16)`; expressing it as array indexing is the more direct,
+ * equally-truthful spelling of the same value and removes a redundant local.
+ * Measured effect: this flips the emitted `addu` operand order at all three
+ * `D_800A34FC`-relative address computations from base-pointer-first
+ * (`addu $4,$2,$19` — our s5 shape) to index-first (`addu $4,$19,$2`),
+ * matching target's own `addu $a0,$s3,$v0` (mask/index register first, base
+ * second) at asm/funcs/func_8006CCC8.s:76 (and the two other occurrences).
+ * This is the EXACT residual s4's evidence had identified and measured DEAD
+ * as a source-level lever under the old byte-pointer-arithmetic spelling
+ * (GCC's commutative-add canonicalization ignored `mask + base` vs
+ * `base + mask` operand order under that spelling) — restated as typed array
+ * indexing, the canonicalization path differs (array subscripting lowers
+ * through a MULT-then-PLUS shape rather than a direct pointer-int PLUS) and
+ * the operand order DOES follow the source spelling this way. Confirmed via
+ * `pwsh tools/grinder/dump.ps1 func_8006CCC8` + hand-read of the regenerated
+ * `tmp/grind/func_8006CCC8/dumps/text1b.s` at the three address-computation
+ * sites.
  *
- * PROVENANCE: found by permuter iteration `output-870-2` (best find of a
- * ~1900-iteration campaign against the floor-39 chassis; base_score 1480 ->
- * 870 permuter-internal weighted score), then independently APPLIED BY HAND
- * to src/text1b.c and measured with the engine's own sandbox (not trusted
- * from the permuter's own scorer, which uses a different weighted metric —
- * see [[scoring-systems]]) — sandbox confirmed 39 -> 23. The permuter's raw
- * mutation also inserted a stray `;` (empty statement, an artifact of its
- * text-diff mutation engine deleting the `byte17 = ...;` line via replacement
- * rather than clean deletion) — that artifact was NOT carried into the C
- * source; the candidate deletes the `byte17` local and its one statement
- * cleanly, which is the ordinary-C form of the SAME construct.
+ * FIX 2 (20 -> 18): reordered the outer `for` loop's update-clause from
+ * `i++, shift += 0x10` to `shift += 0x10, i++` (pure reordering of two
+ * independent, side-effect-only compound assignments — both still execute
+ * every iteration, C's comma operator sequences left-to-right exactly as
+ * written, no semantic change). Target's own tail sequence
+ * (asm/funcs/func_8006CCC8.s:189-193) computes `shift`'s register (`$s2`)
+ * update BEFORE `i`'s register (`$s1`) update, with the (former, now-removed)
+ * `mask`-tracking register's update pushed into the loop-back-edge branch's
+ * DELAY SLOT — i.e., target's source almost certainly wrote the `mask`-like
+ * update LAST in its own for-loop update-clause. Since FIX 1 eliminated the
+ * explicit `mask` variable (folded into array indexing), there is no longer
+ * a THIRD update-clause term to place last; matching target's `shift`-before-
+ * `i` relative order for the two REMAINING terms was the closest available
+ * spelling and measured a clean 2-point drop with the delay-slot fill
+ * landing correctly (confirmed via the WSL `engine.score.normalized_insns`
+ * masked-opcode diff, `tmp/grind/func_8006CCC8/s6/diff_probe.py`).
  *
- * OTHER PERMUTER FINDS THIS SESSION — REJECTED, NOT CHEATS-BY-OMISSION:
- * every other novel find surfaced by ~5.9k combined iterations across two
- * campaigns (floor-39 chassis then re-seeded on the floor-23 chassis) was
- * either (a) a dead-conditional-store / address-of-local RA-steering
- * construct with no semantic purpose (`s32 *new_var; ...; new_var = &masked;
- * ...; *new_var` — Lever-D-shaped, no family covers it, would need a
- * ruling-request, not worth it since it didn't even reach a better score than
- * the accepted split-read form), or (b) an outright INCORRECT mutation that
- * corrupts the outer loop's live `mask` accumulator (`mask = *(rec + 0x17);
- * byte17 = mask;` inside the j-loop — `mask` is read again at the TOP of the
- * NEXT outer-loop iteration via `mask += 2` and the next field28 address
- * computation, so overwriting it inside the inner loop changes runtime
- * behavior, not just bytes for this one input — rejected on correctness
- * grounds regardless of cheat status). Neither was surfaced as a candidate.
- * See memory/grind/func_8006CCC8/rejected/ for both, and the s5 evidence.md
- * entry for full detail.
+ * REJECTED THIS SESSION (see memory/grind/func_8006CCC8/rejected/):
+ *   - byte17-hoist-on-floor20-chassis.c — re-testing the s3-style hoisted
+ *     `byte17` local (single read of *(rec+0x17) before the i==0/else
+ *     branch, matching target's own unconditional-both-loads asm shape) on
+ *     the floor-20 chassis: REGRESSED 20 -> 36. The s5 split-read-into-arms
+ *     form (this candidate's actual shape) remains strictly better on every
+ *     chassis measured across this whole ledger.
+ *   - flat-target-literal-compare-order-dispatch.c — rewriting the field28
+ *     dispatch as a flat if/else-if chain in target's literal runtime
+ *     compare order (==3, then <4, then ==4, matching the asm's beq/slti/beq
+ *     read order) REGRESSED 20 -> 54. The nested form (`if (field != 4) {
+ *     if (field != 3) { if (field < 4) {...} } else {...} } else {...}`,
+ *     this candidate's actual shape, from s4) does not preserve the literal
+ *     compare order but DOES match target's physical block LAYOUT, which is
+ *     what actually matters for GCC 2.7.2's nested-if/else emission. Also
+ *     side-probed the mirror nested form (outer test `field != 3` instead of
+ *     `field != 4`): scored an IDENTICAL 18 on this chassis (neutral, not
+ *     separately saved) — the two nested-outer-test choices are
+ *     interchangeable here; kept `field != 4` for s4-lineage continuity.
  *
- * KNOWN REMAINING GAP (floor 23, carried forward from s4's analysis, NOT
- * re-measured this session but still visible in the workspace's objdump
- * diff): the same two residual shapes s4 identified —
- *   (a) THREE `addu` operand-order flips at the `mask + (u8*)D_800A34FC +
- *       0x28` address computations (target mask-register-first, our build
- *       base-pointer-first) — s4 measured this dead as a source-level lever
- *       (GCC's fold-const.c re-canonicalizes the commutative add
- *       independent of source spelling).
- *   (b) A register-allocation difference inside the `for (j...)` record loop
- *       (target keeps the record pointer in $v1 and the mask-shift result in
- *       $a2 — the same register the loop's shift-amount source uses — vs our
- *       build's $a1/$a3 split) — s4 flagged this as a genuine local-alloc.c
- *       register-preference tie, candidate for `tools/ra_solver` /
- *       `inverse_compose.py classify` in a future solver-modality session.
- * These were NOT re-probed this session (the split-read fix already dropped
- * 16 of the 39 floor points); the next session should re-run PASS
- * ATTRIBUTION (`tools/grinder/dump.ps1 func_8006CCC8`) fresh against the
- * floor-23 chassis before assuming s4's diagnosis still applies unchanged.
+ * KNOWN REMAINING GAP (floor 18, from this session's
+ * tmp/grind/func_8006CCC8/s6/diff_probe.py masked-opcode diff):
+ *   (a) A ~8-insn field28-dispatch-chain mismatch (diff indices ~86-95):
+ *       target's asm inserts extra insns around the field==4 compare / the
+ *       field>4 "skip" tail (`li v0,0x40; j @; addiu s5,s5,4`) that our
+ *       build's nested-if physical layout does not reproduce in that exact
+ *       shape, even though the overall block ordering (default nearest,
+ *       then +0x1A case, then +0x1D case) matches per s4's original
+ *       full-disassembly read. NOT re-diagnosed at the RTL/pass level this
+ *       session — next session should re-run PASS ATTRIBUTION
+ *       (`pwsh tools/grinder/dump.ps1 func_8006CCC8`, already fresh as of
+ *       this session's dumps in tmp/grind/func_8006CCC8/dumps/) and read
+ *       `.jump`/`.jump2` for this region specifically (cross-jump block
+ *       merging is the most likely candidate mechanism given the "extra"
+ *       vs "missing" insn shape in the diff).
+ *   (b) The j-loop split-read-vs-hoisted-read residual (diff indices
+ *       ~125-132, ~155-162): target keeps the s3-style single hoisted
+ *       `*(rec+0x17)` read before the i==0/else branch; this candidate uses
+ *       the s5 split-read-into-arms form, which is WORSE in raw insn-shape
+ *       match to target but scores BETTER overall (confirmed both directions
+ *       this session — see the byte17-hoist rejected form above). This is a
+ *       genuine register-allocation trade-off, not a simple "match target's
+ *       shape" fix — the two forms were measured head-to-head twice now
+ *       (s5's original 39-vs-23 test, and this session's 20-vs-36 retest)
+ *       and split-read wins both times on this chassis lineage. Candidate
+ *       for `tools/ra_solver` / `inverse_compose.py classify` in a future
+ *       solver-modality session, as s4/s5 already flagged.
  *
  * Structure derived from m2c --valid-syntax over asm/funcs/func_8006CCC8.s
- * (s1 provenance) + a full manual read of the target disassembly (s3) + the
- * nested if/else + named-intermediate restructure (s4) + this session's
- * directed-permuter split-read fix (s5). Field layout cross-checked against
- * sibling func_8006CBD4 (same TU, same D_800A34FC / D_800A3524 struct idiom,
- * unchanged since s1). Sibling func_80056CB8 (same TU, floor 38 since its
- * s22, 68 sessions) re-checked this session and remains signature-level
- * disjoint (3-arg pointer-taking s32-return vs its own 1-arg void) — no
- * transplantable lever, consistent with every prior cross-check since s54 of
- * that ledger.
+ * (s1) + full manual disassembly read (s3) + nested if/else + named-
+ * intermediate restructure (s4) + directed-permuter split-read fix (s5) +
+ * this session's array-index addressing rewrite + update-clause reorder
+ * (s6). Field layout cross-checked against sibling func_8006CBD4 (same TU,
+ * same D_800A34FC/D_800A3524 struct idiom, unchanged since s1). Sibling
+ * func_80056CB8 (same TU, floor 38 through its own s71) reached COMPLETED-C
+ * at its s72 (2026-09-16) — re-checked this session (s6, forced rederive
+ * from the sibling-progress notice): its matched body
+ * (`void func_80056CB8(s32 arg0)`, src/text1b.c:1813) is a hit-detection
+ * routine over `pt0`/`pt1`/`hit0`/`hit1` stack arrays with NO reference to
+ * `D_800A34FC` or `D_800A3524` and a completely disjoint 1-arg signature —
+ * remains signature- and struct-idiom-level disjoint, consistent with every
+ * prior cross-check since its own s54. No transplantable construct; the two
+ * fixes this session were independently re-derived from func_8006CCC8's own
+ * residual diagnosis, not sourced from the sibling.
  */
 s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     s32 i;
     s16 lim;
     s32 shift;
-    s32 mask;
     s32 nib;
     s32 fade;
     s32 j;
@@ -107,28 +137,27 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     nib = 0xF;
     fade = 0;
     shift = 0;
-    mask = 0;
-    for (; i < 2; i++, shift += 0x10, mask += 2) {
+    for (; i < 2; shift += 0x10, i++) {
         t = arg2;
         lim = ((t >> i) & 1) ? 4 : 5;
 
         if (*arg1 & (0x1000 << shift)) {
             func_8005C650(0, 0x7F, 0x7F);
-            if (*(s16 *)(mask + (u8 *)D_800A34FC + 0x28) <= 0) {
-                *(s16 *)(mask + (u8 *)D_800A34FC + 0x28) = lim;
+            if (((s16 *)((u8 *)D_800A34FC + 0x28))[i] <= 0) {
+                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = lim;
             } else {
-                *(s16 *)(mask + (u8 *)D_800A34FC + 0x28) = (s16)(*(s16 *)(mask + (u8 *)D_800A34FC + 0x28) - 1);
+                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = (s16)(((s16 *)((u8 *)D_800A34FC + 0x28))[i] - 1);
             }
         } else if (*arg1 & (0x4000 << shift)) {
             func_8005C650(0, 0x7F, 0x7F);
-            if (*(s16 *)(mask + (u8 *)D_800A34FC + 0x28) >= lim) {
-                *(s16 *)(mask + (u8 *)D_800A34FC + 0x28) = 0;
+            if (((s16 *)((u8 *)D_800A34FC + 0x28))[i] >= lim) {
+                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = 0;
             } else {
-                *(s16 *)(mask + (u8 *)D_800A34FC + 0x28) = (s16)(*(s16 *)(mask + (u8 *)D_800A34FC + 0x28) + 1);
+                ((s16 *)((u8 *)D_800A34FC + 0x28))[i] = (s16)(((s16 *)((u8 *)D_800A34FC + 0x28))[i] + 1);
             }
         }
 
-        field = *(s16 *)(mask + (u8 *)D_800A34FC + 0x28);
+        field = ((s16 *)((u8 *)D_800A34FC + 0x28))[i];
         if (field != 4) {
             if (field != 3) {
                 if (field < 4) {
