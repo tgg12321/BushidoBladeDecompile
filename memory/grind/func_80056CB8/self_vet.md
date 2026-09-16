@@ -1,68 +1,13 @@
-# SELF-VET — func_80056CB8 (s6, 2026-09-16)
-
-CONSTRUCTS: `extern s32 D_800F6610;` (new TU-local extern declaration) + using
-`D_800F6610` in place of `D_800F6608.w8` at the second ratan2 argument. No
-other construct changed vs the s5-banked candidate (the shared-idx-local
-experiment and the goto-tail experiment were both reverted this session and
-are not part of the candidate).
-
-## T1 semantic purpose
-`D_800F6610` names the exact same storage as `D_800F6608.w8` (0x800F6608+8 =
-0x800F6610, confirmed via undefined_syms_auto.txt). The construct changes
-WHICH SYMBOL the read is spelled through, and that symbol choice has a
-directly observable effect on the emitted bytes (two independent lui/lw pairs
-vs one lui + two lw offsets) — confirmed by objdiff before/after. Not a no-op
-spelling; it changes real codegen in the direction the target bytes require.
-
-## T2 human-programmer test
-Yes — a programmer who had two named globals in their original source
-(`D_800F6608` for the camera-anchor struct and a second, distinct global
-`D_800F6610`) would naturally read them as two separate C names. This is
-exactly what the target's disassembly shows (asm/funcs/func_80056CB8.s:51-55
-names D_800F6610 explicitly via its own %hi/%lo relocation) — this isn't an
-inference from scheduling, it's a literal symbol name in the binary.
-
-## T3 GCC-internals justification
-Not needed as the primary justification: the change is justified by the
-target's own relocation entries (an object-model / declaration fact), not by
-an appeal to combine.c/global.c/etc. The GCC-level EXPLANATION for why the
-bytes differ (CSE not sharing an %hi(D_800F6608) load across a call boundary
-vs two independent %hi/%lo pairs) is incidental background, not the
-justification for the construct.
-
-## T4 permuter/search provenance
-Not permuter-found. Found by direct evidence inspection: `tools/objdiff.py`
-diffing the honest sandbox object against `build/src/text1b.o` (the
-INCLUDE_ASM reference, i.e. target bytes) isolated the exact 2-line mismatch,
-then reading the target's own asm/funcs/func_80056CB8.s confirmed the literal
-symbol name.
-
-## T5 family check
-Not a member of any forbidden family: no dead code, no pins, no volatile
-coercion, no alias rename (`D_800F6610` is the SYMBOL'S OWN name, not a
-renamed alias of `D_800F6608`), no scheduling barrier. It's an ordinary
-`extern` declaration of a real, separately-addressed global and an ordinary
-read of it — plain C.
-
-## T6 naming-announces-intent
-`D_800F6610` is the auto-generated splat name for its own address (matches
-the project's standard `D_<addr>` convention for anonymous data symbols) — no
-pad/dummy/spill/tmp naming signal.
-
-SANCTIONED-FAMILY-CLAIMS: none — this construct does not need a sanctioned
-no-semantic-purpose family; it is ordinary compilable C with a truthful
-semantic reading (Ruling 1, [[ordinary-c-judge-decidable]]: "a construct with
-a real semantic reading is never a cheat merely because the agent chose it
-after observing generated code").
-
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct.
-
-## Note on floor
-This fix is SCORE-NEUTRAL (81 -> 81, build_insns 197 -> 197 both before and
-after) — it does not move the honest floor. It is banked because it is a real
-correctness fix (removes a wrong read the objdiff proved was wrong) with zero
-downside, and because it cleans the remaining objdiff signal for future
-sessions (see candidate.c's REMAINING RESIDUAL section for what's left: a
-register-rotation cluster + a reorg.c delay-slot-duplication difference in
-the code==4 tail). Given it is score-neutral, this session's outcome is
-`progress`, not `candidate-ready` — floor is not 0.
+# SELF-VET — func_80056CB8 (s11)
+CONSTRUCTS: flags-borrowed-for-r1 (existing local `flags` reused for the func_80053614 call's return value), r2-inlined-as-expression (no local declared, call expression used directly in the disposition formula)
+## T1 semantic purpose: Both constructs have full semantic purpose. `flags` after the merge genuinely HOLDS the first collision-check's return value (`r1`) for the remainder of its use (the `if (flags != 0)` branch, and the final `(flags | (r2<<1)) + 1` disposition formula) -- every read consumes the real return value, nothing is dead. The inlined second call is a normal C expression (`func_80053614(...) << 1`) with no declared intermediate at all -- there is nothing to have "no purpose".
+## T2 human-programmer: A programmer reusing an already-dead local for the next real value it needs to hold (rather than declaring `r1` as a third name for a value with the same lifetime shape as `flags`) is ordinary variable-reuse practice, not something a reader would flag as suspicious. Not naming a single-use call result before using it (the r2 inlining) is also completely ordinary C style.
+## T3 GCC-internals justification: The DISCOVERY that this reuse matches target was made by reading target's asm (asm/funcs/func_80056CB8.s lines 103-122: `jal func_80053614; addu $s0,$v0,$zero` then `or $s0,$s0,$v0; addiu $s0,$s0,0x1`) -- register-identity evidence, not a GCC-pass mechanism the construct itself depends on. The construct's justification is program logic (the value's real lifetime lets it share a name with the prior dead value), not "this changes allocno priority" or similar. No GCC-internals term is the MECHANISM; register-choice is the OBSERVED CONSEQUENCE the source structure was chosen to match, per Ruling 1(3) of ordinary-c-judge-decidable.md ("a construct with a real semantic reading is never a cheat merely because the agent chose it after observing the scheduler").
+## T4 permuter/search provenance: Not permuter-found. Derived by directly reading target's own asm listing and identifying the register-reuse pattern (same method as the s7 flags/ang/code merge), then hand-writing and measuring the C change.
+## T5 family check: Matches the existing SOTN-accepted "variable reuse for codegen control" family (no-new-park-categories.md § SOTN-accepted; [[defeat-licm-hoist-var-reuse]]) -- the SAME family already used and Judge-reviewable for this function's s7 flags/ang/code merge, now extended to a fourth value (r1) that shares the identical structural shape (dead old value in an existing local, reused for a new real, consumed value). Not a new family, not an analogy stretch -- same construct shape, same rule, same function.
+## T6 naming-announces-intent: No new names introduced. `flags` is the SAME pre-existing, honestly-named local from the s7 merge (a real disposition-code variable, not a `pad`/`dummy`/`spill`-style name). The r2 inlining removes a name entirely (no local declared) -- nothing to carry coercion-intent naming.
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: variable reuse for codegen control (borrow an EXISTING local for a second unrelated but real value)
+  SCOPE: "When GCC hoists a loop-invariant (e.g. limit-1) that the target recomputes INLINE, reuse one C variable for a used loop-variant AND the invariant — multi-set pseudo isn't a loop.c movable, so it's not hoisted. Pure C, no asm." (.claude/rules/defeat-licm-hoist-var-reuse.md description; the broader SOTN-accepted entry in no-new-park-categories.md generalizes this to any borrow of an EXISTING local for a second unrelated real value, which is the shape actually used here and in the already-accepted s7 flags/ang/code merge on this same function)
+  PRECEDENT: .claude/rules/no-new-park-categories.md:113 (the "Variable reuse for codegen control" SOTN-accepted bullet, citing SOTN's `idxSub = idxSub;` / `randy = basePoint.x; baseX = randy;` shapes)
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. Both changes are ordinary, semantically-truthful C (a real value assigned to an existing name; a single-use expression left uninlined-as-a-name) with no no-semantic-purpose element, so no /* FAKE */ annotation is required or present, consistent with how the s7 flags/ang/code merge (same family, same function) was likewise unannotated.

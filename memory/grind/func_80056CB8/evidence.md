@@ -388,3 +388,19 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s10] The classify report's other 'target only' instructions (li #,4; two lw at stack offsets 96/104) are ordinary structural artifacts of the code==3/4 tail comparison and the pt0/pt1 pointer spills across the two func_80053614 calls -- traced against the raw asm and NOT independent residual axes; they are part of the already-diagnosed (s6/s7/s8) branch-topology + call-argument-spill residual, not a new lever.
 
 - [s10] Two spellings of 'share i*2 as one C value across both byte-table reads' are now killed on the s7/s10 chassis: fresh in-body local (regenerates s6's original finding, now confirmed chassis-independent) and loop-carried induction variable (new this session, worse still). Both regress via the same mechanism s6 identified: the shared value's live range spans the ratan2() call and the intervening obj/flags computation, and that extra register pressure costs more than the single sll+addu it would remove.
+
+- [s11] [forensics] Ran the instrumented cc1 .loop dump (pwsh tools/grinder/dump.ps1 func_80056CB8) and read the func_80056CB8 slice (tmp/grind/func_80056CB8/dumps/text1b.loop:13251-14311). Root-caused the missing $fp accumulator to loop.c:3806-3833's strength-reduction benefit-vs-insn_count threshold ("giv of insn 140 not worth while, 124 vs 164."; loop has 164 real insns) -- both i*2 byte-table-index givs are already combined by combine_givs from our existing (&D_x)[i*2] spelling, but neither the combined giv nor the store-address giv clears the threshold for this loop's size, so GCC recomputes them from the biv each iteration instead of maintaining an accumulator. This is a named, non-source-facing mechanism, not an unexplored C structure.
+- [s11] Read the FULL target asm (asm/funcs/func_80056CB8.s, all 210 lines) for the first time this session end to end (not just the loop-body slice prior sessions focused on). Found $s0 (already flags/ang/code per s7) also carries r1 across the entire second func_80053614 call (addu $s0,$v0,$zero at line 105; or $s0,$s0,$v0 / addiu $s0,$s0,0x1 at the tail merges r2 directly into the register still holding r1). r2 itself never gets a persistent register -- consumed straight from $v0.
+- [s11] func_80056CB8 sandbox --disable all: 58/204 (build_insns 198) confirmed at session start; 48/204 (build_insns 198, unchanged insn count) after the r1/r2 variable-reuse merge -- new session floor.
+
+- [s11] sandbox func_80056CB8 --disable all at session start (s7-banked chassis reapplied): score 58, build_insns 198 -- reproduces s7-s10 exactly.
+
+- [s11] pwsh tools/grinder/dump.ps1 func_80056CB8 regenerated tmp/grind/func_80056CB8/dumps/text1b.{loop,greg,lreg,sched,sched2,combine,cse,cse2,flow,jump,jump2,rtl,s,dbr} from the instrumented cc1 against the full text1b.c TU (pre-existing unrelated forward-declaration conflict warnings elsewhere in the TU are cosmetic and do not affect func_80056CB8's own dump slice).
+
+- [s11] func_80056CB8's .loop dump slice is tmp/grind/func_80056CB8/dumps/text1b.loop lines 13251-14311 ('Loop from 22 to 444: 164 real insns.'); the giv-rejection lines name the exact loop.c:3823 predicate.
+
+- [s11] Read the FULL target asm/funcs/func_80056CB8.s (all 210 lines) end to end for the first time this session (prior sessions read slices); found the r1/r2 register-reuse pattern in $s0 not previously identified despite being flagged as an open frontier item since s7.
+
+- [s11] Final sandbox measurement after both s11 changes: score 48, build_insns 198 (unchanged insn count from the 58-floor baseline) -- confirms a pure register-identity win, same class as the s7 merge.
+
+- [s11] src/text1b.c and the func_80053614 return-type prerequisite were reverted to the committed HEAD state (git checkout -- src/text1b.c) before ending the session; func_80056CB8 remains INCLUDE_ASM on main per asm-until-matched. candidate.c carries the full s11 body + derivation.

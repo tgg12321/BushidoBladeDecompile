@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_80056CB8",
-   "floor": 58,
-   "session": 7,
-   "at": "2026-09-16T08:49:13.600176+00:00",
-   "headline": "Structural s7: reusing the EXISTING flags local for ang and code (matching target's own $s0 register reuse, read directly from asm/funcs/func_80056CB8.s) drops the honest floor 81 -> 58/204; re-killed",
+   "floor": 48,
+   "session": 11,
+   "at": "2026-09-16T09:15:53.595588+00:00",
+   "headline": "forensics s11: root-caused the missing $fp accumulator to loop.c's strength-reduction benefit threshold (named, non-source-facing); killed the loop-inversion frontier hypothesis; found + banked a new ",
    "consumed": null
   }
  ]

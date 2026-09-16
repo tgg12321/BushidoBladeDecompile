@@ -599,3 +599,83 @@ and has NOT been tried in any prior session:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), idx2 promoted to a loop-carried induction variable in the for-statement's init/increment clauses, zero FAKE/cheat constructs, reverted after measurement.
+
+## [s11] Re-applying the s7-banked candidate.c body verbatim (+ func_80053614 s32-return prerequisite) to the current src/text1b.c reproduces floor 58/204 (build_insns 198) exactly -- chassis unchanged since s10.
+- mechanism: n/a (chassis re-audit measurement, mandated before proposing anything new).
+- probe: Applied candidate.c to src/text1b.c, ran sandbox func_80056CB8 --disable all.
+- result: score 58, build_insns 198, byte-identical to s7-s10's recorded floor.
+- verdict: CONFIRMED
+
+## [s11] loop.c's strength-reduction benefit threshold, not a missing C spelling, is why the loop-counter register-rotation residual ($fp accumulator absent) persists -- named via the instrumented cc1 .loop dump.
+- mechanism: `strength_reduce` (tools/gcc-2.7.2/loop.c:3806-3833) rejects strength-reducing the `i*2` byte-table-index giv and the `arg0+0x444+i` store-address giv for THIS loop because `v->lifetime * threshold * benefit < insn_count` (164 real insns in the loop body per the dump's "Loop from 22 to 444: 164 real insns."), printed as "giv of insn 140 not worth while, 124 vs 164." and "giv of insn 427 not worth while, 0 vs 164." Both `i*2` computations (D_8009A821 and D_8009A820 indices) are already recognized as givs of the SAME biv (reg 74 = `i`) and already get merged by `combine_givs` ("giv at 42 combined with giv at 140") purely from the existing `(&D_x)[i*2]` C spelling -- no index-sharing C lever was ever missing; GCC just doesn't judge the merged giv (or the store-address giv) worth promoting to an accumulator register for a loop this size.
+- probe: Read tmp/grind/func_80056CB8/dumps/text1b.loop lines 13251-14311 (the func_80056CB8 slice of a full -da loop-pass dump produced by `pwsh tools/grinder/dump.ps1 func_80056CB8` against the instrumented tools/gcc-2.7.2/cc1); cross-referenced the rejection message against tools/gcc-2.7.2/loop.c:3806-3833.
+- result: Confirms the residual is a genuine, named GCC-internal cost-model decision (the benefit-vs-insn_count threshold test), not an unexplored C structure for the index arithmetic itself.
+- verdict: CONFIRMED
+
+## [s11] Making the doubled byte-table index the loop's PRIMARY induction variable (for (j = start*2; j < start*2+4; j += 2) { s32 i = j >> 1; ...[j]...; store uses i; }) does not reproduce target's $fp accumulator and is worse than the i-as-biv baseline.
+- mechanism: loop.c's giv detector only recognizes affine mult/add relations to a biv (see strength_reduce / general_induction_var in loop.c); `i = j >> 1` is a right-shift, so with `j` as the new biv, `i` is NOT a giv and must be recomputed via a real `sra` every iteration -- strictly more work than the original shape, and the underlying strength-reduction rejection (see the CONFIRMED loop.c-threshold hypothesis above) still applies to `j` itself regardless of which variable is nominally the biv.
+- probe: Rewrote the loop with `j` as the for-statement's control variable (init/test/increment all in terms of j, stepping by 2) and `i` as a fresh per-iteration local computed as `j >> 1`, on the s7-banked (pre-r1/r2-merge) chassis; ran sandbox func_80056CB8 --disable all.
+- result: Score REGRESSED 58 -> 86 (build_insns 198 -> 202). Reverted; re-confirmed floor 58 exactly reproduces after revert. Banked as memory/grind/func_80056CB8/rejected/primary-biv-doubled-index-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s11 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, loop control variable changed from i to the doubled value j with i computed as a fresh per-iteration j>>1 local), zero FAKE/cheat constructs, reverted after measurement.
+
+## [s11] Target's asm shows $s0 (already carrying flags/ang/code per the s7 merge) ALSO carries r1 (first func_80053614 call's return value) across its entire lifetime including through the second func_80053614 call; borrowing the EXISTING `flags` local for r1's real, dead-then-reused value improves the floor.
+- mechanism: SOTN-sanctioned variable-reuse-for-codegen-control family ([[defeat-licm-hoist-var-reuse]] / no-new-park-categories.md SOTN-accepted list), same family as the s7 flags/ang/code merge -- borrowing an EXISTING local for a second, non-overlapping-lifetime real value (flags is dead the instant sin_p/cos_p/scale/x/z are derived from it, well before the first func_80053614 call is made).
+- probe: Read asm/funcs/func_80056CB8.s in full this session. Line 105 (`addu $s0,$v0,$zero` immediately after `jal func_80053614`) shows the first call's result moved directly into $s0. $s0 (as r1) then survives the `if (r1 != 0) {...}` branch and the entire second func_80053614 call, because `or $s0,$s0,$v0; addiu $s0,$s0,0x1` computes the final disposition by OR-ing r2 directly into the register that already holds r1 -- not by combining two freshly-loaded locals. Removed the `r1` local declaration, assigned the first func_80053614(...) call's result directly to `flags`, changed the guard to `if (flags != 0)`. Ran sandbox func_80056CB8 --disable all.
+- result: Score IMPROVED 58 -> 48/204 (build_insns 198, UNCHANGED -- pure register-identity win). Re-verified.
+- verdict: CONFIRMED
+
+## [s11] r2 (second func_80053614 call's result) never acquires a persistent register in target -- it's consumed directly out of $v0 immediately after the call (`sll $v0,$v0,1; or $s0,$s0,$v0`) rather than being moved into a callee-saved register first; inlining the call directly into the final disposition expression instead of naming a fresh `r2` local is byte-neutral.
+- mechanism: same variable-reuse-for-codegen-control family; here the finding is that the target's C simply never named r2 as a persistent variable at all (single-use expression), so removing our `r2` local entirely (not merging it into anything) is the most direct match to target's own shape.
+- probe: Removed the `r2` local declaration; changed `r2 = func_80053614(...); flags = (flags | (r2 << 1)) + 1;` to `flags = (flags | (func_80053614(...) << 1)) + 1;`. Ran sandbox func_80056CB8 --disable all.
+- result: Score UNCHANGED at 48/204 (build_insns 198) -- byte-identical to keeping the separate `r2` local used once. Kept the no-extra-local form per the pipeline's simplest-known-form tiebreak (Ruling 1(4), ordinary-c-judge-decidable.md): fewer declared locals, identical bytes.
+- verdict: CONFIRMED
+
+## [s11] dx/dz/y in the code==4 tail have NO register-reuse opportunity in target's own asm (frontier item 2 from s7-s10, now fully explored).
+- mechanism: n/a (negative-evidence read of target's own bytes, not a GCC-internals claim).
+- probe: Read asm/funcs/func_80056CB8.s lines from .L80056F08 (the code==4 tail) through .L80056F98. dx (`hit0[0]-obj->0xB8`) and dz (`hit0[2]-obj->0xC0`) are transient `mult`/`mflo` operands (`$a0`/`$t0`) consumed once each into the `addu $v0,$a0,$t0` sum-of-squares compare and never given a persistent home; `y` (`lw $a0,0xBC($s1)`) is read directly into the `bltz`/`slti` compare chain with no persistent register either.
+- result: Confirms no register-reuse lever exists for these three values -- closes frontier item 2 from s7-s10 as fully explored (the r1/r2 merge above was the only real hit in that item).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s11 chassis (target asm read directly, no C change made or measured for this specific hypothesis -- a negative read-only finding, not a sandboxed probe).
+
+## [s11] Re-applying the s7-banked candidate.c body verbatim (+ func_80053614 s32-return prerequisite) to the current src/text1b.c reproduces floor 58/204 (build_insns 198) exactly -- chassis unchanged since s10.
+- mechanism: n/a (chassis re-audit measurement)
+- probe: Applied candidate.c to src/text1b.c, ran sandbox func_80056CB8 --disable all.
+- result: score 58, build_insns 198, byte-identical to s7-s10's recorded floor.
+- verdict: CONFIRMED
+
+## [s11] loop.c's strength-reduction benefit threshold (not a missing C spelling) is why the loop-counter register-rotation residual (missing $fp-style accumulator) persists.
+- mechanism: strength_reduce (tools/gcc-2.7.2/loop.c:3806-3833) rejects strength-reducing the i*2 byte-table-index giv (already combined with the sibling i*2 giv by combine_givs, from the existing (&D_x)[i*2] C spelling) and the arg0+0x444+i store-address giv, because v->lifetime * threshold * benefit < insn_count for this 164-real-insn loop ('giv of insn 140 not worth while, 124 vs 164.' / 'giv of insn 427 not worth while, 0 vs 164.' in the dump).
+- probe: Read tmp/grind/func_80056CB8/dumps/text1b.loop lines 13251-14311 (produced by pwsh tools/grinder/dump.ps1 func_80056CB8 against the instrumented cc1); cross-referenced against tools/gcc-2.7.2/loop.c:3806-3833.
+- result: Confirms the residual is a named GCC-internal cost-model decision, not an unexplored C index-arithmetic structure.
+- verdict: CONFIRMED
+
+## [s11] Making the doubled byte-table index j the loop's PRIMARY induction variable (with i recomputed each iteration as a fresh j>>1 local) does not reproduce target's $fp accumulator and is worse than keeping i as the biv.
+- mechanism: loop.c's giv detector only recognizes affine mult/add relations to a biv; i = j >> 1 is a right-shift so it is not a giv of the new biv j, forcing a real sra recomputation every iteration -- strictly worse, and the same strength-reduction threshold rejection still applies to j regardless of which variable is nominally the biv.
+- probe: Rewrote the loop with j as the for-statement's control variable (init/test/increment in terms of j, step 2) and i as a fresh per-iteration j>>1 local, on the s7-banked (pre-r1/r2-merge) chassis; ran sandbox func_80056CB8 --disable all.
+- result: Score REGRESSED 58 -> 86 (build_insns 198 -> 202). Reverted; re-confirmed floor 58 exactly reproduces after revert. Banked as memory/grind/func_80056CB8/rejected/primary-biv-doubled-index-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s11 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, loop control variable changed from i to the doubled value j with i computed as a fresh per-iteration j>>1 local), zero FAKE/cheat constructs, reverted after measurement.
+
+## [s11] Target's asm shows $s0 (already carrying flags/ang/code per the s7 merge) ALSO carries r1 (first func_80053614 call's return value) across its entire lifetime including through the second func_80053614 call; borrowing the EXISTING flags local for r1's real, dead-then-reused value improves the floor.
+- mechanism: SOTN-sanctioned variable-reuse-for-codegen-control family (no-new-park-categories.md SOTN-accepted list / defeat-licm-hoist-var-reuse.md), same family as the s7 flags/ang/code merge on this same function -- borrowing an EXISTING local for a second, non-overlapping-lifetime real value.
+- probe: Read asm/funcs/func_80056CB8.s in full. Line ~105 (addu $s0,$v0,$zero immediately after jal func_80053614) shows the first call's result moved into $s0; the final disposition (or $s0,$s0,$v0; addiu $s0,$s0,0x1) ORs r2 directly into the register that already holds r1. Removed the r1 local, assigned the first func_80053614(...) call's result directly to flags, changed the guard to if (flags != 0). Ran sandbox func_80056CB8 --disable all.
+- result: Score IMPROVED 58 -> 48/204 (build_insns 198, unchanged -- pure register-identity win). Re-verified.
+- verdict: CONFIRMED
+
+## [s11] r2 (second func_80053614 call's result) never acquires a persistent register in target -- consumed directly out of $v0 immediately after the call; inlining the call directly into the final disposition expression instead of naming a fresh r2 local is byte-neutral.
+- mechanism: same variable-reuse family; target's own C never named r2 as a persistent variable at all (single-use expression).
+- probe: Removed the r2 local; changed to flags = (flags | (func_80053614(...) << 1)) + 1;. Ran sandbox func_80056CB8 --disable all.
+- result: Score UNCHANGED at 48/204 (build_insns 198) -- byte-identical to keeping a separate r2 local used once. Kept the no-extra-local form per the simplest-known-form tiebreak.
+- verdict: CONFIRMED
+
+## [s11] dx/dz/y in the code==4 tail have no register-reuse opportunity in target's own asm (frontier item 2 from s7-s10, now fully explored).
+- mechanism: n/a (negative read of target's own bytes, not a GCC-internals claim)
+- probe: Read asm/funcs/func_80056CB8.s from .L80056F08 through .L80056F98. dx/dz are transient mult/mflo operands consumed once each; y is read directly into a compare chain with no persistent register.
+- result: Confirms no register-reuse lever exists for these three values; closes frontier item 2 from s7-s10 (r1/r2 was the only real hit in that item).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s11 chassis (target asm read directly; no C change made or measured for this specific hypothesis -- a negative read-only finding).

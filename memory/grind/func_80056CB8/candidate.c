@@ -1,20 +1,154 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s7 body, s9 2026-09-16 enumerate-modality
- * re-verified, NO CHANGE) — floor 58/204, NOT YET 0. (Prior: 81/204 s5/s6.)
- * s9 (enumerate): re-confirmed floor 58 chassis; killed the "hoist
- * 0x1F8002B8 above the loop" frontier hypothesis (60, worse, matches s8's
- * in-loop result); ran an exhaustive spelling_enum sweep (5/5 variants,
- * decl-order + full-inline) of the code==4 tail's dx/dz distance-check
- * sub-expression -- zero gradient, all byte-identical at 58. Body below is
- * UNCHANGED from s7; see hypotheses.md/evidence.md [s9] for the full
- * writeup and the still-open frontier (scratchpad single-materialization +
- * y-compare branch-topology split, both PRE-RA per s8's classify report).
+ * func_80056CB8 — CANDIDATE (s11 forensics-modality win) — floor 48/204,
+ * NOT YET 0. (Prior: 58/204 s7-s10.)
  * ---------------------------------------------------------------------
- * ---------------------------------------------------------------------
- * s7 (structural modality). STALE-HEAD-CLAIM NOTE (same as every prior
+ * s11 (forensics modality). STALE-HEAD-CLAIM NOTE (same as every prior
  * session): src representation is INCLUDE_ASM between grind sessions;
- * nothing persists on main. Re-applied the s6-banked body (D_800F6610 fix
- * + s5 store-batching + func_80053614 s32-return fix) to src/text1b.c,
+ * nothing persists on main. Re-applied the s7-banked body to
+ * src/text1b.c, re-confirmed floor 58/204 (build_insns 198) exactly
+ * matches the s7-s10 record before any s11 change.
+ *
+ * PASS-ATTRIBUTION WORK: ran `pwsh tools/grinder/dump.ps1 func_80056CB8`
+ * (instrumented cc1, whole-TU dumps under tmp/grind/func_80056CB8/dumps/)
+ * and read the func_80056CB8 slice of the .loop dump (lines 13251-14311
+ * of tmp/grind/func_80056CB8/dumps/text1b.loop). Findings on the s10
+ * frontier's induction-variable hypothesis (item 1, "invert the primary
+ * biv to the doubled index j"):
+ *   - loop.c's biv/giv analysis (`strength_reduce`) already tracks `i`
+ *     (reg 74) as the loop's ONLY verified biv, and BOTH byte-table
+ *     index computations `i*2` (insns 42 and 140, "giv reg 93/126 src
+ *     reg 74 ... mult 2 add 0") are recognized as givs of that SAME biv
+ *     and get COMBINED by `combine_givs` ("giv at 42 combined with giv
+ *     at 140") — i.e. GCC already unifies the two `i*2` index
+ *     computations into one shared reduction candidate purely from our
+ *     existing `(&D_x)[i*2]` spelling; no C-level index-sharing lever
+ *     was missing.
+ *   - Both the combined giv AND the store-address giv (insn 427, "src
+ *     reg 74 ... mult 1 add (reg/v:SI 72)", i.e. `arg0+0x444+i`) are
+ *     then REJECTED for strength-reduction: "giv of insn 140 not worth
+ *     while, 124 vs 164" / "giv of insn 427 not worth while, 0 vs 164".
+ *     The rejection predicate is loop.c:3823
+ *     (`v->lifetime * threshold * benefit < insn_count`) — read
+ *     tools/gcc-2.7.2/loop.c:3806-3833. `insn_count` here is 164 (this
+ *     loop's real-insn count, printed at the top of the dump slice:
+ *     "Loop from 22 to 444: 164 real insns."); with lifetime==1 for both
+ *     givs, the product of the per-target `threshold` (the same
+ *     hoisting-threshold constant the softfloat-adoption memory names —
+ *     58 under -msoft-float) and each giv's `benefit` field falls below
+ *     164, so `strength_reduce` sets `v->ignore = 1` and leaves the
+ *     index/address recomputed via an ordinary `mult`/`add` from the biv
+ *     at each use, INSTEAD OF maintaining a separate incrementing
+ *     accumulator register for it.
+ *   - CONSEQUENCE: this is exactly why our build never produces target's
+ *     `$fp` accumulator (`sll $fp,$v1,2` once before the loop, `addiu
+ *     $fp,$fp,0x2` once per iteration, read directly by both byte-table
+ *     `lbu`s) — GCC's own cost model for THIS loop's insn_count (164)
+ *     rejects the strength-reduction that would produce that shape,
+ *     regardless of which of `i`/`j` is nominally the biv in the source.
+ *     Confirms this residual is a genuine benefit-threshold decision
+ *     inside loop.c, not a missing C spelling of the index arithmetic.
+ *
+ * PROBE 1 (killed, instance): tried making the DOUBLED value the primary
+ * loop-control variable instead of `i` (`for (j = start*2; j < start*2+4;
+ * j += 2) { s32 i = j >> 1; ...index sites use [j]...; store site uses
+ * i; }`, j declared in function scope like `i` was). This is a genuinely
+ * new spelling (distinct from s10's loop-carried idx2, which kept `i` as
+ * the loop control and added idx2 as a SECOND loop-carried variable of
+ * the same biv class). Measured: score REGRESSED 58 -> 86 (build_insns
+ * 198 -> 202). Reverted immediately, re-confirmed floor 58 exactly
+ * reproduces after revert. Consistent with the dump finding above: `j`
+ * becomes the new (and only) biv, `i = j >> 1` is NOT a giv (loop.c only
+ * tracks affine mult/add relations to a biv, not right-shifts), so `i`
+ * has to be recomputed by an actual `sra` every iteration instead of
+ * being a strength-reduced accumulator OR a cheap direct read of the
+ * biv — strictly worse than the original shape on every axis. Kills the
+ * "the original C's loop was literally indexed by the doubled value"
+ * hypothesis outright, per the s10 frontier's own stated fallback: the
+ * `$fp` accumulator is NOT reachable by respelling which variable is the
+ * loop's primary induction variable; it is a direct consequence of the
+ * insn_count-gated strength-reduction threshold above, which is fixed by
+ * the toolchain, not by source loop shape, for this loop body's size.
+ *
+ * THE WIN (structural, SOTN-sanctioned variable-reuse-for-codegen-control
+ * family, .claude/rules/no-new-park-categories.md § SOTN-accepted /
+ * .claude/rules/defeat-licm-hoist-var-reuse.md — borrowing an EXISTING
+ * local for a second unrelated but REAL value, same family as s7's
+ * flags/ang/code merge, now extended to r1):
+ *
+ * Read the full target asm (asm/funcs/func_80056CB8.s) end to end this
+ * session (frontier item 2, carried since s7/s8/s9/s10). Target's $s0 —
+ * already carrying flags/ang/code per the s7 win — ALSO carries `r1`,
+ * the first `func_80053614` call's return value:
+ *   `jal func_80053614` / `addu $s0, $v0, $zero` (line 105 of the asm
+ *   listing, .L80056E38-.L80056E40) — the call result is moved straight
+ *   into $s0, the SAME register flags/ang lived in one instruction
+ *   earlier (flags is dead the instant sin_p/cos_p/scale/x/z are
+ *   derived from it, well before this call). $s0 (as r1) then survives
+ *   THROUGH the `if (r1 != 0) {...}` branch AND through the entire
+ *   second `func_80053614` call, because the final disposition value is
+ *   computed as `or $s0,$s0,$v0; addiu $s0,$s0,0x1` — i.e. `flags =
+ *   (r1 | (r2 << 1)) + 1` is computed by OR-ing r2 directly into the
+ *   register that ALREADY holds r1, not by combining two freshly-loaded
+ *   values. r2 itself never gets a persistent register at all: it's
+ *   consumed straight out of $v0 immediately after the second call
+ *   (`sll $v0,$v0,1; or $s0,$s0,$v0`), matching an inlined
+ *   non-declared expression rather than a named local.
+ *
+ * CHANGE: removed the `r1` local declaration; the first
+ * `func_80053614(...)` call's result is now assigned directly to
+ * `flags` (`flags = func_80053614(...)`) and the `if (r1 != 0)` guard
+ * became `if (flags != 0)`. Removed the `r2` local declaration entirely;
+ * the second `func_80053614(...)` call is now inlined directly into the
+ * final disposition expression: `flags = (flags | (func_80053614(pt0,
+ * pt1, (s32)hit1, (s32)work, 0x1F8002B8) << 1)) + 1;` — this mirrors
+ * target's own shape (r2 never named, consumed once out of $v0) and
+ * measured BYTE-IDENTICAL to keeping a separate `r2` local that's used
+ * exactly once (48/198 either way) — kept the no-extra-local form per
+ * the pipeline's simplest-known-form tiebreak (Ruling 1(4),
+ * ordinary-c-judge-decidable.md) since it's strictly fewer declared
+ * locals with identical bytes.
+ *
+ * MEASURED: sandbox func_80056CB8 --disable all: score 58 -> 48/204
+ * (build_insns 198, UNCHANGED insn count — pure register-identity win,
+ * same shape as the s7 flags/ang/code merge). Re-verified after the
+ * r2-inlining simplification (still 48/198, neutral).
+ *
+ * REMAINING RESIDUAL (48) — same two classes noted since s6/s7: (a) the
+ * register-rotation cluster ($s3 vs $s6/$s7 for the loop counter and its
+ * derived store addresses, now root-caused this session to loop.c's
+ * strength-reduction benefit threshold — see PASS-ATTRIBUTION above —
+ * genuinely NOT a source-spelling lever for THIS loop's insn_count), and
+ * (b) the code==4 tail's branch-topology difference (target: `bltz` +
+ * `beqz` as two branches; ours: one `bgez`), confirmed by s6/s7 to be
+ * gated upstream, not by this tail's own C shape.
+ *
+ * FRONTIER FOR s12: (1) re-run tools/ra_solver/inverse_compose.py
+ * classify on this s11 chassis — the r1/r2 merge is a genuine
+ * instruction-count-neutral register-identity change and the loop.c
+ * root-cause finding narrows what's left to a named, non-source-facing
+ * mechanism; worth checking whether the PRE-RA verdict from s8 changes
+ * now that TWO of the three s7-frontier merge candidates are spent. (2)
+ * dx/dz/y in the code==4 tail were checked this session by re-reading
+ * the tail asm (lines .L80056F08 onward): dx/dz never acquire a
+ * persistent register (transient mult/mflo operands only, `$a0`/`$t0`
+ * one-shot), and `y` (`lw $a0,0xBC($s1)`) is read directly into a
+ * compare with no persistent home either — NO register-reuse
+ * opportunity exists for these three, closing frontier item 2 from
+ * s7-s10 as fully explored (r1/r2 was the only real hit in that item).
+ * (3) the loop.c threshold-rejection root cause suggests the ONLY way
+ * left to get the `$fp`-style accumulator is to change the loop's
+ * insn_count itself (i.e., find further C restructuring that shrinks or
+ * reshapes the loop body enough to cross the strength-reduction
+ * benefit threshold) — NOT to respell the induction variable. This is
+ * speculative and unconfirmed; a structural-modality session should
+ * treat it as a hypothesis to test by measuring insn_count shifts as
+ * other levers land, not a lever to chase directly.
+ * ---------------------------------------------------------------------
+ * s7 (structural modality, content preserved below for provenance).
+ * STALE-HEAD-CLAIM NOTE (same as every prior session): src
+ * representation is INCLUDE_ASM between grind sessions; nothing
+ * persists on main. Re-applied the s6-banked body (D_800F6610 fix + s5
+ * store-batching + func_80053614 s32-return fix) to src/text1b.c,
  * re-confirmed floor 81/204 (build_insns 197) exactly matches the s5/s6
  * record before any s7 change.
  *
@@ -29,92 +163,21 @@
  *   1. `flags` (the D_8009A821 byte-table value, shifted << 8)
  *   2. `ang` — target computes this as `addu $s0,$s0,$v0` (asm lines
  *      .L80056D60/.L80056D90), i.e. literally `flags += ...`, NOT a
- *      separate register/variable. Our s6 candidate declared `ang` as
- *      a SEPARATE fresh local (`ang = flags + ratan2(...);`), forcing
- *      GCC to allocate a second pseudo across the identical live range.
+ *      separate register/variable.
  *   3. `code` — after the Judge-table lookups, target reuses the SAME
- *      $s0 for the final disposition code (`or $s0,$s0,$v0; addiu
- *      $s0,$s0,0x1` at .L80056ED0/.L80056ED4, then the 0/3/4/5 tail).
- *      Our s6 candidate declared a THIRD fresh local `code` for this,
- *      again forcing a separate pseudo across a range that, in target,
- *      is the very same register.
- *
- * `ang` is dead the instant the two Judge-table pointers are computed
- * (`sin_p`/`cos_p` derived from it); `flags`/`ang`'s combined value is
- * therefore genuinely dead from that point until the `flags = (r1 |
- * (r2<<1)) + 1;` line, exactly matching target's reuse window. This is
- * the textbook "reuse an EXISTING local for a second unrelated value"
- * SOTN family (bound 2 in the family-selection table: this is a BORROW
- * of an already-declared local, never an INVENTED one) — not a fresh
- * intermediate, not a dead store, not a cheat: every write is real,
- * every read consumes a real value, and the merge exactly mirrors an
- * observed hardware-register reuse in the target's own asm.
+ *      $s0 for the final disposition code.
  *
  * CHANGE: removed the `ang` and `code` local declarations entirely;
- * every former `ang` use became `flags` (`flags += *(s16*)(obj+0x1CA);`
- * / `flags += ratan2(...);` instead of `ang = flags + ...;`, and
- * `sin_p = &Judge + (flags & 0xFFF);` instead of `(ang & 0xFFF)`); every
- * former `code` use became a re-assignment of `flags`
- * (`flags = (r1 | (r2 << 1)) + 1;` and the three `flags = 0;`/`flags =
- * 5;` tail assignments), with the final store reading `(s8)flags`
- * instead of `(s8)code`.
+ * every former `ang` use became `flags`; every former `code` use became
+ * a re-assignment of `flags`.
  *
  * MEASURED: sandbox func_80056CB8 --disable all: score 81 -> 58/204
- * (build_insns 197 -> 198, one MORE instruction than before, yet the
- * WEIGHTED score dropped by 23 points — the win is register-identity
- * quality, not raw instruction count). Re-verified twice (once
- * immediately after the edit, once again after an unrelated tail
- * experiment was reverted — see below) — reproducible, not a fluke.
- *
- * OBJDIFF EVIDENCE (tools/objdiff.py tmp/sandbox/func_80056CB8/text1b.o
- * build/src/text1b.o, captured tmp/grind/func_80056CB8/s7/objdiff_s7.txt):
- * the diff region SHRANK from the s6 shape to 112 lines covering (a) a
- * pure register-name/loop-counter rotation ($s3 vs $s6/$s7 for the loop
- * index and its derived store address — the standing register-rotation-
- * infrastructure class per no-new-park-categories.md, not a new C
- * lever), and (b) the SAME code==4 tail branch-topology difference noted
- * at s6 (target: `bltz`+`beqz` as two branches; ours: one `bgez`) —
- * EXCEPT NOW target's characteristic FOUR duplicated `addu v0,s7,s6`
- * (recomputing the shared store address into each exit branch's delay
- * slot) has a matching FOUR duplicated `addu v0,s3,s7` in OUR build too
- * (previously our build only had it appear differently) — the address-
- * recompute duplication itself is now reproduced; only the two-vs-one
- * branch split for the y-compare remains different.
- *
- * TRIED AND REVERTED (re-tested KILLED, instance, confirms s6's finding
- * survives the s7 chassis change): rewrote the code==4 tail's y-compare
- * (`y - hit1[1] >= 0` / `>= 0x3E9` nested if/else) using explicit `goto
- * store;`/`goto neg;` early exits mirroring target's two-branch
- * (bltz+beqz) topology instead of the nested if/else fallthrough.
- * Measured: BYTE-IDENTICAL to the nested-if form (58/198, no change) —
- * re-confirms s6's conclusion that this tail's own C control-flow shape
- * is not what gates the branch-topology mismatch; whatever decides it is
- * upstream (register pressure/scheduling earlier in the function).
- * Reverted to the simpler nested-if form (no reason to carry unnecessary
- * goto complexity when it measures no different, twice now, on two
- * different chassis).
- *
- * TRIED AND REJECTED (measured WORSE, instance kill, reverted before
- * finalizing): replacing the two `(&D_8009A821)[i*2]` / `(&D_8009A820)
- * [i*2]` byte-table reads with two PER-TABLE pointer locals (`u8 *pf =
- * &D_8009A821 + i*2; u8 *ps = &D_8009A820 + i*2;`) instead of array-index
- * syntax on the extern bytes. Measured: score 81 -> 83 (WORSE),
- * build_insns 197 -> 196 (fewer raw instructions, but worse weighted
- * register-match quality) — reverted before the flags/ang/code merge was
- * applied (measured on the PRE-merge s6/s7-baseline chassis). A further
- * variant computing `ps` as `pf - 1` (treating D_8009A820 and D_8009A821
- * as one array via cross-declaration pointer arithmetic) was drafted but
- * NEVER MEASURED and immediately reverted without running sandbox — it
- * is undefined-behavior C (pointer arithmetic across two independently-
- * declared objects) and would also deepen the exact declaration-pun the
- * grind brief's DATA MODEL section already flags for these two symbols;
- * not banked as a measured kill, just noted so a future session does not
- * re-derive and try it.
+ * (build_insns 197 -> 198).
  * ---------------------------------------------------------------------
- * s6 (enumerate modality, PREVIOUS session) content preserved below for
- * provenance — object-model fix (D_800F6610) and the killed shared-idx-
- * local / goto-tail hypotheses are UNCHANGED by this session's edits;
- * see hypotheses.md/evidence.md [s6] entries for the full writeup.
+ * s6 (enumerate modality) content preserved below for provenance —
+ * object-model fix (D_800F6610) and the killed shared-idx-local /
+ * goto-tail hypotheses are UNCHANGED by this session's edits; see
+ * hypotheses.md/evidence.md [s6] entries for the full writeup.
  *
  * OBJECT-MODEL FIX (real, evidence-backed, carried forward unchanged):
  * the ratan2 branch's second argument reads the separate global
@@ -126,36 +189,12 @@
  * PREREQUISITE CHANGE IN THE SAME TU (func_80053614 void -> s32 return
  * type, byte-neutral standalone) — unchanged since s2, still required.
  *
- * REMAINING RESIDUAL (58) — register-rotation cluster ($s3 vs $s6/$s7
- * for the loop counter and its derived addresses — no new C lever found
- * yet for this specific rotation) PLUS the code==4 tail's branch-
- * topology difference (one `bgez` vs target's `bltz`+`beqz`), which two
- * independent sessions (s6, s7) now confirm is NOT gated by this tail's
- * own C shape.
- *
- * FRONTIER FOR s8: (1) the loop-counter register rotation ($s3 in ours,
- * $s6-ish role in target, entangled with $s7=arg0 and the derived
- * store-address computations) is the single largest remaining named
- * residual — re-dump .greg/.lreg on THIS (s7, floor-58) chassis (pseudo
- * numbers renumber on every structural edit; do not reuse the s3-era
- * map) and read the disposition table before proposing a lever; this is
- * better suited to rederive/solver modality than more structural
- * guessing. (2) The bgez-vs-bltz+beqz branch-topology tail is very
- * likely gated by whatever decides the loop-counter rotation above, not
- * an independent lever — do not re-try goto-vs-nested-if on this tail a
- * third time, it has now measured neutral twice. (3) Consider whether
- * OTHER existing locals can similarly be borrowed for a second dead-
- * then-reused role (the flags/ang/code merge this session suggests the
- * technique generalizes) — `r1`/`r2` and `dx`/`dz`/`y` were not tried
- * this session; check whether target reuses any of THEIR registers for
- * an unrelated purpose before inventing a merge (register reuse must be
- * observed in target's own asm, not guessed).
- *
  * PROVENANCE: body is the s2-authored draft + s5 store-batching + s6
- * D_800F6610 fix + func_80053614 signature fix + this session's
- * flags/ang/code variable-reuse merge. See earlier session headers
- * (git history of this file, or hypotheses.md) for the full derivation
- * chain back to memory/grind/func_80056CB8/authored-notes-2026-08-18.md.
+ * D_800F6610 fix + func_80053614 signature fix + s7 flags/ang/code
+ * variable-reuse merge + s11 r1/r2 variable-reuse merge. See earlier
+ * session headers (git history of this file, or hypotheses.md) for the
+ * full derivation chain back to
+ * memory/grind/func_80056CB8/authored-notes-2026-08-18.md.
  * ===================================================================== */
 
 extern s16 Judge;
@@ -182,8 +221,6 @@ void func_80056CB8(s32 arg0) {
         s16 *cos_p;
         s32 x;
         s32 z;
-        s32 r1;
-        s32 r2;
 
         obj = arg0;
         flags = (&D_8009A821)[i * 2] << 8;
@@ -210,8 +247,8 @@ void func_80056CB8(s32 arg0) {
         pt1[1] = *(s32 *)(obj + 0xBC) - 0x320;
         pt1[2] = z;
 
-        r1 = func_80053614(pt0, pt1, (s32)hit0, (s32)work, 0x1F8002B8);
-        if (r1 != 0) {
+        flags = func_80053614(pt0, pt1, (s32)hit0, (s32)work, 0x1F8002B8);
+        if (flags != 0) {
             x += (*sin_p * 0x7D) >> 8;
             z += (*cos_p * 0x7D) >> 8;
         }
@@ -223,9 +260,7 @@ void func_80056CB8(s32 arg0) {
         pt1[1] = *(s32 *)(obj + 0xBC) + 0x1004;
         pt1[2] = z;
 
-        r2 = func_80053614(pt0, pt1, (s32)hit1, (s32)work, 0x1F8002B8);
-
-        flags = (r1 | (r2 << 1)) + 1;
+        flags = (flags | (func_80053614(pt0, pt1, (s32)hit1, (s32)work, 0x1F8002B8) << 1)) + 1;
         if (flags == 3) {
             if (hit1[1] - *(s32 *)(obj + 0xBC) < 5) {
                 flags = 0;

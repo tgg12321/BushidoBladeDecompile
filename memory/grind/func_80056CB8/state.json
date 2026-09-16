@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 58,
    "modality": "synthesis",
    "headline": "s10 synthesis: re-confirmed floor 58/204 chassis-stable; read the FULL target asm for the first time this ledger cycle and found the exact mechanism behind the s8 classify PRE-RA divergence (target ke"
+  },
+  {
+   "session": 11,
+   "floor": 48,
+   "modality": "forensics",
+   "headline": "forensics s11: root-caused the missing $fp accumulator to loop.c's strength-reduction benefit threshold (named, non-source-facing); killed the loop-inversion frontier hypothesis; found + banked a new "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Invert the loop's primary induction variable: iterate the loop by the doubled byte-table index j (stepping by 2, matching $fp's own step) and derive the store index i as j >> 1 (matching $s6's exact relationship to $fp, i.e. fp = s6*2 throughout the whole function) -- untried in any prior session; distinct from both killed shared-VALUE spellings because it changes which variable is the loop's PRIMARY biv rather than sharing a derived value.",
-   "mechanism": "loop.c strength-reduction on TWO givens with a fixed linear relationship to the same basic induction variable: if the original C's loop variable was genuinely the doubled index (not i), GCC's normal single-induction-variable codegen for THAT variable would naturally produce $fp's exact pattern (one multiply at loop entry, +=2 per iteration), while i = j>>1 (or an inline shift at the store site) would separately explain $s6's +=1 pattern if loop.c recognizes j>>1 as a second, independently-reducible given of the same loop.",
-   "next_probe": "Rewrite the loop as for (j = start*2; j < start*2+4; j += 2) with i = j >> 1 computed once per iteration (or the store address computed inline via arg0 + 0x444 + (j>>1)), sandbox it on the s7-banked chassis. If neutral-or-better, this is the real structural fix (continue narrowing); if worse, it kills the 'original loop was indexed by the doubled value' hypothesis outright and $fp must be attributed to a delay-slot/scheduling artifact independent of loop shape -- worth an immediate solver-modality inverse_compose.py re-classify either way, since this is the first C change since s8's classify run with any chance of moving the verdict off PRE-RA."
+   "hypothesis": "Re-run tools/ra_solver/inverse_compose.py classify on the new s11 (floor-48) chassis to see whether the PRE-RA verdict from s8 narrows now that two of the three s7-frontier merge candidates (flags/ang/code, r1/r2) are spent and the loop.c threshold root cause is named.",
+   "mechanism": "s8's classify verdict (PRE-RA, full instruction multiset mismatch) predates every C change since; a fresh classify against the current 48-floor chassis is the natural next diagnostic now that the register-identity axis is more fully explored.",
+   "next_probe": "python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o, with the s11-banked candidate.c applied to src/text1b.c."
   },
   {
-   "hypothesis": "Check whether r1/r2 or dx/dz/y have an analogous register-reuse opportunity, OBSERVED DIRECTLY in target's own asm (not guessed), before inventing any further variable merge -- carried forward unchanged from s7/s8/s9, still untried.",
-   "mechanism": "Same method that produced the s7 win (borrowing an EXISTING local for a second, non-overlapping-lifetime real value) -- apply it only where target's own bytes show the register reuse, per full-picture-first discipline.",
-   "next_probe": "Grep asm/funcs/func_80056CB8.s (now fully read this session -- see evidence) for any hard register shared across r1/r2's or dx/dz/y's live ranges the way $s0 was shared across flags/ang/code at s7; none was spotted incidentally while reading for the idx2 hypothesis, but a dedicated register-by-register pass was not done."
+   "hypothesis": "The code==4 tail's branch-topology difference (target: bltz+beqz as two branches; ours: one bgez) may now be reachable or may remain gated upstream -- worth re-checking with the new floor-48 chassis since two sessions confirmed it was neutral on the OLD chassis but the register-identity landscape has changed.",
+   "mechanism": "Unknown -- s6/s7 both found this tail's own C control-flow shape does not gate the branch-topology mismatch; whatever decides it is upstream (register pressure/scheduling earlier in the function), which the s11 r1/r2 merge changed.",
+   "next_probe": "Re-run the s6/s7 goto-based two-branch-topology rewrite of the y-compare (goto store;/goto neg; mirroring bltz+beqz) on the s11 (floor-48) chassis and measure -- if still neutral, re-confirms the s6/s7 finding generalizes across this chassis change too; if it now moves the floor, the r1/r2 merge changed what gates it."
   },
   {
-   "hypothesis": "Re-run tools/ra_solver/inverse_compose.py classify after the loop-inversion probe (frontier item 1) lands, even if negative, to see whether the PRE-RA verdict narrows or changes.",
-   "mechanism": "s8's classify verdict (PRE-RA, full instruction multiset mismatch) was measured before any of s9's or this session's C changes; a structural loop-shape change is the first edit since s8 with any chance of altering that verdict.",
-   "next_probe": "python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o, immediately after applying frontier item 1's loop-inversion form (win or lose)."
+   "hypothesis": "The loop.c strength-reduction threshold finding suggests the ONLY remaining way to get target's $fp-style accumulator is to shrink or reshape the loop body enough to cross the benefit-vs-insn_count threshold (currently 164 real insns) -- not to respell the induction variable directly.",
+   "mechanism": "loop.c:3823 (v->lifetime * threshold * benefit < insn_count) is a function of the WHOLE loop's insn_count, so any lever that reduces insn_count (further register-reuse merges, dead-code-adjacent restructuring) could in principle flip the threshold even without touching the index arithmetic itself.",
+   "next_probe": "Track insn_count in the .loop dump as future sessions land further register-reuse or structural levers; if it drops meaningfully below ~164, re-run dump.ps1 and check whether the i*2 givs cross the strength-reduction threshold and produce an accumulator register automatically."
   }
  ],
  "judge_constraints": [],
@@ -196,6 +202,22 @@
    "measured_on": "s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), idx2 promoted to a loop-carried induction variable in the for-statement's init/increment clauses, zero FA",
    "predicate_cite": "",
    "result": "Score REGRESSED 58 -> 73 (build_insns 198 -> 201) -- WORSE than even the fresh-in-body-local variant. Reverted. This is "
+  },
+  {
+   "session": 11,
+   "statement": "Making the doubled byte-table index j the loop's PRIMARY induction variable (with i recomputed each iteration as a fresh j>>1 local) does not reproduce target's $fp accumulator and is worse than keepi",
+   "kill_scope": "instance",
+   "measured_on": "s11 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, loop control variable changed from i to the doubled value j with i computed as a fresh per-iteration j>>1 local), zero FAKE/chea",
+   "predicate_cite": "",
+   "result": "Score REGRESSED 58 -> 86 (build_insns 198 -> 202). Reverted; re-confirmed floor 58 exactly reproduces after revert. Bank"
+  },
+  {
+   "session": 11,
+   "statement": "dx/dz/y in the code==4 tail have no register-reuse opportunity in target's own asm (frontier item 2 from s7-s10, now fully explored).",
+   "kill_scope": "instance",
+   "measured_on": "s11 chassis (target asm read directly; no C change made or measured for this specific hypothesis -- a negative read-only finding).",
+   "predicate_cite": "",
+   "result": "Confirms no register-reuse lever exists for these three values; closes frontier item 2 from s7-s10 (r1/r2 was the only r"
   }
  ],
  "ladder_skip": 0,
