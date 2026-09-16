@@ -2270,3 +2270,36 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s48 chassis: candidate.c s22-s47-banked body + func_80053614 s32-return prerequisite + D_8009A820/D_8009A821 array-form externs (scalar externs temporarily removed for the measurement, restored before session end), zero FAKE constructs present, engine/sandbox.py --disable all
+
+
+## [s49, synthesis] MANDATORY KILL RE-AUDIT: fresh re-splice of the s22-s48-banked candidate.c body onto current src/text1b.c HEAD reproduces 38/204 exactly; no FAKE construct exists anywhere in the candidate for tools/fake_ablate.py to act on.
+- mechanism: n/a -- direct re-measurement per the ledger's mandatory kill-re-audit instruction. This is the FOURTH consecutive session (s41, s46, s48, s49) to independently confirm the candidate carries zero FAKE-annotated constructs, so the ablation tool has no target; the correct re-audit action for this ledger is the direct fresh-splice reproduction, not an ablation run.
+- probe: Wrote tmp/grind/func_80056CB8/s49/splice.py (a repeatable splice script, banked as an artifact for future sessions) to apply: (1) the func_80053614 void->s32 return-type prerequisite, (2) removal of the conflicting scalar `D_8009A820`/`D_8009A821` externs at text1b.c:2183-2184, (3) the full s22-s48-banked candidate.c body in place of the INCLUDE_ASM stub. Ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`, then reverted with `git checkout -- src/text1b.c`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's recorded floor. git status confirms src/text1b.c clean after revert.
+- verdict: CONFIRMED
+
+## [s49, synthesis] SYNTHESIS: the ledger's spelling-space search (s1-s48, every identified block: loop bound forms, obj/flags dispatch + combinations, sin_p/cos_p/scale/x/z ordering+swaps, both pt0/pt1 store-order blocks, dx/dz declaration-order+inlining, x/z post-call adjustment order, flags==3 named-intermediate, angle/flags variable split) is exhaustive with zero hits below 38/204 across 12 consecutive flat sessions (s37-s48) and 9+ distinct modalities. The single remaining open frontier item -- a fresh RTL/.greg dump targeting the func_80053614 call-site register conflicts specifically (not the loop-bound guard dumps already banked from s43) -- has NOT yet been executed; it requires forensics or solver modality, which this synthesis session is not mandated to run. Restating it here as the sole frontier item for the next ladder pass, since the CONTRADICTION RULE requires re-auditing the weakest standing foreclosure before accepting a flat floor: the s45 LADDER EXHAUSTED (non-endgame residual, floor 38) ROTATED disposition rests on TWO endgame-lock gates (scan_hand_coded tier LOW, sotn-construct-index census zero hits) that correctly gate CANONICAL-ASM AUTHORIZATION and CONSTRUCT-CLASS EXTENSION -- neither gate speaks to whether an ORDINARY-C restructuring (no new construct family, no FAKE annotation) could still close the gap. That distinction means the ROTATED disposition is procedurally correct (both endgame-lock AND-gates genuinely fail) but does NOT mean the ordinary-C search is exhausted -- and per [[difficult-is-not-impossible]] and [[ordinary-c-judge-decidable]] Ruling 1, an un-run forensics/solver probe is not the same as a proven-dead axis. This session does not re-file owner-gated (the mandate for filing that outcome is `escalation` modality with every remaining sanctioned axis measured dead; this ledger explicitly still has one unrun axis).
+- mechanism: n/a -- ledger consolidation, not a codegen hypothesis.
+- probe: Re-read hypotheses.md (2272 lines) + evidence.md (876 lines) + candidate.c header in full this session; cross-checked the s45 disposition's two gate evaluations against the s46-s48 spelling-space additions to confirm neither gate's evidence changed.
+- result: Confirmed the s45/s46/s47/s48 record chain is internally consistent; no contradiction found in the weakest-foreclosure sense (the disposition never claimed ordinary-C exhaustion, only endgame-lock gate failure). The genuinely open item is the forensics/solver RTL dump, unchanged from s47/s48.
+- verdict: CONFIRMED
+
+## [s49] The s22-s48-banked candidate.c body, freshly re-spliced onto current src/text1b.c HEAD (func_80053614 s32-return prerequisite + array-form D_8009A820/D_8009A821 externs), reproduces the ledger's recorded 38/204 floor exactly, with no FAKE construct present anywhere in the candidate for tools/fake_ablate.py to act on.
+- mechanism: n/a -- direct re-measurement per the mandatory kill-re-audit instruction; this is the 4th independent confirmation (s41, s46, s48, s49) that no FAKE-annotated construct exists in this candidate.
+- probe: Wrote tmp/grind/func_80056CB8/s49/splice.py, applied the func_80053614 void->s32 prerequisite + array-form externs + full candidate body to src/text1b.c, ran & tools/wteng.ps1 main sandbox func_80056CB8 --disable all, then git checkout -- src/text1b.c to revert.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact match to the ledger's recorded floor. git status confirms clean revert.
+- verdict: CONFIRMED
+
+## [s49] The s45 LADDER EXHAUSTED (non-endgame residual, floor 38) ROTATED disposition's two endgame-lock gates remain correctly failed and their evidence is unchanged since s45, but this does NOT mean the ordinary-C spelling-space is exhausted -- it only means canonical-asm authorization and new construct-family sanctioning are unavailable.
+- mechanism: n/a -- ledger consolidation / re-audit of the disposition record, not a codegen hypothesis.
+- probe: Re-read hypotheses.md (2272 lines) + evidence.md (876 lines) + candidate.c header in full; cross-checked the s45 gate evaluations (scan_hand_coded tier LOW; sotn-construct-index census zero hits) against the s46-s48 post-rotation findings (6 more genuinely new ordinary-C spellings tried and killed, none closing the gap).
+- result: The s45/s46/s47/s48 record chain is internally consistent -- the disposition was correctly scoped to endgame-lock gate failure, not ordinary-C exhaustion. No contradiction found. The genuinely open axis (forensics/solver RTL dump at the func_80053614 call sites) is unchanged from s47/s48 and still unrun.
+- verdict: CONFIRMED
+
+## [s49] The s49 auto-return directive re-check (func_8006CCC8 sibling movement, unchanged stamp from s46/s47) carries no transplantable lever for func_80056CB8 -- third consecutive session to confirm this same finding.
+- mechanism: n/a -- sibling-ledger cross-check, not a codegen hypothesis.
+- probe: Re-confirmed s46/s47's own audit: func_8006CCC8's only open frontier item (an unrelated LICM-hoist-var-reuse case on a sign-extended arg) shares no C structure with this function's for-loop guard / register-pressure frontier.
+- result: No new grep or evidence contradicts the s46/s47 finding.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49 re-audit of the s46-established func_8006CCC8 cross-reference check, no build measurement needed (structural non-overlap already established by grep across s46/s47/s49)

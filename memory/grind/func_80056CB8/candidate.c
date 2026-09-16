@@ -1,6 +1,25 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49) — floor 38/204, NOT YET 0.
+ * s49 (synthesis modality, 2026-09-16): mandatory kill re-audit (4th
+ * consecutive independent confirmation, after s41/s46/s48) reproduced
+ * 38/204 fresh via a new repeatable splice script
+ * (tmp/grind/func_80056CB8/s49/splice.py, banked as artifact). Body
+ * UNCHANGED. No new spelling probes this session (synthesis modality =
+ * ledger consolidation, not enumeration). Full re-read of hypotheses.md
+ * + evidence.md confirms the s45 LADDER EXHAUSTED (non-endgame residual,
+ * floor 38) ROTATED disposition's two endgame-lock gates (canonical-asm
+ * tier LOW; SOTN construct-class census zero hits) remain correctly
+ * failed and unchanged -- but those gates only govern canonical-asm
+ * authorization and new construct-family sanctioning, NOT whether more
+ * ordinary-C restructuring could still close the gap (and s46-s48 found
+ * 6 more genuinely new ordinary-C spellings post-rotation without
+ * closing it, proving the axis is not dead, just not yet closed).
+ * FRONTIER RESET: the single strongest live item is a forensics/solver-
+ * modality RTL/.greg dump AT THE TWO func_80053614 CALL SITES
+ * specifically (not the s43 loop-guard dumps) to identify the actual
+ * conflicting pseudo(s) instead of continuing to guess restructuring
+ * shapes blind -- this needs a session in forensics or solver modality.
  * s48 (enumerate modality, 2026-09-16): mandatory kill re-audit reproduced
  * 38/204 fresh (no FAKE construct to ablate). Two genuinely new spelling
  * probes, both previously untested in this ledger: (1) swapping the
