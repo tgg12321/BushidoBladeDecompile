@@ -1,6 +1,30 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41) — floor 38/204, NOT YET 0.
+ * s41 (solver modality): body UNCHANGED. Fresh chassis-reproduction
+ * confirmed 38/204 (198 insns). Ran tools/ra_solver/inverse_compose.py
+ * classify in OBJECT MODE (the zero-rule/INCLUDE_ASM-routed escape:
+ * `--target-object build/src/text1b.o --ours-object
+ * tmp/sandbox/func_80056CB8/text1b.o`) since text-stream mode refuses
+ * on zero-rule functions. Verdict: PRE-RA / rtl_shape (its most severe
+ * category -- no RA/scheduler perturbation reaches this residual). The
+ * tool's own instruction-multiset diff independently corroborates TWO
+ * things already in the ledger: (1) the s31/s32/s37-s40 loop.c:3823
+ * strength-reduce frontier item (target shows `addiu s8,s8,2` +
+ * `addu #,#,s8` x2 -- a strength-reduced i+=2 accumulator -- vs ours'
+ * three `sll #,#,0x1` i*2 shifts); (2) the s15-rejected named-
+ * intermediate-scratchpad lever (target reads the 0x1F8002B8 literal
+ * back via `lw #,104(#)`/`lw #,96(#)` at two DIFFERENT offsets instead
+ * of ours' two independent `lui+ori+sw s8,16(#)` materializations). Per
+ * the KILL RE-AUDIT REQUIRED mandate, re-spliced the s15 lever onto the
+ * CURRENT chassis rather than trusting the stale kill: still worse
+ * (42/204, 200 insns). RE-CONFIRMED KILLED on the current chassis; see
+ * hypotheses.md [s41] and rejected/named-intermediate-scratchpad-
+ * literal-worse.c's s41 re-audit note. No new lever found this session;
+ * the classify tool's independent corroboration of the loop.c:3823
+ * frontier item raises confidence that item is the correct next
+ * structural target, but it remains unattempted (requires a hand-drafted
+ * structural loop-body rewrite, not a spelling change).
  * s40 (synthesis modality): body UNCHANGED. Full ledger re-read; fresh
  * chassis-reproduction confirmed 38/204 (198 insns), no drift since s39.
  * Extended s39's "share the duplicate *(s32*)(obj+0xBC) expression" find

@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 40,
- "current_modality": "synthesis",
+ "session_count": 41,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -243,36 +243,34 @@
    "floor": 38,
    "modality": "synthesis",
    "headline": "s40 synthesis: chassis re-confirmed 38/204 fresh; killed the maximal cross-call merge of all six obj+0xBC reads (38->95, -21 insns yet worse); spelling/sharing search space now exhausted, frontier res"
+  },
+  {
+   "session": 41,
+   "floor": 38,
+   "modality": "solver",
+   "headline": "s41 solver: object-mode inverse_compose classify verdicts PRE-RA/rtl_shape, independently corroborating the loop.c:3823 strength-reduce frontier and the s15 scratchpad-literal lever; re-audit re-confi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions would let strength_reduce promote i*2 automatically.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163). s37-s40's exhaustive spelling/sharing sweeps show the residual is not a spelling problem within the existing structure -- the remaining lever is a genuine structural rewrite of the loop body shape itself.",
-   "next_probe": "Hand-draft a structural loop-body rewrite (e.g. hoisting a shared sub-computation across both func_80053614 call sites in a way that reduces the COMPILED insn count, not just the source line count -- s39/s40 show naive source-level sharing backfires) and measure its real-insn count directly against the 124 threshold via a .loop dump."
+   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per s31/s32's exact numeric target) without touching the i*2 index expressions would let strength_reduce promote i*2 to the i+=2 accumulator classify's own diff independently confirms target uses.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap. s37-s41's exhaustive spelling/sharing/naming sweeps (now including the classify-suggested scratchpad lever) all show the residual within the existing structure is spelling-exhausted -- the remaining lever is a genuine structural rewrite of the loop body shape, now independently corroborated by the object-mode classify diff.",
+   "next_probe": "Hand-draft a structural loop-body rewrite that reduces the COMPILED insn count (via a .loop dump measurement, not source line count -- s39/s40 show naive source-level sharing backfires) and measure it directly against the 124 threshold."
   },
   {
-   "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z, not the i*2 index or the pt0/pt1 store order) on the do-while chassis specifically, since that chassis's lower insn count (195 vs 198) and different register landscape has never had this axis tried on it.",
-   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph; the do-while rewrite (s34, rejected/do-while-loop-rewrite-worse.c) already shows the function responds to source-level structural changes that don't touch the index axis, so other residents' footprints may behave differently there than on the for-loop chassis where the s29 conflict analysis was run.",
-   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (apply rejected/do-while-loop-rewrite-worse.c fresh) to see whether the 9-resident conflict picture differs from the for-loop chassis's profile."
+   "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z) on the do-while chassis specifically has never been tried on that chassis's distinct register landscape (195 vs 198 insns).",
+   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph; the do-while rewrite (s34, rejected/do-while-loop-rewrite-worse.c) shows the function responds to source-level structural changes outside the index axis, so other residents' footprints may behave differently there.",
+   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis to compare its 9-resident conflict picture to the for-loop chassis's profile."
   },
   {
-   "hypothesis": "Extend tools/spelling_enum.py to support a region containing interior if/else anchors with braced multi-statement bodies, so the obj/flags block (and any future similar region) can be swept exhaustively instead of by hand-picked variants.",
-   "mechanism": "n/a -- tooling gap, not a codegen hypothesis. s38-s40's hand samples are a large but non-exhaustive sample of spelling space; a true class kill needs the tool extension.",
-   "next_probe": "Patch spelling_enum.py's anchor classification (tools/spelling_enum.py:76-91) to treat a bracketed if/else block as a single opaque, reorderable anchor unit, then re-run a full mechanical sweep over the obj/flags region."
+   "hypothesis": "Extend tools/spelling_enum.py to treat a bracketed if/else block as one opaque reorderable anchor, so the obj/flags region (and future similar regions) can be swept exhaustively instead of by hand-picked variants.",
+   "mechanism": "n/a -- tooling gap, not a codegen hypothesis.",
+   "next_probe": "Patch spelling_enum.py's anchor classification (tools/spelling_enum.py:76-91) then re-run a full mechanical sweep over the obj/flags region."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 7,
-   "statement": "Replacing the two `(&D_8009A821)[i*2]` / `(&D_8009A820)[i*2]` byte-table array-index reads with two per-table pointer locals (`u8 *pf = &D_8009A821 + i*2; u8 *ps = &D_8009A820 + i*2;`) measures worse ",
-   "kill_scope": "instance",
-   "measured_on": "s6/s7-baseline chassis (candidate.c body before the flags/ang/code merge), two per-table pointer locals replacing the array-index reads, zero FAKE constructs, reverted after measurement.",
-   "predicate_cite": "",
-   "result": "Score 81 -> 83 (WORSE), build_insns 197 -> 196. Reverted; banked as memory/grind/func_80056CB8/rejected/per-table-pointe"
-  },
   {
    "session": 8,
    "statement": "Naming the repeated 0x1F8002B8 scratchpad-address literal (5th arg to both func_80053614 calls) as a single fresh local recovers target's single-materialization pattern and improves the floor.",
@@ -744,6 +742,14 @@
    "measured_on": "s40 chassis (candidate.c's s22-s39-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, all six *(s32*)(obj+0xBC) reads merged into one call-spanning `by` local, no FAKE constr",
    "predicate_cite": "",
    "result": "score 38 -> 95/204, build_insns 198 -> 177 (-21 real instructions, yet substantially worse score). Baseline 38/204 recon"
+  },
+  {
+   "session": 41,
+   "statement": "Naming the repeated 0x1F8002B8 scratchpad-address literal (passed to both func_80053614() calls) as a single fresh local `scratchpad`, read at both call sites instead of written twice, does not improv",
+   "kill_scope": "instance",
+   "measured_on": "s41 chassis (candidate.c's s22-s40-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, the 0x1F8002B8 literal at both func_80053614() call sites replaced by one fresh scratchp",
+   "predicate_cite": "",
+   "result": "score 38 -> 42/204, build_insns 198 -> 200 (worse on both axes). Baseline 38/204 reconfirmed clean after revert (git sta"
   }
  ],
  "ladder_skip": 0,

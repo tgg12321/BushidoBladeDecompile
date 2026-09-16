@@ -12,6 +12,20 @@
  *
  * Only the changed region is shown; splice into the s14-banked
  * candidate.c body to reproduce.
+ *
+ * s41 RE-AUDIT (solver modality): re-measured this exact splice on the
+ * CURRENT s22-s40-banked 38/204 chassis (candidate.c body + func_80053614
+ * s32-return prerequisite + header externs, zero FAKE constructs present).
+ * inverse_compose.py classify (object-mode: build/src/text1b.o vs
+ * tmp/sandbox/func_80056CB8/text1b.o) independently re-derived this exact
+ * lever unprompted from the current 198-vs-204-insn PRE-RA rtl_shape
+ * residual (its own cse_merge suggestion list names "store-const-reload-cse"
+ * / "single named intermediate" for the repeated 0x1F8002B8 literal +
+ * lui/ori/sw materialization pair it found in the diff). Re-spliced onto
+ * the CURRENT chassis and measured: 42/204 (build_insns 200), still worse
+ * than the 38/204 baseline. KILL RE-CONFIRMED on the current chassis —
+ * the mechanism (spill cost of a single live-across-call pseudo exceeding
+ * the two independent stack-arg stores) is unchanged from s15.
  */
 
 /* loop-body locals: added */
