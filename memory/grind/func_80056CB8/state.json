@@ -775,5 +775,14 @@
  "origin": "queue",
  "created": "2026-09-16T07:19:13.663722+00:00",
  "escalation_deferrals": 0,
- "object_model_audited": 44
+ "object_model_audited": 44,
+ "cc1psx_check": {
+  "at": "2026-09-16T12:58:20.128889+00:00",
+  "candidate_sha": "d5ef7d924e4d",
+  "ours": 134,
+  "psx": 145,
+  "closer": false,
+  "ok": true,
+  "error": null
+ }
 }

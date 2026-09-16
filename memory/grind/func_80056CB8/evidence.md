@@ -809,3 +809,5 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s44] The previous session's session-44 work was content-correct but used an evidence.md tag format ('[s44 OBJECT MODEL]') that the driver's mechanical scan for a literal 'OBJECT MODEL:'-prefixed line did not match; this session re-filed the same findings under the required literal prefix.
 
 - [s44] engine/sandbox.py's cheat-disabled ('--disable all') build path is currently broken for func_80056CB8/text1b.c -- independently reproduced this session, root-caused to the documented sibling index-based reorder-rule truncation mode, and confirmed NOT a candidate-content defect (the same candidate body compiles cleanly under a plain build-c).
+
+- [s44] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate d5ef7d924e4d scores 134 under our cc1 and 145 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
