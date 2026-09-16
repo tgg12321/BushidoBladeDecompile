@@ -44,6 +44,17 @@
  * hypotheses.md [s6] for all four. This body (unchanged from s4/s5) is
  * still the best known chassis.
  *
+ * s7 (enumerate, 2026-09-16): re-confirmed floor 2/187 unchanged (src had
+ * drifted back to INCLUDE_ASM between sessions; re-applied this body
+ * verbatim). Ran the systematic spelling-enumeration protocol on the final
+ * -callback block, naming the guard read and callback pointer as
+ * additional locals (`flag`, `cb`) alongside the existing `p`: 19 spellings
+ * (every inline/keep subset x valid order x commutative swap) swept
+ * against the real sandbox. Floor 2 reached ONLY by the two spellings that
+ * collapse back to this exact chassis; every spelling that names `flag` or
+ * `cb` as a real local scores 5-27 (worse). Class-killed (instance scope)
+ * this enumeration space -- see hypotheses.md [s7]. This body unchanged.
+ *
  * Remaining floor-2 residual (1 site, unchanged mechanism from s2's H6):
  *   The final "clear D_8009BE7C and invoke the D_8009BE80 callback" block's
  *   `jalr $v0` — target keeps `sw $zero,0($v1)` (D_8009BE7C = 0;) BEFORE the
