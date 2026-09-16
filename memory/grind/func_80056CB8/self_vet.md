@@ -1,24 +1,16 @@
-# SELF-VET — func_80056CB8 (s23)
-
-Not a candidate-ready session (floor 38/204, not 0) -- this self-vet is written
-for hygiene/continuity, not because the mandatory gate applies this session.
-
-CONSTRUCTS: none in the final src/text1b.c state (reverted to committed
-INCLUDE_ASM HEAD at session end). Two constructs were tried in-session and
-reverted after measuring worse: (1) reuse of the dead `scale` pseudo for the
-0x1F8002B8 literal (defeat-licm-hoist-var-reuse family), (2) a fresh named
-`s32 addr;` local set once before the loop (ordinary C, no family needed).
-Neither survives in the final diff.
-
-## T1 semantic purpose: N/A -- no construct present in the final diff.
-## T2 human-programmer: N/A.
-## T3 GCC-internals justification: N/A.
-## T4 permuter/search provenance: N/A -- no permuter used this session.
-## T5 family check: N/A.
-## T6 naming-announces-intent: N/A.
-
-SANCTIONED-FAMILY-CLAIMS: none -- no construct is being submitted.
-
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct present in the final diff
-(src/text1b.c reverted to HEAD; only memory/grind/func_80056CB8/candidate.c
-and rejected/ carry this session's findings, per asm-until-matched).
+# SELF-VET -- func_80056CB8
+CONSTRUCTS: idx (fresh once-written once-read s32 local naming the first byte-table index, FAKE-annotated), inline loop bound `i < start + 2` (no limit local), `s32 work[2]` sizing, split-init accumulation `flags |= ...; flags += 1;`, store-address operand order `arg0 + i + 0x444`, `flags == 3 && ... < 5` else-if dispatch, abs-value conditional expression in the y-distance compare, `D_800F6608.w8` struct-member read, array externs `extern u8 D_8009A820[]; extern u8 D_8009A821[];` (replacing the TU-local unused scalar externs), prerequisite `s32 func_80053614(...)` return type + `return func_80052D00(...)`.
+## T1 semantic purpose: idx -- holds the record index i*2 that is genuinely consumed by the D_8009A821 load; its value appears in the target's own bytes as the $fp accumulator. Every other construct has a direct semantic reading: the loop bound is the literal bound; work[2] is the true size of the 8-byte work buffer (frame evidence: the target's first spill slot at sp+0x60); the accumulation split, the store-address expression, the `&&` dispatch, the abs-value `?:` and the struct-member read are equivalent-semantics rewrites; the prototype change is bytes-decided (the caller consumes $v0 after both calls).
+## T2 human-programmer: idx -- borderline (a reader could ask why only the first lookup names the index while the second uses `i * 2` inline), which is exactly why it carries the /* FAKE */ annotation under the named-intermediate family rather than being passed off as plain C. All other constructs pass: `i < start + 2`, `work[2]`, `flags |= ...; flags += 1;`, `arg0 + i + 0x444`, `if (a && b) ... else if (c)`, `(d >= 0 ? d : -d) >= K` (the classic abs idiom), `struct.member`.
+## T3 GCC-internals justification: idx -- yes, the reason it works is loop.c strength_reduce's giv-worth test (tools/gcc-2.7.2/loop.c:3823), dump-proven (tmp/grind/func_80056CB8/s72/life2.loopgiv); that is the FAKE family's required named mechanism, declared in the annotation, not hidden. The other constructs were chosen by reading the target's bytes (frame layout, branch senses, operand order, dispatch fall-through) and each has an ordinary program-logic reading.
+## T4 permuter/search provenance: none -- no permuter or automated search ran this session; every spelling was hand-derived from the objdiff residual and the loop.c predicate, then measured.
+## T5 family check: idx -- named-intermediate (sanctioned; claim below). No construct matches any forbidden family: no register pins, no asm, no volatile, no dead stores, no dead locals, no constant holders, no do-while wraps, no empty ifs, no alias renames, no pads. work[2] is a live array fully consumed by the callee (not a pad). The scalar-extern removal is a declaration fix (the two scalars had zero C uses), not an aggregate merge (no struct introduced, no header edit).
+## T6 naming-announces-intent: no construct is named pad/dummy/unused/spill/tail/slack/_buf. `idx` names what it holds (the table index).
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: named-intermediate (fresh once-written local holding a real consumed value)
+  SCOPE: "A fresh named intermediate therefore qualifies under this entry **whatever GCC pass it acts through** (LUID bias, cse.c re-materialization, allocno priority), provided ALL of: (1) once-written"
+  PRECEDENT: .claude/rules/no-new-park-categories.md:214
+  PRECEDENT: docs/reference/sotn-construct-index.md:113
+  PRECEDENT: docs/reference/sotn-construct-index.md:1428
+  PRONGS: (1) once-written, once-read (`idx = i * 2;` / `D_8009A821[idx]`); (2) real value -- i*2 is materialised in the target as $fp; (3) byte-neutral -- build_insns 204 == target_insns 204, sandbox 0; (4) fresh local, not a borrow; (5) destination not live-pre-initialized (declared, first written at the assignment); (6) dump-proven mechanism (s72/life2.loopgiv), lever exhaustion documented (hypotheses.md [s72] + rejected/: shared-idx-local, shared-idx-local-fresh-chassis, separately-named-idxB, per-table-pointer-locals, loop-carried-idx2, primary-biv-doubled-index, dowhile-idxB, named-addr-local-pre-loop, ncounter-loop-s72-reaudit), annotation present.
+ANNOTATION-CONFORMANCE: /* FAKE: idx names the byte-table index for the first lookup only, mechanism: loop.c strength_reduce giv-worth test (lifetime * threshold * benefit >= insn_count), lever-exhaustion: memory/grind/func_80056CB8/hypotheses.md [s72] + rejected/ */ -- carries what + mechanism + lever-exhaustion, placed immediately above the `idx = i * 2;` statement in src/text1b.c.

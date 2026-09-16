@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80056CB8",
-      "file": "text1b",
-      "distance": 188,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-16T15:40:50+00:00",
-      "rotation_count": 2,
-      "unparked_from": "ROTATED (ladder exhausted, non-endgame residual \u2014 owner ruling 2026-09-02 wording; 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md 2026-09-16 func_80056CB8 OWNER-ESCALATION LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED",
-      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8006CCC8 -> floor 23 (2026-09-16T16:01)",
-      "returned_at": "2026-09-16T16:01:16+00:00"
-    },
-    {
       "func": "func_8006CCC8",
       "file": "text1b",
       "distance": 189,
@@ -1164,14 +1151,14 @@
     }
   ],
   "counts": {
-    "total": 124,
-    "active": 117,
+    "total": 123,
+    "active": 116,
     "by_status": {
-      "active": 117,
+      "active": 116,
       "rotated": 7
     },
     "by_verdict": {
-      "C": 95,
+      "C": 94,
       "ASM-PARTIAL": 22
     }
   },

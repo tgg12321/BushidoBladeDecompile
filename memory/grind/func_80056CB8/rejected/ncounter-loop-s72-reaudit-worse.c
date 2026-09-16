@@ -1,0 +1,104 @@
+/* REJECTED s72 (synthesis, 2026-09-16) -- mandatory KILL RE-AUDIT of the s52
+ * n-counter form on the s72 chassis:
+ *   for (n = 0; n < 2; n++) { i = start + n; ... }
+ * MEASURED: sandbox func_80056CB8 --disable all = 68/204 (build_insns 199),
+ * identical to s52. Dump (tmp/grind/func_80056CB8/s72/ncount.loopgiv): the
+ * ONLY giv is `i = start + n` (benefit 2, lifetime 184, "not worth while,
+ * 0 vs 164" because benefit - add_cost = 0); the two `i * 2` lookups are
+ * NOT givs at all: simplify_giv_expr distributes (start + n) * 2 into
+ * (mult (use start) 2) and returns 0 at tools/gcc-2.7.2/loop.c:5203
+ * ("invar * invar. Not giv"). So no form in which `i` is itself a giv of a
+ * counter biv can reach the target's $fp accumulator. CLASS kill,
+ * predicate_cite tools/gcc-2.7.2/loop.c:5203.
+ * Zero FAKE constructs present; reverted after measurement.
+ * The matching form (candidate.c) keeps `i` as the sole biv with the
+ * inline bound `i < start + 2` and names only the FIRST lookup's index. */
+extern s16 Judge;
+extern s32 ratan2(s32, s32);
+extern u8 D_8009A820[];
+extern u8 D_8009A821[];
+extern s32 D_800F6610;
+
+void func_80056CB8(s32 arg0) {
+    s32 pt0[4];
+    s32 pt1[4];
+    s32 hit0[4];
+    s32 hit1[4];
+    s32 work[4];
+    s32 start;
+    s32 i;
+    s32 n;
+
+    start = (*(u16 *)(arg0 + 0x3E8) & 3) * 2;
+    for (n = 0; n < 2; n++) {
+        s32 obj;
+        s32 flags;
+        s32 scale;
+        s16 *sin_p;
+        s16 *cos_p;
+        s32 x;
+        s32 z;
+
+        i = start + n;
+        obj = arg0;
+        flags = D_8009A821[i * 2] << 8;
+        if ((flags & 0x1000) != 0) {
+            obj = *(s32 *)arg0;
+        }
+
+        if (*(u16 *)(arg0 + 0x6A) == 0x13 || *(u16 *)(arg0 + 0x6A) == 6) {
+            flags += *(s16 *)(obj + 0x1CA);
+        } else {
+            flags += ratan2(D_800F6608.w0 - *(s32 *)(obj + 0xF4),
+                             D_800F6610 - *(s32 *)(obj + 0xFC));
+        }
+
+        sin_p = &Judge + (flags & 0xFFF);
+        scale = D_8009A820[i * 2] << 8;
+        x = *(s32 *)(obj + 0xB8) + ((scale * *sin_p) >> 12);
+        cos_p = &Judge + ((flags + 0x400) & 0xFFF);
+        z = *(s32 *)(obj + 0xC0) + ((scale * *cos_p) >> 12);
+        pt0[0] = *(s32 *)(obj + 0xB8);
+        pt0[1] = *(s32 *)(obj + 0xBC) - 0x320;
+        pt0[2] = *(s32 *)(obj + 0xC0);
+        pt1[0] = x;
+        pt1[1] = *(s32 *)(obj + 0xBC) - 0x320;
+        pt1[2] = z;
+
+        flags = func_80053614(pt0, pt1, (s32)hit0, (s32)work, 0x1F8002B8);
+        if (flags != 0) {
+            x += (*sin_p * 0x7D) >> 8;
+            z += (*cos_p * 0x7D) >> 8;
+        }
+
+        pt0[0] = x;
+        pt0[1] = *(s32 *)(obj + 0xBC) - 0x834;
+        pt0[2] = z;
+        pt1[0] = x;
+        pt1[1] = *(s32 *)(obj + 0xBC) + 0x1004;
+        pt1[2] = z;
+
+        flags = (flags | (func_80053614(pt0, pt1, (s32)hit1, (s32)work, 0x1F8002B8) << 1)) + 1;
+        if (flags == 3) {
+            if (hit1[1] - *(s32 *)(obj + 0xBC) < 5) {
+                flags = 0;
+            }
+        } else if (flags == 4) {
+            s32 dx = hit0[0] - *(s32 *)(obj + 0xB8);
+            s32 dz = hit0[2] - *(s32 *)(obj + 0xC0);
+            if (0x3D0900 < dx * dx + dz * dz) {
+                s32 y = *(s32 *)(obj + 0xBC);
+                if (y - hit1[1] >= 0) {
+                    if (y - hit1[1] >= 0x3E9) {
+                        flags = 5;
+                    }
+                } else {
+                    if (hit1[1] - y >= 0x3E9) {
+                        flags = 5;
+                    }
+                }
+            }
+        }
+        *(s8 *)(arg0 + 0x444 + i) = (s8)flags;
+    }
+}

@@ -3247,3 +3247,56 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - probe: Re-read s69/s70's direct signature comparison (func_8006CCC8: s32 func_8006CCC8(s32*, s32*, s16) vs func_80056CB8: void func_80056CB8(s32)); no new evidence available this session beyond what s69/s70 already measured.
 - result: Confirms s69/s70's conclusion unchanged: 3-arg pointer-taking s32-return vs 1-arg void, structurally and signature-level disjoint. No transplantable block exists.
 - verdict: CONFIRMED
+
+## [s72, synthesis] A fresh once-written once-read local naming the FIRST byte-table index (`idx = i * 2;`) with one real statement (`obj = arg0;`) between its def and its load lifts loop.c's giv-worth product for the combined i*2 giv pair from 124 to 186 (>= insn_count 163) and strength-reduces the pair into the target's $fp accumulator.
+- mechanism: loop.c strength_reduce giv-worth test, tools/gcc-2.7.2/loop.c:3823: `v->lifetime * threshold * benefit < insn_count` -> ignore. threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs) = 31 here, combined benefit 2+2 minus add_cost 2 = 2, lifetimes 1+1 = 2 -> 124 (the s11 message). lifetime 2+1 = 3 -> 186 -> reduced. The second lookup keeps its inline `i * 2` (combined into the same giv by combine_givs); naming BOTH lookups' index (s6/s32 shared idx) makes ONE giv with benefit 2 - 2 = 0, which is never reduced whatever its lifetime -- that is why every shared-index spelling in rejected/ was worse, and why s33's separately-named idxB (lifetime ~40 across the ratan2 call) paid register pressure instead.
+- probe: variant life2 (tmp/grind/func_80056CB8/s72/variant_life2.c), sandbox + dump.ps1; dump slice s72/life2.loopgiv shows "giv at 38 ... lifetime 2", "giv at 131 reduced to (reg:SI 220)".
+- result: 38 -> 51/204 in isolation (the +8 frame shift masks the win; all $fp lines match), 0/204 in the final combination. FAKE-annotated named-intermediate (.claude/rules/no-new-park-categories.md:214).
+- verdict: CONFIRMED
+
+## [s72] With the $fp giv reduced, the inline bound `for (i = start; i < start + 2; i++)` (no `limit` local) reproduces the target's constant entry guard (`li $v0,1; beqz`) and per-iteration loop-end compare (`lw start; addiu $v0,$t3,2; slt`).
+- mechanism: the duplicated entry test folds once `i` and `start` share a cse qty (cse.c:5334 '<' case); `start + 2` recomputed in-loop is a lifetime-1 invariant that move_movables declines to hoist (29*1*1 < 163), which is the target's shape. The s46 kill of this exact form was chassis-relative (measured without the $fp giv, 45 vs the then-floor).
+- probe: variant life2_bound; sandbox 45/204, diff shows both loop-control blocks gone.
+- verdict: CONFIRMED
+
+## [s72] `s32 work[2]` (not [4]) is the original size of the func_80053614 work buffer: the target's first reload spill slot sits at sp+0x60, inside where work[2..3] would be.
+- mechanism: frame layout is data (assign_stack_local order); a 16-byte work[] pushes every spill slot up by 8 and the frame to 0xB0. The greg dump confirmed both builds use exactly four spill slots.
+- probe: variant b2+work2; 40 -> 7/204, all prologue/epilogue/spill offsets match.
+- verdict: CONFIRMED
+
+## [s72] `flags |= call << 1; flags += 1;` and `*(s8 *)(arg0 + i + 0x444)` fix the `or $s0,$s0,$v0; addiu $s0,$s0,1` register shape and the `addu $v0,$s7,$s6` operand order.
+- mechanism: ordinary C (split-init accumulation sanctioned as ordinary C, owner rulings 2026-08-31 / 2026-09-02); operand order follows expression order.
+- probe: b2acc 43, b2st 42, both 40/204.
+- verdict: CONFIRMED
+
+## [s72] `if (flags == 3 && hit1[1] - y < 5) flags = 0; else if (flags == 4) {...}` is the target's dispatch: the failed `< 5` test falls into the `== 4` compare (with `li $v0,4` in the delay slot) and only the `flags = 0` path jumps over it (`j .L80056F94`).
+- mechanism: ordinary C; the previous nested-if form skipped the `== 4` test on the failed `< 5` path, and the two-independent-ifs form (also measured, 7/204) lacks the `j` because `flags = 0` then falls into the compare.
+- probe: variants b2+work2+twoifs (7) and b2+work2+and3+ya (0).
+- verdict: CONFIRMED
+
+## [s72] The y-distance block is an abs-value compare `(y - hit1[1] >= 0 ? y - hit1[1] : hit1[1] - y) >= 0x3E9`: fold-const distributes the `>=` into the ?: arms and do_jump's COND_EXPR case emits `bltz / beqz -> L5 / j end` for the then-arm and `bnez -> end` for the else-arm, so cross-jump merges only `li $s0,5`.
+- mechanism: fold-const COND_EXPR distribution + expr.c do_jump COND_EXPR (both labels given) -- ordinary C, the classic abs idiom; the rejected `ady = (dy >= 0) ? dy : -dy;` temp form (rejected/ycompare-absvalue-worse.c) differs because the temp forces one compare after the join.
+- probe: variants ...+ya and ...+yb both 0/204 (value form adopted, simplest).
+- verdict: CONFIRMED
+
+## [s72] KILL RE-AUDIT: the s52 n-counter form (`for (n = 0; n < 2; n++) { i = start + n; }`) re-measures 68/204 on the s72 chassis; in this form the i*2 lookups are not givs, so the $fp accumulator cannot form from any counter-biv spelling in which `i` is itself a giv.
+- mechanism: loop.c simplify_giv_expr MULT case, tools/gcc-2.7.2/loop.c:5203: (start + n) * 2 distributes to (mult (use start) 2) -> `case USE: return 0` -- an invariant-times-constant product is not representable, so the whole expression stops being a giv. Dump s72/ncount.loopgiv lists a single giv (`i = start + n`, benefit 2, "0 vs 164").
+- probe: variant ncount (clean C89 declarations, otherwise s52's shape); sandbox 68/204, build_insns 199 (identical to s52).
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/loop.c:5203
+- measured_on: s72 chassis (s22-s71 candidate body + func_80053614 s32-return prerequisite), zero FAKE constructs.
+
+## [s72] Two bivs (`i = start; for (n = 0; n < 2; n++, i++)`) on top of the lifetime-2 idx spelling measure 66/204: the $fp giv and the entry guard appear but biv n has no givs, so maybe_eliminate_biv cannot rewrite `n < 2` onto i and n stays live in its own register.
+- mechanism: loop.c maybe_eliminate_biv_1 (tools/gcc-2.7.2/loop.c:6004) rewrites a biv-vs-constant compare only through a reduced giv of THAT biv.
+- probe: variant life2_twobiv; sandbox 66/204, build_insns 197; diff keeps `sw zero,104(sp)`, `slti`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s72 chassis with the idx FAKE named-intermediate present (lifetime-2 spelling), func_80053614 s32-return prerequisite, no other FAKE constructs.
+
+## [s72] `D_800F6608.w8` (struct member) is byte-identical to the split scalar `extern s32 D_800F6610;` for the Z-midpoint read.
+- mechanism: same address after link (lo16 of D_800F6608+8); honest data model per split-scalars-hide-aggregate.
+- probe: variants with and without the w8 token, both 0/204.
+- verdict: CONFIRMED
+
+## [s72] FRONTIER after 0/204: (1) Judge/layer-1 review of the single FAKE construct (`idx`, named-intermediate family) -- if the reviewer wants a FAKE-free spelling, the only lever is any ordinary statement that sits between the first `i * 2` and its load; none was found that is not a named local. (2) Header-canonical cleanup: src/text1b_b.c still declares `extern u8 D_8009A820; / D_8009A821;` as unused scalars while text1b.c now declares them as byte arrays (cross-TU consistency, not a byte question). (3) Nothing else open.

@@ -1510,12 +1510,12 @@ void func_80053584(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
     func_80052D00(arg2, arg3);
 }
 typedef struct { s32 a, b, c, d; } _S16_53614;
-void func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A33F4 = arg4;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 8) = *(_S16_53614 *)arg0;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53614 *)arg1;
     *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
-    func_80052D00(arg2, arg3);
+    return func_80052D00(arg2, arg3);
 }
 extern u8 *D_800A33F4;
 extern u16 D_800A33F8;
@@ -1805,7 +1805,90 @@ void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
     *(s32 *)(a0 + 0x3CC) = -1;
 }
 INCLUDE_ASM("asm/funcs", func_80055B60);
-INCLUDE_ASM("asm/funcs", func_80056CB8);
+extern s16 Judge;
+extern s32 ratan2(s32, s32);
+extern u8 D_8009A820[];
+extern u8 D_8009A821[];
+
+void func_80056CB8(s32 arg0) {
+    s32 pt0[4];
+    s32 pt1[4];
+    s32 hit0[4];
+    s32 hit1[4];
+    s32 work[2];
+    s32 start;
+    s32 i;
+
+    start = (*(u16 *)(arg0 + 0x3E8) & 3) * 2;
+    for (i = start; i < start + 2; i++) {
+        s32 obj;
+        s32 flags;
+        s32 scale;
+        s16 *sin_p;
+        s16 *cos_p;
+        s32 x;
+        s32 z;
+        s32 idx;
+
+        /* FAKE: idx names the byte-table index for the first lookup only, mechanism:
+           loop.c strength_reduce giv-worth test (lifetime * threshold * benefit >= insn_count),
+           lever-exhaustion: memory/grind/func_80056CB8/hypotheses.md [s72] + rejected/ */
+        idx = i * 2;
+        obj = arg0;
+        flags = D_8009A821[idx] << 8;
+        if ((flags & 0x1000) != 0) {
+            obj = *(s32 *)arg0;
+        }
+
+        if (*(u16 *)(arg0 + 0x6A) == 0x13 || *(u16 *)(arg0 + 0x6A) == 6) {
+            flags += *(s16 *)(obj + 0x1CA);
+        } else {
+            flags += ratan2(D_800F6608.w0 - *(s32 *)(obj + 0xF4),
+                             D_800F6608.w8 - *(s32 *)(obj + 0xFC));
+        }
+
+        sin_p = &Judge + (flags & 0xFFF);
+        scale = D_8009A820[i * 2] << 8;
+        x = *(s32 *)(obj + 0xB8) + ((scale * *sin_p) >> 12);
+        cos_p = &Judge + ((flags + 0x400) & 0xFFF);
+        z = *(s32 *)(obj + 0xC0) + ((scale * *cos_p) >> 12);
+        pt0[0] = *(s32 *)(obj + 0xB8);
+        pt0[1] = *(s32 *)(obj + 0xBC) - 0x320;
+        pt0[2] = *(s32 *)(obj + 0xC0);
+        pt1[0] = x;
+        pt1[1] = *(s32 *)(obj + 0xBC) - 0x320;
+        pt1[2] = z;
+
+        flags = func_80053614(pt0, pt1, (s32)hit0, (s32)work, 0x1F8002B8);
+        if (flags != 0) {
+            x += (*sin_p * 0x7D) >> 8;
+            z += (*cos_p * 0x7D) >> 8;
+        }
+
+        pt0[0] = x;
+        pt0[1] = *(s32 *)(obj + 0xBC) - 0x834;
+        pt0[2] = z;
+        pt1[0] = x;
+        pt1[1] = *(s32 *)(obj + 0xBC) + 0x1004;
+        pt1[2] = z;
+
+        flags |= func_80053614(pt0, pt1, (s32)hit1, (s32)work, 0x1F8002B8) << 1;
+        flags += 1;
+        if (flags == 3 && hit1[1] - *(s32 *)(obj + 0xBC) < 5) {
+            flags = 0;
+        } else if (flags == 4) {
+            s32 dx = hit0[0] - *(s32 *)(obj + 0xB8);
+            s32 dz = hit0[2] - *(s32 *)(obj + 0xC0);
+            if (0x3D0900 < dx * dx + dz * dz) {
+                s32 y = *(s32 *)(obj + 0xBC);
+                if ((y - hit1[1] >= 0 ? y - hit1[1] : hit1[1] - y) >= 0x3E9) {
+                    flags = 5;
+                }
+            }
+        }
+        *(s8 *)(arg0 + i + 0x444) = (s8)flags;
+    }
+}
 #undef sp18
 #undef sp1C
 #undef sp20
@@ -2180,8 +2263,6 @@ extern u8 D_80099D94;
 extern u8 D_80099D9C;
 extern u8 D_80099D9D;
 extern u8 D_8009A088;
-extern u8 D_8009A820;
-extern u8 D_8009A821;
 extern u8 D_8009A830;
 extern s8 D_8009A838;
 extern u8 D_8009A840;
