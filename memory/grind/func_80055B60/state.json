@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_80056CB8",
-   "floor": 38,
-   "session": 22,
-   "at": "2026-09-16T10:35:08.044252+00:00",
-   "headline": "s22 rederive: materializing the loop bound as a named `s32 limit = start + 2;` local (not the i*2 index) drops the honest floor 42->38/204 (build_insns 197->198) -- first drop since s14 (8 flat sessio",
+   "floor": 0,
+   "session": 72,
+   "at": "2026-09-16T16:56:41.454152+00:00",
+   "headline": "func_80056CB8 COMPLETED-C",
    "consumed": null
   }
  ]
