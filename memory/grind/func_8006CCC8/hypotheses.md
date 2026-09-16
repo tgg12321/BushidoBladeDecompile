@@ -541,3 +541,12 @@ restructuring, not a no-semantic-purpose device).
 ## Frontier for s8 (<=3)
 1. RULING PENDING (this session's outcome): whether `nib = 0xF` (read mask, `nib << fade`, held in $s6 across calls, byte-evidenced statement position) is ordinary C or a constant-holder needing `/* FAKE: ..., mechanism: loop.c move_movables vs statement-order emission, lever-exhaustion: hypotheses.md s7 */` under named-local-fake-exception. Once ruled, submit candidate.c EXACTLY (annotated or not per the ruling) -- do not respell. SOTN const_holder precedents: docs/reference/sotn-construct-index.md:2635 (handFlag = 0x80000000) and :2658 (InitDistRandRangeX = 0xF).
 2. Nothing else is open for the bytes: 0 measured this session with the body resident.
+
+## [s7, solver re-dispatch] The Judge-cleared body (hash f80e2efaf2d289ed, unannotated `nib = 0xF`) still measures 0 on HEAD 74215cabe when applied to src/text1b.c.
+- mechanism: n/a -- re-measurement of the cleared body on the current chassis (the brief's CHASSIS CHECK was "measurement unavailable").
+- probe: apply2.py cand; sandbox --disable all; object-level inverse_compose classify.
+- result: score 0 (189/189, rules_dropped 0); classify IDENTICAL. Submitted exactly as cleared.
+- verdict: CONFIRMED
+
+## Frontier for s8 (<=3)
+1. None for the bytes: 0 measured with the cleared body resident; awaiting driver bytes-proof + FINAL CALL. If FINAL CALL FAILs on something other than `nib` (already ruled ordinary C), read the ruling before touching the body -- do not respell `nib`.

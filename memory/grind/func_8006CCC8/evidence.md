@@ -671,3 +671,33 @@ consumed, i.e. the same shape as `nib`, shipped as ordinary named constants.
 - tmp/grind/func_8006CCC8/s7/classify_literal.txt -- inverse_compose classify verdict (SCHED)
 - tmp/grind/func_8006CCC8/s7/sched_literal.txt, sched_literal_perturb.txt -- sched_solver extract/mkasm log and the perturb result (single vector)
 - tmp/grind/func_8006CCC8/s7/rtl_literal_func.txt, loop_literal_func.txt -- function slices of the .rtl / .loop dumps for the literal form
+
+## s7 (solver, re-dispatch 2026-09-16 after the Judge PASS) -- submission session
+
+The driver re-dispatched func_8006CCC8 in solver modality with a JUDGE CLEARANCE
+on record: decisions.md 2026-09-16 12:36 ruling PASS, body hash f80e2efaf2d289ed
+(the exact candidate.c body: switch dispatch + ternary nibble select +
+`nib = 0xF` mask local, unannotated). The ruling: `nib` is ORDINARY C (a read,
+consumed mask reconstructing the target's own `addiu $s6,$zero,0xF` between
+the i=0 and fade=0 inits), no /* FAKE */ required; the dispatch-time ban on
+`nib` was lifted by the same ruling. Per the brief, a cleared body is
+submitted EXACTLY.
+
+Measured this session, HEAD 74215cabe, body applied to src/text1b.c with
+tmp/grind/func_8006CCC8/s7/apply2.py (variant cand; it also deletes the stale
+`extern void func_8006CCC8(s32, s32, s32);` since the definition now precedes
+the caller func_8006D338):
+- `sandbox func_8006CCC8 --disable all`: score 0, target_insns 189,
+  build_insns 189, rules_dropped 0.
+- `inverse_compose.py classify text1b func_8006CCC8 --target-object
+  build/src/text1b.o --ours-object tmp/sandbox/func_8006CCC8/text1b.o`:
+  FIRST DIVERGENCE: IDENTICAL (tmp/grind/func_8006CCC8/s7/classify_cand_final.txt).
+  The text-stream classify path refuses zero-rule functions (would report a
+  fictitious PRE-RA verdict) -- use the object path, as its own message says.
+Nothing was respelled; self_vet.md is unchanged in substance (SANCTIONED-FAMILY-
+CLAIMS: none, ANNOTATION-CONFORMANCE: n/a), consistent with the Judge's
+"unannotated" clearance. Outcome: candidate-ready.
+
+## Artifacts (s7 solver, re-dispatch)
+- tmp/grind/func_8006CCC8/s7/classify_cand_final.txt -- object-level classify: IDENTICAL
+- tmp/grind/func_8006CCC8/s7/finish_s7b.py -- this session's ledger writer

@@ -1,3 +1,11 @@
+/* MIGRATION BANNER (asm-until-matched): main HEAD 74215cabe carries
+ * INCLUDE_ASM("asm/funcs", func_8006CCC8). Every "HEAD"/"resident" claim below
+ * refers to the WORKING TREE with this body applied via
+ * tmp/grind/func_8006CCC8/s7/apply2.py, not to committed main.
+ * [s7 solver, 2026-09-16, re-dispatch after the Judge PASS] Applied again on
+ * HEAD 74215cabe: sandbox --disable all = 0 (189/189); inverse_compose classify
+ * (object path) = IDENTICAL. Judge PASS ruling 2026-09-16 12:36 cleared body
+ * hash f80e2efaf2d289ed UNANNOTATED; submitted exactly, no respelling. */
 /* func_8006CCC8 -- src/text1b.c -- session s7 (synthesis modality), 2026-09-16
  * [s7 solver addendum, 2026-09-16] RE-MEASURED 0 (189/189) on HEAD 4b2d932bc
  * via tmp/grind/func_8006CCC8/s7/apply2.py (the older apply.py is broken).
