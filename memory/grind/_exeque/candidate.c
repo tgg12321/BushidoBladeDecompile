@@ -98,6 +98,27 @@
  * reorg.c fill_simple_delay_slots decision, a pass neither ra_solver nor
  * sched_solver models (documented out-of-scope in both tools' READMEs).
  * See hypotheses.md [s9] for the full evidence chain. This body unchanged.
+ *
+ * s10 (forensics, 2026-09-16): re-confirmed floor 2/187 unchanged (src had
+ * drifted back to INCLUDE_ASM; re-applied this body verbatim). Read
+ * tools/gcc-2.7.2/reorg.c's actual resource-conflict algorithm
+ * (mark_set_resources / mark_referenced_resources / insn_sets_resource_p /
+ * fill_simple_delay_slots's backward scan) line-by-line and proved
+ * FORMALLY (not by measurement) that s8's frontier axis 2 -- forcing
+ * D_8009BE7C's address pointer into a call-clobbered/call-target register
+ * to create a resource conflict excluding the D_8009BE7C=0 store from the
+ * D_8009BE80 jalr's delay slot -- is dead for EVERY possible register
+ * assignment: a plain memory store's address operand is always visited
+ * with in_dest=0 in mark_set_resources's MEM case (reorg.c:663-671), so it
+ * NEVER contributes a register bit to the computed "set" resources
+ * (reorg.c:690-693 only sets a bit when in_dest is true) -- a store only
+ * ever "sets" the memory flag, never a register, regardless of which hard
+ * register holds its address. See hypotheses.md/evidence.md [s10] for the
+ * full derivation with exact reorg.c line numbers. This closes axis 2
+ * permanently (class kill, predicate-cited); the frontier is now just
+ * axis 1 (H6 volatile ruling-request) plus a newly-identified axis 3
+ * (RTL-shape restructuring beyond register assignment, unexplored). This
+ * body unchanged.
  */
 s32 _exeque(void) {
     s32 mask;

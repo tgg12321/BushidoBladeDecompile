@@ -1,8 +1,8 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 9,
- "current_modality": "solver",
+ "session_count": 10,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -57,18 +57,24 @@
    "floor": 2,
    "modality": "solver",
    "headline": "s9 (solver): sched_solver formally proves zero sched1/sched2 order vectors exist for _exeque's floor-2/187 residual \u2014 it is entirely a reorg.c delay-slot-fill decision, out of scope for both ra_solver"
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s10 (forensics, corrected resubmission): floor re-confirmed 2/187; formal reorg.c source proof (not measurement) that frontier axis 2 (register-steering D_8009BE7C's store address to force a delay-slo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Restructuring D_8009BE7C's ADDRESS computation (not the callback pointer, which s7 already falsified in all 19 combinations) may force the store's address pseudo into a call_used_reg ($v0/$v1/$a0-$a3/$t0-$t9) that the D_8009BE80 jalr itself needs live across the call, excluding the store from reorg.c's delay-slot fill on a genuine resource conflict rather than a scheduling preference.",
-   "mechanism": "GCC 2.7.2 reorg.c mark_set_resources for CALL_INSN with include_delayed_effects=1 (reorg.c:573-604): marks every call_used_reg as SET by the call; a delay-slot candidate must not need a resource the call needs to be excluded from the fill.",
-   "next_probe": "Read the .sched/.combine dump (pwsh tools/grinder/dump.ps1 _exeque) for the exact hard register the D_8009BE80 indirect-call target materializes into, then try C-level spellings of D_8009BE7C's address expression (field/struct access instead of &D_8009BE7C, or a path sharing register pressure with the callback-address load) designed to force the store's address pseudo into that same register. This is a structural-modality probe (not solver), since neither ra_solver nor sched_solver can search a reorg.c resource-conflict question."
-  },
-  {
    "hypothesis": "The jalr-delay-slot residual may qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched (guard-clear-and-invoke), closing the last 2/187 instructions once ruled on.",
    "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and that the floor has now been flat at 2/187 for six consecutive sessions (s4-s9) across permuter, structural, enumerate, synthesis, and solver modalities, with the solver session additionally proving the residual is unreachable by either RA or scheduling-order search."
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and that the floor has now been flat at 2/187 for seven consecutive sessions (s4-s10) across permuter, structural, enumerate, synthesis, solver, and forensics modalities, with axis 2 (register-steering) now formally class-killed by reorg.c source proof rather than just measured dead."
+  },
+  {
+   "hypothesis": "Axis 3 (unexplored): restructure the RTL SHAPE of the guard/clear/call block itself (e.g. splitting it into more or fewer basic blocks, or changing which insn reorg.c treats as the delay-slot-fill 'trial' candidate at all) rather than steering register assignment within the existing shape.",
+   "mechanism": "reorg.c fill_simple_delay_slots's backward-scan loop (reorg.c:2960-2985) only considers trial=prev_nonnote_insn(insn) walking backward from the call; changing basic-block boundaries or insn count in the source block changes what stop_search_p and the backward scan even see as candidates, independent of the now-closed register-conflict question.",
+   "next_probe": "Structural-modality session: try C-level spellings that add/remove intervening statements or reorder the guard-read/clear/call sequence (e.g., moving the *p!=0 test into a separate helper-shaped block, or introducing a genuinely separate statement between the clear and the call) and re-measure sandbox score for each, watching for a spelling that changes reorg.c's trial-candidate set rather than just register homes."
   }
  ],
  "judge_constraints": [],
@@ -217,6 +223,14 @@
    "measured_on": "s4-s8 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged this session), sched_solver's full sched1+sched2 model of display.c (parity=True vs build/cc1), goal derived f",
    "predicate_cite": "",
    "result": "Both passes print only the header alignment stats (align honobj->tgtobj: |A|=186 |B|=187 {'equal': 185, 'replace': 1, 'd"
+  },
+  {
+   "session": 10,
+   "statement": "Frontier axis 2 (s8): restructuring D_8009BE7C's address computation to force its store's address pseudo into a call_used_reg the D_8009BE80 jalr needs live can create a reorg.c resource conflict that",
+   "kill_scope": "class",
+   "measured_on": "s4-s9 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c, both FAKE wraps present, unchanged); this is a reorg.c source-code proof independent of chassis/register-allocation sta",
+   "predicate_cite": "tools/gcc-2.7.2/reorg.c:690",
+   "result": "For a plain memory-store insn (D_8009BE7C's clear), mark_set_resources's MEM case (reorg.c:663-671) always visits the ad"
   }
  ],
  "ladder_skip": 0,
