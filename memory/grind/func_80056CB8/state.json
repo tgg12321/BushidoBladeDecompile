@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 81,
    "modality": "enumerate",
    "headline": "enumerate modality: systematic spelling sweep of the pt0/pt1 point-store block drops the floor 106 -> 81 by batching the output stores after the sin_p/cos_p/scale/x/z computations (pure statement reor"
+  },
+  {
+   "session": 6,
+   "floor": 81,
+   "modality": "enumerate",
+   "headline": "s6 (enumerate): fixed a real D_800F6608/D_800F6610 object-model mismatch (objdiff-confirmed, score-neutral); killed a shared-idx-local RA hypothesis (worse, 81->90); killed a goto-vs-nested-if hypothe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Re-reading the freshly-regenerated .greg/.lreg dumps for the NEW (81-floor) chassis's pseudo->hardreg map, and diffing the new build's asm instruction-by-instruction against asm/funcs/func_80056CB8.s to locate the exact 7 missing/extra instructions, will reveal the next concrete register-alloc lever.",
-   "mechanism": "global.c allocno priority (spill cost x use frequency) plus the specific conflict graph shape now current after the s5 statement reorder -- the pre-s5 pseudo numbers (obj=82, flags=83, etc.) are stale and must not be reused.",
-   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.greg's disposition table at line 14788 in full (currently only partially read this session) and cross-reference against tmp/grind/func_80056CB8/dumps/text1b.s vs asm/funcs/func_80056CB8.s side by side for the pt0/pt1/r1/r2 region."
+   "hypothesis": "The code==4 tail's reorg.c delay-slot-duplication difference (4 extra addu v0,s7,s6 in exit-branch delay slots, bltz+beqz vs our bgez) is gated by register pressure or scheduling earlier in the function, not this tail's own C shape (goto-vs-nested-if measured neutral this session).",
+   "mechanism": "reorg.c profitable-duplication-into-delay-slot heuristic; likely tied to how many free/fillable delay slots exist earlier in the function, which depends on the register-rotation residual elsewhere.",
+   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.sched (regenerated this session) around the code==4 tail's RTL insns to see the actual delay-slot-fill decisions reorg made for THIS build, and compare against what would need to change earlier in the function (not in this tail) to make 4 more delay slots available/profitable."
   },
   {
-   "hypothesis": "The dx/dz/y block in the code==4 branch near the end of the function (reading *(obj+0xB8)/*(obj+0xC0)/*(obj+0xBC) again) may have the same untried batched-store-ordering lever available.",
-   "mechanism": "Same spelling_enum.py assign/anchor batching mechanism that produced this session's win, applied to a different straight-line sub-block.",
-   "next_probe": "Mark that block with ENUM-BEGIN/END and run the same spelling_enum.py + sweep_variants.py pipeline once the register-alloc dump reading above is done first (this block is smaller and less likely to be the primary residual, so it's third priority)."
+   "hypothesis": "Target's single materialized $s8 (i*2, reused across the flags-index and scale-index reads via a call boundary) is reachable via a shared BASE POINTER local instead of a shared index local (which measured worse this session).",
+   "mechanism": "If the original C held a pointer into the D_8009A821/D_8009A820 arrays (or a combined struct) rather than re-indexing by a shared scalar, the pointer's live range across the ratan2 call might cost less than the shared idx did, or GCC may not even need to keep it live across the call if the two reads are restructured relative to the call.",
+   "next_probe": "Try restructuring so the two array reads happen adjacently (both before or both after the ratan2 call) instead of straddling it, OR try a pointer local `u8 *pf = &D_8009A821 + i*2;`/`u8 *ps = &D_8009A820 + i*2;` pattern and measure both against the s6 chassis."
   },
   {
-   "hypothesis": "The 16/32 unchanged-at-106 variants from this session's sweep are compile-time-invalid pointer-arithmetic swaps, not real neutral measurements -- a future session should not re-run the same swap axis on &Judge-style pointer expressions expecting new information.",
-   "mechanism": "spelling_enum.py's generic commutative-swap regex does not special-case address-of/pointer-arithmetic operands.",
-   "next_probe": "If tools/spelling_enum.py is used again on a region containing &GLOBAL + expr pointer arithmetic, either exclude that product from the swap axis (--keep-inlined does not cover this; would need a tool enhancement) or manually inspect each swap variant's validity before trusting its score."
+   "hypothesis": "The remaining register-rotation cluster (s3/s6/s0/s1/... renaming) needs a fresh .greg/.lreg pseudo->hardreg map read on the CURRENT (s6) chassis before further RA-lever hypotheses are proposed -- prior sessions' pseudo numbers are stale after each structural edit.",
+   "mechanism": "global.c allocno priority (spill cost x use frequency) + the current conflict-graph shape, which changes every time the C body's statement order or local set changes.",
+   "next_probe": "Re-dump (pwsh tools/grinder/dump.ps1 func_80056CB8) on the s6 chassis and read tmp/grind/func_80056CB8/dumps/text1b.greg's disposition table for the pt0/pt1/obj/flags/ang region, cross-referenced against the objdiff_full2.txt register-substitution list already captured this session."
   }
  ],
  "judge_constraints": [],
@@ -94,6 +100,22 @@
    "measured_on": "s5 chassis, enum2/v01.c (one of the 16 ill-formed-swap variants) as generated by tools/spelling_enum.py's default swap axis applied to this region's &Judge pointer-arithmetic expressions",
    "predicate_cite": "",
    "result": "16/32 of the swept variants that reported the pre-session baseline score of 106 are this artifact, not a real measuremen"
+  },
+  {
+   "session": 6,
+   "statement": "Target's asm materializes i*2 ONCE into $s8 (reused via addu at,at,s8 at both the D_8009A821 flags-index site and the D_8009A820 scale-index site, ~30 C lines and one ratan2 call apart) where our buil",
+   "kill_scope": "instance",
+   "measured_on": "s6 chassis: candidate.c body (s5 store-batching + s6 D_800F6610 fix) + func_80053614 s32-return fix, with a single s32 idx = i * 2; local added and both [i*2] index sites switched to [idx]; zero FAKE ",
+   "predicate_cite": "",
+   "result": "Score REGRESSED 81 -> 90 (build_insns 197 -> 199). The shared idx local's live range spans the ratan2 call and the obj/a"
+  },
+  {
+   "session": 6,
+   "statement": "The code==4 tail's branch-topology mismatch (our build emits one bgez where target emits bltz+beqz as two branches, plus target has 4 extra addu v0,s7,s6 address-recomputes duplicated into exit-branch",
+   "kill_scope": "instance",
+   "measured_on": "s6 chassis (candidate.c body + D_800F6610 fix + func_80053614 s32-return fix), goto-based rewrite of the code==3/code==4 tail only, zero FAKE constructs, reverted after measurement.",
+   "predicate_cite": "",
+   "result": "Score and build_insns IDENTICAL before and after (81/197) -- our fork produces byte-identical output for the goto form a"
   }
  ],
  "ladder_skip": 0,
