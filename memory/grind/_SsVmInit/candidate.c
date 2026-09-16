@@ -1,27 +1,26 @@
-/* _SsVmInit candidate — session s1 (recon, drilled to progress).
- * Honest sandbox floor at end of session: 37 (started at 200, no-C-body).
- * Apply verbatim in place of the old `INCLUDE_ASM("asm/funcs", _SsVmInit);`
- * line in src/main.c (declarations block included — several are shared
- * with sibling functions already in the TU; de-dupe against whatever's
- * there when re-applying to a later HEAD).
+/* _SsVmInit candidate — session s2 (structural).
+ * Honest sandbox floor at end of s2: 19 (was 38 at end of s1 — see s2
+ * evidence: the s1 floor was FALSE, produced by a declaration-order bug,
+ * not a real codegen residual; see hypotheses.md s2 H5).
+ * Apply verbatim in place of `INCLUDE_ASM("asm/funcs", _SsVmInit);` in
+ * src/main.c. Several of these externs duplicate declarations already in
+ * scope LATER in the same TU (main.c) with identical types — harmless
+ * per C extern-redeclaration rules, and REQUIRED here because this
+ * function sits textually BEFORE those later declarations.
  */
 extern s32 MarioCam_str[2];
-extern u8 _SsVmMaxVoice;
-extern u8 _svm_vab_used[];
-extern u16 _svm_vab_count;
-extern s16 D_80102A78[];
-extern u8 D_800F65E0[];
-extern s16 D_800F4E1A;
+extern s16 D_800F4E18;
 extern s16 D_800F4E1C;
-extern s16 D_800F4E1E;
+extern s8  D_800F4E35;
+extern u16 D_800F1B10;
+extern u16 D_800F1B12;
+extern u16 D_801078D8;
+extern u8  _svm_auto_kof_mode;
+extern s16 kMaxPrograms;
+extern u16 _svm_vab_count;
 extern s16 D_800F4E20;
 extern s8  D_800F4E22;
 extern s16 D_800F4E24;
-extern s16 D_800F4E28[];
-extern s16 D_800F4E2A;
-extern s16 D_800F4E2C;
-extern s16 D_800F4E2E;
-extern s8  D_800F4E35;
 extern s16 D_800F4E36;
 extern s16 D_800F4E38;
 extern s16 D_800F4E3A;
@@ -33,18 +32,8 @@ extern s16 D_800F4E46;
 extern s16 D_800F4E48;
 extern s16 D_800F4E4A;
 extern u16 D_8010280A;
-extern s32 _svm_rattr;
-extern s32 _svm_rattr_plus_0x4;
-extern s16 _svm_rattr_plus_0x8;
-extern s16 _svm_rattr_plus_0xA;
-extern u16 D_800F1B10;
-extern u16 D_800F1B12;
-extern u16 D_801078D8;
 extern u16 D_800F1B14;
 extern u16 D_800F2B68;
-extern u8 _svm_auto_kof_mode;
-extern s16 _svm_stereo_mono;
-extern s16 kMaxPrograms;
 
 void _SsVmInit(s32 a0) {
     s32 buf[16];

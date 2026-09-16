@@ -173,3 +173,126 @@ before hypothesizing further:
 - [s1] The CROSS-KNOWLEDGE hits (libsnd-hunt-report.md naming _SsVmInit as md_game_end) are naming/provenance evidence only, not codegen evidence; no action taken beyond what the inherited ledger already recorded.
 
 - [s1] New extern needed and added beyond the inherited candidate.c's declaration list: extern s16 D_800F4E18; (used at the offset-cast site but only declared later in the file at line ~1401 for a different function; C requires the declaration precede use in this TU's style).
+
+## Session s2 (structural, 2026-09-16)
+
+### OBJECT MODEL (mandatory per DATA MODEL signals) — reconfirmed, unchanged from s1
+`D_800F4E1C` and `D_800F4E35` (SPLIT-AGGREGATE aliases of
+`g_satan1_slot_state_table` / `g_satan1_slot_state_field_at_14`): per-word
+extern + byte-offset-cast convention, MATCHES — same as s1, no change this
+session. Re-verified: still no per-symbol anomaly at floor 19.
+
+### The s1 floor of 38 was FALSE — declaration-order bug (H5)
+
+Applying the ledger's inherited candidate.c to `src/main.c` verbatim this
+session and running `sandbox --disable all` FRESH (not trusting the
+inherited number, per the brief's CHASSIS CHECK instruction) read **57**,
+not 38. `pwsh tools/grinder/dump.ps1 _SsVmInit` immediately explained why:
+cc1 emitted 8 `undeclared (first use this function)` errors inside
+`_SsVmInit` for symbols that ARE declared elsewhere in `src/main.c` — but
+LATER in the file, after `_SsVmInit`'s definition. GCC 2.7.2 does not hard
+-fail the translation unit on this; it falls back to an implicit `int`
+declaration for each undeclared identifier and keeps compiling, silently
+producing WRONG codegen (wrong access width/signedness at each affected
+store site, which then perturbs register liveness/allocation for the rest
+of the function body — explaining why the score regression was much
+larger than 8 individual bad stores would suggest).
+
+Fixed by adding 8 explicit `extern` declarations (types taken from each
+symbol's existing, later, in-scope declaration in the same TU) to the
+function's local declaration block, ahead of `_SsVmInit`'s definition:
+`_svm_vab_count`, `D_800F4E35`, `D_800F4E1C`, `D_800F1B10`, `D_800F1B12`,
+`D_801078D8`, `_svm_auto_kof_mode`, `kMaxPrograms`. Score dropped
+57 -> 19 immediately; re-running `dump.ps1` shows zero remaining errors
+attributable to `_SsVmInit` (the 5 `conflicting types for ...` messages
+still printed are pre-existing, unrelated symbols at unrelated line
+numbers elsewhere in main.c — `D_800163D8`, `D_800163E8`,
+`_spu_IRQCallback`, `SpuFree`, `SpuSetReverb` — not touched this session).
+
+**This means the s1 session's recorded floor (37, then re-measured as 38)
+was never a real measurement of this candidate.c body's honest distance —
+it was measuring a body with silent implicit-int corruption.** The TRUE
+honest floor for (functionally) the same C structure s1 derived is **19**,
+less than half of what the ledger claimed. This is evidence for future
+sessions on ANY function: `sandbox --disable all`'s build step does not
+surface cc1 declaration errors in its score/insn-count output — always
+cross-check with `dump.ps1`'s cc1 stderr (or a manual cc1 invocation) when
+a candidate's declaration block was assembled piecemeal across multiple
+sessions / re-applications, especially when several symbols are declared
+"later in the file for a different function" as a stated convention (a
+strong sign a later-only declaration might get silently missed for an
+earlier function).
+
+### Score history this session (sandbox --disable all)
+
+1. s1's candidate.c applied verbatim (re-verified from disk, not assumed):
+   **57** (target_insns misreported differently across runs — see below;
+   this measurement was BEFORE the declaration fix).
+2. Added the 8 missing `extern` declarations (H5): **19**. Reproducible
+   (measured twice).
+3. Frontier item 1 probe (H6): `(u16)i < maxVoice` loop-exit mask alone:
+   **21** (worse). Combined with `offset << (u16)i` shift mask: **21**
+   (same, no further change). Reverted both: **19** (confirms
+   reproducibility of the regression, not a fluke).
+4. Typed `maxVoice` as `u16` instead of `s32` (isolated probe, no cast
+   changes elsewhere): **19** (no change either way) — reverted to `s32`
+   for minimal-diff cleanliness since it had zero effect.
+
+Final HEAD state this session: floor **19**, matching candidate.c as
+banked to `memory/grind/_SsVmInit/candidate.c`.
+
+### NOTE on target_insns/build_insns fields across runs
+
+The sandbox tool's JSON printed `target_insns: 200, build_insns: 174`
+(score 57) on the FIRST measurement this session and
+`target_insns: 174, build_insns: 193` (score 19) on the SECOND — i.e.
+`target_insns` changed between runs of the SAME tool on the SAME target
+file. This looks like a display/caching quirk in the sandbox tool (target
+instruction count should be fixed per function) rather than a real change
+in the target; not investigated further this session (out of scope for
+structural modality) but flagged here in case a future session sees
+inconsistent `target_insns` readings and wonders whether the target
+itself moved — it almost certainly did not; trust the `score` field.
+
+### Direct asm read of the remaining residual region (frontier item 2, corrected)
+
+Read `asm/funcs/_SsVmInit.s` lines 55-172 directly (the per-voice loop
+body + its exit test) to check the s1-inherited frontier item 2's theory
+about `D_800F4E22`'s register reuse. Findings:
+
+- The per-field store ORDER in target's asm matches candidate.c's
+  statement order EXACTLY (21 fields: D_800F4E1A, D_800F4E28, D_800F4E18,
+  D_800F4E35, D_800F4E1C, D_800F4E1E, D_800F4E2A, D_800F4E2C, D_800F4E2E,
+  D_800F4E20, D_800F4E24, D_800F4E22, D_800F4E36, D_800F4E38, D_800F4E3A,
+  D_800F4E3C, D_800F4E42, D_800F4E44, D_800F4E46, D_800F4E48, D_800F4E4A,
+  D_800F4E3E) — ordering is not a remaining lever.
+- The 0xFF constant shared by `D_800F4E18` and `D_800F4E2E` is
+  materialized ONCE in `$s1`, BEFORE the per-voice loop begins
+  (`addiu $s1,$zero,0xFF` at 0x80086940), and reused across BOTH stores
+  on EVERY loop iteration — a loop-invariant shared-constant hoist, not
+  the s1 theory of an intra-iteration transient reuse with `D_800F4E22`'s
+  0x40. The s1 theory about `D_800F4E22` reusing a register that
+  "carried an earlier unrelated constant 0x40... consumed by the
+  D_800F4E18-store's dead branch" does not match: `D_800F4E18` stores
+  `$s1` (=0xFF), not the `$v1`-carried 0x40, and there is no dead branch
+  in this region. Frontier item 2 is corrected/replaced (see
+  hypotheses.md live frontier).
+- Target also hoists `$a0 = sp+0x10` (the `buf` array's address, the arg
+  to `func_8008B488`) ONCE before the loop (0x80086944) rather than
+  re-deriving it per call — noted as a new frontier item, not yet probed
+  this session.
+
+- [s2] Object model reconfirmed unchanged from s1 (both flagged SPLIT-AGGREGATE symbols still MATCH via the per-word convention) at the new, corrected floor 19.
+- [s2] H5: the s1-recorded floor of 38 was FALSE, caused by 8 identifiers used-before-declared in _SsVmInit (silently accepted as implicit int by GCC 2.7.2, corrupting codegen); fixing the declaration order dropped the honest floor to 19, confirmed via dump.ps1's cc1 stderr going from 8 errors to 0 for this function.
+- [s2] H6 KILLED (instance): u16-masking the per-voice loop's exit compare and/or shift-amount operand, to match target's andi/sltu tail shape, regresses the score 19->21; reverted.
+- [s2] Direct read of asm/funcs/_SsVmInit.s lines 55-172 confirms candidate.c's field-store order matches target exactly, and corrects the s1 frontier's D_800F4E22 register-reuse theory (target actually hoists the SHARED 0xFF constant for D_800F4E18/D_800F4E2E into $s1 once before the loop; D_800F4E22's 0x40 is a fresh, unrelated per-store load with no dead-branch involvement).
+
+- [s2] OBJECT MODEL reconfirmed unchanged from s1: D_800F4E1C and D_800F4E35 (SPLIT-AGGREGATE aliases of g_satan1_slot_state_table / g_satan1_slot_state_field_at_14) still MATCH via the per-word extern + byte-offset-cast convention at the new floor 19; no per-symbol anomaly.
+
+- [s2] Direct read of asm/funcs/_SsVmInit.s lines 55-172 confirms candidate.c's 21-field per-voice store order matches target's asm order EXACTLY (D_800F4E1A, D_800F4E28, D_800F4E18, D_800F4E35, D_800F4E1C, D_800F4E1E, D_800F4E2A, D_800F4E2C, D_800F4E2E, D_800F4E20, D_800F4E24, D_800F4E22, D_800F4E36, D_800F4E38, D_800F4E3A, D_800F4E3C, D_800F4E42, D_800F4E44, D_800F4E46, D_800F4E48, D_800F4E4A, D_800F4E3E) -- store ordering is not a remaining lever.
+
+- [s2] The s1 ledger's frontier item 2 theory (D_800F4E22 reusing a register that 'carried an earlier unrelated constant 0x40... consumed by the D_800F4E18-store's dead branch') does not match the actual target bytes: D_800F4E18 stores $s1 (=0xFF, hoisted once before the loop and shared with D_800F4E2E's store), not a $v1-carried 0x40, and there is no dead branch in this region. D_800F4E22's 0x40 is a fresh, unrelated per-iteration li immediately before its own store.
+
+- [s2] Target hoists two loop-invariant values out of the per-voice loop that candidate.c currently re-derives per-iteration via ordinary C: the shared 0xFF constant (materialized once in $s1 before the loop, reused by both D_800F4E18 and D_800F4E2E stores each iteration) and the buf array's address ($a0 = sp+0x10, computed once at 0x80086944 before the loop, reused for every func_8008B488 call). Neither has been tested as an explicit C-level hoist yet.
+
+- [s2] sandbox --disable all's JSON output for this function showed target_insns flip between 200 and 174 across two consecutive runs of the identical committed source (build_insns also changed, 174 then 193) -- looks like a display/caching quirk in the sandbox tool rather than the target itself changing; the score field was consistent and is the trustworthy number.

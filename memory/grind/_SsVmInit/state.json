@@ -1,31 +1,37 @@
 {
  "func": "_SsVmInit",
  "file": "main",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 38,
    "modality": "recon",
    "headline": "Re-ran discarded s1 recon: applied inherited candidate.c to src/main.c, re-measured honest floor 38 (was claimed 37 pre-discard), banked explicit per-symbol OBJECT MODEL verdicts for both flagged SPLI"
+  },
+  {
+   "session": 2,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "s1's recorded floor of 38 was false (8 undeclared-identifier implicit-int bugs); fixing declaration order drops the honest floor to 19; a u16-mask lever for the per-voice loop exit was tried and kille"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Type the per-voice loop counter `i` as s16/u16 instead of s32 to reproduce the residual loop-exit compare mismatch (target: masked andi 0xFFFF + unsigned sltu; current build: plain signed slt, no mask).",
-   "mechanism": "Same class of fix as the confirmed do-while/u16-mask and narrowing-cast levers, applied to the outer loop bound instead of the inner offset -- an unmasked s32 counter vs the original's narrower counter type would produce exactly this shape difference.",
-   "next_probe": "Change i's declaration (or introduce a masked view) for just the per-voice loop and re-measure; if it doesn't close, read the .sched/.greg dump per the PASS ATTRIBUTION contract (pwsh tools/grinder/dump.ps1 _SsVmInit) before further guessing."
+   "hypothesis": "Read the .greg/.sched dump content (not just cc1 stderr) for the floor-19 body's _SsVmInit region and pass-attribute the remaining ~19-insn residual before proposing further specific-register-seat levers.",
+   "mechanism": "n/a -- diagnostic step, mandated by the PASS ATTRIBUTION contract before further guessing.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 _SsVmInit already regenerates tmp/grind/_SsVmInit/dumps/main.greg and main.sched (whole-TU); grep/extract just the _SsVmInit region (search for the function's label/LUID range) and read it before hypothesizing further."
   },
   {
-   "hypothesis": "Line-by-line objdump diff of the remaining ~38-score residual against asm/funcs/_SsVmInit.s has not been done exhaustively (only a visual skim in the inherited work) -- the D_800F4E22 store's source register may reuse a transient v1 that also carried an earlier unrelated constant 0x40 in target, analogous to the already-applied offset=1;buf[0]=offset<<i variable-reuse technique.",
-   "mechanism": "Same variable-reuse-for-RA-steering technique (defeat-licm-hoist-var-reuse family) applied to a different constant.",
-   "next_probe": "Re-verify from asm/funcs/_SsVmInit.s bytes around the D_800F4E22 store before trusting the register-reuse theory; if confirmed, write the constant through a reused local instead of a fresh literal and re-measure."
+   "hypothesis": "Explicitly hoist the shared 0xFF constant (currently written as the literal 0xFF at both the D_800F4E18 and D_800F4E2E store sites) into a single local variable set once before the per-voice loop and read twice inside it, matching target's single-materialization-in-$s1-before-the-loop shape.",
+   "mechanism": "Named-intermediate / staged-value family (a fresh or loop-hoisted local reused across two same-value stores) -- if this closes bytes, it needs the family's prerequisites (no-new-park-categories.md) checked before banking; if it's simply what GCC 2.7.2 naturally does when the value is loop-invariant and used twice, no annotation is needed at all (ordinary C, Ruling 1 in ordinary-c-judge-decidable.md).",
+   "next_probe": "Declare a local (e.g. `s16 ff = 0xFF;`) before the per-voice do-while, replace both literal 0xFF stores with reads of it, re-measure sandbox --disable all."
   },
   {
-   "hypothesis": "Run tools/grinder/dump.ps1 _SsVmInit and read the .greg/.sched dumps to pass-attribute the remaining floor-38 residual before further manual guessing -- not yet done this session (recon budget spent on re-verifying the inherited chassis and fixing the OBJECT MODEL gap).",
-   "mechanism": "n/a -- diagnostic step, not a codegen lever itself.",
-   "next_probe": "pwsh tools/grinder/dump.ps1 _SsVmInit; read tmp/grind/_SsVmInit/dumps/*.greg and *.sched for the current HEAD form before hypothesizing further register/scheduling levers."
+   "hypothesis": "Target hoists the buf-array address ($a0 = sp+0x10) once before the per-voice loop rather than re-deriving it per func_8008B488 call; check whether this already happens naturally in our build or is a symptom of the register-pressure difference behind the residual.",
+   "mechanism": "n/a until the .greg/.sched dump (frontier item 1) is read -- this is exactly the kind of allocation/scheduling question that dump answers directly rather than needing a guessed C lever.",
+   "next_probe": "After reading the .greg/.sched dump for this function, check whether buf's address is already live across the whole loop in our RTL or gets recomputed; if recomputed, look for a C-level reason (e.g. an intervening statement that appears to clobber a0's preferred register)."
   }
  ],
  "judge_constraints": [],
@@ -38,11 +44,20 @@
    "measured_on": "HEAD s1 naive-transliteration form (plain for loops, unmasked s32 i, offset = i*54), no FAKE constructs present",
    "predicate_cite": "",
    "result": "objdump confirms loop-reversal + accumulator strength-reduction on the naive form, contradicting target's shape"
+  },
+  {
+   "session": 2,
+   "statement": "u16-masking the per-voice loop's exit compare (`(u16)i < maxVoice`) and/or the shift-amount operand (`offset << (u16)i`), to match target's andi $v0,$s0,0xFFFF / sltu / andi $a1,$s0,0xFFFF tail shapes",
+   "kill_scope": "instance",
+   "measured_on": "HEAD s2 floor-19 candidate.c chassis, casts applied/reverted in isolation, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score regressed 19 -> 21 with either the loop-exit mask alone or combined with the shift-amount mask; reverting both res"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T21:24:37.353584+00:00",
- "object_model_audited": 1
+ "object_model_audited": 2,
+ "escalation_deferrals": 0
 }
