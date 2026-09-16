@@ -1,6 +1,40 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16)
+ * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17)
  * — floor 42/204, NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s17 (synthesis modality, 2026-09-16). STALE-HEAD-CLAIM NOTE (as always):
+ * src is INCLUDE_ASM between sessions. Re-applied s16 body unchanged,
+ * re-confirmed floor 42/204 fresh (build_insns 197). Kill re-audit:
+ * re-measured s16's closest instance kill (abs-value y-compare form) fresh
+ * -- reproduces 45/204 exactly, no FAKE constructs present so
+ * fake_ablate.py has nothing to ablate.
+ *
+ * MAJOR CORRECTION: the s13-s16 "reg 11/reg 65 double-bind" frontier item
+ * was a category error. FIRST_PSEUDO_REGISTER=68 (mips.h:1181), so any
+ * register number below 68 that reload1.c:2283's "Spilling reg %d." prints
+ * is a HARD register, never a pseudo -- reg 11 = $t3, reg 65 = "lo" (MIPS
+ * mult/div low-result register). These are ordinary reload scratch-register
+ * evictions (LO_REG/MD_REGS pressure from the loop's two back-to-back
+ * `scale * *sin_p` / `scale * *cos_p` multiplies at RTL insn 142, plus a
+ * separate t3-class GR_REGS need for stack-address materialization ahead of
+ * the func_80053614 calls) -- NOT a spilled named C-level value, and the
+ * ledger's proposed "ask inverse.py which C object occupies pseudo 11/65"
+ * next-probe cannot be answered because no such pseudo exists. KILLED
+ * class (predicate: mips.h:1181). Full derivation: hypotheses.md [s17].
+ *
+ * Re-ran `inverse_compose.py classify` fresh on the current chassis --
+ * reproduces the s8 verdict UNCHANGED: FIRST DIVERGENCE is PRE-RA/rtl_shape
+ * (a different instruction MULTISET), which ra_solver/sched_solver both
+ * explicitly refuse to touch. This means the entire s13-s16 RA-solver
+ * pursuit was mis-targeted from the start -- the classify tool had already
+ * ruled it out at s8. Correlated part of the "target only" instruction set
+ * to real target asm this session: `addiu $v0,$t3,0x2` (80056FA4) and
+ * `addiu $fp,$fp,0x2` (80056FB0) sit in the LOOP TAIL (80056F9C-80056FB4),
+ * ordinary per-iteration index/pointer bookkeeping distinct from BOTH the
+ * closed y-compare tail (s16) and the closed scratchpad-literal
+ * materialization (s8/s9/s15) -- a genuinely new, previously-unexamined
+ * axis for the next session. Reverted src/text1b.c to clean INCLUDE_ASM
+ * (`git checkout -- src/text1b.c`, verified zero diff) before finishing.
  * ---------------------------------------------------------------------
  * s16 (structural modality). STALE-HEAD-CLAIM NOTE (same as every prior
  * session): src representation is INCLUDE_ASM between grind sessions;

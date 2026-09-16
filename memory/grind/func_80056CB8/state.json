@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 16,
- "current_modality": "structural",
+ "session_count": 17,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -99,18 +99,24 @@
    "floor": 42,
    "modality": "structural",
    "headline": "s16 structural: re-confirmed floor 42/204 fresh; read the target asm's flags==4 y-compare tail directly for the first time this cycle and found the s6/s7 'branch-topology mismatch' framing was a misdi"
+  },
+  {
+   "session": 17,
+   "floor": 42,
+   "modality": "synthesis",
+   "headline": "s17 synthesis: re-confirmed floor 42/204 fresh; killed the s13-s16 reg11/reg65 'double-bind' as a category error (hardregs t3/lo, not pseudos -- FIRST_PSEUDO_REGISTER=68) and re-derived that the resid"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The reg 11/reg 65 call-crossing spill pair (s13/s15's double-bind, .greg 'Spilling reg 11.'/'Spilling reg 65.' twice each around the two func_80053614 calls) is the one remaining un-narrowed lever -- neither the induction-variable family (closed s10+s16) nor the y-compare branch-topology family (closed s16) explains it, and no session s13-s16 has named which C-level VALUE actually occupies pseudo 11/65.",
-   "mechanism": "reload1.c: a pseudo with reg_n_refs spanning a CALL_INSN is a spill candidate; classify's PRE-RA verdict names the frame-size delta (176 vs 168 byte frame) and the $s8-based spill/reload round-trip as the concrete symptom, but has never identified WHICH source-level object (pt0/pt1/hit0/work addresses? flags? obj?) is forced through that path.",
-   "next_probe": "A solver-modality session running `tools/ra_solver/inverse.py` (not just `inverse_compose.py classify`) against the current 42/197 chassis, specifically asking which C-level object maps to pseudo 11 and pseudo 65 at the func_80053614 call sites -- this is the concrete, previously-unexecuted step the s13/s15 double-bind entries both deferred."
+   "hypothesis": "The remaining PRE-RA rtl_shape residual is concentrated (at least in part) in how the loop-tail index/pointer bookkeeping (`i++` and the $fp byte-offset-into-Judge-table pointer, both advanced by 2/iteration in target) is expressed in C, not in any register-allocation-solvable axis.",
+   "mechanism": "classify's rtl_shape verdict says the instruction multiset differs upstream of RA/scheduler; the newly-localized target-only `addiu ?,?,0x2` (x2, loop tail 80056F9C-80056FB4) and the stride-4 `sll ?,?,0x2` in the target-only set (vs our stride-2 `i*2` indexing) suggest target may compute a second, pointer-typed induction variable (advancing a pointer into the Judge sin/cos table by a byte offset, distinct from the array-index `i`) that our current C's `(&D_x)[i*2]` array-indexing form does not produce as separate loop-carried bookkeeping.",
+   "next_probe": "A structural or rederive-modality session should do a fresh line-by-line walk of asm/funcs/func_80056CB8.s lines 195-215 (the loop tail, addresses 80056F9C-80056FB4) against a fresh m2c decompile restricted to that block, and against the classify target-only list's full remaining unattributed entries (`li ?,4`, the two extra `lw` loads at offsets 104/96(sp)), to determine what C-level VALUE (not register) the target's `$fp`-based pointer arithmetic represents -- do NOT reopen the RA-solver/inverse.py pseudo-naming path, which s17 closed as a category error."
   },
   {
-   "hypothesis": "With the y-compare branch-topology sub-residual and the full 'share i*2' family both now closed, the remaining PRE-RA multiset gap (classify's repeated verdict across s13-s16) is concentrated entirely in the call-crossing spill pair above and possibly the frame-size delta itself, not in any remaining un-swept statement-ordering or declaration-order axis of the loop body.",
-   "mechanism": "n/a -- negative-space narrowing from this session's two kills plus the prior sessions' exhaustive dx/dz, pt0/pt1, sin_p/cos_p/scale/x/z, and named-intermediate sweeps (all flat at 42/197 or worse).",
-   "next_probe": "Once the solver names the spilled value(s), apply the phantom-slot-frame-lever diagnosis recipe (.claude/rules/phantom-slot-frame-lever.md) to the named local/temp to find a lifetime-shortening or narrowing C-level fix, rather than any further blind structural sweep of the loop body."
+   "hypothesis": "The already-twice-killed scratchpad-literal-naming family (s8/s9 in-loop and above-loop hoists, s15 re-confirmation) and the closed y-compare branch-topology family (s16) are both fully exhausted and should not be revisited without new evidence.",
+   "mechanism": "n/a -- negative-space narrowing from four sessions' worth of measurements (s8, s9, s15, s16) all landing at or above the 42/204 floor on this exact axis.",
+   "next_probe": "None -- explicitly excluded from the next session's search space unless a future classify/asm re-read surfaces new evidence contradicting the s16 closure."
   }
  ],
  "judge_constraints": [],
@@ -339,6 +345,22 @@
    "measured_on": "s16 chassis (s15-banked candidate.c body, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs",
    "predicate_cite": "",
    "result": "score 42 -> 50/204 (build_insns 197 -> 200, 3 more real instructions). Reverted; re-confirmed 42/197 reproduces exactly "
+  },
+  {
+   "session": 17,
+   "statement": "s16's closest-to-target instance kill (the flags==4 y-compare single abs-value form) still fails on the current chassis (mandatory kill re-audit).",
+   "kill_scope": "instance",
+   "measured_on": "s17 chassis (42/197, s16-banked body unmodified), single fresh sandbox measurement, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 42 -> 45/204 (build_insns unchanged at 197) -- reproduces the s16 result exactly."
+  },
+  {
+   "session": 17,
+   "statement": "The s13/s15/s16 'reg 11/reg 65 double-bind' frontier item (asking a solver to name which C-level object occupies pseudo 11 and pseudo 65) is unanswerable because neither number is a pseudo.",
+   "kill_scope": "class",
+   "measured_on": "s17 chassis (42/197, s16-banked body unmodified), fresh .greg dump this session, no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:1181",
+   "result": "The premise that pseudo 11/65 are nameable spilled C objects is factually false; no C-level lever follows from further p"
   }
  ],
  "ladder_skip": 0,

@@ -878,3 +878,49 @@ src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat emp
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s16 chassis (s15-banked candidate.c body, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs
+
+## [s17] The s13-s16 "reg 11/reg 65 double-bind" is a category error -- neither number is a pseudo, so no C-level object can be named as "occupying" them.
+- mechanism: mips.h:1181 sets FIRST_PSEUDO_REGISTER=68; reload1.c:2283's "Spilling reg %d." always prints a value < FIRST_PSEUDO_REGISTER (spill_regs[] holds hard-register numbers reload is transiently evicting), so "reg 11"/"reg 65" are hardregs $t3 and lo (DEBUG_REGISTER_NAMES indices 11 and 65), never pseudo/allocno numbers. The two "Spilling reg 11."/"Spilling reg 65." lines in the fresh .greg dump are driven by "Need 1 reg of class LO_REG/MD_REGS (for insn 142)" -- insn 142 is the `mulsi3_internal` for the first `scale * *sin_p` multiply in the loop body (confirmed by direct RTL read, tmp/grind/func_80056CB8/s17/func_greg.txt:399-407) -- and a later, separate "Need 1 reg of class GR_REGS (for insn 457)" tied to t3-class stack-address materialization for the func_80053614 call args. Ordinary MIPS single-hi/lo-pair pressure from two back-to-back multiplies plus scratch-register reuse for address computation, not a named spilled local/pseudo.
+- probe: Read tools/gcc-2.7.2/config/mips/mips.h (FIRST_PSEUDO_REGISTER, DEBUG_REGISTER_NAMES) and tools/gcc-2.7.2/reload1.c:2283 directly; cross-referenced against the fresh s17 .greg dump (tmp/grind/func_80056CB8/dumps/text1b.greg, function block extracted to tmp/grind/func_80056CB8/s17/func_greg.txt) to locate insn 142's actual RTL.
+- result: The s13/s15/s16 frontier item's premise (that pseudo 11/65 are spillable C-level values a solver could name) is factually false. No C-level lever follows from this axis because there is no spilled C object to find.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s17 chassis (42/197, s16-banked body unmodified), fresh .greg dump this session, no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:1181
+
+## [s17] Re-running the classify triage (not the RA-solver) on the current chassis reproduces the ALREADY-BANKED s8 verdict: this residual is PRE-RA/rtl_shape (different instruction multiset), explicitly outside what ra_solver/sched_solver can address.
+- mechanism: `tools/ra_solver/inverse_compose.py classify` object-level path compares the honest sandbox .o against build/src/text1b.o; its own printed verdict states the instruction-shape sets differ (not merely reordered/renamed), so per the tool's design ("the RA and scheduler models cannot express this residual... searching them would produce fiction") the entire s13-s16 pursuit of an RA-solver-named pseudo was mis-targeted -- the right tool had already ruled that pursuit out at s8, before the double-bind framing was built.
+- probe: `wsl ... python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --ours-object tmp/sandbox/func_80056CB8/text1b.o --target-object build/src/text1b.o` on the s17 (42/197) chassis; output saved tmp/grind/func_80056CB8/s17/classify.txt.
+- result: FIRST DIVERGENCE: PRE-RA / rtl_shape, unchanged from s8. "ours only" set includes the scratchpad-literal double materialization (already closed s8/s9/s15) plus `sll #,#,0x1`x3/`negu`/`addu`/`bgez`; "target only" set includes `addiu ?,?,0x2` (x1, loop-tail index bump -- new axis, see evidence.md), `sll ?,?,0x2` (stride-4, not our stride-2), two `addu ?,?,base`, `beqz`/`bltz`/`j` (already attributed to the closed y-compare tail per s16), `li ?,4`, two extra `lw` loads. Confirms the residual is a genuine C-expression/structural difference, not an allocation or schedule question.
+- verdict: CONFIRMED
+- kill_scope: n/a (confirmatory re-derivation, not a kill)
+- measured_on: s17 chassis (42/197, s16-banked body unmodified)
+
+## [s17] The s16-banked candidate.c body reproduces the ledger's recorded floor on the current chassis.
+- mechanism: n/a -- straight re-measurement
+- probe: Applied s16-banked body + func_80053614 s32-return prerequisite to src/text1b.c, ran `sandbox func_80056CB8 --disable all`.
+- result: score=42, target_insns=204, build_insns=197 -- exact match to the recorded floor.
+- verdict: CONFIRMED
+
+## [s17] s16's closest-to-target instance kill (the flags==4 y-compare single abs-value form) still fails on the current chassis (mandatory kill re-audit).
+- mechanism: Collapsing the nested if/else to `dy`/`ady`+ternary changes cc1's branch/compare emission away from the target's actual delay-slot-fill pattern (already root-caused at s16 by direct asm decode).
+- probe: Re-applied the abs-value substitution to the s17 chassis, ran `sandbox func_80056CB8 --disable all`, reverted. No FAKE construct is present in this form or the baseline, so tools/fake_ablate.py has no ablatable unit here -- direct re-measurement is the applicable re-audit.
+- result: score 42 -> 45/204 (build_insns unchanged at 197) -- reproduces the s16 result exactly.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s17 chassis (42/197, s16-banked body unmodified), single fresh sandbox measurement, no FAKE constructs present
+
+## [s17] The s13/s15/s16 'reg 11/reg 65 double-bind' frontier item (asking a solver to name which C-level object occupies pseudo 11 and pseudo 65) is unanswerable because neither number is a pseudo.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.h:1181 sets FIRST_PSEUDO_REGISTER=68. tools/gcc-2.7.2/reload1.c:2283's `fprintf (dumpfile, "Spilling reg %d.\n", spill_regs[n_spills]);` only ever prints hard-register numbers (spill_regs[] holds hardregs reload transiently evicts), so any value below 68 is necessarily a hardreg, never a pseudo/allocno. Per mips.h's DEBUG_REGISTER_NAMES, reg 11 = $t3 and reg 65 = 'lo' (MIPS multiply/divide low-result register, class MD_REGS/LO_REG). Direct read of the fresh .greg dump (tmp/grind/func_80056CB8/dumps/text1b.greg, function block, extracted to tmp/grind/func_80056CB8/s17/func_greg.txt) shows the spill is driven by 'Need 1 reg of class LO_REG/MD_REGS (for insn 142)' where insn 142 is the mulsi3_internal RTL for the loop's first `scale * *sin_p` multiply (func_greg.txt:399-407), plus a separate later t3-class GR_REGS need for materializing &pt0/&pt1/&hit0/&work stack addresses ahead of the two func_80053614 calls (func_greg.txt:118-120). This is ordinary MIPS single-hi/lo-pair register pressure from two back-to-back multiplies and address-materialization scratch reuse -- not a spillable named C-level value.
+- probe: Read mips.h (FIRST_PSEUDO_REGISTER, DEBUG_REGISTER_NAMES) and reload1.c:2283 directly; cross-referenced against the fresh s17 .greg dump for func_80056CB8's own function block.
+- result: The premise that pseudo 11/65 are nameable spilled C objects is factually false; no C-level lever follows from further pursuit of this axis via tools/ra_solver/inverse.py.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s17 chassis (42/197, s16-banked body unmodified), fresh .greg dump this session, no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:1181
+
+## [s17] Re-running the object-level classify triage on the current chassis reproduces the already-banked s8 verdict: FIRST DIVERGENCE is PRE-RA/rtl_shape (a different instruction multiset), which the RA-solver and scheduler-solver both explicitly refuse to address.
+- mechanism: tools/ra_solver/inverse_compose.py classify compares honest-sandbox vs build/src object streams and prints its own verdict; a different instruction-shape MULTISET (not merely reordering) means 'no perturbation of RA or scheduler inputs can reach it' per the tool's design -- so the s13-s16 pursuit of an RA-solver pseudo-naming answer was mis-targeted before it started, since this verdict already existed in the ledger from s8.
+- probe: `python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --ours-object tmp/sandbox/func_80056CB8/text1b.o --target-object build/src/text1b.o` (WSL) on the s17 42/197 chassis; output saved tmp/grind/func_80056CB8/s17/classify.txt. Correlated part of the 'target only' instruction set to asm/funcs/func_80056CB8.s directly.
+- result: Verdict unchanged from s8: PRE-RA/rtl_shape. Localized two previously-unattributed target-only instructions (`addiu $v0,$t3,0x2` @80056FA4, `addiu $fp,$fp,0x2` @80056FB0) to the loop-tail index/pointer-bookkeeping region (80056F9C-80056FB4), distinct from both the closed y-compare tail (s16, 80056F50-80056F78) and the closed scratchpad-literal materialization (s8/s9/s15) -- a new, previously-unexamined axis.
+- verdict: CONFIRMED
