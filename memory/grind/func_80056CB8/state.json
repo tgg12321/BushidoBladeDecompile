@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 21,
- "current_modality": "forensics",
+ "session_count": 22,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -129,18 +129,24 @@
    "floor": 42,
    "modality": "forensics",
    "headline": "s21 forensics: re-confirmed floor 42/204 fresh; class-killed the s20 register-pressure/threshold frontier item by reading loop.c:3241+regclass.c:360-392 -- n_non_fixed_regs is a per-compilation consta"
+  },
+  {
+   "session": 22,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s22 rederive: materializing the loop bound as a named `s32 limit = start + 2;` local (not the i*2 index) drops the honest floor 42->38/204 (build_insns 197->198) -- first drop since s14 (8 flat sessio"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pt0/pt1 block-shape family (reorder + interleave-with-computation, 12 measured spellings across s15/s20) and the register-pressure/threshold family (s20/s21, now class-killed) are both closed. The remaining un-scanned axis is the flags==3/flags==4 dispatch tail and the store-address computation at the loop bottom for a genuinely untested C-level statement shape (not yet covered by s16's y-compare closure or s19's li#,4/lw-96/104 attribution).",
-   "mechanism": "n/a -- negative-space conclusion from exhausting the two prior families; the loop.c:3823 insn_count deficit (7 real instructions, 197 vs 204) is the single root cause per s18/s19, so any closing lever must be a C statement shape that GENUINELY adds/reshapes real instructions in the loop body rather than merely reordering existing ones.",
-   "next_probe": "A future structural/rederive session should read the target's flags dispatch tail (asm lines around the flags==3/4 chain and the loop-bottom store-address computation) instruction-by-instruction for any real value/statement our C computes implicitly or folds away that the target computes explicitly (mirroring how s16 closed the y-compare tail), rather than re-touching pt0/pt1 or register-pressure levers."
+   "hypothesis": "The 0x1F8002B8 scratchpad-address constant should NOT be hoisted into a callee-saved register across the loop; forcing GCC to rematerialize it per call site (matching target's bare target-only `lui #,0x1f80`) may close part of the remaining PRE-RA/rtl_shape multiset gap without disturbing the s22 limit win.",
+   "mechanism": "Unclear yet whether this is a register-allocation global-alloc choice sensitive to which OTHER values are live across the two func_80053614 calls, or a CSE-level decision to unify the two textually-identical literal occurrences into one materialization. Needs a fresh .greg/.combine dump read on the 38/198 chassis before hypothesizing a specific C-level lever (per the pass-attribution discipline -- do not guess).",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_80056CB8` on the 38/198 chassis (limit change applied), read the fresh .greg dump for which pass decided to home 0x1F8002B8 in $s8, and the .combine dump for whether the two literal occurrences were CSE-unified. Then try a natural C variant that keeps the constant from surviving across the loop (e.g., confirm whether it is genuinely dead register-pressure fallout from `limit` rather than something requiring a coercion construct -- if the only lever found is a coercion, that is a KILL, not a lever)."
   },
   {
-   "hypothesis": "Every one of the four possible C spellings of holding i*2 (fresh int, loop-carried int, fresh pointer, loop-carried pointer) is measured worse across three chassis generations (58/198, 48/198, 42/197) per s18 -- this axis should be treated as fully closed going forward, not re-probed.",
-   "mechanism": "loop.c:3823's giv-worth predicate depends only on insn_count and each giv's own lifetime/benefit terms, never on which C construct names/carries the index value -- promoting the value to its own object costs additional instructions rather than removing them.",
-   "next_probe": "None -- this is a closed-axis record for future sessions to skip, not an open lever."
+   "hypothesis": "The target's `addiu s8,s8,2` / `addu #,#,s8` x2 $fp-accumulator residual (the original PRE-RA/rtl_shape gap chased since s6, now 6 real instructions short even after the s22 win: 198 vs 204) may respond differently to the i*2-sharing family now that the chassis's register-pressure baseline has shifted by the limit change.",
+   "mechanism": "s18/s21's class-kill of idx2-sharing was measured on the pre-limit chassis (42/197) and re-confirmed this session on the post-limit chassis (38/198) with the SAME idx2 spelling -- still dead. But the s11 loop-inversion hypothesis (make the doubled index j the primary induction variable) was only ever tested on the s7 pre-r1/r2-merge chassis; it may be worth a single fresh re-measurement on the current 38/198 chassis before this axis is treated as permanently closed, since the register-pressure story that killed idx2-sharing is not obviously identical for the inverted-loop shape.",
+   "next_probe": "Re-apply the s11 loop-inversion form (`for (j = start*2; j < start*2+4; j += 2) { i = j >> 1; ... }` with j as the primary control variable) on top of the s22 38/198 chassis and measure fresh -- a single sandbox run, cheap to rule in/out before spending more sessions on the constant-hoisting frontier."
   }
  ],
  "judge_constraints": [],
@@ -433,6 +439,14 @@
    "measured_on": "n/a (mechanism/predicate analysis of frozen compiler source, not a source-level spelling test); fresh sandbox re-confirmation of the s14-s20 42/197 chassis this session as context, no FAKE constructs ",
    "predicate_cite": "tools/gcc-2.7.2/regclass.c:380",
    "result": "Fresh sandbox: score=42, build_insns=197, target_insns=204 -- exact reproduction of the s14-s20 floor. Fresh .greg dump "
+  },
+  {
+   "session": 22,
+   "statement": "Combining the s22 `limit` win with an s10/s18-style `idx2` (loop-carried i*2) promotion on the SAME improved chassis is worse -- the idx2 axis is independently dead even after the limit change, not me",
+   "kill_scope": "class",
+   "measured_on": "s22 chassis (s22-banked 38/198 body -- start/limit/i declarations + func_80053614 s32-return prerequisite -- with idx2 added on top, then reverted), single fresh sandbox measurement, no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
+   "result": "score 38 -> 55/204, build_insns 198 -> 201 (worse on both axes). Reverted; 38/204 re-confirmed fresh after revert."
   }
  ],
  "ladder_skip": 0,

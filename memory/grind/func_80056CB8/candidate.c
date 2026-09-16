@@ -1,6 +1,42 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17/s18/s19/s20)
- * — floor 42/204, NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * func_80056CB8 — CANDIDATE (s22 rederive-modality win) — floor 38/204,
+ * NOT YET 0. (Prior: 42/204 s14-s21; 48/204 s11-s13; 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s22 (rederive modality, 2026-09-16). Re-confirmed 42/204 fresh
+ * (build_insns 197) before any change, then materialized the loop's
+ * BOUND (previously the recomputed sub-expression `start + 2` in the
+ * for-statement's test clause) into its own named local `s32 limit =
+ * start + 2;`, declared alongside `start`, used as `for (i = start; i <
+ * limit; i++)`. This is a genuinely untried axis distinct from every
+ * prior i*2-sharing probe (s6/s10/s12/s18, all class-killed at
+ * loop.c:3823): those promoted the byte-table INDEX value (i*2) to a
+ * shared object; this promotes the LOOP BOUND itself (start+2, a plain
+ * loop-invariant already visible to loop.c as a movable) to a named
+ * object instead of a recomputed subexpression. Measured RESULT: score
+ * 42 -> 38/204 (build_insns 197 -> 198, +1 real instruction, moving
+ * TOWARD target's 204) -- the first floor drop since s14 (8 sessions
+ * flat). Also tried combining this with the s10/s18-style idx2 (i*2)
+ * promotion on TOP of the limit change: score regressed to 55/201,
+ * confirming the idx2 axis is independently dead even on this new
+ * chassis (re-banked, see hypotheses.md). Fresh `inverse_compose.py
+ * classify` on the 38/198 chassis still reports FIRST DIVERGENCE:
+ * PRE-RA/rtl_shape (an instruction-multiset difference, not an
+ * allocation/schedule permutation) -- target's `addiu s8,s8,2` /
+ * `addu #,#,s8` x2 (the long-chased $fp accumulator) are STILL
+ * target-only, so this is NOT the fix for that residual; it is an
+ * independent, additive win on the loop-bound sub-expression axis.
+ * NEW "ours only" residue introduced by this change: `lui s8,0x1f80` /
+ * `ori s8,s8,0x2b8` / two `sw s8,16(#)` -- GCC is now caching the
+ * 0x1F8002B8 scratchpad-address literal (passed to both func_80053614
+ * calls) in a callee-saved register across the whole loop, apparently
+ * because the `limit` local freed up register pressure that previously
+ * forced a fresh per-call materialization; target instead shows a
+ * bare `lui #,0x1f80` (target-only, temp register) suggesting target
+ * rematerializes this constant at (at least) one call site rather than
+ * hoisting it into a callee-save home. This is the next frontier item
+ * for a future session (see hypotheses.md s22 CONFIRMED entry) -- NOT
+ * yet probed this session (turn budget), banked as an open lever, not
+ * attempted-and-killed.
  * ---------------------------------------------------------------------
  * s20 (rederive modality, 2026-09-16). Re-applied body unchanged (+
  * func_80053614 s32-return prerequisite), re-confirmed floor 42/204 fresh
@@ -722,10 +758,12 @@ void func_80056CB8(s32 arg0) {
     s32 hit1[4];
     s32 work[4];
     s32 start;
+    s32 limit;
     s32 i;
 
     start = (*(u16 *)(arg0 + 0x3E8) & 3) * 2;
-    for (i = start; i < start + 2; i++) {
+    limit = start + 2;
+    for (i = start; i < limit; i++) {
         s32 obj;
         s32 flags;
         s32 scale;

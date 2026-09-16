@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_80056CB8",
-   "floor": 42,
-   "session": 14,
-   "at": "2026-09-16T09:41:43.097253+00:00",
-   "headline": "s14 enumerate: systematic spelling_enum.py+sweep_variants.py sweep of the never-before-targeted sin_p/cos_p/scale/x/z block found a real reordering win, dropping the honest floor 48 -> 42/204 (build_i",
+   "floor": 38,
+   "session": 22,
+   "at": "2026-09-16T10:35:08.044252+00:00",
+   "headline": "s22 rederive: materializing the loop bound as a named `s32 limit = start + 2;` local (not the i*2 index) drops the honest floor 42->38/204 (build_insns 197->198) -- first drop since s14 (8 flat sessio",
    "consumed": null
   }
  ]
