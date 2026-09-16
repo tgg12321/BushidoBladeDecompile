@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 35,
+ "session_count": 36,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -213,39 +213,29 @@
    "floor": 38,
    "modality": "structural",
    "headline": "s35 structural: killed the shared-idx and idxB index-naming spellings on the s34-banked do-while chassis (both 66/204, worse, +2 insns each); index-naming axis now exhausted on both chassis shapes; fl"
+  },
+  {
+   "session": 36,
+   "floor": 38,
+   "modality": "structural",
+   "headline": "s36 structural: KILL RE-AUDIT re-confirmed the two stale s20-chassis m2c pt0/pt1 store-order kills (block1 interleave, block2 permuted order) on the CURRENT 38/204 chassis; both still worse (88/204 an"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions -- restructuring the pt0/pt1 store blocks or the flags==3/flags==4 tail differently than s34's one (wrong-direction) attempt -- would let strength_reduce promote i*2 automatically.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163) but no session has shrunk insn_count as its own axis distinct from widening a giv's lifetime.",
-   "next_probe": "Identify which currently-unmerged statements in the loop body could be restructured to emit FEWER real RTL insns without changing byte output; read the .loop dump's insn_count directly after each change, on both the for-loop and do-while chassis."
+   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions would let strength_reduce promote i*2 automatically.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163) but no session has shrunk insn_count as its own axis distinct from widening a giv's lifetime. Both pt0/pt1 store-order axes (this session) and the earlier duplicated-store tail rewrite (s34) are now ruled out as ways to shrink insn_count -- they either grow it or leave it flat while changing which specific instructions are emitted.",
+   "next_probe": "Read the .loop dump's insn_count directly after restructuring OTHER parts of the loop body not yet tried structurally: the flags computation chain itself (the ratan2/short-circuit if-else at candidate.c lines 1159-1164), or the sin_p/cos_p pointer-arithmetic expressions, to see if any of those can be spelled with fewer real RTL insns without changing byte output."
   },
   {
-   "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z, not the i*2 index) on the do-while chassis specifically, since that chassis's lower insn count and different register landscape has never had this axis tried on it (only the index-naming axis has been tried there, twice, both this session).",
-   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph; the do-while rewrite has already shown responds to source-level structure changes that don't touch the index axis at all (195 vs 198 insns from loop-syntax alone), so other residents' footprints may behave differently here than on the for-loop chassis where the s29 conflict analysis was run.",
+   "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z, not the i*2 index or the pt0/pt1 store order) on the do-while chassis specifically, since that chassis's lower insn count and different register landscape has never had this axis tried on it.",
+   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph; the do-while rewrite (s34, rejected/do-while-loop-rewrite-worse.c, 195 real insns vs the for-loop's 198) has already shown it responds to source-level structure changes that don't touch the index axis, so other residents' footprints may behave differently there than on the for-loop chassis where the s29 conflict analysis was run.",
    "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (apply rejected/do-while-loop-rewrite-worse.c fresh) to see whether the 9-resident conflict picture differs from the for-loop chassis's profile, then try restructuring one resident's live range on this chassis."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 3,
-   "statement": "Declaring `s32 r1;` immediately after `s32 flags;` (adjacent in source, statements unchanged) makes r1 and flags share a hard register the way target's asm does (target: flags/r1 share $s0).",
-   "kill_scope": "instance",
-   "measured_on": "s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + r1-after-flags declaration reorder), zero FAKE/cheat constructs present in the diff",
-   "predicate_cite": "",
-   "result": "Score unchanged at 106. r1 and flags still do not share a register in this chassis."
-  },
-  {
-   "session": 4,
-   "statement": "A directed permuter campaign (44,294 iterations, base score 5235) on the s2/s3 candidate.c chassis (unchanged body, 106/204 floor) plateaued at best score 4103/5235 (21.6% reduction) via a type-broken",
-   "kill_scope": "instance",
-   "measured_on": "s4 chassis == s2/s3 candidate.c body verbatim (obj/flags/r1 in original statement+declaration order, work[4] frame fix, func_80053614 s32-return prerequisite fix), zero FAKE/cheat constructs present; ",
-   "predicate_cite": "",
-   "result": "Best score found 4103/5235 (21.6% reduction), plateaued for the back half of the run with no further novel-and-better fi"
-  },
   {
    "session": 5,
    "statement": "Several swap-axis variants generated by spelling_enum.py's commutative-swap logic (e.g. v01.c: `&Judge + (ang & 0xFFF)` rewritten as `&(ang & 0xFFF) + Judge`) produce ill-formed C for this region's po",
@@ -709,6 +699,22 @@
    "measured_on": "s35 chassis (do-while chassis body + separately-named idxB local, func_80053614 s32-return fix, header externs restored, no FAKE constructs present)",
    "predicate_cite": "",
    "result": "score 38 -> 66/204, build_insns 195 -> 197 (+2 real instructions) -- byte-identical build_insns to the shared-idx varian"
+  },
+  {
+   "session": 36,
+   "statement": "On the CURRENT s22-s35-banked 38/204 chassis, interleaving block1's pt0[] stores between the sin_p/scale/cos_p computation and the x/z computation (m2c's own reconstructed statement order: sin_p; scal",
+   "kill_scope": "instance",
+   "measured_on": "s36 chassis (candidate.c's s22-s35-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block1 reordered to m2c's interleaved statement order, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 88/204, build_insns 198 -> 203 (+5 real instructions). Worse than even the stale s19/s20 42/197 chassis's me"
+  },
+  {
+   "session": 36,
+   "statement": "On the CURRENT 38/204 chassis, permuting block2's pt0/pt1 store order to m2c's exact per-store SSA sequence (pt0[0]=x; pt0[2]=z; pt1[0]=x; pt0[1]=obj+0xBC-0x834; pt1[2]=z; pt1[1]=obj+0xBC+0x1004;) ins",
+   "kill_scope": "instance",
+   "measured_on": "s36 chassis (candidate.c's s22-s35-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block2 pt0/pt1 stores reordered to m2c's exact sequence, block1 left at baseline order, ",
+   "predicate_cite": "",
+   "result": "score 38 -> 51/204, build_insns UNCHANGED at 198. Consistent with the stale s20 chassis's finding of the same construct "
   }
  ],
  "ladder_skip": 0,

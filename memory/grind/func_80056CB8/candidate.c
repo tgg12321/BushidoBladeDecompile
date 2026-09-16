@@ -1,6 +1,13 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36) — floor 38/204, NOT YET 0.
+ * s36 (structural, KILL RE-AUDIT): re-measured the s20-banked m2c block1
+ * interleave-with-xz-computation kill (38->88/204, +5 insns, worse than the
+ * stale-chassis 42->87 result) and the s20-banked m2c block2 permuted-store-
+ * order kill (38->51/204, insns unchanged at 198) on the CURRENT chassis —
+ * both stale s20 kills (originally measured on the retired 42/197 chassis)
+ * hold, and the block1 interleave got relatively worse as the chassis
+ * improved. Body UNCHANGED. See hypotheses.md [s36] for full detail.
  * Body UNCHANGED at s33 (rederive). s33 KILLED the s31/s32 live frontier
  * item #1 (two separately-named locals for i*2, hoping combine_givs would
  * merge them into one giv without forcing a call-spanning resident): 38 ->
