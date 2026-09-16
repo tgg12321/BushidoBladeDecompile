@@ -357,3 +357,5 @@ CONCLUSION (formal, from the compiler source, not a measurement): a plain memory
 - [s11] Both m2c-derived alternate shapes, AND the isolated pointer-local ablation, score strictly worse (5 or 7) than the banked chassis (2) -- three independent measurements agreeing that the candidate's specific final-block spelling (nested if/if + pointer-local `p`) and its early-return top-level guard are both individually load-bearing, not just accidentally co-occurring with the floor-2 result.
 
 - [s11] No sibling ledger (_addque2, main, get_alarm, func_8002EA24) offered a transplantable construct for this specific residual -- all four are COMPLETED-C with closed ledgers on unrelated function shapes (record-copy struct merges, MIDI dispatch, register-alloc walls) that don't share _exeque's reorg.c delay-slot-fill mechanism.
+
+- [s11] CC1PSX SELF-DISPROOF (driver): check did not produce a scorable result (cc1psx produced no scorable object: '_exeque not found in tmp/cc1psx/_exeque/psx.o'); rotation proceeds on the source-side assumption.

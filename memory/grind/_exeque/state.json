@@ -268,5 +268,14 @@
  "origin": "queue",
  "created": "2026-09-16T04:50:43.697974+00:00",
  "object_model_audited": 3,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "cc1psx_check": {
+  "at": "2026-09-16T07:16:53.682734+00:00",
+  "candidate_sha": "def06b1fef41",
+  "ours": null,
+  "psx": null,
+  "closer": false,
+  "ok": false,
+  "error": "cc1psx produced no scorable object: '_exeque not found in tmp/cc1psx/_exeque/psx.o'"
+ }
 }
