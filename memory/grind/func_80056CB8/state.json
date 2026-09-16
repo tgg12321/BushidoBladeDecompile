@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 52,
- "current_modality": "rederive",
+ "session_count": 53,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -315,31 +315,29 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s52 rederive: re-confirmed 38/204 fresh; closed both genuinely-untried structural items from s49-s51 (valid brace-balanced outer-ncounter loop, and two do-while-chassis combinations) -- all three KILL"
+  },
+  {
+   "session": 53,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s53 forensics: fresh 38/204 re-confirmed (re-derived the header-extern + func_80053614 s32-return chassis trap fresh, confirming it fresh: omitting externs alone silently miscompiles to 141/204); read"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Find a loop-VARIANT value near the limit/i<limit compare site that could legitimately share ONE C variable with limit under a truthful semantic reading (multi-set pseudo, not deletion or inline) -- the defeat-licm-hoist-var-reuse mechanism applied to the loop BOUND rather than the table INDEX.",
-   "mechanism": "loop.c's find_and_verify_loops/strength_reduce only treats a pseudo as a movable invariant if it has exactly one set reaching every use inside the loop; a genuinely multi-set pseudo is excluded from the movable set and is not hoisted-then-spilled.",
-   "next_probe": "Search the loop body for any value computed near the limit use that could plausibly share storage with limit under a truthful semantic reading; if none exists, the next step is the fresh .lreg/.rtl dump of the post-spill reload sequence (text1b.greg ~line 14790-14810) to find what ELSE conflicts with reg 11, not yet cross-referenced against source-level candidates."
+   "hypothesis": "Run tools/loop_movables.py directly against func_80056CB8's .loop dump to get loop.c's exact movable/invariant-set decision terms for limit's pseudo (n_times_set, the reaching-uses check), as a formal confirmation beyond the manual .greg dump read that limit is correctly excluded from the strength-reduction movable set for structural (not register-pressure) reasons.",
+   "mechanism": "loop.c's find_and_verify_loops/strength_reduce only treats a pseudo as a movable invariant if it has exactly one set reaching every use inside the loop; the tool reports the exact predicate terms rather than requiring manual RTL tracing.",
+   "next_probe": "python3 tools/loop_movables.py --func func_80056CB8 (or the equivalent invocation reading tmp/grind/func_80056CB8/dumps/text1b.loop) and cross-reference its output against pseudo 149's conflict-list entry already read this session."
   },
   {
-   "hypothesis": "Cross-reference the reg-11 conflict list in text1b.greg (lines ~14790-14810, not yet read this ledger) against source-level candidate values to identify a concrete C-level conflict source beyond limit itself.",
-   "mechanism": "global_alloc's find_reg spill decision is driven by the FULL conflict set of the pseudo, not just its single-set status; the s51 forensics session named the spilled pseudo but has not yet enumerated everything it conflicts with.",
-   "next_probe": "pwsh tools/grinder/dump.ps1 func_80056CB8, then grep/read the reg-11 conflict list in the .greg dump at the cited line range."
+   "hypothesis": "Investigate whether merging or restructuring the hit0/hit1/work array live ranges (already individually measured byte-neutral at s24 for a scope-move) changes the overall register pressure enough to shift global_alloc's spill choice away from limit, since the current per-function pressure (21 pseudos needing allocation, conflicting almost universally) is driven by the sheer number of simultaneously-live locals rather than any single one.",
+   "mechanism": "global_alloc's find_reg spill decision at insn 21 is a function of the FULL conflict graph, not just limit's own properties; reducing the live-range overlap of unrelated locals (hit0/hit1/work) could in principle change which pseudo gets spilled first, though s24's byte-identical result for a simple scope move suggests this axis may already be flat.",
+   "next_probe": "Try declaring hit0/work with narrower scope or reusing hit1's storage for hit0 between the two func_80053614 calls (if semantically valid -- verify hit0 is dead before hit1 is written) and measure via sandbox --disable all."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 19,
-   "statement": "The classify-flagged 'target only: li #,4' instructions (unattributed since s8) are reorg.c's fill_simple_delay_slots reusing one constant preload across two converging branch delay slots, not an inde",
-   "kill_scope": "class",
-   "measured_on": "s19 chassis (42/197, s18-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified -- read-only attribution, no new C spelling tested), fresh sandbox + fresh instrumented-cc1 .loop d",
-   "predicate_cite": "tools/gcc-2.7.2/reorg.c:2861",
-   "result": "Floor re-confirmed 42/204 fresh this session (score=42, build_insns=197, target_insns=204, sandbox func_80056CB8 --disab"
-  },
   {
    "session": 19,
    "statement": "The classify-flagged 'target only: lw #,96(#)/104(#)' instructions are ordinary per-iteration stack-reload offset drift caused by our 197-insn frame differing in size/layout from target's 204-insn fra",
@@ -811,6 +809,14 @@
    "measured_on": "s52 chassis (s22-s51-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, do-while loop with limit retained + off shared-index local, zero FAKE constructs present)",
    "predicate_cite": "",
    "result": "score REGRESSED 38 -> 66 (do-while-alone baseline: 46), build_insns 198 -> 197. Banked at memory/grind/func_80056CB8/rej"
+  },
+  {
+   "session": 53,
+   "statement": "The live-frontier item 'find a loop-VARIANT value near the limit/i<limit compare site that could legitimately share ONE C variable with limit' has no candidate within the spilled pseudo's actual live ",
+   "kill_scope": "instance",
+   "measured_on": "s53 chassis (s22-s52-banked 38/204 body + header externs + func_80053614 s32-return prerequisite, zero FAKE constructs present); the 'no shared-storage candidate for limit' claim is a property of the ",
+   "predicate_cite": "",
+   "result": "No new C-level lever exists in the direction this frontier item pointed. Re-confirmed fresh floor 38/204 (build_insns 19"
   }
  ],
  "ladder_skip": 0,

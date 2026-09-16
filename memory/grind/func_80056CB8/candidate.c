@@ -1,6 +1,21 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53) — floor 38/204, NOT YET 0.
+ * s53 (forensics modality, 2026-09-16): re-confirmed 38/204 fresh (re-
+ * derived the header-extern + func_80053614 s32-return chassis trap
+ * fresh: omitting header externs alone silently miscompiles to 141/204
+ * via K&R implicit-int). Read the FULL func_80056CB8 RTL region in
+ * tmp/grind/func_80056CB8/dumps/text1b.greg (lines 14788-15995) end-to-
+ * end for the first time. CONFIRMED: reg 11 (t3, insn 21) is `limit`,
+ * spilled to sp+104 at insn 469, reloaded once at insn 493 immediately
+ * before the loop-back-edge compare (insn 28) -- its live range spans
+ * the whole loop by construction. Reg 65 (lo, insn 143) is an UNRELATED,
+ * INDEPENDENT MD_REGS spill for the flags/scale multiply (already a
+ * previously-killed hypothesis family: scratchpad-literal/scale-reuse).
+ * No shared-storage candidate exists for `limit` within its own live
+ * range besides `i` itself (can't merge — compared every iteration).
+ * Closes both s50/s51-named live-frontier items. See hypotheses.md
+ * [s53] + evidence.md [s53] for full detail. Body UNCHANGED.
  * s49 (synthesis modality, 2026-09-16): mandatory kill re-audit (4th
  * consecutive independent confirmation, after s41/s46/s48) reproduced
  * 38/204 fresh via a new repeatable splice script
