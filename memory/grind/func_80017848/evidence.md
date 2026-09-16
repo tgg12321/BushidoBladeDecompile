@@ -6702,3 +6702,5 @@ expression - forbidden family, not a candidate.
 - [s63] E-s63-4: a3-preference route closed (global.c:842): the only a3 mention is slot_b's entry copy and it has no allocno partner; the copy dest's v0 pref is inherited from base at the add and cannot be refused (global.c:925-926); hence hard v0 AND a0 conflicts are required.
 
 - [s63] E-s63-5: ALLOCDBG order on K2: i 26000, guard temps 20000, q 16666, p 13333 (5th), ctx, t, slot_b, sh 3750, lnk 2500, slot_a, arg1; every allocator input now closed with a cite; the residual is a NATURAL flow-live combine-deleted reader of the copy dest (E-s44-3).
+
+- [s63] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 1acdc765adab scores 3 under our cc1 and 5 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).

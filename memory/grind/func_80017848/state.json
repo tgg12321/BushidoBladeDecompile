@@ -903,5 +903,14 @@
    "headline": "func_8005BA8C COMPLETED-C",
    "consumed": 56
   }
- ]
+ ],
+ "cc1psx_check": {
+  "at": "2026-09-16T01:21:43.835640+00:00",
+  "candidate_sha": "1acdc765adab",
+  "ours": 3,
+  "psx": 5,
+  "closer": false,
+  "ok": true,
+  "error": null
+ }
 }
