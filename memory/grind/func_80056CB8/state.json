@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 26,
- "current_modality": "synthesis",
+ "session_count": 27,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -159,18 +159,24 @@
    "floor": 38,
    "modality": "synthesis",
    "headline": "s26 synthesis: fresh 38/204 re-confirmed; killed both s25-named frontier items (sin_p/cos_p live-range narrowing, distinct per-call-site addr locals) and re-derived the loop.c:3823 giv-worth predicate"
+  },
+  {
+   "session": 27,
+   "floor": 38,
+   "modality": "solver",
+   "headline": "s27 solver: killed the s26-named idx2+literal-CSE-defeat combination (55/204, worse) and class-killed literal respelling in isolation via fold-const.c constant folding; floor holds at 38/204 fresh."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The register-pressure competition for $s8 between the (target-present, ours-absent) loop-carried idx2 accumulator and the (ours-present, target-absent) spilled 0x1F8002B8 literal cache is the single root cause of this residual -- successfully constructing i*2 as a loop-carried object might, as a SIDE EFFECT, free up enough pressure that the literal no longer needs to spill, closing both symptoms in one C change even though every isolated idx2-promotion attempt so far has failed loop.c:3823's giv-worth predicate on its own.",
-   "mechanism": "loop.c:3823 rejects a giv's strength-reduction based on lifetime*threshold*benefit vs insn_count computed in isolation from what ELSE is competing for registers at global allocation time (global.c/reload1.c run after loop.c, so loop.c's rejection is upstream of and blind to the $s8-literal-cache pressure that this session's classify run newly surfaced as a competing consumer of the same hard register).",
-   "next_probe": "Since every prior idx2 attempt (s6/s10/s12/s18/s21/s22) ALSO carried the bare-literal or shared-local 0x1F8002B8 spelling, none of them tested idx2 promotion TOGETHER WITH a spelling that avoids spilling the literal (e.g. computing it fresh inline at each call site with no shared pseudo at all, forcing two independent short single-use materializations instead of one long-lived spilled one) on the SAME chassis. Try: idx2 loop-carried promotion (s22-style for-statement) COMBINED WITH inlining the literal as two textually-independent expressions that are NOT identical tokens (e.g. one as 0x1F8002B8 and reaching the other via a distinct-looking but equal expression like (0x1F800000 + 0x2B8)) to see if defeating literal-CSE while promoting idx2 changes the register-pressure balance enough to pass loop.c:3823. This is a genuinely untried COMBINATION, not a re-test of either axis alone."
+   "hypothesis": "Target's SECOND 0x1F8002B8 use is a bare lui with no ori (single half-word constant, not the full 0x1F8002B8 value written twice) -- suggesting the original source may pass a DIFFERENT, non-literal expression at the second func_80053614 call site (e.g. relative to a base already in a register, or a named scratchpad symbol) rather than the same literal constant repeated.",
+   "mechanism": "If the original C never wrote the literal 0x1F8002B8 twice at all, there is no CSE-unification decision to make in the first place -- dissolving this half of the residual entirely rather than requiring any CSE-defeat trick (which this session showed is unreachable at the C level anyway, per the fold-const.c class kill).",
+   "next_probe": "Grep asm/funcs and src/*.c for other callers of func_80053614 or sibling collision-check functions for a non-literal fifth argument spelling; check include/*.h and the naming census for a named scratchpad symbol at or near 0x1F8002B8 that would motivate a symbolic (not literal) argument at the second call site."
   },
   {
-   "hypothesis": "Target's single bare `lui #,0x1f80` (no ori, no spill) for the 0x1F8002B8 literal suggests the ORIGINAL source may pass a DIFFERENT expression at the second call site that happens to fold to the same runtime address via a different computation path (e.g. relative to a base already in a register) rather than the literal constant 0x1F8002B8 written twice -- worth checking whether func_80053614's fifth argument has any documented semantic (a scratchpad base address) that a sibling matched function passes via a computed expression instead of a bare hex literal.",
-   "mechanism": "If the original C never wrote the literal 0x1F8002B8 twice at all (e.g. it was `(s32)&some_scratchpad_var` or similarly derived), there would be no CSE-unification decision to make in the first place, dissolving this half of the residual entirely rather than requiring a defeat-CSE trick.",
-   "next_probe": "Grep asm/funcs and src/*.c for other callers of func_80053614 or its sibling collision-check functions to see if any matched call site passes a non-literal fifth argument, and check include/*.h or the naming census for whether 0x1F8002B8 has a named scratchpad symbol anywhere in the codebase that would motivate a symbolic (not literal) argument spelling."
+   "hypothesis": "The i*2 loop-carried idx2 promotion axis is now exhaustively class-analyzed (s21's insn_count-direction finding, corroborated by every s6/s10/s12/s18/s21/s22/s27 measurement landing at 55/204) but not yet a full class kill with a crossing-predicate proof across all C shapes -- a genuinely new loop-restructuring (not a declaration-order or literal variant) that shrinks insn_count enough to flip loop.c:3823's inequality has not been tried.",
+   "mechanism": "loop.c:3823's rejection predicate compares lifetime*threshold*benefit against the loop's own compiled insn_count; every variant tried so far either changes register spelling (no insn_count effect) or grows insn_count (wrong direction). A structural change that genuinely SHRINKS the loop body's instruction count while still computing i*2 as a byte-table index has not been attempted.",
+   "next_probe": "Structural-modality session: look for a way to fold the two [i*2] table reads (D_8009A820/D_8009A821) into fewer total instructions (e.g. reading both bytes via one combined access) that would lower insn_count without changing program behavior, then re-test idx2 promotion on that shrunk chassis."
   }
  ],
  "judge_constraints": [],
@@ -551,6 +557,30 @@
    "measured_on": "n/a (mechanism/predicate analysis of frozen compiler source, not a fresh source-level spelling test this session); relies on the s22 idx2-on-limit sandbox measurement (55/204) as its empirical anchor",
    "predicate_cite": "",
    "result": "Mechanism record corrected: insn_count is chassis-variable (not a compile-time constant, correcting a possible over-read"
+  },
+  {
+   "session": 27,
+   "statement": "The s26-named untried combination -- promoting i*2 to a loop-carried idx2 accumulator TOGETHER WITH spelling the two 0x1F8002B8 literal occurrences as textually-distinct expressions (0x1F8002B8 vs 0x1",
+   "kill_scope": "instance",
+   "measured_on": "s27 chassis (s22-s26-banked 38/198 body, idx2 for-statement promotion + two-spelling literal), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 38 -> 55/204, build_insns 198 -> 201 (+3, wrong direction). Identical to every prior isolated idx2 measurement (s2"
+  },
+  {
+   "session": 27,
+   "statement": "Spelling one of the two identical-value 0x1F8002B8 call-argument literals as an arithmetically-equal but textually-distinct expression (0x1F800000 + 0x2B8) cannot change the compiled instruction strea",
+   "kill_scope": "class",
+   "measured_on": "s27 chassis (s22-s26-banked 38/198 body, literal-respelling only, idx2 reverted to i*2), single fresh sandbox measurement + fresh .s dump read, no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/fold-const.c:3536",
+   "result": "score 38/204, build_insns 198 -- byte-for-byte identical to unmodified baseline. Dump confirms both call sites still res"
+  },
+  {
+   "session": 27,
+   "statement": "The current chassis's two sw $fp,16($sp) instructions before the two func_80053614 calls are mandatory o32-ABI stack-argument stores for the 5th (stack-passed) integer argument, not a register-pressur",
+   "kill_scope": "class",
+   "measured_on": "n/a (dump/mechanism reading against the frozen ABI/compiler, not a source-level spelling test)",
+   "predicate_cite": "tools/gcc-2.7.2/fold-const.c:3536",
+   "result": "Confirmed one li+ori materialization (line 34-35 of the span) reused at both call sites, with a sw $fp,16($sp) immediate"
   }
  ],
  "ladder_skip": 0,

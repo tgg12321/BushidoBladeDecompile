@@ -1,8 +1,50 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204
- * s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this session; s24
- * ran the ledger's own flagged next-probe (fresh .greg dump read on the
+ * s23/s24/s25/s26/s27) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21;
+ * 48/204 s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this session.
+ * ---------------------------------------------------------------------
+ * s27 (solver modality, 2026-09-16). Body UNCHANGED (re-confirmed
+ * 38/204 fresh, build_insns 198, before and after every probe). Ran the
+ * s26-named untried COMBINATION -- idx2 loop-carried promotion (for-
+ * statement `idx2 += 2`) TOGETHER WITH respelling the second
+ * func_80053614 call's literal argument as `0x1F800000 + 0x2B8` instead
+ * of bare `0x1F8002B8`, to test whether relieving literal-CSE pressure
+ * would let idx2 clear loop.c:3823's giv-worth predicate. KILLED:
+ * 55/204 (build_insns 201) -- identical to every prior isolated idx2
+ * attempt (s6/s10/s12/s18/s21/s22); the literal-respelling half
+ * contributed nothing. Isolated that half alone (idx2 reverted to
+ * `i * 2`): 38/204, byte-identical to baseline. A fresh
+ * `pwsh tools/grinder/dump.ps1 func_80056CB8` read
+ * (tmp/grind/func_80056CB8/dumps/text1b.s:4713-5002) confirms why:
+ * GCC's `fold()` (tools/gcc-2.7.2/fold-const.c:3536, PLUS_EXPR case at
+ * :3642) constant-folds `0x1F800000 + 0x2B8` into the SAME INTEGER_CST
+ * as the bare literal at parse time, before cse.c/combine.c ever run --
+ * there is only ever one value for the optimizer to see, so no
+ * arithmetic respelling of a compile-time constant can defeat CSE for
+ * it. This is a CLASS kill of the entire "respell the literal
+ * differently" sub-family, not just this instance (see hypotheses.md
+ * [s27] for the full citation). The dump read also confirms the
+ * current chassis materializes 0x1F8002B8 exactly ONCE (`li $fp,
+ * 0x1f800000` / `ori $fp,$fp,0x02b8`) reused at both call sites via
+ * two `sw $fp,16($sp)` -- those two stores are the o32 ABI's mandatory
+ * per-call stack-argument stores for the 5th (stack-passed) integer
+ * argument and cannot be eliminated by any C-level value respelling.
+ * FRONTIER FOR s28: the combined idx2+literal-defeat axis is now fully
+ * closed (both halves independently and jointly measured). The
+ * remaining register-pressure hypothesis from s26 (idx2 vs the cached
+ * literal contesting $s8/$fp) stands PARTIALLY reopened only in the
+ * sense that literal-CSE was never actually a live axis to defeat --
+ * so any further progress on this residual must come from either (a) a
+ * genuinely new idx2-promotion C shape not yet tried (all known
+ * declaration-order / loop-form variants are class-killed per s21's
+ * insn_count-direction analysis), or (b) discovering why target's
+ * SECOND 0x1F8002B8 use is a bare `lui` with no `ori` at all (implying
+ * a DIFFERENT non-literal expression at that call site in the original
+ * source, per the still-open second frontier item below) -- (b) is the
+ * more promising unexplored avenue since it does not require beating
+ * loop.c:3823.
+ * ---------------------------------------------------------------------
+ * s24 ran the ledger's own flagged next-probe (fresh .greg dump read on the
  * CURRENT 38/198 chassis) and two cheap declaration-order/scope probes,
  * both neutral (see below).
  * ---------------------------------------------------------------------
