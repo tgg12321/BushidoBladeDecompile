@@ -1,7 +1,32 @@
 /* func_8006A564 -- src/text1b.c
- * Session 5 (enumerate). sandbox --disable all score = 45 (down from the
- * session-3/4 floor of 60), target_insns 199, build_insns 199 -- EQUAL.
+ * Session 6 (enumerate). Chassis UNCHANGED from session 5: sandbox
+ * --disable all score = 45, target_insns 199, build_insns 199 -- EQUAL.
  * Pure C, zero cheat constructs, zero FAKE annotations.
+ *
+ * SESSION 6 (no floor movement -- two CLASS-shaped instance kills banked):
+ * Per the s5 frontier ("blocks 2/3 only got block 1's hand-transplanted
+ * winner, not their own independent sweep"), ran spelling_enum.py --no-swaps
+ * on block 2's tail (65 variants) and block 3's tail (65 variants)
+ * INDEPENDENTLY. Both sweeps show the SAME shape: several spellings score
+ * BELOW 45 (down to 40-41), but every one of them breaks the exact
+ * target_insns==199 build_insns parity (191-196 insns instead of 199) --
+ * the identical failure mode s5's H8 already found for block 2's
+ * separate-locals form. Only the ALREADY-APPLIED fully-inlined transplant
+ * (from block 1's s5 winner) preserves exact parity, at score 45, in BOTH
+ * blocks independently. This means blocks 2 and 3's local spelling space
+ * (inline-subset x decl-order, no operand swaps -- neither block's tail has
+ * a swappable commutative pair) is EXHAUSTED at the current form; it is not
+ * a partial/hand-derived guess, it is the true minimum under the
+ * exact-parity constraint. See hypotheses.md [s6] for the full histograms.
+ *
+ * Also re-ran `pwsh tools/grinder/dump.ps1 func_8006A564` (the s5 dump had
+ * gone stale in tmp/ scratch) and read block 1's basic-block-1 .sched trace
+ * directly: the tie-break that keeps block 1's remaining diff alive is NOT
+ * the dependence-class compare [[sched-rank-class-tie-wall]] describes --
+ * the dump's own comment says `insn 36 has a greater potential hazard, now
+ * 36 46`, i.e. a function-unit/load-latency HAZARD heuristic decided the
+ * tie, not a dependence-class fallback. This refines (does not merely
+ * confirm) the s5 frontier item; see hypotheses.md [s6] third entry.
  *
  * Structure unchanged from session 3/4 (see below for the original
  * narrative) -- draws 3 TILE primitives whose color bytes are chosen by

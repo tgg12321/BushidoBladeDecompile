@@ -1,7 +1,7 @@
 {
  "func": "func_8006A564",
  "file": "text1b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -33,23 +33,24 @@
    "floor": 45,
    "modality": "enumerate",
    "headline": "Systematic spelling_enum.py sweep (150 variants) found block 1's full-inline tail spelling closes its v0/v1 coloring swap entirely; transplanting to blocks 2/3 dropped floor 60 -> 45 (exact insn parit"
+  },
+  {
+   "session": 6,
+   "floor": 45,
+   "modality": "enumerate",
+   "headline": "Independent spelling_enum sweeps of block 2's and block 3's tails (65 variants each) confirm the s5 block-1-transplanted form is already the exact-parity-preserving minimum for both blocks; refined th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Block 1's remaining residual (after this session's fix) is now a pure SCHEDULING tie, not a register-allocation diff: target computes+stores tile+0xA fully before touching tile+0xE/tile+0xC, while our build's list scheduler interleaves the independent constant store 'li v1,1; sh v1,0xE(s0)' between the tile+0xA load and its addiu.",
-   "mechanism": "GCC 2.7.2's backward list scheduler (sched.c schedule_block/rank_for_schedule) picked the independent constant-store insn to fill a slot ahead of finishing the dependent load-add-store chain; likely the same class of tie described in [[sched-rank-class-tie-wall]] (equal INSN_PRIORITY for two ready, mutually-independent insns falls through to a dependence-class compare).",
-   "next_probe": "Read block 1's .sched dump (pwsh tools/grinder/dump.ps1 func_8006A564; tmp/grind/func_8006A564/dumps/text1b.sched) for the exact rank_for_schedule tie-break at this program point before trying further statement-order variants; if priorities are equal, [[sched-rank-class-tie-wall]] says operand/decl/association-order rewrites are structurally closed for that pair and a different lever is needed."
+   "hypothesis": "Block 1's remaining residual is a scheduling HAZARD-heuristic tie (not a dependence-class compare) between the independent 'li v1,1; sh v1,0xE(s0)' store and the tile+0xA load-add-store chain.",
+   "mechanism": "cc1's rank_for_schedule hazard estimate (function-unit/load-latency modeling in sched.c) picked the independent constant-store insn ahead of finishing the dependent chain; this is a DIFFERENT GCC tie-break class than [[sched-rank-class-tie-wall]]'s documented dependence-class fallback, and is not yet covered by any rule in this ledger's cited rule set.",
+   "next_probe": "Read sched.c's hazard/insn_cost estimation logic (the code path that produces 'insn N has a greater potential hazard') to understand what C-level restructuring (operand order, statement order, an intervening independent computation) could change the hazard estimate for this specific pair; cross-reference against any existing hazard-based rule in .claude/rules/ before deriving a new lever."
   },
   {
-   "hypothesis": "Block 2 and block 3's tails have their OWN winning spelling that a dedicated spelling_enum.py sweep (not just the hand-transplanted block-1 winner) would find -- their two-loaded-value liveness overlap differs from block 1's (block 1's values don't overlap in liveness the same way), so block 1's winning spelling is only a partial transplant, not necessarily their true winner.",
-   "mechanism": "Same class as H6/H7 -- GCC's pseudo materialization / global-alloc conflict graph is sensitive to exact spelling; block 2/3's specific two-value overlap likely has a different optimal spelling than block 1's simpler one-value-plus-two-constants tail.",
-   "next_probe": "Mark block 2's tail (and separately block 3's) with its own ENUM-BEGIN/END region and run the full spelling_enum.py + sweep loop independently, rather than reusing block 1's winner verbatim."
-  },
-  {
-   "hypothesis": "Block 4 (the obj2->field_1C->field_28 record-copy block, lines ~6509-6547 of the reverted src) still carries the untouched session-2/3 v0/v1-reuse chassis and shows the same residual v0/v1 swap pattern in the diff; it also contains a pre-existing dead read (v0 = *(s32*)(arg1+0x1C); immediately overwritten before any read) that predates this session and was not touched.",
-   "mechanism": "Same v0/v1 coloring-swap class as blocks 1-3, unattacked this session because turn budget was spent proving out the enumerate methodology on blocks 1-3 first.",
-   "next_probe": "Apply the same ENUM-mark + spelling_enum.py + sweep-loop treatment to block 4's flat (non-branching) sub-sequences; the dead read at line ~6531 (pre-existing, not introduced this session) may also be worth investigating separately once the register-coloring residual is isolated."
+   "hypothesis": "Block 4 (the obj2->field_1C->field_28 record-copy block, candidate.c lines ~194-233) still carries the untouched session-2/3 v0/v1-reuse chassis and was not touched by either s5's enumerate work or this session's block-2/3 sweeps.",
+   "mechanism": "Same v0/v1 coloring-swap class as blocks 1-3 before their enumerate treatment; block 4 also contains a pre-existing dead read (v0 = *(s32*)(arg1+0x1C) at candidate.c line ~217, immediately overwritten at line ~217 itself before any read of the first value -- predates this session, not introduced by it).",
+   "next_probe": "Apply the SAME ENUM-mark + spelling_enum.py + sweep-loop treatment (proven this session on blocks 2 and 3) to block 4's flat non-branching sub-sequences; this is the only block in the function that has not yet had a systematic sweep."
   }
  ],
  "judge_constraints": [],
@@ -94,6 +95,30 @@
    "measured_on": "candidate.c session-5 chassis (blocks 1 and 3 already using the fully-inlined tail form; block 2 tested in isolation with the two-fresh-locals form), zero FAKE constructs present",
    "predicate_cite": "",
    "result": "Sandbox score DID drop further (45 -> 42) but build_insns broke exact parity (199 -> 194, i.e. 5 fewer instructions than"
+  },
+  {
+   "session": 6,
+   "statement": "Block 2's own flat post-if/else tail (arg1+0x18 / arg1+0x1C dual-value store sequence), enumerated independently via spelling_enum.py --no-swaps (65 inline-subset x decl-order spellings), has a spelli",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c session-5/6 chassis (blocks 1 and 3 in s5 form, block 2's tail swept in isolation across all 65 spellings), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Histogram: 41(1) 42(2) 43(4) 44(21) 45(10) 46(27). Several variants score below 45 (as low as 41) but every one of them "
+  },
+  {
+   "session": 6,
+   "statement": "Block 3's own flat post-if/else tail (arg1+0x18+0x40 / arg1+0x1C+0xD dual-value store sequence), enumerated independently via spelling_enum.py --no-swaps (65 spellings), has a spelling that beats the ",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c session-5/6 chassis (blocks 1 and 2 in s5/s6 form, block 3's tail swept in isolation across all 65 spellings), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Histogram: 40(1) 41(2) 42(2) 43(21) 44(30) 45(9). Same shape as block 2: variants score as low as 40 but ALL break build"
+  },
+  {
+   "session": 6,
+   "statement": "Block 1's remaining tail residual is a scheduling tie resolved by rank_for_schedule falling through to a dependence-CLASS compare between two equal-priority ready insns that are the two inputs of the ",
+   "kill_scope": "instance",
+   "measured_on": "fresh dump.ps1 run against the unchanged (this session) candidate.c body in src/text1b.c, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The dump's own comment at the T-4 tie between insn 36 and insn 46 (both priority 1) reads 'insn 36 has a greater potenti"
   }
  ],
  "ladder_skip": 0,

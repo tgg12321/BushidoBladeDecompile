@@ -372,3 +372,51 @@ H8: Block 2's tail as two SEPARATE fresh named locals (`o18`, `o1c`, each
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c session-5 chassis (blocks 1 and 3 already using the fully-inlined tail form; block 2 tested in isolation with the two-fresh-locals form), zero FAKE constructs present
+
+## [s6] Systematic spelling_enum.py sweep (65 spellings: inline-subset x decl-order, --no-swaps) of block 2's OWN flat post-if/else tail (the arg1+0x18 / arg1+0x1C dual-value tail), run INDEPENDENTLY of block 1's transplanted winner as the s5 frontier called for.
+- mechanism: block 2's tail has a genuinely different two-value liveness overlap than block 1's (block 1's tail values did not overlap in liveness the same way), so its optimal spelling was hypothesized to potentially differ from block 1's transplanted "fully inline everything" winner.
+- probe: ENUM-marked block 2's tail (`s32 valA..valD` fully-named form covering the arg1+0x18 load, the two constants, and the arg1+0x1C+0xE load) in tmp/grind/func_8006A564/s6/enum_block2.c; `python3 tools/spelling_enum.py --candidate ... --out tmp/grind/func_8006A564/s6/enum2 --no-swaps` (65 variants, swaps axis found nothing additional -- `--list` reported the identical count with and without `--swaps`); scored all 65 via tmp/grind/func_8006A564/s6/sweep.py (a pwsh-7-based Python driver -- `pwsh.exe` not legacy `powershell.exe`, whose non-UTF8 default codepage garbles wteng.ps1's unicode glyphs and throws a parser error; see EVIDENCE).
+- result: Histogram over 65 variants: 41(1) 42(2) 43(4) 44(21) 45(10) 46(27). Several variants scored BELOW the current 45 baseline (as low as 41), but build_insns for every one of them was < 199 (196, 194, 195, 192, 191 ...) -- i.e. every lower-scoring spelling breaks the exact target_insns==199 parity, the SAME failure mode H8/s5 already identified for block 2's separate-locals form (combine folds something the target doesn't fold, opening a new diff elsewhere that the masked sandbox score doesn't see). Only ONE variant (v64.c, the fully-inlined form -- i.e. the CURRENT candidate.c baseline transplanted from block 1) preserves build_insns==199, and it scores 45, matching the current floor exactly. The already-applied transplant IS the score-minimizing form for this region under the exact-parity constraint.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c session-5/6 chassis (blocks 1 and 3 in their s5 form, block 2's tail swept in isolation across all 65 spellings), zero FAKE constructs present
+
+## [s6] Systematic spelling_enum.py sweep (65 spellings, --no-swaps) of block 3's OWN flat post-if/else tail (the arg1+0x18+0x40 / arg1+0x1C+0xD dual-value tail), independently of block 1's transplanted winner, same method as block 2's sweep this session.
+- mechanism: same as the block-2 sweep above -- block 3's tail also has its own two-value liveness shape distinct from block 1's.
+- probe: ENUM-marked block 3's tail in tmp/grind/func_8006A564/s6/enum_block3.c; spelling_enum.py --no-swaps (65 variants) written to tmp/grind/func_8006A564/s6/enum3; scored via the same tmp/grind/func_8006A564/s6/sweep.py driver.
+- result: Histogram: 40(1) 41(2) 42(2) 43(21) 44(30) 45(9). Same shape as block 2's sweep: several variants score below 45 (down to 40) but ALL of them break build_insns==199 parity (196, 193, 195, 192, 191 ...). Only v64.c (the fully-inlined transplanted form, i.e. the current candidate.c baseline) holds exact parity at score 45.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c session-5/6 chassis (blocks 1 and 2 in their s5/s6 form, block 3's tail swept in isolation across all 65 spellings), zero FAKE constructs present
+
+## [s6] Re-dumped block 1's .sched pass output on the CURRENT (session-5) chassis via `pwsh tools/grinder/dump.ps1 func_8006A564` (the s5-era dump had gone stale in tmp/ scratch) to identify the EXACT rank_for_schedule tie-break named in the s5 frontier as a hypothesis ("dependence-class compare, per [[sched-rank-class-tie-wall]]").
+- mechanism: [[sched-rank-class-tie-wall]] predicts that when two ready insns are equal-priority AND are the two inputs of the same nearest successor, GCC falls through to a dependence-CLASS compare. Block 1's tail sits in "basic block number 1 from 32 to 48" of the fresh .sched dump.
+- probe: `grep -n "func_8006A564" tmp/grind/func_8006A564/dumps/text1b.sched` -> function starts at dump line 70410; read the basic-block-1 scheduling trace (dump lines ~70436-70452) directly.
+- result: The actual dump text is NOT a dependence-class compare. At T-4 the ready list has insn 36 (priority 1) and insn 46 (priority 1) tied; the scheduler's own comment reads `;; insn 36 has a greater potential hazard, now 36 46` -- i.e. cc1's `rank_for_schedule` picked insn 36 first specifically because of a FUNCTION-UNIT / LOAD-LATENCY hazard estimate (`insn_cost`/hazard heuristic in sched.c), not the dependence-class fallback the s5 frontier guessed. This REFINES (does not confirm) the s5 hypothesis: [[sched-rank-class-tie-wall]]'s specific "two inputs of the same nearest successor -> class compare" shape does not appear to be the operative tie-break here; the operative one is the hazard estimate, which is a genuinely different (and less-studied in this ledger) tie-break class.
+- verdict: KILLED (the specific dependence-class-compare mechanism named in the s5 frontier, for THIS tie)
+- kill_scope: instance
+- measured_on: fresh dump.ps1 run against candidate.c's current (unchanged this session) src/text1b.c body, zero FAKE constructs present
+
+## [s6] Block 2's own flat post-if/else tail (arg1+0x18 / arg1+0x1C dual-value store sequence), enumerated independently via spelling_enum.py --no-swaps (65 inline-subset x decl-order spellings), has a spelling that beats the block-1-transplanted form's score of 45 while preserving build_insns==199 exact parity with target.
+- mechanism: Different two-value liveness overlap than block 1's tail could plausibly favor a different named-local/inlining pattern for global-alloc's conflict graph.
+- probe: ENUM-marked block 2's tail in tmp/grind/func_8006A564/s6/enum_block2.c; python3 tools/spelling_enum.py --no-swaps (65 variants) to tmp/grind/func_8006A564/s6/enum2; scored all 65 via tmp/grind/func_8006A564/s6/sweep.py (splices each into src/text1b.c, calls '& tools/wteng.ps1 main sandbox func_8006A564 --disable all', restores original after).
+- result: Histogram: 41(1) 42(2) 43(4) 44(21) 45(10) 46(27). Several variants score below 45 (as low as 41) but every one of them has build_insns < 199 (196/194/195/192/191), breaking exact instruction-count parity with target -- the same failure mode session 5's separate-locals experiment (H8) already found. Only v64.c (the already-applied fully-inlined form transplanted from block 1) holds build_insns==199, scoring 45.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c session-5/6 chassis (blocks 1 and 3 in s5 form, block 2's tail swept in isolation across all 65 spellings), zero FAKE constructs present
+
+## [s6] Block 3's own flat post-if/else tail (arg1+0x18+0x40 / arg1+0x1C+0xD dual-value store sequence), enumerated independently via spelling_enum.py --no-swaps (65 spellings), has a spelling that beats the block-1-transplanted form's score of 45 while preserving build_insns==199 exact parity with target.
+- mechanism: Same as block 2's hypothesis above -- block 3's tail also has its own two-value liveness shape distinct from block 1's.
+- probe: ENUM-marked block 3's tail in tmp/grind/func_8006A564/s6/enum_block3.c; spelling_enum.py --no-swaps (65 variants) to tmp/grind/func_8006A564/s6/enum3; scored via the same sweep.py driver.
+- result: Histogram: 40(1) 41(2) 42(2) 43(21) 44(30) 45(9). Same shape as block 2: variants score as low as 40 but ALL break build_insns==199 parity (191-196). Only v64.c (the current fully-inlined transplanted form) holds exact parity at score 45.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c session-5/6 chassis (blocks 1 and 2 in s5/s6 form, block 3's tail swept in isolation across all 65 spellings), zero FAKE constructs present
+
+## [s6] Block 1's remaining tail residual is a scheduling tie resolved by rank_for_schedule falling through to a dependence-CLASS compare between two equal-priority ready insns that are the two inputs of the same nearest successor, per the [[sched-rank-class-tie-wall]] mechanism the s5 frontier named as the likely explanation.
+- mechanism: sched.c rank_for_schedule's documented fallback when priority() ties: compare by dependence class.
+- probe: Re-ran 'pwsh tools/grinder/dump.ps1 func_8006A564' (the s5-era .sched dump had gone stale in tmp/ scratch) and read block 1's basic-block-1 scheduling trace directly (dump lines ~70436-70452, function starts at line 70410).
+- result: The dump's own comment at the T-4 tie between insn 36 and insn 46 (both priority 1) reads 'insn 36 has a greater potential hazard, now 36 46' -- i.e. the tie was broken by a function-unit/load-latency HAZARD estimate, not a dependence-class compare. The specific mechanism the s5 frontier guessed does not match the dump for this tie.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: fresh dump.ps1 run against the unchanged (this session) candidate.c body in src/text1b.c, zero FAKE constructs present
