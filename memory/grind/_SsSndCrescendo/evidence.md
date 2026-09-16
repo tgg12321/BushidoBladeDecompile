@@ -347,3 +347,11 @@ form (verified via a final re-measurement) before ending the session.
 - [s4] Direct objdump diff of target.o vs base.o (not inference from the earlier .combine dump alone) shows target caches the bank pointer AND the a1*0xB0 product as TWO SEPARATE hard registers, both spilled early, recombined once - a more specific structural finding than H4's prior combine.c-only attribution.
 
 - [s4] Caching a1_off as a named C local in addition to bank_off overshoots the fold: GCC eliminates MORE recomputation than target's own asm shows (184 vs 200 target insns), proving the a1_off caching is not a general reuse idiom in target - it is scoped to the single 'build base once' site, and the clear sites still re-derive fresh (consistent with H3).
+
+- [s5] tools/spelling_enum.py --candidate tmp/grind/_SsSndCrescendo/s5/enum_candidate.c --list reports: region has 2 named locals (bank_off, a1_off), 2 assignments (base, key), 0 anchors -> 16 distinct spellings with swaps.
+
+- [s5] sweep_variants.py --json histogram over all 16: {130:6, 133:4, 137:4, 139:2}, baseline (INCLUDE_ASM, no candidate) = 200/0.
+
+- [s5] The two variants that keep BOTH bank_off and a1_off as named locals in the preamble (v00, v02) score 130/213 - identical to the fully-inlined forms - as long as the clear sites are left as the SS_SCORE_FLAG macro's fresh recompute.
+
+- [s5] This directly separates two previously-conflated effects from s4/s5's earlier 143/184 rejection (rejected/shared-bank-off-and-a1off-s5.md): naming the locals in the preamble is inert; rewriting the clear sites to REUSE them is what over-shared and undershot target's instruction count.

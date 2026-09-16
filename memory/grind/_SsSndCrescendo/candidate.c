@@ -84,6 +84,20 @@
  * bank_off-only chassis specifically at the clear sites to see whether GCC
  * is choosing to re-derive a1's x0xB0 fresh there (matching target) or not,
  * rather than guessing from the C-level symptom alone.
+ *
+ * s5 (enumerate modality, 2026-09-16): ran tools/spelling_enum.py over the
+ * base/key preamble (bank_off/a1_off named locals, decl order, inline-or-
+ * keep, commutative swaps) — 16/16 exhaustively-enumerated spellings
+ * measured, holding the SS_SCORE_FLAG clear sites fixed at their existing
+ * fresh-recompute form. Best = 130/213 (six-way tie, all equivalent to
+ * THIS banked form); nothing beats it. CLASS KILL for the preamble's own
+ * spelling space (see hypotheses.md s5) — the residual is NOT reachable by
+ * respelling this block alone. New finding: naming BOTH bank_off and
+ * a1_off in the preamble ties 130 as long as the clear sites are left
+ * untouched — s4's worse 143/184 result came specifically from ALSO
+ * rewriting the 6 clear sites to reuse those locals, not from naming them
+ * in the preamble. This sharpens the frontier: the residual lives at the
+ * clear sites (register-allocation modality), not in the preamble.
  */
 void _SsSndCrescendo(s16 a0, s16 a1) {
     u8 *base;

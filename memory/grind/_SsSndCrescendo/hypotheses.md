@@ -264,3 +264,33 @@ next session to confirm or refute with a direct sandbox measurement.
 - probe: Declared s32 bank_off and s32 a1_off at top of the function; rewrote base and all 6 clear sites to use *(s32*)((u8*)&_ss_score + bank_off + a1_off + 0x98) &= ~0x10; measured via sandbox --disable all
 - result: KILLED: score 143, build_insns 184 - the first time any measured variant on this ledger landed UNDER target_insns (184 < 200; every prior variant landed at or above 200). Naming a1_off as a C local makes GCC's CSE reuse it MORE aggressively across all 6 clear sites than target's own asm actually does - target's visible cached a1_off register at the top of the function is evidence of ONE local build of base, not a general a1_off-reuse idiom threaded through the whole function body (the clear sites likely still re-derive the a1 offset fresh, consistent with H3's earlier confirmed fresh-recompute finding for the WHOLE clear-site address). Reverted; banked to rejected/shared-bank-off-and-a1off-s5.md.
 - verdict: ?
+
+## [s5, enumerate modality] Chassis re-verify: the banked candidate.c (s3 inlined-single-expr form) reproduces sandbox score 130 exactly via the enum-sweep baseline comparison.
+- mechanism: N/A - chassis re-verification via tools/sweep_variants.py baseline row
+- probe: python3 tools/sweep_variants.py --func _SsSndCrescendo --file main --variants tmp/grind/_SsSndCrescendo/s5/enum --json; the fully-inlined enum spellings (v10/v12/v14/v15, equivalent to the banked form under decl-order/operand-swap) reproduced score 130, build_insns 213 exactly.
+- result: CONFIRMED: 130/213/200, matching the ledger's last recorded floor. Chassis NOT stale.
+- verdict: CONFIRMED
+
+## [s5, enumerate modality] The base/key address-computation preamble's ENTIRE spelling space (decl-order x inline-or-keep for bank_off/a1_off x commutative-swap of the two products), holding the SS_SCORE_FLAG clear sites fixed at their existing fresh-macro-recompute form, contains no spelling that beats the banked 130-score form.
+- mechanism: N/A - exhaustive systematic enumeration (tools/spelling_enum.py), not derived or guessed; the tool enumerates ALL def-before-use decl orderings x inline/keep combinations x commutative operand swaps for a marked region by construction (tools/spelling_enum.py:9)
+- probe: Marked the preamble (bank_off, a1_off named locals feeding base = ...; key = a0|(a1<<8);) with ENUM-BEGIN/END in tmp/grind/_SsSndCrescendo/s5/enum_candidate.c; `python3 tools/spelling_enum.py --candidate tmp/grind/_SsSndCrescendo/s5/enum_candidate.c --out tmp/grind/_SsSndCrescendo/s5/enum` generated all 16 distinct spellings (2 named locals x 2 assigns, with swaps); swept all 16 with tools/sweep_variants.py --json in one call.
+- result: KILLED as a closing route: full histogram (16/16 measured) = 6 variants at 130/213 (all fully-inlined-equivalent forms, ties the banked best), 4 at 133/213, 4 at 137/215, 2 at 139/215. No spelling in this exhaustively-enumerated space scores below 130 or reaches build_insns=200. Notably, keeping BOTH bank_off and a1_off as NAMED locals (v00/v02) also ties 130/213 as long as the SS_SCORE_FLAG clear sites are left untouched (fresh-recompute) - this is a NEW result (s4's same-looking "shared bank_off+a1_off" form scored 143/184 because it ALSO rewrote the 6 clear sites to reuse the cached locals; s5's enum form does not touch the clear sites at all). This isolates the naming/caching of bank_off+a1_off in the PREAMBLE ALONE as harmless-but-not-helpful, strengthening H3/s4's already-confirmed finding that the residual is specifically in what happens at the 6 clear sites, not in the preamble's own spelling.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: src/main.c HEAD, banked candidate.c body as baseline chassis, preamble region replaced by each of the 16 exhaustively-enumerated spellings in turn, no FAKE constructs present, sandbox --disable all
+- predicate_cite: tools/spelling_enum.py:9
+
+## [s5] Chassis re-verify: the banked candidate.c (s3 inlined-single-expr form) reproduces sandbox score 130 exactly on this session's HEAD.
+- mechanism: N/A - chassis re-verification via the enum-sweep's fully-inlined variants
+- probe: python3 tools/sweep_variants.py --func _SsSndCrescendo --file main --variants tmp/grind/_SsSndCrescendo/s5/enum --json
+- result: CONFIRMED: score 130, build_insns 213, target_insns 200 - matching the ledger's last recorded floor exactly.
+- verdict: CONFIRMED
+
+## [s5] The base/key address-computation preamble's entire spelling space (decl-order x inline-or-keep for bank_off/a1_off x commutative operand swaps), holding the 6 SS_SCORE_FLAG clear sites fixed at their existing fresh-macro-recompute form, contains a spelling that beats the banked 130-score form.
+- mechanism: N/A - exhaustive systematic enumeration via tools/spelling_enum.py, which enumerates ALL def-before-use decl orderings x inline/keep combinations x commutative operand swaps for a marked region by construction
+- probe: Marked the preamble with ENUM-BEGIN/END in tmp/grind/_SsSndCrescendo/s5/enum_candidate.c; generated all 16 distinct spellings via tools/spelling_enum.py; swept all 16 in one tools/sweep_variants.py --json call.
+- result: KILLED: full histogram (16/16 measured) = 6 variants at 130/213 (ties the banked best), 4 at 133/213, 4 at 137/215, 2 at 139/215. No spelling reaches below 130 or hits build_insns=200. New finding: naming BOTH bank_off and a1_off in the preamble alone (clear sites untouched) also ties 130 - the s4/earlier-s5 143/184 regression came specifically from additionally rewriting the 6 clear sites to reuse those locals, not from naming them in the preamble. This isolates the residual to the clear sites, not the preamble.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: src/main.c HEAD, banked candidate.c body as the fixed surrounding chassis, preamble region replaced by each of the 16 exhaustively-enumerated spellings in turn, no FAKE constructs present, sandbox --disable all
+- predicate_cite: tools/spelling_enum.py:9

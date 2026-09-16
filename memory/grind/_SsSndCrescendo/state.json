@@ -1,8 +1,8 @@
 {
  "func": "_SsSndCrescendo",
  "file": "main",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 130,
    "modality": "permuter",
    "headline": "s5 permuter: objdump-diffed target vs the insn-exact bank_off chassis, found target caches BOTH bank_ptr AND a1_off as separate hard regs; a directed permuter campaign on that chassis plateaued 8332-9"
+  },
+  {
+   "session": 5,
+   "floor": 130,
+   "modality": "enumerate",
+   "headline": "s5 enumerate: exhaustive 16-spelling sweep of the base/key preamble (tools/spelling_enum.py) ties the banked 130 floor but finds no improvement \u2014 class-kills the preamble's spelling space and sharpens"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 139-score bank_off-only chassis's remaining gap to target may be explained by exactly WHERE GCC chooses to re-derive the a1*0xB0 product at each clear site (fresh vs from a live register) rather than a instruction-count problem - the s5 kill shows naming a1_off in C over-shares it, so the correct lever may be a C shape that shares bank_off explicitly (as s4 does) while leaving a1's product implicit/uncached at the C level, but the compiler still needs to be steered into re-deriving it the SAME way at each site as target (which itself caches SOME copy of it, per the objdump read) - this is a genuine remaining register-allocation-modality question, not yet resolved by a pure C-shape probe.",
-   "mechanism": "local-alloc.c / combine.c interaction between named-local liveness scope and per-site re-derivation choice",
-   "next_probe": "pwsh tools/grinder/dump.ps1 _SsSndCrescendo with the s4 bank_off-only chassis (score 139/200/200) applied to src/main.c; read the .greg/.lreg dumps specifically for the pseudo carrying the a1*0xB0 product at EACH of the 6 clear sites (not just the base-build site) and compare hard-register choice against target's asm/funcs/_SsSndCrescendo.s at the same offsets - this is the correctly-sequenced register-alloc-modality follow-up now that both the insn-count-exact chassis (s4) and its target-side register-caching shape (this session's objdump diff) are on record."
+   "hypothesis": "The residual now isolates entirely to the 6 SS_SCORE_FLAG clear sites: target's asm re-derives the clear-site address fresh (H3, confirmed s2/s3), but in a specific register pattern (per s4's objdump read: a dedicated hard reg for bank_off and a separate one for a1_off, both spilled early, recombined once for base) that our fork's register allocator does not reproduce when the clear sites use the plain SS_SCORE_FLAG macro form.",
+   "mechanism": "local-alloc.c / global.c register allocation at the 6 independent clear-site macro expansions - not a C-spelling question (s5's exhaustive preamble sweep proves the preamble's own C spelling is not the lever)",
+   "next_probe": "pwsh tools/grinder/dump.ps1 _SsSndCrescendo on the banked 130 candidate.c; read the .greg/.lreg dumps specifically for the pseudos generated at each of the 6 SS_SCORE_FLAG clear-site expansions (not just the preamble/base-build site) and compare hard-register choice + conflict lists against asm/funcs/_SsSndCrescendo.s at those exact offsets. This is now the correctly-scoped register-alloc-modality probe: s5 proved the preamble spelling is exhausted, so the next session should NOT re-sweep C spellings of the preamble again."
   },
   {
-   "hypothesis": "The remaining ~13-instruction gap between the banked 130 form (213 built) and target (200) may not be solely the H4 bank-index-shift issue - a full objdump-vs-target diff of the CANDIDATE (not just the bank_off chassis) has still never been run to enumerate every remaining instruction-level difference beyond the address-computation region.",
-   "mechanism": "N/A - unexplored enumeration gap, carried forward from s2/s3/s4",
-   "next_probe": "Run mipsel-linux-gnu-objdump -d on tmp/sandbox/_SsSndCrescendo/main.o (banked 130 candidate) vs asm/funcs/_SsSndCrescendo.s in full, not just the header/address-computation region this and prior sessions have focused on, to see if any diffs exist past the bank-index shift and the SS_SCORE_FLAG clear sites."
+   "hypothesis": "A full objdump-vs-target diff of the CANDIDATE (banked 130 form), not just the address-computation/clear-site region, may surface additional instruction-level differences beyond the ones this and prior sessions have focused on.",
+   "mechanism": "N/A - unexplored enumeration gap, carried forward unchanged from s2/s3/s4",
+   "next_probe": "Run mipsel-linux-gnu-objdump -d on the sandboxed .o for the banked 130 candidate vs asm/funcs/_SsSndCrescendo.s in full."
   },
   {
-   "hypothesis": "The exact register choice for voll/volr (stack temps) has not yet been compared instruction-for-instruction against target past the first ~40 lines of disassembly.",
+   "hypothesis": "The voll/volr stack-temp register/slot choice has not been compared instruction-for-instruction against target past the first ~40 lines of disassembly.",
    "mechanism": "N/A - unexplored",
-   "next_probe": "Once the full objdump-vs-target diff (frontier item 2) is run, check whether voll/volr's stack-slot placement matches target exactly or contributes to the residual score."
+   "next_probe": "Once the full objdump diff (frontier item 2) is run, check voll/volr placement specifically."
   }
  ],
  "judge_constraints": [],
@@ -72,6 +78,14 @@
    "measured_on": "src/main.c HEAD with the shared-bank_off variant (both s32 and s16 typings) substituted for the banked candidate.c body, no FAKE constructs present, sandbox --disable all",
    "predicate_cite": "",
    "result": "KILLED as a closing form on this session's weighted score (139, worse than banked 130) but NOTABLE: build_insns landed E"
+  },
+  {
+   "session": 5,
+   "statement": "The base/key address-computation preamble's entire spelling space (decl-order x inline-or-keep for bank_off/a1_off x commutative operand swaps), holding the 6 SS_SCORE_FLAG clear sites fixed at their ",
+   "kill_scope": "class",
+   "measured_on": "src/main.c HEAD, banked candidate.c body as the fixed surrounding chassis, preamble region replaced by each of the 16 exhaustively-enumerated spellings in turn, no FAKE constructs present, sandbox --d",
+   "predicate_cite": "tools/spelling_enum.py:9",
+   "result": "KILLED: full histogram (16/16 measured) = 6 variants at 130/213 (ties the banked best), 4 at 133/213, 4 at 137/215, 2 at"
   }
  ],
  "ladder_skip": 0,
