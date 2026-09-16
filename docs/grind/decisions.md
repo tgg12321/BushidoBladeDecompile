@@ -27585,3 +27585,77 @@ THE ONE OPERATOR ACTION, when you next read the borderline log: add a single lin
 Nothing in the C needs to change; the body is re-submitted exactly as-is and still passes every normal gate (sandbox re-verify, scope check, layer-1, Judge, full-build SHA1), landing as COMPLETED-INLINE-ASM-CANONICAL.
 
 **Constraint recorded for any future session:** Do not re-submit this body as COMPLETED-C and do not respell the four GTE islands in C: they are genuine cop2 operations (leading-zero-count and mvmva) with no C form; the only missing piece is an operator row for func_8002D780 in tools/grinder/owner_cluster_grants.txt.
+
+## 2026-09-16 — func_8002D780 — LAYER-2 ADVERSARIAL REVIEW (manual path) — **FAIL** — canonical-asm registry row REFUSED
+
+**Context.** The owner authorized the operator to address the standing owner-action on
+func_8002D780: add a row to `tools/grinder/owner_cluster_grants.txt` so the banked body
+could merge as COMPLETED-INLINE-ASM-CANONICAL under the 2026-08-17 cop2-addressing-preamble
+cluster ruling. Per [[review-discipline-before-commit]], a manual completion-class action
+(`auth:`) requires a fresh adversarial `cheat-reviewer` first, default-FAIL, the author's
+verdict not credited. It was run (Opus 5) and returned FAIL. **No row was added; nothing
+merged; `src/code6cac_b.c:1404` remains `INCLUDE_ASM`.**
+
+**The grinder Judge's 2026-09-15 23:43 PASS and 23:50 ESCALATE on this body are SUPERSEDED.**
+
+**The defect.** The LZCR island's clobber list `"$12","$14","$15"` is a register pin in
+clobber spelling, not a footprint reconstruction:
+
+- The island is two instructions (`addu $t4, %1, $zero` / `swc2 $31, 0($t4)`) and provably
+  touches neither `$t6` (`$14`) nor `$t7` (`$15`).
+- The only rule licensing clobbers on untouched registers
+  (`.claude/rules/reload-spill-reg-reveals-asm-clobbers.md:59-70`) requires ZERO compiler
+  uses of the named register anywhere in the target — that is what makes "the original
+  source must have named it" a closed deduction. Verified first-hand against
+  `asm/funcs/func_8002D780.s`: `$t7` 0 uses (qualifies), **`$t6` 2 uses in ordinary
+  compiled code** (`mflo $t6` line 68 / `subu $v0, $t6, $s1` line 82). The premise fails
+  for `$14`.
+- It is load-bearing, not decorative. Verified first-hand:
+  `tmp/grind/func_8002D780/s23/r2/score_K.json` = 0/202 with the clobbers,
+  `score_A.json` = 4/202 with only `"$12"` (both 202/202 insns, rules_dropped 0).
+  **The claimed honest floor of 0 is a floor of 4 plus an allocator constraint.**
+- Corroborating shape: the two siblings that legitimately spend this grant
+  (`src/code6cac_b.c:766`, `:829`) both ship the full conservative
+  `"$12","$13","$14","$15"`. This body omits `$13` precisely because it measured inert.
+  No hand-written GTE macro clobbers t4, t6 and t7 but not t5.
+
+**Why the row was refused even on its own terms.** The cluster ruling's entry condition
+(`.claude/rules/cop2-addressing-preamble-cluster.md:102-113`) is `sandbox --disable all == 0`
+AND zero register pins. Condition 1 holds only via the construct condition 2 excludes. The
+ruling's own load-bearing negative (lines 115-121): membership means "when you get to 0, the
+island is not what blocks you" — it is explicitly NOT a way to get to 0. The residual 4 lives
+in the multiply region, nowhere near the GTE code, so the grant would pay for a gap it does
+not cover.
+
+**The row's AUTHORITY chain is sound** — the function genuinely is a named member at
+`cop2-addressing-preamble-cluster.md:75`, and the registry is genuinely the owner-sanctioned
+door for a LOW `scan_hand_coded` tier (verified: LOW 1/8). **Add the row when a clobber-free
+body reaches 0/202; it is clean then.** The defect is the body, not the ruling.
+
+**Cleared, not the defect:** the three `/* FAKE */` constructs (`flag = z2 - z0`,
+`ax = pz - z0` staged-value-reused-variable; `m = dist` dead-store) were reviewed prong-by-prong
+and are clean.
+
+**Correction to the record.** The 23:50 Judge packet's claim that the function was omitted from
+the 2026-08-30 registry population "because it was then 56 instructions away" is FALSE. 56 is the
+stale 2026-08-18 census figure; at the population date the ledger floor was 2 — inside the set
+ruling 4 named. Do not carry the 56 story forward.
+
+**Floor history is contaminated (OPEN — owner decision pending).** Every candidate s2-s22 carried
+this clobber list; the clobber-free floor of the s14-s22 chassis is 6. The recorded "floor 2" is
+therefore not a clobber-free number and the honest series is closer to 10 -> 7 -> 6 -> 6 -> 4.
+This is NOT a queue-ordering problem (`engine/queue.json` carries the migration pin, distance 56,
+which is what ordered the item) but it does bear on the exhaustion machinery:
+`ENDGAME_LOCK_MAX_FLOOR = 5` splits the rotation record's wording at 5, so a true floor of 6
+across s14-s22 puts those sessions in the "non-endgame residual" branch, which requires a second
+full ladder cycle before exhaustion may fire. **The recorded floor was left UNCHANGED pending the
+owner's call**; only the ban and this record were applied.
+
+**Gate-miss note.** Layer-1 FAILed `"$13","$14","$15"` on this function at 2026-09-15 22:37; the
+body returned at 23:43 with `"$12","$14","$15"` and was PASSED by the Judge. The objection was
+respelled, not removed, and the respelling was selected by measuring which registers move the
+allocator. Both gates were Opus 5 at the time — this is not an artifact of the 2026-09-16 Sonnet
+worker-lane experiment (`docs/grind/model-experiment-2026-09-15.md`), but it is directly relevant
+to it, since the gates are that experiment's entire safety argument.
+
+**Applied:** `grindlib ban` on the clobber list + `grindlib constrain` with the full finding.
