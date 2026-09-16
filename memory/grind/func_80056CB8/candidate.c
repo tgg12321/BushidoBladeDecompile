@@ -1,8 +1,54 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29) — floor 38/204, NOT YET 0. (Prior: 42/204
- * s14-s21; 48/204 s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this
- * session.
+ * s23/s24/s25/s26/s27/s28/s29/s30) — floor 38/204, NOT YET 0. (Prior:
+ * 42/204 s14-s21; 48/204 s11-s13; 58/204 s7-s10.) Body UNCHANGED from
+ * s22 this session.
+ * ---------------------------------------------------------------------
+ * s30 (solver modality, 2026-09-16). Body UNCHANGED (re-confirmed
+ * 38/204 fresh, build_insns 198). Ran the OBJECT-based
+ * `inverse_compose.py classify` (via WSL — the tool's OBJDUMP config is
+ * WSL-only, a bare Windows invocation throws FileNotFoundError) against
+ * this exact chassis: verdict PRE-RA, instruction MULTISET differs, "no
+ * backend — upstream of every model". Cross-checked with a full fresh
+ * read of asm/funcs/func_80056CB8.s (all ~215 lines): TARGET'S `$fp`
+ * register is NOT the 0x1F8002B8 literal at all — it is a genuine
+ * loop-carried STRENGTH-REDUCED `i*2` accumulator (`sll $fp,$v1,2` at
+ * entry = start*2; `addiu $fp,$fp,2` at the loop tail), used at BOTH
+ * byte-table reads. `$s6` is the separate ordinary loop counter `i`.
+ * Target ALSO never hoists a stable `limit`: `start` itself is spilled
+ * to 0x60($sp) and RELOADED + re-added-2 fresh every iteration for the
+ * bound test. So target's real allocation has NINE simultaneously-live
+ * register-resident values (obj, obj2, i, idx2, flags/code, sin_p,
+ * cos_p, x, z) filling every one of s0-s7+fp, while BOTH `start` (for
+ * the per-iteration bound recompute) and the 0x1F8002B8 literal are
+ * deliberately stack-resident (0x60/0x78), not register-resident.
+ * TESTED the specific untried combination this implies — hand-carried
+ * `idx2 = start*2` incremented `+= 2` in the for-clause, loop guard
+ * rewritten as `i < start + 2` (no `limit` local at all), both
+ * `[i*2]` table reads replaced with `[idx2]` — MEASURED WORSE: 52/204
+ * (build_insns 201, +3 vs baseline). Same regressed signature as s22's
+ * idx2-on-top-of-limit (55/204) and s27's idx2+literal-respelling
+ * (55/204) despite being a genuinely different combination (no `limit`
+ * hoist this time). Conclusion banked in hypotheses.md: GCC treats an
+ * explicitly hand-written `idx2` accumulator as an ordinary competing
+ * user pseudo, not as the compiler's own strength-reduced `giv` (which
+ * loop.c's strength_reduce would build automatically from a literal
+ * `[i*2]` expression IF its own insn_count-sensitive cost/benefit
+ * predicate favored it on this chassis — already established rejected,
+ * per the s26 loop.c:3823 mechanism record, on every chassis measured
+ * so far). Reverted; 38/204 re-confirmed fresh after revert.
+ * FRONTIER for the next session: the idx2-hand-authorship axis is now
+ * dead in BOTH known combinations (with and without a hoisted `limit`).
+ * The remaining open question is whether some OTHER, not-yet-tried
+ * structural change to the function (elsewhere in the loop body, not
+ * touching the index arithmetic) can either (a) raise this specific
+ * loop's per-loop insn_count/benefit ratio enough for GCC's OWN
+ * strength_reduce to promote `i*2` automatically (letting the compiler
+ * build the giv, not a hand-written accumulator), or (b) independently
+ * change which 8 named values compete for s0-s7 in a way that leaves
+ * $fp free for a DIFFERENT genuinely-real value while the literal is
+ * forced to spill by some other path entirely. Neither has a concrete
+ * candidate C shape identified yet.
  * ---------------------------------------------------------------------
  * s29 (synthesis modality, 2026-09-16). Body UNCHANGED (re-confirmed
  * 38/204 fresh, build_insns 198). Decoded the s28-dumped .greg

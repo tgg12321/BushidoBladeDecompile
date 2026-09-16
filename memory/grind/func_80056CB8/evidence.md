@@ -619,3 +619,13 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s29] hit_flag_arg named-local variant tested in a NEW placement (in-loop, not pre-loop like s28) also regresses: 42/204 (build_insns 200) vs baseline 38/204 (198) and vs s28's pre-loop variant 45/204 (199) -- three distinct measured points on the same dead axis.
 
 - [s29] src/text1b.c reverted to clean INCLUDE_ASM state at session end (git checkout -- src/text1b.c, verified zero diff via git status --short) -- nothing persists on main between grind sessions per asm-until-matched.
+
+- [s30] Chassis re-confirmed fresh this session at floor 38/204 (build_insns 198) before any probe, matching the s22-s29 banked floor exactly.
+
+- [s30] The object-level inverse_compose.py classify tool requires WSL for its OBJDUMP dependency; a bare Windows-side python3 invocation throws FileNotFoundError on the objdump call even though the .py file runs -- always invoke it via `wsl bash -c 'source .venv/bin/activate && python3 tools/ra_solver/inverse_compose.py classify ...'` from this project.
+
+- [s30] asm/funcs/func_80056CB8.s lines 17/27/199/203: $s6 = ordinary loop counter i (sll $s6,$v1,1 = start; addiu $s6,$s6,1 per iteration); $fp = separate strength-reduced i*2 accumulator (sll $fp,$v1,2 = start*2; addiu $fp,$fp,2 per iteration). These are two DISTINCT registers with two DISTINCT roles in target, confirmed by direct read, not inferred from the classify diff summary alone.
+
+- [s30] asm/funcs/func_80056CB8.s lines 20/198-201: target spills the INITIAL `start` value to 0x60($sp) and reloads + re-adds 2 to it FRESH every loop iteration for the bound comparison, rather than hoisting a stable invariant `limit` register -- a structural difference from our s22-banked chassis (which DOES hoist a stable `limit` local, and that hoist is what dropped the floor 42->38 when it was added).
+
+- [s30] Both known C spellings for 'a value that becomes target's fp accumulator' (idx2-on-top-of-hoisted-limit: s22/s27, 55/204; idx2-without-any-limit-hoist: s30, 52/204) measure worse than the current 38/204 baseline -- the hand-authored-accumulator axis is exhausted in both combinations this ledger has been able to construct.
