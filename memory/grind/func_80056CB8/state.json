@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 69,
- "current_modality": "rederive",
+ "session_count": 70,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -417,39 +417,34 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s69 rederive: sibling func_8006CCC8's floor-23 fix confirmed non-transplantable (signature-disjoint); closed the long-open s4 obj+0xC0/z/flags split-read frontier item as already-maximal; 38/204 re-co"
+  },
+  {
+   "session": 70,
+   "floor": 38,
+   "modality": "enumerate",
+   "headline": "s70 enumerate: 32nd consecutive flat 38/204 re-confirmation; closed the last untried hand-derived combo (OR-swap + arm-negate) in the s37/38/60-flagged interior-if/else dispatch block at 48/204 (worse"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled, ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 48 flat sessions and 9+ modalities.",
+   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled, ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 49 flat sessions and 9+ modalities.",
    "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c",
-   "next_probe": "A future session dispatched in escalation modality should re-evaluate the endgame-lock gates fresh (scan_hand_coded + precedent census) since gate evidence can go stale; absent a new gate PASS, the ladder-exhaustion disposition from s68 remains the correct terminal record for this axis."
+   "next_probe": "A future escalation-modality session should re-evaluate the endgame-lock gates fresh (scan_hand_coded + precedent census); absent a new gate PASS the s68 ladder-exhaustion disposition remains the correct terminal record for this axis. Do not re-file rotation outside escalation modality (s69/s70 correction)."
   },
   {
-   "hypothesis": "A newly-COMPLETED-C sibling in src/text1b.c or src/code6cac*.c landing after this session could supply fresh transplant material; the current candidate pool (func_80055B60, func_8006CCC8, func_80057094, func_80057CC8, code6cac.c lim/scratchpad sites) is exhausted.",
+   "hypothesis": "A newly-COMPLETED-C sibling landing in src/text1b.c or src/code6cac*.c after this session could supply fresh transplant material; the current candidate pool (func_80055B60, func_8006CCC8, func_80057094, func_80057CC8, code6cac.c lim/scratchpad sites) is exhausted.",
    "mechanism": "n/a -- coverage/process finding",
    "next_probe": "Check for newly-COMPLETED-C functions in the same TUs each future dispatch before re-deriving from scratch."
+  },
+  {
+   "hypothesis": "A fully mechanical exhaustive enumeration of the type-dispatch if/else block (rather than the 4 hand-derived readings now closed) would require extending spelling_enum.py to represent regions with interior braced if/else bodies as orderable anchors.",
+   "mechanism": "n/a -- tooling gap, not a GCC-pass claim",
+   "next_probe": "If a future session has tooling-development budget, extend spelling_enum.py's ENUM-BEGIN/END parser to accept interior if/else anchors; otherwise this block's obvious spelling space is already closed by hand."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 36,
-   "statement": "On the CURRENT s22-s35-banked 38/204 chassis, interleaving block1's pt0[] stores between the sin_p/scale/cos_p computation and the x/z computation (m2c's own reconstructed statement order: sin_p; scal",
-   "kill_scope": "instance",
-   "measured_on": "s36 chassis (candidate.c's s22-s35-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block1 reordered to m2c's interleaved statement order, no FAKE constructs present)",
-   "predicate_cite": "",
-   "result": "score 38 -> 88/204, build_insns 198 -> 203 (+5 real instructions). Worse than even the stale s19/s20 42/197 chassis's me"
-  },
-  {
-   "session": 36,
-   "statement": "On the CURRENT 38/204 chassis, permuting block2's pt0/pt1 store order to m2c's exact per-store SSA sequence (pt0[0]=x; pt0[2]=z; pt1[0]=x; pt0[1]=obj+0xBC-0x834; pt1[2]=z; pt1[1]=obj+0xBC+0x1004;) ins",
-   "kill_scope": "instance",
-   "measured_on": "s36 chassis (candidate.c's s22-s35-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block2 pt0/pt1 stores reordered to m2c's exact sequence, block1 left at baseline order, ",
-   "predicate_cite": "",
-   "result": "score 38 -> 51/204, build_insns UNCHANGED at 198. Consistent with the stale s20 chassis's finding of the same construct "
-  },
   {
    "session": 38,
    "statement": "On the s22-s37-banked chassis (candidate.c body + func_80053614 s32-return prerequisite + header externs, no FAKE constructs present), none of 6 hand-written spellings of the obj/flags if-else block (",
@@ -913,6 +908,22 @@
    "measured_on": "s69 chassis, candidate.c body unchanged since s22, source-level read-only analysis (no sandbox re-run needed, no new form produced)",
    "predicate_cite": "",
    "result": "Already 3 independent re-reads of *(obj+0xC0) exist in source (z=, pt0[2]=, dz=). The only site where a local (z) is reu"
+  },
+  {
+   "session": 70,
+   "statement": "Combining the two individually-worse s60 mutations of the type-dispatch if/else block (OR-operand swap `!=6 && !=0x13` AND if/else arm negate/swap, applied together) measures worse than either mutatio",
+   "kill_scope": "instance",
+   "measured_on": "s70 chassis (candidate.c s22-s69-banked body + func_80053614 s32-return prerequisite + array-form D_8009A820/D_8009A821 externs), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 48 (build_insns 199, target_insns 204), worse than OR-swap-alone (40), arm-negate-alone (46), and baseline (38). B"
+  },
+  {
+   "session": 70,
+   "statement": "The s37/s38/s60-flagged interior-if/else tooling-gap block (spelling_enum.py cannot mechanically represent it) now has all four obvious hand-derived spelling readings closed by direct measurement (OR-",
+   "kill_scope": "instance",
+   "measured_on": "s70 chassis, read-only cross-reference of s60+s70 measurements",
+   "predicate_cite": "",
+   "result": "Hand-derived enumeration of this block is exhausted as far as obvious readings go; a fully mechanical exhaustive sweep w"
   }
  ],
  "ladder_skip": 0,

@@ -3141,3 +3141,47 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - probe: tmp/grind/func_80056CB8/s69/splice.py baseline (copy of s67's splice script) applied to src/text1b.c, dumps regenerated via tools/grinder/dump.ps1 func_80056CB8, then sandbox func_80056CB8 --disable all.
 - result: score 38 (build_insns 198, target_insns 204) -- exact match to s61-s68's reconfirmations.
 - verdict: CONFIRMED
+
+## [s70, enumerate] Fresh chassis re-confirmation (mandatory kill re-audit): the s22-s69-banked candidate.c body, applied to src/text1b.c with the func_80053614 void->s32 return-type prerequisite and array-form D_8009A820/D_8009A821 externs, reproduces 38/204 (build_insns 198) exactly.
+- mechanism: Ordinary compiled C reconstruction; no chassis drift since s69.
+- probe: Direct edit of src/text1b.c (INCLUDE_ASM -> candidate body + prerequisites), `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38 (build_insns 198, target_insns 204) -- exact match to s61-s69's reconfirmations.
+- verdict: CONFIRMED
+
+## [s70, enumerate] The ONE combination s60 left untried in the type-dispatch if/else block (OR-operand swap `!=6 && !=0x13` combined WITH the if/else arm negate/swap, applied together rather than individually) measures WORSE than baseline.
+- mechanism: s60 measured the OR-swap alone at 40/204 and the arm-negate alone at 46/204 (both worse than the 38/204 baseline, for independent reasons: same-insn-count RA residual shift for the OR-swap, branch-sense flip changing GCC's then/else scheduling choice for the arm-negate). This session combined both mutations in the same candidate to check whether they might cancel.
+- probe: Edited src/text1b.c's spliced if/else block to `if (*(u16*)(arg0+0x6A) != 6 && *(u16*)(arg0+0x6A) != 0x13) { flags += ratan2(...); } else { flags += *(s16*)(obj+0x1CA); }` (baseline body otherwise unchanged), `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 48 (build_insns 199, target_insns 204) -- worse than EITHER individual mutation (40 and 46) and worse than the 38/204 baseline. Compounding two independently-regressing respellings stacks rather than cancels. Reverted; baseline re-measured immediately after and reproduced 38/204 exactly, confirming the regression is attributable to the combined mutation, not chassis drift. Full form: memory/grind/func_80056CB8/rejected/dispatch-condition-or-swap-plus-negate-combo-worse.c.
+- kill_scope: instance
+- measured_on: s70 chassis (candidate.c s22-s69-banked body + func_80053614 s32-return prerequisite + array-form D_8009A820/D_8009A821 externs), zero FAKE constructs present
+- verdict: KILLED
+
+## [s70] The s37/s38/s60-flagged interior-if/else tooling-gap block (spelling_enum.py cannot represent regions with interior braced if/else bodies) now has FOUR of its most obvious hand-derived spellings closed by direct measurement: OR-operand swap alone (s60, 40/204), field-read caching alone (s60, 58/204, non-neutral), if/else arm negate alone (s60, 46/204), and the OR-swap+arm-negate combination (s70, 48/204). No further obvious reading of this block's dispatch-condition spelling space remains identified in this ledger. Live frontier is unchanged from s49/s51/s55/s58/s59/s60/s61: naming one of the ~20 OTHER compiler-internal pseudos live with `limit` in global_alloc's conflict graph, structurally outside what spelling_enum.py-class or hand-derived source-level enumeration can search (no declared C name to enumerate spellings of) -- forensics/solver modality territory, not enumerate.
+- mechanism: n/a -- coverage/synthesis finding
+- probe: Cross-referenced this session's combined-mutation result against the full s37/s38/s60 tooling-gap history.
+- result: The interior-if/else block's hand-derived spelling space is now closed as far as obvious readings go (4/4 tried, all worse); a fully mechanical exhaustive enumeration of this specific block would still require a spelling_enum.py interior-anchor extension, which remains unbuilt and is a tooling investment, not a C-lever search.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s70 chassis, read-only cross-reference of s60+s70 measurements (no additional chassis measurement beyond the two above)
+
+## [s70] The s22-s69-banked candidate.c body, applied fresh to src/text1b.c (func_80053614 void->s32 return-type prerequisite + array-form D_8009A820/D_8009A821 externs), reproduces the ledger's recorded honest floor on the current chassis.
+- mechanism: Ordinary compiled C reconstruction; no chassis drift since s69.
+- probe: Direct src/text1b.c edit (INCLUDE_ASM -> candidate body + prerequisites), & tools/wteng.ps1 main sandbox func_80056CB8 --disable all
+- result: score 38 (build_insns 198, target_insns 204), exact match to s61-s69
+- verdict: CONFIRMED
+
+## [s70] Combining the two individually-worse s60 mutations of the type-dispatch if/else block (OR-operand swap `!=6 && !=0x13` AND if/else arm negate/swap, applied together) measures worse than either mutation alone and worse than the 38/204 baseline.
+- mechanism: combine.c/local-alloc.c RA-residual interaction: the OR-swap alone (s60) shifts RA at equal insn count (40/204); the arm-negate alone (s60) flips GCC's then/else scheduling choice for +1 insn (46/204); applied together the two effects stack rather than cancel (48/204, +1 insn vs baseline, worse RA residual than either single mutation).
+- probe: Edited src/text1b.c's spliced if/else block to the combined form, & tools/wteng.ps1 main sandbox func_80056CB8 --disable all; reverted and re-measured baseline immediately after (38/204 exact) to rule out chassis drift as the cause.
+- result: score 48 (build_insns 199, target_insns 204), worse than OR-swap-alone (40), arm-negate-alone (46), and baseline (38). Banked to memory/grind/func_80056CB8/rejected/dispatch-condition-or-swap-plus-negate-combo-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s70 chassis (candidate.c s22-s69-banked body + func_80053614 s32-return prerequisite + array-form D_8009A820/D_8009A821 externs), zero FAKE constructs present
+
+## [s70] The s37/s38/s60-flagged interior-if/else tooling-gap block (spelling_enum.py cannot mechanically represent it) now has all four obvious hand-derived spelling readings closed by direct measurement (OR-swap alone, field-cache alone, arm-negate alone from s60; the OR-swap+arm-negate combo from s70), all worse than baseline; no further obvious reading of this block's dispatch-condition spelling space remains identified in this ledger.
+- mechanism: n/a -- coverage/synthesis finding, not a GCC-pass claim
+- probe: Cross-referenced this session's combined-mutation result against the s37/s38/s60 tooling-gap history in hypotheses.md/evidence.md.
+- result: Hand-derived enumeration of this block is exhausted as far as obvious readings go; a fully mechanical exhaustive sweep would need a spelling_enum.py interior-anchor extension (tooling investment, not a new C lever). Live frontier is unchanged: naming one of the ~20 other compiler-internal pseudos live with `limit` in global_alloc's conflict graph (forensics/solver modality territory, no declared C name to enumerate spellings of).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s70 chassis, read-only cross-reference of s60+s70 measurements
