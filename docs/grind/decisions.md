@@ -27424,3 +27424,7 @@ E-s63 (a3-preference route closed, global.c:842); `hypotheses.md` s64 frontier r
    (the driver's sibling-movement auto-return).
 4. The open frontier (hypotheses.md s64): a depth-0 reader that flow counts and combine erases without
    lifting the copy dest's priority above lnk's 2500 — grindable on return, not exhausted as a class.
+
+## 2026-09-15 20:46 — func_8006BEC4 — layer-1 review — **FAIL**
+
+Both block-scoped `Tile *p = D_800A36DC;` aliases are un-annotated second handles to a global-held object, introduced (by the session's own flow.c REG_BASIC_BLOCK evidence) purely to seat a register; the self-vet denies the family instead of meeting its mandatory /* FAKE */ prong.
