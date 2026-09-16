@@ -2093,3 +2093,4 @@
 - 2026-09-15 21:40 func_8002D780 AUTO-RETURNED to active — auto-return: coupled sibling moved after rotation — func_8002CA8C -> floor 0 (2026-09-16T02:40)
 - 2026-09-15 22:37 func_8002D780: LAYER-1 FAILED a sandbox-0 candidate — The three FAKE constructs check out, but the candidate also carries an UNDISCLOSED, load-bearing (4 insns) inline-asm hard-register footprint — the "$13","$14","$15" clobbers on the LZCS swc2 statement — extended by analogy from a grant scoped to two other named functions, and this function's target bytes contradict that grant's decisive premise.
 - 2026-09-15 23:16 func_8002D780: judge FAILED a bytes-proven candidate — Bytes re-verified myself: sandbox --disable all = 0/202, rules_dropped 0; verify-oracle SHA1 == oracle; the src body is 
+- 2026-09-15 23:31 func_8002D780: MERGE REFUSED after judge PASS — 4 unallowlisted inline-asm island(s), no grant door; constraint banked.
