@@ -145,9 +145,12 @@
   }
  ],
  "judge_constraints": [
-  "The LZCS island may clobber only \"$12\",\"$14\",\"$15\" - measure that exact list before submitting, and document per register why the target's bytes force it."
+  "The LZCS island may clobber only \"$12\",\"$14\",\"$15\" - measure that exact list before submitting, and document per register why the target's bytes force it.",
+  "No fresh/invented local may carry two writes (the y1 ban): every non-borrowed named local in this function must be written exactly once, and a borrow is only of a variable with its own real job."
  ],
- "banned_constructs": [],
+ "banned_constructs": [
+  "the function-scope scratch local `tmp` written twice - carrying block 7's `z2 - z0` and the sqrt block's `*((&D_8008D118) + ((u32)m >> shift))` table byte in one fresh multi-write carrier"
+ ],
  "kills": [
   {
    "session": 3,
@@ -630,7 +633,7 @@
    "result": "Base 2; kc-operand-swap 4; kp-operand-swap 17; both-swap 19; kp-first 29; kp-split-around-kc 30; kp-split 30; kc-split-a"
   }
  ],
- "ladder_skip": 11,
+ "ladder_skip": 22,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-08T07:20:48.522431+00:00",
