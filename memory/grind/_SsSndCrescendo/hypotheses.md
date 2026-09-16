@@ -294,3 +294,154 @@ next session to confirm or refute with a direct sandbox measurement.
 - kill_scope: class
 - measured_on: src/main.c HEAD, banked candidate.c body as the fixed surrounding chassis, preamble region replaced by each of the 16 exhaustively-enumerated spellings in turn, no FAKE constructs present, sandbox --disable all
 - predicate_cite: tools/spelling_enum.py:9
+
+## s6 (synthesis, 2026-09-16)
+
+## [s6] The banked 130 candidate.c reproduces its recorded floor on this session's HEAD chassis.
+**Probe:** apply candidate.c to src/main.c, `sandbox _SsSndCrescendo --disable all`.
+**Result:** 130 / build_insns 213 / target_insns 200 - exact. **CONFIRMED.**
+
+## [s6] The 13-instruction surplus (213 built vs 200 target) is dominated by the H4 register-allocation residual and other allocation-class effects.
+**Probe:** the never-run full objdump-vs-target diff of the whole function
+(frontier item 2, carried unchanged from s2 through s5), via a
+register/operand-canonicalising differ (tmp/grind/_SsSndCrescendo/s6/diff.py).
+**Result:** FALSE, and this is the session's central finding. H4's shift issue
+is worth ONE instruction. The other twelve are five independent SOURCE-LEVEL
+divergences (cached field locals; s16-vs-u16 voll/volr; the bank/a1_off pair;
+the `unk40 <= 0` tail disjunct; two blocks target shares that GCC will not
+cross-jump from duplicated source). Fixing them measures 130 -> 10.
+**KILLED** (kill_scope: instance - measured on the s6 chassis with no FAKE
+constructs present; what is killed is the ledger's attribution of the
+surplus, not any C form).
+
+## [s6] Removing the cached `unk42`/`unk40`/`key` s16 locals in favour of direct struct field re-reads and an inline key expression at every call site lowers the score.
+**Mechanism:** the intervening `jal`s clobber memory, so target reloads
+`lh 0x4C($s0)` / `lh 0x4A($s0)` and rebuilds the key per block; caching them
+in locals makes GCC keep them in callee-saved registers across the calls,
+adding copies and spilling `key` to the frame (`sh $a0,0x18($sp)`).
+**Probe:** rewrite the body with no field locals, measure.
+**Result:** 130 -> 84 (213 -> 210 insns). **CONFIRMED.**
+
+## [s6] voll/volr are u16 and the two computed func_80087770 calls pass (u16)-truncated arguments.
+**Probe:** target's `lhu 0x10($sp)` / `andi $a1,$a1,0xFFFF` / `andi $a2,$a2,0xFFFF`
+(0x800843F4..0x80084410); spelled as `u16 voll, volr;` + `(u16)(voll+1)` etc.
+**Result:** part of the 84 measurement; removing the casts re-introduces the
+missing `andi`s. **CONFIRMED.**
+
+## [s6] Carrying the bank-slot pointer and the a1*0xB0 product as two ordinary C locals (target's $s3/$s2) lowers the score on the s6 chassis.
+**Probe:** `s32 *bank = (s32*)((u8*)&_ss_score + ((s32)(a0<<16)>>14)); s32 a1_off = (s16)a1*0xB0;`
+with the in-arm clear sites spelled `*(s32*)(a1_off + *bank + 0x98) &= ~0x10;`.
+**Result:** 84 -> 69. **CONFIRMED - and this REVERSES the s4 and s5 instance
+kills** (`shared-bank-off-s4.md`, `shared-bank-off-and-a1off-s5.md`), which
+measured the same lever at 139/143 on the cached-field chassis. Those kills
+were correct as instance results and are now superseded: the lever works, it
+was being measured on top of a larger error.
+
+## [s6] The tail check's second disjunct is `unk40 <= 0`, not cres.c's `== 0`.
+**Probe:** target `lh $v0,0x4A($s0); bgtz $v0,.L800844C0` at 0x80084470 skips
+the clear only when unk40 > 0; measured both spellings.
+**Result:** 69 -> 68. **CONFIRMED.** Same class of BB2/4.1-build divergence
+from the SOTN reference as H1 (outer guard) and H2 (literal-1 4th arg).
+
+## [s6] GCC 2.7.2 cross-jumps the duplicated tail check / unk40<0 handler that cres.c's structure produces, so the source may keep them duplicated in both arms.
+**Probe:** measured both spellings of each block (duplicated in both arms vs
+shared via `goto tail;` / `goto neg40;` into single blocks before the common
+final call), and read the two emitted copies side by side in the sandbox .o
+disassembly.
+**Result:** FALSE - the two copies are byte-identical, 21 instructions each,
+both ending in a jump to the same label, and GCC leaves both. Duplicated tail
+= 233 insns; duplicated neg40 handler = 212; both shared = 199. Target emits
+exactly one copy of each (.L8008441C and .L80084458/.L8008447C).
+**KILLED** (kill_scope: instance - measured on the s6 chassis, no FAKE
+constructs present). The shared-goto form is the `cross-jump-store-tail-merge`
+shape (.claude/rules/cross-jump-store-tail-merge.md), ordinary C.
+
+## [s6] The five in-arm clear sites and the shared tail clear can use the SAME address spelling.
+**Probe:** all-cached (bank/a1_off everywhere), all-re-derived (inline
+expression everywhere), all-macro (SS_SCORE_FLAG everywhere), and the mixed
+form target actually shows.
+**Result:** FALSE. All-cached under-counts (186 vs 200 - the 14-insn re-derive
+block at the tail is missing); all-re-derived over-counts (241); all-macro on
+the s6 chassis measures 89/223. Only the mixed form (cached in the arms,
+inline re-derive at the shared tail) lands on 199/200. **KILLED**
+(kill_scope: instance - s6 chassis, no FAKE constructs present).
+
+## Live frontier after s6
+
+### H5 (NEW, s6) - the last instruction is a second live copy of param a0
+**Statement:** target opens with `addu $a3, $a0, $zero` and later makes a
+third copy `addu $s5, $a3, $zero` (and `addu $s4, $a1, $zero` for a1). Every
+key build in a block with no preceding call reads `$a3`/`$a1`; every one
+after a call reads `$s5`/`$s4`. Our build has only the `$s5`/`$s4` copies and
+reads the incoming `$a0` directly, which is exactly the one missing
+instruction (199 vs 200) and the cause of all six remaining register-name
+diffs plus the two unfilled delay slots (target fills them with a reorg.c
+peel of `sll $a0,$s4,8` from the final call's key build -
+[[reorg-peel-is-not-a-source-statement]]).
+**Mechanism:** unread. Candidate passes: local-alloc.c (two allocnos for one
+parameter would need two source-level pseudos) or caller-save.c. DO NOT
+GUESS - run `pwsh tools/grinder/dump.ps1 _SsSndCrescendo` on the banked s6
+candidate and read `.greg`/`.lreg` for the a0 pseudo(s).
+**Next probe (in order):** (1) the dump read above; (2) parameter typing -
+try `void _SsSndCrescendo(s32 a0, s16 a1)` / both `s32`, updating the forward
+decl at src/main.c:234 and the call site at main.c:285 (NOTE: this changes
+SsSeqCalledTbyT's own codegen, so re-measure that function too before
+banking); (3) whether the preamble scheduling diff (`sra $v0,$v0,14` sitting
+one slot later in target, after the `lui`/`addiu` of %hi/%lo(_ss_score))
+resolves on its own once the register split matches.
+
+### H6 (carried, s6) - permuter is now viable for the first time
+**Statement:** at 199/200 insns with a purely register/scheduling residual,
+a directed permuter campaign on the s6 chassis has a real gradient, unlike
+the s4 campaign (which ran on a 139-score chassis carrying five unfixed
+source-level errors and plateaued 8332-9589 over 4687 iterations).
+**Next probe:** rebuild a single-function permuter workspace from the s6
+candidate and run a fresh-seed campaign per [[permuter-fresh-seed-discipline]].
+
+## [s6] The banked s3/s5 candidate.c reproduces its recorded floor of 130 on this session's HEAD chassis.
+- mechanism: chassis re-verification (mandated before spending any banked conclusion)
+- probe: apply memory/grind/_SsSndCrescendo/candidate.c to src/main.c; `wteng main sandbox _SsSndCrescendo --disable all`
+- result: score 130, build_insns 213, target_insns 200 - exactly as banked. Chassis stable.
+- verdict: CONFIRMED
+
+## [s6] The 13-instruction surplus of the 130-score form (213 built vs 200 target) is dominated by the H4 register-allocation residual and other allocation-class effects.
+- mechanism: ledger attribution carried s2->s5: combine.c fold refusal on the sign-extended-a0 intermediate, then local-alloc/global.c seat choice at the clear sites
+- probe: ran the full objdump-vs-target diff of the whole function (frontier item 2, carried forward unchanged from s2 through s5 and never executed) with a register/operand-canonicalising differ, tmp/grind/_SsSndCrescendo/s6/diff.py
+- result: False. H4's shift issue is worth ONE instruction. The other twelve are five independent source-level divergences: (a) s2 introduced cached s16 locals for unk42/unk40/key that target does not have - target re-reads those fields after every call and rebuilds the key per block; (b) voll/volr are u16 with (u16)-truncated call arguments, not s16; (c) the bank-slot pointer and the a1*0xB0 product are real source locals (target's $s3/$s2); (d) the tail check's second disjunct is `unk40 <= 0`, not cres.c's `== 0`; (e) the two arms share their unk40<0 handler and their tail check, which GCC will not produce from duplicated source. Correcting all five measures 130 -> 84 -> 69 -> 68 -> 50 -> 10.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6 chassis = src/main.c HEAD with each successive s6 variant substituted for the banked 130 body; no FAKE constructs present in any variant
+
+## [s6] Removing the cached unk42/unk40/key s16 locals in favour of direct struct field re-reads and an inline key expression at every call site lowers the score below the banked 130.
+- mechanism: the intervening jal clobbers memory, so target reloads lh 0x4C($s0)/lh 0x4A($s0) and rebuilds the key per block; caching them forces GCC to hold them in callee-saved registers across the calls and to spill key to the frame (sh $a0,0x18($sp))
+- probe: tmp/grind/_SsSndCrescendo/s6/v1.c - same control flow as the banked form, no field locals, key spelled (s16)(a0|(a1<<8)) at each of the 8 use sites; sandbox
+- result: 130 -> 84 (build_insns 213 -> 210). The largest single contributor this session, and it voids the framing of the s2 key-type kill: the problem was never which type `key` had, it was that `key` was a variable at all.
+- verdict: CONFIRMED
+
+## [s6] Carrying the bank-slot pointer and the a1*0xB0 product as two ordinary C locals (target's $s3 and $s2), with the in-arm clear sites reloading *bank and re-adding a1_off, lowers the score on the s6 chassis.
+- mechanism: target holds &_ss_score+((a0<<16)>>14) in $s3 and (s16)a1*0xB0 in $s2 for the whole function and does lw 0x0($s3) + addu $s2 at each clear site; cse.c does not manufacture those shared pseudos from repeated inline expressions (measured: all-inline = 241 insns), so they have to be source locals
+- probe: tmp/grind/_SsSndCrescendo/s6/v3.c and v6.c; sandbox
+- result: 84 -> 69 (then 68 with the <=0 fix). This REVERSES the s4 and s5 instance kills (rejected/shared-bank-off-s4.md, rejected/shared-bank-off-and-a1off-s5.md) which measured the same lever at 139/143 - correct as instance results, but measured on top of the cached-field error that dominated the residual.
+- verdict: CONFIRMED
+
+## [s6] The tail check's second disjunct is `unk40 <= 0` rather than the SOTN reference's `unk40 == 0`.
+- mechanism: source-level semantic divergence in BB2's 4.1 LIBSND build, same class as the already-confirmed H1 outer guard and H2 literal-1 4th argument
+- probe: target asm/funcs/_SsSndCrescendo.s:174 `bgtz $v0, .L800844C0` (skip the clear only when unk40 > 0) vs our `bnez`; measured both spellings
+- result: 69 -> 68, and the branch mnemonic now matches. Confirmed by bytes, not by reference text.
+- verdict: CONFIRMED
+
+## [s6] GCC 2.7.2 cross-jumps the duplicated unk40<0 handler and the duplicated tail check that the SOTN reference's per-arm structure produces, so those statements may stay written out in both arms.
+- mechanism: jump.c cross-jumping of identical block tails ending in a jump to the same label
+- probe: measured duplicated vs goto-shared spellings of both blocks (tmp/grind/_SsSndCrescendo/s6/v8.c, v9.c, v10.c, v11.c) and read the two emitted copies side by side in the sandbox .o disassembly
+- result: False. The two tail copies are byte-identical, 21 instructions each, both ending in a jump to the same label, and GCC leaves both in place. Duplicated tail = 233 insns; duplicated unk40<0 handler = 212; both shared via `goto tail;`/`goto neg40;` = 199. Target emits exactly one copy of each (.L8008441C and .L80084458/.L8008447C). The shared-goto form is the ordinary-C cross-jump-store-tail-merge shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6 chassis (direct field reads + bank/a1_off locals + u16 voll/volr) with each block's two spellings substituted; no FAKE constructs present
+
+## [s6] The five in-arm clear sites and the shared tail clear can use one and the same address spelling.
+- mechanism: whether cse.c/local-alloc keeps the cached pseudos live across the join point at the shared tail label
+- probe: measured all-cached (v6), all-inline-re-derive (v7), all-SS_SCORE_FLAG-macro (v12), and the mixed form (v11)
+- result: False. All-cached under-counts by exactly the 14-instruction re-derive block target emits at .L8008447C (186 vs 200); all-inline over-counts (241); all-macro measures 89/223. Only the mixed form - cached bank/a1_off inside the arms, full inline re-derive at the shared tail - lands on 199/200, which is what target's own asm shows.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6 chassis, each spelling substituted for the clear sites of the banked s6 body; no FAKE constructs present

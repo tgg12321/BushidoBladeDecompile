@@ -1,158 +1,124 @@
-/* _SsSndCrescendo candidate — s3 (2026-09-16), structural modality.
- * NOT byte-matched. sandbox --disable all score = 130 (build_insns=213,
- * target_insns=200) — down from s2's 136 (inlined address expr, see the
- * function-body comment below) and the s1 recon floor of 200 (no C written).
- * To apply: replace the two lines
+/* _SsSndCrescendo candidate - s6 (2026-09-16), SYNTHESIS modality.
+ * NOT byte-matched. sandbox --disable all score = 10 (build_insns=199,
+ * target_insns=200) - down from the s2-s5 plateau of 130 (build_insns 213).
+ * To apply: replace the line
  *     INCLUDE_ASM("asm/funcs", _SsSndCrescendo);
  * with the body below, in src/main.c (right before
  * INCLUDE_ASM("asm/funcs", _SsSndDecrescendo);). Requires the existing
  * `extern s32 _ss_score;`, `extern void func_80087770(s32,s32,s32,s32);`,
- * `extern s16 _SsVmGetSeqVol(s32,s16*,s16*);` declarations already in the
- * TU (main.c:37/40/41) and the `SS_SCORE_FLAG(i,j)` macro (main.c:267-268).
+ * `extern s16 _SsVmGetSeqVol(s32,s16*,s16*);` declarations (main.c:37/40/41).
+ * NOTE: this form no longer uses the SS_SCORE_FLAG macro at all - see the
+ * s6 findings below; re-introducing the macro at the clear sites measures
+ * 89/223 on this chassis (rejected/macro-clear-sites-s6.md).
  *
- * Structure is the SOTN reference `tmp/sotn-decomp/src/main/psxsdk/libsnd/cres.c`
- * (evidence.md s1) plus three confirmed BB2/4.1 divergences from it:
- *   H1 (CONFIRMED s2): an outer guard `if (--score->unk98 >= 0) { <all of
- *       cres.c's body> } else { score->unk90 &= ~0x10; }` wraps the ENTIRE
- *       function — SOTN's cres.c runs the unk42-sign logic unconditionally.
- *   H2 (CONFIRMED s2, asm read): every func_80087770 (SpuVmSetSeqVol analog)
- *       call's 4th argument is literal 1 in BB2's asm; cres.c's transcribed
- *       text uses literal 0 throughout. Systematic — spelled as `1` at every
- *       call site here.
- *   NEW (found s2, asm read, not in evidence.md yet): in the unk42<0 arm,
- *       the FIRST inner call (`func_80087770(key,0x7F,0x7F,1)`, guarded by
- *       `(voll-unk42>=0x7F) && (volr-unk42>=0x7F)`) is immediately followed
- *       by an extra `SS_SCORE_FLAG(a0,a1) &= ~0x10;` in BB2's asm
- *       (.L800843B8's lead-in) that does NOT appear in the transcribed
- *       cres.c text for that specific call. Spelled below; every OTHER
- *       call site's absence/presence of a trailing clear matches cres.c
- *       exactly (verified instruction-by-instruction against
- *       asm/funcs/_SsSndCrescendo.s).
- * H3 (CONFIRMED s2, matches cres.c as originally read — no divergence):
- *       the three `_ss_score[arg0][arg1].unk90 &= ~0x10;` sites re-index
- *       fresh from the global rather than reusing the `base` pointer — this
- *       is exactly what cres.c's own source does (score-> is used for
- *       READS, the fresh _ss_score[][] form only for these three specific
- *       WRITES). Spelled via the existing SS_SCORE_FLAG(i,j) macro, which
- *       is the proven idiom for this exact recompute-from-scratch pattern
- *       elsewhere in this TU (SsSeqCalledTbyT, main.c:281 etc).
+ * WHAT S6 CHANGED (all five changes measured individually; see evidence.md):
+ *  1. NO cached field locals. s2-s5 cached `unk42`, `unk40` and `key` in s16
+ *     locals; target re-reads every one of those fields from the struct at
+ *     each use (lh 0x4C(s0) / lh 0x4A(s0) after each call, and a fresh
+ *     `sll a1,8; or a0; sll 16; sra 16` key build per block). Direct field
+ *     reads + an inline key expression at every call site: 130 -> 84.
+ *  2. voll/volr are u16, not s16 (target uses `lhu` + `andi ,0xFFFF`), and
+ *     the two computed func_80087770 calls pass (u16)-truncated arguments
+ *     (target's `andi $a1,$a1,0xFFFF` / `andi $a2,$a2,0xFFFF` before/at the
+ *     shared jal). SOTN's cres.c also declares these u16.
+ *  3. The channel address is carried as TWO ordinary locals - `bank`
+ *     (a pointer to the bank-table slot, = &_ss_score + ((a0<<16)>>14)) and
+ *     `a1_off` (= (s16)a1 * 0xB0) - exactly target's $s3 / $s2. The clear
+ *     sites reload `*bank` (memory is clobbered by the intervening calls,
+ *     so the reload is real and matches H3's fresh-re-derive finding) and
+ *     re-add a1_off. 84 -> 69.
+ *  4. The tail check's second disjunct is `unk40 <= 0`, not `== 0`
+ *     (target `bgtz $v0, .L800844C0` at 0x80084470; cres.c has `==0`).
+ *     A 4.1-build divergence, same class as H1/H2. 69 -> 68.
+ *  5. CONTROL FLOW: the two arms share their `unk40 < 0` handler and their
+ *     `(unk98==0 || unk40<=0)` tail check via `goto neg40;` / `goto tail;`
+ *     into single blocks placed before the common final call, and the outer
+ *     guard is written in its ASM-ORDER polarity (`if (--unk98 < 0) clear;
+ *     else { ... }`). Target emits exactly one copy of each of those blocks
+ *     (.L8008441C and .L80084458/.L8008447C) reached by branches from both
+ *     arms; GCC 2.7.2 would NOT cross-jump our duplicated copies (measured:
+ *     duplicated tail = 233 insns, duplicated neg40 handler = 212 insns).
+ *     68 -> 50 (shared tail) -> 20 (polarity + operand order + u16 casts)
+ *     -> 10 (shared neg40 handler).
+ *     This is the `cross-jump-store-tail-merge` shape (ordinary C - goto to
+ *     a shared tail label, no FAKE annotation, nothing dead).
+ *  6. One deliberate spelling asymmetry, forced by the bytes: the five
+ *     clear sites inside the arms use the cached bank/a1_off pair, while
+ *     the SHARED TAIL clear re-derives the whole address inline from
+ *     _ss_score. Target does exactly this (`.L8008447C` rebuilds
+ *     `sll a0,s5,16; sra a0,14; ...; lui at,%hi(_ss_score)` while
+ *     .L8008441C/.L800844AC use `lw 0x0($s3)` + `addu $s2`). Using the
+ *     cached pair at the tail too under-counts by 14 insns (186 vs 200).
  *
- * Field offset table (established this session by reading
- * asm/funcs/_SsSndCrescendo.s side-by-side against cres.c's control flow;
- * SOTN field NAMES below are cres.c's own arbitrary labels, not BB2-proven
- * numbers — only the OFFSETS and WIDTHS are asm-confirmed):
- *   +0xA0  s32  cres "unk98" — outer decrement counter (lw/sw, full word)
- *   +0x4C  s16  cres "unk42" — sign-branch field (lh)
- *   +0x4A  s16  cres "unk40" — inner decremented/added field (lhu load,
- *          sh store; sign tested via sll16;bltz trick, not a full sra)
- *   +0x98  u32  cres "unk90" — bit-flags word; bit 0x10 cleared (SS_SCORE_FLAG)
- *   +0x9C  s32  cres "unk94" — read via lw (full word) in the
- *          (unk94-unk98)*-unk42 < field48 comparison
- *   +0x48  s16  cres "unk3E" — read via lh; RHS of the same comparison
- *   +0x5C  s16  cres "unk78" — final _SsVmGetSeqVol output slot 1
- *   +0x5E  s16  cres "unk7A" — final _SsVmGetSeqVol output slot 2
+ * RESIDUAL at score 10 / 199 insns (the whole remaining diff, from
+ * tmp/grind/_SsSndCrescendo/s6/diff.py output banked this session):
+ *   - target opens with `addu $a3, $a0, $zero` - a SECOND live copy of
+ *     param a0 (a third, $s5, is made later). Every pre-call key build in
+ *     target reads $a3/$a1 (the incoming param regs); every post-call one
+ *     reads $s5/$s4. Our build has only the $s5 copy and reads $a0
+ *     directly, so it is exactly ONE instruction short (199 vs 200) and
+ *     the register names at 6 sites differ. What C shape gives GCC 2.7.2
+ *     two distinct pseudos for the same parameter here is the open
+ *     question - see hypotheses.md H5.
+ *   - two delay slots target fills with `sll $a0,$s4,8` (a reorg.c peel of
+ *     the final call's key build, see [[reorg-peel-is-not-a-source-statement]])
+ *     are `nop` in ours; a consequence of the same register split, not an
+ *     independent problem.
+ *   - `sra $v0,$v0,14` sits one slot later in target's preamble (after the
+ *     lui/addiu of %hi/%lo(_ss_score)) - pure scheduling.
  *
- * RESIDUAL (register-allocation class, NOT yet closed — see hypotheses.md
- * H4): the outer bank-index shift `(a0<<16)>>14` compiles here as THREE
- * insns (sll 16; sra 16 [full]; sll 2) instead of the target's/sibling
- * _SsSndPause's TWO (sll 16; sra 14, fused). Confirmed the identical
- * `s32 shifted=a0<<16; ...; shifted>>14` source shape DOES fuse in the
- * already-matched _SsSndPause (sandbox score 0) when key/base are used
- * only once each near the top; in this function `key` stays live across
- * ~6 call sites spanning the whole function body, and that extra liveness
- * appears to be what changes the RA/combine decision — declaring key as
- * s32 (worse, 141) vs s16 (this file, 136) vs inlining `(s16)(a0|(a1<<8))`
- * at every call site instead of a variable (worse, 143/220 insns) were all
- * measured this session; s16-cached-key is the best of the three.
- 
- *
- * s4 (permuter modality, 2026-09-16): objdump-diffed a clean standalone
- * permuter workspace's target.o vs a bank_off-sharing chassis's base.o
- * (tmp/grind/_SsSndCrescendo/s4/{target,base_s4_bankoff}.dis) and confirmed
- * target caches BOTH the bank pointer (&_ss_score+bank_off) AND the a1*0xB0
- * product as separate hard registers, recombined once via addu to build
- * `base`. A directed permuter campaign on that insn-count-exact (200/200)
- * chassis plateaued 8332-9589 over 4687 iterations (see hypotheses.md) -
- * KILLED as a search route for this chassis. s5 measured caching BOTH
- * bank_off AND a1_off as named C locals (mirroring target's register
- * pattern literally) - KILLED, UNDER-counted insns (184 vs 200), proving
- * GCC's CSE over-applies the named a1_off local relative to what target's
- * asm actually does at the clear sites (rejected/shared-bank-off-and-a1off-s5.md).
- * The gap between "target visibly caches 2 components at the top" and "our
- * C can't reproduce that without over-caching downstream" remains OPEN -
- * next register-alloc session should dump-read (.greg/.lreg) the 139-score
- * bank_off-only chassis specifically at the clear sites to see whether GCC
- * is choosing to re-derive a1's x0xB0 fresh there (matching target) or not,
- * rather than guessing from the C-level symptom alone.
- *
- * s5 (enumerate modality, 2026-09-16): ran tools/spelling_enum.py over the
- * base/key preamble (bank_off/a1_off named locals, decl order, inline-or-
- * keep, commutative swaps) — 16/16 exhaustively-enumerated spellings
- * measured, holding the SS_SCORE_FLAG clear sites fixed at their existing
- * fresh-recompute form. Best = 130/213 (six-way tie, all equivalent to
- * THIS banked form); nothing beats it. CLASS KILL for the preamble's own
- * spelling space (see hypotheses.md s5) — the residual is NOT reachable by
- * respelling this block alone. New finding: naming BOTH bank_off and
- * a1_off in the preamble ties 130 as long as the clear sites are left
- * untouched — s4's worse 143/184 result came specifically from ALSO
- * rewriting the 6 clear sites to reuse those locals, not from naming them
- * in the preamble. This sharpens the frontier: the residual lives at the
- * clear sites (register-allocation modality), not in the preamble.
+ * Everything from s1-s5 that is still load-bearing (field offset table,
+ * H1 outer guard, H2 literal-1 4th arg, H3 fresh re-derive at the clear
+ * sites, the extra clear in the unk42<0 arm) is unchanged and still
+ * correct; see evidence.md.
  */
 void _SsSndCrescendo(s16 a0, s16 a1) {
     u8 *base;
-    s16 key;
-    s16 voll, volr;
-    s16 unk42;
-    s16 unk40;
+    s32 *bank;
+    s32 a1_off;
+    u16 voll, volr;
 
-    /* s3 (2026-09-16, structural): inlining the address computation into a
-     * single expression (matching the already-matched _SsSeqPlay's style,
-     * main.c:399) instead of the separate shifted/addr/base_ptr/offset
-     * locals dropped score 136 -> 130 (build_insns unchanged at 213 — the
-     * improvement is fewer register-diff penalties, not fewer instructions;
-     * see hypotheses.md H4 for why build_insns itself doesn't move). */
-    base = (u8 *)(*(s32 *)((u8 *)&_ss_score + ((s32)(a0 << 16) >> 14)) + (s16)a1 * 0xB0);
-    key = a0 | (a1 << 8);
+    bank = (s32 *)((u8 *)&_ss_score + ((s32)(a0 << 16) >> 14));
+    a1_off = (s16)a1 * 0xB0;
+    base = (u8 *)(*bank + a1_off);
 
-    if (--(*(s32 *)(base + 0xA0)) >= 0) {
-        unk42 = *(s16 *)(base + 0x4C);
-        if (unk42 > 0) {
-            if ((*(s32 *)(base + 0xA0) % unk42) == 0) {
-                unk40 = *(s16 *)(base + 0x4A) - 1;
-                *(s16 *)(base + 0x4A) = unk40;
-                if (unk40 >= 0) {
-                    _SsVmGetSeqVol(key, &voll, &volr);
-                    if ((voll + 1) <= (voll + unk40))
-                        func_80087770(key, voll + 1, volr + 1, 1);
-                } else {
-                    func_80087770(key, 0x7F, 0x7F, 1);
-                    SS_SCORE_FLAG(a0, a1) &= ~0x10;
-                }
-                if ((*(s32 *)(base + 0xA0) == 0) || (unk40 == 0))
-                    SS_SCORE_FLAG(a0, a1) &= ~0x10;
-            }
-        } else if (unk42 < 0) {
-            unk40 = *(s16 *)(base + 0x4A) + unk42;
-            *(s16 *)(base + 0x4A) = unk40;
-            if (unk40 >= 0) {
-                _SsVmGetSeqVol(key, &voll, &volr);
-                if (((voll - unk42) >= 0x7F) && ((volr - unk42) >= 0x7F)) {
-                    func_80087770(key, 0x7F, 0x7F, 1);
-                    SS_SCORE_FLAG(a0, a1) &= ~0x10;
-                }
-                if (((*(s32 *)(base + 0x9C) - *(s32 *)(base + 0xA0)) * -unk42) <
-                    *(s16 *)(base + 0x48))
-                    func_80087770(key, voll - unk42, volr - unk42, 1);
-            } else {
-                func_80087770(key, 0x7F, 0x7F, 1);
-                SS_SCORE_FLAG(a0, a1) &= ~0x10;
-            }
-            if ((*(s32 *)(base + 0xA0) == 0) || (unk40 == 0))
-                SS_SCORE_FLAG(a0, a1) &= ~0x10;
-        }
+    if (--(*(s32 *)(base + 0xA0)) < 0) {
+        *(s32 *)(a1_off + *bank + 0x98) &= ~0x10;
     } else {
-        SS_SCORE_FLAG(a0, a1) &= ~0x10;
+        if (*(s16 *)(base + 0x4C) > 0) {
+            if ((*(s32 *)(base + 0xA0) % *(s16 *)(base + 0x4C)) == 0) {
+                *(u16 *)(base + 0x4A) = *(u16 *)(base + 0x4A) - 1;
+                if (*(s16 *)(base + 0x4A) < 0)
+                    goto neg40;
+                _SsVmGetSeqVol((s16)(a0 | (a1 << 8)), (s16 *)&voll, (s16 *)&volr);
+                if ((voll + 1) <= (voll + *(s16 *)(base + 0x4A)))
+                    func_80087770((s16)(a0 | (a1 << 8)), (u16)(voll + 1), (u16)(volr + 1), 1);
+                goto tail;
+            }
+        } else if (*(s16 *)(base + 0x4C) < 0) {
+            *(u16 *)(base + 0x4A) = *(u16 *)(base + 0x4A) + *(s16 *)(base + 0x4C);
+            if (*(s16 *)(base + 0x4A) < 0)
+                goto neg40;
+            _SsVmGetSeqVol((s16)(a0 | (a1 << 8)), (s16 *)&voll, (s16 *)&volr);
+            if (((voll - *(s16 *)(base + 0x4C)) >= 0x7F) &&
+                ((volr - *(s16 *)(base + 0x4C)) >= 0x7F)) {
+                func_80087770((s16)(a0 | (a1 << 8)), 0x7F, 0x7F, 1);
+                *(s32 *)(a1_off + *bank + 0x98) &= ~0x10;
+            }
+            if (((*(s32 *)(base + 0x9C) - *(s32 *)(base + 0xA0)) * -*(s16 *)(base + 0x4C)) <
+                *(s16 *)(base + 0x48))
+                func_80087770((s16)(a0 | (a1 << 8)), (u16)(voll - *(s16 *)(base + 0x4C)),
+                              (u16)(volr - *(s16 *)(base + 0x4C)), 1);
+            goto tail;
+        }
     }
-    _SsVmGetSeqVol(key, (s16 *)(base + 0x5C), (s16 *)(base + 0x5E));
+    goto done;
+neg40:
+    func_80087770((s16)(a0 | (a1 << 8)), 0x7F, 0x7F, 1);
+    *(s32 *)(a1_off + *bank + 0x98) &= ~0x10;
+tail:
+    if ((*(s32 *)(base + 0xA0) == 0) || (*(s16 *)(base + 0x4A) <= 0))
+        *(s32 *)(*(s32 *)((u8 *)&_ss_score + ((s32)(a0 << 16) >> 14)) + (s16)a1 * 0xB0 + 0x98) &= ~0x10;
+done:
+    _SsVmGetSeqVol((s16)(a0 | (a1 << 8)), (s16 *)(base + 0x5C), (s16 *)(base + 0x5E));
 }

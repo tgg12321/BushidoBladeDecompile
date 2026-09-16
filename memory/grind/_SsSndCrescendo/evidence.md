@@ -355,3 +355,111 @@ form (verified via a final re-measurement) before ending the session.
 - [s5] The two variants that keep BOTH bank_off and a1_off as named locals in the preamble (v00, v02) score 130/213 - identical to the fully-inlined forms - as long as the clear sites are left as the SS_SCORE_FLAG macro's fresh recompute.
 
 - [s5] This directly separates two previously-conflated effects from s4/s5's earlier 143/184 rejection (rejected/shared-bank-off-and-a1off-s5.md): naming the locals in the preamble is inert; rewriting the clear sites to REUSE them is what over-shared and undershot target's instruction count.
+
+## s6 (synthesis, 2026-09-16) - the plateau broke: 130 -> 10
+
+Chassis re-verified first: the banked s3/s5 candidate.c reproduced **130**
+(build_insns 213, target_insns 200) exactly on this session's HEAD.
+
+**The synthesis finding that unlocked everything: the ledger had been
+grinding a 1-instruction register-allocation residual (H4) while TWELVE of
+the thirteen surplus instructions were never attributed to anything.**
+Frontier item 2 ("a full objdump-vs-target diff of the CANDIDATE, not just
+the address-computation region, may surface additional instruction-level
+differences") had been carried forward UNCHANGED from s2 through s5 and was
+never run. It was run first thing this session
+(`tmp/grind/_SsSndCrescendo/s6/diff.py`, a register/operand-canonicalising
+differ over the sandbox .o disassembly vs `asm/funcs/_SsSndCrescendo.s`),
+and the surplus turned out to be five INDEPENDENT source-level divergences,
+none of them register allocation:
+
+1. **Cached field locals were the single biggest error.** s2's candidate
+   introduced `s16 unk42`, `s16 unk40` and `s16 key` locals that are not in
+   the SOTN reference (`cres.c` reads `score->unk42` / `score->unk40`
+   directly and rebuilds the key expression per use). Target re-reads
+   `lh 0x4C($s0)` / `lh 0x4A($s0)` after each call and rebuilds the key
+   (`sll $v0,$a1,8; or $v0,$a3,$v0; sll 16; sra $s1,16`) per block, because
+   the intervening `jal` clobbers memory. Our cached locals produced extra
+   `move`/`sra` copies AND a stack spill of `key` (`sh $a0,0x18($sp)`),
+   inflating the frame. Dropping all three locals for direct field reads and
+   an inline key expression: **130 -> 84** (213 -> 210 insns).
+   This directly VOIDS the s2 `key`-type kill's framing: the problem was
+   never which TYPE `key` had, it was that `key` was a variable at all.
+
+2. **voll/volr are `u16`, not `s16`** - target loads them with `lhu` and the
+   two computed `func_80087770` calls pass `(u16)`-truncated arguments
+   (`andi $a1,$a1,0xFFFF` at 0x800843F4ff and `andi $a2,$a2,0xFFFF` in the
+   shared jal's delay slot at .L8008440C). SOTN's cres.c declares them
+   `u16` too - another place the ledger had silently diverged from the
+   reference. Worth ~4 instructions and several register diffs.
+
+3. **The `bank` / `a1_off` pair are REAL source locals, and the s4/s5 kills
+   that rejected them were measured on the wrong chassis.** Target holds
+   `&_ss_score + ((a0<<16)>>14)` in `$s3` and `(s16)a1*0xB0` in `$s2` for the
+   whole function, reloading `lw 0x0($s3)` + `addu $s2` at the clear sites.
+   Written as two ordinary locals on the s6 chassis (direct field reads, no
+   cached fields) this measures **84 -> 69**. On the s2-s5 chassis the same
+   two locals measured 139/143 and were banked as instance kills - they were
+   never wrong as a lever, they were being measured on top of the
+   cached-field error that dominated the residual.
+
+4. **The tail check's second disjunct is `unk40 <= 0`, not `== 0`.** Target
+   at 0x80084470 branches `bgtz $v0, .L800844C0` (skip the clear when
+   unk40 > 0). cres.c has `==0`. Same class of BB2/4.1-build divergence as
+   H1 (the outer guard) and H2 (the literal-1 4th arg). **69 -> 68.**
+
+5. **The two arms SHARE their `unk40 < 0` handler and their tail check, and
+   GCC 2.7.2 will not produce that sharing from duplicated source.** Target
+   emits exactly one copy of each block (.L8008441C for
+   `func_80087770(key,0x7F,0x7F,1); clear;`, and .L80084458/.L8008447C for
+   `if (unk98==0 || unk40<=0) clear;`), reached by branches from both arms.
+   Writing those statements out in both arms (which is what cres.c's text
+   and every prior candidate did) leaves GCC with two byte-identical
+   21-instruction blocks that it does NOT cross-jump - verified by reading
+   the two copies side by side in the disassembly, not inferred. Sharing
+   them with `goto neg40;` / `goto tail;` into single blocks placed before
+   the common final call: **68 -> 50 -> 10.** Also in this group: writing the
+   outer guard in its asm-order polarity (`if (--unk98 < 0) clear; else {...}`)
+   so the else-arm is the fall-through, and matching target's operand order
+   (`*bank + a1_off` for base, `a1_off + *bank` at the clear sites).
+
+6. **A deliberate spelling asymmetry is required.** The five clear sites
+   inside the arms use the cached `bank`/`a1_off` pair; the SHARED TAIL clear
+   re-derives the entire address inline from `_ss_score`. Target does exactly
+   this. Using the cached pair at the tail too under-counts by 14 insns
+   (186 vs 200); using the re-derive everywhere over-counts (241).
+
+Final measurement this session: **score 10, build_insns 199, target_insns
+200** - from a floor that had been flat at 130 for four sessions.
+
+- [s6] Chassis re-verify: the banked s3/s5 candidate.c reproduces sandbox score 130 (213/200) exactly on this session's HEAD - not stale.
+- [s6] The never-run full objdump-vs-target diff (frontier item 2, carried unchanged s2->s5) accounts for the ENTIRE 13-instruction surplus as five independent source-level divergences, none of them register allocation: cached field locals (unk42/unk40/key), s16-vs-u16 voll/volr, the bank/a1_off pair, the `unk40 <= 0` tail disjunct, and the two shared blocks GCC will not cross-jump from duplicated source.
+- [s6] Removing the s16 `unk42`/`unk40`/`key` locals in favour of direct struct field re-reads and an inline key expression at every call site measures 130 -> 84 (213 -> 210 insns). Target re-reads those fields after every call because the jal clobbers memory; the cached locals also forced a stack spill of key (sh $a0,0x18($sp)) that inflated the frame.
+- [s6] voll/volr are u16 (target `lhu` + `andi ,0xFFFF` on the two computed func_80087770 argument pairs), matching SOTN cres.c's own declaration; the s2-s5 candidates had them s16.
+- [s6] Carrying the bank-slot pointer and the a1*0xB0 product as two ordinary C locals (target's $s3 and $s2) measures 84 -> 69 on the s6 chassis, REVERSING the s4/s5 instance kills that rejected the same lever at 139/143 on the cached-field chassis.
+- [s6] The tail check's second disjunct is `unk40 <= 0`, not cres.c's `== 0` (target `bgtz $v0,.L800844C0` at 0x80084470) - worth 1 point (69 -> 68) and a real 4.1-build divergence, same class as H1/H2.
+- [s6] GCC 2.7.2 does NOT cross-jump the two byte-identical 21-instruction tail blocks the duplicated-source form produces (both copies read side by side in the disassembly): duplicated tail = 233 insns, duplicated unk40<0 handler = 212 insns, vs 199 when both are shared via goto into single blocks. Target emits one copy of each (.L8008441C, .L80084458/.L8008447C).
+- [s6] A spelling asymmetry is required and matches target: the five in-arm clear sites use the cached bank/a1_off pair, the SHARED TAIL clear re-derives the full address inline from _ss_score. Cached-everywhere under-counts (186), re-derive-everywhere over-counts (241).
+- [s6] New floor 10 (build_insns 199 vs target 200). The entire remaining diff is one missing `addu $a3,$a0,$zero` param copy plus its consequences: target keeps THREE live copies of param a0 ($a0 incoming, $a3 for pre-call key builds, $s5 for post-call ones) and two of a1 ($a1, $s4); ours has two and one, so six register names differ and two delay slots target fills with a reorg.c peel of `sll $a0,$s4,8` are nops in ours.
+
+- [s6] Chassis re-verify: the banked s3/s5 candidate.c reproduces sandbox score 130 (build_insns 213, target_insns 200) exactly on this session's HEAD - the ledger floor was not stale.
+
+- [s6] The full objdump-vs-target diff of the candidate (frontier item 2, carried unchanged from s2 through s5) had never been run; running it accounts for the entire 13-instruction surplus as five independent SOURCE-LEVEL divergences, of which the ledger's H4 register-allocation residual is worth exactly one instruction.
+
+- [s6] Target re-reads unk42 (lh 0x4C) and unk40 (lh 0x4A) from the struct after every call and rebuilds the key expression (sll $v0,$a1,8; or $v0,$a3,$v0; sll 16; sra $s1,16) per block - the s2-s5 candidates cached all three in s16 locals, which also forced a stack spill of key (sh $a0,0x18($sp)). Dropping those locals: 130 -> 84.
+
+- [s6] voll/volr are u16 (target lhu 0x10($sp)/0x12($sp)) and the two computed func_80087770 calls pass (u16)-truncated arguments (andi $a1,$a1,0xFFFF at 0x80084404, andi $a2,$a2,0xFFFF in the shared jal delay slot at .L8008440C); SOTN's cres.c declares them u16 as well.
+
+- [s6] The bank-slot pointer (&_ss_score + ((a0<<16)>>14), target's $s3) and the a1*0xB0 product (target's $s2) must be source-level locals: written as ordinary locals on the s6 chassis they measure 84 -> 69, while the same values written inline at every site are not shared by cse.c at all (241 insns).
+
+- [s6] The tail check's second disjunct is `unk40 <= 0`, not the reference's `== 0` (target bgtz $v0,.L800844C0 at 0x80084470) - 69 -> 68.
+
+- [s6] GCC 2.7.2 does NOT cross-jump the two byte-identical 21-instruction tail blocks produced by writing the tail check in both arms (both copies read side by side in the disassembly): duplicated tail = 233 insns, duplicated unk40<0 handler = 212, both shared via goto = 199. Target emits one copy of each (.L8008441C, .L80084458/.L8008447C).
+
+- [s6] Target's clear sites need two DIFFERENT address spellings and so does the C: cached bank/a1_off in the arms, full inline re-derive from _ss_score at the shared tail. Cached everywhere under-counts (186), re-derived everywhere over-counts (241), SS_SCORE_FLAG everywhere measures 89/223.
+
+- [s6] Writing the outer guard in its asm-order polarity (if (--unk98 < 0) clear; else {...}) plus matching target's addu operand order (base = *bank + a1_off, clears = a1_off + *bank) and the (u16) argument casts took 50 -> 20.
+
+- [s6] New floor: score 10, build_insns 199, target_insns 200. The entire remaining diff is one missing `addu $a3,$a0,$zero` (target keeps three live copies of param a0 - $a0 incoming, $a3 for pre-call key builds, $s5 for post-call ones - and two of a1; ours has two and one), six consequent register-name diffs, and two delay slots target fills with a reorg.c peel of `sll $a0,$s4,8` that are nops in ours.
+
+- [s6] s4/s5's instance kills on the bank_off/a1_off lever are superseded rather than wrong: the lever was being measured on a chassis that still carried the cached-field error, which dominated the residual. This is the KILL RE-AUDIT paying off exactly as the rule predicts.
