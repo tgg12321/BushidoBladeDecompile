@@ -581,3 +581,93 @@ claims, no FAKE).
 - tmp/grind/func_8006CCC8/s7/diff_probe.py -- masked-opcode diff (s4 script)
 - tmp/grind/func_8006CCC8/s7/text1b_floor18.c / text1b_floor10.c / text1b_final_score0.c -- TU snapshots at each floor
 - tmp/grind/func_8006CCC8/s7/final.diff -- the applied working-tree diff
+
+## s7 (solver) -- 2026-09-16 -- floor 0 re-confirmed; the `nib` question typed by both solvers
+
+CONTEXT. The previous synthesis session reached sandbox 0 with the body now in
+candidate.c and was layer-1 FAILed (docs/grind/decisions.md, 2026-09-16 12:25)
+solely because `nib = 0xF` was classified as a constant-holder local under
+named-local-fake-exception and shipped un-annotated. The driver then BANNED
+the construct (`s32 nib; ... nib = 0xF; ... masked = *(rec + 0x1A) & (nib <<
+fade);` and the T5 disclaimer), so a candidate-ready re-declaring it is
+discarded before any review. This session's job in solver modality was to
+type the residual that removing `nib` leaves, and to measure whether any
+nib-free ordinary-C spelling reaches 0.
+
+CHASSIS. `python3 tmp/grind/func_8006CCC8/s7/apply2.py cand` applies
+candidate.c to src/text1b.c (replaces the INCLUDE_ASM line, deletes the stale
+`extern void func_8006CCC8(s32, s32, s32);` -- the definition precedes the
+caller). `sandbox func_8006CCC8 --disable all` = 0, 189/189, measured twice
+this session (start and end). The prior apply.py is broken (its
+`cand.index('s32 func_8006CCC8(')` matched inside the header comment and
+produced an unparseable body -> "not found in text1b.o"); apply2.py fixes it
+with rindex on the definition line.
+
+SWEEP (tmp/grind/func_8006CCC8/s7/sweep.ps1, objects saved as
+tmp/grind/func_8006CCC8/s7/text1b_<variant>.o):
+  candidate (nib)                         0   189/189
+  literal `0xF << fade`                   2   189/189
+  literal + inits reordered fade,shift,i  4   189/189
+  nib placed before i = 0                 2   189/189
+  walking mask `nib <<= 4` (no fade)     29   184/189
+  per-outer-iteration `msk = 0xF<<fade`  21   188/189
+All five non-candidate forms banked in rejected/ with WHY DEAD headers.
+
+PASS ATTRIBUTION (literal form, dumps regenerated with the literal resident,
+function slices saved as s7/rtl_literal_func.txt and s7/loop_literal_func.txt):
+.rtl preheader is insn 46 (ret=1 arm) / 51 (i=0, reg 76) / 54 (fade=0, reg 79)
+/ 57 (shift=0, reg 78) / NOTE_INSN_LOOP_BEG 59 -- no constant-15 set exists at
+RTL-expand. .loop shows loop.c inserted `(insn 547 ... (set (reg:SI 176)
+(const_int 15)))` and the giv init `(insn 553 ... (set (reg:SI 217)
+(const_int 0)))` between 57 and the LOOP_BEG note: the literal's mask constant
+is hoisted by loop.c move_movables to the preheader END. Target's
+`addiu $s6,$zero,0xF` sits between `move $s1,$zero` and `move $s5,$zero`
+(asm/funcs/func_8006CCC8.s lines 33-37), i.e. between the i=0 and fade=0
+statements, followed by shift=0 and the giv init.
+
+SOLVER VERDICTS (literal form):
+- `inverse_compose.py classify --target-object build/src/text1b.o
+  --ours-object s7/text1b_literal.o` -> FIRST DIVERGENCE: SCHED, "same
+  instructions and registers, 3 slot(s) in a different order"
+  (s7/classify_literal.txt). So the residual is neither RTL-shape nor RA:
+  every instruction and every register already matches; only the emission
+  order of the preheader block differs.
+- `sched_solver/perturb.py --pass 2 --goal-from-target text1b --target-object
+  build/src/text1b.o --ours-object s7/text1b_literal.o --atoms luid,luid_move
+  --depth 2` (s7/sched_literal_perturb.txt): honobj->tgtobj alignment 188
+  equal + 1 moved; block 3 (5 insns) is the only differing block; 30 single
+  atoms + pairs searched; EXACTLY ONE vector reaches the goal:
+  `luid_move 547 -> immediately before 54 (move that statement earlier in the
+  source)`, result order [553, 57, 54, 547, 51] in post-reorg space.
+  Insn 547 is the loop.c-inserted constant set; it has NO source statement in
+  the literal form, so "move that statement earlier in the source" can only be
+  realised by giving the constant a source statement between i = 0 (51) and
+  fade = 0 (54). That statement is `nib = 0xF;` -- the banned construct.
+  No other vector exists at depth 2 over the luid/luid_move atoms.
+
+CONCLUSION. The byte-proven body is candidate.c; its only reviewable
+construct is the mask variable, and both solvers type the nib-free residual as
+"the constant set must be a source statement at that position". This is not a
+spelling question any more -- it is the classification question the previous
+frontier already named: is a READ mask variable (`nib << fade`, consumed twice
+per iteration, held in $s6 across the func_8005C650 calls) ordinary C, or a
+constant-holder that needs the /* FAKE */ annotation under
+named-local-fake-exception? Either answer yields a submittable body; neither
+can be chosen by this session because the driver's ban rejects both spellings
+of a candidate-ready. Outcome: ruling-request.
+
+SOTN precedent census for the ruling: docs/reference/sotn-construct-index.md
+`const_holder` class (line 33; 41 hits, list at line 2625). Closest PSX hits:
+`src/dra/menu.c:2744` `u32 handFlag = 0x80000000; // right hand` (a READ
+constant mask carried in a local) and `src/st/e_venus_weed.h:1047`
+`const int InitDistRandRangeX = 0xF; // Must be a "full flags" value`
+(a 0xF mask constant given a name). Both are constant locals that are
+consumed, i.e. the same shape as `nib`, shipped as ordinary named constants.
+
+## Artifacts (s7 solver)
+- tmp/grind/func_8006CCC8/s7/apply2.py -- working apply script (variants: cand, literal, literal_reorder, mask_shift, inloop_lit, fade_first)
+- tmp/grind/func_8006CCC8/s7/sweep.ps1 -- the variant sweep driver
+- tmp/grind/func_8006CCC8/s7/variant_*.c, text1b_*.o -- each variant's body and cheat-stripped object
+- tmp/grind/func_8006CCC8/s7/classify_literal.txt -- inverse_compose classify verdict (SCHED)
+- tmp/grind/func_8006CCC8/s7/sched_literal.txt, sched_literal_perturb.txt -- sched_solver extract/mkasm log and the perturb result (single vector)
+- tmp/grind/func_8006CCC8/s7/rtl_literal_func.txt, loop_literal_func.txt -- function slices of the .rtl / .loop dumps for the literal form

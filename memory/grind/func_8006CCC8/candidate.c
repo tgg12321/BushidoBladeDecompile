@@ -1,4 +1,13 @@
 /* func_8006CCC8 -- src/text1b.c -- session s7 (synthesis modality), 2026-09-16
+ * [s7 solver addendum, 2026-09-16] RE-MEASURED 0 (189/189) on HEAD 4b2d932bc
+ * via tmp/grind/func_8006CCC8/s7/apply2.py (the older apply.py is broken).
+ * STATUS: layer-1 FAILed 12:25 for `nib = 0xF` un-annotated (constant-holder
+ * classification); the driver BANNED the construct, so this body is held for
+ * a ruling (outcome: ruling-request). Both solvers type the nib-free residual
+ * as "the constant-15 set must be a source statement between i = 0 and
+ * fade = 0" (single sched vector luid_move 547 -> before 54); five nib-free /
+ * repositioned spellings measured 2/4/2/29/21 (rejected/). Do NOT respell:
+ * submit this body exactly once the ruling lands, annotated iff ruled FAKE.
  * Sandbox --disable all: score 0 (target_insns=189, build_insns=189), measured
  * repeatedly this session with THIS body resident in src/text1b.c. The caller
  * func_8006D338 also sandboxes at 0 with the corrected forward declaration

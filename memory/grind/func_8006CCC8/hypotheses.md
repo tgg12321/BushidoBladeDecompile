@@ -517,3 +517,27 @@ restructuring, not a no-semantic-purpose device).
 ## Frontier for s8 (<=3)
 1. None for the bytes: floor 0 measured this session with the body resident. Next step is review (layer-1 cheat-reviewer, then Judge). The only construct a reviewer may question is the `nib = 0xF` mask variable; the byte evidence for it (preheader init ORDER) is in evidence.md s7 and self_vet.md T5. If it is classified as constant-holder rather than ordinary C, the correct move is a `ruling-request` on that exact question, NOT a respelling (the literal form measures 2, and the body is keyed by content).
 2. If the Judge wants pass attribution for the dispatch, read tmp/grind/func_8006CCC8/dumps/text1b.jump after `pwsh tools/grinder/dump.ps1 func_8006CCC8` for the case012 block inversion (not done this session; bytes matched).
+
+## [s7, solver] Candidate.c (switch dispatch + ternary nibble select + `nib = 0xF` mask variable) measures sandbox 0 (189/189) on the current HEAD chassis with the body applied by tmp/grind/func_8006CCC8/s7/apply2.py.
+- mechanism: n/a -- chassis re-measurement (the brief's HEAD floor was "measurement unavailable").
+- probe: apply2.py cand; sandbox func_8006CCC8 --disable all, at session start and end.
+- result: 0 both times; the caller's stale `extern void` prototype is deleted (definition precedes it).
+- verdict: CONFIRMED
+
+## [s7, solver] Removing the `nib` mask variable (literal `0xF << fade`) leaves a residual that inverse_compose classifies as SCHED (same instructions and registers, 3 preheader slots reordered) and that sched_solver perturb reaches with exactly one vector: `luid_move 547 -> immediately before 54`, i.e. the constant-15 set emitted as a source statement between `i = 0` and `fade = 0`.
+- mechanism: loop.c move_movables hoists the literal's (const_int 15) set (insn 547, tmp/grind/func_8006CCC8/s7/loop_literal_func.txt) to the preheader END; target's `addiu $s6,$zero,0xF` is in statement order. sched2 cannot move it (all five preheader sets are independent, ties keep LUID order), so the only realisation of the vector is a source statement, which is the mask variable itself.
+- probe: s7/classify_literal.txt, s7/sched_literal_perturb.txt (--atoms luid,luid_move --depth 2, 30 atoms + pairs).
+- result: literal = 2; REACHABLE with a single vector whose C spelling is `nib = 0xF;` at that position (the driver-banned construct); no second vector.
+- verdict: CONFIRMED
+
+## [s7, solver] Four nib-free or re-positioned mask spellings on the score-0 chassis: literal `0xF << fade` (2), literal with inits reordered fade/shift/i (4), walking mask `nib <<= 4` without a shift counter (29, 184 insns), per-outer-iteration `msk = 0xF << fade` local (21, 188 insns), and `nib = 0xF` placed before `i = 0` (2).
+- mechanism: the first two and the last are the preheader emission-order fact above; the walking mask and the hoisted per-iteration mask remove the in-loop `sllv $a2,$s6,$s5` target performs every j-iteration.
+- probe: tmp/grind/func_8006CCC8/s7/sweep.ps1 via apply2.py variants; banked as rejected/literal-nibble-mask-0xF-shl-fade.c, literal-mask-inits-reordered-fade-shift-i.c, walk-the-mask-nib-shl4-no-fade.c, per-outer-iteration-mask-local-msk.c, nib-init-before-i-init.c.
+- result: none reaches 0; the best nib-free form is the plain literal at 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c working tree, s7 switch + ternary-mask chassis (candidate.c = 0), no FAKE construct present in any variant.
+
+## Frontier for s8 (<=3)
+1. RULING PENDING (this session's outcome): whether `nib = 0xF` (read mask, `nib << fade`, held in $s6 across calls, byte-evidenced statement position) is ordinary C or a constant-holder needing `/* FAKE: ..., mechanism: loop.c move_movables vs statement-order emission, lever-exhaustion: hypotheses.md s7 */` under named-local-fake-exception. Once ruled, submit candidate.c EXACTLY (annotated or not per the ruling) -- do not respell. SOTN const_holder precedents: docs/reference/sotn-construct-index.md:2635 (handFlag = 0x80000000) and :2658 (InitDistRandRangeX = 0xF).
+2. Nothing else is open for the bytes: 0 measured this session with the body resident.

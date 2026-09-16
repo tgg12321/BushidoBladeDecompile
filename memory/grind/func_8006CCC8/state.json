@@ -59,10 +59,7 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [
-  "s32 nib; ... nib = 0xF; ... masked = *(rec + 0x1A) & (nib << fade);  (and the +0x1D twin)",
-  "self_vet.md T5 disclaimer: 'NOT claimed: `nib` ... is not \"a local existing only to carry a constant in a register across calls\" in the codegen-control sense'"
- ],
+ "banned_constructs": [],
  "kills": [
   {
    "session": 1,
@@ -179,6 +176,21 @@
    "hash": "f80e2efaf2d289ed",
    "when": "2026-09-16T17:25:47.275311+00:00",
    "summary": "Body is otherwise ordinary C, but `nib = 0xF` is a constant-holder local squarely inside [[named-local-fake-exception]] and ships un-annotated with the vet declaring SANCTIONED-FAMILY-CLAIMS: none \u2014 the mandatory /* FAKE: ... */ prerequisite is unmet."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "f80e2efaf2d289ed",
+   "when": "2026-09-16T17:36:08.762652+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-16 12:36 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "f80e2efaf2d289ed",
+   "when": "2026-09-16T17:36:08.761652+00:00",
+   "ref": "decisions.md 2026-09-16 12:36 ruling PASS",
+   "justification": "(1) ORDINARY C, no /* FAKE */ required. `nib = 0xF` is the nibble mask the game logic actually needs, consumed twice as `nib << fade` -- it has a truthful semantic reading, so per .claude/rules/ordinary-c-judge-decidable.md (owner ruling 2026-08-31) choosing it over the literal after seeing loop.c hoist the literal is the sanctioned method of matching decomp, not a cheat. named-local-fake-exception.md scopes to locals whose ONLY purpose is codegen influence (dead scalars, `zero`, `fake = 8`); this one is read and consumed, matching the SOTN ordinary-constant shape I verified at docs/reference/"
   }
  ]
 }
