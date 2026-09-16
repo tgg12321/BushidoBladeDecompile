@@ -1,45 +1,24 @@
-# SELF-VET — func_80056CB8
+# SELF-VET — func_80056CB8 (s23)
 
-CONSTRUCTS: none (this session made no net source change — three probed
-respellings of the flags==4 threshold comparison were each measured and
-reverted; the committed candidate.c body is byte-identical to the s11/s12
-banked form: the s7 flags/ang/code variable-reuse merge + s11 r1/r2
-variable-reuse merge, both SOTN-sanctioned variable-reuse-for-codegen-
-control, unchanged this session)
+Not a candidate-ready session (floor 38/204, not 0) -- this self-vet is written
+for hygiene/continuity, not because the mandatory gate applies this session.
 
-## T1 semantic purpose: N/A — no construct in the diff (this session is a
-pure pass-attribution + probe-and-revert session; src/text1b.c currently
-carries the same s11/s12 body). The two banked variable-reuse merges
-(flags/ang/code at s7; r1/r2 at s11) each borrow an EXISTING local for a
-second unrelated but REAL value with observable effect (the merged
-variable's final value is what gets stored to `*(s8*)(arg0+0x444+i)`).
-## T2 human-programmer: N/A — no new construct. The banked merges read as
-ordinary reuse of a status/flags accumulator across sequential stages of
-one loop iteration, which is how a human decompiler naming from assembly
-observation would write it once shown the target keeps one register for
-all three roles.
-## T3 GCC-internals justification: N/A — no new construct this session.
-The banked merges' original justification (s7/s11 headers) cites program
-logic (three non-overlapping-lifetime named quantities in the same loop
-iteration), not a GCC pass, as the actual code change.
-## T4 permuter/search provenance: N/A — no auto-search used this session;
-all three probes were hand-derived from a loop.c source reading, each
-independently measured via sandbox --disable all and reverted on no gain.
-## T5 family check: N/A — no new construct in the diff.
-## T6 naming-announces-intent: N/A — no new construct in the diff.
+CONSTRUCTS: none in the final src/text1b.c state (reverted to committed
+INCLUDE_ASM HEAD at session end). Two constructs were tried in-session and
+reverted after measuring worse: (1) reuse of the dead `scale` pseudo for the
+0x1F8002B8 literal (defeat-licm-hoist-var-reuse family), (2) a fresh named
+`s32 addr;` local set once before the loop (ordinary C, no family needed).
+Neither survives in the final diff.
 
-SANCTIONED-FAMILY-CLAIMS: none — this session's diff is empty (net) and no
-family is being claimed. The pre-existing candidate.c body's two claims
-(variable-reuse-for-codegen-control at s7 and s11) are unchanged from prior
-sessions' self-vets; re-stated here for continuity, not re-claimed fresh:
-  FAMILY: variable reuse for codegen control
-  SCOPE: "reusing one C variable for two unrelated values to influence loop-invariant detection or RA. SOTN ships `idxSub = idxSub;` and `randy = basePoint.x; baseX = randy;` with \"FAKE but makes register allocation work\" comments."
-  PRECEDENT: .claude/rules/no-new-park-categories.md:185
+## T1 semantic purpose: N/A -- no construct present in the final diff.
+## T2 human-programmer: N/A.
+## T3 GCC-internals justification: N/A.
+## T4 permuter/search provenance: N/A -- no permuter used this session.
+## T5 family check: N/A.
+## T6 naming-announces-intent: N/A.
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct anywhere in the current
-candidate.c body (the variable-reuse-for-codegen-control family is a
-SOTN-accepted ordinary-C technique per Ruling 1 of
-.claude/rules/ordinary-c-judge-decidable.md and does not require a FAKE
-annotation — only the LAST-RESORT families listed in
-no-new-park-categories.md's "2026-07-01 additions" carry that
-prerequisite).
+SANCTIONED-FAMILY-CLAIMS: none -- no construct is being submitted.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct present in the final diff
+(src/text1b.c reverted to HEAD; only memory/grind/func_80056CB8/candidate.c
+and rejected/ carry this session's findings, per asm-until-matched).

@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -135,18 +135,24 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s22 rederive: materializing the loop bound as a named `s32 limit = start + 2;` local (not the i*2 index) drops the honest floor 42->38/204 (build_insns 197->198) -- first drop since s14 (8 flat sessio"
+  },
+  {
+   "session": 23,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s23 rederive: re-confirmed 38/204 fresh; read the target's actual 0x1F8002B8 materialization shape (single pre-loop lui/ori -> stack-slot store -> per-call lw reload, NOT the per-call-site remateriali"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 0x1F8002B8 scratchpad-address constant should NOT be hoisted into a callee-saved register across the loop; forcing GCC to rematerialize it per call site (matching target's bare target-only `lui #,0x1f80`) may close part of the remaining PRE-RA/rtl_shape multiset gap without disturbing the s22 limit win.",
-   "mechanism": "Unclear yet whether this is a register-allocation global-alloc choice sensitive to which OTHER values are live across the two func_80053614 calls, or a CSE-level decision to unify the two textually-identical literal occurrences into one materialization. Needs a fresh .greg/.combine dump read on the 38/198 chassis before hypothesizing a specific C-level lever (per the pass-attribution discipline -- do not guess).",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_80056CB8` on the 38/198 chassis (limit change applied), read the fresh .greg dump for which pass decided to home 0x1F8002B8 in $s8, and the .combine dump for whether the two literal occurrences were CSE-unified. Then try a natural C variant that keeps the constant from surviving across the loop (e.g., confirm whether it is genuinely dead register-pressure fallout from `limit` rather than something requiring a coercion construct -- if the only lever found is a coercion, that is a KILL, not a lever)."
+   "hypothesis": "The target reload-spills the 0x1F8002B8 pseudo to a stack slot before the loop instead of keeping it in a callee-saved register across the loop; our current bare-literal chassis keeps it callee-save-resident. This is likely a register-pressure/reload decision sensitive to what ELSE is live across the loop body's two func_80053614 calls, not directly controllable by respelling the literal itself (both respellings tried this session made it worse).",
+   "mechanism": "Unclear which specific pass (global.c's register-class assignment, or reload1.c's alter_reg spill-vs-keep decision) is choosing the callee-save home over a stack spill for this specific pseudo. Needs a fresh .greg/.lreg dump read (not done this session) on the current 38/198 chassis to see the pseudo's conflict set and spill-cost accounting before hypothesizing a specific C-level register-pressure lever, per the pass-attribution discipline.",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80056CB8 on the current 38/198 chassis (bare-literal form, the still-best spelling), read the fresh .greg dump for the pseudo carrying 0x1F8002B8's two lui/ori materializations, and the .lreg dump for its conflict/death-count profile, to determine whether some OTHER local's live range is what's pushing this pseudo to a register home instead of a stack slot -- then try a register-pressure lever elsewhere in the loop body (not another respelling of the literal itself, per [[register-alloc-pure-c]])."
   },
   {
-   "hypothesis": "The target's `addiu s8,s8,2` / `addu #,#,s8` x2 $fp-accumulator residual (the original PRE-RA/rtl_shape gap chased since s6, now 6 real instructions short even after the s22 win: 198 vs 204) may respond differently to the i*2-sharing family now that the chassis's register-pressure baseline has shifted by the limit change.",
-   "mechanism": "s18/s21's class-kill of idx2-sharing was measured on the pre-limit chassis (42/197) and re-confirmed this session on the post-limit chassis (38/198) with the SAME idx2 spelling -- still dead. But the s11 loop-inversion hypothesis (make the doubled index j the primary induction variable) was only ever tested on the s7 pre-r1/r2-merge chassis; it may be worth a single fresh re-measurement on the current 38/198 chassis before this axis is treated as permanently closed, since the register-pressure story that killed idx2-sharing is not obviously identical for the inverted-loop shape.",
-   "next_probe": "Re-apply the s11 loop-inversion form (`for (j = start*2; j < start*2+4; j += 2) { i = j >> 1; ... }` with j as the primary control variable) on top of the s22 38/198 chassis and measure fresh -- a single sandbox run, cheap to rule in/out before spending more sessions on the constant-hoisting frontier."
+   "hypothesis": "The target's `addiu s8,s8,2` / two `addu #,#,s8` $fp-accumulator residual (chased since s6, still target-only per the s22 classify run) is the OLDER, larger structural gap and may be worth a single fresh re-measurement of the s11 loop-inversion hypothesis on the current 38/198 chassis before further sessions on the newer 0x1F8002B8 axis, since the register-pressure story around idx2-sharing was measured dead on a pre-limit chassis and only re-confirmed with the SAME idx2 spelling post-limit (not the inverted-loop shape).",
+   "mechanism": "s18/s21/s22 class-killed loop-carried idx2-sharing (i*2 promoted to its own object) via loop.c:3823's giv-worth predicate, independent of the limit change. The s11 loop-inversion variant (make the doubled index j the primary induction variable, i = j>>1 derived) was only ever tested on the pre-s7 chassis and has not been re-measured on the current, much-improved 38/198 chassis.",
+   "next_probe": "Re-apply the s11 loop-inversion form (for (j = start*2; j < start*2+4; j += 2) { i = j >> 1; ... } with j as the primary control variable) on top of the current 38/198 chassis and measure fresh via sandbox func_80056CB8 --disable all -- a single cheap measurement to rule in/out before spending more sessions on the 0x1F8002B8 axis."
   }
  ],
  "judge_constraints": [],
@@ -447,6 +453,22 @@
    "measured_on": "s22 chassis (s22-banked 38/198 body -- start/limit/i declarations + func_80053614 s32-return prerequisite -- with idx2 added on top, then reverted), single fresh sandbox measurement, no FAKE construct",
    "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
    "result": "score 38 -> 55/204, build_insns 198 -> 201 (worse on both axes). Reverted; 38/204 re-confirmed fresh after revert."
+  },
+  {
+   "session": 23,
+   "statement": "Reusing the dead `scale` pseudo (byte-table scale value, dead after the z computation) for the 0x1F8002B8 scratchpad-address literal at both func_80053614 call sites, per the defeat-licm-hoist-var-reu",
+   "kill_scope": "instance",
+   "measured_on": "s23 chassis (s22-banked 38/198 body, unmodified except the scale-reuse substitution at both call sites), single fresh sandbox measurement, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 38 -> 71/204, build_insns unchanged at 198 (pure register-identity/allocation regression, not an insn-count change"
+  },
+  {
+   "session": 23,
+   "statement": "Naming the 0x1F8002B8 literal as a fresh `s32 addr;` local, assigned once before the loop (mirroring the target's own single pre-loop materialization) and passed to both call sites, is worse than the ",
+   "kill_scope": "instance",
+   "measured_on": "s23 chassis (s22-banked 38/198 body, unmodified except the addr-local substitution, both declaration positions), two fresh sandbox measurements, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Declared last: score 38 -> 45/204, build_insns 198 -> 199. Declared first: score 38 -> 44/204, build_insns 198 -> 199. B"
   }
  ],
  "ladder_skip": 0,

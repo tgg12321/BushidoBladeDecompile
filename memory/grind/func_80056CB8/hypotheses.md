@@ -1056,3 +1056,35 @@ src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat emp
 - kill_scope: class
 - measured_on: s22 chassis (s22-banked 38/198 body -- start/limit/i declarations + func_80053614 s32-return prerequisite -- with idx2 added on top, then reverted), single fresh sandbox measurement, no FAKE constructs present
 - predicate_cite: tools/gcc-2.7.2/loop.c:3823
+
+## [s23] Reusing the dead `scale` pseudo (the byte-table scale value, dead after the z computation) for the 0x1F8002B8 scratchpad-address literal at both func_80053614 call sites (the [[defeat-licm-hoist-var-reuse]] multi-set-reuse lever) is WORSE than leaving the literal a bare repeated constant argument.
+- mechanism: [[defeat-licm-hoist-var-reuse]] prescribes reusing an existing pseudo for both a real used loop-variant value and a later loop-invariant, so the pseudo becomes multi-set and loop.c's scan_loop never admits the invariant assignment as a movable (n_times_set==1 precondition), forcing per-iteration recomputation instead of a loop-spanning hoist. Applied here: `scale` (the byte-table scale, used to compute x/z) is dead after the z computation; reassigning `scale = 0x1F8002B8;` there and passing `scale` to both func_80053614 calls makes the scale/literal pseudo multi-set.
+- probe: Applied on top of the s22-banked 38/198 chassis (limit local unchanged), single change: replaced both literal `0x1F8002B8` call arguments with a `scale = 0x1F8002B8;` reassignment + `scale` argument reuse. Measured via `sandbox func_80056CB8 --disable all`.
+- result: score 38 -> 71/204, build_insns UNCHANGED at 198 (pure register-identity/allocation regression, not an insn-count change -- the multi-set reuse did not defeat a harmful hoist here, it just scrambled register assignment elsewhere). Reverted; 38/204 re-confirmed after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s23 chassis (s22-banked 38/198 body, unmodified except the scale-reuse substitution at both call sites), single fresh sandbox measurement, no FAKE constructs present (the construct was plain reassignment, no annotation attempted since it regressed before any review was warranted)
+
+## [s23] Naming the 0x1F8002B8 literal as a fresh `s32 addr;` local, assigned once BEFORE the loop (mirroring the target's own single pre-loop materialization discovered this session by reading the raw target asm) and passed to both call sites, is WORSE than the bare repeated literal -- in TWO declaration-order variants.
+- mechanism: This session's fresh read of asm/funcs/func_80056CB8.s:1-30 established the target computes 0x1F8002B8 exactly ONCE, before the loop, stores it to a stack slot, and reloads it via `lw` before each call -- correcting the s22 "target rematerializes it per call site" guess. A natural C mirror of that shape is a single named local set once before the loop and read at both call sites (ordinary C, no reuse trick, no annotation needed since every construct has a truthful semantic reading).
+- probe: On the s22-banked 38/198 chassis, declared `s32 addr;` and set `addr = 0x1F8002B8;` once before the `for` loop, replaced both literal call-site arguments with `addr`. Measured via `sandbox func_80056CB8 --disable all`. Then re-measured with `addr` moved to the FIRST declaration slot (before `start`/`limit`/`i`) instead of last, in case GCC 2.7.2's LUID-order-sensitive allocation cared about declaration position.
+- result: Declared last: score 38 -> 45/204, build_insns 198 -> 199 (+1 real insn, moving toward target's 204, but net WORSE on score -- register-identity regressions elsewhere outweighed the insn-count gain). Declared first: score 38 -> 44/204, build_insns 198 -> 199 (marginally better than declared-last but still worse than the bare-literal baseline). Both reverted; 38/204 re-confirmed after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s23 chassis (s22-banked 38/198 body, unmodified except the addr-local substitution, both declaration positions), two fresh sandbox measurements, no FAKE constructs present (ordinary C, no annotation needed)
+
+## [s23] Reusing the dead `scale` pseudo (byte-table scale value, dead after the z computation) for the 0x1F8002B8 scratchpad-address literal at both func_80053614 call sites, per the defeat-licm-hoist-var-reuse multi-set-reuse lever, is worse than the bare repeated literal on this chassis.
+- mechanism: defeat-licm-hoist-var-reuse prescribes reusing an existing pseudo for a real used loop-variant value and a later loop-invariant so the pseudo becomes multi-set and loop.c's scan_loop never admits the invariant as a movable. Applied to `scale` (real, used for x/z, dead after) reassigned to 0x1F8002B8 and passed to both calls.
+- probe: Applied on the s22-banked 38/198 chassis: scale = 0x1F8002B8; after z computation, scale passed to both func_80053614 calls instead of the literal. Measured via sandbox func_80056CB8 --disable all.
+- result: score 38 -> 71/204, build_insns unchanged at 198 (pure register-identity/allocation regression, not an insn-count change). Reverted; 38/204 re-confirmed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s23 chassis (s22-banked 38/198 body, unmodified except the scale-reuse substitution at both call sites), single fresh sandbox measurement, no FAKE constructs present
+
+## [s23] Naming the 0x1F8002B8 literal as a fresh `s32 addr;` local, assigned once before the loop (mirroring the target's own single pre-loop materialization) and passed to both call sites, is worse than the bare repeated literal, in both a last-declared and a first-declared variant.
+- mechanism: A fresh direct read of asm/funcs/func_80056CB8.s:1-30 this session shows the target materializes 0x1F8002B8 exactly once before the loop (lui/ori at 80056D14-18), stores it to a fixed stack slot (sw $t3,0x78($sp)), and reloads it via lw before each of the two func_80053614 calls -- a stack-spill-reload pattern, correcting the s22 guess of per-call-site rematerialization. A single named pre-loop local is the natural C mirror.
+- probe: On the s22-banked 38/198 chassis, declared s32 addr; addr = 0x1F8002B8; once before the for loop, replaced both literal call-site arguments with addr. Measured via sandbox func_80056CB8 --disable all, then re-measured with addr moved to the first declaration slot instead of last.
+- result: Declared last: score 38 -> 45/204, build_insns 198 -> 199. Declared first: score 38 -> 44/204, build_insns 198 -> 199. Both move build_insns toward target's 204 (+1 real insn) but net WORSE on score -- register-identity regressions elsewhere outweigh the insn-count gain. Both reverted; 38/204 re-confirmed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s23 chassis (s22-banked 38/198 body, unmodified except the addr-local substitution, both declaration positions), two fresh sandbox measurements, no FAKE constructs present

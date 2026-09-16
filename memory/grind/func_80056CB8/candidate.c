@@ -1,6 +1,42 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s22 rederive-modality win) — floor 38/204,
- * NOT YET 0. (Prior: 42/204 s14-s21; 48/204 s11-s13; 58/204 s7-s10.)
+ * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed s23)
+ * — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204 s11-s13;
+ * 58/204 s7-s10.) Body UNCHANGED from s22 this session; only the
+ * 0x1F8002B8-literal frontier item from s22 was probed and killed (see
+ * below) -- the CORRECT reading of the target's own materialization
+ * shape.
+ * ---------------------------------------------------------------------
+ * s23 (rederive modality, 2026-09-16). CORRECTED the s22 "new frontier
+ * item" characterization: a fresh direct read of
+ * asm/funcs/func_80056CB8.s:1-30 this session shows the TARGET ALSO
+ * materializes 0x1F8002B8 exactly ONCE (before the loop, `lui/ori $t3`),
+ * but stores it to a fixed STACK SLOT (`sw $t3,0x78($sp)`) and RELOADS
+ * it via `lw $t3,0x78($sp)` before each of the two func_80053614 calls --
+ * a stack-spill-reload pattern, not the "rematerializes per call site"
+ * s22 inferred from the classify diff alone. Tried two natural-C mirrors
+ * of this shape (both measured on the s22 38/198 chassis, both WORSE,
+ * both reverted -- full detail in hypotheses.md s23):
+ *   1. [[defeat-licm-hoist-var-reuse]] multi-set reuse: reassign the
+ *      dead `scale` pseudo to 0x1F8002B8 after its last real use, pass
+ *      `scale` to both calls. Result: 38 -> 71/204 (build_insns
+ *      unchanged 198) -- pure register-identity regression. KILLED
+ *      (instance).
+ *   2. Named `s32 addr;` local set once before the loop (two
+ *      declaration-order variants: last-declared and first-declared),
+ *      passed to both calls. Result: 45/204 and 44/204 respectively
+ *      (build_insns 198 -> 199 in both, +1 real insn toward target's
+ *      204, but net WORSE on score) -- register-identity regressions
+ *      elsewhere outweighed the insn-count gain. KILLED (instance,
+ *      both variants).
+ * The bare repeated-literal form (this candidate's current shape) is
+ * still the best measured spelling of this axis. The stack-slot-reload
+ * vs callee-save-register RA/reload choice remains an OPEN, unresolved
+ * axis for a future session -- worth a fresh .greg/.lreg dump read
+ * (not done this session) to see WHY reload chose a callee-save home
+ * for this pseudo instead of spilling it, before trying more C-level
+ * register-pressure levers elsewhere in the loop body (per
+ * [[register-alloc-pure-c]], not more re-spellings of the literal
+ * itself -- both spellings tried this session are now closed).
  * ---------------------------------------------------------------------
  * s22 (rederive modality, 2026-09-16). Re-confirmed 42/204 fresh
  * (build_insns 197) before any change, then materialized the loop's
