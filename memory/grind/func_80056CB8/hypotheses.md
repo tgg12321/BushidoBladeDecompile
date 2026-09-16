@@ -2140,3 +2140,49 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s45 fresh splice of the s44-banked candidate body onto src/text1b.c HEAD, no FAKE constructs, engine/sandbox.py --disable all pipeline
+
+## [s46] The engine/sandbox.py --disable all scoring defect flagged at s44b/s45 is RESOLVED — direct measurement now works for this function.
+- mechanism: the s44b/s45 diagnosis attributed the truncated/wrong score (134/204 instead of the banked 38/204) to a sibling's index-based regfix/asmfix reorder rule shifting maspsx instruction indices during cheat-stripping. The regfix/asmfix rule machinery was fully retired (zero rules, files+pipeline+guard deleted 2026-08-30) between s45 (2026-09-16 session, dispatched same day as this one per the rotation/auto-return) and this session — that machinery no longer exists project-wide, so its failure mode cannot recur.
+- probe: Applied candidate.c's unchanged s22-s44-banked body (5-line extern header + func_80053614 void->s32 return-type prerequisite with explicit `return func_80052D00(...)` + the function body verbatim) to src/text1b.c, ran `wteng sandbox func_80056CB8 --disable all` fresh.
+- result: score 38, target_insns 204, build_insns 198, scorable true — EXACT reproduction of the ledger's long-banked floor via the direct pipeline, no ra_solver workaround needed. This retires re-activation trigger (2) from the s45 LADDER EXHAUSTED record.
+- verdict: CONFIRMED
+- kill_scope: n/a (positive tooling-health finding)
+- measured_on: s46 chassis (candidate.c s22-s44-banked body, func_80053614 s32-return prerequisite), zero FAKE constructs, engine/sandbox.py --disable all, fresh this session
+
+## [s46] Direct-bound for-loop rewrite `for (i = start; i < start + 2; i++)` (no separate `limit` local) does NOT let cc1 elide the pre-header guard, and scores WORSE than the limit-local baseline.
+- mechanism: cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) was hypothesized (s42/s43, live frontier item #1) to possibly prove `start < start+2` unconditionally true when the bound is written inline instead of through a separately-assigned `limit` local, eliding the 3-insn `addu;slt;beq` pre-header guard. Measured directly this session with the now-working sandbox pipeline.
+- probe: Took the s22-s44-banked candidate body (baseline: `s32 limit; ...; limit = start + 2; for (i = start; i < limit; i++)`, confirmed fresh at 38/204 this session) and rewrote ONLY the loop header to `s32 i; ...; for (i = start; i < start + 2; i++)` (dropping the `limit` local entirely, no other change). Spliced into src/text1b.c (same extern header + func_80053614 prerequisite), ran `sandbox func_80056CB8 --disable all`.
+- result: score 42/204 (197 build insns) — 1 fewer real instruction than baseline's 198, but WORSE overall score (more reordering/register diffs than the single guard-elision would explain). cc1 did NOT elide the guard the way hypothesized on this chassis; some other diff opened up instead. Reverted to clean INCLUDE_ASM state after measurement (git status confirms no diff).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s46 chassis (candidate.c s22-s44-banked body with `limit` local removed and bound inlined to `start + 2`, func_80053614 s32-return prerequisite, no FAKE constructs), engine/sandbox.py --disable all (confirmed-working pipeline this session)
+
+## [s46] The `i - start < 2` spelling of the same direct-bound idea also fails to elide the guard and scores worse still.
+- mechanism: same hypothesis as above, alternate spelling of the truthful bound relationship (subtraction form instead of addition form) in case cc1's static-provability check is sensitive to the exact expression shape.
+- probe: Same baseline chassis, loop header rewritten to `for (i = start; i - start < 2; i++)` (no `limit` local). Spliced and measured via `sandbox func_80056CB8 --disable all`.
+- result: score 47/204 (196 build insns) — fewest real insns of the three variants tried, but the worst score of all three (baseline 38, `start+2` 42, `i-start<2` 47). Reverted to clean INCLUDE_ASM state after measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s46 chassis (candidate.c s22-s44-banked body with `limit` local removed and bound spelled `i - start < 2`, func_80053614 s32-return prerequisite, no FAKE constructs), engine/sandbox.py --disable all (confirmed-working pipeline this session)
+
+## [s46] The engine/sandbox.py --disable all scoring defect flagged at s44b/s45 (returned 134/204 instead of the banked 38/204 floor, attributed to a sibling's index-based regfix/asmfix reorder rule shifting maspsx indices during cheat-stripping) no longer reproduces.
+- mechanism: n/a -- tooling-health reproduction, not a codegen hypothesis. The regfix/asmfix rule machinery the s44b/s45 diagnosis blamed was fully retired (files+pipeline+guard deleted) on 2026-08-30, so that failure mode cannot recur.
+- probe: Applied candidate.c's unchanged s22-s44-banked body (5-line extern header + func_80053614 void->s32 return-type prerequisite with explicit return) to src/text1b.c, ran `wteng sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's banked floor via the direct pipeline.
+- verdict: CONFIRMED
+
+## [s46] A semantically-truthful for-loop bound rewrite `for (i = start; i < start + 2; i++)` (dropping the separate `limit` local) lets cc1 elide the 3-insn pre-header guard (addu;slt;beq) and improves the score.
+- mechanism: cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) only omits the pre-header guard when it can statically prove the trip count nonzero from the loop header text; hypothesized that an opaque separately-assigned `limit` local was defeating that proof (s42/s43 frontier item #1).
+- probe: Took the s22-s44-banked baseline body (fresh-confirmed 38/204/198 this session), removed the `limit` local, rewrote the loop header to `for (i = start; i < start + 2; i++)`, spliced into src/text1b.c with the same extern header + func_80053614 prerequisite, measured via `sandbox func_80056CB8 --disable all`.
+- result: score 42/204 (197 build insns) -- 1 fewer real instruction than baseline (198) but a WORSE overall score, meaning some other register/scheduling diff opened up larger than the guard it (may have) removed. Reverted to clean INCLUDE_ASM state after measurement (git status clean).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s46 chassis: candidate.c s22-s44-banked body with `limit` local removed and bound inlined to `i < start + 2`, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all (confirmed-working pipeline this session)
+
+## [s46] The subtraction-form spelling of the same direct bound, `for (i = start; i - start < 2; i++)`, also elides the guard and improves the score.
+- mechanism: Same hypothesis as above, alternate expression shape in case cc1's static-provability check is sensitive to addition vs subtraction form.
+- probe: Same baseline chassis, loop header rewritten to `for (i = start; i - start < 2; i++)` (no `limit` local), spliced and measured via `sandbox func_80056CB8 --disable all`.
+- result: score 47/204 (196 build insns) -- fewest real insns of the three variants but the worst score of all three tried this session (baseline 38, `start+2` form 42, this form 47). Reverted to clean INCLUDE_ASM state after measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s46 chassis: candidate.c s22-s44-banked body with `limit` local removed and bound spelled `i - start < 2`, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all (confirmed-working pipeline this session)

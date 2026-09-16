@@ -1,6 +1,27 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46) — floor 38/204, NOT YET 0.
+ * s46 (structural modality, 2026-09-16, auto-returned via func_8006CCC8
+ * sibling movement -- checked that sibling's ledger, no transplantable
+ * lever found, its H2 is an unrelated LICM-hoist-var-reuse case). Body
+ * UNCHANGED (38/204/198 re-confirmed fresh). TWO findings: (1) the
+ * engine/sandbox.py --disable-all scoring defect flagged at s44b/s45
+ * (which returned 134/204 instead of the true floor) is RESOLVED --
+ * the regfix/asmfix rule machinery it blamed was fully retired
+ * 2026-08-30, so that failure mode can no longer occur; direct
+ * `sandbox --disable all` measurement now works for this function
+ * without the ra_solver object-mode workaround. (2) Both untried
+ * direct-bound for-loop spellings from the s45 LADDER EXHAUSTED
+ * record's live frontier item #1 were measured and KILLED: `for (i =
+ * start; i < start + 2; i++)` (no `limit` local) scores 42/204 (197
+ * insns, WORSE than baseline despite 1 fewer real insn); `for (i =
+ * start; i - start < 2; i++)` scores 47/204 (196 insns, worse still).
+ * cc1 does NOT elide the pre-header guard via either truthful inline
+ * bound spelling on this chassis -- the guard-elision hypothesis from
+ * s42/s43 is now dead on both concrete forms. Frontier item #2
+ * (structural insn-count reduction to cross the loop.c:3823
+ * strength-reduce threshold) remains genuinely open with no new
+ * candidate shape found this session.
  * s43 (forensics modality): body UNCHANGED (38/204/198 re-confirmed fresh).
  * Two findings: (1) CLASS KILL -- both func_80053614() calls in the loop
  * are unguarded, unconditional-per-iteration collision-probe calls whose

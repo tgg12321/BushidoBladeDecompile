@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 45,
- "current_modality": "escalation",
+ "session_count": 46,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -273,44 +273,29 @@
    "floor": 38,
    "modality": "escalation",
    "headline": "s45 escalation disposition: both endgame-lock gates FAIL (scan tier LOW, no SOTN precedent for the two ordinary-C frontier items) and cc1psx is not closer (banked); filed LADDER EXHAUSTED (non-endgame"
+  },
+  {
+   "session": 46,
+   "floor": 38,
+   "modality": "structural",
+   "headline": "Sandbox scoring defect from s44b/s45 is resolved (regfix/asmfix machinery fully retired) -- direct sandbox measurement now works; both concrete direct-bound for-loop spellings from the s45 frontier ar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A semantically-truthful for-loop bound rewrite (e.g. `for (i = start; i < start + 2; i++)` or `i - start < 2`) lets cc1's expand_exit_loop_if_false statically prove the trip count nonzero and elide the 3-insn pre-header guard (addu;slt;beq) the for-loop chassis currently emits, without the do-while rewrite's overall-worse score.",
-   "mechanism": "cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) only omits the guard when it can statically prove the bound relationship from the loop header text; an opaque separately-assigned `limit` local two statements earlier may be defeating that proof.",
-   "next_probe": "Try both direct-bound spellings on the s22-s44-banked for-loop chassis; measure via the ra_solver object-mode workaround (or engine/sandbox.py directly once its scoring defect for this function is fixed)."
+   "hypothesis": "A structural change elsewhere in the loop body (not the index arithmetic, not the loop bound) could shrink real-insn count enough to flip loop.c:3823's strength-reduce rejection inequality, letting GCC's own strength_reduce promote i*2 to a giv the way target's asm shows.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried through s40 failed due to register pressure from the two func_80053614 calls (both are class-killed as unremovable, s41).",
+   "next_probe": "No new candidate C shape identified this session -- this remains the genuinely open axis. A future session could try: restructuring the obj/flags dispatch chain (candidate.c ~1300-1359) to reduce live-range overlap with the func_80053614 calls without changing program semantics, now that direct sandbox measurement works again for fast iteration."
   },
   {
-   "hypothesis": "A structural rewrite shrinking the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 on the for-loop chassis, per s41 solver classify) without touching the i*2 index expressions' lifetime could let strength_reduce promote i*2 the way the target's asm shows (addiu s8,s8,2 + addu accumulator, vs our sll i*2 x3).",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried so far (s37-s40 enumeration/synthesis) fails due to register pressure from the intervening func_80053614 calls.",
-   "next_probe": "With the do-while chassis mechanism now fully understood and closed (s42/s43), determine whether any OTHER structural change can shrink real-insn count enough to flip the inequality while leaving i*2's live range and guard structure untouched."
-  },
-  {
-   "hypothesis": "engine/sandbox.py's --disable all path needs a fix for text1b.c/func_80056CB8's non-trivial candidate bodies -- it currently returns 134/204 on the same candidate the ra_solver object-mode workaround and prior sessions' m2c/greg-dump cross-checks consistently place at 38/204.",
-   "mechanism": "n/a -- tooling defect, not a codegen hypothesis. sandbox.py:86-89 self-diagnoses a possible per-function regfix/asmfix reorder-rule interaction in this TU as a candidate root cause (per the s44 ledger frontier), but this was not investigated further this session (out of the grind session's allowed edit surface).",
-   "next_probe": "Outside this session's edit surface (engine/ is off-limits); flag for the operator/driver-level fix, or a future session could identify which sibling function's regfix/asmfix rule in text1b.c is implicated without editing engine code."
+   "hypothesis": "The s45 LADDER EXHAUSTED / ROTATED disposition (floor 38, non-endgame residual) should be re-evaluated now that one of its two named re-activation triggers (the sandbox scoring defect) has resolved.",
+   "mechanism": "n/a -- process note, not a codegen hypothesis.",
+   "next_probe": "This session did not re-run the full escalation gate evaluation (mandated modality was `structural`, not `escalation`); a future `escalation`-modality session should note the sandbox fix in its gate evaluation, though it does not by itself close either endgame-lock gate (scan tier is still LOW, no SOTN precedent for the ordinary-C restructuring still needed)."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 12,
-   "statement": "Rewriting the flags==3/flags==4 tail so the final byte store *(s8*)(arg0+0x444+i)=flags is duplicated as a real statement at every leaf of the if/else-if/nested-if chain (mirroring the fresh m2c recon",
-   "kill_scope": "instance",
-   "measured_on": "s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh statement-duplication rewrite of the tail store, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "Score regressed 48 -> 75/204 (build_insns 198 -> 202, MORE real instructions). Reverted immediately; re-confirmed floor "
-  },
-  {
-   "session": 12,
-   "statement": "Sharing the doubled byte-table index i*2 between the D_8009A821 and D_8009A820 lookups via a genuine LOOP-CARRIED POINTER induction variable (two fresh u8* locals initialized before the loop and incre",
-   "kill_scope": "instance",
-   "measured_on": "s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single loop-carried dual-pointer induction rewrite, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "Score regressed 48 -> 78/204 (build_insns 198 -> 209, MORE real instructions -- two parallel pointer inductions cost mor"
-  },
   {
    "session": 13,
    "statement": "Swapping the flags==4 threshold comparison's operand order (`dx*dx+dz*dz > 0x3D0900` instead of `0x3D0900 < dx*dx+dz*dz`) does not change loop.c's decision to hoist-and-spill the 0x3D0900 threshold co",
@@ -774,6 +759,22 @@
    "measured_on": "s45 fresh splice of the s44-banked candidate body onto src/text1b.c HEAD, no FAKE constructs, engine/sandbox.py --disable all pipeline",
    "predicate_cite": "",
    "result": "Returned 134/204 (build_insns 171), not the ledger's banked 38/204. This reproduces the KNOWN tooling defect already fla"
+  },
+  {
+   "session": 46,
+   "statement": "A semantically-truthful for-loop bound rewrite `for (i = start; i < start + 2; i++)` (dropping the separate `limit` local) lets cc1 elide the 3-insn pre-header guard (addu;slt;beq) and improves the sc",
+   "kill_scope": "instance",
+   "measured_on": "s46 chassis: candidate.c s22-s44-banked body with `limit` local removed and bound inlined to `i < start + 2`, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable a",
+   "predicate_cite": "",
+   "result": "score 42/204 (197 build insns) -- 1 fewer real instruction than baseline (198) but a WORSE overall score, meaning some o"
+  },
+  {
+   "session": 46,
+   "statement": "The subtraction-form spelling of the same direct bound, `for (i = start; i - start < 2; i++)`, also elides the guard and improves the score.",
+   "kill_scope": "instance",
+   "measured_on": "s46 chassis: candidate.c s22-s44-banked body with `limit` local removed and bound spelled `i - start < 2`, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all ",
+   "predicate_cite": "",
+   "result": "score 47/204 (196 build insns) -- fewest real insns of the three variants but the worst score of all three tried this se"
   }
  ],
  "ladder_skip": 0,
@@ -798,7 +799,7 @@
    "session": 4,
    "at": "2026-09-16T13:44:19.873477+00:00",
    "headline": "Chassis restructure (nested if/else + named-intermediate constants) drops honest floor 77 -> 39 (measured this session); mandated permuter campaign blocked by a maspsx import-pipeline exception, logge",
-   "consumed": null
+   "consumed": 46
   }
  ],
  "exhaustion_base": 45,
