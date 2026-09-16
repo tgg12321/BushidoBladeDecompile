@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 34,
- "current_modality": "rederive",
+ "session_count": 35,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -207,44 +207,29 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s34 rederive: killed the mixed-exit-forms tail rewrite (72/204, worse) and empirically DISPROVED s33's reasoning-only 'do-while is codegen-neutral' claim (46/204, but build_insns actually drops 198->1"
+  },
+  {
+   "session": 35,
+   "floor": 38,
+   "modality": "structural",
+   "headline": "s35 structural: killed the shared-idx and idxB index-naming spellings on the s34-banked do-while chassis (both 66/204, worse, +2 insns each); index-naming axis now exhausted on both chassis shapes; fl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The do-while chassis (195 real insns, banked this session) may respond differently than the for-loop chassis to the s29/s32-flagged 9-resident register-competition restructuring (varying the footprint of obj/obj2/flags/sin_p/cos_p/x/z rather than the i*2 index), since its baseline insn count and register pressure differ from every chassis previously tried.",
-   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph, which the do-while rewrite has already shown responds to source-level structure changes that don't touch the index axis at all -- so other residents' footprints may also behave differently here than on the for-loop chassis where they were last measured (s29).",
-   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (from rejected/do-while-loop-rewrite-worse.c, applied fresh) to see whether the 9-resident competition picture differs from the for-loop chassis's profile, then try restructuring one resident's live range on THIS chassis instead of the for-loop one."
+   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions -- restructuring the pt0/pt1 store blocks or the flags==3/flags==4 tail differently than s34's one (wrong-direction) attempt -- would let strength_reduce promote i*2 automatically.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163) but no session has shrunk insn_count as its own axis distinct from widening a giv's lifetime.",
+   "next_probe": "Identify which currently-unmerged statements in the loop body could be restructured to emit FEWER real RTL insns without changing byte output; read the .loop dump's insn_count directly after each change, on both the for-loop and do-while chassis."
   },
   {
-   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions -- e.g. restructuring the pt0/pt1 store blocks or the flags==3/flags==4 tail differently than this session's duplicated-store attempt -- would let strength_reduce promote i*2 automatically. Still untried as its own axis distinct from widening a giv's lifetime or naming the index by hand.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163) but no session has shrunk insn_count as its own axis, and this session's one attempt at tail restructuring (mixed-exit-forms) went the WRONG direction (+2 insns, not -39).",
-   "next_probe": "Identify which currently-unmerged statements in the loop body (pt0/pt1 store blocks specifically, since the tail restructuring this session made things worse) could be restructured to emit FEWER real RTL insns without changing byte output; read the .loop dump's insn_count directly after each change."
-  },
-  {
-   "hypothesis": "Re-run the previously-killed shared-idx and separately-named-idxB index-naming spellings (not just idx2) on the do-while chassis, since only idx2 has been tested there so far.",
-   "mechanism": "each index-naming spelling interacts differently with register pressure; the do-while chassis's altered insn/register landscape (195 vs 198 baseline) has only been tested against one of the six previously-killed spellings.",
-   "next_probe": "Apply the s6/s32 shared-idx-local spelling and the s31/s33 separately-named-idxB spelling to the do-while chassis (not the for-loop chassis) and measure each independently."
+   "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z, not the i*2 index) on the do-while chassis specifically, since that chassis's lower insn count and different register landscape has never had this axis tried on it (only the index-naming axis has been tried there, twice, both this session).",
+   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph; the do-while rewrite has already shown responds to source-level structure changes that don't touch the index axis at all (195 vs 198 insns from loop-syntax alone), so other residents' footprints may behave differently here than on the for-loop chassis where the s29 conflict analysis was run.",
+   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (apply rejected/do-while-loop-rewrite-worse.c fresh) to see whether the 9-resident conflict picture differs from the for-loop chassis's profile, then try restructuring one resident's live range on this chassis."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 2,
-   "statement": "Swapping the source order of `obj = arg0;` and `flags = (&D_8009A821)[i*2] << 8;` (computing obj first instead of flags first) changes which of the two receives the lower hard register ($s0 vs $s1), m",
-   "kill_scope": "instance",
-   "measured_on": "s2 chassis (candidate.c as banked: authored-draft-2026-08-18.c body + work[4] + func_80053614 s32-return fix), zero FAKE/cheat constructs present in the diff",
-   "predicate_cite": "",
-   "result": "No change: score stayed 106, and the dump showed obj still assigned to $16(=$s0) and flags still assigned to $17(=$s1), "
-  },
-  {
-   "session": 3,
-   "statement": "Swapping the DECLARATION order of `s32 obj;` / `s32 flags;` (declaring flags before obj, leaving every statement in its original position) changes the register assigned to obj/flags.",
-   "kill_scope": "instance",
-   "measured_on": "s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + flags-before-obj declaration reorder), zero FAKE/cheat constructs present in the diff",
-   "predicate_cite": "",
-   "result": "Score unchanged at 106. Combined with s2's statement-order kill, this rules out both declaration order and statement ord"
-  },
   {
    "session": 3,
    "statement": "Declaring `s32 r1;` immediately after `s32 flags;` (adjacent in source, statements unchanged) makes r1 and flags share a hard register the way target's asm does (target: flags/r1 share $s0).",
@@ -708,6 +693,22 @@
    "measured_on": "s34 chassis (do-while chassis body + idx2 accumulator substituted at both table-index reads, func_80053614 s32-return fix + header externs unchanged, no FAKE constructs present)",
    "predicate_cite": "",
    "result": "score=66, build_insns=198 (up from the do-while-alone chassis's 195, back to parity with the for-loop+idx2 combination's"
+  },
+  {
+   "session": 35,
+   "statement": "On the s34-banked do-while chassis (195 real insns), sharing the i*2 index computation into ONE local (`s32 idx = i * 2;`, consumed at both the flags-table and scale-table reads) produces worse codege",
+   "kill_scope": "instance",
+   "measured_on": "s35 chassis (do-while chassis body + shared `idx` local at both table reads, func_80053614 s32-return fix, header externs restored, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 66/204, build_insns 195 (do-while-alone) -> 197 (+2 real instructions). Reverted via git checkout. Saved mem"
+  },
+  {
+   "session": 35,
+   "statement": "On the s34-banked do-while chassis, the separately-named `idxB` local spelling (assigned right after the flags-table i*2 read, consumed only at the scale-table read) produces worse codegen than the do",
+   "kill_scope": "instance",
+   "measured_on": "s35 chassis (do-while chassis body + separately-named idxB local, func_80053614 s32-return fix, header externs restored, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 66/204, build_insns 195 -> 197 (+2 real instructions) -- byte-identical build_insns to the shared-idx varian"
   }
  ],
  "ladder_skip": 0,

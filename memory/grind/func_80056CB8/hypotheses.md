@@ -1625,3 +1625,36 @@ itself.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s34 chassis (do-while chassis body + idx2 accumulator substituted at both table-index reads, func_80053614 s32-return fix + header externs unchanged, no FAKE constructs present)
+
+## [s35, structural] Re-running the two previously-killed index-naming spellings (shared single `idx` local, separately-named `idxB` local) on the s34-banked do-while chassis instead of the for-loop chassis they were originally killed on.
+- mechanism: both spellings were only ever measured against the for-loop chassis (198 real insns); the do-while chassis (195 real insns, s34) is a genuinely lower-insn starting point with a different register/insn landscape, so the frontier item asked whether the same axis behaves differently there.
+- probe: Built two variants from the s34-banked do-while body (rejected/do-while-loop-rewrite-worse.c): (1) `s32 idx = i * 2;` shared at both table reads, (2) `s32 idxB;` assigned right after the flags read, consumed only at the scale read. func_80053614 s32-return prerequisite applied both times (verified byte-neutral, 0/32, per s2/s3). Measured each via `wteng sandbox func_80056CB8 --disable all`.
+- result: BOTH variants score 66/204, build_insns 197 (up from the do-while-alone chassis's 195, +2 real instructions each) -- byte-identical build_insns between the two spellings. Reverted via `git checkout -- src/text1b.c` after each. Saved memory/grind/func_80056CB8/rejected/dowhile-shared-idx-worse.c and dowhile-idxB-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s35 chassis (do-while chassis body + each index-naming spelling in turn, func_80053614 s32-return fix + header externs, no FAKE constructs present)
+
+## [s35, structural] Synthesis: the index-naming axis (how the doubled i*2 computation is shared/named/carried) is now empirically exhausted on BOTH chassis shapes this ledger has reached.
+- mechanism: n/a -- summary of this session's two measurements combined with the prior 6 for-loop-chassis kills (s6/s7/s10/s18/s21/s22/s27/s33).
+- probe: n/a -- summary entry, no new measurement beyond the two above.
+- result: 8 total index-naming spellings measured across 2 chassis shapes (for-loop 198-insn baseline, do-while 195-insn baseline), all flat-or-worse (+2 to +3 real instructions each). The remaining untried axes are: (2) shrinking the loop body's real-insn count below loop.c:3823's threshold via restructuring statements that do NOT touch the index expressions (pt0/pt1 store blocks, the flags==3/flags==4 tail -- s34's one attempt at the tail went the wrong direction); (3) restructuring one of the OTHER 8 resident variables' (obj/obj2/flags/sin_p/cos_p/x/z) live-range footprint instead of the index axis, per the s29 conflict-map analysis -- untried on the do-while chassis specifically.
+- verdict: CONFIRMED
+
+## Floor history addendum
+s35 [structural] floor=38 (unchanged) — killed the shared-idx and idxB index-naming spellings on the do-while chassis (both 66/204, worse); index-naming axis now exhausted on both chassis shapes. Frontier for next session: shrink loop-body insn_count below the loop.c:3823 threshold via non-index restructuring, or attack a different resident's register footprint (not the index) on the do-while chassis.
+
+## [s35] On the s34-banked do-while chassis (195 real insns), sharing the i*2 index computation into ONE local (`s32 idx = i * 2;`, consumed at both the flags-table and scale-table reads) produces worse codegen than the do-while-alone baseline.
+- mechanism: Same construct as the s6/s7/s10/s18/s21/s22/s27 for-loop-chassis kills, re-tested on the lower-insn do-while chassis to check whether its different register/insn landscape changes the outcome for this specific index-naming axis.
+- probe: Applied the shared-idx local to the do-while chassis body (rejected/do-while-loop-rewrite-worse.c), with func_80053614's void->s32 return-type prerequisite fix (verified byte-neutral 0/32 per s2/s3) and header externs. Measured via `wteng sandbox func_80056CB8 --disable all`.
+- result: score 38 -> 66/204, build_insns 195 (do-while-alone) -> 197 (+2 real instructions). Reverted via git checkout. Saved memory/grind/func_80056CB8/rejected/dowhile-shared-idx-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s35 chassis (do-while chassis body + shared `idx` local at both table reads, func_80053614 s32-return fix, header externs restored, no FAKE constructs present)
+
+## [s35] On the s34-banked do-while chassis, the separately-named `idxB` local spelling (assigned right after the flags-table i*2 read, consumed only at the scale-table read) produces worse codegen than the do-while-alone baseline.
+- mechanism: Same construct as the s33 for-loop-chassis kill, re-tested on the do-while chassis.
+- probe: Applied the idxB local to the do-while chassis body, same prerequisites as above. Measured via `wteng sandbox func_80056CB8 --disable all`.
+- result: score 38 -> 66/204, build_insns 195 -> 197 (+2 real instructions) -- byte-identical build_insns to the shared-idx variant, i.e. both index-naming spellings converge on the same insn count on this chassis. Reverted via git checkout. Saved memory/grind/func_80056CB8/rejected/dowhile-idxB-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s35 chassis (do-while chassis body + separately-named idxB local, func_80053614 s32-return fix, header externs restored, no FAKE constructs present)

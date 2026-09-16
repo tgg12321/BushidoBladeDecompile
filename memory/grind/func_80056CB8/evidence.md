@@ -659,3 +659,9 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s34] The do-while loop rewrite (same body, different loop syntax) measurably changes codegen: build_insns drops 198->195, directly refuting s33's untested reasoning-only claim that loop-inversion makes for/do-while source syntax neutral. This is new information for the ledger: loop SYNTAX is not proven neutral and should not be assumed so in future sessions without a fresh measurement.
 
 - [s34] The do-while chassis (195 real insns) is a genuinely new, lower-insn-count starting point that has never been combined with any lever besides idx2 (which was also worse there). It differs from every chassis previously explored in this ledger (which were all for-loop-based).
+
+- [s35] Both do-while-chassis index-naming spellings (shared idx, separately-named idxB) compile to identical build_insns (197), +2 over the do-while-alone baseline (195) -- matching the +2..+3 delta pattern already observed on all 6 for-loop-chassis index-naming spellings measured in prior sessions.
+
+- [s35] The index-naming axis (how the doubled i*2 loop computation is shared, named, or carried across the two table reads) is now empirically exhausted across 8 total spellings on 2 different chassis shapes (for-loop 198-insn baseline; do-while 195-insn baseline) -- every combination measured flat-or-worse.
+
+- [s35] func_80053614's void->s32 return-type fix remains verified byte-neutral (re-confirmed applicable, not re-measured this session since it was already established in s2/s3) and is a load-bearing prerequisite for any chassis that reads its return value into `flags`.
