@@ -2191,3 +2191,4 @@
 - 2026-09-16 12:25 func_8006CCC8: LAYER-1 FAILED a sandbox-0 candidate — Body is otherwise ordinary C, but `nib = 0xF` is a constant-holder local squarely inside [[named-local-fake-exception]] and ships un-annotated with the vet declaring SANCTIONED-FAMILY-CLAIMS: none — the mandatory /* FAKE: ... */ prerequisite is unmet.
 - 2026-09-16 12:39 func_8006CCC8 COMPLETED-C after 7 sessions (closer: s7 [solver]).
 - 2026-09-16 12:45 func_8006A564 s1 [recon] floor=137: First C body written (was INCLUDE_ASM/no-c-body, distance 199) -- sandbox score 137, build_insns 204 vs target 199; srl-vs-sra byte diff killed, residual is a register-allocation mapping (extra callee-saved reg + bigger frame) per hypotheses.md H2
+- 2026-09-16 13:03 func_8006A564 s2 [structural] floor=68: Block-local var split (structural lever) drops func_8006A564 from floor 137 to 68; build_insns now EXACT parity with target (199==199); residual is a systemic v0<->v1 register-coloring swap.
