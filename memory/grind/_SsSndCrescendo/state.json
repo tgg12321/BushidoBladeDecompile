@@ -1,7 +1,7 @@
 {
  "func": "_SsSndCrescendo",
  "file": "main",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,29 @@
    "floor": 130,
    "modality": "structural",
    "headline": "s3 structural: re-verified s2 floor (136), improved to 130 via inlined base-address expr, and CONFIRMED H4's pass attribution (combine.c fold blocked by shared SS_SCORE_FLAG re-derivation liveness) vi"
+  },
+  {
+   "session": 3,
+   "floor": 130,
+   "modality": "structural",
+   "headline": "s4 structural: chassis re-verified at 130; measured both concrete spellings of s3's 'share the intermediate' probe (base-pointer reuse KILLED, confirms H3's fresh-recompute finding directly; shared ba"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Caching the shifted bank pointer explicitly (a single s32 *bank_ptr computed once) and having all 4 SS_SCORE_FLAG-equivalent clear sites dereference it, instead of each independently re-invoking the SS_SCORE_FLAG(a0,a1) macro (which re-derives (a0<<16)>>14 from scratch every time), may let combine.c's fold window see a single-consumer intermediate and fuse the top-level shift to 2 insns - genuinely untested this session.",
-   "mechanism": "combine.c local 2-3-insn fold window (confirmed this session via the .combine dump) - fold succeeds only when the intermediate value dies at the fold point",
-   "next_probe": "Write and sandbox-measure a variant that caches *(s32*)&_ss_score[a0]-equivalent pointer once and rewrites the 4 unk90-clear sites to dereference it, while checking whether this changes the byte pattern of those sites away from H3's confirmed fresh-recompute shape (which may make it a dead end - H3 established BB2's own asm DOES re-derive fresh at those sites, not reuse a cached pointer)"
+   "hypothesis": "The s32-bank_off variant (rejected/shared-bank-off-s4.md), which hits build_insns==target_insns==200 exactly, has its remaining ~139-vs-ideal-0 score gap purely in register allocation/ordering, not instruction count or structure.",
+   "mechanism": "local-alloc.c / global.c register assignment on a form where the instruction SET now matches target 1:1 in count",
+   "next_probe": "pwsh tools/grinder/dump.ps1 _SsSndCrescendo with the bank_off-s32 variant (rejected/shared-bank-off-s4.md) applied to src/main.c instead of the banked candidate.c; read .greg/.lreg dumps and diff hard-register assignment against a fresh objdump of the target asm/funcs/_SsSndCrescendo.s, insn-for-insn, since instruction count is no longer the confound."
   },
   {
-   "hypothesis": "The remaining ~13-instruction gap (213 built vs 200 target) may include diffs beyond the single bank-index-shift instruction once that lever is applied - not yet enumerated with a full instruction-by-instruction objdump diff.",
-   "mechanism": "N/A - unexplored enumeration gap",
-   "next_probe": "Once/if the bank_ptr-sharing lever from the frontier item above is measured (whether it succeeds or is killed), run a full objdump-vs-target diff (not just spot-checked ranges) to enumerate every remaining instruction-level difference."
+   "hypothesis": "The remaining 13-instruction gap in the banked 130 form (213 built vs 200 target) may not be solely the H4 bank-index-shift issue (confirmed 1 instruction of it) - a full objdump-vs-target diff has still never been run to enumerate every remaining instruction-level difference.",
+   "mechanism": "N/A - unexplored enumeration gap, carried forward from s2/s3",
+   "next_probe": "Run a full mipsel-linux-gnu-objdump -d diff between tmp/sandbox/_SsSndCrescendo/main.o and the target's own disassembly of asm/funcs/_SsSndCrescendo.s (via WSL), not just the header lines spot-checked so far, to enumerate every remaining diff instruction-by-instruction."
+  },
+  {
+   "hypothesis": "The exact register choice for voll/volr (stack temps) has not yet been compared instruction-for-instruction against the target past the first ~40 lines of disassembly.",
+   "mechanism": "N/A - unexplored",
+   "next_probe": "Once the objdump-vs-target full diff (frontier item 2) is run, check whether voll/volr's stack-slot placement matches target exactly or contributes to the residual score."
   }
  ],
  "judge_constraints": [],
@@ -39,6 +50,22 @@
    "measured_on": "src/main.c HEAD with the array-subscript base-expr variant substituted for the banked candidate.c body, no FAKE constructs present, sandbox --disable all",
    "predicate_cite": "",
    "result": "KILLED: score 143, build_insns 233 (worse than both the 136 and 130 forms on every axis). Reverted; banked to rejected/a"
+  },
+  {
+   "session": 3,
+   "statement": "Reusing the already-computed base pointer (instead of the SS_SCORE_FLAG macro's fresh re-derivation) at the 6 unk90-clear sites closes the gap or at least matches build_insns closer.",
+   "kill_scope": "instance",
+   "measured_on": "src/main.c HEAD with the base-pointer-reuse variant substituted for the banked candidate.c body at all 6 clear sites, no FAKE constructs present, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "KILLED: score 132, build_insns 165 (target 200) - FEWER instructions than target, confirming BB2's asm genuinely re-deri"
+  },
+  {
+   "session": 3,
+   "statement": "Sharing the a0 sign-extension sub-expression (bank_off) explicitly across base's computation AND all 6 clear sites, while still performing the full address re-derivation fresh at each clear site (not ",
+   "kill_scope": "instance",
+   "measured_on": "src/main.c HEAD with the shared-bank_off variant (both s32 and s16 typings) substituted for the banked candidate.c body, no FAKE constructs present, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "KILLED as a closing form on this session's weighted score (139, worse than banked 130) but NOTABLE: build_insns landed E"
   }
  ],
  "ladder_skip": 0,

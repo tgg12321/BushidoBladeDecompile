@@ -168,3 +168,47 @@ next session to confirm or refute with a direct sandbox measurement.
 - probe: pwsh tools/grinder/dump.ps1 _SsSndCrescendo; read tmp/grind/_SsSndCrescendo/dumps/main.combine (function block starts line 1741, insns 16/17/19) and cross-referenced .greg dump pseudo-285/reg82 usage (65 references) against the sandboxed .o disassembly (mipsel-linux-gnu-objdump -d tmp/sandbox/_SsSndCrescendo/main.o), confirming 3 additional sll v0,s5,0x2 sites
 - result: CONFIRMED via direct dump read: insn17 in main.combine carries a REG_EQUAL (sign_extend:SI (reg/v:HI 72)) note (combine recognizes the sign-extend semantically) but does not retire the insn because reg82/hard-reg s5 is referenced at 3 more disassembly offsets outside the fold window. This is a named-mechanism (combine.c local fold window vs multi-use liveness), not a guess.
 - verdict: CONFIRMED
+
+## [s4] Chassis re-verify: candidate.c (s3 form, inlined base expr) reproduces sandbox score 130 exactly on this session's HEAD.
+- mechanism: N/A - chassis re-verification measurement
+- probe: Applied candidate.c to src/main.c, ran `sandbox _SsSndCrescendo --disable all`
+- result: CONFIRMED exactly: score=130, build_insns=213, target_insns=200. Chassis is NOT stale vs the ledger.
+- verdict: CONFIRMED
+
+## [s4] Reusing the already-computed `base` pointer (instead of the SS_SCORE_FLAG macro's fresh re-derivation) at the 6 unk90-clear sites closes the gap or at least matches build_insns closer.
+- mechanism: N/A - alternative C spelling of the clear-site address, measured not derived; tests H3's "fresh recompute is real" finding directly rather than by asm-read alone
+- probe: Replaced all 6 `SS_SCORE_FLAG(a0, a1) &= ~0x10;` sites with `*(s32 *)(base + 0x98) &= ~0x10;`, measured via sandbox --disable all
+- result: KILLED: score 132, build_insns 165 (target 200) - FEWER instructions than target, confirming BB2's asm genuinely re-derives the address fresh at these sites (H3), not merely a plausible-but-unconfirmed asm reading. Reverted; banked to rejected/base-pointer-reuse-s4.md.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main.c HEAD with the base-pointer-reuse variant substituted for the banked candidate.c body at all 6 clear sites, no FAKE constructs present, sandbox --disable all
+
+## [s4] Sharing the a0 sign-extension sub-expression (`bank_off`) explicitly across `base`'s computation AND all 6 clear sites, while still performing the FULL address re-derivation fresh at each clear site (not reusing `base`), closes the 3-vs-2-insn shift gap and/or improves the score below 130.
+- mechanism: suspected combine.c/local-alloc.c - sharing only the sign-extend sub-step while keeping every other part of the address fresh per-site was flagged in s3's frontier as "may not be independently expressible in C (CSE/combine decide sub-expression sharing)"; this session measured it directly rather than leaving it as a derived guess.
+- probe: Declared `s32 bank_off = (s32)(a0 << 16) >> 14;` once at top; rewrote `base = ...` to use `bank_off`; expanded all 6 clear sites inline as `*(s32 *)((u8 *)&_ss_score + bank_off + (s16)a1 * 0xB0 + 0x98) &= ~0x10;` (same full formula as the SS_SCORE_FLAG macro, just with the shift factored through the shared local). Measured via sandbox --disable all. Also measured a variant with `bank_off` declared `s16` instead of `s32`.
+- result: KILLED as a closing form on THIS session's weighted score (139, worse than banked 130) but NOTABLE: build_insns landed EXACTLY on target_insns (200 vs 200) for the s32-bank_off variant - the first time this ledger has measured a form with the correct raw instruction count. The s16-bank_off variant was worse on both axes (136/208). Reverted to the banked 130 form; both variants banked to rejected/shared-bank-off-s4.md with a flagged next-step: register-alloc modality should dump-read THIS insn-count-exact variant's `.greg`/`.lreg` allocation (not the 213-insn banked form) since the obstacle there is now purely register choice, not instruction count.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main.c HEAD with the shared-bank_off variant (both s32 and s16 typings) substituted for the banked candidate.c body, no FAKE constructs present, sandbox --disable all
+
+## [s3] Applying the banked s3 candidate.c body to src/main.c reproduces the ledger's recorded floor of 130 on the current chassis.
+- mechanism: N/A - chassis re-verification measurement
+- probe: Applied candidate.c to src/main.c, ran sandbox _SsSndCrescendo --disable all
+- result: CONFIRMED exactly: score=130, build_insns=213, target_insns=200. Chassis is NOT stale vs the ledger.
+- verdict: CONFIRMED
+
+## [s3] Reusing the already-computed base pointer (instead of the SS_SCORE_FLAG macro's fresh re-derivation) at the 6 unk90-clear sites closes the gap or at least matches build_insns closer.
+- mechanism: N/A - alternative C spelling of the clear-site address, measured not derived; directly tests H3's asm-read finding that BB2 re-derives the channel address fresh at these sites rather than reusing the cached register
+- probe: Replaced all 6 SS_SCORE_FLAG(a0, a1) &= ~0x10; sites with *(s32 *)(base + 0x98) &= ~0x10;, measured via sandbox --disable all
+- result: KILLED: score 132, build_insns 165 (target 200) - FEWER instructions than target, confirming BB2's asm genuinely re-derives the address fresh at these sites (H3), not merely a plausible-but-unconfirmed asm reading. Reverted; banked to rejected/base-pointer-reuse-s4.md.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main.c HEAD with the base-pointer-reuse variant substituted for the banked candidate.c body at all 6 clear sites, no FAKE constructs present, sandbox --disable all
+
+## [s3] Sharing the a0 sign-extension sub-expression (bank_off) explicitly across base's computation AND all 6 clear sites, while still performing the full address re-derivation fresh at each clear site (not reusing base), closes the 3-vs-2-insn shift gap and/or improves the score below 130.
+- mechanism: suspected combine.c/local-alloc.c - sharing only the sign-extend sub-step while keeping every other part of the address fresh per-site was flagged in s3's frontier as possibly not independently expressible in C since CSE/combine decide sub-expression sharing; this session measured it directly instead of leaving it as a derived guess
+- probe: Declared s32 bank_off = (s32)(a0 << 16) >> 14; once at top; rewrote base = ... to use bank_off; expanded all 6 clear sites inline as *(s32 *)((u8 *)&_ss_score + bank_off + (s16)a1 * 0xB0 + 0x98) &= ~0x10; (same full formula as the SS_SCORE_FLAG macro, shift factored through the shared local). Measured via sandbox --disable all. Also measured an s16-typed bank_off variant.
+- result: KILLED as a closing form on this session's weighted score (139, worse than banked 130) but NOTABLE: build_insns landed EXACTLY on target_insns (200 vs 200) for the s32-bank_off variant - the first time this ledger has measured a form with the correct raw instruction count. The s16-bank_off variant was worse on both axes (136/208). Reverted to the banked 130 form; both variants banked to rejected/shared-bank-off-s4.md flagging that register-alloc modality should dump-read this insn-count-exact variant's .greg/.lreg allocation instead of the 213-insn banked form, since its remaining obstacle is purely register choice, not instruction count.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main.c HEAD with the shared-bank_off variant (both s32 and s16 typings) substituted for the banked candidate.c body, no FAKE constructs present, sandbox --disable all

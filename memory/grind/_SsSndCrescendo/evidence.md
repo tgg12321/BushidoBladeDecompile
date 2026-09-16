@@ -278,3 +278,62 @@ confirm or refute with a direct measurement, not further dump-reading.
 - [s2] H4's pass attribution is now DONE (was the #1 open item from s2): tmp/grind/_SsSndCrescendo/dumps/main.combine confirms the 3-vs-2-insn bank-index-shift gap is a combine.c local-fold-window refusal caused by the sign-extended-a0 intermediate having later independent consumers from the 4 SS_SCORE_FLAG macro re-derivation sites in the function body.
 
 - [s2] Neither measured base-expression spelling can close the gap because the blocker is structural (multiple LATER independent uses of the shared intermediate across the whole function), not the syntax of the FIRST use site - the correct next lever is sharing the intermediate itself across the 4 re-derivation sites, not respelling the top-of-function computation.
+
+## s4 (structural, 2026-09-16) — chassis re-verify + the s3-flagged "share the intermediate" probe measured directly
+
+Chassis re-verified: applied candidate.c (s3 form) to src/main.c, ran
+`sandbox _SsSndCrescendo --disable all`. Score reproduced EXACTLY as
+banked: **130** (build_insns 213, target_insns 200).
+
+Executed s3's own flagged next-probe (the "cache the shifted bank-pointer
+and share it across the 6 SS_SCORE_FLAG clear sites" idea) as TWO concrete,
+directly-measured C spellings instead of leaving it as a derived guess:
+
+1. **Reuse `base` directly at the 6 clear sites** (`*(s32*)(base+0x98) &= ~0x10;`
+   instead of the `SS_SCORE_FLAG(a0,a1)` macro). This is the most literal
+   reading of "share the pointer". **Measured WORSE and instructive**:
+   score 132, build_insns dropped to **165** — fewer than the target's 200.
+   This independently CONFIRMS H3's asm-read finding (evidence.md s2) that
+   BB2's own compiled output genuinely re-derives the channel address
+   FRESH at each clear site rather than reusing the cached register — not
+   just a plausible reading of the asm, but now a direct measurement
+   showing that skipping the re-derivation moves further from target, not
+   closer. Banked to `rejected/base-pointer-reuse-s4.md`.
+
+2. **Share only the a0-sign-extension sub-step** via a single
+   `s32 bank_off = (s32)(a0<<16)>>14;` local, while still fully
+   re-deriving the pointer + a1-offset + 0x98 field-offset arithmetic
+   FRESH at each of the 6 clear sites (preserving H3's fresh-recompute
+   requirement, unlike variant 1). **Measured: score 139 (worse than the
+   banked 130), but build_insns landed EXACTLY on target_insns — 200 vs
+   200 — for the first time this ledger has recorded an insn-count-exact
+   form.** A companion variant typing `bank_off` as `s16` instead of `s32`
+   measured worse on both axes (136/208). Both banked to
+   `rejected/shared-bank-off-s4.md`.
+
+**Why this matters for the next register-alloc session:** every prior
+form this ledger measured (130 best) has a RAW INSTRUCTION COUNT gap (213
+vs 200 — 13 too many), meaning any RA lever applied to it is fighting two
+problems at once (missing/extra insns AND register choice). The s32-
+bank_off variant from probe 2 above is the first form where the
+instruction-count gap is fully closed (200==200) and the ONLY remaining
+problem is register allocation / ordering — a cleaner base to iterate RA
+levers from, even though its weighted score (139) is currently worse than
+the instruction-count-mismatched 130 form. The next register-alloc-modality
+session should apply `dump.ps1` to the bank_off-s32 variant specifically
+(not the banked 130 candidate.c) and read its `.greg`/`.lreg` dumps to see
+exactly which pseudo/hard-reg choice diverges from target now that
+instruction count itself is out of the picture.
+
+**KILL (instance, this chassis, s4):** neither of the two directly-measured
+"share the intermediate" spellings closes the gap or beats the banked 130
+form as a closing candidate. Reverted src/main.c to the exact banked 130
+form (verified via a final re-measurement) before ending the session.
+
+- [s3] Chassis re-verified: candidate.c (s3 form) reproduces sandbox score 130 exactly - not stale.
+
+- [s3] Reusing the cached base pointer at the 6 SS_SCORE_FLAG clear sites (instead of the macro's fresh re-derivation) measures WORSE (132/165) and produces FEWER instructions than target (200), independently confirming H3's asm-read finding that the fresh re-derivation is a real, bytes-required pattern, not an artifact of macro-idiom-reuse convenience.
+
+- [s3] Sharing only the a0-sign-extension sub-expression via a single bank_off local, while still fully re-deriving the rest of the address at each clear site, is the first spelling this ledger has measured that hits build_insns == target_insns == 200 exactly - all prior forms (including the banked 130 form) have a raw instruction-count gap (213 vs 200) on top of any register-allocation mismatch. This variant's weighted score (139) is worse than 130 because of register/ordering mismatch, not instruction count - a cleaner base for the next register-alloc-modality session to iterate from.
+
+- [s3] src/main.c reverted to and re-verified at the exact banked 130 form before ending the session; candidate.c on disk already matches this form (no update needed).
