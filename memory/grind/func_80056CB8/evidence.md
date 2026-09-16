@@ -653,3 +653,9 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s33] m2c's fresh reconstruction (tmp/grind/func_80056CB8/s12/m2c_out.c, target asm unchanged so still current) confirms the target's own loop is compiled from a genuine do-while-shaped control-flow graph with a folded-constant entry guard (`if (1 != 0) { do {...} while(...); }`), and that its var_fp is algebraically identical to i*2 (var_fp initialized to start*2, incremented by 2 per iteration) -- consistent with, not beyond, what s26's classify.txt already established.
 
 - [s33] src/text1b.c reverted to clean INCLUDE_ASM at session end (git status --short src/text1b.c empty).
+
+- [s34] Target asm (asm/funcs/func_80056CB8.s lines 144-197) recomputes the store address `addu $v0,$s7,$s6` fresh at FIVE separate exit points of the flags==3/flags==4 tail rather than falling through to one merged store -- confirmed by direct read and independently by m2c's reconstruction (tmp/grind/func_80056CB8/s12/m2c_out.c) which repeats `var_v0 = arg0 + var_s6;` at each goto-block target. Writing this shape in C via duplicated-statement-into-arms measures WORSE (72/204) than candidate.c's single-merged-store form (38/204) on this chassis -- the source-level shape match does not reproduce the RTL shape here.
+
+- [s34] The do-while loop rewrite (same body, different loop syntax) measurably changes codegen: build_insns drops 198->195, directly refuting s33's untested reasoning-only claim that loop-inversion makes for/do-while source syntax neutral. This is new information for the ledger: loop SYNTAX is not proven neutral and should not be assumed so in future sessions without a fresh measurement.
+
+- [s34] The do-while chassis (195 real insns) is a genuinely new, lower-insn-count starting point that has never been combined with any lever besides idx2 (which was also worse there). It differs from every chassis previously explored in this ledger (which were all for-loop-based).

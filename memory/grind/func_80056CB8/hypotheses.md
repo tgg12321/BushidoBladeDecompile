@@ -1571,3 +1571,57 @@ itself.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: reasoning-only (not built/measured) against tools/gcc-2.7.2/loop.c's documented loop-inversion pass and the archived s12 m2c_out.c reconstruction; not a class kill because no C variant was actually compiled and diffed this session -- a future session should still spend one real measurement before treating this as fully closed
+
+## [s34, rederive] Mixed-exit-forms / duplicated-statement-into-arms rewrite of the flags==3/flags==4 tail (matching target's asm and m2c's shape, which both recompute the store address `arg0+i` fresh at 5 separate exit points instead of falling through to one merged store) is worse than the 38/204 baseline.
+- mechanism: target asm (asm/funcs/func_80056CB8.s lines 144-197) shows `addu $v0,$s7,$s6` recomputed at .L80056F0C/.L80056F54/.L80056F74/.L80056F8C/.L80056F94, matching m2c's independent reconstruction's repeated `var_v0 = arg0 + var_s6;`. Rewrote the tail to duplicate the real store statement `*(s8 *)(arg0+0x444+i) = (s8)flags;` into each of the 5 exit arms (each followed by `goto next;`) instead of one shared fallthrough store, per the SOTN-sanctioned duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md, owner ruling 2026-07-01, quoted scope: "a REAL statement duplicated into 2+ arms (instead of label-sharing) is legitimate").
+- probe: Applied to the s22-s33-banked 38/204 chassis (func_80053614 s32-return fix + header externs unchanged). Measured via `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score=72, build_insns=200 (baseline this session: score=38, build_insns=198, target_insns=204). WORSE, +2 real instructions. Reverted immediately (`git checkout -- src/text1b.c`). Saved: memory/grind/func_80056CB8/rejected/mixed-exit-forms-tail-duplicated-store-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, tail rewritten with the store statement duplicated into 5 exit arms with goto next;, no FAKE constructs present)
+
+## [s34, rederive] Empirical (not reasoning-only) measurement of the do-while loop rewrite s33 only argued about: writing the loop as `i = start; do { ...unchanged body...; i++; } while (i < limit);` instead of `for (i = start; i < limit; i++) { ... }` REFUTES s33's "codegen-neutral" prediction -- build_insns actually drops 198 -> 195 -- but the overall weighted score is still worse (46 vs 38), and this is banked as a fresh, genuinely different, lower-insn-count chassis for future sessions to explore other levers on top of.
+- mechanism: s33 reasoned (without building) that loop.c's loop-inversion pass runs post-parse and should make for-loop vs do-while source syntax codegen-neutral. This session built and measured it for real: it is NOT neutral. Plausible (not dump-verified) explanation: the for-loop's synthesized entry-guard-invert differs from a source do-while's already-absent entry guard, changing which loop notes/blocks downstream passes see even though the steady-state loop body is textually identical.
+- probe: Applied the do-while rewrite (same body, only loop syntax changed) to the s22-s33-banked 38/204 chassis. Measured via sandbox func_80056CB8 --disable all.
+- result: score=46, build_insns=195 (down from 198; target_insns=204 unchanged). Reverted immediately (git checkout -- src/text1b.c). Saved: memory/grind/func_80056CB8/rejected/do-while-loop-rewrite-worse.c. NOTE FOR FUTURE SESSIONS: this is a genuinely different, lower-insn-count starting chassis (195 vs 198 real insns) that no prior session has explored combinations on top of -- only idx2 was tried on it this session (also worse, see next entry). The other five previously-killed index-naming spellings (shared single idx, separately-named idxB, pointer-walk, etc.) have only ever been measured on the FOR-loop chassis, not this one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, loop rewritten from for to do-while, no other change, no FAKE constructs present)
+
+## [s34, rederive] idx2 hand-carried accumulator applied on top of the NEW do-while chassis (not the for-loop chassis s30 already killed it on) is also worse, and worse than the do-while-alone chassis.
+- mechanism: same idx2 construct s30 killed on the for-loop chassis (idx2 = start*2 before the loop, idx2 += 2 in the increment step, both [i*2] reads replaced with [idx2]), tested on the do-while chassis instead to check whether the do-while chassis's lower insn count (195) changes the outcome.
+- probe: Applied idx2 to the do-while chassis body from the entry above. Measured via sandbox func_80056CB8 --disable all.
+- result: score=66, build_insns=198 (up from the do-while-alone chassis's 195, back to the same build_insns as the for-loop+idx2 combination s30 measured at 52/204 -- this combination scores worse still at 66/204). Reverted immediately. Saved: memory/grind/func_80056CB8/rejected/do-while-idx2-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s34 chassis (do-while chassis body + idx2 accumulator substituted at both table-index reads, func_80053614 s32-return fix + header externs unchanged, no FAKE constructs present)
+
+## [s34, rederive] m2c cross-check + mixed-exit-forms tail (this session's independent re-derivation from m2c/asm, not carried from s33): confirms candidate.c's current for-loop + single-fallthrough-store tail is closer to target than either the mixed-exit-forms tail or the do-while loop rewrite, individually. Frontier for next session updated: the do-while chassis (195 real insns, never before reached by this ledger) is worth combining with restructured OTHER-resident register pressure (the s29/s32-flagged 9-resident conflict map) rather than the index-naming axis, which is now exhausted on BOTH chassis shapes.
+- mechanism: n/a -- synthesis of this session's three measurements.
+- probe: n/a -- summary entry.
+- result: n/a -- summary entry, no new measurement.
+- verdict: CONFIRMED
+
+## [s34] Duplicating the real store statement `*(s8 *)(arg0+0x444+i) = (s8)flags;` into each of the five exit arms of the flags==3/flags==4 tail (matching target asm's repeated `addu $v0,$s7,$s6` at .L80056F0C/F54/F74/F8C/F94 and m2c's repeated `var_v0 = arg0 + var_s6;`) instead of falling through to one merged store, under the SOTN-sanctioned duplicated-statement-into-arms family, is worse than the 38/204 baseline.
+- mechanism: duplicated-statement-into-arms (.claude/rules/duplicated-statement-into-arms.md, owner ruling 2026-07-01) applied to the store statement at the loop's 5 exit points instead of one shared fallthrough store.
+- probe: Applied to the s22-s33-banked 38/204 chassis (func_80053614 s32-return fix + header externs); measured via `wteng sandbox func_80056CB8 --disable all`.
+- result: score=72, build_insns=200 (baseline 38/204, build_insns=198). Worse by +2 real instructions. Reverted via git checkout. Saved memory/grind/func_80056CB8/rejected/mixed-exit-forms-tail-duplicated-store-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, tail rewritten with the store statement duplicated into 5 exit arms with goto next;, no FAKE constructs present)
+
+## [s34] Rewriting the loop as an explicit `i = start; do { ...unchanged body...; i++; } while (i < limit);` instead of `for (i = start; i < limit; i++) { ... }` is worse than the 38/204 baseline, but REFUTES s33's reasoning-only prediction that this rewrite is codegen-neutral: build_insns actually drops from 198 to 195, a measurable structural change from source-level loop syntax alone.
+- mechanism: s33 argued loop.c's loop-inversion pass runs post-parse and should make for-loop vs do-while source syntax codegen-neutral; this session built and measured the variant for the first time instead of reasoning about it.
+- probe: Applied the do-while rewrite (identical body, only loop syntax changed) to the s22-s33-banked 38/204 chassis; measured via wteng sandbox func_80056CB8 --disable all.
+- result: score=46, build_insns=195 (down from 198; target_insns=204 unchanged; overall weighted score still worse than 38 despite fewer real instructions). Reverted via git checkout. Saved memory/grind/func_80056CB8/rejected/do-while-loop-rewrite-worse.c. This is a genuinely new, lower-insn-count chassis no prior session in this ledger has explored other levers on top of.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, loop rewritten from for to do-while, no other change, no FAKE constructs present)
+
+## [s34] Applying the previously-killed idx2 hand-carried accumulator (idx2 = start*2 before the loop, idx2 += 2 in the increment step, both [i*2] reads replaced with [idx2]) on top of the NEW do-while chassis instead of the for-loop chassis s30 already killed it on is also worse, and worse than the do-while-alone chassis.
+- mechanism: same construct as the s30-killed idx2 spelling, tested on a different (lower-insn-count) base chassis to check whether the do-while chassis's savings change the outcome for this specific index-naming axis.
+- probe: Applied idx2 to the do-while chassis body; measured via wteng sandbox func_80056CB8 --disable all.
+- result: score=66, build_insns=198 (up from the do-while-alone chassis's 195, back to parity with the for-loop+idx2 combination's build_insns, but a worse overall score of 66 vs that combination's 52). Reverted via git checkout. Saved memory/grind/func_80056CB8/rejected/do-while-idx2-worse.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s34 chassis (do-while chassis body + idx2 accumulator substituted at both table-index reads, func_80053614 s32-return fix + header externs unchanged, no FAKE constructs present)

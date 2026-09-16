@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 33,
+ "session_count": 34,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -201,23 +201,29 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s33 rederive: KILLED the s31/s32 two-separately-named-idxB frontier item (51/204, worse); confirmed via fresh m2c that do-while-vs-for loop spelling is codegen-neutral here; floor holds at 38/204 fres"
+  },
+  {
+   "session": 34,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s34 rederive: killed the mixed-exit-forms tail rewrite (72/204, worse) and empirically DISPROVED s33's reasoning-only 'do-while is codegen-neutral' claim (46/204, but build_insns actually drops 198->1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural change elsewhere in the loop body (not touching the i*2 index expressions or their live ranges) that shortens the loop's real-insn count from 163 to <=124 would flip loop.c:3823's inequality from the insn_count side instead of the lifetime side, letting strength_reduce promote i*2 automatically at unchanged register pressure.",
-   "mechanism": "loop.c:3823's rejection inequality is symmetric in insn_count vs the lifetime*threshold*benefit product; s32 factored the exact numeric gap (124 vs 163, needing +1 lifetime unit OR a matching insn_count reduction) but no session has yet tried shrinking insn_count as its own axis.",
-   "next_probe": "Identify which currently-unmerged/unoptimized statements in the loop body (pt0/pt1 store blocks, sin_p/cos_p lookups, flags==3/==4 tail) could be restructured to emit fewer real RTL insns without changing byte output, then re-run pwsh tools/grinder/dump.ps1 func_80056CB8 after each candidate change and read the .loop or .rtl insn_count directly (this session's dump run did not emit a .loop file -- check the dump script's pass-file selection or invoke cc1 -da directly if pwsh tools/grinder/dump.ps1 keeps omitting it)."
+   "hypothesis": "The do-while chassis (195 real insns, banked this session) may respond differently than the for-loop chassis to the s29/s32-flagged 9-resident register-competition restructuring (varying the footprint of obj/obj2/flags/sin_p/cos_p/x/z rather than the i*2 index), since its baseline insn count and register pressure differ from every chassis previously tried.",
+   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph, which the do-while rewrite has already shown responds to source-level structure changes that don't touch the index axis at all -- so other residents' footprints may also behave differently here than on the for-loop chassis where they were last measured (s29).",
+   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (from rejected/do-while-loop-rewrite-worse.c, applied fresh) to see whether the 9-resident competition picture differs from the for-loop chassis's profile, then try restructuring one resident's live range on THIS chassis instead of the for-loop one."
   },
   {
-   "hypothesis": "A restructuring of one of the 8 OTHER named residents' (obj/self-ptr, obj2, flags/code, sin_p, cos_p, x, z) live-range/conflict footprint could independently free a callee-saved register for i*2 to take without a net cost, even though six direct index-naming spellings have now all failed.",
-   "mechanism": "global.c global_alloc priority-ordered coloring; s29's conflict-map decode showed 9 pseudos live across the loop competing for 9 callee-saved registers -- the index axis is exhausted but the OTHER residents' footprints have not been independently varied.",
-   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the s33-rejected idxB variant (or any other now-fully-killed idx-naming variant) to see whether the 9-resident register-competition picture changes shape at all -- even in a losing variant, a shape change might reveal which OTHER resident (not i*2) is the actual lever."
+   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions -- e.g. restructuring the pt0/pt1 store blocks or the flags==3/flags==4 tail differently than this session's duplicated-store attempt -- would let strength_reduce promote i*2 automatically. Still untried as its own axis distinct from widening a giv's lifetime or naming the index by hand.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163) but no session has shrunk insn_count as its own axis, and this session's one attempt at tail restructuring (mixed-exit-forms) went the WRONG direction (+2 insns, not -39).",
+   "next_probe": "Identify which currently-unmerged statements in the loop body (pt0/pt1 store blocks specifically, since the tail restructuring this session made things worse) could be restructured to emit FEWER real RTL insns without changing byte output; read the .loop dump's insn_count directly after each change."
   },
   {
-   "hypothesis": "An explicit do-while rewrite of the loop (matching m2c's exact reconstructed control-flow shape) might still produce different codegen despite the loop-inversion-is-post-parse argument, since GCC 2.7.2's front end could plausibly attach different loop notes/hints to source-level do-while vs for before RTL generation.",
-   "mechanism": "Untested assumption from this session's reasoning-only kill above -- worth one real measurement before being treated as closed.",
-   "next_probe": "Build the do-while-spelled variant (same statements, loop written as `i = start; do { ...body... ; i++; } while (i < limit);` or matching m2c's exact `if (1) { do {} while(); }` guard shape) on the current 38/204 chassis and measure via wteng sandbox --disable all; read the .rtl/.loop dump to confirm whether the loop-inversion RTL is byte-identical to the current for-loop's RTL before concluding neutrality empirically rather than by argument alone."
+   "hypothesis": "Re-run the previously-killed shared-idx and separately-named-idxB index-naming spellings (not just idx2) on the do-while chassis, since only idx2 has been tested there so far.",
+   "mechanism": "each index-naming spelling interacts differently with register pressure; the do-while chassis's altered insn/register landscape (195 vs 198 baseline) has only been tested against one of the six previously-killed spellings.",
+   "next_probe": "Apply the s6/s32 shared-idx-local spelling and the s31/s33 separately-named-idxB spelling to the do-while chassis (not the for-loop chassis) and measure each independently."
   }
  ],
  "judge_constraints": [],
@@ -678,6 +684,30 @@
    "measured_on": "reasoning-only (not built/measured) against tools/gcc-2.7.2/loop.c's documented loop-inversion pass and the archived s12 m2c_out.c reconstruction; not a class kill because no C variant was actually co",
    "predicate_cite": "",
    "result": "Not built or measured this session -- the mechanism-level argument (loop-inversion is a post-parse RTL transform, not a "
+  },
+  {
+   "session": 34,
+   "statement": "Duplicating the real store statement `*(s8 *)(arg0+0x444+i) = (s8)flags;` into each of the five exit arms of the flags==3/flags==4 tail (matching target asm's repeated `addu $v0,$s7,$s6` at .L80056F0C",
+   "kill_scope": "instance",
+   "measured_on": "s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, tail rewritten with the store statement duplicated into 5 exit arms with goto next;, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score=72, build_insns=200 (baseline 38/204, build_insns=198). Worse by +2 real instructions. Reverted via git checkout. "
+  },
+  {
+   "session": 34,
+   "statement": "Rewriting the loop as an explicit `i = start; do { ...unchanged body...; i++; } while (i < limit);` instead of `for (i = start; i < limit; i++) { ... }` is worse than the 38/204 baseline, but REFUTES ",
+   "kill_scope": "instance",
+   "measured_on": "s34 chassis (s22-s33-banked 38/204 body + func_80053614 s32-return fix + header externs, loop rewritten from for to do-while, no other change, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score=46, build_insns=195 (down from 198; target_insns=204 unchanged; overall weighted score still worse than 38 despite"
+  },
+  {
+   "session": 34,
+   "statement": "Applying the previously-killed idx2 hand-carried accumulator (idx2 = start*2 before the loop, idx2 += 2 in the increment step, both [i*2] reads replaced with [idx2]) on top of the NEW do-while chassis",
+   "kill_scope": "instance",
+   "measured_on": "s34 chassis (do-while chassis body + idx2 accumulator substituted at both table-index reads, func_80053614 s32-return fix + header externs unchanged, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score=66, build_insns=198 (up from the do-while-alone chassis's 195, back to parity with the for-loop+idx2 combination's"
   }
  ],
  "ladder_skip": 0,
