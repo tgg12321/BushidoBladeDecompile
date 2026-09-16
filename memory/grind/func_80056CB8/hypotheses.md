@@ -2972,3 +2972,72 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s65 chassis (s22-s61-banked candidate.c body + func_80053614 s32-return prerequisite applied fresh to src/text1b.c; sandbox 38/204 confirmed before and after; zero FAKE constructs present; src/text1b.c reverted to committed INCLUDE_ASM state before session end, git status clean)
+
+## [s66, rederive modality, 2026-09-16]
+
+1. **[KILLED, instance] Kengo transplant lever (this session's mandated
+   "sibling/Kengo transplant" rederive angle) is not usable: the
+   `kengo_matches.csv` row for func_80056CB8 (line 686) is
+   `size-only-ambiguous` with 18 total size-204 candidates in the pool and
+   similarity 0.22, and the specific name it landed on
+   (`efc_rob_set_type_flash`) is itself ambiguously mapped back to THREE
+   different BB2 addresses (`efc_rob_set_type_flash`, `func_800520B8`,
+   `func_80056CB8` — confirmed via `python3 tools/kengo_ref.py
+   efc_rob_set_type_flash --list`).** Mechanism: n/a — this is a
+   provenance/confidence check, not a codegen question. A match this weak
+   (many-to-one in both directions) carries no more structural evidence
+   than a random same-size function; attempting a transplant from it would
+   be pattern-matching noise, not genuine cross-reference. `kengo_ref.py`
+   additionally requires `mipsel-linux-gnu-objdump` (WSL-only toolchain,
+   unavailable from this session's PowerShell/Bash tool context), so even
+   if the match were credible, dumping the actual Kengo asm needs a
+   WSL-invoking session — moot given the confidence finding above. No
+   prior ledger session (grepped hypotheses.md/evidence.md for "Kengo",
+   zero hits before this one) had checked this angle; it is now closed.
+   Result: KILLED. kill_scope: instance. measured_on: s66 chassis
+   (kengo_matches.csv as committed at HEAD; `tools/kengo_ref.py --list`
+   output this session).
+2. **[KILLED, instance] Sibling func_8006CCC8 remains structurally
+   disjoint — re-confirmed via signature comparison, not just region
+   comparison.** Mechanism: n/a. `memory/grind/func_8006CCC8/candidate.c:106`
+   declares `s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2)` — a
+   3-argument, pointer-taking, s32-returning signature — against our
+   target's `void func_80056CB8(s32 arg0)` — a 1-argument void function.
+   This is a stronger disjointness signal than the s60/s62/s64/s65
+   region-level checks (field28-dispatch vs. collision-detection loop):
+   the two functions don't even share a calling convention shape, so no
+   block-level transplant is structurally possible without a bridging
+   argument-marshalling rewrite that would itself be an untested,
+   unjustified restructuring. Closes the owner-directive auto-return
+   check for this session. Result: KILLED. kill_scope: instance.
+   measured_on: s66 chassis (func_8006CCC8/candidate.c as committed,
+   floor 39 per this session's dispatch brief).
+3. **[CONFIRMED] Baseline candidate.c (s22-s65-banked body) re-measures
+   38/204 (198 build insns) fresh this session via a fresh splice
+   (tmp/grind/func_80056CB8/s66/splice.py, adapted from s58's script) +
+   `sandbox func_80056CB8 --disable all`.** This is the 23rd consecutive
+   flat-floor confirmation. No FAKE construct present (nothing to
+   ablate — consistent with s58/s61's audits). Mechanism: n/a
+   (re-confirmation only). Result: CONFIRMED.
+
+## [s66] Kengo transplant lever for func_80056CB8 is not usable: its kengo_matches.csv row is size-only-ambiguous (18 same-size candidates, similarity 0.22), and the specific Kengo name it landed on (efc_rob_set_type_flash) itself maps back to 3 different BB2 addresses (efc_rob_set_type_flash, func_800520B8, func_80056CB8) per `python3 tools/kengo_ref.py efc_rob_set_type_flash --list`.
+- mechanism: n/a -- provenance/confidence check, not a codegen question
+- probe: grep kengo_matches.csv for func_80056CB8's row; cross-check the matched name's own back-mapping via tools/kengo_ref.py --list
+- result: This form's Kengo match confidence is too low (many-to-one/one-to-many ambiguity) to justify any transplant probe on this chassis this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s66 chassis, kengo_matches.csv as committed at HEAD; tools/kengo_ref.py --list output this session
+
+## [s66] Sibling func_8006CCC8's candidate.c body remains structurally disjoint from func_80056CB8, confirmed this session at the function-signature level rather than only the region level.
+- mechanism: n/a -- signature comparison
+- probe: Read memory/grind/func_8006CCC8/candidate.c:106 for its declared signature; compare arg count/types/return type against func_80056CB8's void func_80056CB8(s32 arg0)
+- result: func_8006CCC8 is s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) -- 3-arg, pointer-taking, s32-returning -- against our 1-arg void target; no shared calling-convention shape, so no block-level transplant is structurally possible without an unjustified bridging rewrite.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s66 chassis, func_8006CCC8/candidate.c as committed (floor 39 per dispatch brief)
+
+## [s66] The banked s22-s65 candidate.c body re-measures 38/204 (198 build insns) on the current chassis this session, via a fresh splice and a fresh sandbox invocation.
+- mechanism: n/a -- re-confirmation
+- probe: tmp/grind/func_80056CB8/s66/splice.py baseline; tools/wteng.ps1 main sandbox func_80056CB8 --disable all
+- result: 38/204, 198 build insns, 137 cheat-asm insns stripped, 0 rules dropped -- 23rd consecutive flat confirmation. src/text1b.c reverted to committed INCLUDE_ASM state after measurement.
+- verdict: CONFIRMED

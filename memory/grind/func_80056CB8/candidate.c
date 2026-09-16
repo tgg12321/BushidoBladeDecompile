@@ -1,6 +1,21 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66) — floor 38/204, NOT YET 0.
+ * s66 (rederive modality, 2026-09-16): Body UNCHANGED (23rd consecutive
+ * session confirming 38/204 fresh, re-spliced + re-measured this
+ * session). Closed a genuinely never-tried angle: the Kengo-transplant
+ * reading of "rederive" modality (named in every prior rederive session's
+ * mandate but never actually executed — grepped hypotheses.md/evidence.md
+ * for "Kengo", zero hits before this session). kengo_matches.csv's row
+ * for this function is size-only-ambiguous (18 candidates, similarity
+ * 0.22) and the specific name it landed on (`efc_rob_set_type_flash`)
+ * itself maps back to 3 different BB2 addresses — no usable structural
+ * precedent, KILLED as an instance (not a class: a higher-confidence
+ * Kengo match elsewhere in the codebase could still be useful for OTHER
+ * functions). Also re-confirmed sibling func_8006CCC8 disjointness at the
+ * SIGNATURE level (3-arg pointer-taking s32-return vs. our 1-arg void) —
+ * stronger than prior sessions' region-level disjointness checks. See
+ * hypotheses.md/evidence.md [s66] for full detail.
  * NOTE: this file is a CANDIDATE, not HEAD state. src/text1b.c on main
  * (and at every session's start/end) carries INCLUDE_ASM("asm/funcs",
  * func_80056CB8) per the asm-until-matched policy -- this body is applied

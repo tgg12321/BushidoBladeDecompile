@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 65,
- "current_modality": "forensics",
+ "session_count": 66,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -393,39 +393,34 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s65 forensics: 22nd consecutive 38/204 re-confirmation; corrected a standing pseudo-149/limit misattribution dating to s54 via direct fresh-dump RTL read (pseudo 149 = 0x1F8002B8 scratch-address const"
+  },
+  {
+   "session": 66,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s66 rederive: 23rd consecutive 38/204 re-confirmation; closed the never-tried Kengo-transplant angle (ambiguous match, no usable precedent) and re-confirmed sibling func_8006CCC8 disjoint at the signa"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~20 other pseudos in a near-fully-connected conflict clique per the .greg conflict-list dump), not further reducible by any spelling-level lever identified so far across 22 flat sessions and 6+ modalities.",
-   "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c; this session's correction clarifies WHICH pseudo is which (149=scratch-const/$fp, 74=limit/spilled) but does not change that both axes are independently exhausted.",
-   "next_probe": "A future session should look for a structurally different lever class entirely -- not a respelling of the now-corrected limit/scratch-constant identities, but e.g. re-examining whether any of the OTHER ~18 conflict-graph-live pseudos (the obj/flags/scale/sin_p/cos_p/x/z per-iteration values, not yet individually forensically identified the way 74 and 149 now are) has an untried scope-narrowing or duplication lever."
+   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~20 other conflict-clique pseudos), not reducible by any spelling-level lever found across 23 flat sessions and 7+ modalities (structural, enumerate, synthesis, solver, forensics, rederive).",
+   "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c",
+   "next_probe": "A future session should target one of the ~18 still-unidentified conflict-graph-live pseudos (obj/flags/scale/sin_p/cos_p/x/z per-iteration values) with the same forensics-level individual identification s63/s65 gave pseudo 74 and 149, looking for an untried scope-narrowing or duplication lever on THOSE specific pseudos."
   },
   {
-   "hypothesis": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) may develop a transplantable block if its own grind progresses further; still structurally disjoint (field28-dispatch vs. collision-detection loop) as of this session's check.",
-   "mechanism": "n/a -- sibling-ledger cross-reference per the brief's mandate.",
-   "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session; no action needed until its structure or floor changes."
+   "hypothesis": "Sibling func_8006CCC8 remains structurally and now signature-level disjoint; re-check only if its own grind changes its shape.",
+   "mechanism": "n/a -- sibling-ledger cross-reference",
+   "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session per the owner-directive auto-return trigger; no action needed until its structure or floor changes."
+  },
+  {
+   "hypothesis": "A higher-confidence Kengo match (not this function's own ambiguous row) could still be useful groundwork for OTHER BB2 functions, but this specific function's Kengo lever is closed.",
+   "mechanism": "n/a",
+   "next_probe": "n/a for func_80056CB8 -- no further Kengo action warranted for this function absent a kengo_matches.csv update that resolves the ambiguity."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 33,
-   "statement": "Adding a fresh, separately-named local (idxB = i * 2;, assigned right after the flags-table i*2 read) and using ONLY that local at the scale-table read (leaving the flags read's own i*2 untouched) let",
-   "kill_scope": "instance",
-   "measured_on": "s33 chassis (s22-s32-banked 38/204 body + idxB local added exactly per the s31/s32 frontier item's spelling; func_80053614 s32-return prerequisite applied; header externs restored; no FAKE constructs ",
-   "predicate_cite": "",
-   "result": "score regressed 38 -> 51/204, build_insns 198 -> 200 (+2 real instructions). No giv/strength-reduce trace found in the f"
-  },
-  {
-   "session": 33,
-   "statement": "Writing the loop as an explicit do-while (matching the exact control-flow shape m2c reconstructs from the target's own RTL: `if (1 != 0) { ... do { ... } while (var_s6 < sp60 + 2); }`) instead of the ",
-   "kill_scope": "instance",
-   "measured_on": "reasoning-only (not built/measured) against tools/gcc-2.7.2/loop.c's documented loop-inversion pass and the archived s12 m2c_out.c reconstruction; not a class kill because no C variant was actually co",
-   "predicate_cite": "",
-   "result": "Not built or measured this session -- the mechanism-level argument (loop-inversion is a post-parse RTL transform, not a "
-  },
   {
    "session": 34,
    "statement": "Duplicating the real store statement `*(s8 *)(arg0+0x444+i) = (s8)flags;` into each of the five exit arms of the flags==3/flags==4 tail (matching target asm's repeated `addu $v0,$s7,$s6` at .L80056F0C",
@@ -889,6 +884,22 @@
    "measured_on": "s65 chassis (s22-s61-banked candidate.c body + func_80053614 s32-return prerequisite applied fresh to src/text1b.c; sandbox 38/204 confirmed before and after; zero FAKE constructs present; src/text1b.",
    "predicate_cite": "",
    "result": "Pseudo 149 = the 0x1F8002B8 scratchpad-address 5th-arg constant to func_80053614 (same family as pseudos 148/146, alread"
+  },
+  {
+   "session": 66,
+   "statement": "Kengo transplant lever for func_80056CB8 is not usable: its kengo_matches.csv row is size-only-ambiguous (18 same-size candidates, similarity 0.22), and the specific Kengo name it landed on (efc_rob_s",
+   "kill_scope": "instance",
+   "measured_on": "s66 chassis, kengo_matches.csv as committed at HEAD; tools/kengo_ref.py --list output this session",
+   "predicate_cite": "",
+   "result": "This form's Kengo match confidence is too low (many-to-one/one-to-many ambiguity) to justify any transplant probe on thi"
+  },
+  {
+   "session": 66,
+   "statement": "Sibling func_8006CCC8's candidate.c body remains structurally disjoint from func_80056CB8, confirmed this session at the function-signature level rather than only the region level.",
+   "kill_scope": "instance",
+   "measured_on": "s66 chassis, func_8006CCC8/candidate.c as committed (floor 39 per dispatch brief)",
+   "predicate_cite": "",
+   "result": "func_8006CCC8 is s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) -- 3-arg, pointer-taking, s32-returning -- against ou"
   }
  ],
  "ladder_skip": 0,

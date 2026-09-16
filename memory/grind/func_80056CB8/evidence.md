@@ -1104,3 +1104,48 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s65] Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) status unchanged from s60-s64 checks -- not re-derived in depth this session since its structure/floor has not moved.
 
 - [s65] src/text1b.c reverted to committed INCLUDE_ASM state before session end (git status --short clean on src/text1b.c).
+
+## [s66, rederive modality, 2026-09-16]
+
+- Baseline candidate.c re-spliced fresh (tmp/grind/func_80056CB8/s66/splice.py)
+  and measured: `sandbox func_80056CB8 --disable all` → 38/204 (198 build
+  insns), 137 cheat-asm insns stripped, 0 rules dropped. 23rd consecutive
+  flat confirmation. src/text1b.c reverted to committed INCLUDE_ASM state
+  after measurement (`git checkout -- src/text1b.c`), tree left clean.
+- Kengo transplant angle (this session's mandated modality explicitly names
+  "sibling/Kengo transplant"): `kengo_matches.csv:686` —
+  `func_80056CB8,text1b.c,204,efc_rob_set_type_flash,204,0,is_efc_rob,
+  src/ishito/is_efc_rob.c,size-only-ambiguous,18,...,0.22,0.00` — a
+  same-size match among 18 candidates, similarity 0.22 (low). Cross-checked
+  with `python3 tools/kengo_ref.py efc_rob_set_type_flash --list`: that
+  Kengo function name itself maps back to 3 different BB2 addresses
+  (`efc_rob_set_type_flash`, `func_800520B8`, `func_80056CB8`) — a
+  many-to-one/one-to-many ambiguity in both directions. No usable
+  structural precedent here. Also noted: `tools/kengo_ref.py` shells out to
+  `mipsel-linux-gnu-objdump`, which is not on PATH from this session's
+  Windows-side tool context (WSL-only) — moot given the confidence finding,
+  but worth noting for any future session that wants to actually dump
+  Kengo asm for a DIFFERENT, higher-confidence match elsewhere.
+- Sibling func_8006CCC8 signature check: `memory/grind/func_8006CCC8/
+  candidate.c:106` = `s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2)`
+  vs. target's `void func_80056CB8(s32 arg0)` — different arg count,
+  different pointer-ness, different return type. Confirms disjointness at
+  a stronger (signature) level than prior sessions' region-level checks.
+- Grepped hypotheses.md + evidence.md for "Kengo" (case-insensitive)
+  BEFORE this session: zero hits. The Kengo-transplant reading of the
+  "rederive" modality had never actually been executed in this ledger's
+  22 prior sessions despite being explicitly named in the modality's
+  description every time — s56's "rederive" work covered fresh m2c +
+  decomp.me corpus but not Kengo. This session closes that gap.
+
+- [s66] Chassis unchanged: fresh splice + sandbox this session reproduces 38/204 (198 build insns), matching the ledger's last-recorded floor.
+
+- [s66] kengo_matches.csv:686 = func_80056CB8,text1b.c,204,efc_rob_set_type_flash,204,0,is_efc_rob,src/ishito/is_efc_rob.c,size-only-ambiguous,18,0.00,0.00,0.00,0.22,0.00 -- a same-size match among 18 candidates at low similarity.
+
+- [s66] tools/kengo_ref.py efc_rob_set_type_flash --list shows that Kengo function name maps back to 3 distinct BB2 addresses (efc_rob_set_type_flash, func_800520B8, func_80056CB8), confirming the match carries no reliable one-to-one structural correspondence.
+
+- [s66] tools/kengo_ref.py requires mipsel-linux-gnu-objdump, unavailable from this session's Windows-side tool context (WSL-only toolchain) -- noted for future sessions targeting a higher-confidence Kengo match elsewhere.
+
+- [s66] memory/grind/func_8006CCC8/candidate.c:106 declares s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2), a different signature shape entirely from func_80056CB8's void func_80056CB8(s32 arg0) -- disjointness confirmed at signature level, stronger than prior region-level checks.
+
+- [s66] Grepped hypotheses.md + evidence.md for 'Kengo' before this session: zero hits across 22 prior sessions and multiple prior 'rederive' modality dispatches -- this session closes that standing gap in the ledger's coverage of its own mandated modality.
