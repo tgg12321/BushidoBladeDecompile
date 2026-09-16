@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 41,
- "current_modality": "solver",
+ "session_count": 42,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -249,36 +249,34 @@
    "floor": 38,
    "modality": "solver",
    "headline": "s41 solver: object-mode inverse_compose classify verdicts PRE-RA/rtl_shape, independently corroborating the loop.c:3823 strength-reduce frontier and the s15 scratchpad-literal lever; re-audit re-confi"
+  },
+  {
+   "session": 42,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "s42 forensics: fresh .greg dump of the s34-rejected do-while chassis proves the 0x1F8002B8-literal-vs-fp allocation is IDENTICAL to the for-loop chassis (same 8 s0-s7 residents + fp), killing the s34/"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per s31/s32's exact numeric target) without touching the i*2 index expressions would let strength_reduce promote i*2 to the i+=2 accumulator classify's own diff independently confirms target uses.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap. s37-s41's exhaustive spelling/sharing/naming sweeps (now including the classify-suggested scratchpad lever) all show the residual within the existing structure is spelling-exhausted -- the remaining lever is a genuine structural rewrite of the loop body shape, now independently corroborated by the object-mode classify diff.",
-   "next_probe": "Hand-draft a structural loop-body rewrite that reduces the COMPILED insn count (via a .loop dump measurement, not source line count -- s39/s40 show naive source-level sharing backfires) and measure it directly against the 124 threshold."
-  },
-  {
-   "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z) on the do-while chassis specifically has never been tried on that chassis's distinct register landscape (195 vs 198 insns).",
-   "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph; the do-while rewrite (s34, rejected/do-while-loop-rewrite-worse.c) shows the function responds to source-level structural changes outside the index axis, so other residents' footprints may behave differently there.",
-   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis to compare its 9-resident conflict picture to the for-loop chassis's profile."
+   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 real insns on the for-loop chassis) without touching the i*2 index expressions or forcing their lifetime through a call-spanning pseudo would let strength_reduce promote i*2 to a compiler-built accumulator the way target's asm shows.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; shrinking insn_count works exactly as well as raising the left side, and every left-side lever tried so far (s32/s33's shared/separately-named idx locals) has failed due to register pressure from spanning the intervening ratan2() call, not from the arithmetic itself.",
+   "next_probe": "Identify which SPECIFIC insns the do-while chassis's -3 reduction removed (compare a fresh for-loop-chassis .greg dump slice against this session's do-while slice insn-by-insn, not just the register-disposition table) to see whether that removal mechanism could be pushed further or combined with a second, different structural change to close the remaining 39-insn (124 vs 163) gap without perturbing i*2's own live range."
   },
   {
    "hypothesis": "Extend tools/spelling_enum.py to treat a bracketed if/else block as one opaque reorderable anchor, so the obj/flags region (and future similar regions) can be swept exhaustively instead of by hand-picked variants.",
    "mechanism": "n/a -- tooling gap, not a codegen hypothesis.",
    "next_probe": "Patch spelling_enum.py's anchor classification (tools/spelling_enum.py:76-91) then re-run a full mechanical sweep over the obj/flags region."
+  },
+  {
+   "hypothesis": "loop.c's threshold formula's n_non_fixed_regs term is compile-time-fixed (s21-confirmed) and loop_has_call's multiplier is already pinned at its smaller value (1, since two calls exist in the loop) -- but no session has yet checked whether REMOVING one of the two func_80053614 calls from the loop's dynamic path (e.g. if the second call's precondition can be proven statically false for some argument shapes) is even a semantically-valid restructuring; this has not been investigated at all and may be a dead end, but is untried.",
+   "mechanism": "loop.c:3241 threshold=(loop_has_call?1:2)*(3+n_non_fixed_regs) -- if loop_has_call could legitimately become false, threshold would double (to 62), trivially flipping the i*2 promotion decision (2*62*2=248 >= 163) without needing any lifetime change at all.",
+   "next_probe": "Re-read the two func_80053614 call sites' semantics (target asm + candidate.c) to determine whether either call is genuinely unconditional per-iteration or could be restructured without changing program behavior; if both calls are truly unconditional and required, this axis is a class kill and should be recorded as such next session."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 8,
-   "statement": "Naming the repeated 0x1F8002B8 scratchpad-address literal (5th arg to both func_80053614 calls) as a single fresh local recovers target's single-materialization pattern and improves the floor.",
-   "kill_scope": "instance",
-   "measured_on": "s8 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local 'scratch' replacing both call-site 0x1F8002B8 literals, zero FAKE/cheat constructs, rev",
-   "predicate_cite": "",
-   "result": "Score 58 -> 60 (WORSE), build_insns unchanged at 198. Reverted immediately; floor 58 re-confirmed."
-  },
   {
    "session": 9,
    "statement": "Hoisting the 0x1F8002B8 scratchpad-address literal ABOVE the for-loop entirely (single fresh local declared once before the loop, shared across both loop iterations and both func_80053614 call sites) ",
@@ -750,6 +748,14 @@
    "measured_on": "s41 chassis (candidate.c's s22-s40-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, the 0x1F8002B8 literal at both func_80053614() call sites replaced by one fresh scratchp",
    "predicate_cite": "",
    "result": "score 38 -> 42/204, build_insns 198 -> 200 (worse on both axes). Baseline 38/204 reconfirmed clean after revert (git sta"
+  },
+  {
+   "session": 42,
+   "statement": "The do-while chassis (46/204, 195 real insns, first rewritten and measured at s34 but never dump-analyzed) does not free $fp for the loop-carried i*2 accumulator or otherwise change the allocation of ",
+   "kill_scope": "instance",
+   "measured_on": "s42 chassis (do-while rewrite of the s22-s41-banked 38/204 for-loop body, func_80053614 s32-return prerequisite + 5-line header externs, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "Register dispositions on the do-while chassis are shape-identical to the s29-banked for-loop-chassis picture: the same 8"
   }
  ],
  "ladder_skip": 0,
