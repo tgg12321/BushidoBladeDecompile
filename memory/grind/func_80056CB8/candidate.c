@@ -1,6 +1,21 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s2, 2026-09-16; re-verified s3, 2026-09-16)
- * — floor 106/204, NOT YET 0
+ * func_80056CB8 — CANDIDATE (s2, 2026-09-16; re-verified s3, 2026-09-16;
+ * re-verified s4, 2026-09-16) — floor 106/204, NOT YET 0
+ * ---------------------------------------------------------------------
+ * s4 (permuter modality): body UNCHANGED from s2/s3. Re-confirmed floor
+ * 106 before permuting. Ran a first-ever directed permuter campaign
+ * (44,294 iterations, 24 min, base permuter score 5235) on this exact
+ * chassis -- best find 4103/5235 (21.6% reduction), plateaued, and the
+ * best form itself is a type-broken mutation, not a valid lever. KILLED
+ * (instance): permuter-as-primary-lever does not close (or meaningfully
+ * narrow) this residual, because the residual is PURE register
+ * allocation on an already-structurally-matching body, which the
+ * permuter's semantic-mutation search is poorly suited to explore. See
+ * hypotheses.md [s4] + evidence.md [s4] for the full workspace/campaign
+ * writeup. NEXT SESSION should use register-alloc/rederive/solver
+ * modality (read the .lreg/.greg dumps for pseudo 82/83/90 live ranges),
+ * NOT another permuter campaign on this chassis (2-permuter-session cap
+ * per R3; this was campaign 1 of 2 max).
  * ---------------------------------------------------------------------
  * s3 (structural modality): re-applied this body + the func_80053614
  * prerequisite fix, re-confirmed score 106 (baseline WITHOUT the fix is

@@ -240,3 +240,52 @@ these two pseudos' hard-register assignment on this chassis.
 - [s3] func_80053614's return-type fix (void -> s32) is confirmed byte-neutral standalone (sandbox func_80053614 --disable all: 0/32 both before and after) and is a hard prerequisite for func_80056CB8's candidate to reach 106 rather than 147 -- its asm falls through $v0 to the epilogue regardless of declared return type, so the fix only affects callers that now read the return value.
 
 - [s3] Working tree left clean at session end (src/text1b.c reverted to committed INCLUDE_ASM state via `git checkout`); only memory/grind/func_80056CB8/{candidate.c,hypotheses.md} were modified and are part of this session's ledger update.
+
+## [s4] permuter 2026-09-16
+
+**Chassis check confirmed floor 106.** Applied candidate.c (unchanged from s2/s3) plus
+the func_80053614 void->s32 prerequisite fix to src/text1b.c; `sandbox func_80056CB8
+--disable all` reproduced score 106 (build_insns 201, target_insns 204) before any
+permuter work started -- no chassis drift since s3.
+
+**Built a fresh single-function permuter workspace** at
+`tmp/grind/func_80056CB8/s4/perm_ws` (this function had never had a permuter campaign
+before this session -- the CHASSIS RULE 20k-iteration re-seed restriction does not
+apply). base.c is a preprocessed (`mipsel-linux-gnu-cpp`) TU-prefix of src/text1b.c
+truncated right after func_80056CB8's closing brace (Python brace-matcher, see
+`tmp/grind/func_80056CB8/s4/build_ws.sh`); target.o is `asm/funcs/func_80056CB8.s`
+assembled standalone at offset 0 via `tools/decomp-permuter/prelude.inc` (gp=64 line
+stripped for r3000); compile.sh mirrors the Makefile's exact per-file pipeline (cc1
+-O2 -G0 ... -mel -msoft-float | prologue_fix.py | maspsx.py --expand-div
+--aspsx-version=2.34 [+ sdata/expand-lb/multu config lists] | multu_pad.py |
+mipsel-linux-gnu-as), then isolates the `.ent func_80056CB8` .. `.end func_80056CB8`
+region via awk before final assembly. Validated: base insns 201 / target insns 204,
+exactly matching the engine sandbox's build_insns/target_insns.
+
+**Campaign result: NEGATIVE, banked as an instance kill.** Launched with
+`-j 6 --stop-on-zero`, base permuter-weighted score 5235. Ran 44,294 iterations over
+~24 minutes (two overlapping in-session `wait` polling loops, both harvested cleanly;
+no orphan -- `harvest --dir tmp/grind/func_80056CB8/s4/perm_ws --stop` confirmed the
+campaign dead afterward). Best score found: 4103/5235 (21.6% reduction from base),
+plateaued at 4103 for the back half of the run with no further novel-and-better find.
+The 4103 form itself (`output-4103-1/diff.txt`) is a type-broken mutation (unused
+`u8 *new_var` alias, uncast `*(obj + 0xC0)` dereference) -- not a valid intermediate
+lever, just permuter noise. No output across the full run approached score 0 or the
+residual's actual scale. See hypotheses.md [s4] for the full mechanism writeup: the
+permuter's mutation set (semantic-changing random edits) is poorly matched to a
+residual that is PURELY hard-register assignment on an already-structurally-matching
+body -- most mutations regress the weighted score by changing instruction count
+rather than exploring register-allocation-neutral rephrasings.
+
+- [s4] Chassis re-confirmed at floor 106 before permuting (candidate.c + func_80053614 fix, no drift since s3)
+- [s4] First-ever permuter campaign for this function: tmp/grind/func_80056CB8/s4/perm_ws, 44,294 iterations, base score 5235, best found 4103 (21.6% reduction), plateaued, zero near-zero or valid-closing finds
+- [s4] Campaign telemetry logged via tools/permuter_campaign.py (permuter-launch/permuter-harvest events, metrics/events.jsonl); campaign stopped and harvested in-session, no orphan
+- [s4] Working tree left clean at session end (src/text1b.c reverted to committed INCLUDE_ASM state); only memory/grind/func_80056CB8/{evidence.md,hypotheses.md} and tmp/grind/func_80056CB8/s4/* (scratch artifacts) were touched this session -- candidate.c unchanged from s2/s3 (permuter found no improvement to bank)
+
+- [s4] Chassis re-confirmed floor 106 (build_insns 201 / target_insns 204) before permuting -- no drift since s3.
+
+- [s4] First-ever permuter campaign for func_80056CB8: 44,294 iterations, base permuter-weighted score 5235, best found 4103 (21.6% reduction), plateaued, zero near-zero or structurally-valid finds.
+
+- [s4] The plateaued 4103 form is type-broken (unused alias pointer + dropped pointer cast), not a usable intermediate lever -- inspected directly in output-4103-1/diff.txt.
+
+- [s4] Campaign stopped and harvested in-session (no orphan); working tree left clean at session end (src/text1b.c reverted to committed INCLUDE_ASM state).
