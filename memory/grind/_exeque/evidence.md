@@ -228,3 +228,36 @@ A/B floor measurement 7 vs 2) is recorded in the annotation comment.
 - [s4] All src/display.c edits were reverted to the committed INCLUDE_ASM("asm/funcs", _exeque); state before this session ended, per asm-until-matched -- this is a progress outcome (floor 2, not 0), so no C lands on main.
 
 - [s4] memory/grind/_exeque/candidate.c, evidence.md, hypotheses.md, and self_vet.md were all updated this session with the full campaign trace, the two applied FAKE-annotated do-while(0) constructs, and the two rejected permuter proposals (volatile coercion, behavior-changing statement move).
+
+## [s5] permuter session
+- Applied s4's candidate.c to src/display.c (fixed the two forward-declaration
+  mismatches: `void _exeque();` -> `extern s32 _exeque(void);` at both call
+  sites' TU-scope declarations, added the missing `extern s32 D_8009BF84;`).
+  Confirmed via `sandbox _exeque --disable all`: score 2/187, build_insns 186,
+  matching the chassis-check number in this session's brief.
+- Two hand-derived structural variants on the final-callback block (do-while(0)
+  wrap; cb-local hoist) both measured negative -- see hypotheses.md [s5].
+  Neither improved nor is a viable direction.
+- Re-launched the jalr-delay-slot directed permuter campaign from a fresh copy
+  of s4's campaign-3 workspace (tmp/grind/_exeque/s5/perm_ws/, base score 200,
+  target.o/base.o carried over unchanged since the residual chassis is
+  identical). One ~547s blocking wait call, 15356 iterations, 0 novel finds.
+  harvest --stop cleanly killed 5 procs. Combined with s4's 9096 iterations on
+  the identical search space, cumulative >=20k -- CHASSIS RULE now applies:
+  this exact chassis+residual is not a valid permuter re-seed target for a
+  future session without a structural change to the surrounding C first.
+- src/display.c left in place with s4's candidate.c body (floor 2/187, no
+  regression) at session end -- matches [[asm-until-matched]]: the committed
+  representation for an INCOMPLETE function is INCLUDE_ASM, so this working
+  tree state is NOT committed; it is the ledger's job (candidate.c) to carry
+  the frontier for the next session, which is unchanged from s4's file.
+- Artifacts: tmp/grind/_exeque/s5/perm_ws/campaign.log,
+  tmp/grind/_exeque/s5/perm_ws/campaign_meta.json.
+
+- [s5] Applied s4's banked candidate.c to src/display.c (fixed two stale forward declarations -- `void _exeque();` -> `extern s32 _exeque(void);` at both the ADDQUE2 block and the _sync block -- and added the missing `extern s32 D_8009BF84;`); confirmed via sandbox _exeque --disable all: score 2/187, build_insns 186, matching the driver's dispatch-time chassis check.
+
+- [s5] Two hand-derived structural variants of the final-callback block (do-while(0) wrap; cb-local hoist) both measured negative and were reverted -- neither is a viable direction for the residual.
+
+- [s5] A second fresh-seed permuter campaign on the jalr-delay-slot residual ran 15356 iterations with zero novel finds; cumulative with s4's prior campaign on the identical chassis+residual now exceeds the ledger's 20k-iteration CHASSIS RULE threshold for re-seeding.
+
+- [s5] src/display.c is left in the working tree with s4's candidate.c body applied (floor 2/187) at session end -- per [[asm-until-matched]] this is NOT committed; candidate.c in the ledger carries the frontier for the next session unchanged in substance from s4, with this session's negative results appended to its header.

@@ -1,7 +1,7 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Directed permuter campaigns dropped _exeque's honest floor 12 -> 2/187 via two SOTN-sanctioned do-while(0) wraps (single-level around the triple-store block, then nested around its first two stores); "
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "_exeque held at floor 2/187 (s4's do-while(0) chassis re-confirmed); s5 permuter session KILLED two hand-derived structural variants of the final-callback block and pushed the jalr-delay-slot permuter"
   }
  ],
  "frontier": [
   {
    "hypothesis": "The floor-2 residual (final-callback jalr delay-slot fill) is the SAME site s2's H6 found closable only via `volatile s32 *p` -- an IRQ-callback-installed function's own single-read test-and-clear of a flag it owns could qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, closing the last 2 instructions with zero further search once ruled on.",
    "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque); IRQ-install site, and this session's confirmation that the floor is now ONLY 2/187 (down from 12), all concentrated at this single site."
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, src/display.c's DMACallback(2, _exeque) IRQ-install site, and the fact that the floor has been at 2/187 (down from 12) for two consecutive sessions with the permuter search space now exhausted (>=20k iterations, 0 finds)."
   },
   {
-   "hypothesis": "A non-volatile pure-C lever for the jalr-delay-slot fill may still exist outside plain-C statement reordering (e.g. a restructuring of the guard-and-clear block's control flow, or a different placement of the pointer/dereference relative to the call) that this session's single directed permuter campaign (9096 iterations, one chassis) did not surface.",
-   "mechanism": "GCC 2.7.2 reorg.c fill_simple_delay_slots (excludes volatile-marked memory from delay-slot motion candidacy) -- the question is whether some OTHER C restructuring (not volatile) can independently make the store ineligible for delay-slot motion",
-   "next_probe": "Read tools/gcc-2.7.2/reorg.c's fill_simple_delay_slots and its callers to see what OTHER conditions (besides MEM_VOLATILE_P) block a candidate insn from filling a jalr's delay slot; try a restructuring that trips one of those conditions without volatile."
+   "hypothesis": "A non-volatile pure-C lever for the jalr-delay-slot fill may still exist outside plain-C statement reordering of the final block or random permuter mutation -- e.g. restructuring the surrounding do-while loop's exit path, or moving the guard-and-clear block relative to the SetIntrMask(D_8009BF84) call that precedes it.",
+   "mechanism": "GCC 2.7.2 reorg.c fill_simple_delay_slots (tools/gcc-2.7.2/reorg.c:2861-3027) excludes a trial insn only via ordinary resource-conflict analysis (mark_set_resources/mark_referenced_resources) between the jalr and the candidate store -- volatile forces a conflict by treating the MEM as touching all memory; the open question is whether any OTHER C-level restructuring changes the resource-conflict computation without volatile",
+   "next_probe": "Read tools/gcc-2.7.2/reorg.c's mark_set_resources/mark_referenced_resources (called from fill_simple_delay_slots) to find what non-volatile conditions could make the jalr's own resource footprint (mark_set_resources on a CALL_INSN, reorg.c ~3072-3079) conflict with the preceding store; try moving SetIntrMask(D_8009BF84) or restructuring the enclosing if to change what the jalr's CALL_INSN resource set includes."
   },
   {
-   "hypothesis": "The do-while(0) wraps banked this session (candidate.c) are a stable improved chassis for any future session on this function -- re-deriving them from scratch would waste a session.",
-   "mechanism": "n/a (tooling/chassis reuse note)",
-   "next_probe": "Next session should apply memory/grind/_exeque/candidate.c verbatim as its starting point (sandbox floor 2/187, confirmed this session) before attempting any new lever."
+   "hypothesis": "The do-while(0)-wrapped chassis in candidate.c (unchanged since s4, re-confirmed this session) remains the best known starting point for any future session on this function -- re-deriving it from scratch would waste a session, and re-seeding its jalr-delay-slot permuter search space without a structural change first would also waste a session per the ledger's CHASSIS RULE.",
+   "mechanism": "n/a (tooling/chassis reuse + anti-waste note)",
+   "next_probe": "Next session should apply memory/grind/_exeque/candidate.c verbatim (sandbox floor 2/187, confirmed this session), then EITHER file the ruling-request above OR attempt a genuinely different structural rewrite of the final-callback block (not yet tried: restructuring around the loop-exit condition, or moving SetIntrMask relative to the guard) before any further permuter campaign on this exact residual."
   }
  ],
  "judge_constraints": [],
@@ -112,6 +118,30 @@
    "measured_on": "do-while(0)-wrapped chassis (this session's candidate.c, both FAKE-annotated wraps present), s2's H5b final-callback pointer in place, no volatile/cheat constructs present",
    "predicate_cite": "",
    "result": "0 novel finds below 200 after 9096 iterations -- the campaign never found any spelling closer to 0 than the do-while cha"
+  },
+  {
+   "session": 5,
+   "statement": "A do-while(0) wrap around the final \"clear D_8009BE7C, invoke D_8009BE80 callback\" two-statement block does NOT perturb the jalr delay-slot fill (unlike H9/H10's triple-store wraps, which each dropped",
+   "kill_scope": "instance",
+   "measured_on": "s4 do-while(0)-wrapped floor-2 chassis, single added do-while(0) wrap around the final block only, no other constructs changed",
+   "predicate_cite": "",
+   "result": "score unchanged at 2/187, build_insns unchanged (186) -- confirms this residual is not an RTL-compound-statement-boundar"
+  },
+  {
+   "session": 5,
+   "statement": "Hoisting the D_8009BE80 callback pointer into a named local `cb` before the guard test, calling `cb()` instead of a cast-call-through-global, improves the residual.",
+   "kill_scope": "instance",
+   "measured_on": "s4 do-while(0)-wrapped floor-2 chassis, cb-local hoist applied to final block only",
+   "predicate_cite": "",
+   "result": "score got WORSE, 2 -> 11 (build_insns dropped 186 -> 184, i.e. this changed codegen structurally rather than just the de"
+  },
+  {
+   "session": 5,
+   "statement": "A second fresh-seed directed permuter campaign on the exact floor-2/187 jalr-delay-slot residual (re-launched from a copy of s4's campaign-3 workspace, identical base.c/target.o, base permuter score 2",
+   "kill_scope": "instance",
+   "measured_on": "s4/s5 do-while(0)-wrapped floor-2/187 chassis (both FAKE-annotated wraps present, no other cheat/volatile constructs), jalr-delay-slot-targeted permuter search space only",
+   "predicate_cite": "",
+   "result": "0 novel finds after 15356 iterations this session. Combined with s4 campaign 3's 9096 iterations on the identical residu"
   }
  ],
  "ladder_skip": 0,

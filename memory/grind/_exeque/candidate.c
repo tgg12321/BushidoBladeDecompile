@@ -2,6 +2,16 @@
  * 2/187 (dropped from the s2/s3-banked floor of 12/187). Apply this body to
  * src/display.c in place of the `INCLUDE_ASM("asm/funcs", _exeque);` line.
  *
+ * s5 (permuter) re-confirmed this exact body at floor 2/187, unchanged. Two
+ * hand-derived structural variants of the final-callback block (do-while(0)
+ * wrap: no effect; cb-local hoist: WORSE, 2->11) and a second fresh-seed
+ * permuter campaign on the jalr-delay-slot residual (15356 iters, 0 novel
+ * finds; cumulative with s4's campaign-3 now >=20k on this exact chassis)
+ * all failed to improve on this body. See hypotheses.md [s5]. This body is
+ * still the best known chassis — next session should NOT re-seed the same
+ * permuter search space; either try a structurally different rewrite of the
+ * final block, or resolve the frontier's ruling-request.
+ *
  * Forward-declaration fixups (unchanged since s1/s3):
  *   - `void _exeque();` -> `extern s32 _exeque(void);` (correct return type)
  *   - `extern s32 D_8009BF84;` added near the other D_8009BE7C/D_8009BE80

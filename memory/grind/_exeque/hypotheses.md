@@ -340,3 +340,51 @@ chain regardless of which local (if any) carries the value.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: do-while(0)-wrapped chassis (this session's candidate.c, both FAKE-annotated wraps present), s2's H5b final-callback pointer in place, no volatile/cheat constructs present
+
+## [s5] A do-while(0) wrap around the final "clear D_8009BE7C, invoke D_8009BE80 callback" two-statement block does NOT perturb the jalr delay-slot fill (unlike H9/H10's triple-store wraps, which each dropped the floor).
+- mechanism: reorg.c fill_simple_delay_slots (tools/gcc-2.7.2/reorg.c:2861-3027) backward-scans from the jalr for a resource-conflict-free trial insn; this is a two-instruction body with no intervening compound-statement boundary for the wrap to change, unlike the triple-store block H9/H10 targeted
+- probe: Applied do-while(0) wrap to memory/grind/_exeque/rejected/dowhile-final-block-no-effect.c's shape on the s4 floor-2 chassis; measured via sandbox _exeque --disable all
+- result: score unchanged at 2/187 (build_insns unchanged 186) -- confirms this residual is not an RTL-compound-statement-boundary issue the way the triple-store block was; reverted, not applied to src
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4 do-while(0)-wrapped floor-2 chassis, single added do-while(0) wrap around the final block only, no other constructs changed
+
+## [s5] Hoisting the D_8009BE80 callback pointer into a named local `cb` before the guard test, calling `cb()` instead of a cast-call-through-global, makes the score WORSE (2 -> 11), not better.
+- mechanism: n/a -- this changed codegen structurally (build_insns dropped 186 -> 184, i.e. fewer instructions emitted than target, not just a delay-slot reschedule), so it is not a viable direction for this residual
+- probe: Applied the cb-local-hoist form to the s4 floor-2 chassis; measured via sandbox
+- result: score 2 -> 11 (worse); reverted immediately, not applied to src (memory/grind/_exeque/rejected/cb-local-hoist-worse.c)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4 do-while(0)-wrapped floor-2 chassis, cb-local hoist applied to final block only
+
+## [s5] A second fresh-seed permuter campaign (15356 iterations, ~9.3 min) on the exact floor-2/187 jalr-delay-slot residual, re-launched from a copy of s4's campaign-3 workspace (same base.c/target.o, base permuter score 200), finds zero novel forms below score 200.
+- mechanism: exhaustive PERM_* random search over the 2-instruction residual (same search space as s4 campaign 3)
+- probe: tools/permuter_campaign.py launch --func _exeque --dir tmp/grind/_exeque/s5/perm_ws --label jalr-delay-slot-s5 -j4 --stop-on-zero; waited via permuter_campaign.py wait (one ~547s blocking call); harvested + stopped
+- result: 0 novel finds after 15356 iterations this session. Combined with s4 campaign 3's 9096 iterations on the identical residual/chassis, cumulative iteration count on this exact search space is now ~24452, crossing the CHASSIS RULE's >=20k threshold -- further re-seeding of this SAME chassis+residual is not a valid probe per the ledger's own discipline. The residual requires either (a) a structurally different chassis for the surrounding block (none of this session's 2 hand-derived structural variants helped -- see the two KILLED hypotheses above), or (b) the ruling-request already on file in the frontier (volatile-based closure, blocked on use-site-shape classification, not on search).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4/s5 do-while(0)-wrapped floor-2 chassis (both FAKE-annotated wraps present, no other cheat/volatile constructs), jalr-delay-slot-targeted permuter search space only
+
+## [s5] A do-while(0) wrap around the final "clear D_8009BE7C, invoke D_8009BE80 callback" two-statement block does NOT perturb the jalr delay-slot fill (unlike H9/H10's triple-store wraps, which each dropped the floor).
+- mechanism: reorg.c fill_simple_delay_slots (tools/gcc-2.7.2/reorg.c:2861-3027) backward-scans from the jalr for a resource-conflict-free trial insn; this two-instruction body has no intervening compound-statement boundary for a do-while(0) wrap to change, unlike the triple-store block H9/H10 targeted
+- probe: Applied do-while(0) wrap around the final block on the s4 floor-2/187 chassis; measured via sandbox _exeque --disable all
+- result: score unchanged at 2/187, build_insns unchanged (186) -- confirms this residual is not an RTL-compound-statement-boundary issue the way the triple-store block was; reverted, not applied to src
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4 do-while(0)-wrapped floor-2 chassis, single added do-while(0) wrap around the final block only, no other constructs changed
+
+## [s5] Hoisting the D_8009BE80 callback pointer into a named local `cb` before the guard test, calling `cb()` instead of a cast-call-through-global, improves the residual.
+- mechanism: n/a -- speculative register-pressure change, not a named GCC pass mechanism
+- probe: Applied the cb-local-hoist form to the s4 floor-2/187 chassis; measured via sandbox
+- result: score got WORSE, 2 -> 11 (build_insns dropped 186 -> 184, i.e. this changed codegen structurally rather than just the delay-slot reschedule); reverted immediately, not applied to src
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4 do-while(0)-wrapped floor-2 chassis, cb-local hoist applied to final block only
+
+## [s5] A second fresh-seed directed permuter campaign on the exact floor-2/187 jalr-delay-slot residual (re-launched from a copy of s4's campaign-3 workspace, identical base.c/target.o, base permuter score 200) can find a non-volatile C-level lever that s2's H6 and s4's campaign 3 (9096 iterations) did not.
+- mechanism: exhaustive PERM_* random search over the 2-instruction residual (same search space as s4 campaign 3)
+- probe: tools/permuter_campaign.py launch --func _exeque --dir tmp/grind/_exeque/s5/perm_ws --label jalr-delay-slot-s5 -j4 --stop-on-zero; waited via permuter_campaign.py wait (one ~547s blocking call, 15158-15356 iterations counted at different checkpoints); harvest --stop
+- result: 0 novel finds after 15356 iterations this session. Combined with s4 campaign 3's 9096 iterations on the identical residual/chassis, cumulative iteration count on this exact search space is now ~24452, crossing the ledger's own CHASSIS RULE >=20k threshold -- further re-seeding of this SAME chassis+residual is not a valid probe for a future session without a structural change first
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4/s5 do-while(0)-wrapped floor-2/187 chassis (both FAKE-annotated wraps present, no other cheat/volatile constructs), jalr-delay-slot-targeted permuter search space only
