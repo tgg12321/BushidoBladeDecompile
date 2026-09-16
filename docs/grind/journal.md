@@ -2095,3 +2095,4 @@
 - 2026-09-15 23:16 func_8002D780: judge FAILED a bytes-proven candidate — Bytes re-verified myself: sandbox --disable all = 0/202, rules_dropped 0; verify-oracle SHA1 == oracle; the src body is 
 - 2026-09-15 23:31 func_8002D780: MERGE REFUSED after judge PASS — 4 unallowlisted inline-asm island(s), no grant door; constraint banked.
 - 2026-09-15 23:50 func_8002D780 JUDGE ESCALATE (final call, canonical-asm-grant (REFUSED: tier LOW, not STRONG-class and not owner-cluster-enumerated)) — refused + ROTATED (returns automatically; owner ruling 2026-09-08).
+- 2026-09-16 00:12 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 00:20

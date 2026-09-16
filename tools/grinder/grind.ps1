@@ -20,12 +20,30 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    # LANE MODELS — owner directive 2026-09-15 (supersedes the 2026-09-10
-    # all-Opus pin): Fable allowance is available again, so the two REASONING
-    # lanes (execution + recon/object-model) go to Fable 5.1 and the two GATE
-    # lanes (Judge + layer-1 cheat-reviewer) stay on Opus 5.
+    # LANE MODELS — owner directive 2026-09-16, CAPABILITY EXPERIMENT (supersedes
+    # the 2026-09-15 Fable split): every WORKER lane (execution + recon/object-model)
+    # drops to Sonnet 5; the two GATE lanes (Judge + layer-1 cheat-reviewer) stay on
+    # Opus 5. Owner: "Lets change all of those except the existing opus lanes to
+    # Sonnet, just to see how it behaves. I'm curious how critical our reasoning
+    # power truly is."
     #
-    # Why this split and not the 2026-09-07 one (which put the gates on Fable):
+    # THIS IS THE FIRST LANE CHANGE DRIVEN BY A QUALITY QUESTION rather than by
+    # allowance exhaustion — it is an EXPERIMENT with a recorded control, not a
+    # settled configuration. Protocol, control table and the metrics to compare:
+    # docs/grind/model-experiment-2026-09-15.md. Control (Fable era, 2026-09-02..15):
+    # 515 sessions, 82 completions (0.159/session), 41 layer-1 FAILs (0.50 per
+    # completion), 40 one-session recon closes. Revert = restore the Fable/Opus
+    # split below.
+    #
+    # Safety argument for running it at all: no cheat can reach main on the strength
+    # of this change. Both gates are unchanged Opus 5, both default-FAIL, and bytes
+    # are proven BEFORE the Judge rules. The realistic downside is wasted sessions
+    # (retries, weak re-derivations, false exhaustion claims), not a corrupted tree.
+    # NOTE the contamination source: a Sonnet lane that 429s falls back to Opus 5 via
+    # Get-LaneModel, journaled as `model-fallback session ...` — exclude those
+    # sessions when scoring the experiment.
+    #
+    # PRIOR SPLIT (2026-09-15, Fable reasoning lanes) and why it was shaped that way:
     #   - The gates run a FROZEN default-FAIL rubric. Extra capability headroom
     #     buys least against a fixed rubric, and they are the HIGH-VOLUME lanes
     #     (every candidate-ready pays layer-1 + Judge, retries included) — so
@@ -51,9 +69,11 @@ param(
     # so total Fable exhaustion degrades to EXACTLY the 2026-09-10 config.
     #
     # To re-collapse to all-Opus, pass -Model / -ReconModel 'claude-opus-5[1m]'
-    # explicitly. ('claude-fable-5[1m]' resolves to Fable 5, not 5.1.)
-    [string]$Model = 'claude-fable-5-1[1m]',            # execution sessions
-    [string]$ReconModel = 'claude-fable-5-1[1m]',       # recon + object-model sessions
+    # explicitly. To end the experiment and restore the 2026-09-15 split, pass (or
+    # restore as defaults) 'claude-fable-5-1[1m]' on both worker lanes.
+    # ('claude-fable-5[1m]' resolves to Fable 5, not 5.1.)
+    [string]$Model = 'claude-sonnet-5[1m]',             # execution sessions (EXPERIMENT)
+    [string]$ReconModel = 'claude-sonnet-5[1m]',        # recon + object-model (EXPERIMENT)
     [string]$JudgeModel = 'claude-opus-5[1m]',         # the default-FAIL Judge
     [string]$Layer1Model = 'claude-opus-5[1m]',        # pre-Judge cheat-reviewer gate
     # Fallback for ANY lane whose model hits a usage-limit 429 (see above).
