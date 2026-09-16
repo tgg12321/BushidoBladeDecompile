@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 55,
+ "session_count": 56,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -333,47 +333,24 @@
    "floor": 38,
    "modality": "rederive",
    "headline": "s55 rederive: fresh 38/204 re-confirmed (7th consecutive); pt0/pt1 shared-buffer merge KILLED (103/204); nrefs_census run (first time) seeding the s53 conflict-graph sweep for next session"
+  },
+  {
+   "session": 56,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s56 rederive: fresh m2c decompile + decomp.me corpus search + sibling re-check all converge on already-explored territory; floor holds at 38/204 (8th consecutive confirming session), no new structural"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the ~20 other pseudos simultaneously live with limit in global_alloc's conflict graph (72,74,75,82,83,85,86,87,88,97,116,126,137,146,148,149,191,192,196,197,198,2-9,29,64,66 per the s51 .greg read) has a declared C-level TYPE or SCOPE that could legitimately narrow ITS OWN live range (not limit's), shifting global_alloc's spill-cost comparison away from limit without eliminating limit's genuine LICM-invariant status (s54 confirmed via loop_movables.py that limit IS a genuine move_movables invariant, so attacking limit itself is closed).",
-   "mechanism": "global_alloc's find_reg spill choice at insn ~21 (original numbering) is a function of the FULL conflict graph's relative costs, not any single pseudo's own properties in isolation -- narrowing an unrelated pseudo's live range could change which pseudo is cheapest to spill.",
-   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's ';; Register dispositions:' pseudo-to-symbol map and this session's .lreg-based nrefs_census 'first def' column (same chassis, `-da` dump vs nrefs_census.py output) before proposing any specific declaration-scope edit -- the numbering mismatch flagged this session must be resolved first, or any C lever derived from raw pseudo numbers risks targeting the wrong object."
-  },
-  {
-   "hypothesis": "(Closed this session, listed for completeness) pt0/pt1 shared-buffer merge -- KILLED, see hypotheses above. No further action needed on this specific axis; do not re-propose.",
-   "mechanism": "n/a (closed)",
-   "next_probe": "n/a (closed) -- if a future session is tempted to retry any variant of merging pt0/pt1 storage, read rejected/pt0-pt1-shared-buffer-worse.c first."
+   "hypothesis": "One of the ~20 other pseudos simultaneously live with limit in global_alloc's conflict graph has a declared C-level type/scope that could legitimately narrow ITS OWN live range, shifting the spill-cost comparison away from limit without attacking limit's genuine LICM-invariant status directly.",
+   "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the full conflict graph's relative costs, not any single pseudo's isolated properties.",
+   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output (fresh -da run on the same chassis) before proposing any specific declaration-scope edit -- this is a forensics/solver-modality task, not a rederive one."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 22,
-   "statement": "Combining the s22 `limit` win with an s10/s18-style `idx2` (loop-carried i*2) promotion on the SAME improved chassis is worse -- the idx2 axis is independently dead even after the limit change, not me",
-   "kill_scope": "class",
-   "measured_on": "s22 chassis (s22-banked 38/198 body -- start/limit/i declarations + func_80053614 s32-return prerequisite -- with idx2 added on top, then reverted), single fresh sandbox measurement, no FAKE construct",
-   "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
-   "result": "score 38 -> 55/204, build_insns 198 -> 201 (worse on both axes). Reverted; 38/204 re-confirmed fresh after revert."
-  },
-  {
-   "session": 23,
-   "statement": "Reusing the dead `scale` pseudo (byte-table scale value, dead after the z computation) for the 0x1F8002B8 scratchpad-address literal at both func_80053614 call sites, per the defeat-licm-hoist-var-reu",
-   "kill_scope": "instance",
-   "measured_on": "s23 chassis (s22-banked 38/198 body, unmodified except the scale-reuse substitution at both call sites), single fresh sandbox measurement, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score 38 -> 71/204, build_insns unchanged at 198 (pure register-identity/allocation regression, not an insn-count change"
-  },
-  {
-   "session": 23,
-   "statement": "Naming the 0x1F8002B8 literal as a fresh `s32 addr;` local, assigned once before the loop (mirroring the target's own single pre-loop materialization) and passed to both call sites, is worse than the ",
-   "kill_scope": "instance",
-   "measured_on": "s23 chassis (s22-banked 38/198 body, unmodified except the addr-local substitution, both declaration positions), two fresh sandbox measurements, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "Declared last: score 38 -> 45/204, build_insns 198 -> 199. Declared first: score 38 -> 44/204, build_insns 198 -> 199. B"
-  },
   {
    "session": 24,
    "statement": "Declaring start/limit/i before the pt0/pt1/hit0/hit1/work arrays (reversing the candidate's current top-of-function declaration order) is byte-identical to the current 38/198 baseline on this chassis,",
@@ -829,6 +806,30 @@
    "measured_on": "s55 chassis (candidate.c's s22-s54-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, pt0/pt1 declared as pointers into one shared 8-word buffer instead of two separate 4-wor",
    "predicate_cite": "",
    "result": "score 38 -> 103/204 (build_insns 198 -> 207), substantially worse. Banked to rejected/pt0-pt1-shared-buffer-worse.c."
+  },
+  {
+   "session": 56,
+   "statement": "Owner directive (sibling func_8006CCC8 auto-return, floor 39) re-checked fresh this session is the SAME floor already recorded at s54, and its object remains structurally disjoint from func_80056CB8 (",
+   "kill_scope": "instance",
+   "measured_on": "s56 ledger read (no chassis measurement applicable)",
+   "predicate_cite": "",
+   "result": "No new lever; owner directive now acknowledged in-ledger"
+  },
+  {
+   "session": 56,
+   "statement": "Fresh m2c decompile of asm/funcs/func_80056CB8.s, run independently of any prior candidate.c, converges on the do-while-with-inline-bound (no named limit local) structural shape, which is byte-for-byt",
+   "kill_scope": "instance",
+   "measured_on": "s52's original measurement (45/204, build_insns 194) stands; s56 only re-derived the shape independently via m2c",
+   "predicate_cite": "",
+   "result": "No new structural lever; shape matches an already-banked kill exactly"
+  },
+  {
+   "session": 56,
+   "statement": "decomp.me local corpus search (3754-scratch cache) surfaces no usable precedent for this residual.",
+   "kill_scope": "instance",
+   "measured_on": "s56 corpus search against the current local cache",
+   "predicate_cite": "",
+   "result": "Best match similarity 0.068 (func_800B788C, gcc2.7.2-cdk), next four <=0.063; no scratch shares this function's shape cl"
   }
  ],
  "ladder_skip": 0,

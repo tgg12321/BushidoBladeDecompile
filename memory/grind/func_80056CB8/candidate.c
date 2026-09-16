@@ -1,6 +1,27 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56) — floor 38/204, NOT YET 0.
+ * s56 (rederive modality, 2026-09-16): Body UNCHANGED (8th consecutive
+ * session confirming/covering the 38/204 floor without new C-level
+ * movement). Three rederive actions this session, all negative/covering
+ * results: (1) owner directive (func_8006CCC8 sibling auto-return at
+ * floor 39) re-checked fresh -- same floor already known at s54, sibling
+ * remains structurally disjoint (field28-dispatch vs. collision-detection
+ * loop), nothing transplantable; (2) fresh m2c decompile run directly off
+ * asm/funcs/func_80056CB8.s (not seeded from any candidate.c) converges
+ * on the do-while+inline-bound (no named `limit` local) shape, which is
+ * exactly the shape already banked as rejected/dowhile-nolimit-worse.c
+ * (s52, measured 45/204, worse than this 38/204 for-loop+named-limit
+ * chassis) -- independent confirmation the for-loop+named-limit family is
+ * the locally-best structural shape already found, not evidence of an
+ * unexplored one; (3) decomp.me local corpus search (3754 scratches)
+ * returns no usable precedent (best similarity 0.068). See hypotheses.md
+ * + evidence.md [s56] for full detail. The residual remains the s51/s53/
+ * s54-pinned global_alloc spill of pseudo 149 (`limit`, a genuine
+ * move_movables LICM invariant per s54's loop_movables.py run) at insn
+ * 469/493; the s55-named next step (cross-referencing nrefs_census's
+ * .lreg pseudo numbering against the .greg dump's post-allocation numbers
+ * via a fresh `-da` run) remains the concrete open forensics/solver item.
  * s54 (forensics modality, 2026-09-16): re-confirmed 38/204 fresh (6th
  * consecutive independent confirmation). Ran tools/loop_movables.py for
  * the first time -- confirms pseudo 149 (`limit`) IS a genuine

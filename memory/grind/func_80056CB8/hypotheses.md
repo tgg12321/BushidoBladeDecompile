@@ -2557,3 +2557,51 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s55 chassis (candidate.c's s22-s54-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, pt0/pt1 declared as pointers into one shared 8-word buffer instead of two separate 4-word arrays, zero FAKE constructs present)
+
+## [s56, rederive] Owner directive (sibling func_8006CCC8 auto-return, floor 39) re-checked fresh this session: it is the SAME floor already recorded at s54, not new movement, and its object remains structurally disjoint from func_80056CB8 (field28-dispatch record-update loop vs. collision-detection loop with func_80053614/hit0/hit1/pt0/pt1) -- no transplantable block exists.
+- mechanism: n/a -- ledger-comparison finding, re-derived fresh rather than assumed from the s54 conclusion, per this session's "DIRECTIVE NOT YET IN LEDGER" consistency warning.
+- probe: Read memory/grind/func_8006CCC8/hypotheses.md tail (s1-s4) fresh this session (not re-reading the s54 summary alone). Its techniques: i s16->s32 widening (H2), nested if/else block-layout matching target's branch sense + physical block order, named-intermediate declaration-order for the 0xF constant, single-read field-dispatch CSE, and a killed pointer-operand-order lever. None address func_80056CB8's residual (a global_alloc spill of a genuinely LICM-invariant loop bound) or share any data/callee.
+- result: Confirms s54's conclusion with a fresh read; no new lever. The owner directive is now acknowledged in-ledger.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 ledger read (no chassis measurement applicable -- "nothing to transplant" finding).
+
+## [s56, rederive] Fresh m2c decompile of asm/funcs/func_80056CB8.s, run independently of any prior-session-derived C, converges on the do-while-with-inline-bound (no named `limit` local) structural shape -- which is byte-for-byte the same structure as the already-KILLED memory/grind/func_80056CB8/rejected/dowhile-nolimit-worse.c (s52: 45/204, build_insns 194, worse than the 38/204 for-loop+named-limit baseline).
+- mechanism: n/a -- this is a rederivation/coverage finding: m2c's control-flow recovery from raw asm.s (not seeded by any prior candidate.c) independently reproduces a structural family already tried and measured worse, which is evidence the modality's target space (distinct loop-control-flow shapes for this residual) is covered, not evidence of an unexplored axis.
+- probe: `python3 tools/m2c/m2c.py --valid-syntax --context include/m2c_context.h --target mipsel-gcc-c asm/funcs/func_80056CB8.s` (artifact tmp/grind/func_80056CB8/s56/fresh_m2c.c), structurally compared against rejected/dowhile-nolimit-worse.c's documented shape (do-while, bound inlined as `i < start + 2`, no `limit` local). No sandbox re-measurement taken -- the s52 measurement (45/204) already covers this exact shape and is still valid (candidate.c body unchanged since s52).
+- result: No new structural lever surfaced. m2c's independently-derived shape matches an already-banked kill exactly.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52's original measurement (45/204, build_insns 194) is the standing result for this shape; s56 only re-derived the shape independently via m2c and confirmed the structural match -- no new sandbox run was needed since the shape and its measurement are unchanged (candidate.c body has been UNCHANGED since s22, confirmed fresh again this session's sibling/m2c checks).
+
+## [s56, rederive] decomp.me local corpus search (3754-scratch cache) surfaces no usable precedent for this residual.
+- mechanism: n/a -- corpus-search coverage finding.
+- probe: `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_80056CB8.s` against tmp/decomp_me_corpus/ (3754 cached scratches across gcc2.7.2-cdk/gcc2.7.2-psx/other BB2-relevant compilers).
+- result: Best match similarity 0.068 (func_800B788C, gcc2.7.2-cdk, score 0/7900 -- itself an unrelated unsolved scratch), next four candidates <=0.063. No scratch shares this function's collision-detection-loop-with-LICM-spill shape closely enough to mine.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 corpus search against the current local cache (a search-coverage result, not a chassis measurement) -- would need re-deriving only if the local corpus cache is refreshed with a much larger pull.
+
+## [s56] Owner directive (sibling func_8006CCC8 auto-return, floor 39) re-checked fresh this session is the SAME floor already recorded at s54, and its object remains structurally disjoint from func_80056CB8 (field28-dispatch record-update loop vs. collision-detection loop with func_80053614/hit0/hit1/pt0/pt1) -- no transplantable block exists.
+- mechanism: n/a -- ledger-comparison finding
+- probe: Read memory/grind/func_8006CCC8/hypotheses.md tail (s1-s4) fresh this session
+- result: No new lever; owner directive now acknowledged in-ledger
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 ledger read (no chassis measurement applicable)
+
+## [s56] Fresh m2c decompile of asm/funcs/func_80056CB8.s, run independently of any prior candidate.c, converges on the do-while-with-inline-bound (no named limit local) structural shape, which is byte-for-byte the same structure as the already-KILLED rejected/dowhile-nolimit-worse.c (s52: 45/204, worse than the 38/204 for-loop+named-limit baseline).
+- mechanism: n/a -- rederivation/coverage finding: independent m2c control-flow recovery reproduces an already-tried-and-killed structural family
+- probe: python3 tools/m2c/m2c.py --valid-syntax --context include/m2c_context.h --target mipsel-gcc-c asm/funcs/func_80056CB8.s, structurally compared against rejected/dowhile-nolimit-worse.c
+- result: No new structural lever; shape matches an already-banked kill exactly
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s52's original measurement (45/204, build_insns 194) stands; s56 only re-derived the shape independently via m2c
+
+## [s56] decomp.me local corpus search (3754-scratch cache) surfaces no usable precedent for this residual.
+- mechanism: n/a -- corpus-search coverage finding
+- probe: python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_80056CB8.s against tmp/decomp_me_corpus/
+- result: Best match similarity 0.068 (func_800B788C, gcc2.7.2-cdk), next four <=0.063; no scratch shares this function's shape closely enough to mine
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 corpus search against the current local cache
