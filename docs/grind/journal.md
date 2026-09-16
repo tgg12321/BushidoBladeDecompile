@@ -2218,3 +2218,5 @@
 - 2026-09-16 18:13 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 18:43
 - 2026-09-16 18:25 _SsVmInit: LAYER-1 FAILED a sandbox-0 candidate — The body re-introduces a per-word splat scalar (extern u16 D_8010280A) for an address the project has ALREADY merged into the include/sound.h aggregate _svm_cur (field .voice), contradicting the TU's shipped object model and the identical store in the bytes-proven sibling func_800858D0 (src/main.c:993 `_svm_cur.voice = var_s0;`); the self-vet does not disclose or justify it.
 - 2026-09-16 18:36 _SsVmInit: LAYER-1 FAILED a sandbox-0 candidate — The first clear loop opts out of the TU's canonical `extern s16 D_80102A78[]` declaration and respells the same element access as an undisclosed byte-offset pointer pun, and the 21-line per-voice pun block's only rule-based justification inverts the 2026-09-03 prong-(c) amendment it cites.
+- 2026-09-16 18:51 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 19:21
+- 2026-09-16 18:54 _SsVmInit COMPLETED-C after 8 sessions (closer: s8 [synthesis]).
