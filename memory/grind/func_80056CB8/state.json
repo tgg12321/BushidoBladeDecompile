@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "solver",
+ "session_count": 9,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -51,18 +51,29 @@
    "floor": 58,
    "modality": "solver",
    "headline": "solver s8: inverse_compose.py classify (object-level) proves the s7-banked floor-58 residual is PRE-RA (different instruction MULTISET, not an RA/scheduler tiebreak) -- corrects the s7 frontier's regi"
+  },
+  {
+   "session": 9,
+   "floor": 58,
+   "modality": "enumerate",
+   "headline": "s9 enumerate: re-confirmed floor 58; killed above-loop scratchpad-hoist and exhaustively killed the dx/dz distance-check spelling space (5/5, zero gradient) -- residual pinned to the scratchpad single"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a coupled fixpoint of (a) the scratchpad-literal materialization count and (b) the code==4 y-compare branch topology, both keyed off a register (s8/$fp-family) that target uses for a *4-scaled quantity unrelated to our current C's use of that register -- not two independent axes.",
-   "mechanism": "Unknown pre-RA front-end shape; needs the .cse/.cse2/.loop dumps (tmp/grind/func_80056CB8/dumps/text1b.cse, .cse2, .loop -- already captured this session) read around func_80056CB8's RTL to see what value GCC assigns *4 scaling and whether it correlates with the scratchpad-address hoist.",
-   "next_probe": "Grep tmp/grind/func_80056CB8/dumps/text1b.cse2 and .loop for the func_80056CB8 region (search ';; Function func_80056CB8'), and asm/funcs/func_80056CB8.s directly for the exact $s8-holding value across the addiu s8,s8,2 / sll s8,#,0x2 sequence -- identify what C-level quantity is scaled by 4 (candidates: a byte offset into a 4-times-larger record, or work[4]/hit0/hit1 array addressing) before drafting any further C restructuring."
+   "hypothesis": "The residual is a single PRE-RA multiset-shape decision (not reachable by any spelling of the downstream C tried so far) that determines BOTH the scratchpad-literal materialization count and the y-compare branch topology simultaneously -- likely tied to how GCC's front end lays out the two func_80053614 call sites' argument-passing sequence.",
+   "mechanism": "Unknown pre-RA front-end shape (s8's inverse_compose.py classify already proved this is upstream of both ra_solver and sched_solver, i.e. not an allocation or scheduling tiebreak). The next diagnostic step is reading the actual RTL emitted for the two func_80053614 call sites in tmp/grind/func_80056CB8/dumps/text1b.cse2 (captured s6) to see whether the constant's rtx is shared or re-expanded per call, and whether that sharing decision is itself controlled by argument list identity/count rather than by naming.",
+   "next_probe": "Try varying the CALL SITE STRUCTURE itself, not just the literal's name: e.g. does wrapping both func_80053614 calls through a single local helper-call site (same call, parameterized by hit array) change the constant's materialization count? Also worth trying: reorder the two calls' surrounding statement blocks (move the r2 call's pt0/pt1 setup earlier, before the r1-dependent x/z adjustment) to see if that changes CSE's basic-block boundary for the constant (see [[cse-block-extension-controls-fold-span]] -- a join label does NOT end cse1's basic block in general, but conditional-branch topology around r1 might)."
   },
   {
-   "hypothesis": "Hoisting the 0x1F8002B8 constant ABOVE the loop entirely (single local declared and assigned once before the for-loop, not just once inside it) may reach target's single materialization where the in-loop single-name attempt (this session, killed) did not.",
-   "mechanism": "Loop-invariant code motion (loop.c) only hoists a value out of the loop if it can prove no intervening definition/call invalidates it within the loop body across iterations; a loop-invariant literal declared and read only once per iteration may still be re-materialized per-iteration unless GCC's own LICM independently hoists it -- worth testing since the killed in-loop attempt changed WHERE it's named, not WHETHER it crosses the loop boundary.",
-   "next_probe": "Move `s32 scratch = 0x1F8002B8;` to before the `for (i = start; ...)` loop (still using `scratch` at both call sites, replacing this session's reverted in-loop declaration), measure sandbox func_80056CB8 --disable all; if worse or unchanged, bank as a second instance kill of this literal-naming family and move to the s8/branch-topology coupling hypothesis instead."
+   "hypothesis": "The loop-counter register-rotation cluster ($s3 vs target's $s6/$s7-family roles) that s7 originally flagged is NOT a separate axis from the PRE-RA residual above -- s8 already corrected this attribution, but the objdiff region (112 lines at s7) has not been re-read against the current s9-confirmed chassis to see whether ANY of it is now register-only (post-RA) rather than multiset (pre-RA).",
+   "mechanism": "s8's classify report characterized the WHOLE residual as pre-RA, but that was measured before this session's dx/dz sub-expression kills; re-running inverse_compose.py classify now (after ruling out three downstream regions) may narrow the multiset diff further or confirm no change.",
+   "next_probe": "python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o on the s9-reconfirmed floor-58 chassis; compare the multiset diff detail against s8's classify_s8.txt to see if it's unchanged (expected, since s9 made no net C change) or whether re-running it now with fresher eyes reveals a lever s8 didn't name."
+  },
+  {
+   "hypothesis": "r1/r2's setup blocks (the x/z point computations feeding pt0/pt1 before each func_80053614 call) may contain their own reachable spelling gradient that hasn't been enumerated yet -- only the code==4 TAIL has been swept so far (s5, s6, s7, s8, s9); the CALL SETUP region upstream of it is untested by spelling_enum.",
+   "mechanism": "Same systematic-enumeration modality, applied to a different block: the sin_p/cos_p/scale/x/z computation and the two pt0[]/pt1[] assignment groups preceding each func_80053614 call are candidate regions for a declaration-order or inlining spelling that might change the scratchpad-literal materialization pattern indirectly (by changing what's live across the call, which is what ra_solver models but classify says the diff predates).",
+   "next_probe": "Write an ENUM-BEGIN/END region around the pt0[]/pt1[] assignment block preceding the r1 call (6 array-element assignments -- note spelling_enum's regex likely won't parse array-subscript assignments as its 'assignment to outer variable' axis, so this probe may need a small tool patch or a hand-written variant set instead of the automated enumerator)."
   }
  ],
  "judge_constraints": [],
@@ -147,6 +158,22 @@
    "measured_on": "s8 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local 'scratch' replacing both call-site 0x1F8002B8 literals, zero FAKE/cheat constructs, rev",
    "predicate_cite": "",
    "result": "Score 58 -> 60 (WORSE), build_insns unchanged at 198. Reverted immediately; floor 58 re-confirmed."
+  },
+  {
+   "session": 9,
+   "statement": "Hoisting the 0x1F8002B8 scratchpad-address literal ABOVE the for-loop entirely (single fresh local declared once before the loop, shared across both loop iterations and both func_80053614 call sites) ",
+   "kill_scope": "instance",
+   "measured_on": "s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local scratch declared above the loop replacing both call-site 0x1F8002B8 literals, zero FAKE",
+   "predicate_cite": "",
+   "result": "Score 58 -> 60 (WORSE), build_insns unchanged at 198 -- identical delta to s8's in-loop attempt. Reverted immediately; f"
+  },
+  {
+   "session": 9,
+   "statement": "The code==4 tail's dx/dz distance-check sub-expression (dx*dx + dz*dz compared against 0x3D0900) has a reachable spelling that closes some of the floor-58 gap.",
+   "kill_scope": "instance",
+   "measured_on": "s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix), each of the 5 exhaustively-enumerated dx/dz spellings applied one at a time, zero FAKE/cheat constructs, reverted after measurem",
+   "predicate_cite": "",
+   "result": "All 5 variants (v0..v4, tmp/grind/func_80056CB8/s9/enum/) scored 58/198, byte-identical to the s7-banked baseline -- zer"
   }
  ],
  "ladder_skip": 0,

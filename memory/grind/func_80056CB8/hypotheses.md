@@ -475,3 +475,35 @@ measured hypotheses.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s8 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local 'scratch' replacing both call-site 0x1F8002B8 literals, zero FAKE/cheat constructs, reverted after measurement.
+
+## [s9] Hoisting the 0x1F8002B8 scratchpad-address literal ABOVE the for-loop entirely (single fresh local declared once before the loop, used at both func_80053614 call sites across both loop iterations) recovers target's single-materialization pattern.
+- mechanism: loop-invariant code motion (loop.c) -- testing whether declaring the literal outside the loop's scope (rather than just once per iteration inside it, which s8 already killed) lets GCC materialize it exactly once for the whole function instead of once per call site.
+- probe: Declared `s32 scratch = 0x1F8002B8;` immediately before `for (i = start; ...)` in the s7-banked chassis, replaced both call-site literals (both loop iterations reuse the same declaration) with `scratch`, ran sandbox func_80056CB8 --disable all.
+- result: Score 58 -> 60 (WORSE), same delta as s8's in-loop attempt. Reverted immediately.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local `scratch` declared above the loop replacing both call-site 0x1F8002B8 literals, zero FAKE/cheat constructs, reverted after measurement.
+
+## [s9] The code==4 tail's dx/dz distance-check sub-expression (`dx*dx + dz*dz` vs 0x3D0900) has NO reachable spelling gradient -- every declaration-order and inlining variant in its exhaustive 5-spelling space scores identically to the current form.
+- mechanism: tools/spelling_enum.py systematic enumeration (declaration-order axis + full-inline axis) over the region `s32 dx = hit0[0]-*(obj+0xB8); s32 dz = hit0[2]-*(obj+0xC0); if (0x3D0900 < dx*dx+dz*dz)` -- 2 named locals, 0 independent assignments, 1 anchor -> 5 distinct spellings (dx-first decl, dz-first decl, dx-inlined, dz-inlined, both-inlined; no `+`-swap axis in the tool, only `*`-operand swaps, which are no-ops here since both operands of each product are the same identifier).
+- probe: Generated all 5 variants (tmp/grind/func_80056CB8/s9/enum/v0..v4.c), hand-applied each to src/text1b.c in turn (the s7-banked chassis otherwise unmodified), sandbox func_80056CB8 --disable all after each.
+- result: All 5 variants scored 58/198, byte-identical build_insns and score to the s7-banked baseline. Zero gradient across the entire spelling space for this sub-expression.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix), each of the 5 exhaustively-enumerated dx/dz spellings applied one at a time, zero FAKE/cheat constructs, reverted after measurement (src/text1b.c returned to committed INCLUDE_ASM state via git checkout at session end).
+
+## [s9] Hoisting the 0x1F8002B8 scratchpad-address literal ABOVE the for-loop entirely (single fresh local declared once before the loop, shared across both loop iterations and both func_80053614 call sites) recovers target's single-materialization pattern.
+- mechanism: loop-invariant code motion (loop.c) -- testing whether declaring the literal outside the loop's lexical scope (vs s8's in-loop attempt) changes cse's materialization count for the constant.
+- probe: Declared s32 scratch = 0x1F8002B8; before the for-loop in the s7-banked chassis, replaced both call-site literals with scratch, sandbox func_80056CB8 --disable all.
+- result: Score 58 -> 60 (WORSE), build_insns unchanged at 198 -- identical delta to s8's in-loop attempt. Reverted immediately; floor 58 re-confirmed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local scratch declared above the loop replacing both call-site 0x1F8002B8 literals, zero FAKE/cheat constructs, reverted after measurement.
+
+## [s9] The code==4 tail's dx/dz distance-check sub-expression (dx*dx + dz*dz compared against 0x3D0900) has a reachable spelling that closes some of the floor-58 gap.
+- mechanism: tools/spelling_enum.py systematic enumeration over the region (2 named locals dx/dz, 1 anchor if) -- declaration-order axis (dx-first vs dz-first) crossed with full-inline axis (dx inlined, dz inlined, both inlined) produces the complete 5-spelling space for this sub-expression (the tool's operand-swap axis is a no-op here since both factors of each product are the same identifier).
+- probe: Generated all 5 variants with spelling_enum.py, hand-applied each to src/text1b.c in turn (sweep_variants.py itself is blocked by worktree_contamination_guard for a bare non-wteng invocation on main, so each variant was measured individually via wteng sandbox instead of the batch harness), sandbox func_80056CB8 --disable all after each of the 5.
+- result: All 5 variants (v0..v4, tmp/grind/func_80056CB8/s9/enum/) scored 58/198, byte-identical to the s7-banked baseline -- zero gradient across the exhaustive spelling space.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix), each of the 5 exhaustively-enumerated dx/dz spellings applied one at a time, zero FAKE/cheat constructs, reverted after measurement.

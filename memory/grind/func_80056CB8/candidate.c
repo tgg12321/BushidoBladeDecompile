@@ -1,6 +1,15 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s7, 2026-09-16, structural modality) — floor
- * 58/204, NOT YET 0. (Prior floor: 81/204 as of s5/s6.)
+ * func_80056CB8 — CANDIDATE (s7 body, s9 2026-09-16 enumerate-modality
+ * re-verified, NO CHANGE) — floor 58/204, NOT YET 0. (Prior: 81/204 s5/s6.)
+ * s9 (enumerate): re-confirmed floor 58 chassis; killed the "hoist
+ * 0x1F8002B8 above the loop" frontier hypothesis (60, worse, matches s8's
+ * in-loop result); ran an exhaustive spelling_enum sweep (5/5 variants,
+ * decl-order + full-inline) of the code==4 tail's dx/dz distance-check
+ * sub-expression -- zero gradient, all byte-identical at 58. Body below is
+ * UNCHANGED from s7; see hypotheses.md/evidence.md [s9] for the full
+ * writeup and the still-open frontier (scratchpad single-materialization +
+ * y-compare branch-topology split, both PRE-RA per s8's classify report).
+ * ---------------------------------------------------------------------
  * ---------------------------------------------------------------------
  * s7 (structural modality). STALE-HEAD-CLAIM NOTE (same as every prior
  * session): src representation is INCLUDE_ASM between grind sessions;
