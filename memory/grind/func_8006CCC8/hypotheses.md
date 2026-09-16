@@ -365,3 +365,47 @@ restructuring, not a no-semantic-purpose device).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c HEAD s4 candidate (floor 39, both the mask-first and base-first spellings of the address expression measured); no FAKE construct (ordinary pointer arithmetic).
+
+## [s5, permuter] Dropping the `byte17` named intermediate and reading `*(rec + 0x17)` directly at each of the two i==0/else branch-arm use sites (instead of one read before the branch) drops the honest floor from 39 to 23, in BOTH the field28==3 (+0x1A) and field28==4 (+0x1D) inner for(j) record loops.
+- mechanism: SOTN-sanctioned "duplicate-read into branch arms" family ([[split-read-defeats-hoist]], no-new-park-categories.md) — ordinary C; the byte read has no side effects and each call executes exactly one of the two arms, so reading it once before the branch vs. once per arm (only one of which ever executes) is behaviorally identical. Candidate mechanism for WHY this changes codegen: cc1's per-basic-block CSE (cse.c) shares a hoisted-before-branch read across both arms as one pseudo with one hard-register home; duplicating the read into each arm gives each arm its own load, freeing register allocation to choose different (target-matching) homes per arm rather than one shared home.
+- probe: Found by a directed decomp-permuter campaign against a hand-built full-TU permuter workspace (tmp/grind/func_8006CCC8/s5/perm_ws — the s4-blocked `nonmatchings/`-based `import.py` workspace is still broken by an upstream base.c-pruning conflicting-declaration bug; worked around by flattening src/text1b.c through the project's own cpp+CC_FLAGS pipeline into a self-contained base.c and hand-writing compile.sh/target.o, mirroring tools/mar_perm_workspace.sh's precedent for marionation_Exec). Permuter's own weighted score dropped from base 1480 to a best find of 870 (output-870-2) after ~1900 iterations on the floor-39 chassis. The exact permuter mutation (which left a stray empty `;` statement, a text-diff artifact of its deletion mechanism) was NOT applied verbatim — the equivalent clean-C form (delete the `byte17` local and its one statement; read `*(rec + 0x17)` inline at both use sites) was hand-applied to src/text1b.c and independently measured via `sandbox --disable all`.
+- result: 39 -> 23 (target_insns=189, build_insns 184 -> 188)
+- verdict: CONFIRMED
+
+## [s5, permuter] Two other permuter finds this session are dead ends — one cheat-shaped (address-of a local purely to force a different addressing mode), one outright incorrect (reuses the LIVE outer-loop `mask` accumulator as inner-loop scratch, corrupting the next outer iteration's address computation).
+- mechanism: n/a — vetting/correctness findings about permuter output, not a codegen-pass hypothesis. The address-of form (output-1130-1, score 1130, worse than the accepted fix) matches the forbidden Lever-D-adjacent "steer RA with no observable behavior change" intent by analogy (no frozen family covers "&scalar purely to force addressing"); the mask-reuse form (output-1105-1 lineage) is a genuine runtime-behavior bug, not merely a cheat, since `mask` is read again by the outer for-loop's own update/address-computation after the inner loop returns.
+- probe: Read both diff.txt files (tmp/grind/func_8006CCC8/s5/perm_ws/output-1130-1/diff.txt, output-1105-1/diff.txt) and hand-traced `mask`'s liveness across the outer for(;i<2;...) loop body.
+- result: Neither surfaced to the Judge; both saved to memory/grind/func_8006CCC8/rejected/ (address-of-local-ra-steer.c, corrupts-outer-mask.c) per the no-new-park-categories.md vetting-checklist discipline ("recognize the find as a cheat AND NOT surface it").
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD floor-23 chassis (post the accepted s5 fix); the address-of form was scored by the permuter's own weighted metric only (1130, never applied to src/text1b.c or sandbox-measured, since it was rejected on cheat-vetting grounds before being tried); the mask-reuse form was rejected on correctness inspection before any measurement. No FAKE construct present in the ACCEPTED s5 fix (ordinary duplicate-read, SOTN family, no annotation prerequisite).
+
+## [s5, permuter] Two directed permuter campaigns (~1900 iters on the floor-39 chassis, ~4000 iters re-seeded on the floor-23 chassis, 6 parallel jobs each, --stop-on-zero) plateau at permuter-internal weighted score ~870 with no further improvement after the split-read fix was applied; every additional novel find at or above that score was either a duplicate of the accepted fix's shape, cheat-shaped (rejected above), or incorrect (rejected above).
+- mechanism: n/a — campaign-exhaustion observation, not a GCC-pass claim. Consistent with s4's diagnosis that the remaining floor-23 residual is the addu operand-order canonicalization (already measured dead as a source-level lever in s4) plus a local-alloc.c register-preference tie in the for(j) loop (not yet probed with tools/ra_solver).
+- probe: tools/permuter_campaign.py launch/wait/harvest --stop, both campaigns; logs in tmp/grind/func_8006CCC8/s5/perm_ws/campaign.log and the per-output diff.txt/score.txt files.
+- result: floor-39 chassis campaign: base 1480, best find 870 (the accepted split-read fix), ~10 total finds, no sub-870 result. floor-23 chassis (re-seeded after applying the fix): base 1190, best find 870 (re-discovery of a variant of the same already-applied fix, confirming it as the permuter's local optimum for this region), ~9 total finds across ~4000 iterations, no further improvement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD, both the floor-39 pre-fix chassis and floor-23 post-fix chassis, permuter's own weighted scorer (not the engine sandbox metric — see [[scoring-systems]] for why the two numbers aren't directly comparable); no FAKE construct present in either chassis measured.
+
+## [s5] Dropping the byte17 named intermediate and reading *(rec + 0x17) directly at each of the two i==0/else branch-arm use sites (instead of one read before the branch) drops the honest floor from 39 to 23, in BOTH the field28==3 (+0x1A) and field28==4 (+0x1D) inner for(j) record loops.
+- mechanism: SOTN-sanctioned duplicate-read-into-branch-arms family (split-read-defeats-hoist); cc1's cse.c shares a hoisted-before-branch read as one pseudo with one hard-register home, duplicating the read into each arm frees register allocation to choose different per-arm homes matching target.
+- probe: Directed decomp-permuter campaign against a hand-built full-TU workspace; found output-870-2 (permuter weighted score 1480->870); the equivalent clean-C form was hand-applied to src/text1b.c and independently measured via sandbox --disable all.
+- result: 39 -> 23 (target_insns=189, build_insns 184 -> 188)
+- verdict: CONFIRMED
+
+## [s5] Two other permuter finds this session are dead ends: an address-of-a-local RA-steering construct with no semantic purpose, and a mutation that reuses the LIVE outer-loop mask accumulator as inner-loop scratch, corrupting the next outer iteration's address computation.
+- mechanism: n/a -- vetting/correctness findings about permuter output, not a codegen-pass claim.
+- probe: Read both diff.txt outputs (output-1130-1, output-1105-1 lineage) and hand-traced mask's liveness across the outer for(;i<2;...) loop.
+- result: Neither surfaced to the Judge; both saved to memory/grind/func_8006CCC8/rejected/ (address-of-local-ra-steer.c, corrupts-outer-mask.c).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD floor-23 chassis (post the accepted s5 fix); address-of form scored only by the permuter's own weighted metric (1130), never sandbox-measured since rejected on cheat-vetting grounds before being tried; mask-reuse form rejected on correctness inspection before any measurement. No FAKE construct present in the accepted s5 fix.
+
+## [s5] Two directed permuter campaigns (~1900 iters on the floor-39 chassis, ~4000 iters re-seeded on the floor-23 chassis, 6 parallel jobs each, --stop-on-zero) plateau at permuter-internal weighted score ~870 with no further improvement after the split-read fix was applied.
+- mechanism: n/a -- campaign-exhaustion observation. Consistent with s4's diagnosis that the remaining floor-23 residual is the addu operand-order canonicalization (already measured dead as a source-level lever in s4) plus a local-alloc.c register-preference tie in the for(j) loop.
+- probe: tools/permuter_campaign.py launch/wait/harvest --stop on both chassis; logs in tmp/grind/func_8006CCC8/s5/perm_ws/campaign.log and per-output diff.txt/score.txt files.
+- result: floor-39 chassis: base 1480, best find 870 (the accepted fix), no sub-870 result. floor-23 chassis (post-fix): base 1190, best find 870 (re-discovery of a variant of the same fix), no further improvement across ~4000 iterations.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD, both the floor-39 pre-fix chassis and floor-23 post-fix chassis, permuter's own weighted scorer; no FAKE construct present in either chassis measured.

@@ -932,6 +932,14 @@
    "at": "2026-09-16T13:44:19.873477+00:00",
    "headline": "Chassis restructure (nested if/else + named-intermediate constants) drops honest floor 77 -> 39 (measured this session); mandated permuter campaign blocked by a maspsx import-pipeline exception, logge",
    "consumed": 46
+  },
+  {
+   "from": "func_8006CCC8",
+   "floor": 23,
+   "session": 5,
+   "at": "2026-09-16T16:01:13.838666+00:00",
+   "headline": "s5 (permuter): built a hand-crafted full-TU permuter workspace (the s4-blocked import.py path is still broken); a directed campaign found the SOTN-sanctioned duplicate-read-into-branch-arms fix (drop ",
+   "consumed": null
   }
  ],
  "exhaustion_base": 45,

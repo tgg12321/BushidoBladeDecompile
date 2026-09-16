@@ -1,7 +1,7 @@
 {
  "func": "func_8006CCC8",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,24 @@
    "floor": 39,
    "modality": "permuter",
    "headline": "Chassis restructure (nested if/else + named-intermediate constants) drops honest floor 77 -> 39 (measured this session); mandated permuter campaign blocked by a maspsx import-pipeline exception, logge"
+  },
+  {
+   "session": 5,
+   "floor": 23,
+   "modality": "permuter",
+   "headline": "s5 (permuter): built a hand-crafted full-TU permuter workspace (the s4-blocked import.py path is still broken); a directed campaign found the SOTN-sanctioned duplicate-read-into-branch-arms fix (drop "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining floor-39 residual (addu operand-order flips + the for(j) record-loop register-allocation tie) is a genuine GCC 2.7.2 local-alloc register-preference tie, not a source-structure gap -- the C now reproduces target's control flow and statement order exactly (verified by hand-walking both the +0x1A and +0x1D arms against the target disassembly).",
-   "mechanism": "Unconfirmed -- candidate mechanism is local-alloc.c's register-preference/conflict-graph resolution choosing a different hard register for the mask-shift result and record pointer than target, most likely because our build's `for(j...)` loop body has one more live temporary (a separate `byte17` re-lbu vs target's implicit reuse) at some point in the loop; not yet confirmed via a .greg/.lreg dump read.",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_8006CCC8` and read the .lreg/.greg dump for the for(j) loop's pseudo allocation (per the PASS ATTRIBUTION discipline this session skipped in favor of the higher-value structural fixes); alternatively classify the loop's register-conflict graph via tools/ra_solver / inverse_compose.py classify, since the directed permuter campaign that would normally probe this is currently blocked (see next frontier item)."
+   "hypothesis": "The floor-23 residual is the addu operand-order canonicalization (3 sites) plus a local-alloc.c register-preference tie in the for(j) record loop, both carried forward unchanged from s4's diagnosis.",
+   "mechanism": "GCC's fold-const.c re-canonicalizes the commutative pointer-plus-int add independent of source spelling (measured dead in s4); the RA tie is unconfirmed pass attribution (candidate: local-alloc.c's register-preference/conflict-graph resolution).",
+   "next_probe": "Run PASS ATTRIBUTION fresh (tools/grinder/dump.ps1 func_8006CCC8) against the NEW floor-23 chassis (the s4 dumps in tmp/grind/func_8006CCC8/dumps/ are stale, from the floor-39 chassis) before assuming the diagnosis is unchanged; classify the for(j) loop's register-conflict graph via tools/ra_solver / inverse_compose.py classify in a future solver-modality session."
   },
   {
-   "hypothesis": "decomp-permuter's import.py workspace for func_8006CCC8 can be made to compile cleanly (unblocking directed permuter campaigns on the for(j) loop's register tie) once the maspsx exception's root cause is identified.",
-   "mechanism": "Unconfirmed -- the exception ('too many values to unpack (expected 2)') fires inside maspsx.py's own parsing, likely triggered by a --expand-lb-funcs / --prefill-label-funcs / --multu-funcs gate-list entry naming a function the import pruner stripped from base.c (a dangling gate-list reference), or a duplicate-declaration artifact from the import's own pruning pass (cc1 itself emitted many 'conflicting types' warnings for functions appearing twice in the pruned base.c, which is suspicious and may be upstream of the maspsx crash).",
-   "next_probe": "Bisect maspsx's input (the raw cc1 .s output piped from the compile.sh chain) to find which line/gate-list entry triggers the unpack exception; compare against a known-working nonmatchings/ import for a different function (e.g. tmp/grind/func_80056CB8/s4/perm_ws referenced in the campaign status output, which launched successfully) to see what differs about this function's TU-scoped gate memberships."
-  },
-  {
-   "hypothesis": "If the RA tie in the for(j) loop and the addu operand-order flips prove to have no clean C-level lever after the solver/permuter probes above, the matched sibling func_8006CBD4 (same TU, same D_800A34FC/D_800A3524 struct idiom, called directly from this function's default-case arm) may show the same record-loop codegen pattern already matched, which would hand over the exact C shape needed.",
-   "mechanism": "n/a -- sibling-comparison methodology, not a GCC-internals claim.",
-   "next_probe": "Check func_8006CBD4's match status and, if matched, diff its own record-update loop (if it has one) against this function's for(j) loop for the same rec-pointer/mask-shift register scheme."
+   "hypothesis": "The permuter's own workspace (now validated and reusable) could find further levers with more directed PERM_* macro annotation on the for(j) loop specifically, rather than blind random mutation over the whole function.",
+   "mechanism": "n/a -- tooling capability, not a codegen claim.",
+   "next_probe": "tools/permuter_annotate.py --func func_8006CCC8 --hint <rule-slug> once the RA-solver classification (above) names a specific lever shape to annotate toward."
   }
  ],
  "judge_constraints": [],
@@ -96,6 +97,22 @@
    "measured_on": "src/text1b.c HEAD s4 candidate (floor 39, both the mask-first and base-first spellings of the address expression measured); no FAKE construct (ordinary pointer arithmetic).",
    "predicate_cite": "",
    "result": "No change: the addu operand order in our build stayed base-first (v0,s3) in both the mask-first and base-first C spellin"
+  },
+  {
+   "session": 5,
+   "statement": "Two other permuter finds this session are dead ends: an address-of-a-local RA-steering construct with no semantic purpose, and a mutation that reuses the LIVE outer-loop mask accumulator as inner-loop",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c HEAD floor-23 chassis (post the accepted s5 fix); address-of form scored only by the permuter's own weighted metric (1130), never sandbox-measured since rejected on cheat-vetting grounds ",
+   "predicate_cite": "",
+   "result": "Neither surfaced to the Judge; both saved to memory/grind/func_8006CCC8/rejected/ (address-of-local-ra-steer.c, corrupts"
+  },
+  {
+   "session": 5,
+   "statement": "Two directed permuter campaigns (~1900 iters on the floor-39 chassis, ~4000 iters re-seeded on the floor-23 chassis, 6 parallel jobs each, --stop-on-zero) plateau at permuter-internal weighted score ~",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c HEAD, both the floor-39 pre-fix chassis and floor-23 post-fix chassis, permuter's own weighted scorer; no FAKE construct present in either chassis measured.",
+   "predicate_cite": "",
+   "result": "floor-39 chassis: base 1480, best find 870 (the accepted fix), no sub-870 result. floor-23 chassis (post-fix): base 1190"
   }
  ],
  "ladder_skip": 0,
