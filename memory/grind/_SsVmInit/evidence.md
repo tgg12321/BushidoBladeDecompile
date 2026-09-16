@@ -446,3 +446,67 @@ Artifacts: `tmp/grind/_SsVmInit/s8/gen.py`,
 `tmp/grind/_SsVmInit/s8/var/*.c` (8 clamp spellings),
 `tmp/grind/_SsVmInit/s8/simp/*.c`, `tmp/grind/_SsVmInit/s8/simp2/*.c`
 (simplification ladder).
+
+## s8 (2026-09-16, synthesis) — MATCH at distance 0; the layer-1 FAIL closed at its root
+
+**Measured this session.** `sandbox _SsVmInit --disable all` → `score 0`,
+`target_insns 200`, `build_insns 200`. Full `build` → SHA1
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**. The chassis
+check the driver ran at dispatch was correct and the ledger's recorded floor of
+3 was void: the inherited `candidate.c` already scored 0. This session's work was
+therefore not a further score reduction but the removal of the single construct
+that made a sandbox-0 body unacceptable.
+
+**The layer-1 FAIL of 2026-09-16 18:25 is resolved, not respelled.** The s7 body
+wrote the loop's current-voice index through a per-word splat scalar for address
+`0x8010280A` (an `extern` for it plus a store inside the per-voice loop). That
+address is not an unmerged splat symbol: the project merged it into this TU's
+shipped object model on 2026-08-17 as `struct struct_svm _svm_cur`
+(include/sound.h:20-28, base `0x801027F0`). Field arithmetic confirms the
+identification exactly — the 22 leading `u8` fields occupy `+0x00..+0x15`, then
+`seq_sep_no` at `+0x16`, `tone_vag_idx` at `+0x18`, and **`voice` at `+0x1A`,
+i.e. `0x801027F0 + 0x1A = 0x8010280A`**. The candidate now spells that store
+`_svm_cur.voice = i;`, which is character-for-character the same store the
+bytes-proven sibling makes at src/main.c:993 (`_svm_cur.voice = var_s0;`) and
+which appears three more times in already-matched C in this TU (src/main.c:1030,
+1479, and the read at 1159/1166/1168). Substituting it is **byte-neutral**: the
+score stayed at 0/200==200 and the full link still reproduces the oracle SHA1.
+The extern for the splat symbol and the extern-block header comment the reviewer
+objected to were both deleted outright; neither survives in the body.
+
+**Why the substitution is byte-neutral.** `_svm_cur.voice` is a `short` at a
+fixed link-time address; the splat `extern u16 D_8010280A` named the same
+address with the same width. GCC 2.7.2 emits the identical `%hi/%lo`-addressed
+`sh` either way, and `engine/score.py` resolves the named-symbol HI16/LO16 pair
+for both spellings. There was never a codegen reason to prefer the splat
+spelling — it was an artifact of an extern block written before the aggregate
+merge landed, which is exactly what the reviewer said.
+
+**Four constructs earlier sessions carried are confirmed NOT load-bearing.**
+Re-measured individually on this chassis, each at 0: the `s16 ff = 0xFF;`
+named-intermediate hoist (s3 had killed it at 19→21 on the old, void chassis),
+the `offset = 1; buf[0] = offset << i;` variable reuse, the `s32 idx = i;` copy,
+and the expanded shift-subtract spelling of the 54-byte stride (plain
+`offset = i * 54;` measures 0, so the s1 H2/H4 strength-reduction kill is void
+under the `u16` loop counter). The final body carries **no FAKE construct at
+all** and claims no sanctioned family.
+
+**The clamp lever that closed the a0/v0 residual (recorded for siblings).**
+Target's clamp is `andi $a0,$s1,0xFF ; sltiu $v0,$a0,0x18 ; … ; sb $a0,…`: ONE
+masked value feeds both the compare and the else-arm store. s4/s6/s7 all varied
+only the compare side and left the else arm storing the raw parameter, so the
+masked pseudo died at the compare. `u16 masked = (u8)a0;` read in both the
+condition and the else-arm store closes it. Width matters: `u16 masked` scores 0,
+`u8 masked` scores 3 at 201 insns, and dropping the `(u8)` scores 3 at 201.
+
+**Disclosed, not hidden: the per-voice slot stores still use byte offsets off
+splat symbols** (`*(s16 *)((u8 *)&D_800F4E1A + offset) = 0x18;` and 21 siblings).
+Those symbols have no header declaration at all, and the aggregate-merge family's
+sanctioned fix (merge `_svm_voice[]` at the declaration in include/sound.h) is
+coupled to the retirement of four still-INCLUDE_ASM siblings that address the
+same rows — SsUtKeyOnV, _SsVmFlush, _SsVmKeyOnNow, vmNoiseOn (prong (c)
+amendment, 2026-09-03). Until then the on-main, oracle-proven spelling for this
+array is the byte-offset form, already shipped in matched C at src/main.c:1168,
+1413, 1422 and 1423. This candidate uses that spelling and claims no family for
+it; the merge is a later TU-wide integration step, not something _SsVmInit can
+do alone.

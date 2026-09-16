@@ -67,7 +67,9 @@
  "judge_constraints": [],
  "banned_constructs": [
   "extern u16 D_8010280A;  /* candidate.c extern block, src/main.c:1221 */  +  `D_8010280A = i;` inside the per-voice loop (src/main.c:1293)",
-  "Header comment on the extern block: 'The externs below duplicate declarations that appear LATER in this TU with identical types'"
+  "Header comment on the extern block: 'The externs below duplicate declarations that appear LATER in this TU with identical types'",
+  "src/main.c (candidate) line 1230: `*(s16 *)((u8 *)D_80102A78 + i * 2) = 0;`",
+  "The 21 per-voice slot stores `*(s16 *)((u8 *)&D_800F4E1A + offset) = 0x18;` etc., justified in self_vet.md / evidence.md:502-512 by the 2026-09-03 prong-(c) amendment"
  ],
  "kills": [
   {
@@ -159,14 +161,15 @@
    "result": "ENUMERATION: 7 spellings, best 3, 1 at the floor (the baseline fully-inlined form). Full histogram in hypotheses.md s7."
   }
  ],
- "ladder_skip": 11,
+ "ladder_skip": 22,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T21:24:37.353584+00:00",
  "object_model_audited": 2,
  "escalation_deferrals": 0,
  "reviewer_history": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The body re-introduces a per-word splat scalar (extern u16 D_8010280A) for an address the project has ALREADY merged into the include/sound.h aggregate _svm_cur (field .voice), contradicting the TU's shipped object model and the identical store in the bytes-proven sibling func_800858D0 (src/main.c:993 `_svm_cur.voice = var_s0;`); the self-vet does not disclose or justify it. Next action: Not a citation fix \u2014 do not re-cite, re-measure. Replace `extern u16 D_8010280A;` + `D_8010280A = i;` with the TU's shipped aggregate spelling `_svm_cur.voice = i;` (include/sound."
+  "LAYER-1 CHEAT-REVIEWER FAIL: The body re-introduces a per-word splat scalar (extern u16 D_8010280A) for an address the project has ALREADY merged into the include/sound.h aggregate _svm_cur (field .voice), contradicting the TU's shipped object model and the identical store in the bytes-proven sibling func_800858D0 (src/main.c:993 `_svm_cur.voice = var_s0;`); the self-vet does not disclose or justify it. Next action: Not a citation fix \u2014 do not re-cite, re-measure. Replace `extern u16 D_8010280A;` + `D_8010280A = i;` with the TU's shipped aggregate spelling `_svm_cur.voice = i;` (include/sound.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The first clear loop opts out of the TU's canonical `extern s16 D_80102A78[]` declaration and respells the same element access as an undisclosed byte-offset pointer pun, and the 21-line per-voice pun block's only rule-based justification inverts the 2026-09-03 prong-(c) amendment it cites. Next action: Not a re-cite -- re-measure. (1) Replace line 1230 with the TU's canonical `D_80102A78[i] = 0;` and re-run `sandbox _SsVmInit --disable all`; if it is byte-identical (expected), that form lands; if it is not, bank the numeric measurement in hypotheses.md as the justi"
  ],
  "review_ledger": [
   {
@@ -175,6 +178,13 @@
    "hash": "60e1867535ee2af0",
    "when": "2026-09-16T23:25:46.239857+00:00",
    "summary": "The body re-introduces a per-word splat scalar (extern u16 D_8010280A) for an address the project has ALREADY merged into the include/sound.h aggregate _svm_cur (field .voice), contradicting the TU's shipped object model and the identical store in the bytes-proven sibling func_800858D0 (src/main.c:9"
+  },
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "8097f78587570739",
+   "when": "2026-09-16T23:36:45.057308+00:00",
+   "summary": "The first clear loop opts out of the TU's canonical `extern s16 D_80102A78[]` declaration and respells the same element access as an undisclosed byte-offset pointer pun, and the 21-line per-voice pun block's only rule-based justification inverts the 2026-09-03 prong-(c) amendment it cites."
   }
  ]
 }

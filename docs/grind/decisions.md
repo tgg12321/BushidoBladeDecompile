@@ -27932,3 +27932,7 @@ Pure C, no asm/volatile/pins/gotos/dead stores; the body is the SOTN cres.c shap
 ## 2026-09-16 18:25 — _SsVmInit — layer-1 review — **FAIL**
 
 The body re-introduces a per-word splat scalar (extern u16 D_8010280A) for an address the project has ALREADY merged into the include/sound.h aggregate _svm_cur (field .voice), contradicting the TU's shipped object model and the identical store in the bytes-proven sibling func_800858D0 (src/main.c:993 `_svm_cur.voice = var_s0;`); the self-vet does not disclose or justify it.
+
+## 2026-09-16 18:36 — _SsVmInit — layer-1 review — **FAIL**
+
+The first clear loop opts out of the TU's canonical `extern s16 D_80102A78[]` declaration and respells the same element access as an undisclosed byte-offset pointer pun, and the 21-line per-voice pun block's only rule-based justification inverts the 2026-09-03 prong-(c) amendment it cites.

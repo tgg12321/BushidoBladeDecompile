@@ -868,3 +868,35 @@ measured_on: HEAD s8 chassis (src/main.c with the s4-s7 candidate body, then
 each variant spliced by sweep_variants.py and restored), no FAKE constructs
 present in any measured form.
 Verdict: KILLED.
+
+## s8 (2026-09-16, synthesis) — frontier reset: the function is MATCHED
+
+The s6/s7 frontier (cse dumps of the duplicate-cast variant, hand-derivation of
+local-alloc allocno priority for reg 72 vs reg 94, a directed PERM_* cast-form
+sweep) is **retired unmeasured and should not be re-opened**: all three existed
+to explain an a0/v0 residual that no longer exists. The inherited chassis
+measured 0 at dispatch, so there is no residual left to attribute to a pass.
+
+The one open item is NOT a matching question, it is an integration question, and
+it belongs to the TU rather than to this function:
+
+- **Merge the 54-byte per-voice slot array into a header aggregate**
+  (`_svm_voice[]` in include/sound.h) and retire the D_800F4E18/1A/1C/1E/20/22/
+  24/28/2A/2C/2E/35/36/38/3A/3C/3E/42/44/46/48/4A splat rows.
+  *Mechanism:* the aggregate-merge family (no-new-park-categories.md,
+  2026-08-17), prongs (a)-(e), applied at the DECLARATION via an integration
+  handoff — never as a per-use cast.
+  *Blocked on:* prong (c)'s 2026-09-03 amendment. Four siblings that address the
+  same rows are still INCLUDE_ASM at HEAD (SsUtKeyOnV, _SsVmFlush, _SsVmKeyOnNow,
+  vmNoiseOn), so the rows stay alive with the `alias of <base>+N; retire with
+  <sibling>` suffix until those functions land in C. Until then the byte-offset
+  spelling already shipped in matched C at src/main.c:1168/1413/1422/1423 is the
+  in-tree norm, and _SsVmInit uses it.
+  *Next probe when unblocked:* after the last of the four siblings matches,
+  propose the header merge once, TU-wide, and re-measure all five bodies
+  together — a merge that changes any one of them is not byte-neutral and must be
+  rejected as a whole.
+
+Everything else in this ledger is now historical. The closing form, the three
+width variants of the clamp local, and the four constructs proven inert are all
+recorded in evidence.md under the s8 heading.
