@@ -337,3 +337,31 @@ restructuring, not a no-semantic-purpose device).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: n/a -- this hypothesis was about tooling access this session, not a chassis measurement; the underlying localization claim remains open and is carried to the s4 frontier rather than asserted as fact.
+
+## [s4] Splitting the outer-loop initializations into separate statements in target's exact LUID order (i=0; nib=0xF; fade=0; shift=0; mask=0 -- matching target's s1,s6,s5,s2,s3 register-init order) instead of a for-loop init-clause plus repeated 0xF literals, and reading field28 ONCE into a named `field` local reused for all three compares instead of re-reading the same pointer expression per compare, together reproduce enough of target's LICM/CSE structure to drop the honest floor from 77 to 63.
+- mechanism: named-intermediate declaration-order family (SOTN-accepted, no-new-park-categories.md) -- the fresh `nib` local biases GCC's loop-invariant-constant hoist to the same LUID slot target's own `li $s6,0xF` occupies; the single `field` read is ordinary CSE-by-source (one read, reused) matching target's single `lh $v1` reused across three compares.
+- probe: sandbox --disable all, before/after; masked objdump diff via tmp/grind/func_8006CCC8/s4/diff_probe.py
+- result: measured 77 -> 63 this session (src/text1b.c HEAD s4, no FAKE construct -- ordinary fresh-local + single-read reuse).
+- verdict: CONFIRMED
+
+## [s4] Restructuring the field28 dispatch from the flat `if(field==3){}else if(field<4){}else if(field==4){}` chain to the nested `if(field!=4){ if(field!=3){ if(field<4){default} } else {case3/+0x1A} } else {case4/+0x1D}` chain reproduces target's exact branch senses (beq/bne polarity) at all three field28 compares AND target's exact physical block ordering (default nearest, then +0x1A case, then +0x1D case, each reached by the correct forward-jump vs fallthrough).
+- mechanism: GCC 2.7.2's block-layout convention for nested if/else -- the innermost condition's TRUE arm lands inline (fallthrough), the outer alternative's arm is pushed to a forward-jump target at the end of the enclosing block. A flat if/else-if chain (uniform branch-if-false-to-next-test convention) does not reproduce this layout. Derived by hand-reading the full target disassembly (asm/funcs/func_8006CCC8.s, all 207 lines) and matching branch senses/label distances directly, not asserted from theory alone.
+- probe: sandbox --disable all; masked objdump diff (WSL engine.score.normalized_insns via diff_probe.py) at each sub-step
+- result: measured 63 -> 40 (first nesting attempt, outer test field!=3) -> 39 (final: outer test field!=4 with case4 as the outer-else, which correctly swapped which case block -- +0x1A vs +0x1D -- lands second vs third in file order, matching target). Both sub-steps measured this session on src/text1b.c HEAD s4; no FAKE construct (ordinary nested if/else, every arm's guard condition is semantically required -- field<4 still excludes field>=5, which target skips entirely).
+- verdict: CONFIRMED
+
+## [s4] Combining the nested `if (field < 4) { if (field >= 0 && mask) {...} }` into a single flattened `if (field < 4 && field >= 0 && mask) {...}` condition regresses the honest floor.
+- mechanism: n/a -- measured codegen difference between two ordinary, semantically-identical C conditional spellings; no GCC-internals claim made, just an observed regression.
+- probe: sandbox --disable all, immediately before/after the single swap (all other source held constant)
+- result: 39 -> 65 on this exact swap; reverted to the nested form (kept in candidate.c). Regressed form saved to memory/grind/func_8006CCC8/rejected/combined-lt4-ge0-condition.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD as edited this session (s4), same chassis as the 39-floor candidate immediately before/after; no FAKE construct present in either the nested or combined form (ordinary conditional expressions).
+
+## [s4] Rewriting the C-level pointer-arithmetic operand order for the repeated `*(s16 *)(... D_800A34FC ... + mask + 0x28)` address expression as `mask + (u8 *)D_800A34FC + 0x28` (mask-register-first) instead of `(u8 *)D_800A34FC + mask + 0x28` (base-pointer-first) changes the emitted `addu` operand order to match target's `addu $x,$s3,$v0` (mask-first) instead of the base-first order our build otherwise emits.
+- mechanism: Candidate mechanism was GCC's tree-level commutative-operand ordering for pointer-plus-int expressions (fold-const.c) preserving C source operand order into the emitted addu.
+- probe: masked objdump diff (diff_probe.py) at the three addu sites (target[53],[72],[84]) before/after the source-level operand-order swap
+- result: No change: the addu operand order in our build stayed base-first (v0,s3) in both the mask-first and base-first C spellings -- confirmed still present in the final floor-39 diff (tmp/grind/func_8006CCC8/s4/diff_probe_final_floor39.log). GCC re-canonicalizes the commutative add independent of source spelling in this shape; the lever does not work here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c HEAD s4 candidate (floor 39, both the mask-first and base-first spellings of the address expression measured); no FAKE construct (ordinary pointer arithmetic).
