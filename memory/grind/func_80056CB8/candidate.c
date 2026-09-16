@@ -1,10 +1,60 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204
+ * s23/s24/s25) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204
  * s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this session; s24
  * ran the ledger's own flagged next-probe (fresh .greg dump read on the
  * CURRENT 38/198 chassis) and two cheap declaration-order/scope probes,
  * both neutral (see below).
+ * ---------------------------------------------------------------------
+ * s25 (enumerate modality, 2026-09-16). Body UNCHANGED. Applying the
+ * candidate to src/text1b.c required THREE missing extern declarations
+ * (`extern s16 Judge; extern s32 ratan2(s32,s32); extern u8 D_8009A820;
+ * extern u8 D_8009A821; extern s32 D_800F6610;`) placed immediately
+ * before the function -- without them the loop body implicit-declares
+ * these symbols and the sandbox score explodes to 141/175 (a false
+ * floor regression; NOT a real chassis change). Once restored, floor
+ * 38/204 (build_insns 198) reproduced exactly.
+ *
+ * Ran the mandated systematic spelling sweep (tools/spelling_enum.py +
+ * tools/sweep_variants.py, plus a scratch hand-generator for the
+ * indexed-LHS pt0/pt1 blocks the tool can't parse) on THREE regions,
+ * all of which had only ever been enumerated on OLDER chassis
+ * generations (s9/s14/s15/s16, back when the floor was 58/197-42/197,
+ * i.e. one fewer real instruction than the current s22-derived 38/198):
+ *   1. sin_p/cos_p/scale/x/z assignment order (the s14-adopted block) --
+ *      16 orderings (--no-swaps) + 32 with the commutative-swap axis,
+ *      both fully re-swept. 4-5 variants tie the 38/198 floor (incl. the
+ *      currently-adopted order); nothing beats it. Re-confirms s14's
+ *      "entire spelling space, order x swap" finding generalizes to the
+ *      current chassis.
+ *   2. pt0[]/pt1[] store-order (2 six-store blocks, 10 structural
+ *      variants: batch order / interleave / intra-triple reversal) --
+ *      10/10 strictly worse (40-81/198-200). Re-confirms s15's kill.
+ *   3. dx/dz named-local declaration order (code==4 tail) -- 5/5 tie the
+ *      floor exactly. Re-confirms s9/s15's kill.
+ * No improvement found in any of the three regions; the 38/204 floor
+ * stands, now with fresh chassis-relative confirmation instead of a
+ * stale cross-chassis citation. Full data: tmp/grind/func_80056CB8/s25/
+ * (sweep_sinp.json, sweep_sinp_sw.json, sweep_pt.json, sweep_dxdz.json).
+ * src/text1b.c reverted to committed HEAD (`git checkout --`) at session
+ * end; git status clean.
+ *
+ * FRONTIER FOR s26: the three spelling-enumerable blocks in this
+ * function are now ALL exhausted on the current chassis (order x swap,
+ * or full structural reorder for the indexed blocks) with zero
+ * improvement. The genuinely open axis remains the live frontier this
+ * ledger has carried since s22-s24: (a) narrowing sin_p/cos_p's live
+ * range to change reload's spill-vs-keep decision for pseudo 149 (the
+ * 0x1F8002B8 literal, homed in $fp across the whole loop per the s24
+ * .greg read) -- UNMEASURED since s24 named it; (b) the older, larger
+ * $fp-accumulator/loop-carried-i*2 structural gap, whose s11 mechanism
+ * finding (loop.c:3823 giv-worth rejection) is chassis-independent but
+ * has not been re-measured on the CURRENT 38/198 chassis since the s22
+ * `limit` win (only re-tested combined WITH the limit change at s22
+ * itself, not as a standalone re-audit on the post-s24 chassis). A
+ * rederive or solver-modality session on (a) is the highest-value next
+ * step: it is untried, has a named mechanism, and a direct verification
+ * path (.greg dump read of pseudo 149's disposition before/after).
  * ---------------------------------------------------------------------
  * s24 (structural modality, 2026-09-16). Re-applied body unchanged +
  * func_80053614 s32-return prerequisite, re-confirmed floor 38/204 fresh

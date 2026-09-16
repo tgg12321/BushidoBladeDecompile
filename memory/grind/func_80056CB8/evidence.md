@@ -570,3 +570,9 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s24] src/text1b.c reverted to clean INCLUDE_ASM state after this session (git checkout -- src/text1b.c, verified zero diff) -- nothing persists on main between grind sessions per asm-until-matched.
 
 - [s24] func_80053614's signature-fix prerequisite (void -> s32 return type, return func_80052D00(...)) is still required for the candidate to reproduce 38/198 and must be re-applied by any future session splicing candidate.c verbatim.
+
+- [s25] Applying candidate.c's function body without its header-block extern declarations (Judge, ratan2, D_8009A820, D_8009A821, D_800F6610 -- all live above the function signature in candidate.c, outside a naive regex extraction of just the function span) produces implicit-int declarations that silently miscompile the loop body: score explodes from 38 to 141 and build_insns DROPS from 198 to 175 (fewer, wrong instructions, not more) -- a diagnostic worth remembering for any future session that programmatically re-applies candidate.c via a text-extraction script rather than hand-copying the whole file.
+
+- [s25] All three spelling-enumerable regions in this function (sin_p/cos_p/scale/x/z order+swap, pt0/pt1 store-order structural reorder, dx/dz declaration-order+inline) are now exhaustively re-measured on the CURRENT 38/198 chassis, not just cited from an older chassis generation -- closes the ledger's KILL RE-AUDIT REQUIRED flag for these three axes specifically.
+
+- [s25] The currently-adopted sin_p/cos_p/scale/x/z ordering (v04 from s14) remains one of the tied-best spellings on the new chassis (4-5 way tie at 38/198) -- no re-adoption needed.

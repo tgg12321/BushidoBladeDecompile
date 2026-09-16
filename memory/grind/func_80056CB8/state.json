@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 24,
- "current_modality": "structural",
+ "session_count": 25,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -147,18 +147,24 @@
    "floor": 38,
    "modality": "structural",
    "headline": "s24 structural: floor 38/204 re-confirmed fresh; corrected an s13 value-misattribution via fresh .greg dump read (pseudo 149 = the 0x1F8002B8 literal in $fp, NOT the 0x3D0900 threshold constant); kill"
+  },
+  {
+   "session": 25,
+   "floor": 38,
+   "modality": "enumerate",
+   "headline": "s25 enumerate: fresh chassis-relative re-sweep of the sin_p/cos_p/scale/x/z, pt0/pt1 store-order, and dx/dz spelling spaces on the CURRENT 38/198 chassis -- all flat or worse (63 variants measured), f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Narrowing sin_p/cos_p's live range (dereferencing them into fresh scalars immediately after computation, before the first func_80053614 call, instead of re-dereferencing the pointers in the post-call if(flags!=0) adjustment) may reduce register pressure enough to flip reload's spill-vs-keep decision for pseudo 149 (the 0x1F8002B8 literal), letting it spill to a stack slot the way target's asm shows (sw to a fixed slot + lw reload per call) instead of occupying a callee-save register for the whole loop.",
+   "hypothesis": "Narrowing sin_p/cos_p's live range (dereferencing into fresh scalars immediately after computation, before the first func_80053614 call, instead of re-dereferencing the pointers in the post-call if(flags!=0) adjustment) may reduce register pressure enough to flip reload's spill-vs-keep decision for pseudo 149 (the 0x1F8002B8 literal, confirmed via s24's .greg read to be homed in $fp across the whole loop body).",
    "mechanism": "reload1.c's alter_reg spill-vs-keep decision is a global cost/pressure tradeoff across all pseudos live at a given point; shrinking a competing pseudo's (sin_p/cos_p) live range reduces 149's effective conflict pressure without touching 149's own live range directly.",
-   "next_probe": "Apply the sin_p/cos_p-narrowing change on the current 38/198 chassis, measure via sandbox func_80056CB8 --disable all, then re-run pwsh tools/grinder/dump.ps1 and read the fresh .greg dump to directly verify whether pseudo 149's disposition (hard-reg-resident vs stack-spilled) actually changed, not just re-measure the aggregate sandbox score blind."
+   "next_probe": "Apply the sin_p/cos_p-narrowing change on the current 38/198 chassis, measure via sandbox func_80056CB8 --disable all, then re-run pwsh tools/grinder/dump.ps1 and read the fresh .greg dump to directly verify whether pseudo 149's disposition (hard-reg-resident vs stack-spilled) actually changed, not just re-measure the aggregate sandbox score blind. This is the ledger's highest-value untried lever since s24 named it."
   },
   {
-   "hypothesis": "The target's $fp accumulator residual (chased since s6, still target-only per every classify run through s22) remains the OLDER, larger structural gap; the s11 loop-inversion hypothesis (make the doubled index j the primary induction variable) was only ever measured on the pre-s14 chassis (58/204) and has not been re-measured on the current, much-improved 38/198 chassis, though the s11 mechanism finding (j becomes the sole biv, i=j>>1 is not a giv-eligible right-shift, so i must be recomputed via sra every iteration) is chassis-independent and predicts this remains a loser.",
-   "mechanism": "loop.c's biv/giv strength-reduction analysis (loop.c:3823's insn_count-gated giv-worth predicate, root-caused s11/s18) rejects promoting i*2 to a loop-carried accumulator regardless of which variable is nominally the primary induction variable in source, because the loop's insn_count is below the acceptance threshold.",
-   "next_probe": "A single cheap re-measurement of the s11 loop-inversion form on the current 38/198 chassis to formally close (or reopen) this axis on the current generation, before spending further sessions on the 0x1F8002B8/pseudo-149 axis."
+   "hypothesis": "The target's $fp accumulator residual (chased since s6) remains the older, larger structural gap; the s11 loop-inversion finding (i*2 promoted to a loop-carried object is rejected by loop.c:3823's giv-worth predicate regardless of source shape) was last re-tested COMBINED with the s22 limit change (at s22 itself, worse) but never as a standalone re-audit on the post-s24 chassis in isolation.",
+   "mechanism": "loop.c's biv/giv strength-reduction analysis (loop.c:3823's insn_count-gated giv-worth predicate) rejects promoting i*2 to a loop-carried accumulator because the loop's insn_count sits below the acceptance threshold -- chassis-independent per s11/s18, but the current 38/198 chassis's insn_count (198) has not been individually re-checked against the threshold since the count changed at s22.",
+   "next_probe": "Read loop.c:3823's exact insn_count threshold value and compare against the current chassis's actual loop insn_count (from a fresh .loop dump), to determine analytically whether the +1 instruction from s22's `limit` local could plausibly cross the threshold before re-spending a sandbox measurement on it."
   }
  ],
  "judge_constraints": [],
@@ -491,6 +497,30 @@
    "measured_on": "s24 chassis (s22-banked 38/198 body, unmodified except the hit0/hit1/work scope move), single fresh sandbox measurement, no FAKE constructs present",
    "predicate_cite": "",
    "result": "score 38/204 unchanged, build_insns 198 unchanged, byte-identical. Consistent with the fresh dump evidence: pseudo 149's"
+  },
+  {
+   "session": 25,
+   "statement": "The sin_p/cos_p/scale/x/z assignment-order spelling space (5 assign-statements: sin_p, scale, x, cos_p, z -- the block s14 adopted from a 16-variant sweep on the older 42/197 chassis) is still flat at",
+   "kill_scope": "instance",
+   "measured_on": "s25 chassis (s22/s23/s24-banked 38/198 body + func_80053614 s32-return prerequisite + the 3 missing extern decls restored, unmodified otherwise), one fresh sandbox measurement per variant (48 total ac",
+   "predicate_cite": "",
+   "result": "--no-swaps: 16/16 measured; 4 variants (v00, v01, v05, v13, incl. the currently-adopted order) tie the floor at 38/198; "
+  },
+  {
+   "session": 25,
+   "statement": "The pt0[]/pt1[] array-fill store-order spelling space (2 six-store blocks, 10 structural reorderings: batch order / interleave / intra-triple reversal, applied one block at a time) is still strictly w",
+   "kill_scope": "instance",
+   "measured_on": "s25 chassis (s22/s23/s24-banked 38/198 body + func_80053614 s32-return prerequisite + the 3 missing extern decls restored, unmodified otherwise), one fresh sandbox measurement per variant (10 total), ",
+   "predicate_cite": "",
+   "result": "10/10 variants scored 40-81/198-200, all strictly worse than the 38/198 baseline (closest: b2_pt0_rev_then_pt1 at 40/198"
+  },
+  {
+   "session": 25,
+   "statement": "The code==4 tail's dx/dz named-local declaration-order spelling space (2 named locals, inline-vs-named x declaration-order, 5 distinct spellings) is still exactly flat at the honest floor on the CURRE",
+   "kill_scope": "instance",
+   "measured_on": "s25 chassis (s22/s23/s24-banked 38/198 body + func_80053614 s32-return prerequisite + the 3 missing extern decls restored, unmodified otherwise), one fresh sandbox measurement per variant (5 total), z",
+   "predicate_cite": "",
+   "result": "5/5 variants scored exactly 38/198, byte-identical spelling-neutral to the baseline. Full data: tmp/grind/func_80056CB8/"
   }
  ],
  "ladder_skip": 0,
