@@ -623,3 +623,15 @@ the same pointer view to the third store (`dst[2]`, c05) measures 4 — worse.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s8 chassis (floor 3), zero FAKE constructs present
+
+## [s9] Cluster B's add is boosted past the store by sched1 because its destination pseudo is assigned exactly ONCE in the function; giving that destination a second real assignment removes the boost and emits the target's order.
+- mechanism: adjust_priority (tools/gcc-2.7.2/sched.c:2584) raises a released insn to max_priority (== LAUNCH_PRIORITY 0x7f000001, sched.c:187, installed at sched.c:4049) ONLY when birthing_insn_p is true, and birthing_insn_p (sched.c:2505-2536) is exactly reg_n_sets[i] == 1 on the SET's destination pseudo. Set count is C-level input. With two sets the boost never fires, the add and the store enter the ready list with EQUAL priority (4), rank_for_schedule's first test (sched.c:2418) no longer decides, and the dependence-class / INSN_LUID tie-breaks (sched.c:2420-2463) place the store first in the backward schedule -- i.e. the add first in program order, as in the target.
+- probe: Read sched.c:2505-2536 / 2543-2600 / 4040-4055; then 5 variants (tmp/grind/func_8006A564/s9/genf.py, f01..f05) differing only in how many function-level assignments the "+0xC" pseudo receives, plus a declaration-hoisting variant (geng.py, g01); each measured with sandbox func_8006A564 --disable all. Prediction verified against the instrumented cc1 .sched dumps for both bodies.
+- result: f01 / f03 / f04 / g01 = score 0, build_insns 199 == target_insns 199; f02 = 6 and f05 = 4 (both leave the add writing a single-set pseudo). Dump proof: s8 body ";; ready list at T-26: 439 (4) 442 (7f000001)" (add writes single-set temp (reg:SI 147), boosted, emitted after the store) vs s9 body ";; ready list at T-26: 431 (4) 428 (4)" (add writes (reg/v:SI 79) = our twice-assigned v1, no boost, emitted before the store). Full-tree verify-oracle SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- verdict: CONFIRMED
+
+## [s9] Adding the second assignment ADJACENT to the first (v1 = v0; v1 += 0xC;) does not change reg_n_sets, which is why session 8's 28 local re-spellings were all inert.
+- mechanism: combine runs before the life analysis that recomputes reg_n_sets, and folds an adjacent copy+add pair back into a single (set (reg) (plus ...)). The second set has to be a SEPARATE, genuinely-consumed assignment in another part of the function (here cluster A's v1 = *(arg1+0); v1 += 0xC; *(arg1+4) = v1;) to survive to sched1.
+- probe: Cross-read of s8's b-series results (copy-then-compound measured 3) against the s9 dumps: the s8 body's add destination is (reg:SI 147), an anonymous single-set temp, in every b-series spelling; the s9 body's is (reg/v:SI 79), a REG_USERVAR_P pseudo with two sets.
+- result: Explains the entire s8 H-B1 null result without re-measuring it; the fix required a non-adjacent second set.
+- verdict: CONFIRMED

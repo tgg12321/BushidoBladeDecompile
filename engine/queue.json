@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8006A564",
-      "file": "text1b",
-      "distance": 199,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_SsSndCrescendo",
       "file": "main",
       "distance": 200,
@@ -1143,14 +1135,14 @@
     }
   ],
   "counts": {
-    "total": 122,
-    "active": 115,
+    "total": 121,
+    "active": 114,
     "by_status": {
-      "active": 115,
+      "active": 114,
       "rotated": 7
     },
     "by_verdict": {
-      "C": 93,
+      "C": 92,
       "ASM-PARTIAL": 22
     }
   },

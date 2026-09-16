@@ -589,3 +589,84 @@ score 3, all exact parity. Banked as instance kills below.
 - [s8] Post-reload sched2 shows cluster B fully dependence-forced (REG_DEP_ANTI from the coalesced `addiu v0,v0,12` onto `sw v0,0(s1)`, every ready list single-membered), so the v1-vs-v0 register difference is a consequence of the sched1 order rather than an independent RA decision. That is why all two-named-local spellings are inert.
 
 - [s8] 28 distinct spellings of cluster B's 4-statement group were measured this session (b/c/d/e sweeps); every one scores 3 or worse, tabulated in tmp/grind/func_8006A564/s8/sweep_results.txt.
+
+## [s9] 2026-09-16 — forensics — floor 3 -> 0 (MATCHED)
+
+### Result
+`sandbox func_8006A564 --disable all` = **score 0**, target_insns 199 ==
+build_insns 199. The register-normalized objdump diff
+(`tmp/grind/func_8006A564/s9/final_objdiff_f01.txt`) is instruction-identical
+on all 199 rows; the 8 remaining `!!` rows are branch/jump displacement TEXT
+only (identical relative offsets, different absolute section addresses — the
+sandbox .o and build/src/text1b.o sit at different section bases). Full-tree
+`verify-oracle` re-linked to `62efab4f73f992798c43e8c730aa43baa10bb4fa`, i.e.
+byte-identical to the original EXE. The body carries zero cheat constructs: no
+inline asm, no register pins, no volatile, no dead stores, no pads, no unused
+locals, no FAKE annotations.
+
+### The one edit
+The final block's two `{ s32 v0; ... }` scopes are merged into a single
+`{ s32 v0, v1; ... }` scope, and the SAME local `v1` now carries the
+"record base + 0xC" value in BOTH record-fill groups:
+  cluster A: `v1 = *(s32 *)(arg1 + 0); v1 += 0xC; ... *(s32 *)(arg1 + 4) = v1;`
+  cluster B: `v0 = *(s32 *)(tile + 0x2C); v1 = v0 + 0xC;
+              *(s32 *)(arg1 + 0) = v0; *(s32 *)(arg1 + 4) = v1;`
+Nothing else in the function changed from the s8 candidate.
+
+### The predicate that closes it (this is the transferable finding)
+s8 correctly named sched1 as the pass reordering cluster B, and correctly
+identified the `LAUNCH_PRIORITY` (0x7f000001, `tools/gcc-2.7.2/sched.c:187`,
+installed on the insn being scheduled at `sched.c:4049`) boost as the reason
+the add was pulled past the store. What s8 did not have was the SOURCE-SIDE
+INPUT that decides who gets the boost. It is:
+
+    sched.c:2584   adjust_priority() raises a just-released insn to
+                   max_priority ONLY if birthing_insn_p(PATTERN(prev)).
+    sched.c:2505-2536  birthing_insn_p((set (reg i) ...)) returns
+                   `reg_n_sets[i] == 1`.
+
+**The boost is a property of the destination pseudo's SET COUNT, not of the
+dependence edge.** A pseudo assigned exactly once in the function is
+"birthing" and gets LAUNCH_PRIORITY when released; a pseudo assigned twice
+does not. Set count is pure C-level input: assign the same local in two places
+and the boost disappears. That is why all 28 of s8's local re-spellings were
+inert — every one of them left the add writing a single-set pseudo (in several
+cases a compiler temp, because combine had folded a `v1 = v0; v1 += 0xC;` pair
+back into one set before flow recomputed reg_n_sets). The extra set has to be a
+SEPARATE, non-foldable, genuinely-consumed assignment elsewhere in the
+function; a second assignment adjacent to the first is folded away by combine
+and does not move reg_n_sets.
+
+### Measured proof (both traces from the instrumented cc1 .sched dump)
+s8 body — the add writes a single-set compiler temp:
+    (insn 442 ... (set (reg:SI 147) (plus:SI (reg/v:SI 146) (const_int 12))))
+    ;; ready list at T-26: 439 (4) 442 (7f000001), now 442 439
+  The boosted add wins rank_for_schedule's FIRST test (INSN_PRIORITY,
+  `sched.c:2418`); the class and INSN_LUID tests (`sched.c:2420-2463`) are
+  never reached. schedule_block is BACKWARD, so being picked at T-26 places the
+  add AFTER the store in program order. Score 3.
+s9 body — the add writes `v1`, which cluster A also assigns:
+    (insn 428 ... (set (reg/v:SI 79) (plus:SI (reg/v:SI 78) (const_int 12))))
+    ;; ready list at T-26: 431 (4) 428 (4), now 431 428
+  No boost; priorities are EQUAL, the tie falls through to the dependence-class
+  / LUID tests, the store is picked first, and the add lands BEFORE it — the
+  target's order. Score 0.
+Note the `/v` flags: reg 78/79 are REG_USERVAR_P pseudos (our named locals),
+where the s8 form's add wrote an anonymous temp.
+Artifacts: `tmp/grind/func_8006A564/s9/f.sched` (s9 trace, extracted from
+`tmp/grind/func_8006A564/dumps/text1b.sched`) and
+`tmp/grind/func_8006A564/s8/f.sched` (s8 trace).
+
+### Sweep
+5 hypothesis-driven variants (`tmp/grind/func_8006A564/s9/genf.py`) plus one
+declaration-hoisting variant (`geng.py`); results in
+`tmp/grind/func_8006A564/s9/sweep_f.txt`. f01 / f03 / f04 / g01 all measure 0;
+f02 and f05 (which leave the add writing a single-set pseudo) measure 6 and 4.
+f01 was adopted: it is the smallest diff from the banked body, it invents no
+carrier (f04 needed a new function-scope variable), and it leaves blocks 1-3 —
+which already matched instruction-for-instruction — untouched.
+
+- [s9] func_8006A564 MATCHES in pure C: sandbox score 0, 199 == 199, full-tree verify-oracle SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- [s9] The closing lever was giving the cluster-B "+0xC" value a local that is assigned TWICE in the function (once per record-fill group) instead of a once-assigned pseudo.
+- [s9] GENERALIZABLE: GCC 2.7.2 sched1's LAUNCH_PRIORITY boost is gated by birthing_insn_p (sched.c:2505-2536), whose predicate is `reg_n_sets[i] == 1` on the insn's DESTINATION PSEUDO. Any "the scheduler moves my add/copy past its neighbour and no local re-spelling helps" residual should first be tested by giving that destination a second, non-foldable assignment elsewhere in the function. Adjacent second assignments do not work — combine folds them before flow recomputes reg_n_sets.
+- [s9] Confirms the s8 note that this is a DIFFERENT wall from .claude/rules/sched-rank-class-tie-wall.md: that rule describes the equal-priority class-compare tie. Here the priorities were unequal, and the fix was to MAKE them equal so that tie-break could run.

@@ -199,5 +199,14 @@
  "origin": "queue",
  "created": "2026-09-16T17:39:11.382406+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "bb4ebf18f336f3c6",
+   "when": "2026-09-16T19:51:48.718461+00:00",
+   "summary": "final call: Ordinary C; no sanctioned-family carve-out needed, so no prerequisites to check. Constructs: named locals v0/v1 (each written and read), one same-variable compound-assignment split (v1 = *(arg1+0); v1"
+  }
+ ]
 }
