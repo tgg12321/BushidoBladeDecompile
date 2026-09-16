@@ -448,3 +448,13 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s14] Official & tools/wteng.ps1 main sandbox func_80056CB8 --disable all on the adopted v04 ordering confirms score=42, target_insns=204, build_insns=197 -- first floor movement since s11's r1/r2 merge, three sessions ago.
 
 - [s14] src/text1b.c was reverted to the committed HEAD state (git checkout -- src/text1b.c) before ending the session; func_80056CB8 remains INCLUDE_ASM on main per asm-until-matched.
+
+- [s15] Chassis re-confirmed at session start: sandbox --disable all on the reapplied s14 candidate.c body (+ func_80053614 void->s32 prerequisite) scores 42, target_insns 204, build_insns 197 — matches the ledger's last recorded floor exactly.
+
+- [s15] spelling_enum.py's _ASSIGN_RE (tools/spelling_enum.py:62) only matches bare-identifier LHS assigns (`name = expr;`), so `pt0[0] = expr;` / `pt1[N] = expr;` are silently treated as anchors, not reorderable statements — confirmed by reading the regex, not assumed. The s15 hand generator (tmp/grind/func_80056CB8/s15/gen_pt_variants.py) is a scratch-only workaround, no edit to tools/ was made or needed.
+
+- [s15] tools/ra_solver/inverse_compose.py classify's own C-lever suggestion list for a cse_merge-class PRE-RA residual includes 'store-const-reload-cse' and '(single named intermediate)' by name — both were already covered by prior sessions or tried fresh this session (the scratchpad local); both remain non-closing.
+
+- [s15] The two 'ours only: sw s8,16(#)' entries in the classify diff are NOT a redundant re-materialization of the literal (there is only ONE lui/ori for it) — they are the o32 ABI's stack-passed 5th-argument store, one per func_80053614 call site, which is structurally required regardless of how arg4's value is sourced in C. This reframes the s8/s13 'materializes twice' language: the redundancy is in the STACK STORE pairing with a call-crossing-live register (reg 11/65 spill), not in the literal's derivation.
+
+- [s15] src/text1b.c is byte-identical to HEAD at session end (git diff --stat reports no changes) — all edits made during this session (candidate re-application, the scratchpad-literal experiment) were reverted; only memory/grind/func_80056CB8/candidate.c carries the session's findings, per the asm-until-matched convention.

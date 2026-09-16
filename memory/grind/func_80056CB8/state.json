@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -87,23 +87,29 @@
    "floor": 42,
    "modality": "enumerate",
    "headline": "s14 enumerate: systematic spelling_enum.py+sweep_variants.py sweep of the never-before-targeted sin_p/cos_p/scale/x/z block found a real reordering win, dropping the honest floor 48 -> 42/204 (build_i"
+  },
+  {
+   "session": 15,
+   "floor": 42,
+   "modality": "enumerate",
+   "headline": "s15 enumerate: re-confirmed floor 42/204 fresh; exhaustively killed the pt0/pt1 array-fill-block reorder space (10/10 worse) and the classify-suggested single-named-intermediate literal lever (46/204,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s13 double-bind evidence (loop.c move_movables vs strength_reduce, both gated on insn_count=164) may have shifted now that insn_count dropped by 1 real instruction (198 -> 197) from the s14 reorder win.",
-   "mechanism": "loop.c:532 threshold formula and loop.c:1631/3823's insn_count-gated cost comparisons, both keyed to the SAME insn_count quantity per s13's finding",
-   "next_probe": "Re-run pwsh tools/grinder/dump.ps1 func_80056CB8 fresh against the new 42/197 chassis (v04 body applied) and re-check both double-bind indicators: does the .greg dump still show 'Spilling reg 11'/'Spilling reg 65'? Does inverse_compose.py classify's PRE-RA verdict on the i*2 givs change?"
+   "hypothesis": "The genuine remaining PRE-RA residual is the loop-carried i*2 induction variable ($fp, s10's finding) plus the code==4 y-compare branch-topology mismatch (beqz+bltz+j vs bgez, s6/s7's C-level kill that is still open at the RTL/instruction-count level) \u2014 both entangled in the same 3-instruction gap, neither separately closable by any spelling tried s9-s15.",
+   "mechanism": "loop.c strength-reduction (the s10/s11 finding: target maintains i*2 as a second, genuinely loop-carried counter incremented alongside i, not recomputed per-iteration) combined with jump.c/reorg.c's handling of the nested y-compare (>=0 / >=0x3E9 double-branch) that our single bgez-based form does not reach structurally.",
+   "next_probe": "s12's loop-carried-idx2 rewrite was measured worse (banked rejected/loop-carried-idx2-worse.c) using a SEPARATE loop-carried variable; the untried form is initializing that second counter's INITIAL value directly from `start` (matching target's single pre-loop `sll $fp,$v1,2`) rather than from `i*2` inside the loop body, so the multiply happens ONCE before the loop, not per-iteration. Needs a structural or solver-modality session to derive the exact C shape (a second loop-control variable stepped in the for-loop's increment clause: `for (i = start, idx2 = start*2; i < start+2; i++, idx2 += 2)`), then re-run inverse_compose classify to see if the multiset gap narrows."
   },
   {
-   "hypothesis": "The pt0/pt1 array-fill blocks (currently opaque to spelling_enum.py because 'pt0[0] = ...;' doesn't match the tool's bare-identifier assign regex, so they parse as fixed-order anchors) may have their own untried reorder/pairing gradient.",
-   "mechanism": "same statement-order-dependent codegen class as the s14 win, unmeasured for indexed-LHS statements",
-   "next_probe": "Either teach spelling_enum.py to parse 'name[idx] = expr;' as a reorderable assign (tool enhancement), or hand-sweep the two 3-store pt0/pt1 blocks' relative statement order (interleaved vs batched, pt0-then-pt1 vs pt1-then-pt0) via direct sandbox measurements."
+   "hypothesis": "The code==4 y-compare's `if (y - hit1[1] >= 0) { if (>= 0x3E9) ... } else { if (hit1[1]-y >= 0x3E9) ... }` nested-diamond form is what forces our single bgez where target has beqz+bltz+j \u2014 an un-tried restructuring (e.g. a single `s32 dy = y - hit1[1]; s32 ady = (dy >= 0) ? dy : -dy; if (ady >= 0x3E9) flags = 5;` absolute-value form, or splitting the >=0x3E9 check into its own goto-based exit) might reach target's 3-branch shape without changing semantics.",
+   "mechanism": "jump.c / combine.c's handling of a signed-magnitude comparison pair: our nested if/else emits a single conditional branch (bgez) selecting between two near-identical >=0x3E9 checks, where the target's compiled form apparently short-circuits differently (beqz then bltz then unconditional j to a shared tail).",
+   "next_probe": "Read asm/funcs/func_80056CB8.s lines around the flags==4/y-compare tail (not yet read this ledger cycle in full) and m2c-reconstruct that specific sub-block in isolation to see what source shape m2c infers for the beqz+bltz+j triple, before hand-deriving C forms to sweep."
   },
   {
-   "hypothesis": "The dx/dz/y flags==4-tail declarations, exhaustively killed for spelling gradient by s9, were measured on the OLD 58/198 chassis -- re-verify flatness now that insn_count moved with the s14 win.",
-   "mechanism": "same insn_count-linked double-bind concern as frontier item 1, applied to the s9 kill instead of a new probe",
-   "next_probe": "Re-run the s9 5-variant dx/dz-declaration-order sweep (or its spelling_enum.py equivalent) against the s14 42/197 chassis and confirm the kill still holds before spending further sessions on that region."
+   "hypothesis": "The reg 11/reg 65 spill pair (unchanged s13->s15) may be resolvable by NOT keeping the 0x1F8002B8 literal (or whatever currently occupies those pseudos across the func_80053614 calls) live across the call boundary at all \u2014 i.e. a source shape where the 5th argument is computed fresh at each call site from something already live, rather than shared.",
+   "mechanism": "reload1.c: a pseudo with reg_n_refs spanning a CALL_INSN is a spill candidate; if the value can instead be trivially recomputed at each of the two use sites (it's a compile-time constant, so this costs nothing extra in real instructions \u2014 GCC already reduces `li $x,0x1F8002B8` to the same lui/ori pair either way), removing its cross-call liveness might let reload pick a different, non-spilled home.",
+   "next_probe": "This is the natural, ALREADY-BASELINE form (the literal `0x1F8002B8` is written twice in source at each call site, not cached) \u2014 s15's classify confirms the baseline STILL shows the reg 11/65 spill despite this, meaning the spilled pseudo is something else (possibly `pt0`/`pt1`/`hit0`/`work`'s addresses, or `flags`, live across the call). Needs a solver-modality session (tools/ra_solver/inverse.py or a fresh -da greg read naming exactly which C-level value maps to pseudo 11 and 65) before any further C-level lever attempt \u2014 this session did not identify the spilled VALUES, only confirmed the spill still fires."
   }
  ],
  "judge_constraints": [],
@@ -284,6 +290,38 @@
    "measured_on": "s14 chassis (v04-applied sin_p/scale/x/cos_p/z reordering + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh in-session sweep of all 32 order+swap variants for this exact reg",
    "predicate_cite": "",
    "result": "Best score across all 32 variants (plus baseline) is 42/197, tied by 4 variants including the already-adopted v04 shape;"
+  },
+  {
+   "session": 15,
+   "statement": "Reordering the pt0[]/pt1[] array-fill statements in the pre-func_80053614-call blocks (batch-pt0-then-pt1 vs pt1-then-pt0, interleaved pt0/pt1-first, or reversed intra-triple order, applied to either ",
+   "kill_scope": "instance",
+   "measured_on": "s15 chassis (s14-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh sandbox measurement per variant, no FAKE constructs present in any variant",
+   "predicate_cite": "",
+   "result": "All 10 variants scored >= 44 (worst 79), strictly worse than the 42/197 baseline; 2 variants raised build_insns to 199. "
+  },
+  {
+   "session": 15,
+   "statement": "The dx/dz declaration-order spelling space in the flags==4 tail (inline vs named, both declaration orders \u2014 5 distinct spellings) is still flat at 42/204 on the s14-derived 42/197 chassis, re-verified",
+   "kill_scope": "instance",
+   "measured_on": "s15 chassis (42/197, s14-banked body unmodified), single fresh sandbox measurement per variant, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "5/5 variants scored exactly 42/197, identical to baseline. Raw output: tmp/grind/func_80056CB8/s15/sweep_dxdz.json."
+  },
+  {
+   "session": 15,
+   "statement": "Naming the repeated 0x1F8002B8 scratchpad-address literal as a single fresh local (`s32 scratchpad = 0x1F8002B8;` declared once per loop iteration, read at both func_80053614 call sites instead of wri",
+   "kill_scope": "instance",
+   "measured_on": "s15 chassis (s14-banked body + the named-intermediate edit + func_80053614 s32-return prerequisite), single fresh sandbox measurement, no FAKE construct (this was ordinary named-intermediate C, not FA",
+   "predicate_cite": "",
+   "result": "Score 46/204 (build_insns 199), 4 worse and 2 more real instructions than the 42/197 baseline. Reverted; not banked as c"
+  },
+  {
+   "session": 15,
+   "statement": "The s13-identified double-bind (the .greg 'Spilling reg 11.'/'Spilling reg 65.' pair, and inverse_compose.py classify's PRE-RA verdict with the same instruction-multiset diff shape: our single $s8 lui",
+   "kill_scope": "instance",
+   "measured_on": "s15 chassis (42/197, s14-banked body unmodified), single fresh dump.ps1 + classify run, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "greg dump: 'Spilling reg 11.'/'Spilling reg 65.' each appear twice (once per func_80053614 call site), identical pattern"
   }
  ],
  "ladder_skip": 0,

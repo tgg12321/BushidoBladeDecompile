@@ -1,6 +1,79 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s14 enumerate-modality win) — floor 42/204,
- * NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15)
+ * — floor 42/204, NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s15 (enumerate modality). STALE-HEAD-CLAIM NOTE (same as every prior
+ * session): src representation is INCLUDE_ASM between grind sessions;
+ * nothing persists on main. Re-applied the s14-banked body (unchanged) +
+ * func_80053614 s32-return prerequisite to src/text1b.c, re-confirmed
+ * floor 42/204 (build_insns 197) exactly matches the s14 record before
+ * any s15 change. Reverted src/text1b.c to a clean INCLUDE_ASM state
+ * (zero diff vs HEAD) before finishing this session.
+ *
+ * FRONTIER ITEM 2 (pt0/pt1 array-fill block reorder) — CLASS-NEGATIVE,
+ * INSTANCE-SCOPED. spelling_enum.py can't parse indexed-LHS `pt0[0] = ...;`
+ * assigns (its _ASSIGN_RE requires a bare identifier), so this session
+ * hand-generated the structural reorder axis (a scratch-only generator,
+ * tmp/grind/func_80056CB8/s15/gen_pt_variants.py — no edit to tools/):
+ * for BOTH the pre-first-func_80053614-call store block (pt0[0..2] from
+ * obj+0xB8/0xBC/0xC0, pt1[0..2] from x/obj+0xBC/z) and the pre-second-call
+ * block (pt0[0..2] from x/obj+0xBC/z, pt1[0..2] from x/obj+0xBC/z), swept:
+ * batch-pt0-then-pt1 (baseline), batch-pt1-then-pt0, interleave-pt0-first,
+ * interleave-pt1-first, reverse-intra-triple-pt0, reverse-intra-triple-pt1
+ * — 10 non-baseline variants total (5 per block, other block held at s14
+ * baseline), scored via `tools/sweep_variants.py --func func_80056CB8
+ * --file text1b --variants tmp/grind/func_80056CB8/s15/enum_pt --json`.
+ * RESULT: 10/10 scored >= 42 (44 to 79; two even raised build_insns to
+ * 199), zero at or below the s14 floor. Full ranked list in
+ * tmp/grind/func_80056CB8/s15/sweep1.json. This block's ORIGINAL
+ * (compute-in-source-order, pt0-batch-then-pt1-batch) statement order is
+ * already GCC's preferred spelling for these 12 stores; the region is not
+ * where the residual's 3 remaining PRE-RA-multiset instructions live.
+ *
+ * FRONTIER ITEM 3 (dx/dz declaration-order re-verify on new chassis) —
+ * RE-CONFIRMED FLAT. Re-ran the s9 sweep via the proper tool this time
+ * (spelling_enum.py --no-swaps on the ENUM-marked `s32 dx = ...; s32 dz =
+ * ...; if (0x3D0900 < dx*dx+dz*dz) {` region, tmp/grind/func_80056CB8/s15/
+ * enum_dxdz/) — 5/5 distinct spellings (inline vs named x2, both decl
+ * orders) score exactly 42/197, identical to baseline. insn_count moving
+ * 198->197 between s13 and s14 did NOT reopen this region; the s9 kill
+ * still holds under the current scope.
+ *
+ * FRONTIER ITEM 1 (double-bind re-check on new 42/197 chassis) —
+ * RE-CONFIRMED UNCHANGED. Fresh `pwsh tools/grinder/dump.ps1
+ * func_80056CB8` + `tools/ra_solver/inverse_compose.py classify` against
+ * this session's rebuilt tmp/sandbox/func_80056CB8/text1b.o (score 42,
+ * build_insns 197): (a) .greg dump STILL shows `Spilling reg 11.` /
+ * `Spilling reg 65.` (twice each — once per func_80053614 call site),
+ * unchanged from s13. (b) classify's verdict is STILL PRE-RA — same
+ * instruction-multiset diff shape as s8/s13: ours materializes the
+ * 0x1F8002B8 scratchpad literal via $s8 (lui/ori) ONCE but stores it to
+ * the stack TWICE (`sw s8,16(#)` x2, one per call) plus three
+ * `sll #,#,0x1` (the i*2 byte-table index, computed fresh instead of
+ * loop-carried); target instead shows `addiu s8,s8,2` / `sll s8,#,0x2`
+ * (a *4 scale) / two `addu #,#,s8` (the loop-carried i*2 induction
+ * variable, s10's finding) PLUS a `beqz+bltz+j` triple where ours has a
+ * single `bgez` (the code==4 y-compare branch-topology divergence,
+ * killed twice at the C level s6/s7 but still open at the RTL level).
+ * Full report: tmp/grind/func_80056CB8/s15/classify_s15.txt.
+ *
+ * TRIED AND KILLED THIS SESSION (new): classify's own suggested
+ * "single named intermediate" lever for the 0x1F8002B8 literal —
+ * `s32 scratchpad = 0x1F8002B8;` declared once at the top of the loop
+ * body, used at both func_80053614 call sites instead of writing the
+ * literal twice. This is ordinary C (fresh local, once-written, real
+ * value consumed at 2 read sites — squarely inside the SOTN
+ * new_var_temp-relaxed named-intermediate family, no FAKE needed since
+ * it has real semantic purpose). MEASURED WORSE: score 46/204,
+ * build_insns 199 (+2 over the 42/197 floor) — giving the literal a
+ * separate C-level home added a genuinely live-across-both-calls pseudo
+ * that reload had to spill/reload AGAIN on top of the existing $s8
+ * materialization, rather than removing a redundant one. classify's own
+ * multiset diff already showed our lui/ori for this literal happens only
+ * ONCE (not twice) — the "twice" in the diff is the two `sw s8,16(#)`
+ * stack spills of the SAME value at each call's arg setup, which the
+ * named-intermediate lever does not address (a per-call spill, not a
+ * per-call re-materialization). REVERTED — instance kill, banked below.
  * ---------------------------------------------------------------------
  * s14 (enumerate modality). STALE-HEAD-CLAIM NOTE (same as every prior
  * session): src representation is INCLUDE_ASM between grind sessions;

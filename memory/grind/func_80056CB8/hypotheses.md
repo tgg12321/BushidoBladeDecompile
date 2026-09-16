@@ -759,3 +759,71 @@ and has NOT been tried in any prior session:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s14 chassis (v04-applied sin_p/scale/x/cos_p/z reordering + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh in-session sweep of all 32 order+swap variants for this exact region, no FAKE constructs, reverted after measurement
+
+## [s15, enumerate] Re-confirmed floor 42/204 on a fresh chassis rebuild; exhaustively swept the pt0/pt1 array-fill block reorder space (never covered by spelling_enum.py, which requires bare-identifier LHS); re-verified the s9 dx/dz kill and the s13 double-bind unchanged; tried and killed classify's own suggested named-intermediate lever for the 0x1F8002B8 literal.
+
+- statement: Reordering the pt0[]/pt1[] array-fill statements (6 stores per block, 2 blocks) via batch-order swap, interleaving, or intra-triple reversal does not lower the honest distance below 42/204.
+- mechanism: GCC's store scheduling for 6 independent already-live array-element stores; spelling_enum.py's _ASSIGN_RE (tools/spelling_enum.py:62) requires a bare-identifier LHS so indexed assigns are silently anchored, not reordered -- a scratch-only hand generator (tmp/grind/func_80056CB8/s15/gen_pt_variants.py, no tools/ edit) covered the structural axis instead.
+- probe: gen_pt_variants.py -> 10 full-function variants; tools/sweep_variants.py --func func_80056CB8 --file text1b --variants tmp/grind/func_80056CB8/s15/enum_pt --json
+- result: 10/10 scored >= 44 (worst 79); 2 raised build_insns to 199. Zero at or below 42. tmp/grind/func_80056CB8/s15/sweep1.json.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (s14-banked body unmodified), single fresh sweep per variant, no FAKE constructs
+
+- statement: The dx/dz declaration-order space (5 spellings) is still flat at 42/204 on the s14-derived 42/197 chassis, now verified with the proper spelling_enum.py+sweep_variants.py pipeline (s9 used hand verification on the older 58/198 chassis).
+- mechanism: cse.c/expand_expr folding of the sum-of-squares comparison, independent of naming.
+- probe: spelling_enum.py --candidate tmp/grind/func_80056CB8/s15/dxdz_marked.c --out tmp/grind/func_80056CB8/s15/enum_dxdz --no-swaps (5 spellings) + sweep_variants.py.
+- result: 5/5 scored exactly 42/197. tmp/grind/func_80056CB8/s15/sweep_dxdz.json.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (42/197), single fresh sweep, no FAKE constructs
+
+- statement: The s13 double-bind (reg 11/65 spill in .greg; inverse_compose classify's PRE-RA verdict) is unchanged on the s14 42/197 chassis (last measured on the s13 48/198 chassis, one instruction earlier).
+- mechanism: same as s8/s13 -- call-crossing register liveness (spill) + genuine PRE-RA RTL instruction-multiset mismatch (loop-carried i*2 induction var + branch topology), both upstream of RA/scheduler models.
+- probe: fresh `pwsh tools/grinder/dump.ps1 func_80056CB8` + fresh `python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o` against the confirmed 42/197 chassis.
+- result: Spilling reg 11./reg 65. still present (2x each). classify verdict still PRE-RA, same shape. tmp/grind/func_80056CB8/s15/classify_s15.txt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (42/197), single fresh dump+classify run, no FAKE constructs
+
+- statement: classify's own suggested "single named intermediate" lever for the repeated 0x1F8002B8 literal (`s32 scratchpad = 0x1F8002B8;` once, read at both func_80053614 call sites) does not close the residual -- it makes it worse.
+- mechanism: reload1.c -- forcing the literal into one pseudo live across the intervening call adds a spill; the baseline's two `sw s8,16(#)` stores are the o32 ABI's stack-passed 5th-argument convention (one per call), not a redundant re-materialization as the diff text first suggested.
+- probe: added `s32 scratchpad;` decl + assignment, substituted at both call sites, `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: 46/204, build_insns 199 (worse than 42/197 by 4 score / 2 real insns). Reverted; banked as memory/grind/func_80056CB8/rejected/named-intermediate-scratchpad-literal-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (s14 body + the named-intermediate edit), single fresh sandbox measurement, no FAKE construct (ordinary C, simply measured worse)
+
+src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat empty). Next-session frontier: (1) loop-carried i*2 counter initialized from `start` before the loop rather than recomputed per-iteration (untried variant of s12's rejected form); (2) restructure the code==4 y-compare nested diamond to look for target's beqz+bltz+j triple (needs a fresh read of asm/funcs/func_80056CB8.s's y-compare tail + m2c on that sub-block, not yet done this cycle); (3) a solver-modality session to identify WHICH C-level value pseudo 11/65 actually are (this session confirmed the spill still fires but did not re-derive the value identity).
+
+## [s15] Reordering the pt0[]/pt1[] array-fill statements in the pre-func_80053614-call blocks (batch-pt0-then-pt1 vs pt1-then-pt0, interleaved pt0/pt1-first, or reversed intra-triple order, applied to either the obj-derived block or the x/z-derived block, one block varied at a time with the other held at the s14 baseline) does not lower the honest distance below 42/204 on the current chassis.
+- mechanism: GCC's store scheduling for 6 independent, already-live array-element stores per block; tested via a scratch-only hand generator (tools/spelling_enum.py cannot parse indexed-LHS assigns) since the tool's _ASSIGN_RE requires a bare identifier LHS.
+- probe: tmp/grind/func_80056CB8/s15/gen_pt_variants.py generated 10 full-function variants (5 structural reorderings x 2 blocks); tools/sweep_variants.py --func func_80056CB8 --file text1b --variants tmp/grind/func_80056CB8/s15/enum_pt --json
+- result: All 10 variants scored >= 44 (worst 79), strictly worse than the 42/197 baseline; 2 variants raised build_insns to 199. Zero at or below the floor. Full ranked list: tmp/grind/func_80056CB8/s15/sweep1.json.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (s14-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh sandbox measurement per variant, no FAKE constructs present in any variant
+
+## [s15] The dx/dz declaration-order spelling space in the flags==4 tail (inline vs named, both declaration orders — 5 distinct spellings) is still flat at 42/204 on the s14-derived 42/197 chassis, re-verified with the proper spelling_enum.py + sweep_variants.py pipeline this session (s9's original kill used hand verification on the older 58/198 chassis).
+- mechanism: cse.c / expand_expr folding of a two-term sum-of-squares comparison; independent of whether the two multiplicands are named locals or inlined.
+- probe: spelling_enum.py --candidate tmp/grind/func_80056CB8/s15/dxdz_marked.c --out tmp/grind/func_80056CB8/s15/enum_dxdz --no-swaps (5 spellings), then sweep_variants.py --func func_80056CB8 --file text1b --variants tmp/grind/func_80056CB8/s15/enum_dxdz --json
+- result: 5/5 variants scored exactly 42/197, identical to baseline. Raw output: tmp/grind/func_80056CB8/s15/sweep_dxdz.json.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (42/197, s14-banked body unmodified), single fresh sandbox measurement per variant, no FAKE constructs present
+
+## [s15] Naming the repeated 0x1F8002B8 scratchpad-address literal as a single fresh local (`s32 scratchpad = 0x1F8002B8;` declared once per loop iteration, read at both func_80053614 call sites instead of writing the literal twice) — the exact lever tools/ra_solver/inverse_compose.py classify's own C-lever list names for this PRE-RA residual ("single named intermediate") — does not lower the honest distance; it raises it.
+- mechanism: reload1.c: forcing the literal into one live-across-both-calls pseudo requires it to survive across the intervening func_80053614 call (a caller-save-register hazard), adding an extra spill/reload beyond what the two `sw s8,16(#)` stack-arg-setup stores in the baseline already do for arg4's stack-passed slot (o32 ABI 5th-argument convention, not a redundant re-materialization as first read from the classify diff).
+- probe: Declared `s32 scratchpad;` at loop-body top, assigned 0x1F8002B8 once, substituted at both func_80053614(..., 0x1F8002B8) call sites; measured via `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all` after re-applying the s14 body + the edit.
+- result: Score 46/204 (build_insns 199), 4 worse and 2 more real instructions than the 42/197 baseline. Reverted; not banked as candidate.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (s14-banked body + the named-intermediate edit + func_80053614 s32-return prerequisite), single fresh sandbox measurement, no FAKE construct (this was ordinary named-intermediate C, not FAKE-annotated, per the SOTN new_var_temp-relaxed family — it simply measured worse, not disqualified on cheat grounds)
+
+## [s15] The s13-identified double-bind (the .greg 'Spilling reg 11.'/'Spilling reg 65.' pair, and inverse_compose.py classify's PRE-RA verdict with the same instruction-multiset diff shape: our single $s8 lui/ori + two per-call `sw s8,16(#)` stack-arg stores + three `sll #,#,0x1` i*2 recomputes, vs target's loop-carried `addiu s8,s8,2`/`sll s8,#,0x2`/two `addu #,#,s8` plus a `beqz+bltz+j` branch triple where ours has one `bgez`) is UNCHANGED by the s14 42/197 chassis (it was last measured on the s13 48/198 chassis, one real instruction earlier).
+- mechanism: same as s8/s13: register allocation forced by call-crossing liveness (reg 11/65) and a genuine PRE-RA RTL instruction-multiset mismatch (loop-carried induction variable + branch topology), both upstream of any RA/scheduler model per classify's own refusal to hand off.
+- probe: Fresh `pwsh tools/grinder/dump.ps1 func_80056CB8` (rebuilds text1b.greg etc. against the current sandbox object) + fresh `python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o`, both run against the confirmed 42/197 chassis.
+- result: greg dump: 'Spilling reg 11.'/'Spilling reg 65.' each appear twice (once per func_80053614 call site), identical pattern to s13. classify: verdict still PRE-RA, same instruction-shape diff modulo the 1-instruction count change; full report tmp/grind/func_80056CB8/s15/classify_s15.txt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s15 chassis (42/197, s14-banked body unmodified), single fresh dump.ps1 + classify run, no FAKE constructs present
