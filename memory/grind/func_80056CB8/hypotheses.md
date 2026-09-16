@@ -2186,3 +2186,43 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s46 chassis: candidate.c s22-s44-banked body with `limit` local removed and bound spelled `i - start < 2`, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all (confirmed-working pipeline this session)
+
+## [s47] Precomputing `sinv = *sin_p; cosv = *cos_p;` right after the Judge-table lookups (replacing every later `*sin_p`/`*cos_p` dereference, including the post-call adjustment block, with the scalar) does NOT reduce register pressure across the two `func_80053614` calls and scores WORSE than baseline.
+- mechanism: hypothesized (frontier item carried from s46: "restructuring the obj/flags dispatch chain to reduce live-range overlap with the func_80053614 calls") that keeping two `s16 *` pointers live across a call (vs. two `s32` scalar values) costs more register pressure, since the pointer must additionally survive for its OWN dereference after the call while a scalar is already the final value. Measured directly.
+- probe: Applied candidate.c's fresh-confirmed s22-s46-banked baseline body (re-confirmed 38/204/198 this session first), then replaced `sin_p`/`cos_p` post-lookup and post-call dereferences with two new scalar locals `sinv`/`cosv` set once right after each pointer is computed (`sinv = *sin_p;` / `cosv = *cos_p;`), leaving `sin_p`/`cos_p` unused for their dereference after that point. Spliced into src/text1b.c with the same extern header + `func_80053614` s32-return prerequisite, measured via `sandbox func_80056CB8 --disable all`.
+- result: score 76/204 (194 build insns) — 4 FEWER real instructions than baseline (198) but a much WORSE score (baseline 38). Scalar-caching the table reads does not help; it opens up a larger register/scheduling diff than the pointer form. Reverted to clean INCLUDE_ASM state after measurement (git status clean).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s47 chassis: candidate.c s22-s46-banked body with sin_p/cos_p post-lookup dereferences replaced by fresh scalars sinv/cosv (single-write-multi-read, real consumed values), func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all (confirmed-working pipeline)
+
+## [s47] Splitting the reused `flags` local into a separately-named `angle` for the angle/lookup phase (leaving `flags` to start fresh at the `func_80053614` return-code phase) is BYTE-NEUTRAL — ties baseline exactly, no improvement.
+- mechanism: same frontier item as above, alternate axis: hypothesized the single `flags` variable's long live range (spanning angle computation THROUGH the two hit-test dispatch phases) might itself be the register-pressure source, distinct from the sin_p/cos_p axis. Naming the angle-computation value separately from the hit-test-result value tests whether GCC's allocator treats the split ranges differently.
+- probe: Same baseline chassis, declared a new `s32 angle;` local, renamed every read/write of `flags` up through the `cos_p = &Judge + ((flags + 0x400) & 0xFFF);` line to `angle` (angle bit-test, table lookups), left `flags` untouched everywhere after (first assigned from the `func_80053614` return value). Spliced and measured via `sandbox func_80056CB8 --disable all`.
+- result: score 38/204 (198 build insns) — EXACT tie with baseline, byte-for-byte identical codegen (same score AND same build_insns as the fresh-reconfirmed baseline this session). The split is real, byte-neutral, ordinary C (no dead code, no FAKE construct) but confers no advantage: GCC allocates it identically either way. Reverted to clean INCLUDE_ASM state after measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s47 chassis: candidate.c s22-s46-banked body with the angle-phase reads/writes of `flags` renamed to a separately-declared `angle` local (real, consumed value, standard C variable split), func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all (confirmed-working pipeline)
+
+## [s47] Precomputing sinv=*sin_p / cosv=*cos_p right after the Judge-table lookups (replacing every later *sin_p/*cos_p dereference, including the post-call adjustment block, with the scalar) reduces register pressure across the two func_80053614 calls and improves the score.
+- mechanism: hypothesized that a s16* pointer kept live across a call costs more register pressure than an equivalent s32 scalar value, since the pointer must additionally survive for its own dereference post-call.
+- probe: Spliced the s22-s46-banked candidate body into src/text1b.c with sin_p/cos_p post-lookup dereferences replaced by fresh scalars sinv/cosv (single-write, multi-read, real consumed values), same func_80053614 s32-return prerequisite, measured via sandbox --disable all.
+- result: score 76/204 (194 build insns) vs baseline 38/204 (198 build insns) -- 4 fewer real instructions but a much worse overall diff. Scalar-caching does not help; it opens a larger register/scheduling diff than the pointer form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s47 chassis: candidate.c s22-s46-banked body with sin_p/cos_p replaced by scalars sinv/cosv, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all
+
+## [s47] Splitting the reused `flags` local into a separately-named `angle` for the angle/lookup phase (leaving `flags` to start fresh at the func_80053614 return-code phase) changes GCC's allocation of the long-lived `flags` range and improves the score.
+- mechanism: hypothesized the single `flags` variable's long live range spanning angle computation through both hit-test dispatch phases might itself be a register-pressure source distinct from the sin_p/cos_p pointer axis.
+- probe: Same baseline chassis; declared a new s32 angle local, renamed every flags read/write up through the cos_p lookup to angle, left flags untouched thereafter (first set from the func_80053614 return value). Measured via sandbox --disable all.
+- result: score 38/204 (198 build insns) -- exact tie with the fresh-reconfirmed baseline, identical build_insns. Byte-neutral, ordinary C, no downside, but confers no closing advantage: GCC allocates it identically either way.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s47 chassis: candidate.c s22-s46-banked body with the angle-phase flags reads/writes renamed to a separately-declared angle local, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all
+
+## [s47] The s46 auto-return directive (func_8006CCC8 sibling movement to floor 39) carries no transplantable lever for func_80056CB8 -- reconfirmed, no change from s46's same-day finding.
+- mechanism: n/a -- sibling-ledger cross-check, not a codegen hypothesis.
+- probe: Re-read s46's evidence.md entry auditing this exact directive: func_8006CCC8's only open frontier item (H2, a LICM-hoist-var-reuse case on a sign-extended arg) is structurally unrelated to this function's frontier (for-loop guard elision / strength-reduce threshold); no shared C between the two bodies.
+- result: No new grep or evidence contradicts s46's finding this session; directive remains acknowledged with nothing to transplant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s47 re-audit of s46's func_8006CCC8 cross-reference check, no build measurement needed (structural non-overlap already established by grep)

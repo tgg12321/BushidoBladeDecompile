@@ -836,3 +836,26 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s46] Both concrete direct-bound for-loop spellings named in the s45 LADDER EXHAUSTED record's live frontier item #1 are now measured and dead: `i < start + 2` (42/204) and `i - start < 2` (47/204), both worse than the `s32 limit = start + 2;` baseline (38/204). Fewer real instructions (197, 196 vs 198) does not correlate with a better score for either.
 
 - [s46] Reverted src/text1b.c to clean INCLUDE_ASM state after every splice-and-measure this session; `git status --short src/text1b.c` empty at session end.
+
+- [s47] structural modality: re-confirmed fresh baseline 38/204/198 at session start
+  (sandbox --disable all, unchanged pipeline health since s46). Checked the auto-return
+  directive (func_8006CCC8 sibling movement to floor 39) against s46's own finding --
+  s46 already audited this same-day directive and found no transplantable lever between
+  the two functions (unrelated frontier: LICM-hoist-var-reuse on a sign-extended arg vs.
+  this function's for-loop guard elision / strength-reduce threshold); nothing changed
+  this session that would revise that finding. Tried two NEW structural probes on the
+  s46 frontier item ("restructure the obj/flags dispatch chain to reduce live-range
+  overlap with the func_80053614 calls"): (1) scalar-cache sin_p/cos_p as sinv/cosv --
+  KILLED, scores worse (76 vs 38) despite fewer real insns (194 vs 198); (2) split the
+  reused `flags` local into `angle` (lookup phase) + `flags` (hit-result phase) --
+  KILLED as a lever (byte-neutral tie, 38/204/198 identical to baseline) though it is a
+  legitimate ordinary-C alternative spelling with no downside. Neither closed the
+  frontier; floor remains flat at 38 (9th consecutive flat session: s39-s47).
+
+- [s47] Fresh sandbox --disable all re-confirms the s22-s46-banked candidate body at 38/204 (198 build insns) at session start -- pipeline health from s46 holds.
+
+- [s47] Two new structural probes targeting the s46 frontier's obj/flags-dispatch-restructure idea were tried and measured this session; neither closed the gap, and the sin_p/cos_p scalar-cache form is markedly worse despite fewer real instructions, showing the residual is scheduling/allocation-shaped, not raw instruction-count-shaped.
+
+- [s47] The angle/flags split is a legitimate, byte-neutral alternative spelling (kept out of candidate.c since it offers no advantage over the existing simpler single-variable form) -- filed as a banked negative result, not adopted.
+
+- [s47] Floor has now been flat at 38/204 for 9 consecutive sessions (s39 through s47) across enumerate/synthesis/solver/forensics/object-model/escalation/structural modalities; the s45 LADDER EXHAUSTED (non-endgame residual, floor 38) ROTATED disposition and its two re-activation triggers remain the governing record -- one trigger (sandbox scoring defect) already resolved per s46; the other (a genuinely new structural lever) is still open and this session's two probes did not supply it.

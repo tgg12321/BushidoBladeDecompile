@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 46,
+ "session_count": 47,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -279,47 +279,29 @@
    "floor": 38,
    "modality": "structural",
    "headline": "Sandbox scoring defect from s44b/s45 is resolved (regfix/asmfix machinery fully retired) -- direct sandbox measurement now works; both concrete direct-bound for-loop spellings from the s45 frontier ar"
+  },
+  {
+   "session": 47,
+   "floor": 38,
+   "modality": "structural",
+   "headline": "s47 structural: re-confirmed fresh floor 38/204; two new dispatch-restructure probes on the s46 frontier item both KILLED (scalar-cache sin_p/cos_p worse at 76; angle/flags split byte-neutral tie at 3"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural change elsewhere in the loop body (not the index arithmetic, not the loop bound) could shrink real-insn count enough to flip loop.c:3823's strength-reduce rejection inequality, letting GCC's own strength_reduce promote i*2 to a giv the way target's asm shows.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried through s40 failed due to register pressure from the two func_80053614 calls (both are class-killed as unremovable, s41).",
-   "next_probe": "No new candidate C shape identified this session -- this remains the genuinely open axis. A future session could try: restructuring the obj/flags dispatch chain (candidate.c ~1300-1359) to reduce live-range overlap with the func_80053614 calls without changing program semantics, now that direct sandbox measurement works again for fast iteration."
+   "hypothesis": "A structural change elsewhere in the loop body (not the index arithmetic, not the loop bound, and evidently not a pointer-vs-scalar swap on the Judge-table results or a rename-split of the reused flags variable) could still shrink real-insn count or register pressure enough to flip loop.c:3823's strength-reduce rejection inequality.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried through s47 (loop-bound rewrites, sin_p/cos_p scalar-caching, flags/angle split) failed or tied, all constrained by register pressure from the two func_80053614 calls (class-killed as unremovable, s41).",
+   "next_probe": "No new candidate C shape identified this session. The two general axes now explored (loop-bound spelling s46; pointer-vs-scalar and variable-split dispatch restructuring s47) are exhausted for this frontier item without closing it. A future session should pull a fresh RTL/.greg dump (per PASS ATTRIBUTION guidance) on the CURRENT baseline chassis specifically around the func_80053614 call sites to see which pseudo(s) are actually conflicting, rather than continuing to guess restructuring shapes blind."
   },
   {
-   "hypothesis": "The s45 LADDER EXHAUSTED / ROTATED disposition (floor 38, non-endgame residual) should be re-evaluated now that one of its two named re-activation triggers (the sandbox scoring defect) has resolved.",
+   "hypothesis": "The s45 LADDER EXHAUSTED / ROTATED disposition (floor 38, non-endgame residual) should be re-evaluated given the sandbox fix (s46) plus this session's two additional negative structural results.",
    "mechanism": "n/a -- process note, not a codegen hypothesis.",
-   "next_probe": "This session did not re-run the full escalation gate evaluation (mandated modality was `structural`, not `escalation`); a future `escalation`-modality session should note the sandbox fix in its gate evaluation, though it does not by itself close either endgame-lock gate (scan tier is still LOW, no SOTN precedent for the ordinary-C restructuring still needed)."
+   "next_probe": "A future `escalation`-modality session should note both the sandbox fix and this session's two structural kills in its gate re-evaluation; neither closes either endgame-lock gate on its own (scan tier is still LOW per s45, no SOTN precedent found for the ordinary-C restructuring still needed) -- but the negative evidence continues to narrow the frontier for whoever eventually re-runs the RTL-dump-guided probe above."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 13,
-   "statement": "Swapping the flags==4 threshold comparison's operand order (`dx*dx+dz*dz > 0x3D0900` instead of `0x3D0900 < dx*dx+dz*dz`) does not change loop.c's decision to hoist-and-spill the 0x3D0900 threshold co",
-   "kill_scope": "instance",
-   "measured_on": "s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement",
-   "predicate_cite": "",
-   "result": "score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline measured immediately before. No gradie"
-  },
-  {
-   "session": 13,
-   "statement": "Naming the threshold comparison's LHS sum as a fresh local (`s32 sq = dx*dx+dz*dz; if (sq > 0x3D0900)`) does not change the honest floor on this chassis.",
-   "kill_scope": "instance",
-   "measured_on": "s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement",
-   "predicate_cite": "",
-   "result": "score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline. No gradient."
-  },
-  {
-   "session": 13,
-   "statement": "Naming the threshold constant as a fresh local (`s32 limit = 0x3D0900; if (dx*dx+dz*dz > limit)`) does not change the honest floor on this chassis, confirming the constant is movable-eligible under lo",
-   "kill_scope": "instance",
-   "measured_on": "s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement",
-   "predicate_cite": "",
-   "result": "score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline. No gradient."
-  },
   {
    "session": 14,
    "statement": "Re-sweeping the same sin_p/cos_p/scale/x/z region with the commutative-operand-swap axis added (32 variants) finds no further improvement below 42/197 -- the order+swap spelling space for this specifi",
@@ -775,6 +757,30 @@
    "measured_on": "s46 chassis: candidate.c s22-s44-banked body with `limit` local removed and bound spelled `i - start < 2`, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all ",
    "predicate_cite": "",
    "result": "score 47/204 (196 build insns) -- fewest real insns of the three variants but the worst score of all three tried this se"
+  },
+  {
+   "session": 47,
+   "statement": "Precomputing sinv=*sin_p / cosv=*cos_p right after the Judge-table lookups (replacing every later *sin_p/*cos_p dereference, including the post-call adjustment block, with the scalar) reduces register",
+   "kill_scope": "instance",
+   "measured_on": "s47 chassis: candidate.c s22-s46-banked body with sin_p/cos_p replaced by scalars sinv/cosv, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/sandbox.py --disable all",
+   "predicate_cite": "",
+   "result": "score 76/204 (194 build insns) vs baseline 38/204 (198 build insns) -- 4 fewer real instructions but a much worse overal"
+  },
+  {
+   "session": 47,
+   "statement": "Splitting the reused `flags` local into a separately-named `angle` for the angle/lookup phase (leaving `flags` to start fresh at the func_80053614 return-code phase) changes GCC's allocation of the lo",
+   "kill_scope": "instance",
+   "measured_on": "s47 chassis: candidate.c s22-s46-banked body with the angle-phase flags reads/writes renamed to a separately-declared angle local, func_80053614 s32-return prerequisite, zero FAKE constructs, engine/s",
+   "predicate_cite": "",
+   "result": "score 38/204 (198 build insns) -- exact tie with the fresh-reconfirmed baseline, identical build_insns. Byte-neutral, or"
+  },
+  {
+   "session": 47,
+   "statement": "The s46 auto-return directive (func_8006CCC8 sibling movement to floor 39) carries no transplantable lever for func_80056CB8 -- reconfirmed, no change from s46's same-day finding.",
+   "kill_scope": "instance",
+   "measured_on": "s47 re-audit of s46's func_8006CCC8 cross-reference check, no build measurement needed (structural non-overlap already established by grep)",
+   "predicate_cite": "",
+   "result": "No new grep or evidence contradicts s46's finding this session; directive remains acknowledged with nothing to transplan"
   }
  ],
  "ladder_skip": 0,
