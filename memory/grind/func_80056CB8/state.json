@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 9,
- "current_modality": "enumerate",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 58,
    "modality": "enumerate",
    "headline": "s9 enumerate: re-confirmed floor 58; killed above-loop scratchpad-hoist and exhaustively killed the dx/dz distance-check spelling space (5/5, zero gradient) -- residual pinned to the scratchpad single"
+  },
+  {
+   "session": 10,
+   "floor": 58,
+   "modality": "synthesis",
+   "headline": "s10 synthesis: re-confirmed floor 58/204 chassis-stable; read the FULL target asm for the first time this ledger cycle and found the exact mechanism behind the s8 classify PRE-RA divergence (target ke"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a single PRE-RA multiset-shape decision (not reachable by any spelling of the downstream C tried so far) that determines BOTH the scratchpad-literal materialization count and the y-compare branch topology simultaneously -- likely tied to how GCC's front end lays out the two func_80053614 call sites' argument-passing sequence.",
-   "mechanism": "Unknown pre-RA front-end shape (s8's inverse_compose.py classify already proved this is upstream of both ra_solver and sched_solver, i.e. not an allocation or scheduling tiebreak). The next diagnostic step is reading the actual RTL emitted for the two func_80053614 call sites in tmp/grind/func_80056CB8/dumps/text1b.cse2 (captured s6) to see whether the constant's rtx is shared or re-expanded per call, and whether that sharing decision is itself controlled by argument list identity/count rather than by naming.",
-   "next_probe": "Try varying the CALL SITE STRUCTURE itself, not just the literal's name: e.g. does wrapping both func_80053614 calls through a single local helper-call site (same call, parameterized by hit array) change the constant's materialization count? Also worth trying: reorder the two calls' surrounding statement blocks (move the r2 call's pt0/pt1 setup earlier, before the r1-dependent x/z adjustment) to see if that changes CSE's basic-block boundary for the constant (see [[cse-block-extension-controls-fold-span]] -- a join label does NOT end cse1's basic block in general, but conditional-branch topology around r1 might)."
+   "hypothesis": "Invert the loop's primary induction variable: iterate the loop by the doubled byte-table index j (stepping by 2, matching $fp's own step) and derive the store index i as j >> 1 (matching $s6's exact relationship to $fp, i.e. fp = s6*2 throughout the whole function) -- untried in any prior session; distinct from both killed shared-VALUE spellings because it changes which variable is the loop's PRIMARY biv rather than sharing a derived value.",
+   "mechanism": "loop.c strength-reduction on TWO givens with a fixed linear relationship to the same basic induction variable: if the original C's loop variable was genuinely the doubled index (not i), GCC's normal single-induction-variable codegen for THAT variable would naturally produce $fp's exact pattern (one multiply at loop entry, +=2 per iteration), while i = j>>1 (or an inline shift at the store site) would separately explain $s6's +=1 pattern if loop.c recognizes j>>1 as a second, independently-reducible given of the same loop.",
+   "next_probe": "Rewrite the loop as for (j = start*2; j < start*2+4; j += 2) with i = j >> 1 computed once per iteration (or the store address computed inline via arg0 + 0x444 + (j>>1)), sandbox it on the s7-banked chassis. If neutral-or-better, this is the real structural fix (continue narrowing); if worse, it kills the 'original loop was indexed by the doubled value' hypothesis outright and $fp must be attributed to a delay-slot/scheduling artifact independent of loop shape -- worth an immediate solver-modality inverse_compose.py re-classify either way, since this is the first C change since s8's classify run with any chance of moving the verdict off PRE-RA."
   },
   {
-   "hypothesis": "The loop-counter register-rotation cluster ($s3 vs target's $s6/$s7-family roles) that s7 originally flagged is NOT a separate axis from the PRE-RA residual above -- s8 already corrected this attribution, but the objdiff region (112 lines at s7) has not been re-read against the current s9-confirmed chassis to see whether ANY of it is now register-only (post-RA) rather than multiset (pre-RA).",
-   "mechanism": "s8's classify report characterized the WHOLE residual as pre-RA, but that was measured before this session's dx/dz sub-expression kills; re-running inverse_compose.py classify now (after ruling out three downstream regions) may narrow the multiset diff further or confirm no change.",
-   "next_probe": "python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o on the s9-reconfirmed floor-58 chassis; compare the multiset diff detail against s8's classify_s8.txt to see if it's unchanged (expected, since s9 made no net C change) or whether re-running it now with fresher eyes reveals a lever s8 didn't name."
+   "hypothesis": "Check whether r1/r2 or dx/dz/y have an analogous register-reuse opportunity, OBSERVED DIRECTLY in target's own asm (not guessed), before inventing any further variable merge -- carried forward unchanged from s7/s8/s9, still untried.",
+   "mechanism": "Same method that produced the s7 win (borrowing an EXISTING local for a second, non-overlapping-lifetime real value) -- apply it only where target's own bytes show the register reuse, per full-picture-first discipline.",
+   "next_probe": "Grep asm/funcs/func_80056CB8.s (now fully read this session -- see evidence) for any hard register shared across r1/r2's or dx/dz/y's live ranges the way $s0 was shared across flags/ang/code at s7; none was spotted incidentally while reading for the idx2 hypothesis, but a dedicated register-by-register pass was not done."
   },
   {
-   "hypothesis": "r1/r2's setup blocks (the x/z point computations feeding pt0/pt1 before each func_80053614 call) may contain their own reachable spelling gradient that hasn't been enumerated yet -- only the code==4 TAIL has been swept so far (s5, s6, s7, s8, s9); the CALL SETUP region upstream of it is untested by spelling_enum.",
-   "mechanism": "Same systematic-enumeration modality, applied to a different block: the sin_p/cos_p/scale/x/z computation and the two pt0[]/pt1[] assignment groups preceding each func_80053614 call are candidate regions for a declaration-order or inlining spelling that might change the scratchpad-literal materialization pattern indirectly (by changing what's live across the call, which is what ra_solver models but classify says the diff predates).",
-   "next_probe": "Write an ENUM-BEGIN/END region around the pt0[]/pt1[] assignment block preceding the r1 call (6 array-element assignments -- note spelling_enum's regex likely won't parse array-subscript assignments as its 'assignment to outer variable' axis, so this probe may need a small tool patch or a hand-written variant set instead of the automated enumerator)."
+   "hypothesis": "Re-run tools/ra_solver/inverse_compose.py classify after the loop-inversion probe (frontier item 1) lands, even if negative, to see whether the PRE-RA verdict narrows or changes.",
+   "mechanism": "s8's classify verdict (PRE-RA, full instruction multiset mismatch) was measured before any of s9's or this session's C changes; a structural loop-shape change is the first edit since s8 with any chance of altering that verdict.",
+   "next_probe": "python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o, immediately after applying frontier item 1's loop-inversion form (win or lose)."
   }
  ],
  "judge_constraints": [],
@@ -174,6 +180,22 @@
    "measured_on": "s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix), each of the 5 exhaustively-enumerated dx/dz spellings applied one at a time, zero FAKE/cheat constructs, reverted after measurem",
    "predicate_cite": "",
    "result": "All 5 variants (v0..v4, tmp/grind/func_80056CB8/s9/enum/) scored 58/198, byte-identical to the s7-banked baseline -- zer"
+  },
+  {
+   "session": 10,
+   "statement": "Sharing the byte-table index value i*2 between the D_8009A821 and D_8009A820 lookups via a FRESH local declared inside the loop body each iteration (s32 idx2 = i*2; used at both sites) improves the fl",
+   "kill_scope": "instance",
+   "measured_on": "s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh in-body local idx2 = i*2 replacing both [i*2] byte-table index sites, zero FAKE/cheat constr",
+   "predicate_cite": "",
+   "result": "Score REGRESSED 58 -> 68 (build_insns 198 -> 200). Reverted. Confirms s6's kill is chassis-independent -- the regression"
+  },
+  {
+   "session": 10,
+   "statement": "Promoting idx2 to a genuine LOOP-CARRIED induction variable (declared in the outer function scope, initialized in the for-statement's init-clause as start*2, incremented in the increment-clause as idx",
+   "kill_scope": "instance",
+   "measured_on": "s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), idx2 promoted to a loop-carried induction variable in the for-statement's init/increment clauses, zero FA",
+   "predicate_cite": "",
+   "result": "Score REGRESSED 58 -> 73 (build_insns 198 -> 201) -- WORSE than even the fresh-in-body-local variant. Reverted. This is "
   }
  ],
  "ladder_skip": 0,

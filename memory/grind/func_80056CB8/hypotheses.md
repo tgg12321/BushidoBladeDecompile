@@ -507,3 +507,95 @@ measured hypotheses.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s9 chassis (s7-banked candidate.c body + func_80053614 s32-return fix), each of the 5 exhaustively-enumerated dx/dz spellings applied one at a time, zero FAKE/cheat constructs, reverted after measurement.
+
+## [s10, synthesis] Chassis re-audit: reapplying the s7-banked candidate.c body verbatim (+ func_80053614 s32-return prereq) to the current src/text1b.c reproduces floor 58/204 (build_insns 198) exactly, with zero drift since s9.
+- mechanism: n/a (measurement, not a lever). No FAKE-annotated constructs exist anywhere in the candidate (the flags/ang/code merge is the SOTN-sanctioned "variable reuse for codegen control" family, not a FAKE last-resort carve-out), so `tools/fake_ablate.py` (which sweeps FAKE-marker subsets) does not apply to this ledger's kill re-audit — noted explicitly so a future session doesn't spend a turn discovering the same thing.
+- probe: Applied candidate.c to src/text1b.c, ran `sandbox func_80056CB8 --disable all`.
+- result: score 58, build_insns 198 (byte-identical to every s7/s8/s9 measurement). Chassis confirmed stable; the ledger's floor-58 record is current, not stale.
+- verdict: CONFIRMED
+
+## [s10, synthesis] Read the FULL target asm (asm/funcs/func_80056CB8.s, all 218 lines) directly for the first time this ledger cycle and derived the precise mechanism behind the s8 classify report's "ours only: three sll #,#,0x1 / target only: sll s8,#,0x2 + addiu s8,s8,2" divergence: target maintains `i*2` (the D_8009A821/D_8009A820 byte-table index) as a SECOND, genuinely loop-carried induction variable ($fp) — initialized ONCE before the loop via a single multiply (`sll $fp,$v1,2` = v1*4 = i_initial*2) and incremented by a plain `addiu $fp,$fp,0x2` at the loop bottom (.L80056FB0), in lockstep with the real loop counter $s6 (i, `addiu $s6,$s6,0x1`) — and reads it via the SAME accumulator at BOTH the D_8009A821 lookup (~line 31, `addu $at,$at,$fp`) and the D_8009A820 lookup (~line 68). This is NOT a per-iteration recompute-from-i pattern; it is a manually-strength-reduced parallel counter.
+- mechanism: named/shared-index-value hypothesis, tested in TWO spellings: (a) `s32 idx2 = i * 2;` declared FRESH inside the loop body each iteration (same shape as s6's already-rejected shared-idx-local-worse.c, re-tested here to confirm the kill generalizes across the s7 flags/ang/code-merge chassis change), and (b) `idx2` promoted to a genuine loop-carried induction variable in the OUTER function scope, initialized in the for-statement's init-clause (`idx2 = start * 2`) and incremented in its increment-clause (`idx2 += 2`) — structurally mirroring target's asm.
+- probe: Applied each variant to the s7-banked chassis in turn, ran `sandbox func_80056CB8 --disable all` after each, reverted before applying the next.
+- result: (a) fresh in-body local: score 58 -> 68 (build_insns 198 -> 200), WORSE. (b) loop-carried induction variable: score 58 -> 73 (build_insns 198 -> 201), WORSE, and worse than (a). Both reverted; the loop-carried variant (b) is a genuinely NEW spelling this session (not previously tried) and is banked at memory/grind/func_80056CB8/rejected/loop-carried-idx2-worse.c; variant (a) reconfirms s6's shared-idx-local-worse.c kill survives the s7 chassis change.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), two spellings of a shared `i*2` value (fresh in-body local; loop-carried induction variable), zero FAKE/cheat constructs in either variant, both reverted after measurement.
+
+## Frontier reset for s11+ (synthesis conclusion)
+
+The residual (floor 58/204, PRE-RA per s8's inverse_compose classify) has
+now had its two most obvious C-level attacks on the scratchpad-literal /
+shared-index axis exhausted (single-naming: s8/s9, x2; shared-value
+sharing: s6, s10, x2) — all four measured WORSE, never neutral, which is
+itself informative: GCC's cse.c/loop.c is NOT simply failing to notice an
+opportunity we're handing it; every attempt to hand it the opportunity
+explicitly costs register pressure across the intervening `ratan2()` call.
+This strongly suggests target's C did NOT write these values as
+programmer-level named intermediates either — the loop-carried $fp
+accumulator most plausibly comes from the ORIGINAL SOURCE's loop
+structure being different from `for (i = start; i < start+2; i++)` in a
+way neither killed spelling reproduces (e.g., target's original loop
+might iterate over the BYTE-TABLE INDEX directly as the primary counter,
+deriving the store-offset `i` from it via `>>1`, rather than the reverse).
+This is a **structural (whole-loop-shape), not local-variable, hypothesis**
+and has NOT been tried in any prior session:
+
+1. **Invert the loop's primary induction variable: iterate the loop by the
+   byte-table index `j` (stepping by 2, matching `$fp`'s own step) and
+   derive the store index as `j >> 1` (matching `$s6`'s relationship to
+   `$fp`, which is exactly `fp = s6*2` throughout).** Concretely:
+   `for (j = start*2; j < start*2+4; j += 2) { i = j >> 1; ... table[j] ...; store[i]; }`
+   or equivalently restructure without an explicit `i` at all, computing
+   `arg0 + 0x444 + (j >> 1)` at the store site.
+   mechanism: if the ORIGINAL C's loop variable genuinely was the doubled
+   index (not `i`), GCC's normal single-induction-variable codegen would
+   produce exactly $fp's pattern (one multiply at loop entry, `+=2` per
+   iteration) for THAT variable, and the derived `i = j>>1` (or the
+   store address computed via a shift) would separately explain $s6's
+   `+=1` pattern IF GCC's strength-reduction independently recognizes
+   `j>>1` as a second induction variable of the same loop (this is a
+   textbook `loop.c` strength-reduction case: two givens with a linear
+   relationship to the same biv).
+   next probe: write the inverted-loop form, sandbox it. If neutral or
+   better, this is the real structural fix; if worse, it kills the
+   "original loop was indexed by the doubled value" hypothesis outright
+   and the $fp accumulator must be attributed to something else entirely
+   (a delay-slot/scheduling artifact per s6's note, or a structural
+   feature of the ORIGINAL source not reachable from this chassis's
+   overall loop shape at all — worth a solver-modality re-classify after
+   this probe either way).
+2. **(carried from s7/s8, still untried) Check whether `r1`/`r2` or
+   `dx`/`dz`/`y` have an analogous register-reuse opportunity, observed
+   directly in target's asm (not guessed)** before inventing any further
+   merge — apply the SAME method that produced the s7 win (read
+   asm/funcs/func_80056CB8.s first, merge only if target's own bytes show
+   the reuse).
+3. **(carried from s8) Re-run `tools/ra_solver/inverse_compose.py
+   classify`** after either of the above C changes lands (even if
+   negative) to see whether the PRE-RA verdict narrows — a structural
+   loop-shape change is the first C edit since s8's classify run that has
+   any chance of changing the verdict from PRE-RA to something
+   RA/scheduler-solvable.
+
+## [s10] Reapplying the s7-banked candidate.c body verbatim (+ func_80053614 s32-return prerequisite) to the current src/text1b.c reproduces floor 58/204 (build_insns 198) exactly -- the chassis has not drifted since s9.
+- mechanism: n/a (chassis re-audit measurement, mandated by the KILL RE-AUDIT instruction before proposing anything new).
+- probe: Applied candidate.c to src/text1b.c, ran sandbox func_80056CB8 --disable all.
+- result: score 58, build_insns 198, byte-identical to s7/s8/s9's recorded floor.
+- verdict: CONFIRMED
+
+## [s10] Sharing the byte-table index value i*2 between the D_8009A821 and D_8009A820 lookups via a FRESH local declared inside the loop body each iteration (s32 idx2 = i*2; used at both sites) improves the floor.
+- mechanism: Named-intermediate / CSE-unification hypothesis: this is the identical spelling shape as s6's already-banked shared-idx-local-worse.c, re-tested here specifically to confirm the s6 kill generalizes across the s7 flags/ang/code-merge chassis change (a genuine chassis-relative re-audit, not a duplicate probe).
+- probe: Declared s32 idx2 = i * 2; once per iteration in the s7-banked chassis, replaced both [i*2] index sites with [idx2], ran sandbox func_80056CB8 --disable all.
+- result: Score REGRESSED 58 -> 68 (build_insns 198 -> 200). Reverted. Confirms s6's kill is chassis-independent -- the regression is not an artifact of the pre-merge s6 chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh in-body local idx2 = i*2 replacing both [i*2] byte-table index sites, zero FAKE/cheat constructs, reverted after measurement.
+
+## [s10] Promoting idx2 to a genuine LOOP-CARRIED induction variable (declared in the outer function scope, initialized in the for-statement's init-clause as start*2, incremented in the increment-clause as idx2 += 2) -- structurally mirroring target's own $fp accumulator observed directly in asm/funcs/func_80056CB8.s (sll $fp,$v1,2 once before the loop; addiu $fp,$fp,0x2 once per iteration, read by BOTH byte-table lookups) -- reproduces target's pattern and improves the floor.
+- mechanism: loop.c induction-variable / strength-reduction hypothesis: if the original C's loop genuinely carried the doubled index as a second induction variable (not merely a same-iteration local), GCC's own strength reduction of a loop-carried variable (vs a per-iteration recompute) was hypothesized to produce a materially different, cheaper code shape than a fresh per-iteration local.
+- probe: Declared s32 idx2; in the function's outer scope alongside i/start, changed the for-statement to for (i = start, idx2 = start * 2; i < start + 2; i++, idx2 += 2), replaced both [i*2] sites with [idx2], ran sandbox func_80056CB8 --disable all.
+- result: Score REGRESSED 58 -> 73 (build_insns 198 -> 201) -- WORSE than even the fresh-in-body-local variant. Reverted. This is a genuinely NEW spelling this ledger had not tried (banked as memory/grind/func_80056CB8/rejected/loop-carried-idx2-worse.c). Both directions of 'one C variable holds i*2, shared by both byte-table reads' are now killed on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s10 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), idx2 promoted to a loop-carried induction variable in the for-statement's init/increment clauses, zero FAKE/cheat constructs, reverted after measurement.
