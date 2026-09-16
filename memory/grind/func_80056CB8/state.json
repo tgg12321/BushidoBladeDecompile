@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 17,
- "current_modality": "synthesis",
+ "session_count": 18,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -105,18 +105,19 @@
    "floor": 42,
    "modality": "synthesis",
    "headline": "s17 synthesis: re-confirmed floor 42/204 fresh; killed the s13-s16 reg11/reg65 'double-bind' as a category error (hardregs t3/lo, not pseudos -- FIRST_PSEUDO_REGISTER=68) and re-derived that the resid"
+  },
+  {
+   "session": 18,
+   "floor": 42,
+   "modality": "solver",
+   "headline": "s18 solver: classify re-confirms PRE-RA/rtl_shape (out of RA/sched-solver scope); read target asm to confirm $fp is a genuine loop-carried i*2 accumulator; re-tested the closest rejected spelling on t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining PRE-RA rtl_shape residual is concentrated (at least in part) in how the loop-tail index/pointer bookkeeping (`i++` and the $fp byte-offset-into-Judge-table pointer, both advanced by 2/iteration in target) is expressed in C, not in any register-allocation-solvable axis.",
-   "mechanism": "classify's rtl_shape verdict says the instruction multiset differs upstream of RA/scheduler; the newly-localized target-only `addiu ?,?,0x2` (x2, loop tail 80056F9C-80056FB4) and the stride-4 `sll ?,?,0x2` in the target-only set (vs our stride-2 `i*2` indexing) suggest target may compute a second, pointer-typed induction variable (advancing a pointer into the Judge sin/cos table by a byte offset, distinct from the array-index `i`) that our current C's `(&D_x)[i*2]` array-indexing form does not produce as separate loop-carried bookkeeping.",
-   "next_probe": "A structural or rederive-modality session should do a fresh line-by-line walk of asm/funcs/func_80056CB8.s lines 195-215 (the loop tail, addresses 80056F9C-80056FB4) against a fresh m2c decompile restricted to that block, and against the classify target-only list's full remaining unattributed entries (`li ?,4`, the two extra `lw` loads at offsets 104/96(sp)), to determine what C-level VALUE (not register) the target's `$fp`-based pointer arithmetic represents -- do NOT reopen the RA-solver/inverse.py pseudo-naming path, which s17 closed as a category error."
-  },
-  {
-   "hypothesis": "The already-twice-killed scratchpad-literal-naming family (s8/s9 in-loop and above-loop hoists, s15 re-confirmation) and the closed y-compare branch-topology family (s16) are both fully exhausted and should not be revisited without new evidence.",
-   "mechanism": "n/a -- negative-space narrowing from four sessions' worth of measurements (s8, s9, s15, s16) all landing at or above the 42/204 floor on this exact axis.",
-   "next_probe": "None -- explicitly excluded from the next session's search space unless a future classify/asm re-read surfaces new evidence contradicting the s16 closure."
+   "hypothesis": "The remaining PRE-RA rtl_shape residual requires shrinking or reshaping the loop body's total instruction count enough to cross loop.c:3823's strength-reduction threshold, rather than any re-spelling of the i*2 index itself -- the two unattributed target-only instructions (`li ?,4`, extra `lw` loads at offsets 104/96(sp)) may be part of a different, still-unexplained structural difference that changes insn_count as a side effect.",
+   "mechanism": "loop.c:3823's `v->lifetime * threshold * benefit < insn_count` predicate is the actual gate; insn_count is the loop body's total instruction count as GCC computes it internally post-optimization, so any C restructuring that genuinely shrinks or reshapes that count (not just renames the index) could in principle cross the threshold.",
+   "next_probe": "A structural or rederive-modality session should trace what the classify target-only `li ?,4` and the two extra `lw` loads at 96/104(sp) actually represent in the target's C -- they are still unattributed after s17 and s18 -- and separately, whether any UNRELATED simplification elsewhere in the loop body (not touching the i*2 index at all) measurably shrinks build_insns enough to approach the loop.c:3823 threshold. Do NOT re-open any spelling of 'i*2 in one C handle' -- that family is now class-killed."
   }
  ],
  "judge_constraints": [],
@@ -361,6 +362,14 @@
    "measured_on": "s17 chassis (42/197, s16-banked body unmodified), fresh .greg dump this session, no FAKE constructs",
    "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:1181",
    "result": "The premise that pseudo 11/65 are nameable spilled C objects is factually false; no C-level lever follows from further p"
+  },
+  {
+   "session": 18,
+   "statement": "No C-level re-spelling of how the i*2 byte-table index is named or carried (fresh int local, loop-carried int induction variable, fresh pointer, loop-carried pointer) can close this residual's missing",
+   "kill_scope": "class",
+   "measured_on": "s18 chassis (42/197, s17-banked candidate.c body unmodified except the tested idx2 substitution, reverted after measurement), single fresh sandbox measurement, no FAKE constructs present in either bas",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
+   "result": "idx2 variant measured 42 -> 50 (build_insns 197 -> 200), WORSE, on the current 42/197 chassis -- reproducing the s10 (58"
   }
  ],
  "ladder_skip": 0,

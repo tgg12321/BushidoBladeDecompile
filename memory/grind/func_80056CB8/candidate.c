@@ -1,6 +1,24 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17)
+ * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17/s18)
  * — floor 42/204, NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s18 (solver modality, 2026-09-16). Re-applied body unchanged, re-confirmed
+ * floor 42/204 fresh (build_insns 197). Ran classify fresh: PRE-RA/rtl_shape
+ * verdict unchanged since s8, still out of scope for ra_solver/sched_solver.
+ * Read asm/funcs/func_80056CB8.s lines 1-217 directly and confirmed target's
+ * $fp is a genuine loop-carried i*2 accumulator (init `sll $fp,$v1,2` before
+ * the loop, `addiu $fp,$fp,0x2` at the loop tail, read via `addu $at,$at,$fp`
+ * at both the D_8009A821/D_8009A820 byte-table lookups) -- matching the
+ * s10/s12-era description exactly on this chassis. Re-tested the closest
+ * rejected form (s10's loop-carried-int idx2) on THIS chassis per the
+ * mandatory kill re-audit: 42 -> 50 (WORSE), reproducing the s10 (58->73)
+ * and s12 (48->78) verdicts on a third chassis generation. Named the
+ * mechanism for the first time with a line cite: tools/gcc-2.7.2/loop.c:3823's
+ * giv-worth predicate gates strength reduction on `insn_count` alone, never
+ * on which C construct carries the index value -- so this is now a CLASS
+ * kill (predicate-cited), not just another instance measurement. Full
+ * derivation: hypotheses.md [s18]. Reverted src/text1b.c to clean
+ * INCLUDE_ASM before finishing.
  * ---------------------------------------------------------------------
  * s17 (synthesis modality, 2026-09-16). STALE-HEAD-CLAIM NOTE (as always):
  * src is INCLUDE_ASM between sessions. Re-applied s16 body unchanged,
