@@ -1,0 +1,48 @@
+{
+ "func": "_SsVmInit",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 38,
+   "modality": "recon",
+   "headline": "Re-ran discarded s1 recon: applied inherited candidate.c to src/main.c, re-measured honest floor 38 (was claimed 37 pre-discard), banked explicit per-symbol OBJECT MODEL verdicts for both flagged SPLI"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Type the per-voice loop counter `i` as s16/u16 instead of s32 to reproduce the residual loop-exit compare mismatch (target: masked andi 0xFFFF + unsigned sltu; current build: plain signed slt, no mask).",
+   "mechanism": "Same class of fix as the confirmed do-while/u16-mask and narrowing-cast levers, applied to the outer loop bound instead of the inner offset -- an unmasked s32 counter vs the original's narrower counter type would produce exactly this shape difference.",
+   "next_probe": "Change i's declaration (or introduce a masked view) for just the per-voice loop and re-measure; if it doesn't close, read the .sched/.greg dump per the PASS ATTRIBUTION contract (pwsh tools/grinder/dump.ps1 _SsVmInit) before further guessing."
+  },
+  {
+   "hypothesis": "Line-by-line objdump diff of the remaining ~38-score residual against asm/funcs/_SsVmInit.s has not been done exhaustively (only a visual skim in the inherited work) -- the D_800F4E22 store's source register may reuse a transient v1 that also carried an earlier unrelated constant 0x40 in target, analogous to the already-applied offset=1;buf[0]=offset<<i variable-reuse technique.",
+   "mechanism": "Same variable-reuse-for-RA-steering technique (defeat-licm-hoist-var-reuse family) applied to a different constant.",
+   "next_probe": "Re-verify from asm/funcs/_SsVmInit.s bytes around the D_800F4E22 store before trusting the register-reuse theory; if confirmed, write the constant through a reused local instead of a fresh literal and re-measure."
+  },
+  {
+   "hypothesis": "Run tools/grinder/dump.ps1 _SsVmInit and read the .greg/.sched dumps to pass-attribute the remaining floor-38 residual before further manual guessing -- not yet done this session (recon budget spent on re-verifying the inherited chassis and fixing the OBJECT MODEL gap).",
+   "mechanism": "n/a -- diagnostic step, not a codegen lever itself.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 _SsVmInit; read tmp/grind/_SsVmInit/dumps/*.greg and *.sched for the current HEAD form before hypothesizing further register/scheduling levers."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Writing the three fixed-count clear loops as plain `for (i=0;i<N;i++)` and the per-voice offset as `offset = i * 54;` on an unmasked s32 i does NOT reproduce target's instruction shapes: GCC 2.7.2 loo",
+   "kill_scope": "instance",
+   "measured_on": "HEAD s1 naive-transliteration form (plain for loops, unmasked s32 i, offset = i*54), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "objdump confirms loop-reversal + accumulator strength-reduction on the naive form, contradicting target's shape"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-16T21:24:37.353584+00:00",
+ "object_model_audited": 1
+}

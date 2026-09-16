@@ -2208,3 +2208,4 @@
 - 2026-09-16 15:32 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 16:02
 - 2026-09-16 15:49 _SsSndCrescendo s6 [synthesis] floor=10: Four-session 130 plateau broken to 10 (199 vs 200 insns): the never-run full objdump diff showed 12 of the 13 surplus instructions were source-level divergences, not register allocation.
 - 2026-09-16 16:24 _SsSndCrescendo COMPLETED-C after 7 sessions (closer: s7 [synthesis]).
+- 2026-09-16 16:39 _SsVmInit s1 [recon] floor=38: Re-ran discarded s1 recon: applied inherited candidate.c to src/main.c, re-measured honest floor 38 (was claimed 37 pre-discard), banked explicit per-symbol OBJECT MODEL verdicts for both flagged SPLIT-AGGREGATE signals.
