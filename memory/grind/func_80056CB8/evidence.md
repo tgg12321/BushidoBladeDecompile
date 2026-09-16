@@ -997,3 +997,15 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s57] The s53 live-frontier item ('narrow some OTHER live pseudo's declared type/scope to relieve limit's spill cost') has two readings: (1) narrow start/limit/i themselves -- now CLOSED by this session's measurement (all 3 combos worse); (2) narrow one of the ~20 OTHER conflict-graph-live pseudos identified in the s51 .greg dump -- still open, requires the s55-named pseudo-number cross-reference (fresh -da run vs nrefs_census .lreg output), which is a forensics/solver-modality task outside this session's structural mandate.
 
 - [s57] Sibling func_8006CCC8 (floor 39, the owner-directive trigger for this session's dispatch) remains structurally disjoint (field28-dispatch record-update loop vs. this function's collision-detection loop over func_80053614/hit0/hit1/pt0/pt1) -- re-confirmed at s54/s56, no transplantable block; not re-derived again this session to avoid redundant ledger bloat.
+
+- [s58] 10 consecutive sessions (s49-s58) re-confirm honest floor 38/204 (build_insns 198 vs target_insns 204) with zero drift.
+
+- [s58] tools/ra_solver/inverse_compose.py classify (re-run multiple times through s50) reports FIRST DIVERGENCE: PRE-RA/rtl_shape -- the honest and target instruction streams are a different instruction MULTISET, not a permutation/renaming of the same set, so RA-solver and sched-solver are both formally out of scope for this residual (their own tool verdict: 'searching them would produce fiction').
+
+- [s58] The target-only instruction shape (addiu s8,s8,2 / two addu #,#,s8 / beqz+bltz+j triple) is a genuine loop-carried strength-reduced i*2 accumulator kept in $fp across the whole loop -- loop.c's strength_reduce giv-worth test (loop.c:3823) rejects promoting our i*2 to a giv on every chassis measured because insn_count (163) exceeds lifetime*threshold*benefit (124), a 24% shortfall confirmed via the real -da .loop dump (s31).
+
+- [s58] The 'one C handle carries i*2 across both table lookups' family (shared index local, shared pointer local, shared byte-offset local) is now KILLED across THREE distinct chassis generations (s6 @81/204, s11-13 @48-58/204, s51 @38/204, always regressing to ~51-81/204) -- this family is exhausted, not chassis-relative.
+
+- [s58] 32 rejected forms are now banked in memory/grind/func_80056CB8/rejected/, spanning loop-bound shapes, declaration order, statement re-association, type-narrowing, do-while restructuring, and shared-index/pointer/offset variants.
+
+- [s58] The 0x1F8002B8 scratchpad-literal single-vs-double materialization gap (target spills to a stack slot and reloads via a caller-saved temp; ours re-materializes via lui/ori into a callee-saved $fp both times) is understood via the s29 .greg register-disposition audit: $fp is the ONLY unclaimed callee-saved register left after 8 other named residents saturate $s0-$s7, so the literal takes it by allocation default, not priority contention -- naming the literal as a local (tried 3x: s15, s28, s41) always regresses because it forces one pseudo to live across the intervening func_80053614 call.

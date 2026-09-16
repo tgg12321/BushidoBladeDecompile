@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 57,
+ "session_count": 58,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -345,34 +345,24 @@
    "floor": 38,
    "modality": "structural",
    "headline": "s57 structural: fresh 38/204 re-confirmed (9th consecutive); new type-narrowing axis (start/limit/i -> s16) tried in 3 combos, all measured worse (39/45/48), closing that reading of the s53 frontier i"
+  },
+  {
+   "session": 58,
+   "floor": 38,
+   "modality": "structural",
+   "headline": "s58 structural: 10th consecutive 38/204 re-confirmation; mandatory FAKE-ablation re-audit on the closest instance kill found zero FAKE constructs (kill is clean); closed the WHOLE type-narrowing axis "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the ~20 OTHER pseudos simultaneously live with limit in global_alloc's conflict graph (per the s51 .greg dump) has a declared C-level type/scope that could legitimately narrow ITS OWN live range, shifting the spill-cost comparison away from limit -- without attacking limit's genuine LICM-invariant status directly.",
-   "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the full conflict graph's relative costs, not any single pseudo's isolated properties; start/limit/i themselves are now ruled out as the narrowing target (this session).",
-   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output via a fresh `-da` cc1 run on the current chassis, to name a SPECIFIC non-start/limit/i pseudo before proposing any declaration-scope edit. Forensics/solver modality, not structural."
+   "hypothesis": "One of the ~20 OTHER pseudos simultaneously live with limit in global_alloc's conflict graph (per the s51 .greg dump) -- a compiler-internal pseudo WITHOUT a stable declared C name, distinct from the 8 named residents (obj/i/flags/scale/sin_p/cos_p/x/z, all now closed as narrowing targets per this session) -- has a source-level handle that could legitimately narrow ITS live range, shifting the spill-cost comparison away from limit.",
+   "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the FULL conflict graph's relative costs, not any single pseudo's isolated properties.",
+   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output via a fresh -da cc1 run on the current chassis, to NAME a specific non-named pseudo before proposing any declaration-scope edit. This is forensics/solver modality, not structural -- the next session in either of those modalities should run this cross-reference before any further C probe."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 24,
-   "statement": "Moving hit0[4]/hit1[4]/work[4] from function scope into the loop's block scope (they are read only within a single iteration, unlike pt0/pt1 whose pre-loop address materialization target itself hoists",
-   "kill_scope": "instance",
-   "measured_on": "s24 chassis (s22-banked 38/198 body, unmodified except the hit0/hit1/work scope move), single fresh sandbox measurement, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "score 38/204 unchanged, build_insns 198 unchanged, byte-identical. Consistent with the fresh dump evidence: pseudo 149's"
-  },
-  {
-   "session": 25,
-   "statement": "The sin_p/cos_p/scale/x/z assignment-order spelling space (5 assign-statements: sin_p, scale, x, cos_p, z -- the block s14 adopted from a 16-variant sweep on the older 42/197 chassis) is still flat at",
-   "kill_scope": "instance",
-   "measured_on": "s25 chassis (s22/s23/s24-banked 38/198 body + func_80053614 s32-return prerequisite + the 3 missing extern decls restored, unmodified otherwise), one fresh sandbox measurement per variant (48 total ac",
-   "predicate_cite": "",
-   "result": "--no-swaps: 16/16 measured; 4 variants (v00, v01, v05, v13, incl. the currently-adopted order) tie the floor at 38/198; "
-  },
   {
    "session": 25,
    "statement": "The pt0[]/pt1[] array-fill store-order spelling space (2 six-store blocks, 10 structural reorderings: batch order / interleave / intra-triple reversal, applied one block at a time) is still strictly w",
@@ -836,6 +826,22 @@
    "measured_on": "s57 chassis (candidate.c's s22-s56-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, start/limit/i individually and jointly narrowed to s16, zero FAKE constructs present)",
    "predicate_cite": "",
    "result": "i-alone: 45/204 (build_insns 206, +8 insns). start+limit: 39/204 (build_insns 198, same insn count, 1-point-worse RA res"
+  },
+  {
+   "session": 58,
+   "statement": "tools/fake_ablate.py run against the closest-scoring instance kill (rejected/type-narrow-start-limit-s16-worse.c, s57: 39/204) reports zero FAKE-annotated constructs to ablate, so that kill is clean a",
+   "kill_scope": "instance",
+   "measured_on": "fake_ablate.py static analysis of the banked form (no FAKE constructs present); underlying sandbox measurement is s57's 39/204",
+   "predicate_cite": "",
+   "result": "Tool output: 'no FAKE-annotated constructs found ... nothing to ablate'. The s57 measurement (39/204) stands unconfounde"
+  },
+  {
+   "session": 58,
+   "statement": "Type-narrowing to s16 is semantically disqualified for all 7 named register-resident locals besides start/limit/i (flags, scale, x, z, sin_p, cos_p, obj), closing the entire type-narrowing structural ",
+   "kill_scope": "instance",
+   "measured_on": "s58 read-only analysis of the s22-s57-banked candidate.c body (no sandbox measurement required), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All 7 non-i named residents disqualified (2 by provable s16 overflow, 2 by unbounded value, 2 by already being pointers/"
   }
  ],
  "ladder_skip": 0,

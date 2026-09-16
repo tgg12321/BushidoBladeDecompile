@@ -1442,6 +1442,31 @@
  * two dumps come from different passes and may renumber) — that
  * cross-reference is the concrete next step, not yet a C hypothesis.
  * Full writeup: hypotheses.md [s55].
+ * ---------------------------------------------------------------------
+ * s57 (structural modality). Re-confirmed 38/204 fresh (9th consecutive
+ * session). New axis: type-narrowed start/limit/i (all provably [0,6]-
+ * valued) to s16 in 3 combinations -- all measured WORSE (39/45/48 vs
+ * 38 baseline; i-alone costs +8 real insns via MIPS's lack of native
+ * halfword ALU ops). Closes the type-narrowing reading of the s53 live
+ * frontier for these three specific locals. Banked to
+ * rejected/type-narrow-{i,start-limit,all}-s16-worse.c.
+ * ---------------------------------------------------------------------
+ * s58 (structural modality). Re-confirmed 38/204 fresh (10th consecutive
+ * session, no HEAD drift). MANDATORY kill re-audit (fake_ablate.py) on
+ * the closest instance kill (s57's start+limit-s16 form, 39/204): zero
+ * FAKE constructs to ablate -- the kill is clean, not a FAKE-carrier
+ * artifact. Then closed the WHOLE type-narrowing axis, not just
+ * start/limit/i: read-only analysis of the s29-named 8 register-resident
+ * locals (obj/i/flags/scale/sin_p/cos_p/x/z) shows the 7 non-i residents
+ * are each DISQUALIFIED from s16 narrowing on correctness grounds (not
+ * measured-worse -- semantically wrong): flags/scale are byte<<8 values
+ * that can reach 0xFF00, exceeding signed s16 range; x/z are unbounded
+ * world coordinates; sin_p/cos_p/obj are pointers. No new sandbox
+ * measurement needed for this closure (disqualification precedes any
+ * codegen question, same standard as the hit0/hit1 precedent). The
+ * remaining live frontier (naming one of the ~20 OTHER, unnamed compiler
+ * pseudos via the s55 .greg/.lreg cross-reference) still requires
+ * forensics/solver modality. Full writeup: hypotheses.md [s58].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;

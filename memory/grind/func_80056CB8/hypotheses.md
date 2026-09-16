@@ -2627,3 +2627,47 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s57 chassis (candidate.c's s22-s56-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, start/limit/i individually and jointly narrowed to s16, zero FAKE constructs present)
+
+## [s58] Chassis re-verification at session start: baseline still reproduces at score 38/204 (build_insns 198) with the s22-s57-banked candidate.c body applied fresh.
+- mechanism: Direct re-measurement, required before spending any new probe this session (10th consecutive confirming session).
+- probe: Applied candidate.c's body verbatim to src/text1b.c via tmp/grind/func_80056CB8/s58/splice.py baseline (func_80053614 s32-return prerequisite + header externs included), ran `sandbox func_80056CB8 --disable all`, reverted via `git checkout -- src/text1b.c`.
+- result: score 38, build_insns 198, target_insns 204 -- matches the ledger's last recorded floor exactly.
+- verdict: CONFIRMED
+
+## [s58, structural] MANDATORY KILL RE-AUDIT: `tools/fake_ablate.py` run against the closest-scoring instance kill (rejected/type-narrow-start-limit-s16-worse.c, s57: 39/204, only 1 point worse than the 38/204 baseline) reports zero FAKE-annotated constructs to ablate -- the kill is clean, not an artifact of a FAKE carrier occupying the target pseudo.
+- mechanism: Per the brief's KILL RE-AUDIT REQUIRED instruction (floor flat 3+ sessions): an instance kill is only trustworthy if no un-ablated FAKE construct sat on the pseudo the lever targeted (func_8002EA24 s8 precedent). This form (start/limit narrowed to s16, i left s32) contains no FAKE annotation at all -- candidate.c's own header audits (grepped: 7 "FAKE" hits, all in prose explaining the ABSENCE of any FAKE construct, none an actual `/* FAKE: ... */` line) confirm the whole s22-s57 chassis carries zero FAKE constructs.
+- probe: `python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/rejected/type-narrow-start-limit-s16-worse.c --json`
+- result: Tool output: "no FAKE-annotated constructs found in memory/grind/func_80056CB8/rejected/type-narrow-start-limit-s16-worse.c; nothing to ablate". No re-measurement needed -- the s57 kill (39/204 vs baseline 38/204) stands as recorded, unconfounded by any FAKE carrier.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: fake_ablate.py static analysis of the banked form (no FAKE constructs present to ablate; the s57 sandbox measurement, 39/204, remains the standing result)
+
+## [s58, structural] Type-narrowing to s16 is semantically DISQUALIFIED (not merely codegen-worse) for every OTHER named register-resident in this function besides start/limit/i -- closing the type-narrowing axis for the whole named-resident set, not just the three already measured at s57.
+- mechanism: The s29-banked .greg audit (line ~1333) named the function's 8 register-resident locals across the loop+call span as obj/i/flags/scale-table-value/sin_p/cos_p/x/z (occupying $s0-$s7). Of these, i was already measured (s57, worse). The remaining 7 fall into three groups on inspection of candidate.c:1460-1518: (1) `flags` and `scale` are computed as `D_8009A821[i*2] << 8` / `D_8009A820[i*2] << 8` -- an 8-bit table byte (0-255) left-shifted by 8 gives a value range up to 0xFF00 = 65280, which EXCEEDS the signed s16 range (max 32767); narrowing either to s16 would silently reinterpret the high bit as a sign bit, changing runtime behavior, not just codegen -- disqualified on correctness grounds, same standard already applied to the hit0/hit1 scope-narrowing candidate at s ~57/line 2520. (2) `x` and `z` are world-space coordinates (`*(s32*)(obj+0xB8) + scaled-sin/cos term`) with no provable small bound -- disqualified, not "provably small-valued" the way start/limit/i are. (3) `sin_p`/`cos_p` are already narrow (`s16 *`, pointers into the `Judge` trig table) and `obj` is a pointer/address value -- neither is a narrowing candidate (pointers don't narrow to s16 on this ABI without becoming meaningless).
+- probe: Read-only analysis of candidate.c's loop-body declarations and their assigned expressions (lines 1467-1518); cross-referenced against the s29 .greg register-resident list to confirm coverage of all 8 named residents. No sandbox measurement taken -- each candidate is disqualified on correctness/semantic grounds before any codegen question is reachable (same standard as the hit0/hit1 precedent), so a measurement would not be informative (a semantically-wrong form is not "worse code", it is not equivalent code).
+- result: All 7 non-start/limit/i named residents are disqualified from s16 narrowing (2 by provable overflow risk, 2 by no provable small bound, 2 by already being narrow/being an address). Combined with s57's measured-worse start/limit/i, this closes the ENTIRE type-narrowing structural axis for every register-resident this function's own register allocator selects for $s0-$s7 -- not just the three tried at s57. The s53/s55 "~20 OTHER pseudos" frontier item (which motivated the s57 probe) refers to pseudos WITHOUT a stable declared C name (block-local temporaries, compiler-introduced pseudos) that the s55 forensics pseudo-cross-reference has not yet named -- that item remains open and requires forensics/solver modality, not structural, per the ledger's own s57 note.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s58 read-only analysis of the s22-s57-banked candidate.c body (no sandbox measurement required; disqualification is semantic, not a codegen-worse comparison), zero FAKE constructs present
+
+## [s58] The s22-s57-banked candidate.c body, applied fresh to src/text1b.c, reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session.
+- probe: Applied candidate.c's body verbatim via tmp/grind/func_80056CB8/s58/splice.py baseline, ran sandbox func_80056CB8 --disable all, reverted via git checkout.
+- result: score 38, build_insns 198, target_insns 204 -- matches the ledger's last recorded floor exactly.
+- verdict: CONFIRMED
+
+## [s58] tools/fake_ablate.py run against the closest-scoring instance kill (rejected/type-narrow-start-limit-s16-worse.c, s57: 39/204) reports zero FAKE-annotated constructs to ablate, so that kill is clean and not an artifact of a FAKE carrier occupying its target pseudo.
+- mechanism: Per the brief's mandatory kill re-audit: a lever is not proven dead if a FAKE construct sat on the pseudo it targeted (func_8002EA24 s8 precedent). This chassis carries zero FAKE annotations anywhere (verified: candidate.c's 7 'FAKE' text hits are all prose explaining the absence, none an actual /* FAKE: ... */ line).
+- probe: python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/rejected/type-narrow-start-limit-s16-worse.c --json
+- result: Tool output: 'no FAKE-annotated constructs found ... nothing to ablate'. The s57 measurement (39/204) stands unconfounded.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: fake_ablate.py static analysis of the banked form (no FAKE constructs present); underlying sandbox measurement is s57's 39/204
+
+## [s58] Type-narrowing to s16 is semantically disqualified for all 7 named register-resident locals besides start/limit/i (flags, scale, x, z, sin_p, cos_p, obj), closing the entire type-narrowing structural axis for this function's declared register residents.
+- mechanism: flags and scale are computed as an 8-bit table byte (D_8009A821/D_8009A820, range 0-255) left-shifted by 8, giving a value range up to 0xFF00=65280 which exceeds signed s16's 32767 max -- narrowing either would silently reinterpret the high bit as a sign bit, changing runtime behavior, not just codegen. x and z are world-space coordinates with no provable small bound. sin_p/cos_p are already s16* pointers and obj is an address value -- neither is a meaningful s16-narrowing target.
+- probe: Read-only analysis of candidate.c's loop-body declarations/assignments (lines ~1467-1518), cross-referenced against the s29-banked .greg register-resident list (obj/i/flags/scale/sin_p/cos_p/x/z occupying $s0-$s7). No sandbox measurement taken since each candidate is disqualified on correctness grounds before any codegen question is reachable (same standard already applied to the hit0/hit1 scope-narrowing candidate).
+- result: All 7 non-i named residents disqualified (2 by provable s16 overflow, 2 by unbounded value, 2 by already being pointers/addresses). Combined with s57's measured-worse start/limit/i narrowing, the type-narrowing axis is now closed for every register resident GCC's own allocator picks for this function -- the s53/s55 'other pseudos' frontier item refers to compiler-internal pseudos without a stable C name, which requires forensics naming, not structural guessing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s58 read-only analysis of the s22-s57-banked candidate.c body (no sandbox measurement required), zero FAKE constructs present
