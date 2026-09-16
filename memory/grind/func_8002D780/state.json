@@ -661,7 +661,7 @@
    "consumed": null
   }
  ],
- "exhaustion_base": 13,
- "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8002E6B0 -> floor 0 (2026-09-08T18:29)",
- "last_unpark_at": "2026-09-08T18:29:21.663824+00:00"
+ "exhaustion_base": 22,
+ "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8002CA8C -> floor 0 (2026-09-16T02:40)",
+ "last_unpark_at": "2026-09-16T02:40:24.629144+00:00"
 }
