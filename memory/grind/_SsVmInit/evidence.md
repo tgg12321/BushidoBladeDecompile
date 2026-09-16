@@ -325,3 +325,15 @@ about `D_800F4E22`'s register reuse. Findings:
 - [s5] main.c already carries pre-existing, non-fatal conflicting-type warnings for several unrelated globals/functions (D_800163D8/D_800163E8/_spu_IRQCallback/SpuFree/SpuSetReverb) that the real Makefile build silently tolerates (cc1 -w suppresses the warning class, build proceeds); these are NOT related to _SsVmInit and are not a lever -- they only mattered because import.py's prune step treated them as fatal.
 
 - [s5] tools/permuter_campaign.py's own preprocess step runs a bare host `cpp -P -nostdinc -DPERMUTER` with no include path, so any hand-built permuter base.c must already be fully preprocessed (zero #include lines) before being handed to the campaign.
+
+- [s6] sandbox --disable all --diff at s6 dispatch: score 3, target_insns=200, build_insns=200, 8 hunks (0 source-level, 2 operand-only, 6 not-scored) -- identical to s4/s5's recorded residual.
+
+- [s6] tools/grinder/dump.ps1 _SsVmInit produced a full -da whole-TU dump set at tmp/grind/_SsVmInit/dumps/ (main.lreg etc.) despite pre-existing harmless conflicting-type warnings elsewhere in main.c (same warnings noted in candidate.c's s4 section); the dump is usable.
+
+- [s6] _SsVmInit's function region in main.lreg spans lines 16251-17172 of that dump (154 registers, 'Function _SsVmInit' header at 16251, next function 'note2pitch' at 17172).
+
+- [s6] Register 72 (reg/v:SI 72) is the a0 parameter's own pseudo -- 'used 3 times across 35 insns; crosses 2 calls' -- what becomes $s1 in the final asm on both target and ours.
+
+- [s6] Register 94 is the compare's masked value (zero_extend:SI(subreg:QI(reg 72))) at insn 131, feeding the ltu compare at insn 133 where it dies (REG_DEAD) and is never referenced again in either baseline or the explicit-duplicate-cast variant.
+
+- [s6] The else-arm store at insn 148 is (mem:QI SsVmMaxVoice) = (subreg:QI (reg/v:SI 72) 0) -- i.e. it already sources reg 72 directly, matching our C's plain `a0` in the else arm; this is front-end output, prior to local-alloc, so the a0-vs-v0 hard-register choice downstream is not resolvable purely by finding a shared-value C expression -- the RTL objects are already distinct.

@@ -640,3 +640,91 @@ Two infra bugs found and fixed while building it:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: tmp/grind/_SsVmInit/s5/perm_ws, default random+structural permuter mutators, -j 4, --stack-diffs, --stop-on-zero, s4/s5's floor-3 candidate.c chassis, no FAKE constructs present
+
+## [s6] Chassis re-confirmed at dispatch: applying candidate.c verbatim to HEAD src/main.c measures score 3 / target_insns 200 / build_insns 200, same 8-hunk diff (0 source-level, 2 operand-only at hunk 4 `andi a0,s1,0xff / sltiu v0,a0,24` vs ours `andi v0,s1,0xff / sltiu v0,v0,24`, and hunk 6 `sb a0,0(at)` vs ours `sb s1,0(at)`; 6 not-scored masked branch-target artifacts). No chassis drift since s5.
+- mechanism: n/a -- re-measurement
+- probe: sandbox _SsVmInit --disable all --diff after applying candidate.c to HEAD
+- result: Confirmed identical to s5's recorded residual.
+- verdict: CONFIRMED
+
+## [s6] RTL provenance for the residual, read directly from tmp/grind/_SsVmInit/s6/dumps/main.lreg (cc1 -da whole-TU dump, function region lines 16251-17172): reg 72 (`reg/v:SI 72`, flagged as a real user variable = the `a0` parameter, "used 3 times across 35 insns; crosses 2 calls" -- this is what becomes `$s1` in the final asm, a parameter preserved across the earlier SpuInitMalloc/loop calls). The compare's mask (insn 131) computes `reg 94 = zero_extend:SI(subreg:QI(reg 72))` (`(u8)a0`), feeding the `ltu` compare at insn 133 where reg 94 dies (REG_DEAD) immediately -- it is NEVER reused. The store in the else arm (insn 148, reached via a taken jump to label 144, NOT fallthrough) is `(mem:QI SsVmMaxVoice) = (subreg:QI (reg/v:SI 72) 0)` -- i.e. our C's `_SsVmMaxVoice = a0;` compiles to a store straight from reg 72 (the raw a0/s1 pseudo), completely independent of the masked reg-94 value used in the compare. This is IN THE FRONT-END OUTPUT (before local-alloc even runs) -- the two references are already distinct RTL objects pre-allocation, so the a0-vs-v0 choice downstream is a question of which HARD REG each of reg-72 and reg-94's successor gets, not a shared-value CSE question at the C level as previously hypothesized.
+- mechanism: cc1 front-end expr expansion (expr.c) for `(u8)a0` vs bare `a0` naturally produces two separate pseudo defs from one statement to the next; only cse.c or combine.c could later unify them, and evidently do not across this specific fallthrough-vs-jump block boundary in either baseline or the s6 explicit-duplicate-cast variant (see next entry).
+- probe: Read tmp/grind/_SsVmInit/s6/dumps/main.lreg lines 16251-17172 (insns 131-148) via grep+sed.
+- result: n/a (evidence, not a hypothesis test)
+- verdict: CONFIRMED
+
+## [s6] Explicit duplicate cast in the else arm -- `_SsVmMaxVoice = (u8)a0;` instead of `_SsVmMaxVoice = a0;` (attempting to give cse.c/combine.c an IDENTICAL expression to the compare's `(u8)a0` so it might reuse the same pseudo/hard-reg as target) -- measures IDENTICAL to baseline: score 3, target_insns 200, build_insns 200, same 8-hunk diff (hunks 4 and 6 unchanged, byte-for-byte). Not a NEW closing form and not a regression -- genuinely flat, meaning the front end/CSE did not unify the two casts across the jump-reached else block on this chassis.
+- mechanism: attempted -- combine/cse unification of `(u8)a0` used in a compare (fallthrough-side EBB) with `(u8)a0` used in a jump-reached else block (label 144, single predecessor). Per split-scalars/cse rule family, cse1's extended-basic-block tracking (cse_end_of_basic_block, cse.c) CAN follow a conditional branch to a label with LABEL_NUSES==1, which this label has -- so the boundary itself doesn't obviously forbid it. The flat result suggests either (a) cse1's equivalence table for reg 72 isn't live/valid by the time it reaches the else block content, or (b) GCC chose not to substitute because the SImode zero_extend result's mode/cost heuristics disfavor it for a QImode store target. Unresolved -- worth a targeted RTL dump comparison (this variant's .cse dump vs baseline's) if a future session wants to pursue this exact angle.
+- probe: Edited src/main.c else arm to `_SsVmMaxVoice = (u8)a0;`, ran sandbox --disable all and --diff.
+- result: score 3, 200==200, hunks 4/6 byte-identical to baseline. Reverted (no chassis change, not worth carrying since candidate.c's plainer `a0` form is simpler with identical bytes).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with `_SsVmMaxVoice = (u8)a0;` substituted for `_SsVmMaxVoice = a0;` in the else arm, applied/reverted in isolation, no FAKE constructs present
+
+## [s6] Parameter type change `s32 a0` -> `u32 a0` (removing the sign vs unsigned ambiguity at the compare, hypothesizing GCC might allocate the masked temp differently for an unsigned parameter) -- measures IDENTICAL to baseline: score 3, 200==200, same 8-hunk diff.
+- mechanism: attempted -- parameter declared-type signedness feeding into which register the compiler's parameter-pseudo preferencing favors for a later masked-derivative value. Flat result means the front end's mask/compare codegen for `(u8)a0 >= 0x18` is insensitive to whether the enclosing parameter is declared s32 or u32 (both already go through an explicit `(u8)` cast, so promotion rules make the parameter's own signedness irrelevant to this expression).
+- probe: Changed `void _SsVmInit(s32 a0)` to `void _SsVmInit(u32 a0)`, ran sandbox --disable all.
+- result: score 3, 200==200, unchanged. Reverted (deviates from the likely-correct s32 signature with zero benefit and no evidence basis for u32).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with the parameter type changed to u32, applied/reverted in isolation, no FAKE constructs present
+
+## [s6] Unconditional-store-then-clamp restructuring -- `_SsVmMaxVoice = a0; if ((u8)a0 >= 0x18) { _SsVmMaxVoice = 0x18; }` replacing the if/else -- REGRESSED: score 9, build_insns 199 (vs target 200; baseline's 200==200 parity is lost).
+- mechanism: n/a -- structural respelling, not a targeted GCC-internals lever; the unconditional store followed by a conditional overwrite is a different control-flow shape (one fewer basic block edge) that the optimizer folds differently, losing the exact instruction-count parity the if/else form achieves.
+- probe: Edited src/main.c, ran sandbox --disable all.
+- result: score 9 (regressed from 3), build_insns 199 (lost the 200==200 parity). Reverted immediately.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with the if/else replaced by unconditional-store-then-clamp, applied/reverted in isolation, no FAKE constructs present
+
+## [s6] Ternary-expression form -- `_SsVmMaxVoice = ((u8)a0 >= 0x18) ? 0x18 : a0;` replacing the if/else statement -- REGRESSED: score 5 (worse than baseline's 3), target_insns==build_insns==200 (parity kept, but more scored operand/structural diffs than the if/else form).
+- mechanism: n/a -- structural respelling; the ternary compiles to a conditional-move-style or differently-scheduled sequence that diverges further from target's explicit branch-and-store-in-each-arm shape than the if/else form does.
+- probe: Edited src/main.c, ran sandbox --disable all.
+- result: score 5 (regressed from 3). Reverted immediately.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with the if/else replaced by a ternary, applied/reverted in isolation, no FAKE constructs present
+
+## [s6] Applying candidate.c verbatim to HEAD src/main.c reproduces the identical floor-3 / 200==200 / 8-hunk chassis recorded at s4/s5 (hunk 4: andi a0,s1,0xff/sltiu v0,a0,24 vs ours andi v0,s1,0xff/sltiu v0,v0,24; hunk 6: sb a0,0(at) vs ours sb s1,0(at); the other 6 hunks are not-scored masked branch-target artifacts).
+- mechanism: n/a -- re-measurement
+- probe: sandbox _SsVmInit --disable all --diff after applying candidate.c
+- result: Confirmed identical to s5's recorded residual; no chassis drift.
+- verdict: CONFIRMED
+
+## [s6] RTL evidence (tmp/grind/_SsVmInit/s6/dumps/main.lreg, function region lines 16251-17172) shows the compare's (u8)a0 mask creates pseudo reg 94 which DIES immediately after the ltu compare at insn 133 and is never reused; the else-arm store (insn 148, reached via a taken jump to label 144, not fallthrough) already compiles from reg 72 (the raw a0/s1 parameter pseudo) independent of reg 94. The two references are separate RTL objects at front-end expansion time, before local-alloc runs.
+- mechanism: cc1 front-end expression expansion (expr.c) creates a fresh pseudo per C expression instance; only cse.c/combine.c could unify (u8)a0 used in the compare with a0 (or (u8)a0) used in the else-arm store, and evidently do not on this chassis in either the baseline or the explicit-duplicate-cast variant.
+- probe: grep+sed over the -da whole-TU dump produced by tools/grinder/dump.ps1 _SsVmInit
+- result: n/a (evidence, not a hypothesis test)
+- verdict: CONFIRMED
+
+## [s6] Duplicating the compare's cast in the else arm -- _SsVmMaxVoice = (u8)a0; instead of _SsVmMaxVoice = a0; -- to give cse/combine an identical expression to unify with the compare's masked value, measures byte-identical to baseline (score 3, 200==200, hunks 4 and 6 unchanged).
+- mechanism: attempted cse1 extended-basic-block unification across the jump-reached else block (label 144 has LABEL_NUSES==1, which per the split-scalars/cse rule family's cited cse_end_of_basic_block behavior should be eligible for EBB extension); flat result means no substitution occurred on this chassis.
+- probe: ?
+- result: score 3, 200==200, hunks byte-identical to baseline. Reverted (simpler bare-a0 form produces identical bytes).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with _SsVmMaxVoice = (u8)a0; substituted for the else arm, applied/reverted in isolation, no FAKE constructs present
+
+## [s6] Changing the parameter's declared type from s32 to u32 (removing signedness ambiguity at the (u8)a0 compare) measures byte-identical to baseline.
+- mechanism: attempted parameter-pseudo signedness influence on masked-derivative register preferencing; flat result because the explicit (u8) cast already makes the parameter's own signedness irrelevant to this expression's codegen.
+- probe: ?
+- result: score 3, 200==200, unchanged. Reverted (no evidence basis for u32, zero benefit).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with the parameter type changed to u32, applied/reverted in isolation, no FAKE constructs present
+
+## [s6] Restructuring the if/else clamp as an unconditional store followed by a conditional override (_SsVmMaxVoice = a0; if (...) { _SsVmMaxVoice = 0x18; }) REGRESSES the score from 3 to 9 and loses the 200==200 instruction-count parity (build_insns drops to 199).
+- mechanism: n/a -- structural respelling; different control-flow shape (one fewer basic-block edge) folds differently under the optimizer.
+- probe: ?
+- result: score 9, build_insns 199. Reverted immediately.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with the if/else replaced by unconditional-store-then-clamp, applied/reverted in isolation, no FAKE constructs present
+
+## [s6] Restructuring the if/else clamp as a ternary expression (_SsVmMaxVoice = ((u8)a0 >= 0x18) ? 0x18 : a0;) REGRESSES the score from 3 to 5, though 200==200 parity is kept.
+- mechanism: n/a -- structural respelling; ternary compiles to a differently-scheduled sequence diverging further from target's per-arm branch-and-store shape.
+- probe: ?
+- result: score 5. Reverted immediately.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s6 floor-3 candidate.c chassis with the if/else replaced by a ternary, applied/reverted in isolation, no FAKE constructs present

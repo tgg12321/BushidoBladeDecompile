@@ -15,6 +15,29 @@
  * local-alloc.c find_reg/allocno-priority choice for a parameter-homed
  * pseudo vs. a fresh v0 temp (untried).
  *
+ * s6 UPDATE (structural modality): re-confirmed floor 3 / 200==200, chassis
+ * unchanged. Read the actual RTL provenance from a fresh -da dump
+ * (tmp/grind/_SsVmInit/s6/dumps/main.lreg, lines 16251-17172): the compare's
+ * `(u8)a0` mask (insn 131) creates a pseudo (reg 94) that DIES immediately
+ * after the compare (insn 133) — it is never reused for the else-arm store.
+ * The else-arm store (insn 148, reached via a TAKEN jump to label 144, not
+ * fallthrough) compiles straight from reg 72 (the a0 parameter's own pseudo,
+ * `reg/v:SI 72`, what becomes `$s1`) — i.e. our C's plain `_SsVmMaxVoice =
+ * a0;` and the compare's `(u8)a0` are already TWO SEPARATE RTL objects at
+ * front-end expansion time, before local-alloc runs. This reframes the
+ * residual: it is not obviously a "shared value, wrong hard reg" CSE
+ * question — target's `andi a0,...`/`sb a0,...` pairing implies target's
+ * front end (or a later cse/combine pass) DID unify the two references, and
+ * three structural respellings this session (explicit duplicate `(u8)a0`
+ * cast in the else arm; unconditional-store-then-clamp; ternary form) all
+ * measured flat-or-worse — see hypotheses.md s6 for each. A parameter-type
+ * change (s32->u32) was also flat. NEXT: diff a .cse dump of the
+ * explicit-duplicate-cast variant against baseline's .cse dump to see
+ * whether cse1 even considers the substitution and rejects it for a
+ * mode/cost reason, or never reaches it (untried this session — the .lreg
+ * dump used was cc1's -da whole-TU output which does NOT include a decodable
+ * per-instruction combine/cse trace).
+ *
  * CHASSIS DISCONTINUITY (s4, load-bearing for every prior session's
  * conclusions): the CHASSIS CHECK at s4 dispatch found HEAD honest floor
  * mismatched the ledger's recorded floor 19. Applying this exact candidate
