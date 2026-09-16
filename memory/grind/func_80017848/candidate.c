@@ -1,3 +1,28 @@
+/* [s63 SOLVER - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
+ * chassis; fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4
+ * at 127/127) remains the faithful chassis.  What s63 measured / closed:
+ *  1. POST-GLOBAL DELETION CENSUS (s62 frontier 1): instrumented -da on K2,
+ *     UID diff .greg/.jump2/.sched2/.dbr - the only insns deleted after
+ *     global are the three cross-jumped return-0 tails and reorg's sequence
+ *     packing; no move, no pseudo reader.  Class closed by measurement.
+ *  2. do-while(0) ON K2 (s62 frontier 3): W1 (inner loop) = 12 (lnk lifted
+ *     over sh: lnk a1 / sh a2, copy dest STILL v0); W2 (preheader) = W3
+ *     (then-block) = 4, byte-identical to K2.  Order-only lever; inert.
+ *  3. integrate.c (s62 frontier 2): dead by s30's measurement + reading -
+ *     the argument copy is emitted at the call site, shares the preheader
+ *     block with the hoisted base add, combine merges it; inlined return
+ *     values overshoot the insn count.  Not re-spent.
+ *  4. A3-PREFERENCE ROUTE CLOSED (class, global.c:842): the only a3 mention
+ *     is slot_b's entry copy; its sole REG_DEAD partner is the epilogue ior
+ *     into a block-local temp (fixed by the target's `or v0,v0,s3; sw`), so
+ *     no allocno can ever carry or pass an a3 preference.  With E-s62-1 and
+ *     global.c:925-926 the seat needs HARD conflicts with v0 and a0 =
+ *     E-s44-3's flow-live, combine-deleted reader.  That natural reader is
+ *     the whole residual (frontier: enumerate combine's operand-erasing
+ *     folds for a natural scan-loop shape spelled through p).
+ * Artifacts: tmp/grind/func_80017848/s63/ (census_K2.txt, K2/ dumps,
+ * results.txt, diff_W1.txt, classify_K2.txt).  Evidence E-s63-0..5.
+ */
 /* [s62 SYNTHESIS - body below UNCHANGED (BASE, 3 at 127/127 on the HEAD
  * chassis; fake_ablate: no FAKE construct).  K2 (candidate_alt_s56_k2_..., 4
  * at 127/127) remains the faithful chassis.  What s62 measured / closed:

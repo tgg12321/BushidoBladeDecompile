@@ -5674,3 +5674,90 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - kill_scope: class
 - measured_on: source reading of the frozen tree; K2 chassis at HEAD src/ings.c:820; no FAKE construct
 - predicate_cite: tools/gcc-2.7.2/stmt.c:3498
+
+## s63 (2026-09-15, solver - frontier items 1-3 measured, a3-preference route closed, residual restated as E-s44-3)
+
+## [s63] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; classify on K2 = RA (seat-only); the owner directive (func_8005BA8C auto-return) was executed in s56 and needs no further action.
+- mechanism: instance kills are chassis-relative; the two closest forms re-measured with s63/run.ps1; solver rule (1) classify before any search
+- probe: s63/run.ps1 -Bodies BASE and -Bodies K2; s63/ablate.sh; s63/classify_K2.txt
+- result: BASE 3, K2 4, both 127/127, diffs identical to s61/s62; "no FAKE-annotated constructs found"; FIRST DIVERGENCE: RA
+- verdict: CONFIRMED
+
+## [s63] Some insn reading the copy dest survives to global allocation and is deleted afterwards (jump2 / reload / sched2 / reorg) on the K2 chassis, which would be the byte-free downstream reader the a3 seat needs (s62 frontier item 1).
+- mechanism: jump.c after reload deletes no-op moves and cross-jumps identical tails; reload deletes REG_EQUIV inits; reorg deletes redundant insns it can prove already executed
+- probe: instrumented cc1 -da on K2 (s63/dump.sh), s63/census.py diffing the function's insn UIDs across .greg/.jump2/.sched2/.dbr (s63/census_K2.txt)
+- result: the only insns deleted after global are the three cross-jumped `(set v0 0); (jump end)` return-0 tails and reorg's sequence packing; zero reg-reg moves and zero readers of any pseudo are removed. Closed by measurement.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis at HEAD src/ings.c:820, instrumented cc1 -da dumps; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:829
+
+## [s63] The sanctioned do { } while (0) wrap (owner ruling 2026-07-06, any codegen effect incl. register allocation) placed on the K2 chassis around the inner loop (W1), the preheader statements (W2) or the whole then-block (W3) moves the copy-dest seat from v0 toward a3 (s62 frontier item 3).
+- mechanism: NOTE_INSN_LOOP_BEG/END change loop_depth-weighted reg_n_refs (flow.c:2081) and hence global.c's allocation order; if sh and lnk were allocated before the copy dest, a1/a2 would enter its conflict set
+- probe: s63/gen_w.py cells W1/W2/W3 from body_K2.c, FAKE-annotated; sandbox --disable all each (s63/results.txt, s63/diff_W1.txt)
+- result: W1 = 12 at 127/127 (lnk lifted over sh: lnk a1, sh a2 in both loops; copy dest still v0); W2 = W3 = 4 at 127/127, byte-identical to K2. The wrap reorders allocation but adds no v0/a0 hard conflict, and the copy dest's own v0 preference cannot be refused (global.c:925-926). Banked rejected/s63_W1..W3_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s63/body_W1.c / body_W2.c / body_W3.c applied; the do-while(0) wraps are the only FAKE constructs present
+
+## [s63] A static inline helper's integrate.c argument copy gives the copy dest references in another basic block, so combine cannot merge it and its live range spans loop 1 (s62 frontier item 2).
+- mechanism: expand_inline_function copies each user-variable actual into a fresh parm pseudo (integrate.c:1285-1305, :1436-1449)
+- probe: source reading of the copy's emission point versus the target's copy position; s30's measured cells F/G/H (hypotheses.md:2665-2668) re-read
+- result: the copy is emitted at the call site, i.e. in the block containing the call; for it to follow the guard's blez the call sits in the then-block, where loop.c hoists the helper's invariant base add into the same preheader block, so copy and consumer share a block and combine merges them (s30 H: no copy at all). Each inlined helper also materialises its return value (`addiu v0,zero,1` + jump + caller test; s30: 30-45 at 136-137 insns), which jump.c never cross-jumps back to the target's single return-0 block. Not re-measured this session: the kill is s30's measurement plus the emission-point reading; a K2-based re-measure would inherit both defects unchanged.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s30 cells F/G/H on the s30-era chassis (retired), re-read s63 against integrate.c and the K2 chassis geometry; no FAKE construct
+
+## [s63] The copy dest can be seated in a3 through a hard-register PREFERENCE (copy or full) rather than through hard conflicts, in some spelling that keeps the target's entry and epilogue bytes.
+- mechanism: find_reg tries copy-prefs then full-prefs after the ascending scan (global.c:1097-1150); an a3 pref would win over the scan's v0 whenever a3 is free
+- probe: source reading of set_preference (global.c:1671), expand_preferences (global.c:829-870, requires reg_allocno >= 0 at :842, runs before prune at :552/:577) and prune_preferences (global.c:882-930) against the RTL's a3 mentions
+- result: a3 appears in the pre-RA RTL only in the entry copy `(set 75 (reg a3))`; 75's sole REG_DEAD partner is the epilogue ior whose dest is a block-local temp (not an allocno), a shape the target's own `or v0,v0,s3; sw v0,4(a0)` fixes, so no allocno ever acquires an a3 preference and none can pass one to the copy dest. With E-s62-1 (a0 only as a hard conflict) and global.c:925-926 (the dest's own v0 pref cannot be refused), the a3 seat requires hard conflicts with a v0-seated pseudo and with q/base - i.e. the copy dest live through the loop at flow time (E-s44-3).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen tools/gcc-2.7.2 tree against the K2 chassis RTL (s63/K2 dumps) at HEAD src/ings.c:820; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:842
+
+## [s63] Frontier reset (strongest 3):
+1. E-s44-3 is the ONLY open mechanism: a reader of the copy dest that flow sees and combine deletes. Enumerate combine.c's fold sites that can erase an operand outright (simplify_and_const_int via nonzero_bits, num_sign_bit_copies on sign-extensions, simplify_comparison on subword compares, `(and (ashift x n) m)` masks) and list, for each, the NATURAL C shape in a scan loop over u8 indices / u16-s16 link fields that produces it; then spell that shape through p (the copy dest) instead of base, in the loop body, and read .flow/.combine/.greg before scoring. The s44 instruments (M5/M6, dead algebra) are the reference for what the dumps must show: p live at the loop top in .flow, the reader gone in .combine, 78 conflicting with v0/a0 in .greg.
+2. If (1) yields no natural shape: measure whether a post-loop reader of p on the return-0 path only (the `beq v0,s3` hit path, which the target cross-jumps into one shared block) can be folded by combine while flow still counts it - the census (E-s63-1) shows jump2 deletes exactly those tails after global, so a reader that combine removes from a tail before global would leave stale liveness behind. Spell the found-path exit as a read of p that combine can fold, and read .greg for 78's conflicts.
+3. Only after 1-2: the sched_solver on the preheader order (copy / lnk load / add) to confirm the pre-sched2 order the target's bytes admit, in case a later chassis changes the copy's block.
+
+## [s63] Chassis / kill re-audit: BASE re-measures 3 at 127/127 and K2 4 at 127/127 on the HEAD chassis; fake_ablate finds no FAKE construct in candidate.c; classify on K2 = RA seat-only; the owner directive (func_8005BA8C auto-return) was executed in s56 and needs no further action.
+- mechanism: instance kills are chassis-relative; the two closest forms re-measured; solver rule (1) classify before search
+- probe: tmp/grind/func_80017848/s63/run.ps1 -Bodies BASE / -Bodies K2; s63/ablate.sh; s63/classify_K2.txt
+- result: BASE 3, K2 4, both 127/127, diffs identical to s61/s62; no FAKE-annotated constructs; FIRST DIVERGENCE: RA
+- verdict: CONFIRMED
+
+## [s63] Some insn reading the copy dest survives to global allocation and is deleted afterwards (jump2 / reload / sched2 / reorg) on the K2 chassis, which would be the byte-free downstream reader the a3 seat needs (s62 frontier item 1).
+- mechanism: jump.c after reload deletes no-op moves and cross-jumps identical tails; reload deletes REG_EQUIV inits; reorg deletes redundant insns
+- probe: instrumented cc1 -da on K2 (s63/dump.sh); s63/census.py diffs the function's insn UIDs across .greg/.jump2/.sched2/.dbr (s63/census_K2.txt)
+- result: only the three cross-jumped (set v0 0)/(jump end) return-0 tails and reorg's SEQUENCE packing are deleted after global; zero reg-reg moves and zero pseudo readers removed
+- verdict: KILLED
+- kill_scope: class
+- measured_on: K2 chassis at HEAD src/ings.c:820, instrumented cc1 -da dumps; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:829
+
+## [s63] The sanctioned do { } while (0) wrap placed on the K2 chassis around the inner loop (W1), the four preheader statements (W2) or the whole then-block (W3) moves the copy-dest seat from v0 toward a3 (s62 frontier item 3).
+- mechanism: NOTE_INSN_LOOP_BEG/END change loop_depth-weighted reg_n_refs (flow.c:2081) and hence global.c's allocation order; sh/lnk allocated first would put a1/a2 in the copy dest's conflicts
+- probe: s63/gen_w.py cells W1/W2/W3 from body_K2.c (FAKE-annotated); sandbox --disable all each; s63/results.txt, s63/diff_W1.txt
+- result: W1 = 12 at 127/127 (lnk lifted over sh: lnk a1 / sh a2 in both loops, copy dest still v0); W2 = W3 = 4 at 127/127 byte-identical to K2; the wrap reorders allocation but adds no v0/a0 hard conflict and the dest's own v0 pref cannot be refused (global.c:925-926). Banked rejected/s63_W1..W3_*.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: K2-derived chassis at HEAD src/ings.c:820 with tmp/grind/func_80017848/s63/body_W1.c / body_W2.c / body_W3.c applied; the do-while(0) wraps are the only FAKE constructs present
+
+## [s63] A static inline helper's integrate.c argument copy gives the copy dest references in another basic block so combine cannot merge it and its live range spans loop 1 (s62 frontier item 2).
+- mechanism: expand_inline_function copies each user-variable actual into a fresh parm pseudo (integrate.c:1285-1305, :1436-1449)
+- probe: source reading of the copy's emission point against the target's copy position; s30 cells F/G/H (hypotheses.md:2665-2668) re-read
+- result: the argument copy is emitted at the call site; a call inside the then-block puts it in the preheader block where loop.c hoists the helper's base add, so combine merges it (s30 H: no copy at all); each inlined helper also materialises its return value (+9/+10 insns, s30 F/G/H 30-45 at 136-137) that jump.c never cross-jumps away. Not re-measured; s30's measurement plus the emission-point reading
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s30 cells F/G/H on the s30-era chassis (retired), re-read s63 against integrate.c and the K2 chassis geometry; no FAKE construct
+
+## [s63] The copy dest can be seated in a3 through a hard-register PREFERENCE (copy or full) rather than through hard conflicts, in some spelling that keeps the target's entry and epilogue bytes.
+- mechanism: find_reg tries copy-prefs then full-prefs after the ascending scan (global.c:1097-1150); an a3 pref would beat the scan's v0 whenever a3 is free
+- probe: source reading of set_preference (global.c:1671), expand_preferences (global.c:829-870, partner gate at :842, runs before prune at :552/:577) and prune_preferences (global.c:882-930) against the K2 RTL's a3 mentions (s63/K2 dumps)
+- result: a3 appears pre-RA only in the entry copy (set 75 (reg a3)); 75's sole REG_DEAD partner is the epilogue ior into a block-local temp (reg_allocno -1, rejected at global.c:842), a shape the target's own `or v0,v0,s3; sw v0,4(a0)` fixes; no allocno ever carries or passes an a3 preference. With E-s62-1 and global.c:925-926 the a3 seat requires hard conflicts with a v0-seated pseudo AND with q/base, i.e. the copy dest live through the loop at flow time (E-s44-3)
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen tools/gcc-2.7.2 tree against the K2 chassis RTL (s63/K2 dumps) at HEAD src/ings.c:820; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:842
