@@ -27659,3 +27659,96 @@ worker-lane experiment (`docs/grind/model-experiment-2026-09-15.md`), but it is 
 to it, since the gates are that experiment's entire safety argument.
 
 **Applied:** `grindlib ban` on the clobber list + `grindlib constrain` with the full finding.
+
+## 2026-09-16 — _exeque — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**
+
+**Driver-assigned modality:** escalation (s12). Honest floor flat at 2/187 across
+s4-s11 (8 consecutive sessions) spanning >=6 distinct modalities (permuter x2,
+structural x2, enumerate, synthesis, solver, forensics, rederive) — the R1
+ladder-exhaustion trigger. Re-confirmed this session on the current chassis:
+`sandbox _exeque --disable all` = 2/187 (`build_insns` 186, `target_insns` 187,
+`rules_dropped` 0, `cheat_asm_stripped` 143) with `memory/grind/_exeque/candidate.c`
+applied verbatim to `src/display.c` (s4-s11's do-while(0) chassis, both FAKE-wrap
+constructs unchanged, no volatile/register-pin/cheat-asm present).
+
+**Endgame-lock gate (a) — canonical-asm scan tier:** `python3 tools/scan_hand_coded.py
+--single _exeque` this session → `HAND_CODED: tier=LOW score=0/8` ("no strong
+hand-coded indicators"; all 8 signals S1-S8 unset — no multu pacing, no empty
+branches, no register spills beyond ordinary allocation, no front-loaded load
+bursts, no jaccard-similar siblings, no BIOS jumptable, all callee-saves have
+`$sp` saves, no redundant pre-shift mask). **FAILS.**
+
+**Endgame-lock gate (b) — SOTN-master precedent for the closing construct:**
+the residual (`hypotheses.md` H6, hypotheses/frontier "jalr-delay-slot residual")
+is a single `sw $zero,0($v1)` (the `D_8009BE7C = 0;` clear) that our build's
+reorg.c `fill_simple_delay_slots` moves into the following `jalr`'s delay slot,
+where target keeps it as a separate instruction ahead of an explicit unfilled
+nop. The only known closing spelling is `volatile s32 *p = &D_8009BE7C;`
+(rejected form, `memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c`,
+KILLED instance s2/re-confirmed H6) under the
+`legitimate-volatile-interrupt-touched` two-prong carve-out's "guard-clear-and-
+invoke" use-site shape — which is NOT one of that rule's three catalogued
+shapes. This session searched `docs/reference/sotn-construct-index.md` (2,746
+lines, PSX-tagged entries) for a PSX-provenance precedent of a `guard-clear-
+and-invoke` volatile shape or any `extern volatile` IRQ-touched-global grant
+matching this residual: zero hits for `extern volatile`, `IRQ`, or
+`interrupt` anywhere in the index, and zero hits for a "clear-and-invoke"
+shape near the `volatile`/pad entries that do exist (those are all unrelated
+pad/dummy-local exhibits, lines 29-919). **A negative census after a real
+search is evidence of no precedent, not an open question. FAILS.**
+
+Both gates FAIL — the common case. Per the owner's 2026-07-27 standing ruling
+and the 2026-08-24 `ENDGAME_LOCK_MAX_FLOOR = 5` amendment, floor 2 <= 5 puts
+this in the endgame-lock branch.
+
+**cc1psx self-disproof (banked in state.json `cc1psx_check`, 2026-09-16T07:16:53Z):**
+attempted and inconclusive by tooling gap, not by result — `ok: false`,
+`error: "cc1psx produced no scorable object: '_exeque not found in
+tmp/cc1psx/_exeque/psx.o'"`. No `ours`/`psx` comparison was produced. This
+does not affect the gate outcome above (neither gate depends on the cc1psx
+comparison), but is recorded per the disposition template's requirement to
+state the banked result.
+
+**Exhaustion (ledger-sourced):** 11 sessions total (s1-s11), floor history
+15(s1)->12(s2)->12(s3)->2(s4)->2(s5)->2(s6)->2(s7)->2(s8)->2(s9)->2(s10)->2(s11);
+flat at 2/187 for the last 8 consecutive sessions across permuter (s4,s5),
+structural (s6), enumerate (s7), synthesis (s8), solver (s9), forensics (s10),
+rederive (s11) — 7 distinct modalities in the flat window, exceeding R1's >=4
+threshold. Axis 2 (register-steering the store address into a call-clobbered
+register to create a reorg.c resource conflict) is FORMALLY class-killed
+(s10, predicate-cited: `tools/gcc-2.7.2/reorg.c:663-671` MEM case sets
+`in_dest=0` unconditionally for a store's address operand, so it never
+contributes a register bit to the computed "set" resources at
+`reorg.c:690-693` — true for every possible hard-register assignment). Axis 3
+(RTL-shape restructuring) is narrowed: s11's fresh m2c re-derivation produced
+three structurally different spellings (single-exit top-level accumulator,
+merged final-block `&&` condition, pointer-local elision), all three measured
+WORSE (7/187, 5/187, 5/187) than the banked chassis. `sched_solver` (s9)
+formally proved the search space for a scheduling-order lever is EMPTY (zero
+sched1/sched2 order vectors differ from target across the whole function) —
+not merely exhausted, structurally absent. The one remaining un-closed avenue
+(axis 3's "insert a genuinely separate real statement between the store and
+the jalr" sub-probe) was not run this session; it is carried into the
+rotation record below as the re-activation-relevant lever, not as unfinished
+exhaustion — R1 forbids a second full ladder cycle regardless.
+
+**Re-activation triggers:** (1) an owner class grant extending
+`legitimate-volatile-interrupt-touched`'s catalogued use-site shapes to cover
+"guard-clear-and-invoke" (would directly close gate (b)); (2) a toolchain
+fidelity finding affecting `reorg.c` delay-slot fill order; (3) a future
+sibling function closing the same jalr-delay-slot residual shape by a novel
+pure-C lever (sibling-ledger propagation would transplant it here); (4) an
+un-run structural probe closing axis 3 (inserting a real intervening
+statement between the `D_8009BE7C=0` store and the `D_8009BE80()` call,
+per hypotheses.md's live frontier item) — this is grindable, not gate-blocked,
+but R1 defers it to the next active window rather than a second ladder cycle
+now.
+
+**Candidate on disk:** `memory/grind/_exeque/candidate.c` (floor 2/187, unchanged
+this session). `src/display.c` currently carries this body applied (re-verify
+`sandbox _exeque --disable all` before any future session trusts it — the
+ledger's own convention is that src drifts back to `INCLUDE_ASM` between
+grinder sessions).
+
+A pure-C preimage of `_exeque` exists by construction; nothing here claims
+otherwise. This is a rotation record, not a question to the owner.

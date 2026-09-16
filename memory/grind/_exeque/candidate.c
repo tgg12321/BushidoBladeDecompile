@@ -151,6 +151,23 @@
  * residual remains axis 1 (H6 volatile ruling-request) / axis 3 (RTL-shape
  * restructuring of the guard/clear/call block itself, still unexplored
  * beyond the three m2c-derived spellings just killed).
+ *
+ * s12 (escalation, 2026-09-16): DISPOSITION session per the driver's
+ * exhaustion assignment (floor flat 2/187 across s4-s11, 7 distinct
+ * modalities). Re-confirmed floor 2/187 unchanged (this body re-applied to
+ * src/display.c verbatim). Ran both endgame-lock gates: (a)
+ * scan_hand_coded --single _exeque = tier LOW score 0/8 (no hand-coded
+ * signal); (b) searched docs/reference/sotn-construct-index.md for any
+ * PSX-provenance precedent of the guard-clear-and-invoke volatile shape
+ * (the only known closer, rejected/volatile-D_8009BE7C-guard-clear.c) --
+ * zero hits for extern volatile / IRQ / interrupt anywhere in the index.
+ * Both gates FAIL -> filed docs/grind/decisions.md 2026-09-16 OWNER-
+ * ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): ROTATED. This
+ * body (unchanged since s4) is still the best known chassis; the rotation
+ * record carries the untried axis-3 sub-probe (insert a real intervening
+ * statement between the D_8009BE7C=0 store and the jalr) as the
+ * re-activation-relevant lever for whenever this function returns to the
+ * active worklist.
  */
 s32 _exeque(void) {
     s32 mask;

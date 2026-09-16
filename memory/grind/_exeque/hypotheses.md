@@ -625,3 +625,24 @@ This narrows (does not eliminate) the frontier: the jalr-delay-slot residual is 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the pointer-local declaration removed from the final block
+
+## [s12] On the current chassis (memory/grind/_exeque/candidate.c applied verbatim to src/display.c, s4-s11 do-while(0) wraps unchanged, no volatile/pin/cheat-asm present), the honest sandbox floor re-measures at exactly 2/187 this session.
+- mechanism: measurement, not inference
+- probe: tools/wteng.ps1 main sandbox _exeque --disable all after applying candidate.c to src/display.c
+- result: score=2, target_insns=187, build_insns=186, rules_dropped=0, cheat_asm_stripped=143
+- verdict: CONFIRMED
+
+## [s12] scan_hand_coded reports tier=LOW score=0/8 for _exeque this session, with all eight hand-coded signals (S1-S8) unset.
+- mechanism: measurement, not inference
+- probe: python3 tools/scan_hand_coded.py --single _exeque
+- result: HAND_CODED: tier=LOW score=0/8 (_exeque, 187 insns); no strong hand-coded indicators; all S1-S8 boxes unchecked
+- verdict: CONFIRMED
+
+## [s12] No PSX-provenance SOTN-master precedent exists in docs/reference/sotn-construct-index.md for a 'guard-clear-and-invoke' extern-volatile use-site shape (the only known closing spelling for the jalr-delay-slot residual, rejected as memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c).
+- mechanism: measurement, not inference (grep census)
+- probe: grep -n -i 'extern volatile|IRQ|interrupt|guard.*clear.*invoke|clear-and-invoke|delay-slot' docs/reference/sotn-construct-index.md
+- result: zero matches for extern volatile / IRQ / interrupt anywhere in the 2746-line index; the only volatile/pad hits (lines 29-919) are unrelated pad/dummy-local exhibits, not IRQ-touched-global or guard-clear-and-invoke shapes
+- verdict: KILLED
+- kill_scope: class
+- measured_on: docs/reference/sotn-construct-index.md at HEAD (2026-09-16), full-file grep, PSX-tagged entries only
+- predicate_cite: .claude/rules/legitimate-volatile-interrupt-touched.md:1

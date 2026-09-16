@@ -359,3 +359,15 @@ CONCLUSION (formal, from the compiler source, not a measurement): a plain memory
 - [s11] No sibling ledger (_addque2, main, get_alarm, func_8002EA24) offered a transplantable construct for this specific residual -- all four are COMPLETED-C with closed ledgers on unrelated function shapes (record-copy struct merges, MIDI dispatch, register-alloc walls) that don't share _exeque's reorg.c delay-slot-fill mechanism.
 
 - [s11] CC1PSX SELF-DISPROOF (driver): check did not produce a scorable result (cc1psx produced no scorable object: '_exeque not found in tmp/cc1psx/_exeque/psx.o'); rotation proceeds on the source-side assumption.
+
+- [s12] state.json cc1psx_check (banked 2026-09-16T07:16:53Z): ok=false, candidate_sha=def06b1fef41, error="cc1psx produced no scorable object: '_exeque not found in tmp/cc1psx/_exeque/psx.o'" -- inconclusive by tooling gap, does not affect either gate.
+
+- [s12] Floor history s1-s11: 15,12,12,2,2,2,2,2,2,2,2 -- flat at 2/187 for the last 8 sessions (s4-s11) spanning 7 distinct modalities (permuter x2, structural, enumerate, synthesis, solver, forensics, rederive), exceeding the R1 >=4-modality exhaustion trigger.
+
+- [s12] s10 formally class-killed axis 2 (register-steering the D_8009BE7C address into a call-clobbered register) via reorg.c:663-671/690-693 source proof: a store's address operand is always visited with in_dest=0 in mark_set_resources's MEM case, so it never contributes a register bit to the computed set-resources, for ANY hard-register assignment.
+
+- [s12] s9 sched_solver formally proved the sched1/sched2 order-vector search space for this residual is EMPTY (not merely exhausted) -- the gap is entirely a reorg.c fill_simple_delay_slots decision, out of scope for both ra_solver and sched_solver.
+
+- [s12] s11 fresh m2c --target=mipsel-ido-c rederive produced 3 structurally distinct spellings of the top-level guard and final block; all 3 transplanted onto the s4-s10 chassis measured WORSE (7/187, 5/187, 5/187) than the banked 2/187 candidate.
+
+- [s12] docs/grind/decisions.md carries the full 2026-09-16 OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): ROTATED entry with both gates' evidence, the exhaustion accounting, and the re-activation triggers.

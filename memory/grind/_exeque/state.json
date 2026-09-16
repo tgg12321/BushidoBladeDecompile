@@ -1,8 +1,8 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -69,18 +69,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "_exeque re-confirmed at honest floor 2/187 (s4-s10 do-while(0) chassis unchanged); rederive session's fresh m2c decompile surfaced two structurally different top-level/final-block shapes, both measure"
+  },
+  {
+   "session": 12,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "escalation disposition (s12): both endgame-lock gates FAIL (scan LOW 0/8; zero SOTN-master precedent for the guard-clear-and-invoke volatile shape) -- rotated per the 2026-07-27 standing ruling; docs/"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The jalr-delay-slot residual may qualify as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched (guard-clear-and-invoke), closing the last 2/187 instructions once ruled on.",
-   "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and that the floor has now been flat at 2/187 for eight consecutive sessions (s4-s11) across permuter, structural, enumerate, synthesis, solver, forensics, and rederive modalities, with axis 2 (register-steering) formally class-killed by reorg.c source proof and three fresh m2c-derived structural alternatives (s11) also killed."
+   "hypothesis": "Axis 3 sub-probe: inserting a genuinely separate, real (non-dead) statement between the D_8009BE7C=0 store and the D_8009BE80() call may change what reorg.c's fill_simple_delay_slots backward scan sees as the delay-slot-fill trial candidate, without needing a volatile grant.",
+   "mechanism": "reorg.c fill_simple_delay_slots's backward-scan loop (reorg.c:2960-2985), trial=prev_nonnote_insn(insn)",
+   "next_probe": "Structural-modality session: try a duplicated-statement-into-arms-sanctioned re-read of a guard value (or the opposite ordering: call via a staged function pointer first, then clear the flag, if semantically equivalent given the original's read-before-write ordering) between the store and the jalr; re-measure sandbox --disable all."
   },
   {
-   "hypothesis": "Axis 3 (RTL-shape restructuring) is narrowed but not closed: s11 killed the m2c-derived merged-condition and no-pointer-local spellings, but has NOT tried restructuring the block boundary itself -- e.g. hoisting the guard test into a separate helper-shaped statement, or introducing a genuinely separate intervening statement between the D_8009BE7C clear and the jalr call that changes what reorg.c's backward scan sees as the delay-slot-fill trial candidate.",
-   "mechanism": "reorg.c fill_simple_delay_slots's backward-scan loop (reorg.c:2960-2985), trial=prev_nonnote_insn(insn)",
-   "next_probe": "Structural-modality session: try inserting a genuinely separate (non-dead, real) statement between the D_8009BE7C=0 store and the D_8009BE80() call -- e.g. a duplicated-statement-into-arms-sanctioned re-read of a guard value -- and re-measure; or try the opposite ordering (call the function first via a staged function pointer, then clear the flag) if semantically equivalent given the original's read-before-write ordering constraints."
+   "hypothesis": "An owner class grant extending legitimate-volatile-interrupt-touched's three catalogued use-site shapes to cover 'guard-clear-and-invoke' would directly close gate (b) and let the already-known volatile-D_8009BE7C-guard-clear.c rejected form close the residual to 0.",
+   "mechanism": "policy/ruling question, not a GCC pass",
+   "next_probe": "Re-activation trigger only, per the rotation record -- not an in-session probe; the rejected form is already banked at memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c for immediate reuse if the grant lands."
   }
  ],
  "judge_constraints": [],
@@ -261,6 +267,14 @@
    "measured_on": "s4-s10 do-while(0)-wrapped floor-2/187 chassis (memory/grind/_exeque/candidate.c unchanged elsewhere), both FAKE-annotated wraps present, only the pointer-local declaration removed from the final bloc",
    "predicate_cite": "",
    "result": "Score 5/187 (build_insns 187) vs the banked 2/187 -- worse, identical to the merged-condition variant's score. This DISP"
+  },
+  {
+   "session": 12,
+   "statement": "No PSX-provenance SOTN-master precedent exists in docs/reference/sotn-construct-index.md for a 'guard-clear-and-invoke' extern-volatile use-site shape (the only known closing spelling for the jalr-del",
+   "kill_scope": "class",
+   "measured_on": "docs/reference/sotn-construct-index.md at HEAD (2026-09-16), full-file grep, PSX-tagged entries only",
+   "predicate_cite": ".claude/rules/legitimate-volatile-interrupt-touched.md:1",
+   "result": "zero matches for extern volatile / IRQ / interrupt anywhere in the 2746-line index; the only volatile/pad hits (lines 29"
   }
  ],
  "ladder_skip": 0,
