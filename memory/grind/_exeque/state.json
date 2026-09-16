@@ -1,15 +1,43 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 15,
+   "modality": "recon",
+   "headline": "_exeque written in pure C for the first time (was INCLUDE_ASM, floor 187) using the already-merged GpuQueueItem struct; found+fixed a genuine missing extern (D_8009BF84) that was silently miscompiled;"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The post-call triple-store scheduling gap closes via a pure C statement-order/structure change (no volatile, no FAKE), once the .sched dump shows why cc1's list scheduler defers the two non-func stores.",
+   "mechanism": "GCC 2.7.2 sched.c list scheduler INSN_PRIORITY / dependency-height ordering, or a cse.c block-extension effect",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 _exeque`, read tmp/grind/_exeque/dumps/*.sched for the triple-store region, then try reordering the three field-assignment statements or restructuring the idx-increment placement relative to them."
+  },
+  {
+   "hypothesis": "If pure reordering doesn't close it, a directed permuter run scoped to just the 16-instruction triple-store region will find the exact closing statement form quickly given how small and isolated the residual is.",
+   "mechanism": "auto-search (decomp-permuter PERM_* macros)",
+   "next_probe": "Build a clean single-function permuter target from asm/funcs/_exeque.s per the difficult-is-not-impossible playbook, run with --stop-on-zero, vet any closing form against the cheat catalog before accepting."
+  }
+ ],
  "judge_constraints": [],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Marking D_8009BF6C/D_8009BF70 volatile (to force the target's strict load-then-immediate-store ordering in the post-call triple-store block) is NOT the fix for the remaining floor-15 residual on this ",
+   "kill_scope": "instance",
+   "measured_on": "struct-based _que[idx].field chassis (this session's candidate.c), no FAKE/cheat constructs present",
+   "predicate_cite": "",
+   "result": "Not independently re-measured with volatile added on this candidate; the existing cross-function grant evidence for the "
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-16T04:50:43.697974+00:00"
+ "created": "2026-09-16T04:50:43.697974+00:00",
+ "object_model_audited": 1
 }
