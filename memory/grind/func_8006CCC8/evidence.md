@@ -127,6 +127,87 @@ though the same expression is written 5 times in the C).
   session (turn budget spent establishing the shape + the two measured
   field-access variants first).
 
+## s2 (structural)
+
+STALE-HEAD CORRECTION: the s2 dossier's consistency audit flagged that the
+s1 `candidate.c` asserted "this IS the resident body" while `engine/queue.py`
+still showed the source representation as `INCLUDE_ASM` — the s1 body had
+NEVER actually been applied to `src/text1b.c`. Re-applied it verbatim at s2
+start (plus fixing the stale `extern void func_8006CCC8(s32, s32, s32);`
+forward-declaration at line ~6620, which didn't match the real pointer/s16
+signature — the call site at func_8006D338 passes `&arg0, &arg1, ...`, so the
+extern needed to read `extern s32 func_8006CCC8(s32 *, s32 *, s16);`). Verified
+this reproduces the ledger's recorded floor exactly (94) before making any
+new change — chassis re-confirmed, not assumed.
+
+- `sandbox --disable all` on the re-applied s1 body: score 94, target_insns
+  189, build_insns 193. MATCHES ledger. Chassis confirmed unchanged since s1.
+
+- `pwsh tools/grinder/dump.ps1 func_8006CCC8` — dumps land at
+  `tmp/grind/func_8006CCC8/dumps/text1b.{rtl,loop,s,...}`. The `.rtl` dump
+  (function region lines 52409-53809 of `text1b.rtl` this session) shows
+  `arg2`'s param pseudo is reg 74 (`(insn 10 8 11 (set (reg/v:HI 74)
+  (subreg:HI (reg:SI 75) 0)))` — reg 75 is the raw `$a2`), and its
+  sign-extension chain is reg 95 (ashift) -> reg 94 (ashiftrt), set ONCE
+  each at insns 71/72, immediately after the loop's `code_label 68`. The
+  `.loop` dump's "Loop from 59 to 557: 155 real insns." block lists
+  `Insn 71: regno 95 (life 4), savings 2 moved to 604` and
+  `Insn 72: regno 94 (life 3), cond forces 71 savings 1 moved to 605` —
+  direct confirmation these two insns are what loop.c's `move_movables`
+  hoisted, matching the s1 disassembly-only diagnosis exactly.
+
+- Separately, reg 76 (the loop counter `i`'s HI-mode pseudo) is set at
+  BOTH insn 54 (loop init) and insn 547 (loop increment) — genuinely
+  multi-set — and its own per-iteration sign-extension (needed for
+  `arg2 >> i`'s shift-amount operand) is recomputed at 4+ separate points
+  in the `.loop` dump, all marked "not desirable" (never hoisted) — this
+  is the compiler behaving exactly as the mechanism predicts: single-set
+  invariant hoists, multi-set loop-variant doesn't.
+
+- H2 FIX: added `s32 t;`, `t = arg2;` at loop top (feeding `lim`), and
+  `t = i;` non-consecutively in the tail `field28>=0` arm (feeding the
+  `func_8006CBD4(t, *arg1)` call, replacing the old direct `func_8006CBD4(i,
+  *arg1)`). `sandbox --disable all`: score 91 (down from 94). Re-dumped:
+  confirmed in `tmp/grind/func_8006CCC8/dumps/text1b.s` that the
+  `sll/sra/srav` sign-extension sequence now sits INSIDE the loop at
+  `.L997` (the loop top), matching target's `.L8006CD54` shape
+  instruction-for-instruction (both: sll 16, sra 16, sra/srav by the loop
+  var). H2 CONFIRMED — see hypotheses.md.
+
+- H3: with H2 applied, the `t = i;` write required a `sll/sra` pair to
+  promote `i` (declared `s16`) to `t`'s `s32` type
+  (`tmp/grind/func_8006CCC8/dumps/text1b.s:16832-16836`:
+  `sll $4,$18,16 / jal func_8006CBD4 / sra $4,$4,16`). Cross-checked
+  target: `asm/funcs/func_8006CCC8.s:117` passes `i`'s register ($s1)
+  to the SAME call with a bare `addu $a0,$s1,$zero` — no extension — and
+  `asm/funcs/func_8006CCC8.s:41` uses $s1 directly as a 32-bit shift-amount
+  operand with no extension anywhere in its lifetime. Widened `i` from
+  `s16` to `s32`: `sandbox --disable all` score 77 (down from 91),
+  build_insns 185 (down from 193, now UNDER target's 189 for the first
+  time this ledger). H3 CONFIRMED.
+  - Side probe: also tried `lim` (currently `s16`) as `s32` in the same
+    session — score UNCHANGED at 77. Reverted to `s16` (the
+    m2c-reconstructed type) since there is no measured benefit to
+    deviating. Recorded here so a future session doesn't re-try it
+    expecting a different result on the same chassis.
+
+- Remaining gap at floor 77 (`diagnose func_8006CCC8` still reports 187
+  differing insns via its own LARGE-triage metric, which is a different,
+  coarser count than the sandbox score and was NOT re-baselined between s1
+  and s2 — read the sandbox score, not `diagnose`, as the authoritative
+  floor number). Walked the disassembly by hand from the top through
+  `asm/funcs/func_8006CCC8.s:160` (`.L8006CEAC` inner record-update loop)
+  against `tmp/grind/func_8006CCC8/dumps/text1b.s:16503-16728`: the outer
+  loop's first-arm (field28<=0/>=lim increment-decrement) and the loop
+  entry/exit control flow now match structurally insn-for-insn (branch
+  targets, register roles). The inner `for (j=0;j<3;j++)` record-update
+  loop does NOT yet match — see H4 in hypotheses.md for the specific shape
+  mismatch (branch-then-duplicate-loads in our build vs
+  unconditional-loads-select-by-AND-source in target). NOT walked this
+  session: target lines 160-200 (the function's tail, field28==4 arm
+  continuation + epilogue) — still unverified from s1, carried forward as
+  frontier item #2.
+
 ## Artifacts
 
 - `tmp/grind/func_8006CCC8/s1/candidate_body.txt` — snapshot of the
@@ -146,3 +227,19 @@ though the same expression is written 5 times in the C).
 - [s1] Second candidate (inline field28 dereference at each use site, no cached pointer/value local): sandbox --disable all score 94, target_insns 189, build_insns 193; frame sp,-0x48 matches target; ret variable register-allocated matching target's $fp usage pattern. This is the resident body in src/text1b.c at end of session.
 
 - [s1] Remaining structural diff identified directly in the disassembly (not yet fixed): our build hoists the full 16-bit sign-extension of arg2 out of the for-loop into its own register computed once before the loop; target recomputes it (sll 16; sra 16; srav i) every iteration inline while keeping only the raw a2 value live across iterations in $s7. Matches the documented loop.c move_movables mechanism in .claude/rules/defeat-licm-hoist-var-reuse.md -- register count is identical (9 registers used in both builds across the loop), so this is a pure hoist-vs-no-hoist codegen decision, not a pressure difference.
+
+- [s2] STALE-HEAD CORRECTION: at s2 dispatch, src/text1b.c still carried INCLUDE_ASM("asm/funcs", func_8006CCC8) — the s1 candidate.c body had never actually been applied to HEAD, despite its own header claiming it was resident. Re-applied it (plus fixing a stale extern forward-declaration whose signature, `extern void func_8006CCC8(s32, s32, s32)`, didn't match the real pointer/s16 parameter types the call site at func_8006D338 uses) and re-verified sandbox score 94 before making any new change, confirming the chassis matched the ledger exactly.
+
+- [s2] tmp/grind/func_8006CCC8/dumps/text1b.rtl (func region ~lines 52409-53809): arg2's raw param pseudo is reg 74 (HImode); its sign-extension chain is reg95 (ashift by 16) -> reg94 (ashiftrt by 16), each SET exactly once, immediately after the loop's top code_label — textbook single-set loop-invariant per loop.c's classification.
+
+- [s2] tmp/grind/func_8006CCC8/dumps/text1b.loop: 'Loop from 59 to 557: 155 real insns.' block explicitly lists 'Insn 71: regno 95 (life 4), savings 2 moved to 604' and 'Insn 72: regno 94 (life 3), cond forces 71 savings 1 moved to 605' — direct pass-level confirmation of the hoist, not inferred from asm alone.
+
+- [s2] Reg 76 (the HImode view of loop counter i) is set at BOTH insn 54 (loop init) and insn 547 (loop increment) in the same .rtl dump — genuinely multi-set — and its own sign-extension is recomputed at 4+ points in the .loop dump, every one marked 'not desirable' (never hoisted): direct empirical confirmation that multi-set defeats move_movables' admission test, which is exactly the lever applied to arg2's sign-extension.
+
+- [s2] asm/funcs/func_8006CCC8.s:11,21,39,198 show target's $s7 (raw arg2) is set exactly once (line 21, addu $s7,$a2,$zero) and read exactly once (line 39, inside the loop) across the whole function — confirming there is no second value sharing that specific register in target, so the multi-set-reuse fix could not literally mirror target's own register assignment; it instead used a fresh scratch local (t) whose second write is a genuinely-used, already-live loop-variant value (i), which still satisfies the defeat-licm-hoist-var-reuse family's prerequisites (real, used, non-consecutive second SET) without requiring register-identical mimicry.
+
+- [s2] asm/funcs/func_8006CCC8.s:41 and :117 both use $s1 (the register holding i) directly with no HI->SI extension anywhere — the evidentiary basis for the H3 s32-widening of i.
+
+- [s2] diagnose func_8006CCC8 still reports 187 differing insns via its own LARGE-triage metric after this session's fixes — that metric was NOT re-baselined between s1 and s2 in this ledger and should not be read as the current floor; sandbox --disable all (score 77) is authoritative.
+
+- [s2] Hand-walked asm/funcs/func_8006CCC8.s against tmp/grind/func_8006CCC8/dumps/text1b.s from the function top through the .L8006CEAC inner record-update loop (target lines 1-160 vs our dump lines 16503-16728): the outer loop's control flow, first arm (field28 <=0/>=lim increment-decrement), and the arg2/i fixes all now match structurally. The inner for(j=0;j<3;j++) record-update loop (the field28==3 and field28==4 arms) does NOT yet match: target unconditionally loads both the +0x17 and +0x1A/+0x1D bytes every iteration and selects the i==0-vs-else half via which register feeds the AND, while our build branches on i==0 at the loop top into two near-duplicate load/mask sequences that converge on a shared tail. This is the new frontier (H4).
