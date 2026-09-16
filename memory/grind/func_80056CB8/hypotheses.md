@@ -827,3 +827,54 @@ src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat emp
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s15 chassis (42/197, s14-banked body unmodified), single fresh dump.ps1 + classify run, no FAKE constructs present
+
+## [s16] Re-confirmed floor 42/204 fresh this session (build_insns 197), applying the s15-banked candidate.c body + func_80053614 s32-return prerequisite verbatim to src/text1b.c.
+- mechanism: n/a -- chassis-stability re-confirmation via fresh `sandbox func_80056CB8 --disable all` before any edit.
+- probe: Applied candidate.c body + func_80053614 return-type fix to src/text1b.c, ran official sandbox.
+- result: score=42, target_insns=204, build_insns=197 -- exact match to s14/s15 record.
+- verdict: CONFIRMED
+
+## [s16] Read the target asm's flags==4 y-compare tail directly for the first time this ledger cycle (asm/funcs/func_80056CB8.s:170-192, the beqz(sum-threshold)/bltz(dy)/beqz(dy>=0x3E9)/bnez(-dy<0x3E9) branch chain) and confirmed our CURRENT banked C (`if (y-hit1[1]>=0) { if (y-hit1[1]>=0x3E9) flags=5; } else { if (hit1[1]-y>=0x3E9) flags=5; }`) is ALREADY the exact structural/semantic mirror of what the asm implements -- the beqz+bltz+j "triple" the ledger's frontier called a branch-topology mismatch is just MIPS delay-slot fill (the `slti $v0,$v0,0x3E9` in the `bltz` instruction's delay slot executes unconditionally regardless of branch outcome; its result is thrown away on the taken path) over exactly this nested if/else, not evidence of a different source shape. This REVISES the s6/s7/s15 framing of this sub-residual: it is NOT an open C-level branch-topology question -- our source already matches target's inferred structure for this block.
+- mechanism: MIPS branch-delay-slot semantics (the delay-slot instruction after `bltz`/`beqz`/`bnez` always executes); not a GCC C-to-RTL structural choice we haven't reached.
+- probe: `grep -n beqz|bltz|bgez` + `sed -n '150,205p' asm/funcs/func_80056CB8.s`, manually decoded the branch/delay-slot sequence against $v0/$v1/$a0 register roles (v1 = hit1[1] via stack reload 0x4C($sp), a0 = y via 0xBC($s1)) and matched it statement-for-statement to the banked C's nested if/else. No C edit made for this specific sub-finding (read-only structural analysis); recorded as evidence, not a hypothesis test.
+- verdict: n/a (evidence finding, not a measured hypothesis -- see the two KILLED probes below that this finding motivated)
+
+## [s16] Replacing the nested if/else y-compare with a single absolute-value form (`s32 dy = y - hit1[1]; s32 ady = (dy >= 0) ? dy : -dy; if (ady >= 0x3E9) flags = 5;`) is WORSE than the already-banked nested if/else, consistent with the s16 asm-read finding that the nested form is already target's structural shape.
+- mechanism: Collapsing to one subtraction + ternary changes cc1's branch/compare emission shape away from the delay-slot-fill pattern target's compiled form actually uses (two conditional branches with a shared subtraction reused via unconditional delay-slot re-evaluation, not a single materialized absolute value).
+- probe: Edited the flags==4 tail to the abs-value form on the s15-banked 42/197 chassis, ran `sandbox func_80056CB8 --disable all`, then reverted.
+- result: score 42 -> 45/204 (build_insns unchanged at 197 -- same real instruction count, worse-scoring register/ordering diff). Reverted; re-confirmed 42/197 reproduces exactly after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s16 chassis (s15-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs
+
+## [s16] Re-testing s10's rejected loop-carried-idx2 induction variable (`idx2 = start*2` initialized in the for-init clause, `idx2 += 2` in the for-increment clause, replacing both `(&D_x)[i*2]` reads with `(&D_x)[idx2]`) on the CURRENT 42/197 chassis reproduces the same negative result s10 measured on the older 58/198 chassis -- the s15 frontier note calling this "untried" was WRONG; s10's rejected/loop-carried-idx2-worse.c variant (b) is character-for-character this exact construct (start*2 init in for-init, += 2 in for-increment), just measured on an earlier chassis. This closes the "untried variant" framing in the s15 frontier note.
+- mechanism: Same as s10/s12's finding -- sharing i*2 via a genuine loop-carried second induction variable raises register pressure across the intervening ratan2()/obj/flags computation more than it saves, regardless of chassis (the s14 reorder win that dropped the floor 48->42 did not touch this axis).
+- probe: Declared `s32 idx2;` alongside `i`, changed the for-loop to `for (i = start, idx2 = start * 2; i < start + 2; i++, idx2 += 2)`, replaced both `(&D_8009A821)[i * 2]` / `(&D_8009A820)[i * 2]` reads with `[idx2]`. Measured via `sandbox func_80056CB8 --disable all` on the s15-banked 42/197 chassis, then reverted.
+- result: score 42 -> 50/204 (build_insns 197 -> 200, 3 MORE real instructions). Reverted; re-confirmed 42/197 reproduces exactly after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s16 chassis (s15-banked candidate.c body, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs
+
+src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat empty, `git checkout -- src/text1b.c` run and verified clean). Next-session frontier, REVISED given this session's asm-read finding: (1) the y-compare tail sub-residual is CLOSED as a C-structure question -- do not re-attempt branch-topology rewrites of that block; the remaining gap there (if any) is purely a register/delay-slot-fill artifact of surrounding code, not this block's own C shape; (2) the "share i*2" family is now FULLY closed across both chassis generations (s10 + s16, 5 total measured spellings, all worse) -- do not re-propose any spelling of a second index/pointer variable carrying i*2; (3) the genuinely open lever is still the reg 11/65 call-crossing spill pair (s13/s15's double-bind) -- needs a solver-modality session to name the exact spilled C-level VALUE (not yet identified in any session s13-s16), since the 0x1F8002B8-literal hypothesis was killed at s15 and the induction-variable hypothesis is now closed by this session's finding. A fresh `tools/ra_solver/inverse.py` run (not just `inverse_compose.py classify`) against the current 42/197 chassis, asking specifically "what C-level object maps to pseudo 11 and pseudo 65 at the func_80053614 call sites" is the concrete next step.
+
+## [s16] The s15-banked candidate.c body (s14 sin_p/cos_p/scale/x/z reorder win + s7/s11 merges + func_80053614 s32-return prerequisite), applied fresh to src/text1b.c this session, reproduces honest floor 42/204 (build_insns 197) with zero source change from the s15 record.
+- mechanism: n/a -- chassis-stability re-confirmation via a fresh sandbox run this session.
+- probe: Applied memory/grind/func_80056CB8/candidate.c's body verbatim to src/text1b.c (incl. retyping func_80053614 to s32 with `return func_80052D00(arg2, arg3);`), ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score=42, target_insns=204, build_insns=197 -- exact match to the s14/s15 recorded floor. Chassis stable.
+- verdict: CONFIRMED
+
+## [s16] Replacing the banked flags==4 y-compare nested if/else with a single absolute-value form (`s32 dy = y - hit1[1]; s32 ady = (dy>=0)?dy:-dy; if (ady>=0x3E9) flags=5;`) does not lower the honest distance; it raises it.
+- mechanism: Collapsing the two-branch nested-if to one subtraction + ternary changes cc1's branch/compare emission away from the delay-slot-fill pattern target's compiled form actually uses (two conditional branches sharing one subtraction, reused via an unconditionally-executed delay-slot re-evaluation) -- confirmed by direct decode of asm/funcs/func_80056CB8.s:150-192 this session, which shows the ALREADY-BANKED nested if/else is target's actual C-level shape for this block, not the single-bgez shape the ledger's s6/s7 framing assumed.
+- probe: Edited the flags==4 tail to the abs-value form on the s15-banked 42/197 chassis, ran `sandbox func_80056CB8 --disable all`, then reverted.
+- result: score 42 -> 45/204 (build_insns unchanged at 197 -- same real instruction count, worse register/ordering diff). Reverted; re-confirmed 42/197 reproduces exactly after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s16 chassis (s15-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs
+
+## [s16] Re-testing s10's loop-carried-idx2 induction variable (idx2 = start*2 initialized in the for-init clause, idx2 += 2 in the for-increment clause, replacing both (&D_x)[i*2] byte-table reads with (&D_x)[idx2]) on the CURRENT 42/197 chassis reproduces the same negative result s10 measured on the older 58/198 chassis -- this closes the s15 frontier note's mistaken claim that this exact spelling was 'untried' (it is character-for-character s10's rejected variant (b), just re-measured on a newer chassis).
+- mechanism: Same as s10/s12's finding -- sharing i*2 via a genuine loop-carried second induction variable raises register pressure across the intervening ratan2()/obj/flags computation more than it saves, independent of the chassis generation (the s14 reorder win that dropped the floor 48->42 did not touch this axis).
+- probe: Declared `s32 idx2;` alongside `i`, changed the for-loop to `for (i = start, idx2 = start * 2; i < start + 2; i++, idx2 += 2)`, replaced both `(&D_8009A821)[i * 2]` / `(&D_8009A820)[i * 2]` reads with `[idx2]`. Measured via sandbox on the s15-banked 42/197 chassis, then reverted.
+- result: score 42 -> 50/204 (build_insns 197 -> 200, 3 more real instructions). Reverted; re-confirmed 42/197 reproduces exactly after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s16 chassis (s15-banked candidate.c body, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs

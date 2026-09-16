@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 15,
- "current_modality": "enumerate",
+ "session_count": 16,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -93,23 +93,24 @@
    "floor": 42,
    "modality": "enumerate",
    "headline": "s15 enumerate: re-confirmed floor 42/204 fresh; exhaustively killed the pt0/pt1 array-fill-block reorder space (10/10 worse) and the classify-suggested single-named-intermediate literal lever (46/204,"
+  },
+  {
+   "session": 16,
+   "floor": 42,
+   "modality": "structural",
+   "headline": "s16 structural: re-confirmed floor 42/204 fresh; read the target asm's flags==4 y-compare tail directly for the first time this cycle and found the s6/s7 'branch-topology mismatch' framing was a misdi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The genuine remaining PRE-RA residual is the loop-carried i*2 induction variable ($fp, s10's finding) plus the code==4 y-compare branch-topology mismatch (beqz+bltz+j vs bgez, s6/s7's C-level kill that is still open at the RTL/instruction-count level) \u2014 both entangled in the same 3-instruction gap, neither separately closable by any spelling tried s9-s15.",
-   "mechanism": "loop.c strength-reduction (the s10/s11 finding: target maintains i*2 as a second, genuinely loop-carried counter incremented alongside i, not recomputed per-iteration) combined with jump.c/reorg.c's handling of the nested y-compare (>=0 / >=0x3E9 double-branch) that our single bgez-based form does not reach structurally.",
-   "next_probe": "s12's loop-carried-idx2 rewrite was measured worse (banked rejected/loop-carried-idx2-worse.c) using a SEPARATE loop-carried variable; the untried form is initializing that second counter's INITIAL value directly from `start` (matching target's single pre-loop `sll $fp,$v1,2`) rather than from `i*2` inside the loop body, so the multiply happens ONCE before the loop, not per-iteration. Needs a structural or solver-modality session to derive the exact C shape (a second loop-control variable stepped in the for-loop's increment clause: `for (i = start, idx2 = start*2; i < start+2; i++, idx2 += 2)`), then re-run inverse_compose classify to see if the multiset gap narrows."
+   "hypothesis": "The reg 11/reg 65 call-crossing spill pair (s13/s15's double-bind, .greg 'Spilling reg 11.'/'Spilling reg 65.' twice each around the two func_80053614 calls) is the one remaining un-narrowed lever -- neither the induction-variable family (closed s10+s16) nor the y-compare branch-topology family (closed s16) explains it, and no session s13-s16 has named which C-level VALUE actually occupies pseudo 11/65.",
+   "mechanism": "reload1.c: a pseudo with reg_n_refs spanning a CALL_INSN is a spill candidate; classify's PRE-RA verdict names the frame-size delta (176 vs 168 byte frame) and the $s8-based spill/reload round-trip as the concrete symptom, but has never identified WHICH source-level object (pt0/pt1/hit0/work addresses? flags? obj?) is forced through that path.",
+   "next_probe": "A solver-modality session running `tools/ra_solver/inverse.py` (not just `inverse_compose.py classify`) against the current 42/197 chassis, specifically asking which C-level object maps to pseudo 11 and pseudo 65 at the func_80053614 call sites -- this is the concrete, previously-unexecuted step the s13/s15 double-bind entries both deferred."
   },
   {
-   "hypothesis": "The code==4 y-compare's `if (y - hit1[1] >= 0) { if (>= 0x3E9) ... } else { if (hit1[1]-y >= 0x3E9) ... }` nested-diamond form is what forces our single bgez where target has beqz+bltz+j \u2014 an un-tried restructuring (e.g. a single `s32 dy = y - hit1[1]; s32 ady = (dy >= 0) ? dy : -dy; if (ady >= 0x3E9) flags = 5;` absolute-value form, or splitting the >=0x3E9 check into its own goto-based exit) might reach target's 3-branch shape without changing semantics.",
-   "mechanism": "jump.c / combine.c's handling of a signed-magnitude comparison pair: our nested if/else emits a single conditional branch (bgez) selecting between two near-identical >=0x3E9 checks, where the target's compiled form apparently short-circuits differently (beqz then bltz then unconditional j to a shared tail).",
-   "next_probe": "Read asm/funcs/func_80056CB8.s lines around the flags==4/y-compare tail (not yet read this ledger cycle in full) and m2c-reconstruct that specific sub-block in isolation to see what source shape m2c infers for the beqz+bltz+j triple, before hand-deriving C forms to sweep."
-  },
-  {
-   "hypothesis": "The reg 11/reg 65 spill pair (unchanged s13->s15) may be resolvable by NOT keeping the 0x1F8002B8 literal (or whatever currently occupies those pseudos across the func_80053614 calls) live across the call boundary at all \u2014 i.e. a source shape where the 5th argument is computed fresh at each call site from something already live, rather than shared.",
-   "mechanism": "reload1.c: a pseudo with reg_n_refs spanning a CALL_INSN is a spill candidate; if the value can instead be trivially recomputed at each of the two use sites (it's a compile-time constant, so this costs nothing extra in real instructions \u2014 GCC already reduces `li $x,0x1F8002B8` to the same lui/ori pair either way), removing its cross-call liveness might let reload pick a different, non-spilled home.",
-   "next_probe": "This is the natural, ALREADY-BASELINE form (the literal `0x1F8002B8` is written twice in source at each call site, not cached) \u2014 s15's classify confirms the baseline STILL shows the reg 11/65 spill despite this, meaning the spilled pseudo is something else (possibly `pt0`/`pt1`/`hit0`/`work`'s addresses, or `flags`, live across the call). Needs a solver-modality session (tools/ra_solver/inverse.py or a fresh -da greg read naming exactly which C-level value maps to pseudo 11 and 65) before any further C-level lever attempt \u2014 this session did not identify the spilled VALUES, only confirmed the spill still fires."
+   "hypothesis": "With the y-compare branch-topology sub-residual and the full 'share i*2' family both now closed, the remaining PRE-RA multiset gap (classify's repeated verdict across s13-s16) is concentrated entirely in the call-crossing spill pair above and possibly the frame-size delta itself, not in any remaining un-swept statement-ordering or declaration-order axis of the loop body.",
+   "mechanism": "n/a -- negative-space narrowing from this session's two kills plus the prior sessions' exhaustive dx/dz, pt0/pt1, sin_p/cos_p/scale/x/z, and named-intermediate sweeps (all flat at 42/197 or worse).",
+   "next_probe": "Once the solver names the spilled value(s), apply the phantom-slot-frame-lever diagnosis recipe (.claude/rules/phantom-slot-frame-lever.md) to the named local/temp to find a lifetime-shortening or narrowing C-level fix, rather than any further blind structural sweep of the loop body."
   }
  ],
  "judge_constraints": [],
@@ -322,6 +323,22 @@
    "measured_on": "s15 chassis (42/197, s14-banked body unmodified), single fresh dump.ps1 + classify run, no FAKE constructs present",
    "predicate_cite": "",
    "result": "greg dump: 'Spilling reg 11.'/'Spilling reg 65.' each appear twice (once per func_80053614 call site), identical pattern"
+  },
+  {
+   "session": 16,
+   "statement": "Replacing the banked flags==4 y-compare nested if/else with a single absolute-value form (`s32 dy = y - hit1[1]; s32 ady = (dy>=0)?dy:-dy; if (ady>=0x3E9) flags=5;`) does not lower the honest distance",
+   "kill_scope": "instance",
+   "measured_on": "s16 chassis (s15-banked candidate.c body + func_80053614 s32-return prerequisite, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "score 42 -> 45/204 (build_insns unchanged at 197 -- same real instruction count, worse register/ordering diff). Reverted"
+  },
+  {
+   "session": 16,
+   "statement": "Re-testing s10's loop-carried-idx2 induction variable (idx2 = start*2 initialized in the for-init clause, idx2 += 2 in the for-increment clause, replacing both (&D_x)[i*2] byte-table reads with (&D_x)",
+   "kill_scope": "instance",
+   "measured_on": "s16 chassis (s15-banked candidate.c body, unmodified otherwise), single fresh sandbox measurement, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "score 42 -> 50/204 (build_insns 197 -> 200, 3 more real instructions). Reverted; re-confirmed 42/197 reproduces exactly "
   }
  ],
  "ladder_skip": 0,

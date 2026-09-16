@@ -1,6 +1,37 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15)
+ * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16)
  * — floor 42/204, NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s16 (structural modality). STALE-HEAD-CLAIM NOTE (same as every prior
+ * session): src representation is INCLUDE_ASM between grind sessions;
+ * nothing persists on main. Re-applied the s15-banked body (unchanged) +
+ * func_80053614 s32-return prerequisite, re-confirmed floor 42/204
+ * (build_insns 197) exactly matches the s14/s15 record.
+ *
+ * KEY FINDING: read asm/funcs/func_80056CB8.s:150-192 (the flags==4
+ * y-compare tail) directly for the first time this ledger cycle and
+ * decoded the beqz(sum-threshold)/bltz(dy)/beqz(dy>=0x3E9)/bnez(-dy<0x3E9)
+ * branch chain register-by-register. CONCLUSION: our CURRENTLY BANKED
+ * nested if/else (`if (y-hit1[1]>=0) { if (y-hit1[1]>=0x3E9) flags=5; }
+ * else { if (hit1[1]-y>=0x3E9) flags=5; }`, unchanged below) is ALREADY
+ * the exact structural mirror of the target's C-level shape for this
+ * block -- the "beqz+bltz+j triple vs our single bgez" framing carried
+ * since s6/s7 was a MISDIAGNOSIS: what looks like a 3-branch triple is
+ * ordinary MIPS delay-slot fill (the slti in bltz's delay slot executes
+ * unconditionally; its result is discarded on the taken path), not
+ * evidence of a different source shape. This block's C-level spelling
+ * question is CLOSED -- do not re-attempt branch-topology rewrites here.
+ * Tried the one plausible alternative (single absolute-value form via
+ * `dy`/`ady` locals + ternary) to confirm: measured WORSE (42->45,
+ * same build_insns=197), consistent with the nested form already being
+ * correct. Also re-tested s10's loop-carried-idx2 induction variable
+ * (the s15 frontier note's "untried" claim was wrong -- it's the same
+ * construct as s10's already-rejected variant (b), just on a newer
+ * chassis) and re-confirmed it's worse (42->50) on the current chassis
+ * too, closing the "share i*2" family across chassis generations.
+ * Full writeup: memory/grind/func_80056CB8/hypotheses.md [s16] entries.
+ * Reverted src/text1b.c to a clean INCLUDE_ASM state (zero diff vs HEAD,
+ * `git checkout -- src/text1b.c` run and verified) before finishing.
  * ---------------------------------------------------------------------
  * s15 (enumerate modality). STALE-HEAD-CLAIM NOTE (same as every prior
  * session): src representation is INCLUDE_ASM between grind sessions;
