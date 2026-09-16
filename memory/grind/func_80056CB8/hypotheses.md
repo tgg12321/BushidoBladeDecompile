@@ -1463,3 +1463,111 @@ src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat emp
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s32 chassis (s22-s31-banked 38/204 body + a single shared `idx = i*2` local substituted at both table-index reads), no FAKE constructs present, single fresh sandbox measurement plus a confirmatory .loop dump
+
+## [s33] (rederive modality, 2026-09-16). Body UNCHANGED (frontier probe measured worse, reverted).
+
+**Chassis reproduction note (re-confirmed the s25/s28 trap fresh, independently
+hit it before reading the ledger):** src/text1b.c carries INCLUDE_ASM between
+grind sessions (asm-until-matched). Naively splicing candidate.c's function
+body alone gives a FALSE floor of 153/204 (152 build insns); adding the 5-line
+extern header block (Judge/ratan2/D_8009A820/D_8009A821/D_800F6610) without the
+func_80053614 s32-return prerequisite gives 141/204; all three together
+reproduce the true 38/204 (198 build insns) fresh. Recorded again here since
+this is now the fourth session (s25/s28/s33 explicitly, plus implicit repeats)
+to hit this reconstruction trap — worth a permanent note in candidate.c's
+header rather than re-deriving every time (added below).
+
+**KILLED the s31/s32-named live frontier item #1** ("two SEPARATELY-named
+locals that `combine_givs` might still merge into one giv, letting
+`global_alloc`/reload treat them as two short individual-lifetime pseudos
+instead of one pseudo forced to live across the whole `ratan2`+`func_80053614`
+call span"). Implemented exactly as specified: added `s32 idxB;` declared at
+loop-body top, assigned `idxB = i * 2;` immediately after the existing
+`flags = (&D_8009A821)[i * 2] << 8;` line (same source position the frontier
+item specified), and changed ONLY the `scale = (&D_8009A820)[i * 2] << 8;`
+line to read `scale = (&D_8009A820)[idxB] << 8;` — the flags read's own
+`i * 2` was left untouched (not shared).
+
+- Measured on: s33 chassis (s22-s32-banked 38/204 body + this single `idxB`
+  addition, func_80053614 s32-return prerequisite applied, header externs
+  restored, no FAKE constructs). `wteng sandbox func_80056CB8 --disable all`.
+- Result: **score 38 -> 51/204, build_insns 198 -> 200 (WORSE, +2 real
+  instructions, not the register-pressure-neutral outcome the frontier item
+  hoped for)**. Reverted immediately (`git checkout -- src/text1b.c`,
+  confirmed zero diff via `git status --short`).
+- Dump evidence: `pwsh tools/grinder/dump.ps1 func_80056CB8` produced a fresh
+  `.lreg`/`.sched`/`.sched2` set (no `.loop`/`.combine` file emitted this run —
+  the dump script's pass-file list did not include them for this build,
+  possibly because loop-invariant analysis didn't reach a promotion decision
+  worth logging); `grep -n "giv\|strength" tmp/grind/func_80056CB8/s33/dumps/text1b.lreg`
+  returned nothing, i.e. no giv-promotion trace to read (contrast with s32's
+  successful giv-promotion trace on the DIFFERENT s6-era shared-idx-local
+  form, which showed `lifetime 42, giv promoted, reduced to reg 217`). The
+  +2 insn delta here reads as ordinary extra register pressure from a second
+  live pseudo carrying the same value as the first (classic split-then-
+  recombine cost), not a giv-promotion event at all — `combine_givs` evidently
+  did NOT treat the two separately-named-but-identical-value locals as
+  mergeable into one strength-reduction candidate the way the frontier item's
+  mechanism hypothesized, or if it did, reload's register-pressure cost from
+  carrying a second short-lived idxB pseudo exceeded any benefit.
+- **KILLED instance.** kill_scope: instance (this exact `idxB` spelling, s33
+  chassis, no FAKE constructs). Re-testable: `s32 idxB; ...; idxB = i * 2;`
+  early, consumed only at the scale read, on the current 38/204 chassis.
+- This closes the s31/s32-flagged frontier item #1 in the negative. Combined
+  with the s12 kill of the pointer-walk variant and the s6/s7/s10/s18/s21/s22/
+  s27 kills of every other "share i*2 as one C value" spelling (int-fresh,
+  int-loop-carried, pointer-fresh, pointer-loop-carried, single-shared-index,
+  now two-separately-named-index), essentially the entire "how the doubled
+  index is NAMED or CARRIED" axis is now empirically exhausted for this
+  residual on this chassis — six distinct spellings, all flat-or-worse. The
+  remaining two frontier items (shrink loop-body insn_count below 124 without
+  touching the index; restructure one of the other 8 residents' conflict
+  footprint) are the only structurally untried axes and both require deeper
+  analysis than a single-line spelling change can provide.
+
+**m2c cross-check (rederive modality mandate).** Re-read the archived
+`tmp/grind/func_80056CB8/s12/m2c_out.c` fresh (target asm unchanged since s12,
+so the m2c reconstruction is still current). Confirmed structurally: m2c
+reconstructs the loop as `do { ... } while (var_s6 < (sp60 + 2));` — i.e. the
+ORIGINAL COMPILER's RTL shows a genuine do-while-style backward branch with a
+folded-constant entry test (`if (1 != 0) { ... do {...} while(...); }`), not a
+for-loop with a real entry comparison. This is consistent with (not new
+evidence beyond) the already-established fact that `start < start+2` is
+compile-time-provable so the for-loop's entry guard folds to a constant —
+GCC 2.7.2 performs the same do-while conversion on `for` and `while` source
+forms alike (`loop.c`'s loop-inversion pass runs after parsing, upstream of
+any distinction between C-level `for`/`while`/`do-while` syntax), so writing
+the C loop as an explicit `do { } while()` instead of the current `for (...)`
+is NOT expected to change codegen and was NOT spent as a probe — noted here so
+a future rederive session doesn't re-derive this same equivalence from
+scratch. m2c's `var_fp` confirms `(&D_8009A820)[var_fp]`-style single combined
+index at the RECONSTRUCTION level is exactly the `idx2`/shared-idx family
+already killed six times over (s6/s7/s10/s12/s18/s21/s22/s27/s33) — m2c offers
+no genuinely new index-spelling axis beyond what's already been swept.
+
+Frontier for next session (unchanged from s31/s32's items #2 and #3, item #1
+now closed): (2) shrink the loop body's real-insn count below 124 (loop.c:3823
+insn_count side of the inequality) via a structural rewrite of the pt0/pt1
+store blocks or the flags==3/flags==4 tail that does NOT touch the i*2 index
+expressions — untried as an axis distinct from widening a giv's lifetime;
+(3) re-run s29's conflict_map.py decode against a fresh `.greg` dump of ANY
+of the six now-fully-killed idx-naming variants to see whether the 9-resident
+register-competition picture changes shape at all (even in a losing variant),
+which might reveal which OTHER resident is the actual lever, not the i*2 axis
+itself.
+
+## [s33] Adding a fresh, separately-named local (idxB = i * 2;, assigned right after the flags-table i*2 read) and using ONLY that local at the scale-table read (leaving the flags read's own i*2 untouched) lets combine_givs merge the two i*2 computations into one strength-reduction giv while letting global_alloc/reload treat idxB as a short individual-lifetime pseudo instead of forcing one pseudo to live across the whole ratan2+func_80053614 call span, on the current 38/204 chassis.
+- mechanism: loop.c:5502-5512 combine_givs merges givs sharing the same biv/mult/add triple regardless of whether they come from textually identical source expressions; loop.c:3823's strength-reduction giv-worth predicate gates on the merged giv's lifetime*threshold*benefit vs insn_count, and s31/s32 had shown the gap was only +1 lifetime unit away from flipping.
+- probe: Applied the exact spelling to the s22-s32-banked 38/204 chassis (func_80053614 s32-return prerequisite + header externs restored, no FAKE constructs); measured via `wteng sandbox func_80056CB8 --disable all`; read tmp/grind/func_80056CB8/s33/dumps/text1b.lreg for giv-promotion evidence.
+- result: score regressed 38 -> 51/204, build_insns 198 -> 200 (+2 real instructions). No giv/strength-reduce trace found in the fresh .lreg dump (no .loop pass file was emitted for this build), unlike s32's successful promotion trace on the different shared-single-idx form (lifetime 42, giv promoted, reduced to reg 217). The regression reads as ordinary extra register pressure from a second live pseudo carrying the same value as the first, not a giv-promotion event -- combine_givs either did not merge the two separately-named locals into one strength-reduction candidate, or did and the pressure cost exceeded any benefit.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s33 chassis (s22-s32-banked 38/204 body + idxB local added exactly per the s31/s32 frontier item's spelling; func_80053614 s32-return prerequisite applied; header externs restored; no FAKE constructs present)
+
+## [s33] Writing the loop as an explicit do-while (matching the exact control-flow shape m2c reconstructs from the target's own RTL: `if (1 != 0) { ... do { ... } while (var_s6 < sp60 + 2); }`) instead of the candidate's current `for (i = start; i < limit; i++)` would produce different codegen and is worth measuring as a rederive-modality structural probe.
+- mechanism: GCC 2.7.2's loop-inversion transform (loop.c) that converts a for/while loop with a statically-provable-true entry condition into a guarded do-while runs AFTER parsing and upstream of any distinction between C-level for/while/do-while source syntax -- so a for-loop and a hand-written do-while loop expressing the identical semantics reach the same RTL loop shape.
+- probe: Re-read the archived tmp/grind/func_80056CB8/s12/m2c_out.c fresh (target asm unchanged since s12, so still current) and confirmed its do-while reconstruction; reasoned about loop.c's inversion pass rather than building and measuring a do-while variant, since the mechanism predicts no observable difference.
+- result: Not built or measured this session -- the mechanism-level argument (loop-inversion is a post-parse RTL transform, not a source-syntax-sensitive one) makes a do-while rewrite very unlikely to change codegen, so it was not worth spending a probe on. Recorded so a future session doesn't re-derive the same equivalence from scratch, and so it can be spent as an actual measured probe if a future session wants empirical confirmation rather than the mechanism argument alone.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: reasoning-only (not built/measured) against tools/gcc-2.7.2/loop.c's documented loop-inversion pass and the archived s12 m2c_out.c reconstruction; not a class kill because no C variant was actually compiled and diffed this session -- a future session should still spend one real measurement before treating this as fully closed

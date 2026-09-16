@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 32,
- "current_modality": "forensics",
+ "session_count": 33,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -195,23 +195,29 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "Factored the s31-banked loop.c:3823 giv-worth gap into exact (lifetime=2, threshold=31, benefit=2) terms -- only +1 lifetime unit needed, not +39 on any single term -- then re-audited the stale s6 sha"
+  },
+  {
+   "session": 33,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s33 rederive: KILLED the s31/s32 two-separately-named-idxB frontier item (51/204, worse); confirmed via fresh m2c that do-while-vs-for loop spelling is codegen-neutral here; floor holds at 38/204 fres"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Two SEPARATELY-named locals (not one shared idx) that combine_givs still merges into one giv (same biv/mult/add triple; loop.c:5502-5512's merge condition does not require identical source expressions) might let global_alloc treat them as two short individual-lifetime pseudos rather than one pseudo forced to live across the whole call span -- potentially flipping loop.c:3823's decision (since combine_givs sums their lifetimes regardless of whether the two source pseudos ever coexist) WITHOUT paying the shared-idx test's 9th-call-spanning-resident cost.",
-   "mechanism": "loop.c:4401 measures lifetime per individual pseudo's own LUID span; combine_givs (loop.c:5523) sums lifetimes across the merge bookkeeping regardless of whether the two contributing pseudos are the SAME register. If reload/global_alloc can spill or rematerialize each separately-named copy independently (since as distinct C locals they are not required to share a hardware register), the merged giv could still reach lifetime>=3 for promotion purposes while neither individual pseudo needs to live across the whole ratan2 call.",
-   "next_probe": "Add `s32 idxB = i * 2;` computed early (same source position as the current `flags = (&D_8009A821)[i*2] << 8;` line) but consumed ONLY later at the scale read; leave the flags read's own `i*2` untouched (do not share a pseudo). Measure via sandbox; read the resulting .loop dump for (a) whether combine_givs still merges the two givs and promotion fires, and (b) whether global_alloc's register disposition for idxB avoids the lifetime-42 call-spanning-resident profile the shared-idx kill showed."
+   "hypothesis": "A structural change elsewhere in the loop body (not touching the i*2 index expressions or their live ranges) that shortens the loop's real-insn count from 163 to <=124 would flip loop.c:3823's inequality from the insn_count side instead of the lifetime side, letting strength_reduce promote i*2 automatically at unchanged register pressure.",
+   "mechanism": "loop.c:3823's rejection inequality is symmetric in insn_count vs the lifetime*threshold*benefit product; s32 factored the exact numeric gap (124 vs 163, needing +1 lifetime unit OR a matching insn_count reduction) but no session has yet tried shrinking insn_count as its own axis.",
+   "next_probe": "Identify which currently-unmerged/unoptimized statements in the loop body (pt0/pt1 store blocks, sin_p/cos_p lookups, flags==3/==4 tail) could be restructured to emit fewer real RTL insns without changing byte output, then re-run pwsh tools/grinder/dump.ps1 func_80056CB8 after each candidate change and read the .loop or .rtl insn_count directly (this session's dump run did not emit a .loop file -- check the dump script's pass-file selection or invoke cc1 -da directly if pwsh tools/grinder/dump.ps1 keeps omitting it)."
   },
   {
-   "hypothesis": "A structural change elsewhere in the loop body (not touching the i*2 index expressions or their live ranges) that shortens the loop's real-insn count from 163 to <=124 would flip loop.c:3823's inequality from the insn_count side instead of the lifetime side, letting strength_reduce promote i*2 automatically without widening any giv's lifetime at all (avoiding the register-pressure cost entirely).",
-   "mechanism": "loop.c:3823's inequality is symmetric in insn_count vs lifetime*threshold*benefit; shrinking insn_count is untried as an axis distinct from widening the giv term.",
-   "next_probe": "Identify which currently-unmerged/unoptimized statements in the loop body (pt0/pt1 store blocks, sin_p/cos_p lookups, flags dispatch tail) could be restructured to emit fewer real RTL insns without changing byte output, then re-run the .loop dump after each candidate change and read the new insn_count directly."
+   "hypothesis": "A restructuring of one of the 8 OTHER named residents' (obj/self-ptr, obj2, flags/code, sin_p, cos_p, x, z) live-range/conflict footprint could independently free a callee-saved register for i*2 to take without a net cost, even though six direct index-naming spellings have now all failed.",
+   "mechanism": "global.c global_alloc priority-ordered coloring; s29's conflict-map decode showed 9 pseudos live across the loop competing for 9 callee-saved registers -- the index axis is exhausted but the OTHER residents' footprints have not been independently varied.",
+   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the s33-rejected idxB variant (or any other now-fully-killed idx-naming variant) to see whether the 9-resident register-competition picture changes shape at all -- even in a losing variant, a shape change might reveal which OTHER resident (not i*2) is the actual lever."
   },
   {
-   "hypothesis": "A restructuring of one of the 8 OTHER named residents' (obj/self-ptr, obj2, flags/code, sin_p, cos_p, x, z) live-range/conflict footprint could independently free a callee-saved register for a genuinely different value while leaving the promoted i*2 giv able to take a register without a net cost -- carried forward unmeasured from s29/s30/s31.",
-   "mechanism": "global.c global_alloc priority-ordered coloring; s29's conflict-map decode showed 9 pseudos live across the loop competing for 9 callee-saved registers.",
-   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the two-separate-locals variant (once built) to see whether the register competition picture changes from the shared-idx case."
+   "hypothesis": "An explicit do-while rewrite of the loop (matching m2c's exact reconstructed control-flow shape) might still produce different codegen despite the loop-inversion-is-post-parse argument, since GCC 2.7.2's front end could plausibly attach different loop notes/hints to source-level do-while vs for before RTL generation.",
+   "mechanism": "Untested assumption from this session's reasoning-only kill above -- worth one real measurement before being treated as closed.",
+   "next_probe": "Build the do-while-spelled variant (same statements, loop written as `i = start; do { ...body... ; i++; } while (i < limit);` or matching m2c's exact `if (1) { do {} while(); }` guard shape) on the current 38/204 chassis and measure via wteng sandbox --disable all; read the .rtl/.loop dump to confirm whether the loop-inversion RTL is byte-identical to the current for-loop's RTL before concluding neutrality empirically rather than by argument alone."
   }
  ],
  "judge_constraints": [],
@@ -656,6 +662,22 @@
    "measured_on": "s32 chassis (s22-s31-banked 38/204 body + a single shared `idx = i*2` local substituted at both table-index reads), no FAKE constructs present, single fresh sandbox measurement plus a confirmatory .lo",
    "predicate_cite": "",
    "result": "score=51, build_insns=200 (baseline this session: score=38, build_insns=198, target_insns=204). Dump confirms promotion "
+  },
+  {
+   "session": 33,
+   "statement": "Adding a fresh, separately-named local (idxB = i * 2;, assigned right after the flags-table i*2 read) and using ONLY that local at the scale-table read (leaving the flags read's own i*2 untouched) let",
+   "kill_scope": "instance",
+   "measured_on": "s33 chassis (s22-s32-banked 38/204 body + idxB local added exactly per the s31/s32 frontier item's spelling; func_80053614 s32-return prerequisite applied; header externs restored; no FAKE constructs ",
+   "predicate_cite": "",
+   "result": "score regressed 38 -> 51/204, build_insns 198 -> 200 (+2 real instructions). No giv/strength-reduce trace found in the f"
+  },
+  {
+   "session": 33,
+   "statement": "Writing the loop as an explicit do-while (matching the exact control-flow shape m2c reconstructs from the target's own RTL: `if (1 != 0) { ... do { ... } while (var_s6 < sp60 + 2); }`) instead of the ",
+   "kill_scope": "instance",
+   "measured_on": "reasoning-only (not built/measured) against tools/gcc-2.7.2/loop.c's documented loop-inversion pass and the archived s12 m2c_out.c reconstruction; not a class kill because no C variant was actually co",
+   "predicate_cite": "",
+   "result": "Not built or measured this session -- the mechanism-level argument (loop-inversion is a post-parse RTL transform, not a "
   }
  ],
  "ladder_skip": 0,

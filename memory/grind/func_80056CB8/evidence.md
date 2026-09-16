@@ -645,3 +645,11 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s32] The insn-427 giv (a different expression, the `*(s8*)(arg0+0x444+i)` output-array store index) is rejected at exactly 0 vs 163 with unmerged raw benefit 2 -- this pins the scan-loop's `add_cost*bl->biv_count` deduction at exactly 2 for this function's biv class, letting the merged-giv's 124 be exactly reverse-engineered into its lifetime/threshold/benefit factors.
 
 - [s32] src/text1b.c was left clean (git checkout -- src/text1b.c) at end of session; HEAD still carries INCLUDE_ASM("asm/funcs", func_80056CB8); for this function as required by asm-until-matched.
+
+- [s33] Chassis-reproduction trap re-confirmed fresh at s33 (matches s25/s28): body-only splice -> 153/204 (152 insns); + header externs (Judge/ratan2/D_8009A820/D_8009A821/D_800F6610) but func_80053614 still void -> 141/204 (175 insns); + func_80053614 s32-return prerequisite (both fixes together) -> true 38/204 (198 insns), matching every s22-s32 measurement.
+
+- [s33] The 'how i*2's value identity is named/carried' axis now has six distinct spellings measured on this or an equivalent chassis, all flat-or-worse: int-fresh (s6), int-loop-carried (s7/s10/s18/s21/s22/s27, e.g. 55/204), pointer-fresh (s10), pointer-loop-carried (s12, rejected/loop-carried-pointer-walk-worse.c, 78/204 on an older 48/204 chassis), single-shared-index (s6/s32, rejected/shared-idx-local-worse.c and shared-idx-local-fresh-chassis-worse.c, giv DOES promote but net worse due to a 9th call-spanning resident), and two-separately-named-index (s33, this session, rejected/separately-named-idxB-worse.c, 51/204, no promotion trace at all).
+
+- [s33] m2c's fresh reconstruction (tmp/grind/func_80056CB8/s12/m2c_out.c, target asm unchanged so still current) confirms the target's own loop is compiled from a genuine do-while-shaped control-flow graph with a folded-constant entry guard (`if (1 != 0) { do {...} while(...); }`), and that its var_fp is algebraically identical to i*2 (var_fp initialized to start*2, incremented by 2 per iteration) -- consistent with, not beyond, what s26's classify.txt already established.
+
+- [s33] src/text1b.c reverted to clean INCLUDE_ASM at session end (git status --short src/text1b.c empty).

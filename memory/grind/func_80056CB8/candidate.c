@@ -1,7 +1,30 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32) — floor 38/204, NOT YET 0. Body
- * UNCHANGED at s32 (forensics). s32 derived the EXACT arithmetic behind
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33) — floor 38/204, NOT YET 0.
+ * Body UNCHANGED at s33 (rederive). s33 KILLED the s31/s32 live frontier
+ * item #1 (two separately-named locals for i*2, hoping combine_givs would
+ * merge them into one giv without forcing a call-spanning resident): 38 ->
+ * 51/204 (worse, +2 insns), no giv-promotion trace in the dumps. This
+ * closes the "how the doubled index is named/carried" axis — six distinct
+ * spellings now measured, all flat-or-worse (see rejected/
+ * separately-named-idxB-worse.c and hypotheses.md [s33] for full detail).
+ * s33 also re-confirmed via fresh m2c read that a `do{}while()` vs `for()`
+ * loop spelling is NOT expected to change codegen (GCC's loop-inversion
+ * runs upstream of source-level loop-keyword choice) and did not spend a
+ * probe on it.
+ *
+ * CHASSIS-REPRODUCTION REMINDER (hit fresh independently at s25/s28/s33 —
+ * READ THIS BEFORE re-measuring): splicing ONLY the function body below
+ * into src/text1b.c gives a FALSE floor of 153/204. You also need (1) the
+ * 5-line extern header block immediately above the function (Judge/
+ * ratan2/D_8009A820/D_8009A821/D_800F6610) and (2) changing
+ * func_80053614's declared return type from void to s32 with an explicit
+ * `return` (src/text1b.c ~line 1513-1519, OUTSIDE this file) — omitting
+ * either miscompiles silently via K&R implicit-int to a shorter, wrong
+ * function. All three together reproduce the true 38/204 (198 build
+ * insns).
+ * ---------------------------------------------------------------------
+ * s32 derived the EXACT arithmetic behind
  * the s31-banked 124-vs-163 loop.c:3823 giv rejection: threshold=31,
  * add_cost*biv_count=2, combined lifetime=2, combined adjusted benefit=2
  * (product 124). Only +1 unit of combined lifetime (2->3) is needed to
