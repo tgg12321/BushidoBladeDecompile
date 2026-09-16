@@ -2461,3 +2461,88 @@ Artifacts: `tmp/grind/func_8002D780/s23/` (`base.sh`, `gen_s23.py`, `sweep.sh`, 
 - [s22] Disposition filed by this session: docs/grind/decisions.md:26057, '## 2026-09-08 — func_8002D780 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**'. It supersedes the earlier FORECLOSED entry and the driver-DISCARDED ROTATED entry at line 25915, and re-takes every measurement rather than citing them.
 
 - [s22] src/code6cac_b.c is unmodified on disk (the function remains INCLUDE_ASM on main); the session's only tracked-file changes are docs/grind/decisions.md, memory/grind/func_8002D780/evidence.md, hypotheses.md and six new rejected/ bodies.
+
+
+## s23 (2026-09-15, rederive) — floor 2 -> 0/202; oracle SHA1 re-confirmed; the residual was local-alloc ADMISSION, not a block-7 spelling
+
+(The earlier "s23" heading above is the s22 escalation session's own label; this is the
+session-23 rederive dispatched after the caller func_8002CA8C reached COMPLETED-C.)
+
+Every number below was measured this session at HEAD 37e78bb88 (`-mel -msoft-float`) with the
+matched caller func_8002CA8C in the TU. Scratch: `tmp/grind/func_8002D780/s23/`.
+
+**Chassis / directive / re-audit.** `candidate.c` (s14 chassis) spliced -> `sandbox
+func_8002D780 --disable all` = **2/202** (202/202 insns). The forced-rederive sibling
+func_8002CA8C is this function's CALLER (it names func_8002D780 as a callee and shares no block),
+so the transplant is empty; its only effect on this chassis is the `extern` prototype now
+above and the TU context, measured inert (floor 2, same pair). fake_ablate on the s14 candidate:
+keep-all 2, drop the `m` re-store 6 (unchanged from s22).
+
+**Reorg trace of the (F,T) quadrant (dz declared first): instance kill of the delay-slot route.**
+`tmp/grind/func_8002D780/s23/ft2/` (instrumented cc1, BB2_DBR_DEBUG): for the block-6 branch
+(insn 175) fill_slots_from_thread takes the fall-through thread (`own=1 likely=0 tif=0`),
+`mark_target_live_regs` of the sqrt-block entry (insn 228) reports `block=5` (find_basic_block
+walks back to barrier 98 because the `return 1` block's barrier is already gone) and
+`oppregs=20010020` = {$a1, $s0, $sp}; trial 179 (`dz = subu a0`) `refset=0 setset=0 setneed=0
+setsopp=0` -> WINNER. Reading reorg.c:2485-2725 with the trace: the only way dz becomes
+ineligible is $a0 in the opposite thread's live set, which requires a pseudo renumbered to $a0
+live at the sqrt entry; every such pseudo would be live across block 7 and conflict with dz's
+own $a0 (the kp product `mflo a0` too), so no C form reaches the target through this quadrant
+(the m re-store copy is set before every use on both paths; a copy only in the LZC arm makes
+`m` live from entry). Banked: `rejected/s23-ft-quadrant-dz-first-slot-pair-2.c`.
+
+**The seat mechanism, from local-alloc.c:472.** `local_alloc` admits a pseudo only if
+`REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1`. s17/s19's tie (dz [2,8] vs dx [4,10], both 3 refs,
+`return *q1 - *q2`) is only reached because dz is a block-7-local pseudo. If the pseudo holding
+`z2 - z0` is referenced in a second basic block it is REG_BLOCK_GLOBAL (flow.c:1428/2075),
+skips local-alloc entirely, block 7's quantity table contains dx alone among the two, dx takes
+the first free seat $v1, and global_alloc seats the two-block pseudo in $a0 (only register free
+over both ranges). Measured in every shared form: sh_tt 5 (seats correct; residuals elsewhere),
+tb_tt 2, tb_B5/tb_B1 0.
+
+**Which second job.** The target holds two sqrt-block values in $a0: the `dist` copy (`addu
+a0,s1,zero` in the beqz slot, read by the LZCS island and by `srlv v0,a0,v1`) and the table byte
+(`lbu a0; sll a0,a0,16`). Sharing with the copy (chassis A, `sh_*`) reaches 1/202 (sh_axre) but
+leaves `srlv v0,s1,v1`: cse.c canon_reg replaces the shared variable by `dist` at the
+table-index read because cse_end_of_basic_block (cse.c:8092-8140, skip_blocks) steps over the
+LZC arm and only a SET of the variable in the skipped arm invalidates the equivalence
+(invalidate_skipped_block); adding that set (E1/E2/CE1: 13-14) gives the variable a third set and
+global_alloc renames the test-1/test-2 products; do-while(0) wraps with the LOOP_END between
+`shift` and the read stop cse1 (`.cse` keeps reg 77) but cse2 ignores NOTE_INSN_LOOP_END
+(cse.c:8046-8050) and refolds (`.cse2` reg 141): dw1-dw6 all 1. Sharing with the table byte
+(chassis B, `tb_*`) has no cse exposure (the byte is loaded from memory) and keeps the banked `m`
+form: tb_tt = 2 with the sqrt block fully matched.
+
+**The order mechanism, from sched.c:2505-2590.** With `tmp` twice-assigned, tb_tt's residual is
+`ax` emitted after `tmp` (target: ax in the delay slot, then dz). `adjust_priority` (sched1
+only) raises an insn to `max_priority` when `birthing_insn_p` — literally `reg_n_sets[regno]
+== 1` for a live dest — so the once-assigned `ax` outranks the twice-assigned `tmp` in the
+backward list and is emitted later, whatever the source order (tb_ft, sh_ftB byte-identical to
+their ax-first twins). Trace `tmp/grind/func_8002D780/s23/adjpri_ttB.txt`: `ADJPRI insn=180
+(ax) birth=1`, `insn=183 (tmp) birth=0`. Making `ax` twice-assigned too restores the LUID
+fall-through: staged `ax = pz - z0` for the kp product (tb_B5) or `ax` shared with the sqrt
+`y` reload (tb_B1) — **both 0/202**. On chassis A the same ax staging scored 1 (srlv) while
+`ax = px - x0` on chassis B scored 23 (centroid rename) — the two chassis differ in global_alloc
+order, so the pairing is chassis-specific and both pairings are banked.
+
+**Submitted body.** tb_B5 + annotations = `memory/grind/func_8002D780/candidate.c` (body
+identical to src/code6cac_b.c, diff-verified). `sandbox --disable all` = **0/202**;
+`verify-oracle` (one confirmation run, `tmp/grind/func_8002D780/s23/verify_oracle.txt`):
+`build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa`, `build_matches true`. fake_ablate on the
+final body (`tmp/grind/func_8002D780/s23/ablate_tb_B5.txt`): keep-all 0, drop the `m` re-store
+4. Alternate 0/202 body: `candidate_alt_s23_ax_shared_with_sqrt_y.c`. FAKE constructs: `tmp`
+shared (staged-value-reused-variable family), `ax = pz - z0` staged (same family, the rule's
+origin mechanism), `m = dist` re-store (dead-store family; mechanism corrected from s5's
+make_regs_eqv to cse.c invalidate_skipped_block). self_vet.md written.
+
+**Forms measured this session (18, all banked under rejected/s23-* except the two 0s):** ft
+(no,no) 4; ft2 (no,yes) 2; sh_tt 5; sh_ttB 3; sh_ftB 3; sh_bkB 5; sh_axre 1; sh_azre 5;
+sh_both 23; sh_ttD 17; sh_ttE 15; sh_axre_E1 13; E2 13; CE1 14 (203 insns); plusr 13 (200
+insns; asm-operand probe, closed not used); dw1..dw6 1; sh_axreC 1; tb_tt 2; tb_ft 2; tb_axre
+23; tb_B5 0; tb_B1 0.
+
+**Corrections to earlier sessions.** (a) s5/s11's "cse.c make_regs_eqv single-definition"
+mechanism for the `m` re-store is wrong; the copy survives because the re-store sits in the
+block cse SKIPS (invalidate_skipped_block), and a do-while(0) cannot substitute for it. (b) s19's
+"the order local-alloc saw was not the final order" inference is unnecessary: local-alloc saw
+the final order and never seated dz at all.

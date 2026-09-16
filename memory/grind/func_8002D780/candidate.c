@@ -1,231 +1,60 @@
-/* func_8002D780 - grind candidate (s14 rederive, 2026-09-08).  Honest sandbox floor
- * 2/202, build_insns == target_insns == 202, measured THIS session with these exact
- * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 2).
+/* func_8002D780 - grind candidate (s23 rederive, 2026-09-15).  Honest sandbox floor
+ * 0/202, build_insns == target_insns == 202, measured THIS session with these exact
+ * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 0), and the full
+ * oracle build re-run once with the body in place: build SHA1
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa == original (tmp/grind/func_8002D780/s23/
+ * verify_oracle.txt).  Chassis: HEAD 37e78bb88 (-mel -msoft-float), with the matched
+ * sibling func_8002CA8C (this function's CALLER) now in the TU.
  *
- * WHAT CHANGED IN s14.  Two things.  (1) The coupled sibling func_8002E6B0 reached
- * COMPLETED-C (src/code6cac_b.c:1332-1364) and it is the SAME point-in-triangle predicate
- * this function inlines with one vertex at the origin; its matched spelling names the two
- * edge differences per test (`s32 dz = ...; s32 dx = ...;`) and leaves the centroid/query
- * differences inline.  Transplanting that spelling here scores 2/202 with the residual on
- * the DELAY-SLOT pair instead of the block-7 pair (tmp/grind/func_8002D780/s14/
- * pairdiff_a_sibling_dz_dx.txt).  (2) The body below adopts the sibling's `dx` naming on
- * top of the s12 ax/dz/az chassis, which keeps the s12 residual (strictly the more
- * tractable of the two) while removing the duplicated inline `(x2 - x0)` subexpression, so
- * all four block-7 differences are ordinary once-written named CSE locals.
+ * WHAT CLOSED THE TWO-INSTRUCTION RESIDUAL (s5..s22 floor 2/202).  The residual was never
+ * a spelling of block 7 in isolation; it was the ADMISSION of one block-7 pseudo to
+ * local-alloc.  s17/s19 derived that in the target's own emission order dz and dx tie
+ * exactly in qty_compare_1 and dz (lower quantity number) takes $v1, whereas the target
+ * has dx in $v1 and dz in $a0.  The way out is not to win the tie but to never enter
+ * it: local_alloc (local-alloc.c:472) only admits pseudos with REG_BASIC_BLOCK >= 0 and
+ * REG_N_DEATHS == 1.  A pseudo referenced in TWO basic blocks is REG_BLOCK_GLOBAL, is
+ * left to global_alloc, and block 7's quantity table then contains only dx, which takes
+ * the first free seat $v1; global_alloc hands the two-block pseudo $a0 (the only
+ * register free over both its ranges).  So the edge difference z2 - z0 is held in a
+ * function-scope scratch `tmp` that the sqrt block also uses for its table byte (the
+ * target keeps that byte in $a0 too: `lbu a0,LUT(at); sll a0,a0,16`).  Measured: seats
+ * correct in every such form (tb_tt 2, tb_B5 0, tb_B1 0; a `tmp` shared with the sqrt
+ * `dist` copy instead gives the same seats but a cse residual, sh_axre 1).
  *
- * THE RESIDUAL (unchanged from s12, tmp/grind/func_8002D780/s14/pairdiff_n1_ax_dz_az_dx.txt):
+ * The second thing the sharing exposed is sched.c adjust_priority -> birthing_insn_p
+ * (reg_n_sets == 1): once `tmp` is twice-assigned it loses the "births a register" max
+ * priority that a once-assigned local gets, and the once-assigned `ax` is then emitted
+ * AFTER it regardless of source order (BB2_SCHED_DEBUG trace, tmp/grind/func_8002D780/
+ * s23/adjpri_ttB.txt: ADJPRI insn=180 (ax) birth=1, insn=183 (tmp) birth=0).  Staging the
+ * query difference pz - z0 through the now-dead `ax` makes both scratch locals
+ * twice-assigned, rank_for_schedule falls through to INSN_LUID (source order) and block
+ * 7 emits ax, tmp, dx, az exactly as the target does (delay slot = ax).  The alternative
+ * of sharing `ax` with the sqrt block's `y` reload also scores 0/202 and is banked as
+ * candidate_alt_s23_ax_shared_with_sqrt_y.c.
  *
- *   ours[96] subu v0,a2,a3 (az)      target[96] subu v1,t5,t1 (dx)
- *   ours[97] subu v1,t5,t1 (dx)      target[97] subu v0,a2,a3 (az)
- *   === 2 differing instructions ===
+ * The `m` re-store's mechanism is CORRECTED here (s5's "cse.c make_regs_eqv" story was
+ * wrong): cse_end_of_basic_block follows the `dist < 0` skip over the LZC arm
+ * (skip_blocks, cse.c:8092-8140) and canonicalises every later read of `m` to `dist`
+ * unless something in the SKIPPED arm sets `m` (invalidate_skipped_block).  That is why
+ * the srlv reads $s1 without the re-store (drop-1 = 4/202 this session) and why
+ * do-while(0) wraps cannot replace it (cse2 ignores NOTE_INSN_LOOP_END, cse.c:8046).
  *
- * Everything else in the function - the test-2 delay slot, every register in every block,
- * both mult operand orders - is already the target's.
- *
- * WHY THE FOUR DECLARATIONS ARE IN THIS ORDER (s14 re-attribution; the s12 header's
- * "sched2 ready-list" story is WRONG and is corrected here from the dumps).  sched1
- * already emits az before dx (tmp/grind/func_8002D780/s14/w_n1/code6cac_b.sched, insns
- * 179 ax, 182 dz, 191 mult1, 185 az, 188 dx, 193 mult2) and sched2 does not move them:
- * rank_for_schedule finds equal INSN_PRIORITY and equal dependence class against the mult
- * (RANKDBG last=193 y=188 cls=3 x=185 cls2=3 val=0 in w_n1/stderr_full.txt) and falls
- * through to INSN_LUID (sched.c:2464), i.e. to SOURCE ORDER.  So the emission order of the
- * az/dx pair is exactly the declaration order.
- *
- * And the declaration order is also what buys the register seats, which is the trap.
- * local-alloc's block-7 quantity table (BB2_QTY_DEBUG, w_n1 vs w_n6/stderr_full.txt):
- *   this body (az 3rd, dx 4th):  dz reg130 birth 4  death 16 refs 3 -> pri 2500, got $a0
- *                                dx reg132 birth 10 death 20 refs 3 -> pri 3000, got $v1
- *   target order (dx 3rd, az 4th): dz birth 4 death 16 -> 2500 ; dx birth 8 death 20 -> 2500
- * i.e. in the target's OWN emission order the two quantities tie exactly on
- * qty_compare_1 (local-alloc.c:1708-1719, which has no tie-break of its own), qsort leaves
- * them in quantity-number order, dz is seated first and takes $v1 while dx takes $a0 - the
- * reverse of the target, and the score goes 2 -> 9 (rejected/s14-decl-order-dx-before-az-
- * seats-swapped-9.c).  The `az` declaration sitting between dz's and dx's definitions is
- * the ONLY thing measured so far that shortens dx's live range enough to break that tie,
- * and it costs exactly the two instructions above.
- *
- * s14 also killed the obvious way out: naming or hoisting the kp/kc difference
- * subexpressions (px - x0, pz - z0) to change the birth/death arithmetic does nothing at
- * all, because sched1 sinks every difference back to just before its consuming mult.  Six
- * spellings, all 9/202, and the dumped block-7 birth/death/refs quadruples are BYTE
- * IDENTICAL between the plain target-order body and both hoisted bodies (w_n6, w_w2b,
- * w_w2c: dz 4/16/3, dx 8/20/3 in all three).  See rejected/s14-w2-*.c.
- *
- * The rest of the body is unchanged from s5/s10 and every line of it is load-bearing; see
- * candidate_alt_s5_named_locals.c for the LZCS/LZCR island split, the `m` carrier and the
- * clobber footprint.  Summary of what must not change:
- *  - the two cop2 islands in the sqrt block must stay SPLIT;
- *  - `s32 m = dist;` must be declared BEFORE `s32 lzcr` and re-stored inside the
- *    `dist >= 0` arm (the annotated FAKE construct below; worth 3 insns, s14 re-ablation);
- *  - the three cop2 blocks are the owner-authorized canonical LZCS/LZCR + mvmva idiom
- *    (.claude/rules/cop2-addressing-preamble-cluster.md).
- *
- * FAMILY NOTE for whoever reaches 0: this body carries one annotated construct, the
- * same-value re-store of the local `m` (dead-store family,
- * .claude/rules/dead-store-fake-exception.md, in-TU byte-matched precedent at
- * src/code6cac_b.c:1244-1265).  The four test-3 locals ax, dz, dx, az all hold REAL values
- * that appear in the target bytes; dz and dx are written once and read twice (ordinary CSE
- * variables, and exactly the sibling func_8002E6B0's matched spelling), while ax and az are
- * written once and read once, which is the named-intermediate shape described in
- * .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification in
- * .claude/rules/no-new-park-categories.md.  A candidate-ready session must decide whether
- * the once-read pair needs the named-intermediate FAKE annotation (six prongs) or is
- * ordinary C, and should file a ruling-request if the answer is not clean. */
-/* s15 (2026-09-08, enumerate) - body UNCHANGED, floor re-measured 2/202 on HEAD e3895bb7.
- * Two exhaustive sweeps ran against this exact chassis and neither found anything below 2:
- *   - 2,080 in-block spellings of the test-3 region (name/inline x declaration order x
- *     kc/kp order x commutative operand swaps): 41 at 2, nothing lower. In-tree
- *     confirmation of the operator's out-of-tree 62,624-spelling class kill.
- *   - 816 DECLARATION-SCOPE variants (every subset of ax/dz/az/dx hoisted to the enclosing
- *     block as an uninitialised decl, values still assigned inside block 7, all outer and
- *     inner orders): 412 at 2, 204 at 4, 204 at 9 - the SAME 2:1:1 trichotomy at every
- *     hoist level, i.e. declaration scope is inert. An uninitialised decl emits no RTL, so
- *     the pseudo's birth/quantity order/LUID are still set by the assignment insn
- *     (local-alloc.c:1708 qty_compare_1). This closes the axis the class-kill memory named
- *     as the next instrument.
- * Do NOT re-enumerate the test-3 block or the scope axis. See memory/grind/func_8002D780/
- * evidence.md and hypotheses.md s15; the remaining region is the outer centroid/test-1
- * declaration list (16,384 valid orders, marked body at tmp/grind/func_8002D780/s15/
- * enum_base3.c). */
-/* s16 (2026-09-08, structural) - body UNCHANGED, floor re-measured 2/202 on HEAD 82ab11bd.
- * s16's result is a complete MODEL of what is left, not a new spelling. Block 7 emits four
- * subus; sched1 groups them by which mult they feed (ax,dz -> mult1; dx,az -> mult2) and
- * within each pair falls through to INSN_LUID = source order (sched.c:2464). So the score
- * of any declaration order is a pure function of TWO BITS, measured exhaustively over all
- * 24 orders (tmp/grind/func_8002D780/s16/va.json + the twelve pairdiff_*.txt):
- *     ax<dz   dx<az   score   residual
- *      no      no       4     BOTH pairs transposed, all registers correct
- *      no      yes      2     ours[92:93] ax/dz swapped (the reorg delay-slot pair)
- *      yes     no       2     ours[96:97] dx/az swapped   <-- THIS BODY
- *      yes     yes      9     both emission orders correct, but the seats swap
- * The target is the (yes,yes) quadrant. It costs 9 rather than 2 because dz and dx then
- * tie EXACTLY in qty_compare_1 (local-alloc.c:1708) - 3 refs each, span 12 each, dz born 4
- * LUIDs earlier and dying 4 LUIDs earlier - so qsort seats dz first and $v1/$a0 swap
- * through the block. The entire remaining problem is: reach (yes,yes) and make dx beat dz
- * in qty_compare_1.
- * s16 killed five structural ways of trying: fresh kc/kp per test (inert alone, +34 for
- * both), hoisting the difference COMPUTATIONS out of block 7 (best 19; this is the axis
- * s15's uninitialised-declaration sweep could not reach), the block SHAPE of the three
- * tests (goto early-out and inner brace scope EXACTLY inert; hit-flag +6), the sign flip
- * of one product with a compensating `< 0` branch (best 21) and of both products (uniform
- * +22 in every shape), and PARTIAL inlining of one use to drop dz to 2 references (all
- * five modes exactly inert - cse refolds the duplicated subexpression). 528 variants;
- * every inert axis reproduces {2:12, 4:6, 9:6} byte-for-byte, which is itself the proof
- * that it never reaches the tie.
- * Do NOT re-run: the block-structure axis, the partial-inline axis, computation hoisting,
- * or any sign flip. See evidence.md / hypotheses.md s16. */
-/* s17 (2026-09-08, synthesis) - body UNCHANGED, floor re-measured 2/202 on HEAD df6966b7.
- * s17 derived the residual end-to-end from local-alloc.c and the target asm instead of
- * from the ledger narrative, and the derivation is now complete: in the (T,T) quadrant
- * block 7 is 14 insns, dz is born at insn 2 and dies at insn 8, dx is born at insn 4 and
- * dies at insn 10, both have 3 references, so qty_compare_1 gives both exactly 2500 and
- * falls through to `return *q1 - *q2` (local-alloc.c:1719) - the QUANTITY number, handed
- * out by alloc_qty's next_qty++ (local-alloc.c:284) from block_alloc's forward insn scan
- * (local-alloc.c:1169-1175). In the (T,T) quadrant dz's subu always precedes dx's, so dz
- * always has the lower quantity number and always wins the seat. Only three levers can
- * change that: (L1) dx gets a 4th reference, (L2) dz's span grows by an insn placed
- * between insn 2 and insn 4, (L3) dx's last use moves to insn 9 or earlier.
- * s17 measured L3 dead (8 more kp-difference spellings, all exactly 9; 2 split-init forms
- * 32/36) and killed the last s16 frontier item, the outer declaration list, as a CLASS
- * kill (24 sampled orders, best 9, and the mechanism shows pseudo numbering is not an
- * input to any comparator in local-alloc.c) - so do NOT run the 16,384-variant sweep the
- * s15/s16 frontier proposed. A new axis, naming a PRODUCT rather than a difference to
- * reverse the multiply order, is inert on the first product and costs 25-32 on the second.
- * What is left is L1 and one unread artefact: block 7's four product pseudos do not
- * appear in the block-7 quantity table and have no QTYDBG-SUGG lines, so combine_regs has
- * already tied each of them into some other quantity. If the kp product can be made to
- * tie into dx's quantity, dx's refs go 3 -> 5 and its death extends to the kp subu:
- * priority 3125 vs dz's 2500, dx wins the seat, emission order untouched. See
- * evidence.md / hypotheses.md s17. */
-/* s19 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 2c87428f.
- * Two whole-TU instrumented dumps (tools/gcc-2.7.2/cc1, BB2_SUGG_DEBUG/BB2_QTY_DEBUG/
- * BB2_RANK_DEBUG) replaced the s18 frontier's suggestion hypothesis with a complete model of
- * the seat.  tmp/grind/func_8002D780/s19/w_bk (this body) and .../w_tt (the (T,T) chassis).
- *
- * 1. The suggestion pass is NOT the original's mechanism.  Block 7 has ncopysugg=0 nsugg=0 on
- *    all seven of its quantities on both chassis - and so does the MATCHED sibling
- *    func_8002E6B0, which reaches the very same dx-before-dz seat order with no suggestion at
- *    all (blk=1 reg117/reg120, blk=2 reg138/reg141).  In this whole TU a copy suggestion
- *    exists only on block-0 pseudos copied out of the incoming parameter registers
- *    ($a0-$a3, copysugg=4,5,6,7).
- * 2. The seat is a WHOLE-TABLE allocation.  qty_order for block 7 is az, qx, qz, tail, ax
- *    (all 10000/5000 priority, pairwise disjoint, all five reuse $v0), and only then dz and
- *    dx.  On this body dx [10,20] is allocated first and takes $v1, dz [4,16] takes $a0 =
- *    the target's seats.  On the (T,T) chassis dz and dx tie at 2500 (spans 12 and 12),
- *    local-alloc.c:1719 seats dz first, and the two registers exchange.
- * 3. The condition, exactly: correct seats need birth(dx) - birth(dz) > death(dx) - death(dz).
- *    The right-hand side is 4 in every layout measured in this grind, because sched1 sinks
- *    the (pz - z0) subu between the third and fourth multiplies.  The target's own final
- *    instruction order supplies a left-hand side of exactly 4 - a tie - so the order
- *    local-alloc saw when the original was compiled was not the original's final order.
- * Next: make the two DEATHS 2 apart at local-alloc time (the sibling's native shape) rather
- * than trying to move the births.  See evidence.md / hypotheses.md s19. */
-/* s20 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 01bd10a2.
- * First trace-level attribution of block 7's residual, from BB2_SCHED_DEBUG/BB2_PRIO_DEBUG
- * dumps of the instrumented cc1 (run it as BB2_CC1=tools/gcc-2.7.2/cc1 - buildconfig's
- * build/cc1 is NOT instrumented and silently emits an empty debug stream):
- *  - sched.c schedules each block BACKWARDS; emission order is the reverse of the pick
- *    order, and rank_for_schedule (sched.c:2408-2464) has only three terms - INSN_PRIORITY,
- *    dependence class against last_scheduled_insn, INSN_LUID.
- *  - the az/dx transposition is settled by INSN_LUID at pass-1 clock 40 AND pass-2 clock 47
- *    (both subus priority 1, both class 3), so it is decided by SOURCE ORDER alone and
- *    sched2 cannot repair it.
- *  - a single-use query difference is always emitted immediately before its own multiply:
- *    it becomes ready only when that multiply is scheduled and the multiply unit is then
- *    blocked 11 cycles, so it is the only unblocked filler. That pins
- *    death(dx) - death(dz) = 4 for the target's multiply order.
- * NEW LANDMARK: `q = dx * (pz - z0); kp = dz * (px - x0) - q;` on the (T,T) declaration
- * order (ax, dz, dx, az) is the FIRST form in 20 sessions to hold the target's block-7
- * emission order AND the target's block-7 seats at once (dx qty4 [8,16] got $v1, dz qty1
- * [4,20] got $a0, no tie). It scores 32 because it swaps the two kp multiplies and because
- * the extra `q` pseudo renames the centroid block's global allocation. Banked as
- * rejected/s20-tt-staged-dx-product-target-seats-and-order-kp-mults-swapped-32.c; the two
- * residual causes are s20's frontier. See evidence.md / hypotheses.md s20. */
-/* s21 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 722aa906
- * (swept as BK_base alongside FF_base 4 and TT_base 9, so the s16 quadrant table reproduces).
- * s21 corrected s20's attribution of the TT_qdx landmark's 26-instruction centroid half and
- * closed the compensation axis it proposed:
- *  - The extra `q` pseudo is NOT the cause. `ax = dx * (pz - z0); kp = (dz * (px - x0)) - ax;`
- *    borrows an already-dead block-7 local, adds no allocno, reaches EXACTLY TT_qdx's block-7
- *    quantity table (dx [8,16] got $v1, dz [4,20] got $a0 = the target's seats) - and still
- *    produces the whole centroid rename. 32/202. Eleven further no-new-pseudo carriers
- *    (kp split against itself, az borrowed, kc split) score 36-42.
- *  - The real mechanism is global_alloc: `;; N regs to allocate:` (the post-qsort allocno
- *    order, global.c:575) permutes the centroid holders, and the ONLY input that moves is
- *    allocno_live_length. From the .lreg dumps, n_refs identical, live_length w_bk/w_tt/w_qdx/
- *    w_ax = 101: 38/38/40/40, 102: 35/34/34/34, 103: 35/35/33/33, 110: 18/19/19/21,
- *    115: 26/26/28/28, 116: 26/26/24/22. Pseudos 115 and 116 (the two query holders) are
- *    EXACTLY TIED at 26 on every chassis that allocates the centroid correctly; allocno_compare
- *    (global.c:635-655) then falls through to the allocno NUMBER (global.c:655). They die at
- *    the two kp multiplies, so every seat fix breaks that tie.
- *  - The birth side cannot compensate: all 56 placements/orders of the px/pz declarations on
- *    the TT_qdx chassis score EXACTLY 32 (byte-inert), and all 24 coordinate-declaration orders
- *    on both carriers score 32-34.
- * NET: block 7's kp multiply order is read by qty_compare_1 (wants dx's product expanded first)
- * and by allocno_compare (wants the target's order, to keep 115/116 tied). Do NOT spend another
- * session on multiply-order spellings or on the outer declaration list. The unspent lever is
- * s17's L2: get a THIRD block-7 computation emitted BETWEEN dz's subu and dx's subu while
- * keeping (T,T)'s ax-before-dz source order - that lengthens dz's span without moving either
- * multiply, and it is what the (F,T) quadrant does natively. See evidence.md / hypotheses.md s21. */
-/* s22 (2026-09-08, escalation) - body UNCHANGED, floor re-measured 2/202 at dispatch HEAD.
- * FAKE re-audit: keep-all 2, drop-1 6 (the sole FAKE, the same-value re-store of `m`, is
- * load-bearing and sits on the sqrt block's pseudo, not on the residual's dz/dx/az).
- * s22 executed the coupled-sibling owner directive and closed the two remaining frontier
- * items with measurements:
- *  - The MATCHED sibling func_8002E6B0's own spelling (src/code6cac_b.c:1332-1364: the two
- *    edge differences named, BOTH the centroid and the query differences inline, in an inner
- *    brace) transplants to EXACTLY 2/202 in all four forms - and dz-before-dx and
- *    dx-before-dz become byte-identical, because with the centroid differences inline the
- *    two named subus no longer bracket a third one and the s16 quadrant bit has nothing to
- *    order. The sibling holds no spelling this chassis lacks.
- *  - L2 (an insn in the dz->dx gap) is exhausted over block 7's whole value set: the six
- *    differences (s15/s16/s18/s21) and now both STAGED PRODUCTS - `s32 p1 = dz * ax;` in the
- *    gap with `kc = p1 - (dx * az);` scores exactly 9, the (T,T) baseline to the byte.
- *  - allocno_compare's n_refs side has no C handle: all four query-holder read-inlining
- *    spellings score exactly 32 on the TT_axcarrier chassis (cse refolds the load).
- * Disposition filed: docs/grind/decisions.md, 2026-09-08 OWNER-ESCALATION ... ROTATED.
- * See evidence.md / hypotheses.md s22. */
+ * FAKE constructs in this body (all annotated at the site): (1) `tmp = z2 - z0` /
+ * `tmp = *LUT` - one scratch local reused for two real, consumed values
+ * (staged-value-reused-variable family, .claude/rules/staged-value-reused-variable.md;
+ * frozen list "variable reuse for codegen control"); (2) `ax = pz - z0` - a real value
+ * staged through the existing dead local `ax` (same family, the rule's own origin
+ * mechanism); (3) `m = dist` same-value re-store (dead-store family,
+ * .claude/rules/dead-store-fake-exception.md; in-TU precedent src/code6cac_b.c:1330).
+ * fake_ablate on this body: keep-all 0, drop the `m` re-store 4.  The rest of the body is
+ * the s14 chassis unchanged (split cop2 islands, canonical LZCS/LZCR + mvmva idiom per
+ * .claude/rules/cop2-addressing-preamble-cluster.md).  Full derivation: evidence.md and
+ * hypotheses.md s23. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
+    /* One scratch local shared by two distant jobs: the third edge test's `z2 - z0`
+     * (block 7) and the sqrt block's table byte.  See the FAKE notes at both stores. */
+    s32 tmp;
+
     if (flag == 0) {
         s32 *vin;
         s32 *vout;
@@ -272,11 +101,33 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             kp = z2 * px - x2 * pz;
             if ((kc ^ kp) >= 0) {
                 s32 ax = cx - x0;
-                s32 dz = z2 - z0;
-                s32 az = cz - z0;
-                s32 dx = x2 - x0;
-                kc = (dz * ax) - (dx * az);
-                kp = (dz * (px - x0)) - (dx * (pz - z0));
+                s32 dx;
+                s32 az;
+                /* FAKE: the edge difference z2 - z0 is staged through the function-scope
+                 * scratch `tmp` (also assigned the sqrt table byte below) instead of a fresh
+                 * block-local, mechanism: local-alloc.c local_alloc admission
+                 * (local-alloc.c:472 REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1) - a pseudo
+                 * referenced in two blocks is left to global.c, so block 7's local-alloc
+                 * table seats dx first in $v1 and global_alloc gives tmp $a0 (the target's
+                 * seats; a block-local dz ties dx in qty_compare_1 and takes $v1 itself),
+                 * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s14-s22
+                 * (declaration order/scope, statement order, staging, hoisting, sign flips,
+                 * 2,080 + 816 + 528 enumerated block-local spellings, all >= 2/202). */
+                tmp = z2 - z0;
+                dx = x2 - x0;
+                az = cz - z0;
+                kc = (tmp * ax) - (dx * az);
+                /* FAKE: the query difference pz - z0 is staged through the existing, now-dead
+                 * local `ax` (its cx - x0 value was consumed by the kc line above; this value
+                 * is consumed on the next line), mechanism: sched.c adjust_priority ->
+                 * birthing_insn_p (reg_n_sets == 1): a once-assigned `ax` gets max priority in
+                 * sched1 and is emitted AFTER the twice-assigned `tmp`, transposing the
+                 * target's `ax` (delay slot) / `tmp` order; a twice-assigned `ax` ties and
+                 * rank_for_schedule falls through to source order, lever-exhaustion:
+                 * memory/grind/func_8002D780/hypotheses.md s23 (sh_tt/sh_ttB/tb_tt: 5, 3, 2;
+                 * ax reused for px - x0: 23; both reused: 23; tmp first in source: 2). */
+                ax = pz - z0;
+                kp = (tmp * (px - x0)) - (dx * ax);
                 if ((kc ^ kp) >= 0)
                     return 1;
             }
@@ -298,10 +149,15 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             s32 m = dist;
             s32 lzcr = 0;
             if (dist >= 0) {
-                /* FAKE: same-value re-store of the local `m`, mechanism: cse.c make_regs_eqv
-                 * (a single-definition copy is folded; a second definition keeps the pseudo
-                 * multiply-defined so the copy survives into local-alloc), lever-exhaustion:
-                 * memory/grind/func_8002D780/hypotheses.md s1-s5, 14 copy spellings dead. */
+                /* FAKE: same-value re-store of the local `m`, mechanism: cse.c
+                 * invalidate_skipped_block - cse_end_of_basic_block follows the `dist < 0`
+                 * skip over this arm (skip_blocks) and only a SET of `m` inside the skipped
+                 * arm invalidates the m == dist equivalence made by the copy above, so the
+                 * `(u32)m >> shift` read below keeps reading the $a0 copy instead of being
+                 * canonicalised to dist ($s1); without it the srlv reads $s1 (drop-1 = 4/202),
+                 * lever-exhaustion: memory/grind/func_8002D780/hypotheses.md s1-s5 (14 copy
+                 * spellings) and s23 (do-while(0) wraps, copy placement, arm re-stores of the
+                 * shared variable: all >= 1/202 or worse). */
                 m = dist;
                 __asm__ volatile(
                     "addu $t4, %0, $zero\n"
@@ -317,8 +173,13 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                s32 tbl = *((&D_8008D118) + ((u32)m >> shift));
-                sqrt_val = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+                /* FAKE: the table byte is staged through the existing, now-dead scratch
+                 * `tmp` (block 7's z2 - z0 died at its last multiply; this value is consumed
+                 * on the next line) - the second job that makes `tmp` a two-block pseudo, see
+                 * the block-7 note for the mechanism (local-alloc.c:472 admission) and
+                 * lever-exhaustion. */
+                tmp = *((&D_8008D118) + ((u32)m >> shift));
+                sqrt_val = (u32)(tmp << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
 
