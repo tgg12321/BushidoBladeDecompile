@@ -1,6 +1,14 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66/s67/s68/s69) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66/s67/s68/s69/s70/s71) — floor 38/204, NOT YET 0.
+ * s71 (structural modality, 2026-09-16): Body UNCHANGED (33rd consecutive
+ * flat 38/204). Ran four PAIRWISE inter-array declaration-order swaps
+ * among pt0/pt1/hit0/hit1/work (baseline order pt0,pt1,hit0,hit1,work) --
+ * a genuinely untried axis (s24 only tried reversing the WHOLE
+ * scalar-vs-array block). All four swaps measured worse (85, 52, 44,
+ * 44 / 204); baseline is a local optimum among the 5 orderings tried to
+ * date. Sibling func_8006CCC8 re-check: already resolved signature-disjoint
+ * at s69/s70, no new material. See hypotheses.md/evidence.md [s71].
  * s69 (rederive modality, forced by sibling func_8006CCC8's floor drop to
  * 23 at its s5): Body UNCHANGED (48th consecutive flat 38/204). Mandatory
  * sibling-transplant check run first: func_8006CCC8's s5 fix (SOTN

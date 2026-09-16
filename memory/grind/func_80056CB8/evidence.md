@@ -1215,3 +1215,22 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s70] Per s69's own correction: a rotation/owner-gated disposition is valid only from driver-assigned escalation modality. This session was dispatched in enumerate modality, so the correct outcome is progress with the enumeration work banked, not a re-filed rotation. The s68 docs/grind/decisions.md 'LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED' entry (line 27756) remains the standing record and is not superseded here.
 
 - [s70] 32nd consecutive flat session at 38/204 (s37-s70) spanning enumerate/synthesis/solver/forensics/object-model/escalation/structural/rederive modalities.
+
+- [s71, structural] Fresh chassis re-confirmation: candidate.c body unmodified since s22-s70, reproduces exact 38/204 (build_insns 198) with func_80053614 s32-return prerequisite; 33rd consecutive flat session at 38/204 (s37-s71).
+- [s71] Sibling func_8006CCC8 auto-return trigger (floor 23, per dispatch brief) already fully resolved at s69/s70: signature-disjoint (3-arg pointer-taking s32-return vs this function's 1-arg void), re-confirmed no new transplant material this session (no re-check needed, unchanged since last two sessions' direct re-verification).
+- [s71] Genuinely untried structural axis this session: PAIRWISE inter-array declaration-order swaps (distinct from s24's single whole-block-reversal test). Four swaps measured (hit0/hit1 before pt0/pt1: 85/204; pt1 before pt0: 52/204; hit1 before hit0: 44/204; work before hit0/hit1: 44/204) -- all worse than the 38/204 baseline. The currently-adopted declaration order is a local optimum among all orderings tried to date (5 of 120 possible permutations of the 5 arrays now measured: baseline, s24's full reversal, and this session's 4 pairwise swaps).
+- [s71] docs/grind/decisions.md's 2026-09-16 'LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED' entry (line 27756/27840) remains on file from s68 and is NOT re-filed this session -- this session's mandated modality is `structural`, not `escalation`; per s69/s70's own correction, a rotation disposition is only valid from escalation modality.
+- [s71] src/text1b.c reverted to INCLUDE_ASM("asm/funcs", func_80056CB8); via git checkout before session end; git status --short confirms only ledger/metrics files modified.
+- [s71] Dossier consistency warning (STALE HEAD CLAIMS) reviewed: candidate.c's header already carries an explicit "this file is a CANDIDATE, not HEAD state" disclaimer (line 61-66) repeated at every session boundary since s11 -- this is a persistent false-positive of the dossier's heuristic (it flags any mention of the word "HEAD" without checking proximity to the existing disclaimer), not an actual staleness gap. Not re-fixed this session (would require touching the detector, out of scope for a grind session).
+
+- [s71] Fresh chassis re-confirmation: 33rd consecutive flat session at 38/204 (s37-s71) across 9+ modalities.
+
+- [s71] Declaration order among the five function-scope arrays (pt0/pt1/hit0/hit1/work) is now tested at 5 of 120 possible permutations (baseline + s24's whole-block reversal + this session's 4 pairwise swaps) -- all non-baseline orderings measured worse; baseline is a confirmed local optimum for this axis.
+
+- [s71] Only one of the four pairwise swaps (hit0/hit1 before pt0/pt1) changed real instruction count (198->201); the other three are pure register/allocation-order shifts at unchanged insn count, consistent with prior declaration-order findings in this ledger (s3, s24) that this axis moves allocation without moving code size.
+
+- [s71] src/text1b.c reverted to INCLUDE_ASM("asm/funcs", func_80056CB8); before session end via git checkout; git status --short confirms only ledger/metrics files modified.
+
+- [s71] The dossier's STALE HEAD CLAIMS warning is a persistent false-positive: candidate.c's header already carries an explicit CANDIDATE-not-HEAD disclaimer (line 61-66) maintained every session since s11; not a real staleness gap.
+
+- [s71] docs/grind/decisions.md's 2026-09-16 LADDER EXHAUSTED (non-endgame residual, floor 38): ROTATED entry (line 27756/27840) remains standing from s68; this session's mandated modality (structural) does not permit re-filing a rotation disposition per s69/s70's own correction (valid only from escalation modality).

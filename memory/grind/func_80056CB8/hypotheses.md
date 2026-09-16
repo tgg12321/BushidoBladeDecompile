@@ -3185,3 +3185,65 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s70 chassis, read-only cross-reference of s60+s70 measurements
+
+## [s71, structural] The s22-s70-banked candidate.c body reproduces the ledger's recorded 38/204 floor fresh on today's chassis, no drift since s70.
+- mechanism: n/a (reproduction check)
+- probe: Applied candidate.c body + func_80053614 void->s32 return-type prerequisite via tmp/grind/func_80056CB8/s71/splice.py (copy of s69's baseline splice script) to src/text1b.c, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198 -- exact match to s61-s70.
+- verdict: CONFIRMED
+
+## [s71, structural] Four untried PAIRWISE inter-array declaration-order swaps among the function-scope arrays (baseline order: pt0,pt1,hit0,hit1,work) all measure worse than the 38/204 baseline -- declaration order among these five arrays is now closed to pairwise granularity, not just the single "whole block reversed" axis s24 tried.
+- mechanism: global_alloc's LUID-order-sensitive allocation priority for function-scope array frame slots and their address-materialization pseudos (loop.c's pre-loop &pt0/&pt1 hoisting per s13 is order-adjacent to this). s24 (s22/s23 chassis) only tested reversing the ENTIRE scalar-vs-array block; this session tests pairwise array/array reorders for the first time in 71 sessions.
+- probe: Four independent single-swap edits to the declaration block in src/text1b.c (each applied to the otherwise-unmodified s22-s70-banked candidate.c body, measured via `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`, then reverted via re-running tmp/grind/func_80056CB8/s71/splice.py baseline before the next edit):
+  1. hit0,hit1 moved before pt0,pt1 (order: hit0,hit1,pt0,pt1,work) -> 85/204 (build_insns 198->201, worse on BOTH axes -- the only one of the four that also changed real instruction count).
+  2. pt1 before pt0 (order: pt1,pt0,hit0,hit1,work) -> 52/204 (build_insns unchanged at 198 -- pure register/order shift).
+  3. hit1 before hit0 (order: pt0,pt1,hit1,hit0,work) -> 44/204 (build_insns unchanged at 198).
+  4. work before hit0/hit1 (order: pt0,pt1,work,hit0,hit1) -> 44/204 (build_insns unchanged at 198).
+- result: All four strictly worse than the 38/204 baseline; the currently-adopted order (pt0,pt1,hit0,hit1,work) is a LOCAL OPTIMUM among every declaration-order permutation tried across s24 (whole-block reversal) and s71 (four pairwise swaps) -- 5 of the 5!=120 possible orderings of these five arrays now measured, all >= baseline. Saved to memory/grind/func_80056CB8/rejected/{hit0hit1-before-pt0pt1-worse.c, pt0-pt1-decl-swap-worse.c, hit0-hit1-decl-swap-worse.c, work-before-hit01-decl-swap-worse.c}. Baseline re-confirmed 38/204 clean after each revert and at session end.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, four independent single-swap declaration-order mutations, no FAKE constructs present in any)
+
+## [s71] The s22-s70-banked candidate.c body reproduces the ledger's recorded 38/204 floor fresh on today's chassis, no drift since s70.
+- mechanism: n/a (reproduction check)
+- probe: Applied candidate.c body + func_80053614 void->s32 return-type prerequisite via tmp/grind/func_80056CB8/s71/splice.py to src/text1b.c, ran sandbox func_80056CB8 --disable all.
+- result: score 38, target_insns 204, build_insns 198 -- exact match to s61-s70.
+- verdict: CONFIRMED
+
+## [s71] Declaring hit0/hit1 before pt0/pt1 (order hit0,hit1,pt0,pt1,work; baseline pt0,pt1,hit0,hit1,work) is worse than baseline.
+- mechanism: global_alloc's LUID-order-sensitive allocation priority for function-scope array frame slots and address-materialization pseudos interacting with the pre-loop &pt0/&pt1 hoisting (s13).
+- probe: Single declaration-order edit to src/text1b.c on the s22-s70-banked chassis, measured via sandbox func_80056CB8 --disable all, reverted.
+- result: score 38 -> 85/204, build_insns 198 -> 201 (worse on both axes -- the only one of the four pairwise swaps that also changed real instruction count). Saved to memory/grind/func_80056CB8/rejected/hit0hit1-before-pt0pt1-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, hit0/hit1 moved before pt0/pt1, no FAKE constructs present)
+
+## [s71] Declaring pt1 before pt0 (order pt1,pt0,hit0,hit1,work) is worse than baseline.
+- mechanism: global_alloc's LUID-order-sensitive allocation priority; same axis as above, narrower scope (single array-pair swap).
+- probe: Single declaration-order edit to src/text1b.c on the s22-s70-banked chassis, measured via sandbox func_80056CB8 --disable all, reverted.
+- result: score 38 -> 52/204, build_insns UNCHANGED at 198 (pure register/order shift). Saved to memory/grind/func_80056CB8/rejected/pt0-pt1-decl-swap-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, pt1 declared before pt0, no FAKE constructs present)
+
+## [s71] Declaring hit1 before hit0 (order pt0,pt1,hit1,hit0,work) is worse than baseline.
+- mechanism: global_alloc's LUID-order-sensitive allocation priority; same axis, narrower scope.
+- probe: Single declaration-order edit to src/text1b.c on the s22-s70-banked chassis, measured via sandbox func_80056CB8 --disable all, reverted.
+- result: score 38 -> 44/204, build_insns UNCHANGED at 198. Saved to memory/grind/func_80056CB8/rejected/hit0-hit1-decl-swap-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, hit1 declared before hit0, no FAKE constructs present)
+
+## [s71] Declaring work before hit0/hit1 (order pt0,pt1,work,hit0,hit1) is worse than baseline.
+- mechanism: global_alloc's LUID-order-sensitive allocation priority; same axis, narrower scope.
+- probe: Single declaration-order edit to src/text1b.c on the s22-s70-banked chassis, measured via sandbox func_80056CB8 --disable all, reverted.
+- result: score 38 -> 44/204, build_insns UNCHANGED at 198. Saved to memory/grind/func_80056CB8/rejected/work-before-hit01-decl-swap-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, work declared before hit0/hit1, no FAKE constructs present)
+
+## [s71] Owner directive (sibling func_8006CCC8 auto-return, floor 23) supplies no new transplant material for func_80056CB8.
+- mechanism: n/a (dataflow/signature disjointness check, re-confirmed not re-derived)
+- probe: Re-read s69/s70's direct signature comparison (func_8006CCC8: s32 func_8006CCC8(s32*, s32*, s16) vs func_80056CB8: void func_80056CB8(s32)); no new evidence available this session beyond what s69/s70 already measured.
+- result: Confirms s69/s70's conclusion unchanged: 3-arg pointer-taking s32-return vs 1-arg void, structurally and signature-level disjoint. No transplantable block exists.
+- verdict: CONFIRMED

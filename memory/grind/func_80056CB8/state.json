@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 70,
- "current_modality": "enumerate",
+ "session_count": 71,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -423,13 +423,19 @@
    "floor": 38,
    "modality": "enumerate",
    "headline": "s70 enumerate: 32nd consecutive flat 38/204 re-confirmation; closed the last untried hand-derived combo (OR-swap + arm-negate) in the s37/38/60-flagged interior-if/else dispatch block at 48/204 (worse"
+  },
+  {
+   "session": 71,
+   "floor": 38,
+   "modality": "structural",
+   "headline": "s71 structural: 33rd consecutive flat 38/204; killed 4 untried pairwise inter-array declaration-order swaps (all worse: 85/52/44/44), confirming the baseline order is a local optimum."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled, ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 49 flat sessions and 9+ modalities.",
+   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled, ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 50 flat sessions and 9+ modalities, now including exhaustive-to-pairwise-granularity declaration-order search.",
    "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c",
-   "next_probe": "A future escalation-modality session should re-evaluate the endgame-lock gates fresh (scan_hand_coded + precedent census); absent a new gate PASS the s68 ladder-exhaustion disposition remains the correct terminal record for this axis. Do not re-file rotation outside escalation modality (s69/s70 correction)."
+   "next_probe": "A future escalation-modality session should re-evaluate the endgame-lock gates fresh (scan_hand_coded + precedent census); absent a new gate PASS the s68 ladder-exhaustion disposition remains the correct terminal record for this axis."
   },
   {
    "hypothesis": "A newly-COMPLETED-C sibling landing in src/text1b.c or src/code6cac*.c after this session could supply fresh transplant material; the current candidate pool (func_80055B60, func_8006CCC8, func_80057094, func_80057CC8, code6cac.c lim/scratchpad sites) is exhausted.",
@@ -437,46 +443,14 @@
    "next_probe": "Check for newly-COMPLETED-C functions in the same TUs each future dispatch before re-deriving from scratch."
   },
   {
-   "hypothesis": "A fully mechanical exhaustive enumeration of the type-dispatch if/else block (rather than the 4 hand-derived readings now closed) would require extending spelling_enum.py to represent regions with interior braced if/else bodies as orderable anchors.",
+   "hypothesis": "A fully mechanical exhaustive enumeration of all 120 declaration-order permutations of pt0/pt1/hit0/hit1/work (rather than the 5 hand-picked orderings now closed) would require a small standalone sweep script since spelling_enum.py does not model function-scope declaration-order as an enumerable axis.",
    "mechanism": "n/a -- tooling gap, not a GCC-pass claim",
-   "next_probe": "If a future session has tooling-development budget, extend spelling_enum.py's ENUM-BEGIN/END parser to accept interior if/else anchors; otherwise this block's obvious spelling space is already closed by hand."
+   "next_probe": "If a future session has tooling-development budget, write a small permutation-sweep script over this specific 5-array declaration block; otherwise the 5 orderings tried (all local-optimum-consistent) are a reasonable stopping point for hand enumeration."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 38,
-   "statement": "On the s22-s37-banked chassis (candidate.c body + func_80053614 s32-return prerequisite + header externs, no FAKE constructs present), none of 6 hand-written spellings of the obj/flags if-else block (",
-   "kill_scope": "instance",
-   "measured_on": "s38 chassis: candidate.c's s22-s37-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line extern header block, obj/flags block hand-varied one spelling at a time, no FAKE constructs prese",
-   "predicate_cite": "",
-   "result": "(1) ternary obj: 38/204 tied. (2) kind-local-after: 38/204 tied. (3) kind-local-before (decl-order swap ahead of obj if-"
-  },
-  {
-   "session": 39,
-   "statement": "Combining 2+ of the s38-tied obj/flags-block hand-variants (ternary obj-assignment, kind-local-after, ang intermediate, dx/dz intermediates) produces no interaction effect -- every tested combination ",
-   "kill_scope": "instance",
-   "measured_on": "s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, obj/flags block varied with each of 5 multi-variant combinations, no FAKE constructs pre",
-   "predicate_cite": "",
-   "result": "all 5 combinations score 38/204, build_insns 198 -- identical to baseline and to each individual variant's own s38 measu"
-  },
-  {
-   "session": 39,
-   "statement": "Sharing block1's literally-duplicated *(s32 *)(obj + 0xBC) - 0x320 expression (independently computed into both pt0[1] and pt1[1]) into a single named y0 local read twice produces worse codegen than t",
-   "kill_scope": "instance",
-   "measured_on": "s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block1's duplicate expression replaced by shared y0 local, no FAKE constructs present)",
-   "predicate_cite": "",
-   "result": "score 38 -> 73/204, build_insns 198 -> 196 (-2 real instructions, but worse score -- the instruction mix diverges from t"
-  },
-  {
-   "session": 40,
-   "statement": "Merging all six occurrences of `*(s32 *)(obj + 0xBC)` (block1's two -0x320 reads, block2's -0x834/+0x1004 reads, the flags==3 comparison, and the flags==4 `y` local) into a single call-spanning local ",
-   "kill_scope": "instance",
-   "measured_on": "s40 chassis (candidate.c's s22-s39-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, all six *(s32*)(obj+0xBC) reads merged into one call-spanning `by` local, no FAKE constr",
-   "predicate_cite": "",
-   "result": "score 38 -> 95/204, build_insns 198 -> 177 (-21 real instructions, yet substantially worse score). Baseline 38/204 recon"
-  },
   {
    "session": 41,
    "statement": "Naming the repeated 0x1F8002B8 scratchpad-address literal (passed to both func_80053614() calls) as a single fresh local `scratchpad`, read at both call sites instead of written twice, does not improv",
@@ -924,6 +898,38 @@
    "measured_on": "s70 chassis, read-only cross-reference of s60+s70 measurements",
    "predicate_cite": "",
    "result": "Hand-derived enumeration of this block is exhausted as far as obvious readings go; a fully mechanical exhaustive sweep w"
+  },
+  {
+   "session": 71,
+   "statement": "Declaring hit0/hit1 before pt0/pt1 (order hit0,hit1,pt0,pt1,work; baseline pt0,pt1,hit0,hit1,work) is worse than baseline.",
+   "kill_scope": "instance",
+   "measured_on": "s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, hit0/hit1 moved before pt0/pt1, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 85/204, build_insns 198 -> 201 (worse on both axes -- the only one of the four pairwise swaps that also chan"
+  },
+  {
+   "session": 71,
+   "statement": "Declaring pt1 before pt0 (order pt1,pt0,hit0,hit1,work) is worse than baseline.",
+   "kill_scope": "instance",
+   "measured_on": "s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, pt1 declared before pt0, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 52/204, build_insns UNCHANGED at 198 (pure register/order shift). Saved to memory/grind/func_80056CB8/reject"
+  },
+  {
+   "session": 71,
+   "statement": "Declaring hit1 before hit0 (order pt0,pt1,hit1,hit0,work) is worse than baseline.",
+   "kill_scope": "instance",
+   "measured_on": "s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, hit1 declared before hit0, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 44/204, build_insns UNCHANGED at 198. Saved to memory/grind/func_80056CB8/rejected/hit0-hit1-decl-swap-worse"
+  },
+  {
+   "session": 71,
+   "statement": "Declaring work before hit0/hit1 (order pt0,pt1,work,hit0,hit1) is worse than baseline.",
+   "kill_scope": "instance",
+   "measured_on": "s71 chassis (candidate.c's s22-s70-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, work declared before hit0/hit1, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 44/204, build_insns UNCHANGED at 198. Saved to memory/grind/func_80056CB8/rejected/work-before-hit01-decl-sw"
   }
  ],
  "ladder_skip": 0,
