@@ -514,3 +514,11 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s19] Read asm/funcs/func_80056CB8.s:130-165 directly this session: confirmed `addiu $v0,$zero,0x4` (=li v0,4) is materialized TWICE at 80056EE0 and 80056EFC, in the delay slots of two branches converging on .L80056F08, matching the s19-banked reorg.c:2861 fill_simple_delay_slots attribution exactly.
 
 - [s19] The previous session on this function was discarded solely for missing an attached artifact ('forensics session must attach >=1 existing non-empty artifact') -- this session's substantive findings (li#,4/lw-96/104 attribution, class kill) were already correctly derived and banked in hypotheses.md/evidence.md/candidate.c; this session's contribution is re-verifying that analysis fresh against the current chassis and attaching the required real artifact (tmp/grind/func_80056CB8/s19/loop_dump_excerpt.txt) plus an independent second read of the target asm confirming the li#,4 delay-slot-fill claim.
+
+- [s20] Fresh m2c decompile of asm/funcs/func_80056CB8.s this session produces output byte-identical to the s12-archived copy (tmp/grind/func_80056CB8/s12/m2c_out.c) -- the target asm has not changed since this ledger began, so m2c gives no new raw information, only a fresh lens for finding untested statement-shape permutations.
+
+- [s20] Every value m2c reconstructs (dx/dz/y in the flags==4 tail, the hit1[1]/obj->unkBC comparison in flags==3, both func_80053614 call-argument triples) matches the current candidate.c's semantics exactly -- m2c's differences from our C are purely SSA-materialization/statement-order artifacts, never a missing or differently-computed VALUE.
+
+- [s20] The pt0/pt1 block-shape family (store-order reorder from s15, plus this session's store/computation interleave) is now closed across both call sites: 12 total measured spellings (10 from s15 + 2 from s20), none at or below the s14 floor of 42/204.
+
+- [s20] The s19 forensics conclusion is unchanged: the remaining 42/204 residual (build_insns 197 vs target 204, a 7-instruction real-body deficit) is PRE-RA/rtl_shape per inverse_compose.py classify, gated by loop.c:3823's strength-reduction insn_count-threshold double-bind (named s13, sharpened with a line cite s18).

@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 19,
- "current_modality": "forensics",
+ "session_count": 20,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -117,13 +117,24 @@
    "floor": 42,
    "modality": "forensics",
    "headline": "s19 forensics: fresh floor 42/204 re-confirmed; fully attributed the previously-unexplained classify li#,4/lw-96/104(sp) target-only instructions to downstream shadows of the s18 loop.c:3823 insn_coun"
+  },
+  {
+   "session": 20,
+   "floor": 42,
+   "modality": "rederive",
+   "headline": "s20 rederive: re-confirmed floor 42/204 fresh; fresh m2c decompile (identical to s12's archived copy, target asm unchanged) surfaced two genuinely new structural statement-shape axes not covered by s1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining PRE-RA rtl_shape residual (42/204, build_insns 197 vs target 204, a 7-insn body deficit) can only close by genuinely adding/reshaping real instructions in the loop body -- not by respelling the i*2 index (class-killed s18), the y-compare tail (closed s16, correct structural mirror), the scratchpad literal (killed s15), or the store-duplication tail (killed s12) -- so the next probe must look OUTSIDE this loop's already-examined blocks for a genuinely different C-level shape that legitimately grows insn_count past the loop.c:3823 threshold.",
-   "mechanism": "loop.c:3823's giv-worth predicate is purely a function of the compiled loop body's total instruction count (insn_count) vs the giv's lifetime*threshold*benefit; nothing about re-spelling an EXISTING value's C handle changes insn_count in the needed direction (it only adds register pressure/increment insns, moving the wrong way). Only a genuine, semantically-motivated additional/differently-shaped computation in the loop body can shift insn_count past 164 (current) toward whatever the target's real value is.",
-   "next_probe": "A rederive-modality session should m2c-decompile the target func_80056CB8 fresh and diff its overall statement shape (not just the already-examined i*2/y-compare/scratchpad/store-dup blocks) against the current 730-line candidate.c body for any block m2c reconstructs with MORE real computation than the current C expresses -- particularly around the two func_80053614 call-argument setup blocks (pt0/pt1 fills) which s15 only tested for REORDER, never for a missing/different VALUE."
+   "hypothesis": "Reducing register pressure elsewhere in the loop body (not insn_count) could flip move_movables' threshold*savings*lifetime >= insn_count cost gate (loop.c:1631) to reject the reg149 constant-hoist without perturbing strength-reduction's separate insn_count-gated rejection of the $fp accumulator -- the s13/s14 double-bind's untried side.",
+   "mechanism": "loop.c:532's threshold = (loop_has_call?1:2)*(1+n_non_fixed_regs) -- narrowing a pseudo's live range or type shrinks n_non_fixed_regs directly, independent of the loop body's total real-instruction count.",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80056CB8 fresh, read the .greg dump's conflict list for the pseudo with the largest conflict set (the two func_80053614 calls' live ranges are the leading candidate per s13/s14), and check whether a block-local split / narrower type / earlier death is available without touching the loop's insn_count."
+  },
+  {
+   "hypothesis": "No further m2c-derived structural-shape axis remains untested in the pt0/pt1 argument-setup blocks; any future session should treat this family as closed and look outside it entirely.",
+   "mechanism": "n/a -- this is a negative-space conclusion, not a mechanism claim.",
+   "next_probe": "A future rederive/structural session should scan the flags dispatch tail (the flags==3/flags==4 chain) and the store-address computation at the loop bottom for a genuinely untested C-level shape, rather than re-touching the pt0/pt1 blocks."
   }
  ],
  "judge_constraints": [],
@@ -392,6 +403,22 @@
    "measured_on": "s19 chassis (42/197, s18-banked candidate.c body unmodified), fresh sandbox + fresh instrumented-cc1 .loop dump this session, no FAKE constructs present",
    "predicate_cite": "tools/gcc-2.7.2/loop.c:3823",
    "result": "No independently-fixable C-level construct found in this tail. Both previously-unattributed classify categories (li#,4 a"
+  },
+  {
+   "session": 20,
+   "statement": "m2c's exact block2 (pre-second-call pt0/pt1 fill) store order -- pt0[0],pt0[2],pt1[0],pt0[1],pt1[2],pt1[1] -- is a worse spelling than the s14-banked batch order.",
+   "kill_scope": "instance",
+   "measured_on": "s20 chassis (s19-banked 42/197 body + func_80053614 s32-return prerequisite, only block2's 6 stores reordered), single fresh sandbox measurement, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 42 -> 55/204, build_insns unchanged at 197. Reverted; baseline 42/204 re-confirmed after revert."
+  },
+  {
+   "session": 20,
+   "statement": "Interleaving block1's pt0[] stores WITH the x/z value computation (m2c's shape) instead of batching both store triples after computing x and z is worse than the s14-banked order, and is the first spel",
+   "kill_scope": "instance",
+   "measured_on": "s20 chassis (s19-banked 42/197 body + func_80053614 s32-return prerequisite, only block1's statement interleaving changed), single fresh sandbox measurement, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 42 -> 87/204, build_insns 197 -> 202 (+5 real instructions). Reverted; baseline 42/204 re-confirmed after revert."
   }
  ],
  "ladder_skip": 0,

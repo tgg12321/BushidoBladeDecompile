@@ -975,3 +975,35 @@ src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat emp
 - kill_scope: class
 - measured_on: s19 chassis (42/197, s18-banked candidate.c body unmodified), fresh sandbox + fresh instrumented-cc1 .loop dump this session, no FAKE constructs present
 - predicate_cite: tools/gcc-2.7.2/loop.c:3823
+
+## [s20] m2c's exact block2 (pre-second-call pt0/pt1 fill) store order — pt0[0],pt0[2],pt1[0],pt0[1],pt1[2],pt1[1] — is a worse spelling than the s14-banked batch order, closing the one permutation s15's 6-pattern sweep did not cover.
+- mechanism: fresh m2c decompile (tmp/grind/func_80056CB8/s12/m2c_out.c, re-verified identical to s12's archived copy since the target asm hasn't changed) reconstructs the second func_80053614 call's argument setup with this specific interleave, not matching any of s15's batch_pt0_pt1/batch_pt1_pt0/interleave_pt0_first/interleave_pt1_first/pt0_rev_then_pt1/pt0_then_pt1_rev patterns.
+- probe: transplanted the exact m2c order onto the current s19/s20 42/197 chassis (candidate.c body unmodified otherwise, func_80053614 s32-return prerequisite applied), `wteng sandbox func_80056CB8 --disable all`.
+- result: score 42 -> 55/204, build_insns unchanged at 197 (pure register-identity/CSE regression, not an insn-count change). Reverted; baseline 42/204 re-confirmed after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s20 chassis (s19-banked 42/197 body + func_80053614 s32-return prerequisite, only block2's 6 stores reordered), single fresh sandbox measurement, no FAKE constructs present
+
+## [s20] Interleaving block1 (pre-first-call pt0/pt1 fill)'s pt0[] stores WITH the x/z value computation (m2c's shape: sin_p/scale/cos_p computed, then pt0[0..2] stored, then x computed + pt1[0..1] stored, then z computed + pt1[2] stored) is worse than the s14-banked "compute x and z first, then batch both store triples after" order — and is the first spelling in this residual's history to actually GROW build_insns.
+- mechanism: m2c's SSA reconstruction of the target bytes places the pt0[] stores between the scale/cos_p computation and the x computation, rather than after both x and z are fully computed (the current candidate's shape, itself the s14 enumerate-modality winner over 16 orderings of sin_p/cos_p/scale/x/z alone). This tests a genuinely different axis: moving the STORE statements relative to the VALUE-COMPUTATION statements, not just relative to each other (s15's sweep only ever held x/z computation fixed and permuted the 6 stores among themselves).
+- probe: transplanted the m2c-order interleaving onto the current chassis (block2 held at s14 baseline), `wteng sandbox func_80056CB8 --disable all`.
+- result: score 42 -> 87/204, build_insns 197 -> 202 (+5 real instructions — WORSE on both score and insn-count, unlike every other spelling tried in this residual's history which stayed flat at build_insns=197). Reverted; baseline 42/204 re-confirmed after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s20 chassis (s19-banked 42/197 body + func_80053614 s32-return prerequisite, only block1's statement interleaving changed), single fresh sandbox measurement, no FAKE constructs present
+
+## [s20] m2c's exact block2 (pre-second-call pt0/pt1 fill) store order -- pt0[0],pt0[2],pt1[0],pt0[1],pt1[2],pt1[1] -- is a worse spelling than the s14-banked batch order.
+- mechanism: Fresh m2c SSA reconstruction of asm/funcs/func_80056CB8.s (identical output to s12's archived copy) places the six pt0/pt1 stores in this interleave, distinct from all 6 patterns s15's gen_pt_variants.py already swept.
+- probe: Transplanted the exact m2c order onto the s19/s20 42/197 chassis (block2 only), measured via `wteng sandbox func_80056CB8 --disable all`.
+- result: score 42 -> 55/204, build_insns unchanged at 197. Reverted; baseline 42/204 re-confirmed after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s20 chassis (s19-banked 42/197 body + func_80053614 s32-return prerequisite, only block2's 6 stores reordered), single fresh sandbox measurement, no FAKE constructs present
+
+## [s20] Interleaving block1's pt0[] stores WITH the x/z value computation (m2c's shape) instead of batching both store triples after computing x and z is worse than the s14-banked order, and is the first spelling in this residual's history to grow build_insns.
+- mechanism: m2c places the pt0[] stores between the scale/cos_p computation and the x computation rather than after both x and z are computed -- a genuinely different axis from s15's sweep, which only ever permuted the 6 stores among themselves with the x/z computation statements held fixed as a prior block.
+- probe: Transplanted the m2c-order interleaving onto the current chassis (block2 held at s14 baseline), measured via `wteng sandbox func_80056CB8 --disable all`.
+- result: score 42 -> 87/204, build_insns 197 -> 202 (+5 real instructions). Reverted; baseline 42/204 re-confirmed after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s20 chassis (s19-banked 42/197 body + func_80053614 s32-return prerequisite, only block1's statement interleaving changed), single fresh sandbox measurement, no FAKE constructs present

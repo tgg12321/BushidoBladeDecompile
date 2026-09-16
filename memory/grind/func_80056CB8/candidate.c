@@ -1,6 +1,62 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17/s18/s19)
+ * func_80056CB8 — CANDIDATE (s14 enumerate-modality win, RE-CONFIRMED s15/s16/s17/s18/s19/s20)
  * — floor 42/204, NOT YET 0. (Prior: 48/204 s11-s13; 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s20 (rederive modality, 2026-09-16). Re-applied body unchanged (+
+ * func_80053614 s32-return prerequisite), re-confirmed floor 42/204 fresh
+ * (build_insns 197) before any change. Re-ran m2c on asm/funcs/func_80056CB8.s
+ * -- output identical to the s12-archived copy (target asm unchanged since
+ * this ledger began), so no new derivation info from m2c itself this
+ * session; instead used it to hunt a STRUCTURALLY DIFFERENT statement shape
+ * per the rederive-modality brief, targeting the s19 frontier's explicit
+ * next-probe ("the two func_80053614 call-argument setup blocks ... tested
+ * for REORDER, never for a missing/different VALUE").
+ *
+ * Found and tested TWO genuinely new structural axes m2c's SSA
+ * reconstruction implies that were NOT covered by s15's pt0/pt1 pure-reorder
+ * sweep (which only permuted the 6 stores among themselves, holding the x/z
+ * computation statements fixed):
+ *   1. Block2 (pre-second-call pt0/pt1 fill): m2c's exact store order
+ *      pt0[0],pt0[2],pt1[0],pt0[1],pt1[2],pt1[1] (not among s15's 6 named
+ *      patterns). MEASURED: 42 -> 55/204 (build_insns unchanged 197).
+ *      WORSE. Reverted.
+ *   2. Block1 (pre-first-call pt0/pt1 fill): interleaving the pt0[] stores
+ *      WITH the x/z computation statements (compute sin_p/scale/cos_p, THEN
+ *      pt0[0..2], THEN x, THEN pt1[0..1], THEN z, THEN pt1[2]) instead of
+ *      the s14-banked "compute x and z first, then batch both triples of
+ *      stores after". MEASURED: 42 -> 87/204, build_insns 197 -> 202 (grew
+ *      the real instruction count -- WORSE on both axes, the first tested
+ *      spelling this entire residual's history to actually GROW build_insns
+ *      rather than stay flat at 197). Reverted.
+ *
+ * Both are KILLED, instance (measured on the s19/s20 42/197 chassis,
+ * func_80053614 prerequisite applied, no FAKE constructs). No missing or
+ * different VALUE was found anywhere in the m2c reconstruction -- every
+ * value m2c computes (dx/dz/y in the flags==4 tail, the sp4C/hit1[1]
+ * comparison in flags==3, the two call-argument triples) matches our
+ * candidate's semantics exactly; the only differences m2c's output ever
+ * shows are STATEMENT ORDER / SSA-materialization artifacts, and both
+ * concretely-different orderings this session tried measure worse than the
+ * s14 baseline. Full writeup + both rejected forms:
+ * memory/grind/func_80056CB8/rejected/m2c-block2-permuted-store-order-worse.c,
+ * memory/grind/func_80056CB8/rejected/m2c-block1-interleave-with-xz-computation-worse.c.
+ * Reverted src/text1b.c to clean INCLUDE_ASM (`git checkout -- src/text1b.c`,
+ * verified zero diff) before finishing.
+ *
+ * FRONTIER FOR s21: the "respell pt0/pt1 block order or interleaving"
+ * family is now CLOSED across both call sites (s15's 10 pure-reorder
+ * variants + this session's 2 interleave-with-computation variants, 12
+ * total spellings, all >= 42, none below). The s19 forensics conclusion
+ * stands: the remaining 42/204 (build_insns 197 vs target 204, 7-insn
+ * deficit) is PRE-RA/rtl_shape, gated by loop.c:3823's insn_count-threshold
+ * double-bind (s13/s18). The only UNTRIED avenue left per s14's frontier
+ * item 3 (never executed): attack `n_non_fixed_regs` in the move_movables
+ * threshold formula (loop.c:532) directly by finding a register-pressure
+ * reduction elsewhere in the loop body that does NOT touch insn_count --
+ * read the .greg dump's conflict list for the pseudo with the largest
+ * conflict set (the two func_80053614 calls' live ranges are the leading
+ * candidate) and check for an uncontested narrowing (block-local split,
+ * narrower type, earlier death).
  * ---------------------------------------------------------------------
  * s19 (forensics modality, 2026-09-16). Re-applied body unchanged,
  * re-confirmed floor 42/204 fresh. Fully attributed the previously-
