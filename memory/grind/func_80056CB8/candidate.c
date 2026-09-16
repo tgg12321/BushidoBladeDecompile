@@ -771,7 +771,7 @@
  * immediately after the ratan2/branch-angle computation —
  *   sin_p = &Judge + (flags & 0xFFF);
  *   cos_p = &Judge + ((flags + 0x400) & 0xFFF);
- *   scale = (&D_8009A820)[i * 2] << 8;
+ *   scale = D_8009A820[i * 2] << 8;
  *   x = *(s32 *)(obj + 0xB8) + ((scale * *sin_p) >> 12);
  *   z = *(s32 *)(obj + 0xC0) + ((scale * *cos_p) >> 12);
  * — 5 independent-enough assignments (x depends on sin_p+scale, z depends
@@ -1221,11 +1221,57 @@
  * full derivation chain back to
  * memory/grind/func_80056CB8/authored-notes-2026-08-18.md.
  * ===================================================================== */
+/* ---------------------------------------------------------------------
+ * s44 (object-model modality). OBJECT-MODEL AUDIT of every DATA MODEL
+ * global the brief flagged, per the dispatch DECLARATION-PUNS warning:
+ *
+ * - D_8009A820 / D_8009A821: previously declared as SCALAR `extern u8`
+ *   with use-site pointer arithmetic `(&D_8009A820)[i*2]` /
+ *   `(&D_8009A821)[i*2]` -- flagged as a layer-1 declaration-pun risk.
+ *   Checked the asm (asm/funcs/func_80056CB8.s lines ~30/67): each
+ *   symbol gets its OWN independent lui %hi/%lo relocation ($fp added
+ *   as the byte offset via addu before the lbu) -- NOT one shared base
+ *   symbol with two different byte-offset immediates. That is the
+ *   opposite of what a merged 2-byte-struct-array declaration would
+ *   compile to (one lui/addu, two lbu at +0/+1), so this is NOT an
+ *   aggregate-merge candidate -- prong (a)'s base-register/stride
+ *   evidence argues AGAINST a merge here, adjacency notwithstanding
+ *   (see [[splat-symbol-names-are-not-evidence]]). What IS wrong is
+ *   the scalar->address-of spelling: fixed by re-declaring each as an
+ *   incomplete array (`extern u8 D_8009A820[];` / `D_8009A821[];`) and
+ *   indexing directly (`D_8009A820[i*2]`), dropping the `&...[...]`
+ *   pun. MEASURED byte-neutral: sandbox still 38/204 (198 build insns)
+ *   after the redeclaration -- confirms this was purely a declaration-
+ *   level fix, not a codegen-affecting change.
+ * - D_800F6610: re-confirmed unchanged. s6 already established (own
+ *   objdiff-verified derivation, see below) that despite
+ *   `D_800F6610 == D_800F6608+8` (the Rec44 `.w8` offset) arithmetically,
+ *   the target's asm emits an INDEPENDENT lui/lw(D_800F6610) relocation
+ *   pair, not a `D_800F6608+8` addend -- i.e. the ORIGINAL source held
+ *   this as its own separate global, not a struct member reference.
+ *   Kept as `extern s32 D_800F6610;` (unchanged from s6). This is the
+ *   textbook counter-example the [[split-scalars-hide-aggregate]] /
+ *   splat-symbol-names-are-not-evidence rules warn about: address
+ *   ADJACENCY to a named struct is not by itself merge evidence: the
+ *   relocation pattern is.
+ * - D_800F6608: declared `extern Rec44 D_800F6608;` in code6cac.h,
+ *   `.w0` member read -- MATCHES the evidence (identical shape to
+ *   matched sibling func_80057094's `mid.w0` read in the same TU).
+ * - Judge: declared `extern s16 Judge;` (scalar) with use-site
+ *   `&Judge + (angle & 0xFFF)` pointer arithmetic at all 3 use sites in
+ *   this TU (this function + the matched, COMPLETED-C func_80057CC8 at
+ *   text1b.c:2055/2257) -- MATCHES existing accepted convention in this
+ *   same file; not re-flagged as a pun since the identical spelling is
+ *   already byte-matched, shipped code elsewhere in this TU.
+ *
+ * See hypotheses.md [s44] and evidence.md [s44 OBJECT MODEL] for the
+ * full per-symbol verdict table.
+ * --------------------------------------------------------------------- */
 
 extern s16 Judge;
 extern s32 ratan2(s32, s32);
-extern u8 D_8009A820;
-extern u8 D_8009A821;
+extern u8 D_8009A820[];
+extern u8 D_8009A821[];
 extern s32 D_800F6610;
 
 void func_80056CB8(s32 arg0) {
@@ -1250,7 +1296,7 @@ void func_80056CB8(s32 arg0) {
         s32 z;
 
         obj = arg0;
-        flags = (&D_8009A821)[i * 2] << 8;
+        flags = D_8009A821[i * 2] << 8;
         if ((flags & 0x1000) != 0) {
             obj = *(s32 *)arg0;
         }
@@ -1263,7 +1309,7 @@ void func_80056CB8(s32 arg0) {
         }
 
         sin_p = &Judge + (flags & 0xFFF);
-        scale = (&D_8009A820)[i * 2] << 8;
+        scale = D_8009A820[i * 2] << 8;
         x = *(s32 *)(obj + 0xB8) + ((scale * *sin_p) >> 12);
         cos_p = &Judge + ((flags + 0x400) & 0xFFF);
         z = *(s32 *)(obj + 0xC0) + ((scale * *cos_p) >> 12);

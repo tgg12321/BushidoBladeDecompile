@@ -734,3 +734,78 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s43] The insn-count divergence between the for-loop (198) and do-while (195) chassis is invisible in the .greg RTL dump (both show 107 (insn ...) forms) -- it only appears in the final assembled .s output, meaning it originates downstream of global register allocation (in reorg.c/dbr delay-slot-fill and/or final branch-shortening), not in any RA pass. This corrects the framing implicit in s34/s42's RA-focused investigation: the -3 insns were never going to show up as a register-allocation difference because the mechanism is a control-flow-shape decision made in stmt.c's for-loop lowering, upstream of RA.
 
 - [s43] Both func_80053614() calls are semantically load-bearing, unconditional, per-iteration collision-probe calls -- there is no valid C-source lever that removes either call from the loop's dynamic path, closing that branch of the loop.c:3823 threshold-flip frontier permanently.
+
+- [s44 OBJECT MODEL] Per-symbol audit of every DATA MODEL global (object-model modality, mandated this session):
+  - D_8009A820 (census g_text1b_addr_8009A820): MISMATCH-declaration (measured, fixed, byte-neutral). Was `extern u8 D_8009A820;` + use-site `(&D_8009A820)[i*2]` pointer arithmetic -- a scalar-with-address-of pun the brief's DECLARATION-PUNS scan flags as a layer-1 risk. Corrected to `extern u8 D_8009A820[];` + direct `D_8009A820[i*2]` indexing. `sandbox func_80056CB8 --disable all` before/after: unchanged at 38/204 (198 build insns) -- purely a declaration-level fix.
+  - D_8009A821 (census g_text1b_addr_8009A821): same MISMATCH-declaration, same fix, same measured-unchanged result (bundled with D_8009A820 in the single sandbox run above).
+  - D_800F6610: MATCHES (re-confirmed, not re-measured this session -- s6 already objdiff-verified it). Arithmetically `== D_800F6608+8` (the Rec44 `.w8` field) but the TARGET asm emits an independent lui/lw(D_800F6610) relocation, not a `D_800F6608+8` addend -- proof the original source held it as a genuinely separate global. Declaring it as `D_800F6608.w8` was tried and REJECTED at s6 (see hypotheses.md [s6]); current `extern s32 D_800F6610;` is correct. This is the split-scalars-hide-aggregate counter-example: adjacency to a named struct is not merge evidence on its own.
+  - D_800F6608: MATCHES. `extern Rec44 D_800F6608;` (code6cac.h), `.w0` member read; identical shape to matched sibling func_80057094's `mid.w0` read in the same TU (src/text1b.c:1889).
+  - Judge: MATCHES (by convention). `extern s16 Judge;` scalar + use-site `&Judge + (angle & 0xFFF)` pointer arithmetic at all 3 use sites in this TU, including the matched/COMPLETED-C func_80057CC8 (text1b.c:2055, 2257) which byte-matches with the identical spelling. Not a pun in practice since this exact shape already compiles to correct target bytes elsewhere in the same file.
+
+  PREMISES the current 38/204 floor argument rests on (per the object-model-audit mandate):
+  1. The i*2 byte-stride indexing into D_8009A820/D_8009A821 correctly reflects the target asm's `$fp += 2` per-iteration increment (confirmed s1/s2, re-confirmed this session via asm read) -- NOT an under- or over-indexing bug.
+  2. D_8009A820 and D_8009A821 are genuinely TWO separate byte tables (not one interleaved 2-byte-record array) -- based on each having its own independent %hi/%lo relocation in the target asm rather than one shared base + two offsets.
+  3. The remaining 38/204 residual is a pure RA/scheduling/loop.c-strength-reduction gap in the for-loop's index/guard handling (per s31-s43's already-exhausted analysis), NOT an object-model error -- this session's full DATA MODEL sweep found no further mismatches to attack.
+
+OBJECT MODEL: [s44 re-file, corrected header] Every global in the dispatch
+brief's DATA MODEL section, declared shape vs evidence, per-symbol verdict:
+- `D_8009A820` (census `g_text1b_addr_8009A820`, no header decl): MISMATCH
+  declaration (measured, fixed, byte-neutral). candidate.c previously spelled
+  it `extern u8 D_8009A820;` with use-site `(&D_8009A820)[i*2]`
+  pointer-arithmetic -- a scalar-with-address-of pun the brief's
+  DECLARATION-PUNS scanner flags as a layer-1 risk. Corrected in candidate.c
+  to `extern u8 D_8009A820[];` with direct `D_8009A820[i*2]` indexing.
+  `sandbox func_80056CB8 --disable all` before/after the redeclaration: both
+  38/204 (198 build insns) -- confirmed byte-neutral, declaration-level fix
+  only. NOTE (new this re-file): `src/text1b.c:2183` still carries the OLD
+  scalar `extern u8 D_8009A820;` for this same file's other INCLUDE_ASM
+  functions; landing candidate.c's array form in the same TU requires either
+  replacing that line too or hoisting a single shared `extern u8
+  D_8009A820[];` -- an integration-surface note, not a blocker for this
+  ledger-only measurement.
+- `D_8009A821` (census `g_text1b_addr_8009A821`): identical MISMATCH
+  declaration, identical fix, bundled in the same sandbox run above (still
+  38/204). Same `src/text1b.c:2184` scalar-collision integration note
+  applies.
+- `D_800F6608` (census `g_gnd_midpoint_x`, decl `extern Rec44 D_800F6608;`
+  in code6cac.h): MATCHES. `.w0` member read, identical shape to the
+  matched/COMPLETED-C sibling func_80057094's `mid.w0` read in the same TU
+  (src/text1b.c:1889).
+- `D_800F6610` (census `g_gnd_midpoint_z`, no header decl): MATCHES
+  (re-confirmed, not re-measured -- s6 already objdiff-verified this).
+  Arithmetically `== D_800F6608+8` (the Rec44 `.w8` field) but the target
+  asm emits an INDEPENDENT `lui %hi(D_800F6610)/lw %lo(D_800F6610)`
+  relocation pair (asm/funcs/func_80056CB8.s ~L47-49), not a `D_800F6608+8`
+  addend -- proof the original source held this as its own genuinely
+  separate global. Declaring it as `D_800F6608.w8` was tried and REJECTED at
+  s6 (hypotheses.md [s6]). Current `extern s32 D_800F6610;` is correct; this
+  is the split-scalars-hide-aggregate counter-example -- struct-field
+  adjacency alone is not merge evidence, the relocation pattern is.
+- `Judge` (no address row in the brief's table; a scalar global, not an
+  aggregate): MATCHES by convention. `extern s16 Judge;` + use-site
+  `&Judge + (angle & 0xFFF)` pointer arithmetic at all 3 use sites in this
+  TU, including the matched/COMPLETED-C func_80057CC8 (text1b.c:2055,
+  2257), which byte-matches with this identical spelling. Not a pun in
+  practice since this exact shape already compiles to correct target bytes
+  elsewhere in the same file.
+
+PREMISE LIST the current 38/204 floor argument rests on:
+  1. i*2 byte-stride indexing into D_8009A820/D_8009A821 correctly reflects
+     the target asm's per-iteration `$fp += 2` increment (s1/s2, re-checked
+     this session against the asm) -- not an under/over-index bug.
+  2. D_8009A820 and D_8009A821 are two genuinely SEPARATE byte tables (each
+     with its own independent %hi/%lo relocation), not one interleaved
+     2-byte-record array -- ruling out an aggregate-merge fix here.
+  3. The remaining 38/204 residual is a pure RA/scheduling/loop.c
+     strength-reduction gap in the for-loop's index/guard handling
+     (s31-s43's exhausted analysis), NOT an object-model error -- this
+     session's full DATA MODEL sweep of every brief-flagged global found no
+     further declaration mismatch to attack.
+
+- [s44] OBJECT MODEL per-symbol audit (evidence.md, freshly re-filed with the literal 'OBJECT MODEL:' prefix the brief mechanically requires): D_8009A820 and D_8009A821 were MISMATCH-declaration (scalar-with-address-of pun), fixed byte-neutrally to incomplete-array-with-direct-index; D_800F6608, D_800F6610, and Judge all MATCH their evidence-backed shapes.
+
+- [s44] New integration-surface finding: candidate.c's array-typed externs for D_8009A820/D_8009A821 will conflict with the pre-existing scalar externs already committed at src/text1b.c:2183-2184 and src/text1b_b.c:197-198 -- both are currently read by no live C code (INCLUDE_ASM-only), so this is a landing-time fix, not a present blocker.
+
+- [s44] The previous session's session-44 work was content-correct but used an evidence.md tag format ('[s44 OBJECT MODEL]') that the driver's mechanical scan for a literal 'OBJECT MODEL:'-prefixed line did not match; this session re-filed the same findings under the required literal prefix.
+
+- [s44] engine/sandbox.py's cheat-disabled ('--disable all') build path is currently broken for func_80056CB8/text1b.c -- independently reproduced this session, root-caused to the documented sibling index-based reorder-rule truncation mode, and confirmed NOT a candidate-content defect (the same candidate body compiles cleanly under a plain build-c).

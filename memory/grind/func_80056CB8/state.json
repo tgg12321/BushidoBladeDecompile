@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 43,
- "current_modality": "forensics",
+ "session_count": 44,
+ "current_modality": "object-model",
  "floor_history": [
   {
    "session": 1,
@@ -261,23 +261,29 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s43 forensics: class-killed the 'remove one func_80053614 call' loop.c-threshold frontier item (both calls are unguarded per-iteration collision probes, no static lever); pinned the exact mechanism be"
+  },
+  {
+   "session": 44,
+   "floor": 38,
+   "modality": "object-model",
+   "headline": "s44 re-file: fixed the missing OBJECT MODEL: evidence-format prefix (prior s44 content was correct but wrongly tagged); re-verified src has no new mismatch; found the dispatch's 'measurement unavailab"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A semantically-truthful C rewrite that lets cc1 prove the for-loop's trip count is nonzero (e.g. inlining `limit` away as `i < start + 2` or `i - start < 2` instead of routing through a separate `limit` local) would drop the 3-instruction pre-header guard on the FOR-LOOP chassis itself, without the do-while rewrite's overall-worse score.",
-   "mechanism": "cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) only omits the guard when it can statically prove the bound relationship; whether a more syntactically-direct bound expression (vs. an opaque separately-assigned local two statements earlier) changes that decision is untested.",
-   "next_probe": "Try `for (i = start; i < start + 2; i++)` and `for (i = start; i - start < 2; i++)` on the s22-s42-banked for-loop chassis (dropping the separate `limit` local or keeping it only for readability elsewhere); measure via `wteng sandbox func_80056CB8 --disable all`; if either drops the guard while preserving the for-loop chassis's otherwise-closer instruction mix, dump-verify via a fresh .s diff against this session's text1b_s_forloop.s baseline."
+   "hypothesis": "A semantically-truthful C rewrite that lets cc1 prove the for-loop's trip count is nonzero (e.g. `for (i = start; i < start + 2; i++)` or `i - start < 2`) would drop the 3-instruction pre-header guard on the for-loop chassis without the do-while rewrite's overall-worse score.",
+   "mechanism": "cc1's for-loop lowering (stmt.c expand_exit_loop_if_false) only omits the guard when it can statically prove the bound relationship; an opaque separately-assigned `limit` local two statements earlier may be defeating that proof.",
+   "next_probe": "Try both direct-bound spellings on the s22-s43-banked for-loop chassis; measure via sandbox once the engine's disable-all pipeline defect is fixed (or work around it by measuring build-c + manual score.py invocation against build/src/text1b.o if the sandbox wrapper stays broken)."
   },
   {
-   "hypothesis": "Extend tools/spelling_enum.py to treat a bracketed if/else block as one opaque reorderable anchor, so the obj/flags region (and future similar regions) can be swept exhaustively instead of by hand-picked variants.",
-   "mechanism": "n/a -- tooling gap, not a codegen hypothesis.",
-   "next_probe": "Patch spelling_enum.py's anchor classification (tools/spelling_enum.py:76-91) then re-run a full mechanical sweep over the obj/flags region."
+   "hypothesis": "engine/sandbox.py's --disable all path needs a fix (or a documented workaround) for text1b.c/func_80056CB8 specifically, since it currently cannot produce ANY fresh honest-distance number for this function's non-trivial candidate bodies.",
+   "mechanism": "n/a -- tooling defect, not a codegen hypothesis.",
+   "next_probe": "This is outside the grind session's allowed edit surface (engine/ is off-limits); flag for the operator/driver-level fix, or investigate whether a specific sibling function's regfix/asmfix reorder rule in text1b.c is the culprit (per sandbox.py:86-89's own diagnosis) so it can be identified precisely without editing engine code."
   },
   {
-   "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 real insns on the for-loop chassis) without touching the i*2 index expressions' lifetime would let strength_reduce promote i*2 the way target's asm shows.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; shrinking insn_count works as well as raising the left side; every left-side lever tried so far has failed due to register pressure from the intervening func_80053614 calls, not the arithmetic itself.",
-   "next_probe": "With the do-while -3-insn mechanism now fully understood (pre-header guard, not RA/loop.c), determine whether any OTHER structural change (not the do-while rewrite, which the ledger shows is net-worse) can shrink real-insn count enough to flip the loop.c:3823 inequality while leaving i*2's own live range and the guard structure untouched."
+   "hypothesis": "A structural rewrite shrinking the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124 vs 163 on the for-loop chassis) without touching the i*2 index expressions' lifetime could let strength_reduce promote i*2 the way the target's asm shows.",
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; every left-side lever tried so far fails due to register pressure from the intervening func_80053614 calls.",
+   "next_probe": "With the do-while -3-insn mechanism now fully understood (s42/s43: pre-header guard, not RA/loop.c), determine whether any OTHER structural change can shrink real-insn count enough to flip the inequality while leaving i*2's live range and guard structure untouched."
   }
  ],
  "judge_constraints": [],
@@ -768,5 +774,6 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T07:19:13.663722+00:00",
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "object_model_audited": 44
 }
