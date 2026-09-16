@@ -120,3 +120,124 @@ s2 field-offset fixes applied), zero FAKE constructs present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c s2 final chassis (block-local var split applied, all s1-bug field-offset fixes applied), zero FAKE constructs present
+
+## H4 (session 3) — KILLED: splitting the AND into a genuinely fresh
+separately-named local does not fix the v0/v1 coloring
+**Statement:** unlike H3 (which reused the SAME variable `v0` for both the
+raw load and the AND, `v0 = D_800A34F8; v0 &= 0xF;`), introducing a
+genuinely FRESH, separately-named local for the raw load
+(`s32 raw; raw = D_800A34F8; v0 = raw & 0xF;`) might let cc1 treat the two
+values as more clearly distinct and color the AND-result into the load's
+hard register.
+**Mechanism (hypothesized):** a fresh named local might get different
+`regclass`/local-alloc preference treatment than a variable already
+carrying two roles.
+**Probe:** applied at site 1 only, re-measured via `sandbox --disable all`;
+also re-dumped `.greg` to check the actual RTL.
+**Result:** score UNCHANGED (68 -> 68). The `.greg` dump showed IDENTICAL
+RTL insns/pseudo numbers to the pre-split form — GCC's combine pass folds
+the extra named copy back to the exact same two-insn shape
+(`load into pseudo A; and(A,15) into pseudo B`) regardless of whether A is
+named `raw` or is anonymous. Naming does not change RTL shape once combine
+runs.
+**verdict:** KILLED
+**kill_scope:** instance
+**measured_on:** candidate.c s2 final chassis (floor 68), single site,
+zero FAKE constructs present.
+
+## H5 (session 3) — CONFIRMED: removing the named mask-compute variable
+before the branch (inlining the AND directly in the if-condition) drops
+the floor 68 -> 60
+**Statement:** replacing `v0 = D_800A34F8 & 0xF; if (v0 == arg2) {...}`
+with `if ((D_800A34F8 & 0xF) == arg2) {...}` at all 4 sites — so that `v0`
+(used only inside/after the branch arms for the tile-draw byte values) is
+NEVER assigned by the mask compute at all, and the AND result becomes an
+anonymous compiler temp consumed only by the comparison — measurably
+lowers the sandbox score.
+**Mechanism:** NOT fully attributed this session. A register-normalized
+objdump diff (`tmp/grind/func_8006A564/s3/diff.py`) against
+`asm/funcs/func_8006A564.s` after this change shows the v0<->v1 coloring
+swap identified in session 2 is STILL PRESENT, unchanged, at all 4 sites —
+so this fix is NOT closing the coloring swap. The `.greg` dump
+(`tmp/grind/func_8006A564/dumps/text1b.greg`, func_8006A564 section) after
+this change shows the identical pseudo->hardreg disposition as before
+(raw-load pseudo -> hardreg 2/v0 via local-alloc; AND-result pseudo ->
+hardreg 3/v1 via global-alloc). The 8-point win must come from some OTHER,
+distinct diff this session did not isolate.
+**Probe:** applied incrementally (site 1 alone: 68->66; all 4 sites:
+68->60) via `sandbox --disable all`; re-dumped and diffed against target
+to check whether the coloring swap closed (it did not).
+**Result:** CONFIRMED as a real, measured improvement (68 -> 60,
+build_insns unchanged at 199==199). Reverted the companion "reverse the
+comparison operand order" variant (`arg2 == (D_800A34F8&0xF)`), which
+measured WORSE (60 -> 64) and was discarded — see H6.
+**verdict:** CONFIRMED
+
+## H6 (session 3) — KILLED: reversing the comparison operand order
+regresses the score
+**Statement:** per [[compare-operand-order-register]], writing
+`arg2 == (D_800A34F8 & 0xF)` (parameter first) instead of
+`(D_800A34F8 & 0xF) == arg2` (global-derived value first) might bias RTL
+emission order and help the coloring swap, mirroring the rule's local-vs-
+global lever.
+**Mechanism (hypothesized):** cc1's RTL evaluation order for `==` may
+depend on LHS/RHS position the same way `<`/`>` does per the cited rule.
+**Probe:** applied at all 4 sites atop the H5 chassis (floor 60), measured
+via `sandbox --disable all`.
+**Result:** score regressed 60 -> 64 (worse). Reverted to
+`(D_800A34F8 & 0xF) == arg2`, confirmed back at 60.
+**verdict:** KILLED
+**kill_scope:** instance
+**measured_on:** candidate.c s3 chassis (H5 applied, floor 60), zero FAKE
+constructs present.
+
+## Frontier for next session
+1. **The v0/v1 coloring swap is STILL the entire residual pattern visible
+   in the target-vs-build diff** (confirmed unchanged by H5's 8-point win,
+   which must be closing something else — not yet isolated which
+   instructions). Next session should diff session-2's build.dis.txt
+   against session-3's build.dis.txt (not each against target) to find
+   exactly which instructions changed between floor 68 and floor 60, to
+   properly attribute H5's mechanism before trying further coloring levers.
+2. **GCC 2.7.2's MIPS backend has no `REG_ALLOC_ORDER` override**
+   (confirmed: grepped `tools/gcc-2.7.2/config/mips/mips.h`, no match) — so
+   local-alloc's hard-reg search is the default ascending numeric order.
+   The raw-load pseudo (block-local, single def/use, dies same insn) is
+   handled by LOCAL-ALLOC and grabs the first free int-class hardreg (v0)
+   before GLOBAL-ALLOC (which runs after local-alloc, per GCC's pass
+   ordering) ever processes the AND-result pseudo (which crosses the
+   if/else merge and is therefore NOT local-alloc-eligible) — global-alloc
+   is then forced to v1. For target to have colored these the other way,
+   target's compile must not treat the raw-load temp as purely local the
+   way ours does. Untried: hoisting all 4 sites' `D_800A34F8` read into ONE
+   shared read outside the loop-unrolled tile blocks (probably changes
+   control flow too much / not applicable — the 3 tile blocks + final
+   section are NOT a loop); or restructuring the arm-value variable (`v0`)
+   so it does NOT itself cross the if/else as one pseudo (try genuinely
+   separate per-arm value locals combined through a different mechanism
+   than one shared block-scoped `v0` — NOT yet attempted).
+3. **The single block3 scheduling tie** (unchanged from session 2,
+   unattempted this session) — low weight, revisit after the coloring
+   issue is understood.
+
+## [s3] A genuinely fresh, separately-named local for the raw D_800A34F8 load (distinct from H3's same-variable split) will make cc1 color the AND result into the load's hard register.
+- mechanism: Hypothesized: a fresh named local might get different regclass/local-alloc preference treatment than a variable already carrying two roles.
+- probe: Applied `s32 raw; raw = D_800A34F8; v0 = raw & 0xF;` at site 1, re-measured via sandbox --disable all, re-dumped .greg to compare RTL.
+- result: Score unchanged (68 -> 68). The .greg dump showed byte-identical pseudo numbers and hardreg assignments to the pre-split form -- combine folds the extra named copy back to the exact same two-insn shape regardless of the C-level name given to the load result.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c s2 chassis (floor 68), single site, zero FAKE constructs present
+
+## [s3] Removing the named mask-compute variable entirely -- writing `if ((D_800A34F8 & 0xF) == arg2) {...}` instead of `v0 = D_800A34F8 & 0xF; if (v0 == arg2) {...}` -- at all 4 sites lowers the sandbox score from the session-2 floor.
+- mechanism: Not fully attributed this session. A register-normalized objdump diff (tmp/grind/func_8006A564/s3/diff.py) confirms the v0<->v1 coloring swap from session 2 is STILL PRESENT unchanged at all 4 sites after this fix, so the improvement is NOT from closing that swap; the true mechanism is an unidentified secondary diff, left as the top frontier item.
+- probe: Applied incrementally (site 1 alone, then all 4 sites) via `& tools/wteng.ps1 main sandbox func_8006A564 --disable all`; re-dumped .greg and diffed the rebuilt .o against target to confirm whether the coloring swap closed (it did not).
+- result: CONFIRMED as a real, measured improvement: 68 -> 66 (site 1 alone), 68 -> 60 (all 4 sites), build_insns unchanged at 199==199 both before and after.
+- verdict: CONFIRMED
+
+## [s3] Reversing the comparison's operand order (`arg2 == (D_800A34F8 & 0xF)` instead of `(D_800A34F8 & 0xF) == arg2`) at all 4 sites, per the compare-operand-order-register lever, will help the coloring swap.
+- mechanism: Hypothesized by analogy to .claude/rules/compare-operand-order-register.md, which documents this lever for `<`/`>` comparisons biasing RTL evaluation order; the rule itself notes it may not generalize to all comparison shapes.
+- probe: Applied at all 4 sites atop the floor-60 chassis, measured via sandbox --disable all.
+- result: Score regressed 60 -> 64 (worse). Reverted to `(D_800A34F8 & 0xF) == arg2`, confirmed back at 60.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c s3 chassis (floor 60), zero FAKE constructs present

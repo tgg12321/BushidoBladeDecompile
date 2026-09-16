@@ -189,3 +189,89 @@ ledger, s1's candidate.c had NOT yet been applied to src/ -- applied it first).
 - [s2] One additional, smaller residual (not insn-count-affecting): in block3, target schedules `sb $v0,0x6($s0)` (the shared-join tile[6] store) before `addu $a0,$s0,$zero` (call-arg setup); our build schedules the reverse order -- an equal-priority list-scheduler tie between two mutually-independent ready instructions.
 
 - [s2] The delay-slot fill for block1's else-arm branch now matches target byte-for-byte after reordering the else-arm's statements to write the flag local (`s4 = 0x20;`) before the unrelated `v0 = 0x50;` sequence -- confirmed via WSL objdump of the rebuilt .o.
+
+## Session 3 (structural)
+
+Chassis check confirmed: applied s2's candidate.c to src/text1b.c (HEAD had
+`INCLUDE_ASM`, no C body applied at session start), re-measured via
+`sandbox --disable all` -- score 68, build_insns 199==199, matching the
+ledger and the driver's dispatch-time floor exactly.
+
+- **[s3] PASS ATTRIBUTION READ: `.combine` and `.greg` dumps for the FIRST
+  `D_800A34F8 & 0xF` site confirm the exact mechanism behind session 2's
+  "systemic v0<->v1 coloring swap" finding.** Read
+  `tmp/grind/func_8006A564/dumps/text1b.combine` (func_8006A564 section,
+  lines 46779-47898) and `.greg` (lines 51553+):
+  - `.combine`: the load `D_800A34F8` goes into pseudo 79 (dies
+    IMMEDIATELY at the very next insn, single def/single use, genuinely
+    block-local); the AND's result goes into pseudo 78, which is the SAME
+    pseudo used for `v0` throughout the rest of the block (both if/else
+    arms + everything after the merge) -- i.e. pseudo 78 crosses the
+    conditional branch, pseudo 79 does not.
+  - `.greg`: pseudo 79 -> hardreg 2 (`$v0`); pseudo 78 -> hardreg 3
+    (`$v1`). GCC 2.7.2's pass order runs LOCAL-ALLOC before GLOBAL-ALLOC;
+    local-alloc handles genuinely block-local pseudos first and grabs the
+    first free int-class hardreg for pseudo 79 (which is `$v0`, since
+    a0-a3 are freed by this point); global-alloc then processes pseudo 78
+    (ineligible for local-alloc since it crosses the branch) and is forced
+    to the next free register, `$v1`. Target's asm
+    (`asm/funcs/func_8006A564.s:15-31`) shows `lw $v0,...; andi $v0,$v0,0xF`
+    -- both the load and the AND's result in the SAME register ($v0),
+    i.e. target's compile did NOT give the raw-load temp $v0 first.
+  - Grepped `tools/gcc-2.7.2/config/mips/mips.h` for `REG_ALLOC_ORDER`:
+    NOT FOUND. The MIPS backend in this fork uses GCC's DEFAULT ascending
+    hard-reg search order (no per-target override), so "lowest free
+    hardreg wins" is the actual mechanism, not a MIPS-specific quirk.
+  - Also confirmed via `asm/funcs/func_8006A564.s:31` that target does NOT
+    duplicate the `tile[6]=` store into both if/else arms (it's at the
+    shared merge label `.L8006A5D0`) -- ruling out "the value never
+    crosses the branch in target's original C" as an explanation; target
+    really does have a value crossing the merge, colored to $v0.
+
+- **[s3] KILLED (H4, instance): a genuinely FRESH separately-named local
+  for the raw load (`s32 raw; raw = D_800A34F8; v0 = raw & 0xF;`) --
+  distinct from session 2's H3, which reused the SAME variable name for
+  both statements -- produces IDENTICAL RTL to the unsplit form.**
+  Applied at site 1, re-measured (68 -> 68, no change), then re-dumped
+  `.greg` and confirmed the pseudo numbers/hardreg assignments were
+  byte-identical to the pre-split dump. GCC's combine pass folds the named
+  copy back to the same 2-insn shape regardless of the C-level variable
+  name given to the load's result.
+
+- **[s3] CONFIRMED (H5): removing the mask-compute's named variable
+  entirely -- writing `if ((D_800A34F8 & 0xF) == arg2) {...}` instead of
+  `v0 = D_800A34F8 & 0xF; if (v0 == arg2) {...}` -- at all 4 sites drops
+  the sandbox score 68 -> 60 (build_insns unchanged, 199==199).** Measured
+  incrementally: site 1 alone (68->66), all 4 sites (68->60), via
+  `& tools/wteng.ps1 main sandbox func_8006A564 --disable all`.
+  **Re-dumped `.greg` after this change and confirmed the v0<->v1 coloring
+  swap is UNCHANGED** -- pseudo 79-equivalent (now renumbered, e.g. site 1
+  is still pseudo 79) still gets hardreg 2, the AND-result pseudo still
+  gets hardreg 3. A register-normalized objdump diff
+  (`tmp/grind/func_8006A564/s3/diff.py` vs
+  `tmp/grind/func_8006A564/s3/build.dis.txt`) shows the SAME v0<->v1 swap
+  pattern at all 4 sites in the post-fix build. **The mechanism behind
+  this 8-point improvement is NOT the coloring swap and was NOT isolated
+  this session** -- it must be some other diff (possibly a secondary
+  effect elsewhere in the block ordering/scheduling), and is the top
+  frontier item for next session (diff session-2's vs session-3's
+  build.dis.txt directly, not each against target, to find exactly which
+  instructions changed).
+
+- **[s3] KILLED (H6, instance): reversing the comparison operand order
+  (`arg2 == (D_800A34F8 & 0xF)` instead of `(D_800A34F8 & 0xF) == arg2`)
+  at all 4 sites, atop the H5 chassis, regresses the score 60 -> 64.**
+  Reverted. This is the opposite of what
+  [[compare-operand-order-register]] would predict by analogy (that rule
+  is for `<`/`>`, not `==`, and explicitly notes it may not generalize);
+  confirmed empirically inapplicable here.
+
+- [s3] Chassis check at session start: applying the s2 candidate.c to src/text1b.c reproduces floor 68 exactly (build_insns 199==199), matching the ledger's last recorded floor and the driver's dispatch-time floor.
+
+- [s3] PASS ATTRIBUTION read of tmp/grind/func_8006A564/dumps/text1b.combine and .greg (func_8006A564 section) confirms the mechanism behind session 2's 'systemic v0<->v1 coloring swap' finding precisely: the raw D_800A34F8 load creates a genuinely block-local pseudo (single def, dies at the very next insn) which LOCAL-ALLOC processes first and assigns to hardreg 2 ($v0, the first free int-class register after a0-a3 free up); the AND's result reuses the SAME pseudo as the block-scoped C variable v0, which is used in both if/else arms and after the merge, so it crosses the conditional branch and is therefore NOT local-alloc-eligible -- it is deferred to GLOBAL-ALLOC, which runs after local-alloc and is forced to the next free register, hardreg 3 ($v1). Target's asm (asm/funcs/func_8006A564.s:15-31) puts BOTH the load and the AND result in $v0 -- i.e. target's compile did not let the raw-load temp claim $v0 first.
+
+- [s3] Grepped tools/gcc-2.7.2/config/mips/mips.h for REG_ALLOC_ORDER: not defined. The MIPS backend in this fork uses GCC's default ascending hard-register search order with no target-specific override, confirming 'lowest free hardreg wins' as the actual allocator behavior driving this residual (not a MIPS-specific REG_ALLOC_ORDER quirk).
+
+- [s3] Confirmed via asm/funcs/func_8006A564.s:31 that target's tile[6] store sits at the shared post-if/else merge label (.L8006A5D0), not duplicated into both arms -- ruling out 'the value never crosses the branch in target's original C' as an alternative explanation; the cross-block pseudo is real and target's own compiler still colored it $v0.
+
+- [s3] The 68->60 improvement's mechanism was NOT isolated this session: a register-normalized objdump diff of the post-fix build against target (tmp/grind/func_8006A564/s3/diff.py output) still shows the identical v0<->v1 swap pattern at all 4 sites, so whatever closed 8 points of score is a different, unattributed diff -- next session should diff session-2's build.dis.txt directly against session-3's (not each against target) to pin down exactly which instructions changed.
