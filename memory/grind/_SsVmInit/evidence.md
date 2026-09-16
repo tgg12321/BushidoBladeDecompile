@@ -309,3 +309,11 @@ about `D_800F4E22`'s register reuse. Findings:
 - [s3] The codegen-technique-index's local-alloc-death-count-class-wall entry records that every ordinary C lever previously tried against this exact 'dies in 0 places' / 'multi-death vs single-death' symptom class measured flat or worse, with the only flip being an invented staging local (forbidden as a cheat) -- consistent with this session's own H10 result on the adjacent shared-constant store.
 
 - [s3] src/main.c was left in its clean INCLUDE_ASM("asm/funcs", _SsVmInit); state at session end (candidate.c changes were reverted from src after each measurement); no dirt left on the tracked tree.
+
+- [s4] CHASSIS DISCONTINUITY: the ledger's floor-19/target_insns-174 baseline is void as of s4 — re-measuring the unedited s3 candidate.c gives floor 38/target_insns-200 (build_insns unchanged at 193, so this is not an artifact of our own edits)
+
+- [s4] Best floor ever recorded for _SsVmInit: score 3, target_insns 200 == build_insns 200, 0 source-level hunks in sandbox --diff
+
+- [s4] The remaining residual is a single register-allocation tie ($a0 vs $v0 for a masked parameter value) spanning 2 real scored instructions, plus 6 not-scored branch-target-only hunks that sandbox --diff explicitly says not to chase
+
+- [s4] The permuter workspace at tmp/grind/_SsVmInit/s4/perm_ws/ is importable (import.py succeeds) but not yet buildable standalone due to unrelated main.c declaration conflicts surfaced by the prune step

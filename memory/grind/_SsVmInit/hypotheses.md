@@ -443,3 +443,107 @@ not the body-relative-to-target region).
 - probe: Read tmp/grind/_SsVmInit/dumps/main.greg at the ';; Function _SsVmInit' header (line 12922) for the 5-pseudo disposition/conflict summary; cross-referenced each pseudo number into tmp/grind/_SsVmInit/dumps/main.lreg's _SsVmInit-only region (lines 16251-17104) via targeted grep for '(reg:SI N' / '(reg:HI N' occurrences to identify the corresponding source-level value for pseudos 72, 73, 75, 112, 143.
 - result: 72=fixed-loop counter i (local, not a lever); 73=same pseudo naturally reused across the 3 fixed clear loops + walking pointer (not a lever, already GCC-natural reuse); 75=maxVoice; 143=D_80102A78 walking store pointer; 112=the D_8010280A store's HImode value, annotated 'dies in 0 places; crosses 2 calls' in main.lreg -- this is the class match. No new C-level lever was identified beyond H10 (killed) this session.
 - verdict: CONFIRMED
+
+## [s4] CHASSIS CHECK: the s2/s3-recorded floor of 19 (target_insns 174) is VOID -- fresh measurement of the identical, unchanged candidate.c body gives floor 38 (target_insns 200).
+- mechanism: n/a -- baseline re-measurement per the mandatory chassis-check protocol. No src edits happened between s3 and s4 for this function (git log confirms); build_insns stayed at 193 (our own compiled output did not move), but target_insns changed 174 -> 200. Root cause not isolated this session (out of scope for a permuter-modality session) -- likely a scoring/asm-derivation-side change, not a codegen change.
+- probe: Applied memory/grind/_SsVmInit/candidate.c (byte-identical to the s3 end-state) verbatim to src/main.c; ran `tools/wteng.ps1 main sandbox _SsVmInit --disable all`.
+- result: score 38 (target_insns 200, build_insns 193) vs the ledger's recorded 19 (target_insns 174, build_insns 193). Every s2/s3 KILLED verdict is therefore VOID against the current chassis and must be re-measured, not cited, before being spent.
+- verdict: CONFIRMED
+
+## [s4] Re-testing the s2-KILLED u16-masking-the-loop-counter family on the fresh 38/200 chassis: declaring the shared loop counter `i` as `u16` (not `s32` with an `(u16)i` cast only at the compare) for all three fixed clear loops, and changing the per-voice loop's `s32 idx = (u8)i;` to `s32 idx = i;`, produces the SAME `andi ...,0xffff` re-masking pattern target shows at every use site (not just the compare) and closes a large structural gap the s2 chassis's narrower version of this test never reproduced.
+- mechanism: GCC 2.7.2 does not track that a `u16`-typed value already has its upper bits clear across separate expression uses, so a `u16` LOCAL forces a fresh `andi $reg,$reg,0xffff` at every independent use site, matching target's repeated-mask pattern; an `s32` local with `(u16)` cast ONLY at the loop-exit compare (the s2 form) cannot reproduce masks at unrelated uses of the same value elsewhere in the loop body -- that is why the two forms measure oppositely.
+- probe: Changed `s32 i;` -> `u16 i;` (dropping now-redundant `(u16)` casts at each `while` condition) and `s32 idx = (u8)i;` -> `s32 idx = i;`; ran sandbox --disable all.
+- result: score IMPROVED 38 -> 21; build_insns went from 193 to 200 (first time this ledger records build_insns == target_insns for this function).
+- verdict: CONFIRMED (opposite of the s2 kill; that kill's `measured_on` chassis is void per the CHASSIS CHECK entry above)
+
+## [s4] On the u16-counter chassis (floor 21), flipping the `_SsVmMaxVoice` clamp if/else branch order to `if ((u8)a0 >= 0x18) { =0x18 } else { =a0 }` (was `if ((u8)a0 < 0x18) { =a0 } else { =0x18 }`) matches target's branch sense at that site.
+- mechanism: Ordinary C if/else branch-sense choice (switch-vs-ifchain-branch-sense family) -- writing the arms in the order matching which one target falls through to reproduces its bnez/beqz sense and the associated sb-store register pairing; no GCC-internals claim beyond that observation.
+- probe: Swapped the if/else arm bodies (semantics unchanged: still clamps to min((u8)a0, 0x18)); ran sandbox --disable all.
+- result: score 21 -> 19.
+- verdict: CONFIRMED
+
+## [s4] Re-testing the s3-KILLED shared-0xFF named-intermediate hoist (`s16 ff = 0xFF;` read twice, replacing the repeated literal in the per-voice loop) on the floor-19 chassis: neutral in isolation (no regression this time, unlike s3's 19->21 regression), and load-bearing for the next win below.
+- mechanism: Named-intermediate / staged-value family, same construct s3 tested and killed on the (now void) old chassis.
+- probe: Added `s16 ff = 0xFF;` inside the `if (_SsVmMaxVoice != 0)` block, replacing both literal `0xFF` per-voice stores with reads of `ff`; ran sandbox --disable all.
+- result: score unchanged at 19 (differs from the s3 chassis's regression 19->21 -- confirms the chassis discontinuity's scope covers this construct too).
+- verdict: CONFIRMED (neutral on this chassis, not independently a win or a kill)
+
+## [s4] MAJOR WIN: dropping the `maxVoice` local entirely -- reading `_SsVmMaxVoice` directly at BOTH the `if (_SsVmMaxVoice != 0)` guard AND the `while (i < _SsVmMaxVoice)` loop-exit compare, instead of caching it once into `s32 maxVoice = _SsVmMaxVoice;` -- drops the score from 19 to 6.
+- mechanism: `sandbox --diff` at floor 19 showed target performing TWO separate `lui/lbu` reads of `_SsVmMaxVoice` (one for the guard, a freshly-reloaded second one for the loop-exit compare) rather than caching the value once -- the store-const-reload-cse family (re-reading a global instead of caching it in a local defeats an unwanted hoist/CSE), here applied to a global BYTE read spanning a loop rather than a store.
+- probe: Deleted `s32 maxVoice;` and `maxVoice = _SsVmMaxVoice;`; changed `if (maxVoice != 0)` -> `if (_SsVmMaxVoice != 0)` and `while (i < maxVoice)` -> `while (i < _SsVmMaxVoice)`; ran sandbox --disable all.
+- result: score 19 -> 6 (target_insns 200, build_insns 200 -- exact instruction-count match maintained).
+- verdict: CONFIRMED
+
+## [s4] MAJOR WIN: moving `i = 0;` (the per-voice loop counter init) from immediately before the per-voice `do`-loop to immediately after `buf[1] = 0x60093;` (before the rest of the `buf` field-init statements, unconditionally -- no longer gated by `if (_SsVmMaxVoice != 0)`) drops the score from 6 to 3, with ZERO source-level hunks remaining in `sandbox --diff`.
+- mechanism: `sandbox --diff` at floor 6 showed target's `addu $s0,$zero,$zero` (i=0) positioned early in the block, right after the `_SsVmMaxVoice` load feeding the guard but BEFORE the `buf` field stores -- target's source order has the loop-counter init ahead of the buf setup. The assignment is harmless when the loop body never executes (i is simply unread in that path), so this is an ordinary reordering of an unconditional local init, not a dead-store construct.
+- probe: Moved `i = 0;` from directly-before-the-do-loop (inside the `if`) to directly-after `buf[1] = 0x60093;` (before the buf field-init block, unconditional); ran sandbox --disable all.
+- result: score 6 -> 3 (target_insns 200, build_insns 200). `sandbox --diff` now reports 0 source-level hunks -- only 2 real operand-only (register-allocation) scored instructions and 6 not-scored branch-target-only hunks remain.
+- verdict: CONFIRMED
+
+## [s4] Combined result: all four s4 wins together (u16 loop counter, branch-sense flip, dropped maxVoice cache, moved i=0) plus the neutral ff-hoist reach score 3 -- the lowest floor ever recorded for this function.
+- mechanism: n/a -- cumulative measurement of the constructs above, applied together.
+- probe: `tools/wteng.ps1 main sandbox _SsVmInit --disable all` on the combined src/main.c edit.
+- result: score 3, target_insns 200, build_insns 200.
+- verdict: CONFIRMED
+
+## [s4] The remaining score-3 residual is a pure register-allocation tie on the `(u8)a0` clamp value -- target keeps it live in `$a0` through to the `sb` store; our build recomputes it into `$v0`. Three ordinary-C respellings tried, all flat-or-worse.
+- mechanism: `sandbox --diff` classes both remaining scored hunks (`andi a0,s1,0xff`/`sltiu v0,a0,24` vs `andi v0,s1,0xff`/`sltiu v0,v0,24`, and `sb a0,0(at)` vs `sb s1,0(at)`) as operand-only. No GCC-pass mechanism was identified this session for WHY target keeps the value in `$a0` -- an open register-allocation question, not pass-attributed yet.
+- probe: (1) `a0 = (u8)a0;` self-truncation before the if -- score stayed 3 but the shape REGRESSED (introduced a new signed/unsigned compare mismatch, `slti` vs target's `sltiu`). (2) Reverting the if/else branch order back to pre-flip -- regressed to score 5. (3) Explicit named `u8 vv = a0;` temp -- build_insns regressed 200->201. All three reverted; the accepted candidate.c form (inline `(u8)a0` cast, current branch order, no named temp) is the best measured. Full detail: memory/grind/_SsVmInit/rejected/s4-a0-clamp-register-variants.c.
+- result: no improvement found this session for this specific residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s4 floor-3 candidate.c chassis (target_insns=200), each variant applied/reverted in isolation, no FAKE constructs present
+
+## [s4] Directed permuter campaign setup ATTEMPTED for the score-3 residual -- BLOCKED before any iteration ran by a pre-existing main.c whole-TU compile issue exposed by the permuter's prune/reassembly step, not by anything in this function's own body.
+- mechanism: n/a -- tooling/build diagnosis, not a codegen claim.
+- probe: `python3 tools/decomp-permuter/import.py src/main.c asm/funcs/_SsVmInit.s` (floor-3 candidate applied to src/main.c) succeeded and produced a workspace (moved to tmp/grind/_SsVmInit/s4/perm_ws/ to avoid the root-level nonmatchings/ grinder-scope-break). `permuter_campaign.py launch` failed immediately (rc=1); running `./compile.sh base.c out.o` directly in the workspace surfaced the root cause: `conflicting types for D_800163D8` / `_spu_IRQCallback` / `SpuFree` / `SpuSetReverb` (duplicate extern declarations with different types elsewhere in main.c -- the same forward-declaration-before-canonical-type pattern s2 fixed for THIS function's own externs, but present for OTHER functions and not prunable by the permuter's default whole-TU import), followed by `MASPSX: An exception occurred: too many values to unpack (expected 2)` when assembling the malformed output.
+- result: campaign never started (0 iterations). Log at tmp/grind/_SsVmInit/s4/perm_ws/campaign.log.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/decomp-permuter/import.py default (whole-TU, no --no-prune) against the current main.c; not yet tried with --no-prune or a hand-trimmed base.c
+
+## [s4] The s2/s3-recorded floor of 19 (target_insns 174) is void: applying the identical, unedited candidate.c to HEAD and re-measuring this session gives floor 38 (target_insns 200, build_insns unchanged at 193) — the target instruction count itself changed since s3, which cannot come from any C edit on our side.
+- mechanism: n/a — baseline re-measurement, not a codegen claim
+- probe: Applied memory/grind/_SsVmInit/candidate.c verbatim to src/main.c (byte-identical to the s3 end state); ran tools/wteng.ps1 main sandbox _SsVmInit --disable all
+- result: score 38 (target_insns 200, build_insns 193) vs the ledger's recorded 19 (target_insns 174, build_insns 193)
+- verdict: CONFIRMED
+
+## [s4] Re-testing the s2-KILLED u16-masking-the-loop-counter family on the fresh chassis (declaring the shared clear-loop counter i as u16 instead of s32+cast, and dropping the (u8) truncation on the per-voice offset index) now WINS — the opposite verdict from s2, because the s2 chassis measurement is void.
+- mechanism: GCC 2.7.2 does not track that a u16-typed value already has its upper bits clear across separate expression uses, so a u16 local forces a fresh andi $reg,$reg,0xffff at every independent use site, matching target's repeated-mask pattern; an s32 local with (u16) cast only at the loop-exit compare (the s2 form) cannot reproduce masks at unrelated uses of the same value
+- probe: Changed s32 i -> u16 i (dropping the now-redundant (u16) casts at each while condition) and s32 idx = (u8)i -> s32 idx = i; ran sandbox --disable all
+- result: score improved 38 -> 21; build_insns went from 193 to 200, matching target_insns exactly for the first time this ledger
+- verdict: CONFIRMED
+
+## [s4] Flipping the _SsVmMaxVoice clamp if/else branch order (if ((u8)a0 >= 0x18) {=0x18} else {=a0}, was the inverse) matches target's branch sense at that site.
+- mechanism: Ordinary C if/else branch-sense choice — no GCC-internals claim beyond writing the arms in the order matching which one target falls through to
+- probe: Swapped the if/else arm bodies (semantics unchanged, still clamps to min((u8)a0,0x18)); ran sandbox --disable all
+- result: score 21 -> 19
+- verdict: CONFIRMED
+
+## [s4] Dropping the maxVoice local entirely and reading _SsVmMaxVoice directly at both the guard and the loop-exit compare (instead of caching it once) drops the score from 19 to 6.
+- mechanism: sandbox --diff at floor 19 showed target performing two separate lui/lbu reads of _SsVmMaxVoice (guard + a freshly-reloaded loop-exit compare) rather than caching the value once — store-const-reload-cse family applied to a global byte read spanning a loop
+- probe: Deleted s32 maxVoice and its assignment; changed both use sites to read _SsVmMaxVoice directly; ran sandbox --disable all
+- result: score 19 -> 6, target_insns 200 == build_insns 200
+- verdict: CONFIRMED
+
+## [s4] Moving i = 0 (per-voice loop counter init) from immediately before the do-loop to immediately after buf[1] = 0x60093 (before the rest of the buf field-init statements, unconditionally) drops the score from 6 to 3 with zero source-level hunks remaining.
+- mechanism: sandbox --diff at floor 6 showed target's addu $s0,$zero,$zero (i=0) positioned early in the block, right after the _SsVmMaxVoice load feeding the guard but before the buf field stores — an ordinary statement reordering of an unconditional local init, harmless when the loop never executes
+- probe: Moved the i = 0 statement's textual position; ran sandbox --disable all
+- result: score 6 -> 3 (target_insns 200, build_insns 200); sandbox --diff now reports 0 source-level hunks, only 2 real operand-only instructions and 6 not-scored branch-target-only hunks
+- verdict: CONFIRMED
+
+## [s4] The remaining score-3 residual (a pure register-allocation tie on the (u8)a0 clamp value — target keeps it live in $a0 through to the sb store; our build recomputes it into $v0) does not close under any of three ordinary-C respellings tried this session.
+- mechanism: sandbox --diff classes both remaining scored hunks as operand-only; no GCC-pass mechanism identified this session for why target keeps the value in $a0 — an open register-allocation question
+- probe: Tried (1) a0 = (u8)a0 self-truncation before the if, (2) reverting the if/else branch order back to pre-flip, (3) an explicit named u8 temp instead of the inline cast — each applied/reverted in isolation on the floor-3 chassis
+- result: (1) score stayed 3 but shape regressed (introduced a new signed/unsigned compare mismatch not present in the accepted form); (2) regressed to score 5; (3) build_insns regressed 200->201. All three rejected; full detail in memory/grind/_SsVmInit/rejected/s4-a0-clamp-register-variants.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD s4 floor-3 candidate.c chassis (target_insns=200), each variant applied/reverted in isolation, no FAKE constructs present
+
+## [s4] A directed permuter campaign for the score-3 residual was attempted but blocked before any iteration ran by a pre-existing main.c whole-TU compile issue exposed by the permuter's prune/reassembly step, unrelated to this function's own body.
+- mechanism: n/a — tooling/build diagnosis, not a codegen claim
+- probe: tools/decomp-permuter/import.py src/main.c asm/funcs/_SsVmInit.s (floor-3 candidate applied) succeeded and produced a workspace; permuter_campaign.py launch failed immediately (rc=1); running ./compile.sh directly surfaced conflicting-type errors across unrelated main.c declarations, then a maspsx unpack exception
+- result: campaign never started (0 iterations); log at tmp/grind/_SsVmInit/s4/perm_ws/campaign.log
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/decomp-permuter/import.py default (whole-TU, no --no-prune) against the current main.c; not yet tried with --no-prune or a hand-trimmed base.c
