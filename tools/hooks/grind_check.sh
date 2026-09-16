@@ -53,9 +53,20 @@ esac
 # Operator escape hatch (mirrors the tooling guard).
 [ -f "$PROJECT_ROOT/.bb2_grind_guard_off" ] && exit 0
 
-REGISTRY="$PROJECT_ROOT/tmp/permuter_campaigns.json"
-[ ! -s "$REGISTRY" ] && exit 0
+# Emit a block decision and leave. Bash cannot be trusted to escape a
+# multi-line reason into JSON, so python does it.
+emit_block() {
+    REASON="$1" python3 -c "
+import json, os
+print(json.dumps({'decision':'block','reason':os.environ['REASON'].replace(chr(13),'')}))
+" 2>/dev/null
+    exit 0
+}
 
+# ── GATE 1: an orphaned permuter campaign (a LIVE process) ──────────────────
+REGISTRY="$PROJECT_ROOT/tmp/permuter_campaigns.json"
+ACTIVE_DIRS=""
+if [ -s "$REGISTRY" ]; then
 # Find campaigns still active for GRIND_FUNC. Prints their dirs, one per line;
 # prints nothing (rc!=0 or empty) when there is nothing to block on.
 ACTIVE_DIRS=$(REGISTRY="$REGISTRY" FUNC="$GRIND_FUNC" python3 <<'PY' 2>/dev/null
@@ -71,8 +82,9 @@ for d in dirs:
     print(d)
 PY
 )
-[ -z "$ACTIVE_DIRS" ] && exit 0
+fi
 
+if [ -n "$ACTIVE_DIRS" ]; then
 # Build the harvest command list for the reason text.
 HARVEST_LINES=$(echo "$ACTIVE_DIRS" | while IFS= read -r d; do
     [ -n "$d" ] && echo "  python tools/permuter_campaign.py harvest --dir \"$d\" --stop --reason \"session end\""
@@ -95,8 +107,21 @@ wake you.
 
 (Operator override: touch .bb2_grind_guard_off to disable this gate.)"
 
-REASON="$REASON" python3 -c "
-import json, os
-print(json.dumps({'decision':'block','reason':os.environ['REASON'].replace(chr(13),'')}))
-" 2>/dev/null
+    emit_block "$REASON"
+fi
+
+# ── GATES 2 & 3: outcome-schema validity and file scope ─────────────────────
+# The driver runs these same predicates the moment the turn ends (grind.ps1
+# steps 5 and 6), where the only verdict left is DISCARD — the whole session,
+# work included. Running them HERE, while the agent is still alive, converts a
+# lost session into an in-session repair. Measured 2026-09-08..16: 61 of 423
+# sessions discarded, 34 outcome-schema + 17 scope.
+#
+# stopgate.py prints a reason or nothing, and always exits 0 (fail open); it
+# caps itself at 3 blocks per session so a stuck agent can never loop.
+GATE_REASON=$(cd "$PROJECT_ROOT" && python3 tools/grinder/stopgate.py "$PROJECT_ROOT" 2>/dev/null)
+[ -n "$GATE_REASON" ] && emit_block "$GATE_REASON
+
+(Operator override: touch .bb2_grind_guard_off to disable this gate.)"
+
 exit 0

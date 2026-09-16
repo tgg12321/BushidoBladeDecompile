@@ -2075,3 +2075,73 @@ class TestFloorAttestation(unittest.TestCase):
             f.write("floor=39 somewhere in project history\n")
         o = {"floor": 39, "artifacts": ["docs/grind/journal.md"]}
         self.assertFalse(G.attest_floor(self.root, "func_X", o, "other-sid", 77)[0])
+
+
+class TestScopeViolations(unittest.TestCase):
+    """The Python twin of grind.ps1's scope check, backing the Stop gate."""
+
+    # The real repo has every one of these directories tracked. That matters:
+    # `git status --porcelain` COLLAPSES a wholly-untracked directory to a
+    # single `?? memory/` line, so a fixture that skips the baseline commit
+    # tests a path shape the driver never sees.
+    BASELINE = ("src/keep.c", "include/keep.h", "memory/grind/keep",
+                "docs/grind/keep", "metrics/keep", "tools/grinder/keep")
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        import subprocess
+        self._git = lambda *a: subprocess.run(["git", "-C", self.root] + list(a),
+                                              capture_output=True)
+        for args in (("init", "-q"), ("config", "user.email", "t@e"),
+                     ("config", "user.name", "t")):
+            self._git(*args)
+        for rel in self.BASELINE:
+            self._touch(rel)
+        self._git("add", "-A")
+        self._git("commit", "-qm", "baseline")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _touch(self, rel, text="x\n"):
+        p = os.path.join(self.root, rel.replace("/", os.sep))
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+
+    def test_allowed_surface_is_not_a_violation(self):
+        for rel in ("src/main.c", "include/game.h",
+                    "memory/grind/func_X/candidate.c",
+                    "docs/grind/journal.md", "tmp/scratch.txt",
+                    "metrics/events.jsonl"):
+            self._touch(rel)
+        self.assertEqual(G.scope_violations(self.root, "func_X"), [])
+
+    def test_pipeline_file_is_a_violation(self):
+        # regfix.txt was the single most common real scope violation (10 of 72).
+        self._touch("regfix.txt")
+        v = G.scope_violations(self.root, "func_X")
+        self.assertEqual(len(v), 1)
+        self.assertIn("regfix.txt", v[0])
+
+    def test_scope_allow_grant_suppresses_the_violation(self):
+        # scope_allow.txt is TRACKED in the real repo; leaving it untracked here
+        # would itself be a violation (correctly) and mask what we're testing.
+        self._touch("tools/grinder/scope_allow.txt",
+                    "# comment\nother_func something.txt\n"
+                    "func_X volatile_extern_allowlist.txt\n")
+        self._git("add", "-A")
+        self._git("commit", "-qm", "grant")
+        self._touch("volatile_extern_allowlist.txt")
+        self.assertEqual(G.scope_violations(self.root, "func_X"), [])
+        # ... and the grant is PER FUNCTION: a different function is unaffected.
+        self.assertTrue(any("volatile_extern_allowlist.txt" in v
+                            for v in G.scope_violations(self.root, "func_Y")))
+
+    def test_scope_allow_entries_skips_comments_and_blanks(self):
+        self._touch("tools/grinder/scope_allow.txt",
+                    "\n# func_X not_this.txt\n\nfunc_X a.txt b.txt\n")
+        self.assertEqual(G.scope_allow_entries(self.root, "func_X"),
+                         ["a.txt", "b.txt"])
+        self.assertEqual(G.scope_allow_entries(self.root, "absent"), [])

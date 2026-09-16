@@ -1125,7 +1125,8 @@ function Get-LaneModel([string]$Requested) {
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                            [string]$RoleFile, [string]$AgentModel,
                            [string]$MockScript, [string]$Func,
-                           [string]$UsageFunc, [string]$UsageRole = 'session') {
+                           [string]$UsageFunc, [string]$UsageRole = 'session',
+                           [string]$Modality = '') {
     $requestedModel = $AgentModel
     $AgentModel = Get-LaneModel $AgentModel
     if ($AgentModel -ne $requestedModel) {
@@ -1135,8 +1136,9 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
     if ($MockScript) {
         $script:LastSessionId = ''   # mock spawn: nothing to attest a floor against
         $env:GRIND_BRIEF_PATH = $BriefPath; $env:GRIND_OUTCOME_PATH = $OutcomePath
+        $env:GRIND_MODALITY = $Modality
         try { & pwsh -NoProfile -File $MockScript } finally {
-            Remove-Item Env:\GRIND_BRIEF_PATH, Env:\GRIND_OUTCOME_PATH -ErrorAction SilentlyContinue
+            Remove-Item Env:\GRIND_BRIEF_PATH, Env:\GRIND_OUTCOME_PATH, Env:\GRIND_MODALITY -ErrorAction SilentlyContinue
         }
     } else {
         # Task text goes to the CLI on STDIN, never as an argv element (2026-09-02
@@ -1157,7 +1159,7 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         # spawn's diagnostics (it hid the launch failure above for 8 attempts).
         Remove-Item ($OutcomePath + '.agent.log') -ErrorAction SilentlyContinue
         $job = Start-Job -ScriptBlock {
-            param($Task, $RoleFile, $Model, $Sid, $Cwd, $AgentLog, $Func)
+            param($Task, $RoleFile, $Model, $Sid, $Cwd, $AgentLog, $Func, $Modality)
             Set-Location $Cwd
             $env:CLAUDE_SESSION_ID = $Sid
             # 1-HOUR prompt-cache TTL (2026-08-11 token audit): grind sessions
@@ -1171,6 +1173,11 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
             # no-ops unless GRIND_FUNC is set, so interactive/operator sessions
             # and this session's own subagents (Stop-only wiring) are unaffected.
             $env:GRIND_FUNC = $Func
+            # Lets the Stop gate (tools/grinder/stopgate.py) run the SAME
+            # outcome validator the driver runs at step 6 — while the agent is
+            # still alive and can fix its outcome, instead of after the turn
+            # ends when the only verdict left is DISCARD.
+            $env:GRIND_MODALITY = $Modality
             # --strict-mcp-config with no --mcp-config = ZERO MCP servers for grind
             # spawns. The operator's user-scope servers (github/playwright/unity) are
             # useless to a decomp session but their tool surface rides in the baseline
@@ -1198,7 +1205,7 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                    result = ("agent launch exception: " + $_.Exception.Message) } |
                     ConvertTo-Json -Compress | Set-Content $AgentLog -Encoding utf8
             }
-        } -ArgumentList $task, $RoleFile, $AgentModel, $sid, $Root, ($OutcomePath + '.agent.log'), $Func
+        } -ArgumentList $task, $RoleFile, $AgentModel, $sid, $Root, ($OutcomePath + '.agent.log'), $Func, $Modality
         if (-not (Wait-Job $job -Timeout ($SessionTimeoutMin * 60))) {
             Log "session TIMEOUT after $SessionTimeoutMin min; stopping job."
             Stop-Job $job -ErrorAction SilentlyContinue
@@ -1441,7 +1448,7 @@ while ($true) {
     Log "${func}: session $sessionN starting, modality=$modality, model=$sessionModel"
 
     # 4) spawn
-    $o = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'grind-session.md') $sessionModel $MockSessionScript $func
+    $o = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'grind-session.md') $sessionModel $MockSessionScript $func -Modality $modality
 
     # 5) scope check — any edit outside the allowed surface invalidates the session
     $dirty = Assert-CleanTree

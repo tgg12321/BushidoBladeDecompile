@@ -224,6 +224,12 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
   a lock looks stale or a hook message suggests it) — main's mutation
   serialization belongs to the driver and the operator, not to you. If a hook
   blocks something, record it in your outcome and move on.
+- BEFORE ending your turn, self-check the two things that discard whole
+  sessions: (1) your outcome JSON satisfies the validator, (2) `git status
+  --short` shows nothing outside your surface (your src file,
+  `memory/grind/<func>/`, `tmp/`). A Stop gate runs both and will hand you the
+  exact failure while you can still fix it — but it caps at 3 blocks, and past
+  that the driver discards the session as it always did. Don't rely on it.
 - Scratch: `tmp/grind/<func>/s<N>/`. Permuter logs and cc1 dumps go there and
   are listed in `artifacts` (permuter/forensics sessions are INVALID without
   at least one real artifact file).

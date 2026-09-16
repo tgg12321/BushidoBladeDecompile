@@ -22,6 +22,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 
 MODALITIES = ["recon", "structural", "permuter", "solver", "forensics", "rederive", "synthesis",
@@ -521,6 +522,52 @@ def add_scope_allow(root, func, paths, date):
     with open(fpath, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(out))
     return entry if not replaced else entry + "  (merged with prior line)"
+
+
+# MIRROR of grind.ps1's $AllowedDirtyPattern. The driver's copy stays
+# AUTHORITATIVE; this one backs the fail-open Stop gate (tools/grinder/stopgate.py),
+# so if the two ever drift the gate can only MISS a violation the driver still
+# catches — it can never invent one the driver would have allowed.
+_SCOPE_OK_RE = re.compile(
+    r'^(\?\?|.M|M.|A.|.A)\s+("?)'
+    r'(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)')
+
+
+def scope_allow_entries(root, func):
+    """Per-function extra paths granted in tools/grinder/scope_allow.txt.
+    Python twin of grind.ps1's Get-ExtraScope."""
+    fpath = os.path.join(root, "tools", "grinder", "scope_allow.txt")
+    try:
+        with open(fpath, encoding="utf-8") as f:
+            lines = f.read().split("\n")
+    except OSError:
+        return []
+    for line in lines:
+        t = line.strip()
+        if not t or t.startswith("#"):
+            continue
+        parts = [p for p in t.split() if p]
+        if len(parts) >= 2 and parts[0] == func:
+            return parts[1:]
+    return []
+
+
+def scope_violations(root, func):
+    """`git status --porcelain` lines outside a grind session's allowed surface.
+
+    The session's surface is its own src file, memory/grind/<func>/, docs/grind/,
+    tmp/, metrics/events.jsonl, plus any per-function scope_allow.txt grant."""
+    out = subprocess.run(["git", "-C", root, "status", "--porcelain"],
+                         capture_output=True, text=True).stdout
+    granted = set(scope_allow_entries(root, func))
+    bad = []
+    for line in out.splitlines():
+        if not line.strip() or _SCOPE_OK_RE.match(line):
+            continue
+        if line[3:].strip().strip('"') in granted:
+            continue
+        bad.append(line)
+    return bad
 
 
 def set_pending_fixup(root, func, kind, detail):

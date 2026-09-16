@@ -1,6 +1,6 @@
 ---
 name: review-discipline-before-commit
-paths: ["src/*.c", ".claude/rules/*.md", "CLAUDE.md", "AGENTS.md", "engine/queue.py", "engine/cheats.py"]
+paths: [".claude/rules/*.md", "CLAUDE.md", "AGENTS.md", "engine/queue.py", "engine/cheats.py"]
 description: "Standing policy 2026-06-02: every COMPLETED-C / cheat-cleanup / canonical-asm-authorization commit MUST pass an independent adversarial review by the cheat-reviewer agent BEFORE it lands. The orchestrator does not perform this review — it is a separately-defined agent (.claude/agents/cheat-reviewer.md) designed to be critical and adversarial by default. The mechanical gates (sandbox==0, SHA1==oracle, retire succeeded) are necessary but NOT sufficient."
 metadata:
   type: rules
