@@ -144,10 +144,10 @@
    "next_probe": "On re-activation, re-measure the chassis first (the floor and all instance kills are chassis-relative), then attack the positional quantity from a lever class not yet enumerated: a change in what block 7's CALLER shape forces into the register file at entry, or a toolchain finding that alters rank_for_schedule's tie-break inputs."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [
-  "__asm__ volatile(\"addu $t4, %1, $zero\n\" \"swc2 $31, 0($t4)\" : \"=m\"(sp_var) : \"r\"(&sp_var) : \"$12\", \"$13\", \"$14\", \"$15\"); \u2014 the $13/$14/$15 clobbers on an island whose instructions touch only $t4 ($12) and cop2"
+ "judge_constraints": [
+  "The LZCS island may clobber only \"$12\",\"$14\",\"$15\" - measure that exact list before submitting, and document per register why the target's bytes force it."
  ],
+ "banned_constructs": [],
  "kills": [
   {
    "session": 3,

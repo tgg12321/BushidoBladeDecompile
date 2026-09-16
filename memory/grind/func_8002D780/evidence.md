@@ -2546,3 +2546,99 @@ mechanism for the `m` re-store is wrong; the copy survives because the re-store 
 block cse SKIPS (invalidate_skipped_block), and a do-while(0) cannot substitute for it. (b) s19's
 "the order local-alloc saw was not the final order" inference is unnecessary: local-alloc saw
 the final order and never seated dz at all.
+
+
+## [s23] second run — rederive, 2026-09-15 (forced by the func_8002CA8C notice; the first s23 run's 0/202 body was layer-1 FAILed at 22:37 for its "$13","$14","$15" clobbers, which the driver now bans for this function)
+
+**Chassis.** HEAD a638b10b6 (-mel -msoft-float), main carries `INCLUDE_ASM("asm/funcs",
+func_8002D780);` at src/code6cac_b.c:1404 and the matched caller func_8002CA8C above it. Splice
+tool: tmp/grind/func_8002D780/s21/splice.py over the marker, src restored from
+tmp/grind/func_8002D780/s23/src_backup.c (byte-identical to HEAD, verified by diff) after every
+measurement. Measurement driver: tmp/grind/func_8002D780/s23/r2/meas.sh (sandbox + pairdiff).
+
+**Sibling transplant (the forced probe).** func_8002CA8C's matched body is a loop over records
+that CALLS this function (src/code6cac_b.c:1074, :1078); it contains no LZCS island, no sqrt
+block, no triangle test and no cop2 store block, so it shares no basic block with func_8002D780
+and there is no spelling to transplant. Measured with it in the TU:
+- first-run body (memory/grind/func_8002D780/candidate.c as committed at a638b10b6, with the
+  banned clobbers): 0/202 at 202 insns (tmp/grind/func_8002D780/s23/r2/score_K.json);
+- the same body with the swc2 statement clobbering only "$12": **4/202** at 202 insns
+  (score_A.json, pairdiff_A.txt) - the honest floor of a body that does not carry the banned
+  construct. Every candidate.c since s2 carried the $12-$15 list (hypotheses.md [s2] H-s2-d;
+  [s5]: dropping $13-$15 from both statements cost 4 on the 2-floor chassis, g4 = 6), so the
+  ledger's 2 was never a clobber-free number.
+- a merged single-island spelling (sibling func_8002E6B0's exact LZCS form, plain `$sp` address,
+  "$12" only): 7/201 (score_B.json) - the s5 split-island + `&sp_var` operand is still required
+  for the `addiu v0,sp,16; move t4,v0` pair.
+
+**The 4-instruction residual, attributed by trace.** pairdiff_A.txt:
+```
+ours[88:90]   mflo t6 / subu v1,v1,t6      target  mflo s1 / subu v1,v1,s1
+ours[116:118] mflo t7 / subu s1,a1,t7      target  mflo t8 / subu s1,a1,t8
+```
+Instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_RELOAD_DEBUG + BB2_ALLOC_DEBUG + BB2_FINDREG_DEBUG)
+run on both bodies through tmp/grind/func_8002D780/s23/r2/trace.py; traces at
+tmp/grind/func_8002D780/s23/r2/trA/trace.txt (clobber-free) and trK/trace.txt (banned body),
+-da dumps beside them, the clobber-free .lreg/.greg function slices in r2/dumpsA/.
+- Pseudo map (lreg): 102 x0, 103 x2, 104 z0, 105 z2, 106 cx, 111 cz, 116 px, 117 pz, 118 kc,
+  121 kp, 73 obj, 76 r_sq, 141 dist (s1), 139 y. Products: test 1 = 119 z0*cx, 120 x0*cz,
+  122 z0*px, 123 x0*pz; test 2 = 125 z2*cx, 126 x2*cz, 127 z2*px, **128 x2*pz**; sqrt =
+  **142 y*y**.
+- global_alloc is IDENTICAL in both traces (all 39 ALLOCDBG lines, e.g. `ord=34 pseudo=119
+  hardreg=14`; 120/128/137 seated in LO = 65, 142 in 65). Divergence begins in reload:
+  - order_regs_for_reload: clobber-free `prr=15,24,25,22,23,14,...` with
+    `uses=15:0,22:0,23:0,24:0,25:0,14:2,...` and `bad_spill_regs: 0 1 2 4 5 6 7 12 26-31`
+    (trA:41-43); banned body `prr=24,25,22,23,19,...`, `uses=...15:290,14:292,13:295...`,
+    `bad_spill_regs: ... 12 13 14 15 ...` (trK:41-43). GR spill register: t7 (`new_spill_reg
+    idx=0 regno=15`, trA:45) vs t8 (`idx=0 regno=24`, trK:45). That is the y*y `mflo` seat.
+  - retry of pseudo 128 after its LO kickout (`kickout spillreg=65 pseudo=128 had=65 nrefs=2
+    bb=6`, both traces :110): conflicts `2 3 4 5 6 7 8 9 10 11 12 13 16 29`, someone_prefers
+    `5`; clobber-free pass0_used = `0-13 15 16 22 23 26-31` -> best_reg=14 (trA:126-137);
+    banned pass0_used = `0-16 22 23 24 26-31` (13/14/15 forbidden, 24 a spill reg) ->
+    best_reg=17 (trK:126-137). That is the x2*pz `mflo` seat. 120 -> 17 and 137 -> 3 in both.
+- Target register census (asm/funcs/func_8002D780.s): t6 only at lines 68 (`mflo $t6`, pseudo
+  119's output in test 1) and 82 (`subu $v0,$t6,$s1`, its death, still test 1; test 2 begins
+  at line 89 `mult $t5,$a2`); t8 only at 128-129 (`mflo $t8; subu $s1,$a1,$t8`); **no t7
+  instruction anywhere**.
+
+**Why no C spelling reaches either seat (class kills, hypotheses.md s23 second run).**
+- y*y spill = t8 needs potential_reload_regs[0] != 15: reload1.c:3771 orders zero-use
+  call-used registers ascending (mips.h defines neither REG_ALLOC_ORDER nor
+  SMALL_REGISTER_CLASSES, grep-verified), so t7 needs hard_reg_n_uses > 0 (a pseudo renumbered
+  to t7 -> t7 instructions in the output, absent from the target) or bad_spill_regs membership
+  (reload1.c:3730-3739: regs_explicitly_used, a copy of regs_ever_live taken at reload1.c:500
+  BEFORE pseudo seats are merged in - only hard registers written in the RTL, i.e. asm
+  clobbers/operands or register-asm variables).
+- 128 -> s1 needs 14 and 15 both in find_reg's pass-0 `used` (global.c:1000): hard-register
+  conflicts (only a pseudo seated in t6/t7 and live across insns 170-172 - the target's sole
+  t6 pseudo 119 dies at line 82, no pseudo is ever in t7), forbidden_regs (explicit mention,
+  as above), or regs_someone_prefers (hard_reg_preferences of a conflicting allocno, filled
+  only from pseudo<->hard-register copy insns; this function's are the a0-a3/v0 argument and
+  return moves and the "$12" asm operand).
+This is the SAME two-predicate signature the 2026-07-28 Judge ruling
+(docs/grind/decisions.md:1852) granted func_8002BC68 / func_8002BEA0 the $12-$15 clobber list
+for ("$13-$15 have zero pseudo uses in target ... explicit RTL mention is the ONLY route by
+which the frozen compiler skips them"). The layer-1 reviewer's objection is that here $14
+(t6) DOES carry a pseudo in the target (119, test 1), so the grant's zero-uses premise does
+not transfer verbatim for $14; this session shows the $14 requirement is closed by a
+different predicate (128's retry, global.c:1000) that is equally asm-level-only, and the $15
+requirement is closed by the grant's own predicate verbatim. Whether that extends the grant is
+the Judge's call - this session ends in a ruling-request and does not re-declare the list.
+
+**FAKE re-audit (mandated).** `tools/fake_ablate.py` on the clobber-free body
+(tmp/grind/func_8002D780/s23/r2/ablate_A.txt): 4 FAKE units, keep-all 4/202, single drops:
+`m` re-store 8/202, table-byte staging 28/198, `tmp = z2 - z0` 34/201, `ax = pz - z0`
+44/200; every combination 29-48. The reload pair is present in every ablation state; the
+FAKE constructs neither cause nor mask it.
+
+**Not attempted, and why.** Any subset or respelling of the banned clobber list (e.g. "$15"
+only, or a clobber on the mtc2 statement) is the same construct under the driver's ban and was
+not measured. Ordinary-C forms that give t6/t7 a live pseudo were not measured because any
+such pseudo prints t6/t7 instructions the target lacks (the census above), so they cannot
+score below the current residual.
+
+**Artifacts.** tmp/grind/func_8002D780/s23/r2/{meas.sh,mkvar.py,trace.py,bank.py,
+A_noclob.c,B_merged.c,C_noclob_firstout.c,score_A.json,score_B.json,score_K.json,
+pairdiff_A.txt,pairdiff_B.txt,ablate_A.txt,trA/trace.txt,trK/trace.txt,dumpsA/}.
+
+**Correction to the artifact list.** C_noclob_firstout.c (first island also naming `sp_var` as an output) did not compile - the added output shifted the asm operand numbering - so score_C.json holds a traceback, not a score; the variant was not measured and claims nothing.

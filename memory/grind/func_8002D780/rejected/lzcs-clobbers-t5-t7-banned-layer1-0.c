@@ -1,43 +1,16 @@
-/* func_8002D780 - grind candidate (s23 rederive, second run, 2026-09-15).  Honest sandbox
- * floor 4/202, build_insns == target_insns == 202, measured THIS session with these exact
- * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 4;
- * tmp/grind/func_8002D780/s23/r2/score_A.json, pairdiff_A.txt).  Chassis: HEAD a638b10b6
- * (-mel -msoft-float), matched caller func_8002CA8C in the TU.
- *
- * THIS IS THE 0/202 BODY OF THE FIRST s23 RUN WITH THE BANNED CONSTRUCT REMOVED.  That body
- * (banked as rejected/lzcs-clobbers-t5-t7-banned-layer1-0.c) carried "$13","$14","$15" on the
- * LZCS swc2 statement; layer-1 FAILed it 2026-09-15 22:37 and the driver now bans that
- * clobber list for this function.  With the statement clobbering only "$12" the score is 4,
- * every one of the 4 residual instructions being a register seat decided in reload1.c /
- * retry_global_alloc, NOT in any pass a C spelling reaches (hypotheses.md s23 second run):
- *
- *   ours[88]  mflo t6 / subu v1,v1,t6   target  mflo s1 / subu v1,v1,s1   (pseudo 128 = x2*pz,
- *             test 2: kicked out of LO by reload, retry_global_alloc pass 0 takes the first
- *             free register >= 2 that is used-so-far and not forbidden: t6 here, s1 in target
- *             because t6 and t7 were forbidden = regs_explicitly_used there)
- *   ours[116] mflo t7 / subu s1,a1,t7   target  mflo t8 / subu s1,a1,t8   (pseudo 142 = y*y:
- *             reload's GR spill register = potential_reload_regs[0] = the lowest call-used
- *             register with zero pseudo uses; t7 here, t8 in target because t7 had
- *             hard_reg_n_uses = large+1 / bad_spill_regs there, i.e. it was explicitly
- *             mentioned in the RTL - the target has no t7 instruction at all)
- *
- * Both seats are the SAME signature the 2026-07-28 judge ruling (docs/grind/decisions.md:1852)
- * granted func_8002BC68 / func_8002BEA0 the $12-$15 clobber list for; this session's outcome is
- * a ruling-request on whether that deduction extends here (it is not self-approved and the
- * banned list is not re-declared in this file).
- *
- * The four FAKE constructs are unchanged from the first s23 run and all four are load-bearing
- * in this no-clobber form too (fake_ablate: keep-all 4; single drops 8 / 28 / 34 / 44;
- * tmp/grind/func_8002D780/s23/r2/ablate_A.txt): (1) `tmp = z2 - z0` / `tmp = *LUT` - one
- * scratch local reused for two real consumed values (staged-value-reused-variable family,
- * .claude/rules/staged-value-reused-variable.md; frozen list "variable reuse for codegen
- * control"); (2) `ax = pz - z0` staged through the existing dead local `ax` (same family);
- * (3) `m = dist` same-value re-store (dead-store family,
- * .claude/rules/dead-store-fake-exception.md; in-TU precedent src/code6cac_b.c:1330).
- * Mechanisms and lever-exhaustion pointers are at each annotation.  The rest of the body is
- * the s14 chassis (split cop2 islands, canonical LZCS/LZCR + mvmva idiom per
- * .claude/rules/cop2-addressing-preamble-cluster.md).  Full derivation: evidence.md and
- * hypotheses.md s23 (both runs). */
+/* REJECTED (s23 second run, 2026-09-15): the first s23 run's 0/202 body.  It carries the
+ * clobber list "$13","$14","$15" on the LZCS swc2 statement, which layer-1 FAILed
+ * 2026-09-15 22:37 (undisclosed load-bearing hard-register footprint extended by analogy from
+ * the 2026-07-28 grant scoped to func_8002BC68 / func_8002BEA0) and which the driver now BANS
+ * for this function.  Re-measured this session: `sandbox func_8002D780 --disable all` -> 0/202
+ * with this exact body (tmp/grind/func_8002D780/s23/r2/score_K.json); with the three clobbers
+ * removed the same body scores 4/202 (candidate.c).  Kept here ONLY as the measured reference
+ * for the ruling-request; do not resubmit this body - the review verdict is keyed by body.
+ * Mechanism of the 4 instructions the clobbers buy: reload1.c order_regs_for_reload puts
+ * regs_explicitly_used into bad_spill_regs (:3730-3739) so the GR spill register becomes t8
+ * instead of t7, and retry_global_alloc's forbidden set then excludes t6/t7 for pseudo 128's
+ * re-seat so it lands in s1 (global.c:1000 pass-0 used set).  Traces:
+ * tmp/grind/func_8002D780/s23/r2/trK/trace.txt vs trA/trace.txt. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     /* One scratch local shared by two distant jobs: the third edge test's `z2 - z0`
      * (block 7) and the sqrt block's table byte.  See the FAKE notes at both stores. */
@@ -156,7 +129,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 __asm__ volatile(
                     "addu $t4, %1, $zero\n"
                     "swc2 $31, 0($t4)"
-                    : "=m"(sp_var) : "r"(&sp_var) : "$12");
+                    : "=m"(sp_var) : "r"(&sp_var) : "$12", "$13", "$14", "$15");
                 lzcr = sp_var;
             }
             {
