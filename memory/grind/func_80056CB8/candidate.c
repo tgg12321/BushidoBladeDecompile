@@ -43,6 +43,18 @@
  * Reverted src/text1b.c to clean INCLUDE_ASM (`git checkout -- src/text1b.c`,
  * verified zero diff) before finishing.
  *
+ * s21 (forensics modality, 2026-09-16). Re-applied body unchanged, re-confirmed
+ * floor 42/204 fresh (build_insns 197) + fresh instrumented-cc1 .greg dump
+ * (unchanged Spilling reg 11/65 pair from s17/s18). CLASS-KILLED the s20 live
+ * frontier item ("reduce register pressure elsewhere in the loop to shrink
+ * n_non_fixed_regs and flip strength_reduce's giv-worth threshold at
+ * loop.c:3823"): read loop.c:3241 + regclass.c:360-392 + mips.h:1188-1195
+ * directly -- n_non_fixed_regs is a per-COMPILATION constant computed once
+ * from the target's static FIXED_REGISTERS table, never recomputed per
+ * function and never influenced by any function's register pressure/live
+ * ranges. The proposed lever cannot exist. Full mechanism trace:
+ * memory/grind/func_80056CB8/evidence.md [s21], hypotheses.md [s21].
+ *
  * FRONTIER FOR s21: the "respell pt0/pt1 block order or interleaving"
  * family is now CLOSED across both call sites (s15's 10 pure-reorder
  * variants + this session's 2 interleave-with-computation variants, 12

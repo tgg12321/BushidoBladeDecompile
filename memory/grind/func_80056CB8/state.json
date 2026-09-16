@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 20,
- "current_modality": "rederive",
+ "session_count": 21,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -123,18 +123,24 @@
    "floor": 42,
    "modality": "rederive",
    "headline": "s20 rederive: re-confirmed floor 42/204 fresh; fresh m2c decompile (identical to s12's archived copy, target asm unchanged) surfaced two genuinely new structural statement-shape axes not covered by s1"
+  },
+  {
+   "session": 21,
+   "floor": 42,
+   "modality": "forensics",
+   "headline": "s21 forensics: re-confirmed floor 42/204 fresh; class-killed the s20 register-pressure/threshold frontier item by reading loop.c:3241+regclass.c:360-392 -- n_non_fixed_regs is a per-compilation consta"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Reducing register pressure elsewhere in the loop body (not insn_count) could flip move_movables' threshold*savings*lifetime >= insn_count cost gate (loop.c:1631) to reject the reg149 constant-hoist without perturbing strength-reduction's separate insn_count-gated rejection of the $fp accumulator -- the s13/s14 double-bind's untried side.",
-   "mechanism": "loop.c:532's threshold = (loop_has_call?1:2)*(1+n_non_fixed_regs) -- narrowing a pseudo's live range or type shrinks n_non_fixed_regs directly, independent of the loop body's total real-instruction count.",
-   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80056CB8 fresh, read the .greg dump's conflict list for the pseudo with the largest conflict set (the two func_80053614 calls' live ranges are the leading candidate per s13/s14), and check whether a block-local split / narrower type / earlier death is available without touching the loop's insn_count."
+   "hypothesis": "The pt0/pt1 block-shape family (reorder + interleave-with-computation, 12 measured spellings across s15/s20) and the register-pressure/threshold family (s20/s21, now class-killed) are both closed. The remaining un-scanned axis is the flags==3/flags==4 dispatch tail and the store-address computation at the loop bottom for a genuinely untested C-level statement shape (not yet covered by s16's y-compare closure or s19's li#,4/lw-96/104 attribution).",
+   "mechanism": "n/a -- negative-space conclusion from exhausting the two prior families; the loop.c:3823 insn_count deficit (7 real instructions, 197 vs 204) is the single root cause per s18/s19, so any closing lever must be a C statement shape that GENUINELY adds/reshapes real instructions in the loop body rather than merely reordering existing ones.",
+   "next_probe": "A future structural/rederive session should read the target's flags dispatch tail (asm lines around the flags==3/4 chain and the loop-bottom store-address computation) instruction-by-instruction for any real value/statement our C computes implicitly or folds away that the target computes explicitly (mirroring how s16 closed the y-compare tail), rather than re-touching pt0/pt1 or register-pressure levers."
   },
   {
-   "hypothesis": "No further m2c-derived structural-shape axis remains untested in the pt0/pt1 argument-setup blocks; any future session should treat this family as closed and look outside it entirely.",
-   "mechanism": "n/a -- this is a negative-space conclusion, not a mechanism claim.",
-   "next_probe": "A future rederive/structural session should scan the flags dispatch tail (the flags==3/flags==4 chain) and the store-address computation at the loop bottom for a genuinely untested C-level shape, rather than re-touching the pt0/pt1 blocks."
+   "hypothesis": "Every one of the four possible C spellings of holding i*2 (fresh int, loop-carried int, fresh pointer, loop-carried pointer) is measured worse across three chassis generations (58/198, 48/198, 42/197) per s18 -- this axis should be treated as fully closed going forward, not re-probed.",
+   "mechanism": "loop.c:3823's giv-worth predicate depends only on insn_count and each giv's own lifetime/benefit terms, never on which C construct names/carries the index value -- promoting the value to its own object costs additional instructions rather than removing them.",
+   "next_probe": "None -- this is a closed-axis record for future sessions to skip, not an open lever."
   }
  ],
  "judge_constraints": [],
@@ -419,6 +425,14 @@
    "measured_on": "s20 chassis (s19-banked 42/197 body + func_80053614 s32-return prerequisite, only block1's statement interleaving changed), single fresh sandbox measurement, no FAKE constructs present",
    "predicate_cite": "",
    "result": "score 42 -> 87/204, build_insns 197 -> 202 (+5 real instructions). Reverted; baseline 42/204 re-confirmed after revert."
+  },
+  {
+   "session": 21,
+   "statement": "The s20 live-frontier hypothesis (reducing register pressure elsewhere in the loop body could shrink n_non_fixed_regs and flip strength_reduce's giv-worth threshold at loop.c:3823, without perturbing ",
+   "kill_scope": "class",
+   "measured_on": "n/a (mechanism/predicate analysis of frozen compiler source, not a source-level spelling test); fresh sandbox re-confirmation of the s14-s20 42/197 chassis this session as context, no FAKE constructs ",
+   "predicate_cite": "tools/gcc-2.7.2/regclass.c:380",
+   "result": "Fresh sandbox: score=42, build_insns=197, target_insns=204 -- exact reproduction of the s14-s20 floor. Fresh .greg dump "
   }
  ],
  "ladder_skip": 0,
