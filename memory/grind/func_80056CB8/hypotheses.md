@@ -1793,3 +1793,91 @@ src/text1b.c) -- no draft C left on main (asm-until-matched).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s38 chassis: candidate.c's s22-s37-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line extern header block, obj/flags block hand-varied one spelling at a time, no FAKE constructs present in any of the 6 variants
+
+## s39 (enumerate modality, 2026-09-16)
+
+**Combinatorial extension of s38's isolated obj/flags hand-variants — zero
+hits, strengthening the instance kill; plus one NEW spelling (shared
+duplicate-expression local in block1) tried for the first time — also
+KILLED.**
+
+Rebuilt the s22-s38-banked 38/204 chassis fresh in src/text1b.c (candidate.c
+body + func_80053614 void->s32 return prerequisite + 5-line extern header),
+re-confirmed 38/204 (198 insns) before starting.
+
+s38 measured 6 obj/flags-block variants IN ISOLATION (A=ternary obj-assignment,
+B=kind-local-declared-after-obj-if, C=named `ang` intermediate in the true
+arm, D=named `dx`/`dz` intermediates in the else arm — the 4 that tied at
+38/204; the other 2, kind-local-before and De-Morgan-arm-swap, already scored
+worse and were not recombined). This session tested whether COMBINING the
+4 tied variants produces an interaction effect the isolated tests couldn't see:
+
+  - A+B: 38/204 (198 insns) — tied.
+  - A+C: 38/204 (198 insns) — tied.
+  - A+D: 38/204 (198 insns) — tied.
+  - A+B+C+D (all four together): 38/204 (198 insns) — tied.
+  - B+C+D (all three non-ternary variants together): 38/204 (198 insns) — tied.
+
+No combination of the tied obj/flags-block spellings, alone or together,
+moves the score. This closes the "maybe two individually-neutral spellings
+interact to shave an instruction" hypothesis for this block — five distinct
+combinations measured, all flat.
+
+**Separately, a genuinely NEW spelling** (not tried in s37 or s38): block1
+computes `*(s32 *)(obj + 0xBC) - 0x320` TWICE, once into `pt0[1]` and once
+into `pt1[1]` (textually identical expressions). Replaced both with a single
+named `y0` local computed once and read twice. Result: score 38 -> 73/204,
+build_insns 198 -> 196 (2 FEWER real instructions than baseline, yet a worse
+score — the instruction MIX diverges from target even though the count
+shrinks). This shows GCC's own CSE already merges the duplicate expression
+into one computation at baseline (`build_insns` unaffected by writing it
+twice vs once at the SOURCE level) — forcing an explicit named carrier
+changes which register/instruction sequence holds the shared value, and that
+different allocation is worse, not better. Saved
+rejected/block1-shared-y0-worse.c.
+
+Baseline 38/204 re-confirmed both before and after all six measurements.
+src/text1b.c and func_80053614 reverted to INCLUDE_ASM / void before ending
+the session (asm-until-matched) — `git status` clean except the new
+rejected/ file.
+
+Frontier UNCHANGED from s37/s38: the s31/s32-banked loop.c:3823 insn-count-
+threshold mechanism (need real-insn count <=124 or combined lifetime>=3) and
+the do-while-chassis resident-footprint probe remain the two live structural
+avenues; the spelling_enum.py if/else-anchor tool extension is still
+unbuilt (flagged again, not attempted this session — a genuine tool-authoring
+task, not a quick probe, and this session's turns went to exhausting the
+combinatorial hand-variant space + the block1 CSE-duplicate spelling
+instead).
+
+## [s39] Combining 2+ of the s38-tied obj/flags-block hand-variants (ternary obj-assignment, kind-local-after, ang intermediate, dx/dz intermediates) produces no interaction effect — every tested combination (A+B, A+C, A+D, A+B+C+D, B+C+D) ties the 38/204 baseline.
+- mechanism: s38 measured these 4 variants individually and found each codegen-neutral; this session tests whether the neutrality holds when combined (a plausible failure mode where two individually-inert spellings interact through shared register pressure or expression scheduling).
+- probe: Applied each of the 5 combinations to the s38-banked chassis one at a time (candidate.c body + func_80053614 s32-return prerequisite + header externs), measured via `sandbox func_80056CB8 --disable all`, reverted to baseline between each.
+- result: all 5 combinations score 38/204, build_insns 198 — identical to baseline and to each individual variant's own s38 measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, obj/flags block varied with each of 5 multi-variant combinations, no FAKE constructs present)
+
+## [s39] Sharing block1's literally-duplicated `*(s32 *)(obj + 0xBC) - 0x320` expression (independently computed into both pt0[1] and pt1[1]) into a single named `y0` local read twice produces worse codegen than the baseline, despite reducing real instruction count.
+- mechanism: GCC's CSE (cse.c) already merges the two textually-identical expressions into one computation at the RTL level regardless of whether the SOURCE writes it once or twice — `build_insns` is unaffected by the source-level duplication. Forcing an explicit named carrier changes which pseudo/register holds the shared value and how it's scheduled relative to the surrounding stores, which is a genuine allocation/scheduling change, not a no-op spelling choice.
+- probe: Replaced the two `*(s32 *)(obj + 0xBC) - 0x320` instances in block1 with a `s32 y0 = ...;` local consumed at both `pt0[1]` and `pt1[1]` stores. Measured via `sandbox func_80056CB8 --disable all`. Reverted via direct re-edit (not git checkout, since it was the last edit before reversion).
+- result: score 38 -> 73/204, build_insns 198 -> 196 (-2 real instructions, but worse score — the instruction MIX diverges from target more even with fewer total instructions). Reverted; baseline 38/204 reconfirmed. Saved memory/grind/func_80056CB8/rejected/block1-shared-y0-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block1's duplicate expression replaced by shared y0 local, no FAKE constructs present)
+
+## [s39] Combining 2+ of the s38-tied obj/flags-block hand-variants (ternary obj-assignment, kind-local-after, ang intermediate, dx/dz intermediates) produces no interaction effect -- every tested combination (A+B, A+C, A+D, A+B+C+D, B+C+D) ties the 38/204 baseline.
+- mechanism: s38 measured these 4 variants individually and found each codegen-neutral; this session tests whether the neutrality holds when combined (a plausible failure mode where two individually-inert spellings interact through shared register pressure or expression scheduling).
+- probe: Applied each of the 5 combinations to the s38-banked chassis one at a time (candidate.c body + func_80053614 s32-return prerequisite + header externs), measured via sandbox func_80056CB8 --disable all, reverted to baseline between each.
+- result: all 5 combinations score 38/204, build_insns 198 -- identical to baseline and to each individual variant's own s38 measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, obj/flags block varied with each of 5 multi-variant combinations, no FAKE constructs present)
+
+## [s39] Sharing block1's literally-duplicated *(s32 *)(obj + 0xBC) - 0x320 expression (independently computed into both pt0[1] and pt1[1]) into a single named y0 local read twice produces worse codegen than the baseline, despite reducing real instruction count.
+- mechanism: GCC's CSE (cse.c) already merges the two textually-identical expressions into one computation at the RTL level regardless of whether the source writes it once or twice -- build_insns is unaffected by the source-level duplication. Forcing an explicit named carrier changes which pseudo/register holds the shared value and how it's scheduled relative to the surrounding stores, a genuine allocation/scheduling change, not a no-op spelling choice.
+- probe: Replaced the two *(s32 *)(obj + 0xBC) - 0x320 instances in block1 with a s32 y0 = ...; local consumed at both pt0[1] and pt1[1] stores. Measured via sandbox func_80056CB8 --disable all.
+- result: score 38 -> 73/204, build_insns 198 -> 196 (-2 real instructions, but worse score -- the instruction mix diverges from target more even with fewer total instructions). Reverted; baseline 38/204 reconfirmed. Saved memory/grind/func_80056CB8/rejected/block1-shared-y0-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block1's duplicate expression replaced by shared y0 local, no FAKE constructs present)

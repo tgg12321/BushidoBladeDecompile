@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 38,
+ "session_count": 39,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -231,44 +231,34 @@
    "floor": 38,
    "modality": "enumerate",
    "headline": "s38 enumerate: hand-enumerated 6 spellings of the obj/flags if-else block (candidate.c ~1160-1179, the region s37's tool couldn't reach); 4 tied at 38/204, 2 worse (40, 46); zero hits on this chassis;"
+  },
+  {
+   "session": 39,
+   "floor": 38,
+   "modality": "enumerate",
+   "headline": "s39 enumerate: 5 combinations of s38's tied obj/flags hand-variants all tie at 38/204 (no interaction effect); a new block1 shared-duplicate-expression spelling scored worse (73/204) despite fewer rea"
   }
  ],
  "frontier": [
   {
    "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions would let strength_reduce promote i*2 automatically.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163). s37/s38's enumerations show neither the sin_p/scale/x/cos_p/z block's ordering nor the obj/flags block's hand-written spellings move insn count meaningfully -- the remaining untried angle is a genuine structural rewrite of the loop body shape itself, not a spelling swap within either block.",
-   "next_probe": "Extend tools/spelling_enum.py to support a region containing interior if/else anchors with braced multi-statement bodies (tracked as its own frontier item below), OR hand-draft a structural loop-body rewrite (e.g. hoisting a shared sub-computation across both blocks) and measure its real-insn count directly against the 124 threshold."
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163). s37/s38/s39's enumerations show neither block's ordering, swap, nor combinatorial hand-spellings move insn count meaningfully -- the remaining untried angle is a genuine structural rewrite of the loop body shape itself, not a spelling swap within either block.",
+   "next_probe": "Hand-draft a structural loop-body rewrite (e.g. hoisting a shared sub-computation across both blocks, or restructuring the two func_80053614 call sites) and measure its real-insn count directly against the 124 threshold."
   },
   {
    "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z, not the i*2 index or the pt0/pt1 store order) on the do-while chassis specifically, since that chassis's lower insn count and different register landscape has never had this axis tried on it.",
    "mechanism": "global_alloc priority-ordered coloring depends on the full conflict graph; the do-while rewrite (s34, rejected/do-while-loop-rewrite-worse.c, 195 real insns vs the for-loop's 198) has already shown it responds to source-level structure changes that don't touch the index axis, so other residents' footprints may behave differently there than on the for-loop chassis where the s29 conflict analysis was run.",
-   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (apply rejected/do-while-loop-rewrite-worse.c fresh) to see whether the 9-resident conflict picture differs from the for-loop chassis's profile, then try restructuring one resident's live range on this chassis."
+   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (apply rejected/do-while-loop-rewrite-worse.c fresh) to see whether the 9-resident conflict picture differs from the for-loop chassis's profile."
   },
   {
-   "hypothesis": "Extend tools/spelling_enum.py to support a region containing interior if/else anchors with braced multi-statement bodies, so the obj/flags block can be swept exhaustively instead of by the 6-variant hand sample s38 ran.",
-   "mechanism": "n/a -- tooling gap, not a codegen hypothesis. s38's hand sample covered 6 plausible variants but is NOT exhaustive the way s37's mechanical sweep over the sin_p/scale block was; a true class kill on this block needs the tool extension.",
+   "hypothesis": "Extend tools/spelling_enum.py to support a region containing interior if/else anchors with braced multi-statement bodies, so the obj/flags block can be swept exhaustively instead of by hand-picked variants.",
+   "mechanism": "n/a -- tooling gap, not a codegen hypothesis. s37-s39's hand samples (6 isolated + 5 combinatorial = 11 variants) are a large but non-exhaustive sample of this block's spelling space; a true class kill needs the tool extension to enumerate ALL syntactically-valid orderings/inlinings of the if/else bodies mechanically.",
    "next_probe": "Patch spelling_enum.py's anchor classification (tools/spelling_enum.py:76-91) to treat a bracketed if/else block as a single opaque, reorderable anchor unit, then re-run a full mechanical sweep over the obj/flags region."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 6,
-   "statement": "Target's asm materializes i*2 ONCE into $s8 (reused via addu at,at,s8 at both the D_8009A821 flags-index site and the D_8009A820 scale-index site, ~30 C lines and one ratan2 call apart) where our buil",
-   "kill_scope": "instance",
-   "measured_on": "s6 chassis: candidate.c body (s5 store-batching + s6 D_800F6610 fix) + func_80053614 s32-return fix, with a single s32 idx = i * 2; local added and both [i*2] index sites switched to [idx]; zero FAKE ",
-   "predicate_cite": "",
-   "result": "Score REGRESSED 81 -> 90 (build_insns 197 -> 199). The shared idx local's live range spans the ratan2 call and the obj/a"
-  },
-  {
-   "session": 6,
-   "statement": "The code==4 tail's branch-topology mismatch (our build emits one bgez where target emits bltz+beqz as two branches, plus target has 4 extra addu v0,s7,s6 address-recomputes duplicated into exit-branch",
-   "kill_scope": "instance",
-   "measured_on": "s6 chassis (candidate.c body + D_800F6610 fix + func_80053614 s32-return fix), goto-based rewrite of the code==3/code==4 tail only, zero FAKE constructs, reverted after measurement.",
-   "predicate_cite": "",
-   "result": "Score and build_insns IDENTICAL before and after (81/197) -- our fork produces byte-identical output for the goto form a"
-  },
   {
    "session": 7,
    "statement": "Rewriting the code==4 tail's y-compare (`y - hit1[1] >= 0` / `>= 0x3E9` nested if/else) with explicit `goto store;`/`goto neg;` early exits mirroring target's bltz+beqz two-branch topology, on the NEW",
@@ -732,6 +722,22 @@
    "measured_on": "s38 chassis: candidate.c's s22-s37-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line extern header block, obj/flags block hand-varied one spelling at a time, no FAKE constructs prese",
    "predicate_cite": "",
    "result": "(1) ternary obj: 38/204 tied. (2) kind-local-after: 38/204 tied. (3) kind-local-before (decl-order swap ahead of obj if-"
+  },
+  {
+   "session": 39,
+   "statement": "Combining 2+ of the s38-tied obj/flags-block hand-variants (ternary obj-assignment, kind-local-after, ang intermediate, dx/dz intermediates) produces no interaction effect -- every tested combination ",
+   "kill_scope": "instance",
+   "measured_on": "s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, obj/flags block varied with each of 5 multi-variant combinations, no FAKE constructs pre",
+   "predicate_cite": "",
+   "result": "all 5 combinations score 38/204, build_insns 198 -- identical to baseline and to each individual variant's own s38 measu"
+  },
+  {
+   "session": 39,
+   "statement": "Sharing block1's literally-duplicated *(s32 *)(obj + 0xBC) - 0x320 expression (independently computed into both pt0[1] and pt1[1]) into a single named y0 local read twice produces worse codegen than t",
+   "kill_scope": "instance",
+   "measured_on": "s39 chassis (candidate.c's s22-s38-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block1's duplicate expression replaced by shared y0 local, no FAKE constructs present)",
+   "predicate_cite": "",
+   "result": "score 38 -> 73/204, build_insns 198 -> 196 (-2 real instructions, but worse score -- the instruction mix diverges from t"
   }
  ],
  "ladder_skip": 0,

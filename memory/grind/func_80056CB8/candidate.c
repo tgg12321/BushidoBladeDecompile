@@ -1,6 +1,15 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39) — floor 38/204, NOT YET 0.
+ * s39 (enumerate modality): body UNCHANGED. Extended s38's isolated obj/flags
+ * hand-variants to COMBINATIONS (A=ternary obj-assignment, B=kind-local-
+ * after, C=ang intermediate, D=dx/dz intermediates): A+B, A+C, A+D, A+B+C+D,
+ * B+C+D all measured -- every combo ties baseline at 38/204 (198 insns), no
+ * interaction effect found. Also tried a NEW spelling not in s37/s38: sharing
+ * the literally-duplicated `*(s32*)(obj+0xBC)-0x320` expression (computed
+ * twice into pt0[1]/pt1[1] in block1) into one named `y0` local -- WORSE
+ * (73/204, insns 198->196), saved rejected/block1-shared-y0-worse.c. Fresh
+ * 38/204 re-confirmed before and after. See hypotheses.md [s39].
  * s38 (enumerate modality): body UNCHANGED. Hand-enumerated 6 spellings of
  * the obj/flags if-else block (~1160-1179, the region s37's tool couldn't
  * reach) -- 4 tied at 38, 2 worse (40, 46). Zero hits. See hypotheses.md

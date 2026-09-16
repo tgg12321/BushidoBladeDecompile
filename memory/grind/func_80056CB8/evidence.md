@@ -691,3 +691,9 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s38] spelling_enum.py's region format (ENUM-BEGIN/END with a single trailing run of bare anchor lines) still cannot represent this block mechanically — the interior-anchor tooling gap flagged in s37 remains open and is carried forward as a frontier item, not resolved this session.
 
 - [s38] src/text1b.c and func_80053614 confirmed clean/reverted to INCLUDE_ASM / void baseline at end of session (git status clean on src/) — no draft C left on main, consistent with asm-until-matched.
+
+- [s39] Fresh chassis reconstruction (candidate.c body + func_80053614 void->s32 return fix + 5-line extern header spliced into src/text1b.c) reproduced the ledger's exact recorded floor of 38/204 (198 build insns) with zero drift, confirmed both before and after this session's probes.
+
+- [s39] s38's 4 individually-tied obj/flags-block hand-variants (ternary obj, kind-local-after, ang intermediate, dx/dz intermediates) show no interaction effect when combined in any of 5 tested groupings -- the obj/flags block's spelling space is now exhausted both individually (s38) and combinatorially (s39) for these variant axes.
+
+- [s39] A genuinely new spelling axis in block1 (sharing the textually-duplicated *(obj+0xBC)-0x320 expression into one local) was tried for the first time and scored worse (73/204) despite fewer real instructions (196 vs 198), demonstrating GCC's CSE already achieves the instruction-count reduction at baseline without a named carrier -- the explicit local only perturbs register/scheduling choice, negatively.
