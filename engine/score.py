@@ -30,6 +30,7 @@ actual bytes.
 """
 from __future__ import annotations
 
+import difflib
 import re
 import subprocess
 
@@ -283,3 +284,69 @@ def score_func(cheat_disabled_o: str, reference_o: str, func: str) -> dict:
     built = normalized_insns(cheat_disabled_o, func)
     return {"score": _levenshtein(target, built),
             "target_insns": len(target), "build_insns": len(built)}
+
+
+def _opcode(insn: str) -> str:
+    return insn.split()[0] if insn else ""
+
+
+def _hunk_class(target: list[str], built: list[str],
+                target_masked: list[str], built_masked: list[str]) -> str:
+    """Which KIND of divergence a hunk is — the question that decides whether
+    the next lever is a source-level restructure or a register-seat nudge.
+
+    not-scored    the two runs are EQUAL once masked, so the score does not
+                  count this hunk at all: a branch/jump displacement or a
+                  section-relative addend that moved because earlier code
+                  changed size. Pure cascade artifact — chasing it is wasted
+                  work, which is exactly why the score masks it.
+    operand-only  same opcodes in the same order, different operands, and the
+                  difference SURVIVES masking: a real register-allocation /
+                  scheduling-seat difference.
+    source-level  the opcode sequence itself differs (or a whole run is
+                  present on one side only): the C is saying something
+                  different, and no amount of reg-seat work closes it.
+
+    Measured motivation: _SsSndCrescendo plateaued at floor 130 for four
+    sessions of reg-alloc work; when the full diff was finally read, 12 of the
+    13 surplus instructions were source-level."""
+    if target_masked == built_masked:
+        return "not-scored"
+    if len(target) != len(built) or not target:
+        return "source-level"
+    return ("operand-only"
+            if all(_opcode(t) == _opcode(b) for t, b in zip(target, built))
+            else "source-level")
+
+
+def insn_diff(built_o: str, reference_o: str, func: str) -> dict:
+    """WHERE the built function differs from the target, not just how much.
+
+    The hunks are aligned and DISPLAYED unmasked (mask=False): the score masks
+    control-flow targets and section-relative addends for cascade-immunity, but
+    a reader diagnosing a gap needs the real registers and offsets. Each hunk is
+    then CLASSIFIED against the masked forms as well, so a hunk the score does
+    not count is labelled `not-scored` instead of masquerading as a
+    register-allocation difference. Masking never changes the instruction count,
+    so both views share one index space.
+
+    Returns the hunk list plus a per-class tally; `_hunk_class` defines the
+    three classes."""
+    target = normalized_insns(reference_o, func, mask=False)
+    built = normalized_insns(built_o, func, mask=False)
+    target_m = normalized_insns(reference_o, func, mask=True)
+    built_m = normalized_insns(built_o, func, mask=True)
+    sm = difflib.SequenceMatcher(a=target, b=built, autojunk=False)
+    hunks = []
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            continue
+        t, b = target[i1:i2], built[j1:j2]
+        hunks.append({"tag": tag, "target_at": i1, "build_at": j1,
+                      "target": t, "built": b,
+                      "class": _hunk_class(t, b, target_m[i1:i2], built_m[j1:j2])})
+    return {"func": func, "target_insns": len(target), "build_insns": len(built),
+            "hunks": hunks,
+            "operand_only_hunks": sum(1 for h in hunks if h["class"] == "operand-only"),
+            "source_level_hunks": sum(1 for h in hunks if h["class"] == "source-level"),
+            "not_scored_hunks": sum(1 for h in hunks if h["class"] == "not-scored")}

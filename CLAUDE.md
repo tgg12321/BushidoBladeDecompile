@@ -31,6 +31,7 @@ tool-agnostic rationale.) Claude-Code specifics:
 | `build` | full clean-driver build → SHA1 check |
 | `canonical <func>` | C-vs-asm gate: ASM-region / ASM-structural / C. **Run BEFORE any pure-C work.** |
 | `sandbox <func> --disable all` | cheat-invisible score = the honest pure-C distance (cheat-asm stripped) |
+| `sandbox <func> --disable all --diff` | **WHERE it differs**, not just how much: per-hunk target-vs-ours, each classed source-level / operand-only / not-scored. Read it BEFORE choosing a lever |
 | `diagnose <funcs...>` | classify a gap: matchable / control-flow / canonical / plateau |
 | `fixtures-verify` | tool-health: golden fixtures still byte-match |
 | `test` | engine regression suite (distance / gate / cheat-stripping) — keep green when you touch engine code |

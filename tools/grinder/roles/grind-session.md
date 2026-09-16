@@ -210,6 +210,16 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
 - Engine commands via `& tools/wteng.ps1 main <cmd>` (PowerShell). Your
   gradient: `sandbox <func> --disable all`. Never `verify-oracle` as an
   iteration tool; never `retire`; never `queue done`; never git commit/push.
+- **Look at the diff before you pick a lever.** `sandbox <func> --disable all
+  --diff` prints WHERE the bytes differ and classes every hunk:
+  `source-level` (the C says something different — no register-seat or
+  scheduling lever can close it), `operand-only` (a real reg-alloc/scheduling
+  seat), `not-scored` (a masked cascade artifact the score does not count —
+  do NOT chase it). Run it at least once per session before proposing a
+  specific-register or scheduling hypothesis, and state which class your
+  hypothesis attacks. Precedent: _SsSndCrescendo sat at floor 130 for four
+  sessions of reg-alloc work; the first full diff showed 12 of the 13 surplus
+  instructions were source-level, and it closed that session.
   Never touch `tools/reintegrate_lock.ps1` (no acquire/release/steal, even if
   a lock looks stale or a hook message suggests it) — main's mutation
   serialization belongs to the driver and the operator, not to you. If a hook

@@ -16,7 +16,6 @@ Verdicts:
 """
 from __future__ import annotations
 
-import difflib
 import re
 from pathlib import Path
 
@@ -33,12 +32,13 @@ def _opcode(insn: str) -> str:
 
 
 def diff_pairs(stripped_o: str, ref_o: str, func: str):
-    target = score.normalized_insns(ref_o, func, mask=False)
-    built = score.normalized_insns(stripped_o, func, mask=False)
-    sm = difflib.SequenceMatcher(a=target, b=built, autojunk=False)
-    pairs = [(tag, target[i1:i2], built[j1:j2])
-             for tag, i1, i2, j1, j2 in sm.get_opcodes() if tag != "equal"]
-    return pairs, len(target), len(built)
+    """(tag, target_run, built_run) hunks — the classify() input shape.
+
+    Delegates to score.insn_diff so `diagnose` and `sandbox --diff` can never
+    disagree about what the hunks are."""
+    d = score.insn_diff(stripped_o, ref_o, func)
+    pairs = [(h["tag"], h["target"], h["built"]) for h in d["hunks"]]
+    return pairs, d["target_insns"], d["build_insns"]
 
 
 def _is_branch(insn: str) -> bool:

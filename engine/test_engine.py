@@ -23,6 +23,7 @@ import tempfile
 from pathlib import Path
 
 from engine import canonical, score, inlineasm, cheats, metrics, volatile_cheats
+from engine import diagnose
 from engine import queue as Q
 from engine import pipeline as P
 from engine import buildconfig as cfg
@@ -228,6 +229,110 @@ def _reloc(addr: str, typ: str, sym: str) -> str:
     """Synthesize an `objdump -dr` relocation line (tab-indented, follows its
     instruction)."""
     return f"\t\t\t{addr}: {typ}\t{sym}"
+
+
+@contextlib.contextmanager
+def _stub_objdump_by_path(bodies: dict):
+    """Path-keyed objdump stub — insn_diff reads TWO objects per call, so the
+    single-body _stub_objdump cannot express a difference between them."""
+    saved = score._objdump
+    runners = {p: _fake_objdump(b) for p, b in bodies.items()}
+
+    def _run(*args: str) -> str:
+        return runners[args[-1]](*args)
+    score._objdump = _run
+    try:
+        yield
+    finally:
+        score._objdump = saved
+
+
+def test_insn_diff() -> None:
+    """`sandbox --diff` must answer the question the score cannot: is the
+    residual a register-seat difference or a source-level divergence?
+
+    Motivated by _SsSndCrescendo — four sessions of register-allocation work
+    against a floor whose surplus instructions were 12/13 source-level. The
+    class tally is the part that must not silently invert."""
+    def obj(*insns: tuple[str, str]) -> str:
+        lines = ["00000000 <f>:"]
+        for i, (mn, ops) in enumerate(insns):
+            lines.append(_dline(f"{i * 4:4x}", "00000000", mn, ops))
+        return "\n".join(lines)
+
+    # 1. Same opcodes, different register seats -> operand-only.
+    with _stub_objdump_by_path({
+            "ours.o": obj(("lui", "v0,0x8010"), ("lw", "v0,0(v0)"), ("jr", "ra")),
+            "ref.o": obj(("lui", "s1,0x8010"), ("lw", "s1,0(s1)"), ("jr", "ra"))}):
+        d = score.insn_diff("ours.o", "ref.o", "f")
+    eq("insn_diff: reg-seat difference is operand-only", d["operand_only_hunks"], 1)
+    eq("insn_diff: reg-seat difference is NOT source-level", d["source_level_hunks"], 0)
+    eq("insn_diff: both instruction counts reported",
+       (d["target_insns"], d["build_insns"]), (3, 3))
+
+    # 2. A different opcode is a source-level divergence even at equal length —
+    #    the case that must never read as "just reallocate a register".
+    with _stub_objdump_by_path({
+            "ours.o": obj(("addu", "v0,v0,v1"), ("jr", "ra")),
+            "ref.o": obj(("sll", "v0,v0,2"), ("jr", "ra"))}):
+        d = score.insn_diff("ours.o", "ref.o", "f")
+    eq("insn_diff: opcode change is source-level", d["source_level_hunks"], 1)
+    eq("insn_diff: opcode change is NOT operand-only", d["operand_only_hunks"], 0)
+
+    # 3. A surplus instruction on our side: unequal runs are source-level, and
+    #    the hunk must carry the position a reader needs to find it.
+    with _stub_objdump_by_path({
+            "ours.o": obj(("lw", "v0,0(a0)"), ("nop", ""), ("jr", "ra")),
+            "ref.o": obj(("lw", "v0,0(a0)"), ("jr", "ra"))}):
+        d = score.insn_diff("ours.o", "ref.o", "f")
+    eq("insn_diff: surplus instruction is source-level", d["source_level_hunks"], 1)
+    eq("insn_diff: surplus instruction is located", d["hunks"][0]["build_at"], 1)
+    eq("insn_diff: surplus instruction counted on our side only",
+       (d["target_insns"], d["build_insns"]), (2, 3))
+
+    # 3b. THE CASCADE TRAP: a branch whose displacement moved because earlier
+    #     code changed size. The score masks control-flow targets precisely so
+    #     this does not count, so the diff must not dress it up as a
+    #     register-allocation difference and send a session chasing it.
+    #     (Caught by running --diff on the real _SsVmInit candidate: 7 of 12
+    #     hunks were this, all originally mislabelled operand-only.)
+    with _stub_objdump_by_path({
+            "ours.o": obj(("bnez", "v0,20fc"), ("jr", "ra")),
+            "ref.o": obj(("bnez", "v0,2c78"), ("jr", "ra"))}):
+        d = score.insn_diff("ours.o", "ref.o", "f")
+    eq("insn_diff: moved branch displacement is not-scored", d["not_scored_hunks"], 1)
+    eq("insn_diff: moved branch displacement is NOT operand-only",
+       d["operand_only_hunks"], 0)
+    eq("insn_diff: moved branch displacement is NOT source-level",
+       d["source_level_hunks"], 0)
+    eq("insn_diff: the not-scored hunk still shows real displacements",
+       (d["hunks"][0]["target"], d["hunks"][0]["built"]),
+       (["bnez v0,2c78"], ["bnez v0,20fc"]))
+
+    # 3c. A branch difference that SURVIVES masking is a real one — the bound
+    #     that stops `not-scored` from swallowing genuine control-flow changes.
+    with _stub_objdump_by_path({
+            "ours.o": obj(("bnez", "v0,20fc"), ("jr", "ra")),
+            "ref.o": obj(("beqz", "v0,2c78"), ("jr", "ra"))}):
+        d = score.insn_diff("ours.o", "ref.o", "f")
+    eq("insn_diff: changed branch OPCODE is still source-level",
+       (d["source_level_hunks"], d["not_scored_hunks"]), (1, 0))
+
+    # 4. Identical objects produce no hunks at all (the score-0 case).
+    same = obj(("lw", "v0,0(a0)"), ("jr", "ra"))
+    with _stub_objdump_by_path({"ours.o": same, "ref.o": same}):
+        d = score.insn_diff("ours.o", "ref.o", "f")
+    eq("insn_diff: identical objects have no hunks", d["hunks"], [])
+
+    # 5. diagnose.diff_pairs delegates here — the two views must not drift.
+    with _stub_objdump_by_path({
+            "ours.o": obj(("addu", "v0,v0,v1"), ("jr", "ra")),
+            "ref.o": obj(("sll", "v0,v0,2"), ("jr", "ra"))}):
+        pairs, nt, nb = diagnose.diff_pairs("ours.o", "ref.o", "f")
+    eq("diff_pairs: still returns (tag, target, built) triples",
+       (pairs[0][0], pairs[0][1], pairs[0][2]),
+       ("replace", ["sll v0,v0,2"], ["addu v0,v0,v1"]))
+    eq("diff_pairs: still returns both lengths", (nt, nb), (2, 2))
 
 
 def test_score_section_addend_mask() -> None:
@@ -2671,6 +2776,7 @@ def main() -> int:
     test_datamodel()
     test_canonical()
     test_score()
+    test_insn_diff()
     test_score_section_addend_mask()
     test_inlineasm()
     test_cheats()

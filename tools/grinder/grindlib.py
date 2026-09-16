@@ -3024,6 +3024,7 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 
 ## Your contract
 - Work ONLY {func} in src/{st['file']}.c. Engine commands: `& tools/wteng.ps1 main sandbox {func} --disable all` (your gradient), canonical, diagnose. NEVER edit .claude/rules/engine/tools/Makefile/*.ld; NEVER run queue done/retire; NEVER commit.
+- LOOK AT THE DIFF FIRST: `sandbox {func} --disable all --diff` shows WHERE the bytes differ, each hunk classed source-level (the C differs — reg-seat levers cannot close it) / operand-only (a real allocation seat) / not-scored (masked cascade artifact — do not chase). Run it before proposing any specific-register or scheduling hypothesis, and say which class you are attacking.
 - Save your best form to memory/grind/{func}/candidate.c before finishing (even if it did not improve the floor). Save disproven forms to memory/grind/{func}/rejected/<slug>.c.
 - Scratch space: tmp/grind/{func}/s{st['session_count'] + 1}/ — put permuter logs / cc1 dumps there and list them in artifacts.
 - PASS ATTRIBUTION: before hypothesizing WHICH GCC pass produced a divergence, run

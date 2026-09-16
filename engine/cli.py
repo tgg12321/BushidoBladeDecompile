@@ -39,6 +39,36 @@ def _print_finish_nudge(func: str) -> None:
     )
 
 
+def _print_insn_diff(d: dict) -> None:
+    """Render `score.insn_diff` for a reader deciding the next lever.
+
+    Deliberately labels the two sides `target` / `ours` rather than -/+ : the
+    +/- convention silently inverts depending on which side you call the
+    original, and a misread hunk sends a session after the wrong register."""
+    n = len(d["hunks"])
+    print(f"\n── insn diff vs target — {d['func']} "
+          f"(operands UNMASKED; the score masks some of these) ──")
+    print(f"target {d['target_insns']} insns · ours {d['build_insns']} insns · {n} hunk(s)")
+    if not n:
+        print("  (no differing instructions)")
+        return
+    print(f"  {d['source_level_hunks']} source-level · "
+          f"{d['operand_only_hunks']} operand-only (reg-alloc/scheduling) · "
+          f"{d['not_scored_hunks']} not-scored (masked cascade artifact)")
+    for i, h in enumerate(d["hunks"], 1):
+        note = ("  [masked — the score does not count this; do NOT chase it]"
+                if h["class"] == "not-scored" else "")
+        print(f"\n@ hunk {i}/{n}  {h['tag']}  "
+              f"target[{h['target_at']}] ours[{h['build_at']}]  — {h['class']}{note}")
+        for x in h["target"]:
+            print(f"    target  {x}")
+        for x in h["built"]:
+            print(f"    ours    {x}")
+    if d["source_level_hunks"] and d["source_level_hunks"] >= d["operand_only_hunks"]:
+        print("\n  NOTE: source-level hunks dominate the SCORED ones — the C is saying\n"
+              "  something different. Register-seat / scheduling levers cannot close those.")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(prog="engine")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -67,6 +97,10 @@ def main() -> int:
     sbp.add_argument("--keep-cheat-asm", action="store_true",
                      help="do NOT strip cheat-asm pins/inline-asm (default: stripped, "
                           "so the score is the honest pure-C COMPLETED-C distance)")
+    sbp.add_argument("--diff", action="store_true",
+                     help="also print WHERE it differs: the target-vs-ours instruction "
+                          "diff, each hunk classed operand-only (reg-alloc) or "
+                          "source-level. Read this before choosing the next lever")
     scp = sub.add_parser("scan-redundant", help="find functions whose rules are redundant (exact byte-identity)")
     g = scp.add_mutually_exclusive_group(required=True)
     g.add_argument("--file", help="scan one src file stem")
@@ -177,6 +211,19 @@ def main() -> int:
         r = SB.sandbox_score(a.func, disable=a.disable,
                              strip_cheat_asm=not a.keep_cheat_asm)
         print(json.dumps(r, indent=2))
+        # The diff is printed, never folded into `r`: metrics.record_event
+        # persists `payload: result` verbatim into the committed
+        # metrics/events.jsonl, and a per-call instruction dump would bloat it.
+        if a.diff:
+            if not r.get("scorable"):
+                print(f"\n(no diff: {r.get('error', 'function not scorable')})")
+            elif r.get("no_c_body"):
+                print("\n(no diff: function is still whole-body INCLUDE_ASM — "
+                      "there is no C to compare)")
+            else:
+                from . import score as SC
+                _print_insn_diff(SC.insn_diff(r["disabled_o"],
+                                              f"build/src/{r['file']}.o", a.func))
         MET.record_event("sandbox", a.func, r, extra={"disable": a.disable})
         return 0
 
