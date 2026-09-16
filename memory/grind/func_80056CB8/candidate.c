@@ -1,6 +1,24 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66/s67/s68) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38/s39/s40/s41/s42/s43/s46/s48/s49/s52/s53/s54/s55/s56/s57/s58/s59/s60/s61/s62/s63/s64/s65/s66/s67/s68/s69) — floor 38/204, NOT YET 0.
+ * s69 (rederive modality, forced by sibling func_8006CCC8's floor drop to
+ * 23 at its s5): Body UNCHANGED (48th consecutive flat 38/204). Mandatory
+ * sibling-transplant check run first: func_8006CCC8's s5 fix (SOTN
+ * duplicate-read-into-branch-arms on its own record-byte field) has no
+ * counterpart object in this function's model -- still signature-level
+ * disjoint (3-arg pointer-taking s32-return vs. this function's 1-arg
+ * void), same conclusion as s54/s66/s67/s68. Also closed hypotheses.md's
+ * long-open frontier item #2 (s4-era obj+0xC0/z/flags split-read probe):
+ * the split-read family is already maximally applied in that region (3
+ * independent re-reads of obj+0xC0 already present); the one place a
+ * local (`z`) is reused across call sites is where the value is genuinely
+ * mutated by a conditional, so no further split is semantics-preserving.
+ * NOTE: the s68 candidate.c/evidence.md text you may be reading still
+ * describes an `owner-gated` disposition from a PRIOR s69 attempt that the
+ * driver DISCARDED (rotation dispositions require `escalation` modality,
+ * not `rederive` -- this session's actual modality). This session
+ * corrects that: outcome is `progress`, ladder axis exhausted per-item but
+ * the driver's escalation gate has not yet been re-triggered.
  * s68 (escalation modality, 2026-09-16): DISPOSITION SESSION (47th
  * consecutive flat session at 38/204, dispatched after the sibling
  * func_8006CCC8 auto-return trigger). Body UNCHANGED. Fresh chassis

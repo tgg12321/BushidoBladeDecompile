@@ -3103,3 +3103,41 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s67 chassis, re-confirmed unchanged on s68 chassis (candidate.c body + func_80053614 prerequisite), zero FAKE constructs present
+
+## [s69] Sibling func_8006CCC8's s5 floor-23 fix (SOTN duplicate-read-into-branch-arms, applied to its own `byte17` field-record read) has no transplantable target in func_80056CB8 -- confirmed still signature-level disjoint on today's chassis.
+- mechanism: n/a -- transplant-check finding, not a codegen-pass hypothesis.
+- probe: Read memory/grind/func_8006CCC8/candidate.c header (s5 entry) directly: `s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2)` (3-arg, pointer-taking, s32-return), vs. func_80056CB8's `void func_80056CB8(s32 arg0)` (1-arg, void). The fix itself (dropping a named intermediate read once before an i==0/else branch, re-reading directly in each arm) targets a record-array byte field with no counterpart in this function's object model (obj/flags/scale/sin_p/cos_p/x/z, D_8009A820/D_8009A821 lookup tables).
+- result: No shared block, no transplant. Same conclusion as s54/s66/s67/s68 cross-checks.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s69 chassis (func_8006CCC8/candidate.c as committed at its s5, floor 23; func_80056CB8/candidate.c s22-s68-banked body, unmodified)
+
+## [s69] Frontier item #2 (register-sharing split-read probe on the obj+0xC0 / `z` / `flags` conflict, open since s4) is answered: the split-read-defeats-hoist family is already maximally applied in that region on the current candidate.c body -- no further split is available.
+- mechanism: split-read-defeats-hoist (duplicating a read into separate use sites narrows a pseudo's live range / conflict set) -- examined for applicability, not newly applied.
+- probe: Read candidate.c lines 1696-1720 (the sin_p/cos_p/scale/x/z block through both func_80053614 call sites). Checked every site that touches `*(s32 *)(obj + 0xC0)`.
+- result: Three independent re-reads of `*(obj + 0xC0)` already exist in source (`z = *(s32*)(obj+0xC0) + ...`, `pt0[2] = *(s32*)(obj+0xC0);`, `dz = hit0[2] - *(s32*)(obj+0xC0);`) -- the only place a single local (`z`) is reused across multiple consumption points is where the value is genuinely MUTATED by the conditional `z += (*cos_p * 0x7D) >> 8;` between the two `func_80053614` call sites, so a raw re-read there would silently drop that mutation on the branch-taken path -- not a semantics-preserving substitution, so not a legitimate probe. This is the same shape s39/s65 already examined from the "shared scratchpad-literal"/"pseudo 149" angle and independently concluded was structurally maximal.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s69 chassis (candidate.c body unchanged since s22, source-level read-only analysis, no sandbox re-run needed since no new form was produced)
+
+## [s69] Sibling func_8006CCC8's s5 floor-23 fix (SOTN duplicate-read-into-branch-arms applied to its own byte17 record-field read) supplies a transplantable lever for func_80056CB8.
+- mechanism: n/a -- transplant-check finding, not a codegen-pass hypothesis.
+- probe: Read memory/grind/func_8006CCC8/candidate.c header (s5 entry) directly; compared signatures and object models against func_80056CB8/candidate.c.
+- result: No shared block: func_8006CCC8 is s32 func_8006CCC8(s32*,s32*,s16) operating on a record-array byte field; func_80056CB8 is void func_80056CB8(s32) operating on obj/flags/scale/sin_p/cos_p/x/z with no record-array analog. Same conclusion as s54/s66/s67/s68.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s69 chassis: func_8006CCC8/candidate.c as committed at its s5 (floor 23); func_80056CB8/candidate.c s22-s68-banked body, unmodified
+
+## [s69] Frontier item #2 from hypotheses.md (s4): duplicating a read of *(obj+0xC0) into a branch arm changes the z/flags register-sharing outcome (mirroring split-read-defeats-hoist).
+- mechanism: split-read-defeats-hoist (duplicating a read into separate use sites narrows a pseudo's live range / conflict set) -- examined for applicability.
+- probe: Read candidate.c lines 1696-1720 (sin_p/cos_p/scale/x/z block through both func_80053614 call sites); enumerated every *(obj+0xC0) use site.
+- result: Already 3 independent re-reads of *(obj+0xC0) exist in source (z=, pt0[2]=, dz=). The only site where a local (z) is reused across multiple consumption points is where the value is genuinely mutated by a conditional (z += (*cos_p*0x7D)>>8;) between the two call sites -- substituting a raw re-read there would silently drop that mutation on the branch-taken path, so it is not a semantics-preserving probe. No further split is available; this closes the frontier item.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s69 chassis, candidate.c body unchanged since s22, source-level read-only analysis (no sandbox re-run needed, no new form produced)
+
+## [s69] Applying the s22-s68-banked candidate.c body (plus the func_80053614 void->s32 return-type prerequisite) to src/text1b.c on today's fresh chassis reproduces the ledger's last-recorded 38/204 floor.
+- mechanism: Ordinary compiled C reconstruction; no chassis drift since s68.
+- probe: tmp/grind/func_80056CB8/s69/splice.py baseline (copy of s67's splice script) applied to src/text1b.c, dumps regenerated via tools/grinder/dump.ps1 func_80056CB8, then sandbox func_80056CB8 --disable all.
+- result: score 38 (build_insns 198, target_insns 204) -- exact match to s61-s68's reconfirmations.
+- verdict: CONFIRMED

@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 68,
- "current_modality": "escalation",
+ "session_count": 69,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -411,16 +411,22 @@
    "floor": 38,
    "modality": "escalation",
    "headline": "s68 disposition: 47th consecutive flat session (s22-s68) at 38/204; both endgame-lock gates FAIL (scan LOW, no precedent); filed LADDER EXHAUSTED ROTATED entry"
+  },
+  {
+   "session": 69,
+   "floor": 38,
+   "modality": "rederive",
+   "headline": "s69 rederive: sibling func_8006CCC8's floor-23 fix confirmed non-transplantable (signature-disjoint); closed the long-open s4 obj+0xC0/z/flags split-read frontier item as already-maximal; 38/204 re-co"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled; ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 47 flat sessions and 9+ modalities.",
+   "hypothesis": "The residual is register-pressure-bound on the loop body's call-spanning resident values (pseudo 74/limit spilled, ~18 other conflict-clique pseudos), not reducible by any spelling-level lever found across 48 flat sessions and 9+ modalities.",
    "mechanism": "global_alloc's priority-ordered coloring over the conflict graph built by flow.c/local-alloc.c",
-   "next_probe": "A future session (post-rotation, on new evidence) should target one of the still-unidentified conflict-graph-live pseudos with the same forensics-level individual identification s63/s65 gave pseudo 74 and 149, looking for an untried scope-narrowing or duplication lever on those specific pseudos."
+   "next_probe": "A future session dispatched in escalation modality should re-evaluate the endgame-lock gates fresh (scan_hand_coded + precedent census) since gate evidence can go stale; absent a new gate PASS, the ladder-exhaustion disposition from s68 remains the correct terminal record for this axis."
   },
   {
-   "hypothesis": "A newly-COMPLETED-C sibling in src/text1b.c or src/code6cac*.c (landing after this session) could supply fresh transplant material; the current candidate pool (func_80055B60, func_8006CCC8, func_80057094, func_80057CC8, code6cac.c's lim/scratchpad sites) is exhausted.",
+   "hypothesis": "A newly-COMPLETED-C sibling in src/text1b.c or src/code6cac*.c landing after this session could supply fresh transplant material; the current candidate pool (func_80055B60, func_8006CCC8, func_80057094, func_80057CC8, code6cac.c lim/scratchpad sites) is exhausted.",
    "mechanism": "n/a -- coverage/process finding",
    "next_probe": "Check for newly-COMPLETED-C functions in the same TUs each future dispatch before re-deriving from scratch."
   }
@@ -428,22 +434,6 @@
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 35,
-   "statement": "On the s34-banked do-while chassis (195 real insns), sharing the i*2 index computation into ONE local (`s32 idx = i * 2;`, consumed at both the flags-table and scale-table reads) produces worse codege",
-   "kill_scope": "instance",
-   "measured_on": "s35 chassis (do-while chassis body + shared `idx` local at both table reads, func_80053614 s32-return fix, header externs restored, no FAKE constructs present)",
-   "predicate_cite": "",
-   "result": "score 38 -> 66/204, build_insns 195 (do-while-alone) -> 197 (+2 real instructions). Reverted via git checkout. Saved mem"
-  },
-  {
-   "session": 35,
-   "statement": "On the s34-banked do-while chassis, the separately-named `idxB` local spelling (assigned right after the flags-table i*2 read, consumed only at the scale-table read) produces worse codegen than the do",
-   "kill_scope": "instance",
-   "measured_on": "s35 chassis (do-while chassis body + separately-named idxB local, func_80053614 s32-return fix, header externs restored, no FAKE constructs present)",
-   "predicate_cite": "",
-   "result": "score 38 -> 66/204, build_insns 195 -> 197 (+2 real instructions) -- byte-identical build_insns to the shared-idx varian"
-  },
   {
    "session": 36,
    "statement": "On the CURRENT s22-s35-banked 38/204 chassis, interleaving block1's pt0[] stores between the sin_p/scale/cos_p computation and the x/z computation (m2c's own reconstructed statement order: sin_p; scal",
@@ -907,6 +897,22 @@
    "measured_on": "s67 chassis, re-confirmed unchanged on s68 chassis (candidate.c body + func_80053614 prerequisite), zero FAKE constructs present",
    "predicate_cite": "",
    "result": "The only candidate precedent search on record (s67) remains negative: those two occurrences are single-call-site, non-lo"
+  },
+  {
+   "session": 69,
+   "statement": "Sibling func_8006CCC8's s5 floor-23 fix (SOTN duplicate-read-into-branch-arms applied to its own byte17 record-field read) supplies a transplantable lever for func_80056CB8.",
+   "kill_scope": "instance",
+   "measured_on": "s69 chassis: func_8006CCC8/candidate.c as committed at its s5 (floor 23); func_80056CB8/candidate.c s22-s68-banked body, unmodified",
+   "predicate_cite": "",
+   "result": "No shared block: func_8006CCC8 is s32 func_8006CCC8(s32*,s32*,s16) operating on a record-array byte field; func_80056CB8"
+  },
+  {
+   "session": 69,
+   "statement": "Frontier item #2 from hypotheses.md (s4): duplicating a read of *(obj+0xC0) into a branch arm changes the z/flags register-sharing outcome (mirroring split-read-defeats-hoist).",
+   "kill_scope": "instance",
+   "measured_on": "s69 chassis, candidate.c body unchanged since s22, source-level read-only analysis (no sandbox re-run needed, no new form produced)",
+   "predicate_cite": "",
+   "result": "Already 3 independent re-reads of *(obj+0xC0) exist in source (z=, pt0[2]=, dz=). The only site where a local (z) is reu"
   }
  ],
  "ladder_skip": 0,
@@ -939,7 +945,7 @@
    "session": 5,
    "at": "2026-09-16T16:01:13.838666+00:00",
    "headline": "s5 (permuter): built a hand-crafted full-TU permuter workspace (the s4-blocked import.py path is still broken); a directed campaign found the SOTN-sanctioned duplicate-read-into-branch-arms fix (drop ",
-   "consumed": null
+   "consumed": 69
   }
  ],
  "exhaustion_base": 68,
