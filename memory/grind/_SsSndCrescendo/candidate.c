@@ -64,6 +64,26 @@
  * s32 (worse, 141) vs s16 (this file, 136) vs inlining `(s16)(a0|(a1<<8))`
  * at every call site instead of a variable (worse, 143/220 insns) were all
  * measured this session; s16-cached-key is the best of the three.
+ 
+ *
+ * s4 (permuter modality, 2026-09-16): objdump-diffed a clean standalone
+ * permuter workspace's target.o vs a bank_off-sharing chassis's base.o
+ * (tmp/grind/_SsSndCrescendo/s4/{target,base_s4_bankoff}.dis) and confirmed
+ * target caches BOTH the bank pointer (&_ss_score+bank_off) AND the a1*0xB0
+ * product as separate hard registers, recombined once via addu to build
+ * `base`. A directed permuter campaign on that insn-count-exact (200/200)
+ * chassis plateaued 8332-9589 over 4687 iterations (see hypotheses.md) -
+ * KILLED as a search route for this chassis. s5 measured caching BOTH
+ * bank_off AND a1_off as named C locals (mirroring target's register
+ * pattern literally) - KILLED, UNDER-counted insns (184 vs 200), proving
+ * GCC's CSE over-applies the named a1_off local relative to what target's
+ * asm actually does at the clear sites (rejected/shared-bank-off-and-a1off-s5.md).
+ * The gap between "target visibly caches 2 components at the top" and "our
+ * C can't reproduce that without over-caching downstream" remains OPEN -
+ * next register-alloc session should dump-read (.greg/.lreg) the 139-score
+ * bank_off-only chassis specifically at the clear sites to see whether GCC
+ * is choosing to re-derive a1's x0xB0 fresh there (matching target) or not,
+ * rather than guessing from the C-level symptom alone.
  */
 void _SsSndCrescendo(s16 a0, s16 a1) {
     u8 *base;

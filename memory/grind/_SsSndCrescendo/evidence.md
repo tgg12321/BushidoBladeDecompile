@@ -337,3 +337,13 @@ form (verified via a final re-measurement) before ending the session.
 - [s3] Sharing only the a0-sign-extension sub-expression via a single bank_off local, while still fully re-deriving the rest of the address at each clear site, is the first spelling this ledger has measured that hits build_insns == target_insns == 200 exactly - all prior forms (including the banked 130 form) have a raw instruction-count gap (213 vs 200) on top of any register-allocation mismatch. This variant's weighted score (139) is worse than 130 because of register/ordering mismatch, not instruction count - a cleaner base for the next register-alloc-modality session to iterate from.
 
 - [s3] src/main.c reverted to and re-verified at the exact banked 130 form before ending the session; candidate.c on disk already matches this form (no update needed).
+
+- [s4] Chassis re-confirmed stable: candidate.c = 130/213/200, s4 bank_off form = 139/200/200, both exactly matching prior session's ledger record.
+
+- [s4] Built and validated a clean single-function permuter workspace for _SsSndCrescendo (tmp/perm_crescendo_s4): target.o extracted from asm/funcs/_SsSndCrescendo.s at offset 0 (200 insns), base.o compiled from the bank_off chassis (also 200 insns) - the first time this function has an insn-count-exact permuter base.
+
+- [s4] Permuter campaign (4687 iterations, 4 jobs, ~165s) plateaued at best score 8332 vs base 9589 on the permuter's own weighted metric - no productive gradient found via random mutation alone for this residual.
+
+- [s4] Direct objdump diff of target.o vs base.o (not inference from the earlier .combine dump alone) shows target caches the bank pointer AND the a1*0xB0 product as TWO SEPARATE hard registers, both spilled early, recombined once - a more specific structural finding than H4's prior combine.c-only attribution.
+
+- [s4] Caching a1_off as a named C local in addition to bank_off overshoots the fold: GCC eliminates MORE recomputation than target's own asm shows (184 vs 200 target insns), proving the a1_off caching is not a general reuse idiom in target - it is scoped to the single 'build base once' site, and the clear sites still re-derive fresh (consistent with H3).

@@ -1,8 +1,8 @@
 {
  "func": "_SsSndCrescendo",
  "file": "main",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 130,
    "modality": "structural",
    "headline": "s4 structural: chassis re-verified at 130; measured both concrete spellings of s3's 'share the intermediate' probe (base-pointer reuse KILLED, confirms H3's fresh-recompute finding directly; shared ba"
+  },
+  {
+   "session": 4,
+   "floor": 130,
+   "modality": "permuter",
+   "headline": "s5 permuter: objdump-diffed target vs the insn-exact bank_off chassis, found target caches BOTH bank_ptr AND a1_off as separate hard regs; a directed permuter campaign on that chassis plateaued 8332-9"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s32-bank_off variant (rejected/shared-bank-off-s4.md), which hits build_insns==target_insns==200 exactly, has its remaining ~139-vs-ideal-0 score gap purely in register allocation/ordering, not instruction count or structure.",
-   "mechanism": "local-alloc.c / global.c register assignment on a form where the instruction SET now matches target 1:1 in count",
-   "next_probe": "pwsh tools/grinder/dump.ps1 _SsSndCrescendo with the bank_off-s32 variant (rejected/shared-bank-off-s4.md) applied to src/main.c instead of the banked candidate.c; read .greg/.lreg dumps and diff hard-register assignment against a fresh objdump of the target asm/funcs/_SsSndCrescendo.s, insn-for-insn, since instruction count is no longer the confound."
+   "hypothesis": "The 139-score bank_off-only chassis's remaining gap to target may be explained by exactly WHERE GCC chooses to re-derive the a1*0xB0 product at each clear site (fresh vs from a live register) rather than a instruction-count problem - the s5 kill shows naming a1_off in C over-shares it, so the correct lever may be a C shape that shares bank_off explicitly (as s4 does) while leaving a1's product implicit/uncached at the C level, but the compiler still needs to be steered into re-deriving it the SAME way at each site as target (which itself caches SOME copy of it, per the objdump read) - this is a genuine remaining register-allocation-modality question, not yet resolved by a pure C-shape probe.",
+   "mechanism": "local-alloc.c / combine.c interaction between named-local liveness scope and per-site re-derivation choice",
+   "next_probe": "pwsh tools/grinder/dump.ps1 _SsSndCrescendo with the s4 bank_off-only chassis (score 139/200/200) applied to src/main.c; read the .greg/.lreg dumps specifically for the pseudo carrying the a1*0xB0 product at EACH of the 6 clear sites (not just the base-build site) and compare hard-register choice against target's asm/funcs/_SsSndCrescendo.s at the same offsets - this is the correctly-sequenced register-alloc-modality follow-up now that both the insn-count-exact chassis (s4) and its target-side register-caching shape (this session's objdump diff) are on record."
   },
   {
-   "hypothesis": "The remaining 13-instruction gap in the banked 130 form (213 built vs 200 target) may not be solely the H4 bank-index-shift issue (confirmed 1 instruction of it) - a full objdump-vs-target diff has still never been run to enumerate every remaining instruction-level difference.",
-   "mechanism": "N/A - unexplored enumeration gap, carried forward from s2/s3",
-   "next_probe": "Run a full mipsel-linux-gnu-objdump -d diff between tmp/sandbox/_SsSndCrescendo/main.o and the target's own disassembly of asm/funcs/_SsSndCrescendo.s (via WSL), not just the header lines spot-checked so far, to enumerate every remaining diff instruction-by-instruction."
+   "hypothesis": "The remaining ~13-instruction gap between the banked 130 form (213 built) and target (200) may not be solely the H4 bank-index-shift issue - a full objdump-vs-target diff of the CANDIDATE (not just the bank_off chassis) has still never been run to enumerate every remaining instruction-level difference beyond the address-computation region.",
+   "mechanism": "N/A - unexplored enumeration gap, carried forward from s2/s3/s4",
+   "next_probe": "Run mipsel-linux-gnu-objdump -d on tmp/sandbox/_SsSndCrescendo/main.o (banked 130 candidate) vs asm/funcs/_SsSndCrescendo.s in full, not just the header/address-computation region this and prior sessions have focused on, to see if any diffs exist past the bank-index shift and the SS_SCORE_FLAG clear sites."
   },
   {
-   "hypothesis": "The exact register choice for voll/volr (stack temps) has not yet been compared instruction-for-instruction against the target past the first ~40 lines of disassembly.",
+   "hypothesis": "The exact register choice for voll/volr (stack temps) has not yet been compared instruction-for-instruction against target past the first ~40 lines of disassembly.",
    "mechanism": "N/A - unexplored",
-   "next_probe": "Once the objdump-vs-target full diff (frontier item 2) is run, check whether voll/volr's stack-slot placement matches target exactly or contributes to the residual score."
+   "next_probe": "Once the full objdump-vs-target diff (frontier item 2) is run, check whether voll/volr's stack-slot placement matches target exactly or contributes to the residual score."
   }
  ],
  "judge_constraints": [],

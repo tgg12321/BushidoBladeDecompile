@@ -191,6 +191,34 @@ next session to confirm or refute with a direct sandbox measurement.
 - kill_scope: instance
 - measured_on: src/main.c HEAD with the shared-bank_off variant (both s32 and s16 typings) substituted for the banked candidate.c body, no FAKE constructs present, sandbox --disable all
 
+## [s4, permuter modality] Chassis re-verify: the s4-recorded 139/200/200 shared-bank_off form (rejected/shared-bank-off-s4.md) reproduces on this session's HEAD, and the banked 130 candidate.c reproduces exactly after re-applying it.
+- mechanism: N/A - chassis re-verification measurement
+- probe: Applied the s32-bank_off variant to src/main.c, measured; then reverted to candidate.c, measured again.
+- result: CONFIRMED: bank_off variant = score 139, build_insns 200 (target 200) exactly as banked. candidate.c (inlined single-expr form) = score 130, build_insns 213, exactly as banked. Chassis NOT stale.
+- verdict: CONFIRMED
+
+## [s4, permuter modality] Directed permuter campaign on a standalone workspace (tmp/perm_crescendo_s4, built from the s4 139/200/200 bank_off chassis) can find a novel sub-9589 (base) form approaching 0.
+- mechanism: N/A - random-mutation search from an insn-count-exact base
+- probe: Built a clean single-function permuter workspace (base.c = the bank_off chassis, target.o extracted from asm/funcs/_SsSndCrescendo.s at offset 0 via _prelude.inc) and launched `tools/permuter_campaign.py launch -j 4 --stop-on-zero`; waited in-turn across 3 windows (tools/permuter_campaign.py wait), ~165s wall time, 4687 iterations total, harvested + stopped.
+- result: KILLED as a closing search: base_score 9589 (permuter's own weighted metric, a different scale from the sandbox's), best find across all 4687 iterations was 8332 (only ~13% improvement), with no trend toward 0 and no near-zero find in any of the 3 fresh-seed wait windows. The permuter's random mutation space on this ~200-insn function with a large base score does not converge in this budget; per the brief's own caveat, the permuter cannot express the N-way statement-sharing/pointer-caching transformations this residual actually needs (confirmed directly below via manual objdump diff, not just inferred).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone permuter workspace tmp/perm_crescendo_s4 (base.c = s4 bank_off chassis, no FAKE constructs), decomp-permuter random mode, 4687 iterations, 4 parallel jobs, stop-on-zero enabled
+
+## [s4, permuter modality] Directly diffing the permuter workspace's own target.o disassembly against its base.o (the 139/200/200 bank_off chassis) reveals the EXACT register-reuse pattern target uses for the bank-index address, which is NOT simply "share bank_off": target materializes bank_off's pointer (`&_ss_score + bank_off`, held in one hard reg for the whole function, spilled to stack early) AND a1's ×0xB0 product (a SEPARATE hard reg, also spilled early) as two independently-cached components, recombined via one `addu` at the point `base` is first built — not the single fused expression our banked 130 form uses, and not literally reusing `base` itself (which H3 already confirmed is wrong).
+- mechanism: N/A - direct evidence from objdump, not derived/guessed; see tmp/grind/_SsSndCrescendo/s4/target.dis lines 4-31 vs base_s4_bankoff.dis same range
+- probe: mipsel-linux-gnu-objdump -d on both tmp/perm_crescendo_s4/target.o and base.o (bank_off chassis), diffed the disassembly listings instruction-by-instruction (opcodes only, addresses/hex stripped)
+- result: CONFIRMED via direct read: target's prologue is `move a3,a0 / sll v0,a3,0x10 / lui v1,%hi(_ss_score) / addiu v1,v1,%lo(_ss_score) / sra v0,v0,0xe / sw s3,52(sp) / addu s3,v0,v1` (s3 = bank pointer, cached) followed later by the already-matched a1*0xB0 chain feeding `sw s2,48(sp) / sll s2,v0,0x4` (s2 = a1_off, cached), then `lw v1,0(s3); addu s0,v1,s2` builds `base` ONCE from the two cached components. This is NOT what our banked forms do: the 130-score form recomputes everything inline each occurrence; the 139-score bank_off form shares ONLY the sign-extend step, re-deriving the a1*0xB0 product fresh at the base computation (matches) but the base itself only once (matches structurally) - the divergence from target is specifically in HOW MANY separate hard registers are held live and WHERE the clear-site re-derivations draw their operands from.
+- verdict: CONFIRMED
+
+## [s5, permuter modality] Caching BOTH bank_off AND a1_off as separate named C locals (following the objdump-diff finding above literally) closes the gap or improves on 130/139.
+- mechanism: suspected combine.c/CSE - if C-level naming of a1_off mirrors target's register-level caching of the same component, GCC's CSE was hypothesized to reuse it exactly where target does
+- probe: Declared both `s32 bank_off` and `s32 a1_off` at top, rewrote base and all clear sites to use both cached components (`*(s32*)((u8*)&_ss_score + bank_off + a1_off + 0x98) &= ~0x10;`), measured via sandbox --disable all
+- result: KILLED: score 143, build_insns 184 - UNDER target_insns 200 for the first time this ledger (every prior variant landed AT OR ABOVE 200). Caching a1_off as a named C local makes GCC's CSE reuse it MORE aggressively than target's own asm does at the clear sites (target's visible s2/a1_off register at the top of the function is evidence of ONE local build of `base`, not a general a1_off-reuse idiom threaded through the whole body — the clear sites likely still re-derive fresh per H3). Reverted; banked to rejected/shared-bank-off-and-a1off-s5.md.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main.c HEAD with the bank_off+a1_off dual-cache variant substituted for the banked candidate.c body at all 6 clear sites plus base, no FAKE constructs present, sandbox --disable all
+
 ## [s3] Applying the banked s3 candidate.c body to src/main.c reproduces the ledger's recorded floor of 130 on the current chassis.
 - mechanism: N/A - chassis re-verification measurement
 - probe: Applied candidate.c to src/main.c, ran sandbox _SsSndCrescendo --disable all
@@ -212,3 +240,27 @@ next session to confirm or refute with a direct sandbox measurement.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/main.c HEAD with the shared-bank_off variant (both s32 and s16 typings) substituted for the banked candidate.c body, no FAKE constructs present, sandbox --disable all
+
+## [s4] The banked s3 candidate.c body and the s4-recorded 139/200/200 shared-bank_off form both reproduce their recorded sandbox scores exactly on this session's HEAD chassis.
+- mechanism: N/A - chassis re-verification measurement
+- probe: Applied each form to src/main.c in turn, ran sandbox _SsSndCrescendo --disable all
+- result: CONFIRMED exactly: bank_off form = score 139, build_insns 200 (target 200); candidate.c = score 130, build_insns 213 (target 200). Chassis not stale vs ledger.
+- verdict: CONFIRMED
+
+## [s4] A directed permuter campaign on a clean standalone workspace (tmp/perm_crescendo_s4), seeded from the s4 139/200/200 bank_off chassis (the ledger's own recommended insn-count-exact base for register-alloc search), can find a novel form approaching score 0 on the permuter's own weighted metric.
+- mechanism: N/A - random-mutation search from an insn-count-exact base
+- probe: Built target.o from asm/funcs/_SsSndCrescendo.s at offset 0 (via a generic _prelude.inc) + base.o from the bank_off chassis; launched tools/permuter_campaign.py launch -j4 --stop-on-zero; waited in-turn across 3 windows (tools/permuter_campaign.py wait, ~165s wall, 4687 iterations); harvested + stopped.
+- result: KILLED: base_score 9589, best find across all 4687 iterations was 8332 (~13% improvement, no trend toward 0, no near-zero find in any of 3 fresh-seed windows). The permuter's random mutation space does not converge on this residual in this budget - consistent with the brief's caveat that the permuter cannot express the N-way register-caching/sharing structure this function actually needs.
+- verdict: ?
+
+## [s4] Diffing the permuter workspace's own target.o disassembly against its base.o (the bank_off chassis) instruction-by-instruction reveals target's exact register-reuse pattern for the bank-index address computation: a dedicated hard register for the bank pointer (&_ss_score+bank_off) AND a separate dedicated hard register for a1's x0xB0 product, both spilled to the stack early and recombined via one addu at the point base is first built - not the single fused expression the banked 130 form uses, and not a naive reuse of base itself (already ruled out by H3/s4's base-pointer-reuse kill).
+- mechanism: N/A - direct evidence from objdump read, not derived or guessed
+- probe: mipsel-linux-gnu-objdump -d on both tmp/perm_crescendo_s4/target.o and base.o, diffed the disassembly opcode-by-opcode (addresses/hex stripped); artifacts copied to tmp/grind/_SsSndCrescendo/s4/{target,base_s4_bankoff}.dis
+- result: CONFIRMED: target's prologue computes bank_off via (move a3,a0; sll; lui %hi(_ss_score); addiu %lo; sra; addu) into a hard reg (s3 in this build) saved to the stack, and separately the already-matched a1x0xB0 chain feeds another hard reg (s2) also saved to the stack; base is then built ONCE via lw+addu combining s3 and s2. This is new, directly-read evidence beyond H4's earlier combine.c dump finding - it names the SPECIFIC register-caching shape target uses, not just that a fold is blocked.
+- verdict: CONFIRMED
+
+## [s4] Literally mirroring target's 2-register-cache pattern in C - declaring BOTH a bank_off local AND an a1_off local, reused at every clear site - closes the gap or improves on the banked 130/139 forms.
+- mechanism: suspected combine.c/CSE: naming a1_off as a C local was hypothesized to make GCC reuse it exactly where target's asm shows the cached a1_off register being used
+- probe: Declared s32 bank_off and s32 a1_off at top of the function; rewrote base and all 6 clear sites to use *(s32*)((u8*)&_ss_score + bank_off + a1_off + 0x98) &= ~0x10; measured via sandbox --disable all
+- result: KILLED: score 143, build_insns 184 - the first time any measured variant on this ledger landed UNDER target_insns (184 < 200; every prior variant landed at or above 200). Naming a1_off as a C local makes GCC's CSE reuse it MORE aggressively across all 6 clear sites than target's own asm actually does - target's visible cached a1_off register at the top of the function is evidence of ONE local build of base, not a general a1_off-reuse idiom threaded through the whole function body (the clear sites likely still re-derive the a1 offset fresh, consistent with H3's earlier confirmed fresh-recompute finding for the WHOLE clear-site address). Reverted; banked to rejected/shared-bank-off-and-a1off-s5.md.
+- verdict: ?
