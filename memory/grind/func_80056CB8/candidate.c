@@ -1,6 +1,96 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s11 forensics-modality win) — floor 48/204,
- * NOT YET 0. (Prior: 58/204 s7-s10.)
+ * func_80056CB8 — CANDIDATE (s11 forensics-modality win, RE-CONFIRMED s12
+ * rederive) — floor 48/204, NOT YET 0. (Prior: 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s12 (rederive modality). STALE-HEAD-CLAIM NOTE (same as every prior
+ * session): src representation is INCLUDE_ASM between grind sessions;
+ * nothing persists on main. Re-applied the s11-banked body (r1/r2 merge +
+ * func_80053614 s32-return fix) to src/text1b.c; the func_80053614
+ * signature fix was MISSING from candidate.c's own splice (the file's
+ * body text alone does not carry it — the fix lives only in prose/git
+ * history) and had to be re-applied by hand before the chassis
+ * reproduced 48/198 (without it: 132/171, badly wrong — future sessions
+ * splicing this candidate.c verbatim must also re-apply the
+ * func_80053614 `void` -> `s32 return func_80052D00(...)` change, or
+ * they will silently start from a wrong chassis).
+ *
+ * FRESH m2c DECOMPILE (mipsel-gcc-c) of asm/funcs/func_80056CB8.s (first
+ * time this ledger ran m2c directly on this function — evidence.md/
+ * hypotheses.md only mention m2c as a suggestion, never as executed).
+ * Output archived: tmp/grind/func_80056CB8/s12/m2c_out.c. Confirms,
+ * doesn't overturn, prior findings: target's `var_fp` (the $fp/$s8
+ * accumulator) increments by 2 alongside the real loop counter `var_s6`
+ * (i), read directly by BOTH byte-table lookups — matches s10/s11's raw-
+ * asm reading exactly. The store-address expression `arg0 + i` is
+ * reconstructed as a value RECOMPUTED at every branch join
+ * (`var_v0 = arg0 + var_s6`) before a single shared store
+ * (`var_v0->unk444 = var_s0_2`) — tried respelling this as a genuinely
+ * duplicated store statement at every leaf of the flags==3/flags==4
+ * chain (mirroring m2c's per-leaf reconstruction): measured WORSE
+ * (48 -> 75/204, build_insns 198 -> 202). Reverted; re-confirmed 48/198.
+ * KILLED, instance — the store-address recompute in target's asm is not
+ * reachable by literally duplicating the store statement into every
+ * source-level leaf; whatever produces it is not this shape.
+ *
+ * inverse_compose.py classify (object-level: text1b func_80056CB8,
+ * --target-object build/src/text1b.o --ours-object
+ * tmp/sandbox/func_80056CB8/text1b.o), the #1 s11 frontier item, RE-RUN
+ * on the s11/s12 floor-48 chassis (must run via WSL — the native-Windows
+ * Python invocation fails, `objdump` is a WSL-only binary on this
+ * machine; use `wsl bash -c 'cd ... && source .venv/bin/activate &&
+ * python3 tools/ra_solver/inverse_compose.py classify ...'`). Verdict
+ * UNCHANGED from s8: FIRST DIVERGENCE: PRE-RA, instruction MULTISET
+ * differs (not a reachable RA/scheduler residual). NEW, more precise
+ * evidence this session: the multiset diff explicitly names a FRAME-SIZE
+ * delta — our build emits `addiu sp,sp,-176` / `addiu sp,sp,176`
+ * (176-byte frame) where target emits `-168` / `168` (168-byte frame) —
+ * exactly one extra 8-byte stack slot on our side. Our build ALSO shows
+ * `move #,s8` / `move s8,#` / `lw s8,168(#)` (a value shuffled through
+ * $s8 via a stack spill) plus `lhu #,1000(s8)` / `lhu #,106(s8)` (arg0-
+ * relative loads using $s8 as base), where target shows `addiu s8,s8,2`
+ * (the known accumulator increment) / three plain `addu #,#,#` / one
+ * `addu #,#,s8`, and the `lhu` pair at the SAME offsets but via a
+ * DIFFERENT (unspecified) base register — i.e. in our build $s8 holds
+ * `arg0`/`obj` (spilled once to free it up, then reloaded), while in
+ * target $s8 is reserved for the i*2 accumulator throughout and arg0
+ * lives elsewhere. This is a sharper restatement of the s10/s11 finding,
+ * not a new mechanism: the extra 8-byte frame slot IS the spill s11's
+ * loop.c reading predicts (our C never creates the accumulator, so $s8
+ * goes to the highest-priority remaining candidate instead, which
+ * apparently needs a stack round-trip somewhere our current chassis
+ * doesn't have visible pressure for).
+ *
+ * PROBE (killed, instance): the classify output's `cse_split` /
+ * `duplicated-statement-into-arms` lever list plus the frame-delta
+ * evidence suggested one untried spelling of "share i*2 between the two
+ * byte-table reads": a genuine LOOP-CARRIED POINTER induction variable
+ * (as opposed to s6/s10's fresh/loop-carried INT, and s7's per-table
+ * pointer RECOMPUTED fresh each iteration) — `u8 *flags_p = &D_8009A821
+ * + start*2; ...; for (i = start; i < start+2; i++, flags_p += 2, scale_p
+ * += 2) { flags = *flags_p << 8; ...; scale = *scale_p << 8; }`. Measured
+ * on the s11/s12 floor-48 chassis: score 48 -> 78/204 (build_insns 198 ->
+ * 209, WORSE). Reverted; re-confirmed floor 48 exactly reproduces.
+ * KILLED, instance — full writeup + all 4 now-measured "share i*2"
+ * spellings (fresh-int, loop-carried-int, fresh-pointer, loop-carried-
+ * pointer) in memory/grind/func_80056CB8/rejected/loop-carried-pointer-
+ * walk-worse.c. This closes the entire "one C handle carries i*2" family
+ * for this residual.
+ *
+ * FRONTIER FOR s13: the classify-confirmed frame-size delta (176 vs 168)
+ * is the sharpest lever surfaced so far and UNTRIED directly — find what
+ * in our current C forces an extra 8-byte stack slot / a spill-through-
+ * $s8 round trip that target's C doesn't need. Candidates: (a) run
+ * dump.ps1 fresh and read the .greg dump's conflict list for whichever
+ * pseudo lands in the frame slot at offset 168 — that names the exact
+ * competing value; (b) [[phantom-slot-frame-lever]] frame-census
+ * procedure to confirm which local/temp corresponds to the extra slot;
+ * (c) once the competing value is named, try reducing ITS lifetime
+ * (block-local split / narrow type / earlier consumption) rather than
+ * touching the index arithmetic at all — per s11's insn_count-threshold
+ * finding, shrinking the loop body's real-insn count is the only
+ * remaining avenue to let strength-reduction accept the accumulator, and
+ * eliminating this spill is a plausible way to do that without altering
+ * program semantics.
  * ---------------------------------------------------------------------
  * s11 (forensics modality). STALE-HEAD-CLAIM NOTE (same as every prior
  * session): src representation is INCLUDE_ASM between grind sessions;

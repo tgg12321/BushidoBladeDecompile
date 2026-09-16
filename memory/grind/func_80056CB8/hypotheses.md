@@ -679,3 +679,25 @@ and has NOT been tried in any prior session:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s11 chassis (target asm read directly; no C change made or measured for this specific hypothesis -- a negative read-only finding).
+
+## [s12] Splicing memory/grind/func_80056CB8/candidate.c's body verbatim onto src/text1b.c without ALSO re-applying func_80053614's void->s32 return-type fix reproduces the s11-banked floor of 48/204.
+- mechanism: candidate.c's own text only carries func_80056CB8's body; the func_80053614 signature prerequisite (stated in prose since s2) lives outside the spliced region and is silently lost on a naive re-application.
+- probe: Applied candidate.c's func_80056CB8 body only, left func_80053614 as void; ran sandbox func_80056CB8 --disable all.
+- result: Score came back 132/171 (build_insns dropped to 171, badly wrong) instead of 48/198. Re-applied the func_80053614 s32-return fix (return func_80052D00(arg2, arg3);) and the chassis reproduced exactly 48/198.
+- verdict: CONFIRMED
+
+## [s12] Rewriting the flags==3/flags==4 tail so the final byte store *(s8*)(arg0+0x444+i)=flags is duplicated as a real statement at every leaf of the if/else-if/nested-if chain (mirroring the fresh m2c reconstruction of target's asm, which recomputes the store address at 5 separate join points before one shared store) is a genuinely new, untried spelling of this tail on the s11/s12 (floor-48) chassis.
+- mechanism: m2c's per-leaf `var_v0 = arg0 + var_s6` reconstruction suggested the address recompute might be reachable by literally duplicating the store statement at the C level; this differs from the s6/s7 goto-based branch-topology rewrites already tried, which changed control flow shape but kept one shared store site.
+- probe: Duplicated the `*(s8 *)(arg0 + 0x444 + i) = (s8)flags;` statement into all 8 leaves of the flags==3/flags==4/other chain, removing the single trailing shared store. Measured sandbox func_80056CB8 --disable all.
+- result: Score regressed 48 -> 75/204 (build_insns 198 -> 202, MORE real instructions). Reverted immediately; re-confirmed floor 48/198 exactly reproduces after revert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh statement-duplication rewrite of the tail store, no FAKE constructs
+
+## [s12] Sharing the doubled byte-table index i*2 between the D_8009A821 and D_8009A820 lookups via a genuine LOOP-CARRIED POINTER induction variable (two fresh u8* locals initialized before the loop and incremented by += 2 in the for-statement's increment clause, mirroring target's own $fp/i*2 accumulator at the pointer level) is the one untried spelling in the 'share i*2' hypothesis family -- s6/s10 only tried fresh-int and loop-carried-int, s7 only tried per-table pointers RECOMPUTED fresh each iteration (never loop-carried).
+- mechanism: inverse_compose.py classify's PRE-RA verdict named target's addiu s8,s8,2 accumulator and our build's extra 8-byte frame spill through $s8 as the concrete multiset gap; a loop-carried pointer is the most literal C mirror of that accumulator shape, distinct from all 3 prior 'share i*2' spellings already killed in this ledger.
+- probe: Declared flags_p/scale_p as u8* locals at function scope, initialized to &D_8009A821/&D_8009A820 + start*2 before the loop, incremented by += 2 in the for-loop's increment clause, and dereferenced (*flags_p, *scale_p) in place of the (&D_x)[i*2] array-index reads. Measured sandbox func_80056CB8 --disable all.
+- result: Score regressed 48 -> 78/204 (build_insns 198 -> 209, MORE real instructions -- two parallel pointer inductions cost more than the array-index recompute they replaced). Reverted immediately; re-confirmed floor 48/198 exactly reproduces after revert. Full writeup + this closing out all 4 'share i*2' spellings: memory/grind/func_80056CB8/rejected/loop-carried-pointer-walk-worse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single loop-carried dual-pointer induction rewrite, no FAKE constructs

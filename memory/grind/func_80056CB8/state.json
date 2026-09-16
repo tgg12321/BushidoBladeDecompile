@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 11,
- "current_modality": "forensics",
+ "session_count": 12,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,24 @@
    "floor": 48,
    "modality": "forensics",
    "headline": "forensics s11: root-caused the missing $fp accumulator to loop.c's strength-reduction benefit threshold (named, non-source-facing); killed the loop-inversion frontier hypothesis; found + banked a new "
+  },
+  {
+   "session": 12,
+   "floor": 48,
+   "modality": "rederive",
+   "headline": "s12 rederive: re-confirmed floor 48/204 (with a required func_80053614 signature-fix re-application); fresh m2c decompile + inverse_compose classify sharpened the residual to an explicit 176-vs-168 fr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Re-run tools/ra_solver/inverse_compose.py classify on the new s11 (floor-48) chassis to see whether the PRE-RA verdict from s8 narrows now that two of the three s7-frontier merge candidates (flags/ang/code, r1/r2) are spent and the loop.c threshold root cause is named.",
-   "mechanism": "s8's classify verdict (PRE-RA, full instruction multiset mismatch) predates every C change since; a fresh classify against the current 48-floor chassis is the natural next diagnostic now that the register-identity axis is more fully explored.",
-   "next_probe": "python3 tools/ra_solver/inverse_compose.py classify text1b func_80056CB8 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80056CB8/text1b.o, with the s11-banked candidate.c applied to src/text1b.c."
+   "hypothesis": "The classify-confirmed frame-size delta (176 vs 168, one extra 8-byte spill slot our build has that target lacks, round-tripped through $s8) is the sharpest lever surfaced so far for this residual and is itself UNTRIED as a direct target: find what value is forced into that extra stack slot and reduce its lifetime instead of touching the i*2 index arithmetic (which the s6/s7/s10/s12 kills have now fully closed as a family).",
+   "mechanism": "s11's loop.c reading (strength_reduce rejecting the i*2 givs because insn_count=164 for our current loop body) predicts our build never gets the accumulator regardless of index spelling; the extra frame slot is consistent with $s8 going to a different, higher-priority pseudo (apparently arg0/obj) instead, with a spill somewhere to relieve pressure. Naming and shrinking that pseudo's lifetime is a plausible way to lower insn_count and let strength-reduction accept the accumulator as a side effect, without touching the index expression at all.",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80056CB8 fresh on this chassis and read the .greg dump's register-conflict list for whichever pseudo lands at frame offset 168 (or the equivalent slot in the fresh dump); cross-check against [[phantom-slot-frame-lever]]'s frame-census procedure to name the exact competing local/temp before trying any C change."
   },
   {
-   "hypothesis": "The code==4 tail's branch-topology difference (target: bltz+beqz as two branches; ours: one bgez) may now be reachable or may remain gated upstream -- worth re-checking with the new floor-48 chassis since two sessions confirmed it was neutral on the OLD chassis but the register-identity landscape has changed.",
-   "mechanism": "Unknown -- s6/s7 both found this tail's own C control-flow shape does not gate the branch-topology mismatch; whatever decides it is upstream (register pressure/scheduling earlier in the function), which the s11 r1/r2 merge changed.",
-   "next_probe": "Re-run the s6/s7 goto-based two-branch-topology rewrite of the y-compare (goto store;/goto neg; mirroring bltz+beqz) on the s11 (floor-48) chassis and measure -- if still neutral, re-confirms the s6/s7 finding generalizes across this chassis change too; if it now moves the floor, the r1/r2 merge changed what gates it."
-  },
-  {
-   "hypothesis": "The loop.c strength-reduction threshold finding suggests the ONLY remaining way to get target's $fp-style accumulator is to shrink or reshape the loop body enough to cross the benefit-vs-insn_count threshold (currently 164 real insns) -- not to respell the induction variable directly.",
-   "mechanism": "loop.c:3823 (v->lifetime * threshold * benefit < insn_count) is a function of the WHOLE loop's insn_count, so any lever that reduces insn_count (further register-reuse merges, dead-code-adjacent restructuring) could in principle flip the threshold even without touching the index arithmetic itself.",
-   "next_probe": "Track insn_count in the .loop dump as future sessions land further register-reuse or structural levers; if it drops meaningfully below ~164, re-run dump.ps1 and check whether the i*2 givs cross the strength-reduction threshold and produce an accumulator register automatically."
+   "hypothesis": "The code==4 tail's branch-topology difference (target: bltz+beqz as two branches plus a trailing j; ours: one bgez, per both the s6/s7 raw-asm reading and this session's classify multiset diff) may now be reachable given the sharper frame-delta evidence, though s6/s7 both found the tail's OWN C shape does not gate it (whatever decides it is upstream).",
+   "mechanism": "Unknown -- s6/s7/s11 all confirmed this tail's own control-flow shape is neutral; classify's PRE-RA verdict this session did not isolate this branch pair specifically (the beqz/bltz/j target-only instructions could belong to either the branch-topology residual or the frame-spill residual, or both jointly). Not yet decomposed.",
+   "next_probe": "Once the frame-slot pseudo from frontier item 1 is named and addressed, re-run classify to see whether the bltz/beqz/j vs bgez multiset gap narrows or persists in isolation -- if it persists as the ONLY remaining multiset diff, that isolates it as a genuinely separate residual worth its own structural-modality session."
   }
  ],
  "judge_constraints": [],
@@ -218,6 +219,22 @@
    "measured_on": "s11 chassis (target asm read directly; no C change made or measured for this specific hypothesis -- a negative read-only finding).",
    "predicate_cite": "",
    "result": "Confirms no register-reuse lever exists for these three values; closes frontier item 2 from s7-s10 (r1/r2 was the only r"
+  },
+  {
+   "session": 12,
+   "statement": "Rewriting the flags==3/flags==4 tail so the final byte store *(s8*)(arg0+0x444+i)=flags is duplicated as a real statement at every leaf of the if/else-if/nested-if chain (mirroring the fresh m2c recon",
+   "kill_scope": "instance",
+   "measured_on": "s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh statement-duplication rewrite of the tail store, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Score regressed 48 -> 75/204 (build_insns 198 -> 202, MORE real instructions). Reverted immediately; re-confirmed floor "
+  },
+  {
+   "session": 12,
+   "statement": "Sharing the doubled byte-table index i*2 between the D_8009A821 and D_8009A820 lookups via a genuine LOOP-CARRIED POINTER induction variable (two fresh u8* locals initialized before the loop and incre",
+   "kill_scope": "instance",
+   "measured_on": "s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single loop-carried dual-pointer induction rewrite, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Score regressed 48 -> 78/204 (build_insns 198 -> 209, MORE real instructions -- two parallel pointer inductions cost mor"
   }
  ],
  "ladder_skip": 0,
