@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 25,
- "current_modality": "enumerate",
+ "session_count": 26,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -153,18 +153,24 @@
    "floor": 38,
    "modality": "enumerate",
    "headline": "s25 enumerate: fresh chassis-relative re-sweep of the sin_p/cos_p/scale/x/z, pt0/pt1 store-order, and dx/dz spelling spaces on the CURRENT 38/198 chassis -- all flat or worse (63 variants measured), f"
+  },
+  {
+   "session": 26,
+   "floor": 38,
+   "modality": "synthesis",
+   "headline": "s26 synthesis: fresh 38/204 re-confirmed; killed both s25-named frontier items (sin_p/cos_p live-range narrowing, distinct per-call-site addr locals) and re-derived the loop.c:3823 giv-worth predicate"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Narrowing sin_p/cos_p's live range (dereferencing into fresh scalars immediately after computation, before the first func_80053614 call, instead of re-dereferencing the pointers in the post-call if(flags!=0) adjustment) may reduce register pressure enough to flip reload's spill-vs-keep decision for pseudo 149 (the 0x1F8002B8 literal, confirmed via s24's .greg read to be homed in $fp across the whole loop body).",
-   "mechanism": "reload1.c's alter_reg spill-vs-keep decision is a global cost/pressure tradeoff across all pseudos live at a given point; shrinking a competing pseudo's (sin_p/cos_p) live range reduces 149's effective conflict pressure without touching 149's own live range directly.",
-   "next_probe": "Apply the sin_p/cos_p-narrowing change on the current 38/198 chassis, measure via sandbox func_80056CB8 --disable all, then re-run pwsh tools/grinder/dump.ps1 and read the fresh .greg dump to directly verify whether pseudo 149's disposition (hard-reg-resident vs stack-spilled) actually changed, not just re-measure the aggregate sandbox score blind. This is the ledger's highest-value untried lever since s24 named it."
+   "hypothesis": "The register-pressure competition for $s8 between the (target-present, ours-absent) loop-carried idx2 accumulator and the (ours-present, target-absent) spilled 0x1F8002B8 literal cache is the single root cause of this residual -- successfully constructing i*2 as a loop-carried object might, as a SIDE EFFECT, free up enough pressure that the literal no longer needs to spill, closing both symptoms in one C change even though every isolated idx2-promotion attempt so far has failed loop.c:3823's giv-worth predicate on its own.",
+   "mechanism": "loop.c:3823 rejects a giv's strength-reduction based on lifetime*threshold*benefit vs insn_count computed in isolation from what ELSE is competing for registers at global allocation time (global.c/reload1.c run after loop.c, so loop.c's rejection is upstream of and blind to the $s8-literal-cache pressure that this session's classify run newly surfaced as a competing consumer of the same hard register).",
+   "next_probe": "Since every prior idx2 attempt (s6/s10/s12/s18/s21/s22) ALSO carried the bare-literal or shared-local 0x1F8002B8 spelling, none of them tested idx2 promotion TOGETHER WITH a spelling that avoids spilling the literal (e.g. computing it fresh inline at each call site with no shared pseudo at all, forcing two independent short single-use materializations instead of one long-lived spilled one) on the SAME chassis. Try: idx2 loop-carried promotion (s22-style for-statement) COMBINED WITH inlining the literal as two textually-independent expressions that are NOT identical tokens (e.g. one as 0x1F8002B8 and reaching the other via a distinct-looking but equal expression like (0x1F800000 + 0x2B8)) to see if defeating literal-CSE while promoting idx2 changes the register-pressure balance enough to pass loop.c:3823. This is a genuinely untried COMBINATION, not a re-test of either axis alone."
   },
   {
-   "hypothesis": "The target's $fp accumulator residual (chased since s6) remains the older, larger structural gap; the s11 loop-inversion finding (i*2 promoted to a loop-carried object is rejected by loop.c:3823's giv-worth predicate regardless of source shape) was last re-tested COMBINED with the s22 limit change (at s22 itself, worse) but never as a standalone re-audit on the post-s24 chassis in isolation.",
-   "mechanism": "loop.c's biv/giv strength-reduction analysis (loop.c:3823's insn_count-gated giv-worth predicate) rejects promoting i*2 to a loop-carried accumulator because the loop's insn_count sits below the acceptance threshold -- chassis-independent per s11/s18, but the current 38/198 chassis's insn_count (198) has not been individually re-checked against the threshold since the count changed at s22.",
-   "next_probe": "Read loop.c:3823's exact insn_count threshold value and compare against the current chassis's actual loop insn_count (from a fresh .loop dump), to determine analytically whether the +1 instruction from s22's `limit` local could plausibly cross the threshold before re-spending a sandbox measurement on it."
+   "hypothesis": "Target's single bare `lui #,0x1f80` (no ori, no spill) for the 0x1F8002B8 literal suggests the ORIGINAL source may pass a DIFFERENT expression at the second call site that happens to fold to the same runtime address via a different computation path (e.g. relative to a base already in a register) rather than the literal constant 0x1F8002B8 written twice -- worth checking whether func_80053614's fifth argument has any documented semantic (a scratchpad base address) that a sibling matched function passes via a computed expression instead of a bare hex literal.",
+   "mechanism": "If the original C never wrote the literal 0x1F8002B8 twice at all (e.g. it was `(s32)&some_scratchpad_var` or similarly derived), there would be no CSE-unification decision to make in the first place, dissolving this half of the residual entirely rather than requiring a defeat-CSE trick.",
+   "next_probe": "Grep asm/funcs and src/*.c for other callers of func_80053614 or its sibling collision-check functions to see if any matched call site passes a non-literal fifth argument, and check include/*.h or the naming census for whether 0x1F8002B8 has a named scratchpad symbol anywhere in the codebase that would motivate a symbolic (not literal) argument spelling."
   }
  ],
  "judge_constraints": [],
@@ -521,6 +527,30 @@
    "measured_on": "s25 chassis (s22/s23/s24-banked 38/198 body + func_80053614 s32-return prerequisite + the 3 missing extern decls restored, unmodified otherwise), one fresh sandbox measurement per variant (5 total), z",
    "predicate_cite": "",
    "result": "5/5 variants scored exactly 38/198, byte-identical spelling-neutral to the baseline. Full data: tmp/grind/func_80056CB8/"
+  },
+  {
+   "session": 26,
+   "statement": "Narrowing sin_p/cos_p's live range (capturing *sin_p/*cos_p into fresh sin_v/cos_v scalars immediately after their computation, before the first func_80053614 call, instead of re-dereferencing the poi",
+   "kill_scope": "instance",
+   "measured_on": "s26 chassis (s22/s23/s24-banked 38/198 body, unmodified except the sin_v/cos_v capture-and-substitute), single fresh sandbox measurement, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 38 -> 76/204, build_insns 198 -> 194 (-4 real instructions, moving away from target's 204). Reverted; 38/204 re-co"
+  },
+  {
+   "session": 26,
+   "statement": "Giving each func_80053614 call site its own distinct block-scoped local (addr1/addr2, each declared and assigned immediately before its own call) for the 0x1F8002B8 literal, instead of the bare repeat",
+   "kill_scope": "instance",
+   "measured_on": "s26 chassis (s22/s23/s24-banked 38/198 body, unmodified except the two distinct per-call-site addr locals), single fresh sandbox measurement, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 38 -> 43/204, build_insns 198 -> 198 (unchanged instruction count -- pure register-identity churn, same signature "
+  },
+  {
+   "session": 26,
+   "statement": "A fresh read of tools/gcc-2.7.2/loop.c:3760-3830 (the strength_reduce giv-worth rejection loop) shows the loop.c:3823 predicate `v->lifetime * threshold * benefit < insn_count` uses insn_count as the ",
+   "kill_scope": "instance",
+   "measured_on": "n/a (mechanism/predicate analysis of frozen compiler source, not a fresh source-level spelling test this session); relies on the s22 idx2-on-limit sandbox measurement (55/204) as its empirical anchor",
+   "predicate_cite": "",
+   "result": "Mechanism record corrected: insn_count is chassis-variable (not a compile-time constant, correcting a possible over-read"
   }
  ],
  "ladder_skip": 0,

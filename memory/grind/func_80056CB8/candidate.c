@@ -1,10 +1,44 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204
+ * s23/s24/s25/s26) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204
  * s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this session; s24
  * ran the ledger's own flagged next-probe (fresh .greg dump read on the
  * CURRENT 38/198 chassis) and two cheap declaration-order/scope probes,
  * both neutral (see below).
+ * ---------------------------------------------------------------------
+ * s26 (synthesis modality, 2026-09-16). Body UNCHANGED (both probed
+ * spellings measured worse; reverted). Re-ran the s25-named top frontier
+ * item (sin_p/cos_p live-range narrowing via sin_v/cos_v capture before
+ * the first func_80053614 call) -- WORSE: 38->76/204, build_insns
+ * 198->194 (-4 insns, wrong direction). Also tried a genuinely new axis
+ * (two DISTINCT per-call-site addr1/addr2 locals for the 0x1F8002B8
+ * literal, instead of one shared local per s23) -- worse: 38->43/204,
+ * same insn count (pure register-identity churn, same signature as
+ * every other addr/scale-reuse probe). Ran a fresh
+ * inverse_compose.py classify on the CURRENT 38/198 chassis
+ * (tmp/grind/func_80056CB8/s26/classify.txt): CONFIRMS the long-chased
+ * $fp/$s8 residual is a loop-carried idx2 accumulator in target
+ * (`addiu s8,s8,2` per iteration + two `addu #,#,s8` at the table
+ * addressing sites) vs our per-iteration `sll #,#,0x1` recompute (3x) --
+ * exactly the s11/s18/s22 giv-worth-rejected shape, now confirmed at the
+ * raw instruction-multiset level rather than inferred from the classify
+ * diff summary alone. Also newly visible: target's 0x1F8002B8 handling
+ * is a single bare `lui #,0x1f80` (no `ori`, no spill) vs our
+ * `lui s8,.. / ori s8,s8,0x2b8 / sw s8,16(#)` TWICE -- our chassis
+ * spills the literal to the stack at BOTH call sites where target does
+ * not, suggesting the register-pressure competition for $s8 between the
+ * (currently absent) idx2 accumulator and the (currently present)
+ * cached literal is the crux of this residual, not a scheduling
+ * artifact. Re-read tools/gcc-2.7.2/loop.c:3760-3830 (the strength_reduce
+ * giv-worth loop) directly: the rejection predicate's `insn_count` term
+ * is the per-loop compiled instruction count (varies with chassis, e.g.
+ * s22's +1), NOT the compile-time-constant `n_non_fixed_regs` term
+ * inside `threshold` (that part of the s21 finding stands) -- but this
+ * doesn't reopen idx2 since a larger insn_count makes strength-reduction
+ * of i*2 LESS likely to pass under the predicate's own arithmetic, and
+ * s22's idx2-on-limit measurement (55/204, worse) already empirically
+ * demonstrates the direction. src/text1b.c reverted to clean INCLUDE_ASM
+ * at session end via `git checkout -- src/text1b.c`.
  * ---------------------------------------------------------------------
  * s25 (enumerate modality, 2026-09-16). Body UNCHANGED. Applying the
  * candidate to src/text1b.c required THREE missing extern declarations
