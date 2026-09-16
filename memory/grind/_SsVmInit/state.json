@@ -190,6 +190,13 @@
    "hash": "ad0b5f6b371bba4c",
    "when": "2026-09-16T23:51:13.024585+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-16 18:51 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "ad0b5f6b371bba4c",
+   "when": "2026-09-16T23:54:43.841198+00:00",
+   "summary": "final call: FINAL CALL on body ad0b5f6b371bba4c, the same body I ruled PASS on 2026-09-16 18:51 (decisions.md); no new defect found, so that ruling binds. Re-verified independently: (1) the per-voice byte-displac"
   }
  ],
  "judge_clearances": [

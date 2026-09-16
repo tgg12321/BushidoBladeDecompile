@@ -1,14 +1,14 @@
 # SELF-VET — _SsVmInit  (session 8, synthesis)
 
-NOTE ON STATUS (s8): this vet describes the body banked in candidate.c, which
-measured `sandbox _SsVmInit --disable all` = score 0 (target_insns 200 ==
-build_insns 200) and a full `verify-oracle` build_sha1 ==
-62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true) on 2026-09-16.
-s8 did NOT submit it: construct (5) below is banned_constructs[3] for this
-function, so a candidate-ready would be discarded by check_banned_constructs
-before any review. s8's outcome is a ruling-request on that ban. A later
-session must NOT reuse this file as-is to submit — it must re-verify the ban's
-status first.
+NOTE ON STATUS (s9, synthesis): this vet describes the body banked in
+candidate.c and now applied verbatim at src/main.c:1192. Re-measured THIS
+session: `sandbox _SsVmInit --disable all` = score 0 (target_insns 200 ==
+build_insns 200, rules_dropped 0) and a full `verify-oracle` build_sha1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true), 2026-09-16.
+The ban that held s8 back (the per-voice byte-displacement field stores) was
+LIFTED by the Judge ruling of 2026-09-16 18:51, which also recorded a PASS
+clearance for this exact body (hash ad0b5f6b371bba4c; src/main.c and
+candidate.c both hash to it). s9 therefore submits it unchanged.
 
 CONSTRUCTS: (1) forward `extern` declaration block for globals this function is
 the first user of in the TU; (2) `u16 masked = (u8)a0;` read in the clamp

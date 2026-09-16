@@ -18,21 +18,15 @@
  * C reads one masked local in both places. `u16 masked = (u8)a0;` scores 0;
  * `u8 masked` scores 3 at 201 insns; dropping the `(u8)` cast scores 3.
  *
- * REMAINING BLOCKER (not a codegen problem): the 22 per-voice field stores
- * addressed as a byte displacement from each field's own splat symbol are
- * banned_constructs[3] for this function (layer-1, 2026-09-16 18:36) because
- * the s7-era self-vet justified them by inverting the 2026-09-03 prong-(c)
- * amendment. s8 measured the sanctioned alternative instead of re-arguing it:
- * a header-canonical 54-byte struct array (`SvmVoice D_800F4E18[24]`, every
- * field at its true offset) scores 4, NOT 0 - two source-level hunks in the
- * x54 stride decomposition (target: sll3/subu/sll2/subu/sll1; struct form
- * picks a different synth_mult sequence), with an s32 index or a u16 index
- * alike (rejected/s8-aggregate-struct-array-score4.c). So the aggregate merge
- * is measurably NOT the target's object model at the addressing level, and
- * this spelling is the one already oracle-proven on main for the same symbols
- * and the same 54-byte stride in the same TU (func_800858D0, src/main.c:
- * 983-988; also 1168 and 1306). A ruling on that ban is what this body waits
- * on - see the s8 outcome ruling_question.
+ * STATUS (s9, synthesis): SUBMITTED. The 2026-09-16 18:51 Judge ruling
+ * LIFTED the ban on the per-voice byte-displacement field stores (it read
+ * asm/funcs/_SsVmInit.s:84-120 and found the target re-materialises
+ * lui %hi(FIELD) + addu + sh %lo(FIELD) per store with the x54 displacement
+ * in a register - that IS this spelling's emission, not an indexed struct
+ * array's), and recorded a PASS clearance for this exact body
+ * (hash ad0b5f6b371bba4c). s9 applied it verbatim to src/main.c:1192 and
+ * re-measured: sandbox --disable all score 0 (200 == 200, rules_dropped 0),
+ * verify-oracle build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
  *
  * Apply verbatim in place of `INCLUDE_ASM("asm/funcs", _SsVmInit);` in
  * src/main.c.

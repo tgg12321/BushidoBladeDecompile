@@ -929,3 +929,29 @@ construct, so the frontier is no longer a list of levers.
    spelling of it; the s8-prev `u16 masked = (u8)a0;` form (one masked value
    read by both the compare and the else-arm store) is the close, re-verified
    at 0 this session.
+
+## s9 (synthesis) — merged attack and disposition
+
+MERGED ATTACK (the synthesis this modality asks for): the ledger's floor-3 era
+(s2-s7) spent six sessions attacking a single operand-only residual in the
+`_SsVmMaxVoice` clamp. s8's synthesis of that work — the target's own asm shows
+ONE masked value (`andi $a0,$s1,0xFF`) feeding BOTH the `sltiu` compare and the
+`sb` store, therefore the C must read ONE masked local in both places — closed
+it (`u16 masked = (u8)a0;`, score 0; `u8 masked` scores 3 at 201 insns; no cast
+scores 3). The only thing left for s9 to synthesise was the DISPOSITION, not a
+new spelling: s8's body was already at 0 and already Judge-cleared, and the ban
+that blocked its submission had been lifted before s9 was dispatched.
+
+CONFIRMED (s9): the banked candidate.c body, applied verbatim to src/main.c,
+measures `sandbox _SsVmInit --disable all` score 0 with target_insns 200 ==
+build_insns 200 and rules_dropped 0, and the full build links to the oracle
+SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. Mechanism: no compiler mechanism
+is claimed — the body is ordinary C (no __asm__, no volatile, no register pin,
+no FAKE annotation, no dead store, no pad, no goto). Probe: apply + sandbox +
+verify-oracle + body_hash_from_file cross-check against the Judge clearance hash
+`ad0b5f6b371bba4c`.
+
+FRONTIER: empty. The function is at distance 0 with a byte-identical full build;
+the s7 frontier items (cse-dump diff, local-alloc allocno-priority derivation,
+directed PERM_* cast-form sweep) all targeted the clamp residual that this body
+closes, and are retired for want of a residual to explain.

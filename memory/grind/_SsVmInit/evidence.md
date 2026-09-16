@@ -569,3 +569,59 @@ no FAKE construct anywhere in the body.
    the same false-positive shape the code's own func_800645B0 comment
    describes. Both observations are reproducible with
    `python -c "import grindlib; grindlib._ban_trips(ban, vet)"`.
+
+## s9 (synthesis) — 2026-09-16 — MATCH RE-PROVEN AND SUBMITTED, floor 0
+
+Session 9 was dispatched in `synthesis` modality against a ledger whose last
+recorded floor was 3, but the driver's CHASSIS CHECK measured the banked
+candidate.c at 0. The discontinuity was NOT a measurement artifact: s8 had
+already closed the function and banked the matching body, and was blocked only
+by `banned_constructs[3]` (the 22 per-voice field stores written as a byte
+displacement from each field's own splat symbol). That ban was LIFTED by the
+Judge ruling of 2026-09-16 18:51, which additionally recorded a PASS clearance
+for this exact body (hash `ad0b5f6b371bba4c`). The ruling's decisive evidence:
+asm/funcs/_SsVmInit.s:84-120 re-materialises `lui $at,%hi(FIELD_SYMBOL)` +
+`addu $at,$at,$v0` + `sh %lo(FIELD_SYMBOL)($at)` for EVERY per-voice field
+store with the x54 displacement held in $v0 — that is the byte-displacement
+spelling's own emission, not an indexed struct array's, so the aggregate-merge
+family's prong (a)/(b) evidence points AWAY from merging these symbols here
+(corroborated by rejected/s8-aggregate-struct-array-score4.c, which scores 4
+with both surplus hunks inside the x54 stride decomposition, under an s32 and a
+u16 index alike).
+
+What s9 actually did (no new spelling was invented; nothing was respelled):
+  1. Applied memory/grind/_SsVmInit/candidate.c verbatim in place of
+     `INCLUDE_ASM("asm/funcs", _SsVmInit);` at src/main.c:1192.
+  2. `sandbox _SsVmInit --disable all` → score 0, target_insns 200 ==
+     build_insns 200, scorable true, rules_dropped 0.
+  3. `verify-oracle` → build_sha1 == expected ==
+     62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true,
+     original_sha1_now == original_sha1_locked (no oracle drift).
+  4. Confirmed with tools/grinder/grindlib.body_hash_from_file that BOTH
+     memory/grind/_SsVmInit/candidate.c and the applied src/main.c body hash to
+     `ad0b5f6b371bba4c` — i.e. the submitted body is bit-for-bit the body the
+     Judge cleared, so layer-1 is skipped by construction and no respelling of a
+     cleared body occurred.
+  5. Refreshed the candidate.c header comment (the stale "REMAINING BLOCKER"
+     paragraph) and the self_vet.md status note. Both are comments/prose only;
+     the body hash is unchanged at `ad0b5f6b371bba4c` after the edits, verified
+     by re-running body_hash_from_file.
+
+KILL RE-AUDIT (mandated when the floor is flat with instance kills present):
+the 11 banked instance kills were all measured on floor-3 chassis (s2-s7) whose
+residual was the `_SsVmMaxVoice` clamp's a0/v0 register seat. That residual is
+CLOSED on the current chassis — the `u16 masked = (u8)a0;` form feeding both
+the `>= 0x18` compare and the else-arm store scores 0 — so those kills describe
+alternative spellings of a region that no longer has a residual. They are left
+in state.json as historical instance kills (each re-testable) rather than
+promoted or re-measured: a re-measurement of a clamp variant on a score-0
+chassis can only regress, and s6/s7 already recorded exactly those regressions
+(ternary, unconditional-store-then-clamp, u32 param type, duplicated cast, and
+the full 7-spelling / 2-axis enumeration). No FAKE construct is or was present
+in the closing body, so fake_ablate has no carrier to ablate here.
+
+The three live frontier items inherited from s7 (cse dump diff of the duplicate-
+cast variant, hand-derivation of local-alloc allocno priority for reg 72 vs
+reg 94, and a directed PERM_* cast-form sweep) are all attacks on that same now-
+closed clamp residual and are RETIRED, not deferred: there is no residual left
+for them to explain.
