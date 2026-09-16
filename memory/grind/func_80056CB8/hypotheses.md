@@ -1088,3 +1088,48 @@ src/text1b.c reverted to byte-identical HEAD at session end (git diff --stat emp
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s23 chassis (s22-banked 38/198 body, unmodified except the addr-local substitution, both declaration positions), two fresh sandbox measurements, no FAKE constructs present
+
+## [s24] Fresh .greg dump read on the CURRENT 38/198 chassis identifies pseudo 149 (huge conflict set, "149 in 30" -> hard reg 30/$fp) as the 0x1F8002B8 scratchpad-literal carrier, and CORRECTS the s13 writeup's misattribution of pseudo 149's value.
+- mechanism: `pwsh tools/grinder/dump.ps1 func_80056CB8`, read tmp/grind/func_80056CB8/dumps/text1b.greg lines 14788-15995 (func_80056CB8's slice). "Register dispositions:" line reads "149 in 30" -- pseudo 149 allocated hard reg 30 ($fp/$s8). Its conflict list (19th line of the slice) names every other pseudo (72,74,75,82,83,85,86,87,88,97,116,126,137,146,148,191,192,196,197,198) plus hard regs 2-9,29,64,66 -- i.e. live across virtually the entire function body. The s13 writeup (banked in this ledger, candidate.c header) claimed pseudo 149 = "528483000 (0x3D0900)", the flags==4 threshold constant; 528483000 decimal is actually 0x1F8002B8 (verified via python), NOT 0x3D0900 (= 4000000 decimal) -- a value mislabeling in that older writeup. On the current chassis, 149's huge conflict span and single $fp-callee-save home match the s22 classify-based inference (0x1F8002B8 cached in $s8 across the whole loop) far better than the threshold constant (which is only live briefly inside one conditionally-executed branch).
+- probe: Re-applied the s22/s23-banked 38/198 body unchanged + func_80053614 s32-return prerequisite, re-confirmed floor 38/204 fresh via sandbox. Ran dump.ps1, read the .greg dump slice directly.
+- result: Confirms (with direct RTL pseudo-level evidence, not just the classify multiset-diff inference) that a single long-lived pseudo carries the repeated 0x1F8002B8 literal across both func_80053614 calls, homed in $fp. Corrects a factual error in the s13 record about what pseudo 149's value was (that record was written on an earlier, pre-`limit` 48/198 chassis generation -- the pseudo numbering differs across chassis generations, so this is not a direct contradiction of s13's own chassis, but the VALUE claimed there was simply arithmetically wrong and should not be trusted by a future session).
+- verdict: CONFIRMED
+- kill_scope: n/a (not a kill; a confirmed diagnostic finding)
+
+## [s24] Declaring `start`/`limit`/`i` before the `pt0`/`pt1`/`hit0`/`hit1`/`work` arrays (reverse of the candidate's current declaration order) is neutral -- byte-identical to the baseline.
+- mechanism: Untried declaration-order axis for the function-scope locals (structural modality's own charter: "declaration order" lever). Tests whether GCC 2.7.2's LUID-order-sensitive allocation for function-scope locals is sensitive to whether the small scalars or the large arrays are declared first.
+- probe: On the s22/s23-banked 38/198 chassis, reordered the top-of-function declarations from `pt0,pt1,hit0,hit1,work,start,limit,i` to `start,limit,i,pt0,pt1,hit0,hit1,work`. Measured via sandbox func_80056CB8 --disable all.
+- result: score 38/204 unchanged, build_insns 198 unchanged -- byte-identical output. Reverted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s24 chassis (s22-banked 38/198 body, unmodified except the top-level declaration-order swap), single fresh sandbox measurement, no FAKE constructs present
+
+## [s24] Moving `hit0[4]`/`hit1[4]`/`work[4]` from function scope into the loop's block scope (they are read only within one iteration, unlike `pt0`/`pt1` whose pre-loop address materialization target itself hoists per s13) is neutral -- byte-identical to the baseline.
+- mechanism: A genuine hypothesis distinct from every prior probe: since s13 confirmed target hoists ONLY `&pt0`/`&pt1` before the loop (not hit0/hit1/work), and our chassis currently declares all five arrays at function scope, block-scoping the three arrays target does NOT hoist might change how GCC allocates their frame slots or affects register pressure around the loop-carried 0x1F8002B8 pseudo (149).
+- probe: On the s22/s23-banked 38/198 chassis, moved the `hit0`/`hit1`/`work` declarations from function scope to inside the `for` loop's block (alongside `obj`/`flags`/etc). Measured via sandbox func_80056CB8 --disable all.
+- result: score 38/204 unchanged, build_insns 198 unchanged -- byte-identical output. Consistent with the dump evidence: pseudo 149's own live range (set by the two call-site argument uses) is untouched by either probe, so the neutral result is expected in hindsight, not surprising. Reverted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s24 chassis (s22-banked 38/198 body, unmodified except the hit0/hit1/work scope move), single fresh sandbox measurement, no FAKE constructs present
+
+## [s24] A fresh .greg dump read on the current 38/198 chassis (tmp/grind/func_80056CB8/dumps/text1b.greg, func_80056CB8 slice lines 14788-15995) shows pseudo 149 allocated to hard reg 30 ($fp/$s8), with a conflict set spanning virtually every other pseudo plus the full hard-reg set, confirming at the RTL pseudo level (not just from the classify instruction-multiset diff) that GCC keeps the repeated 0x1F8002B8 scratchpad-address literal live in a single callee-saved register across the whole loop body. This also corrects the s13 writeup's claim that pseudo 149 held 528483000 as '0x3D0900' -- 528483000 decimal is actually 0x1F8002B8, not 0x3D0900 (4000000 decimal); that earlier writeup mislabeled the value.
+- mechanism: reload/global.c register allocation on the current chassis; the pseudo's long live range (both func_80053614 call sites) and large conflict set force it into a stable callee-save home rather than being rematerialized per use.
+- probe: pwsh tools/grinder/dump.ps1 func_80056CB8; read the func_80056CB8 slice of tmp/grind/func_80056CB8/dumps/text1b.greg directly.
+- result: Confirmed pseudo 149 -> hard reg 30 ($fp), lifetime 30 references, conflicts with 72,74,75,82,83,85,86,87,88,97,116,126,137,146,148,191,192,196,197,198 plus hard regs 2-9,29,64,66. Corrects the s13 record's value attribution (candidate.c and hypotheses.md updated this session with the correction).
+- verdict: CONFIRMED
+
+## [s24] Declaring start/limit/i before the pt0/pt1/hit0/hit1/work arrays (reversing the candidate's current top-of-function declaration order) is byte-identical to the current 38/198 baseline on this chassis, with these FAKE constructs present: none.
+- mechanism: Tests whether GCC 2.7.2's LUID-order-sensitive local allocation for function-scope locals is sensitive to scalar-vs-array declaration ordering.
+- probe: On the s22/s23-banked 38/198 chassis, swapped the declaration order of start/limit/i vs the five arrays; measured via sandbox func_80056CB8 --disable all.
+- result: score 38/204 unchanged, build_insns 198 unchanged, byte-identical. Reverted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s24 chassis (s22-banked 38/198 body, unmodified except the top-level declaration-order swap), single fresh sandbox measurement, no FAKE constructs present
+
+## [s24] Moving hit0[4]/hit1[4]/work[4] from function scope into the loop's block scope (they are read only within a single iteration, unlike pt0/pt1 whose pre-loop address materialization target itself hoists per the s13 record) is byte-identical to the current 38/198 baseline on this chassis, with these FAKE constructs present: none.
+- mechanism: Tests whether block-scoping arrays the target does NOT pre-hoist changes frame-slot allocation or register pressure around the loop-carried 0x1F8002B8 pseudo (149).
+- probe: On the s22/s23-banked 38/198 chassis, moved hit0/hit1/work declarations into the for loop's block scope; measured via sandbox func_80056CB8 --disable all.
+- result: score 38/204 unchanged, build_insns 198 unchanged, byte-identical. Consistent with the fresh dump evidence: pseudo 149's own live range is set by the two call-site argument uses, untouched by either probe. Reverted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s24 chassis (s22-banked 38/198 body, unmodified except the hit0/hit1/work scope move), single fresh sandbox measurement, no FAKE constructs present

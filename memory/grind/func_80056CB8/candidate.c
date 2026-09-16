@@ -1,10 +1,80 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed s23)
- * — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204 s11-s13;
- * 58/204 s7-s10.) Body UNCHANGED from s22 this session; only the
- * 0x1F8002B8-literal frontier item from s22 was probed and killed (see
- * below) -- the CORRECT reading of the target's own materialization
- * shape.
+ * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
+ * s23/s24) — floor 38/204, NOT YET 0. (Prior: 42/204 s14-s21; 48/204
+ * s11-s13; 58/204 s7-s10.) Body UNCHANGED from s22 this session; s24
+ * ran the ledger's own flagged next-probe (fresh .greg dump read on the
+ * CURRENT 38/198 chassis) and two cheap declaration-order/scope probes,
+ * both neutral (see below).
+ * ---------------------------------------------------------------------
+ * s24 (structural modality, 2026-09-16). Re-applied body unchanged +
+ * func_80053614 s32-return prerequisite, re-confirmed floor 38/204 fresh
+ * (build_insns 198) before any change.
+ *
+ * KEY CORRECTION (via fresh `pwsh tools/grinder/dump.ps1 func_80056CB8`,
+ * read directly this session -- tmp/grind/func_80056CB8/dumps/text1b.greg
+ * lines 14788-15995, the func_80056CB8 slice on the CURRENT 38/198
+ * chassis): the s13 write-up's claim that pseudo 149 holds "528483000
+ * (0x3D0900)" -- the flags==4 tail's threshold constant -- is WRONG.
+ * 528483000 decimal IS 0x1F8002B8, not 0x3D0900 (0x3D0900 = 4000000
+ * decimal). The "Register dispositions" line in the fresh dump reads
+ * "149 in 30" -- pseudo 149 is allocated to HARD REG 30, which is $fp
+ * ($s8) on this target (MIPS reg names: 2-9=a/v, 16-23=s0-s7, 30=fp).
+ * Its lifetime is 30 references and its conflict list (line 19 of the
+ * slice) includes EVERY other pseudo in the function plus the full
+ * a0-a3/v0-v1/t0-t1/sp/ra/hi/lo hard-reg set -- i.e. it is live across
+ * essentially the WHOLE loop body, both func_80053614 calls included.
+ * This CONFIRMS (not just infers from the classify multiset diff, as
+ * s22 did) that on the current chassis GCC allocates the 0x1F8002B8
+ * scratchpad-address literal to a single long-lived pseudo homed in the
+ * callee-save register $fp -- corroborating s22's classify-based guess
+ * with direct RTL-level evidence and CORRECTING the s13-era
+ * misattribution of pseudo 149's value (the s13 chassis was a different,
+ * earlier generation -- 48/198 pre-`limit` -- so the two findings are not
+ * directly contradictory, but the VALUE 528483000 was mislabeled in that
+ * writeup and any future session reading it should treat the 0x3D0900
+ * attribution there as unreliable).
+ *
+ * PROBE 1 (killed, instance, byte-identical/neutral): declared
+ * `start`/`limit`/`i` BEFORE the `pt0`/`pt1`/`hit0`/`hit1`/`work` arrays
+ * (reverse of the candidate's current top-of-function order). Measured:
+ * 38/198, BYTE-IDENTICAL score and build_insns -- no effect. Reverted.
+ *
+ * PROBE 2 (killed, instance, byte-identical/neutral): moved `hit0[4]`,
+ * `hit1[4]`, `work[4]` from function scope into the LOOP's block scope
+ * (they are only read within a single iteration and never carried
+ * across iterations, unlike `pt0`/`pt1` whose &-taken pre-loop
+ * materialization s13 confirmed target hoists too -- so this was a
+ * genuine hypothesis that GCC might treat their frame slots differently
+ * if block-scoped, possibly changing the register-pressure picture
+ * around pseudo 149). Measured: 38/198, BYTE-IDENTICAL -- no effect.
+ * Reverted (both probes reverted via `git checkout -- src/text1b.c`,
+ * verified zero diff before finishing).
+ *
+ * MECHANISM NOTE for the next session: neither probe touched pseudo
+ * 149's own live range (its lifetime is set by the two call sites'
+ * argument uses, which are unchanged by either probe), so the neutral
+ * result is CONSISTENT with the dump evidence, not surprising in
+ * hindsight -- the two probes were declaration-order/scope changes to
+ * OTHER locals, and 149's huge conflict set already includes essentially
+ * every pseudo regardless. A future session's lever needs to either (a)
+ * shrink pseudo 149's OWN live range (defeat the CSE/constant-propagation
+ * unification of the two identical `0x1F8002B8` literal call arguments
+ * into one pseudo -- every respelling tried so far, s23's `scale` reuse
+ * and named `addr` local, made this WORSE, not better, because they gave
+ * the literal an EXTRA C-level handle without removing the underlying
+ * CSE fold), or (b) find an UNRELATED register-pressure reduction
+ * elsewhere that's large enough to flip reload's spill-vs-keep decision
+ * for 149 specifically (per [[register-alloc-pure-c]] Levers A-C, not
+ * more respellings of the literal itself). Candidate for (b): `sin_p`
+ * and `cos_p` (s16 pointers) are live from their computation through the
+ * `if (flags != 0)` block after the FIRST func_80053614 call -- check
+ * whether narrowing THEIR lifetime (e.g. reading `*sin_p`/`*cos_p` into
+ * fresh scalars immediately after computing them, before the call, then
+ * using the scalars in the post-call adjustment instead of re-dereferencing
+ * the pointers) changes reg149's conflict set. NOT tried this session
+ * (turn budget) -- worth a session's full attention with a fresh dump
+ * re-read after the change to directly verify the effect on pseudo 149's
+ * disposition, not just re-measure the sandbox score blind.
  * ---------------------------------------------------------------------
  * s23 (rederive modality, 2026-09-16). CORRECTED the s22 "new frontier
  * item" characterization: a fresh direct read of

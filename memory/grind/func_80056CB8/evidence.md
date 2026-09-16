@@ -564,3 +564,9 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s23] func_80053614's declared return type is changed void->s32 as an unchanged, load-bearing prerequisite (banked since s2): the asm falls through $v0 from the final func_80052D00 call to the epilogue regardless of declared C return type, so the change is behavior-neutral for func_80053614 itself while making its return value available to func_80056CB8's caller.
 
 - [s23] Both new-this-session spellings of the 0x1F8002B8 axis (scale-pseudo reuse, named pre-loop local in two declaration orders) regress the score despite the addr-local variants nudging build_insns one step closer to target (199 vs 198, target 204) -- the residual is a register-IDENTITY/allocation choice, not purely an insn-count deficit on this axis, so simply adding the missing instruction via a natural C spelling is not sufficient by itself.
+
+- [s24] Fresh chassis re-confirmation this session: sandbox func_80056CB8 --disable all == 38/204 (build_insns 198), matching the ledger's last recorded floor exactly before any s24 change.
+
+- [s24] src/text1b.c reverted to clean INCLUDE_ASM state after this session (git checkout -- src/text1b.c, verified zero diff) -- nothing persists on main between grind sessions per asm-until-matched.
+
+- [s24] func_80053614's signature-fix prerequisite (void -> s32 return type, return func_80052D00(...)) is still required for the candidate to reproduce 38/198 and must be re-applied by any future session splicing candidate.c verbatim.
