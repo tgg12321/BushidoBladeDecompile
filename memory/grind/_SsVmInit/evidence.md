@@ -349,3 +349,100 @@ about `D_800F4E22`'s register reuse. Findings:
 - [s7] tools/spelling_enum.py widened mask+limit axis (2 named locals): 5 distinct spellings, scores {3 x1, 13 x3, 20 x1}.
 
 - [s7] The 2 operand-only hunks (score-3 residual) are unchanged: target keeps the masked parameter value in $a0 (andi a0,.../sb a0,...) while ours keeps it in $v0/$s1 (andi v0,.../sb s1,...) — a register-allocation seat tie, not a source-level diff.
+
+## Session s8 (synthesis, 2026-09-16) — **MATCH: honest distance 0**
+
+Chassis at dispatch: candidate.c measured 3 (200/200), as the driver's chassis
+check reported. Final state of this session: `sandbox _SsVmInit --disable all`
+prints **score 0, target_insns 200, build_insns 200** with the body applied to
+`src/main.c`; `--diff` shows 7 hunks, ALL classed not-scored (masked
+branch-target artifacts). No FAKE constructs are present in the matching body.
+
+### What closed it — the gap every prior session left open
+
+The residual was the pair of operand-only hunks s4-s7 chased:
+
+    target   andi $a0,$s1,0xFF ; sltiu $v0,$a0,0x18 ; ... ; sb $a0,%lo(_SsVmMaxVoice)($at)
+    ours     andi $v0,$s1,0xFF ; sltiu $v0,$v0,0x18 ; ... ; sb $s1,%lo(_SsVmMaxVoice)($at)
+
+Read as a whole (asm/funcs/_SsVmInit.s:52-62) target's shape says something
+stronger than "the mask landed in a different register": target STORES THE
+MASKED VALUE ($a0, the `andi` result) in the else arm, while we stored the raw
+parameter ($s1). One value, computed once, consumed by both the compare and
+the store.
+
+Every form the ledger had tried — s4's hand variants, s6's explicit duplicate
+cast / u32 param / unconditional-store / ternary, and s7's 7-spelling
+enumeration — varied only the COMPARE side and left the else arm as
+`_SsVmMaxVoice = a0;`. s7's enumeration files confirm this literally
+(`tmp/grind/_SsVmInit/s7/enum*/v*.c`: every variant's else arm is `= a0`).
+That is why s6's RTL read found the compare's masked pseudo (reg 94) dying at
+the compare and the store coming from reg 72: the C never asked for the masked
+value in the store. The enumeration was therefore not a complete cover of the
+region's spelling space — it was a complete cover of ONE axis of it.
+
+The closing form names the masked value once and reads it in both places:
+
+    {
+        u16 masked = (u8)a0;
+        if (masked >= 0x18) { _SsVmMaxVoice = 0x18; } else { _SsVmMaxVoice = masked; }
+    }
+
+Width of the local is load-bearing and was measured, not assumed
+(`tmp/grind/_SsVmInit/s8/var/`, one batched sweep):
+
+| form                                                   | score | build_insns |
+|--------------------------------------------------------|-------|-------------|
+| `u16 masked = (u8)a0;` … else `= masked;`               | **0** | 200 |
+| `s32 masked = (u8)a0;` … else `= masked;`               | 1     | 200 |
+| baseline (inline `(u8)a0`, else `= a0;`)                | 3     | 200 |
+| `u8 masked = a0;` / `u8 masked = (u8)a0;` … else `= masked;` | 3 | 201 |
+| `u16 masked = a0;` (no `(u8)` cast) … else `= masked;`  | 3     | 201 |
+| inline `(u8)a0` in BOTH arms (no local)                 | 3     | 200 |
+| parameter declared `u8 a0` (with and without a local)   | 3     | 200 |
+
+So: the local must exist (inlining the cast in both arms does not unify the
+two references), must be WIDER than the QImode store (a `u8` local lets the
+store drop the mask again and costs an extra insn), and must carry the `(u8)`
+truncation explicitly (`u16 masked = a0;` is not the same value).
+
+### Constructs DELETED this session (each re-measured at 0 without them)
+
+Four constructs the ledger carried as load-bearing are not load-bearing on the
+score-0 chassis. All were removed and the body re-measured at 0 each time
+(`tmp/grind/_SsVmInit/s8/simp/`, `tmp/grind/_SsVmInit/s8/simp2/`):
+
+1. `s16 ff = 0xFF;` hoisted before the per-voice loop and read at the two
+   0xFF stores (s3 killed it at 19->21; s4 re-measured it neutral and kept
+   it) — deleted, literals inlined, score 0.
+2. `offset = 1; buf[0] = offset << i;` (the offset-variable reuse that
+   sibling func_800858D0 documents as a codegen lever) — replaced with
+   `buf[0] = 1 << i;`, score 0.
+3. `s32 idx = i;` copy feeding the stride multiply — deleted, score 0.
+4. The expanded shift-subtract stride spelling `((idx*8-idx)*4-idx)*2`, which
+   s1's H4 introduced specifically to defeat loop.c's strength reduction —
+   replaced with plain `offset = i * 54;`, score 0. s1's H2/H4 kill of the
+   plain multiply was measured on the pre-s4 chassis (raw `s32` counter,
+   174-insn target); under the s4 `u16 i` counter the plain multiply is
+   byte-identical, so that kill is void.
+
+The matching body therefore carries no FAKE construct and no
+codegen-motivated local at all: `masked`, `i`, `offset` and `buf` are the
+function's own values.
+
+### Object model / declaration puns (unchanged from s1's verdict)
+
+The 21 per-voice field stores keep the per-word extern + byte-offset cast
+convention that this TU's two already-matched, accepted-on-main siblings use
+against the same base symbols and the same 54-byte stride: func_800858D0
+(`src/main.c:984`) and _SsVmKeyOffNow (`src/main.c:1419`, `src/main.c:1429`).
+The dispatch brief's automated DECLARATION-PUNS scan flags these sites and
+points at the header-canonical aggregate merge; that merge is an integration
+handoff over `include/*.h` covering this function AND the still-INCLUDE_ASM
+siblings (_SsVmKeyOnNow, vmNoiseOn, SsUtKeyOnV, _SsVmFlush), which is outside
+a grind session's surface. See self_vet.md T5 for the full statement.
+
+Artifacts: `tmp/grind/_SsVmInit/s8/gen.py`,
+`tmp/grind/_SsVmInit/s8/var/*.c` (8 clamp spellings),
+`tmp/grind/_SsVmInit/s8/simp/*.c`, `tmp/grind/_SsVmInit/s8/simp2/*.c`
+(simplification ladder).

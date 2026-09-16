@@ -775,3 +775,96 @@ each variant, no FAKE constructs present in any swept form
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD s7 floor-3 candidate.c chassis (src/main.c with candidate.c applied verbatim), sweep_variants.py restoring src/main.c after each variant, no FAKE constructs present in any swept form
+
+## s8 (synthesis session) — FUNCTION MATCHED, honest distance 0
+
+### H — CONFIRMED (the closing lever): the clamp's masked value must be a named local READ IN THE ELSE-ARM STORE, not just in the compare, and it must be wider than the byte store
+Statement: target's clamp region (asm/funcs/_SsVmInit.s:52-62) computes the
+masked parameter once (`andi $a0,$s1,0xFF`), compares that value
+(`sltiu $v0,$a0,0x18`) and STORES THAT SAME VALUE in the else arm
+(`sb $a0,%lo(_SsVmMaxVoice)($at)`). Writing the C so one local carries that
+value into both uses — `{ u16 masked = (u8)a0; if (masked >= 0x18)
+{ _SsVmMaxVoice = 0x18; } else { _SsVmMaxVoice = masked; } }` — closes the
+two operand-only hunks the ledger has carried since s4 and takes the function
+to honest distance 0 (200 == 200; all remaining diff hunks are not-scored
+masked branch targets).
+Mechanism: no GCC-internals claim is needed or made — the C now names the
+same value target names. (Descriptively: with the local read twice, neither
+reference can be copy-propagated back to the parameter pseudo, so the masked
+value stays a single live object; with the else arm reading the parameter
+instead, the masked pseudo dies at the compare, which is exactly the RTL s6
+observed and correctly reported.)
+Probe: `python3 tools/sweep_variants.py --func _SsVmInit --file main
+--variants tmp/grind/_SsVmInit/s8/var --json` (8 hand-written spellings in one
+batch), then `& tools/wteng.ps1 main sandbox _SsVmInit --disable all` and
+`--diff` on the applied body.
+Result: score 0 (target_insns 200, build_insns 200). Width matters and was
+measured: `u16 masked` = 0; `s32 masked` = 1; `u8 masked` = 3 at 201 insns;
+`u16 masked = a0;` (no `(u8)` cast) = 3 at 201; inline `(u8)a0` in both arms
+(no local) = 3; parameter declared `u8` = 3.
+Verdict: CONFIRMED.
+
+### H — CONFIRMED: s7's "complete enumeration" of the clamp region covered only the COMPARE side; every variant it swept kept `_SsVmMaxVoice = a0;` in the else arm
+Statement: the s7 enumerate session concluded that the declaration/inlining
+spelling space of the clamp was exhaustively covered. Reading its own variant
+files (tmp/grind/_SsVmInit/s7/enum/v{0,1}.c, enum2/v{0..4}.c) shows all seven
+spellings vary only the mask/limit values used by the `if` condition and leave
+the else arm as `_SsVmMaxVoice = a0;` — the axis that actually mattered (WHICH
+VALUE the else arm stores) was never varied. The s4 and s6 hand-tried forms
+have the same blind spot.
+Mechanism: n/a — an audit of prior sessions' artifacts, not a codegen claim.
+Probe: grepped the s7 enum variant files for their clamp regions.
+Result: confirmed; this is why five sessions read the residual as a pure
+register-seat tie. The lesson for the ledger: an enumeration is only complete
+over the axes it parameterises, and the axis list must be derived from the
+TARGET's data flow (which value is stored), not from the current C's shape.
+Verdict: CONFIRMED.
+
+### H — KILLED (instance): the four codegen-motivated constructs the ledger carried (`ff` hoist, `offset = 1` reuse, `idx` copy, expanded shift-subtract stride) are not load-bearing on the score-0 chassis
+Statement: deleting `s16 ff = 0xFF;` (inlining the literal at both 0xFF
+stores), replacing `offset = 1; buf[0] = offset << i;` with `buf[0] = 1 << i;`,
+deleting the `s32 idx = i;` copy, and replacing the expanded stride spelling
+`((idx*8-idx)*4-idx)*2` with plain `offset = i * 54;` each leave the honest
+distance at 0, individually and all together. In particular s1's H2/H4
+conclusion that a plain `i * 54` multiply gets strength-reduced away from
+target's shape does not hold on the current chassis (it was measured with a
+raw `s32` loop counter against the pre-s4 174-insn target; the s4 `u16 i`
+counter changes it).
+Mechanism: n/a — measurement of construct necessity, not a codegen claim.
+Probe: `tools/sweep_variants.py --func _SsVmInit --file main --variants
+tmp/grind/_SsVmInit/s8/simp` (w0 current, w1 no-ff, w2 no-offset-reuse,
+w3 both, w4 no-idx) and `.../simp2` (w5 minimal, w6 plain `i * 54`,
+w7 masked-without-cast).
+Result: w0-w6 all score 0 at 200 insns; only w7 (dropping the `(u8)` cast on
+the masked local) regresses to 3/201. The final adopted body is w6 — the
+simplest — and carries no FAKE construct.
+Verdict: KILLED (the claim that these constructs are needed).
+kill_scope: instance
+measured_on: HEAD s8 score-0 body in src/main.c (u16 loop counter, `u16
+masked = (u8)a0;` clamp), each construct removed via sweep_variants.py with
+src/main.c restored between variants, no FAKE constructs present in any swept
+form.
+
+### H — KILLED (instance): kill re-audit of the two closest-to-target banked kills (s6 explicit-duplicate-cast; s4/s7 named-local-for-the-mask) — both were measured against a body whose else arm stored the raw parameter, and both change verdict once the else arm reads the local
+Statement: the mandated kill re-audit picked the two instance kills that sat
+closest to the target shape — s6's "explicit duplicate cast in the else arm"
+(`_SsVmMaxVoice = (u8)a0;`, measured flat at 3) and s4/s7's "named local for
+the mask value" (measured 3/201 and 13-20). Re-measured on the current
+chassis: the duplicate-cast form is still flat at 3 (its cast is stripped for
+the QImode store, so it is not the same construct as reading a named local),
+but the named-local form REVERSES from a kill to the closing win as soon as
+the else arm reads the local instead of the parameter. `tools/fake_ablate.py`
+was not applicable: no FAKE construct is present in the s4/s6/s7 chassis or in
+this one (all measurements above are on FAKE-free bodies), so ablation is a
+no-op here — the re-audit was done by re-measuring the forms directly.
+Mechanism: n/a — re-measurement of banked kills under the current chassis.
+Probe: the same `tmp/grind/_SsVmInit/s8/var` sweep (v5 = inline cast in both
+arms = 3; v1/v2 = u8 named local read in both arms = 3/201; v4 = u16 named
+local read in both arms = 0).
+Result: the named-local family's kill was an artifact of WHERE the local was
+read, not of the local itself.
+kill_scope: instance
+measured_on: HEAD s8 chassis (src/main.c with the s4-s7 candidate body, then
+each variant spliced by sweep_variants.py and restored), no FAKE constructs
+present in any measured form.
+Verdict: KILLED.

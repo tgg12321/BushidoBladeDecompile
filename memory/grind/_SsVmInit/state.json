@@ -65,7 +65,10 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "extern u16 D_8010280A;  /* candidate.c extern block, src/main.c:1221 */  +  `D_8010280A = i;` inside the per-voice loop (src/main.c:1293)",
+  "Header comment on the extern block: 'The externs below duplicate declarations that appear LATER in this TU with identical types'"
+ ],
  "kills": [
   {
    "session": 1,
@@ -156,10 +159,22 @@
    "result": "ENUMERATION: 7 spellings, best 3, 1 at the floor (the baseline fully-inlined form). Full histogram in hypotheses.md s7."
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 11,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T21:24:37.353584+00:00",
  "object_model_audited": 2,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The body re-introduces a per-word splat scalar (extern u16 D_8010280A) for an address the project has ALREADY merged into the include/sound.h aggregate _svm_cur (field .voice), contradicting the TU's shipped object model and the identical store in the bytes-proven sibling func_800858D0 (src/main.c:993 `_svm_cur.voice = var_s0;`); the self-vet does not disclose or justify it. Next action: Not a citation fix \u2014 do not re-cite, re-measure. Replace `extern u16 D_8010280A;` + `D_8010280A = i;` with the TU's shipped aggregate spelling `_svm_cur.voice = i;` (include/sound."
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "60e1867535ee2af0",
+   "when": "2026-09-16T23:25:46.239857+00:00",
+   "summary": "The body re-introduces a per-word splat scalar (extern u16 D_8010280A) for an address the project has ALREADY merged into the include/sound.h aggregate _svm_cur (field .voice), contradicting the TU's shipped object model and the identical store in the bytes-proven sibling func_800858D0 (src/main.c:9"
+  }
+ ]
 }
