@@ -701,3 +701,33 @@ and has NOT been tried in any prior session:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single loop-carried dual-pointer induction rewrite, no FAKE constructs
+
+## [s13] The s12-banked candidate.c body (s7 flags/ang/code merge + s11 r1/r2 merge + func_80053614 s32-return fix), applied fresh to src/text1b.c this session, reproduces honest floor 48/204 (build_insns 198) with zero source change from the s12 record.
+- mechanism: No new mechanism -- this is a chassis-stability re-confirmation via a fresh `sandbox func_80056CB8 --disable all` run this session.
+- probe: Applied memory/grind/func_80056CB8/candidate.c's body verbatim to src/text1b.c (incl. retyping func_80053614 to s32 with `return func_80052D00(arg2, arg3);`), ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score=48, target_insns=204, build_insns=198 -- exact match to the s11/s12 recorded floor. Chassis stable.
+- verdict: CONFIRMED
+
+## [s13] Swapping the flags==4 threshold comparison's operand order (`dx*dx+dz*dz > 0x3D0900` instead of `0x3D0900 < dx*dx+dz*dz`) does not change loop.c's decision to hoist-and-spill the 0x3D0900 threshold constant (reg149) on this chassis.
+- mechanism: loop.c move_movables eligibility test (loop.c:695-701, the 3-way OR: not-maybe_never+not-used-before / not-a-uservar-and-not-in-exit-test / def-and-use-in-same-basic-block) -- the constant's def/use are already adjacent in the same basic block in every operand-order spelling, so the REG_USERVAR_P-related prong of the eligibility test was never the deciding factor; the actual gate is the move_movables cost-benefit test at loop.c:1631 (threshold*savings*lifetime vs insn_count), which is insensitive to operand order.
+- probe: Edited the flags==4 branch to `if (dx * dx + dz * dz > 0x3D0900)` (operands swapped from the banked `if (0x3D0900 < dx * dx + dz * dz)`), ran `sandbox func_80056CB8 --disable all` on the s12 chassis (func_80053614 s32-return fix + s7/s11 merges present, unmodified otherwise), then reverted.
+- result: score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline measured immediately before. No gradient.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement
+
+## [s13] Naming the threshold comparison's LHS sum as a fresh local (`s32 sq = dx*dx+dz*dz; if (sq > 0x3D0900)`) does not change the honest floor on this chassis.
+- mechanism: Same loop.c move_movables cost-benefit gate as above -- the sum expression is not the movable in question (the constant 0x3D0900 is); naming the sum does not alter the constant's def/use adjacency or the insn_count/threshold/benefit product that move_movables:1631 evaluates.
+- probe: Edited the flags==4 branch to declare `s32 sq = dx * dx + dz * dz;` then `if (sq > 0x3D0900)`, ran `sandbox func_80056CB8 --disable all` on the same s12 chassis, then reverted.
+- result: score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline. No gradient.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement
+
+## [s13] Naming the threshold constant as a fresh local (`s32 limit = 0x3D0900; if (dx*dx+dz*dz > limit)`) does not change the honest floor on this chassis, confirming the constant is movable-eligible under loop.c's def-and-use-in-same-basic-block prong regardless of whether it is a literal or a named local.
+- mechanism: loop.c:695-701 prong (3) (def and use in the same basic block, no intervening branch) makes the constant's assignment movable-eligible independent of REG_USERVAR_P -- so converting the literal to a user-named variable, which would only matter if prong (2)'s REG_USERVAR_P clause were the active gate, has no effect because prong (3) already qualifies it. The real gate remains move_movables:1631's cost-benefit test.
+- probe: Edited the flags==4 branch to declare `s32 limit = 0x3D0900;` then `if (dx * dx + dz * dz > limit)`, ran `sandbox func_80056CB8 --disable all` on the same s12 chassis, then reverted.
+- result: score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline. No gradient.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement

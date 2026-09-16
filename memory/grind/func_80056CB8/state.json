@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 12,
- "current_modality": "rederive",
+ "session_count": 13,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -75,18 +75,19 @@
    "floor": 48,
    "modality": "rederive",
    "headline": "s12 rederive: re-confirmed floor 48/204 (with a required func_80053614 signature-fix re-application); fresh m2c decompile + inverse_compose classify sharpened the residual to an explicit 176-vs-168 fr"
+  },
+  {
+   "session": 13,
+   "floor": 48,
+   "modality": "structural",
+   "headline": "s13 structural: re-confirmed floor 48/204 fresh (sandbox measured this session), named the s12 frame-delta pseudo (reg149 = 0x3D0900 flags==4 threshold constant, spilled per .greg dump), found the dou"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The classify-confirmed frame-size delta (176 vs 168, one extra 8-byte spill slot our build has that target lacks, round-tripped through $s8) is the sharpest lever surfaced so far for this residual and is itself UNTRIED as a direct target: find what value is forced into that extra stack slot and reduce its lifetime instead of touching the i*2 index arithmetic (which the s6/s7/s10/s12 kills have now fully closed as a family).",
-   "mechanism": "s11's loop.c reading (strength_reduce rejecting the i*2 givs because insn_count=164 for our current loop body) predicts our build never gets the accumulator regardless of index spelling; the extra frame slot is consistent with $s8 going to a different, higher-priority pseudo (apparently arg0/obj) instead, with a spill somewhere to relieve pressure. Naming and shrinking that pseudo's lifetime is a plausible way to lower insn_count and let strength-reduction accept the accumulator as a side effect, without touching the index expression at all.",
-   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80056CB8 fresh on this chassis and read the .greg dump's register-conflict list for whichever pseudo lands at frame offset 168 (or the equivalent slot in the fresh dump); cross-check against [[phantom-slot-frame-lever]]'s frame-census procedure to name the exact competing local/temp before trying any C change."
-  },
-  {
-   "hypothesis": "The code==4 tail's branch-topology difference (target: bltz+beqz as two branches plus a trailing j; ours: one bgez, per both the s6/s7 raw-asm reading and this session's classify multiset diff) may now be reachable given the sharper frame-delta evidence, though s6/s7 both found the tail's OWN C shape does not gate it (whatever decides it is upstream).",
-   "mechanism": "Unknown -- s6/s7/s11 all confirmed this tail's own control-flow shape is neutral; classify's PRE-RA verdict this session did not isolate this branch pair specifically (the beqz/bltz/j target-only instructions could belong to either the branch-topology residual or the frame-spill residual, or both jointly). Not yet decomposed.",
-   "next_probe": "Once the frame-slot pseudo from frontier item 1 is named and addressed, re-run classify to see whether the bltz/beqz/j vs bgez multiset gap narrows or persists in isolation -- if it persists as the ONLY remaining multiset diff, that isolates it as a genuinely separate residual worth its own structural-modality session."
+   "hypothesis": "The double-bind means the next lever is NOT another respelling of the threshold comparison (that family is now closed -- 3/3 killed this session, consistent with the i*2 index family's 6 prior kills) but a C change that reduces register PRESSURE elsewhere in the loop body (lowering `n_non_fixed_regs`, and hence loop.c:532's `threshold`) without touching insn_count or the threshold comparison at all.",
+   "mechanism": "loop.c:532 computes threshold = (loop_has_call?1:2)*(1+n_non_fixed_regs); lowering n_non_fixed_regs shrinks threshold directly, which could flip move_movables:1631's `threshold*savings*lifetime >= insn_count` comparison to reject the constant hoist WITHOUT perturbing insn_count (and thus without touching strength_reduce's separate, insn_count-gated $fp-accumulator decision at loop.c:3823).",
+   "next_probe": "Read the .greg dump's conflict list (tmp/grind/func_80056CB8/dumps/text1b.greg lines ~14791-14812) for which of the ~20 pseudos in this loop (obj/sin_p/cos_p/scale/x/z/flags and the two func_80053614 call results) has the largest conflict set, and try narrowing/shortening its live range (earlier death, narrower type, or splitting a multi-role pseudo) as a genuine, semantically-motivated C change -- then re-check BOTH the reg149 spill (still 'Spilling reg 11'/'Spilling reg 65'?) and the strength-reduction verdict (does classify's PRE-RA verdict on the i*2 givs change?) in the same session, since the double-bind means either could move."
   }
  ],
  "judge_constraints": [],
@@ -235,6 +236,30 @@
    "measured_on": "s12 chassis (s11-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single loop-carried dual-pointer induction rewrite, no FAKE constructs",
    "predicate_cite": "",
    "result": "Score regressed 48 -> 78/204 (build_insns 198 -> 209, MORE real instructions -- two parallel pointer inductions cost mor"
+  },
+  {
+   "session": 13,
+   "statement": "Swapping the flags==4 threshold comparison's operand order (`dx*dx+dz*dz > 0x3D0900` instead of `0x3D0900 < dx*dx+dz*dz`) does not change loop.c's decision to hoist-and-spill the 0x3D0900 threshold co",
+   "kill_scope": "instance",
+   "measured_on": "s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement",
+   "predicate_cite": "",
+   "result": "score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline measured immediately before. No gradie"
+  },
+  {
+   "session": 13,
+   "statement": "Naming the threshold comparison's LHS sum as a fresh local (`s32 sq = dx*dx+dz*dz; if (sq > 0x3D0900)`) does not change the honest floor on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement",
+   "predicate_cite": "",
+   "result": "score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline. No gradient."
+  },
+  {
+   "session": 13,
+   "statement": "Naming the threshold constant as a fresh local (`s32 limit = 0x3D0900; if (dx*dx+dz*dz > limit)`) does not change the honest floor on this chassis, confirming the constant is movable-eligible under lo",
+   "kill_scope": "instance",
+   "measured_on": "s13 chassis (s12-banked candidate.c body, func_80053614 s32-return fix in place, no other change), single fresh in-session sandbox run, form reverted after measurement",
+   "predicate_cite": "",
+   "result": "score=48, target_insns=204, build_insns=198 -- byte-identical to the s12 baseline. No gradient."
   }
  ],
  "ladder_skip": 0,

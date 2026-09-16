@@ -1,13 +1,45 @@
-# SELF-VET — func_80056CB8 (s11)
-CONSTRUCTS: flags-borrowed-for-r1 (existing local `flags` reused for the func_80053614 call's return value), r2-inlined-as-expression (no local declared, call expression used directly in the disposition formula)
-## T1 semantic purpose: Both constructs have full semantic purpose. `flags` after the merge genuinely HOLDS the first collision-check's return value (`r1`) for the remainder of its use (the `if (flags != 0)` branch, and the final `(flags | (r2<<1)) + 1` disposition formula) -- every read consumes the real return value, nothing is dead. The inlined second call is a normal C expression (`func_80053614(...) << 1`) with no declared intermediate at all -- there is nothing to have "no purpose".
-## T2 human-programmer: A programmer reusing an already-dead local for the next real value it needs to hold (rather than declaring `r1` as a third name for a value with the same lifetime shape as `flags`) is ordinary variable-reuse practice, not something a reader would flag as suspicious. Not naming a single-use call result before using it (the r2 inlining) is also completely ordinary C style.
-## T3 GCC-internals justification: The DISCOVERY that this reuse matches target was made by reading target's asm (asm/funcs/func_80056CB8.s lines 103-122: `jal func_80053614; addu $s0,$v0,$zero` then `or $s0,$s0,$v0; addiu $s0,$s0,0x1`) -- register-identity evidence, not a GCC-pass mechanism the construct itself depends on. The construct's justification is program logic (the value's real lifetime lets it share a name with the prior dead value), not "this changes allocno priority" or similar. No GCC-internals term is the MECHANISM; register-choice is the OBSERVED CONSEQUENCE the source structure was chosen to match, per Ruling 1(3) of ordinary-c-judge-decidable.md ("a construct with a real semantic reading is never a cheat merely because the agent chose it after observing the scheduler").
-## T4 permuter/search provenance: Not permuter-found. Derived by directly reading target's own asm listing and identifying the register-reuse pattern (same method as the s7 flags/ang/code merge), then hand-writing and measuring the C change.
-## T5 family check: Matches the existing SOTN-accepted "variable reuse for codegen control" family (no-new-park-categories.md § SOTN-accepted; [[defeat-licm-hoist-var-reuse]]) -- the SAME family already used and Judge-reviewable for this function's s7 flags/ang/code merge, now extended to a fourth value (r1) that shares the identical structural shape (dead old value in an existing local, reused for a new real, consumed value). Not a new family, not an analogy stretch -- same construct shape, same rule, same function.
-## T6 naming-announces-intent: No new names introduced. `flags` is the SAME pre-existing, honestly-named local from the s7 merge (a real disposition-code variable, not a `pad`/`dummy`/`spill`-style name). The r2 inlining removes a name entirely (no local declared) -- nothing to carry coercion-intent naming.
-SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: variable reuse for codegen control (borrow an EXISTING local for a second unrelated but real value)
-  SCOPE: "When GCC hoists a loop-invariant (e.g. limit-1) that the target recomputes INLINE, reuse one C variable for a used loop-variant AND the invariant — multi-set pseudo isn't a loop.c movable, so it's not hoisted. Pure C, no asm." (.claude/rules/defeat-licm-hoist-var-reuse.md description; the broader SOTN-accepted entry in no-new-park-categories.md generalizes this to any borrow of an EXISTING local for a second unrelated real value, which is the shape actually used here and in the already-accepted s7 flags/ang/code merge on this same function)
-  PRECEDENT: .claude/rules/no-new-park-categories.md:113 (the "Variable reuse for codegen control" SOTN-accepted bullet, citing SOTN's `idxSub = idxSub;` / `randy = basePoint.x; baseX = randy;` shapes)
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct. Both changes are ordinary, semantically-truthful C (a real value assigned to an existing name; a single-use expression left uninlined-as-a-name) with no no-semantic-purpose element, so no /* FAKE */ annotation is required or present, consistent with how the s7 flags/ang/code merge (same family, same function) was likewise unannotated.
+# SELF-VET — func_80056CB8
+
+CONSTRUCTS: none (this session made no net source change — three probed
+respellings of the flags==4 threshold comparison were each measured and
+reverted; the committed candidate.c body is byte-identical to the s11/s12
+banked form: the s7 flags/ang/code variable-reuse merge + s11 r1/r2
+variable-reuse merge, both SOTN-sanctioned variable-reuse-for-codegen-
+control, unchanged this session)
+
+## T1 semantic purpose: N/A — no construct in the diff (this session is a
+pure pass-attribution + probe-and-revert session; src/text1b.c currently
+carries the same s11/s12 body). The two banked variable-reuse merges
+(flags/ang/code at s7; r1/r2 at s11) each borrow an EXISTING local for a
+second unrelated but REAL value with observable effect (the merged
+variable's final value is what gets stored to `*(s8*)(arg0+0x444+i)`).
+## T2 human-programmer: N/A — no new construct. The banked merges read as
+ordinary reuse of a status/flags accumulator across sequential stages of
+one loop iteration, which is how a human decompiler naming from assembly
+observation would write it once shown the target keeps one register for
+all three roles.
+## T3 GCC-internals justification: N/A — no new construct this session.
+The banked merges' original justification (s7/s11 headers) cites program
+logic (three non-overlapping-lifetime named quantities in the same loop
+iteration), not a GCC pass, as the actual code change.
+## T4 permuter/search provenance: N/A — no auto-search used this session;
+all three probes were hand-derived from a loop.c source reading, each
+independently measured via sandbox --disable all and reverted on no gain.
+## T5 family check: N/A — no new construct in the diff.
+## T6 naming-announces-intent: N/A — no new construct in the diff.
+
+SANCTIONED-FAMILY-CLAIMS: none — this session's diff is empty (net) and no
+family is being claimed. The pre-existing candidate.c body's two claims
+(variable-reuse-for-codegen-control at s7 and s11) are unchanged from prior
+sessions' self-vets; re-stated here for continuity, not re-claimed fresh:
+  FAMILY: variable reuse for codegen control
+  SCOPE: "reusing one C variable for two unrelated values to influence loop-invariant detection or RA. SOTN ships `idxSub = idxSub;` and `randy = basePoint.x; baseX = randy;` with \"FAKE but makes register allocation work\" comments."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:185
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct anywhere in the current
+candidate.c body (the variable-reuse-for-codegen-control family is a
+SOTN-accepted ordinary-C technique per Ruling 1 of
+.claude/rules/ordinary-c-judge-decidable.md and does not require a FAKE
+annotation — only the LAST-RESORT families listed in
+no-new-park-categories.md's "2026-07-01 additions" carry that
+prerequisite).

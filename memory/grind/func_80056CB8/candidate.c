@@ -1,6 +1,103 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s11 forensics-modality win, RE-CONFIRMED s12
- * rederive) — floor 48/204, NOT YET 0. (Prior: 58/204 s7-s10.)
+ * rederive, s13 structural) — floor 48/204, NOT YET 0. (Prior: 58/204 s7-s10.)
+ * ---------------------------------------------------------------------
+ * s13 (structural modality). STALE-HEAD-CLAIM NOTE (same as every prior
+ * session): src representation is INCLUDE_ASM between grind sessions;
+ * nothing persists on main. Re-applied the s12-banked body (unchanged) to
+ * src/text1b.c, re-confirmed floor 48/204 (build_insns 198) exactly
+ * matches the s11/s12 record before any s13 change.
+ *
+ * NAMED THE s12 FRAME-DELTA PSEUDO (frontier item 1). Ran
+ * `pwsh tools/grinder/dump.ps1 func_80056CB8` fresh and read the
+ * func_80056CB8 slice of the .greg dump (tmp/grind/func_80056CB8/dumps/
+ * text1b.greg lines 14788-14850): "Spilling reg 11. Spilling reg 65."
+ * fires to satisfy simultaneous "Need 1 reg of class GR_REGS (for insn
+ * 456)" + "Need 1 reg of class LO_REG/MD_REGS (for insn 153)" register
+ * requests. Cross-referenced insn numbers against the .combine dump
+ * (same session): insn 153 is the `scale * *sin_p` widening multiply
+ * (the FIRST of two multu ops in the loop body); insns 456/457/459 are
+ * THREE loop-invariants hoisted to immediately before `NOTE_INSN_LOOP_BEG`
+ * (insn 22): 456/457 are the `&pt0`/`&pt1` stack addresses (these SHOULD
+ * hoist — pt0/pt1 are function-scope arrays, target hoists their address
+ * setup too, see below), and insn 459 sets reg 149 = 528483000 (0x3D0900)
+ * — the flags==4 tail's `dx*dx+dz*dz > LIMIT` threshold constant. Reg 149
+ * lives from before the loop until its single use deep inside the
+ * flags==4/nested-if branch, and this long cross-loop live range is what
+ * competes with the insn-153 multiply's LO/MD register need, forcing the
+ * two-hard-reg spill (reg 11 = $t3, reg 65 = $lo) that the s12 classify
+ * frame-delta (176 vs 168) evidence predicted.
+ *
+ * READ TARGET ASM DIRECTLY for the first time at this exact byte range
+ * (asm/funcs/func_80056CB8.s:150-171, the flags==4 tail): target ALSO
+ * hoists the &pt0/&pt1/scratchpad-address setup before the loop (lines
+ * 21-26, matching our insns 456/457 exactly — NOT a residual), but the
+ * 0x3D0900 constant (lines 170-171, `lui $v1,(0x3D0900>>16); ori
+ * $v1,$v1,(0x3D0900&0xFFFF)`) is materialized INLINE, right at its use
+ * site inside the conditionally-executed flags==4 branch — NOT hoisted.
+ * This is the first direct confirmation of WHICH specific loop-invariant
+ * our build hoists that target's original C did not.
+ *
+ * MECHANISM (loop.c `move_movables`, tools/gcc-2.7.2/loop.c:1529-1634):
+ * a constant-set insn becomes an eligible movable via loop.c:695-701's
+ * 3-way OR test (three ways an insn qualifies: (1) not-maybe_never +
+ * not-used-before, (2) not a user variable AND not used in the loop exit
+ * test, (3) def+use in the same basic block) — our threshold constant
+ * satisfies BOTH (2) (compiler temp, not the loop's exit test) and (3)
+ * (def is immediately before its single use, no intervening branch), so
+ * it is movable regardless. Whether it actually GETS hoisted is then
+ * move_movables:1631's cost gate: `threshold * savings * m->lifetime >=
+ * insn_count`, where `threshold = (loop_has_call?1:2)*(1+n_non_fixed_regs)`
+ * (loop.c:532) and `insn_count` is the SAME 164-real-insn count s11 named
+ * as the strength-reduction gate for the $fp accumulator. This is a
+ * DOUBLE-BIND: strength-reduction's rejection test (loop.c:3823,
+ * `v->lifetime*threshold*benefit < insn_count`) wants insn_count SMALL to
+ * flip to ACCEPT (get the $fp accumulator target has); move_movables'
+ * acceptance test wants insn_count LARGE (relative to threshold*savings*
+ * lifetime) to flip to REJECT (avoid the constant hoist we don't want).
+ * Both are gated by the identical insn_count quantity in OPPOSITE
+ * directions — shrinking the loop body to help one lever plausibly hurts
+ * the other. This is new, mechanistically precise evidence explaining why
+ * this residual has resisted 6+ sessions of index/loop-shape respellings.
+ *
+ * PROBES (all killed, instance) — tested whether a superficial respelling
+ * of the flags==4 threshold comparison changes loop.c's movable decision
+ * for reg 149, per the REG_USERVAR_P clause of the eligibility OR-test:
+ *   1. Swap comparison operand order: `dx*dx+dz*dz > 0x3D0900` instead of
+ *      `0x3D0900 < dx*dx+dz*dz`. Measured: 48/198, BYTE-IDENTICAL, no
+ *      change. Reverted.
+ *   2. Named intermediate for the sum: `s32 sq = dx*dx+dz*dz; if (sq >
+ *      0x3D0900)`. Measured: 48/198, no change. Reverted.
+ *   3. Named intermediate for the constant: `s32 limit = 0x3D0900; if
+ *      (dx*dx+dz*dz > limit)`. Measured: 48/198, no change. Reverted.
+ * KILLED, instance — per the mechanism above, condition (3)
+ * (reg_in_basic_block_p, def and use already adjacent with no
+ * intervening branch in ALL three spellings) already makes the constant
+ * movable-eligible regardless of REG_USERVAR_P, so naming it a real local
+ * changes nothing: eligibility was never the gate here, the move_movables
+ * cost-benefit calculation (threshold*savings*lifetime vs insn_count) is.
+ * This closes the "respell the threshold comparison" family for this
+ * residual — the same class of surface-level move already closed for the
+ * i*2 index arithmetic (s6/s7/s10/s12).
+ *
+ * FRONTIER FOR s14: the double-bind above means neither "shrink insn_count
+ * to help strength-reduction" nor "grow insn_count to block the constant
+ * hoist" can be pursued in isolation without checking the other lever's
+ * response — any insn_count-shifting C change should be measured against
+ * BOTH the $fp-accumulator question (does classify's PRE-RA verdict
+ * change?) and the reg149 spill (does the .greg dump still show "Spilling
+ * reg 11"/"Spilling reg 65"?) in the SAME session. UNTRIED: rather than
+ * changing insn_count, attack `n_non_fixed_regs` in the threshold formula
+ * directly (loop.c:532) — i.e. find a C change that reduces REGISTER
+ * PRESSURE elsewhere in the loop body (not insn count) without touching
+ * the i*2 index or the threshold comparison, which would lower `threshold`
+ * and could flip move_movables:1631 to reject the constant hoist without
+ * touching insn_count (and thus without perturbing strength-reduction's
+ * separate insn_count-gated decision at all). Candidate targets: the
+ * `obj`/`sin_p`/`cos_p` pointer locals and the two `func_80053614` calls'
+ * live ranges — read the .greg dump's conflict list (14791-14812) for
+ * which of the 20 pseudos have the largest conflict sets and see if any
+ * has an uncontested narrowing (narrower type, earlier death) available.
  * ---------------------------------------------------------------------
  * s12 (rederive modality). STALE-HEAD-CLAIM NOTE (same as every prior
  * session): src representation is INCLUDE_ASM between grind sessions;
