@@ -2087,3 +2087,4 @@
 - 2026-09-15 20:46 func_8006BEC4: LAYER-1 FAILED a sandbox-0 candidate — Both block-scoped `Tile *p = D_800A36DC;` aliases are un-annotated second handles to a global-held object, introduced (by the session's own flow.c REG_BASIC_BLOCK evidence) purely to seat a register; the self-vet denies the family instead of meeting its mandatory /* FAKE */ prong.
 - 2026-09-15 20:53 func_8006BEC4 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-15 21:15 func_8002CA8C s1 [recon] floor=5: func_8002CA8C recon: empty stub 177 -> 5/179 (179==179 insns) via walking rec pointer + &SCR[id].j[i+4] call arg (fold/loop.c hoist mechanism read in the .loop dump) + shared seen tail; residual = rejected-flag seat ($a1 vs $s0) and one lhu reorder
+- 2026-09-15 21:32 func_8002CA8C: judge FAILED a bytes-proven candidate — The C itself is legitimate. One no-semantic-purpose construct: the AABB reject flag staged through the existing `hit` st
