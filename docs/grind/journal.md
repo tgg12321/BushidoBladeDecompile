@@ -2188,3 +2188,4 @@
 - 2026-09-16 11:15 func_80056CB8 s71 [structural] floor=38: s71 structural: 33rd consecutive flat 38/204; killed 4 untried pairwise inter-array declaration-order swaps (all worse: 85/52/44/44), confirming the baseline order is a local optimum.
 - 2026-09-16 11:56 func_80056CB8 COMPLETED-C after 72 sessions (closer: s72 [synthesis]).
 - 2026-09-16 12:06 func_8006CCC8 s6 [rederive] floor=18: rederive: array-index D_800A34FC addressing + update-clause reorder drop the honest floor 23 -> 18 (2 confirmed levers, 3 instance kills, sibling transplant re-confirmed disjoint)
+- 2026-09-16 12:25 func_8006CCC8: LAYER-1 FAILED a sandbox-0 candidate — Body is otherwise ordinary C, but `nib = 0xF` is a constant-holder local squarely inside [[named-local-fake-exception]] and ships un-annotated with the vet declaring SANCTIONED-FAMILY-CLAIMS: none — the mandatory /* FAKE: ... */ prerequisite is unmet.

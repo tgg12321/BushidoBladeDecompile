@@ -479,3 +479,41 @@ restructuring, not a no-semantic-purpose device).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c HEAD s6, floor-20 chassis (flat-chain probe) and floor-18 chassis (neutral field!=3 side-probe); no FAKE construct present in any variant
+
+## [s7, synthesis] The field28 dispatch is a `switch (field)` with cases 0/1/2, 3, 4 (bodies in that order); GCC 2.7.2's stmt.c decision tree (emit_case_nodes over {[0..2],[3],[4]}) emits target's contiguous `beq 3 / slti 4 + bnez / beq 4 / j default` test group and the `bltz` low-bound range check that s4-s6 had been spelling as an explicit `field >= 0 &&` guard.
+- mechanism: stmt.c expand_end_case decision-tree path (tools/gcc-2.7.2/stmt.c:4806-4818, threshold 5 with no casesi on mips) + emit_case_nodes (stmt.c:5580); the [0..2] leaf gets a low-bound check only (node_has_high_bound, stmt.c:5494, satisfied by root low == 2+1).
+- probe: sandbox --disable all, nested-if s6 body (18) vs switch012 body, same session, same chassis otherwise.
+- result: 18 -> 10, build_insns 188 -> 189 (= target); the entire dispatch cluster left the masked-opcode diff.
+- verdict: CONFIRMED
+
+## [s7, synthesis] The j-loop record update selects the nibble MASK constant with a ternary over a single +0x17 read -- `*(rec+0x17) = (u8)((*(rec+0x17) & ((i == 0) ? 0xF0 : 0xF)) + masked);` -- which is target's exact single-lbu / bnez / andi-0xF0-or-0xF / addu / sb shape.
+- mechanism: ordinary C; expand emits one MEM read, a conditional jump on i selecting one of two AND immediates, one add, one store -- exactly target's block; no named local for the byte means no extra pseudo competing in local-alloc (the mechanism behind the s3/s5/s6/s7 58-vs-0 gap).
+- probe: five spellings J1..J5 measured on the floor-10 switch chassis (see evidence.md s7 table).
+- result: J4 (this form) = 0; J3 (ternary over two reads) = 10 = split-read bytes; J1/J2/J5 (any `byte17` local) = 58.
+- verdict: CONFIRMED
+
+## [s7, synthesis] Hoisting the +0x17 byte into a named local (`byte17`), whether consumed by if/else, by a ternary, or spelled with array subscripts, on the s7 switch-dispatch chassis regresses the score from 10 to 58 (build_insns 187).
+- mechanism: local-alloc/global register assignment shifts once the byte has its own pseudo live across the i==0 branch (same direction as the s5 39-vs-23 and s6 20-vs-36 measurements, third chassis).
+- probe: J1, J2, J5 in tmp/grind/func_8006CCC8/s7/jvariant.py, sandbox --disable all each.
+- result: 58 / 58 / 58 vs 10 (split-read) and 0 (constant-select ternary).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c working tree, s7 switch-dispatch chassis (floor 10 before the j-loop probe), no FAKE construct present anywhere in the body.
+
+## [s7, synthesis] The s2 defeat-licm-hoist-var-reuse lever `t` (t = arg2 at loop top, t = i before the func_8006CBD4 call) is no longer needed on the switch chassis: `lim = ((arg2 >> i) & 1) ? 4 : 5;` + `func_8006CBD4(i, *arg1)` measures 0 as well.
+- mechanism: measured only; the sign-extension of arg2 stays inline in the loop on this chassis without the multi-set trick (not dump-attributed -- bytes matched).
+- probe: J4 body with and without `t`, sandbox --disable all.
+- result: 0 and 0. The `t`-free body is the candidate (zero family claims).
+- verdict: CONFIRMED
+
+## [s7, synthesis] Spelling the nibble mask as the literal `0xF << fade` instead of the `nib = 0xF` variable moves the `li $s6,0xF` from target's statement-order position (between the i = 0 and fade = 0 inits) to the end of the loop preheader.
+- mechanism: loop.c move_movables hoists the invariant constant load to the preheader end; a source-level assignment is emitted in statement order. Target's position matches the assignment, so the original had the variable.
+- probe: text1b_J4_not_nonib (literal) vs the nib body, sandbox --disable all.
+- result: literal = 2 (the two diff entries are that one `li s6,15` moving), variable = 0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c working tree, s7 switch + J4 chassis, no FAKE construct present.
+
+## Frontier for s8 (<=3)
+1. None for the bytes: floor 0 measured this session with the body resident. Next step is review (layer-1 cheat-reviewer, then Judge). The only construct a reviewer may question is the `nib = 0xF` mask variable; the byte evidence for it (preheader init ORDER) is in evidence.md s7 and self_vet.md T5. If it is classified as constant-holder rather than ordinary C, the correct move is a `ruling-request` on that exact question, NOT a respelling (the literal form measures 2, and the body is keyed by content).
+2. If the Judge wants pass attribution for the dispatch, read tmp/grind/func_8006CCC8/dumps/text1b.jump after `pwsh tools/grinder/dump.ps1 func_8006CCC8` for the case012 block inversion (not done this session; bytes matched).

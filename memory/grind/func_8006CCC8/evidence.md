@@ -482,3 +482,102 @@ session.
 - [s6] Both rejected probes (byte17 re-hoist, flat literal-compare-order dispatch) regressed when tested on the floor-20 chassis, confirming the s4/s5 findings about these specific construct choices generalize to the more-advanced s6 chassis rather than being chassis-specific artifacts.
 
 - [s6] Final resident src/text1b.c state measures sandbox --disable all score 18 (target_insns=189, build_insns=188), confirmed as the last action this session.
+
+## s7 (synthesis)
+
+CHASSIS: src/text1b.c carried INCLUDE_ASM("asm/funcs", func_8006CCC8) at dispatch
+(as at every prior session). Re-applied the s6 candidate.c body verbatim via
+tmp/grind/func_8006CCC8/s7/apply.py (INCLUDE_ASM line -> body; stale
+`extern void func_8006CCC8(s32, s32, s32);` -> `extern s32 func_8006CCC8(s32 *,
+s32 *, s16);`) and measured `sandbox --disable all` = 18 (target 189, build
+188) -- matches the ledger floor exactly. The masked-opcode diff
+(tmp/grind/func_8006CCC8/s7/diff_probe.py, the s4/s6 script reused verbatim)
+showed exactly two clusters: (a) the field28 dispatch (indices 86-95: ours
+emits `li 4; beq -> A4` first and `slti; beqz; nop` where target has
+`beq 3 -> A3; slti; bnez -> L; li 4; beq -> A4; li 0x40; j; addiu s5`), and
+(b) the two j-loops (indices 123-132 / 154-162: our `bnez s1` sits before
+the second lbu and we emit a second `lbu v0,23(v1)`; target has ONE lbu 0x17
+then `bnez s1` with a nop slot).
+
+FIX 1 -- switch dispatch (18 -> 10, build_insns 188 -> 189 = target).
+Reading target's test group (asm/funcs/func_8006CCC8.s:94-103): `beq v1,3 ->
+.L8006CE80` / `slti v0,v1,4; bnez v0 -> .L8006CE44` / `beq v1,4 -> .L8006CEFC`
+/ `j end` with the case-L block at .L8006CE44 starting `bltz v1 -> end`. A
+nested if/else cannot emit three contiguous jump-if-TRUE tests followed by an
+unconditional fall-through to the loop end; GCC 2.7.2's switch decision tree
+can. tools/gcc-2.7.2/stmt.c:4806-4818: mips has no casesi (insn-flags.h:311,
+TARGET_EMBEDDED_PIC only) so CASE_VALUES_THRESHOLD is 5 and 3 grouped case
+nodes take the decision-tree path; stmt.c:5580 emit_case_nodes on the tree
+{[0..2] left, [3] root, [4] right}: root single-valued -> do_jump_if_equal(3)
+= `beq 3 -> case3`; neither child bounded ([4] has no high bound, [0..2] has
+no low bound because no parent tests -1) -> `cmp GT 3 -> test_label` (mips
+spells `field > 3` as `slti field,4` + branch), left leaf [0..2]: low-bound
+check `bltz -> default`, NO high-bound check (2+1 == root low 3,
+node_has_high_bound at stmt.c:5494), `j case012`; test_label: `beq 4 ->
+case4`; then `j default`. Spelled as `switch (field) { case 0: case 1:
+case 2: <func_8006CBD4 arm, WITHOUT the `field >= 0 &&` guard -- that guard
+was the tree's own range check>; break; case 3: <+0x1A arm>; break; case 4:
+<+0x1D arm>; break; }` with the arm bodies otherwise identical to s6.
+Measured 10; the whole dispatch cluster vanished from the diff and
+build_insns became 189 = target. NOT dump-verified: the jump.c rewrite that
+turns `beqz -> test_label; bltz -> default; j case012; test_label:` into
+target's `bnez -> L'; ...; L': bltz` (probably jump.c's jump-over-block
+inversion once the case012 body is laid out right after the `j default`);
+the bytes matched so this was not spent on. Also prepared but NOT run: a
+`switch` with only `case 3`/`case 4` and `default: if (field >= 0 && field
+< 4 && ...)` (`switch34_default` in tmp/grind/func_8006CCC8/s7/variant.py)
+-- the 0..2 form matched first.
+
+FIX 2 -- ternary nibble select (10 -> 0). Five j-loop spellings measured
+head-to-head on the floor-10 switch chassis
+(tmp/grind/func_8006CCC8/s7/jvariant.py, all ordinary C, no FAKE):
+  J1 hoisted `byte17` local + if/else (the s3/s6 form)      -> 58 (187 insns)
+  J2 hoisted `byte17` local + ternary on byte17             -> 58 (187)
+  J3 ternary over two DIRECT reads of *(rec+0x17)           -> 10 (189) = split-read bytes
+  J4 ternary on the CONSTANT: `*(rec+0x17) & ((i==0) ? 0xF0 : 0xF)` -> 0 (189)
+  J5 J1 spelled with rec[off] subscripts                    -> 58 (187)
+So: any named local for the +0x17 byte loses the register allocation
+(58, three chassis in a row now: s5, s6, s7); duplicating the read
+(if/else arms or a ternary over two reads) reproduces our old
+`bnez`-before-second-`lbu` shape (10); selecting the MASK CONSTANT over a
+single read is target's exact `lbu 0x17; bnez s1; nop; j/andi 0xF0; andi
+0xF; addu; sb` sequence. J1/J2/J3/J5 banked in rejected/.
+
+CLEANUPS measured byte-neutral at 0: (i) removed the s2 `t` variable-reuse
+lever (`lim = ((arg2 >> i) & 1) ? 4 : 5;` and `func_8006CBD4(i, *arg1)`
+directly) -> still 0, so the body carries NO defeat-licm-hoist-var-reuse
+claim. (ii) Probed replacing `nib` with the literal `0xF << fade`: score 2
+-- diff is exactly `li s6,15` moving from target's position (between
+`move s1,0` and `move s5,0`, i.e. statement order `i = 0; nib = 0xF; fade =
+0;`) to the END of the preheader (after `move s3,0`), where loop.c
+move_movables places a hoisted invariant constant load. That is byte
+evidence the original source initialised a mask variable at that
+statement position; `nib` kept (see self_vet.md T5 for the family
+discussion -- no family claimed).
+
+CALLER CHECK: `sandbox func_8006D338 --disable all` = 0 with the corrected
+prototype (`s16` third parameter; the caller passes `(s32)((r << 16) >>
+16)`), so the prototype change is byte-neutral for the caller.
+`verify-oracle --rebuild` refuses on dirty build inputs by design (it would
+overwrite the sandbox reference); the driver re-verifies bytes itself.
+
+SCOPE SLIP CAUGHT AND REVERSED: an intermediate python edit removed the
+first `    s32 t;` in the FILE, which belonged to func_8004A1FC (line
+~1280), not to func_8006CCC8. Restored before the final measurement; the
+final `git diff src/text1b.c` deletes exactly two lines
+(`INCLUDE_ASM("asm/funcs", func_8006CCC8);` and the stale extern) and adds
+only the func_8006CCC8 body. tmp/grind/func_8006CCC8/s7/final.diff is that
+diff.
+
+FINAL STATE: src/text1b.c resident body == candidate.c body, `sandbox
+func_8006CCC8 --disable all` = 0 (189/189), measured as the last build
+action of the session. self_vet.md written (CONSTRUCTS listed, no family
+claims, no FAKE).
+
+## Artifacts (s7)
+- tmp/grind/func_8006CCC8/s7/apply.py -- INCLUDE_ASM -> s6 body + extern fix
+- tmp/grind/func_8006CCC8/s7/variant.py -- dispatch spellings (switch012 = winner, switch34_default unrun)
+- tmp/grind/func_8006CCC8/s7/jvariant.py -- the five j-loop spellings J1..J5
+- tmp/grind/func_8006CCC8/s7/diff_probe.py -- masked-opcode diff (s4 script)
+- tmp/grind/func_8006CCC8/s7/text1b_floor18.c / text1b_floor10.c / text1b_final_score0.c -- TU snapshots at each floor
+- tmp/grind/func_8006CCC8/s7/final.diff -- the applied working-tree diff

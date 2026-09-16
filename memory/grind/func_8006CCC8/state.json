@@ -59,7 +59,10 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "s32 nib; ... nib = 0xF; ... masked = *(rec + 0x1A) & (nib << fade);  (and the +0x1D twin)",
+  "self_vet.md T5 disclaimer: 'NOT claimed: `nib` ... is not \"a local existing only to carry a constant in a register across calls\" in the codegen-control sense'"
+ ],
  "kills": [
   {
    "session": 1,
@@ -150,7 +153,7 @@
    "result": "Flat literal-order chain: 20 -> 54 (build_insns unchanged at 188); reverted. Saved to memory/grind/func_8006CCC8/rejecte"
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 1,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T13:02:42.546307+00:00",
@@ -164,6 +167,18 @@
    "at": "2026-09-16T16:56:41.455153+00:00",
    "headline": "func_80056CB8 COMPLETED-C",
    "consumed": 6
+  }
+ ],
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Body is otherwise ordinary C, but `nib = 0xF` is a constant-holder local squarely inside [[named-local-fake-exception]] and ships un-annotated with the vet declaring SANCTIONED-FAMILY-CLAIMS: none \u2014 the mandatory /* FAKE: ... */ prerequisite is unmet. Next action: Do NOT respell or delete `nib` \u2014 I am imposing no ban on it, and the literal form is measured worse (2). Re-submit the same body with (a) a `/* FAKE: 0xF nibble mask held in a callee-save reg across the func_8005C650 calls; the literal `0xF << fade` lets loop.c hoist the constant load to the preheader end"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "f80e2efaf2d289ed",
+   "when": "2026-09-16T17:25:47.275311+00:00",
+   "summary": "Body is otherwise ordinary C, but `nib = 0xF` is a constant-holder local squarely inside [[named-local-fake-exception]] and ships un-annotated with the vet declaring SANCTIONED-FAMILY-CLAIMS: none \u2014 the mandatory /* FAKE: ... */ prerequisite is unmet."
   }
  ]
 }
