@@ -2009,3 +2009,69 @@ class TestCandidateBlockTripwire(unittest.TestCase):
         with open(p, "w", encoding="utf-8", newline="\n") as f:
             f.write(txt)
         self.assertEqual(G.open_owner_actions(self.root), [])
+
+
+class TestFloorAttestation(unittest.TestCase):
+    """A self-reported floor DROP must be corroborated by this session's own
+    measurement (func_8006CCC8 s1, 2026-09-16: floor=94 banked off a C body that
+    was never written to disk)."""
+
+    SID = "11111111-2222-3333-4444-555555555555"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        os.makedirs(os.path.join(self.root, "metrics"))
+        self._write_event(self.SID, "func_X", "sandbox", 39)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _write_event(self, sid, func, command, score):
+        ev = {"schema": 1, "command": command, "func": func, "session_id": sid,
+              "payload": {"score": score}}
+        p = os.path.join(self.root, "metrics", "events.jsonl")
+        with open(p, "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(ev) + "\n")
+
+    def test_measured_drop_passes(self):
+        ok, _ = G.attest_floor(self.root, "func_X", {"floor": 39}, self.SID, 77)
+        self.assertTrue(ok)
+
+    def test_unmeasured_drop_is_invalid(self):
+        ok, why = G.attest_floor(self.root, "func_X", {"floor": 39}, "other-sid", 77)
+        self.assertFalse(ok)
+        self.assertIn("UNATTESTED FLOOR DROP", why)
+
+    def test_another_functions_measurement_does_not_attest(self):
+        self._write_event("other-sid", "func_Y", "sandbox", 39)
+        ok, _ = G.attest_floor(self.root, "func_X", {"floor": 39}, "other-sid", 77)
+        self.assertFalse(ok)
+
+    def test_flat_or_worse_floor_is_never_gated(self):
+        self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 77}, "x", 77)[0])
+        self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 90}, "x", 77)[0])
+
+    def test_mock_spawn_without_session_id_is_not_gated(self):
+        # drills and -MockSessionScript runs have no CLAUDE_SESSION_ID to match
+        self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 39}, "", 77)[0])
+
+    def test_unknown_prior_floor_is_not_gated(self):
+        self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 39}, "x", None)[0])
+
+    def test_ledger_artifact_containing_the_floor_attests(self):
+        d = os.path.join(self.root, "memory", "grind", "func_X")
+        os.makedirs(d)
+        art = os.path.join(d, "solver.txt")
+        with open(art, "w", encoding="utf-8", newline="\n") as f:
+            f.write("object-mode classify: residual 39/204\n")
+        o = {"floor": 39, "artifacts": ["memory/grind/func_X/solver.txt"]}
+        self.assertTrue(G.attest_floor(self.root, "func_X", o, "other-sid", 77)[0])
+
+    def test_arbitrary_repo_file_does_not_attest(self):
+        d = os.path.join(self.root, "docs", "grind")
+        os.makedirs(d)
+        with open(os.path.join(d, "journal.md"), "w", encoding="utf-8", newline="\n") as f:
+            f.write("floor=39 somewhere in project history\n")
+        o = {"floor": 39, "artifacts": ["docs/grind/journal.md"]}
+        self.assertFalse(G.attest_floor(self.root, "func_X", o, "other-sid", 77)[0])

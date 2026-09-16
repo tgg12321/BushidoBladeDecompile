@@ -20,20 +20,42 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    # LANE MODELS — owner directive 2026-09-16, CAPABILITY EXPERIMENT (supersedes
-    # the 2026-09-15 Fable split): every WORKER lane (execution + recon/object-model)
-    # drops to Sonnet 5; the two GATE lanes (Judge + layer-1 cheat-reviewer) stay on
-    # Opus 5. Owner: "Lets change all of those except the existing opus lanes to
-    # Sonnet, just to see how it behaves. I'm curious how critical our reasoning
-    # power truly is."
+    # LANE MODELS — owner directive 2026-09-16 (ARM 2 of the capability experiment).
     #
-    # THIS IS THE FIRST LANE CHANGE DRIVEN BY A QUALITY QUESTION rather than by
-    # allowance exhaustion — it is an EXPERIMENT with a recorded control, not a
-    # settled configuration. Protocol, control table and the metrics to compare:
-    # docs/grind/model-experiment-2026-09-15.md. Control (Fable era, 2026-09-02..15):
-    # 515 sessions, 82 completions (0.159/session), 41 layer-1 FAILs (0.50 per
-    # completion), 40 one-session recon closes. Revert = restore the Fable/Opus
-    # split below.
+    # ARM 1 (2026-09-16 00:22..10:40, all worker lanes on Sonnet 5) ran 68 sessions
+    # across 3 functions and produced 0 completions — but its CONTROL IS INVALID:
+    # the queue's difficulty regime changed at exactly the switchpoint. Minimum
+    # active distance went 126 (09-14) -> 0 (09-15) -> 188 (09-16) as the 09-15
+    # Fable burst drained the last small functions; every remaining item is now
+    # >=188 insns (median 342). The 0.159 completions/session control was measured
+    # on a queue that still contained one-session recon closes. Arm 1 never saw one.
+    #
+    # What arm 1 DID show, from the ledgers rather than the completion count:
+    #   - Mechanical ladder work holds up. func_8006CCC8 went 189 -> 39 in four
+    #     sessions (real finds: an `i` mistyped s16 vs target's int, 91->77; an
+    #     LICM-hoist closure). func_80056CB8 went 204 -> 38 over s1-s22.
+    #   - Protocol compliance is FINE — better than the mixed-model baseline:
+    #     9.7% discarded sessions vs 14.3% over 2026-09-02..15.
+    #   - The failures were all JUDGMENT-ABOUT-ITS-OWN-WORK, concentrated in the
+    #     reasoning modalities: func_8006CCC8 s1 banked a floor from a C body it
+    #     never wrote to disk (caught by s2); s44/s45 diagnosed a nonexistent
+    #     engine/sandbox.py scoring defect and filed a LADDER-EXHAUSTED rotation
+    #     citing a stale number (s46 measured it fine); s33's reasoning-only
+    #     codegen-neutrality claim was disproved by s34's measurement; s45-s49
+    #     chased what s50 calls a "misdirected RA-conflict frontier"; s64 and s65
+    #     each corrected a standing misattribution from an earlier session.
+    #
+    # ARM 2 therefore splits the worker lanes along that fault line instead of
+    # flipping the whole tier back. Sonnet keeps the lanes whose output is
+    # verified by tooling; the lanes that decide WHERE TO AIM and WHETHER TO STOP
+    # go back to Fable 5.1. `escalation` matters most: a rotation is not a
+    # completion, so the default-FAIL Judge never sees it — a false exhaustion is
+    # the one expensive error with no gate behind it.
+    #
+    # Protocol and the metrics to compare: docs/grind/model-experiment-2026-09-15.md.
+    # The arm-2 comparison is scored ONLY over functions >=188 insns, in both arms —
+    # the headline rate from the mixed-difficulty queue is not a comparator any more.
+    # Revert = set all three worker lanes to one model.
     #
     # Safety argument for running it at all: no cheat can reach main on the strength
     # of this change. Both gates are unchanged Opus 5, both default-FAIL, and bytes
@@ -72,8 +94,15 @@ param(
     # explicitly. To end the experiment and restore the 2026-09-15 split, pass (or
     # restore as defaults) 'claude-fable-5-1[1m]' on both worker lanes.
     # ('claude-fable-5[1m]' resolves to Fable 5, not 5.1.)
-    [string]$Model = 'claude-sonnet-5[1m]',             # execution sessions (EXPERIMENT)
-    [string]$ReconModel = 'claude-sonnet-5[1m]',        # recon + object-model (EXPERIMENT)
+    # TOOLING-VERIFIED lanes (structural, enumerate, permuter, rederive,
+    # annotation-fix): every claim is a sandbox/permuter measurement, so a weak
+    # session costs one cheap retry.
+    [string]$Model = 'claude-sonnet-5[1m]',             # execution sessions (ARM 2)
+    [string]$ReconModel = 'claude-sonnet-5[1m]',        # recon + object-model (ARM 2)
+    # AIM-AND-STOP lanes (synthesis, forensics, solver, escalation): these decide
+    # which axis the next N sessions attack and whether the ladder is finished.
+    # A wrong call here is invisible to both gates and costs whole sessions.
+    [string]$ReasoningModel = 'claude-fable-5-1[1m]',   # judgment lanes (ARM 2)
     [string]$JudgeModel = 'claude-opus-5[1m]',         # the default-FAIL Judge
     [string]$Layer1Model = 'claude-opus-5[1m]',        # pre-Judge cheat-reviewer gate
     # Fallback for ANY lane whose model hits a usage-limit 429 (see above).
@@ -196,7 +225,7 @@ function Reap-PermuterOrphans([string]$When) {
     try { python tools/permuter_campaign.py deactivate-all 2>$null | Out-Null } catch { }
 }
 
-Log "grinder starting (pid $PID, execution $Model, recon $ReconModel, judge $JudgeModel, layer1 $Layer1Model, fallback $FallbackModel)"
+Log "grinder starting (pid $PID, execution $Model, recon $ReconModel, reasoning $ReasoningModel, judge $JudgeModel, layer1 $Layer1Model, fallback $FallbackModel)"
 if (-not (Test-OracleGreen)) {
     Log "PRE-FLIGHT FAIL: oracle not green on main. Fix before grinding."
     Attribute-RedBuild 'pre-flight'
@@ -1104,6 +1133,7 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
     }
     Remove-Item $OutcomePath -ErrorAction SilentlyContinue
     if ($MockScript) {
+        $script:LastSessionId = ''   # mock spawn: nothing to attest a floor against
         $env:GRIND_BRIEF_PATH = $BriefPath; $env:GRIND_OUTCOME_PATH = $OutcomePath
         try { & pwsh -NoProfile -File $MockScript } finally {
             Remove-Item Env:\GRIND_BRIEF_PATH, Env:\GRIND_OUTCOME_PATH -ErrorAction SilentlyContinue
@@ -1119,6 +1149,9 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         $task = (Get-Content $BriefPath -Raw -Encoding utf8) +
             "`n`nWhen finished, write your outcome JSON to this exact absolute path (overwrite it):`n  $OutcomePath`n"
         $sid = [guid]::NewGuid().ToString()
+        # Exposed for the floor-attestation gate: engine events written by this
+        # spawn carry it as session_id (metrics stamps CLAUDE_SESSION_ID).
+        $script:LastSessionId = $sid
         $t0 = Get-Date
         # A stale agent.log from the previous spawn must never masquerade as this
         # spawn's diagnostics (it hid the launch failure above for 8 attempts).
@@ -1390,13 +1423,21 @@ while ($true) {
         $pf = $stObj.floor_history[-1].floor
         if ($null -ne $pf -and "$pf" -match '^-?\d+$') { $priorFloor = [int]$pf }
     }
-    # Per-modality model: recon sessions get the strong model (frontier quality
-    # determines how many execution sessions follow); everything else grinds on
-    # the execution model. (Get-LaneModel inside Invoke-GrindAgent swaps in
-    # $FallbackModel while the chosen model is usage-limited.)
-    # object-model (2026-09-03) is a one-shot audit whose quality decides whether
-    # the function forecloses — it gets the recon-tier model for the same reason.
-    $sessionModel = if ($modality -in @('recon', 'object-model')) { $ReconModel } else { $Model }
+    # Per-modality model (ARM 2, 2026-09-16 — rationale in the param block). Three
+    # lanes:
+    #   recon / object-model -> $ReconModel — one-shot audits that set the frontier.
+    #   synthesis / forensics / solver / escalation -> $ReasoningModel — these four
+    #       produce a JUDGMENT, not a measurement: where to aim next, what a dump
+    #       means, and whether the ladder is exhausted. Arm 1's misdirected
+    #       frontiers, stale-mechanism claims and the s44/s45 false tooling-defect
+    #       rotation all came out of exactly these modalities.
+    #   everything else -> $Model — tooling-verified grinding.
+    # (Get-LaneModel inside Invoke-GrindAgent swaps in $FallbackModel while the
+    # chosen model is usage-limited.)
+    $sessionModel =
+        if ($modality -in @('recon', 'object-model')) { $ReconModel }
+        elseif ($modality -in @('synthesis', 'forensics', 'solver', 'escalation')) { $ReasoningModel }
+        else { $Model }
     Log "${func}: session $sessionN starting, modality=$modality, model=$sessionModel"
 
     # 4) spawn
@@ -1452,6 +1493,21 @@ while ($true) {
         if (-not $valid -and [string]$o.result -eq 'candidate-ready') {
             $cause = if ($invalidReason -match 'BANNED') { 'banned' } else { 'selfvet' }
             Record-Review $func 'layer1' 'REJECTED' $cause
+        }
+        # FLOOR ATTESTATION (2026-09-16): the floor is the one self-reported
+        # number the validator took on trust, and func_8006CCC8 s1 banked a
+        # floor=94 from a C body it never wrote to disk — the queue ordered on
+        # it and two later sessions aimed at it. A claimed DROP must now be
+        # corroborated by an engine measurement stamped with THIS spawn's
+        # session id, or by an attached artifact containing the number
+        # (ra_solver object-mode floors). Flat/worse floors are untouched.
+        if ($valid) {
+            $priorArg = if ($null -ne $priorFloor) { "$priorFloor" } else { '' }
+            $attestWhy = (python tools/grinder/grindlib.py attest-floor . $outPath $func $script:LastSessionId $priorArg 2>&1 | Out-String).Trim()
+            if ($LASTEXITCODE -ne 0) {
+                $valid = $false
+                $invalidReason = $attestWhy
+            }
         }
         # owner-gated: the validator can't see $func, so the driver verifies the
         # cited escalation entry (OWNER-ESCALATION or CANONICAL-ASM GRANT PATH,

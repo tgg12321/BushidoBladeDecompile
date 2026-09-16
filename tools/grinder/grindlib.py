@@ -883,6 +883,104 @@ def validate_outcome(o, modality, root, func=None):
     return True, ""
 
 
+# ── Floor attestation (2026-09-16) ───────────────────────────────────────────
+# A session's `floor` is SELF-REPORTED. Every other claim in the outcome has to
+# carry a measurement, but the floor itself was taken on trust — and on
+# 2026-09-16 func_8006CCC8 s1 banked floor=94 from a C body it never wrote to
+# disk (s2: "Fixed the stale-HEAD chassis (s1 body was never applied)"). That
+# number then ordered the queue and framed two follow-on sessions' frontiers.
+#
+# The guard is deliberately narrow: only a CLAIMED DROP has to be attested. A
+# flat or worse floor costs nothing if it is sloppy (the next session re-measures
+# it anyway), while a fabricated drop silently redirects the whole ledger.
+#
+# Attestation accepts either:
+#   (a) an `engine sandbox`/`build-c` event in metrics/events.jsonl stamped with
+#       THIS spawn's CLAUDE_SESSION_ID, for THIS function, whose score equals the
+#       reported floor — the engine writes those itself and a session cannot
+#       forge one without actually running the measurement; or
+#   (b) an attached, existing artifact under tmp/ or the function's own ledger
+#       dir whose text contains the claimed floor — the escape hatch for floors
+#       measured by the ra_solver object-mode workaround rather than by the
+#       sandbox (func_80056CB8 s22-s44).
+# Neither present => the drop was never measured anywhere => invalid session,
+# discarded and respawned, exactly like any other unproven claim.
+ATTEST_TAIL_BYTES = 4_000_000
+
+
+def _session_scores(root, func, sid):
+    """Scores the engine recorded for `func` under agent session `sid`."""
+    path = os.path.join(root, "metrics", "events.jsonl")
+    out = set()
+    try:
+        size = os.path.getsize(path)
+        with open(path, "rb") as f:
+            if size > ATTEST_TAIL_BYTES:
+                f.seek(size - ATTEST_TAIL_BYTES)
+                f.readline()          # drop the partial line
+            for raw in f:
+                if sid.encode() not in raw:
+                    continue
+                try:
+                    ev = json.loads(raw.decode("utf-8", "replace"))
+                except ValueError:
+                    continue
+                if ev.get("session_id") != sid or ev.get("func") != func:
+                    continue
+                if ev.get("command") not in ("sandbox", "build-c"):
+                    continue
+                sc = (ev.get("payload") or {}).get("score", ev.get("score"))
+                if isinstance(sc, int):
+                    out.add(sc)
+    except OSError:
+        return None                   # no telemetry at all -> cannot judge, don't block
+    return out
+
+
+def attest_floor(root, func, o, sid, prior_floor):
+    """(ok, reason). Gate a self-reported floor DROP on evidence from this
+    session. Returns ok for anything else (flat/worse floor, unknown prior,
+    mock/drill spawns with no session id, missing telemetry)."""
+    floor = o.get("floor")
+    if not isinstance(floor, int) or not isinstance(prior_floor, int):
+        return True, ""
+    if floor >= prior_floor:
+        return True, ""
+    if not sid:
+        return True, ""               # mock/drill spawn: nothing to attest against
+    scores = _session_scores(root, func, sid)
+    if scores is None:
+        return True, ""
+    if floor in scores:
+        return True, ""
+    for art in o.get("artifacts", []) or []:
+        # Only a SESSION-PRODUCED artifact counts — the ledger dir or tmp/. Any
+        # repo file would do otherwise (docs/grind/journal.md contains every
+        # number this project has ever measured).
+        norm = str(art).replace("\\", "/")
+        if not (norm.startswith("tmp/")
+                or norm.startswith("memory/grind/%s/" % func)):
+            continue
+        ap = os.path.join(root, art)
+        if not os.path.isfile(ap) or os.path.getsize(ap) == 0:
+            continue
+        try:
+            with open(ap, encoding="utf-8", errors="replace") as f:
+                if str(floor) in f.read():
+                    return True, ""
+        except OSError:
+            continue
+    seen = ("none" if not scores
+            else ", ".join(str(x) for x in sorted(scores)[:6]))
+    return False, (
+        f"UNATTESTED FLOOR DROP: you reported floor={floor} (prior {prior_floor}) "
+        f"but this session recorded no engine measurement of {func} at that score "
+        f"(scores recorded this session: {seen}) and attached no artifact "
+        f"containing it. Apply the candidate body to src and measure it — a floor "
+        f"read off a chassis you did not write to disk is the func_8006CCC8 s1 "
+        f"failure. Re-run the measurement and resubmit.")
+
+
 # Escalation trigger (2026-07-22): the ladder used to repeat forever with no way
 # to transition a genuinely-exhausted function to a disposition. Sessions kept
 # returning `progress` with "escalation-ready, no owner entry filed" — obeying the
@@ -3041,6 +3139,19 @@ if __name__ == "__main__":
         o = json.load(open(sys.argv[3], encoding="utf-8"))
         ok, why = validate_outcome(o, sys.argv[4], sys.argv[2],
                                    sys.argv[5] if len(sys.argv) > 5 else None)
+        if not ok:
+            print(why)
+            sys.exit(1)
+    elif cmd == "attest-floor":
+        # attest-floor <root> <outcome.json> <func> <agent_session_id> <prior_floor>
+        o = json.load(open(sys.argv[3], encoding="utf-8"))
+        try:
+            prior = int(sys.argv[6])
+        except (IndexError, ValueError):
+            prior = None
+        ok, why = attest_floor(sys.argv[2], sys.argv[4], o,
+                               (sys.argv[5] if len(sys.argv) > 5 else "").strip(),
+                               prior)
         if not ok:
             print(why)
             sys.exit(1)
