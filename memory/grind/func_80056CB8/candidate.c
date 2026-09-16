@@ -1526,6 +1526,42 @@
  * reference not yet done". No C-level lever attempted or measured this
  * session; the quantified +2-nrefs target is not yet spent. Full
  * writeup: hypotheses.md [s62].
+ * ---------------------------------------------------------------------
+ * s63 (solver modality, 2026-09-16): Re-confirmed 38/204 fresh (19th
+ * consecutive flat session). Body UNCHANGED. RESOLVED the s62 pseudo-
+ * identity open question: a fresh dump.ps1 regeneration this session
+ * confirms nrefs_census.py's pseudo 74 (first-def "reg75 + const_int 2")
+ * IS the same object as dump.ps1/.lreg's reg 74 (insn 21: `(set (reg/v:SI
+ * 74) (plus:SI (reg/v:SI 75) (const_int 2)))`, i.e. `limit = start + 2`)
+ * -- the two tools DO share one pseudo-number object space for this
+ * function, contrary to s62's uncertainty. .greg's "Register dispositions"
+ * table confirms reg 74 is genuinely spilled (absent from the hard-reg
+ * remap list, consistent with nrefs_census's hard=-1), while reg 149 (the
+ * priority target) is confirmed allocated hard reg 30/$fp ("149 in 30").
+ * Extended the nrefs-lift census to the other two frontier pseudos:
+ * `--above 148:149` (pseudo 148, nrefs 5, needs +1) and `--above 116:149`
+ * (pseudo 116, nrefs 5, needs +3). Read their first-def insns: pseudo 148
+ * = insn 459 `reg148 = $fp + const_int 0x2B8` and pseudo 146 = insn 458
+ * `reg146 = $fp + const_int <offset>` -- these are literally the two
+ * separate per-call-site materializations of the `0x1F8002B8` scratchpad
+ * address already investigated and KILLED at s8/s9 (single-local merge,
+ * both in-loop and hoisted-above-loop spellings, both measured WORSE:
+ * 58->60). Pseudo 116 is the `Judge` symbol_ref (already used twice, at
+ * sin_p/cos_p). CONCLUSION: none of the three remaining nrefs-lift targets
+ * (74/limit, 148+146/scratch-addr, 116/Judge) has a natural, non-invented
+ * duplication site -- the function's control flow does not branch around
+ * any of these three value's use sites (no arms to duplicate a real
+ * statement into per [[duplicated-statement-into-arms]]), and the closely
+ * analogous "give this value one more real reference" attempts already on
+ * record (s6/s10/s12/s22 idx-sharing for the limit-adjacent i*2 value; s8/
+ * s9 scratch-address merge) both independently measured WORSE via
+ * register-pressure growth across the ratan2 call -- consistent with, not
+ * contradicting, this session's conclusion. This closes the whole
+ * s49-s62 nrefs-census lift-target frontier as measured-exhausted on the
+ * current chassis (not a class kill -- a future genuinely-new real
+ * statement touching one of these pseudos would reopen it). fake_ablate.py
+ * re-audit clean (3rd consecutive, matches s58/s61). See hypotheses.md /
+ * evidence.md [s63] for full detail.
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;

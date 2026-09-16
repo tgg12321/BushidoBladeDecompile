@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 62,
- "current_modality": "synthesis",
+ "session_count": 63,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -375,36 +375,29 @@
    "floor": 38,
    "modality": "synthesis",
    "headline": "s62 synthesis: 38/204 re-confirmed (18th consecutive flat session); first actual execution of the s49-s61-deferred pseudo-naming frontier item via nrefs_census.py quantifies a +2-nrefs lift target for"
+  },
+  {
+   "session": 63,
+   "floor": 38,
+   "modality": "solver",
+   "headline": "s63 solver: 38/204 re-confirmed (19th consecutive flat); resolved s62's pseudo-identity question (nrefs_census pseudo 74 == dump.ps1 reg 74 == `limit`, genuinely spilled) and closed the whole s49-s62 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Pseudo 74 in nrefs_census.py's numbering IS the `limit` local (s51/s54's spilled pseudo), and gaining it +2 nrefs within its existing live range (via a sanctioned duplicated-real-statement-into-arms spelling, per [[duplicated-statement-into-arms]]) would flip global_alloc's priority ranking and let it take a hard register instead of spilling.",
-   "mechanism": "global.c:615 allocno_compare priority ranking; flow.c adds loop_depth per reference on each duplicated real read, per nrefs_census.py's own free-lift documentation.",
-   "next_probe": "First resolve the pseudo-identity question (either patch nrefs_census.py's extract call to consume dump.ps1's existing dump files instead of a fresh independent compile, or read pseudo 74's full .lreg RTL use-sites -- not just its first-def -- to confirm it participates in the loop-guard compare the way `limit` should). Only then attempt a real +2-reference duplication of whatever statement pseudo 74 actually is, measuring via sandbox --disable all. Forensics/solver modality."
+   "hypothesis": "The PRE-RA structural residual (target's single-materialized 0x1F8002B8 literal via a loop-carried $fp-style byte-table index accumulator, vs our two separate materializations plus the code==4 y-compare branch-topology mismatch: addiu s8,s8,2 / sll s8,#,0x2 *4-stride / two addu / beqz+bltz+j triple) remains the only live structural axis; it is upstream of both RA and scheduler models per inverse_compose.py and requires a genuinely different C expression, not a register/lifetime lever.",
+   "mechanism": "loop.c:3823 strength_reduce giv-worth rejection (lifetime*threshold*benefit < insn_count) for the merged i*2 giv, precisely quantified at s31: combined benefit=2, lifetime=2, threshold=31, product 124 vs insn_count 163 -- promoting the giv needs lifetime>=3 (measured WORSE via register pressure across the ratan2 call, s6/s10/s12/s22/s54) or a 3rd genuine i*2 use (architecturally unavailable, only 2 byte-tables exist).",
+   "next_probe": "Direct restructuring of the code==4 y-compare tail's branch topology (the addiu/sll-*4/addu/beqz+bltz+j vs our bgez shape) has not been tried as a standalone lever independent of the i*2 sharing question -- read asm/funcs/func_80056CB8.s lines ~195-217 (the y-compare tail) fresh and derive what C control-flow shape would naturally produce a beqz+bltz+j triple instead of GCC's folded bgez, without touching the i*2/limit axis at all. Forensics/structural modality."
   },
   {
-   "hypothesis": "Pseudos 148/146 (fp-relative address computations, likely &pt0/&pt1 stack-slot addresses per s17's original reading of hard-reg spills) and 116 (the `Judge` symbol_ref) are three more spilled-class candidates each with their own quantifiable lift target, independent of the limit/pseudo-74 question.",
-   "mechanism": "Same global.c:615 ranking; each has a distinct first-def insn and pri already printed by this session's census.",
-   "next_probe": "Run `--above 148:149`, `--above 146:149`, `--above 116:149` to get their individual lift numbers, then evaluate whether any has a natural (non-FAKE, real-statement) duplication site before spending a session on limit specifically -- may be a shorter path to closing the residual."
-  },
-  {
-   "hypothesis": "Sibling func_8006CCC8 may develop a transplantable block if its own grind progresses further; currently still structurally disjoint.",
+   "hypothesis": "Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) may develop a transplantable block if its own grind progresses; currently structurally disjoint (field28-dispatch vs collision-detection loop).",
    "mechanism": "n/a -- sibling-ledger cross-reference per the brief's mandate.",
-   "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session per the mandate; no action needed until its structure or floor changes."
+   "next_probe": "Re-check func_8006CCC8's ledger/candidate.c each future session; no action needed until its structure or floor changes."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 28,
-   "statement": "Naming the 0x1F8002B8 literal as a pre-loop-declared local (hit_flag_arg, read at both func_80053614 call sites instead of the bare literal at each site) does not reproduce target's stack-spill-and-re",
-   "kill_scope": "instance",
-   "measured_on": "s28 chassis (s22-s27-banked 38/198 body + s28-restored header externs/func_80053614 fix, hit_flag_arg pre-loop named-local substitution only), single fresh sandbox measurement, no FAKE constructs pres",
-   "predicate_cite": "",
-   "result": "45/204 (build_insns 199, one MORE instruction than baseline's 198) -- wrong direction. Reverted immediately."
-  },
   {
    "session": 29,
    "statement": "Declaring `s32 hit_flag_arg = 0x1F8002B8;` INSIDE the loop body (re-assigned each iteration) instead of s28's pre-loop/outside-loop placement, with both func_80053614 call sites reading it instead of ",
@@ -876,6 +869,14 @@
    "measured_on": "s62 chassis (candidate.c's s22-s61-banked 38/204 body, fresh dump.ps1 regeneration + fresh nrefs_census.py run this session, zero FAKE constructs present) -- kills THIS session's specific disposition-",
    "predicate_cite": "",
    "result": "nrefs_census reports pseudos {148,146,74,116} as hard=-1 (spilled from hard-reg assignment) with pri 719/714/555/354; ps"
+  },
+  {
+   "session": 63,
+   "statement": "None of the three remaining nrefs-lift frontier targets (pseudo 74/limit needing +2, pseudo 148+146/scratchpad-address needing +1 each, pseudo 116/Judge symbol_ref needing +3) has a natural, non-inven",
+   "kill_scope": "instance",
+   "measured_on": "s63 chassis (candidate.c's s22-s62-banked 38/204 body + func_80053614 void->s32 return-type prerequisite applied to src/text1b.c, confirmed sandbox 38/204 before this probe), fresh dump.ps1 .lreg/.gre",
+   "predicate_cite": "",
+   "result": "pseudo 148 needs +1, pseudo 116 needs +3 nrefs to outrank pseudo 149 (hard=$fp); pseudo 148/146 are the two per-call-sit"
   }
  ],
  "ladder_skip": 0,

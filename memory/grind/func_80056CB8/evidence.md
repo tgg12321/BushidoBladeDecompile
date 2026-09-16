@@ -1065,3 +1065,20 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s62] Sibling func_8006CCC8 (owner-directive auto-return trigger) remains structurally disjoint; no transplant available.
 
 - [s62] src/text1b.c reverted cleanly to INCLUDE_ASM after every measurement this session (git status --short empty).
+
+- [s63] Fresh 38/204 re-confirmed (19th consecutive flat session across s45-s63... actually flat streak per floor-history: 19 consecutive at floor 38 counting from s22's first hit through s63, per candidate.c header running count).
+- [s63] Resolved s62's open pseudo-identity question: nrefs_census.py's pseudo 74 and dump.ps1/.lreg's reg 74 share one pseudo-number space for this function/chassis (both cite insn 21 `reg75 + const_int 2` = `limit = start + 2` verbatim); reg 74 is genuinely spilled (absent from .greg's hard-reg remap list, matching nrefs_census's hard=-1), reg 149 is confirmed allocated hard reg 30/$fp ("149 in 30" in .greg's Register dispositions table, matching nrefs_census's hard=$fp).
+- [s63] pseudo 148/146 (the two 0x1F8002B8 scratchpad-address materializations, insns 459/458) and pseudo 116 (Judge symbol_ref, insn 457) are the other two nrefs-lift frontier items; none has a natural real-statement duplication site (no branch arms around any of the three values' use sites), and the closely analogous already-killed s6/s8/s9/s10/s12/s22 measurements (idx-sharing, scratch-address merge) both independently regressed via register pressure across the ratan2 call -- consistent evidence this whole frontier axis is dead on the current chassis without inventing an unmotivated duplicate read.
+- [s63] fake_ablate.py re-audit: zero FAKE constructs in candidate.c (3rd consecutive clean audit, matches s58/s61).
+- [s63] src/text1b.c reverted cleanly to INCLUDE_ASM after every measurement this session (git status --short empty at session end).
+- [s63] Sibling func_8006CCC8 (owner-directive auto-return trigger, floor 39 since its s4) re-checked via ledger cross-reference only (no new sandbox measurement needed); remains structurally disjoint per s60/s62.
+
+- [s63] HEAD/main is INCLUDE_ASM for func_80056CB8; sandbox on bare src/text1b.c scores 204/204 (no_c_body). Applying memory/grind/func_80056CB8/candidate.c's function body PLUS the load-bearing func_80053614 void->s32 return-type prerequisite (src/text1b.c ~line 1513, verified byte-neutral standalone, sandbox func_80053614 --disable all 0/32) reproduces the ledger's recorded 38/204 floor exactly (build_insns 198). Omitting the func_80053614 prerequisite alone regresses the measurement to 134/204 -- confirmed this session as a reproducibility trap for any future session applying candidate.c naively.
+
+- [s63] tools/ra_solver/inverse_compose.py classify (object-level path) re-confirms FIRST DIVERGENCE: PRE-RA, unchanged from s7/s8: the honest (198-insn) and target (204-insn) streams have a different instruction MULTISET (scratchpad-literal double materialization via lui/ori s8 x2 vs target's single lui/ori; target additionally carries addiu s8,s8,2 / sll s8,#,0x2 (*4 stride, not our *2) / two addu / a beqz+bltz+j triple vs our single bgez) -- this is the same PRE-RA structural residual identified at s6/s7/s8 and re-confirmed at s51/s54; ra_solver/sched_solver both explicitly refuse it (upstream of every model).
+
+- [s63] The s62-flagged pseudo-identity uncertainty (whether nrefs_census.py's pseudo numbering shares an object space with dump.ps1/.lreg/.greg's numbering) is RESOLVED this session in the affirmative via direct .lreg RTL read: reg 74's def (insn 21) textually matches nrefs_census's cited first-def for pseudo 74 exactly.
+
+- [s63] src/text1b.c reverted cleanly to committed INCLUDE_ASM state at session end (git status --short clean); no src/engine/tools/rules changes persist on the tree.
+
+- [s63] fake_ablate.py re-audit on candidate.c: zero FAKE-annotated constructs (3rd consecutive clean audit, matches s58/s61).
