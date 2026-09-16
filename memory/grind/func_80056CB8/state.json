@@ -1,0 +1,38 @@
+{
+ "func": "func_80056CB8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 204,
+   "modality": "recon",
+   "headline": "Recon complete on from-scratch 204-insn function: object model resolved (D_800F6608.w8, Judge-table idiom both match matched in-TU siblings), outer-loop byte-table indexing stride is the open structur"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A first full-body C draft applying hypotheses 1+2 (D_800F6608.w8, the Judge idiom) plus a literal transcription of the outer loop / dual func_80053614 calls / gate chain will sandbox well below 204, even before hypothesis 3 is resolved.",
+   "mechanism": "Ordinary compiled C reconstruction - no coercion needed for the two resolved sub-questions.",
+   "next_probe": "Write the draft in src/text1b.c (replacing the INCLUDE_ASM line), sandbox --disable all, read the residual."
+  },
+  {
+   "hypothesis": "The fp+=2/iter byte-table indexing resolves to a simple C array-index expression once the region's cc1 dump or m2c output is read directly, rather than reverse-engineered from raw MIPS.",
+   "mechanism": "m2c reconstructs probable source shape; -da loop/greg dumps show cc1's actual induction-variable arithmetic.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_80056CB8 (once a C draft exists to compile) or m2c asm/funcs/func_80056CB8.s for an initial structural guess before any draft exists."
+  },
+  {
+   "hypothesis": "The mid-loop angle-blend fallback block (only taken when the first func_80053614 call fails) uses a *125 or similar scale factor derived from a shift/subtract/shift/add chain (sll 5; subu; sll 2; addu) that needs an exact algebraic re-derivation before transcription.",
+   "mechanism": "Unverified arithmetic identity - do not transcribe a guessed multiplier into the C draft without checking it reproduces the exact asm shape when compiled.",
+   "next_probe": "Algebraically re-derive the shift/subtract/shift/add sequence by hand or via a small standalone test compile before writing the surrounding C."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-16T07:19:13.663722+00:00"
+}
