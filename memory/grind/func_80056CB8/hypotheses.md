@@ -2775,3 +2775,43 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s60 read-only cross-reference (no new sandbox measurement of the sibling needed, its floor/structure unchanged since the last full read)
+
+## [s61, enumerate] The s22-s60-banked candidate.c body, applied fresh to src/text1b.c (func_80053614 void->s32 return-type prerequisite + 5-line header externs + the full loop body), reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session (17th consecutive confirming session/mandatory pre-probe re-confirmation per the brief's protocol).
+- probe: Wrote tmp/grind/func_80056CB8/s61/apply_candidate.py (scratch splice script, verbatim-matches the current src text before substituting), ran it against src/text1b.c, then `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor, zero drift since s22.
+- verdict: CONFIRMED
+
+## [s61, enumerate] MANDATORY KILL RE-AUDIT: `tools/fake_ablate.py` run against the current banked candidate.c reports zero FAKE-annotated constructs to ablate -- the banked 38/204 floor carries no FAKE-carrier artifact that could be masking a lever as "inert" (the func_8002EA24 s8 / func_800324D0 s6 failure modes this audit exists to catch).
+- mechanism: n/a -- mechanical audit per the brief's "KILL RE-AUDIT REQUIRED" mandate (floor flat since s22, 17+ consecutive sessions). fake_ablate.py greps the candidate for `/* FAKE */` markers and scores every ablation subset; with zero markers present, there is nothing to ablate and the tool reports so directly.
+- probe: `python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c --json`.
+- result: "no FAKE-annotated constructs found in memory/grind/func_80056CB8/candidate.c; nothing to ablate". This re-confirms s58's identical finding (2nd time this specific audit has been run on this ledger) -- the 38/204 floor is a clean instance kill of every measured lever, not a FAKE-carrier artifact. No kill this ledger has banked needs re-classification.
+- verdict: CONFIRMED
+
+## [s61, enumerate] Cross-referenced this session's re-confirmation against the ledger's full enumerate-modality coverage (s2/s3/s5/s9/s14/s15/s25/s36/s37/s38/s39/s48/s59/s60): every previously-identified block-local spelling axis (loop-bound forms, obj/flags dispatch incl. the s60 3-way type-dispatch respellings, sin_p/cos_p/scale/x/z ordering+swaps, BOTH pt0/pt1 store-order blocks incl. the m2c-exact permutations for block1 AND block2, dx/dz declaration-order+inlining, x/z post-call adjustment order, flags==3/flags==4 named-intermediate forms, the 0x1F8002B8 scratchpad-literal staging family (s8/s9/s15/s22/s23), the 7-local full declaration-order space) is flat or worse, re-measured on the CURRENT chassis at least once. No new spelling axis was identified this session; this is a restatement of the s59/s60 synthesis, not a new discovery.
+- mechanism: n/a -- ledger-status synthesis, not a codegen hypothesis.
+- probe: Read-only cross-reference of this session's re-confirmation against the full enumerate-modality history recorded in hypotheses.md.
+- result: The spelling-enumeration space for every block this ledger has identified is exhausted on the current chassis. The live frontier remains exactly what s49/s51/s55/s58/s59/s60 named: naming one of the ~20 OTHER (compiler-internal, no stable C handle) pseudos live with `limit` in global_alloc's conflict graph via the s51 `.greg` / s55 `nrefs_census` cross-reference -- a forensics/solver-modality task, structurally outside what `spelling_enum.py`-class enumeration can search (it enumerates SOURCE-LEVEL respellings of NAMED locals; the residual pseudo has no declared C name to enumerate spellings of).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s61 read-only cross-reference of this session's re-confirmation + all prior enumerate-modality sessions' findings (no new chassis measurement beyond the baseline re-confirmation and the fake_ablate.py audit above)
+
+## [s61] The s22-s60-banked candidate.c body, applied fresh to src/text1b.c (func_80053614 void->s32 return-type prerequisite + 5-line header externs + the full loop body), reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session.
+- probe: Wrote tmp/grind/func_80056CB8/s61/apply_candidate.py (verbatim splice script), applied it to src/text1b.c, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`, reverted with `git checkout -- src/text1b.c` after measurement.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor, zero drift since s22.
+- verdict: CONFIRMED
+
+## [s61] MANDATORY KILL RE-AUDIT: tools/fake_ablate.py run against the current banked candidate.c reports zero FAKE-annotated constructs to ablate -- the banked 38/204 floor carries no FAKE-carrier artifact that could be masking a lever as inert.
+- mechanism: n/a -- mechanical audit per the brief's KILL RE-AUDIT REQUIRED mandate (floor flat since s22, 17+ consecutive sessions). fake_ablate.py greps the candidate for /* FAKE */ markers and scores every ablation subset; with zero markers present it reports directly that there is nothing to ablate.
+- probe: python3 tools/fake_ablate.py --func func_80056CB8 --file text1b --candidate memory/grind/func_80056CB8/candidate.c --json
+- result: "no FAKE-annotated constructs found in memory/grind/func_80056CB8/candidate.c; nothing to ablate" -- re-confirms s58's identical finding (2nd time this audit has run on this ledger). No banked kill needs re-classification as a FAKE-carrier artifact.
+- verdict: CONFIRMED
+
+## [s61] Cross-referencing this session's re-confirmation against the ledger's full enumerate-modality coverage (s2/s3/s5/s9/s14/s15/s25/s36-s40/s48/s59/s60) shows every previously-identified block-local spelling axis (loop-bound forms, obj/flags dispatch incl. the s60 3-way type-dispatch respellings, sin_p/cos_p/scale/x/z ordering+swaps, BOTH pt0/pt1 store-order blocks incl. m2c-exact permutations for block1 and block2, dx/dz declaration-order+inlining, x/z post-call adjustment order, flags==3/flags==4 named-intermediate forms, the 0x1F8002B8 scratchpad-literal staging family, the 7-local full declaration-order space) is flat or worse, already re-measured on the CURRENT chassis at least once. No new spelling axis was identified this session.
+- mechanism: n/a -- ledger-status synthesis, not a codegen hypothesis.
+- probe: Read-only cross-reference of this session's re-confirmation against the full enumerate-modality history recorded in hypotheses.md (no new sandbox measurement beyond the two above).
+- result: The spelling-enumeration space for every block this ledger has identified is exhausted on the current chassis. Live frontier is unchanged from s49/s51/s55/s58/s59/s60: naming one of the ~20 unnamed compiler-internal pseudos live with `limit` in global_alloc's conflict graph, structurally outside what spelling_enum.py-class enumeration can search (it enumerates source-level respellings of NAMED locals; the residual pseudo has no declared C name).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s61 read-only cross-reference of this session's re-confirmation + all prior enumerate-modality sessions' findings (candidate.c's s22-s60-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, zero FAKE constructs present per the fake_ablate.py audit above), engine/sandbox.py --disable all

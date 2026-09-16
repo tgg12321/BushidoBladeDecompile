@@ -1486,6 +1486,25 @@
  * history (s2/s3/s5/s9/s14/s15/s25/s37/s38/s39/s48/s59); the live
  * frontier is unchanged (forensics/solver pseudo cross-reference).
  * Full writeup: hypotheses.md [s59].
+ * ---------------------------------------------------------------------
+ * s60 (enumerate modality). Re-confirmed 38/204 fresh (16th consecutive
+ * session). Three untried hand-written spellings of the type-dispatch
+ * if/else block (OR-operand swap, field-read hoist into a named local,
+ * arm-swap+negated condition) all measured WORSE (40/58/46 vs 38
+ * baseline). Banked to rejected/dispatch-condition-spellings-worse.c.
+ * ---------------------------------------------------------------------
+ * s61 (enumerate modality). Re-confirmed 38/204 fresh (17th consecutive
+ * session, no HEAD drift). MANDATORY kill re-audit: fake_ablate.py on
+ * this candidate.c reports zero FAKE-annotated constructs -- the 38/204
+ * floor is a clean instance kill, not a FAKE-carrier artifact (2nd time
+ * this audit has been run, same result as s58). Cross-referenced the
+ * full enumerate-modality history (s2/s3/s5/s9/s14/s15/s25/s36-s40/s48/
+ * s59/s60): every identified block-local spelling axis in this function
+ * is exhausted on the current chassis. No new axis identified. Live
+ * frontier unchanged: naming one of the ~20 unnamed compiler-internal
+ * pseudos live with `limit` in global_alloc's conflict graph (s51 .greg
+ * / s55 nrefs_census cross-reference) -- forensics/solver modality, not
+ * further enumerate. Full writeup: hypotheses.md [s61].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;

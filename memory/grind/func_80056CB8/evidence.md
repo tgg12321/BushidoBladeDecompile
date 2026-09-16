@@ -1035,3 +1035,11 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s60] The live frontier (naming one of the ~20 OTHER compiler-internal pseudos in the global_alloc conflict graph via the s51 .greg / s55 nrefs_census cross-reference) remains unaddressed -- it requires forensics/solver modality, not enumerate.
 
 - [s60] src/text1b.c reverted to clean INCLUDE_ASM state after every measurement this session; no residual diff except the pre-existing unrelated metrics/events.jsonl noise.
+
+- [s61] src/text1b.c HEAD representation is INCLUDE_ASM("asm/funcs", func_80056CB8); confirmed at session start; reverted back to this state after measurement (git status clean at session end).
+
+- [s61] func_80053614's void->s32 return-type change (declared, body unchanged apart from `return func_80052D00(...)`) is a required, previously-verified byte-neutral prerequisite for the candidate body to consume $v0 from its own two calls.
+
+- [s61] 17 consecutive sessions (s45 through s61, spanning enumerate/structural/rederive/forensics modalities) have reproduced the identical 38/204 floor with zero drift.
+
+- [s61] 56 instance kills + 4 class kills are now banked in this ledger; the mandatory fake_ablate.py re-audit (run twice, s58 and s61) confirms none of them are FAKE-carrier artifacts.
