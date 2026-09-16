@@ -1,0 +1,43 @@
+{
+ "func": "func_8006CCC8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 94,
+   "modality": "recon",
+   "headline": "Wrote first full C body from m2c reconstruction (no-C-body 189 -> 94); confirmed inline field-access beats a cached pointer local, next lever is a LICM-hoisted arg2 sign-extension."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The arg2 sign-extension hoist can be defeated by making its pseudo multi-set per .claude/rules/defeat-licm-hoist-var-reuse.md -- route an already-used loop-variant value through the same C variable non-consecutively with the invariant assignment.",
+   "mechanism": "loop.c move_movables (GCC 2.7.2) hoists any single-set, non-trapping, loop-invariant pseudo out of a short loop-with-call; making the pseudo multi-set (n_times_set > 1) removes it from scan_loop's movable set.",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_8006CCC8 and read the .loop/.greg dump to confirm target's $s7 pseudo shape (does it ever hold a second value in target's own compile, or does target simply never form the hoisted pseudo at all because arg2's sign-extension is consumed differently) before attempting a var-reuse fix; this determines whether the standard recipe applies verbatim or a different restructure is needed."
+  },
+  {
+   "hypothesis": "Once the sign-extension hoist is resolved, the tail of the function (field28>=4/==4 arm and the trailing func_8006CBD4 call arm) needs its own instruction-for-instruction disassembly verification -- only inferred from m2c/the first two arms so far, not independently diffed against asm/funcs/func_8006CCC8.s past the loop header and the D_800A3524 inner-loop block.",
+   "mechanism": "n/a -- verification step, not a codegen hypothesis.",
+   "next_probe": "objdump the sandboxed .o after the H2 fix and walk it against asm/funcs/func_8006CCC8.s line-by-line from .L8006CE10 (the second field28 read) through the end of the function."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "A cached s16 *slot pointer local for the D_800A34FC field, reused across the ~5 accesses within one loop iteration, is NOT the shape of the original source for this chassis (it measurably regresses th",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c HEAD as edited this session (s1); no FAKE construct present in either variant (both are ordinary C, no cheat-catalog constructs).",
+   "predicate_cite": "",
+   "result": "score 142 (vs 94 for the accepted alternative measured in the same session, same chassis), frame grew from target's 0x48"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-16T13:02:42.546307+00:00",
+ "object_model_audited": 1
+}
