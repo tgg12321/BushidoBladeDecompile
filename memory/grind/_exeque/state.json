@@ -1,7 +1,7 @@
 {
  "func": "_exeque",
  "file": "display",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 12,
    "modality": "structural",
    "headline": "Structural session dropped _exeque from floor 15 to 12: pre-computing a pointer to D_8009BE7C closed the final-callback block byte-exact; the triple-store residual survives two more reordering probes "
+  },
+  {
+   "session": 3,
+   "floor": 12,
+   "modality": "structural",
+   "headline": "Floor held at 12/187; exhausted pure-C respelling of the triple-store block (5 measured spellings, all byte-identical) and traced the exact rank_for_schedule LUID tie with the instrumented cc1's BB2_R"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The triple-store block's residual is a GCC 2.7.2 sched.c rank_for_schedule dependency-class tie (sched-rank-class-tie-wall shape) between the field-store chain and the idx-increment/loop-condition reloads, not fixable by statement reordering.",
-   "mechanism": "sched.c INSN_PRIORITY / rank_for_schedule dependence-class tiebreak",
-   "next_probe": "Read tmp/grind/_exeque/dumps/display.sched around the basic-block-11 region (insns 103-222, already dumped this session at hash matching the H5a+H5b chassis) for the exact tie, or run a directed permuter scoped to just this ~16-instruction region (much cheaper now that the base floor is 12, not 15)."
-  },
-  {
-   "hypothesis": "An IRQ-callback-installed function's own single-read test-and-clear of a flag it owns qualifies as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, which would close 2 more instructions (floor 12 -> 10) with zero further search.",
+   "hypothesis": "An IRQ-callback-installed function's own single-read test-and-clear of a flag it owns (the D_8009BE7C guard-and-clear in the final callback block) qualifies as a fourth catalogued use-site shape under legitimate-volatile-interrupt-touched, which would close 2 more instructions (floor 12 -> 10) with zero further search.",
    "mechanism": "policy/ruling question, not a GCC pass",
-   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and src/display.c:915 (the DMACallback(2, _exeque) IRQ-install site)."
+   "next_probe": "File a ruling-request citing memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c, hypotheses.md H6, and src/display.c:915 (the DMACallback(2, _exeque); IRQ-install site). Highest-value untried lever -- unspent since s2."
   },
   {
-   "hypothesis": "Re-running pwsh tools/grinder/dump.ps1 _exeque fresh on the H5a+H5b chassis (current candidate.c) will show updated .sched/.greg insn numbering for the still-open triple-store region, since this session's chassis differs from s1's dumped chassis.",
-   "mechanism": "n/a (tooling freshness)",
-   "next_probe": "Re-dump before further RA/scheduler-specific probing on the triple-store block."
+   "hypothesis": "A directed permuter run scoped to just the ~16-instruction triple-store region could find a C-level lever that breaks the rank_for_schedule LUID tie that five independent manual spellings (this session's 3 + s2's H4a/H4b) did not.",
+   "mechanism": "exhaustive PERM_* search over the block per [[permuter-directives]], now cheap since the base floor is 12/187",
+   "next_probe": "Build a clean single-function target.o from asm/funcs/_exeque.s (per [[difficult-is-not-impossible]] permuter guidance), run decomp-permuter with --stop-on-zero, directed at the triple-store block only."
+  },
+  {
+   "hypothesis": "Re-running pwsh tools/grinder/dump.ps1 _exeque after any future edit to the triple-store block will need a fresh RANKDBG trace via tmp/grind/_exeque/s3/rankdbg_run.py (reusable harness banked this session) to verify whether a new spelling actually changes the LUID relationship, rather than re-guessing from objdump alone.",
+   "mechanism": "n/a (tooling reuse note)",
+   "next_probe": "Rerun tmp/grind/_exeque/s3/rankdbg_run.py with BB2_RANK_DEBUG=1 via tools/gcc-2.7.2/cc1 (NOT build/cc1) after editing the block; grep for the relevant insn UIDs from a fresh .sched dump."
   }
  ],
  "judge_constraints": [],
@@ -68,12 +74,20 @@
    "measured_on": "H5b chassis (candidate.c with s32 *p promoted to volatile s32 *p), no other FAKE/cheat constructs present",
    "predicate_cite": "",
    "result": "Score 12 -> 10 (build_insns 186, target 187); the store now sits before jalr with an explicit nop in the delay slot, byt"
+  },
+  {
+   "session": 3,
+   "statement": "Reusing three independently-spelled forms of the post-call triple-store block (s2's mask-reuse; two fresh locals arg_val/count_val both loaded before either store; a direct mask-free assignment) chang",
+   "kill_scope": "instance",
+   "measured_on": "struct-based _que[idx].field chassis with the s2 H5b final-callback pointer in place; no FAKE/cheat constructs present in any of the three variants",
+   "predicate_cite": "",
+   "result": "All three variants: sandbox score 12, build_insns 185, byte-identical objdump in the triple-store region (both stores la"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T04:50:43.697974+00:00",
- "object_model_audited": 1,
+ "object_model_audited": 3,
  "escalation_deferrals": 0
 }

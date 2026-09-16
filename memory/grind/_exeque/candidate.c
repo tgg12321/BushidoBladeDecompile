@@ -1,7 +1,6 @@
-/* _exeque candidate — session 2 (structural), sandbox --disable all score
- * 12/187 (down from the s1-banked floor of 15/187, and 187 raw INCLUDE_ASM
- * floor before s1). Apply this body to src/display.c in place of the
- * `INCLUDE_ASM("asm/funcs", _exeque);` line.
+/* _exeque candidate — session 3 (structural), sandbox --disable all score
+ * 12/187 (unchanged from the s2-banked floor of 12/187). Apply this body to
+ * src/display.c in place of the `INCLUDE_ASM("asm/funcs", _exeque);` line.
  *
  * Forward-declaration fixups needed (already applied in src/display.c
  * since s1; unchanged this session):
@@ -11,68 +10,63 @@
  *   - `extern s32 D_8009BF84;` added near the other D_8009BE7C/D_8009BE80
  *     externs (was completely undeclared before s1 — see s1 evidence)
  *
- * s2 changes (both pure C, no FAKE/cheat constructs, no new declarations
- * needed beyond what's already in scope):
+ * s3 change (pure C, no FAKE/cheat constructs): the post-call triple-store
+ * block's `mask`-reuse spelling (s2's H5a) was REPLACED with a direct,
+ * mask-free assignment:
  *
- * 1. The post-call triple-store block (D_8009BF68[0]/D_8009BF6C/D_8009BF70)
- *    now reuses the existing `mask` local (already declared for the saved
- *    interrupt mask, and dead after `D_8009BF84 = mask;`) to hold BOTH the
- *    `.arg` and `.count` field values sequentially instead of using two
- *    freshly-materialized locals. This is the SOTN-sanctioned
- *    "variable reuse for codegen control" family
- *    (.claude/rules/no-new-park-categories.md § SOTN-accepted techniques,
- *    "Variable reuse for codegen control"; .claude/rules/
- *    defeat-licm-hoist-var-reuse.md) — SOTN ships `randy = basePoint.x;
- *    baseX = randy;`-style reuse with a "FAKE but makes register allocation
- *    work" comment for the identical mechanism (single register serializes
- *    the two field loads instead of two independent registers). No FAKE
- *    annotation needed here since the value is real/consumed at each
- *    reassignment (not a dead/no-op copy) — same class as the SOTN
- *    `new_var_temp` citations, [[ordinary-c-judge-decidable]] Ruling 1.
- *    This did not move the sandbox score by itself (see hypotheses.md H4)
- *    but is a genuine structural improvement (matches target's single-
- *    register-per-field-pair reuse instead of a two-register split) and is
- *    kept because it does not regress and documents real progress toward
- *    the remaining residual.
+ *     D_8009BF6C = (s32)_que[D_8009BF7C].arg;
+ *     D_8009BF70 = _que[D_8009BF7C].count;
  *
- * 2. The final "clear D_8009BE7C and invoke the D_8009BE80 callback" block
- *    now pre-computes a pointer to D_8009BE7C (`s32 *p = &D_8009BE7C;`)
- *    used for BOTH the guard read (`*p != 0`) and the clear store (`*p =
- *    0;`), instead of reading/writing the global by name twice. This is the
- *    "defeat-combine-symbol-fold — displaced store/load folded into
- *    %lo(sym+K) addressing -> pre-compute a displaced pointer" structural
- *    lever from the codegen-technique-index. Ordinary C, no FAKE needed —
- *    the pointer is genuinely read AND written through, not merely held.
- *    THIS closed the entire final-callback block to a byte-exact match
- *    (only a masked branch-target diff remains there) and dropped the
- *    sandbox floor from 15 to 12. See hypotheses.md H5 (CONFIRMED) for the
- *    measurement and the objdump evidence.
+ * This session measured THREE variants of this block on the identical
+ * surrounding chassis — (a) s2's `mask`-reuse form, (b) two freshly-named
+ * locals `arg_val`/`count_val` loaded before either store, (c) this direct
+ * assignment with no intermediate local at all — and all three produced
+ * BYTE-IDENTICAL object code for the whole function (sandbox score 12,
+ * build_insns 185 in every case; objdump of the triple-store region is
+ * identical down to register numbers). Kept (c) because it is the
+ * simplest of the three byte-equivalent forms (no reused/staged locals to
+ * justify) per [[ordinary-c-judge-decidable]] Ruling 1(4) ("simplest-known-
+ * form: when multiple byte-exact forms are known, the one with the fewest
+ * no-semantic-purpose constructs lands"). See hypotheses.md H7 (CONFIRMED)
+ * for the three-way measurement.
  *
- * Remaining floor-12 residual (2 sites, both scheduling-only — see
- * hypotheses.md frontier for s3):
+ * The final "clear D_8009BE7C and invoke the D_8009BE80 callback" block
+ * (s2's H5b) is unchanged: it pre-computes a pointer to D_8009BE7C
+ * (`s32 *p = &D_8009BE7C;`) used for BOTH the guard read and the clear
+ * store. Ordinary C, no FAKE needed — closes that whole block to a
+ * byte-exact match. See hypotheses.md H5b (CONFIRMED, s2).
+ *
+ * Remaining floor-12 residual (2 sites — see hypotheses.md frontier for
+ * s4, updated this session with dump-verified rank_for_schedule evidence):
  *   a. The triple-store block still schedules both field-stores later than
- *      target (target: load-store-load-store per field with its own
- *      %hi/%lo per store; ours: both loads happen, then both stores are
- *      deferred to just before the loop-continuation branch). Confirmed
- *      NOT fixable by pure statement reordering this session (H4a/H4b
- *      KILLED, instance).
+ *      target (target: strict load-store-load-store per field, each with
+ *      its own %hi/%lo recompute; ours: both loads/recomputes happen, then
+ *      both stores are deferred to just before the loop-continuation
+ *      branch). This session traced the EXACT compiler decision with the
+ *      instrumented cc1's BB2_RANK_DEBUG hook (tools/gcc-2.7.2/cc1, NOT
+ *      tools/gcc-2.7.2/build/cc1 — see [[instrumented-cc1-location]]):
+ *      `RANKDBG last=204 y=198 cls=3 x=189 cls2=3 val=0` — the D_8009BF6C
+ *      store (insn 189) ties in BOTH priority (8) AND dependency class
+ *      (3 = independent of last-scheduled-insn) against insn 198 (part of
+ *      the .count field's address recompute), so GCC's rank_for_schedule
+ *      (tools/gcc-2.7.2/sched.c:2417-2464) falls through to the final
+ *      INSN_LUID tiebreak, which is fixed by RTL-generation (= C
+ *      statement) order — and every C-level respelling this session and
+ *      s2 tried (mask-reuse, fresh two-locals, direct assignment,
+ *      statement-order swap [s2 H4a], increment-position move [s2 H4b])
+ *      leaves that LUID relationship unchanged, because the store is
+ *      always generated in the same relative position vs. the recompute
+ *      chain for the OTHER field. Five independently-measured spellings,
+ *      byte-identical every time. See hypotheses.md H7/H8 for the full
+ *      evidence chain and the CLASS-scope kill this now supports.
  *   b. The final callback's `jalr v0` — target keeps the `D_8009BE7C = 0;`
  *      store BEFORE the call with an unfilled delay-slot nop; our build's
- *      scheduler fills the jalr's delay slot with that same store instead
- *      (functionally equivalent, 1 insn shorter). Empirically, marking the
- *      pointer `volatile s32 *p` prevents the delay-slot fill and closes
- *      this one instruction (score 12 -> 10) — but D_8009BE7C's use-site
- *      here (single-read guard-and-clear, not spin-wait / double-read-
- *      across-sequence-point / IRQ-mutated-loop-bound) does NOT match any
- *      of the three catalogued shapes in
- *      .claude/rules/legitimate-volatile-interrupt-touched.md, so it is
- *      NOT submittable under the current two-prong carve-out even though
- *      _exeque itself IS installed as a DMA IRQ callback (`DMACallback(2,
- *      _exeque);`, src/display.c:915) and would satisfy prong 1. This is a
- *      `ruling-request` candidate for a future session (a new use-site
- *      shape: "IRQ-callback-installed function does its own single-read
- *      test-and-clear on a flag it also writes from non-IRQ context") —
- *      NOT adopted this session; kept OUT of this candidate.
+ *      scheduler fills the jalr's delay slot with that same store instead.
+ *      Marking the pointer `volatile s32 *p` closes this one instruction
+ *      (score 12 -> 10) but does NOT qualify under the current
+ *      `legitimate-volatile-interrupt-touched` two-prong carve-out (s2 H6,
+ *      KILLED instance, NOT submittable) — still a `ruling-request`
+ *      candidate for a future session, unchanged since s2.
  */
 s32 _exeque(void) {
     s32 mask;
@@ -91,10 +85,8 @@ s32 _exeque(void) {
             }
             _que[D_8009BF7C].func(_que[D_8009BF7C].arg, _que[D_8009BF7C].count);
             D_8009BF68[0] = (s32)_que[D_8009BF7C].func;
-            mask = (s32)_que[D_8009BF7C].arg;
-            D_8009BF6C = mask;
-            mask = _que[D_8009BF7C].count;
-            D_8009BF70 = mask;
+            D_8009BF6C = (s32)_que[D_8009BF7C].arg;
+            D_8009BF70 = _que[D_8009BF7C].count;
             D_8009BF7C = (D_8009BF7C + 1) & 0x3F;
         } while (D_8009BF78 != D_8009BF7C && !(*D_8009BF54 & 0x01000000));
     }

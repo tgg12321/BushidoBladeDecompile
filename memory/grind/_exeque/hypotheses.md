@@ -127,11 +127,42 @@ in volatile_extern_allowlist.txt:75, not a fresh sandbox run).
 - kill_scope: instance (this exact volatile spelling, on the H5b chassis, un-annotated — no FAKE claimed since this isn't a FAKE-eligible family, it's a scope-mismatch against the ONE narrow volatile carve-out)
 - measured_on: H5b chassis (candidate.c with `s32 *p` promoted to `volatile s32 *p`), no other FAKE/cheat constructs present
 
-## Frontier for s3 (updated 2026-09-16, session 2)
+## Frontier for s4 (updated 2026-09-16, session 3)
 
-1. **Triple-store block (floor 12, ~2 of the residual instructions)** — H4a/H4b confirm pure statement/declaration reordering doesn't move it; this is a genuine `sched-rank-class-tie-wall`-shaped residual (dependency-class tie between the field-store chain and the idx-increment/loop-condition reloads). Next probe: read `tmp/grind/_exeque/dumps/display.sched` around the basic-block-11 region (insns 103-222, already dumped this session) for the exact `INSN_PRIORITY`/rank_for_schedule tie-break, or run a directed permuter scoped to just this ~16-instruction region (ledger's original frontier item 2, still valid and now MUCH cheaper since the base is 12 not 15).
-2. **`ruling-request` opportunity on H6** — ask whether "an IRQ-callback-installed function's own single-read test-and-clear of a flag it owns" qualifies as a fourth catalogued use-site shape in `.claude/rules/legitimate-volatile-interrupt-touched.md`. If granted, this closes 2 more instructions (floor 12 -> 10) with zero further search. Evidence pointers: `memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c`, this hypothesis file's H6 entry, `src/display.c:915` (the `DMACallback(2, _exeque);` IRQ-install site).
-3. Re-run `pwsh tools/grinder/dump.ps1 _exeque` fresh next session (dumps are chassis-relative; the H5b pointer-alias change may shift insn numbering in the .sched/.greg dumps for the still-open triple-store region).
+1. **`ruling-request` opportunity on H6 — highest-value remaining lever.**
+   Ask whether "an IRQ-callback-installed function's own single-read
+   test-and-clear of a flag it owns" qualifies as a fourth catalogued
+   use-site shape in `.claude/rules/legitimate-volatile-interrupt-touched.md`.
+   If granted, this closes 2 more instructions (floor 12 -> 10) with zero
+   further search. Evidence pointers: `memory/grind/_exeque/rejected/volatile-D_8009BE7C-guard-clear.c`,
+   this hypothesis file's H6 entry, `src/display.c:915` (the
+   `DMACallback(2, _exeque);` IRQ-install site). Unchanged since s2 —
+   still not spent.
+2. **Triple-store block (floor 12, ~2 of the residual instructions) is now
+   evidence-exhausted for pure C-level statement/variable respelling
+   WITHIN the block** — H4a, H4b (s2) and H7's three variants (s3) are five
+   independently-measured spellings, all byte-identical, and H8 (s3) traces
+   the exact `rank_for_schedule` tie via the instrumented cc1's
+   `BB2_RANK_DEBUG` hook to a class+priority tie resolved by `INSN_LUID`
+   (RTL-generation order), which none of the five spellings altered
+   relative to the competing field's recompute chain. The one UNTRIED axis:
+   changing the LOOP-LEVEL structure so the store's LUID lands on the far
+   side of the .count recompute chain — e.g. restructure the two field
+   accesses so the SECOND field (`.count`) is computed+stored FIRST inside
+   the loop but the FIRST field (`.func`, already stored earlier at
+   `D_8009BF68[0]`) is what feeds the LAST store — this reshuffles which
+   insn is "the one being deferred" rather than whether deferral happens,
+   so it is unlikely to help without also changing target's own field
+   emission order (which the s1 H1-confirmed object model must preserve).
+   A directed permuter scoped to just this ~16-instruction region
+   (`tmp/grind/_exeque/dumps/display.sched:16329-17507` for the function's
+   full RTL) is the more promising next step — cheap now that the base is
+   12/187, not 15/187 or 187/187.
+3. Re-run `pwsh tools/grinder/dump.ps1 _exeque` fresh again next session if
+   the chassis changes (this session's dumps, taken fresh at floor-12, are
+   in `tmp/grind/_exeque/dumps/`; `tmp/grind/_exeque/s3/rankdbg_run.py` is
+   the reusable BB2_RANK_DEBUG harness — rerun it after any edit to the
+   triple-store block to get a fresh RANKDBG trace).
 
 ## [s2] Swapping the source order of the D_8009BF6C=arg / D_8009BF70=count statements changes the scheduler's register/timing choice for the triple-store residual.
 - mechanism: GCC 2.7.2 sched.c list scheduler dependency-class ranking (sched-rank-class-tie-wall shape)
@@ -168,3 +199,80 @@ in volatile_extern_allowlist.txt:75, not a fresh sandbox run).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: H5b chassis (candidate.c with s32 *p promoted to volatile s32 *p), no other FAKE/cheat constructs present
+
+## [s3] H7 — KILLED (instance): three independently-spelled variants of the
+post-call triple-store block (s2's `mask`-reuse; two freshly-named locals
+`arg_val`/`count_val` both loaded before either store; a direct
+mask-free assignment with no intermediate local) all produce
+BYTE-IDENTICAL object code — sandbox score 12 and objdump of the
+triple-store region identical down to register numbers, in every case.
+- mechanism: n/a for the comparison itself (three ordinary-C spellings
+  measured against each other); the underlying compiler mechanism this
+  disproves any C-level fix via is GCC 2.7.2's `rank_for_schedule`
+  (tools/gcc-2.7.2/sched.c:2417-2464) — see H8 for the dump-verified trace.
+- probe: rewrote the block three ways on the identical surrounding chassis
+  (s2's H5b final-callback pointer unchanged); ran `sandbox _exeque
+  --disable all` after each; diffed `mipsel-linux-gnu-objdump -dr
+  tmp/sandbox/_exeque/display.o` for the triple-store region (offsets
+  0x20e0-0x2218 in the disabled object) across all three.
+- result: all three: score 12, build_insns 185, byte-identical
+  objdump in the triple-store region (both stores land at the same two
+  instructions, `sw a1,%lo(D_8009BF6C)(at)` / `sw a0,%lo(D_8009BF70)(at)`,
+  immediately before the loop-continuation `beq`, in every variant).
+  Kept the direct-assignment form (fewest constructs) in candidate.c per
+  [[ordinary-c-judge-decidable]] Ruling 1(4).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: struct-based `_que[idx].field` chassis with the s2 H5b
+  final-callback pointer in place; no FAKE/cheat constructs present in any
+  of the three variants.
+
+## [s3] H8 — CONFIRMED (diagnostic, not a fix): the instrumented cc1's
+`BB2_RANK_DEBUG` hook (tools/gcc-2.7.2/cc1, NOT tools/gcc-2.7.2/build/cc1
+— see [[instrumented-cc1-location]]) proves the D_8009BF6C store (insn 189)
+ties with insn 198 (part of the .count field's address recompute chain) in
+BOTH `INSN_PRIORITY` (8) and dependency class (3 = independent of the
+last-scheduled insn, insn 204) when `rank_for_schedule` compares them, so
+the decision falls through to the final `INSN_LUID` tiebreak — which is
+fixed by RTL-generation (= C statement) order and is IDENTICAL across
+every spelling this session and s2 tried (H7's three variants, s2's H4a
+statement-swap, s2's H4b increment-move), because the store is always
+generated in the same relative position versus the OTHER field's recompute
+chain regardless of which local (if any) carries the value.
+- mechanism: GCC 2.7.2 `rank_for_schedule` (tools/gcc-2.7.2/sched.c:2417-2464):
+  priority tie (line 2418) -> dependency-class tie relative to
+  `last_scheduled_insn` (lines 2421-2458) -> `INSN_LUID` tiebreak (lines
+  2461-2464, `return INSN_LUID(tmp) - INSN_LUID(tmp2);`).
+- probe: built `tmp/grind/_exeque/s3/rankdbg_run.py` (preprocesses
+  src/display.c, invokes the INSTRUMENTED `tools/gcc-2.7.2/cc1` — not the
+  plain build/cc1 — with `BB2_RANK_DEBUG=1` in its env, `-da` dump flags);
+  captured stderr to `/tmp/rankdbg3.log` (1050 RANKDBG lines for the whole
+  TU); grepped for insn UIDs 189/207 (the two deferred stores identified in
+  the fresh `.sched` dump from `pwsh tools/grinder/dump.ps1 _exeque`, read
+  at `tmp/grind/_exeque/dumps/display.sched:16542-16583` this session).
+- result: `RANKDBG last=204 y=198 cls=3 x=189 cls2=3 val=0` — confirms the
+  exact tie (val=0 means the class comparison itself was also a tie, so
+  the caller falls through to the LUID compare, which this session's five
+  measured spellings (H7 x3 + s2 H4a/H4b) show is invariant to every
+  tested C-level respelling of this specific block). This is DIAGNOSTIC
+  evidence explaining WHY H4a/H4b/H7 all measured null — it does not
+  itself close the residual, and no C form that changes ONLY this block's
+  internal statement/variable spelling (holding the surrounding loop and
+  field order fixed) has been found to break the tie.
+- verdict: CONFIRMED
+- kill_scope: n/a (positive/diagnostic confirmation, not a kill of a
+  proposed fix)
+
+## [s3] Reusing three independently-spelled forms of the post-call triple-store block (s2's mask-reuse; two fresh locals arg_val/count_val both loaded before either store; a direct mask-free assignment) changes the scheduler's placement of the D_8009BF6C/D_8009BF70 stores.
+- mechanism: n/a for the comparison; underlying mechanism traced separately (see next hypothesis)
+- probe: Rewrote the block three ways on the identical s2 H5b chassis; ran sandbox _exeque --disable all after each; diffed mipsel-linux-gnu-objdump -dr tmp/sandbox/_exeque/display.o for the triple-store region across all three.
+- result: All three variants: sandbox score 12, build_insns 185, byte-identical objdump in the triple-store region (both stores land at the same two instructions immediately before the loop-continuation beq in every variant). Kept the direct-assignment form (fewest constructs) in candidate.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: struct-based _que[idx].field chassis with the s2 H5b final-callback pointer in place; no FAKE/cheat constructs present in any of the three variants
+
+## [s3] The instrumented cc1's BB2_RANK_DEBUG hook (tools/gcc-2.7.2/cc1) shows the D_8009BF6C store (insn 189) ties with insn 198 (part of the .count field's address recompute) in both INSN_PRIORITY (8) and dependency class (3 = independent of last-scheduled insn 204) in rank_for_schedule, forcing the decision to the final INSN_LUID tiebreak, which is fixed by RTL-generation (C statement) order and is invariant across every C-level respelling of this block tested this session and in s2.
+- mechanism: GCC 2.7.2 rank_for_schedule (tools/gcc-2.7.2/sched.c:2417-2464): priority tie at line 2418, dependency-class tie at lines 2421-2458, INSN_LUID tiebreak at lines 2461-2464
+- probe: Built tmp/grind/_exeque/s3/rankdbg_run.py (preprocesses src/display.c, invokes tools/gcc-2.7.2/cc1 -- the instrumented binary, not build/cc1 -- with BB2_RANK_DEBUG=1, -da dump flags); captured stderr; grepped for insn UIDs 189/207 identified from a fresh dump.ps1 .sched dump read at tmp/grind/_exeque/dumps/display.sched:16542-16583.
+- result: RANKDBG last=204 y=198 cls=3 x=189 cls2=3 val=0 -- confirms the exact class+priority tie. This is diagnostic evidence explaining why five independently measured spellings (this session's 3 + s2's H4a/H4b) all produced byte-identical output; it does not by itself close the residual.
+- verdict: CONFIRMED

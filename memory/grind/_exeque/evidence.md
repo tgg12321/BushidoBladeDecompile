@@ -138,3 +138,13 @@ answers).
 - [s2] _exeque is installed as an asynchronous DMA-interrupt callback at src/display.c:915/927 (`DMACallback(2, _exeque);`), confirmed by reading the surrounding _addque2 source -- this is the IRQ-writer citation for the H6 ruling-request candidate.
 
 - [s2] The remaining floor-12 residual is exactly two sites: (a) the post-call triple-store block (D_8009BF68[0]/D_8009BF6C/D_8009BF70), unchanged in shape from the s1-banked residual and confirmed immune to pure statement/declaration reordering this session (H4a, H4b); (b) a single jalr delay-slot fill difference in the final-callback block, closable only via an unsanctioned volatile spelling (H6).
+
+- [s3] sandbox _exeque --disable all confirms floor 12/187 unchanged from the s2-banked chassis (build_insns 185, cheat_asm_stripped 143, rules_dropped 0) both before and after this session's edits.
+
+- [s3] src/display.c reverted to its committed INCLUDE_ASM("asm/funcs", _exeque); state before finishing this session (git status/diff on src/display.c show zero delta from HEAD) -- the working candidate lives only in memory/grind/_exeque/candidate.c per asm-until-matched.
+
+- [s3] Fresh pwsh tools/grinder/dump.ps1 _exeque dumps were taken this session (tmp/grind/_exeque/dumps/*) on the floor-12 chassis, superseding s1's stale-chassis dumps referenced in the prior frontier.
+
+- [s3] The three s3 triple-store spellings (mask-reuse, fresh two-locals, direct assignment) plus s2's H4a/H4b statement reorderings are five total independently-measured C-level respellings of this specific block, all byte-identical in the triple-store region -- this is now a well-evidenced (though still instance-scoped per this session's kill_scope discipline) wall for pure statement/variable respelling WITHIN that block.
+
+- [s3] target asm (asm/funcs/_exeque.s lines corresponding to addresses 8007D860-8007D8E4) shows a strict load-store-load-store-load-store interleave per field (recompute -> load .arg -> store D_8009BF6C -> recompute -> load .count -> store D_8009BF70 -> recompute -> increment+store D_8009BF7C) that our build's list scheduler does not reproduce regardless of tested C-level spelling; the deferred-store shape is a scheduling decision, not an addressing/object-model gap (the object model itself, established in s1 H1, remains correct).
