@@ -637,3 +637,11 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s31] func_80052D00 (called by func_80053614) is already declared 's32 func_80052D00(s32, s32);' elsewhere in text1b.c, so func_80053614's void->s32 signature fix requires no additional cast -- `return func_80052D00(arg2, arg3);` compiles cleanly.
 
 - [s31] The function's loop calls ratan2 (confirmed via call_insn 109 in the .loop dump) in addition to the two func_80053614 calls already known from the target-asm read -- this means loop_has_call is TRUE for strength_reduce's threshold formula, which was not previously stated explicitly in this ledger.
+
+- [s32] Fresh sandbox reconfirmation this session: candidate.c body + func_80053614 void->s32 signature fix, applied verbatim to src/text1b.c, reproduces score=38, target_insns=204, build_insns=198 exactly (chassis unchanged from s22-s31).
+
+- [s32] loop.c:5494-5530 combine_givs literally does `g1->benefit += g2->benefit; g1->lifetime += g2->lifetime; g1->times_used += g2->times_used;` on merge -- confirms the merged giv's lifetime/benefit are additive sums of the two component per-use givs, not independently computed.
+
+- [s32] The insn-427 giv (a different expression, the `*(s8*)(arg0+0x444+i)` output-array store index) is rejected at exactly 0 vs 163 with unmerged raw benefit 2 -- this pins the scan-loop's `add_cost*bl->biv_count` deduction at exactly 2 for this function's biv class, letting the merged-giv's 124 be exactly reverse-engineered into its lifetime/threshold/benefit factors.
+
+- [s32] src/text1b.c was left clean (git checkout -- src/text1b.c) at end of session; HEAD still carries INCLUDE_ASM("asm/funcs", func_80056CB8); for this function as required by asm-until-matched.

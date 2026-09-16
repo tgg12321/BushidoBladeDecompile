@@ -1,6 +1,26 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30) — floor 38/204, NOT YET 0. (Prior:
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32) — floor 38/204, NOT YET 0. Body
+ * UNCHANGED at s32 (forensics). s32 derived the EXACT arithmetic behind
+ * the s31-banked 124-vs-163 loop.c:3823 giv rejection: threshold=31,
+ * add_cost*biv_count=2, combined lifetime=2, combined adjusted benefit=2
+ * (product 124). Only +1 unit of combined lifetime (2->3) is needed to
+ * flip the inequality (3*31*2=186>=163) -- far smaller than the raw
+ * 124->163 gap suggested. Re-tested the s6-era "shared idx local" kill on
+ * this fresh chassis WITH a .loop dump: it DOES flip the strength-reduce
+ * decision (dump shows lifetime 42, giv promoted, reduced to reg 217) but
+ * still regresses score 38->51 because the shared pseudo must live across
+ * the ratan2 call as a 9th competing callee-saved-register resident.
+ * Untried frontier: two SEPARATELY-named locals (not one shared idx) that
+ * combine_givs would still merge into one giv, to see whether reload/
+ * global_alloc can promote i*2 WITHOUT forcing one pseudo to live across
+ * the whole call span. See hypotheses.md s32 entries for full detail.
+ * ---------------------------------------------------------------------
+ * s31 (forensics modality, 2026-09-16, unchanged body) — closed the pass-
+ * attribution numeric gap for the FIRST time (124 vs 163, loop.c:3823),
+ * superseded by s32's exact factorization above.
+ * ---------------------------------------------------------------------
+ * (Prior:
  * 42/204 s14-s21; 48/204 s11-s13; 58/204 s7-s10.) Body UNCHANGED from
  * s22 this session.
  * ---------------------------------------------------------------------

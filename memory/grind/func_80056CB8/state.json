@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 31,
+ "session_count": 32,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -189,23 +189,29 @@
    "floor": 38,
    "modality": "forensics",
    "headline": "s31 forensics: fresh 38/204 reconfirmed; instrumented .loop dump gives EXACT loop.c:3823 giv-worth numbers for the i*2 axis (124 vs 163, gap 39) replacing s26's qualitative claim with a measurable tar"
+  },
+  {
+   "session": 32,
+   "floor": 38,
+   "modality": "forensics",
+   "headline": "Factored the s31-banked loop.c:3823 giv-worth gap into exact (lifetime=2, threshold=31, benefit=2) terms -- only +1 lifetime unit needed, not +39 on any single term -- then re-audited the stale s6 sha"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structural C change elsewhere in the loop body (not touching the i*2 index expressions or their live ranges) that reduces the loop's real-insn count from 163 to <=124 would flip loop.c:3823's inequality (124 >= new lower insn_count) and let strength_reduce automatically promote the merged i*2 giv into a compiler-built accumulator register, reproducing target's fp shape without any hand-written idx2 variable.",
-   "mechanism": "loop.c:3823 giv-worth test; insn_count is 'Loop from 25 to 444: 163 real insns' printed directly in the .loop dump for this exact chassis.",
-   "next_probe": "Identify which currently-unmerged/unoptimized statements in the loop body (the pt0/pt1 store blocks, the sin_p/cos_p table lookups, the flags dispatch tail) could be restructured to emit fewer real RTL insns without changing byte output, then re-run the .loop dump after each candidate change and read the new insn_count + the new giv-worth product for insn 130 directly (do not guess -- the dump prints both numbers exactly)."
+   "hypothesis": "Two SEPARATELY-named locals (not one shared idx) that combine_givs still merges into one giv (same biv/mult/add triple; loop.c:5502-5512's merge condition does not require identical source expressions) might let global_alloc treat them as two short individual-lifetime pseudos rather than one pseudo forced to live across the whole call span -- potentially flipping loop.c:3823's decision (since combine_givs sums their lifetimes regardless of whether the two source pseudos ever coexist) WITHOUT paying the shared-idx test's 9th-call-spanning-resident cost.",
+   "mechanism": "loop.c:4401 measures lifetime per individual pseudo's own LUID span; combine_givs (loop.c:5523) sums lifetimes across the merge bookkeeping regardless of whether the two contributing pseudos are the SAME register. If reload/global_alloc can spill or rematerialize each separately-named copy independently (since as distinct C locals they are not required to share a hardware register), the merged giv could still reach lifetime>=3 for promotion purposes while neither individual pseudo needs to live across the whole ratan2 call.",
+   "next_probe": "Add `s32 idxB = i * 2;` computed early (same source position as the current `flags = (&D_8009A821)[i*2] << 8;` line) but consumed ONLY later at the scale read; leave the flags read's own `i*2` untouched (do not share a pseudo). Measure via sandbox; read the resulting .loop dump for (a) whether combine_givs still merges the two givs and promotion fires, and (b) whether global_alloc's register disposition for idxB avoids the lifetime-42 call-spanning-resident profile the shared-idx kill showed."
   },
   {
-   "hypothesis": "Alternatively, raising the merged giv's own lifetime or benefit term (rather than shrinking insn_count) could close the 124->163 gap -- e.g. if a third genuine use of the i*2 expression existed in the loop body, combine_givs might merge it in and raise the combined benefit/lifetime product past the threshold.",
-   "mechanism": "loop.c 3776-3801 benefit computation + combine_givs; the dump shows exactly 2 uses (insn 43, insn 130) combined into the rejected giv, with each pre-combine value being 'benefit 2 used 1 lifetime 1' -- the combined values feeding the 124 product are not separately printed and would need an intermediate dump read (adding print statements is off-limits per no-compiler-divergence, but the EXISTING dump output at combine time, if any, should be checked first).",
-   "next_probe": "Re-read the full .loop dump slice (not just the grep) around lines 36-43 (tmp/grind/func_80056CB8/dumps/text1b.loop, function slice from line 13251) for any additional combine_givs diagnostic output between the two 'giv reg ... benefit 2' lines and the 'not worth while' line that would reveal the combined benefit/lifetime values directly, before assuming they need cc1 instrumentation."
+   "hypothesis": "A structural change elsewhere in the loop body (not touching the i*2 index expressions or their live ranges) that shortens the loop's real-insn count from 163 to <=124 would flip loop.c:3823's inequality from the insn_count side instead of the lifetime side, letting strength_reduce promote i*2 automatically without widening any giv's lifetime at all (avoiding the register-pressure cost entirely).",
+   "mechanism": "loop.c:3823's inequality is symmetric in insn_count vs lifetime*threshold*benefit; shrinking insn_count is untried as an axis distinct from widening the giv term.",
+   "next_probe": "Identify which currently-unmerged/unoptimized statements in the loop body (pt0/pt1 store blocks, sin_p/cos_p lookups, flags dispatch tail) could be restructured to emit fewer real RTL insns without changing byte output, then re-run the .loop dump after each candidate change and read the new insn_count directly."
   },
   {
-   "hypothesis": "A restructuring of one of the 8 OTHER named residents' (obj/self-ptr, obj2, flags/code, sin_p, cos_p, x, z) live-range/conflict footprint could independently free $fp for a genuinely different value while leaving the 0x1F8002B8 literal spilled by a different competing value than idx2 -- carried forward unmeasured from s29/s30.",
+   "hypothesis": "A restructuring of one of the 8 OTHER named residents' (obj/self-ptr, obj2, flags/code, sin_p, cos_p, x, z) live-range/conflict footprint could independently free a callee-saved register for a genuinely different value while leaving the promoted i*2 giv able to take a register without a net cost -- carried forward unmeasured from s29/s30/s31.",
    "mechanism": "global.c global_alloc priority-ordered coloring; s29's conflict-map decode showed 9 pseudos live across the loop competing for 9 callee-saved registers.",
-   "next_probe": "Re-run the s29 conflict_map.py decode against this session's fresh .greg dump (tmp/grind/func_80056CB8/dumps/text1b.greg) to verify the 8-named/1-literal picture is unchanged, then search each of the 8 named residents' declaration/use sites for a not-yet-tried live-range-narrowing or live-range-widening spelling (sin_p/cos_p narrowing was killed at s26; obj/obj2 and x/z have not been swept for this specific axis)."
+   "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the two-separate-locals variant (once built) to see whether the register competition picture changes from the shared-idx case."
   }
  ],
  "judge_constraints": [],
@@ -642,6 +648,14 @@
    "measured_on": "s30 chassis (s22-s29-banked 38/198 body, limit local removed + idx2 for-statement-carried accumulator added + loop guard rewritten as i < start + 2, both table-index reads substituted), single fresh s",
    "predicate_cite": "",
    "result": "score=52, build_insns=201 (+3 real instructions vs baseline's 198) -- worse, in the same direction and nearly the same m"
+  },
+  {
+   "session": 32,
+   "statement": "On the CURRENT 38/204 chassis, sharing i*2 into ONE local (`idx = i*2;` used at both table reads) does widen the merged giv's lifetime enough to flip loop.c's strength-reduction decision (dump-proven:",
+   "kill_scope": "instance",
+   "measured_on": "s32 chassis (s22-s31-banked 38/204 body + a single shared `idx = i*2` local substituted at both table-index reads), no FAKE constructs present, single fresh sandbox measurement plus a confirmatory .lo",
+   "predicate_cite": "",
+   "result": "score=51, build_insns=200 (baseline this session: score=38, build_insns=198, target_insns=204). Dump confirms promotion "
   }
  ],
  "ladder_skip": 0,
