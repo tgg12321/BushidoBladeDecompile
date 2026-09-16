@@ -1009,3 +1009,15 @@ PREMISE LIST the current 38/204 floor argument rests on:
 - [s58] 32 rejected forms are now banked in memory/grind/func_80056CB8/rejected/, spanning loop-bound shapes, declaration order, statement re-association, type-narrowing, do-while restructuring, and shared-index/pointer/offset variants.
 
 - [s58] The 0x1F8002B8 scratchpad-literal single-vs-double materialization gap (target spills to a stack slot and reloads via a caller-saved temp; ours re-materializes via lui/ori into a callee-saved $fp both times) is understood via the s29 .greg register-disposition audit: $fp is the ONLY unclaimed callee-saved register left after 8 other named residents saturate $s0-$s7, so the literal takes it by allocation default, not priority contention -- naming the literal as a local (tried 3x: s15, s28, s41) always regresses because it forces one pseudo to live across the intervening func_80053614 call.
+
+- [s59] Fresh 38/204 re-confirmation (13th consecutive flat session). Extended the s3 obj/flags declaration-order kill (originally measured on a pre-s22 ancient 106-floor chassis) to all 7 loop-scoped locals (obj/flags/scale/sin_p/cos_p/x/z) on the CURRENT chassis: 3 representative orderings (full reverse, def-before-use, pointer-locals-first) all tie 38/204 exactly. Declaration-order axis for this block is now closed on the current chassis (instance-scoped, 3 of 5040 permutations sampled).
+
+- [s59] No untried block-local spelling axis remains identifiable from this ledger's enumerate-modality history (s2/s3/s5/s9/s14/s15/s25/s37/s38/s39/s48/s59). The live frontier is unchanged from s49/s51/s55/s58: naming an unnamed compiler-internal pseudo in the global_alloc conflict graph via the s51/s55 .greg/.lreg cross-reference, which requires forensics/solver modality.
+
+- [s59] 13th consecutive session confirming honest floor 38/204 (build_insns 198) on the current chassis with zero HEAD drift since s22.
+
+- [s59] The block-local spelling search for this residual (loop bound forms, obj/flags dispatch + combinations, sin_p/cos_p/scale/x/z ordering+swaps, both pt0/pt1 store-order blocks, dx/dz declaration-order+inlining, x/z post-call adjustment order, flags==3 named-intermediate, angle/flags variable split, sin_p/cos_p precompute-to-scalar, and now the full 7-local declaration order) is flat across 15 consecutive sessions (s37-s59) and 10+ distinct modalities.
+
+- [s59] The residual's mechanism was pinned at s51 via a .greg dump: pseudo for `limit` is spilled in global_alloc's conflict graph, live across virtually the whole function body alongside ~20 other pseudos; 8 of those have stable C names (obj/i/flags/scale/sin_p/cos_p/x/z) and are all closed as narrowing/reorder targets (s57/s58/s59); the remaining ~20 are compiler-internal pseudos with no stable declared C handle.
+
+- [s59] src/text1b.c reverted to clean INCLUDE_ASM state after every measurement this session; git status confirms no residual diff except the pre-existing metrics/events.jsonl noise.

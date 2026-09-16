@@ -2671,3 +2671,47 @@ Live frontier in candidate.c's header and this session's outcome JSON.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s58 read-only analysis of the s22-s57-banked candidate.c body (no sandbox measurement required), zero FAKE constructs present
+
+## [s59, enumerate] Fresh chassis re-confirmation (13th consecutive session): the s22-s58-banked candidate.c body reproduces 38/204 (build_insns 198) on the current HEAD, zero drift.
+- mechanism: Direct re-measurement, required before any new probe per the ledger's own discipline.
+- probe: Spliced candidate.c's unchanged function body (lines 1472-1560: extern header + func_80056CB8 body) into src/text1b.c, plus the func_80053614 void->s32 return-type prerequisite (`return func_80052D00(arg2, arg3);`), via a scratch python splice script. Ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor.
+- verdict: CONFIRMED
+
+## [s59, enumerate] Extending s3's obj/flags-pair declaration-order kill (originally measured on an ancient pre-s22 chassis, floor 106) to the FULL 7-local loop-scoped declaration set (obj/flags/scale/sin_p/cos_p/x/z) on the CURRENT 38/204 chassis: three representative orderings all tie the baseline exactly.
+- mechanism: s3 (very early session) established that swapping the DECLARATION order of just `obj`/`flags` had zero effect on register assignment, but that measurement predates the s22 `limit`-local change that dropped the floor from 42->38 and reshaped the whole function's register-pressure picture -- the finding had never been re-tested on the current chassis, nor extended to the other 5 loop-scoped locals (scale/sin_p/cos_p/x/z) which s3 never touched. GCC 2.7.2's pseudo-register numbering for block-scope locals is influenced by their DECLARATION order (not just first-use order) in the RTL expansion for a C89 declaration-at-block-top block, so this is a genuinely distinct axis from the many STATEMENT-order sweeps this ledger has already exhausted (s2/s9/s14/s15/s25/s37).
+- probe: On the fresh s59-confirmed 38/204 chassis, tested three declaration-order permutations of the 7-local block (`s32 obj; s32 flags; s32 scale; s16 *sin_p; s16 *cos_p; s32 x; s32 z;` at candidate.c:1827-1833), each applied via direct Edit, measured via `sandbox func_80056CB8 --disable all`, reverted via `git checkout -- src/text1b.c` before the next: (1) full reverse order (z, x, cos_p, sin_p, scale, flags, obj); (2) def-before-use order matching the statements' actual read/write sequence (obj, flags, sin_p, scale, x, cos_p, z); (3) pointer-typed locals declared first (sin_p, cos_p, obj, flags, scale, x, z).
+- result: All three variants score 38/204, build_insns 198 -- byte-for-byte tied with the baseline declaration order. No declaration-order permutation of these 7 locals (of the 3 representative orderings sampled from the 5040-permutation space) moves the score.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s59 chassis (candidate.c's s22-s58-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, each of 3 declaration-order permutations of obj/flags/scale/sin_p/cos_p/x/z applied and reverted in turn, zero FAKE constructs present), engine/sandbox.py --disable all
+
+## [s59, enumerate] Systematic spelling-space status for func_80056CB8: with s37-s58 (14 consecutive flat sessions, 10+ distinct modalities) plus this session's 3-way declaration-order extension all tied at 38/204, every block-local spelling axis identified in this ledger (loop bound forms, obj/flags dispatch + combinations, sin_p/cos_p/scale/x/z ordering+swaps, both pt0/pt1 store-order blocks, dx/dz declaration-order+inlining, x/z post-call adjustment order, flags==3 named-intermediate, angle/flags variable split, sin_p/cos_p precompute-to-scalar, full 7-local declaration order) is flat. The live frontier remains exactly what s49/s51/s55/s58 already named: naming one of the ~20 OTHER (compiler-internal, no stable C handle) pseudos in the global_alloc conflict graph via the s51 .greg / s55 nrefs_census cross-reference -- a forensics/solver-modality task, not a further enumerate probe. No new spelling axis was identified this session beyond the declaration-order extension above; this is a restatement of the s49 synthesis finding with fresh confirming evidence, not a new discovery.
+- mechanism: n/a -- ledger-status synthesis, not a codegen hypothesis.
+- probe: Cross-referenced this session's 3-way declaration-order result against the full enumerate-modality history (s2/s3/s5/s9/s14/s15/s25/s37/s38/s39/s48/this session).
+- result: No untried block-local spelling axis remains identifiable from this ledger's own history. Restated as evidence, not a new hypothesis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s59 read-only cross-reference of this session's + all prior sessions' enumerate-modality findings (no new chassis measurement beyond the 3-way declaration-order test above)
+
+## [s59] The s22-s58-banked candidate.c body, applied fresh to src/text1b.c, reproduces honest floor 38/204 (build_insns 198) on the current HEAD.
+- mechanism: Direct re-measurement of the previously-banked body on the current chassis, required before spending any new probe this session.
+- probe: Spliced candidate.c's function body (lines 1472-1560) + func_80053614 void->s32 return-type prerequisite into src/text1b.c via a scratch python splice, ran `& tools/wteng.ps1 main sandbox func_80056CB8 --disable all`.
+- result: score 38, target_insns 204, build_insns 198, scorable true -- exact reproduction of the ledger's long-banked floor, no drift since s58.
+- verdict: CONFIRMED
+
+## [s59] Extending s3's obj/flags-pair declaration-order kill (measured on an ancient pre-s22 106-floor chassis) to the full 7-local loop-scoped declaration set (obj/flags/scale/sin_p/cos_p/x/z) on the CURRENT 38/204 chassis: three representative orderings (full reverse; def-before-use order; pointer-typed-locals-first) all tie the baseline exactly.
+- mechanism: GCC 2.7.2's pseudo-register numbering for block-scope C89 locals is influenced by DECLARATION order (not just first-use statement order) in the RTL expansion; this is a distinct axis from the many statement-order sweeps already exhausted (s2/s9/s14/s15/s25/s37), and s3's original finding for just obj/flags predates the s22 chassis reshape (42->38) so had never been re-tested nor extended to the other 5 locals.
+- probe: On the fresh s59-confirmed 38/204 chassis, edited the 7-local declaration block at candidate.c:1827-1833 into 3 orderings in turn, measured each via `sandbox func_80056CB8 --disable all`, reverted via `git checkout -- src/text1b.c` before the next.
+- result: All three variants score 38/204, build_insns 198 -- byte-for-byte tied with baseline. No declaration-order permutation sampled moves the score.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s59 chassis (candidate.c's s22-s58-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, 3 of 5040 possible declaration-order permutations of obj/flags/scale/sin_p/cos_p/x/z applied and reverted in turn, zero FAKE constructs present), engine/sandbox.py --disable all
+
+## [s59] No untried block-local spelling axis remains identifiable from this ledger's full enumerate-modality history (s2/s3/s5/s9/s14/s15/s25/s37/s38/s39/s48/s59) after this session's declaration-order extension.
+- mechanism: n/a -- ledger-status synthesis restating and extending the s49 synthesis finding with fresh confirming evidence, not a new discovery.
+- probe: Cross-referenced this session's 3-way declaration-order result against every prior enumerate-modality session's coverage (loop bound forms, obj/flags dispatch, sin_p/cos_p/scale/x/z ordering+swaps, pt0/pt1 store-order blocks, dx/dz ordering+inlining, x/z post-call order, flags==3 named-intermediate, angle/flags split, sin_p/cos_p precompute).
+- result: No new spelling axis identified beyond the declaration-order extension already tested this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s59 read-only cross-reference of this session's + all prior sessions' enumerate-modality findings (no new chassis measurement beyond the declaration-order test above)

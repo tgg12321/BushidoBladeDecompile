@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 58,
- "current_modality": "structural",
+ "session_count": 59,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -351,34 +351,24 @@
    "floor": 38,
    "modality": "structural",
    "headline": "s58 structural: 10th consecutive 38/204 re-confirmation; mandatory FAKE-ablation re-audit on the closest instance kill found zero FAKE constructs (kill is clean); closed the WHOLE type-narrowing axis "
+  },
+  {
+   "session": 59,
+   "floor": 38,
+   "modality": "enumerate",
+   "headline": "s59 enumerate: fresh 38/204 re-confirmed (13th consecutive flat session); extended s3's obj/flags declaration-order kill to the full 7-local loop-scoped set (3 orderings, all tied) -- no untried block"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the ~20 OTHER pseudos simultaneously live with limit in global_alloc's conflict graph (per the s51 .greg dump) -- a compiler-internal pseudo WITHOUT a stable declared C name, distinct from the 8 named residents (obj/i/flags/scale/sin_p/cos_p/x/z, all now closed as narrowing targets per this session) -- has a source-level handle that could legitimately narrow ITS live range, shifting the spill-cost comparison away from limit.",
+   "hypothesis": "One of the ~20 OTHER pseudos simultaneously live with limit in global_alloc's conflict graph (per the s51 .greg dump) -- a compiler-internal pseudo without a stable declared C name -- has a source-level handle that could legitimately narrow its live range, shifting the spill-cost comparison away from limit.",
    "mechanism": "global_alloc's find_reg spill choice at insn ~21 is a function of the FULL conflict graph's relative costs, not any single pseudo's isolated properties.",
-   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output via a fresh -da cc1 run on the current chassis, to NAME a specific non-named pseudo before proposing any declaration-scope edit. This is forensics/solver modality, not structural -- the next session in either of those modalities should run this cross-reference before any further C probe."
+   "next_probe": "Build a verified pseudo-number cross-reference between the s51 .greg dump's pseudo-to-symbol map and the s55 nrefs_census .lreg-based output via a fresh -da cc1 run on the current chassis, to NAME a specific non-named pseudo before proposing any declaration-scope edit. Forensics/solver modality, not enumerate/structural."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 25,
-   "statement": "The pt0[]/pt1[] array-fill store-order spelling space (2 six-store blocks, 10 structural reorderings: batch order / interleave / intra-triple reversal, applied one block at a time) is still strictly w",
-   "kill_scope": "instance",
-   "measured_on": "s25 chassis (s22/s23/s24-banked 38/198 body + func_80053614 s32-return prerequisite + the 3 missing extern decls restored, unmodified otherwise), one fresh sandbox measurement per variant (10 total), ",
-   "predicate_cite": "",
-   "result": "10/10 variants scored 40-81/198-200, all strictly worse than the 38/198 baseline (closest: b2_pt0_rev_then_pt1 at 40/198"
-  },
-  {
-   "session": 25,
-   "statement": "The code==4 tail's dx/dz named-local declaration-order spelling space (2 named locals, inline-vs-named x declaration-order, 5 distinct spellings) is still exactly flat at the honest floor on the CURRE",
-   "kill_scope": "instance",
-   "measured_on": "s25 chassis (s22/s23/s24-banked 38/198 body + func_80053614 s32-return prerequisite + the 3 missing extern decls restored, unmodified otherwise), one fresh sandbox measurement per variant (5 total), z",
-   "predicate_cite": "",
-   "result": "5/5 variants scored exactly 38/198, byte-identical spelling-neutral to the baseline. Full data: tmp/grind/func_80056CB8/"
-  },
   {
    "session": 26,
    "statement": "Narrowing sin_p/cos_p's live range (capturing *sin_p/*cos_p into fresh sin_v/cos_v scalars immediately after their computation, before the first func_80053614 call, instead of re-dereferencing the poi",
@@ -842,6 +832,22 @@
    "measured_on": "s58 read-only analysis of the s22-s57-banked candidate.c body (no sandbox measurement required), zero FAKE constructs present",
    "predicate_cite": "",
    "result": "All 7 non-i named residents disqualified (2 by provable s16 overflow, 2 by unbounded value, 2 by already being pointers/"
+  },
+  {
+   "session": 59,
+   "statement": "Extending s3's obj/flags-pair declaration-order kill (measured on an ancient pre-s22 106-floor chassis) to the full 7-local loop-scoped declaration set (obj/flags/scale/sin_p/cos_p/x/z) on the CURRENT",
+   "kill_scope": "instance",
+   "measured_on": "s59 chassis (candidate.c's s22-s58-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line header externs, 3 of 5040 possible declaration-order permutations of obj/flags/scale/sin_p/cos_p/",
+   "predicate_cite": "",
+   "result": "All three variants score 38/204, build_insns 198 -- byte-for-byte tied with baseline. No declaration-order permutation s"
+  },
+  {
+   "session": 59,
+   "statement": "No untried block-local spelling axis remains identifiable from this ledger's full enumerate-modality history (s2/s3/s5/s9/s14/s15/s25/s37/s38/s39/s48/s59) after this session's declaration-order extens",
+   "kill_scope": "instance",
+   "measured_on": "s59 read-only cross-reference of this session's + all prior sessions' enumerate-modality findings (no new chassis measurement beyond the declaration-order test above)",
+   "predicate_cite": "",
+   "result": "No new spelling axis identified beyond the declaration-order extension already tested this session."
   }
  ],
  "ladder_skip": 0,

@@ -1467,6 +1467,18 @@
  * remaining live frontier (naming one of the ~20 OTHER, unnamed compiler
  * pseudos via the s55 .greg/.lreg cross-reference) still requires
  * forensics/solver modality. Full writeup: hypotheses.md [s58].
+ * ---------------------------------------------------------------------
+ * s59 (enumerate modality). Re-confirmed 38/204 fresh (13th consecutive
+ * session). Extended s3's obj/flags declaration-order kill (originally
+ * measured on an ancient pre-s22 106-floor chassis) to the FULL 7-local
+ * loop-scoped declaration set (obj/flags/scale/sin_p/cos_p/x/z) on the
+ * CURRENT chassis: 3 representative orderings (full reverse, def-before-
+ * use, pointer-locals-first) all tie 38/204 exactly. Declaration order
+ * for this block is closed on the current chassis. No untried block-
+ * local spelling axis remains identifiable in this ledger's enumerate
+ * history (s2/s3/s5/s9/s14/s15/s25/s37/s38/s39/s48/s59); the live
+ * frontier is unchanged (forensics/solver pseudo cross-reference).
+ * Full writeup: hypotheses.md [s59].
  * --------------------------------------------------------------------- */
 
 extern s16 Judge;
