@@ -683,3 +683,11 @@ rather than exploring register-allocation-neutral rephrasings.
 - [s37] The tool's ENUM-BEGIN/END region format requires the marked span to end in a single trailing run of anchor (if/return-condition) lines with bodies OUTSIDE the markers -- it cannot currently represent a region containing interior if/else blocks with braced multi-statement bodies. The obj/flags computation block (candidate.c ~1160-1171, two separate if-statements with braced bodies) does not fit this format without either a tool extension or manual unrolling; neither was attempted this session.
 
 - [s37] src/text1b.c and func_80053614's signature were reverted to their committed HEAD state (INCLUDE_ASM("asm/funcs", func_80056CB8); / void return) before ending the session -- git status confirms src/text1b.c clean, no draft C left on main (asm-until-matched).
+
+- [s38] s38 chassis reproduction re-confirmed at score 38, target_insns 204, build_insns 198 both before and after the 6-variant sweep — no chassis drift since s37.
+
+- [s38] The 6 hand-written variants covered: ternary-vs-if form for the obj assignment, decl-order placement of a hoisted kind-check local (both before and after the obj if-block), De Morgan negation with arm swap on the flags gate condition, and named intermediates (ang; dx/dz) for the true-arm and else-arm sub-expressions respectively.
+
+- [s38] spelling_enum.py's region format (ENUM-BEGIN/END with a single trailing run of bare anchor lines) still cannot represent this block mechanically — the interior-anchor tooling gap flagged in s37 remains open and is carried forward as a frontier item, not resolved this session.
+
+- [s38] src/text1b.c and func_80053614 confirmed clean/reverted to INCLUDE_ASM / void baseline at end of session (git status clean on src/) — no draft C left on main, consistent with asm-until-matched.

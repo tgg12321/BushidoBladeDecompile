@@ -1,6 +1,11 @@
 /* =====================================================================
  * func_80056CB8 — CANDIDATE (s22 rederive-modality win, re-confirmed
- * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37) — floor 38/204, NOT YET 0.
+ * s23/s24/s25/s26/s27/s28/s29/s30/s31/s32/s33/s34/s35/s36/s37/s38) — floor 38/204, NOT YET 0.
+ * s38 (enumerate modality): body UNCHANGED. Hand-enumerated 6 spellings of
+ * the obj/flags if-else block (~1160-1179, the region s37's tool couldn't
+ * reach) -- 4 tied at 38, 2 worse (40, 46). Zero hits. See hypotheses.md
+ * [s38] for the full per-variant breakdown. Fresh 38/204 re-confirmed
+ * before and after the sweep.
  * s37 (enumerate modality): body UNCHANGED. Fresh 38/204 re-confirmed.
  * Ran tools/spelling_enum.py + sweep_variants.py over the
  * sin_p/scale/x/cos_p/z pointer-arithmetic block (all 32 def-before-use

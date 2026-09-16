@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 37,
+ "session_count": 38,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -225,13 +225,19 @@
    "floor": 38,
    "modality": "enumerate",
    "headline": "s37 enumerate: exhaustive spelling sweep (32/32) of the sin_p/scale/x/cos_p/z block found zero hits below 38/204 -- class kill for that block's ordering+swap spelling space; floor unchanged at 38."
+  },
+  {
+   "session": 38,
+   "floor": 38,
+   "modality": "enumerate",
+   "headline": "s38 enumerate: hand-enumerated 6 spellings of the obj/flags if-else block (candidate.c ~1160-1179, the region s37's tool couldn't reach); 4 tied at 38/204, 2 worse (40, 46); zero hits on this chassis;"
   }
  ],
  "frontier": [
   {
    "hypothesis": "A structural rewrite that shrinks the loop body's real-insn count below loop.c:3823's rejection-inequality threshold (124, per the s31/s32-banked exact numeric target) without touching the i*2 index expressions would let strength_reduce promote i*2 automatically.",
-   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163). s37's enumeration shows the sin_p/scale/x/cos_p/z block's own statement order/commutativity is not the lever (all 32 spellings flat-or-worse) -- the remaining untried angle within this frontier item is the EXPRESSIONS themselves (not their order): e.g. restructuring the flags/ratan2 short-circuit if-else that spelling_enum.py couldn't enumerate.",
-   "next_probe": "Manually unroll the obj/flags if-else block (candidate.c ~1160-1171) into a small number of hand-written alternative C expressions (not a mechanical enumeration -- the tool doesn't support this region shape) and sandbox each; or extend tools/spelling_enum.py to support interior anchor blocks with bodies, then re-run the enumeration over the full obj/flags+pointer-arithmetic region together."
+   "mechanism": "loop.c:3823's rejection inequality (lifetime*threshold*benefit < insn_count) is symmetric; s32 factored the exact gap (need lifetime>=3 at fixed benefit=2, OR insn_count<=124 from 163). s37/s38's enumerations show neither the sin_p/scale/x/cos_p/z block's ordering nor the obj/flags block's hand-written spellings move insn count meaningfully -- the remaining untried angle is a genuine structural rewrite of the loop body shape itself, not a spelling swap within either block.",
+   "next_probe": "Extend tools/spelling_enum.py to support a region containing interior if/else anchors with braced multi-statement bodies (tracked as its own frontier item below), OR hand-draft a structural loop-body rewrite (e.g. hoisting a shared sub-computation across both blocks) and measure its real-insn count directly against the 124 threshold."
   },
   {
    "hypothesis": "Restructuring the footprint of a DIFFERENT resident (obj/obj2/flags/sin_p/cos_p/x/z, not the i*2 index or the pt0/pt1 store order) on the do-while chassis specifically, since that chassis's lower insn count and different register landscape has never had this axis tried on it.",
@@ -239,22 +245,14 @@
    "next_probe": "Re-run the s29 conflict_map.py decode against a fresh .greg dump of the do-while chassis (apply rejected/do-while-loop-rewrite-worse.c fresh) to see whether the 9-resident conflict picture differs from the for-loop chassis's profile, then try restructuring one resident's live range on this chassis."
   },
   {
-   "hypothesis": "Extend tools/spelling_enum.py to support a region containing interior if/else anchors with braced multi-statement bodies (currently only a single trailing run of bare anchor lines is supported), so the obj/flags computation block (which s37 identified as untestable by the current tool) can be swept mechanically instead of by hand.",
-   "mechanism": "n/a -- this is a tooling gap, not a codegen hypothesis. The obj/flags block (candidate.c ~1160-1171) has two if-statements with braced bodies interleaved with plain assignments, which the tool's line-based parser (_DECL_RE/_ASSIGN_RE/anchor classification in tools/spelling_enum.py:76-91) cannot represent without treating the braced bodies as anchors mid-region, which breaks the tool's def-before-use ordering guarantee.",
-   "next_probe": "Either write tmp/grind/func_80056CB8/ a small standalone script that manually enumerates the handful of semantically-equivalent spellings of the obj/flags if-else (a much smaller space, maybe 4-8 variants, doable by hand), or patch spelling_enum.py to treat a bracketed if/else block as a single opaque anchor unit that can still be reordered relative to sibling anchors (a real tool extension, out of scope for this session's turn budget)."
+   "hypothesis": "Extend tools/spelling_enum.py to support a region containing interior if/else anchors with braced multi-statement bodies, so the obj/flags block can be swept exhaustively instead of by the 6-variant hand sample s38 ran.",
+   "mechanism": "n/a -- tooling gap, not a codegen hypothesis. s38's hand sample covered 6 plausible variants but is NOT exhaustive the way s37's mechanical sweep over the sin_p/scale block was; a true class kill on this block needs the tool extension.",
+   "next_probe": "Patch spelling_enum.py's anchor classification (tools/spelling_enum.py:76-91) to treat a bracketed if/else block as a single opaque, reorderable anchor unit, then re-run a full mechanical sweep over the obj/flags region."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 5,
-   "statement": "Several swap-axis variants generated by spelling_enum.py's commutative-swap logic (e.g. v01.c: `&Judge + (ang & 0xFFF)` rewritten as `&(ang & 0xFFF) + Judge`) produce ill-formed C for this region's po",
-   "kill_scope": "instance",
-   "measured_on": "s5 chassis, enum2/v01.c (one of the 16 ill-formed-swap variants) as generated by tools/spelling_enum.py's default swap axis applied to this region's &Judge pointer-arithmetic expressions",
-   "predicate_cite": "",
-   "result": "16/32 of the swept variants that reported the pre-session baseline score of 106 are this artifact, not a real measuremen"
-  },
   {
    "session": 6,
    "statement": "Target's asm materializes i*2 ONCE into $s8 (reused via addu at,at,s8 at both the D_8009A821 flags-index site and the D_8009A820 scale-index site, ~30 C lines and one ratan2 call apart) where our buil",
@@ -726,6 +724,14 @@
    "measured_on": "s36 chassis (candidate.c's s22-s35-banked 38/204 body + func_80053614 s32-return prerequisite + header externs, block2 pt0/pt1 stores reordered to m2c's exact sequence, block1 left at baseline order, ",
    "predicate_cite": "",
    "result": "score 38 -> 51/204, build_insns UNCHANGED at 198. Consistent with the stale s20 chassis's finding of the same construct "
+  },
+  {
+   "session": 38,
+   "statement": "On the s22-s37-banked chassis (candidate.c body + func_80053614 s32-return prerequisite + header externs, no FAKE constructs present), none of 6 hand-written spellings of the obj/flags if-else block (",
+   "kill_scope": "instance",
+   "measured_on": "s38 chassis: candidate.c's s22-s37-banked 38/204 body + func_80053614 s32-return prerequisite + 5-line extern header block, obj/flags block hand-varied one spelling at a time, no FAKE constructs prese",
+   "predicate_cite": "",
+   "result": "(1) ternary obj: 38/204 tied. (2) kind-local-after: 38/204 tied. (3) kind-local-before (decl-order swap ahead of obj if-"
   }
  ],
  "ladder_skip": 0,
