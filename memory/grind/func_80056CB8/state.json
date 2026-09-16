@@ -1,8 +1,8 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "structural",
+ "session_count": 8,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,24 @@
    "floor": 58,
    "modality": "structural",
    "headline": "Structural s7: reusing the EXISTING flags local for ang and code (matching target's own $s0 register reuse, read directly from asm/funcs/func_80056CB8.s) drops the honest floor 81 -> 58/204; re-killed"
+  },
+  {
+   "session": 8,
+   "floor": 58,
+   "modality": "solver",
+   "headline": "solver s8: inverse_compose.py classify (object-level) proves the s7-banked floor-58 residual is PRE-RA (different instruction MULTISET, not an RA/scheduler tiebreak) -- corrects the s7 frontier's regi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining named residual is a loop-counter register rotation ($s3 in our build vs a $s6/$s7-entangled role in target for the outer loop index and its derived store-address computations), and the code==4 tail's branch-topology difference is very likely downstream of this SAME rotation rather than an independent lever.",
-   "mechanism": "global.c allocno priority / conflict-graph shape for the loop-counter pseudo, re-entangled with the register-rotation-infrastructure class (no-new-park-categories.md) -- needs a fresh .greg/.lreg disposition read on the s7 (floor-58) chassis, not a reuse of any earlier session's stale pseudo map.",
-   "next_probe": "Re-dump via `pwsh tools/grinder/dump.ps1 func_80056CB8` on the s7 chassis (apply candidate.c first) and read the `;; Register dispositions:` table plus the conflict lists for the loop-counter pseudo and its immediate neighbors, cross-referenced against tmp/grind/func_80056CB8/s7/objdiff_s7.txt's specific register-name lines -- best suited to rederive/solver modality rather than more structural guessing."
+   "hypothesis": "The residual is a coupled fixpoint of (a) the scratchpad-literal materialization count and (b) the code==4 y-compare branch topology, both keyed off a register (s8/$fp-family) that target uses for a *4-scaled quantity unrelated to our current C's use of that register -- not two independent axes.",
+   "mechanism": "Unknown pre-RA front-end shape; needs the .cse/.cse2/.loop dumps (tmp/grind/func_80056CB8/dumps/text1b.cse, .cse2, .loop -- already captured this session) read around func_80056CB8's RTL to see what value GCC assigns *4 scaling and whether it correlates with the scratchpad-address hoist.",
+   "next_probe": "Grep tmp/grind/func_80056CB8/dumps/text1b.cse2 and .loop for the func_80056CB8 region (search ';; Function func_80056CB8'), and asm/funcs/func_80056CB8.s directly for the exact $s8-holding value across the addiu s8,s8,2 / sll s8,#,0x2 sequence -- identify what C-level quantity is scaled by 4 (candidates: a byte offset into a 4-times-larger record, or work[4]/hit0/hit1 array addressing) before drafting any further C restructuring."
   },
   {
-   "hypothesis": "Other existing locals (r1/r2, dx/dz/y) may have an analogous borrow-for-reuse opportunity, but ONLY if target's own asm shows the same register being reused for them -- the flags/ang/code win came from reading the target bytes first, not from guessing.",
-   "mechanism": "Same SOTN variable-reuse-for-codegen-control family as the confirmed win this session, applied only where directly observed in asm/funcs/func_80056CB8.s.",
-   "next_probe": "Before proposing any further merge, grep asm/funcs/func_80056CB8.s for the hardware registers holding r1/r2/dx/dz/y's values across their live ranges and check whether target reuses any of them for an unrelated later value; only then draft the corresponding C merge and measure it."
-  },
-  {
-   "hypothesis": "Do not re-try the goto-vs-nested-if rewrite on the code==4 tail's y-compare a third time -- killed twice now on two materially different chassis.",
-   "mechanism": "n/a (a closed-off axis, recorded so a future session does not re-derive and re-spend a probe on it).",
-   "next_probe": "n/a"
+   "hypothesis": "Hoisting the 0x1F8002B8 constant ABOVE the loop entirely (single local declared and assigned once before the for-loop, not just once inside it) may reach target's single materialization where the in-loop single-name attempt (this session, killed) did not.",
+   "mechanism": "Loop-invariant code motion (loop.c) only hoists a value out of the loop if it can prove no intervening definition/call invalidates it within the loop body across iterations; a loop-invariant literal declared and read only once per iteration may still be re-materialized per-iteration unless GCC's own LICM independently hoists it -- worth testing since the killed in-loop attempt changed WHERE it's named, not WHETHER it crosses the loop boundary.",
+   "next_probe": "Move `s32 scratch = 0x1F8002B8;` to before the `for (i = start; ...)` loop (still using `scratch` at both call sites, replacing this session's reverted in-loop declaration), measure sandbox func_80056CB8 --disable all; if worse or unchanged, bank as a second instance kill of this literal-naming family and move to the s8/branch-topology coupling hypothesis instead."
   }
  ],
  "judge_constraints": [],
@@ -138,6 +139,14 @@
    "measured_on": "s6/s7-baseline chassis (candidate.c body before the flags/ang/code merge), two per-table pointer locals replacing the array-index reads, zero FAKE constructs, reverted after measurement.",
    "predicate_cite": "",
    "result": "Score 81 -> 83 (WORSE), build_insns 197 -> 196. Reverted; banked as memory/grind/func_80056CB8/rejected/per-table-pointe"
+  },
+  {
+   "session": 8,
+   "statement": "Naming the repeated 0x1F8002B8 scratchpad-address literal (5th arg to both func_80053614 calls) as a single fresh local recovers target's single-materialization pattern and improves the floor.",
+   "kill_scope": "instance",
+   "measured_on": "s8 chassis (s7-banked candidate.c body + func_80053614 s32-return fix, unmodified otherwise), single fresh local 'scratch' replacing both call-site 0x1F8002B8 literals, zero FAKE/cheat constructs, rev",
+   "predicate_cite": "",
+   "result": "Score 58 -> 60 (WORSE), build_insns unchanged at 198. Reverted immediately; floor 58 re-confirmed."
   }
  ],
  "ladder_skip": 0,
