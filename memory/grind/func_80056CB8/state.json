@@ -1,7 +1,7 @@
 {
  "func": "func_80056CB8",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,29 @@
    "floor": 106,
    "modality": "structural",
    "headline": "First-ever C draft applied (204->126) + work[4] frame fix (126->106); structure fully matches target region-by-region, residual is pure register allocation"
+  },
+  {
+   "session": 3,
+   "floor": 106,
+   "modality": "structural",
+   "headline": "Re-verified s2 floor 106 (func_80053614 s32-return prereq load-bearing: 147 without it); killed both declaration-order probes for obj/flags/r1 (distinct from s2's statement-order kill) with zero effec"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Reading the .greg/.lreg dumps (generated this session, not yet analyzed in detail) will reveal WHY GCC's global allocator assigns obj/flags/z/cos_p/loop-i/r1 to the specific hard registers it does, pointing at a concrete register-alloc-pure-c lever (block-local split, narrow type, loop-local precompute, or RA-steering dead store) rather than more blind source-order guessing.",
-   "mechanism": "global.c allocno priority + conflict-graph-driven hard register assignment, per the register-alloc-pure-c playbook.",
-   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.greg and .lreg for the ';; Register dispositions:' section and each contended pseudo's conflict list; cross-reference against .claude/rules/register-alloc-pure-c.md's Levers A-D before writing any new C."
+   "hypothesis": "The next lever is live-range/conflict-graph shape, not source order: check whether `obj`'s live range (read at ~10 sites across the whole loop body) is genuinely wider than target's equivalent value, which would explain why global.c's priority-based coloring picks obj for $s0 over flags in our build but not in target's.",
+   "mechanism": "global.c allocno priority is driven by live-range weight (spill cost x use frequency), not raw declaration/statement order -- consistent with all three killed order-probes this session and last.",
+   "next_probe": "Read tmp/grind/func_80056CB8/dumps/text1b.lreg for pseudo 82 (obj), 83 (flags), 90 (r1) live-range extents and conflict counts; cross-reference against a hand-reconstructed target live-range for the same values from asm/funcs/func_80056CB8.s to look for a read of obj that target's asm has but the candidate's C structure does not reproduce at the corresponding point."
   },
   {
-   "hypothesis": "Once the conflict graph is understood, applying the matching lever from register-alloc-pure-c (most likely a block-local variable split or a loop-local precompute given the loop-counter/local mismatch) will close some or all of the remaining 106-instruction gap.",
-   "mechanism": "Standard RA-lever application per .claude/rules/register-alloc-pure-c.md.",
-   "next_probe": "Apply the indicated lever to candidate.c, re-run sandbox func_80056CB8 --disable all, re-dump and re-compare register assignments."
+   "hypothesis": "Target gives `z` its own standalone register ($s3) while our candidate shares z's register with flags ($s1) -- this may stem from an extra/duplicated read of *(obj+0xC0) in target extending z's live range, mirroring the split-read-defeats-hoist family's mechanism but for register-sharing rather than instruction count.",
+   "mechanism": "split-read-defeats-hoist family (duplicate a read into a branch arm changes a pseudo's live range / conflict set).",
+   "next_probe": "Diff target asm's .L80056DDC-.L80056E1C region (code/dx/dz/y compare block) instruction-by-instruction against the candidate's assembled output, checking which reads of *(obj+0xB8)/*(obj+0xC0)/*(obj+0xBC) are duplicated vs cached in each."
+  },
+  {
+   "hypothesis": "flags's declared type (currently s32) may need to be u16/s16 to match the target's actual store/load width, which could change its live-range/conflict shape -- untested this session due to sign-extension risk on the `ang = flags + ...` addition (s16 would change semantics for values 0x8000-0xFF00; u16 is the safer candidate but still unverified against target's actual width).",
+   "mechanism": "narrow-type lever (register-alloc-pure-c Lever B) -- narrowing a value's declared type can shrink its live-range footprint and change allocation priority.",
+   "next_probe": "Check asm/funcs/func_80056CB8.s for the actual load/store width used for the D_8009A821-derived flags value (lbu/lhu/lw) before trying a type change, to avoid a semantically-incorrect guess."
   }
  ],
  "judge_constraints": [],
@@ -39,6 +50,22 @@
    "measured_on": "s2 chassis (candidate.c as banked: authored-draft-2026-08-18.c body + work[4] + func_80053614 s32-return fix), zero FAKE/cheat constructs present in the diff",
    "predicate_cite": "",
    "result": "No change: score stayed 106, and the dump showed obj still assigned to $16(=$s0) and flags still assigned to $17(=$s1), "
+  },
+  {
+   "session": 3,
+   "statement": "Swapping the DECLARATION order of `s32 obj;` / `s32 flags;` (declaring flags before obj, leaving every statement in its original position) changes the register assigned to obj/flags.",
+   "kill_scope": "instance",
+   "measured_on": "s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + flags-before-obj declaration reorder), zero FAKE/cheat constructs present in the diff",
+   "predicate_cite": "",
+   "result": "Score unchanged at 106. Combined with s2's statement-order kill, this rules out both declaration order and statement ord"
+  },
+  {
+   "session": 3,
+   "statement": "Declaring `s32 r1;` immediately after `s32 flags;` (adjacent in source, statements unchanged) makes r1 and flags share a hard register the way target's asm does (target: flags/r1 share $s0).",
+   "kill_scope": "instance",
+   "measured_on": "s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + r1-after-flags declaration reorder), zero FAKE/cheat constructs present in the diff",
+   "predicate_cite": "",
+   "result": "Score unchanged at 106. r1 and flags still do not share a register in this chassis."
   }
  ],
  "ladder_skip": 0,

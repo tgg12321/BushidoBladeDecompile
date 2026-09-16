@@ -230,3 +230,13 @@ these two pseudos' hard-register assignment on this chassis.
 - [s2] Frame size now matches target exactly: 168 bytes (0xA8), vars=104, with pt0/pt1/hit0/hit1/work at the same relative offsets (0x18/0x28/0x38/0x48/0x58) as the target's implied layout.
 
 - [s2] hand_coded_tier stays LOW; zero GTE/cop2 instructions anywhere in the candidate or the target asm -- this remains an ordinary pure-C register-allocation problem, not a canonical-asm candidate.
+
+- [s3] Dossier confirms src/text1b.c still carries INCLUDE_ASM("asm/funcs", func_80056CB8); for this function -- no C has landed on main; the candidate.c body only exists in the ledger.
+
+- [s3] Read tmp/grind/func_80056CB8/dumps/text1b.greg (regenerated this session via `pwsh tools/grinder/dump.ps1 func_80056CB8`), function block starting line 14788: the 23-pseudo register-disposition list maps obj=pseudo82->$s0(16), flags=pseudo83->$s1(17, shares with a later pseudo consistent with z), x=pseudo88->$s2(18, MATCHES target), cos_p=pseudo87->$s3(19), i(loop)=pseudo74->$s4(20), sin_p=pseudo86->$s5(21, MATCHES target), r1=pseudo90->$s6(22), arg0=pseudo72->$s7(23, MATCHES target) -- pinning the candidate.c header's prose register-ring description to exact pseudo numbers for future sessions.
+
+- [s3] Three independent source-order permutation probes across s2 (statement-order swap of obj/flags) and s3 (declaration-order swap of obj/flags; declaration-order move of r1 next to flags) all measured ZERO effect on score or register assignment -- source order among these three locals is not the lever; the next axis is live-range/conflict-graph shape (register-alloc-pure-c Lever A/B), not reordering.
+
+- [s3] func_80053614's return-type fix (void -> s32) is confirmed byte-neutral standalone (sandbox func_80053614 --disable all: 0/32 both before and after) and is a hard prerequisite for func_80056CB8's candidate to reach 106 rather than 147 -- its asm falls through $v0 to the epilogue regardless of declared return type, so the fix only affects callers that now read the return value.
+
+- [s3] Working tree left clean at session end (src/text1b.c reverted to committed INCLUDE_ASM state via `git checkout`); only memory/grind/func_80056CB8/{candidate.c,hypotheses.md} were modified and are part of this session's ledger update.

@@ -155,3 +155,62 @@ measured hypotheses.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s2 chassis (candidate.c as banked: authored-draft-2026-08-18.c body + work[4] + func_80053614 s32-return fix), zero FAKE/cheat constructs present in the diff
+
+## [s3] Chassis re-verification at session start: baseline still reproduces at score 106 with the s2-banked body (func_80053614 s32-return fix + work[4]) applied.
+- mechanism: n/a (re-measurement, not a new construct).
+- probe: Applied candidate.c verbatim + the func_80053614 signature fix to src/text1b.c, ran sandbox func_80056CB8 --disable all.
+- result: score 106 (build_insns 201, target_insns 204), matching the s2-recorded floor exactly. Without the func_80053614 fix alone, score is 147 (build_insns 176) — confirms the fix is a load-bearing prerequisite for this chassis, not optional cleanup. func_80053614 itself re-verified byte-neutral (0/32) with the fix applied.
+- verdict: CONFIRMED
+
+## [s3] Reading the .greg dump's register-disposition table for func_80056CB8 (tmp/grind/func_80056CB8/dumps/text1b.greg, function block at line 14788) gives the exact pseudo->hardreg map, refining the candidate.c header's approximate register-ring description into precise per-pseudo numbers.
+- mechanism: global.c's `;; Register dispositions:` printout, read directly (not re-derived from asm side-by-side diffing).
+- probe: Located the 23-pseudo "regs to allocate" list for func_80056CB8 and cross-referenced each pseudo's assigned hard reg in the dispositions block.
+- result: obj=pseudo82->$s0(16), flags=pseudo83->$s1(17) [shares $s1 with a later pseudo, likely z], x=pseudo88->$s2(18, MATCHES target), cos_p=pseudo87->$s3(19), i(loop)=pseudo74->$s4(20), sin_p=pseudo86->$s5(21, MATCHES target), r1=pseudo90->$s6(22), arg0=pseudo72->$s7(23, MATCHES target). This is consistent with (not new information beyond) the candidate.c header's prose description, now pinned to exact pseudo numbers for future sessions to cross-reference against .lreg/.rtl without re-deriving.
+- verdict: CONFIRMED (diagnostic only, not a code change)
+
+## [s3] Swapping the DECLARATION order (not just statement order, which s2 already killed) of `s32 obj;` / `s32 flags;` — declaring `flags` before `obj` in the block's local-variable list while leaving every statement unchanged — has zero effect on register assignment or score.
+- mechanism: Tested hypothesis (now refuted for this chassis): GCC 2.7.2's stmt.c `expand_decl` creates each local's pseudo REG at its declaration point in the C source (before any statement executes), so declaration order alone — independent of first-use/statement order — could determine pseudo numbering and therefore global.c's allocation-priority tie-breaking.
+- probe: Reordered the two declarations (`s32 flags; s32 obj;` instead of `s32 obj; s32 flags;`), leaving every assignment/use statement in its original position. Re-ran sandbox func_80056CB8 --disable all.
+- result: Score unchanged at 106. Combined with s2's statement-order kill (also zero effect), this rules out BOTH declaration order and statement order as levers for the obj/flags register-slot swap on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + flags-before-obj declaration reorder), zero FAKE/cheat constructs present in the diff
+
+## [s3] Moving `s32 r1;`'s declaration to immediately after `s32 flags;` (testing whether declaring the pseudo GCC's allocator should share $s0 with flags — per target's "flags/r1 share $s0" — adjacent to flags in source changes the sharing outcome) has zero effect.
+- mechanism: Tested hypothesis (now refuted for this chassis): proximity of two non-overlapping-live-range locals' declarations in source order influences global.c's conflict-graph coloring enough to make them share a hard register.
+- probe: Declared `r1` directly after `flags` (before `obj`, `ang`, etc.), leaving `r1`'s single assignment statement (`r1 = func_80053614(...)`) at its original late position in the loop body. Re-ran sandbox func_80056CB8 --disable all.
+- result: Score unchanged at 106. r1 and flags still do not share a register in this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + r1-after-flags declaration reorder), zero FAKE/cheat constructs present in the diff
+
+## Frontier for s4 (register-alloc / rederive modality, not structural)
+1. **Three independent order-permutation probes (s2 statement-order, s3 declaration-order x2) all measured zero effect on the obj/flags/r1 register-slot assignment.** This is now a fairly strong (though still instance-scoped, not GCC-internals-predicate-proven) signal that source ORDER among these three locals is not the lever. The next un-tried axis per register-alloc-pure-c Lever A/B: shrink or reshape LIVE RANGES rather than reorder — e.g. block-local-split `obj` (it's read in ~10 places across the whole loop body; check whether the ORIGINAL source structure might re-derive `obj`'s pointer at fewer/different points, changing its conflict-graph weight relative to `flags`), or check whether `z`'s target-observed standalone $s3 slot (vs. ours sharing $s1 with flags) comes from a genuine extra live-range-extending read of `*(obj+0xC0)` in target that our candidate's structure doesn't reproduce.
+   mechanism: global.c allocno priority is driven by live-range weight (spill cost x use frequency), not raw declaration/statement order — the three killed order-probes are consistent with this.
+   next_probe: Read tmp/grind/func_80056CB8/dumps/text1b.lreg for pseudo 82 (obj), 83 (flags), 90 (r1) to see their exact live-range extents (which insns) and conflict counts, then compare against a hand-reconstructed target live-range for the same values from asm/funcs/func_80056CB8.s. Look specifically for whether `obj` is read at a point in target's asm that the candidate.c body does NOT have a corresponding `obj`-based read (evidence the object model itself is still slightly off, not just the register choice).
+2. **Check whether `z` genuinely gets a standalone register in target because target re-reads `*(obj+0xC0)` (or equivalent) an extra time that shrinks flags's apparent conflict with it**, mirroring the fix pattern in [[split-read-defeats-hoist]] / the candidate's own noted "double-read of obj+0xC0" structural feature — but for the register-sharing outcome rather than instruction count.
+   mechanism: split-read-defeats-hoist family (duplicate a read into a branch arm to change a pseudo's live range / conflict set).
+   next_probe: Diff the target asm's `.L80056DDC`-`.L80056E1C` region (the code/dx/dz/y compare block) instruction-by-instruction against the candidate's assembled output for that block, checking specifically which reads of `*(obj+0xB8)`/`*(obj+0xC0)`/`*(obj+0xBC)` are duplicated vs. cached in each.
+3. **Read `authored-notes-2026-08-18.md`'s SUSPICIOUS SPOTS section again against the now-106-floor structure** for any remaining unresolved field/typing question that might affect a pseudo's live range (e.g. whether `flags` should be `u16`/`s16` rather than `s32` — untested this session due to sign-extension risk on the `ang = flags + ...` addition; would need target asm confirmation of the actual store/load width for `flags` before trying).
+
+## [s3] Applying the s2-banked candidate.c body plus the func_80053614 void->s32 return-type prerequisite fix to src/text1b.c reproduces score 106 on today's chassis.
+- mechanism: Ordinary compiled C reconstruction; no chassis drift since s2.
+- probe: Applied candidate.c + the func_80053614 signature fix, ran sandbox func_80056CB8 --disable all.
+- result: Score 106 (build_insns 201, target_insns 204), matching s2 exactly. Without the func_80053614 fix, score is 147 (build_insns 176) -- the fix is load-bearing. func_80053614 itself re-verified byte-neutral (0/32) with the fix applied.
+- verdict: CONFIRMED
+
+## [s3] Swapping the DECLARATION order of `s32 obj;` / `s32 flags;` (declaring flags before obj, leaving every statement in its original position) changes the register assigned to obj/flags.
+- mechanism: Tested hypothesis (now refuted for this chassis): GCC 2.7.2 stmt.c expand_decl creates each local's pseudo REG at its declaration point, so declaration order alone (independent of statement/first-use order, which s2 already killed) could determine pseudo numbering and global.c's tie-breaking.
+- probe: Reordered the two declarations only (statements unchanged), re-ran sandbox func_80056CB8 --disable all.
+- result: Score unchanged at 106. Combined with s2's statement-order kill, this rules out both declaration order and statement order as levers for the obj/flags register-slot swap on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + flags-before-obj declaration reorder), zero FAKE/cheat constructs present in the diff
+
+## [s3] Declaring `s32 r1;` immediately after `s32 flags;` (adjacent in source, statements unchanged) makes r1 and flags share a hard register the way target's asm does (target: flags/r1 share $s0).
+- mechanism: Tested hypothesis (now refuted for this chassis): proximity of two non-overlapping-live-range locals' declarations in source order influences global.c's conflict-graph coloring enough to make them share a hard register.
+- probe: Declared r1 directly after flags (before obj/ang/etc.), leaving r1's single assignment statement at its original late position. Re-ran sandbox func_80056CB8 --disable all.
+- result: Score unchanged at 106. r1 and flags still do not share a register in this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 chassis (candidate.c body + work[4] + func_80053614 s32-return fix + r1-after-flags declaration reorder), zero FAKE/cheat constructs present in the diff

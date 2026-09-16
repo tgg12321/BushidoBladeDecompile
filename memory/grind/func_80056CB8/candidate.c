@@ -1,5 +1,18 @@
 /* =====================================================================
- * func_80056CB8 — CANDIDATE (s2, 2026-09-16) — floor 106/204, NOT YET 0
+ * func_80056CB8 — CANDIDATE (s2, 2026-09-16; re-verified s3, 2026-09-16)
+ * — floor 106/204, NOT YET 0
+ * ---------------------------------------------------------------------
+ * s3 (structural modality): re-applied this body + the func_80053614
+ * prerequisite fix, re-confirmed score 106 (baseline WITHOUT the fix is
+ * 147 — the fix is load-bearing, not optional). Tried two DECLARATION-
+ * order probes (flags-before-obj; r1-declared-next-to-flags) distinct
+ * from s2's already-killed STATEMENT-order probe — both measured ZERO
+ * effect on the obj/flags/r1 register assignment or score. All three
+ * order-permutation probes across s2+s3 are now killed; see
+ * hypotheses.md's s3 entries and "Frontier for s4" for the next
+ * register-alloc-specific (not order-based) levers to try. No code
+ * change applied to this banked candidate.c this session — it is
+ * unchanged from s2.
  * ---------------------------------------------------------------------
  * This is the WORKING FRONTIER, not a finished match. sandbox --disable
  * all reports score 106 (build_insns 201 vs target_insns 204) as of this
