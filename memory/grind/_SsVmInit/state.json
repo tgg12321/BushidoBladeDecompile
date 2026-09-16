@@ -67,9 +67,7 @@
  "judge_constraints": [],
  "banned_constructs": [
   "extern u16 D_8010280A;  /* candidate.c extern block, src/main.c:1221 */  +  `D_8010280A = i;` inside the per-voice loop (src/main.c:1293)",
-  "Header comment on the extern block: 'The externs below duplicate declarations that appear LATER in this TU with identical types'",
-  "src/main.c (candidate) line 1230: `*(s16 *)((u8 *)D_80102A78 + i * 2) = 0;`",
-  "The 21 per-voice slot stores `*(s16 *)((u8 *)&D_800F4E1A + offset) = 0x18;` etc., justified in self_vet.md / evidence.md:502-512 by the 2026-09-03 prong-(c) amendment"
+  "Header comment on the extern block: 'The externs below duplicate declarations that appear LATER in this TU with identical types'"
  ],
  "kills": [
   {
@@ -185,6 +183,21 @@
    "hash": "8097f78587570739",
    "when": "2026-09-16T23:36:45.057308+00:00",
    "summary": "The first clear loop opts out of the TU's canonical `extern s16 D_80102A78[]` declaration and respells the same element access as an undisclosed byte-offset pointer pun, and the 21-line per-voice pun block's only rule-based justification inverts the 2026-09-03 prong-(c) amendment it cites."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "ad0b5f6b371bba4c",
+   "when": "2026-09-16T23:51:13.024585+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-16 18:51 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "ad0b5f6b371bba4c",
+   "when": "2026-09-16T23:51:13.024585+00:00",
+   "ref": "decisions.md 2026-09-16 18:51 ruling PASS",
+   "justification": "Ruling on candidate.c as read (s8 body, no FAKE, no family claimed). banned_constructs[3] is LIFTED. I verified the target's own addressing in asm/funcs/_SsVmInit.s:84-120: every per-voice field store re-materialises lui $at,%hi(FIELD_SYMBOL) + addu $at,$at,$v0 + sh %lo(FIELD_SYMBOL)($at) with the x54 displacement in $v0 - that IS the byte-displacement C's emission and is not an indexed struct array's, so the aggregate-merge family's prong (a)/(b) evidence points AWAY from the merge here (corroborated by rejected/s8-aggregate-struct-array-score4.c, score 4, both hunks in the stride multiply). "
   }
  ]
 }

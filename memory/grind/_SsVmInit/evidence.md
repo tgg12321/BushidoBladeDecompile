@@ -510,3 +510,62 @@ array is the byte-offset form, already shipped in matched C at src/main.c:1168,
 1413, 1422 and 1423. This candidate uses that spelling and claims no family for
 it; the merge is a later TU-wide integration step, not something _SsVmInit can
 do alone.
+
+## s8 (synthesis, 2026-09-16) — the aggregate merge is MEASURED non-matching
+
+Chassis: candidate.c as dispatched measured 0 (score 0, target_insns 200 ==
+build_insns 200); the ledger's "floor 3" was void, as the dispatch CHASSIS
+CHECK said. Everything below is measured on that chassis, in src/main.c, with
+no FAKE construct anywhere in the body.
+
+1. **Both layer-1 findings closed at the root, still 0.** The 18:36 finding
+   ("the first clear loop opts out of the TU's canonical `extern s16
+   D_80102A78[]`") is fixed by writing `D_80102A78[i] = 0;`, and the same
+   treatment applied to the other symbol that already has an array
+   declaration in this TU (`extern s16 D_800F4E28[];`, src/main.c:922) gives
+   `D_800F4E28[i * 27] = -1;`. With BOTH substituted the function still
+   measures score 0 / 200 == 200, and a full `verify-oracle` returns
+   build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+   banned_constructs[2] (the `*(s16 *)((u8 *)D_80102A78 + i * 2)` line) is
+   therefore satisfied by deletion, not by argument. banned_constructs[0]/[1]
+   (the D_8010280A splat extern and its header comment) were already gone
+   before this session.
+
+2. **The sanctioned aggregate-merge spelling does NOT reproduce the bytes.**
+   The obvious objection to the remaining 22 per-voice field writes is "merge
+   the 54-byte record at the declaration and index it". s8 measured that
+   instead of arguing about it: a struct of 30 fields at their true offsets
+   (0x00,0x02,0x04,0x06,0x08,0x0A(s8),0x0C,0x10,0x12,0x14,0x16,0x1D(s8),0x1E,
+   0x20,0x22,0x24,0x26,0x2A,0x2C,0x2E,0x30,0x32; sizeof 0x36 = 54) declared as
+   `extern SvmVoice D_800F4E18[];` and written as `D_800F4E18[i].unkNN = ...`
+   measures **score 4** at 200 == 200 insns — 2 source-level hunks, 0
+   operand-only. Both hunks are the stride multiply: target computes
+   `((i*8 - i)*4 - i)*2` (sll 3 / subu / sll 2 / subu / sll 1, asm/funcs/
+   _SsVmInit.s:84-88), the struct-indexed form picks a different synth_mult
+   decomposition (sll 1 … addu). Re-measured with an `s32 idx = i;` index
+   instead of the u16 loop counter: still score 4. Banked as
+   rejected/s8-aggregate-struct-array-score4.c.
+   Consequence for the aggregate-merge family's prong (a): the addressing
+   evidence in the target bytes points AWAY from an indexed struct array here —
+   every field store re-materialises `lui $at,%hi(FIELD_SYMBOL)` + `addu
+   $at,$at,$v0` + `sh …,%lo(FIELD_SYMBOL)($at)` with the byte displacement in
+   $v0, which is what the per-field byte-displacement C emits and is not what
+   the struct-indexed C emits.
+
+3. **On-main precedent for the spelling that does match, in this very TU.**
+   func_800858D0 is compiled C on main (not INCLUDE_ASM) and its voice-init
+   loop writes the SAME symbols at the SAME 54-byte stride in the SAME
+   spelling: src/main.c:983-988. Same form again at src/main.c:1168 and
+   src/main.c:1306. All of it is inside the oracle.
+
+4. **The ban tripwire is mechanically in the way, in both directions.**
+   `grindlib._ban_trips` scans only the self-vet's CONSTRUCTS: block and trips
+   at >= 50% of a ban's content words. Measured against this function's four
+   bans: a CONSTRUCTS line that names the per-voice stores in code form trips
+   banned_constructs[3] at 8/14 terms, so an honest candidate-ready declaring
+   them is discarded before any review; and banned_constructs[0] (the
+   D_8010280A ban, a construct no longer in the body at all) trips at 7/14 on
+   generic vocabulary alone — `extern`, `block`, `main`, `voice`, `(src` —
+   the same false-positive shape the code's own func_800645B0 comment
+   describes. Both observations are reproducible with
+   `python -c "import grindlib; grindlib._ban_trips(ban, vet)"`.

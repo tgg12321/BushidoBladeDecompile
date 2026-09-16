@@ -900,3 +900,32 @@ it belongs to the TU rather than to this function:
 Everything else in this ledger is now historical. The closing form, the three
 width variants of the clamp local, and the four constructs proven inert are all
 recorded in evidence.md under the s8 heading.
+
+## s8 (synthesis) — frontier reset
+
+The codegen question is CLOSED: candidate.c measures 0 and the full build
+matches the oracle SHA1. What remains is a disposition question about one
+construct, so the frontier is no longer a list of levers.
+
+1. **Ruling on banned_constructs[3]** (filed 2026-09-16 18:36 against the
+   per-voice field writes). The ban was filed against the s7-era *justification*
+   (which inverted the prong-(c) amendment), and s8 has now measured the
+   alternative that justification was supposed to defend: the header-canonical
+   struct-array merge scores 4, not 0. The question the next session should ask
+   (or the Judge should answer) is whether the byte-displacement spelling —
+   already oracle-proven on main at src/main.c:983-988, 1168 and 1306 for the
+   same symbols and stride — may ship for _SsVmInit, with banned_constructs[0]
+   and [2] cleared as satisfied-by-deletion.
+
+2. **If the ruling says the header merge must land first**, this becomes an
+   integration handoff, not a grind item, and it is a losing one on the current
+   measurement: the merge costs 4 insns here. The handoff would have to cover
+   _SsVmInit plus the still-INCLUDE_ASM siblings (SsUtKeyOnV, _SsVmFlush,
+   _SsVmKeyOnNow, vmNoiseOn) AND the already-matched func_800858D0, and it must
+   re-measure all of them together — a merge that moves any one of them off 0
+   is not byte-neutral.
+
+3. **Do not re-grind the clamp.** s6 and s7 killed every restructuring and
+   spelling of it; the s8-prev `u16 masked = (u8)a0;` form (one masked value
+   read by both the compare and the else-arm store) is the close, re-verified
+   at 0 this session.
