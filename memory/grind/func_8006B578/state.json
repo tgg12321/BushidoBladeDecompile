@@ -1,7 +1,7 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -69,23 +69,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Escalation modality: both endgame-lock gates measured FAIL (scan_hand_coded tier=LOW 0/8; no coercion construct exists to seek a family for), the s10 kill re-audited on the current FAKE-free chassis ("
+  },
+  {
+   "session": 12,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Escalation s12: floor re-measured at 2 (200/200, 0 source-level/0 operand-only/22 not-scored), the last bb2.ld-free route (moving the body into the rodata-donor TU) killed by linker-script inspection,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Inserting build/src/text1b.o(.rodata) at exactly 0x80015988 (moved from bb2.ld:66), deleting jtbl_80015988 from src/text1a_b_pre_rodata.c:409 and splitting that TU so D_800159A0 onward follows text1b.o, with candidate.c applied to src/text1b.c, makes the full build SHA1-match.",
-   "mechanism": "Session 9 certified both remaining preconditions at byte level: our emitted 6-word table relocates to the target's jtbl_80015988 exactly (uniform section-base delta 0x80062164), and the 24-byte hole at 0x80015988 absorbs our 8-aligned section with zero padding on either side. bb2.ld:59-61 already implements the identical pattern for func_80077B30.",
-   "next_probe": "Operator pass (or a session explicitly authorized for bb2.ld): apply steps 1-4 of the 2026-09-16 s11 INTEGRATION HANDOFF entry and certify with verify-oracle --rebuild (SHA1), not the sandbox score, which stays at 2 by construction. Note that a Judge scope-widening alone is insufficient: bb2.ld is outside the grantable scope classes."
+   "hypothesis": "func_80065800 (active sibling in src/text1b.c, owner of jtbl_80015940 at src/text1a_b_pre_rodata.c:386-387, the cluster immediately before ours) reaching C would let both tables be emitted by text1b.o in ascending order, collapsing part of the pre/post rodata split and shrinking or eliminating the bb2.ld change this function needs.",
+   "mechanism": "GCC emits switch tables in the order their switch statements appear in the TU; both tables lie in the same rodata run (0x80015940-0x80015A3C), which session 7b verified is entirely src/text1b.c-owned.",
+   "next_probe": "A session dispatched on func_80065800 (queue: active, floor 1453 since its s1) should re-derive the slot boundary from func_8006B578's evidence.md Sessions 7b/9 before proposing a placement, and record whether its own table lands at 0x80015940. This is the route the Judge named; it cannot be worked from a func_8006B578 session."
   },
   {
-   "hypothesis": "func_80065800 (active sibling in src/text1b.c, owner of jtbl_80015940 immediately before ours) reaching C in the same pass would let both tables be emitted by text1b.o in ascending order, collapsing part of the pre/post split and shrinking the bb2.ld change.",
-   "mechanism": "GCC emits switch tables in the order their switch statements appear in the TU; both tables are in the same rodata run (0x80015940-0x80015A3C), which session 7b verified is entirely src/text1b.c-owned.",
-   "next_probe": "A session handed func_80065800 (queue: active, floor 1453 since its s1) should re-derive the slot boundary from evidence.md Sessions 7b/9 before proposing a placement, and record whether its own table lands at 0x80015940."
+   "hypothesis": "Listing jtbl_80015988 in LD_SYM_FILES (named_syms.txt) would let the sandbox resolve the symbol and certify this body without a full build, unpinning the floor from 2 without changing a single byte.",
+   "mechanism": "engine/score.py:62 resolves named-symbol HI16/LO16 pairs against LD_SYM_FILES addresses; jtbl_80015988 is unlisted because the 2026-06-09 rodata cleanup turned it into a C const.",
+   "next_probe": "named_syms.txt is a root-level pipeline file \u2014 inside the Judge's grantable scope classes but outside a grind session's surface. Needs an operator decision or an explicit scope grant before measuring; it changes the instrument, not the bytes."
   },
   {
-   "hypothesis": "Listing jtbl_80015988 in LD_SYM_FILES would let the sandbox resolve the symbol and certify the body without a full build, unpinning the floor from 2.",
-   "mechanism": "engine/score.py:62 resolves named-symbol HI16/LO16 pairs against LD_SYM_FILES addresses; jtbl_80015988 is unlisted because the rodata cleanup turned it into a C const.",
-   "next_probe": "named_syms.txt is a root-level pipeline file \u2014 inside the Judge's grantable scope classes but outside a grind session's surface. Needs an operator decision or a scope grant before measuring; it would change the instrument, not the bytes."
+   "hypothesis": "An operator (or a session explicitly authorized for bb2.ld) applying the banked rodata placement closes the function outright.",
+   "mechanism": "Session 9 certified both preconditions at byte level: our emitted 6-word table relocates to the target's jtbl_80015988 exactly (uniform section-base delta 0x80062164), and the 24-byte hole at 0x80015988 absorbs our 8-aligned section with zero padding on either side. bb2.ld:59-61 already implements the identical pattern for func_80077B30.",
+   "next_probe": "Apply steps 1-4 of the 2026-09-16 s11 entry in docs/grind/decisions.md and certify with verify-oracle --rebuild (SHA1), not the sandbox score, which stays at 2 by construction. A Judge scope-widening alone is insufficient: bb2.ld is outside the grantable scope classes."
   }
  ],
  "judge_constraints": [
@@ -252,6 +258,14 @@
    "measured_on": "memory/grind/func_8006B578/candidate.c as banked (sandbox score 2, 200/200 insns), FAKE-free by fake_ablate",
    "predicate_cite": "",
    "result": "Gate (b) FAILS as N/A: there is no coercion construct in the body to seek a family for, and none is claimed. A census wa"
+  },
+  {
+   "session": 12,
+   "statement": "Compiling func_8006B578's body into src/text1a_b_pre_rodata.c (the TU that owns the rodata run containing 0x80015988) makes GCC emit its switch table at the correct address without any bb2.ld change.",
+   "kill_scope": "instance",
+   "measured_on": "bb2.ld and src/text1a_b_pre_rodata.c as they stand on main at s12 (read-only inspection, no chassis dependence); candidate.c chassis is FAKE-free (fake_ablate at s11 reported no FAKE-annotated constru",
+   "predicate_cite": "",
+   "result": "KILLED. text1a_b_pre_rodata.o is a rodata-only object by construction: any .text it emitted falls through every explicit"
   }
  ],
  "ladder_skip": 0,

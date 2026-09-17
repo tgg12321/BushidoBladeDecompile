@@ -816,3 +816,33 @@ end of the session (`git checkout -- src/text1b.c`); the working tree carries no
 - [s11] The dispatch-time CONSISTENCY WARNING ('candidate.c asserts HEAD/main state without a migration banner') is a false positive — candidate.c lines 5-9 carry an explicit MIGRATION BANNER stating main holds INCLUDE_ASM and the file is not on main. No edit was made on that account.
 
 - [s11] src/text1b.c was reverted to HEAD at the end of the session; git status --short shows nothing outside memory/grind/func_8006B578/, docs/grind/, tmp/ and the driver's own metrics/events.jsonl.
+
+- [s12] Floor re-measured this session: candidate.c applied to src/text1b.c gives `sandbox func_8006B578 --disable all` score 2, 200 target insns / 200 build insns, rules_dropped 0, cheat_asm_stripped 134 — identical to the driver's dispatch-time CHASSIS CHECK and to every session since s3. src/text1b.c reverted to HEAD immediately after (tmp/grind/func_8006B578/s12/sandbox_s12.txt).
+
+- [s12] bb2.ld inspection (read-only) closes the last bb2.ld-free route: `grep -n "text1a_b_pre_rodata" bb2.ld` yields exactly ONE hit (line 59, `.rodata` only). The ordered `.text` run at bb2.ld:93-94 lists only build/src/text1b.o(.text) and build/src/text1b_b.o(.text). The one wildcard in the entire script, `*(*)` at bb2.ld:164, lives inside the `/DISCARD/ :` block (lines 162-165). So text1a_b_pre_rodata.o is a rodata-only object BY CONSTRUCTION — moving func_8006B578's body into that TU to get its switch table emitted at 0x80015988 would send the object's .text to /DISCARD/, and would itself require a new bb2.ld `.text` line. The TU-move lever relocates the bb2.ld edit; it does not avoid it.
+
+- [s12] Layout facts confirmed for whoever picks this up: jtbl_80015988 sits at src/text1a_b_pre_rodata.c:409-416 (6 words) between the block ending at 0x80015980 and D_800159A0 at line 418; the sibling table jtbl_80015940 (18 words, func_80065800's) is at src/text1a_b_pre_rodata.c:386-387 in the same rodata run. src/text1a_b_pre_rodata.c is 471 lines and contains zero INCLUDE_ASM directives — it is a pure rodata sub-TU from the 2026-06-09 rodata cleanup, per its own header comment (lines 1-5).
+
+- [s12] Judge history that binds future sessions: the s11 INTEGRATION HANDOFF entry was ruled FAIL on 2026-09-16 20:50 — "the handoff bar is sandbox==0 AND a measured full-build SHA1==oracle with the banked form applied, and bb2.ld/Makefile are denylisted surfaces the Judge cannot grant". Do not re-file the handoff shape. The only two live routes are the func_80065800 sibling route and an operator/linker-authorized pass.
+
+- [s12] Disposition filed: `## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**` at docs/grind/decisions.md:28138, carrying both failed endgame-lock gates, the cc1psx self-disproof (ours 2 / cc1psx 44 / closer=false), the exhaustion record, and five named re-activation triggers (sibling movement, toolchain-fingerprint change, queue drain, an LD_SYM_FILES/named_syms.txt instrument change, an operator/linker-authorized pass).
+
+- [s12] s12 re-measurement: candidate.c applied to src/text1b.c gives sandbox --disable all score 2, 200 target insns / 200 build insns, rules_dropped 0 — matching the driver's dispatch-time CHASSIS CHECK.
+
+- [s12] bb2.ld carries exactly one text1a_b_pre_rodata reference (line 59, .rodata); its .text run (lines 93-94) names only text1b.o and text1b_b.o; the only wildcard, *(*) at line 164, is inside /DISCARD/ — so the rodata-donor TU cannot host code without a new bb2.ld .text line.
+
+- [s12] Layout facts for successors: jtbl_80015988 is src/text1a_b_pre_rodata.c:409-416, between the block ending at 0x80015980 and D_800159A0 at line 418; the sibling table jtbl_80015940 (func_80065800's) is at src/text1a_b_pre_rodata.c:386-387 in the same rodata run; the file is 471 lines with zero INCLUDE_ASM directives (a pure rodata sub-TU from the 2026-06-09 cleanup).
+
+- [s12] Endgame-lock gate (a) FAILS: tools/scan_hand_coded.py --single func_8006B578 -> tier=LOW, 0/8, all three STRONG signals (S1/S2/S6) negative (measured s11 on the shipped asm; no chassis dependence).
+
+- [s12] Endgame-lock gate (b) FAILS as N/A: tools/fake_ablate.py reports no FAKE-annotated constructs in candidate.c, and the body claims no sanctioned family (two switch dispatches, u32 casts on real values, named intermediates carrying real consumed values, forward gotos mirroring the target's own jumps) — there is no construct for a SOTN-master precedent census to be about.
+
+- [s12] cc1psx self-disproof banked by the driver in state.json.cc1psx_check (2026-09-17T01:42Z, candidate_sha 4a4452e58cb2): ours 2, cc1psx 44, closer=false — not a compiler-divergence residual.
+
+- [s12] Judge history binding on successors: the s11 INTEGRATION HANDOFF entry was ruled FAIL on 2026-09-16 20:50 (the handoff bar is sandbox==0 plus a measured full-build SHA1==oracle, and bb2.ld/Makefile are denylisted surfaces the Judge cannot grant). Do not re-file the handoff shape.
+
+- [s12] Exhaustion: floor flat at 2 since s3 across 9 distinct modalities over 12 sessions (recon, structural, permuter x2, enumerate, synthesis, solver, forensics, rederive, escalation x2); 21 instance kills banked, 0 class kills.
+
+- [s12] Rotation record filed this session at docs/grind/decisions.md:28138 — '## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**' — carrying both gates' evidence, the cc1psx result, the exhaustion record, and five named re-activation triggers.
+
+- [s12] src/text1b.c is at HEAD; git status --short shows only docs/grind/decisions.md, memory/grind/func_8006B578/{evidence,hypotheses}.md and the driver's own metrics/events.jsonl.

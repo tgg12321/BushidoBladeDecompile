@@ -28134,3 +28134,101 @@ Decisive fact: integration-handoff-self-serve requires bytes PROVEN = 'sandbox -
 Second, independent defect: the load-bearing step is bb2.ld line 2 of the operator steps, plus a new sub-TU that needs Makefile/bb2.ld entries. '*.ld' and 'Makefile' are on the add-scope-allow path denylist and on the rule's 'what STILL pends the owner' substrate list. I verified bb2.ld:59-66 myself (the func_80077B30 pattern is real, and text1b.o(.rodata) is at line 66). So no scope_paths grant I could issue closes this function; granting src/text1a_b_pre_rodata.c + src/text1b.c alone would hand the next session a surface it can only fail with.
 Recorded architecture question for the owner's own cadence (I do not file it as an escalation): the honest match here needs a rodata re-split of the 101C.rodata_text1a_b_pre cluster at 0x80015988 — a linker-script/substrate decision only the owner makes. Until then, frontier[1] (func_80065800 reaching C, which would let both tables be emitted by text1b.o in ascending order) is the only in-pipeline route.
 Ledger read: state.json, hypotheses H7/H13-H18, evidence.md Sessions 7/7b/8/9, candidate.c, docs/grind/decisions.md:28026-28128.
+
+## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**
+
+Session 12, `escalation` modality (the second escalation slot; s11's INTEGRATION HANDOFF filing was
+ruled **FAIL** by the Judge on 2026-09-16 20:50, with the binding constraint "Do not re-file this as
+an integration handoff: the handoff bar is sandbox==0 AND a measured full-build SHA1==oracle with the
+banked form applied, and bb2.ld/Makefile are denylisted surfaces the Judge cannot grant; pursue the
+H-frontier sibling route (func_80065800) or rotate."). This entry is that rotation record. It is not
+a question to the owner, not a decision packet, and it does not claim that policy blocks the
+function: a pure-C preimage exists by construction, and the residual below is re-attackable the
+moment its named triggers fire.
+
+**Honest floor, re-measured THIS session.** `memory/grind/func_8006B578/candidate.c` applied to
+`src/text1b.c` (the stale 4-param prototype at `src/text1b.c:6547` replaced with the real
+`s32 func_8006B578(s32 *arg0, s32 *arg1);`, the `INCLUDE_ASM("asm/funcs", func_8006B578);` stub at
+`src/text1b.c:6548` replaced by the candidate body): `sandbox func_8006B578 --disable all` → **score
+2**, 200 target insns / 200 build insns, `rules_dropped: 0`. Identical to the driver's dispatch-time
+CHASSIS CHECK and to every session since s3. `src/text1b.c` was reverted to HEAD immediately after
+the measurement (`tmp/grind/func_8006B578/s12/sandbox_s12.txt`).
+
+**Nature of the residual.** Re-proven at s4/s8/s9 and re-measured at s11: `--diff` reports 22 hunks,
+**0 source-level · 0 operand-only · 22 not-scored**, every hunk differing by the single constant
+object offset 0x1A294. The score-2 residual is the dispatch pair `lui at,%hi(...)` /
+`lw v0,%lo(...)(at)`: the reference object names the EXTERNAL symbol `jtbl_80015988` (which the
+2026-06-09 rodata-cleanup parked in a different TU, `src/text1a_b_pre_rodata.c:409-416`), while our
+object carries a section-relative reloc against its own `.rodata`. `engine/score.py` masks those
+through two code paths that can never compare equal, so the sandbox cannot reach 0 for this body by
+construction. There is no allocation seat and no scheduling tie left for a C lever to act on.
+
+**Gate (a) — canonical-asm (STRONG `scan_hand_coded` signals): FAILS.**
+`python3 tools/scan_hand_coded.py --single func_8006B578` → **tier=LOW, score 0/8**, "no strong
+hand-coded indicators"; all three STRONG signals negative (S1 0 multu/mflo pairs, S2 no empty-body
+branches, S6 no BIOS jumptable pattern), and S3-S5/S7-S8 negative as well (206 insns, 5 spills,
+9 distinct regs, max load burst 2 per 8-insn window, no high-similarity sibling, every callee-save
+use paired with an `$sp` save, no redundant mask-before-shift). Measured at s11 on
+`asm/funcs/func_8006B578.s` as shipped; the scan has no chassis dependence, so it is not re-run.
+This is ordinary compiler output, not hand-written assembly — canonical-asm is not its disposition.
+
+**Gate (b) — an in-hand SOTN-master precedent for a closing coercion/spelling construct: FAILS
+(N/A).** `python3 tools/fake_ablate.py --func func_8006B578 --file text1b --candidate
+memory/grind/func_8006B578/candidate.c` → "no FAKE-annotated constructs found … nothing to ablate".
+The body is two `switch` dispatches, `u32` casts on real values, named intermediates that each carry
+a real consumed value, and forward `goto`s mirroring the target's own jumps; `self_vet.md` records
+the same and claims no sanctioned family. There is no construct for a precedent census to be about,
+so the gate fails as N/A rather than standing open. Both AND-gates therefore FAIL — the common case.
+
+**cc1psx self-disproof (driver-banked in `state.json.cc1psx_check`).** 2026-09-17T01:42Z,
+candidate_sha `4a4452e58cb2`: ours **2**, cc1psx **44**, `closer=false`. The period-original PsyQ
+compiler is not closer, so this is not a compiler-divergence residual.
+
+**Exhaustion.** Floor flat at **2 since s3**, across **9 distinct modalities** over 12 sessions:
+recon, structural, permuter (x2), enumerate, synthesis, solver, forensics, rederive, escalation
+(x2). 20 instance kills banked, 0 class kills. The four banked rejected forms are
+`all-three-cases-inline-tail-recheck-s2-kill-on-current-chassis-score15.c`,
+`extern-jtbl-computed-goto-blocks-deleted-and-hardcoded-addresses.c`,
+`ifelse-chain-second-dispatch-regresses-score16.c`, and
+`ifelse-chain-reaudit-s11-full-chassis-score41.c`. The mandated kill re-audit was discharged at s11
+on the current FAKE-free chassis (the if-else rederivation of the second dispatch reconstructed as a
+compilable whole function: score 41 / 211 insns vs the chassis's 2 / 200).
+
+**New kill banked this session (s12) — the TU-relocation lever.** The one route that would have
+avoided the linker script: GCC 2.7.2 emits a switch's ADDR_VEC table into the `.rodata` of the TU
+containing the switch, so compiling `func_8006B578`'s body into `src/text1a_b_pre_rodata.c` —
+textually between the block ending at 0x80015980 and `D_800159A0`
+(`src/text1a_b_pre_rodata.c:409-425`) — would emit the table at exactly 0x80015988 with no rodata
+reorder and no TU split. Measured by reading `bb2.ld` (never edited):
+`grep -n "text1a_b_pre_rodata" bb2.ld` returns exactly ONE hit, line 59, `.rodata` only; the `.text`
+run at `bb2.ld:93-94` lists `build/src/text1b.o(.text)` and `build/src/text1b_b.o(.text)` and
+carries no `text1a_b_pre_rodata.o(.text)` line anywhere; the only wildcard in the whole script is
+`*(*)` at `bb2.ld:164`, inside `/DISCARD/`. So `text1a_b_pre_rodata.o` is a rodata-only object by
+construction — any `.text` it emitted would fall through every explicit placement into `/DISCARD/`
+and be dropped from the image, and nothing would place it at 0x8006B578 in the ordered `.text` run.
+The lever does not avoid `bb2.ld`; it merely moves the required `bb2.ld` edit from the rodata list
+to the text list. (`tmp/grind/func_8006B578/s12/tu_move_lever.txt`)
+
+**Why the sibling route the Judge named is not actionable from this session.**
+`func_80065800` (active, `src/text1b.c`, floor 1453 since its s1) owns `jtbl_80015940`
+(`src/text1a_b_pre_rodata.c:386-387`), the cluster immediately before ours in the same rodata run.
+If it reached C in the same pass, both tables would be emitted by `text1b.o` in ascending order and
+part of the pre/post split would collapse — but that work belongs to a session handed
+`func_80065800`, and at floor 1453 it is many sessions away. It is recorded on the frontier, not
+consumed here; a grind session may only work its dispatched function.
+
+**Evidence pointers.** `memory/grind/func_8006B578/evidence.md` (Sessions 7/7b/8/9/11/12),
+`hypotheses.md` H7/H13/H14/H15/H16/H21 plus the s12 entries, `candidate.c`, `self_vet.md`,
+`state.json.cc1psx_check`, `tmp/grind/func_8006B578/s12/sandbox_s12.txt`,
+`tmp/grind/func_8006B578/s12/tu_move_lever.txt`, `tmp/grind/func_8006B578/s11/diff_s11.txt`,
+`tmp/grind/func_8006B578/s7/diff_baseline.txt`.
+
+**Re-activation triggers (this is a rotation, never terminal).** The item returns to the active
+worklist automatically on any of: (1) **sibling movement** — `func_80065800` reaching C, which
+collapses the rodata-split problem described above; (2) a **toolchain-fingerprint change**, which
+re-measures every banked candidate; (3) **queue drain**; (4) an **instrument change** that unpins
+the score from 2 without touching bytes — listing `jtbl_80015988` in `LD_SYM_FILES` would let
+`engine/score.py:62` resolve the named-symbol HI16/LO16 pair and certify this body without a full
+build (`named_syms.txt` is a root-level pipeline file, inside the Judge's grantable scope classes
+but outside a grind session's surface); (5) an **operator or explicitly linker-authorized pass**
+applying the rodata placement, whose exact steps remain on record in the 2026-09-16 s11 entry above.
