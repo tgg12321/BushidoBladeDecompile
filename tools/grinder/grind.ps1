@@ -102,7 +102,12 @@ param(
     # AIM-AND-STOP lanes (synthesis, forensics, solver, escalation): these decide
     # which axis the next N sessions attack and whether the ladder is finished.
     # A wrong call here is invisible to both gates and costs whole sessions.
-    [string]$ReasoningModel = 'claude-fable-5-1[1m]',   # judgment lanes (ARM 2)
+    # 2026-09-16 owner directive: the Fable allowance is EXHAUSTED, so the
+    # judgment lanes default to Opus 5 instead of relying on the runtime 429
+    # fallback (which costs one dead spawn per lane per limit window). This is
+    # an allowance change, not a quality finding — restore
+    # 'claude-fable-5-1[1m]' here when the allowance returns.
+    [string]$ReasoningModel = 'claude-opus-5[1m]',      # judgment lanes (ARM 2)
     [string]$JudgeModel = 'claude-opus-5[1m]',         # the default-FAIL Judge
     [string]$Layer1Model = 'claude-opus-5[1m]',        # pre-Judge cheat-reviewer gate
     # Fallback for ANY lane whose model hits a usage-limit 429 (see above).
