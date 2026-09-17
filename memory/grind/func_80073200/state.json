@@ -1,31 +1,37 @@
 {
  "func": "func_80073200",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 115,
    "modality": "recon",
    "headline": "First C body ever written for func_80073200: sandbox 203 -> 115; --diff shows 31/34 hunks source-level (structural, not reg/sched levers); 3 concrete unmeasured-in-isolation frontier items banked."
+  },
+  {
+   "session": 2,
+   "floor": 24,
+   "modality": "structural",
+   "headline": "func_80073200: 115 -> 24 (build_insns now == target_insns 203) by replacing 14 bare-scalar stack locals with one address-taken S73200 struct (field-identical to the already-on-main S_69AE4/S_69F80 str"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Stage the color-byte pair (sp41 branch-specific / sp42 shared) through m2c's shape: write sp42 from ONE post-if-merge location via a temp, not duplicated inside both if/else arms as the s1 draft does.",
-   "mechanism": "cse.c store recognition \u2014 a single merged store position vs. two duplicated-arm store positions is visible to CSE differently; unmeasured this session",
-   "next_probe": "restructure the if/else in src/text1b.c func_80073200 to match tmp/authoring/func_80073200.m2c.c lines 47-57 (var_v0 staged, sp42=var_v0 after merge), re-run sandbox --disable all --diff and check whether hunks 3/4 close"
+   "hypothesis": "The frame-size/callee-save gap (target 4 callee-saved regs / 96-byte frame vs ours 2 / 88-byte frame) closes once the liveness reason target keeps the 0x12 literal (s.sp2C) live across BOTH func_8007352C call blocks in a persistent register is identified and reproduced in C.",
+   "mechanism": "register allocation / global-reg liveness (global.c) \u2014 needs the instrumented cc1 .greg dump to see which pseudo target's s3 corresponds to and why its live range spans both blocks",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80073200, read the .greg dump for the pseudo holding 0x12 across both D_800A3580 branches, then try named-intermediate / declaration-order levers (register-alloc-pure-c Levers A-C) for that specific value before touching anything else."
   },
   {
-   "hypothesis": "The sp18/sp1C/sp24/sp2C locals passed to func_80073728 should be an explicit S46C-typed struct (matching func_8005D46C/func_8005FA98's established pattern in the same TU) instead of bare stack scalars, to stop GCC from const-folding sp2C into the later AddPrim address computation.",
-   "mechanism": "struct-field stores are less transparent to GCC's redundant-load/constant-propagation than scalar locals in this fork; unmeasured \u2014 try only after the H2 restructure above",
-   "next_probe": "declare a local `S46C s;` (typedef already present at src/text1b.c ~3182) in place of sp18/sp1C/sp20/sp24/sp28/sp2C, rewire the 4 func_80073728 calls + the two func_8007352C calls through it, re-measure"
+   "hypothesis": "Hunk 16's apparent 5-insn insert (duplicate-looking D_800A3580<2 test) is a scheduling artifact of the register-seat gap above, not an independent third lever.",
+   "mechanism": "sched.c scheduling order shift caused by a different register being live at that point",
+   "next_probe": "Re-run sandbox --disable all --diff after frontier item 1's fix lands; check whether hunk 16 collapses for free before treating it as its own lever."
   },
   {
-   "hypothesis": "Once H2+the struct rewrite close the 3 repeated AddPrim-fold hunks (15-18/21-23/31-33) and the color-byte hunks (3/4/6/7), the remaining hunks (16-9/11/13/19/24-27/29/34) should collapse mostly for free since they are consequences of the same root miscompile, not independent diffs \u2014 re-run --diff after each incremental fix rather than guessing ahead.",
-   "mechanism": "cascade \u2014 most of the 27 source-level hunks trace back to the same 2-3 structural causes (H1 done/inert alone, H2, struct-vs-scalar)",
-   "next_probe": "after H2 + struct rewrite, sandbox --disable all --diff; if hunk count is still >5, re-run m2c against the NEW candidate.c mentally (or via tmp/run_m2c.sh) is not applicable (m2c only reads asm) \u2014 instead re-read the raw asm around any surviving hunk's target[N] line number directly"
+   "hypothesis": "H2's KILLED result (var_v0 staging identical to duplicated-arm spelling) may no longer hold post-H3/H4 \u2014 worth a quick re-check once the frame gap closes, since CSE/store-recognition behavior can change once more of the aggregate's fields are live/address-exposed.",
+   "mechanism": "cse.c store recognition, potentially interacting with the now-address-exposed aggregate",
+   "next_probe": "After frontier item 1 lands, re-diff hunks 3/4/6/7 (color-byte region) specifically; if still byte-identical to the duplicated-arm spelling, drop this hypothesis for good."
   }
  ],
  "judge_constraints": [],
@@ -38,11 +44,28 @@
    "measured_on": "src/text1b.c func_80073200 s1 draft chassis (post H1 edit only, no FAKE constructs, ordinary C), sandbox --disable all",
    "predicate_cite": "",
    "result": "score unchanged: 115 before and after (target_insns 203, build_insns 131 both times)"
+  },
+  {
+   "session": 2,
+   "statement": "Staging the inner if/else's color-byte write (sp42) through a single shared post-if-merge variable (var_v0, matching m2c's shape) instead of duplicating the sp41/sp42 pair inside both if/else arms cha",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 s1 draft chassis (bare sp18..sp43 scalars, pre-H3-struct rewrite, no FAKE constructs, ordinary C), sandbox --disable all",
+   "predicate_cite": "",
+   "result": "score unchanged 115 -> 115 (target_insns 203, build_insns 131 both times); the --diff hunks at that location were byte-i"
+  },
+  {
+   "session": 2,
+   "statement": "Block-scoping the v1/idx locals inside the if (D_800A3580 < 2) block (instead of function-scope, matching the s1 draft's original declaration style) changes the sandbox score on the current (post-H3, ",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all",
+   "predicate_cite": "",
+   "result": "score unchanged 24 -> 24, no hunk-shape change. Reverted (kept function-scope declaration in the saved candidate for min"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-17T01:55:53.827748+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }

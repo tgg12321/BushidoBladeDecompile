@@ -85,3 +85,87 @@ for the func_80073200 recon session (the digest's only flagged global).
 - [s1] Target frame is 96 bytes / 4 callee-saved regs (s0-s3); our build is 48 bytes / 2 callee-saved regs (s0,s1) — our C is collapsing structure (redundant loads/stores, compile-time-folded offsets) the target keeps separate as live stack state.
 
 - [s1] Concrete fold identified: our C's `AddPrim(D_800A374C + (sp2C * 4), ...)` with sp2C set to the literal 0x14 just above gets constant-folded by GCC into `addiu a0,a0,80`; target reloads sp2C from the stack at that point (`lw a0,44(sp)`) and computes the shift/add at runtime — evidence the original source kept more live/non-foldable structure between the assignment and the use (repeats identically at the two other AddPrim call sites in the function, hunks 15-18 and 31-33).
+
+## s2 (structural)
+
+- [s2] SIBLING CHECK: func_8007352C/func_800600C8/func_80060768 (named in this
+  session's sibling-ledger block) have NO memory/grind/<func>/ directory —
+  their ledgers record "candidate: src/text1b.c (the MATCHED body, on main)",
+  i.e. their matched bodies ARE the committed src/text1b.c text with nothing
+  external to transplant. The genuinely useful transplant targets this
+  session were the OTHER address-taken-aggregate callers of
+  func_80073728/func_8007352C already on main in the same TU:
+  func_8005D46C/func_8005FA98 (S46C, src/text1b.c:3178-3190),
+  func_80069AE4 (S_69AE4, :5960-5963), func_80069F80 (S_69F80, :6160-6164).
+
+- [s2] ROOT CAUSE of the s1-diagnosed AddPrim compile-time fold (H3,
+  CONFIRMED): GCC 2.7.2's alias/escape analysis treats address-of-local
+  escape PER-C-VARIABLE, not per-stack-byte-range. The s1 draft declared
+  sp18/1C/20/24/28/2C/30/34/38/3C/40/41/42/43 as 14 SEPARATE bare-scalar
+  locals and only took `&sp18`; GCC therefore only treated `sp18` as
+  address-exposed to the four intervening `func_80073728(&sp18, N)` calls,
+  leaving `sp2C` (and friends) free to be constant-propagated across those
+  calls even though the ORIGINAL target frame layout puts all 14 at
+  contiguous offsets sp+0x18..sp+0x43 (a single 0x2C-byte object). Declaring
+  one `S73200 s;` struct (field-for-field identical to the already-on-main
+  `S_69AE4`/`S_69F80` structs used by func_80069AE4/func_80069F80 for the
+  SAME two callees with the SAME `(s32)&s, 0`-style call convention) and
+  replacing every `spNN` with `s.spNN` made the WHOLE aggregate
+  address-exposed by the SAME `&s` used in the func_80073728 calls — GCC
+  now reloads every field after a call instead of folding it, matching
+  target exactly on that axis. Measured: sandbox score 115 -> 26
+  (target_insns 203, build_insns 131 -> 203 — build_insns now EXACTLY
+  target_insns), hunk count 34 -> 22, source-level hunks 27 -> 12. This is
+  ordinary C (an address-taken local struct declaration — no FAKE
+  construct, no annotation needed, same shape already on main 4x in this
+  file) — not a new construct family.
+
+- [s2] H2 (color-byte var_v0 staging) KILLED as an instance: staging the
+  inner if/else's `sp42` write through a shared post-merge `var_v0` (matching
+  m2c's shape) vs. duplicating `sp41=..;sp42=..;` in both arms compiles
+  BYTE-IDENTICALLY on this chassis — the hunk-3/4 residual named in s1 is NOT
+  attributable to that spelling choice; some other structural difference
+  (likely subsumed by/related to the H3 struct fix, or a genuine
+  register-seat tie) accounts for it. Superseded by the H3 struct rewrite
+  regardless (that hunk region also closed/reclassified after H3).
+
+- [s2] H4 (CONFIRMED, small): naming `tmp + 0xC` / `idx + 0xC` as a local
+  `tbl` before the `s.sp1C = tbl;` store — matching the IDENTICAL
+  `tbl = p1 + 0xC; s.sp1C = tbl;` shape already on main at
+  src/text1b.c:6249-6250/6257-6258/6352-6353 for the SAME S_69AE4/S_69F80
+  struct family — reclassified the two remaining source-level hunks at that
+  location (target `addiu s1,v0,12; sw s1,28(sp)` vs our inlined `addiu
+  v0,v0,12; sw v0,28(sp)`) to operand-only (register-seat: target keeps the
+  value in `s1`, ours in `v1`). Score 26 -> 24.
+
+- [s2] Block-scoping the `v1`/`idx` locals inside the `if (D_800A3580 < 2)`
+  block (vs. function-scope, matching the s1 draft's original declaration
+  style) measured score-INERT: 24 -> 24, no hunk-shape change. KILLED as an
+  instance (see hypotheses.md); reverted to keep the committed candidate
+  minimal.
+
+- [s2] CURRENT RESIDUAL (24, target_insns == build_insns == 203): target uses
+  4 callee-saved regs (s0-s3, frame 96 bytes) vs. our 2 (s0,s1, frame 88
+  bytes) — target holds the repeated `0x12` literal (`s.sp2C = 0x12;`, set
+  once before and once again inside the `D_800A3580 < 2` block) in a THIRD
+  persistent register (`s3`) spanning BOTH func_8007352C call blocks, while
+  our allocation only spans one block at a time (`s1`/`v1`). This is a
+  genuine register-allocation/liveness question, not a source-level
+  omission (insn counts are equal) — needs a `.greg`/`-da` dump next
+  session before proposing a specific lever (see codegen-technique-index →
+  register-alloc-pure-c). One remaining apparent 5-insn "insert" (hunk 16,
+  the D_800A3580<2 re-test) is very likely a downstream scheduling artifact
+  of this same register-seat gap, not an independent third lever — verify
+  that first before treating it separately.
+
+- [s2] Sibling ledgers func_8007352C/func_800600C8/func_80060768 have no memory/grind/<func>/ directory left; their note 'candidate: src/text1b.c (the MATCHED body, on main)' means nothing external needed transplanting — the genuinely useful transplant targets this session were the OTHER address-taken-aggregate callers of func_80073728/func_8007352C already on main in this TU: func_8005D46C/func_8005FA98 (S46C), func_80069AE4 (S_69AE4), func_80069F80 (S_69F80).
+
+- [s2] S73200's field layout (sp18,sp1C,sp20,sp24,sp28,sp2C,sp30,sp34,sp38,sp3C,sp40,sp41,sp42,sp43) is IDENTICAL to the already-committed S_69AE4 (src/text1b.c:5960-5963) and the first 14 fields of S_69F80 (src/text1b.c:6160-6164) — both used elsewhere in the same TU with the identical func_80073728/func_8007352C callees and (s32)&s call convention. This is not a novel construct; it is the SAME address-taken-local-aggregate pattern already accepted 4x in this file.
+
+- [s2] Confirmed root cause of the s1-diagnosed AddPrim compile-time-fold residual: GCC 2.7.2 alias/escape analysis is per-C-DECLARATION, so 14 separate bare-scalar locals only exposed the ONE addressed variable (sp18) to the func_80073728 calls, letting sibling scalars like sp2C fold across the calls; one aggregate whose address is taken exposes the whole object, forcing reloads that match target.
+
+- [s2] sandbox --disable all --diff after the struct rewrite: target_insns == build_insns == 203 exactly (was 203 vs 131 before) — every remaining hunk is a REPLACE, not an insert/delete of unequal total length, confirming nothing is structurally missing or extra anymore.
+
+- [s2] Remaining residual (24) is dominated by a register-seat/callee-save gap: target uses 4 callee-saved regs (s0-s3, 96-byte frame) vs ours 2 (s0,s1, 88-byte frame) — target keeps the repeated 0x12 literal live in a third persistent register (s3) spanning both func_8007352C call blocks; ours only spans one block at a time. This needs a .greg/-da dump, not yet root-caused this session.
+
+- [s2] One apparent 5-insn insert (hunk 16, the D_800A3580<2 re-test) is very likely a downstream scheduling/alignment artifact of the register-seat gap above rather than an independent missing statement, since target_insns == build_insns overall.
