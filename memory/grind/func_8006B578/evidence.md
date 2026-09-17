@@ -325,3 +325,169 @@ flag checks calling `func_8005C650`):
 - [s6] After both measurements the candidate was restored to its exact s3/s4/s5 form and re-verified at score=2/200 insns before reverting src/text1b.c to the INCLUDE_ASM stub; git status --short at session end shows only the ledger files + pre-existing metrics/events.jsonl churn changed.
 
 - [s6] No source-level or operand-only hunks exist in the current diff (0/22 of each) — the enumerate modality's search precondition (a region with a real spelling-space residual) is not met by the function's current frontier; the one sub-block tested was chosen as the most structurally complex candidate region, not because diff evidence pointed at it specifically.
+
+## Session 7 (synthesis modality) — floor 2 held; residual proven to be a rodata-PLACEMENT problem, not a codegen problem
+
+- [s7] Chassis re-established: `src/text1b.c` carried the INCLUDE_ASM stub at session start
+  (as always under asm-until-matched). Re-applied `memory/grind/func_8006B578/candidate.c`
+  verbatim and re-measured `sandbox func_8006B578 --disable all` => **score 2, 200 target
+  insns / 200 build insns**, and `--diff` => 22 hunks, **0 source-level · 0 operand-only ·
+  22 not-scored** — identical to s3/s4/s5/s6. No drift across four sessions.
+
+- [s7] **NEW, DECISIVE — the GCC-synthesized jump table is CONTENT-IDENTICAL to
+  jtbl_80015988.** `objdump -sr -j .rodata tmp/sandbox/func_8006B578/text1b.o` on our
+  compiled candidate shows a 24-byte `.rodata` section with six `R_MIPS_32 .text`
+  relocations and word contents `0x9554 0x9584 0x95bc 0x9650 0x9698 0x96c4`. The target
+  table (`src/text1a_b_pre_rodata.c:409-416`, `jtbl_80015988`) is
+  `0x8006B6B8 0x8006B6E8 0x8006B720 0x8006B7B4 0x8006B7FC 0x8006B828`. Entry-by-entry the
+  difference is the SAME constant **0x80062164** for all six (6B6B8-9554 = 6B6E8-9584 =
+  6B720-95BC = 6B7B4-9650 = 6B7FC-9698 = 6B828-96C4 = 0x80062164) — i.e. exactly the
+  section-base delta between our object's `.text` and the linked address of
+  `func_8006B578`. Our switch therefore emits the target's jump table byte-for-byte; the
+  ONLY thing wrong with it is WHICH translation unit's `.rodata` it lands in.
+
+- [s7] **NEW — every one of the 22 not-scored hunks is one single uniform object-offset
+  shift.** A script over the captured `--diff`
+  (`tmp/grind/func_8006B578/s7/diff_baseline.txt`) extracted the trailing address operand of
+  every `target`/`ours` hunk pair: all 22 deltas are **0x1A294**, with zero non-address
+  hunks. That is the offset difference between where `func_8006B578` sits inside the
+  reference `build/src/text1b.o` (built from the whole-file asm) and where it sits inside our
+  sandbox object. There is no branch-sense, no scheduling, and no allocation divergence
+  anywhere in the body. Combined with the previous bullet, the compiled body of
+  func_8006B578 is byte-equivalent to the target modulo (a) object placement and (b) the
+  jump-table relocation SYMBOL (`%hi(jtbl_80015988)` vs `%hi(.rodata)`).
+
+- [s7] **NEW — in-project precedent for the exact infrastructure fix this function needs.**
+  `func_80077B30` (`src/text1b_b.c:825`) is an already-COMPLETED-C function in this same
+  rodata cluster whose outer `switch (D_800A35E4)` has six cases (0..5) and therefore emits a
+  24-byte GCC jump table. `bb2.ld` gives it a dedicated slot: line 59
+  `build/src/text1a_b_pre_rodata.o(.rodata);`, line 60
+  `build/src/text1b_b.o(.rodata);`, line 61
+  `build/src/text1a_b_post_rodata.o(.rodata);`. The last symbol in the pre file is
+  `jtbl_80015A24` (6 words @ 0x80015A24, ending 0x80015A3C); the first symbol in the post
+  file is `jtbl_80015A54` (@ 0x80015A54). The 0x18 = 24-byte hole between them is EXACTLY
+  where func_80077B30's compiler-generated table lands. So the rodata-cleanup project already
+  established, and the linker script already implements, the "split the extracted grab-bag
+  rodata sub-TU in two and give the real owning C file its own `.rodata` slot in the middle"
+  pattern. func_8006B578 needs the identical treatment one cluster earlier, at 0x80015988.
+
+- [s7] `build/src/text1b.o(.rodata)` is currently at `bb2.ld:66` — between `sound.o` and
+  `gpu.o`, i.e. ~0x1000 bytes past the cluster — and `src/text1b.c` today declares no
+  `const`/string-literal data at all (`grep -n "^const\|^static const" src/text1b.c` => no
+  hits), so that slot currently contributes ZERO bytes. Compiling func_8006B578 as C adds 24
+  bytes there, which both (i) puts the table at the wrong address and (ii) shifts every
+  later `.rodata` input and the whole of `.text`, so a full-build SHA1 cannot match while
+  that slot stays at line 66. This is why the honest floor sits at 2 and why no in-file C
+  change can move it.
+
+- [s7] The rodata that genuinely belongs to `src/text1b.c` looks like a contiguous run inside
+  the pre-rodata grab-bag starting at `jtbl_80015988`: 0x80015988 (this function's table),
+  `D_800159A0` ("warning\n", 16B), `jtbl_800159B0` (8 words -> 0x8006E5D8 etc.),
+  `jtbl_800159D0` (15 words), `jtbl_80015A0C` (6 words -> 0x800748F0 etc. — note those
+  targets are outside text1b.c's address range, so the run's END is not yet established).
+  An operator implementing the fix should re-derive the exact boundary from the per-symbol
+  address/owner inventory in `docs/rodata-cleanup-project.md` rather than trusting this
+  sketch.
+
+- [s7] KILL RE-AUDIT (mandated): `python3 tools/fake_ablate.py --func func_8006B578 --file
+  text1b --candidate memory/grind/func_8006B578/candidate.c` reports "no FAKE-annotated
+  constructs found ... nothing to ablate" — the candidate is and has always been FAKE-free,
+  so every banked instance kill was measured with no FAKE carrier occupying any pseudo. The
+  two closest-to-target instance kills were re-measured on the CURRENT chassis:
+  s5's `hi` narrowed from `s32` to `s16` => **score 2 / 200 insns** (unchanged, kill holds as
+  score-neutral); s6's v02 "inline `f`, drop the shared local" in the case-0 bit-toggle block
+  => **score 2 / 200 insns** (unchanged, kill holds as score-neutral). Neither is an
+  improvement and neither is a regression; both re-confirm the body is already at its
+  in-file optimum.
+
+- [s7] STALE-HEAD-CLAIM warning from the dispatch brief addressed: `candidate.c`'s header
+  comment now carries an explicit migration banner stating that `src/text1b.c` on main holds
+  the `INCLUDE_ASM` stub and that this file is the applied-during-measurement body, not HEAD
+  state.
+
+- [s7] `src/text1b.c` reverted to its pre-session INCLUDE_ASM stub before session end; no C
+  landed on main. No FAKE/cheat construct was used, proposed, or is present anywhere.
+
+## Session 7b (synthesis, 2026-09-16 — the re-run after the driver discarded the first s7 for returning `owner-gated` in a non-`escalation` modality)
+
+**Chassis re-confirmation.** `memory/grind/func_8006B578/candidate.c` spliced into `src/text1b.c`
+(replacing lines 6544-6548: the stale 4-param prototype + `INCLUDE_ASM`) and measured with
+`sandbox func_8006B578 --disable all --diff`: **score 2, 200 target insns / 200 build insns, 22
+hunks, 0 source-level · 0 operand-only · 22 not-scored**. Every one of the 22 hunks is a
+branch/jump target pair differing by the constant object-vs-image delta (e.g. `beq v1,v0,23718`
+vs `beq v1,v0,9484`). Artifact: `tmp/grind/func_8006B578/s7/diff_baseline_s7b.txt`.
+`tools/fake_ablate.py --func func_8006B578 --file text1b --candidate .../candidate.c` →
+"no FAKE-annotated constructs found; nothing to ablate", so the s5/s6 instance kills were all
+measured on a chassis byte-identical to the current one with no FAKE carrier occupying any
+pseudo — they stand as recorded and needed no re-measurement.
+
+**The score-2 pin, now cited in the scorer's own source (H7/H14 hardened).**
+`engine/buildconfig.py:93` defines `LD_SYM_FILES = ["undefined_funcs_auto.txt",
+"undefined_syms_auto.txt", "named_syms.txt"]`, and `jtbl_80015988` appears in NONE of them
+(it is a C `const u32[6]` in `src/text1a_b_pre_rodata.c:409`, so no splat symbol file lists it).
+`engine/score.py:62` — "Named-symbol HI16/LO16 are NOT masked"; `engine/score.py:71` masks only
+`R_MIPS_HI16`/`R_MIPS_LO16` **against section symbols**, rewriting the field to `@.rodata`
+(`score.py:140`). The reference object's dispatch pair carries a NAMED reloc against
+`jtbl_80015988` (unresolvable, so its immediate is compared raw); ours carries a
+SECTION-relative reloc, masked to `@.rodata`. Two different code paths, no possible equal
+token → the sandbox gradient for this function is pinned at exactly 2 and the full-build oracle
+is the only instrument that can certify it. This is the known
+`score-symtab-blind-to-asm-data-dlabels` class, now confirmed for a symbol that lives in C
+rodata rather than an `asm/data` dlabel.
+
+**NEW: the rodata ownership inventory the previous session left unverified is now measured.**
+Method: for every rodata symbol in `src/text1a_b_pre_rodata.c` with an address in
+0x80015900-0x80015B00, take its first table entries, resolve each entry address to the
+enclosing function by grepping `asm/funcs/*.s` for that instruction address, then find that
+function's `INCLUDE_ASM` owner in `src/*.c`:
+
+| rodata symbol | first target | enclosing function | owning TU |
+|---|---|---|---|
+| `jtbl_80015940` (0x80015940) | 0x80066168 | `func_80065800` | `src/text1b.c` |
+| `jtbl_80015988` (0x80015988) | 0x8006B6B8 | **`func_8006B578`** | `src/text1b.c` |
+| `D_800159A0` (0x800159A0, "warning\n") | — | — | (string, unattributed) |
+| `jtbl_800159B0` (0x800159B0) | 0x8006E5D8 | `func_8006E534` | `src/text1b.c` |
+| `jtbl_800159D0` (0x800159D0) | 0x8006EE74 | `func_8006ECF4` | `src/text1b.c` |
+| `jtbl_80015A0C` (0x80015A0C) | 0x800748F0 | `func_800747D8` | `src/text1b.c` (`INCLUDE_ASM` at src/text1b.c:8122) |
+| `jtbl_80015A24` (0x80015A24) | 0x80077438 | `func_80077374` | `src/text1b.c` |
+| (0x80015A3C-0x80015A54 hole, filled by `bb2.ld:60` `text1b_b.o(.rodata)`) | 0x80077B30 | `func_80077B30` | `src/text1b_b.c` (COMPLETED-C) |
+
+Two corrections to the previous session's sketch, which it flagged as unverified past
+`jtbl_800159B0`:
+1. `jtbl_80015A0C` is **not** outside text1b.c's range — `0x800748F0` sits inside
+   `func_800747D8`, which `src/text1b.c:8122` owns. The whole run
+   **0x80015940-0x80015A3C is text1b.c-owned rodata**, seven symbols, one of them a string.
+2. The cluster begins one symbol EARLIER than the sketch assumed: `jtbl_80015940`
+   (`func_80065800`, text1b.c) precedes our table.
+
+`mipsel-linux-gnu-objdump -h build/src/text1b.o` shows a single `.text` section and **no
+`.rodata` section at all** today, confirming the premise that the `bb2.ld:66`
+`build/src/text1b.o(.rodata)` slot currently contributes zero bytes and can be moved without
+disturbing any other placement.
+
+**Consequence for the integration handoff (sharper than the previous entry).** The original
+object model is `text1a_b_pre_rodata → text1b → text1b_b → text1a_b_post_rodata`, and
+text1b.o's rodata run is 0x80015940-0x80015A3C. Because GCC emits switch tables in the order
+their `switch` statements appear in the TU, decompiling text1b.c's functions to C **must**
+proceed so that the emitted tables stay in ascending address order; today only
+`func_8006B578`'s table exists, so the `text1b.o(.rodata)` slot must sit exactly at 0x80015988
+(between `jtbl_80015940` and `D_800159A0`), and `jtbl_80015988` must be deleted. When
+`func_80065800` later lands as C, the slot moves back to 0x80015940 and `jtbl_80015940` is
+deleted too. Each additional text1b.c switch-carrying function shrinks the extracted remainder
+until the whole run belongs to text1b.o and the pre/post split collapses.
+
+- [s7] Chassis re-measured this session: memory/grind/func_8006B578/candidate.c spliced over src/text1b.c:6544-6548 gives sandbox --disable all score 2, 200 target insns / 200 build insns, 22 hunks, 0 source-level / 0 operand-only / 22 not-scored; every hunk is a branch or jump target differing by the constant object-vs-image delta.
+
+- [s7] tools/fake_ablate.py --func func_8006B578 --file text1b --candidate memory/grind/func_8006B578/candidate.c: 'no FAKE-annotated constructs found; nothing to ablate' - the body is ordinary C and the banked instance kills are on-chassis.
+
+- [s7] The score-2 pin is now cited in the scorer's own source: engine/buildconfig.py:93 (LD_SYM_FILES lists no file containing jtbl_80015988), engine/score.py:62 (named-symbol HI16/LO16 not masked), engine/score.py:71 and engine/score.py:140 (only section-relative HI16/LO16 are rewritten to @.rodata).
+
+- [s7] Rodata ownership inventory (new, verified): 0x80015940 jtbl -> func_80065800, 0x80015988 jtbl -> func_8006B578, 0x800159A0 warning-string, 0x800159B0 jtbl -> func_8006E534, 0x800159D0 jtbl -> func_8006ECF4, 0x80015A0C jtbl -> func_800747D8, 0x80015A24 jtbl -> func_80077374 - every table in 0x80015940-0x80015A3C belongs to a src/text1b.c function.
+
+- [s7] Correction to the s7 integration-handoff entry: jtbl_80015A0C's targets are INSIDE text1b.c (func_800747D8, INCLUDE_ASM at src/text1b.c:8122), and the text1b.c rodata run begins at jtbl_80015940, one symbol before this function's table.
+
+- [s7] build/src/text1b.o currently has a single .text section and NO .rodata section (mipsel-linux-gnu-objdump -h), confirming the bb2.ld:66 text1b.o(.rodata) slot contributes zero bytes today.
+
+- [s7] The extern-table computed-goto route is mechanically self-defeating: jump.c:185 seeds LABEL_NUSES from LABEL_PRESERVE_P, so blocks entered only by a computed goto with no address-taken label are deleted (measured: 95 insns instead of 200).
+
+- [s7] Object-model order corroborated by an already-COMPLETED-C precedent: bb2.ld:60 inserts build/src/text1b_b.o(.rodata) between text1a_b_pre_rodata.o (bb2.ld:59) and text1a_b_post_rodata.o (bb2.ld:61) to fill the 0x18-byte hole at 0x80015A3C with func_80077B30's compiler-generated table.

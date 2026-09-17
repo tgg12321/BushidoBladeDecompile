@@ -666,3 +666,149 @@ is unchanged and remains the only live lever.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either form, reverted to the INCLUDE_ASM stub before session end
+
+## H13 (s7, synthesis) — CONFIRMED: the compiled switch's jump table is content-identical to jtbl_80015988; only its owning TU is wrong
+
+**Statement.** The GCC-2.7.2-synthesized jump table that `candidate.c`'s second `switch`
+emits into `src/text1b.c`'s `.rodata` has exactly the same six entries, in the same order, as
+the extracted `const u32 jtbl_80015988[6]` array in `src/text1a_b_pre_rodata.c:409-416`.
+
+**Mechanism.** `expand_end_case` (`tools/gcc-2.7.2/stmt.c:4681`) allocates a fresh internal
+table label (`gen_label_rtx()`, `stmt.c:4704`) and fills it with one `R_MIPS_32` word per case
+label of the compiling function. Those case labels are the same six basic-block entry points
+the original compiler produced, so the words are the same addresses.
+
+**Probe.** `mipsel-linux-gnu-objdump -sr -j .rodata tmp/sandbox/func_8006B578/text1b.o`.
+
+**Result.** Our `.rodata` is 24 bytes, six `R_MIPS_32 .text` relocations, words
+`0x9554 0x9584 0x95BC 0x9650 0x9698 0x96C4`. Target words are
+`0x8006B6B8 0x8006B6E8 0x8006B720 0x8006B7B4 0x8006B7FC 0x8006B828`. All six pairwise
+differences equal **0x80062164** — the section-base delta. Content match is exact.
+**Verdict: CONFIRMED.**
+
+## H14 (s7, synthesis) — CONFIRMED: all 22 not-scored hunks are one uniform object-offset shift, i.e. zero codegen divergence remains in the body
+
+**Statement.** Every `target`/`ours` address operand in the 22 not-scored hunks of
+`sandbox --disable all --diff` differs by the single constant 0x1A294, and no hunk has a
+non-address difference.
+
+**Mechanism.** The reference `build/src/text1b.o` is assembled from the whole-file asm, so
+`func_8006B578` begins at a different offset inside that object than inside our sandbox
+object; every intra-function branch/jump target therefore prints shifted by that constant.
+
+**Probe.** Captured the full diff to `tmp/grind/func_8006B578/s7/diff_baseline.txt` and ran a
+script extracting the trailing hex operand of every hunk pair.
+
+**Result.** `deltas: {'0x1a294': 22}`, `non-address hunks: []`. **Verdict: CONFIRMED.** There
+is no branch-sense, scheduling, or allocation divergence anywhere in the function body.
+
+## H15 (s7, synthesis) — KILLED (instance): the two closest banked instance kills re-measure unchanged on the current chassis with no FAKE carrier present
+
+**Statement.** Re-measuring s5's `s32 hi` -> `s16 hi` narrowing and s6's v02 "inline `f`,
+drop the shared local" rewrite of the case-0 bit-toggle block, each applied to the current
+`candidate.c` chassis, reproduces score 2 / 200 insns for both — neither form improves nor
+regresses the floor.
+
+**Mechanism.** Both variants touch only value-numbering-equivalent spellings inside blocks
+that already emit target-identical instructions (H14); there is no residual for them to move.
+
+**Probe.** `tools/fake_ablate.py --func func_8006B578 --file text1b --candidate
+memory/grind/func_8006B578/candidate.c` (=> "no FAKE-annotated constructs found; nothing to
+ablate", so no FAKE carrier could have masked either lever), then each variant applied to
+`src/text1b.c` and measured with `sandbox func_8006B578 --disable all`.
+Variant files: `tmp/grind/func_8006B578/s7/reaudit_hi_s16.c`,
+`tmp/grind/func_8006B578/s7/reaudit_v02_inline_f.c`.
+
+**Result.** `reaudit_hi_s16 => score 2, target_insns 200, build_insns 200`;
+`reaudit_v02_inline_f => score 2, target_insns 200, build_insns 200`.
+**Verdict: KILLED (instance)** — measured on the s3 candidate.c chassis, ordinary C only, zero
+FAKE constructs present in either form. Both kills stand as originally banked.
+
+## H16 (s7, synthesis) — CONFIRMED: the project already implements the exact linker-script fix this residual needs, for a sibling function one cluster later
+
+**Statement.** `func_80077B30` (`src/text1b_b.c:825`), an already-COMPLETED-C function, has a
+six-case `switch (D_800A35E4)` whose compiler-generated 24-byte jump table is placed correctly
+by a dedicated `build/src/text1b_b.o(.rodata);` slot that `bb2.ld` inserts BETWEEN the two
+halves of the extracted grab-bag rodata sub-TU.
+
+**Mechanism.** The 2026-06-09 rodata-cleanup project split the `101C.rodata_text1a_b` cluster
+into `text1a_b_pre_rodata.c` and `text1a_b_post_rodata.c` precisely so the real owning C
+file's compiler-generated `.rodata` could take the hole in the middle.
+
+**Probe.** Read `bb2.ld:53-70`; read the tail of `src/text1a_b_pre_rodata.c` and head of
+`src/text1a_b_post_rodata.c`; read `src/text1b_b.c:825-870`.
+
+**Result.** `bb2.ld` lines 59/60/61 are pre_rodata / text1b_b / post_rodata in that order.
+Pre's last symbol is `jtbl_80015A24` (6 words @ 0x80015A24, ending 0x80015A3C); post's first
+is `jtbl_80015A54` (@ 0x80015A54); the 0x18 = 24-byte hole is exactly one 6-entry table — the
+one `func_80077B30`'s switch emits. **Verdict: CONFIRMED.** func_8006B578 needs the identical
+treatment at 0x80015988: split `text1a_b_pre_rodata.c` again around `jtbl_80015988`, delete
+that array (GCC re-emits it, proven byte-identical by H13), and insert a
+`build/src/text1b.o(.rodata);` line at the new boundary in `bb2.ld` (moving it from its
+current, wrong position at `bb2.ld:66`). Both edits are outside a grind session's surface
+(`*.ld` is explicitly forbidden; `src/text1a_b_pre_rodata.c` is a second file) — this is an
+INTEGRATION HANDOFF, recorded in `docs/grind/decisions.md`.
+
+## Session 7b (synthesis re-run) — H17, H18, H19
+
+### H17 — KILLED (instance). Dispatching the second switch with a computed `goto` through the EXTERN extracted table `jtbl_80015988` makes the body reference the same named symbol the reference object does, removing the need for any `bb2.ld`/second-TU change.
+- **Mechanism tested.** `extern const u32 jtbl_80015988[6];` in `src/text1b.c` plus
+  `u32 k = (u32)D_800A34F8 >> 10 & 7; if (k >= 6) goto tail; goto *(void *)jtbl_80015988[k];`
+  with the six former `case N:` labels rewritten as plain labels `cg0:`..`cg5:`. GCC 2.7.2's
+  `indirect_jump` expansion for `goto *expr` emits `sll/lui %hi/addu/lw %lo/jr`, the exact
+  five-instruction shape the target uses at 0x8006B69C-0x8006B6B0, and text1b.o would emit no
+  `.rodata` at all, so nothing downstream shifts.
+- **Probe.** Form written to
+  `tmp/grind/func_8006B578/s7/variant_a_extern_cgoto.c`, spliced into `src/text1b.c`, measured
+  with `sandbox func_8006B578 --disable all --diff`
+  (`tmp/grind/func_8006B578/s7/diff_variant_a.txt`).
+- **Result.** Score **116**, and decisively: **95 build insns vs 200 target insns**. GCC deleted
+  the five blocks `cg1:`..`cg5:` outright. They are reachable only through the computed jump, and
+  no label's address is taken anywhere in the TU, so `jump.c:185`
+  (`LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);`) seeds their use counts at zero and the
+  blocks are dropped as unreachable before any later pass sees them. 7 of the 17 remaining hunks
+  are source-level. The form is also unsound as a submission independent of the measurement: the
+  table it reads holds hardcoded original code addresses (0x8006B6B8…), which matches no entry in
+  the frozen SOTN family list and is a first reach of a hardcoded-address family — so even a
+  `&&label`-preserving repair (which would re-emit our own table anyway, defeating the purpose)
+  would need a ruling, not a submission. Banked at
+  `memory/grind/func_8006B578/rejected/extern-jtbl-computed-goto-blocks-deleted-and-hardcoded-addresses.c`.
+- **kill_scope** instance. **measured_on** candidate.c chassis (score 2, byte-identical to s3-s7),
+  ordinary C plus the one computed-goto construct; no FAKE constructs present; `src/text1b.c`
+  reverted to the `INCLUDE_ASM` stub before session end.
+
+### H18 — CONFIRMED. The 0x80015940-0x80015A3C rodata run is entirely `src/text1b.c`-owned, and the operator's split point for this function is exactly 0x80015988 (between `jtbl_80015940` and `D_800159A0`).
+Measured by resolving every entry of each rodata table in that range to its enclosing function
+(`asm/funcs/*.s` instruction-address grep) and then to that function's `INCLUDE_ASM` owner; full
+table in `evidence.md` (Session 7b). Corrects the previous session's unverified sketch on two
+points: `jtbl_80015A0C` IS text1b.c's (`func_800747D8`, `src/text1b.c:8122`), and the run starts
+at `jtbl_80015940` (`func_80065800`), one symbol before our table. `objdump -h build/src/text1b.o`
+confirms text1b.o has no `.rodata` section today, so the `bb2.ld:66` slot is free to move.
+
+### H19 — CONFIRMED. The sandbox score for this function is pinned at exactly 2 by the scorer's symbol-resolution asymmetry, not by any codegen divergence.
+`jtbl_80015988` is in none of `LD_SYM_FILES` (`engine/buildconfig.py:93`) because the rodata
+cleanup made it a C `const` rather than a splat symbol; `engine/score.py:62` leaves named-symbol
+HI16/LO16 immediates unmasked while `score.py:71`/`:140` rewrite only SECTION-relative HI16/LO16
+to `@.rodata`. The reference pair (named reloc) and ours (section reloc) therefore traverse
+different code paths and can never produce an equal token. The full-build oracle is the only
+instrument that can certify this body.
+
+## [s7] Dispatching the second switch with a computed goto through the extern extracted table jtbl_80015988 (goto *(void *)jtbl_80015988[k]) reproduces the target's dispatch pair while emitting no rodata of our own, closing the residual without any bb2.ld or second-TU change.
+- mechanism: GCC 2.7.2 indirect_jump expansion for a computed goto emits sll/lui %hi/addu/lw %lo/jr, the exact shape the target uses at 0x8006B69C-0x8006B6B0, and names the same external symbol the reference object names; text1b.o would contribute zero .rodata so no later input section shifts.
+- probe: tmp/grind/func_8006B578/s7/variant_a_extern_cgoto.c spliced into src/text1b.c in place of the INCLUDE_ASM stub; sandbox func_8006B578 --disable all --diff (tmp/grind/func_8006B578/s7/diff_variant_a.txt).
+- result: Score 116 with only 95 build insns against 200 target insns: GCC deleted the five blocks cg1:..cg5:, which are reachable only through the computed jump while no label's address is taken anywhere in the TU, so jump.c:185 seeds their LABEL_NUSES at zero and they are dropped as unreachable; 7 of the 17 surviving hunks are source-level. Independently of the measurement the form is not submittable: the table holds hardcoded original code addresses (0x8006B6B8 and following), a first reach of a hardcoded-address family that matches nothing on the frozen SOTN list, and the obvious repair (taking label addresses with &&label to set LABEL_PRESERVE_P) re-emits our own table and so defeats the entire purpose. Banked at memory/grind/func_8006B578/rejected/extern-jtbl-computed-goto-blocks-deleted-and-hardcoded-addresses.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis (sandbox score 2, byte-identical to sessions 3-7) plus the single computed-goto construct; no FAKE constructs present in either form; src/text1b.c reverted to the INCLUDE_ASM stub before session end
+
+## [s7] The rodata run 0x80015940-0x80015A3C is entirely src/text1b.c-owned, and the slot for build/src/text1b.o(.rodata) that this function needs sits at exactly 0x80015988, between jtbl_80015940 and D_800159A0.
+- mechanism: Per-symbol ownership resolution: each table entry address was resolved to its enclosing function by grepping asm/funcs/*.s for that instruction address, then to that function's INCLUDE_ASM owner in src/*.c; the object-model order text1a_b_pre_rodata -> text1b -> text1b_b -> text1a_b_post_rodata is corroborated by bb2.ld:60 already filling the 0x80015A3C-0x80015A54 hole with text1b_b.o(.rodata) for func_80077B30's table.
+- probe: Address-to-function-to-TU sweep over every src/text1a_b_pre_rodata.c rodata symbol in 0x80015900-0x80015B00 (full table in evidence.md Session 7b), plus mipsel-linux-gnu-objdump -h build/src/text1b.o.
+- result: jtbl_80015940 -> func_80065800, jtbl_80015988 -> func_8006B578, jtbl_800159B0 -> func_8006E534, jtbl_800159D0 -> func_8006ECF4, jtbl_80015A0C -> func_800747D8 (INCLUDE_ASM at src/text1b.c:8122), jtbl_80015A24 -> func_80077374 - all six owned by src/text1b.c. This corrects the previous session's unverified sketch on two points: jtbl_80015A0C is NOT outside text1b.c's range, and the run starts one symbol earlier than assumed (jtbl_80015940). objdump shows text1b.o has a single .text section and no .rodata section at all, so the bb2.ld:66 slot contributes zero bytes today and can be relocated without disturbing any other placement. Forward constraint recorded: because GCC emits switch tables in TU order, future text1b.c decompilations must land so the emitted tables stay in ascending address order, and each one moves the slot earlier and deletes another extracted table.
+- verdict: CONFIRMED
+
+## [s7] The sandbox score for func_8006B578 is pinned at exactly 2 by the scorer's named-vs-section symbol resolution asymmetry rather than by any codegen divergence in the body.
+- mechanism: jtbl_80015988 is absent from LD_SYM_FILES (engine/buildconfig.py:93) because the rodata cleanup turned it into a C const rather than a splat symbol; engine/score.py:62 leaves named-symbol HI16/LO16 immediates unmasked while score.py:71 and score.py:140 rewrite only SECTION-relative HI16/LO16 to @.rodata, so the reference object's named reloc and our section reloc traverse different code paths.
+- probe: Read engine/score.py:57-141 and 186-215 plus engine/buildconfig.py:93; grepped symbol_addrs.txt, named_syms.txt and undefined_syms_auto.txt for jtbl_80015988 (no hit); re-measured the baseline diff (tmp/grind/func_8006B578/s7/diff_baseline_s7b.txt).
+- result: Confirmed: score 2, 200/200 insns, 22 hunks all classed not-scored and all of them branch/jump target pairs differing by the constant object-vs-image delta. The two scored tokens are the dispatch pair lui/lw, which traverse the two different masking paths and can never produce an equal token. tools/fake_ablate.py reports no FAKE-annotated construct in candidate.c, so the s5/s6 instance kills were measured on a chassis byte-identical to the current one with no FAKE carrier occupying any pseudo and needed no re-measurement. The full-build oracle is the only instrument that can certify this body.
+- verdict: CONFIRMED

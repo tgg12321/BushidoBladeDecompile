@@ -1,17 +1,45 @@
-/* func_8006B578 — candidate body, session 3 (permuter modality).
- * Measured this session: sandbox --disable all score 2, 200/200 insns, 0
- * source-level hunks, 0 operand-only hunks — the ONLY remaining diff is a
- * masking asymmetry in the scorer's jump-table relocation handling (see
- * evidence.md "Session 3" + hypotheses.md H4/H5/H6 for the full derivation).
- * This is the body applied to src/text1b.c DURING this session's measurement;
- * it has been REVERTED back to the INCLUDE_ASM stub on disk per
- * asm-until-matched (not yet a byte match) — this file is the live frontier
- * for the next session.
+/* func_8006B578 — candidate body. Chassis unchanged since session 3; re-measured
+ * at sessions 4, 5, 6, 7 and 7b at sandbox --disable all score 2, 200/200 insns,
+ * 0 source-level hunks, 0 operand-only hunks, 22 not-scored hunks.
  *
- * No FAKE / cheat constructs anywhere in this body — ordinary C only
- * (a `goto` into the middle of a switch's own case bodies to reach a
- * genuinely-shared consequence, matching the target's own physical block
- * layout — see hypotheses.md H5).
+ * MIGRATION BANNER (do not misread this file as HEAD state): src/text1b.c on main
+ * carries `INCLUDE_ASM("asm/funcs", func_8006B578);` per asm-until-matched. This file
+ * is NOT on main. It is the body each session applies to src/text1b.c for the duration
+ * of its measurements and then reverts. C lands in src/ exactly once, at COMPLETED-C.
+ *
+ * WHY IT IS NOT AT ZERO, AND WHY IT NEVER CAN BE VIA THE SANDBOX (session 7, H13/H14):
+ *   - All 22 remaining diff hunks differ by ONE constant object offset (0x1A294) with no
+ *     non-address hunk: there is no branch-sense, scheduling or allocation divergence left.
+ *   - The jump table GCC synthesizes for the second switch is CONTENT-IDENTICAL to the
+ *     extracted `jtbl_80015988` array (all six entries differ by the same section-base
+ *     delta 0x80062164).
+ *   - The whole score-2 residual is the dispatch pair `lui at,%hi(..)/lw v0,%lo(..)(at)`:
+ *     the reference object (built from asm) names the EXTERNAL symbol jtbl_80015988, which
+ *     the rodata-cleanup project parked in a different TU (src/text1a_b_pre_rodata.c:409),
+ *     while ours carries a section-relative reloc against our own .rodata. engine/score.py
+ *     masks those via two code paths that can never compare equal, so the sandbox score is
+ *     pinned at 2 by construction. The FULL-BUILD ORACLE is the only instrument that can
+ *     certify this function.
+ *   - Closing it is a linker-script + second-source-file change (delete jtbl_80015988, split
+ *     text1a_b_pre_rodata.c around it, move build/src/text1b.o(.rodata) from bb2.ld:66 to the
+ *     new boundary) — the exact pattern bb2.ld:59-61 already implements for func_80077B30's
+ *     switch table. Filed as an INTEGRATION HANDOFF in docs/grind/decisions.md (2026-09-16).
+ *
+ *   - SESSION 7b VERIFIED THE SPLIT POINT (H18): the rodata run 0x80015940-0x80015A3C is
+ *     ENTIRELY src/text1b.c-owned (jtbl_80015940 -> func_80065800, jtbl_80015988 -> this
+ *     function, jtbl_800159B0 -> func_8006E534, jtbl_800159D0 -> func_8006ECF4,
+ *     jtbl_80015A0C -> func_800747D8 (src/text1b.c:8122 — the s7 sketch wrongly put it
+ *     outside text1b.c), jtbl_80015A24 -> func_80077374). build/src/text1b.o has no
+ *     .rodata section today (objdump -h), so the bb2.ld:66 slot must be inserted at
+ *     exactly 0x80015988, between jtbl_80015940 and D_800159A0, with jtbl_80015988 deleted.
+ *   - SESSION 7b ALSO KILLED the one attack that would have avoided the cross-TU change
+ *     (H17): dispatching via `goto *(void *)jtbl_80015988[k]` through the extern extracted
+ *     table drops to 95 insns because jump.c:185 deletes the five blocks reachable only
+ *     through the computed jump, and it would hardcode original code addresses regardless.
+ * No FAKE / cheat constructs anywhere in this body — ordinary C only (switches, u32 casts,
+ * real named intermediates holding real values, and forward `goto`s into the switch's own
+ * shared consequence block that mirror the target's own physical layout, see H5).
+ * tools/fake_ablate.py reports nothing to ablate.
  */
 s32 func_8006B578(s32 *arg0, s32 *arg1) {
     u32 v;

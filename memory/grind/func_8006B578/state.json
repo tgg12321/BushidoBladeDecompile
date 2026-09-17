@@ -1,8 +1,8 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "enumerate",
+ "session_count": 7,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -39,13 +39,29 @@
    "floor": 2,
    "modality": "enumerate",
    "headline": "Re-confirmed floor 2 (200/200 insns, 0 source-level/0 operand-only/22 not-scored) and ran the mandated enumerate-modality spelling sweep on the case-0 bit-toggle sub-block: measured v02 (inlined CSE) "
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Floor held at 2 (0 source-level/0 operand-only/22 not-scored); killed the extern-jtbl computed-goto attack that would have avoided the cross-TU change, and measured the rodata ownership inventory that"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Moving the jtbl_80015988 array declaration out of src/text1a_b_pre_rodata.c (or otherwise re-attributing its TU ownership) so GCC's own switch-generated jump table for func_8006B578 lands at the address the scorer can resolve will close the remaining score-2 residual to 0.",
-   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual) \u2014 a source-file re-attribution per no-new-park-categories.md, not a codegen lever confined to text1b.c; GCC's expand_end_case (stmt.c:4681, table_label = gen_label_rtx() at stmt.c:4704) always synthesizes a fresh internal label for a compiled switch's table, so no C spelling within text1b.c alone can make it reference jtbl_80015988 by name.",
-   "next_probe": "A future session needs authorization/scope to edit BOTH src/text1b.c and src/text1a_b_pre_rodata.c atomically (or a ruling-request confirming the cross-file move is in-scope for a single-function grind session), apply candidate.c to text1b.c, delete/move the jtbl_80015988 declaration in the pre-rodata file, run sandbox --disable all, and verify the score actually reaches 0."
+   "hypothesis": "Inserting build/src/text1b.o(.rodata) at exactly 0x80015988 (moved from bb2.ld:66), deleting jtbl_80015988 from src/text1a_b_pre_rodata.c and splitting that TU so D_800159A0 onward follows text1b.o, with candidate.c applied to src/text1b.c, makes the full build SHA1-match.",
+   "mechanism": "The split point and the ownership of every symbol in the run are now measured (H18); the placement pattern is the one bb2.ld:59-61 already implements for func_80077B30's table in text1b_b.o.",
+   "next_probe": "Requires atomic edits to bb2.ld plus a second src file, outside a grind session's surface. An operator or a multi-file-authorized session applies steps 1-4 of the docs/grind/decisions.md 2026-09-16 integration-handoff entry, using the verified split point from evidence.md Session 7b, and certifies with verify-oracle --rebuild rather than the sandbox score."
+  },
+  {
+   "hypothesis": "The residual is decidable in-sandbox only if the scorer can resolve jtbl_80015988; listing it in a LD_SYM_FILES file would let the sandbox read 0 and certify the body without a full build.",
+   "mechanism": "engine/score.py:62 resolves named-symbol HI16/LO16 pairs against LD_SYM_FILES addresses; jtbl_80015988 is unlisted because the rodata cleanup made it a C const (engine/buildconfig.py:93).",
+   "next_probe": "named_syms.txt is a build-pipeline file outside a grind session's surface, and adding a symbol there changes what the scorer measures rather than what the compiler emits, so it needs an operator decision or a ruling before anyone measures it. Recorded so no future session spends a pass respelling C against a pinned gradient."
+  },
+  {
+   "hypothesis": "Decompiling func_80065800 (owner of jtbl_80015940, the symbol immediately before ours) in the same pass would let both tables be emitted by text1b.o in ascending order and move the slot to 0x80015940, collapsing part of the pre/post split.",
+   "mechanism": "GCC emits switch tables in the order their switch statements appear in the TU, so table order inside text1b.o(.rodata) is fixed by function order in the file.",
+   "next_probe": "Out of scope for a single-function session; the next session handed func_80065800 or any other switch-carrying text1b.c function should re-derive the slot boundary from the evidence.md Session 7b ownership table before proposing a placement."
   }
  ],
  "judge_constraints": [],
@@ -130,6 +146,14 @@
    "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either form, reverted to the INCLUDE_ASM stub before session end",
    "predicate_cite": "",
    "result": "KILLED: score=11, build_insns=203 (+3 insns vs target's 200) \u2014 a real regression. Candidate.c's current declaration orde"
+  },
+  {
+   "session": 7,
+   "statement": "Dispatching the second switch with a computed goto through the extern extracted table jtbl_80015988 (goto *(void *)jtbl_80015988[k]) reproduces the target's dispatch pair while emitting no rodata of o",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (sandbox score 2, byte-identical to sessions 3-7) plus the single computed-goto construct; no FAKE constructs present in either form; src/text1b.c reverted to the INCLUDE_ASM stub ",
+   "predicate_cite": "",
+   "result": "Score 116 with only 95 build insns against 200 target insns: GCC deleted the five blocks cg1:..cg5:, which are reachable"
   }
  ],
  "ladder_skip": 0,
