@@ -387,3 +387,149 @@ C only, no FAKE/cheat constructs present or proposed.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: func_8006B578, src/text1b.c (candidate.c reapplied then reverted to the INCLUDE_ASM stub before session end, per asm-until-matched), ordinary C only, no FAKE/cheat constructs present or proposed
+
+## H9 — KILLED (class, s5/structural modality): NO C spelling of the switch in src/text1b.c can ever close the H7 residual, because GCC's jump-table label is ALWAYS a fresh compiler-generated internal symbol, never a reference to an externally-declared name
+Statement: re-applied candidate.c to src/text1b.c this session and re-measured
+before doing anything else — reproduced score 2 exactly (200/200 insns), no
+drift from s3/s4. `sandbox --disable all --diff` (re-run fresh this session,
+not read from a cached s4 result) confirms the same shape: 22 hunks, 0
+source-level, 0 operand-only, 22 not-scored. This session's addition is a
+GCC-SOURCE mechanism citation that upgrades H7/H8's finding from an
+empirically-observed instance result to a provable CLASS result: read
+`tools/gcc-2.7.2/stmt.c:4704` (`expand_end_case`, the switch-statement
+lowering routine) — `table_label = gen_label_rtx();` is called
+UNCONDITIONALLY for every switch reaching this code path, with no branch or
+parameter that could make it bind to a pre-existing or externally-declared
+symbol name instead. `gen_label_rtx()` (see its definition in the same
+GCC source tree) always allocates a fresh, function-scoped internal label
+(the eventual `.L<N>` in the assembler output); the label — and therefore
+the jump table's data, emitted later via `ASM_OUTPUT_ADDR_VEC` at that same
+label — can only ever be placed in the CURRENTLY-COMPILING translation
+unit's own object output. There is no C source text (no declaration, no
+attribute, no pragma available in this GCC fork) that can redirect
+`expand_end_case`'s jump-table label to bind to `jtbl_80015988` (a symbol
+whose address is fixed by `src/text1a_b_pre_rodata.c`, a DIFFERENT TU).
+Therefore: for as long as func_8006B578's switch is compiled from
+src/text1b.c, no rewrite of that switch (if-chain conversion, case
+reordering, dense-vs-sparse restructuring, splitting into nested switches,
+etc.) can make our build's jump-table reference resolve to the same
+scorer-visible form as the target's (which references the external
+`jtbl_80015988` by name, per H7). The residual is provably NOT reachable by
+any C spelling confined to this file; it requires the cross-TU
+re-attribution already on the frontier (moving/declaring `jtbl_80015988`'s
+backing storage such that GCC's own synthesized table lands there, i.e.
+splitting `src/text1a_b_pre_rodata.c` around this jtbl the way
+`replay_camera_rob_back_loose2` was resolved in 2026-06-09 — see
+[[jtbl-rodata-split-infrastructure]]).
+Mechanism: GCC 2.7.2's `expand_end_case` (stmt.c) switch-lowering — the
+jump-table label allocation is compiler-internal and unconditional, not a
+C-source-controllable choice.
+Probe: `sandbox func_8006B578 --disable all` (score 2, reproduced, no drift)
++ `sandbox --disable all --diff` (fresh this session: 22 hunks, 0
+source-level, 0 operand-only, 22 not-scored — identical class breakdown to
+s4); direct read of `tools/gcc-2.7.2/stmt.c` lines 4685-4714 confirming
+`table_label = gen_label_rtx();` at line 4704 has no conditional path to an
+external symbol.
+Result: KILLED (class) — no C spelling confined to src/text1b.c can close
+this residual; the fix is definitively the cross-TU re-attribution on the
+frontier, not further in-file search. This does not change the frontier
+(H7 already named the correct fix); it forecloses any FUTURE structural or
+permuter session from re-deriving "maybe a different switch shape helps"
+from scratch.
+kill_scope: class
+measured_on: func_8006B578, src/text1b.c, ordinary C only (candidate.c
+reapplied then reverted to the INCLUDE_ASM stub before session end, per
+asm-until-matched), no FAKE/cheat constructs present or proposed.
+predicate_cite: tools/gcc-2.7.2/stmt.c:4704
+
+## H9 (s5, structural) — KILLED (instance): local declaration-order reversal is score-neutral
+Statement: reversing the order of the four block-local declarations in
+func_8006B578 (`s32 var_s2=0; s32 hi; s32 ret; s32 sp10; u32 v;` instead of the
+candidate's `u32 v; s32 sp10; s32 ret; s32 hi; s32 var_s2=0;`) produces IDENTICAL
+codegen: sandbox --disable all reports score 2, 200/200 insns, unchanged from the
+baseline candidate measured earlier this session.
+Mechanism: none identified — GCC 2.7.2's `local-alloc`/`global` pass allocation
+for this function is apparently insensitive to source declaration order for
+these four locals (no LUID-adjacency effect manifested here).
+Probe: candidate.c applied to src/text1b.c, `sandbox func_8006B578 --disable all`
+before (score 2) and after the reorder (score 2, 200/200 insns both times).
+Result: KILLED (instance) — declaration-order reversal measured score 2 -> 2 (no
+change), same insn count 200/200, on this exact chassis.
+kill_scope: instance
+measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat
+constructs present in either form, candidate.c reapplied then reverted to the
+INCLUDE_ASM stub before session end per asm-until-matched.
+
+## H10 (s5, structural) — KILLED (instance): narrowing `hi` from s32 to s16 is score-neutral
+Statement: declaring the switch-dispatch temporary `hi` (holds `ret >> 16`,
+range-limited to a 16-bit value by construction) as `s16` instead of `s32`
+produces IDENTICAL codegen to the s32 form.
+Mechanism: none identified — the value is already effectively narrow at the use
+site (`switch(hi)` with case labels 1/2 only), so GCC's constant/type folding
+apparently treats the s16 and s32 forms as equivalent for this expression.
+Probe: `sandbox func_8006B578 --disable all` after retyping `hi` to s16 (with
+the declaration-order-reversed chassis from H9 as the base) → score 2, 200/200
+insns, identical to both the s32 baseline and the H9 reorder.
+Result: KILLED (instance) — s16 vs s32 typing of `hi` measured score 2 -> 2 (no
+change), same insn count 200/200, on this exact chassis.
+kill_scope: instance
+measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat
+constructs present in either form, reverted to the INCLUDE_ASM stub before
+session end per asm-until-matched.
+
+## H11 (s5, structural) — KILLED (instance): splitting the packed-halfword-swap
+statement into two statements REGRESSES the score
+Statement: rewriting `sp10 = (v & 0xFFFF) | (v >> 16);` as the two-statement
+form `sp10 = v >> 16; sp10 |= v & 0xFFFF;` (statement re-association / split
+init-then-accumulate, structurally analogous to the sanctioned
+split-init-accumulation pattern) makes the build WORSE: score 2 -> 4, still
+200/200 insns (so the two extra weighted-score points come from a
+register/operand-level divergence the single-statement form does not have,
+consistent with GCC choosing a different intermediate register/ordering for
+the split computation).
+Mechanism: none identified beyond "the compound `(a) | (b)` single-expression
+form gives GCC's expression folder/scheduler a different (better-matching)
+allocation than the pre-split two-statement form for this specific pack
+operation" — not investigated further this session (declared dead on the
+numeric regression alone; re-deriving the exact RTL mechanism is not needed to
+kill this specific spelling).
+Probe: `sandbox func_8006B578 --disable all` before (score 2) and after the
+split (score 4, 200/200 insns), then reverted back to the single-statement
+form and re-measured (score 2 again, confirming the split was the sole cause).
+Result: KILLED (instance) — the split form measured strictly worse (2 -> 4);
+the single-statement compound-OR form remains the closing spelling for this
+line.
+kill_scope: instance
+measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat
+constructs present in either form, reverted to the INCLUDE_ASM stub before
+session end per asm-until-matched.
+
+## Live frontier (s5 update — unchanged from s3/s4)
+The jtbl_80015988 cross-TU re-attribution (see H7/H8 above) remains the sole
+live frontier item; this session's three structural probes (decl-order,
+type-narrowing, statement-split) confirm the residual is NOT reachable through
+in-file structural levers, reinforcing (not superseding) H8's class kill.
+
+## [s5] Reversing the declaration order of func_8006B578's four block locals (var_s2, hi, ret, sp10, v vs the candidate's v, sp10, ret, hi, var_s2) is score-neutral.
+- mechanism: none identified — GCC 2.7.2 local-alloc/global allocation for this function is insensitive to source declaration order for these locals
+- probe: sandbox func_8006B578 --disable all before and after reordering the declarations in the applied candidate.c body
+- result: score 2 -> 2, 200/200 insns unchanged, both measured this session
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, candidate.c reapplied then reverted to INCLUDE_ASM stub before session end
+
+## [s5] Narrowing the switch-dispatch temporary `hi` (holds ret>>16) from s32 to s16 is score-neutral.
+- mechanism: none identified — the value is already effectively narrow at its only use site (switch(hi) with case labels 1/2)
+- probe: sandbox func_8006B578 --disable all after retyping hi to s16 on the H9 (decl-order-reversed) chassis
+- result: score 2 -> 2, 200/200 insns unchanged from both the s32 baseline and the H9 reorder, measured this session
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, reverted to INCLUDE_ASM stub before session end
+
+## [s5] Splitting `sp10 = (v & 0xFFFF) | (v >> 16);` into `sp10 = v >> 16; sp10 |= v & 0xFFFF;` regresses the score.
+- mechanism: none identified — the compound single-expression OR form gives GCC a different (better-matching) allocation/ordering than the split two-statement form for this pack operation
+- probe: sandbox func_8006B578 --disable all before (score 2), after the split (score 4, same 200/200 insns), then reverted and re-measured (score 2 again, confirming causality)
+- result: score 2 -> 4 with the split (regression), 2 again after reverting; 200/200 insns throughout, all measured this session
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, reverted to INCLUDE_ASM stub before session end

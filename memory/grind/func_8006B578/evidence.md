@@ -299,3 +299,11 @@ flag checks calling `func_8005C650`):
 - [s4] jtbl_80015988 (const u32[6], the case-label address table) is declared and defined in src/text1a_b_pre_rodata.c:409-416, a different TU than func_8006B578's home src/text1b.c; nm confirms build/src/text1a_b_pre_rodata.o defines it while build/src/text1b.o references it as an undefined external — this cross-TU split is the entire remaining residual (H7, session 3), unchanged this session.
 
 - [s4] src/text1b.c reverted to its pre-session INCLUDE_ASM stub before session end; git status --short shows only memory/grind/func_8006B578/{evidence,hypotheses}.md changed by this session (plus the pre-existing metrics/events.jsonl churn) — no C landed on main.
+
+- [s5] Re-applied memory/grind/func_8006B578/candidate.c to src/text1b.c at session start (chassis was INCLUDE_ASM stub, per the ledger's STALE HEAD CLAIMS warning) and re-measured: sandbox --disable all --diff reproduces score 2, 200/200 insns, 22/22 hunks not-scored, 0 source-level, 0 operand-only — identical class breakdown to s3/s4.
+
+- [s5] All 22 not-scored hunks are branch/jump target address mismatches (e.g. target 'beq v1,v0,23718' vs ours 'beq v1,v0,9484') — consistent with the banked H7/H8 finding that the residual is the cross-TU jtbl_80015988 address-resolution artifact, not a codegen difference.
+
+- [s5] Three structural levers tried this session (declaration order, type narrowing, statement re-association) produced either no change or a measured regression, corroborating H8's class kill that no in-file C structure change can reach the jtbl_80015988 residual.
+
+- [s5] src/text1b.c was left byte-identical to its pre-session state (verified via git diff --stat showing 0 changes) after reverting the candidate application back to the INCLUDE_ASM stub.

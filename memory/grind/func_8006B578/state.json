@@ -1,8 +1,8 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -27,13 +27,19 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Permuter modality confirmed 0 source-level/operand-only hunks remain (H8 killed: no mutation surface exists); re-verified H7's cross-TU jtbl_80015988 scorer artifact as the sole residual, floor unchan"
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural modality (s5): re-confirmed floor 2 (200/200 insns, 0 source-level/0 operand-only/22 not-scored) and killed 3 structural variants (decl-order reversal, s16 narrowing of hi, statement-split "
   }
  ],
  "frontier": [
   {
    "hypothesis": "Moving the jtbl_80015988 array declaration out of src/text1a_b_pre_rodata.c (or otherwise re-attributing its TU ownership) so GCC's own switch-generated jump table for func_8006B578 lands at the address the scorer can resolve will close the remaining score-2 residual to 0.",
-   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual); fix is an evidence-based source-file re-attribution per no-new-park-categories.md, not a codegen lever, and is NOT reachable via a named_syms.txt-only addition (see this session's evidence).",
-   "next_probe": "A future session needs authorization/scope to edit BOTH src/text1b.c and src/text1a_b_pre_rodata.c atomically (or a ruling-request confirming the cross-file move is in-scope for a single-function grind session), apply candidate.c to text1b.c, delete/move the jtbl_80015988 declaration in the pre-rodata file, run sandbox --disable all, and verify the score actually reaches 0 (not merely masks-equal) \u2014 this session did NOT attempt the edit, only re-confirmed via read-only inspection + engine/score.py source reading that a single-file (text1b.c-only) fix does not exist for this residual."
+   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual) \u2014 a source-file re-attribution per no-new-park-categories.md, not a codegen lever, and confirmed (H8, class kill) not reachable via any switch rewrite confined to text1b.c",
+   "next_probe": "A future session needs authorization/scope to edit BOTH src/text1b.c and src/text1a_b_pre_rodata.c atomically (or a ruling-request confirming the cross-file move is in-scope for a single-function grind session), apply candidate.c to text1b.c, delete/move the jtbl_80015988 declaration in the pre-rodata file, run sandbox --disable all, and verify the score actually reaches 0."
   }
  ],
  "judge_constraints": [],
@@ -78,6 +84,30 @@
    "measured_on": "func_8006B578, src/text1b.c (candidate.c reapplied then reverted to the INCLUDE_ASM stub before session end, per asm-until-matched), ordinary C only, no FAKE/cheat constructs present or proposed",
    "predicate_cite": "",
    "result": "KILLED \u2014 confirmed no permuter (or any in-file C mutation) target exists; the residual is entirely the H7 cross-TU jtbl-"
+  },
+  {
+   "session": 5,
+   "statement": "Reversing the declaration order of func_8006B578's four block locals (var_s2, hi, ret, sp10, v vs the candidate's v, sp10, ret, hi, var_s2) is score-neutral.",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, candidate.c reapplied then reverted to INCLUDE_ASM stub before session end",
+   "predicate_cite": "",
+   "result": "score 2 -> 2, 200/200 insns unchanged, both measured this session"
+  },
+  {
+   "session": 5,
+   "statement": "Narrowing the switch-dispatch temporary `hi` (holds ret>>16) from s32 to s16 is score-neutral.",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, reverted to INCLUDE_ASM stub before session end",
+   "predicate_cite": "",
+   "result": "score 2 -> 2, 200/200 insns unchanged from both the s32 baseline and the H9 reorder, measured this session"
+  },
+  {
+   "session": 5,
+   "statement": "Splitting `sp10 = (v & 0xFFFF) | (v >> 16);` into `sp10 = v >> 16; sp10 |= v & 0xFFFF;` regresses the score.",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, reverted to INCLUDE_ASM stub before session end",
+   "predicate_cite": "",
+   "result": "score 2 -> 4 with the split (regression), 2 again after reverting; 200/200 insns throughout, all measured this session"
   }
  ],
  "ladder_skip": 0,
