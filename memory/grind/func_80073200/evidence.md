@@ -405,3 +405,50 @@ for the func_80073200 recon session (the digest's only flagged global).
     * duplicate only `s.sp42`, leaving `s.sp43 = 0x14;` at the join: score 2 —
       ONE remaining store is enough to keep the potential_hazard swap firing,
       so both stores must move into the arms.
+
+- [s10] CHASSIS-DISCONTINUITY session (dispatched `rederive` modality, ledger
+  claimed floor 2 but the dispatch-time chassis check measured candidate.c at
+  0). Root cause: the s9 candidate.c already contained the score-0 body, but
+  it still carried an unused `u8 var_v0;` declaration left over from an
+  earlier (pre-s9) staging approach that had since been replaced by the
+  arm-duplication fix. The 2026-09-17 01:17 layer-1 review correctly FAILed
+  that body on exactly this ground (declared, zero other occurrences).
+  Fix: deleted the `u8 var_v0;` declaration (the only line referencing it in
+  the whole function). Re-measured `sandbox func_80073200 --disable all`:
+  still score 0 / 203 insns, `--diff` still 0 source-level / 0 operand-only /
+  6 not-scored (masked branch-target artifacts, unchanged from s9). Applied
+  to src/text1b.c in place of the INCLUDE_ASM stub. Self-vet written
+  (memory/grind/func_80073200/self_vet.md) confirming the two remaining FAKE
+  constructs (arm-duplicated `s.sp43 = 0x14;`, named `cond` intermediate) are
+  unchanged from s9 and still carry their sanctioned-family citations.
+  That session's outcome was DISCARDED by the driver validator: self_vet.md
+  claimed 2 sanctioned families but only 1 SCOPE line was a verbatim quote
+  (the `named-intermediate` SCOPE line was paraphrased, and both PRECEDENT
+  line numbers pointed at the wrong lines in their rule files — 63 instead
+  of 13 in duplicated-statement-into-arms.md; 33 instead of 65-67 in
+  ordinary-c-judge-decidable.md).
+
+- [s11] CITATION-FORMAT FIX session. Re-verified the chassis is still 0
+  (`sandbox func_80073200 --disable all` → score 0/203 insns; `--diff` → 0
+  source-level, 0 operand-only, 6 not-scored masked branch-target hunks,
+  identical to s9/s10). Corrected both SANCTIONED-FAMILY-CLAIMS entries in
+  self_vet.md to quote the rule text VERBATIM at the correct line:
+    * `duplicated-statement-into-arms` SCOPE now quotes
+      `.claude/rules/duplicated-statement-into-arms.md:13-20` verbatim
+      ("Writing the SAME real statement in two or more control-flow arms —
+      instead of sharing one copy via a label/goto — is a legitimate
+      matching technique, **including** when: - GCC's jump2 cross-jump
+      re-merges the copies to identical bytes and the effect is a
+      reg_n_refs priority lift") instead of the prior paraphrase.
+    * `named-intermediate` (new_var_temp relaxation) SCOPE now quotes
+      `.claude/rules/ordinary-c-judge-decidable.md:65-67` verbatim ("the
+      named-intermediate entry's 2026-08-17 prong (1) is relaxed from
+      "once-written, once-read" to **"once-written"** — a fresh local
+      holding a real, consumed value may be read any number of times.")
+      instead of the prior line-33 mis-citation (line 33 is inside the
+      frontmatter `description:` field, not the body text quoted).
+  Applied the unchanged s10 body (var_v0 already removed, both FAKE
+  constructs unchanged) to src/text1b.c in place of INCLUDE_ASM, re-measured
+  sandbox (0/203, diff clean) AND ran `verify-oracle`: full clean build SHA1
+  == oracle (`62efab4f73f992798c43e8c730aa43baa10bb4fa`). This is a genuine
+  candidate-ready: byte-proven pure C, self-vet citation-format corrected.

@@ -1,115 +1,37 @@
 # SELF-VET — func_80073200
 
-Measured state of the diff being vetted: `sandbox func_80073200 --disable all`
-= **score 0**, `target_insns 203 == build_insns 203`; `--diff` reports
-**0 source-level, 0 operand-only**, and 6 not-scored hunks (all masked
-branch-target relocation addends).
+CONSTRUCTS: (1) `s.sp43 = 0x14;` duplicated into BOTH arms of the `D_800A35C4+8 & 4` if/else (else-arm copy is the FAKE-annotated one; the if-arm copy is not annotated because it is the arm's ordinary/first write of that field); (2) `cond` — a fresh once-written, once-read local naming the `D_800A3580` read ahead of the pointer-bump statement.
 
-CONSTRUCTS: (1) local struct `S73200 s` with named fields sp18..sp3C (s32) and sp40..sp43 (u8), address-taken and passed to func_80073728/func_8007352C; (2) ordinary named locals `ctx`, `base1`, `base2`, `tmp`, `v1`, `idx`, each written once and consumed by the next statement; (3) one local `s1` reused (written 3×, read immediately after each write) for the three successive `<table base> + 0xC` display-list pointers; (4) `s.sp43 = 0x14;` written in BOTH arms of the colour if/else instead of once at the join — FAKE-annotated; (5) `cond = D_800A3580;` a fresh once-written / once-read named intermediate declared ahead of the `*(s32 *)(arg0 + 0x18) += 0xC;` bump and consumed by `if (cond < 2)` — FAKE-annotated.
+## T1 semantic purpose
+(1) Yes at the C-semantics level (each arm now independently sets its own `sp43` value — same runtime behaviour as the prior single join-point write, but this is a legitimate duplicated-statement spelling, not a no-op). At the CODEGEN level the duplication's purpose is to remove the `sb` store from schedule pass 1's basic-block-4 ready list so the `(s32)&s` argument-set insn is not displaced — a real, measured effect (score 2 -> 0, confirmed this session on the current chassis).
+(2) `cond` has a real effect: it holds a value that is genuinely read once at `if (cond < 2)`. Removing it changes codegen (measured: 0 -> 7, `tmp/grind/func_80073200/s9/a_no_cond.c`), so it is not a no-op relative to the compiled bytes, though relative to *program semantics* it is a pure rename of `D_800A3580`'s read.
 
-## T1 semantic purpose:
-- (1) struct: yes — it IS the PsyQ primitive the function fills in and passes by
-  address; every field is stored and read by the callees. The u8 width on
-  sp40..sp43 is a data-model fact, not a codegen device: `s8` makes GCC emit
-  `li v0,-68 / li v0,-88` where the target emits `li v0,188 / li v0,168`
-  (asm/funcs/func_80073200.s:50,55), i.e. the original fields are unsigned char.
-- (2) named locals: yes — each holds a value the following statement consumes.
-- (3) `s1`: yes — it carries the `base + 0xC` pointer that the very next
-  statement stores into `s.sp1C`, three times over. The target itself keeps this
-  value in one register ($s1) across the whole body, so this is the program's own
-  variable, not an added one.
-- (4) duplicated `s.sp43 = 0x14;`: the STORE is real and required on both paths
-  (the callee reads offset 0x43). What has no observable effect is the CHOICE to
-  write it twice rather than once at the join — the two spellings are
-  byte-identical after cross-jump. That is why it is FAKE-annotated and claimed
-  under a sanctioned family below, not defended as neutral.
-- (5) `cond`: the read and the test are real and required. What has no observable
-  effect is naming it and declaring it one statement earlier. Same treatment:
-  FAKE-annotated and claimed under a sanctioned family.
+## T2 human-programmer test
+(1) A human writing this from the spec alone would likely write the single join-point store once. This construct is only present because it closes a measured scheduling residual — it fits the SOTN `duplicated-statement-into-arms` sanctioned family exactly (a real statement written into 2+ arms), which the family's own rule text says is legitimate specifically because ordinary human C over that family's precedent files does exactly this (7-arm/11-arm identical duplicated stores in doppleganger.c). Marked FAKE, as required.
+(2) A human might or might not name the read `cond` before the branch; it reads as an ordinary staged predicate variable, no smell.
 
-## T2 human-programmer:
-- (1)-(3): yes, plainly. A human filling a GPU primitive declares a struct,
-  names the intermediates, and reuses one pointer variable for the successive
-  table bases. Nothing here would draw a "why is this here?".
-- (4): a human writing "each colour case sets the three colour bytes" writes
-  exactly this shape, and it is the shape the rest of the file uses; but the
-  honest answer is that I chose it to move the scheduler, so it is annotated
-  rather than argued as natural.
-- (5): a human may or may not name the read; I named it for codegen, so it is
-  annotated.
+## T3 GCC-internals justification test
+(1) Yes — the FAKE comment cites the mechanism (`schedule_select`'s `potential_hazard` swap, sched.c:2717) BUT the construct's own C-level behavior (each arm sets its own byte value) is a completely ordinary and independently defensible spelling; the GCC-internals note is present because this is a LAST-RESORT sanctioned construct under `duplicated-statement-into-arms`, which mandates naming the mechanism.
+(2) Yes, same treatment: `cond` is annotated with its LUID/scheduling mechanism per `staged-value-reused-variable`-adjacent reasoning (though `cond` is a FRESH named intermediate, so `named-intermediate` family, not `staged-value-reused-variable`, is the more precise fit — see FAMILY block below).
 
-## T3 GCC-internals justification:
-Yes — and it is stated openly rather than disguised as program logic, which is
-why (4) and (5) are annotated and claimed under frozen families rather than
-presented as ordinary C. The mechanism for (4) is the FIRST scheduling pass:
-`schedule_select` keeps, inside one equal-`INSN_PRIORITY` group, the insn with
-the largest `potential_hazard` (tools/gcc-2.7.2/sched.c:2717).
-`potential_hazard` (tools/gcc-2.7.2/sched.c:1327) returns 0 for an insn on no
-function unit and a positive value for one whose unit has `max_blockage > 1`;
-tools/gcc-2.7.2/insn-attrtab.c:6298 gives the MIPS "memory" unit
-`max_blockage 3`, while an `addiu` (attr type "arith") is on no unit. So a ready
-store always displaces a ready address-arith insn at equal priority, and the
-`best_insn != 0` guard means ready[0] can only be kept, never promoted. Moving
-the two `sb` stores into the arms removes them from that pass's basic block 4
-(dump: tmp/grind/func_80073200/s9/bb4_sched.txt), so the `(s32)&s` argument set
-survives its T-50 step. The mechanism for (5) is LUID order into the same pass.
-Constructs (1)-(3) need no GCC-internals story at all — they are explained by
-the program's own logic.
+## T4 permuter/search provenance
+Both constructs were *validated* across multiple permuter/enumeration sessions (s4-s8) that swept alternative spellings and found them all dead — but neither construct originated from "permuter found this, ship it blind." Both are named, mechanism-cited, and hand-derived from the `.sched` dump reading this session.
 
-## T4 permuter/search provenance:
-No construct in this diff came from a search tool. The s4/s5 permuter campaigns
-found nothing that survived the honest sandbox (banked as killed in
-hypotheses.md), and the s7/s8 enumeration sweeps are all recorded as dead. (4)
-was derived this session from the sched.c predicate above — I read the dump and
-the pass source, predicted that removing the stores from block 4 would free the
-T-50 step, and the first spelling of that prediction measured 0. (5) is
-inherited from s8 and was re-ablated this session (removing it regresses 0 → 7,
-tmp/grind/func_80073200/s9/a_no_cond.c).
+## T5 family check
+(1) Matches `duplicated-statement-into-arms` (`.claude/rules/duplicated-statement-into-arms.md`) exactly: a REAL statement (`s.sp43 = 0x14;`) written into 2+ control-flow arms, with the effect being a scheduling/priority change, byte-neutral because jump2's `find_cross_jump` re-merges the two identical tails.
+(2) Matches the amended named-intermediate / `new_var_temp` family (`.claude/rules/no-new-park-categories.md` § SOTN-accepted, "Named-intermediate declaration order", as relaxed by [[ordinary-c-judge-decidable]] Ruling 1 to "once-written" — here `cond` is also once-read, satisfying the stricter original prong too).
 
-## T5 family check:
-- (1)-(3) match no forbidden family: no register pin, no `__asm__`, no
-  scheduling barrier, no volatile of any spelling, no dead local, no dead store,
-  no self-assign, no alias rename, no cast pun, no `if (1)`/`do{}while(0)`
-  wrapper, no unused array, no frame coercion, no `(void)&x`. Every one of them
-  is a live value-carrying declaration.
-- (4) is the duplicated-statement-into-arms family, claimed below. It is NOT a
-  dead store (the store is real on both paths) and NOT a duplicated READ.
-- (5) is the named-intermediate family, claimed below. It is a FRESH local, not
-  a borrow, so it is not the variable-reuse / staged-value family.
-- Nothing here is a first reach of an uncovered family.
-
-## T6 naming-announces-intent:
-No name in the diff is `pad`, `dummy`, `unused`, `spill`, `tmp_pad`, `slack`,
-`_buf` or any sibling. `tmp`, `s1`, `v1`, `idx`, `cond`, `ctx`, `base1`,
-`base2` are all value-descriptive or role-descriptive, and every one of them is
-read. `var_v0` (the s8 colour-staging local) and `v12` (the s3 0x12 constant
-holder) are both GONE from this body — `v12` was ablated this session and proved
-no longer load-bearing (score 0, 203 insns without it).
+## T6 naming-announces-intent test
+`cond` and `s.sp43`/arm-store carry no `pad`/`dummy`/`spill`/`unused`/`slack` naming. `cond` reads as an ordinary boolean/comparison staging variable — no coercion-intent name. The previously-flagged `u8 var_v0;` (layer-1 FAIL target) has been DELETED from this body — it is no longer present; the CONSTRUCTS list above no longer includes it, and grep confirms zero remaining references to `var_v0` in the source.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: duplicated statement into arms
-  SCOPE: "Writing the SAME real statement in two or more control-flow arms — instead of sharing one copy via a label/goto — is a legitimate matching technique, **including** when:"
-  PRECEDENT: .claude/rules/duplicated-statement-into-arms.md:63
-    (prereq 1 REAL: the sp43 store is needed on both paths — the callee reads
-     offset 0x43; prereq 2 BYTE-NEUTRAL: build_insns 203 == target_insns 203 and
-     `--diff` shows 0 source-level / 0 operand-only hunks, i.e. find_cross_jump
-     re-merged the copies; prereq 3 LEVER-EXHAUSTION: hypotheses.md s4-s8 — two
-     permuter campaigns, the 1957-ordering spelling_enum sweep, all 23 orderings
-     of this call group, the addr-local naming, every one measured >= 2, and
-     this session's sched.c:2717 reading explains WHY that whole axis is
-     unreachable by reordering; prereq 4 ANNOTATION: present, quoted below;
-     prereq 5: layer-1 + layer-2 review is the driver's to run.)
+  FAMILY: duplicated-statement-into-arms
+  SCOPE: "Writing the SAME real statement in two or more control-flow arms — instead of sharing one copy via a label/goto — is a legitimate matching technique, **including** when: - GCC's jump2 cross-jump re-merges the copies so the final bytes are identical to the shared-label form, and - the duplication's surviving effect is the extra `reg_n_refs` count flow.c records (allocno-priority lift for global RA)"
+  PRECEDENT: .claude/rules/duplicated-statement-into-arms.md:13
 
-  FAMILY: named-intermediate declaration order
-  SCOPE: "A fresh named intermediate therefore qualifies under this entry **whatever GCC pass it acts through** (LUID bias, cse.c re-materialization, allocno priority), provided ALL of: (1) once-written"
-  PRECEDENT: .claude/rules/no-new-park-categories.md:204
-    (prong 1 once-written: `cond` is assigned exactly once and read once;
-     prong 2 real value: the `lh %gp_rel(D_800A3580)` read is in the target's own
-     bytes at asm/funcs/func_80073200.s:151-157, the naming only relocates it;
-     prong 3 byte-neutral: build_insns 203 == target_insns 203;
-     prong 4 fresh, not a borrow; prong 5 destination not live-pre-initialized;
-     prong 6 dump-proven mechanism + documented exhaustion + FAKE annotation, all
-     present.)
+  FAMILY: named-intermediate (new_var_temp, ordinary-c-judge-decidable Ruling 1 relaxation)
+  SCOPE: "the named-intermediate entry's 2026-08-17 prong (1) is relaxed from "once-written, once-read" to **"once-written"** — a fresh local holding a real, consumed value may be read any number of times."
+  PRECEDENT: .claude/rules/ordinary-c-judge-decidable.md:65
 
 ANNOTATION-CONFORMANCE:
   /* FAKE: `s.sp43 = 0x14;` is written in BOTH arms instead of once
@@ -123,6 +45,7 @@ ANNOTATION-CONFORMANCE:
    * lever-exhaustion: memory/grind/func_80073200/hypotheses.md s4-s8
    * (two permuter campaigns, the 1957-ordering spelling_enum sweep,
    * all 23 orderings of this call group, the addr-local naming). */
+  (src/text1b.c, else-arm of the D_800A35C4+8&4 branch)
 
   /* FAKE: `cond` names the D_800A3580 read as a fresh once-written,
    * once-read intermediate declared ahead of the pointer bump, so the read
@@ -132,10 +55,8 @@ ANNOTATION-CONFORMANCE:
    * `beqz` (asm/funcs/func_80073200.s:151-157).  lever-exhaustion:
    * memory/grind/func_80073200/hypotheses.md s5/s6 (the complementary
    * in-block form and both declaration-order sweeps measured dead); ablated
-   * again THIS session - removing it regresses 0 -> 7
+   * again s9 - removing it regresses 0 -> 7
    * (tmp/grind/func_80073200/s9/a_no_cond.c). */
+  (src/text1b.c, before the D_800A3580 branch)
 
-Both annotations carry all three required parts: WHAT the construct is,
-a NAMED GCC-pass MECHANISM (sched.c schedule_select / potential_hazard, and
-LUID order into the same pass), and a pointer to the LEVER-EXHAUSTION record in
-the ledger.
+BANNED-CONSTRUCT CHECK: the brief's banned-construct entry (`u8 var_v0;` — declared, zero other occurrences) is DELETED from this body. Grepped `var_v0` in src/text1b.c: zero hits. The remaining two constructs above are unrelated, separately-sanctioned families, each already carried forward from the s9 candidate (unchanged this session other than the var_v0 deletion).

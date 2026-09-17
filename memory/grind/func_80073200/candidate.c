@@ -75,7 +75,6 @@ void func_80073200(s32 arg0) {
     s32 tmp;
     s32 v1;
     s32 idx;
-    u8 var_v0;
     s32 cond;
 
     s.sp30 = 0;

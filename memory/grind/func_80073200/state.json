@@ -237,6 +237,13 @@
    "hash": "abc7fdbffe091e9a",
    "when": "2026-09-17T06:17:55.173291+00:00",
    "summary": "Body carries an unused `u8 var_v0;` local \u2014 declared, never written, never read \u2014 un-annotated, unclaimed, and affirmatively denied by the self-vet's T6 answer; the two FAKE constructs themselves check out."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "48c50aeaaf71977a",
+   "when": "2026-09-17T06:35:21.234721+00:00",
+   "summary": "final call: Two FAKE constructs, both inside frozen families with prerequisites met. (1) `s.sp43 = 0x14;` duplicated into both inner arms = duplicated-statement-into-arms (.claude/rules/duplicated-statement-into-"
   }
  ]
 }
