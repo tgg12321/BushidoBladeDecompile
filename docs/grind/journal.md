@@ -2220,3 +2220,4 @@
 - 2026-09-16 18:36 _SsVmInit: LAYER-1 FAILED a sandbox-0 candidate — The first clear loop opts out of the TU's canonical `extern s16 D_80102A78[]` declaration and respells the same element access as an undisclosed byte-offset pointer pun, and the 21-line per-voice pun block's only rule-based justification inverts the 2026-09-03 prong-(c) amendment it cites.
 - 2026-09-16 18:51 model-fallback session claude-fable-5-1[1m]->claude-opus-5[1m] until 19:21
 - 2026-09-16 18:54 _SsVmInit COMPLETED-C after 8 sessions (closer: s8 [synthesis]).
+- 2026-09-16 19:05 func_8006B578 s1 [recon] floor=34: recon: wrote real 2-param C body from stale 4-param placeholder; 200 -> 34 (199/200 insns), 7 source-level hunks remain

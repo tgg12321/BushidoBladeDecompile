@@ -1,0 +1,48 @@
+{
+ "func": "func_8006B578",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 34,
+   "modality": "recon",
+   "headline": "recon: wrote real 2-param C body from stale 4-param placeholder; 200 -> 34 (199/200 insns), 7 source-level hunks remain"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The remaining case-2 -> shared-post-switch-block transition diff is a cross-jump/tail-merge shape (cases 0/1/2 vs the shared block, and/or case 3's early exit) rather than a simple statement-order issue.",
+   "mechanism": "GCC jump2 find_cross_jump / reorg.c delay-slot fill differences around the switch-case-to-shared-code boundary",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_8006B578` and read the .sched/.combine dump for this region BEFORE proposing any further C restructuring -- PASS ATTRIBUTION step was not done this session (turn budget); do not re-guess blindly next session."
+  },
+  {
+   "hypothesis": "We are 1 instruction UNDER target (199 vs 200) -- likely a delay-slot nop target keeps and our structure currently elides, not missing logic.",
+   "mechanism": "reorg.c delay-slot filling differences",
+   "next_probe": "Compare insn-for-insn around the last --diff hunk 16/17 region (already captured verbatim in evidence.md) against the raw asm/funcs/func_8006B578.s listing for an explicit nop target keeps."
+  },
+  {
+   "hypothesis": "Case 3's tail (`D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000; var_s2 = 2;`) statement order may not match target's `sw; j; li s2,2` grouping.",
+   "mechanism": "Instruction scheduling / statement-order sensitivity in a simple two-statement block",
+   "next_probe": "Swap the order of the D_800A34F8 store and the var_s2 assignment in case 3, re-run sandbox --disable all --diff, cheap to try before reaching for the dump."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Adding an inline `if (*arg1 & 0x400040) {...; goto do_field_inc;}` check inside switch cases 0/1/2 (in addition to the existing shared post-switch check they fall into) is wrong and causes cc1 to emit",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either the killed or surviving form",
+   "predicate_cite": "",
+   "result": "score 35 -> 34, insn count 218 -> 199 (matches target's 200 to within 1)"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-16T23:54:49.966797+00:00",
+ "object_model_audited": 1
+}
