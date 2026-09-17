@@ -211,3 +211,113 @@ function's exact field layout — see H3 below.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all
+
+## [s3] H5 (CONFIRMED) — naming the repeated `0x12` literal (`s.sp2C = 0x12;`, written twice: once unconditionally after the first if/else, once inside `if (D_800A3580 < 2)`) as a single fresh local `v12 = 0x12;` declared+initialized ONCE at the top of the function, read (never reassigned) at both `s.sp2C = v12;` sites, changes the sandbox score on the post-s2 (S73200 + tbl) chassis.
+- mechanism: global register allocation (global.c) — a value with a REG_EQUIV
+  constant note whose live range is established from the function's top
+  (via a top-of-body initializer) spans both `func_8007352C` call blocks and
+  is assigned a persistent CALLEE-SAVED hard register (`s3`), matching
+  target's `addiu $s3,$zero,0x12` / reuse pattern exactly, closing the
+  frame-size/callee-save gap named in the s2 frontier (target 4 callee-saved
+  regs / 96-byte frame vs our 2 / 88-byte frame).
+- probe: added `s32 v12 = 0x12;` to the top-of-function declaration block
+  (initializer, not a later assignment), replaced both `s.sp2C = 0x12;`
+  literal stores with `s.sp2C = v12;`. Re-ran sandbox --disable all --diff.
+- result: score 24 -> 17. Every hunk about the prologue/epilogue frame size
+  (`addiu sp,sp,-96` vs `-88`) and the `sw ra,88(sp); sw s3,84(sp)` /
+  `lw ra,88(sp); lw s3,84(sp)` callee-save pair CLOSED — target_insns stays
+  203, build_insns 204 (ONE extra insn: GCC also rematerializes `li s3,0x12`
+  at the earliest legal point in the CFG, target[30], where target has a
+  bare `nop`). The pre-existing `s1`/`v1` register-seat tie at the
+  `tbl+0xC` store and the D_800A3580<2 test's early/late materialization
+  (v1 vs v0) are UNCHANGED — this lever closes the frame-size gap only, it
+  does not touch the other two residuals.
+- verdict: CONFIRMED
+- kill_scope: n/a (CONFIRMED, not KILLED)
+- measured_on: src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct
+  + tbl intermediate, plus this session's v12 named-intermediate; no FAKE
+  constructs, ordinary C — ONCE-WRITTEN fresh local read at 2 real use
+  sites, the SOTN new_var_temp / named-intermediate family per
+  no-new-park-categories.md and its 2026-08-31 ordinary-c-judge-decidable
+  once-written relaxation), sandbox --disable all --diff
+
+## [s3] H5b (KILLED, instance) — declaring v12 WITHOUT an initializer (`s32 v12;`) and assigning `v12 = 0x12;` immediately before the first `s.sp2C = v12;` use (i.e. at the deep point-of-first-use, not the function top) reproduces the SAME codegen as the pre-v12 baseline.
+- mechanism: global register allocation — a pseudo whose defining assignment
+  is NOT a top-of-body initializer does not get the same long-live-range
+  callee-saved treatment; local-alloc/global.c allocate it a normal
+  caller-saved register (v1/s1) exactly as when the literal `0x12` was
+  written inline twice (pre-H5).
+- probe: moved `v12 = 0x12;` from the top-of-function initializer to a bare
+  assignment statement directly preceding the first `s.sp2C = v12;`
+  (deleting the top initializer). Re-ran sandbox --disable all --diff.
+- result: score unchanged 24 -> 24 (identical hunk set to the pre-H5
+  baseline: `s1`/`v1` frame-size hunks all present, register choice
+  reverted to `s1`/`v1`, not `s3`). Reverted to the H5 top-initializer form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-H3+H4 chassis (S73200 +
+  tbl, no FAKE constructs, ordinary C), sandbox --disable all --diff
+
+## [s3] H5c (KILLED, instance) — reordering v12's C DECLARATION among the sibling locals (declared first, right after `S73200 s;`, instead of last) while keeping the top-of-body initializer, has no effect.
+- mechanism: none — declaration order among co-declared locals does not
+  change where an initializer's assignment statement is emitted in the
+  function body; the initializer is always the first executable statement
+  regardless of its textual position in the declaration list.
+- probe: moved `s32 v12 = 0x12;` from the last declared local to
+  immediately after `S73200 s;`. Re-ran sandbox --disable all --diff.
+- result: score unchanged 17 -> 17, hunk set identical to H5. Reverted the
+  reorder (kept v12 declared last, matching the order the other locals were
+  introduced in, for minimal diff against the H5 form).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-H5 chassis (v12
+  top-initializer, no FAKE constructs, ordinary C), sandbox --disable all --diff
+
+## [s3] H5d (KILLED, instance) — moving the `v12 = 0x12;` initializing statement from the absolute top of the function body to a still-early-but-later point (right after `s1 = base2 + 0xC;`, before the first if/else block) makes the score WORSE, not better.
+- mechanism: global register allocation / instruction scheduling — the
+  early-but-not-absolute-top position apparently confuses the constant's
+  rematerialization placement further rather than resolving it; not
+  root-caused this session (would need the .greg dump read against this
+  specific variant, not done — H5 was reverted back to before this dump
+  read happened).
+- probe: removed the top-of-body `v12 = 0x12;` initializer (kept `s32 v12;`
+  declared, uninitialized), inserted `v12 = 0x12;` as a statement right
+  after `s1 = base2 + 0xC;` (still inside the un-branched prologue code,
+  well before the first if/else block). Re-ran sandbox --disable all.
+- result: score 17 -> 22 (WORSE), build_insns 207 (three extra insns, up
+  from one extra at H5). Reverted to the H5 top-initializer form
+  immediately (did not diff this variant in detail).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-H3+H4 chassis (S73200 +
+  tbl, no FAKE constructs, ordinary C), sandbox --disable all
+
+## [s3] Naming the repeated `s.sp2C = 0x12;` literal (written once unconditionally after the first if/else block, once inside `if (D_800A3580 < 2)`) as a single fresh local `v12 = 0x12;` declared+initialized at the top of the function and read (never reassigned) at both sites closes the frame-size/callee-save gap (target 4 callee-saved regs s0-s3 / 96-byte frame vs our 2 / 88-byte frame) on the post-s2 (S73200 struct + tbl intermediate) chassis.
+- mechanism: global register allocation (global.c) assigns a persistent callee-saved hard register (s3) to a pseudo whose live range, established via a top-of-body initializer, spans both func_8007352C call blocks -- matching target's addiu $s3,$zero,0x12 / register-reuse pattern.
+- probe: Added `s32 v12 = 0x12;` to the function's declaration block (initializer form), replaced both `s.sp2C = 0x12;` stores with `s.sp2C = v12;`. sandbox --disable all --diff.
+- result: score 24 -> 17; every prologue/epilogue frame-size hunk (sp,-96 vs -88; sw/lw ra+s3 callee-save pair) closed; target_insns stays 203, build_insns 204 (one extra insn: GCC also rematerializes li s3,0x12 at the earliest legal CFG point, where target has a bare nop). The pre-existing s1/v1 register-seat tie and the D_800A3580<2 test's early/late materialization are unchanged by this lever.
+- verdict: CONFIRMED
+
+## [s3] Declaring v12 WITHOUT an initializer and assigning `v12 = 0x12;` immediately before the first `s.sp2C = v12;` use (at the deep point-of-first-use rather than the function top) reproduces the exact same codegen as the pre-v12 baseline (score 24), with no persistent-register benefit.
+- mechanism: global register allocation only grants the long-live-range callee-saved treatment when the defining assignment is a top-of-body initializer; a later bare assignment statement gets ordinary local/caller-saved allocation (v1/s1), identical to writing the literal 0x12 inline twice.
+- probe: Moved v12's assignment from the top-of-function initializer to a bare statement directly preceding the first `s.sp2C = v12;`. sandbox --disable all --diff.
+- result: score unchanged 24 -> 24, hunk set identical to the pre-H5 baseline (register choice reverted to s1/v1, all frame-size hunks reappear).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all --diff
+
+## [s3] Reordering v12's C declaration among the sibling locals (declared first, right after `S73200 s;`, instead of last) while keeping the top-of-body initializer has no effect on the score.
+- mechanism: declaration order among co-declared locals does not change where an initializer's assignment statement is emitted in the function body -- the initializer is always the first executable statement regardless of its textual position in the declaration list.
+- probe: Moved `s32 v12 = 0x12;` from last-declared to immediately after `S73200 s;`. sandbox --disable all --diff.
+- result: score unchanged 17 -> 17, hunk set identical to the H5 form. Reverted (kept v12 declared last).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-H5 chassis (v12 top-initializer, no FAKE constructs, ordinary C), sandbox --disable all --diff
+
+## [s3] Moving the v12 = 0x12 initializing statement from the absolute top of the function body to a still-early-but-later point (right after `s1 = base2 + 0xC;`, before the first if/else block) makes the score worse than either the top-initializer or the deep-point-of-use forms.
+- mechanism: global register allocation / instruction scheduling interaction -- not root-caused this session; the intermediate placement produces MORE spurious rematerialization insns than the absolute-top position, not fewer.
+- probe: Removed the top-of-body v12 initializer, inserted `v12 = 0x12;` as a statement right after `s1 = base2 + 0xC;` (still before the first if/else block). sandbox --disable all.
+- result: score 17 -> 22 (worse); build_insns 207 (three extra insns, vs one extra at the H5 top-initializer form). Reverted immediately to the H5 form without a detailed --diff of this variant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all

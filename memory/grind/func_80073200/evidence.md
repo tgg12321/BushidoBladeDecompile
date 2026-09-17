@@ -169,3 +169,71 @@ for the func_80073200 recon session (the digest's only flagged global).
 - [s2] Remaining residual (24) is dominated by a register-seat/callee-save gap: target uses 4 callee-saved regs (s0-s3, 96-byte frame) vs ours 2 (s0,s1, 88-byte frame) — target keeps the repeated 0x12 literal live in a third persistent register (s3) spanning both func_8007352C call blocks; ours only spans one block at a time. This needs a .greg/-da dump, not yet root-caused this session.
 
 - [s2] One apparent 5-insn insert (hunk 16, the D_800A3580<2 re-test) is very likely a downstream scheduling/alignment artifact of the register-seat gap above rather than an independent missing statement, since target_insns == build_insns overall.
+
+- [s3] H5 CONFIRMED: naming the repeated `s.sp2C = 0x12;` literal (written
+  once unconditionally, once inside `if (D_800A3580 < 2)`) as a single fresh
+  `s32 v12 = 0x12;` local declared+initialized at the TOP of the function
+  and read (never reassigned) at both sites closed the ENTIRE frame-
+  size/callee-save residual named in the s2 frontier: score 24 -> 17,
+  target's 96-byte-frame / 4-callee-saved-reg (s0-s3) shape now matches
+  exactly (prologue `sw ra,88(sp); sw s3,84(sp)` / epilogue restore both
+  reproduced). This confirms the s2 frontier's root-cause guess: target's
+  compiler DOES keep this literal live in a persistent (callee-saved)
+  register spanning both `func_8007352C` call blocks, and a fresh
+  once-written local read twice reproduces that register-allocation
+  decision in our fork too.
+
+- [s3] Residual side-effect of H5: GCC also rematerializes `li s3,0x12` at
+  the earliest legal point in the function's CFG (target_insns diff
+  position 30, where target has a bare `nop`) IN ADDITION TO the correct
+  later position — one extra instruction (build_insns 204 vs target 203).
+  This is a genuine GCC-internals question (global/reload constant
+  rematerialization for a globally-allocated pseudo with a REG_EQUIV
+  constant note) not yet root-caused against `tools/gcc-2.7.2/{global,
+  reload,reload1}.c` this session — next session should read the .greg
+  dump for the v12 pseudo specifically
+  (tmp/grind/func_80073200/dumps/text1b.greg, produced this session via
+  `pwsh tools/grinder/dump.ps1 func_80073200`) before proposing a further
+  lever.
+
+- [s3] Three placement variants of the v12 initializing STATEMENT were
+  measured: (a) top-of-body initializer (H5, confirmed, score 17); (b) bare
+  assignment at the deep point-of-first-use (H5b, KILLED — reproduces the
+  pre-H5 baseline exactly, score 24, no persistent register); (c) a
+  still-early-but-not-absolute-top assignment right after
+  `s1 = base2 + 0xC;` (H5d, KILLED — WORSE, score 22, build_insns 207). Only
+  the absolute-top initializer form gets the persistent-register benefit
+  without making things worse. Declaration ORDER among sibling locals
+  (H5c, KILLED) has zero effect, confirming it's the STATEMENT's emission
+  position (top-of-body initializer vs later assignment), not the C
+  declaration-list ordering, that drives global.c's allocation decision.
+
+- [s3] CURRENT RESIDUAL (17, build_insns 204 vs target_insns 203): (1) the
+  phantom early `li s3,0x12` rematerialization described above (source of
+  the +1 insn and its two downstream cascade `not-scored`/operand-only
+  branch-offset hunks); (2) the pre-existing `s1`/`v1` register-seat tie at
+  the `tbl+0xC` store (unchanged since s2, hunks matching target's
+  `addiu s1,v0,12; sw s1,28(sp)` vs ours `addiu v1,v0,12; sw v1,28(sp)`,
+  appearing at BOTH the s1/idx call-block sites); (3) the D_800A3580<2
+  test's scheduling: target computes `lh v1,%gp_rel(D_800A3580); slti
+  v1,v1,2; beqz v1,...` EARLY (interleaved into the delay slot after the
+  preceding `lw v0,0x18($s0)`) using v1, keeping the value in v1 through to
+  where it's stored later (`li v0,1; sw s3,44(sp)` at the branch target);
+  ours computes the equivalent test LATER, using v0, with an extra
+  load-delay nop. (2) and (3) are unchanged from the s2 floor-24 diff —
+  this session's H5 lever closed the frame gap ONLY, cleanly separable
+  from these two.
+
+- [s3] sandbox --disable all --diff on the s2 floor-24 chassis showed 8 source-level / 10 operand-only / 4 not-scored hunks; the operand-only hunks at target-insn positions 0/3/22/195/200 were exactly the frame-size (sp,-96 vs -88) and callee-save (ra/s3) pair the s2 frontier named as the register-seat gap.
+
+- [s3] Reading asm/funcs/func_80073200.s directly (lines 120-124 and 159) shows target computes `addiu $s3,$zero,0x12` exactly ONCE and reuses the same register value at the second `sw $s3,0x2C($sp)` store -- confirming the s2 frontier's guess that the original C held this repeated literal in one persistent variable.
+
+- [s3] Introducing `s32 v12 = 0x12;` as a top-of-body initializer (read at both s.sp2C = v12 sites, never reassigned) is confirmed to reproduce target's persistent-s3-register allocation and closes the entire frame-size residual: score 24 -> 17.
+
+- [s3] The remaining +1 build_insns (204 vs target's 203) is an extra `li s3,0x12` rematerialized at the earliest legal point in the function's CFG (diff position 30) where target has a bare `nop` -- isolated to this one construct; every other hunk from the floor-24 diff besides the frame-size ones is unchanged at floor 17.
+
+- [s3] Three placement variants of the v12 assignment statement were measured (top initializer / deep point-of-use / mid-function-early) -- only the top-of-body initializer gets the persistent-register benefit; the other two are both worse or no-better, and declaration ORDER among sibling locals (independent of statement position) has zero effect.
+
+- [s3] pwsh tools/grinder/dump.ps1 func_80073200 was run this session and produced tmp/grind/func_80073200/dumps/text1b.{greg,sched,combine,...} for the CURRENT (H5, floor-17) chassis -- not yet read in detail for the v12-specific rematerialization root cause; that is next session's first step.
+
+- [s3] Sibling ledgers (func_80069F80, func_8007352C, main/src/ings.c, func_800600C8, func_80069AE4, func_80060768) are all COMPLETED-C with closed ledgers; their candidate.c files are just the matched body already on main in this same TU (already consulted/transplanted at s2 -- the S73200 struct shape IS the transplanted pattern from func_80069AE4/func_80069F80). No new transplant material from siblings this session.

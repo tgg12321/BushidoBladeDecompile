@@ -1,36 +1,61 @@
-/* func_80073200 — session 2 (structural) candidate.
- * Session 1 wrote the first C body (score 115, target_insns 203 / build_insns 131) with
- * bare stack scalars sp18/1C/20/24/28/2C/30/34/38/3C/40/41/42/43. This session's H3 lever
- * (frontier item #2 from s1) replaced those bare scalars with an explicit local struct
- * (S73200, field-for-field identical layout to the already-established S_69AE4 /
- * S_69F80 structs used elsewhere in this same TU with func_80073728/func_8007352C) whose
- * address is taken and passed to func_80073728/func_8007352C. This is the SAME construct
- * already on main for func_80069AE4/func_80069F80/func_8005D46C/func_8005FA98 in this file
- * (ordinary C — ADDRESS-TAKEN AGGREGATE, ordinary struct declaration, no cheat).
- * Effect measured this session: score 115 -> 26 (build_insns 131 -> 203, now EQUAL to
- * target_insns 203) — the prior build was constant-folding struct-field values across the
- * four func_80073728(&s, N) calls because each field was a SEPARATE bare-scalar C variable
- * unrelated (in GCC's alias analysis) to the one whose address escaped (sp18); as ONE
- * struct, taking &s makes the WHOLE aggregate address-escape, so GCC can no longer treat
- * s.sp2C's value as unaffected by the intervening calls and reloads it from memory exactly
- * like target — closing hunks 15-18/21-23/31-33 (the AddPrim compile-time-fold hunks named
- * in s1 hypothesis H3) essentially for free, matching the s1 ledger's cascade prediction.
- * A second small lever (naming `tmp + 0xC` / `idx + 0xC` as a local `tbl` before storing to
- * s.sp1C, matching the same `tbl = p1 + 0xC; s.sp1C = tbl;` shape already used at
- * src/text1b.c:6249-6250/6257-6258 and 6352-6353 for the SAME S_69F80/S_69AE4-family
- * structs) dropped the remaining two source-level hunks (target's `addiu s1,v0,12; sw
- * s1,28(sp)` vs our inlined `addiu v0,v0,12; sw v0,28(sp)`) to operand-only (register-seat)
- * ties: score 26 -> 24.
+/* func_80073200 — session 3 (structural) candidate.
+ * Session 2 closed the AddPrim compile-time-fold + color-byte residuals with the S73200
+ * address-taken struct + `tbl` named intermediate (floor 115 -> 24, target_insns == build_insns
+ * == 203). Its frontier named a genuine register-seat/frame-size gap: target uses 4 callee-saved
+ * regs (s0-s3, 96-byte frame) and keeps the repeated `0x12` literal (`s.sp2C = 0x12;`, written once
+ * unconditionally after the first if/else block and again inside the `if (D_800A3580 < 2)` block)
+ * live in `s3` across BOTH `func_8007352C` call blocks, while our build only spanned one block at a
+ * time in a caller-saved reg (`s1`/`v1`).
  *
- * REMAINING RESIDUAL (24, all register-seat/scheduling ties + one still-open source hunk):
- * target uses 4 callee-saved regs (s0-s3, frame 96) where ours uses 2 (s0,s1 not s0-s3,
- * frame 88) — an 8-byte/one-extra-callee-save gap (hunks 1/2/10/11/21/22). Also one
- * apparent duplicate D_800A3580<2 re-test (hunk 16, 5 inserted insns) whose net effect is
- * likely a scheduling/alignment artifact of the register-seat difference above, not an
- * independent missing statement (target_insns == build_insns == 203, so nothing is
- * structurally missing/extra — every remaining hunk is a REPLACE/reorder, not an
- * insert/delete pair of unequal total length). NOT yet root-caused this session — next
- * session's frontier.
+ * This session's lever (H5): name the repeated `0x12` literal as a single fresh local `v12`,
+ * declared+initialized ONCE at the top of the function (`s32 v12 = 0x12;`) and READ at both
+ * `s.sp2C = v12;` sites (never reassigned) — the SOTN-sanctioned named-intermediate / `new_var_temp`
+ * family (no-new-park-categories.md "Named-intermediate declaration order", relaxed to
+ * once-written/many-read by the 2026-08-31 ordinary-c-judge-decidable ruling). This is ordinary C:
+ * `v12` holds a real value that is genuinely read at both AddPrim/func_8007352C call blocks.
+ *
+ * MEASURED EFFECT: score 24 -> 17. Confirmed the frame-size/callee-save hypothesis: with `v12`
+ * declared+initialized at the top, global register allocation puts it in `s3` (matching target
+ * exactly) and the prologue/epilogue now correctly save/restore `s3` with a 96-byte frame — every
+ * hunk about the `sp,-96` vs `sp,-88` frame size and the `sw ra,88(sp); sw s3,84(sp)` callee-save
+ * pair CLOSED. The only remaining defect this lever introduces: GCC materializes `li s3, 0x12`
+ * at the very TOP of the function (position 30 in the --diff numbering, where target has a bare
+ * `nop`) as well as at the correct point later (matching target's actual `li s3,0x12` position),
+ * i.e. it emits ONE EXTRA instruction (target_insns 203, build_insns 204) — a rematerialization
+ * of the global-allocated constant's value at the earliest legal point in the CFG, not exactly
+ * where target's compiler placed it. This is NOT source-missing (target_insns/build_insns delta
+ * is exactly +1, isolated to this one hunk) — every other hunk from the s2 floor-24 diff besides
+ * the frame-size ones is UNCHANGED (still present at 17): the two `addiu s1,v0,12`/`sw s1,28(sp)`
+ * register-seat ties (target keeps `s1`, we still get `v1`) and the D_800A3580<2 test scheduling
+ * hunks (target computes the branch condition earlier into `v1`, ours computes it later into `v0`
+ * with a load-delay nop) are untouched by this lever — they are a SEPARATE, still-open residual.
+ *
+ * MEASURED-DEAD variants of this lever (see hypotheses.md for full detail — all instance kills,
+ * same chassis):
+ *   - v12 declared WITHOUT an initializer (`s32 v12;`) and assigned `v12 = 0x12;` right at the
+ *     point of first use (immediately before the first `s.sp2C = v12;`) — identical codegen to
+ *     the PRE-v12 baseline (score 24, register choice reverts to v1/s1, no frame change). The
+ *     persistent-register effect ONLY appears when the assignment is an INITIALIZER emitted at
+ *     the textual top of the function body.
+ *   - Re-ordering v12's DECLARATION among the other locals (moved to declare first, right after
+ *     `S73200 s;`) while keeping the initializer — no change (score still 17); C declaration
+ *     order among sibling locals does not affect where an initializer's assignment statement is
+ *     emitted in the function body — the top-of-body initializer is always the first statement
+ *     regardless of textual declaration order among co-declared locals.
+ *   - Moving the initializing statement partway down (right after `s1 = base2 + 0xC;`, still well
+ *     before the first if/else block) — WORSE, not better: score 22, build_insns 207 (three extra
+ *     insns). Confirms the hoist is not simply "put it as early as textually possible" — the
+ *     absolute-top initializer position is uniquely better than a mid-function-but-still-early one.
+ *
+ * REMAINING RESIDUAL (17): (1) the phantom early `li s3,0x12` rematerialization (mechanism
+ * suspected: global/reload constant rematerialization for a globally-allocated pseudo with a
+ * REG_EQUIV constant note — not yet root-caused against the GCC source this session); (2) the
+ * pre-existing `s1`/`v1` register-seat tie at the `tbl+0xC` store (unchanged since s2); (3) the
+ * D_800A3580<2 test's early-vs-late materialization into v1 vs v0 (unchanged since s2, likely
+ * downstream of (1)/(2)'s register pressure). Frontier for next session: read the .greg/.combine
+ * dumps for the v12 pseudo specifically (tmp/grind/func_80073200/dumps/text1b.greg) to see which
+ * GCC pass performs the early rematerialization and find a C-source lever that keeps the
+ * persistent-register allocation while suppressing the redundant early copy.
  */
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
@@ -47,6 +72,7 @@ void func_80073200(s32 arg0) {
     s32 idx;
     s8 var_v0;
     s32 tbl;
+    s32 v12 = 0x12;
 
     s.sp30 = 0;
     s.sp34 = 0;
@@ -96,7 +122,7 @@ void func_80073200(s32 arg0) {
     }
     s.sp34 = 0;
     s.sp30 = 0;
-    s.sp2C = 0x12;
+    s.sp2C = v12;
     s.sp28 = 0;
     tmp = *(s32 *)((s32)ctx + 0x14);
     s.sp18 = tmp;
@@ -108,7 +134,7 @@ void func_80073200(s32 arg0) {
     AddPrim(D_800A374C + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     if (D_800A3580 < 2) {
-        s.sp2C = 0x12;
+        s.sp2C = v12;
         s.sp28 = 1;
         v1 = *(s32 *)((s32)D_800A35C4 + 8);
         idx = *(s32 *)((s32)ctx + 0x28 + (v1 % 4) * 4);

@@ -1,7 +1,7 @@
 {
  "func": "func_80073200",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 24,
    "modality": "structural",
    "headline": "func_80073200: 115 -> 24 (build_insns now == target_insns 203) by replacing 14 bare-scalar stack locals with one address-taken S73200 struct (field-identical to the already-on-main S_69AE4/S_69F80 str"
+  },
+  {
+   "session": 3,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "func_80073200: 24 -> 17 by naming the repeated s.sp2C=0x12 literal as one fresh top-of-function local (v12), closing the entire frame-size/callee-save (s0-s3, 96-byte frame) residual named in the s2 f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The frame-size/callee-save gap (target 4 callee-saved regs / 96-byte frame vs ours 2 / 88-byte frame) closes once the liveness reason target keeps the 0x12 literal (s.sp2C) live across BOTH func_8007352C call blocks in a persistent register is identified and reproduced in C.",
-   "mechanism": "register allocation / global-reg liveness (global.c) \u2014 needs the instrumented cc1 .greg dump to see which pseudo target's s3 corresponds to and why its live range spans both blocks",
-   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80073200, read the .greg dump for the pseudo holding 0x12 across both D_800A3580 branches, then try named-intermediate / declaration-order levers (register-alloc-pure-c Levers A-C) for that specific value before touching anything else."
+   "hypothesis": "The +1 extra `li s3,0x12` insn at diff position 30 (target has a nop there) is a global/reload constant-rematerialization artifact for the v12 pseudo, placed at the earliest CFG point that dominates its uses rather than exactly where target's compiler placed the equivalent computation.",
+   "mechanism": "global.c / reload.c / reload1.c constant rematerialization for a pseudo carrying a REG_EQUIV constant note, once it is assigned a hard register with a long (cross-call) live range",
+   "next_probe": "Read tmp/grind/func_80073200/dumps/text1b.greg (already produced this session) for the v12 pseudo's REG_EQUIV/rematerialization annotations and cross-reference tools/gcc-2.7.2/{global.c,reload.c,reload1.c} to find the exact rematerialization-placement logic, then look for a C-source lever (e.g. a genuine second READ of v12 placed early, or restructuring so the pseudo's first real use dominates a narrower region) that keeps the s3 allocation while suppressing the redundant early copy."
   },
   {
-   "hypothesis": "Hunk 16's apparent 5-insn insert (duplicate-looking D_800A3580<2 test) is a scheduling artifact of the register-seat gap above, not an independent third lever.",
-   "mechanism": "sched.c scheduling order shift caused by a different register being live at that point",
-   "next_probe": "Re-run sandbox --disable all --diff after frontier item 1's fix lands; check whether hunk 16 collapses for free before treating it as its own lever."
+   "hypothesis": "The pre-existing s1/v1 register-seat tie at the two `tbl+0xC` stores (target keeps the value in s1, ours in v1) is a separate, still-unexplained allocation choice independent of the v12/frame-size fix.",
+   "mechanism": "register allocation / global.c allocno priority for the tbl pseudo",
+   "next_probe": "Once frontier item 1 is resolved (build_insns == target_insns == 203 again), re-run sandbox --disable all --diff and check whether this hunk's classification or register choice shifts as a side effect before treating it as an independent third lever."
   },
   {
-   "hypothesis": "H2's KILLED result (var_v0 staging identical to duplicated-arm spelling) may no longer hold post-H3/H4 \u2014 worth a quick re-check once the frame gap closes, since CSE/store-recognition behavior can change once more of the aggregate's fields are live/address-exposed.",
-   "mechanism": "cse.c store recognition, potentially interacting with the now-address-exposed aggregate",
-   "next_probe": "After frontier item 1 lands, re-diff hunks 3/4/6/7 (color-byte region) specifically; if still byte-identical to the duplicated-arm spelling, drop this hypothesis for good."
+   "hypothesis": "The D_800A3580<2 test's early-vs-late materialization (target computes it early into v1, interleaved into the delay slot after the preceding lw v0,0x18($s0); ours computes it later into v0 with an extra load-delay nop) may collapse once frontier items 1 and 2 are fixed, since it was already suspected in s2 to be a downstream scheduling artifact of the register-seat gap rather than an independent lever.",
+   "mechanism": "sched.c list scheduler ordering, contingent on which registers are live/available at that point",
+   "next_probe": "Re-diff this specific hunk region after frontier items 1+2 land; only pursue it as its own lever if it's still present once the register-seat gap is fully closed."
   }
  ],
  "judge_constraints": [],
@@ -60,6 +66,30 @@
    "measured_on": "src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all",
    "predicate_cite": "",
    "result": "score unchanged 24 -> 24, no hunk-shape change. Reverted (kept function-scope declaration in the saved candidate for min"
+  },
+  {
+   "session": 3,
+   "statement": "Declaring v12 WITHOUT an initializer and assigning `v12 = 0x12;` immediately before the first `s.sp2C = v12;` use (at the deep point-of-first-use rather than the function top) reproduces the exact sam",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all --diff",
+   "predicate_cite": "",
+   "result": "score unchanged 24 -> 24, hunk set identical to the pre-H5 baseline (register choice reverted to s1/v1, all frame-size h"
+  },
+  {
+   "session": 3,
+   "statement": "Reordering v12's C declaration among the sibling locals (declared first, right after `S73200 s;`, instead of last) while keeping the top-of-body initializer has no effect on the score.",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-H5 chassis (v12 top-initializer, no FAKE constructs, ordinary C), sandbox --disable all --diff",
+   "predicate_cite": "",
+   "result": "score unchanged 17 -> 17, hunk set identical to the H5 form. Reverted (kept v12 declared last)."
+  },
+  {
+   "session": 3,
+   "statement": "Moving the v12 = 0x12 initializing statement from the absolute top of the function body to a still-early-but-later point (right after `s1 = base2 + 0xC;`, before the first if/else block) makes the sco",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all",
+   "predicate_cite": "",
+   "result": "score 17 -> 22 (worse); build_insns 207 (three extra insns, vs one extra at the H5 top-initializer form). Reverted immed"
   }
  ],
  "ladder_skip": 0,
