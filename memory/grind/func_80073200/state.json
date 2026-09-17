@@ -1,8 +1,8 @@
 {
  "func": "func_80073200",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 17,
    "modality": "structural",
    "headline": "func_80073200: 24 -> 17 by naming the repeated s.sp2C=0x12 literal as one fresh top-of-function local (v12), closing the entire frame-size/callee-save (s0-s3, 96-byte frame) residual named in the s2 f"
+  },
+  {
+   "session": 4,
+   "floor": 16,
+   "modality": "permuter",
+   "headline": "func_80073200: 17 -> 16 via a fresh permuter workspace (none existed) + a genuine named-intermediate hoist (new_var) for the D_800A35C4+8 address read, closing part of frontier item 3; frontier items "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The +1 extra `li s3,0x12` insn at diff position 30 (target has a nop there) is a global/reload constant-rematerialization artifact for the v12 pseudo, placed at the earliest CFG point that dominates its uses rather than exactly where target's compiler placed the equivalent computation.",
-   "mechanism": "global.c / reload.c / reload1.c constant rematerialization for a pseudo carrying a REG_EQUIV constant note, once it is assigned a hard register with a long (cross-call) live range",
-   "next_probe": "Read tmp/grind/func_80073200/dumps/text1b.greg (already produced this session) for the v12 pseudo's REG_EQUIV/rematerialization annotations and cross-reference tools/gcc-2.7.2/{global.c,reload.c,reload1.c} to find the exact rematerialization-placement logic, then look for a C-source lever (e.g. a genuine second READ of v12 placed early, or restructuring so the pseudo's first real use dominates a narrower region) that keeps the s3 allocation while suppressing the redundant early copy."
+   "hypothesis": "The +1 extra `li s3,0x12` insn at diff position 30 (target has a nop there) is a global/reload constant-rematerialization artifact for the v12 pseudo, placed at the earliest CFG point that dominates its uses rather than exactly where target's compiler placed the equivalent computation. Unchanged by this session's lever.",
+   "mechanism": "global.c / reload.c / reload1.c constant rematerialization for a pseudo carrying a REG_EQUIV constant note, once assigned a hard register with a long (cross-call) live range.",
+   "next_probe": "Read tmp/grind/func_80073200/dumps/text1b.greg (produced s3, still unread in detail) for the v12 pseudo's REG_EQUIV/rematerialization annotations; cross-reference tools/gcc-2.7.2/{global.c,reload.c,reload1.c} for the exact rematerialization-placement logic; look for a C-source lever that keeps the s3 allocation while suppressing the redundant early copy."
   },
   {
-   "hypothesis": "The pre-existing s1/v1 register-seat tie at the two `tbl+0xC` stores (target keeps the value in s1, ours in v1) is a separate, still-unexplained allocation choice independent of the v12/frame-size fix.",
-   "mechanism": "register allocation / global.c allocno priority for the tbl pseudo",
-   "next_probe": "Once frontier item 1 is resolved (build_insns == target_insns == 203 again), re-run sandbox --disable all --diff and check whether this hunk's classification or register choice shifts as a side effect before treating it as an independent third lever."
+   "hypothesis": "The pre-existing s1/v1 register-seat tie at the two `tbl+0xC` stores (target keeps s1, ours gets v1) is a separate, still-unexplained allocation choice, unchanged by this session.",
+   "mechanism": "register allocation / global.c allocno priority for the tbl pseudo.",
+   "next_probe": "Once frontier item 1 is resolved, re-diff and check whether this hunk's register choice shifts as a side effect before treating it as independent."
   },
   {
-   "hypothesis": "The D_800A3580<2 test's early-vs-late materialization (target computes it early into v1, interleaved into the delay slot after the preceding lw v0,0x18($s0); ours computes it later into v0 with an extra load-delay nop) may collapse once frontier items 1 and 2 are fixed, since it was already suspected in s2 to be a downstream scheduling artifact of the register-seat gap rather than an independent lever.",
-   "mechanism": "sched.c list scheduler ordering, contingent on which registers are live/available at that point",
-   "next_probe": "Re-diff this specific hunk region after frontier items 1+2 land; only pursue it as its own lever if it's still present once the register-seat gap is fully closed."
+   "hypothesis": "The D_800A3580<2 test's materialization is now NARROWER but not closed: target uses `lh v1,0(gp)` (halfword) where we now emit `lw v1,0(gp)` (word) at the same diff position, and a later duplicate-read block still has one more instruction than target's single compute.",
+   "mechanism": "Possibly a sub-word-read lever (narrow-stack-param-subword-offset family) on the D_800A3580 global read, combined with an unmerged duplicate read of the same test for two different consumers (the branch itself vs. a later store of its result).",
+   "next_probe": "Check D_800A3580's declared type vs actual width used at both read sites; try reading it explicitly as `*(u16 *)&D_800A3580` or similar at the first site to match target's lh; separately investigate whether the two reads of the same global test can be merged via the split-read-defeats-hoist or shared-end-label families."
   }
  ],
  "judge_constraints": [],
@@ -90,6 +96,14 @@
    "measured_on": "src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all",
    "predicate_cite": "",
    "result": "score 17 -> 22 (worse); build_insns 207 (three extra insns, vs one extra at the H5 top-initializer form). Reverted immed"
+  },
+  {
+   "session": 4,
+   "statement": "The permuter's second-best find on this chassis, respelling `if (D_800A3580 < 2)` as `if ((D_800A3580 + 1) <= 2)`, is a cheat-smelling opaque-arithmetic branch-condition perturbation with no semantic ",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 s3 floor-17 chassis (pre-new_var), permuter's own compile.sh/target.o scorer only, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Rejected on cheat-checklist grounds (T1/T3 fail) independent of and in addition to scoring worse than the adopted fix. B"
   }
  ],
  "ladder_skip": 0,

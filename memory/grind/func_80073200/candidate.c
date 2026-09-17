@@ -1,61 +1,64 @@
-/* func_80073200 — session 3 (structural) candidate.
- * Session 2 closed the AddPrim compile-time-fold + color-byte residuals with the S73200
- * address-taken struct + `tbl` named intermediate (floor 115 -> 24, target_insns == build_insns
- * == 203). Its frontier named a genuine register-seat/frame-size gap: target uses 4 callee-saved
- * regs (s0-s3, 96-byte frame) and keeps the repeated `0x12` literal (`s.sp2C = 0x12;`, written once
- * unconditionally after the first if/else block and again inside the `if (D_800A3580 < 2)` block)
- * live in `s3` across BOTH `func_8007352C` call blocks, while our build only spanned one block at a
- * time in a caller-saved reg (`s1`/`v1`).
+/* func_80073200 — session 4 (permuter) candidate.
+ * Session 3 closed the frame-size/callee-save gap with `v12` (named-intermediate
+ * for the repeated 0x12 literal, floor 24 -> 17) but left three residuals open:
+ * (1) a phantom early `li s3,0x12` rematerialization at diff position 30 (target
+ * has a bare nop there), (2) the pre-existing `s1`/`v1` register-seat tie at the
+ * two `tbl+0xC` stores, (3) the `D_800A3580 < 2` test's early-vs-late
+ * materialization (target computes it earlier into v1, ours later into v0 with an
+ * extra load-delay nop).
  *
- * This session's lever (H5): name the repeated `0x12` literal as a single fresh local `v12`,
- * declared+initialized ONCE at the top of the function (`s32 v12 = 0x12;`) and READ at both
- * `s.sp2C = v12;` sites (never reassigned) — the SOTN-sanctioned named-intermediate / `new_var_temp`
- * family (no-new-park-categories.md "Named-intermediate declaration order", relaxed to
- * once-written/many-read by the 2026-08-31 ordinary-c-judge-decidable ruling). This is ordinary C:
- * `v12` holds a real value that is genuinely read at both AddPrim/func_8007352C call blocks.
+ * This session ran a directed permuter campaign (tools/perm_80073200, workspace
+ * built fresh this session since none existed — see setup notes in evidence.md)
+ * seeded on the session-3 chassis. It found (output-545-1, permuter score
+ * 645 -> 545) that hoisting the `D_800A35C4 + 8` address computation used inside
+ * the `if (D_800A3580 < 2)` block out to a fresh local declared once, assigned
+ * unconditionally right before the if, and read once inside it:
  *
- * MEASURED EFFECT: score 24 -> 17. Confirmed the frame-size/callee-save hypothesis: with `v12`
- * declared+initialized at the top, global register allocation puts it in `s3` (matching target
- * exactly) and the prologue/epilogue now correctly save/restore `s3` with a 96-byte frame — every
- * hunk about the `sp,-96` vs `sp,-88` frame size and the `sw ra,88(sp); sw s3,84(sp)` callee-save
- * pair CLOSED. The only remaining defect this lever introduces: GCC materializes `li s3, 0x12`
- * at the very TOP of the function (position 30 in the --diff numbering, where target has a bare
- * `nop`) as well as at the correct point later (matching target's actual `li s3,0x12` position),
- * i.e. it emits ONE EXTRA instruction (target_insns 203, build_insns 204) — a rematerialization
- * of the global-allocated constant's value at the earliest legal point in the CFG, not exactly
- * where target's compiler placed it. This is NOT source-missing (target_insns/build_insns delta
- * is exactly +1, isolated to this one hunk) — every other hunk from the s2 floor-24 diff besides
- * the frame-size ones is UNCHANGED (still present at 17): the two `addiu s1,v0,12`/`sw s1,28(sp)`
- * register-seat ties (target keeps `s1`, we still get `v1`) and the D_800A3580<2 test scheduling
- * hunks (target computes the branch condition earlier into `v1`, ours computes it later into `v0`
- * with a load-delay nop) are untouched by this lever — they are a SEPARATE, still-open residual.
+ *     new_var = (s32)D_800A35C4 + 8;
+ *     ...
+ *     if (D_800A3580 < 2) {
+ *         ...
+ *         v1 = *(s32 *)new_var;   // was: v1 = *(s32 *)((s32)D_800A35C4 + 8);
  *
- * MEASURED-DEAD variants of this lever (see hypotheses.md for full detail — all instance kills,
- * same chassis):
- *   - v12 declared WITHOUT an initializer (`s32 v12;`) and assigned `v12 = 0x12;` right at the
- *     point of first use (immediately before the first `s.sp2C = v12;`) — identical codegen to
- *     the PRE-v12 baseline (score 24, register choice reverts to v1/s1, no frame change). The
- *     persistent-register effect ONLY appears when the assignment is an INITIALIZER emitted at
- *     the textual top of the function body.
- *   - Re-ordering v12's DECLARATION among the other locals (moved to declare first, right after
- *     `S73200 s;`) while keeping the initializer — no change (score still 17); C declaration
- *     order among sibling locals does not affect where an initializer's assignment statement is
- *     emitted in the function body — the top-of-body initializer is always the first statement
- *     regardless of textual declaration order among co-declared locals.
- *   - Moving the initializing statement partway down (right after `s1 = base2 + 0xC;`, still well
- *     before the first if/else block) — WORSE, not better: score 22, build_insns 207 (three extra
- *     insns). Confirms the hoist is not simply "put it as early as textually possible" — the
- *     absolute-top initializer position is uniquely better than a mid-function-but-still-early one.
+ * measurably closes residual (3): re-measured against the real engine sandbox
+ * (not just the permuter's own weighted metric), this drops the honest floor
+ * 17 -> 16 with build_insns == target_insns == 203 (was 204). This is the
+ * SOTN-sanctioned named-intermediate / `new_var_temp` family
+ * (no-new-park-categories.md "Named-intermediate declaration order", relaxed to
+ * once-written/many-read by the 2026-08-31 ordinary-c-judge-decidable ruling;
+ * `new_var` is literally the SOTN precedent's own shipped identifier for this
+ * class, docs/reference/sotn-construct-index.md:649). Ordinary C: the local
+ * holds a real, genuinely-consumed pointer value.
  *
- * REMAINING RESIDUAL (17): (1) the phantom early `li s3,0x12` rematerialization (mechanism
- * suspected: global/reload constant rematerialization for a globally-allocated pseudo with a
- * REG_EQUIV constant note — not yet root-caused against the GCC source this session); (2) the
- * pre-existing `s1`/`v1` register-seat tie at the `tbl+0xC` store (unchanged since s2); (3) the
- * D_800A3580<2 test's early-vs-late materialization into v1 vs v0 (unchanged since s2, likely
- * downstream of (1)/(2)'s register pressure). Frontier for next session: read the .greg/.combine
- * dumps for the v12 pseudo specifically (tmp/grind/func_80073200/dumps/text1b.greg) to see which
- * GCC pass performs the early rematerialization and find a C-source lever that keeps the
- * persistent-register allocation while suppressing the redundant early copy.
+ * Full diff after this lever (sandbox --disable all --diff, 17 hunks, 7
+ * source-level / 6 operand-only / 4 not-scored):
+ *   - Residual (1) UNCHANGED: hunk1 (`target nop` vs `ours li s3,0x12` @ pos 30)
+ *     and hunk9 (target's real `li s3,0x12` @ pos 114 that we don't re-emit) are
+ *     byte-identical to the s3 floor-17 diff. The v12 rematerialization-placement
+ *     mechanism is NOT touched by this lever — still the #1 frontier item.
+ *   - Residual (2) UNCHANGED: hunks 10/11/16/17 (`addiu s1,v0,12`/`sw s1,28(sp)`
+ *     vs `v1`) are byte-identical to before.
+ *   - Residual (3) PARTIALLY CLOSED: hunk12 changed from `target lh v1,0(gp) /
+ *     ours nop` to `target lh v1,0(gp) / ours lw v1,0(gp)` (still source-level,
+ *     narrower gap), and the downstream insert-group (hunk14) shrank from 5
+ *     inserted instructions to 4 (the trailing `li v0,1` duplicate is gone) —
+ *     net -1 instruction. The early/late materialization split between v1/v0
+ *     is NOT fully closed, just narrowed.
+ *
+ * A second permuter finding (output-560-1, worse: permuter score 560) respelled
+ * the same `if` condition as `if ((D_800A3580 + 1) <= 2)` — REJECTED: no
+ * semantic purpose (opaque arithmetic on a compare, pure fold-defeat), worse
+ * score than the real fix, cheat-smell per the T1/T2/T3 checklist. Banked at
+ * rejected/s4-opaque-arith-branch-cond.c.
+ *
+ * REMAINING RESIDUAL (16): (1) the phantom early `li s3,0x12` (unchanged,
+ * highest-value frontier item — needs .greg/.combine dump analysis of the v12
+ * pseudo's REG_EQUIV rematerialization, per s3's frontier note); (2) the
+ * `s1`/`v1` register-seat tie (unchanged); (3) the narrowed but not-yet-closed
+ * `D_800A3580 < 2` test materialization (`lw v1,0(gp)` vs target `lh v1,0(gp)` —
+ * width mismatch, likely another sub-word-read lever candidate; separately the
+ * `lh v0,0(gp)` duplicate-read block at hunk14 is the SAME test computed a
+ * second time later for the branch itself, still not merged with the first).
  */
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
@@ -73,6 +76,7 @@ void func_80073200(s32 arg0) {
     s8 var_v0;
     s32 tbl;
     s32 v12 = 0x12;
+    s32 new_var;
 
     s.sp30 = 0;
     s.sp34 = 0;
@@ -132,11 +136,12 @@ void func_80073200(s32 arg0) {
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0x60), 0);
     AddPrim(D_800A374C + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
+    new_var = (s32)D_800A35C4 + 8;
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     if (D_800A3580 < 2) {
         s.sp2C = v12;
         s.sp28 = 1;
-        v1 = *(s32 *)((s32)D_800A35C4 + 8);
+        v1 = *(s32 *)new_var;
         idx = *(s32 *)((s32)ctx + 0x28 + (v1 % 4) * 4);
         s.sp18 = idx;
         tbl = idx + 0xC;

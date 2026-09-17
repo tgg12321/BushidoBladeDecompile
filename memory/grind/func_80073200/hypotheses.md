@@ -321,3 +321,31 @@ function's exact field layout — see H3 below.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c func_80073200 post-H3+H4 chassis (S73200 struct + tbl intermediate, no FAKE constructs, ordinary C), sandbox --disable all
+
+## [s4] No prior permuter campaign existed for func_80073200 (checked -- no permut* entries in this ledger); the chassis-rule 0-find-basin re-seed restriction does not apply. Built a fresh workspace (tmp/perm_80073200: full-TU preprocess with -DPERMUTER so every OTHER function's INCLUDE_ASM collapses to a no-op instead of pulling raw asm/funcs/*.s, avoiding the macro/glabel assembly errors a naive full-TU extraction hit first) seeded on the s3 floor-17 chassis, and ran it 2375 iterations / ~105s / 6 jobs before stopping on turn budget (not a no-novel-find window -- finds were still arriving roughly every 15-30s when stopped).
+- mechanism: decomp-permuter random statement/expression mutation over the s3 candidate chassis.
+- probe: tools/permuter_campaign.py launch/wait/harvest --stop on tmp/perm_80073200, label s4-perm-v12-remat; telemetry in metrics/events.jsonl; 6 finds banked under tmp/perm_80073200/output-*.
+- result: Best permuter-metric find (output-545-1, permuter score 645 -> 545) hoists `v1 = *(s32 *)((s32)D_800A35C4 + 8);` (inside `if (D_800A3580 < 2)`) into a fresh top-declared local `new_var` assigned unconditionally right before the if-block, read once inside it. Re-measured against the REAL engine sandbox (not the permuter's own weighted metric): honest floor 17 -> 16, build_insns 204 -> 203 (== target_insns again). This is the SOTN named-intermediate / new_var_temp family (no-new-park-categories.md, relaxed to once-written/many-read by 2026-08-31 ordinary-c-judge-decidable.md) -- ordinary C, no FAKE annotation needed, real consumed pointer value. APPLIED to src/text1b.c and candidate.c.
+- verdict: CONFIRMED
+
+## [s4] The permuter's second-best find (output-560-1, permuter score 560, worse than 545) respells `if (D_800A3580 < 2)` as `if ((D_800A3580 + 1) <= 2)`.
+- mechanism: opaque arithmetic reassociation on a compare, purely to perturb GCC's branch-fold codegen -- no real value computed, matches the cheat checklist's T1 (no semantic purpose) / T3 (justification is GCC-internal fold-defeat only) signals.
+- probe: read tmp/perm_80073200/output-560-1/diff.txt; vetted, not applied.
+- result: Worse than the real fix under BOTH metrics (permuter 560 > 545; not independently verified against the real sandbox since it's a rejected construct on its face) and fails the cheat checklist -- rejected without further measurement. Banked at rejected/s4-opaque-arith-branch-cond.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 s3 floor-17 chassis (pre-new_var), permuter's own compile.sh/target.o scorer only, no FAKE constructs present, construct itself rejected on cheat-checklist grounds independent of the score
+
+## [s4] No prior permuter campaign existed for func_80073200. Built a fresh workspace (tmp/perm_80073200) and ran a permuter campaign on the s3 floor-17 chassis; its best find hoists the D_800A35C4+8 address computation used inside `if (D_800A3580 < 2)` into a fresh once-written local (new_var) read once inside the block, closing part of frontier item 3 (the D_800A3580<2 test materialization).
+- mechanism: Named-intermediate hoist changes where the address computation materializes relative to the branch, which shifts downstream scheduling of the `D_800A3580 < 2` test's load-delay/duplicate-read region; SOTN new_var_temp family per no-new-park-categories.md/ordinary-c-judge-decidable.md.
+- probe: tools/permuter_campaign.py launch/wait/harvest --stop on tmp/perm_80073200 (2375 iterations, 6 finds); best find re-applied to src/text1b.c and re-measured with the real engine sandbox --disable all --diff.
+- result: Honest floor 17 -> 16, build_insns 204 -> 203 (== target_insns). Full diff re-run confirms frontier items 1 (v12 rematerialization at position 30) and 2 (s1/v1 register-seat tie at both tbl+0xC stores) are byte-identical to before this lever -- cleanly separable, untouched. Frontier item 3 is narrowed (target still uses lh where we now use lw at the same position; the later duplicate-read block still has one extra instruction) but not fully closed.
+- verdict: CONFIRMED
+
+## [s4] The permuter's second-best find on this chassis, respelling `if (D_800A3580 < 2)` as `if ((D_800A3580 + 1) <= 2)`, is a cheat-smelling opaque-arithmetic branch-condition perturbation with no semantic purpose and a worse permuter score (560) than the real fix (545) on this same chassis.
+- mechanism: Arithmetic reassociation on a compare, offered only to perturb GCC's branch-fold codegen -- no real value computed, no human-programmer motivation, justification is GCC-internal-fold-defeat only.
+- probe: Read tmp/perm_80073200/output-560-1/diff.txt; vetted against the 6-test cheat checklist; not applied to src.
+- result: Rejected on cheat-checklist grounds (T1/T3 fail) independent of and in addition to scoring worse than the adopted fix. Banked at rejected/s4-opaque-arith-branch-cond.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 s3 floor-17 chassis (pre-new_var), permuter's own compile.sh/target.o scorer only, no FAKE constructs present
