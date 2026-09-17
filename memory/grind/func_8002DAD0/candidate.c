@@ -1,26 +1,17 @@
-/* func_8002DAD0 — session 1 (recon) candidate. Measured floor: 25 (was 204,
- * whole-body INCLUDE_ASM, at session start). Apply this body in place of the
+/* func_8002DAD0 — session 2 candidate. Measured floor: 6 (was 25 at session
+ * start; session-1's floor). Apply this body in place of the
  * INCLUDE_ASM("asm/funcs", func_8002DAD0); line in src/code6cac_b.c (right
  * after func_8002D780, before func_8002DE20). Needs the existing
  * `extern u8 D_8008D118;` (already at src/code6cac_b.c:278) and
  * `extern void RotMatrixX(s32, s32 *); extern void RotMatrixY(s32, s32 *);`
- * (already at src/code6cac_b.c:93-94) in scope — no new externs required. */
-
-/* kengo:MED  |  sa_tan0/saTan0KiWareMoveA  |  212i  |  x2 size collision.
- * Cross-product-of-two-relative-vectors "look at" solve, structurally the
- * long-form sibling of func_8002E838 (pad_main_control) in this same file:
- * vecA = obj->p1 - obj->p0, vecB = obj->p2 - obj->p0 (obj+0xA8/0xB8, each
- * s32[3]); GTE OP computes cross = vecA x vecB into obj+0xC8 (raw MAC,
- * unclamped); if cross is near-zero on all 3 axes the vectors are parallel
- * and the function bails returning 0. Otherwise two ratan2() calls plus the
- * same distance/log2 table (D_8008D118) used by func_8001A67C /
- * func_8002E838 derive a yaw/pitch pair, an identity matrix at obj+0xD8 is
- * built and rotated by RotMatrixY then RotMatrixX, and finally that matrix
- * is applied (GTE MVMVA) to rotate both vecA and vecB in place before
- * returning 1. All __asm__ islands below are the same PsyQ libgte macro
- * bodies (gte_SetRotMatrix partial-diagonal preamble, GTE OP, gte_ldv0,
- * MVMVA sf=1/mx=rotation/v=V0, gte_stlvnl) already authorized/matched in
- * func_800203B4 (src/code6cac.c) and func_8002E838 (this file). */
+ * (already at src/code6cac_b.c:93-94) in scope — no new externs required.
+ *
+ * sandbox --disable all --diff at this floor shows 9 hunks, 0 source-level,
+ * 5 operand-only (a plain a0<->a1 register-seat tie on dist_sq's final
+ * pseudo, propagated through every later use: sltiu/addu/bltz/move/srlv),
+ * 4 not-scored (masked branch-target-address cascade artifacts from the
+ * 6-insn-earlier region — do not chase). This is the clean frontier for
+ * session 3: a register-allocation seat question, not a C-structure one. */
 s32 func_8002DAD0(u8 *obj) {
     s32 *mat;
     s32 sp_tmp;
@@ -79,12 +70,10 @@ s32 func_8002DAD0(u8 *obj) {
 
     angle1 = ratan2(*(s32 *)(obj + 0xC8), *(s32 *)(obj + 0xD0));
     *(s32 *)(obj + 0xC8) = *(s32 *)(obj + 0xC8) >> 6;
-    dist_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8);
+    *(s32 *)(obj + 0xCC) = *(s32 *)(obj + 0xCC) >> 6;
     {
         s32 dz = *(s32 *)(obj + 0xD0) >> 6;
-        s32 dy = *(s32 *)(obj + 0xCC) >> 6;
-        dist_sq += dz * dz;
-        *(s32 *)(obj + 0xCC) = dy;
+        dist_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8) + dz * dz;
         *(s32 *)(obj + 0xD0) = dz;
     }
     *(s16 *)(obj + 0xFA) = 0x800 - angle1;

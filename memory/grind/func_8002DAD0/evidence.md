@@ -77,3 +77,86 @@ operand-only, all inside the dist_sq scratch-block reload pattern.
 - [s1] sandbox --disable all --diff at floor 25 shows the residual is entirely contained in one straight-line block (target insns 88-119): after the first ratan2() call, obj+0xC8 is shifted right 6 and stored, then RELOADED from memory for the subsequent multiply in target (sra v1,v1,6; sw v1,200(s1); lw v1,200(s1); mult v1,v1) -- our candidate's structurally-identical-looking C (store then re-read the same fixed offset) does NOT reproduce this reload; GCC's cse/register-allocation keeps the value in a register instead. This is the open frontier item.
 
 - [s1] No naming/prototype for func_8002DAD0 existed anywhere in the tree before this session (first declaration); parameter is treated as u8 *obj matching the sibling func_8002E838's own parameter style in the same file.
+
+## [s2] dist_sq scratch-block: CSE invalidation mechanism found + spent, floor 25 -> 6
+
+**Root cause of the H3 "phantom reload" (RESOLVED, see hypotheses.md H3):**
+read `tools/gcc-2.7.2/cse.c` directly this session.
+`note_mem_written` (cse.c:7539-7579): for a `SET (MEM (PLUS reg const)) ...`
+store (any pointer-relative address, SImode, not QImode) sets
+`writes_ptr->var = 1` unconditionally, and additionally sets
+`writes_ptr->nonscalar = 1` (the `all` flag stays 0 for a plain `PLUS`
+address — only BLKmode/scratch-address stores set `all`).
+`invalidate_from_clobbers` then calls `invalidate_memory(w)` whenever
+`w->var` is set — i.e. after ANY pointer-relative store.
+`invalidate_memory` (cse.c:1701-1719) removes every hash-table entry `p`
+with `p->in_memory` set when `all || (nonscalar && p->in_struct) ||
+cse_rtx_addr_varies_p(p->exp)` — and `cse_rtx_addr_varies_p` is TRUE for
+essentially any entry whose own expression is a pointer-relative MEM,
+**regardless of whether its address has any relationship to the store
+that triggered invalidation.** So: ANY second pointer-relative store
+(even to a totally unrelated field) wipes the cache entry created by an
+earlier pointer-relative store, forcing a genuine reload on the next read
+of the EARLIER address. The insertion of the CURRENT store's own MEM=reg
+equivalence happens AFTER invalidation, so it always survives until the
+NEXT store (of anything, any address).
+
+**Applied structure (candidate.c, current floor-6 body):**
+```c
+angle1 = ratan2(*(obj+0xC8), *(obj+0xD0));
+*(obj+0xC8) = *(obj+0xC8) >> 6;      /* write 1: inserts C8 cache entry */
+*(obj+0xCC) = *(obj+0xCC) >> 6;      /* write 2: nukes C8 entry (any addr) */
+{
+    s32 dz = *(obj+0xD0) >> 6;        /* plain register read, no memory write yet */
+    dist_sq = *(obj+0xC8) * *(obj+0xC8)   /* C8 read: cache MISS -> genuine reload */
+            + dz * dz;                     /* dz: ordinary register reuse, no memory op */
+    *(obj+0xD0) = dz;                 /* deferred D0 store -- scheduler is free to push
+                                          this arbitrarily late since alias analysis
+                                          proves no real conflict with C8/CC */
+}
+```
+Measured: `sandbox --disable all --diff` -> `target_insns=204,
+build_insns=204`, 9 hunks, **0 source-level**, 5 operand-only (a0<->a1
+register-seat rename on dist_sq, propagated through
+sltiu/addu/bltz/move/srlv), 4 not-scored (masked branch-target-address
+cascade, explicitly flagged "do NOT chase").
+
+**Two orderings measured IDENTICAL at floor 6** (both produce byte-for-byte
+the same object, same score):
+1. CC's write immediately after C8's write, before the `{ }` block (the
+   form kept in candidate.c — simpler to read).
+2. CC's write moved INSIDE the `{ }` block, after `dz`'s read but before
+   the `dist_sq=` statement.
+Both satisfy the same invalidation-ordering requirement (a second
+pointer-relative write occurs between C8's write and C8's read), hence
+identical codegen. This rules out "CC's exact textual position relative
+to dz" as a lever for the remaining a0-vs-a1 tie — the next session needs
+a DIFFERENT change (see frontier item 1: find what stamps `preferences: 5`
+onto dist_sq's pseudo in local-alloc.c, per the `.greg` dump numbers
+72/75/78/129/130/140 captured this session at
+tmp/grind/func_8002DAD0/dumps/code6cac_b.greg:11463-11500).
+
+**Sub-hypotheses tried and rejected during the search for the H3 mechanism**
+(kept for the record, not to be re-tried in the same form):
+- Two-shift-then-separate-`dist_sq+=`-statements (write C8, `dist_sq=C8*C8`,
+  write D0, `dist_sq+=D0*D0`, write CC): floor 10 (WORSE than the 25
+  baseline was 25->10 not an improvement path) — confirmed no reload
+  occurs when the invalidating write comes AFTER the read it would need to
+  invalidate; this measurement is what pinned down that invalidation must
+  happen BEFORE the read, not merely "somewhere in the block".
+- All-three-writes-upfront-then-one-combined-sum (C8, D0, CC writes, then
+  one `dist_sq=C8*C8+D0*D0` expression, using a real D0 write instead of a
+  deferred temp): floor 10, 3 source-level hunks (D0's own reload
+  reappeared, since a THIRD write (CC) after D0's own write invalidates
+  D0's entry too, before D0 is read for its own square) — this is what
+  motivated H4's insight that D0 must stay as a deferred-store TEMP (never
+  written to memory before its own read) rather than a second immediate
+  write.
+
+- [s2] sandbox --disable all --diff at the new floor 6 shows 9 hunks: 0 source-level, 5 operand-only (a0<->a1 rename on dist_sq's final pseudo), 4 not-scored (masked branch-target-address cascade artifacts) -- the C is no longer 'saying something different' from target; the remaining gap is a pure register-allocation seat choice.
+
+- [s2] tools/gcc-2.7.2/cse.c:1701-1719 (invalidate_memory) and cse.c:7539-7579 (note_mem_written) are the exact GCC-2.7.2 CSE mechanism that explains BOTH why target genuinely reloads obj+0xC8 after storing it AND why obj+0xD0 does not reload after its own store -- read directly this session, not inferred from dumps alone.
+
+- [s2] .greg dump captured this session (tmp/grind/func_8002DAD0/dumps/code6cac_b.greg, function header at line 11463) shows 6 pseudos needing allocation (72 75 78 129 130 140); pseudo 75 (likely dist_sq) has preferences:5 and no conflict vs hard reg 4; pseudo 78 has preferences:2,5 and DOES conflict with hard reg 4 -- this is the concrete data the next session's register-seat lever needs to trace back to its source copy/call insn in local-alloc.c.
+
+- [s2] Two independent textual orderings of the CC-write/dz-read/dist_sq-statement sequence produced byte-IDENTICAL objects at floor 6, ruling out 'CC's exact position relative to dz' as a further lever for the remaining tie.

@@ -2242,3 +2242,4 @@
 - 2026-09-17 01:17 func_80073200: LAYER-1 FAILED a sandbox-0 candidate — Body carries an unused `u8 var_v0;` local — declared, never written, never read — un-annotated, unclaimed, and affirmatively denied by the self-vet's T6 answer; the two FAKE constructs themselves check out.
 - 2026-09-17 01:35 func_80073200 COMPLETED-C after 9 sessions (closer: s9 [rederive]).
 - 2026-09-17 01:48 func_8002DAD0 s1 [recon] floor=25: Recon: wrote first full C body (was whole-body INCLUDE_ASM, floor 204); literal transcription using func_8002E838's proven GTE-island idioms + dropping cached vecA/vecB pointer locals dropped floor to 25, residual entirely inside the dist_sq scratch block.
+- 2026-09-17 02:04 func_8002DAD0 s2 [structural] floor=6: Found and spent the H3 CSE-invalidation mechanism (cse.c:1701-1719 unconditional varying-address invalidation); floor 25 -> 6, 0 source-level hunks remain, only an a0/a1 register-seat tie + masked cascade hunks.

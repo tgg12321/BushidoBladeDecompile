@@ -1,29 +1,53 @@
 {
  "func": "func_8002DAD0",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 25,
    "modality": "recon",
    "headline": "Recon: wrote first full C body (was whole-body INCLUDE_ASM, floor 204); literal transcription using func_8002E838's proven GTE-island idioms + dropping cached vecA/vecB pointer locals dropped floor to"
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Found and spent the H3 CSE-invalidation mechanism (cse.c:1701-1719 unconditional varying-address invalidation); floor 25 -> 6, 0 source-level hunks remain, only an a0/a1 register-seat tie + masked cas"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The dist_sq scratch-block C8-reload (target: sra;sw;lw;mult vs ours: sra;mult with the register value reused, no reload) is the load-bearing residual; forcing it -- or discovering it's actually an allocation-driven spill rather than a C-source-controllable reload -- closes most/all of the remaining 25.",
-   "mechanism": "Either cse.c is folding a source-level reload that needs a different C shape to defeat (candidate mechanisms to test: an intervening statement, a genuinely fresh local instead of re-reading the field, or reordering the CC/D0 loads to match target's exact lw/mflo interleave), or local-alloc/global-alloc is choosing to spill+reload obj+0xC8 as an ordinary allocation artifact unrelated to any C-level cheat lever -- read the .cse1/.greg dump before guessing further (do NOT reach for a dead-store or volatile coercion here; this looks like an ordinary reg-alloc/scheduling tie per the operand-only hunk classification).",
-   "next_probe": "pwsh tools/grinder/dump.ps1 func_8002DAD0; read tmp/grind/func_8002DAD0/dumps/*.cse1 and *.greg around the obj+0xC8/0xCC/0xD0 statements; then try the three named C restructurings in evidence/hypotheses.md H3 in order and remeasure after each with sandbox --disable all --diff."
+   "hypothesis": "dist_sq's final pseudo (reg 75 in the session-2 .greg dump) is being given preference for hard reg 5 (a1) by some copy or call-return insn upstream in local-alloc.c's preference-assignment pass; removing or redirecting that preference (via a register-alloc-pure-c lever: block-local split, narrow type, or reordering which statement first computes/consumes a competing value) should let it land in hard reg 4 (a0) to match target.",
+   "mechanism": "GCC 2.7.2 local-alloc.c reg_pref / reg_pref_class stamping, read alongside the .greg dump's conflicts/preferences annotations for pseudos 72/75/78/129/130/140.",
+   "next_probe": "Read tools/gcc-2.7.2/local-alloc.c's preference-recording code (search for reg_pref, update_equiv_regs, or the local-alloc pass's copy-insn scan) to find which SET/copy insn in the dist_sq scratch block or its immediate surroundings stamps hard-reg-5 preference on pseudo 75, then try the corresponding register-alloc-pure-c lever (already-catalogued in .claude/rules/register-alloc-pure-c.md) and remeasure with sandbox --disable all --diff."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 2,
+   "statement": "The two-shift-then-two-separate-dist_sq+=-statements ordering (write C8; dist_sq=C8*C8; write D0; dist_sq+=D0*D0; write CC) does not force any reload because the invalidating write for a field must oc",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact statement ordering only",
+   "predicate_cite": "",
+   "result": "score 25 -> 10 (worse than the 6/7 achieved by the other orderings); target_insns 204, build_insns 201; 3 source-level h"
+  },
+  {
+   "session": 2,
+   "statement": "Doing all three shifts as real immediate writes upfront (C8, D0, CC all written via *(field)=field>>6 before any read), then computing dist_sq=C8*C8+D0*D0 as one combined expression, matches target.",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact statement ordering only",
+   "predicate_cite": "",
+   "result": "score 25 -> 10; target_insns 204, build_insns 206; 3 source-level hunks -- D0's reload reappeared (its own store got inv"
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-17T06:35:28.393949+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }
