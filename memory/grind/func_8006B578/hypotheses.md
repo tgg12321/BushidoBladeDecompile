@@ -812,3 +812,111 @@ instrument that can certify this body.
 - probe: Read engine/score.py:57-141 and 186-215 plus engine/buildconfig.py:93; grepped symbol_addrs.txt, named_syms.txt and undefined_syms_auto.txt for jtbl_80015988 (no hit); re-measured the baseline diff (tmp/grind/func_8006B578/s7/diff_baseline_s7b.txt).
 - result: Confirmed: score 2, 200/200 insns, 22 hunks all classed not-scored and all of them branch/jump target pairs differing by the constant object-vs-image delta. The two scored tokens are the dispatch pair lui/lw, which traverse the two different masking paths and can never produce an equal token. tools/fake_ablate.py reports no FAKE-annotated construct in candidate.c, so the s5/s6 instance kills were measured on a chassis byte-identical to the current one with no FAKE carrier occupying any pseudo and needed no re-measurement. The full-build oracle is the only instrument that can certify this body.
 - verdict: CONFIRMED
+
+## [s8] The score-2 residual is owned by the RA model (register allocation) or by the scheduler, so tools/ra_solver/inverse.py or inverse_sched.py can express a lever for it.
+- mechanism: tools/ra_solver/inverse_compose.py `classify` triages a residual into
+  PRE-RA / RA / SCHED / IDENTICAL by comparing register-blanked instruction multisets
+  (RA and SCHED models permute and rename a FIXED multiset, so they can only own a
+  residual whose multisets already agree).
+- probe: candidate.c applied to src/text1b.c (sandbox score 2, 200/200 insns);
+  `python3 tools/ra_solver/inverse_compose.py classify text1b func_8006B578
+   --target-object build/src/text1b.o --ours-object tmp/sandbox/func_8006B578/text1b.o`
+  (object mode, the asm-until-matched-safe path). Output banked at
+  tmp/grind/func_8006B578/s8/classify.txt.
+- result: KILLED. The classifier returns FIRST DIVERGENCE: PRE-RA, "next tool: no
+  backend — the residual is upstream of every model". The RA backend (inverse.py) and
+  the scheduler backend (inverse_sched.py) are both mechanically inapplicable to this
+  residual: they permute/rename a fixed multiset and the multisets do not agree. This
+  is the typed solver-modality verdict for func_8006B578 — the solver axis is closed,
+  and no future session should spend a pass running inverse.py / inverse_sched.py /
+  perturb.py against this function on the current chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis applied to src/text1b.c (sandbox --disable all score 2,
+  200 target insns / 200 build insns), zero FAKE constructs present
+  (tools/fake_ablate.py: "no FAKE-annotated constructs found ... nothing to ablate"),
+  src/text1b.c reverted to the INCLUDE_ASM stub before session end.
+
+## [s8] The classifier's PRE-RA label means our C builds a different RTL instruction shape from the target's, i.e. there is still a front-end / CSE / combine lever to find.
+- mechanism: `classify` blanks REGISTERS but not RELOCATION SYMBOLS, so two objdump
+  renderings of the identical opcode with identical operand roles are counted as
+  different "shapes" when their immediate fields carry relocations against different
+  symbols. Its own output names the four shapes, and they are two instructions:
+  ours `lui #,@.rodata` / `lw #,@.rodata(#)` vs target `lui #,0x0` / `lw #,0(#)`.
+- probe: (a) tmp/grind/func_8006B578/s8/delta.py over engine.score.normalized_insns for
+  both objects: 22 unmasked differences, ALL branch/jump targets, and the set of distinct
+  target deltas is exactly {0x1a294} — one constant object offset, no second delta;
+  masked-diff-count is 2, and the two masked hunks are insn #74 `lui at` and insn #76
+  `lw v0`. (b) `mipsel-linux-gnu-objdump -r --section=.text` on both objects: the target
+  carries R_MIPS_HI16 + R_MIPS_LO16 against the EXTERNAL symbol `jtbl_80015988` at
+  0x237d0/0x237d8; ours carries R_MIPS_HI16 + R_MIPS_LO16 against our own `.rodata`
+  SECTION at 0x953c/0x9544 — the same two reloc TYPES at the same two instruction slots,
+  offset by the same constant 0x1a294.
+- result: KILLED. The PRE-RA label is a rendering artifact of unnormalized relocation
+  symbols, not evidence of an RTL-shape divergence. Opcode, operand roles and relocation
+  types are identical on both dispatch instructions; only the relocation's SYMBOL differs
+  (external `jtbl_80015988` vs our own `.rodata`), which is exactly the cross-TU table
+  ownership residual H7/H13/H14 already characterized. There is no front-end/CSE/combine
+  lever behind the label, and the `classify` output's cse_merge / cse_split lever menus
+  do not apply to this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis applied to src/text1b.c (score 2, 200/200 insns), zero
+  FAKE constructs (fake_ablate: nothing to ablate); objects
+  tmp/sandbox/func_8006B578/text1b.o (ours) and build/src/text1b.o (reference), src
+  reverted to the INCLUDE_ASM stub before session end.
+
+## [s8] KILL RE-AUDIT — the two s5 "score-neutral" instance kills are neutral only because the sandbox gradient is pinned at 2 by the reloc artifact, and could hide a real byte difference inside a masked hunk.
+- mechanism: `engine/score.py` masks branch/jump targets and the two reloc-bearing
+  dispatch operands, so at a pinned floor of 2 a variant can change a MASKED operand
+  without changing the score. Against a function that will be certified by the full-build
+  SHA1 oracle rather than by the sandbox, "score-neutral" is therefore not automatically
+  "byte-neutral" — the mandated re-audit instrument for this function is the byte/delta
+  comparison, not the score.
+- probe: both s5 neutral forms rebuilt on the CURRENT chassis (candidate.c, FAKE-free —
+  fake_ablate reports nothing to ablate, so there is no FAKE carrier occupying any
+  pseudo) and measured twice each: sandbox --disable all, then delta.py.
+  (i) v_s16hi (narrow `hi` from s32 to s16): score 2, 200 build insns; distinct branch
+      deltas {0x1a294}; masked diffs exactly #74 `lui at` and #76 `lw v0`.
+  (ii) v_declrev (reverse the five block locals to var_s2, hi, ret, sp10, v): score 2,
+      200 build insns; distinct branch deltas {0x1a294}; masked diffs exactly #74/#76.
+  Banked: tmp/grind/func_8006B578/s8/{v_s16hi.c,v_declrev.c,delta_v_s16hi.txt,
+  delta_v_declrev.txt}.
+- result: KILLED (the re-audit hypothesis — the hidden-difference worry is disproven).
+  Both s5 kills SURVIVE re-measurement and are UPGRADED from score-neutral to
+  byte-equivalent: each variant reproduces the target byte-for-byte modulo the same
+  single constant position delta 0x1a294 and the same two reloc-symbol hunks as
+  candidate.c itself. Neither respelling perturbs allocation, scheduling or frame layout,
+  and neither would change the full-build SHA1 outcome. candidate.c remains the form of
+  record (it is the one whose provenance is documented), but an operator performing the
+  integration handoff may treat these two respellings as interchangeable with it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis, zero FAKE constructs present in any of the three
+  bodies (fake_ablate on candidate.c: nothing to ablate; the two variants differ from it
+  by one type keyword and one declaration permutation respectively), src/text1b.c
+  reverted to the INCLUDE_ASM stub before session end.
+
+## [s8] The score-2 residual is owned by the RA model or by the scheduler, so tools/ra_solver/inverse.py or inverse_sched.py can express a lever for it.
+- mechanism: inverse_compose.py classify triages a residual PRE-RA / RA / SCHED / IDENTICAL by comparing register-blanked instruction multisets; the RA and scheduler models permute and rename a FIXED multiset, so they can only own a residual whose multisets already agree.
+- probe: candidate.c applied to src/text1b.c (sandbox --disable all: score 2, 200 target insns / 200 build insns, 0 source-level / 0 operand-only / 22 not-scored), then `python3 tools/ra_solver/inverse_compose.py classify text1b func_8006B578 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_8006B578/text1b.o` (object mode, the asm-until-matched-safe path).
+- result: KILLED. Classifier returns FIRST DIVERGENCE: PRE-RA, 'next tool: no backend - the residual is upstream of every model'. Both solver backends (inverse.py for allocation, inverse_sched.py/perturb.py for ordering) are mechanically inapplicable to this residual on this chassis, so the solver axis is closed and no future session should spend a pass running them here. Output banked at tmp/grind/func_8006B578/s8/classify.txt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis applied to src/text1b.c, sandbox --disable all score 2 (200/200 insns); zero FAKE constructs present (tools/fake_ablate.py: 'no FAKE-annotated constructs found ... nothing to ablate'); src/text1b.c reverted to the INCLUDE_ASM stub before session end.
+
+## [s8] The classifier's PRE-RA label means our C builds a different RTL instruction shape from the target's, i.e. a front-end / CSE / combine lever remains to be found.
+- mechanism: classify blanks REGISTERS but not RELOCATION SYMBOLS, so two objdump renderings of the same opcode with the same operand roles count as different shapes when their immediate fields carry relocations against different symbols.
+- probe: (a) tmp/grind/func_8006B578/s8/delta.py over engine.score.normalized_insns for both objects: 22 unmasked differences, all branch/jump targets, distinct target-delta set exactly {0x1a294}; masked-diff count 2, at insn #74 (lui at) and #76 (lw v0). (b) `mipsel-linux-gnu-objdump -r --section=.text` on both objects.
+- result: KILLED. The reference object carries R_MIPS_HI16 + R_MIPS_LO16 against the EXTERNAL symbol jtbl_80015988 at 0x237d0/0x237d8; ours carries R_MIPS_HI16 + R_MIPS_LO16 against our own .rodata SECTION at 0x953c/0x9544 - the same two relocation TYPES at the same two instruction slots, offset by the same constant 0x1a294. The PRE-RA label is therefore a relocation-rendering artifact, not an RTL-shape divergence; the classify output's cse_merge / cse_split lever menus do not apply to this function, and this is the cross-TU rodata ownership residual H7/H13/H14 already characterized. First whole-stream (rather than sampled) verification of the s7 'all 22 hunks differ by one constant' claim.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis applied to src/text1b.c (score 2, 200/200 insns), zero FAKE constructs (fake_ablate: nothing to ablate); objects tmp/sandbox/func_8006B578/text1b.o (ours) vs build/src/text1b.o (reference); src reverted to the INCLUDE_ASM stub before session end.
+
+## [s8] The two s5 score-neutral kills (s16 narrowing of `hi`; reversed declaration order of the five block locals) are neutral only because the sandbox gradient is pinned at 2, and could be hiding a real byte difference inside a masked hunk.
+- mechanism: engine/score.py masks branch/jump targets and the two reloc-bearing dispatch operands, so at a pinned floor of 2 a variant can change a MASKED operand without changing the score; since this function will be certified by the full-build SHA1 oracle rather than the sandbox, score-neutral does not automatically imply byte-neutral.
+- probe: Both s5 forms rebuilt on the CURRENT chassis (candidate.c, FAKE-free, so no FAKE carrier occupies any pseudo) and measured twice each - sandbox --disable all, then delta.py. v_s16hi: score 2, 200 build insns, distinct branch deltas {0x1a294}, masked diffs exactly #74/#76. v_declrev: score 2, 200 build insns, distinct branch deltas {0x1a294}, masked diffs exactly #74/#76.
+- result: KILLED (the hidden-difference worry is disproven). Both s5 kills survive re-measurement and are UPGRADED from score-neutral to byte-equivalent: each variant reproduces the target byte-for-byte modulo the same single constant position delta 0x1a294 and the same two reloc-symbol hunks as candidate.c itself. Note sp10 is address-taken and passed to func_800692C0, so the declaration permutation did not move its frame slot either. candidate.c remains the form of record; an operator performing the integration handoff may treat these two respellings as interchangeable with it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis; zero FAKE constructs present in any of the three bodies (fake_ablate on candidate.c: nothing to ablate; the variants differ from it by one type keyword and one declaration permutation respectively); src/text1b.c reverted to the INCLUDE_ASM stub before session end.

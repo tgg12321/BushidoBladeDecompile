@@ -36,6 +36,23 @@
  *     (H17): dispatching via `goto *(void *)jtbl_80015988[k]` through the extern extracted
  *     table drops to 95 insns because jump.c:185 deletes the five blocks reachable only
  *     through the computed jump, and it would hardcode original code addresses regardless.
+ *   - SESSION 8 (solver) CLOSED THE RA AND SCHEDULER AXES with a typed verdict:
+ *     tools/ra_solver/inverse_compose.py classify (object mode) returns FIRST DIVERGENCE
+ *     PRE-RA, "no backend — the residual is upstream of every model", so inverse.py and
+ *     inverse_sched.py/perturb.py are mechanically inapplicable here. The PRE-RA label is
+ *     itself a RELOCATION-rendering artifact, not an RTL-shape difference: the classifier
+ *     blanks registers but not reloc symbols, and objdump -r shows the target carrying
+ *     R_MIPS_HI16/LO16 against the external symbol jtbl_80015988 exactly where ours carries
+ *     R_MIPS_HI16/LO16 against our own .rodata — same reloc types, same two instruction
+ *     slots, offsets differing by the same constant 0x1A294. Whole-stream check: 22 unmasked
+ *     differences, ALL branch/jump targets, distinct delta set exactly {0x1A294}; masked
+ *     residual exactly 2 insns (#74 lui at, #76 lw v0).
+ *   - SESSION 8 RE-AUDITED the two s5 "score-neutral" kills with the BYTE instrument (the
+ *     score is pinned at 2, so score-neutrality alone could hide a masked-operand change):
+ *     `s16 hi` and the reversed local declaration order both measure score 2 / 200 insns /
+ *     delta set {0x1A294} / the same 2 masked hunks. Both are BYTE-EQUIVALENT to this body,
+ *     not merely score-equal. This body stays the form of record; those two respellings are
+ *     interchangeable with it for the integration handoff.
  * No FAKE / cheat constructs anywhere in this body â€” ordinary C only (switches, u32 casts,
  * real named intermediates holding real values, and forward `goto`s into the switch's own
  * shared consequence block that mirror the target's own physical layout, see H5).

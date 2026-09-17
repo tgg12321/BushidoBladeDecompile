@@ -491,3 +491,122 @@ until the whole run belongs to text1b.o and the pre/post split collapses.
 - [s7] The extern-table computed-goto route is mechanically self-defeating: jump.c:185 seeds LABEL_NUSES from LABEL_PRESERVE_P, so blocks entered only by a computed goto with no address-taken label are deleted (measured: 95 insns instead of 200).
 
 - [s7] Object-model order corroborated by an already-COMPLETED-C precedent: bb2.ld:60 inserts build/src/text1b_b.o(.rodata) between text1a_b_pre_rodata.o (bb2.ld:59) and text1a_b_post_rodata.o (bb2.ld:61) to fill the 0x18-byte hole at 0x80015A3C with func_80077B30's compiler-generated table.
+
+## Session 8 (solver modality) — 2026-09-16
+
+Floor re-confirmed at 2 with `memory/grind/func_8006B578/candidate.c` applied to
+`src/text1b.c`: `sandbox func_8006B578 --disable all` → score 2, 200 target insns /
+200 build insns; `--diff` → 22 hunks, **0 source-level · 0 operand-only · 22
+not-scored** (tmp/grind/func_8006B578/s8/diff_baseline.txt). Chassis unchanged since
+session 3. `src/text1b.c` was reverted to `INCLUDE_ASM("asm/funcs", func_8006B578);`
+before session end, per asm-until-matched.
+
+### 1. The solver axis is now CLOSED by a typed verdict (not by inference)
+
+`python3 tools/ra_solver/inverse_compose.py classify text1b func_8006B578
+ --target-object build/src/text1b.o --ours-object tmp/sandbox/func_8006B578/text1b.o`
+(object mode — the asm-until-matched-safe path required for a zero-rule function)
+returns:
+
+    FIRST DIVERGENCE: PRE-RA
+      next tool: no backend — the residual is upstream of every model
+
+so `tools/ra_solver/inverse.py` (RA) and `tools/ra_solver/inverse_sched.py` /
+`perturb.py` (scheduler) are both mechanically inapplicable here: they permute and
+rename a FIXED instruction multiset, and the classifier reports the multisets as
+disagreeing. Full output: `tmp/grind/func_8006B578/s8/classify.txt`. No future session
+should spend a pass running the RA or scheduler backends against this function on this
+chassis.
+
+### 2. The PRE-RA label is a relocation-rendering artifact, NOT an RTL-shape difference
+
+The classifier blanks registers but not relocation symbols. Its own "shapes present in
+ONE stream only" list is two instructions:
+
+    ours only  : lui #,@.rodata      target only: lui #,0x0
+    ours only  : lw #,@.rodata(#)    target only: lw #,0(#)
+
+Two independent measurements show these are the same instructions with the same
+relocations against different symbols:
+
+* **Instruction-stream delta** (`tmp/grind/func_8006B578/s8/delta.py`, output
+  `delta.txt`): 200 vs 200 insns; 22 unmasked differences, every one a branch or jump
+  target; the set of DISTINCT target deltas is exactly `{0x1a294}` — one constant
+  object-position offset with no second delta anywhere. Masked-diff count is 2, at insn
+  #74 (`lui at`) and #76 (`lw v0`). This is the first time the "all 22 differ by one
+  constant" claim (s7 H13) has been verified programmatically over the whole stream
+  rather than by sampling.
+* **Relocation tables** (`mipsel-linux-gnu-objdump -r --section=.text`): the reference
+  object carries `R_MIPS_HI16 jtbl_80015988` at 0x237d0 and `R_MIPS_LO16 jtbl_80015988`
+  at 0x237d8; ours carries `R_MIPS_HI16 .rodata` at 0x953c and `R_MIPS_LO16 .rodata` at
+  0x9544. Same two relocation TYPES, same two instruction slots, and the offsets differ
+  by the same constant 0x1a294. Only the relocation's SYMBOL differs — external table
+  symbol vs our own section — which is precisely the cross-TU rodata ownership residual
+  characterized in H7/H13/H14.
+
+Consequence: the `classify` output's `cse_merge` / `cse_split` lever menus are NOT
+applicable to this function, and no front-end / CSE / combine lever sits behind the
+PRE-RA label. The body's RTL is the target's RTL.
+
+### 3. Mandated kill re-audit — both s5 "score-neutral" kills upgraded to byte-equivalent
+
+The re-audit mandate exists because a kill measured under a stale chassis or with a FAKE
+carrier occupying a pseudo is not a kill. Here there is no FAKE carrier at all
+(`tools/fake_ablate.py --func func_8006B578 --file text1b --candidate
+memory/grind/func_8006B578/candidate.c` → "no FAKE-annotated constructs found …
+nothing to ablate"), but there IS a subtler hazard specific to this function: the
+gradient is pinned at 2 by the reloc artifact and `engine/score.py` masks the branch
+targets and the two dispatch operands, so a variant could in principle change a MASKED
+operand and still read "score-neutral". Since this function will be certified by the
+full-build SHA1 oracle rather than by the sandbox, the correct re-audit instrument is
+the byte/delta comparison, not the score.
+
+Both s5 neutral forms were rebuilt on the current chassis and measured both ways:
+
+| variant | sandbox | build insns | distinct branch deltas | masked diffs |
+|---|---|---|---|---|
+| candidate.c (form of record) | 2 | 200 | {0x1a294} | #74 lui at, #76 lw v0 |
+| v_s16hi (`s16 hi`) | 2 | 200 | {0x1a294} | #74 lui at, #76 lw v0 |
+| v_declrev (locals reversed to var_s2, hi, ret, sp10, v) | 2 | 200 | {0x1a294} | #74 lui at, #76 lw v0 |
+
+Both s5 kills SURVIVE and are strengthened: these are not merely score-neutral, they are
+byte-equivalent — each reproduces the target byte-for-byte modulo the same single
+constant position delta and the same two reloc-symbol hunks as candidate.c. Neither
+respelling perturbs allocation, scheduling or frame layout (note `sp10` is address-taken
+and passed to `func_800692C0`, so the declaration permutation did not move its frame
+slot either). candidate.c stays the form of record because its provenance is documented;
+an operator performing the integration handoff may treat the two respellings as
+interchangeable. Sources: `tmp/grind/func_8006B578/s8/v_s16hi.c`, `v_declrev.c`;
+measurements `delta_v_s16hi.txt`, `delta_v_declrev.txt`.
+
+### 4. What this session does NOT change
+
+The blocking surface is unchanged and is still the one described in the 2026-09-16
+`docs/grind/decisions.md` integration-handoff entry: `jtbl_80015988` lives in
+`src/text1a_b_pre_rodata.c:409-416` while `bb2.ld:66` places
+`build/src/text1b.o(.rodata)` about 0x1000 bytes past 0x80015988. Session 8 adds no new
+attack on that; it removes the RA and scheduler axes from the ledger's search space and
+hardens the bytes-proven claim with whole-stream and relocation-table evidence. Note the
+driver DISCARDED session 7 as invalid (an `owner-gated`/rotation disposition requires
+`escalation` modality), so the terminal-sounding language in that decisions.md span
+carries no standing; this session's outcome is `progress` and the item stays active.
+
+- [s8] Floor re-confirmed at 2 this session with candidate.c applied: sandbox --disable all reports score 2, 200 target insns / 200 build insns; --diff reports 22 hunks, 0 source-level / 0 operand-only / 22 not-scored (tmp/grind/func_8006B578/s8/diff_baseline.txt). Chassis unchanged since session 3.
+
+- [s8] Typed solver verdict: inverse_compose.py classify (object mode) returns FIRST DIVERGENCE PRE-RA with 'no backend - the residual is upstream of every model'. The RA and scheduler solver backends are mechanically inapplicable to this function on this chassis.
+
+- [s8] The four 'shapes present in ONE stream only' the classifier reports are two instructions: ours `lui #,@.rodata` / `lw #,@.rodata(#)` vs target `lui #,0x0` / `lw #,0(#)`.
+
+- [s8] objdump -r proves those two are the SAME instructions with the same relocation types: target has R_MIPS_HI16 jtbl_80015988 at 0x237d0 and R_MIPS_LO16 jtbl_80015988 at 0x237d8; ours has R_MIPS_HI16 .rodata at 0x953c and R_MIPS_LO16 .rodata at 0x9544. The offsets differ by the same 0x1a294 as every other hunk; only the relocation SYMBOL differs (external table symbol vs our own section).
+
+- [s8] Whole-stream verification (new this session, previously only sampled): of 200 vs 200 instructions, 22 unmasked differences exist, every one a branch or jump target, and the set of DISTINCT target deltas is exactly {0x1a294} - one constant object-position offset, no second delta anywhere. Masked-diff count is exactly 2 (insn #74 lui at, insn #76 lw v0).
+
+- [s8] tools/fake_ablate.py --func func_8006B578 --file text1b --candidate memory/grind/func_8006B578/candidate.c reports 'no FAKE-annotated constructs found ... nothing to ablate' - the body is ordinary C with no FAKE carrier on any pseudo, so every kill measured on this chassis is FAKE-free.
+
+- [s8] Kill re-audit result: the s5 `s16 hi` narrowing and the s5 reversed-declaration-order form are BYTE-EQUIVALENT to candidate.c, not merely score-equal (both: score 2, 200 build insns, delta set {0x1a294}, masked diffs exactly #74/#76).
+
+- [s8] The blocking surface is unchanged from the 2026-09-16 decisions.md integration-handoff entry: jtbl_80015988 lives in src/text1a_b_pre_rodata.c:409-416 while bb2.ld:66 places build/src/text1b.o(.rodata) roughly 0x1000 bytes past 0x80015988. Session 8 adds no new attack on that surface; it removes the RA and scheduler axes from the search space and hardens the bytes-proven claim.
+
+- [s8] Session 7 was DISCARDED by the driver as invalid (an owner-gated/rotation disposition requires escalation modality, not synthesis), so the terminal-sounding language in that decisions.md span carries no standing; the item stays active and this session's outcome is progress.
+
+- [s8] src/text1b.c was reverted to the INCLUDE_ASM stub before session end; git status --short shows nothing outside the session surface.
