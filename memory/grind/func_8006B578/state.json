@@ -1,7 +1,7 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 3,
+ "session_count": 4,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -21,13 +21,19 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Floor 34 -> 2 (200/200 insns, 0 source-level hunks): two structural C bugs fixed (idx>=6 fallthrough, shared-block layout) + a statement-order fix; sole residual is a cross-TU jtbl_80015988 scorer art"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter modality confirmed 0 source-level/operand-only hunks remain (H8 killed: no mutation surface exists); re-verified H7's cross-TU jtbl_80015988 scorer artifact as the sole residual, floor unchan"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Moving the jtbl_80015988 array declaration out of src/text1a_b_pre_rodata.c (deleting it there) so GCC's own switch-generated jump table for func_8006B578 lands at the correct .rodata slot will close the remaining score-2 residual to 0.",
-   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual); fix is an evidence-based source-file re-attribution per no-new-park-categories.md, not a codegen lever.",
-   "next_probe": "Apply memory/grind/func_8006B578/candidate.c to src/text1b.c, delete the jtbl_80015988 declaration block (lines 408-416) from src/text1a_b_pre_rodata.c, run sandbox --disable all and verify score reaches 0 before treating this as solved \u2014 this is a two-file edit outside this session's single-file mandate, so it was diagnosed but not executed this session; may need a ruling-request confirming the cross-file edit is in-scope for a single-function grind session."
+   "hypothesis": "Moving the jtbl_80015988 array declaration out of src/text1a_b_pre_rodata.c (or otherwise re-attributing its TU ownership) so GCC's own switch-generated jump table for func_8006B578 lands at the address the scorer can resolve will close the remaining score-2 residual to 0.",
+   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual); fix is an evidence-based source-file re-attribution per no-new-park-categories.md, not a codegen lever, and is NOT reachable via a named_syms.txt-only addition (see this session's evidence).",
+   "next_probe": "A future session needs authorization/scope to edit BOTH src/text1b.c and src/text1a_b_pre_rodata.c atomically (or a ruling-request confirming the cross-file move is in-scope for a single-function grind session), apply candidate.c to text1b.c, delete/move the jtbl_80015988 declaration in the pre-rodata file, run sandbox --disable all, and verify the score actually reaches 0 (not merely masks-equal) \u2014 this session did NOT attempt the edit, only re-confirmed via read-only inspection + engine/score.py source reading that a single-file (text1b.c-only) fix does not exist for this residual."
   }
  ],
  "judge_constraints": [],
@@ -64,6 +70,14 @@
    "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either the killed variant or the restored floor-34 form",
    "predicate_cite": "",
    "result": "score 34 -> 44, insn count 199 -> 202; reverted, re-measured 34 to confirm restoration."
+  },
+  {
+   "session": 4,
+   "statement": "No permuter mutation surface exists at the current candidate (score 2, 22/22 hunks not-scored, 0 source-level, 0 operand-only) \u2014 a permuter campaign against this residual would be mechanically wasted ",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c (candidate.c reapplied then reverted to the INCLUDE_ASM stub before session end, per asm-until-matched), ordinary C only, no FAKE/cheat constructs present or proposed",
+   "predicate_cite": "",
+   "result": "KILLED \u2014 confirmed no permuter (or any in-file C mutation) target exists; the residual is entirely the H7 cross-TU jtbl-"
   }
  ],
  "ladder_skip": 0,

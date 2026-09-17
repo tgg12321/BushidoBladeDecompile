@@ -247,3 +247,55 @@ flag checks calling `func_8005C650`):
 - [s3] src/text1b.c has been reverted to its pre-session INCLUDE_ASM stub (git status --short src/text1b.c is empty) — no C landed on main this session, consistent with asm-until-matched (C lands only once, at COMPLETED-C, and this function is not yet a byte match).
 
 - [s3] No FAKE/cheat construct was used, proposed, or is present anywhere in this session's candidate — every construct is ordinary C with a real semantic reading (see self_vet.md T1-T6).
+
+## Session 4 (permuter modality) — re-confirmed H7, no permuter surface, floor unchanged at 2
+
+- [s4] Re-applied candidate.c to src/text1b.c at session start (it had reverted
+  to the INCLUDE_ASM stub between sessions, as expected under asm-until-matched);
+  sandbox --disable all reproduced score 2 exactly, no drift.
+
+- [s4] sandbox --disable all --diff: 22 hunks, 0 source-level, 0 operand-only,
+  22 not-scored. There is no C-mutation surface anywhere in the function body
+  for a permuter (or any hand-written variant sweep) to act on.
+
+- [s4] tmp/grind/func_8006B578/s4/diag_masked.py (direct call into
+  engine.score.normalized_insns(mask=True) on build/src/text1b.o vs
+  tmp/sandbox/func_8006B578/text1b.o) independently reproduced H7's finding:
+  the ENTIRE masked diff is 2 instructions — `lui at,@.rodata`/`lw
+  v0,@.rodata(at)` (ours, section-relative reloc against our own
+  GCC-synthesized local jump table) vs `lui at,0x0`/`lw v0,0(at)` (target, an
+  unresolved named-symbol reloc against jtbl_80015988, which is not present in
+  named_syms.txt/undefined_syms_auto.txt/undefined_funcs_auto.txt).
+
+- [s4] Re-read engine/score.py's `_resolve_named_pair` and
+  `_mask_section_addend` this session: a section-relative HI16/LO16 (ours) and
+  a named-symbol HI16/LO16 (target's) are handled by two DIFFERENT masking
+  code paths that never converge to the same token, regardless of whether
+  jtbl_80015988 is added to LD_SYM_FILES. Adding it would only let the
+  TARGET side resolve to `@hi(addr)`/`@lo(addr)`; OUR side would remain
+  `@.rodata` — still a mismatch. Ruling out "just add it to named_syms.txt" as
+  a one-file fix.
+
+- [s4] No permuter campaign was launched this session — 0 source-level/0
+  operand-only hunks means there is nothing in the function body a mutation
+  search could change to close this residual; running one would be a
+  mechanically wasted session (see H8, hypotheses.md).
+
+- [s4] src/text1b.c reverted to its pre-session INCLUDE_ASM stub before
+  session end (git status --short src/text1b.c empty) — no C landed on main,
+  consistent with asm-until-matched.
+
+- [s4] No FAKE/cheat construct was used, proposed, or is present anywhere this
+  session.
+
+- [s4] Chassis check: reapplying memory/grind/func_8006B578/candidate.c to src/text1b.c reproduces sandbox --disable all score 2 exactly (no drift from session 3).
+
+- [s4] sandbox --disable all --diff on the reapplied candidate: 200/200 insns, 22 hunks, 0 source-level, 0 operand-only, 22 not-scored (all masked branch/jump-target cascade artifacts).
+
+- [s4] tmp/grind/func_8006B578/s4/diag_masked.py independently reproduces H7: the only 2 differing masked-normalized instructions are the switch's jump-table address load — ours 'lui at,@.rodata / lw v0,@.rodata(at)' (section-relative reloc against our own GCC-synthesized local jump table) vs target 'lui at,0x0 / lw v0,0(at)' (unresolved named-symbol reloc against jtbl_80015988).
+
+- [s4] Re-reading engine/score.py's _resolve_named_pair + _mask_section_addend confirms a section-relative reloc and a named-symbol reloc are masked via two different code paths that never produce an equal token, so adding jtbl_80015988 to named_syms.txt (LD_SYM_FILES) would only resolve the TARGET side to an @hi/@lo(addr) token while OUR side stays @.rodata — still a mismatch, not a one-file fix.
+
+- [s4] jtbl_80015988 (const u32[6], the case-label address table) is declared and defined in src/text1a_b_pre_rodata.c:409-416, a different TU than func_8006B578's home src/text1b.c; nm confirms build/src/text1a_b_pre_rodata.o defines it while build/src/text1b.o references it as an undefined external — this cross-TU split is the entire remaining residual (H7, session 3), unchanged this session.
+
+- [s4] src/text1b.c reverted to its pre-session INCLUDE_ASM stub before session end; git status --short shows only memory/grind/func_8006B578/{evidence,hypotheses}.md changed by this session (plus the pre-existing metrics/events.jsonl churn) — no C landed on main.

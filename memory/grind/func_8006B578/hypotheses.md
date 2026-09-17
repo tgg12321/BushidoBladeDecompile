@@ -337,3 +337,53 @@ proposed.
 - probe: tmp/grind/func_8006B578/diag_score.py (engine.score.normalized_insns on both build and reference objects, masked, diffed line-for-line); nm on build/src/text1b.o (U jtbl_80015988) and build/src/text1a_b_pre_rodata.o (00000598 R jtbl_80015988); grep across src/*.c and asm/funcs/*.s for any other reference to jtbl_80015988 or its 6 literal case-label addresses (single-owner confirmed, none found)
 - result: CONFIRMED — this is the entire remaining residual and is a jtbl-rodata-split-infrastructure shape requiring an evidence-based cross-TU move of the jtbl_80015988 declaration out of src/text1a_b_pre_rodata.c into src/text1b.c to close, which is a two-file edit outside this session's single-file (src/text1b.c only) mandate.
 - verdict: CONFIRMED
+
+## H8 — KILLED (instance, s4/permuter modality): no permuter mutation surface exists at the current candidate — a campaign would be a wasted session
+Statement: re-applied candidate.c verbatim to src/text1b.c (reverted to the
+INCLUDE_ASM stub between sessions per asm-until-matched) and re-measured
+before doing anything else. `sandbox --disable all` reproduced score 2
+exactly, no drift from s3. `sandbox --disable all --diff` shows 22 hunks: 0
+source-level, 0 operand-only, 22 not-scored — every displayed difference is a
+masked branch/jump-target artifact the scorer does not count. A fresh
+`tmp/grind/func_8006B578/s4/diag_masked.py` (calling
+`engine.score.normalized_insns(..., mask=True)` directly on both
+`build/src/text1b.o` and `tmp/sandbox/func_8006B578/text1b.o`) isolated the
+masked-form diff to the same 2 instructions H7 already identified: `lui
+at,@.rodata`/`lw v0,@.rodata(at)` (ours, a section-relative reloc against our
+own GCC-synthesized local jump table) vs `lui at,0x0`/`lw v0,0(at)` (target,
+an unresolved named-symbol reloc against jtbl_80015988). There is no
+source-level or operand-only residual anywhere in the function body for a
+permuter (or any other C-mutation search) to act on. A permuter mutates C
+statements inside the function body; it cannot change which TU's .rodata a
+compiler-synthesized jump table links into, nor can adding jtbl_80015988 to
+named_syms.txt/LD_SYM_FILES fix this (re-read `_resolve_named_pair` +
+`_mask_section_addend` in engine/score.py this session: a section-relative
+reloc (ours) and a named-symbol reloc (target's) are masked via two
+different, never-converging code paths regardless of symtab contents — only
+adding the symbol would let the TARGET side resolve to an `@hi/@lo(addr)`
+token, while OUR side stays `@.rodata`; they still would not match). No
+lever exists for this modality on this residual; the fix is the cross-file
+one already on the frontier (H7). No permuter campaign was launched:
+launching one against a target with 0 source-level/0 operand-only hunks
+would be a mechanically wasted session — no mutation of the function body
+can touch the 2 differing instructions, since they differ only in which TU's
+rodata they resolve against, not in program logic.
+Mechanism: n/a — absence-of-search-surface finding, not a GCC-pass lever.
+Probe: `sandbox --disable all --diff` hunk-class breakdown;
+`tmp/grind/func_8006B578/s4/diag_masked.py` (fresh normalized-insn diff,
+independent of the cached hunk numbers from s3).
+Result: KILLED — permuter modality has no viable target on this residual;
+confirms H7 stands as the sole remaining gap and it needs the cross-file fix
+already on the frontier, not more in-TU search.
+kill_scope: instance
+measured_on: func_8006B578, src/text1b.c (candidate.c reapplied then reverted
+to the INCLUDE_ASM stub before session end, per asm-until-matched), ordinary
+C only, no FAKE/cheat constructs present or proposed.
+
+## [s4] No permuter mutation surface exists at the current candidate (score 2, 22/22 hunks not-scored, 0 source-level, 0 operand-only) — a permuter campaign against this residual would be mechanically wasted because the only remaining differing instructions (the switch's jtbl address load) differ purely in which translation unit's .rodata the relocation resolves against, not in program logic reachable by any C mutation inside src/text1b.c.
+- mechanism: n/a — absence-of-search-surface finding. engine/score.py masks section-relative HI16/LO16 relocations to '@<section>' and named-symbol HI16/LO16 relocations by resolving them via LD_SYM_FILES (engine/score.py _mask_section_addend / _resolve_named_pair); our build's jump-table load is a section-relative reloc against our own GCC-synthesized local table, target's is a named-symbol reloc against jtbl_80015988 (defined in a different TU, src/text1a_b_pre_rodata.c, and absent from named_syms.txt/undefined_syms_auto.txt/undefined_funcs_auto.txt). These two masking code paths never converge to an equal token regardless of symtab contents, so adding jtbl_80015988 to LD_SYM_FILES alone does not close this either.
+- probe: Re-applied candidate.c to src/text1b.c, ran `sandbox func_8006B578 --disable all` (score 2, no drift) and `--diff` (22 hunks: 0 source-level, 0 operand-only, 22 not-scored); wrote and ran tmp/grind/func_8006B578/s4/diag_masked.py (direct engine.score.normalized_insns(mask=True) diff on build/src/text1b.o vs tmp/sandbox/func_8006B578/text1b.o) which isolated the entire masked-form diff to the same 2 instructions H7 (session 3) already identified; re-read engine/score.py's _resolve_named_pair and _mask_section_addend to rule out a named_syms.txt-only fix.
+- result: KILLED — confirmed no permuter (or any in-file C mutation) target exists; the residual is entirely the H7 cross-TU jtbl-symbol scorer artifact, requiring the cross-file fix already on the frontier, not more in-TU search.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8006B578, src/text1b.c (candidate.c reapplied then reverted to the INCLUDE_ASM stub before session end, per asm-until-matched), ordinary C only, no FAKE/cheat constructs present or proposed
