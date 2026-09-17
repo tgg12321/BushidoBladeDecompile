@@ -1,31 +1,37 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 34,
    "modality": "recon",
    "headline": "recon: wrote real 2-param C body from stale 4-param placeholder; 200 -> 34 (199/200 insns), 7 source-level hunks remain"
+  },
+  {
+   "session": 2,
+   "floor": 34,
+   "modality": "structural",
+   "headline": "Floor held at 34 (199/200 insns); killed two mixed-exit-form variants of the cross-jump-store-tail-merge recipe on cases 3/4/5 (both made it worse, 55 and 44); confirmed via direct asm read that the s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining case-2 -> shared-post-switch-block transition diff is a cross-jump/tail-merge shape (cases 0/1/2 vs the shared block, and/or case 3's early exit) rather than a simple statement-order issue.",
-   "mechanism": "GCC jump2 find_cross_jump / reorg.c delay-slot fill differences around the switch-case-to-shared-code boundary",
-   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_8006B578` and read the .sched/.combine dump for this region BEFORE proposing any further C restructuring -- PASS ATTRIBUTION step was not done this session (turn budget); do not re-guess blindly next session."
+   "hypothesis": "The check+call PREFIX shared by case3/case4/case5/fallback is unified by our compile but kept separate (4 inline copies) by target; the mechanism is NOT jump2's backward-suffix find_cross_jump (mixing the final exit form made it worse, twice), so a different pass (combine's insn-sharing, cse.c re-materialization refusal, or something jump2-adjacent working forward from a common ENTRY rather than backward from a common EXIT) is doing the merge.",
+   "mechanism": "Unconfirmed -- needs a dump read, not another by-analogy guess.",
+   "next_probe": "Read tmp/grind/func_8006B578/dumps/text1b.jump2 and text1b.combine starting at the func_8006B578 boundary (jump2 line 53481) and find the actual basic-block structure for the case3/4/5/fallback region; identify which pass's output first shows the 4 prefixes collapsed to fewer copies, then read that pass's source (tools/gcc-2.7.2/<pass>.c) for the exact merge predicate before proposing another C-structural fix."
   },
   {
-   "hypothesis": "We are 1 instruction UNDER target (199 vs 200) -- likely a delay-slot nop target keeps and our structure currently elides, not missing logic.",
-   "mechanism": "reorg.c delay-slot filling differences",
-   "next_probe": "Compare insn-for-insn around the last --diff hunk 16/17 region (already captured verbatim in evidence.md) against the raw asm/funcs/func_8006B578.s listing for an explicit nop target keeps."
+   "hypothesis": "We are 199 insns vs target's 200 (one UNDER) at the floor-34 baseline; target keeps an explicit `nop` (hunk 17: target has `nop` where ours has `li s2,2`) that our structure elides via reordering/scheduling rather than us missing real logic.",
+   "mechanism": "reorg.c delay-slot filling / insn scheduling difference, likely coupled to whatever fix emerges from frontier item 1 (the counts will shift once the prefix-merge is addressed, so don't chase this in isolation first).",
+   "next_probe": "After frontier item 1 is resolved (or ruled further), re-run sandbox --diff and recheck whether this one-under-target insn gap persists or was an artifact of the still-merged prefix."
   },
   {
-   "hypothesis": "Case 3's tail (`D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000; var_s2 = 2;`) statement order may not match target's `sw; j; li s2,2` grouping.",
-   "mechanism": "Instruction scheduling / statement-order sensitivity in a simple two-statement block",
-   "next_probe": "Swap the order of the D_800A34F8 store and the var_s2 assignment in case 3, re-run sandbox --disable all --diff, cheap to try before reaching for the dump."
+   "hypothesis": "Case 3's tail store/const ordering (`D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000; var_s2 = 2;`) may not match target's exact statement-order-to-register mapping.",
+   "mechanism": "Instruction scheduling / statement-order sensitivity in a simple two-statement block.",
+   "next_probe": "Swap the order of the two statements in case 3 and re-measure -- cheap, but should come AFTER frontier item 1 since the prefix-merge dominates the current source-level diff and any C change to case 3 will need re-measuring against whatever the frontier-1 fix produces anyway."
   }
  ],
  "judge_constraints": [],
@@ -38,6 +44,30 @@
    "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either the killed or surviving form",
    "predicate_cite": "",
    "result": "score 35 -> 34, insn count 218 -> 199 (matches target's 200 to within 1)"
+  },
+  {
+   "session": 2,
+   "statement": "Adding an inline `if (*arg1 & 0x400040) {...; goto do_field_inc;}` check inside switch cases 0/1/2 (in addition to the existing shared post-switch check) causes cc1 to emit a duplicated ~19-instructio",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either the killed or surviving form",
+   "predicate_cite": "",
+   "result": "score 35 -> 34, insn count 218 -> 199"
+  },
+  {
+   "session": 2,
+   "statement": "Mixing the FINAL exit form of switch cases 3/4/5 (goto-to-distinct-label for one, full inline duplicate of the shared 0x100010 tail-check+return for another, unchanged goto-tail for the third) per the",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either the killed variant or the restored floor-34 form",
+   "predicate_cite": "",
+   "result": "score 34 -> 55, insn count 199 -> 202 (worse in both score and raw count vs the 200-insn target); reverted, re-measured "
+  },
+  {
+   "session": 2,
+   "statement": "Giving ALL THREE of switch cases 3/4/5 their own fully-inlined duplicate of the shared 0x100010 tail-check + return (removing every goto-tail so no two cases share any jump target at all) closes the s",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either the killed variant or the restored floor-34 form",
+   "predicate_cite": "",
+   "result": "score 34 -> 44, insn count 199 -> 202; reverted, re-measured 34 to confirm restoration."
   }
  ],
  "ladder_skip": 0,

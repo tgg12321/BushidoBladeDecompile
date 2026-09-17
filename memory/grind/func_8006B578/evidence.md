@@ -105,3 +105,17 @@ flag checks calling `func_8005C650`):
 - [s1] Current floor 34 (199 insns vs target 200, 1 UNDER target) with 7 source-level hunks remaining, concentrated around: (a) the case-2-to-shared-post-switch-block transition (target's instruction layout differs in count/shape there, not yet diagnosed with a pass-attribution dump), (b) case 3's tail store/branch/const-load ordering (target groups `sw; j; li s2,2` differently than our current statement order).
 
 - [s1] No cheat/FAKE construct of any kind was used or is present in the current candidate — pure ordinary C (switch statements, u32 casts, real scratch locals for real intermediate values, one forward `goto tail` per case 3/4/5 that mirrors the asm's own explicit jumps past the shared block).
+
+- [s2] sandbox --disable all --diff at the floor-34 candidate.c baseline: 25 hunks total, 7 source-level, 0 operand-only, 18 not-scored (masked branch/jump target noise, do not chase).
+
+- [s2] All 7 source-level hunks (15-24, minus the not-scored ones interleaved) cluster around target insns 122-186, the switch-cases-3/4/5-to-shared-tail transition region.
+
+- [s2] Direct read of asm/funcs/func_8006B578.s lines 60-219 confirms the jump table (jtbl_80015988) dispatches cases 0-5 to labels .L8006B6B8/.L8006B6E8/.L8006B720/.L8006B7B4/.L8006B7FC/.L8006B828 respectively, matching candidate.c's case order exactly (no signature/order error).
+
+- [s2] Target keeps FOUR separate, byte-identical-looking inline copies of `lui v1,0x400040-hi; lw v0,0(s1); ori v1,...; and v0,v0,v1; beqz v0,SKIP; li a0,1; li a1,127; jal func_8005C650; li a2,127` — at .L8006B760 (fallback, >=6 case), .L8006B7B4 (case3), .L8006B7FC (case4), .L8006B828 (case5) — while our floor-34 build shares ONE copy across (at least some of) these sites, reached via jumps (visible as the extra `j 96a0` insert + huge-target-block-vs-tiny-ours-branch mismatch in diff hunks 15-16).
+
+- [s2] Case5's target block (.L8006B828) ends with NO jump instruction at all -- it falls straight through into .L8006B850 (the shared tail entry) because it happens to be laid out immediately before it; this is consistent with case5 also literally writing `goto tail;` in the original C (a trivial jump-to-next-instruction elision), not evidence of a different C shape for case5.
+
+- [s2] pwsh tools/grinder/dump.ps1 func_8006B578 ran clean this session (harmless pre-existing K&R-style redeclaration warnings only, same warnings the file has always emitted); dumps for the whole text1b.c TU are in tmp/grind/func_8006B578/dumps/ (func_8006B578 starts at text1b.jump2:53481) but were NOT read in detail for this specific region before the session's turn budget ran low -- flagged as the sharpened next probe.
+
+- [s2] Chassis check confirmed at session start: sandbox --disable all == 34 with candidate.c applied, matching the ledger's last recorded floor exactly (no drift).
