@@ -1,8 +1,8 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "solver",
+ "session_count": 9,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 2,
    "modality": "solver",
    "headline": "Solver modality closed the RA and scheduler axes with a typed classify verdict, proved the PRE-RA label is a relocation-rendering artifact (same reloc types, only the symbol differs), and re-audited b"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: byte-certified the integration handoff (our emitted 6-word table relocates to the target's jtbl_80015988 exactly; the rodata hole is exactly 24B with zero padding on both sides) and closed "
   }
  ],
  "frontier": [
   {
    "hypothesis": "Inserting build/src/text1b.o(.rodata) at exactly 0x80015988 (moved from bb2.ld:66), deleting jtbl_80015988 from src/text1a_b_pre_rodata.c and splitting that TU so D_800159A0 onward follows text1b.o, with candidate.c applied to src/text1b.c, makes the full build SHA1-match.",
-   "mechanism": "The split point and per-symbol ownership of the whole 0x80015940-0x80015A3C run are measured (s7b H18), and session 8 now proves the compiled body is byte-identical to the target apart from the two relocation symbols and one constant position delta - so the only remaining variable is where the linker puts our .rodata. bb2.ld:59-61 already implements exactly this placement pattern for func_80077B30's switch table in text1b_b.o.",
-   "next_probe": "Requires atomic edits to bb2.ld plus a second src file, outside a grind session's surface. An operator or a multi-file-authorized session applies steps 1-4 of the docs/grind/decisions.md 2026-09-16 integration-handoff entry using the verified split point from evidence.md Session 7b, and certifies with verify-oracle --rebuild (SHA1), NOT with the sandbox score, which is pinned at 2 by construction."
+   "mechanism": "Session 9 certifies the two remaining preconditions at byte level: (a) our emitted table relocates to the target's six words exactly (uniform base 0x80062164), and (b) the 24-byte hole at 0x80015988 absorbs our 8-aligned section with zero padding on either side, so no symbol outside the hole moves. Sessions 7b/8 already fixed the split point and proved the .text byte-identical modulo the two relocation symbols. bb2.ld:59-61 implements this exact placement pattern for func_80077B30's table in text1b_b.o.",
+   "next_probe": "Requires atomic edits to bb2.ld plus a second src file, outside a grind session's surface. An operator or a multi-file-authorized session applies steps 1-4 of the docs/grind/decisions.md 2026-09-16 integration-handoff entry and certifies with verify-oracle --rebuild (SHA1), NOT with the sandbox score, which is pinned at 2 by construction. tmp/grind/func_8006B578/s9/rodata_certification.txt gives the exact offsets and padding arithmetic to check against after the link."
   },
   {
    "hypothesis": "The residual is decidable in-sandbox only if the scorer can resolve jtbl_80015988; listing it in a LD_SYM_FILES file would let the sandbox read 0 and certify the body without a full build.",
-   "mechanism": "engine/score.py:62 resolves named-symbol HI16/LO16 pairs against LD_SYM_FILES addresses; jtbl_80015988 is unlisted because the rodata cleanup made it a C const (engine/buildconfig.py:93). Session 8's objdump -r measurement confirms the two sides' relocations are identical in type and slot and differ only in symbol, which is exactly what such a resolution would normalize.",
+   "mechanism": "engine/score.py:62 resolves named-symbol HI16/LO16 pairs against LD_SYM_FILES addresses; jtbl_80015988 is unlisted because the rodata cleanup made it a C const (engine/buildconfig.py:93). Sessions 8 and 9 both show the two sides' relocations are identical in type and slot and differ only in symbol plus a uniform base, which is exactly what such a resolution would normalize.",
    "next_probe": "named_syms.txt is a build-pipeline file outside a grind session's surface, and adding a symbol there changes what the scorer measures rather than what the compiler emits, so it needs an operator decision or a ruling before anyone measures it. Recorded so no future session spends a pass respelling C against a pinned gradient."
   },
   {
    "hypothesis": "Decompiling func_80065800 (owner of jtbl_80015940, the symbol immediately before ours) in the same pass would let both tables be emitted by text1b.o in ascending order and move the slot to 0x80015940, collapsing part of the pre/post split.",
-   "mechanism": "GCC emits switch tables in the order their switch statements appear in the TU, so table order inside text1b.o(.rodata) is fixed by function order in the file. func_80065800 is an active sibling in the same file (src/text1b.c, floor 1453 since its s1).",
-   "next_probe": "Out of scope for a single-function session. The next session handed func_80065800 (or any other switch-carrying src/text1b.c function) should re-derive the slot boundary from the evidence.md Session 7b ownership table before proposing a placement, and should not re-run the RA or scheduler solver backends against func_8006B578 (s8 killed that axis)."
+   "mechanism": "GCC emits switch tables in the order their switch statements appear in the TU, so table order inside text1b.o(.rodata) is fixed by function order in the file. func_80065800 is an active sibling in the same file (src/text1b.c, floor 1453 since its s1). Session 9's measurement that jtbl_80015940 is 0x48 bytes ending exactly at 0x80015988 makes the combined-slot arithmetic checkable in advance.",
+   "next_probe": "Out of scope for a single-function session. A session handed func_80065800 should re-derive the slot boundary from evidence.md Sessions 7b/9 before proposing a placement, and should not re-run the RA or scheduler solver backends against func_8006B578 (s8 killed that axis) nor hunt for a pass-level lever (s9 H21 killed that axis)."
   }
  ],
  "judge_constraints": [],
@@ -184,6 +190,22 @@
    "measured_on": "candidate.c chassis; zero FAKE constructs present in any of the three bodies (fake_ablate on candidate.c: nothing to ablate; the variants differ from it by one type keyword and one declaration permuta",
    "predicate_cite": "",
    "result": "KILLED (the hidden-difference worry is disproven). Both s5 kills survive re-measurement and are UPGRADED from score-neut"
+  },
+  {
+   "session": 9,
+   "statement": "The two masked dispatch instructions (lui at,%hi / lw v0,%lo(at)) that pin the sandbox score at 2 are produced by a GCC optimization pass whose input shape the C can vary.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis applied to src/text1b.c, sandbox --disable all score 2 (200/200 insns, 22/22 hunks not-scored); zero FAKE constructs present (tools/fake_ablate.py has nothing to ablate); src/text1",
+   "predicate_cite": "",
+   "result": "KILLED. dumps/text1b.rtl:51828 carries (jump_insn 474 473 475 (addr_vec:SI[...])) in the FIRST RTL dump - the vector is "
+  },
+  {
+   "session": 9,
+   "statement": "Inlining the shared 0x100010 tail-check plus return var_s2 into all three of switch cases 3/4/5 (removing every goto tail from them) improves the score on the current chassis, even though it regressed",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (score 2, 200/200) vs the variant; ordinary C in both bodies, no FAKE constructs in either (fake_ablate: nothing to ablate); src/text1b.c reverted to the INCLUDE_ASM stub before se",
+   "predicate_cite": "",
+   "result": "KILLED - score 15 at 200/200 insns against the baseline's 2 at 200/200. The session-2 kill stands (the form is still a r"
   }
  ],
  "ladder_skip": 0,

@@ -53,30 +53,6 @@
  *     delta set {0x1A294} / the same 2 masked hunks. Both are BYTE-EQUIVALENT to this body,
  *     not merely score-equal. This body stays the form of record; those two respellings are
  *     interchangeable with it for the integration handoff.
- *   - SESSION 9 (forensics) BYTE-CERTIFIED THE HANDOFF PRECONDITIONS and CLOSED the
- *     pass-attribution question. (a) Our emitted text1b.o(.rodata) is exactly 0x18 bytes
- *     / 6 words / Algn 2**3, six R_MIPS_32 relocs against .text with addends 0x9554,
- *     0x9584, 0x95BC, 0x9650, 0x9698, 0x96C4; func_8006B578 sits at .text+0x9414 and
- *     links at 0x8006B578, so the section base is 0x80062164 and the six words RESOLVE
- *     TO 0x8006B6B8/6E8/720/7B4/7FC/828 - byte-identical to the extracted
- *     jtbl_80015988[6]. (b) The hole is exact: in build/src/text1a_b_pre_rodata.o,
- *     jtbl_80015940 is .rodata+0x550 size 0x48 (ends +0x598), jtbl_80015988 is +0x598
- *     size 0x18, D_800159A0 is +0x5B0; 0x80015988 is 8-aligned and 0x800159A0 satisfies
- *     that TU's 4-byte alignment, so the bb2.ld move costs ZERO padding on either side.
- *     (c) PASS ATTRIBUTION: the ADDR_VEC is already present in the FIRST RTL dump
- *     (dumps/text1b.rtl:51828, jump_insn 474) - created by stmt.c expand_end_case, not by
- *     any optimization pass, and untouched through .jump/.cse/.loop/.combine/.flow/
- *     .lreg/.greg/.sched/.jump2/.dbr. final.c emits `lw $2,.L988($2)`, which maspsx/ASPSX
- *     expands into the lui/lw PAIR that is the whole score-2 residual. There is no
- *     pass-input shape to enumerate: the only variable is the label's ADDRESS.
- *   - SESSION 9 ALSO RE-AUDITED the stale s2 kill on the CURRENT chassis (it had only
- *     ever been measured on the superseded floor-34 body): inlining the shared 0x100010
- *     tail into all three of cases 3/4/5 now measures score 15 at 200/200 insns (s2 saw
- *     44 at 202). Still a regression; the kill stands, banked in rejected/.
- *   - SESSION 9 HOUSEKEEPING: this file carried a stray cp1252 0x97 byte, which made
- *     engine/inlineasm.py's utf-8 read of src/text1b.c raise UnicodeDecodeError the
- *     moment the body was applied - that is what made the driver's dispatch-time CHASSIS
- *     CHECK report "measurement unavailable". Sanitized to ASCII; chassis re-measures 2.
  * No FAKE / cheat constructs anywhere in this body — ordinary C only (switches, u32 casts,
  * real named intermediates holding real values, and forward `goto`s into the switch's own
  * shared consequence block that mirror the target's own physical layout, see H5).
@@ -182,19 +158,31 @@ s32 func_8006B578(s32 *arg0, s32 *arg1) {
             D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000;
             var_s2 = 2;
         }
-        goto tail;
+        if (*(u32 *)arg1 & 0x100010) {
+            func_8005C650(2, 0x7F, 0x7F);
+            var_s2 = 1;
+        }
+        return var_s2;
     case 4:
         if (*(u32 *)arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             var_s2 = 3;
         }
-        goto tail;
+        if (*(u32 *)arg1 & 0x100010) {
+            func_8005C650(2, 0x7F, 0x7F);
+            var_s2 = 1;
+        }
+        return var_s2;
     case 5:
         if (*(u32 *)arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             var_s2 = 1;
         }
-        goto tail;
+        if (*(u32 *)arg1 & 0x100010) {
+            func_8005C650(2, 0x7F, 0x7F);
+            var_s2 = 1;
+        }
+        return var_s2;
     }
 tail:
     if (*(u32 *)arg1 & 0x100010) {

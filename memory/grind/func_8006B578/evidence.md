@@ -610,3 +610,92 @@ carries no standing; this session's outcome is `progress` and the item stays act
 - [s8] Session 7 was DISCARDED by the driver as invalid (an owner-gated/rotation disposition requires escalation modality, not synthesis), so the terminal-sounding language in that decisions.md span carries no standing; the item stays active and this session's outcome is progress.
 
 - [s8] src/text1b.c was reverted to the INCLUDE_ASM stub before session end; git status --short shows nothing outside the session surface.
+
+## Session 9 (forensics) — byte-certification of the integration handoff + pass attribution
+
+Chassis re-measured: `candidate.c` applied to `src/text1b.c` -> `sandbox func_8006B578
+--disable all` = **score 2, target_insns 200, build_insns 200**, `--diff` = 22 hunks all
+classed `not-scored`. Unchanged since session 3.
+
+**Why the driver's dispatch-time CHASSIS CHECK said "measurement unavailable".** Not a
+tooling outage and not a chassis regression: `memory/grind/func_8006B578/candidate.c`
+carried a stray cp1252 byte `0x97` (a lone em-dash, introduced by an earlier session's
+Windows-side write) at offset 3192. `engine/inlineasm.py:393` reads the candidate-applied
+`src/text1b.c` with `encoding="utf-8"`, so the moment the body is spliced in the sandbox
+raises `UnicodeDecodeError: 'utf-8' codec can't decode byte 0x97`. The file is now
+sanitized to pure ASCII apart from valid UTF-8 em-dashes, and the chassis measures 2
+again. Any future session that writes ledger C from the Windows side must keep
+`candidate.c` UTF-8-decodable or the driver's chassis probe silently fails.
+
+### A. The emitted jump table is byte-identical to the target's extracted table
+Artifact: `tmp/grind/func_8006B578/s9/rodata_certification.txt`.
+
+`objdump -h/-s/-r` on the candidate's own object `tmp/sandbox/func_8006B578/text1b.o`:
+  * `.rodata` size **0x18** (24 B = 6 words), alignment **2**3** (8 bytes).
+  * six `R_MIPS_32` relocations against `.text`, addends
+    `0x9554 0x9584 0x95BC 0x9650 0x9698 0x96C4`.
+  * `objdump -t`: `func_8006B578` is at `.text+0x9414`; it links at `0x8006B578` on main,
+    so `text1b.o(.text)` base = **0x80062164**.
+  * addend + base = `0x8006B6B8 0x8006B6E8 0x8006B720 0x8006B7B4 0x8006B7FC 0x8006B828`,
+    which is *element-for-element* the extracted `const u32 jtbl_80015988[6]` at
+    `src/text1a_b_pre_rodata.c:409-416`.
+Session 7 asserted this content-identity from the C array; session 9 measures it from the
+compiled object including relocation type, slot and addend. CONFIRMED.
+
+### B. The rodata hole is exact and costs zero padding
+`objdump -t/-h build/src/text1a_b_pre_rodata.o`: `.rodata` size `0x64C`, alignment `2**2`.
+  * `jtbl_80015940` @ `.rodata+0x550` size `0x48` -> ends at `+0x598` (= `0x80015988`)
+  * `jtbl_80015988` @ `.rodata+0x598` size `0x18` -> ends at `+0x5B0` (= `0x800159A0`)
+  * `D_800159A0`    @ `.rodata+0x5B0` size `0x10`
+Deleting `jtbl_80015988` leaves a hole of exactly 24 bytes at `0x80015988`. `0x80015988 %
+8 == 0`, so our 8-byte-aligned `.rodata` lands with **zero** leading padding, ends exactly
+at `0x800159A0`, and the post-split half of the TU (4-byte alignment) resumes there with
+zero padding. The `bb2.ld` move is therefore byte-neutral for every symbol outside the
+hole — the last unmeasured risk in the integration-handoff plan is now closed.
+(The `2**3` alignment is not ours to choose: mips.h's case-vector alignment emits
+`.align 3` ahead of the vector, visible in `dumps/text1b.s`.)
+
+### C. Pass attribution: no optimization pass owns the residual
+Artifact: `tmp/grind/func_8006B578/s9/pass_attribution.txt`; dumps in
+`tmp/grind/func_8006B578/dumps/` (`pwsh tools/grinder/dump.ps1 func_8006B578`).
+  * `dumps/text1b.rtl:51828` — `(jump_insn 474 473 475 (addr_vec:SI[ ... ]))`. The ADDR_VEC
+    exists in the FIRST RTL dump, i.e. it is built by RTL generation
+    (`stmt.c expand_end_case` -> the `casesi` expander), before any optimization pass runs.
+  * It is unchanged through `.jump .cse .cse2 .loop .combine .flow .lreg .greg .sched
+    .sched2 .jump2 .dbr`.
+  * `final.c/final_scan_insn` emits `lw $2,.L988($2)` plus the `.rodata`/`.align 3`/
+    `.word .L974..` vector; maspsx/ASPSX expands that single macro load into the
+    `lui at,%hi / lw v0,%lo(at)` PAIR which IS the entire score-2 residual.
+Consequence: there is no pass-input shape to enumerate for this function. Any C that still
+compiles to a table dispatch yields the same local label and the same macro load (only the
+label's final ADDRESS varies, and the linker script owns that); any C that does not compile
+to a table dispatch loses the target's dispatch entirely (s7 H17: score 116 / 95 insns).
+
+### D. Stale-chassis kill re-audit (mandated)
+The s2 kills were measured on the superseded floor-34 body (two structural bugs later fixed
+in s3), so they were the stale ones. Re-measured the closest of them on the CURRENT chassis:
+inlining the shared `0x100010` tail-check + `return var_s2` into ALL THREE of cases 3/4/5
+(removing every `goto tail` from them) now measures **score 15 at 200/200 insns**, versus
+s2's 44 at 202/200. The kill stands — the form is still a regression — but its character
+changed: on the current chassis it is a pure ordering/operand divergence, not an
+instruction-count divergence. Banked at
+`memory/grind/func_8006B578/rejected/all-three-cases-inline-tail-recheck-s2-kill-on-current-chassis-score15.c`.
+`tools/fake_ablate.py` has nothing to ablate in either body (no FAKE constructs exist here).
+
+- [s9] Chassis re-measured this session: candidate.c applied to src/text1b.c gives sandbox --disable all score 2, target_insns 200, build_insns 200, and --diff reports 22 hunks ALL classed not-scored (0 source-level, 0 operand-only).
+
+- [s9] Our candidate's object emits .rodata of exactly 0x18 bytes (6 words) at alignment 2**3, with six R_MIPS_32 relocations against .text and addends 0x9554/0x9584/0x95BC/0x9650/0x9698/0x96C4.
+
+- [s9] func_8006B578 is at .text+0x9414 in our object and at 0x8006B578 in the shipped EXE, so text1b.o(.text) links at base 0x80062164; the six table addends plus that base equal the extracted jtbl_80015988[6] words exactly (0x8006B6B8 0x8006B6E8 0x8006B720 0x8006B7B4 0x8006B7FC 0x8006B828).
+
+- [s9] In build/src/text1a_b_pre_rodata.o the neighbouring symbols sit at .rodata+0x550 (jtbl_80015940, 0x48), +0x598 (jtbl_80015988, 0x18) and +0x5B0 (D_800159A0, 0x10), and that section's alignment is 2**2 - so deleting jtbl_80015988 leaves a 24-byte hole at 0x80015988 that our 8-aligned .rodata fills with zero padding on both sides.
+
+- [s9] The 8-byte alignment is mips.h's case-vector alignment, not a choice of ours: dumps/text1b.s emits '.section .rodata / .align 3 / .align 2' ahead of the .L988 vector.
+
+- [s9] dumps/text1b.rtl:51828 shows the ADDR_VEC as jump_insn 474 in the FIRST RTL dump, and it is unchanged through .jump .cse .cse2 .loop .combine .flow .lreg .greg .sched .sched2 .jump2 .dbr - so the jump table is created by stmt.c expand_end_case at RTL generation and no optimization pass touches it.
+
+- [s9] final.c emits the dispatch as the single macro load 'lw $2,.L988($2)'; the lui/lw pair the scorer counts is maspsx/ASPSX's expansion of that one instruction, which is why the masked residual is exactly 2.
+
+- [s9] Kill re-audit on the current chassis: the session-2 'inline the shared tail into all three of cases 3/4/5' variant now measures 15 at 200/200 insns (s2 recorded 44 at 202/200). The kill stands; its instruction-count component is gone.
+
+- [s9] Tooling: the ledger's candidate.c carried a stray cp1252 0x97 byte that made engine/inlineasm.py's utf-8 read of the candidate-applied src/text1b.c throw, which is the cause of the dispatch-time 'measurement unavailable' chassis reading. Sanitized this session.

@@ -920,3 +920,117 @@ instrument that can certify this body.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c chassis; zero FAKE constructs present in any of the three bodies (fake_ablate on candidate.c: nothing to ablate; the variants differ from it by one type keyword and one declaration permutation respectively); src/text1b.c reverted to the INCLUDE_ASM stub before session end.
+
+## Session 9 (forensics)
+
+### H19 — CONFIRMED. The compiled jump table is byte-identical to the extracted jtbl_80015988 after relocation.
+*Statement.* With `candidate.c` applied, `text1b.o(.rodata)` holds exactly six `R_MIPS_32`
+words that, once the linker resolves them against `text1b.o(.text)`'s live base, equal the
+six words of `const u32 jtbl_80015988[6]` at `src/text1a_b_pre_rodata.c:409-416`.
+*Mechanism.* GCC's `casesi` vector is emitted as `.word .L<label>` entries carrying
+section-relative `R_MIPS_32` relocations; the target's table was extracted during the 2026
+rodata cleanup as absolute `u32` literals. Equality therefore means "same addends + correct
+section base", which is measurable without a full build.
+*Probe.* `objdump -h/-s/-r/-t tmp/sandbox/func_8006B578/text1b.o` +
+`objdump -t build/src/text1a_b_pre_rodata.o`.
+*Result.* Size 0x18, Algn 2**3, addends `0x9554 0x9584 0x95BC 0x9650 0x9698 0x96C4`;
+`func_8006B578` at `.text+0x9414` and linking at `0x8006B578` gives base `0x80062164`;
+addend+base = `0x8006B6B8 0x8006B6E8 0x8006B720 0x8006B7B4 0x8006B7FC 0x8006B828` = the
+extracted array element-for-element. CONFIRMED. Artifact:
+`tmp/grind/func_8006B578/s9/rodata_certification.txt`.
+
+### H20 — CONFIRMED. The bb2.ld move costs zero padding on both sides of the hole.
+*Statement.* Deleting `jtbl_80015988` from `src/text1a_b_pre_rodata.c` and inserting
+`build/src/text1b.o(.rodata)` at `0x80015988` leaves every symbol outside the 24-byte hole
+at its current address.
+*Mechanism.* Output-section placement inserts per-object alignment padding; a mismatch
+between our vector's `.align 3` and the hole's start address, or between the hole's end and
+the post-split TU's alignment, would shift everything downstream and silently break the
+SHA1 the handoff is supposed to produce.
+*Probe.* `objdump -t/-h build/src/text1a_b_pre_rodata.o` for the three neighbouring symbols'
+offsets and the section alignment; arithmetic against our object's `2**3`.
+*Result.* `jtbl_80015940` +0x550 size 0x48 (ends +0x598), `jtbl_80015988` +0x598 size 0x18,
+`D_800159A0` +0x5B0; hole = exactly 24 B at `0x80015988`; `0x80015988 % 8 == 0` (our
+alignment satisfied, 0 pad) and `0x800159A0` satisfies the post-half's `2**2` (0 pad).
+CONFIRMED — the last unmeasured risk in the handoff plan is closed.
+
+### H21 — KILLED (instance). "Some GCC optimization pass produces the two masked dispatch instructions, so a pass-input shape can be enumerated to change them."
+*Statement.* The `lui at,%hi(..)` / `lw v0,%lo(..)(at)` pair that pins the score at 2 is
+produced by an optimization pass whose input shape C can vary.
+*Mechanism to test.* The forensics-modality PASS-INPUT ENUMERATION discipline: name the
+pass from the instrumented-cc1 dumps, then enumerate the source shapes that change what it
+sees.
+*Probe.* `pwsh tools/grinder/dump.ps1 func_8006B578`; read `dumps/text1b.rtl`,
+`.jump .cse .cse2 .loop .combine .flow .lreg .greg .sched .sched2 .jump2 .dbr`, `dumps/text1b.s`.
+*Result.* KILLED. `dumps/text1b.rtl:51828` shows `(jump_insn 474 473 475 (addr_vec:SI[...]))`
+already present in the FIRST RTL dump — the vector is built by RTL generation
+(`stmt.c expand_end_case` -> `casesi`), before any optimization pass, and no later dump
+alters it. `final.c` emits a single `lw $2,.L988($2)`; maspsx/ASPSX expands that macro load
+into the observed lui/lw pair. No optimization pass is in the causal chain, so there is no
+pass input to enumerate; the only free variable is the label's final address, owned by
+`bb2.ld`. Artifact: `tmp/grind/func_8006B578/s9/pass_attribution.txt`.
+*kill_scope.* instance — measured on the candidate.c chassis (score 2, 200/200 insns), zero
+FAKE constructs present (`fake_ablate`: nothing to ablate), `src/text1b.c` reverted to the
+`INCLUDE_ASM` stub before session end.
+
+### H22 — KILLED (instance). Re-audit of the stale s2 kill on the current chassis.
+*Statement.* Inlining the shared `0x100010` tail-check + `return var_s2` into all three of
+switch cases 3/4/5 (removing every `goto tail` from them) improves the score on the CURRENT
+chassis, even though it regressed on the superseded floor-34 chassis of session 2.
+*Mechanism to test.* s2 measured this variant against a body that still carried two
+structural bugs fixed in s3, so the kill's chassis is stale; the mandated kill re-audit
+requires re-measuring the stale kill that sat closest to the target.
+*Probe.* `tmp/grind/func_8006B578/s9/v_inline_tail_345.c` applied to `src/text1b.c`;
+`sandbox func_8006B578 --disable all`.
+*Result.* KILLED — score **15** at 200/200 insns (baseline 2 at 200/200). Still a
+regression, so the s2 kill stands, but its character changed: s2 recorded 44 at 202 insns,
+i.e. an instruction-count divergence; on this chassis the count is right and the damage is
+ordering/operand only. Banked at
+`rejected/all-three-cases-inline-tail-recheck-s2-kill-on-current-chassis-score15.c`.
+*kill_scope.* instance — candidate.c chassis, ordinary C in both bodies, no FAKE constructs
+in either (`fake_ablate`: nothing to ablate), `src/text1b.c` reverted to the `INCLUDE_ASM`
+stub before session end.
+
+### H23 — CONFIRMED (tooling). The dispatch-time chassis check failed on an encoding defect, not a regression.
+*Statement.* The driver's "measurement unavailable" chassis reading for this function was
+caused by a stray cp1252 `0x97` byte inside `memory/grind/func_8006B578/candidate.c`.
+*Mechanism.* `engine/inlineasm.py:393` reads the candidate-applied `src/<stem>.c` with
+`encoding="utf-8"`; a lone `0x97` makes that read raise `UnicodeDecodeError`, which aborts
+`sandbox_score` before any compilation happens.
+*Probe.* Reproduced the traceback verbatim on first apply; sanitized the byte; re-ran.
+*Result.* CONFIRMED — after sanitization the chassis measures 2 / 200 / 200 exactly as in
+sessions 3-8. Guidance for future sessions: keep ledger C files UTF-8-decodable.
+
+## [s9] With candidate.c applied, text1b.o(.rodata) holds six R_MIPS_32 words that, once resolved against text1b.o(.text)'s live base, equal the six words of the extracted const u32 jtbl_80015988[6] at src/text1a_b_pre_rodata.c:409-416.
+- mechanism: GCC's casesi vector is emitted as .word .L<label> entries carrying section-relative R_MIPS_32 relocations, while the target's table was extracted by the 2026 rodata cleanup as absolute u32 literals; equality reduces to 'same addends plus correct section base', which objdump can measure without a full build.
+- probe: objdump -h/-s/-r/-t tmp/sandbox/func_8006B578/text1b.o (the candidate's own object) and objdump -t build/src/text1a_b_pre_rodata.o.
+- result: CONFIRMED. .rodata size 0x18 (6 words), Algn 2**3, six R_MIPS_32 relocs against .text with addends 0x9554 0x9584 0x95BC 0x9650 0x9698 0x96C4. func_8006B578 is at .text+0x9414 and links at 0x8006B578, so the section base is 0x80062164; addend+base = 0x8006B6B8 0x8006B6E8 0x8006B720 0x8006B7B4 0x8006B7FC 0x8006B828, element-for-element the extracted array. Session 7 asserted this content-identity from the C source; this is the first measurement from the compiled object, including relocation type, slot and addend.
+- verdict: CONFIRMED
+
+## [s9] Deleting jtbl_80015988 from src/text1a_b_pre_rodata.c and inserting build/src/text1b.o(.rodata) at 0x80015988 leaves every symbol outside the 24-byte hole at its current address.
+- mechanism: Output-section placement inserts per-object alignment padding; a mismatch between our case vector's .align 3 and the hole's start, or between the hole's end and the post-split TU's alignment, would shift everything downstream and break the SHA1 the handoff is meant to produce.
+- probe: objdump -t/-h build/src/text1a_b_pre_rodata.o for the three neighbouring symbol offsets and the section alignment, checked against our object's 2**3 alignment.
+- result: CONFIRMED. jtbl_80015940 at .rodata+0x550 size 0x48 (ends +0x598), jtbl_80015988 at +0x598 size 0x18, D_800159A0 at +0x5B0; the hole is exactly 24 bytes at 0x80015988. 0x80015988 % 8 == 0, so our 8-aligned section lands with zero leading padding and ends exactly at 0x800159A0, which satisfies the post-split half's 2**2 alignment with zero padding. The last unmeasured risk in the handoff plan is closed.
+- verdict: CONFIRMED
+
+## [s9] The two masked dispatch instructions (lui at,%hi / lw v0,%lo(at)) that pin the sandbox score at 2 are produced by a GCC optimization pass whose input shape the C can vary.
+- mechanism: The forensics-modality PASS-INPUT ENUMERATION discipline: name the pass from the instrumented-cc1 dumps, then enumerate the source shapes that change what that pass sees.
+- probe: pwsh tools/grinder/dump.ps1 func_8006B578; read dumps/text1b.rtl plus .jump .cse .cse2 .loop .combine .flow .lreg .greg .sched .sched2 .jump2 .dbr and dumps/text1b.s.
+- result: KILLED. dumps/text1b.rtl:51828 carries (jump_insn 474 473 475 (addr_vec:SI[...])) in the FIRST RTL dump - the vector is built by RTL generation (stmt.c expand_end_case -> the casesi expander) before any optimization pass runs, and no later dump alters it. final.c emits a single macro load 'lw $2,.L988($2)' plus the .rodata/.align 3/.word vector; maspsx/ASPSX expands that one load into the observed lui/lw pair. No optimization pass sits in the causal chain on this chassis, so this session found no pass input to enumerate; the free variable is the local label's final address, which bb2.ld owns.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis applied to src/text1b.c, sandbox --disable all score 2 (200/200 insns, 22/22 hunks not-scored); zero FAKE constructs present (tools/fake_ablate.py has nothing to ablate); src/text1b.c reverted to the INCLUDE_ASM stub before session end.
+
+## [s9] Inlining the shared 0x100010 tail-check plus return var_s2 into all three of switch cases 3/4/5 (removing every goto tail from them) improves the score on the current chassis, even though it regressed on the superseded floor-34 chassis of session 2.
+- mechanism: Session 2 measured this cross-jump/tail-merge variant against a body still carrying two structural bugs that session 3 fixed, so that kill's chassis is stale; the mandated kill re-audit requires re-measuring the stale kill whose form sat closest to the target.
+- probe: tmp/grind/func_8006B578/s9/v_inline_tail_345.c applied to src/text1b.c; sandbox func_8006B578 --disable all.
+- result: KILLED - score 15 at 200/200 insns against the baseline's 2 at 200/200. The session-2 kill stands (the form is still a regression) but its character changed: s2 recorded 44 at 202 insns, an instruction-count divergence, whereas on this chassis the count is right and the damage is ordering/operand only. Banked at memory/grind/func_8006B578/rejected/all-three-cases-inline-tail-recheck-s2-kill-on-current-chassis-score15.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis (score 2, 200/200) vs the variant; ordinary C in both bodies, no FAKE constructs in either (fake_ablate: nothing to ablate); src/text1b.c reverted to the INCLUDE_ASM stub before session end.
+
+## [s9] The driver's dispatch-time CHASSIS CHECK reported 'measurement unavailable' because of an encoding defect in the ledger's candidate.c, not because of a chassis regression or a tooling outage.
+- mechanism: engine/inlineasm.py:393 reads the candidate-applied src/<stem>.c with encoding='utf-8'; a lone cp1252 0x97 byte inside candidate.c makes that read raise UnicodeDecodeError, aborting sandbox_score before any compilation happens.
+- probe: Applied candidate.c verbatim and reproduced the traceback (UnicodeDecodeError on byte 0x97 at position 203196 of the spliced src/text1b.c); located the byte at candidate.c offset 3192; sanitized it to ASCII and re-ran the sandbox.
+- result: CONFIRMED. After sanitization the chassis measures score 2, target_insns 200, build_insns 200, 22/22 hunks not-scored - identical to sessions 3-8. candidate.c is now UTF-8-decodable; future sessions writing ledger C from the Windows side must keep it so, or the driver's chassis probe silently fails again.
+- verdict: CONFIRMED
