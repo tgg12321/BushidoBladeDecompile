@@ -699,3 +699,23 @@ instruction-count divergence. Banked at
 - [s9] Kill re-audit on the current chassis: the session-2 'inline the shared tail into all three of cases 3/4/5' variant now measures 15 at 200/200 insns (s2 recorded 44 at 202/200). The kill stands; its instruction-count component is gone.
 
 - [s9] Tooling: the ledger's candidate.c carried a stray cp1252 0x97 byte that made engine/inlineasm.py's utf-8 read of the candidate-applied src/text1b.c throw, which is the cause of the dispatch-time 'measurement unavailable' chassis reading. Sanitized this session.
+
+- [s10, rederive] Re-applied candidate.c fresh to src/text1b.c and re-verified the chassis independently: score 2, 200/200 insns, 0 source-level / 0 operand-only / 22 not-scored hunks, all 22 unmasked hunks are absolute branch/jump-target literals differing only by whole-object base address (e.g. target `beq v1,v0,23718` vs ours `beq v1,v0,9484`) - consistent with sessions 3-9, no drift.
+
+- [s10, rederive] m2c is not installed in this WSL environment (`python3 -m m2c` -> "No module named m2c", `.venv` has no m2c package) - a fresh m2c decompile could not be obtained this session. Direct asm read (asm/funcs/func_8006B578.s:80-88) was used instead to confirm the target's own dispatch is an ADDR_VEC jump table (`lui $at,%hi(jtbl_80015988); addu $at,$at,$v0; lw $v0,%lo(jtbl_80015988)($at); jr $v0`) for the case 0-5 range, matching candidate.c's `switch` structure exactly.
+
+- [s10, rederive] Tested a structurally different rederivation of the second dispatch (if-else chain instead of switch, same statements/gotos) - see hypotheses.md H18 and rejected/ifelse-chain-second-dispatch-regresses-score16.c. Score regressed 2 -> 16 (200 -> 206 insns): GCC 2.7.2 only synthesizes an ADDR_VEC jump table from a real `switch` (stmt.c expand_end_case); an if-else chain never reaches that RTL shape at all. This confirms (does not merely reassert) that the switch form is required and that the jtbl_80015988 cross-TU residual is orthogonal to C control-flow shape - no rederivation of the dispatch as ordinary C can route around it; the fix remains the bb2.ld + second-source-file integration handoff filed 2026-09-16 (docs/grind/decisions.md).
+
+- [s10, rederive] No sibling transplant was actionable: func_80065800 (same file, active, floor 1453) has no candidate.c to transplant; func_8006B92C and func_800692C0 are already COMPLETED-C siblings in the same TU with no open candidate work to pull from.
+
+- [s10, rederive] src/text1b.c reverted to the exact committed INCLUDE_ASM stub at session end (`git diff --stat src/text1b.c` empty against HEAD) - no HEAD drift introduced.
+
+- [s10] Chassis re-measured independently this session at score 2, 200/200 insns, matches sessions 3-9 with no drift.
+
+- [s10] m2c is not installed in this repo's WSL venv (python3 -m m2c fails with 'No module named m2c'); a fresh m2c decompile could not be obtained, so the rederive probe used direct asm reading (asm/funcs/func_8006B578.s) plus a hand-constructed structurally-different C shape instead.
+
+- [s10] Direct asm read confirms the target's own case 0-5 dispatch is an ADDR_VEC jump table (lui $at,%hi(jtbl_80015988); addu $at,$at,$v0; lw $v0,%lo(jtbl_80015988)($at); jr $v0), matching candidate.c's switch structure exactly — this is independent confirmation (not just candidate.c's own account) that the switch form is the only C shape that reaches the target's dispatch mechanism.
+
+- [s10] No sibling transplant was actionable: func_80065800 (same file, active, floor 1453) has no candidate.c; func_8006B92C and func_800692C0 are already COMPLETED-C with no open work to pull from.
+
+- [s10] src/text1b.c reverted to the exact committed INCLUDE_ASM stub at session end; git status shows only ledger files touched.

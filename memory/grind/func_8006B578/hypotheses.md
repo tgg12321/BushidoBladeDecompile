@@ -1034,3 +1034,50 @@ sessions 3-8. Guidance for future sessions: keep ledger C files UTF-8-decodable.
 - probe: Applied candidate.c verbatim and reproduced the traceback (UnicodeDecodeError on byte 0x97 at position 203196 of the spliced src/text1b.c); located the byte at candidate.c offset 3192; sanitized it to ASCII and re-ran the sandbox.
 - result: CONFIRMED. After sanitization the chassis measures score 2, target_insns 200, build_insns 200, 22/22 hunks not-scored - identical to sessions 3-8. candidate.c is now UTF-8-decodable; future sessions writing ledger C from the Windows side must keep it so, or the driver's chassis probe silently fails again.
 - verdict: CONFIRMED
+
+## H17 (s10, rederive) — CONFIRMED: candidate.c chassis re-verified at floor 2 (200/200 insns, 0 source-level, 0 operand-only, 22 not-scored) with candidate.c applied fresh to src/text1b.c this session
+- mechanism: plain re-measurement; no C change from the banked body.
+- probe: applied memory/grind/func_8006B578/candidate.c verbatim to src/text1b.c, ran `sandbox func_8006B578 --disable all --diff`.
+- result: score 2, target_insns 200, build_insns 200, 22/22 hunks not-scored, all 22 unmasked hunks are branch/jump absolute-address literals (e.g. `beq v1,v0,23718` vs `beq v1,v0,9484`) that differ only because the whole-object build places the function at a different absolute address than the target link — expected and consistent with sessions 3-9's account. No new source-level or operand-only hunk appeared.
+- verdict: CONFIRMED
+- kill_scope: n/a (confirm, not kill)
+
+## H18 (s10, rederive) — KILLED (instance): rewriting the second dispatch (`(D_800A34F8>>10)&7`, cases 0-5) as an if-else chain instead of a `switch` regresses the score and does not touch the jtbl_80015988 residual
+Statement: replacing the `switch ((u32)D_800A34F8 >> 10 & 7) { case 0: ... case 5: ... }` block with
+an equivalent `s32 dk = ...; if (dk==0) {...} else if (dk==1) {...} ... else if (dk==5) {...}` chain
+(same statements, same goto targets, same shared_400040/tail labels) was hypothesized as a
+structurally-different rederivation that might let the compiler reach the target's dispatch bytes
+through a different codegen path than the ADDR_VEC jump table our switch produces, potentially
+sidestepping the jtbl_80015988 cross-TU symbol issue documented in H13/H16 and candidate.c's header.
+mechanism: GCC 2.7.2's stmt.c `expand_end_case` only emits an ADDR_VEC jump-table dispatch
+(`case_stmt` → `casesi`/`tablejump`) for a `switch` whose case density crosses its jump-table
+threshold; a hand-written if-else chain instead compiles to a linear chain of `beq`/`bne` compares,
+never synthesizing a jump table at all. Confirmed by direct read of asm/funcs/func_8006B578.s:83-88
+(`lui $at,%hi(jtbl_80015988); addu $at,$at,$v0; lw $v0,%lo(jtbl_80015988)($at); jr $v0`) — the
+target itself dispatches through the SAME kind of ADDR_VEC jump table, so an if-else chain is
+structurally further from target, not closer.
+probe: edited src/text1b.c in place (candidate.c chassis with only the second switch rewritten to
+the if-else form above), ran `sandbox func_8006B578 --disable all`.
+result: score regressed 2 -> 16, insn count 200 -> 206 (build now emits 6 more insns than target,
+consistent with a `beq` chain replacing a 4-insn jump-table dispatch). Reverted immediately back to
+the switch form, re-verified score 2 / 200 insns, then reverted src/text1b.c to the committed
+`INCLUDE_ASM("asm/funcs", func_8006B578);` stub (git diff clean against HEAD after revert).
+verdict: KILLED
+kill_scope: instance
+measured_on: func_8006B578 candidate.c chassis with the second switch replaced by an if-else chain
+(the rest of the body byte-identical to memory/grind/func_8006B578/candidate.c); zero FAKE/cheat
+constructs in either form (ordinary switch vs ordinary if-else, both ordinary C).
+
+## [s10] candidate.c chassis re-verified at floor 2 (200/200 insns, 0 source-level, 0 operand-only, 22 not-scored) with candidate.c applied fresh to src/text1b.c this session
+- mechanism: plain re-measurement; no C change from the banked body
+- probe: applied memory/grind/func_8006B578/candidate.c verbatim to src/text1b.c, ran sandbox func_8006B578 --disable all --diff
+- result: score 2, target_insns 200, build_insns 200, 22/22 hunks not-scored; all 22 unmasked hunks are branch/jump absolute-address literals differing only by whole-object base address; no new source-level or operand-only hunk appeared
+- verdict: CONFIRMED
+
+## [s10] rewriting the second dispatch (D_800A34F8>>10&7, cases 0-5) as an if-else chain instead of a switch regresses the score and does not avoid the jtbl_80015988 residual
+- mechanism: GCC 2.7.2 stmt.c expand_end_case only synthesizes an ADDR_VEC jump-table dispatch for a real switch statement past its case-density threshold; a hand-written if-else chain compiles to a linear beq/bne compare chain and never reaches that RTL shape. asm/funcs/func_8006B578.s:80-88 shows the target itself dispatches this range through the identical kind of ADDR_VEC jump table, so an if-else chain is structurally further from target, not closer.
+- probe: edited src/text1b.c in place (candidate.c chassis with only the second switch rewritten to an equivalent if-else chain, same statements/gotos/labels), ran sandbox func_8006B578 --disable all, then reverted
+- result: score regressed 2 -> 16, insn count 200 -> 206 (6 more insns than target). Reverted immediately, re-verified score 2/200 insns on the switch form, then reverted src/text1b.c to the committed INCLUDE_ASM stub (git diff clean against HEAD)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8006B578 candidate.c chassis with only the second switch replaced by an if-else chain (rest of body byte-identical to memory/grind/func_8006B578/candidate.c); zero FAKE/cheat constructs in either form
