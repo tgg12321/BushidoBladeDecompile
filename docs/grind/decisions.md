@@ -28294,3 +28294,7 @@ Remaining hand-transcribed compiler-generated jump tables project-wide: **24**
 (was 25; this commit retired `jtbl_80015988`). Every one
 is owned by a function that is still `INCLUDE_ASM` and queue-active, except the two
 above. No C body anywhere in `src/` reads a hand-transcribed table (checked).
+
+## 2026-09-17 01:17 — func_80073200 — layer-1 review — **FAIL**
+
+Body carries an unused `u8 var_v0;` local — declared, never written, never read — un-annotated, unclaimed, and affirmatively denied by the self-vet's T6 answer; the two FAKE constructs themselves check out.

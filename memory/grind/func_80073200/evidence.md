@@ -334,3 +334,74 @@ for the func_80073200 recon session (the digest's only flagged global).
 - [s8] Harness note: tmp/grind/func_80073200/s8/apply.py reverts src/text1b.c from git and re-splices at the INCLUDE_ASM marker each time. An earlier in-place body-replacement splice silently deleted 1815 lines of src/text1b.c and produced a wall of misleading `conflicting types` cc1 errors that looked like a per-variant compile failure rather than a harness bug.
 
 - [s8] src/text1b.c was reverted to its committed INCLUDE_ASM state before session end; the floor-2 body lives only in memory/grind/func_80073200/candidate.c.
+
+## s9 (forensics) — 2026-09-17 — FLOOR 2 -> 0, byte-match
+
+- [s9] The s8 floor-2 residual is ONE hunk pair, and this session pinned the
+  exact pass and decision that produces it. The `--diff` on the s8 chassis:
+  `ours[55] insert addiu a0,sp,24` / `target[58] delete addiu a0,sp,24`,
+  classed source-level, with the other 6 hunks all not-scored branch-target
+  relocation artifacts.
+
+- [s9] PASS ATTRIBUTION — it is the FIRST scheduling pass, not the second.
+  Basic block 4 of func_80073200 (insns 134..267) holds ALL FOUR
+  func_80073728 call groups. The first pass's trace
+  (tmp/grind/func_80073200/s9/bb4_sched.txt) shows insn 158 (`a0 = fp + 24`,
+  the `(s32)&s` argument of call #1, INSN_PRIORITY 1) sorted to ready[0] at
+  every step T-47..T-53 and displaced FOUR times by
+  `;; insn N has a greater potential hazard` — at T-47 (insn 150, `sw s1,0x1C`),
+  T-48 (147, `sw 0x2C`), T-50 (142, `sb 0x43`) and T-52 (137, `sb 0x42`).
+  Being picked at T-53 (the last pick of the backward pass) makes it the FIRST
+  insn emitted in the block; the target emits it 4th.
+
+- [s9] THE PREDICATE (class-level, standing): tools/gcc-2.7.2/sched.c:2717,
+  inside `schedule_select`. Within one equal-`INSN_PRIORITY` group it keeps the
+  insn with the largest `potential_hazard`. `potential_hazard`
+  (tools/gcc-2.7.2/sched.c:1327) returns 0 immediately for an insn that is on no
+  function unit, and a positive value only when the insn's unit has
+  `max_blockage > 1`. tools/gcc-2.7.2/insn-attrtab.c:6298 gives the MIPS
+  `"memory"` unit `max_blockage 3`; an `addiu` (attr type `"arith"`) is on no
+  function unit at all. Therefore, at equal priority, a READY STORE ALWAYS
+  DISPLACES A READY ADDRESS-ARITH INSN, whatever their ready-list order — the
+  `best_insn != 0` guard means ready[0] can only be kept, never promoted.
+  This is the standing reason the s7 spelling_enum sweep (1957 no-swap
+  orderings) and the s8 sweep (all 23 orderings of the first call group) all
+  measured >= 2: reordering the C only moves `rank_for_schedule`'s INSN_LUID
+  tie-break, and with a store in the group that tie-break is never reached.
+
+- [s9] The SECOND scheduling pass is only a stabilizer here
+  (tmp/grind/func_80073200/s9/bb4_sched2.txt): after reload every insn in that
+  cluster writes `$2`, so register anti/output dependences serialize
+  137->140->142->145->147 into a forced chain, no `potential_hazard` swap fires
+  at all, and `rank_for_schedule`'s INSN_LUID tie-break ("sort by INSN_LUID ...
+  so that we make the sort stable") simply replays whatever pass 1 chose. Any
+  future scheduling work on this function should read the `.sched` dump, not
+  `.sched2`.
+
+- [s9] READINESS STRUCTURE (why the stores are in the group at all): insns
+  137/142/147/150 all become ready together at T-47, released when the load
+  153 (`lw v0,0x4(s0)`, the `*(s32 *)(arg0 + 4)` read) is scheduled at T-46 —
+  they are its anti-dependence predecessors. Insn 158 becomes ready at T-44,
+  released by the call 162. So from T-47 on, the ready group is
+  {158, 150, 147, 142, 137} and the arith insn is guaranteed to lose four times.
+
+- [s9] THE CLOSER is a pass-INPUT change: remove the two `sb` stores from block
+  4 entirely by writing `s.sp42` and `s.sp43` inside BOTH arms of the colour
+  if/else (which also retires the `var_v0` staging local). jump2's
+  `find_cross_jump` re-merges the two identical arm tails afterwards, so the
+  duplication never materializes: build_insns 203 == target_insns 203, score 0,
+  `--diff` = 0 source-level / 0 operand-only. Emitted order is now
+  `sb 66 / li 20 / sb 67 / addu $4,$sp,24 / li 20 / sw 44 / ...`, identical to
+  asm/funcs/func_80073200.s:59-63.
+
+- [s9] MINIMAL-FORM ABLATIONS on the new score-0 chassis (owner prong 4,
+  "simplest-known-form"):
+    * drop `v12` (the s3 0x12 constant holder), storing the literal at both
+      sites: score 0, 203 insns — NO LONGER LOAD-BEARING, removed from the
+      final body.
+    * drop `cond`, testing D_800A3580 inline: score 7, 205 insns — KEPT.
+    * split the reused `s1` into three separate locals: score 15, 201 insns —
+      the single reused table pointer is KEPT.
+    * duplicate only `s.sp42`, leaving `s.sp43 = 0x14;` at the join: score 2 —
+      ONE remaining store is enough to keep the potential_hazard swap firing,
+      so both stores must move into the arms.

@@ -71,7 +71,10 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "u8 var_v0;  (declaration at src/text1b.c func_80073200 local block; ZERO occurrences elsewhere in the function \u2014 verified by awk over the function body: 1 total occurrence, the declaration itself)",
+  "PRECEDENT: .claude/rules/duplicated-statement-into-arms.md:63 for the quoted SCOPE sentence 'Writing the SAME real statement in two or more control-flow arms ... including when:'"
+ ],
  "kills": [
   {
    "session": 1,
@@ -218,10 +221,22 @@
    "result": "Best reordering 4, most 8-9; `s.sp42` moved out of first position 5; the `addr` local 52 with build_insns 204 (the extra"
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-17T01:55:53.827748+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Body carries an unused `u8 var_v0;` local \u2014 declared, never written, never read \u2014 un-annotated, unclaimed, and affirmatively denied by the self-vet's T6 answer; the two FAKE constructs themselves check out. Next action: Delete the `u8 var_v0;` declaration from func_80073200 and re-measure `sandbox func_80073200 --disable all`. (a) If the score stays 0 / 203 insns, resubmit the reduced body with a corrected self-vet \u2014 the T6 answer must describe the text actually submitted \u2014 and re-cite the duplicated-statement precedent as .claude/rules/duplicated-statement-into-ar"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "abc7fdbffe091e9a",
+   "when": "2026-09-17T06:17:55.173291+00:00",
+   "summary": "Body carries an unused `u8 var_v0;` local \u2014 declared, never written, never read \u2014 un-annotated, unclaimed, and affirmatively denied by the self-vet's T6 answer; the two FAKE constructs themselves check out."
+  }
+ ]
 }

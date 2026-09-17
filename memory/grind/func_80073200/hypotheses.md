@@ -547,3 +547,52 @@ result: best reordering 4, most 8-9; `s.sp42` moved out of first position 5; `ad
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c func_80073200 s8 floor-2 chassis (vLJ: cond swap + u8 colour fields + join-assigned v12 + s1 reused for both table pointers); no FAKE construct present
+
+## s9 (forensics) — 2026-09-17
+
+**H-s9-1 (CONFIRMED, closes the function).** Writing `s.sp42` and `s.sp43`
+inside BOTH arms of the colour if/else — instead of staging the byte through
+`var_v0` and storing at the join — removes the two `sb` insns from the first
+scheduling pass's basic block 4, so nothing in that block's priority-1 group can
+displace the `(s32)&s` argument set, and jump2's `find_cross_jump` re-merges the
+two arm tails so the duplication costs no bytes.
+- mechanism: `schedule_select`'s `potential_hazard` ready-list swap,
+  tools/gcc-2.7.2/sched.c:2717 (predicate detail in evidence.md [s9]).
+- probe: tmp/grind/func_80073200/s9/v1_dup42_43.c then s9/final.c (annotated).
+- result: score 2 -> **0**, build_insns 203 == target_insns 203, `--diff`
+  0 source-level / 0 operand-only / 6 not-scored.
+
+**H-s9-2 (KILLED, instance).** Duplicating only `s.sp42` into the arms and
+leaving `s.sp43 = 0x14;` at the join still leaves ONE `sb` in block 4's
+priority-1 group, so the swap keeps firing and the a0 set stays at the block
+head. Measured score 2 on the s9 chassis, no FAKE beyond the duplication.
+Banked: rejected/s9-dup-sp42-only-join-sp43.c.
+
+**H-s9-3 (KILLED, instance).** The `v12` local (the s3 fresh 0x12 constant
+holder, read at both `s.sp2C` sites) is no longer load-bearing once the colour
+stores move into the arms: replacing it with the literal at both sites measures
+score 0 / 203 insns. It is REMOVED from the final body under the
+simplest-known-form prong.
+Banked: tmp/grind/func_80073200/s9/b_no_v12.c.
+
+**H-s9-4 (CONFIRMED).** The `cond = D_800A3580;` named intermediate (s8) is
+still load-bearing on the s9 chassis: removing it and testing the global inline
+regresses to score 7 / 205 insns.
+Banked: rejected/s9-no-cond-local-regress-7.c.
+
+**H-s9-5 (CONFIRMED).** The single reused `s1` table-pointer local (s8) is still
+load-bearing: splitting it into three separate locals regresses to score 15 /
+201 insns.
+Banked: rejected/s9-split-s1-three-locals-regress-15.c.
+
+**H-s9-6 (KILLED, class).** No C-level reordering of the first call group's
+statements can move the `(s32)&s` argument set off the head of the join block
+while any store to `s` remains in that block: in `schedule_select`
+(tools/gcc-2.7.2/sched.c:2717) the ready insn with the largest
+`potential_hazard` wins its equal-`INSN_PRIORITY` group, `potential_hazard`
+(sched.c:1327) is 0 for an insn on no function unit, the MIPS "memory" unit has
+`max_blockage 3` (insn-attrtab.c:6298) while `addiu` is on no unit, and the
+`best_insn != 0` guard means ready[0] can only be kept, never promoted. So
+`rank_for_schedule`'s INSN_LUID tie-break — the only thing statement order moves
+— is never reached. This retires the whole s7/s8 reordering axis with a
+predicate rather than another sweep.

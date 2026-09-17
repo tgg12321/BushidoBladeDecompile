@@ -1,72 +1,66 @@
-/* func_80073200 - session 8 (synthesis). FLOOR 16 -> 2 (build_insns 203 ==
- * target_insns 203).  This body supersedes the s4-s7 floor-16 candidate.
+/* func_80073200 - session 9 (forensics).  FLOOR 2 -> 0.  BYTE-MATCHES.
  *
- * Three independent levers, found by merging partial results the ledger had
- * already banked as separate (instance-scoped) kills.  Each was measured on
- * top of the previous one:
+ * The s8 body sat at score 2 on ONE source-level hunk pair: our
+ * `addiu a0,sp,0x18` (the `(s32)&s` argument of the FIRST of the four
+ * func_80073728 calls) was emitted at the head of the if/else join block,
+ * where the target emits it 4th - after `sb v0,0x42(sp); li v0,0x14;
+ * sb v0,0x43(sp)` (asm/funcs/func_80073200.s:59-62).
  *
- * 1. 16 -> 10  "cond" swap.  The s4 permuter find hoisted the D_800A35C4+8
- *    address into `new_var` BEFORE the `if (D_800A3580 < 2)`; s5 killed the
- *    complementary move (pushing that address computation back INSIDE the
- *    if-block) because it left the early slot empty.  Reading
- *    asm/funcs/func_80073200.s:151-157 shows the target fills that slot with
- *    the *D_800A3580 read*, not the address: `lw v0,0x18(s0); lh
- *    v1,%gp_rel(D_800A3580); addiu v0,v0,0xC; slti v1,v1,2; beqz v1,...` with
- *    `lw v1,%gp_rel(D_800A35C4)` only AFTER the branch.  So both halves are
- *    needed at once: replace `new_var = (s32)D_800A35C4 + 8;` with
- *    `cond = D_800A3580;` at the SAME statement position, and put the
- *    dereference back inline inside the if.  Closes the whole hunk-12/13/14
- *    cluster (target `lh` + `slti` + `beqz` vs our `lw` + load-delay nop).
+ * PASS ATTRIBUTION (this session, from the instrumented cc1 -da dumps):
+ *   - The decision belongs to the FIRST scheduling pass, not the second.
+ *     tmp/grind/func_80073200/s9/bb4_sched.txt (basic block 4, insns
+ *     134..267 - all four call groups sit in ONE block) shows the a0 set
+ *     (insn 158, INSN_PRIORITY 1) sorted to ready[0] at every step from
+ *     T-47 to T-53 and displaced FOUR times by "insn N has a greater
+ *     potential hazard" - at T-47 (insn 150), T-48 (147), T-50 (142) and
+ *     T-52 (137).  It is therefore the LAST pick of the backward pass,
+ *     i.e. the FIRST insn emitted in the block.
+ *   - The predicate is tools/gcc-2.7.2/sched.c:2717, inside
+ *     schedule_select: within one equal-INSN_PRIORITY group it keeps the
+ *     insn with the largest `potential_hazard`.  potential_hazard
+ *     (sched.c:1327) returns 0 immediately for an insn that is on no
+ *     function unit, and a positive value for one whose unit has
+ *     max_blockage > 1.  tools/gcc-2.7.2/insn-attrtab.c:6298 gives the MIPS
+ *     "memory" unit max_blockage 3; an `addiu` (attr type "arith") is on no
+ *     unit at all.  So at equal priority a ready STORE always displaces a
+ *     ready address-arith insn REGARDLESS of their ready-list order (the
+ *     `best_insn != 0` guard means position 0 can only be kept, never
+ *     promoted).  That is precisely why the s7 spelling_enum sweep (1957
+ *     no-swap orderings) and the s8 sweep (all 23 orderings of this call
+ *     group) all measured >= 2: reordering the C only moves the LUID
+ *     tie-break in rank_for_schedule, and the tie-break is never reached.
+ *   - The SECOND pass (tmp/grind/func_80073200/s9/bb4_sched2.txt) is only a
+ *     stabilizer here: after reload every one of those insns writes $2, so
+ *     register anti/output dependences serialize them, and
+ *     rank_for_schedule's INSN_LUID tie-break ("sort by INSN_LUID ... so
+ *     that we make the sort stable") simply preserves pass 1's order.
  *
- * 2. 10 -> 8   u8 color/code bytes.  S73200's sp40..sp43 are the PsyQ
- *    primitive's code/r/g/b bytes.  Declared `s8`, GCC narrows the source
- *    constants and emits `li v0,-68` / `li v0,-88`; the target emits
- *    `li v0,188` / `li v0,168` (asm lines 50 and 55), i.e. the fields are
- *    UNSIGNED char.  This is a data-model correction, not a codegen trick.
+ * THE CLOSER is a pass-INPUT change, not another spelling of the same
+ * input: stop putting those two `sb` stores into block 4 at all.  Writing
+ * `s.sp42` and `s.sp43` inside BOTH if-arms leaves sched pass 1 a block 4
+ * whose priority-1 group holds no store able to displace insn 158, so the
+ * a0 set is emitted exactly where the target emits it.  jump2's
+ * find_cross_jump then re-merges the two identical arm tails, so the
+ * duplication is invisible in the bytes: build_insns 203 == target_insns
+ * 203, score 0, `sandbox --diff` reports 0 source-level and 0 operand-only
+ * hunks (the 6 remaining hunks are masked branch-target relocation
+ * artifacts).  Staging the colour byte through the `var_v0` local is no
+ * longer needed, so that local is gone.
  *
- * 3. 8 -> 2    v12-at-the-join + s1 reuse, TOGETHER.  These two had each been
- *    killed alone.  Measured this session, separately, on the floor-8 chassis:
- *      - v12 assigned at the join instead of a top-of-body initializer (vL):
- *        the `li ...,0x12` moves to the correct target[114] slot, but the
- *        pseudo takes s1 and the function drops to 3 callee-saved regs
- *        (88-byte frame vs target's 96) - score 15.
- *      - reusing the existing `s1` local for the two later `+0xC` table
- *        pointers, with v12 still a top-of-body initializer (vJE): score 9,
- *        build_insns 205.
- *    Together they are exact: forcing the table-pointer pseudo onto s1 makes
- *    it CONFLICT with v12's join-to-end live range, so global.c is forced to
- *    give v12 the 4th callee-saved register s3 - reproducing the target's
- *    s0/s1/s2/s3 + 96-byte frame AND its single `addiu s3,zero,0x12` at the
- *    join label .L800733C8.  All four operand-only register-seat hunks and
- *    both `li s3,18` placement hunks close at once.
- *
- * REMAINING RESIDUAL (score 2, ONE hunk pair, source-level):
- *    ours[55] `addiu a0,sp,24` inserted / target[58] `addiu a0,sp,24` deleted.
- *    The `(s32)&s` argument materialization for the FIRST of the four
- *    func_80073728 calls is scheduled to the very head of the join basic
- *    block; the target emits it 4th, after `sb v0,0x42(sp); li v0,0x14;
- *    sb v0,0x43(sp)` (asm/funcs/func_80073200.s:59-62).  The other three call
- *    groups already match byte-for-byte.  Everything else in the function -
- *    every register, every other instruction - is identical to the target.
- *    Pass attribution IS done: tmp/grind/func_80073200/dumps/text1b.sched,
- *    basic block 4 (insns 134..267, all four call groups in ONE block).  The
- *    a0 set is insn 158, INSN_PRIORITY 1 - tied with the seven stores/loads
- *    137/140/142/145/147/150/153 - and it sorts to the HEAD of the ready list
- *    every step (highest LUID wins the rank_for_schedule tie), but the
- *    "insn N has a greater potential hazard" swap in schedule_block promotes a
- *    store over it at T-47, T-48, T-50 and T-52, so it is left as the very
- *    last pick of the backward pass = the FIRST insn emitted in the block.
- *    The target's schedule picks it at the T-50 step instead.
- *
- * Measured DEAD on this chassis this session (do not re-propose):
- *    all 23 non-identity orderings of the 4 statements after `s.sp42` in the
- *    first call group (best 4, none < 2); moving `s.sp42 = var_v0;` out of
- *    first position (all 5); naming `(s32)&s` as an `addr` local used by all
- *    four or by only the first call (52, build_insns 204); var_v0 typed
- *    s8/s16/s32/u32 (all 2, inert); spelling the argument `(s32)&s.sp18`
- *    (2, inert); duplicating the sp42 store into both arms instead of staging
- *    it through var_v0 (2, inert - the s2 H2 re-audit); declaring v12 or s1
- *    first among the locals (2, inert).
+ * MINIMAL-FORM ABLATIONS (owner prong 4, "simplest-known-form"), all
+ * measured THIS session on this chassis:
+ *   - drop `v12` (the 0x12 constant holder introduced at s3), storing the
+ *     literal at both sites instead: score 0, build_insns 203.  It is no
+ *     longer load-bearing on the s9 chassis, so it is REMOVED.
+ *     (tmp/grind/func_80073200/s9/b_no_v12.c)
+ *   - drop `cond`, testing D_800A3580 inline: score 7 / 205 insns - KEPT.
+ *   - split the reused `s1` into three separate locals: score 15 / 201 -
+ *     the single reused table pointer is KEPT.
+ *   - duplicate only `s.sp42` and leave `s.sp43 = 0x14;` at the join:
+ *     score 2 - one remaining store is enough to keep the potential_hazard
+ *     swap firing, so BOTH stores must move into the arms.
+ *     (tmp/grind/func_80073200/s9/e_sp43_at_join.c, banked as
+ *     rejected/s9-dup-sp42-only-join-sp43.c)
  */
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
@@ -82,7 +76,6 @@ void func_80073200(s32 arg0) {
     s32 v1;
     s32 idx;
     u8 var_v0;
-    s32 v12;
     s32 cond;
 
     s.sp30 = 0;
@@ -103,13 +96,24 @@ void func_80073200(s32 arg0) {
         s.sp28 = 1;
         if (*(s32 *)((s32)D_800A35C4 + 8) & 4) {
             s.sp41 = 0xBC;
-            var_v0 = 0x78;
+            s.sp42 = 0x78;
+            s.sp43 = 0x14;
         } else {
             s.sp41 = 0xA8;
-            var_v0 = 0x6E;
+            s.sp42 = 0x6E;
+            /* FAKE: `s.sp43 = 0x14;` is written in BOTH arms instead of once
+             * at the join.  Byte-neutral - jump2's find_cross_jump re-merges
+             * the two identical arm tails, so nothing extra materializes
+             * (build_insns 203 == target_insns 203).  mechanism: the FIRST
+             * scheduling pass, schedule_select's `potential_hazard` ready-list
+             * swap (tools/gcc-2.7.2/sched.c:2717).  Keeping the two `sb` stores
+             * out of that pass's basic block 4 removes the only ready insns
+             * that could displace the `(s32)&s` argument set at its T-50 step.
+             * lever-exhaustion: memory/grind/func_80073200/hypotheses.md s4-s8
+             * (two permuter campaigns, the 1957-ordering spelling_enum sweep,
+             * all 23 orderings of this call group, the addr-local naming). */
+            s.sp43 = 0x14;
         }
-        s.sp42 = var_v0;
-        s.sp43 = 0x14;
         s.sp2C = 0x14;
         s.sp1C = s1;
         s.sp24 = *(s32 *)(arg0 + 4);
@@ -131,10 +135,9 @@ void func_80073200(s32 arg0) {
         s.sp42 = 0x32;
         s.sp43 = 0x5A;
     }
-    v12 = 0x12;
     s.sp34 = 0;
     s.sp30 = 0;
-    s.sp2C = v12;
+    s.sp2C = 0x12;
     s.sp28 = 0;
     tmp = *(s32 *)((s32)ctx + 0x14);
     s.sp18 = tmp;
@@ -144,10 +147,20 @@ void func_80073200(s32 arg0) {
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0x60), 0);
     AddPrim(D_800A374C + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
+    /* FAKE: `cond` names the D_800A3580 read as a fresh once-written,
+     * once-read intermediate declared ahead of the pointer bump, so the read
+     * is emitted before the branch rather than after it.  mechanism: LUID
+     * order into the first scheduling pass - the named read becomes the
+     * delay-slot-fillable insn the target puts between `lw v0,0x18(s0)` and
+     * `beqz` (asm/funcs/func_80073200.s:151-157).  lever-exhaustion:
+     * memory/grind/func_80073200/hypotheses.md s5/s6 (the complementary
+     * in-block form and both declaration-order sweeps measured dead); ablated
+     * again THIS session - removing it regresses 0 -> 7
+     * (tmp/grind/func_80073200/s9/a_no_cond.c). */
     cond = D_800A3580;
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     if (cond < 2) {
-        s.sp2C = v12;
+        s.sp2C = 0x12;
         s.sp28 = 1;
         v1 = *(s32 *)((s32)D_800A35C4 + 8);
         idx = *(s32 *)((s32)ctx + 0x28 + (v1 % 4) * 4);
