@@ -533,3 +533,136 @@ in-file structural levers, reinforcing (not superseding) H8's class kill.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, reverted to INCLUDE_ASM stub before session end
+
+## H12 (s6, enumerate modality) — KILLED (class): no enumerable source-level/operand-only region exists at the current candidate for a spelling sweep; the sole residual is structurally locked to a cross-TU named-symbol jump-table reference GCC cannot emit from ordinary switch C
+Statement: re-applied candidate.c to src/text1b.c and re-measured before probing (per protocol).
+`sandbox --disable all` reproduced score 2 exactly (no drift from s3/s4/s5). `sandbox --diff`
+shows 22 hunks, ALL not-scored (masked branch/jump-target displacement noise from the function's
+own absolute address differing between target's real load location and the sandbox's synthetic
+placement) — 0 source-level, 0 operand-only. The systematic-spelling-sweep protocol (identify the
+one differing region, wrap it in ENUM-BEGIN/END, run spelling_enum + sweep_variants) requires a
+source-level or operand-only hunk to define the enumerable region; none exists, so there is
+nothing to wrap or sweep — enumeration finds a genuinely empty search space, not a null result
+from an unlucky sweep.
+Went further than re-citing H7/H8/H9: independently re-derived the underlying mechanism this
+session via direct binary inspection (not from old hypothesis text) —
+  - `mipsel-linux-gnu-nm build/src/text1a_b_pre_rodata.o` still shows `00000598 R jtbl_80015988`
+    (defined, a different TU); `build/src/text1b.o` still shows `U jtbl_80015988` (target-side
+    build artifact, still referencing it externally — this reflects the INCLUDE_ASM stub's own
+    asm, not our candidate).
+  - Grepped `src/text1b.c` for `jtbl_80015988` — zero references. No C code anywhere in the file
+    names the symbol; it cannot, since splat auto-named it and it is declared only in
+    `src/text1a_b_pre_rodata.c:409`.
+  - `mipsel-linux-gnu-objdump -dr tmp/sandbox/func_8006B578/text1b.o` on OUR compiled candidate
+    shows the second switch's dispatch as `lui at,0x0 / R_MIPS_HI16 .rodata` + `lw v0,0(at) /
+    R_MIPS_LO16 .rodata` — a section-relative relocation against a table GCC synthesized fresh
+    into ITS OWN compiling TU's `.rodata`, exactly as `expand_end_case`/`gen_jump` in GCC 2.7.2's
+    `stmt.c` always does for a `switch` with 6 contiguous case values (0-5).
+  - `grep -n jtbl_80015988 asm/funcs/func_8006B578.s` shows target's own dispatch is `lui
+    $at,%hi(jtbl_80015988)` / `lw $v0,%lo(jtbl_80015988)($at)` — a NAMED-SYMBOL relocation against
+    the table declared in a different file, at address 0x80015988 (far from this function's own
+    0x8006B578 — this is not a local/adjacent table, it is a genuinely separate, pre-existing
+    object elsewhere in the binary that the original build's switch reused).
+  - Conclusion (re-derived, not assumed): ordinary C `switch` statement semantics give the
+    programmer no lever to make GCC's `stmt.c` case-table emission reference an
+    externally-declared name instead of synthesizing a fresh local table — the switch structure,
+    case ordering, declaration order, or any pure C rewrite confined to `src/text1b.c` cannot
+    change WHICH object the compiler treats as "the jump table for this switch." This is a
+    property of GCC's `expand_end_case`, not of the C source shape, so it holds for every C
+    spelling of the switch, not merely the ones tried so far.
+kill_scope: class
+predicate_cite: tools/gcc-2.7.2/stmt.c:4704 (`table_label = gen_label_rtx ();` inside
+  `expand_end_case`, stmt.c:4681) — GCC always allocates a FRESH internal label/table via
+  `gen_label_rtx()` for a compiled switch's jump table; there is no code path in
+  `expand_end_case` that takes a symbol name from the C source and reuses it as the table
+  label, so no C spelling of the switch can make GCC reference `jtbl_80015988` by name.
+measured_on: func_8006B578, src/text1b.c (candidate.c reapplied then reverted to the INCLUDE_ASM
+  stub before session end, per asm-until-matched), ordinary C only, no FAKE/cheat constructs
+  present or proposed. Score 2, 200/200 insns, 0 source-level, 0 operand-only, 22 not-scored
+  (re-confirmed this session, matching s3/s4/s5 exactly).
+Result: KILLED (class) — no in-TU C spelling reachable; the residual requires the already-
+  identified cross-TU jtbl_80015988 declaration move (frontier item 1, unchanged), which is
+  outside a single-file grind session's mandate. This closes the enumerate modality on this
+  function's current frontier: there is no region for the systematic spelling sweep to search.
+
+## Session 6 (enumerate modality, 2026-09-16)
+
+H9: The candidate.c chassis at src/text1b.c measures score=2, target_insns=200,
+build_insns=200, 0 source-level hunks, 0 operand-only hunks, 22/22 not-scored
+hunks (all masked branch-target-address artifacts, e.g. target `beq v1,v0,23718`
+vs ours `beq v1,v0,9484` — objdump-printed absolute addresses that differ because
+of upstream link-layout offset, not real instruction content) when re-measured
+fresh this session via `sandbox func_8006B578 --disable all --diff`.
+Result: CONFIRMED — exact re-measurement of s3/s4/s5's finding on the current
+chassis: score=2, 200/200 insns, 0/22 source-level, 0/22 operand-only, 22/22
+not-scored.
+kill_scope: n/a (CONFIRMED, not KILLED)
+measured_on: func_8006B578, src/text1b.c, candidate.c applied then reverted to
+the INCLUDE_ASM stub before session end, ordinary C only, no FAKE/cheat
+constructs present.
+
+H10 (the mandated enumerate-modality spelling sweep): with 0 source-level and 0
+operand-only hunks, there is no C-visible byte difference to search — but the
+modality still requires running the systematic sweep procedure, so I marked the
+most structurally complex sub-block (switch-dispatch case 0's bit-toggle
+sequence, candidate.c lines 64-71: `s32 *p = ...; u32 f = (u32)p[8]; u32 a3 = f &
+~1u; u32 bit = f & 1; bit ^= 1; a3 |= bit; p[8] = (s32)a3; func_8005C650(...);`)
+with ENUM-BEGIN/ENUM-END and ran `tools/spelling_enum.py` (3 named locals, 0
+assignments, 4 anchors -> 10 distinct spellings including commutative swaps,
+tmp/grind/func_8006B578/s6/enum/v00.c..v09.c). Of the 10 emitted spellings, only
+4 are syntactically valid C (v00 identical-to-candidate, v01 declaration-order
+swap of `bit`/`a3`, v02 inlines `f` at both use sites, v03 same inlining with
+`bit` computed first) — the remaining 6 (v04-v09) are BROKEN C emitted by the
+tool's compound-assignment axis misapplying itself to this region (it produces
+invalid lvalues like `(f & ~1u) |= bit;`, `(f & 1) ^= 1;` — not compilable, a
+tool limitation on this region's shape, not a spelling candidate).
+I measured the two non-trivial valid spellings directly against the sandbox:
+  - v02 (inline `f`, both `p[8]` reads written out at each use site instead of
+    a shared `f` local): score=2, build_insns=200 — IDENTICAL to baseline.
+    KILLED (instance): this respelling changes nothing; GCC's CSE re-derives
+    the same `f` value either way.
+    kill_scope: instance
+    measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat
+    constructs, reverted to INCLUDE_ASM stub before session end.
+  - v01 (declare `bit` before `a3`, reversing candidate.c's declaration order):
+    score=11, build_insns=203 (+3 insns vs target's 200) — REGRESSES.
+    KILLED (instance): reversing this pair's declaration order changes local
+    allocation and costs 3 instructions; candidate.c's current order (`a3`
+    before `bit`) is strictly better and must be kept.
+    kill_scope: instance
+    measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat
+    constructs, reverted to INCLUDE_ASM stub before session end.
+After both measurements the candidate was restored to its exact s3/s4/s5 form
+(re-verified score=2, 200/200 insns) before reverting to INCLUDE_ASM.
+
+Conclusion for this session: the enumerate modality's precondition (a
+source-level or operand-only residual to search) does not hold for this
+function's current frontier — H8 (s4, class-killed) and H9 (this session's
+re-confirmation) both establish that the only remaining gap is the cross-TU
+jtbl_80015988 masked-artifact residual, not a spelling question. The sweep
+that WAS run (H10) found the current candidate's spelling of case 0's
+bit-toggle block is already locally optimal among the syntactically valid
+enumerated alternatives. Frontier item 1 (cross-file jtbl declaration move)
+is unchanged and remains the only live lever.
+
+## [s6] Re-measuring memory/grind/func_8006B578/candidate.c on the current chassis reproduces sandbox --disable all score=2, target_insns=200, build_insns=200, with the --diff breakdown showing 0/22 source-level hunks, 0/22 operand-only hunks, and 22/22 not-scored hunks (masked branch/jump-target address artifacts, e.g. target 'beq v1,v0,23718' vs ours 'beq v1,v0,9484').
+- mechanism: Chassis-reproducibility check (no GCC pass claimed) — establishes the baseline this session's spelling sweep measures against.
+- probe: Applied candidate.c to src/text1b.c, ran `sandbox func_8006B578 --disable all --diff`.
+- result: CONFIRMED: score=2, target_insns=200, build_insns=200, 0 source-level, 0 operand-only, 22 not-scored — exact match to s3/s4/s5's recorded floor.
+- verdict: CONFIRMED
+
+## [s6] Wrapping candidate.c's switch-dispatch case-0 bit-toggle block (lines 64-71: p[8] read into local f, masked into a3/bit, toggled, recombined, stored) in ENUM-BEGIN/END and running tools/spelling_enum.py produces 10 distinct spellings; of those, inlining the shared local f (both p[8] reads written out separately instead of cached, variant v02) is a byte-neutral respelling of this residual-free region.
+- mechanism: GCC's CSE (cse.c) re-derives the repeated p[8] load either way when the region is already free of source-level/operand-only diffs — this is a spelling-space sweep per the mandated enumerate-modality procedure, not a claimed coercion mechanism.
+- probe: Applied variant v02 (tmp/grind/func_8006B578/s6/enum/v02.c region) to src/text1b.c in place of candidate.c's case-0 block, ran `sandbox func_8006B578 --disable all`.
+- result: KILLED: score=2, build_insns=200 — identical to baseline; no improvement, no regression. The current candidate.c spelling (cached local f) and the inlined spelling (v02) are score-equivalent; neither closes the residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either form, reverted to the INCLUDE_ASM stub before session end
+
+## [s6] Reversing candidate.c's declaration order for the case-0 block's a3/bit locals (declaring bit before a3, variant v01) is a byte-neutral respelling that does not affect codegen.
+- mechanism: Local-allocation declaration-order sensitivity (ordinary C register-allocation observation, not a claimed coercion) — part of the mandated enumerate-modality sweep's declaration-order axis.
+- probe: Applied variant v01 (bit declared before a3) to src/text1b.c in place of candidate.c's case-0 block, ran `sandbox func_8006B578 --disable all`.
+- result: KILLED: score=11, build_insns=203 (+3 insns vs target's 200) — a real regression. Candidate.c's current declaration order (a3 before bit) is strictly better and must be retained; this reordering is not a viable lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either form, reverted to the INCLUDE_ASM stub before session end

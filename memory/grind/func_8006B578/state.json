@@ -1,8 +1,8 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "structural",
+ "session_count": 6,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -33,12 +33,18 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural modality (s5): re-confirmed floor 2 (200/200 insns, 0 source-level/0 operand-only/22 not-scored) and killed 3 structural variants (decl-order reversal, s16 narrowing of hi, statement-split "
+  },
+  {
+   "session": 6,
+   "floor": 2,
+   "modality": "enumerate",
+   "headline": "Re-confirmed floor 2 (200/200 insns, 0 source-level/0 operand-only/22 not-scored) and ran the mandated enumerate-modality spelling sweep on the case-0 bit-toggle sub-block: measured v02 (inlined CSE) "
   }
  ],
  "frontier": [
   {
    "hypothesis": "Moving the jtbl_80015988 array declaration out of src/text1a_b_pre_rodata.c (or otherwise re-attributing its TU ownership) so GCC's own switch-generated jump table for func_8006B578 lands at the address the scorer can resolve will close the remaining score-2 residual to 0.",
-   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual) \u2014 a source-file re-attribution per no-new-park-categories.md, not a codegen lever, and confirmed (H8, class kill) not reachable via any switch rewrite confined to text1b.c",
+   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual) \u2014 a source-file re-attribution per no-new-park-categories.md, not a codegen lever confined to text1b.c; GCC's expand_end_case (stmt.c:4681, table_label = gen_label_rtx() at stmt.c:4704) always synthesizes a fresh internal label for a compiled switch's table, so no C spelling within text1b.c alone can make it reference jtbl_80015988 by name.",
    "next_probe": "A future session needs authorization/scope to edit BOTH src/text1b.c and src/text1a_b_pre_rodata.c atomically (or a ruling-request confirming the cross-file move is in-scope for a single-function grind session), apply candidate.c to text1b.c, delete/move the jtbl_80015988 declaration in the pre-rodata file, run sandbox --disable all, and verify the score actually reaches 0."
   }
  ],
@@ -108,6 +114,22 @@
    "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs, reverted to INCLUDE_ASM stub before session end",
    "predicate_cite": "",
    "result": "score 2 -> 4 with the split (regression), 2 again after reverting; 200/200 insns throughout, all measured this session"
+  },
+  {
+   "session": 6,
+   "statement": "Wrapping candidate.c's switch-dispatch case-0 bit-toggle block (lines 64-71: p[8] read into local f, masked into a3/bit, toggled, recombined, stored) in ENUM-BEGIN/END and running tools/spelling_enum.",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either form, reverted to the INCLUDE_ASM stub before session end",
+   "predicate_cite": "",
+   "result": "KILLED: score=2, build_insns=200 \u2014 identical to baseline; no improvement, no regression. The current candidate.c spellin"
+  },
+  {
+   "session": 6,
+   "statement": "Reversing candidate.c's declaration order for the case-0 block's a3/bit locals (declaring bit before a3, variant v01) is a byte-neutral respelling that does not affect codegen.",
+   "kill_scope": "instance",
+   "measured_on": "func_8006B578, src/text1b.c, ordinary C only, no FAKE/cheat constructs present in either form, reverted to the INCLUDE_ASM stub before session end",
+   "predicate_cite": "",
+   "result": "KILLED: score=11, build_insns=203 (+3 insns vs target's 200) \u2014 a real regression. Candidate.c's current declaration orde"
   }
  ],
  "ladder_skip": 0,
