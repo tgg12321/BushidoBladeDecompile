@@ -2222,3 +2222,4 @@
 - 2026-09-16 18:54 _SsVmInit COMPLETED-C after 8 sessions (closer: s8 [synthesis]).
 - 2026-09-16 19:05 func_8006B578 s1 [recon] floor=34: recon: wrote real 2-param C body from stale 4-param placeholder; 200 -> 34 (199/200 insns), 7 source-level hunks remain
 - 2026-09-16 19:17 func_8006B578 s2 [structural] floor=34: Floor held at 34 (199/200 insns); killed two mixed-exit-form variants of the cross-jump-store-tail-merge recipe on cases 3/4/5 (both made it worse, 55 and 44); confirmed via direct asm read that the shared 0x400040 check+call block is a PREFIX duplicated 4x in target but merged once in our build.
+- 2026-09-16 19:37 func_8006B578 s3 [permuter] floor=2: Floor 34 -> 2 (200/200 insns, 0 source-level hunks): two structural C bugs fixed (idx>=6 fallthrough, shared-block layout) + a statement-order fix; sole residual is a cross-TU jtbl_80015988 scorer artifact needing a second file's edit.

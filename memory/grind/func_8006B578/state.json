@@ -1,8 +1,8 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -15,23 +15,19 @@
    "floor": 34,
    "modality": "structural",
    "headline": "Floor held at 34 (199/200 insns); killed two mixed-exit-form variants of the cross-jump-store-tail-merge recipe on cases 3/4/5 (both made it worse, 55 and 44); confirmed via direct asm read that the s"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Floor 34 -> 2 (200/200 insns, 0 source-level hunks): two structural C bugs fixed (idx>=6 fallthrough, shared-block layout) + a statement-order fix; sole residual is a cross-TU jtbl_80015988 scorer art"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The check+call PREFIX shared by case3/case4/case5/fallback is unified by our compile but kept separate (4 inline copies) by target; the mechanism is NOT jump2's backward-suffix find_cross_jump (mixing the final exit form made it worse, twice), so a different pass (combine's insn-sharing, cse.c re-materialization refusal, or something jump2-adjacent working forward from a common ENTRY rather than backward from a common EXIT) is doing the merge.",
-   "mechanism": "Unconfirmed -- needs a dump read, not another by-analogy guess.",
-   "next_probe": "Read tmp/grind/func_8006B578/dumps/text1b.jump2 and text1b.combine starting at the func_8006B578 boundary (jump2 line 53481) and find the actual basic-block structure for the case3/4/5/fallback region; identify which pass's output first shows the 4 prefixes collapsed to fewer copies, then read that pass's source (tools/gcc-2.7.2/<pass>.c) for the exact merge predicate before proposing another C-structural fix."
-  },
-  {
-   "hypothesis": "We are 199 insns vs target's 200 (one UNDER) at the floor-34 baseline; target keeps an explicit `nop` (hunk 17: target has `nop` where ours has `li s2,2`) that our structure elides via reordering/scheduling rather than us missing real logic.",
-   "mechanism": "reorg.c delay-slot filling / insn scheduling difference, likely coupled to whatever fix emerges from frontier item 1 (the counts will shift once the prefix-merge is addressed, so don't chase this in isolation first).",
-   "next_probe": "After frontier item 1 is resolved (or ruled further), re-run sandbox --diff and recheck whether this one-under-target insn gap persists or was an artifact of the still-merged prefix."
-  },
-  {
-   "hypothesis": "Case 3's tail store/const ordering (`D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000; var_s2 = 2;`) may not match target's exact statement-order-to-register mapping.",
-   "mechanism": "Instruction scheduling / statement-order sensitivity in a simple two-statement block.",
-   "next_probe": "Swap the order of the two statements in case 3 and re-measure -- cheap, but should come AFTER frontier item 1 since the prefix-merge dominates the current source-level diff and any C change to case 3 will need re-measuring against whatever the frontier-1 fix produces anyway."
+   "hypothesis": "Moving the jtbl_80015988 array declaration out of src/text1a_b_pre_rodata.c (deleting it there) so GCC's own switch-generated jump table for func_8006B578 lands at the correct .rodata slot will close the remaining score-2 residual to 0.",
+   "mechanism": "jtbl-rodata-split-infrastructure (no-C-form cross-TU jump-table symbol residual); fix is an evidence-based source-file re-attribution per no-new-park-categories.md, not a codegen lever.",
+   "next_probe": "Apply memory/grind/func_8006B578/candidate.c to src/text1b.c, delete the jtbl_80015988 declaration block (lines 408-416) from src/text1a_b_pre_rodata.c, run sandbox --disable all and verify score reaches 0 before treating this as solved \u2014 this is a two-file edit outside this session's single-file mandate, so it was diagnosed but not executed this session; may need a ruling-request confirming the cross-file edit is in-scope for a single-function grind session."
   }
  ],
  "judge_constraints": [],
@@ -74,5 +70,6 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-16T23:54:49.966797+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }

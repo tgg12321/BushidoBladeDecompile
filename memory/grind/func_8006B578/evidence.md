@@ -119,3 +119,131 @@ flag checks calling `func_8005C650`):
 - [s2] pwsh tools/grinder/dump.ps1 func_8006B578 ran clean this session (harmless pre-existing K&R-style redeclaration warnings only, same warnings the file has always emitted); dumps for the whole text1b.c TU are in tmp/grind/func_8006B578/dumps/ (func_8006B578 starts at text1b.jump2:53481) but were NOT read in detail for this specific region before the session's turn budget ran low -- flagged as the sharpened next probe.
 
 - [s2] Chassis check confirmed at session start: sandbox --disable all == 34 with candidate.c applied, matching the ledger's last recorded floor exactly (no drift).
+
+## Session 3 (permuter modality) — floor 34 -> 2, 0 source-level hunks left
+
+- [s3] CHASSIS-CHECK CORRECTION: the ledger's "chassis measures 34 right now"
+  dispatch line was WRONG — candidate.c was never actually applied to
+  src/text1b.c between s2 and s3 (src still carried the raw INCLUDE_ASM stub,
+  which sandboxes at 200). Applying candidate.c verbatim reproduced the
+  documented 34 exactly, so s1/s2's measurements were real; only the
+  inter-session persistence assumption was stale. Re-applying is now step 0
+  for the next session too — always re-check `sandbox --disable all` right
+  after applying candidate.c, don't trust the dispatch-line number blindly.
+
+- [s3] ROOT CAUSE of the floor-34 plateau (frontier item 1 from s2, now
+  RESOLVED): read `asm/funcs/func_8006B578.s` lines 60-219 directly (ground
+  truth, not the jump2/combine dumps — those weren't needed this time) and
+  found TWO separate structural bugs in the s1/s2 candidate, both now fixed:
+  1. **idx>=6 must skip the shared 0x400040 block entirely.** The asm's
+     `sltiu v0,v1,0x6; beqz v0,.L8006B850` sends idx>=6 STRAIGHT to the final
+     tail check (`.L8006B850`/`.L8006B854`, the `*arg1&0x100010` block) —
+     it does NOT execute the shared `*arg1&0x400040` field-increment code that
+     case 0/1/2 fall into. The s1/s2 candidate's `if (idx<6){switch}` followed
+     unconditionally by the shared-0x400040 `if` block let idx>=6 fall through
+     into that shared code too — a genuine SEMANTIC bug, not just a layout
+     issue (confirmed by objdump: with the OLD structure, idx>=6 compiled to
+     `beqz v0,969c` — jumping INTO the shared block's start; with the fix, it
+     compiles to `beqz v0,96e8` — the tail's own check, matching target's
+     `.L8006B850` jump exactly). Fix: `if (idx>=6) goto tail;` before the
+     switch, instead of wrapping the switch in `if (idx<6){...}`.
+  2. **The shared 0x400040+field-increment block is physically laid out
+     BETWEEN case 2 and case 3 in target, not after the whole switch.** Target
+     asm: case 0 and case 1 each end with an explicit `j .L8006B754` (the
+     toggle-call merge point); case 2 falls into `.L8006B754` naturally
+     (no jump); `.L8006B754` flows straight into `.L8006B760` (the shared
+     `*arg1&0x400040` check + field-increment) with NO branch in between;
+     `.L8006B760` then does `j .L8006B854` to reach the tail, skipping
+     `.L8006B850`'s own (now-redundant) `lui` — and ONLY THEN does the asm
+     lay out `.L8006B7B4`/`7FC`/`828` (case 3/4/5). The s1/s2 candidate wrote
+     the shared code AFTER the switch's closing brace in source, so GCC (which
+     lays out switch case bodies in source/case order) placed case 3/4/5
+     BEFORE the shared code, needing an extra `j 96a0; lui v1,0x40` glue
+     hunk to reach it (the exact "hunk 15 extra insert" flagged at floor 34).
+     Fix: moved the shared `*arg1&0x400040` block INSIDE the switch, as case
+     2's fallthrough consequence (case 0 and case 1 `goto shared_400040;`,
+     case 2 falls through into a `shared_400040:` label written immediately
+     after its own body, before `case 3:`). This reproduces the target's
+     physical ordering exactly (GCC lays out switch bodies in source order,
+     so `shared_400040:` now sits between case 2 and case 3 in the emitted
+     code, matching target byte-for-byte in this region).
+  Combined effect measured via `sandbox --disable all`: 34 -> 11 (fix 1
+  alone, applied first) -> 2 (fix 2, applied after). `--diff` after fix 2
+  shows: `target 200 insns · ours 200 insns · 22 hunk(s) — 0 source-level ·
+  0 operand-only · 22 not-scored`.
+
+- [s3] A THIRD, independent register-allocation-shaped diff surfaced between
+  fix 1 and fix 2 (score 11, hunk 16 of that intermediate diff): the shared
+  field-increment `D_800A34F8 = (f2 & ~0x1C00) | (((f2>>10)&7)+1)<<10;` was
+  written as `u32 f2=D_800A34F8; s32 c2=((f2>>10)&7)+1; D_800A34F8=(f2&~0x1C00u)|((c2&7)<<10);`
+  — computing the SHIFT/FIELD part (c2) before the MASK part. Target's asm
+  computes the mask AND first (`li v1,-7169; and v1,v0,v1`) THEN the shift
+  (`srl v0,v0,0xa; ...`), reusing v0 for the field after v1 already holds the
+  masked base — exactly mirroring case 1/2's OWN increment/decrement style
+  (`u32 m = a0 & ~0x1C00; s32 c = ((a0>>10)&7)+1; m |= (c&7)<<10;`). Rewriting
+  the shared block to compute the mask FIRST (`u32 m2 = f2 & ~0x1C00u;` before
+  `s32 c2 = ...`) closed this without any register-pin or reordering trick —
+  ordinary C statement-order match. Measured: 11 -> 2.
+
+- [s3] THE ONLY REMAINING RESIDUAL (score 2, 0 hunks flagged as source-level
+  or operand-only by `sandbox --diff`) is a scorer-visible but NOT
+  source-level artifact: `tmp/grind/func_8006B578/diag_score.py` (normalized
+  instruction dump via `engine.score.normalized_insns`) isolates it to
+  exactly 2 instructions — the switch's jump-table address load:
+  ```
+  ours:   lui at,@.rodata      /  lw v0,@.rodata(at)
+  target: lui at,0x0           /  lw v0,0(at)
+  ```
+  Root cause (confirmed via `nm`, not guessed): `jtbl_80015988` — the literal
+  6-entry case-label address table this switch's jump table must match — is
+  declared as a REAL C array (`const u32 jtbl_80015988[6] = {0x8006B6B8, ...};`)
+  in a DIFFERENT translation unit, `src/text1a_b_pre_rodata.c:409-416`, and
+  compiles to a GLOBAL, DEFINED symbol there (`nm build/src/text1a_b_pre_rodata.o`
+  -> `00000598 R jtbl_80015988`; `nm build/src/text1b.o` -> `U jtbl_80015988`,
+  i.e. text1b.o references it as UNDEFINED/external). Every one of the 6
+  table entries is a hardcoded address that is a case label OF THIS FUNCTION
+  and nothing else (`grep`-confirmed: no other function/file references
+  jtbl_80015988 or any of the 6 addresses) — single-owner evidence this table
+  belongs with func_8006B578's own TU, not with text1a_b_pre_rodata.c's grab-bag
+  of leftover pre-cleanup rodata literals. A normal `switch` statement in C
+  can NEVER make GCC reference a foreign externally-declared symbol for its
+  jump table — GCC always synthesizes its OWN local jump table into the
+  compiling TU's `.rodata`, referenced via a section-relative relocation
+  (masked to `@.rodata` by the sandbox scorer, by design, since it's normally
+  layout noise). The reference build (`build/src/text1b.o`, still built from
+  the ORIGINAL hand-written-for-this-address asm, not from any C) references
+  the symbol `jtbl_80015988` BY NAME (an `R_MIPS_HI16`/`R_MIPS_LO16` pair
+  against that named external symbol) — which is why the diff shows target's
+  raw immediate as literal `0x0` (unresolved: `jtbl_80015988` isn't listed in
+  `named_syms.txt`/`undefined_syms_auto.txt`, so `engine/score.py`'s
+  `_resolve_named_pair` can't look up its address and leaves the immediate
+  raw) instead of a normalized `@hi(...)`/`@lo(...)` token. **This is the
+  `jtbl-rodata-split-infrastructure` carve-out shape** (`.claude/rules/no-new-park-categories.md`
+  / `codegen-technique-index.md` "jtbl-infra"): "the GCC-emitted jtbl can't be
+  at the address the function references because rodata link order puts the
+  asm/data block before the C file's .rodata. There is literally no pure-C
+  form that resolves this without a project-wide rodata reorder." The
+  no-new-park-categories rule's own evidence-based-reattribution carve-out
+  says this is fixable, legitimately, by MOVING the `jtbl_80015988` array
+  declaration out of `src/text1a_b_pre_rodata.c` and into `src/text1b.c`
+  (deleting it from the pre-rodata grab-bag file, since single-owner evidence
+  supports the TU reassignment) so GCC's own switch-generated table lands in
+  THIS TU's `.rodata` at the correct link position — but that edit touches a
+  SECOND file (`src/text1a_b_pre_rodata.c`), which is OUTSIDE this session's
+  single-function/single-file mandate ("Work ONLY func_8006B578 in
+  src/text1b.c"). This is the sole live frontier item for the next session
+  (which should either get authorization to touch both files in one atomic
+  edit, or file a `ruling-request` asking whether the cross-file move is
+  in-scope for a single-function grind session).
+
+- [s3] candidate.c (session 3) reaches sandbox --disable all score 2, 200/200 insns, 0 source-level hunks and 0 operand-only hunks in sandbox --diff — the entire prior floor-34 residual (7 source-level hunks) is closed.
+
+- [s3] The only 2 differing normalized instructions (per tmp/grind/func_8006B578/diag_score.py) are the switch's jump-table lui/lw address load, masked to @.rodata in our build vs an unresolved literal 0x0 in the reference build.
+
+- [s3] jtbl_80015988 (the 6-entry case-label address table this switch's jump table must match) is defined as a real C array in src/text1a_b_pre_rodata.c:409-416, a DIFFERENT translation unit than func_8006B578's home src/text1b.c; nm confirms build/src/text1a_b_pre_rodata.o defines it (00000598 R jtbl_80015988) while build/src/text1b.o references it as undefined external (U jtbl_80015988).
+
+- [s3] Every one of jtbl_80015988's 6 entries (0x8006B6B8, 0x8006B6E8, 0x8006B720, 0x8006B7B4, 0x8006B7FC, 0x8006B828) is a case-label address belonging exclusively to func_8006B578 — grep across src/*.c and asm/funcs/*.s found no other reference to the symbol or any of its 6 literal values, i.e. single-owner evidence supporting a TU reassignment per no-new-park-categories.md's evidence-based-reattribution carve-out.
+
+- [s3] src/text1b.c has been reverted to its pre-session INCLUDE_ASM stub (git status --short src/text1b.c is empty) — no C landed on main this session, consistent with asm-until-matched (C lands only once, at COMPLETED-C, and this function is not yet a byte match).
+
+- [s3] No FAKE/cheat construct was used, proposed, or is present anywhere in this session's candidate — every construct is ordinary C with a real semantic reading (see self_vet.md T1-T6).
