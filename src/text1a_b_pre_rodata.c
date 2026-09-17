@@ -405,67 +405,7 @@ const u32 jtbl_80015940[18] = {
     0x80066324,
 };
 
-/* jtbl_80015988: 6 words (24B) @ 0x80015988 */
-const u32 jtbl_80015988[6] = {
-    0x8006B6B8,
-    0x8006B6E8,
-    0x8006B720,
-    0x8006B7B4,
-    0x8006B7FC,
-    0x8006B828,
-};
-
-/* D_800159A0: 16B @ 0x800159A0 — "warning\n" + alignment + empty trailing string */
-const char D_800159A0[16] = "warning\n";
-
-/* jtbl_800159B0: 8 words (32B) @ 0x800159B0 */
-const u32 jtbl_800159B0[8] = {
-    0x8006E5D8,
-    0x8006E618,
-    0x8006E5F0,
-    0x8006E618,
-    0x8006E5E4,
-    0x8006E628,
-    0x8006E5E4,
-    0x00000000,
-};
-
-/* jtbl_800159D0: 15 words (60B) @ 0x800159D0 */
-const u32 jtbl_800159D0[15] = {
-    0x8006EE74,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EE88,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EF10,
-    0x8006EE38,
-    0x8006EE4C,
-    0x8006EE60,
-};
-
-/* jtbl_80015A0C: 6 words (24B) @ 0x80015A0C */
-const u32 jtbl_80015A0C[6] = {
-    0x800748F0,
-    0x80074984,
-    0x800749D8,
-    0x80074A58,
-    0x80074AB0,
-    0x00000000,
-};
-
-/* jtbl_80015A24: 6 words (24B) @ 0x80015A24 */
-const u32 jtbl_80015A24[6] = {
-    0x80077438,
-    0x80077460,
-    0x800774B0,
-    0x80077540,
-    0x800775D0,
-    0x80077670,
-};
-
+/* NOTE: the cluster continues in src/text1a_b_mid_rodata.c. The 24 bytes at
+ * 0x80015988 between this file and that one are supplied by build/src/text1b.o
+ * (func_8006B578's switch table) -- see bb2.ld and the 2026-09-16 entry in
+ * docs/grind/decisions.md. */
