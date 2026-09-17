@@ -27944,3 +27944,81 @@ Ruling on candidate.c as read (s8 body, no FAKE, no family claimed). banned_cons
 ## 2026-09-16 18:54 — _SsVmInit — final call — **PASS**
 
 FINAL CALL on body ad0b5f6b371bba4c, the same body I ruled PASS on 2026-09-16 18:51 (decisions.md); no new defect found, so that ruling binds. Re-verified independently: (1) the per-voice byte-displacement field stores are the truthful spelling of the target's own addressing - asm/funcs/_SsVmInit.s:84-120 re-materialises lui %hi(FIELD)/addu $at,$at,$v0/sh %lo(FIELD)($at) per store with the x54 displacement in $v0, an un-merged adjacent-scalar splat per .claude/rules/split-scalars-hide-aggregate.md, not an indexed struct array; (2) both banned_constructs entries (the D_8010280A extern+store, and the extern-block header comment) are absent from the submitted body; (3) the body carries no __asm__, no /* FAKE */, no intent-announcing names, and the diff touches only src/main.c - no pipeline/rule/Makefile surface, so no build-time output rewriting. The clamp lever (u16 masked = (u8)a0) is a semantically-truthful reading of the target's single andi feeding both the sltiu and the sb (ordinary-c-judge-decidable, 2026-08-31). Evidence trail: memory/grind/_SsVmInit/{state.json floor_history s1-s8, hypotheses.md, evidence.md, rejected/}.
+
+## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **INTEGRATION HANDOFF (bytes proven; blocked only by bb2.ld + a second src file): ROTATED**
+
+**This is not an endgame lock and not an exhaustion claim.** The function's compiled body is
+byte-equivalent to the target. What blocks it is rodata PLACEMENT infrastructure that a grind
+session is forbidden to touch (`*.ld`) or is outside its single-file mandate
+(`src/text1a_b_pre_rodata.c`).
+
+**State.** Honest floor 2, flat across s3-s7 (permuter, permuter, structural, enumerate,
+synthesis). `sandbox func_8006B578 --disable all --diff` with
+`memory/grind/func_8006B578/candidate.c` applied: 200 target insns / 200 build insns, 22
+hunks, **0 source-level · 0 operand-only · 22 not-scored**.
+
+**Why the body is bytes-proven (s7 measurements, hypotheses.md H13/H14):**
+1. All 22 not-scored hunks differ by the single constant object offset 0x1A294 with no
+   non-address hunk — no branch-sense, scheduling, or allocation divergence anywhere.
+2. The GCC-synthesized jump table our `switch` emits has the same six entries as
+   `jtbl_80015988`, each differing by the same constant section-base delta 0x80062164.
+3. The entire score-2 residual is the two dispatch instructions
+   `lui at,%hi(...)` / `lw v0,%lo(...)(at)`: the reference object (built from asm) names the
+   external symbol `jtbl_80015988`, ours carries a section-relative reloc against our own
+   `.rodata`. `engine/score.py` masks those through two different code paths that can never
+   produce an equal token (s4), so **this function can never reach sandbox distance 0** —
+   the full-build oracle, not the sandbox gradient, is the only instrument that can certify it.
+
+**The blocking surface.** `jtbl_80015988` is currently an extracted `const u32[6]` in
+`src/text1a_b_pre_rodata.c:409-416`, a different TU from `func_8006B578`'s home
+`src/text1b.c`. `bb2.ld:66` places `build/src/text1b.o(.rodata)` between `sound.o` and
+`gpu.o`, roughly 0x1000 bytes past where the table must sit, and `src/text1b.c` declares no
+const data today so that slot currently contributes zero bytes. Compiling this function as C
+puts 24 bytes at the wrong address AND shifts every later `.rodata` input plus all of
+`.text`, so SHA1 cannot match while the slot stays at line 66.
+
+**Exact operator steps (precedented — see below):**
+1. Split `src/text1a_b_pre_rodata.c` at `jtbl_80015988`: everything before 0x80015988 stays;
+   `jtbl_80015988` itself is DELETED (GCC re-emits it byte-identically, proven above); the
+   symbols from 0x800159A0 onward move to a new sub-TU (or a `..._pre_rodata2.c`). Re-derive
+   the exact end of `src/text1b.c`'s own rodata run from the per-symbol owner inventory in
+   `docs/rodata-cleanup-project.md` — the ledger's sketch (0x80015988, `D_800159A0`
+   "warning\n", `jtbl_800159B0`, `jtbl_800159D0`, `jtbl_80015A0C`) is unverified past
+   `jtbl_800159B0`, and `jtbl_80015A0C`'s targets (0x800748F0…) are outside text1b.c's range.
+2. In `bb2.ld`, move `build/src/text1b.o(.rodata);` from line 66 to the new boundary between
+   the two halves, and add the new sub-TU's `.rodata` line after it.
+3. Apply `memory/grind/func_8006B578/candidate.c` to `src/text1b.c` in place of the
+   `INCLUDE_ASM("asm/funcs", func_8006B578);` stub (replacing the stale 4-param prototype
+   above it with the real `s32 func_8006B578(s32 *arg0, s32 *arg1);` signature).
+4. Certify with the full-build oracle (`verify-oracle --rebuild` / SHA1 ==
+   `62efab4f73f992798c43e8c730aa43baa10bb4fa`), NOT with the sandbox score, which stays at 2
+   by construction.
+5. Run a fresh layer-2 `cheat-reviewer` on the C body before acceptance, per the manual-path
+   review discipline. The body is ordinary C — switches, `u32` casts, real named
+   intermediates for real values, forward `goto`s mirroring the target's own jumps — with
+   zero FAKE/cheat constructs (`tools/fake_ablate.py` confirms nothing to ablate), but a
+   Judge/reviewer pass is still required and is not pre-granted by this entry.
+
+**Precedent that these steps are the project's own established pattern (H16).**
+`func_80077B30` (`src/text1b_b.c:825`) is an already-COMPLETED-C function with a six-case
+switch whose 24-byte compiler-generated table is placed by a dedicated
+`build/src/text1b_b.o(.rodata);` slot that `bb2.ld:60` inserts BETWEEN
+`text1a_b_pre_rodata.o(.rodata)` (`bb2.ld:59`) and `text1a_b_post_rodata.o(.rodata)`
+(`bb2.ld:61`). Pre's last symbol `jtbl_80015A24` ends at 0x80015A3C; post's first symbol
+`jtbl_80015A54` starts at 0x80015A54; the 0x18-byte hole between them is exactly that
+function's table. func_8006B578 needs the identical split one cluster earlier, at 0x80015988.
+
+**Re-activation triggers.** (a) An operator or a multi-file-authorized session performing
+steps 1-4 above; (b) any future rodata-cleanup pass that re-splits the
+`101C.rodata_text1a_b_pre` cluster; (c) a grind-session surface grant covering `bb2.ld` plus a
+second `src/*.c` file for atomic rodata re-attribution. Nothing here is terminal and no
+question is addressed to the owner — a pure-C preimage exists and is already written.
+
+**Evidence pointers.** `memory/grind/func_8006B578/evidence.md` (Session 7 block),
+`memory/grind/func_8006B578/hypotheses.md` H7/H13/H14/H15/H16,
+`memory/grind/func_8006B578/candidate.c`,
+`tmp/grind/func_8006B578/s7/diff_baseline.txt`.
+
+## 2026-09-16 20:11 — func_8006B578 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s7 of func_8006B578, which the driver DISCARDED as invalid (owner-gated: a rotation disposition (standing ruling / ladder exhausted / ROTATED) requires `escalation` modality (driver-declared exhaustion), not `synthesis`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
