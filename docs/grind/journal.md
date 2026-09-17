@@ -2241,3 +2241,4 @@
 - 2026-09-17 00:55 func_80073200 s8 [synthesis] floor=2: func_80073200: floor 16 -> 2 (build_insns 203 == target 203) by merging three previously-killed partial forms; one source-level hunk pair left, fully pass-attributed.
 - 2026-09-17 01:17 func_80073200: LAYER-1 FAILED a sandbox-0 candidate — Body carries an unused `u8 var_v0;` local — declared, never written, never read — un-annotated, unclaimed, and affirmatively denied by the self-vet's T6 answer; the two FAKE constructs themselves check out.
 - 2026-09-17 01:35 func_80073200 COMPLETED-C after 9 sessions (closer: s9 [rederive]).
+- 2026-09-17 01:48 func_8002DAD0 s1 [recon] floor=25: Recon: wrote first full C body (was whole-body INCLUDE_ASM, floor 204); literal transcription using func_8002E838's proven GTE-island idioms + dropping cached vecA/vecB pointer locals dropped floor to 25, residual entirely inside the dist_sq scratch block.
