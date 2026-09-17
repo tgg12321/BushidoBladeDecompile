@@ -1,100 +1,76 @@
-/* func_80073200 — session 7 (enumerate) note: floor UNCHANGED at 16.
- * s7 identified a previously-unnamed source-level residual (--diff hunks
- * 6/7): the FIRST of four `func_80073728` calls in the `if (D_800A3580 < 4)`
- * block has its `(s32)&s` address computation one scheduler slot later than
- * target (asm/funcs/func_80073200.s:62 — target emits it as the very first
- * insn after the if/else join, before the sp2C/sp1C/sp24 stores). The other
- * 3 repeated call groups already match exactly. Attempted a systematic
- * spelling_enum.py sweep (1957 orderings of the 6 independent sub-exprs in
- * that block) but tools/sweep_variants.py's per-variant cost is a full
- * cpp|cc1|maspsx|as pipeline (~15-20s/variant) — ~8-11h total, infeasible
- * this session; killed mid-run and the interrupted variant it left in
- * src/text1b.c was manually reverted back to this exact floor-16 body
- * (verified: sandbox --disable all == score 16, build_insns 203). Two
- * targeted manual instances (naming `(s32)&s` as a fresh `addr0` local, at
- * two candidate positions) both regressed to score 64 / build_insns 206 —
- * confirms the residual is a pure INLINE-expression scheduling-slot
- * question, not a naming/staging axis. See hypotheses.md [s7] for the full
- * writeup. This file (below) is unchanged from session 4/5/6 — the correct
- * floor-16 body to resume from.
- */
-/* func_80073200 — session 4 (permuter) candidate, UNCHANGED by session 5.
- * Session 5 (permuter, modality) tried two hypotheses against this exact
- * chassis and killed both (see hypotheses.md [s5]): (1) restructuring the
- * D_800A35C4 pointer read to match target's load-then-offset-load split
- * INSIDE the if-block (worse: 16 -> 17); (2) the s5 permuter campaign's
- * best find, staging the `D_800A3580 < 2` test through the reused `idx`
- * local before its real job (worse on the REAL sandbox: 16 -> 19, despite
- * a better permuter-metric score of 425 vs 545 — a clean instance of the
- * permuter-score-vs-honest-sandbox mismatch). This file is still the
- * correct floor-16 body to resume from; see hypotheses.md for the
- * untried frontier note on the D_800A35C4 address-split question.
- */
-/* func_80073200 — session 4 (permuter) candidate.
- * Session 3 closed the frame-size/callee-save gap with `v12` (named-intermediate
- * for the repeated 0x12 literal, floor 24 -> 17) but left three residuals open:
- * (1) a phantom early `li s3,0x12` rematerialization at diff position 30 (target
- * has a bare nop there), (2) the pre-existing `s1`/`v1` register-seat tie at the
- * two `tbl+0xC` stores, (3) the `D_800A3580 < 2` test's early-vs-late
- * materialization (target computes it earlier into v1, ours later into v0 with an
- * extra load-delay nop).
+/* func_80073200 - session 8 (synthesis). FLOOR 16 -> 2 (build_insns 203 ==
+ * target_insns 203).  This body supersedes the s4-s7 floor-16 candidate.
  *
- * This session ran a directed permuter campaign (tools/perm_80073200, workspace
- * built fresh this session since none existed — see setup notes in evidence.md)
- * seeded on the session-3 chassis. It found (output-545-1, permuter score
- * 645 -> 545) that hoisting the `D_800A35C4 + 8` address computation used inside
- * the `if (D_800A3580 < 2)` block out to a fresh local declared once, assigned
- * unconditionally right before the if, and read once inside it:
+ * Three independent levers, found by merging partial results the ledger had
+ * already banked as separate (instance-scoped) kills.  Each was measured on
+ * top of the previous one:
  *
- *     new_var = (s32)D_800A35C4 + 8;
- *     ...
- *     if (D_800A3580 < 2) {
- *         ...
- *         v1 = *(s32 *)new_var;   // was: v1 = *(s32 *)((s32)D_800A35C4 + 8);
+ * 1. 16 -> 10  "cond" swap.  The s4 permuter find hoisted the D_800A35C4+8
+ *    address into `new_var` BEFORE the `if (D_800A3580 < 2)`; s5 killed the
+ *    complementary move (pushing that address computation back INSIDE the
+ *    if-block) because it left the early slot empty.  Reading
+ *    asm/funcs/func_80073200.s:151-157 shows the target fills that slot with
+ *    the *D_800A3580 read*, not the address: `lw v0,0x18(s0); lh
+ *    v1,%gp_rel(D_800A3580); addiu v0,v0,0xC; slti v1,v1,2; beqz v1,...` with
+ *    `lw v1,%gp_rel(D_800A35C4)` only AFTER the branch.  So both halves are
+ *    needed at once: replace `new_var = (s32)D_800A35C4 + 8;` with
+ *    `cond = D_800A3580;` at the SAME statement position, and put the
+ *    dereference back inline inside the if.  Closes the whole hunk-12/13/14
+ *    cluster (target `lh` + `slti` + `beqz` vs our `lw` + load-delay nop).
  *
- * measurably closes residual (3): re-measured against the real engine sandbox
- * (not just the permuter's own weighted metric), this drops the honest floor
- * 17 -> 16 with build_insns == target_insns == 203 (was 204). This is the
- * SOTN-sanctioned named-intermediate / `new_var_temp` family
- * (no-new-park-categories.md "Named-intermediate declaration order", relaxed to
- * once-written/many-read by the 2026-08-31 ordinary-c-judge-decidable ruling;
- * `new_var` is literally the SOTN precedent's own shipped identifier for this
- * class, docs/reference/sotn-construct-index.md:649). Ordinary C: the local
- * holds a real, genuinely-consumed pointer value.
+ * 2. 10 -> 8   u8 color/code bytes.  S73200's sp40..sp43 are the PsyQ
+ *    primitive's code/r/g/b bytes.  Declared `s8`, GCC narrows the source
+ *    constants and emits `li v0,-68` / `li v0,-88`; the target emits
+ *    `li v0,188` / `li v0,168` (asm lines 50 and 55), i.e. the fields are
+ *    UNSIGNED char.  This is a data-model correction, not a codegen trick.
  *
- * Full diff after this lever (sandbox --disable all --diff, 17 hunks, 7
- * source-level / 6 operand-only / 4 not-scored):
- *   - Residual (1) UNCHANGED: hunk1 (`target nop` vs `ours li s3,0x12` @ pos 30)
- *     and hunk9 (target's real `li s3,0x12` @ pos 114 that we don't re-emit) are
- *     byte-identical to the s3 floor-17 diff. The v12 rematerialization-placement
- *     mechanism is NOT touched by this lever — still the #1 frontier item.
- *   - Residual (2) UNCHANGED: hunks 10/11/16/17 (`addiu s1,v0,12`/`sw s1,28(sp)`
- *     vs `v1`) are byte-identical to before.
- *   - Residual (3) PARTIALLY CLOSED: hunk12 changed from `target lh v1,0(gp) /
- *     ours nop` to `target lh v1,0(gp) / ours lw v1,0(gp)` (still source-level,
- *     narrower gap), and the downstream insert-group (hunk14) shrank from 5
- *     inserted instructions to 4 (the trailing `li v0,1` duplicate is gone) —
- *     net -1 instruction. The early/late materialization split between v1/v0
- *     is NOT fully closed, just narrowed.
+ * 3. 8 -> 2    v12-at-the-join + s1 reuse, TOGETHER.  These two had each been
+ *    killed alone.  Measured this session, separately, on the floor-8 chassis:
+ *      - v12 assigned at the join instead of a top-of-body initializer (vL):
+ *        the `li ...,0x12` moves to the correct target[114] slot, but the
+ *        pseudo takes s1 and the function drops to 3 callee-saved regs
+ *        (88-byte frame vs target's 96) - score 15.
+ *      - reusing the existing `s1` local for the two later `+0xC` table
+ *        pointers, with v12 still a top-of-body initializer (vJE): score 9,
+ *        build_insns 205.
+ *    Together they are exact: forcing the table-pointer pseudo onto s1 makes
+ *    it CONFLICT with v12's join-to-end live range, so global.c is forced to
+ *    give v12 the 4th callee-saved register s3 - reproducing the target's
+ *    s0/s1/s2/s3 + 96-byte frame AND its single `addiu s3,zero,0x12` at the
+ *    join label .L800733C8.  All four operand-only register-seat hunks and
+ *    both `li s3,18` placement hunks close at once.
  *
- * A second permuter finding (output-560-1, worse: permuter score 560) respelled
- * the same `if` condition as `if ((D_800A3580 + 1) <= 2)` — REJECTED: no
- * semantic purpose (opaque arithmetic on a compare, pure fold-defeat), worse
- * score than the real fix, cheat-smell per the T1/T2/T3 checklist. Banked at
- * rejected/s4-opaque-arith-branch-cond.c.
+ * REMAINING RESIDUAL (score 2, ONE hunk pair, source-level):
+ *    ours[55] `addiu a0,sp,24` inserted / target[58] `addiu a0,sp,24` deleted.
+ *    The `(s32)&s` argument materialization for the FIRST of the four
+ *    func_80073728 calls is scheduled to the very head of the join basic
+ *    block; the target emits it 4th, after `sb v0,0x42(sp); li v0,0x14;
+ *    sb v0,0x43(sp)` (asm/funcs/func_80073200.s:59-62).  The other three call
+ *    groups already match byte-for-byte.  Everything else in the function -
+ *    every register, every other instruction - is identical to the target.
+ *    Pass attribution IS done: tmp/grind/func_80073200/dumps/text1b.sched,
+ *    basic block 4 (insns 134..267, all four call groups in ONE block).  The
+ *    a0 set is insn 158, INSN_PRIORITY 1 - tied with the seven stores/loads
+ *    137/140/142/145/147/150/153 - and it sorts to the HEAD of the ready list
+ *    every step (highest LUID wins the rank_for_schedule tie), but the
+ *    "insn N has a greater potential hazard" swap in schedule_block promotes a
+ *    store over it at T-47, T-48, T-50 and T-52, so it is left as the very
+ *    last pick of the backward pass = the FIRST insn emitted in the block.
+ *    The target's schedule picks it at the T-50 step instead.
  *
- * REMAINING RESIDUAL (16): (1) the phantom early `li s3,0x12` (unchanged,
- * highest-value frontier item — needs .greg/.combine dump analysis of the v12
- * pseudo's REG_EQUIV rematerialization, per s3's frontier note); (2) the
- * `s1`/`v1` register-seat tie (unchanged); (3) the narrowed but not-yet-closed
- * `D_800A3580 < 2` test materialization (`lw v1,0(gp)` vs target `lh v1,0(gp)` —
- * width mismatch, likely another sub-word-read lever candidate; separately the
- * `lh v0,0(gp)` duplicate-read block at hunk14 is the SAME test computed a
- * second time later for the branch itself, still not merged with the first).
+ * Measured DEAD on this chassis this session (do not re-propose):
+ *    all 23 non-identity orderings of the 4 statements after `s.sp42` in the
+ *    first call group (best 4, none < 2); moving `s.sp42 = var_v0;` out of
+ *    first position (all 5); naming `(s32)&s` as an `addr` local used by all
+ *    four or by only the first call (52, build_insns 204); var_v0 typed
+ *    s8/s16/s32/u32 (all 2, inert); spelling the argument `(s32)&s.sp18`
+ *    (2, inert); duplicating the sp42 store into both arms instead of staging
+ *    it through var_v0 (2, inert - the s2 H2 re-audit); declaring v12 or s1
+ *    first among the locals (2, inert).
  */
 typedef struct {
     s32 sp18, sp1C, sp20, sp24, sp28, sp2C, sp30, sp34, sp38, sp3C;
-    s8 sp40, sp41, sp42, sp43;
+    u8 sp40, sp41, sp42, sp43;
 } S73200;
 void func_80073200(s32 arg0) {
     S73200 s;
@@ -105,10 +81,9 @@ void func_80073200(s32 arg0) {
     s32 tmp;
     s32 v1;
     s32 idx;
-    s8 var_v0;
-    s32 tbl;
-    s32 v12 = 0x12;
-    s32 new_var;
+    u8 var_v0;
+    s32 v12;
+    s32 cond;
 
     s.sp30 = 0;
     s.sp34 = 0;
@@ -156,28 +131,29 @@ void func_80073200(s32 arg0) {
         s.sp42 = 0x32;
         s.sp43 = 0x5A;
     }
+    v12 = 0x12;
     s.sp34 = 0;
     s.sp30 = 0;
     s.sp2C = v12;
     s.sp28 = 0;
     tmp = *(s32 *)((s32)ctx + 0x14);
     s.sp18 = tmp;
-    tbl = tmp + 0xC;
-    s.sp1C = tbl;
+    s1 = tmp + 0xC;
+    s.sp1C = s1;
     s.sp20 = *(s32 *)(arg0 + 0x10);
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0x60), 0);
     AddPrim(D_800A374C + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
-    new_var = (s32)D_800A35C4 + 8;
+    cond = D_800A3580;
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
-    if (D_800A3580 < 2) {
+    if (cond < 2) {
         s.sp2C = v12;
         s.sp28 = 1;
-        v1 = *(s32 *)new_var;
+        v1 = *(s32 *)((s32)D_800A35C4 + 8);
         idx = *(s32 *)((s32)ctx + 0x28 + (v1 % 4) * 4);
         s.sp18 = idx;
-        tbl = idx + 0xC;
-        s.sp1C = tbl;
+        s1 = idx + 0xC;
+        s.sp1C = s1;
         s.sp20 = *(s32 *)(arg0 + 0x10);
         *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
         SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0x20), 0);

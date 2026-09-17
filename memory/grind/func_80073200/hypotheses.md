@@ -488,3 +488,62 @@ function's exact field layout — see H3 below.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis, (s32)&s replaced with a fresh addr0 local at two positions in turn, no FAKE constructs, ordinary C, sandbox --disable all
+
+## [s8] (synthesis) Replacing the `new_var = (s32)D_800A35C4 + 8;` statement with `cond = D_800A3580;` at the SAME statement position, and moving the D_800A35C4 dereference back inline inside the `if (cond < 2)` block, reproduces the target's `lh %gp_rel(D_800A3580)` in the load-delay slot and closes the hunk-12/13/14 cluster.
+mechanism: the slot after `lw v0,0x18(s0)` is filled by whichever independent statement sits at that source position; s4 proved the slot is fillable (with the address read), s5 proved that emptying it regresses. The target fills it with the branch condition's halfword read, so both halves of the swap must be made at once.
+probe: vA in tmp/grind/func_80073200/s8/, measured with `sandbox func_80073200 --disable all`.
+result: 16 -> 10, build_insns 204 -> 202. Hunks 12/13/14 of the floor-16 diff are gone entirely. `cond` typed s16 instead of s32 measures 18; keeping BOTH new_var and cond measures 14; keeping cond but computing new_var inside the if measures 10 (same as vA, with one more local). VERDICT: CONFIRMED.
+
+## [s8] Declaring S73200's sp40..sp43 as u8 rather than s8 reproduces the target's `li v0,188` / `li v0,168` constant materializations.
+mechanism: data model, not codegen -- these are the PsyQ primitive's code/r/g/b bytes (u_char). With a signed field GCC narrows 0xBC/0xA8 to -68/-88 before emitting the `addiu`.
+probe: vE (all four u8) and vE2 (only sp41 u8) in tmp/grind/func_80073200/s8/.
+result: 10 -> 8 for both. VERDICT: CONFIRMED. (Sibling structs S_69AE4/S_69F80 on main declare these fields s8 and still match, because every value they store is < 0x80 -- the signedness is unobservable there.)
+
+## [s8] Assigning v12 at the if/else join (no top-of-body initializer) AND reusing the existing `s1` local for both later `+0xC` table pointers, TOGETHER, reproduce the target's four-callee-saved-register allocation (s0-s3, 96-byte frame) with the single `addiu s3,zero,0x12` at the join label.
+mechanism: global.c allocation-order / conflict-graph. Forcing the table-pointer value onto the `s1` pseudo makes it live-conflict with v12's join-to-end range, so v12 can no longer share s1 and is pushed onto the fourth callee-saved register s3 -- which is exactly the target's assignment.
+probe: vLJ in tmp/grind/func_80073200/s8/; the two halves separately as vL (join-assigned v12 only) and vJE (s1 reuse only), plus vLJ2/vLJ3 (merging only one of the two table pointers).
+result: vLJ = 2, build_insns 203 == target_insns 203; vL alone = 15 (201 insns, 3 callee-saved, 88-byte frame); vJE alone = 9 (205 insns); vLJ2 (first table pointer only) = 5; vLJ3 (inner one only) = 14. VERDICT: CONFIRMED.
+
+## [s8] KILL RE-AUDIT: s3's v12-placement kills (H5b deep point-of-first-use, H5d right after `s1 = base2 + 0xC;`) still lose to the top-of-body initializer when re-measured on the s8 floor-8 chassis with no FAKE construct present.
+mechanism: with the assignment and its first read in the SAME basic block the constant is available to cse at the store and the pseudo loses its persistent callee-saved seat; the top-of-body initializer keeps the def in a different block.
+probe: vK (deep point-of-use), vL (first statement of the join region), vM (right after `s1 = base2 + 0xC;`), vN (immediately before `if (D_800A3580 < 4)`), all on the floor-8 chassis.
+result: 15 / 15 / 13 / 13 versus 8 for the top-of-body initializer. VERDICT: KILLED (kill_scope instance). The re-audit was still decisive: vL's --diff showed the `li` at the CORRECT target[114] slot with the wrong register and a 3-callee-saved frame, which is the observation that produced the winning lever 3 above.
+
+## [s8] The remaining `addiu a0,sp,24` scheduling slot in the first func_80073728 call group is reachable by reordering or renaming the statements of that call-setup group.
+mechanism: schedule_block's backward list scheduling of basic block 4 (insns 134..267, all four call groups in one block); the a0 set is insn 158 at INSN_PRIORITY 1, tied with the surrounding stores, and is repeatedly demoted by the "greater potential hazard" ready-list swap until it is the last backward pick = the first insn emitted.
+probe: all 23 non-identity orderings of the four statements following `s.sp42 = var_v0;`; all four non-first positions for `s.sp42` itself; a fresh `addr` local for `(s32)&s` used by all four calls and by only the first; the `(s32)&s.sp18` spelling; var_v0 typed s8/s16/s32/u32; v12 and s1 declared first among the locals. All measured with `sandbox func_80073200 --disable all` on the floor-2 vLJ chassis.
+result: best reordering 4, most 8-9; `s.sp42` moved out of first position 5; `addr` local 52 (build_insns 204); `(s32)&s.sp18`, the var_v0 types, and both declaration-order moves all inert at 2. Nothing reached 0. VERDICT: KILLED (kill_scope instance) -- this set of spellings of this call-setup group, on the floor-2 chassis with no FAKE construct present, does not move insn 158's schedule slot.
+
+## [s8] Replacing the `new_var = (s32)D_800A35C4 + 8;` statement with `cond = D_800A3580;` at the same statement position, while moving the D_800A35C4 dereference back inline inside the `if (cond < 2)` block, reproduces the target's `lh %gp_rel(D_800A3580)` in the load-delay slot after `lw v0,0x18(s0)` and closes the hunk-12/13/14 cluster.
+- mechanism: The load-delay slot after `lw v0,0x18(s0)` gets filled by whichever independent statement sits at that source position. s4 proved the slot is fillable (it filled it with the D_800A35C4 address read); s5 proved that emptying it regresses. asm/funcs/func_80073200.s:151-157 shows the target fills it with the branch condition's halfword read and defers the D_800A35C4 load until after the branch, so both halves of the swap have to be made at once.
+- probe: tmp/grind/func_80073200/s8/vA.c applied to src/text1b.c, `sandbox func_80073200 --disable all`. Controls: vB (cond typed s16) = 18, vC (keep both new_var and cond) = 14, vD (cond plus new_var computed inside the if) = 10.
+- result: 16 -> 10, build_insns 204 -> 202. The whole `lw` + load-delay-nop + late `slti`/`beqz` cluster is replaced by the target's `lh`/`slti`/`beqz`.
+- verdict: CONFIRMED
+
+## [s8] Declaring S73200's sp40..sp43 as u8 rather than s8 reproduces the target's `li v0,188` and `li v0,168` constant materializations for the colour bytes.
+- mechanism: Data model, not codegen. These are the PsyQ primitive's code/r/g/b bytes (u_char). With a signed field GCC narrows the source constants 0xBC/0xA8 to -68/-88 before emitting the `addiu`; asm/funcs/func_80073200.s lines 50 and 55 show the target emitting `addiu $v0,$zero,0xBC` and `0xA8`.
+- probe: tmp/grind/func_80073200/s8/vE.c (all four fields u8) and vE2.c (only sp41 u8), `sandbox func_80073200 --disable all`.
+- result: 10 -> 8 for both. All four are made u8 in the banked candidate for consistency with the PsyQ convention. Note for siblings: the on-main S_69AE4 (src/text1b.c:5960-5963) and S_69F80 (:6160-6164) declare these fields s8 and still byte-match because every value they store is below 0x80, so the signedness is unobservable there.
+- verdict: CONFIRMED
+
+## [s8] Assigning v12 at the if/else join (no top-of-body initializer) AND reusing the existing `s1` local for both later `+0xC` table pointers, applied together, reproduce the target's four-callee-saved-register allocation (s0-s3, 96-byte frame) with a single `addiu s3,zero,0x12` at the join label.
+- mechanism: global.c allocation order and conflict graph. Forcing the table-pointer value onto the `s1` pseudo makes it live-conflict with v12's join-to-end range, so v12 can no longer share s1 and is pushed onto the fourth callee-saved register s3 - exactly the target's assignment. That one allocation change closes all four operand-only `addiu s1,v0,12` / `sw s1,28(sp)` seat hunks and both `li s3,18` placement hunks at once.
+- probe: tmp/grind/func_80073200/s8/vLJ.c, `sandbox func_80073200 --disable all`. Halves measured separately on the floor-8 chassis: vL.c (join-assigned v12 only) and vJE.c (s1 reuse only); partial merges vLJ2.c / vLJ3.c.
+- result: vLJ = 2 with build_insns 203 == target_insns 203. vL alone = 15 (201 insns, only 3 callee-saved regs, 88-byte frame). vJE alone = 9 (205 insns). vLJ2 (first table pointer only) = 5, vLJ3 (inner one only) = 14. Both halves had been banked as separate kills by earlier sessions; neither works alone.
+- verdict: CONFIRMED
+
+## [s8] Assigning v12 at its deep point-of-first-use, or as the first statement of the join region, or right after `s1 = base2 + 0xC;`, or immediately before `if (D_800A3580 < 4)`, beats the top-of-body initializer while `tbl` remains a separate local.
+- mechanism: With the assignment and its first read in the same basic block the constant is available to cse at the store and the pseudo loses its persistent callee-saved seat; the top-of-body initializer keeps the def in a different block. This is the mandated re-audit of s3's H5b and H5d kills, which were measured two chassis ago.
+- probe: tmp/grind/func_80073200/s8/vK.c, vL.c, vM.c, vN.c on the s8 floor-8 chassis (vE), `sandbox func_80073200 --disable all`.
+- result: 15 / 15 / 13 / 13 versus 8 for the top-of-body initializer, so the s3 kills hold on the current chassis. The re-audit was still decisive: vL's --diff showed the `li` at the CORRECT target[114] slot with the wrong register and a 3-callee-saved frame, and that observation is what produced the winning combined lever above.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 s8 floor-8 chassis (cond swap + u8 colour fields, separate tbl local); no FAKE construct present anywhere in the body
+
+## [s8] Reordering or renaming the statements of the first func_80073728 call-setup group moves the `addiu a0,sp,24` argument materialization out of the head of the join basic block to the target's fourth slot.
+- mechanism: schedule_block's backward list scheduling of basic block 4 (insns 134..267 - all four call groups are one basic block). The a0 set is insn 158 at INSN_PRIORITY 1, tied with the seven surrounding stores/loads 137/140/142/145/147/150/153; it sorts to the head of the ready list at every step (highest LUID wins the rank_for_schedule tie at equal priority) but the 'insn N has a greater potential hazard' swap promotes a store over it at T-47, T-48, T-50 and T-52, so it is the last pick of the backward pass and therefore the first insn emitted. Read from tmp/grind/func_80073200/dumps/text1b.sched this session.
+- probe: All 23 non-identity orderings of the four statements after `s.sp42 = var_v0;` (tmp/grind/func_80073200/s8/o01..o23); all four non-first positions for `s.sp42` itself (p1..p4); a fresh `addr` local for `(s32)&s` used by all four calls (vR2) and by only the first (vR3); the `(s32)&s.sp18` spelling (vR1); var_v0 typed s8/s16/s32/u32 (t1..t4); v12 and s1 declared first among the locals (u3, u4); the sp42-duplicated-into-arms form (u2). All via `sandbox func_80073200 --disable all` on the floor-2 vLJ chassis.
+- result: Best reordering 4, most 8-9; `s.sp42` moved out of first position 5; the `addr` local 52 with build_insns 204 (the extra pseudo buys its own materialization insn instead of moving the a0 set's slot - a re-audit of the s7 kill on a far closer chassis, with the mechanism now named); `(s32)&s.sp18`, all five var_v0 types, both declaration-order moves and the sp42-duplicated-into-arms form all inert at 2. Nothing reached 0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 s8 floor-2 chassis (vLJ: cond swap + u8 colour fields + join-assigned v12 + s1 reused for both table pointers); no FAKE construct present

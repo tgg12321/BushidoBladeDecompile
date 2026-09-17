@@ -1,8 +1,8 @@
 {
  "func": "func_80073200",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "enumerate",
+ "session_count": 8,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 16,
    "modality": "enumerate",
    "headline": "func_80073200: floor unchanged at 16 (enumerate modality); identified a new source-level residual (hunks 6/7: the first of four func_80073728 calls has its (s32)&s address one scheduler slot late) but"
+  },
+  {
+   "session": 8,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "func_80073200: floor 16 -> 2 (build_insns 203 == target 203) by merging three previously-killed partial forms; one source-level hunk pair left, fully pass-attributed."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The hunks-6/7 residual (first func_80073728 call's (s32)&s address one scheduler slot late) is closable by a smaller, targeted spelling_enum region (e.g. only the 2-3 statements immediately surrounding the address computation, not all 6 independent sub-expressions) that keeps the variant count under ~200-300 so the full pipeline sweep finishes in a session.",
-   "mechanism": "Same schedule_block first-pass list-scheduler slot-selection mechanism named in the s7 hypothesis above; narrowing the region reduces the combinatorial explosion without changing the mechanism being searched.",
-   "next_probe": "Re-run tools/spelling_enum.py with --keep-inlined on the sub-expressions NOT adjacent to the address computation (forcing them to stay in their current textual position/form) so only the 2-3 statements bracketing `(s32)&s` permute; verify --list reports a small count before sweeping."
+   "hypothesis": "The last 2 points are a single schedule_block ready-list decision: insn 158 (`a0 = fp + 24`, the first func_80073728 call's `(s32)&s`) must be picked at the T-50 backward step instead of T-53. Every C-level spelling of that call-setup group has now been swept and is dead, so the next lever must change the DEPENDENCE structure the hazard-swap sees - e.g. the RTL shape of the three insns it loses to (137 `sb v0,0x42(sp)`, 140 `li 0x14`, 142 `sb v0,0x43(sp)`).",
+   "mechanism": "sched.c schedule_block's 'greater potential hazard' ready-list swap at equal INSN_PRIORITY, in basic block 4 of tmp/grind/func_80073200/dumps/text1b.sched. The swap fires only when the head insn would stall behind a store whose operand was just set; insns 140->142 and 145->147 are exactly such li->store pairs.",
+   "next_probe": "Read tools/gcc-2.7.2/sched.c's schedule_block around the 'greater potential hazard' fprintf to get the exact predicate, then look for a C form that removes one li->store hazard pair from that block (for example storing sp43 and sp2C from a shared s32 local, or changing which of the two 0x14 constants is materialized first) and re-measure. Note the target emits TWO separate `li v0,0x14`, so any shared-constant form must still produce two materializations."
   },
   {
-   "hypothesis": "Read the .sched dump (pwsh tools/grinder/dump.ps1 func_80073200, then tmp/grind/func_80073200/dumps/text1b.sched) around the first call-setup block's insn range to see the actual ready-list/priority values schedule_block used, rather than continuing to guess spellings blind.",
-   "mechanism": "sched.c rank_for_schedule dependence-class / priority tiebreaking, same class of evidence the codegen-technique-index's sched-rank-class-tie-wall entry describes for other functions.",
-   "next_probe": "Dump attribution per the brief's PASS ATTRIBUTION instruction (not yet done for this specific residual in any prior session) before proposing another C-source lever."
+   "hypothesis": "tools/sched_solver models both scheduler passes order- and clock-exact; this residual is exactly its problem shape (one emission-order tie in one basic block, everything else identical), so it should return a typed REACHABLE/FORECLOSED verdict plus a ranked C-lever vector rather than another blind spelling sweep.",
+   "mechanism": "sched_solver's model of sched.c's list scheduler, and tools/ra_solver/inverse_compose.py classify for triage of the emission-order tie.",
+   "next_probe": "Run `inverse_compose.py classify` on the insn-158 residual against the floor-2 chassis, then drive tools/sched_solver on basic block 4's insn set (134..267) to see whether the target's T-50 pick is reachable from any dependence structure a C rewrite can produce."
   },
   {
-   "hypothesis": "The v12 rematerialization (frontier item 1, unchanged since s3) and the s1/v1 register-seat tie (frontier item 2) remain untried via the enumerate modality's systematic-sweep procedure -- both are smaller-shaped residuals (a single constant load position, a single register-seat pair) that may fit a tractable variant count where the hunks-6/7 region did not.",
-   "mechanism": "Same first-pass scheduler / allocno-priority mechanisms already named for those items in the ledger's live frontier.",
-   "next_probe": "Apply spelling_enum.py to the narrow block containing v12's declaration + its two use sites (not the whole function) and check --list count before committing to a full sweep."
+   "hypothesis": "A permuter campaign seeded on the NEW floor-2 chassis can find the last lever. The two prior campaigns (s4, s5) were seeded on the floor-17 and floor-16 chassis respectively and are stale; the search space is now one instruction wide.",
+   "mechanism": "decomp-permuter randomized source perturbation, scored against the real engine sandbox rather than the permuter's own weighted metric (s5 recorded a clean case where the permuter's best find regressed the honest floor).",
+   "next_probe": "Update tmp/perm_80073200/base.c to the floor-2 body (it currently holds the stale floor-16 chassis; setup notes in memory/grind/func_80073200/evidence.md [s4]), launch via tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait`, then harvest --stop and re-measure every find on the real sandbox before believing it."
   }
  ],
  "judge_constraints": [],
@@ -194,6 +200,22 @@
    "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis, (s32)&s replaced with a fresh addr0 local at two positions in turn, no FAKE constructs, ordinary C, sandbox --disable all",
    "predicate_cite": "",
    "result": "Both regressed: score 16 -> 64, build_insns 203 -> 206 (+3 insns), identical for both declaration positions. Introducing"
+  },
+  {
+   "session": 8,
+   "statement": "Assigning v12 at its deep point-of-first-use, or as the first statement of the join region, or right after `s1 = base2 + 0xC;`, or immediately before `if (D_800A3580 < 4)`, beats the top-of-body initi",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 s8 floor-8 chassis (cond swap + u8 colour fields, separate tbl local); no FAKE construct present anywhere in the body",
+   "predicate_cite": "",
+   "result": "15 / 15 / 13 / 13 versus 8 for the top-of-body initializer, so the s3 kills hold on the current chassis. The re-audit wa"
+  },
+  {
+   "session": 8,
+   "statement": "Reordering or renaming the statements of the first func_80073728 call-setup group moves the `addiu a0,sp,24` argument materialization out of the head of the join basic block to the target's fourth slo",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 s8 floor-2 chassis (vLJ: cond swap + u8 colour fields + join-assigned v12 + s1 reused for both table pointers); no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Best reordering 4, most 8-9; `s.sp42` moved out of first position 5; the `addr` local 52 with build_insns 204 (the extra"
   }
  ],
  "ladder_skip": 0,
