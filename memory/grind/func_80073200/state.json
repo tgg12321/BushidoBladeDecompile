@@ -1,8 +1,8 @@
 {
  "func": "func_80073200",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 16,
    "modality": "permuter",
    "headline": "func_80073200: floor unchanged at 16 this session; two permuter-modality hypotheses killed (both regressed the real sandbox despite one scoring better under the permuter's own metric) -- confirms floo"
+  },
+  {
+   "session": 6,
+   "floor": 16,
+   "modality": "structural",
+   "headline": "func_80073200: floor unchanged at 16 this session; 5 structural hypotheses killed (address-split, v12-split-into-two-copies, v12 type-narrow, and two declaration-order sweeps) -- exhausts the s5 live-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Keep the D_800A35C4+8 address computation BEFORE the branch (as in the current floor-16 candidate) but SPLIT it into two statements matching target's own split (a fresh local holding the plain pointer VALUE, then a separate statement/local for the +8 dereference) rather than one combined new_var = (s32)D_800A35C4 + 8; expression -- untried this session (only the inside-the-if placement of the split form was tried and killed).",
-   "mechanism": "Possibly affects register allocation of the intermediate pointer value or the scheduling of the D_800A3580 lh vs lw width choice, since GCC's decision to widen the D_800A3580 read to lw appears sensitive to what other values are live/materializing around the branch.",
-   "next_probe": "Add a second fresh local (e.g. s32 ptr_val = (s32)D_800A35C4;) before the if, keep the +8 add as a separate statement (also before the if, or right at first use inside), re-run sandbox --disable all --diff and compare hunk-by-hunk against the current 17-hunk floor-16 diff."
+   "hypothesis": "The v12 rematerialization residual (extra li s3,0x12 at position 30 vs target's single li at position 114) is likely a first-pass scheduler hoisting decision independent of C source placement -- 4 distinct spellings (s3: no-initializer, reordered decl, moved statement; s6: split into two locals) all failed to move it, and 2 more spellings (s6: type-narrow, decl-order-swap) also failed. The remaining untried axis is changing what ELSE occupies the early scheduling slot so the li has scheduling competition, rather than changing v12 itself.",
+   "mechanism": "sched.c first-pass list scheduler (schedule_block) picks the earliest available slot for a no-dependency constant load; if no other ready insn competes for that slot, the li floats to the top regardless of source position.",
+   "next_probe": "Read tmp/grind/func_80073200/dumps/text1b.sched around insn 11's scheduling decision to see what OTHER insns were candidates for that early slot, and whether introducing a genuine dependency chain (not v12 itself, but an adjacent statement) before v12's first use changes the competition."
   },
   {
-   "hypothesis": "The +1 extra li s3,0x12 rematerialization at diff position 30 (target has a bare nop) -- unchanged since s3, still the single largest named residual.",
-   "mechanism": "global.c/reload.c/reload1.c constant rematerialization for the v12 pseudo (REG_EQUIV constant note) once assigned a long-live-range hard register.",
-   "next_probe": "Read tmp/grind/func_80073200/dumps/text1b.greg for the v12 pseudo's REG_EQUIV/rematerialization annotations (still unread in detail per the s3 frontier note); cross-reference tools/gcc-2.7.2/{global.c,reload.c,reload1.c}."
+   "hypothesis": "The s1/v1 register-seat tie (hunks 10/11/16/17: target addiu s1,v0,12 / sw s1,28(sp) vs ours v1) is unaffected by declaration-order changes to either tbl or s1 in isolation (tbl tested this session, s1 itself not yet retried) -- likely coupled to the same allocation pass that resolves the v12 residual, per the s5 note.",
+   "mechanism": "global.c allocno priority / register class preference for the s1 pseudo, potentially entangled with the same long-range materialization decisions governing v12.",
+   "next_probe": "Once frontier item 1 (v12 rematerialization) has a genuine lever, re-diff before spending a dedicated session on the s1/v1 tie in isolation -- per the s5 coupling note, it may shift as a side effect."
   },
   {
-   "hypothesis": "The pre-existing s1/v1 register-seat tie at the two tbl+0xC stores (target keeps s1, ours gets v1) -- unchanged across s2-s5.",
-   "mechanism": "register allocation / global.c allocno priority for the tbl pseudo.",
-   "next_probe": "Re-diff after any fix to the v12 rematerialization or the D_800A35C4 split frontier item, since this tie may shift as a side effect before it needs its own dedicated lever."
+   "hypothesis": "The D_800A3580 lh-vs-lw width residual (hunk12: target lh v1,0(gp) / ours lw v1,0(gp)) is a narrower sub-word-read lever candidate ([[narrow-stack-param-subword-offset]] family) untried on this global read.",
+   "mechanism": "GCC widens the D_800A3580 read to lw because of surrounding value liveness (per candidate.c's session-4 header note); a narrow-width C-level cast might force the lh form.",
+   "next_probe": "Try reading D_800A3580 via an explicit (s16) or *(s16 *)&D_800A3580 narrow cast at the second (if (D_800A3580 < 2)) test site instead of the plain s32 global read, and re-measure sandbox --disable all --diff."
   }
  ],
  "judge_constraints": [],
@@ -126,6 +132,46 @@
    "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with output-425-1's idx-reuse applied (draft /* FAKE */ annotation present, never committed), sandbox --disable all --diff -- real engine ",
    "predicate_cite": "",
    "result": "Honest floor got WORSE, not better: 16 -> 19. The idx reuse collides with idx's real later use as the record-offset resu"
+  },
+  {
+   "session": 6,
+   "statement": "Splitting the D_800A35C4+8 address computation into two statements (a fresh local holding the plain pointer VALUE, then a separate +8 add into new_var), kept BEFORE the branch as floor-16 requires, re",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with the address computation split into ptr_val + new_var (two statements, same before-branch placement), no FAKE constructs, ordinary C, ",
+   "predicate_cite": "",
+   "result": "No change: score stayed 16, build_insns 203, 17-hunk diff byte-identical hunk-for-hunk to the pre-split floor-16 diff (s"
+  },
+  {
+   "session": 6,
+   "statement": "Splitting v12's single shared constant-holder local into two independent same-valued locals (v12 for the first use, a fresh v12b for the second, inside the final if-block) narrows the long v12 live ra",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with a second v12b local added for the final if-block's use, no FAKE constructs, ordinary C, sandbox --disable all --diff",
+   "predicate_cite": "",
+   "result": "Score got WORSE: 16 -> 22. Splitting the shared constant into two separately-materialized copies adds a second li instru"
+  },
+  {
+   "session": 6,
+   "statement": "Narrowing v12's declared type from s32 to s16 (register-alloc-pure-c Lever B, type narrowing) changes its REG_EQUIV rematerialization placement.",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with v12 retyped s16, no FAKE constructs, ordinary C, sandbox --disable all --diff",
+   "predicate_cite": "",
+   "result": "Score got WORSE: 16 -> 18. The s16 type forces a sign-extending load/store pattern around v12's two uses (s.sp2C is an s"
+  },
+  {
+   "session": 6,
+   "statement": "Reordering v12's declaration to LAST among the locals (after new_var instead of before it) changes LUID-driven scheduling of its constant materialization.",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with new_var declared before v12, no FAKE constructs, ordinary C, sandbox --disable all --diff",
+   "predicate_cite": "",
+   "result": "No change: score stayed 16, identical diff. Generalizes the s3 finding (declaration reordering among siblings already ki"
+  },
+  {
+   "session": 6,
+   "statement": "Reordering tbl's declaration to sit adjacent to s1 (the pre-existing register-seat-tie variable) instead of near var_v0/v12 changes the s1/v1 register-seat tie at the two tbl+0xC stores.",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with tbl declared adjacent to s1, no FAKE constructs, ordinary C, sandbox --disable all --diff",
+   "predicate_cite": "",
+   "result": "No change: score stayed 16, identical diff -- the s1/v1 tie (hunks 10/11/16/17) is completely unaffected by tbl's declar"
   }
  ],
  "ladder_skip": 0,

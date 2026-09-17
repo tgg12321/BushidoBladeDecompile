@@ -383,3 +383,83 @@ function's exact field layout — see H3 below.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with output-425-1's idx-reuse applied (draft /* FAKE */ annotation present, never committed), sandbox --disable all --diff -- real engine sandbox, not the permuter's own scorer
+
+## [s6] The D_800A35C4+8 address computation, kept BEFORE the branch (as floor-16 requires per s5), split into two statements (a fresh local holding the plain pointer VALUE, then a separate `+8` add into new_var) instead of one combined expression, reproduces target's structure and improves the floor.
+- mechanism: Possibly affects register allocation of the intermediate pointer value or scheduling of the D_800A3580 lh/lw width choice (per the s5 frontier note).
+- probe: Declared `s32 ptr_val;` and rewrote `new_var = (s32)D_800A35C4 + 8;` as `ptr_val = (s32)D_800A35C4; new_var = ptr_val + 8;`, keeping placement identical (before the `if (D_800A3580 < 2)` branch). Re-ran sandbox --disable all --diff.
+- result: No change. Score stayed 16, build_insns 203 (unchanged). The 17-hunk diff is byte-identical to the pre-split floor-16 diff, hunk-for-hunk (same source-level/operand-only/not-scored classes, same target/ours insn text at every hunk, including hunk12/13/14's D_800A3580 width residual). GCC folds the two-statement form back into one combined address expression before this point -- the split is invisible to the compiler at this placement. This closes the ONLY remaining untried variant of the live-frontier item #1 named in the s5 ledger (the inside-the-if placement was already killed in s5; this session covers the before-the-branch placement).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with the address computation split into ptr_val + new_var (two statements, same before-branch placement), no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Splitting v12's single shared constant-holder local into two independent same-valued locals (v12 for the first `s.sp2C = v12;` use, a fresh v12b for the second, inside the final if-block) narrows the long v12 live range and changes its rematerialization placement (frontier item 2).
+- mechanism: v12's pseudo (hard reg s3 per the .greg dump, insn 11: `(set (reg/v:SI 19 s3) (const_int 18))` with a REG_EQUIV note) has a live range spanning the ENTIRE function body (first use ~mid-function, second use near the end inside the final if). A shorter live range per copy might let the allocator/scheduler place each materialization closer to its own use instead of hoisting the shared one to the earliest legal point.
+- probe: Declared a second local `s32 v12b = 0x12;` and repointed the final if-block's `s.sp2C = v12;` to `s.sp2C = v12b;`, leaving the first use as `v12`. Re-ran sandbox --disable all --diff.
+- result: Score got WORSE: 16 -> 22. Splitting the shared constant into two separately-materialized copies adds a second `li` instruction (now TWO real constant loads instead of one shared value used twice) plus disturbs downstream register seating. Confirms the ledger's existing s3 finding that v12 must stay a single shared local -- this is now the fourth independently-killed spelling variant targeting the same residual (declared-without-initializer, reordered-declaration, moved-initializer-statement from s3; split-into-two-locals from s6).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with a second v12b local added for the final if-block's use, no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Narrowing v12's declared type from s32 to s16 (structural type-narrowing lever, register-alloc-pure-c Lever B) changes its REG_EQUIV rematerialization placement.
+- mechanism: A narrower integer type can change which move/extend pattern GCC selects for the constant load and materialization pass, potentially altering when the allocator schedules it.
+- probe: Changed `s32 v12 = 0x12;` to `s16 v12 = 0x12;` (single-line type edit, no other change). Re-ran sandbox --disable all --diff.
+- result: Score got WORSE: 16 -> 18. The s16 type forces a sign-extending load/store pattern around v12's two uses (s.sp2C is an s32 struct field) that costs more than it fixes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with v12 retyped s16, no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Reordering v12's declaration to LAST among the locals (after new_var, instead of before it) changes LUID-driven scheduling of its constant materialization.
+- mechanism: Declaration-order-driven LUID bias (per the named-intermediate family's own mechanism class) could shift the early-vs-late scheduling decision for the li s3,0x12 insn.
+- probe: Swapped `s32 v12 = 0x12; s32 new_var;` to `s32 new_var; s32 v12 = 0x12;`. Re-ran sandbox --disable all --diff.
+- result: No change. Score stayed 16, identical diff. Confirms the s3 finding (declaration reordering among siblings already killed once) generalizes to this ordering too -- declaration position of v12 relative to its neighbors has no effect on the materialization placement, for any tried ordering so far.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with new_var declared before v12, no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Reordering `tbl`'s declaration to sit adjacent to `s1` (the pre-existing register-seat-tie variable, frontier item 3) instead of near `var_v0`/`v12` changes the s1/v1 register-seat tie at the two tbl+0xC stores.
+- mechanism: Declaration-order LUID bias applied to the OTHER side of the tie (tbl's declaration position) rather than s1's (s1's own reordering was not separately retried this session, only tbl's).
+- probe: Moved `s32 tbl;` to immediately after `s32 s1;` in the declaration block. Re-ran sandbox --disable all --diff.
+- result: No change. Score stayed 16, identical diff -- the s1/v1 tie (hunks 10/11/16/17) is completely unaffected by tbl's declaration position.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with tbl declared adjacent to s1, no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Splitting the D_800A35C4+8 address computation into two statements (a fresh local holding the plain pointer VALUE, then a separate +8 add into new_var), kept BEFORE the branch as floor-16 requires, reproduces target's load-then-offset-load structure and improves the floor.
+- mechanism: Possibly affects register allocation of the intermediate pointer value or scheduling of the D_800A3580 lh/lw width choice.
+- probe: Declared s32 ptr_val; rewrote new_var = (s32)D_800A35C4 + 8; as ptr_val = (s32)D_800A35C4; new_var = ptr_val + 8; (same before-branch placement); sandbox --disable all --diff.
+- result: No change: score stayed 16, build_insns 203, 17-hunk diff byte-identical hunk-for-hunk to the pre-split floor-16 diff (same target/ours insn text at every hunk). GCC folds the two-statement form back into one combined address expression at this placement -- the split is invisible to the compiler here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with the address computation split into ptr_val + new_var (two statements, same before-branch placement), no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Splitting v12's single shared constant-holder local into two independent same-valued locals (v12 for the first use, a fresh v12b for the second, inside the final if-block) narrows the long v12 live range and improves its rematerialization placement.
+- mechanism: v12's pseudo (hard reg s3, .greg dump insn 11, REG_EQUIV const_int 18) has a live range spanning the entire function body; a shorter per-copy live range might let the allocator/scheduler place each materialization closer to its own use.
+- probe: Declared a second local s32 v12b = 0x12; repointed the final if-block's s.sp2C = v12; to s.sp2C = v12b;, leaving the first use as v12; sandbox --disable all --diff.
+- result: Score got WORSE: 16 -> 22. Splitting the shared constant into two separately-materialized copies adds a second li instruction and disturbs downstream register seating.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with a second v12b local added for the final if-block's use, no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Narrowing v12's declared type from s32 to s16 (register-alloc-pure-c Lever B, type narrowing) changes its REG_EQUIV rematerialization placement.
+- mechanism: A narrower integer type can change which move/extend pattern GCC selects for the constant load, potentially altering when the allocator schedules the materialization.
+- probe: Changed s32 v12 = 0x12; to s16 v12 = 0x12; (single-line type edit only); sandbox --disable all --diff.
+- result: Score got WORSE: 16 -> 18. The s16 type forces a sign-extending load/store pattern around v12's two uses (s.sp2C is an s32 struct field) that costs more than it fixes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with v12 retyped s16, no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Reordering v12's declaration to LAST among the locals (after new_var instead of before it) changes LUID-driven scheduling of its constant materialization.
+- mechanism: Declaration-order-driven LUID bias could shift the early-vs-late scheduling decision for the li s3,0x12 insn.
+- probe: Swapped s32 v12 = 0x12; s32 new_var; to s32 new_var; s32 v12 = 0x12;; sandbox --disable all --diff.
+- result: No change: score stayed 16, identical diff. Generalizes the s3 finding (declaration reordering among siblings already killed once) to this ordering too.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with new_var declared before v12, no FAKE constructs, ordinary C, sandbox --disable all --diff
+
+## [s6] Reordering tbl's declaration to sit adjacent to s1 (the pre-existing register-seat-tie variable) instead of near var_v0/v12 changes the s1/v1 register-seat tie at the two tbl+0xC stores.
+- mechanism: Declaration-order LUID bias applied to the tbl side of the tie.
+- probe: Moved s32 tbl; to immediately after s32 s1; in the declaration block; sandbox --disable all --diff.
+- result: No change: score stayed 16, identical diff -- the s1/v1 tie (hunks 10/11/16/17) is completely unaffected by tbl's declaration position.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with tbl declared adjacent to s1, no FAKE constructs, ordinary C, sandbox --disable all --diff
