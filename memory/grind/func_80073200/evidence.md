@@ -251,3 +251,15 @@ for the func_80073200 recon session (the digest's only flagged global).
 - [s4] Real engine sandbox --disable all --diff re-run after applying the campaign's best find confirms 17 hunks (7 source-level / 6 operand-only / 4 not-scored), with frontier items 1 and 2 byte-identical to the pre-session diff and only frontier item 3's hunk narrower.
 
 - [s4] Campaign was stopped and harvested in-session (2375 iterations, ~105s, 6 jobs, 6 finds, best_new_score 545 vs base 645) on turn budget, not a no-novel-find window -- novel finds were still arriving roughly every 15-30s when stopped. No orphaned process (procs_killed: 7 confirmed in harvest output).
+
+- [s5] Chassis check confirmed candidate.c measures floor 16 at session start (target_insns==build_insns==203, 17 hunks: 7 source-level / 6 operand-only / 4 not-scored).
+
+- [s5] Read the raw target asm directly (asm/funcs/func_80073200.s:145-165): target's D_800A3580<2 / D_800A35C4+8 region loads D_800A35C4 via a PLAIN gp-relative lw (no +8 folded in) and defers the +8 offset to a SEPARATE later lw v1,8($v1) AFTER the branch is taken -- our floor-16 C combines both into one new_var = (s32)D_800A35C4 + 8; expression BEFORE the branch, which nonetheless produces the lowest instruction-count diff of any tested form.
+
+- [s5] Both this session's hypotheses (a hand-derived asm-literal restructure and the permuter's own best find) independently regressed the honest floor when the underlying source is the current (post-s4, new_var) chassis -- the floor-16 body is a genuine local optimum among everything tried so far, not an artifact of insufficient search.
+
+- [s5] Confirmed sibling ledgers (func_80069F80, func_8007352C, main/ings.c, func_800600C8, func_80069AE4, func_80060768) are all closed COMPLETED-C with candidates living directly in src/text1b.c on main -- none carry a transplantable spelling relevant to func_80073200's remaining residuals (frame/rematerialization, s1/v1 register-seat tie, D_800A3580 read-width narrowing); no new transplant opportunity found this session.
+
+- [s5] The permuter workspace tmp/perm_80073200/base.c had gone stale (still held the pre-s4, pre-new_var chassis from the s4 session) -- updated it in place to the current floor-16 chassis before launching this session's campaign; this is now the correct base for any future campaign on this function.
+
+- [s5] src/text1b.c was reverted to its committed INCLUDE_ASM("asm/funcs", func_80073200); state before session end (git checkout -- src/text1b.c) -- per asm-until-matched, main carries no draft C for an INCOMPLETE function; the floor-16 body lives only in memory/grind/func_80073200/candidate.c.

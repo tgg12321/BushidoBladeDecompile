@@ -1,3 +1,15 @@
+/* func_80073200 — session 4 (permuter) candidate, UNCHANGED by session 5.
+ * Session 5 (permuter, modality) tried two hypotheses against this exact
+ * chassis and killed both (see hypotheses.md [s5]): (1) restructuring the
+ * D_800A35C4 pointer read to match target's load-then-offset-load split
+ * INSIDE the if-block (worse: 16 -> 17); (2) the s5 permuter campaign's
+ * best find, staging the `D_800A3580 < 2` test through the reused `idx`
+ * local before its real job (worse on the REAL sandbox: 16 -> 19, despite
+ * a better permuter-metric score of 425 vs 545 — a clean instance of the
+ * permuter-score-vs-honest-sandbox mismatch). This file is still the
+ * correct floor-16 body to resume from; see hypotheses.md for the
+ * untried frontier note on the D_800A35C4 address-split question.
+ */
 /* func_80073200 — session 4 (permuter) candidate.
  * Session 3 closed the frame-size/callee-save gap with `v12` (named-intermediate
  * for the repeated 0x12 literal, floor 24 -> 17) but left three residuals open:
