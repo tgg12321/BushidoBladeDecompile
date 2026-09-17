@@ -28232,3 +28232,65 @@ the score from 2 without touching bytes — listing `jtbl_80015988` in `LD_SYM_F
 build (`named_syms.txt` is a root-level pipeline file, inside the Judge's grantable scope classes
 but outside a grind session's surface); (5) an **operator or explicitly linker-authorized pass**
 applying the rodata placement, whose exact steps remain on record in the 2026-09-16 s11 entry above.
+
+## 2026-09-16 — func_8006B578 — **RESOLVED: COMPLETED-C via the operator rodata placement pass** (commit 2a5db4c32)
+
+Supersedes the ROTATED disposition recorded above the same day. Re-activation
+trigger (5) of that entry — "an operator or explicitly linker-authorized pass
+applying the rodata placement" — fired: the owner directed the grinder be brought
+to a close and the resolvable items closed, and the operator executed steps 1-4 of
+the s11 INTEGRATION HANDOFF verbatim.
+
+**What was done.** Exactly the s11 recipe. (1) `src/text1a_b_pre_rodata.c` split at
+`jtbl_80015988`; that hand-extracted array DELETED; `D_800159A0` onward moved to a
+new sub-TU `src/text1a_b_mid_rodata.c`. (2) `bb2.ld`: `build/src/text1b.o(.rodata)`
+moved from its old zero-size placeholder slot to sit between
+`text1a_b_pre_rodata.o(.rodata)` and `text1a_b_mid_rodata.o(.rodata)`. (3)
+`candidate.c` applied to `src/text1b.c` over the stale 4-param prototype +
+INCLUDE_ASM stub. No other file touched.
+
+**Certification.** `verify-oracle --rebuild` → ok=true, build_sha1 ==
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, re-verified independently by
+the layer-2 reviewer rather than credited from the author. `queue done` accepted
+COMPLETED-C (rotation overridden). `tools/check_completion_integrity.py`: "OK: all
+completed functions satisfy their category's invariants", 1162 COMPLETED-C.
+
+**Layer-2 adversarial `cheat-reviewer`: PASS.** Body is ordinary C, zero cheat
+constructs; `find_all_cheats` on `src/text1b.c` returns the same 3 pre-existing
+unrelated hits as HEAD. The deleted table's six entries are exactly the six jlabel
+case targets in case order. The `bb2.ld` move satisfies all four conditions
+`no-new-park-categories.md` requires for evidence-based re-attribution, and matches
+the 2026-06-09 `replay_camera_rob_back_loose2` precedent
+(`jtbl-rodata-split-infrastructure.md`) plus the in-tree `text1b_b.o` sibling slot.
+The redundant range guard at `src/text1b.c:6590` was scrutinized and cleared
+against the committed, byte-matching identical shape at `src/text1b_b.c:832`.
+
+**Note for the sibling frontier.** `func_80065800` (owner of `jtbl_80015940`,
+immediately before ours) reaching C would let both tables be emitted by `text1b.o`
+in ascending order and collapse part of this split. That remains desirable, not
+required — this entry does not depend on it.
+
+### Collateral finding (NOT acted on — for the owner's cadence)
+
+`func_8004A4E0` is listed COMPLETED-INLINE-ASM-CANONICAL at
+`inline_asm_canonical.txt:201`, auto-added 2026-05-17. Audited while censusing the
+remaining hand-transcribed jump tables (it owns `jtbl_8001541C` + `jtbl_8001545C`):
+
+- **The disposition is empirically sound.** Corpus-wide test: 0 of the functions
+  matched as pure C contain trapping arithmetic; 67 asm/canonical ones do. The
+  function carries 2 trapping `addi` (one in a branch delay slot) plus 4 `ctc2`
+  GTE control writes — ~6 instructions with no C form. A 100% pure-C match is not
+  reachable. This is not a cheat.
+- **But two of its stated grounds are factually false.** `known_psyq_stdlib.txt:28`
+  justifies it partly on `syscall` — there is no `syscall` in the function. The
+  entry cites `known_blocked.txt`, which does not exist.
+- **And the form likely overshoots.** Whole-body asm for 163 instructions when only
+  ~6 lack a C form is what `minimize-asm-when-blocked` targets; no pure-C attempt is
+  on record, unlike its cluster siblings at lines 185/188 which document theirs
+  (func_8004A348 reached 93/102 before concluding). Candidate for re-derivation as
+  pure C with ~6 canonical inline-asm islands, which would also retire its 2 tables.
+
+Remaining hand-transcribed compiler-generated jump tables project-wide: **24**
+(was 25; this commit retired `jtbl_80015988`). Every one
+is owned by a function that is still `INCLUDE_ASM` and queue-active, except the two
+above. No C body anywhere in `src/` reads a hand-transcribed table (checked).

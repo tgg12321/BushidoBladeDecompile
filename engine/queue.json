@@ -1108,25 +1108,14 @@
       "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md 2026-09-16 -- _exeque -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): ROTATED",
       "rotated_at": "2026-09-16T07:19:10+00:00",
       "rotation_count": 1
-    },
-    {
-      "func": "func_8006B578",
-      "file": "text1b",
-      "distance": 200,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md:28138 \u2014 ## 2026-09-16 \u2014 func_8006B578 \u2014 OWNER-ESCALATION \u2014 **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**",
-      "rotated_at": "2026-09-17T01:55:49+00:00",
-      "rotation_count": 1
     }
   ],
   "counts": {
-    "total": 119,
+    "total": 118,
     "active": 111,
     "by_status": {
       "active": 111,
-      "rotated": 8
+      "rotated": 7
     },
     "by_verdict": {
       "C": 89,
