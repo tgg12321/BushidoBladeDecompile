@@ -1,13 +1,10 @@
 # SELF-VET — func_80073200
-CONSTRUCTS: new_var (fresh local, once-written, once-read named intermediate hoisting `(s32)D_800A35C4 + 8`)
-## T1 semantic purpose: Yes -- `new_var` holds a real address value (`D_800A35C4 + 8`) that is genuinely dereferenced (`v1 = *(s32 *)new_var;`) inside the `if (D_800A3580 < 2)` block. Removing the local and inlining the expression back at the use site changes NOTHING observable (same value, same read) -- the construct's only effect is WHERE the address computation is materialized in the emitted instruction stream, which is exactly the sanctioned named-intermediate family's shape (see SANCTIONED-FAMILY-CLAIMS below), not a behavior change. This is a real value computed and consumed, not a no-op.
-## T2 human-programmer: A human factoring this function might reasonably hoist a repeated/precomputed address above a conditional block it's used once inside, especially if they were tracking a pointer to a fixed hardware/game-state structure (`D_800A35C4`) that other parts of the same function already read via `ctx`/`base1`/`base2` locals computed the same way earlier in the function. It reads naturally as "compute the pointer once, use it below."
-## T3 GCC-internals justification: The MEASURED effect (floor 17 -> 16) was found by a permuter search and is explainable via GCC-internal scheduling/allocation behavior (materializing the address earlier changes downstream instruction ordering in the `D_800A3580 < 2` test region), but the construct's OWN justification for being ordinary C does not rest on a named GCC pass -- it is a real value, computed once, read once, at a natural point in the control flow. The GCC-internals explanation is offered as a MEASUREMENT NOTE (what changed and why), not as the reason the construct is legal to write.
-## T4 permuter/search provenance: Found by a directed permuter campaign (tools/perm_80073200, output-545-1). Per policy this is a PROPOSAL, not an automatic pass -- it was vetted against the 6-test checklist before adoption (this document), and its counterpart proposal (output-560-1, the opaque `(D_800A3580+1)<=2` respelling) was REJECTED on sight for failing T1/T3, confirming the vetting was applied discriminately rather than accepting everything the search returned.
-## T5 family check: Matches the SOTN-sanctioned named-intermediate / `new_var_temp` family exactly (no-new-park-categories.md "Named-intermediate declaration order", relaxed to once-written/many-read by ordinary-c-judge-decidable.md Ruling 1). Does not match any forbidden family: not a register pin, not hardcoded-$N asm, not a scheduling barrier, not volatile coercion, not a dead/unused local (the value IS read), not a dead-conditional-store, not an empty-if, not a dead-goto.
-## T6 naming-announces-intent: `new_var` is a neutral, non-announcing name -- it does not contain pad/dummy/unused/spill/sp_/buf/tail/slack/frame_pad or any other coercion-intent marker. Notably it is also literally the identifier SOTN-master ships for this exact construct class (`new_var_temp`, docs/reference/sotn-construct-index.md:649), so it is doubly appropriate rather than a red flag.
-SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: named-intermediate declaration order (new_var_temp)
-  SCOPE: "Named-intermediate declaration order (narrow-byte-args-packed-call.md hi/lo sub-trick): declare a sub-expression as a separately-named local to bias LUID... a fresh local holding a real, consumed value may be read any number of times." (no-new-park-categories.md § SOTN-accepted techniques, as amended by ordinary-c-judge-decidable.md Ruling 1, prong 1 relaxed to once-written)
-  PRECEDENT: .claude/rules/no-new-park-categories.md:204
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct (this family does not require a /* FAKE */ annotation; it is ordinary C under Ruling 1, unlike the last-resort dead-store/constant-holder/pointer-alias families)
+CONSTRUCTS: none (this session's edits to src/text1b.c were all reverted; the committed working tree carries the SAME floor-16 chassis as the s4 candidate, with no new constructs introduced or retained)
+## T1 semantic purpose: N/A — no construct survives this session's edits.
+## T2 human-programmer: N/A
+## T3 GCC-internals justification: N/A
+## T4 permuter/search provenance: N/A
+## T5 family check: N/A
+## T6 naming-announces-intent: N/A
+SANCTIONED-FAMILY-CLAIMS: none
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct

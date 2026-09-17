@@ -276,3 +276,13 @@ for the func_80073200 recon session (the digest's only flagged global).
 - [s6] The s5 live-frontier item 1 (address-split placement, before-the-branch variant) is now fully exhausted: the inside-the-if placement was killed in s5, and the before-the-branch placement is killed this session (s6) -- both concrete spellings of this frontier item are dead.
 
 - [s6] src/text1b.c reverted to its committed INCLUDE_ASM("asm/funcs", func_80073200); state before session end, per asm-until-matched.
+
+- [s7] Chassis check confirmed at session start: memory/grind/func_80073200/candidate.c applied to src/text1b.c measures sandbox --disable all == score 16, build_insns 203 (matches ledger floor exactly).
+
+- [s7] sandbox --disable all --diff (17 hunks total, 7 source-level / 6 operand-only / 4 not-scored) re-run this session; hunks 6/7 (insert ours[55] `addiu a0,sp,24` / delete target[58]) are a previously-unnamed source-level residual distinct from the three frontier items already tracked (v12 rematerialization, s1/v1 tie, D_800A3580 width) -- the first of four repeated func_80073728 call-setup blocks has its (s32)&s address computed one scheduler slot later than target; the other 3 repeated blocks already match byte-for-byte (verified against asm/funcs/func_80073200.s lines 62/70/78/86).
+
+- [s7] tools/spelling_enum.py --list on the 6-decl ENUM region (var_v0->sp42, sp43/sp2C literals, sp1C<-s1, sp24<-*(arg0+4) read, and a named (s32)&s) reports 1957 distinct no-swap orderings for this specific residual's block.
+
+- [s7] tools/sweep_variants.py's per-variant cost is the FULL build pipeline (cpp|cc1|maspsx|as), observed ~15-20s/variant on this function -- this makes exhaustive enumeration of even a 6-statement/1957-variant region impractical within a single grind session's turn budget; the enumerate modality's systematic-sweep procedure needs either a much smaller region (<=200-300 variants) or a cheaper per-variant scorer (cc1-only, skipping maspsx/as) to be tractable per-session for residuals at this file's build-pipeline cost.
+
+- [s7] sweep_variants.py's source-restore is only `finally`-guarded, not signal-safe: killing the process mid-sweep (SIGKILL) left an interrupted variant spliced into src/text1b.c, requiring a manual detect-and-revert (grep for the ENUM region's local names v42/vaddr, then Edit back to the exact candidate.c text) before any further measurement in this session could be trusted -- worth flagging for a future engine-tooling session (add a SIGTERM handler / atexit restore, or write progress+partial-results incrementally so a kill doesn't lose all completed scores).

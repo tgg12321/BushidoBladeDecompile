@@ -1,3 +1,23 @@
+/* func_80073200 — session 7 (enumerate) note: floor UNCHANGED at 16.
+ * s7 identified a previously-unnamed source-level residual (--diff hunks
+ * 6/7): the FIRST of four `func_80073728` calls in the `if (D_800A3580 < 4)`
+ * block has its `(s32)&s` address computation one scheduler slot later than
+ * target (asm/funcs/func_80073200.s:62 — target emits it as the very first
+ * insn after the if/else join, before the sp2C/sp1C/sp24 stores). The other
+ * 3 repeated call groups already match exactly. Attempted a systematic
+ * spelling_enum.py sweep (1957 orderings of the 6 independent sub-exprs in
+ * that block) but tools/sweep_variants.py's per-variant cost is a full
+ * cpp|cc1|maspsx|as pipeline (~15-20s/variant) — ~8-11h total, infeasible
+ * this session; killed mid-run and the interrupted variant it left in
+ * src/text1b.c was manually reverted back to this exact floor-16 body
+ * (verified: sandbox --disable all == score 16, build_insns 203). Two
+ * targeted manual instances (naming `(s32)&s` as a fresh `addr0` local, at
+ * two candidate positions) both regressed to score 64 / build_insns 206 —
+ * confirms the residual is a pure INLINE-expression scheduling-slot
+ * question, not a naming/staging axis. See hypotheses.md [s7] for the full
+ * writeup. This file (below) is unchanged from session 4/5/6 — the correct
+ * floor-16 body to resume from.
+ */
 /* func_80073200 — session 4 (permuter) candidate, UNCHANGED by session 5.
  * Session 5 (permuter, modality) tried two hypotheses against this exact
  * chassis and killed both (see hypotheses.md [s5]): (1) restructuring the

@@ -1,8 +1,8 @@
 {
  "func": "func_80073200",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "structural",
+ "session_count": 7,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 16,
    "modality": "structural",
    "headline": "func_80073200: floor unchanged at 16 this session; 5 structural hypotheses killed (address-split, v12-split-into-two-copies, v12 type-narrow, and two declaration-order sweeps) -- exhausts the s5 live-"
+  },
+  {
+   "session": 7,
+   "floor": 16,
+   "modality": "enumerate",
+   "headline": "func_80073200: floor unchanged at 16 (enumerate modality); identified a new source-level residual (hunks 6/7: the first of four func_80073728 calls has its (s32)&s address one scheduler slot late) but"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The v12 rematerialization residual (extra li s3,0x12 at position 30 vs target's single li at position 114) is likely a first-pass scheduler hoisting decision independent of C source placement -- 4 distinct spellings (s3: no-initializer, reordered decl, moved statement; s6: split into two locals) all failed to move it, and 2 more spellings (s6: type-narrow, decl-order-swap) also failed. The remaining untried axis is changing what ELSE occupies the early scheduling slot so the li has scheduling competition, rather than changing v12 itself.",
-   "mechanism": "sched.c first-pass list scheduler (schedule_block) picks the earliest available slot for a no-dependency constant load; if no other ready insn competes for that slot, the li floats to the top regardless of source position.",
-   "next_probe": "Read tmp/grind/func_80073200/dumps/text1b.sched around insn 11's scheduling decision to see what OTHER insns were candidates for that early slot, and whether introducing a genuine dependency chain (not v12 itself, but an adjacent statement) before v12's first use changes the competition."
+   "hypothesis": "The hunks-6/7 residual (first func_80073728 call's (s32)&s address one scheduler slot late) is closable by a smaller, targeted spelling_enum region (e.g. only the 2-3 statements immediately surrounding the address computation, not all 6 independent sub-expressions) that keeps the variant count under ~200-300 so the full pipeline sweep finishes in a session.",
+   "mechanism": "Same schedule_block first-pass list-scheduler slot-selection mechanism named in the s7 hypothesis above; narrowing the region reduces the combinatorial explosion without changing the mechanism being searched.",
+   "next_probe": "Re-run tools/spelling_enum.py with --keep-inlined on the sub-expressions NOT adjacent to the address computation (forcing them to stay in their current textual position/form) so only the 2-3 statements bracketing `(s32)&s` permute; verify --list reports a small count before sweeping."
   },
   {
-   "hypothesis": "The s1/v1 register-seat tie (hunks 10/11/16/17: target addiu s1,v0,12 / sw s1,28(sp) vs ours v1) is unaffected by declaration-order changes to either tbl or s1 in isolation (tbl tested this session, s1 itself not yet retried) -- likely coupled to the same allocation pass that resolves the v12 residual, per the s5 note.",
-   "mechanism": "global.c allocno priority / register class preference for the s1 pseudo, potentially entangled with the same long-range materialization decisions governing v12.",
-   "next_probe": "Once frontier item 1 (v12 rematerialization) has a genuine lever, re-diff before spending a dedicated session on the s1/v1 tie in isolation -- per the s5 coupling note, it may shift as a side effect."
+   "hypothesis": "Read the .sched dump (pwsh tools/grinder/dump.ps1 func_80073200, then tmp/grind/func_80073200/dumps/text1b.sched) around the first call-setup block's insn range to see the actual ready-list/priority values schedule_block used, rather than continuing to guess spellings blind.",
+   "mechanism": "sched.c rank_for_schedule dependence-class / priority tiebreaking, same class of evidence the codegen-technique-index's sched-rank-class-tie-wall entry describes for other functions.",
+   "next_probe": "Dump attribution per the brief's PASS ATTRIBUTION instruction (not yet done for this specific residual in any prior session) before proposing another C-source lever."
   },
   {
-   "hypothesis": "The D_800A3580 lh-vs-lw width residual (hunk12: target lh v1,0(gp) / ours lw v1,0(gp)) is a narrower sub-word-read lever candidate ([[narrow-stack-param-subword-offset]] family) untried on this global read.",
-   "mechanism": "GCC widens the D_800A3580 read to lw because of surrounding value liveness (per candidate.c's session-4 header note); a narrow-width C-level cast might force the lh form.",
-   "next_probe": "Try reading D_800A3580 via an explicit (s16) or *(s16 *)&D_800A3580 narrow cast at the second (if (D_800A3580 < 2)) test site instead of the plain s32 global read, and re-measure sandbox --disable all --diff."
+   "hypothesis": "The v12 rematerialization (frontier item 1, unchanged since s3) and the s1/v1 register-seat tie (frontier item 2) remain untried via the enumerate modality's systematic-sweep procedure -- both are smaller-shaped residuals (a single constant load position, a single register-seat pair) that may fit a tractable variant count where the hunks-6/7 region did not.",
+   "mechanism": "Same first-pass scheduler / allocno-priority mechanisms already named for those items in the ledger's live frontier.",
+   "next_probe": "Apply spelling_enum.py to the narrow block containing v12's declaration + its two use sites (not the whole function) and check --list count before committing to a full sweep."
   }
  ],
  "judge_constraints": [],
@@ -172,6 +178,22 @@
    "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis with tbl declared adjacent to s1, no FAKE constructs, ordinary C, sandbox --disable all --diff",
    "predicate_cite": "",
    "result": "No change: score stayed 16, identical diff -- the s1/v1 tie (hunks 10/11/16/17) is completely unaffected by tbl's declar"
+  },
+  {
+   "session": 7,
+   "statement": "A systematic spelling_enum.py sweep (1957 no-swap orderings) over the 6 independent sub-expressions in the first func_80073728 call-setup block (--diff hunks 6/7 residual: (s32)&s address materializat",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis; the enumerate tool-chain itself (spelling_enum.py + sweep_variants.py) against this specific 6-statement region; no FAKE constructs, tool",
+   "predicate_cite": "",
+   "result": "Infeasible in-session: each variant pays a full cpp|cc1|maspsx|as pipeline invocation (~15-20s observed), projecting ~8-"
+  },
+  {
+   "session": 7,
+   "statement": "Naming the repeated `(s32)&s` call-argument expression as a fresh named local (`addr0`), declared either immediately after the if/else join or immediately before the call's last setup statement, will ",
+   "kill_scope": "instance",
+   "measured_on": "src/text1b.c func_80073200 post-s4 (new_var) floor-16 chassis, (s32)&s replaced with a fresh addr0 local at two positions in turn, no FAKE constructs, ordinary C, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "Both regressed: score 16 -> 64, build_insns 203 -> 206 (+3 insns), identical for both declaration positions. Introducing"
   }
  ],
  "ladder_skip": 0,
