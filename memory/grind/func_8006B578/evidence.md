@@ -721,3 +721,98 @@ instruction-count divergence. Banked at
 - [s10] src/text1b.c reverted to the exact committed INCLUDE_ASM stub at session end; git status shows only ledger files touched.
 
 - [s10] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 4a4452e58cb2 scores 2 under our cc1 and 44 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+## Session 11 (2026-09-16) — escalation modality — DISPOSITION FILED (integration handoff)
+
+Driver dispatched s11 in `escalation` modality: the honest floor has been flat at 2 since s3,
+across 8 distinct modalities (recon, structural, permuter x2, enumerate, synthesis, solver,
+forensics, rederive). No new grind lever was proposed; the session's job was to reach a
+disposition, and it did.
+
+**Re-measurements (candidate.c applied to src/text1b.c, then reverted):**
+- `sandbox func_8006B578 --disable all` → score **2**, 200 target insns / 200 build insns.
+  Matches the driver's dispatch-time CHASSIS CHECK exactly.
+- `sandbox func_8006B578 --disable all --diff` → 22 hunks, **0 source-level · 0 operand-only ·
+  22 not-scored**. Banked at `tmp/grind/func_8006B578/s11/diff_s11.txt`. There is no hunk class
+  left that any C lever can act on: not one allocation seat, not one scheduling tie.
+- `tools/fake_ablate.py --func func_8006B578 --file text1b --candidate
+  memory/grind/func_8006B578/candidate.c` → "no FAKE-annotated constructs found … nothing to
+  ablate". The chassis is FAKE-free, so every banked instance kill on it was measured without a
+  FAKE carrier occupying any pseudo — the s8 func_8002EA24 failure mode does not apply here.
+
+**H19 — MANDATED KILL RE-AUDIT of the newest instance kill (s10 if-else chain). KILLED
+(instance), re-confirmed.** The banked `rejected/ifelse-chain-second-dispatch-regresses-score16.c`
+is a *middle-block fragment*, not a whole function — applying it verbatim to src/text1b.c makes
+the sandbox report `func_8006B578 not found in … text1b.o` (a useful trap for future sessions:
+reconstruct it into candidate.c's chassis instead). Reconstructed by substituting the fragment for
+candidate.c's second `switch` block (the `>= 6` guard left in place) and measured on the CURRENT
+chassis with zero FAKE constructs: **score 41, 211 build insns**, vs candidate.c's 2/200. s10
+recorded 16/206 for its own spelling, so the 5-insn/25-point delta is the reconstruction's own
+(s10 most likely also dropped the now-redundant `>= 6` guard). Either spelling regresses hard and
+in the same direction; the mechanism is unchanged and pass-attributed: GCC 2.7.2's
+`stmt.c expand_end_case` synthesizes an ADDR_VEC jump table only for a real `switch`, while an
+if-else chain compiles to a linear beq/bne compare chain and emits no table at all — and the
+target dispatches through exactly such a table (`asm/funcs/func_8006B578.s:83-88`). Variant banked
+at `tmp/grind/func_8006B578/s11/variant_ifelse_reaudit.c`.
+
+**H20 — endgame-lock gate (a), canonical-asm. GATE FAILS (measured).**
+`python3 tools/scan_hand_coded.py --single func_8006B578` → **tier=LOW, score 0/8**, "no strong
+hand-coded indicators". All eight signals negative, including the three STRONG ones (S1 multu
+pacing: 0 multu/mflo pairs; S2 empty branch: none; S6 BIOS jumptable: no pattern). S3 reports 206
+insns / 5 spills / 9 distinct regs — ordinary compiler output. This function was compiled, not
+hand-written; canonical-asm is not its disposition.
+
+**H21 — endgame-lock gate (b), coercion-family precedent. N/A → GATE FAILS.** The body claims no
+sanctioned family and contains no coercion construct to seek one for: two `switch` dispatches,
+`u32` casts on real values, named intermediates that each carry a real consumed value, and forward
+`goto`s that mirror the target's own jumps. `self_vet.md` records the same. A census was therefore
+not run as a "maybe" — there is no construct to census.
+
+**Disposition.** Both endgame-lock gates fail, but the standing endgame-lock ruling (2026-07-27)
+is not this residual's subject: that ruling governs a function whose byte-match is held by a CHEAT,
+and nothing holds this one — the pure-C body is already byte-equivalent (s7 H13/H14, s9 byte
+certification of the emitted table and the 24-byte rodata hole). The honest classification is an
+**INTEGRATION HANDOFF**: the only remaining blocker is rodata PLACEMENT (`bb2.ld:66` plus a split
+of `src/text1a_b_pre_rodata.c` at line 409), a surface a grind session may not touch. Filed as
+`## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — INTEGRATION HANDOFF …` in
+docs/grind/decisions.md, superseding the voided s7 copy of the same substance (s7 filed it in
+`synthesis` modality and the driver discarded that session; s11 is the mandated escalation slot).
+
+**Scope finding new to s11 (read this before re-filing):** step 2 of the operator recipe touches
+`bb2.ld`, which is outside the scope classes the Judge can grant under
+`.claude/rules/integration-handoff-self-serve.md` (include/*.h, src/*.c, root-level *.txt). A Judge
+scope-widening alone therefore cannot close this function — steps 1 and 3 are grantable, step 2 is
+not. Whoever picks this up needs an operator pass or an explicit linker-script authorization.
+
+**Housekeeping.** The dispatch-time CONSISTENCY WARNING ("candidate.c asserts HEAD/main state
+without a migration banner") is a false positive: candidate.c lines 5-9 carry an explicit
+MIGRATION BANNER stating that main holds `INCLUDE_ASM("asm/funcs", func_8006B578);` and that the
+file is not on main. No edit was made on that account. src/text1b.c was reverted to HEAD at the
+end of the session (`git checkout -- src/text1b.c`); the working tree carries nothing outside
+`memory/grind/func_8006B578/`, `docs/grind/`, and `tmp/`.
+
+- [s11] s11 re-measured the banked chassis: candidate.c applied to src/text1b.c gives sandbox --disable all score 2, 200 target insns / 200 build insns — identical to the driver's dispatch-time CHASSIS CHECK.
+
+- [s11] sandbox --disable all --diff on that chassis: 22 hunks, 0 source-level, 0 operand-only, 22 not-scored. Every hunk is a masked-relocation artifact differing by the single constant object offset 0x1A294.
+
+- [s11] tools/fake_ablate.py on candidate.c: 'no FAKE-annotated constructs found in memory/grind/func_8006B578/candidate.c; nothing to ablate'. The chassis is FAKE-free, so every banked instance kill measured on it was taken without a FAKE carrier occupying any pseudo.
+
+- [s11] Endgame-lock gate (a): python3 tools/scan_hand_coded.py --single func_8006B578 -> tier=LOW, score 0/8, all eight signals negative including the STRONG S1/S2/S6.
+
+- [s11] Endgame-lock gate (b): N/A and therefore failed — the body contains no coercion/spelling construct and claims no sanctioned family, so there is nothing for a SOTN-master precedent census to be about.
+
+- [s11] cc1psx self-disproof banked by the driver in state.json.cc1psx_check (2026-09-17T01:42Z, candidate_sha 4a4452e58cb2): ours 2, cc1psx 44, closer=false — the period-original compiler is not closer, so this is not a compiler-divergence residual.
+
+- [s11] Exhaustion: floor flat at 2 since s3, across 8 distinct modalities (recon, structural, permuter x2, enumerate, synthesis, solver, forensics, rederive); s11 is the driver-assigned escalation slot.
+
+- [s11] Kill re-audit found a ledger trap worth inheriting: rejected/ifelse-chain-second-dispatch-regresses-score16.c is a middle-block FRAGMENT, not a whole function — applied verbatim the sandbox reports 'func_8006B578 not found in tmp/sandbox/func_8006B578/text1b.o'. A compilable whole-function reconstruction is now banked as rejected/ifelse-chain-reaudit-s11-full-chassis-score41.c.
+
+- [s11] Disposition filed THIS session: '## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven; the only remaining blocker is rodata PLACEMENT in bb2.ld plus a second src file)' in docs/grind/decisions.md. It supersedes the identical-substance entry appended by s7, which the driver voided as a discarded session (filed in synthesis modality).
+
+- [s11] New scope finding: operator step 2 touches bb2.ld, which is outside the scope classes the Judge can grant under .claude/rules/integration-handoff-self-serve.md (include/*.h, src/*.c, root-level *.txt). A Judge scope-widening alone cannot close this function — steps 1 and 3 are grantable, step 2 needs an operator pass or explicit linker-script authorization.
+
+- [s11] Precedent for the placement pattern verified by reading the cited lines this session: bb2.ld:60 places build/src/text1b_b.o(.rodata) between text1a_b_pre_rodata.o(.rodata) (bb2.ld:59) and text1a_b_post_rodata.o(.rodata) (bb2.ld:61) for func_80077B30's switch table (src/text1b_b.c:825); jtbl_80015988 currently lives at src/text1a_b_pre_rodata.c:409-416 and build/src/text1b.o(.rodata) sits at bb2.ld:66.
+
+- [s11] The dispatch-time CONSISTENCY WARNING ('candidate.c asserts HEAD/main state without a migration banner') is a false positive — candidate.c lines 5-9 carry an explicit MIGRATION BANNER stating main holds INCLUDE_ASM and the file is not on main. No edit was made on that account.
+
+- [s11] src/text1b.c was reverted to HEAD at the end of the session; git status --short shows nothing outside memory/grind/func_8006B578/, docs/grind/, tmp/ and the driver's own metrics/events.jsonl.

@@ -28022,3 +28022,115 @@ question is addressed to the owner — a pure-C preimage exists and is already w
 ## 2026-09-16 20:11 — func_8006B578 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s7 of func_8006B578, which the driver DISCARDED as invalid (owner-gated: a rotation disposition (standing ruling / ladder exhausted / ROTATED) requires `escalation` modality (driver-declared exhaustion), not `synthesis`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **INTEGRATION HANDOFF (bytes proven; the only remaining blocker is rodata PLACEMENT in bb2.ld plus a second src file)**
+
+Filed by session s11 in **`escalation` modality** (driver-declared exhaustion: floor flat at 2
+across s3–s10, 8 distinct modalities — permuter, permuter, structural, enumerate, synthesis,
+solver, forensics, rederive). This entry SUPERSEDES the identical-substance entry appended by
+session s7 above, which the driver voided as a discarded session (wrong modality). It is a
+disposition RECORD, not a question to the owner, and it does not claim that policy blocks the
+function: a pure-C preimage exists and is already written and measured.
+
+**This is an INTEGRATION HANDOFF, not an endgame lock and not an exhaustion claim.** No cheat
+holds the byte-match — there is no cheat anywhere in the body (`tools/fake_ablate.py --func
+func_8006B578 --file text1b --candidate memory/grind/func_8006B578/candidate.c` →
+"no FAKE-annotated constructs found … nothing to ablate", re-run this session). What blocks
+COMPLETED-C is rodata PLACEMENT infrastructure that a grind session may not touch (`bb2.ld`)
+and that sits outside its single-file mandate (`src/text1a_b_pre_rodata.c`).
+
+### Measurements re-taken THIS session (s11), candidate.c applied to src/text1b.c
+- `sandbox func_8006B578 --disable all` → **score 2**, 200 target insns / 200 build insns.
+- `sandbox func_8006B578 --disable all --diff` → 22 hunks, **0 source-level · 0 operand-only ·
+  22 not-scored**. Every hunk is a masked-relocation artifact; there is no reg-allocation,
+  scheduling, or branch-sense seat anywhere in the function for a C lever to attack.
+  (`tmp/grind/func_8006B578/s11/diff_s11.txt`)
+- **Mandated kill re-audit** (floor flat >=3 sessions): the newest instance kill (s10,
+  if-else-chain rederivation of the second dispatch) was reconstructed from its banked fragment
+  onto the CURRENT chassis with zero FAKE constructs present and re-measured: **score 41, 211
+  build insns** (s10 recorded 16/206 for its own slightly different spelling; the banked file is a
+  middle-block fragment, so the reconstruction is not byte-identical to what s10 measured). The
+  kill direction is re-confirmed — the if-else chain regresses hard because GCC 2.7.2's
+  `stmt.c expand_end_case` synthesizes an ADDR_VEC table only for a real `switch`, and the target
+  dispatches through exactly such a table (`asm/funcs/func_8006B578.s:83-88`).
+  (`tmp/grind/func_8006B578/s11/variant_ifelse_reaudit.c`)
+- **cc1psx self-disproof** (banked by the driver in `state.json.cc1psx_check`, 2026-09-17T01:42Z,
+  candidate_sha 4a4452e58cb2): ours **2**, cc1psx **44**, `closer: false` — the period-original
+  compiler is not closer; this is not a compiler-divergence residual.
+
+### Endgame-lock AND-gates (evaluated as mandated; both FAIL, which is the expected result here)
+- **(a) canonical-asm scan:** `python3 tools/scan_hand_coded.py --single func_8006B578` →
+  **tier=LOW, score 0/8**, "no strong hand-coded indicators"; S1/S2/S6 all negative. **GATE FAILS.**
+  This function is compiler output, not hand-written asm.
+- **(b) SOTN-master precedent for a closing coercion/spelling construct:** **N/A — GATE FAILS** —
+  the body needs no coercion construct at all. It is ordinary C (two `switch` dispatches, `u32`
+  casts, real named intermediates for real values, forward `goto`s mirroring the target's own
+  jumps). There is nothing to seek a frozen-family grant for, and no family is claimed.
+
+Because gate (a) is LOW and no coercion family is in play, the standing endgame-lock ruling
+(2026-07-27) is **not** this residual's subject: that ruling governs a function whose byte-match is
+held by a cheat. Here the bytes are already reachable by pure C — see below.
+
+### Why the sandbox score can never reach 0, and why that is not a defect in the C
+The entire score-2 residual is the dispatch pair `lui at,%hi(...)` / `lw v0,%lo(...)(at)`. The
+reference object (assembled from `asm/funcs/`) names the EXTERNAL symbol `jtbl_80015988`; our
+object carries a section-relative relocation against its own `.rodata`. `engine/score.py` masks
+those two through different code paths that can never produce an equal token (banked s4, re-proven
+s8/s9). All 22 not-scored hunks differ by one constant object offset (0x1A294). The
+GCC-synthesized table our `switch` emits is content-identical to the extracted
+`jtbl_80015988` (`src/text1a_b_pre_rodata.c:409-416`) — all six entries differ by the same
+section-base delta 0x80062164 (s9 byte certification). The FULL-BUILD ORACLE, not the sandbox
+gradient, is the only instrument that can certify this function.
+
+### Exact operator steps (unchanged from the s7 draft; re-verified this session)
+1. Split `src/text1a_b_pre_rodata.c` at `jtbl_80015988` (line 409): everything below 0x80015988
+   stays; `jtbl_80015988` itself is **deleted** (GCC re-emits it byte-identically — proven above);
+   the symbols from `D_800159A0` (line 418) onward move to a new sub-TU. Session 7b verified the
+   ownership of the whole run 0x80015940–0x80015A3C (jtbl_80015940 → func_80065800,
+   jtbl_80015988 → this function, jtbl_800159B0 → func_8006E534, jtbl_800159D0 → func_8006ECF4,
+   jtbl_80015A0C → func_800747D8, jtbl_80015A24 → func_80077374).
+2. In `bb2.ld`, move `build/src/text1b.o(.rodata);` from **line 66** to the new boundary between
+   the two halves, and add the new sub-TU's `.rodata` line after it.
+3. Apply `memory/grind/func_8006B578/candidate.c` to `src/text1b.c` in place of the
+   `INCLUDE_ASM("asm/funcs", func_8006B578);` stub at `src/text1b.c:6548`, replacing the stale
+   4-param prototype above it with the real `s32 func_8006B578(s32 *arg0, s32 *arg1);`.
+4. Certify with the full-build oracle (`verify-oracle --rebuild`, SHA1 ==
+   `62efab4f73f992798c43e8c730aa43baa10bb4fa`) — NOT with the sandbox score, which stays at 2 by
+   construction.
+5. Run a fresh layer-2 `cheat-reviewer` on the C body before acceptance, per manual-path review
+   discipline. Nothing in this entry pre-grants that pass.
+
+**Scope note for whoever executes this.** Step 2 touches `bb2.ld`. That path is outside a grind
+session's surface AND outside the scope classes the Judge can grant under
+`.claude/rules/integration-handoff-self-serve.md` (include/*.h, src/*.c, root-level *.txt). So a
+Judge scope-widening alone cannot close this function: it needs an operator pass, or a session
+explicitly authorized for the linker script. Steps 1 and 3 are inside grantable classes.
+
+### Precedent that this placement pattern is the project's own established practice
+`func_80077B30` (`src/text1b_b.c:825`) is an already-COMPLETED-C function with a six-case switch
+whose 24-byte compiler-generated table is placed by a dedicated `build/src/text1b_b.o(.rodata);`
+slot inserted at `bb2.ld:60`, BETWEEN `text1a_b_pre_rodata.o(.rodata)` (`bb2.ld:59`) and
+`text1a_b_post_rodata.o(.rodata)` (`bb2.ld:61`). func_8006B578 needs the identical split one
+cluster earlier, at 0x80015988.
+
+### Re-activation triggers
+(a) An operator or linker-script-authorized session performing steps 1–4; (b) any future
+rodata-cleanup pass that re-splits the `101C.rodata_text1a_b_pre` cluster; (c) a grind-session
+surface grant covering `bb2.ld` plus a second `src/*.c` for atomic rodata re-attribution;
+(d) `func_80065800` (active sibling, owner of `jtbl_80015940` immediately before ours) reaching C
+— decompiling it in the same pass lets both tables be emitted by `text1b.o` in ascending order and
+collapses part of the split.
+
+### Evidence pointers
+`memory/grind/func_8006B578/evidence.md` (Sessions 7/7b/8/9/11), `hypotheses.md` H7/H13/H14/H15/
+H16/H17/H18, `candidate.c`, `state.json` (floor_history s1–s10, `cc1psx_check`),
+`tmp/grind/func_8006B578/s11/diff_s11.txt`, `tmp/grind/func_8006B578/s11/variant_ifelse_reaudit.c`,
+`tmp/grind/func_8006B578/s7/diff_baseline.txt`.
+
+## 2026-09-16 20:50 — func_8006B578 — ruling: INTEGRATION HANDOFF filed for func_8006B578 : 2026-09-16 — func_8006B578 — OWNER — **FAIL**
+
+The C body is not in question: candidate.c is ordinary C (two switch dispatches, u32 casts, forward gotos mirroring the target), fake_ablate finds nothing to ablate, scan_hand_coded is LOW 0/8, banned_constructs is empty. I FAIL on EVIDENCE, not on any construct.
+Decisive fact: integration-handoff-self-serve requires bytes PROVEN = 'sandbox --disable all == 0 AND full-build SHA1 == oracle with the banked form applied'. Neither holds. Sandbox is pinned at 2, and evidence.md:376-379 states in the ledger's own words that a full-build SHA1 CANNOT match while build/src/text1b.o(.rodata) sits at bb2.ld:66. The SHA1 of the proposed final configuration has never been measured — it is frontier hypothesis H (state.json frontier[0], 'next_probe: operator pass'), supported by strong circumstantial byte certification (s9 section-base delta 0x80062164, the 24-byte hole) but not by the oracle. A prediction of a match is not a match.
+Second, independent defect: the load-bearing step is bb2.ld line 2 of the operator steps, plus a new sub-TU that needs Makefile/bb2.ld entries. '*.ld' and 'Makefile' are on the add-scope-allow path denylist and on the rule's 'what STILL pends the owner' substrate list. I verified bb2.ld:59-66 myself (the func_80077B30 pattern is real, and text1b.o(.rodata) is at line 66). So no scope_paths grant I could issue closes this function; granting src/text1a_b_pre_rodata.c + src/text1b.c alone would hand the next session a surface it can only fail with.
+Recorded architecture question for the owner's own cadence (I do not file it as an escalation): the honest match here needs a rodata re-split of the 101C.rodata_text1a_b_pre cluster at 0x80015988 — a linker-script/substrate decision only the owner makes. Until then, frontier[1] (func_80065800 reaching C, which would let both tables be emitted by text1b.o in ascending order) is the only in-pipeline route.
+Ledger read: state.json, hypotheses H7/H13-H18, evidence.md Sessions 7/7b/8/9, candidate.c, docs/grind/decisions.md:28026-28128.

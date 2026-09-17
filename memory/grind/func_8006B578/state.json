@@ -1,8 +1,8 @@
 {
  "func": "func_8006B578",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "rederive",
+ "session_count": 11,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -63,26 +63,34 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Rederive modality: re-verified candidate.c chassis at floor 2 (0 source-level/0 operand-only/22 not-scored) and killed an if-else-chain rederivation of the second dispatch (score regressed 2->16) \u2014 co"
+  },
+  {
+   "session": 11,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Escalation modality: both endgame-lock gates measured FAIL (scan_hand_coded tier=LOW 0/8; no coercion construct exists to seek a family for), the s10 kill re-audited on the current FAKE-free chassis ("
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Inserting build/src/text1b.o(.rodata) at exactly 0x80015988 (moved from bb2.ld:66), deleting jtbl_80015988 from src/text1a_b_pre_rodata.c and splitting that TU so D_800159A0 onward follows text1b.o, with candidate.c applied to src/text1b.c, makes the full build SHA1-match.",
-   "mechanism": "Session 9 certified both remaining preconditions at byte level: our emitted table relocates to the target's six words exactly (uniform base 0x80062164), and the 24-byte hole at 0x80015988 absorbs our 8-aligned section with zero padding on either side.",
-   "next_probe": "Requires atomic edits to bb2.ld plus a second src file, outside a grind session's surface \u2014 an operator or multi-file-authorized session applies the 2026-09-16 integration-handoff steps in docs/grind/decisions.md and certifies with verify-oracle --rebuild (SHA1), not the sandbox score (pinned at 2 by construction)."
+   "hypothesis": "Inserting build/src/text1b.o(.rodata) at exactly 0x80015988 (moved from bb2.ld:66), deleting jtbl_80015988 from src/text1a_b_pre_rodata.c:409 and splitting that TU so D_800159A0 onward follows text1b.o, with candidate.c applied to src/text1b.c, makes the full build SHA1-match.",
+   "mechanism": "Session 9 certified both remaining preconditions at byte level: our emitted 6-word table relocates to the target's jtbl_80015988 exactly (uniform section-base delta 0x80062164), and the 24-byte hole at 0x80015988 absorbs our 8-aligned section with zero padding on either side. bb2.ld:59-61 already implements the identical pattern for func_80077B30.",
+   "next_probe": "Operator pass (or a session explicitly authorized for bb2.ld): apply steps 1-4 of the 2026-09-16 s11 INTEGRATION HANDOFF entry and certify with verify-oracle --rebuild (SHA1), not the sandbox score, which stays at 2 by construction. Note that a Judge scope-widening alone is insufficient: bb2.ld is outside the grantable scope classes."
   },
   {
-   "hypothesis": "Listing jtbl_80015988 in LD_SYM_FILES would let the sandbox resolve the symbol and certify the body without a full build.",
-   "mechanism": "engine/score.py:62 resolves named-symbol HI16/LO16 pairs against LD_SYM_FILES addresses; jtbl_80015988 is unlisted because the rodata cleanup made it a C const.",
-   "next_probe": "named_syms.txt is a build-pipeline file outside a grind session's surface; needs an operator decision or ruling before measuring."
+   "hypothesis": "func_80065800 (active sibling in src/text1b.c, owner of jtbl_80015940 immediately before ours) reaching C in the same pass would let both tables be emitted by text1b.o in ascending order, collapsing part of the pre/post split and shrinking the bb2.ld change.",
+   "mechanism": "GCC emits switch tables in the order their switch statements appear in the TU; both tables are in the same rodata run (0x80015940-0x80015A3C), which session 7b verified is entirely src/text1b.c-owned.",
+   "next_probe": "A session handed func_80065800 (queue: active, floor 1453 since its s1) should re-derive the slot boundary from evidence.md Sessions 7b/9 before proposing a placement, and record whether its own table lands at 0x80015940."
   },
   {
-   "hypothesis": "Decompiling func_80065800 (owner of jtbl_80015940, the symbol immediately before ours) in the same pass would let both tables be emitted by text1b.o in ascending order, collapsing part of the pre/post split.",
-   "mechanism": "GCC emits switch tables in the order their switch statements appear in the TU; func_80065800 is an active sibling in the same file.",
-   "next_probe": "Out of scope for a single-function session; a session handed func_80065800 should re-derive the slot boundary from evidence.md Sessions 7b/9 before proposing a placement."
+   "hypothesis": "Listing jtbl_80015988 in LD_SYM_FILES would let the sandbox resolve the symbol and certify the body without a full build, unpinning the floor from 2.",
+   "mechanism": "engine/score.py:62 resolves named-symbol HI16/LO16 pairs against LD_SYM_FILES addresses; jtbl_80015988 is unlisted because the rodata cleanup turned it into a C const.",
+   "next_probe": "named_syms.txt is a root-level pipeline file \u2014 inside the Judge's grantable scope classes but outside a grind session's surface. Needs an operator decision or a scope grant before measuring; it would change the instrument, not the bytes."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do not re-file this as an integration handoff: the handoff bar is sandbox==0 AND a measured full-build SHA1==oracle with the banked form applied, and bb2.ld/Makefile are denylisted surfaces the Judge cannot grant; pursue the H-frontier sibling route (func_80065800) or rotate."
+ ],
  "banned_constructs": [],
  "kills": [
   {
@@ -220,6 +228,30 @@
    "measured_on": "func_8006B578 candidate.c chassis with only the second switch replaced by an if-else chain (rest of body byte-identical to memory/grind/func_8006B578/candidate.c); zero FAKE/cheat constructs in either",
    "predicate_cite": "",
    "result": "score regressed 2 -> 16, insn count 200 -> 206 (6 more insns than target). Reverted immediately, re-verified score 2/200"
+  },
+  {
+   "session": 11,
+   "statement": "The s10 if-else-chain rederivation of the second dispatch (D_800A34F8>>10&7, cases 0-5), reconstructed onto the current candidate.c chassis, reaches the target's jtbl_80015988 dispatch bytes through a",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis applied to src/text1b.c with only the second dispatch replaced; zero FAKE constructs anywhere (tools/fake_ablate.py --func func_8006B578 --file text1b --candidate memory/grind/func",
+   "predicate_cite": "",
+   "result": "Re-confirmed the s10 kill on the current chassis, this time with a compilable whole-function form. The reconstruction sc"
+  },
+  {
+   "session": 11,
+   "statement": "func_8006B578 carries STRONG hand-coded-asm signals, which would put it on the canonical-asm grant path (endgame-lock gate (a)).",
+   "kill_scope": "instance",
+   "measured_on": "asm/funcs/func_8006B578.s as shipped (206 insns); scanner run at s11, no chassis dependence",
+   "predicate_cite": "",
+   "result": "Gate (a) FAILS. Every signal is negative, including all three STRONG ones. This function is ordinary compiler output, no"
+  },
+  {
+   "session": 11,
+   "statement": "The candidate body is held together by a coercion/spelling construct that needs a frozen-family grant, so endgame-lock gate (b) is open pending a SOTN-master precedent census.",
+   "kill_scope": "instance",
+   "measured_on": "memory/grind/func_8006B578/candidate.c as banked (sandbox score 2, 200/200 insns), FAKE-free by fake_ablate",
+   "predicate_cite": "",
+   "result": "Gate (b) FAILS as N/A: there is no coercion construct in the body to seek a family for, and none is claimed. A census wa"
   }
  ],
  "ladder_skip": 0,
