@@ -719,3 +719,5 @@ instruction-count divergence. Banked at
 - [s10] No sibling transplant was actionable: func_80065800 (same file, active, floor 1453) has no candidate.c; func_8006B92C and func_800692C0 are already COMPLETED-C with no open work to pull from.
 
 - [s10] src/text1b.c reverted to the exact committed INCLUDE_ASM stub at session end; git status shows only ledger files touched.
+
+- [s10] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 4a4452e58cb2 scores 2 under our cc1 and 44 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).

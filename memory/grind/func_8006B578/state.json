@@ -227,5 +227,14 @@
  "origin": "queue",
  "created": "2026-09-16T23:54:49.966797+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "cc1psx_check": {
+  "at": "2026-09-17T01:42:56.302448+00:00",
+  "candidate_sha": "4a4452e58cb2",
+  "ours": 2,
+  "psx": 44,
+  "closer": false,
+  "ok": true,
+  "error": null
+ }
 }
