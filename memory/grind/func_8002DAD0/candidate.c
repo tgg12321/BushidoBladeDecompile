@@ -1,7 +1,17 @@
-/* func_8002DAD0 - session 6 candidate. MEASURED: sandbox --disable all == 0
- * (204/204 insns; every remaining --diff hunk is a masked branch-target
- * artifact), and a full clean build links to SHA1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle.
+/* func_8002DAD0 - session 6 candidate, re-cited session 7 (layer-1 FAIL
+ * 2026-09-18 22:09, citation-only defect: three of six islands' precedent
+ * was wrongly given as func_8002E838/func_800203B4 where the real in-file
+ * precedent for those three is func_8002FC80/func_8002FDB0's own
+ * addressing-preamble idiom; two islands also mislabeled gte_ldlv0 as
+ * gte_ldv0). MEASURED: sandbox --disable all == 0 (204/204 insns; every
+ * remaining --diff hunk is a masked branch-target artifact), and a full
+ * clean build links to SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the
+ * oracle. No C construct changed from session 6 - this pass only corrects
+ * island comments per cluster condition 3 (owner ruling 2026-09-02): every
+ * island now names its PsyQ macro and inline_c.h/gtemac.h header line(s),
+ * read directly against the header copy at
+ * tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_c.h
+ * and .../gtemac.h this session.
  *
  * Apply in place of the INCLUDE_ASM("asm/funcs", func_8002DAD0); line in
  * src/code6cac_b.c (after func_8002D780, before func_8002DE20). Needs the
@@ -11,13 +21,20 @@
  *
  * NOTE FOR INTEGRATION: the six __asm__ islands are canonical GTE/cop2 SDK
  * macro bodies (`canonical func_8002DAD0` => ASM-PARTIAL, 29/204 insns
- * canonical-asm), character-identical to the already-authorized
- * func_8002E838 (inline_asm_canonical.txt:373) and func_800203B4 (:367).
- * func_8002DAD0 is an owner-enumerated member of the cop2-addressing-
- * preamble cluster (.claude/rules/cop2-addressing-preamble-cluster.md:76)
- * but does NOT yet have its own inline_asm_canonical.txt row; writing that
- * row is an operator/driver step (that file is outside a grind session's
- * allowed surface).
+ * canonical-asm). Three of them (the diagonal gte_ldopv1 preamble, the
+ * LZCS/LZCR gte_Lzc block, and gte_SetRotMatrix) share the cop2-addressing-
+ * preamble cluster's OWN `addu/move $r,%,$zero` + immediate ctc2/mtc2 idiom
+ * and are precedented by the cluster's own exemplar members func_8002FC80
+ * (.claude/rules/cop2-addressing-preamble-cluster.md:83) and func_8002FDB0
+ * (:84). The other three (gte_ldopv2 + OP, gte_stlvnl, and the two
+ * gte_ldlv0+MVMVA+gte_stlvnl pairs) are character-identical SDK-macro-body
+ * spellings already authorized in this same file for func_8002E838
+ * (inline_asm_canonical.txt:373) and func_800203B4 (:367). func_8002DAD0 is
+ * an owner-enumerated member of the cop2-addressing-preamble cluster
+ * (.claude/rules/cop2-addressing-preamble-cluster.md:76) but does NOT yet
+ * have its own inline_asm_canonical.txt row; writing that row is an
+ * operator/driver step (that file is outside a grind session's allowed
+ * surface).
  */
 s32 func_8002DAD0(u8 *obj) {
     s32 *mat;
@@ -35,9 +52,14 @@ s32 func_8002DAD0(u8 *obj) {
     *(s32 *)(obj + 0xBC) = (*(s32 **)(obj + 0x68))[1] - (*(s32 **)(obj + 0x60))[1];
     *(s32 *)(obj + 0xC0) = (*(s32 **)(obj + 0x68))[2] - (*(s32 **)(obj + 0x60))[2];
 
-    /* PsyQ libgte partial gte_SetRotMatrix-shaped preamble --- loads the
-     * diagonal (R11,R22,R33) control regs 0,2,4 from vecA; feeds the GTE OP
-     * (outer/cross product) instruction below. */
+    /* PsyQ libgte inline macro gte_ldopv1(r) (inline_c.h:210-219) - loads
+     * the OP diagonal (RT11/RT22/RT33) into cop2 control regs $0/$2/$4 from
+     * vecA; feeds the GTE OP (cross product) instruction below. The
+     * move+lw+ctc2 addressing preamble is the cop2-addressing-preamble
+     * cluster's own idiom, not the SDK-macro-body precedent used below -
+     * precedent func_8002FC80 (.claude/rules/cop2-addressing-preamble-cluster.md:83)
+     * / func_8002FDB0 (:84), same "addu/move $r,%,$zero -> lw;lw;ctc2" shape
+     * the cluster's own membership table exhibits. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -48,8 +70,14 @@ s32 func_8002DAD0(u8 *obj) {
         "ctc2   $15, $4\n"
         :: "r"(obj + 0xA8) : "$12", "$13", "$14", "$15");
 
-    /* Load IR1/IR2/IR3 directly from vecB, then GTE OP (cross product
-     * against the diagonal matrix set above). */
+    /* PsyQ libgte inline macro gte_ldopv2(r) (inline_c.h:221-226) - loads
+     * IR1/IR2/IR3 ($9/$10/$11) directly from vecB. Same-file SDK-macro-body
+     * precedent (this exact lwc2-triple spelling): func_8002E838
+     * (inline_asm_canonical.txt:373) / func_800203B4 (:367). Then GTE OP
+     * (outer/cross product of the IR vector with the rotation-matrix
+     * diagonal set above), sf=0 - cop2 command 0x0170000C, same
+     * `.word 0x4B70000C` encoding already committed at
+     * src/code6cac_b.c:1717-1718 and src/display.c:2657. */
     __asm__ volatile(
         "addu   $12, %0, $zero\n"
         "lwc2   $11, 8($12)\n"
@@ -60,8 +88,11 @@ s32 func_8002DAD0(u8 *obj) {
         ".word 0x4B70000C\n"
         :: "r"(obj + 0xB8) : "$12");
 
-    /* gte_stlvnl(r): store MAC1/MAC2/MAC3 (unclamped cross-product) to
-     * obj+0xC8/CC/D0. */
+    /* PsyQ libgte inline macro gte_stlvnl(r) (inline_c.h:1111-1117) -
+     * stores MAC1/MAC2/MAC3 ($25/$26/$27, "memory" clobber per the macro's
+     * own clobber list) to obj+0xC8/CC/D0 (unclamped cross-product).
+     * Same-file precedent: func_8002E838 (inline_asm_canonical.txt:373) /
+     * func_800203B4 (:367). */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
@@ -108,9 +139,14 @@ s32 func_8002DAD0(u8 *obj) {
     } else {
         s32 lzcr = 0;
         if (dist_sq >= 0) {
-            /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
-             * canonical inline asm, identical to func_8001A67C /
-             * func_8002E838. */
+            /* PsyQ libgte macro gte_Lzc(r1,r2) (gtemac.h:174-178 = ldlzc
+             * inline_c.h:228-231 + 2x nop :1346-1347 + stlzc :1318-1322) -
+             * leading-zero-count block (LZCS in via mtc2, LZCR out via
+             * swc2 to the stack slot sp_tmp). The addu $t4,%,$zero + mtc2
+             * preamble is the cop2-addressing-preamble cluster's own idiom -
+             * precedent func_8002FC80 (.claude/rules/cop2-addressing-preamble-cluster.md:83)
+             * / func_8002FDB0 (:84); same-file spelling precedent
+             * func_8001A67C / func_8002E838. */
             __asm__ volatile(
                 "addu   $t4, %1, $zero\n"
                 "mtc2   $t4, $30\n"
@@ -148,9 +184,13 @@ s32 func_8002DAD0(u8 *obj) {
     RotMatrixY(*(s16 *)(obj + 0xFA), mat);
     RotMatrixX(*(s16 *)(obj + 0xF8), mat);
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) --- loads the 5 packed
-     * rotation-matrix words at r into cop2 control regs $0..$4. Same island
-     * as func_800203B4 / func_8002E838. */
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r) (inline_c.h:297-310) -
+     * loads the 5 packed rotation-matrix words at r into cop2 control regs
+     * $0..$4. The move+lw+ctc2 addressing preamble is the cop2-addressing-
+     * preamble cluster's own idiom - precedent func_8002FC80
+     * (.claude/rules/cop2-addressing-preamble-cluster.md:83) / func_8002FDB0
+     * (:84); same-spelling precedent func_800203B4
+     * (inline_asm_canonical.txt:367) / func_8002E838 (:373). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -165,8 +205,14 @@ s32 func_8002DAD0(u8 *obj) {
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
 
-    /* PsyQ libgte inline macro gte_ldv0(r) + MVMVA sf=1/mx=rotation/v=V0 +
-     * gte_stlvnl(r): rotate vecA in place. */
+    /* PsyQ libgte inline macro gte_ldlv0(r) (inline_c.h:101-110 - the
+     * lhu/lhu/sll/or VX0/VY0 pack; this is gte_ldlv0, NOT gte_ldv0, whose
+     * body at inline_c.h:16-20 is a bare lwc2 pair with no such pack) +
+     * MVMVA sf=1/mx=rotation/v=V0 (.word 0x4A486012, the gte_rtv0-class
+     * MVMVA encoding already committed at src/code6cac_b.c:1543/1902/1985
+     * and src/code6cac.c:2099) + gte_stlvnl(r) (inline_c.h:1111-1117):
+     * rotate vecA in place. Same-file precedent: func_800203B4
+     * (inline_asm_canonical.txt:367) / func_8002E838 (:373). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -186,7 +232,8 @@ s32 func_8002DAD0(u8 *obj) {
         "swc2   $27, 8($12)\n"
         :: "r"(obj + 0xA8) : "$12", "memory");
 
-    /* Same gte_ldv0 + MVMVA + gte_stlvnl sequence: rotate vecB in place. */
+    /* Same gte_ldlv0 (inline_c.h:101-110) + MVMVA (.word 0x4A486012) +
+     * gte_stlvnl (inline_c.h:1111-1117) sequence: rotate vecB in place. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"

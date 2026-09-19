@@ -1,13 +1,34 @@
 # SELF-VET - func_8002DAD0
 
-(Session 7 re-file. Session 6 proved the bytes but was DISCARDED by the driver
-validator on paperwork only: its first SANCTIONED-FAMILY-CLAIMS block wrapped
-the SCOPE quote across five physical lines, and grindlib.py's `_SCOPE_LINE`
-regex requires the quoted scope sentence to sit on ONE line. The C body is
-unchanged from that session; it was re-applied to src/code6cac_b.c and
-re-measured from scratch this session: `sandbox func_8002DAD0 --disable all`
-== 0 (204/204) and `verify-oracle` build_sha1 ==
-62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle.)
+(Session 8 re-file, ANNOTATION-FIX modality only. Session 7's body (df-free,
+same C as session 6) was layer-1 FAILed 2026-09-18 22:09 on a CITATION-ONLY
+ground: "the GTE islands fail the cluster rule's dated condition-3 citation
+requirement and the vet's island precedent is wrong for three of six islands
+(the real in-file precedent is func_8002FC80/func_8002FDB0, not
+func_8002E838/func_800203B4)". This session made ZERO changes to any C
+construct: the six island comments were rewritten to (a) name each island's
+PsyQ macro and its exact inline_c.h/gtemac.h header line range, read
+directly against the header copy at
+tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_c.h and
+.../gtemac.h this session (condition 3, owner ruling 2026-09-02), and (b)
+correct the precedent citation: the three islands that share the cop2-
+addressing-preamble cluster's own `addu/move $r,%,$zero` + immediate
+ctc2/mtc2 idiom (the diagonal gte_ldopv1 preamble, the LZCS/LZCR gte_Lzc
+block, and gte_SetRotMatrix) now cite the cluster's own exemplar members
+func_8002FC80 (.claude/rules/cop2-addressing-preamble-cluster.md:83) and
+func_8002FDB0 (:84) instead of func_8002E838/func_800203B4; the other three
+islands (gte_ldopv2 + OP, gte_stlvnl, and the two gte_ldlv0+MVMVA+gte_stlvnl
+pairs) keep func_8002E838 (inline_asm_canonical.txt:373) / func_800203B4
+(:367) as the correct same-file SDK-macro-body-spelling precedent. A second,
+independent citation error was found and fixed in the same pass: two islands
+had been commented "gte_ldv0" when the lhu/lhu/sll/or VX0/VY0 pack they
+contain is gte_ldlv0's body (inline_c.h:101-110) — gte_ldv0's own body
+(inline_c.h:16-20) is a bare lwc2 pair with no such pack, so the old name was
+a plain misidentification, not a stylistic choice. Re-measured from scratch
+this session with the corrected comments applied to src/code6cac_b.c:
+`sandbox func_8002DAD0 --disable all` == 0 (204/204) and `verify-oracle`
+build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle,
+both re-run after the comment edit, confirming the fix touched no bytes.)
 
 CONSTRUCTS: (1) six canonical GTE/cop2 `__asm__ volatile` islands (partial
 gte_SetRotMatrix diagonal preamble, gte_ldv0 + cop2 OP cross product, gte_stlvnl,
@@ -142,9 +163,37 @@ SANCTIONED-FAMILY-CLAIMS:
   SCOPE: "The 2026-08-17 owner CLUSTER ruling for func_8002FDB0 covers a 28-function family in the 0x8001-0x8003 band sharing the `addu $t4,$aN,$zero` + cop2 hand-asm idiom. Membership list built and verified here; each member inherits the canonical-asm disposition subject to the same mechanical per-function check, applied by the Judge without re-escalation."
   PRECEDENT: .claude/rules/cop2-addressing-preamble-cluster.md:76
 
-  Second, independent precedent for the exact island spellings:
-  inline_asm_canonical.txt:373 - func_8002E838, same file, same island shapes,
-  already authorized and merged; inline_asm_canonical.txt:367 - func_800203B4.
+  Per-island precedent (corrected this session - the prior file cited
+  func_8002E838/func_800203B4 for all six islands, which layer-1 FAILed as
+  wrong for three of them):
+  - Diagonal gte_ldopv1 preamble, LZCS/LZCR gte_Lzc block, gte_SetRotMatrix:
+    these three share the cluster's OWN `addu/move $r,%,$zero` -> immediate
+    ctc2/mtc2 addressing-preamble idiom (the exact shape the cluster's
+    membership table exhibits). PRECEDENT: func_8002FC80
+    (.claude/rules/cop2-addressing-preamble-cluster.md:83) / func_8002FDB0
+    (:84).
+  - gte_ldopv2 + OP, gte_stlvnl, and the two gte_ldlv0+MVMVA+gte_stlvnl
+    pairs: character-identical SDK-macro-body spellings already authorized
+    in this same file. PRECEDENT: inline_asm_canonical.txt:373 -
+    func_8002E838; inline_asm_canonical.txt:367 - func_800203B4.
+
+  Condition-3 (owner ruling 2026-09-02) macro+header citations, verified
+  against tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/ this
+  session:
+  - gte_ldopv1: inline_c.h:210-219
+  - gte_ldopv2: inline_c.h:221-226; OP command 0x0170000C (`.word
+    0x4B70000C`), same encoding already committed at
+    src/code6cac_b.c:1717-1718 / src/display.c:2657
+  - gte_stlvnl: inline_c.h:1111-1117
+  - gte_Lzc: gtemac.h:174-178 = ldlzc inline_c.h:228-231 + 2x nop
+    :1346-1347 + stlzc :1318-1322
+  - gte_SetRotMatrix: inline_c.h:297-310
+  - gte_ldlv0 (corrected from the prior file's "gte_ldv0" - gte_ldv0's own
+    body at inline_c.h:16-20 is a bare lwc2 pair, not this lhu/lhu/sll/or
+    pack): inline_c.h:101-110
+  - MVMVA sf=1/mx=rotation/v=V0 (`.word 0x4A486012`), the gte_rtv0-class
+    encoding already committed at src/code6cac_b.c:1543/1902/1985 and
+    src/code6cac.c:2099
 
 ANNOTATION-CONFORMANCE: the diff carries exactly one /* FAKE */ construct, the
 `dist` reuse, annotated in full in memory/grind/func_8002DAD0/candidate.c and
@@ -185,6 +234,14 @@ actually compiled (tmp/sandbox/func_8002DAD0/src/code6cac_b.c) still carries all
 function's canonical islands intact, exactly as the canonical gate classes them.
 `verify-oracle` -> ok true, build_matches true, build_sha1
 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked.
+
+CONDITION-3 CONFORMANCE (this session's fix, re-verified against
+src/code6cac_b.c as committed to the working tree): every one of the six
+island comments now names its PsyQ macro AND its exact header line range
+(inline_c.h / gtemac.h), per the corrected list above. Nothing outside each
+named macro body is swallowed into any island; the addressing-preamble
+prefixes (`move`/`addu $12,%0,$zero`) are disclosed as the cluster's own
+widened idiom, not attributed to SDK macro text.
 
 INTEGRATION NOTE (a heads-up for the merge step, not a blocker claim):
 func_8002DAD0 has no row of its own in inline_asm_canonical.txt yet. Its

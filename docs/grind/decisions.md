@@ -28306,3 +28306,7 @@ Two FAKE constructs, both inside frozen families with prerequisites met. (1) `s.
 ## 2026-09-18 22:09 — func_8002DAD0 — layer-1 review — **FAIL (citation-only)**
 
 Constructs are clean and I verified every prerequisite, but the GTE islands fail the cluster rule's dated condition-3 citation requirement and the vet's island precedent is wrong for three of six islands (the real in-file precedent is func_8002FC80/func_8002FDB0, not func_8002E838/func_800203B4) - a one-comment re-cite, no construct ban.
+
+## 2026-09-18 22:39 — func_8002DAD0 — layer-1 review — **FAIL (citation-only)**
+
+Constructs all verify clean (FAKE dist-reuse meets staged-value-reused-variable's six bounds with real receipts; every island shape is character-identical to landed authorized siblings), but three islands carry `nop` instructions that fall outside every macro range the comments cite - a condition-3 citation gap, not a substantive cheat.
