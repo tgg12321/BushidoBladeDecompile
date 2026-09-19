@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002DAD0",
-      "file": "code6cac_b",
-      "distance": 204,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80017A44",
       "file": "ings",
       "distance": 208,
@@ -1100,18 +1092,29 @@
       "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md 2026-09-16 -- _exeque -- OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): ROTATED",
       "rotated_at": "2026-09-16T07:19:10+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_8002DAD0",
+      "file": "code6cac_b",
+      "distance": 204,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "Byte-perfect GTE/cop2 candidate remains banked; operator-only canonical grant is outside current 100%-C scope (2026-09-19).",
+      "rotated_at": "2026-09-19T22:32:16+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 117,
-    "active": 110,
+    "active": 109,
     "by_status": {
-      "active": 110,
-      "rotated": 7
+      "active": 109,
+      "rotated": 8
     },
     "by_verdict": {
-      "ASM-PARTIAL": 22,
-      "C": 88
+      "C": 88,
+      "ASM-PARTIAL": 21
     }
   },
   "toolchain_fingerprint": "a04b7a59487234ab"
