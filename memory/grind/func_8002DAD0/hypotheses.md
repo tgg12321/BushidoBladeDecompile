@@ -176,21 +176,26 @@ measured on this chassis, no FAKE constructs — the block is ordinary C
 with one deferred-store temp).
 
 ## Frontier (<=3, carried to next session)
-1. **dist_sq final-pseudo register seat (a0 vs a1)** — `.greg` dump for
-   this session (tmp/grind/func_8002DAD0/dumps/code6cac_b.greg, function
-   at line 11463) shows the dist_sq pseudo (reg 75) with `preferences: 5`
-   and no conflict against hard reg 4; a sibling pseudo (reg 78, likely
-   `dz` or `angle1`) has `preferences: 2 5` and DOES conflict with hard
-   reg 4 (`;; 78 conflicts: 72 78 4 29`). Target wants dist_sq in a0 (hard
-   reg 4). Read `local-alloc.c`'s preference-assignment code
-   (`reg_pref`/`reg_pref_class`) to find WHAT copy/call insn is stamping
-   preference 5 onto reg 75, then apply a `register-alloc-pure-c` lever
-   (block-local split / narrow type / reordering the dz-block's internal
-   statement order) to shift that preference to 4 instead. Two orderings
-   already tried and measured IDENTICAL (byte-for-byte) at floor 6 — see
-   evidence.md — so the next attempt needs to change WHICH statement
-   creates the reg75/reg78 preference, not just reshuffle statement
-   order within the already-explored positions.
+1. **dist_sq final-pseudo register seat (a0 vs a1) — mechanism still unattributed after s3.**
+   Five more C-level orderings/stagings were tried in s3 (operand swap, store-then-compute
+   reorder, compound-assignment split both directions, named-intermediate for the c8 term,
+   declaration-order reshuffle) — all either regressed or measured byte-identical. Hand-tracing
+   `tools/gcc-2.7.2/global.c`'s `set_preference`/`expand_preferences`/`prune_preferences`
+   against the `.lreg`/`.greg` dumps ruled out the two insns that DO call `set_preference` with
+   reg75 as an operand (insns 183 and 225 — both traced to a hard-reg-2/v0 preference that gets
+   PRUNED by conflict, not a hard-reg-5/a1 preference), so the actual source of `preferences: 5`
+   on allocno 75 is NOT one of the obvious direct-copy or dead-note-merge paths. NEXT SESSION:
+   either (a) request/emit a `ruling-request` asking whether a temporary read-only diagnostic
+   print inside `tools/gcc-2.7.2/global.c`'s `set_preference` (dumping allocno+hardreg+insn-UID
+   at the point a bit is SET, before `prune_preferences` runs) is in-scope for this session's
+   surface — the existing `BB2_ALLOC_DEBUG` hook at global.c:379/605 is read-only diagnostic
+   instrumentation already present in the tree (not part of the build), and this would be the
+   same kind of addition, but the grind contract's "never edit tools/" line reads as covering
+   it, hence flagging rather than just doing it; or (b) exhaustively hand-simulate
+   `global_conflicts`'s FULL per-insn scan order (not just the insns directly touching reg75)
+   to find an indirect chain (e.g. a THIRD allocno recognized as sharing a `may_share`/coalesce
+   slot) — this needs reading `global.c`'s `global_conflicts` function start-to-finish against
+   the FULL insn stream (not just the reg75-touching subset), which s3 did not have budget for.
 2. Once floor reaches 0: run the mandatory self-vet (6 `__asm__` islands,
    all verbatim SDK macro bodies already authorized for func_800203B4 /
    func_8002E838 — cite those two functions' ledgers/commits as
@@ -235,3 +240,109 @@ with one deferred-store temp).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact statement ordering only
+
+## [s3] H5 (traced, mechanism NOT conclusively isolated) — dist_sq's `preferences: 5` in global.c's allocno table is real but its originating insn could not be identified by hand-tracing global.c's set_preference/expand_preferences against the .lreg/.greg dumps
+**Statement:** Confirmed via `tmp/grind/func_8002DAD0/dumps/code6cac_b.{lreg,greg}` that
+pseudo 75 (dist_sq) is defined once (insn 166: `dist_sq = pseudo129(c8sq) + pseudo130(dzsq)`,
+both operands still unresolved pseudos at global-scan time) and used at insn 183 (`sltiu
+<1024`, dest resolves to hard v0/reg2 — this DOES call `set_preference` and stamps a
+preference for hard reg 2 onto allocno 75 by my trace, but `prune_preferences` (global.c:882)
+removes it again because reg75 conflicts with v0/reg2 per the conflicts list, which matches
+the dump showing `75 conflicts: 72 75 140 2 3 12 29` including `2`). Insn 225 (the false-branch
+`(u32)dist_sq >> shift` — dest resolves to hard v0/reg2 too) traces the same way and is
+pruned the same way. Neither traced path explains the surviving `preferences: 5`. Ran
+`BB2_ALLOC_DEBUG=1` (existing instrumentation, `tools/gcc-2.7.2/global.c:379/605`, NOT
+modified this session — read-only env-gated hook already present) via
+`tmp/grind/func_8002DAD0/s3/allocdbg.py`: confirms allocation ORDER (pseudo72 first, pseudo75
+second at pri=9230/nrefs=6/livelen=13, landing hardreg=5) and that hard regs 4/5/6/7 (a0-a3)
+are ALL in the function's `seed_used` set (call-used regs, not a live-range fact) — so within
+`find_reg`'s default ascending-register trial order neither a0 nor a1 should be preferred over
+the other absent a real preference bit, yet the dump insists one exists. The mechanism remains
+unattributed at the exact-insn level.
+**Mechanism:** tools/gcc-2.7.2/global.c `set_preference` (line 1670) + `expand_preferences`
+(line 828) + `prune_preferences` (line 882) are the candidate machinery; which specific insn's
+scan sets the surviving bit is unresolved.
+**Probe:** four C-level lever attempts, each measured with `sandbox --disable all` (and one
+with `--diff` to confirm hunk-for-hunk identity):
+  1. Swap the addition operand order (`dz*dz + c8*c8` instead of `c8*c8 + dz*dz`).
+  2. Move the `*(obj+0xD0) = dz;` store BEFORE the `dist_sq = ...` computation (statement
+     reorder within the block, keeping the combined-expression form).
+  3. Split the combined expression into two compound-assignment statements
+     (`dist_sq = c8*c8; dist_sq += dz*dz;`), both orders tried (c8-first and dz-first).
+  4. Introduce a fresh named local for the c8 term (`s32 dx = *(obj+0xC8); dist_sq = dx*dx +
+     dz*dz;`) — the named-intermediate/declaration-order lever family.
+  5. Reorder the function's own local declarations (move `dist_sq`'s decl to the end of the
+     declaration list, after `dist`/`angle1`/`angle2`).
+**Result:** (1) and (3-dz-first) regressed to score 13; (2), (3-c8-first), (4), (5) measured
+byte-identical to the floor-6 baseline (confirmed via `--diff` for case 4: same 9 hunks,
+same `target[108]/[113]/[117]/[119]/[129]` a0-vs-a1 hunks, byte-for-byte). None of the five
+tested spellings broke the a1 seat.
+**Verdict:** KILLED (all five, individually)
+**kill_scope:** instance
+**measured_on:** src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, each of the
+five statement/declaration orderings listed above, this chassis only (the H3/H4-winning
+CSE-invalidation block structure held constant; only the dist_sq computation's internal
+shape/decl order varied)
+
+## Session-3 summary
+Floor held at 6 (chassis-check-confirmed at dispatch and re-confirmed after every edit this
+session). No C-level reordering/staging of the dist_sq computation moved the a0/a1 register
+seat in either direction (all either neutral or regressive). The BB2_ALLOC_DEBUG instrumented
+dump (already present in tools/gcc-2.7.2/global.c, not edited this session) shows the
+allocation order and priority numbers but not a per-preference-bit attribution; a real answer
+needs either a NEW read-only debug hook inside global.c's `set_preference`/`expand_preferences`
+(printing allocno + hard reg + calling insn UID every time a preference bit is set, before
+pruning) — which this session did NOT add, since tools/ edits are outside this session's
+allowed surface — or a fully mechanical hand-simulation of `global_conflicts`'s per-insn scan
+order that budget did not allow this session. src/code6cac_b.c was reverted to the committed
+`INCLUDE_ASM("asm/funcs", func_8002DAD0);` line before this session ended (asm-until-matched:
+C lands on main only at COMPLETED-C); candidate.c is unchanged from session 2 (still the
+floor-6 form, still the best known).
+
+## [s3] Swapping the dist_sq addition operand order (dz*dz + c8*c8 instead of c8*c8 + dz*dz) breaks or improves the a0/a1 register-seat tie on dist_sq's final pseudo.
+- mechanism: Operand order in a PLUS RTL expression affects which sub-expression global.c's set_preference (XEXP(src,0) only) considers for preference stamping.
+- probe: Edited src/code6cac_b.c's dist_sq statement to `dist_sq = dz * dz + *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8);`, ran sandbox --disable all.
+- result: score regressed 6 -> 13
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact operand order only
+
+## [s3] Moving the *(obj+0xD0)=dz store to occur BEFORE the dist_sq=... computation (instead of after) breaks the a0/a1 tie.
+- mechanism: Statement order changes LUID and RTL insn-stream position of the store relative to the dist_sq PLUS insn, which set_preference/expand_preferences scan in program order.
+- probe: Reordered the block to store dz to obj+0xD0 first, then compute dist_sq. Ran sandbox --disable all.
+- result: score unchanged at 6, hunks not independently re-diffed for this specific case (superseded by case 4's --diff which confirmed byte-identity for the equivalent-shape variant)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact statement order only
+
+## [s3] Splitting the combined dist_sq expression into two compound-assignment statements (dist_sq = c8*c8; dist_sq += dz*dz;) breaks the a0/a1 tie.
+- mechanism: Compound-assignment split (sanctioned ordinary C per ordinary-c-judge-decidable Ruling 4) creates two separate SET insns instead of one PLUS insn, changing which insns' operands are visible to set_preference.
+- probe: Rewrote as two statements, c8-term first. Ran sandbox --disable all.
+- result: score unchanged at 6
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact split (c8-term first) only
+
+## [s3] Same compound-assignment split as above but with the dz-term (dist_sq = dz*dz; dist_sq += c8*c8;) instead of the c8-term first.
+- mechanism: Same as above, reversed term order.
+- probe: Rewrote as two statements, dz-term first. Ran sandbox --disable all.
+- result: score regressed 6 -> 13
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact split (dz-term first) only
+
+## [s3] Introducing a fresh named local for the c8 term (s32 dx = *(obj+0xC8); dist_sq = dx*dx + dz*dz;) — the named-intermediate/declaration-order lever family — breaks the a0/a1 tie.
+- mechanism: A fresh single-write local changes the RTL pseudo allocated for the c8 value (a genuinely-named pseudo instead of an unnamed re-derived MEM-load), which could alter set_preference's operand resolution at the dist_sq PLUS insn.
+- probe: Rewrote the block with `s32 dx = *(s32*)(obj+0xC8);` then `dist_sq = dx*dx + dz*dz;`. Ran sandbox --disable all --diff.
+- result: score unchanged at 6; --diff confirmed all 9 hunks byte-for-byte identical to the baseline candidate, including the exact same target[108]/[113]/[117]/[119]/[129] a0-vs-a1 hunks
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact named-intermediate form only
+
+## [s3] Reordering the function's own local declarations (moving `s32 dist_sq;`'s declaration to the end of the decl list, after angle1/angle2/dist) breaks the a0/a1 tie via LUID bias.
+- mechanism: Declaration order in GCC 2.7.2 affects pseudo-register LUID assignment, which can bias tie-breaking in global allocation priority ordering.
+- probe: Moved the `s32 dist_sq;` declaration to the end of the local variable list. Ran sandbox --disable all.
+- result: score unchanged at 6
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact declaration order only

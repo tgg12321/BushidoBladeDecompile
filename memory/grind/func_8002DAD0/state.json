@@ -1,7 +1,7 @@
 {
  "func": "func_8002DAD0",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,13 +15,24 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Found and spent the H3 CSE-invalidation mechanism (cse.c:1701-1719 unconditional varying-address invalidation); floor 25 -> 6, 0 source-level hunks remain, only an a0/a1 register-seat tie + masked cas"
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Floor held at 6; five more C-level orderings of the dist_sq block (operand swap, store/compute reorder, compound-split both directions, named-intermediate, decl-order) all measured neutral-or-worse; h"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "dist_sq's final pseudo (reg 75 in the session-2 .greg dump) is being given preference for hard reg 5 (a1) by some copy or call-return insn upstream in local-alloc.c's preference-assignment pass; removing or redirecting that preference (via a register-alloc-pure-c lever: block-local split, narrow type, or reordering which statement first computes/consumes a competing value) should let it land in hard reg 4 (a0) to match target.",
-   "mechanism": "GCC 2.7.2 local-alloc.c reg_pref / reg_pref_class stamping, read alongside the .greg dump's conflicts/preferences annotations for pseudos 72/75/78/129/130/140.",
-   "next_probe": "Read tools/gcc-2.7.2/local-alloc.c's preference-recording code (search for reg_pref, update_equiv_regs, or the local-alloc pass's copy-insn scan) to find which SET/copy insn in the dist_sq scratch block or its immediate surroundings stamps hard-reg-5 preference on pseudo 75, then try the corresponding register-alloc-pure-c lever (already-catalogued in .claude/rules/register-alloc-pure-c.md) and remeasure with sandbox --disable all --diff."
+   "hypothesis": "dist_sq's a0-vs-a1 register-seat preference in global.c's allocation table is real (confirmed in the .greg dump) but its originating insn/mechanism is not one of the direct paths this session traced (insns 183, 225, or an expand_preferences dead-note merge with allocno 78) -- some other insn or an indirect/transitive chain is responsible.",
+   "mechanism": "tools/gcc-2.7.2/global.c's set_preference (line 1670) / expand_preferences (line 828) / prune_preferences (line 882) machinery, exact triggering insn unidentified.",
+   "next_probe": "Either (a) emit a ruling-request asking whether a temporary read-only diagnostic print inside global.c's set_preference (dumping allocno+hardreg+insn-UID at the point a preference bit is SET, before pruning) is in-scope given the grind contract's blanket 'never edit tools/' line, noting the existing BB2_ALLOC_DEBUG hook at global.c:379/605 is the same class of read-only instrumentation already present and unmodified this session; or (b) hand-simulate global_conflicts's FULL per-insn scan (not just the reg75-touching subset) against the complete .lreg insn stream to find an indirect/transitive preference chain this session's narrower trace missed."
+  },
+  {
+   "hypothesis": "Once the register-seat mechanism is understood (or bypassed via a lever that empirically works), the function should close to 0 -- all 6 __asm__ islands are already verbatim SDK-macro-body forms proven byte-exact and precedented by func_800203B4/func_8002E838, so no fresh canonical-asm review is needed for them.",
+   "mechanism": "N/A -- bookkeeping frontier item for the eventual candidate-ready self-vet.",
+   "next_probe": "Once floor reaches 0, cite func_800203B4 and func_8002E838's ledgers/commits as precedent for the 6 asm islands in the self-vet's SANCTIONED-FAMILY-CLAIMS section."
   }
  ],
  "judge_constraints": [],
@@ -42,6 +53,54 @@
    "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact statement ordering only",
    "predicate_cite": "",
    "result": "score 25 -> 10; target_insns 204, build_insns 206; 3 source-level hunks -- D0's reload reappeared (its own store got inv"
+  },
+  {
+   "session": 3,
+   "statement": "Swapping the dist_sq addition operand order (dz*dz + c8*c8 instead of c8*c8 + dz*dz) breaks or improves the a0/a1 register-seat tie on dist_sq's final pseudo.",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact operand order only",
+   "predicate_cite": "",
+   "result": "score regressed 6 -> 13"
+  },
+  {
+   "session": 3,
+   "statement": "Moving the *(obj+0xD0)=dz store to occur BEFORE the dist_sq=... computation (instead of after) breaks the a0/a1 tie.",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact statement order only",
+   "predicate_cite": "",
+   "result": "score unchanged at 6, hunks not independently re-diffed for this specific case (superseded by case 4's --diff which conf"
+  },
+  {
+   "session": 3,
+   "statement": "Splitting the combined dist_sq expression into two compound-assignment statements (dist_sq = c8*c8; dist_sq += dz*dz;) breaks the a0/a1 tie.",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact split (c8-term first) only",
+   "predicate_cite": "",
+   "result": "score unchanged at 6"
+  },
+  {
+   "session": 3,
+   "statement": "Same compound-assignment split as above but with the dz-term (dist_sq = dz*dz; dist_sq += c8*c8;) instead of the c8-term first.",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact split (dz-term first) only",
+   "predicate_cite": "",
+   "result": "score regressed 6 -> 13"
+  },
+  {
+   "session": 3,
+   "statement": "Introducing a fresh named local for the c8 term (s32 dx = *(obj+0xC8); dist_sq = dx*dx + dz*dz;) \u2014 the named-intermediate/declaration-order lever family \u2014 breaks the a0/a1 tie.",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact named-intermediate form only",
+   "predicate_cite": "",
+   "result": "score unchanged at 6; --diff confirmed all 9 hunks byte-for-byte identical to the baseline candidate, including the exac"
+  },
+  {
+   "session": 3,
+   "statement": "Reordering the function's own local declarations (moving `s32 dist_sq;`'s declaration to the end of the decl list, after angle1/angle2/dist) breaks the a0/a1 tie via LUID bias.",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact declaration order only",
+   "predicate_cite": "",
+   "result": "score unchanged at 6"
   }
  ],
  "ladder_skip": 0,
