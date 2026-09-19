@@ -1,8 +1,8 @@
 {
  "func": "func_8002DAD0",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,17 +27,23 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "Floor unchanged at 6 (re-confirmed, same a0/a1 register-seat tie); built and debugged a working per-function permuter workspace but hit an unresolved decomp-permuter pycparser lexer error before any s"
+  },
+  {
+   "session": 5,
+   "floor": 6,
+   "modality": "enumerate",
+   "headline": "enumerate: tools/spelling_enum.py + sweep_variants.py exhaustively swept both structurally-flat blocks touching dist_sq/dist (2 + 4 = 6 spellings total, incl. full-inline forms); all scored 6/204, ide"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The a0-vs-a1 register-seat tie on dist_sq's final pseudo is real (confirmed in the .greg dump) but its originating insn/mechanism remains untraced (per s3's frontier); a permuter search over declaration-order/operand-order/staging variants for the pure-C dist_sq region could find a spelling that flips it, but needs a working permuter campaign first.",
-   "mechanism": "tools/gcc-2.7.2/global.c set_preference/expand_preferences/prune_preferences machinery, exact triggering insn still unidentified (s3 frontier, unchanged this session).",
-   "next_probe": "Regenerate tmp/perm_8002DAD0/base.c FRESH from cc1 (do not reuse the checked-in tmp/ copy, which carries an abandoned regex string-collapse and is not verified safe outside func_8002DAD0's own region); apply only the obj+0xNN -> &obj[0xNN] asm-operand rewrite; then resolve the pycparser 'Illegal character' lexer error properly (read tools/decomp-permuter's own preprocessing source for how it handles multi-line adjacent string literals, rather than hand-rolling a whole-file regex) before attempting another launch. Full 5-step recipe in hypotheses.md [s4] Frontier update."
+   "hypothesis": "The a0-vs-a1 register-seat tie on dist_sq's final pseudo is not resolvable by respelling either of the two flat blocks that read/write it -- both are now exhaustively swept. The tie's origin is upstream: either in how dist_sq/dist values are threaded across the if/else branch structure itself (which spelling_enum.py cannot safely enumerate -- nested control flow), or in the RA/scheduler machinery per s3's frontier (tools/gcc-2.7.2/global.c set_preference/expand_preferences/prune_preferences).",
+   "mechanism": "Unidentified -- s3's frontier item, unchanged. A future session should use tools/ra_solver's inverse_compose.py classify (per the solver-suite section of the role brief) to get a typed REACHABLE/FORECLOSED verdict on this specific register-seat tie before spending more hand/enum probes on it.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify against this function's a0/a1 tie (dump-driven, per the SOLVER SUITE section) to determine whether this is a genuinely C-reachable RA seat or a foreclosed scheduler artifact, before attempting another permuter campaign (s4's workspace-construction bugs are fixed; only the pycparser lexer blocker remains unresolved, per s4's frontier)."
   },
   {
-   "hypothesis": "Once the register-seat mechanism is understood or bypassed via a lever that empirically works, the function should close to 0 \u2014 all 6 __asm__ islands are already verbatim SDK-macro-body forms proven byte-exact and precedented by func_800203B4/func_8002E838.",
-   "mechanism": "N/A \u2014 bookkeeping frontier item for the eventual candidate-ready self-vet (unchanged from s2/s3).",
+   "hypothesis": "Once the register-seat mechanism is understood or bypassed via a lever that empirically works, the function should close to 0 -- all 6 __asm__ islands are already verbatim SDK-macro-body forms proven byte-exact and precedented by func_800203B4/func_8002E838.",
+   "mechanism": "N/A -- bookkeeping frontier item for the eventual candidate-ready self-vet (unchanged from s2/s3/s4).",
    "next_probe": "Once floor reaches 0, cite func_800203B4 and func_8002E838's ledgers/commits as precedent for the 6 asm islands in the self-vet's SANCTIONED-FAMILY-CLAIMS section."
   }
  ],
@@ -115,6 +121,22 @@
    "measured_on": "N/A (tooling/workspace-construction result, not a measurement of candidate C on the real toolchain). The real-toolchain floor (6, same 5 operand-only a0/a1 hunks as s2/s3) was independently re-confirm",
    "predicate_cite": "",
    "result": "Launch failed both before and after a same-session attempt to mechanically collapse the GTE asm blocks' multi-line adjac"
+  },
+  {
+   "session": 5,
+   "statement": "Exhaustive tool-enumerated spelling sweep (named vs. fully-inlined dz, all def-before-use-valid orderings, commutative-swap axis checked and found inapplicable) of the dist_sq compute block `{ s32 dz ",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact 2-spelling enumerated space (dist_sq compute block only) on the current chassis (floor 6)",
+   "predicate_cite": "",
+   "result": "Both variants (named dz, fully-inlined dz) scored 6/204, matching the baseline exactly. A first attempt that stripped th"
+  },
+  {
+   "session": 5,
+   "statement": "Exhaustive tool-enumerated spelling sweep (independent name-vs-inline on `shift` and `tbl`, all 4 combinations respecting def-before-use; commutative-swap axis checked and found inapplicable -- no `*`",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact 4-spelling enumerated space (shift/tbl/dist compute block only) on the current chassis (floor 6)",
+   "predicate_cite": "",
+   "result": "All 4 variants (named/named, named/inlined, inlined/named, inlined/inlined for shift/tbl) scored 6/204, identical to bas"
   }
  ],
  "ladder_skip": 0,

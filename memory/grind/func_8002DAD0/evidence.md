@@ -194,3 +194,18 @@ tmp/grind/func_8002DAD0/dumps/code6cac_b.greg:11463-11500).
 - [s4] decomp-permuter's bundled pycparser fork's asm_operand grammar (tools/decomp-permuter/perm_pycparser/c_parser.py:2109) accepts only unary_expression, not general additive expressions — `"r"(obj + 0xA8)` fails to parse there even though it is completely ordinary C accepted by the real cc1; a workspace-only respelling to `"r"(&obj[0xA8])` (array-subscript reduces to postfix_expression -> unary_expression) is required to get past this specific parser, verified byte-identical on the real toolchain both ways.
 
 - [s4] src/code6cac_b.c reverted to the committed INCLUDE_ASM("asm/funcs", func_8002DAD0); line before this session ended (git status --short clean except the pre-existing metrics/events.jsonl dirt and this session's ledger edits).
+
+## s5 (enumerate)
+- Chassis reconfirmed at session start: sandbox --disable all == 6/204 with candidate.c applied (matches driver's chassis-check).
+- Ran tools/spelling_enum.py + tools/sweep_variants.py over the two structurally-flat blocks that read/write dist_sq and dist: the dist_sq compute block (2 spellings: named-dz vs fully-inlined) and the shift/tbl/dist compute block (4 spellings: independent name/inline of shift and tbl). Commutative-swap axis checked for both and found inapplicable (no bare-identifier/paren-group multiplicands or additive terms in either region).
+- All 6 generated spellings scored 6/204, identical to baseline. Zero improvement anywhere in either region's enumerated space.
+- Gotcha recorded for future sessions: marking ENUM-BEGIN/END so it strips a block's enclosing `{ }` produces a structurally different (mis-nested) candidate that can score very differently (measured 27/191 once, purely from lost block scope) -- not a real spelling variant. Keep the markers strictly inside existing braces.
+- Conclusion: the a0/a1 register-seat tie survives every source-level respelling reachable from these two blocks. Next session should use the RA solver (tools/ra_solver/inverse_compose.py classify) to get a typed verdict on the tie before further hand/enum probing, or resume the s4 permuter workspace (construction bugs fixed, only the pycparser lexer blocker remains).
+
+- [s5] Chassis check reconfirmed: candidate.c applied to src/code6cac_b.c measures sandbox --disable all == 6/204 at session start, matching the ledger's last recorded floor.
+
+- [s5] spelling_enum.py's flat def-before-use permuter is UNSAFE to apply across a nested if/else/compound boundary -- it treats every non-decl/non-assign line as a trailing anchor and would hoist named-local declarations out of their original block scope, producing structurally different (and in this case measurably worse, 191 vs 204 insns) code that is not a real spelling variant of the target region. Both regions swept this session were deliberately chosen to sit entirely inside one existing `{ }` block with no nested control flow, to keep every generated variant a genuine same-semantics respelling.
+
+- [s5] 6 of 6 generated spellings across the two flat sub-blocks (2 in the dist_sq compute block, 4 in the shift/tbl/dist compute block) scored exactly 6/204 -- the residual 5 operand-only a0/a1 register-seat hunks (per s2/s3's sandbox --disable all --diff classification) are invariant under every source-level respelling this tool can generate in either region.
+
+- [s5] This corroborates, via exhaustive enumeration rather than hand-picked sampling, s3's five manual instance kills on the same/adjacent forms (store/compute reorder, compound-split both directions, named-intermediate for the c8 term, declaration-order change) -- the tool-based sweep covers the space those probes sampled from and finds nothing outside it that helps.
