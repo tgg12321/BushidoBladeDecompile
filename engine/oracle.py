@@ -25,6 +25,7 @@ from pathlib import Path
 
 from . import buildconfig as cfg
 from . import pipeline as P
+from . import buildstamp
 
 ORACLE_DIR = Path("oracle")
 MANIFEST = ORACLE_DIR / "manifest.json"
@@ -36,7 +37,7 @@ CONFIG_FILES = [
     "expand_lb_funcs.txt", "multu_funcs.txt", "multu_pad_funcs.txt",
     "expand_dest_funcs.txt", "named_syms.txt",
     "undefined_funcs_auto.txt", "undefined_syms_auto.txt",
-    "bb2.ld", "tools/prologue_config.json",
+    "bb2.ld", "tools/prologue_config.json", "maspsx_prefill_label_funcs.txt",
 ]
 
 
@@ -150,16 +151,22 @@ def verify(rebuild: bool = False) -> dict:
             drift["toolchain"].append(k)
 
     exe = Path("build/bb2.exe")
-    if rebuild or not exe.exists():
+    if rebuild:
         P.build_all()
-    build_sha1 = P.sha1("build/bb2.exe")
-    build_matches = build_sha1 == man["expected_build_sha1"]
+    build_sha1 = P.sha1(exe) if exe.exists() else None
+    freshness = buildstamp.check()
+    artifact_matches = build_sha1 == cfg.ORACLE_SHA1
+    build_matches = (artifact_matches and freshness['fresh']
+                     and man['expected_build_sha1'] == cfg.ORACLE_SHA1
+                     and P.sha1(cfg.TARGET_EXE) == cfg.ORACLE_SHA1)
 
     return {
         "ok": build_matches,
         "build_sha1": build_sha1,
         "expected": man["expected_build_sha1"],
         "build_matches": build_matches,
+        "artifact_matches": artifact_matches,
+        "freshness": freshness,
         "original_sha1_now": P.sha1(cfg.TARGET_EXE),
         "original_sha1_locked": man["original_exe"]["sha1"],
         "drift": {k: v for k, v in drift.items() if v},

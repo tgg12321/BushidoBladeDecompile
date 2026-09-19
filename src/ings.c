@@ -41,8 +41,8 @@ extern u8 *D_800A374C;
 extern u32 D_800A38B4;
 extern u32 D_80102794;
 extern s32 D_800A30DC;
-extern u8 g_str_prim_overflow;
-extern u32 g_module_func_tbl[];
+
+
 extern u8 D_800F33D8;
 extern u8 D_800F7438;
 extern u8 D_800A37A8[];
@@ -52,7 +52,7 @@ extern void PutDispEnv(u8 *);
 extern void LoadImage(u8 *, u8 *);
 extern void VSync(s32);
 extern void ClearOTagR(u8 *, s32);
-extern void func_80019568(s32);
+
 extern s32 func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
 extern void PutDrawEnv(u8 *);
@@ -66,7 +66,7 @@ extern void SetSp(u32);
 extern void SetMem(s32);
 extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
-extern void func_8003D330(void);
+
 extern void func_80019568();
 extern u8 D_800A3768;
 extern u32 D_8008D090;
@@ -76,9 +76,9 @@ extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
 extern s32 func_8005E54C(s32, u8 *, s32);
 extern void func_80060414(s32, u8 *, s32);
-extern void SetRotMatrix(u8 *);
-extern void SetTransMatrix(u8 *);
-extern void RotTrans(u8 *, s32 *, s32 *);
+
+
+
 
 typedef struct {
     s16 x;

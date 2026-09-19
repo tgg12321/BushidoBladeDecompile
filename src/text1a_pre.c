@@ -7,29 +7,29 @@
 #include "gpu.h"
 
 
-extern s16 D_800EED10[];
-extern s32 D_800EED1C[];
-extern s32 D_800EED18;
-extern s32 D_800EED14;
-extern s32 D_800EED00[];
-extern s32 D_800A33AC;
-extern s32 D_800A33A0;
-extern s32 D_800A33A4;
-extern s32 D_800A33A8;
-extern u8 D_800A9D10;
-extern void func_80049E1C(void);
+
+
+
+
+
+
+
+
+
+
+
 extern void func_80052C10(void);
-extern void func_80044098(s16);
+
 extern void func_80044010(s32 *, s16);
-extern s32 D_800A3240;
-extern s32 D_800A3398;
-extern s32 D_800A3244;
-extern s16 D_800963EE;
-extern void func_8003EDC0(s32 *, s32);
-extern void func_80054410(s32 *);
-extern s32 func_800457A0(s32);
-extern void func_80041430(s32, s32);
-extern s32 func_8004019C(s32 *, s32);
+
+
+
+
+
+
+
+
+
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
 extern s32 D_800A378C;
@@ -39,7 +39,7 @@ extern u8 D_800A9830;
 extern u8 D_800A9920;
 extern u16 D_80094AF4;
 extern u8 D_80094B48[];
-extern u8 D_80094D40[];
+
 extern void SetDrawMove(s32, s16 *, s32, s32);
 
 void func_800401CC(s32 a0, s32 a1, s32 a2) {
@@ -101,8 +101,8 @@ void func_80040304(s32 a0, s32 a1) {
             mask = 0x12;
             break;
         case 6:
-            func_800401CC(a0, 5);
-            func_800401CC(a0, 6);
+            ((void (*)())func_800401CC)(a0, 5);
+            ((void (*)())func_800401CC)(a0, 6);
             mask = 0;
             break;
         }
@@ -110,7 +110,7 @@ void func_80040304(s32 a0, s32 a1) {
         i = 0;
         do {
             if (mask & 1) {
-                func_800401CC(a0, 4 - i);
+                ((void (*)())func_800401CC)(a0, 4 - i);
             }
             i++;
             mask >>= 1;
@@ -307,7 +307,7 @@ extern s16 D_80094B96[];
 extern s16 D_80094B98[];
 extern s16 D_80094B9A[];
 extern s16 D_80094B9C[];
-extern s16 D_80094C68[];
+
 void func_800408F8(s32 *a0) {
     s16 *tbl;
     s32 count;

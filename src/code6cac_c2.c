@@ -13,50 +13,50 @@
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
 /* Extern data declarations */
-extern s32 D_800F33D8;
+
 extern u32 D_800A378C;
 extern u32 D_80101E3C;
 extern u32 D_80101E44;
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
-extern s32 func_80037110(s32);
-extern void game_FrameInit(void);
-extern void game_FrameLoop(void);
-extern void func_800194F4(void);
-extern void seq_Reset(void);
-extern void func_8003A39C(void);
-extern void VSync(s32);
+
+
+
+
+
+
+
+
 extern void LoadImage(s32, s32);
 
-extern s32 func_80036FD4(void);
-extern void snd_SerialMixOn(void);
+
+
 extern void game_Cleanup(void);
-extern s32 func_800371E8(s16);
-extern void seq_Start(s32, s32);
-extern u16 g_game_p1_ctrl;
+
+
+
 extern s32 D_80102794;
-extern s32 D_800A3894;
+
 extern u32 D_800A3D30;
-extern s16 D_800A38C4;
-extern s16 D_80101F32;
-extern void cdrom_SetMix(s32, s32, s32, s32);
-extern void obj_InitChars(void);
-extern void obj_Reset(void);
-extern void obj_InitTask(void);
-extern void obj_InitPair(void);
-extern void player_SetCharId(s32, s32);
-extern void func_80021974(s32);
-extern void player_Destroy(s32);
-extern void file_ResetDmaFlag(void);
-extern void obj_InitAll(void);
-extern void func_80077820(s32);
-extern s32 D_80101E70;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800A3894;
-extern u8 D_80102781;
+
 extern s8 D_8010277D;
 extern u8 D_8010277F;
-extern s16 D_800A391D;
+
 extern s32 D_800A3368;
 extern u8 D_800A4750[];
 extern u8 D_800A6690[];
@@ -66,36 +66,36 @@ extern u8 D_800A8FB0[];
 extern s32 D_800A3820;
 extern s32 *func_8004153C(s32);
 extern void func_800432A0(s32, s32, s32, s32, s32);
-extern s32 file_GetFlag2(void);
-extern s16 *snd_GetSeId(void);
-extern void func_8003553C(void);
+
+
+
 extern void func_8003AF40(s32);
-extern void func_8003AFFC(void);
-extern void func_8003AFFC(void);
 
-extern void sys_Panic(void);
-extern s32 func_80020D38(void);
-extern s32 obj_InitTaskCamera(s32);
+
+
+
+
+
 extern s32 D_800A38B4;
-extern s32 memcpy(s32 *, s32, s32);
-extern void obj_ExecTask(s32);
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void func_8005B98C(s32);
-extern void func_8003AA78(void);
-extern s32 func_80036D88(void);
-extern void func_8003AA48(void);
+
+
+
+
+
+
+
 extern void func_800174F4(void);
-extern void func_8003AAB0(void);
-extern s32 D_800A384C;
-extern s32 ratan2(s32, s32);
-extern s16 D_80101E74;
 
-extern void file_LoadOverlay(void);
-extern void func_80040510(s32, s32, s32);
-extern void stage_GetDataPtr(void);
 
-extern void snd_Quit(void);
+
+
+
+
+
+
+
+
 extern void SetDrawMove(u32 *, s16 *, s32, s32);
 extern s32 game_GetPlayerCount(void);
 extern s32 func_80052C28(s32, s32);
@@ -111,47 +111,47 @@ extern void func_8005C650(s32, s32, s32);
 extern s32 *func_80077D00(void);
 extern void func_80060758(void);
 extern void func_8001CD68(u8 *);
-extern void func_80046BF4(s16 *, s32, s32);
+
 extern void game_StageInit(s32);
 extern s32 func_800600C8(s32, s32, s32);
 extern void func_8001DA2C(void);
-extern void func_8003B10C(s32);
+
 extern void func_8005FBC8(s32, s32);
 extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);
 extern void func_8001DBE4(void);
-extern void func_80041BF4(s32, s32, s32);
-extern void func_8004659C(s32);
+
+
 extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern void func_800342A0(void);
 extern s32 func_80022408(s32 *);
 extern void StoreImage(s32 *, u16 *);
 extern void func_80052BE4(u8 *);
-extern void func_8003F388(s16 *);
-extern void func_80037774(void);
-extern void cdrom_LoadExec(s32 *);
-extern void StopPAD(void);
-extern void StopCallback(void);
-extern s32 EnterCriticalSection(void);
-extern void sys_Init(void);
-extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
-extern s32 func_800392B8(void);
+
+
+
+
+
+
+
+
+
+
 extern s8 D_8008EA70;
 extern s32 D_8009060C;
-extern s16 Judge;
-extern s16 D_800A3678;
-extern s32 D_800A3708;
+
+
+
 extern s32 D_800A374C;
-extern u8 D_800A377C;
-extern u8 D_800A37A8;
-extern u16 D_800A3904;
-extern u8 D_800F65F8;
-extern s32 g_anim_func_table;
-extern s32 g_pad_data;
-extern u16 D_80101E02;
-extern u16 D_80101E04;
-extern s16 D_80101ED6;
+
+
+
+
+
+
+
+
+
 extern s32 g_file_disc_size;
 extern s32 D_80106A58;
 extern u8 D_800A3768;
@@ -1063,7 +1063,7 @@ typedef char *va_list;
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
 s32 strlen(u8 *);
-void sprintf(u8 *, u8 *, s32);
+
 
 void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
     u8 buf[0x400];

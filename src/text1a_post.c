@@ -6,40 +6,40 @@
 #include "code6cac.h"
 
 
-extern s16 D_800EED10[];
-extern s32 D_800EED1C[];
-extern s32 D_800EED18;
-extern s32 D_800EED14;
-extern s32 D_800EED00[];
-extern s32 D_800A33AC;
-extern s32 D_800A33A0;
-extern s32 D_800A33A4;
-extern s32 D_800A33A8;
-extern u8 D_800A9D10;
-extern void func_80049E1C(void);
-extern void func_80052C10(void);
-extern void func_80044098(s16);
-extern void func_80044010(s32 *, s16);
-extern s32 D_800A3240;
-extern s32 D_800A3398;
-extern s32 D_800A3244;
-extern s16 D_800963EE;
-extern void func_8003EDC0(s32 *, s32);
-extern void func_80054410(s32 *);
-extern s32 func_800457A0(s32);
-extern void func_80041430(s32, s32);
-extern s32 func_8004019C(s32 *, s32);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
-extern s32 D_800A378C;
-extern s32 D_800A3234;
-extern s32 D_800A3378;
-extern u8 D_800A9830;
-extern u8 D_800A9920;
-extern u16 D_80094AF4;
-extern u8 D_80094B48[];
+
+
+
+
+
+
+
 extern u8 D_80094D40[];
-extern void SetDrawMove(s32, s16 *, s32, s32);
+
 
 extern s32 g_player_ptrs[];
 s32 func_8004153C(s32 a0) {
@@ -89,7 +89,7 @@ s32 func_80041650(s32 a0) {
     }
     return -1;
 }
-extern s32 func_800486FC(s32);
+extern s32 func_800486FC();
 extern s32 func_8004881C(s32, s32, s32);
 extern void func_80041398(s32);
 
@@ -147,7 +147,7 @@ void func_80041688(s32 arg0, s32 arg1) {
     u8 *p;
     u8 *q;
     s32 b, r, g, v;
-    extern s32 func_800486FC(void);
+
 
     player = (s32 *)g_player_ptrs[arg0];
     if (player == NULL) return;
@@ -227,7 +227,6 @@ void func_800417D0(s32 *a0) {
     }
     ((s16 *)a0)[3] = 1;
 }
-typedef struct { s32 w[4]; } Block16;
 extern s32 g_anim_func_table[];
 void func_800418D0(s32 *a0) {
     s16 sp10[4];
@@ -402,7 +401,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
      Lever-exhaustion: memory/grind/func_80041BF4/hypotheses.md [s10] frame
      sweep + [s11] re-measured in the new basin. */
   s16 rect[8];
-  extern s32 func_800486FC(void);
+  extern s32 func_800486FC();
   fp_ptr = (s32 *)func_8004153C(1);
   if (fp_ptr == 0) { return; }
   if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
@@ -595,8 +594,8 @@ extern s16 D_800F6462;
 extern s16 D_800F6342;
 extern s16 D_800F62E2;
 extern s16 D_800F6460;
-extern s16 D_800F6340;
-extern s16 D_800F62E0;
+
+
 extern s32 StageLight[];
 void func_800421C8(s32 a0) {
     s32 *p = (s32 *)((u8 *)StageLight + a0 * 24);
@@ -611,8 +610,8 @@ void func_800421C8(s32 a0) {
     D_800F62E2 = val & 0xFFF;
     val = *(s16 *)((u8 *)p + 2);
     D_800F6460 = val & 0xFFF;
-    D_800F6340 = val & 0xFFF;
-    D_800F62E0 = val & 0xFFF;
+    *(s16 *)D_800F6340 = val & 0xFFF;
+    *(s16 *)D_800F62E0 = val & 0xFFF;
     func_80042478(*(s32 *)((u8 *)p + 4));
 }
 extern s16 D_800F6318[];
@@ -633,9 +632,9 @@ extern s16 D_800F64A4;
 extern u8 D_800F64B8;
 extern u8 D_800F64B9;
 extern u8 D_800F64BA;
-extern s32 func_800486FC(s32);
+
 extern s32 func_8004881C(s32, s32, s32);
-extern void func_8004A1FC(s16 *);
+
 void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     s32 r = (packed >> 16) & 0xFF;
     s32 g = (packed >> 8) & 0xFF;
@@ -694,7 +693,7 @@ alt_raw:
     D_800F64BA = b;
 out:;
 }
-extern s32 func_800486FC(s32);
+extern s32 func_800486FC();
 extern s32 func_8004881C(s32, s32, s32);
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
 extern void SetFarColor(s32, s32, s32);

@@ -27,6 +27,7 @@ from engine import diagnose
 from engine import queue as Q
 from engine import pipeline as P
 from engine import buildconfig as cfg
+from engine import completion, buildstamp
 
 _passed = _failed = _skipped = 0
 
@@ -1892,6 +1893,7 @@ def test_include_asm_whole_body() -> None:
             orig = (Q.QUEUE_PATH, P.c_stems, canonical.scan_all,
                     cheats.canonical_asm_funcs, Q._rule_count,
                     cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                    completion.source_issues,
                     cheats.is_jtbl_infra, cheats.is_canonical_extraction_only,
                     Q.sandbox.build_stripped_object, score._o_func_table,
                     score.score_func)
@@ -1903,6 +1905,7 @@ def test_include_asm_whole_body() -> None:
             Q._rule_count = lambda f: 0
             cheats.func_prologue_count = lambda f: 0
             inlineasm.file_func_cheat_asm_count = lambda s, f: cheat_count
+            completion.source_issues = lambda *a, **k: []
             cheats.is_jtbl_infra = lambda f: False
             cheats.is_canonical_extraction_only = lambda f: False
             Q.sandbox.build_stripped_object = lambda *a, **k: {}
@@ -1915,6 +1918,7 @@ def test_include_asm_whole_body() -> None:
                 (Q.QUEUE_PATH, P.c_stems, canonical.scan_all,
                  cheats.canonical_asm_funcs, Q._rule_count,
                  cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                 completion.source_issues,
                  cheats.is_jtbl_infra, cheats.is_canonical_extraction_only,
                  Q.sandbox.build_stripped_object, score._o_func_table,
                  score.score_func) = orig
@@ -1955,13 +1959,15 @@ def test_include_asm_whole_body() -> None:
                  "counts": {}}))
             orig = (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
                     cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
-                    inlineasm.file_func_cheat_asm_count, Q.O.verify)
+                    inlineasm.file_func_cheat_asm_count, completion.source_issues,
+                    Q.O.verify)
             Q.QUEUE_PATH = str(qp)
             Q._rule_count = lambda f: 0
             cheats.func_prologue_count = lambda f: 0
             cheats.canonical_asm_funcs = lambda: canon
             cheats.maspsx_gate_entries = lambda f: []
             inlineasm.file_func_cheat_asm_count = lambda s, f: cheat_count
+            completion.source_issues = lambda *a, **k: []
             Q.O.verify = lambda rebuild=False: {"build_matches": True,
                                                 "build_sha1": "deadbeef"}
             try:
@@ -1969,7 +1975,8 @@ def test_include_asm_whole_body() -> None:
             finally:
                 (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
                  cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
-                 inlineasm.file_func_cheat_asm_count, Q.O.verify) = orig
+                 inlineasm.file_func_cheat_asm_count, completion.source_issues,
+                 Q.O.verify) = orig
 
     r_attr = _done_with(1, set())
     check("include_asm: queue done REFUSES attributed cheat-asm",
@@ -1984,6 +1991,62 @@ def test_include_asm_whole_body() -> None:
           r_canon.get("ok") is True)
     eq("include_asm: canonical completion state",
        r_canon.get("completion"), "COMPLETED-INLINE-ASM-CANONICAL")
+
+
+def test_completion_region_grants() -> None:
+    """Mixed C/asm completion authorizes exact reviewed islands, not a whole C body."""
+    text = '''\
+s32 func_MIX(s32 value) {
+    __asm__ volatile ("ctc2 %0,$13" :: "r"(value));
+    return value + 1;
+}
+'''
+    with tempfile.TemporaryDirectory() as td:
+        grants = Path(td) / "regions.json"
+        old_read, old_regions = inlineasm._read_src_cached, completion.REGIONS
+        try:
+            inlineasm._read_src_cached = lambda stem: text
+            completion.REGIONS = grants
+            issues = completion.source_issues("fake", "func_MIX", canonical=False)
+            check("region grants: an unclassified inline-asm island is rejected",
+                  any("requires canonical" in i for i in issues))
+
+            entry = {"file": "fake", "sha256": completion.region_hashes(text, "func_MIX")}
+            grants.write_text(json.dumps({"schema": 1,
+                                          "functions": {"func_MIX": entry}}))
+            eq("region grants: exact reviewed island is accepted",
+               completion.source_issues("fake", "func_MIX", canonical=True), [])
+
+            changed = text.replace("$13", "$14")
+            inlineasm._read_src_cached = lambda stem: changed
+            issues = completion.source_issues("fake", "func_MIX", canonical=True)
+            check("region grants: an operand change invalidates completion",
+                  any("changed since review" in i for i in issues))
+        finally:
+            inlineasm._read_src_cached, completion.REGIONS = old_read, old_regions
+
+
+def test_buildstamp() -> None:
+    """A matching old artifact stops being evidence as soon as inputs drift."""
+    with tempfile.TemporaryDirectory() as td:
+        state = {"inputs": {"src/a.c": "one"}, "artifacts": {"build/a.o": "obj"}}
+        old = (buildstamp.STAMP, buildstamp.inputs, buildstamp.artifacts)
+        try:
+            buildstamp.STAMP = Path(td) / "verified-inputs.json"
+            buildstamp.inputs = lambda: dict(state["inputs"])
+            buildstamp.artifacts = lambda: dict(state["artifacts"])
+            buildstamp.record(buildstamp.inputs())
+            eq("build stamp: freshly recorded inputs are accepted",
+               buildstamp.check(), {"fresh": True})
+            state["inputs"]["src/a.c"] = "two"
+            check("build stamp: source drift makes the artifact stale",
+                  buildstamp.check().get("reason") == "build inputs changed")
+            buildstamp.record(buildstamp.inputs())
+            state["artifacts"]["build/a.o"] = "tampered"
+            check("build stamp: artifact drift is detected",
+                  buildstamp.check().get("reason") == "build artifacts changed")
+        finally:
+            buildstamp.STAMP, buildstamp.inputs, buildstamp.artifacts = old
 
 
 def test_canonical_completion_is_the_drop() -> None:
@@ -2045,6 +2108,7 @@ def test_canonical_completion_is_the_drop() -> None:
                 cheats.canonical_asm_funcs, Q._rule_count,
                 cheats.func_prologue_count, cheats.maspsx_gate_entries,
                 inlineasm.file_func_cheat_asm_count,
+                completion.source_issues,
                 Q.sandbox.build_stripped_object, score._o_func_table,
                 score.score_func, Q.O.verify, cheats.is_jtbl_infra,
                 cheats.is_canonical_extraction_only)
@@ -2067,6 +2131,7 @@ def test_canonical_completion_is_the_drop() -> None:
             # >0 == whole-body asm attributed to it, which is what a converted
             # canonical function looks like to the detectors (9e68966c).
             inlineasm.file_func_cheat_asm_count = lambda s, f: 1
+            completion.source_issues = lambda *a, **k: []
             Q.sandbox.build_stripped_object = lambda *a, **k: None
             score._o_func_table = lambda o: ["func_CANON"]
             score.score_func = lambda a, b, f: {"score": 300}
@@ -2151,6 +2216,7 @@ def test_canonical_completion_is_the_drop() -> None:
              cheats.canonical_asm_funcs, Q._rule_count,
              cheats.func_prologue_count, cheats.maspsx_gate_entries,
              inlineasm.file_func_cheat_asm_count,
+             completion.source_issues,
              Q.sandbox.build_stripped_object, score._o_func_table,
              score.score_func, Q.O.verify, cheats.is_jtbl_infra,
              cheats.is_canonical_extraction_only) = orig
@@ -2345,12 +2411,14 @@ def test_queue_write_serialization() -> None:
             seed(qp, ["func_A", "func_B"])
             saved = (Q._rule_count, Q.cheats.func_prologue_count,
                      Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
-                     Q.inlineasm.file_func_cheat_asm_count, Q.O.verify)
+                     Q.inlineasm.file_func_cheat_asm_count,
+                     completion.source_issues, Q.O.verify)
             Q._rule_count = lambda f: 0
             Q.cheats.func_prologue_count = lambda f: 0
             Q.cheats.maspsx_gate_entries = lambda f: []
             Q.cheats.canonical_asm_funcs = lambda: set()
             Q.inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+            completion.source_issues = lambda *a, **k: []
             # the "gate" deletes queue.json, standing in for a concurrent
             # git checkout / stash landing during O.verify
             def _verify_that_loses_the_file(rebuild=False):
@@ -2382,7 +2450,8 @@ def test_queue_write_serialization() -> None:
             finally:
                 (Q._rule_count, Q.cheats.func_prologue_count,
                  Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
-                 Q.inlineasm.file_func_cheat_asm_count, Q.O.verify) = saved
+                 Q.inlineasm.file_func_cheat_asm_count,
+                 completion.source_issues, Q.O.verify) = saved
 
             # --- 6. Atomicity hygiene: the write-then-rename staging file is
             #        never left behind (a reader must never find a partial
@@ -2837,6 +2906,8 @@ def main() -> int:
     test_macro_asm_strip_round_trip()
     test_substitute_body()
     test_include_asm_whole_body()
+    test_completion_region_grants()
+    test_buildstamp()
     test_canonical_completion_is_the_drop()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()

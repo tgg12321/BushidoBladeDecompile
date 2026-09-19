@@ -34,7 +34,7 @@ extern void player_Destroy(s32);
 extern void func_8004668C(void);
 extern void func_80046020(void);
 extern void func_80049E1C(void);
-extern void camera_InitRotation(u8 *);
+
 extern void func_80042A88(s32 *, s32 *);
 extern void ApplyMatrix(s32 *, s16 *, s32 *);
 extern s16 ratan2(s32, s32);
@@ -55,7 +55,7 @@ extern s16 D_800EEDBE;
 extern s32 g_snd_stage_bgm;
 extern s32 g_snd_fade_pos;
 extern s32 g_snd_fade_amt;
-extern s32 g_snd_config_tbl[];
+
 extern s32 g_snd_fade_curve[];
 extern u8 g_stage_data;
 extern s16 g_game_pause;

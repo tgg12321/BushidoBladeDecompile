@@ -20,28 +20,28 @@ extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
 extern void func_80052C10(void);
-extern void func_80044098(s16);
-extern void func_80044010(s32 *, s16);
-extern s32 D_800A3240;
+
+
+
 extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
-extern void func_8003EDC0(s32 *, s32);
-extern void func_80054410(s32 *);
-extern s32 func_800457A0(s32);
+
+
+
 extern void func_80041430(s32, s32);
 extern s32 func_8004019C(s32 *, s32);
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
-extern s32 D_800A378C;
-extern s32 D_800A3234;
-extern s32 D_800A3378;
-extern u8 D_800A9830;
-extern u8 D_800A9920;
-extern u16 D_80094AF4;
-extern u8 D_80094B48[];
-extern u8 D_80094D40[];
-extern void SetDrawMove(s32, s16 *, s32, s32);
+
+
+
+
+
+
+
+
+
 
 
 extern s32 func_800486FC(s32 *);
@@ -468,8 +468,8 @@ void func_80042C80(u16 *a0, s16 *a1) {
 }
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl_2  |  132i  |  x2 size collision */
 extern void func_8004A348(s16 *, s32 *);
-extern void func_80042874(void);
-extern void func_80042A88(void);
+
+
 extern void func_80042C80();
 extern s32 D_800F66A8;
 extern s32 D_800F66B0;
@@ -1120,9 +1120,9 @@ extern s32 D_800A3678;
 extern s32 D_80101BD0;
 extern s32 D_800A3708;
 extern s32 D_800A370C;
-extern s16 D_80095328;
+
 extern s32 D_80102C00;
-extern void func_80042874(s32 *, s32 *);
+
 extern void MulMatrix(s32 *, s32 *);
 extern void MulMatrix2(s32 *, s32 *);
 extern void MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
@@ -1472,8 +1472,8 @@ void func_80044ED8(s32 a0, s32 a1) {
         func_80044E74(a0, a1);
     }
 }
-extern void func_80044E74(s32, s32);
-extern s32 func_800450F4(s32, s32);
+
+
 extern void func_80044E74(s32, s32);
 void func_80044F30(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x27, a1);
@@ -1827,7 +1827,7 @@ s32 *func_8004574C(s32 arg0) {
     return NULL;
 }
 s32 func_800457A0(s32 a0) {
-    s32 *v0 = func_8004574C();
+    s32 *v0 = ((s32 *(*)())func_8004574C)();
     if (v0) {
         return v0[1];
     }

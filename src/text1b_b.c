@@ -6,20 +6,6 @@
 #include "code6cac.h"
 
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef volatile u8 vu8;
-typedef volatile s8 vs8;
-typedef volatile u16 vu16;
-typedef volatile s16 vs16;
-typedef volatile u32 vu32;
-typedef volatile s32 vs32;
 #define NULL ((void *)0)
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
@@ -58,452 +44,453 @@ typedef struct GameObj {
     s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
     s16 field_FA; s32 field_FC;
 } GameObj;
+s32 _Pad1(void);
 
-extern s32 func_800484A0(s32, s32, s32);
-extern void func_800485EC(s32, s32, s32, s32, s32, s32);
-extern s16 g_color_mode;
-extern s32 snd_LoadBgm(u8);
-extern s32 snd_PlayBgm(s32);
-extern u8 D_80099BCC;
-extern s32 D_800A33E0;
-extern s32 D_800A33E4;
-extern s32 func_8004153C(s32);
-extern s32 g_snd_play_count;
-extern u8 g_snd_ch_data[];
-extern u16 g_snd_se_bank[];
-extern void func_80052C10(void);
-extern s32 D_800A36AC;
-extern s32 D_800A378C;
-extern s32 D_800EF848;
-extern s32 SetDrawMove(void *, s16 *, s32, s32);
-extern s16 D_800EF9F2;
-extern s16 D_800EF9F4;
-extern s16 D_800A33EA;
-extern s16 D_800A33E8;
-extern s32 D_800A33EC;
-extern s32 func_80052C10();
-extern u8 D_80099CC8[];
-extern u8 D_80099CC9[];
-extern s16 D_800EF980[];
-extern s16 D_80099C50[];
-extern s32 D_800A324C;
-extern s32 func_8004954C(s32, s32, s32);
-extern s32 func_80046020();
-extern void func_80045B68(s32, s32, s16 *, s32);
-extern s32 func_8003E120();
-extern u8 *D_800A3820;
-extern u8 *D_800A38B4;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 (*g_anim_func_table)(s16 *, s16 *);
-extern u8 *func_8004153C(s32);
-extern void MulMatrix0(s16 *, s16 *, s16 *);
-extern void ApplyMatrix(s32, s16 *, s32 *);
-extern s16 D_80099D3C[];
-extern void func_800417D0(s32 *);
-extern s16 D_80099CC2;
-extern s32 func_800418D0();
-extern s32 func_8004A1FC();
-extern void *D_800A3708;
-extern void *D_800A370C;
-extern u8 D_800FF638;
-extern s8 D_800FF639;
-extern s16 D_800FF640;
-extern s32 D_800FF644;
-extern s16 D_800FF648;
-extern s16 D_800FF64A;
-extern s16 D_800FF64C;
-extern s32 D_800FF684;
-extern s32 D_800FF688;
-extern s32 D_800FF68C;
-extern u8 D_80101DF0;
-extern s8 D_80101DF1;
-extern s16 D_80101DF8;
-extern s32 D_80101DFC;
-extern s16 D_80101E00;
-extern s16 D_80101E02;
-extern s16 D_80101E04;
-extern s32 D_80101E3C;
-extern s32 D_80101E40;
-extern s32 D_80101E44;
-extern u8 D_800153F0;
-extern u8 D_800F62E0;
-extern s32 D_800F6318;
-extern u8 D_800F6338;
-extern u8 D_800F6339;
-extern u8 D_800F633A;
-extern void func_8004A09C(s32, u16 *);
-extern void SetColorMatrix(s32 *);
-extern void SetBackColor(s32, s32, s32);
-extern s32 rcos();
-extern s32 rsin();
-extern s32 func_80052754(s32, s32, s32);
-extern s32 func_80052D00(s32, s32);
-extern void func_80053754();
-extern void func_80053E9C();
-extern u8 D_800EFA00;
-extern u8 D_800EF9F8;
-extern s32 D_800A33F4;
-extern u8 *D_800A33F4;
-extern u16 D_800A33F8;
-extern s32 D_800A33F0;
-extern s16 D_800A33F8;
-extern s16 InfoPosYTbl1[];
-extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
-extern u32 D_80102C00;
-extern u16 D_800A38D6;
-extern s32 D_800A3808;
-extern s32 func_8005490C(void);
-extern void func_800444E0(void);
-extern s32 D_80101E1C;
-extern u16 D_80099D88;
-extern u8 D_8009A830;
-extern s8 D_8009A838;
-extern u8 D_8009A840;
-extern s32 ratan2(s32, s32);
-extern s32 func_800233AC(void *, s32 *);
-extern s32 D_8009AA50[];
-extern s16 Judge;
-extern s16 D_800A3400;
-extern s32 D_800A3408;
-extern s32 D_800EFB38;
-extern s32 D_800EFB78;
-extern s32 D_800EFB7C;
-extern s32 D_800EFC38;
-extern void SsStart(void);
-extern s32 SsSetTickMode(s32);
-extern s32 SsSetReservedVoice(s32);
-extern s32 SsInit(void);
-extern s32 func_800858D0(s32);
-extern s32 SsUtSetReverbDepth(s32, s32);
-extern s32 SsUtSetReverbType(s32);
-extern s32 SsUtReverbOff(void);
-extern s32 D_800EFB38[];
-extern s32 D_800EFC38[];
-extern void func_800858D0(s32);
-extern void func_80086130(s32, s32, s32);
-extern u32 D_800EFB78[];
-extern u8 D_800EFB7C[];
-extern s32 D_80015470;
-extern u8 D_80099CC8;
-extern u8 D_80099CC9;
-extern u8 D_80099D8B;
-extern u8 D_80099D8C;
-extern u8 D_80099D8D;
-extern u8 D_80099D8E;
-extern u8 D_80099D8F;
-extern u8 D_80099D94;
-extern u8 D_80099D9C;
-extern u8 D_80099D9D;
-extern u8 D_8009A088;
-extern u8 D_8009A820;
-extern u8 D_8009A821;
-extern u8 D_8009A850;
-extern u8 D_8009A851;
-extern u8 D_8009A852;
-extern u8 D_8009A853;
-extern u16 D_8009A8CA;
-extern u8 D_8009AD18;
-extern u8 D_8009B14E;
-extern s16 D_8009B16C;
-extern s16 D_8009B17C;
-extern s16 D_8009B18C;
-extern s16 D_8009B2BC;
-extern s16 D_8009B2BE;
-extern s16 D_8009B2C4;
-extern u16 D_8009B450;
-extern u16 D_8009B452;
-extern u8 D_8009B48E;
-extern u8 D_8009B58C;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern u8 D_8009BA60;
 extern s32 chractar_use_pset_combo_id_table;
-extern s32 D_8009BC04;
-extern s32 D_8009BC08;
-extern u8 D_8009BC0C;
-extern u8 D_8009BC0D;
-extern s32 D_8009BC1C;
-extern u8 D_8009BC38;
-extern u8 D_8009BC40;
-extern u8 D_8009BC41;
-extern u8 D_8009BC44;
-extern u8 D_8009BC72;
-extern u8 D_8009BC76;
-extern u8 D_8009BC7C;
-extern s16 D_8009BC94;
-extern s16 D_8009BC96;
-extern u16 D_8009BCC4;
-extern u16 D_8009BCC6;
-extern s16 D_8009BCD0;
-extern s16 D_8009BCD2;
-extern u8 D_8009BCE4;
-extern u8 D_8009BD20;
-extern u8 D_8009BD21;
-extern s32 D_8009BD38;
-extern s32 D_8009BD44;
-extern u8 D_8009BD58;
-extern u8 D_8009BD59;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_8009BD68;
 extern s32 D_8009BD6C;
 extern s32 D_8009BD70;
 extern s32 D_8009BD84;
 extern s32 D_8009BD88;
-extern u8 D_800A3270;
-extern s32 D_800A32C8;
-extern s16 D_800A3438;
-extern s32 D_800A344C;
-extern s16 D_800A34E8;
-extern s16 D_800A3530;
-extern s16 D_800A3534;
-extern s16 D_800A3540;
-extern s16 D_800A3544;
-extern u8 D_800A3560;
-extern u8 D_800A3561;
-extern u8 D_800A3562;
-extern s16 D_800A3588;
-extern s16 D_800A358C;
-extern s16 D_800A3590;
-extern s16 D_800A3594;
-extern s32 D_800A3618;
-extern s32 D_800A3628;
-extern s32 D_800A362C;
-extern s32 D_800A3638;
-extern s32 D_800A3708;
-extern s32 D_800A370C;
-extern s32 D_800A3828;
-extern s32 D_800A38B4;
-extern s32 D_800A38D8;
-extern s32 D_800EFC44;
-extern s32 D_800EFC50;
-extern u16 D_800EFC8A;
-extern s16 D_800F0B78;
-extern s16 D_800F0B7C;
-extern s16 D_800F0B98;
-extern s16 D_800F0BA4;
-extern s16 D_800F0BB2;
-extern s16 D_800F0BCC;
-extern s16 D_800F0BEC;
-extern s32 D_800F0C10;
-extern s32 D_800F0C14;
-extern s32 D_800F0C18;
-extern s32 D_800F0CA0;
-extern s32 D_800F0CA4;
-extern s32 D_800F0CA8;
-extern s32 D_800F0CAC;
-extern s32 D_800F0CB0;
-extern s32 D_800F0CB4;
-extern s32 D_800F0CB8;
-extern s32 D_800F0CBC;
-extern s32 D_800F0CC0;
-extern s32 D_800F0CC4;
-extern s32 D_800F0CC8;
-extern s32 D_800F0CCC;
-extern s32 D_800F0CD0;
-extern s32 D_800F0CD4;
-extern s32 D_800F0CD8;
-extern s32 D_800F0CDC;
-extern s32 D_800F0CE0;
-extern s32 D_800F0CE4;
-extern s32 D_800F0CE8;
-extern s32 D_800F0CEC;
-extern s32 D_800F0CF0;
-extern s32 D_800F0CF4;
-extern s32 D_800F0CF8;
-extern s32 D_800F0CFC;
-extern s32 D_800F0D18;
-extern s32 D_800F0D1C;
-extern s32 D_800F0D20;
-extern s32 D_800F0D24;
-extern s32 D_800F0D28;
-extern s32 D_800F0D2C;
-extern s32 D_800F0D30;
-extern s32 D_800F0D34;
-extern s32 D_800F0D38;
-extern s32 D_800F0D3C;
-extern s32 D_800F0D40;
-extern s32 D_800F0D44;
-extern s32 D_800F0D48;
-extern s32 D_800F0D4C;
-extern s32 D_800F0D50;
-extern s32 D_800F0D54;
-extern s32 D_800F0D58;
-extern s32 D_800F0D5C;
-extern s32 D_800F0D60;
-extern s32 D_800F0D64;
-extern s32 D_800F0D68;
-extern s32 D_800F0D6C;
-extern s32 D_800F0D70;
-extern s32 D_800F0D74;
-extern s32 D_800F0D78;
-extern s32 D_800F0D7C;
-extern s32 videoDec;
-extern s32 D_800F0E38;
-extern s32 D_800F0E3C;
-extern s32 D_800F0E40;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800F0FB8;
 extern s32 D_800F0FBC;
 extern s32 D_800F0FC0;
-extern s16 D_800F1000;
-extern s16 D_800F1002;
-extern s16 D_800F1004;
+
+
+
 extern s16 D_800F10A0;
 extern s16 D_800F10A2;
 extern s16 D_800F10A4;
 extern s32 D_800F10D0;
-extern s32 D_800F10D4;
-extern s32 D_800F10E0;
-extern s32 D_800F10E4;
-extern s32 D_800F10E8;
-extern s32 D_800F10EC;
-extern s32 D_800F10F0;
-extern s32 D_800F10F4;
-extern s32 D_800F10F8;
-extern s32 D_800F10FC;
-extern s32 D_800F1100;
-extern s32 D_800F1104;
-extern s32 D_800F1108;
-extern s32 D_800F110C;
-extern s32 D_800F1110;
-extern s32 D_800F1114;
-extern s32 D_800F1118;
-extern s32 D_800F111C;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800F1138;
-extern s32 D_800F1140;
-extern s32 D_800F1144;
-extern s32 D_800F1148;
-extern u8 D_800F1150;
-extern s32 D_800F1178;
-extern s32 D_800F117C;
-extern s32 D_800F1180;
+
+
+
+
+
+
+
 extern s32 D_800F1850;
-extern s32 g_anim_func_table;
-extern u8 D_800F74A4;
-extern u8 D_800F74A5;
-extern u8 D_800FB534;
-extern u8 D_800FB535;
-extern s16 D_800FF558;
-extern s16 D_800FF55A;
-extern s16 D_800FF55C;
-extern s16 D_800FF55E;
-extern s16 D_800FF560;
-extern s16 D_800FF562;
-extern s16 D_800FF564;
-extern s16 D_800FF566;
-extern s16 D_800FF568;
-extern s32 D_800FF570;
-extern s32 D_800FF574;
-extern u8 D_800FF639;
-extern u8 D_80101DF1;
-extern u16 D_80101E02;
-extern u16 D_80101E04;
-extern s32 D_80103624;
-extern s32 D_800EFC40;
-extern s32 D_800EFB40;
-extern s32 D_800EFC4C;
-extern s32 D_800EFB4C;
-extern s32 D_800EFC3C;
-extern s32 D_800EFB3C;
-extern s32 D_800EFB3C[];
-extern s32 D_800EFC3C[];
-extern s32 func_80036EA8();
-extern s32 func_80036F28();
-extern s32 func_8005C2A8(s32, s32, s32);
-extern s32 D_800158B4;
-extern s32 D_800A3404;
-extern s32 D_800A340C;
-extern s32 D_800EFC58;
-extern s32 D_800EFB58;
-extern s32 D_800EFC48;
-extern s32 D_800EFB48;
-extern s32 func_80036EA8(s32, s32);
-extern s32 func_80036F28(s32);
-extern void obj_InitPair(void);
-extern void replay_camera_Init(s32, s32);
-extern s32 D_800EFC5C;
-extern s32 D_800EFB5C;
-extern void func_800858D0(s32);
-extern void snd_VabFakeOpen(s32, s32);
-extern u32 D_800EFC38[];
-extern u32 D_800EFB38[];
-extern u8 D_8009AD18[];
-extern void SsVabClose(s32);
-extern s32 D_8009AD1C;
-extern s32 SsUtReverbOff();
-extern s32 SsUtSetReverbType(s16);
-extern s32 SsUtSetReverbDepth(s16, s16);
-extern s32 SsUtReverbOn();
-extern s32 SpuClearReverbWorkArea(s16);
-extern s32 SsVabClose();
-extern s32 SsVabFakeBody();
-extern s32 SsVabFakeHead();
-extern s32 SpuRead();
-extern s32 SpuWrite();
-extern s32 SpuSetTransferStartAddr();
-extern s32 SpuIsTransferCompleted();
-extern s32 *D_800EFC38[];
-extern s32 SsVabClose(s32);
-extern s16 SsVabFakeHead(s32, s32, s32);
-extern s16 SsVabFakeBody(s16);
-extern s32 D_8009AA70;
-extern u8 D_800EFB7C;
-extern u8 D_800EFB7D;
-extern s32 func_80073728(s32, s32);
-extern s32 D_8009B2C8;
-extern s32 D_8009B340;
-extern s32 D_8009B358;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     extern s32 rand(void);
     extern u8 D_8009B2E0;
     extern s32 D_8009B388;
     extern s32 D_8009B390;
     extern s32 D_800A326C;
     extern s32 D_800A3418;
-extern s16 D_8009B488;
-extern s8 D_8009B48E;
-extern s32 D_8009B610;
-extern s32 D_8009B634;
-extern s32 D_8009B63C;
-extern s32 D_8009B660;
-extern s32 D_8009B670;
-extern s32 D_8009B678;
-extern u8 D_800A327C[8];
-extern u8 D_800A3284[8];
-extern s32 D_800A3278;
-extern s32 D_8009B698;
-extern s32 D_8009B6B0;
-extern s32 D_800F7438;
-extern s32 SetDrawArea(s32, u16 *);
-extern s32 SetPolyG4(s32);
-extern s32 SetSemiTrans(s32, s32);
-extern s32 func_8007352C(s32);
-extern s32 D_8009B6F0;
-extern s32 D_8009B6FC;
-extern s32 D_8009B708;
-extern s32 D_8009B758;
-extern u8 D_800A3294[8];
-extern u8 D_800A329C[8];
-extern u8 D_800A32A4[8];
-extern u8 D_800A32AC[8];
-extern s32 func_8006E480();
-extern s32 func_8007352C();
-extern s32 D_8009B7AC;
-extern s32 D_8009B7B8;
-extern s32 D_8009B7C4;
-extern u16 D_8009B850;
-extern u8 D_8009BD24;
-extern s32 D_800A328C;
-extern s32 D_8009B3B0;
-extern s32 D_8009B770;
-extern s32 D_8009B7A0;
-extern s32 D_8009B7D0;
-extern s32 D_8009B7D8;
-extern s32 D_8009B800;
-extern s32 D_8009B820;
-extern s32 D_8009B840;
-extern u16 D_800A32B6;
-extern u16 D_800A32B4;
-extern s32 D_8009B0C0;
-extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 SetDrawMode(void *, s32, s32, s32, s32);
-extern s32 SetTile(void *);
-extern s32 AddPrim(s32, void *);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     extern s32 D_800A3468;
     extern s32 D_800A3478;
     extern s32 D_800A347C;
@@ -515,78 +502,78 @@ extern s32 AddPrim(s32, void *);
     extern s32 D_800A3470;
     extern s32 D_800A3474;
     extern void func_80061FAC(s32, s32, s32);
-extern s32 D_800F10D0[];
-extern u8 D_800F1150[];
-extern s16 D_800A345E;
-extern s16 D_800A345C;
-extern s32 D_800A3458;
-extern s32 D_800A3454;
-extern s32 D_800A3450;
+
+
+
+
+
+
+
 extern s32 D_800A3460;
-extern s32 D_800A3444;
-extern s32 D_800A3448;
-extern s32 D_800A3420;
-extern s32 D_800A3424;
-extern volatile s32 D_800A37D4;
-extern s32 D_800A3720;
-extern s32 D_800A3468;
-extern s32 D_800A346C;
-extern s32 D_800A3470;
-extern s32 D_800A3474;
-extern s32 D_800A3480;
-extern s32 D_800A3484;
-extern s32 D_800A3488;
-extern s32 D_800A348C;
-extern s32 D_800A3490;
-extern s32 D_800A3494;
-extern s32 D_800A3498;
-extern s32 D_800A349C;
-extern s32 D_800A34A0;
-extern s32 D_800A34A4;
-extern s32 D_800A34A8;
-extern s32 D_800A34AC;
-extern s32 D_800A34B0;
-extern s32 D_800A34B4;
-extern s32 D_800A34B8;
-extern s32 D_800A34BC;
-extern s32 D_800A34C0;
-extern s32 D_800A34C4;
-extern s32 D_800A34C8;
-extern s32 D_800A34CC;
-extern s32 D_800A34D0;
-extern s32 D_800A34D4;
-extern s32 D_800A34D8;
-extern s32 D_800A34DC;
-extern s32 D_800A34E0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800A34E4;
 extern s32 D_800A34E8;
 extern s32 D_800A34EC;
-extern s32 func_80041E10();
-extern s32 func_800421A4();
-extern s32 func_80060B70();
-extern s32 func_80060E38();
-extern s32 printf(s32 *, s32);
-extern s32 D_800158E0;
-extern s32 D_800A32BC;
-extern s32 D_800A3464;
-extern s32 *D_800A3468;
+
+
+
+
+
+
+
+
+
 extern s32 D_800A37D4;
-extern u8 D_800F116A;
-extern s32 D_800F116C;
-extern u8 D_800F1154;
-extern u8 D_800F115B;
-extern u8 D_800F115C;
-extern u8 D_800F1160[];
-extern u8 D_800F1152[];
-extern s32 D_800F1158;
-extern u8 D_800F1154[];
-extern u8 D_800F1151;
-extern u8 D_800F1164[];
-extern s16 D_800A34F0;
-extern s16 D_800A34F2;
-extern u8 D_800F1168[];
-extern u8 D_8009BB74[];
-extern s32 D_800A32B8;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     extern s32 D_800A3460;
     extern volatile s32 D_800A347C;
     extern volatile s32 D_800A3478;
@@ -594,215 +581,215 @@ extern s32 D_800A32B8;
     extern s32 D_800F0FB8;
     extern s32 D_800F0FBC;
     extern s32 D_800F0FC0;
-    extern s32 D_800F10A0;
-    extern s32 D_800F10A2;
-    extern s32 D_800F10A4;
+
+
+
     extern s32 D_800F1138;
-extern volatile s32 D_800A347C;
-extern s32 rand(void);
-extern void *D_800A347C;
-extern volatile s32 D_800F0CA0;
-extern volatile s32 D_800F0CA4;
-extern volatile s32 D_800F0CA8;
-extern volatile s32 D_800F10E0;
-extern volatile s16 D_800F0BA8;
-extern volatile s32 D_800F0CAC;
-extern volatile s32 D_800F0CB0;
-extern volatile s32 D_800F0CB4;
-extern volatile s32 D_800F10E4;
-extern volatile s16 D_800F0BAA;
-extern volatile s32 D_800F0CB8;
-extern volatile s32 D_800F0CBC;
-extern volatile s32 D_800F0CC0;
-extern volatile s32 D_800F10E8;
-extern volatile s16 D_800F0BAC;
-extern s16 D_800F0BAE;
-extern s16 D_800F0BB0;
-extern volatile s32 D_800A3468;
-extern volatile s32 D_800F0CDC;
-extern volatile s32 D_800F0CE0;
-extern volatile s32 D_800F0CE4;
-extern volatile s32 D_800F10FC;
-extern volatile s16 D_800F0BB2;
-extern volatile s16 D_800A3440;
-extern volatile s32 D_800F0CE8;
-extern volatile s32 D_800F0CEC;
-extern volatile s32 D_800F0CF0;
-extern volatile s32 D_800F1100;
-extern volatile s16 D_800F0BB4;
-extern volatile s32 D_800F0CF4;
-extern volatile s32 D_800F0CF8;
-extern volatile s32 D_800F0CFC;
-extern volatile s32 D_800F1104;
-extern volatile s16 D_800F0BB6;
-extern volatile s32 D_800F0D18;
-extern volatile s32 D_800F0D1C;
-extern volatile s32 D_800F0D20;
-extern volatile s32 D_800F1108;
-extern volatile s16 D_800F0BBC;
-extern volatile s32 D_800F0D24;
-extern volatile s32 D_800F0D28;
-extern volatile s32 D_800F0D2C;
-extern volatile s32 D_800F110C;
-extern volatile s16 D_800F0BBE;
-extern u16 D_800F0BC0;
-extern u16 D_800F0BC4;
-extern u16 D_800F0BC2;
-extern u16 D_800F0BC6;
-extern volatile s32 D_800F0D60;
-extern volatile s32 D_800F0D64;
-extern volatile s32 D_800F0D68;
-extern volatile s32 D_800F1118;
-extern volatile s16 D_800F0BC8;
-extern volatile s32 D_800F0D6C;
-extern volatile s32 D_800F0D70;
-extern volatile s32 D_800F0D74;
-extern volatile s32 D_800F111C;
-extern volatile s16 D_800F0BCA;
-extern s16 D_800F0BA8;
-extern s16 D_800F0BAA;
-extern s16 D_800F0BAC;
-extern s32 *D_800A3484;
-extern s16 D_800F0BB4;
-extern s16 D_800F0BB6;
-extern s16 D_800F0BBC;
-extern s16 D_800F0BBE;
-extern s32 func_80065800(s32);
-extern s16 D_800F0BC4;
-extern s16 D_800F0BC8;
-extern s16 D_800F0BCA;
-extern s32 D_800F10D8;
-extern s32 D_800F10DC;
-extern s32 D_800F1120;
-extern s32 D_800F1124;
-extern s32 D_800F1128;
-extern s32 D_800F112C;
-extern s32 D_800F1130;
-extern s32 D_800F1134;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     extern s32 D_800A34EC;
     extern s32 D_800A37D4;
     extern s32 D_800A3724;
     extern s32 D_800A34E4;
     extern s32 D_800A34E8;
     extern s32 D_800A374C;
-extern s32 D_800A3500;
-extern s32 D_800A351C;
-extern s32 D_800A3524;
-extern s32 D_800A34FC;
-extern s32 D_800A372C;
-extern s32 D_800A3518;
-extern u32 D_800A34F8;
-extern s16 D_800A3528;
-extern s16 D_800A3512;
-extern s16 D_800A3510;
-extern s16 D_800A350E;
-extern s16 D_800A350C;
-extern u8 D_800A32C0[8];
-extern s32 snd_StopAll(void);
-extern s32 func_8006E950(s32, s32);
-extern s32 func_8006919C(s32);
-extern s32 *func_8006E49C(s32, s32);
-extern s32 DrawSync(s32);
-extern s32 MoveImage(u8 *, s32, s32);
-extern s32 func_8005C650();
-extern void func_80069E18(s32, s32);
-extern s32 func_8006E390();
-extern s32 D_800A3514;
-extern u32 D_800A32D0;
-extern void SetTile(u8 *p);
-extern void SetSemiTrans(u8 *p, s32 semi);
-extern void AddPrim(u32 *ot, u32 *prim);
-extern void SetPolyF4(u8 *p);
-extern void func_80069A8C(u8 *p);
-extern s32 func_80073728(s32, s32);
-extern u8 g_disp_fb_base;
-extern s32 D_800A350C;
-extern s32 D_800A36E0;
-extern s32 D_800A36E4;
-extern void SetDrawMode();
-extern void AddPrim();
-extern void func_8006BB68(s32);
-extern s32 func_8006B92C();
-extern void func_8006C21C(s32);
-extern s32 func_8006CFBC(s32);
-extern void func_8006CCC8(s32, s32, s32);
-extern void *D_800A3524;
-extern u16 D_800A3528;
-extern s32 func_8006E390(s32, s32);
-extern s32 func_80069AE4(s32, s32, s32);
-extern void func_8006D3DC(s32);
-extern s32 func_8006D5D4(s32, u32);
-extern s32 func_8005C6D0(void);
-extern s32 D_800A352C;
-extern s32 func_800692C0();
-extern void func_8006DD94(s32);
-extern s32 func_8006DF68();
-extern u8 D_800A32D8[8];
-extern void func_80036F28(s32);
-extern void game_FrameLoop(void);
-extern void SetDefDrawEnv(s32, s32, s32, s32, s32);
-extern void SetDefDispEnv(s32, s32, s32, s32, s32);
-extern void LoadImage(u8 *, s32);
-extern void ClearImage(s32, s32, s32, s32);
-extern void PutDrawEnv(s32);
-extern void PutDispEnv(s32);
-extern void SetDispMask(s32);
-extern void DrawSync(s32);
-extern u8 D_800A32E0[8];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
-extern s32 D_800A3520;
-extern s32 D_800A35AC;
-extern s32 D_800A3548;
-extern s32 D_800A354C;
-extern s16 D_800A3580;
-extern s32 D_800A35A0;
-extern void *D_800A35A4;
-extern s32 D_800A35A8;
-extern s32 D_800A35BC;
-extern s32 D_800A35C0;
-extern void *D_800A35C4;
-extern s16 D_800A3570;
-extern u16 D_800A3578;
-extern s16 D_800A3584;
-extern volatile u16 D_800A3550;
-extern s32 SetTile(s32);
-extern s32 D_800A3558;
-extern s32 D_800A35B0;
-extern s32 func_8007352C(s32 *prim);
-extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
-extern void func_80070F78(s32 a0, s32 *prim);
-extern void func_8006ECF4(s32);
-extern void func_80072E10(s32);
-extern void func_80073200(s32);
-extern u8 D_8009BC7C[];
-extern s32 SetSemiTrans(GameObj *, s32);
-extern s32 SetPolyG4(GameObj *);
-extern s32 AddPrim(s32, GameObj *);
-extern s32 func_80073060(s32);
-extern s32 func_80072CD4(s32, GameObj *);
-extern s32 SetSprt(s32, s16);
-extern s32 SetShadeTex(s32, s32);
-extern s32 func_8003D52C(s32 *, s32);
-extern s32 GetClut(u16, u16);
-extern s32 D_800159A0;
-extern void SetPolyF4(s32);
-extern s32 func_80069A8C(s32);
-extern s32 SetTile(GameObj *);
-extern u8 *D_800A36A0;
-extern s16 D_800A35D0;
-extern s32 func_8005C650(s32, s32, s32);
-extern s32 D_800A35D8;
-extern s8 D_800A35DC;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 ClearOTagR(s32, s32);
 extern s32 func_8006E950(s32, s32 *);
-extern s32 func_80076FF8(s32 *);
+
 extern u8 *func_8006E49C(s32, s32);
-extern s32 *func_80077098(s32);
-extern void func_80077374(s32, s32 *);
-extern s32 *D_800A36A0;
-extern s32 D_800A35E0;
-extern s32 D_800A35E8;
-extern u8 D_8009BD24[];
+
+
+
+
+
+
 
 /* Padding NOP macro */
 #define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
@@ -818,10 +805,10 @@ extern u8 D_8009BD3D;
 extern u8 D_8009BD41;
 extern u8 D_8009BD42;
 extern u8 D_8009BD43;
-extern s32 motion_CalcMotion_80077B30(s32, s32);
-extern s32 saTan2InfoInit_8006C1FC_local(s32, s32);
+
+
 extern void func_8006D324(void);
-extern s32 motion_shift_check_80077B30(s32, s32);
+
 s32 func_80077B30(s32 arg0, s32 arg1) {
     extern s32 func_8006B898(s32, s32);
     extern s32 func_8006C1FC(s32, s32);
@@ -916,10 +903,10 @@ s32 func_800784E4(s32 arg0) {
     D_800A3600 = 0;
     return 1;
 }
-extern s32 *func_80077D74(s32);
+
 extern void func_80077D94(s32 *);
 extern s32 D_800A35F0;
-extern s32 *D_800A35F8;
+
 extern s32 D_800A35FC;
 typedef struct {
     s32 sp10;
@@ -1060,11 +1047,11 @@ loop:
 check:
     if (var_s0[1] != -1) goto loop;
 }
-extern s32 D_800A3610;
+
 extern s32 D_800A3614;
 extern s32 D_800A3304;
 extern s32 D_800A3608;
-extern s32 func_80078628(s32);
+
 s32 func_80078824(s32 arg0) {
     s32 s0;
     s32 r;
@@ -1084,7 +1071,7 @@ s32 func_80078824(s32 arg0) {
 }
 extern s32 D_800A3304;
 extern s32 D_800A3608;
-s32 *func_80078634(s32);
+
 void func_80078654(s32 *);
 s32 func_800788B0(void) {
     s32 buf[8];
@@ -1510,7 +1497,7 @@ extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 extern void SysDeqIntRP(s32, u32 *);
 extern void SysEnqIntRP(s32, u32 *);
-extern void _Pad1(void);
+
 extern s32 _IsVSync(void);
 extern u32 D_800F183C;
 extern u32 D_800F1840;
@@ -1530,9 +1517,9 @@ s32 SetPatchPad(void) {
     return 1;
 }
 void EnterCriticalSection(void);
-void SysDeqIntRP(s32, s16*);
+
 void ExitCriticalSection(void);
-extern s16 D_800F1838;
+
 s32 RemovePatchPad(void) {
     EnterCriticalSection();
     SysDeqIntRP(1, &D_800F1838);
@@ -1657,7 +1644,7 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* padding after bios_SysDeqIntRP */
-extern void (*jtbl_800A3620)(void);
+
 extern void (*jtbl_800A3624)(void);
 /* func_80078F60 / func_80078F74: 5-insn bare tail-jump trampolines
    (lui/lw/nop/jr/nop) through the jtbl_800A3620 / jtbl_800A3624 function
@@ -1873,7 +1860,7 @@ s32 rand(void) {
     D_800F1848 = D_800F1848 * 0x41C64E6D + 0x3039;
     return (D_800F1848 >> 16) & 0x7FFF;
 }
-extern s32 D_800F1848;
+
 void srand(s32 a0) {
     D_800F1848 = a0;
 }

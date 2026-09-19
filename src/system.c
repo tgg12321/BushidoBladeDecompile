@@ -329,9 +329,9 @@ u8 *CdIntToPos(s32 i, u8 *p) {
     return p;
 }
 
-extern s32 g_cd_sector_buf[];
+
 extern s32 CD_cw(s32, void *, void *, s32);
-extern s32 func_80080DB0_ret(s32, void *);
+
 /* --- text3 segment functions (0x800807A8-0x800827D0, 17 funcs) --- */
 
 s32 CdPosToInt(u8 *a0) {
@@ -352,7 +352,7 @@ s32 CdPosToInt(u8 *a0) {
 INCLUDE_ASM("asm/funcs", getintr);
 extern s32 VSync(s32);
 extern void puts(void *);
-extern void printf(void *, void *, s32, s32, s32);
+extern void printf();
 extern s32 CheckCallback(void);
 extern s32 getintr(void);
 extern volatile u8 *D_800A147C;
@@ -372,8 +372,8 @@ extern u8 CD_com;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];
 extern volatile u8 g_cd_status_a;
-extern u8 D_800A1494;
-extern u8 D_800A1495;
+
+
 s32 CD_sync(s32 a0, u8 *a1)
 {
   s32 v0;
@@ -662,7 +662,7 @@ s32 CD_vol(u8 *a0) {
     return 0;
 }
 extern volatile u32 *g_cd_dma_madr;
-extern volatile u32 *g_cd_dma_ctrl;
+
 extern volatile u8 g_cd_status_a;
 extern volatile u8 g_cd_status_b;
 extern volatile u8 g_cd_status_c;
@@ -786,7 +786,7 @@ s32 CD_init(void) {
 }
 extern s32 VSync(s32);
 extern void puts(void *);
-extern void printf(void *, void *, s32, s32, s32);
+extern void printf();
 extern s32 D_800F19B8;
 extern s32 D_800F19BC;
 extern void *D_800F19C0;
@@ -796,10 +796,10 @@ extern void D_800162C0;
 extern u8 CD_com;
 extern s32 CD_comstr[];
 extern s32 CD_intstr[];
-extern u8 D_800A1494;
-extern u8 D_800A1495;
+
+
 extern volatile u32 *D_800A14C0;
-extern s32 D_800161B8;
+
 s32 CD_datasync(s32 a0) {
     s32 v0;
     s32 cnt;
@@ -919,7 +919,7 @@ void CD_set_test_parmnum(s32 a0) {
     D_800A1460 = a0;
 }
 
-extern volatile u8 g_cd_status_a;
+
 extern volatile u8 g_cd_status_b;
 extern s32 CD_cbsync;
 extern s32 CD_cbready;
@@ -979,7 +979,7 @@ void puts(void *a0) {
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
 extern s32 D_800162EC;
 extern s32 D_80016304;
-static void D_80082050(u8 intr, u8 *result);
+
 /* External linkage (Sony's cdread.c had cb_data static): byte-identical
    either way, but static linkage bakes the section-local offset into the
    %lo addend, so the sandbox's file-wide cheat strip (which shrinks earlier

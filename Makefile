@@ -2,6 +2,9 @@
 # Build system for PS1 (PsyQ SDK 3.5, GCC 2.7.2, ASPSX 2.34)
 
 # -- Configuration --
+SHELL := /bin/bash
+.SHELLFLAGS := -o pipefail -c
+.DELETE_ON_ERROR:
 TARGET       := bb2
 BASE_DIR     := disc
 TARGET_EXE   := $(BASE_DIR)/SLUS_006.63
@@ -88,17 +91,21 @@ all: check
 
 # Build and verify match
 check: $(EXE) $(TARGET).sha1
-	@sha1sum -c $(TARGET).sha1 && echo "OK: $(TARGET) matches!" || echo "MISMATCH: $(TARGET) does not match"
+	@sha1sum -c $(TARGET).sha1 || { echo "MISMATCH: $(TARGET) does not match"; exit 1; }
+	@python3 -m engine.buildstamp record-current
+	@echo "OK: $(TARGET) matches!"
 
 # Force a clean rebuild before checking the final hash.
-clean-check: clean check
+clean-check:
+	$(MAKE) clean
+	$(MAKE) check
 
 # -- SHA1 checksum file --
 $(TARGET).sha1:
 	@echo "62efab4f73f992798c43e8c730aa43baa10bb4fa  $(EXE)" > $@
 
 # -- Link --
-$(ELF): $(ALL_O_FILES) $(TARGET).ld
+$(ELF): $(ALL_O_FILES) $(TARGET).ld undefined_funcs_auto.txt undefined_syms_auto.txt named_syms.txt
 	$(LD) $(LD_FLAGS) -Map $(BUILD_DIR)/$(TARGET).map -T $(TARGET).ld \
 		-T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T named_syms.txt \
 		-o $@
@@ -108,7 +115,7 @@ $(BIN): $(ELF)
 	$(OBJCOPY) -O binary -j .main $< $@
 
 # Construct PS-X EXE (prepend original 0x800-byte header)
-$(EXE): $(BIN)
+$(EXE): $(BIN) $(TARGET_EXE) tools/make_psexe.py
 	python3 tools/make_psexe.py $(TARGET_EXE) $< $@
 
 # -- Per-file GP-relative opt-in --
@@ -142,10 +149,12 @@ rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.a
 # pipeline/toolchain config can leave stale objects in place because
 # make only notices src/*.c timestamps.
 PIPELINE_DEPS := Makefile \
+	$(CC1) engine/buildconfig.py \
 	tools/prologue_config.json \
-	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt \
+	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt maspsx_prefill_label_funcs.txt \
 	tools/prologue_fix.py tools/multu_pad.py \
-	tools/maspsx/maspsx.py tools/maspsx/maspsx/__init__.py
+	$(wildcard tools/maspsx/*.py tools/maspsx/maspsx/*.py) \
+	$(wildcard include/* src/*.h asm/funcs/*.s)
 
 # -- Compile C source (decompiled functions) --
 # Pipeline: cpp | cc1 | prologue_fix | maspsx | [sed align fix] | multu_pad | as -> .o
@@ -154,11 +163,11 @@ $(BUILD_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c $(PIPELINE_DEPS)
 	$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | $(CC1) $(call cc_flags_for,$*) | $(PROLOGUE_FIX) | $(MASPSX) $(call maspsx_flags_for,$*) | $(call rodata_align_fix,$*) $(MULTU_PAD) | $(AS) $(AS_FLAGS) -o $@
 
 # -- Assemble .s files (non-decompiled asm) --
-$(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s
+$(BUILD_DIR)/$(ASM_DIR)/%.o: $(ASM_DIR)/%.s $(wildcard include/*)
 	@mkdir -p $(dir $@)
 	$(AS) $(AS_FLAGS) $< -o $@
 
-$(BUILD_DIR)/$(ASM_DIR)/data/%.o: $(ASM_DIR)/data/%.s
+$(BUILD_DIR)/$(ASM_DIR)/data/%.o: $(ASM_DIR)/data/%.s $(wildcard include/*)
 	@mkdir -p $(dir $@)
 	$(AS) $(AS_FLAGS) $< -o $@
 

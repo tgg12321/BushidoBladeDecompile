@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "functions": {
+    "ReadGeomScreen": {
+      "file": "display",
+      "sha256": [
+        "1d5933751cf15300cd3cef9e766582c2679de481e8686f994dded5f427060194"
+      ]
+    },
+    "SetBackColor": {
+      "file": "display",
+      "sha256": [
+        "c849f62fe5ea93c8203a7b17c32a5bc8b3579cce5f1a9c96532389c5f13b1a63",
+        "b49381c90bb282f49ea6560f4ad4e83d6b6c263329b9f01a0a5b52269ea111ea",
+        "611dcff566dfd487dbe56050d49b54099f0068fda4ef2c9464a9aa9820eff408"
+      ]
+    },
+    "SetFarColor": {
+      "file": "display",
+      "sha256": [
+        "8906cfbb45953103c74e6868b5825db656a1897a09defbe6f3e789e8fc3b3cd5",
+        "3d75c4c221677f91cc2ee92f1e345f871a99fd4d40cfde59f4d6e16da7b1d284",
+        "3215b6d206a22b60286267fd7ffcecad515649aecec3775b232d15d82ce048b1"
+      ]
+    },
+    "SetGeomOffset": {
+      "file": "display",
+      "sha256": [
+        "1eb0b16285038bb366c0bc1789c4f94600a9c02b67a99166884eaf36cad683d2",
+        "466dc27a08987330794e41992c1608c1841a0f80042f817002840bcea9f2efc4"
+      ]
+    },
+    "SetGeomScreen": {
+      "file": "display",
+      "sha256": [
+        "344beedc0fdefe22c1dba1e59a15944906bf9847a5fd40c0db1a054f29a6620c"
+      ]
+    },
+    "func_80019310": {
+      "file": "code6cac",
+      "sha256": [
+        "08a0617c4c2003325f6692af2c5d1333a06aa692bb8f390e2c795244c58f0993",
+        "d5df96acf0ca547a69b76e67859e917afcc85f85e531a47c0e961d1258b01b46",
+        "4d917ac5c87772b6a64a95b3c19597a87b12d4f56be5ed61e7df75b2e493a673",
+        "c3aaed21ae25a2cad842ce24a5ea87e8d7e4eb37bd83d2f23afcb943aa3d7bb8",
+        "e8254fcb0b423268fedf36e30f67eb31014fee734b4f727cd96296f2a1070024"
+      ]
+    },
+    "func_8001A67C": {
+      "file": "code6cac",
+      "sha256": [
+        "347d3f4de724019b89413acc2d7fb0a6b23deb94b0268e86aea05ee1156046b9"
+      ]
+    },
+    "func_800203B4": {
+      "file": "code6cac",
+      "sha256": [
+        "612a5623f061a75d1e7337b7380941aac2509287bc296a8c5c378469dbad5247",
+        "55291e7be15df7cf65129d6d3830c05fcc84c63c0e4693121d1abeeded39b6fd",
+        "20a8b3f00edab54f529c470f655aa36fafa1a7190326a0b4051dd95779623ef0",
+        "f7fb428ed91cb62ea287fef7df589f4ad10ae415e1105acaf036c05887697fb8"
+      ]
+    },
+    "func_800274BC": {
+      "file": "code6cac_b",
+      "sha256": [
+        "9b07ea8259ee1d679b86ac6510a16bc2a77fbefbbcbdfa72589a9221d071931c"
+      ]
+    },
+    "func_8002BC68": {
+      "file": "code6cac_b",
+      "sha256": [
+        "271c957f867c7c8be6a86526850de02afb42749db8fe144b694de9c8e0eb1331"
+      ]
+    },
+    "func_8002BEA0": {
+      "file": "code6cac_b",
+      "sha256": [
+        "271c957f867c7c8be6a86526850de02afb42749db8fe144b694de9c8e0eb1331"
+      ]
+    },
+    "func_8002D320": {
+      "file": "code6cac_b",
+      "sha256": [
+        "db4467178a61c4a9188b8b2e5cc6de7e459a9531b4f6e61d4afae459a996a823",
+        "f0d0861c2ea43bc3652c31f9c06fde571396a2e0d276f0075b1b0da2a3234421",
+        "1b10df5be3c5fc35fb68e9a096ed0369e674282719bc9c547ef4e8c5601cda41"
+      ]
+    },
+    "func_8002D518": {
+      "file": "code6cac_b",
+      "sha256": [
+        "62db15448daa3f157ec6a33b8b4df574903a34f7370a0f0c03b073b5bb7c265e"
+      ]
+    },
+    "func_8002E838": {
+      "file": "code6cac_b",
+      "sha256": [
+        "3e5630022b5af3159b63fa0edc1b8ef55f4f36c8fb74270e096879ddf4931dd4",
+        "612a5623f061a75d1e7337b7380941aac2509287bc296a8c5c378469dbad5247",
+        "55291e7be15df7cf65129d6d3830c05fcc84c63c0e4693121d1abeeded39b6fd",
+        "20a8b3f00edab54f529c470f655aa36fafa1a7190326a0b4051dd95779623ef0",
+        "6be7521fb30a8edeaa1ac6a76cd90d7714522e74f1448acb29e58d48f76fd4ec"
+      ]
+    },
+    "func_8002EA24": {
+      "file": "code6cac_b",
+      "sha256": [
+        "9b234b18f1f9e259822fdc7bbb8e8ec08ca5086911186f0e8b9dcbe22e606667",
+        "0a3dd861675d9469aa778deb2bd6d8f89b89812d59a7cb47bc500525114f0be0",
+        "cbcafb749d9a749e0c7bbe06927913fe5c25e6528e89c50d53208c90c2b2dbf5"
+      ]
+    },
+    "func_8002FC80": {
+      "file": "code6cac_b",
+      "sha256": [
+        "4d30e396a12567dd978ec377c29555ef239d595547fb3a1a2b1584e2dbf61853",
+        "b8dc1fd697f00a16e6786cac31638799a914529276cbfb58fafca032e3daee9e",
+        "74556e2c6821f5e2ad0303bc6a5dfc9a16cbf098a52a1a1d471c6c109d56b7d3",
+        "b3c6263b8080beec5c3af7b80728a9ab2ce03c063a966d653a6ab8e222ab88d8"
+      ]
+    },
+    "func_8002FDB0": {
+      "file": "code6cac_b",
+      "sha256": [
+        "3a926cb2ff7e3fa4e9e08adf07b6f191235d861e4646683c7e518247d42bc0a3",
+        "3d6564f3f6859603d6abcab98948e6fb5630d858041add37d20d95ac45c7aacc",
+        "74556e2c6821f5e2ad0303bc6a5dfc9a16cbf098a52a1a1d471c6c109d56b7d3",
+        "9f821ccc9e4af76b84bacad9b3d4ab7c4355dfc494f2e3d89deb9db9955c171d"
+      ]
+    },
+    "func_8002FF20": {
+      "file": "code6cac_b",
+      "sha256": [
+        "0fd9dad15e083d0db09db04bb44f1abd832c8ba8932a99b0090cd586fd81e98a",
+        "55291e7be15df7cf65129d6d3830c05fcc84c63c0e4693121d1abeeded39b6fd",
+        "20a8b3f00edab54f529c470f655aa36fafa1a7190326a0b4051dd95779623ef0",
+        "62d47b42f4762b0650f8554c3760662a37804cf3918b15fe387743946a7b3ecf"
+      ]
+    },
+    "func_800300B4": {
+      "file": "code6cac_b",
+      "sha256": [
+        "612a5623f061a75d1e7337b7380941aac2509287bc296a8c5c378469dbad5247",
+        "965f1fdfaff1be7437e7d429d1617c9bc907dba94ebca7d3cfa6e211441a5eb2",
+        "20a8b3f00edab54f529c470f655aa36fafa1a7190326a0b4051dd95779623ef0",
+        "ee51cf912889c414f0b4cbef329f26d96f4e7cee7147b3aec34b9294d7353ae3"
+      ]
+    },
+    "func_80031890": {
+      "file": "code6cac_b",
+      "sha256": [
+        "612a5623f061a75d1e7337b7380941aac2509287bc296a8c5c378469dbad5247",
+        "55291e7be15df7cf65129d6d3830c05fcc84c63c0e4693121d1abeeded39b6fd",
+        "20a8b3f00edab54f529c470f655aa36fafa1a7190326a0b4051dd95779623ef0",
+        "6be7521fb30a8edeaa1ac6a76cd90d7714522e74f1448acb29e58d48f76fd4ec"
+      ]
+    },
+    "func_80032314": {
+      "file": "code6cac_b",
+      "sha256": [
+        "00c66dd7b0a2b56a589eed8261c78be2d64009dcbe31ab90c0f35bdda58f026e"
+      ]
+    },
+    "func_800325E0": {
+      "file": "code6cac_b",
+      "sha256": [
+        "3e5630022b5af3159b63fa0edc1b8ef55f4f36c8fb74270e096879ddf4931dd4"
+      ]
+    }
+  }
+}

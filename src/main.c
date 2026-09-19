@@ -6,7 +6,7 @@
 #include "sound.h"
 
 /* Forward declarations */
-extern void SpuSetReverb(s32);
+
 extern void _SpuInit(s32);
 extern s32 SpuIsTransferCompleted(s32);
 extern void _SsSeqPlay(s16, s16);
@@ -17,24 +17,24 @@ extern s32 _SpuSetAnyVoice(s32, u32, s32, s32);
 extern s16 D_800F66F8;
 extern s16 _svm_stereo_mono;
 extern s32 g_spu_busy;
-extern s32 _spu_RXX;
+
 
 extern void DMACallback(s32, s32);
-extern s32 _spu_Fr(s32, s32);
+
 /* PsyQ LIBSPU: _spu_transferCallback — Sony's own header types the SPU
    transfer callback as a volatile function pointer (sotn-decomp
    libspu_internal.h:39); volatile is original semantics, not coercion */
 extern void (* volatile g_spu_init_flag)();
 extern s32 _spu_keystat;
 extern s32 _spu_trans_mode;
-extern s32 _spu_transMode;
-extern u16 _spu_tsa;
-extern s32 _spu_mem_mode_plus;
+
+
+
 extern s32 EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 extern void AddDrv(s32 *);
 extern s32 g_snd_callback;
-extern s32 _ss_score;
+
 extern s32 TestEvent(s32);
 extern s32 _spu_init(s32);
 extern void func_80087770(s32, s32, s32, s32);
@@ -52,7 +52,7 @@ extern volatile s32 _spu_RQvoice; /* _spu_RQvoice — Ruling-4 grant (volatile_e
 extern volatile s32 _spu_RQmask;
 extern s16 D_800A28D2;
 extern volatile s32 _spu_env;
-extern s32 _spu_transMode;
+
 extern s32 _spu_AllocBlockNum;
 extern s32 _spu_AllocLastNum;
 extern s32 _spu_memList;
@@ -63,7 +63,7 @@ typedef struct {
 } SpuMemRec;
 
 extern s32 _spu_rev_startaddr[]; /* _spu_rev_startaddr */
-extern s32 _spu_EVdma;
+
 extern s32 _spu_zerobuf;
 extern s32 _spu_transMode;
 extern s32 _spu_mem_mode_plus;
@@ -88,15 +88,15 @@ extern u16 _spu_tsa;
 extern s32 _spu_inTransfer;
 extern s32 _spu_IRQCallback;
 extern s32 D_800A2D1C;
-extern s32 D_800163D8;
-extern s32 D_800163E8;
+extern const char D_800163D8[16];
+extern const char D_800163E8[16];
 extern void printf(s32 *, s32 *);
 extern void _spu_Fw1ts(void);
 /* Sony _spu_RQ: ONE u16[4] object (PsyQ 4.0 LIBSPU S_SK relocs: addends 0/2/4/6 —
  * key-on pending [0..1], key-off pending [2..3]); splat split it into two D_
  * symbols. Ruling-4 grant, volatile_extern_allowlist.txt:40-41. */
 extern volatile u16 _spu_RQ[10]; /* _spu_RQ; _spu_init clears all 10 (PsyQ 4.0 spu.c) */
-extern s32 _spu_Fw(s32, s32);
+
 extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
 extern s32 D_800A2D34;
@@ -1086,7 +1086,7 @@ void SsUtReverbOff(void) {
 }
 
 extern s16 D_80102A78[];
-extern s16 D_80102A7A[];
+
 extern u8 D_800F65E0[];
 
 void SsUtReverbOn(void) {
@@ -1146,9 +1146,9 @@ typedef struct {
     s16 reserved[4];
 } VagAtr;
 extern VagAtr *_svm_tn; /* _svm_tn */
-extern s16 D_80102A7E;
-extern s16 D_80102A80;
-extern s16 D_80102A82;
+
+
+
 extern s32 D_80107898[];
 /* Sony LIBSND `_SsVmDoAllocate` (psyz vm_aloc2.c analog): set up the
    allocated voice's SPU shadow registers (start address, ADSR) and mark the
@@ -1549,7 +1549,7 @@ s32 SsSetReservedVoice(s32 a0) {
 extern u8 _svm_vab_used[];
 extern s32 _svm_vab_start[];
 extern u16 _svm_vab_count;
-extern void SpuFree(s32);
+
 void SsVabClose(s16 a0) {
     if ((u16)a0 < 0x10) {
         s16 idx = a0;
@@ -2221,7 +2221,7 @@ void _SpuDataCallback(s32 a0) {
    g_spu_init_flag = _spu_transferCallback, g_spu_timer = _spu_IRQCallback
    (both volatile fn ptrs per Sony's header), g_snd_init_flag =
    _spu_isCalled. */
-extern void (* volatile _spu_IRQCallback)();
+
 
 void SpuQuit(void) {
     if (_spu_isCalled == 1) {
@@ -2247,9 +2247,9 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-extern s32 _spu_AllocBlockNum;
-extern s32 _spu_AllocLastNum;
-extern s32 _spu_memList;
+
+
+
 
 extern s32 _spu_AllocBlockNum;
 extern s32 _spu_AllocLastNum;

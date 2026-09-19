@@ -14,58 +14,59 @@
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
 typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+typedef struct GameObj GameObj;
 
 /* Extern data declarations */
 extern u8 D_8008D118;
-extern s32 D_800F33D8;
-extern u32 D_800A378C;
-extern u32 D_80101E3C;
-extern u32 D_80101E44;
+
+
+
+
 extern s32 D_800FF580;
 
 /* Extern function declarations */
 extern s32 func_80037110(s32);
-extern void game_FrameInit(void);
+
 extern void game_FrameLoop(void);
 extern void seq_Reset(void);
-extern void func_8003A39C(void);
+
 extern void VSync(s32);
-extern void LoadImage(s32, s32);
-extern s32 func_80036FD4(void);
+
+
 extern void snd_SerialMixOn(void);
 extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
 extern void seq_Start(s32, s32);
-extern u16 g_game_p1_ctrl;
+
 extern s32 D_80102794;
-extern s32 D_800A3894;
+
 extern u16 D_800A38C4;
 extern s16 D_80101F32;
-extern void cdrom_SetMix(s32, s32, s32, s32);
+
 extern void obj_InitChars(void);
 extern void obj_Reset(void);
 extern void obj_InitTask(void);
 extern void obj_InitPair(void);
-extern void player_SetCharId(s32, s32);
-extern void player_Destroy(s32);
-extern void file_ResetDmaFlag(void);
-extern void obj_InitAll(void);
-extern void func_80077820(s32);
-extern s32 D_80101E70;
-extern s32 D_800A3894;
+
+
+
+
+
+
+
 extern s8 D_80102781;
 extern u16 D_800A3310;
 
 
 extern s8 D_8010277D;
 extern s8 D_8010277F;
-extern s16 D_800A391D;
+
 extern s32 file_GetFlag2(void);
-extern s16 *snd_GetSeId(void);
+
 extern void func_800324D0(u8 *);
-extern void func_8003553C(void);
-extern void func_8003AF40(s32);
-extern void func_8003AFFC(void);
+
+
+
 
 extern void sys_Panic(void);
 extern s32 obj_InitTaskCamera(s32);
@@ -78,49 +79,49 @@ extern void func_8002EBDC(s16 *, s16 *, s32 *, s32, s32);
 
 extern void func_8005B98C(s32);
 extern void func_8003AA78(void);
-extern s32 func_80036D88(void);
+
 extern void func_8003AA48(void);
 extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern u8 D_800A384C;
 extern s32 ratan2(s32, s32);
-extern s16 D_80101E74;
 
-extern void file_LoadOverlay(void);
-extern void func_80040510(s32, s32, s32);
+
+
+
 extern s32 stage_GetDataPtr(void);
 
-extern void snd_Quit(void);
-extern void func_80037774(void);
-extern void cdrom_LoadExec(s32 *);
-extern void StopPAD(void);
-extern void StopCallback(void);
-extern s32 EnterCriticalSection(void);
-extern void sys_Init(void);
-extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
-extern s32 func_800392B8(void);
-extern s16 Judge;
-extern s16 D_800A3678;
-extern s32 D_800A3708;
-extern s32 D_800A374C;
-extern u8 D_800A377C;
-extern u8 D_800A37A8;
-extern u16 D_800A3904;
-extern u8 D_800F65F8;
-extern s32 g_anim_func_table;
-extern s32 g_pad_data;
-extern u16 D_80101E02;
-extern u16 D_80101E04;
-extern s16 D_80101ED6;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern u8 D_800F1B18[];
-extern s32 g_file_disc_size;
+
 extern s32 replay_camera_Init(s32, s32);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
 extern s32 game_GetPlayerData(s32);
-extern s32 func_80032854(s32, s32, u8 *, s16 *);
+
 extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
 extern s32 SquareRoot0(s32);
@@ -132,26 +133,26 @@ extern u16 D_8008D59C;
 extern s16 D_8008EB40;
 extern u8 D_800F5F68;
 extern s16 Judge;
-extern void func_80033BC0(void);
-extern void func_8001DA2C(void);
+
+
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
 extern void SetGeomScreen(s32);
 extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
-extern s32 D_80101F90;
-extern s32 D_801020C0;
-extern s32 D_80102114;
+
+
+
 extern s32 camera_GetBoneData(void);
 extern void func_80039320(void);
 extern void func_8002C61C(void);
 extern void func_80030D7C(void);
-extern void func_800321E8(void);
+
 extern void func_800397A0(void);
 extern void func_8003E6A0(s32, s32);
 extern void game_StageInit(s32);
-extern void func_800335D8(void);
+
 extern s32 D_80102030;
 extern s8 D_800A3768;
 extern void func_800321E8(void);
@@ -163,7 +164,7 @@ extern s32 func_8005FA98(s32, s32, s32);
 extern s32 func_8005D814(s16 *, s32, s32, s32);
 extern void func_800550E8(s32);
 typedef struct { s32 f0, f1, f2, f3; } Copy16;
-extern void func_80017FA0(s32 *);
+
 extern void func_80018300(s32 *);
 extern void func_800372C0(void);
 extern void func_80023F08(s32, s32);

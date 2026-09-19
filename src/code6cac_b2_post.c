@@ -13,66 +13,66 @@
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
 /* Extern data declarations */
-extern s32 D_800F33D8;
-extern u32 D_800A378C;
-extern u32 D_80101E3C;
-extern u32 D_80101E44;
+
+
+
+
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
-extern void func_800194F4(void);
-extern void seq_Reset(void);
-extern void func_8003A39C(void);
+
+
+
+
 extern void VSync(s32);
-extern void LoadImage(s32, s32);
-extern void game_Cleanup(void);
-extern void seq_Start(s32, s32);
-extern u16 g_game_p1_ctrl;
-extern s32 D_80102794;
-extern s32 D_800A3894;
-extern s16 D_800A38C4;
-extern s16 D_80101F32;
-extern void obj_InitChars(void);
-extern void obj_Reset(void);
-extern void obj_InitTask(void);
-extern void obj_InitPair(void);
-extern void player_SetCharId(s32, s32);
-extern void func_80021974(s32);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
 extern void obj_InitAll(void);
 extern void func_80077820(s32);
-extern s32 D_800A3894;
-extern u8 D_80102781;
 
 
-extern u8 D_8010277D;
-extern u8 D_8010277F;
-extern s16 D_800A391D;
-extern s32 file_GetFlag2(void);
-extern s16 *snd_GetSeId(void);
-extern void func_8003AF40(s32);
-extern void func_8003AFFC(void);
 
-extern void sys_Panic(void);
-extern s32 func_80020D38(void);
-extern s32 obj_InitTaskCamera(s32);
-extern void *D_800A38B4;
-extern s32 memcpy(s32 *, s32, s32);
-extern void obj_ExecTask(s32);
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void func_8005B98C(s32);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
 extern void func_800174F4(void);
 extern void func_8003AAB0(void);
-extern s32 D_800A384C;
-extern s32 ratan2(s32, s32);
 
-extern void file_LoadOverlay(void);
-extern void func_80040510(s32, s32, s32);
-extern void stage_GetDataPtr(void);
+
+
+
+
+
 
 extern void snd_Quit(void);
 extern void func_80037774(void);
@@ -81,25 +81,25 @@ extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
-extern s32 func_800392B8(void);
-extern s16 Judge;
-extern s16 D_800A3678;
-extern s32 D_800A3708;
-extern s32 D_800A374C;
-extern s32 D_80106A50;
-extern void SetPolyG4(u8 *p);
-extern void AddPrim(u32 *a0, u32 *a1);
-extern u8 D_800A377C;
-extern u8 D_800A37A8;
-extern u16 D_800A3904;
-extern u8 D_800F65F8;
-extern s32 g_anim_func_table;
-extern s32 g_pad_data;
-extern u16 D_80101E02;
-extern u16 D_80101E04;
-extern s16 D_80101ED6;
-extern s32 g_file_disc_size;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
  * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
  * file to be split around it to preserve text addresses). */
@@ -384,7 +384,7 @@ void func_800371E8(s16 arg0) {
 s32 func_800371F8(void) {
     extern s32 func_80036FD4();
 
-    if (func_80036FD4() != 0) {
+    if (((s32 (*)())func_80036FD4)() != 0) {
         D_80101E60.unk04 = 1;
         return 1;
     }

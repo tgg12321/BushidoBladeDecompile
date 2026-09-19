@@ -188,7 +188,7 @@ typedef struct {
 extern volatile u16 *D_800A2604;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
 extern volatile s32 *D_800A260C;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
-extern s32 func_800831A4(u16 *, s32);
+
 extern s32 setjmp(u16 *);
 extern void trapIntr(void);
 extern void HookEntryInt(s32 *);

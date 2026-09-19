@@ -23,7 +23,7 @@ from . import buildconfig as cfg
 
 def sh(cmd: str, **kw) -> subprocess.CompletedProcess:
     """Run a shell command under bash (so pipes / env-prefixes behave)."""
-    return subprocess.run(["bash", "-c", cmd], **kw)
+    return subprocess.run(["bash", "-o", "pipefail", "-c", cmd], **kw)
 
 
 def sha1(path: str | Path) -> str:
@@ -90,13 +90,8 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
         cfg.MULTU_PAD,
         f"{cfg.AS} {cfg.AS_FLAGS} -o {out_o}",
     ]
-    # NO pipefail, deliberately. The Makefile checks only the final stage's
-    # (`as`) exit, and this build legitimately relies on that: cc1 (GCC 2.7.2
-    # SN) exits non-zero (e.g. 33, "parse error before `GameObj'") on several
-    # m2c-decompiled files, yet still emits the CORRECT assembly that flows
-    # downstream to a byte-identical .o. Intermediate exit codes are noise here;
-    # the oracle / parity byte-check is the only correctness gate. (See the
-    # Phase 0 finding: pipefail broke parity on code6cac et al.)
+    # Every stage must succeed. A compiler can emit plausible assembly after
+    # reporting an error; that output is not a successful compilation.
     return " | ".join(stages)
 
 
@@ -105,6 +100,7 @@ def build_c_object(stem: str, out_o: str, cheat_overrides=None) -> str:
     cmd = c_pipeline_cmd(stem, out_o, cheat_overrides)
     r = sh(cmd, capture_output=True, text=True)
     if r.returncode != 0:
+        Path(out_o).unlink(missing_ok=True)
         raise RuntimeError(f"C build failed for {stem}\nCMD: {cmd}\nSTDERR:\n{r.stderr}")
     return out_o
 
@@ -148,6 +144,11 @@ def build_all(build_dir: str = "build") -> str:
     `build/...` object paths, so a non-default build_dir works for objects but
     not for `link`. Phase 0 full builds use the default 'build'.
     """
+    from . import buildstamp
+    if build_dir != 'build':
+        raise ValueError('Full builds require build/: the linker script fixes object paths')
+    buildstamp.invalidate()
+    before = buildstamp.inputs()
     bd = Path(build_dir)
     for stem in c_stems():
         build_c_object(stem, str(bd / "src" / f"{stem}.o"))
@@ -159,7 +160,10 @@ def build_all(build_dir: str = "build") -> str:
         build_asm_object(f"asm/funcs/{name}.s",
                          str(bd / "asm" / "funcs" / f"{name}.o"))
     link(build_dir)
-    return make_exe(build_dir)
+    exe = make_exe(build_dir)
+    if sha1(exe) == cfg.ORACLE_SHA1:
+        buildstamp.record(before)
+    return exe
 
 
 def _first_diff(a: bytes, b: bytes) -> int:

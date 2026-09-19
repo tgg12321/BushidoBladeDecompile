@@ -44,6 +44,7 @@ sys.path.insert(0, str(REPO))
 # resolve correctly regardless of where this tool was invoked from.
 os.chdir(REPO)
 from engine import cheats, inlineasm, pipeline as P, score  # noqa: E402
+from engine import buildstamp, completion, buildconfig  # noqa: E402
 from engine import queue as Q  # noqa: E402
 sys.path.insert(0, str(REPO / "tools"))
 import audit_asm_cheats as AAC  # noqa: E402  (the manual detector's island scanner)
@@ -74,6 +75,9 @@ def main() -> int:
     canon = cheats.canonical_asm_funcs()
 
     violations: list[str] = []
+    freshness = buildstamp.check()
+    if not freshness['fresh']:
+        violations.append(f'Build is not certified from current inputs: {freshness}')
     gate_notes: list[str] = []
     data_as_code: list[str] = []
     total_completed_c = 0
@@ -86,6 +90,7 @@ def main() -> int:
     for stem in sorted(P.c_stems()):
         ref_o = f"build/src/{stem}.o"
         if not Path(ref_o).exists():
+            violations.append(f'{ref_o}: required object missing')
             continue
         src_text = inlineasm._read_src_cached(stem)
         island_funcs = _island_funcs(src_text, stem)
@@ -111,6 +116,8 @@ def main() -> int:
             prologue = cheats.func_prologue_count(func)
             gates = cheats.maspsx_gate_entries(func)
             is_canon = func in canon
+            for issue in completion.source_issues(stem, func, is_canon):
+                violations.append(f'{func} ({stem}.c): {issue}')
 
             if is_canon:
                 total_completed_canon += 1
@@ -177,6 +184,17 @@ def main() -> int:
                         gate_notes.append(
                             f"{func} ({stem}.c): COMPLETED-C depends on {path} "
                             f"(fidelity-class assembler gate)")
+
+    # Standalone linked canonical assembly is not in a C object's inventory.
+    for func in buildconfig.LINKED_ASM_FUNCS:
+        obj = Path(f'build/asm/funcs/{func}.o')
+        if not obj.exists():
+            violations.append(f'{obj}: required standalone object missing')
+        elif func not in in_queue:
+            if func not in canon:
+                violations.append(f'{func}: standalone assembly is neither queued nor canonical')
+            else:
+                total_completed_canon += 1
 
     print(f"COMPLETED-C:                    {total_completed_c} functions")
     print(f"COMPLETED-INLINE-ASM-CANONICAL: {total_completed_canon} functions")

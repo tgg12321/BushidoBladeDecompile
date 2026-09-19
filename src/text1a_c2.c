@@ -26,7 +26,7 @@ extern void func_8004659C(s32);
 extern void func_800466C0(void);
 extern void func_80045510(s32, s32);
 extern void func_80044098(s32);
-extern void func_800453E0(s32);
+
 
 #define ALIGN4(x) (((u32)(x) >> 2) << 2)
 #define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))

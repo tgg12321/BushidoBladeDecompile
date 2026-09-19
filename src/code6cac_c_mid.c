@@ -15,97 +15,97 @@
 
 /* Extern data declarations */
 extern u8 D_800F33D8[];
-extern u32 D_800A378C;
-extern u32 D_80101E3C;
-extern u32 D_80101E44;
+
+
+
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
-extern s32 func_80037110(s32);
-extern void game_FrameInit(void);
-extern void game_FrameLoop(void);
-extern void func_800194F4(void);
-extern void seq_Reset(void);
+
+
+
+
+
+
 extern void VSync(s32);
-extern void LoadImage(s32, s32);
-extern s32 func_80036FD4(void);
-extern void snd_SerialMixOn(void);
-extern s32 D_800109BC;
+
+
+
+
 extern void game_Cleanup(void);
-extern s32 func_800371E8(s16);
-extern void seq_Start(s32, s32);
-extern u16 g_game_p1_ctrl;
+
+
+
 extern s32 D_80102794;
-extern u8 *D_800A3894;
-extern s16 D_800A38C4;
-extern s16 D_80101F32;
-extern void cdrom_SetMix(s32, s32, s32, s32);
-extern void obj_InitChars(void);
-extern void obj_Reset(void);
-extern void obj_InitTask(void);
-extern void obj_InitPair(void);
-extern void player_SetCharId(s32, s32);
-extern void func_80021974(s32);
-extern void player_Destroy(s32);
-extern void file_ResetDmaFlag(void);
-extern void obj_InitAll(void);
-extern void func_80077820(s32);
-extern s32 D_80101E70;
-
-extern u8 D_80102781;
 
 
-extern u8 D_8010277D;
-extern u8 D_8010277F;
-extern s16 D_800A391D;
-extern s32 file_GetFlag2(void);
-extern s16 *snd_GetSeId(void);
-extern void func_8003553C(void);
 
-extern void sys_Panic(void);
-extern s32 func_80020D38(void);
-extern s32 obj_InitTaskCamera(s32);
-extern s32 D_800A38B4;
-extern s32 memcpy(s32 *, s32, s32);
-extern void obj_ExecTask(s32);
-extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void func_8005B98C(s32);
-extern s32 func_80036D88(void);
-extern void func_800174F4(void);
-extern s32 D_800A384C;
-extern s32 ratan2(s32, s32);
-extern s16 D_80101E74;
 
-extern void file_LoadOverlay(void);
-extern void func_80040510(s32, s32, s32);
-extern void stage_GetDataPtr(void);
 
-extern void snd_Quit(void);
-extern void cdrom_LoadExec(s32 *);
-extern void StopPAD(void);
-extern void StopCallback(void);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800A3210;
 extern void AddCOMB(void);
-extern s32 EnterCriticalSection(void);
-extern void sys_Init(void);
-extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
-extern u8 D_8008E6A4;
-extern s16 Judge;
-extern s16 D_800A3678;
+
+
+
+
+
+
+
 extern s32 D_800A36C0;
-extern s32 D_800A3708;
-extern s32 D_800A374C;
-extern u8 D_800A377C;
-extern u8 D_800A37A8;
-extern s16 D_800A3904;
-extern u8 D_800F65F8;
-extern s32 g_anim_func_table;
-extern s32 g_pad_data;
-extern u16 D_80101E02;
-extern u16 D_80101E04;
-extern s16 D_80101ED6;
+
+
+
+
+
+
+
+
+
+
+
 extern s32 g_file_disc_size;
 
 /* GP-relative extern data (for decompiled functions) */
@@ -121,29 +121,29 @@ extern s32 D_800A373C;
 extern s32 D_800A3810;
 extern s32 D_800A3738;
 extern u8 D_800A320C;
-extern s32 D_800A37DC;
-extern s32 D_800A37F0;
-extern s32 D_800A37FC;
-extern s32 D_800A3800;
-extern s32 D_800A3838;
-extern s32 D_800A383C;
-extern s32 D_800A3848;
-extern s32 D_800A3850;
+
+
+
+
+
+
+
+
 extern s32 D_800A31F8;
 extern u8 D_800A36F8;
 extern s32 D_800A36EC;
 extern u8 D_800A3782;
-extern u8 D_800A3203;
+
 extern u8 D_800A31FC;
 extern s32 D_80106A50;
-extern s32 D_800A38C8;
-extern u8 D_80102810;
+
+
 extern s32 D_800A3870;
 extern s32 D_800A3688;
 extern s32 D_800A3698;
 extern u8 D_800A37D0;
-extern s32 D_800A3915_ext;
-extern s32 D_800A36F4_ext;
+
+
 
 /* Extern function declarations for decompiled functions */
 extern s32 TestEvent(s32);
@@ -153,26 +153,26 @@ extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 extern void read(s32, s32 *, s32);
 extern void close(s32);
-extern s32 firstfile(s32 *, s32 *);
-extern s32 nextfile(s32 *);
+
+
 extern void ResetRCnt(s32);
 extern s32 GetRCnt(s32);
-extern void StopCARD(void);
+
 extern void DelCOMB(void);
-extern void func_8006BEC4(s32, s32);
+
 extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
 extern void SetGeomScreen(s32);
 extern void func_8001B6F4(void);
-extern void func_80022568(u8 *);
-extern s32 g_str_memcard_fmt;
-extern s32 D_80102810;
+
+
+
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
 extern s32 D_800A3794;
 extern s32 memcard_CountFiles(s32, s32);
-extern void func_80037F40(void *);
+
 extern s32 func_80037AA4(void);
 extern s32 func_80037B00(s32);
 extern s32 memcard_ReadFile(s32, s32, s32, void *, s32);

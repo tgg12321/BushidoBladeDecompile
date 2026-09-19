@@ -31,20 +31,6 @@ extern s32 D_8009BF08[];
 
 /* --- Functions 0x8007A28C - 0x8007B234 --- */
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef volatile u8 vu8;
-typedef volatile s8 vs8;
-typedef volatile u16 vu16;
-typedef volatile s16 vs16;
-typedef volatile u32 vu32;
-typedef volatile s32 vs32;
 #define NULL ((void *)0)
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;

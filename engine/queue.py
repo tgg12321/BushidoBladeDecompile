@@ -307,6 +307,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 prev[it["func"]] = it
     verdicts = {r["func"]: r["verdict"] for r in canonical.scan_all()}
     canon_funcs = cheats.canonical_asm_funcs()
+    from . import completion
     items, failures = [], []
     for stem in sorted(P.c_stems()):
         ref_o = f"build/src/{stem}.o"
@@ -336,7 +337,8 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # honest distance here. Distance is recorded as -1 to indicate
                 # unscored.
                 cheats_unscored = inlineasm.file_func_cheat_asm_count(stem, func)
-                if rules == 0 and prologue == 0 and (
+                source_ok = not completion.source_issues(stem, func, func in canon_funcs)
+                if rules == 0 and prologue == 0 and source_ok and (
                         cheats_unscored == 0 or func in canon_funcs
                         or (cheats_unscored < 0 and _not_a_c_function(stem, func))):
                     continue  # nothing to track
@@ -387,7 +389,10 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                         dist = min(pins)
                         scorable = True
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
-            if rules == 0 and prologue == 0:
+            source_issues = completion.source_issues(stem, func, func in canon_funcs)
+            if source_issues:
+                cheat_count = max(1, cheat_count)
+            if rules == 0 and prologue == 0 and not source_issues:
                 # COMPLETED-INLINE-ASM-CANONICAL: function is in inline_asm_canonical.txt
                 # and carries 0 rules. The inline asm IS the accepted finished form,
                 # so masked sandbox distance is meaningless here (the cheat-strip removes
@@ -616,10 +621,15 @@ def mark_done(func: str) -> dict:
                                f"authorize it in inline_asm_canonical.txt with evidence. "
                                f"(register pins, plain register hints, hardcoded-$N asm, "
                                f"scheduling barriers are cheats, not a match.)")}
+    from . import completion
+    issues = completion.source_issues(item['file'], func)
+    if issues:
+        return {'ok': False, 'func': func, 'reason': '; '.join(issues)}
     v = O.verify(rebuild=False)
     if not v.get("build_matches"):
         return {"ok": False, "func": func,
-                "reason": "current build/ SHA1 != oracle — run `verify-oracle`/`retire` first"}
+                "reason": "current build is unmatched or stale — run `verify-oracle --rebuild` first",
+                "freshness": v.get('freshness')}
     # Drop the item — queue presence = INCOMPLETE; completion removes it.
     # Re-read under the lock: the gate checks above are slow (O.verify), so the
     # `q` loaded at entry may be stale. Dropping one func is idempotent, so

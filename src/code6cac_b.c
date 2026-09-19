@@ -18,44 +18,44 @@
 extern u8 D_8008E914[][8];
 extern s32 D_8008EA00[][4];
 extern s32 func_8001DB58(void);
-extern s32 D_800F33D8;
-extern u32 D_800A378C;
-extern u32 D_80101E3C;
-extern u32 D_80101E44;
+
+
+
+
 
 /* Extern function declarations */
-extern void func_80023CB4(s32, s32);
-extern s32 func_80037110(s32);
-extern void game_FrameInit(void);
-extern void game_FrameLoop(void);
-extern void func_800194F4(void);
-extern void seq_Reset(void);
-extern void func_8003A39C(void);
-extern void VSync(s32);
-extern void LoadImage(s32, s32);
-extern s32 func_80036FD4(void);
-extern void snd_SerialMixOn(void);
-extern void game_Cleanup(void);
-extern s32 func_800371E8(s16);
-extern void seq_Start(s32, s32);
-extern u16 g_game_p1_ctrl;
-extern s32 D_80102794;
-extern s32 D_800A3894;
-extern s16 D_800A38C4;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern u16 D_80101F32;
-extern void cdrom_SetMix(s32, s32, s32, s32);
-extern void obj_InitChars(void);
-extern void obj_Reset(void);
-extern void obj_InitTask(void);
-extern void obj_InitPair(void);
+
+
+
+
+
 extern void player_SetCharId(s32, s32);
-extern void func_80021974(s32);
-extern void player_Destroy(s32);
-extern void file_ResetDmaFlag(void);
-extern void obj_InitAll(void);
-extern void func_80077820(s32);
-extern s32 D_80101E70;
-extern s32 D_800A3894;
+
+
+
+
+
+
+
 extern s8 D_80102781;
 extern u8 D_800A3768;
 extern u8 D_800A36A8;
@@ -63,27 +63,27 @@ extern u8 D_800A36A8;
 
 extern u8 D_8010277D;
 extern u8 D_8010277F;
-extern s16 D_800A391D;
-extern s32 file_GetFlag2(void);
-extern s16 *snd_GetSeId(void);
-extern void func_8003553C(void);
-extern void func_8003AF40(s32);
-extern void func_8003AFFC(void);
 
-extern void sys_Panic(void);
-extern s32 func_80020D38(void);
-extern s32 obj_InitTaskCamera(s32);
-extern s32 D_800A38B4;
-extern s32 memcpy(s32 *, s32, s32);
-extern void obj_ExecTask(s32);
+
+extern s16 *snd_GetSeId(void);
+
+
+
+
+
+
+
+
+
+
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 
-extern void func_8005B98C(s32);
-extern void func_8003AA78(void);
-extern s32 func_80036D88(void);
-extern void func_8003AA48(void);
-extern void func_800174F4(void);
-extern void func_8003AAB0(void);
+
+
+
+
+
+
 extern s32 D_800A384C;
 extern u8 D_8008E908[][5];
 extern u8 D_8008EC24[][5];
@@ -93,44 +93,44 @@ extern s32 rand(void);
 extern void RotMatrixX(s32, s32 *);
 extern void RotMatrixY(s32, s32 *);
 extern void *RotMatrixZ(s32, s32 *);
-extern s16 D_80101E74;
-extern void func_80033D38(void);
+
+
 
 extern void file_LoadOverlay(void);
-extern void func_80040510(s32, s32, s32);
+
 extern s32 stage_GetDataPtr(void);
 
-extern void snd_Quit(void);
-extern void func_80037774(void);
-extern void cdrom_LoadExec(s32 *);
-extern void StopPAD(void);
-extern void StopCallback(void);
-extern s32 EnterCriticalSection(void);
-extern void sys_Init(void);
-extern void file_LoadSoundData(void);
-extern s32 func_8004939C(void);
-extern s32 func_800392B8(void);
+
+
+
+
+
+
+
+
+
+
 extern s16 Judge;
-extern void *D_800A36B4;
+
 extern u16 D_8008EBA0;
-extern s16 D_800A3678;
-extern s32 D_800A3708;
-extern s32 D_800A374C;
+
+
+
 extern u8 D_800A377C;
-extern u8 D_800A37A8;
-extern u16 D_800A3904;
+
+
 extern u8 D_800F65F8;
-extern s32 g_anim_func_table;
-extern s32 g_pad_data;
-extern u16 D_80101E02;
-extern u16 D_80101E04;
+
+
+
+
 extern u8 D_80106A73;
 extern u8 D_80106A78;
 extern s32 *func_80077D00(void);
 extern s32 D_80106A58;
 extern s16 D_80101ED6;
-extern s32 g_file_disc_size;
-extern s32 func_8002BC68(s32 a0);
+
+
 extern s32 D_80102410;
 extern s32 D_80102408;
 extern s32 D_80101FC4;
@@ -140,23 +140,23 @@ extern s16 D_800A3876;
 extern s16 D_800A38A8;
 extern void func_8001F860(s16 *arg0, s32 arg1);
 extern void func_8002AB08(s32 a0);
-extern void func_8002872C(void);
+
 extern void func_800288C8(void);
 extern s32 func_80029454(void);
 extern void func_80031B24(void);
 extern s32 D_801020D8;
-extern s32 D_801020DC;
-extern s32 D_801020E0;
-extern s32 D_801020E4;
-extern s32 D_801020E8;
-extern s32 D_801020EC;
+
+
+
+
+
 extern s32 D_801020FC;
-extern s32 D_80102100;
-extern s32 D_80102104;
-extern s32 D_80102108;
-extern s32 D_8010210C;
-extern s32 D_80102110;
-extern s32 D_80102314;
+
+
+
+
+
+
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 INCLUDE_RODATA("asm/rodata", jtbl_8001042C);
@@ -317,8 +317,8 @@ void func_800274BC(s32 *arg0, s16 *arg1) {
     arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)log2_val));
 }
 extern void *func_80021424(s32, u16, s32);
-extern s32 func_80021A98(s16, void *, s16);
-extern s32 func_80032854(s16, s32, s32 *, s32);
+
+extern void func_80032854(s32, s32, u8 *, s16 *);
 void func_80027640(s32 arg0)
 {
     VECTOR tgt;
@@ -380,7 +380,7 @@ void func_80027640(s32 arg0)
     func_80032854(*(s16 *)(arg0 + 4), 0x30, (s32 *)(arg0 + 0xF4), 0);
 }
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
-extern s32 func_80032854(s32, s32, u8 *, s16 *);
+
 void func_800278C0(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
     s32 chk_obj;
 
@@ -480,7 +480,7 @@ void func_80027A58(s32 *a0) {
     s16 v1 = *(s16 *)((u8 *)a0 + 0x86);
     if (v1 == *(s16 *)((u8 *)a0 + 0x88)) {
         if (*(s16 *)((u8 *)a0 + 0x8A)) {
-            if (func_8002798C()) {
+            if (((s32 (*)())func_8002798C)()) {
                 s32 v0 = game_GetPlayerData(*(s16 *)((u8 *)a0 + 4));
                 func_80030900(a0, *(s32 *)(v0 + 0x4C) + 0x14);
                 *(s16 *)((u8 *)a0 + 0x8A) = 0;
@@ -2200,7 +2200,7 @@ s32 *func_80030580(s32 *arg0, s32 arg1) {
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
 /* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
 extern s32 *func_80030580(s32 *, s32);
-extern s32 func_80032854(s32, s32, u8 *, s16 *);
+extern void func_80032854(s32, s32, u8 *, s16 *);
 s32 func_800307D0(u8 *a0) {
     s32 count;
     s32 idx;
@@ -2507,7 +2507,7 @@ void func_80032040(void) {
         (&D_80104E88)[i] = 0;
     }
 }
-extern s32 func_80032854(s32, s32, u8 *, s16 *);
+
 u8 *func_80032064(u8 *src, s32 type) {
     s32 speed = 0x50;
     s32 vel_y = -0xC8;

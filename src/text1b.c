@@ -5,6 +5,8 @@
 #include "game.h"
 #include "code6cac.h"
 
+extern s32 func_8005C2A8(s32 *, s16, s32);
+
 /* Padding NOP macro */
 #define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
 #define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
@@ -294,7 +296,7 @@ void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     }
     LoadImage(rect, (s32 *)p_alt);
 }
-extern s32 func_800484A0(s32, s32, s32);
+
 
 void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
@@ -648,10 +650,10 @@ void func_80048F58(s32 a0, s32 a1) {
         dst++;
     } while (i < 7);
 }
-extern s32 D_800A36AC;
-extern s32 D_800A378C;
-extern s32 D_800EF848;
-extern s32 SetDrawMove(void *, s16 *, s32, s32);
+
+
+
+
 
 INCLUDE_ASM("asm/funcs", func_80048FFC);
 extern s16 D_800EF9F2;
@@ -673,7 +675,7 @@ void func_8004939C(void) {
     D_800A33E8 = -1;
     D_800A33EC = -1;
 }
-extern s32 func_80052C10();
+
 extern u8 D_80099CC8[];
 extern u8 D_80099CC9[];
 extern s32 D_800A33EC;
@@ -709,7 +711,7 @@ void func_800493E4(s32 arg0) {
 }
 extern s32 D_800A33EC;
 extern s16 D_800A33E8;
-extern void func_80052C10(void);
+
 void func_800494D4(s32 idx, s32 val) {
     s32 cond;
     if (D_800A33EC == 0) {
@@ -828,11 +830,11 @@ end:
 void func_80049710(void) {
 }
 typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } _struct_copy_func49718;
-extern u8 *D_800A3820;
+
 extern u8 *D_800A38B4;
 extern s16 D_800EF980[];
 extern s32 (*g_anim_func_table)(s16 *, s16 *);
-extern u8 *func_8004153C(s32);
+
 extern void func_80052C10(void);
 extern void MulMatrix0(s16 *, s16 *, s16 *);
 extern void ApplyMatrix(s32, s16 *, s32 *);
@@ -924,7 +926,6 @@ void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
 }
 extern u8 D_80099CC8[];
 extern s16 D_80099D3C[];
-extern u8 *D_800A3820;
 extern u8 *D_800A38B4;
 extern s16 D_800EF980[];
 extern void func_800417D0(s32 *);
@@ -1023,8 +1024,8 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     *((s16 *) (obj + 6)) = 0;
     *((u16 *) (obj + 0x14)) = (u16) new_var2;
     func_800417D0((s32 *) obj);
-    ot = D_800A3820;
-    D_800A3820 = ot + 4;
+    ot = (u8 *)D_800A3820;
+    D_800A3820 = (s32)(ot + 4);
     *((u8 **) ot) = obj;
     obj += 0x68;
     new_var5 = obj + 0xA;
@@ -1039,8 +1040,8 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     *((s16 *) (obj + 4)) = 6;
     *((s16 *) (obj + 2)) = (s16) (a1_val + 1);
     *((s32 *) (obj + 0x58)) = (s32) (*((s16 *) (vehicle + 0x1A84)));
-    ot = D_800A3820;
-    D_800A3820 = ot + 4;
+    ot = (u8 *)D_800A3820;
+    D_800A3820 = (s32)(ot + 4);
     *((u8 **) ot) = obj;
     D_800A38B4 = obj + 0x68;
 }
@@ -1156,7 +1157,7 @@ void func_80049E1C(void) {
     D_800A324C = -1;
 }
 extern s32 func_800418D0();
-extern s32 func_8004A1FC();
+
 extern void *D_800A3708;
 extern void *D_800A370C;
 extern u8 D_800FF638;
@@ -1467,7 +1468,7 @@ extern s32 func_80052754(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
 extern void func_80053E9C();
-extern u8 *D_800A33F4;
+
 typedef struct { s32 a, b, c, d; } _S16_5344C;
 void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     u8 *p;
@@ -1500,7 +1501,7 @@ extern s32 func_80052D00(s32, s32);
 extern void func_80053E9C();
 extern u8 D_800EFA00;
 extern u8 D_800EF9F8;
-extern s32 D_800A33F4;
+
 typedef struct { s32 a, b, c, d; } _S16_53584;
 void func_80053584(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
     D_800A33F4 = (s32)&D_800EF9F8;
@@ -1517,7 +1518,7 @@ s32 func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     *(s32 *)((u8 *)D_800A33F4 + 0x5C) = (s32)func_80053E9C;
     return func_80052D00(arg2, arg3);
 }
-extern u8 *D_800A33F4;
+
 extern u16 D_800A33F8;
 s32 func_80053694(s32 *arg0, s16 *arg1) {
     u8 *p = D_800A33F4;
@@ -1545,7 +1546,7 @@ void func_80054410(s32 a0) {
 void func_8005441C(s32 a0) {
     D_800A33F0 += a0;
 }
-extern s16 D_800A33F8;
+
 s16 func_80054434(void) {
     return D_800A33F8;
 }
@@ -1559,7 +1560,7 @@ extern void snd_StopBgm(void);
 extern s32 *snd_LoadSelection(s32);
 extern s16 *stage_GetDataPtr(void);
 extern s32 stage_GetId(void);
-extern s32 func_8004153C(s32);
+
 extern void func_8003FFC4(s32);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
@@ -2133,10 +2134,10 @@ INCLUDE_ASM("asm/funcs", func_80057E84);
 INCLUDE_ASM("asm/funcs", func_80058580);
 extern s16 D_800A3400;
 extern s32 D_800A3408;
-extern s32 D_800EFB38;
-extern s32 D_800EFB78;
-extern s32 D_800EFB7C;
-extern s32 D_800EFC38;
+extern s32 D_800EFB38[];
+extern u32 D_800EFB78[];
+extern u8 D_800EFB7C[];
+extern s32 *D_800EFC38[];
 extern void SsStart(void);
 extern s32 SsSetTickMode(s32);
 extern s32 SsSetReservedVoice(s32);
@@ -2153,8 +2154,8 @@ void snd_Init(void) {
     s32 j;
 
     i = 0;
-    p1 = &D_800EFB38;
-    p2 = &D_800EFC38;
+    p1 = D_800EFB38;
+    p2 = (s32 *)D_800EFC38;
     do {
         *p2 = 0;
         *p1 = 0;
@@ -2186,13 +2187,13 @@ void snd_Init(void) {
     D_800A3400 = 0;
 }
 void func_800858D0(s32);
-void SsUtReverbOff(void);
-void SsUtSetReverbType(s32);
-void SsUtSetReverbDepth(s32, s32);
+
+
+
 void SsEnd(void);
 void SsQuit(void);
-extern s32 D_800EFB38[];
-extern s32 D_800EFC38[];
+
+
 extern s32 D_800A3408;
 void snd_Quit(void) {
     s32 i;
@@ -2223,8 +2224,8 @@ void func_8005B58C(void) {
 }
 extern void func_800858D0(s32);
 extern void func_80086130(s32, s32, s32);
-extern u32 D_800EFB78[];
-extern u8 D_800EFB7C[];
+
+
 void obj_InitChars(void) {
     s32 s1;
     s32 s3;
@@ -2247,167 +2248,167 @@ void obj_InitChars(void) {
 }
 void func_800858D0(s32);
 void SsVabClose(s16);
-extern s32 D_800EFC38;
-extern s32 D_80015470;
-extern s16 Judge;
-extern u8 D_80099BCC;
-extern u8 D_80099CC8;
-extern u8 D_80099CC9;
-extern u16 D_80099D88;
-extern u8 D_80099D8B;
-extern u8 D_80099D8C;
-extern u8 D_80099D8D;
-extern u8 D_80099D8E;
-extern u8 D_80099D8F;
-extern u8 D_80099D94;
-extern u8 D_80099D9C;
-extern u8 D_80099D9D;
-extern u8 D_8009A088;
-extern u8 D_8009A830;
-extern s8 D_8009A838;
-extern u8 D_8009A840;
-extern u8 D_8009A850;
-extern u8 D_8009A851;
-extern u8 D_8009A852;
-extern u8 D_8009A853;
-extern u16 D_8009A8CA;
-extern s32 D_8009AA50[];
-extern u8 D_8009AD18;
-extern u8 D_8009B14E;
-extern s16 D_8009B16C;
-extern s16 D_8009B17C;
-extern s16 D_8009B18C;
-extern s16 D_8009B2BC;
-extern s16 D_8009B2BE;
-extern s16 D_8009B2C4;
-extern u16 D_8009B450;
-extern u16 D_8009B452;
-extern u8 D_8009B48E;
-extern u8 D_8009B58C;
-extern u8 D_8009BA60;
-extern s32 chractar_use_pset_combo_id_table;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+extern u8 D_8009BA60[];
+extern s32 chractar_use_pset_combo_id_table[];
 extern s32 D_8009BC04;
-extern s32 D_8009BC08;
-extern u8 D_8009BC0C;
-extern u8 D_8009BC0D;
-extern s32 D_8009BC1C;
-extern u8 D_8009BC38;
-extern u8 D_8009BC40;
-extern u8 D_8009BC41;
-extern u8 D_8009BC44;
-extern u8 D_8009BC72;
-extern u8 D_8009BC76;
-extern u8 D_8009BC7C;
-extern s16 D_8009BC94;
-extern s16 D_8009BC96;
-extern u16 D_8009BCC4;
-extern u16 D_8009BCC6;
-extern s16 D_8009BCD0;
-extern s16 D_8009BCD2;
-extern u8 D_8009BCE4;
-extern u8 D_8009BD20;
-extern u8 D_8009BD21;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_8009BD38;
-extern u8 D_8009BD3C;
-extern u8 D_8009BD41;
-extern u8 D_8009BD42;
-extern s32 D_8009BD44;
+
+
+
+
 extern u8 D_8009BD58;
 extern u8 D_8009BD59;
-extern s32 D_8009BD68;
-extern s32 D_8009BD6C;
-extern s32 D_8009BD70;
-extern s32 D_8009BD84;
-extern s32 D_8009BD88;
-extern u8 D_800A3270;
+
+
+
+
+
+
 extern s32 D_800A32C8;
-extern s16 D_800A33E8;
-extern s16 D_800A3438;
-extern u32 D_800A344C[];
-extern s16 D_800A34E8;
-extern s16 D_800A3530;
-extern s16 D_800A3534;
-extern s16 D_800A3540;
-extern s16 D_800A3544;
-extern u8 D_800A3560[];
-extern u8 D_800A3561;
-extern u8 D_800A3562;
-extern s16 D_800A3588;
-extern s16 D_800A358C;
-extern s16 D_800A3590[];
-extern s16 D_800A3594;
-extern s32 D_800A3618;
-extern s32 D_800A3628;
-extern s32 D_800A362C;
-extern s32 D_800A3638;
-extern s32 D_800A3708;
-extern s32 D_800A370C;
-extern s32 D_800A3828;
-extern s32 D_800A38B4;
-extern s32 D_800A38D8;
-extern s16 D_800EF980[];
-extern s16 D_800EF9F4;
-extern s32 D_800EFC44;
-extern s32 D_800EFC50;
-extern u16 D_800EFC8A;
-extern s16 D_800F0B78;
-extern s16 D_800F0B7C;
-extern s16 D_800F0B98;
-extern s16 D_800F0BA4;
-extern s16 D_800F0BB2;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s16 D_800F0BCC;
 extern s16 D_800F0BEC;
-extern s32 D_800F0C10;
-extern s32 D_800F0C14;
-extern s32 D_800F0C18;
-extern s32 D_800F0CA0;
-extern s32 D_800F0CA4;
-extern s32 D_800F0CA8;
-extern s32 D_800F0CAC;
-extern s32 D_800F0CB0;
-extern s32 D_800F0CB4;
-extern s32 D_800F0CB8;
-extern s32 D_800F0CBC;
-extern s32 D_800F0CC0;
-extern s32 D_800F0CC4;
-extern s32 D_800F0CC8;
-extern s32 D_800F0CCC;
-extern s32 D_800F0CD0;
-extern s32 D_800F0CD4;
-extern s32 D_800F0CD8;
-extern s32 D_800F0CDC;
-extern s32 D_800F0CE0;
-extern s32 D_800F0CE4;
-extern s32 D_800F0CE8;
-extern s32 D_800F0CEC;
-extern s32 D_800F0CF0;
-extern s32 D_800F0CF4;
-extern s32 D_800F0CF8;
-extern s32 D_800F0CFC;
-extern s32 D_800F0D18;
-extern s32 D_800F0D1C;
-extern s32 D_800F0D20;
-extern s32 D_800F0D24;
-extern s32 D_800F0D28;
-extern s32 D_800F0D2C;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800F0D30;
 extern s32 D_800F0D34;
-extern s32 D_800F0D38;
+
 extern s32 D_800F0D3C;
 extern s32 D_800F0D40;
-extern s32 D_800F0D44;
-extern s32 D_800F0D48;
-extern s32 D_800F0D4C;
-extern s32 D_800F0D50;
-extern s32 D_800F0D54;
-extern s32 D_800F0D58;
-extern s32 D_800F0D5C;
-extern s32 D_800F0D60;
-extern s32 D_800F0D64;
-extern s32 D_800F0D68;
-extern s32 D_800F0D6C;
-extern s32 D_800F0D70;
-extern s32 D_800F0D74;
+
+
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800F0D78;
 extern s32 D_800F0D7C;
 extern s32 videoDec;
@@ -2417,76 +2418,76 @@ extern s32 D_800F0E40;
 extern s32 D_800F0FB8;
 extern s32 D_800F0FBC;
 extern s32 D_800F0FC0;
-extern s16 D_800F1002;
-extern s16 D_800F1004;
+
+
 extern s16 D_800F10A0;
 extern s16 D_800F10A2;
 extern s16 D_800F10A4;
-extern s32 D_800F10D0;
-extern s32 D_800F10D4;
-extern s32 D_800F10E0;
-extern s32 D_800F10E4;
-extern s32 D_800F10E8;
+extern s32 D_800F10D0[];
+
+
+
+
 extern s32 D_800F10EC;
 extern s32 D_800F10F0;
-extern s32 D_800F10F4;
-extern s32 D_800F10F8;
-extern s32 D_800F10FC;
-extern s32 D_800F1100;
-extern s32 D_800F1104;
-extern s32 D_800F1108;
-extern s32 D_800F110C;
-extern s32 D_800F1110;
-extern s32 D_800F1114;
-extern s32 D_800F1118;
-extern s32 D_800F111C;
+
+
+
+
+
+
+
+
+
+
+
 extern s32 D_800F1138;
-extern s32 D_800F1140;
+
 extern s32 D_800F1144;
 extern s32 D_800F1148;
-extern u8 D_800F1150;
+
 extern s32 D_800F1178;
 extern s32 D_800F117C;
 extern s32 D_800F1180;
-extern s32 D_800F1850;
-extern u8 D_800F6338;
-extern u8 D_800F6339;
-extern u8 D_800F633A;
-extern s32 g_anim_func_table;
-extern u8 D_800F74A4;
-extern u8 D_800F74A5;
-extern u8 D_800FB534;
-extern u8 D_800FB535;
-extern s16 D_800FF558;
-extern s16 D_800FF55A;
-extern s16 D_800FF55C;
-extern s16 D_800FF55E;
-extern s16 D_800FF560;
-extern s16 D_800FF562;
-extern s16 D_800FF564;
-extern s16 D_800FF566;
-extern s16 D_800FF568;
-extern s32 D_800FF570;
-extern s32 D_800FF574;
-extern u8 D_800FF639;
-extern s16 D_800FF640;
-extern s32 D_800FF644;
-extern s16 D_800FF648;
-extern s16 D_800FF64A;
-extern s16 D_800FF64C;
-extern s32 D_800FF684;
-extern s32 D_800FF688;
-extern s32 D_800FF68C;
-extern u8 D_80101DF1;
-extern s16 D_80101DF8;
-extern s32 D_80101DFC;
-extern u16 D_80101E02;
-extern u16 D_80101E04;
-extern s32 D_80101E3C;
-extern s32 D_80101E40;
-extern s32 D_80101E44;
-extern s32 D_80103624;
-extern s32 D_800EFB38;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void func_8005B644(s32 a0) {
     s32 v;
     func_800858D0(0);
@@ -2500,7 +2501,7 @@ extern s32 D_800EFB40;
 extern s32 D_800EFC4C;
 extern s32 D_800EFB4C;
 void func_800858D0(s32);
-void SsVabClose(s32);
+
 void func_8005B6AC(void) {
     func_800858D0(0);
     SsVabClose(2);
@@ -2510,22 +2511,22 @@ void func_8005B6AC(void) {
     D_800EFC4C = 0;
     D_800EFB4C = 0;
 }
-extern s32 D_800EFC3C;
-extern s32 D_800EFB3C;
-void SsVabClose(s32);
+extern s32 D_800EFC3C[];
+extern s32 D_800EFB3C[];
+void SsVabClose(s16);
 void func_8005B6FC(void) {
     SsVabClose(1);
-    D_800EFC3C = 0;
-    D_800EFB3C = 0;
+    D_800EFC3C[0] = 0;
+    D_800EFB3C[0] = 0;
 }
 void func_800858D0(s32);
-void SsUtReverbOff(void);
-void SsUtSetReverbType(s32);
-void SsUtSetReverbDepth(s32, s32);
-void SsVabClose(s16);
+s32 SsUtReverbOff(void);
+s32 SsUtSetReverbType(s32);
+s32 SsUtSetReverbDepth(s32, s32);
+
 void obj_InitChars(void);
-extern s32 D_800EFB3C[];
-extern s32 D_800EFC3C[];
+
+
 extern s32 D_800A3408;
 void obj_InitAll(void) {
     s32 s0;
@@ -2548,20 +2549,6 @@ void obj_InitAll(void) {
     obj_InitChars();
 }
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef volatile u8 vu8;
-typedef volatile s8 vs8;
-typedef volatile u16 vu16;
-typedef volatile s16 vs16;
-typedef volatile u32 vu32;
-typedef volatile s32 vs32;
 #define NULL ((void *)0)
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
@@ -2602,12 +2589,12 @@ typedef struct GameObj {
 } GameObj;
 extern s32 func_80036EA8();
 extern s32 func_80036F28();
-extern s32 func_8005C2A8(s32, s32, s32);
+extern s32 func_8005C2A8(s32 *, s16, s32);
 
 s32 printf(s32 *, s32);               /* extern */
 s32 game_FrameLoop();                           /* extern */
 s32 replay_camera_Init(s32, s32);               /* extern */
-s32 func_800858D0(s32);                    /* extern */
+
 extern s32 D_800158B4;
 extern s32 D_800A3404;
 extern s32 D_800A3408;
@@ -2636,8 +2623,8 @@ extern s32 D_800EFC58;
 extern s32 D_800EFB58;
 extern s32 D_800EFC48;
 extern s32 D_800EFB48;
-void func_800858D0(s32);
-void SsVabClose(s32);
+
+
 void obj_InitPair(void) {
     func_800858D0(0);
     SsVabClose(8);
@@ -2649,10 +2636,10 @@ void obj_InitPair(void) {
 }
 extern s32 func_80036EA8(s32, s32);
 extern s32 func_80036F28(s32);
-extern s32 func_8005C2A8(s32, s32, s32);
+extern s32 func_8005C2A8(s32 *, s16, s32);
 extern void obj_InitPair(void);
 extern void func_800858D0(s32);
-extern void replay_camera_Init(s32, s32);
+
 s32 func_8005B8B8(s32 arg0) {
     s32 t0;
     s32 size;
@@ -2674,7 +2661,7 @@ s32 func_8005B8B8(s32 arg0) {
     game_FrameLoop();
     return func_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
 }
-void snd_VabFakeOpen(s32, s32);
+s32 snd_VabFakeOpen(s32, s16);
 void func_8005B98C(s32 a0) {
     snd_VabFakeOpen(a0, 8);
     snd_VabFakeOpen(a0, 4);
@@ -2682,7 +2669,7 @@ void func_8005B98C(s32 a0) {
 extern s32 D_800EFC5C;
 extern s32 D_800EFB5C;
 void func_800858D0(s32);
-void SsVabClose(s32);
+void SsVabClose(s16);
 void obj_InitTask(void) {
     func_800858D0(0);
     SsVabClose(9);
@@ -2692,9 +2679,9 @@ void obj_InitTask(void) {
 void obj_InitTask(void);
 s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
-void replay_camera_Init(s32, s32);
+s32 replay_camera_Init(s32, s32);
 s32 func_80036F28(s32);
-s32 func_8005C2A8(s32, s32, s32);
+s32 func_8005C2A8(s32 *, s16, s32);
 void obj_InitTaskCamera(s32 a0) {
     s32 s1;
     obj_InitTask();
@@ -2705,7 +2692,7 @@ void obj_InitTaskCamera(s32 a0) {
     game_FrameLoop();
     func_8005C2A8(a0, 9, a0 + s1);
 }
-void snd_VabFakeOpen(s32, s32);
+s32 snd_VabFakeOpen(s32, s16);
 void obj_ExecTask(s32 a0) {
     snd_VabFakeOpen(a0, 9);
 }
@@ -2717,18 +2704,18 @@ typedef struct {
     VabEnt ent[3];
     s32 len[3];
 } VabLoad;
-extern u32 D_800EFC38[];
-extern u32 D_800EFB38[];
+
+
 extern u8 D_8009AD18[];
 extern void func_800858D0(s32);
-extern void SsVabClose(s32);
+extern void SsVabClose(s16);
 extern s32 func_80036EA8(s32, s32);
 extern s32 game_FrameLoop(void);
-extern void replay_camera_Init(s32, s32);
+extern s32 replay_camera_Init(s32, s32);
 extern s32 func_80036F28(s32);
-extern void func_80062020(s32);
-extern s32 func_8005C2A8(s32, s32, s32);
-extern void snd_VabFakeOpen(s32, s32);
+
+
+extern s32 snd_VabFakeOpen(s32, s16);
 extern s32 D_800EFC44;
 extern s32 D_800EFC50;
 s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
@@ -2787,10 +2774,10 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
 }
 
 extern void func_800858D0(s32);
-extern void snd_VabFakeOpen(s32, s32);
+
 extern s32 D_800EFC50;
 extern s32 D_800EFC44;
-extern u8 D_8009AD18;
+
 void func_8005BD30(s32 arg0) {
     u8 count;
     s32 i;
@@ -2799,7 +2786,7 @@ void func_8005BD30(s32 arg0) {
     i = 0;
     if (count != 0) {
         do {
-            u8 byte = (&D_8009AD18)[i & 0xFF];
+            u8 byte = D_8009AD18[i & 0xFF];
             snd_VabFakeOpen(arg0, byte);
             i += 1;
         } while ((u32)(i & 0xFF) < (u32)count);
@@ -2808,10 +2795,10 @@ void func_8005BD30(s32 arg0) {
         D_800EFC50 = D_800EFC44;
     }
 }
-extern u32 D_800EFC38[];
-extern u32 D_800EFB38[];
-extern u8 D_8009AD18[];
-extern void SsVabClose(s32);
+extern s32 *D_800EFC38[];
+extern s32 D_800EFB38[];
+
+extern void SsVabClose(s16);
 void func_8005BDF0(void) {
     u32 *s3 = D_800EFC38;
     u32 *s2 = D_800EFB38;
@@ -2826,9 +2813,9 @@ void func_8005BDF0(void) {
 }
 extern s16 D_8009AD1C[][2];
 extern void func_800858D0(s32);
-extern s32 SsUtReverbOff();
-extern s32 SsUtSetReverbType(s16);
-extern s32 SsUtSetReverbDepth(s16, s16);
+
+
+
 extern s32 SsUtReverbOn();
 extern s32 SpuClearReverbWorkArea(s16);
 s32 func_8005BE84(s32 arg0)
@@ -2860,16 +2847,16 @@ s32 func_8005BE84(s32 arg0)
   return (s16) result;
 }
 void func_800858D0(s32);
-void SsUtReverbOff(void);
-void SsUtSetReverbType(s32);
-void SsUtSetReverbDepth(s32, s32);
+
+
+
 void obj_Reset(void) {
     func_800858D0(0);
     SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
 }
-extern s32 SsVabClose();
+
 extern s32 SsVabFakeBody();
 extern s32 SsVabFakeHead();
 extern s32 SpuRead();
@@ -2877,8 +2864,8 @@ extern s32 SpuWrite();
 extern s32 SpuSetTransferStartAddr();
 extern s32 SpuIsTransferCompleted();
 extern void func_800858D0(s32);
-extern s32 *D_800EFC38[];
-extern s32 D_800EFB38[];
+
+
 s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     func_800858D0(0);
     SsVabClose((s16) arg1);
@@ -2973,12 +2960,12 @@ s32 func_8005C074(s16 vabid, s32 base) {
  */
 extern s32 *func_80077D00(void);
 extern void func_800858D0(s32);
-extern void func_8005C074(s16, s32);
-extern void SsVabClose(s16);
+
+
 extern s16 SsVabTransCompleted(s16);
 extern s32 SsUtGetVBaddrInSB(s16);
 extern s32 snd_VabOpen(s32 *, s16);
-extern s32 printf(const char *, s32);
+
 extern const char D_800158CC[];
 extern s32 *D_800EFC38[];
 extern s32 D_800EFB38[];
@@ -3026,10 +3013,10 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
     printf(D_800158CC, vabid);
     return 0;
 }
-extern s32 D_800EFC38;
-extern s32 SsVabClose(s32);
-extern s16 SsVabFakeHead(s32, s32, s32);
-extern s16 SsVabFakeBody(s16);
+
+
+
+
 /* saFidLoad tail: s16 result-carrier + single trailing return — the target
  * CFG (li -1 in its own block; shared sll/sra sext join) is only producible
  * from this spelling class (direct-return floors at 4, s32 carrier at 8).
@@ -3067,7 +3054,7 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
 }
 
 extern s32 D_800A3404;
-void SsVabClose(s32);
+
 void SsVabOpenHeadSticky(s32, s16, s32);
 s32 SsVabTransBody(s32, s16);
 s32 snd_VabOpen(s32 *a0, s16 a1) {
@@ -3087,8 +3074,8 @@ void func_8005C614(void) {
     SsSetAutoKeyOffMode(0);
 }
 extern s32 D_8009AA70;
-extern s32 D_800EFB78;
-extern u8 D_800EFB7C;
+
+
 extern u8 D_800EFB7D;
 void func_8005C650(s32 a0, s32 a1, s32 a2) {
     s16 a3 = 0;
@@ -3115,7 +3102,7 @@ extern void SpuGetAllKeysStatus(u8 *);
 extern s32 SpuGetKeyStatus(s32);
 extern s32 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
 void func_8005C6D0(void) {
-    extern s32 *D_800EFC38[];
+
     u8 keys[24];
     s16 i;
     s16 voice;
@@ -3223,8 +3210,8 @@ void func_8005D46C(s32 arg0, s32 arg1) {
 }
 INCLUDE_ASM("asm/funcs", func_8005D554);
 INCLUDE_ASM("asm/funcs", func_8005D814);
-extern s16 D_8009B488;
-extern s8 D_8009B48E;
+
+
 
 INCLUDE_ASM("asm/funcs", func_8005E098);
 s32 func_8005E098(s32, s32, s32, s32);
@@ -3291,17 +3278,17 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
     DrawSync(0);
     D_800A3278 = 0;
 }
-extern s32 D_800A36AC;
+
 extern s32 D_800A374C;
-extern s32 D_800A3278;
-extern s32 D_8009B698;
-extern s32 D_8009B6B0;
-extern s32 D_800F7438;
-extern s32 SetDrawArea(s32, u16 *);
-extern s32 SetPolyG4(s32);
+
+
+
+
+
+
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
-extern s32 SetSemiTrans(s32, s32);
+
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 
@@ -3411,7 +3398,7 @@ extern s32 D_8009B7AC;
 extern s32 D_8009B7B8;
 extern s32 D_8009B7C4;
 extern u16 D_8009B850;
-extern u8 D_8009BD24;
+extern u8 D_8009BD24[];
 extern s32 D_800A328C;
 typedef struct {
     s32 *p_geom;
@@ -3441,7 +3428,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.height = ((*((&D_8009B850) + (arg0 & 0x7FFF))) & 0x7F) + 0x2A;
     if (arg0 & 0x8000) {
         s.p_geom = &D_8009B7AC;
-    } else if (((u8)D_8009BD24) < 0xC) {
+    } else if (D_8009BD24[0] < 0xC) {
         s.p_geom = &D_8009B7B8;
     } else {
         s.p_geom = &D_8009B7C4;
@@ -3618,9 +3605,9 @@ extern s32 D_8009B0C0;
 extern s32 D_800A374C;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 extern s32 SetSemiTrans(void *, s32);
-extern s32 SetDrawMode(void *, s32, s32, s32, s32);
+
 extern s32 SetTile(void *);
-extern s32 AddPrim(s32, void *);
+
 s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     s32 sp18;
     s32 sp1C;
@@ -3794,9 +3781,9 @@ void func_80060A68(void) {
     extern s32 D_800A3478;
     extern s32 D_800A347C;
     extern s32 D_800A32BC;
-    extern u8 D_8009BA60[];
-    extern s32 D_800F10D0[];
-    extern s32 chractar_use_pset_combo_id_table[];
+
+
+
     s32 result;
 
     D_800F10D0[D_800A3468->id.h] = 0;
@@ -3823,9 +3810,9 @@ void func_80060B70(void) {
     extern s32 D_800A346C;
     extern s32 D_800A3470;
     extern s32 D_800A3474;
-    extern u8 D_8009BA60;
-    extern s32 D_800F10D0;
-    extern s32 chractar_use_pset_combo_id_table;
+
+
+
     extern void func_80061FAC(s32, s32, s32);
     s32 outer;
     s32 dst_u16;
@@ -3854,7 +3841,7 @@ void func_80060B70(void) {
 
     *(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;
 }
-extern s32 D_800F10D0[];
+
 extern u8 D_800F1150[];
 extern s16 D_800A345E;
 extern s16 D_800A345C;
@@ -4030,21 +4017,21 @@ void func_80060E38(s32 arg0, s32 arg1) {
 }
 extern s32 func_80041E10();
 extern s32 func_800421A4();
-extern s32 func_80060B70();
-extern s32 func_80060E38();
-extern s32 printf(s32 *, s32);
+
+
+
 extern s32 D_800158E0;
 extern s32 D_800A32BC;
 extern s32 D_800A3464;
-extern s32 *D_800A3468;
+
 extern s32 D_800A3720;
 extern s32 D_800A37D4;
 extern s32 D_800F1140;
-extern u8 D_800F1150;
+
 void func_80061064(void) {
     s32 temp_a1;
     s32 i;
-    func_80060E38();
+    ((void (*)())func_80060E38)();
     i = 0;
     do {
         *(s32 **)((s32)D_800A3468 + 0x14) = (s32 *)(i + (s32)&D_800F1150);
@@ -4068,7 +4055,7 @@ void func_80061064(void) {
 }
 extern s32 D_800A32BC;
 void func_80060C60(void);
-void func_800421A4(void);
+
 void game_Cleanup(void) {
     func_80060C60();
     func_800421A4();
@@ -4077,7 +4064,7 @@ void game_Cleanup(void) {
 extern u8 D_800F116A;
 extern s32 D_800F116C;
 extern s32 D_800A3464;
-extern s32 D_800A3468;
+
 void func_800611A4(s32 *arg0, s32 *arg1) {
     u16 svec[3];
     s32 *p;
@@ -4126,7 +4113,7 @@ end:
     D_800F1148 = *p;
     D_800A3464 = 0xFF0060;
 }
-extern u8 D_800F1154;
+    extern u8 D_800F1154[];
 extern s32 D_800A3464;
 extern s32 D_800A3468;
 extern s32 D_800F116C;
@@ -4137,7 +4124,7 @@ s32 func_8006133C(s32 *a0) {
     s32 *p = a0;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)a0;
-    D_800F1180 = (s32)&D_800F1154;
+    D_800F1180 = (s32)D_800F1154;
     *v1 = 0x210004;
     func_80060A68();
     D_800F1140 = *p++;
@@ -4195,25 +4182,25 @@ s32 func_800614E0(s32 *a0) {
     D_800A3464 = 0x8080FF;
     return 5;
 }
-extern u8 D_800F1154;
+extern u8 D_800F1154[];
 void func_8006156C(s32 *arg0) {
     s32 *v1 = (s32 *)&D_800F116C;
     s32 *p;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)arg0;
-    if ((&D_800F1154)[1] != 0) {
-        if ((&D_800F1154)[2] != 0) {
-            (&D_800F1154)[2] = 0;
-            (&D_800F1154)[1] = 0;
+    if (D_800F1154[1] != 0) {
+        if (D_800F1154[2] != 0) {
+            D_800F1154[2] = 0;
+            D_800F1154[1] = 0;
         }
-        if ((&D_800F1154)[1] != 0) goto check_one_zero;
+        if (D_800F1154[1] != 0) goto check_one_zero;
     }
-    *(s32 *)((s32)D_800A3468 + 0x14) = (s32)((&D_800F1154) + 1);
+    *(s32 *)((s32)D_800A3468 + 0x14) = (s32)&D_800F1154[1];
     *(s32 *)D_800A3468 = 0x210005;
     goto end;
 check_one_zero:
-    if ((&D_800F1154)[2] == 0) {
-        D_800F1180 = (s32)((&D_800F1154) + 2);
+    if (D_800F1154[2] == 0) {
+        D_800F1180 = (s32)&D_800F1154[2];
         *v1 = 0x210006;
     }
 end:
@@ -4383,7 +4370,7 @@ extern s32 D_800F116C;
 extern s32 D_800A3468;
 extern s32 D_800F1178;
 extern s32 D_800F1180;
-extern u8 D_800F1154[];
+
 void func_80060A68(void);
 void func_800619F0(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
@@ -4586,7 +4573,7 @@ end:
 }
 extern s32 D_800A34EC;
 extern u8 D_8009BB74[];
-void *RotMatrix(u16*, u8*);
+
 void ScaleMatrixL(u8*, u8*);
 void SetRotMatrix(u8*);
 void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
@@ -4633,9 +4620,9 @@ s32 func_8006288C(void) {
     extern s32 D_800F0FB8;
     extern s32 D_800F0FBC;
     extern s32 D_800F0FC0;
-    extern s32 D_800F10A0;
-    extern s32 D_800F10A2;
-    extern s32 D_800F10A4;
+
+
+
     extern s32 D_800F1138;
     /* FAKE: `one` is an opaque holder for the constant 1 rather than a literal
        `1 << i`; mechanism: with a literal the shift base is loop-invariant and
@@ -4717,12 +4704,12 @@ found:
 }
 INCLUDE_ASM("asm/funcs", func_80063084);
 extern s32 D_800A3468;
-extern s32 D_800F10D0;
+
 extern s16 D_800A345C;
 u8 func_80063BD0(s32);
 u8 func_80063AF0(void) {
     s32 *v1 = (s32 *)D_800A3468;
-    D_800F10D0 = 1;
+    D_800F10D0[0] = 1;
     D_800A345C = (*v1 >> 17) & 3;
     return func_80063BD0(0);
 }
@@ -4853,7 +4840,7 @@ void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
     }
 }
 extern s32 rand(void);
-extern void *D_800A347C;
+
 /* func_800645B0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 78
  * (target_insns 78, build_insns 78, rules_dropped 0, zero cheat-asm), and the
  * full clean-driver build SHA1 == the oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa,
@@ -4945,7 +4932,7 @@ s32 func_800645B0(void) {
     return 1;
 }
 INCLUDE_ASM("asm/funcs", func_800646E8);
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0CA0;
 extern s32 D_800F0CA4;
 extern s32 D_800F0CA8;
@@ -4961,7 +4948,7 @@ void func_80064E90(void) {
     D_800F0BA8 = 0;
     D_800F0CA8 = last;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0CAC;
 extern s32 D_800F0CB0;
 extern s32 D_800F0CB4;
@@ -4977,7 +4964,7 @@ void func_80064ED8(void) {
     D_800F0BAA = 0;
     D_800F0CB4 = last;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0CB8;
 extern s32 D_800F0CBC;
 extern s32 D_800F0CC0;
@@ -4993,7 +4980,7 @@ void func_80064F20(void) {
     D_800F0BAC = 0;
     D_800F0CC0 = last;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0CC4;
 extern s32 D_800F0CC8;
 extern s32 D_800F0CCC;
@@ -5028,8 +5015,8 @@ s32 func_80064FB4(void) {
     D_800F0CD8 = last;
     return 1;
 }
-extern void *D_800A347C;
-extern void *D_800A3468;
+extern s32 D_800A347C;
+
 extern s32 D_800F0CDC;
 extern s32 D_800F0CE0;
 extern s32 D_800F0CE4;
@@ -5049,7 +5036,7 @@ s32 func_80065000(void) {
     D_800A3440 = (*(s32 *)q >> 19) & 3;
     return 1;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0CE8;
 extern s32 D_800F0CEC;
 extern s32 D_800F0CF0;
@@ -5065,7 +5052,7 @@ void func_8006505C(void) {
     D_800F0BB4 = 0;
     D_800F0CF0 = last;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0CF4;
 extern s32 D_800F0CF8;
 extern s32 D_800F0CFC;
@@ -5081,7 +5068,7 @@ void func_800650A4(void) {
     D_800F0BB6 = 0;
     D_800F0CFC = last;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0D18;
 extern s32 D_800F0D1C;
 extern s32 D_800F0D20;
@@ -5097,7 +5084,7 @@ void func_800650EC(void) {
     D_800F0BBC = 0;
     D_800F0D20 = last;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0D24;
 extern s32 D_800F0D28;
 extern s32 D_800F0D2C;
@@ -5161,7 +5148,7 @@ void func_800651F0(void) {
     D_800F0BC6 = 0;
     D_800F0D5C = (s32)p;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0D60;
 extern s32 D_800F0D64;
 extern s32 D_800F0D68;
@@ -5177,7 +5164,7 @@ void func_80065264(void) {
     D_800F0BC8 = 0;
     D_800F0D68 = last;
 }
-extern void *D_800A347C;
+extern s32 D_800A347C;
 extern s32 D_800F0D6C;
 extern s32 D_800F0D70;
 extern s32 D_800F0D74;
@@ -5254,13 +5241,13 @@ u8 func_80065434(void) {
     }
     return 0;
 }
-extern s32 *D_800A3484;
+
 u8 func_80065484(void) {
     unsigned int temp_v1;
     u8 v0;
-    *D_800A3484 = (s32)*(s16 *)&D_800A3440;
+    *(s32 *)D_800A3484 = (s32)*(s16 *)&D_800A3440;
     v0 = func_80065800(5);
-    temp_v1 = *D_800A3484;
+    temp_v1 = *(s32 *)D_800A3484;
     switch (temp_v1) {
     case 0: {
         u16 *p = (u16 *)&D_800F0BB2;
@@ -5331,7 +5318,7 @@ u8 func_80065630(void) {
     }
     return 0;
 }
-extern s32 func_80065800(s32);
+
 extern u16 D_800F0BC0;
 s32 func_80065680(void) {
     u16 *v1;
@@ -5342,10 +5329,11 @@ s32 func_80065680(void) {
     *v1 = v0;
     v0 = func_80065800(0xE);
     D_800F0BC4 = D_800F0BC4 + 1;
-    if ((s16)D_800F0BC4 < 11) {
-        return v0 & 0xFF;
+    v0 &= 0xFF;
+    if ((s16)D_800F0BC4 >= 11) {
+        v0 = 0;
     }
-    return 0;
+    return v0;
 }
 extern u16 D_800F0BC2;
 extern u16 D_800F0BC6;
@@ -5650,10 +5638,10 @@ extern s16 D_800A350C;
 extern s32 D_8009BC04;
 extern u8 D_800A32C0[8];
 extern s32 snd_StopAll(void);
-extern s32 func_8006E950(s32, s32);
-extern s32 func_8006919C(s32);
-extern s32 *func_8006E49C(s32, s32);
-extern s32 DrawSync(s32);
+
+
+
+
 extern s32 MoveImage(u8 *, s32, s32);
 s32 func_80068F70(s32 arg0, s32 *arg1) {
     u8 buf[8];
@@ -5747,7 +5735,7 @@ extern s32 D_800A3524;
 extern s32 D_800A34FC;
 extern s32 D_800A372C;
 extern s32 D_800A351C;
-void func_8006E8CC(s32);
+
 s32 *func_80069120(s32 a0) {
     s32 *v0 = (s32 *)D_800A3524;
     u8 *v1 = (u8 *)D_800A34FC;
@@ -5761,7 +5749,7 @@ s32 *func_80069120(s32 a0) {
 }
 
 void func_8006920C(s32 *, s32);
-s32 func_8005C2A8(s32, s32, s32);
+
 s32 func_8006919C(s32 *a0) {
     s32 i = 0;
     s32 *p = &a0[5];
@@ -5783,9 +5771,9 @@ void func_8006920C(s32 *a0, s32 a1) {
         p++;
     }
 }
-extern s32 func_8005C650();
-extern void func_80069E18(s32, s32);
-extern s32 func_8006E390();
+
+
+extern void func_8006E390();
 extern s32 D_800A3514;
 extern s32 D_800A3518;
 s32 func_80069250(s32 arg0, s32 arg1) {
@@ -5879,9 +5867,9 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
  * memory/grind/func_800693CC/pre-include-asm-body.c. */
 s32 func_800693CC(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 INCLUDE_ASM("asm/funcs", func_800693CC);
-extern void SetTile(u8 *p);
-extern void SetSemiTrans(u8 *p, s32 semi);
-extern void AddPrim(u32 *ot, u32 *prim);
+
+
+
 void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     u8 *p = (u8 *) arg0->field_18;
 
@@ -5964,7 +5952,7 @@ typedef struct {
 
 extern s32 func_8006E480(s32, s32);
 extern s32 func_8007352C(s32);
-extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+
 extern void SetPolyF4(u8 *p);
 extern void func_80069A8C(u8 *p);
 
@@ -6171,7 +6159,7 @@ extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
+
 extern s32 rsin();
 
 void func_80069F80(s32 *arg0, s32 arg1) {
@@ -6676,11 +6664,11 @@ void func_8006B898(s32 arg0, s32 arg1) {
     t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
-    func_8006B120(sp10);
+    ((void (*)())func_8006B120)(sp10);
     func_8006B578(&arg0, &arg1);
 }
-extern u32 D_800A34F8;
-extern s32 D_800A350C;
+
+
 s32 func_8006B92C(s32 *unused, u32 *arg1) {
     s32 sp10;
     s32 ret;
@@ -6719,7 +6707,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
         break;
     }
 
-    idx = (D_800A34F8 >> 13) & 7;
+    idx = ((u32)D_800A34F8 >> 13) & 7;
     switch (idx) {
     case 0:
         if (*arg1 & 0x400040) {
@@ -6737,7 +6725,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
         if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             var_s0 = 1;
-            D_800A34F8 = (D_800A34F8 & ~0x1C00) | (((((D_800A34F8 >> 10) & 7) + 1) & 7) << 10);
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) | ((((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10);
         }
         break;
     }
@@ -6780,7 +6768,7 @@ void func_8006BB68(s32 *arg0) {
         p1 = p0 + 0xC;
         s.p0 = (s32 *)p0;
         s.p1 = (s32 *)p1;
-        if (((D_800A34F8 >> 13) & 7) == i) {
+        if ((((u32)D_800A34F8 >> 13) & 7) == i) {
             s.zero1C = *(s16 *)(D_800A34FC + 0xE);
             s.zero10 = 0;
         } else {
@@ -6824,9 +6812,9 @@ extern u8 D_800F11E0[];
 extern u8 D_800F1438[];
 extern Tile D_800F1498[];
 extern void func_8006BD28(s32, s32, s32 *, s32);
-extern s32 SetTile(void *);
-extern s32 SetSemiTrans(void *, s32);
-extern s32 AddPrim(s32, void *);
+
+
+
 void func_8006BEC4(s32 arg0, s32 arg1) {
     s32 sp10[12];
     s32 par;
@@ -7027,7 +7015,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
 }
 extern s16 D_800A3528;
 extern s32 D_800A374C;
-extern s32 func_8006E480(s32, s32);
+
 extern s32 func_8007352C(s32);
 /* EnvA: the 0x2C-byte draw descriptor func_8007352C consumes.  Same field
    layout as EnvB (func_8006DD94) and S69E18 (func_80069E18); this call site
@@ -7099,9 +7087,9 @@ void func_8006D3DC(s32 *arg0) {
     rect[3] = 1;
     func_80069898((GameObj *)arg0, rect, 0x11);
 }
-extern s32 D_800A350C;
-extern void *D_800A3524;
-extern u16 D_800A3528;
+extern s16 D_800A350C;
+
+
 s32 func_8006D5D4(s32 arg0, u32 arg1) {
     s32 sp10;
     s32 result = 0;
@@ -7144,11 +7132,11 @@ extern s32 D_800A3514;
 extern s32 D_800A3518;
 extern s32 D_800A36AC;
 extern s32 D_800F7438;
-extern s32 func_8006E390(s32, s32);
-extern s32 func_80069AE4(s32, s32, s32);
-extern void func_8006D3DC(s32);
+
+
+
 extern s32 func_8006D5D4(s32, u32);
-extern s32 func_8005C6D0(void);
+
 s32 func_8006D74C(s32 arg0, s32 arg1) {
     s32 sp_buf[22];
     s32 result;
@@ -7265,7 +7253,7 @@ void func_8006DD94(s32 *arg0) {
     func_80069898((GameObj *)arg0, rect, 0x11);
 }
 extern s32 func_800692C0();
-extern s32 D_800A350C;
+extern s16 D_800A350C;
 
 s32 func_8006DF68(s32 arg0, u32 arg1) {
     s32 sp10;
@@ -7293,7 +7281,7 @@ s32 func_8006DF68(s32 arg0, u32 arg1) {
     func_8005C6D0();
     return result;
 }
-extern void func_8006DD94(s32);
+
 extern s32 func_8006DF68();
 void func_8006E068(s32 arg0, s32 arg1) {
     s32 sp10[22];
@@ -7306,7 +7294,7 @@ void func_8006E068(s32 arg0, s32 arg1) {
     func_8006DF68(arg0, arg1);
 }
 extern u8 D_800A32D8[8];
-extern void *D_800A3524;
+extern s32 D_800A3524;
 extern s32 D_800A3500;
 extern u8 D_800F74A4;
 extern u8 D_800F74A5;
@@ -7314,9 +7302,9 @@ extern u8 D_800FB534;
 extern u8 D_800FB535;
 extern s32 D_800F7438;
 extern s32 func_80036EA8(s32, s32);
-extern void func_80036F28(s32);
-extern void replay_camera_Init(s32, s32);
-extern void game_FrameLoop(void);
+
+extern s32 replay_camera_Init(s32, s32);
+
 extern void SetDefDrawEnv(s32, s32, s32, s32, s32);
 extern void SetDefDispEnv(s32, s32, s32, s32, s32);
 extern void LoadImage(u8 *, s32);
@@ -7324,7 +7312,7 @@ extern void ClearImage(s32, s32, s32, s32);
 extern void PutDrawEnv(s32);
 extern void PutDispEnv(s32);
 extern void SetDispMask(s32);
-extern void DrawSync(s32);
+
 s32 func_8006E10C(void) {
     s32 ff0;
     s32 temp_s3 = D_800A3500;
@@ -7421,7 +7409,8 @@ void func_8006E440(s32 *a0) {
         p++;
     }
 }
-s32 func_8006E480(u8 *a0, s32 a1) {
+s32 func_8006E480(s32 a0_addr, s32 a1) {
+    u8 *a0 = (u8 *)a0_addr;
     s32 v0 = a0[0] & 0xFE1F;
     s32 v1 = a0[1] << 7;
     return v0 + v1 + a1;
@@ -7466,7 +7455,7 @@ s32 func_8006E8AC(s32 a0) {
 }
 s32* func_80077D00(void);
 void DrawSync(s32);
-void LoadImage(s16*, s32);
+
 void func_8006E8CC(s32 *a0) {
     s32 *p;
     s32 data;
@@ -7522,7 +7511,7 @@ void func_8006E950(s32 *a0, s32 *a1) {
     func_8006E8CC(s1);
 }
 void func_8006920C(s32 *, s32);
-s32 func_8005C2A8(s32, s32, s32);
+s32 func_8005C2A8(s32 *, s16, s32);
 s32 func_8006EA28(s32 *a0) {
     func_8006920C(a0, a0[21]);
     func_8006920C(a0, a0[22]);
@@ -7621,8 +7610,8 @@ done: ;
 }
 INCLUDE_ASM("asm/funcs", func_8006ECF4);
 extern u16 D_800A3550;
-extern s32 SetSemiTrans(s32, s32);
-extern s32 SetTile(s32);
+
+
 void func_8006F038(s32 arg0) {
     s32 temp_s0;
     s32 v1;
@@ -7660,10 +7649,10 @@ extern s32 D_800A35A8;
 extern s32 D_800A35B0;
 extern s32 D_800A35BC;
 extern s32 D_800A374C;
-extern s32 func_8007352C(s32 *prim);
-extern s32 func_8006E480(s32, s32);
+
+
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
+
 extern void func_80070F78(s32 a0, s32 *prim);
 extern void func_8006ECF4(s32);
 extern void func_80072E10(s32);
@@ -7810,9 +7799,9 @@ void func_800720D4(s32 a0) {
 }
 INCLUDE_ASM("asm/funcs", func_800720FC);
 extern s32 D_800A374C;
-extern s32 SetSemiTrans(GameObj *, s32);
+
 extern s32 SetPolyG4(GameObj *);
-extern s32 AddPrim(s32, GameObj *);
+
 extern void *D_800A35C4;
 s32 func_80072BC4(s32 arg0, GameObj *arg1) {
     u8 var_v0;
@@ -7905,7 +7894,7 @@ s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     AddPrim(D_800A374C + 0x60, arg1);
     return (s32)((u8 *)arg1 + 0x24);
 }
-extern s32 func_80073060(s32);
+
 extern s32 func_80072CD4(s32, GameObj *);
 extern s16 D_800A3580;
 /* BEGIN func_80072E10 */
@@ -7963,10 +7952,10 @@ void func_80072E10(s32 arg0) {
     *(PolyG4Xy **)((s32)arg0 + 0xC) = p;
 }
 /* END func_80072E10 */
-void SetTile(s32);
-void SetSemiTrans(s32, s32);
+
+
 extern s32 D_800A374C;
-void AddPrim(s32, s32);
+
 s32 *func_80072F30(s32 a0, u8 *a1) {
     SetTile((s32)a1);
     if (a0 < 4) {
@@ -8227,27 +8216,11 @@ void func_80073200(s32 arg0) {
 }
 extern void SetSprt(s32);
 extern s32 SetShadeTex(s32, s32);
-extern s32 SetSemiTrans(s32, s32);
-extern s32 AddPrim(s32, s32);
-extern void func_8003D52C(u8 *, ...);
+
+
+
 extern u16 GetClut(s32, s32);
 extern u8 D_800159A0[];
-
-typedef struct EnvA {
-    s32 *header;
-    s8  *table;
-    s32  out;
-    s32  pad0C;
-    s32  semi;
-    u32  ot_idx;
-    s32  x;
-    s32  y;
-    s32  pad20, pad24;
-    u8   has_color;
-    u8   col_r;
-    u8   col_g;
-    u8   col_b;
-} EnvA;
 
 typedef struct SprtA {
     u32 tag;
@@ -8274,7 +8247,8 @@ typedef struct SprtEntA {
     u8  w, h;
 } SprtEntA;
 
-s32 func_8007352C(EnvA *env) {
+s32 func_8007352C(s32 env_addr) {
+    EnvA *env = (EnvA *)env_addr;
     SprtHdrA *hdr = (SprtHdrA *)env->header;
     SprtA *sp = (SprtA *)env->out;
     SprtEntA *e;
@@ -8309,7 +8283,7 @@ s32 func_8007352C(EnvA *env) {
             SetSemiTrans((s32)sp, env->semi);
             if (env->ot_idx >= 0x1006) {
                 env->ot_idx = 1;
-                func_8003D52C(D_800159A0);
+                ((void (*)())func_8003D52C)(D_800159A0);
             }
             AddPrim(D_800A374C + env->ot_idx * 4, (s32)sp);
             sp++;
@@ -8321,9 +8295,9 @@ s32 func_8007352C(EnvA *env) {
 
 INCLUDE_ASM("asm/funcs", func_80073728);
 INCLUDE_ASM("asm/funcs", func_80073C78);
-extern void SetPolyF4(s32);
-extern s32 func_80069A8C(s32);
-extern s32 func_8007352C(s32 *);
+
+
+
 
 void func_80074220(s32 *arg0, s32 arg1) {
     s32 sp[12];
@@ -8415,20 +8389,7 @@ skip_init:
 }
 INCLUDE_ASM("asm/funcs", func_80074488);
 INCLUDE_ASM("asm/funcs", func_800747D8);
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
 
-/* opaque - to satisfy GameObj * pointer-arg signatures without struct */
-typedef struct GameObj { s32 dummy; } GameObj;
-extern s32 SetSemiTrans(GameObj *, s32);
-extern s32 SetTile(GameObj *);
-extern s32 AddPrim(s32, GameObj *);
 extern u8 *D_800A36A0;
 extern s32 D_800A374C;
 
@@ -8570,10 +8531,10 @@ typedef struct {
 
 extern u8 *D_800A36A0;
 extern s32 D_800A374C;
-extern s32 func_8007352C(s32);
+
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
-extern s32 AddPrim(s32, s32);
+
 extern s32 rsin(s32);
 
 /* Per-player gauge draw: fills the 0x2C-byte sprite descriptor `s` (the same
@@ -8662,7 +8623,7 @@ void func_800753D8(s32 *arg0, s32 arg1) {
 }
 extern u8 *D_800A36A0;
 extern s16 D_800A35D0;
-extern s32 func_8005C650(s32, s32, s32);
+extern void func_8005C650(s32, s32, s32);
 extern s32 func_800692C0();
 void func_80075670(s32 arg0, s32 arg1) {
     s16 i;
@@ -8863,20 +8824,6 @@ s32 func_80077098(s32 a0) {
     return D_800A35D8 + a0 * 44;
 }
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef volatile u8 vu8;
-typedef volatile s8 vs8;
-typedef volatile u16 vu16;
-typedef volatile s16 vs16;
-typedef volatile u32 vu32;
-typedef volatile s32 vs32;
 extern u8 *D_800A36A0;
 extern s32 D_800A35D8;
 extern s8 D_800A35DC;
@@ -8886,9 +8833,9 @@ extern s16 D_800A35D0;
 extern s32 D_800A374C;
 extern s32 ClearOTagR(s32, s32);
 extern s32 snd_StopAll(void);
-extern s32 func_8006E950(s32, s32 *);
+
 extern s32 func_80076FF8(s32 *);
-extern u8 *func_8006E49C(s32, s32);
+
 s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     u16 sp[2];
     s32 *p_old;
@@ -9031,9 +8978,9 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
 
 INCLUDE_ASM("asm/funcs", func_80077374);
 extern s32 D_800A36AC;
-extern s32 *func_80077098(s32);
+
 extern void func_80077374(s32, s32 *);
-extern s32 *D_800A36A0;
+
 extern s32 D_800F7438;
 typedef struct {
     s32 sp10;
@@ -9070,8 +9017,8 @@ void func_80077724(s32 arg0, s32 arg1) {
     func_80077374(arg1, &s.sp10);
 }
 extern s32 D_800A35E4;
-void func_80068F70(s32, s32 *);
-extern s32 D_8009BD24;
+
+
 void disp_SetFramebufferMode(s32, s32, s32, s32);
 s32 func_80077820(s32 a0) {
     func_80068F70(a0, (s32 *)&D_8009BD24);
@@ -9081,9 +9028,9 @@ s32 func_80077820(s32 a0) {
 }
 
 extern s32 D_800A35E4;
-s32 func_80069250(void);
+
 s32 func_80077860(void) {
-    if (func_80069250() == 1) {
+    if (((s32 (*)())func_80069250)() == 1) {
         D_800A35E4 = 0;
         return 1;
     }
@@ -9094,7 +9041,7 @@ s32 func_80077894(void) {
     s32 result;
 
     ret = 0;
-    result = func_800693CC();
+    result = ((s32 (*)())func_800693CC)();
     if (result >= 0) {
         s32 *p = &D_8009BD38;
         s32 cur;
@@ -9124,24 +9071,24 @@ void func_80077940(s32 arg0) {
 }
 extern s32 D_800A35E0;
 extern s32 D_800A35E8;
-extern u8 D_8009BD24[];
+
 void func_8006E534(s32, s32, u8*, s32);
 s32 func_80077984(s32 a0) {
     func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
     disp_SetFramebufferMode(1, 0, 0, 0);
     return 1;
 }
-s32 func_8006EACC(void);
+
 void func_8005B6FC(void);
 s32 func_800779C8(void) {
-    s32 ret = func_8006EACC();
+    s32 ret = ((s32 (*)())func_8006EACC)();
     if (ret) {
         func_8005B6FC();
     }
     return ret;
 }
 extern s32 D_800A35E4;
-void func_8006D74C(s32, s32);
+
 void func_80077A04(s32 a0, s32 a1) {
     D_800A35E4 = 0;
     func_8006D74C(a0, a1);
@@ -9154,12 +9101,12 @@ void func_80077A28(void) {
     disp_SetFramebufferMode(1, 0, 0, 0);
     func_8006D7FC();
 }
-void func_8006E068(void);
+
 void func_80077A60(void) {
-    func_8006E068();
+    ((void (*)())func_8006E068)();
 }
 extern s32 D_800A35E8;
-extern s32 D_8009BD24;
+
 s32 func_800770B8(s32, s32, s32);
 void disp_SetFramebufferMode(s32, s32, s32, s32);
 s32 func_80077A80(s32 a0) {
@@ -9168,15 +9115,15 @@ s32 func_80077A80(s32 a0) {
     return 1;
 }
 
-void func_80077724(void);
+
 void func_80077AC0(void) {
-    func_80077724();
+    ((void (*)())func_80077724)();
 }
-void func_8006E10C(void);
+
 void func_80077AE0(void) {
     func_8006E10C();
 }
-void func_8006E2A8(void);
+
 void func_80077B00(void) {
     func_8006E2A8();
 }

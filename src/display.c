@@ -35,7 +35,7 @@ extern u32 D_80015FDC;
 extern u32 g_gpu_draw_mode;
 
 extern u32 g_str_setdispmask;
-extern u32 g_str_clearimage;
+
 extern u8 D_80015F2C;
 extern u8 D_80015F38;
 extern u8 D_80015F4C;
@@ -234,7 +234,7 @@ void DrawOTag(s32 a0) {
     }
 }
 extern u32 g_str_putdrawenv;
-extern s32 SetDrawEnv2(s32 *, s32 *);
+
 
 typedef struct { s32 a, b, c, d; } _drawenv_q;
 typedef struct { s32 a, b, c; } _drawenv_t;
@@ -657,7 +657,7 @@ s32 get_dx(s16 *arg0) {
 u32 _status(void) {
     return *g_gpu_stat_reg;
 }
-extern s32 set_alarm();
+extern void set_alarm(void);
 extern s32 get_alarm();
 extern volatile s32 *D_8009BF58;
 extern volatile s32 *D_8009BF5C;
@@ -866,7 +866,7 @@ void _addque(s32 a0, s32 a1, s32 a2) {
 extern volatile s32 *D_8009BF48;
 extern volatile s32 D_8009BF78;
 extern volatile s32 D_8009BF7C;
-extern s32 set_alarm();
+
 
 void _exeque();                           /* extern */
 s32 get_alarm();                                /* extern */
@@ -943,7 +943,7 @@ extern s32 D_80016044;
 extern volatile u32 *g_gpu_dma_madr;
 extern volatile int *D_8009BF64;
 extern volatile s32 D_8009BF68[];
-extern s32 D_8009BF6C;
+
 extern s32 D_8009BF70;
 extern s32 printf();
 s32 _reset(s32 arg0) {
@@ -1296,43 +1296,8 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 LoadAverageShort12(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
-    s32 v0;
-    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
-    __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
-    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
-    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
-    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
-    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B98003D");             /* gpf 1 */
-    __asm__ volatile (".word 0x8CA80000" :: "r"(a1));  /* lw $t0, 0($a1) */
-    __asm__ volatile (".word 0x8CAA0004" :: "r"(a1));  /* lw $t2, 4($a1) */
-    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
-    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
-    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
-    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
-    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4BA8003E");             /* gpl 1 */
-    __asm__ volatile (".word 0x48084800");             /* mfc2 $t0, $9 */
-    __asm__ volatile (".word 0x48095000");             /* mfc2 $t1, $10 */
-    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
-    __asm__ volatile (".word 0x00094C00");             /* sll $t1, $t1, 16 */
-    __asm__ volatile (".word 0x01094025");             /* or $t0, $t0, $t1 */
-    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
-    __asm__ volatile (".word 0x480A5800");             /* mfc2 $t2, $11 */
-    __asm__ volatile (".word 0xADA80000");             /* sw $t0, 0($t5) */
-    __asm__ volatile (".word 0xADAA0004");             /* sw $t2, 4($t5) */
-    (void)out;
-    return v0;
-}
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", LoadAverageShort12);
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"
@@ -1344,104 +1309,12 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 LoadAverageShort0(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
-    s32 v0;
-    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
-    __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
-    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
-    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
-    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
-    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
-    __asm__ volatile (".word 0x8CA80000" :: "r"(a1));  /* lw $t0, 0($a1) */
-    __asm__ volatile (".word 0x8CAA0004" :: "r"(a1));  /* lw $t2, 4($a1) */
-    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
-    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
-    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
-    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
-    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
-    __asm__ volatile (".word 0x48084800");             /* mfc2 $t0, $9 */
-    __asm__ volatile (".word 0x48095000");             /* mfc2 $t1, $10 */
-    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
-    __asm__ volatile (".word 0x00094C00");             /* sll $t1, $t1, 16 */
-    __asm__ volatile (".word 0x01094025");             /* or $t0, $t0, $t1 */
-    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
-    __asm__ volatile (".word 0x480A5800");             /* mfc2 $t2, $11 */
-    __asm__ volatile (".word 0xADA80000");             /* sw $t0, 0($t5) */
-    __asm__ volatile (".word 0xADAA0004");             /* sw $t2, 4($t5) */
-    (void)out;
-    return v0;
-}
-s32 LoadAverageByte(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
-    s32 v0;
-    __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
-    __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
-    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
-    __asm__ volatile (".word 0x90A80000" :: "r"(a1));  /* lbu $t0, 0($a1) */
-    __asm__ volatile (".word 0x90A90001" :: "r"(a1));  /* lbu $t1, 1($a1) */
-    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
-    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile (".word 0x240B000C");             /* addiu $t3, $zero, 0xC */
-    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
-    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
-    __asm__ volatile (".word 0x4808C800");             /* mfc2 $t0, $25 */
-    __asm__ volatile (".word 0x4809D000");             /* mfc2 $t1, $26 */
-    __asm__ volatile (".word 0x01684007");             /* srav $t0, $t0, $t3 */
-    __asm__ volatile (".word 0x01694807");             /* srav $t1, $t1, $t3 */
-    __asm__ volatile (".word 0xA1A80000");             /* sb $t0, 0($t5) */
-    __asm__ volatile (".word 0xA1A90001");             /* sb $t1, 1($t5) */
-    (void)out;
-    return v0;
-}
-s32 LoadAverageCol(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
-    s32 v0;
-    __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
-    __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
-    __asm__ volatile (".word 0x908A0002" :: "r"(a0));  /* lbu $t2, 2($a0) */
-    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
-    __asm__ volatile (".word 0x90A80000" :: "r"(a1));  /* lbu $t0, 0($a1) */
-    __asm__ volatile (".word 0x90A90001" :: "r"(a1));  /* lbu $t1, 1($a1) */
-    __asm__ volatile (".word 0x90AA0002" :: "r"(a1));  /* lbu $t2, 2($a1) */
-    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
-    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
-    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
-    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
-    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
-    __asm__ volatile (".word 0x240B000C");             /* addiu $t3, $zero, 0xC */
-    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
-    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
-    __asm__ volatile (".word 0x4808C800");             /* mfc2 $t0, $25 */
-    __asm__ volatile (".word 0x4809D000");             /* mfc2 $t1, $26 */
-    __asm__ volatile (".word 0x480AD800");             /* mfc2 $t2, $27 */
-    __asm__ volatile (".word 0x01684007");             /* srav $t0, $t0, $t3 */
-    __asm__ volatile (".word 0x01694807");             /* srav $t1, $t1, $t3 */
-    __asm__ volatile (".word 0x016A5007");             /* srav $t2, $t2, $t3 */
-    __asm__ volatile (".word 0xA1A80000");             /* sb $t0, 0($t5) */
-    __asm__ volatile (".word 0xA1A90001");             /* sb $t1, 1($t5) */
-    __asm__ volatile (".word 0xA1AA0002");             /* sb $t2, 2($t5) */
-    (void)out;
-    return v0;
-}
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", LoadAverageShort0);
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", LoadAverageByte);
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", LoadAverageCol);
 PAD_NOPS_1; /* 1 NOP after func_8007E1AC */
 __asm__(
     ".section .text\n"
@@ -2428,33 +2301,33 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after gte_GetScreenXY */
-s32 ReadGeomScreen(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
+s32 ReadGeomScreen(void) { s32 ret; __asm__ volatile ("cfc2 %0, $26" : "=r" (ret)); return ret; }
 PAD_NOPS_1; /* 1 NOP after gte_GetH */
 void SetBackColor(s32 a0, s32 a1, s32 a2) {
     a0 <<= 4;
     a1 <<= 4;
     a2 <<= 4;
-    __asm__ volatile (".word 0x48C46800" :: "r"(a0));  /* ctc2 $a0, $13 */
-    __asm__ volatile (".word 0x48C57000" :: "r"(a1));  /* ctc2 $a1, $14 */
-    __asm__ volatile (".word 0x48C67800" :: "r"(a2));  /* ctc2 $a2, $15 */
+    __asm__ volatile ("ctc2 %0, $13" :: "r"(a0));  /* ctc2 $a0, $13 */
+    __asm__ volatile ("ctc2 %0, $14" :: "r"(a1));  /* ctc2 $a1, $14 */
+    __asm__ volatile ("ctc2 %0, $15" :: "r"(a2));  /* ctc2 $a2, $15 */
 }
 void SetFarColor(s32 a0, s32 a1, s32 a2) {
     a0 <<= 4;
     a1 <<= 4;
     a2 <<= 4;
-    __asm__ volatile (".word 0x48C4A800" :: "r"(a0));  /* ctc2 $a0, $21 */
-    __asm__ volatile (".word 0x48C5B000" :: "r"(a1));  /* ctc2 $a1, $22 */
-    __asm__ volatile (".word 0x48C6B800" :: "r"(a2));  /* ctc2 $a2, $23 */
+    __asm__ volatile ("ctc2 %0, $21" :: "r"(a0));  /* ctc2 $a0, $21 */
+    __asm__ volatile ("ctc2 %0, $22" :: "r"(a1));  /* ctc2 $a1, $22 */
+    __asm__ volatile ("ctc2 %0, $23" :: "r"(a2));  /* ctc2 $a2, $23 */
 }
 void SetGeomOffset(s32 a0, s32 a1) {
     a0 <<= 16;
     a1 <<= 16;
-    __asm__ volatile (".word 0x48C4C000" :: "r"(a0));  /* ctc2 $a0, $24 */
-    __asm__ volatile (".word 0x48C5C800" :: "r"(a1));  /* ctc2 $a1, $25 */
+    __asm__ volatile ("ctc2 %0, $24" :: "r"(a0));  /* ctc2 $a0, $24 */
+    __asm__ volatile ("ctc2 %0, $25" :: "r"(a1));  /* ctc2 $a1, $25 */
 }
 PAD_NOPS_2; /* 2 NOPs after gte_SetScreenOffset */
 void SetGeomScreen(s32 a0) {
-    __asm__ volatile (".word 0x48C4D000" :: "r"(a0));  /* ctc2 $a0, $26 */
+    __asm__ volatile ("ctc2 %0, $26" :: "r"(a0));  /* ctc2 $a0, $26 */
 }
 PAD_NOPS_1; /* 1 NOP after tslDmaDrawListDelAll */
 __asm__(
@@ -2499,22 +2372,8 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void DpqColor3(s32 *a0, s32 *a1, s32 *a2, s32 a3, s32 *o0, s32 *o1, s32 *o2) {
-    __asm__ volatile (".word 0xC8940000" :: "r"(a0));  /* lwc2 $20, 0($a0) */
-    __asm__ volatile (".word 0xC8B50000" :: "r"(a1));  /* lwc2 $21, 0($a1) */
-    __asm__ volatile (".word 0xC8D60000" :: "r"(a2));  /* lwc2 $22, 0($a2) */
-    __asm__ volatile (".word 0xC8C60000" :: "r"(a2));  /* lwc2 $6,  0($a2) */
-    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4AF8002A");             /* dpct */
-    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
-    __asm__ volatile (".word 0x8FA90014");             /* lw $t1, 0x14($sp) */
-    __asm__ volatile (".word 0x8FAA0018");             /* lw $t2, 0x18($sp) */
-    __asm__ volatile (".word 0xE9140000");             /* swc2 $20, 0($t0) */
-    __asm__ volatile (".word 0xE9350000");             /* swc2 $21, 0($t1) */
-    __asm__ volatile (".word 0xE9560000");             /* swc2 $22, 0($t2) */
-    (void)o0; (void)o1; (void)o2;
-}
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", DpqColor3);
 __asm__(
     ".set\tnoat\n"
     ".set\tnoreorder\n"
@@ -2586,16 +2445,8 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-s32 AverageZ3(s32 a0, s32 a1, s32 a2) {
-    s32 v0;
-    __asm__ volatile (".word 0x48848800" :: "r"(a0));  /* mtc2 $a0, $17 */
-    __asm__ volatile (".word 0x48859000" :: "r"(a1));  /* mtc2 $a1, $18 */
-    __asm__ volatile (".word 0x48869800" :: "r"(a2));  /* mtc2 $a2, $19 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B58002D");              /* avsz3 */
-    __asm__ volatile (".word 0x48023800" : "=r"(v0));  /* mfc2 $v0, $7 */
-    return v0;
-}
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", AverageZ3);
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"
@@ -2607,84 +2458,17 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 AverageZ4(s32 a0, s32 a1, s32 a2, s32 a3) {
-    s32 v0;
-    __asm__ volatile (".word 0x48848000" :: "r"(a0));  /* mtc2 $a0, $16 */
-    __asm__ volatile (".word 0x48858800" :: "r"(a1));  /* mtc2 $a1, $17 */
-    __asm__ volatile (".word 0x48869000" :: "r"(a2));  /* mtc2 $a2, $18 */
-    __asm__ volatile (".word 0x48879800" :: "r"(a3));  /* mtc2 $a3, $19 */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B68002E");              /* avsz4 */
-    __asm__ volatile (".word 0x48023800" : "=r"(v0));  /* mfc2 $v0, $7 */
-    return v0;
-}
-void OuterProduct12(s32 *a0, s16 *a1, s32 *a2) {
-    __asm__ volatile (".word 0x484D0000");             /* cfc2 $t5, $0 */
-    __asm__ volatile (".word 0x484E1000");             /* cfc2 $t6, $2 */
-    __asm__ volatile (".word 0x484F2000");             /* cfc2 $t7, $4 */
-    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
-    __asm__ volatile (".word 0x8C890004" :: "r"(a0));  /* lw $t1, 4($a0) */
-    __asm__ volatile (".word 0x8C8A0008" :: "r"(a0));  /* lw $t2, 8($a0) */
-    __asm__ volatile (".word 0x48C80000");             /* ctc2 $t0, $0 */
-    __asm__ volatile (".word 0x48C91000");             /* ctc2 $t1, $2 */
-    __asm__ volatile (".word 0x48CA2000");             /* ctc2 $t2, $4 */
-    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
-    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9,  0($a1) */
-    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B78000C");             /* op 1 */
-    __asm__ volatile (".word 0xE8D90000" :: "r"(a2));  /* swc2 $25, 0($a2) */
-    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));  /* swc2 $26, 4($a2) */
-    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));  /* swc2 $27, 8($a2) */
-    __asm__ volatile (".word 0x48CD0000");             /* ctc2 $t5, $0 */
-    __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
-    __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
-}
-void OuterProduct0(s32 *a0, s16 *a1, s32 *a2) {
-    __asm__ volatile (".word 0x484D0000");             /* cfc2 $t5, $0 */
-    __asm__ volatile (".word 0x484E1000");             /* cfc2 $t6, $2 */
-    __asm__ volatile (".word 0x484F2000");             /* cfc2 $t7, $4 */
-    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
-    __asm__ volatile (".word 0x8C890004" :: "r"(a0));  /* lw $t1, 4($a0) */
-    __asm__ volatile (".word 0x8C8A0008" :: "r"(a0));  /* lw $t2, 8($a0) */
-    __asm__ volatile (".word 0x48C80000");             /* ctc2 $t0, $0 */
-    __asm__ volatile (".word 0x48C91000");             /* ctc2 $t1, $2 */
-    __asm__ volatile (".word 0x48CA2000");             /* ctc2 $t2, $4 */
-    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
-    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9,  0($a1) */
-    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B70000C");             /* op 0 */
-    __asm__ volatile (".word 0xE8D90000" :: "r"(a2));  /* swc2 $25, 0($a2) */
-    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));  /* swc2 $26, 4($a2) */
-    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));  /* swc2 $27, 8($a2) */
-    __asm__ volatile (".word 0x48CD0000");             /* ctc2 $t5, $0 */
-    __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
-    __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
-}
-s32 Lzc(s32 a0) {
-    s32 v0;
-    __asm__ volatile (".word 0x4884F000" :: "r"(a0));  /* mtc2 $a0, $30 */
-    __asm__ volatile ("nop");
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
-    return v0;
-}
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", AverageZ4);
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", OuterProduct12);
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", OuterProduct0);
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", Lzc);
 PAD_NOPS_1; /* 1 NOP after func_8007F200 */
-s32 RotTransPers(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
-    s32 v1;
-    s32 v0;
-    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
-    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A180001");              /* rtps */
-    __asm__ volatile (".word 0xE8AE0000" :: "r"(a1));  /* swc2 $14, 0($a1) */
-    __asm__ volatile (".word 0xE8C80000" :: "r"(a2));  /* swc2 $8, 0($a2) */
-    __asm__ volatile (".word 0x4843F800" : "=r"(v1));  /* cfc2 $v1, $31 */
-    __asm__ volatile (".word 0x48029800" : "=r"(v0));  /* mfc2 $v0, $19 */
-    *a3 = v1;
-    return v0 >> 2;
-}
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", RotTransPers);
 PAD_NOPS_1; /* 1 NOP after func_8007F21C */
 /* func_8007F24C = LIBGTE SMP_03 RotTransPers3 â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). Triple perspective transform: lwc2 3 SXY0/SXY1/SXY2
@@ -2725,18 +2509,8 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
-void RotTrans(s32 *a0, s32 *a1, s32 *a2) {
-    s32 v0;
-    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
-    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A480012");              /* mvmva 1,0,0,0,0 */
-    __asm__ volatile (".word 0xE8B90000" :: "r"(a1));  /* swc2 $25, 0($a1) */
-    __asm__ volatile (".word 0xE8BA0004" :: "r"(a1));  /* swc2 $26, 4($a1) */
-    __asm__ volatile (".word 0xE8BB0008" :: "r"(a1));  /* swc2 $27, 8($a1) */
-    __asm__ volatile (".word 0x4842F800" : "=r"(v0));  /* cfc2 $v0, $31 */
-    *a2 = v0;
-}
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+INCLUDE_ASM("asm/funcs", RotTrans);
 PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
 /* func_8007F2DC = LIBGTE CMB_00 RotTransPers4 â€” verbatim-linked Sony PsyQ 4.0
  * object (census 2026-07-09). Triple perspective transform PLUS a 4th vertex
@@ -3530,20 +3304,6 @@ __asm__(
     ".set\tat\n"
 );
 PAD_NOPS_2; /* 2 NOPs after func_8007FBBC */
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef volatile u8 vu8;
-typedef volatile s8 vs8;
-typedef volatile u16 vu16;
-typedef volatile s16 vs16;
-typedef volatile u32 vu32;
-typedef volatile s32 vs32;
 #define NULL ((void *)0)
 
 typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
@@ -3691,9 +3451,12 @@ extern s32 CdReset(s32);
 extern s32 CdSyncCallback(s32);
 extern s32 CdReadCallback(s32);
 extern s32 CdReadMode(s32);
-extern s32 def_cbsync;
-extern s32 def_cbready;
-extern s32 def_cbread;
+void def_cbsync(void);
+void def_cbready(void);
+void def_cbread(void);
+
+
+
 extern u32 g_str_cdinit_fail;
 
 s32 CdInit(void) {
