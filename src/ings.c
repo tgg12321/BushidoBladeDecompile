@@ -4,6 +4,7 @@
 #include "system.h"
 #include "code6cac.h"
 #include "bb2_const.h"
+#include "gte.h"
 
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
@@ -818,8 +819,119 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     return SquareRoot12(out[0] + out[1] + out[2]) << 4;
 }
 INCLUDE_ASM("asm/funcs", func_80017848);
-INCLUDE_ASM("asm/funcs", func_80017A44);
-extern void func_80017A44(void *, u8 *);
+extern void func_80017848(u8 *, s32, s32, s32);
+extern void SetRotMatrix(u8 *);
+extern void SetTransMatrix(u8 *);
+extern void RotTrans(s16 *, s32 *, s32 *);
+
+typedef struct {
+    s32 pos[3];
+    s32 field_C;
+    s32 field_10;
+    s32 field_14;
+    s32 index;
+    s32 field_1C;
+    s32 field_20;
+    s32 field_24[4];
+    s32 distance;
+    s32 field_38[2];
+} Func80017A44Record;
+
+typedef struct {
+    s16 count;
+    s16 field_2;
+    SVECTOR *points;
+    s16 *groups;
+    MATRIX *matrix;
+} Func80017A44Input;
+
+typedef struct {
+    u8 field_0[0xC];
+    Func80017A44Record *records;
+} Func80017A44Output;
+
+void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
+    VECTOR pos;
+    VECTOR center;
+    s32 flag;
+    Func80017A44Record *record_base;
+    s16 *groups;
+    s32 valid_count;
+    s32 i;
+    s32 j;
+    s32 group_count;
+    s32 group_id;
+    s32 dist;
+    s32 value;
+
+    center.vx = 0;
+    center.vy = 0;
+    center.vz = 0;
+    valid_count = 0;
+    SetRotMatrix((u8 *)a0->matrix);
+    SetTransMatrix((u8 *)a0->matrix);
+
+    record_base = a1->records;
+    i = 0;
+    if (i < a0->count) {
+        do {
+            record_base[i].index = a0->points[i].pad;
+            RotTrans((s16 *)&a0->points[i], (s32 *)&pos, &flag);
+            pos.vx <<= 7;
+            pos.vy <<= 7;
+            pos.vz <<= 7;
+            if (record_base[i].index >= 0) {
+                valid_count++;
+                center.vx += pos.vx;
+                center.vy += pos.vy;
+                center.vz += pos.vz;
+            }
+            record_base[i].pos[0] = pos.vx;
+            record_base[i].pos[1] = pos.vy;
+            record_base[i].pos[2] = pos.vz;
+            record_base[i].field_C = 0;
+            record_base[i].field_10 = 0;
+            record_base[i].field_14 = 0;
+            record_base[i].field_1C = 0;
+            record_base[i].field_20 = 0;
+            i++;
+        } while (i < a0->count);
+    }
+
+    center.vx /= valid_count;
+    center.vy /= valid_count;
+    center.vz /= valid_count;
+
+    i = 0;
+    if (i < a0->count) {
+        do {
+            value = math_Distance3D_16((s32 *)&center, record_base[i].pos) >> 8;
+            if (value > 0x100) {
+                value = 0x100;
+            }
+            record_base[i].distance = value;
+            i++;
+        } while (i < a0->count);
+    }
+
+    groups = a0->groups;
+    group_count = *groups++;
+    while (group_count != 0) {
+        group_id = *groups++;
+        for (i = 0; i < group_count - 1; i++) {
+            dist = math_Distance3D_16((s32 *)&center, record_base[groups[i]].pos);
+            for (j = i + 1; j < group_count; j++) {
+                if (dist < math_Distance3D_16((s32 *)&center, record_base[groups[j]].pos)) {
+                    func_80017848((u8 *)a1, group_id, groups[i], groups[j]);
+                } else {
+                    func_80017848((u8 *)a1, group_id, groups[j], groups[i]);
+                }
+            }
+        }
+        groups += group_count;
+        group_count = *groups++;
+    }
+}
 typedef struct { s32 v[8]; } ObjBlock;
 s32 func_80017D84(u8 *a0) {
     u8 *p;
