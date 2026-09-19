@@ -47,7 +47,9 @@
    "next_probe": "Once floor reaches 0, cite func_800203B4 and func_8002E838's ledgers/commits as precedent for the 6 asm islands in the self-vet's SANCTIONED-FAMILY-CLAIMS section."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 9 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
+ ],
  "banned_constructs": [],
  "kills": [
   {
@@ -148,5 +150,16 @@
  "origin": "queue",
  "created": "2026-09-17T06:35:28.393949+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "candidate_blocks": {
+  "merge-refused-islands|09b1d2792cb8809e|ccd5c7d5c8af": {
+   "ground": "merge-refused-islands",
+   "body_hash": "09b1d2792cb8809e",
+   "gate_fingerprint": "ccd5c7d5c8af",
+   "count": 1,
+   "first_seen": "2026-09-19T03:26:28.899515+00:00",
+   "last_seen": "2026-09-19T03:26:28.899515+00:00",
+   "remedy": "Either respell the 9 island(s) in C, or \u2014 if this function is enumerated by name in a LANDED owner cluster ruling \u2014 add a row for it to tools/grinder/owner_cluster_grants.txt citing that ruling (operator-only; sessions cannot reach that file)."
+  }
+ }
 }
