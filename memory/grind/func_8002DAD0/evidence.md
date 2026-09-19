@@ -209,3 +209,156 @@ tmp/grind/func_8002DAD0/dumps/code6cac_b.greg:11463-11500).
 - [s5] 6 of 6 generated spellings across the two flat sub-blocks (2 in the dist_sq compute block, 4 in the shift/tbl/dist compute block) scored exactly 6/204 -- the residual 5 operand-only a0/a1 register-seat hunks (per s2/s3's sandbox --disable all --diff classification) are invariant under every source-level respelling this tool can generate in either region.
 
 - [s5] This corroborates, via exhaustive enumeration rather than hand-picked sampling, s3's five manual instance kills on the same/adjacent forms (store/compute reorder, compound-split both directions, named-intermediate for the c8 term, declaration-order change) -- the tool-based sweep covers the space those probes sampled from and finds nothing outside it that helps.
+
+## s6 (synthesis) - MATCHED. Floor 6 -> 0; full-EXE SHA1 == oracle.
+
+**The residual was never a "tie".** It was one deterministic preference bit,
+and the tree's own instrumentation names it in a single read. Sessions 2-5
+attacked the residual by respelling the two flat blocks around `dist_sq`
+(11 banked instance kills + an exhaustive tool sweep, all measuring 6). The
+mechanism lives one level up, in WHICH VARIABLE CARRIES THE Z DELTA.
+
+**Mechanism (read, not inferred).** `BB2_FINDREG_DEBUG=75` (the env-gated
+read-only hook already present at tools/gcc-2.7.2/global.c:1008, never used by
+sessions 1-5 - they used BB2_ALLOC_DEBUG, which does not print preference sets)
+prints for dist_sq's allocno:
+
+    FINDREGDBG func=func_8002DAD0 pseudo=75 alt=0 acc=0 retry=0
+    FINDREGDBG  conflicts: 2 3 12 17 29
+    FINDREGDBG  someone_prefers:
+    FINDREGDBG  pass0_used: 0 1 2 3 12 17 18 19 20 21 22 23 26 27 28 29 30 31
+    FINDREGDBG  own_copy_prefs:
+    FINDREGDBG  own_full_prefs: 5
+
+`own_copy_prefs` EMPTY + `own_full_prefs: 5` is the whole answer. find_reg
+(global.c:1056-1083) first scans hard regs ascending, skipping `pass0_used`;
+the lowest survivor is **4 = $a0 = what the target uses**. Then the preference
+loop at global.c:1130 OVERRIDES that pick with any bit still set in
+`hard_reg_preferences[allocno]` - here 5 = $a1.
+
+Where the bit comes from (chain, each link confirmed against the -da dumps at
+tmp/grind/func_8002DAD0/s6/dumps/):
+  1. `dz` is a fresh block-local referenced only inside one basic block, so
+     local-alloc assigns it a hard register: `;; Register dispositions:`
+     in the .greg shows `125 in 5` (and `126 in 5`, the D0 load temp).
+  2. insn 164 is `(set (reg 130) (mult (reg 125) (reg 125)))`. `mark_reg_store`
+     -> `set_preference(dest=reg130, src=MULT)` (global.c:1484); since
+     GET_RTX_FORMAT(MULT)[0]=='e', src is unwrapped to reg125 and `copy` is set
+     to 0 - which is exactly why a FULL preference is stamped and no COPY
+     preference is. `reg_renumber[125] == 5`, so allocno 130 gets full-pref 5.
+  3. insn 166 is `(set (reg/v 75) (plus (reg 129) (reg 130)))` carrying
+     `REG_DEAD reg129` and `REG_DEAD reg130`. `expand_preferences`
+     (global.c:828) merges preferences between an allocno that DIES in an insn
+     and the allocno that insn SETS, when they do not conflict. The .greg
+     conflict lists confirm neither 75-vs-130 nor 130-vs-75 conflicts, so
+     `hard_reg_preferences[75] |= hard_reg_preferences[130]` = {5}.
+     (129's own pref, 3, is merged too but `prune_preferences` removes it -
+     75 conflicts with 3. 5 survives because 75 does NOT conflict with 5.)
+  4. find_reg's natural $a0 is overridden to $a1. Five operand-only hunks.
+
+**The C lever that follows directly.** A variable referenced in MORE THAN ONE
+BASIC BLOCK is not a local-alloc quantity at all - it is a global allocno with
+`reg_renumber == -1` during `global_conflicts`, so step 2 stamps NOTHING, step 3
+has nothing to merge, and find_reg keeps its natural $a0. Carrying the Z delta
+in one of the function's existing multi-block locals does exactly that.
+
+**Measurements this session (all `sandbox func_8002DAD0 --disable all`):**
+
+| form | score |
+|---|---|
+| s2-s5 chassis (fresh block-local `dz`) | 6 |
+| CONTROL: fresh function-scope `s32 dz2;`, still single-block | **6** |
+| `dist` carries the Z delta (`dist = *(obj+0xD0) >> 6;`) | **5** |
+| `angle2` carries it, same spelling | **5** |
+| `dist` carries it, load split from shift (`dist = *(obj+0xD0); dist >>= 6;`) | **0** |
+| `angle2` carries it, same split | **0** |
+
+The CONTROL is the load-bearing one: it isolates "multi-basic-block carrier" as
+the variable and rules out declaration scope / declaration order (which s3 had
+already killed from the other side).
+
+**The second half of the fix.** With the carrier now a global allocno, the
+unsplit `dist = *(obj+0xD0) >> 6;` leaves TWO pseudos (a local load temp plus
+the global carrier), so ours emitted `lw v1,208(s1); sra a1,v1,6` where the
+target emits `lw a1,208(s1); sra a1,a1,6`, and the D0 store / 0xFA store then
+scheduled in the wrong order (score 5, 3 source-level hunks - banked at
+rejected/s6-dist-reuse-unsplit-load-score5.c). Splitting the load from the shift
+onto the SAME variable routes both through one pseudo and closes everything:
+
+    dist = *(s32 *)(obj + 0xD0);
+    dist >>= 6;
+
+Split-init / compound-assignment splits of this shape are ordinary C
+([[split-init-accumulation-sanctioned]]).
+
+**Final state.** `sandbox func_8002DAD0 --disable all` == **0** (204/204); the
+only remaining `--diff` hunks are the 5 masked branch-target-address artifacts
+that were always there and are classed not-scored. `verify-oracle`:
+`build_matches: true`, `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`
+== the locked oracle - the whole EXE links byte-identical with func_8002DAD0 in
+pure C.
+
+- [s6] The sibling-transplant sweep mandated by the brief was run first and did
+  contribute: reading the MATCHED func_8002E838 body on main (src/code6cac_b.c,
+  its `dist`/`angle`/`lzcr` block) is what made it obvious that the matched
+  sibling uses a small set of long-lived function-scope locals rather than
+  block-scoped temps - the shape this session's fix generalizes. func_8002E838's
+  own dist_sq block needs no carrier trick because its Z term is read straight
+  from memory twice (no shift, hence no `dz` temp and no dying-product
+  preference chain), which is why the sibling never hit this residual.
+- [s6] CITATION for future sessions: `BB2_FINDREG_DEBUG=<pseudo>` (global.c:1008)
+  prints conflicts / someone_prefers / used_so_far / pass0_used / own_copy_prefs
+  / own_full_prefs for ONE pseudo. When a residual is "operand-only, one register
+  differs", run it BEFORE hand-tracing global.c - it answers in one read what s3
+  spent a session failing to hand-derive. Driver script used:
+  tmp/grind/func_8002DAD0/s6/findreg.sh (mirrors dump.ps1's cpp|cc1 pipeline with
+  the instrumented cc1 at tools/gcc-2.7.2/cc1 plus arbitrary env vars, capturing
+  full stderr).
+- [s6] GENERALIZABLE RULE-OF-THUMB (candidate for a technique rule): if a single
+  pseudo lands one register off target and `own_copy_prefs` is EMPTY while
+  `own_full_prefs` is non-empty, the bit did NOT come from a copy - it came from
+  set_preference's `copy=0` path (an arithmetic RHS whose first operand is a
+  local-alloc'd pseudo) and was then propagated by expand_preferences through a
+  REG_DEAD edge. The C-level fix is to change the BASIC-BLOCK SPAN of the
+  variable feeding that arithmetic, not to respell the arithmetic.
+
+## [s7] Re-file of the s6 match (synthesis modality) - bytes re-proven from scratch
+
+Session 6 reached distance 0 but was DISCARDED by the driver validator for a
+paperwork defect in `memory/grind/func_8002DAD0/self_vet.md`: it declared three
+sanctioned families but only two of its three `SCOPE:` quotes sat on a single
+physical line. `tools/grinder/grindlib.py`'s `_SCOPE_LINE` regex is
+`^\s*SCOPE\s*:\s*["“](.+?)["”]\s*$` - the closing quote must be
+followed only by end-of-line, so a scope sentence wrapped across physical lines
+counts as ZERO quotes no matter how faithful it is. The variable-reuse family's
+scope bullet in `.claude/rules/no-new-park-categories.md:185` is a five-line
+bullet, which is exactly how s6 quoted it.
+
+FIX (for every future session, not just this function): quote the scope sentence
+on ONE physical line, collapsing the rule file's own line wrapping. Embedded
+double quotes inside the quoted span are fine (the regex is non-greedy but
+anchored at `$`, so it expands to the last quote on the line). The fix was
+verified mechanically by calling the driver's own validator directly:
+`python3 tmp/grind/func_8002DAD0/s6/check_vet.py` -> `VALIDATOR ok= True`.
+Do this BEFORE writing the outcome JSON - it costs one turn and it is the exact
+check the driver runs.
+
+RE-MEASUREMENT (nothing was taken on trust from s6; the C body is byte-identical
+to s6's, re-applied to src/code6cac_b.c at the `INCLUDE_ASM("asm/funcs",
+func_8002DAD0);` site by tmp/grind/func_8002DAD0/s6/apply.py):
+  - `sandbox func_8002DAD0 --disable all` -> score 0, target_insns 204,
+    build_insns 204, scorable true, rules_dropped 0, cheat_asm_stripped 21.
+  - The `cheat_asm_stripped: 21` is FILE-WIDE and none of it is ours:
+    `engine/inlineasm.py:384 write_stripped` strips the whole TU, and the
+    stripped source it actually compiled
+    (tmp/sandbox/func_8002DAD0/src/code6cac_b.c) still contains all 11 `__asm__`
+    tokens of func_8002DAD0's body. The 0 is therefore measured WITH this
+    function's six GTE/cop2 islands intact - i.e. it is the honest pure-C
+    distance for an ASM-PARTIAL function, not a score obtained by deleting the
+    islands. A future session that sees a non-zero `cheat_asm_stripped` on this
+    file should check the stripped source before concluding anything.
+  - `canonical func_8002DAD0` -> ASM-PARTIAL, 29/204 insns canonical-asm
+    (reasons: GTE/cop2 op c2 / ctc2 / lwc2 / mtc2 / swc2). Unchanged from s1.
+  - `verify-oracle` -> ok true, build_matches true, build_sha1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked. The whole
+    EXE links byte-identical with func_8002DAD0 as C.

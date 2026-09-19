@@ -1,17 +1,24 @@
-/* func_8002DAD0 — session 2 candidate. Measured floor: 6 (was 25 at session
- * start; session-1's floor). Apply this body in place of the
- * INCLUDE_ASM("asm/funcs", func_8002DAD0); line in src/code6cac_b.c (right
- * after func_8002D780, before func_8002DE20). Needs the existing
- * `extern u8 D_8008D118;` (already at src/code6cac_b.c:278) and
- * `extern void RotMatrixX(s32, s32 *); extern void RotMatrixY(s32, s32 *);`
- * (already at src/code6cac_b.c:93-94) in scope — no new externs required.
+/* func_8002DAD0 - session 6 candidate. MEASURED: sandbox --disable all == 0
+ * (204/204 insns; every remaining --diff hunk is a masked branch-target
+ * artifact), and a full clean build links to SHA1
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle.
  *
- * sandbox --disable all --diff at this floor shows 9 hunks, 0 source-level,
- * 5 operand-only (a plain a0<->a1 register-seat tie on dist_sq's final
- * pseudo, propagated through every later use: sltiu/addu/bltz/move/srlv),
- * 4 not-scored (masked branch-target-address cascade artifacts from the
- * 6-insn-earlier region — do not chase). This is the clean frontier for
- * session 3: a register-allocation seat question, not a C-structure one. */
+ * Apply in place of the INCLUDE_ASM("asm/funcs", func_8002DAD0); line in
+ * src/code6cac_b.c (after func_8002D780, before func_8002DE20). Needs the
+ * existing `extern u8 D_8008D118;` (src/code6cac_b.c:278) and
+ * `extern void RotMatrixX(s32, s32 *); extern void RotMatrixY(s32, s32 *);`
+ * (src/code6cac_b.c:93-94) in scope - no new externs.
+ *
+ * NOTE FOR INTEGRATION: the six __asm__ islands are canonical GTE/cop2 SDK
+ * macro bodies (`canonical func_8002DAD0` => ASM-PARTIAL, 29/204 insns
+ * canonical-asm), character-identical to the already-authorized
+ * func_8002E838 (inline_asm_canonical.txt:373) and func_800203B4 (:367).
+ * func_8002DAD0 is an owner-enumerated member of the cop2-addressing-
+ * preamble cluster (.claude/rules/cop2-addressing-preamble-cluster.md:76)
+ * but does NOT yet have its own inline_asm_canonical.txt row; writing that
+ * row is an operator/driver step (that file is outside a grind session's
+ * allowed surface).
+ */
 s32 func_8002DAD0(u8 *obj) {
     s32 *mat;
     s32 sp_tmp;
@@ -71,11 +78,29 @@ s32 func_8002DAD0(u8 *obj) {
     angle1 = ratan2(*(s32 *)(obj + 0xC8), *(s32 *)(obj + 0xD0));
     *(s32 *)(obj + 0xC8) = *(s32 *)(obj + 0xC8) >> 6;
     *(s32 *)(obj + 0xCC) = *(s32 *)(obj + 0xCC) >> 6;
-    {
-        s32 dz = *(s32 *)(obj + 0xD0) >> 6;
-        dist_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8) + dz * dz;
-        *(s32 *)(obj + 0xD0) = dz;
-    }
+    /* FAKE: the scaled Z delta is staged through the function's existing
+     * `dist` local (whose distance value is only assigned by the if/else
+     * below, so `dist` is dead at this point) instead of a fresh
+     * block-local temp, mechanism: GCC 2.7.2 global.c expand_preferences
+     * (tools/gcc-2.7.2/global.c:828) - a single-block fresh temp is
+     * local-alloc'd to a hard reg ($a1), so global.c set_preference
+     * (tools/gcc-2.7.2/global.c:1670) stamps $a1 onto the allocno of the
+     * dying `dz*dz` product, and expand_preferences then merges that
+     * preference onto dist_sq's allocno (the product dies in the insn that
+     * defines dist_sq and the two do not conflict), overriding find_reg's
+     * natural ascending pick of $a0 that the target uses; a variable
+     * referenced in more than one basic block is a GLOBAL allocno
+     * (reg_renumber == -1 during global_conflicts), so no preference is
+     * stamped at all and dist_sq lands in $a0,
+     * lever-exhaustion: memory/grind/func_8002DAD0/hypotheses.md s3 + s5 -
+     * 11 banked instance kills (addition-operand order, store/compute
+     * reorder, both compound-assignment splits, fresh named intermediate,
+     * local-declaration order) plus the exhaustive tools/spelling_enum.py
+     * sweep of both flat blocks touching dist_sq/dist, all measured 6. */
+    dist = *(s32 *)(obj + 0xD0);
+    dist >>= 6;
+    dist_sq = *(s32 *)(obj + 0xC8) * *(s32 *)(obj + 0xC8) + dist * dist;
+    *(s32 *)(obj + 0xD0) = dist;
     *(s16 *)(obj + 0xFA) = 0x800 - angle1;
 
     if ((u32)dist_sq < 0x400) {

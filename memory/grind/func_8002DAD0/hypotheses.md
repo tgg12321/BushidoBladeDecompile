@@ -421,3 +421,126 @@ construction from scratch — instead:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact 4-spelling enumerated space (shift/tbl/dist compute block only) on the current chassis (floor 6)
+
+## [s6, synthesis] H6 CONFIRMED - dist_sq's $a1 seat is an expand_preferences merge from the dying `dz*dz` product, and it disappears when the Z-delta carrier is a multi-basic-block variable
+**Statement:** dist_sq's allocno carries `own_full_prefs: 5` and an EMPTY
+`own_copy_prefs`, so the bit was stamped by global.c set_preference's `copy == 0`
+path (arithmetic RHS, first operand unwrapped) onto the allocno of the `dz*dz`
+product, and then merged onto dist_sq by global.c expand_preferences because the
+product dies in the insn that defines dist_sq and the two allocnos do not
+conflict. The stamp is only possible because a fresh block-local `dz` is a
+local-alloc quantity with a real `reg_renumber`; a carrier variable referenced in
+more than one basic block is a global allocno (`reg_renumber == -1` at
+global_conflicts time), so no preference exists and find_reg keeps its natural
+ascending pick of $a0, which is what the target uses.
+**Mechanism:** tools/gcc-2.7.2/global.c:1484 (mark_reg_store -> set_preference),
+:1670 (set_preference, `copy=0` for an 'e'-format RHS), :828
+(expand_preferences REG_DEAD merge), :882 (prune_preferences), :1056-1083
+(find_reg's ascending pass-0/pass-1 scan) and :1130 (the preference override).
+**Probe:** (a) ran the pre-existing read-only hook `BB2_FINDREG_DEBUG=75` through
+the project's exact cpp|cc1 pipeline with the instrumented cc1
+(tmp/grind/func_8002DAD0/s6/findreg.sh) and read the preference sets directly;
+(b) confirmed every link of the chain against the -da .lreg/.greg dumps
+(`;; Register dispositions: ... 125 in 5 126 in 5`, insn 164's mult, insn 166's
+two REG_DEAD notes, the 75/130 conflict lists); (c) measured four carrier
+variants plus a control.
+**Result:** CONTROL (fresh function-scope `s32 dz2;` still used in only one basic
+block) = 6, unchanged - so declaration scope is not the lever. `dist` as carrier
+= 5; `angle2` as carrier = 5 (both kill all five a0/a1 operand-only hunks).
+`dist` as carrier WITH the load split from the shift onto the same variable
+(`dist = *(s32 *)(obj + 0xD0); dist >>= 6;`) = **0**; `angle2` with the same
+split = **0**. `verify-oracle` then reported build_matches=true with
+build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (the locked oracle).
+**Verdict:** CONFIRMED
+
+## [s6] H7 CONFIRMED - the second residual after the carrier fix is a two-pseudo load/shift, closed by splitting the load from the shift onto the same variable
+**Statement:** With the Z delta carried by a global-allocno variable, the
+unsplit `dist = *(s32 *)(obj + 0xD0) >> 6;` still produces two pseudos - a
+single-block load temp and the multi-block carrier - so the load lands in $v1
+and the shift writes $a1 (`lw v1,208(s1); sra a1,v1,6`) where the target uses one
+register for both (`lw a1,208(s1); sra a1,a1,6`), and the D0 store schedules
+after the 0xFA store instead of before it.
+**Mechanism:** one C variable is one pseudo in GCC 2.7.2, so writing the load and
+the shift into the SAME variable collapses the pair; ordinary split-init /
+compound-assignment splitting, no exception needed
+([[split-init-accumulation-sanctioned]]).
+**Probe:** measured `dist = *(s32 *)(obj + 0xD0) >> 6;` (5, banked at
+rejected/s6-dist-reuse-unsplit-load-score5.c) against
+`dist = *(s32 *)(obj + 0xD0); dist >>= 6;` (0). Also measured `dist = dist >> 6;`
+as a spelling variant of the same split: also 0 (identical bytes); `>>=` kept as
+the more idiomatic form.
+**Verdict:** CONFIRMED
+
+## [s6] KILL RE-AUDIT of the s3/s5 instance kills - all 11 stand as INSTANCE kills and none was void, but they were all measured on the WRONG level
+**Statement:** Every s3/s5 kill varied the SHAPE of the dist_sq arithmetic while
+holding the carrier a fresh single-basic-block block-local. On the s6 mechanism
+that variable choice is the thing that stamps the preference, so the entire s3/s5
+search space sat inside one fixed value of the deciding parameter; the kills are
+accurate for that parameter value and were correctly scoped `instance`. No FAKE
+construct was present on the s2-s5 chassis, so `tools/fake_ablate.py` had nothing
+to ablate; the re-audit was performed instead by re-measuring the chassis
+(6, matching the driver's dispatch-time chassis check exactly) and by running the
+CONTROL variant, which reproduces a kill-equivalent result (6) from the opposite
+direction and pins the cause.
+**Mechanism:** see H6.
+**Probe:** re-measured the s2-s5 candidate.c on the current chassis (6) and the
+fresh-function-scope-local control (6) before any new probe.
+**Verdict:** CONFIRMED (the kills stand; their scope was the limiting factor,
+not their accuracy)
+
+## Frontier (reset by s6)
+The function is MATCHED and the frontier is now integration-only:
+1. **inline_asm_canonical.txt row.** func_8002DAD0 has no row of its own. Its
+   six islands are character-identical to func_8002E838 (:373) and
+   func_800203B4 (:367), and .claude/rules/cop2-addressing-preamble-cluster.md:76
+   names func_8002DAD0 as a cluster member. `canonical func_8002DAD0` =>
+   ASM-PARTIAL, 29/204 insns canonical-asm. Writing that row is an
+   operator/driver step (the file is outside a grind session's surface).
+2. **D_8008D118 declaration.** The byte LUT has no header declaration anywhere;
+   the TU-local `extern u8 D_8008D118;` (src/code6cac_b.c:278) plus
+   `*(((u8 *)&D_8008D118) + idx)` is the shipped idiom of the matched
+   COMPLETED-C func_8002D320 in this same file (:1154, :1170) and 6 further
+   sites. A proper `extern u8 D_8008D118[];` declaration is a TU-wide change
+   touching 9 already-matched functions - a separate, deliberate integration
+   task, not something to slip into this match.
+3. **Generalization.** The H6 mechanism is not specific to this function. Any
+   residual of the shape "one pseudo, one register off, operand-only hunks only"
+   should start with `BB2_FINDREG_DEBUG=<pseudo>`: empty `own_copy_prefs` with a
+   non-empty `own_full_prefs` means the bit came from set_preference's copy=0
+   path and travelled through an expand_preferences REG_DEAD edge, and the C-level
+   fix is to change the basic-block span of the variable feeding the arithmetic.
+   Worth promoting to a technique rule under codegen-technique-index.
+
+## [s7] The s6 body reproduces distance 0 on a fresh apply - the match is not chassis-luck
+**Statement:** Re-applying memory/grind/func_8002DAD0/candidate.c (byte-identical
+to the s6 body, including the single FAKE-annotated `dist` staging) to the
+`INCLUDE_ASM("asm/funcs", func_8002DAD0);` site in src/code6cac_b.c reproduces
+`sandbox --disable all` == 0 (204/204) and a full-build SHA1 equal to the locked
+oracle, in a session that shares nothing with s6 but the file on disk.
+**Mechanism:** none needed - this is a reproduction check, not a lever. It exists
+because the driver's dispatch-time chassis check and the s6 ledger disagreed
+(chassis said 0, ledger floor said 6), and a chassis discontinuity is exactly the
+situation where a banked spelling conclusion must be re-measured rather than
+quoted.
+**Probe:** tmp/grind/func_8002DAD0/s6/apply.py -> `sandbox func_8002DAD0
+--disable all` -> 0; `canonical func_8002DAD0` -> ASM-PARTIAL 29/204;
+`verify-oracle` -> build_matches true, 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+**Verdict:** CONFIRMED
+
+## [s7] A self_vet SCOPE quote wrapped across physical lines is worth ZERO quotes to the driver
+**Statement:** `tools/grinder/grindlib.py`'s `_SCOPE_LINE` regex anchors the
+closing quote to end-of-line, so a `SCOPE:` quotation that wraps onto a second
+physical line is not counted at all, and a candidate-ready session whose family
+count exceeds its single-line scope count is discarded before any review runs -
+which is the only reason s6's proven match did not land.
+**Mechanism:** grindlib.py:83 `_SCOPE_LINE`, consumed by
+grindlib.py:validate_self_vet (the `len(scopes) < len(fams)` branch at
+grindlib.py:119).
+**Probe:** rewrote all three SCOPE quotes as single physical lines and ran the
+driver's validator directly (tmp/grind/func_8002DAD0/s6/check_vet.py) ->
+`VALIDATOR ok= True`, reason empty. Before the rewrite the same call reported the
+3-families/2-scopes failure verbatim.
+**Verdict:** CONFIRMED
+
+## Frontier (unchanged from s6 - integration-only)
+The function is MATCHED; see the s6 frontier above. Nothing new was opened.

@@ -140,7 +140,11 @@
   }
  ],
  "ladder_skip": 0,
- "pending_fixup": null,
+ "pending_fixup": {
+  "kind": "citation",
+  "detail": "Constructs are clean and I verified every prerequisite, but the GTE islands fail the cluster rule's dated condition-3 citation requirement and the vet's island precedent is wrong for three of six islands (the real in-file precedent is func_8002FC80/func_8002FDB0, not func_8002E838/func_800203B4) - a one-comment re-cite, no construct ban. Re-cite only; do not re-grind and do not touch the C. (1) Per cluster condition 3 (owner ruling 2026-09-02), rewrite the island comments to name the macro and its header line: island 1 = gte_ldopv1-class OP-diagonal load (ctc2 $0/$2/$4 = RT11/RT22/RT33), islan",
+  "set": "2026-09-19T03:09:07.955859+00:00"
+ },
  "origin": "queue",
  "created": "2026-09-17T06:35:28.393949+00:00",
  "object_model_audited": 1,
