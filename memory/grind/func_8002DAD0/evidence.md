@@ -362,3 +362,84 @@ func_8002DAD0);` site by tmp/grind/func_8002DAD0/s6/apply.py):
   - `verify-oracle` -> ok true, build_matches true, build_sha1
     62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked. The whole
     EXE links byte-identical with func_8002DAD0 as C.
+
+## [s6 · synthesis] Island provenance found: Sony PsyQ `inline_o.h` (DMPSX v3)
+
+RE-MEASURED FIRST (chassis discontinuity in the brief was real and benign — the
+banked body measures 0, the ledger's "floor 6" is from before s6 solved the
+a0/a1 seat): `sandbox func_8002DAD0 --disable all` -> score 0, 204/204,
+cheat_asm_stripped 21 (file-wide, ours intact). Confirmed twice this session,
+before and after the comment re-cite, with `tmp/grind/func_8002DAD0/s6/apply.py`
+(which now `git checkout`s src/code6cac_b.c before splicing — the earlier
+version anchored onto whatever was already applied and produced ONE invalid
+measurement before it was caught; if a future session sees a nonsensical score,
+check the applied file first).
+
+THE FINDING. All nine islands are verbatim expansions of NAMED Sony macros from
+PsyQ's DMPSX header `inline_o.h` — "Macro definitions of DMPSX version 3",
+$PSLibId: Run-time Library Release 4.5$, Copyright(C) 1996 Sony Computer
+Entertainment Inc. That header spells every GTE primitive as a run of
+SINGLE-instruction `__asm__ volatile` blocks that stage the address through a
+hard `$12` (`move $12,%0`) and hard-code `$13/$14/$15`; `inline_c.h` spells the
+same primitives `%0`-relative with no preamble. Example, `gte_ldopv1(r1)`
+(inline_o.h:192-200) vs our island 1: identical instruction for instruction,
+register for register. Full table (all 9 islands, header line numbers, the
+header banner):  memory/grind/func_8002DAD0/psyq_inline_o_provenance.md
+Header copy lives at (gitignored scratch clone)
+tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_o.h.
+
+Consequences:
+  - The two layer-1 citation FAILs (2026-09-18 22:09 and 22:39) were both
+    caused by citing the WRONG HEADER: attributing these bodies to inline_c.h
+    leaves the `move`/`addu` preamble and the delay `nop`s unattributable, and
+    the reviewer correctly kept finding uncited instructions. candidate.c's
+    island comments now cite inline_o.h macro-by-macro (comments only — the
+    body hash is unchanged).
+  - It explains the whole 28-function cop2-addressing-preamble cluster: the
+    idiom the cluster rule calls a handwritten signature is ordinary compiled C
+    whose GTE macros expand that way. This is also why `scan_hand_coded
+    --single func_8002DAD0` measures **tier=LOW, score=1/8** (S4 only) and why
+    that tier will never be STRONG for this family — the STRONG-tier
+    canonical-asm door cannot open for it by construction.
+
+GATE MECHANICS (read before proposing an island respelling):
+  - engine strip (`engine/inlineasm.py:_block_category`): a block survives iff
+    it contains >=1 cop2 instruction. A GPR-only block is "cheat" and is
+    deleted before scoring.
+  - driver island gate (`tools/grinder/grind.ps1:967`, owner Ruling C):
+    a MULTI-instruction block is flagged iff it contains >=1 NON-cop2/non-nop
+    instruction (`tools/audit_asm_cheats.py:_is_whitelisted_insn`); single-insn
+    blocks are skipped entirely.
+  These two are in direct opposition: a block passes both only if it contains
+  ONLY cop2/nop instructions. Every GPR preamble instruction therefore has to
+  come from C — and it cannot (measured, see hypotheses s6 H1/H2/H3).
+  - macro DEFINITIONS are skipped by the stripper only when the `__asm__` sits
+    on a physical line whose start is `#` — in a multi-line macro definition
+    only the first line qualifies. But the decisive fact is simpler:
+    `write_stripped` only ever rewrites `src/<stem>.c`, so macros defined in a
+    HEADER are outside the stripper's reach entirely.
+
+DISPOSITION: filed as an INTEGRATION HANDOFF in docs/grind/decisions.md
+(2026-09-18 entry, line ~28314) with the two doors that land it: (1) one row in
+tools/grinder/owner_cluster_grants.txt, the same row seven sibling cluster
+members already carry; (2) a Judge scope grant for include/gte.h so the Sony
+macro set can live in the project header and the body can be written as macro
+invocations. Door (2) is deliberately NOT self-approved — the mechanism that
+makes it clear the island gate is that a header is outside the cheat-stripper's
+reach, and that is a Judge question, not an agent question.
+
+- [s6] Re-measured this session with memory/grind/func_8002DAD0/candidate.c applied to src/code6cac_b.c: `sandbox func_8002DAD0 --disable all` -> score 0, target_insns 204, build_insns 204, scorable true, rules_dropped 0, cheat_asm_stripped 21 (file-wide; this function's own islands are intact in the stripped source). Confirmed twice, before and after the comment re-cite.
+
+- [s6] The brief's CHASSIS DISCONTINUITY is real and benign: the banked body measures 0 and the ledger's 'floor 6' predates s6's solution of the a0/a1 register seat. Floor is 0.
+
+- [s6] PROVENANCE (new): all nine islands are verbatim expansions of named Sony PsyQ DMPSX inline_o.h macros; per-island header line numbers in memory/grind/func_8002DAD0/psyq_inline_o_provenance.md. inline_c.h, which earlier sessions cited, spells the same primitives %0-relative with no move preamble — the root cause of both layer-1 citation FAILs.
+
+- [s6] candidate.c's island comments were re-cited to inline_o.h macro-by-macro. COMMENTS ONLY: the code lines are identical to the previous body (verified by comment-stripped diff, 139 lines both sides), so the driver's comment-insensitive body hash is unchanged and no review loop is re-opened by a respelling.
+
+- [s6] The two gates are in direct opposition: engine/inlineasm.py:_block_category keeps a block only if it contains a cop2 instruction, while tools/audit_asm_cheats.py:_is_whitelisted_insn (the driver's island gate, grind.ps1:967) flags a multi-instruction block for any non-cop2/non-nop instruction. A block passes both only if it holds cop2/nop instructions exclusively, so every GPR preamble instruction would have to come from C — and measurement H1 shows the target's bytes contain it.
+
+- [s6] tools/scan_hand_coded.py --single func_8002DAD0 -> tier=LOW, score=1/8 (S4 front-loads only). The STRONG-tier canonical-asm door cannot open for this family by construction; the owner-cluster registry door is the one that fits, and func_8002DAD0 is enumerated by name in the landed 2026-08-17 cluster ruling (.claude/rules/cop2-addressing-preamble-cluster.md:76) but has no row in tools/grinder/owner_cluster_grants.txt (seven sibling members do).
+
+- [s6] memory/grind/func_8002DAD0/self_vet.md was rewritten and verified against the driver's own validator (tmp/grind/func_8002DAD0/s6/check_vet.py -> ok=True): two claimed families, each with its scope sentence quoted on ONE physical line and a file:line precedent. This clears the defect that discarded the previous session.
+
+- [s6] tmp/grind/func_8002DAD0/s6/apply.py now restores src/code6cac_b.c from git before splicing. The earlier version anchored onto whatever was already applied and produced one mis-spliced measurement before it was caught; any future session reusing it gets a clean baseline per variant.

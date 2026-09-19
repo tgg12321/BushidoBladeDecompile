@@ -28310,3 +28310,96 @@ Constructs are clean and I verified every prerequisite, but the GTE islands fail
 ## 2026-09-18 22:39 — func_8002DAD0 — layer-1 review — **FAIL (citation-only)**
 
 Constructs all verify clean (FAKE dist-reuse meets staged-value-reused-variable's six bounds with real receipts; every island shape is character-identical to landed authorized siblings), but three islands carry `nop` instructions that fall outside every macro range the comments cite - a condition-3 citation gap, not a substantive cheat.
+
+## 2026-09-18 — func_8002DAD0 — OWNER-ESCALATION — **INTEGRATION HANDOFF (bytes proven, honest score 0): the 9 in-body islands are verbatim Sony `inline_o.h` macro bodies; the remaining step is a grant door, or `include/gte.h` scope**
+
+Filed by grind session 6 (synthesis modality). This is **not** an exhaustion
+claim and not an endgame lock: the function's bytes are PROVEN and the only
+thing standing between the banked body and COMPLETED status is a one-line edit
+to a file no grind session may stage.
+
+### Bytes claim (re-measured THIS session, not inherited)
+With `memory/grind/func_8002DAD0/candidate.c` applied over the
+`INCLUDE_ASM("asm/funcs", func_8002DAD0);` line in `src/code6cac_b.c`:
+
+    sandbox func_8002DAD0 --disable all
+      -> score 0, target_insns 204, build_insns 204, scorable true,
+         rules_dropped 0, cheat_asm_stripped 21 (file-wide, none of it ours)
+
+A prior session (s7) additionally ran `verify-oracle` on this same body:
+build_matches true, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the
+locked original. The C body has not changed since (identical driver body
+hash); session 6 changed only comments.
+
+### Why the merge is refused today
+`tools/grinder/grind.ps1:967` (owner Ruling C 2026-09-02) refuses a merge when
+`island_count` > 0 and the function is not in `inline_asm_canonical.txt`.
+func_8002DAD0 has 9 islands that `tools/audit_asm_cheats.py`'s
+`scan_c_body_smuggled_work` flags, because each contains non-cop2 instructions
+(`move $12,%0`, `lw/lhu/sll/or`, delay `nop`s) alongside its cop2 ops. The
+grant door `grindlib.grant_canonical_asm` needs either a STRONG
+`scan_hand_coded` tier or a row in `tools/grinder/owner_cluster_grants.txt`.
+Measured this session: `python3 tools/scan_hand_coded.py --single
+func_8002DAD0` -> **tier=LOW, score=1/8** (S4 only). func_8002DAD0 is NOT in
+the registry, although it IS enumerated by name in the landed 2026-08-17 owner
+cluster ruling's membership census
+(`.claude/rules/cop2-addressing-preamble-cluster.md:76`).
+
+### The finding that resolves the Judge's remedy #1 ("respell the islands in C")
+The islands are **verbatim expansions of named Sony macros** from PsyQ's DMPSX
+header `inline_o.h` ("Macro definitions of DMPSX version 3", $PSLibId:
+Run-time Library Release 4.5$, Copyright(C) 1996 Sony Computer Entertainment
+Inc.). That header spells every GTE primitive as a run of SINGLE-instruction
+`__asm__ volatile` blocks that stage the address through a hard `$12`
+(`move $12,%0`) and hard-code `$13/$14/$15`. PsyQ's other header,
+`inline_c.h`, spells the same primitives `%0`-relative with no preamble.
+Island-by-island table with header line numbers:
+`memory/grind/func_8002DAD0/psyq_inline_o_provenance.md`. This also explains
+the whole 28-function cop2-addressing-preamble cluster — the idiom the cluster
+rule calls a handwritten signature is compiled C whose GTE macros expand that
+way, which is why the cluster's `scan_hand_coded` tier is and will remain LOW.
+
+Three respellings were measured this session, all on the bytes-proven chassis:
+
+| form | measurement | file |
+|---|---|---|
+| island 3 as the authentic `inline_c.h` `%0`-relative `gte_stlvnl` (zero hard GPRs, whitelist-clean) | score 0 -> **4**, build_insns 204 -> 203 | `rejected/s6-stlvnl-pct0-offset-score4.c` |
+| island 1 as the VERBATIM `inline_o.h` per-instruction form (what Sony's header literally contains) | engine cheat-stripper classifies each GPR-only single-insn block as cheat-asm (21 -> 25 stripped); function absent from the sandbox object, **unscorable** | `rejected/s6-inline-o-per-insn-stripped.c` |
+| whole body as Sony macro INVOCATIONS, macro set defined TU-locally in `src/code6cac_b.c` | stripper removes the macro bodies too (21 -> 46 stripped), score **83**, build_insns 139 | `rejected/s6-sdk-macro-tu-local-score83.c` |
+
+So "respell the islands in C" is measured dead on this chassis: the preamble
+instructions are IN the target bytes (removing one costs 4), and the two
+spellings that would clear the island scanner are erased by the sandbox's own
+cheat-stripper when they live in the TU.
+
+### Operator / driver steps (either one lands this function)
+1. **Preferred, one line:** add
+   `func_8002DAD0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)`
+   to `tools/grinder/owner_cluster_grants.txt` — the same row seven sibling
+   members already have. `grant_canonical_asm` then admits it through the
+   OWNER-CLUSTER door, writes the `inline_asm_canonical.txt` line itself, and
+   the next session's candidate merges through the full normal gates.
+2. **Alternative, needs a Judge scope grant:** widen scope to `include/gte.h`
+   (an allowed class under `.claude/rules/integration-handoff-self-serve.md`;
+   `inline_asm_canonical.txt` and `tools/**` are denylisted) so the Sony DMPSX
+   macro set can be added to the project's GTE header and this body rewritten
+   as macro INVOCATIONS — `gte_ldopv1(p); gte_op0(); gte_stlvnl(q); ...`,
+   which is how the original source read. In a header the macro bodies are
+   never seen by `engine/inlineasm.py:write_stripped` (it only rewrites
+   `src/<stem>.c`) and the function body then contains no `__asm__` text at
+   all, so `island_count` is 0 and no allowlist row is needed. **This route
+   needs a Judge ruling before it is used**, precisely because the mechanism
+   that makes it work is that the header is outside the stripper's reach: the
+   session that found it is not willing to self-approve that, even though the
+   macro bodies are Sony's own text and `include/gte.h` already hosts this
+   class of macro (`gte_mvmva`, `gte_ctc2`, ... at `include/gte.h:88-101`).
+
+### What is NOT being claimed
+Not exhaustion, not an endgame lock, not a policy blocker. The pure-C/canonical
+end state exists and is banked; the gate is administrative. Re-activation is
+automatic the moment either door above is opened (a gate-file edit changes
+`gate_fingerprint` and retires the recorded candidate block by construction).
+
+## 2026-09-18 23:13 — func_8002DAD0 — ruling: INTEGRATION HANDOFF filed for func_8002DAD0 : docs/grind/decisions.md 2026-09-18 — **FAIL**
+
+Bytes claim is SOUND and I verified it: hypotheses.md:518-527 (s7 fresh re-apply -> sandbox 0, 204/204; verify-oracle build_matches, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa), evidence.md:213, and the driver's 2026-09-18 22:26 refusal fired only at the island gate. Provenance verified myself in the cited header (tmp/.../rood-reverse/include/psx/inline_o.h): gte_ldopv1 @192-200, ldopv2 @201-206, ldlzc @207-211, stlvnl @904-909, ldlv0 @95-103 are verbatim matches. Good, honest research. Neither remedy is mine to grant. Door 1 (tools/grinder/owner_cluster_grants.txt) is path-denylisted (integration-handoff-self-serve.md:71, anything under tools/). Door 2 is a CHEAT: its only working mechanism, as the session itself states, is that a header sits outside engine/inlineasm.py:write_stripped, whose docstring (:384-391) names the exact invariant it defeats - 'a candidate carrying cheats must not score as if it had none'; the same macro set measured in-TU stripped 21->46, score 83. Relocating GPR-pinned asm so island_count reads 0 also records a canonical-asm body as COMPLETED-C, and the header form's bytes are UNMEASURED, so integration-handoff's proven-bytes precondition fails independently. Canonical-asm-grant door is likewise shut: I re-ran tools/scan_hand_coded.py --single -> tier=LOW 1/8, S4 only (no S1/S2/S6). Recorded for the owner's cadence: the one door that fits this bytes-proven body is a single operator row in owner_cluster_grants.txt, whose own header limits rows to the 'proven-or-near-floor set' - which func_8002DAD0 now is (floor 0), and it is named in the landed cluster census (.claude/rules/cop2-addressing-preamble-cluster.md:76). That row is an operator action, not a Judge scope grant.

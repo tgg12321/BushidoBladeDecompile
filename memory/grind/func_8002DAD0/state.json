@@ -1,8 +1,8 @@
 {
  "func": "func_8002DAD0",
  "file": "code6cac_b",
- "session_count": 5,
- "current_modality": "enumerate",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -33,22 +33,34 @@
    "floor": 6,
    "modality": "enumerate",
    "headline": "enumerate: tools/spelling_enum.py + sweep_variants.py exhaustively swept both structurally-flat blocks touching dist_sq/dist (2 + 4 = 6 spellings total, incl. full-inline forms); all scored 6/204, ide"
+  },
+  {
+   "session": 6,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "Bytes re-proven at 0 this session; found the islands' provenance (verbatim Sony PsyQ inline_o.h DMPSX macro bodies, 9/9 cited by header line), measured all three island respellings dead, and filed the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The a0-vs-a1 register-seat tie on dist_sq's final pseudo is not resolvable by respelling either of the two flat blocks that read/write it -- both are now exhaustively swept. The tie's origin is upstream: either in how dist_sq/dist values are threaded across the if/else branch structure itself (which spelling_enum.py cannot safely enumerate -- nested control flow), or in the RA/scheduler machinery per s3's frontier (tools/gcc-2.7.2/global.c set_preference/expand_preferences/prune_preferences).",
-   "mechanism": "Unidentified -- s3's frontier item, unchanged. A future session should use tools/ra_solver's inverse_compose.py classify (per the solver-suite section of the role brief) to get a typed REACHABLE/FORECLOSED verdict on this specific register-seat tie before spending more hand/enum probes on it.",
-   "next_probe": "Run tools/ra_solver/inverse_compose.py classify against this function's a0/a1 tie (dump-driven, per the SOLVER SUITE section) to determine whether this is a genuinely C-reachable RA seat or a foreclosed scheduler artifact, before attempting another permuter campaign (s4's workspace-construction bugs are fixed; only the pycparser lexer blocker remains unresolved, per s4's frontier)."
+   "hypothesis": "The function is byte-complete; the only remaining question is which door admits it. Door 1: one row for func_8002DAD0 in tools/grinder/owner_cluster_grants.txt (operator-only) makes grindlib.grant_canonical_asm admit it through the OWNER-CLUSTER evidence door and the driver writes the inline_asm_canonical.txt line itself.",
+   "mechanism": "grindlib.py:grant_canonical_asm's second evidence door (owner ruling 2026-08-30); seven sibling cluster members already carry exactly this row. A gate-file edit also changes gate_fingerprint, which retires the recorded candidate block automatically.",
+   "next_probe": "Once the row exists, re-apply memory/grind/func_8002DAD0/candidate.c, re-measure 0, and submit candidate-ready with the already-validated self_vet.md (body hash unchanged, so the Judge decides once)."
   },
   {
-   "hypothesis": "Once the register-seat mechanism is understood or bypassed via a lever that empirically works, the function should close to 0 -- all 6 __asm__ islands are already verbatim SDK-macro-body forms proven byte-exact and precedented by func_800203B4/func_8002E838.",
-   "mechanism": "N/A -- bookkeeping frontier item for the eventual candidate-ready self-vet (unchanged from s2/s3/s4).",
-   "next_probe": "Once floor reaches 0, cite func_800203B4 and func_8002E838's ledgers/commits as precedent for the 6 asm islands in the self-vet's SANCTIONED-FAMILY-CLAIMS section."
+   "hypothesis": "Door 2: with include/gte.h in scope, the Sony DMPSX macro set can live in the project's GTE header and this body can be written as macro invocations (gte_ldopv1(p); gte_op0(); gte_stlvnl(q); ...) \u2014 the shape the original source had \u2014 leaving zero __asm__ text in the function body and therefore island_count 0, with no allowlist row needed.",
+   "mechanism": "engine/inlineasm.py:384 write_stripped only rewrites src/<stem>.c, so header-hosted macro bodies are never stripped; include/*.h is an allowed scope class under .claude/rules/integration-handoff-self-serve.md (inline_asm_canonical.txt and tools/** are denylisted). include/gte.h already hosts this class of macro (gte_mvmva, gte_ctc2 at include/gte.h:88-101).",
+   "next_probe": "Judge ruling first \u2014 this route works BECAUSE a header is outside the cheat-stripper's reach, which is exactly the kind of thing a session must not self-approve. If the Judge grants scope_paths=[\"include/gte.h\"], add the verbatim Sony macro bodies (table in psyq_inline_o_provenance.md), rewrite the body as invocations, and re-measure; the TU-local version of the same experiment measured 83, so the header placement must be verified, not assumed."
+  },
+  {
+   "hypothesis": "The provenance finding generalises: every other member of the cop2-addressing-preamble cluster can have each of its islands cited to a named inline_o.h macro at a header line, which is what the cluster rule's condition 3 asks for, and their LOW scan tiers are explained rather than anomalous.",
+   "mechanism": "Same DMPSX macro set; the cluster's shared idiom IS the macro expansion (memory/grind/func_8002DAD0/psyq_inline_o_provenance.md).",
+   "next_probe": "When a sibling cluster member reaches a citation review, cite inline_o.h (not inline_c.h) for its preamble and delay-nop instructions."
   }
  ],
  "judge_constraints": [
-  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 9 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
+  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 9 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)",
+  "Do not host or relocate GPR-pinned __asm__ bodies outside src/<stem>.c (headers included) to zero island_count or evade write_stripped; the proven body is banked - spend no further sessions on grant engineering for func_8002DAD0."
  ],
  "banned_constructs": [],
  "kills": [
@@ -139,14 +151,34 @@
    "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact 4-spelling enumerated space (shift/tbl/dist compute block only) on the current chassis (floor 6)",
    "predicate_cite": "",
    "result": "All 4 variants (named/named, named/inlined, inlined/named, inlined/inlined for shift/tbl) scored 6/204, identical to bas"
+  },
+  {
+   "session": 6,
+   "statement": "Replacing the gte_stlvnl island at obj+0xC8 (move $12,%0 plus three $12-relative swc2) with PsyQ inline_c.h's own %0-relative body (swc2 $25,0(%0); swc2 $26,4(%0); swc2 $27,8(%0)) \u2014 zero hardcoded GPR",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0 on the bytes-proven s6 chassis (baseline score 0, 204/204), FAKE dist-reuse construct present, only this one island respelled",
+   "predicate_cite": "",
+   "result": "score 0 -> 4, target_insns 204, build_insns 203. One instruction is lost (the addu/move preamble) and the three swc2 ope"
+  },
+  {
+   "session": 6,
+   "statement": "Writing gte_ldopv1 exactly as Sony's inline_o.h does \u2014 seven single-instruction __asm__ volatile blocks with the full \"$12\",\"$13\",\"$14\",\"$15\",\"memory\" clobber list \u2014 keeps the function scorable at 0 w",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0 on the bytes-proven s6 chassis, FAKE dist-reuse construct present, only island 1 respelled",
+   "predicate_cite": "",
+   "result": "cheat_asm_stripped 21 -> 25 and the scorer reports 'func_8002DAD0 not found in tmp/sandbox/func_8002DAD0/code6cac_b.o' \u2014"
+  },
+  {
+   "session": 6,
+   "statement": "Defining the Sony DMPSX macro set (gte_ldopv1/ldopv2/op0/stlvnl/Lzc/SetRotMatrix/ldlv0/rtv0, verbatim inline_o.h bodies) at file scope inside src/code6cac_b.c and writing the body as macro invocations",
+   "kill_scope": "instance",
+   "measured_on": "src/code6cac_b.c func_8002DAD0 on the bytes-proven s6 chassis, FAKE dist-reuse construct present, macro definitions TU-local (header case deliberately not tested \u2014 out of scope)",
+   "predicate_cite": "",
+   "result": "multi-line form: cheat_asm_stripped 21 -> 49, unscorable. One-line form: cheat_asm_stripped 21 -> 46, score 83, build_in"
   }
  ],
  "ladder_skip": 0,
- "pending_fixup": {
-  "kind": "citation",
-  "detail": "Constructs all verify clean (FAKE dist-reuse meets staged-value-reused-variable's six bounds with real receipts; every island shape is character-identical to landed authorized siblings), but three islands carry `nop` instructions that fall outside every macro range the comments cite - a condition-3 citation gap, not a substantive cheat. One-comment re-cite, no construct change and no re-grind. (1) In the gte_ldopv2 island comment, name the OP block as PsyQ macro gte_op0() (inline_c.h:784-787 = `nop; nop; .word <op0>`), i.e. the island is gte_ldopv2 (inline_c.h:221-226) + gte_op0 (inline_c.h:78",
-  "set": "2026-09-19T03:39:47.657995+00:00"
- },
+ "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-17T06:35:28.393949+00:00",
  "object_model_audited": 1,
