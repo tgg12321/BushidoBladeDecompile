@@ -1,8 +1,8 @@
 {
  "func": "func_8002DAD0",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,17 +21,23 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Floor held at 6; five more C-level orderings of the dist_sq block (operand swap, store/compute reorder, compound-split both directions, named-intermediate, decl-order) all measured neutral-or-worse; h"
+  },
+  {
+   "session": 4,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Floor unchanged at 6 (re-confirmed, same a0/a1 register-seat tie); built and debugged a working per-function permuter workspace but hit an unresolved decomp-permuter pycparser lexer error before any s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "dist_sq's a0-vs-a1 register-seat preference in global.c's allocation table is real (confirmed in the .greg dump) but its originating insn/mechanism is not one of the direct paths this session traced (insns 183, 225, or an expand_preferences dead-note merge with allocno 78) -- some other insn or an indirect/transitive chain is responsible.",
-   "mechanism": "tools/gcc-2.7.2/global.c's set_preference (line 1670) / expand_preferences (line 828) / prune_preferences (line 882) machinery, exact triggering insn unidentified.",
-   "next_probe": "Either (a) emit a ruling-request asking whether a temporary read-only diagnostic print inside global.c's set_preference (dumping allocno+hardreg+insn-UID at the point a preference bit is SET, before pruning) is in-scope given the grind contract's blanket 'never edit tools/' line, noting the existing BB2_ALLOC_DEBUG hook at global.c:379/605 is the same class of read-only instrumentation already present and unmodified this session; or (b) hand-simulate global_conflicts's FULL per-insn scan (not just the reg75-touching subset) against the complete .lreg insn stream to find an indirect/transitive preference chain this session's narrower trace missed."
+   "hypothesis": "The a0-vs-a1 register-seat tie on dist_sq's final pseudo is real (confirmed in the .greg dump) but its originating insn/mechanism remains untraced (per s3's frontier); a permuter search over declaration-order/operand-order/staging variants for the pure-C dist_sq region could find a spelling that flips it, but needs a working permuter campaign first.",
+   "mechanism": "tools/gcc-2.7.2/global.c set_preference/expand_preferences/prune_preferences machinery, exact triggering insn still unidentified (s3 frontier, unchanged this session).",
+   "next_probe": "Regenerate tmp/perm_8002DAD0/base.c FRESH from cc1 (do not reuse the checked-in tmp/ copy, which carries an abandoned regex string-collapse and is not verified safe outside func_8002DAD0's own region); apply only the obj+0xNN -> &obj[0xNN] asm-operand rewrite; then resolve the pycparser 'Illegal character' lexer error properly (read tools/decomp-permuter's own preprocessing source for how it handles multi-line adjacent string literals, rather than hand-rolling a whole-file regex) before attempting another launch. Full 5-step recipe in hypotheses.md [s4] Frontier update."
   },
   {
-   "hypothesis": "Once the register-seat mechanism is understood (or bypassed via a lever that empirically works), the function should close to 0 -- all 6 __asm__ islands are already verbatim SDK-macro-body forms proven byte-exact and precedented by func_800203B4/func_8002E838, so no fresh canonical-asm review is needed for them.",
-   "mechanism": "N/A -- bookkeeping frontier item for the eventual candidate-ready self-vet.",
+   "hypothesis": "Once the register-seat mechanism is understood or bypassed via a lever that empirically works, the function should close to 0 \u2014 all 6 __asm__ islands are already verbatim SDK-macro-body forms proven byte-exact and precedented by func_800203B4/func_8002E838.",
+   "mechanism": "N/A \u2014 bookkeeping frontier item for the eventual candidate-ready self-vet (unchanged from s2/s3).",
    "next_probe": "Once floor reaches 0, cite func_800203B4 and func_8002E838's ledgers/commits as precedent for the 6 asm islands in the self-vet's SANCTIONED-FAMILY-CLAIMS section."
   }
  ],
@@ -101,6 +107,14 @@
    "measured_on": "src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact declaration order only",
    "predicate_cite": "",
    "result": "score unchanged at 6"
+  },
+  {
+   "session": 4,
+   "statement": "Directed permuter campaign on the a0/a1 register-seat tie requires a bespoke per-function permuter workspace, which needed three real tooling fixes (asm-operand grammar restricted to unary_expression,",
+   "kill_scope": "instance",
+   "measured_on": "N/A (tooling/workspace-construction result, not a measurement of candidate C on the real toolchain). The real-toolchain floor (6, same 5 operand-only a0/a1 hunks as s2/s3) was independently re-confirm",
+   "predicate_cite": "",
+   "result": "Launch failed both before and after a same-session attempt to mechanically collapse the GTE asm blocks' multi-line adjac"
   }
  ],
  "ladder_skip": 0,

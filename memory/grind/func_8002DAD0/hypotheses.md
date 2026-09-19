@@ -346,3 +346,53 @@ floor-6 form, still the best known).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/code6cac_b.c func_8002DAD0, pure C, zero FAKE constructs, this exact declaration order only
+
+## [s4] Directed permuter campaign on the a0/a1 register-seat tie requires a bespoke per-function permuter workspace, which needed three real tooling fixes before it could compile the chassis at all.
+- mechanism: N/A — this is an infrastructure-construction finding, not a C-source hypothesis. Three independent bugs blocked `tools/permuter_campaign.py launch` from ever reaching a live search on this function:
+  1. decomp-permuter's bundled pycparser fork restricts GNU extended-asm operands to `unary_expression` (`asm_operand : ... unified_string_literal LPAREN unary_expression RPAREN`, `tools/decomp-permuter/perm_pycparser/c_parser.py:2109`) — it cannot parse `"r"(obj + 0xA8)` (a pointer-arithmetic/additive expression), only a workspace-local rewrite to `"r"(&obj[0xA8])` (array-subscript, which reduces through postfix_expression -> unary_expression) satisfies its grammar. This is a permuter-tooling limitation, not a real candidate-C defect; the committed candidate.c keeps the original `obj + 0xA8` spelling.
+  2. Running a Python `open(...).write()` text-mode rewrite of the workspace's preprocessed base.c via the Windows-side Bash tool (not inside WSL) silently converted the whole file to CRLF line endings (confirmed via `file` + byte-count diff: 4670/4670 lines flipped) — this is the documented `windows-python-crlf-write-text` failure mode; it broke every downstream `awk`/regex line-anchor match (`$` doesn't match before a trailing `\r`) and produced spurious cc1 parse errors starting exactly at the edited region. Fix: only ever rewrite workspace .c files from inside a WSL-launched script (`newline="\n"` / binary mode), never via a bare `python3 -c` through the Windows Bash tool.
+  3. A full-TU compile of `src/code6cac_b.c` must feed cpp's output to cc1 via **stdin pipe** (`cpp ... | cc1 - -o ...` or `cc1 ... < file.i`), matching the Makefile's pipe-based invocation exactly — passing the preprocessed file as a **filename argument** to cc1 instead produces a corrupted/empty body for func_8002DAD0 specifically (cc1's error-recovery state from an unrelated pre-existing parse error many lines earlier, in `func_80035280`, propagates differently depending on stdin-vs-argv input mode). Confirmed by direct A/B compile of the identical preprocessed content through both invocation forms.
+- probe: Built `tmp/perm_8002DAD0/` (base.c preprocessed from `src/code6cac_b.c`, compile.sh mirroring `tools/mar_perm_workspace.sh`'s full-TU-compile + per-function-extraction pattern, target.o built from the RAW ORACLE BYTES at VA 0x8002DAD0-0x8002DE20 via `objcopy -I binary` + section rename to `.text` — NOT from assembling `asm/funcs/func_8002DAD0.s`, since that file's ASPSX-mnemonic GTE ops (`mvmva 1,0,0,3,0`, `op 0`) have no GNU-`as`-compatible spelling and there is no maspsx-equivalent translator for standalone .s files). After fixing bugs 1-3 above, `bash tmp/perm_8002DAD0/compile.sh tmp/perm_8002DAD0/base.c func_8002DAD0 tmp/perm_8002DAD0/base.o` reproduces the real 204-insn body (verified byte-identical instruction count to the engine sandbox's own build). Then attempted `python3 tools/permuter_campaign.py launch --func func_8002DAD0 --dir tmp/perm_8002DAD0 --label s4_regseat -j 4 --stop-on-zero`.
+- result: launch still fails — a FOURTH, unresolved pycparser front-end issue: after fix 1, the permuter's own preprocessor/lexer throws `Illegal character '"'` inside the GTE asm string-literal blocks (multiple adjacent `"instr\n"` string-literal-per-physical-line templates, which are valid ISO C adjacent-string-literal concatenation but appear to defeat whatever line-oriented pre-pass the permuter runs before pycparser proper). A same-session attempt to mechanically collapse each multi-line adjacent-string run into one single-line string literal (regex-based, `tmp/grind/func_8002DAD0/s4/fix_asm_strings.py`) still compiled correctly through the real toolchain (204 insns, byte-identical) but did NOT fix the permuter's lexer error, and a naive regex boundary risked corrupting unrelated code elsewhere in the 4670-line TU (observed: a later launch attempt's error pointed at a plain C statement `sq = x * x + z * z;` inside a bogus merged-string span from a DIFFERENT, false-positive-matched function) — this path was abandoned this session rather than risk shipping a mis-transcribed workspace. No permuter search iterations ever ran; the campaign never reached the point of generating or scoring a single mutation.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: N/A — this is a tooling/workspace-construction result, not a measurement of the candidate C on the real toolchain. The real-toolchain floor (6, same 5 operand-only a0/a1 hunks) was independently re-confirmed this session via `sandbox func_8002DAD0 --disable all --diff` before any permuter work began — see evidence.md.
+
+## Frontier update [s4]
+The permuter workspace for func_8002DAD0 now EXISTS and compiles correctly
+(`tmp/perm_8002DAD0/{base.c,compile.sh,target.o,settings.toml}` — base.c is
+currently in the POST-string-collapse-attempt state, i.e. NOT safe to launch
+as-is; see below). A future permuter session should NOT re-derive workspace
+construction from scratch — instead:
+1. Regenerate `base.c` fresh from `mipsel-linux-gnu-cpp` on `src/code6cac_b.c`
+   (do NOT reuse the checked-in tmp/ copy — it carries the abandoned
+   string-collapse regex's partial edits and is not verified byte-safe
+   outside func_8002DAD0's own region).
+2. Apply ONLY the `obj + 0xNN` -> `&obj[0xNN]` operand rewrite inside
+   func_8002DAD0's two `"r"(obj + ...)` asm operands (this workspace-only
+   respelling is required for the permuter's pycparser fork and does not
+   change real codegen — verified byte-identical insn count/objdump both
+   ways on the real toolchain).
+3. Solve the "Illegal character '"'" pycparser lexer error properly: either
+   (a) find the ACTUAL cause in decomp-permuter's own preprocessing (it may
+   be model/version-specific — check `tools/decomp-permuter/src/preprocess.py`
+   or equivalent for how it strips/retokenizes comments and strings before
+   handing off to pycparser, rather than hand-rolling a regex collapse), or
+   (b) as a narrower workaround, rewrite JUST func_8002DAD0's own six asm
+   blocks (not a whole-file regex) to single-line string literals by hand,
+   verifying with a targeted diff that no other function's text was touched.
+4. Only after compile.sh AND a permuter launch both succeed against a clean
+   base.c should a real campaign run (fresh-seed discipline, 20-30 min,
+   `tools/permuter_campaign.py wait` in-turn, `harvest --stop` before session
+   end).
+5. Always write any workspace .c file mutation via a WSL-launched script
+   (never a bare Windows-side `python3 -c`) — see the CRLF-corruption entry
+   above; this cost the majority of this session's turns once already.
+
+## [s4] Directed permuter campaign on the a0/a1 register-seat tie requires a bespoke per-function permuter workspace, which needed three real tooling fixes (asm-operand grammar restricted to unary_expression, a Windows-Python CRLF-corruption trap, a stdin-vs-argv cc1 full-TU compile bug) before it could even compile the chassis, and a fourth unresolved pycparser lexer issue then blocked the campaign from ever launching.
+- mechanism: N/A — infrastructure-construction finding, not a C-source/GCC-pass hypothesis. See memory/grind/func_8002DAD0/hypotheses.md [s4] for the full mechanism of each of the three fixed bugs and the one unresolved blocker.
+- probe: Built tmp/perm_8002DAD0/ (base.c preprocessed from src/code6cac_b.c, compile.sh mirroring tools/mar_perm_workspace.sh, target.o built from raw oracle EXE bytes via objcopy since asm/funcs/func_8002DAD0.s's ASPSX GTE mnemonics have no GNU-as encoding). Fixed the asm-operand grammar (obj+0xNN -> &obj[0xNN]), the CRLF corruption (rewrite via WSL script only), and the cc1 stdin-vs-argv bug; workspace then compiled the real 204-insn body correctly. Attempted tools/permuter_campaign.py launch --func func_8002DAD0 --dir tmp/perm_8002DAD0 --label s4_regseat -j 4 --stop-on-zero.
+- result: Launch failed both before and after a same-session attempt to mechanically collapse the GTE asm blocks' multi-line adjacent string literals into single-line strings (tmp/grind/func_8002DAD0/s4/fix_asm_strings.py) — decomp-permuter's pycparser fork still threw 'Illegal character "' during its own preprocessing/lexing pass, and the regex-based collapse risked corrupting unrelated code elsewhere in the 4670-line TU (a later attempt's error pointed at a plain statement in a different, false-positive-matched function), so it was abandoned rather than risk a mistranscribed workspace. Zero permuter search iterations ran; no mutation was ever generated or scored.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: N/A (tooling/workspace-construction result, not a measurement of candidate C on the real toolchain). The real-toolchain floor (6, same 5 operand-only a0/a1 hunks as s2/s3) was independently re-confirmed this session via sandbox --disable all --diff before any permuter work began.
