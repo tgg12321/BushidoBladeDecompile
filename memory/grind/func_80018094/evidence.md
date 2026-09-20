@@ -1068,3 +1068,13 @@ journal.
 - [s11] Judge constraints in this brief are explicit and current-dated (2026-09-15 refusal of pipeline-grantability) — no scope supersedes them this session.
 
 - [s11] git status --short shows only metrics/events.jsonl modified (pre-existing, unrelated to this session) — no src/ or ledger dirt introduced.
+
+- [s12] tools/grinder/owner_cluster_grants.txt has zero func_80018094 rows as of this session (grep confirmed).
+
+- [s12] docs/grind/owner_actions.md carries a committed (c1a2311b) OPEN entry for func_80018094 dated 2026-09-20 stating the pipeline never waits on it and it is rotated/returns automatically.
+
+- [s12] docs/grind/decisions.md:28560 records a same-day (2026-09-20 01:40) Judge FAIL on an identical integration-handoff filing: the requested owner_cluster_grants.txt row is refused both because grindlib.py:466-497 blocks driver writes under tools/ by path class, and because the 2026-09-15 ruling itself named that widening as REFUSED (decisions.md:27036).
+
+- [s12] The same 01:40 ruling independently re-ran tools/scan_hand_coded.py --single func_80018094 and got tier=LOW score=1/8 (S4 only) — the canonical-asm endgame-lock door is also shut, not just the cluster-grant door.
+
+- [s12] No git dirt outside session scope: git status --short shows only the pre-existing metrics/events.jsonl modification noted at session start; no src/ or docs/ changes were made this session.

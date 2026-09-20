@@ -1,8 +1,8 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,6 +69,12 @@
    "floor": 0,
    "modality": "rederive",
    "headline": "s11 rederive: function already at floor 0, blocked solely on operator-only owner_cluster_grants.txt row (owner ruling 2026-09-15 refused pipeline-grantability) \u2014 verified row still absent, no C re-ope"
+  },
+  {
+   "session": 12,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "func_80018094 remains bytes-proven (sandbox 0/153) and fully blocked on the operator-only owner_cluster_grants.txt row; s12 verified the row is still absent and the OPEN owner_actions.md entry is comm"
   }
  ],
  "frontier": [
@@ -79,7 +85,7 @@
   },
   {
    "hypothesis": "No pure-C or spelling work remains on this function; it is fully solved pending an operator-only action outside grind scope.",
-   "mechanism": "Floor 0, 153/153 insns, full-link SHA1 match already achieved and re-verified across sessions 10 and 11.",
+   "mechanism": "Floor 0, 153/153 insns, full-link SHA1 match already achieved and re-verified across sessions 10, 11, and now 12 (grant-absence + committed-entry check).",
    "next_probe": "None on the C side. Do not dispatch rederive/synthesis/enumerate modalities here until the grant row lands or a new Judge ruling changes the blocker."
   }
  ],
@@ -87,7 +93,8 @@
   "The LZC island's operand list must stay exactly the granted form (`: \"=m\"(sp_tmp[0]) : \"r\"(sum_sq) : \"$2\", \"$12\"`); no extra output, tied/matching (\"0\"/\"1\"), or clobber operand may be added to any __asm__ in this function to make the compiler materialise a copy. The pre-island `move $a0,$a1` must come from ordinary C or the function stays INCOMPLETE.",
   "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 3 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)",
   "Comment-only fix-up: (1) add the gte_Lzc macro-name + header-line citation (gtemac.h:174-178; inline_c.h:228-231, :1346-1347, :1318-1322) to the LZC island's comment, disclosing the addressing preamble; (2) revert the 16 mojibake'd em-dash comment lines outside func_80018094 so git diff src/code6cac.c contains only this function's hunk. Body must not change. Merge additionally needs an operator row in tools/grinder/owner_cluster_grants.txt (outside session scope).",
-  "Do not re-file the integration handoff or re-open the C: the owner_cluster_grants.txt row is operator-only and owner ruling 2026-09-15 explicitly refused making it pipeline-grantable - confirm the row's absence with one grep, confirm the owner_actions.md OPEN entry is committed, and return immediately (state.json frontier #2)."
+  "Do not re-file the integration handoff or re-open the C: the owner_cluster_grants.txt row is operator-only and owner ruling 2026-09-15 explicitly refused making it pipeline-grantable - confirm the row's absence with one grep, confirm the owner_actions.md OPEN entry is committed, and return immediately (state.json frontier #2).",
+  "Do not re-file this integration handoff or re-open the C: confirm the owner_cluster_grants.txt row's absence with one grep, confirm the OPEN owner_actions.md entry is committed, and return immediately (state.json frontier #2)."
  ],
  "banned_constructs": [],
  "kills": [
@@ -386,6 +393,14 @@
    "measured_on": "chassis 2026-09-20 (-mel -msoft-float), candidate.c body f5e49e3dddc24d62 (unchanged, not re-applied to src/ this session), no FAKE-construct changes",
    "predicate_cite": "",
    "result": "Row absent, entry committed, floor unchanged at 0. No C work performed \u2014 none is warranted or permitted by the ledger's "
+  },
+  {
+   "session": 12,
+   "statement": "On this chassis, the tools/grinder/owner_cluster_grants.txt func_80018094 row remains absent, and docs/grind/owner_actions.md carries a committed OPEN entry (commit c1a2311b, 2026-09-20) recording the",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-20 (-mel -msoft-float), candidate.c body f5e49e3dddc24d62 (unchanged, not reapplied to src/ this session), no FAKE constructs touched this session",
+   "predicate_cite": "",
+   "result": "Confirmed exactly the state the s11/s10 ledger predicted: no grant row, OPEN handoff entry present and committed. A same"
   }
  ],
  "ladder_skip": 0,

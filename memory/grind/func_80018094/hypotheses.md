@@ -1155,3 +1155,11 @@ C-expressible (respell them in C)" — is open for this body.*
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-20 (-mel -msoft-float), candidate.c body f5e49e3dddc24d62 (unchanged, not re-applied to src/ this session), no FAKE-construct changes
+
+## [s12] On this chassis, the tools/grinder/owner_cluster_grants.txt func_80018094 row remains absent, and docs/grind/owner_actions.md carries a committed OPEN entry (commit c1a2311b, 2026-09-20) recording the exact one-line operator remedy authorized by owner Ruling 3 (2026-09-15).
+- mechanism: grep of the grants file returns zero matches; git log/status on owner_actions.md shows the entry already committed and clean, matching the s11/s10-established frontier that this function needs no further session-side action until the operator appends that row.
+- probe: grep -n func_80018094 tools/grinder/owner_cluster_grants.txt (no match); git status --short + git log -1 -- docs/grind/owner_actions.md (clean, committed at c1a2311b); grep -n 2026-09-20.*func_80018094 docs/grind/decisions.md (shows the 01:40 FAIL ruling that already re-confirmed the operator-only refusal and canonical-asm tier LOW this same day).
+- result: Confirmed exactly the state the s11/s10 ledger predicted: no grant row, OPEN handoff entry present and committed. A same-day (2026-09-20 01:40) Judge ruling already re-litigated this identical remedy request and FAILed it on the same operator-only-file grounds, plus a fresh scan_hand_coded run at tier LOW (1/8, S4 only) — so re-filing another integration-handoff entry this session would just duplicate that ruling with no new information.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-20 (-mel -msoft-float), candidate.c body f5e49e3dddc24d62 (unchanged, not reapplied to src/ this session), no FAKE constructs touched this session
