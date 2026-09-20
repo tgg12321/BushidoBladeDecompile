@@ -291,6 +291,14 @@
    "at": "2026-09-20T09:25:55.244066+00:00",
    "headline": "Forensics s9: floor 6 -> 2 with ZERO source-level hunks left - moving `sound = 4;` to the END of both inner-switch arms keeps reg_set_last's CODE_LABEL stop (refusing the jump.c:1178 store-flag fold, ",
    "consumed": null
+  },
+  {
+   "from": "func_8006ECF4",
+   "floor": 60,
+   "session": 2,
+   "at": "2026-09-20T10:16:31.441464+00:00",
+   "headline": "Re-confirmed s2's first C body (113), then found 3 more source-level levers: staged b*2 named intermediate, Rect (4xs16) struct-copy type fix, and switch/goto replacing manufactured tookCase flag -- f",
+   "consumed": null
   }
  ]
 }

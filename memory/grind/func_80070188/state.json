@@ -63,6 +63,14 @@
    "at": "2026-09-10T20:34:07.758718+00:00",
    "headline": "func_80070C70 COMPLETED-C",
    "consumed": null
+  },
+  {
+   "from": "func_8006ECF4",
+   "floor": 60,
+   "session": 2,
+   "at": "2026-09-20T10:16:31.443465+00:00",
+   "headline": "Re-confirmed s2's first C body (113), then found 3 more source-level levers: staged b*2 named intermediate, Rect (4xs16) struct-copy type fix, and switch/goto replacing manufactured tookCase flag -- f",
+   "consumed": null
   }
  ]
 }

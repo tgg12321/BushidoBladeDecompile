@@ -1,31 +1,37 @@
 {
  "func": "func_8006ECF4",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 209,
    "modality": "recon",
    "headline": "Recon complete: traced full control flow from asm, found the data-model signals' scalar/sub-symbol framing likely wrong for D_800A3588/D_800A358C/D_800A3561 (asm shows array-indexed access, not fixed-"
+  },
+  {
+   "session": 2,
+   "floor": 60,
+   "modality": "structural",
+   "headline": "Re-confirmed s2's first C body (113), then found 3 more source-level levers: staged b*2 named intermediate, Rect (4xs16) struct-copy type fix, and switch/goto replacing manufactured tookCase flag -- f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1: D_8009BC7C/D_800A3588/D_800A358C/D_800A3561 need corrected array declarations (not the current scalar/sub-symbol shapes) before any function body can be drafted correctly",
-   "mechanism": "data-model correctness (declaration, not codegen) -- aggregate-merge family applies only if cross-sibling stride/index evidence agrees; this function's own evidence suggests the existing SPLIT-AGGREGATE scalar framing may be wrong for 3 of the 4 symbols",
-   "next_probe": "Pull index bounds/strides for all four symbols from every named xref (func_8006F100, func_80070188, func_80070F78, func_8006F97C, func_8006E534) and check agreement before deciding merge-at-declaration vs separate array declarations"
+   "hypothesis": "Entry-block store ordering: target stores zero18/zero1C before reusing v0 for the arg0-deref chain and the c24=0x100 store lands last; current C's straight-line s.one14/c20/c24/zero18/zero1C order doesn't reproduce this and shows as source-level hunks 3-4.",
+   "mechanism": "possibly GCC's own callee-save prologue store scheduling (register pressure from s0-s4 spills) rather than something block-local C statement order controls -- needs a .greg/.sched dump read to confirm before proposing a specific C reorder.",
+   "next_probe": "run pwsh tools/grinder/dump.ps1 func_8006ECF4 and read the .sched dump for the entry block before guessing a C-level statement reorder; only reorder the s.zero18/s.zero1C/s.c24 assignment statements in src if the dump shows the source order (not the scheduler) drives store order."
   },
   {
-   "hypothesis": "F2: draft the real single-argument struct-pointer C body from the traced control flow (loop + nested lookup chain + 6-way switch + LoadImage struct copy + func_80073728 RMW) once F1 settles",
-   "mechanism": "ordinary structural C recovery, no codegen lever needed at this stage",
-   "next_probe": "Write the body, run sandbox --disable all --diff, class every hunk source-level/operand-only/not-scored before proposing any register/scheduling lever"
+   "hypothesis": "The tail s.p1 selection region (asm offset ~142-194, current diff hunks 24/25/27/29/30/31/32/33) still carries ~8 source-level hunks after H1-H3; likely a similar structural mismatch (branch-sense or shared-computation topology) to what H3 found in the case-dispatch region.",
+   "mechanism": "control-flow / shared-computation structure recovery -- same class of fix as H3, not yet attempted here.",
+   "next_probe": "read asm/funcs/func_8006ECF4.s directly from the label around offset 0x142 (.L8006EF24) through the end of the function (the same technique that found H3, reading the raw asm instead of the interleaved register-renamed diff tool output), and compare against the current if/else-if chain in src/text1b.c lines 7713-7721."
   },
   {
-   "hypothesis": "F3: jtbl_800159D0 will hit the same cross-TU rodata-ownership residual class func_8006B578 already solved (score pinned near-zero by relocation-symbol mismatch, not a real codegen defect)",
-   "mechanism": "engine/score.py masks branch/jump targets but not section-relative-vs-external-symbol reloc differences on jump-table words (same class documented in func_8006B578/candidate.c header, sessions 7-9)",
-   "next_probe": "Once F2 produces a body scoring near 0 with this exact residual pattern, re-run func_8006B578 s9's byte-certification method (objdump -r/-h on both objects) rather than re-deriving it"
+   "hypothesis": "jtbl_800159D0 cross-TU rodata-ownership residual (unchanged from s1's F3) will surface once the function is near 0 -- same class func_8006B578 already solved.",
+   "mechanism": "engine/score.py masks branch/jump targets but not section-relative-vs-external-symbol reloc differences on jump-table words (documented in func_8006B578/candidate.c header, sessions 7-9).",
+   "next_probe": "once score reaches ~0 with this exact residual pattern, re-run func_8006B578 s9's byte-certification method (objdump -r/-h on both objects) rather than re-deriving it."
   }
  ],
  "judge_constraints": [],
@@ -35,5 +41,6 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-20T09:47:55.540251+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }
