@@ -145,3 +145,45 @@ Banked: `rejected/selection_sound-single-shot-no-intermediate.c`.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c chassis + H2 s8 fix, no FAKE constructs, sandbox --disable all
+
+## [s2] Reusing the SAME C variable across load, test, and result for the selection_sound block reaches build_insns == target_insns (208), matching the self-subtract baseline exactly, without the self-subtract cheat-smell.
+- mechanism: n/a — ordinary C, ordinary variable reuse (single pseudo carries load+test+result); no GCC-internals coercion, no FAKE construct.
+- probe: Replaced `s32 sound = field64; if (sound==0) sound+=4; else sound-=sound;` with `s32 sound = field64; if (sound==0) { sound=4; } else { sound=0; }` in candidate.c, applied to src/text1b.c, `sandbox func_800747D8 --disable all` -> score 6, build_insns 208 == target_insns 208. `--diff` shows the IDENTICAL 30-hunk classification (same 2 source-level + 2 operand-only + 26 not-scored hunks, byte-identical hunk contents) as the self-subtract baseline.
+- result: CONFIRMED and banked as the new candidate.c. Strictly better than the s1 baseline: same honest floor, removes the self-subtract construct the s1 ledger flagged for future cheat-smell review (evidence.md s1: "a self-subtract instead of a plain `= 0` is not what a human would write from a spec"). That flagged concern is now resolved — no self-subtract in the candidate.
+- verdict: CONFIRMED
+
+## [s2] Introducing a FRESH, single-use, isolated test variable ("flag") separate from the result variable for the selection_sound block triggers a branchless arithmetic fold (`a0 = (flag==0)*4` via sltiu+sll) that eats 3 real instructions vs target's branching form, on this GCC 2.7.2 fork.
+- mechanism: combine.c / constant-propagation recognizes the canonical "single-use-dead-after-test flag feeding a two-constant conditional-select into a separate result pseudo" shape and folds it to `sltiu`+`sll` branchless arithmetic instead of keeping cc1's normal branch+literal-set codegen. Confirmed via `--diff` on rejected/selection_sound-default-then-override.c this session: hunks 17-19 show our build's actual emitted insns are `lbu a0,0x64(v0); sltiu a0,a0,1; sll a0,a0,0x2` where target keeps `beqz v0,...` + delay-slot `li a0,4` + fallthrough `move a0,zero` (a real branch, no shift).
+- probe: Re-applied rejected/selection_sound-default-then-override.c (s1's spelling, `s32 flag=field64; s32 sound=4; if(flag!=0) sound=0;`) to candidate.c's chassis, ran `sandbox func_800747D8 --disable all --diff` this session (tmp/grind/func_800747D8/s2/diff_defaultoverride.txt): score 10, build_insns 205 (3 short), hunks 17-19 show the exact branchless sltiu+sll fold. This explains (not just re-confirms) all 3 of s1's "natural if/else" rejections plus this session's own re-derivation — all 4 isolated-test-variable spellings collapse to this identical branchless shape regardless of which local holds which literal or which branch is written first.
+- result: KILLED (explained). The isolated-test-variable family is dead for this block on this chassis; the same-variable-reuse spelling (see the CONFIRMED entry above) is the correct honest form and is now banked as candidate.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/selection_sound-default-then-override.c spliced onto candidate.c's chassis (s2), src/text1b.c, sandbox --disable all --diff; zero FAKE constructs anywhere in the candidate or the rejected form
+
+## [s2] Hunk 9's jtbl_80015A0C table-offset residual (24 vs 0) is the same masked cross-TU-placement mechanism that sibling func_8006B578's jtbl_80015988 residual was (rotated 2026-09-16, its own s7/s12 evidence) — a GCC-synthesized-ADDR_VEC-vs-hand-transcribed-array placement conflict, not a pure src/text1b.c C-structure lever.
+- mechanism: bb2.ld orders text1a_b_pre_rodata.o, text1b.o, text1a_b_mid_rodata.o. jtbl_80015A0C is CURRENTLY a hand-transcribed `const u32[6]` in src/text1a_b_mid_rodata.c:44-52 (not yet migrated to compiler-synthesized, unlike jtbl_80015988 which WAS migrated when func_8006B578 landed as C — see that file's own header comment). Once func_800747D8's real `switch(state)` is the committed C, GCC's own ADDR_VEC for it needs to land in build/src/text1b.o's own .rodata at exactly 0x80015A0C, which requires deleting the hand-transcribed jtbl_80015A0C array from text1a_b_mid_rodata.c in the SAME change — a precedented, already-executed-once (for jtbl_80015988) mechanical step, not a novel lever and not a wall.
+- probe: Read src/text1a_b_mid_rodata.c (jtbl_80015A0C at lines 44-52, still hand-transcribed) and its header comment (documents doing this migration for jtbl_80015988 only so far). Read bb2.ld ordering (unchanged, not edited). Cross-referenced sibling func_8006B578's s7/s12 ledger entries, which independently derived and executed the identical migration for jtbl_80015988 with zero bb2.ld edits.
+- result: Not attacked this session (out of the func_800747D8/src/text1b.c-only surface — the fix touches src/text1a_b_mid_rodata.c) and not measured — this is a read-only mechanism identification, not a probe with a negative result. Left on the frontier for the session that assembles the final submission: delete the jtbl_80015A0C array from text1a_b_mid_rodata.c in the same change that lands func_800747D8's C body, matching the func_8006B578 precedent exactly.
+- verdict: (not scored this session — no measurement taken; see frontier)
+
+## [s2] Reusing the SAME C variable across load, test, and result for the selection_sound block reaches build_insns == target_insns (208), matching the s1 self-subtract baseline exactly, without the self-subtract cheat-smell.
+- mechanism: n/a - ordinary C, ordinary variable reuse; no GCC-internals coercion, no FAKE construct
+- probe: Replaced `s32 sound = field64; if (sound==0) sound+=4; else sound-=sound;` with `s32 sound = field64; if (sound==0) { sound=4; } else { sound=0; }` in candidate.c, applied to src/text1b.c, sandbox --disable all
+- result: score 6, build_insns 208 == target_insns 208; --diff shows the IDENTICAL 30-hunk classification (same 2 source-level + 2 operand-only + 26 not-scored, byte-identical hunk contents) as the self-subtract baseline
+- verdict: CONFIRMED
+
+## [s2] Introducing a fresh, single-use, isolated test variable ("flag") separate from the result variable for the selection_sound block triggers a branchless arithmetic fold (a0 = (flag==0)*4 via sltiu+sll) that eats 3 real instructions vs target's branching form, on this chassis.
+- mechanism: combine.c / constant-propagation recognizes the canonical single-use-dead-after-test flag feeding a two-constant conditional-select into a separate result pseudo, and folds it to sltiu+sll branchless arithmetic instead of a branch+literal-set; confirmed via --diff on rejected/selection_sound-default-then-override.c, hunks 17-19
+- probe: Re-applied rejected/selection_sound-default-then-override.c to candidate.c's chassis, ran sandbox --disable all --diff
+- result: score 10, build_insns 205 (3 short); --diff shows the emitted insns are lbu a0,0x64(v0); sltiu a0,a0,1; sll a0,a0,0x2, where target keeps a real beqz branch + delay-slot li a0,4 + fallthrough move a0,zero. Explains (not just re-confirms) all 4 of the isolated-test-variable spellings banked in rejected/ (3 from s1, 1 new this session) as the same branchless-fold collapse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/selection_sound-default-then-override.c spliced onto candidate.c's chassis (s2), src/text1b.c, sandbox --disable all --diff; zero FAKE constructs anywhere in the candidate or the rejected form
+
+## [s2] Branch source order (sound == 0 written first vs sound != 0 written first) has no effect on the emitted hunks 17-19 for the selection_sound block on this chassis.
+- mechanism: GCC normalizes branch polarity independent of source statement order for this shape
+- probe: Swapped the if/else arm order in the new same-variable candidate spelling, applied to src/text1b.c, sandbox --disable all --diff
+- result: score 6, build_insns 208; hunks 17-19 byte-identical to the non-swapped form (tmp/grind/func_800747D8/s2/diff_swapped.txt)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis with if/else arms swapped, src/text1b.c, sandbox --disable all --diff; zero FAKE constructs

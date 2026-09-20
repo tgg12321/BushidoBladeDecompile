@@ -1,31 +1,32 @@
 {
  "func": "func_800747D8",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 6,
    "modality": "recon",
    "headline": "Re-confirmed the banked floor-6 candidate (fixed a D_800A35DC type conflict), classed the residual (2 source-level + 2 operand-only real hunks, 26 masked), and killed 3 natural respellings of the sele"
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "De-smelled the selection_sound block to an honest same-variable form (score 6 unchanged); named the GCC branchless-fold mechanism that kills all isolated-test-variable spellings; identified hunk 9's j"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Hunk 9's state-switch jtbl table-offset residual (target lw v0,0(at) vs ours lw v0,24(at)) is a GCC-synthesized-jump-table structural difference, not a masked relocation artifact.",
-   "mechanism": "jump.c/final.c jump-table emission for the field3C 5-case switch; possibly the same class as sibling func_8006B578's rodata-split jtbl_80015988 residual, or a genuinely different case-ordering issue",
-   "next_probe": "pwsh tools/grinder/dump.ps1 func_800747D8; read the .combine/.jump2 dumps for the state-switch region to see whether GCC's synthesized table has a different entry count/base than target's jtbl_80015A0C"
+   "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual (target lw v0,0(at) vs ours lw v0,24(at)) closes once the hand-transcribed jtbl_80015A0C array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C, mirroring the already-executed func_8006B578/jtbl_80015988 precedent.",
+   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch (build/src/text1b.o); with the hand array still present in text1a_b_mid_rodata.c, the two tables coexist and the sandbox's isolated single-function build sees a placement/offset conflict rather than the real target layout.",
+   "next_probe": "When assembling the final submission (not a src/text1b.c-only session): delete the jtbl_80015A0C array (and its header-comment TODO) from src/text1a_b_mid_rodata.c in the same commit as func_800747D8's C body, then re-measure with sandbox --disable all --diff to confirm hunk 9 closes with zero bb2.ld edits, exactly as it did for func_8006B578."
   },
   {
-   "hypothesis": "The selection_sound block's 3-insn shortfall (208 vs 205) when written as a natural if/else, vs the baseline self-subtract reaching 208, is explained by a specific combine/cse fold visible in the cc1 dumps.",
-   "mechanism": "combine.c or cse.c folding a trivial-valued if/else (constant results 4/0) more aggressively than the baseline's self-subtract form",
-   "next_probe": "Read the .combine and .cse dumps for this block on both the baseline chassis and one of the 3 rejected forms; diff the RTL to find exactly which insns the fold removes"
-  },
-  {
-   "hypothesis": "Once hunks 9 and 17-19 are understood, the sound -= sound self-subtract construct in the baseline should be re-examined for cheat-smell (it has no semantic reading a human would write from spec) and replaced with an honest equivalent if one closes to the same or better score.",
-   "mechanism": "n/a - this is a vetting concern, not a codegen mechanism",
-   "next_probe": "Once a natural spelling matches or beats score 6, run tools/fake_ablate.py and the 6-test cheat checklist against sound -= sound before any candidate-ready submission"
+   "hypothesis": "Hunk 17 (target lbu v0,100(v0) vs ours lbu a0,100(v0), a pure register-seat choice) may resolve automatically once hunk 9's table-placement issue and the switch's real ADDR_VEC are both in place, since the current a0-vs-v0 split is entangled with the same block's branch shape.",
+   "mechanism": "unconfirmed - register allocation for this load may shift once the surrounding switch dispatch is compiled from real C rather than scored against a stand-in hand array",
+   "next_probe": "Re-run sandbox --disable all --diff on the same-variable candidate AFTER the text1a_b_mid_rodata.c migration (frontier item 1) lands, before spending a session on register-seat levers for hunk 17 in isolation."
   }
  ],
  "judge_constraints": [],
@@ -54,6 +55,22 @@
    "measured_on": "candidate.c chassis + H2 s8 fix, no FAKE constructs, sandbox --disable all",
    "predicate_cite": "",
    "result": "score 10, build_insns 205 - identical to both prior attempts."
+  },
+  {
+   "session": 2,
+   "statement": "Introducing a fresh, single-use, isolated test variable (\"flag\") separate from the result variable for the selection_sound block triggers a branchless arithmetic fold (a0 = (flag==0)*4 via sltiu+sll) ",
+   "kill_scope": "instance",
+   "measured_on": "rejected/selection_sound-default-then-override.c spliced onto candidate.c's chassis (s2), src/text1b.c, sandbox --disable all --diff; zero FAKE constructs anywhere in the candidate or the rejected for",
+   "predicate_cite": "",
+   "result": "score 10, build_insns 205 (3 short); --diff shows the emitted insns are lbu a0,0x64(v0); sltiu a0,a0,1; sll a0,a0,0x2, w"
+  },
+  {
+   "session": 2,
+   "statement": "Branch source order (sound == 0 written first vs sound != 0 written first) has no effect on the emitted hunks 17-19 for the selection_sound block on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis with if/else arms swapped, src/text1b.c, sandbox --disable all --diff; zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "score 6, build_insns 208; hunks 17-19 byte-identical to the non-swapped form (tmp/grind/func_800747D8/s2/diff_swapped.tx"
   }
  ],
  "ladder_skip": 0,

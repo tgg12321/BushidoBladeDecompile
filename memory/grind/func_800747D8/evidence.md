@@ -154,3 +154,110 @@ before trying a 4th form.
 - [s1] Three natural if/else respellings of the selection_sound block (two-local split, default-then-override, single-shot-no-intermediate) all measured IDENTICALLY at score 10 / build_insns 205, three instructions short of target - while the baseline's sound -= sound self-subtract spelling reaches build_insns == target_insns 208 with the smaller score-6 residual. This 3-for-3 identical-wrong-shape result is evidence the fold is not keyed to local-variable count/placement; next session should read .combine/.cse dumps rather than hand-write a 4th blind spelling.
 
 - [s1] The baseline's sound -= sound construct is flagged (not changed) as a candidate for cheat-smell review later: a human would write sound = 0, not a self-subtract. It currently measures as the best-known honest form and was left untouched pending further narrowing.
+
+## Session 2 (structural) — 2026-09-20
+
+**Re-measurement.** candidate.c (s1 form, `sound -= sound` self-subtract)
+spliced onto `src/text1b.c` (with the `D_800A35DC` u8->s8 fix already
+baked into candidate.c this session) reproduces the s1 floor exactly:
+`sandbox --disable all` -> score 6, target_insns 208, build_insns 208.
+`--diff` reproduces the identical 30-hunk classification: 2 source-level
+(hunks 18-19) + 2 operand-only (hunks 9, 17) + 26 not-scored.
+
+**De-smelled the baseline (CONFIRMED, banked as the new candidate.c).**
+Replaced the flagged-as-suspicious `sound -= sound;` self-subtract with a
+plain, ordinary-C literal form that reuses the SAME variable across load,
+test, and result:
+
+```c
+s32 sound = MENU_800747D8->field64;
+if (sound == 0) {
+    sound = 4;
+} else {
+    sound = 0;
+}
+func_8005C650(sound, 0x7F, 0x7F);
+```
+
+Measured: score 6, build_insns 208 == target_insns 208 — IDENTICAL to the
+self-subtract baseline in both score and full hunk classification (same
+hunks 9/17/18/19 in the same classes, byte-for-byte identical diff output).
+This is a strict improvement: same honest floor, zero cheat-smell (no
+self-subtract, no reader-hostile arithmetic-as-zero idiom). Banked as the
+new `candidate.c`. Branch source-order (`sound == 0` first vs `sound != 0`
+first) measured identical too — GCC normalizes branch polarity
+independent of source order here
+(tmp/grind/func_800747D8/s2/diff_swapped.txt).
+
+**Named the mechanism behind the 3-instruction shortfall in all 4
+prior/repeated two-value spellings (frontier item 2, now explained).**
+Re-measured `rejected/selection_sound-default-then-override.c`
+(`s32 flag = field64; s32 sound = 4; if (flag != 0) sound = 0;`) with
+`--diff` this session (tmp/grind/func_800747D8/s2/diff_defaultoverride.txt):
+score 10, build_insns 205, and the diff shows EXACTLY where the 3 insns
+vanish (hunks 17-19) — our build folds the whole flag-test + literal-select
+into 3 branchless insns:
+
+```
+lbu   a0,0x64(v0)
+sltiu a0,a0,1
+sll   a0,a0,0x2
+```
+
+i.e. `a0 = (flag == 0) * 4`, a fully branchless arithmetic fold of the
+`flag != 0 ? 0 : 4` ternary — GCC eliminates the branch entirely. Target
+keeps a REAL branch (`beqz v0,...` / delay-slot `li a0,4` / fallthrough
+`move a0,zero`), so this is a genuinely different (branchless vs branching)
+shape, not just a register-choice difference. The trigger is a FRESH,
+single-use-then-dead `flag` pseudo isolated from the result pseudo `sound`
+— GCC's combine/constant-propagation recognizes that isolated two-constant
+conditional-select shape and folds it branchless. Reusing ONE variable
+across load+test+result (this session's new candidate.c spelling) denies
+that isolation and keeps the real branch, landing on 208 insns exactly like
+the self-subtract baseline. Full mechanism note + all 4 confirmed-identical
+prior spellings: `rejected/selection_sound-flag-then-literal-branchless-fold.c`.
+
+**Hunk 9 (jtbl table-offset residual, frontier item 1) — likely explained,
+not yet closable from src/text1b.c alone.** `jtbl_80015A0C` (the table this
+function's `state` switch, case 0-4, dispatches through) is currently a
+HAND-TRANSCRIBED `const u32 jtbl_80015A0C[6]` array in
+`src/text1a_b_mid_rodata.c:44-52` — not GCC-synthesized, because
+func_800747D8 is still `INCLUDE_ASM`. `bb2.ld` orders
+`text1a_b_pre_rodata.o, text1b.o, text1a_b_mid_rodata.o`
+(text1a_b_mid_rodata.c:1-8 comment). Sibling func_8006B578's ledger
+(session 12, 2026-09-16) established the EXACT same mechanism for
+`jtbl_80015988`: once that function's switch became real C, GCC's own
+compiler-synthesized ADDR_VEC (emitted into `build/src/text1b.o`'s
+own, currently-empty, `.rodata`) landed at 0x80015988 with NO bb2.ld
+edit, and the hand-transcribed array for it was deleted from
+`text1a_b_mid_rodata.c` in the same change (see that file's own header
+comment, which documents doing exactly this for
+`jtbl_800159B0`/`jtbl_800159D0`/`jtbl_80015A0C`/`jtbl_80015A24` NOT yet
+having happened — only `jtbl_80015988`, owned by `func_8006B578`, has been
+migrated). The 24-byte (6-word) offset hunk 9 shows (target `lw v0,0(at)`
+vs ours `lw v0,24(at)`) is consistent with our SANDBOX single-function
+build's synthesized table landing at a different sub-offset than the
+hand-transcribed array it's being scored against, because the two tables
+currently coexist (this candidate's real `switch` AND the mid_rodata.c
+hand array both claim table space) rather than the hand array being
+retired in favor of the compiler-synthesized one. **This is a cross-file
+integration matter, not a pure src/text1b.c C-structure lever** — closing
+it for real requires deleting the `jtbl_80015A0C` array from
+`src/text1a_b_mid_rodata.c` in the SAME change that lands func_800747D8's
+C body, exactly as was done for func_8006B578/jtbl_80015988. That edit is
+outside this session's mandated surface (func_800747D8 in src/text1b.c
+only) and is deferred to the session that submits the final candidate —
+NOT flagged as a wall, this is a known, already-precedented mechanical
+step. No bb2.ld edit is expected to be needed (same as the sibling case).
+
+- [s2] candidate.c (s1 form) re-measured this session: sandbox --disable all -> score 6, target_insns 208, build_insns 208 - reproduces the s1 floor exactly on the current tree with the D_800A35DC u8->s8 fix baked in.
+
+- [s2] --diff reproduces the identical 30-hunk classification from s1: 2 source-level (hunks 18-19) + 2 operand-only (hunks 9, 17) + 26 not-scored.
+
+- [s2] jtbl_80015A0C (the table func_800747D8's state switch dispatches through) is currently a hand-transcribed const u32[6] array in src/text1a_b_mid_rodata.c:44-52, not GCC-synthesized, because func_800747D8 is still INCLUDE_ASM.
+
+- [s2] src/text1a_b_mid_rodata.c's own header comment documents that this exact migration (hand-transcribed array -> compiler-synthesized ADDR_VEC, zero bb2.ld edits) was already executed for jtbl_80015988 when sibling func_8006B578 landed as C, and that jtbl_800159B0/jtbl_800159D0/jtbl_80015A0C/jtbl_80015A24 have NOT yet been migrated.
+
+- [s2] Sibling func_8006B578's own ledger (s7/s12, 2026-09-16) independently derived and executed the identical mechanism for jtbl_80015988: bb2.ld orders text1a_b_pre_rodata.o, text1b.o, text1a_b_mid_rodata.o; once the switch became real C, GCC's own ADDR_VEC landed at the exact target address with no bb2.ld edit required, after the hand array was deleted.
+
+- [s2] The new candidate.c (same-variable literal-assignment selection_sound spelling) is strictly better than the inherited s1 candidate: identical score/insns, zero self-subtract construct - the s1 ledger's flagged cheat-smell concern about `sound -= sound;` is resolved.

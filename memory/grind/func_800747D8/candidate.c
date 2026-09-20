@@ -1,6 +1,6 @@
 extern u8 D_8009BD20[][2];
 extern s16 D_800A35D0;
-extern u8 D_800A35DC;
+extern s8 D_800A35DC;
 extern u8 *D_800A36A0;
 
 typedef struct {
@@ -84,9 +84,9 @@ selection_sound:
         {
         s32 sound = MENU_800747D8->field64;
         if (sound == 0) {
-            sound += 4;
+            sound = 4;
         } else {
-            sound -= sound;
+            sound = 0;
         }
         func_8005C650(sound, 0x7F, 0x7F);
         }
