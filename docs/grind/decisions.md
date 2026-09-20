@@ -28407,3 +28407,45 @@ Bytes claim is SOUND and I verified it: hypotheses.md:518-527 (s7 fresh re-apply
 ## 2026-09-20 01:23 — func_80018094 — layer-1 review — **FAIL (citation-only)**
 
 Every executable construct verified legitimate inside its family (including the three cop2 islands, which are owner-granted for THIS function), but the submission files them under the wrong disposition: the header headlines 'MATCHED IN PURE C' and the self-vet omits the islands from CONSTRUCTS entirely while T5 affirmatively denies hardcoded-$N asm - contradicting the dated owner ruling 2026-09-15 Ruling 3 that the honest bucket is COMPLETED-INLINE-ASM-CANONICAL.
+
+## 2026-09-20 — func_80018094 — annotation fix-up (s10 continuation) — comment-only re-file
+
+Fixed the exact defect the 2026-09-20 01:23 layer-1 FAIL named. Restored
+`memory/grind/func_80018094/candidate.c` into `src/code6cac.c` (single hunk, 226
+insertions / 1 deletion, verified `git diff --stat`). Two comment-only changes, NO
+executable construct added/removed/renamed/reordered:
+
+1. `candidate.c`'s header no longer headlines "MATCHED IN PURE C" — it now states
+   the disposition is COMPLETED-INLINE-ASM-CANONICAL and cites the dated owner
+   ruling by name (docs/grind/decisions.md 2026-09-15 "OWNER RULING — the
+   candidate-path no-progress tripwire + a registry row for func_80018094",
+   Ruling 3), which is the ruling that put func_80018094's honest bucket in
+   terms: "the honest finished bucket stays COMPLETED-INLINE-ASM-CANONICAL, not
+   COMPLETED-C."
+2. `memory/grind/func_80018094/self_vet.md` now enumerates the three cop2
+   inline-asm islands (gte_SetRotMatrix, gte_SetTransMatrix, gte_Lzc) as
+   CONSTRUCTS 9-11 with their own T1-T6 rows and a SANCTIONED-FAMILY-CLAIMS
+   block citing `.claude/rules/cop2-addressing-preamble-cluster.md:60`
+   (func_80018094's own membership row, SetRotMatrix/long-vector sub-family, 3
+   idiom sites) — the same family the 2026-09-14/15 record already established
+   this function is granted under. T5's summary no longer affirmatively denies
+   hardcoded-`$N` asm; it now states plainly that constructs 9-11 ARE inline asm
+   under a named, owner-granted family, and that no OTHER forbidden family
+   (pin/barrier/un-granted injection) is present anywhere in the body.
+
+Re-measured this session: `sandbox func_80018094 --disable all` == 0
+(target_insns 153, build_insns 153, rules_dropped 0, cheat_asm_stripped 20),
+chassis -mel -msoft-float. No mojibake em-dash sequences found in
+src/code6cac.c (checked mechanically). The executable body is unchanged from
+the body the 2026-09-14 23:55 and 2026-09-15 Judge PASSes reviewed.
+
+**Unchanged blocker (outside this session's scope, per the 2026-09-15 Ruling 3
+record above): `tools/grinder/owner_cluster_grants.txt` still carries no
+func_80018094 row.** That row is the operator's action, not a session's — until
+it lands, `queue done` / the merge path stays MERGE REFUSED regardless of how
+correctly this candidate is annotated. This session's only job was the
+citation/disposition defect layer-1 named, which is now fixed.
+
+## 2026-09-20 01:27 — func_80018094 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s10 of func_80018094, which the driver DISCARDED as invalid (self_vet.md claims 5 sanctioned family/families but quotes only 4 verbatim SCOPE sentence(s) ΓÇö every claimed family needs its rule's scope sentence in quotes). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
