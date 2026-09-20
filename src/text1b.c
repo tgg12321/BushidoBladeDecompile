@@ -6657,19 +6657,8 @@ tail:
 }
 
 /* Keep the original text1b rodata run contiguous around compiler-generated
- * switch tables. func_8006B578 emits the table at 0x80015988; these objects
- * occupy 0x800159A0..0x800159CF so func_8006ECF4's table lands at 0x800159D0. */
+ * switch tables. */
 const u8 D_800159A0[16] = "warning\n";
-const u32 jtbl_800159B0[8] = {
-    0x8006E5D8,
-    0x8006E618,
-    0x8006E5F0,
-    0x8006E618,
-    0x8006E5E4,
-    0x8006E628,
-    0x8006E5E4,
-    0x00000000,
-};
 
 extern s32 D_800A36AC;
 extern u8 g_disp_fb_base;
@@ -7577,7 +7566,150 @@ s32 func_8006E49C(s32 arg0, s32 *arg1) {
     arg1[0xF] = base4;
     return base4 + tail;
 }
-INCLUDE_ASM("asm/funcs", func_8006E534);
+typedef struct SelectEntryE534 {
+    u8 value;
+    u8 pad;
+} SelectEntryE534;
+
+extern SelectEntryE534 D_8009BC40[][6];
+extern u8 D_8009BC44;
+extern u8 D_8009BC72;
+extern u8 D_8009BC76;
+extern u8 D_8009BC7C[];
+extern u8 D_800A32E8;
+extern u8 D_800A32E9;
+extern u8 D_800A32EC[8];
+extern s16 D_800A3554;
+extern s16 D_800A3558;
+extern u8 D_800A3560[];
+extern u8 D_800A3561;
+extern u8 D_800A3564;
+extern s32 D_800A3568;
+extern s32 D_800A356C;
+extern s16 D_800A3570;
+extern u16 D_800A3578;
+extern s16 D_800A357C;
+extern s16 D_800A3580;
+extern s16 D_800A3588[];
+extern s16 D_800A358A;
+extern s16 D_800A358C[];
+extern s16 D_800A358E;
+extern s16 D_800A3598;
+extern s16 D_800A359C;
+extern s32 D_800A35A0;
+extern s32 D_800A35A8;
+extern s32 D_800A35AC;
+extern s32 D_800A35B0;
+extern s16 D_800A35B4;
+extern s16 D_800A35B8;
+extern s32 D_800A35BC;
+extern void *D_800A35C4;
+extern s32 D_800A374C;
+
+typedef struct RectE534 {
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+} RectE534;
+
+s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
+    RectE534 rect;
+    s16 i;
+    u8 value;
+
+    ClearOTagR(D_800A374C, 0x1008);
+    D_800A32E8 = 0x7F;
+    D_800A35BC = *(s32 *)(arg2 + 0x14) & 0xF;
+    D_800A35AC = arg0;
+    D_800A3568 = (s32)arg2;
+    D_800A3558 = 0;
+    D_800A3554 = 0;
+    D_800A32E9 = 0;
+    D_800A35B0 = arg1;
+    D_800A356C = arg0 + 0x58;
+    D_800A35A8 = arg0 + 0x58;
+    snd_StopAll();
+
+    switch (D_800A35BC) {
+    case 0:
+        func_8006E950(5, D_800A356C);
+        break;
+    case 4:
+    case 6:
+        func_8006E950(3, D_800A356C);
+        break;
+    case 2:
+        if (*(s32 *)(D_800A3568 + 0x14) & 0x20000) {
+            func_8006E950(3, D_800A356C);
+        } else {
+            func_8006E950(4, D_800A356C);
+        }
+        break;
+    case 1:
+    case 3:
+        func_8006E950(4, D_800A356C);
+        break;
+    }
+
+    D_800A356C = func_8006EA28((s32 *)D_800A356C);
+    D_800A356C = func_8006E49C(D_800A356C, (s32 *)D_800A35AC);
+    *(s32 *)D_800A3560 = -1;
+    D_800A3570 = 0;
+    D_800A3578 = 0;
+    D_800A357C = 0;
+    D_800A3580 = 0;
+    D_800A35A0 = 0;
+    D_800A3588[0] = 0;
+    D_800A358C[0] = 0;
+    D_800A358A = 2;
+    D_800A358E = 0;
+    D_800A3561 = D_8009BC40[0][0].value;
+    D_800A3564 = D_8009BC44;
+
+    for (i = 0; i < 0x16; i++) {
+        value = D_8009BC7C[i] & 0xFA;
+        D_8009BC7C[i] = value;
+        if (arg3 & (1 << i)) {
+            D_8009BC7C[i] = value | 1;
+        }
+    }
+
+    if (D_800A35BC < 4) {
+        if (D_800A35BC >= 0) {
+            D_8009BC7C[D_8009BC72] |= 4;
+            D_8009BC7C[D_8009BC76] |= 4;
+        }
+    }
+    D_800A35B8 = (arg3 >> 20) & 3;
+    D_800A35B4 = 5;
+    {
+        s32 b = D_800A3588[0];
+        s32 c = D_800A358C[0];
+        D_8009BC7C[D_8009BC40[c][b].value] |= 4;
+    }
+    if (D_800A35B0 != 0) {
+        s32 b = D_800A358A;
+        s32 c = D_800A358E;
+        D_8009BC7C[D_8009BC40[c][b].value] |= 4;
+    }
+
+    __builtin_memcpy(&rect, D_800A32EC, 8);
+    D_800A359C = 0;
+    D_800A3598 = 0;
+    DrawSync(0);
+    MoveImage(&rect, 0x3C0, 0x1FE);
+    DrawSync(0);
+    D_800A35C4 = (void *)D_800A356C;
+    D_800A356C += 0x14;
+    *(s32 *)((s32)D_800A35C4 + 8) = 0;
+    *(s32 *)((s32)D_800A35C4 + 0xC) = 0;
+    return 1;
+}
+/* The original rodata has one zero word between this switch table and the
+ * following function's compiler-generated table. */
+const u32 D_800159CC = 0;
+
 extern s32 D_800A35AC;
 s32 func_8006E8AC(s32 a0) {
     return D_800A35AC + a0 * 44;
@@ -7741,7 +7873,7 @@ extern s16 D_800A3554;
 extern s32 D_800A35B0;
 extern u8 D_8009BC7C[];
 extern u8 D_800A3560[];
-extern u8 D_8009BC40[];
+extern SelectEntryE534 D_8009BC40[][6];
 extern s16 D_800A3588[];
 extern s16 D_800A358C[];
 extern u8 D_800A32E8;
@@ -7781,9 +7913,7 @@ void func_8006ECF4(s32 arg0) {
     for (i = 0; i < D_800A35B0 + 1 + D_800A3554; i++) {
         s32 b = D_800A3588[i];
         s32 c = D_800A358C[i];
-        s32 b2 = b * 2;
-        s32 c12 = c * 12;
-        sel = D_8009BC40[b2 + c12];
+        sel = D_8009BC40[c][b].value;
         if (D_8009BC7C[sel] & 1) {
             s.zero10 = 0;
             if (*(s32 *)((s32)D_800A35C4 + 8) & 4) {
@@ -9432,7 +9562,7 @@ void func_80077940(s32 arg0) {
 extern s32 D_800A35E0;
 extern s32 D_800A35E8;
 
-void func_8006E534(s32, s32, u8*, s32);
+s32 func_8006E534(s32, s32, u8*, u32);
 s32 func_80077984(s32 a0) {
     func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
     disp_SetFramebufferMode(1, 0, 0, 0);

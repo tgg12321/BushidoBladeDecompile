@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8006E534",
-      "file": "text1b",
-      "distance": 222,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "SsUtKeyOnV",
       "file": "main",
       "distance": 229,
@@ -1077,14 +1069,14 @@
     }
   ],
   "counts": {
-    "total": 113,
-    "active": 104,
+    "total": 112,
+    "active": 103,
     "by_status": {
-      "active": 104,
+      "active": 103,
       "rotated": 9
     },
     "by_verdict": {
-      "C": 83,
+      "C": 82,
       "ASM-PARTIAL": 21
     }
   },
