@@ -264,3 +264,42 @@ before/after C, and the two mis-step/revert episodes). Summary:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-11 chassis (H4-H7 applied, s3 banked candidate.c) plus the single new_var construct; no other FAKE constructs present
+
+## [s5, enumerate] Exhaustive spelling sweep of the `b/c/b2/sel` index-computation region (hunks 4/5, the `addu v1,v1,v0` vs `addu v0,v0,v1` operand-only register-seat tie) closes the residual for some spelling in this region.
+- mechanism: unconfirmed a priori — testing whether ANY combination of (a) inlining `b`/`c`/`b2` vs keeping them named, (b) declaration/assignment order, (c) commutative operand swap on `b*2`, `b2+c*12` flips GCC's allocno choice for this pair.
+- probe: applied s3/s4's floor-11 chassis to src/text1b.c (chassis-confirmed at floor 11, `sandbox --disable all --diff` re-read: 5 source-level / 3 operand-only / 22 not-scored, unchanged from s3/s4's characterization). Marked the region
+  ```
+  s32 b = D_800A3588[i];
+  s32 c = D_800A358C[i];
+  s32 b2 = b * 2;
+  sel = D_8009BC40[b2 + c * 12];
+  if (D_8009BC7C[sel] & 1)
+  ```
+  with `/* ENUM-BEGIN */` / `/* ENUM-END */` in a scratch copy (tmp/grind/func_8006ECF4/s5/enum_index.c), ran `tools/spelling_enum.py --candidate ... --out tmp/grind/func_8006ECF4/s5/enum_index_out` (3 named locals, 1 assignment, 1 anchor -> 22 distinct spellings including the commutative-swap axis on `b*2` and `b2+c*12`), then `tools/sweep_variants.py --func func_8006ECF4 --file text1b --variants tmp/grind/func_8006ECF4/s5/enum_index_out --json` against the live sandbox.
+- result: **ENUMERATION: 22 spellings (21 variants + baseline), best 11, 7 at the floor (11), 14 strictly worse (20).** The baseline spelling (named `b`,`c`,`b2`, unswapped, current decl order) is tied for best; every other spelling either matches it exactly (11) or costs 9 more instructions (20, presumably from losing the `sll` strength-reduction on `b*2` or breaking a different fold when inlined/reordered). NONE beat 11 — the region's full spelling space (this tool's three axes: inline-vs-named, decl/assign order, commutative swap) is exhausted for this exact statement shape. This is a full-space, mechanically-generated confirmation of s3's single manual associativity-swap KILL (`b2+c*12` vs `c*12+b2`), now covering all 22 reachable spellings instead of one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3 banked candidate.c: `s3/s4` unchanged), no FAKE constructs present in any of the 22 spellings measured (all are ordinary named-intermediate / inline / operand-order C)
+- artifacts: tmp/grind/func_8006ECF4/s5/enum_index.c, tmp/grind/func_8006ECF4/s5/enum_index_out/ (22 variant files), tmp/grind/func_8006ECF4/s5/sweep_index.json
+
+## [s5, enumerate] The loop-bound expression (`D_800A3554 + 1 + D_800A35B0` in the `for` condition, hunks 1/2/29 — target's `lw`-then-`lh` load order vs ours `lh`-then-`lw`) is NOT a fit for `tools/spelling_enum.py`'s statement-list model.
+- mechanism: n/a — this is a tooling-scope finding, not a codegen result.
+- probe: attempted to frame the `for (i = 0; i < D_800A3554 + 1 + D_800A35B0; i++)` loop guard as an enumerable region; the tool operates on a flat list of decl/assign/anchor STATEMENTS ending in one anchor line (an `if`/`return`), and cannot decompose a `for`-statement's condition into separately-orderable named locals without changing the loop's re-evaluation semantics every iteration (turning the natural for-loop into a different control-flow shape entirely, which would itself be a new, unrelated hypothesis, not a spelling of the existing one). Left un-enumerated this session — this residual still needs the `.sched` dump read the s3/s4 frontier already named (this is a scheduler interleaving question per s3, not a source-order question), not a further tool-driven spelling sweep.
+- result: not probed (tooling scope-mismatch identified before spending a measurement)
+- verdict: n/a (not a measured hypothesis — recorded so a future session doesn't re-attempt shoehorning this region into spelling_enum.py)
+
+## [s5] Some spelling (inline-vs-named local, declaration/assignment order, or commutative operand swap on `b*2` / `b2+c*12`) of the `b`/`c`/`b2`/`sel` index-computation region closes the operand-only register-seat tie at hunks 4/5 (`addu v1,v1,v0` vs `addu v0,v0,v1`).
+- mechanism: Unconfirmed a priori -- tested whether any reachable spelling in this region's search space flips GCC's local-alloc/global-alloc pseudo-to-hardreg assignment for this pair, via tools/spelling_enum.py's inline/decl-order/commutative-swap axes.
+- probe: tools/spelling_enum.py --candidate tmp/grind/func_8006ECF4/s5/enum_index.c --out tmp/grind/func_8006ECF4/s5/enum_index_out (22 distinct spellings) then tools/sweep_variants.py --func func_8006ECF4 --file text1b --variants tmp/grind/func_8006ECF4/s5/enum_index_out --json against the live sandbox, floor-11 chassis (s3/s4 candidate.c applied).
+- result: ENUMERATION: 22 spellings, best 11, 7 at the floor (11 -- including the current candidate.c spelling), 14 strictly worse (20). Zero spelling in this exhaustively-generated space beats 11.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3 banked candidate.c), no FAKE constructs present in any of the 22 measured spellings
+
+## [s5] The loop-bound `for` condition (`D_800A3554 + 1 + D_800A35B0`, hunks 1/2/29) can be exhaustively swept for a closing spelling using tools/spelling_enum.py the same way the index region was.
+- mechanism: n/a -- tooling-scope finding, not a codegen claim.
+- probe: Attempted to frame the for-loop condition as an enumerable statement-list region for spelling_enum.py.
+- result: The tool's model (a flat list of decl/assign statements ending in one anchor) cannot decompose a for-condition into separately-orderable named locals without changing the loop's per-iteration re-evaluation semantics -- that would be a different control-flow hypothesis, not a spelling of this one. Not probed; no measurement taken.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: n/a -- tool-applicability finding, no chassis measurement; recorded so a future session does not re-attempt shoehorning this region into spelling_enum.py

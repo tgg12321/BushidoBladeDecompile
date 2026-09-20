@@ -1,8 +1,8 @@
 {
  "func": "func_8006ECF4",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,16 +27,22 @@
    "floor": 11,
    "modality": "permuter",
    "headline": "s4 (permuter): floor unchanged at 11 - 2 structural probes KILLED, 15k+ permuter iters converged only on a rejected dead-store cheat family (verified moves 11->9 but no exhaustion/FAKE, not submitted)"
+  },
+  {
+   "session": 5,
+   "floor": 11,
+   "modality": "enumerate",
+   "headline": "s5 (enumerate): exhaustive 22-spelling sweep of the b/c/b2/sel index region found zero improvement (7 tie at 11, 14 worse at 20) -- floor unchanged at 11; loop-bound region ruled out as a spelling_enu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s2/s3 callee-save register-seat tie (operand-only hunks 4/5/12: target assigns arg0->s2 and the chain-derived value->s3, our build has them swapped) is unresolved by any decl-order or expression-associativity lever tried across s3+s4 (4 independent attempts, all flat or reverted).",
-   "mechanism": "Likely a GCC global/local allocator allocno-priority or LUID tiebreak, not yet confirmed against an actual RTL dump.",
-   "next_probe": "Read a .greg/.lreg dump via pwsh tools/grinder/dump.ps1 func_8006ECF4 to see which pseudo gets s2 vs s3 and why, before trying any further blind reorder."
+   "hypothesis": "The s2/s3 callee-save register-seat tie (target: arg0->s2, chain-value->s3; ours: swapped) behind operand-only hunks 4/5/12 is NOT closable by any spelling of the index-computation region alone (now exhaustively confirmed) -- it needs a .greg/.lreg dump read to identify which pseudo GCC's allocator is choosing and why, before any further blind lever.",
+   "mechanism": "Likely a global/local allocator allocno-priority or LUID tiebreak reaching beyond this one statement's spelling; unconfirmed against an actual RTL dump.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_8006ECF4, then read the .greg/.lreg dump in tmp/grind/func_8006ECF4/dumps/ for which pseudo gets s2 vs s3."
   },
   {
-   "hypothesis": "The loop-bound lh/lw load-order mismatch (hunks 1/2, and its mirror at hunk 29) is a scheduler interleaving effect with the unrelated v0=*(s32*)arg0; s3=*(v0+0x54) chain, not a source-text evaluation-order question (confirmed KILLED for naive reorder across s3's two independent attempts).",
+   "hypothesis": "The loop-bound lh/lw load-order mismatch (hunks 1/2, mirrored at hunk 29) is a scheduler interleaving effect with the unrelated v0=*(s32*)arg0; s3=*(v0+0x54) chain, not a source-text evaluation-order or spelling question -- confirmed unreachable by spelling_enum.py's model this session, on top of s3's two independent naive-reorder KILLs.",
    "mechanism": "cc1's scheduler possibly hoisting the loop-bound loads alongside the entry-block chain for latency-hiding, independent of source statement order.",
    "next_probe": "Read the .sched dump for the entry block (tmp/grind/func_8006ECF4/dumps/*.sched) before proposing any further loop-bound-expression lever."
   },
@@ -88,6 +94,22 @@
    "measured_on": "floor-11 chassis (H4-H7 applied, s3 banked candidate.c) plus the single new_var construct; no other FAKE constructs present",
    "predicate_cite": "",
    "result": "score DOES improve (11 -> 9), confirming real codegen effect - but REJECTED per the 6-test cheat checklist: first-reach "
+  },
+  {
+   "session": 5,
+   "statement": "Some spelling (inline-vs-named local, declaration/assignment order, or commutative operand swap on `b*2` / `b2+c*12`) of the `b`/`c`/`b2`/`sel` index-computation region closes the operand-only registe",
+   "kill_scope": "instance",
+   "measured_on": "floor-11 chassis (H4-H7 applied, s3 banked candidate.c), no FAKE constructs present in any of the 22 measured spellings",
+   "predicate_cite": "",
+   "result": "ENUMERATION: 22 spellings, best 11, 7 at the floor (11 -- including the current candidate.c spelling), 14 strictly worse"
+  },
+  {
+   "session": 5,
+   "statement": "The loop-bound `for` condition (`D_800A3554 + 1 + D_800A35B0`, hunks 1/2/29) can be exhaustively swept for a closing spelling using tools/spelling_enum.py the same way the index region was.",
+   "kill_scope": "instance",
+   "measured_on": "n/a -- tool-applicability finding, no chassis measurement; recorded so a future session does not re-attempt shoehorning this region into spelling_enum.py",
+   "predicate_cite": "",
+   "result": "The tool's model (a flat list of decl/assign statements ending in one anchor) cannot decompose a for-condition into sepa"
   }
  ],
  "ladder_skip": 0,
