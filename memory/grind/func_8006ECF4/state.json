@@ -1,0 +1,39 @@
+{
+ "func": "func_8006ECF4",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 209,
+   "modality": "recon",
+   "headline": "Recon complete: traced full control flow from asm, found the data-model signals' scalar/sub-symbol framing likely wrong for D_800A3588/D_800A358C/D_800A3561 (asm shows array-indexed access, not fixed-"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "F1: D_8009BC7C/D_800A3588/D_800A358C/D_800A3561 need corrected array declarations (not the current scalar/sub-symbol shapes) before any function body can be drafted correctly",
+   "mechanism": "data-model correctness (declaration, not codegen) -- aggregate-merge family applies only if cross-sibling stride/index evidence agrees; this function's own evidence suggests the existing SPLIT-AGGREGATE scalar framing may be wrong for 3 of the 4 symbols",
+   "next_probe": "Pull index bounds/strides for all four symbols from every named xref (func_8006F100, func_80070188, func_80070F78, func_8006F97C, func_8006E534) and check agreement before deciding merge-at-declaration vs separate array declarations"
+  },
+  {
+   "hypothesis": "F2: draft the real single-argument struct-pointer C body from the traced control flow (loop + nested lookup chain + 6-way switch + LoadImage struct copy + func_80073728 RMW) once F1 settles",
+   "mechanism": "ordinary structural C recovery, no codegen lever needed at this stage",
+   "next_probe": "Write the body, run sandbox --disable all --diff, class every hunk source-level/operand-only/not-scored before proposing any register/scheduling lever"
+  },
+  {
+   "hypothesis": "F3: jtbl_800159D0 will hit the same cross-TU rodata-ownership residual class func_8006B578 already solved (score pinned near-zero by relocation-symbol mismatch, not a real codegen defect)",
+   "mechanism": "engine/score.py masks branch/jump targets but not section-relative-vs-external-symbol reloc differences on jump-table words (same class documented in func_8006B578/candidate.c header, sessions 7-9)",
+   "next_probe": "Once F2 produces a body scoring near 0 with this exact residual pattern, re-run func_8006B578 s9's byte-certification method (objdump -r/-h on both objects) rather than re-deriving it"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-20T09:47:55.540251+00:00",
+ "object_model_audited": 1
+}
