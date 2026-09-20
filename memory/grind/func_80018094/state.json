@@ -1,8 +1,8 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -75,17 +75,23 @@
    "floor": 0,
    "modality": "structural",
    "headline": "func_80018094 remains bytes-proven (sandbox 0/153) and fully blocked on the operator-only owner_cluster_grants.txt row; s12 verified the row is still absent and the OPEN owner_actions.md entry is comm"
+  },
+  {
+   "session": 13,
+   "floor": 0,
+   "modality": "enumerate",
+   "headline": "s13: grant row still absent; func_80018094 remains bytes-proven (candidate.c distance 0) and fully blocked on the operator-only owner_cluster_grants.txt append \u2014 no C touched, per Judge constraint"
   }
  ],
  "frontier": [
   {
    "hypothesis": "The moment tools/grinder/owner_cluster_grants.txt carries a func_80018094 row, candidate.c merges unchanged with no further grind session required.",
    "mechanism": "grant_canonical_asm's owner-cluster branch reads that file directly; the row's presence alone flips the grant decision for a body already proven at distance 0.",
-   "next_probe": "Any future session dispatched here: grep tools/grinder/owner_cluster_grants.txt for func_80018094 first. If present, splice candidate.c into src/code6cac.c and submit candidate-ready. If absent, verify owner_actions.md still carries the OPEN entry and return immediately without touching C."
+   "next_probe": "Any future session dispatched here: grep tools/grinder/owner_cluster_grants.txt for func_80018094 first. If present, splice candidate.c into src/code6cac.c and submit candidate-ready. If absent, verify docs/grind/owner_actions.md still carries the OPEN entry and return immediately without touching C."
   },
   {
    "hypothesis": "No pure-C or spelling work remains on this function; it is fully solved pending an operator-only action outside grind scope.",
-   "mechanism": "Floor 0, 153/153 insns, full-link SHA1 match already achieved and re-verified across sessions 10, 11, and now 12 (grant-absence + committed-entry check).",
+   "mechanism": "Floor 0, 153/153 insns, full-link SHA1 match already achieved and re-verified across sessions 10, 11, 12, and now 13 (grant-absence + committed-entry check).",
    "next_probe": "None on the C side. Do not dispatch rederive/synthesis/enumerate modalities here until the grant row lands or a new Judge ruling changes the blocker."
   }
  ],
@@ -401,6 +407,14 @@
    "measured_on": "chassis 2026-09-20 (-mel -msoft-float), candidate.c body f5e49e3dddc24d62 (unchanged, not reapplied to src/ this session), no FAKE constructs touched this session",
    "predicate_cite": "",
    "result": "Confirmed exactly the state the s11/s10 ledger predicted: no grant row, OPEN handoff entry present and committed. A same"
+  },
+  {
+   "session": 13,
+   "statement": "On this chassis, the tools/grinder/owner_cluster_grants.txt func_80018094 row remains absent, and the docs/grind/owner_actions.md OPEN entry describing the exact remedy is already committed (dated 202",
+   "kill_scope": "instance",
+   "measured_on": "chassis 2026-09-20 (-mel -msoft-float), owner_cluster_grants.txt and owner_actions.md re-read this session; candidate.c body f5e49e3dddc24d62 unchanged, not reapplied to src/ this session per the Judg",
+   "predicate_cite": "",
+   "result": "Grant row absent; OPEN owner_actions.md entry already committed and unchanged; current src representation is still INCLU"
   }
  ],
  "ladder_skip": 0,

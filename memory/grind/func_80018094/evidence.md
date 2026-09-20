@@ -1078,3 +1078,11 @@ journal.
 - [s12] The same 01:40 ruling independently re-ran tools/scan_hand_coded.py --single func_80018094 and got tier=LOW score=1/8 (S4 only) — the canonical-asm endgame-lock door is also shut, not just the cluster-grant door.
 
 - [s12] No git dirt outside session scope: git status --short shows only the pre-existing metrics/events.jsonl modification noted at session start; no src/ or docs/ changes were made this session.
+
+- [s13] tools/grinder/owner_cluster_grants.txt has zero lines matching func_80018094 as of this session.
+
+- [s13] docs/grind/owner_actions.md carries a '## 2026-09-20 — func_80018094 — merge-refused-islands' OPEN entry (lines 10-11) already stating the exact one-line remedy, citing owner Ruling 3 (2026-09-15) as pre-authorizing the row; this entry predates this session (filed by an earlier 2026-09-20 session, likely s12) and needed no re-filing.
+
+- [s13] sandbox func_80018094 --disable all on the current tree (src/code6cac.c still INCLUDE_ASM) reports score 153/153, no_c_body true, cheat_asm_stripped 21, rules_dropped 0 — the expected asm-until-matched state, not a regression; the proven-0 body lives only in memory/grind/func_80018094/candidate.c pending the operator row.
+
+- [s13] Judge constraints explicitly forbid re-filing the integration handoff or re-opening the C this session; the correct action is to confirm the row's continued absence and the entry's continued presence, then return without touching src/.

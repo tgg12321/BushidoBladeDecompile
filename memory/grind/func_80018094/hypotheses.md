@@ -1163,3 +1163,11 @@ C-expressible (respell them in C)" — is open for this body.*
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis 2026-09-20 (-mel -msoft-float), candidate.c body f5e49e3dddc24d62 (unchanged, not reapplied to src/ this session), no FAKE constructs touched this session
+
+## [s13] On this chassis, the tools/grinder/owner_cluster_grants.txt func_80018094 row remains absent, and the docs/grind/owner_actions.md OPEN entry describing the exact remedy is already committed (dated 2026-09-20, present before this session started) — the merge remains gated purely on an operator-only file write, not on any C-side work.
+- mechanism: grant_canonical_asm's owner-cluster branch reads tools/grinder/owner_cluster_grants.txt directly for a func_80018094 row; that file is outside grind-session write scope (operator-only per owner ruling 2026-09-15), so no session-side action can flip the grant decision.
+- probe: Select-String -Path tools/grinder/owner_cluster_grants.txt -Pattern func_80018094 (zero matches); Select-String -Path docs/grind/owner_actions.md -Pattern func_80018094 (confirmed the 2026-09-20 merge-refused-islands entry is present and states the row 'was never physically added'); re-ran `sandbox func_80018094 --disable all` on current src state (INCLUDE_ASM representation, as expected under asm-until-matched — score 153/153, no_c_body true, cheat_asm_stripped 21, rules_dropped 0) to confirm nothing has silently drifted.
+- result: Grant row absent; OPEN owner_actions.md entry already committed and unchanged; current src representation is still INCLUDE_ASM (expected, not a regression) while memory/grind/func_80018094/candidate.c is the proven-0 body awaiting the grant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis 2026-09-20 (-mel -msoft-float), owner_cluster_grants.txt and owner_actions.md re-read this session; candidate.c body f5e49e3dddc24d62 unchanged, not reapplied to src/ this session per the Judge constraint against re-opening the C
