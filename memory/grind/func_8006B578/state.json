@@ -282,5 +282,15 @@
   "closer": false,
   "ok": true,
   "error": null
- }
+ },
+ "sibling_progress": [
+  {
+   "from": "func_800747D8",
+   "floor": 2,
+   "session": 9,
+   "at": "2026-09-20T09:25:55.244066+00:00",
+   "headline": "Forensics s9: floor 6 -> 2 with ZERO source-level hunks left - moving `sound = 4;` to the END of both inner-switch arms keeps reg_set_last's CODE_LABEL stop (refusing the jump.c:1178 store-flag fold, ",
+   "consumed": null
+  }
+ ]
 }

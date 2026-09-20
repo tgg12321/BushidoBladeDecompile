@@ -741,3 +741,150 @@ Testing B9 needs a compound condition whose operands cannot be coalesced.
 - [s8] Sibling ledgers re-checked per dispatch: func_8006B578 (floor 2, unspent since its s3) already transplant-checked at this ledger's s6 with no useful selection_sound idiom; main/ings.c and func_800692C0 (both COMPLETED-C, on-main bodies) already compared at s6 with no shared construct. No new sibling movement since s6/s7 last-mention.
 
 - [s8] src/text1b.c ends this session back at INCLUDE_ASM("asm/funcs", func_800747D8); candidate.c unchanged (still the floor-6 same-variable-reuse form, zero FAKE constructs); git status --short shows only memory/grind/func_800747D8/hypotheses.md and memory/grind/func_800747D8/evidence.md plus the pre-existing metrics/events.jsonl drift.
+
+## Session 9 (forensics) — FLOOR 6 -> 2; zero source-level hunks remain
+
+### The whole-residual reconstruction (read from the -da dumps, not guessed)
+
+`pwsh tools/grinder/dump.ps1 func_800747D8` on the floor-6 chassis, then
+`tmp/grind/func_800747D8/dumps/text1b.sched2:107819-107880` (the post-reload,
+pre-reorg RTL of the `selection_sound` block) shows our floor-6 body reaching
+`dbr` as the UN-normalised two-arm form on a SINGLE pseudo:
+
+```
+(code_label 268 ... 1293 ("selection_sound"))
+(insn 272  (set (reg:SI 2 v0) (mem:SI (symbol_ref "D_800A36A0"))))
+(insn 275  (set (reg/v:SI 4 a0) (zero_extend (mem/s:QI (plus (reg 2 v0) (const_int 100))))))
+(jump_insn 278 (if_then_else (ne (reg/v:SI 4 a0) (const_int 0)) (label_ref 286) (pc)))
+(insn 282  (set (reg/v:SI 4 a0) (const_int 4)))
+(jump_insn 284 (label_ref 292))
+(code_label 286 ... 1300)
+(insn 290  (set (reg/v:SI 4 a0) (const_int 0)))
+(code_label 292 ... 1301)
+```
+
+`reorg` then steals insn 290 (`a0 = 0`) from the branch target into the delay
+slot and redirects the branch past it, producing our emitted
+`lbu $4,100($2) / bne $4,$0,.L1300 / move $4,$0 / li $4,4`
+(`tmp/grind/func_800747D8/dumps/text1b.s:22021-22036`).
+
+TARGET's same block (`asm/funcs/func_800747D8.s:107-118`) is
+`lbu $v0,0x64($v0) / beqz $v0,.L80074978 / addiu $a0,$zero,4 /
+addu $a0,$zero,$zero`. Reading reorg backwards, target's pre-reorg shape was the
+NORMALISED form `a0 = 4; if (field64 == 0) goto L; a0 = 0; L:` with `a0 = 4`
+physically immediately before the conditional jump (reorg's backward
+`fill_simple_delay_slots` then moves it into the slot, which is legal because
+the branch tests `$v0`, not `$a0`). The two builds therefore differ in exactly
+one structural fact: **target's test byte lives on its own pseudo ($v0) while
+ours is forced to share the result pseudo ($a0) by the B10 escape.**
+
+### The lever that closes it
+
+`tools/gcc-2.7.2/jump.c:1178` admits the branchless store-flag fold only when
+`temp3 = reg_set_last (temp1, insn)` is a `CONST_INT` (BRANCH_COST is 1 on the
+R3000, `tools/gcc-2.7.2/config/mips/mips.h:2937`, so the other two disjuncts are
+dead — s6 H16). `reg_set_last` (`tools/gcc-2.7.2/rtlanal.c:886-888`) **stops at
+a CODE_LABEL**. s6 variant F already used that (score 8) by hoisting
+`sound = 4;` to the top of `case 0:`; its two surplus diffs came entirely from
+PLACEMENT — `$a0` pinned live across the field65 update block, and the orphaned
+`li a0,4` falling into the switch-dispatch delay slot.
+
+s9's change moves the same assignment to the **end of each inner-switch arm**,
+immediately before `goto selection_sound;`:
+
+```c
+case 1:
+    if (field65 == field64) field65 = 0; else field65 += 1;
+    sound = 4;
+    goto selection_sound;
+case 2:
+    if (field65 == 0) field65 = field64; else field65 -= 1;
+    sound = 4;
+    goto selection_sound;
+    }
+    goto confirm;
+selection_sound:
+    if (MENU_800747D8->field64 != 0) sound = 0;
+    func_8005C650(sound, 0x7F, 0x7F);
+    goto confirm;
+```
+
+`$a0` is now dead across the whole field65 block (fixing variant F's hunks
+13/14), the `selection_sound:` CODE_LABEL still sits between the assignment and
+the conditional jump (so `reg_set_last` still returns 0 and the fold is still
+refused), and the two `li a0,4` copies cross-jump-merge back into the single
+copy target carries. Measured: **score 2, build_insns 208 == target_insns 208,
+0 source-level hunks, 1 operand-only hunk, 27 not-scored**
+(`tmp/grind/func_800747D8/s9/diff_V3.txt`).
+
+### The measured variant sweep (all on the floor-6 chassis, zero FAKE)
+
+| variant | spelling | score | insns |
+|---|---|---|---|
+| base | floor-6 body (`s32 sound = field64; if (sound==0) sound=4; else sound=0;`) | 6 | 208 |
+| V1 | `vol` duplicated into both arms (`if (field64!=0){sound=0;vol=0x7F;} else {sound=4;vol=0x7F;}`) — blocks jump.c:754 via B2/B6 | **2** | 208 |
+| V2 | V1 with the polarity flipped (`==0` arm first) | 5 | 208 |
+| V3 | `sound = 4;` at the END of both inner-switch arms + `if (field64!=0) sound=0;` | **2** | 208 |
+| V4 | natural single default AFTER the inner switch (`break;` arms, `default: goto confirm;`, then `sound = 4; if (field64!=0) sound = 0;`) | 10 | 205 |
+| V5 | single `sound = 4;` at the TOP of `case 0:` (= s6 variant F re-measured) | 8 | 208 |
+
+V4 is the decisive control: it is the MOST natural single-assignment spelling,
+and it folds to the 205 branchless form, because the inner switch's join
+CODE_LABEL lands BEFORE `sound = 4;` instead of after it, so `reg_set_last`
+reaches the `CONST_INT 4` and `jump.c:1178` fires. V5 re-confirms s6's variant F
+at 8. The label must be BETWEEN the assignment and the test, and the assignment
+must be inside the arms (not above the inner switch) — both conditions are
+necessary and, together, sufficient.
+
+### The last hunk is a scorer artifact of the isolated build, not a code defect
+
+Hunk 9 is `target lw v0,0(at)` vs `ours lw v0,24(at)` at insn index 66 — the
+`switch (state)` dispatch load. `tmp/grind/func_800747D8/dumps/text1b.s:21953-21962`
+shows GCC emitting the ADDR_VEC as the TU-local label `.L1317` into
+`text1b.c`'s own `.rodata`; the sandbox's single-TU object places it at
+`.rodata+24` and `engine/score.py` cannot resolve a compiler-local label to a
+named symbol (the `sandbox-lo16-text-addend-false-distance` /
+`score-symtab-blind-to-asm-data-dlabels` class), so it prints the raw addend
+while target's `%lo(jtbl_80015A0C)` resolves to 0. **This hunk cannot be closed
+in the sandbox by any C change**; it closes only in the full link, and only
+once `jtbl_80015A0C` comes from real compiler output at 0x80015A0C.
+
+### The integration problem that closes hunk 9 (scoped out of this session)
+
+`src/text1a_b_mid_rodata.c:44-52` still hand-transcribes `jtbl_80015A0C`.
+Deleting it is NOT sufficient: per that file's own header comment, `bb2.ld`
+orders the run `text1a_b_pre_rodata.o, text1b.o, text1a_b_mid_rodata.o`, and
+`text1b.o` already owns `jtbl_80015988` (func_8006B578's table) at 0x80015988.
+A single `.rodata` section in `text1b.o` cannot straddle the
+0x800159A0..0x80015A0B run (`D_800159A0` "warning\n", `jtbl_800159B0`,
+`jtbl_800159D0`) that currently lives in `text1a_b_mid_rodata.o`. Two routes,
+both for a session whose scope covers more than `src/text1b.c`:
+  (a) move `D_800159A0`, `jtbl_800159B0` and `jtbl_800159D0` into
+      `src/text1b.c` as `const` declarations placed between `func_8006B578`
+      and `func_800747D8` (GCC 2.7.2 emits `.rodata` in declaration order), and
+      delete all four objects from `src/text1a_b_mid_rodata.c`. This needs NO
+      `bb2.ld` change and stays inside one TU.
+  (b) split `src/text1a_b_mid_rodata.c` again at 0x80015A0C and re-order
+      `bb2.ld` — but `bb2.ld` is outside every grind session's allowed surface,
+      so (a) is the route to try first.
+The 6th word of the hand array (`0x00000000`) is alignment padding: our table
+has 5 real entries (20B) and GCC's `.align 3` before the NEXT table supplies
+the 4-byte gap to 0x80015A24 (`tmp/grind/func_800747D8/dumps/text1b.s:21953`).
+
+- [s9] MEASURED SWEEP (all on the floor-6 chassis applied to src/text1b.c, zero FAKE constructs, tmp/grind/func_800747D8/s9/sweep2.ps1): base 6/208, V1 2/208, V2 5/208, V3 2/208, V4 10/205, V5 8/208. Floor moves 6 -> 2 for the first time in 9 sessions.
+
+- [s9] V3's `sandbox --disable all --diff` reports '0 source-level hunks, 1 operand-only, 27 not-scored'. Every instruction of func_800747D8 except the switch-dispatch load's base operand is now byte-identical to asm/funcs/func_800747D8.s.
+
+- [s9] Target's pre-reorg RTL for the selection block, reconstructed from the dumps: `a0 = 4; if (field64 == 0) goto L; a0 = 0; L:` with `a0 = 4` immediately before the conditional jump - reorg's backward fill_simple_delay_slots then moves it into the branch's delay slot (legal because the branch tests $v0, not $a0), giving asm/funcs/func_800747D8.s:113-116 exactly.
+
+- [s9] Our floor-6 body's post-reload RTL is at tmp/grind/func_800747D8/dumps/text1b.sched2:107819-107880 - the un-normalised two-arm form on a SINGLE pseudo (insn 275 loads into reg 4/a0, jump_insn 278 tests reg 4/a0), which is the B10 escape and the direct cause of the `lbu a0` vs `lbu v0` seat.
+
+- [s9] The necessary-and-sufficient conditions for the floor-2 spelling are both placement facts, each isolated by its own control: the `selection_sound:` CODE_LABEL must sit BETWEEN `sound = 4;` and the test (V4 puts the label on the wrong side -> 10/205), and the assignment must be inside the goto-arms rather than above the inner switch (V5 = s6 variant F -> 8/208, from $a0 liveness across the field65 block plus an orphaned `li a0,4` in the switch-dispatch delay slot).
+
+- [s9] V3's two `sound = 4;` copies cross-jump-merge back to a single `li a0,4`; that merge is proven byte-wise, not asserted - the 208-insn total and the zero source-level hunks leave no room for a second copy.
+
+- [s9] CONSTRUCT CLASSIFICATION IS OPEN AND DELIBERATELY NOT CLAIMED THIS SESSION: V3's duplicated `sound = 4;` is a real statement that re-merges byte-neutrally, which is the shape .claude/rules/duplicated-statement-into-arms.md covers (its description line: 'duplicating a REAL statement into 2+ arms (instead of label-sharing) is legitimate - incl. when cross-jump re-merges the copies to identical bytes ... Prerequisites: byte-neutrality verified, lever-exhaustion, FAKE annotation when match-motivated'). No self_vet.md was written and no family is claimed, because this session cannot reach sandbox 0 and therefore cannot submit.
+
+- [s9] jtbl_80015A0C is hand-transcribed at src/text1a_b_mid_rodata.c:44-52 as 6 words; our compiler-generated table has 5 real entries (20B) and GCC's `.align 3` before the next table supplies the 4-byte gap to 0x80015A24 - so the hand array's trailing 0x00000000 is alignment padding, and the compiler output is size-compatible with the original layout.
+
+- [s9] src/text1b.c was restored to `INCLUDE_ASM("asm/funcs", func_800747D8);` after every measurement; `git status --short` at session end shows only memory/grind/func_800747D8/** and the engine's own metrics/events.jsonl.

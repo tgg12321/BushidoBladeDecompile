@@ -1,3 +1,31 @@
+/* func_800747D8 candidate - s9 (forensics), honest sandbox score 2/208 (was 6).
+ *
+ * The ONLY remaining scored hunk is hunk 9, the jump-table base operand
+ * (target `lw v0,0(at)` vs ours `lw v0,24(at)`): GCC emits this switch's
+ * ADDR_VEC into text1b.c's own .rodata as the local label .L1317, and the
+ * isolated sandbox build cannot place it at jtbl_80015A0C (0x80015A0C).
+ * ZERO source-level hunks remain - every other instruction is byte-identical
+ * to asm/funcs/func_800747D8.s.
+ *
+ * The s9 change vs the floor-6 body is the selection_sound block only:
+ * `sound = 4;` now sits at the END of each of the two inner-switch arms
+ * (before `goto selection_sound;`) and the block reduces to
+ * `if (field64 != 0) sound = 0;`.  Mechanism (measured, not guessed):
+ * `reg_set_last` (tools/gcc-2.7.2/rtlanal.c:886-888) stops at a CODE_LABEL,
+ * so with `sound = 4;` on the far side of the `selection_sound:` label the
+ * store-flag gate at tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather
+ * than CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
+ * fold; the two-arm branch survives with the test byte on its own pseudo,
+ * which is target's `lbu v0,0x64(v0)` / `beqz v0` seat.  Putting the
+ * assignment in the ARMS rather than at the top of `case 0:` (s6 variant F,
+ * score 8) is what keeps $a0 dead across the field65 update block and lets
+ * the two copies cross-jump-merge back into the single `li a0,4` that
+ * target carries in the branch's delay slot.
+ *
+ * NOT yet self-vetted.  The duplicated `sound = 4;` is a real statement that
+ * re-merges byte-neutrally; the next session must classify it against
+ * .claude/rules/duplicated-statement-into-arms.md before any submission.
+ */
 extern u8 D_8009BD20[][2];
 extern s16 D_800A35D0;
 extern s8 D_800A35DC;
@@ -35,6 +63,7 @@ s32 func_800747D8(u32 input) {
     S_800747D8 *menu;
     S_800747D8 *work;
     u8 row;
+    s32 sound;
 
     base = D_800A36A0;
     result = 0;
@@ -70,6 +99,7 @@ s32 func_800747D8(u32 input) {
             } else {
                 MENU_800747D8->field65 += 1;
             }
+            sound = 4;
             goto selection_sound;
         case 2:
             if (MENU_800747D8->field65 == 0) {
@@ -77,19 +107,15 @@ s32 func_800747D8(u32 input) {
             } else {
                 MENU_800747D8->field65 -= 1;
             }
+            sound = 4;
             goto selection_sound;
         }
         goto confirm;
 selection_sound:
-        {
-        s32 sound = MENU_800747D8->field64;
-        if (sound == 0) {
-            sound = 4;
-        } else {
+        if (MENU_800747D8->field64 != 0) {
             sound = 0;
         }
         func_8005C650(sound, 0x7F, 0x7F);
-        }
         goto confirm;
     case 1:
         if ((ret & 0xFF) != 0) {

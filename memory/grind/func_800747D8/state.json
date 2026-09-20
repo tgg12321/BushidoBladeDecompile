@@ -1,8 +1,8 @@
 {
  "func": "func_800747D8",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "Rederive s8: fresh m2c blocked (missing jtbl, out-of-scope fix); MEM-source mechanism probe proves predicate B4 can never be target's real blocker (class kill) and reproduces target's exact v0/a0 regi"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics s9: floor 6 -> 2 with ZERO source-level hunks left - moving `sound = 4;` to the END of both inner-switch arms keeps reg_set_last's CODE_LABEL stop (refusing the jump.c:1178 store-flag fold, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The true blocker for target's real (literal-0) selection_sound escape from jump.c's folds is a B8/B9-class predicate about the SHARED CALL TAIL at .L80074A20 (entered by both the row-toggle path's fallthrough and selection_sound's explicit j), not about the else-arm's value (B4 is now class-killed).",
-   "mechanism": "jump.c:794-812/831 (LABEL_NUSES walk defeated by a CALL_INSN or a second FORWARD entry) or jump.c:832 (no_labels_between_p between the last conditional jump and the then-arm's terminating jump) - both predicates concern the LABEL the fallthrough/else path reaches, and target's real fallthrough here is not an isolated two-way if/else, it eventually merges into a tail (.L80074A20) reached from more than one caller.",
-   "next_probe": "Re-run the s7 xjdbg instrumented-cc1 trace (BB2_XJUMP_DEBUG=1) on the CURRENT (un-relocated, non-duplicated-call) floor-6 chassis - not the s7 relocated/duplicated variants - to see whether jump.c or a later cross-jump pass is what actually produces target's shared .L80074A20 tail, and whether LABEL_NUSES on that tail (not on the internal if/else label) is the real predicate in play. This has not been tried: s7's xjdbg trace only covered the relocated duplicated-call variant."
+   "hypothesis": "func_800747D8 is byte-complete in pure C at V3's spelling; the only thing between it and COMPLETED-C is moving ownership of jtbl_80015A0C from the hand-transcribed array to real compiler output, which the isolated sandbox can never score.",
+   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch. bb2.ld orders text1a_b_pre_rodata.o, text1b.o, text1a_b_mid_rodata.o, and text1b.o already owns jtbl_80015988 at 0x80015988, so text1b.o's single .rodata cannot straddle the 0x800159A0..0x80015A0B run that text1a_b_mid_rodata.o supplies. bb2.ld is outside every grind session's allowed surface, so the fix must stay inside the C files.",
+   "next_probe": "In a session whose scope covers src/text1b.c AND src/text1a_b_mid_rodata.c: declare `const char D_800159A0[16]`, `const u32 jtbl_800159B0[8]` and `const u32 jtbl_800159D0[15]` in src/text1b.c between func_8006B578 and func_800747D8 (GCC emits .rodata in declaration order), delete those three plus jtbl_80015A0C from src/text1a_b_mid_rodata.c, apply candidate.c, and verify with the FULL build (`& tools/wteng.ps1 main build`) against SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa - the sandbox score will stay at 2 either way and is not the right instrument here."
   },
   {
-   "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual (operand-only, lw v0,0(at) vs lw v0,24(at)) closes once the hand-transcribed array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C.",
-   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch; the sandbox's isolated single-function build sees a placement/offset conflict against the hand array still present in text1a_b_mid_rodata.c rather than target's real layout.",
-   "next_probe": "At final-submission assembly time only (not a src/text1b.c-only session): delete the jtbl_80015A0C array from src/text1a_b_mid_rodata.c in the same commit as func_800747D8's C body, then re-measure with sandbox --disable all --diff."
+   "hypothesis": "V3's duplicated `sound = 4;` can be replaced by a single-assignment spelling that still puts a CODE_LABEL between the assignment and the test, which would remove the need to claim the duplicated-statement-into-arms family at all.",
+   "mechanism": "The gate is purely tools/gcc-2.7.2/rtlanal.c:886-888's CODE_LABEL stop feeding tools/gcc-2.7.2/jump.c:1178. Any control-flow shape in which the assignment is executed before a label that the test's block begins with satisfies it; V4 proved that a `break`-converged switch puts the label on the wrong side, but other shapes (e.g. a single arm assigning and the other arm reaching the block by a goto that skips the assignment, or an enclosing if that guards only the assignment) have not been enumerated.",
+   "next_probe": "Enumerate single-assignment control-flow shapes for the case-1/case-2 -> selection_sound path with tools/spelling_enum.py + sweep_variants.py (the s4 tool pair), scoring each with `sandbox --disable all`, and keep any that reaches 2/208 with one textual `sound = 4;`. If none exists, the duplicated-statement-into-arms citation is unavoidable and the next session should write self_vet.md against .claude/rules/duplicated-statement-into-arms.md with a /* FAKE */ annotation naming jump.c:1178 / rtlanal.c:886-888 as the mechanism."
   },
   {
-   "hypothesis": "B9 (jump.c:832, a CODE_LABEL between the last conditional jump and the then-arm's terminating jump) is unreachable via a compound condition on this function's real single-byte field64 test (adjacent-field ORIF coalesces to one halfword compare, s7 finding) but may still be reachable via the shared-tail structure itself rather than the condition.",
-   "mechanism": "Same jump.c:754-860 normalisation as B8; if the shared .L80074A20 tail is what supplies the extra CODE_LABEL or extra use, B9 and B8 may turn out to be the SAME underlying blocker described two different ways.",
-   "next_probe": "Compare the xjdbg trace's label-use counts for .L80074A20 against LABEL_NUSES expectations from jump.c:787 to determine whether B8 and B9 collapse to one predicate for this function."
+   "hypothesis": "The V1 route (a second real statement duplicated into both arms of the original if/else, blocking jump.c:754-860 via its multi-insn-arm predicates) reaches the same 2/208 and may be classifiable under a different, easier family than V3's.",
+   "mechanism": "tools/gcc-2.7.2/jump.c:775 and tools/gcc-2.7.2/jump.c:784-789 both require single-insn arms; two-insn arms defeat the normalisation and, transitively, the store-flag block's `reallabelprev == temp` test at tools/gcc-2.7.2/jump.c:1066.",
+   "next_probe": "Re-measure memory/grind/func_800747D8/vol-dup-arms-floor2.c and take its --diff to confirm it too has zero source-level hunks; then compare the two forms' cheat-checklist exposure (V1 invents a `vol` local whose only purpose is to be duplicated - likely worse under T1/T6 than V3's duplicated real default) before deciding which body a submission session should carry."
   }
  ],
  "judge_constraints": [],
@@ -232,10 +238,19 @@
    "measured_on": "candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block replaced by the MEM-sourced mechanism probe (flag2/sound2, D_800A35D0 else value); zero FAKE constructs. src/text1b.c",
    "predicate_cite": "tools/gcc-2.7.2/jump.c:1190-1191",
    "result": "score 4, build_insns 209 (1 insn long). Every previously-flagged register-seat hunk (old hunks 9 and 17-19: lbu a0 vs ta"
+  },
+  {
+   "session": 9,
+   "statement": "The most natural single-assignment spelling - inner-switch arms ending in `break;` with a `default: goto confirm;`, converging on a shared tail that carries `sound = 4; if (field64 != 0) sound = 0;` -",
+   "kill_scope": "instance",
+   "measured_on": "floor-6 chassis applied to src/text1b.c with the inner switch restructured to `break;` arms plus `default: goto confirm;` and a single post-switch `sound = 4;`; zero FAKE constructs.",
+   "predicate_cite": "",
+   "result": "score 10, build_insns 205 - the same bucket as the fourteen spellings banked across s1/s2/s5/s6. This is the control tha"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-20T06:45:56.103477+00:00"
+ "created": "2026-09-20T06:45:56.103477+00:00",
+ "escalation_deferrals": 0
 }
