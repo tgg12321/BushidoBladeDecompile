@@ -1,35 +1,79 @@
-# SELF-VET — func_8006ECF4
-CONSTRUCTS: named intermediate `b2 = b * 2` (staged sub-expression); struct type `Rect_8006ECF4` (4x s16, matches existing project-wide `Rect` shape in src/ings.c); `switch`/`default`/`goto skip_load` control flow replacing a fallthrough case set
+# SELF-VET — func_8006ECF4 (session 3, progress outcome — floor 60 -> 11, not yet candidate-ready)
+
+CONSTRUCTS: struct-init statement reorder (H4); goto-based shared-label
+control-flow transcription for the s.p1 dispatch region (H5); pad-byte store
+statement reorder (H6); if/else split of a call argument into two literal
+call sites (H7). None of these are no-semantic-purpose constructs — every
+statement in the diff computes or stores a real, consumed value, and every
+branch/goto corresponds 1:1 to a real conditional edge present in the target
+disassembly.
 
 ## T1 semantic purpose
-`b2` holds the real value `b*2` that is consumed at its use site (`D_8009BC40[b2 + c*12]`) — same bytes contribute to the final index either way, this only changes association/emit order, not program meaning. Real semantic purpose, not dead.
-`Rect_8006ECF4` is the real type of the copied object (a screen-rect passed to `LoadImage`) — same struct shape as `Rect` already declared and used identically in src/ings.c for the exact same `LoadImage` idiom. Real, non-dead type declaration.
-`switch`/`goto skip_load` encodes the ACTUAL control-flow topology read directly off the disassembly (asm/funcs/func_8006ECF4.s lines 84-138): the jump table's non-explicit-case entries and the `sel>=15` path both go straight to the shared fallback and never enter the `if (i != 0)` guard. The goto is not decorative — it is the only way to express "some switch arms fall through to guarded code, the default arm does not" in C without duplicating the guard's condition or code.
+Every changed construct has an observable effect matching the target's own
+control flow / value assignments: the goto labels (H5) route to blocks that
+compute real values (`s.p1`) actually read later by `func_80073728`; the two
+call sites (H7) each perform the real call with the real literal mode
+argument the corresponding branch used in the original. Reordering assignment
+statements (H4/H6) changes nothing semantically (same final struct state) but
+matches the ACTUAL store order the original compiler produced from its own
+source — this is ordinary statement-order C, not a coercion.
 
-## T2 human-programmer
-Yes to all three. A programmer transcribing this disassembly would naturally: (a) name the sub-expression `b*2` if writing out the index calc step by step, (b) reuse the project's existing `Rect` struct shape for a screen-rect copy+LoadImage call (it's already the established idiom in this codebase for this exact API), (c) write a switch with a default arm that goto-skips guarded code that only applies to the recognized cases — this is ordinary readable C for "recognized selector → extra validated side effect; unrecognized selector → just use a formula."
+## T2 human-programmer test
+A programmer transcribing this exact disassembly (which a decomp is,
+definitionally) would write the goto-to-shared-label pattern for H5/H7
+because that IS the control-flow shape shown by `jr`-free explicit branches
+in the asm (bnez/beqz targeting shared labels .L8006EFA4/.L8006EF98,
+beqz/j choosing between two `jal` call sites) — not something a reader would
+ask "why is this here?" about.
 
 ## T3 GCC-internals justification
-None of the three constructs are justified by naming a GCC pass as the MECHANISM that makes them "work" by hiding/defeating something. `b2`'s effect (matching op order) is incidental to a real value; the struct type controls real ABI/codegen (alignment-driven aligned-vs-unaligned copy) as an ordinary type-correctness fix, not a coercion; the switch/goto is ordinary control-flow structure recovery, not a scheduling/allocation trick. No FAKE annotation is claimed for any of them because none needs one — they are exactly the code a human would write from the spec/disassembly, and each measured drop follows from expressing REAL program logic more precisely, not from suppressing something in the emitted output.
+No construct's justification rests on a compiler-internals mechanism as the
+semantic reason for the statement's existence. The goto/if-else shapes ARE
+the real control flow (asm evidence, cited by line in evidence.md); GCC's
+cross-jump/tail-merge behavior is mentioned only to EXPLAIN why the
+duplicated-statement spelling (s2's version) cost extra instructions, not as
+the reason the new spelling is "needed" absent real semantics.
 
 ## T4 permuter/search provenance
-None of the three came from an auto-search tool. `b2` and the switch/goto rewrite were derived by directly reading asm/funcs/func_8006ECF4.s and matching its literal instruction sequence/control flow. The struct-type fix was derived by finding the identical idiom already matched in src/ings.c (func_80016A8C, COMPLETED-C on main) and applying the same struct shape here. All three are principled derivations, not "whatever the detector didn't catch."
+No permuter or auto-search tool was used this session. Every lever was
+derived by directly reading asm/funcs/func_8006ECF4.s and comparing against
+the diff tool's hunk classifications, then hand-transcribing the real control
+flow / store order into C.
 
 ## T5 family check
-`b2`: SOTN-accepted "named-intermediate declaration order" family (.claude/rules/no-new-park-categories.md) — once-written, real value, byte-neutral (target_insns==build_insns unaffected — both sides still 209 vs 21x insns; this term specifically closed 4 hunks from source-level to operand-only), fresh local. No annotation required per that family's own precedent (SOTN ships this shape un-annotated as ordinary style; the FAKE-annotation requirement in [[no-new-park-categories]] governs the constructs that have NO semantic purpose — this one does have one, board test T1).
-`Rect_8006ECF4`: not a "sanctioned family" construct at all — it's an ordinary type declaration matching a real, already-established, already-matched project shape. No family entry needed; this is normal decomp type-correctness work, same category as [[header-type-correction-from-use-sites]] in spirit (correcting an invented aggregate's shape from use-site/sibling evidence) but even more directly: literally reusing a sibling TU's proven-matching struct layout.
-`switch`/`goto skip_load`: SOTN-accepted "mixed exit forms" family (.claude/rules/no-new-park-categories.md, citing SsVabOpenHeadWithMode) — ordinary goto used to mix exit forms / skip a code region, real control flow, not label-sharing dead code.
+H5 and H7 match the SOTN-sanctioned "mixed exit forms" (goto endK + inline
+return/distinct labels) and "unconditional-common-store duplication into both
+branch arms" (F7 survey) families in no-new-park-categories.md — but note
+neither construct NEEDS the family sanction to be legitimate: they are the
+literal, truthful translation of the disassembly's real branch structure, not
+a no-semantic-purpose wrapper. H4/H6 are plain statement-order changes with
+no family at all (ordinary C, no no-semantic-purpose content).
 
 ## T6 naming-announces-intent
-`b2`, `Rect_8006ECF4`, `skip_load` are all descriptive of their real role (a doubled value, a rect type, a control-flow target) — none of them are named `pad`/`dummy`/`spill`/`unused`/`tmp` or otherwise announce coercion intent. `skip_load` literally states what the goto does (skip the LoadImage attempt), consistent with the real control flow, not a hidden purpose.
+No new identifiers introduced this session (b2, i, s3, s0, sel, a2, rectbuf,
+p1_idx/p1_fallback/p1_done labels — all pre-existing from s2 or named for
+their real role in the control flow, e.g. `p1_idx` names the block that
+computes the index-based p1 value, `p1_fallback` the block that computes the
+fallback p1 value — no `pad`/`dummy`/`unused`/`spill`/`tail`/`slack` naming
+anywhere).
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: named-intermediate declaration order
-  SCOPE: "Named-intermediate declaration order (narrow-byte-args-packed-call hi/lo sub-trick): declare a sub-expression as a separately-named local to bias LUID. SOTN's `randy` chain in `src/weapon/w_037.c` is the same mechanism."
-  PRECEDENT: .claude/rules/no-new-park-categories.md:96
+  FAMILY: mixed exit forms (goto-based shared-label control flow)
+  SCOPE: "deliberately mix `goto endK` with inline `return` to defeat `find_cross_jump`. SOTN ships this verbatim in `SsVabOpenHeadWithMode` (`src/main/psxsdk/libsnd/vs_vh.c`)."
+  PRECEDENT: .claude/rules/no-new-park-categories.md (SOTN-accepted techniques section, "Mixed exit forms" bullet)
 
-  FAMILY: mixed exit forms
-  SCOPE: "Mixed exit forms ([[cross-jump-store-tail-merge]]): deliberately mix `goto endK` with inline `return` to defeat `find_cross_jump`. SOTN ships this verbatim in `SsVabOpenHeadWithMode` (`src/main/psxsdk/libsnd/vs_vh.c`)."
-  PRECEDENT: .claude/rules/no-new-park-categories.md:94
+  FAMILY: unconditional-common-store duplication into both branch arms
+  SCOPE: "duplicating common-tail stores into both if/else arms where cross-jump may or may not re-merge them — sanctioned at the CONSTRUCT level regardless of which GCC pass the duplication feeds ... SOTN ships 25 fully-identical-arm if/else constructs and 1,275 identical-store-in-both-arms sites in matched code."
+  PRECEDENT: .claude/rules/no-new-park-categories.md (2026-08-18 additions, F7 survey entry)
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct (all three constructs have a truthful semantic reading with a real, observably-necessary purpose; none is a no-semantic-purpose coercion requiring the `/* FAKE */` prerequisites)
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. Every statement in this
+session's diff has a truthful, directly-consumed semantic reading (real
+values, real control-flow edges matching the disassembly); nothing in this
+diff is dead code, a padding device, or a no-semantic-purpose coercion, so no
+`/* FAKE */` annotation applies.
+
+NOTE: this is a `progress` outcome (floor 11, not 0) — this self-vet is
+written proactively per the ledger's own discipline (banking a clean
+construct trail for whichever future session closes the remaining 3
+operand-only + 5 source-level hunks), not because this session is claiming
+`candidate-ready`.

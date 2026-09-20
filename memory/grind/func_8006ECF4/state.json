@@ -1,7 +1,7 @@
 {
  "func": "func_8006ECF4",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,28 +15,51 @@
    "floor": 60,
    "modality": "structural",
    "headline": "Re-confirmed s2's first C body (113), then found 3 more source-level levers: staged b*2 named intermediate, Rect (4xs16) struct-copy type fix, and switch/goto replacing manufactured tookCase flag -- f"
+  },
+  {
+   "session": 3,
+   "floor": 11,
+   "modality": "structural",
+   "headline": "func_8006ECF4: floor 60 -> 11 via 4 structural levers (struct-init store order, goto-based shared-label p1 dispatch, pad-byte store order, if/else call-arg split); 2 associativity/order hypotheses KIL"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Entry-block store ordering: target stores zero18/zero1C before reusing v0 for the arg0-deref chain and the c24=0x100 store lands last; current C's straight-line s.one14/c20/c24/zero18/zero1C order doesn't reproduce this and shows as source-level hunks 3-4.",
-   "mechanism": "possibly GCC's own callee-save prologue store scheduling (register pressure from s0-s4 spills) rather than something block-local C statement order controls -- needs a .greg/.sched dump read to confirm before proposing a specific C reorder.",
-   "next_probe": "run pwsh tools/grinder/dump.ps1 func_8006ECF4 and read the .sched dump for the entry block before guessing a C-level statement reorder; only reorder the s.zero18/s.zero1C/s.c24 assignment statements in src if the dump shows the source order (not the scheduler) drives store order."
+   "hypothesis": "The s2/s3 register-seat swap (arg0 vs the chain-derived value) accounts for all 3 remaining operand-only hunks; declaring a dedicated loop-counter local before the v0/s3/s0 chain-derivation locals may flip which gets the lower-numbered callee-save register.",
+   "mechanism": "GCC callee-save register assignment order, likely tied to pseudo-introduction order \u2014 untested this session.",
+   "next_probe": "Reorder local declarations (i before v0/s3/s0) and re-measure; if flat, read a .greg/.lreg dump (pwsh tools/grinder/dump.ps1 func_8006ECF4) to see which pseudo gets s2 vs s3 and why."
   },
   {
-   "hypothesis": "The tail s.p1 selection region (asm offset ~142-194, current diff hunks 24/25/27/29/30/31/32/33) still carries ~8 source-level hunks after H1-H3; likely a similar structural mismatch (branch-sense or shared-computation topology) to what H3 found in the case-dispatch region.",
-   "mechanism": "control-flow / shared-computation structure recovery -- same class of fix as H3, not yet attempted here.",
-   "next_probe": "read asm/funcs/func_8006ECF4.s directly from the label around offset 0x142 (.L8006EF24) through the end of the function (the same technique that found H3, reading the raw asm instead of the interleaved register-renamed diff tool output), and compare against the current if/else-if chain in src/text1b.c lines 7713-7721."
+   "hypothesis": "The loop-bound lh/lw load-order mismatch (diff hunks 1/2, target loads the 32-bit D_800A35B0 before the 16-bit D_800A3554) is a scheduler interleaving effect with the unrelated arg0-deref chain, not a source-text-order question (the naive reorder was KILLED this session).",
+   "mechanism": "possibly cc1's scheduler hoisting the loop-bound loads alongside the v0=*(s32*)arg0; s3=*(v0+0x54); statements for latency-hiding, independent of source statement order.",
+   "next_probe": "Read the .sched dump for the entry block (pwsh tools/grinder/dump.ps1 func_8006ECF4, tmp/grind/func_8006ECF4/dumps/*.sched) before proposing any further loop-bound-expression lever."
   },
   {
-   "hypothesis": "jtbl_800159D0 cross-TU rodata-ownership residual (unchanged from s1's F3) will surface once the function is near 0 -- same class func_8006B578 already solved.",
-   "mechanism": "engine/score.py masks branch/jump targets but not section-relative-vs-external-symbol reloc differences on jump-table words (documented in func_8006B578/candidate.c header, sessions 7-9).",
-   "next_probe": "once score reaches ~0 with this exact residual pattern, re-run func_8006B578 s9's byte-certification method (objdump -r/-h on both objects) rather than re-deriving it."
+   "hypothesis": "jtbl_800159D0's cross-TU rodata-ownership residual (same class already solved for sibling func_8006B578, sessions 7-9) will surface once this function reaches score 0.",
+   "mechanism": "engine/score.py masks branch/jump targets but not section-relative-vs-external-symbol reloc differences on jump-table words.",
+   "next_probe": "Once score reaches ~0 with this residual pattern, re-run func_8006B578 s9's byte-certification method (objdump -r/-h on both objects) rather than re-deriving it."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 3,
+   "statement": "Reordering the loop-bound expression from `D_800A3554 + 1 + D_800A35B0` to `D_800A35B0 + D_800A3554 + 1` (to match target's lw-then-lh load order for the two loop-bound globals, vs our current lh-then",
+   "kill_scope": "instance",
+   "measured_on": "floor-11 chassis (H4-H7 applied), no FAKE constructs present in either the reordered or un-reordered form",
+   "predicate_cite": "",
+   "result": "measured strictly worse both times (score 18 vs 11 baseline on one measurement; more source-level hunks on the diff read"
+  },
+  {
+   "session": 3,
+   "statement": "Swapping the D_8009BC40 index expression from `b2 + c * 12` to `c * 12 + b2` (associativity swap of two already-named intermediates) changes which register (v0 vs v1) becomes the addu accumulator, clo",
+   "kill_scope": "instance",
+   "measured_on": "floor-11 chassis (H4-H7 applied), no FAKE constructs present in either form",
+   "predicate_cite": "",
+   "result": "score identical (11) in both operand orders \u2014 the addu v1,v1,v0 vs addu v0,v0,v1 operand-only tie is stable under this l"
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",

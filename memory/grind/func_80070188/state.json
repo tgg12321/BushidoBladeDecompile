@@ -66,10 +66,10 @@
   },
   {
    "from": "func_8006ECF4",
-   "floor": 60,
-   "session": 2,
-   "at": "2026-09-20T10:16:31.443465+00:00",
-   "headline": "Re-confirmed s2's first C body (113), then found 3 more source-level levers: staged b*2 named intermediate, Rect (4xs16) struct-copy type fix, and switch/goto replacing manufactured tookCase flag -- f",
+   "floor": 11,
+   "session": 3,
+   "at": "2026-09-20T10:27:14.951441+00:00",
+   "headline": "func_8006ECF4: floor 60 -> 11 via 4 structural levers (struct-init store order, goto-based shared-label p1 dispatch, pad-byte store order, if/else call-arg split); 2 associativity/order hypotheses KIL",
    "consumed": null
   }
  ]

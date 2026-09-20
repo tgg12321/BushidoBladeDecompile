@@ -101,3 +101,118 @@
 - probe: removed `tookCase` local and its `= 1` sets, restructured the switch with a `default:` arm doing the fallback + `goto skip_load;`, added the `skip_load:;` label after the `if (i != 0)` guard; ran sandbox func_8006ECF4 --disable all
 - result: score dropped 96 -> 60 (target_insns=209, build_insns=213); diff hunk 17/18's ~20-instruction source-level cluster (the per-case `li v1,1` + duplicate lw sequences) collapsed
 - verdict: CONFIRMED
+
+## [s3] H4-H7 — CONFIRMED (measured), progression floor 60 -> 11
+
+See evidence.md `[s3]` for the full per-lever detail (asm line citations, exact
+before/after C, and the two mis-step/revert episodes). Summary:
+- H4: struct-init store reorder (one14,c20,zero18,zero1C,c24 — c24 last). 60->58.
+- H5: s.p1 dispatch region rewritten from duplicated-statement if/else-if arms
+  to explicit `goto p1_idx;`/`goto p1_fallback;` matching the asm's real
+  shared-label topology. 58->39. (An intermediate nested-if/else spelling with
+  identical logical content but NOT matching the goto topology was tried and
+  measured IDENTICAL to the pre-H5 39... wait pre-H5 was 58; the nested-if
+  form measured the SAME as 58, i.e. zero improvement — only the goto form
+  moved the needle. Recorded so a future session doesn't re-try the
+  nested-if-with-flipped-branch-sense spelling expecting a different result.)
+- H6: else-branch pad-byte store order reversed to descending (+0x2B,+0x2A,+0x29).
+  Isolated from an earlier bundled (byte28-value + order) change that measured
+  WORSE (46) — the byte28=0 guess was WRONG (mis-read MIPS delay-slot
+  semantics: the delay-slot instruction after a beqz executes unconditionally
+  on BOTH paths, so v0=1 reaches the else-branch regardless of branch
+  direction). Isolated order-only fix: 39->37.
+- H7: tail func_80073728 call split into if/else with two call sites (literal
+  1/0 args) instead of a `(i != 0)` ternary-argument. Matches asm's real
+  two-literal-branch structure (li a1,1 / move a1,zero) rather than GCC's
+  alternate `sltu`-based boolean-materialization codegen path for the same
+  logical value. 37->11. Largest single lever this session.
+
+## [s3] KILLED — loop-bound expression reorder (D_800A35B0 first)
+- Statement: rewriting `for (i=0; i < D_800A3554+1+D_800A35B0; i++)` as
+  `D_800A35B0 + D_800A3554 + 1` (attempting to match target's lw-then-lh load
+  order for the two loop-bound globals, vs our lh-then-lw order) does NOT
+  improve the score on this chassis.
+- Mechanism: unconfirmed — the load-order mismatch is likely a SCHEDULER
+  interleaving effect (these two loads share the block with the unrelated
+  `v0=*(s32*)arg0; s3=*(v0+0x54);` chain, which the scheduler may hoist loads
+  across for latency-hiding), not a plain source-text evaluation-order
+  question. Next session: read the `.sched` dump for this entry block
+  (`pwsh tools/grinder/dump.ps1 func_8006ECF4`, tmp/grind/func_8006ECF4/dumps/*.sched)
+  before proposing any further loop-bound-expression lever.
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied), no FAKE constructs present in
+  either the reordered or un-reordered form.
+- result: measured floor 18 on first try (all-hunks diff showed 9 source-level
+  hunks vs 5 baseline), confirmed worse on a second independent measurement.
+  Reverted to `D_800A3554 + 1 + D_800A35B0` (the better-measured form, banked
+  in candidate.c).
+
+## [s3] KILLED — D_8009BC40 index associativity swap (b2 + c*12 vs c*12 + b2)
+- Statement: swapping the written order of the two ALREADY-NAMED intermediates
+  `b2` and `c*12` in the `D_8009BC40[...]` index expression does not move the
+  score on this chassis.
+- Mechanism: the `addu v1,v1,v0` (target) vs `addu v0,v0,v1` (ours) operand-only
+  tie in diff hunks 4/5 is a register-allocation-seat / RTL-canonicalization
+  matter (which operand becomes the accumulator dest) that text-order swap of
+  two pre-named locals does not influence — consistent with GCC's commutative-
+  operand canonicalization happening after the named intermediates are already
+  materialized into pseudos, at a stage source order can no longer steer.
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied), no FAKE constructs present in
+  either form.
+- result: score identical (11) both ways; reverted to the `b2 + c * 12` form
+  (matches the asm's own load order b-then-c, marginally more natural reading).
+
+## [s3] Frontier for next session (banked in candidate.c header too)
+1. The 3 remaining operand-only hunks (all one root cause: target assigns
+   s2=arg0/s3=chain-derived-value, ours assigns them the opposite way round)
+   — try declaring a dedicated loop-counter local BEFORE the v0/s3/s0 chain
+   locals (the s2 H-note's original suggestion, never actually tried); if
+   flat, read a `.greg`/`.lreg` dump for which pseudo gets which hard reg and
+   why, per [[register-alloc-pure-c]].
+2. The 5 remaining source-level hunks (hunks 1/2 = the loop-bound lh/lw
+   load-order mismatch, KILLED for the naive text-reorder above — needs a
+   `.sched` dump read next; the other 3 not yet individually triaged this
+   session, re-run `--diff` fresh and read them one at a time).
+3. jtbl_800159D0 cross-TU rodata-ownership residual (F3, unchanged) — same
+   class as func_8006B578 sessions 7-9, only relevant once score is at/near 0.
+
+## [s3] H4: reordering the S46C struct-init statements to one14, c20, zero18, zero1C, c24 (c24 last) instead of one14, c20, c24, zero18, zero1C matches the target's deferred-store pattern for the 0x100 constant.
+- mechanism: ordinary statement-order C; target's asm computes the 0x100 constant into a register early but defers its store past the two zero-stores (which need no register) — matching source statement order reproduces this.
+- probe: sandbox func_8006ECF4 --disable all after reordering the 5 init statements
+- result: score 60 -> 58
+- verdict: CONFIRMED
+
+## [s3] H5: rewriting the s.p1 dispatch region from a duplicated-statement if/else-if chain to explicit goto p1_idx / goto p1_fallback matching the disassembly's real shared-label branch topology closes ~19 instructions of overhead from unmerged duplicate blocks.
+- mechanism: GCC's cross-jump pass did not merge the 3 textually-identical `s.p1=*(s32*)(s3+i*4)` statements (one per if/else-if arm) into a single block; spelling the real asm topology (3 branches into ONE shared label, 2 branches into another) produces the single shared block directly instead of relying on tail-merge to reconstruct it post-hoc.
+- probe: sandbox func_8006ECF4 --disable all after rewriting the p1 dispatch as goto-based shared blocks; also tried an intermediate nested-if/else-with-flipped-branch-sense spelling (same logical content) which measured IDENTICAL to the pre-H5 score (58, zero improvement) before the goto form was tried and closed the gap
+- result: score 58 -> 39
+- verdict: CONFIRMED
+
+## [s3] H6: the D_8009BC7C[sel]&1==0 (else) branch's three pad-byte stores (*(u8*)&s+0x29/0x2A/0x2B) must be written in DESCENDING offset order (+0x2B,+0x2A,+0x29), opposite of the if-branch's ascending order, to match the target.
+- mechanism: ordinary statement-order C; read directly from the .L8006EE00 asm block.
+- probe: sandbox func_8006ECF4 --disable all with only the store-order changed (isolated from an earlier bundled byte28-value change that measured worse and was reverted, see the KILLED byte28-value note in evidence.md)
+- result: score 39 -> 37
+- verdict: CONFIRMED
+
+## [s3] H7: the tail func_80073728 call must be split into an explicit if(i!=0){call(...,1);}else{call(...,0);} with two real call sites, instead of a single call whose second argument is the boolean expression (i!=0); the target computes the literal 0/1 argument via two branches (li a1,1 / move a1,zero) selecting between two jal sites, not via a sltu-based boolean materialization.
+- mechanism: GCC compiles a ternary/boolean-expression call argument via a different codegen path (sltu comparison-to-0/1) than an explicit if/else with two call sites (branch-to-immediate-then-call); these are semantically identical but structurally different instruction sequences, and only the explicit-branch form matches target.
+- probe: sandbox func_8006ECF4 --disable all after splitting the call into two arms
+- result: score 37 -> 11
+- verdict: CONFIRMED
+
+## [s3] Reordering the loop-bound expression from `D_800A3554 + 1 + D_800A35B0` to `D_800A35B0 + D_800A3554 + 1` (to match target's lw-then-lh load order for the two loop-bound globals, vs our current lh-then-lw order) improves or is neutral for the score on the floor-11 chassis.
+- mechanism: unconfirmed — hypothesized to be a source-text evaluation-order effect on load scheduling, but not verified against a .sched dump this session.
+- probe: sandbox func_8006ECF4 --disable all with the loop-bound expression operand order swapped, tried twice independently (once from the H4-only chassis giving score 18, once from the full H4-H7 chassis giving 9 source-level hunks vs the un-swapped body's 5)
+- result: measured strictly worse both times (score 18 vs 11 baseline on one measurement; more source-level hunks on the diff read on the other) — reverted to the original `D_800A3554 + 1 + D_800A35B0` order, which is the form banked in candidate.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied), no FAKE constructs present in either the reordered or un-reordered form
+
+## [s3] Swapping the D_8009BC40 index expression from `b2 + c * 12` to `c * 12 + b2` (associativity swap of two already-named intermediates) changes which register (v0 vs v1) becomes the addu accumulator, closing the operand-only tie in diff hunks 4/5.
+- mechanism: unconfirmed — hypothesized as a source-order-driven RTL canonicalization effect; not confirmed.
+- probe: sandbox func_8006ECF4 --disable all with the index expression operand order swapped
+- result: score identical (11) in both operand orders — the addu v1,v1,v0 vs addu v0,v0,v1 operand-only tie is stable under this lever; reverted to `b2 + c * 12` (matches the asm's own b-then-c load order)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied), no FAKE constructs present in either form
