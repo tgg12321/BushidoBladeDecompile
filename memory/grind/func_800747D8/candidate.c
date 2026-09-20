@@ -1,15 +1,27 @@
-/* func_800747D8 candidate - s9 (forensics), honest sandbox score 2/208 (was 6).
+/* func_800747D8 candidate - s10 (forensics).  BYTES PROVEN ON MAIN:
+ * a full driver build carrying this body produced build/bb2.exe SHA1
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa (== the oracle) on 2026-09-20.
  *
- * The ONLY remaining scored hunk is hunk 9, the jump-table base operand
- * (target `lw v0,0(at)` vs ours `lw v0,24(at)`): GCC emits this switch's
- * ADDR_VEC into text1b.c's own .rodata as the local label .L1317, and the
- * isolated sandbox build cannot place it at jtbl_80015A0C (0x80015A0C).
- * ZERO source-level hunks remain - every other instruction is byte-identical
- * to asm/funcs/func_800747D8.s.
+ * Honest sandbox score with this body is 2/208 and CANNOT go lower: the sole
+ * scored hunk is the switch's jump-table base operand (target `lw v0,0(at)`
+ * vs ours `lw v0,24(at)`), i.e. the %lo addend of the compiler-emitted
+ * ADDR_VEC.  That addend is decided by LINK GEOMETRY, not by C, so the
+ * isolated sandbox is the wrong instrument; the full build is.  --diff
+ * reports 0 source-level / 1 operand-only / 27 not-scored hunks.
+ *
+ * The body alone is NOT sufficient - two edits on surfaces a grind session may
+ * not touch are also required.  Full recipe + proof:
+ *   memory/grind/func_800747D8/integration/README.md
+ * In short: (1) Makefile:136 RODATA_ALIGN2_FILES += text1b, because
+ * tools/gcc-2.7.2/final.c:1515-1518 emits an unconditional `.align 3` before
+ * every .rdata ADDR_VEC and jtbl_80015A0C sits at a 4-mod-8 address;
+ * (2) move D_800159A0 / jtbl_800159B0 / jtbl_800159D0 from
+ * src/text1a_b_mid_rodata.c into src/text1b.c between func_8006B578 and this
+ * function so text1b.o(.rodata) runs 0x80015988..0x80015A20 contiguously.
  *
  * The s9 change vs the floor-6 body is the selection_sound block only:
- * `sound = 4;` now sits at the END of each of the two inner-switch arms
- * (before `goto selection_sound;`) and the block reduces to
+ * `sound = 4;` sits at the END of each of the two inner-switch arms (before
+ * `goto selection_sound;`) and the block reduces to
  * `if (field64 != 0) sound = 0;`.  Mechanism (measured, not guessed):
  * `reg_set_last` (tools/gcc-2.7.2/rtlanal.c:886-888) stops at a CODE_LABEL,
  * so with `sound = 4;` on the far side of the `selection_sound:` label the
@@ -22,9 +34,9 @@
  * the two copies cross-jump-merge back into the single `li a0,4` that
  * target carries in the branch's delay slot.
  *
- * NOT yet self-vetted.  The duplicated `sound = 4;` is a real statement that
- * re-merges byte-neutrally; the next session must classify it against
- * .claude/rules/duplicated-statement-into-arms.md before any submission.
+ * Self-vet: memory/grind/func_800747D8/self_vet.md.  The duplicated
+ * `sound = 4;` is claimed under .claude/rules/duplicated-statement-into-arms.md
+ * and carries the mandated FAKE annotation inline (below).
  */
 extern u8 D_8009BD20[][2];
 extern s16 D_800A35D0;
@@ -99,6 +111,15 @@ s32 func_800747D8(u32 input) {
             } else {
                 MENU_800747D8->field65 += 1;
             }
+            /* FAKE: `sound = 4;` is written into BOTH inner-switch arms instead of one
+             * shared copy after `selection_sound:`; mechanism: reg_set_last
+             * (tools/gcc-2.7.2/rtlanal.c:886-888) stops scanning at the
+             * `selection_sound:` CODE_LABEL, so the store-flag gate at
+             * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
+             * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
+             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
+             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
+             * break-converged single-assignment control at score 10/205). */
             sound = 4;
             goto selection_sound;
         case 2:
@@ -107,6 +128,15 @@ s32 func_800747D8(u32 input) {
             } else {
                 MENU_800747D8->field65 -= 1;
             }
+            /* FAKE: `sound = 4;` is written into BOTH inner-switch arms instead of one
+             * shared copy after `selection_sound:`; mechanism: reg_set_last
+             * (tools/gcc-2.7.2/rtlanal.c:886-888) stops scanning at the
+             * `selection_sound:` CODE_LABEL, so the store-flag gate at
+             * tools/gcc-2.7.2/jump.c:1178 sees temp3 = a REG rather than a
+             * CONST_INT and (BRANCH_COST == 1 on R3000) refuses the branchless
+             * sltiu/sll fold; lever-exhaustion: memory/grind/func_800747D8/
+             * hypotheses.md s1-s9 (20 measured kills, incl. the s9
+             * break-converged single-assignment control at score 10/205). */
             sound = 4;
             goto selection_sound;
         }

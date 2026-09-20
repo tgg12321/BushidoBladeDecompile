@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800747D8",
-      "file": "text1b",
-      "distance": 208,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8006ECF4",
       "file": "text1b",
       "distance": 209,
@@ -1095,17 +1087,28 @@
       "rotation": "Byte-perfect GTE/cop2 candidate remains banked; operator-only canonical grant is outside current 100%-C scope (2026-09-19).",
       "rotated_at": "2026-09-19T22:32:16+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_800747D8",
+      "file": "text1b",
+      "distance": 208,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "ROTATED (logged to borderline.md; owner ruling 2026-09-08 \u2014 returns automatically): docs/grind/decisions.md:28568",
+      "rotated_at": "2026-09-20T09:47:42+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 116,
-    "active": 108,
+    "active": 107,
     "by_status": {
-      "active": 108,
-      "rotated": 8
+      "active": 107,
+      "rotated": 9
     },
     "by_verdict": {
-      "C": 87,
+      "C": 86,
       "ASM-PARTIAL": 21
     }
   },

@@ -737,3 +737,8 @@ disposition taken: REFUSED under the current frozen policy; ROTATED to the back 
 category: policy-question
 evidence: session-filed disposition: docs/grind/owner_actions.md:10-11 (## 2026-09-20 — func_80018094 — merge-refused-islands)
 disposition taken: ROTATED (owner ruling 2026-09-08 rotation-not-foreclosure — no pending states, no packets; returns automatically).
+
+## 2026-09-20 — func_800747D8 — policy-question
+category: policy-question
+evidence: session-filed disposition: docs/grind/decisions.md:28568
+disposition taken: ROTATED (owner ruling 2026-09-08 rotation-not-foreclosure — no pending states, no packets; returns automatically).

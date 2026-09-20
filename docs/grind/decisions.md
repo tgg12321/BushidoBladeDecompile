@@ -28564,3 +28564,134 @@ No construct objection: the three cop2 islands are owner-granted for this functi
 ## 2026-09-20 01:44 — func_80018094 — ruling: INTEGRATION HANDOFF filed for func_80018094 : docs/grind/owner_actions.md:10-13  — **FAIL**
 
 Re-filing of the same 2026-09-20 handoff I already FAILed at 01:40; no new fact. No construct objection: the 3 cop2 islands sit in the owner cluster (cop2-addressing-preamble-cluster.md:59 names func_80018094) and banned_constructs is empty, so there is nothing to unban. Bytes hold on the sandbox side - I re-read metrics/events.jsonl: score 0, 153/153, cheat_asm_stripped 20 (the with-candidate full-build SHA1 is still not separately identifiable, same gap as 01:40). DECISIVE: the requested remedy is tools/grinder/owner_cluster_grants.txt, which _SCOPE_GRANT_ALLOWED_RE (grindlib.py:466) refuses by path class and which owner Ruling 3 of 2026-09-15 refuses BY NAME (decisions.md:27036, 'widening the driver's grantable path classes ... is REFUSED'). The canonical-asm door is likewise shut - I re-ran tools/scan_hand_coded.py --single func_80018094 myself: tier=LOW 1/8 (S4 only). No driver-executable grant exists, so ESCALATE is unavailable; the handoff's scope claim does not hold. Ledger: state.json floor_history s10-s12, hypotheses.md H54/H55, owner_actions.md:10-13 (correctly banked and now committed).
+
+## 2026-09-20 — func_800747D8 — OWNER-ESCALATION — **INTEGRATION HANDOFF (bytes PROVEN this session by a full driver build: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, with func_800747D8 compiled from pure C): the remaining blocker is one word in the Makefile, which no grind session may stage**
+
+**This is not an endgame lock and not an exhaustion claim.** func_800747D8 is
+byte-matched in pure C. A complete driver build carrying the banked form
+produced `build/bb2.exe` with SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa`
+— the oracle — twice (once before and once after the mandated `/* FAKE */`
+annotations were added, confirming the annotations are byte-neutral). The
+session then reverted every edit outside its own surface and left the tree
+matching the oracle in its HEAD state.
+
+### Why the sandbox cannot be the instrument here (and why floor 2 is terminal, not slow)
+
+`sandbox func_800747D8 --disable all --diff` with the banked body reports
+`score 2, target_insns 208, build_insns 208, 0 source-level · 1 operand-only ·
+27 not-scored`. The single scored hunk is hunk 9/28:
+
+    target  lw v0,0(at)      # %lo(jtbl_80015A0C)
+    ours    lw v0,24(at)     # %lo(<text1b.o .rodata>) + 24
+
+That operand is the `%lo` addend of the switch's compiler-emitted `ADDR_VEC`
+base — a **link-geometry** value. The isolated sandbox compiles one TU and
+links nothing, so no C spelling can move it. Nine sessions of spelling work
+drove the body to zero source-level hunks; the last two points were never a C
+problem. Banked as a CLASS kill in `memory/grind/func_800747D8/hypotheses.md`
+with predicate `tools/gcc-2.7.2/final.c:1517`.
+
+Note for the integration-handoff precondition: the rule
+(`.claude/rules/integration-handoff-self-serve.md`) phrases proof as
+"`sandbox --disable all` == 0 AND full-build SHA1 == oracle". Here the sandbox
+half is unreachable **by construction, with a compiler-source predicate**, and
+the full-build half is satisfied outright. The full build is strictly the
+stronger of the two instruments and it is green.
+
+### The forensic finding (new, and systemic)
+
+`tools/gcc-2.7.2/final.c:1515-1518` emits, **unconditionally**, an
+`ASM_OUTPUT_ALIGN (file, exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT))` —
+`.align 3`, 8 bytes on mips — immediately before every jump table it places in
+the read-only data section. maspsx passes `.align` through untouched
+(`tools/maspsx/maspsx/__init__.py:580-582` only skips them in a preprocessing
+scan), and GNU `as` both inserts the padding and raises the object's `.rodata`
+alignment to `2**3`, which forces the linker to place the section at an
+8-aligned address. `jtbl_80015A0C` is at **0x80015A0C = 4 mod 8**, so the
+compiler-emitted table cannot land there while that directive stands. Measured
+directly: the first s10 build (rodata moved, Makefile untouched) put four zero
+bytes at `.rodata` offset 0x84 and the table at 0x88, grew the EXE by 4 bytes
+(606212 vs 606208) and shifted 275 byte-runs.
+
+**The project already owns the fix.** `Makefile:146` defines
+`rodata_align_fix = $(if $(filter $1,$(RODATA_ALIGN2_FILES)),sed "s/\.align\t3/.align\t2/" |,)`,
+a pipeline stage between maspsx and `as`, and `Makefile:136` lists 13 files that
+opt in. `text1b_b` is on that list precisely because `func_80077B30`'s table
+sits at `0x80015A3C`, also 4 mod 8. `text1b` was simply never added.
+
+New reusable census (`tmp/grind/func_800747D8/s10/jtbl_align_census.py`): of the
+**65** distinct `jtbl_*` symbols in the binary, **25 are 8-aligned and 40 are
+4 mod 8**. ASPSX 2.34 / psylink did not 8-align jump tables; `RODATA_ALIGN2_FILES`
+is this project's standing compensation, and any future function whose table
+address is 4 mod 8 will need its file on that list. This is a systemic pointer
+for the queue, not a func_800747D8 quirk.
+
+### The three edits, and who may make them
+
+Full recipe, exact patches and full-file `.proven` copies:
+`memory/grind/func_800747D8/integration/README.md` (+ `text1b.c.patch`,
+`text1a_b_mid_rodata.c.patch`, `text1b.c.proven`,
+`text1a_b_mid_rodata.c.proven`).
+
+1. **`Makefile:136` — add `text1b` to `RODATA_ALIGN2_FILES`.**
+   *Operator-only.* `Makefile` is on every grind session's forbidden list and
+   is outside `_SCOPE_GRANT_ALLOWED_RE` (`tools/grinder/grindlib.py:466`), so
+   the driver cannot self-grant it either. This is the whole of the residual
+   blocker: one word appended to an existing 13-entry list, using a mechanism
+   the project has shipped since before this ledger existed.
+
+2. **`src/text1b.c`** — replace `INCLUDE_ASM("asm/funcs", func_800747D8);` with
+   `memory/grind/func_800747D8/candidate.c`, move `D_800159A0`,
+   `jtbl_800159B0` and `jtbl_800159D0` in from the mid-rodata TU (placed
+   between `func_8006B578` and `func_800747D8`), and delete the now-shadowed
+   `extern u8 D_800159A0[];` forward declaration. *In session scope already.*
+
+3. **`src/text1a_b_mid_rodata.c`** — drop those three arrays and
+   `jtbl_80015A0C`, add `const u32 D_80015A20[1] = { 0x00000000 };`
+   (the dispatch is `sltiu $v0, $v1, 0x5`, `asm/funcs/func_800747D8.s:67`, so
+   the real table is 5 words and the 6th transcribed word is the independent
+   datum at 0x80015A20). *Driver-grantable:* the path matches the `src/*.c`
+   class in `_SCOPE_GRANT_ALLOWED_RE` and is not on `_SCOPE_GRANT_DENY`, so a
+   Judge ESCALATE with `escalate_kind=integration-handoff`,
+   `scope_paths=["src/text1a_b_mid_rodata.c"]` covers it with no owner action.
+
+Resulting section geometry in the matching build: `build/src/text1b.o(.rodata)`
+= 0x98 bytes @ `2**2`, covering 0x80015988..0x80015A20 with the `ADDR_VEC` at
+offset 0x84 = 0x80015A0C; `build/src/text1a_b_mid_rodata.o(.rodata)` = 0x1c
+bytes @ `2**2`. **`bb2.ld` needs no change.**
+
+### Verification command actually run
+
+    bash tools/wsl.sh "cd '/mnt/c/.../Bushido Blade 2 Decompile' && source .venv/bin/activate && \
+      make RODATA_ALIGN2_FILES='code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab \
+      code6cac_c2 text1a_pre text1a_post text1a_b text1a_c text1a_c2 text1b_b text1b main' check"
+    -> OK: bb2 matches!    sha1sum build/bb2.exe == 62efab4f73f992798c43e8c730aa43baa10bb4fa
+
+The `RODATA_ALIGN2_FILES=` command-line override reproduces edit 1 **without
+modifying the Makefile**, which is how the session proved the bytes while
+staying inside its surface.
+
+### Construct disposition
+
+`memory/grind/func_800747D8/self_vet.md` was written this session against the
+proven body. One sanctioned-family claim: the duplicated `sound = 4;` in the two
+inner-switch arms, under `.claude/rules/duplicated-statement-into-arms.md`
+(scope quoted verbatim; precedent `.claude/rules/duplicated-statement-into-arms.md:29`),
+with all five of that rule's prerequisites answered — byte-neutrality by the
+full-build SHA1, lever-exhaustion by `hypotheses.md` s1-s9 (20 measured kills),
+and the mandated `/* FAKE */` annotation emitted on BOTH copies naming
+`tools/gcc-2.7.2/rtlanal.c:886-888` and `tools/gcc-2.7.2/jump.c:1178` as the
+mechanism. Everything else in the body is ordinary C: no pins, no `__asm__`, no
+volatile, no dead locals, no frame coercion. `banned_constructs` for this
+function is empty and no Judge ruling constrains it. Layer-1 + layer-2 review
+still applies before `queue done`, exactly as normal.
+
+### Re-activation triggers
+
+Immediate, and none of them require a decision: (a) the one-word `Makefile:136`
+edit lands (operator; also filed as a row in `docs/grind/owner_actions.md`), or
+(b) a Judge ESCALATE(integration-handoff) grants
+`src/text1a_b_mid_rodata.c` into `tools/grinder/scope_allow.txt` and the
+Makefile row is applied, after which the very next session lands all three edits
+through the full normal gates. Nothing about this function is open as a
+technical question.

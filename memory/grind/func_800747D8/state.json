@@ -1,7 +1,7 @@
 {
  "func": "func_800747D8",
  "file": "text1b",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -57,23 +57,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics s9: floor 6 -> 2 with ZERO source-level hunks left - moving `sound = 4;` to the END of both inner-switch arms keeps reg_set_last's CODE_LABEL stop (refusing the jump.c:1178 store-flag fold, "
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "func_800747D8 is BYTE-MATCHED in pure C \u2014 a full driver build with the banked body produced SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle); the sandbox's last 2 points are the ADDR_VEC's %"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_800747D8 is byte-complete in pure C at V3's spelling; the only thing between it and COMPLETED-C is moving ownership of jtbl_80015A0C from the hand-transcribed array to real compiler output, which the isolated sandbox can never score.",
-   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch. bb2.ld orders text1a_b_pre_rodata.o, text1b.o, text1a_b_mid_rodata.o, and text1b.o already owns jtbl_80015988 at 0x80015988, so text1b.o's single .rodata cannot straddle the 0x800159A0..0x80015A0B run that text1a_b_mid_rodata.o supplies. bb2.ld is outside every grind session's allowed surface, so the fix must stay inside the C files.",
-   "next_probe": "In a session whose scope covers src/text1b.c AND src/text1a_b_mid_rodata.c: declare `const char D_800159A0[16]`, `const u32 jtbl_800159B0[8]` and `const u32 jtbl_800159D0[15]` in src/text1b.c between func_8006B578 and func_800747D8 (GCC emits .rodata in declaration order), delete those three plus jtbl_80015A0C from src/text1a_b_mid_rodata.c, apply candidate.c, and verify with the FULL build (`& tools/wteng.ps1 main build`) against SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa - the sandbox score will stay at 2 either way and is not the right instrument here."
+   "hypothesis": "The one-word Makefile:136 edit (RODATA_ALIGN2_FILES += text1b) plus the two banked src patches take func_800747D8 to COMPLETED-C with no further technical work.",
+   "mechanism": "Proven this session by full-build SHA1. The three edits are banked verbatim as memory/grind/func_800747D8/integration/text1b.c.patch, text1a_b_mid_rodata.c.patch and the two .proven full-file copies; the Makefile change is a single word appended to an existing 13-entry list whose mechanism (Makefile:146 rodata_align_fix) has shipped since before this ledger existed.",
+   "next_probe": "Operator: apply the Makefile word (filed as a row in docs/grind/owner_actions.md). Driver: on a Judge ESCALATE(integration-handoff), grant src/text1a_b_mid_rodata.c into tools/grinder/scope_allow.txt. Then the next session applies all three patches, runs layer-1 + Judge + the full build, and calls `queue done func_800747D8`."
   },
   {
-   "hypothesis": "V3's duplicated `sound = 4;` can be replaced by a single-assignment spelling that still puts a CODE_LABEL between the assignment and the test, which would remove the need to claim the duplicated-statement-into-arms family at all.",
-   "mechanism": "The gate is purely tools/gcc-2.7.2/rtlanal.c:886-888's CODE_LABEL stop feeding tools/gcc-2.7.2/jump.c:1178. Any control-flow shape in which the assignment is executed before a label that the test's block begins with satisfies it; V4 proved that a `break`-converged switch puts the label on the wrong side, but other shapes (e.g. a single arm assigning and the other arm reaching the block by a goto that skips the assignment, or an enclosing if that guards only the assignment) have not been enumerated.",
-   "next_probe": "Enumerate single-assignment control-flow shapes for the case-1/case-2 -> selection_sound path with tools/spelling_enum.py + sweep_variants.py (the s4 tool pair), scoring each with `sandbox --disable all`, and keep any that reaches 2/208 with one textual `sound = 4;`. If none exists, the duplicated-statement-into-arms citation is unavoidable and the next session should write self_vet.md against .claude/rules/duplicated-statement-into-arms.md with a /* FAKE */ annotation naming jump.c:1178 / rtlanal.c:886-888 as the mechanism."
+   "hypothesis": "Other queued functions are stuck on exactly this alignment gate \u2014 a 4-mod-8 jump-table address in a TU that is not on RODATA_ALIGN2_FILES.",
+   "mechanism": "tools/gcc-2.7.2/final.c:1512-1518's unconditional `.align 3` vs the original toolchain's 4-byte tables: 40 of the binary's 65 jump tables are 4 mod 8, and only 13 source files currently opt into the sed fix.",
+   "next_probe": "Run tmp/grind/func_800747D8/s10/jtbl_align_census.py, cross-reference each 4-mod-8 table's owning function against engine/queue.json and against RODATA_ALIGN2_FILES at Makefile:136, and flag any queued function whose file is missing from the list. That is a cheap sweep that may unblock several items at once."
   },
   {
-   "hypothesis": "The V1 route (a second real statement duplicated into both arms of the original if/else, blocking jump.c:754-860 via its multi-insn-arm predicates) reaches the same 2/208 and may be classifiable under a different, easier family than V3's.",
-   "mechanism": "tools/gcc-2.7.2/jump.c:775 and tools/gcc-2.7.2/jump.c:784-789 both require single-insn arms; two-insn arms defeat the normalisation and, transitively, the store-flag block's `reallabelprev == temp` test at tools/gcc-2.7.2/jump.c:1066.",
-   "next_probe": "Re-measure memory/grind/func_800747D8/vol-dup-arms-floor2.c and take its --diff to confirm it too has zero source-level hunks; then compare the two forms' cheat-checklist exposure (V1 invents a `vol` local whose only purpose is to be duplicated - likely worse under T1/T6 than V3's duplicated real default) before deciding which body a submission session should carry."
+   "hypothesis": "The duplicated `sound = 4;` could be replaced by a single-assignment spelling that still puts a CODE_LABEL between the assignment and the test, removing the need to claim duplicated-statement-into-arms at all.",
+   "mechanism": "The gate is purely tools/gcc-2.7.2/rtlanal.c:886-888's CODE_LABEL stop feeding tools/gcc-2.7.2/jump.c:1178. s9's V4 proved a `break`-converged switch puts the label on the wrong side (score 10/205), but other shapes (one arm assigning and the other reaching the block by a goto that skips the assignment; an enclosing if guarding only the assignment) are still unenumerated.",
+   "next_probe": "Only worth spending if layer-1 or the Judge objects to the family claim \u2014 the claim is fully documented in self_vet.md with the rule's scope quoted and all five prerequisites answered, and the byte-neutrality prerequisite is now satisfied by a full-binary SHA1 rather than by an isolated score. If it is needed: tools/spelling_enum.py + sweep_variants.py over the case-1/case-2 -> selection_sound path, keeping any form that reaches 2/208 with one textual `sound = 4;`."
   }
  ],
  "judge_constraints": [],
@@ -246,6 +252,22 @@
    "measured_on": "floor-6 chassis applied to src/text1b.c with the inner switch restructured to `break;` arms plus `default: goto confirm;` and a single post-switch `sound = 4;`; zero FAKE constructs.",
    "predicate_cite": "",
    "result": "score 10, build_insns 205 - the same bucket as the fourteen spellings banked across s1/s2/s5/s6. This is the control tha"
+  },
+  {
+   "session": 10,
+   "statement": "Moving D_800159A0, jtbl_800159B0 and jtbl_800159D0 from src/text1a_b_mid_rodata.c into src/text1b.c is sufficient on its own \u2014 with the Makefile untouched \u2014 to place func_800747D8's compiler-emitted A",
+   "kill_scope": "instance",
+   "measured_on": "full driver build with candidate.c in src/text1b.c and the three arrays relocated; Makefile untouched (text1b NOT in RODATA_ALIGN2_FILES); the two /* FAKE */ annotations not yet present.",
+   "predicate_cite": "",
+   "result": "SHA1 f70ddb609fe34bafcf3676abbc3588085433f198, MISMATCH. The EXE is 4 bytes LARGER (606212 vs 606208) and 275 byte-runs "
+  },
+  {
+   "session": 10,
+   "statement": "The sandbox's remaining score of 2 on this body can be closed by a further C spelling of func_800747D8.",
+   "kill_scope": "class",
+   "measured_on": "candidate.c applied to src/text1b.c, sandbox --disable all --diff, cross-checked against the oracle-matching full build; the two /* FAKE */ annotations present in the second measurement.",
+   "predicate_cite": "tools/gcc-2.7.2/final.c:1518",
+   "result": "Nine sessions of spelling work drove the body to zero source-level hunks; the last two points were never a C problem. An"
   }
  ],
  "ladder_skip": 0,
