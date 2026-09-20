@@ -1,4 +1,16 @@
-/* func_80018094 -- MATCHED IN PURE C, s10 (forensics, 2026-09-09).
+/* func_80018094 -- COMPLETED-INLINE-ASM-CANONICAL, s10 (forensics, 2026-09-09),
+ * annotation fix-up s (annotation-fix, 2026-09-20). Honest bucket per the dated owner
+ * ruling docs/grind/decisions.md 2026-09-15 "OWNER RULING -- the candidate-path
+ * no-progress tripwire + a registry row for func_80018094", Ruling 3: func_80018094 is
+ * enumerated BY NAME in the 2026-08-17 owner cluster ruling's census
+ * (.claude/rules/cop2-addressing-preamble-cluster.md:60, SetRotMatrix/long-vector
+ * sub-family) and bytes are proven on main, so "the honest finished bucket stays
+ * COMPLETED-INLINE-ASM-CANONICAL, not COMPLETED-C." This body is NOT pure C: it carries
+ * three PsyQ GTE inline-asm islands (gte_SetRotMatrix, gte_SetTransMatrix, gte_Lzc),
+ * each owner-granted for this function by the cluster ruling above; only the pure-C
+ * SURROUND (the do-while(0) wraps, the oversized locals, the staged copy) is a "matched
+ * pure C" result in the sense that no non-C mechanism was used to force any byte the
+ * three canonical islands do not already produce.
  * `sandbox func_80018094 --disable all` = 0 (target_insns 153, build_insns 153,
  * rules_dropped 0, cheat_asm_stripped 20 -- the two PsyQ gte_Set*Matrix islands and the
  * LZC island, stripped on BOTH sides).  Chassis: -mel -msoft-float.

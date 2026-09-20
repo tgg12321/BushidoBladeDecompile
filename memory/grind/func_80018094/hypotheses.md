@@ -1079,3 +1079,71 @@ and the oversized locals object is individually load-bearing on the zero chassis
   build_insns 153. No single level and no pair substitutes for the three, which discharges the
   do-while-zero-exception's "nested wraps need a single-level-insufficient justification".
 - verdict: CONFIRMED
+
+## s10 (forensics, 2026-09-20) — the grant-door forensics
+
+**H54 — KILLED (class).** *The `scan_hand_coded` STRONG-tier evidence door can admit
+func_80018094's three cop2 islands, so the missing `owner_cluster_grants.txt` row is not the only
+way through the merge gate.*
+- mechanism: `Invoke-CandidatePath` (tools/grinder/grind.ps1:955-985) calls
+  `grindlib.py grant-canonical-asm` after a Judge PASS on an island-carrying body. That function
+  refuses unless `"STRONG" in tier_s` (tools/grinder/grindlib.py:1956) **or** the function has a
+  row in `tools/grinder/owner_cluster_grants.txt`. Two doors, and only two.
+- probe (measured this session, with the candidate spliced into src/code6cac.c):
+  `python tools/grinder/grindlib.py island-count . func_80018094 code6cac` -> `3 no` (three
+  islands, not allowlisted); `python tools/scan_hand_coded.py --single func_80018094` ->
+  `tier=LOW score=1/8`, only S4 (front loads) set, S1/S2/S6 all clear;
+  `grep 80018094 tools/grinder/owner_cluster_grants.txt` -> no row (the file is 30 lines, 10 rows).
+- result: the scanner door is shut, and it is shut for the WHOLE cop2 cluster, not just here.
+  I scanned three already-GRANTED cluster members for comparison: func_80019310 `tier=LOW 2/8`,
+  func_800300B4 `tier=LOW 1/8`, func_8002D320 `tier=TIGHT_C 3/8`. **Not one granted member of this
+  cluster is STRONG.** The cluster's members are short GTE wrappers; they have no multu pacing
+  (S1), no empty-body branches (S2) and no BIOS jumptable (S6), which are the three signals the
+  STRONG tier is built from. The registry row is, by construction, this cluster's only evidence
+  door — which is exactly why the 2026-08-17 cluster ruling created an "alternative evidence door"
+  in the first place (`tools/grinder/owner_cluster_grants.txt` header lines 4-9).
+- verdict: KILLED (class) — predicate `tools/grinder/grindlib.py:1956`.
+
+**H55 — KILLED (class).** *The other alternative the merge refusal names — "either the islands are
+C-expressible (respell them in C)" — is open for this body.*
+- mechanism: the refusal text (grind.ps1:967-972) offers two ways out: respell the islands in C, or
+  get the cluster row. Respelling is only possible if the island instructions have a C form.
+- probe: `& tools/wteng.ps1 main canonical func_80018094` on this tree.
+- result: verdict ASM-PARTIAL, 10/153 insns canonical-asm, regions [11,12] [16,18] [24,24] [26,27]
+  [76,76] [79,79], reasons exactly `GTE/cop2 op (ctc2)`, `GTE/cop2 op (mtc2)`, `GTE/cop2 op (swc2)`.
+  Every one of the ten is a coprocessor-2 transfer. GCC 2.7.2 has no operator, builtin or type that
+  emits `ctc2`/`mtc2`/`swc2` — the canonical gate itself is the project's standing statement of
+  that (AGENTS.md "GTE (cop2) ops have no C analog — inline `__asm__` for those is canonical").
+  So the "respell in C" branch of the refusal cannot be taken for THIS function's islands, and the
+  registry-row branch is the only one left.
+- verdict: KILLED (class) — predicate `engine/canonical.py:1`.
+
+## [s10] The scan_hand_coded STRONG-tier evidence door can admit func_80018094's three cop2 islands, so the missing owner_cluster_grants.txt row is not the only way through the merge gate.
+- mechanism: Invoke-CandidatePath (tools/grinder/grind.ps1:955-985) calls grindlib.py grant-canonical-asm after a Judge PASS on an island-carrying body. grant_canonical_asm refuses unless the scan tier is STRONG-class (tools/grinder/grindlib.py:1956, `if "STRONG" not in tier_s:`) or the function has a row in tools/grinder/owner_cluster_grants.txt. Exactly two doors.
+- probe: With candidate.c spliced into src/code6cac.c: `python tools/grinder/grindlib.py island-count . func_80018094 code6cac` -> `3 no`; `python tools/scan_hand_coded.py --single func_80018094` -> tier=LOW score=1/8 (only S4 front-loads set; S1 multu pacing, S2 empty-body branches, S6 BIOS jumptable all clear); `grep 80018094 tools/grinder/owner_cluster_grants.txt` -> no row (10 rows present). Then the same scanner run against five ALREADY-GRANTED members of the same cop2 cluster. Saved: tmp/grind/func_80018094/s10/grant_door_census.txt.
+- result: The STRONG door is shut here AND for every granted member of this cluster: func_80019310 tier=LOW 2/8, func_800300B4 tier=LOW 1/8, func_8002D320 tier=TIGHT_C 3/8, func_8002FC80 tier=LOW 1/8, func_80032314 tier=LOW 2/8 — 0 of 5 are STRONG. The cause is structural, not per-function: cluster members are short GTE wrappers, so they cannot set S1 (no multu/mflo pacing), S2 (no empty-body branches) or S6 (no BIOS jumptable), which are the signals the STRONG tier is composed of. That is exactly why the 2026-08-17 cluster ruling built the registry as an ALTERNATIVE evidence door (owner_cluster_grants.txt header, lines 4-9). No future session should spend measurements trying to raise this function's scanner tier.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 0 with all five FAKE constructs present, spliced into src/code6cac.c; scanner reads asm/funcs/*.s and is body-independent
+- predicate_cite: tools/grinder/grindlib.py:1956
+
+## [s10] The second way out the merge refusal names — 'either the islands are C-expressible (respell them in C)' — is available for this body's three islands.
+- mechanism: The refusal text (tools/grinder/grind.ps1:967-972) offers respelling in C as the alternative to the cluster row. Respelling is possible only if the island instructions have a C form GCC 2.7.2 can emit.
+- probe: `& tools/wteng.ps1 main canonical func_80018094` on this tree.
+- result: ASM-PARTIAL, 10/153 insns canonical-asm, regions [11,12] [16,18] [24,24] [26,27] [76,76] [79,79], reasons exactly `GTE/cop2 op (ctc2)`, `GTE/cop2 op (mtc2)`, `GTE/cop2 op (swc2)`. All ten are coprocessor-2 transfers. GCC 2.7.2 has no operator, builtin or type that emits ctc2/mtc2/swc2; the canonical gate is the project's standing mechanical statement of that (AGENTS.md: 'GTE (cop2) ops have no C analog — inline __asm__ for those is canonical'). The respell branch of the refusal cannot be taken, leaving the registry row as the only remaining step.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 0 with all five FAKE constructs present; canonical gate reads target asm and is body-independent
+- predicate_cite: engine/canonical.py:1
+
+## [s10] The previous session was discarded because its self-vet's fifth SCOPE line did not end in a closing quote, so grindlib's _SCOPE_LINE regex skipped it and counted 4 scopes against 5 family claims.
+- mechanism: tools/grinder/grindlib.py:83 defines _SCOPE_LINE as ^\s*SCOPE\s*:\s*["“](.+?)["”]\s*$ — single-line, and the line must END with the closing quote. The cop2-addressing-preamble-cluster claim's SCOPE line appended the 2026-09-01 / 2026-09-02 amendment parentheses AFTER the closing quote, so the line ended in ')' and did not match.
+- probe: Reproduced the exact discard message by calling grindlib.validate_self_vet('.', 'func_80018094') directly before the edit; moved the amendments to a new SCOPE-AMENDMENTS: line beneath the SCOPE: line, leaving the SCOPE line as the rule's `description:` sentence and nothing else; re-ran the validator and check_banned_constructs.
+- result: Before: (False, "self_vet.md claims 5 sanctioned family/families but quotes only 4 verbatim SCOPE sentence(s)") — byte-identical to the driver's discard reason. After: validate_self_vet -> (True, ''), check_banned_constructs -> (True, ''). The executable body was NOT touched: no construct added, removed, renamed or reordered.
+- verdict: CONFIRMED
+
+## [s10] The banked candidate.c still measures 0 on the current chassis and the whole executable still links byte-identical with it in place.
+- mechanism: Chassis-discontinuity check demanded by the brief (the ledger claimed floor 2 after the -msoft-float toolchain change moved it to 0); the brief's own dispatch measurement of 0 needed independent confirmation, and a full-link SHA1 is a strictly stronger proof than the sandbox score.
+- probe: Spliced memory/grind/func_80018094/candidate.c into src/code6cac.c over the INCLUDE_ASM line (one hunk, 226 insertions / 1 deletion, git diff --stat verified), then `sandbox func_80018094 --disable all` and `verify-oracle --rebuild --allow-dirty`.
+- result: sandbox: score 0, target_insns 153, build_insns 153, rules_dropped 0, cheat_asm_stripped 20. verify-oracle: ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected. The tree was then reverted to INCLUDE_ASM (asm-until-matched) and rebuilt clean (oracle green again).
+- verdict: CONFIRMED

@@ -1,26 +1,36 @@
 # SELF-VET — func_80018094  (s10 (chassis session-count), 2026-09-20, annotation-fix — filed WITH a `candidate-ready`)
 
-**THIS SESSION'S FIX-UP SCOPE.** The Judge's 2026-09-14 23:55 FINAL CALL FAILed the prior
-submission on CITATION-ONLY grounds, with every construct independently re-verified inside its
-sanctioned family and the work itself accepted. The stated defect named exactly two citations
-that do not resolve: (1) the Set*Matrix islands' comment cited src/code6cac_b.c:935 as the
-"memory"-clobber precedent, but that line is `func_800288C8();` — a plain call, not an asm
-island; (2) the self-vet's T2/T6/ORDINARY-C-NOTE sections attributed the `lw_v1`/`li_v0` /
-`D_8008D118` sibling precedent to pure-C func_8001A538 at src/code6cac.c:974-977 and :980/:953,
-lines that do not carry those statements in the current tree. This session changed COMMENTS
-ONLY, fixing both citations against the CURRENT tree (verified by direct Read/Grep, not by
-trusting the stale numbers): the Set*Matrix "memory"-clobber precedent now cites
+**THIS SESSION'S FIX-UP SCOPE.** The 2026-09-20 01:23 layer-1 review FAILed the prior
+submission on a DISPOSITION/CITATION-ONLY defect: every executable construct — including the
+three cop2 inline-asm islands, which are owner-granted for THIS function by the
+cop2-addressing-preamble-cluster census — was independently re-verified legitimate inside its
+family, but the submission filed itself under the wrong disposition: the candidate.c header
+headlined "MATCHED IN PURE C" and this self-vet's CONSTRUCTS list omitted the three asm islands
+entirely while T5 affirmatively denied any hardcoded-`$N` asm — contradicting the dated owner
+ruling docs/grind/decisions.md 2026-09-15 "OWNER RULING — the candidate-path no-progress
+tripwire + a registry row for func_80018094", Ruling 3, which states in terms that
+func_80018094's honest finished bucket is **COMPLETED-INLINE-ASM-CANONICAL, not COMPLETED-C**.
+This session changed COMMENTS ONLY: candidate.c's header now states the correct disposition and
+cites Ruling 3 by name; this self-vet's CONSTRUCTS list now enumerates the three cop2 islands as
+constructs 9-11 with their own T1-T6 rows and a SANCTIONED-FAMILY-CLAIMS block citing
+cop2-addressing-preamble-cluster.md; T5's summary paragraph no longer denies hardcoded-`$N` asm
+outright — it now states plainly that the three islands ARE inline asm, granted under that named
+family, and that no OTHER family (register pin, scheduling barrier, un-granted `$N` injection) is
+present. `git diff src/code6cac.c` contains exactly one hunk, the func_80018094 body replacing
+its `INCLUDE_ASM`, with zero other lines touched (verified: 226 insertions / 1 deletion, no
+mojibake em-dash sequences found in the file). The executable BODY is byte-for-byte the
+previously-Judge-reviewed body (hash f5e49e3dddc24d62 lineage); no construct was added, removed,
+renamed or reordered, and every FAKE annotation below is unchanged. Re-measured this session:
+`sandbox func_80018094 --disable all` == 0 (target_insns 153, build_insns 153, rules_dropped 0,
+cheat_asm_stripped 20).
+
+**Prior fix-up (2026-09-16 lineage, unchanged this session).** An earlier annotation-fix session
+corrected two stale citations: the Set*Matrix islands' "memory"-clobber precedent now cites
 src/code6cac_b.c:1116-1123 (func_8002D320's lwc2-read island, `"r"(vin) : "$12", "memory"`), the
 same precedent the committed sibling func_80019310 itself cites (src/code6cac.c:356-361); the
 `lw_v1`/`li_v0` precedent now cites src/code6cac.c:778-781 (func_8001A538's identical
 `{ s32 lw_v1 = sp_tmp; s32 li_v0 = -2; li_v0 = lw_v1 & li_v0; shift_a = 0x16 - li_v0; }` block);
-the `D_8008D118` byte-LUT-read precedent now cites src/code6cac.c:757 and :784 (verified against
-the current func_8001A538 body). `git diff src/code6cac.c` contains exactly one hunk, the
-func_80018094 body replacing its `INCLUDE_ASM`, with zero other lines touched. The executable
-BODY is byte-for-byte the previously-Judge-reviewed body; no construct was added, removed,
-renamed or reordered, and every FAKE annotation below is unchanged. Re-measured this session:
-`sandbox func_80018094 --disable all` == 0 (target_insns 153, build_insns 153, rules_dropped 0,
-cheat_asm_stripped 20).
+the `D_8008D118` byte-LUT-read precedent cites src/code6cac.c:757 and :784.
 
 The body under vet is `memory/grind/func_80018094/candidate.c` (= tmp/grind/func_80018094/s10/final.c,
 generated from s10/e1.c by adding the FAKE annotations only). Spliced into src/code6cac.c it
@@ -38,7 +48,13 @@ CONSTRUCTS: (1) oversized locals object `s32 sp_tmp[4]` with only element 0 writ
 the LZC arm's body (the third wrap, new this session); (5) the staged island-input copy
 `lut = sum_sq;` through the LZC arm's existing `lut` local; (6) the named intermediates
 `lut`, `lw_v1`, `li_v0`, `shift_a`, `shift_b`, `dx`, `dy`, `dz`, `sum_sq`, `scale`, `dst`;
-(7) the `*(&D_8008D118 + i)` byte-LUT read spelling; (8) the `goto lzc_done` mixed exit.
+(7) the `*(&D_8008D118 + i)` byte-LUT read spelling; (8) the `goto lzc_done` mixed exit;
+(9) the `gte_SetRotMatrix(r0)` inline-asm island (5 `ctc2` transfers preceded by the arg-pointer
+load sequence); (10) the `gte_SetTransMatrix(r0)` inline-asm island (3 `ctc2` transfers); (11) the
+`gte_Lzc(r1,r2)` inline-asm island (`mtc2`/two `nop`/`swc2` plus the `addu $t4,...,$zero` +
+`addiu $v0,$sp,0x10` cop2 addressing preamble). Constructs 9-11 are genuine `__asm__` blocks —
+this function is NOT pure C, and the honest completion bucket is COMPLETED-INLINE-ASM-CANONICAL
+(docs/grind/decisions.md 2026-09-15 Ruling 3), not COMPLETED-C.
 
 ## T1 semantic purpose (per construct)
 (1) No observable effect — a frame-size device; sanctioned only under the oversized-locals
@@ -56,6 +72,11 @@ value the LZC hardware sees. Without it the island reads `sum_sq` directly and t
 sibling func_8001A538's own names for the identical statements (src/code6cac.c:778-781).
 (7) Semantic — it is the actual byte load from the magnitude LUT.
 (8) Semantic — it is the arm's exit.
+(9)(10)(11) Full semantic effect — these ARE the function's rotation/translation-matrix load and
+leading-zero-count magnitude estimate; the cop2 coprocessor has no C-level access path, so the
+asm text is not "no observable effect", it is the only way these operations can be expressed at
+all. Removing any of the three changes the program's behavior (the GTE state is simply never
+loaded / never counted).
 
 ## T2 human-programmer
 (1) No — a programmer writes `s32 sp_tmp;`. This is why it carries a FAKE annotation and the
@@ -71,6 +92,13 @@ src/code6cac_b.c:284 and :747), all against the same `extern u8 D_8008D118;` dec
 src/code6cac.c:19. Changing the declaration to an array type would break those matched siblings'
 pointer arithmetic, so this is not a new pun introduced by this candidate; it is the TU's
 established, oracle-verified declaration. (8) Yes.
+(9)(10)(11) No — a programmer does not free-write GTE cop2 transfers as inline asm from a blank
+page; they call the SDK macro (`gte_SetRotMatrix`, `gte_SetTransMatrix`, `gte_Lzc`). That is
+exactly why these are governed by the canonical-asm family (a human WOULD write the macro
+invocation; the macro's own body is what compiles to this asm — see cop2-addressing-preamble-
+cluster.md's Ruling 2026-09-02 "condition 3 clarified" note, which holds every GPR instruction
+here is the named macro's own published text, not an invented device) rather than by the
+ordinary-C tests T1-T2 use for constructs (1)-(8).
 
 ## T3 GCC-internals justification
 Constructs (1)-(4) ARE justified by a named pass rather than by program logic, and each sits
@@ -89,6 +117,11 @@ guard, so both cse runs refuse to extend the block into the LZC arm.
 the reason the spelling is `lut = sum_sq;` rather than `"r"(sum_sq)` — which is precisely what the
 staged-value-reused-variable family sanctions, with its mandatory annotation.
 (6)(7)(8) need no pass reference at all.
+(9)(10)(11) need no GCC-internals justification at all — unlike (1)-(5), these are not devices
+that influence what GCC's optimizer does with surrounding C; they are literal machine
+instructions the compiler passes through unchanged. Their legitimacy rests on hand-coded-asm
+evidence (splat's handwritten-instruction tags, the redundant `addu $tN,...,$zero` copy signature
+GCC 2.7.2 never emits, unfilled cop2 load-delay slots), not on any pass mechanism.
 
 ## T4 permuter/search provenance
 No permuter and no auto-search ran this session. The closing form was PREDICTED arithmetically
@@ -120,9 +153,33 @@ bytes.
 (7) ordinary C for this TU — the established declaration+use pair, oracle-verified in matched
 sibling bodies (precedent cited below).
 (8) ordinary C — mixed exit forms, `.claude/rules/cross-jump-store-tail-merge.md`.
-No construct matches a forbidden family: there is no register pin, no hardcoded-`$N` injection, no
-scheduling barrier, no volatile coercion, no dead store, no dead local, no unused array, no
-`(void)&x`, no alias rename, no asm-operand device, no build-time rewriting.
+(9)(10)(11) cop2-addressing-preamble-cluster, owner ruling 2026-08-17 (widened 2026-09-01,
+condition 3 clarified 2026-09-02) — claimed below. func_80018094 is enumerated BY NAME in the
+cluster census (.claude/rules/cop2-addressing-preamble-cluster.md:60, SetRotMatrix/long-vector
+sub-family, 3 idiom sites) and satisfies the file's 4-point mechanical per-function check: (i)
+`sandbox func_80018094 --disable all` == 0, measured this session; (ii) zero register pins, zero
+`move %0,%1` aliasing blocks, zero scheduling barriers anywhere in the body (constructs (1)-(8)
+are do-while(0) wraps / named locals / a staged copy / a LUT-read spelling / a mixed exit — none
+is a pin, alias block, or barrier); (iii) every in-island GPR instruction is either the named
+SDK macro's own published text (the `ctc2`/`lw`/`mtc2`/`swc2`/`nop` transfers) or the disclosed
+cop2 addressing preamble (the `addu $t4,...,$zero` copies + `addiu $v0,$sp,0x10`) — nothing else
+is swallowed into any of the three templates; (iv) bytes proven on main this session, and a
+fresh layer-2 cheat-reviewer + `verify-oracle --rebuild` still gate the merge (outside this
+session's surface — the operator registry row is the blocker, per the MERGE REFUSED constraint
+below).
+
+**THIS IS NOT A "NO CONSTRUCT MATCHES A FORBIDDEN FAMILY" BODY.** Constructs (9)-(11) ARE
+`__asm__` blocks containing hardcoded machine instructions with real (non-`%0`-placeholder-only)
+register names (`$12`,`$13`,`$14`,`$15`,`$t4`,`$v0`,`$2`) — the literal shape the "hardcoded-`$N`
+`__asm__` injection" forbidden family describes at the syntax level. They are NOT that family
+because they are the disclosed, owner-granted canonical reproduction of a named PsyQ SDK macro's
+own published text (cop2-addressing-preamble-cluster.md), not an invented device to force a byte
+no C source produces — the forbidden family is for asm blocks whose ONLY purpose is defeating
+GCC's allocator/scheduler on GENERAL-PURPOSE opcodes with C equivalents (`move`/`addu`/`nop` used
+as workarounds); `ctc2`/`mtc2`/`mfc2`/`lwc2`/`swc2` have NO C equivalent at all. Constructs
+(1)-(8) contain no register pin, no un-granted hardcoded-`$N` injection, no scheduling barrier,
+no volatile coercion, no dead store, no dead local, no unused array, no `(void)&x`, no alias
+rename, no asm-operand device beyond the Judge-granted LZC island form, no build-time rewriting.
 
 ## T6 naming-announces-intent
 No `pad` / `_pad` / `dummy` / `unused` / `spill` / `sp_*`-as-pad / `_buf` / `tail` / `slack` names.
@@ -130,6 +187,9 @@ No `pad` / `_pad` / `dummy` / `unused` / `spill` / `sp_*`-as-pad / `_buf` / `tai
 the island and read on the next line). `lut` names the LUT byte it holds for most of its life.
 `lw_v1` / `li_v0` are the matched sibling func_8001A538's own names for the identical statements.
 Every declared local is read.
+(9)(10)(11) No coercion-announcing names — the islands are unnamed statement blocks; every
+comment discloses the SDK macro name, the header line range, and (for the LZC island) the
+addressing-preamble disclosure the Judge's 2026-09-09 23:11 ruling required.
 
 SANCTIONED-FAMILY-CLAIMS:
   FAMILY: dead-vars-local-array (OVERSIZED-LOCALS carve-out 2026-07-13)
@@ -148,6 +208,11 @@ SANCTIONED-FAMILY-CLAIMS:
   SCOPE: "target has more `sw GLOBAL` stores (or more `j SAME_LABEL` error tails) than your build: GCC 2.7.2 jump2 cross_jump merged N identical `[sw GLOBAL; j END]` tails into one block. FIX: give the error paths a MIX of exit forms (distinct `goto endK; ... endK: return G;` labels + one inline `return G;`) so the block ENDINGS differ -> suffixes not rtx_equal -> no merge."
   PRECEDENT: .claude/rules/cross-jump-store-tail-merge.md:6
 
+  FAMILY: cop2-addressing-preamble-cluster (constructs 9-11, the three GTE inline-asm islands)
+  SCOPE: "The 2026-08-17 owner CLUSTER ruling for func_8002FDB0 covers a 28-function family in the 0x8001-0x8003 band sharing the `addu $t4,$aN,$zero` + cop2 hand-asm idiom. Membership list built and verified here; each member inherits the canonical-asm disposition subject to the same mechanical per-function check, applied by the Judge without re-escalation."
+  SCOPE-AMENDMENTS (not part of the verbatim scope sentence above): widened 2026-09-01 to any copy-source register; condition 3 clarified 2026-09-02 -- condition 3's "template" is the body of the named Sony PsyQ GTE macro the island reproduces, so GPR instructions that are the macro's own published text are part of the template and ADMITTED.
+  PRECEDENT: .claude/rules/cop2-addressing-preamble-cluster.md:60 (func_80018094 membership row, SetRotMatrix/long-vector sub-family, 3 idiom sites)
+
 ORDINARY-C NOTE (NOT a sanctioned-family claim — no exception is invoked for it):
   construct 7, the `*(&D_8008D118 + i)` byte-LUT read, is this TU's pre-existing,
   oracle-verified spelling against the `extern u8 D_8008D118;` declaration at
@@ -157,6 +222,12 @@ ORDINARY-C NOTE (NOT a sanctioned-family claim — no exception is invoked for i
   ordinary C against the declaration this TU already ships.
 
 ANNOTATION-CONFORMANCE:
+  Constructs (9)-(11) (the three cop2 islands) carry NO `/* FAKE */` annotation and need none —
+  the FAKE template is for no-semantic-purpose C devices that influence codegen; these are
+  semantically-necessary machine instructions with no C form at all, disclosed instead by a
+  plain comment naming the SDK macro + header line range (candidate.c lines 60-63, 77, 165-178).
+  The four `/* FAKE */` blocks below are unchanged from the prior submission and cover only
+  constructs (1)-(4):
   /* FAKE: unwritten tail sp_tmp[1..3] on the live LZC-output locals object, mechanism:
      function.c assign_stack_local / mips.c compute_frame_size (get_frame_size raw 16 ->
      MIPS_STACK_ALIGN keeps 16 where the scalar form rounds 4 -> 8), lever-exhaustion:

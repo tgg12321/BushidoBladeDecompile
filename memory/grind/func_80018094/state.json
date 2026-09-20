@@ -1,8 +1,8 @@
 {
  "func": "func_80018094",
  "file": "code6cac",
- "session_count": 9,
- "current_modality": "solver",
+ "session_count": 10,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -57,29 +57,36 @@
    "floor": 2,
    "modality": "solver",
    "headline": "Honest floor 7 -> 2: cse's follow-jumps gate closed with a do-while(0)+goto small arm, so the target's pre-island `move $a0,$a1` materialises from ordinary C with NO asm-operand device; the last 2 ins"
+  },
+  {
+   "session": 10,
+   "floor": 0,
+   "modality": "forensics",
+   "headline": "Forensics s10: floor re-proven 0 (sandbox 153/153 + full-tree verify-oracle SHA1); the discarded session's self-vet defect is root-caused and fixed; both merge-gate evidence doors measured shut and th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last two instructions close by making `sum_sq` lose global.c's priority sort from the DENOMINATOR side (live length) rather than the numerator (references), so the small arm's LUT byte can go back to its own short-lived pseudo and land in $v0.",
-   "mechanism": "allocno_compare ranks allocnos on a function of allocno_n_refs and allocno_live_length. The numerator side is measured flat: every reference the copy's variable can honestly take, other than the small arm's byte, costs the seats it touches (5, 4, 4, 13, 13, 13). The denominator has never been attacked - lengthening sum_sq's live range, or shortening the copy's while keeping it a cross-block (global) allocno, would flip the same comparison without borrowing a register that shows in the bytes.",
-   "next_probe": "Read allocno_n_refs / allocno_live_length for both allocnos out of the .lreg and .greg dumps of tmp/grind/func_80018094/s9/m1.c (loses the sort) versus n1.c (wins it) - they differ only in the boost, so the two arrays bracket the threshold. Then spell denominator-side C on the n13 chassis: move the `lut = sum_sq;` copy later (it is currently the first statement inside the outer wrap, before the `sum_sq < 0x400` test - the target's copy is in the branch's delay slot, i.e. as late as possible), and try ending sum_sq's live range differently in the tail."
+   "hypothesis": "The moment tools/grinder/owner_cluster_grants.txt carries a func_80018094 row, memory/grind/func_80018094/candidate.c merges unchanged \u2014 no new C work is required at any point.",
+   "mechanism": "The row satisfies grant_canonical_asm's owner-cluster branch (grindlib.py:1956 is bypassed by enumeration), so the Judge PASS path calls queue done with bucket COMPLETED-INLINE-ASM-CANONICAL. The row also changes gate_fingerprint, retiring any recorded candidate block.",
+   "next_probe": "Splice memory/grind/func_80018094/candidate.c into src/code6cac.c, confirm sandbox 0 (it was 0 on 2026-09-20), confirm memory/grind/func_80018094/self_vet.md still validates (it does as of this session), and submit candidate-ready with NO body change. The self-vet, the FAKE annotations and the disposition header are all already correct \u2014 do not re-spell anything."
   },
   {
-   "hypothesis": "The s9b gate shape generalises: a residual that is a cse-deleted copy across a two-arm branch can be closed by respelling the fallthrough arm as `if (cond) { do { ...; goto L; } while (0); }`.",
-   "mechanism": "The lever is a property of tools/gcc-2.7.2/cse.c's follow-jumps gate, not of this function: the loop-end note between the arm's BARRIER and the else label is what stops cse from extending the block. Nine sessions here treated 'cse deletes the copy' as a class kill (s6, s9a H42, predicate cse.c:8102); that kill is now scoped to bodies whose arms are spelled `if/else`.",
-   "next_probe": "When a sibling ledger reports a copy that 'cse always deletes', transplant this shape before re-deriving. Within this function, re-audit the s6/s9a class kill H42 - it is instance-scoped under the new evidence, and its predicate line (cse.c:8102) points at the block scan rather than at the gate at 8100-8125."
+   "hypothesis": "No pure-C or spelling work remains on this function at all; any session that re-opens the C is re-deriving a solved body.",
+   "mechanism": "Floor is 0 with 153/153 insns and a full-link SHA1 match. The five constructs are individually ablation-measured as load-bearing (H53: outer wrap 13, small-arm wrap 10, LZC-arm wrap 13, scalar sp_tmp 8), so there is no slack to simplify into.",
+   "next_probe": "None on the C. If a future session is dispatched here before the row lands, the correct action is to verify the row's absence in one grep and return immediately rather than re-measuring the body."
   },
   {
-   "hypothesis": "The Judge-FAILed tied-operand lineage (s9a b4 -> f1) is fully superseded and should not be revisited: everything it bought is now bought honestly.",
-   "mechanism": "The tied `\"=r\"(lut)` / `\"1\"(sum_sq)` pair existed only to make reload materialise the pre-island copy. The s9b gate materialises the same copy from ordinary C, and the seat it landed on ($a0) is reproduced by the priority-sort boost. The zero body's other two devices (sp_tmp[4] oversized locals, the outer do-while(0) wrap) are carried unchanged in candidate.c.",
-   "next_probe": "None needed; recorded so a later session does not re-file a ruling-request on the operand. The Judge's binding constraint stands: no extra output, tied, or clobber operand may be added to any __asm__ in this function."
+   "hypothesis": "The scanner-tier route is permanently unavailable to this whole cluster, so no future session (here or on a sibling) should attempt to raise a cop2 wrapper's scan_hand_coded tier as a way to open the grant door.",
+   "mechanism": "STRONG is composed of S1 (multu pacing), S2 (empty-body branches) and S6 (BIOS jumptable). Short GTE wrapper bodies contain none of those shapes; measured 0/5 STRONG across the granted members.",
+   "next_probe": "For any cop2-cluster sibling reaching floor 0, go straight to the registry-row check (`grep <func> tools/grinder/owner_cluster_grants.txt`) and file the integration handoff if it is absent; skip the scanner entirely. Census saved at tmp/grind/func_80018094/s10/grant_door_census.txt."
   }
  ],
  "judge_constraints": [
   "The LZC island's operand list must stay exactly the granted form (`: \"=m\"(sp_tmp[0]) : \"r\"(sum_sq) : \"$2\", \"$12\"`); no extra output, tied/matching (\"0\"/\"1\"), or clobber operand may be added to any __asm__ in this function to make the compiler materialise a copy. The pre-island `move $a0,$a1` must come from ordinary C or the function stays INCOMPLETE.",
   "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 3 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)",
-  "Comment-only fix-up: (1) add the gte_Lzc macro-name + header-line citation (gtemac.h:174-178; inline_c.h:228-231, :1346-1347, :1318-1322) to the LZC island's comment, disclosing the addressing preamble; (2) revert the 16 mojibake'd em-dash comment lines outside func_80018094 so git diff src/code6cac.c contains only this function's hunk. Body must not change. Merge additionally needs an operator row in tools/grinder/owner_cluster_grants.txt (outside session scope)."
+  "Comment-only fix-up: (1) add the gte_Lzc macro-name + header-line citation (gtemac.h:174-178; inline_c.h:228-231, :1346-1347, :1318-1322) to the LZC island's comment, disclosing the addressing preamble; (2) revert the 16 mojibake'd em-dash comment lines outside func_80018094 so git diff src/code6cac.c contains only this function's hunk. Body must not change. Merge additionally needs an operator row in tools/grinder/owner_cluster_grants.txt (outside session scope).",
+  "Do not re-file the integration handoff or re-open the C: the owner_cluster_grants.txt row is operator-only and owner ruling 2026-09-15 explicitly refused making it pipeline-grantable - confirm the row's absence with one grep, confirm the owner_actions.md OPEN entry is committed, and return immediately (state.json frontier #2)."
  ],
  "banned_constructs": [],
  "kills": [
@@ -354,14 +361,26 @@
    "measured_on": "chassis 2026-09-09 (-mel -msoft-float), the s9b goto + do-while(0) chassis (m1/n13) with the sp_tmp[4] oversized-locals FAKE and both do-while(0) wraps present and the island operand list at its grant",
    "predicate_cite": "",
    "result": "5, 4, 4, 13, 13, 13, 8 (154 insns), 8 (154 insns). n5 and n8 keep the seats but relocate the -2 / index block; p1, n7 an"
+  },
+  {
+   "session": 10,
+   "statement": "The scan_hand_coded STRONG-tier evidence door can admit func_80018094's three cop2 islands, so the missing owner_cluster_grants.txt row is not the only way through the merge gate.",
+   "kill_scope": "class",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 0 with all five FAKE constructs present, spliced into src/code6cac.c; scanner reads asm/funcs/*.s and is body-independent",
+   "predicate_cite": "tools/grinder/grindlib.py:1956",
+   "result": "The STRONG door is shut here AND for every granted member of this cluster: func_80019310 tier=LOW 2/8, func_800300B4 tie"
+  },
+  {
+   "session": 10,
+   "statement": "The second way out the merge refusal names \u2014 'either the islands are C-expressible (respell them in C)' \u2014 is available for this body's three islands.",
+   "kill_scope": "class",
+   "measured_on": "chassis 2026-09-09 (-mel -msoft-float), candidate.c body at floor 0 with all five FAKE constructs present; canonical gate reads target asm and is body-independent",
+   "predicate_cite": "engine/canonical.py:1",
+   "result": "ASM-PARTIAL, 10/153 insns canonical-asm, regions [11,12] [16,18] [24,24] [26,27] [76,76] [79,79], reasons exactly `GTE/c"
   }
  ],
  "ladder_skip": 0,
- "pending_fixup": {
-  "kind": "citation",
-  "detail": "Every executable construct verified legitimate inside its family (including the three cop2 islands, which are owner-granted for THIS function), but the submission files them under the wrong disposition: the header headlines 'MATCHED IN PURE C' and the self-vet omits the islands from CONSTRUCTS entirely while T5 affirmatively denies hardcoded-$N asm - contradicting the dated owner ruling 2026-09-15 Ruling 3 that the honest bucket is COMPLETED-INLINE-ASM-CANONICAL. One-comment re-file, no re-grind and no construct ban - the executable body is correct and must NOT change (body f5e49e3dddc24d62, u",
-  "set": "2026-09-20T06:23:12.522084+00:00"
- },
+ "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-10T00:33:40.741531+00:00",
  "object_model_audited": 1,

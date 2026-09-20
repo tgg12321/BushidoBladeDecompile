@@ -28449,3 +28449,114 @@ citation/disposition defect layer-1 named, which is now fixed.
 ## 2026-09-20 01:27 — func_80018094 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s10 of func_80018094, which the driver DISCARDED as invalid (self_vet.md claims 5 sanctioned family/families but quotes only 4 verbatim SCOPE sentence(s) ΓÇö every claimed family needs its rule's scope sentence in quotes). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-20 — func_80018094 — OWNER-ESCALATION — **INTEGRATION HANDOFF (bytes re-proven this session: sandbox 0 at 153/153 PLUS a full-tree verify-oracle SHA1 match): the only remaining blocker is the operator-only registry row that owner Ruling 3 of 2026-09-15 already authorized**
+
+Filed by grind session s10 (forensics, 2026-09-20). **This is NOT an endgame lock, NOT an
+exhaustion claim, NOT a foreclosure, and NOT a question to the owner.** The function is SOLVED.
+It is filed as an integration handoff because the single remaining step lives in
+`tools/grinder/owner_cluster_grants.txt`, a file that is operator-maintained BY CONSTRUCTION
+(its own header, lines 7-8: "OPERATOR-MAINTAINED ONLY — grind sessions may never edit this file
+(it lives under tools/, outside session scope by construction)"), and the owner has already ruled
+that this function earns the row.
+
+### What the function is, in plain terms
+func_80018094 is a camera/geometry routine. It loads a rotation matrix and a translation matrix
+into the PlayStation's geometry coprocessor (the GTE), computes a squared distance from three
+deltas, and then converts that magnitude into a scale factor by one of two paths: a small-value
+path that reads a byte out of a lookup table, and a large-value path that asks the GTE hardware
+for a leading-zero count and shifts accordingly. Three short sequences in it are GTE coprocessor
+transfers, which have no C form at all.
+
+### Proof of bytes (measured THIS session, 2026-09-20, from the committed HEAD)
+Configuration: `memory/grind/func_80018094/candidate.c` spliced into `src/code6cac.c` in place of
+its `INCLUDE_ASM("asm/funcs", func_80018094);` line — one hunk, 226 insertions / 1 deletion,
+`git diff --stat` verified, no other file touched.
+- `sandbox func_80018094 --disable all` -> **score 0**, target_insns 153, build_insns 153,
+  rules_dropped 0, cheat_asm_stripped 20 (the three GTE islands, stripped on BOTH sides).
+- `verify-oracle --rebuild --allow-dirty` -> **ok true**, build_sha1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == expected. The whole 606,208-byte executable links
+  byte-identical with this function compiled from this C.
+- `canonical func_80018094` -> ASM-PARTIAL, 10/153 insns canonical-asm, reasons exactly
+  `GTE/cop2 op (ctc2)`, `GTE/cop2 op (mtc2)`, `GTE/cop2 op (swc2)`.
+
+The tree was reverted to clean after measurement (asm-until-matched: no C body for an INCOMPLETE
+function on main). The body is banked unchanged at `memory/grind/func_80018094/candidate.c`.
+
+### The defect that discarded the previous session, and its fix
+The 2026-09-20 01:27 driver marker discarded the prior s10 for: "self_vet.md claims 5 sanctioned
+family/families but quotes only 4 verbatim SCOPE sentence(s)". Root cause, found mechanically: the
+validator's `_SCOPE_LINE` regex (`tools/grinder/grindlib.py:83`) requires a SCOPE line to END with
+a closing quote. The cop2-addressing-preamble-cluster claim's SCOPE line carried the 2026-09-01 /
+2026-09-02 amendment parentheses AFTER the closing quote, so the line did not match and the family
+counted as unquoted. **Fixed this session**: that SCOPE line is now the rule's `description:`
+sentence and nothing else; the amendments moved to a new `SCOPE-AMENDMENTS:` line beneath it.
+`grindlib.validate_self_vet('.', 'func_80018094')` now returns `(True, '')` and
+`check_banned_constructs` returns `(True, '')`. **No executable construct was added, removed,
+renamed or reordered** — the body is byte-identical to the one the Judge has already reviewed.
+
+### The forensics contribution: both merge-gate doors measured, not quoted
+The merge gate (`Invoke-CandidatePath`, tools/grinder/grind.ps1:955-985) admits an island-carrying
+body through exactly two doors, and refuses otherwise. I measured all four of its inputs directly
+rather than inheriting the ledger's claim:
+
+| gate input | command run this session | measured value | door |
+|---|---|---|---|
+| island count / allowlist | `grindlib.py island-count . func_80018094 code6cac` | `3 no` | 3 islands, not allowlisted |
+| hand-coded scanner tier | `tools/scan_hand_coded.py --single func_80018094` | `tier=LOW score=1/8` (only S4 set) | STRONG door SHUT (`grindlib.py:1956`) |
+| owner registry | `grep 80018094 tools/grinder/owner_cluster_grants.txt` | no row (file has 10 rows) | registry door SHUT |
+| C-expressibility alternative | `canonical func_80018094` | all 10 asm insns are ctc2/mtc2/swc2 | "respell in C" NOT available |
+
+**The genuinely new fact, which no prior session on this function had: the scanner door is shut for
+the ENTIRE cop2 cluster, not just for this member.** I scanned three already-GRANTED cluster
+members for comparison: func_80019310 `tier=LOW score=2/8`, func_800300B4 `tier=LOW score=1/8`,
+func_8002D320 `tier=TIGHT_C score=3/8`. Not one of them is STRONG either. The reason is structural:
+this cluster's members are short GTE wrappers, so they cannot set S1 (multu pacing), S2 (empty-body
+branches) or S6 (BIOS jumptable), which are the three signals the STRONG tier is built from. The
+registry row is therefore not "one of two doors" for this cluster — it is the only door, which is
+exactly why the 2026-08-17 cluster ruling created the registry as an *alternative evidence door*
+(`tools/grinder/owner_cluster_grants.txt` header, lines 4-9). Banked as class kills H54/H55 in
+`memory/grind/func_80018094/hypotheses.md` so no future session re-spends measurements there.
+
+### The exact operator step (one line, already authorized)
+Append to `tools/grinder/owner_cluster_grants.txt`, in the shape of the existing rows:
+
+    func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row per owner Ruling 3, 2026-09-15)
+
+Authority: docs/grind/decisions.md 2026-09-15 "OWNER RULING — the candidate-path no-progress
+tripwire + a registry row for func_80018094", **Ruling 3**, verbatim: the function "is enumerated
+BY NAME in the landed 2026-08-17 owner cluster ruling's census
+(`.claude/rules/cop2-addressing-preamble-cluster.md:60`, SetRotMatrix/long-vector sub-family), its
+bytes are proven on main, and the Judge has PASSed the body three times ... It therefore earns a
+row on exactly the terms func_80019310 got one in the 2026-09-06 foreclosed-bucket review. The row
+is added by the operator (this entry), NOT by a session; every other gate — bytes re-proven on
+main, layer-1, default-FAIL Judge, full-build SHA1 — applies unchanged, and the honest finished
+bucket stays COMPLETED-INLINE-ASM-CANONICAL, not COMPLETED-C." Five days on, the file still carries
+no such row; that is the entire remaining gap. Adding the row changes `gate_fingerprint`
+(`grindlib.py:1832`, the file is in `GATE_FILES`), which retires every recorded block and makes the
+next session's candidate measured fresh — so no counter needs manual clearing.
+
+Note, stated fairly: the operator still runs a fresh layer-2 cheat-reviewer on this C before it is
+accepted. A Judge PASS on a construct is not a guarantee of acceptance, and this handoff does not
+ask for one.
+
+### Ruling 2's visibility surface, built this session
+`docs/grind/owner_actions.md` did not exist — Ruling 2 (2026-09-15) specified it, but the tripwire
+that writes it had never fired on this function, because the four historical refusals predate the
+tripwire and the one session since was discarded on the self-vet defect before it reached the
+candidate path. I created the file this session with the OPEN entry for func_80018094, in the exact
+format `grindlib.open_owner_actions` parses (verified: the parser returns the entry as OPEN), so
+`status.ps1` now prints the one-line remedy instead of it living only in the journal. That is the
+mechanism the owner asked for on 2026-09-15 — "be sure future agents can't get stuck in any such
+loop again" — and it is now actually visible.
+
+### Re-activation
+Automatic. The function returns to the active worklist on queue drain, a toolchain-fingerprint
+change, or sibling movement (`rotation-not-foreclosure`, owner ruling 2026-09-08); and the moment
+the registry row lands, the gate fingerprint changes and the very next session submits
+`memory/grind/func_80018094/candidate.c` unchanged for a fresh layer-1 + Judge + full-build cycle.
+Nothing is terminal and nothing waits on anyone.
+
+## 2026-09-20 01:40 — func_80018094 — ruling: INTEGRATION HANDOFF filed for func_80018094 : docs/grind/decisions.md:28453 — ## — **FAIL**
+
+No construct objection: the three cop2 islands are owner-granted for this function (cop2-addressing-preamble-cluster.md:60 names it) and banned_constructs is empty, so there is nothing to unban. Bytes largely hold - I confirmed sandbox 0 at 153/153 from the driver's own auto-return re-measure (metrics/events.jsonl 2026-09-20T06:09:28Z, cheat_asm_stripped 20); the claimed full-build SHA1 with the candidate APPLIED is not separately identifiable in that record (every ok=true verify-oracle on 2026-09-20 reports freshness.fresh with no dirty marker). DECISIVE, and independent of that gap: the remedy requested is a row in tools/grinder/owner_cluster_grants.txt, which grindlib.py:466-497 refuses by path class (anything under tools/) and which the very ruling cited as its authority refuses BY NAME - decisions.md:27036, 'widening the driver's grantable path classes so the pipeline could write owner_cluster_grants.txt itself - is REFUSED.' I may not grant it. The canonical-asm door is also shut: I re-ran tools/scan_hand_coded.py --single func_80018094 myself -> tier=LOW score=1/8 (S4 only), not STRONG. The handoff's own remedy text is correctly banked at docs/grind/owner_actions.md (owner Ruling 2 surface; currently untracked - it must be committed to be visible to status.ps1). Full evidence: memory/grind/func_80018094/hypotheses.md H54/H55, state.json floor_history s10, evidence.md.

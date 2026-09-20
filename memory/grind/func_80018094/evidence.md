@@ -994,3 +994,67 @@ REMAINING MERGE BLOCKER (outside session scope, restated so it is not lost): the
 note requires an operator row for func_80018094 in tools/grinder/owner_cluster_grants.txt, because
 the body carries three non-cop2-whitelist inline-asm islands and the function is not allowlisted.
 That is an operator/integration action on a surface a grind session may not touch.
+
+
+## s10 (forensics, 2026-09-20) — bytes re-proven, and the merge gate's two doors measured shut
+
+The prior session (also numbered s10) was DISCARDED by the driver validator on a mechanical
+self-vet defect: `self_vet.md` claimed five sanctioned families but only four SCOPE lines matched
+`^\s*SCOPE\s*:\s*["“](.+?)["”]\s*$` (grindlib.py:83). The cop2 family's SCOPE line carried a
+trailing parenthetical AFTER the closing quote, so the line did not end in a quote and the regex
+skipped it. **Fixed this session**: the SCOPE line is now the rule's `description:` sentence and
+nothing else, and the 2026-09-01/2026-09-02 amendments moved to a new `SCOPE-AMENDMENTS` line
+directly below it. `grindlib.validate_self_vet('.', 'func_80018094')` now returns `(True, '')`, and
+`check_banned_constructs` returns `(True, '')`. The executable body was NOT touched.
+
+BYTES, RE-PROVEN THIS SESSION at the strongest level available to a session:
+- `sandbox func_80018094 --disable all` -> **score 0**, target_insns 153, build_insns 153,
+  rules_dropped 0, cheat_asm_stripped 20. Chassis -mel -msoft-float.
+- `verify-oracle --rebuild --allow-dirty` with the C body spliced into src/code6cac.c ->
+  **ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected**. The whole 606,208-byte
+  executable links byte-identical with func_80018094 compiled from this C.
+- `git diff --stat src/code6cac.c` -> 226 insertions, 1 deletion, one hunk (the `INCLUDE_ASM` line).
+
+THE MERGE GATE, MEASURED RATHER THAN QUOTED (this is the s10 forensics contribution):
+| input the gate reads | measured value | door state |
+|---|---|---|
+| `grindlib.py island-count . func_80018094 code6cac` | `3 no` | 3 islands, not allowlisted |
+| `tools/scan_hand_coded.py --single func_80018094` | `tier=LOW score=1/8` (only S4) | STRONG door SHUT (grindlib.py:1956) |
+| `tools/grinder/owner_cluster_grants.txt` | 10 rows, none for func_80018094 | registry door SHUT |
+| `canonical func_80018094` | ASM-PARTIAL, 10/153, all ctc2/mtc2/swc2 | "respell in C" NOT available |
+
+The new fact — the one no prior session on this function had — is that **the scanner door is shut
+for the entire cop2 cluster, not just for this member.** Granted siblings measure func_80019310
+`tier=LOW 2/8`, func_800300B4 `tier=LOW 1/8`, func_8002D320 `tier=TIGHT_C 3/8`. None is STRONG.
+Short GTE wrappers cannot set S1 (multu pacing), S2 (empty-body branches) or S6 (BIOS jumptable),
+which are the STRONG tier's constituent signals. So for this cluster the registry row is not "one
+of two doors" — it is the only door, by construction, which is precisely why the 2026-08-17 ruling
+built the registry as an *alternative* evidence door (`owner_cluster_grants.txt` header, lines 4-9).
+A future session must not spend measurements re-testing the scanner path.
+
+The row itself is already AUTHORIZED: owner Ruling 3, docs/grind/decisions.md 2026-09-15 "OWNER
+RULING — the candidate-path no-progress tripwire + a registry row for func_80018094", states that
+func_80018094 "earns a row on exactly the terms func_80019310 got one in the 2026-09-06
+foreclosed-bucket review" and that the row "is added by the operator (this entry), NOT by a
+session". Five days on, `tools/grinder/owner_cluster_grants.txt` still carries no such row, and
+`docs/grind/owner_actions.md` (Ruling 2's visibility surface) did not exist — it does now, created
+this session with the OPEN row so `status.ps1` prints the remedy instead of it living only in the
+journal.
+
+- [s10] Bytes re-proven this session at the strongest level available to a session: sandbox func_80018094 --disable all == 0 (153/153, rules_dropped 0, cheat_asm_stripped 20) AND a full-tree verify-oracle --rebuild --allow-dirty with the C body in src/code6cac.c returning ok=true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected.
+
+- [s10] The driver's discard of the previous session was a pure paperwork defect, now root-caused to grindlib.py:83 (_SCOPE_LINE requires the SCOPE line to END with a closing quote) and fixed by moving the cop2 family's 2026-09-01/2026-09-02 amendments to a separate SCOPE-AMENDMENTS: line. validate_self_vet and check_banned_constructs both return clean now. The executable body is unchanged.
+
+- [s10] Merge-gate door census (tmp/grind/func_80018094/s10/grant_door_census.txt): island-count = `3 no` (3 islands, not allowlisted); scan tier LOW 1/8; owner_cluster_grants.txt has 10 rows and none is func_80018094; canonical = ASM-PARTIAL with all 10 asm insns ctc2/mtc2/swc2.
+
+- [s10] NEW CLASS FACT: 0 of 5 already-GRANTED cop2-cluster members reach STRONG scanner tier (func_80019310 LOW 2/8, func_800300B4 LOW 1/8, func_8002D320 TIGHT_C 3/8, func_8002FC80 LOW 1/8, func_80032314 LOW 2/8). Short GTE wrappers structurally cannot set S1/S2/S6. The registry row is this cluster's ONLY evidence door — which is what the 2026-08-17 ruling's registry was created to be.
+
+- [s10] The remedy is already AUTHORIZED and is one line: append `func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row per owner Ruling 3, 2026-09-15)` to tools/grinder/owner_cluster_grants.txt. Owner Ruling 3 (docs/grind/decisions.md 2026-09-15) states the function 'earns a row on exactly the terms func_80019310 got one' and that the row 'is added by the operator (this entry), NOT by a session'. Five days on the file still has no such row.
+
+- [s10] Adding that row changes gate_fingerprint (grindlib.py:1832 — owner_cluster_grants.txt is in GATE_FILES), which retires every recorded candidate block automatically, so nothing needs manual clearing once the operator acts.
+
+- [s10] docs/grind/owner_actions.md did not exist (owner Ruling 2, 2026-09-15 specified it; the tripwire that writes it never fired here because the four historical refusals predate it and the one session since was discarded before reaching the candidate path). Created this session with the OPEN func_80018094 entry in the exact format grindlib.open_owner_actions parses — verified it returns the entry as OPEN, so status.ps1 now surfaces the one-line remedy.
+
+- [s10] This is an INTEGRATION HANDOFF, not exhaustion and not an endgame lock: the function is solved, the floor is 0, and the only remaining surface is operator-only by construction (owner_cluster_grants.txt header lines 7-8). The operator still runs a fresh layer-2 cheat-reviewer on the C before acceptance; a Judge PASS is not a guarantee of acceptance.
+
+- [s10] Why this session did NOT spend a Judge cycle on a resubmission: all three inputs the merge gate reads were measured directly this session and every one of them is unchanged from the state that produced the four prior MERGE REFUSED cycles, so a candidate-ready would have reached the identical known refusal. That is precisely the waste the owner named on 2026-09-15 ('a full execution session plus a Judge cycle to reach the identical refusal').
