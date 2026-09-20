@@ -7008,7 +7008,120 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     }
     return ret;
 }
-INCLUDE_ASM("asm/funcs", func_8006CFBC);
+typedef struct {
+    s32 *header;
+    s8 *table;
+    s32 out;
+    s32 pad0C;
+    s32 semi;
+    s32 ot_idx;
+    s32 x;
+    s32 y;
+    s32 pad20;
+    s32 pad24;
+    s8 has_color;
+} Env_8006CFBC;
+
+typedef union {
+    s32 word;
+    s16 half[2];
+} Counts_8006CFBC;
+
+extern s32 D_800A3524;
+extern s32 D_800A34FC;
+extern s32 D_800A374C;
+extern s32 func_8007352C(s32);
+extern s32 func_8006E480(s32, s32);
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+
+s32 func_8006CFBC(s32 arg) {
+    s32 *arg0;
+    Env_8006CFBC s;
+    Counts_8006CFBC counts;
+    s32 *table;
+    s16 outer;
+    s16 column;
+    s16 row;
+    s16 result;
+    s32 value;
+
+    arg0 = (s32 *)arg;
+    result = 0;
+    table = *(s32 **)(arg0[1] + 0x30);
+    s.ot_idx = 8;
+    s.has_color = 0;
+    s.semi = 0;
+
+    outer = 0;
+    do {
+        counts.word = 0;
+        s.y = outer * 16;
+        column = 0;
+        do {
+            s.header = (s32 *)table[column + 8];
+            value = (s32)s.header + 0xC;
+            s.table = (s8 *)value;
+            for (row = 0; row < 2; row++) {
+                if (*(u8 *)(D_800A3524 + outer + 0x17) &
+                    ((1 << (row * 4)) << column)) {
+                    s.x = row * 280 + counts.half[row] * 23;
+                    s.out = arg0[5];
+                    arg0[5] = func_8007352C((s32)&s);
+                    counts.half[row]++;
+                }
+            }
+            column++;
+        } while (column < 4);
+
+        row = 0;
+        do {
+            if (counts.half[row] == 0) {
+                s.x = row * 280;
+                result |= 1 << row;
+                s.header = (s32 *)table[12];
+                value = (s32)s.header + 0xC;
+                s.table = (s8 *)value;
+                s.out = arg0[5];
+                arg0[5] = func_8007352C((s32)&s);
+            }
+            row++;
+        } while (row < 2);
+        outer++;
+    } while (outer < 3);
+
+    row = 0;
+    do {
+        if (*(s32 *)(D_800A34FC + 0x28) == 0x50005) {
+            s.header = (s32 *)table[17];
+        } else if ((result >> row) & 1) {
+            s.header = (s32 *)table[19];
+        } else {
+            s.header = (s32 *)table[18];
+        }
+        s.x = row * 280;
+        s.y = 0;
+        value = (s32)s.header + 0xC;
+        s.table = (s8 *)value;
+        s.out = arg0[5];
+        arg0[5] = func_8007352C((s32)&s);
+        row++;
+    } while (row < 2);
+
+    s.header = (s32 *)table[14];
+    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
+    AddPrim(D_800A374C + 0x20, arg0[7]);
+    arg0[7] += 0xC;
+
+    {
+        u16 rect[4];
+        rect[2] = 0xE1;
+        rect[0] = 0xCF;
+        rect[1] = 0x25;
+        rect[3] = 1;
+        func_80069898((GameObj *)arg0, rect, 0x11);
+    }
+    return (s16)result;
+}
 extern s32 D_800A34FC;
 void func_8006D324(void) {
     s16 *v1 = (s16 *)D_800A34FC;
@@ -8522,7 +8635,119 @@ skip_init:
 
     arg0[2] = q;
 }
-INCLUDE_ASM("asm/funcs", func_80074488);
+extern u8 D_8009BD20[][2];
+extern u8 *D_800A36A0;
+
+typedef struct {
+    s32 sp18;
+    s32 sp1C;
+    s32 sp20;
+    s32 sp24;
+    s32 sp28;
+    s32 sp2C;
+    s32 sp30;
+    s32 sp34;
+    s32 sp38;
+    s32 sp3C;
+    s8 sp40;
+    u8 sp41;
+    u8 sp42;
+    u8 sp43;
+} S_80074488;
+
+void func_80074488(s32 *arg0) {
+    S_80074488 s;
+    s16 mask;
+    s16 i;
+    s32 *table;
+    s32 value;
+    s32 color;
+    s16 rect[4];
+    u8 *base;
+
+    base = D_800A36A0;
+    i = 0;
+    mask = (1 << *(s16 *)(base + 0x3C))
+         + (1 << (*(u8 *)(base + 0x65) + 5))
+         + (1 << (*(u8 *)(base + 0x67) + 8))
+         + (1 << (*(u8 *)(base + 0x66) + 9));
+    s.sp2C = 2;
+    table = *(s32 **)(arg0[0] + 0x34);
+    do {
+        s.sp30 = 0;
+        s.sp34 = 0;
+        s.sp28 = 0;
+        if ((mask >> i) & 1) {
+            if (i < 5) {
+                color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                s.sp43 = color;
+                s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+            } else if (i < 8) {
+                if (*(s16 *)(D_800A36A0 + 0x3C) == 0) {
+                    color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.sp43 = color;
+                    s.sp30 = *(s16 *)(D_800A36A0 + 0x40);
+                    s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+                } else {
+                    s.sp43 = 0x80;
+                }
+            } else if (i < 10) {
+                if (*(s16 *)(D_800A36A0 + 0x3C) == 1) {
+                    color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.sp43 = color;
+                    s.sp30 = *(s16 *)(D_800A36A0 + 0x40);
+                    s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+                } else {
+                    s.sp43 = 0x80;
+                }
+            } else if (i < 14) {
+                if (*(s16 *)(D_800A36A0 + 0x3C) == 2) {
+                    color = ((rsin(((*(u16 *)(D_800A36A0 + 0x34) & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.sp43 = color;
+                    s.sp30 = *(s16 *)(D_800A36A0 + 0x40);
+                    s.sp34 = *(s16 *)(D_800A36A0 + 0x42);
+                } else {
+                    s.sp43 = 0x80;
+                }
+            }
+            s.sp40 = 1;
+            s.sp42 = s.sp43;
+            s.sp41 = s.sp43;
+        } else {
+            s.sp43 = 0x40;
+            s.sp42 = 0x40;
+            s.sp41 = 0x40;
+            if (i < 5) {
+                s.sp40 = 0;
+                s.sp28 = 1;
+            } else if (i < 14) {
+                s.sp40 = 1;
+            } else {
+                s.sp40 = 0;
+            }
+        }
+        if ((u16)(i - 10) >= 4 ||
+            D_8009BD20[*(u8 *)(D_800A36A0 + 0x67)][0] + 9 == i ||
+            D_8009BD20[*(u8 *)(D_800A36A0 + 0x67)][1] + 9 == i) {
+            value = table[i];
+            s.sp18 = value;
+            s.sp1C = value + 0xC;
+            s.sp20 = arg0[4];
+            arg0[4] = func_8007352C((s32)&s.sp18);
+        }
+        i++;
+    } while (i < 15);
+
+    s.sp18 = table[0];
+    SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, 0), 0);
+    AddPrim(D_800A374C + 8, arg0[6]);
+    arg0[6] += 0xC;
+    rect[2] = 0x108;
+    rect[0] = 0xBC;
+    rect[1] = 0x25;
+    rect[3] = 1;
+    func_80069898((GameObj *)arg0, (u16 *)rect, 2);
+}
 INCLUDE_ASM("asm/funcs", func_800747D8);
 
 extern u8 *D_800A36A0;
