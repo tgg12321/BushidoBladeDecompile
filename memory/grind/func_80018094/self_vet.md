@@ -1,19 +1,26 @@
-# SELF-VET — func_80018094  (s11, 2026-09-10, annotation-fix — filed WITH a `candidate-ready`)
+# SELF-VET — func_80018094  (s10 (chassis session-count), 2026-09-20, annotation-fix — filed WITH a `candidate-ready`)
 
-**s11 FIX-UP SCOPE.** The Judge's 2026-09-10 00:29 FINAL CALL FAILed the s10 submission on
-CITATION/COMMENT grounds only, with the work itself accepted. This session changed COMMENTS ONLY:
-(1) the LZC island now carries the PsyQ macro-name + header-line citation the Judge asked for
-(`gte_Lzc(r1,r2)`, gtemac.h:174-178, expanding to gte_ldlzc inline_c.h:228-231, two gte_nop
-inline_c.h:1346-1347, gte_stlzc inline_c.h:1318-1322) together with an explicit disclosure that
-the `addu $t4,...,$zero` / `addiu $v0,$sp,0x10` addressing preamble is NOT macro text but the
-cop2-addressing-preamble idiom of the 28-function cluster this function is enumerated in
-(.claude/rules/cop2-addressing-preamble-cluster.md:60); (2) the mojibake'd em-dash comment lines
-outside func_80018094 are gone — `git diff src/code6cac.c` now contains exactly one hunk, the
-func_80018094 body replacing its `INCLUDE_ASM`, with zero other lines touched (verified: the s11
-splice starts from a clean `main` src/code6cac.c and inserts only this function). The executable
-BODY is byte-for-byte the s10 body; no construct was added, removed, renamed or reordered, and
-every FAKE annotation below is unchanged. Re-measured this session: `sandbox func_80018094
---disable all` == 0 (target_insns 153, build_insns 153, rules_dropped 0, cheat_asm_stripped 20).
+**THIS SESSION'S FIX-UP SCOPE.** The Judge's 2026-09-14 23:55 FINAL CALL FAILed the prior
+submission on CITATION-ONLY grounds, with every construct independently re-verified inside its
+sanctioned family and the work itself accepted. The stated defect named exactly two citations
+that do not resolve: (1) the Set*Matrix islands' comment cited src/code6cac_b.c:935 as the
+"memory"-clobber precedent, but that line is `func_800288C8();` — a plain call, not an asm
+island; (2) the self-vet's T2/T6/ORDINARY-C-NOTE sections attributed the `lw_v1`/`li_v0` /
+`D_8008D118` sibling precedent to pure-C func_8001A538 at src/code6cac.c:974-977 and :980/:953,
+lines that do not carry those statements in the current tree. This session changed COMMENTS
+ONLY, fixing both citations against the CURRENT tree (verified by direct Read/Grep, not by
+trusting the stale numbers): the Set*Matrix "memory"-clobber precedent now cites
+src/code6cac_b.c:1116-1123 (func_8002D320's lwc2-read island, `"r"(vin) : "$12", "memory"`), the
+same precedent the committed sibling func_80019310 itself cites (src/code6cac.c:356-361); the
+`lw_v1`/`li_v0` precedent now cites src/code6cac.c:778-781 (func_8001A538's identical
+`{ s32 lw_v1 = sp_tmp; s32 li_v0 = -2; li_v0 = lw_v1 & li_v0; shift_a = 0x16 - li_v0; }` block);
+the `D_8008D118` byte-LUT-read precedent now cites src/code6cac.c:757 and :784 (verified against
+the current func_8001A538 body). `git diff src/code6cac.c` contains exactly one hunk, the
+func_80018094 body replacing its `INCLUDE_ASM`, with zero other lines touched. The executable
+BODY is byte-for-byte the previously-Judge-reviewed body; no construct was added, removed,
+renamed or reordered, and every FAKE annotation below is unchanged. Re-measured this session:
+`sandbox func_80018094 --disable all` == 0 (target_insns 153, build_insns 153, rules_dropped 0,
+cheat_asm_stripped 20).
 
 The body under vet is `memory/grind/func_80018094/candidate.c` (= tmp/grind/func_80018094/s10/final.c,
 generated from s10/e1.c by adding the FAKE annotations only). Spliced into src/code6cac.c it
@@ -46,7 +53,7 @@ scalar scores 8 (tmp/grind/func_80018094/s10/f2.c).
 value the LZC hardware sees. Without it the island reads `sum_sq` directly and the target's
 `move $a0,$a1` never exists (measured across s5-s9, hypotheses.md H26-H46).
 (6) Semantic — every one is once- or twice-written and read; `lw_v1`/`li_v0` are the COMPLETED-C
-sibling func_8001A538's own names for the identical statements (src/code6cac.c:974-977).
+sibling func_8001A538's own names for the identical statements (src/code6cac.c:778-781).
 (7) Semantic — it is the actual byte load from the magnitude LUT.
 (8) Semantic — it is the arm's exit.
 
@@ -59,7 +66,7 @@ annotations name the pass and the ablation score.
 (5) Yes — staging a value into an existing local one line before it is consumed is ordinary,
 readable C, and the SOTN corpus ships the shape verbatim (see the family's census below).
 (6) Yes. (7) Yes — it is the existing house spelling for this symbol in this TU, shipped in
-already-matched bodies (src/code6cac.c:953 and :980, inside the pure-C func_8001A538, plus
+already-matched bodies (src/code6cac.c:757 and :784, inside the pure-C func_8001A538, plus
 src/code6cac_b.c:284 and :747), all against the same `extern u8 D_8008D118;` declaration at
 src/code6cac.c:19. Changing the declaration to an array type would break those matched siblings'
 pointer arithmetic, so this is not a new pun introduced by this candidate; it is the TU's
@@ -145,7 +152,7 @@ ORDINARY-C NOTE (NOT a sanctioned-family claim — no exception is invoked for i
   construct 7, the `*(&D_8008D118 + i)` byte-LUT read, is this TU's pre-existing,
   oracle-verified spelling against the `extern u8 D_8008D118;` declaration at
   src/code6cac.c:19, shipped unchanged in the already-matched pure-C sibling
-  func_8001A538 at src/code6cac.c:953 and src/code6cac.c:980, and in matched bodies in
+  func_8001A538 at src/code6cac.c:757 and src/code6cac.c:784, and in matched bodies in
   src/code6cac_b.c:284 and src/code6cac_b.c:747. It needs no family grant because it is
   ordinary C against the declaration this TU already ships.
 

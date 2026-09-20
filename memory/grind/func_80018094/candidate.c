@@ -58,7 +58,9 @@ void func_80018094(s32 *arg0, s32 *arg1) {
     u32 lut;
 
     /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- inline_c.h:297-310 (same spelling
-     * as func_80019310 / func_800300B4; "memory" clobber ADDED per src/code6cac_b.c:935). */
+     * as func_80019310 / func_800300B4; "memory" clobber ADDED, not SDK text -- precedent
+     * src/code6cac_b.c:1116-1123 (func_8002D320's lwc2-read island: `"r"(vin) : "$12", "memory"`),
+     * the same committed same-file precedent func_80019310 itself cites, src/code6cac.c:356-361). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
