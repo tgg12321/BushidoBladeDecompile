@@ -261,3 +261,22 @@ step. No bb2.ld edit is expected to be needed (same as the sibling case).
 - [s2] Sibling func_8006B578's own ledger (s7/s12, 2026-09-16) independently derived and executed the identical mechanism for jtbl_80015988: bb2.ld orders text1a_b_pre_rodata.o, text1b.o, text1a_b_mid_rodata.o; once the switch became real C, GCC's own ADDR_VEC landed at the exact target address with no bb2.ld edit required, after the hand array was deleted.
 
 - [s2] The new candidate.c (same-variable literal-assignment selection_sound spelling) is strictly better than the inherited s1 candidate: identical score/insns, zero self-subtract construct - the s1 ledger's flagged cheat-smell concern about `sound -= sound;` is resolved.
+
+## Session 3 (permuter)
+
+- `import.py`'s full-TU import of `src/text1b.c` is broken for this function (maspsx crash on a pruning artifact); worked around with a hand-built minimal-context permuter workspace (`tmp/grind/func_800747D8/s3/perm_ws/base.c`) that compiles through the real pipeline and reuses the correctly-generated `target.o`. Reusable recipe for any future permuter session on this function or other text1b.c functions hitting the same import.py failure.
+- Ran a real permuter campaign (21,884 iterations, 8 jobs, 5 novel finds, base_score 265 unmasked). No find improves on the honest floor of 6; best find (100) is a pure reformat with zero codegen difference. The local C-spelling space around the selection_sound block (hunks 17-19) is now exhausted by both hand-written (s1/s2) and randomized (s3 permuter) search.
+- Hand-tested the sanctioned `do { ... } while (0);` wrap (one of the permuter's finds, output-170-1) directly on src/text1b.c: regressed score 6 -> 7 (added a real instruction). Banked as `rejected/selection_sound-do-while-zero-wrap.c`. Confirms this specific sanctioned-family application does not help here.
+- Floor unchanged: still 6 (2 source-level: hunks 18-19 selection_sound branch/value-flow shape; 2 operand-only: hunk 9 jtbl table-offset, hunk 17 register seat; 26 not-scored). Frontier unchanged from s2 — hunk 9's jtbl migration (src/text1a_b_mid_rodata.c, out of this session's src/text1b.c-only surface) remains the next actionable step, to be done at final-submission assembly time, mirroring the func_8006B578 precedent.
+
+- [s3] Chassis check confirmed floor 6 at dispatch (candidate.c re-applied, sandbox --disable all): 2 source-level hunks (18-19, selection_sound branch/value-flow shape), 2 operand-only hunks (9: jtbl_80015A0C table-offset, 17: register seat lbu v0 vs a0), 26 not-scored.
+
+- [s3] import.py's default full-TU import of src/text1b.c produces a compile.sh that crashes maspsx with 'too many values to unpack' on a corrupted .comm line -- a pruning-pass artifact from one of the TU's many canonical-asm placeholder stubs, unrelated to func_800747D8's own C.
+
+- [s3] A hand-built minimal-context permuter workspace (self-contained base.c, real target.o from asm/funcs/func_800747D8.s) is a working, reusable substitute for future permuter sessions on this function or other text1b.c functions hitting the same import.py failure.
+
+- [s3] Permuter campaign: 21,884 iterations, 5 novel finds (scores 100/120/130/170/220 vs base 265), 0 finds beat or matched candidate.c's real honest floor; best find is a no-op reformat.
+
+- [s3] Hand-tested the campaign's do-while(0) find directly on src/text1b.c: regressed score 6 -> 7. The local C-spelling space around the selection_sound block is now exhausted by both hand-written (s1/s2) and randomized (s3 permuter) search.
+
+- [s3] src/text1b.c reverted to INCLUDE_ASM("asm/funcs", func_800747D8); before session end per asm-until-matched; candidate.c unchanged in memory/grind/func_800747D8/.

@@ -1,8 +1,8 @@
 {
  "func": "func_800747D8",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -15,18 +15,29 @@
    "floor": 6,
    "modality": "structural",
    "headline": "De-smelled the selection_sound block to an honest same-variable form (score 6 unchanged); named the GCC branchless-fold mechanism that kills all isolated-test-variable spellings; identified hunk 9's j"
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Permuter modality: built a working workaround for import.py's broken full-TU workspace on text1b.c, ran a 21,884-iteration campaign, found no improvement on the hunks 17-19 selection_sound register-se"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual (target lw v0,0(at) vs ours lw v0,24(at)) closes once the hand-transcribed jtbl_80015A0C array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C, mirroring the already-executed func_8006B578/jtbl_80015988 precedent.",
+   "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual closes once the hand-transcribed jtbl_80015A0C array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C, mirroring the already-executed func_8006B578/jtbl_80015988 precedent.",
    "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch (build/src/text1b.o); with the hand array still present in text1a_b_mid_rodata.c, the two tables coexist and the sandbox's isolated single-function build sees a placement/offset conflict rather than the real target layout.",
-   "next_probe": "When assembling the final submission (not a src/text1b.c-only session): delete the jtbl_80015A0C array (and its header-comment TODO) from src/text1a_b_mid_rodata.c in the same commit as func_800747D8's C body, then re-measure with sandbox --disable all --diff to confirm hunk 9 closes with zero bb2.ld edits, exactly as it did for func_8006B578."
+   "next_probe": "At final-submission assembly time (not a src/text1b.c-only session): delete the jtbl_80015A0C array from text1a_b_mid_rodata.c in the same commit as func_800747D8's C body, then re-measure with sandbox --disable all --diff to confirm hunk 9 closes with zero bb2.ld edits, exactly as it did for func_8006B578."
   },
   {
-   "hypothesis": "Hunk 17 (target lbu v0,100(v0) vs ours lbu a0,100(v0), a pure register-seat choice) may resolve automatically once hunk 9's table-placement issue and the switch's real ADDR_VEC are both in place, since the current a0-vs-v0 split is entangled with the same block's branch shape.",
-   "mechanism": "unconfirmed - register allocation for this load may shift once the surrounding switch dispatch is compiled from real C rather than scored against a stand-in hand array",
-   "next_probe": "Re-run sandbox --disable all --diff on the same-variable candidate AFTER the text1a_b_mid_rodata.c migration (frontier item 1) lands, before spending a session on register-seat levers for hunk 17 in isolation."
+   "hypothesis": "Hunk 17's register-seat residual (target lbu v0 vs ours lbu a0) may resolve automatically once hunk 9's table-placement issue is fixed and the switch's real ADDR_VEC is in place, since the current a0-vs-v0 split may be entangled with the same block's surrounding dispatch shape.",
+   "mechanism": "unconfirmed -- register allocation for this load may shift once the surrounding switch dispatch is compiled from real C rather than scored against a stand-in hand array",
+   "next_probe": "Re-run sandbox --disable all --diff on the same-variable candidate AFTER the text1a_b_mid_rodata.c migration lands, before spending another session on register-seat levers for hunk 17 in isolation."
+  },
+  {
+   "hypothesis": "The local C-spelling space for hunks 17-19 (selection_sound block) is exhausted by both hand-written and permuter search on this chassis; further sessions in permuter/structural modality on this exact block are unlikely to find new ground without a different mechanism (e.g. RA/scheduler solver classification of the v0-vs-a0 seat).",
+   "mechanism": "combine.c's isolated-test-variable branchless fold (documented s2) plus the s3 permuter's independent 21.8k-iteration confirmation that no mutation pass reaches a different byte-identical-count spelling",
+   "next_probe": "If a future session revisits this residual, run tools/ra_solver's inverse_compose.py classify on hunk 17 to determine whether the v0-vs-a0 seat is RA- or scheduler-owned before proposing any further hand-written C variant."
   }
  ],
  "judge_constraints": [],
@@ -71,6 +82,14 @@
    "measured_on": "candidate.c chassis with if/else arms swapped, src/text1b.c, sandbox --disable all --diff; zero FAKE constructs",
    "predicate_cite": "",
    "result": "score 6, build_insns 208; hunks 17-19 byte-identical to the non-swapped form (tmp/grind/func_800747D8/s2/diff_swapped.tx"
+  },
+  {
+   "session": 3,
+   "statement": "A permuter campaign on the minimal-workspace chassis (21,884 iterations, 8 jobs, 5 novel finds) finds no C-structure improvement on the hunks 17-19 selection_sound register-seat/branch-shape residual,",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (same-variable-reuse baseline, unchanged) plus the do-while(0)-wrapped variant, both applied to src/text1b.c; zero FAKE constructs in either form; sandbox --disable all --diff; cam",
+   "predicate_cite": "",
+   "result": "Best permuter find (score 100 of base 265) is a pure whitespace/parenthesization reformat with zero codegen difference f"
   }
  ],
  "ladder_skip": 0,
