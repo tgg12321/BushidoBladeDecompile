@@ -294,3 +294,110 @@ step. No bb2.ld edit is expected to be needed (same as the sibling case).
 - [s4] Cross-checked against target asm (asm/funcs/func_800747D8.s, jlabel .L80074984 / .L800749D8) and our own -da dump (tmp/grind/func_800747D8/dumps/text1b.s, .L1302/.L1304) to confirm the field67 block's current C spelling already produces byte-identical bytes to target for that region.
 
 - [s4] src/text1b.c restored to exactly candidate.c's content at session end; sandbox --disable all reconfirms score 6, build_insns 208; git status shows only src/text1b.c + metrics/events.jsonl changed (metrics is pre-existing drift, not from this session's work).
+
+## Session 5 (synthesis) - 2026-09-20
+
+**Chassis re-confirmed.** `candidate.c` spliced onto `src/text1b.c` measures
+`sandbox --disable all` -> score 6, build_insns 208 == target_insns 208, the
+same figure the driver measured at dispatch. `--diff` reproduces the s1-s4
+classification unchanged: 2 source-level (hunks 18-19), 2 operand-only
+(hunk 9 jtbl_80015A0C table offset, hunk 17 register seat), 26 not-scored.
+
+**KILL RE-AUDIT (mandated).** Every instance kill in this ledger was
+measured on the SAME chassis that is live now (candidate.c, floor 6) and
+this ledger has never contained a single `/* FAKE */` construct - neither
+candidate.c nor any of the seven banked rejected forms carries one - so
+`tools/fake_ablate.py` has nothing to ablate here and the FAKE-carrier
+failure mode it guards against cannot apply. The re-audit was therefore
+done by DIRECT RE-MEASUREMENT of the two kills that sat closest to target:
+s1/H4 (`default-then-override`) re-measured this session as variant
+`b2_default4_direct_test.c` (and as `v3_zero_default_override.c` in the
+opposite polarity) -> score 10, build_insns 205, reproducing the banked
+figure exactly; s1/H5 (`single-shot-no-intermediate`) re-measured as part
+of the same class sweep -> identical. Both kills stand, unchanged, on the
+current chassis.
+
+**THE SESSION'S MAIN RESULT: the residual is now mechanistically explained
+end to end, and the explanation is read out of the compiler source rather
+than inferred.** Three regimes exist for the selection_sound block (hunks
+17-19), and thirteen measured spellings fall into exactly three buckets:
+
+| regime | spellings measured | score / build_insns |
+|---|---|---|
+| one variable reused across load+test+result (the banked baseline) | 3 (s1 self-subtract, s2 literal form, s5 pointer-local, s5 function-scope decl) | **6 / 208** |
+| single call, result pseudo DISTINCT from the loaded test value | 12 (s1 H3/H4/H5, s2, s5 v3/v4/b1/b2/b11/c1/c2/c3/c4) | 10 / 205 |
+| the call DUPLICATED into both arms | 4 (s5 v1/v2/v7 + plain if/else) | 7 / 211 |
+
+- The 205 bucket is GCC 2.7.2's jump.c store-flag transform
+  (`tools/gcc-2.7.2/jump.c:1166-1197`, the block commented "That didn't
+  work, try a store-flag insn"). Its admitting disjunct is
+  `jump.c:1190-1191`: it fires whenever EITHER of the two selected
+  constants is `const0_rtx`. The pair selected here is {4, 0}, so one of
+  them is always zero regardless of spelling - which is why a `switch`, a
+  ternary in the call argument, a QImode (`u8`) result variable, and reuse
+  of an already-live local (`state`, `ret`) ALL fold to the identical
+  `lbu / sltiu / sll` sequence.
+- The baseline escapes that transform for a reason that is now named: its
+  result variable's prior value is the LOAD (not a `CONST_INT`, so
+  `temp3` fails the first disjunct) and the arm sitting immediately after
+  the conditional jump assigns 4 (so `temp2 != const0_rtx`), leaving only
+  the `BRANCH_COST >= 3` fallback, which MIPS does not satisfy. The price
+  of that escape is exactly hunk 17: the test value and the call argument
+  are the same pseudo, so the load is emitted straight into `$a0`.
+- The 211 bucket blocks the transform at a DIFFERENT clause,
+  `tools/gcc-2.7.2/jump.c:1066` (the insn after the conditional jump must
+  be followed immediately by the join label - i.e. the arm must be exactly
+  one insn; a full argument setup plus call is five).
+
+**NEW, and the most useful single fact this ledger has gained: duplicating
+the call into both arms REPRODUCES TARGET'S REGISTER SEAT.** Measured
+objdump of the sandbox object for that form:
+`lw v0,0(gp) / lbu v0,100(v0) / bnez v0,L / move a0,zero / li a0,4 /
+li a1,127 / j <shared jal> / li a2,127` - the load lands in **$v0**, and
+`$a0` is materialized separately in each arm, which is target's exact shape
+(asm/funcs/func_800747D8.s:108-118). Hunk 17 disappears from the diff in
+that form. The whole residual of the 211 form is 3 SURPLUS instructions:
+the two arms' identical `li a1,127 / j <jal> / li a2,127` tails were never
+cross-jump-merged with each other. `tools/gcc-2.7.2/jump.c:2005` tries
+`find_cross_jump (insn, JUMP_LABEL (insn), 1, ...)` first - a minimum=1
+merge against the code physically preceding the jump's own label - and only
+falls back to the sibling-jump pairing at `jump.c:2011-2021` when that
+returns `newjpos == 0`. Here the first attempt succeeds with a ONE-insn
+match against the shared `jal func_8005C650` that the field67 path falls
+into, so the deeper 3-insn arm-to-arm merge target shows is never tried.
+
+- [s5] Chassis re-confirmed at dispatch value: candidate.c on src/text1b.c -> sandbox --disable all score 6, build_insns 208 == target_insns 208; --diff reproduces the s1-s4 hunk classification unchanged (2 source-level 18-19, 2 operand-only 9 and 17, 26 not-scored).
+
+- [s5] KILL RE-AUDIT: this ledger contains zero /* FAKE */ constructs in candidate.c and in all seven banked rejected forms, so tools/fake_ablate.py has nothing to ablate; the two closest-to-target instance kills (s1 H4 default-then-override, s1 H5 single-shot-no-intermediate) were instead re-measured directly on the current chassis this session and both reproduce their banked figures exactly (score 10, build_insns 205). Both kills stand.
+
+- [s5] Thirteen spellings of the selection_sound block now partition into exactly three measured regimes: same-variable reuse -> 6/208 (the banked baseline, plus two NEW neutral ties: a pointer local `S_800747D8 *m = MENU_800747D8;` and hoisting `s32 sound;` to the function-scope declaration list, both 6/208); any single-call spelling with the result pseudo distinct from the loaded test value -> 10/205; the call duplicated into both arms -> 7/211.
+
+- [s5] The 10/205 regime is GCC 2.7.2's jump.c store-flag transform (tools/gcc-2.7.2/jump.c:1166-1197), admitted by the disjunct at tools/gcc-2.7.2/jump.c:1190-1191 which fires whenever either selected constant is const0_rtx. The constant pair here is {4, 0}, so one is always zero and no C-level respelling of a two-constant select can miss that disjunct - confirmed by a switch statement, a ternary in the call argument, a u8 (QImode) result variable, and reuse of two different already-live locals (`state`, `ret`) all folding identically.
+
+- [s5] The banked baseline escapes the store-flag transform because its result variable's prior value is the load (not a CONST_INT) AND the arm immediately after the conditional jump assigns 4 (not zero), so neither disjunct at jump.c:1190-1191 applies and only the BRANCH_COST >= 3 fallback remains, which MIPS does not satisfy. That escape is exactly what forces the load into $a0 and keeps hunk 17 open.
+
+- [s5] Duplicating func_8005C650(4/0, 0x7F, 0x7F) into both arms reproduces target's register seat exactly (objdump of the sandbox object: lbu v0,100(v0) with $a0 materialized per-arm, matching asm/funcs/func_800747D8.s:108-118) and removes hunk 17 from the diff; its only residual is 3 surplus instructions from the two arms' identical `li a1,127 / j <jal> / li a2,127` tails failing to cross-jump-merge with each other.
+
+- [s5] That missed merge is explained by tools/gcc-2.7.2/jump.c:2005: for a simplejump GCC tries find_cross_jump against the code before the jump's own label (minimum=1) BEFORE the sibling-jump pairing at jump.c:2011-2021, and the minimum=1 attempt succeeds here on the single shared `jal func_8005C650` the field67 path falls into - so the deeper 3-insn arm-to-arm merge that target shows is never attempted.
+
+- [s5] tools/gcc-2.7.2/jump.c carries a pre-existing BB2 diagnostic knob (jump.c:66-89, env var BB2_XJUMP_DEBUG, codegen-inert when unset) that prints find_cross_jump pairing decisions as "XJDBG: DO_CROSS_JUMP jump=N newjpos=N newlpos=N". It was NOT exercised this session and is the cheapest next probe for the 211 form's missed merge.
+
+- [s5] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form); git status shows only metrics/events.jsonl (pre-existing drift) outside memory/grind and tmp.
+
+- [s5] Chassis re-confirmed: candidate.c on src/text1b.c -> sandbox --disable all score 6, build_insns 208 == target_insns 208; --diff reproduces the s1-s4 classification unchanged (2 source-level hunks 18-19, 2 operand-only hunks 9 and 17, 26 not-scored).
+
+- [s5] Thirteen spellings of the selection_sound block now partition into exactly three measured regimes: same-variable reuse -> 6/208 (the banked baseline plus two new neutral ties); any single-call spelling whose result pseudo is distinct from the loaded test value -> 10/205; the call duplicated into both arms -> 7/211.
+
+- [s5] The 10/205 regime is GCC 2.7.2's jump.c store-flag transform (tools/gcc-2.7.2/jump.c:1166-1197), admitted by the disjunct at tools/gcc-2.7.2/jump.c:1190-1191 which fires whenever either selected constant is const0_rtx; the constant pair here is {4, 0}, so a switch statement, a ternary in the call argument, a u8 (QImode) result variable and reuse of two different already-live locals all fold identically.
+
+- [s5] The banked floor-6 baseline escapes that transform because its result variable's prior value is the load (not a CONST_INT) AND the arm immediately after the conditional jump assigns 4 (not zero), leaving only the BRANCH_COST >= 3 fallback which MIPS does not satisfy - and that escape is precisely what forces the load into $a0 and keeps hunk 17 open.
+
+- [s5] Duplicating func_8005C650(4/0, 0x7F, 0x7F) into both arms reproduces target's register seat exactly (objdump: lbu v0,100(v0) with $a0 materialized per-arm, matching asm/funcs/func_800747D8.s:108-118) and removes hunk 17 from the diff; its only residual is 3 surplus instructions from the two arms' identical `li a1,127 / j <jal> / li a2,127` tails failing to cross-jump-merge with each other.
+
+- [s5] That missed merge is explained by tools/gcc-2.7.2/jump.c:2005: for a simplejump GCC tries find_cross_jump against the code before the jump's own label (minimum=1) BEFORE the sibling-jump pairing at tools/gcc-2.7.2/jump.c:2011-2021, and the minimum=1 attempt succeeds here on the single shared `jal func_8005C650` the field67 path falls into.
+
+- [s5] tools/gcc-2.7.2/jump.c carries a pre-existing BB2 diagnostic knob (jump.c:66-89, env var BB2_XJUMP_DEBUG, codegen-inert when unset) that prints find_cross_jump pairing decisions as 'XJDBG: DO_CROSS_JUMP jump=N newjpos=N newlpos=N'. It was NOT exercised this session and is the cheapest next probe for the 211 form's missed merge.
+
+- [s5] Hunk 9's jtbl_80015A0C table-offset residual is unchanged and remains a cross-file final-submission step (delete the hand-transcribed array from src/text1a_b_mid_rodata.c in the same change that lands the C body), per the s2 analysis and the executed func_8006B578/jtbl_80015988 precedent.
+
+- [s5] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form, zero FAKE constructs); git status shows only metrics/events.jsonl (pre-existing drift) outside memory/grind and tmp.

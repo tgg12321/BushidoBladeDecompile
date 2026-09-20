@@ -252,3 +252,104 @@ Banked: `rejected/selection_sound-single-shot-no-intermediate.c`.
 - probe: tools/spelling_enum.py --candidate tmp/grind/func_800747D8/s4/enum_input.c --out tmp/grind/func_800747D8/s4/enum_ss --no-swaps on the selection_sound decl+if/else+call region -> 4 variants, manually inspected (not blind-swept).
 - result: 2 of 4 variants (v0, v1) hoist 'sound = 4;'/'sound = 0;' out of the if/else, leaving an empty-armed diamond that changes behavior; 2 of 4 (v2, v3) drop the 's32 sound = ...;' declaration entirely while keeping the now-orphaned assigns, which is invalid C (confirmed via an accidental partial-apply during sweep_variants.py's restore step hitting a transient WSL/NTFS OSError mid-run: build failed with "text1b.c:8475: 'sound' undeclared"; src/text1b.c was manually reverted to candidate.c's known-good text and floor 6 was re-verified before continuing). No sandbox measurement of v0-v3 was taken since manual inspection already showed all 4 non-informative for this residual.
 - verdict: CONFIRMED
+
+## s5 (synthesis modality, 2026-09-20)
+
+### H11 - the selection_sound call duplicated into both arms reproduces target's register seat
+- statement: Writing the selection_sound block as two separate calls, one per arm (`if (MENU_800747D8->field64 == 0) { func_8005C650(4, 0x7F, 0x7F); } else { func_8005C650(0, 0x7F, 0x7F); }`), makes the field64 load land in $v0 with $a0 materialized separately in each arm - target's exact shape - but costs 3 surplus instructions because the two arms' identical argument-setup tails do not cross-jump-merge, measuring score 7 / build_insns 211 on this chassis.
+- mechanism: a full argument setup plus call is five insns, so the arm after the conditional jump is not the single insn that GCC 2.7.2's jump.c store-flag transform requires (tools/gcc-2.7.2/jump.c:1066) - the branchless fold is blocked and the real branch with per-arm $a0 survives. The surplus comes from jump2 cross-jumping: tools/gcc-2.7.2/jump.c:2005 tries find_cross_jump against the code before the jump's own label with minimum=1 first, succeeds on the one shared `jal func_8005C650` the field67 path falls into, and therefore never reaches the sibling-jump pairing at tools/gcc-2.7.2/jump.c:2011-2021 that would merge the two arms' `li a1,127 / j / li a2,127` tails with each other.
+- probe: four spellings swept with tools/sweep_variants.py (plain if/else, polarity-swapped, and both early-goto orderings) - tmp/grind/func_800747D8/s5/var/; the winning form's sandbox object disassembled with mipsel-linux-gnu-objdump and compared insn-by-insn against asm/funcs/func_800747D8.s:108-118.
+- result: all four measure score 7, build_insns 211 (baseline 6 / 208). The register seat is CORRECT in all four - hunk 17 (`lbu a0` vs target `lbu v0`) disappears from `--diff` entirely and the scored residual becomes 3 source-level hunks that are purely the duplicated tail. Banked: rejected/selection_sound-duplicated-call-into-arms.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis, src/text1b.c, sandbox --disable all; zero FAKE constructs in any of the four spellings.
+
+### H12 - every single-call two-constant select folds branchless (store-flag transform)
+- statement: Every single-call spelling of the selection_sound block that selects between the constants 4 and 0 into a pseudo distinct from the loaded test value is folded branchless to `lbu / sltiu / sll` by GCC 2.7.2's jump.c store-flag transform and measures score 10 / build_insns 205, because the transform's admitting disjunct fires whenever either selected constant is zero and one of {4, 0} always is.
+- mechanism: tools/gcc-2.7.2/jump.c:1166-1197, the block commented "That didn't work, try a store-flag insn", admitted by the disjunct at tools/gcc-2.7.2/jump.c:1190-1191 - `(reversep = 0, temp2 == const0_rtx) || (temp3 == const0_rtx && (reversep = can_reverse_comparison_p (temp4, insn)))`. Reversing the arms only flips which of the two disjuncts fires, so branch polarity and which arm holds which literal are both irrelevant.
+- probe: twelve spellings measured identically at 10/205 - s1 H3/H4/H5 and the s2 mechanism form (already banked), plus nine NEW this session swept with tools/sweep_variants.py: `sound = 0; if (field64 == 0) sound = 4;`, a ternary in the call argument, a `switch (field64)` with case 0 / default arms, `sound = 4; if (field64 != 0) sound = 0;` with the field tested directly and no intermediate local, a `u8` (QImode) result variable, and reuse of the already-live locals `state` (three orderings) and `ret`. Variant sources: tmp/grind/func_800747D8/s5/var/, var2/, var3/.
+- result: all twelve identical at score 10, build_insns 205 (3 short of target's 208). The QImode and switch spellings were specifically chosen to try to fail the transform's mode and control-flow-shape requirements; both fold anyway. Banked: rejected/selection_sound-distinct-pseudo-store-flag-fold-class.c.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/jump.c:1190
+- measured_on: candidate.c floor-6 chassis, src/text1b.c, sandbox --disable all; zero FAKE constructs in any of the twelve spellings.
+
+### H13 - declaration-shape levers on the surviving same-variable chassis are inert
+- statement: On the floor-6 same-variable chassis, introducing a pointer local for the menu base (`S_800747D8 *m = MENU_800747D8; s32 sound = m->field64;`) or hoisting `s32 sound;` out of the inner block into the function-scope declaration list leaves the score and the instruction count unchanged at 6 / 208.
+- mechanism: neither change alters the def-use chain that decides the hunk-17 seat - the loaded value still flows into the same pseudo that becomes the call argument, so local-alloc still seats it in $a0.
+- probe: tmp/grind/func_800747D8/s5/var2/b10_pointer_local.c and b5_fnscope_decl.c, swept with tools/sweep_variants.py against the floor-6 baseline.
+- result: both score 6, build_insns 208 - exact ties with the baseline, no improvement and no regression. Recorded as neutral ties rather than banked as rejected forms; a future session should not spend a measurement on either again.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis, src/text1b.c, sandbox --disable all; zero FAKE constructs.
+
+## Live frontier (reset by s5 - supersedes the s1-s4 frontier)
+
+1. **The 211 form's missed cross-jump merge is the shortest path to 208 with
+   target's register seat.** The duplicated-call form is already
+   byte-correct through the branch and the per-arm `$a0`; it is exactly 3
+   insns over because the two arms' identical `li a1,127 / j <jal> /
+   li a2,127` tails never merge. tools/gcc-2.7.2/jump.c carries a
+   pre-existing, codegen-inert diagnostic knob for precisely this question
+   (jump.c:66-89, `BB2_XJUMP_DEBUG=1`, prints
+   `XJDBG: DO_CROSS_JUMP jump=N newjpos=N newlpos=N`). NEXT PROBE: compile
+   the duplicated-call form with that env var set, capture the trace, and
+   determine whether any source-level change to which block physically
+   precedes the shared `jal func_8005C650` (e.g. the relative order of the
+   selection_sound path and the field67 paths, or whether the field67
+   paths' own calls are spelled so they do not present a minimum=1 match)
+   flips jump.c:2005's shallow-merge preference and lets the sibling-jump
+   pairing at jump.c:2011-2021 run instead.
+
+2. **The only clause of the store-flag transform a C author can still fail
+   is jump.c:1066** (the arm after the conditional jump must be exactly one
+   insn followed by the join label; `next_nonnote_insn` does NOT skip a
+   CODE_LABEL, so a label sitting between the conditional jump and the
+   constant store also fails it). NEXT PROBE: enumerate C shapes that put a
+   real, non-dead second insn or a genuinely-referenced label between the
+   conditional jump and the `sound = 0` store - the most promising being a
+   restructuring in which the zero arm is a shared join target for another
+   real `func_8005C650(0, 0x7F, 0x7F)` site that already exists in this
+   function (the `ret >> 16` case 1/case 2 arms, or the field67 case 1/2
+   blocks). Do NOT add a statement that exists only to occupy the slot -
+   that is a dead-store/pad cheat and would be a first reach of an
+   unsanctioned family.
+
+3. **Hunk 9's jtbl_80015A0C table-offset residual is unchanged and remains
+   a final-submission integration step, not a C lever** (s2 established the
+   mechanism and the func_8006B578/jtbl_80015988 precedent). NEXT PROBE: at
+   final-submission assembly time, delete the hand-transcribed
+   `jtbl_80015A0C` array from src/text1a_b_mid_rodata.c in the same change
+   that lands func_800747D8's C body, then re-measure with
+   `sandbox --disable all --diff`.
+
+## [s5] Writing the selection_sound block as two separate calls, one per arm (if (MENU_800747D8->field64 == 0) { func_8005C650(4, 0x7F, 0x7F); } else { func_8005C650(0, 0x7F, 0x7F); }), makes the field64 load land in $v0 with $a0 materialized separately in each arm - target's exact shape - but measures score 7 / build_insns 211 on this chassis because the two arms' identical argument-setup tails do not cross-jump-merge with each other.
+- mechanism: A full argument setup plus call is five insns, so the arm after the conditional jump is not the single insn that GCC 2.7.2's jump.c store-flag transform requires (tools/gcc-2.7.2/jump.c:1066); the branchless fold is blocked and the real branch with per-arm $a0 survives. The 3 surplus insns come from jump2 cross-jumping: tools/gcc-2.7.2/jump.c:2005 tries find_cross_jump against the code before the jump's own label with minimum=1 FIRST, succeeds on the single shared `jal func_8005C650` that the field67 path falls into, and therefore never reaches the sibling-jump pairing at tools/gcc-2.7.2/jump.c:2011-2021 that would merge the two arms' `li a1,127 / j / li a2,127` tails.
+- probe: Four spellings swept with tools/sweep_variants.py (plain if/else, polarity-swapped, and both early-goto orderings) - tmp/grind/func_800747D8/s5/var/; the form's sandbox object disassembled with mipsel-linux-gnu-objdump and compared insn-by-insn against asm/funcs/func_800747D8.s:108-118.
+- result: All four measure score 7, build_insns 211 (baseline 6 / 208). The register seat is CORRECT in all four: hunk 17 (ours `lbu a0,100(v0)` vs target `lbu v0,0x64(v0)`) disappears from --diff entirely, and the scored residual becomes the 3 duplicated tail instructions. Banked as memory/grind/func_800747D8/rejected/selection_sound-duplicated-call-into-arms.c with the full disassembly comparison in its header. This is the first spelling in five sessions to reproduce target's v0/a0 split.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c, sandbox --disable all; zero FAKE constructs in any of the four spellings
+
+## [s5] Every single-call spelling of the selection_sound block that selects between the constants 4 and 0 into a pseudo distinct from the loaded test value is folded branchless to lbu/sltiu/sll and measures score 10 / build_insns 205, because GCC 2.7.2's jump.c store-flag transform is admitted whenever either selected constant is const0_rtx and one of {4, 0} always is.
+- mechanism: tools/gcc-2.7.2/jump.c:1166-1197, the block commented "That didn't work, try a store-flag insn", admitted by the disjunct at tools/gcc-2.7.2/jump.c:1190-1191: `(reversep = 0, temp2 == const0_rtx) || (temp3 == const0_rtx && (reversep = can_reverse_comparison_p (temp4, insn)))`. Swapping the arms only flips which disjunct fires, so branch polarity and which arm holds which literal are both irrelevant.
+- probe: Twelve spellings measured identically at 10/205: s1 H3/H4/H5 and the s2 mechanism form (re-measured this session), plus nine new ones swept with tools/sweep_variants.py - `sound = 0; if (field64 == 0) sound = 4;`, a ternary in the call argument, a `switch (field64)` with case 0 / default arms, `sound = 4; if (field64 != 0) sound = 0;` with the field tested directly and no intermediate local, a u8 (QImode) result variable, and reuse of the already-live locals `state` (three orderings) and `ret`. Variant sources: tmp/grind/func_800747D8/s5/var/, var2/, var3/.
+- result: All twelve identical at score 10, build_insns 205 (3 short of target's 208). The QImode and switch spellings were chosen specifically to try to fail the transform's mode and control-flow-shape requirements; both fold anyway. Banked as memory/grind/func_800747D8/rejected/selection_sound-distinct-pseudo-store-flag-fold-class.c. The banked floor-6 baseline escapes the transform only because its result variable's prior value is the load (not a CONST_INT) and the arm immediately after the conditional jump assigns 4 (not zero) - which is exactly what forces the load into $a0 and keeps hunk 17 open.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c, sandbox --disable all; zero FAKE constructs in any of the twelve spellings
+- predicate_cite: tools/gcc-2.7.2/jump.c:1190
+
+## [s5] On the floor-6 same-variable chassis, introducing a pointer local for the menu base (S_800747D8 *m = MENU_800747D8; s32 sound = m->field64;) or hoisting `s32 sound;` out of the inner block into the function-scope declaration list leaves both the score and the instruction count unchanged at 6 / 208.
+- mechanism: Neither change alters the def-use chain that decides the hunk-17 seat - the loaded value still flows into the same pseudo that becomes the call argument, so local-alloc still seats it in $a0.
+- probe: tmp/grind/func_800747D8/s5/var2/b10_pointer_local.c and b5_fnscope_decl.c, swept with tools/sweep_variants.py against the floor-6 baseline.
+- result: Both score 6, build_insns 208 - exact ties with the baseline, no improvement and no regression. Recorded as neutral ties in the ledger rather than banked as rejected forms; a future session should not spend a measurement on either again.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c, sandbox --disable all; zero FAKE constructs
+
+## [s5] The mandated kill re-audit finds every instance kill in this ledger still valid: the ledger has never contained a /* FAKE */ construct, so tools/fake_ablate.py has nothing to ablate, and direct re-measurement of the two closest-to-target kills on the current chassis reproduces their banked figures exactly.
+- mechanism: n/a - this is a re-measurement audit, not a codegen lever.
+- probe: Grepped candidate.c and all seven banked rejected forms for FAKE annotations (none present), then re-measured s1/H4 (default-then-override) as tmp/grind/func_800747D8/s5/var2/b2_default4_direct_test.c and tmp/grind/func_800747D8/s5/var/v3_zero_default_override.c (both polarities) and s1/H5 (single-shot-no-intermediate, covered by the same class sweep) on the live chassis.
+- result: Chassis re-confirmed at the dispatch value (score 6, build_insns 208 == target_insns 208, same 30-hunk classification). Both re-measured kills reproduce score 10 / build_insns 205 exactly. No kill in this ledger was measured with a FAKE carrier occupying a target pseudo, so the func_8002EA24-s8 failure mode the re-audit guards against does not apply here.
+- verdict: CONFIRMED
