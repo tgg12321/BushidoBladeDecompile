@@ -1058,3 +1058,13 @@ journal.
 - [s10] This is an INTEGRATION HANDOFF, not exhaustion and not an endgame lock: the function is solved, the floor is 0, and the only remaining surface is operator-only by construction (owner_cluster_grants.txt header lines 7-8). The operator still runs a fresh layer-2 cheat-reviewer on the C before acceptance; a Judge PASS is not a guarantee of acceptance.
 
 - [s10] Why this session did NOT spend a Judge cycle on a resubmission: all three inputs the merge gate reads were measured directly this session and every one of them is unchanged from the state that produced the four prior MERGE REFUSED cycles, so a candidate-ready would have reached the identical known refusal. That is precisely the waste the owner named on 2026-09-15 ('a full execution session plus a Judge cycle to reach the identical refusal').
+
+- [s11] tools/grinder/owner_cluster_grants.txt contains no func_80018094 row as of 2026-09-20 (grep empty).
+
+- [s11] docs/grind/owner_actions.md:10-11 carries the '2026-09-20 — func_80018094 — merge-refused-islands' OPEN entry stating the exact remedy row text and that bytes are already proven (sandbox 0/153, full-tree SHA1 match); this entry is committed at c1a2311b5, not left uncommitted.
+
+- [s11] Driver chassis check at dispatch measured memory/grind/func_80018094/candidate.c at distance 0, matching the ledger's s10 floor.
+
+- [s11] Judge constraints in this brief are explicit and current-dated (2026-09-15 refusal of pipeline-grantability) — no scope supersedes them this session.
+
+- [s11] git status --short shows only metrics/events.jsonl modified (pre-existing, unrelated to this session) — no src/ or ledger dirt introduced.
