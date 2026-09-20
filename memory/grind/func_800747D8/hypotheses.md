@@ -353,3 +353,250 @@ Banked: `rejected/selection_sound-single-shot-no-intermediate.c`.
 - probe: Grepped candidate.c and all seven banked rejected forms for FAKE annotations (none present), then re-measured s1/H4 (default-then-override) as tmp/grind/func_800747D8/s5/var2/b2_default4_direct_test.c and tmp/grind/func_800747D8/s5/var/v3_zero_default_override.c (both polarities) and s1/H5 (single-shot-no-intermediate, covered by the same class sweep) on the live chassis.
 - result: Chassis re-confirmed at the dispatch value (score 6, build_insns 208 == target_insns 208, same 30-hunk classification). Both re-measured kills reproduce score 10 / build_insns 205 exactly. No kill in this ledger was measured with a FAKE carrier occupying a target pseudo, so the func_8002EA24-s8 failure mode the re-audit guards against does not apply here.
 - verdict: CONFIRMED
+
+## Session 6 (solver)
+
+### H14 - the duplicated-call form's polarity is a lever
+**Statement:** writing the duplicated-call form with the inverted test
+(`if (MENU_800747D8->field64 != 0) func_8005C650(0, ...); else
+func_8005C650(4, ...);`) changes the emitted selection-sound block relative to
+the banked `== 0` / 4-first spelling, because target's `beqz` is the opposite
+sense of what the banked form emits.
+**Mechanism:** `expand` emits `jumpifnot(cond)`, so the source arm order
+decides which arm is the fallthrough and which is the branch target, and
+reorg's `steal_delay_list_from_target` fills the delay slot from the target
+thread - so the arm order should decide the delay-slot content.
+**Probe:** variant A (`tmp/grind/func_800747D8/s6/var_A.c`) measured against
+variant C (`var_C.c`, the banked spelling re-measured), both spliced onto
+candidate.c's chassis on src/text1b.c, `sandbox --disable all`.
+**Result:** variant A score 7 / build_insns 211; variant C score 7 /
+build_insns 211. Identical figures. GCC canonicalises the branch sense before
+the shape is decided, so the source arm order is inert here.
+**Verdict:** KILLED
+**kill_scope:** instance
+**measured_on:** candidate.c floor-6 chassis applied to src/text1b.c with the
+selection_sound block replaced by each spelling; zero FAKE constructs in
+either form.
+**Banked as:** rejected/selection_sound-dup-call-inverted-polarity.c
+
+### H15 - the last unmeasured polarity of the single-call distinct-local regime
+**Statement:** the single-call form with a fresh distinct local and the ZERO
+arm written FIRST (`if (field64 != 0) sound = 0; else sound = 4;`) escapes the
+205 fold, because its `sound = 4` sits in the branch-target arm rather than in
+the fallthrough arm.
+**Mechanism:** the store-flag gate at `tools/gcc-2.7.2/jump.c:1042-1066` keys
+`temp` on `next_nonnote_insn (insn)`, the FALLTHROUGH arm's insn, so putting
+the non-zero constant in the other arm should change which constant becomes
+temp2.
+**Probe:** variant B (`tmp/grind/func_800747D8/s6/var_B.c`) on the floor-6
+chassis; `sandbox --disable all`, then objdump of the sandbox object, then a
+full `-da` dump pair via `pwsh tools/grinder/dump.ps1 func_800747D8`.
+**Result:** score 10, build_insns 205; objdump shows `sltiu a0,a0,1 /
+sll a0,a0,2` at c7a4/c7ac - the 205 regime. The dumps explain why the polarity
+cannot matter: `tools/gcc-2.7.2/jump.c:726-860` NORMALISES the two-arm form to
+`x = b; if (c) x = a;` before the store-flag gate is ever consulted. In
+`text1b.rtl` (function at 69695) the arms are insn 282 (`r140 = 0`) and insn
+290 (`r140 = 4`); in `text1b.jump` (function at 66301) insn 290 is gone and a
+NEW insn 622 (`r140 = 4`) sits before the conditional jump.
+**Verdict:** KILLED
+**kill_scope:** instance
+**measured_on:** candidate.c floor-6 chassis applied to src/text1b.c; zero
+FAKE constructs.
+**Banked as:** rejected/selection_sound-distinct-local-zero-arm-first.c
+
+### H16 - the 205 fold's admitting gate is temp3 == CONST_INT, not the const0 disjunct
+**Statement:** every single-call spelling of this two-constant select whose
+arms are one insn each and whose test does not reference the result variable
+folds to the store-flag sequence, because `tools/gcc-2.7.2/jump.c:726-860`
+first rewrites the two-arm form into `x = 4; if (c) x = 0;` and the rewritten
+`x = 4` then makes `reg_set_last` return CONST_INT 4, which is the only
+disjunct of the store-flag gate that MIPS/R3000 can satisfy.
+**Mechanism:** `tools/gcc-2.7.2/jump.c:1178-1181` admits the transform on
+`GET_CODE (temp3) == CONST_INT`, else on `(BRANCH_COST >= 2 && temp2 ==
+const0_rtx) || BRANCH_COST >= 3`. `tools/gcc-2.7.2/config/mips/mips.h:2937`
+defines BRANCH_COST as 2 only for PROCESSOR_R4000 / PROCESSOR_R6000 and 1
+otherwise, so on our R3000 both fallbacks are dead and `temp3 == CONST_INT` is
+the sole door. `temp3` comes from `reg_set_last (temp1, insn)` at
+`tools/gcc-2.7.2/jump.c:1061`.
+**Probe:** read the gate and mips.h; then confirmed the two-pass sequence in
+the `-da` dumps for variant B (text1b.rtl insn 282/290 vs text1b.jump insn 622
+plus the emitted `xor / ltu / neg / and 4` at insns 629-635); cross-checked
+against the fourteen spellings this ledger has measured in the 205 bucket
+(s1 H3/H4/H5, s2, s5 v3/v4/b1/b2/b11/c1/c2/c3/c4, s6 variant B) - all
+identical at 10/205.
+**Result:** CONFIRMED as the mechanism. Recorded as a CLASS kill of the
+single-call two-constant select whose arms are one insn each: the gate is
+structural, not spelling-dependent, so no further respelling inside that shape
+is worth a measurement. The escape is NOT a different spelling of the select -
+it is making reg_set_last unable to return a CONST_INT (H17).
+**Verdict:** KILLED
+**kill_scope:** class
+**measured_on:** fourteen spellings across s1/s2/s5/s6, all on the floor-6
+chassis applied to src/text1b.c, all with zero FAKE constructs; plus the
+`-da` dump pair for variant B.
+**predicate_cite:** tools/gcc-2.7.2/jump.c:1178
+
+### H17 - reg_set_last's label-stop escapes the fold and recovers target's register seat
+**Statement:** hoisting the default `sound = 4;` ABOVE the `selection_sound:`
+CODE_LABEL makes the store-flag transform fail, and the resulting branchy form
+emits target's register seat (`lbu v0,0x64(v0)`) and target's branch
+(`beqz v0`) at target's instruction count.
+**Mechanism:** `reg_set_last` (`tools/gcc-2.7.2/rtlanal.c:886-888`) scans
+backwards from the conditional jump and "Stop[s] when we reach a label",
+returning 0. With `sound = 4;` on the far side of the label, temp3 becomes the
+REG itself rather than CONST_INT, and the gate at
+`tools/gcc-2.7.2/jump.c:1178-1181` fails for BRANCH_COST 1 (H16). The block
+then survives as a real branch, and with $a0 carrying the default the loaded
+test byte is free to live in $v0.
+**Probe:** variant F (`tmp/grind/func_800747D8/s6/var_F.c`): `s32 sound;` moved
+to the function-scope declaration list, `sound = 4;` placed at the top of
+`case 0:` (above the inner `switch` and above the `selection_sound:` label),
+and the block reduced to `if (field64 != 0) sound = 0;` + the single call.
+`sandbox --disable all` plus `--diff` (tmp/grind/func_800747D8/s6/diff_F.txt)
+plus objdump of the sandbox object.
+**Result:** score 8, build_insns 208 (== target_insns). CONFIRMED on the two
+bytes that matter: hunk 17 now reads `lbu v0,0x64(v0)`, matching target
+exactly, and the branch reads `beqz v0,<join>`, matching target exactly (the
+floor-6 baseline emits `lbu a0,0x64(v0)` / `bnez a0,<join>`). The form
+REGRESSES the score to 8 for a placement reason only: `sound = 4;` is now in a
+different basic block from the branch, so reorg's backward
+`fill_simple_delay_slots` cannot reach it - the branch's delay slot gets
+`li a1,127` stolen from the target thread, the orphaned `li a0,4` lands in the
+switch-dispatch delay slot at c734 (hunk 10, an insn target lacks), and $a0
+pinned live across the field65 block pushes that block's `lbu`/`bne`/`addiu`
+onto $a1 (hunks 13/14, 3 operand-only diffs the baseline lacks).
+**Verdict:** CONFIRMED (as the mechanism and as the best-shape form); KILLED as
+a floor improvement.
+**kill_scope:** instance
+**measured_on:** candidate.c floor-6 chassis applied to src/text1b.c with
+`sound` hoisted to function scope; zero FAKE constructs.
+**Banked as:** rejected/selection_sound-default-hoisted-above-label.c
+
+### H18 - moving `goto confirm` into the arms gives the duplicated-call arms a private join
+**Statement:** writing the duplicated-call form with the `goto confirm;` inside
+each arm instead of after the if/else gives the two arms a private join label,
+which lets the minimum=1 own-label `find_cross_jump` match the arms against
+each other three insns deep instead of matching each separately against
+case 2's call.
+**Mechanism:** `tools/gcc-2.7.2/jump.c:2005` tries
+`find_cross_jump (insn, JUMP_LABEL (insn), 1, ...)` first; the depth of that
+match is decided by what physically precedes the jump's own label, so changing
+the label the arms jump to changes the match depth.
+**Probe:** variant E (`tmp/grind/func_800747D8/s6/var_E.c`) on the floor-6
+chassis; `sandbox --disable all`.
+**Result:** score 7, build_insns 211 - identical to both if/else spellings of
+the duplicated-call form. GCC's jump-to-jump tensioning threads both arm jumps
+straight through to `confirm` in the FIRST jump pass, long before jump2's
+cross-jumping runs, so the arms never get a private join label from this
+source change.
+**Verdict:** KILLED
+**kill_scope:** instance
+**measured_on:** candidate.c floor-6 chassis applied to src/text1b.c; zero
+FAKE constructs.
+**Banked as:** rejected/selection_sound-dup-call-early-return-spelling.c
+
+### H19 - the duplicated-call form's missed arm-to-arm merge, mechanism proved
+**Statement:** the duplicated-call form's 3-insn surplus is the two arms'
+`li a1,127 / li a2,127 / jal` tails failing to cross-jump-merge with each
+other, and the reason is that the minimum=1 own-label attempt at
+`tools/gcc-2.7.2/jump.c:2005` wins first with a one-insn match against case 2's
+call and retargets both arm jumps to a label `do_cross_jump` created, after
+which the sibling-jump pairing loop cannot see them.
+**Mechanism:** `tools/gcc-2.7.2/jump.c:2011-2021` runs the sibling-jump loop
+only when the own-label attempt returned `newjpos == 0`, and only when
+`INSN_UID (JUMP_LABEL (insn)) < max_uid`; `do_cross_jump` creates its merge
+label with a fresh uid above `max_uid` and (unlike the condjump path at
+jump.c:1982-1989) never adds the retargeted simplejump to `jump_chain`.
+**Probe:** the s5 frontier's named probe - the codegen-inert BB2_XJUMP_DEBUG
+knob (`tools/gcc-2.7.2/jump.c:66-89`) run through the INSTRUMENTED cc1
+(`tools/gcc-2.7.2/cc1`) on variant A, trace captured to
+`tmp/grind/func_800747D8/s6/dumps/xjdbg.txt`, with insn uids resolved from
+`tmp/grind/func_800747D8/s6/dumps/text1b.sched2` (function at 106432).
+**Result:** CONFIRMED verbatim. Trace lines 1855-1870 show
+`enter e1=288 e2=424 min=1 (own-label)` / `MATCH i1=286 i2=418 parallel` /
+`result ... => WIN` / `DO_CROSS_JUMP jump=288 newjpos=286 newlpos=418`, and the
+same for e1=304. jump_insn 288/304 are the two arms' `goto confirm`;
+code_label 424 is `confirm`; call_insn 418 is case 2's call, which falls
+through into `confirm` and is therefore the insn preceding that label. After
+the retarget both jumps point at uid 660, and the trace contains ZERO
+`chain-partner` entries for e1=288 or e1=304 in any `while (changed)`
+iteration - while e1=369 (case 1's jump, still on the original label 424)
+merges 8 insns deep in the same trace.
+**Verdict:** CONFIRMED
+**kill_scope:** n/a (not a kill)
+**measured_on:** variant A applied to src/text1b.c, instrumented cc1 with
+BB2_XJUMP_DEBUG=1; zero FAKE constructs.
+
+### H20 - sibling sweep (dispatch-flagged UNSPENT siblings)
+**Statement:** the two siblings the dispatch flagged as never mentioned by this
+ledger (`main` in src/ings.c, `func_800692C0` in src/text1b.c) carry a spelling
+this residual can transplant.
+**Mechanism:** n/a - inheritance check, not a codegen lever.
+**Probe:** func_800692C0 is this function's CALLEE and is already COMPLETED-C
+on main; checked that candidate.c's call site matches the prototype main ships
+(`func_800692C0((u32 *)&sp10, 0, (s16 *)(base + 0x40), &D_800A35D0)` - it
+does, and the floor-6 build reproduces target's argument setup with no diff in
+that region). `main`/ings.c shares no basic block with this function; it names
+func_800747D8 only through the text1b/ings call graph.
+**Result:** no transplantable block in either sibling. Recorded so a later
+session does not re-sweep them.
+**Verdict:** KILLED
+**kill_scope:** instance
+**measured_on:** candidate.c floor-6 chassis applied to src/text1b.c, compared
+against the committed bodies of func_800692C0 and src/ings.c on main; zero FAKE
+constructs.
+
+## [s6] The single-call two-constant select folds to the store-flag sequence because tools/gcc-2.7.2/jump.c:726-860 first rewrites the two-arm form into `x = 4; if (c) x = 0;` and the rewritten `x = 4` then makes reg_set_last return CONST_INT 4, which is the only disjunct of the store-flag gate that an R3000 BRANCH_COST of 1 can satisfy; no respelling of the select inside that shape (one-insn arms, test not referencing the result variable) avoids it.
+- mechanism: tools/gcc-2.7.2/jump.c:1178-1181 admits the transform on GET_CODE (temp3) == CONST_INT, else on (BRANCH_COST >= 2 && temp2 == const0_rtx) || BRANCH_COST >= 3. tools/gcc-2.7.2/config/mips/mips.h:2937 defines BRANCH_COST as 2 only for PROCESSOR_R4000 / PROCESSOR_R6000 and 1 otherwise, so on our R3000 both fallbacks are dead and temp3 == CONST_INT is the sole door. temp3 comes from reg_set_last (temp1, insn) at tools/gcc-2.7.2/jump.c:1061, and jump.c:726-860 guarantees a CONST_INT is sitting there.
+- probe: Read the gate and mips.h; then confirmed the two-pass sequence in the -da dumps for variant B via `pwsh tools/grinder/dump.ps1 func_800747D8`: in tmp/grind/func_800747D8/dumps/text1b.rtl (function at line 69695) the arms are insn 282 (r140 = 0) and insn 290 (r140 = 4); in text1b.jump (function at 66301) insn 290 is GONE and a NEW insn 622 (r140 = 4) sits before the conditional jump, followed by the emitted xor / ltu / neg / and 4 at insns 629-635. Cross-checked against the fourteen spellings this ledger has measured in that bucket (s1 H3/H4/H5, s2, s5 v3/v4/b1/b2/b11/c1/c2/c3/c4, s6 variant B).
+- result: All fourteen measure sandbox --disable all score 10, build_insns 205, emitting sltiu a0,a0,1 / sll a0,a0,2. This REFINES the s5 attribution, which credited jump.c:1190-1191 (either selected constant is const0_rtx): that clause is necessary but not sufficient, and naming the real gate is what identified the escape (reg_set_last must be unable to return a CONST_INT), which the next hypothesis then spells and measures.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c across fourteen spellings spanning sessions 1, 2, 5 and 6; zero FAKE constructs in any of them; plus the -da dump pair for variant B.
+- predicate_cite: tools/gcc-2.7.2/jump.c:1178
+
+## [s6] Hoisting the default `sound = 4;` above the `selection_sound:` CODE_LABEL defeats the store-flag transform via reg_set_last's label-stop, and the surviving branchy form emits target's register seat `lbu v0,0x64(v0)` and target's branch `beqz v0,<join>` at target's instruction count; it does not lower the floor, because the assignment then sits in a different basic block from the branch.
+- mechanism: reg_set_last (tools/gcc-2.7.2/rtlanal.c:867-916) scans backwards from the conditional jump and stops at a CODE_LABEL, returning 0, so temp3 becomes the REG rather than CONST_INT and the gate at tools/gcc-2.7.2/jump.c:1178-1181 fails for BRANCH_COST 1. The same label stops reorg's backward fill_simple_delay_slots, so the branch's delay slot is filled from the target thread instead.
+- probe: Variant F (tmp/grind/func_800747D8/s6/var_F.c): `s32 sound;` moved to the function-scope declaration list, `sound = 4;` placed at the top of `case 0:` above both the inner switch and the selection_sound label, and the block reduced to `if (MENU_800747D8->field64 != 0) sound = 0;` plus the single call. Measured with sandbox --disable all, then --diff (tmp/grind/func_800747D8/s6/diff_F.txt), then objdump of tmp/sandbox/func_800747D8/text1b.o.
+- result: score 8, build_insns 208 (== target_insns 208). CONFIRMED on the two bytes that matter: hunk 17 reads `lbu v0,0x64(v0)`, matching target exactly, and the branch reads `beqz v0,<join>`, matching target exactly - the floor-6 baseline emits `lbu a0,0x64(v0)` / `bnez a0,<join>`. This is the first form in six sessions to close either. The regression to 8 is placement only: the branch's delay slot gets `li a1,127` stolen from the target thread where target has `li a0,4`; the orphaned `li a0,4` lands in the switch-dispatch delay slot at c734 (an insn target does not have); and with $a0 pinned live across the field65 block that block's lbu/bne/addiu shift to $a1 (3 operand-only diffs the baseline does not have). Banked as rejected/selection_sound-default-hoisted-above-label.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c with `sound` hoisted to the function-scope declaration list; zero FAKE constructs.
+
+## [s6] The duplicated-call form's 3-insn surplus is the two arms' `li a1,127 / li a2,127 / jal` tails failing to cross-jump-merge with each other, because the minimum=1 own-label find_cross_jump at tools/gcc-2.7.2/jump.c:2005 wins first with a one-insn match against case 2's call and retargets both arm jumps to a label do_cross_jump created, after which the sibling-jump pairing loop cannot see them.
+- mechanism: tools/gcc-2.7.2/jump.c:2011-2021 runs the sibling-jump loop only when the own-label attempt returned newjpos == 0, and only when INSN_UID (JUMP_LABEL (insn)) < max_uid (tools/gcc-2.7.2/jump.c:2012); do_cross_jump creates its merge label with a fresh uid above max_uid and, unlike the condjump path at jump.c:1982-1989, never adds the retargeted simplejump to jump_chain.
+- probe: Ran the s5 frontier's named probe: the codegen-inert BB2_XJUMP_DEBUG knob (tools/gcc-2.7.2/jump.c:66-89) through the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1) on variant A, capturing tmp/grind/func_800747D8/s6/dumps/xjdbg.txt, with insn uids resolved from tmp/grind/func_800747D8/s6/dumps/text1b.sched2 (function at line 106432).
+- result: CONFIRMED verbatim. Trace lines 1855-1870: `enter e1=288 e2=424 min=1 (own-label)` / `MATCH i1=286 i2=418 parallel min->0` / `PAT-MISMATCH i1=284 set(reg<-127) vs i2=409 set` / `result e1=288 min=0 last1=286 => WIN` / `DO_CROSS_JUMP jump=288 newjpos=286 newlpos=418`, and the identical sequence for e1=304. jump_insn 288/304 are the two arms' `goto confirm`; code_label 424 is `confirm`; call_insn 418 is case 2's func_8005C650 call, which falls through into confirm and is therefore the insn preceding that label. After the retarget both jumps point at uid 660 and the trace contains ZERO `chain-partner` entries for e1=288 or e1=304 in any `while (changed)` iteration - while e1=369 (case 1's jump, still on the original label 424) merges 8 insns deep in the same trace.
+- verdict: CONFIRMED
+
+## [s6] Writing the duplicated-call form with the inverted test (`if (field64 != 0) func_8005C650(0, ...); else func_8005C650(4, ...);`) changes the emitted selection-sound block relative to the banked `== 0` / 4-first spelling.
+- mechanism: expand emits jumpifnot(cond), so the source arm order decides which arm is the fallthrough and which is the branch target, and reorg's steal_delay_list_from_target fills the delay slot from the target thread - so the arm order should decide the delay-slot content and the branch sense.
+- probe: Variant A (tmp/grind/func_800747D8/s6/var_A.c) measured against variant C (var_C.c, the banked spelling re-measured this session), both spliced onto candidate.c's chassis on src/text1b.c, sandbox --disable all; plus the full classed --diff for variant A (tmp/grind/func_800747D8/s6/diff_A_full.txt) and objdump of the sandbox object.
+- result: Variant A score 7 / build_insns 211; variant C score 7 / build_insns 211 - the same figures. GCC canonicalises the branch sense before the shape is decided. This extends the session-2 polarity kill, which was measured on the same-variable floor-6 chassis, to the duplicated-call chassis. Banked as rejected/selection_sound-dup-call-inverted-polarity.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block replaced by each spelling; zero FAKE constructs in either form.
+
+## [s6] Writing the duplicated-call form with the `goto confirm;` inside each arm instead of after the if/else gives the two arms a private join label, letting the minimum=1 own-label find_cross_jump match the arms against each other three insns deep instead of matching each separately against case 2's call.
+- mechanism: tools/gcc-2.7.2/jump.c:2005 tries find_cross_jump (insn, JUMP_LABEL (insn), 1, ...) first, and the depth of that match is decided by what physically precedes the jump's own label, so changing the label the arms jump to should change the match depth.
+- probe: Variant E (tmp/grind/func_800747D8/s6/var_E.c) on the floor-6 chassis; sandbox --disable all.
+- result: score 7, build_insns 211 - identical to both if/else spellings of the duplicated-call form. GCC's jump-to-jump tensioning threads both arm jumps straight through to `confirm` in the first jump pass, long before jump2's cross-jumping runs, so the arms never get a private join label from this source change. Banked as rejected/selection_sound-dup-call-early-return-spelling.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c; zero FAKE constructs.
+
+## [s6] The single-call form with a fresh distinct local and the ZERO arm written FIRST (`if (field64 != 0) sound = 0; else sound = 4;`) escapes the 205 fold, because its `sound = 4` sits in the branch-target arm rather than the fallthrough arm.
+- mechanism: the store-flag gate at tools/gcc-2.7.2/jump.c:1042-1066 keys temp on next_nonnote_insn (insn), the fallthrough arm's insn, so putting the non-zero constant in the other arm should change which constant becomes temp2.
+- probe: Variant B (tmp/grind/func_800747D8/s6/var_B.c) on the floor-6 chassis; sandbox --disable all, objdump of the sandbox object, and a full -da dump pair.
+- result: score 10, build_insns 205; objdump shows sltiu a0,a0,1 / sll a0,a0,2 at c7a4/c7ac. The last unmeasured natural polarity of that regime now joins the other thirteen. Banked as rejected/selection_sound-distinct-local-zero-arm-first.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c; zero FAKE constructs.
+
+## [s6] The two siblings the dispatch flagged as UNSPENT (`main` in src/ings.c and func_800692C0 in src/text1b.c) carry a spelling this residual can transplant.
+- mechanism: n/a - inheritance check, not a codegen lever.
+- probe: func_800692C0 is this function's callee and is already COMPLETED-C on main; checked candidate.c's call site against the prototype main ships - func_800692C0((u32 *)&sp10, 0, (s16 *)(base + 0x40), &D_800A35D0) - and the floor-6 build already reproduces target's argument setup for it with no diff in that region. Compared src/ings.c's matched body for any shared basic block with this function.
+- result: No transplantable block in either sibling: func_800692C0 shares only a call boundary that already matches, and ings.c/main shares no block - it names func_800747D8 only through the text1b/ings call graph. Recorded so a later session does not re-sweep them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c, compared against the committed bodies of func_800692C0 and src/ings.c on main; zero FAKE constructs.

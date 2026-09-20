@@ -401,3 +401,168 @@ into, so the deeper 3-insn arm-to-arm merge target shows is never tried.
 - [s5] Hunk 9's jtbl_80015A0C table-offset residual is unchanged and remains a cross-file final-submission step (delete the hand-transcribed array from src/text1a_b_mid_rodata.c in the same change that lands the C body), per the s2 analysis and the executed func_8006B578/jtbl_80015988 precedent.
 
 - [s5] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form, zero FAKE constructs); git status shows only metrics/events.jsonl (pre-existing drift) outside memory/grind and tmp.
+
+## Session 6 (solver) - 2026-09-20
+
+**Chassis re-confirmed.** `candidate.c` spliced onto `src/text1b.c` measures
+`sandbox --disable all` -> score 6, build_insns 208 == target_insns 208, the
+figure the driver measured at dispatch. `--diff` reproduces the s1-s5
+classification unchanged (2 source-level hunks 18-19, 2 operand-only hunks 9
+and 17, 26 not-scored).
+
+**THE SESSION'S HEADLINE: the selection-sound residual is no longer a search
+problem - both of the two remaining C-level questions now have a named,
+dump-confirmed compiler gate, and one NEW form (variant F) reproduces target's
+register seat AND target's branch at target's instruction count.**
+
+### 1. The 205 regime is fully attributed (was "GCC folds it", now named)
+
+The twelve-spelling 10/205 bucket is the product of TWO passes, in order, and
+the .rtl-vs-.jump dump pair names both:
+
+- `tools/gcc-2.7.2/jump.c:726-860` - "Simplify `if (...) x = a; else x = b;` by
+  converting it to `x = b; if (...) x = a;`". In the pre-jump dump
+  (`tmp/grind/func_800747D8/dumps/text1b.rtl`, function at line 69695) the arms
+  are insn 282 (`r140 = 0`) and insn 290 (`r140 = 4`); in the post-jump dump
+  (`text1b.jump`, function at 66301) insn 290 is GONE and a NEWLY created insn
+  622 (`r140 = 4`) sits immediately BEFORE the conditional jump. That is this
+  transform's output, observed, not inferred.
+- `tools/gcc-2.7.2/jump.c:1178-1181` - the store-flag gate. Once `x = 4`
+  precedes the jump, `reg_set_last (temp1, insn)` at
+  `tools/gcc-2.7.2/jump.c:1061` returns CONST_INT 4, which satisfies the gate's
+  FIRST disjunct. MIPS `BRANCH_COST` is **1** for the R3000
+  (`tools/gcc-2.7.2/config/mips/mips.h:2937` returns 2 only for R4000/R6000),
+  so both `BRANCH_COST >= 2` and `BRANCH_COST >= 3` fallbacks are dead here and
+  `temp3 == CONST_INT` is the ONLY door into the transform. emit_store_flag
+  then emits `xor / ltu / neg / and 4` (.jump insns 629-635), which combine
+  folds to the observed `sltiu a0,a0,1 / sll a0,a0,2`.
+
+This corrects the s5 attribution in one respect worth recording: s5 credited
+the fold to the `jump.c:1190-1191` "either constant is const0_rtx" disjunct.
+That disjunct is necessary but NOT sufficient - the load-bearing gate for this
+function is `temp3 == CONST_INT` at jump.c:1178-1181, because BRANCH_COST is 1.
+This matters because it names the ESCAPE: make reg_set_last unable to return a
+CONST_INT.
+
+### 2. reg_set_last's label-stop IS a usable escape (variant F, NEW)
+
+`reg_set_last` (`tools/gcc-2.7.2/rtlanal.c:886-888`) scans backwards and
+"Stop[s] when we reach a label", returning 0. Variant F
+(`memory/grind/func_800747D8/rejected/selection_sound-default-hoisted-above-label.c`)
+puts `sound = 4;` ABOVE the `selection_sound:` CODE_LABEL, leaving only
+`if (MENU_800747D8->field64 != 0) sound = 0;` inside the block. Measured
+**score 8, build_insns 208**, and for the first time in this ledger:
+
+- hunk 17 MATCHES: `lbu v0,0x64(v0)` - target's register seat, the load out of
+  $a0 because $a0 now carries the default 4.
+- the branch MATCHES: `beqz v0,<join>` - target's exact branch (the floor-6
+  baseline emits `bnez a0,<join>`).
+
+The price, all four diffs visible in `tmp/grind/func_800747D8/s6/diff_F.txt`:
+`sound = 4;` is now in a DIFFERENT basic block from the branch, so reorg's
+backward `fill_simple_delay_slots` cannot reach it. The branch's delay slot
+instead gets `li a1,127` stolen from the target thread; the orphaned `li a0,4`
+lands in the switch-dispatch delay slot at c734 (hunk 10, an insn target does
+not have); and with $a0 pinned live across the field65 block, that block's
+`lbu`/`bne`/`addiu` shift to $a1 (hunks 13/14, 3 operand-only diffs the
+baseline does not have).
+
+**So the residual is now a single, precisely stated tension:** target needs
+`a0 = 4` to be (a) inside the branch's own basic block, so reorg's backward
+slot fill takes it, and (b) invisible to `reg_set_last`, so the store-flag gate
+fails. The only two things that stop reg_set_last's backward scan are a
+CODE_LABEL (`rtlanal.c:886-888`) and `reg_set_last_unknown`, which
+`reg_set_last_1` (`tools/gcc-2.7.2/rtlanal.c:851-858`) sets only for a CLOBBER
+or when `SET_DEST (pat) != x` (a SUBREG / STRICT_LOW_PART destination). A
+CODE_LABEL also stops reorg's backward fill, so (a) and (b) cannot both be had
+via a label. That leaves two live routes, both named in the frontier.
+
+### 3. The duplicated-call form's missed cross-jump is PROVED, not hypothesised
+
+The s5 frontier's named next probe (BB2_XJUMP_DEBUG=1, the codegen-inert knob
+at `tools/gcc-2.7.2/jump.c:66-89`) was run this session through the
+INSTRUMENTED cc1 (`tools/gcc-2.7.2/cc1`, per [[instrumented-cc1-location]]).
+Trace: `tmp/grind/func_800747D8/s6/dumps/xjdbg.txt` (2202 lines for the TU;
+func_800747D8's region is lines 1840-1930, identified by insn uids read out of
+`tmp/grind/func_800747D8/s6/dumps/text1b.sched2` at 106432+). The decisive
+lines, verbatim:
+
+    XJDBG: enter e1=288 e2=424 min=1 (own-label)
+    XJDBG:   MATCH i1=286 i2=418 parallel min->0
+    XJDBG:   PAT-MISMATCH i1=284 set(reg<-127) vs i2=409 set lose=0
+    XJDBG: result e1=288 min=0 last1=286 => WIN
+    XJDBG: DO_CROSS_JUMP jump=288 newjpos=286 newlpos=418
+    XJDBG: enter e1=288 e2=660 min=1 (own-label)
+    XJDBG:   PAT-MISMATCH i1=284 set(reg<-127) vs i2=409 set lose=0
+    XJDBG: result e1=288 min=1 last1=0 => no
+    XJDBG: enter e1=304 e2=424 min=1 (own-label)
+    XJDBG:   MATCH i1=300 i2=418 parallel min->0
+    XJDBG: result e1=304 min=0 last1=300 => WIN
+    XJDBG: DO_CROSS_JUMP jump=304 newjpos=300 newlpos=418
+
+Reading it against the sched2 RTL: jump_insn 288 and 304 are the two arms'
+`goto confirm`; code_label 424 is `confirm`; call_insn 418 is case 2's
+`func_8005C650` call, which falls through into `confirm` and is therefore the
+insn physically preceding that label. The minimum=1 own-label attempt at
+`tools/gcc-2.7.2/jump.c:2005` WINS with a ONE-insn match (call vs call) for
+BOTH arms and retargets both jumps to a NEWLY created label, uid 660. From
+then on the sibling-jump pairing loop at
+`tools/gcc-2.7.2/jump.c:2011-2021` - the one that would have matched the arms
+against each other 3 insns deep (`li a1,127 / li a2,127 / jal`) - is
+unreachable for those two jumps for two independent reasons: it is guarded by
+`INSN_UID (JUMP_LABEL (insn)) < max_uid`, false for uid 660, and `jump_chain`
+is never updated for a label created by `do_cross_jump`. The trace contains
+ZERO `chain-partner` entries for e1=288 or e1=304 across every
+`while (changed)` iteration. By contrast e1=369 (case 1's jump, still pointing
+at the original label 424) merges 8 insns deep in the same trace.
+
+### 4. Three more spellings measured and killed
+
+- Duplicated call with INVERTED polarity (`!= 0` / zero-arm first): 7/211,
+  the same figures as the `== 0` spelling. Extends the s2 polarity kill from
+  the same-variable chassis to the duplicated-call chassis.
+- Duplicated call in `else`-free / early-`goto` spelling: 7/211. Written to
+  test whether hoisting `goto confirm` into each arm gives the arms a private
+  join label; GCC threads both arm jumps through to `confirm` before jump2
+  runs, so the layout is unchanged.
+- Single call, distinct local, ZERO arm first (the last unmeasured natural
+  polarity of that regime): 10/205, joining the twelve.
+
+- [s6] Chassis re-confirmed: candidate.c on src/text1b.c -> sandbox --disable all score 6, build_insns 208 == target_insns 208; --diff reproduces the s1-s5 hunk classification unchanged.
+- [s6] MIPS BRANCH_COST is 1 for the R3000 (tools/gcc-2.7.2/config/mips/mips.h:2937 returns 2 only for PROCESSOR_R4000 / PROCESSOR_R6000), so in the store-flag gate at tools/gcc-2.7.2/jump.c:1178-1181 the BRANCH_COST >= 2 and BRANCH_COST >= 3 fallbacks are both dead and `temp3 == CONST_INT` is the ONLY admitting disjunct for this function. This REFINES the s5 attribution, which credited jump.c:1190-1191 (either constant is const0_rtx) - that clause is necessary but not sufficient.
+- [s6] The 10/205 regime is produced by TWO passes in sequence, confirmed by reading tmp/grind/func_800747D8/dumps/text1b.rtl (function at line 69695) against text1b.jump (function at 66301): tools/gcc-2.7.2/jump.c:726-860 first normalises `if (c) x=a; else x=b;` into `x=b; if (c) x=a;` (arms insn 282 / insn 290 in .rtl become a NEW insn 622 `r140 = 4` sitting before the conditional jump in .jump), and only then does the store-flag gate see a CONST_INT in reg_set_last and fire (emitting .jump insns 629-635, `xor / ltu / neg / and 4`, which combine folds to sltiu+sll).
+- [s6] reg_set_last (tools/gcc-2.7.2/rtlanal.c:886-888) stops its backward scan at a CODE_LABEL and returns 0; reg_set_last_1 (tools/gcc-2.7.2/rtlanal.c:851-858) additionally returns-unknown only for a CLOBBER or when SET_DEST (pat) != x, i.e. a SUBREG / STRICT_LOW_PART destination. Those are the ONLY two ways a C author can make the store-flag gate's temp3 non-CONST_INT while a constant default is in flight.
+- [s6] NEW BEST-SHAPE FORM (variant F, rejected/selection_sound-default-hoisted-above-label.c): hoisting `sound = 4;` above the `selection_sound:` CODE_LABEL measures score 8, build_insns 208, and is the FIRST spelling in this ledger to match BOTH of target's selection-block bytes that the floor-6 baseline gets wrong - `lbu v0,0x64(v0)` (hunk 17 register seat) and `beqz v0,<join>` (the branch). Its cost is entirely placement: `sound = 4;` is in a different basic block from the branch, so reorg's backward fill_simple_delay_slots cannot reach it (slot gets `li a1,127` stolen from the target thread), the orphaned `li a0,4` lands in the switch-dispatch delay slot at c734, and $a0 pinned live across the field65 block pushes that block onto $a1 (3 new operand-only diffs). Scored diff: tmp/grind/func_800747D8/s6/diff_F.txt.
+- [s6] The residual is now ONE stated tension: target needs `a0 = 4` both (a) inside the branch's own basic block, so reorg's backward slot fill takes it, and (b) invisible to reg_set_last, so the store-flag gate fails. A CODE_LABEL delivers (b) but destroys (a), because reorg's backward fill also stops at a label.
+- [s6] The duplicated-call form's 3-insn surplus is PROVED (not hypothesised) to be the jump.c cross-jump ordering, via the BB2_XJUMP_DEBUG trace at tmp/grind/func_800747D8/s6/dumps/xjdbg.txt lines 1855-1870 read against tmp/grind/func_800747D8/s6/dumps/text1b.sched2: the minimum=1 own-label find_cross_jump at tools/gcc-2.7.2/jump.c:2005 WINS with a ONE-insn match (arm call_insn 286 / 300 against case 2's call_insn 418, which falls through into `confirm`) and retargets both arm jumps to a newly created label (uid 660); thereafter the sibling-jump pairing loop at tools/gcc-2.7.2/jump.c:2011-2021 is unreachable for them both because `INSN_UID (JUMP_LABEL (insn)) < max_uid` is false for uid 660 and because jump_chain is never updated for a do_cross_jump-created label. Zero `chain-partner` entries appear for e1=288/304 in the whole trace, while e1=369 (case 1's jump, still on the original label) merges 8 insns deep.
+- [s6] Duplicated-call polarity is codegen-inert on the duplicated-call chassis: `!= 0` with the zero arm first measures 7/211, the same as `== 0` with the 4 arm first. This extends the s2 polarity kill (measured on the same-variable chassis) to the dup chassis.
+- [s6] The `else`-free / early-`goto` spelling of the duplicated-call form also measures 7/211: GCC threads both arm jumps straight through to `confirm` before jump2's cross-jumping runs, so giving the arms a private join label is not reachable by moving the `goto confirm` into the arms.
+- [s6] Single call, distinct local, ZERO arm first measures 10/205 - the last unmeasured natural polarity of that regime now joins the other twelve.
+- [s6] SIBLING SWEEP: the two "UNSPENT" siblings the dispatch flagged (`main` in src/ings.c, func_800692C0 in src/text1b.c) carry nothing transplantable for this residual. func_800692C0 is this function's CALLEE, already COMPLETED-C on main, and the candidate already calls it with the prototype main ships; no block is shared. `main`/ings.c shares no block either - it names func_800747D8 only through the shared text1b/ings call graph. Recorded so a later session does not re-sweep them.
+- [s6] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form, zero FAKE constructs); git status shows only metrics/events.jsonl (pre-existing drift) outside memory/grind and tmp.
+
+- [s6] Chassis re-confirmed: candidate.c on src/text1b.c measures sandbox --disable all score 6, build_insns 208 == target_insns 208; --diff reproduces the s1-s5 hunk classification unchanged (2 source-level hunks 18-19, 2 operand-only hunks 9 and 17, 26 not-scored).
+
+- [s6] MIPS BRANCH_COST is 1 for the R3000 (tools/gcc-2.7.2/config/mips/mips.h:2937 returns 2 only for PROCESSOR_R4000 / PROCESSOR_R6000), so in the store-flag gate at tools/gcc-2.7.2/jump.c:1178-1181 the BRANCH_COST >= 2 and BRANCH_COST >= 3 fallbacks are both dead and temp3 == CONST_INT is the ONLY admitting disjunct for this function. This refines the s5 attribution, which credited jump.c:1190-1191 (either constant is const0_rtx) - that clause is necessary but not sufficient.
+
+- [s6] The 10/205 regime is produced by TWO passes in sequence, confirmed by reading tmp/grind/func_800747D8/dumps/text1b.rtl (function at line 69695) against text1b.jump (function at 66301): tools/gcc-2.7.2/jump.c:726-860 first normalises `if (c) x=a; else x=b;` into `x=b; if (c) x=a;` (the .rtl arms insn 282 / insn 290 become a NEW insn 622 `r140 = 4` sitting before the conditional jump in .jump), and only then does the store-flag gate see a CONST_INT in reg_set_last and fire, emitting .jump insns 629-635 (xor / ltu / neg / and 4) which combine folds to sltiu+sll.
+
+- [s6] reg_set_last (tools/gcc-2.7.2/rtlanal.c:867-916) stops its backward scan at a CODE_LABEL and returns 0; reg_set_last_1 (tools/gcc-2.7.2/rtlanal.c:851-858) additionally returns-unknown only for a CLOBBER or when SET_DEST (pat) != x, i.e. a SUBREG / STRICT_LOW_PART destination. Those are the only two ways a C author can make the store-flag gate's temp3 non-CONST_INT while a constant default is in flight.
+
+- [s6] NEW BEST-SHAPE FORM (variant F, rejected/selection_sound-default-hoisted-above-label.c): hoisting `sound = 4;` above the `selection_sound:` CODE_LABEL measures score 8, build_insns 208, and is the FIRST spelling in this ledger to match BOTH selection-block bytes the floor-6 baseline gets wrong - `lbu v0,0x64(v0)` (hunk 17 register seat) and `beqz v0,<join>` (the branch). Its cost is placement only: the assignment is in a different basic block from the branch, so reorg's backward fill_simple_delay_slots cannot reach it (slot gets `li a1,127` stolen from the target thread), the orphaned `li a0,4` lands in the switch-dispatch delay slot at c734, and $a0 pinned live across the field65 block pushes that block onto $a1 (3 new operand-only diffs). Scored diff: tmp/grind/func_800747D8/s6/diff_F.txt.
+
+- [s6] The residual is now ONE precisely stated tension: target needs `a0 = 4` both (a) inside the branch's own basic block, so reorg's backward slot fill takes it, and (b) invisible to reg_set_last, so the store-flag gate fails. A CODE_LABEL delivers (b) but destroys (a), because reorg's backward fill also stops at a label.
+
+- [s6] The duplicated-call form's 3-insn surplus is PROVED to be jump.c cross-jump ordering, via the BB2_XJUMP_DEBUG trace at tmp/grind/func_800747D8/s6/dumps/xjdbg.txt lines 1855-1870 read against tmp/grind/func_800747D8/s6/dumps/text1b.sched2: the minimum=1 own-label find_cross_jump at tools/gcc-2.7.2/jump.c:2005 WINS with a one-insn match (arm call_insn 286 / 300 against case 2's call_insn 418, which falls through into `confirm`) and retargets both arm jumps to a newly created label (uid 660); thereafter the sibling-jump pairing loop at tools/gcc-2.7.2/jump.c:2011-2021 is unreachable for both because INSN_UID (JUMP_LABEL (insn)) < max_uid is false for uid 660 (tools/gcc-2.7.2/jump.c:2012) and because jump_chain is never updated for a do_cross_jump-created label. Zero `chain-partner` entries appear for e1=288/304 in the whole trace, while e1=369 (case 1's jump, still on the original label) merges 8 insns deep.
+
+- [s6] Duplicated-call polarity is codegen-inert on the duplicated-call chassis: `!= 0` with the zero arm first measures 7/211, the same as `== 0` with the 4 arm first. This extends the s2 polarity kill from the same-variable chassis to the dup chassis.
+
+- [s6] The `else`-free / early-`goto` spelling of the duplicated-call form also measures 7/211: GCC threads both arm jumps straight through to `confirm` before jump2's cross-jumping runs, so giving the arms a private join label is not reachable by moving `goto confirm` into the arms.
+
+- [s6] Single call, distinct local, ZERO arm first measures 10/205 - the last unmeasured natural polarity of that regime now joins the other thirteen.
+
+- [s6] SOLVER-MODALITY NOTE for the next session: the residual triaged PRE-RA, not RA or SCHED. The full classed --diff, the -da dump pair and the XJDBG trace all place both remaining scored hunks (17 and 18/19) inside tools/gcc-2.7.2/jump.c decisions taken before local-alloc runs, so ra_solver / sched_solver vectors cannot move them; the levers are source-level control-flow shape and basic-block boundaries. Recorded so a later solver session does not spend a campaign on the wrong layer.
+
+- [s6] Hunk 9's jtbl_80015A0C table-offset residual is unchanged and remains a cross-file final-submission step (delete the hand-transcribed array from src/text1a_b_mid_rodata.c in the same change that lands the C body), per the s2 analysis and the executed func_8006B578/jtbl_80015988 precedent.
+
+- [s6] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form, zero FAKE constructs); git status shows only metrics/events.jsonl (pre-existing drift) outside memory/grind and tmp.
