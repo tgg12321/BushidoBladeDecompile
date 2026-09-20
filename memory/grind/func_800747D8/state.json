@@ -1,8 +1,8 @@
 {
  "func": "func_800747D8",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Forensics: re-attributed the 10/205 fold one pass UPSTREAM to the jump.c:754-860 normalisation (blocking it alone is sufficient), enumerated its eleven C-visible preconditions with file:line predicate"
+  },
+  {
+   "session": 8,
+   "floor": 6,
+   "modality": "rederive",
+   "headline": "Rederive s8: fresh m2c blocked (missing jtbl, out-of-scope fix); MEM-source mechanism probe proves predicate B4 can never be target's real blocker (class kill) and reproduces target's exact v0/a0 regi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's selection block is the SINGLE-call two-arm form, and the ONLY thing separating it from the banked 10/205 bucket is one failing precondition of the tools/gcc-2.7.2/jump.c:754-860 normalisation. Three predicates are still untried: B4 (jump.c:766-768 - the branch-target arm's value comes from MEMORY, so SET_SRC is neither REG, SUBREG nor CONSTANT_P), B8 (jump.c:794-812,831 - LABEL_NUSES of the else-label cannot be fully discharged by conditional jumps found walking backwards from the condjump, e.g. because a CALL_INSN breaks the walk at jump.c:812 or because a second entry to the else arm is FORWARD), and B9 (jump.c:832 - a CODE_LABEL sits between the last conditional jump and the then-arm's terminating jump).",
-   "mechanism": "Blocking the normalisation is sufficient: the store-flag gate at jump.c:1178-1181 then never receives a CONST_INT because nothing moved `sound = 4` in front of the conditional jump, and its own precondition at jump.c:1065-1068 fails for a two-arm shape anyway. The surviving two-arm form is what reorg's steal_delay_list_from_target turns into target's `beqz v0,<join>` + delay-slot `li a0,4` + fallthrough `move a0,zero`, with the loaded byte free to sit in $v0.",
-   "next_probe": "Spell and measure C shapes for each untried predicate, checking each against the .jump dump (tools/grinder/dump.ps1 func_800747D8) for the ABSENCE of a newly created `r = 4` insn immediately before the conditional jump (the s6 insn-622 signature) BEFORE crediting any score. For B9 the vehicle must be a compound condition whose two operands cannot be coalesced into one comparison - the adjacent-byte ORIF measured this session collapses to a single lhu, so pick operands in different words or of different widths. For B8, look for a spelling in which the else arm is entered from a second, FORWARD site. For B4, look for a spelling in which the branch-target arm's value is loaded rather than materialised."
+   "hypothesis": "The true blocker for target's real (literal-0) selection_sound escape from jump.c's folds is a B8/B9-class predicate about the SHARED CALL TAIL at .L80074A20 (entered by both the row-toggle path's fallthrough and selection_sound's explicit j), not about the else-arm's value (B4 is now class-killed).",
+   "mechanism": "jump.c:794-812/831 (LABEL_NUSES walk defeated by a CALL_INSN or a second FORWARD entry) or jump.c:832 (no_labels_between_p between the last conditional jump and the then-arm's terminating jump) - both predicates concern the LABEL the fallthrough/else path reaches, and target's real fallthrough here is not an isolated two-way if/else, it eventually merges into a tail (.L80074A20) reached from more than one caller.",
+   "next_probe": "Re-run the s7 xjdbg instrumented-cc1 trace (BB2_XJUMP_DEBUG=1) on the CURRENT (un-relocated, non-duplicated-call) floor-6 chassis - not the s7 relocated/duplicated variants - to see whether jump.c or a later cross-jump pass is what actually produces target's shared .L80074A20 tail, and whether LABEL_NUSES on that tail (not on the internal if/else label) is the real predicate in play. This has not been tried: s7's xjdbg trace only covered the relocated duplicated-call variant."
   },
   {
-   "hypothesis": "The duplicated-call chassis is closable in principle - its arms merge 3 insns deep once the arm jump's own label is the if/else join - but every spelling that preserves that join also relocates the block, and the relocation costs +9 insns that target's own block order (selection block first, before case 1) forbids recovering.",
-   "mechanism": "tools/gcc-2.7.2/jump.c:2403 find_cross_jump decides match depth from the insn physically preceding the jump's label; jump threading moves that label from the join to `confirm` whenever the join is immediately followed by an unconditional jump. Target's own selection block ends in a forward jump (j .L80074A20), so target's join is in exactly that threaded configuration - which is why target only gets the 1-insn own-label merge at the shared jal and therefore cannot be a duplicated call.",
-   "next_probe": "Do NOT re-spend sessions on the duplicated-call family or on s6's suggested reordering of case 2's call; both are now measured or excluded. If a later session wants to revisit it, the only untried lever is a real (non-dead) statement between the if/else join and the `goto confirm;` that blocks the threading - and no such statement exists in target's asm, so it would have to come from a sanctioned duplicated-statement-into-arms grant with its own lever-exhaustion record, not from this chassis."
-  },
-  {
-   "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual closes once the hand-transcribed array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C, mirroring the already-executed func_8006B578/jtbl_80015988 precedent.",
-   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch; with the hand array still present in text1a_b_mid_rodata.c the sandbox's isolated single-function build sees a placement/offset conflict (ours `lw v0,24(at)` vs target `lw v0,0(at)`) rather than the real target layout.",
+   "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual (operand-only, lw v0,0(at) vs lw v0,24(at)) closes once the hand-transcribed array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C.",
+   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch; the sandbox's isolated single-function build sees a placement/offset conflict against the hand array still present in text1a_b_mid_rodata.c rather than target's real layout.",
    "next_probe": "At final-submission assembly time only (not a src/text1b.c-only session): delete the jtbl_80015A0C array from src/text1a_b_mid_rodata.c in the same commit as func_800747D8's C body, then re-measure with sandbox --disable all --diff."
+  },
+  {
+   "hypothesis": "B9 (jump.c:832, a CODE_LABEL between the last conditional jump and the then-arm's terminating jump) is unreachable via a compound condition on this function's real single-byte field64 test (adjacent-field ORIF coalesces to one halfword compare, s7 finding) but may still be reachable via the shared-tail structure itself rather than the condition.",
+   "mechanism": "Same jump.c:754-860 normalisation as B8; if the shared .L80074A20 tail is what supplies the extra CODE_LABEL or extra use, B9 and B8 may turn out to be the SAME underlying blocker described two different ways.",
+   "next_probe": "Compare the xjdbg trace's label-use counts for .L80074A20 against LABEL_NUSES expectations from jump.c:787 to determine whether B8 and B9 collapse to one predicate for this function."
   }
  ],
  "judge_constraints": [],
@@ -210,6 +216,22 @@
    "measured_on": "candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block replaced by the adjacent-field ORIF spelling; zero FAKE constructs.",
    "predicate_cite": "",
    "result": "Score 10, build_insns 205 - the fold regime. Hunks 18/19 read lhu a0,100(v0) / sltiu a0,a0,1 / sll a0,a0,0x2, confirming"
+  },
+  {
+   "session": 8,
+   "statement": "A fresh m2c decompile of asm/funcs/func_800747D8.s cannot surface a new structural shape this session because m2c refuses to run without a jump-table input for an unrelated jr at line 74, and supplyin",
+   "kill_scope": "instance",
+   "measured_on": "tooling probe only, no candidate.c chassis involved; re-attemptable once/if a session's scope covers src/text1a_b_mid_rodata.c",
+   "predicate_cite": "",
+   "result": "m2c exits with 'Found jr instruction ... but the corresponding jump table is not provided.' No candidate produced."
+  },
+  {
+   "session": 8,
+   "statement": "Replacing the selection_sound else-arm's real constant value (0) with a memory-sourced value while keeping the test value and the result value on genuinely separate pseudos escapes GCC's jump.c:1178-1",
+   "kill_scope": "class",
+   "measured_on": "candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block replaced by the MEM-sourced mechanism probe (flag2/sound2, D_800A35D0 else value); zero FAKE constructs. src/text1b.c",
+   "predicate_cite": "tools/gcc-2.7.2/jump.c:1190-1191",
+   "result": "score 4, build_insns 209 (1 insn long). Every previously-flagged register-seat hunk (old hunks 9 and 17-19: lbu a0 vs ta"
   }
  ],
  "ladder_skip": 0,
