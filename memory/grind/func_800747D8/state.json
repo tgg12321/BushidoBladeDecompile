@@ -1,0 +1,63 @@
+{
+ "func": "func_800747D8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 6,
+   "modality": "recon",
+   "headline": "Re-confirmed the banked floor-6 candidate (fixed a D_800A35DC type conflict), classed the residual (2 source-level + 2 operand-only real hunks, 26 masked), and killed 3 natural respellings of the sele"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Hunk 9's state-switch jtbl table-offset residual (target lw v0,0(at) vs ours lw v0,24(at)) is a GCC-synthesized-jump-table structural difference, not a masked relocation artifact.",
+   "mechanism": "jump.c/final.c jump-table emission for the field3C 5-case switch; possibly the same class as sibling func_8006B578's rodata-split jtbl_80015988 residual, or a genuinely different case-ordering issue",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_800747D8; read the .combine/.jump2 dumps for the state-switch region to see whether GCC's synthesized table has a different entry count/base than target's jtbl_80015A0C"
+  },
+  {
+   "hypothesis": "The selection_sound block's 3-insn shortfall (208 vs 205) when written as a natural if/else, vs the baseline self-subtract reaching 208, is explained by a specific combine/cse fold visible in the cc1 dumps.",
+   "mechanism": "combine.c or cse.c folding a trivial-valued if/else (constant results 4/0) more aggressively than the baseline's self-subtract form",
+   "next_probe": "Read the .combine and .cse dumps for this block on both the baseline chassis and one of the 3 rejected forms; diff the RTL to find exactly which insns the fold removes"
+  },
+  {
+   "hypothesis": "Once hunks 9 and 17-19 are understood, the sound -= sound self-subtract construct in the baseline should be re-examined for cheat-smell (it has no semantic reading a human would write from spec) and replaced with an honest equivalent if one closes to the same or better score.",
+   "mechanism": "n/a - this is a vetting concern, not a codegen mechanism",
+   "next_probe": "Once a natural spelling matches or beats score 6, run tools/fake_ablate.py and the 6-test cheat checklist against sound -= sound before any candidate-ready submission"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Splitting the selection_sound block's test value and result value into two named locals (flag = field64; sound = 4-or-0 by branch), matching the apparent v0-vs-a0 register split visible in target's as",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis + H2 s8 fix, no FAKE constructs, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "score 10, build_insns 205 (3 insns short of target 208) - worse on both axes than the baseline."
+  },
+  {
+   "session": 1,
+   "statement": "Initializing the selection_sound result to the delay-slot literal (4) and overriding it in the branch (mirroring the asm's literal control-flow order) narrows hunks 17-19.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis + H2 s8 fix, no FAKE constructs, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "score 10, build_insns 205 - identical to the two-var-split attempt."
+  },
+  {
+   "session": 1,
+   "statement": "Removing the intermediate flag local entirely and testing MENU_800747D8->field64 directly in the if condition narrows hunks 17-19.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis + H2 s8 fix, no FAKE constructs, sandbox --disable all",
+   "predicate_cite": "",
+   "result": "score 10, build_insns 205 - identical to both prior attempts."
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-20T06:45:56.103477+00:00"
+}
