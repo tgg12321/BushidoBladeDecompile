@@ -108,6 +108,50 @@
  * (sessions 7-9), do not re-derive, re-run its byte-certification method
  * once this function is otherwise at/near 0.
  *
+ * SESSION 4 (permuter modality) ADDENDUM: chassis confirmed at floor 11
+ * (dispatch chassis check matched exactly, no drift). Two honest structural
+ * probes measured this session, both reverted:
+ *   - Removed the `if (sel < 15) { switch {...} } else { s.p0 = ...; }`
+ *     wrapper entirely (switch's own `default:` arm already computes the
+ *     identical `s.p0 = (void*)(s0+sel*12)` and `goto skip_load`, so the
+ *     outer guard is logically redundant for correctness) -> measured
+ *     WORSE, floor 46. KILLED, instance scope: the redundant guard is
+ *     apparently load-bearing for cc1's codegen shape even though it's
+ *     logically redundant for program behavior; do not re-propose removing
+ *     it without a new angle.
+ *   - Reordered the `i` (s16 loop counter) local's declaration to FIRST
+ *     in the local list (before v0/s3/s0/sel/a2), per the s2/s3 frontier
+ *     note's untested suggestion -> measured FLAT, still floor 11. KILLED,
+ *     instance scope: plain decl-order reordering of `i` alone does not
+ *     flip the s2/s3 register-seat tie (hunks 4/5, the `addu v1,v1,v0` vs
+ *     `addu v0,v0,v1` operand-only pair — same root cause as s3's
+ *     `b2+c*12` associativity swap, also flat).
+ * Directed permuter campaign (tmp/perm_ecf4/, validated workspace: base.o
+ * 211 insns / target.o 209 insns, diff identical to the sandbox --diff
+ * output) ran 15,077+ iterations, base permuter-score 725, best find 470.
+ * EVERY closing-score find (output-525-1, output-470-1, output-625-1,
+ * output-559-1, ...) converged on the SAME forbidden construct family: an
+ * unused `new_var` local written once as a side effect inside an existing
+ * comparison/arithmetic expression (`if (sel < (new_var = 15))`,
+ * `D_800A3554 + (new_var = 1) + D_800A35B0`) — classic dead-store /
+ * constant-holder codegen-steering, occasionally paired with a redundant
+ * width mask (`0x12C & 0xFFFFu`, itself the separately-forbidden F2
+ * redundant-width-cast family). VERIFIED against the real sandbox (not
+ * just the permuter's own proxy score): the `new_var=15` form alone DOES
+ * move the honest floor 11 -> 9. REJECTED anyway — see
+ * memory/grind/func_8006ECF4/rejected/permuter-new_var-dead-store-cheat.c
+ * for the full 6-test checklist writeup. It sits inside a nominally
+ * sanctioned family (named-local-fake-exception / dead-store-fake-
+ * exception) but this session did not document the lever-exhaustion that
+ * family's prerequisites require (only 2 honest structural probes were
+ * tried, both above), so it is not eligible for submission yet. A future
+ * session that first exhausts honest alternatives for the operand-only
+ * `b2+c*12` tie and the `sel<15` extra-insn hunk should re-evaluate this
+ * construct WITH a documented exhaustion ledger and a `/* FAKE */`
+ * annotation before considering it. No cheat construct was landed or left
+ * in src/text1b.c this session; src was reverted to `INCLUDE_ASM` before
+ * the session ended (unchanged vs `git show HEAD:src/text1b.c`).
+ *
  * No cheat constructs: everything this session is either a plain statement-
  * order change (struct-init store order, H4/H6), a faithful goto-based
  * transcription of the disassembly's own real branch topology (H5/H7, the

@@ -216,3 +216,51 @@ before/after C, and the two mis-step/revert episodes). Summary:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-11 chassis (H4-H7 applied), no FAKE constructs present in either form
+
+## [s4] Removing the `if (sel < 15) { switch {...} } else { s.p0 = (void*)(s0+sel*12); }` outer guard (behavior-preserving, since the switch's own `default:` arm computes the identical result for every `sel >= 15`, and `sel` — read from a `u8` array — is always >= 0) eliminates the hunk-10 extra `slti v0,v1,15; beqz v0,...` instruction pair.
+- mechanism: unconfirmed hypothesis — that the extra compare/branch was purely a byproduct of the redundant outer `if`, and that removing the redundant C-level guard would let GCC drop the redundant compare too.
+- probe: sandbox func_8006ECF4 --disable all with the outer `if (sel<15)`/`else` wrapper removed, switch's `default:` arm left as the sole path for sel>=15 and for unmatched sel<15 values
+- result: score WORSE, 11 -> 46 (build_insns 211 -> 213) — removing the logically-redundant guard makes the REAL codegen worse, not better; the guard (despite being behaviorally redundant) is load-bearing for GCC's block layout / cross-jump behavior in this region
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3's banked candidate.c), no FAKE constructs present in either form
+
+## [s4] Declaring the `i` (`s16`) loop-counter local FIRST in func_8006ECF4's local-variable list (before `v0`/`s3`/`s0`/`sel`/`a2`) flips which of arg0 / the `*(s32*)arg0->0x54` chain value gets the lower-numbered callee-save register (`s2` vs `s3`), closing the 3 operand-only hunks (4/5/12 in the s4 diff numbering).
+- mechanism: unconfirmed — hypothesized as pseudo-introduction-order bias on GCC's global/local register allocator; not confirmed against a `.greg`/`.lreg` dump this session (still the correct next step per the frontier item below).
+- probe: sandbox func_8006ECF4 --disable all with `i`'s declaration moved to the top of the local list, all other locals unchanged
+- result: score FLAT, still 11 — no effect on the operand-only register-seat tie
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3's banked candidate.c), no FAKE constructs present in either form
+
+## [s4] The permuter's `new_var`-side-effect dead-store family (e.g. `if (sel < (new_var = 15))`) is a legitimate SOTN-sanctioned closing lever for this function's floor-11 residual, submittable as-is.
+- mechanism: named-local-fake-exception / dead-store-fake-exception (.claude/rules/no-new-park-categories.md 2026-07-01 additions) — GCC's local-alloc/cse.c treats the materialized-but-unread pseudo differently from a bare literal, changing downstream register/constant handling.
+- probe: applied `if (sel < (new_var = 15))` + matching unused `unsigned long new_var;` local declaration to src/text1b.c (on top of the s3 floor-11 chassis), ran `sandbox func_8006ECF4 --disable all`
+- result: score DOES improve (11 -> 9), confirming the construct has real codegen effect — but REJECTED as a submission per the full 6-test checklist (see memory/grind/func_8006ECF4/rejected/permuter-new_var-dead-store-cheat.c): it is a first-reach of a last-resort family without the mandatory documented lever-exhaustion (only 2 honest structural probes were tried this session, both above and both negative) or a `/* FAKE */` annotation. Reverted, not banked in candidate.c or left in src.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3's banked candidate.c) + the single `new_var` construct; no other FAKE constructs present
+
+## [s4] Removing the logically-redundant `if (sel < 15) {switch} else {...}` outer guard (the switch's own default arm already computes the identical s.p0 for every sel>=15) eliminates the extra slti/beqz compare in hunk 10.
+- mechanism: unconfirmed - hypothesized the extra compare was a pure byproduct of the redundant C-level guard
+- probe: sandbox func_8006ECF4 --disable all with the outer if/else wrapper removed
+- result: score WORSE, 11 -> 46 (211 -> 213 insns) - the guard is load-bearing for GCC's block layout despite being behaviorally redundant
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3 banked candidate.c), no FAKE constructs present in either form
+
+## [s4] Declaring the `i` loop-counter local first in the local list (before v0/s3/s0/sel/a2) flips the s2/s3 callee-save register-seat tie behind the 3 operand-only hunks.
+- mechanism: unconfirmed - hypothesized pseudo-introduction-order bias on GCC's allocator; not confirmed against a .greg/.lreg dump this session
+- probe: sandbox func_8006ECF4 --disable all with i's declaration moved to the top of the local list
+- result: score FLAT, still 11 - no effect on the operand-only register-seat tie
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3 banked candidate.c), no FAKE constructs present in either form
+
+## [s4] The permuter's `new_var`-side-effect dead-store construct (e.g. `if (sel < (new_var = 15))`) is a submittable SOTN-sanctioned closing lever for this function's floor-11 residual.
+- mechanism: named-local-fake-exception / dead-store-fake-exception family - GCC's local-alloc/cse.c treats a materialized-but-unread pseudo differently from a bare literal, changing downstream register/constant handling
+- probe: applied `if (sel < (new_var = 15))` + matching unused local decl to src/text1b.c on top of the floor-11 chassis, ran sandbox func_8006ECF4 --disable all
+- result: score DOES improve (11 -> 9), confirming real codegen effect - but REJECTED per the 6-test cheat checklist: first-reach of a last-resort family without documented lever-exhaustion (only 2 honest structural probes tried this session, both negative) or a /* FAKE */ annotation. Reverted, not banked in candidate.c or left in src.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: floor-11 chassis (H4-H7 applied, s3 banked candidate.c) plus the single new_var construct; no other FAKE constructs present

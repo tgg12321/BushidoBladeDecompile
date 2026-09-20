@@ -1,8 +1,8 @@
 {
  "func": "func_8006ECF4",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,18 +21,24 @@
    "floor": 11,
    "modality": "structural",
    "headline": "func_8006ECF4: floor 60 -> 11 via 4 structural levers (struct-init store order, goto-based shared-label p1 dispatch, pad-byte store order, if/else call-arg split); 2 associativity/order hypotheses KIL"
+  },
+  {
+   "session": 4,
+   "floor": 11,
+   "modality": "permuter",
+   "headline": "s4 (permuter): floor unchanged at 11 - 2 structural probes KILLED, 15k+ permuter iters converged only on a rejected dead-store cheat family (verified moves 11->9 but no exhaustion/FAKE, not submitted)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s2/s3 register-seat swap (arg0 vs the chain-derived value) accounts for all 3 remaining operand-only hunks; declaring a dedicated loop-counter local before the v0/s3/s0 chain-derivation locals may flip which gets the lower-numbered callee-save register.",
-   "mechanism": "GCC callee-save register assignment order, likely tied to pseudo-introduction order \u2014 untested this session.",
-   "next_probe": "Reorder local declarations (i before v0/s3/s0) and re-measure; if flat, read a .greg/.lreg dump (pwsh tools/grinder/dump.ps1 func_8006ECF4) to see which pseudo gets s2 vs s3 and why."
+   "hypothesis": "The s2/s3 callee-save register-seat tie (operand-only hunks 4/5/12: target assigns arg0->s2 and the chain-derived value->s3, our build has them swapped) is unresolved by any decl-order or expression-associativity lever tried across s3+s4 (4 independent attempts, all flat or reverted).",
+   "mechanism": "Likely a GCC global/local allocator allocno-priority or LUID tiebreak, not yet confirmed against an actual RTL dump.",
+   "next_probe": "Read a .greg/.lreg dump via pwsh tools/grinder/dump.ps1 func_8006ECF4 to see which pseudo gets s2 vs s3 and why, before trying any further blind reorder."
   },
   {
-   "hypothesis": "The loop-bound lh/lw load-order mismatch (diff hunks 1/2, target loads the 32-bit D_800A35B0 before the 16-bit D_800A3554) is a scheduler interleaving effect with the unrelated arg0-deref chain, not a source-text-order question (the naive reorder was KILLED this session).",
-   "mechanism": "possibly cc1's scheduler hoisting the loop-bound loads alongside the v0=*(s32*)arg0; s3=*(v0+0x54); statements for latency-hiding, independent of source statement order.",
-   "next_probe": "Read the .sched dump for the entry block (pwsh tools/grinder/dump.ps1 func_8006ECF4, tmp/grind/func_8006ECF4/dumps/*.sched) before proposing any further loop-bound-expression lever."
+   "hypothesis": "The loop-bound lh/lw load-order mismatch (hunks 1/2, and its mirror at hunk 29) is a scheduler interleaving effect with the unrelated v0=*(s32*)arg0; s3=*(v0+0x54) chain, not a source-text evaluation-order question (confirmed KILLED for naive reorder across s3's two independent attempts).",
+   "mechanism": "cc1's scheduler possibly hoisting the loop-bound loads alongside the entry-block chain for latency-hiding, independent of source statement order.",
+   "next_probe": "Read the .sched dump for the entry block (tmp/grind/func_8006ECF4/dumps/*.sched) before proposing any further loop-bound-expression lever."
   },
   {
    "hypothesis": "jtbl_800159D0's cross-TU rodata-ownership residual (same class already solved for sibling func_8006B578, sessions 7-9) will surface once this function reaches score 0.",
@@ -58,6 +64,30 @@
    "measured_on": "floor-11 chassis (H4-H7 applied), no FAKE constructs present in either form",
    "predicate_cite": "",
    "result": "score identical (11) in both operand orders \u2014 the addu v1,v1,v0 vs addu v0,v0,v1 operand-only tie is stable under this l"
+  },
+  {
+   "session": 4,
+   "statement": "Removing the logically-redundant `if (sel < 15) {switch} else {...}` outer guard (the switch's own default arm already computes the identical s.p0 for every sel>=15) eliminates the extra slti/beqz com",
+   "kill_scope": "instance",
+   "measured_on": "floor-11 chassis (H4-H7 applied, s3 banked candidate.c), no FAKE constructs present in either form",
+   "predicate_cite": "",
+   "result": "score WORSE, 11 -> 46 (211 -> 213 insns) - the guard is load-bearing for GCC's block layout despite being behaviorally r"
+  },
+  {
+   "session": 4,
+   "statement": "Declaring the `i` loop-counter local first in the local list (before v0/s3/s0/sel/a2) flips the s2/s3 callee-save register-seat tie behind the 3 operand-only hunks.",
+   "kill_scope": "instance",
+   "measured_on": "floor-11 chassis (H4-H7 applied, s3 banked candidate.c), no FAKE constructs present in either form",
+   "predicate_cite": "",
+   "result": "score FLAT, still 11 - no effect on the operand-only register-seat tie"
+  },
+  {
+   "session": 4,
+   "statement": "The permuter's `new_var`-side-effect dead-store construct (e.g. `if (sel < (new_var = 15))`) is a submittable SOTN-sanctioned closing lever for this function's floor-11 residual.",
+   "kill_scope": "instance",
+   "measured_on": "floor-11 chassis (H4-H7 applied, s3 banked candidate.c) plus the single new_var construct; no other FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score DOES improve (11 -> 9), confirming real codegen effect - but REJECTED per the 6-test cheat checklist: first-reach "
   }
  ],
  "ladder_skip": 0,
