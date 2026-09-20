@@ -1,8 +1,8 @@
 {
  "func": "func_800747D8",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "permuter",
+ "session_count": 4,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "Permuter modality: built a working workaround for import.py's broken full-TU workspace on text1b.c, ran a 21,884-iteration campaign, found no improvement on the hunks 17-19 selection_sound register-se"
+  },
+  {
+   "session": 4,
+   "floor": 6,
+   "modality": "enumerate",
+   "headline": "Enumerate modality: ran the new spelling_enum.py+sweep_variants.py tool pair for the first time on this ledger; a control sweep on the already-matching field67 block confirmed its interleaved statemen"
   }
  ],
  "frontier": [
   {
    "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual closes once the hand-transcribed jtbl_80015A0C array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C, mirroring the already-executed func_8006B578/jtbl_80015988 precedent.",
-   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch (build/src/text1b.o); with the hand array still present in text1a_b_mid_rodata.c, the two tables coexist and the sandbox's isolated single-function build sees a placement/offset conflict rather than the real target layout.",
-   "next_probe": "At final-submission assembly time (not a src/text1b.c-only session): delete the jtbl_80015A0C array from text1a_b_mid_rodata.c in the same commit as func_800747D8's C body, then re-measure with sandbox --disable all --diff to confirm hunk 9 closes with zero bb2.ld edits, exactly as it did for func_8006B578."
+   "mechanism": "GCC 2.7.2 emits a switch's ADDR_VEC into the .rodata of the TU containing the switch; with the hand array still present in text1a_b_mid_rodata.c, the sandbox's isolated single-function build sees a placement/offset conflict rather than the real target layout.",
+   "next_probe": "At final-submission assembly time (not a src/text1b.c-only session): delete the jtbl_80015A0C array from text1a_b_mid_rodata.c in the same commit as func_800747D8's C body, then re-measure with sandbox --disable all --diff."
   },
   {
-   "hypothesis": "Hunk 17's register-seat residual (target lbu v0 vs ours lbu a0) may resolve automatically once hunk 9's table-placement issue is fixed and the switch's real ADDR_VEC is in place, since the current a0-vs-v0 split may be entangled with the same block's surrounding dispatch shape.",
+   "hypothesis": "The selection_sound block's C-spelling space (hunks 17-19) is exhausted by hand-derivation (s1-s2), permuter search (s3), and now confirmed out of reach of the new spelling_enum.py tool (s4, tool-shape limitation) -- the next productive lever is RA/scheduler solver classification, not another hand-written C variant.",
+   "mechanism": "combine.c's isolated-test-variable branchless fold (s2) plus s3's 21.8k-iteration permuter confirmation plus s4's demonstration that flat-statement enumeration cannot even represent this if/else-diamond's respelling space",
+   "next_probe": "Run tools/ra_solver's inverse_compose.py classify on hunk 17 (target lbu v0 vs ours lbu a0) to determine whether the v0-vs-a0 seat is RA- or scheduler-owned before proposing any further hand-written C variant; alternatively extend spelling_enum.py to treat each if/else arm as its own flat sub-region (a tool-improvement task, out of this session's src/text1b.c-only scope)."
+  },
+  {
+   "hypothesis": "Hunk 17's register-seat residual may resolve automatically once hunk 9's table-placement issue is fixed and the switch's real ADDR_VEC is in place.",
    "mechanism": "unconfirmed -- register allocation for this load may shift once the surrounding switch dispatch is compiled from real C rather than scored against a stand-in hand array",
-   "next_probe": "Re-run sandbox --disable all --diff on the same-variable candidate AFTER the text1a_b_mid_rodata.c migration lands, before spending another session on register-seat levers for hunk 17 in isolation."
-  },
-  {
-   "hypothesis": "The local C-spelling space for hunks 17-19 (selection_sound block) is exhausted by both hand-written and permuter search on this chassis; further sessions in permuter/structural modality on this exact block are unlikely to find new ground without a different mechanism (e.g. RA/scheduler solver classification of the v0-vs-a0 seat).",
-   "mechanism": "combine.c's isolated-test-variable branchless fold (documented s2) plus the s3 permuter's independent 21.8k-iteration confirmation that no mutation pass reaches a different byte-identical-count spelling",
-   "next_probe": "If a future session revisits this residual, run tools/ra_solver's inverse_compose.py classify on hunk 17 to determine whether the v0-vs-a0 seat is RA- or scheduler-owned before proposing any further hand-written C variant."
+   "next_probe": "Re-run sandbox --disable all --diff on the candidate AFTER the text1a_b_mid_rodata.c migration lands, before spending another session on register-seat levers for hunk 17 in isolation."
   }
  ],
  "judge_constraints": [],
@@ -90,6 +96,14 @@
    "measured_on": "candidate.c chassis (same-variable-reuse baseline, unchanged) plus the do-while(0)-wrapped variant, both applied to src/text1b.c; zero FAKE constructs in either form; sandbox --disable all --diff; cam",
    "predicate_cite": "",
    "result": "Best permuter find (score 100 of base 265) is a pure whitespace/parenthesization reformat with zero codegen difference f"
+  },
+  {
+   "session": 4,
+   "statement": "Reordering the field67 block's (switch(state) case 1, currently byte-matching, zero diff vs target) four plain-assign statements into any of the 6 valid def-before-use orderings that separate the two ",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis with the field67 block's 4 plain-assign statements permuted through all 6 valid def-before-use orderings, src/text1b.c, sandbox --disable all, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "baseline score 6; all 6 generated orderings scored 24 with build_insns 206 (strictly worse on both score and instruction"
   }
  ],
  "ladder_skip": 0,
