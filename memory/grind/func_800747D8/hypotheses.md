@@ -600,3 +600,239 @@ constructs.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c floor-6 chassis applied to src/text1b.c, compared against the committed bodies of func_800692C0 and src/ings.c on main; zero FAKE constructs.
+
+## Session 7 (forensics)
+
+### H18 - the 205 fold's ENTRY gate is the jump.c:754-860 normalisation, and blocking it alone is sufficient (the s6 "single tension" is chassis-specific, not general)
+**Statement:** on the two-arm chassis (`if (c) sound = X; else sound = Y;` with
+`sound` a pseudo distinct from the loaded test byte), the store-flag transform
+at `tools/gcc-2.7.2/jump.c:1178-1181` is UNREACHABLE unless the normalisation
+at `tools/gcc-2.7.2/jump.c:754-860` has already run, because the store-flag
+block's own preconditions fail on the un-normalised two-arm shape: `temp =
+next_nonnote_insn (insn)` is the fallthrough arm, and `reallabelprev == temp ||
+(next_active_insn (temp) is a simplejump to JUMP_LABEL (insn))`
+(`tools/gcc-2.7.2/jump.c:1065-1068`) is false, since the fallthrough arm is
+followed by the arm's own `goto join` whose JUMP_LABEL is the JOIN, not the
+else-label the conditional jump targets. Independently, `reg_set_last`
+(`tools/gcc-2.7.2/rtlanal.c:886-888`) returns 0 for the un-normalised shape
+because its backwards scan from the conditional jump reaches the
+`selection_sound:` CODE_LABEL without finding any set of the result pseudo.
+**Mechanism:** the two gates are in series, not in parallel. s5 attributed the
+fold to `jump.c:1190-1191`; s6 corrected that to `jump.c:1178-1181`
+(BRANCH_COST is 1 on the R3000, `tools/gcc-2.7.2/config/mips/mips.h:2937`, so
+`temp3 == CONST_INT` is the only admitting disjunct). This session corrects the
+FRAME: `temp3` can only BE a CONST_INT because `jump.c:754-860` moved the
+branch-target arm's `sound = 4` in front of the conditional jump. Kill the
+move and the store-flag gate never gets an input to fire on. Consequence: the
+s6 frontier's "single stated tension" (`a0 = 4` must be simultaneously inside
+the branch's basic block for reorg's backward fill AND invisible to
+`reg_set_last`) is a property of the SINGLE-ARM `x = 4; if (c) x = 0;` chassis
+only. On the two-arm chassis there is no tension at all, because target's
+`li a0,4` is stolen from the branch's TARGET THREAD, not filled backwards -
+the arm never needs to be in the branch's own block.
+**Probe:** read `tools/gcc-2.7.2/jump.c:700-870` and `:1040-1200` end-to-end
+against `tools/gcc-2.7.2/rtlanal.c:835-916` and
+`tools/gcc-2.7.2/emit-rtl.c:1855-1894` (`next_active_insn` / `prev_active_insn`
+skip CODE_LABELs and BARRIERs and stop only at INSN / CALL_INSN / JUMP_INSN),
+then cross-checked against the s6 `-da` dump pair
+(`tmp/grind/func_800747D8/dumps/text1b.rtl` insns 282/290 becoming
+`text1b.jump` insn 622) which is the normalisation's observed output.
+**Result:** CONFIRMED by construction from the compiler source plus the s6
+dumps. This is a REFRAMING, not a new measurement: it says the whole
+fourteen-spelling 205 bucket is ONE gate away from target, and names the gate.
+**Verdict:** CONFIRMED
+
+### H19 - PASS-INPUT ENUMERATION: the eleven C-visible preconditions of the jump.c:754-860 normalisation
+**Statement:** every input shape that can make the normalisation fail, with the
+predicate that rejects it. `insn` = the then-arm's terminating simplejump;
+`temp` = the conditional jump; `temp3` = the FALLTHROUGH arm's insn; `temp2` =
+the BRANCH-TARGET arm's first insn; `temp1` = the result pseudo X.
+
+  B0 `tools/gcc-2.7.2/jump.c:754` - the then-arm must end in an unconditional
+     jump (a plain `if` with no else never reaches this block at all).
+  B1 `tools/gcc-2.7.2/jump.c:757-758` - `single_set (temp3)` must exist and its
+     SET_DEST must be a REG: a fallthrough arm that STORES TO MEMORY kills it.
+  B2 `tools/gcc-2.7.2/jump.c:775` - `prev_active_insn (temp3)` must BE the
+     conditional jump: **a fallthrough arm of two or more insns kills it.**
+  B3 `tools/gcc-2.7.2/jump.c:762-765` - `temp2` must be a `single_set` to the
+     SAME pseudo.
+  B4 `tools/gcc-2.7.2/jump.c:766-768` - `SET_SRC (temp2)` must be REG / SUBREG /
+     CONSTANT_P: **a branch-target arm whose value comes from MEMORY kills it.**
+  B5 `tools/gcc-2.7.2/jump.c:769-774` - `temp2` must carry no REG_NOTES other
+     than a REG_EQUAL/EQUIV equal to its own source.
+  B6 `tools/gcc-2.7.2/jump.c:784-789` - `reallabelprev == temp2` or
+     `next_active_insn (temp2)` is a simplejump to the join: **a branch-target
+     arm of two or more insns kills it.**
+  B7 `tools/gcc-2.7.2/jump.c:778-781` - `prev_real_insn (JUMP_LABEL (temp)) ==
+     insn` and the two `no_labels_between_p` checks around the else-label.
+  B8 `tools/gcc-2.7.2/jump.c:794-812,831` - the `nuses` walk: `LABEL_NUSES` of
+     the else-label must be fully accounted for by conditional jumps found
+     walking BACKWARDS from `temp`; the walk breaks on any CALL_INSN
+     (`tools/gcc-2.7.2/jump.c:812`) or any JUMP_INSN that is not a condjump to
+     that label. A second, FORWARD entry to the else arm leaves `nuses != 0`
+     and kills it.
+  B9 `tools/gcc-2.7.2/jump.c:832` - `no_labels_between_p (p, insn)` where
+     `p = PREV_INSN (temp)`: **any CODE_LABEL between the last conditional jump
+     and the then-arm's terminating jump kills it** (this is what a
+     TRUTH_ANDIF / TRUTH_ORIF drop-through label would supply).
+  B10 `tools/gcc-2.7.2/jump.c:833` - `! reg_referenced_between_p (temp1, p,
+     NEXT_INSN (temp3))`: **the condition may not mention the result pseudo.**
+     This is the floor-6 baseline's escape, and it forces the loaded test byte
+     and the result into ONE pseudo, which is exactly why the baseline emits
+     `lbu a0,0x64(v0)` where target emits `lbu v0,0x64(v0)`.
+  B11 `tools/gcc-2.7.2/jump.c:834-836` - `! reg_set_between_p (temp1, p, temp3)`
+     and, when `SET_SRC (temp2)` is not a CONST_INT,
+     `! reg_set_between_p (SET_SRC (temp4), p, temp2)`. Both regions are only
+     two insns wide here (the condjump and the fallthrough arm), so neither is
+     reachable from C without also tripping B2 or B10.
+
+**Mechanism:** `tools/gcc-2.7.2/jump.c:754-860`, read end-to-end. B2/B6 are the
+load-bearing pair for this function: every banked 205 spelling has one-insn
+arms, and every spelling with multi-insn arms (the duplicated-call family)
+escapes the fold and lands in the 7/211 bucket instead.
+**Probe:** source read plus the fourteen banked 205 measurements (s1/s2/s5/s6)
+and the three duplicated-call measurements (s5/s6) re-read against the list.
+**Result:** CONFIRMED as an enumeration. The next session's search should be
+over B4, B8 and B9 - the three predicates no banked spelling has yet tripped -
+because B2/B6 (multi-insn arms) are already known to cost the cross-jump
+problem of H20, and B10 is already known to cost the register seat (it IS the
+floor-6 baseline).
+**Verdict:** CONFIRMED
+
+### H20 - the duplicated-call arms DO cross-jump-merge; what stops them in place is that the if/else join label is threaded away by the trailing `goto confirm;`
+**Statement:** the two arms of the duplicated-call form merge three insns deep
+(`jal` / `a2 = 127` / `a1 = 127`, mismatching only at `a0 = 4` vs `a0 = 0`) as
+soon as the arm jump's OWN label is still the if/else join label, because the
+join label's physical predecessor is then the sibling arm. In the in-place
+spelling the join label is immediately followed by `goto confirm;`, so jump.c
+threads both arm jumps past it to `confirm`, whose physical predecessor is
+case 2's `func_8005C650` call - and THAT is why the minimum=1 own-label attempt
+at `tools/gcc-2.7.2/jump.c:2005` only ever matches one insn.
+**Mechanism:** `find_cross_jump` (`tools/gcc-2.7.2/jump.c:2403`) walks
+`i2 = PREV_INSN (e2)` skipping only NOTEs and CODE_LABELs, so whatever insn
+physically precedes the jump's label decides the match depth. Threading the
+jump from the join to `confirm` swaps that predecessor from "the sibling arm"
+to "case 2's call". This REPLACES the s6 statement of the same phenomenon,
+which named the symptom (a 1-insn call-vs-call win) but not its cause, and
+whose suggested next probe (reorder case 2 so its call is not the last insn
+before `confirm`) attacks the wrong end of the chain.
+**Probe:** variant A (`tmp/grind/func_800747D8/s7/var_A.c`, banked as
+`rejected/selection_sound-dup-call-relocated-before-confirm.c`) moves the
+`selection_sound:` block down so it is the last thing before `confirm:` and
+therefore needs no trailing `goto confirm;`. Measured with
+`sandbox --disable all`, then re-compiled through the instrumented cc1
+(`tools/gcc-2.7.2/cc1`) with `BB2_XJUMP_DEBUG=1` via
+`tmp/grind/func_800747D8/s7/xjdbg.sh`.
+**Result:** score 32, build_insns 217. The merge is PROVED by
+`tmp/grind/func_800747D8/s7/dumps/xjdbg.txt:1901-1907`:
+`enter e1=406 e2=421 min=1 (own-label)` followed by three MATCH lines
+(`i1=404/i2=418 parallel`, `i1=402/i2=416 set(reg<-127)`,
+`i1=400/i2=414 set(reg<-127)`) and `PAT-MISMATCH i1=398 set(reg<-4) vs i2=412
+set(reg<-0) lose=0`, ending `DO_CROSS_JUMP jump=406 newjpos=400 newlpos=414`.
+The form is nonetheless REJECTED because the relocation itself costs +9 insns:
+the single-call control
+(`rejected/selection_sound-single-call-relocated-before-confirm.c`) moves
+10/205 -> 29/214.
+**Verdict:** CONFIRMED as the mechanism; KILLED as a floor improvement.
+**kill_scope:** instance
+**measured_on:** candidate.c floor-6 chassis applied to src/text1b.c with the
+selection_sound block relocated to immediately before `confirm:`, in both the
+duplicated-call and single-call spellings; zero FAKE constructs in either.
+
+### H21 - target's own layout excludes the duplicated-call family on this chassis
+**Statement:** target's selection path ends `addiu a1,zero,0x7F` /
+`j .L80074A20` / `addiu a2,zero,0x7F` with the single `jal func_8005C650`
+shared at `.L80074A20` (asm/funcs/func_800747D8.s:115-117 and :161-162). That
+is ONE `a1`/`a2` pair for the whole selection block plus a 1-insn own-label
+merge at the shared `jal` - i.e. target's if/else JOIN is itself followed by a
+jump, which is exactly the configuration that threads arm jumps away (H20). A
+duplicated call therefore cannot reach target's bytes on this chassis without
+the relocation H20 already priced at +9.
+**Mechanism:** H20's threading argument applied to target's own block order:
+the selection block sits FIRST, before case 1's label
+(asm/funcs/func_800747D8.s:107-118 precede `jlabel .L80074984` at :120), so
+the block must end in a forward jump and its join can never be a
+fallthrough-into-`confirm`.
+**Probe:** read asm/funcs/func_800747D8.s:85-165 for the block order and the
+merge points; cross-checked against the two relocation measurements above.
+**Result:** CONFIRMED. Target's selection block is the SINGLE-call two-arm form
+whose own `jal` was own-label-merged 1 insn deep into case 2's - the same
+1-insn merge our duplicated-call form gets, but applied to a block that only
+ever had one call. The remaining question is therefore entirely H19: which of
+B4 / B8 / B9 the original C trips.
+**Verdict:** CONFIRMED
+
+### H22 - MECHANISM PROBE: an adjacent-byte `||` does not create a drop-through CODE_LABEL, so B9 is still untested
+**Statement:** writing the condition as a TRUTH_ORIF over two ADJACENT byte
+fields does not exercise predicate B9, because GCC merges the two byte tests
+into a single halfword load before any second branch is emitted.
+**Mechanism:** the two fields (`field64` at 0x64, `field65` at 0x65) are
+adjacent, so the load/compare pair is rewritten as a single `lhu` of the
+halfword at 0x64 tested against zero - one comparison, one conditional jump,
+hence no TRUTH_ORIF drop-through label for `no_labels_between_p (p, insn)`
+(`tools/gcc-2.7.2/jump.c:832`) to trip on.
+**Probe:** variant D (`tmp/grind/func_800747D8/s7/var_D.c` - a MECHANISM PROBE
+ONLY, deliberately NOT semantics-preserving, and therefore deliberately not
+banked in rejected/): `if (field64 != 0 || field65 != 0) sound = 0; else
+sound = 4;`. `sandbox --disable all --diff` ->
+`tmp/grind/func_800747D8/s7/diff_D.txt`.
+**Result:** score 10, build_insns 205 - the fold regime. The diff's hunks 18/19
+read `lhu a0,100(v0)` / `sltiu a0,a0,1` / `sll a0,a0,0x2`, confirming both the
+halfword merge and the store-flag output. B9 is therefore NOT disproved; it is
+UNTESTED, and testing it needs a compound condition whose two operands cannot
+be coalesced into one comparison.
+**Verdict:** KILLED (as a B9 test vehicle - not as the B9 predicate)
+**kill_scope:** instance
+**measured_on:** candidate.c floor-6 chassis applied to src/text1b.c with the
+selection_sound block replaced by the ORIF spelling; zero FAKE constructs.
+
+### H23 - KILL RE-AUDIT (mandated): variant F still measures 8/208 and this ledger has no FAKE carrier to ablate
+**Statement:** the s6 instance kill on variant F - the closest form to target,
+and the only spelling that matches BOTH `lbu v0,0x64(v0)` and `beqz v0,<join>`
+- stands unchanged on the current chassis, and its FAKE-ablation prong is
+vacuous.
+**Mechanism:** n/a - re-measurement.
+**Probe:** `tmp/grind/func_800747D8/s6/var_F.c` re-applied to src/text1b.c and
+re-measured with `sandbox --disable all`
+(`tmp/grind/func_800747D8/s7/score_F_reaudit.txt`); then `python3
+tools/fake_ablate.py --func func_800747D8 --file text1b --candidate
+memory/grind/func_800747D8/candidate.c`.
+**Result:** score 8, build_insns 208 - identical to s6, so the kill re-stands.
+fake_ablate reports "no FAKE-annotated constructs found in
+memory/grind/func_800747D8/candidate.c; nothing to ablate", so no banked kill
+on this ledger was ever measured with a FAKE carrier occupying a target pseudo.
+**Verdict:** CONFIRMED (the s6 kill re-stands)
+
+## [s7] On the two-arm chassis the store-flag transform at tools/gcc-2.7.2/jump.c:1178-1181 cannot be reached until the normalisation at tools/gcc-2.7.2/jump.c:754-860 has already rewritten `if (c) x = a; else x = b;` into `x = b; if (c) x = a;`, so defeating the normalisation alone is sufficient to escape the 10/205 regime - no separate store-flag escape has to be engineered.
+- mechanism: The store-flag block has its own precondition at tools/gcc-2.7.2/jump.c:1065-1068 (`reallabelprev == temp` or the next active insn after temp is a simplejump to JUMP_LABEL(insn)); on an un-normalised two-arm shape the fallthrough arm is followed by the arm's own `goto join`, whose JUMP_LABEL is the join and not the else-label the conditional jump targets, so that disjunction is false. Independently reg_set_last (tools/gcc-2.7.2/rtlanal.c:886-888) returns 0 there, its backward scan reaching the `selection_sound:` CODE_LABEL without finding any set of the result pseudo. The two gates are in series, not in parallel. This supersedes the s5 attribution (jump.c:1190-1191) and reframes the s6 one (jump.c:1178-1181): s6 named the gate the store-flag block sees, this names the gate that decides.
+- probe: Read tools/gcc-2.7.2/jump.c:700-870 and :1040-1200 end to end against tools/gcc-2.7.2/rtlanal.c:835-916 and tools/gcc-2.7.2/emit-rtl.c:1855-1894 (next_active_insn / prev_active_insn skip CODE_LABELs and BARRIERs and stop only at INSN / CALL_INSN / JUMP_INSN), cross-checked against the s6 -da dump pair tmp/grind/func_800747D8/dumps/text1b.rtl (insns 282/290) vs text1b.jump (new insn 622), which is the normalisation's observed output.
+- result: CONFIRMED by construction from the compiler source plus the banked s6 dumps. Corollary recorded in the ledger: the s6 'single stated tension' - a0=4 must be both inside the branch's basic block for reorg's backward fill AND invisible to reg_set_last - is a property of the single-arm `x = 4; if (c) x = 0;` chassis only. On the two-arm chassis there is no tension, because target's li a0,4 is stolen from the branch's TARGET thread and the arm never has to live in the branch's own block.
+- verdict: CONFIRMED
+
+## [s7] The jump.c:754-860 normalisation has eleven C-visible preconditions (banked as H19/B0-B11 with a file:line predicate each); of them B2 (tools/gcc-2.7.2/jump.c:775) and B6 (tools/gcc-2.7.2/jump.c:784-789) mean an arm of two or more insns defeats it, B10 (tools/gcc-2.7.2/jump.c:833) means a condition mentioning the result pseudo defeats it, and B4 (jump.c:766-768), B8 (jump.c:794-812,831) and B9 (jump.c:832) are the three predicates no banked spelling of this block has yet tripped.
+- mechanism: tools/gcc-2.7.2/jump.c:754-860 read end to end. B2/B6 explain the whole measured partition of this ledger: every one-insn-arm spelling folds at 10/205, every multi-insn-arm (duplicated-call) spelling escapes at 7/211. B10 explains the floor-6 baseline: 'the condition mentions the result' is precisely what forces the loaded test byte and the result into one pseudo, which is why the baseline emits lbu a0,0x64(v0) where target emits lbu v0,0x64(v0).
+- probe: Source read, then the fourteen banked 205 measurements (s1/s2/s5/s6) and the three duplicated-call measurements (s5/s6) re-read against the enumeration to check each lands in the predicted bucket.
+- result: CONFIRMED as an enumeration; every banked measurement on this ledger is accounted for by B2/B6/B10. B4, B8 and B9 are the untried search space handed to the next session.
+- verdict: CONFIRMED
+
+## [s7] Relocating the selection_sound block so it sits immediately before `confirm:` (removing the trailing `goto confirm;`) lets the duplicated-call arms cross-jump-merge three insns deep, but the relocation costs more insns than the merge recovers on this chassis.
+- mechanism: find_cross_jump (tools/gcc-2.7.2/jump.c:2403) walks i2 = PREV_INSN(e2) skipping only NOTEs and CODE_LABELs, so the insn physically preceding the jump's label decides the match depth. With the trailing `goto confirm;` present, jump.c threads both arm jumps past the if/else join to `confirm`, whose physical predecessor is case 2's func_8005C650 call - a 1-insn match. Without it the arm jump's own label is the join, whose predecessor is the sibling arm - a 3-insn match on jal / a2=127 / a1=127. This names the CAUSE behind the s6 symptom (the minimum=1 own-label win at tools/gcc-2.7.2/jump.c:2005) and retires s6's suggested probe of reordering case 2's call, which attacks the wrong end of the chain.
+- probe: Variant A (tmp/grind/func_800747D8/s7/var_A.c, banked as rejected/selection_sound-dup-call-relocated-before-confirm.c) measured with sandbox --disable all, then recompiled through the instrumented cc1 tools/gcc-2.7.2/cc1 with BB2_XJUMP_DEBUG=1 via tmp/grind/func_800747D8/s7/xjdbg.sh. Relocation cost isolated with variant B (single-call control, banked as rejected/selection_sound-single-call-relocated-before-confirm.c).
+- result: Variant A score 32 / build_insns 217; variant B (control) score 29 / build_insns 214, i.e. the relocation alone costs +9 insns over the in-place 10/205 spelling and the dup form's net +6 is that +9 minus the 3 insns the merge recovers. The merge itself is proved verbatim at tmp/grind/func_800747D8/s7/dumps/xjdbg.txt:1901-1907: `enter e1=406 e2=421 min=1 (own-label)` then three MATCH lines (i1=404/i2=418 parallel, i1=402/i2=416 set(reg<-127), i1=400/i2=414 set(reg<-127)) then `PAT-MISMATCH i1=398 set(reg<-4) vs i2=412 set(reg<-0)` then `DO_CROSS_JUMP jump=406 newjpos=400 newlpos=414`. Also recorded: target's own layout puts the selection block first, before case 1's label (asm/funcs/func_800747D8.s:107-118 precede jlabel .L80074984 at :120), and its path ends addiu a1,0x7F / j .L80074A20 / addiu a2,0x7F with a single shared jal at .L80074A20 (:115-117, :161-162) - one a1/a2 pair plus a 1-insn own-label merge - so target's block is the SINGLE-call two-arm form, not a duplicated call.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block relocated to immediately before `confirm:` in both the duplicated-call and the single-call spelling; zero FAKE constructs in either form or in the chassis.
+
+## [s7] Spelling the condition as a TRUTH_ORIF over the two adjacent byte fields (field64 at 0x64, field65 at 0x65) does not exercise predicate B9, because GCC coalesces the two byte tests into one halfword comparison and emits no drop-through CODE_LABEL.
+- mechanism: The fields are adjacent, so the pair of byte loads and compares is rewritten as a single lhu of the halfword at 0x64 tested against zero. One comparison means one conditional jump, so no TRUTH_ORIF drop-through label is emitted for no_labels_between_p (p, insn) at tools/gcc-2.7.2/jump.c:832 to trip on, and the normalisation proceeds exactly as for a simple condition.
+- probe: Variant D (tmp/grind/func_800747D8/s7/var_D.c) - a MECHANISM PROBE ONLY, deliberately not semantics-preserving and therefore deliberately NOT banked in rejected/: `if (field64 != 0 || field65 != 0) sound = 0; else sound = 4;`. sandbox --disable all --diff -> tmp/grind/func_800747D8/s7/diff_D.txt.
+- result: Score 10, build_insns 205 - the fold regime. Hunks 18/19 read lhu a0,100(v0) / sltiu a0,a0,1 / sll a0,a0,0x2, confirming both the halfword coalescing and the store-flag output. B9 is therefore not disproved, it is untested: testing it needs a compound condition whose two operands cannot be coalesced into a single comparison.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block replaced by the adjacent-field ORIF spelling; zero FAKE constructs.
+
+## [s7] MANDATED KILL RE-AUDIT: the s6 instance kill on variant F (the closest banked form to target) re-measures identically on the current chassis, and this ledger carries no FAKE-annotated construct for fake_ablate to strip.
+- mechanism: n/a - re-measurement of a banked instance kill under the current chassis and FAKE state.
+- probe: tmp/grind/func_800747D8/s6/var_F.c re-applied to src/text1b.c and re-measured with sandbox --disable all (tmp/grind/func_800747D8/s7/score_F_reaudit.txt); then python3 tools/fake_ablate.py --func func_800747D8 --file text1b --candidate memory/grind/func_800747D8/candidate.c.
+- result: Variant F: score 8, build_insns 208 - identical to s6, so that kill re-stands unchanged. fake_ablate reports 'no FAKE-annotated constructs found in memory/grind/func_800747D8/candidate.c; nothing to ablate', so the FAKE-ablation prong of the re-audit is vacuous here: no banked kill on this ledger was ever measured with a FAKE carrier occupying a target pseudo.
+- verdict: CONFIRMED

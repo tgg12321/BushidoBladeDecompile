@@ -1,8 +1,8 @@
 {
  "func": "func_800747D8",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "solver",
+ "session_count": 7,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -39,18 +39,24 @@
    "floor": 6,
    "modality": "solver",
    "headline": "Solver/forensics session: named both remaining gates from the compiler source and PROVED them from dumps - the 205 fold is jump.c:726 normalisation feeding a temp3==CONST_INT store-flag gate (BRANCH_C"
+  },
+  {
+   "session": 7,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Forensics: re-attributed the 10/205 fold one pass UPSTREAM to the jump.c:754-860 normalisation (blocking it alone is sufficient), enumerated its eleven C-visible preconditions with file:line predicate"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's `li a0,4` is stolen into the branch's delay slot from the branch's TARGET THREAD, not moved backward from the same block - which means the C is a two-arm if/else whose `sound = 4` arm is the branch target, and the reason it survives to reorg is that tools/gcc-2.7.2/jump.c:726-860 is defeated by its own 'the test doesn't involve X' precondition: the test must reference the result variable while the result variable is NOT the destination of the field64 load.",
-   "mechanism": "jump.c:832 requires `! reg_referenced_between_p (temp1, p, NEXT_INSN (temp3))`, i.e. the normalisation dies if the conditional jump's pattern mentions X (the result pseudo). If it dies, the store-flag gate at jump.c:1178-1181 also dies because reg_set_last then finds no pre-branch set of X at all and returns 0 at the CODE_LABEL (rtlanal.c:867-916), leaving the two arms intact for reorg's steal_delay_list_from_target to lift the else arm's `a0 = 4` into the slot and delete the resulting jump-to-next.",
-   "next_probe": "Enumerate C shapes in which the branch condition references the SAME local that the arms assign, while that local's value at the branch is not the loaded field64 byte - the floor-6 baseline is the degenerate case (local IS the load dest, hence `lbu a0`). Candidates to spell and measure: (i) the local carries the loaded byte but the arms write a NARROWER lvalue of it so the arm insns are subreg sets (which also trips reg_set_last_1's SET_DEST (pat) != x path at rtlanal.c:851-858); (ii) the condition is a compound test whose second half references the local. Measure each with sandbox --disable all --diff and confirm against the .jump dump that insn 290's equivalent is still present (normalisation defeated) before crediting any result."
+   "hypothesis": "Target's selection block is the SINGLE-call two-arm form, and the ONLY thing separating it from the banked 10/205 bucket is one failing precondition of the tools/gcc-2.7.2/jump.c:754-860 normalisation. Three predicates are still untried: B4 (jump.c:766-768 - the branch-target arm's value comes from MEMORY, so SET_SRC is neither REG, SUBREG nor CONSTANT_P), B8 (jump.c:794-812,831 - LABEL_NUSES of the else-label cannot be fully discharged by conditional jumps found walking backwards from the condjump, e.g. because a CALL_INSN breaks the walk at jump.c:812 or because a second entry to the else arm is FORWARD), and B9 (jump.c:832 - a CODE_LABEL sits between the last conditional jump and the then-arm's terminating jump).",
+   "mechanism": "Blocking the normalisation is sufficient: the store-flag gate at jump.c:1178-1181 then never receives a CONST_INT because nothing moved `sound = 4` in front of the conditional jump, and its own precondition at jump.c:1065-1068 fails for a two-arm shape anyway. The surviving two-arm form is what reorg's steal_delay_list_from_target turns into target's `beqz v0,<join>` + delay-slot `li a0,4` + fallthrough `move a0,zero`, with the loaded byte free to sit in $v0.",
+   "next_probe": "Spell and measure C shapes for each untried predicate, checking each against the .jump dump (tools/grinder/dump.ps1 func_800747D8) for the ABSENCE of a newly created `r = 4` insn immediately before the conditional jump (the s6 insn-622 signature) BEFORE crediting any score. For B9 the vehicle must be a compound condition whose two operands cannot be coalesced into one comparison - the adjacent-byte ORIF measured this session collapses to a single lhu, so pick operands in different words or of different widths. For B8, look for a spelling in which the else arm is entered from a second, FORWARD site. For B4, look for a spelling in which the branch-target arm's value is loaded rather than materialised."
   },
   {
-   "hypothesis": "The duplicated-call form (7/211, target's register seat already correct) closes if the two arms' jumps are still pointing at an ORIGINAL label - uid below max_uid and present in jump_chain - when jump.c reaches them, so the sibling-jump pairing loop at tools/gcc-2.7.2/jump.c:2011-2021 gets a chance to match them against each other 3 insns deep.",
-   "mechanism": "Per the s6 XJDBG trace the arms are lost at tools/gcc-2.7.2/jump.c:2005: the minimum=1 own-label attempt WINS a 1-insn call-vs-call match against case 2's call_insn 418 (the insn that falls through into `confirm`) and retargets both arm jumps to a do_cross_jump-created label, uid 660, which jump.c:2012's `INSN_UID (JUMP_LABEL (insn)) < max_uid` guard then excludes from the pairing loop forever - and jump_chain is never updated for that label either.",
-   "next_probe": "The own-label attempt only wins because a func_8005C650 call is the insn immediately preceding `confirm`. Test whether the `confirm:` block can legitimately begin with something other than a fallthrough from case 2's call - e.g. spell case 2 so its call is not the last insn before the label (the D_800A35DC increment or the field66 store ordered after it), which target's own asm ordering at .L80074A04-.L80074A1C may already license. Re-run BB2_XJUMP_DEBUG=1 through tools/gcc-2.7.2/cc1 on each spelling and check for a `chain-partner` entry on the arm jumps; a `DO_CROSS_JUMP` with newjpos 3 insns back is the win condition. Do NOT add a statement whose only purpose is to occupy that slot - that would be a dead-store/pad cheat and a first reach of an unsanctioned family."
+   "hypothesis": "The duplicated-call chassis is closable in principle - its arms merge 3 insns deep once the arm jump's own label is the if/else join - but every spelling that preserves that join also relocates the block, and the relocation costs +9 insns that target's own block order (selection block first, before case 1) forbids recovering.",
+   "mechanism": "tools/gcc-2.7.2/jump.c:2403 find_cross_jump decides match depth from the insn physically preceding the jump's label; jump threading moves that label from the join to `confirm` whenever the join is immediately followed by an unconditional jump. Target's own selection block ends in a forward jump (j .L80074A20), so target's join is in exactly that threaded configuration - which is why target only gets the 1-insn own-label merge at the shared jal and therefore cannot be a duplicated call.",
+   "next_probe": "Do NOT re-spend sessions on the duplicated-call family or on s6's suggested reordering of case 2's call; both are now measured or excluded. If a later session wants to revisit it, the only untried lever is a real (non-dead) statement between the if/else join and the `goto confirm;` that blocks the threading - and no such statement exists in target's asm, so it would have to come from a sanctioned duplicated-statement-into-arms grant with its own lever-exhaustion record, not from this chassis."
   },
   {
    "hypothesis": "Hunk 9's jtbl_80015A0C table-offset residual closes once the hand-transcribed array is deleted from src/text1a_b_mid_rodata.c in the same change that lands func_800747D8's real switch as committed C, mirroring the already-executed func_8006B578/jtbl_80015988 precedent.",
@@ -188,6 +194,22 @@
    "measured_on": "candidate.c floor-6 chassis applied to src/text1b.c, compared against the committed bodies of func_800692C0 and src/ings.c on main; zero FAKE constructs.",
    "predicate_cite": "",
    "result": "No transplantable block in either sibling: func_800692C0 shares only a call boundary that already matches, and ings.c/ma"
+  },
+  {
+   "session": 7,
+   "statement": "Relocating the selection_sound block so it sits immediately before `confirm:` (removing the trailing `goto confirm;`) lets the duplicated-call arms cross-jump-merge three insns deep, but the relocatio",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block relocated to immediately before `confirm:` in both the duplicated-call and the single-call spelling; zero FAKE constr",
+   "predicate_cite": "",
+   "result": "Variant A score 32 / build_insns 217; variant B (control) score 29 / build_insns 214, i.e. the relocation alone costs +9"
+  },
+  {
+   "session": 7,
+   "statement": "Spelling the condition as a TRUTH_ORIF over the two adjacent byte fields (field64 at 0x64, field65 at 0x65) does not exercise predicate B9, because GCC coalesces the two byte tests into one halfword c",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c floor-6 chassis applied to src/text1b.c with the selection_sound block replaced by the adjacent-field ORIF spelling; zero FAKE constructs.",
+   "predicate_cite": "",
+   "result": "Score 10, build_insns 205 - the fold regime. Hunks 18/19 read lhu a0,100(v0) / sltiu a0,a0,1 / sll a0,a0,0x2, confirming"
   }
  ],
  "ladder_skip": 0,

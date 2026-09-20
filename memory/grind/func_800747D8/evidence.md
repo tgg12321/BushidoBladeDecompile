@@ -566,3 +566,159 @@ at the original label 424) merges 8 insns deep in the same trace.
 - [s6] Hunk 9's jtbl_80015A0C table-offset residual is unchanged and remains a cross-file final-submission step (delete the hand-transcribed array from src/text1a_b_mid_rodata.c in the same change that lands the C body), per the s2 analysis and the executed func_8006B578/jtbl_80015988 precedent.
 
 - [s6] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form, zero FAKE constructs); git status shows only metrics/events.jsonl (pre-existing drift) outside memory/grind and tmp.
+
+## Session 7 (forensics) - 2026-09-20
+
+**Chassis re-confirmed.** `candidate.c` spliced onto `src/text1b.c` measures
+`sandbox --disable all` -> score 6, build_insns 208 == target_insns 208 (the
+figure the driver measured at dispatch). `--diff`
+(`tmp/grind/func_800747D8/s7/diff_base.txt`) reproduces the s1-s6
+classification unchanged: 30 hunks, 2 source-level (18/19), 2 operand-only
+(9 and 17), 26 not-scored.
+
+**THE SESSION'S HEADLINE: the 205 fold has been re-attributed one pass
+UPSTREAM, and its entry gate's eleven C-visible preconditions are now
+enumerated with file:line predicates - and the duplicated-call family's
+3-insn surplus has been traced to its actual cause (jump threading of the
+if/else join label) and REPRODUCED closing, three insns deep, in an XJDBG
+trace.**
+
+### 1. Re-attribution: the entry gate is jump.c:754-860, not the store-flag gate
+
+s5 credited the 10/205 fold to `tools/gcc-2.7.2/jump.c:1190-1191`; s6 corrected
+that to the `temp3 == CONST_INT` disjunct at
+`tools/gcc-2.7.2/jump.c:1178-1181` (BRANCH_COST is 1 on the R3000, so the two
+BRANCH_COST fallbacks are dead). Both are true of the insn stream the
+store-flag gate SEES, but neither is the gate that decides. On the two-arm
+chassis the store-flag block at `tools/gcc-2.7.2/jump.c:1040-1200` cannot fire
+at all until the normalisation at `tools/gcc-2.7.2/jump.c:754-860` has already
+rewritten `if (c) x = a; else x = b;` into `x = b; if (c) x = a;`:
+
+- its own precondition `reallabelprev == temp || (next_active_insn (temp) is a
+  simplejump to JUMP_LABEL (insn))` (`tools/gcc-2.7.2/jump.c:1065-1068`) is
+  FALSE for the un-normalised two-arm shape, because the fallthrough arm is
+  followed by the arm's own `goto join`, whose JUMP_LABEL is the join and not
+  the else-label the conditional jump targets; and
+- `reg_set_last` (`tools/gcc-2.7.2/rtlanal.c:886-888`) returns 0 anyway, its
+  backwards scan reaching the `selection_sound:` CODE_LABEL without finding any
+  set of the result pseudo.
+
+Practical consequence: **blocking the normalisation is SUFFICIENT.** There is
+no separate store-flag escape to engineer, and the s6 "single stated tension"
+(`a0 = 4` must be both inside the branch's basic block for reorg's backward
+fill and invisible to `reg_set_last`) is a property of the SINGLE-ARM
+`x = 4; if (c) x = 0;` chassis only. On the two-arm chassis the tension does
+not exist, because target's `li a0,4` is stolen from the branch's TARGET
+THREAD - the arm never has to live in the branch's own block.
+
+### 2. PASS-INPUT ENUMERATION of the normalisation (H19)
+
+Eleven predicates, each with a file:line, are now banked in hypotheses.md H19.
+The load-bearing ones for this function:
+
+- **B2** (`tools/gcc-2.7.2/jump.c:775`) and **B6**
+  (`tools/gcc-2.7.2/jump.c:784-789`): either arm having two or more insns kills
+  the normalisation. This is exactly why every duplicated-call spelling escapes
+  the fold (7/211) and every one-insn-arm spelling does not (10/205).
+- **B10** (`tools/gcc-2.7.2/jump.c:833`): the condition may not mention the
+  result pseudo. This is the floor-6 baseline's escape - and it is also the
+  reason the baseline emits `lbu a0,0x64(v0)` where target emits
+  `lbu v0,0x64(v0)`, because "the condition mentions the result" forces the
+  loaded byte and the result into one pseudo.
+- **B4** (`tools/gcc-2.7.2/jump.c:766-768`), **B8**
+  (`tools/gcc-2.7.2/jump.c:794-812,831`) and **B9**
+  (`tools/gcc-2.7.2/jump.c:832`) are the three predicates NO banked spelling
+  has yet tripped. They are the next session's search space.
+
+### 3. The duplicated-call arms DO merge - proved, with the real cause named
+
+s6 proved the symptom (the minimum=1 own-label `find_cross_jump` at
+`tools/gcc-2.7.2/jump.c:2005` wins a 1-insn call-vs-call match and locks both
+arm jumps out of the sibling-pairing loop). This session names the CAUSE and
+reproduces the merge.
+
+`find_cross_jump` (`tools/gcc-2.7.2/jump.c:2403`) walks `i2 = PREV_INSN (e2)`
+skipping only NOTEs and CODE_LABELs, so the match depth is decided by whatever
+insn PHYSICALLY PRECEDES the jump's label. In the in-place duplicated-call
+spelling the if/else join label is immediately followed by `goto confirm;`, so
+jump.c threads both arm jumps past the join to `confirm` - and `confirm`'s
+physical predecessor is case 2's `func_8005C650` call, giving a 1-insn match.
+Remove the `goto confirm;` (by making the selection block the last thing before
+`confirm:`) and the arm jump's own label is the join again, whose predecessor
+is the SIBLING ARM. Trace, verbatim, from
+`tmp/grind/func_800747D8/s7/dumps/xjdbg.txt:1901-1907`:
+
+    XJDBG: enter e1=406 e2=421 min=1 (own-label)
+    XJDBG:   MATCH i1=404 i2=418 parallel min->0
+    XJDBG:   MATCH i1=402 i2=416 set(reg<-127) min->-1
+    XJDBG:   MATCH i1=400 i2=414 set(reg<-127) min->-2
+    XJDBG:   PAT-MISMATCH i1=398 set(reg<-4) vs i2=412 set(reg<-0) lose=0
+    XJDBG: result e1=406 min=-2 last1=400 => WIN
+    XJDBG: DO_CROSS_JUMP jump=406 newjpos=400 newlpos=414
+
+That is `jal` / `a2 = 127` / `a1 = 127` merged, mismatching only at `a0 = 4`
+vs `a0 = 0` - the exact three-insn merge the in-place spelling never gets.
+s6's suggested next probe (reorder case 2 so its call is not the last insn
+before `confirm`) attacks the wrong end of the chain and should not be spent.
+
+### 4. But the relocation costs more than the merge saves, and target's layout forbids it
+
+- duplicated-call, relocated: score 32, build_insns 217
+  (`rejected/selection_sound-dup-call-relocated-before-confirm.c`).
+- single-call CONTROL, relocated: score 29, build_insns 214
+  (`rejected/selection_sound-single-call-relocated-before-confirm.c`) - so the
+  relocation ALONE costs +9 insns over the in-place 10/205 spelling, and the
+  dup form's +6 net is that +9 minus the 3 insns the merge recovers.
+- target's own layout forbids the relocation regardless: the selection block
+  sits FIRST, before case 1's label (asm/funcs/func_800747D8.s:107-118 precede
+  `jlabel .L80074984` at :120), and its path ends `addiu a1,zero,0x7F` /
+  `j .L80074A20` / `addiu a2,zero,0x7F` with the single `jal func_8005C650`
+  shared at `.L80074A20` (:115-117, :161-162). Target's if/else join is itself
+  followed by a jump, i.e. exactly the configuration that threads arm jumps
+  away. **Target's selection block is the SINGLE-call two-arm form**, whose one
+  `jal` was own-label-merged 1 insn deep into case 2's - the same 1-insn merge
+  our duplicated-call form gets, but on a block that only ever had one call.
+
+### 5. Mechanism probe on B9 was inconclusive by construction
+
+`if (field64 != 0 || field65 != 0) sound = 0; else sound = 4;` measures 10/205
+with hunks 18/19 reading `lhu a0,100(v0)` / `sltiu a0,a0,1` / `sll a0,a0,0x2`:
+the two ADJACENT byte tests are coalesced into one halfword comparison, so no
+TRUTH_ORIF drop-through CODE_LABEL is ever emitted and B9 is never exercised.
+Testing B9 needs a compound condition whose operands cannot be coalesced.
+
+- [s7] Chassis re-confirmed: candidate.c on src/text1b.c -> sandbox --disable all score 6, build_insns 208 == target_insns 208; --diff (tmp/grind/func_800747D8/s7/diff_base.txt) reproduces the s1-s6 hunk classification unchanged (2 source-level 18/19, 2 operand-only 9 and 17, 26 not-scored).
+- [s7] RE-ATTRIBUTION: on the two-arm chassis the store-flag transform at tools/gcc-2.7.2/jump.c:1178-1181 is unreachable until the normalisation at tools/gcc-2.7.2/jump.c:754-860 has already run, because (a) the store-flag block's own precondition at tools/gcc-2.7.2/jump.c:1065-1068 (`reallabelprev == temp` or the next active insn after temp is a simplejump to the same label) is false for an un-normalised two-arm shape, and (b) reg_set_last (tools/gcc-2.7.2/rtlanal.c:886-888) returns 0 there anyway, its backward scan hitting the `selection_sound:` CODE_LABEL. Blocking the normalisation is therefore SUFFICIENT; no separate store-flag escape has to be engineered. This supersedes the s6 framing that the two gates must be defeated together.
+- [s7] The s6 "single stated tension" (`a0 = 4` must be simultaneously inside the branch's basic block and invisible to reg_set_last) is specific to the SINGLE-ARM `x = 4; if (c) x = 0;` chassis. On the two-arm chassis it does not apply: target's `li a0,4` is stolen from the branch's TARGET thread, so the arm never needs to sit in the branch's own basic block.
+- [s7] PASS-INPUT ENUMERATION (hypotheses.md H19): eleven C-visible preconditions of tools/gcc-2.7.2/jump.c:754-860, each with a file:line predicate. B2 (jump.c:775) and B6 (jump.c:784-789) mean either arm having 2+ insns kills the normalisation - which is exactly why the duplicated-call family escapes the fold at 7/211 while every one-insn-arm spelling folds at 10/205. B10 (jump.c:833) - the condition may not mention the result pseudo - is the floor-6 baseline's escape and the direct cause of its `lbu a0` register seat. B4 (jump.c:766-768, a branch-target arm whose value comes from MEMORY), B8 (jump.c:794-812,831, an unresolvable LABEL_NUSES on the else-label) and B9 (jump.c:832, a CODE_LABEL between the last condjump and the then-arm's terminating jump) are the three predicates no banked spelling has yet tripped.
+- [s7] The duplicated-call arms DO cross-jump-merge 3 insns deep (jal / a2=127 / a1=127, mismatching only at a0=4 vs a0=0) when the arm jump's own label is still the if/else join. PROVED by the BB2_XJUMP_DEBUG trace at tmp/grind/func_800747D8/s7/dumps/xjdbg.txt:1901-1907 (`enter e1=406 e2=421 min=1 (own-label)` -> three MATCH lines -> `DO_CROSS_JUMP jump=406 newjpos=400 newlpos=414`). The in-place spelling loses that merge because the join label is immediately followed by `goto confirm;`, so jump.c threads both arm jumps past the join to `confirm`, whose physical predecessor is case 2's call - and find_cross_jump (tools/gcc-2.7.2/jump.c:2403) walks `i2 = PREV_INSN (e2)` skipping only NOTEs and CODE_LABELs, so the label's physical predecessor is what decides match depth. This names the CAUSE behind the s6 symptom and retires s6's suggested probe (reordering case 2's call), which attacks the wrong end.
+- [s7] The relocation that buys the merge costs more than the merge: duplicated-call relocated to immediately before `confirm:` measures 32/217, and the single-call CONTROL with the same relocation measures 29/214, i.e. +9 insns of pure layout over the in-place 10/205. Both banked in rejected/.
+- [s7] TARGET'S LAYOUT EXCLUDES THE DUPLICATED-CALL FAMILY on this chassis: the selection block sits FIRST, before case 1's label (asm/funcs/func_800747D8.s:107-118 precede `jlabel .L80074984` at :120), and ends `addiu a1,zero,0x7F` / `j .L80074A20` / `addiu a2,zero,0x7F` with the single `jal func_8005C650` shared at .L80074A20 (:115-117, :161-162) - one a1/a2 pair for the whole block plus a 1-insn own-label merge at the shared jal. Target's join is itself followed by a jump, i.e. exactly the configuration that threads arm jumps away, so target's selection block is the SINGLE-call two-arm form and the residual is entirely "which of B4/B8/B9 does the original C trip".
+- [s7] MECHANISM PROBE (not a candidate, deliberately not semantics-preserving): `if (field64 != 0 || field65 != 0) sound = 0; else sound = 4;` measures 10/205 with hunks 18/19 reading `lhu a0,100(v0)` / `sltiu a0,a0,1` / `sll a0,a0,0x2` - the two ADJACENT byte tests coalesce into one halfword comparison, so no TRUTH_ORIF drop-through CODE_LABEL is emitted and B9 is never exercised. Testing B9 needs a compound condition whose operands cannot be coalesced into a single comparison.
+- [s7] KILL RE-AUDIT (mandated): variant F (tmp/grind/func_800747D8/s6/var_F.c) re-measures score 8 / build_insns 208 on the current chassis, unchanged from s6, so that instance kill re-stands. `python3 tools/fake_ablate.py --func func_800747D8 --file text1b --candidate memory/grind/func_800747D8/candidate.c` reports "no FAKE-annotated constructs found ... nothing to ablate", so the FAKE-ablation prong of the re-audit is vacuous for this ledger: no banked kill was ever measured with a FAKE carrier occupying a target pseudo.
+- [s7] Hunk 9's jtbl_80015A0C table-offset residual is unchanged and remains a cross-file final-submission step (delete the hand-transcribed array from src/text1a_b_mid_rodata.c in the same change that lands the C body), per the s2 analysis and the executed func_8006B578/jtbl_80015988 precedent.
+- [s7] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form, zero FAKE constructs).
+
+- [s7] Chassis re-confirmed: candidate.c on src/text1b.c measures sandbox --disable all score 6, build_insns 208 == target_insns 208; --diff (tmp/grind/func_800747D8/s7/diff_base.txt) reproduces the s1-s6 classification unchanged (2 source-level hunks 18/19, 2 operand-only hunks 9 and 17, 26 not-scored).
+
+- [s7] The 10/205 fold is produced by TWO passes in series and the DECIDING one is the first: tools/gcc-2.7.2/jump.c:754-860 normalises `if (c) x = a; else x = b;` into `x = b; if (c) x = a;`, and only then can the store-flag gate at tools/gcc-2.7.2/jump.c:1178-1181 see a CONST_INT. On the un-normalised two-arm shape the store-flag block fails its own precondition at tools/gcc-2.7.2/jump.c:1065-1068 AND reg_set_last (tools/gcc-2.7.2/rtlanal.c:886-888) returns 0 at the selection_sound CODE_LABEL - so blocking the normalisation alone is sufficient.
+
+- [s7] The s6 'single stated tension' (a0=4 must be both inside the branch's basic block for reorg's backward fill and invisible to reg_set_last) applies only to the single-arm `x = 4; if (c) x = 0;` chassis. On the two-arm chassis target's li a0,4 is stolen from the branch's TARGET thread, so the arm never needs to live in the branch's own basic block and the two requirements are not in conflict.
+
+- [s7] PASS-INPUT ENUMERATION (hypotheses.md H19): eleven C-visible preconditions of tools/gcc-2.7.2/jump.c:754-860 with file:line predicates. B2 (jump.c:775) and B6 (jump.c:784-789) - an arm of 2+ insns defeats the normalisation, which is exactly why every duplicated-call spelling escapes at 7/211 while every one-insn-arm spelling folds at 10/205. B10 (jump.c:833) - the condition may not mention the result pseudo - is the floor-6 baseline's escape and the direct cause of its lbu a0 seat. B4 (jump.c:766-768, branch-target arm sourced from MEMORY), B8 (jump.c:794-812,831, unresolvable LABEL_NUSES on the else-label) and B9 (jump.c:832, a CODE_LABEL between the last condjump and the then-arm's terminating jump) are untried.
+
+- [s7] find_cross_jump (tools/gcc-2.7.2/jump.c:2403) walks i2 = PREV_INSN(e2) skipping only NOTEs and CODE_LABELs, so the insn PHYSICALLY PRECEDING a jump's label decides the cross-jump match depth. That is the cause behind the s6 symptom: with the trailing `goto confirm;` present, jump.c threads both duplicated-call arm jumps past the if/else join to `confirm`, whose predecessor is case 2's call (1-insn match); remove it and the own label is the join, whose predecessor is the sibling arm (3-insn match).
+
+- [s7] PROVED in trace: with the selection block relocated to immediately before `confirm:`, tmp/grind/func_800747D8/s7/dumps/xjdbg.txt:1901-1907 shows `enter e1=406 e2=421 min=1 (own-label)` followed by three MATCH lines (i1=404/i2=418 parallel; i1=402/i2=416 set(reg<-127); i1=400/i2=414 set(reg<-127)), `PAT-MISMATCH i1=398 set(reg<-4) vs i2=412 set(reg<-0) lose=0`, and `DO_CROSS_JUMP jump=406 newjpos=400 newlpos=414` - jal / a2=127 / a1=127 merged, mismatching only at a0=4 vs a0=0.
+
+- [s7] The relocation that buys that merge costs +9 insns of layout: the single-call control moves 10/205 -> 29/214, and the duplicated-call form moves 7/211 -> 32/217 (the +9 minus the 3 the merge recovers). Both banked in memory/grind/func_800747D8/rejected/.
+
+- [s7] Target's layout excludes the duplicated-call family on this chassis: the selection block sits FIRST, before case 1's label (asm/funcs/func_800747D8.s:107-118 precede jlabel .L80074984 at :120), and its path ends addiu a1,zero,0x7F / j .L80074A20 / addiu a2,zero,0x7F with the single jal func_8005C650 shared at .L80074A20 (:115-117, :161-162) - one a1/a2 pair for the whole block plus a 1-insn own-label merge at the shared jal. Target's join is itself followed by a jump, i.e. the very configuration that threads arm jumps away, so target's selection block is the SINGLE-call two-arm form.
+
+- [s7] Mechanism probe (not a candidate, deliberately not semantics-preserving): `if (field64 != 0 || field65 != 0) sound = 0; else sound = 4;` measures 10/205 with hunks 18/19 reading lhu a0,100(v0) / sltiu a0,a0,1 / sll a0,a0,0x2 - the two ADJACENT byte tests coalesce into one halfword comparison, so no TRUTH_ORIF drop-through CODE_LABEL is emitted and predicate B9 is never exercised.
+
+- [s7] KILL RE-AUDIT: variant F (tmp/grind/func_800747D8/s6/var_F.c) re-measures score 8 / build_insns 208 on the current chassis, unchanged from s6. tools/fake_ablate.py reports zero FAKE-annotated constructs in candidate.c, so no banked kill on this ledger was ever taken with a FAKE carrier occupying a target pseudo.
+
+- [s7] Hunk 9's jtbl_80015A0C table-offset residual is unchanged and remains a cross-file final-submission step (delete the hand-transcribed array from src/text1a_b_mid_rodata.c in the same change that lands the C body), per the s2 analysis and the executed func_8006B578/jtbl_80015988 precedent.
+
+- [s7] src/text1b.c restored to INCLUDE_ASM("asm/funcs", func_800747D8); at session end per asm-until-matched; candidate.c unchanged (still the floor-6 same-variable form, zero FAKE constructs); git status shows nothing outside memory/grind/func_800747D8/, tmp/ and the pre-existing metrics/events.jsonl drift.
