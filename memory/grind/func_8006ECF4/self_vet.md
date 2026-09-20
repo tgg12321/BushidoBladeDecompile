@@ -1,14 +1,41 @@
-# SELF-VET — func_8006ECF4 (s4, permuter modality)
+# SELF-VET — func_8006ECF4 (completion)
 
-CONSTRUCTS: none (this session did not produce a candidate-ready submission; no construct is proposed for landing)
+CONSTRUCTS: none. The landed body is ordinary C and contains no dead stores,
+unused locals, volatile tricks, register pins, inline assembly, or padding.
 
-## T1 semantic purpose: n/a — no construct submitted. (The permuter's `new_var` dead-store family, examined and rejected this session, has NO semantic purpose: it is written once inside an unrelated comparison/arithmetic expression and never read.)
-## T2 human-programmer: n/a. (The rejected `new_var` family: no programmer would write `if (sel < (new_var = 15))` from a spec of this function's behavior.)
-## T3 GCC-internals justification: n/a. (The rejected family's only justification is that materializing a literal into a fresh pseudo changes local-alloc/cse register-choice for surrounding code — a GCC-internals mechanism, not program logic — which is exactly why it was rejected.)
-## T4 permuter/search provenance: n/a for submission. This session ran a directed permuter campaign (tmp/perm_ecf4/, 15,077+ iterations, base score 725, best find 470) as the mandated modality. Every closing-score find across ~10 harvested outputs used the SAME `new_var` dead-write family (plus one co-occurring redundant `& 0xFFFFu` width mask in output-470-1) — i.e., the search converged entirely on a forbidden-family construct, which is the correct outcome to report and reject, not adopt.
-## T5 family check: n/a for submission. The rejected `new_var` finds match dead-store-fake-exception / named-local-fake-exception (.claude/rules/dead-store-fake-exception.md, .claude/rules/named-local-fake-exception.md) — both LAST-RESORT sanctions requiring documented lever-exhaustion + named GCC-pass mechanism + mandatory `/* FAKE */` annotation. Prerequisites are NOT met this session (only 2 honest structural levers were tried before the permuter found this family), so it is not eligible even though the family itself is nominally sanctioned. See memory/grind/func_8006ECF4/rejected/permuter-new_var-dead-store-cheat.c for full reasoning.
-## T6 naming-announces-intent: n/a for submission. (`new_var` is decomp-permuter's own auto-generated fresh-variable name; it was never renamed to anything that would try to disguise it, and it is not being submitted.)
+## T1 semantic purpose
+Every declaration, statement, and branch represents behavior visible in the
+original assembly. In particular, both `s.p0 = s0 + sel * 12` statements are
+semantically required: the switch default uses one, while the other implements
+the `i == 0` overwrite after explicit switch cases.
 
-SANCTIONED-FAMILY-CLAIMS: none — no construct submitted this session, so no family claim is made.
+## T2 human-programmer
+The body is a direct transcription of the loop, table selection, image upload,
+shared pointer dispatch, and renderer call. The labels express the assembly's
+real shared control-flow tails.
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct submitted; the honest floor-11 candidate.c banked this session carries no cheat construct of any kind (same posture as the s3 header: plain statement-order / duplicated-real-statement / control-flow-topology C only).
+## T3 GCC-internals justification
+No semantically inert construct was added for compiler behavior. The two
+source-level `s.p0` assignments reach different real paths; GCC's later tail
+merge merely restores the shared machine block present in the target.
+
+## T4 permuter/search provenance
+The rejected permuter dead-store family is not present. The landed index
+staging uses consumed values (`b2` and `c12`) and was selected only after the
+semantically incorrect score-11 chassis was replaced.
+
+## T5 family check
+No sanctioned fake family is claimed. The shared-label/goto topology and the
+two path-required assignments are ordinary control-flow C.
+
+## T6 naming announces intent
+Names describe the represented values (`b2`, `c12`, `sel`, `rectbuf`) and no
+identifier disguises a code-generation-only purpose.
+
+SANCTIONED-FAMILY-CLAIMS: none.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct exists.
+
+BYTE PROOF: `tools/wteng.ps1 main build` produced the oracle SHA1
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` on 2026-09-20 after moving the
+intervening rodata objects into `text1b.o`.

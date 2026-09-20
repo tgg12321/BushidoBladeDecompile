@@ -405,7 +405,7 @@ const u32 jtbl_80015940[18] = {
     0x80066324,
 };
 
-/* NOTE: the cluster continues in src/text1a_b_mid_rodata.c. The 24 bytes at
- * 0x80015988 between this file and that one are supplied by build/src/text1b.o
- * (func_8006B578's switch table) -- see bb2.ld and the 2026-09-16 entry in
- * docs/grind/decisions.md. */
+/* NOTE: the cluster continues in src/text1a_b_mid_rodata.c. The bytes from
+ * 0x80015988 through 0x80015A0B are supplied by build/src/text1b.o: the
+ * compiler-generated switch tables for func_8006B578 and func_8006ECF4 plus
+ * the intervening warning string and func_8006E534 table. */
