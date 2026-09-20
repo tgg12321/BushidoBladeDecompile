@@ -4,6 +4,19 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80018094",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-15T04:55:26+00:00",
+      "rotation_count": 3,
+      "unparked_from": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-14 \u2014 func_80018094 \u2014 JUDGE ESCALATE on final call (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
+      "unpark_reason": "auto-return: toolchain change re-measure floor 2 -> 0 (fingerprint a04b7a59487234ab -> cc1ebbbc530ab130)",
+      "returned_at": "2026-09-20T06:09:28+00:00"
+    },
+    {
       "func": "func_800747D8",
       "file": "text1b",
       "distance": 208,
@@ -998,20 +1011,6 @@
       "hand_coded_tier": "LOW"
     },
     {
-      "func": "func_80018094",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "rotated",
-      "rotated_at": "2026-09-15T04:55:26+00:00",
-      "rotation_count": 3,
-      "unparked_from": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-14 \u2014 func_80018094 \u2014 JUDGE ESCALATE on final call (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "unpark_reason": "auto-return: toolchain change re-measure floor 2 -> 0 (fingerprint 2046c403e76d0fe5 -> a04b7a59487234ab)",
-      "returned_at": "2026-09-15T03:46:08+00:00",
-      "rotation": "ROTATED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-14 \u2014 func_80018094 \u2014 JUDGE ESCALATE on final call (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
-    },
-    {
       "func": "func_80017848",
       "file": "ings",
       "distance": 3,
@@ -1099,15 +1098,15 @@
   ],
   "counts": {
     "total": 116,
-    "active": 108,
+    "active": 109,
     "by_status": {
-      "active": 108,
-      "rotated": 8
+      "active": 109,
+      "rotated": 7
     },
     "by_verdict": {
-      "C": 87,
-      "ASM-PARTIAL": 21
+      "ASM-PARTIAL": 22,
+      "C": 87
     }
   },
-  "toolchain_fingerprint": "a04b7a59487234ab"
+  "toolchain_fingerprint": "cc1ebbbc530ab130"
 }
