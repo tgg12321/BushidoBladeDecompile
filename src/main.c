@@ -1016,7 +1016,105 @@ s32 SsUtGetVBaddrInSB(s16 a0) {
     }
     return _svm_vab_start[a0];
 }
-INCLUDE_ASM("asm/funcs", SsUtKeyOnV);
+/* PsyQ LIBSND UT_KEYV. BB2 keeps the 4.0 routine's source shape but uses the
+   later 54-byte voice-state stride (rather than 4.0's 52-byte layout). */
+typedef struct {
+    u8 prior, mode, vol, pan, center, shift, min, max;
+    u8 vibW, vibT, porW, porT, pbmin, pbmax, reserved1, reserved2;
+    u16 adsr1, adsr2;
+    s16 prog, vag;
+    s16 reserved[4];
+} VagAtr;
+
+extern s16 D_800F4E18;
+extern s16 D_800F4E1A;
+extern s16 D_800F4E26;
+extern s16 D_800F4E28[];
+extern s16 D_800F4E2A;
+extern s16 D_800F4E2C;
+extern s16 D_800F4E2E;
+extern s16 D_800F4E30;
+extern s8 D_800F4E35;
+extern ProgAtr *_svm_pg;
+extern VagAtr *_svm_tn;
+extern void vmNoiseOn(u8);
+extern s32 note2pitch2(u16, u16);
+extern void _SsVmKeyOnNow(s32, u16);
+
+s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
+                s16 voll, s16 volr) {
+    s32 toneIndex;
+    s32 voiceOffset;
+
+    if (_snd_ev_flag == 1) {
+        return -1;
+    }
+    _snd_ev_flag = 1;
+    if (voice < 0 || voice >= 24) {
+        _snd_ev_flag = 0;
+        return -1;
+    }
+    if (_SsVmVSetUp(vabId, prog)) {
+        _snd_ev_flag = 0;
+        return -1;
+    }
+    _svm_cur.seq_sep_no = 0x21;
+    _svm_cur.note = note;
+    _svm_cur.fine = fine;
+    _svm_cur.tone = tone;
+
+    if (voll == volr) {
+        _svm_cur.pan = 0x40;
+        _svm_cur.volume = voll;
+    } else if (volr < voll) {
+        _svm_cur.pan = (volr * 0x40) / voll;
+        _svm_cur.volume = voll;
+    } else {
+        _svm_cur.pan = 0x7F - ((voll * 0x40) / volr);
+        _svm_cur.volume = volr;
+    }
+
+    _svm_cur.mvol = _svm_pg[prog].mvol;
+    _svm_cur.mpan = _svm_pg[prog].mpan;
+    _svm_cur.prog_tones = _svm_pg[prog].tones;
+
+    toneIndex = _svm_cur.tone + (_svm_cur.field_7_fake_program * 0x10);
+    _svm_cur.tone_prior = _svm_tn[toneIndex].prior;
+    _svm_cur.tone_vag_idx = _svm_tn[toneIndex].vag;
+    _svm_cur.tone_vol = _svm_tn[toneIndex].vol;
+    _svm_cur.tone_pan = _svm_tn[toneIndex].pan;
+    _svm_cur.tone_center = _svm_tn[toneIndex].center;
+    _svm_cur.tone_shift = _svm_tn[toneIndex].shift;
+    _svm_cur.tone_mode = _svm_tn[toneIndex].mode;
+    _svm_cur.tone_min = _svm_tn[toneIndex].min;
+    _svm_cur.tone_max = _svm_tn[toneIndex].max;
+
+    if (_svm_cur.tone_vag_idx == 0) {
+        _snd_ev_flag = 0;
+        return -1;
+    }
+
+    voiceOffset = ((voice * 8 - voice) * 4 - voice) * 2;
+    _svm_cur.voice = voice;
+    *(s16 *)((u8 *)D_800F4E28 + voiceOffset) = 0x21;
+    *(s16 *)((u8 *)&D_800F4E30 + voiceOffset) = vabId;
+    *(s16 *)((u8 *)&D_800F4E2A + voiceOffset) = _svm_cur.field_7_fake_program;
+    *(s16 *)((u8 *)&D_800F4E2C + voiceOffset) = prog;
+    *(s16 *)((u8 *)&D_800F4E18 + voiceOffset) = _svm_cur.tone_vag_idx;
+    *(s16 *)((u8 *)&D_800F4E2E + voiceOffset) = _svm_cur.tone;
+    *(s16 *)((u8 *)&D_800F4E26 + voiceOffset) = note;
+    *(s8 *)((u8 *)&D_800F4E35 + voiceOffset) = 1;
+    *(s16 *)((u8 *)&D_800F4E1A + voiceOffset) = 0;
+    _SsVmDoAllocate();
+    if (_svm_cur.tone_vag_idx == 0xFF) {
+        vmNoiseOn(voice);
+    } else {
+        _SsVmKeyOnNow(1, note2pitch2(note, fine));
+    }
+    _snd_ev_flag = 0;
+    return voice;
+}
+
 /* PsyQ LIBSND UT_KEYV: SsUtKeyOffV — the module's second exported entry point, which
    splat merged into SsUtKeyOnV. Split out 2026-09-07 (docs/naming/libscan/
    near-tier-ruling-2026-09-07.md; XDEF +0x394, follows a real jr $ra); must stay
@@ -1136,19 +1234,6 @@ s32 func_80086130(s16 idx, s16 x, s16 y)
     }
     return -1;
 }
-extern s32 _svm_pg;
-/* PsyQ VagAtr (libsnd) — _svm_tn tone-attribute table pointer */
-typedef struct {
-    u8 prior, mode, vol, pan, center, shift, min, max;
-    u8 vibW, vibT, porW, porT, pbmin, pbmax, reserved1, reserved2;
-    u16 adsr1, adsr2;
-    s16 prog, vag;
-    s16 reserved[4];
-} VagAtr;
-extern VagAtr *_svm_tn; /* _svm_tn */
-
-
-
 extern s32 D_80107898[];
 /* Sony LIBSND `_SsVmDoAllocate` (psyz vm_aloc2.c analog): set up the
    allocated voice's SPU shadow registers (start address, ADSR) and mark the
@@ -1488,7 +1573,6 @@ extern s32 _svm_vab_vh[];
 extern s32 _svm_vab_pg[];
 extern s32 _svm_vab_tn[];
 extern s32 _svm_vh;
-extern s32 _svm_pg;
 s32 _SsVmVSetUp(s32 a0, s32 a1) {
     u16 a0h;
     s16 a1h;
