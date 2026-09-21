@@ -14,8 +14,11 @@ case 2 of `switch (ret & 0xFF)`) instead of one shared copy after the
 (3) duplicate reads of the global pointer `D_800A36A0` into the locals `base`,
 `menu`, `work` and through the `MENU_800747D8` macro; (4) the named intermediate
 `u8 row = work->field67;`; (5) the `S_800747D8` struct with explicit `padNN`
-members; (6) three pre-existing hand-transcribed const rodata arrays
-(`D_800159A0`, `jtbl_800159B0`, `jtbl_800159D0`) relocated verbatim from
+members; (6) [CORRECTED 2026-09-21 by the layer-2 reviewer: only `D_800159A0` is
+a hand-written const; `jtbl_800159B0` / `jtbl_800159D0` do not exist as source
+symbols at all -- they are the COMPILER-GENERATED ADDR_VECs of func_8006E534 and
+func_8006ECF4, emitted into this TU once those functions became C. The original
+wording below overstated this construct.] the rodata run relocated from
 `src/text1a_b_mid_rodata.c` into `src/text1b.c`.
 
 ## T1 semantic purpose
