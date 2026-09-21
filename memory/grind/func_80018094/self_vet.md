@@ -27,10 +27,18 @@ cheat_asm_stripped 20).
 **Prior fix-up (2026-09-16 lineage, unchanged this session).** An earlier annotation-fix session
 corrected two stale citations: the Set*Matrix islands' "memory"-clobber precedent now cites
 src/code6cac_b.c:1116-1123 (func_8002D320's lwc2-read island, `"r"(vin) : "$12", "memory"`), the
-same precedent the committed sibling func_80019310 itself cites (src/code6cac.c:356-361); the
-`lw_v1`/`li_v0` precedent now cites src/code6cac.c:778-781 (func_8001A538's identical
+same precedent FUNCTION the committed sibling func_80019310's own CLOBBER PROVENANCE
+paragraph cites in this file; the
+`lw_v1`/`li_v0` precedent now cites src/code6cac.c:1005-1008 (func_8001A67C's identical
 `{ s32 lw_v1 = sp_tmp; s32 li_v0 = -2; li_v0 = lw_v1 & li_v0; shift_a = 0x16 - li_v0; }` block);
-the `D_8008D118` byte-LUT-read precedent cites src/code6cac.c:757 and :784.
+the `D_8008D118` byte-LUT-read precedent cites src/code6cac.c:984 and :1011.
+[CORRECTED 2026-09-21 by the layer-2 reviewer: all three of those statements are inside
+func_8001A67C (begins src/code6cac.c:970), NOT func_8001A538 (begins :946) -- the
+2026-09-16 fix-up re-anchored the line numbers and left the function NAME wrong. And
+func_8001A67C is not pure C: it is COMPLETED-INLINE-ASM-CANONICAL,
+inline_asm_canonical.txt:266. The precedent itself is unaffected -- func_8001A67C is a
+committed matched body in this TU that ships both spellings verbatim as ordinary C, and
+line numbers below are the post-splice tree.]
 
 The body under vet is `memory/grind/func_80018094/candidate.c` (= tmp/grind/func_80018094/s10/final.c,
 generated from s10/e1.c by adding the FAKE annotations only). Spliced into src/code6cac.c it
@@ -68,8 +76,10 @@ scalar scores 8 (tmp/grind/func_80018094/s10/f2.c).
 (5) Semantic: `lut` is READ by the island as its `"r"` input operand. Zero dead code — this is the
 value the LZC hardware sees. Without it the island reads `sum_sq` directly and the target's
 `move $a0,$a1` never exists (measured across s5-s9, hypotheses.md H26-H46).
-(6) Semantic — every one is once- or twice-written and read; `lw_v1`/`li_v0` are the COMPLETED-C
-sibling func_8001A538's own names for the identical statements (src/code6cac.c:778-781).
+(6) Semantic — every one is once- or twice-written and read; `lw_v1`/`li_v0` are the committed
+matched sibling func_8001A67C's own names for the identical statements
+(src/code6cac.c:1005-1008; that sibling is COMPLETED-INLINE-ASM-CANONICAL, and these
+particular statements are ordinary C inside it).
 (7) Semantic — it is the actual byte load from the magnitude LUT.
 (8) Semantic — it is the arm's exit.
 (9)(10)(11) Full semantic effect — these ARE the function's rotation/translation-matrix load and
@@ -87,9 +97,9 @@ annotations name the pass and the ablation score.
 (5) Yes — staging a value into an existing local one line before it is consumed is ordinary,
 readable C, and the SOTN corpus ships the shape verbatim (see the family's census below).
 (6) Yes. (7) Yes — it is the existing house spelling for this symbol in this TU, shipped in
-already-matched bodies (src/code6cac.c:757 and :784, inside the pure-C func_8001A538, plus
+already-matched bodies (src/code6cac.c:984 and :1011, inside func_8001A67C, plus
 src/code6cac_b.c:284 and :747), all against the same `extern u8 D_8008D118;` declaration at
-src/code6cac.c:19. Changing the declaration to an array type would break those matched siblings'
+src/code6cac.c:20. Changing the declaration to an array type would break those matched siblings'
 pointer arithmetic, so this is not a new pun introduced by this candidate; it is the TU's
 established, oracle-verified declaration. (8) Yes.
 (9)(10)(11) No — a programmer does not free-write GTE cop2 transfers as inline asm from a blank
@@ -185,7 +195,7 @@ rename, no asm-operand device beyond the Judge-granted LZC island form, no build
 No `pad` / `_pad` / `dummy` / `unused` / `spill` / `sp_*`-as-pad / `_buf` / `tail` / `slack` names.
 `sp_tmp` is the inherited name for the LIVE LZC-output locals object (its element 0 is written by
 the island and read on the next line). `lut` names the LUT byte it holds for most of its life.
-`lw_v1` / `li_v0` are the matched sibling func_8001A538's own names for the identical statements.
+`lw_v1` / `li_v0` are the matched sibling func_8001A67C's own names for the identical statements.
 Every declared local is read.
 (9)(10)(11) No coercion-announcing names — the islands are unnamed statement blocks; every
 comment discloses the SDK macro name, the header line range, and (for the LZC island) the
@@ -216,8 +226,8 @@ SANCTIONED-FAMILY-CLAIMS:
 ORDINARY-C NOTE (NOT a sanctioned-family claim — no exception is invoked for it):
   construct 7, the `*(&D_8008D118 + i)` byte-LUT read, is this TU's pre-existing,
   oracle-verified spelling against the `extern u8 D_8008D118;` declaration at
-  src/code6cac.c:19, shipped unchanged in the already-matched pure-C sibling
-  func_8001A538 at src/code6cac.c:757 and src/code6cac.c:784, and in matched bodies in
+  src/code6cac.c:20, shipped unchanged in the already-matched sibling
+  func_8001A67C at src/code6cac.c:984 and src/code6cac.c:1011, and in matched bodies in
   src/code6cac_b.c:284 and src/code6cac_b.c:747. It needs no family grant because it is
   ordinary C against the declaration this TU already ships.
 

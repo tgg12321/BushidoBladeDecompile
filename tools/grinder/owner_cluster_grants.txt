@@ -28,3 +28,7 @@ func_800325E0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; regi
 func_80031890 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
 func_8002FF20 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
 func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-06 foreclosed-bucket review)
+# 2026-09-15 Ruling 3 (decisions.md:27024) — func_80018094 reached floor 0 after
+# the 2026-08-30 proven-or-near-floor cut was drawn; the owner ruled it earns a
+# row "on exactly the terms func_80019310 got one", added by the operator:
+func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row per owner Ruling 3, 2026-09-15, decisions.md:27024)
