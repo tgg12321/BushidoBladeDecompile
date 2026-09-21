@@ -1672,8 +1672,146 @@ void func_8003E2AC(void) {
 u32 func_8003E2C8(void) {
     return D_800905F8;
 }
-void func_8003E2D8(s32 a0, s32 a1, s32 a2, s32 a3);
-INCLUDE_ASM("asm/funcs", func_8003E2D8);
+extern void func_8003F388(s16 *arg0);
+void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s16 sp10[4];
+    s16 sp18[4];
+    s16 *call_arg;
+    s32 sp20;
+    s16 var_v0;
+    s32 temp_a2;
+    s32 temp_a3;
+    s32 temp_fp;
+    s32 temp_lo;
+    s32 temp_s2;
+    s32 temp_s7;
+    s32 temp_t0;
+    s32 temp_v0;
+    s32 temp_v0_2;
+    s32 temp_v0_3;
+    s32 temp_v1;
+    s32 var_s0;
+    s32 var_s1;
+    s32 var_s3;
+    s32 var_s4;
+    s32 var_s5;
+    s32 var_s6;
+
+    temp_t0 = arg0 + 0x7D00;
+    temp_s2 = arg1 + 0x7D00;
+    temp_a2 = arg2 + 0x7D00;
+    temp_a3 = arg3 + 0x7D00;
+    arg0 = temp_a2 - temp_t0;
+    arg1 = temp_a3 - temp_s2;
+    var_s1 = temp_t0 / 2000;
+    var_s0 = temp_s2 / 2000;
+    temp_fp = temp_a2 / 2000;
+    temp_s7 = temp_a3 / 2000;
+    if ((arg0 == 0) && (arg1 == 0)) {
+        if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
+            call_arg = sp10;
+            sp10[0] = var_s1 - 0x10;
+            var_v0 = var_s0 - 0x10;
+            goto block_49;
+        }
+    } else {
+        temp_v1 = (var_s1 * 0x7D0) + 0x3E8;
+        temp_t0 -= temp_v1;
+        temp_v0 = (var_s0 * 0x7D0) + 0x3E8;
+        temp_s2 -= temp_v0;
+        temp_a2 -= temp_v1;
+        temp_a3 -= temp_v0;
+        if (arg0 < 0) {
+            var_s6 = -1;
+            arg0 = -arg0;
+            temp_t0 = -temp_t0;
+            temp_a2 = -temp_a2;
+        } else {
+            var_s6 = 1;
+        }
+        var_s5 = 1;
+        if (arg1 < 0) {
+            var_s5 = -1;
+            arg1 = -arg1;
+            temp_s2 = -temp_s2;
+            temp_a3 = -temp_a3;
+        }
+        if (arg0 < arg1) {
+            temp_v0_2 = arg0;
+            arg0 = arg1;
+            arg1 = temp_v0_2;
+            temp_v0_3 = temp_t0;
+            temp_t0 = temp_s2;
+            temp_s2 = temp_v0_3;
+            temp_a2 = temp_a3;
+            var_s4 = 1;
+        } else {
+            var_s4 = 0;
+        }
+        temp_lo = (s32)(arg1 << 0xC) / arg0;
+        temp_a2 += 0x3E8;
+        temp_t0 += 0x3E8;
+        var_s3 = (temp_a2 / 2000) - (temp_t0 / 2000);
+        temp_s2 += 0x3E8;
+        temp_s2 -= (s32)(temp_t0 * temp_lo) >> 0xC;
+        sp20 = (s32)(temp_lo * 0x7D0) >> 0xC;
+        if (var_s3 != -1) {
+loop_16:
+            if (var_s1 >= 0) {
+                if ((var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
+                    sp10[0] = var_s1 - 0x10;
+                    sp10[2] = var_s0 - 0x10;
+                    func_8003F388(sp10);
+                }
+            }
+            temp_s2 %= 2000;
+            temp_s2 += sp20;
+            if (var_s3 != 0) {
+                if (temp_s2 >= 0x7D1) {
+                    if (var_s4 != 0) {
+                        if (var_s6 < 0) {
+                            var_s1 -= 1;
+                        } else {
+                            var_s1 += 1;
+                        }
+                    } else if (var_s5 < 0) {
+                        var_s0 -= 1;
+                    } else {
+                        var_s0 += 1;
+                    }
+                    if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
+                        sp18[0] = var_s1 - 0x10;
+                        sp18[2] = var_s0 - 0x10;
+                        func_8003F388(sp18);
+                    }
+                }
+                if (var_s4 != 0) {
+                    if (var_s5 < 0) {
+                        var_s0 -= 1;
+                    } else {
+                        var_s0 += 1;
+                    }
+                } else if (var_s6 < 0) {
+                    var_s1 -= 1;
+                } else {
+                    var_s1 += 1;
+                }
+                var_s3 -= 1;
+                if (var_s3 != -1) {
+                    goto loop_16;
+                }
+            }
+        }
+        if ((temp_fp >= 0) && (temp_s7 >= 0) && (temp_fp < 0x20) && (temp_s7 < 0x20)) {
+            call_arg = sp10;
+            sp10[0] = temp_fp - 0x10;
+            var_v0 = temp_s7 - 0x10;
+block_49:
+            sp10[2] = var_v0;
+            func_8003F388(call_arg);
+        }
+    }
+}
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_get_attack_number  |  242i */
 void func_8003E6A0(s32 arg0, s32 arg1) {
     func_8003E2D8(D_80101E3C, D_80101E44, arg0, arg1);
