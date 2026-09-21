@@ -4,46 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80020E74",
-      "file": "code6cac",
-      "distance": 231,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800290B8",
-      "file": "code6cac_b",
-      "distance": 231,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80048FFC",
-      "file": "text1b",
-      "distance": 232,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8003EDC0",
-      "file": "code6cac_c2",
-      "distance": 234,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "_SsSndDecrescendo",
-      "file": "main",
-      "distance": 235,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80077374",
       "file": "text1b",
       "distance": 236,
@@ -1058,17 +1018,61 @@
       "rotation": "ROTATED (logged to borderline.md; owner ruling 2026-09-08 \u2014 returns automatically): docs/grind/decisions.md:28568",
       "rotated_at": "2026-09-20T09:47:42+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_80020E74",
+      "file": "code6cac",
+      "distance": 231,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "Target frame requires an untouched 256-byte local; byte-zero also needs a do-while(0) RA wrapper. Both are forbidden families under standing rulings; no independently attested workspace contract found.",
+      "rotated_at": "2026-09-21T00:35:35+00:00",
+      "rotation_count": 1
+    },
+    {
+      "func": "func_800290B8",
+      "file": "code6cac_b",
+      "distance": 231,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "Recon shows 28-branch nested collision/audio search with substantial scratchpad state; selecting the next C candidate with only five branches for a clean completion.",
+      "rotated_at": "2026-09-21T00:36:21+00:00",
+      "rotation_count": 1
+    },
+    {
+      "func": "func_80048FFC",
+      "file": "text1b",
+      "distance": 232,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "Honest C reached 232/232 and score 31, but exact register allocation only appeared with a variable reused across unrelated height/mask roles; refinement required non-idiomatic register-steering temporaries, so not landable under standing rules.",
+      "rotated_at": "2026-09-21T01:02:39+00:00",
+      "rotation_count": 1
+    },
+    {
+      "func": "func_8003EDC0",
+      "file": "code6cac_c2",
+      "distance": 234,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "Recon shows a multi-phase packed-stream parser with four loops, dynamic dispatch, and several global table initializations; choosing a narrower candidate for a clean exact completion.",
+      "rotated_at": "2026-09-21T01:02:54+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
-    "total": 111,
-    "active": 102,
+    "total": 110,
+    "active": 97,
     "by_status": {
-      "active": 102,
-      "rotated": 9
+      "active": 97,
+      "rotated": 13
     },
     "by_verdict": {
-      "C": 81,
+      "C": 76,
       "ASM-PARTIAL": 21
     }
   },
