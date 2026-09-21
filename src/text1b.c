@@ -626,7 +626,125 @@ extern s32 g_snd_play_count;
 void func_80048B8C(s32 a0) {
     g_snd_play_count += a0;
 }
-INCLUDE_ASM("asm/funcs", func_80048BA4);
+typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } _struct_copy_func48BA4;
+typedef struct {
+    s16 matrix[9];
+    s16 pad[7];
+    s16 rot[3];
+} _stack_func48BA4;
+extern void *game_GetPlayerData();
+extern s16 Judge;
+extern void ApplyMatrix(s32, s16 *, s32 *);
+extern void func_8004A348(s16 *, s16 *);
+extern void func_80052930(s32, s16 *, s16 *);
+extern s32 ClearOTagR(s32, s32);
+extern s32 D_800A36AC;
+extern s32 D_800A378C;
+extern s32 D_800A3820;
+extern s32 D_800A38D8;
+extern u8 D_800F5768[];
+extern s16 D_80099C14[];
+extern s16 D_800FF558;
+extern s16 D_800FF55A;
+extern s16 D_800FF55C;
+extern s16 D_800FF55E;
+extern s16 D_800FF560;
+extern s16 D_800FF562;
+extern s16 D_800FF564;
+extern s16 D_800FF566;
+extern s16 D_800FF568;
+extern s32 D_800FF56C;
+extern s32 D_800FF570;
+extern s32 D_800FF574;
+
+void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
+    _stack_func48BA4 stack;
+    s32 index;
+    s32 scale;
+    s32 old;
+    s16 *rotp;
+    s32 *vec;
+    s16 *indices;
+    s32 *ot;
+    u8 *player;
+    u8 *prim;
+
+    player = game_GetPlayerData(D_800A33E0);
+    if (player == 0) {
+        return;
+    }
+    if (arg1 >= 6) {
+        arg1 = -1;
+    }
+
+    stack.rot[0] = 0x1770;
+    stack.rot[1] = 0;
+    stack.rot[2] = 0;
+    scale = 0x1770;
+    stack.rot[2] = ((s32)(&Judge)[arg0 & 0xFFF] * scale) >> 12;
+    stack.rot[0] = ((s32)(&Judge)[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
+    prim = (u8 *)D_800A33E4;
+    rotp = stack.rot;
+    vec = &D_800FF56C;
+    ApplyMatrix(*(s32 *)player, rotp, vec);
+    vec[0] += *(s32 *)(*(u8 **)player + 0x14);
+    D_800FF570 += *(s32 *)(*(u8 **)(player + 4) + 0x18);
+    D_800FF574 += *(s32 *)(*(u8 **)(player + 8) + 0x1C);
+
+    stack.rot[0] = 0;
+    stack.rot[1] = 0xC00 - arg0;
+    stack.rot[2] = 0;
+    indices = D_80099C14;
+    func_8004A348(rotp, stack.matrix);
+    func_80052930(*(s32 *)player, stack.matrix, stack.matrix);
+    D_800FF558 = stack.matrix[0];
+    D_800FF55A = stack.matrix[3];
+    D_800FF55C = stack.matrix[6];
+    D_800FF55E = stack.matrix[1];
+    D_800FF560 = stack.matrix[4];
+    D_800FF562 = stack.matrix[7];
+    D_800FF564 = stack.matrix[2];
+    D_800FF566 = stack.matrix[5];
+    D_800FF568 = stack.matrix[8];
+
+    goto test_index;
+copy_index:
+        *((_struct_copy_func48BA4 *)(prim + 0x18)) =
+            *((_struct_copy_func48BA4 *)((u8 **)player)[index]);
+        ot = (s32 *)D_800A3820;
+        D_800A3820 = (s32)(ot + 1);
+        *ot = (s32)prim;
+        prim += 0x68;
+test_index:
+    index = *indices;
+    indices++;
+    if (index >= 0) {
+        goto copy_index;
+    }
+    if (arg1 >= 0) {
+        *((_struct_copy_func48BA4 *)(prim + 0x18)) =
+            *((_struct_copy_func48BA4 *)*(u8 **)(player + 0x48));
+        ot = (s32 *)D_800A3820;
+        *(s16 *)(prim + 2) = arg1 + 0xF;
+        D_800A3820 = (s32)(ot + 1);
+        *ot = (s32)prim;
+        prim += 0x68;
+    }
+    if (arg2 != 0) {
+        *((_struct_copy_func48BA4 *)(prim + 0x18)) =
+            *((_struct_copy_func48BA4 *)*(u8 **)(player + 0x4C));
+        ot = (s32 *)D_800A3820;
+        *(s16 *)(prim + 2) = 0x15;
+        D_800A3820 = (s32)(ot + 1);
+        *ot = (s32)prim;
+    }
+
+    D_800A38D8 = (s32)(D_800F5768 + ((D_800A36AC & 1) << 10));
+    ClearOTagR(D_800A38D8, 0x100);
+    old = *(s32 *)D_800A378C;
+    *(s32 *)D_800A378C = (D_800A38D8 + 0x3FC) & 0xFFFFFF;
+    *(s32 *)D_800A38D8 = old;
+}
 extern u8 g_snd_ch_data[];
 extern u16 g_snd_se_bank[];
 extern void func_80052C10(void);
@@ -9466,10 +9584,105 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     return 1;
 }
 
-INCLUDE_ASM("asm/funcs", func_80077374);
-extern s32 D_800A36AC;
+/* func_800747D8 still references this preceding switch table from assembly.
+ * Keeping it in this TU places it immediately before func_80077374's
+ * compiler-generated switch table in the original rodata order. */
+const u32 jtbl_80015A0C[6] = {
+    0x800748F0,
+    0x80074984,
+    0x800749D8,
+    0x80074A58,
+    0x80074AB0,
+    0x00000000,
+};
 
-extern void func_80077374(s32, s32 *);
+s32 func_80077374(s32 arg0, s32 *arg1) {
+    typedef struct {
+        u8 pad[0x6A];
+        u8 rows[2][10];
+    } GaugeWork;
+    s32 ret;
+    s16 i;
+    s16 player;
+
+    ret = 0;
+    {
+        u8 *p = D_800A36A0;
+        if (*(s32 *)(p + 0x14) == 0x40004) {
+            *(s16 *)(p + 0x16) = 5;
+            *(s16 *)(p + 0x14) = 5;
+            *(s16 *)(p + 0x36) = 0;
+        }
+    }
+    func_80074220(arg1, *(s16 *)(D_800A36A0 + 0x14));
+    if (*(s16 *)(D_800A36A0 + 0x14) != 5) {
+        func_8007526C();
+    }
+
+    for (i = 0; i < 2; i++) {
+        switch (*(s16 *)(D_800A36A0 + i * 2 + 0x14)) {
+        case 0:
+            if (i == 0) {
+                ret = func_800747D8(arg0);
+                func_80074488(arg1);
+            }
+            break;
+        case 1:
+            player = i;
+            func_80075670(arg0, player);
+            func_80074D2C((s32)arg1, player,
+                          (s16)(*(u16 *)(D_800A36A0 + player * 2 + 0x14) - 1));
+            func_800753D8(arg1, player);
+            func_80074E08(arg1, player);
+            break;
+        case 2:
+            player = i;
+            func_80075F80(arg0, *(u8 *)(D_800A36A0 + player + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[player], player);
+            func_80074D2C((s32)arg1, player,
+                          (s16)(*(u16 *)(D_800A36A0 + player * 2 + 0x14) - 1));
+            func_80074B18(arg1, player, 0);
+            func_800759D0(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[player], player);
+            func_80074E08(arg1, player);
+            break;
+        case 3:
+            player = i;
+            func_800768DC(arg0, *(u8 *)(D_800A36A0 + player + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[player], player);
+            func_80074D2C((s32)arg1, player,
+                          (s16)(*(u16 *)(D_800A36A0 + player * 2 + 0x14) - 1));
+            func_80074B18(arg1, player, 1);
+            func_8007636C(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[player], player);
+            func_80074E08(arg1, player);
+            break;
+        case 4:
+            player = i;
+            func_80074D2C((s32)arg1, player, 2);
+            func_80074B18(arg1, player, 1);
+            func_8007636C(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[player], player);
+            func_80074E08(arg1, player);
+            if (arg0 & (0x10 << (player * 16))) {
+                func_8005C650(2, 0x7F, 0x7F);
+                *(s16 *)(D_800A36A0 + player * 2 + 0x14) = 3;
+            }
+            break;
+        case 5:
+            player = i;
+            func_80074D2C((s32)arg1, player, 2);
+            func_80074B18(arg1, player, 1);
+            func_8007636C(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[player], player);
+            ret = func_80076D74(arg1);
+            func_80074E08(arg1, player);
+            break;
+        }
+    }
+    return ret;
+}
+extern s32 D_800A36AC;
 
 extern s32 D_800F7438;
 typedef struct {
