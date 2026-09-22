@@ -4,20 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002D780",
-      "file": "code6cac_b",
-      "distance": 56,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "rotated_from_legacy": "foreclosed",
-      "rotated_at": "2026-09-16T04:50:40+00:00",
-      "unparked_from": "ROTATED (judge ESCALATE canonical-asm-grant (REFUSED: tier LOW, not STRONG-class and not owner-cluster-enumerated) refused; owner ruling 2026-09-08 rotation-not-foreclosure): 2026-09-15 \u2014 func_8002D780 \u2014 JUDGE ESCALATE on final call (canonical-asm-grant) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8002C22C -> floor 173 (2026-09-22T03:41)",
-      "returned_at": "2026-09-22T03:41:26+00:00",
-      "rotation_count": 2
-    },
-    {
       "func": "func_8002C22C",
       "file": "code6cac_b",
       "distance": 252,
@@ -1007,15 +993,15 @@
     }
   ],
   "counts": {
-    "total": 104,
-    "active": 94,
+    "total": 103,
+    "active": 93,
     "by_status": {
-      "active": 94,
+      "active": 93,
       "rotated": 10
     },
     "by_verdict": {
-      "ASM-PARTIAL": 22,
-      "C": 72
+      "C": 72,
+      "ASM-PARTIAL": 21
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
