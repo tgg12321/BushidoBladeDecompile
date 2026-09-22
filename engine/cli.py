@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import buildconfig as cfg
 from . import fixtures as F
@@ -218,6 +219,15 @@ def main() -> int:
                              strip_cheat_asm=not a.keep_cheat_asm,
                              candidate=a.candidate)
         print(json.dumps(r, indent=2))
+        # Deliberately NOT an implicit default: the Grinder's candidate-ready
+        # check runs a bare sandbox to prove the session spliced C into src/,
+        # and a silent fallback to the ledger candidate would let an
+        # INCLUDE_ASM-only session pass on the ledger's score. So point, don't
+        # substitute (CD_cw manual session 2026-09-22 lost a round to this).
+        _ledger_cand = Path("memory/grind") / a.func / "candidate.c"
+        if r.get("no_c_body") and not a.candidate and _ledger_cand.is_file():
+            print(f"\n(scored the INCLUDE_ASM stub. A banked candidate exists — "
+                  f"measure it with: --candidate {_ledger_cand.as_posix()})")
         # The diff is printed, never folded into `r`: metrics.record_event
         # persists `payload: result` verbatim into the committed
         # metrics/events.jsonl, and a per-call instruction dump would bloat it.

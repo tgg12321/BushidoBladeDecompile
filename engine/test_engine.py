@@ -2889,12 +2889,53 @@ def test_queue_rotation() -> None:
             Q.QUEUE_PATH = orig_path
 
 
+def test_symtab_data_dlabels() -> None:
+    """_symtab() resolves data symbols defined only as `dlabel`s in the data
+    asm (2026-09-22): before, `D_800A13FC` vs `D_800A12FC+0x100` (one address)
+    scored a false +2 per lui/load pair. Linker symbol files still win."""
+    import os
+    import tempfile
+    from . import score
+    saved_tab, saved_glob = score._SYMTAB_CACHE, score._DATA_ASM_GLOB
+    saved_files = score.cfg.LD_SYM_FILES
+    d = tempfile.mkdtemp()
+    try:
+        with open(os.path.join(d, "x.data.s"), "w") as fh:
+            fh.write("nonmatching D_800A12FC\n"
+                     "dlabel D_800A12FC\n"
+                     "    /* 91AFC 800A12FC 00000000 */ .word 0x00000000\n"
+                     "enddlabel D_800A12FC\n"
+                     "dlabel CD_debug\n"
+                     "    /* 919C0 800A11C0 */ .byte 0x00\n"
+                     "dlabel Overridden\n"
+                     "    /* 0 80000004 */ .byte 0x00\n"
+                     "dlabel NoData\n"
+                     "\n"
+                     "enddlabel NoData\n"
+                     "    /* 0 80000008 */ .byte 0x00\n")
+        with open(os.path.join(d, "syms.txt"), "w") as fh:
+            fh.write("Overridden = 0x80001000;\n")
+        score._SYMTAB_CACHE = None
+        score._DATA_ASM_GLOB = os.path.join(d, "*.s")
+        score.cfg.LD_SYM_FILES = [os.path.join(d, "syms.txt")]
+        t = score._symtab()
+        eq("dlabel: splat-named data symbol resolves", t.get("D_800A12FC"), 0x800A12FC)
+        eq("dlabel: Sony-named data symbol resolves", t.get("CD_debug"), 0x800A11C0)
+        eq("dlabel: linker symbol file wins on conflict", t.get("Overridden"), 0x80001000)
+        eq("dlabel: only the first data line after the label counts",
+           t.get("NoData"), None)
+    finally:
+        score._SYMTAB_CACHE, score._DATA_ASM_GLOB = saved_tab, saved_glob
+        score.cfg.LD_SYM_FILES = saved_files
+
+
 def main() -> int:
     test_datamodel()
     test_canonical()
     test_score()
     test_insn_diff()
     test_score_section_addend_mask()
+    test_symtab_data_dlabels()
     test_inlineasm()
     test_cheats()
     test_prologue_cheat()

@@ -31,6 +31,7 @@ actual bytes.
 from __future__ import annotations
 
 import difflib
+import glob
 import re
 import subprocess
 
@@ -74,8 +75,20 @@ _IMM_RE = re.compile(r"^-?(?:0x[0-9a-fA-F]+|\d+)")
 # linker symbol-file line:  NAME = 0xADDR;
 _SYM_DEF_RE = re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*(0x[0-9a-fA-F]+)\s*;")
 # name -> address, loaded once per process from cfg.LD_SYM_FILES (the same
-# files bb2.ld links against). Tests pre-seed this to stub the table.
+# files bb2.ld links against), then from the `dlabel`s in the data asm.
+# Tests pre-seed this to stub the table.
 _SYMTAB_CACHE: dict[str, int] | None = None
+# Data symbols splat emitted as `dlabel NAME` inside asm/data/*.s are defined
+# by the assembled data object, not by any linker symbol file — so before
+# 2026-09-22 they were invisible here, and an honest `sym+N` (or a C name for
+# the same address) scored a false +2 per lui/load pair against the splat-asm
+# reference (func_800335D8, _drs, CD_cw). Their address is the vaddr in the
+# comment on the first data line after the label:
+#     dlabel D_800A12FC
+#         /* 91AFC 800A12FC 00000000 */ .word 0x00000000
+_DATA_ASM_GLOB = "asm/data/*.s"
+_DLABEL_RE = re.compile(r"^\s*dlabel\s+([A-Za-z_]\w*)\s*$")
+_DATA_VADDR_RE = re.compile(r"^\s*/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\b")
 
 
 def _symtab() -> dict[str, int]:
@@ -89,6 +102,24 @@ def _symtab() -> dict[str, int]:
                         m = _SYM_DEF_RE.match(line)
                         if m:
                             tab.setdefault(m.group(1), int(m.group(2), 16))
+            except OSError:
+                continue
+        # Linker files win on conflict (setdefault): they are what bb2.ld uses.
+        for fn in sorted(glob.glob(_DATA_ASM_GLOB)):
+            try:
+                with open(fn, encoding="utf-8", errors="replace") as fh:
+                    pending = None
+                    for line in fh:
+                        m = _DLABEL_RE.match(line)
+                        if m:
+                            pending = m.group(1)
+                            continue
+                        if pending is not None:
+                            v = _DATA_VADDR_RE.match(line)
+                            if v:
+                                tab.setdefault(pending, int(v.group(1), 16))
+                            if line.strip():
+                                pending = None   # only the first data line counts
             except OSError:
                 continue
         _SYMTAB_CACHE = tab
