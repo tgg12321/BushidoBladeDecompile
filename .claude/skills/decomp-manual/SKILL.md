@@ -39,6 +39,10 @@ pwsh tools/manual_session.ps1 status             # what's open right now
 refuses a dirty tree or a red oracle, pops the target, and prints the full
 context bundle (dossier · siblings · canonical route · floor + instruction diff).
 
+`end` only restarts what `begin` stopped: if the Grinder was already down when
+you began, `end` leaves it down rather than starting one behind your back.
+`-NoRelaunch` forces that either way.
+
 **Never work over a live Grinder.** Its end-of-session scope check treats any
 foreign edit to a tracked file as contamination and discards that session's
 entire work ([[grinder-clobbers-uncommitted-edits]]). `.claude/`, `tools/`,
@@ -148,7 +152,17 @@ scoring, so they cannot move it. They are inert here by construction.
 
 1. Splice the candidate into `src/<file>.c`, replacing the `INCLUDE_ASM` line.
    Build files stay **LF** — the Write tool produces LF here.
-2. `& tools/wteng.ps1 main verify-oracle --rebuild` → SHA1 must equal the oracle.
+   **If the banked candidate is a whole-file snapshot** (older ledgers hold one;
+   newer ones hold just the body), move ONLY the function's definition. The file
+   has moved on since the snapshot, and copying it wholesale silently reverts
+   every sibling completed since — a regression the oracle will not necessarily
+   catch. Check the staged diff shows one deletion: the `INCLUDE_ASM` line.
+2. `& tools/wteng.ps1 main verify-oracle --rebuild --allow-dirty` → SHA1 must
+   equal the oracle. **`--allow-dirty` is required here**: plain `--rebuild`
+   refuses on dirty build inputs to protect the canonical `build/` reference the
+   sandbox scores against, and during a landing the dirty tree IS the intended
+   new reference. (Never pass it during the edit loop — that is what the
+   refusal is for.)
 3. `python3 tools/reviewer_precheck.py --func <f> --staged [--msg-file tmp/msg.txt]`
    — it mechanically settles the procedural facts so reviewer tokens go to the
    semantic judgment (a layer-1 review once burned ~117k tokens re-deriving
@@ -157,12 +171,53 @@ scoring, so they cannot move it. They are inert here by construction.
    adversarially: default to FAIL, do not credit your verdict, work the specific
    diff against the 6-test checklist, and audit any rule doc the commit adds
    (self-sanctioning docs are banned outright).
-5. **PASS** → commit (`Match: <func> — COMPLETED-C (manual)`, `git commit -F
+5. **If the verdict is canonical-asm**, record the region grant BEFORE
+   `queue done`, or it refuses with *"C/assembly function has no reviewed region
+   grant"*: write `{file, sha256:[…]}` for the function into
+   `tools/canonical_asm_regions.json`, hashing each island with
+   `engine.completion.region_hashes` (never by hand — it hashes the island's
+   exact source text, operands and constraints included). That file is the
+   record of **what layer-2 actually reviewed**, so any later island edit
+   correctly invalidates the grant. Preserve the file's existing indent; a
+   reformat buries the 9-line addition in 180 lines of churn.
+6. **PASS** → commit (`Match: <func> — COMPLETED-C (manual)`, `git commit -F
    tmp/msg.txt`) → `& tools/wteng.ps1 main queue done <func>` → `python3
    tools/check_completion_integrity.py`.
    **FAIL** → revert `src/` to `INCLUDE_ASM`, bank the body as
    `memory/grind/<func>/rejected/<slug>.c` with the reviewer's reasoning, and
    treat the objection as the next session's frontier.
+
+**After fixing anything a reviewer flagged, re-stage before committing.** A
+post-review edit leaves the file `MM` — corrected in the working tree, FAILED
+text still in the index — and `git commit` takes the index. Verify with
+`git show :src/<file>.c`, not by reading the working tree. (Caught by the
+reviewer itself on func_8002D780, 2026-09-21; it would have landed the failed
+comment.)
+
+### Committing during a landing — three rules, each learned the hard way
+
+1. **The layer-2 PASS precedes the commit.** A FAIL means the work does NOT
+   land; it returns to INCOMPLETE. Never commit a completion "and then fix it",
+   and never land a fix-up on top of a completion that is sitting on main under
+   an outstanding FAIL.
+2. **Completion-class changes use a completion-class subject** (`Match:` /
+   `auth:` / `cheat-cleanup:`). The commit-msg guard chain, `audit_asm_cheats.py`
+   and the owner's audit surfaces all key off the subject, so a body + grant
+   landing under a `docs:`/`skills:` subject is invisible to every audit that
+   matters.
+3. **Commit explicit paths, never the bare index.** `git commit` takes the
+   WHOLE index, and during a landing the completion is already staged for the
+   reviewer. `git add <unrelated file> && git commit -m …` therefore sweeps the
+   staged completion into that unrelated commit. Always
+   `git commit -F tmp/msg.txt -- <the exact paths>`, and check `git show --stat
+   HEAD` afterwards.
+
+All three fired at once on func_8002EBDC (2026-09-21): a skills-doc commit
+swallowed the whole staged completion, putting a 207-line body and a
+canonical-asm grant on main under a `skills:` subject while a layer-2 FAIL was
+outstanding. The reviewer caught it; `git reset --soft` recovered it because
+nothing had been pushed. Also note `git commit --amend` changes the hash — do
+not report a pre-amend hash as the landed commit.
 
 A citation is verified by reading what the cited construct *does*, not by
 confirming the line exists ([[citation-check-reads-the-cited-code]]). The two
@@ -232,7 +287,8 @@ and move on. Do not self-authorize a new grant
 | `& tools/wteng.ps1 main sandbox <f> --disable all --diff` | honest floor + WHERE it differs |
 | `& tools/wteng.ps1 main canonical <f>` | C vs ASM-region vs ASM-structural route |
 | `& tools/wteng.ps1 main dossier <f>` | the full live-verified picture |
-| `& tools/wteng.ps1 main verify-oracle --rebuild` | the only truth |
+| `& tools/wteng.ps1 main verify-oracle --rebuild --allow-dirty` | the only truth (landing step; `--allow-dirty` needed once src is spliced) |
+| `engine.completion.region_hashes(text, f)` | island hashes for `tools/canonical_asm_regions.json` — required before `queue done` on a canonical function |
 | `& tools/wteng.ps1 main queue done <f>` | record the completion (re-checks cheats + SHA1) |
 | `python3 tools/reviewer_precheck.py --func <f> --staged` | procedural facts for the reviewer brief |
 | `python3 tools/check_completion_integrity.py` | standing audit of every completed function |
