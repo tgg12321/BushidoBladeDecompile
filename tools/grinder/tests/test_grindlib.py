@@ -2180,5 +2180,56 @@ class TestPsyqIdentityAfterRename(unittest.TestCase):
         self.assertEqual(G.psyq_identity(self.root, "Bogus"), "")
 
 
+class TestSiblingNameMatching(unittest.TestCase):
+    """2026-09-22: the function named `main` matched every ledger saying "on main"."""
+
+    def test_prose_word_main_needs_code_form(self):
+        pat = G._name_re(["main"])
+        self.assertIsNone(pat.search("landed on main at 1a86"))
+        self.assertIsNotNone(pat.search("see `main` in ings.c"))
+        self.assertIsNotNone(pat.search("called from main() at boot"))
+
+    def test_ordinary_names_unchanged(self):
+        pat = G._name_re(["CD_sync", "cpu_side_move_dir_4"])
+        self.assertIsNotNone(pat.search("same block as CD_sync's printf"))
+        self.assertIsNone(pat.search("CD_sync2"))
+
+    def test_undated_outbound_label(self):
+        sib = {"func": "CD_sync", "names": ["CD_sync"], "file": "system",
+               "queue_status": "x", "floor": 0, "floor_since_session": None,
+               "floor_since_date": None, "sessions": 1, "candidate": None,
+               "candidate_mtime": "", "mentioned_at_session": None,
+               "mentioned_at_date": None, "outbound": True, "inbound": False,
+               "unspent": False}
+        out = G.render_siblings([sib], "CD_cw")
+        self.assertIn("your ledger names it (undated mention)", out)
+        self.assertNotIn("NEVER mentioned", out)
+
+
+class TestModuleMates(unittest.TestCase):
+    def test_same_module_listed_with_matched_src(self):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "docs", "naming", "libscan"))
+        os.makedirs(os.path.join(root, "src"))
+        os.makedirs(os.path.join(root, "engine"))
+        with open(os.path.join(root, "engine", "queue.json"), "w") as fh:
+            json.dump({"items": [{"func": "CD_cw", "status": "active"}]}, fh)
+        with open(os.path.join(root, "docs", "naming", "libscan",
+                               "rename_manifest.csv"), "w", newline="") as fh:
+            fh.write("addr,proposed_name,module,lib,evidence,classification\n"
+                     "1,CD_cw,BIOS,LIBCD,libscan-verbatim,FILL\n"
+                     "2,CD_sync,BIOS,LIBCD,libscan-verbatim,FILL\n"
+                     "3,CD_other,BIOS,LIBCD,libscan-verbatim,FILL\n"
+                     "4,SpuX,S_M,LIBSPU,libscan-verbatim,FILL\n")
+        with open(os.path.join(root, "src", "system.c"), "w") as fh:
+            fh.write("s32 CD_sync(s32 a0, u8 *a1)\n{\n}\n"
+                     'INCLUDE_ASM("asm/funcs", CD_other);\n')
+        mates = G._module_mates(root, "CD_cw", {"lib": "LIBCD", "mod": "BIOS"})
+        self.assertEqual(dict((n, w) for n, _, w in mates),
+                         {"CD_sync": "src/system.c", "CD_other": ""})
+        out = G.psyq_identity(root, "CD_cw")
+        self.assertIn("CD_sync: COMPLETED (not in queue) — matched C in src/system.c", out)
+
+
 if __name__ == "__main__":
     unittest.main()

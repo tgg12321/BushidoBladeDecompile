@@ -2212,6 +2212,41 @@ MODALITY_PLAYBOOK = {
 }
 
 
+def _module_mates(root, func, proven):
+    """Other applied libscan names in the same lib+module as `func`, as
+    (name, status, src file holding matched C or ''). Never raises."""
+    lib, mod = proven.get("lib"), proven.get("mod")
+    if not lib or not mod:
+        return []
+    out = []
+    try:
+        p = os.path.join(root, "docs", "naming", "libscan", "rename_manifest.csv")
+        with open(p, encoding="utf-8", newline="") as fh:
+            rows = [r for r in csv.DictReader(fh)
+                    if r.get("lib") == lib and r.get("module") == mod
+                    and r.get("proposed_name") and r.get("proposed_name") != func
+                    and not r.get("classification", "").startswith(("REJECTED", "CONTRADICTED"))]
+    except Exception:
+        return []
+    src_dir = os.path.join(root, "src")
+    try:
+        srcs = {f: open(os.path.join(src_dir, f), encoding="utf-8", errors="replace").read()
+                for f in os.listdir(src_dir) if f.endswith(".c")}
+    except Exception:
+        srcs = {}
+    for r in rows:
+        name = r["proposed_name"]
+        qs = _queue_status(root, name)
+        where = ""
+        if qs == "not in queue":
+            # defined as C (not INCLUDE_ASM) somewhere in src/ => matched
+            pat = re.compile(r"(?m)^[A-Za-z_][\w \t\*]*\b" + re.escape(name) + r"\s*\([^;]*$")
+            where = next((f"src/{f}" for f, t in sorted(srcs.items()) if pat.search(t)), "")
+            qs = "COMPLETED (not in queue)" if where else "not in queue"
+        out.append((name, qs, where))
+    return out
+
+
 def psyq_identity(root, func):
     """Sony-library provenance for `func`, as a brief section (or '' if none).
 
@@ -2334,6 +2369,12 @@ def psyq_identity(root, func):
                 "exact reference C. Do NOT adopt on faith. Use the identity to guide "
                 "informed decomp: you know what the routine DOES and what Sony called it. "
                 "See memory/closer/libsnd-hunt-report.md."]
+    mates = _module_mates(root, func, proven) if proven else []
+    if mates:
+        out += ["", "Same Sony module (their C is the closest possible reference — same "
+                "source file, same build, same compiler):"]
+        for name, status, where in mates:
+            out.append(f"  - {name}: {status}" + (f" — matched C in {where}" if where else ""))
     if refs:
         out += ["", "Banked reference material from the retired closer campaign "
                     "(read before probing — this work is already done):"]
@@ -2446,8 +2487,22 @@ def _ledger_names(root, func, extra=()):
     return out
 
 
+# Function names that are also ordinary English words in ledger prose. The
+# function literally named `main` matched every ledger that says "on main"
+# (CD_cw manual session 2026-09-22), so these match only in code form:
+# `main` in backticks, or a call `main(`.
+_PROSE_WORD_NAMES = frozenset({"main"})
+
+
 def _name_re(names):
-    return re.compile(r"(?<![\w$])(?:" + "|".join(re.escape(n) for n in names) + r")(?![\w$])")
+    alts = []
+    for n in names:
+        e = re.escape(n)
+        if n in _PROSE_WORD_NAMES:
+            alts.append(r"`" + e + r"`|(?<![\w$])" + e + r"\s*\(")
+        else:
+            alts.append(r"(?<![\w$])" + e + r"(?![\w$])")
+    return re.compile("(?:" + "|".join(alts) + ")")
 
 
 def _last_mention_session(root, func, pat):
@@ -2574,6 +2629,7 @@ def sibling_ledgers(root, func, names=None):
                     "sessions": int(st.get("session_count", 0)),
                     "candidate": cand_rel, "candidate_mtime": cand_mtime,
                     "mentioned_at_session": ment, "mentioned_at_date": ment_date,
+                    "outbound": outbound, "inbound": inbound,
                     "unspent": bool(unspent)})
     # COMPLETED siblings last: their ledger directory is gone, so the loop above
     # cannot see them, but a floor-0 twin is the strongest lead that exists
@@ -2596,7 +2652,12 @@ def render_siblings(sibs, func):
             if s["floor_since_session"] is not None else ""
         cand = (f"{s['candidate']} (written {s['candidate_mtime']})" if s["candidate"]
                 else "no candidate.c")
-        if s["mentioned_at_session"] is None:
+        if s["mentioned_at_session"] is None and s.get("outbound"):
+            # Named in prose without a `## [sN]` / `- [sN]` session tag (the
+            # manual lane writes free prose), so the mention can't be dated.
+            ment = "your ledger names it (undated mention)" + (
+                "; it names you too" if s.get("inbound") else "")
+        elif s["mentioned_at_session"] is None:
             ment = "your ledger has NEVER mentioned it (it names you)"
         else:
             ment = (f"your ledger last mentions it at your s{s['mentioned_at_session']}"
@@ -2811,6 +2872,7 @@ def completed_siblings(root, func, names=None):
                     "candidate": f"src/{stem}.c (the MATCHED body, on main)",
                     "candidate_mtime": done_date or "",
                     "mentioned_at_session": ment, "mentioned_at_date": ment_date,
+                    "outbound": outbound, "inbound": inbound,
                     "unspent": bool(unspent)})
     # A long-running ledger names a lot of functions (CD_sync at s125 couples to
     # 17 completed ones), and the brief pays for every line. Newest completions
