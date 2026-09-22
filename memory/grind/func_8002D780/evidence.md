@@ -2756,3 +2756,95 @@ tmp/grind/judge_func_8002D780.json.
 - [s26] The banned clobber list "$12","$14","$15" and the banned multi-write scratch `tmp` carrier remain untouched this session -- no candidate re-declares either.
 
 - [s26] src/code6cac_b.c restored to its INCLUDE_ASM baseline after measurement; git status clean except ledger files and metrics/events.jsonl (pre-existing at session start).
+
+## s27 (synthesis, 2026-09-21) — the residual's predicate re-derived from the compiler, and the sibling-canon clobber list that satisfies it
+
+- [s27] Baseline re-measure on the s24/s26 body (candidate_alt_s27_honest_floor2.c spliced into
+  src/code6cac_b.c): `sandbox func_8002D780 --disable all` -> score 2, target_insns 202,
+  build_insns 202, rules_dropped 0. `--diff` on that chassis: **0 source-level, 1 operand-only,
+  11 not-scored** masked branch-target artifacts. The single operand-only hunk is hunk 5/12 at
+  target[88]/ours[88]: target `mflo s1; subu v1,v1,s1` vs ours `mflo t6; subu v1,v1,t6`. The
+  second residual pair s23 recorded at ours[116:118] (`mflo t7` vs target `mflo t8`) is GONE —
+  the licensed "$15" widening already closed it. Diagnosis unchanged from s24/s25/s26.
+
+- [s27] **Predicate re-derived directly from the frozen compiler source this session** (not from a
+  prior session's prose). `global.c:999-1001` builds find_reg's pass-0 exclusion set as
+  `used = hard_reg_conflicts[allocno] | ~regs_used_so_far | regs_someone_prefers[allocno]`;
+  the scan at `global.c:1052-1082` then takes the LOWEST regno not in `used` (mips.h defines no
+  REG_ALLOC_ORDER, so the `int regno = i` branch is live). Pseudo 128 (x2*pz) reaches find_reg
+  through `reload1.c:3576 retry_global_alloc (i, forbidden_regs)` after its LO kickout, and
+  `reload1.c:727` shows `forbidden_regs` is seeded `COPY_HARD_REG_SET (forbidden_regs, bad_spill_regs)`.
+  With s23's instrumented sets (conflicts {2..13,16,29}, someone_prefers {5}, regs_used_so_far
+  containing 14 and 17) the lowest free regno is 14 = $t6 — our build's answer. For the target's
+  17 = $s1, regno 14 must additionally be in `used`.
+
+- [s27] **Every non-asm route into that set for regno 14 is closed by the TARGET's own register
+  census, not by our build's.** (a) a hard-register conflict needs a pseudo seated in $t6 that is
+  live across the retry's insn window (ours[170-172]); the target's only $t6 instructions are
+  `mflo $t6` (asm/funcs/func_8002D780.s:68) and its death `subu $v0,$t6,$s1` (:82), both inside
+  test 1, while test 2 opens at :89 — so no conflict exists in the target either. (b)
+  `regs_someone_prefers` is the union of conflicting allocnos' `hard_reg_preferences`, which
+  global.c fills only from pseudo<->hard-register copy insns; this function's are the a0-a3/v0 ABI
+  moves and the "$12" asm operand. (c) 14 cannot drop out of `regs_used_so_far`, because the
+  target itself seats pseudo 119 (z0*cx) in $t6 (`mflo $t6`, .s:68). That leaves `forbidden_regs`
+  = `bad_spill_regs`, and `reload1.c:3727-3740` gives a NON-FIXED register bad_spill_regs
+  membership only via `regs_explicitly_used[i]` — a hard register literally mentioned in the RTL
+  (asm operand/clobber or register-asm variable). The s23/s24 class kill is therefore CONFIRMED
+  by independent re-derivation, and it is a statement about the ORIGINAL TU's asm text, not a
+  statement that the function is unreachable.
+
+- [s27] The same predicate governs the OTHER seat the "$15" widening already bought, which makes it
+  a two-witness result rather than one coincidence: `reload1.c:3727-3775` ranks zero-use call-used
+  registers ascending for `potential_reload_regs`, so the GR spill register that materialises the
+  sqrt block's `y*y` mflo is $t7 (regno 15) unless $t7 is in bad_spill_regs. s23's trA trace shows
+  exactly that (`uses=15:0,22:0,23:0,24:0,25:0,14:2`, `prr=15,24,25,22,23,14,...`,
+  `new_spill_reg idx=0 regno=15`). The target's is $t8 (.s:128 `mflo $t8`) and the target contains
+  **no $t7 instruction anywhere**. Two independent seats ($s1 for pseudo 128, $t8 for the y*y
+  reload), one predicate (`regs_explicitly_used` ⊇ {14,15}), asm-level only.
+
+- [s27] **Sibling canon found in this very file, and it was never in this ledger's sibling list.**
+  func_8002BC68 (`src/code6cac_b.c:766`) and func_8002BEA0 (`src/code6cac_b.c:829`) — both
+  COMPLETED-C on main, both computing the identical D_8008D118 / 0x400 / 0x16 / 0x13 LZCS sqrt
+  idiom — ship the PsyQ mtc2/swc2 island with the FULL CONSERVATIVE clobber list
+  `"$12", "$13", "$14", "$15"`, granted by the 2026-07-28 Judge ruling
+  (`docs/grind/decisions.md:1852`). That is the same footprint this function's bytes demand, and
+  the 2026-09-16 layer-2 FAIL objected to the s23 body precisely because it was a hand-picked
+  SUBSET of it ("no hand-written GTE macro clobbers t4/t6/t7 but not t5").
+
+- [s27] **Measured ladder, one variable (the clobber list), same chassis, same three FAKEs:**
+  `"$12"` only = 4/202 · `"$12","$15"` (s24/s26 banked body) = 2/202 ·
+  `"$12","$13","$14","$15"` on the swc2 half only = **0/202** ·
+  `"$12","$13","$14","$15"` on BOTH halves of the macro = **0/202** (202 build insns == 202
+  target insns, rules_dropped 0). The both-halves form is banked as the new
+  `memory/grind/func_8002D780/candidate.c`; artifacts
+  `tmp/grind/func_8002D780/s27/v1_full_conservative_both.c` and
+  `tmp/grind/func_8002D780/s27/v2_full_conservative_swc2.c`.
+
+- [s27] **The island TEXT does NOT transfer from the siblings — only the clobber list does.** The
+  target computes the swc2 store address in a separate instruction *between* the macro's nops and
+  its `addu $t4`: `addiu $v0,$sp,0x10` (.s:1E1B0) then `addu $t4,$v0,$zero; swc2 $31,0($t4)`. A
+  single asm statement would emit the address computation before the whole block, so the
+  two-statement split with `"r"(&sp_var)` is FORCED by the bytes; the siblings' single island with
+  an inline `addu $t4,$sp,$zero` is a different macro instance. Do not "normalise" this body
+  toward the sibling's island shape.
+
+- [s27] **FAKE re-audit (mandated) on the new 0/202 chassis.** `tools/fake_ablate.py` is BROKEN on
+  this host right now: `tools/sweep_variants.py:203` dies with `OSError: [Errno 22] Invalid
+  argument` on its very first `Path.write_bytes` to `src/code6cac_b.c` (a WSL/DrvFs write failure,
+  reproduced three times; it also leaves src/ spliced, so `git checkout -- src/code6cac_b.c`
+  afterwards is mandatory — log at `tmp/grind/func_8002D780/s27/ablate_v1.txt`). Ablation was
+  therefore done by hand on the FAKE nearest the residual seat: dropping the `m = dist` same-value
+  re-store from the 0/202 body gives **4/202** (banked
+  `rejected/s27-conservative-clobber-without-m-restore-4.c`), i.e. the sole sqrt-block FAKE is
+  load-bearing on this chassis exactly as s23's grid recorded (keep-all 0, drop-m 4). No instance
+  kill in state.json was measured with a FAKE occupying pseudo 128's seat, so none is voided.
+
+- [s27] `verify-oracle` could NOT be run as byte proof: with the candidate spliced, the engine
+  refuses (`"refused": "dirty-build-inputs"`, exit 3) because a `--rebuild` on a dirty tree would
+  corrupt the canonical `build/` reference, and this session may not commit. The sandbox's
+  `score 0 / build_insns 202 / target_insns 202 / rules_dropped 0` is the session's byte evidence;
+  the driver re-verifies independently.
+
+- [s27] The banned multi-write scratch `tmp` carrier is untouched — no form this session declares
+  it. src/code6cac_b.c restored to its INCLUDE_ASM baseline; git status clean except
+  metrics/events.jsonl (pre-existing at session start) and this ledger.

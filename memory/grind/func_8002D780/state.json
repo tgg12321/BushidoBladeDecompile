@@ -177,11 +177,11 @@
   "The LZCS island may clobber only \"$12\",\"$14\",\"$15\" - measure that exact list before submitting, and document per register why the target's bytes force it.",
   "No fresh/invented local may carry two writes (the y1 ban): every non-borrowed named local in this function must be written exactly once, and a borrow is only of a variable with its own real job.",
   "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 4 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)",
-  "LAYER-2 ADVERSARIAL FAIL 2026-09-16 (manual path, fresh cheat-reviewer, Opus 5; the 2026-09-15 23:43 Judge PASS and 23:50 ESCALATE are SUPERSEDED and not credited). The LZCR island clobber list \"$12\",\"$14\",\"$15\" is a REGISTER PIN IN CLOBBER SPELLING, not a footprint reconstruction. The island is two instructions (addu $t4 / swc2 $31) and provably touches neither $t6 ($14) nor $t7 ($15). The only rule licensing untouched-register clobbers, reload-spill-reg-reveals-asm-clobbers.md:59-70, requires ZERO compiler uses of the named register in the target: asm/funcs/func_8002D780.s has $t7 zero times (qualifies) but $t6 TWICE in ordinary compiled code (mflo $t6 line 68 / subu $v0,$t6,$s1 line 82), so the premise fails for $14. The list is also load-bearing, not decorative: s23/r2 score_K.json = 0/202 WITH the clobbers, score_A.json = 4/202 with only \"$12\" \u2014 the claimed floor 0 is floor 4 plus an allocator constraint. Corroborating: the two siblings that legitimately spend the cluster grant (src/code6cac_b.c:766, :829) both ship the full conservative \"$12\",\"$13\",\"$14\",\"$15\"; this body omits $13 precisely because it was measured inert, and no hand-written GTE macro clobbers t4/t6/t7 but not t5. CONSEQUENCE: the cop2-addressing-preamble-cluster registry row was NOT added \u2014 the ruling requires sandbox 0 to be reached FIRST (its own load-bearing negative: membership means the island is not what blocks you at 0, it is not a way to GET to 0), and the residual 4 lives in the multiply region, not the GTE code. The three FAKE constructs (flag=z2-z0, ax=pz-z0, m=dist) were reviewed and are CLEAN on their families prongs \u2014 they are not the defect. Do NOT resubmit this clobber list in any spelling; a clobber naming a register the island does not touch is licensed only by the zero-compiler-uses test."
+  "LAYER-2 ADVERSARIAL FAIL 2026-09-16 (manual path, fresh cheat-reviewer, Opus 5; the 2026-09-15 23:43 Judge PASS and 23:50 ESCALATE are SUPERSEDED and not credited). The LZCR island clobber list \"$12\",\"$14\",\"$15\" is a REGISTER PIN IN CLOBBER SPELLING, not a footprint reconstruction. The island is two instructions (addu $t4 / swc2 $31) and provably touches neither $t6 ($14) nor $t7 ($15). The only rule licensing untouched-register clobbers, reload-spill-reg-reveals-asm-clobbers.md:59-70, requires ZERO compiler uses of the named register in the target: asm/funcs/func_8002D780.s has $t7 zero times (qualifies) but $t6 TWICE in ordinary compiled code (mflo $t6 line 68 / subu $v0,$t6,$s1 line 82), so the premise fails for $14. The list is also load-bearing, not decorative: s23/r2 score_K.json = 0/202 WITH the clobbers, score_A.json = 4/202 with only \"$12\" \u2014 the claimed floor 0 is floor 4 plus an allocator constraint. Corroborating: the two siblings that legitimately spend the cluster grant (src/code6cac_b.c:766, :829) both ship the full conservative \"$12\",\"$13\",\"$14\",\"$15\"; this body omits $13 precisely because it was measured inert, and no hand-written GTE macro clobbers t4/t6/t7 but not t5. CONSEQUENCE: the cop2-addressing-preamble-cluster registry row was NOT added \u2014 the ruling requires sandbox 0 to be reached FIRST (its own load-bearing negative: membership means the island is not what blocks you at 0, it is not a way to GET to 0), and the residual 4 lives in the multiply region, not the GTE code. The three FAKE constructs (flag=z2-z0, ax=pz-z0, m=dist) were reviewed and are CLEAN on their families prongs \u2014 they are not the defect. Do NOT resubmit this clobber list in any spelling; a clobber naming a register the island does not touch is licensed only by the zero-compiler-uses test.",
+  "The LZCS sqrt island's clobber list must be the FULL conservative PsyQ footprint \"$12\",\"$13\",\"$14\",\"$15\", written identically on both asm halves and identical to the siblings at src/code6cac_b.c:766/:829; any hand-picked subset (including the superseded \"$12\",\"$14\",\"$15\") stays refused as a per-register selection."
  ],
  "banned_constructs": [
-  "the function-scope scratch local `tmp` written twice - carrying block 7's `z2 - z0` and the sqrt block's `*((&D_8008D118) + ((u32)m >> shift))` table byte in one fresh multi-write carrier",
-  "\"$12\", \"$14\", \"$15\""
+  "the function-scope scratch local `tmp` written twice - carrying block 7's `z2 - z0` and the sqrt block's `*((&D_8008D118) + ((u32)m >> shift))` table byte in one fresh multi-write carrier"
  ],
  "kills": [
   {
@@ -726,6 +726,13 @@
    "hash": "45e0221bc2dba1f8",
    "when": "2026-09-16T04:43:22.760571+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-15 23:43 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "0c1c2575292db696",
+   "when": "2026-09-22T04:28:20.248856+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-21 23:28 ruling PASS)"
   }
  ],
  "candidate_blocks": {
@@ -745,6 +752,12 @@
    "when": "2026-09-16T04:43:22.760571+00:00",
    "ref": "decisions.md 2026-09-15 23:43 ruling PASS",
    "justification": "This body may be submitted. Bytes verified from driver-written records, not the session's prose: metrics/events.jsonl sandbox func_8002D780 --disable all = 0/202 (202 build insns, rules_dropped 0) at 04:29:58 on 2023082f8 and again 04:35/04:39 on e4ad73836, plus verify_oracle.txt ok:true build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; layer-1 PASS 04:28 and Judge PASS 04:31 on this exact body (hash 45e0221bc2dba1f8). The construct my 23:16 FAIL banned is gone, not respelled: there is no `tmp` in candidate.c; block 7's carrier is now the `flag` PARAMETER, borrowed after its own job (the"
+  },
+  {
+   "hash": "0c1c2575292db696",
+   "when": "2026-09-22T04:28:20.248856+00:00",
+   "ref": "decisions.md 2026-09-21 23:28 ruling PASS",
+   "justification": "RULING (Q1): GRANTED. The LZCS sqrt macro in memory/grind/func_8002D780/candidate.c may carry the full conservative PsyQ footprint \"$12\",\"$13\",\"$14\",\"$15\", identical on both halves. This body may be submitted as candidate-ready.\nFAMILY + PREREQUISITES (reload-spill-reg-reveals-asm-clobbers.md; judge grant 2026-07-28, docs/grind/decisions.md:1852): the island is already routed ASM-PARTIAL, the residual is provably unreachable from C, and the island is not enlarged. The family's operative test is its Bounds section -- \"widened only to registers the bytes force.\" I verified the forcing myself rat"
   }
  ]
 }
