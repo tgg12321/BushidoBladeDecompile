@@ -683,9 +683,9 @@
    "consumed": null
   }
  ],
- "exhaustion_base": 22,
- "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8002CA8C -> floor 0 (2026-09-16T02:40)",
- "last_unpark_at": "2026-09-16T02:40:24.629144+00:00",
+ "exhaustion_base": 23,
+ "last_unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8002C22C -> floor 173 (2026-09-22T03:41)",
+ "last_unpark_at": "2026-09-22T03:41:29.693886+00:00",
  "reviewer_history": [
   "LAYER-1 CHEAT-REVIEWER FAIL: The three FAKE constructs check out, but the candidate also carries an UNDISCLOSED, load-bearing (4 insns) inline-asm hard-register footprint \u2014 the \"$13\",\"$14\",\"$15\" clobbers on the LZCS swc2 statement \u2014 extended by analogy from a grant scoped to two other named functions, and this function's target bytes contradict that grant's decisive premise. Next action: Do not commit. This is a substantive objection, not a re-cite. Either (a) drop $13-$15 (measured 6/202 \u2014 so this closes the match and the function goes back to grinding), or (b) build the per-function bytes-fo"
  ],
