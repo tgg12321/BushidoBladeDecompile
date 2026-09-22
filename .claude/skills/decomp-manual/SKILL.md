@@ -37,7 +37,10 @@ pwsh tools/manual_session.ps1 status             # what's open right now
 
 `begin` stops the Grinder, **waits for it to actually release the lock**,
 refuses a dirty tree or a red oracle, pops the target, and prints the full
-context bundle (dossier · siblings · canonical route · floor + instruction diff).
+context bundle (dossier · siblings · Sony-library provenance when the function
+is library code · canonical route · the banked candidate's floor + instruction
+diff). It also flags ledger `.c` files that never mention the function — usually
+pre-rename leftovers that should not be trusted.
 
 `end` only restarts what `begin` stopped: if the Grinder was already down when
 you began, `end` leaves it down rather than starting one behind your back.
@@ -81,7 +84,7 @@ The freedoms in §3 are bounded by these. They are the whole point of the projec
 ## 2. Read the diff before you reach for a lever
 
 ```powershell
-& tools/wteng.ps1 main sandbox <func> --disable all --diff
+& tools/wteng.ps1 main sandbox <func> --disable all --diff --candidate memory/grind/<func>/candidate.c
 ```
 
 Of grinder sessions that ran `sandbox`, only **37% ever looked at an instruction
@@ -99,7 +102,17 @@ Each hunk is classed for you:
 | **not-scored** | equal once masked (moved branch displacement, section addend) — **chasing it is wasted work** |
 
 If every remaining hunk is `not-scored`, the function is done and the residual is
-a scorer artifact — say so rather than grinding.
+a scorer artifact — say so rather than grinding. **A nonzero score with zero
+scored hunks is a scorer defect, not a floor** — prove it with `verify-oracle`
+and file it. (Data symbols defined only as `dlabel`s in `asm/data/*.s` were
+invisible to the scorer until 2026-09-22; CD_cw's "floor 4" was entirely that.)
+
+**Library code: check for published reference C first.** If `begin` prints a
+*Sony library provenance* block, fetch the reference it names (SOTN psxsdk /
+psyz) into `tmp/` and measure it BEFORE writing your own spelling — it is a lead,
+not the answer (BB2 links a different build), but on CD_cw it carried the whole
+structure (inline `set_alarm`/`get_alarm`/`callback`/`_memcpy` helpers, the
+`tbl[com + 0x40]` index) that ~15 hand variants never found.
 
 ---
 
@@ -108,8 +121,24 @@ a scorer artifact — say so rather than grinding.
 Edit **`memory/grind/<func>/candidate.c`** and score it:
 
 ```powershell
-& tools/wteng.ps1 main sandbox <func> --disable all --diff   # defaults to that candidate
+& tools/wteng.ps1 main sandbox <func> --disable all --diff --candidate memory/grind/<func>/candidate.c
 ```
+
+**`--candidate` is required.** `main` carries `INCLUDE_ASM` for an incomplete
+function, so a bare `sandbox <func>` scores the stub (`no_c_body: true`) — it
+prints a pointer to the candidate but never substitutes it (an implicit fallback
+would let a Grinder session that left `INCLUDE_ASM` in `src/` pass the driver's
+byte check on the ledger's score).
+
+To score several spellings at once — one line each, full output kept in
+`tmp/sandbox_sweep/<func>/`, `-Hunks` prints only the SCORED hunks:
+
+```powershell
+pwsh tools/sandbox_sweep.ps1 -Func <func> -Variants tmp/<f>/a.c,tmp/<f>/b.c [-Hunks]
+```
+
+Keep scratch variants in `tmp/`, and bank only the winners (`candidate.c`) and
+the instructive losers (`rejected/<slug>-<score>.c`) to the ledger.
 
 **The working tree stays clean the whole time.** This is not tidiness — it makes
 a real hazard structurally impossible: `dossier`, `queue *` and `sandbox` run
@@ -235,7 +264,9 @@ sitting.
    you killed and how, what the frontier is now). Be honest about a flat floor;
    a false floor is worse than no floor.
 2. `pwsh tools/manual_session.ps1 end` — asserts the tree is clean, commits the
-   ledger, relaunches the Grinder (`-NoRelaunch` to leave it down).
+   ledger and the session's `metrics/events.jsonl` (separate `metrics:` commit),
+   lists the session's commits, relaunches the Grinder (`-NoRelaunch` to leave
+   it down).
 
 The Grinder picks up your ledger and continues. Nothing is lost between lanes —
 that's why this lane writes `memory/grind/<func>/` rather than `memory/wip/`.
@@ -284,7 +315,8 @@ and move on. Do not self-authorize a new grant
 | `pwsh tools/manual_session.ps1 begin [-Func <f>] [-DryRun]` | take the wheel: stop Grinder, pop target, print full context |
 | `pwsh tools/manual_session.ps1 end [-NoRelaunch]` | bank the ledger, hand back to the Grinder |
 | `pwsh tools/manual_session.ps1 status` | what's open, is the Grinder up, is the tree dirty |
-| `& tools/wteng.ps1 main sandbox <f> --disable all --diff` | honest floor + WHERE it differs |
+| `& tools/wteng.ps1 main sandbox <f> --disable all --diff --candidate memory/grind/<f>/candidate.c` | honest floor + WHERE it differs (`--candidate` required) |
+| `pwsh tools/sandbox_sweep.ps1 -Func <f> -Variants a.c,b.c [-Hunks]` | score many variants, scored hunks only |
 | `& tools/wteng.ps1 main canonical <f>` | C vs ASM-region vs ASM-structural route |
 | `& tools/wteng.ps1 main dossier <f>` | the full live-verified picture |
 | `& tools/wteng.ps1 main verify-oracle --rebuild --allow-dirty` | the only truth (landing step; `--allow-dirty` needed once src is spliced) |
