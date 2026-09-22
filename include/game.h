@@ -93,6 +93,22 @@ typedef struct {
 
 extern Unk8009BCF8Record D_8009BCF8[20];
 
+/* 0x8009BC94: table of {x, y} s16 position records, 6 records (24 bytes) per
+ * row. Object model evidence, independent of and predating any byte-chasing
+ * session, from the original binary: func_8006F100 and func_80071C4C form ONE
+ * offset per access (row*24 held in a strength-reduced register plus
+ * D_800A3590[row]*4) and read `lh %lo(D_8009BC94)($at)` and
+ * `lh %lo(D_8009BC96)($at)` through that same offset -- record stride 4,
+ * row stride 24, base+offset addressing. Replaces the splat per-word scalars
+ * D_8009BC94 / D_8009BC96 (per-word splat symbol -> aggregate merge family,
+ * owner ruling 2026-08-17). */
+typedef struct {
+    s16 x;
+    s16 y;
+} Unk8009BC94Record;
+
+extern Unk8009BC94Record D_8009BC94[][6];
+
 /* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
  * (independent of and predating any byte-chasing): the original binary
  * addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
