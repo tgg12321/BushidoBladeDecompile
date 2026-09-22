@@ -90,7 +90,7 @@ param(
     # limit window the moment a spawn dies on a 429. $FallbackModel is Opus 5,
     # so total Fable exhaustion degrades to EXACTLY the 2026-09-10 config.
     #
-    # To re-collapse to all-Opus, pass -Model / -ReconModel 'claude-opus-5[1m]'
+    # To re-collapse to all-Opus, pass -Model / -ReconModel 'claude-opus-5-5[1m]'
     # explicitly. To end the experiment and restore the 2026-09-15 split, pass (or
     # restore as defaults) 'claude-fable-5-1[1m]' on both worker lanes.
     # ('claude-fable-5[1m]' resolves to Fable 5, not 5.1.)
@@ -107,11 +107,14 @@ param(
     # fallback (which costs one dead spawn per lane per limit window). This is
     # an allowance change, not a quality finding — restore
     # 'claude-fable-5-1[1m]' here when the allowance returns.
-    [string]$ReasoningModel = 'claude-opus-5[1m]',      # judgment lanes (ARM 2)
-    [string]$JudgeModel = 'claude-opus-5[1m]',         # the default-FAIL Judge
-    [string]$Layer1Model = 'claude-opus-5[1m]',        # pre-Judge cheat-reviewer gate
+    # 2026-09-22 owner directive: every Opus-pinned lane moved Opus 5 -> Opus 5.5
+    # ('claude-opus-5-5[1m]') on release. The Sonnet worker lanes above are the
+    # ARM 2 experiment and are unchanged.
+    [string]$ReasoningModel = 'claude-opus-5-5[1m]',    # judgment lanes (ARM 2)
+    [string]$JudgeModel = 'claude-opus-5-5[1m]',       # the default-FAIL Judge
+    [string]$Layer1Model = 'claude-opus-5-5[1m]',      # pre-Judge cheat-reviewer gate
     # Fallback for ANY lane whose model hits a usage-limit 429 (see above).
-    [string]$FallbackModel = 'claude-opus-5[1m]',
+    [string]$FallbackModel = 'claude-opus-5-5[1m]',
     [int]$SessionTimeoutMin = 90,
     [string]$MockSessionScript = '',
     [string]$MockJudgeScript = '',

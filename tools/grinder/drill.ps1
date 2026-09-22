@@ -18,7 +18,8 @@
 # still be re-checked whenever grind.ps1's -JudgeModel moves).
 # Drill C spends a real Judge cycle, so a stale default here would drill a model
 # the driver no longer uses.
-param([switch]$WithJudge, [string]$JudgeModel = 'claude-opus-5[1m]')
+# 2026-09-22: moved to Opus 5.5 in lockstep with grind.ps1.
+param([switch]$WithJudge, [string]$JudgeModel = 'claude-opus-5-5[1m]')
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $Root
