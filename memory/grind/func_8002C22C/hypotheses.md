@@ -343,3 +343,64 @@ were not tried and remain open frontier.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s3/196-floor chassis (D_80102314 base+offset decl, per-arm-duplicated 4-word zero-init, current toolchain -mel -msoft-float), zero FAKE constructs, zero pins; the permuter's best-of-794-iterations find re-spliced and measured directly on the real sandbox, then reverted
+
+## [s5] Sibling check (mandatory, before any own probe): func_8002D780 candidate.c (floor 0/202, rotated, queue: rotated) and func_80029454 (floor 1024, no candidate.c) were both re-checked against func_8002C22C's current chassis.
+- mechanism: n/a — dossier/sibling-inheritance check, not a codegen lever.
+- probe: grep func_8002D780's candidate.c body for any of func_8002C22C's addresses (0x1F800xxx scratchpad literals, D_80102xxx / D_800A3824 globals) or shared structural shape (obj+offset collision test vs practice-menu scratchpad accumulation — different domains entirely).
+- result: zero overlap. func_8002D780 is a collision/distance-test function over `obj`/`pos` structs with GTE islands and sqrt tables; func_8002C22C is a scratchpad-accumulation function over 0x1F800xxx MMIO-adjacent scratchpad + the D_80102xxx practice-menu record table. No transplantable block. Confirms s4's same finding (still true; nothing moved).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current func_8002D780 candidate.c (s23, floor 0/202, rotated) vs current func_8002C22C chassis (s4, floor 196) — text/address comparison only, no compile needed to establish zero overlap
+
+## [s5] The second if/else accumulate block's deferred t0[0xC0] term was being read AFTER the if/else join (`sum_a1_2 = d_tbl[0x248/4];` then `t0[0xC0/4] += sum_a1_2;`) while its sibling deferred term t0[0xBC] was already read INSIDE each arm (`sum_v0_2 = t0[0xBC/4] + d_tbl[0x244/4];`). Reading t0[0xC0] inside each arm too (mirroring t0[0xBC]'s existing shape) and storing the plain sum at the join closes this asymmetry.
+- mechanism: cse.c cse_end_of_basic_block block-extension (cse.c:8102-8184) — same mechanism as the s2 zero-init lever ([[cse-block-extension-controls-fold-span]]). A load textually placed AFTER a conditional join sits in a DIFFERENT extended basic block than the arm that produced the other operand, so it cannot be scheduled/rematerialized into the arm the way an in-arm reference is; ground-truth asm (asm/funcs/func_8002C22C.s .L8002C41C-.L8002C4E8 / .L8002C4EC-.L8002C5B8) shows the compiler DOES read t0[0xC0] early inside the arm and carries it in a register through to the join, exactly the shape t0[0xBC] already had in our C.
+- probe: edited both arms' `sum_a1_2 = d_tbl[0x248/4];` (resp. `d_tbl[0x224/4]`) to `sum_a1_2 = t0[0xC0/4] + d_tbl[0x248/4];` (resp. `+ d_tbl[0x224/4]`), and changed the post-join `t0[0xC0/4] += sum_a1_2;` to `t0[0xC0/4] = sum_a1_2;`. Measured `sandbox func_8002C22C --disable all`.
+- result: 196 -> 173 (build_insns 238 -> 240, target unchanged at 252). `--diff` before/after: 31 source-level / 4 operand-only / 1 not-scored -> 29 source-level / 6 operand-only / 1 not-scored — two of the hunks in the accumulate region's second round (offsets 0x528-0x548(t1) reads) flipped from source-level to operand-only (pure register renames now, a real reg-alloc/scheduling residual instead of a C-structure gap).
+- verdict: CONFIRMED
+- (ordinary C — ONE more field read relocated inside its own arm, matching a shape already present in the same block for the sibling field; no new construct, no FAKE, ordinary-C-Judge-decidable per [[ordinary-c-judge-decidable]] Ruling 1)
+
+## [s5] Operand-order swap on the newly-fixed sum_v0_2/sum_a1_2 expressions (`t0[x] + d_tbl[y]` vs `d_tbl[y] + t0[x]`) has no effect on the score.
+- mechanism: n/a — commutative-operand swap probe (Axis 3 of the enumerate methodology), checking whether the residual includes an addend-order tie.
+- probe: swapped both sum_v0_2/sum_a1_2 RHS operand orders in both arms; re-measured; swapped back.
+- result: 173 both ways — byte-identical build. The remaining residual is NOT an addend-order tie at this site.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s5/173-floor chassis, current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins
+
+## [s5] Extending the same cse-block-extension mechanism to the FIRST if/else block's trailing unconditional stores (0x1F800368/374/378, currently written once after that if/else's join from a2/d_v1/d_a0/d_v0/d_a1) — duplicating them into each arm using the arm's own already-computed values, per the s4 frontier's second item — does NOT help; it regresses.
+- mechanism: same named mechanism as above (cse-block-extension), but this site's values are WRITE-ONLY across the join (never re-read afterward), unlike t0[0xBC]/t0[0xC0] which ARE re-read (by the third block's final sra/sll math). There is no cross-join re-materialization for the duplication to defeat, so it just doubles the emitted stores.
+- probe: duplicated the 5-statement trailing-store block into both arms of the first if/else, removed the single post-join copy; measured sandbox --disable all.
+- result: 173 -> 214 (build_insns 240 -> 250, WORSE against target 252 — moved further from source-level closure, not closer). Reverted immediately; confirmed reversion restores exactly 173.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s5/173-floor chassis (with the t0[0xC0] fix applied), current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins; both the regressed (214) and reverted (173) states directly measured
+
+## [s5] func_8002D780's candidate.c (floor 0/202, rotated) and func_80029454 (floor 1024, no candidate) share zero addresses or structural shape with func_8002C22C's current chassis; no transplant exists.
+- mechanism: n/a - sibling-ledger transplant check, not a codegen lever
+- probe: grepped func_8002D780's candidate.c for func_8002C22C's 0x1F800xxx scratchpad literals and D_80102xxx/D_800A3824 globals; compared function domains directly
+- result: zero overlap in either address space or control-flow shape; func_8002D780 is a collision/distance-test over obj/pos structs with GTE islands, func_8002C22C is a scratchpad-accumulation function over the practice-menu record table
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: func_8002D780 s23 candidate.c (floor 0/202, rotated) vs func_8002C22C s4 chassis (floor 196), text/address comparison
+
+## [s5] Reading t0[0xC0] inside each accumulate-block arm (matching t0[0xBC]'s existing shape) instead of after the if/else join, and storing the plain sum at the join instead of using +=, closes part of the residual.
+- mechanism: cse.c cse_end_of_basic_block block-extension (cse.c:8102-8184) - the same mechanism as the s2 zero-init lever ([[cse-block-extension-controls-fold-span]]); a load placed textually after a conditional join sits in a different extended basic block than the arm producing the sibling operand and cannot be rematerialized into the arm the way an in-arm reference is
+- probe: changed `sum_a1_2 = d_tbl[0x248/4];` / `d_tbl[0x224/4]` to `sum_a1_2 = t0[0xC0/4] + d_tbl[...];` in both arms, and the post-join `t0[0xC0/4] += sum_a1_2;` to `t0[0xC0/4] = sum_a1_2;`; measured sandbox --disable all
+- result: 196 -> 173 (build_insns 238 -> 240, target unchanged at 252); --diff hunk classification improved from 31 source-level/4 operand-only/1 not-scored to 29 source-level/6 operand-only/1 not-scored
+- verdict: CONFIRMED
+
+## [s5] Swapping the operand order of the newly-fixed sum_v0_2/sum_a1_2 additions (t0[x]+d_tbl[y] vs d_tbl[y]+t0[x]) changes the score.
+- mechanism: commutative addend-order tie probe (enumerate methodology Axis 3)
+- probe: swapped both arms' operand order on both sum expressions; re-measured; swapped back
+- result: 173 both ways, byte-identical build - not an addend-order tie at this site
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s5/173-floor chassis, current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins
+
+## [s5] Duplicating the first if/else block's trailing unconditional stores (0x1F800368/374/378) into each arm using that arm's own already-computed values (the s4 frontier's second item) closes more of the residual via the same cse-block-extension mechanism.
+- mechanism: same named mechanism (cse-block-extension), but this site's values are write-only across the join (never re-read afterward) unlike t0[0xBC]/t0[0xC0] which are consumed by the third block's sra/sll math
+- probe: duplicated the 5-statement trailing-store block into both first-if/else arms, removed the single post-join copy; measured sandbox --disable all
+- result: 173 -> 214 (build_insns 240 -> 250) - regression, moved further from target. Reverted; confirmed reversion restores exactly 173.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s5/173-floor chassis (with the t0[0xC0] fix applied), current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins; both the regressed (214) and reverted (173) states directly measured

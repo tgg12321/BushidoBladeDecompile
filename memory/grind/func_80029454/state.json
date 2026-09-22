@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_8002C22C",
-   "floor": 196,
-   "session": 3,
-   "at": "2026-09-22T03:20:13.664392+00:00",
-   "headline": "Ground-truth asm read showed the per-arm zero-init of 0x1F800374/0x1F800378 was dead; dropping it dropped floor 199 -> 196; two literal-source-structure hypotheses (single unconditional 6-word zero-in",
+   "floor": 173,
+   "session": 5,
+   "at": "2026-09-22T03:41:16.283168+00:00",
+   "headline": "Enumerate sweep on the accumulate block's deferred t0[0xC0] term dropped the floor 196 -> 173 by reading it inside each arm (mirroring t0[0xBC]'s existing shape) instead of after the if/else join; dup",
    "consumed": null
   }
  ]

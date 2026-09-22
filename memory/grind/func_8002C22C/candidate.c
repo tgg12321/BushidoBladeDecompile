@@ -1,27 +1,54 @@
-/* func_8002C22C (PutRobShadow) — s3 candidate (structural, 2026-09-22).
- * sandbox --disable all = 196 (target 252 insns, build 238 insns). NOT a match.
- * s2 (floor 199) duplicated a 6-word scratchpad zero-init
- * (0x1F800360/364/368/370/374/378 = 0;) into BOTH if/else arms. This session
- * dropped the 0x1F800374/0x1F800378 zero-stores from that duplicated block
- * (per-arm zero-init is now only the 4 words 0x360/364/368/370) after the
- * asm/funcs/func_8002C22C.s ground truth showed the ORIGINAL zero-init is a
- * single unconditional 6-word block ABOVE the branch (lines 7-18 of the .s),
- * not duplicated at all — the two trailing words (0x374/0x378) are written
- * for the first time by the real d_v1/d_a0 stores after the if/else join and
- * were never re-read as zero inside either arm, so re-zeroing them per-arm
- * was a genuinely DEAD, unnecessary store (not present in the target's own
- * dataflow) rather than a needed part of the CSE-defeat duplication. Dropping
- * them is ordinary dead-code removal, not a construct change: 199 -> 196.
- * Re-testing the literal single-unconditional-6-word-before-branch form (byte
- * -identical in *structure* to the real .s) measured WORSE (211) — see
- * memory/grind/func_8002C22C/hypotheses.md H6 — confirming the per-arm
- * duplication is doing real CSE-block-extension-defeat work
- * ([[cse-block-extension-controls-fold-span]], sanctioned
- * duplicated-statement-into-arms family) even though it does not literally
- * mirror the original source's join-point structure. See
- * memory/grind/func_8002C22C/evidence.md / hypotheses.md for the full
- * mechanism discussion and the killed do-while(0) / full-upfront-preload
- * follow-up probes.
+/* func_8002C22C (PutRobShadow) — s5 candidate (enumerate, 2026-09-21).
+ * sandbox --disable all = 173 (target 252 insns, build 240 insns). NOT a match.
+ * Down from s3/s4's floor 196. Full-diff read (`sandbox --diff`) on the s4
+ * chassis showed the second if/else accumulate block's C statement order
+ * ALREADY matched the target's read/add/store sequence for 10 of 12 field
+ * updates (t0[0xA8/0xAC/0xB0/0xB8] += ...  literally 1:1), but the deferred
+ * pair (t0[0xBC], t0[0xC0]) diverged: BC's deferred sum already read
+ * t0[0xBC] INSIDE the arm (`sum_v0_2 = t0[0xBC/4] + d_tbl[0x244/4];`), but
+ * C0's deferred sum only captured the table read
+ * (`sum_a1_2 = d_tbl[0x248/4];`) and left the read of t0[0xC0] itself to the
+ * POST-JOIN store statement (`t0[0xC0/4] += sum_a1_2;`). Ground-truth asm
+ * (asm/funcs/func_8002C22C.s, .L8002C41C..8002C4E8 arm) shows the compiler
+ * reads t0[0xC0] EARLY inside the arm (right after the round-1 add for
+ * 0x23C) and carries that value in a register across the whole of round 2,
+ * only adding the round-2 table term at the join (.L8002C5B8) — mirroring
+ * exactly what the BC term already did. Because our C put t0[0xC0]'s read
+ * textually AFTER the if/else join, cse1's basic-block boundary
+ * (cse_end_of_basic_block, cse.c:8102-8184) could not hoist that load back
+ * into the arm the way it does for a same-block reference — a second face
+ * of the SAME mechanism the s2 zero-init lever already exploited
+ * ([[cse-block-extension-controls-fold-span]]). Fix: read t0[0xC0] inside
+ * each arm too (`sum_a1_2 = t0[0xC0/4] + d_tbl[0x248/4];`) and store the
+ * plain sum at the join (`t0[0xC0/4] = sum_a1_2;` instead of `+=`). This is
+ * ordinary C (named-intermediate pattern already established for BC in this
+ * same function, no FAKE, no new construct) — measured 196 -> 173 this
+ * session, confirmed stable across an operand-order swap probe (173 both
+ * ways, so the residual left is NOT this term's operand order).
+ *
+ * REJECTED same session: moving the trailing unconditional stores
+ * (0x1F800368/374/378, currently after the first if/else join) into each
+ * arm, duplicating them using that arm's own already-computed a2/d_v1/d_a0/
+ * d_v0/d_a1 (the natural next step of the SAME cse-block-extension
+ * mechanism, per the s4 frontier's second item) — measured WORSE, 173 -> 214
+ * (target_insns 252, build grew to 250: the duplication this time defeated
+ * folding the compiler was otherwise doing across that join, net negative).
+ * See rejected/dup-trailing-stores-into-arms-214.c. The frontier item this
+ * disproves: the mechanism does not generalize to every join-adjacent
+ * store — it depends on whether the value is later RE-READ across the join
+ * (BC/C0 are; the a2/d_v1..d_a1 trailing stores are not re-read at all, so
+ * duplicating them just doubles emitted stores with no CSE-defeat payoff).
+ *
+ * Residual 173 is still dominated by source-level hunks (29 of 36) per the
+ * post-fix `sandbox --diff` — largely in the FIRST if/else block (the
+ * 0x1F800360-378 zero-init/read/store region, hunks 1-12) and in remaining
+ * accumulate-block scheduling artifacts (hunks 13-36, several now
+ * operand-only where they were source-level before this session's fix).
+ * See hypotheses.md s5 for the hunk-by-hunk read and the un-tried next
+ * probe (apply the same "read the shared-join value early, inside the arm"
+ * pattern to whichever OTHER post-join reads remain, if any — none
+ * obviously remain after this fix; the frontier below names the actual
+ * next candidate region).
  */
 extern s32 D_80102314; /* record 1 of a 2-elem table, stride 0x44C from D_80101EC8 (func_8002C61C's s1+0x44C);
                          * fields accessed base+offset here, unlike record 0's individually-named scalars.
@@ -97,7 +124,7 @@ void func_8002C22C(void) {
         t0[0xB0/4] += *(s32 *)0x1F800074;
         t0[0xB8/4] += d_tbl[0x240/4];
         sum_v0_2 = t0[0xBC/4] + d_tbl[0x244/4];
-        sum_a1_2 = d_tbl[0x248/4];
+        sum_a1_2 = t0[0xC0/4] + d_tbl[0x248/4];
     } else {
         t0[0xA8/4] += *(s32 *)0x1F800024;
         t0[0xAC/4] += *(s32 *)0x1F800028;
@@ -110,10 +137,10 @@ void func_8002C22C(void) {
         t0[0xB0/4] += *(s32 *)0x1F800038;
         t0[0xB8/4] += d_tbl[0x21C/4];
         sum_v0_2 = t0[0xBC/4] + d_tbl[0x220/4];
-        sum_a1_2 = d_tbl[0x224/4];
+        sum_a1_2 = t0[0xC0/4] + d_tbl[0x224/4];
     }
     t0[0xBC/4] = sum_v0_2;
-    t0[0xC0/4] += sum_a1_2;
+    t0[0xC0/4] = sum_a1_2;
     t0[0x13C/4] = ((t0[0xA8/4] * 3) + t0[0xB8/4]) >> 4;
     t0[0x140/4] = ((t0[0xAC/4] * 3) + t0[0xBC/4]) >> 4;
     t0[0x144/4] = ((t0[0xB0/4] * 3) + t0[0xC0/4]) >> 4;

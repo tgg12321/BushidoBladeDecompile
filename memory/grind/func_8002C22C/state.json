@@ -1,8 +1,8 @@
 {
  "func": "func_8002C22C",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,18 +27,29 @@
    "floor": 196,
    "modality": "permuter",
    "headline": "Permuter campaign on the s3/196-floor chassis found zero improvement (best find codegen-neutral); pass-attributed the residual to the second if/else accumulate block, which needs C-level statement-ord"
+  },
+  {
+   "session": 5,
+   "floor": 173,
+   "modality": "enumerate",
+   "headline": "Enumerate sweep on the accumulate block's deferred t0[0xC0] term dropped the floor 196 -> 173 by reading it inside each arm (mirroring t0[0xBC]'s existing shape) instead of after the if/else join; dup"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Restructuring the second if/else accumulate block's C statement order to fuse the two source tables' contributions per output field (interleaving load-current-slot / load-next-field-operand / add / store, matching the target's asm exactly) will close most or all of the remaining 196-floor residual.",
-   "mechanism": "source-level statement order (not a GCC-pass lever) -- the permuter cannot express this class of multi-statement interleaving restructuring, so it must be hand-written and measured directly",
-   "next_probe": "Rewrite the second if/else block's six accumulate statements per arm into the interleaved fused order observed in the raw asm (grep asm/funcs/func_8002C22C.s for the t0[0xA8..0xC0] region's exact load/add/store sequence), keeping semantics identical; measure sandbox --disable all --diff and compare hunk count/class against the current 28 source-level hunks in that region."
+   "hypothesis": "The remaining 29 source-level hunks are concentrated in the first if/else block's zero-init/vec-delta region (hunks 1-12, largely unchanged this session) - the target's address-computation register reuse pattern (t1/t2 materialized once, reused across both if/else branches via the shared post-branch label .L8002C3D4) differs from the candidate's per-arm-duplicated addressing.",
+   "mechanism": "source-level statement/declaration structure in the first block, not yet diagnosed with the same rigor as the second block was this session",
+   "next_probe": "Read asm/funcs/func_8002C22C.s .L8002C2CC-.L8002C3D4 (the full first-block preamble through both arms) at the same instruction-by-instruction granularity used this session for the accumulate block, looking for the same 'value read/stored inside one arm but referenced across the join in the other' asymmetry pattern that fixed t0[0xC0]."
   },
   {
-   "hypothesis": "The trailing unconditional stores to 0x1F800368/0x374/0x378 after the first if/else join could be moved into the if/else arms themselves (using the arm-local a2/d_v1/d_a0/d_v0/d_a1 values already computed there), further shrinking cse1's cross-block address sharing for the now-closed first block.",
-   "mechanism": "cse.c cse_end_of_basic_block block-extension, same mechanism as the confirmed s2 zero-init lever, applied to a currently-unexamined post-join region",
-   "next_probe": "Duplicate the three post-join stores into each arm (using that arm's own already-computed values) instead of leaving them shared after the join; measure sandbox --disable all and diff against 196 to confirm the first block stays at zero hunks and doesn't regress."
+   "hypothesis": "Two hunks in the accumulate region's second round (the 0x528-0x548(t1)-equivalent reads) are now operand-only (pure register rename) rather than source-level - these are real reg-alloc/scheduling residuals reachable by a register-alloc-pure-c lever (not a C-structure rewrite).",
+   "mechanism": "GCC 2.7.2 local-alloc/global-alloc register seat choice, not yet dump-diagnosed this session (turn budget spent on the source-level fixes above)",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_8002C22C` and read the .greg dump for the accumulate-region pseudos to see which allocno conflicts force the current register choice, before proposing any specific lever."
+  },
+  {
+   "hypothesis": "The remaining hunks 13/14, 21/22, 24/25, 32/33 (insert+delete pairs showing a `lui/lw` address load moved to a different position) suggest one more shared-address-computation term is still being re-materialized per-round instead of carried, similar in spirit to the t0[0xC0] fix but on the d_tbl/scratchpad SOURCE side rather than the t0 DESTINATION side.",
+   "mechanism": "same cse-block-extension family, applied to a source-operand load instead of a destination-field load",
+   "next_probe": "Identify which specific d_tbl[...]/scratchpad read in the second round of each arm corresponds to the insert/delete pair's relocated lui/lw, and check whether hoisting or restructuring that one read (not the whole block) closes the pair without the write-only regression seen this session."
   }
  ],
  "judge_constraints": [],
@@ -99,6 +110,30 @@
    "measured_on": "s3/196-floor chassis (D_80102314 base+offset decl, per-arm-duplicated 4-word zero-init, current toolchain -mel -msoft-float), zero FAKE constructs, zero pins; the permuter's best-of-794-iterations fin",
    "predicate_cite": "",
    "result": "Best find measured 196 (build_insns 238) \u2014 identical to the s3 chassis's own floor, zero improvement. Its only structura"
+  },
+  {
+   "session": 5,
+   "statement": "func_8002D780's candidate.c (floor 0/202, rotated) and func_80029454 (floor 1024, no candidate) share zero addresses or structural shape with func_8002C22C's current chassis; no transplant exists.",
+   "kill_scope": "instance",
+   "measured_on": "func_8002D780 s23 candidate.c (floor 0/202, rotated) vs func_8002C22C s4 chassis (floor 196), text/address comparison",
+   "predicate_cite": "",
+   "result": "zero overlap in either address space or control-flow shape; func_8002D780 is a collision/distance-test over obj/pos stru"
+  },
+  {
+   "session": 5,
+   "statement": "Swapping the operand order of the newly-fixed sum_v0_2/sum_a1_2 additions (t0[x]+d_tbl[y] vs d_tbl[y]+t0[x]) changes the score.",
+   "kill_scope": "instance",
+   "measured_on": "s5/173-floor chassis, current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins",
+   "predicate_cite": "",
+   "result": "173 both ways, byte-identical build - not an addend-order tie at this site"
+  },
+  {
+   "session": 5,
+   "statement": "Duplicating the first if/else block's trailing unconditional stores (0x1F800368/374/378) into each arm using that arm's own already-computed values (the s4 frontier's second item) closes more of the r",
+   "kill_scope": "instance",
+   "measured_on": "s5/173-floor chassis (with the t0[0xC0] fix applied), current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins; both the regressed (214) and reverted (173) states directly measured",
+   "predicate_cite": "",
+   "result": "173 -> 214 (build_insns 240 -> 250) - regression, moved further from target. Reverted; confirmed reversion restores exac"
   }
  ],
  "ladder_skip": 0,

@@ -673,6 +673,14 @@
    "at": "2026-09-16T02:40:20.218807+00:00",
    "headline": "func_8002CA8C COMPLETED-C",
    "consumed": 23
+  },
+  {
+   "from": "func_8002C22C",
+   "floor": 173,
+   "session": 5,
+   "at": "2026-09-22T03:41:16.284171+00:00",
+   "headline": "Enumerate sweep on the accumulate block's deferred t0[0xC0] term dropped the floor 196 -> 173 by reading it inside each arm (mirroring t0[0xBC]'s existing shape) instead of after the if/else join; dup",
+   "consumed": null
   }
  ],
  "exhaustion_base": 22,

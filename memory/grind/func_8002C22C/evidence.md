@@ -263,3 +263,15 @@ since the function had zero C before this session):
 - [s4] func_80029454 (same file, floor 1024) has no candidate.c to transplant.
 
 - [s4] main (src/ings.c) is a MIDI-dispatch function (per project memory) sharing no object-model or address-space overlap with this scratchpad/practice-menu function; not a transplant candidate.
+
+- [s5] Ground-truth asm read of the accumulate-region arm (`.L8002C41C`-`.L8002C4E8`, `.L8002C4EC`-`.L8002C5B8`): confirms t0[0xBC] and t0[0xC0]'s SECOND (round-2) updates are read early inside each arm and only STORED at the shared post-join label (.L8002C5B8) — a symmetric pair. Our s3/s4 candidate had already given t0[0xBC] this shape but not t0[0xC0]; fixing the asymmetry dropped the floor 196 -> 173 (see hypotheses.md s5).
+- [s5] Duplicating a join-adjacent value into both arms only helps when that value is RE-READ after the join (t0[0xBC]/t0[0xC0], consumed by the third block's `((t0[x]*3)+t0[y])>>4` math); duplicating a WRITE-ONLY-across-the-join value (the first block's trailing 0x1F800368/374/378 stores, never read again) regresses 173 -> 214. This refines [[cse-block-extension-controls-fold-span]]'s applicability for this function: the mechanism needs a post-join READ to defeat, not merely a post-join WRITE.
+- [s5] Sibling re-check: func_8002D780 (rotated, floor 0/202) and func_80029454 (floor 1024, no candidate) share zero addresses/structure with func_8002C22C — confirmed again this session, no transplant available (same conclusion as s4).
+
+- [s5] Ground-truth asm read of .L8002C41C-.L8002C4E8 / .L8002C4EC-.L8002C5B8 confirms t0[0xBC] and t0[0xC0]'s round-2 updates are read early inside each arm and only stored at the shared post-join label - a symmetric pair; the candidate had already given t0[0xBC] this shape but not t0[0xC0].
+
+- [s5] The cse-block-extension duplication lever only helps when the join-adjacent value is RE-READ after the join (t0[0xBC]/t0[0xC0]); duplicating a write-only-across-the-join value (the first block's trailing stores) regresses. This refines the mechanism's applicability for this function.
+
+- [s5] Post-fix --diff: 29 source-level / 6 operand-only / 1 not-scored hunks (down from 31/4/1) - two hunks in the accumulate region's second round flipped from source-level to operand-only, i.e. from a genuine C-structure gap to a real register-allocation/scheduling residual.
+
+- [s5] Sibling re-check (func_8002D780, func_80029454) confirms zero transplantable overlap, same as s4.
