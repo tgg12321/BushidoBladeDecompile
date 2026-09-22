@@ -1,15 +1,48 @@
 {
  "func": "func_8002C22C",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 211,
+   "modality": "recon",
+   "headline": "OBJECT MODEL settled (D_801020D8 et al MATCH as plain scalars; D_80102314 declared+used base+offset as record[1] of the practice-menu table); s1 candidate carries the floor from 252 (no-C-body) to 211"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 211-distance residual is a scheduling-pass (not object-model) divergence: cc1 hoists/reorders scratchpad loads across the two if/else branches while target keeps them strictly arm-local in source order.",
+   "mechanism": "sched.c list scheduler and/or loop.c LICM treating the non-volatile scratchpad pointer casts as alias-free and reorderable across the branch",
+   "next_probe": "grep tmp/grind/func_8002C22C/dumps/code6cac_b.{loop,sched,sched2} for the func_8002C22C RTL block (search near the 0x1F800360/0x1F800048 literals or PutRobShadow-adjacent symbol names) and confirm which pass performs the motion before proposing any volatile-grant or restructuring lever."
+  },
+  {
+   "hypothesis": "A legitimate-volatile-interrupt-touched two-prong grant may apply to the scratchpad addresses this function touches, if a matched sibling elsewhere in the codebase already resolved the same 0x1F800000-0x1F800074 / 0x1F800360-0x1F800378 range with a cited IRQ writer.",
+   "mechanism": "N/A -- evidentiary precedent search, not a codegen mechanism",
+   "next_probe": "grep -rn \"0x1F80036\\|0x1F80037\\|0x1F80000\\|0x1F80005\\|0x1F80006\\|0x1F80007\" src/*.c for a matched (COMPLETED-C) function already using these addresses; if none exists, this hypothesis is dead and the residual must be closed by ordinary C restructuring (arm-local duplicate reads / do-while-zero / other sanctioned scheduling levers) instead."
+  },
+  {
+   "hypothesis": "D_80102314 should eventually promote from a file-local extern in src/code6cac_b.c to include/code6cac.h once a scope-grant authorizes touching that header for this function.",
+   "mechanism": "N/A -- scope/administrative, not codegen",
+   "next_probe": "no action needed while distance is nonzero; revisit once the candidate reaches sandbox 0 and header placement becomes relevant to final acceptance."
+  }
+ ],
  "judge_constraints": [],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Plain (non-volatile) casts on the scratchpad addresses (0x1F800000-0x1F800074, 0x1F800360-0x1F800378) reproduce the target's control-flow-local scratchpad accesses without needing volatile, since scra",
+   "kill_scope": "instance",
+   "measured_on": "s1 candidate (archived-body C shape translated 1:1 to plain casts, D_80102314 declared+used base+offset), current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins",
+   "predicate_cite": "",
+   "result": "sandbox --disable all = 211/252 (build 230 insns) -- a large improvement over the 252-insn no-C-body floor, so the scrat"
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-22T02:50:03.749383+00:00"
+ "created": "2026-09-22T02:50:03.749383+00:00",
+ "object_model_audited": 1
 }
