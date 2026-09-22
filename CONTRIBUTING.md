@@ -75,7 +75,7 @@ audit surfaces: `docs/grind/decisions.md` + `docs/grind/journal.md`. Full design
 ### Manual — one focused agent, on `main`
 
 To drive ONE function by hand, run the per-function engine loop directly on
-`main` (the **`decomp-orchestrate` skill**). The full procedure lives in
+`main` (the **`decomp-manual` skill**). The full procedure lives in
 [`.claude/rules/decomp-loop.md`](.claude/rules/decomp-loop.md); the short spine:
 
 1. `queue next` — take the top item (resume from `memory/wip/<func>/` if a

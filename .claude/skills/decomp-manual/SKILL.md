@@ -1,0 +1,238 @@
+---
+name: decomp-manual
+description: >-
+  Drive ONE Bushido Blade 2 function by hand, on main, with the Grinder's full
+  context already loaded — the hand-driven lane for the hard tail. Stops the
+  Grinder, pops the queue top (or a named function), assembles the complete
+  dossier, then works it with free choice of approach and sustained context,
+  landing it through the mandatory layer-2 adversarial review. Use when asked to
+  work a function manually / by hand, to take over from the Grinder, to close a
+  plateaued or stalled function, or to clear an operator-only blocker the
+  pipeline cannot touch.
+---
+
+# BB2 decomp — the manual lane
+
+You are the hand on the wheel for ONE function. The Grinder
+(`decomp-grind`) is still the default autonomous pipeline; this lane exists for
+the work it is structurally bad at.
+
+**Why this lane exists** (measured 2026-09-21): 19 functions taking ≥20 grinder
+sessions consumed **53% of all grinder session spend for 7% of its completions**,
+and the remaining queue is now *all* that population — 93 of 94 active items sit
+at distance ≥250. Cold restarts re-derive what is already on disk. A sustained
+hand-driven session closed `func_800747D8` after 10 grinder sessions and
+`sys_VSync` after 7 cold-start workers thrashed. Design:
+`docs/superpowers/specs/2026-09-21-decomp-manual-design.md`.
+
+---
+
+## 0. Handshake — always start here
+
+```powershell
+pwsh tools/manual_session.ps1 begin              # queue top
+pwsh tools/manual_session.ps1 begin -Func <name> # a specific function
+pwsh tools/manual_session.ps1 status             # what's open right now
+```
+
+`begin` stops the Grinder, **waits for it to actually release the lock**,
+refuses a dirty tree or a red oracle, pops the target, and prints the full
+context bundle (dossier · siblings · canonical route · floor + instruction diff).
+
+**Never work over a live Grinder.** Its end-of-session scope check treats any
+foreign edit to a tracked file as contamination and discards that session's
+entire work ([[grinder-clobbers-uncommitted-edits]]). `.claude/`, `tools/`,
+`docs/superpowers/` are all outside its allowed-dirt list. One writer on `main`,
+ever.
+
+A clean stop lands at the Grinder's next session boundary and can take ~10
+minutes. That is normal — the script reports elapsed time. **Never force-kill
+it**: that loses the in-flight session's ledger write.
+
+---
+
+## 1. The non-negotiables — these do NOT relax
+
+The freedoms in §3 are bounded by these. They are the whole point of the project.
+
+- **Exactly two completion states.** `COMPLETED-C` (pure C, zero cheat-asm,
+  byte-matches) or `COMPLETED-INLINE-ASM-CANONICAL` (the `canonical` gate's call,
+  not yours). No gradations, no "almost done" ([[completion-standard]]).
+- **The oracle is the only truth** — full build+link SHA1 ==
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Sandbox scores and exit codes are
+  hints.
+- **A fresh adversarial layer-2 `cheat-reviewer` before every completion-class
+  commit.** The Grinder's default-FAIL Judge does not run in this lane, so this
+  IS the gate. Default-FAIL; your own verdict is not credited
+  ([[review-discipline-before-commit]]).
+- **No cheats on `main`.** Register pins, hardcoded-`$N` `__asm__`, scheduling
+  barriers are cheats, not a finish. INCOMPLETE stays
+  `INCLUDE_ASM("asm/funcs", <func>);` ([[asm-until-matched]]).
+- **No deferral.** Close the function you popped, or bank honestly and say so.
+  A stuck item changes MODALITY, never target
+  ([[no-deferral-work-to-completion]]).
+
+---
+
+## 2. Read the diff before you reach for a lever
+
+```powershell
+& tools/wteng.ps1 main sandbox <func> --disable all --diff
+```
+
+Of grinder sessions that ran `sandbox`, only **37% ever looked at an instruction
+diff**; 257 sessions spent 834 sandbox calls mutating C against a bare integer.
+`_SsSndCrescendo` plateaued four sessions at floor 130 and closed in one once
+the diff was read — 12 of its 13 surplus instructions were source-level, not
+register allocation.
+
+Each hunk is classed for you:
+
+| Class | Meaning |
+|---|---|
+| **source-level** | different C would emit different instructions — a real lever |
+| **operand-only** | same instructions, different registers — reg-alloc/scheduling |
+| **not-scored** | equal once masked (moved branch displacement, section addend) — **chasing it is wasted work** |
+
+If every remaining hunk is `not-scored`, the function is done and the residual is
+a scorer artifact — say so rather than grinding.
+
+---
+
+## 3. The loop — iterate on the candidate, not on `src/`
+
+Edit **`memory/grind/<func>/candidate.c`** and score it:
+
+```powershell
+& tools/wteng.ps1 main sandbox <func> --disable all --diff   # defaults to that candidate
+```
+
+**The working tree stays clean the whole time.** This is not tidiness — it makes
+a real hazard structurally impossible: `dossier`, `queue *` and `sandbox` run
+the engine's rollback machinery, which treats operator dirt like failed-state
+dirt and **silently reverts uncommitted tracked edits**
+([[engine-queue-ops-revert-uncommitted-tree]]; it ate a verified match on
+2026-08-25). Keep src edits for the landing step alone.
+
+The score is cheat-invisible — pins and `__asm__` injections are stripped before
+scoring, so they cannot move it. They are inert here by construction.
+
+### Your four freedoms (and the string attached to each)
+
+1. **Choose your own approach.** No modality ladder. Pick the lever the diff
+   argues for. *But:* when a class of spelling is exhausted, say it is exhausted
+   and move to a different mechanism — don't re-run a dead sweep.
+2. **Touch files outside the function.** The Makefile, a rodata config, a shared
+   header. A grind session loses its work for this; you don't. *But:* the oracle
+   is the check, and anything you change rides in the same commit with its
+   reasoning.
+3. **Record findings in prose.** No outcome schema, no verdict enum. *But:*
+   findings still land in `memory/grind/<func>/` — evidence in `evidence.md`,
+   what you ruled out in `hypotheses.md`. The next session (yours or the
+   Grinder's) resumes from it.
+4. **Keep full context.** One conversation, no cold restarts. *But:* bank to the
+   ledger as you go, so an interruption costs nothing.
+
+### Useful when local levers run out
+
+`tools/fake_ablate.py` · `tools/loop_movables.py` · `tools/nrefs_census.py` ·
+`tools/label_census.py` (read-only diagnostics) · `tools/permuter_annotate.py`
+(directed permuter search; outputs are PROPOSALS, still reviewed) ·
+`tools/decomp_me_scrape.py` (GCC 2.7.2 PSX scratch corpus) ·
+`tools/find_duplicates.py` (near-duplicate COMPLETED-C analogs) ·
+`engine diagnose <func>` (matchable / control-flow / canonical / plateau).
+
+---
+
+## 4. Landing it
+
+1. Splice the candidate into `src/<file>.c`, replacing the `INCLUDE_ASM` line.
+   Build files stay **LF** — the Write tool produces LF here.
+2. `& tools/wteng.ps1 main verify-oracle --rebuild` → SHA1 must equal the oracle.
+3. `python3 tools/reviewer_precheck.py --func <f> --staged [--msg-file tmp/msg.txt]`
+   — it mechanically settles the procedural facts so reviewer tokens go to the
+   semantic judgment (a layer-1 review once burned ~117k tokens re-deriving
+   these).
+4. **Spawn a fresh `cheat-reviewer` agent.** Paste the precheck output. Brief it
+   adversarially: default to FAIL, do not credit your verdict, work the specific
+   diff against the 6-test checklist, and audit any rule doc the commit adds
+   (self-sanctioning docs are banned outright).
+5. **PASS** → commit (`Match: <func> — COMPLETED-C (manual)`, `git commit -F
+   tmp/msg.txt`) → `& tools/wteng.ps1 main queue done <func>` → `python3
+   tools/check_completion_integrity.py`.
+   **FAIL** → revert `src/` to `INCLUDE_ASM`, bank the body as
+   `memory/grind/<func>/rejected/<slug>.c` with the reviewer's reasoning, and
+   treat the objection as the next session's frontier.
+
+A citation is verified by reading what the cited construct *does*, not by
+confirming the line exists ([[citation-check-reads-the-cited-code]]). The two
+manual completions that needed repair on 2026-09-21 both failed on citation
+defects, not on the C.
+
+---
+
+## 5. Banking without a match
+
+Perfectly legitimate — the lane is not obliged to close every function in one
+sitting.
+
+1. Write what you learned into `memory/grind/<func>/` (the measured floor, what
+   you killed and how, what the frontier is now). Be honest about a flat floor;
+   a false floor is worse than no floor.
+2. `pwsh tools/manual_session.ps1 end` — asserts the tree is clean, commits the
+   ledger, relaunches the Grinder (`-NoRelaunch` to leave it down).
+
+The Grinder picks up your ledger and continues. Nothing is lost between lanes —
+that's why this lane writes `memory/grind/<func>/` rather than `memory/wip/`.
+
+---
+
+## 6. Operator-only blockers — this lane's other job
+
+Some finished functions strand because the remedy lives in a file no grind
+session or Judge may write (`Makefile`, `tools/grinder/owner_cluster_grants.txt`,
+`tools/grinder/scope_allow.txt`). Three have hit this: `func_800747D8`,
+`func_80018094`, `func_8002D780`. They are filed in
+`docs/grind/owner_actions.md`, and the bytes are usually already proven.
+
+Clearing one is exactly what freedom #2 is for — but the remedy must be
+**already authorized by a landed ruling**, cited by date. If it is not, it is an
+architecture decision: log a `policy-question` entry to `docs/grind/borderline.md`
+and move on. Do not self-authorize a new grant
+([[ruling-record-lands-before-code]]).
+
+---
+
+## 7. Footguns
+
+- **`$?` is unreliable inside `wsl bash -c`** (clobbered across shells, silently
+  reads 0) → use PowerShell's `$LASTEXITCODE`.
+- **Never hand-author `wsl bash -c '…python3 -m engine.cli…'`** — three nested
+  shells eat awk/sed/heredocs, and `shell_footgun_guard.py` blocks it. Engine
+  commands go through `& tools/wteng.ps1 main <cmd>`. Anything beyond one simple
+  command → write a `.py`/`.sh`/`.ps1` to `tmp/` and run the file.
+- **Multi-line commit messages → `git commit -F tmp/msg.txt`**, never a heredoc.
+- **`make setup` is forbidden** — `bb2.ld` is hand-maintained; `asm/data/*.rodata*.s`
+  are deliberately deleted. Don't recreate them.
+- **A masked `0`** can hide a register diff or a source cheat-asm barrier. If
+  sandbox says 0 but the full build mismatches, look for cheat-asm in the source
+  ([[sandbox-zero-retire-fails]]).
+- **Never recreate `bb2-work-*` worktrees.** They arm `main_reintegration_lock`
+  and break the Grinder.
+
+---
+
+## Quick reference
+
+| Command | Purpose |
+|---|---|
+| `pwsh tools/manual_session.ps1 begin [-Func <f>] [-DryRun]` | take the wheel: stop Grinder, pop target, print full context |
+| `pwsh tools/manual_session.ps1 end [-NoRelaunch]` | bank the ledger, hand back to the Grinder |
+| `pwsh tools/manual_session.ps1 status` | what's open, is the Grinder up, is the tree dirty |
+| `& tools/wteng.ps1 main sandbox <f> --disable all --diff` | honest floor + WHERE it differs |
+| `& tools/wteng.ps1 main canonical <f>` | C vs ASM-region vs ASM-structural route |
+| `& tools/wteng.ps1 main dossier <f>` | the full live-verified picture |
+| `& tools/wteng.ps1 main verify-oracle --rebuild` | the only truth |
+| `& tools/wteng.ps1 main queue done <f>` | record the completion (re-checks cheats + SHA1) |
+| `python3 tools/reviewer_precheck.py --func <f> --staged` | procedural facts for the reviewer brief |
+| `python3 tools/check_completion_integrity.py` | standing audit of every completed function |

@@ -123,8 +123,9 @@ minimal-perturbation lever hypotheses — `tools/ra_solver/inverse_compose.py`
 Grinder dispatches them via the `solver` modality (added 2026-08-24).
 
 ### Manual close-out path
-Manual per-function work uses the `decomp-orchestrate` skill (single focused
-agent on `main` driving the engine as a toolkit). Layer-2 fresh
+Manual per-function work uses the `decomp-manual` skill (single focused
+agent on `main` driving the engine as a toolkit; `tools/manual_session.ps1`
+handles the Grinder handoff). Layer-2 fresh
 `cheat-reviewer` remains mandatory for any completion-class commit per
 [[review-discipline-before-commit]].
 

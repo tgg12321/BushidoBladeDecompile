@@ -15,7 +15,7 @@ routes, and gates; the agent writes the C.
 The GRINDER is the DEFAULT autonomous workflow and uses its own richer ledgers
 (`memory/grind/<func>/`, append-only, driver-managed) rather than this loop; it converts
 any existing WIP entry into a seed ledger on first contact. The steps below are the MANUAL
-path (the `decomp-orchestrate` skill, one focused agent on `main`).
+path (the `decomp-manual` skill, one focused agent on `main`).
 
 ## The loop
 

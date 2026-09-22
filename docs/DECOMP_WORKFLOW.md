@@ -2,7 +2,7 @@
 
 **Audience: any AI coding agent working a function in this repo** — Codex, Cursor, Cline,
 Aider, Gemini CLI, Copilot, or a human. Claude Code loads the same standards from
-`CLAUDE.md` and the `decomp-grind` / `decomp-orchestrate` skills; this document is the
+`CLAUDE.md` and the `decomp-grind` / `decomp-manual` skills; this document is the
 tool-agnostic equivalent of that *process*, so you do not need those skills to run the
 loop correctly.
 

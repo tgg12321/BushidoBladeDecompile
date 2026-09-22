@@ -79,7 +79,8 @@ audit surfaces: `docs/grind/decisions.md` + `docs/grind/journal.md`. Spec:
 
 ### Fallback: a single focused agent, on main
 For driving ONE function by hand, decomp work can run **directly on `main`** — one focused agent,
-end-to-end, the engine as a toolkit (the `decomp-orchestrate` skill). Manual path only; the Grinder is
+end-to-end, the engine as a toolkit (the `decomp-manual` skill — `pwsh tools/manual_session.ps1 begin`
+stops the Grinder, pops the target and loads its full dossier). Manual path only; the Grinder is
 the autonomous pipeline. **Build files (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`)
 MUST use LF line endings** (also in AGENTS.md) — edit via WSL or an LF-enforcing editor (the Write tool
 produces LF on this machine).
