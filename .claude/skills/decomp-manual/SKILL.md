@@ -298,6 +298,12 @@ and move on. Do not self-authorize a new grant
   commands go through `& tools/wteng.ps1 main <cmd>`. Anything beyond one simple
   command → write a `.py`/`.sh`/`.ps1` to `tmp/` and run the file.
 - **Multi-line commit messages → `git commit -F tmp/msg.txt`**, never a heredoc.
+  **Use a unique filename** (`tmp/msg_<func>_<topic>.txt`) and write it with the
+  Write tool: `tmp/` holds ~150 stale `msg*.txt` files from earlier sessions, and
+  if the step that writes yours fails (a blocked hook, a typo), `-F` silently
+  commits the stale one. On 2026-09-22 a skills-doc change landed under an old
+  `Match: func_8007526C` subject this way (caught and amended before push).
+  Check `git log -1 --format=%s` after every commit.
 - **`make setup` is forbidden** — `bb2.ld` is hand-maintained; `asm/data/*.rodata*.s`
   are deliberately deleted. Don't recreate them.
 - **A masked `0`** can hide a register diff or a source cheat-asm barrier. If
