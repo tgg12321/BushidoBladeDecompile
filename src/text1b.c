@@ -626,12 +626,9 @@ extern s32 g_snd_play_count;
 void func_80048B8C(s32 a0) {
     g_snd_play_count += a0;
 }
+typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
+typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } _struct_copy_func48BA4;
-typedef struct {
-    s16 matrix[9];
-    s16 pad[7];
-    s16 rot[3];
-} _stack_func48BA4;
 extern void *game_GetPlayerData();
 extern s16 Judge;
 extern void ApplyMatrix(s32, s16 *, s32 *);
@@ -658,7 +655,8 @@ extern s32 D_800FF570;
 extern s32 D_800FF574;
 
 void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
-    _stack_func48BA4 stack;
+    MATRIX mtx;
+    SVECTOR rot;
     s32 index;
     s32 scale;
     s32 old;
@@ -677,35 +675,35 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
         arg1 = -1;
     }
 
-    stack.rot[0] = 0x1770;
-    stack.rot[1] = 0;
-    stack.rot[2] = 0;
+    rot.vx = 0x1770;
+    rot.vy = 0;
+    rot.vz = 0;
     scale = 0x1770;
-    stack.rot[2] = ((s32)(&Judge)[arg0 & 0xFFF] * scale) >> 12;
-    stack.rot[0] = ((s32)(&Judge)[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
+    rot.vz = ((s32)(&Judge)[arg0 & 0xFFF] * scale) >> 12;
+    rot.vx = ((s32)(&Judge)[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
     prim = (u8 *)D_800A33E4;
-    rotp = stack.rot;
+    rotp = &rot.vx;
     vec = &D_800FF56C;
     ApplyMatrix(*(s32 *)player, rotp, vec);
     vec[0] += *(s32 *)(*(u8 **)player + 0x14);
     D_800FF570 += *(s32 *)(*(u8 **)(player + 4) + 0x18);
     D_800FF574 += *(s32 *)(*(u8 **)(player + 8) + 0x1C);
 
-    stack.rot[0] = 0;
-    stack.rot[1] = 0xC00 - arg0;
-    stack.rot[2] = 0;
+    rot.vx = 0;
+    rot.vy = 0xC00 - arg0;
+    rot.vz = 0;
     indices = D_80099C14;
-    func_8004A348(rotp, stack.matrix);
-    func_80052930(*(s32 *)player, stack.matrix, stack.matrix);
-    D_800FF558 = stack.matrix[0];
-    D_800FF55A = stack.matrix[3];
-    D_800FF55C = stack.matrix[6];
-    D_800FF55E = stack.matrix[1];
-    D_800FF560 = stack.matrix[4];
-    D_800FF562 = stack.matrix[7];
-    D_800FF564 = stack.matrix[2];
-    D_800FF566 = stack.matrix[5];
-    D_800FF568 = stack.matrix[8];
+    func_8004A348(rotp, mtx.m[0]);
+    func_80052930(*(s32 *)player, mtx.m[0], mtx.m[0]);
+    D_800FF558 = mtx.m[0][0];
+    D_800FF55A = mtx.m[1][0];
+    D_800FF55C = mtx.m[2][0];
+    D_800FF55E = mtx.m[0][1];
+    D_800FF560 = mtx.m[1][1];
+    D_800FF562 = mtx.m[2][1];
+    D_800FF564 = mtx.m[0][2];
+    D_800FF566 = mtx.m[1][2];
+    D_800FF568 = mtx.m[2][2];
 
     goto test_index;
 copy_index:
@@ -2674,10 +2672,8 @@ typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
 typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
 typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
 typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
-typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
 typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
 typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
-typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
 
 /* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
  * field layout is the union of all observed accesses; m2c picks the type
@@ -3292,6 +3288,9 @@ typedef struct {
     s32 c20;
     s32 c24;
     s8 byte28;
+    u8 byte29;
+    u8 byte2A;
+    u8 byte2B;
 } S46C;
 void func_8005D46C(s32 arg0, s32 arg1) {
     S46C s;
@@ -7141,8 +7140,7 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 
-s32 func_8006CFBC(s32 arg) {
-    s32 *arg0;
+s32 func_8006CFBC(s32 *arg0) {
     Env_8006CFBC s;
     Counts_8006CFBC counts;
     s32 *table;
@@ -7152,7 +7150,6 @@ s32 func_8006CFBC(s32 arg) {
     s16 result;
     s32 value;
 
-    arg0 = (s32 *)arg;
     result = 0;
     table = *(s32 **)(arg0[1] + 0x30);
     s.ot_idx = 8;
@@ -7236,7 +7233,7 @@ void func_8006D324(void) {
     v1[0x14] = 5;
 }
 extern void func_8006C21C(s32);
-extern s32 func_8006CFBC(s32);
+extern s32 func_8006CFBC(s32 *);
 void func_8006D338(s32 arg0, s32 arg1) {
     s32 sp10[22];
     u8 *t;
@@ -7690,9 +7687,6 @@ typedef struct SelectEntryE534 {
 } SelectEntryE534;
 
 extern SelectEntryE534 D_8009BC40[][6];
-extern u8 D_8009BC44;
-extern u8 D_8009BC72;
-extern u8 D_8009BC76;
 extern u8 D_8009BC7C[];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
@@ -7709,9 +7703,7 @@ extern u16 D_800A3578;
 extern s16 D_800A357C;
 extern s16 D_800A3580;
 extern s16 D_800A3588[];
-extern s16 D_800A358A;
 extern s16 D_800A358C[];
-extern s16 D_800A358E;
 extern s16 D_800A3598;
 extern s16 D_800A359C;
 extern s32 D_800A35A0;
@@ -7780,10 +7772,10 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
     D_800A35A0 = 0;
     D_800A3588[0] = 0;
     D_800A358C[0] = 0;
-    D_800A358A = 2;
-    D_800A358E = 0;
+    D_800A3588[1] = 2;
+    D_800A358C[1] = 0;
     D_800A3561 = D_8009BC40[0][0].value;
-    D_800A3564 = D_8009BC44;
+    D_800A3564 = D_8009BC40[0][2].value;
 
     for (i = 0; i < 0x16; i++) {
         value = D_8009BC7C[i] & 0xFA;
@@ -7795,8 +7787,8 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
 
     if (D_800A35BC < 4) {
         if (D_800A35BC >= 0) {
-            D_8009BC7C[D_8009BC72] |= 4;
-            D_8009BC7C[D_8009BC76] |= 4;
+            D_8009BC7C[D_8009BC40[4][1].value] |= 4;
+            D_8009BC7C[D_8009BC40[4][3].value] |= 4;
         }
     }
     D_800A35B8 = (arg3 >> 20) & 3;
@@ -7807,8 +7799,8 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
         D_8009BC7C[D_8009BC40[c][b].value] |= 4;
     }
     if (D_800A35B0 != 0) {
-        s32 b = D_800A358A;
-        s32 c = D_800A358E;
+        s32 b = D_800A3588[1];
+        s32 c = D_800A358C[1];
         D_8009BC7C[D_8009BC40[c][b].value] |= 4;
     }
 
@@ -8039,15 +8031,15 @@ void func_8006ECF4(s32 arg0) {
             } else {
                 s.byte28 = 0;
             }
-            *((u8 *)&s + 0x29) = 0x94;
-            *((u8 *)&s + 0x2A) = 0x80;
-            *((u8 *)&s + 0x2B) = 0x6E;
+            s.byte29 = 0x94;
+            s.byte2A = 0x80;
+            s.byte2B = 0x6E;
         } else {
             s.zero10 = 1;
             s.byte28 = 1;
-            *((u8 *)&s + 0x2B) = 0;
-            *((u8 *)&s + 0x2A) = 0;
-            *((u8 *)&s + 0x29) = 0;
+            s.byte2B = 0;
+            s.byte2A = 0;
+            s.byte29 = 0;
         }
 
         switch (sel) {
@@ -8075,6 +8067,13 @@ void func_8006ECF4(s32 arg0) {
             s.p0 = (void *)(s0 + sel * 12);
             goto p1_dispatch;
         }
+        /* FAKE: the default `s.p0 = (void *)(s0 + sel * 12);` is written TWICE --
+         * once in the switch default above and once at `default_p0:` -- instead of
+         * sharing one copy behind the label.  Measured: the label-shared single-copy
+         * form scores 20 (same 209 instruction count, different block layout) because
+         * jump2's cross-jump merge direction flips.  The statement is real on both
+         * paths (the target recomputes p0 for i == 0 at .L8006EF14).
+         * Family: duplicated-statement-into-arms (owner ruling 2026-07-01). */
         if (i == 0) goto default_p0;
         if (D_800A32E8 != sel || D_800A32E9 != D_800A3554) {
             rectbuf = D_800A32F4;
@@ -9801,7 +9800,6 @@ s32 func_80077374(s32 arg0, s32 *arg1) {
     } GaugeWork;
     s32 ret;
     s16 i;
-    s16 player;
 
     ret = 0;
     {
@@ -9826,55 +9824,50 @@ s32 func_80077374(s32 arg0, s32 *arg1) {
             }
             break;
         case 1:
-            player = i;
-            func_80075670(arg0, player);
-            func_80074D2C((s32)arg1, player,
-                          (s16)(*(u16 *)(D_800A36A0 + player * 2 + 0x14) - 1));
-            func_800753D8(arg1, player);
-            func_80074E08(arg1, player);
+            func_80075670(arg0, i);
+            func_80074D2C((s32)arg1, i,
+                          (s16)(*(u16 *)(D_800A36A0 + i * 2 + 0x14) - 1));
+            func_800753D8(arg1, i);
+            func_80074E08(arg1, i);
             break;
         case 2:
-            player = i;
-            func_80075F80(arg0, *(u8 *)(D_800A36A0 + player + 0x68),
-                          ((GaugeWork *)D_800A36A0)->rows[player], player);
-            func_80074D2C((s32)arg1, player,
-                          (s16)(*(u16 *)(D_800A36A0 + player * 2 + 0x14) - 1));
-            func_80074B18(arg1, player, 0);
-            func_800759D0(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
-                          ((GaugeWork *)D_800A36A0)->rows[player], player);
-            func_80074E08(arg1, player);
+            func_80075F80(arg0, *(u8 *)(D_800A36A0 + i + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[i], i);
+            func_80074D2C((s32)arg1, i,
+                          (s16)(*(u16 *)(D_800A36A0 + i * 2 + 0x14) - 1));
+            func_80074B18(arg1, i, 0);
+            func_800759D0(arg1, *(u8 *)(D_800A36A0 + i + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[i], i);
+            func_80074E08(arg1, i);
             break;
         case 3:
-            player = i;
-            func_800768DC(arg0, *(u8 *)(D_800A36A0 + player + 0x68),
-                          ((GaugeWork *)D_800A36A0)->rows[player], player);
-            func_80074D2C((s32)arg1, player,
-                          (s16)(*(u16 *)(D_800A36A0 + player * 2 + 0x14) - 1));
-            func_80074B18(arg1, player, 1);
-            func_8007636C(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
-                          ((GaugeWork *)D_800A36A0)->rows[player], player);
-            func_80074E08(arg1, player);
+            func_800768DC(arg0, *(u8 *)(D_800A36A0 + i + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[i], i);
+            func_80074D2C((s32)arg1, i,
+                          (s16)(*(u16 *)(D_800A36A0 + i * 2 + 0x14) - 1));
+            func_80074B18(arg1, i, 1);
+            func_8007636C(arg1, *(u8 *)(D_800A36A0 + i + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[i], i);
+            func_80074E08(arg1, i);
             break;
         case 4:
-            player = i;
-            func_80074D2C((s32)arg1, player, 2);
-            func_80074B18(arg1, player, 1);
-            func_8007636C(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
-                          ((GaugeWork *)D_800A36A0)->rows[player], player);
-            func_80074E08(arg1, player);
-            if (arg0 & (0x10 << (player * 16))) {
+            func_80074D2C((s32)arg1, i, 2);
+            func_80074B18(arg1, i, 1);
+            func_8007636C(arg1, *(u8 *)(D_800A36A0 + i + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[i], i);
+            func_80074E08(arg1, i);
+            if (arg0 & (0x10 << (i * 16))) {
                 func_8005C650(2, 0x7F, 0x7F);
-                *(s16 *)(D_800A36A0 + player * 2 + 0x14) = 3;
+                *(s16 *)(D_800A36A0 + i * 2 + 0x14) = 3;
             }
             break;
         case 5:
-            player = i;
-            func_80074D2C((s32)arg1, player, 2);
-            func_80074B18(arg1, player, 1);
-            func_8007636C(arg1, *(u8 *)(D_800A36A0 + player + 0x68),
-                          ((GaugeWork *)D_800A36A0)->rows[player], player);
+            func_80074D2C((s32)arg1, i, 2);
+            func_80074B18(arg1, i, 1);
+            func_8007636C(arg1, *(u8 *)(D_800A36A0 + i + 0x68),
+                          ((GaugeWork *)D_800A36A0)->rows[i], i);
             ret = func_80076D74(arg1);
-            func_80074E08(arg1, player);
+            func_80074E08(arg1, i);
             break;
         }
     }

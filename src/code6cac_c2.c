@@ -1676,9 +1676,7 @@ extern void func_8003F388(s16 *arg0);
 void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 sp10[4];
     s16 sp18[4];
-    s16 *call_arg;
     s32 sp20;
-    s16 var_v0;
     s32 temp_a2;
     s32 temp_a3;
     s32 temp_fp;
@@ -1709,10 +1707,9 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     temp_s7 = temp_a3 / 2000;
     if ((arg0 == 0) && (arg1 == 0)) {
         if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
-            call_arg = sp10;
             sp10[0] = var_s1 - 0x10;
-            var_v0 = var_s0 - 0x10;
-            goto block_49;
+            sp10[2] = var_s0 - 0x10;
+            func_8003F388(sp10);
         }
     } else {
         temp_v1 = (var_s1 * 0x7D0) + 0x3E8;
@@ -1803,12 +1800,9 @@ loop_16:
             }
         }
         if ((temp_fp >= 0) && (temp_s7 >= 0) && (temp_fp < 0x20) && (temp_s7 < 0x20)) {
-            call_arg = sp10;
             sp10[0] = temp_fp - 0x10;
-            var_v0 = temp_s7 - 0x10;
-block_49:
-            sp10[2] = var_v0;
-            func_8003F388(call_arg);
+            sp10[2] = temp_s7 - 0x10;
+            func_8003F388(sp10);
         }
     }
 }

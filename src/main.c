@@ -1151,7 +1151,7 @@ s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
         return -1;
     }
 
-    voiceOffset = ((voice * 8 - voice) * 4 - voice) * 2;
+    voiceOffset = voice * 54;
     _svm_cur.voice = voice;
     *(s16 *)((u8 *)D_800F4E28 + voiceOffset) = 0x21;
     *(s16 *)((u8 *)&D_800F4E30 + voiceOffset) = vabId;
