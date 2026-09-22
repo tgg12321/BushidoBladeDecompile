@@ -8,9 +8,18 @@
 # mismatch is why we never hand-copy them). Canonical cc1 = tools/gcc-2.7.2/build/cc1 (what the
 # oracle pipeline runs). For the BB2_*_DEBUG hook output use the INSTRUMENTED cc1 at
 # tools/gcc-2.7.2/cc1 (instrumented-cc1-location) by passing -Instrumented.
+#
+# -Candidate <file>: since asm-until-matched, src/<stem>.c carries
+# INCLUDE_ASM(...) for every QUEUED function, so a bare dump of the TU contains no
+# C body for it at all — every pass file is empty of the thing you wanted to read.
+# Pass the ledger candidate (memory/grind/<func>/candidate.c) and it is spliced over
+# the INCLUDE_ASM line into a scratch TU before the dump. The .frame line is echoed
+# either way: its `vars=` IS get_frame_size(), a direct gradient on frame size that
+# the sandbox score cannot give you (phantom-frame-slots-gcc272).
 param(
     [Parameter(Mandatory = $true)][string]$Func,
     [string]$Stem = '',
+    [string]$Candidate = '',
     [switch]$Instrumented
 )
 $ErrorActionPreference = 'Stop'
@@ -40,11 +49,21 @@ set -e
 cd "`$(wslpath -a '$((Get-Location).Path)')" 2>/dev/null || cd '/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile'
 source .venv/bin/activate
 PYTHONPATH=. python3 - <<'PYEOF'
-import shlex, subprocess, sys
+import pathlib, shlex, subprocess, sys
 from engine import buildconfig as B
 stem = '$Stem'; out = '$outDir'; func = '$Func'
 cc1 = '$cc1flag' or B.CC1
 src = f'src/{stem}.c'
+cand = '$Candidate'
+if cand:
+    # newline='' throughout: these are LF build files, never round-trip them to CRLF.
+    text = open(src, newline='').read()
+    marker = f'INCLUDE_ASM("asm/funcs", {func});'
+    if marker not in text:
+        sys.stderr.write(f"-Candidate given but {src} has no {marker}\n"); sys.exit(1)
+    body = open(cand, newline='').read()
+    src = f'{out}/{stem}.c'
+    open(src, 'w', newline='').write(text.replace(marker, body))
 cpp = f"{B.CPP} {B.CPP_FLAGS} {B.CPP_DEFS} {src}"
 flags = B.CC_FLAGS_GP if hasattr(B, 'GP_FILES') and stem in getattr(B, 'GP_FILES', ()) else B.CC_FLAGS
 cc = f"{cc1} {flags} -da -dumpbase {out}/{stem} -o {out}/{stem}.s"
@@ -56,6 +75,13 @@ sys.stderr.write(p2.stderr[-2000:] if p2.stderr else '')
 if p2.returncode:
     sys.exit(p2.returncode)
 print(f"dumps for {func} (TU {stem}) written under {out}/")
+asm = open(f'{out}/{stem}.s').read().splitlines()
+for i, l in enumerate(asm):
+    if l.startswith(f'{func}:'):
+        for m in asm[i:i + 4]:
+            if '.frame' in m:
+                print(f"{func}{m}   <- vars= IS get_frame_size()")
+        break
 PYEOF
 ls -la '$outDir' | tail -n +2
 "@
