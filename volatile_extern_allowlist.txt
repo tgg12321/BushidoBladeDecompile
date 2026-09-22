@@ -37,7 +37,7 @@ _spu_transferCallback    # SpuClearReverbWorkArea family: md_game_check_change_m
 # (range ..0x8008CD8C), installed as the IRQ8/SIO handler via bios_SysEnqIntRP(3,
 # &D_800A304C) from r_sioinit @0x8008CE1C; InterruptElement D_800A304C =
 # {next=0, handler=0x8008C9F4=HandleSio, verifier=0x8008C978=EvalpSio, 0}
-# (asm/data/7D920.data.s:33468). Verbatim Sony LIBCOMB COMB module (libscan).
+# (asm/data/91C98.data.s:2413). Verbatim Sony LIBCOMB COMB module (libscan).
 D_800F1B00    # SioAnsyncRead buf — IRQ writer: HandleSio read-advance-store @0x8008CBFC-CC00 (asm/funcs/func_8008C464.s; verbatim Sony LIBCOMB COMB module, census). Use-site: ordered-stores-before-IRQ-enable (SioAnsyncRead) + IRQ-mutated-loop-bound (Syncro siblings). Operator-audited grant 2026-07-10 (proposal §1, memory/closer/volatile-grant-proposals.md); kills the flag&&flag wrappers at main.c:2724/2848. [citation corrected 2026-08-07: dropped "cleared @0x8008CE5C" — that store is in r_sioinit (synchronous), past HandleSio's 0x8008CD8C boundary]
 D_800F1B04    # SioAnsyncRead len — IRQ writer: HandleSio sw $zero @0x8008CA58 + sw @0x8008CC18. Same grant as D_800F1B00. [citation corrected 2026-08-07: was 0x8008CA54, the preceding lui — off by one insn]
 D_800F1AF0    # SioAnsyncWrite buf — IRQ writer: HandleSio read-advance-store @0x8008CD18-CD2C. Same Ruling-4 class grant.

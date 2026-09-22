@@ -121,10 +121,12 @@ SECTIONS
         build/src/text1b_b.o(.data);
         build/src/gpu.o(.data);
         build/src/display.o(.data);
-        build/src/system.o(.data);
         build/src/ings2.o(.data);
         build/src/main.o(.data);
         build/asm/data/7D920.data.o(.data);
+        /* libcd bios.c: Intr (static volatile CD_intr, defined in src/system.c) at 0x800A1494 */
+        build/src/system.o(.data);
+        build/asm/data/91C98.data.o(.data);
         main_DATA_END = .;
         main_DATA_SIZE = ABSOLUTE(main_DATA_END - main_DATA_START);
         main_BSS_START = .;

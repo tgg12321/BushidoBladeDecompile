@@ -635,6 +635,7 @@ g_mental_bar_max_packets        = 0x800A38F8;  /* max-count cap for mental-bar b
 g_motion_ex_counter_p2          = 0x800F0BC4;  /* p2's motion-ex counter (paired with D_800F0BC0 p1) */
 g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
 g_vsync_timeout_deadline        = 0x800F19B8;  /* sys_VSync(-1) + 0x3C0 timeout frame number */
+Alarm = 0x800F19B8;  /* libcd bios.c alarm {time, count, name} (SOTN name; memory/closer/libcd-identity.md) */
 g_panic_msg_format_ptr          = 0x800F19C0;  /* cached pointer to panic format string (&D_80016240) */
 _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */  /* data-wave 2026-09-07: was g_alarm_armed_flag */
 g_irq_alarm_handle              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */
