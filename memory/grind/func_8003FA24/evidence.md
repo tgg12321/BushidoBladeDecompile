@@ -213,3 +213,19 @@ Frontier for the next session:
    the tags could honestly pass through it too).
 3. Owner question logged to docs/grind/borderline.md (family-candidate): a fresh
    HImode staging local for in-loop constants.
+
+## Session 4 — 2026-09-22 (manual lane) — COMPLETED-C (commit 1d9c5375b, layer-2 PASS)
+
+The in-loop tag constants were a loop.c **desirability** problem, not an admission one.
+`move_movables` does `threshold -= 3` for every register it hoists, and considers
+movables in insn order. Removing the `packet_type` temp and writing `((s16)flags >> 3)`
+at each use re-derives the packet type inside each inner loop (the loop top is a join
+label, so CSE can't reuse the outer value). Those early invariants are hoisted first,
+the threshold drops below the loop's insn count before the 4/3/2 constants and the exit
+`-1` are considered, and all of them stay in-loop. cse2 then folds the hoisted copies
+onto the outer computation. The form with a `packet_type` temp scores 17.
+
+Also rejected today by layer-2 (both oracle-exact): `half` (a fresh multi-set staging
+local) and `group_count`/`group_id` (the same carrier split and renamed). Both are in
+rejected/; the owner auto-rejected the shape (borderline.md 2026-09-22). The inline
+`packet_type & 3` stride (p1) was cleared but is unnecessary in the final form.
