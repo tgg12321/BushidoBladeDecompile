@@ -140,3 +140,20 @@ import re
 s=re.sub(r'echo "--- census regen".*?echo "--- residual grep"\n.*?\n', '', s, `
 - **Why not a real failure:** bash syntax error came from an unbalanced quote left by a re.sub edit of tmp/naming-wave-2026-09/post_apply2.sh (line 15 'echo "'), not from CRLF; the guard matched the literal $'\r' token inside the script text that the command itself printed with cat. No file had CR bytes (verified below with a python scan).
 - **Action:** tighten signature `crlf-shell-token` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-09-22 15:34:01 — RESOLVED (crlf/crlf-shell-token)
+- **Triggering command:** `cd "/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"; cat > tmp/f2d0/perm/compile.sh <<'EOF'
+#!/usr/bin/env bash
+INPUT="$(realpath "$1")"
+OUTPUT="$(realpath "$3")"
+TMPC="$(mktemp /tmp/permbaseXXXXXX.c)"
+trap 'rm -f "$TMPC"' EXIT
+cp "$INPUT" "$TMPC"
+cd '/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile'
+mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 \
+  -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ \
+  -D_MIPSEL -`
+- **Root cause:** Windows-side python3 heredoc wrote tmp scratch .sh/.c files via open(...,'w') text mode -> CRLF (4th recurrence of the windows-python-crlf vector)
+- **Permanent guard:** `tools/hooks/shell_footgun_guard.py` (committed in dc773f76)
+- **Verified by:** guard rule 4 blocks the exact triggering spelling; test_shell_footgun_guard.py 12 allow + 8 block, 0 failures; offending files normalized with sed -i (grep -c CR = 0)
+- **Occurrences this incident:** 1
