@@ -744,6 +744,15 @@
    "first_seen": "2026-09-16T04:31:28.440329+00:00",
    "last_seen": "2026-09-16T04:31:28.440329+00:00",
    "remedy": "Either respell the 4 island(s) in C, or \u2014 if this function is enumerated by name in a LANDED owner cluster ruling \u2014 add a row for it to tools/grinder/owner_cluster_grants.txt citing that ruling (operator-only; sessions cannot reach that file)."
+  },
+  "merge-refused-islands|0c1c2575292db696|4718a0978238": {
+   "ground": "merge-refused-islands",
+   "body_hash": "0c1c2575292db696",
+   "gate_fingerprint": "4718a0978238",
+   "count": 1,
+   "first_seen": "2026-09-22T04:47:30.550714+00:00",
+   "last_seen": "2026-09-22T04:47:30.550714+00:00",
+   "remedy": "Either respell the 4 island(s) in C, or \u2014 if this function is enumerated by name in a LANDED owner cluster ruling \u2014 add a row for it to tools/grinder/owner_cluster_grants.txt citing that ruling (operator-only; sessions cannot reach that file)."
   }
  },
  "judge_clearances": [
