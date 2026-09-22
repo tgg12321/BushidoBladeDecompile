@@ -90,9 +90,29 @@ splices a candidate into config.c and prints it. That separates "wrong frame" fr
    `(s16)*src++` value-cast, dropping `!= 0`, block-scoping `value`, inlining
    `mode`, and a separate packet counter all still give 48; a separate counter gives
    56. Splitting into `n = *(s16*)src++; count = n;` keeps vars=32 but GCC coalesces
-   `n` into `count` and the `move` disappears. **Finding the spelling that gets both
-   is the highest-value next step** — it is worth ~4 scored insns plus, probably,
-   the register cascade.
+   `n` into `count` and the `move` disappears.
+
+   **The mechanism is now exactly pinned, and it RULES THE SPELLING OUT.** Each
+   assignment-used-as-a-value costs precisely 8 bytes of phantom `vars`
+   (`expand_assignment` with `want_value=1` reserves a stack temp). Three points
+   measured on that line: **zero** occurrences (comma form,
+   `while (count = *(s16*)src++, count != 0)`) = vars **32**; **one** occurrence
+   (plain test at the top, `if ((count = *(s16*)src++) == 0) break;` at the bottom)
+   = vars **40**; the `while`-condition form, which loop-inversion duplicates,
+   = vars **48**. The target's frame is `0x50`, i.e. **vars = 32** — so the original
+   source used an assignment as a value **zero** times. `while ((count = ...) != 0)`
+   reproduces the target's instructions but cannot be what the original said, and
+   the entire assignment-in-condition family is CLOSED. (The comma form scores
+   identically to the banked candidate — 83, same 7 hunks: no temp, but also no
+   `move`.)
+
+   That leaves the two-variable form (`s32 n` + `s16 count`) as the live lead — the
+   only shape that can emit `lh v0` plus a separate `move` at vars=32. It fails
+   today only because local-alloc gives `n` and `count` the same hard register, so
+   `final` deletes the self-move; in the target `v0` and `a3` simply landed apart.
+   That is an allocation outcome, not a semantic barrier. **Next session: tune
+   packet-pass register pressure until that copy survives**, rather than searching
+   for more spellings of the condition.
 2. **Type-3 loop preheader.** The target's two inner-loop preheaders are
    *byte-identical* 8-insn blocks, and the type-3 copy ends with `andi a2,v1,0x2`
    (= `packet_type & 2`) whose result is **never read** — a2 is dead through the whole

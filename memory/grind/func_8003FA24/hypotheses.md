@@ -51,12 +51,21 @@ gradient than the sandbox score for frame questions (session 2, `tmp/frame.sh`).
 
 - **H4** (s1) named stride/field-selector intermediates — byte-identical.
 
+- **H15** (s2, late) — the whole **assignment-in-condition family is KILLED**.
+  `want_value=1` reserves 8 phantom `vars` bytes per occurrence; measured 0 / 1 / 2
+  occurrences gives vars 32 / 40 / 48. The target is vars=32, so the original used
+  it ZERO times. `while ((count = *(s16*)src++) != 0)` reproduces the target's
+  instructions but cannot be what the original said. The comma form costs nothing
+  and buys nothing (83, hunk-identical to the banked candidate).
+
 ## FRONTIER (ranked)
 
-1. A spelling of the outer packet-loop count read that yields the target's
-   `lh v0,0(s0)` + `move a3,v0` **and** keeps `vars = 32`. Every
-   assignment-in-condition form measured costs exactly 16 phantom bytes; every
-   split-statement form loses the `move`. This is the single highest-value item.
+1. Make the two-variable form's copy survive. `s32 n; n = *(s16*)src++; count = n;`
+   is the ONLY shape that can emit the target's `lh v0` + separate `move a3,v0` at
+   vars=32, now that H15 closes the assignment-in-condition family. It fails today
+   only because local-alloc hands `n` and `count` the same hard register and the
+   self-move is deleted — an allocation outcome, not a semantic barrier. Attack
+   packet-pass register pressure, not more spellings of the condition.
 2. An honest source construct that puts `packet_type & 2` in the **type-3** loop
    body so `loop.c` hoists the target's dead `andi a2,v1,0x2` into that preheader.
    Worth 3 insns (the `andi` itself plus the two delay-slot nops our redundant
