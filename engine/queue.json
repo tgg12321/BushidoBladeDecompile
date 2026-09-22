@@ -9,7 +9,12 @@
       "distance": 263,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "rotated_at": "2026-09-22T15:28:51+00:00",
+      "rotation_count": 1,
+      "unparked_from": "2026-09-22 Codex session: honest candidate banked at memory/grind/func_8003FA24/candidate.c, floor 129/263; packet-loop source shape and authentic 0x50-frame object model remain unresolved; evidence.md and hypotheses.md record measured probes.",
+      "unpark_reason": "User explicitly requested continued work through a completed match on 2026-09-22.",
+      "returned_at": "2026-09-22T15:30:03+00:00"
     },
     {
       "func": "CD_cw",
