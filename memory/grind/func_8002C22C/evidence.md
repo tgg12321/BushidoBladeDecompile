@@ -211,3 +211,37 @@ since the function had zero C before this session):
 - [s2] Volatile is unavailable for the 0x1F800000-0x1F8003FF scratchpad range on this project: a sibling function (func_80017FA0, src/code6cac.c:237-238) already tried it and the Judge FAILed it (2026-08-20 02:54), closing instead via a genuine loop restructuring. Do not re-attempt volatile on this range without a new IRQ-writer citation.
 
 - [s2] do-while(0) wrapping a zero-init block (FAKE-annotated, sanctioned family) measured net-negative (199 -> 200) for this specific placement; not a universal claim about the family, just this instance.
+
+## s3 (2026-09-22) — ground-truth asm read + dead-store removal
+- `asm/funcs/func_8002C22C.s` lines 2-18: the ORIGINAL zero-init of the six
+  scratchpad words (0x1F800360/364/368/370/374/378) is a SINGLE unconditional
+  6x `sw zero` block before the `andi $v0,$v0,1 / beqz` branch — it is never
+  duplicated per-arm in the target. This contradicts a naive reading of the
+  s2 candidate's per-arm-duplicated 6-word block, but per H5 below, literally
+  mirroring that single-block structure in our C measures WORSE (211) than
+  the duplicated-per-arm form (196) — the duplication is doing real
+  CSE-block-extension-defeat work our fork needs even though it doesn't
+  mirror the target's own join topology.
+- Of those six words, only FOUR (0x360/364/368/370) are ever read back or
+  re-stored with a real value INSIDE either arm. The other two
+  (0x1F800374/0x1F800378) get their only real writes from `d_v1`/`d_a0` AFTER
+  the if/else join — so a per-arm zero-store to those two addresses is dead
+  code with no bearing on the CSE-defeat mechanism. Dropping those two dead
+  stores from both arms: floor 199 -> 196 (build_insns 246 -> 238). Ordinary
+  dead-code removal, zero FAKE, zero cheat constructs.
+- `sandbox --disable all --diff`'s hunk/insn-count based alignment is
+  UNRELIABLE evidence for "what the target's own zero-init structure looks
+  like" — it re-aligns differently depending on OUR code shape (observed: the
+  same target bytes were grouped into a 4-word-then-branch hunk under one of
+  our code shapes and a 6-word-then-branch hunk under another). Ground truth
+  for target structure is `asm/funcs/<func>.s`, not the diff hunk grouping.
+
+- [s3] asm/funcs/func_8002C22C.s lines 2-18: the target's zero-init of the six scratchpad words (0x1F800360/364/368/370/374/378) is a SINGLE unconditional 6x `sw zero` block before the `andi/beqz` branch, never duplicated per-arm in the original.
+
+- [s3] Of those six words, only 0x360/364/368/370 are ever read back or re-stored with a real value inside either arm; 0x374/0x378 receive their first real write from d_v1/d_a0 after the if/else join.
+
+- [s3] sandbox --disable all --diff's hunk/insn-count-based alignment is unreliable evidence for the target's own zero-init structure -- the same target bytes were grouped into a 4-word-then-branch hunk under one candidate shape and a 6-word-then-branch hunk under another; asm/funcs/<func>.s is the ground truth, not the diff hunk grouping.
+
+- [s3] Despite the target's own source apparently using a single un-duplicated zero-init block, literally mirroring that structure in our C measures worse (211) than the sanctioned per-arm duplicated-statement-into-arms spelling (196) -- confirms the s2-session hypothesis that duplication is doing real CSE-block-extension-defeat work in our fork independent of whether it matches the target's own join topology.
+
+- [s3] Preloading all six per-arm field reads into named locals ahead of the store sequence (matching the target's apparent load order in the .s) also measures worse (211) than reading a0/a1/a3 inline at point of use (196).

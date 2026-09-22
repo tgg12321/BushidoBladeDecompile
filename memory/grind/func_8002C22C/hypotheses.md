@@ -246,3 +246,78 @@ scope surface). NOT candidate-ready: distance is 211, not 0.
 - kill_scope: class
 - measured_on: N/A (precedent citation, not a measurement on this function's chassis)
 - predicate_cite: src/code6cac.c:237-238
+
+## H4 (s3, 2026-09-22) — the per-arm zero-init of 0x1F800374/0x1F800378 is genuinely DEAD
+**CONFIRMED / applied.** Ground-truth read of `asm/funcs/func_8002C22C.s` lines
+2-18 shows the ORIGINAL zero-init is a single unconditional 6-word block
+(0x1F800360/364/368/370/374/378 all `sw zero`) BEFORE the `andi/beqz` branch —
+never duplicated. The s2 candidate's per-arm-duplicated 6-word zero-init
+(211->199) included 0x374/0x378 in the duplication, but the ONLY writes those
+two addresses ever receive afterward are the real `d_v1`/`d_a0` stores after
+the if/else join (`*(s32*)0x1F800374 = d_v1; *(s32*)0x1F800378 = d_a0; ...`),
+so the per-arm zero-store to those two addresses is dead in both target's
+dataflow AND ours — it was never load-bearing for the CSE-defeat effect H4/H5
+in the s2 hypotheses targeted (which is about 0x360/364/368/370, the four
+addresses actually READ BACK inside the arms). Dropping the two dead stores
+from both arms measured `sandbox --disable all` = 196 (build_insns 238,
+target 252) on the current toolchain (-mel -msoft-float), zero FAKE
+constructs, zero pins — ordinary dead-code removal, not a construct change.
+`kill_scope: instance` is not applicable here (this is a CONFIRMED
+improvement, not a kill) but see H5/H6 below for what it ISN'T.
+
+## H5 (s3, 2026-09-22) — literal single-unconditional-6-word zero-init (matching the .s exactly) is WORSE than per-arm duplication
+**KILLED — instance.** Moved the (now 6-word) zero-init entirely out of both
+arms to a single unconditional block immediately before the first `if`,
+exactly mirroring `asm/funcs/func_8002C22C.s` lines 2-18's structure (single
+block, no duplication, before the branch). Measured `sandbox --disable all` =
+211 (build_insns 230) — WORSE than the s3 chassis's 196. This confirms (again,
+after s2's do-while(0)-wrapped single-arm probe) that our fork's cse1 handles
+this join-spanning single zero-init block differently than whatever produced
+the target's bytes at the C level: literal structural fidelity to the target's
+own join topology does NOT reproduce the target's instruction count here,
+while the sanctioned per-arm duplicated-statement-into-arms spelling
+([[cse-block-extension-controls-fold-span]]) does measurably better despite
+not mirroring the join point. Measured on: s3 chassis with the zero-init
+consolidated to one unconditional 6-word block before the `if`, current
+toolchain (-mel -msoft-float), zero FAKE constructs, zero pins. Saved:
+`rejected/literal-single-unconditional-6word-zero.c`. `kill_scope: instance`
+— this exact single-block-before-branch spelling on this chassis; NOT a claim
+that no source form can ever reproduce a single-block zero-init at target's
+instruction count.
+
+## H6 (s3, 2026-09-22) — hoisting all six per-arm scratchpad/global field reads into named locals ahead of the first store (matching the .s's literal load order) is WORSE
+**KILLED — instance.** `asm/funcs/func_8002C22C.s` lines 22-33 show target
+loading v1/v0/a2/a0/a1/a3(=D_80102108) all up front before any store/add
+begins. Reproduced that literally: added named locals `a0, a1, a3` per arm,
+preloaded all six fields before the first store, matching the target's own
+apparent load order exactly. Measured `sandbox --disable all` = 211
+(build_insns 231) — worse than the s3 chassis's 196. Measured on: s3 chassis
+with a0/a1/a3 added and every inline `*(s32*)ADDR` read in the arm body
+replaced by a reference to the matching preloaded local, current toolchain
+(-mel -msoft-float), zero FAKE constructs, zero pins. Saved:
+`rejected/upfront-preload-all-arm-fields.c`. `kill_scope: instance` — this
+exact "hoist every field into a named local before any store" spelling on
+this chassis; partial preloads (e.g. only the D_80102108/D_801020E4 constant)
+were not tried and remain open frontier.
+
+## [s3] The s2 candidate's per-arm-duplicated zero-init of 0x1F800374/0x1F800378 is dead code: those two addresses are never read back or re-stored with a real value inside either arm (their only real writes are the post-join d_v1/d_a0 stores), so the zero-store to them inside each arm is unnecessary and can be dropped without changing behavior.
+- mechanism: ordinary dead-store elimination at the C source level (not a GCC-pass-dependent coercion) -- verified by reading asm/funcs/func_8002C22C.s and tracing which addresses are actually consumed inside each arm
+- probe: Remove the *(s32*)0x1F800374 = 0; and *(s32*)0x1F800378 = 0; statements from both if/else arms of the s2 candidate; sandbox --disable all
+- result: sandbox --disable all dropped from 199 to 196 (build_insns 246 -> 238); confirmed and applied to candidate.c
+- verdict: CONFIRMED
+
+## [s3] Restructuring the zero-init to a single unconditional 6-word block immediately before the if/else (literally mirroring asm/funcs/func_8002C22C.s lines 2-18's structure, un-duplicated) reproduces the target's instruction count better than the per-arm-duplicated 4-word form.
+- mechanism: cse1's basic-block extension through a conditional-branch join label (cse_end_of_basic_block, cse.c:8102-8184) -- hypothesized to treat a single pre-branch zero-init differently than a duplicated per-arm one when forwarding/merging the scratchpad address pseudos
+- probe: Move the (4-word, post-H4) zero-init out of both arms into one unconditional block before the first if; sandbox --disable all
+- result: sandbox --disable all measured 211 (build_insns 230), worse than the 196 floor of the duplicated-arm chassis -- reverted
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 chassis with the zero-init consolidated to a single unconditional 6-word block before the first if, current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins
+
+## [s3] Hoisting all six per-arm scratchpad/global field reads (v1, v0, a2, a0, a1, a3) into named locals immediately before the first store -- matching the literal load order visible in asm/funcs/func_8002C22C.s lines 22-33 -- reproduces the target's instruction count better than reading a0/a1/a3's values inline at point of use.
+- mechanism: hypothesized register-allocation/scheduling effect of pre-materializing all arm-local values before the store/accumulate sequence begins, matching the apparent source order in the original compiled output
+- probe: Declare a0, a1, a3 as named locals per arm, preload them from their scratchpad/global addresses before any store, and replace every inline *(s32*)ADDR read in the arm body with the corresponding preloaded local; sandbox --disable all
+- result: sandbox --disable all measured 211 (build_insns 231), worse than the 196 floor of the inline-read chassis -- reverted
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s3 chassis with a0/a1/a3 added as named locals in both arms replacing every inline scratchpad/global read, current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins

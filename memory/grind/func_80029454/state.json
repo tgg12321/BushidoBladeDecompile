@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_8002C22C",
-   "floor": 199,
-   "session": 2,
-   "at": "2026-09-22T03:11:44.925874+00:00",
-   "headline": "Structural: per-arm duplication of the shared scratchpad zero-init dropped floor 211->199; pass-attributed the residual to cse1 block-extension (not LICM); found a citable Judge-FAIL precedent banning",
+   "floor": 196,
+   "session": 3,
+   "at": "2026-09-22T03:20:13.664392+00:00",
+   "headline": "Ground-truth asm read showed the per-arm zero-init of 0x1F800374/0x1F800378 was dead; dropping it dropped floor 199 -> 196; two literal-source-structure hypotheses (single unconditional 6-word zero-in",
    "consumed": null
   }
  ]

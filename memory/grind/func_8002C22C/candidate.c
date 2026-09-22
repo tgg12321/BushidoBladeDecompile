@@ -1,12 +1,27 @@
-/* func_8002C22C (PutRobShadow) — s2 candidate (structural, 2026-09-22).
- * sandbox --disable all = 199 (target 252 insns, build 246 insns). NOT a match.
- * Live-staged in src/code6cac_b.c as of this session. Progress this session:
- * duplicated the s1 candidate's top-level unconditional 6-word scratchpad
- * zero-init (0x1F800360/364/368/370/374/378 = 0;) into BOTH if/else arms
- * instead of leaving it above the branch. s1 measured 211; this form measures
- * 199 (build_insns 230 -> 246, closer to target's 252). See evidence.md /
- * hypotheses.md for the CSE block-extension mechanism this targets and the
- * killed do-while(0) follow-up probe.
+/* func_8002C22C (PutRobShadow) — s3 candidate (structural, 2026-09-22).
+ * sandbox --disable all = 196 (target 252 insns, build 238 insns). NOT a match.
+ * s2 (floor 199) duplicated a 6-word scratchpad zero-init
+ * (0x1F800360/364/368/370/374/378 = 0;) into BOTH if/else arms. This session
+ * dropped the 0x1F800374/0x1F800378 zero-stores from that duplicated block
+ * (per-arm zero-init is now only the 4 words 0x360/364/368/370) after the
+ * asm/funcs/func_8002C22C.s ground truth showed the ORIGINAL zero-init is a
+ * single unconditional 6-word block ABOVE the branch (lines 7-18 of the .s),
+ * not duplicated at all — the two trailing words (0x374/0x378) are written
+ * for the first time by the real d_v1/d_a0 stores after the if/else join and
+ * were never re-read as zero inside either arm, so re-zeroing them per-arm
+ * was a genuinely DEAD, unnecessary store (not present in the target's own
+ * dataflow) rather than a needed part of the CSE-defeat duplication. Dropping
+ * them is ordinary dead-code removal, not a construct change: 199 -> 196.
+ * Re-testing the literal single-unconditional-6-word-before-branch form (byte
+ * -identical in *structure* to the real .s) measured WORSE (211) — see
+ * memory/grind/func_8002C22C/hypotheses.md H6 — confirming the per-arm
+ * duplication is doing real CSE-block-extension-defeat work
+ * ([[cse-block-extension-controls-fold-span]], sanctioned
+ * duplicated-statement-into-arms family) even though it does not literally
+ * mirror the original source's join-point structure. See
+ * memory/grind/func_8002C22C/evidence.md / hypotheses.md for the full
+ * mechanism discussion and the killed do-while(0) / full-upfront-preload
+ * follow-up probes.
  */
 extern s32 D_80102314; /* record 1 of a 2-elem table, stride 0x44C from D_80101EC8 (func_8002C61C's s1+0x44C);
                          * fields accessed base+offset here, unlike record 0's individually-named scalars.
@@ -24,8 +39,6 @@ void func_8002C22C(void) {
         *(s32 *)0x1F800364 = 0;
         *(s32 *)0x1F800368 = 0;
         *(s32 *)0x1F800370 = 0;
-        *(s32 *)0x1F800374 = 0;
-        *(s32 *)0x1F800378 = 0;
         v1 = *(s32 *)0x1F80004C;
         v0 = *(s32 *)0x1F800048;
         a2 = *(s32 *)0x1F800050;
@@ -48,8 +61,6 @@ void func_8002C22C(void) {
         *(s32 *)0x1F800364 = 0;
         *(s32 *)0x1F800368 = 0;
         *(s32 *)0x1F800370 = 0;
-        *(s32 *)0x1F800374 = 0;
-        *(s32 *)0x1F800378 = 0;
         v1 = *(s32 *)0x1F800004;
         v0 = *(s32 *)0x1F800000;
         a2 = *(s32 *)0x1F800008;
