@@ -1,8 +1,9 @@
 # CD_cw — hypotheses / frontier (2026-09-22, after manual s1)
 
 ## Frontier: an HONEST spelling of `Intr` that GCC does not fold to `sym+k`
-Floor 42 (candidate.c). Forbidden cast view reaches 4, so everything except the Intr
-addressing is solved. Next levers, in order:
+Floor 38 (candidate.c, re-measured 2026-09-22). The forbidden cast view reaches 0 — a
+byte-exact preimage, so everything except an HONEST spelling of the Intr/Alarm addressing
+is solved. Next levers, in order:
 1. How the matched siblings reach Intr on main: `CD_sync`/`CD_ready` use
    `idx_1494 = &g_cd_status_a; idx_1495 = 1 + idx_1494;` (u8 handles, FAKE-annotated).
    Try that exact shape inside the SOTN inline helpers (u8 handle hoisted in CD_cw and
