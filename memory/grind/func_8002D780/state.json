@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 25,
- "current_modality": "structural",
+ "session_count": 26,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -153,18 +153,24 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s25 structural: re-confirmed s24's class kill on pseudo 119's mflo/subu seat with two fresh probes (baseline re-measure, named-intermediate ysq variant); sibling func_8002C22C re-checked (floor 196->1"
+  },
+  {
+   "session": 26,
+   "floor": 2,
+   "modality": "enumerate",
+   "headline": "s26 enumerate: spelling_enum.py swept the y/dist declaration region feeding pseudo 119's mflo/subu seat -- both compilable spellings (named y; y inlined to a duplicate load) measure 2/202, re-confirmi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The mflo/subu pair at asm/funcs/func_8002D780.s:68,82 might itself be part of a named Sony PsyQ GTE macro's published text (rather than ordinary compiled y*y arithmetic), which would let a future cluster-widening ruling admit it into the already-authorized LZCR island under condition-3's macro-body admission test (cop2-addressing-preamble-cluster.md).",
-   "mechanism": "cop2-addressing-preamble-cluster.md's 2026-09-02 owner ruling admits SDK-macro-body GPR instructions into an island's template when they are the macro's own published text (e.g. gte_ldlv0's lhu/lhu/sll/or pack, PsyQ inline_c.h precedent).",
-   "next_probe": "Read PsyQ inline_c.h / any available SDK macro reference for a y*y-with-LO-kickout macro whose body would include this exact mflo/subu pair; this is a forensics-modality question, not structural, and was not run this session."
+   "hypothesis": "The mflo/subu pseudo-119 seat might be reachable via an SDK-macro-body admission under cop2-addressing-preamble-cluster.md's condition-3 test (macro's own published GPR text), if the y*y LO-kickout is itself part of a named PsyQ inline_c.h macro rather than ordinary compiled arithmetic.",
+   "mechanism": "cop2-addressing-preamble-cluster.md's 2026-09-02 owner ruling admits SDK-macro-body GPR instructions into an island's template when they are the macro's own published text.",
+   "next_probe": "Forensics-modality: locate/consult PsyQ inline_c.h (or any available SDK macro reference) for a y*y-with-LO-kickout macro whose body would include this exact mflo/subu pair; not attempted this session (enumerate modality only)."
   },
   {
-   "hypothesis": "Once the operator adds the func_8002D780 row to tools/grinder/owner_cluster_grants.txt (the s23 INTEGRATION HANDOFF), the licensed \"$12\",\"$15\" body still only reaches 2/202, not 0 -- the operator step alone does not close this function.",
-   "mechanism": "tools/grinder/owner_cluster_grants.txt is operator-only; grant_canonical_asm reads it by exact name, but even after the grant lands the pseudo-119 seat (this session's re-confirmed class kill) still blocks 0/202.",
-   "next_probe": "No session action possible (operator surface); the pseudo-119 seat needs either the frontier-item-1 macro-body finding or a fresh un-derived C-level lever before this becomes actionable."
+   "hypothesis": "No further pure-C spelling axis remains untested for this residual on the current chassis -- the enumerable declaration/naming/order space for the y/dist region is now exhaustively covered at floor 2, and the class-kill mechanism (global.c/reload1.c, asm-level-only route) is independently re-confirmed by direct measurement, not just source-code trace.",
+   "mechanism": "global.c:1000-1080 / reload1.c:3730-3739 (unchanged from s23).",
+   "next_probe": "Escalation-modality disposition should treat this residual as endgame-lock-eligible (flat floor 2 <= ENDGAME_LOCK_MAX_FLOOR=5) once the driver's flat-window/modality-count trigger fires; no further enumerate-modality action is derivable for this specific hunk."
   }
  ],
  "judge_constraints": [
@@ -178,14 +184,6 @@
   "\"$12\", \"$14\", \"$15\""
  ],
  "kills": [
-  {
-   "session": 3,
-   "statement": "Giving the call-3 block a real CODE_LABEL from above (if (f2 == 0) goto last; return 1; last: return f3 != 0;) changes reorg's liveness walk on the second post-call branch.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "10 = control; jump1 deletes the goto and rebuilds the same relocation. The structural change that DID work was the retur"
-  },
   {
    "session": 4,
    "statement": "A decomp-permuter campaign on the s3 7-floor chassis finds a form that lowers the engine's honest floor below 7.",
@@ -657,6 +655,14 @@
    "measured_on": "HEAD (2026-09-21 session), src/code6cac_b.c s24-body chassis (\"$12\",\"$15\" clobber) with the ysq intermediate added, sole FAKE present (same-value re-store of local m, unchanged from s23/s24)",
    "predicate_cite": "",
    "result": "2/202, unchanged. sandbox --diff re-confirms the single operand-only hunk is still exactly the mflo s1/subu v1,v1,s1 vs "
+  },
+  {
+   "session": 26,
+   "statement": "Systematic spelling_enum.py enumeration of the y/dist declaration region (name-vs-inline axis over the self-multiply y*y, plus a declaration-order widening of the surrounding bare pointer/scalar local",
+   "kill_scope": "instance",
+   "measured_on": "HEAD (2026-09-21 session s26), src/code6cac_b.c spliced from tmp/grind/func_8002D780/s26/spliced_v1.c (s24-body chassis, licensed \"$12\",\"$15\" clobber, sole FAKE = same-value re-store of local m unchan",
+   "predicate_cite": "",
+   "result": "v0 = 2/202 (baseline, unchanged). v1 (inlined y, duplicate load) = 2/202, identical score. The bare-decl reordering embe"
   }
  ],
  "ladder_skip": 22,

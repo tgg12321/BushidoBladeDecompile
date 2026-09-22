@@ -2745,3 +2745,14 @@ tmp/grind/judge_func_8002D780.json.
 - [s25] This session's modality (structural) is the same lane s24 already ran the definitive RTL trace in; no new structural lever surfaced. The class kill (predicate tools/gcc-2.7.2/reload1.c:3730-3739) is re-confirmed on two independent probes, not merely re-asserted.
 
 - [s25] src/code6cac_b.c is clean (git checkout applied after measurement) -- only the ledger files (memory/grind/func_8002D780/{evidence.md,hypotheses.md}) and tmp/ were touched this session.
+
+- [s26] enumerate modality: tools/spelling_enum.py run against the `y`/`dist` declaration region feeding pseudo 119's mflo/subu seat (the s23-s25 CONFIRMED class-killed residual) -- 4 generated variants, only 2 compilable (the tool inlined `dist` in the other 2 without checking its out-of-region reads, an undeclared-variable compile break, not evidence). Both compilable spellings (named `y`, and `y` inlined to a duplicate load) measure 2/202, identical to baseline. Declaration-order widening (bare pointer/scalar decls moved ahead of `y`/`dist`) is also byte-neutral. Exhausts this residual's enumerable spelling space on this chassis; the standing global.c/reload1.c RTL-mention-only mechanism (s23) remains the only known route, still asm-level only.
+- [s26] src/code6cac_b.c restored to INCLUDE_ASM baseline after measurement (git status clean); artifacts in tmp/grind/func_8002D780/s26/ (enum_base.c, enum1/v0-v3.c, spliced_v1.c, v1_body.c, v0_body.c, code6cac_b.c.orig).
+
+- [s26] Chassis check confirmed: memory/grind/func_8002D780/candidate.c measures 2/202 this session, matching the ledger's last recorded floor.
+
+- [s26] tools/spelling_enum.py's automatic axis generation is not aware of a named local's reads OUTSIDE the marked ENUM region -- it inlined `dist` in 2 of 4 generated variants even though `dist` is read at the sqrt-table index and in the else-arm (`m = dist`, two func_8002D518 calls), producing uncompilable C. This is a tool limitation worth noting for future enumerate-modality sessions on this function: mark regions ending strictly BEFORE any named local's last use, or exclude locals with known outside-region reads via a future --keep-inlined-style safety check.
+
+- [s26] The banned clobber list "$12","$14","$15" and the banned multi-write scratch `tmp` carrier remain untouched this session -- no candidate re-declares either.
+
+- [s26] src/code6cac_b.c restored to its INCLUDE_ASM baseline after measurement; git status clean except ledger files and metrics/events.jsonl (pre-existing at session start).
