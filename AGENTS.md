@@ -4,6 +4,13 @@ Project-level facts for any AI coding agent (Claude Code, Codex, Cursor, Cline, 
 
 Tool-specific guidance (hooks, skills, the active-marker workflow, memory system) lives in `CLAUDE.md` and is loaded only by Claude Code.
 
+> **About to decompile a function? Read [`docs/DECOMP_WORKFLOW.md`](docs/DECOMP_WORKFLOW.md) first.**
+> It is the tool-agnostic operating manual: what "done" means, the per-function loop, the
+> honest-C standard, the ablation discipline required before defending a construct, the
+> catalog of defects that have actually landed here, and the mandatory adversarial review
+> before any completion commit. This file (toolchain and build facts) is its prerequisite;
+> `docs/MATCHING.md` is the technique catalog you reach for once you are inside the loop.
+
 ## Project overview
 
 Matching decompilation of **Bushido Blade 2** (SLUS-00663) — a PS1 fighting game published by SquareSoft (1998, North America). The goal: C source that compiles to a byte-identical copy of the original executable.
@@ -201,4 +208,4 @@ See `docs/HISTORY.md` for the timeline of major milestones (zero-stub completion
 
 ## Getting help
 
-This is a single-person project (Trenton, `tgg12321@gmail.com`). Issues / context for understanding what's been done previously: `docs/HISTORY.md` + git log. The repo's been worked on extensively in Claude Code; references to "the agent" and the engine workflow (`engine/` CLI, the Grinder) are part of that workflow. Older docs and commits mention a retired `dc.sh` driver — see `docs/HISTORY.md`.
+This is a single-person project (Trenton, `tgg12321@gmail.com`). Start with [`docs/DECOMP_WORKFLOW.md`](docs/DECOMP_WORKFLOW.md) for the workflow and standards. Issues / context for understanding what's been done previously: `docs/HISTORY.md` + git log. The repo's been worked on extensively in Claude Code; references to "the agent" and the engine workflow (`engine/` CLI, the Grinder) are part of that workflow. Older docs and commits mention a retired `dc.sh` driver — see `docs/HISTORY.md`.
