@@ -21,6 +21,10 @@ ALLOW = [
     "wsl bash -c 'python3 tmp/norm_diff.py a b'",   # running a script FILE is fine
     # heredoc BODY is data: a patch that merely mentions `wsl bash -c` (2026-09-22)
     "python3 - <<'PYEOF'\nold = 'wsl bash -c \"\n$*\n\"'\nprint(old)\nPYEOF",
+    # Windows-python heredoc writes are fine with an explicit LF newline / bytes
+    "python3 - <<'EOF'\nopen('tmp/x.sh','w',newline='\\n').write(s)\nEOF",
+    "python3 - <<'EOF'\nimport pathlib\npathlib.Path('tmp/x.c').write_bytes(b)\nEOF",
+    "python3 - <<'EOF'\nprint(open('tmp/x.c').read())\nEOF",   # read-only
 ]
 
 # Commands that must be blocked (genuine footguns).
@@ -31,6 +35,9 @@ BLOCK = [
     "wsl bash -c 'norm() { echo hi; }; norm'",                # funcdef in wsl
     'wsl bash -c \'awk "{print \\$3}" f.txt\'',               # awk touching $
     "wsl bash -c 'python3 x.py; echo \"rc=$?\"'",             # unreliable $? capture in wsl
+    # Windows-python heredoc text-mode writes -> CRLF (4 recurrences through 2026-09-22)
+    "python3 - <<'EOF'\nfor k,t in v.items(): open(f'tmp/f2d0/{k}.c','w').write(t)\nEOF",
+    "cd repo; python3 - <<'EOF'\nimport pathlib\npathlib.Path('tmp/a.sh').write_text(s)\nEOF",
 ]
 
 

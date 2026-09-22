@@ -33,6 +33,14 @@ WSL_NEST_RE = re.compile(r"\bwsl\s+bash\s+-l?c\b")
 HEREDOC_RE = re.compile(r"<<-?\s*[\"']?\w")
 FUNCDEF_RE = re.compile(r"\b[A-Za-z_]\w*\s*\(\)\s*\{")
 AWK_SED_DOLLAR_RE = re.compile(r"\b(?:awk|sed)\b[^|;&]*\\?\$")
+# Rule 4: a heredoc-fed `python3 - <<TAG` run by the WINDOWS-side shell (Git Bash's
+# `python3` is the Windows Store Python) writes text-mode files with CRLF. Four
+# recurrences (2026-08-06, 09-01, 09-04, 09-22) — see memory
+# workflow/windows-python-crlf-write-text. Only heredoc python NOT routed via wsl.
+PY_HEREDOC_RE = re.compile(r"\bpython3?(?:\.exe)?\s+-\s*<<")
+TEXT_WRITE_RE = re.compile(
+    r"\.write_text\(|\bopen\([^)\n]*,\s*['\"][wa]t?\+?['\"]"
+)
 
 SAFE = ("\nThe safe path:\n"
         "  - engine/build commands  ->  the PowerShell tool with  tools/wteng.ps1 main\n"
@@ -111,6 +119,17 @@ def reasons_for(cmd: str) -> list[str]:
                 "by three shells before awk sees it. Write a .py file to tmp/ and run it "
                 "(a Python normalizer is both more robust and easier to read)."
             )
+
+    if (PY_HEREDOC_RE.search(code) and not WSL_NEST_RE.search(code)
+            and "wsl.sh" not in code and TEXT_WRITE_RE.search(cmd)
+            and "newline=" not in cmd):
+        out.append(
+            "Windows-side `python3 - <<EOF` heredoc writing a file in TEXT mode "
+            "(write_text / open(...,'w')) without newline='\\n'. The Bash tool's "
+            "python3 is Windows Python: every line comes back CRLF and breaks .sh/.c/"
+            "build files. Pass newline='\\n' (open(p, 'w', newline='\\n')), use "
+            "write_bytes, or run the script under WSL (bash tools/wsl.sh)."
+        )
     return out
 
 
