@@ -1,47 +1,37 @@
-/* func_8002D780 - grind candidate (s23 fourth run, 2026-09-16).  Honest sandbox floor 0/202,
- * build_insns == target_insns == 202, RE-MEASURED THIS RUN with these exact edits spliced
- * into src/code6cac_b.c on HEAD e4ad73836 (-mel -msoft-float, matched caller func_8002CA8C
- * in the TU): `sandbox func_8002D780 --disable all` -> 0, pairdiff "0 differing
- * instructions" (tmp/grind/func_8002D780/s23/r5/score_chassis_e4ad738.json,
- * pairdiff_chassis_e4ad738.txt).  This is BYTE-FOR-BYTE the body of the s23 third run
- * (tmp/grind/func_8002D780/s23/r4/final_body.c, body hash 45e0221bc2dba1f8): it scored 0/202
- * there too, verify-oracle returned build SHA1 == oracle (s23/r4/verify_oracle.txt), and the
- * Judge PASSed it at 2026-09-16 04:31 (tmp/grind/judge_func_8002D780.json; metrics event
- * "review" layer=judge verdict=PASS at 04:31:03).  The merge was then REFUSED by the
- * owner-cluster registry gate, not by any review: the body carries 4 GTE islands that are
- * not on the cop2 whitelist, scan_hand_coded scores the function LOW 1/8, and
- * tools/grinder/owner_cluster_grants.txt has no row for func_8002D780 (grind.ps1:915-926,
- * grindlib.grant_canonical_asm).  That row is operator-only (tools/ is outside session
- * scope), so the s23 fourth run filed an INTEGRATION HANDOFF entry in
- * docs/grind/decisions.md (2026-09-16) with the exact operator step; nothing in this body
- * needs to change once the row lands - resubmit it EXACTLY (the Judge PASS is keyed to the
- * body, comments ignored).
+/* func_8002D780 - grind candidate (s24, 2026-09-21). Honest sandbox floor 2/202
+ * (build_insns == target_insns == 202), measured THIS session with these exact edits
+ * spliced into src/code6cac_b.c: `sandbox func_8002D780 --disable all` -> {"score": 2, ...}.
  *
- * Construct summary (unchanged from the Judge-passed third-run body).  Three FAKE
- * constructs, all load-bearing (fake_ablate: keep-all 0, single drops 32 / 40 / 4,
- * tmp/grind/func_8002D780/s23/r4/ablate_final.txt): (1) `flag = z2 - z0` - block 7's edge
- * difference staged through the `flag` PARAMETER, a variable with its own real job (the
- * entry mode test) that is dead from that test onward (staged-value-reused-variable family,
- * .claude/rules/staged-value-reused-variable.md; frozen list "variable reuse for codegen
- * control"; in-TU precedent: func_8002CA8C's `hit` borrow in this file); (2) `ax = pz - z0`
- * - the same family, borrowing the block-7 local `ax` after its value died (Judge-cleared
- * 2026-09-15 23:16); (3) `m = dist` same-value re-store (dead-store family,
- * .claude/rules/dead-store-fake-exception.md; Judge-cleared the same ruling).  Mechanisms
- * and lever-exhaustion pointers are at each annotation.  The rest of the body is the s14
- * chassis: split cop2 islands with the canonical LZCS/LZCR + mvmva idiom per
- * .claude/rules/cop2-addressing-preamble-cluster.md (func_8002D780 is census row
- * `.claude/rules/cop2-addressing-preamble-cluster.md:75`); the LZCS swc2 island carries the
- * Judge-granted "$12","$14","$15" clobber list (docs/grind/decisions.md 2026-09-15 22:59,
- * reload1.c / global.c derivation in hypotheses.md s23 second run; "$13" deliberately absent
- * per that ruling).  Alternatives measured in the third run (tmp/grind/func_8002D780/s23/r4):
- * `flag` carrying both block 7 and the table byte is also 0/202 but needs a second borrow for
- * nothing (rejected/flag-carries-both-jobs-redundant-second-borrow-0.c); `threshold` as the
- * carrier scores 28 (it arrives in $a3, so global_alloc seats it there, not $a0;
- * rejected/threshold-param-as-block7-carrier-28.c); `flag` carrying only the table byte with
- * a fresh block-local dz scores 9 (rejected/flag-carries-table-byte-only-fresh-dz-9.c); a
- * fresh once-written `tb` for the table byte is byte-neutral at 0 and therefore dropped
- * (rejected/flag-block7-plus-fresh-once-written-tb-0.c).  Full derivation: evidence.md and
- * hypotheses.md s23 (all four runs). */
+ * s24 finding: the s23 body's clobber list "$12","$14","$15" on the LZCR swc2 island
+ * scores 0/202 but was LAYER-2 ADVERSARIAL FAILED 2026-09-16 (docs/grind/decisions.md) as
+ * a register pin in clobber spelling -- $14(=$t6) has TWO genuine compiler pseudo uses in
+ * the target (asm/funcs/func_8002D780.s:68,82: `mflo $t6` / `subu $v0,$t6,$s1`), which
+ * fails reload-spill-reg-reveals-asm-clobbers.md's own zero-pseudo-use prerequisite for
+ * licensing a clobber-list widening. $15(=$t7) has ZERO pseudo uses anywhere in the target
+ * (grep confirmed this session) and DOES satisfy that prerequisite -- it legitimately
+ * reconstructs the original TU's asm-level register footprint for the y*y LO-kickout
+ * reload spill (the mechanism s23/r2 traced in full: local-alloc.c/global.c/reload1.c,
+ * memory/grind/func_8002D780/hypotheses.md s23 "CONFIRMED" entry, tmp/grind/func_8002D780/
+ * s23/r2/trA,trK/trace.txt).
+ *
+ * This session measured the SPLIT: clobber list "$12" alone = 4/202 (matches the Judge's
+ * own score_A citation exactly); "$12","$15" (drop ONLY the illegitimate $14) = 2/202.
+ * So $15's legitimate reconstruction buys 2 of the 4 instructions honestly; the remaining
+ * 2 (ours[88:90] `mflo $t6`/`subu $v1,$v1,$t6` vs target `mflo $s1`/`subu $v1,$v1,$s1`,
+ * pseudo 119's global_alloc seat) is the SAME construct s23 already CLASS-KILLED
+ * (hypotheses.md s23 "Every pure-C form fails to re-seat pseudo 128..." / the companion
+ * t6-seat entry): reload1.c:3730-3739 shows `bad_spill_regs`/bumped `hard_reg_n_uses` for
+ * a hard register is populated ONLY from `fixed_regs` or `regs_explicitly_used` (an
+ * explicit RTL hard-register mention -- asm-level only), and no pseudo conflict, C-level
+ * hard-register copy, or preference route exists in this function's dataflow to move that
+ * seat (global.c:1000-1080/1311-1344 trace, s23/r2). This is re-confirmed on THIS chassis:
+ * the remaining hunk after the licensed $15 widening is exactly the t6/s1 pair, nothing else.
+ *
+ * The one existing FAKE construct (same-value re-store of the local `m`) is unchanged from
+ * the s23 body -- see its own inline comment for the cse.c mechanism + lever-exhaustion
+ * citation. This body is NOT candidate-ready (floor 2, not 0): it supersedes the banned
+ * s23-body clobber list as the current best HONEST (non-cheat) floor for this function. */
+
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -162,10 +152,19 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                     "nop\n"
                     "nop"
                     : : "r"(m) : "$12");
+                /* clobber list widened to $15 per reload-spill-reg-reveals-asm-clobbers.md:
+                 * asm/funcs/func_8002D780.s shows $t7(=$15) at ZERO pseudo uses anywhere in
+                 * the target (grep confirmed this session), so widening to it satisfies that
+                 * rule's own zero-pseudo-use prerequisite and reconstructs the original TU's
+                 * asm-level register footprint for the y*y LO-kickout reload spill; $14 is
+                 * NOT included here because $t6 has two genuine compiler pseudo uses in the
+                 * target (mflo $t6 / subu $v0,$t6,$s1, func_8002D780.s:68,82), which fails
+                 * that same rule's prerequisite and is a register pin, not reconstruction
+                 * (LAYER-2 ADVERSARIAL FAIL 2026-09-16, docs/grind/decisions.md). */
                 __asm__ volatile(
                     "addu $t4, %1, $zero\n"
                     "swc2 $31, 0($t4)"
-                    : "=m"(sp_var) : "r"(&sp_var) : "$12", "$14", "$15");
+                    : "=m"(sp_var) : "r"(&sp_var) : "$12", "$15");
                 lzcr = sp_var;
             }
             {
@@ -191,3 +190,4 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         return 0;
     }
 }
+
