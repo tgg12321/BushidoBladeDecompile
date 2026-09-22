@@ -1,7 +1,10 @@
-/* func_8003FA24 — honest work-in-progress candidate.
- * This is not completion-grade and must not be copied to src/ until score 0,
- * full oracle verification, ablation, and fresh adversarial review all pass.
- */
+extern s32 obj_CalcOffset(s32, s32);
+extern s32 func_80017D84(u8 *);
+extern void func_80045230(s32);
+extern u16 **D_80103608[];
+extern s16 D_80094AEC[];
+s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2);
+
 u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     struct SceneObjInit {
         s16 count;
@@ -14,12 +17,6 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
         s32 unk18;
         s32 unk1C;
     } init;
-    extern s32 obj_CalcOffset(s32, s32);
-    extern s32 func_80017D84(u8 *);
-    extern void func_80045230(s32);
-    extern void func_80052C10();
-    extern u16 **D_80103608[];
-    extern s16 D_80094AEC[];
     u8 *obj;
     u16 *src;
     u16 *block;
@@ -30,6 +27,7 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     s32 point_count;
     s32 value;
     s32 n;
+    s16 half;
     s16 *packet;
     u16 *dst;
 
@@ -41,14 +39,14 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     init.points = cur;
     src += 2;
     count--;
-    if ((s16)count != -1) {
+    if (count != -1) {
         do {
             dst[0] = *src++;
             dst[1] = *src++;
             dst[2] = *src++;
             dst += 4;
             count--;
-        } while ((s16)count != -1);
+        } while (count != -1);
     }
     cur = (u8 *)dst;
     if ((u32)src & 3) {
@@ -87,26 +85,40 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
                 } else {
                     value = ((u32)src[8] << 16) | src[7];
                 }
-                *packet++ = 4;
-                *packet++ = 2;
-                *packet++ = value & 0xFF;
-                *packet++ = (value >> 8) & 0xFF;
-                *packet++ = (value >> 16) & 0xFF;
-                *packet++ = (u32)value >> 24;
+                half = 4;
+                *packet++ = half;
+                half = 2;
+                *packet++ = half;
+                half = value & 0xFF;
+                *packet++ = half;
+                half = (value >> 8) & 0xFF;
+                *packet++ = half;
+                half = (value >> 16) & 0xFF;
+                *packet++ = half;
+                half = (u32)value >> 24;
+                *packet++ = half;
                 src += D_80094AEC[mode];
             }
         } else {
             while (--count != -1) {
+                /* FAKE: identical arms (gouraud and flat triangle records keep
+                 * the colour at the same offset); jump2 cross-jumping merges
+                 * them, leaving loop.c's hoisted `packet_type & 2` test. */
                 if (packet_type & 2) {
                     value = ((u32)src[7] << 16) | src[6];
                 } else {
                     value = ((u32)src[7] << 16) | src[6];
                 }
-                *packet++ = 3;
-                *packet++ = 2;
-                *packet++ = value & 0xFF;
-                *packet++ = (value >> 8) & 0xFF;
-                *packet++ = (value >> 16) & 0xFF;
+                half = 3;
+                *packet++ = half;
+                half = 2;
+                *packet++ = half;
+                half = value & 0xFF;
+                *packet++ = half;
+                half = (value >> 8) & 0xFF;
+                *packet++ = half;
+                half = (value >> 16) & 0xFF;
+                *packet++ = half;
                 src += D_80094AEC[mode];
             }
         }
@@ -116,24 +128,22 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     cur = ((u32)cur & 3) ? cur + 2 : cur;
     func_80045230((s32)cur);
     if (*src != 0) {
-        ((void (*)(const char *))func_80052C10)(D_80010D8C);
+        func_80052C10(D_80010D8C);
     }
     func_8003FE40((s16 *)init.points, init.count, cmds);
 
     init.matrix = obj + 0x18;
     init.flags = 0xE00;
     *(s16 *)rec = func_80017D84((u8 *)&init);
-    {
-        *(u8 **)(obj + 0x60) = init.point_end;
-        rec->inner.count = 0;
-        rec->inner.objs[4] = 0;
-        cur = ((u32)cur & 3) ? cur + 2 : cur;
-        *(u16 *)((u8 *)rec + 4) = *(u16 *)rec;
-        *(u8 **)((u8 *)rec + 8) = obj + 0x18;
-        *(u8 **)((u8 *)rec + 0xC) = *(u8 **)(obj + 0x60);
-        *(void **)((u8 *)rec + 0x10) = (u8 *)rec + 0x2C;
-        *((u8 *)rec + 6) = 0;
-        *((u8 *)rec + 7) = 0;
-        return cur;
-    }
+    *(u8 **)(obj + 0x60) = init.point_end;
+    rec->inner.count = 0;
+    rec->inner.objs[4] = 0;
+    cur = ((u32)cur & 3) ? cur + 2 : cur;
+    *(u16 *)((u8 *)rec + 4) = *(u16 *)rec;
+    *(u8 **)((u8 *)rec + 8) = obj + 0x18;
+    *(u8 **)((u8 *)rec + 0xC) = *(u8 **)(obj + 0x60);
+    *(void **)((u8 *)rec + 0x10) = (u8 *)rec + 0x2C;
+    *((u8 *)rec + 6) = 0;
+    *((u8 *)rec + 7) = 0;
+    return cur;
 }

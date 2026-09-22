@@ -144,3 +144,72 @@ read by the next statement, but the **name** will (fairly) draw reviewer fire, s
 `flags` is the command word at the top of the same loop. Rename it to something
 neutral before the completion commit, and re-measure — a rename is codegen-neutral
 but the reviewer reads names.
+
+## Session 3 — 2026-09-22 (manual lane) — sandbox 0, oracle GREEN
+
+`candidate.c` now holds the matched body (263/263, vars=32). Path from s2's 83,
+each step measured (`tmp/fa24/*` scratch):
+
+1. **Frontier 2 solved — cross-jumping, not a hidden read.** Type-3 body
+   `if (packet_type & 2) value = X; else value = X;` (identical arms). loop.c hoists
+   the `&2` test; jump2 cross-jumps the identical arms *after* flow, so the hoisted
+   `andi a2,v1,0x2` survives dead — exactly the target's preheader. 83 → 97 on the
+   flags-reuse chassis, but source-level hunks 7 → 4 and 263 insns. Removing it
+   later (ablation) = 79.
+2. **With the type-3 loop bigger, the register cascade came from `flags` reuse.**
+   Plain stores → 39 (constants hoisted to the outer preheader); a fresh multi-set
+   `s16` scratch → **29** with the whole cascade gone. `flags` reuse = 89, plain = 17
+   at the end. Duplicating the stores into both `&2` arms (c5) = 50, KILLED (CSE
+   hoists the common stores into the if-head).
+3. **Frontier 1 solved — the copy must sit in the exit-TEST block.** With
+   `while ((n = ...) != 0) { count = n; ...}` CSE (follow-jumps) rewrites the first
+   `--count` to read `n`, and the copy dies. Putting `count = n` in the condition via a
+   comma, `for (n = *(s16*)src++, count = n; n != 0; n = *(s16*)src++, count = n)`,
+   keeps it: score **2**. **Correction to s2's H15:** the phantom 8 bytes are
+   HImode-only; an `s32 n` assignment-as-value costs 0 vars (c3/c6 = 32; `s16 n` = 48).
+4. Final alignment as the ternary `cur = ((u32)cur & 3) ? cur + 2 : cur; return cur;`
+   → **0**.
+5. Cleanups verified oracle-neutral: `func_80052C10` declared unprototyped at file
+   scope (a stubbed printf; called with the string here, with no args elsewhere)
+   instead of a cast call; `func_8003FE40` prototype added; redundant `(s16)` casts
+   dropped.
+
+### Session 3 outcome — layer-2 FAIL on `half`; banked candidate = plain stores, floor 17
+
+The score-0 body (`rejected/half-multiwrite-carrier.c`, oracle GREEN) was **FAILED by
+layer-2**: `s16 half` is a *fresh* local written 11 times to stage the bare constants
+4/3/2. That is the multi-write carrier shape the frozen list excludes (y1 FAIL
+decisions.md:1833/1838, the 2026-08-30 `c` FAIL at :16474, and :6631/:10732). The
+reviewer **cleared** everything else, which carries forward: the identical-arm type-3
+`if (packet_type & 2)`, `for (n = *(s16*)src++, count = n; n != 0; ...)` with `s32 n`,
+the unprototyped file-scope `extern void func_80052C10();` (drop the cast call), the
+`func_8003FE40` prototype, the ternary alignment sites, `init`, and the raw-offset tail.
+
+`candidate.c` is now that cleared body with **plain** `*packet++ = 4;` stores: floor
+**17**, 262 insns (it still carries the old cast call, because the sandbox splices into
+the committed config.c, which declares `func_80052C10(void)`). The only residual is the
+LICM hoist of the tag constants 4/3/2 to the outer preheader, plus its register
+cascade.
+
+**The residual, pinned (`pwsh tools/grinder/dump.ps1 -Func func_8003FA24 -Candidate tmp/fa24/a1.c`, .loop):**
+the type-4 inner loop has 50 real insns and the type-3 loop 46. The tag constants are
+`move-insn savings 1, life 1` and are moved because `58*1*1 >= 50/46`. For the
+target's in-loop `li v0,4` they must either not be admitted (multi-set pseudo) or
+face ≥59 real insns per inner loop.
+
+**Why `flags` reuse can't be the original:** in the target the tag scratch is **v0** and
+the header word `flags` is **a2**, in both passes. 2.7.2 assigns one hard register per
+pseudo, so the original's tag carrier was a *different* pseudo from the header word.
+Reusing `flags` (89, all 34 hunks operand-only) merges them. `s32` carriers (`value`,
+`mode`, `n`, `point_count`) are CSE-folded back to a single-set constant (H10).
+
+Frontier for the next session:
+1. Size route: find authentic source that makes each inner loop ≥59 real insns at
+   loop.c time, where the extra RTL disappears later (combine / cse2 / jump2
+   cross-jump). The duplicated-stores-into-both-arms form (c5 = 50) fails because
+   matching movables add their savings.
+2. A natural HImode variable that is genuinely distinct from `flags` and has a real
+   non-constant role in the store sequence (a colour-byte temp would qualify only if
+   the tags could honestly pass through it too).
+3. Owner question logged to docs/grind/borderline.md (family-candidate): a fresh
+   HImode staging local for in-loop constants.

@@ -752,3 +752,7 @@ disposition taken: inline_asm_canonical.txt entry written by the driver per owne
 category: canonical-asm-grant
 evidence: scan_hand_coded --single func_8002EBDC tier=OWNER-CLUSTER (cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :80; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-21)) (driver-verified); judge ESCALATE packet in docs/grind/decisions.md (2026-09-21)
 disposition taken: inline_asm_canonical.txt entry written by the driver per owner ruling 2026-08-18; function stays ACTIVE for canonical-asm integration.
+
+## 2026-09-22 — func_8003FA24 — family-candidate
+evidence: memory/grind/func_8003FA24/rejected/half-multiwrite-carrier.c (sandbox 0, full-build SHA1 == oracle) + .md; manual-lane layer-2 cheat-reviewer FAIL. The only closing form found stages the in-loop packet tag constants (4/3/2) through a fresh `s16` local written 11x (`half = 4; *packet++ = half; ...`), so loop.c (threshold 58, inner loops 50/46 real insns) never admits them as movables. In the target the tag carrier (v0) is a different pseudo from every existing variable (flags = a2), and s32 carriers are CSE-folded. Ruled out under the y1/`c` multi-write-carrier lineage (decisions.md:1833, :16474).
+disposition taken: not committed; func_8003FA24 stays INCLUDE_ASM/active at floor 17 (plain stores) with every other construct cleared by layer-2. Question for the owner: is a fresh HImode staging local whose every write is a real, consumed store value (no dead writes) inside or outside the multi-write-carrier ban?

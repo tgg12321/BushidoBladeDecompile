@@ -72,3 +72,13 @@ gradient than the sandbox score for frame questions (session 2, `tmp/frame.sh`).
    `li t1,-1` blocks). Note the two preheaders are byte-identical in the target —
    whatever it is, it is in BOTH loops.
 3. The register cascade — expect it to largely follow (1) and (2).
+
+## Session 3 (manual, 2026-09-22)
+
+- **H16 CONFIRMED**: identical-arm `if (packet_type & 2)` in the type-3 body produces the dead hoisted `andi` (jump2 cross-jump after flow). Ablation to a single assignment scores 79. Cleared by layer-2.
+- **H17 CONFIRMED**: `for (n = *(s16*)src++, count = n; n != 0; n = *(s16*)src++, count = n)` with `s32 n` gives the target's `lh v0` / `move a3,v0`. `while ((n=..)!=0) { count = n; }` fails because CSE rewrites `--count` to read n. Cleared by layer-2.
+- **H15 CORRECTED**: the phantom 8 `vars` bytes come only from an HImode assignment-as-value. An s32 one costs 0.
+- **H18 CONFIRMED**: the final alignment is a ternary on `cur`.
+- **H19 BANNED** (layer-2 FAIL): a fresh multi-set `s16` staging local for the tag constants. It reaches sandbox 0 and oracle GREEN, but it is the fresh multi-write carrier the frozen rulings exclude.
+- **H20 KILLED**: reusing `flags` = 89. The target's tag carrier (v0) is a different pseudo from `flags` (a2).
+- **H21 KILLED**: duplicating the stores into both `&2` arms (c5) = 50. The matching movables add their savings, so the constants still hoist.
