@@ -39,3 +39,8 @@ func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row 
 # instruction 2026-09-21; every other gate applies unchanged:
 func_8002D780 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :75; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-21)
 func_8002EBDC cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :80; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-21)
+# 2026-09-22 — one further census member reached floor 0 in a manual session,
+# so it earns a row on exactly the Ruling 3 terms the two 2026-09-21 rows got.
+# Operator-added at the owner's instruction 2026-09-22 (conversation, the
+# manual-lane landing of func_8002F2D0); every other gate applies unchanged:
+func_8002F2D0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :81; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-22)
