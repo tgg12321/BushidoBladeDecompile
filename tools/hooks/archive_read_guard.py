@@ -31,12 +31,29 @@ import sys
 from pathlib import Path
 
 
-def _path_in_archive(p: str) -> bool:
+def _path_in_archive(p: str, is_command: bool = False) -> bool:
     """True if `p` (a file path or command string) targets archive/."""
     if not p:
         return False
+    n = p
+    if is_command:
+        # Heredoc bodies are data (a commit message or patch that talks ABOUT
+        # archive/ paths is not a read of them) — same rule as
+        # shell_footgun_guard, which owns the stripping helper.
+        try:
+            from shell_footgun_guard import _strip_heredoc_bodies
+            n = _strip_heredoc_bodies(n)
+        except Exception:
+            pass
+        # A command that EXCLUDES archive/ is not reading it. Two measured
+        # false blocks (2026-09-22): `grep -v "^./archive\|^./memory"` — the
+        # regex alternation `\|` became `/|` under separator normalization and
+        # read as `archive/` — and exclusion flags. Drop both before matching.
+        n = n.replace("\\|", "|")
+        n = re.sub(r"--exclude(?:-dir)?=\S*archive\S*", " ", n, flags=re.IGNORECASE)
+        n = re.sub(r"!\S*archive/\S*", " ", n, flags=re.IGNORECASE)   # rg -g '!archive/**'
     # Normalize separators
-    n = p.replace("\\", "/").lower()
+    n = n.replace("\\", "/").lower()
     # Match `archive/...` at start of path or after `/` or whitespace
     return bool(re.search(r"(?:^|[/\s\"'])archive/", n))
 
@@ -97,6 +114,7 @@ def main() -> int:
 
     # Determine which path/command to check based on tool
     targets: list[str] = []
+    is_command = tool_name in ("Bash", "PowerShell")
     if tool_name == "Read":
         targets.append(tool_input.get("file_path", ""))
     elif tool_name == "Glob":
@@ -108,7 +126,7 @@ def main() -> int:
         targets.append(tool_input.get("command", ""))
 
     targets = [t for t in targets if t]
-    if not any(_path_in_archive(t) for t in targets):
+    if not any(_path_in_archive(t, is_command) for t in targets):
         return 0
 
     # Path targets archive/. Check if user explicitly asked for it.

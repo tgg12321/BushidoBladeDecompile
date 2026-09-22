@@ -19,6 +19,8 @@ ALLOW = [
     "wsl bash -c 'grep -n foo bar.c'",
     "git status",
     "wsl bash -c 'python3 tmp/norm_diff.py a b'",   # running a script FILE is fine
+    # heredoc BODY is data: a patch that merely mentions `wsl bash -c` (2026-09-22)
+    "python3 - <<'PYEOF'\nold = 'wsl bash -c \"\n$*\n\"'\nprint(old)\nPYEOF",
 ]
 
 # Commands that must be blocked (genuine footguns).

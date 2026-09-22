@@ -44,8 +44,33 @@ SAFE = ("\nThe safe path:\n"
         "See the 'PowerShell-first scripting' section of CLAUDE.md / AGENTS.md.")
 
 
+_HEREDOC_OPEN_RE = re.compile(r"<<-?\s*[\"']?(\w+)[\"']?")
+
+
+def _strip_heredoc_bodies(cmd: str) -> str:
+    """Drop the BODY of every heredoc (the lines up to its terminator), keeping
+    the `<<TAG` opener. A heredoc body is data: a Python patch that merely
+    CONTAINS the text `wsl bash -c` (e.g. one editing tools/wsl.sh) is not a
+    wsl invocation (false block, 2026-09-22)."""
+    lines = cmd.split("\n")
+    out, i = [], 0
+    while i < len(lines):
+        out.append(lines[i])
+        tags = _HEREDOC_OPEN_RE.findall(lines[i])
+        i += 1
+        for tag in tags:
+            while i < len(lines) and lines[i].strip() != tag:
+                i += 1
+            if i < len(lines):
+                out.append(lines[i])   # the terminator line
+                i += 1
+    return "\n".join(out)
+
+
 def reasons_for(cmd: str) -> list[str]:
     out: list[str] = []
+    # The wsl-nesting checks below look at the command, not heredoc data.
+    code = _strip_heredoc_bodies(cmd)
 
     if NESTED_QUOTE_RE.search(cmd):
         out.append(
@@ -60,7 +85,7 @@ def reasons_for(cmd: str) -> list[str]:
             "`& tools/wteng.ps1 main <subcommand> ...`."
         )
 
-    if WSL_NEST_RE.search(cmd):
+    if WSL_NEST_RE.search(code):
         if "$?" in cmd:
             out.append(
                 "`$?` inside `wsl bash -c '...'` is UNRELIABLE — the exit code is "
