@@ -1,12 +1,12 @@
-/* func_8002C22C (PutRobShadow) — s1 candidate (recon, 2026-09-22).
- * sandbox --disable all = 211 (target 252 insns, build 230 insns). NOT a match.
- * Live-staged in src/code6cac_b.c as of this session (scope-permitted: it's this
- * function's own src file). See evidence.md / hypotheses.md for the full
- * derivation, the OBJECT MODEL findings (D_80102314 = record[1] of the 2-elem
- * practice-menu table, D_80101EC8 = record[0], stride 0x44C), and H3's KILLED
- * (instance-scope) measurement of the plain-cast scratchpad hypothesis — a large
- * improvement over the 252-insn floor but not yet 0; --diff shows 27 source-level
- * hunks not yet pass-attributed (next session: read tmp/grind/func_8002C22C/dumps/).
+/* func_8002C22C (PutRobShadow) — s2 candidate (structural, 2026-09-22).
+ * sandbox --disable all = 199 (target 252 insns, build 246 insns). NOT a match.
+ * Live-staged in src/code6cac_b.c as of this session. Progress this session:
+ * duplicated the s1 candidate's top-level unconditional 6-word scratchpad
+ * zero-init (0x1F800360/364/368/370/374/378 = 0;) into BOTH if/else arms
+ * instead of leaving it above the branch. s1 measured 211; this form measures
+ * 199 (build_insns 230 -> 246, closer to target's 252). See evidence.md /
+ * hypotheses.md for the CSE block-extension mechanism this targets and the
+ * killed do-while(0) follow-up probe.
  */
 extern s32 D_80102314; /* record 1 of a 2-elem table, stride 0x44C from D_80101EC8 (func_8002C61C's s1+0x44C);
                          * fields accessed base+offset here, unlike record 0's individually-named scalars.
@@ -19,14 +19,13 @@ void func_8002C22C(void) {
     s32 d_v1, d_a0, d_v0, d_a1;
     s32 sum_v0_2, sum_a1_2;
 
-    *(s32 *)0x1F800360 = 0;
-    *(s32 *)0x1F800364 = 0;
-    *(s32 *)0x1F800368 = 0;
-    *(s32 *)0x1F800370 = 0;
-    *(s32 *)0x1F800374 = 0;
-    *(s32 *)0x1F800378 = 0;
-
     if (D_800A3824 & 1) {
+        *(s32 *)0x1F800360 = 0;
+        *(s32 *)0x1F800364 = 0;
+        *(s32 *)0x1F800368 = 0;
+        *(s32 *)0x1F800370 = 0;
+        *(s32 *)0x1F800374 = 0;
+        *(s32 *)0x1F800378 = 0;
         v1 = *(s32 *)0x1F80004C;
         v0 = *(s32 *)0x1F800048;
         a2 = *(s32 *)0x1F800050;
@@ -45,6 +44,12 @@ void func_8002C22C(void) {
         d_v0 = D_8010210C;
         d_a1 = D_80102110;
     } else {
+        *(s32 *)0x1F800360 = 0;
+        *(s32 *)0x1F800364 = 0;
+        *(s32 *)0x1F800368 = 0;
+        *(s32 *)0x1F800370 = 0;
+        *(s32 *)0x1F800374 = 0;
+        *(s32 *)0x1F800378 = 0;
         v1 = *(s32 *)0x1F800004;
         v0 = *(s32 *)0x1F800000;
         a2 = *(s32 *)0x1F800008;

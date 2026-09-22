@@ -134,3 +134,80 @@ since the function had zero C before this session):
 - [s1] Dumps generated this session (pwsh tools/grinder/dump.ps1 func_8002C22C) to tmp/grind/func_8002C22C/dumps/code6cac_b.{cse,cse2,loop,sched,sched2,flow} but NOT yet read in detail -- next session's first move per the PASS ATTRIBUTION mandate.
 
 - [s1] No sibling ledger transplant was applicable: func_80029454 (same file, floor 1024, active) has no candidate.c to transplant; func_8002C61C (same file, COMPLETED-C) is the matched body already on main and its addressing pattern (s1+0x44C) was the direct evidentiary basis for this session's D_80102314 declaration, so its contribution is already folded into the s1 candidate.
+
+## s2 (structural, 2026-09-22)
+
+- **PASS ATTRIBUTION run per brief mandate.** `pwsh tools/grinder/dump.ps1 func_8002C22C` regenerated
+  `tmp/grind/func_8002C22C/dumps/code6cac_b.*`. `grep -n ";; Function func_8002C22C"` located the
+  block in `.loop` (line 6365-7445), `.cse` (6352-7439), `.sched` (10014-11884), `.combine`
+  (6437-7551). **`.loop` dump has ZERO invariant/hoist/giv notes for this function** — the function
+  has NO LOOPS (straight-line code with two if/else pairs, no back-edges), so LICM (loop.c) is
+  MECHANICALLY INAPPLICABLE here. This overturns H3's "loop.c LICM" mechanism guess from s1 — LICM
+  cannot be the cause because there is nothing for it to operate on.
+- **The real mechanism is CSE1's block-extension merge** (`.claude/rules/cse-block-extension-controls-fold-span.md`,
+  `cse.c:8102-8184`). Read `.cse` dump lines 6352-6420: at the very top of the function's RTL (before
+  any scheduling), each of the six scratchpad-zero-store addresses (0x1F800360/364/368/370/374/378 =
+  CONST_INT 528483168/172/176/184/188/192) is materialized into its OWN fresh pseudo register
+  (regs 83-87 etc.) via `(set (reg:SI N) (const_int ADDR))` immediately followed by `(set (mem:SI
+  (reg:SI N)) (const_int 0))` — i.e. cse1 does NOT merge the six addresses with each other (good,
+  they're different constants). But `grep`-ing the SAME constants across the whole function body
+  (lines 6352-7439) shows **0x1F800360's address-pseudo (528483168) and 0x1F800364's (528483172) and
+  0x1F800370's (528483184) each appear EXACTLY ONCE in the entire dump**, despite being written to
+  again inside BOTH if/else arms in the s1 candidate's C — confirming cse1 recognizes the LATER
+  in-arm stores to the SAME address as reusing the pseudo computed once at the top, i.e. it is
+  treating the pre-branch block and BOTH branch arms as one continuous CSE region
+  (`;; Processing block from 2 to 239` spans past the conditional branch — the `cse_end_of_basic_block`
+  extension the rule documents, `LABEL_NUSES(JUMP_LABEL)==1` on the else-arm's entry label). This is
+  what produced s1's compiled shape: 4 addresses batch-computed once up front (`lui/ori t1/t2/a0/t3`)
+  and reused as long-lived pointer registers across both branches, vs target's per-statement
+  independent `lui at,0x1f80; ...; sw ...` at EVERY occurrence (confirmed via `--diff` hunks 1-10 on
+  the s1 candidate: target NEVER reuses a materialized scratchpad base register across two different
+  stores, ours does).
+- **STRUCTURAL LEVER — CONFIRMED, measured this session.** Moved the six `*(s32*)0x1F80036x = 0;`
+  zero-init statements from BEFORE the first `if` (unconditional, shared by both arms) to the START
+  of EACH arm (duplicated verbatim into both `if` and `else` bodies) — semantically identical (both
+  arms always ran the zero-init before, since it wasn't itself conditional; now each arm carries its
+  own copy). This does NOT fully separate cse1's processing of the two arms (the `.cse` dump still
+  shows constants like 528483176 (0x1F800368) reused across the join at least once), but it does
+  measurably shrink the SPAN over which the compiler's per-store address gets shared, because the
+  in-arm zero-init store is now the FIRST reference to some of these addresses within its own arm
+  rather than a shared reference dominating both arms. Measured: **`sandbox --disable all` = 199**
+  (`build_insns` 230 -> 246, target 252) — a drop of 12 from s1's 211. `--diff` after this change: 36
+  hunks, 32 source-level / 4 operand-only / 0 not-scored; hunk 1 shows our build STILL batches four
+  `lui/ori` pairs together before the four zero-stores WITHIN one arm (the merge now happens
+  intra-arm, not cross-arm) — the residual mechanism is unchanged (cse1 sharing an address pseudo
+  across multiple same-address stores within the arm's now-larger straight-line block), just with a
+  smaller span.
+- **VOLATILE HYPOTHESIS — CLASS-SCOPE EVIDENCE FOUND (do not re-attempt without new precedent).**
+  `grep` for scratchpad address literals across `src/*.c` found `src/code6cac.c:237-238`
+  (func_80017FA0, PutRobShadow's neighbor in the SAME file/cluster): its doc comment states
+  **"This supersedes the s4 volatile form (Judge FAIL 2026-08-20 02:54, construct BANNED: volatile on
+  scratchpad 0x1F800000-0x1F8003FF)"** — a Judge FAIL, on a function touching THIS EXACT scratchpad
+  address range, explicitly banning volatile there, and closing the function instead via a genuine
+  goto/do-while loop restructuring (loop.c mechanism, unrelated to volatile). This is a directly
+  on-point, citable precedent that volatile is NOT an available lever for 0x1F800000-0x1F8003FF absent
+  a new IRQ-writer citation — consistent with `.claude/rules/legitimate-volatile-interrupt-touched.md`
+  (two-prong gate, no IRQ writer identified for these addresses) and
+  `.claude/rules/mmio-volatile-type-level.md` (scratchpad explicitly excluded from the type-level MMIO
+  carve-out, which only covers 0x1F801000-0x1F802FFF). H3 (s1, KILLED instance) is therefore
+  reinforced, and its `next probe` #2 (grep for a sibling using these addresses) is now answered:
+  found, and the sibling's answer is "volatile was tried and Judge-FAILed", not "volatile worked".
+- **REJECTED — do-while(0) wrap on one arm's zero-init.** Tried wrapping the if-arm's six-store
+  zero-init block in `do { ... } while (0);` (FAKE-annotated per
+  `.claude/rules/do-while-zero-exception.md`, hoping the loop-note boundary would trip one of
+  `cse_end_of_basic_block`'s three backward-scan escapes). Measured **WORSE**: `sandbox --disable all`
+  = 200, `build_insns` unchanged at 246 — net zero benefit (same instruction count, worse masked
+  operand score) for an added construct. Reverted; saved to
+  `memory/grind/func_8002C22C/rejected/dowhile0-zero-init-single-arm.c`. KILLED (instance).
+
+- [s2] func_8002C22C has NO loops (two straight-line if/else pairs, zero back-edges) confirmed via an empty .loop dump for its RTL block, so any future hypothesis invoking loop.c/LICM for this function is invalid by construction.
+
+- [s2] cse.c's cse_end_of_basic_block extends its processing region across a conditional branch whose jump-target label has LABEL_NUSES==1, forwarding constant-address pseudo computations across if/else joins; this is the confirmed mechanism behind the s1 211-residual (see .claude/rules/cse-block-extension-controls-fold-span.md for the general pattern, cse.c:8102-8184 for the exact predicate).
+
+- [s2] Duplicating the shared pre-branch scratchpad zero-init into both if/else arms is semantically identical to the original (both arms always executed it) and measurably improves the honest floor 211 -> 199 by shrinking the cse1-shared span from cross-arm to intra-arm.
+
+- [s2] The remaining 199-residual's --diff hunk 1 shows the SAME address-batching mechanism (four lui/ori pairs materialized together before four stores) now operating WITHIN one arm rather than across both arms -- the next lever is a further span-shrinking restructuring, not a new mechanism.
+
+- [s2] Volatile is unavailable for the 0x1F800000-0x1F8003FF scratchpad range on this project: a sibling function (func_80017FA0, src/code6cac.c:237-238) already tried it and the Judge FAILed it (2026-08-20 02:54), closing instead via a genuine loop restructuring. Do not re-attempt volatile on this range without a new IRQ-writer citation.
+
+- [s2] do-while(0) wrapping a zero-init block (FAKE-annotated, sanctioned family) measured net-negative (199 -> 200) for this specific placement; not a universal claim about the family, just this instance.

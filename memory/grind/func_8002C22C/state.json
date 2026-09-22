@@ -1,31 +1,37 @@
 {
  "func": "func_8002C22C",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 211,
    "modality": "recon",
    "headline": "OBJECT MODEL settled (D_801020D8 et al MATCH as plain scalars; D_80102314 declared+used base+offset as record[1] of the practice-menu table); s1 candidate carries the floor from 252 (no-C-body) to 211"
+  },
+  {
+   "session": 2,
+   "floor": 199,
+   "modality": "structural",
+   "headline": "Structural: per-arm duplication of the shared scratchpad zero-init dropped floor 211->199; pass-attributed the residual to cse1 block-extension (not LICM); found a citable Judge-FAIL precedent banning"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 211-distance residual is a scheduling-pass (not object-model) divergence: cc1 hoists/reorders scratchpad loads across the two if/else branches while target keeps them strictly arm-local in source order.",
-   "mechanism": "sched.c list scheduler and/or loop.c LICM treating the non-volatile scratchpad pointer casts as alias-free and reorderable across the branch",
-   "next_probe": "grep tmp/grind/func_8002C22C/dumps/code6cac_b.{loop,sched,sched2} for the func_8002C22C RTL block (search near the 0x1F800360/0x1F800048 literals or PutRobShadow-adjacent symbol names) and confirm which pass performs the motion before proposing any volatile-grant or restructuring lever."
+   "hypothesis": "Interleaving each scratchpad zero-init store immediately before its own first later use in program order (instead of grouping all six zero-inits together at the top of each arm) further shrinks cse1's address-sharing window within the arm and may close more of the 199-residual.",
+   "mechanism": "cse.c cse_end_of_basic_block / redundant address-pseudo forwarding, same as H4/H5",
+   "next_probe": "Reorder the six *(s32*)0x1F80036x = 0; statements in each arm so each sits immediately before its own first subsequent write to the same address, rather than all six grouped consecutively; measure sandbox --disable all and re-check --diff hunk 1."
   },
   {
-   "hypothesis": "A legitimate-volatile-interrupt-touched two-prong grant may apply to the scratchpad addresses this function touches, if a matched sibling elsewhere in the codebase already resolved the same 0x1F800000-0x1F800074 / 0x1F800360-0x1F800378 range with a cited IRQ writer.",
-   "mechanism": "N/A -- evidentiary precedent search, not a codegen mechanism",
-   "next_probe": "grep -rn \"0x1F80036\\|0x1F80037\\|0x1F80000\\|0x1F80005\\|0x1F80006\\|0x1F80007\" src/*.c for a matched (COMPLETED-C) function already using these addresses; if none exists, this hypothesis is dead and the residual must be closed by ordinary C restructuring (arm-local duplicate reads / do-while-zero / other sanctioned scheduling levers) instead."
+   "hypothesis": "The trailing unconditional stores to 0x1F800368/0x374/0x378 after the first if/else (lines ~976-980 of the s2 candidate) could be restructured into the if/else arms themselves (using the branch-set a2/d_v1/d_a0/d_v0/d_a1 values), which is a legitimate real restructuring (not a coercion) and may further reduce cross-block address sharing.",
+   "mechanism": "cse.c cse_end_of_basic_block, same as H4/H5, applied to a currently-unexamined post-join region",
+   "next_probe": "Move the *(s32*)0x1F800368 = a2; *(s32*)0x1F800374 = ...; *(s32*)0x1F800378 = ...; statements into each arm (duplicated with the arm-local values already computed there) instead of leaving them in a shared post-if/else block; measure and diff."
   },
   {
-   "hypothesis": "D_80102314 should eventually promote from a file-local extern in src/code6cac_b.c to include/code6cac.h once a scope-grant authorizes touching that header for this function.",
-   "mechanism": "N/A -- scope/administrative, not codegen",
-   "next_probe": "no action needed while distance is nonzero; revisit once the candidate reaches sandbox 0 and header placement becomes relevant to final acceptance."
+   "hypothesis": "The second if/else block (0xA8/0xAC/0xB0/0xBC/0xC0 accumulate region via t0[...] += ...) has not been examined in --diff detail this session (hunks past #14 unread); it may be governed by a DIFFERENT pass (combine.c fold of the += accumulation) rather than cse1's address-sharing mechanism.",
+   "mechanism": "unknown -- combine.c vs cse.c not yet distinguished for this region",
+   "next_probe": "Read --diff hunks 15+ for this function and cross-check against .combine dump (lines 6437-7551) for fold/copy survival in the accumulate region before proposing a lever."
   }
  ],
  "judge_constraints": [],
@@ -38,11 +44,36 @@
    "measured_on": "s1 candidate (archived-body C shape translated 1:1 to plain casts, D_80102314 declared+used base+offset), current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins",
    "predicate_cite": "",
    "result": "sandbox --disable all = 211/252 (build 230 insns) -- a large improvement over the 252-insn no-C-body floor, so the scrat"
+  },
+  {
+   "session": 2,
+   "statement": "The s1 211-instruction residual is caused by GCC 2.7.2's loop.c LICM hoisting scratchpad loads out of the two if/else arms.",
+   "kill_scope": "class",
+   "measured_on": "s2 candidate (per-arm-duplicated zero-init), current toolchain (-mel -msoft-float), zero FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c (LICM only operates within LOOP_BEG/LOOP_END regions; func_8002C22C's .loop dump at tmp/grind/fun",
+   "result": "The .loop dump for this function's block contains zero invariant/hoist/giv notes. The function has no loops at all (two "
+  },
+  {
+   "session": 2,
+   "statement": "Wrapping one arm's six-store zero-init block in do { ... } while (0); (FAKE-annotated per do-while-zero-exception) trips one of cse_end_of_basic_block's three backward-scan escapes (e.g. the NOTE_INSN",
+   "kill_scope": "instance",
+   "measured_on": "s2 candidate (per-arm-duplicated zero-init chassis, D_80102314 base+offset decl), current toolchain (-mel -msoft-float), one FAKE do-while(0) construct (reverted after measurement), zero pins",
+   "predicate_cite": "",
+   "result": "199 -> 200 (build_insns unchanged at 246) \u2014 worse, not better: same instruction count, a worse masked operand arrangemen"
+  },
+  {
+   "session": 2,
+   "statement": "Volatile typing of the 0x1F800000-0x1F8003FF scratchpad addresses in this function is unavailable as a lever: a sibling function in the same file/cluster (func_80017FA0) already tried volatile on this",
+   "kill_scope": "class",
+   "measured_on": "N/A (precedent citation, not a measurement on this function's chassis)",
+   "predicate_cite": "src/code6cac.c:237-238",
+   "result": "src/code6cac.c:237-238 (func_80017FA0's doc comment, same cluster/file family) states verbatim: 'This supersedes the s4 "
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-22T02:50:03.749383+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }
