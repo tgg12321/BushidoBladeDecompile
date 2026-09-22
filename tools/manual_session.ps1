@@ -129,7 +129,10 @@ function Invoke-Begin {
     }
 
     # 2. Never work over dirt.
-    $dirt = Get-BlockingDirt
+    # @() re-wrap is load-bearing: PowerShell unrolls an empty array on
+    # `return`, so Get-BlockingDirt yields $null on a clean tree and
+    # $null.Count throws under StrictMode.
+    $dirt = @(Get-BlockingDirt)
     if ($dirt.Count) {
         $dirt | ForEach-Object { Say "  $_" 'Yellow' }
         Die 'working tree has uncommitted tracked changes. Commit or revert before a manual session.'
@@ -147,8 +150,10 @@ function Invoke-Begin {
     $lo = $qn.IndexOf('{'); $hi = $qn.LastIndexOf('}')
     if ($lo -ge 0 -and $hi -gt $lo) {
         $item = $qn.Substring($lo, $hi - $lo + 1) | ConvertFrom-Json
-        if (-not $target) { $target = [string]$item.func }
-        $stem = [string]$item.file
+        # StrictMode throws on a missing property, so probe before reading.
+        $have = $item.PSObject.Properties.Name
+        if (-not $target -and $have -contains 'func') { $target = [string]$item.func }
+        if ($have -contains 'file') { $stem = [string]$item.file }
     }
     if (-not $target) { Die 'could not determine a target function (queue next gave nothing, and no -Func).' }
     Say "[manual] target: $target" 'Green'
@@ -198,7 +203,7 @@ function Invoke-End {
     $s = Get-Content $StateFile -Raw | ConvertFrom-Json
     Head "closing manual session — $($s.func)"
 
-    $dirt = Get-BlockingDirt
+    $dirt = @(Get-BlockingDirt)
     if ($dirt.Count) {
         $dirt | ForEach-Object { Say "  $_" 'Yellow' }
         Die 'tree still has uncommitted tracked changes. Commit the match, or revert to INCLUDE_ASM, then re-run end. (Relaunching over dirt makes the Grinder discard its next session.)'
@@ -251,7 +256,7 @@ function Invoke-Status {
     } else {
         Say 'manual session: none open'
     }
-    $dirt = Get-BlockingDirt
+    $dirt = @(Get-BlockingDirt)
     Say ("blocking dirt: " + $(if ($dirt.Count) { "$($dirt.Count) path(s)" } else { 'none' }))
 }
 

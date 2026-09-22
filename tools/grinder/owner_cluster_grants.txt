@@ -32,3 +32,10 @@ func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 20
 # the 2026-08-30 proven-or-near-floor cut was drawn; the owner ruled it earns a
 # row "on exactly the terms func_80019310 got one", added by the operator:
 func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row per owner Ruling 3, 2026-09-15, decisions.md:27024)
+# 2026-09-21 — two further census members reached floor 0 after the 2026-08-30
+# proven-or-near-floor cut was drawn, so they earn rows on exactly the terms
+# Ruling 3 (2026-09-15, decisions.md:27024) gave func_80018094, which in turn
+# tracked func_80019310's 2026-09-06 row. Operator-added at the owner's
+# instruction 2026-09-21; every other gate applies unchanged:
+func_8002D780 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :75; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-21)
+func_8002EBDC cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :80; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-21)
