@@ -174,11 +174,39 @@ function Invoke-Begin {
     $sib = (python (Join-Path $Root 'tools\grinder\grindlib.py') siblings $Root $target 2>&1 | Out-String)
     Write-Host $sib
 
+    # Sony-library provenance (published reference C, banked closer material).
+    # Empty for game code. CD_cw 2026-09-22: without it the session re-derived
+    # the SOTN structure by hand across ~15 variants before fetching the reference.
+    $psyq = (python (Join-Path $Root 'tools\grinder\grindlib.py') psyq $Root $target 2>&1 | Out-String)
+    if ($psyq.Trim()) {
+        Head "Sony library provenance — $target"
+        Write-Host $psyq
+    }
+
+    # Ledger files that define some OTHER function are pre-rename leftovers and
+    # mislead a cold reader (CD_cw's pre-include-asm-body.c was a placeholder
+    # for its old name tslTm2LoadImage). Flag, never delete.
+    $ledgerDir = Join-Path $Root "memory/grind/$target"
+    if (Test-Path $ledgerDir) {
+        $stale = @(Get-ChildItem $ledgerDir -Filter *.c -File | Where-Object {
+            $t = Get-Content $_.FullName -Raw
+            $t -and ($t -notmatch "\b$([regex]::Escape($target))\b")
+        })
+        foreach ($f in $stale) {
+            Say "[manual] NOTE: memory/grind/$target/$($f.Name) never mentions $target -- likely a pre-rename leftover; don't trust it." 'Yellow'
+        }
+    }
+
     Head "canonical route — $target"
     Write-Host (Invoke-Eng @('canonical', $target))
 
+    # main carries INCLUDE_ASM for an incomplete function, so a bare sandbox
+    # only measures the function's size. Score the banked candidate instead.
+    $candRel = "memory/grind/$target/candidate.c"
+    $sbArgs = @('sandbox', $target, '--disable', 'all', '--diff')
+    if (Test-Path (Join-Path $Root $candRel)) { $sbArgs += @('--candidate', $candRel) }
     Head "honest floor + where it differs — $target"
-    Write-Host (Invoke-Eng @('sandbox', $target, '--disable', 'all', '--diff'))
+    Write-Host (Invoke-Eng $sbArgs)
 
     # 5. Session state, so an interrupted session is resumable.
     New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
@@ -191,8 +219,11 @@ function Invoke-Begin {
     } | ConvertTo-Json | Set-Content $StateFile -Encoding utf8
 
     Head 'ready'
-    Say "Working $target by hand. Iterate on memory/grind/$target/candidate.c and score with" 'Green'
-    Say "  & tools/wteng.ps1 main sandbox $target --disable all --diff" 'Green'
+    Say "Working $target by hand. Iterate on $candRel and score with" 'Green'
+    Say "  & tools/wteng.ps1 main sandbox $target --disable all --diff --candidate $candRel" 'Green'
+    Say "  (--candidate is REQUIRED: without it sandbox scores the INCLUDE_ASM stub.)" 'Green'
+    Say "Several variants at once, scored hunks only:" 'Green'
+    Say "  pwsh tools/sandbox_sweep.ps1 -Func $target -Variants a.c,b.c [-Hunks]" 'Green'
     Say 'The tree stays clean while you do -- that is what keeps engine commands from reverting your work.'
     Say 'When done (matched or banked): pwsh tools/manual_session.ps1 end'
 }
@@ -210,21 +241,31 @@ function Invoke-End {
     }
     Say '[manual] tree clean.' 'Green'
 
+    # Bank any ledger movement so the Grinder resumes informed. Explicit
+    # pathspecs on the commit: `git commit` takes the WHOLE index otherwise.
+    $ledgerPaths = @("memory/grind/$($s.func)", 'docs/grind')
+    $ledgerDirt = @(git -C $Root status --porcelain -- @ledgerPaths | Where-Object { $_ })
+    if ($ledgerDirt.Count) {
+        git -C $Root add -- @ledgerPaths 2>$null
+        git -C $Root commit -q -m "grind: $($s.func) — manual session ledger update
+
+Banked by tools/manual_session.ps1 end so the Grinder resumes from what the
+manual lane learned. See the decomp-manual skill." -- @ledgerPaths 2>$null | Out-Null
+        Say '[manual] ledger banked.' 'Green'
+    }
+
+    # Engine events accumulate in metrics/events.jsonl during the session; the
+    # convention is a separate metrics: capture commit (see git log).
+    if (@(git -C $Root status --porcelain -- metrics/events.jsonl | Where-Object { $_ }).Count) {
+        git -C $Root commit -q -m "metrics: capture from $($s.func) manual session" -- metrics/events.jsonl 2>$null | Out-Null
+        Say '[manual] metrics captured.' 'Green'
+    }
+
+    # Listed AFTER the banking commits so the report includes them.
     $range = "$($s.start_head)..HEAD"
     Head "commits this session ($range)"
     $commits = @(git -C $Root log --oneline $range)
     if ($commits.Count) { $commits | ForEach-Object { Say "  $_" } } else { Say '  (none)' }
-
-    # Bank any ledger movement so the Grinder resumes informed.
-    $ledgerDirt = @(git -C $Root status --porcelain -- "memory/grind/$($s.func)" docs/grind | Where-Object { $_ })
-    if ($ledgerDirt.Count) {
-        git -C $Root add -- "memory/grind/$($s.func)" docs/grind 2>$null
-        git -C $Root commit -q -m "grind: $($s.func) — manual session ledger update
-
-Banked by tools/manual_session.ps1 end so the Grinder resumes from what the
-manual lane learned. See the decomp-manual skill." 2>$null | Out-Null
-        Say '[manual] ledger banked.' 'Green'
-    }
 
     Remove-Item $StateFile -Force
 

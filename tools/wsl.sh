@@ -76,6 +76,17 @@ esac
 # variable scope) that silently dropped the repair. See
 # tools/hooks/tooling_error_signatures.json id `venv-python-symlink-missing`
 # (codified 2026-06-04).
+
+# Already INSIDE WSL? From PowerShell, `bash` resolves to WSL's bash.exe, so
+# this script runs in Linux where there is no `wsl` command (CD_cw manual
+# session 2026-09-22: `wsl: command not found`). Run the command directly.
+if ! command -v wsl >/dev/null 2>&1 && grep -qi microsoft /proc/version 2>/dev/null; then
+    cd "$WSL_DIR" || exit 1
+    bash tools/venv_repair.sh || true
+    exec bash -c "set -e
+$*"
+fi
+
 wsl bash -c "
 set -e
 cd \"$WSL_DIR\"
