@@ -70,13 +70,18 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
 
     init.point_end = cur;
     cur = cur + obj_CalcOffset(init.count, point_count);
-    cur = ((u32)cur & 3) ? cur + 2 : cur;
+    {
+        u8 *aligned = cur;
+        if ((u32)cur & 3) {
+            aligned = cur + 2;
+        }
+        cur = aligned;
+    }
 
     src = block;
     packet = (s16 *)0x1F800000;
     init.groups = packet;
-    count = *(s16 *)src++;
-    while (count != 0) {
+    while ((count = *(s16 *)src++) != 0) {
         flags = *src++;
         packet_type = (s16)flags >> 3;
         mode = packet_type & 3;
@@ -87,41 +92,35 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
                 } else {
                     value = ((u32)src[8] << 16) | src[7];
                 }
-                flags = 4;
-                *packet++ = flags;
-                flags = 2;
-                *packet++ = flags;
-                flags = value & 0xFF;
-                *packet++ = flags;
-                flags = (value >> 8) & 0xFF;
-                *packet++ = flags;
-                flags = (value >> 16) & 0xFF;
-                *packet++ = flags;
-                flags = (u32)value >> 24;
-                *packet++ = flags;
+                *packet++ = 4;
+                *packet++ = 2;
+                *packet++ = value & 0xFF;
+                *packet++ = (value >> 8) & 0xFF;
+                *packet++ = (value >> 16) & 0xFF;
+                *packet++ = (u32)value >> 24;
                 src += D_80094AEC[mode];
             }
         } else {
             while (--count != -1) {
                 value = ((u32)src[7] << 16) | src[6];
-                flags = 3;
-                *packet++ = flags;
-                flags = 2;
-                *packet++ = flags;
-                flags = value & 0xFF;
-                *packet++ = flags;
-                flags = (value >> 8) & 0xFF;
-                *packet++ = flags;
-                flags = (value >> 16) & 0xFF;
-                *packet++ = flags;
+                *packet++ = 3;
+                *packet++ = 2;
+                *packet++ = value & 0xFF;
+                *packet++ = (value >> 8) & 0xFF;
+                *packet++ = (value >> 16) & 0xFF;
                 src += D_80094AEC[mode];
             }
         }
         *packet++ = 0;
-        count = *(s16 *)src++;
     }
 
-    cur = ((u32)cur & 3) ? cur + 2 : cur;
+    {
+        u8 *aligned = cur;
+        if ((u32)cur & 3) {
+            aligned = cur + 2;
+        }
+        cur = aligned;
+    }
     func_80045230((s32)cur);
     if (*src != 0) {
         ((void (*)(const char *))func_80052C10)(D_80010D8C);

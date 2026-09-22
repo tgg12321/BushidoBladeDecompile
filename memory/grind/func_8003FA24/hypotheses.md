@@ -1,28 +1,65 @@
 # func_8003FA24 hypotheses
 
-## H1 — packed data model (confirmed semantically, candidate floor 129)
+## CONFIRMED
 
-The function consumes a point list selected through `D_80103608`, copies three halfwords per point into 8-byte output records, then walks two passes over a command stream. The first pass computes `point_count * 16 + vertex_count * 64`; the second emits type-3 or type-4 scratchpad packets using strides from `D_80094AEC = {12, 12, 18, 22}`. The candidate reproduces these data effects and reaches 262/263 instructions.
+### H1 — packed data model (session 1, still holds)
+Point list via `D_80103608[*(s16*)(obj+4)][*(s16*)(obj+2)]`; three halfwords per
+point copied into 8-byte records; first stream pass computes
+`count*3` or `count*6` (bit 3 of flags) and advances by `D_80094AEC[(flags>>3)&3] * count`;
+second pass emits type-3 (5 halfwords) / type-4 (6 halfwords) scratchpad packets at
+`0x1F800000`; then `func_80045230`, `func_8003FE40`, `func_80017D84`, aligned cursor
+returned. All of it reproduced.
 
-## H2 — phase-specific counter split (killed)
+### H6 — the store constants must not be LICM-hoisted; a multi-set `s16` user
+variable is the lever (session 2). Measured: `-dL` shows threshold 58 (soft-float),
+our loop 50 insns → always hoists. `s32` scratch is folded away by CSE and changes
+**nothing**; `s16` scratch works; reusing the already-live `flags` works best.
+119 → 97 → 89.
 
-Splitting vertex, scan, and packet counters into separate semantic locals regressed the honest score from 129 to 137 and reduced the build to 261 instructions. Rejected.
+### H7 — `short` counter + `while (--count != -1)` produces the target's
+`addiu v0,a3,-1 / move a3,v0 / sll / sra` idiom (session 2).
 
-## H3 — signed packet-stream pointer (killed)
+### H8 — the three alignment sites are ternaries
+`cur = ((u32)cur & 3) ? cur + 2 : cur;` (session 2).
 
-Using a dedicated `s16 *` walker for the second pass regressed the score to 140 and reduced the build to 259 instructions. Rejected.
+### H9 — `cc1`'s `.frame ... vars=` IS `get_frame_size()`, and is a far better
+gradient than the sandbox score for frame questions (session 2, `tmp/frame.sh`).
 
-## H4 — named stride and field-selector intermediates (neutral)
+## KILLED
 
-Introducing truthful branch-local pointers to the stride-table entry and a named field selector compiled byte-identically to the 129 floor. They do not close the residual.
+- **H2** phase-specific counter split (s1): 129 → 137. Re-killed independently in s2
+  in a different chassis: a separate packet counter takes vars 48 → **56**.
+- **H3** dedicated `s16 *` walker for pass 2 (s1): 129 → 140.
+- **H5** permuter proposal inserting `count = mode` (s1): semantic lie, rejected
+  without scoring.
+- **H10** (s2) `s32` scratch variable to defeat the hoist — byte-identical output;
+  CSE re-creates the single-set constant pseudo. Only `s16` survives.
+- **H11** (s2) one shared `u8 *aligned` local across all three alignment sites —
+  collapses one site, 263 → 260 insns, score 107.
+- **H12** (s2) `n = *(s16*)src++; count = n;` to get the outer load's `lh`+`move`
+  without the assignment-in-condition — GCC coalesces `n` into `count`, the `move`
+  vanishes, and score goes 83 → 85. They never conflict, so coalescing is
+  unavoidable without an artificial later read of `n`.
+- **H13** (s2) blaming the +16 `vars` on declared block-scope locals — converting
+  all of them to ternaries/returns left vars at 48. It is inherent to the
+  assignment-in-condition spelling (see evidence.md frontier item 1).
+- **H14** (s2) pressure reduction as a route to E's frame — inlining `mode`,
+  block-scoping `value`, and shortening the scratch's live range all still give
+  vars 48.
 
-## H5 — generic permuter proposal (rejected as dishonest)
+## NEUTRAL
 
-The lowest internal permuter proposal inserted `count = mode` inside the type-3 packet loop and then indexed the stride table through `count`. This changes the live loop count and therefore program behavior. It was rejected under the semantic-lie / carrier rules without integration or engine scoring.
+- **H4** (s1) named stride/field-selector intermediates — byte-identical.
 
-## Frontier
+## FRONTIER (ranked)
 
-1. Re-derive the packet loop from a source-level packet writer abstraction that keeps every store live while reproducing the target's non-hoisted 4/2/3 constants.
-2. Establish the authentic full size of the initializer object passed to `func_80017D84`; do not fill the 0x48→0x50 frame gap with fabricated padding.
-3. Once source-level instruction count reaches 263, address the three register cycles in the copy/scan phases through truthful declaration and lifetime changes.
-
+1. A spelling of the outer packet-loop count read that yields the target's
+   `lh v0,0(s0)` + `move a3,v0` **and** keeps `vars = 32`. Every
+   assignment-in-condition form measured costs exactly 16 phantom bytes; every
+   split-statement form loses the `move`. This is the single highest-value item.
+2. An honest source construct that puts `packet_type & 2` in the **type-3** loop
+   body so `loop.c` hoists the target's dead `andi a2,v1,0x2` into that preheader.
+   Worth 3 insns (the `andi` itself plus the two delay-slot nops our redundant
+   `li t1,-1` blocks). Note the two preheaders are byte-identical in the target —
+   whatever it is, it is in BOTH loops.
+3. The register cascade — expect it to largely follow (1) and (2).

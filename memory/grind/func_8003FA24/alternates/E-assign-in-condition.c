@@ -75,8 +75,7 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     src = block;
     packet = (s16 *)0x1F800000;
     init.groups = packet;
-    count = *(s16 *)src++;
-    while (count != 0) {
+    while ((count = *(s16 *)src++) != 0) {
         flags = *src++;
         packet_type = (s16)flags >> 3;
         mode = packet_type & 3;
@@ -118,7 +117,6 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
             }
         }
         *packet++ = 0;
-        count = *(s16 *)src++;
     }
 
     cur = ((u32)cur & 3) ? cur + 2 : cur;
