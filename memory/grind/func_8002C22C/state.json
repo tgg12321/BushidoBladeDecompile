@@ -1,8 +1,8 @@
 {
  "func": "func_8002C22C",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,24 @@
    "floor": 196,
    "modality": "structural",
    "headline": "Ground-truth asm read showed the per-arm zero-init of 0x1F800374/0x1F800378 was dead; dropping it dropped floor 199 -> 196; two literal-source-structure hypotheses (single unconditional 6-word zero-in"
+  },
+  {
+   "session": 4,
+   "floor": 196,
+   "modality": "permuter",
+   "headline": "Permuter campaign on the s3/196-floor chassis found zero improvement (best find codegen-neutral); pass-attributed the residual to the second if/else accumulate block, which needs C-level statement-ord"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A partial preload -- e.g. only the D_80102108/D_801020E4 constant (target's a3, loaded very early alongside v1/v0/a2 before any store) hoisted into a named local, while a0/a1 stay inline -- may isolate which of the six preloaded fields in H6 caused the regression, rather than reverting all three at once.",
-   "mechanism": "cse.c / local-alloc.c register-allocation priority effects of a fresh named local vs an inline re-read at point of use; H6 only tested the all-or-nothing form",
-   "next_probe": "Add only `a3 = D_80102108;` (and the else-arm's D_801020E4 analogue) as a named local preloaded alongside v1/v0/a2, leaving a0/a1 as inline *(s32*)ADDR reads exactly as in the current candidate.c; measure sandbox --disable all and compare against 196."
+   "hypothesis": "Restructuring the second if/else accumulate block's C statement order to fuse the two source tables' contributions per output field (interleaving load-current-slot / load-next-field-operand / add / store, matching the target's asm exactly) will close most or all of the remaining 196-floor residual.",
+   "mechanism": "source-level statement order (not a GCC-pass lever) -- the permuter cannot express this class of multi-statement interleaving restructuring, so it must be hand-written and measured directly",
+   "next_probe": "Rewrite the second if/else block's six accumulate statements per arm into the interleaved fused order observed in the raw asm (grep asm/funcs/func_8002C22C.s for the t0[0xA8..0xC0] region's exact load/add/store sequence), keeping semantics identical; measure sandbox --disable all --diff and compare hunk count/class against the current 28 source-level hunks in that region."
   },
   {
-   "hypothesis": "The second if/else block (0xA8/0xAC/0xB0/0xBC/0xC0 accumulate region via t0[...] += ...) has still not been examined in --diff detail this session; it may be governed by a DIFFERENT pass (combine.c fold of the += accumulation) rather than cse1's address-sharing mechanism that the first block's hypotheses all target.",
-   "mechanism": "unknown -- combine.c vs cse.c not yet distinguished for this region",
-   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_8002C22C, read the .combine dump for the accumulate region (t0[0xA8/4] += ... chain), and cross-check against sandbox --disable all --diff hunks past the first if/else block before proposing a lever for this region."
-  },
-  {
-   "hypothesis": "The trailing unconditional stores to 0x1F800368/0x374/0x378 after the first if/else (candidate.c lines ~991-995) could be restructured into the if/else arms themselves (using the branch-set a2/d_v1/d_a0/d_v0/d_a1 values), which is a legitimate real restructuring and may further reduce cross-block address sharing -- carried over from s2, not yet attempted this session.",
-   "mechanism": "cse.c cse_end_of_basic_block, same as the zero-init hypotheses, applied to a currently-unexamined post-join region",
-   "next_probe": "Move the *(s32*)0x1F800368 = a2; *(s32*)0x1F800374 = ...; *(s32*)0x1F800378 = ...; statements into each arm (duplicated with the arm-local values already computed there) instead of leaving them in a shared post-if/else block; measure and diff."
+   "hypothesis": "The trailing unconditional stores to 0x1F800368/0x374/0x378 after the first if/else join could be moved into the if/else arms themselves (using the arm-local a2/d_v1/d_a0/d_v0/d_a1 values already computed there), further shrinking cse1's cross-block address sharing for the now-closed first block.",
+   "mechanism": "cse.c cse_end_of_basic_block block-extension, same mechanism as the confirmed s2 zero-init lever, applied to a currently-unexamined post-join region",
+   "next_probe": "Duplicate the three post-join stores into each arm (using that arm's own already-computed values) instead of leaving them shared after the join; measure sandbox --disable all and diff against 196 to confirm the first block stays at zero hunks and doesn't regress."
   }
  ],
  "judge_constraints": [],
@@ -90,6 +91,14 @@
    "measured_on": "s3 chassis with a0/a1/a3 added as named locals in both arms replacing every inline scratchpad/global read, current toolchain (-mel -msoft-float), zero FAKE constructs, zero pins",
    "predicate_cite": "",
    "result": "sandbox --disable all measured 211 (build_insns 231), worse than the 196 floor of the inline-read chassis -- reverted"
+  },
+  {
+   "session": 4,
+   "statement": "A decomp-permuter campaign run on the s3 candidate chassis (per-arm-duplicated 4-word zero-init, D_80102314 base+offset decl, current toolchain -mel -msoft-float, zero FAKE constructs, zero pins) \u2014 tw",
+   "kill_scope": "instance",
+   "measured_on": "s3/196-floor chassis (D_80102314 base+offset decl, per-arm-duplicated 4-word zero-init, current toolchain -mel -msoft-float), zero FAKE constructs, zero pins; the permuter's best-of-794-iterations fin",
+   "predicate_cite": "",
+   "result": "Best find measured 196 (build_insns 238) \u2014 identical to the s3 chassis's own floor, zero improvement. Its only structura"
   }
  ],
  "ladder_skip": 0,
