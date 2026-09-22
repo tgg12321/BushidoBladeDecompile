@@ -1,7 +1,7 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -147,18 +147,24 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Narrowed the banned '$12,$14,$15' clobber list to a legitimate '$12,$15' widening (4/202 -> 2/202 honest floor); the surviving 2-insn residual is a re-confirmed class kill (pseudo 119's global_alloc s"
+  },
+  {
+   "session": 25,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s25 structural: re-confirmed s24's class kill on pseudo 119's mflo/subu seat with two fresh probes (baseline re-measure, named-intermediate ysq variant); sibling func_8002C22C re-checked (floor 196->1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Once the operator adds the func_8002D780 row to tools/grinder/owner_cluster_grants.txt (the existing INTEGRATION HANDOFF from s23), the licensed \"$12\",\"$15\" candidate.c body still only reaches 2/202, not 0 -- the operator step alone does not close this function; a genuine C-level or additional-legitimate-asm lever for pseudo 119's seat is still needed, or the function proceeds as COMPLETED-INLINE-ASM-CANONICAL only if a future ruling narrowly re-examines whether $14's two target uses could themselves be reconstructed by a DIFFERENT legitimate mechanism (e.g. if those two mflo/subu instructions are themselves later shown to be part of the same authorized GTE island under a future cluster-widening ruling).",
-   "mechanism": "cop2-addressing-preamble-cluster.md widened-anchor and condition-3 rulings (2026-09-01/09-02) admit SDK-macro-body GPR instructions into an island's template; whether the mflo/subu pair at asm/funcs/func_8002D780.s:68,82 is itself part of a named Sony macro's published text (rather than ordinary compiler-generated code around the y*y computation) has not been checked this session.",
-   "next_probe": "Read PsyQ inline_c.h / the gte_Lzc macro definition (if available in the repo's SDK reference material) to determine whether lines 68/82 are SDK-macro text or ordinary compiled arithmetic; if SDK text, a future session could widen the island itself (not just its clobber list) under condition-3's macro-body admission test."
+   "hypothesis": "The mflo/subu pair at asm/funcs/func_8002D780.s:68,82 might itself be part of a named Sony PsyQ GTE macro's published text (rather than ordinary compiled y*y arithmetic), which would let a future cluster-widening ruling admit it into the already-authorized LZCR island under condition-3's macro-body admission test (cop2-addressing-preamble-cluster.md).",
+   "mechanism": "cop2-addressing-preamble-cluster.md's 2026-09-02 owner ruling admits SDK-macro-body GPR instructions into an island's template when they are the macro's own published text (e.g. gte_ldlv0's lhu/lhu/sll/or pack, PsyQ inline_c.h precedent).",
+   "next_probe": "Read PsyQ inline_c.h / any available SDK macro reference for a y*y-with-LO-kickout macro whose body would include this exact mflo/subu pair; this is a forensics-modality question, not structural, and was not run this session."
   },
   {
-   "hypothesis": "The owner-cluster registry integration handoff from s23 is still unresolved and remains the only path to 0/202 on the (banned) full-clobber body -- but since that body is banned, this session's honest floor-2 candidate is the correct one to carry forward, not the s23 body.",
-   "mechanism": "tools/grinder/owner_cluster_grants.txt is operator-only (outside session scope); grant_canonical_asm reads it by exact name.",
-   "next_probe": "No session action possible; this is an operator step, and even after it lands the function needs the pseudo-119 seat closed (see frontier item 1) before any submission, since the s23 body that the grant would unblock is itself banned."
+   "hypothesis": "Once the operator adds the func_8002D780 row to tools/grinder/owner_cluster_grants.txt (the s23 INTEGRATION HANDOFF), the licensed \"$12\",\"$15\" body still only reaches 2/202, not 0 -- the operator step alone does not close this function.",
+   "mechanism": "tools/grinder/owner_cluster_grants.txt is operator-only; grant_canonical_asm reads it by exact name, but even after the grant lands the pseudo-119 seat (this session's re-confirmed class kill) still blocks 0/202.",
+   "next_probe": "No session action possible (operator surface); the pseudo-119 seat needs either the frontier-item-1 macro-body finding or a fresh un-derived C-level lever before this becomes actionable."
   }
  ],
  "judge_constraints": [
@@ -172,22 +178,6 @@
   "\"$12\", \"$14\", \"$15\""
  ],
  "kills": [
-  {
-   "session": 3,
-   "statement": "A copy of dist survives cse on the 7-floor chassis in one of five further spellings (mag copy at the head of the else arm covering both uses, the same copy in the outer block, asm-input-only, srlv-ind",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "All 7 = control. Fourteen natural copy spellings are now dead across s1-s3; re-measured here because the chassis changed"
-  },
-  {
-   "session": 3,
-   "statement": "Fully inlining every difference in the third side test (no dz/dx locals at all), with each product written difference-from-origin first, reproduces the target's test-3 emission order.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "26, 27, 25 and 10 respectively against a control of 10 - the fully-inlined forms lose the cse'd dz/dx pseudos and reperm"
-  },
   {
    "session": 3,
    "statement": "Giving the call-3 block a real CODE_LABEL from above (if (f2 == 0) goto last; return 1; last: return f3 != 0;) changes reorg's liveness walk on the second post-call branch.",
@@ -651,6 +641,22 @@
    "measured_on": "HEAD (2026-09-21 session), src/code6cac_b.c s23-body chassis with \"$12\",\"$15\" clobber, sole FAKE present (same-value re-store of local `m`, unchanged from s23)",
    "predicate_cite": "tools/gcc-2.7.2/reload1.c:3730-3739",
    "result": "KILLED (class) -- re-confirmation of s23's existing class kill on a new (non-banned) chassis. Every pure-C spelling leav"
+  },
+  {
+   "session": 25,
+   "statement": "func_8002C22C's floor moved 196->173 (its own s5) but shares zero addresses/globals/domain with this function on the current candidate.c.",
+   "kill_scope": "instance",
+   "measured_on": "memory/grind/func_8002C22C/candidate.c (its s5, floor 173, 2026-09-21) vs memory/grind/func_8002D780/candidate.c (s24 body, floor 2) -- text/address comparison only, no chassis edit made",
+   "predicate_cite": "",
+   "result": "Zero overlap confirmed on the current (floor-173) sibling body, same conclusion as the earlier s4/s5 cross-check on the "
+  },
+  {
+   "session": 25,
+   "statement": "A fresh named intermediate for the y*y LO-kickout product (ysq = y*y before the subtraction, unchanged declaration order otherwise) does not perturb pseudo 119's hard-register seat.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD (2026-09-21 session), src/code6cac_b.c s24-body chassis (\"$12\",\"$15\" clobber) with the ysq intermediate added, sole FAKE present (same-value re-store of local m, unchanged from s23/s24)",
+   "predicate_cite": "",
+   "result": "2/202, unchanged. sandbox --diff re-confirms the single operand-only hunk is still exactly the mflo s1/subu v1,v1,s1 vs "
   }
  ],
  "ladder_skip": 22,

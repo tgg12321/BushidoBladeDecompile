@@ -2410,3 +2410,35 @@ dx wins the seat with the emission order untouched.
 - kill_scope: class
 - measured_on: HEAD (2026-09-21 session), src/code6cac_b.c s23-body chassis with "$12","$15" clobber, sole FAKE present (same-value re-store of local `m`, unchanged from s23)
 - predicate_cite: tools/gcc-2.7.2/reload1.c:3730-3739
+
+## [s25] Sibling re-check (mandatory, before own probes): func_8002C22C's floor moved 196->173 (its own s5) but shares zero addresses/globals/domain with this function on the current candidate.c.
+- mechanism: func_8002C22C operates entirely on scratchpad 0x1F800xxx addresses (0x1F8002B8-based `t0`, 0x1F800360/364/368/370/374/378 accumulator region) and D_801020xx globals; func_8002D780 operates on `obj`-relative offsets (0xA8-0x124), D_8008D118 (sqrt LUT), and calls func_8002D518 -- disjoint address space and disjoint struct-offset domain, same conclusion as s4/s5 of func_8002C22C's own ledger.
+- probe: grep of memory/grind/func_8002C22C/candidate.c (current, post-s5) for func_8002D780's addresses/globals/offsets (D_8008D118, func_8002D518, obj+0x.. offsets, threshold, r_sq) and vice versa; direct read of the sibling candidate body.
+- result: KILLED (instance) -- zero overlap confirmed on the current (floor-173) sibling body, same as the s4/s5 cross-check on the prior (floor-196) body. Nothing to transplant.
+- kill_scope: instance
+- measured_on: memory/grind/func_8002C22C/candidate.c (its s5, floor 173, 2026-09-21) vs memory/grind/func_8002D780/candidate.c (this ledger's s24 body, floor 2) -- text/address comparison only, no chassis edit made.
+- verdict: KILLED
+
+## [s25] A fresh named intermediate for the y*y LO-kickout product (`ysq = y*y` before the subtraction, unchanged declaration order otherwise) does not perturb pseudo 119's hard-register seat.
+- mechanism: same class-kill trace as s23/s24 (reload1.c:3730-3739 / global.c:1000-1080) -- the seat is decided by global.c's ascending hard-register scan over `used`, a function of hard_reg_n_uses (fixed by the target's own two genuine $t6 uses) and conflict/preference sets, none of which a same-value-different-name intermediate changes; this session's probe checks that claim empirically rather than re-deriving it.
+- probe: spliced s24 candidate.c ("$12","$15" clobber body) into src/code6cac_b.c; re-measured baseline (2/202, matches chassis check); edited `s32 dist = r_sq - y * y;` to `s32 ysq = y * y; s32 dist = r_sq - ysq;` (fresh named intermediate, real consumed value, once-written/once-read -- ordinary C, no FAKE needed) and re-measured.
+- result: KILLED (instance) -- 2/202, unchanged. `sandbox --disable all --diff` re-confirms the single operand-only hunk is still exactly hunk 5 (mflo s1/subu v1,v1,s1 vs ours mflo t6/subu v1,v1,t6, insns[88:90]); the other 11 hunks are the same masked not-scored branch-target artifacts as s24. Reverted (`git checkout -- src/code6cac_b.c`); candidate.c unchanged from s24 (still the current best honest floor).
+- kill_scope: instance
+- measured_on: HEAD (2026-09-21 session), src/code6cac_b.c s24-body chassis ("$12","$15" clobber) with the `ysq` intermediate added, sole FAKE present (same-value re-store of local `m`, unchanged from s23/s24)
+- verdict: KILLED
+
+## [s25] func_8002C22C's floor moved 196->173 (its own s5) but shares zero addresses/globals/domain with this function on the current candidate.c.
+- mechanism: func_8002C22C operates entirely on scratchpad 0x1F800xxx addresses and D_801020xx globals; func_8002D780 operates on obj-relative offsets (0xA8-0x124), D_8008D118, and calls func_8002D518 -- disjoint address space and struct-offset domain.
+- probe: grep of memory/grind/func_8002C22C/candidate.c (current, post-s5) for this function's addresses/globals/offsets and vice versa; direct read of the sibling candidate body.
+- result: Zero overlap confirmed on the current (floor-173) sibling body, same conclusion as the earlier s4/s5 cross-check on the prior (floor-196) body. Nothing to transplant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: memory/grind/func_8002C22C/candidate.c (its s5, floor 173, 2026-09-21) vs memory/grind/func_8002D780/candidate.c (s24 body, floor 2) -- text/address comparison only, no chassis edit made
+
+## [s25] A fresh named intermediate for the y*y LO-kickout product (ysq = y*y before the subtraction, unchanged declaration order otherwise) does not perturb pseudo 119's hard-register seat.
+- mechanism: Same class-kill trace as s23/s24 (reload1.c:3730-3739 / global.c:1000-1080): the seat is decided by global.c's ascending hard-register scan over `used`, a function of hard_reg_n_uses (fixed by the target's own two genuine $t6 uses at asm/funcs/func_8002D780.s:68,82) and conflict/preference sets, none of which a same-value-different-name intermediate changes.
+- probe: Spliced s24 candidate.c ("$12","$15" clobber body) into src/code6cac_b.c; re-measured baseline (2/202, matches driver's CHASSIS CHECK); edited `s32 dist = r_sq - y * y;` to `s32 ysq = y * y; s32 dist = r_sq - ysq;` and re-measured; ran sandbox --diff on both.
+- result: 2/202, unchanged. sandbox --diff re-confirms the single operand-only hunk is still exactly the mflo s1/subu v1,v1,s1 vs ours mflo t6/subu v1,v1,t6 pair (insns[88:90]); the other 11 hunks are the same masked not-scored branch-target artifacts as s24. Reverted via git checkout; candidate.c unchanged from s24.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD (2026-09-21 session), src/code6cac_b.c s24-body chassis ("$12","$15" clobber) with the ysq intermediate added, sole FAKE present (same-value re-store of local m, unchanged from s23/s24)

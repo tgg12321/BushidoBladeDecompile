@@ -2727,3 +2727,21 @@ tmp/grind/judge_func_8002D780.json.
 - [s24] sandbox --diff on the 2/202 chassis: 1 operand-only hunk (pseudo 119 mflo/subu seat) + 11 not-scored masked branch-target artifacts + 0 source-level hunks -- the entire real residual is the single register seat, nothing else.
 
 - [s24] src/code6cac_b.c was reverted to INCLUDE_ASM("asm/funcs", func_8002D780); before ending the session (floor is 2, not 0 -- asm-until-matched forbids landing draft C on main for an INCOMPLETE function); the honest floor-2 candidate lives only in memory/grind/func_8002D780/candidate.c.
+
+- [s25] Chassis re-check: memory/grind/func_8002D780/candidate.c (s24 body) spliced into src/code6cac_b.c re-measures 2/202 exactly, matching the driver's CHASSIS CHECK for this dispatch. sandbox --diff re-confirms the identical single operand-only hunk (target mflo s1/subu v1,v1,s1 vs ours mflo t6/subu v1,v1,t6 at insns[88:90]) plus the same 11 masked not-scored branch-target hunks as s24 -- nothing shifted since s24.
+
+- [s25] Owner directive processed: the OWNER DIRECTIVE named func_8002C22C's auto-return (its floor moved 196->173 at its own s5). Cross-checked memory/grind/func_8002C22C/candidate.c (current) against this function's address/global/offset set -- zero overlap (func_8002C22C is a scratchpad-collision function at 0x1F800xxx + D_801020xx, this function is an `obj`-relative triangle/distance test touching D_8008D118 + func_8002D518). Same disjoint-domain conclusion as func_8002C22C's own s4/s5 checks. Nothing to transplant; banked as an instance kill.
+
+- [s25] One additional structural probe on the pseudo-119 seat: a fresh named intermediate `ysq = y * y` ahead of `dist = r_sq - ysq` (real value, once-written/once-read, ordinary C under Ruling 1's relaxed named-intermediate prong) measures 2/202, unchanged. This is consistent with s23/s24's class-kill trace: the seat is fixed by global.c's ascending hard-register scan over `used`, driven by hard_reg_n_uses (fixed by the target's own genuine $t6 uses) and conflict/preference sets -- none of which a same-value rename touches. src/code6cac_b.c reverted to INCLUDE_ASM via `git checkout` after measurement; candidate.c is unchanged from s24 (still the current best honest floor, 2/202).
+
+- [s25] Modality was `structural`, the same lane s24 already ran the definitive trace in. The class kill (predicate: tools/gcc-2.7.2/reload1.c:3730-3739) stands re-confirmed on two independent probes this session (baseline re-measure + the `ysq` variant) and no new structural lever was found. The only live frontier items remain (1) the SDK-macro-body question for the mflo/subu pair at asm/funcs/func_8002D780.s:68,82 (a forensics-modality question, not structural -- unexplored this session) and (2) the operator-only owner_cluster_grants.txt row (integration handoff, out of session scope).
+
+- [s25] Chassis re-check: memory/grind/func_8002D780/candidate.c (s24 body) spliced into src/code6cac_b.c re-measures 2/202 exactly, matching the driver's CHASSIS CHECK for this dispatch.
+
+- [s25] sandbox --diff on the s24 chassis this session: 1 operand-only hunk (pseudo 119 mflo/subu seat, insns[88:90]) + 11 not-scored masked branch-target artifacts + 0 source-level hunks -- unchanged from s24's diagnosis.
+
+- [s25] Owner directive (auto-return: func_8002C22C sibling moved) processed and closed: zero transplantable overlap, consistent with func_8002C22C's own s4/s5 cross-checks.
+
+- [s25] This session's modality (structural) is the same lane s24 already ran the definitive RTL trace in; no new structural lever surfaced. The class kill (predicate tools/gcc-2.7.2/reload1.c:3730-3739) is re-confirmed on two independent probes, not merely re-asserted.
+
+- [s25] src/code6cac_b.c is clean (git checkout applied after measurement) -- only the ledger files (memory/grind/func_8002D780/{evidence.md,hypotheses.md}) and tmp/ were touched this session.
