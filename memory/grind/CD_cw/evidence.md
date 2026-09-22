@@ -1,4 +1,29 @@
-# CD_cw — evidence (manual session s1, 2026-09-22)
+# CD_cw — evidence (CLOSED: COMPLETED-C bba90442b, manual session s2, 2026-09-22)
+
+## SOLVED — the mechanism (read this first)
+The whole residual was the DATA MODEL, not the C. Sony's bios.c DEFINES its
+module state in the TU (`static volatile CD_intr Intr = {0};`), and GCC 2.7.2
+addresses a TU-defined object differently from an `extern` one: the target's
+register-materialized `&Intr` / `&Intr+1` and loop.c hoisting come from the
+definition. Same body, Intr as extern = 52/263; defined (static or global,
+initialized) = 0 (after the relocation name difference, which links identically).
+Landing: asm/data/7D920.data.s split at vram 0x800A1494 (the 4 zero bytes
+0x800A1494..97 leave the asm; tail = asm/data/91C98.data.s) and bb2.ld links
+system.o(.data) between the halves. Alarm = plain `extern Alarm_t Alarm;`
+(named_syms.txt) — SOTN reaches it through a non-volatile view; a volatile or
+aliased Alarm costs 23-35. volatile on Intr is load-bearing (non-volatile = 52).
+Dead ends on the way to that: tentative definition (`volatile CD_intr Intr;`)
+emits `.comm Intr,3,1`, which maspsx cannot parse (it expects `.comm sym,size`);
+static .bss (`.lcomm`) crashes the same way. Layer-2 PASS.
+
+**Transfer lead (CD_sync / CD_ready / CD_datasync / cdrom_IrqHandler):** they
+reach the same bytes through FAKE-annotated `idx_1494 = &g_cd_status_a` handles.
+With Intr now defined in system.c, `Intr.sync` / `Intr.ready` may reproduce their
+targets honestly — a cheat-cleanup candidate for each.
+
+---
+(Session s1 notes follow, kept for the record.)
+
 
 Identity: PsyQ libcd `bios.c` v1.86 `CD_cw(u_char com, u_char *param, u_char *result, int async)`
 (string xref `"CD_cw"` @ 0x8001626C; memory/closer/libcd-identity.md). Reference C: SOTN

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_cw",
-      "file": "system",
-      "distance": 263,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8006F100",
       "file": "text1b",
       "distance": 266,
@@ -966,14 +958,14 @@
     }
   ],
   "counts": {
-    "total": 100,
-    "active": 91,
+    "total": 99,
+    "active": 90,
     "by_status": {
-      "active": 91,
+      "active": 90,
       "rotated": 9
     },
     "by_verdict": {
-      "C": 70,
+      "C": 69,
       "ASM-PARTIAL": 21
     }
   },
