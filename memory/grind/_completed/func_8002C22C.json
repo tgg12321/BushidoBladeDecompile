@@ -1,0 +1,15 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-09-22T06:23:18.419563+00:00",
+ "file": "code6cac_b",
+ "func": "func_8002C22C",
+ "headline": "closed s6 (manual): one object model - every write is a field of the 0x1F8002B8 record via u8* scr + displaced casts; uniform per-arm runs (cross-jump tail merge). No config change.",
+ "mentions": [
+  "func_80029454",
+  "func_8002D780"
+ ],
+ "names": [
+  "func_8002C22C"
+ ],
+ "sessions": 6
+}
