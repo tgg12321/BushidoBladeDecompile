@@ -17,6 +17,7 @@ The ledger (memory/grind/<func>/) is the pipeline's persistent brain:
 
 Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md
 """
+import csv
 import datetime
 import hashlib
 import json
@@ -2229,12 +2230,33 @@ def psyq_identity(root, func):
         p = os.path.join(root, "memory", "closer", "psyq-queue-hits.json")
         if os.path.isfile(p):
             with open(p, encoding="utf-8") as fh:
+                # Match the Sony name too: the census is keyed by the queue
+                # names of 2026-07-09, and the libscan wave (fe40a52b2) renamed
+                # those functions to their Sony names — keyed on `func` alone,
+                # this lookup matched 0 queue items from then on.
                 for h in json.load(fh).get("queue_hits", []):
-                    if h.get("func") == func:
+                    if func in (h.get("func"), h.get("sony")):
                         proven = h
                         break
     except Exception:
         pass
+    if not proven:
+        # Fallback: the libscan rename manifest, keyed by the applied name.
+        try:
+            p = os.path.join(root, "docs", "naming", "libscan", "rename_manifest.csv")
+            if os.path.isfile(p):
+                with open(p, encoding="utf-8", newline="") as fh:
+                    for row in csv.DictReader(fh):
+                        if (row.get("proposed_name") == func
+                                and row.get("evidence", "").startswith("libscan-")
+                                and not row.get("classification", "").startswith(
+                                    ("REJECTED", "CONTRADICTED"))):
+                            proven = {"sony": func, "lib": row.get("lib"),
+                                      "mod": row.get("module"),
+                                      "addr": row.get("addr")}
+                            break
+        except Exception:
+            pass
     try:
         p = os.path.join(root, "memory", "closer", "libsnd-hunt-report.md")
         if os.path.isfile(p):
@@ -2263,9 +2285,12 @@ def psyq_identity(root, func):
     except Exception:
         pass
 
+    renamed = bool(proven) and proven.get("sony") == func
     out = ["## SONY LIBRARY PROVENANCE — READ THIS FIRST",
            "",
-           "This function's queue name is an auto-generated MISNOMER. It is not game code."]
+           ("This function already carries its Sony name (libscan wave). It is not game code."
+            if renamed else
+            "This function's queue name is an auto-generated MISNOMER. It is not game code.")]
     if proven:
         out += ["",
                 f"**{func} = `{proven.get('sony')}` — verbatim-linked Sony PsyQ 4.0 "
@@ -2286,7 +2311,10 @@ def psyq_identity(root, func):
                 "lower floor. A losing reference means 'different build', NOT 'wrong source'.",
                 "",
                 "Reference sources to try, in order:",
-                "  1. sotn-decomp psxsdk tree (matched C, same library family + GCC 2.7.2 era)",
+                "  1. sotn-decomp psxsdk tree (matched C, same library family + GCC 2.7.2 era): "
+                f"https://github.com/Xeeynamo/sotn-decomp/tree/master/src/main/psxsdk/{str(proven.get('lib') or '').lower()}/ "
+                "(e.g. LIBCD BIOS = libcd/bios.c; fetch the raw file with curl into tmp/)",
+                "     and Xeeynamo/psyz decomp/src/ (PsyQ 4.0-targeted; see the psyz-psyq40-decomp memory)",
                 "  2. sozud/psy-q-decomp",
                 "  3. the ground-truth object itself — you have the original bytes AND the "
                 "Sony symbol names, which is far easier than blind decomp",
@@ -3182,6 +3210,7 @@ if __name__ == "__main__":
     #   grindlib.py rule-scopes <root> <func>                        -> prints the current-scope block
     #   grindlib.py supersede-bans <root> <func> <superseded_by> <needle> [needles...]  -> prints count moved
     #   grindlib.py siblings <root> <func>                          -> sibling-ledger block + pending notices
+    #   grindlib.py psyq <root> <func>                              -> Sony-library provenance block ('' if none)
     import sys
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -3345,6 +3374,9 @@ if __name__ == "__main__":
     elif cmd == "rule-scopes":
         # rule-scopes <root> <func> -> prints the CURRENT SCOPE block (empty if none cited)
         print(render_rule_scopes(cited_rule_scopes(sys.argv[2], sys.argv[3])))
+    elif cmd == "psyq":
+        # psyq <root> <func> -> the SONY LIBRARY PROVENANCE block (manual lane)
+        print(psyq_identity(sys.argv[2], sys.argv[3]))
     elif cmd == "siblings":
         # siblings <root> <func> -> the SIBLING LEDGERS block + pending progress
         # notices, exactly as the next brief would carry them (read-only)

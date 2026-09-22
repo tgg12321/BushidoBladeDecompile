@@ -1712,8 +1712,6 @@ class TestEscalationDeferral(unittest.TestCase):
         self.assertNotIn("forced_next_modality", st)
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class TestCompletionTombstones(unittest.TestCase):
@@ -2145,3 +2143,42 @@ class TestScopeViolations(unittest.TestCase):
         self.assertEqual(G.scope_allow_entries(self.root, "func_X"),
                          ["a.txt", "b.txt"])
         self.assertEqual(G.scope_allow_entries(self.root, "absent"), [])
+
+
+class TestPsyqIdentityAfterRename(unittest.TestCase):
+    """The census is keyed by pre-libscan queue names; after the libscan wave
+    renamed library functions to their Sony names, a func-only lookup found
+    nothing (CD_cw manual session, 2026-09-22)."""
+
+    def setUp(self):
+        self.root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(self.root, "memory", "closer"))
+        os.makedirs(os.path.join(self.root, "docs", "naming", "libscan"))
+        with open(os.path.join(self.root, "memory", "closer",
+                               "psyq-queue-hits.json"), "w") as fh:
+            json.dump({"queue_hits": [{"func": "oldName", "sony": "CD_sync",
+                                       "lib": "LIBCD", "mod": "BIOS",
+                                       "addr": "0x80080DB0"}]}, fh)
+        with open(os.path.join(self.root, "docs", "naming", "libscan",
+                               "rename_manifest.csv"), "w", newline="") as fh:
+            fh.write("addr,current_name,proposed_name,module,lib,evidence,classification\n"
+                     "0x800812FC,func_800812FC,CD_cw,BIOS,LIBCD,libscan-verbatim,FILL\n"
+                     "0x80000000,func_80000000,Bogus,X,LIBX,libscan-verbatim,REJECTED_UNREACHABLE\n")
+
+    def test_census_matches_sony_name(self):
+        out = G.psyq_identity(self.root, "CD_sync")
+        self.assertIn("LIBCD/BIOS", out)
+        self.assertIn("already carries its Sony name", out)
+
+    def test_census_still_matches_old_name(self):
+        self.assertIn("MISNOMER", G.psyq_identity(self.root, "oldName"))
+
+    def test_manifest_fallback(self):
+        self.assertIn("LIBCD/BIOS", G.psyq_identity(self.root, "CD_cw"))
+
+    def test_manifest_rejected_rows_ignored(self):
+        self.assertEqual(G.psyq_identity(self.root, "Bogus"), "")
+
+
+if __name__ == "__main__":
+    unittest.main()
