@@ -73,6 +73,7 @@ pre-decided NO and MUST NOT be filed as an escalation. The class includes:
 - granting a coercion family with no in-hand SOTN-master precedent;
 - overriding the canonical-asm evidence bar (a LOW scan tier is an answer,
   not an obstacle to be waived);
+  (Exception: verbatim PsyQ GTE macro islands, inline-asm-policy.md § Owner ruling 2026-09-23.)
 - any "accept the debt" disposition in new wording.
 Functions whose only known closer is auto-reject-class stay ACTIVE and keep
 grinding under standing policy (difficult-is-not-impossible) — the honest

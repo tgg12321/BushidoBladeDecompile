@@ -180,3 +180,6 @@ line required) — never COMPLETED-C. Since 2026-09-02 the driver enforces this 
 the Judge PASS path (island count > 0 and not allowlisted ⇒ grant door or refuse).
 Preferred future form: a BB2-local GTE macro header so the source reads
 `gte_ldlv0(vec)` (same bytes, the SOTN idiom).
+(Not for islands admitted under inline-asm-policy.md § Owner ruling 2026-09-23:
+there the islands must be inline in src/*.c; header forms are not admitted, per
+Judge ruling func_8002DAD0 2026-09-18.)

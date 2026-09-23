@@ -81,6 +81,113 @@ When BB2's inline-asm policy is honest, every `__asm__` block in
 | **cheat** | Inline `__asm__` or `register T x asm("$N")` pin used to steer GCC's allocator or scheduler. General-purpose opcodes (`move`, `addu`, `nop`, `lui`, `negu`, etc.) that have C equivalents but we wrote them in asm to force matching. NOT in original source — they're workarounds for our `mips-gcc-2.7.2` fork diverging from the original `cc1psx`. | ❌ INCOMPLETE — **the BB2-specific gap** |
 | **(no asm)** | Pure C, no inline asm. Matches byte-for-byte without hints. | ✅ COMPLETED-C — gold standard |
 
+## Owner ruling 2026-09-23 — verbatim PsyQ GTE macro islands in ordinary C
+
+Question put to the owner (manual session), verbatim: "func_800678A8 now
+matches the original exactly. It is ordinary C except for two short snippets
+that talk to the PS1's 3D math chip. That hardware has no C equivalent, and
+both snippets are copied word-for-word from Sony's official SDK header. The
+reviewer passed all the C. It blocked the commit only because nobody has
+ruled that a function using plain Sony-header snippets like these may be
+marked 'finished with approved inline asm'. Should I record that approval and
+land it?"
+
+Options, verbatim:
+- "Approve (Recommended)": "Land a standing ruling: verbatim Sony SDK GTE
+  header snippets in otherwise-plain C are approved. Then land func_800678A8
+  with a fresh review. This also covers future functions in the same
+  situation."
+- "Approve this one only": "Grant func_800678A8 alone. Record it first as a
+  separate rules commit, then land the match with a fresh review."
+- "Don't approve": "Leave it as INCLUDE_ASM with the candidate saved in the
+  ledger, and log the question to borderline.md."
+
+Owner (Trenton) selected, verbatim: **"Approve (Recommended)"**.
+
+Was the owner shown the LOW scan tier (2/8, S3+S4) or the
+[[escalation-not-parked]] AUTO-REJECT clause? **No, the question did not
+show them.** The owner ruled on the plain-language framing above.
+Why this is still adequate: scan_hand_coded detects functions that were hand-written in asm as a whole. LOW is the expected result for C that calls SDK macros, so it does not bear on what the owner approved. The AUTO-REJECT test (no SOTN precedent) is not met, per the informed 2026-09-02 Condition 3 ruling.
+
+Author's context (not shown to the owner): func_800678A8 scores 0 on
+`sandbox --disable all` (283/283) and its full-build SHA1 matches the oracle.
+The first layer-2 cheat-reviewer passed every C construct and the text of
+both islands. It FAILed the commit on authorization alone:
+`scan_hand_coded --single` rates the function LOW, there is no owner-cluster
+registry row, and the `inline_asm_canonical.txt` row was a self-grant.
+
+**What it admits.** A C function body may carry GTE inline-asm islands and be
+classified COMPLETED-INLINE-ASM-CANONICAL on **macro-provenance evidence** in
+place of a STRONG `scan_hand_coded` tier. Every one of these must hold:
+
+1. **Verbatim macro, pinned provenance.** Each island is one named GTE macro
+   from a Sony PsyQ `inline_c.h` (DMPSX) release. It matches that macro
+   character for character in instruction text, operand constraints and
+   clobber list. The only differences allowed are separators and whitespace
+   (`;` vs `\n`, tabs vs spaces). The row and the source comment cite the
+   header release, the macro name and its line range. Provenance is pinned:
+   record the header's `$PSLibId` line, its source (URL and commit hash) and
+   the SHA-256 of the header file. Then confirm the macro text, character for
+   character, against a second, independent copy of the same header release
+   (another project's vendored PsyQ headers). If only one copy can be found,
+   the island is not admitted.
+2. **Nothing else in the islands.** No instruction outside the macro text. That
+   rules out an addressing preamble, a materialize-then-copy pair, an extra
+   `nop`, and any GPR literal beyond the macro's own. The preamble class stays
+   under [[cop2-addressing-preamble-cluster]] and its owner-enumerated
+   registry. The operand seat is left to cc1: no register pin and no
+   `register ... asm("$N")` feeding an operand.
+3. **Inline, and the only asm.** The islands are written out inline in the
+   function body in `src/*.c`, so the sandbox's cheat-stripping and the
+   region gate both see them. Reaching the macros through a header
+   (`#include`, a BB2-local `gte.h`, macro-by-name) is NOT admitted under
+   this ruling. A header lets cheat-asm score as asm-free (Judge ruling,
+   func_8002DAD0, decisions.md 2026-09-18). For this class, this overrides
+   the "Preferred future form: a BB2-local GTE macro header" sentence in
+   [[cop2-addressing-preamble-cluster]] § Condition 3 clarified. A header is
+   not a route to admission under this ruling. Everything outside the islands is
+   ordinary C that passes normal review on its own merits (family list,
+   rename test, annotations). The islands are authorized as units and cover
+   nothing around them.
+4. **Bytes and hashes.** `sandbox --disable all` == 0, full-build SHA1 ==
+   oracle, and island hashes are recorded in
+   `tools/canonical_asm_regions.json`, so any later edit to an island voids
+   the grant.
+5. **Record and review.** The `inline_asm_canonical.txt` row carries the new
+   tag value `gcc-cannot-emit:gte_cop2_sdk_macro`. The evidence-tag grammar in
+   `tools/audit_asm_cheats.py` (`TAG_PATTERNS`) accepts it: `gcc-cannot-emit:[a-z][a-z0-9_]*`.
+   The row cites this ruling. The row lands in its own `auth:` commit before the body, and the message of
+   each of the two commits carries a `Pure-C attempts:` block with at least 3
+   entries. This ruling requires both of these for every island. The audit
+   enforces them only in part: in audit_asm_cheats, G2 validates the tag and
+   G6 (`needs_attempt_log`) requires the attempts block on the row commit. On
+   the body commit, G1 (`same_commit_self_auth`) and G6 fire only when an
+   island contains an instruction outside the §6.1 whitelist
+   (`_is_whitelisted_insn`: nop/cop2/ctc2/mtc2/mfc2/cfc2/lwc2/swc2/GTE
+   `.word`), for example a `lw`/`sw`. For whitelisted-only macros the
+   reviewer checks the split and the attempts block by hand. A layer-2 cheat-reviewer then checks the
+   macro text against the pinned header.
+
+**Relation to standing policy.** This is an owner exception, for this class
+only, to [[judge-sole-gate]] rule 3 ("Without STRONG evidence, asm remains
+refused") and to the [[escalation-not-parked]] AUTO-REJECT bullet on
+overriding the canonical-asm evidence bar. It is not AUTO-REJECT class,
+because SOTN-master precedent exists: SOTN `#include`s Sony's `inline_c.h`
+and calls these GTE macros by name ([[cop2-addressing-preamble-cluster]]
+§ Condition 3 clarified, owner ruling 2026-09-02). The LOW scan tier is
+recorded as it stands; it is not re-scored. For all asm outside this class,
+both standing texts apply unchanged. Hand-written islands that only resemble
+a macro, edited macros (reordered loads, dropped clobbers, changed
+constraints), non-GTE macros and GPR-only asm are not admitted. Whole-body
+`glabel` asm still needs hand-coded-signal evidence
+([[hand-coded-asm-recognition]]).
+
+**Manual path only.** Letting the Grinder's driver (`grindlib.grant_canonical_asm`)
+apply this route would be a separate `rules:`/`engine:` change. That change
+needs its own owner ruling and layer-2 review, and this ruling does not
+authorize it. Record: docs/grind/decisions.md 2026-09-23 OWNER RULING —
+verbatim PsyQ GTE macro islands.
+
 # Why this distinction matters
 
 For a long time the BB2 project lumped canonical and cheat asm together as
