@@ -4,30 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_SsVmFlush",
-      "file": "main",
-      "distance": 271,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80036940",
-      "file": "code6cac_b2_post",
-      "distance": 274,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8005763C",
-      "file": "text1b",
-      "distance": 276,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8006F528",
       "file": "text1b",
       "distance": 277,
@@ -923,17 +899,39 @@
       "rotation": "Recon shows a multi-phase packed-stream parser with four loops, dynamic dispatch, and several global table initializations; choosing a narrower candidate for a clean exact completion.",
       "rotated_at": "2026-09-21T01:02:54+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "_SsVmFlush",
+      "file": "main",
+      "distance": 271,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "source-side first-loop address-rematerialization floor: best honest one-handle score 8/270; cc1psx 34/270; score-0 two-symbol form rejected by fresh review (memory/grind/_SsVmFlush/ledger.md)",
+      "rotated_at": "2026-09-23T03:59:40+00:00",
+      "rotation_count": 1
+    },
+    {
+      "func": "func_80036940",
+      "file": "code6cac_b2_post",
+      "distance": 274,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "pre-existing WIP proves multi-owner jump-table rodata attribution blocker; pure-C floor 69 and integration leaves 14 external .L80036xxx references (memory/wip/func_80036940/notes.md); resolving requires broader 4-sibling TU/rodata architecture change",
+      "rotated_at": "2026-09-23T04:00:17+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
-    "total": 95,
-    "active": 86,
+    "total": 94,
+    "active": 83,
     "by_status": {
-      "active": 86,
-      "rotated": 9
+      "active": 83,
+      "rotated": 11
     },
     "by_verdict": {
-      "C": 66,
+      "C": 63,
       "ASM-PARTIAL": 20
     }
   },
