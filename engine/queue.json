@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80074E08",
-      "file": "text1b",
-      "distance": 281,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800678A8",
       "file": "text1b",
       "distance": 283,
@@ -908,15 +900,15 @@
     }
   ],
   "counts": {
-    "total": 92,
-    "active": 81,
+    "total": 91,
+    "active": 80,
     "by_status": {
-      "active": 81,
+      "active": 80,
       "rotated": 11
     },
     "by_verdict": {
-      "C": 61,
-      "ASM-PARTIAL": 20
+      "ASM-PARTIAL": 20,
+      "C": 60
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
