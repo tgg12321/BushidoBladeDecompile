@@ -84,7 +84,12 @@ this relaxation is an owner judgment call on flagged-as-partial evidence,
 not a claim the evidence is line-for-line conclusive.
 
 **Multi-WRITE carriers remain banned** (the y1 FAIL, decisions.md:1833,
-and the 2026-08-30 21:30 `c` FAIL both stand). All other prongs (real
+and the 2026-08-30 21:30 `c` FAIL both stand; a fresh local written more
+than once is admitted ONLY if it meets every prong of Ruling 5
+(2026-09-23), which governs that variable exclusively: the reused variable itself may not
+also claim this entry or [[staged-value-reused-variable]]; other locals in
+the same body, including a Ruling 5 1(b)(ii) selector binding, are judged
+under their own entries.) All other prongs (real
 value, byte-neutral, fresh not borrowed, destination not
 live-pre-initialized, standard prerequisites) are unchanged.
 
@@ -175,6 +180,136 @@ split-init-accumulation directive ("adjacent spellings need their own ruling").
 Multi-WRITE carriers whose extra write is dead remain banned (unchanged).
 Record: docs/grind/decisions.md 2026-09-02 OWNER RULING, Ruling B
 (_spu_2pitch 10eadce5 stands as COMPLETED-C).
+
+## Ruling 5 (owner, 2026-09-23) — one role repeated per block: a reused local
+
+Owner (Trenton), verbatim: "If this is a genuine C situation that makes sense
+to add, we can add it. I dont want to slip and allow a cheat or workaround
+though." Then, after the proposal was laid out: "I approve for now assuming
+this is not a cheat".
+
+A FRESH local written more than once is admitted ONLY if it meets EVERY prong
+below. This ruling governs that case exclusively: the reused variable itself
+may not claim the named-intermediate relaxation (Ruling 1; its reads are
+governed by this ruling's prong 1(c) alone) or [[staged-value-reused-variable]], and no consumer
+of it may be a staged-value borrow. Other locals in the body, including a
+1(b)(ii) selector binding, are judged under their own entries. No FAKE
+annotation is required for the reuse itself; any other family the body relies
+on (duplication, dead-store, etc.) keeps its own annotation requirement.
+Failing any prong is a FAIL(CONSTRUCT) under Ruling 1, exactly as before.
+
+1. **One consumer role, one template.**
+   (a) Every write feeds the SAME consumer: the same struct member of the
+       same object, or the same argument slot of the same callee, never
+       another local.
+   (b) The write statements are textually identical except for the
+       SELECTOR, the ONLY permitted textual difference, which identifies
+       which sibling record the block processes. The selector difference is
+       confined to the subscript of ONE AND THE SAME base expression (e.g.
+       `ctx[0]` / `ctx[1]`), where each subscript is an integer constant;
+       only one subscript position may differ between blocks, and
+       different blocks may use the same subscript (e.g. func_8006F528
+       uses `ctx[0]` in both its first and third blocks); the base
+       expression is a declared array or pointer variable, used without any
+       cast, whose elements are interchangeable instances of one role:
+       sibling records, or pointers/addresses to sibling records, that the
+       function uses in the same way (e.g. func_8006F528's `ctx[0..2]`, each
+       used as a record base at the same +0xC offset). The base variable
+       must not be declared, initialized or assigned from a cast of the
+       ADDRESS of a struct, scalar or field (`(T *)&obj`, `(T *)&obj.f`,
+       `(T *)obj.arr` where `arr` is an array member, `(T *)G` where G is not
+       itself an array of those records). Loading a pointer VALUE stored in
+       memory is not such a cast (e.g. func_8006F528's
+       `ctx = *(s32 **)(D_800A35A8 + 0x5C);` reads the pointer held at
+       +0x5C). A loaded base, like any base, qualifies only if the object it
+       points to is an array of interchangeable sibling records; the
+       different-roles and distinct-named-fields clauses below apply to it
+       unchanged. It also
+       must not be an array/pointer declaration over an object whose slots
+       the function uses in different roles (e.g. a parameter `s32 *arg0`
+       whose [1], [5], [7], [8] hold a return chain, a prim cursor and OT
+       pointers). Either is a pun by declaration and is never a selector,
+       whether or not the fields have names. A cast or pointer-pun base at
+       the use site (e.g. `((u16 *)G)[N]`, `((s16 *)&d)[N]`), or subscripts
+       that reach distinct named fields of one struct, are likewise never a
+       selector. It
+       appears either (i) directly in the write, or (ii) in a block-local
+       variable declared in each block and written exactly once there, whose
+       binding statements are textually identical except for that subscript
+       (e.g. `s32 base = ctx[0];` / `s32 base = ctx[1];`). Two different
+       named variables, parameters, globals or fields are never a selector,
+       even when they have the same type or point at records of the same
+       type. The consumer statements are textually identical across the
+       blocks, with NO selector and no other difference (e.g. `s.p1 = p1;`
+       in every block); a consumer whose destination differs by subscript,
+       member, or object fails 1(a).
+   (c) Each write is read exactly once, by the role consumer, in the same
+       block as the write. A variable with any other reader fails.
+   (d) The writes sit in distinct sibling blocks (or the arms of one
+       conditional), each ending in the consumer (statements other than the
+       write, its selector binding and the consumer may differ between
+       blocks): repetitions of one piece of
+       code, the kind a programmer could have written as a loop or macro body.
+   (e) **Real computation.** Every write's right-hand side is a load or an
+       arithmetic computation whose instructions appear in the target's own
+       bytes. A write whose value is a literal constant, or a bare copy of
+       another named variable or parameter, fails. Constant-holders stay under
+       [[named-local-fake-exception]] (FAKE required), and the F1
+       constant-staging chain stays refused.
+   (f) The name names the consumer role (`p1`, because it is stored to
+       `s.p1`). Generic names (`tmp`, `t`, `temp`, `val`, `v`, `ptr`, `p`,
+       `new_var`, register-style names) never satisfy this prong. For a
+       call-argument consumer, the name states what the argument means (e.g.
+       `ot`, `rect`, `count`); single-letter names and `arg`/`argN`/`aN`
+       never satisfy this prong.
+   Writes feeding DIFFERENT consumers fail even when their expressions look
+   alike: y1 fed `dx` and then `dy`, so y1 fails.
+2. **Nothing added, nothing reloaded.**
+   (a) Every write is used before the next write.
+   (b) The reuse spelling and the one-local-per-write spelling measured
+       under prong 4 have the SAME statement list: they differ only in
+       declarations and identifiers. A write or consumer that exists only in
+       the reuse form fails.
+   (c) No write stores a value the variable already holds, judged by C
+       semantics: an intervening store is ignored only when it provably
+       targets a distinct object (the same base with a non-overlapping
+       constant offset). Re-loading the same lvalue with no intervening write
+       to that lvalue fails (func_80060A68 `src`/`idx`).
+   (d) No single computation is split across writes (Ruling 4 governs
+       same-statement splits separately).
+3. **Not a borrow.** The variable has no other job, and no declaration OTHER
+   THAN the variable's own is moved or re-scoped. The variable is declared
+   once, at the innermost scope that encloses all of its writes. Borrowing
+   stays under [[staged-value-reused-variable]] and all of its bounds.
+4. **Receipts.** The one-local-per-write spelling is measured and recorded
+   as failing, AND the function's ledger shows the ordinary ladder was run
+   (structural respellings, the permuter from the carrier-free candidate,
+   an allocation dump) before the reuse form was adopted. Normal review
+   (layer-1/Judge, or layer-2 on the manual path) applies.
+
+**What stays banned, and why each still fails:** func_800200DC `y1`
+(decisions.md 2026-07-28 01:47: fed `dx` then `dy`, fails prong 1(a),
+including respelled with a punned array consumer, 1(b));
+func_80045878 `c` (2026-08-30 21:30: `s1[3]`, then `a0 + 3`, then `0x8000`:
+different templates, fails 1(b); the `c = 0x8000` constant write also fails
+1(e)); func_80060A68 `src`/`idx`/`cp` (2026-08-19: a fresh local re-loaded
+with the same unchanged pointer, or given a folded extra write, fails prong
+2(b)/(c)); func_800460E4 off_a/off_b (2026-08-25: a declaration-hoist borrow
+and a one-statement split, fails prongs 2(d) and 3); func_8002D780 `tmp`
+(2026-09-15 23:16: held `z2 - z0` and then a `*LUT` value, fails 1(a)/(b)/(c));
+any constant-holder spelled as a reused local (`mode = 0; ... mode = 1;`),
+which fails 1(e); a cast-laundered base (`T *v = (T *)&obj; ... v[0] ...
+v[1]`) or struct-as-`s32 *` slots used as a selector, which fail 1(b). This ruling reopens none of them.
+
+**Known weakness, presented to the owner:** in func_8006F528 the author also
+chose which variables to make block-scoped (`base`) and which to make
+function-scoped (`p1`) by measuring. The reuse and per-block spellings
+compile the same statements. The only codegen effect of the function-scope
+declaration is that one pseudo spans several blocks, the same allocator
+effect the banned y1/`c`/`src` carriers relied on. This ruling admits that
+effect only when the reuse also reads as one role repeated per prongs 1-2.
+Allocator effect alone is never sufficient. Record: docs/grind/decisions.md
+2026-09-23 OWNER RULING.
 
 ## What this ruling does NOT change
 

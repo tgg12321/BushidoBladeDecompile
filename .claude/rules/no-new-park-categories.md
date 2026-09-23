@@ -223,7 +223,13 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     fresh RA-purposed locals in SOTN PSX master, not a line-for-line shape
     match; the owner ruled with that caveat presented): a fresh local
     holding a real, consumed value may be read any number of times.** Multi-WRITE carriers remain NOT this entry (the `y1` FAIL,
-    decisions.md:1833, and the 2026-08-30 func_80045878 `c` FAIL stand);
+    decisions.md:1833, and the 2026-08-30 func_80045878 `c` FAIL stand;
+    a fresh local written more than once is admitted ONLY if it meets
+    every prong of [[ordinary-c-judge-decidable]] Ruling 5 (2026-09-23),
+    which governs that variable exclusively: the reused variable itself may
+    not also claim this entry or [[staged-value-reused-variable]]; other
+    locals in the same body, including a Ruling 5 1(b)(ii) selector
+    binding, are judged under their own entries);
     (2) real value — the intermediate holds a computation that appears in
     the target's own bytes and only relocates where the value is named;
     pure no-op copies stay with the dead-store family and its

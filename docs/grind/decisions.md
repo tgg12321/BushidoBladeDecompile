@@ -28708,3 +28708,61 @@ SIX-TEST CHECKLIST. A conservative clobber is an over-approximation and therefor
 BYTES, from driver-written records rather than the session's prose: metrics/events.jsonl, agent session b38bb464, commit 0ad9da8b6 -- `sandbox func_8002D780 --disable all` = 0 at 04:08:04, 04:08:18 and 04:14:54, each at 202 build insns == 202 target insns with rules_dropped 0; the ladder baseline 2/202 (04:07:42) and the FAKE-ablation 4/202 (04:11:25) sit in the same run. A diff against candidate_alt_s27_honest_floor2.c confirms the clobber lists are the ONLY code delta from the banked 2/202 body.
 ANSWER (Q2): RETURN CANDIDATE-READY; DO NOT FILE AN INTEGRATION HANDOFF. The owner_cluster_grants.txt row is still required, and neither a grind session nor I can create it. tools/grinder/owner_cluster_grants.txt sits on the integration-handoff path denylist ("anything under tools/", .claude/rules/integration-handoff-self-serve.md), enforced mechanically by _SCOPE_GRANT_DENY at tools/grinder/grindlib.py:1820; and the canonical-asm-grant door needs a STRONG scan tier where this function measures LOW (1/8, decisions.md:25703). The designed route is the one Ruling C already builds: prove the bytes on main, take the FINAL CALL, and let the driver's own island gate (tools/grinder/grind.ps1:952-985) emit the refusal record. That record is the operator's cue, and the entitlement behind it is now complete -- func_8002D780 is census row 75 of the landed 2026-08-17 cluster ruling (.claude/rules/cop2-addressing-preamble-cluster.md:75) and now reaches floor 0, which is exactly the ground on which func_80018094 earned its row (owner Ruling 3, 2026-09-15, decisions.md:27024). The islands are not respellable away: the `addu $t4,%0,$zero` addressing preamble is in the target's own bytes at .s:32, .s:38 and .s:143.
 MECHANICAL CLEARANCE: the banned_constructs tripwire '"$12", "$14", "$15"' predates and is superseded by this ruling for the conservative-footprint spelling only. unban_construct clears it so the 0/202 body is not auto-discarded by the self-vet ban check before the Judge sees it. The tuned-subset form itself stays refused -- see constraint.
+
+## 2026-09-23 — OWNER RULING — one role repeated per block: a reused local (`.claude/rules/ordinary-c-judge-decidable.md` Ruling 5)
+
+Owner (Trenton), verbatim: "If this is a genuine C situation that makes sense to add, we can add it.
+I dont want to slip and allow a cheat or workaround though." After the proposal: "I approve for now
+assuming this is not a cheat".
+
+**Trigger.** func_8006F528 (manual session). The byte-exact body reuses one function-scope `s32 *p1`
+in five sibling blocks (`p1 = (s32 *)(base + 0xC); ... s.p1 = p1;`, where each `base` is that block's
+`ctx[N]` record). Target homes every block's value in a1, which only a single pseudo spanning several
+blocks produces (allocation dump: one pseudo, global.c conflicts v0/v1/a0 -> a1; per-block pseudos go
+to local-alloc -> v0/v1). The one-variable-per-block spelling measures 14/277. Layer-2 round 1 FAILed
+it under the multi-write carrier ban. Round 2, a borrow of `offset` via a declaration hoist, FAILed as
+an invented borrow; that FAIL stands and is correct.
+
+**Ruling (full text in the rule file).** A fresh local written more than once is admitted only if:
+(1) every write feeds the same consumer (a struct member or call-argument slot, never another local);
+the write statements differ only in a SELECTOR and the consumer statements are identical; the selector
+is one integer-constant subscript position of one and the same uncast array/pointer variable whose
+elements are interchangeable instances of one role (directly, or via a once-written block-local whose
+bindings differ only in that subscript; casts/puns of an address, including casts moved into the base
+variable's declaration (a base loaded as a pointer value is judged by what it points to), struct-as-`s32 *` slots, and distinct fields are never a selector); each write is read exactly once, by that consumer, in the same block; the
+writes sit in distinct sibling blocks; every right-hand side is a real load/computation (no constants,
+no bare copies); and the name names the consumer role (generic names never qualify); (2) nothing is
+added or reloaded: every write is used, the statement list equals the one-local-per-write spelling, no
+write re-stores a value the variable already holds (judged by C semantics), and no computation is
+split; (3) it has no other job, no other declaration is moved, and it is declared at the innermost
+scope enclosing its writes; (4) the per-write spelling is measured as failing and the ordinary ladder
+(structural, permuter, allocation dump) ran first. The ruling governs such locals exclusively and
+the reused variable may not claim the named-intermediate or staged-value relaxations; other locals
+are judged under their own entries.
+
+**Precedents checked, none reopened:** y1 (2026-07-28 01:47, fed dx then dy: 1(a)), func_80045878
+`c` (2026-08-30 21:30, three different templates: 1(b); `c = 0x8000`: 1(e)), func_80060A68
+`src`/`idx`/`cp` (2026-08-19, re-load of an unchanged pointer / folded extra write: 2(b)/(c)),
+func_800460E4 off_a/off_b (2026-08-25, declaration-hoist borrow and one-statement split: 2(d), 3),
+func_8002D780 `tmp` (2026-09-15 23:16, different values and readers: 1(a)/(b)/(c)), and a
+constant-holder reused local (`mode = 0; ... mode = 1;`: 1(e)), and a cast-laundered or
+struct-as-`s32 *` selector base (1(b)).
+
+**Rule-text layer-2:** round 1 FAILed the first draft (prong 1 admitted y1; the prongs admitted
+`src`; `src` was mislabelled as a borrow). Round 2 FAILed the second draft (a constant-holder carrier
+passed all prongs; "selector" was undefined; readers were unrestricted; prong 3 contradicted the
+motivating case). Round 3 FAILed the third draft (a block-local selector binding could hide a
+different source; "cannot be combined" was ambiguous). Round 4 FAILed the fourth draft (the two
+cross-reference sites kept the old unscoped wording; the selector admitted two unrelated variables;
+local-to-local relays and differing consumers were admitted). Round 5 FAILed the fifth draft (the
+consumer could carry a selector; a cast/pun base could reach distinct fields; call-argument names were
+unconstrained). Round 6 FAILed the sixth draft (a pun moved into the base variable's declaration, or
+struct slots declared as `s32 *`, passed as a selector). Round 7 FAILed the seventh draft (the
+`(T *)obj.f` example covered ctx's own pointer-value load). Round 8 FAILed the eighth draft ("exactly
+one subscript position differs" failed the motivating body, whose blocks 1 and 3 share ctx[0]). This
+text applies all eight reviewers' replacement wording.
+
+**Caveat presented to the owner:** the reuse and per-block spellings compile the same statements; the
+only codegen effect of the function-scope declaration is one pseudo spanning several blocks, the same
+allocator effect the banned carriers relied on. It is admitted only when the reuse also reads as one
+role repeated per prongs 1-2. Allocator effect alone is never sufficient.
