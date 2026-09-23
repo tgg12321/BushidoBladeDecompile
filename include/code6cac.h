@@ -12,6 +12,21 @@ extern u8 g_module_type_tbl;
 extern s32 menuDat;
 extern s16 single_dojo_yaburi_char_id_tbl;
 
+/* Per-character record pointed to by D_800A3860[ch] (ch = rec+0x4A). f14 is
+ * the modulus func_800213A0 / func_80021424 wrap rec+0x86 with. The u16
+ * fields at +0x4E are indices into D_801027B0[ch][0], as func_80021424 reads
+ * them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4),
+ * f54[rec+0x86][t] (id 0x7FF3), and
+ * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). */
+typedef struct {
+    u8 pad00[0x14];
+    s16 f14;
+    u8 pad16[0x4E - 0x16];
+    u16 f4E[3];
+    u16 f54[3][3];
+    u16 f66[11][3];
+} Tbl800A3860Entry;
+
 /* Per-character / practice-menu record table (base 0x80101EC8, stride 0x44C,
  * 4 records).  Schema: docs/naming/CHAR_STRUCT_SCHEMA.md; base symbol:
  * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
@@ -193,7 +208,7 @@ extern u8 D_800A3836;
 extern s32 D_800A3844;
 extern s32 D_800A3858;
 extern u8 *D_800A385C;
-extern s32 D_800A3860;
+extern Tbl800A3860Entry *D_800A3860[];
 extern s32 D_800A3864;
 extern u8 D_800A3874;
 extern s16 D_800A3876;
@@ -470,7 +485,7 @@ extern s32 D_80102790;
 extern u8 D_80102795;
 extern s32 D_80102798;
 extern s32 D_8010279C;
-extern s32 D_801027B0;
+extern s32 D_801027B0[][5];
 extern s32 D_801027B4;
 extern s32 D_801027B8;
 extern s32 D_801027BC[][5];

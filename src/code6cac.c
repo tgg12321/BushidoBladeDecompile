@@ -2300,7 +2300,7 @@ typedef struct {
     u8 b[4];
 } StatusEvt;
 
-extern void *func_80021424(u8 *, u16, u8 *);
+extern void *func_80021424(u8 *, s32, u8 *);
 extern void func_80032854(s32, s32, s32 *, s16 *);
 
 void func_8001FBE8(void) {
@@ -2612,7 +2612,7 @@ void func_80020D70(void) {
     D_800A3888 = (s32)0x80118800;
     D_800A388C = (s32)0x8011C400;
     D_800A3830 = (s32)0x80120000;
-    D_800A3860 = (s32)0x80148800;
+    D_800A3860[0] = (Tbl800A3860Entry *)0x80148800;
     D_800A3864 = (s32)0x80190800;
     func_80020CDC();
 }
@@ -2732,11 +2732,143 @@ void func_800213A0(s16 *arg0) {
         }
     }
     {
-        s16 *v = (s16 *)(&D_800A3860)[arg0[0x4A / 2]];
+        s16 *v = (s16 *)D_800A3860[arg0[0x4A / 2]];
         arg0[0x86 / 2] = (s16)((a1 + 1) % v[0x14 / 2]);
     }
 }
-INCLUDE_ASM("asm/funcs", func_80021424);
+/* Rodata moved from asm/data/800.rodata_post.s (rodata-cleanup project,
+ * docs/rodata-cleanup-project.md, 2026-06-09): the 66-string animation/asset
+ * table referenced by func_80023F08. Defined here, ahead of func_80021424, so
+ * it follows the 0x94 bytes of switch-jtbl rodata emitted by the functions
+ * above (0x80010068..0x800100FC) and precedes func_80021424's own switch table
+ * (0x80010414), matching the original rodata order. Bracket-sized [66][12] to
+ * match the fixed 12-byte stride per name (8-char content + null + pad). */
+const char D_800100FC[66][12] = {
+    "WIN     ",
+    "KARAMI_ED",
+    "RUN_ED  ",
+    "RUN_ST  ",
+    "CHAKUTI ",
+    "APPEAR  ",
+    "KAISHAKU_ST",
+    "HAJIKARE",
+    "SERIEXIT",
+    "SYAGAMI ",
+    "HOM_ED  ",
+    "HOM_AT  ",
+    "HOM_ST  ",
+    "ANOBORI ",
+    "KAMAE_KA",
+    "MOVE    ",
+    "NOBORI_E",
+    "NOBORI_S",
+    "FURI2   ",
+    "FURI1   ",
+    "YURI2   ",
+    "YURI1   ",
+    "GOKAKU  ",
+    "START   ",
+    "ARUN    ",
+    "STEP    ",
+    "WALK    ",
+    "LJUMP   ",
+    "MJUMP   ",
+    "SJUMP   ",
+    "KAMAE   ",
+    "DTH     ",
+    "RUN     ",
+    "SUNA    ",
+    "KARAMI  ",
+    "RELOAD  ",
+    "SERI    ",
+    "HAJI    ",
+    "UKE     ",
+    "SYASTEP ",
+    "SUBWEP  ",
+    "ORI     ",
+    "OKIAGARI",
+    "NOBORI  ",
+    "KZRE    ",
+    "KOROGARI",
+    "KAISYAKU",
+    "END_GAME",
+    "DAM     ",
+    "ATTACK  ",
+    "NORMAL  ",
+    "NULL    ",
+    "Y123.BBM",
+    "N123.BBM",
+    "K123.BBM",
+    "T123.BBM",
+    "S234.BBM",
+    "S125.BBM",
+    "S124.BBM",
+    "S123.BBM",
+    "U235.BBM",
+    "U135.BBM",
+    "U134.BBM",
+    "U125.BBM",
+    "U124.BBM",
+    "U123.BBM",
+};
+void *func_80021424(u8 *rec, s32 id, u8 *out)
+{
+    s16 t;
+    s32 ch;
+
+    *(s16 *)(rec + 0x78) = 0;
+    *(s16 *)out = 0;
+    if ((u32)(id - 0x7FF5) < 11) {
+        return (void *)(D_801027B0[*(s16 *)(rec + 0x4A)][0]
+             + D_800A3860[*(s16 *)(rec + 0x4A)]->f66[id - 0x7FF5][*(s16 *)(rec + 0x86)] * 2);
+    }
+    switch (id) {
+    case 0x7FF0:
+        *(s16 *)(rec + 0x78) = 1;
+        *(s16 *)(rec + 0x86) = *(s16 *)(rec + 0x84);
+        return (void *)(D_801027B0[*(s16 *)(rec + 0x4A)][0]
+             + D_800A3860[*(s16 *)(rec + 0x4A)]->f4E[*(s16 *)(rec + 0x84)] * 2);
+    case 0x7FF1:
+        *(s16 *)(rec + 0x86) = (*(s16 *)(rec + 0x86) + 1)
+                             % D_800A3860[*(s16 *)(rec + 0x4A)]->f14;
+    case 0x7FF2:
+    case 0x7FF4:
+        if (id == 0x7FF4) {
+            *(s16 *)(rec + 0x78) = 1;
+        }
+        t = *(s16 *)(rec + 0x86);
+        if ((t == *(s16 *)(rec + 0x88) && *(s16 *)(rec + 0x8A) == 0)
+         || (t == *(s16 *)(rec + 0x8E) && *(s16 *)(rec + 0x90) == 0)) {
+            *(s16 *)(rec + 0x86) = (*(s16 *)(rec + 0x86) + 1)
+                                 % D_800A3860[*(s16 *)(rec + 0x4A)]->f14;
+        } else if (D_800A38DC == 3 && *(s16 *)(rec + 6) != 0) {
+            func_800213A0((s16 *)rec);
+        }
+        return (void *)(D_801027B0[*(s16 *)(rec + 0x4A)][0]
+             + D_800A3860[*(s16 *)(rec + 0x4A)]->f4E[*(s16 *)(rec + 0x86)] * 2);
+    case 0x7FF3:
+        t = (*(s16 *)(rec + 0x86) + 1) % D_800A3860[*(s16 *)(rec + 0x4A)]->f14;
+        if ((t == *(s16 *)(rec + 0x88) && *(s16 *)(rec + 0x8A) == 0)
+         || (t == *(s16 *)(rec + 0x8E) && *(s16 *)(rec + 0x90) == 0)) {
+            t = (t + 1) % D_800A3860[*(s16 *)(rec + 0x4A)]->f14;
+        } else if (D_800A38DC == 3 && *(s16 *)(rec + 6) != 0
+                   && (t == *(s16 *)(rec + 0x88) || t == *(s16 *)(rec + 0x8E))) {
+            t = (t + 1) % D_800A3860[*(s16 *)(rec + 0x4A)]->f14;
+        }
+        return (void *)(D_801027B0[*(s16 *)(rec + 0x4A)][0]
+             + D_800A3860[*(s16 *)(rec + 0x4A)]->f54[*(s16 *)(rec + 0x86)][t] * 2);
+    }
+    if (id & 0x8000) {
+        if (*(s16 *)(rec + 0x4C) != 0) {
+            ch = *(s16 *)(*(u8 **)rec + 0x4A);
+        } else {
+            ch = *(s16 *)(rec + 0x4A);
+        }
+        return (void *)(D_801027B0[ch][0] + (id & 0x7FFF) * 2);
+    }
+    *(s16 *)out = 1;
+    return (void *)(D_80102760 + id * 2);
+}
 void func_800218C8(s32 a0) {
     s32 offset = a0 * 1100;
     *(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);
@@ -3701,90 +3833,5 @@ done:;
 }
 INCLUDE_ASM("asm/funcs", func_80023F08);
 
-/* Rodata moved from asm/data/800.rodata_post.s (rodata-cleanup project,
- * docs/rodata-cleanup-project.md, 2026-06-09). The 66-string animation/asset
- * table is referenced by func_80023F08 (stub above); the jump table is
- * referenced by func_80021424 (stub elsewhere in this file). Both stubs are
- * `replace_with_asmfile`-bridged; the asm bodies' external symbol references
- * resolve to these C definitions.
- *
- * Placed at end-of-file so the existing 148 bytes of switch-jtbl rodata
- * (from earlier functions in this TU) land at the original offsets
- * (0..148 = 0x80010068..0x800100FC) and these new arrays land at the
- * 800.rodata_post block's original address slot (0x800100FC..0x8001042C).
- *
- * Bracket-sized as [66][12] to match the asm/data block's fixed 12-byte
- * stride per animation name (8-char content + null + alignment pad). The
- * jtbl uses literal addresses (cc1 produces the same bytes regardless of
- * whether the addresses are written symbolically vs as constants). */
-const char D_800100FC[66][12] = {
-    "WIN     ",
-    "KARAMI_ED",
-    "RUN_ED  ",
-    "RUN_ST  ",
-    "CHAKUTI ",
-    "APPEAR  ",
-    "KAISHAKU_ST",
-    "HAJIKARE",
-    "SERIEXIT",
-    "SYAGAMI ",
-    "HOM_ED  ",
-    "HOM_AT  ",
-    "HOM_ST  ",
-    "ANOBORI ",
-    "KAMAE_KA",
-    "MOVE    ",
-    "NOBORI_E",
-    "NOBORI_S",
-    "FURI2   ",
-    "FURI1   ",
-    "YURI2   ",
-    "YURI1   ",
-    "GOKAKU  ",
-    "START   ",
-    "ARUN    ",
-    "STEP    ",
-    "WALK    ",
-    "LJUMP   ",
-    "MJUMP   ",
-    "SJUMP   ",
-    "KAMAE   ",
-    "DTH     ",
-    "RUN     ",
-    "SUNA    ",
-    "KARAMI  ",
-    "RELOAD  ",
-    "SERI    ",
-    "HAJI    ",
-    "UKE     ",
-    "SYASTEP ",
-    "SUBWEP  ",
-    "ORI     ",
-    "OKIAGARI",
-    "NOBORI  ",
-    "KZRE    ",
-    "KOROGARI",
-    "KAISYAKU",
-    "END_GAME",
-    "DAM     ",
-    "ATTACK  ",
-    "NORMAL  ",
-    "NULL    ",
-    "Y123.BBM",
-    "N123.BBM",
-    "K123.BBM",
-    "T123.BBM",
-    "S234.BBM",
-    "S125.BBM",
-    "S124.BBM",
-    "S123.BBM",
-    "U235.BBM",
-    "U135.BBM",
-    "U134.BBM",
-    "U125.BBM",
-    "U124.BBM",
-    "U123.BBM",
-};
-const u32 jtbl_80010414[6] = {
-    0x800214D0, 0x80021520, 0x80021578, 0x80021690, 0x80021578, 0x00000000,
-};
+/* Tail word after func_80021424's five-entry compiler-generated switch table. */
+const u32 D_80010428[1] = { 0x00000000 };
