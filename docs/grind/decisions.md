@@ -28766,3 +28766,69 @@ text applies all eight reviewers' replacement wording.
 only codegen effect of the function-scope declaration is one pseudo spanning several blocks, the same
 allocator effect the banned carriers relied on. It is admitted only when the reuse also reads as one
 role repeated per prongs 1-2. Allocator effect alone is never sufficient.
+
+## 2026-09-23 — OWNER RULING — Ruling 5 extension: identical writes, record picked beforehand (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question put to the owner (manual session, plain language): func_8006B120 sends one descriptor to
+the same routine five times (once up front, once per pass in four loops); each site runs the same two
+lines `p1 = s.p0 + 0xC; s.p1 = p1;` with `p1` declared once at the top. Ruling 5 admits a reused local
+only when each site picks its record with a constant subscript; here the record comes from a loop
+counter (`s.p0 = tbl[i + k];`) and one site is at function scope, the two grounds of the 2026-09-23
+layer-2 FAIL (borderline.md 2026-09-23 func_8006B120 family-candidate). Should Ruling 5 cover it?
+
+Owner (Trenton) selected, verbatim: "Yes, extend Ruling 5" — option text: "Record a narrow addition:
+allowed when the reassignment line is word-for-word identical at every site and each site feeds the
+same field. The record can be chosen by a loop counter, and one site can be at function level. Then
+land func_8006B120 as COMPLETED-C after a fresh reviewer pass."
+
+**Ruling (full text in the rule file, "Ruling 5 extension").** Replaces ONLY prongs 1(b) and 1(d), for
+a variable whose writes are all character-identical and whose consumers are all character-identical
+(no selector at all); the right-hand side reads the record through a member of the consumer's own
+object, assigned before each write (at the same nesting level, on every path) from an element of one and
+the same array of interchangeable sibling records at every site (same base expression; a pointer base
+must be an address-never-taken local or parameter, not reassigned between sites; global/static/field
+pointer bases never qualify), read directly in the member store (no staging local), the member store the last write to the member
+before its carrier write (no intervening write to or address-taking of the member/object), the counter
+a non-static, address-never-taken local, the
+subscript a constant or the innermost enclosing loop's counter (initialized to an integer constant immediately before each loop or in
+its `for` init clause, required for every such loop; stepped exactly once per iteration, on every path,
+by a nonzero-constant increment/decrement, whether in the body, condition or header; no other write
+from the first such initialization to the last carrier write) plus an optional constant, the member also read by something other than the
+carrier write, the 1(b) base conditions
+unchanged; each write is followed by its consumer in the same block; each site in its own distinct
+sibling block, except at most one site at function scope, preceding the others. All other Ruling 5 prongs (1(a), 1(c), 1(e), 1(f), 2, 3, 4) and the
+exclusivity clause apply unchanged; prong 2(c) applies in full and, in addition, the member must be
+re-assigned between writes to a different array element.
+
+**Evidence (func_8006B120 ledger, memory/grind/func_8006B120/hypotheses.md):** per-site local
+11/278; `s.p1 = s.p0 + 0xC` spellings 13/13/13; static-inline helper 11 (both parameterizations);
+permuter carrier-free-11 (53,192 iterations, 26 min, no closing find; every improvement a banned rec0
+borrow); allocation dump: the shared pseudo goes to global.c and is seated in v1 (target), per-site
+pseudos are local-alloc'd to v0.
+
+**Precedents re-checked, none reopened:** y1 (different consumers), func_80045878 `c` (different
+templates), func_80060A68 `src`/`idx` (unchanged-value re-load: prong 2(c) in full, plus the
+different-element re-assignment condition), func_800460E4 off_a/off_b, func_8002D780 `tmp`, constant-holders,
+cast-laundered bases.
+
+**Rule-text layer-2:** round 1 FAILed the first draft (subscript "any expression" broader than "a loop
+counter"; a once-written staging-local route (`rec0`) the owner never saw; prong 2(c) narrowed to a
+re-assignment check; "distinct" sibling blocks dropped; truncated owner quote). All five replacement
+wordings applied. The rec0 route was dropped rather than put to the owner: func_8006B120 measures 0/278
+with `s.p0 = tbl[0];` read directly (tmp/6b120v/v1.c), so it does not need it.
+Round 2 FAILed on provenance (a "caveat presented to the owner" heading the record does not support; the
+borderline resolution mixing the owner's words with the author's narrowing) and two tightenings
+("induction variable" undefined -> innermost loop counter, single constant increment on every path;
+a member read only by the carrier write is a staging slot). All four replacement wordings applied.
+Round 3 FAILed one new gap (sites could pick records from different named arrays, or a reassigned
+pointer base; 1(b)'s same-base clause was not carried over). Replacement wording applied.
+Round 4 FAILed one residual gap in the round-3 fix (a global or address-escaped pointer base can be
+re-pointed by a callee between sites). Replacement wording applied.
+Round 5 FAILed three residual gaps (an intervening member write could substitute a record from another
+base; the counter lacked round 4's address-escape bar; "assigns" vs "written" left `++`/`--` pointer
+walks ambiguous). Replacement wording applied.
+Round 6 FAILed one residual gap (the counter clause bounded body writes only, so a header/condition
+step such as `i = next[i]` passed). Replacement wording applied.
+Round 7 FAILed two defects (the constant initialization was permitted but not required, and the
+window let a pre-first-site write through; a `for (i = K; ...)` header init counted as a second in-loop
+write). Replacement wording applied.

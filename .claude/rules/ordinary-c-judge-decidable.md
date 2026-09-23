@@ -86,7 +86,7 @@ not a claim the evidence is line-for-line conclusive.
 **Multi-WRITE carriers remain banned** (the y1 FAIL, decisions.md:1833,
 and the 2026-08-30 21:30 `c` FAIL both stand; a fresh local written more
 than once is admitted ONLY if it meets every prong of Ruling 5
-(2026-09-23), which governs that variable exclusively: the reused variable itself may not
+(2026-09-23; as amended by its 2026-09-23 extension), which governs that variable exclusively: the reused variable itself may not
 also claim this entry or [[staged-value-reused-variable]]; other locals in
 the same body, including a Ruling 5 1(b)(ii) selector binding, are judged
 under their own entries.) All other prongs (real
@@ -310,6 +310,121 @@ effect the banned y1/`c`/`src` carriers relied on. This ruling admits that
 effect only when the reuse also reads as one role repeated per prongs 1-2.
 Allocator effect alone is never sufficient. Record: docs/grind/decisions.md
 2026-09-23 OWNER RULING.
+
+### Ruling 5 extension (owner, 2026-09-23) — identical writes, record picked beforehand
+
+Owner (Trenton), answering the func_8006B120 question, selected verbatim:
+"Yes, extend Ruling 5" — described to the owner as "Record a narrow addition:
+allowed when the reassignment line is word-for-word identical at every site
+and each site feeds the same field. The record can be chosen by a loop
+counter, and one site can be at function level. Then land func_8006B120 as
+COMPLETED-C after a fresh reviewer pass."
+
+This extension replaces ONLY prongs 1(b) and 1(d), and only for a variable
+meeting ALL of (A)-(D) below. Every other prong of Ruling 5 (1(a), 1(c),
+1(e), 1(f), 2, 3, 4) and the exclusivity clause apply unchanged.
+
+- **(A) No selector at all.** Every write statement of the variable is
+  textually identical, character for character (e.g. `p1 = s.p0 + 0xC;` at
+  every site), and every consumer statement is textually identical (e.g.
+  `s.p1 = p1;`). A write that differs in any way, including by subscript,
+  is judged under Ruling 5 as written, not under this extension.
+- **(B) The record is picked before the write, by an ordinary member
+  store.** The right-hand side reads the record through one member of the
+  SAME object whose member the consumer writes (`s.p0`, consumer `s.p1`).
+  Before each write, on every path reaching it, that member is assigned,
+  at the same nesting level as the write, an element of one array of
+  interchangeable sibling records. The member store's right-hand side is
+  the array element itself, read in that statement. On every path from a
+  member store to the carrier write that relies on it, the member store is
+  the LAST write to that member: no statement in that stretch writes the
+  member or the whole object (assignment, compound assignment, `++`/`--`,
+  a struct copy, or a copy routine), or takes the address of the object or
+  the member. An intervening write of any kind, even one that re-selects
+  from the same array, fails (B). Every member store, at
+  every site, reads its element from ONE AND THE SAME base expression (one
+  declared array or pointer variable, spelled identically at every site);
+  only the subscript may differ between sites. Member stores whose bases
+  are different named variables, parameters, globals or fields never
+  qualify, even when the objects have the same type. If the base is a
+  pointer variable, it must be a local variable or parameter of this
+  function whose address is never taken (no `&base` anywhere in the
+  function), and no statement of the function writes it (assignment, compound
+  assignment, `++`/`--`) between the first member store and the last
+  carrier write. A global pointer, a static
+  pointer, or a pointer held in a field of any object never qualifies as the
+  base, because a callee could re-point it between sites. The subscript is either
+  an integer constant or the counter of the INNERMOST loop whose body
+  contains the member store, plus an optional integer constant (e.g.
+  `s.p0 = tbl[i + 1];`). The counter must be a non-static local variable of this
+  function whose address is never taken (no `&counter` anywhere in the
+  function). Each loop whose counter is used in a subscript initializes
+  the counter to an integer constant, either by a plain assignment `i = K;`
+  that is the statement immediately before the loop, or by the init clause
+  of that loop's `for` header (`for (i = K; ...)`). This initialization is
+  required for every such loop, including the first, and it is not counted
+  as an in-loop write. Apart from that initialization, the counter is
+  written within the loop (its body, its condition, and the rest of a `for`
+  header) by exactly one statement or expression.
+  That write is an increment or decrement by a nonzero integer constant
+  (`i++`, `++i`, `i--`, `--i`, `i += K`, `i -= K`) and runs exactly once on
+  every path through each iteration. The counter has no other write
+  anywhere in the function between the first such initialization and the
+  last carrier write. A counter stepped any other way (e.g.
+  `i = next[i]`, `i *= 2`, `i = f(i)`) never qualifies. It must not be written
+  between the member store and the carrier write. No other subscript
+  expression qualifies. The array's base is subject to every base
+  condition of Ruling 5 1(b) unchanged: a declared array or pointer
+  variable, no cast or pun of an address in its declaration, initialization
+  or use, not an object whose slots the function uses in different roles,
+  elements used by the function in the same way. The member-store statement
+  must appear identically in the one-local-per-write spelling (prong 2(b));
+  it is ordinary program logic, not part of the carrier.
+  The member must also be read by at least one statement other than the
+  carrier write (for example the object is passed to a callee, or the
+  member is an argument). A member whose only reader is the carrier write
+  is a staging slot and fails (B), just as a staging local does.
+- **(C) Sites.** Each write is followed, in the same straight-line
+  sequence, by its consumer, and the two sit in the same block (prong 1(c)).
+  The sites are repetitions of one piece of code; each site sits in its own
+  distinct sibling block (a loop body or conditional arm), and no block
+  contains more than one site, except that at most ONE site may sit at
+  function scope rather than in a sibling block, and it must precede every
+  other site in the source.
+- **(D) Nothing else relaxes.** The variable is fresh, has no other job,
+  and is declared once at the innermost scope enclosing all its writes
+  (prong 3). No write stores the value the variable already holds (prong 2(c)),
+  judged by C semantics exactly as in prong 2(c); IN ADDITION, the member
+  read by the right-hand side must have been re-assigned since the previous
+  write, and that re-assignment must select a different array element than
+  the one the previous write read (a re-assignment that can re-select the
+  same element, e.g. a repeated constant subscript, fails). The per-write spelling, permuter
+  and allocation dump receipts (prong 4) are required as before.
+
+**Still banned under this extension:** everything Ruling 5 lists as still
+banned. y1 (different consumers) fails (A)/1(a); `c` (different
+templates) fails (A); `src`/`idx` (re-load of an unchanged value) fails (D);
+a carrier whose writes are identical but whose member was not re-assigned
+in between, or was re-assigned to the same element, fails (D); a record picked through a punned or multi-role
+base fails (B); a record picked from different named arrays or pointers at
+different sites, or through a pointer base that is reassigned between sites, is a
+global/static/field pointer, or has its address taken, fails (B); a member
+written again, or whose object's address is taken, between its qualifying
+member store and the carrier write fails (B); a subscript whose loop counter is not initialized to an integer constant
+immediately before (or in the `for` init clause of) each loop, or is stepped
+by anything other than one
+nonzero-constant increment/decrement per iteration (including in a loop
+header or condition) fails (B); a counter that is static or
+has its address taken, or a pointer base changed by `++`/`--`/compound
+assignment between sites, fails (B); two or more function-scope writes fail (C).
+
+**Known weakness (carried over from Ruling 5; NOT restated in the extension
+question as recorded in decisions.md):** as with Ruling 5, the only codegen effect of reusing the
+variable is one pseudo spanning all sites (func_8006B120: global.c seats it
+in v1 as the target does; per-site pseudos are local-alloc'd to v0,
+11/278). The extension admits that effect only for identical text feeding
+one field. Record: docs/grind/decisions.md 2026-09-23 OWNER RULING —
+Ruling 5 extension.
 
 ## What this ruling does NOT change
 

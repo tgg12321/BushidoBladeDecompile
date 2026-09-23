@@ -226,6 +226,7 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     decisions.md:1833, and the 2026-08-30 func_80045878 `c` FAIL stand;
     a fresh local written more than once is admitted ONLY if it meets
     every prong of [[ordinary-c-judge-decidable]] Ruling 5 (2026-09-23),
+    as amended for identical-text writes by its 2026-09-23 extension,
     which governs that variable exclusively: the reused variable itself may
     not also claim this entry or [[staged-value-reused-variable]]; other
     locals in the same body, including a Ruling 5 1(b)(ii) selector
