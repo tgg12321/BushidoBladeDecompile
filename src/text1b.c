@@ -4794,8 +4794,6 @@ end:
     D_800F1148 = *p;
     D_800A3464 = 0xFF8080;
 }
-extern s16 D_800A34F0;
-extern s16 D_800A34F2;
 void func_80061C00(s32 arg0, s32 arg1, s32 arg2) {
     s16 sp10[4];
     s16 sp18[4];
@@ -4837,13 +4835,13 @@ void func_80061C00(s32 arg0, s32 arg1, s32 arg2) {
     }
     *(s32 *)(D_800A3468 + 0x14) = (s32)(D_800F1164 + 2);
     *(s32 *)D_800A3468 = 0x10016;
-    D_800A34F0 = arg2;
+    D_800A34F0[0] = arg2;
     goto end;
 check_one_zero:
     if ((D_800F1164 + 2)[1] == 0) {
         *(s32 *)(D_800A3468 + 0x14) = (s32)(D_800F1164 + 3);
         *(s32 *)D_800A3468 = 0x10017;
-        D_800A34F2 = arg2;
+        D_800A34F0[1] = arg2;
     }
 end:
     func_80060A68();

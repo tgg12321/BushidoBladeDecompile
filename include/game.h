@@ -151,4 +151,28 @@ typedef struct {
 
 extern Unk800EFAE8Ctrl D_800EFAE8;
 
+/* Two s16 slots at 0x800A34F0, indexed as one array. Object model evidence
+ * (the original binary, independent of any byte-chasing): asm/funcs/func_800678A8.s
+ * reads the pair through ONE indexed access, `lh %lo(sym)(base + arg0*2)` with the
+ * base folded to 0x800A34F0 - 8 for arg0 = 4/5 (callers func_800677B8 /
+ * func_800677F4), and asm/funcs/func_80067D14.s forms the same folded base with
+ * %hi/%lo. func_80061C00 writes slot 0 or slot 1 with the same value. Replaces
+ * the splat per-word scalars D_800A34F0 / D_800A34F2. */
+extern s16 D_800A34F0[2];
+
+/* Record table at 0x800F0C10 (0x90 bytes, ends at D_800F0CA0): 4 rows of 3
+ * records of 3 s32 words. Object model evidence (the original binary):
+ * asm/funcs/func_800678A8.s addresses it as base + arg1*36 + idx*12 (+0/+4/+8),
+ * i.e. a row stride of 36 bytes and a record stride of 12; arg1 ranges 0..3
+ * (callers func_800676C8..func_8006786C). The still-asm func_80067200 and
+ * func_80067D14 reach the same words. Replaces the splat per-word scalars
+ * D_800F0C10 / D_800F0C14 / D_800F0C18. */
+typedef struct {
+    /* 0x0 */ s32 unk0;
+    /* 0x4 */ s32 unk4;
+    /* 0x8 */ s32 unk8;
+} Unk800F0C10Record;
+
+extern Unk800F0C10Record D_800F0C10[4][3];
+
 #endif /* GAME_H */
