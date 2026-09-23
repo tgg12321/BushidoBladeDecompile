@@ -1,6 +1,9 @@
 # func_8001FBE8 — evidence (manual session 2026-09-23)
 
 ## State
+- **COMPLETED-C 2026-09-23** (Match commit on main; `queue done` ok, SHA1 == oracle). The shared `rec`
+  is admitted under owner Ruling 6 (ef4f8cdad); the layer-2 landing review PASSed every prong (A)-(G).
+  The bullets below are the pre-ruling history.
 - `candidate.c` = sandbox `--disable all` **0 (289/289)**; the earlier form of this
   body (with `off` + `other`) also reached full-build SHA1 == oracle 62efab4f when spliced
   (verify-oracle --rebuild, 2026-09-23). The cleaned candidate differs only by
