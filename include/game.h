@@ -109,6 +109,48 @@ typedef struct {
 
 extern Unk8009BC94Record D_8009BC94[][6];
 
+/* 0x8009B398: table of 4 twelve-byte records (0x8009B398..0x8009B3C7;
+ * D_8009B3C8 follows, different data). Object model evidence from the original
+ * binary, independent of the byte-chasing session: asm/funcs/func_8005E098.s
+ * forms ONE base `lui $s7,%hi(D_8009B3B0); addiu $s7,$s7,%lo(D_8009B3B0)`
+ * (record 2) and reaches record 3 as `addiu $v1,$s7,0xC` and record 0 as
+ * `addiu $a0,$s7,-0x18` -- base+offset addressing of one object at a 12-byte
+ * stride. Data: all four records share one shape (word 0 = 0x0001001F,
+ * word 2 = 0). Replaces the splat per-word scalars D_8009B398 / D_8009B3A4 /
+ * D_8009B3B0 / D_8009B3BC in C (per-word splat symbol -> aggregate merge family,
+ * owner ruling 2026-08-17); the dlabels stay in asm/data for the still-asm
+ * func_8005D814 / func_8005F1C8 / func_8005E54C. */
+typedef struct {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+} Unk8009B398Record;
+
+extern Unk8009B398Record D_8009B398[4];
+
+/* 8-byte sprite records {s16, s16, u8 x4}. Object model evidence from the
+ * original binary, independent of the byte-chasing session:
+ * asm/funcs/func_8005E098.s and asm/funcs/func_8005D814.s index 0x8009B400 by a
+ * digit value through a shift-3 (8-byte-stride) index, and func_8005E098 stores
+ * an s16 to offset 0 of the indexed record (`sh $v0,0x0($v1)`); it indexes 0x8009B458 by `sra 13` of an
+ * s16 counter (i * 8) and 0x8009B468 / 0x8009B470 by counter * 16 -- pairs of
+ * 8-byte records. Data: 0x8009B400..0x8009B44F is 10 records (one per digit),
+ * 0x8009B458..0x8009B487 is 6 records of the same shape; D_8009B450 and
+ * D_8009B488 follow. Replaces the splat per-word scalars D_8009B458 /
+ * D_8009B468 / D_8009B470 in C (per-word splat symbol -> aggregate merge
+ * family, owner ruling 2026-08-17). */
+typedef struct {
+    s16 unk0;
+    s16 unk2;
+    u8 unk4;
+    u8 unk5;
+    u8 unk6;
+    u8 unk7;
+} Unk8009B400Record;
+
+extern Unk8009B400Record D_8009B400[10];
+extern Unk8009B400Record D_8009B458[3][2];
+
 /* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
  * (independent of and predating any byte-chasing): the original binary
  * addresses the whole block through ONE base register -- asm/funcs/func_80054604.s
