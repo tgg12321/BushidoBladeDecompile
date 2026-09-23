@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80071C4C",
-      "file": "text1b",
-      "distance": 270,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_SsVmFlush",
       "file": "main",
       "distance": 271,
@@ -934,14 +926,14 @@
     }
   ],
   "counts": {
-    "total": 96,
-    "active": 87,
+    "total": 95,
+    "active": 86,
     "by_status": {
-      "active": 87,
+      "active": 86,
       "rotated": 9
     },
     "by_verdict": {
-      "C": 67,
+      "C": 66,
       "ASM-PARTIAL": 20
     }
   },
