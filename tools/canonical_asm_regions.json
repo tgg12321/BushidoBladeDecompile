@@ -208,6 +208,13 @@
       "sha256": [
         "3e5630022b5af3159b63fa0edc1b8ef55f4f36c8fb74270e096879ddf4931dd4"
       ]
+    },
+    "func_800678A8": {
+      "file": "text1b",
+      "sha256": [
+        "8961b0c8392d0778799f80983fd9e48f800a1fba3f1fa62fe0add30085c540d7",
+        "adcf86c232f33923bb694a1ed4312f7d878bf0f98cbaddd438afe4b434e8ce1d"
+      ]
     }
   }
 }

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800678A8",
-      "file": "text1b",
-      "distance": 283,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80021DB0",
       "file": "code6cac",
       "distance": 285,
@@ -900,15 +892,15 @@
     }
   ],
   "counts": {
-    "total": 91,
-    "active": 80,
+    "total": 90,
+    "active": 79,
     "by_status": {
-      "active": 80,
+      "active": 79,
       "rotated": 11
     },
     "by_verdict": {
-      "ASM-PARTIAL": 20,
-      "C": 60
+      "C": 60,
+      "ASM-PARTIAL": 19
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
