@@ -86,12 +86,14 @@ not a claim the evidence is line-for-line conclusive.
 **Multi-WRITE carriers remain banned** (the y1 FAIL, decisions.md:1833,
 and the 2026-08-30 21:30 `c` FAIL both stand; a fresh local written more
 than once is admitted ONLY if it meets every prong of Ruling 5
-(2026-09-23; as amended by its 2026-09-23 extension), which governs that variable exclusively: the reused variable itself may not
-also claim this entry or [[staged-value-reused-variable]]; other locals in
-the same body, including a Ruling 5 1(b)(ii) selector binding, are judged
-under their own entries.) All other prongs (real
-value, byte-neutral, fresh not borrowed, destination not
-live-pre-initialized, standard prerequisites) are unchanged.
+(2026-09-23; as amended by its 2026-09-23 extension) or of Ruling 6
+(2026-09-23), whichever governs that variable, exclusively: the reused
+variable itself may not also claim this entry or
+[[staged-value-reused-variable]]; other locals in the same body,
+including a Ruling 5 1(b)(ii) selector binding, are judged under their
+own entries.) All other prongs (real value, byte-neutral, fresh not
+borrowed, destination not live-pre-initialized, standard prerequisites)
+are unchanged.
 
 ## Ruling 2 — dead-store deadness is STORE-level
 
@@ -189,7 +191,8 @@ though." Then, after the proposal was laid out: "I approve for now assuming
 this is not a cheat".
 
 A FRESH local written more than once is admitted ONLY if it meets EVERY prong
-below. This ruling governs that case exclusively: the reused variable itself
+below (a variable meeting every prong of Ruling 6 is judged under Ruling 6
+instead). This ruling governs that case exclusively: the reused variable itself
 may not claim the named-intermediate relaxation (Ruling 1; its reads are
 governed by this ruling's prong 1(c) alone) or [[staged-value-reused-variable]], and no consumer
 of it may be a staged-value borrow. Other locals in the body, including a
@@ -425,6 +428,121 @@ in v1 as the target does; per-site pseudos are local-alloc'd to v0,
 11/278). The extension admits that effect only for identical text feeding
 one field. Record: docs/grind/decisions.md 2026-09-23 OWNER RULING —
 Ruling 5 extension.
+
+## Ruling 6 (owner, 2026-09-23) — one record pointer, one write per exclusive path
+
+**Question as put to the owner** (manual session, plain language; the filed
+form is docs/grind/borderline.md 2026-09-23 func_8001FBE8): "a programmer
+declares `p`, uses it for record A in one branch, and reuses it for a
+different record in another branch that never runs alongside the first.
+Should that count as ordinary C, or stay banned?" The owner asked for the
+author's view and was given it: not a cheat, allow it with tight limits,
+"I'd close that off by allowing it only when all of these hold:"
+
+> 1. **Same role and type in every path.** Here, a pointer to a record in one
+>    table. Reusing a counter as a pointer, or a variable that meant something
+>    else earlier, stays banned.
+> 2. **The paths are mutually exclusive.** One returns, or they're if/else arms.
+> 3. **Each path assigns it once, before reading it.** No re-staging inside a
+>    path. Once per loop iteration counts as once.
+> 4. **Receipts are recorded.** The split-variable version is measured, and its
+>    remaining diffs are register-only.
+
+The view also stated: "The register placement here is *evidence* of what the
+original source looked like. The *justification* is that one shared `rec` is
+ordinary code that would pass on its own merits, even if it changed no bytes."
+It also stated that the banned func_8003FA24 shape fails conditions 2 and 3.
+
+Owner (Trenton), verbatim: "Agree, go ahead".
+
+**Rule text.** This is the author's narrowing of those four conditions, not the
+owner's words. A fresh local written more than once that meets EVERY prong
+(A)-(G) below is judged under this ruling INSTEAD of Ruling 5 and its
+extension. A variable that misses any prong of (A)-(F) gets nothing from this
+ruling. It is judged under Ruling 5 (as amended by its extension) and fails
+unless it meets every prong there; a claim of this ruling that fails a prong
+is a FAIL(CONSTRUCT) under Ruling 1 unless Ruling 5 independently admits the
+variable. The variable may not also claim Ruling 1's named-intermediate
+relaxation or [[staged-value-reused-variable]], and no consumer of the
+variable may be a staged-value borrow. Other locals in the body are judged
+under their own entries.
+
+- **(A) Mutually exclusive regions** (condition 2). Every write statement of
+  the variable lies in exactly one REGION, and there are at least two regions.
+  A region is one arm of an if/else, or a block that every path through it
+  leaves by `return`, or the final region of the function: the statements from
+  the end of the last other region to the end of the function. No execution
+  passes through statements of two different regions. Every read of the
+  variable lies in the same region as the write it reads. The variable is
+  never read outside the regions.
+- **(B) One write per region, before every read** (condition 3). Each region
+  contains exactly ONE write statement of the variable. On every path through
+  the region, that write executes before any read of the variable in the
+  region. If the write sits inside a loop, it is the FIRST statement of that
+  loop's body, and every read of the variable lies inside that loop's body
+  and reads the value written earlier in the same iteration. A read after the
+  loop, or in the loop's header or condition, fails (B).
+  A second write in the same region, of any kind (assignment, compound
+  assignment, `++`/`--`), fails (B).
+- **(C) Same role, same table** (condition 1). Every write's right-hand side
+  is the address of an element of ONE AND THE SAME record table, spelled
+  identically at every write except for the index expression. The spelling is
+  either `&tbl[IDX]`, where `tbl` is a declared array of records, or the
+  record-base form `&BASE + IDX * STRIDE` with identical `BASE` and `STRIDE`
+  at every write. The record-base form is the convention the Judge cleared for
+  func_8002C61C (decisions.md 2026-09-06 06:44). The right-hand side contains
+  no cast. `IDX` is an integer constant or a read, with no side effects, of
+  one integer scalar variable (a local, a parameter or a global). In every
+  region the variable is used ONLY to reach the record that region processes.
+  It is dereferenced at a constant field offset (reading or writing a field,
+  or loading a pointer stored in the record). Or the record's address, plus an
+  optional constant field offset and optionally cast to the callee's
+  parameter type, is passed to a callee. It is never stored to memory,
+  compared, returned, or used in any other arithmetic.
+- **(D) Fresh, one job** (condition 1). The variable has a pointer type and no
+  other job. It is not a loop counter, it is not reused from an earlier
+  purpose, and it is declared once, at the innermost scope that encloses every
+  region. Its name names the record role (e.g. `rec`). Generic names (`tmp`,
+  `t`, `temp`, `val`, `v`, `p`, `ptr`, `new_var`, register-style names) never
+  satisfy this prong.
+- **(E) Nothing added.** The shared spelling and the one-local-per-region
+  spelling have the SAME statement list. They differ only in declarations and
+  identifiers.
+- **(F) Receipts** (condition 4). The one-local-per-region spelling is
+  measured and recorded in the ledger as failing, together with at least one
+  structural respelling. Its sandbox `--diff` has NO source-level hunk. EVERY
+  hunk, whether classed operand-only or not-scored, pairs target and split
+  instructions with the same opcodes in the same order and identical
+  immediates, memory offsets, symbols and relocation addends. Only register
+  operands and branch/jump targets may differ. Branch and jump targets are
+  compared as offsets from the function's first instruction, not as raw
+  addresses. The sandbox object is unlinked, so raw targets differ by one
+  constant for the whole function. That delta must be the same constant at
+  every branch and jump in every hunk; any other raw-target delta counts as a
+  non-register difference. A not-scored hunk that differs in anything other
+  than a branch/jump target (for example a section-relative addend) is a
+  non-register difference. Any non-register difference means the sharing is
+  doing more than holding one pointer, and this ruling does not apply.
+- **(G) Normal review.** Layer-1 and the Judge, or layer-2 on the manual path,
+  apply unchanged.
+
+**What stays banned, and why each still fails:** func_8003FA24 `half`
+(borderline.md 2026-09-22: straight-line staging of constants in one path,
+which fails (A), (B) and (C)); func_800200DC `y1` (fed `dx` then `dy` in one
+path, which fails (B)); func_80045878 `c` (several writes in one path, one of
+them a constant, which fails (B) and (C)); func_80060A68 `src`/`idx` (re-load in
+one path, which fails (B)); a counter or any other variable pressed into
+service as the record pointer (fails (D)); a pointer carried out of its region
+into later code (fails (A)); a record picked through a cast or from a different
+table in another region (fails (C)). This ruling reopens none of them.
+
+**Known weakness:** as with Ruling 5, the only codegen effect of the sharing is
+one pseudo spanning every region (func_8001FBE8: the call-free D_800A3758 block's
+pointer is seated in callee-saved `$s1` with the loop's pointer, as in the
+target; split locals put it in `$a1`, 14/289, every scored hunk operand-only).
+Allocator effect alone is never sufficient. This ruling admits the effect only
+when the sharing reads as ordinary one-role C under (A)-(F). Record:
+docs/grind/decisions.md 2026-09-23 OWNER RULING — Ruling 6.
 
 ## What this ruling does NOT change
 

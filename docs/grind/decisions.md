@@ -28871,3 +28871,49 @@ registry row, and the `inline_asm_canonical.txt` row was a self-grant.
 Rule text (the author's narrowing, not the owner's words): `.claude/rules/inline-asm-policy.md` § "Owner ruling 2026-09-23 — verbatim PsyQ GTE macro islands in ordinary C". Macro-provenance evidence (verbatim, cited, pinned by hash, confirmed against a second independent copy) is admitted in place of a STRONG scan tier. It covers only inline GTE islands with no preamble or extra instructions; header/macro-by-name forms are excluded, overriding the cop2 rule's preferred-header sentence for this class, tagged `gcc-cannot-emit:gte_cop2_sdk_macro`, with a separate `auth:` commit ahead of the body (G1 split, G6 attempt log, both required by the ruling; the audit enforces them on the body commit only for islands with non-whitelisted instructions), region hashes, and a layer-2 macro-text check. It is an owner exception to judge-sole-gate rule 3 and the escalation-not-parked AUTO-REJECT bullet, grounded in SOTN precedent (cop2-addressing-preamble-cluster.md § Condition 3 clarified). Manual path only; a driver implementation needs its own ruling.
 
 Review: layer-2 FAILed the first draft (edits A-F) then the second draft (G2 changed to G1/G6; header-form conflict with cop2-addressing-preamble-cluster stated and cross-referenced), then the third (gate enforcement scope stated accurately); all edits applied. The candidate and review record are in memory/grind/func_800678A8/evidence.md.
+
+## 2026-09-23 — OWNER RULING — Ruling 6: one record pointer, one write per exclusive path (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question put to the owner (manual session, plain language; filed as borderline.md 2026-09-23 func_8001FBE8
+family-candidate): func_8001FBE8's only byte-exact body uses one `u8 *rec` in two paths that never both run
+(the call-free D_800A3758 != 0xFF block, which returns, and the per-player loop). Each path sets it once, then
+uses it. The body was FAILed twice by layer-2. The second FAIL ruled the shared `rec` out under Ruling 5
+prongs 1(a)-(d) and 3; the first FAIL concerned a separate local (`other`), since removed. "Should that count
+as ordinary C, or stay banned?" The owner asked for the author's view and was given four limits, quoted
+verbatim in the rule file: (1) same role and type in every path, (2) paths mutually exclusive, (3) each path
+assigns it once before reading, with once per loop iteration counting as once, (4) receipts showing that the
+split-variable version's remaining diffs are register-only.
+
+Owner (Trenton), verbatim: "Agree, go ahead".
+
+**Ruling (full text in the rule file, "Ruling 6"; the prongs are the author's narrowing, not the owner's
+words).** A fresh multi-written local meeting every prong (A)-(G) is judged under Ruling 6 instead of Ruling
+5: (A) the writes lie in two or more mutually exclusive regions (if/else arms, blocks every path leaves by
+return, or the function's final region), and every read is in its write's region; (B) exactly one write per
+region, before every read; inside a loop it is the first statement of the body and every read stays in that
+iteration (no read after the loop); (C) every right-hand side is the address of an element of one and the same
+record table, spelled identically except for the index (either `&tbl[IDX]` or the func_8002C61C record-base
+form `&BASE + IDX * STRIDE`), with no cast, and the variable is used only to reach that record; (D) a fresh
+pointer with no other job and a role name; (E) the same statement list as the split spelling; (F) the split
+spelling measured failing, with no source-level hunk and every hunk (operand-only or not-scored) differing
+ONLY in register operands, with branch/jump targets compared relative to the function start under a uniform
+raw delta; (G) normal review.
+
+**Evidence (memory/grind/func_8001FBE8/):** shared-`rec` body 0/289, full-build SHA1 == oracle. Split locals
+(function-scope `sel`, block-local `sel`, and the else-if restructure) 14/289, 0 source-level hunks, 8
+operand-only (s1 vs a1 in the call-free block). SOTN src/dra/8D3E8.c `var_v1` (one scalar local written once
+per exclusive switch arm, from a different table per arm) supports the general idea only loosely. It is a
+scalar, not a record pointer, and switch arms are not admitted by this ruling. Precedents re-checked, none
+reopened: func_8003FA24 `half`, y1, `c`, src/idx.
+
+**Rule-text layer-2:** round 1 FAILed the first draft on five points. (F) admitted more than register-only
+diffs, because operand-only also covers offsets and immediates. (B) let a loop-carried value be read after the
+loop. (A) admitted switch cases, which the owner's condition 2 does not list. The fall-back sentence
+contradicted itself. This record misstated the FAIL history. All five replacement wordings were applied. The
+SOTN citation was downgraded to loose, general support. Round 2 FAILed one gap: the literal (F) wording
+rejected func_8001FBE8's own receipts, whose operand-only hunks carry unlinked branch/jump targets with a
+uniform 0x44C8 raw delta. The replacement wording (targets compared relative to the function start, with a
+uniform delta required) was applied, and the final region is now defined as the statements from the end of the
+last other region to the end of the function. Round 3 FAILed one gap: (F) constrained only scored hunks, but
+not-scored also masks section-relative addends. (F) now quantifies over every hunk. func_8001FBE8's 23
+not-scored hunks are all branch/jump targets at the uniform 0x44C8 delta, so its receipts still satisfy (F).
