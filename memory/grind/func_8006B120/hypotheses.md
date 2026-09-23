@@ -67,3 +67,15 @@ Also measured after the FAIL: `static inline submit(arg0, &s)` helper (p1 comput
 helper taking `s.p0 + 0xC` as a parameter 11. Inline copies are per-site pseudos, same as per-block.
 Frontier: an authentic source shape where one pseudo spans the five sites without a reused local
 (e.g., the loops as one data-driven loop over a table, if the asm permits), or the owner ruling.
+
+## CLOSED — COMPLETED-C (manual session 2026-09-23, second sitting)
+- Prototype placeholder in src/text1b.c (4 x s32) fixed to `s32 *arg0` (18e1f614e, byte-neutral).
+- Owner answered the borderline question: "Yes, extend Ruling 5". The rule text went through 8 layer-2
+  rounds and landed in af39d970a ("### Ruling 5 extension", ordinary-c-judge-decidable.md).
+- rec0 dropped: `s.p0 = tbl[0];` directly after the tbl load scores 0/278 (the earlier ablation placed
+  it after the zero stores: 4). Landed body = candidate.c (== tmp/6b120v/v1.c).
+- One-local-per-write spelling of THIS rec0-free body: 11/278 (re-measured independently by the
+  layer-2 code reviewer, tmp/6b120_review/pw.c). Reuse form: 0/278; verify-oracle --rebuild SHA1 ==
+  oracle. The permuter campaign (53k iterations) ran on the rec0-carrying per-write form; its result
+  (no close, only rec0 borrows) is unaffected by rec0's removal.
+- Layer-2 code review: PASS under extension clauses (A)-(D) and the retained Ruling 5 prongs.

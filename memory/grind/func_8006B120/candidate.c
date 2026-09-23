@@ -13,29 +13,22 @@ typedef struct {
     s8 c29, c2A, c2B;
 } S_6B120;
 
-typedef struct {
-    s16 x, y, w, h;
-} S_6B120_rect;
-
 void func_8006B120(s32 *arg0) {
     S_6B120 s;
-    S_6B120_rect r;
+    u16 r[4];
     s32 *tbl;
     s32 i;
-    s32 rec0;
+    s32 p1;
 
     s.flag28 = 0;
     s.n14 = 10;
     tbl = *(s32 **)(arg0[1] + 0x28);
-    rec0 = tbl[0];
+    s.p0 = tbl[0];
     s.y1C = 0;
     s.x18 = 0;
     s.flag10 = 0;
-    s.p0 = rec0;
-    {
-        s32 p1 = s.p0 + 0xC;
-        s.p1 = p1;
-    }
+    p1 = s.p0 + 0xC;
+    s.p1 = p1;
     s.chain = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     SetDrawMode(arg0[7], 1, 0, func_8006E480(s.p0, 0), 0);
@@ -56,10 +49,8 @@ void func_8006B120(s32 *arg0) {
             s.y1C = 0;
             s.flag10 = 1;
         }
-        {
-            s32 p1 = s.p0 + 0xC;
-            s.p1 = p1;
-        }
+        p1 = s.p0 + 0xC;
+        s.p1 = p1;
         s.chain = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
@@ -86,10 +77,8 @@ void func_8006B120(s32 *arg0) {
         } else {
             s.flag10 = 1;
         }
-        {
-            s32 p1 = s.p0 + 0xC;
-            s.p1 = p1;
-        }
+        p1 = s.p0 + 0xC;
+        s.p1 = p1;
         s.chain = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
@@ -115,10 +104,8 @@ void func_8006B120(s32 *arg0) {
         } else {
             s.flag10 = 1;
         }
-        {
-            s32 p1 = s.p0 + 0xC;
-            s.p1 = p1;
-        }
+        p1 = s.p0 + 0xC;
+        s.p1 = p1;
         s.chain = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
@@ -144,10 +131,8 @@ void func_8006B120(s32 *arg0) {
         } else {
             s.flag10 = 1;
         }
-        {
-            s32 p1 = s.p0 + 0xC;
-            s.p1 = p1;
-        }
+        p1 = s.p0 + 0xC;
+        s.p1 = p1;
         s.chain = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         i++;
@@ -158,9 +143,9 @@ void func_8006B120(s32 *arg0) {
     SetDrawMode(arg0[7], 1, 0, func_8006E480(s.p0, 0), 0);
     AddPrim(D_800A374C + 0x28, arg0[7]);
     arg0[7] += 0xC;
-    r.w = 0xAF;
-    r.x = 0xE8;
-    r.y = 0x25;
-    r.h = 1;
-    func_80069898((GameObj *)arg0, (u16 *)&r, 0x11);
+    r[2] = 0xAF;
+    r[0] = 0xE8;
+    r[1] = 0x25;
+    r[3] = 1;
+    func_80069898((GameObj *)arg0, r, 0x11);
 }
