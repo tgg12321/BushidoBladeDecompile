@@ -6881,10 +6881,9 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 }
 INCLUDE_ASM("asm/funcs", func_8006A880);
-/* Signature UNVERIFIED — restated verbatim from the pre-INCLUDE_ASM stub so cc1's
- * input is unchanged for the caller(s) below; the asm proves at least 1 argument(s). See
- * memory/grind/func_8006B120/pre-include-asm-body.c. */
-void func_8006B120(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+/* One argument: the caller's s32[10] draw context (asm reads a0 only; see
+ * memory/grind/func_8006B120/hypotheses.md). */
+void func_8006B120(s32 *arg0);
 INCLUDE_ASM("asm/funcs", func_8006B120);
 /* func_8006B578 — menu/config input dispatch. The second `switch` makes GCC
  * synthesize a 6-entry jump table into this TU's .rodata; bb2.ld places
