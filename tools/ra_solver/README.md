@@ -104,7 +104,7 @@ Measured negatives worth not re-deriving: **`display.c` has zero retry calls**,
 so the prologue twins (func_8007C2A0 / func_8007C4B8) never enter reload's
 spill loop; and saTan4FireDisp has exactly **one** retry-affected pseudo (the
 `mulhi` for `channel / 255`, `$hi` → `$t1`), which does not touch its `$s`
-rotation. Full write-up: `memory/wip/_reload_solver_2026-08-06.md`.
+rotation. Full write-up: `docs/campaigns/2026-08-solver-surveys/reload_solver_2026-08-06.md`.
 
 ## Phase 5 stage 2 — reload spill-retry (superseded by Phase 6 above)
 
