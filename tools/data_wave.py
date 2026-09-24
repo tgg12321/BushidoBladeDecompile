@@ -21,7 +21,8 @@ of the proposed name, across every surface where a data name is a key:
 
 Byte-neutrality is the claim, the oracle is the proof: run
 `python3 -m engine.cli verify-oracle --rebuild --allow-dirty` after --apply.
---apply refuses a dirty working tree so `git checkout` is always a clean rollback.
+--apply refuses when a path it would edit is already dirty, so `git checkout` of its paths is
+always a clean rollback (other agents' dirt elsewhere is tolerated, as in naming_wave.py).
 
 Usage:
   python3 tools/data_wave.py                      # dry run over the default manifest
@@ -40,7 +41,11 @@ REGISTRIES = ["undefined_syms_auto.txt", "named_syms.txt", "symbol_addrs.txt"]
 SYM_LINE = re.compile(r"^(\s*)([A-Za-z_]\w*)(\s*=\s*)(0x[0-9A-Fa-f]{8})(\s*;)(.*)$")
 AUTO = re.compile(r"^(D|func)_[0-9A-Fa-f]{8}$")
 ADDR = re.compile(r"^0x8[0-9A-Fa-f]{7}$")
-LIST_FILES = ["volatile_extern_allowlist.txt", "sdata_funcs.txt", "sdata_exclude.txt"]
+# sdata_syms.txt is load-bearing: maspsx (--sdata-syms) emits %gp_rel only for symbols listed
+# there, so a C-side rename that leaves the old spelling in it silently turns a gp-relative
+# access into lui+lw and shifts every later byte (2026-09-24 sweep verifier finding).
+LIST_FILES = ["volatile_extern_allowlist.txt", "sdata_funcs.txt", "sdata_exclude.txt", "sdata_syms.txt"]
+WAVE_TAG = "data-wave " + __import__("datetime").date.today().isoformat()
 
 
 def die(msg):
@@ -69,10 +74,6 @@ def main() -> int:
     ap.add_argument("--manifest", default="", help="write the edit manifest JSON here")
     a = ap.parse_args()
 
-    if a.apply:
-        st = subprocess.run(["git", "status", "--short"], cwd=ROOT, capture_output=True, text=True).stdout
-        if st.strip():
-            die("working tree is dirty — commit or stash first so git checkout is a clean rollback:\n" + st)
 
     rows = [r for r in csv.DictReader(open(a.manifest_csv, encoding="utf-8", errors="replace"))
             if (r.get("verdict") or "CONFIRM").strip().upper() == "CONFIRM"]
@@ -170,7 +171,7 @@ def main() -> int:
                 addr = m.group(4).lower(); new = code_map[m.group(2)]
                 if addr in obj_addrs:
                     cmt = "/* %s */" if rel != "symbol_addrs.txt" else "// %s"
-                    out.append(cmt % f"data-wave 2026-09-07: {m.group(2)} = {m.group(4)} retired; {new} is now object-defined")
+                    out.append(cmt % f"{WAVE_TAG}: {m.group(2)} = {m.group(4)} retired; {new} is now object-defined")
                     reg_report.append(f"{rel}:{i} dropped {m.group(2)} (object now defines {new})")
                     n += 1
                     continue
@@ -180,7 +181,7 @@ def main() -> int:
                     continue
                 seen.add((new, addr))
                 tail = m.group(6)
-                note = f"  /* data-wave 2026-09-07: was {m.group(2)} */" if rel != "symbol_addrs.txt" else f"  // data-wave 2026-09-07: was {m.group(2)}"
+                note = f"  /* {WAVE_TAG}: was {m.group(2)} */" if rel != "symbol_addrs.txt" else f"  // {WAVE_TAG}: was {m.group(2)}"
                 if m.group(2) != new:
                     out.append(f"{m.group(1)}{new}{m.group(3)}{m.group(4)}{m.group(5)}{tail}{'' if 'data-wave' in tail else note}")
                     reg_report.append(f"{rel}:{i} {m.group(2)} -> {new}")
@@ -215,6 +216,16 @@ def main() -> int:
     if not a.apply:
         print("\nDRY RUN — nothing written. Re-run with --apply.")
         return 0
+    # Rollback point: only OUR paths must be clean. Other agents work the repo concurrently and
+    # their dirt elsewhere is none of this tool's business (same rule as naming_wave.py).
+    st = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True)
+    if st.returncode != 0:
+        die("git status failed; cannot establish a rollback point")
+    dirty = {ln[3:].strip().strip('"').split(" -> ")[-1] for ln in st.stdout.splitlines()}
+    clash = sorted(dirty & set(edits))
+    if clash:
+        die("these paths already carry uncommitted changes, so git checkout would not be a "
+            "clean rollback:\n  " + "\n  ".join(clash))
     for rel, (t, n) in edits.items():
         nw.write_lf(ROOT / rel, t)
     # residual audit: any old name still present outside comments?
