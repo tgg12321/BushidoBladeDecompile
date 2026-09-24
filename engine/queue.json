@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "vmNoiseOn",
-      "file": "main",
-      "distance": 305,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80018300",
       "file": "code6cac",
       "distance": 307,
@@ -767,15 +759,15 @@
     }
   ],
   "counts": {
-    "total": 75,
-    "active": 64,
+    "total": 74,
+    "active": 63,
     "by_status": {
-      "active": 64,
+      "active": 63,
       "rotated": 11
     },
     "by_verdict": {
-      "C": 48,
-      "ASM-PARTIAL": 16
+      "ASM-PARTIAL": 16,
+      "C": 47
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
