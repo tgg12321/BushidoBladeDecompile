@@ -135,6 +135,9 @@ order is invariant under every spelling measured:
 | `n = *hdr` spelling | hdr[0] emitted first |
 | `hdr[1]` read through a second pointer | hdr[0] emitted first |
 | `hdr[1]` read last of all (vF1) | **47** — badly worse, +3 insns |
+| `if (n >= 3)` guard moved ahead of `dl`, splitting the block (vK1) | **52** — +2 insns |
+| same, with a shared `hp = hdr + n` pointer (vK2) | **50** — +1 insn |
+| shared `hp = hdr + n`, original order (vK3) | 9 — neutral |
 
 **Consequence:** to flip this, the `last` chain must be at least as deep as the
 `dl` chain at sched1 time. With the emitted instruction count already exact at
