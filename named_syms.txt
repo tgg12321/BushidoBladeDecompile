@@ -968,15 +968,14 @@ g_char_id                                               = 0x80101F12;  /* +0x4A 
 g_char_curr_keyframe_idx                                = 0x80101F4C;  /* +0x84 -- current motion keyframe index (s16) */
 g_char_prev_keyframe_idx                                = 0x80101F4E;  /* +0x86 -- previous motion keyframe (curr -> prev at frame start) */
 
-/* === Second per-character struct (saTan1 slot state, 54-byte stride) === */
-/* Found in main.c init loop: `*(s16 *)(&D_800F4E1A + idx * 54) = ...` */
-/* Bound iterations to D_80101BCC slots; consumed by saTan1MainJump. */
-_svm_voice_plus_0x2                               = 0x800F4E1A;  /* base of 54-byte stride slot array; init writes 0x18 to +0x00 */  /* data-wave 2026-09-24: was g_satan1_slot_state_table */
-_svm_voice_plus_0x6                          = 0x800F4E1E;  /* +0x04 -- counter (max 0x7FFF) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_4 */
-_svm_voice_plus_0x10                          = 0x800F4E28;  /* +0x0E -- init to 0xFF */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_E */
-_svm_voice_plus_0x12                         = 0x800F4E2A;  /* +0x10 -- init to 0 */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_10 */
-_svm_voice_plus_0x14                         = 0x800F4E2C;  /* +0x12 -- init to 0 */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_12 */
-_svm_voice_plus_0x16                         = 0x800F4E2E;  /* +0x14 -- init to 0xFF */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14 */
+/* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, include/sound.h; */
+/* base _svm_voice 0x800F4E18, 0x36-byte records, 24 voices). The per-word rows */
+/* below are aliases still named by INCLUDE_ASM _SsVmFlush / func_80087770. */
+_svm_voice_plus_0x6                          = 0x800F4E1E;  /* +0x04 -- counter (max 0x7FFF) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_4 */  /* alias of _svm_voice+0x6 (struct SpuVoice, include/sound.h); retire with _SsVmFlush */
+_svm_voice_plus_0x10                          = 0x800F4E28;  /* +0x0E -- init to 0xFF */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_E */  /* alias of _svm_voice+0x10 (struct SpuVoice, include/sound.h); retire with func_80087770 */
+_svm_voice_plus_0x12                         = 0x800F4E2A;  /* +0x10 -- init to 0 */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_10 */  /* alias of _svm_voice+0x12 (struct SpuVoice, include/sound.h); retire with func_80087770 */
+_svm_voice_plus_0x14                         = 0x800F4E2C;  /* +0x12 -- init to 0 */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_12 */  /* alias of _svm_voice+0x14 (struct SpuVoice, include/sound.h); retire with func_80087770 */
+_svm_voice_plus_0x16                         = 0x800F4E2E;  /* +0x14 -- init to 0xFF */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14 */  /* alias of _svm_voice+0x16 (struct SpuVoice, include/sound.h); retire with func_80087770 */
 
 /* === More indexed struct tables discovered (2026-05-17) === */
 g_sleep_menu_cursor_state_table                         = 0x800A3D40;  /* 24-byte stride per slot; 3 s32 + 6 s16 layout; consumed by DispSleepMenuTex */
@@ -2490,8 +2489,7 @@ g_sys_int_rp_table_plus_8                               = 0x800F1840;  /* +8 fro
 g_cdrom_callback_buf_b_plus_8                           = 0x800F19B0;  /* +8 from g_cdrom_callback_buf_b (0x800F19A8) */
 g_spu_xfer_status_snapshot_plus_4                       = 0x800F1AFC;  /* +4 from g_spu_xfer_status_snapshot (0x800F1AF8) */
 g_spu_xfer_status_snapshot_plus_8                       = 0x800F1B00;  /* +8 from g_spu_xfer_status_snapshot (0x800F1AF8) */
-_svm_voice_plus_0x4                        = 0x800F4E1C;  /* +2 from g_satan1_slot_state_table (0x800F4E1A) */  /* data-wave 2026-09-24: was g_satan1_slot_state_table_plus_2 */
-_svm_voice_plus_0x1D                  = 0x800F4E35;  /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */
+_svm_voice_plus_0x1D                  = 0x800F4E35;  /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */  /* alias of _svm_voice+0x1D (struct SpuVoice, include/sound.h); retire with _SsVmFlush */
 g_gte_color_matrix_data_plus_6                          = 0x800F631E;  /* +6 from g_gte_color_matrix_data (0x800F6318) */
 g_gte_color_matrix_data_b_plus_6                        = 0x800F637E;  /* +6 from g_gte_color_matrix_data_b (0x800F6378) */
 g_gte_back_color_b_r_plus_1                             = 0x800F6399;  /* +1 from g_gte_back_color_b_r (0x800F6398) */

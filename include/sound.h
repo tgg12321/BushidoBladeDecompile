@@ -27,6 +27,48 @@ struct struct_svm {
 };
 extern struct struct_svm _svm_cur; /* _svm_cur */
 
+/* Sony LIBSND `_svm_voice` (vmanager per-voice state; psyz libsnd_private.h
+   `struct SpuVoice`), base 0x800F4E18, one record per SPU voice (24). BB2's
+   record is 0x36 bytes: psyz's 0x34-byte layout with one extra halfword at
+   +0x0C (unkc), so every psyz field from `note` on sits 2 bytes later. The
+   original binary indexes it as a record table: stride-54 addressing off the
+   one base in _SsVmInit/_SsVmKeyOffNow/SsUtKeyOnV/_SsVmSeqKeyOff and the
+   asm-only _SsVmFlush. Field names follow psyz. Replaces the splat per-word
+   scalars _svm_voice_plus_0x2..0x1D and D_800F4E20..4A (per-word splat
+   symbol -> aggregate merge family, owner ruling 2026-08-17). */
+struct SpuVoice {
+    s16 unk0;      /* 0x00 */
+    s16 unk2;      /* 0x02 */
+    s16 unk04;     /* 0x04 */
+    u16 unk6;      /* 0x06 */
+    s16 unk8;      /* 0x08 */
+    u8 unka;       /* 0x0A */
+    u8 unkb;       /* 0x0B */
+    s16 unkc;      /* 0x0C: BB2-only */
+    s16 note;      /* 0x0E */
+    s16 unke;      /* 0x10 */
+    s16 unk10;     /* 0x12 */
+    s16 prog;      /* 0x14 */
+    s16 tone;      /* 0x16 */
+    s16 vabId;     /* 0x18 */
+    s16 unk18;     /* 0x1A */
+    u8 pad4[1];    /* 0x1C */
+    u8 unk1b;      /* 0x1D */
+    s16 auto_vol;  /* 0x1E */
+    s16 unk1e;     /* 0x20 */
+    s16 unk20;     /* 0x22 */
+    s16 unk22;     /* 0x24 */
+    s16 start_vol; /* 0x26 */
+    s16 end_vol;   /* 0x28 */
+    s16 auto_pan;  /* 0x2A */
+    s16 unk2a;     /* 0x2C */
+    s16 unk2c;     /* 0x2E */
+    s16 unk2e;     /* 0x30 */
+    s16 start_pan; /* 0x32 */
+    s16 end_pan;   /* 0x34 */
+};
+extern struct SpuVoice _svm_voice[24]; /* _svm_voice */
+
 /* PsyQ ProgAtr (libsnd.h) - program attribute record, 16 bytes; BB2 reads
    reserved2 as two u16 halves (VAG start-address pair). _svm_pg table. */
 typedef struct {

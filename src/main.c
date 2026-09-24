@@ -974,56 +974,16 @@ void _SsSndTempo(s16 a0, s16 a1) {
     }
 }
 extern u8 _SsVmMaxVoice;
-extern s16 _svm_voice_plus_0x2;
-extern s16 _svm_voice_plus_0x6;
-extern s16 _svm_voice_plus_0x10[];
-extern s16 _svm_voice_plus_0x12;
-extern s16 _svm_voice_plus_0x14;
-extern s16 _svm_voice_plus_0x16;
 
-/* func_800858D0 (title_mv_exec2) — BYTES PROVEN (s3, 2026-08-20, permuter
- * modality): permuter score 0 vs target.o (--stack-diffs, honest pipeline),
- * TU-context emission word-identical (72/72, tmp/grind/func_800858D0/s3/
- * ours_tu.dis vs zero.dis — only section-offset branch text differs).
- * NOT candidate-ready: engine/volatile_cheats.py find_empty_if_dead_reads
- * (written 2026-06-02) strips the closing construct before scoring, so
- * `sandbox --disable all` reads 13, not 0 — the detector predates the
- * 2026-08-18 F6 sanction and has no allowlist hook (unlike
- * _SANCTIONED_UNWRITTEN_PADS). Ruling + engine wiring requested; see
- * outcome + docs/grind decision trail.
- *
- * THE CLOSER: `if (D_80101BCC) { }` (empty-if redundant-condition, F6
- * family, .claude/rules/no-new-park-categories.md:371-383; SOTN exhibits
- * docs/reference/sotn-construct-index.md:34 [empty_if family, 17 PSX
- * instances] and :63 [dra/5D5BC.c:769 "!FAKE, permuter found it"]).
- * Mechanism (dump-proven, tmp/grind/func_800858D0/dumps/ regenerated from
- * THIS form): the manufactured limit read becomes reg101/reg102; jump1
- * deletes the empty branch; cse1 rewrites the loop compare to read reg102,
- * leaving `u = reg102` (insn 139) DEAD; loop.c still counts reg75(u) as
- * 2-set (insn 71 `u=24` + insn 139) -> not a movable, li 24 NOT hoisted
- * (main.loop: zero moved lines, "biv discarded"); flow then deletes insn
- * 139 (main.flow NOTE_INSN_DELETED 139) -> at sched1 reg_n_sets[75]==1 ->
- * birthing_insn_p (sched.c:2504-2537) approves -> adjust_priority
- * (sched.c:2584-2590) LAUNCHES li 24 adjacent to its sh (target's mid-loop
- * slot); the a0=sp+16 hard-reg set becomes the lone pri-1 straggler at
- * block top; reorg steals it into preheader + loop-back delay slot
- * (target's rotation identity); hard $a0 live across the sign-extend span
- * puts the extend in $a1 and the 24/limit class in $v1/$v0 — all 13
- * residual diffs flip together, exactly the coupled flip mapped at s3 open.
- * The pass-order window (loop.c counts sets BEFORE flow's DCE, sched counts
- * AFTER) is the only honest resolution of the hoist-vs-launch trilemma
- * proven this session (see hypotheses.md s3 H9-H11).
- *
- * Everything else is the reconstructed floor-13 do-while form (s2):
- * u={0x18, limit-reload} carrier (defeat-licm-hoist-var-reuse),
- * offset={stride, 1} reuse (anti-dep pins li 1 by the jal), direct s16
- * increment, A/B statement moves in the init block. */
+/* func_800858D0: reset the per-voice state record (_svm_voice) of every
+ * voice up to _SsVmMaxVoice and key each one off (func_8008B488 with a
+ * one-voice mask, then _SsVmKeyOffNow). Plain C since the 2026-09-24
+ * _svm_voice aggregate merge: with the stores spelled as record-field
+ * writes, the former empty-if (F6) closer and the u/offset carrier locals
+ * are no longer needed (memory/grind/vmNoiseOn/evidence.md). */
 void func_800858D0(void) {
     s32 buf[16];
     s16 var_s0;
-    s32 offset;
-    s16 ff;
-    s32 u;
 
     buf[1] = 0x60093;
     var_s0 = 0;
@@ -1034,32 +994,19 @@ void func_800858D0(void) {
     *(s16 *)((u8 *)buf + 0x0A) = 0;
     *(s16 *)((u8 *)buf + 0x3C) = 0x4000;
     if (_SsVmMaxVoice != 0) {
-        ff = 0xFF;
         do {
-            offset = var_s0 * 54;
-            u = 0x18;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x2 + offset) = u;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x6 + offset) = 0;
-            *(s16 *)((u8 *)_svm_voice_plus_0x10 + offset) = ff;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x12 + offset) = 0;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x14 + offset) = 0;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x16 + offset) = ff;
-            offset = 1;
-            buf[0] = offset << var_s0;
+            _svm_voice[var_s0].unk2 = 0x18;
+            _svm_voice[var_s0].unk6 = 0;
+            _svm_voice[var_s0].unke = 0xFF;
+            _svm_voice[var_s0].unk10 = 0;
+            _svm_voice[var_s0].prog = 0;
+            _svm_voice[var_s0].tone = 0xFF;
+            buf[0] = 1 << var_s0;
             func_8008B488(buf);
             _svm_cur.voice = var_s0;
             _SsVmKeyOffNow(1);
             var_s0 = var_s0 + 1;
-            if (_SsVmMaxVoice) { /* !FAKE: empty-if redundant-condition (F6,
-                no-new-park-categories.md:371); mechanism: jump1 branch
-                deletion + cse1 load-CSE leaves u's second set dead;
-                loop.c sees 2 sets (no hoist), flow DCEs it, sched1 sees
-                reg_n_sets==1 and launches the li 24 (birthing_insn_p,
-                sched.c:2504-2537); lever-exhaustion: hypotheses.md s3
-                H9-H11 (noted-loop trilemma proven analytically) */
-            }
-            u = _SsVmMaxVoice;
-        } while (var_s0 < u);
+        } while (var_s0 < _SsVmMaxVoice);
     }
 }
 extern u8 _svm_vab_used[];
@@ -1083,15 +1030,6 @@ typedef struct {
     s16 reserved[4];
 } VagAtr;
 
-extern s16 _svm_voice;
-extern s16 _svm_voice_plus_0x2;
-extern s16 D_800F4E26;
-extern s16 _svm_voice_plus_0x10[];
-extern s16 _svm_voice_plus_0x12;
-extern s16 _svm_voice_plus_0x14;
-extern s16 _svm_voice_plus_0x16;
-extern s16 D_800F4E30;
-extern s8 _svm_voice_plus_0x1D;
 extern ProgAtr *_svm_pg;
 extern VagAtr *_svm_tn;
 extern void vmNoiseOn(u8);
@@ -1101,7 +1039,6 @@ extern void _SsVmKeyOnNow(s32, u16);
 s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
                 s16 voll, s16 volr) {
     s32 toneIndex;
-    s32 voiceOffset;
 
     if (_snd_ev_flag == 1) {
         return -1;
@@ -1151,17 +1088,16 @@ s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
         return -1;
     }
 
-    voiceOffset = voice * 54;
     _svm_cur.voice = voice;
-    *(s16 *)((u8 *)_svm_voice_plus_0x10 + voiceOffset) = 0x21;
-    *(s16 *)((u8 *)&D_800F4E30 + voiceOffset) = vabId;
-    *(s16 *)((u8 *)&_svm_voice_plus_0x12 + voiceOffset) = _svm_cur.field_7_fake_program;
-    *(s16 *)((u8 *)&_svm_voice_plus_0x14 + voiceOffset) = prog;
-    *(s16 *)((u8 *)&_svm_voice + voiceOffset) = _svm_cur.tone_vag_idx;
-    *(s16 *)((u8 *)&_svm_voice_plus_0x16 + voiceOffset) = _svm_cur.tone;
-    *(s16 *)((u8 *)&D_800F4E26 + voiceOffset) = note;
-    *(s8 *)((u8 *)&_svm_voice_plus_0x1D + voiceOffset) = 1;
-    *(s16 *)((u8 *)&_svm_voice_plus_0x2 + voiceOffset) = 0;
+    _svm_voice[voice].unke = 0x21;
+    _svm_voice[voice].vabId = vabId;
+    _svm_voice[voice].unk10 = _svm_cur.field_7_fake_program;
+    _svm_voice[voice].prog = prog;
+    _svm_voice[voice].unk0 = _svm_cur.tone_vag_idx;
+    _svm_voice[voice].tone = _svm_cur.tone;
+    _svm_voice[voice].note = note;
+    _svm_voice[voice].unk1b = 1;
+    _svm_voice[voice].unk2 = 0;
     _SsVmDoAllocate();
     if (_svm_cur.tone_vag_idx == 0xFF) {
         vmNoiseOn(voice);
@@ -1307,7 +1243,7 @@ void _SsVmDoAllocate(void) {
 
     _svm_cur.voiceOffset = _svm_cur.voice * 8;
     _svm_cur.field_0x1e = _svm_cur.field_7_fake_program * 16 + _svm_cur.tone;
-    *(s16 *)((u8 *)&_svm_voice_plus_0x6 + _svm_cur.voice * 54) = 0x7FFF;
+    _svm_voice[_svm_cur.voice].unk6 = 0x7FFF;
     for (i = 0; i < 16; i++) {
         _svm_envx_hist[i] &= ~(1 << _svm_cur.voice);
     }
@@ -1333,35 +1269,18 @@ INCLUDE_ASM("asm/funcs", _SsVmFlush);
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
 /* _SsVmInit - libsnd voice-manager init (SLUS-00663). */
 extern s32 D_800F19D0[2];
-extern s16 _svm_voice;
-extern s16 _svm_voice_plus_0x4;
-extern s8  _svm_voice_plus_0x1D;
 extern u16 _svm_okon1;
 extern u16 _svm_okon2;
 extern u16 _svm_okof1;
 extern u8  _svm_auto_kof_mode;
 extern s16 kMaxPrograms;
 extern u16 _svm_vab_count;
-extern s16 D_800F4E20;
-extern s8  D_800F4E22;
-extern s16 D_800F4E24;
-extern s16 D_800F4E36;
-extern s16 D_800F4E38;
-extern s16 D_800F4E3A;
-extern s16 D_800F4E3C;
-extern s16 D_800F4E3E;
-extern s16 D_800F4E42;
-extern s16 D_800F4E44;
-extern s16 D_800F4E46;
-extern s16 D_800F4E48;
-extern s16 D_800F4E4A;
 extern u16 D_800F1B14;
 extern u16 D_800F2B68;
 
 void _SsVmInit(s32 a0) {
     s32 buf[16];
     u16 i;
-    s32 offset;
 
     _spu_setInTransfer(0);
     _svm_damper = 0;
@@ -1404,29 +1323,28 @@ void _SsVmInit(s32 a0) {
 
     if (_SsVmMaxVoice != 0) {
         do {
-            offset = i * 54;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x2 + offset) = 0x18;
-            _svm_voice_plus_0x10[i * 27] = -1;
-            *(s16 *)((u8 *)&_svm_voice + offset) = 0xFF;
-            *(s8  *)((u8 *)&_svm_voice_plus_0x1D + offset) = 0;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x4 + offset) = 0;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x6 + offset) = 0;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x12 + offset) = 0;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x14 + offset) = 0;
-            *(s16 *)((u8 *)&_svm_voice_plus_0x16 + offset) = 0xFF;
-            *(s16 *)((u8 *)&D_800F4E20 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E24 + offset) = 0;
-            *(s8  *)((u8 *)&D_800F4E22 + offset) = 0x40;
-            *(s16 *)((u8 *)&D_800F4E36 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E38 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E3A + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E3C + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E42 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E44 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E46 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E48 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E4A + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E3E + offset) = 0;
+            _svm_voice[i].unk2 = 0x18;
+            _svm_voice[i].unke = -1;
+            _svm_voice[i].unk0 = 0xFF;
+            _svm_voice[i].unk1b = 0;
+            _svm_voice[i].unk04 = 0;
+            _svm_voice[i].unk6 = 0;
+            _svm_voice[i].unk10 = 0;
+            _svm_voice[i].prog = 0;
+            _svm_voice[i].tone = 0xFF;
+            _svm_voice[i].unk8 = 0;
+            _svm_voice[i].unkc = 0;
+            _svm_voice[i].unka = 0x40;
+            _svm_voice[i].auto_vol = 0;
+            _svm_voice[i].unk1e = 0;
+            _svm_voice[i].unk20 = 0;
+            _svm_voice[i].unk22 = 0;
+            _svm_voice[i].auto_pan = 0;
+            _svm_voice[i].unk2a = 0;
+            _svm_voice[i].unk2c = 0;
+            _svm_voice[i].unk2e = 0;
+            _svm_voice[i].start_pan = 0;
+            _svm_voice[i].start_vol = 0;
             buf[0] = 1 << i;
             func_8008B488(buf);
             _svm_cur.voice = i;
@@ -1522,26 +1440,134 @@ s32 note2pitch2(u16 arg0, u16 arg1) {
     }
     return var_v1;
 }
-INCLUDE_ASM("asm/funcs", vmNoiseOn);
+extern void SpuSetNoiseVoice(s32, s32);
+extern s32 SpuSetNoiseClock(s32);
+extern u16 _svm_okon2;
+extern u16 _svm_okof2;
+/* Sony LIBSND `vmNoiseOn` (vm_no1.c): compute the noise voice's L/R volume
+   (score channel volume x program volume x tone volume, then three pan
+   stages and the optional mono fold), set the SPU noise clock from the
+   note, queue the volume shadow registers, claim the voice for noise
+   (pitch slot 0xA, noise state 2, every other voice's noise bit cleared),
+   and set the key-on / reverb bits before switching the SPU noise voice on.
+   Shape follows sotn-decomp src/main/psxsdk/libsnd/vmanager.c vmNoiseOn
+   (US main build, matched); BB2's build calls SpuSetNoiseClock /
+   SpuSetNoiseVoice where SOTN pokes the SPU registers directly.
+   Symbol map: D_80102A78 <- _svm_sreg_buf (s16 view); D_800F65E0 <-
+   _svm_sreg_dirty; D_800F1B14/D_800F2B68 <- _svm_orev1/2;
+   D_800F1B10/12 <- _svm_okon1/2; D_801078D8/DA <- _svm_okof1/2. */
+void vmNoiseOn(u8 vc) {
+    u8 *score;
+    s16 voice;
+    s16 bitsLower;
+    s16 bitsUpper;
+    u32 voll_t, volr_t;
+    u32 voll, volr;
+    /* SOTN-verbatim (sotn-decomp src/main/psxsdk/libsnd/vmanager.c
+       vmNoiseOn): temp holds the tone pan, then the program pan, then the
+       voice pan, one per pan stage below. Owner Ruling 8, 2026-09-24
+       (ordinary-c-judge-decidable.md), vmNoiseOn only. */
+    u32 temp;
+    u32 idx;
+
+    score = (u8 *)(&_ss_score)[_svm_cur.seq_sep_no & 0xFF] +
+            ((_svm_cur.seq_sep_no & 0xFF00) >> 8) * 0xB0;
+
+    voll_t = *(u16 *)(score + 0x58) * 0x81;
+    volr_t = *(u16 *)(score + 0x5A) * 0x81;
+
+    voll_t = (voll_t * _svm_cur.mvol) / 0x7F;
+    volr_t = (volr_t * _svm_cur.mvol) / 0x7F;
+
+    voll_t = (voll_t * _svm_cur.tone_vol) / 0x7F;
+    volr_t = (volr_t * _svm_cur.tone_vol) / 0x7F;
+
+    temp = _svm_cur.tone_pan;
+    if (temp < 0x40) {
+        voll = voll_t;
+        volr = (volr_t * temp) / 0x3F;
+    } else {
+        voll = (voll_t * (0x7F - temp)) / 0x3F;
+        volr = volr_t;
+    }
+    temp = _svm_cur.mpan;
+    if (temp < 0x40) {
+        volr = (volr * temp) / 0x3F;
+    } else {
+        voll = (voll * (0x7F - temp)) / 0x3F;
+    }
+    temp = _svm_cur.pan;
+    if (temp < 0x40) {
+        volr = (temp * volr) / 0x3F;
+    } else {
+        voll = (voll * (0x7F - temp)) / 0x3F;
+    }
+
+    if (_svm_stereo_mono == 1) {
+        if (voll < volr) {
+            voll = volr;
+        } else {
+            volr = voll;
+        }
+    }
+
+    /* FAKE: named-intermediate (no-new-park-categories.md 'Named-intermediate
+       declaration order', once-written per ordinary-c-judge-decidable.md
+       Ruling 1) - idx is the voice index, bound before the SpuSetNoiseClock
+       call so its pseudo is live across that call and global.c seats it in
+       call-saved $s0 as the target does (sched1 still places the zero-extend
+       after the jal: no dependence ties it to the call). Measured on this
+       final body (memory/grind/vmNoiseOn/evidence.md): vc at each use puts
+       the index in $a0 and drops $s3 from the frame; idx also at the two
+       _svm_voice[] uses differs too (the target zero-extends vc again there). */
+    idx = vc;
+    SpuSetNoiseClock((_svm_cur.note - _svm_cur.tone_center) & 0x3F);
+
+    _svm_sreg_buf[idx * 8 + 0] = voll;
+    _svm_sreg_buf[idx * 8 + 1] = volr;
+    _svm_sreg_dirty[idx] |= 3;
+    if (idx < 0x10) {
+        bitsLower = 1 << idx;
+        bitsUpper = 0;
+    } else {
+        bitsLower = 0;
+        bitsUpper = 1 << (idx - 0x10);
+    }
+    _svm_voice[vc].unk04 = 0xA;
+    for (voice = 0; voice < _SsVmMaxVoice; voice++) {
+        _svm_voice[voice].unk1b &= 1;
+    }
+    _svm_voice[vc].unk1b = 2;
+
+    _svm_okon1 |= bitsLower;
+    _svm_okon2 |= bitsUpper;
+
+    _svm_okof1 &= ~_svm_okon1;
+    _svm_okof2 &= ~_svm_okon2;
+
+    if (_svm_cur.tone_mode & 4) {
+        D_800F1B14 |= bitsLower;
+        D_800F2B68 |= bitsUpper;
+    } else {
+        D_800F1B14 &= ~bitsLower;
+        D_800F2B68 &= ~bitsUpper;
+    }
+
+    SpuSetNoiseVoice(1, ((bitsUpper & 0xFF) << 16) | bitsLower);
+}
 extern u16 _svm_okon1;
 extern u16 _svm_okon2;
-extern s16 _svm_voice;
-extern s16 _svm_voice_plus_0x4;
-extern s8 _svm_voice_plus_0x1D;
 extern u16 _svm_okof1;
 extern u16 _svm_okof2;
 /* Sony LIBSND `_SsVmKeyOffNow` (probable): mark the current voice's pending
    key-off bit, release the voice slot, and drop the matching key-on bit.
-   Symbol map: D_801027F0.voice <- _svm_cur.voice; D_800F4E18 <- _svm_voice[] base
-   (BB2 stride 54); D_801078D8/DA <- _svm_okof1/_svm_okof2; D_800F1B10/12 <-
+   Body is psyz vm_nowof.c verbatim (with BB2's _svm_voice record layout).
+   Symbol map: D_801078D8/DA <- _svm_okof1/_svm_okof2; D_800F1B10/12 <-
    _svm_okon1/_svm_okon2. */
 void _SsVmKeyOffNow(s32 mode) {
     s32 bitsUpper;
     s32 bitsLower;
     u16 voice;
-    s32 idx;
-    u16 okof1;
-    u16 okof2;
 
     voice = _svm_cur.voice;
     if (voice < 16) {
@@ -1551,20 +1577,11 @@ void _SsVmKeyOffNow(s32 mode) {
         bitsLower = 0;
         bitsUpper = 1 << (voice - 16);
     }
-    idx = voice * 54;
-    *(s8 *)((u8 *)&_svm_voice_plus_0x1D + idx) = 0;
-    /* FAKE: named-intermediate (no-new-park-categories.md 'Named-intermediate
-       declaration order' + owner clarification 2026-08-17) - okof1/okof2 stage
-       the key-off words across the voice-slot halfword clears; mechanism:
-       sched.c cannot move a bare-symbol MEM across a (plus (reg) (symbol_ref))
-       store; lever-exhaustion: memory/grind/func_800871D4/hypotheses.md [s3]-[s7]
-       + evidence.md (direct Sony form re-measured at 8). */
-    okof1 = _svm_okof1 | bitsLower;
-    okof2 = _svm_okof2 | bitsUpper;
-    *(s16 *)((u8 *)&_svm_voice_plus_0x4 + idx) = 0;
-    *(s16 *)((u8 *)&_svm_voice + idx) = 0;
-    _svm_okof1 = okof1;
-    _svm_okof2 = okof2;
+    _svm_voice[voice].unk1b = 0;
+    _svm_voice[voice].unk04 = 0;
+    _svm_voice[voice].unk0 = 0;
+    _svm_okof1 |= bitsLower;
+    _svm_okof2 |= bitsUpper;
     _svm_okon1 &= ~_svm_okof1;
     _svm_okon2 &= ~_svm_okof2;
 }
@@ -1576,7 +1593,7 @@ void _SsVmKeyOffNow(s32 mode) {
    and the ps2sdk libsnd2 vm_nowon.c port; BB2's build squares the volumes
    only for sequence voices (seq_sep_no != 0x21) and has no unk1b store.
    Symbol map: D_80102A78 <- _svm_sreg_buf (s16 view); D_800F65E0 <-
-   _svm_sreg_dirty; D_800F4E1C <- _svm_voice[].unk04 (BB2 stride 54);
+   _svm_sreg_dirty; D_800F4E1C <- _svm_voice[].unk04;
    D_800F1B14/D_800F2B68 <- _svm_orev1/2; D_800F1B10/12 <- _svm_okon1/2;
    D_801078D8/DA <- _svm_okof1/2. */
 void _SsVmKeyOnNow(s32 vagCount, u16 pitch) {
@@ -1631,7 +1648,7 @@ void _SsVmKeyOnNow(s32 vagCount, u16 pitch) {
     _svm_sreg_buf[pos + 0] = voll;
     _svm_sreg_buf[pos + 1] = volr;
     _svm_sreg_dirty[_svm_cur.voice] |= 7;
-    *(s16 *)((u8 *)&_svm_voice_plus_0x4 + _svm_cur.voice * 54) = pitch;
+    _svm_voice[_svm_cur.voice].unk04 = pitch;
     if (_svm_cur.voice < 16) {
         bitsLower = 1 << _svm_cur.voice;
         bitsUpper = 0;
@@ -1688,7 +1705,6 @@ s16 func_80087D58(s32 a0) {
     return *(s16 *)(base + 0x5A);
 }
 extern u8 _SsVmMaxVoice;
-extern s16 _svm_voice_plus_0x10[];
 void _SsVmSeqKeyOff(s16 a0) {
     s32 s0 = 0;
     s16 s1;
@@ -1697,9 +1713,7 @@ void _SsVmSeqKeyOff(s16 a0) {
     }
     s1 = (s16)a0;
     do {
-        s32 idx = (u8)s0;
-        s32 off = ((idx * 8 - idx) * 4 - idx) * 2;
-        if (*(s16 *)((u8 *)_svm_voice_plus_0x10 + off) == s1) {
+        if (_svm_voice[(u8)s0].unke == s1) {
             _svm_cur.voice = (u8)s0;
             _SsVmKeyOffNow(0);
         }
