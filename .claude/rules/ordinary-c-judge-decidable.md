@@ -192,7 +192,8 @@ this is not a cheat".
 
 A FRESH local written more than once is admitted ONLY if it meets EVERY prong
 below (a variable meeting every prong of Ruling 6 is judged under Ruling 6
-instead). This ruling governs that case exclusively: the reused variable itself
+instead, and vmNoiseOn's `temp` meeting every prong of Ruling 8 is judged
+under Ruling 8 instead). This ruling governs that case exclusively: the reused variable itself
 may not claim the named-intermediate relaxation (Ruling 1; its reads are
 governed by this ruling's prong 1(c) alone) or [[staged-value-reused-variable]], and no consumer
 of it may be a staged-value borrow. Other locals in the body, including a
@@ -600,6 +601,111 @@ This does NOT relax the cross-symbol address-derivation ban (2026-07-05
 ruling, do-while-zero-exception.md forbidden #5) for globals or named
 symbols, nor admit any other derivation between locals. Record:
 docs/grind/decisions.md 2026-09-23 OWNER RULING — Ruling 7.
+
+## Ruling 8 (owner, 2026-09-24) — vmNoiseOn's SOTN pan-stage `temp` (vmNoiseOn only)
+
+**Question as put to the owner** (manual session), verbatim: "vmNoiseOn now
+matches the original exactly, but only with one line pattern copied from
+SOTN. SOTN's matched version of this same Sony function uses one scratch
+variable, `temp`, for three pan values in a row (tone pan, program pan, voice
+pan). Every other spelling I measured is off by a few register choices. Those
+were: reading the fields directly, and one separate variable per pan. Our
+rules don't allow a local that is assigned three times with different fields,
+so this needs your call. Should that SOTN `temp` reuse be allowed?"
+
+Options, verbatim:
+- "Allow, vmNoiseOn only (Recommended)": "Record a narrow ruling first as its
+  own rules commit: the SOTN-verbatim `temp` pan cascade is allowed in
+  vmNoiseOn only. Then land vmNoiseOn (plus the voice-table cleanup) after a
+  fresh adversarial review."
+- "Allow as a class": "Record a standing ruling: a scratch variable reused
+  exactly as SOTN's matched code reuses it in the same Sony library function
+  is allowed. Covers future cases like SpuVmSetVol's pan cascade too."
+- "Don't allow": "Keep vmNoiseOn as INCLUDE_ASM with the candidate saved in
+  the ledger, log the question to borderline.md, and keep searching for
+  another spelling."
+
+Owner (Trenton), selected option verbatim: **"Allow, vmNoiseOn only
+(Recommended)"**.
+
+**Correction to the question (recorded 2026-09-24, before any code spends
+this ruling).** The question said the other spellings are "off by a few
+register choices". Re-measured on the whole translation unit
+(tmp/vmn/tucheck.py), each alternative also schedules the pan loads later and
+emits one extra load-delay `nop` (388 lines against the target's 387), so the
+difference is not register-only. In the author's judgment this does not
+change the question put to the owner, which was whether SOTN's verbatim
+`temp` reuse is allowed. It is recorded so the record is accurate.
+
+**Rule text.** This is the author's narrowing of that answer, not the owner's
+words. It admits ONE local in ONE function and nothing else:
+
+- **(A) Scope.** Only the function `vmNoiseOn` (PsyQ LIBSND vm_no1.c,
+  0x80086CF8, `src/main.c`). No other function may cite this ruling. A pan
+  cascade elsewhere (e.g. SOTN's SpuVmSetVol) needs its own owner ruling.
+- **(B) The local and the cascade.** One `u32 temp;`, declared once at
+  function scope with no initializer. The function contains the following
+  statements exactly once, as one contiguous run, immediately after the
+  statement `volr_t = (volr_t * _svm_cur.tone_vol) / 0x7F;` and immediately
+  before `if (_svm_stereo_mono == 1)`. Only whitespace and line breaks may
+  differ:
+
+  ```
+  temp = _svm_cur.tone_pan;
+  if (temp < 0x40) {
+      voll = voll_t;
+      volr = (volr_t * temp) / 0x3F;
+  } else {
+      voll = (voll_t * (0x7F - temp)) / 0x3F;
+      volr = volr_t;
+  }
+  temp = _svm_cur.mpan;
+  if (temp < 0x40) {
+      volr = (volr * temp) / 0x3F;
+  } else {
+      voll = (voll * (0x7F - temp)) / 0x3F;
+  }
+  temp = _svm_cur.pan;
+  if (temp < 0x40) {
+      volr = (temp * volr) / 0x3F;
+  } else {
+      voll = (voll * (0x7F - temp)) / 0x3F;
+  }
+  ```
+
+  This is SOTN's matched vmNoiseOn cascade (sotn-decomp
+  `src/main/psxsdk/libsnd/vmanager.c`:251-270 at aa53500, `u32 temp;` at
+  :238; that file is `[0x12A0C, c, psxsdk/libsnd/vmanager]` in
+  `config/splat.us.main.yaml` and has no INCLUDE_ASM). The only change from
+  SOTN is that its field names become BB2's `struct struct_svm` names at the
+  same offsets: `field_E_pan` (+0xE) -> `tone_pan`, `field_B_mpan` (+0xB) ->
+  `mpan`, `field_0x5` (+0x5) -> `pan`. `temp` appears nowhere else in the
+  function: no other read, write, compound assignment, `++`/`--`, and no
+  `&temp`. `voll`, `volr`, `voll_t` and `volr_t` are the function's ordinary
+  volume variables and are judged under (E).
+- **(C) Annotation.** An inline comment at the declaration or the first write
+  says that the reuse is SOTN-verbatim, says what the three writes hold, and
+  cites this ruling.
+- **(D) Receipts.** `memory/grind/vmNoiseOn/evidence.md` records two failing
+  spellings, each measured on the full translation unit with the rest of the
+  candidate unchanged, and gives each one's result. The first is the (B)
+  cascade with every `temp` replaced by the field it holds. The second is the
+  (B) cascade with three once-written `u32` locals (`tone_pan`, `mpan`, `pan`)
+  in place of `temp`. Both differ from the target, in vmNoiseOn only.
+- **(E) Everything else is judged normally.** Every other construct in the
+  body passes ordinary review on its own merits. That includes the `idx`
+  named intermediate, under the named-intermediate entry and its
+  prerequisites, and the `_svm_voice` record declaration, under the
+  aggregate-merge prongs (a)-(e). This ruling sanctions nothing but (B).
+
+A `temp` that misses any prong of (A)-(D) gets nothing from this ruling. It
+is judged under Ruling 5 (as amended by its extension) and fails there; the
+name `temp` alone fails Ruling 5 prong 1(f). `temp` may not also claim Ruling
+1's named-intermediate relaxation, Ruling 6, or
+[[staged-value-reused-variable]]. This does NOT relax Ruling 5, its
+extension, or Ruling 6 for any other variable or function. It also does not
+relax the multi-WRITE carrier bans (y1, `c`, `src`/`idx`), which stand.
+Record: docs/grind/decisions.md 2026-09-24 OWNER RULING — Ruling 8.
 
 ## What this ruling does NOT change
 

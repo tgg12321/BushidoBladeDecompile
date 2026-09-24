@@ -29007,3 +29007,41 @@ inline_c.h is written as a DMPSX placeholder (65 distinct `.word 0x0000xxxx`
 operands), so this standing ruling applies to any of them that meets prongs
 (A)-(D). The author's narrowing, prongs (A)-(D), is in inline-asm-policy.md
 § Extension (owner, 2026-09-24).
+
+## 2026-09-24 — OWNER RULING — Ruling 8: vmNoiseOn's SOTN pan-stage `temp`, vmNoiseOn only (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question put to the owner (manual session, plain language, verbatim in the rule file): vmNoiseOn
+matches the original exactly only with SOTN's spelling of its three pan stages, which reuses one
+`u32 temp` for tone pan, program pan and voice pan; the measured alternatives (direct field reads,
+one separate local per pan) do not match: each schedules the pan loads later and adds one load-delay
+nop (whole-TU 388 lines vs 387). The question as put to the owner said "off by a few register
+choices", which understated this; the rule file records the correction; a local assigned three times with
+different fields is outside Ruling 5/6. Options offered: allow for vmNoiseOn only / allow as a class
+/ don't allow.
+
+Owner (Trenton), selected option verbatim: "Allow, vmNoiseOn only (Recommended)".
+
+**Ruling (full text in the rule file, "Ruling 8"; the prongs are the author's narrowing, not the
+owner's words).** (A) function `vmNoiseOn` only; (B) SOTN's 20-line pan cascade verbatim, field renames only
+(`temp = _svm_cur.tone_pan;` / `.mpan;` / `.pan;` each followed by its if/else stage), once, as one
+contiguous run between the tone_vol scaling and the stereo/mono fold; `u32 temp;` with no
+initializer and no other use anywhere (sotn-decomp src/main/psxsdk/libsnd/vmanager.c:238,
+:251-270 at aa53500, US main build, no INCLUDE_ASM); (C) inline annotation citing SOTN and this ruling; (D) failing receipts recorded in
+memory/grind/vmNoiseOn/; (E) everything else judged normally. Ruling 5, its extension, Ruling 6 and
+the multi-WRITE carrier bans are unchanged for every other variable and function; a `temp` missing
+any prong falls back to Ruling 5 and fails there. The Ruling 5 opening clause and the
+no-new-park-categories.md named-intermediate exclusivity sentence now cross-reference Ruling 8
+(and the latter Ruling 6, which it had omitted).
+
+**Evidence (memory/grind/vmNoiseOn/evidence.md):** with the rest of the candidate fixed and
+the _svm_voice record declared, the whole-TU compare (tmp/vmn/tucheck.py) is identical for the temp
+form and differs for both alternatives, each of which swaps the tone_vol multiply chain's v0/v1 and
+loads the pans late. Mechanism (author's reading, not confirmed by an instrumented sched dump of
+vmNoiseOn): a single-set pan pseudo takes sched1's birthing boost (sched.c adjust_priority ->
+birthing_insn_p, `reg_n_sets == 1`), and the three-write `temp` does not.
+
+**Rule-text layer-2:** round 1 FAILed on wording: (B) pinned only the three writes (stage bodies
+elided, `* temp` wrong for the third stage, no bar on an initializer or `&temp`); the Ruling 5 and
+named-intermediate exclusivity clauses did not point to Ruling 8; the record said the alternatives
+were off by register choices and stated the birthing-boost mechanism as fact. The reviewer's
+replacement wordings were applied verbatim.
