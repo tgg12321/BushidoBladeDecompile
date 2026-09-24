@@ -56,9 +56,20 @@ extern s16 D_8008DA50;
 extern s16 D_8008DA94;
 extern s16 D_8008DAD8;
 extern u8 D_8008DB1C;
-extern s16 D_8008E194;
-extern s16 D_8008E19E;
-extern u8 D_8008E1A1;
+/* 14-byte record table indexed by the kind field (+0x2) of the 0x64-byte
+ * objects at D_80106A78: func_80030580 and func_80031B24 index it with
+ * stride 14, func_80030D7C reads +0x0 / +0xA of a record. */
+typedef struct {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+    s16 unk6;
+    u16 unk8;
+    s16 unkA;
+    u8 unkC;
+    u8 unkD;
+} Tbl8008E194;
+extern Tbl8008E194 D_8008E194[];
 extern u8 D_8008E338;
 extern u16 D_8008E3C0;
 extern u8 D_8008E5A8;

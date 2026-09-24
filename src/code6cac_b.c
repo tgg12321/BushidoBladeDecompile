@@ -2664,7 +2664,7 @@ s32 func_8002FDB0(s32 *arg0) {
  * Load-bearing: `vec` is ONE named local used by both the gte_ldv0 and gte_stlvnl operands so
  * cse.c materializes `addiu $v0,$s0,0x2C` once and island 3 reuses $v0 (.s L84).
  * Full ledger: memory/grind/func_8002FF20/. */
-void func_8002FF20(u8 *arg0, u8 arg1) {
+void func_8002FF20(u8 *arg0, s16 arg1) {
     s32 mat_local[8];
     s32 *playerData;
     s32 *s2_ptr;
@@ -2978,7 +2978,7 @@ s32 *func_80030580(s32 *arg0, s32 arg1) {
     volatile u32 pre_pad[4]; /* !FAKE */
     u8 *obj;
     u8 *src = (u8 *)arg0;
-    s16 *tbl;
+    Tbl8008E194 *tbl;
     s32 i;
 
     obj = (u8 *)&D_80106A78;
@@ -2994,10 +2994,10 @@ s32 *func_80030580(s32 *arg0, s32 arg1) {
     *(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4);
     *(s32 *)(obj + 0x30) = *(s32 *)(src + 0xF8) - *(s16 *)(src + 0x1A) / 32;
     *(s32 *)(obj + 0x34) = *(s32 *)(src + 0xFC);
-    tbl = &D_8008E194 + arg1 * 7;
-    *(s32 *)(obj + 0x44) = ((&Judge)[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl[2]) >> 12;
-    *(s32 *)(obj + 0x48) = tbl[3];
-    *(s32 *)(obj + 0x4C) = ((&Judge)[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl[2]) >> 12;
+    tbl = &D_8008E194[arg1];
+    *(s32 *)(obj + 0x44) = ((&Judge)[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl->unk4) >> 12;
+    *(s32 *)(obj + 0x48) = tbl->unk6;
+    *(s32 *)(obj + 0x4C) = ((&Judge)[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl->unk4) >> 12;
     *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44);
     *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48);
     *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C);
@@ -3008,17 +3008,17 @@ s32 *func_80030580(s32 *arg0, s32 arg1) {
     *(s16 *)(obj + 0x54) = 0;
     *(u16 *)(obj + 0x56) = *(u16 *)(src + 0x1CA);
     *(s16 *)(obj + 0x58) = 0;
-    if (tbl[0] == 1) {
+    if (tbl->unk0 == 1) {
         *(s16 *)(obj + 0x5C) = 0;
-        *(u16 *)(obj + 0x5E) = *(u16 *)(tbl + 4);
+        *(u16 *)(obj + 0x5E) = tbl->unk8;
         *(s16 *)(obj + 0x60) = 0;
-    } else if (tbl[0] == 2) {
-        *(u16 *)(obj + 0x5C) = *(u16 *)(tbl + 4);
+    } else if (tbl->unk0 == 2) {
+        *(u16 *)(obj + 0x5C) = tbl->unk8;
         *(s16 *)(obj + 0x5E) = 0;
         *(s16 *)(obj + 0x60) = 0;
-    } else if (tbl[0] == 3) {
+    } else if (tbl->unk0 == 3) {
         *(s16 *)(obj + 0x5C) = 0;
-        *(u16 *)(obj + 0x5E) = *(u16 *)(tbl + 4);
+        *(u16 *)(obj + 0x5E) = tbl->unk8;
         *(s16 *)(obj + 0x60) = 0;
     } else {
         *(s16 *)(obj + 0x5C) = 0;
@@ -3333,7 +3333,93 @@ void func_80031890(u8 *obj, u8 *ent, s32 idx) {
     *(s32 *)(ent + 0x30) += *(s32 *)(ent + 0x48) / 2;
     *(s32 *)(ent + 0x34) += *(s32 *)(ent + 0x4C) / 2;
 }
-INCLUDE_ASM("asm/funcs", func_80031B24);
+extern s32 func_80027AD8(s32, u8 *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
+void func_80031B24(void) {
+    u8 *scr = (u8 *)0x1F8002B8;
+    s32 i;
+    s32 deep;
+    u8 *obj;
+    Vec3i *seg = (Vec3i *)scr;
+    u8 *ch;
+    s32 other;
+    u16 st;
+    u8 *rec;
+    s32 j;
+    s32 hit;
+    s32 diff;
+    s32 r;
+    s32 kind;
+    s32 flag;
+
+    obj = (u8 *)&D_80106A78;
+    for (i = 0; i < 12; i++, obj += 0x64) {
+        if (*(s16 *)(obj + 2) == -1) continue;
+        if (obj[4] == 0) continue;
+        if (*(s32 *)(obj + 0x50) == 0) continue;
+        other = obj[6] == 0;
+        ch = (u8 *)&D_80101EC8 + other * 0x44C;
+        st = *(u16 *)(ch + 0x6A);
+        if (st == 4 || st == 0x14 || st == 0xF || st == 0x1C || st == 0x1D || st == 0x1E ||
+            st == 0x1F || st == 0x20 || st == 0x21 || st == 0x11) {
+            continue;
+        }
+
+        seg[0] = *(Vec3i *)(obj + 0x38);
+        seg[1] = *(Vec3i *)(obj + 0x2C);
+        *(Vec3i **)(scr + 0x60) = &seg[0];
+        *(Vec3i **)(scr + 0x64) = &seg[1];
+        func_8002E838(scr);
+
+        hit = 0;
+        rec = &D_800F5F68[other * 0x1B8];
+        for (j = 0; j < 22; j++, rec += 0x14) {
+            s32 *pos;
+            if (*(s16 *)(ch + 0x26C) == 0 && j >= 6 && j <= 9) continue;
+            pos = (s32 *)&SCR[other].j[j + 4];
+            hit = func_8002EA24(scr, pos, *(u16 *)(rec + 0xC), *(u16 *)(rec + 0xE));
+            if (hit != 0) {
+                deep = 0;
+                if (*(s16 *)rec != 0 && D_8008E194[*(s16 *)(obj + 2)].unkD == 0) {
+                    deep = func_8002EA24(scr, pos, *(u16 *)(rec + 0x10), *(u16 *)(rec + 0x12)) != 0;
+                }
+                break;
+            }
+        }
+        if (hit == 0) continue;
+
+        diff = (*(s16 *)(ch + 0x1CA) - ratan2(*(s32 *)(obj + 0x44), *(s32 *)(obj + 0x4C))) & 0xFFF;
+        if (diff >= 0x800) diff = 0x1000 - diff;
+        func_800274BC((s32 *)(obj + 0x44), &D_800A37E8);
+        *(s32 *)(obj + 0x2C) -= *(s32 *)(obj + 0x44) / 2;
+        *(s32 *)(obj + 0x30) -= *(s32 *)(obj + 0x48) / 2;
+        *(s32 *)(obj + 0x34) -= *(s32 *)(obj + 0x4C) / 2;
+        r = func_80027AD8(1, ch, j, diff, deep, &D_8008E194[*(s16 *)(obj + 2)], 0, &flag);
+        if (r == 2) continue;
+        if (r != 0) {
+            func_80032854((*(s16 *)(obj + 2) ^ D_800A36F2) != 0, 0x2B, (u8 *)&SCR[other].j[j + 4], 0);
+            func_8002FF20(obj, *(s16 *)(rec + 2));
+            obj[4] = 0;
+            st = *(u16 *)(ch + 0x6A);
+            if (st == 8 || st == 0x23) {
+                g_disp_fade = 1;
+            }
+            continue;
+        }
+        kind = *(s16 *)(obj + 2);
+        if (kind == 0xF) {
+            func_80032854(other ^ 1, 0xE, (u8 *)&SCR[other].j[j + 4], &D_800A37E8);
+            *(s16 *)(obj + 2) = -1;
+            continue;
+        }
+        if (kind == 0xE) {
+            func_80032854((D_800A36F2 ^ 0xE) != 0, 0x2F, obj + 0x2C, 0);
+        } else if (flag == 0) {
+            func_80032854((kind ^ D_800A36F2) != 0, 0x2B, (u8 *)&SCR[other].j[j + 4], 0);
+        }
+        func_80031890(scr, obj, j);
+        obj[4] = 0;
+    }
+}
 void func_80032040(void) {
     s32 i;
     for (i = 0x84; i >= 0; i -= 0x2C) {
