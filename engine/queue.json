@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "PutDispEnv",
-      "file": "display",
-      "distance": 298,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80067200",
       "file": "text1b",
       "distance": 298,
@@ -820,15 +812,15 @@
     }
   ],
   "counts": {
-    "total": 81,
-    "active": 70,
+    "total": 80,
+    "active": 69,
     "by_status": {
-      "active": 70,
+      "active": 69,
       "rotated": 11
     },
     "by_verdict": {
-      "C": 53,
-      "ASM-PARTIAL": 17
+      "ASM-PARTIAL": 17,
+      "C": 52
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
