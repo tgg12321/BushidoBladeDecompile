@@ -529,7 +529,7 @@ def render_methodology() -> str:
         "- **Size-only Kengo false positives**: a Kengo `size-only-*` match is "
         "  weak. Five `katinuki_game_get_katinuki_max_num_*` renames were "
         "  applied in a prior pass and four of them turned out to be unrelated "
-        "  GPU wrappers; one was `gpu_EnableDisplay` and one was "
+        "  GPU wrappers; one was `gpu_ResetGraphMode1` and one was "
         "  `gpu_DisableDisplay`. The analyzer **skips** this Kengo name entirely "
         "  and downgrades `size-only` to `low` with mandatory address-suffix.\n"
         "- **Address-suffix indicates uncertainty**: a Kengo proposal with "

@@ -154,7 +154,7 @@ glabel func_8003C9A4
     /* 2D3E0 8003CBE0 05000224 */  addiu      $v0, $zero, 0x5
     /* 2D3E4 8003CBE4 0B006214 */  bne        $v1, $v0, .L8003CC14
     /* 2D3E8 8003CBE8 01000224 */   addiu     $v0, $zero, 0x1
-    /* 2D3EC 8003CBEC 1A5A000C */  jal        gpu_EnableDisplay
+    /* 2D3EC 8003CBEC 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2D3F0 8003CBF0 00000000 */   nop
     /* 2D3F4 8003CBF4 3783000C */  jal        func_80020CDC
     /* 2D3F8 8003CBF8 00000000 */   nop

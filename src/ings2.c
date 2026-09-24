@@ -617,8 +617,8 @@ INCLUDE_ASM("asm/funcs", _start);
    that also carried motion_Close @0x80083804 (below — its dtor-side twin,
    COMPLETED-INLINE-ASM-CANONICAL per owner ruling 2026-08-30, same prebuilt
    crt0/libgcc object; entry in inline_asm_canonical.txt). */
-INCLUDE_ASM("asm/funcs", func_80083794);
-INCLUDE_ASM("asm/funcs", motion_Close);
+INCLUDE_ASM("asm/funcs", __main);
+INCLUDE_ASM("asm/funcs", func_80083804);
 /* kengo:HIGH  |  is_motion/motion_Open  |  54i */
 __asm__(
     ".section .text\n"

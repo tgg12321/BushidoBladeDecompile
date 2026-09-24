@@ -202,8 +202,8 @@ MotDataBaseAddress = 0x80104F38;
 /* See docs/naming/MISNOMERS.md for the audit. The replacement aliases */
 /* with the correct semantic names are added at the same addresses */
 /* in the "Misnomer-replacement aliases" section further down. */
-gpu_EnableDisplay = 0x80016868;  /* MISNAMED: actually gpu_EnableDisplay (already in undefined_syms_auto.txt at this addr) */
-gpu_DisableDisplay = 0x800168D0;  /* MISNAMED: actually gpu_DisableDisplay (already in undefined_syms_auto.txt at this addr) */
+gpu_ResetGraphMode1 = 0x80016868;  /* body = ResetGraph(1) only; retired names katinuki_* (Kengo) and gpu_EnableDisplay (false: never enables the display) - naming sweep 2026-09-24 */
+gpu_SetDispMaskOn = 0x800168D0;  /* body = SetDispMask(1) only (display ON); retired names katinuki_* (Kengo) and gpu_DisableDisplay (inverted) - naming sweep 2026-09-24 */
 func_80046914 = 0x80046914;  /* MISNAMED: 1-line wrapper func_800453E0(8); not katinuki-related */
 func_80046934 = 0x80046934;  /* MISNAMED: 1-line wrapper func_800455AC(9); not katinuki-related */
 func_80046A60 = 0x80046A60;  /* MISNAMED: 1-line wrapper func_800453E0(0xA); not katinuki-related */
@@ -3016,7 +3016,6 @@ replay_camera_decode_player_bits_80077940 = 0x80077940;
 replay_camera_init_framebuffer_80077A28 = 0x80077A28;
 replay_camera_apply_transform_and_flip_80077A80 = 0x80077A80;
 camera_ptr_array_apply_offset_80077D10 = 0x80077D10;
-satan_voice_init_80084A7C = 0x80084A7C;
 
 /* === Cluster naming pass 3 aliases (2026-05-18) === */
 /* Semantic aliases for previously-unnamed func_* in 14 smaller subsystem */
@@ -3361,7 +3360,7 @@ disp_helper_80078628                               = 0x80078628;  /* first-pass 
 /* RENAME 0x800826CC: retired name 'special_camera_helper_800826CC' — preserved note: first-pass subsystem tag (special_camera); <-special_camera_load_cdrom_wait_800372F4 */
 /* RESET 0x800859F0: retired name 'tslglobalmemfree_helper_800859F0' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
 /* RENAME 0x80085FB8: retired name 'mario_helper_80085FB8' — preserved note: first-pass subsystem tag (mario); <-mario_getMarioVoiceData_8005BE84 */
-dispstuff_helper_80087770                          = 0x80087770;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
+/* RESET 0x80087770: retired name 'dispstuff_helper_80087770' — preserved note: first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
 /* RENAME 0x80087CAC: retired name 'dispstuff_helper_80087CAC' — preserved note: first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
 /* RESET 0x80088584: retired name 'tslglobalmemfree_helper_80088584' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
 /* RENAME 0x80089D10: retired name 'allocbukirmd_helper_80089D10' — preserved note: first-pass subsystem tag (allocbukirmd); <-AllocBukiRmd_helper_80086CF8 */

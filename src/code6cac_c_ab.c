@@ -293,7 +293,7 @@ s32 func_8003ACB8(void) {
         D_800A3904 = var_v0;
     }
     gpu_InitDisplay();
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
     ResetRCnt(0xF2000001);
     return temp_s0;
 }
@@ -331,7 +331,7 @@ void func_8003AE5C(u8 *arg0) {
 
     if (result >= 0) {
         (&D_800A37A8)[D_800A37A0] = *(u16 *)&D_800A36A4;
-        gpu_EnableDisplay();
+        gpu_ResetGraphMode1();
         func_80020D38();
         func_800602AC(result, addr);
     }
@@ -344,7 +344,7 @@ void func_8003AF40(s32 arg0) {
         (&D_8010277E)[arg0] = (&D_8010277E)[(u32)arg0 < 1u];
     }
     func_80022580(arg0, ((s8 *)&D_80102780)[arg0], ((s8 *)&D_8010277C)[arg0], ((s8 *)&D_8010277E)[arg0], 0);
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020D38();
     func_80040510(arg0, (&D_8008D578)[(s8)(&D_8010277C)[arg0]], (s32)0x80190800);
 }
@@ -356,7 +356,7 @@ void func_8003AFFC(void) {
     u8 *tbl;
     s32 v1;
 
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020D38();
     func_8004939C();
 
@@ -389,7 +389,7 @@ void func_8003B10C(s32 arg0) {
     s32 v0;
     u8 *tbl;
 
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020D38();
     func_8004939C();
 
@@ -628,7 +628,7 @@ void func_8003B870(void) {
     disp_SetFramebufferMode(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x17;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 void func_8003B8E4(void) {
     s32 tmp;

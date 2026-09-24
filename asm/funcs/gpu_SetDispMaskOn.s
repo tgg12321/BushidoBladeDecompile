@@ -1,4 +1,4 @@
-glabel gpu_DisableDisplay
+glabel gpu_SetDispMaskOn
     /* 70D0 800168D0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 70D4 800168D4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 70D8 800168D8 A8EC010C */  jal        SetDispMask
@@ -7,4 +7,4 @@ glabel gpu_DisableDisplay
     /* 70E4 800168E4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 70E8 800168E8 0800E003 */  jr         $ra
     /* 70EC 800168EC 00000000 */   nop
-endlabel gpu_DisableDisplay
+endlabel gpu_SetDispMaskOn

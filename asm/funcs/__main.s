@@ -1,4 +1,4 @@
-glabel func_80083794
+glabel __main
     /* 73F94 80083794 0A80083C */  lui        $t0, %hi(D_800A2668)
     /* 73F98 80083798 6826088D */  lw         $t0, %lo(D_800A2668)($t0)
     /* 73F9C 8008379C F0FFBD27 */  addiu      $sp, $sp, -0x10
@@ -29,4 +29,4 @@ glabel func_80083794
     /* 73FF8 800837F8 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 73FFC 800837FC 0800E003 */  jr         $ra
     /* 74000 80083800 00000000 */   nop
-endlabel func_80083794
+endlabel __main

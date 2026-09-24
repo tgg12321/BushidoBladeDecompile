@@ -4,7 +4,7 @@ glabel func_8001D790
     /* DF98 8001D798 1980123C */  lui        $s2, (0x80190800 >> 16)
     /* DF9C 8001D79C 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* DFA0 8001D7A0 1400B1AF */  sw         $s1, 0x14($sp)
-    /* DFA4 8001D7A4 1A5A000C */  jal        gpu_EnableDisplay
+    /* DFA4 8001D7A4 1A5A000C */  jal        gpu_ResetGraphMode1
     /* DFA8 8001D7A8 1000B0AF */   sw        $s0, 0x10($sp)
     /* DFAC 8001D7AC 0A80033C */  lui        $v1, %hi(D_800A36A4)
     /* DFB0 8001D7B0 A4366384 */  lh         $v1, %lo(D_800A36A4)($v1)

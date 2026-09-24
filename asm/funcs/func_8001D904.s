@@ -5,7 +5,7 @@ glabel func_8001D904
     /* E110 8001D910 00085236 */  ori        $s2, $s2, (0x80190800 & 0xFFFF)
     /* E114 8001D914 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* E118 8001D918 1400B1AF */  sw         $s1, 0x14($sp)
-    /* E11C 8001D91C 1A5A000C */  jal        gpu_EnableDisplay
+    /* E11C 8001D91C 1A5A000C */  jal        gpu_ResetGraphMode1
     /* E120 8001D920 1000B0AF */   sw        $s0, 0x10($sp)
     /* E124 8001D924 4E83000C */  jal        func_80020D38
     /* E128 8001D928 00000000 */   nop

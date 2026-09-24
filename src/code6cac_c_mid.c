@@ -1411,7 +1411,7 @@ void func_800397A0(void) {
     }
 }
 void func_800397D4(void) {
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_8003E22C();
     game_SetPlayerCount(0);
     SetGeomScreen(disp_CalcFov(0x2D));

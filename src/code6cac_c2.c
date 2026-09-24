@@ -162,8 +162,8 @@ extern s32 D_800A37B8;
 extern u8 D_800A390F;
 extern s16 D_800A3834;
 extern void gpu_InitDisplay(void);
-extern void gpu_DisableDisplay(void);
-extern void gpu_EnableDisplay(void);
+extern void gpu_SetDispMaskOn(void);
+extern void gpu_ResetGraphMode1(void);
 extern void func_8003AFFC(void);
 extern void func_80020CDC(void);
 extern void func_80020D38(void);
@@ -190,9 +190,9 @@ void func_8003B9D0(void) {
     func_8001DA2C();
     game_Cleanup();
     if (D_800A3768 != 0x14) gpu_InitDisplay();
-    if (D_800A3768 != 0xFF) gpu_DisableDisplay();
+    if (D_800A3768 != 0xFF) gpu_SetDispMaskOn();
     func_800174F4();
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020D38();
     disp_SetFramebufferMode(1, 0, 0, 0);
     if (((u8 *)D_800A3878)[3] & 0x80) {
@@ -235,7 +235,7 @@ void func_8003B9D0(void) {
     func_80037260();
     D_800A37B8 = 0;
     D_800A3834 = 7;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 /* kengo:HIGH  |  md_game/md_game_check_change_sub_mode  |  87i */
 
@@ -303,7 +303,7 @@ extern void snd_SerialMixOn(void);
 extern void cdrom_StartAudio(s32, s32);
 extern void func_80037260(void);
 void func_8003BE10(void) {
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     gpu_InitDisplay();
     func_80020CDC();
     player_Destroy(0);
@@ -318,7 +318,7 @@ void func_8003BE10(void) {
     }
     func_80037260();
     D_800A3834 = 0xB;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 void func_8003BEA8(void) {
     s32 s0 = 0;
@@ -386,7 +386,7 @@ void func_8003BEA8(void) {
 }
 void func_8003BFC4(void) {
     s32 v;
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020CDC();
     player_Destroy(0);
     player_Destroy(1);
@@ -404,7 +404,7 @@ void func_8003C040(void) {
     s32 a0;
     s8 *p;
     gpu_InitDisplay();
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020CDC();
     if (((u32)(D_800A38A4 - 4)) < 2u) {
         file_ResetDmaFlag();
@@ -476,7 +476,7 @@ void func_8003C040(void) {
     }
     D_800A37B8 = 0;
     D_800A3834 = 0x13;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_2  |  160i  |  x4 size collision */
 void func_8003C2C0(void) {
@@ -711,7 +711,7 @@ void func_8003C714(void) {
     disp_SetFramebufferMode(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x1F;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 /* kengo:LOW  |  su_menu_edit/_SetCurrentCursor  |  104i  |  PS2 UI â€” reverted */
 void func_8003C8B4(void) {
@@ -730,7 +730,7 @@ void func_8003C958(void) {
     D_800A3929 = 0;
     D_800A37B8 = 0;
     D_800A3834 = 0x19;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 extern void func_80046BF4(s16 *, s16 *, s32);
 void func_8003C9A4(void) {
@@ -785,7 +785,7 @@ void func_8003C9A4(void) {
     func_800372C0();
     if (D_800A3817 == 0) {
         if (D_800A38DC == 5) {
-            gpu_EnableDisplay();
+            gpu_ResetGraphMode1();
             func_80020CDC();
             D_800A3874 = 0;
             func_800342A0();
@@ -813,7 +813,7 @@ void func_8003CCCC(void) {
     game_Cleanup();
     D_800A37B8 = 0;
     D_800A3834 = 0x21;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 void func_8003CD10(void) {
     s32 *a0 = (s32 *)&D_800F6608;
@@ -857,7 +857,7 @@ void func_8003CE18(void) {
     func_8001DA2C();
     func_800372C0();
     gpu_InitDisplay();
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     disp_SetFramebufferMode(1, 0, 0, 0);
     func_8003E22C();
     game_SetPlayerCount(0);
@@ -893,7 +893,7 @@ void func_8003CE18(void) {
     game_Cleanup();
     D_800A37B8 = 0;
     D_800A3834 = 0x1D;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 extern void func_800335D8(void);
 extern void func_80021D10(s32, s32 *, s32);

@@ -7,7 +7,7 @@ glabel func_8003CE18
     /* 2D62C 8003CE2C 00000000 */   nop
     /* 2D630 8003CE30 225A000C */  jal        gpu_InitDisplay
     /* 2D634 8003CE34 00000000 */   nop
-    /* 2D638 8003CE38 1A5A000C */  jal        gpu_EnableDisplay
+    /* 2D638 8003CE38 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2D63C 8003CE3C 00000000 */   nop
     /* 2D640 8003CE40 01000424 */  addiu      $a0, $zero, 0x1
     /* 2D644 8003CE44 21280000 */  addu       $a1, $zero, $zero
@@ -86,7 +86,7 @@ glabel func_8003CE18
     /* 2D75C 8003CF5C B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 2D760 8003CF60 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2D764 8003CF64 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 2D768 8003CF68 345A000C */  jal        gpu_DisableDisplay
+    /* 2D768 8003CF68 345A000C */  jal        gpu_SetDispMaskOn
     /* 2D76C 8003CF6C 00000000 */   nop
     /* 2D770 8003CF70 2400BF8F */  lw         $ra, 0x24($sp)
     /* 2D774 8003CF74 2000B08F */  lw         $s0, 0x20($sp)

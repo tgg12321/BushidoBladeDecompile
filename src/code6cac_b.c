@@ -4047,7 +4047,7 @@ void func_800335D8(void) {
     }
 }
 void func_80033898(void) {
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     D_800A37B8 = 0;
     D_800A3834 = 3;
 }
@@ -4535,7 +4535,7 @@ void func_800344B4(void) {
             D_800A36A4 = (s16)v1;
         }
         D_800A3874 = 0;
-        gpu_EnableDisplay();
+        gpu_ResetGraphMode1();
         file_LoadOverlay();
         func_800342A0();
         goto skip_clear;

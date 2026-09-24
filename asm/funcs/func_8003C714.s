@@ -97,7 +97,7 @@ glabel func_8003C714
     /* 2D08C 8003C88C B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 2D090 8003C890 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2D094 8003C894 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 2D098 8003C898 345A000C */  jal        gpu_DisableDisplay
+    /* 2D098 8003C898 345A000C */  jal        gpu_SetDispMaskOn
     /* 2D09C 8003C89C 00000000 */   nop
     /* 2D0A0 8003C8A0 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 2D0A4 8003C8A4 1800B08F */  lw         $s0, 0x18($sp)

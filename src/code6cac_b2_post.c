@@ -105,7 +105,7 @@ extern void file_LoadSoundData(void);
  * file to be split around it to preserve text addresses). */
 INCLUDE_ASM("asm/funcs", func_80035828);
 void func_80035DC8(void) {
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     gpu_InitDisplay();
     func_80020CDC();
     player_Destroy(0);
@@ -114,7 +114,7 @@ void func_80035DC8(void) {
     obj_InitAll();
     func_80077820((s32)0x80118800);
     D_800A3834 = 0x1B;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 void func_80035E38(void) {
     D_800A36F1 = 1;
@@ -468,7 +468,7 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
     VSync(0);
     SetDispMask(0);
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     snd_Quit();
     memcard_Quit();
     ResetCallback();

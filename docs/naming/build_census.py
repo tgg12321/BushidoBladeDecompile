@@ -358,7 +358,9 @@ CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               # owner ruling 2026-09-24 (docs/naming/sweep-2026-09-24/ruling-2026-09-24.md)
               "in-binary-string": ("in-binary-string", "VERIFIED"),
               "computation-restatement": ("computation-restatement", "CORROBORATED"),
-              "libsn-pcdrv-protocol": ("libsn-pcdrv-protocol", "CORROBORATED")}
+              "libsn-pcdrv-protocol": ("libsn-pcdrv-protocol", "CORROBORATED"),
+              # __main: sole first call of main(), where cc1psx inserts `jal __main` (probe)
+              "crt0-convention": ("hardware-role", "VERIFIED")}
 # RESET rows from a verified manifest (evidence_class reset-contradicted, proposed_name =
 # the auto name): the current name is contradicted by the body. Consumed only while the
 # address still carries a semantic name; once reset, the row falls through to AUTO.

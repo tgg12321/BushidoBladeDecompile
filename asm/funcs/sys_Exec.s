@@ -11,7 +11,7 @@ glabel sys_Exec
     /* 27C8C 8003748C 21200000 */   addu      $a0, $zero, $zero
     /* 27C90 80037490 A8EC010C */  jal        SetDispMask
     /* 27C94 80037494 21200000 */   addu      $a0, $zero, $zero
-    /* 27C98 80037498 1A5A000C */  jal        gpu_EnableDisplay
+    /* 27C98 80037498 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 27C9C 8003749C 00000000 */   nop
     /* 27CA0 800374A0 436D010C */  jal        snd_Quit
     /* 27CA4 800374A4 00000000 */   nop

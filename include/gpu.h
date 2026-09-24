@@ -63,8 +63,8 @@ extern u8 g_gpu_dither;
 extern u8 g_gpu_type;
 
 /* Functions */
-extern void gpu_DisableDisplay(void);
-extern void gpu_EnableDisplay(void);
+extern void gpu_SetDispMaskOn(void);
+extern void gpu_ResetGraphMode1(void);
 extern void gpu_InitDisplay(void);
 
 /* PsyQ libgpu packet queue (sys.c `static volatile struct QueueItem`): 64

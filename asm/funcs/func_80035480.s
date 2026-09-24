@@ -1,7 +1,7 @@
 glabel func_80035480
     /* 25C80 80035480 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25C84 80035484 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 25C88 80035488 1A5A000C */  jal        gpu_EnableDisplay
+    /* 25C88 80035488 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 25C8C 8003548C 00000000 */   nop
     /* 25C90 80035490 225A000C */  jal        gpu_InitDisplay
     /* 25C94 80035494 00000000 */   nop
@@ -42,7 +42,7 @@ glabel func_80035480
     /* 25D18 80035518 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 25D1C 8003551C 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 25D20 80035520 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 25D24 80035524 345A000C */  jal        gpu_DisableDisplay
+    /* 25D24 80035524 345A000C */  jal        gpu_SetDispMaskOn
     /* 25D28 80035528 00000000 */   nop
     /* 25D2C 8003552C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 25D30 80035530 1800BD27 */  addiu      $sp, $sp, 0x18

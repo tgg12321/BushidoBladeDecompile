@@ -1661,7 +1661,7 @@ extern void func_8003FFC4(s32);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
 extern void SetGeomScreen(s32);
-extern void gpu_EnableDisplay(void);
+extern void gpu_ResetGraphMode1(void);
 extern void game_StageCleanup(s32, s32);
 extern void func_8004659C(s32);
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
@@ -1731,7 +1731,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
             a6 += ret;
             game_StageCleanup(n, a6);
         } else {
-            gpu_EnableDisplay();
+            gpu_ResetGraphMode1();
             game_StageCleanup(n, (s32)&D_800A3770);
         }
     }

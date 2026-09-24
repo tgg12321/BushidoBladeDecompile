@@ -46,7 +46,7 @@ glabel func_8001DBE4
     /* E488 8001DC88 00000000 */   nop
     /* E48C 8001DC8C 225A000C */  jal        gpu_InitDisplay
     /* E490 8001DC90 00000000 */   nop
-    /* E494 8001DC94 345A000C */  jal        gpu_DisableDisplay
+    /* E494 8001DC94 345A000C */  jal        gpu_SetDispMaskOn
     /* E498 8001DC98 00000000 */   nop
   .L8001DC9C:
     /* E49C 8001DC9C 1400BF8F */  lw         $ra, 0x14($sp)

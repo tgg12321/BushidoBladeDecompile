@@ -125,7 +125,7 @@ extern u8 D_800A31D8;
 extern void func_8003A41C(void);
 extern void func_80020CDC(void);
 void func_80035480(void) {
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     gpu_InitDisplay();
     if (D_800A31DA == 0) {
         func_8003A41C();
@@ -143,7 +143,7 @@ void func_80035480(void) {
     func_80077820((s32)0x80118800);
     D_800A37B8 = 0;
     D_800A3834 = 9;
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 typedef struct {
     u32 tag;

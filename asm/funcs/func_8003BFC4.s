@@ -1,7 +1,7 @@
 glabel func_8003BFC4
     /* 2C7C4 8003BFC4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2C7C8 8003BFC8 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 2C7CC 8003BFCC 1A5A000C */  jal        gpu_EnableDisplay
+    /* 2C7CC 8003BFCC 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2C7D0 8003BFD0 00000000 */   nop
     /* 2C7D4 8003BFD4 3783000C */  jal        func_80020CDC
     /* 2C7D8 8003BFD8 00000000 */   nop

@@ -22,7 +22,7 @@ glabel func_8003B870
     /* 2C0C0 8003B8C0 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 2C0C4 8003B8C4 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2C0C8 8003B8C8 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
-    /* 2C0CC 8003B8CC 345A000C */  jal        gpu_DisableDisplay
+    /* 2C0CC 8003B8CC 345A000C */  jal        gpu_SetDispMaskOn
     /* 2C0D0 8003B8D0 00000000 */   nop
     /* 2C0D4 8003B8D4 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2C0D8 8003B8D8 1800BD27 */  addiu      $sp, $sp, 0x18

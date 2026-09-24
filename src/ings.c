@@ -62,7 +62,7 @@ extern void ResetRCnt(u32);
 extern s32 GetRCnt(u32);
 extern s32 rand(void);
 extern void func_800372C0(void);
-extern void func_80083794(void);
+extern void __main(void);
 extern void SetSp(u32);
 extern void SetMem(s32);
 extern void func_80060E04(s32);
@@ -239,7 +239,7 @@ void func_800167EC(void) {
     func_8001945C();
 }
 
-void gpu_EnableDisplay(void) {
+void gpu_ResetGraphMode1(void) {
     ResetGraph(1);
 }
 
@@ -250,7 +250,7 @@ void gpu_InitDisplay(void) {
     DrawSync(0);
 }
 
-void gpu_DisableDisplay(void) {
+void gpu_SetDispMaskOn(void) {
     SetDispMask(1);
 }
 
@@ -581,7 +581,7 @@ void main(void) {
     s32 voice;
     u32 *tbl;
 
-    func_80083794();
+    __main();
     SetSp(0x801FFF00);
     SetMem(2);
     sys_Init();

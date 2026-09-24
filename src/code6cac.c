@@ -1502,7 +1502,7 @@ void func_8001C8DC(void) {
         if (D_80101F5E != 0) break;
         if (func_80033DF4() == 0) goto end;
         D_800A390D = 1;
-        gpu_EnableDisplay();
+        gpu_ResetGraphMode1();
         func_80040510(1, D_800A38DE, 0);
         prev = D_800A38E0;
         switch (D_800A38E2) {
@@ -1593,7 +1593,7 @@ void func_8001D790(void) {
     s32 s1;
     s32 *s0;
 
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
 
     if (D_800A36A4 != D_800A390E
         || *(&D_8008E5A8 + (s8)D_8010277C) != D_800A30FC
@@ -1632,7 +1632,7 @@ void func_8001D904(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
     s32 *s0;
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020D38();
     obj_InitTask();
     s1 = obj_InitTaskCamera((s32)0x80190800);
@@ -1647,7 +1647,7 @@ void func_8001D998(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
     s32 *s0;
-    gpu_EnableDisplay();
+    gpu_ResetGraphMode1();
     func_80020D38();
     obj_InitPair();
     s1 = func_8005B8B8((s32)0x80190800);
@@ -1737,7 +1737,7 @@ void func_8001DBE4(void) {
     }
     func_8003AAB0();
     gpu_InitDisplay();
-    gpu_DisableDisplay();
+    gpu_SetDispMaskOn();
 }
 INCLUDE_ASM("asm/funcs", func_8001DCB0);
 /* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */

@@ -775,3 +775,14 @@ category: family-candidate
 evidence: memory/grind/sprintf/rejected/sotn-args-frame-walk-0.c (sandbox 0/535, full-build SHA1 == oracle with the rodata re-attribution in memory/grind/sprintf/evidence.md) + evidence.md 2026-09-23; manual-lane layer-2 cheat-reviewer FAIL (2026-09-23). The only closing form is SOTN's verbatim `bufPtr = (char*)&args - sizeof(printf_info) - 4;` (SOTN src/main/psxsdk/libc/sprintf.c:88-90, PSX psxsdk, comment "Need to use args to force args on the stack"): it takes the va_list's address and walks back over `info` to land on `&buf[0x200]`. Layer-2 FAILed it as cross-object address derivation between locals (#5). Receipts: the truthful `bufPtr = &buf[sizeof(buf)]` = 96/535 because args then lives in a register, while the target keeps it at sp+0x220 with $s7 free (so not a spill); five stdarg spellings 82-96. Note docs/grind/sotn-family-surveys-2026-08-18.md:287 classified this same SOTN line as "varargs frame walking in imported PsyQ library code, not a named-symbol crossing". Every other construct is cleared.
 disposition taken: not committed; sprintf stays INCLUDE_ASM/active. Question for the owner: is SOTN's `&args`-relative buffer pointer in PsyQ's sprintf (a pointer to the end of the local buffer, computed from the address of the adjacent va_list local) acceptable, or banned as cross-object derivation?
 resolution (owner, 2026-09-23): ALLOWED FOR sprintf ONLY. The owner selected "Allow it, sprintf only". Rule text (the author's narrowing): .claude/rules/ordinary-c-judge-decidable.md "Ruling 7"; record in decisions.md 2026-09-23 OWNER RULING — Ruling 7. sprintf is re-submitted to a fresh layer-2 under that text.
+
+## 2026-09-24 — naming sweep — name-drift alias table — policy-question
+category: policy-question
+evidence: naming sweep 2026-09-24 (docs/naming/sweep-2026-09-24/) renamed functions whose rulings / journal entries were filed under the old names; engine/dossier.py aliases() resolves them from this table.
+disposition taken: alias table recorded here; no policy change.
+  cdrom_IsIdle = func_80036D88 · cdrom_StartRead = replay_camera_Init · cdrom_Pause = game_FrameInit ·
+  cdrom_StartAudio = func_80036FD4 · cdrom_ReadWait = func_800372F4 · bitstream_ReadBits = func_8003D888 ·
+  gpu_AddDrawMove = func_800401CC · math_RotMatrixZXY = func_80042874 · math_RotMatrixXYZ = func_80042C80 ·
+  gpu_OffsetTexPolyFT3 = func_80043BD0 · gpu_OffsetTexPolyFT4 = func_80043C7C · gpu_OffsetTexPolyGT3 = func_80043D34 ·
+  gpu_OffsetTexPolyGT4 = func_80043DE0 · gte_SetMatrixRotTransIR = func_80052A20 · PCclose = func_800836B8 ·
+  __main = func_80083794 · func_80083804 = motion_Close

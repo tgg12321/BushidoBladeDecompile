@@ -12,12 +12,12 @@ glabel func_8001DCB0
     /* E4D8 8001DCD8 00000000 */   nop
     /* E4DC 8001DCDC 225A000C */  jal        gpu_InitDisplay
     /* E4E0 8001DCE0 00000000 */   nop
-    /* E4E4 8001DCE4 345A000C */  jal        gpu_DisableDisplay
+    /* E4E4 8001DCE4 345A000C */  jal        gpu_SetDispMaskOn
     /* E4E8 8001DCE8 00000000 */   nop
   .L8001DCEC:
     /* E4EC 8001DCEC 3D5D000C */  jal        func_800174F4
     /* E4F0 8001DCF0 00000000 */   nop
-    /* E4F4 8001DCF4 1A5A000C */  jal        gpu_EnableDisplay
+    /* E4F4 8001DCF4 1A5A000C */  jal        gpu_ResetGraphMode1
     /* E4F8 8001DCF8 00000000 */   nop
     /* E4FC 8001DCFC 8BF8000C */  jal        func_8003E22C
     /* E500 8001DD00 00000000 */   nop

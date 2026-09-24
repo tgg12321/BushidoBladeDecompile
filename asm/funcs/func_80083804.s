@@ -1,4 +1,4 @@
-glabel motion_Close
+glabel func_80083804
     /* 74004 80083804 0A80083C */  lui        $t0, %hi(D_800A2668)
     /* 74008 80083808 6826088D */  lw         $t0, %lo(D_800A2668)($t0)
     /* 7400C 8008380C F0FFBD27 */  addiu      $sp, $sp, -0x10
@@ -27,4 +27,4 @@ glabel motion_Close
     /* 74060 80083860 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 74064 80083864 0800E003 */  jr         $ra
     /* 74068 80083868 00000000 */   nop
-endlabel motion_Close
+endlabel func_80083804
