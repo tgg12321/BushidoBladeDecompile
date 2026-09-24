@@ -217,4 +217,13 @@ typedef struct {
 
 extern Unk800F0C10Record D_800F0C10[4][3];
 
+/* 0x800948BC: per-stage function pairs, indexed by stage_GetId().
+ * stage_ExecInitFunc calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
+ * holds camera_InitBone2 / func_800475A4). */
+typedef struct {
+    void (*init)(void);
+    void (*unk4)(void);
+} StageFuncEntry;
+extern StageFuncEntry g_stage_init_tbl[];
+
 #endif /* GAME_H */

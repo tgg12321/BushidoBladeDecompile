@@ -109,7 +109,6 @@ extern s32 D_80090600;
 extern s32 D_80090604;
 extern s16 D_80090608;
 extern s16 D_800906A4;
-extern s32 D_800948C0;
 extern u16 D_80094C68[];
 extern s16 D_800A310C;
 extern s32 D_800A3134;
@@ -309,7 +308,36 @@ extern s16 D_800FF5DA;
 extern s16 D_800FF5DC;
 extern s32 D_800FF5E0;
 extern u8 D_80101BF0;
-extern s16 D_80101E00;
+/* Two 0x58-byte records set up side by side by func_80049E4C: 0x80101DF0
+ * (unk0 = 0x64, unk8 = 5; pointer stored to D_800A3708) and 0x800FF638
+ * (unk0 = 0x65, unk8 = 2; pointer stored to D_800A370C). func_800418D0
+ * passes a negated stack copy of xf.rot (+0x10..0x14; the record is not
+ * written) and &work (+0x38) to g_anim_func_table[unk8], then copies work
+ * to xf.mat (+0x18);
+ * func_80046BF4 writes work.t (+0x4C/+0x50/+0x54) just before that call.
+ * func_800475A4 passes &xf.rot to g_anim_func_table[0] and &xf.mat to
+ * ApplyMatrix; func_8003E6D8 forms one base at &xf (0x80101E00) and passes
+ * base+0x1C (xf.mat.t). Rot / Mat are the PsyQ SVECTOR / MATRIX layouts
+ * (include/gte.h), spelled with local tags because several TUs typedef
+ * SVECTOR/MATRIX themselves. */
+typedef struct { s16 vx, vy, vz, pad; } Unk80101DF0Rot;
+typedef struct { s16 m[3][3]; u16 pad; s32 t[3]; } Unk80101DF0Mat;
+typedef struct {
+    Unk80101DF0Rot rot; /* +0x00 */
+    Unk80101DF0Mat mat; /* +0x08 */
+} Unk80101DF0Xform;
+typedef struct {
+    u8 unk0;               /* +0x00 */
+    s8 unk1;               /* +0x01 */
+    u8 unk2[6];            /* +0x02 */
+    s16 unk8;              /* +0x08 g_anim_func_table index */
+    s16 unkA;              /* +0x0A */
+    s32 unkC;              /* +0x0C */
+    Unk80101DF0Xform xf;   /* +0x10 */
+    Unk80101DF0Mat work;   /* +0x38 */
+} Unk80101DF0Record;      /* 0x58 */
+extern Unk80101DF0Record D_80101DF0;
+extern Unk80101DF0Record D_800FF638;
 extern u8 D_80101E59;
 extern s32 D_80101E5C;
 typedef struct {

@@ -82,11 +82,6 @@ extern void func_800420D0(void);
 extern void stage_ClearLighting(void);
 extern void stage_ApplyLighting(void);
 extern void stage_InitCollision(void);
-extern s16 D_80101E02;
-extern s16 D_80101E04;
-extern s32 D_80101E3C;
-extern s32 D_80101E40;
-extern s32 D_80101E44;
 extern s32 D_80102C00;
 extern u16 D_800A38D6;
 extern s32 D_800A374C;
@@ -294,11 +289,11 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
 
     new_var = &a1[2];
     if (a0 != 0) {
-        rot_base = &D_80101E00;
+        rot_base = &D_80101DF0.xf.rot.vx;
 
         *rot_base = -(s16)a1[0];
-        D_80101E02 = -(s16)a1[1];
-        D_80101E04 = -(s16)(*new_var);
+        D_80101DF0.xf.rot.vy = -(s16)a1[1];
+        D_80101DF0.xf.rot.vz = -(s16)(*new_var);
 
         trans[1] = (trans[0] = 0);
         trans[2] = -a2;
@@ -314,12 +309,12 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
         {
             s32 *rp = result;
             s32 *ap = a0;
-            D_80101E3C = *rp++ + *ap++;
-            D_80101E40 = *rp++ + *ap++;
-            D_80101E44 = *rp++ + *ap++;
+            D_80101DF0.work.t[0] = *rp++ + *ap++;
+            D_80101DF0.work.t[1] = *rp++ + *ap++;
+            D_80101DF0.work.t[2] = *rp++ + *ap++;
         }
 
-        func_800418D0((s32 *)((char *)rot_base - 0x10));
+        func_800418D0((s32 *)&D_80101DF0);
         camera_InitBoneData();
         stage_InitCollision();
 
@@ -456,7 +451,6 @@ void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
 typedef struct {
     s32 w[8];
 } Block32;
-extern Block32 D_80101E08;
 typedef struct { s16 lo; s16 hi; } CamHalves;
 extern s16 D_800EEDD6;
 extern s16 D_800EEDD8;
@@ -466,7 +460,7 @@ void camera_InitBoneData(void) {
        physically live INSIDE g_cam_bone_data (+6/+8), so the dependency is
        real, but the split extern symbols hide it from GCC's alias analysis;
        no distinct-symbol spelling can express it (measured s2). */
-    do { *(Block32 *)&g_cam_bone_data = D_80101E08; } while (0);
+    do { *(Unk80101DF0Mat *)&g_cam_bone_data = D_80101DF0.xf.mat; } while (0);
     {
         s16 h0 = D_800EEDD6;
         s16 h1 = D_800EEDD8;
@@ -570,9 +564,6 @@ extern s16 D_800EEE02;
 extern s32 D_800EEE1C;
 extern s32 D_800EEE20;
 extern s32 D_800EEE24;
-extern s32 D_80101E1C;
-extern s32 D_80101E20;
-extern s32 D_80101E24;
 extern s32 D_800F66B0;
 extern void MulMatrix0(s32 *, s32 *, s32 *);
 void func_800475A4(void) {
@@ -591,7 +582,7 @@ void func_800475A4(void) {
     rot[0] = 0;
     rot[1] = 0;
     rot[2] = 0x6590;
-    ApplyMatrix((s32 *)&D_80101E08, rot, result);
+    ApplyMatrix((s32 *)&D_80101DF0.xf.mat, rot, result);
 
     angle = ratan2(result[0], result[2]);
 
@@ -604,11 +595,11 @@ void func_800475A4(void) {
         D_800EEE00 = neg;
     }
     D_800EEE02 = angle;
-    D_800EEE1C = D_80101E1C;
-    D_800EEE20 = D_80101E20;
-    D_800EEE24 = D_80101E24 + 0x6590;
+    D_800EEE1C = D_80101DF0.xf.mat.t[0];
+    D_800EEE20 = D_80101DF0.xf.mat.t[1];
+    D_800EEE24 = D_80101DF0.xf.mat.t[2] + 0x6590;
     ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
-    ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101E08 - 8, buf2);
+    ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101DF0.xf.rot, buf2);
     MulMatrix0(buf2, buf1, (s32 *)(base + 0x18));
 
     {

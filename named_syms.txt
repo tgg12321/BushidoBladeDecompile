@@ -324,7 +324,7 @@ empty_stub_80046954          = 0x80046954;  /* literal `jr ra; nop` -- 2 insns t
 /* (b) lack callsite context to distinguish their role.  See */
 /* `docs/naming/MISNOMERS.md` and `tools/rename_funcs.py` for the full delta. */
 math_Distance3D_80017748     = 0x80017748;  /* vec3 sub + >>2 + sum-after-helper + <<2 == magnitude-with-overflow-guard. Exact match with legacy `math_Distance3D`. */
-camera_InitBoneData_80047210 = 0x80047210;  /* memcpy(g_cam_bone_data, D_80101E08, 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
+camera_InitBoneData_80047210 = 0x80047210;  /* memcpy(g_cam_bone_data, D_80101DF0.xf.mat (0x80101E08), 0x20) + halve 3 halfword fields. Legacy `camera_InitBoneData` is an exact-shape match. */
 camera_InitBone2_80047570    = 0x80047570;  /* camera_InitRotation(&g_cam_bone_data2) + g_cam_interp=4. Legacy `camera_InitBone2` matches the body 1:1 (it's the second cam bone bank init). */
 
 /* === Batch 4 data-symbol renames (2026-05-17) === */
@@ -579,9 +579,7 @@ g_camera_rotation_data          = 0x800F66A0;  /* camera_InitRotation state */
 /* === Data-symbol batch 6 (2026-05-17) -- ranks 61-90 === */
 /* 5 high-confidence + 22 medium proposals (full evidence in */
 /* docs/naming/data_evidence/). The 5 highs landed below. */
-g_replay_pos_x                  = 0x80101E02;  /* halfword X of replay-camera pos triple; paired with g_replay_pos_y/z */
-g_replay_pos_y                  = 0x80101E04;  /* halfword Y of replay-camera pos triple */
-g_replay_pos_z                  = 0x80101E44;  /* word Z of replay-camera pos triple; passed to replay_camera_get_attack_number */
+/* 2026-09-23: g_replay_pos_x/y/z (3 of the 5) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 g_pad_analog_substate           = 0x800A37C8;  /* halfword; sub-state for pad_FuncAnalog (values {0, 3}); paired with g_pad_analog_mode (D_800A31F4) */
 g_match_round_byte_a            = 0x800F65F8;  /* byte array indexed by g_match_round_index * 2 -- per-round result byte (paired with D_800F65F9 byte_b) */
 
@@ -593,8 +591,8 @@ g_text1b_render_state           = 0x800F116C;  /* base of text1b render state st
 g_text1b_render_state_ptr       = 0x800A3468;  /* pointer to g_text1b_render_state; +0x0 has 0x200000 valid-flag, +0x14 has output cursor */
 g_text1b_render_buf_ptr         = 0x800A347C;  /* volatile pointer to render buffer (state + 0x20); concurrent with IRQ/DMA */
 g_text1b_glyph_cursor           = 0x800F1180;  /* pointer-cursor over glyph data; reset per render-init path */
+/* 2026-09-23: g_replay_attack_pos_x (batch 7) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 g_text1b_render_arg_cache       = 0x800F1178;  /* cached caller-arg0 in text1b render path; consumed by deeper functions */
-g_replay_attack_pos_x           = 0x80101E3C;  /* X position for replay-camera attack-number selection; paired with D_80101E44 */
 
 /* === Data-symbol batch 8 (2026-05-17) -- 8 highs + 18 mediums === */
 _snd_seq_tick_env_plus_0x12         = 0x800A26DE;  /* 0x7F = alarm armed, 0 = inactive; tested in irq_ProcessPending */  /* data-wave 2026-09-07: was g_alarm_active_sentinel */
@@ -641,6 +639,7 @@ _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (d
 g_irq_alarm_handle              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */
 
 /* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
+/* 2026-09-23: g_replay_attack_pos_y retired -- per-word piece of Unk80101DF0Record (include/code6cac.h). */
 /* GTE background color (RGB triple) */
 g_gte_back_color_r              = 0x800F6338;  /* R, passed to gte_SetBackColor */
 g_gte_back_color_g              = 0x800F6339;  /* G */
@@ -649,8 +648,6 @@ g_gte_back_color_b              = 0x800F633A;  /* B */
 g_scratchpad_ptr_18             = 0x800A346C;  /* -> 0x1F800018 */
 g_scratchpad_ptr_20             = 0x800A3470;  /* -> 0x1F800020 */
 g_scratchpad_ptr_30             = 0x800A3474;  /* -> 0x1F800030 */
-/* Replay-attack position triple (Y completes the X/Y/Z trio) */
-g_replay_attack_pos_y           = 0x80101E40;  /* Y, computed result[1] + a0[1] */
 /* IRQ alarm callback state */
 _snd_seq_tick_env_plus_0xC            = 0x800A26D8;  /* function-pointer/arg for pending alarm */  /* data-wave 2026-09-07: was g_alarm_callback_ptr */
 _snd_seq_tick_env_plus_0x10        = 0x800A26DC;  /* boolean: alarm callback pending */  /* data-wave 2026-09-07: was g_alarm_callback_pending */
@@ -1641,8 +1638,8 @@ g_cam_matrix_m8                                         = 0x800EEDC0;  /* identi
 
 /* === Camera bone data init halves (2026-05-17) -- 3 highs === */
 /* From sound.c camera_InitBoneData (line 460): copies 32-byte */
-/* g_cam_bone_data from D_80101E08, then halves 3 specific s16 fields. */
-g_cam_bone_data_template                                = 0x80101E08;  /* 32-byte source block copied to g_cam_bone_data on init */
+/* g_cam_bone_data from D_80101DF0.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
+/* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 g_cam_bone_data_h0                                      = 0x800EEDD6;  /* s16 field halved by camera_InitBoneData (h >> 1) */
 g_cam_bone_data_h1                                      = 0x800EEDD8;  /* s16 field halved by camera_InitBoneData; new_var pointer base */
 
@@ -1683,9 +1680,9 @@ _spu_rev_offsetaddr                                = 0x800A2884;  /* offset for 
 g_snd_cached_bgm_arg                                    = 0x800A3248;  /* memoization cache for snd_PlayBgm helper -- skip re-init if arg matches */
 g_snd_3d_angle_h_b                                      = 0x800EEE00;  /* sibling pair to g_sound_3d_angle_h/v but for the bone-data2 audio context */
 g_snd_3d_angle_v_b                                      = 0x800EEE02;  /* sibling pair */
-g_snd_3d_pos_x                                          = 0x800EEE1C;  /* position triple X (from D_80101E1C) */
-g_snd_3d_pos_y                                          = 0x800EEE20;  /* position triple Y (from D_80101E20) */
-g_snd_3d_pos_z                                          = 0x800EEE24;  /* position triple Z (from D_80101E24 + 0x6590) */
+g_snd_3d_pos_x                                          = 0x800EEE1C;  /* position triple X (from D_80101DF0.xf.mat.t[0], 0x80101E1C) */
+g_snd_3d_pos_y                                          = 0x800EEE20;  /* position triple Y (from D_80101DF0.xf.mat.t[1], 0x80101E20) */
+g_snd_3d_pos_z                                          = 0x800EEE24;  /* position triple Z (from D_80101DF0.xf.mat.t[2], 0x80101E24, + 0x6590) */
 
 /* === Animation interp / camera transition counters (2026-05-17) -- 3 highs === */
 g_anim_stability_counter                                = 0x800A3310;  /* counts consecutive "stable" interp frames in dst[0x1F]-marked struct; >= 0xB switches to high-precision update */
@@ -1967,17 +1964,17 @@ g_effect_cached_id                                      = 0x800A33F8;  /* u16 ca
 g_effect_accumulator                                    = 0x800A33F0;  /* s32 set by func_80054410 / incremented by func_8005441C */
 
 /* === Replay target A/B struct bases (2026-05-17) -- 4 highs === */
+/* 2026-09-23: g_replay_target_a/b_init_val (2 of the 4) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 /* From text1b.c func_80049E4C: 2 parallel replay-target structs */
 /* initialized together.  D_80101DF0 is "target A" (type 0x64); */
 /* D_800FF638 is "target B" (type 0x65).  After init, pointers are */
 /* stored to existing g_replay_camera_target_ptr_b (D_800A370C) and */
-/* g_replay_camera_state etc.  D_80101E3C/40/44 (named separately as */
-/* g_replay_attack_pos_x/y g_replay_pos_z) are fields at +0x4C/50/54 */
-/* of target A. */
+/* g_replay_camera_state etc.  0x80101E3C/40/44 are */
+/* D_80101DF0.work.t[0..2] (+0x4C/50/54; Unk80101DF0Record, */
+/* include/code6cac.h, 0x58 bytes -- the "~0x60" below is the */
+/* census estimate); per-word names retired 2026-09-23. */
 g_replay_target_a_base                                  = 0x80101DF0;  /* target A struct base (type 0x64 at +0; size ~0x60) */
-g_replay_target_a_init_val                              = 0x80101DF8;  /* target A field at +8 (init = 5) */
 g_replay_target_b_base                                  = 0x800FF638;  /* target B struct base (type 0x65 at +0) */
-g_replay_target_b_init_val                              = 0x800FF640;  /* target B field at +8 (init = 2) */
 
 /* === code6cac_c_mid SE slot + pad-rec + other state (2026-05-17) -- 7 highs === */
 g_se_slot_table_180x16                                  = 0x800F68E0;  /* 180-entry x 0x10-byte SE slot table (saSeInit_2 iterates with stride 0x10 for 0xB4=180) */
@@ -2067,10 +2064,8 @@ g_player_byte_flags_table                               = 0x8009BC7C;  /* per-pl
 /* === 3D sound data buffer cluster (2026-05-17) -- 6 highs === */
 g_sound_3d_data_buffer                                  = 0x80102C00;  /* base of 3D-sound data buffer; cursor advances per primitive */
 g_sound_3d_cursor                                       = 0x800A3820;  /* current cursor into g_sound_3d_data_buffer */
+/* 2026-09-23: g_sound_3d_pos_x/y/z_src (3 of the 6) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 g_sound_3d_dma_snapshot                                 = 0x800A3808;  /* snapshot of g_dma_buf_base at start of 3D sound batch */
-g_sound_3d_pos_x_src                                    = 0x80101E1C;  /* source X for g_snd_3d_pos_x copy */
-g_sound_3d_pos_y_src                                    = 0x80101E20;  /* source Y for g_snd_3d_pos_y copy */
-g_sound_3d_pos_z_src                                    = 0x80101E24;  /* source Z; gets +0x6590 offset when copied to g_snd_3d_pos_z */
 
 /* === Memcard operation state (2026-05-17) -- 3 highs === */
 /* From code6cac_c_mid.c around line 489-509: memcard file open/read/write */
@@ -2515,13 +2510,7 @@ g_gnd_init_complete_flag_plus_1                         = 0x800F6627;  /* +1 fro
 g_game_p2_ctrl_plus_2                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */
 g_anim_func_table_plus_8                                = 0x800F66A8;  /* +8 from g_anim_func_table (0x800F66A0) */
 g_snd_callback_func_ptr_plus_4                          = 0x800F66B4;  /* +4 from g_snd_callback_func_ptr (0x800F66B0) */
-g_replay_target_b_base_plus_1                           = 0x800FF639;  /* +1 from g_replay_target_b_base (0x800FF638) */
-g_replay_target_b_init_val_plus_4                       = 0x800FF644;  /* +4 from g_replay_target_b_init_val (0x800FF640) */
-g_replay_target_b_init_val_plus_8                       = 0x800FF648;  /* +8 from g_replay_target_b_init_val (0x800FF640) */
 g_memcard_slot_plus_4                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */
-g_replay_target_a_base_plus_1                           = 0x80101DF1;  /* +1 from g_replay_target_a_base (0x80101DF0) */
-g_replay_target_a_init_val_plus_4                       = 0x80101DFC;  /* +4 from g_replay_target_a_init_val (0x80101DF8) */
-g_replay_target_a_init_val_plus_8                       = 0x80101E00;  /* +8 from g_replay_target_a_init_val (0x80101DF8) */
 g_cd_playback_flag_b_plus_2                             = 0x80101E6A;  /* +2 from g_cd_playback_flag_b (0x80101E68) */
 g_replay_frame_offset_plus_4                            = 0x80101E78;  /* +4 from g_replay_frame_offset (0x80101E74) */
 g_replay_frame_offset_plus_8                            = 0x80101E7C;  /* +8 from g_replay_frame_offset (0x80101E74) */
@@ -2791,11 +2780,6 @@ g_camera_view_state_plus_14                                  = 0x800FF566;
 g_camera_view_state_plus_16                                  = 0x800FF568;
 g_text1b_addr_800FF570                                       = 0x800FF570;
 g_text1b_addr_800FF574                                       = 0x800FF574;
-g_replay_target_b_init_val_plus_8_plus_2                     = 0x800FF64A;
-g_replay_target_b_init_val_plus_8_plus_4                     = 0x800FF64C;
-g_text1b_state_FF684_a                                       = 0x800FF684;
-g_text1b_state_FF684_b                                       = 0x800FF688;
-g_text1b_state_FF684_c                                       = 0x800FF68C;
 g_char_p6_field_1E0                                          = 0x80103624;
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */
@@ -3200,7 +3184,7 @@ coli_find_nearest_edge_hit_80057ACC            = 0x80057ACC;  /* loops polygons(
 /* RENAME 0x8007EDBC: retired name 'matrix_scale_3x3_cols_8007EDBC' — preserved note: column-scale counterpart of matrix_scale_3x3_rows: col0*$a1[0], col1*$a1[4], col2*$a1[8] of the packed 3x3 matrix, 4.12 */
 get_ptr_D_800A9D10_80045814                    = 0x80045814;  /* returns &D_800A9D10 (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
 get_ptr_D_800EFB0C_8005507C                    = 0x8005507C;  /* returns &D_800EFB0C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
-get_ptr_D_80101E1C_8005508C                    = 0x8005508C;  /* returns &D_80101E1C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
+get_ptr_D_80101E1C_8005508C                    = 0x8005508C;  /* returns D_80101DF0.xf.mat.t = 0x80101E1C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
 set_D_800A33F0_80054410                        = 0x80054410;  /* D_800A33F0 = arg (2-insn setter); was Kengo-misnomer 'efc_ougi_Init' */
 efc_helper_80017A44                                = 0x80017A44;  /* first-pass subsystem tag (efc); <-efc_rob_ougi_control */
 ang_helper_8001924C                                = 0x8001924C;  /* first-pass subsystem tag (ang); <-ang_hosei_8003F62C */

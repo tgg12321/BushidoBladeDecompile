@@ -1276,50 +1276,30 @@ extern s32 func_800418D0();
 
 extern void *D_800A3708;
 extern void *D_800A370C;
-extern u8 D_800FF638;
-extern s8 D_800FF639;
-extern s16 D_800FF640;
-extern s32 D_800FF644;
-extern s16 D_800FF648;
-extern s16 D_800FF64A;
-extern s16 D_800FF64C;
-extern s32 D_800FF684;
-extern s32 D_800FF688;
-extern s32 D_800FF68C;
-extern u8 D_80101DF0;
-extern s8 D_80101DF1;
-extern s16 D_80101DF8;
-extern s32 D_80101DFC;
-extern s16 D_80101E00;
-extern s16 D_80101E02;
-extern s16 D_80101E04;
-extern s32 D_80101E3C;
-extern s32 D_80101E40;
-extern s32 D_80101E44;
 void func_80049E4C(void) {
-    u8 *p1 = &D_80101DF0;
-    u8 *p2 = &D_800FF638;
-    *p1 = 0x64;
-    D_80101DF1 = 0;
-    D_80101E00 = 0;
-    D_80101E02 = 0;
-    D_80101E04 = 0;
-    D_80101E3C = 0;
-    D_80101E40 = 0;
-    D_80101E44 = 0;
-    D_80101DFC = 0;
-    D_80101DF8 = 5;
+    Unk80101DF0Record *p1 = &D_80101DF0;
+    Unk80101DF0Record *p2 = &D_800FF638;
+    p1->unk0 = 0x64;
+    D_80101DF0.unk1 = 0;
+    D_80101DF0.xf.rot.vx = 0;
+    D_80101DF0.xf.rot.vy = 0;
+    D_80101DF0.xf.rot.vz = 0;
+    D_80101DF0.work.t[0] = 0;
+    D_80101DF0.work.t[1] = 0;
+    D_80101DF0.work.t[2] = 0;
+    D_80101DF0.unkC = 0;
+    D_80101DF0.unk8 = 5;
     func_800418D0(p1);
-    *p2 = 0x65;
-    D_800FF639 = 0;
-    D_800FF648 = 0;
-    D_800FF64A = 0;
-    D_800FF64C = 0;
-    D_800FF684 = 0;
-    D_800FF688 = 0;
-    D_800FF68C = 0;
-    D_800FF644 = 0;
-    D_800FF640 = 2;
+    p2->unk0 = 0x65;
+    D_800FF638.unk1 = 0;
+    D_800FF638.xf.rot.vx = 0;
+    D_800FF638.xf.rot.vy = 0;
+    D_800FF638.xf.rot.vz = 0;
+    D_800FF638.work.t[0] = 0;
+    D_800FF638.work.t[1] = 0;
+    D_800FF638.work.t[2] = 0;
+    D_800FF638.unkC = 0;
+    D_800FF638.unk8 = 2;
     func_800418D0(p2);
     D_800A3708 = p1;
     D_800A370C = p2;
@@ -1812,9 +1792,8 @@ void func_80054FDC(s32 a0) {
 s32* func_8005507C(void) {
     return &D_800EFAE8.unk24;
 }
-extern s32 D_80101E1C;
 s32* func_8005508C(void) {
-    return &D_80101E1C;
+    return D_80101DF0.xf.mat.t;
 }
 void func_8005509C(s32 arg0)
 {

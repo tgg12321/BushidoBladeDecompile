@@ -21,7 +21,6 @@ extern s32 g_game_mode;
 extern s32 g_game_player_count;
 extern s32 g_game_flag_b;
 extern s32 g_game_flag_a;
-extern s32 g_stage_init_tbl;
 extern void func_8001924C(s32 *, s32);
 extern void func_80045A28(s32, s32);
 extern void func_80052A20(s32 *, s32 *, s16 *);
@@ -42,9 +41,8 @@ extern s32 D_800A93C4;
 
 /* --- Functions 0x8003F168 - 0x8004019C --- */
 void stage_ExecInitFunc(void) {
-    s32 v0 = *(s32 *)((u32)&g_stage_init_tbl + (stage_GetId() << 3));
-    if (v0) {
-        (*(void (**)(void))((u32)&g_stage_init_tbl + (stage_GetId() << 3)))();
+    if (g_stage_init_tbl[stage_GetId()].init != 0) {
+        g_stage_init_tbl[stage_GetId()].init();
     }
 }
 s32 game_GetMode(void) {
