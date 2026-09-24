@@ -3,7 +3,15 @@
 Base for every row below is the banked `candidate.c` (score **22**, 302/302
 instructions) unless stated. Scores are `engine sandbox --disable all`.
 
-## The one open question
+## The one open question (SOLVED 2026-09-24 — see "Killed" below)
+
+`cnt` is the same variable as block 3's switch counter `n`. That merge made
+`global_alloc` reach the merged pseudo before `hdr`, so `hdr` took `$s1` and
+`arg1` kept `$s0` — the target's assignment. Distance 22 → 9, and register
+allocation is now **exact** (0 operand-only hunks). The original analysis is
+kept below because its numbers are what made the merge predictable.
+
+### Superseded: why hdr outranked arg1 before the merge
 
 `global_alloc` must reach **arg1/cnt before hdr**. It doesn't:
 
@@ -69,11 +77,99 @@ holder back into `hdr`.
 
 ## Not yet tried
 
-- "Base holder" variants where the holder is a variable CSE cannot fold away
-  because it is independently live (`prev`/`last` doubling as the byte base,
-  or a holder assigned **before** the `func_80044F50` call so the call stops
-  referencing `hdr` — that is the only spelling that reaches 6 refs).
-  Generated as `tmp/f45b68/vB{a,b,c,d}.c`, unmeasured.
+- **The frontier is item 1** (see below): find the C shape whose `dl` chain is
+  no deeper than its `last` chain at sched1. Everything else in the function is
+  byte-exact.
 - decomp-permuter. Needs a workspace built against the **current** flags
   (`-mel -msoft-float`, `--prefill-label-funcs`); `tools/mar_perm_workspace.sh`
-  is a stale per-function example and must not be copied verbatim.
+  is a stale per-function example and must not be copied verbatim. Note the
+  residual is a *scheduling* difference, so the permuter has to find a
+  structural restatement, not a register nudge.
+
+The "base holder" family listed here earlier (`tmp/f45b68/vB*.c`) is **moot** —
+it existed only to lower `hdr`'s allocation priority, and the `cnt`/`n` merge
+solved that outright.
+
+---
+
+# Residual at 9 — the three placement items (2026-09-24)
+
+All three are one instruction in a different slot of the *same* basic block.
+No register differs anywhere in the function.
+
+## Item 1 (5 of the 9 points) — ROOT-CAUSED, not closable by statement order
+
+Target loads `hdr[1]` before `hdr[0]`; we do the reverse, and the following
+four instructions mirror accordingly. Everything from the `lw hdr[n]` on is
+identical.
+
+Per-pass RTL dumps (`tmp/f45b68/rtldump.sh`, cc1 `-da`) locate the decision
+exactly:
+
+```
+rtl       50:LOAD hdr[1] | 51:srl | 52:sll | 54:addu | 57:LOAD hdr[0] | 61:sll | 63:addu | 65:LOAD hdr[n] ...
+combine   50:LOAD hdr[1] | 51:srl | 52:sll | 54:addu | 57:LOAD hdr[0] | 61:sll | 63:addu | 65:LOAD hdr[n] ...
+sched     57:LOAD hdr[0] | 61:sll | 63:addu | 65:LOAD hdr[n] | 66:srl | 67:sll | 50:LOAD hdr[1] | 69:addu ...
+```
+
+- `rtl`/`combine` preserve **source order** — expand is not the problem.
+- **`sched1` reorders**, hoisting the whole `hdr[0]`→`dl` chain ahead of the
+  `hdr[1]`→`last` chain. `sched2` then interleaves them, and whichever chain
+  `sched1` put first leads in the final code.
+
+`sched1` picks by `INSN_PRIORITY`, which in GCC 2.7.2 (`tools/gcc-2.7.2/sched.c`,
+`priority()`) walks **`LOG_LINKS`** — i.e. depth from the block start, not to
+the end. The two chains are `lw→sll→addu→lw→srl→sll→addu` (7 deep, `dl`) and
+`lw→srl→sll→addu` (4 deep, `last`), so the `dl` chain wins on depth. That is a
+property of the *dependency graph*, not of statement order — which is why the
+order is invariant under every spelling measured:
+
+| spelling | result |
+|---|---|
+| `last` (hdr[1]) assigned first | hdr[0] emitted first |
+| `n = hdr[0]` assigned first | hdr[0] emitted first |
+| `dl` assigned before `last` | hdr[0] emitted first |
+| named temp for `hdr[1]`, read after `hdr[0]` | hdr[0] emitted first |
+| named temp for `hdr[n]`, read before `hdr[1]` | hdr[0] emitted first |
+| both reads into temps, either order | hdr[0] emitted first |
+| `n = *hdr` spelling | hdr[0] emitted first |
+| `hdr[1]` read through a second pointer | hdr[0] emitted first |
+| `hdr[1]` read last of all (vF1) | **47** — badly worse, +3 insns |
+
+**Consequence:** to flip this, the `last` chain must be at least as deep as the
+`dl` chain at sched1 time. With the emitted instruction count already exact at
+302/302, no extra dependent operation can be added. So the target's C for this
+block is structurally different from ours in a way not yet identified — most
+likely `dl`'s dependence on `n` is shorter there, or the block is split. That
+is the frontier; it is **not** a register or scheduling-lever problem.
+
+## Item 2 (2 points) — closable only with a flagged construct
+
+The fill value `-1` is a loop invariant that `loop.c move_movables` hoists via
+`emit_insn_before(…, loop_start)`, which lands it **after** `i = 31`. The
+target has it **before**, so there it was never a movable.
+
+A named local (`s16 fill = -1;` before the loop) reproduces the target exactly
+and scores **7** (`tmp/f45b68/vF3.c`). That is a *constant-holder* — the
+`func_80041988` class (`.claude/rules/no-new-park-categories.md`,
+named-local-fake-exception, SOTN `s16 three = 3;`). **Deliberately NOT adopted:**
+it does not reach 0, and adding a construct that needs an owner-cited
+justification for a partial improvement is strictly worse than banking honestly.
+It should only be revisited as part of a form that actually byte-matches.
+
+Measured neutral: `do {…} while (--i >= 0)`, `while (i >= 0) {… i--;}`,
+descending pointer walk.
+
+## Item 3 (2 points)
+
+Target's `y = 0` sits in the loop preheader **after** the four hoisted `li`
+constants; ours sits before the guard test. Writing the loop with an explicit
+guard (`if (*q != -2) { y = 0; do {…} while (…); }`, `tmp/f45b68/vDc.c`) moves
+it from slot 196 to 200 — closer, still not 204, and the score does not change.
+Landing after the movables means the insn was inserted *after* `move_movables`
+ran, which in `loop.c` is what `strength_reduce`'s `emit_iv_add_mult` does for
+a giv's initial value. But `y` increments **conditionally** (only for
+non-negative entries), so it cannot be a giv of this loop — that route is
+closed, and the mechanism is still unexplained.
+
+Measured neutral: `y = 0` before/after `q = sp18`, before/after `i = 0`.
