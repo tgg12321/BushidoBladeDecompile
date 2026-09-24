@@ -557,7 +557,7 @@ extern s32 func_8005B8B8(s32);
 extern void func_8005C6D0(void);
 extern void Exec(s32 *, s32, s32 *);
 extern s32 format(s32 *);
-extern s32 sprintf();
+extern s32 sprintf(char *, char *, ...);
 extern void ResetGraph(s32);
 extern void SetDispMask(s32);
 extern void DrawSync(s32);

@@ -68,3 +68,11 @@
   little-endian va_arg 82 (build 534).
 - Frontier: a truthful reason for args to be address-taken (or an owner ruling on the
   SOTN frame-walk line — docs/grind/borderline.md 2026-09-23 sprintf entry).
+
+## 2026-09-24 re-landing under owner Ruling 7 (40813a22e)
+
+- Landed chassis = rejected/sotn-args-frame-walk-0.c + Ruling 7 comment on the bufPtr line.
+- Per-wrap ablation of the four isHalf do-while(0) wraps on the landed chassis (sandbox 0):
+  dropping only wrap #1 (d/i) = 5/535, #2 (u) = 8, #3 (o) = 5, #4 (hex) = 5. Every wrap is
+  individually load-bearing; the unwrapped diff at each site is the va_arg load + isHalf
+  flag test before it swapping v0/v1 and reordering (source-level + operand-only hunks).

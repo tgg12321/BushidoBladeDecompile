@@ -886,6 +886,15 @@ extern s32 D_800A3600;
 s32 func_80077D74(s32 a0) {
     return D_800A35F4 + a0 * 44;
 }
+/* jtbl_80015A54: 5 words (20B) @ 0x80015A54 */
+const u32 jtbl_80015A54[5] = {
+    0x80077EE4,
+    0x800780C8,
+    0x80077FE0,
+    0x800781CC,
+    0x80078254,
+};
+
 INCLUDE_ASM("asm/funcs", func_80077D94);
 s32 func_800784E4(s32 arg0) {
     s32 s0;
@@ -1894,6 +1903,146 @@ void printf(s32 fmt, s32 a, s32 b, s32 c) {
     ap[3] = c;
     prnt(1, fmt, ap + 1);
 }
+/* D_80015A68: 1 string(s), 20B @ 0x80015A68 */
+const char D_80015A68[20] =
+    "0123456789abcdef\0\0\0\0"
+    ;
+
+/* D_80015A7C: 1 string(s), 8B @ 0x80015A7C */
+const char D_80015A7C[8] =
+    "(null)\0\0"
+    ;
+
+/* D_80015A84: 1 string(s), 20B @ 0x80015A84 */
+const char D_80015A84[20] =
+    "0123456789ABCDEF\0\0\0\0"
+    ;
+
+/* jtbl_80015A98: 121 words (484B) @ 0x80015A98 */
+const u32 jtbl_80015A98[121] = {
+    0x800792A4,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x800792FC,
+    0x80079878,
+    0x80079878,
+    0x8007930C,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079314,
+    0x80079338,
+    0x80079878,
+    0x80079330,
+    0x80079340,
+    0x80079878,
+    0x800793CC,
+    0x800793D4,
+    0x800793D4,
+    0x800793D4,
+    0x800793D4,
+    0x800793D4,
+    0x800793D4,
+    0x800793D4,
+    0x800793D4,
+    0x800793D4,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079460,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x8007942C,
+    0x80079878,
+    0x80079878,
+    0x800794E4,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x8007958C,
+    0x80079878,
+    0x80079878,
+    0x800795C4,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079444,
+    0x80079464,
+    0x80079878,
+    0x80079878,
+    0x80079878,
+    0x80079434,
+    0x80079464,
+    0x80079878,
+    0x80079878,
+    0x8007943C,
+    0x80079878,
+    0x800794A8,
+    0x800794E8,
+    0x8007951C,
+    0x80079878,
+    0x80079878,
+    0x8007952C,
+    0x80079878,
+    0x80079590,
+    0x80079878,
+    0x80079878,
+    0x800795D0,
+};
+
 INCLUDE_ASM("asm/funcs", prnt);
 extern u8 D_8009BD8D;
 u8 toupper(u8 a0) {
@@ -1952,4 +2101,329 @@ def:
 tail:
     write(1, &sp10, 1);
 }
-INCLUDE_ASM("asm/funcs", sprintf);
+/* PsyQ LIBC SPRINTF: sprintf — verbatim-linked Sony object; C ref: SOTN
+ * src/main/psxsdk/libc/sprintf.c (tmp/sotn @8bd7c77). Two differences for
+ * BB2's build: %c reads its slot as s32 (target `lw`), and the '+' flag
+ * is a plain else-if (SOTN's do-while(0) FAKE is not needed here). */
+#define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
+#define va_start(AP, LASTARG) (AP = ((char*)&(LASTARG) + __va_rounded_size(LASTARG)))
+#define va_arg(AP, TYPE) (AP = ((char*)(AP)) += __va_rounded_size(TYPE), *((TYPE*)((char*)(AP) - __va_rounded_size(TYPE))))
+typedef void *va_list;
+#define LOH(x) (*(s16*)&(x))
+#define LOW(x) (*(s32*)&(x))
+extern void *memmove();
+typedef struct {
+    u32 leftJustified : 1;
+    u32 prependPlus : 1;
+    u32 alternativeForm : 1;
+    u32 leadingZeros : 1;
+    u32 usePrecision : 1;
+    u32 isHalf : 1;
+    u32 isLong : 1;
+    u32 isLongLong : 1;
+    char leadingChar;
+    s32 width;
+    s32 precision;
+} printf_info; /* size = 0xC */
+
+extern printf_info D_8009BE10;
+
+s32 sprintf(char* out, char* f, ...) {
+    char buf[0x200];
+    printf_info info;
+    va_list args;
+    char* hexChars;
+    s32 written;
+    s32 num;
+    s32 len;
+    char* bufPtr;
+    u32 ch;
+
+    va_start(args, f);
+    ch = *f;
+    written = 0;
+    for (; ch = *f, ch != 0; ++f) {
+        if (ch != '%') {
+            out[written++] = ch;
+            continue;
+        }
+        info = D_8009BE10;
+
+        while (1) {
+            ch = *++f;
+            if (ch == '-') {
+                info.leftJustified = 1;
+            } else if (ch == '+') {
+                info.prependPlus = 1;
+            } else if (ch == ' ') {
+                info.leadingChar = ' ';
+            } else if (ch == '#') {
+                info.alternativeForm = 1;
+            } else if (ch == '0') {
+                info.leadingZeros = 1;
+            } else {
+                break;
+            }
+        }
+
+        if (ch == '*') {
+            info.width = va_arg(args, s32);
+            if (info.width < 0) {
+                info.width = -info.width;
+                info.leftJustified = 1;
+            }
+            ch = *++f;
+        } else {
+            while (ch >= '0' && ch <= '9') {
+                info.width = (info.width * 10) + (ch - '0');
+                ch = *++f;
+            }
+        }
+        if (ch == '.') {
+            ch = *++f;
+            if (ch == '*') {
+                info.precision = va_arg(args, s32);
+                ch = *++f;
+            } else {
+                while (ch >= '0' && ch <= '9') {
+                    info.precision = (info.precision * 10) + (ch - '0');
+                    ch = *++f;
+                }
+            }
+            if (info.precision >= 0) {
+                info.usePrecision = 1;
+            }
+        }
+
+        /* SOTN-verbatim (psxsdk/libc/sprintf.c:90): sets the digit cursor to
+         * &buf[sizeof(buf)] through the frame layout (buf, info, args are
+         * adjacent), which keeps args in its stack slot as in the target.
+         * Admitted for sprintf only by owner Ruling 7 (2026-09-23,
+         * ordinary-c-judge-decidable.md); the truthful &buf[sizeof(buf)]
+         * spelling measures 96/535 (memory/grind/sprintf/evidence.md). */
+        bufPtr = (char*)&args - sizeof(printf_info) - 4;
+
+        if (info.leftJustified) {
+            info.leadingZeros = 0;
+        }
+
+    loop_30:
+        switch (ch) {
+        case 'h':
+            info.isHalf = 1;
+            ch = *++f;
+            goto loop_30;
+
+        case 'l':
+            info.isLong = 1;
+            ch = *++f;
+            goto loop_30;
+
+        case 'L':
+            info.isLongLong = 1;
+            ch = *++f;
+            goto loop_30;
+
+        case 'd':
+        case 'i':
+            num = va_arg(args, s32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
+            do {
+                if (info.isHalf) {
+                    num = (s16)num;
+                }
+            } while (0);
+            if (num < 0) {
+                num = -num;
+                info.leadingChar = '-';
+            } else if (info.prependPlus) {
+                info.leadingChar = '+';
+            }
+            goto printDec;
+
+        case 'u':
+            num = va_arg(args, u32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 8/535 vs 0; evidence.md) */
+            do {
+                if (info.isHalf) {
+                    num = (u16)num;
+                }
+            } while (0);
+            info.leadingChar = '\0';
+        printDec:
+            if (!info.usePrecision) {
+                if (info.leadingZeros) {
+                    info.precision = info.width;
+                    if (info.leadingChar != '\0') {
+                        info.precision = info.width - 1;
+                    }
+                }
+                if (info.precision <= 0) {
+                    info.precision = 1;
+                }
+            }
+            len = 0;
+            while (num != 0) {
+                *--bufPtr = (num % 10U) + '0';
+                num /= 10U;
+                len++;
+            }
+            while (len < info.precision) {
+                *--bufPtr = '0';
+                len++;
+            }
+            if (info.leadingChar != '\0') {
+                *--bufPtr = info.leadingChar;
+                len++;
+            }
+            break;
+
+        case 'o':
+            num = va_arg(args, u32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
+            do {
+                if (info.isHalf) {
+                    num = (u16)num;
+                }
+            } while (0);
+            if (!info.usePrecision) {
+                if (info.leadingZeros) {
+                    info.precision = info.width;
+                }
+                if (info.precision <= 0) {
+                    info.precision = 1;
+                }
+            }
+            len = 0;
+            while (num != 0) {
+                *--bufPtr = (num % 8U) + '0';
+                num /= 8U;
+                len++;
+            }
+            if (info.alternativeForm && (len != 0) && (*bufPtr != '0')) {
+                *--bufPtr = '0';
+                len++;
+            }
+            while (len < info.precision) {
+                *--bufPtr = '0';
+                len++;
+            }
+            break;
+
+        case 'p':
+            info.precision = 8;
+            info.usePrecision = 1;
+            info.isLong = 1;
+            /* fallthrough */
+        case 'X':
+            hexChars = "0123456789ABCDEF";
+            goto printHex;
+        case 'x':
+            hexChars = "0123456789abcdef";
+        printHex:
+            num = va_arg(args, u32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
+            do {
+                if (info.isHalf) {
+                    num = (u16)num;
+                }
+            } while (0);
+            if (!info.usePrecision) {
+                if (info.leadingZeros) {
+                    info.precision = info.width;
+                    if (info.alternativeForm) {
+                        info.precision = info.width - 2;
+                    }
+                }
+                if (info.precision <= 0) {
+                    info.precision = 1;
+                }
+            }
+            len = 0;
+            while (num != 0) {
+                *--bufPtr = hexChars[num % 16U];
+                num /= 16U;
+                len++;
+            }
+            while (len < info.precision) {
+                *--bufPtr = '0';
+                len++;
+            }
+            if (info.alternativeForm) {
+                *--bufPtr = ch;
+                *--bufPtr = '0';
+                len += 2;
+            }
+            break;
+
+        case 'c':
+            *--bufPtr = va_arg(args, s32);
+            len = 1;
+            break;
+
+        case 's':
+            bufPtr = va_arg(args, char*);
+            if (info.alternativeForm) {
+                len = *bufPtr++;
+                if (info.usePrecision) {
+                    if (info.precision < len) {
+                        len = info.precision;
+                    }
+                }
+            } else if (!info.usePrecision) {
+                len = strlen(bufPtr);
+            } else {
+                char* ptr = memchr(bufPtr, 0, info.precision);
+                len = ptr - bufPtr;
+                if (ptr == 0) {
+                    len = info.precision;
+                }
+            }
+            break;
+
+        case 'n':
+            bufPtr = va_arg(args, s32*);
+            if (info.isHalf) {
+                LOH(*bufPtr) = written;
+            } else if (info.isLong) {
+                LOW(*bufPtr) = written;
+            } else if (info.isLongLong) {
+                LOW(*bufPtr) = written;
+            } else {
+                LOW(*bufPtr) = written;
+            }
+            continue;
+
+        default:
+            if (ch == '%') {
+                out[written++] = ch;
+                continue;
+            } else {
+                goto end;
+            }
+        }
+        if (len < info.width && !info.leftJustified) {
+            while (len < info.width) {
+                out[written++] = ' ';
+                info.width--;
+            }
+        }
+        memmove(&out[written], bufPtr, len);
+        written += len;
+        while (len < info.width) {
+            out[written++] = ' ';
+            len++;
+        }
+    }
+end:
+    out[written] = 0;
+    return written;
+}
