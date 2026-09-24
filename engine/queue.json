@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002F770",
-      "file": "code6cac_b",
-      "distance": 298,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "PutDispEnv",
       "file": "display",
       "distance": 298,
@@ -828,15 +820,15 @@
     }
   ],
   "counts": {
-    "total": 82,
-    "active": 71,
+    "total": 81,
+    "active": 70,
     "by_status": {
-      "active": 71,
+      "active": 70,
       "rotated": 11
     },
     "by_verdict": {
-      "ASM-PARTIAL": 18,
-      "C": 53
+      "C": 53,
+      "ASM-PARTIAL": 17
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"

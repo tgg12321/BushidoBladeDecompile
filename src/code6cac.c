@@ -26,6 +26,7 @@ extern s32 D_800FF580;
 
 /* Extern function declarations */
 extern s32 func_80037110(s32);
+extern void func_8002F770(s16 *, s32, s32, s32);
 
 extern void game_FrameLoop(void);
 extern void seq_Reset(void);
@@ -2085,8 +2086,8 @@ void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
         func_80027334((s32 *)arg2);
         func_80027334((s32 *)arg3);
     }
-    func_8002F770((s32 *)(arg2 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
-    func_8002F770((s32 *)(arg3 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
+    func_8002F770((s16 *)(arg2 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
+    func_8002F770((s16 *)(arg3 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
     temp_v1 = *(s16 *)(arg0 + 0xC);
     if ((temp_v1 == 0x1D) || (temp_v1 == 0xE)) {
         *(u16 *)(arg2 + 0x7E) = (u16)(*(u16 *)(arg2 + 0x7E) + (*(s8 *)(arg1 + 0x16) * 4));
