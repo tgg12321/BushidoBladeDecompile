@@ -1,12 +1,13 @@
-/* MEASUREMENT: SOTN src/main/psxsdk/libc/sprintf.c (tmp/sotn @8bd7c77) adapted to BB2 names */
+/* PsyQ LIBC SPRINTF: sprintf — verbatim-linked Sony object; C ref: SOTN
+ * src/main/psxsdk/libc/sprintf.c (tmp/sotn @8bd7c77). Two differences for
+ * BB2's build: %c reads its slot as s32 (target `lw`), and the '+' flag
+ * is a plain else-if (SOTN's do-while(0) FAKE is not needed here). */
 #define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
 #define va_start(AP, LASTARG) (AP = ((char*)&(LASTARG) + __va_rounded_size(LASTARG)))
 #define va_arg(AP, TYPE) (AP = ((char*)(AP)) += __va_rounded_size(TYPE), *((TYPE*)((char*)(AP) - __va_rounded_size(TYPE))))
-typedef void *va_list_s;
-#define va_list va_list_s
+typedef void *va_list;
 #define LOH(x) (*(s16*)&(x))
 #define LOW(x) (*(s32*)&(x))
-extern const char D_80015C7C[], D_80015C90[];
 extern void *memmove();
 typedef struct {
     u32 leftJustified : 1;
@@ -91,8 +92,12 @@ s32 sprintf(char* out, char* f, ...) {
             }
         }
 
-        // This points to &buf[0x200 - 4]. Need to use args
-        // to force args on the stack
+        /* SOTN-verbatim (psxsdk/libc/sprintf.c:90): sets the digit cursor to
+         * &buf[sizeof(buf)] through the frame layout (buf, info, args are
+         * adjacent), which keeps args in its stack slot as in the target.
+         * Admitted for sprintf only by owner Ruling 7 (2026-09-23,
+         * ordinary-c-judge-decidable.md); the truthful &buf[sizeof(buf)]
+         * spelling measures 96/535 (memory/grind/sprintf/evidence.md). */
         bufPtr = (char*)&args - sizeof(printf_info) - 4;
 
         if (info.leftJustified) {
@@ -119,6 +124,9 @@ s32 sprintf(char* out, char* f, ...) {
         case 'd':
         case 'i':
             num = va_arg(args, s32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
             do {
                 if (info.isHalf) {
                     num = (s16)num;
@@ -134,6 +142,9 @@ s32 sprintf(char* out, char* f, ...) {
 
         case 'u':
             num = va_arg(args, u32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 8/535 vs 0; evidence.md) */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -170,6 +181,9 @@ s32 sprintf(char* out, char* f, ...) {
 
         case 'o':
             num = va_arg(args, u32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -205,12 +219,15 @@ s32 sprintf(char* out, char* f, ...) {
             info.isLong = 1;
             /* fallthrough */
         case 'X':
-            hexChars = (char *)D_80015C7C;
+            hexChars = "0123456789ABCDEF";
             goto printHex;
         case 'x':
-            hexChars = (char *)D_80015C90;
+            hexChars = "0123456789abcdef";
         printHex:
             num = va_arg(args, u32);
+            /* FAKE: do-while(0) kept from SOTN (single level); without it the
+             * va_arg load and the isHalf flag test before it swap v0/v1 and
+             * reorder (this wrap alone dropped: 5/535 vs 0; evidence.md) */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
