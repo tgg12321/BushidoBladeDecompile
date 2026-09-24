@@ -21,3 +21,28 @@
 - [s1] [fable-blitz 2026-07-07] Width/precision interplay details for the draft: 'd' path with bit8&&signch!=0 -> prec = width-1 (:261-269 reads width into prec then decrements if sign present); prec<=0 -> prec=1 (:271-275); 'x' with bits 8|4 -> prec = width-2 (:417-423); 'u' with bit8 -> prec = width (:335-339). The 0x50 flag-set case .L80079F94 (prec=8, flags|=0x40|0x10) is likely '%p'-adjacent spelling: check jtbl index (c-0x4C) to name it precisely when drafting.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference: tmp/blitz/m2c_func_80079A30.c (398 lines, clean) with jtbl at tmp/blitz/jtbl_80079A30.s. Loop counters s0/s2 are plain s32 (no re-extension); fmt pointer kept in MEMORY (sp+0x24C reload every use, not a register) -- characteristic of address-taken va/fmt locals, matches stdarg + heavy struct-in-stack usage.
+
+## 2026-09-23 manual upstream sweep — SOTN reference scores 2/535 (insn count exact)
+
+- Source: SOTN `src/main/psxsdk/libc/sprintf.c` (local clone tmp/sotn @8bd7c77; the
+  psxsdk tree is gone from sotn master as of 02bc3bd). psyz (a438bda) still INCLUDE_ASM.
+- Verbatim adaptation (static default -> `extern printf_info D_8009BE10`, hex strings ->
+  D_80015C7C/D_80015C90, bool bitfields -> u32) = 9/535, build_insns 535 == target.
+- Two edits to reach 2/535 (candidate.c here):
+  1. `case 'c'`: `va_arg(args, s32)` not `va_arg(args, char)` — target reads the slot with
+     `lw`, char spelling emits `lbu` (9 -> 8).
+  2. Drop SOTN's `do { if (prependPlus) ... } while (0); // FAKE` -> plain
+     `} else if (info.prependPlus) {` — fixes the s5/s6 swap of the '-'/'+' constants (8 -> 2).
+     BB2 links a different build; SOTN's fake is not needed (plain-C form is better here).
+  (Removing the isHalf do-while(0) wrappers too is WORSE: 25.)
+- The remaining 2 is the jump-table load `lw v0,0(at)` vs ours `lw v0,24(at)` — our jtbl
+  lands at text1b_b.o .rodata+0x18. NOT a code difference: it is rodata placement.
+- MEASUREMENT REQUIRES a header change: include/code6cac.h:560 `extern s32 sprintf();`
+  conflicts with a varargs definition in GCC 2.7.2 — changed to
+  `extern s32 sprintf(char *, char *, ...);` for the sandbox run only (reverted after;
+  tmp/upstream/sb_sprintf.ps1 does this automatically).
+- LANDING needs rodata re-attribution: text1b_b.o(.rodata) is 0x80015A3C (0x18 B); the
+  original sprintf.o rodata = the two hex literals + jtbl (0x80015C7C..0x80015D58) inside
+  text1a_b_post_rodata.c, preceded by 0x80015A54..0x80015C7B items. Per the TU re-split
+  recipe (.claude/rules/jtbl-rodata-split-infrastructure.md) the intervening items must move
+  into text1b_b.c (or text1a_b_post_rodata split) so the literals + jtbl emit at 0x80015C7C.
