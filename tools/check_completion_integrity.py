@@ -32,6 +32,17 @@ This tool DETECTS any cheated completion that slipped past those gates (manual
 edit to the queue, a missed cheat pattern, etc.). Exit code 1 on any violation;
 run it manually, in CI, or from a hook.
 """
+# Run this under WSL: it reaches engine.score, which shells out to the
+# mipsel-linux-gnu cross-toolchain, so the Windows-side interpreter cannot
+# complete it regardless.
+#
+# The deferred-annotation import is still needed: PEP 604 (`str | None`)
+# annotations are used below, and the Windows Python on this machine is 3.9,
+# which evaluates them eagerly and raises TypeError at def time. Without this,
+# a Windows invocation dies with a confusing TypeError inside a type annotation
+# instead of reaching the honest "cross-toolchain not found" failure.
+from __future__ import annotations
+
 import json
 import os
 import sys
