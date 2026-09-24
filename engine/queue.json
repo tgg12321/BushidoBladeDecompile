@@ -4,22 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800693CC",
-      "file": "text1b",
-      "distance": 307,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800207C8",
-      "file": "code6cac",
-      "distance": 317,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80087770",
       "file": "main",
       "distance": 323,
@@ -748,18 +732,40 @@
       "rotation": "pre-existing WIP proves multi-owner jump-table rodata attribution blocker; pure-C floor 69 and integration leaves 14 external .L80036xxx references (memory/wip/func_80036940/notes.md); resolving requires broader 4-sibling TU/rodata architecture change",
       "rotated_at": "2026-09-23T04:00:17+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_800693CC",
+      "file": "text1b",
+      "distance": 307,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "memory/grind/func_800693CC/evidence.md",
+      "rotated_at": "2026-09-24T21:03:51+00:00",
+      "rotation_count": 1
+    },
+    {
+      "func": "func_800207C8",
+      "file": "code6cac",
+      "distance": 317,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "memory/grind/func_800207C8/evidence.md",
+      "rotated_at": "2026-09-24T21:09:08+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 73,
-    "active": 62,
+    "active": 60,
     "by_status": {
-      "active": 62,
-      "rotated": 11
+      "active": 60,
+      "rotated": 13
     },
     "by_verdict": {
-      "C": 47,
-      "ASM-PARTIAL": 15
+      "C": 46,
+      "ASM-PARTIAL": 14
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
