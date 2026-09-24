@@ -1,11 +1,11 @@
 glabel func_8005BDF0
     /* 4C5F0 8005BDF0 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 4C5F4 8005BDF4 1C00B3AF */  sw         $s3, 0x1C($sp)
-    /* 4C5F8 8005BDF8 0F80133C */  lui        $s3, %hi(D_800EFC38)
-    /* 4C5FC 8005BDFC 38FC7326 */  addiu      $s3, $s3, %lo(D_800EFC38)
+    /* 4C5F8 8005BDF8 0F80133C */  lui        $s3, %hi(g_vab_rec_ptr)
+    /* 4C5FC 8005BDFC 38FC7326 */  addiu      $s3, $s3, %lo(g_vab_rec_ptr)
     /* 4C600 8005BE00 1800B2AF */  sw         $s2, 0x18($sp)
-    /* 4C604 8005BE04 0F80123C */  lui        $s2, %hi(D_800EFB38)
-    /* 4C608 8005BE08 38FB5226 */  addiu      $s2, $s2, %lo(D_800EFB38)
+    /* 4C604 8005BE04 0F80123C */  lui        $s2, %hi(g_vab_vb_sbaddr)
+    /* 4C608 8005BE08 38FB5226 */  addiu      $s2, $s2, %lo(g_vab_vb_sbaddr)
     /* 4C60C 8005BE0C 1000B0AF */  sw         $s0, 0x10($sp)
     /* 4C610 8005BE10 0A80103C */  lui        $s0, %hi(D_8009AD18)
     /* 4C614 8005BE14 18AD1026 */  addiu      $s0, $s0, %lo(D_8009AD18)

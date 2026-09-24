@@ -145,8 +145,8 @@ glabel func_8005F1C8
     /* 4FBE0 8005F3E0 0A80113C */  lui        $s1, %hi(D_8009B5D8)
     /* 4FBE4 8005F3E4 D8B53126 */  addiu      $s1, $s1, %lo(D_8009B5D8)
     /* 4FBE8 8005F3E8 7800A58F */  lw         $a1, 0x78($sp)
-    /* 4FBEC 8005F3EC 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 4FBF0 8005F3F0 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 4FBEC 8005F3EC 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 4FBF0 8005F3F0 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 4FBF4 8005F3F4 6800AA8F */  lw         $t2, 0x68($sp)
     /* 4FBF8 8005F3F8 2158A000 */  addu       $t3, $a1, $zero
     /* 4FBFC 8005F3FC 0C006B25 */  addiu      $t3, $t3, 0xC
@@ -255,8 +255,8 @@ glabel func_8005F1C8
     /* 4FD88 8005F588 FAFF22A6 */   sh        $v0, -0x6($s1)
     /* 4FD8C 8005F58C 10003126 */  addiu      $s1, $s1, 0x10
     /* 4FD90 8005F590 7000A58F */  lw         $a1, 0x70($sp)
-    /* 4FD94 8005F594 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 4FD98 8005F598 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 4FD94 8005F594 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 4FD98 8005F598 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 4FD9C 8005F59C 6800AA8F */  lw         $t2, 0x68($sp)
     /* 4FDA0 8005F5A0 2158A000 */  addu       $t3, $a1, $zero
     /* 4FDA4 8005F5A4 10006B25 */  addiu      $t3, $t3, 0x10
@@ -574,8 +574,8 @@ glabel func_8005F1C8
     /* 50234 8005FA34 1000A0AF */   sw        $zero, 0x10($sp)
     /* 50238 8005FA38 7800A58F */  lw         $a1, 0x78($sp)
     /* 5023C 8005FA3C 6800AA8F */  lw         $t2, 0x68($sp)
-    /* 50240 8005FA40 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 50244 8005FA44 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 50240 8005FA40 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 50244 8005FA44 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 50248 8005FA48 80200A00 */  sll        $a0, $t2, 2
     /* 5024C 8005FA4C 2DEA010C */  jal        AddPrim
     /* 50250 8005FA50 21204400 */   addu      $a0, $v0, $a0

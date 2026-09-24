@@ -11,17 +11,17 @@ glabel startIntrVSync
     /* 73AC4 800832C4 342620AC */  sw         $zero, %lo(Vcount)($at)
     /* 73AC8 800832C8 E70C020C */  jal        sys_MemClear
     /* 73ACC 800832CC 08000524 */   addiu     $a1, $zero, 0x8
-    /* 73AD0 800832D0 0880053C */  lui        $a1, %hi(D_800832F8)
-    /* 73AD4 800832D4 F832A524 */  addiu      $a1, $a1, %lo(D_800832F8)
+    /* 73AD0 800832D0 0880053C */  lui        $a1, %hi(trapIntrVSync)
+    /* 73AD4 800832D4 F832A524 */  addiu      $a1, $a1, %lo(trapIntrVSync)
     /* 73AD8 800832D8 BC0A020C */  jal        InterruptCallback
     /* 73ADC 800832DC 21200000 */   addu      $a0, $zero, $zero
-    /* 73AE0 800832E0 0880023C */  lui        $v0, %hi(D_80083370)
-    /* 73AE4 800832E4 70334224 */  addiu      $v0, $v0, %lo(D_80083370)
+    /* 73AE0 800832E0 0880023C */  lui        $v0, %hi(setIntrVSync)
+    /* 73AE4 800832E4 70334224 */  addiu      $v0, $v0, %lo(setIntrVSync)
     /* 73AE8 800832E8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 73AEC 800832EC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 73AF0 800832F0 0800E003 */  jr         $ra
     /* 73AF4 800832F4 00000000 */   nop
-  alabel D_800832F8
+  alabel trapIntrVSync
     /* 73AF8 800832F8 0A80023C */  lui        $v0, %hi(Vcount)
     /* 73AFC 800832FC 3426428C */  lw         $v0, %lo(Vcount)($v0)
     /* 73B00 80083300 E0FFBD27 */  addiu      $sp, $sp, -0x20
@@ -54,7 +54,7 @@ glabel startIntrVSync
     /* 73B64 80083364 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 73B68 80083368 0800E003 */  jr         $ra
     /* 73B6C 8008336C 00000000 */   nop
-  alabel D_80083370
+  alabel setIntrVSync
     /* 73B70 80083370 0A80023C */  lui        $v0, %hi(D_800A2614)
     /* 73B74 80083374 14264224 */  addiu      $v0, $v0, %lo(D_800A2614)
     /* 73B78 80083378 80200400 */  sll        $a0, $a0, 2

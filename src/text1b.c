@@ -638,8 +638,8 @@ extern s32 ClearOTagR(s32, s32);
 extern s32 D_800A36AC;
 extern s32 D_800A378C;
 extern s32 D_800A3820;
-extern s32 D_800A38D8;
-extern u8 D_800F5768[];
+extern s32 g_gpu_ot256_ptr;
+extern u8 g_gpu_ot256_db[];
 extern s16 D_80099C14[];
 extern s16 D_800FF558;
 extern s16 D_800FF55A;
@@ -737,11 +737,11 @@ test_index:
         *ot = (s32)prim;
     }
 
-    D_800A38D8 = (s32)(D_800F5768 + ((D_800A36AC & 1) << 10));
-    ClearOTagR(D_800A38D8, 0x100);
+    g_gpu_ot256_ptr = (s32)(g_gpu_ot256_db + ((D_800A36AC & 1) << 10));
+    ClearOTagR(g_gpu_ot256_ptr, 0x100);
     old = *(s32 *)D_800A378C;
-    *(s32 *)D_800A378C = (D_800A38D8 + 0x3FC) & 0xFFFFFF;
-    *(s32 *)D_800A38D8 = old;
+    *(s32 *)D_800A378C = (g_gpu_ot256_ptr + 0x3FC) & 0xFFFFFF;
+    *(s32 *)g_gpu_ot256_ptr = old;
 }
 extern u8 g_snd_ch_data[];
 extern u16 g_snd_se_bank[];
@@ -1306,10 +1306,10 @@ void func_80049E4C(void) {
 }
 extern u8 D_800153F0;
 extern u8 D_800F62E0;
-extern s32 D_800F6318;
-extern u8 D_800F6338;
-extern u8 D_800F6339;
-extern u8 D_800F633A;
+extern s32 g_gte_color_matrix_data;
+extern u8 g_gte_back_color_r;
+extern u8 g_gte_back_color_g;
+extern u8 g_gte_back_color_b;
 extern void func_8004A09C(s32, u16 *);
 extern void SetColorMatrix(s32 *);
 extern void SetBackColor(s32, s32, s32);
@@ -1326,8 +1326,8 @@ void func_80049F4C(void) {
         i++;
         base += 0x60;
     } while (i < 8);
-    SetColorMatrix(&D_800F6318);
-    SetBackColor(D_800F6338, D_800F6339, D_800F633A);
+    SetColorMatrix(&g_gte_color_matrix_data);
+    SetBackColor(g_gte_back_color_r, g_gte_back_color_g, g_gte_back_color_b);
 }
 void func_8004A09C(s32 arg0, u16 *arg1) {
     *(s16 *)(arg0 + 0x38) = *arg1++;
@@ -1755,7 +1755,7 @@ void func_800548DC(void) {
 INCLUDE_ASM("asm/funcs", func_8005490C);
 extern u32 D_80102C00;
 extern u16 D_800A38D6;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern s32 D_800A3808;
 extern s32 D_800A378C;
 extern s32 func_8005490C(void);
@@ -1764,7 +1764,7 @@ s32 func_80054F68(void) {
     s32 v3;
     s32 s0;
     D_800A3820 = &D_80102C00;
-    v3 = D_800A374C;
+    v3 = g_gpu_ot_ptr;
     D_800A38D6 = D_800A38D6 + 1;
     D_800A3808 = v3;
     D_800A378C = v3 + 0x10;
@@ -2435,10 +2435,10 @@ INCLUDE_ASM("asm/funcs", func_80057E84);
 INCLUDE_ASM("asm/funcs", func_80058580);
 extern s16 D_800A3400;
 extern s32 D_800A3408;
-extern s32 D_800EFB38[];
+extern s32 g_vab_vb_sbaddr[];
 extern u32 D_800EFB78[];
 extern u8 D_800EFB7C[];
-extern s32 *D_800EFC38[];
+extern s32 *g_vab_rec_ptr[];
 extern void SsStart(void);
 extern s32 SsSetTickMode(s32);
 extern s32 SsSetReservedVoice(s32);
@@ -2455,8 +2455,8 @@ void snd_Init(void) {
     s32 j;
 
     i = 0;
-    p1 = D_800EFB38;
-    p2 = (s32 *)D_800EFC38;
+    p1 = g_vab_vb_sbaddr;
+    p2 = (s32 *)g_vab_rec_ptr;
     do {
         *p2 = 0;
         *p1 = 0;
@@ -2507,8 +2507,8 @@ void snd_Quit(void) {
     SsEnd();
     SsQuit();
     i = 0;
-    a0 = D_800EFB38;
-    v1 = D_800EFC38;
+    a0 = g_vab_vb_sbaddr;
+    v1 = g_vab_rec_ptr;
     do {
         *v1 = 0;
         *a0 = 0;
@@ -2794,31 +2794,31 @@ void func_8005B644(s32 a0) {
     func_800858D0(0);
     v = a0 * 2 + a0 + 1;
     SsVabClose(v);
-    *(s32*)((u8*)&D_800EFC38 + (v * 4)) = 0;
-    *(s32*)((u8*)&D_800EFB38 + (v * 4)) = 0;
+    *(s32*)((u8*)&g_vab_rec_ptr + (v * 4)) = 0;
+    *(s32*)((u8*)&g_vab_vb_sbaddr + (v * 4)) = 0;
 }
-extern s32 D_800EFC40;
-extern s32 D_800EFB40;
-extern s32 D_800EFC4C;
-extern s32 D_800EFB4C;
+extern s32 g_vab_rec_ptr_plus_0x8;
+extern s32 g_vab_vb_sbaddr_plus_0x8;
+extern s32 g_vab_rec_ptr_plus_0x14;
+extern s32 g_vab_vb_sbaddr_plus_0x14;
 void func_800858D0(s32);
 
 void func_8005B6AC(void) {
     func_800858D0(0);
     SsVabClose(2);
-    D_800EFC40 = 0;
-    D_800EFB40 = 0;
+    g_vab_rec_ptr_plus_0x8 = 0;
+    g_vab_vb_sbaddr_plus_0x8 = 0;
     SsVabClose(5);
-    D_800EFC4C = 0;
-    D_800EFB4C = 0;
+    g_vab_rec_ptr_plus_0x14 = 0;
+    g_vab_vb_sbaddr_plus_0x14 = 0;
 }
-extern s32 D_800EFC3C[];
-extern s32 D_800EFB3C[];
+extern s32 g_vab_rec_ptr_plus_0x4[];
+extern s32 g_vab_vb_sbaddr_plus_0x4[];
 void SsVabClose(s16);
 void func_8005B6FC(void) {
     SsVabClose(1);
-    D_800EFC3C[0] = 0;
-    D_800EFB3C[0] = 0;
+    g_vab_rec_ptr_plus_0x4[0] = 0;
+    g_vab_vb_sbaddr_plus_0x4[0] = 0;
 }
 void func_800858D0(s32);
 s32 SsUtReverbOff(void);
@@ -2837,8 +2837,8 @@ void obj_InitAll(void) {
     SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
-    s2 = D_800EFB3C;
-    s1 = D_800EFC3C;
+    s2 = g_vab_vb_sbaddr_plus_0x4;
+    s1 = g_vab_rec_ptr_plus_0x4;
     for (s0 = 1; s0 < 0x10; s0++) {
         SsVabClose((s16)s0);
         *s1 = 0;
@@ -2895,7 +2895,7 @@ s32 game_FrameLoop();                           /* extern */
 s32 cdrom_StartRead(s32, s32);               /* extern */
 
 extern s32 D_800158B4;
-extern s32 D_800A3404;
+extern s32 g_vab_sticky_sbaddr;
 extern s32 D_800A3408;
 extern s32 D_800A340C;
 
@@ -2913,25 +2913,25 @@ s32 snd_LoadCommonVab(s32 arg0) {
     game_FrameLoop();
     D_800A3408 = 0;
     D_800A340C = 0x1010;
-    D_800A3404 = 0x1010;
+    g_vab_sticky_sbaddr = 0x1010;
     ret = func_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
-    D_800A340C = D_800A3404;
+    D_800A340C = g_vab_sticky_sbaddr;
     return ret;
 }
-extern s32 D_800EFC58;
-extern s32 D_800EFB58;
-extern s32 D_800EFC48;
-extern s32 D_800EFB48;
+extern s32 g_vab_rec_ptr_plus_0x20;
+extern s32 g_vab_vb_sbaddr_plus_0x20;
+extern s32 g_vab_rec_ptr_plus_0x10;
+extern s32 g_vab_vb_sbaddr_plus_0x10;
 
 
 void obj_InitPair(void) {
     func_800858D0(0);
     SsVabClose(8);
-    D_800EFC58 = 0;
-    D_800EFB58 = 0;
+    g_vab_rec_ptr_plus_0x20 = 0;
+    g_vab_vb_sbaddr_plus_0x20 = 0;
     SsVabClose(4);
-    D_800EFC48 = 0;
-    D_800EFB48 = 0;
+    g_vab_rec_ptr_plus_0x10 = 0;
+    g_vab_vb_sbaddr_plus_0x10 = 0;
 }
 extern s32 func_80036EA8(s32, s32);
 extern s32 func_80036F28(s32);
@@ -2965,15 +2965,15 @@ void func_8005B98C(s32 a0) {
     snd_VabFakeOpen(a0, 8);
     snd_VabFakeOpen(a0, 4);
 }
-extern s32 D_800EFC5C;
-extern s32 D_800EFB5C;
+extern s32 g_vab_rec_ptr_plus_0x24;
+extern s32 g_vab_vb_sbaddr_plus_0x24;
 void func_800858D0(s32);
 void SsVabClose(s16);
 void obj_InitTask(void) {
     func_800858D0(0);
     SsVabClose(9);
-    D_800EFC5C = 0;
-    D_800EFB5C = 0;
+    g_vab_rec_ptr_plus_0x24 = 0;
+    g_vab_vb_sbaddr_plus_0x24 = 0;
 }
 void obj_InitTask(void);
 s32 func_80036EA8(s32, s32);
@@ -3015,8 +3015,8 @@ extern s32 func_80036F28(s32);
 
 
 extern s32 snd_VabFakeOpen(s32, s16);
-extern s32 D_800EFC44;
-extern s32 D_800EFC50;
+extern s32 g_vab_rec_ptr_plus_0xC;
+extern s32 g_vab_rec_ptr_plus_0x18;
 s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     VabLoad loc;
     u8 *p;
@@ -3031,8 +3031,8 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     func_800858D0(0);
     for (i = 0; i < 3; i++) {
         SsVabClose(D_8009AD18[i]);
-        D_800EFC38[D_8009AD18[i]] = 0;
-        D_800EFB38[D_8009AD18[i]] = 0;
+        g_vab_rec_ptr[D_8009AD18[i]] = 0;
+        g_vab_vb_sbaddr[D_8009AD18[i]] = 0;
     }
     task = func_80036EA8(2, arg1 + 9);
     game_FrameLoop();
@@ -3067,21 +3067,21 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
         p += loc.len[i];
     }
     if (count == 2) {
-        D_800EFC50 = D_800EFC44;
+        g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
     }
     return (s32)p - base;
 }
 
 extern void func_800858D0(s32);
 
-extern s32 D_800EFC50;
-extern s32 D_800EFC44;
+extern s32 g_vab_rec_ptr_plus_0x18;
+extern s32 g_vab_rec_ptr_plus_0xC;
 
 void func_8005BD30(s32 arg0) {
     u8 count;
     s32 i;
     func_800858D0(0);
-    count = (D_800EFC50 == D_800EFC44) ? 2 : 3;
+    count = (g_vab_rec_ptr_plus_0x18 == g_vab_rec_ptr_plus_0xC) ? 2 : 3;
     i = 0;
     if (count != 0) {
         do {
@@ -3091,16 +3091,16 @@ void func_8005BD30(s32 arg0) {
         } while ((u32)(i & 0xFF) < (u32)count);
     }
     if (count == 2) {
-        D_800EFC50 = D_800EFC44;
+        g_vab_rec_ptr_plus_0x18 = g_vab_rec_ptr_plus_0xC;
     }
 }
-extern s32 *D_800EFC38[];
-extern s32 D_800EFB38[];
+extern s32 *g_vab_rec_ptr[];
+extern s32 g_vab_vb_sbaddr[];
 
 extern void SsVabClose(s16);
 void func_8005BDF0(void) {
-    u32 *s3 = D_800EFC38;
-    u32 *s2 = D_800EFB38;
+    u32 *s3 = g_vab_rec_ptr;
+    u32 *s2 = g_vab_vb_sbaddr;
     u8 *s0 = D_8009AD18;
     u8 *s1 = (u8 *)((s32)s0 + 3);
     do {
@@ -3169,15 +3169,15 @@ s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     func_800858D0(0);
     SsVabClose((s16) arg1);
     SpuSetTransferStartAddr(arg3);
-    SpuRead(arg0, D_800EFC38[arg1][3]);
+    SpuRead(arg0, g_vab_rec_ptr[arg1][3]);
     SpuIsTransferCompleted(1);
     SpuSetTransferStartAddr(arg2);
-    SpuWrite(arg0, D_800EFC38[arg1][3]);
+    SpuWrite(arg0, g_vab_rec_ptr[arg1][3]);
     SpuIsTransferCompleted(1);
-    SsVabFakeHead(D_800EFC38[arg1][1], (s16) arg1, arg2);
+    SsVabFakeHead(g_vab_rec_ptr[arg1][1], (s16) arg1, arg2);
     SsVabFakeBody((s16) arg1);
-    D_800EFB38[arg1] = arg2;
-    return arg2 + D_800EFC38[arg1][3];
+    g_vab_vb_sbaddr[arg1] = arg2;
+    return arg2 + g_vab_rec_ptr[arg1][3];
 }
 /* func_8005C074 (text1b.c) - SPU VAB compaction: sorts the resident VAB slots
  * 1..15 by SPU address (selection order into order[]), then walks them from the
@@ -3208,8 +3208,8 @@ s32 func_8005C074(s16 vabid, s32 base) {
         min = 0x7FFFF;
         minidx = -1;
         for (i = 1; i < 16; i++) {
-            if (!((mask >> i) & 1) && D_800EFB38[i] != 0 && D_800EFB38[i] < min) {
-                min = D_800EFB38[i];
+            if (!((mask >> i) & 1) && g_vab_vb_sbaddr[i] != 0 && g_vab_vb_sbaddr[i] < min) {
+                min = g_vab_vb_sbaddr[i];
                 minidx = i;
             }
         }
@@ -3220,14 +3220,14 @@ s32 func_8005C074(s16 vabid, s32 base) {
         mask += 1 << minidx;
     }
     for (j = 0; j < count; j++) {
-        addr = D_800EFB38[0] + D_800EFC38[0][3];
+        addr = g_vab_vb_sbaddr[0] + g_vab_rec_ptr[0][3];
     }
     for (j = 0; j < count; j++) {
-        if (D_800EFB38[order[j]] == addr) {
-            addr += D_800EFC38[order[j]][3];
+        if (g_vab_vb_sbaddr[order[j]] == addr) {
+            addr += g_vab_rec_ptr[order[j]][3];
         } else {
             for (k = j; k < count; k++) {
-                addr = func_8005BF78(base, order[k], addr, D_800EFB38[order[k]]);
+                addr = func_8005BF78(base, order[k], addr, g_vab_vb_sbaddr[order[k]]);
             }
             return 0;
         }
@@ -3266,9 +3266,9 @@ extern s32 SsUtGetVBaddrInSB(s16);
 extern s32 snd_VabOpen(s32 *, s16);
 
 extern const char D_800158CC[];
-extern s32 *D_800EFC38[];
-extern s32 D_800EFB38[];
-extern s32 D_800A3404;
+extern s32 *g_vab_rec_ptr[];
+extern s32 g_vab_vb_sbaddr[];
+extern s32 g_vab_sticky_sbaddr;
 extern s32 D_800A3408;
 extern s32 D_800A340C;
 
@@ -3280,20 +3280,20 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
         return 0;
     }
     func_800858D0(0);
-    if (D_800EFC38[vabid] != 0) {
+    if (g_vab_rec_ptr[vabid] != 0) {
         SsVabClose(vabid);
-        D_800EFC38[vabid] = 0;
-        D_800EFB38[vabid] = 0;
+        g_vab_rec_ptr[vabid] = 0;
+        g_vab_vb_sbaddr[vabid] = 0;
     }
     if (vabid != 0) {
-        D_800A3404 = D_800EFB38[0];
+        g_vab_sticky_sbaddr = g_vab_vb_sbaddr[0];
         for (i = 0; i < 16; i++) {
-            if (D_800EFC38[i] != 0) {
-                D_800A3404 += D_800EFC38[i][3];
+            if (g_vab_rec_ptr[i] != 0) {
+                g_vab_sticky_sbaddr += g_vab_rec_ptr[i][3];
             }
         }
     }
-    D_800A3408 = D_800A3404 - D_800A340C;
+    D_800A3408 = g_vab_sticky_sbaddr - D_800A340C;
     if (vabid != 0) {
         func_8005C074(vabid, arg2);
     }
@@ -3303,10 +3303,10 @@ s32 func_8005C2A8(s32 *hdr, s16 vabid, s32 arg2) {
     id = snd_VabOpen(hdr, vabid);
     SsVabTransCompleted(1);
     if (id != -1) {
-        D_800EFC38[id] = hdr;
+        g_vab_rec_ptr[id] = hdr;
         D_800A3408 += hdr[3];
-        D_800A3404 = D_800A340C + D_800A3408;
-        D_800EFB38[vabid] = SsUtGetVBaddrInSB(vabid);
+        g_vab_sticky_sbaddr = D_800A340C + D_800A3408;
+        g_vab_vb_sbaddr[vabid] = SsUtGetVBaddrInSB(vabid);
         return hdr[2] - (s32) hdr;
     }
     printf(D_800158CC, vabid);
@@ -3331,7 +3331,7 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
     s16 ret;
     func_800858D0(0);
     idx = arg1;
-    base = (u8 *)&D_800EFC38;
+    base = (u8 *)&g_vab_rec_ptr;
     p = (s32 **)(base + idx * 4);
     v = *p;
     if (v != 0) {
@@ -3341,7 +3341,7 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
         vv = *p;
         *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
         SsVabClose(idx);
-        ret = SsVabFakeHead(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&D_800EFB38 + idx * 4));
+        ret = SsVabFakeHead(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&g_vab_vb_sbaddr + idx * 4));
         if (ret != idx) {
             return ret;
         }
@@ -3352,13 +3352,13 @@ s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
     return ret;
 }
 
-extern s32 D_800A3404;
+extern s32 g_vab_sticky_sbaddr;
 
 void SsVabOpenHeadSticky(s32, s16, s32);
 s32 SsVabTransBody(s32, s16);
 s32 snd_VabOpen(s32 *a0, s16 a1) {
     SsVabClose(a1);
-    SsVabOpenHeadSticky(a0[1], a1, D_800A3404);
+    SsVabOpenHeadSticky(a0[1], a1, g_vab_sticky_sbaddr);
     *(s32 *)(a0[1] + 8) = a1;
     return (s16)SsVabTransBody(a0[2], a1);
 }
@@ -3395,8 +3395,8 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
  * running `next` cursor and key the note on with the entry's stored volumes.
  * Each pool slot is cleared as it is visited.
  */
-extern s32 D_800EFC44;
-extern s32 D_800EFC50;
+extern s32 g_vab_rec_ptr_plus_0xC;
+extern s32 g_vab_rec_ptr_plus_0x18;
 extern void SpuGetAllKeysStatus(u8 *);
 extern s32 SpuGetKeyStatus(s32);
 extern s32 SsUtKeyOnV(s16, s16, s16, s16, s16, s16, s16, s16);
@@ -3417,7 +3417,7 @@ void func_8005C6D0(void) {
     for (i = 0; (s16)i < 0x18; i = (s16)(i + 1)) {
         off = i * 8;
         p = *(u16 **)((u8 *)&D_800EFB78 + off);
-        if (p != 0 && (s32)D_800EFC38[*p] < 0) {
+        if (p != 0 && (s32)g_vab_rec_ptr[*p] < 0) {
             voice = next;
             for (; (s16)voice < 0x18; voice = (s16)(voice + 1)) {
                 /* FAKE: second name for the pool byte offset i*8, feeding only the
@@ -3437,10 +3437,10 @@ void func_8005C6D0(void) {
                 nv = off;
                 if (SpuGetKeyStatus(1 << voice) != 1) {
                     vab = *p;
-                    if (vab == 6 && D_800EFC50 == D_800EFC44) {
+                    if (vab == 6 && g_vab_rec_ptr_plus_0x18 == g_vab_rec_ptr_plus_0xC) {
                         vab = 3;
                     }
-                    ev = &((u32 *)D_800EFC38[vab][0])[p[1]];
+                    ev = &((u32 *)g_vab_rec_ptr[vab][0])[p[1]];
                     SsUtKeyOnV((s16)voice, (s16)vab,
                                (s16)(*ev & 0x7F),
                                (s16)((*ev >> 7) & 0xF),
@@ -3641,7 +3641,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         tile->w = 0x30;
         tile->h = 1;
         SetSemiTrans(tile, 0);
-        AddPrim(D_800A374C + arg3 * 4, (s32)tile);
+        AddPrim(g_gpu_ot_ptr + arg3 * 4, (s32)tile);
         tile++;
         s.height = 0x24;
         s.p0 = &D_8009B398[2];
@@ -3657,7 +3657,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         }
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B398[0], 0), 0);
-    AddPrim(D_800A374C + arg3 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg3 * 4, mode_off);
     return end_off - arg2;
 }
 s32 func_8005E098(s32, s32, s32, s32);
@@ -3725,7 +3725,7 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
     D_800A3278 = 0;
 }
 
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 
 
@@ -3739,7 +3739,7 @@ extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 
 extern s32 D_800A36AC;
-extern u8 g_disp_fb_base;
+extern u8 g_gpu_db;
 extern s32 D_800A3278;
 extern s32 D_8009B698;
 extern s32 D_8009B6B0;
@@ -3804,14 +3804,14 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
     area = arg0 + 0x2D4;
     end_off = arg0 + 0x2F8;
     j = 0;
-    env = (EnvFC9C *)(&g_disp_fb_base + (D_800A36AC & 1) * 0x4090);
+    env = (EnvFC9C *)(&g_gpu_db + (D_800A36AC & 1) * 0x4090);
     r.x = env->clip.x;
     r.y = env->clip.y;
     r.w = env->clip.w;
     r.h = env->clip.h;
     clip = &env->clip;
     SetDrawArea(area, &r);
-    AddPrim(D_800A374C + arg1 * 4, area);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
     area = arg0 + 0x2E0;
     s.byte28 = 0;
     s.zero10 = 0;
@@ -3864,7 +3864,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
             poly->r3 = 0;
             poly->g3 = 0;
             poly->b3 = 0;
-            AddPrim(D_800A374C + arg1 * 4, poly);
+            AddPrim(g_gpu_ot_ptr + arg1 * 4, poly);
             poly++;
         }
         for (i = 0; i < 2; i++) {
@@ -3875,13 +3875,13 @@ s32 func_8005FC9C(s32 arg0, s32 arg1)
         }
         if (D_800A3278 >= 0xB5) {
             SetDrawArea(area, &r);
-            AddPrim(D_800A374C + arg1 * 4, area);
+            AddPrim(g_gpu_ot_ptr + arg1 * 4, area);
             area += 0xC;
         }
         j++;
     } while (j < 2);
     SetDrawMode(mode_off, 1, 0, func_8006E480((s32)&D_8009B698, 0x20), 0);
-    AddPrim(D_800A374C + arg1 * 4, mode_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, mode_off);
     if (off <= 0x140) {
         D_800A3278++;
     }
@@ -3951,7 +3951,7 @@ loop_60C8:
         if (i < 2) goto loop_60C8;
     }
     SetDrawMode(dist_off, 1, 0, func_8006E480((s32 *)&D_8009B6F0, 0), 0);
-    AddPrim(D_800A374C + (arg2 * 4), dist_off);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
 extern u8 D_800A3294[8];
@@ -4031,7 +4031,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.arg1_field = new_var;
     func_8007352C((s32)(&s));
     SetDrawMode(dist_off, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
-    AddPrim(D_800A374C + (arg2 * 4), dist_off);
+    AddPrim(g_gpu_ot_ptr + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
 extern s32 D_8009B770;
@@ -4184,7 +4184,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         p0 = (s32 *)(((s32)p0) + 0xC);
     } while (j < 2);
     SetDrawMode(new_var3, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
-    AddPrim(D_800A374C + (arg1 * 4), new_var3);
+    AddPrim(g_gpu_ot_ptr + (arg1 * 4), new_var3);
     return new_var6 - arg0;
 }
 
@@ -4195,7 +4195,7 @@ void func_80060758(void) {
     D_800A32B4 = 0;
 }
 extern s32 D_8009B0C0;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 extern s32 SetSemiTrans(void *, s32);
 
@@ -4238,7 +4238,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
             D_800A32B4 = 0x1E;
         }
         SetSemiTrans((void *)tile_off, 0);
-        AddPrim(D_800A374C + arg1 * 4, (void *)tile_off);
+        AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
         tile_off = arg0 + 0x7E0;
     }
     SetTile((void *)tile_off);
@@ -4262,7 +4262,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
         D_800A32B6 = 0x1E;
     }
     SetSemiTrans((void *)tile_off, 0);
-    AddPrim(D_800A374C + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
     tile_off += 0x10;
 
     SetTile((void *)tile_off);
@@ -4274,7 +4274,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x6C;
     SetSemiTrans((void *)tile_off, 1);
-    AddPrim(D_800A374C + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
     tile_off += 0x10;
 
     SetTile((void *)tile_off);
@@ -4286,10 +4286,10 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xE) = 0x1A;
     SetSemiTrans((void *)tile_off, 1);
-    AddPrim(D_800A374C + arg1 * 4, (void *)tile_off);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)tile_off);
 
     SetDrawMode((void *)sp1C, 1, 0, 0, 0);
-    AddPrim(D_800A374C + arg1 * 4, (void *)sp1C);
+    AddPrim(g_gpu_ot_ptr + arg1 * 4, (void *)sp1C);
     sp1C += 0xC;
     return end_off - arg0;
 }
@@ -6408,7 +6408,7 @@ u8 func_80068D88(s32 arg0, s32 arg1) {
     extern s32 D_800A3724;
     extern s32 D_800A34E4;
     extern s32 D_800A34E8;
-    extern s32 D_800A374C;
+    extern s32 g_gpu_ot_ptr;
     s32 outer = D_800A34EC;
     s16 *p_idx = (s16 *)(outer + 0x6E);
     s32 *p_prev = (s32 *)(outer + 0x7C);
@@ -6437,7 +6437,7 @@ u8 func_80068D88(s32 arg0, s32 arg1) {
             do {
                 s32 idx_s = *p_idx;
                 u32 entry = *(u16 *)((s32)p_matrix + idx_s * 2);
-                p_a = (s32 *)(D_800A374C + (s32)(entry * 4));
+                p_a = (s32 *)(g_gpu_ot_ptr + (s32)(entry * 4));
                 D_800A34E4 = (s32)p_a;
                 p_b = (s32 *)*p_cur;
                 D_800A34E8 = (s32)p_b;
@@ -6734,7 +6734,7 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     *(u16 *)(p + 12) = arg1[2];
     *(u16 *)(p + 14) = arg1[3];
     SetSemiTrans(p, 0);
-    AddPrim((u32 *) D_800A374C + arg2, (u32 *)p);
+    AddPrim((u32 *) g_gpu_ot_ptr + arg2, (u32 *)p);
     p += 0x10;
 
     SetTile(p);
@@ -6746,7 +6746,7 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     *(u16 *)(p + 12) = arg1[2];
     *(u16 *)(p + 14) = arg1[3];
     SetSemiTrans(p, 1);
-    AddPrim((u32 *) D_800A374C + arg2, (u32 *)p);
+    AddPrim((u32 *) g_gpu_ot_ptr + arg2, (u32 *)p);
     p += 0x10;
 
     SetTile(p);
@@ -6758,7 +6758,7 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
     *(u16 *)(p + 12) = arg1[2];
     *(u16 *)(p + 14) = arg1[3];
     SetSemiTrans(p, 1);
-    AddPrim((u32 *) D_800A374C + arg2, (u32 *)p);
+    AddPrim((u32 *) g_gpu_ot_ptr + arg2, (u32 *)p);
     p += 0x10;
 
     arg0->field_18 = (s32) p;
@@ -6823,7 +6823,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         *(s16 *)(p + 12) = 0xCC;
         *(s16 *)(p + 14) = 0xB0;
         SetSemiTrans(p, 1);
-        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        AddPrim((u32 *)(g_gpu_ot_ptr + 0x44), (u32 *)p);
         p += 0x10;
         SetTile(p);
         func_80069A30(p);
@@ -6832,7 +6832,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         *(s16 *)(p + 12) = 0xCC;
         *(s16 *)(p + 14) = 0xB0;
         SetSemiTrans(p, 1);
-        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        AddPrim((u32 *)(g_gpu_ot_ptr + 0x44), (u32 *)p);
         p += 0x10;
     } else if (mode == 1) {
         SetTile(p);
@@ -6842,7 +6842,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         *(s16 *)(p + 12) = 0x202;
         *(s16 *)(p + 14) = 0xB0;
         SetSemiTrans(p, 1);
-        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        AddPrim((u32 *)(g_gpu_ot_ptr + 0x44), (u32 *)p);
         p += 0x10;
     } else {
         SetTile(p);
@@ -6852,7 +6852,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         *(s16 *)(p + 12) = 0x126;
         *(s16 *)(p + 14) = 0xAB;
         SetSemiTrans(p, 1);
-        AddPrim((u32 *)(D_800A374C + 0x44), (u32 *)p);
+        AddPrim((u32 *)(g_gpu_ot_ptr + 0x44), (u32 *)p);
         p += 0x10;
     }
     arg0[6] = (s32)p;
@@ -6879,7 +6879,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
         s.sp18 = first;
         SetDrawMode(arg0[7], 1, 0, func_8006E480(first, 0), 0);
     }
-    AddPrim(D_800A374C + 0x48, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x48, arg0[7]);
 
     poly = (u8 *)arg0[3];
     arg0[7] += 0xC;
@@ -6894,7 +6894,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     *(s16 *)(poly + 20) = 0x122;
     *(s16 *)(poly + 22) = 0xEF;
     SetSemiTrans(poly, 0);
-    AddPrim(D_800A374C + 0x4C, (s32)poly);
+    AddPrim(g_gpu_ot_ptr + 0x4C, (s32)poly);
     poly += 0x18;
 
     SetPolyF4(poly);
@@ -6908,7 +6908,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     *(s16 *)(poly + 20) = 0x27F;
     *(s16 *)(poly + 22) = 0x36;
     SetSemiTrans(poly, 0);
-    AddPrim(D_800A374C + 0x4C, (s32)poly);
+    AddPrim(g_gpu_ot_ptr + 0x4C, (s32)poly);
     poly += 0x18;
 
     SetPolyF4(poly);
@@ -6922,7 +6922,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     *(s16 *)(poly + 20) = 0x15E;
     *(s16 *)(poly + 22) = 0xEF;
     SetSemiTrans(poly, 0);
-    AddPrim(D_800A374C + 0x4C, (s32)poly);
+    AddPrim(g_gpu_ot_ptr + 0x4C, (s32)poly);
     poly += 0x18;
 
     arg0[3] = (s32)poly;
@@ -6942,7 +6942,7 @@ typedef struct {
     s8 byte28;
 } S69E18;
 void func_80069E18(s32 arg0) {
-    extern s32 D_800A374C;
+    extern s32 g_gpu_ot_ptr;
     s32 tile;
     s32 ptr;
     S69E18 s;
@@ -6959,7 +6959,7 @@ void func_80069E18(s32 arg0) {
     *(s16 *)(tile + 0xA) = 0;
     *(s16 *)(tile + 0xE) = 0xF0;
     SetSemiTrans(tile, 0);
-    AddPrim(D_800A374C + 0x50, tile);
+    AddPrim(g_gpu_ot_ptr + 0x50, tile);
     *(s32 *)(arg0 + 0x18) = tile + 0x10;
 
     ptr = *(s32 *)(*(s32 *)(arg0 + 4) + 0x14);
@@ -6971,7 +6971,7 @@ void func_80069E18(s32 arg0) {
 
     s.p0 = (s32 *)*(s32 *)ptr;
     SetDrawMode(*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.p0, 0), 0);
-    AddPrim(D_800A374C + 0x44, *(s32 *)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + 0x44, *(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 
     p0 = (s32)s.p0;
@@ -7003,7 +7003,7 @@ typedef struct {
 extern s32 D_800A3524;
 extern s32 D_800A3514;
 extern s32 D_800A34FC;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern s32 func_80073728(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
@@ -7110,7 +7110,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
             arg0[5] = func_8007352C((s32)&s);
         }
         SetDrawMode(arg0[7], 1, 0, func_8006E480(s.sp18, 0), 0);
-        AddPrim(D_800A374C + 0xC, arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 0xC, arg0[7]);
         arg0[7] += 0xC;
     }
 }
@@ -7213,7 +7213,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
             arg0[5] = func_8007352C((s32)&s);
         }
         SetDrawMode(arg0[7], 1, 0, func_8006E480(s.sp18, 0), 0);
-        AddPrim(D_800A374C + 8, arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 8, arg0[7]);
         arg0[7] += 0xC;
     }
 }
@@ -7232,7 +7232,7 @@ void func_8006A3CC(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 8) = arg0[5];
     arg0[5] = func_8007352C((s32)arg1);
     SetDrawMode(arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
-    AddPrim(D_800A374C + 4, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 4, arg0[7]);
     arg0[7] += 0xC;
 }
 extern s32 func_80073728(s32, s32);
@@ -7249,7 +7249,7 @@ void func_8006A494(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 0xC) = arg0[2];
     arg0[2] = func_80073728((s32)arg1, 0);
     SetDrawMode(arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
-    AddPrim(D_800A374C + 4, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 4, arg0[7]);
     arg0[7] += 0xC;
 }
 extern s32 D_800A34F8;
@@ -7281,7 +7281,7 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
         *(s16 *)(tile + 0xE) = 1;
     }
     SetSemiTrans(tile, *(s32 *)(arg1 + 0x10));
-    AddPrim(D_800A374C + (*(s32 *)(arg1 + 0x14) << 2), tile);
+    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
     tile += 0x10;
 
     SetTile(tile);
@@ -7305,7 +7305,7 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
         *(s16 *)(tile + 0xE) = 1;
     }
     SetSemiTrans(tile, 1);
-    AddPrim(D_800A374C + (*(s32 *)(arg1 + 0x14) << 2), tile);
+    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
     tile += 0x10;
 
     SetTile(tile);
@@ -7331,7 +7331,7 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
         *(s16 *)(tile + 0xE) = 1;
     }
     SetSemiTrans(tile, 1);
-    AddPrim(D_800A374C + (*(s32 *)(arg1 + 0x14) << 2), tile);
+    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), tile);
 
     obj2 = *(u8 **)(arg0 + 4);
     tile = tile + 0x10;
@@ -7369,7 +7369,7 @@ void func_8006A564(u8 *arg0, u8 *arg1, s32 arg2) {
 
     SetDrawMode(*(s32 *)(arg0 + 0x1C), 1, 0,
                 func_8006E480(*(s32 *)(arg1 + 0), s4), 0);
-    AddPrim(D_800A374C + (*(s32 *)(arg1 + 0x14) << 2), *(u8 **)(arg0 + 0x1C));
+    AddPrim(g_gpu_ot_ptr + (*(s32 *)(arg1 + 0x14) << 2), *(u8 **)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 }
 INCLUDE_ASM("asm/funcs", func_8006A880);
@@ -7410,7 +7410,7 @@ void func_8006B120(s32 *arg0) {
     s.chain = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     SetDrawMode(arg0[7], 1, 0, func_8006E480(s.p0, 0), 0);
-    AddPrim(D_800A374C + 0x28, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
     s.x18 = 0;
     i = 0;
@@ -7519,7 +7519,7 @@ void func_8006B120(s32 *arg0) {
     tbl = *(s32 **)(arg0[1] + 0x28);
     s.p0 = tbl[1];
     SetDrawMode(arg0[7], 1, 0, func_8006E480(s.p0, 0), 0);
-    AddPrim(D_800A374C + 0x28, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
     r[2] = 0xAF;
     r[0] = 0xE8;
@@ -7659,12 +7659,12 @@ tail:
 const u8 D_800159A0[16] = "warning\n";
 
 extern s32 D_800A36AC;
-extern u8 g_disp_fb_base;
+extern u8 g_gpu_db;
 void func_8006B898(s32 arg0, s32 arg1) {
     s32 sp10[10];
     u8 *t;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     ((void (*)())func_8006B120)(sp10);
@@ -7763,7 +7763,7 @@ void func_8006BB68(s32 *arg0) {
     s.in_tex = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.p0, 0), 0);
-    AddPrim(D_800A374C + 0x28, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
 
     for (i = 0; i < 3; i++) {
@@ -7786,7 +7786,7 @@ void func_8006BB68(s32 *arg0) {
     q = *(s32 **)(arg0[1] + 0x28);
     s.p0 = (s32 *)q[1];
     SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.p0, 0), 0);
-    AddPrim(D_800A374C + 0x28, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
 
     rect[2] = 0xAF;
@@ -7805,7 +7805,7 @@ typedef struct Tile {
     s16 w, h;
 } Tile;
 extern s32 D_800A36AC;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern s32 D_800A34FC;
 extern s32 D_800A3900;
 extern Tile *D_800A36DC;
@@ -7859,7 +7859,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
             D_800A36DC->x0 = x0;
             D_800A36DC->w = w;
             D_800A36DC->h = 1;
-            AddPrim(D_800A374C + 0x20, D_800A36DC);
+            AddPrim(g_gpu_ot_ptr + 0x20, D_800A36DC);
             D_800A36DC++;
         }
     }
@@ -7872,7 +7872,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC->w = pos->x;
     D_800A36DC->h = pos->y + h;
     SetSemiTrans(D_800A36DC, 1);
-    AddPrim(D_800A374C + 0x20, D_800A36DC);
+    AddPrim(g_gpu_ot_ptr + 0x20, D_800A36DC);
     D_800A36DC++;
 }
 /* END func_8006BEC4 */
@@ -7881,7 +7881,7 @@ s32 func_8006C168(s32 arg0, s32 arg1) {
     s32 sp10[22];
     u8 *t;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     func_8006BB68(sp10);
@@ -8016,7 +8016,7 @@ typedef union {
 
 extern s32 D_800A3524;
 extern s32 D_800A34FC;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
@@ -8094,7 +8094,7 @@ s32 func_8006CFBC(s32 *arg0) {
 
     s.header = (s32 *)table[14];
     SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
-    AddPrim(D_800A374C + 0x20, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x20, arg0[7]);
     arg0[7] += 0xC;
 
     {
@@ -8120,7 +8120,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
     u8 *t;
     s32 r;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 2, t);
     func_8006C21C(sp10);
@@ -8128,7 +8128,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
     func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
 extern s16 D_800A3528;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 extern s32 func_8007352C(s32);
 /* EnvA: the 0x2C-byte draw descriptor func_8007352C consumes.  Same field
@@ -8191,7 +8191,7 @@ void func_8006D3DC(s32 *arg0) {
         s.out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, semi), 0);
-        AddPrim(D_800A374C + 0x28, arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
         arg0[7] += 0xC;
     }
 
@@ -8245,7 +8245,7 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
 extern s32 D_800A3514;
 extern s32 D_800A3518;
 extern s32 D_800A36AC;
-extern s32 D_800F7438;
+extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
 
 
 
@@ -8256,7 +8256,7 @@ s32 func_8006D74C(s32 arg0, s32 arg1) {
     s32 result;
     s32 ptr_offset;
     D_800A3514 += 1;
-    ptr_offset = ((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438;
+    ptr_offset = ((D_800A36AC & 1) * 0x4090) + (s32)&g_gpu_db;
     func_8006E390((s32)&sp_buf[0], (s32)&D_800A3518);
     func_80069AE4((s32)&sp_buf[0], 1, ptr_offset);
     func_8006D3DC((s32)&sp_buf[0]);
@@ -8286,7 +8286,7 @@ typedef struct EnvB {
     u8   col_b;
     s32  pad2C, pad30;
 } EnvB;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
 void func_8006DD94(s32 *arg0) {
     /* FAKE: oversized locals object - `s` is the LIVE descriptor whose address is
@@ -8354,7 +8354,7 @@ void func_8006DD94(s32 *arg0) {
         s.out = arg0[5];
         arg0[5] = func_8007352C((s32)&s);
         SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, semi), 0);
-        AddPrim(D_800A374C + 0x28, arg0[7]);
+        AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
         arg0[7] += 0xC;
     }
 
@@ -8401,7 +8401,7 @@ void func_8006E068(s32 arg0, s32 arg1) {
     s32 sp10[22];
     u8 *t;
     D_800A3514 += 1;
-    t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
+    t = ((D_800A36AC & 1) * 0x4090) + &g_gpu_db;
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     func_8006DD94(sp10);
@@ -8410,11 +8410,11 @@ void func_8006E068(s32 arg0, s32 arg1) {
 extern u8 D_800A32D8[8];
 extern s32 D_800A3524;
 extern s32 D_800A3500;
-extern u8 D_800F74A4;
-extern u8 D_800F74A5;
-extern u8 D_800FB534;
-extern u8 D_800FB535;
-extern s32 D_800F7438;
+extern u8 g_gpu_db_plus_0x6C;
+extern u8 g_gpu_db_plus_0x6D;
+extern u8 g_gpu_db_plus_0x40FC;
+extern u8 g_gpu_db_plus_0x40FD;
+extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
 extern s32 func_80036EA8(s32, s32);
 
 extern s32 cdrom_StartRead(s32, s32);
@@ -8451,16 +8451,16 @@ s32 func_8006E10C(void) {
     game_FrameLoop();
     func_80036F28(v0);
     SetDispMask(0);
-    base = (s32)&D_800F7438;
+    base = (s32)&g_gpu_db;
     SetDefDrawEnv(base, 0, 0, 0x280, ff0);
     SetDefDrawEnv(base + 0x4090, 0, ff0, 0x280, ff0);
     SetDefDispEnv(base + 0x5C, 0, ff0, 0x280, ff0);
     base2 = base + 0x40EC;
     SetDefDispEnv(base2, 0, 0, 0x280, ff0);
-    D_800F74A4 = 0;
-    D_800FB534 = 0;
-    D_800F74A5 = 0;
-    D_800FB535 = 0;
+    g_gpu_db_plus_0x6C = 0;
+    g_gpu_db_plus_0x40FC = 0;
+    g_gpu_db_plus_0x6D = 0;
+    g_gpu_db_plus_0x40FD = 0;
     DrawSync(0);
     ClearImage((s32)rect, 0, 0, 0);
     DrawSync(0);
@@ -8483,9 +8483,9 @@ s32 func_8006E2A8(void) {
     u8 rect[8];
     s32 base;
     SetDispMask(0);
-    base = ((D_800A3518 & 1) * 0x4090) + (s32)&D_800F7438;
+    base = ((D_800A3518 & 1) * 0x4090) + (s32)&g_gpu_db;
     PutDrawEnv(base);
-    base = ((D_800A3518 & 1) * 0x4090) + (s32)&D_800F7438 + 0x5C;
+    base = ((D_800A3518 & 1) * 0x4090) + (s32)&g_gpu_db + 0x5C;
     PutDispEnv(base);
     DrawSync(0);
     __builtin_memcpy(rect, D_800A32E0, 8);
@@ -8595,7 +8595,7 @@ extern s16 D_800A35B4;
 extern s16 D_800A35B8;
 extern s32 D_800A35BC;
 extern void *D_800A35C4;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 typedef struct RectE534 {
     s16 x;
@@ -8609,7 +8609,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, u8 *arg2, u32 arg3) {
     s16 i;
     u8 value;
 
-    ClearOTagR(D_800A374C, 0x1008);
+    ClearOTagR(g_gpu_ot_ptr, 0x1008);
     D_800A32E8 = 0x7F;
     D_800A35BC = *(s32 *)(arg2 + 0x14) & 0xF;
     D_800A35AC = arg0;
@@ -8794,7 +8794,7 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     s32 *temp_v0;
     s32 temp_v1;
 
-    D_800A35C0 = ((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438;
+    D_800A35C0 = ((D_800A36AC & 1) * 0x4090) + (s32)&g_gpu_db;
     D_800A3548 = arg0;
     D_800A354C = arg1;
     if (D_800A35BC == 2) {
@@ -9007,11 +9007,11 @@ void func_8006F038(s32 arg0) {
     *((s16 *)(((s32)temp_s0) + 0xE)) = 0xF0;
     *((s8 *)(((s32)temp_s0) + 6)) = v3;
     SetSemiTrans(temp_s0, 1);
-    AddPrim(D_800A374C, temp_s0);
+    AddPrim(g_gpu_ot_ptr, temp_s0);
     temp_s0 += 0x10;
     *((s32 *)(((s32)arg0) + 0x14)) = temp_s0;
     SetDrawMode(*((s32 *)(((s32)arg0) + 0x18)), 1, 0, 0x40, 0);
-    AddPrim(D_800A374C, *((s32 *)(((s32)arg0) + 0x18)));
+    AddPrim(g_gpu_ot_ptr, *((s32 *)(((s32)arg0) + 0x18)));
     *((s32 *)(((s32)arg0) + 0x18)) = (s32)(*((s32 *)(((s32)arg0) + 0x18)) + 0xC);
 }
 extern s16 D_800A355C;
@@ -9258,7 +9258,7 @@ void func_8006F528(s32 *arg0) {
     rect.w = 0x1E8 - D_800A3570;
     rect.h = 0x54;
     SetDrawArea(arg0[7], &rect);
-    AddPrim(D_800A374C + 0x3C, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x3C, arg0[7]);
     arg0[7] += 0xC;
 
     rect.x = ((u16 *)D_800A35C0)[0];
@@ -9266,7 +9266,7 @@ void func_8006F528(s32 *arg0) {
     rect.w = ((u16 *)D_800A35C0)[2];
     rect.h = ((u16 *)D_800A35C0)[3];
     SetDrawArea(arg0[7], &rect);
-    AddPrim(D_800A374C + 0x18, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + 0x18, arg0[7]);
     arg0[7] += 0xC;
 
     switch (state) {
@@ -9286,13 +9286,13 @@ void func_8006F528(s32 *arg0) {
         *(s16 *)(offset + 0x10) = offset_x;
         *(u16 *)(D_800A35C4 + 0x12) = *(u16 *)(D_800A35C0 + 0xA);
         SetDrawOffset(arg0[8], D_800A35C4 + 0x10);
-        AddPrim(D_800A374C + 0x3C, arg0[8]);
+        AddPrim(g_gpu_ot_ptr + 0x3C, arg0[8]);
         arg0[8] += 0xC;
 
         *(u16 *)(D_800A35C4 + 0x10) = *(u16 *)(D_800A35C0 + 8);
         *(u16 *)(D_800A35C4 + 0x12) = *(u16 *)(D_800A35C0 + 0xA);
         SetDrawOffset(arg0[8], D_800A35C4 + 0x10);
-        AddPrim(D_800A374C + 0x18, arg0[8]);
+        AddPrim(g_gpu_ot_ptr + 0x18, arg0[8]);
         arg0[8] += 0xC;
         break;
     }
@@ -9313,7 +9313,7 @@ void func_8006F528(s32 *arg0) {
     {
         s32 ot;
 
-        ot = D_800A374C + 0x38;
+        ot = g_gpu_ot_ptr + 0x38;
         *(s16 *)(prim + 8) = 0x4C;
         *(s16 *)(prim + 0xA) = 0x80;
         *(s16 *)(prim + 0xC) = 0x215;
@@ -9348,7 +9348,7 @@ extern s16 D_800A3590[];
 extern s32 D_800A35A8;
 extern s32 D_800A35B0;
 extern s32 D_800A35BC;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
@@ -9416,7 +9416,7 @@ void func_80070C70(s32 arg0) {
     prim.code = 1;
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
     SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.p_geom, c60), 0);
-    AddPrim(D_800A374C + 4, ((GameObj *)arg0)->field_18);
+    AddPrim(g_gpu_ot_ptr + 4, ((GameObj *)arg0)->field_18);
     ((GameObj *)arg0)->field_18 += 0xC;
     rect[2] = 0xE7;
     rect[0] = 0xCC;
@@ -9436,7 +9436,7 @@ void func_80070C70(s32 arg0) {
     }
     prim.p_geom = *(s32 *)(ctx_or_var_s2);
     SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.p_geom, c60), 0);
-    AddPrim(D_800A374C + 0x28, ((GameObj *)arg0)->field_18);
+    AddPrim(g_gpu_ot_ptr + 0x28, ((GameObj *)arg0)->field_18);
     ((GameObj *)arg0)->field_18 += 0xC;
     prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
     for (var_s0 = 0; var_s0 < 1 + D_800A35B0 + D_800A3558; var_s0++) {
@@ -9464,7 +9464,7 @@ void func_80070C70(s32 arg0) {
             }
     }
     SetDrawMode(((GameObj *)arg0)->field_18, 1, 0, func_8006E480(prim.p_geom, c60), 0);
-    AddPrim(D_800A374C + 4, ((GameObj *)arg0)->field_18);
+    AddPrim(g_gpu_ot_ptr + 4, ((GameObj *)arg0)->field_18);
     ((GameObj *)arg0)->field_18 += 0xC;
     func_80070F78(arg0, (s32 *)&prim);
     func_8006ECF4(arg0);
@@ -9585,7 +9585,7 @@ void func_800720D4(s32 a0) {
     func_800720FC(a0, v0[0x1C], 2);
 }
 INCLUDE_ASM("asm/funcs", func_800720FC);
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 extern s32 SetPolyG4(GameObj *);
 
@@ -9630,7 +9630,7 @@ s32 func_80072BC4(s32 arg0, GameObj *arg1) {
         *(u8 *)((s32)(arg1) + 0x1D) = 0x40;
         *(u8 *)((s32)(arg1) + 0x1E) = 0x80;
     }
-    AddPrim(D_800A374C + 0x60, arg1);
+    AddPrim(g_gpu_ot_ptr + 0x60, arg1);
     return (s32)((u8 *)arg1 + 0x24);
 }
 /* func_80072CD4 - matched pure C. Judge PASS ruling 2026-09-04 01:32
@@ -9678,7 +9678,7 @@ s32 func_80072CD4(s32 arg0, GameObj *arg1) {
         *(u8 *)((s32)(arg1) + 0x1D) = 0;
         *(u8 *)((s32)(arg1) + 0x1E) = 0;
     }
-    AddPrim(D_800A374C + 0x60, arg1);
+    AddPrim(g_gpu_ot_ptr + 0x60, arg1);
     return (s32)((u8 *)arg1 + 0x24);
 }
 
@@ -9741,7 +9741,7 @@ void func_80072E10(s32 arg0) {
 /* END func_80072E10 */
 
 
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 s32 *func_80072F30(s32 a0, u8 *a1) {
     SetTile((s32)a1);
@@ -9756,7 +9756,7 @@ s32 *func_80072F30(s32 a0, u8 *a1) {
         a1[6] = 0x18;
         SetSemiTrans((s32)a1, 0);
     }
-    AddPrim(D_800A374C + 0x5C, (s32)a1);
+    AddPrim(g_gpu_ot_ptr + 0x5C, (s32)a1);
     return (s32 *)(a1 + 0x10);
 }
 extern s16 D_800A3580;
@@ -9773,7 +9773,7 @@ s32 *func_80072FCC(s32 ignored, u8 *a1) {
         a1[6] = 0;
         SetSemiTrans((s32)a1, 0);
     }
-    AddPrim(D_800A374C + 0x5C, (s32)a1);
+    AddPrim(g_gpu_ot_ptr + 0x5C, (s32)a1);
     return (s32 *)(a1 + 0x10);
 }
 /* BEGIN func_80073060 */
@@ -9913,7 +9913,7 @@ void func_80073200(s32 arg0) {
     base1 = *(s32 *)((s32)ctx + 0xC);
     s.sp18 = base1;
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(base1, 0), 0);
-    AddPrim(D_800A374C + 0x70, *(s32 *)(arg0 + 0x18));
+    AddPrim(g_gpu_ot_ptr + 0x70, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     s.sp40 = 1;
     base2 = *(s32 *)((s32)ctx + 0x10);
@@ -9955,7 +9955,7 @@ void func_80073200(s32 arg0) {
         s.sp24 = *(s32 *)(arg0 + 4);
         *(s32 *)(arg0 + 4) = func_80073728((s32)&s, 3);
         SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, 0x60, 0);
-        AddPrim(D_800A374C + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
+        AddPrim(g_gpu_ot_ptr + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
         *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     } else {
         s.sp41 = 0x32;
@@ -9973,7 +9973,7 @@ void func_80073200(s32 arg0) {
     s.sp20 = *(s32 *)(arg0 + 0x10);
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0x60), 0);
-    AddPrim(D_800A374C + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
+    AddPrim(g_gpu_ot_ptr + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
     /* FAKE: `cond` names the D_800A3580 read as a fresh once-written,
      * once-read intermediate declared ahead of the pointer bump, so the read
      * is emitted before the branch rather than after it.  mechanism: LUID
@@ -9997,7 +9997,7 @@ void func_80073200(s32 arg0) {
         s.sp20 = *(s32 *)(arg0 + 0x10);
         *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
         SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0x20), 0);
-        AddPrim(D_800A374C + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
+        AddPrim(g_gpu_ot_ptr + (s.sp2C * 4), *(s32 *)(arg0 + 0x18));
         *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     }
 }
@@ -10072,7 +10072,7 @@ s32 func_8007352C(s32 env_addr) {
                 env->ot_idx = 1;
                 ((void (*)())func_8003D52C)(D_800159A0);
             }
-            AddPrim(D_800A374C + env->ot_idx * 4, (s32)sp);
+            AddPrim(g_gpu_ot_ptr + env->ot_idx * 4, (s32)sp);
             sp++;
         }
     }
@@ -10104,7 +10104,7 @@ void func_80074220(s32 *arg0, s32 arg1) {
     *(s16 *)(t + 0xC) = 0x202;
     *(s16 *)(t + 0xE) = 0xB0;
     SetSemiTrans(t, 1);
-    AddPrim(D_800A374C + 0x78, t);
+    AddPrim(g_gpu_ot_ptr + 0x78, t);
     t += 0x10;
     arg0[5] = t;
 skip_init:
@@ -10127,7 +10127,7 @@ skip_init:
     sp[0] = *temp_s2;
     a3 = func_8006E480(sp[0], 0);
     SetDrawMode(arg0[6], 1, 0, a3, 0);
-    AddPrim(D_800A374C + 0x7C, arg0[6]);
+    AddPrim(g_gpu_ot_ptr + 0x7C, arg0[6]);
     q = arg0[2];
     arg0[6] = arg0[6] + 0xC;
     SetPolyF4(q);
@@ -10141,7 +10141,7 @@ skip_init:
     *(s16 *)(q + 0x14) = 0x122;
     *(s16 *)(q + 0x16) = 0xEF;
     SetSemiTrans(q, 0);
-    AddPrim(D_800A374C + 0x80, q);
+    AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
     SetPolyF4(q);
@@ -10155,7 +10155,7 @@ skip_init:
     *(s16 *)(q + 0x14) = 0x27F;
     *(s16 *)(q + 0x16) = 0x36;
     SetSemiTrans(q, 0);
-    AddPrim(D_800A374C + 0x80, q);
+    AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
     SetPolyF4(q);
@@ -10169,7 +10169,7 @@ skip_init:
     *(s16 *)(q + 0x14) = 0x15E;
     *(s16 *)(q + 0x16) = 0xEF;
     SetSemiTrans(q, 0);
-    AddPrim(D_800A374C + 0x80, q);
+    AddPrim(g_gpu_ot_ptr + 0x80, q);
     q += 0x18;
 
     arg0[2] = q;
@@ -10279,7 +10279,7 @@ void func_80074488(s32 *arg0) {
 
     s.sp18 = table[0];
     SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, 0), 0);
-    AddPrim(D_800A374C + 8, arg0[6]);
+    AddPrim(g_gpu_ot_ptr + 8, arg0[6]);
     arg0[6] += 0xC;
     rect[2] = 0x108;
     rect[0] = 0xBC;
@@ -10497,7 +10497,7 @@ tail:
 
 
 extern u8 *D_800A36A0;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 void func_80074B18(s32 *arg0, s32 arg1, s32 arg2) {
     u8 *p;
@@ -10533,7 +10533,7 @@ void func_80074B18(s32 *arg0, s32 arg1, s32 arg2) {
             if (arg1 != 0) {
                 ot = 0x15;
             }
-            AddPrim(D_800A374C + ot * 4, (GameObj *)p);
+            AddPrim(g_gpu_ot_ptr + ot * 4, (GameObj *)p);
             p += 0x10;
             t += 0xC;
         }
@@ -10567,7 +10567,7 @@ void func_80074D2C(s32 arg0, s32 arg1, s32 arg2) {
     s.sp20 = *(s32 *)(arg0 + 0x10);
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
     SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0), 0);
-    AddPrim(D_800A374C + var_s1 * 4, *(s32 *)(arg0 + 0x18));
+    AddPrim(g_gpu_ot_ptr + var_s1 * 4, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) += 0xC;
 }
 void func_80074E08(s32 *arg0, s32 arg1) {
@@ -10595,7 +10595,7 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     if (arg1 != 0) {
         ot_idx = 0xE;
     }
-    AddPrim(D_800A374C + ot_idx * 4 + 0x24, prim);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, prim);
     prim += 0x10;
     arg0[5] = prim;
 
@@ -10651,7 +10651,7 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     s.out = arg0[4];
     arg0[4] = func_8007352C((s32)&s);
     SetDrawMode(arg0[6], 1, 0, func_8006E480((s32)s.header, 0), 0);
-    AddPrim(D_800A374C + s.ot_idx * 4, arg0[6]);
+    AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, arg0[6]);
     arg0[6] += 0xC;
 
     if (arg1 != 0) {
@@ -10666,7 +10666,7 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     rect[2] = 0xD4;
     rect[3] = 0xC8 - *(u16 *)(D_800A36A0 + arg1 * 2 + 0xC);
     SetDrawArea(arg0[7], rect);
-    AddPrim(D_800A374C + ot_idx * 4 + 0x24, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[7]);
     arg0[7] += 0xC;
 
     rect[0] = *(u16 *)(*(s32 *)(D_800A36A0 + 0x24));
@@ -10674,20 +10674,20 @@ void func_80074E08(s32 *arg0, s32 arg1) {
     rect[2] = *(u16 *)(*(s32 *)(D_800A36A0 + 0x24) + 4);
     rect[3] = *(u16 *)(*(s32 *)(D_800A36A0 + 0x24) + 6);
     SetDrawArea(arg0[7], rect);
-    AddPrim(D_800A374C + ot_idx * 4, arg0[7]);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4, arg0[7]);
     arg0[7] += 0xC;
 
     offset[0] = *(u16 *)(*(s32 *)(D_800A36A0 + 0x24) + 8);
     offset[1] = *(u16 *)(*(s32 *)(D_800A36A0 + 0x24) + 0xA)
               - *(u16 *)(D_800A36A0 + arg1 * 2 + 8);
     SetDrawOffset(arg0[8], offset);
-    AddPrim(D_800A374C + ot_idx * 4 + 0x24, arg0[8]);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4 + 0x24, arg0[8]);
     arg0[8] += 0xC;
 
     offset[0] = *(u16 *)(*(s32 *)(D_800A36A0 + 0x24) + 8);
     offset[1] = *(u16 *)(*(s32 *)(D_800A36A0 + 0x24) + 0xA);
     SetDrawOffset(arg0[8], offset);
-    AddPrim(D_800A374C + ot_idx * 4, arg0[8]);
+    AddPrim(g_gpu_ot_ptr + ot_idx * 4, arg0[8]);
     arg0[8] += 0xC;
 }
 extern u8 *D_800A36A0;
@@ -10755,7 +10755,7 @@ typedef struct {
 } S_753D8;
 
 extern u8 *D_800A36A0;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 extern s32 func_8006E480(s32, s32);
 extern s32 SetDrawMode(s32, s32, s32, s32, s32);
@@ -10824,7 +10824,7 @@ void func_800753D8(s32 *arg0, s32 arg1) {
     s.sp20 = arg0[4];
     arg0[4] = func_8007352C((s32)&s);
     SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
-    AddPrim(D_800A374C + s.sp2C * 4, arg0[6]);
+    AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
     arg0[6] += 0xC;
     tbl = *(s32 **)(arg0[0] + 0x2C);
     do {
@@ -10841,7 +10841,7 @@ void func_800753D8(s32 *arg0, s32 arg1) {
         s.sp20 = arg0[4];
         arg0[4] = func_8007352C((s32)&s);
         SetDrawMode(arg0[6], 1, 0, func_8006E480(s.sp18, zero), 0);
-        AddPrim(D_800A374C + s.sp2C * 4, arg0[6]);
+        AddPrim(g_gpu_ot_ptr + s.sp2C * 4, arg0[6]);
         i++;
         arg0[6] += 0xC;
     } while (i < 2);
@@ -11261,11 +11261,11 @@ s32 func_80076D74(s32 *arg0) {
     *(s16 *)(p + 0xC) = 0x280;
     *(s16 *)(p + 0xE) = 0xF0;
     SetSemiTrans((GameObj *)p, 1);
-    AddPrim(D_800A374C, (GameObj *)p);
+    AddPrim(g_gpu_ot_ptr, (GameObj *)p);
     p += 0x10;
     arg0[5] = (s32)p;
     SetDrawMode(arg0[6], 1, 0, 0x40, 0);
-    AddPrim(D_800A374C, (GameObj *)arg0[6]);
+    AddPrim(g_gpu_ot_ptr, (GameObj *)arg0[6]);
     do { /* FAKE: do-while(0) wrap, loop-end note pins the return copy after the sw so the increment temp takes v0; mechanism: sched.c loop_notes dependence on the first insn after NOTE_INSN_LOOP_END; lever-exhaustion: memory/grind/func_80076D74/hypotheses.md s1-s2 */
         arg0[6] += 0xC;
     } while (0);
@@ -11296,7 +11296,7 @@ extern s8 D_800A35DC;
 extern u8 D_8009BCE4;
 extern u8 D_8009BD21;
 extern s16 D_800A35D0;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern s32 ClearOTagR(s32, s32);
 extern s32 snd_StopAll(void);
 
@@ -11327,7 +11327,7 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
     do { } while (0);
     sp[0] = 0;
     sp[1] = 0;
-    ClearOTagR(D_800A374C, 0x1008);
+    ClearOTagR(g_gpu_ot_ptr, 0x1008);
     p_old = (s32 *)(arg0 + 0x58);
     D_800A35D8 = arg0;
     snd_StopAll();
@@ -11527,7 +11527,7 @@ s32 func_80077374(s32 arg0, s32 *arg1) {
 }
 extern s32 D_800A36AC;
 
-extern s32 D_800F7438;
+extern u8 g_gpu_db;  /* one type per TU: all uses here take (s32)&g_gpu_db */
 typedef struct {
     s32 sp10;
     s32 sp14;
@@ -11544,7 +11544,7 @@ void func_80077724(s32 arg0, s32 arg1) {
     S7724 s;
     s32 *p;
     s32 temp_v1;
-    *(s32 **)((s32)D_800A36A0 + 0x24) = (s32 *)(((D_800A36AC & 1) * 0x4090) + (s32)&D_800F7438);
+    *(s32 **)((s32)D_800A36A0 + 0x24) = (s32 *)(((D_800A36AC & 1) * 0x4090) + (s32)&g_gpu_db);
     temp_v1 = *(s32 *)((s32)D_800A36A0 + 0x30) + 1;
     *(u16 *)((s32)D_800A36A0 + 0x34) = (u16)(*(u16 *)((s32)D_800A36A0 + 0x34) + 1);
     *(s32 *)((s32)D_800A36A0 + 0x30) = temp_v1;

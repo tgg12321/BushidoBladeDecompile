@@ -2,8 +2,8 @@ glabel func_800784E4
     /* 68CE4 800784E4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 68CE8 800784E8 1400B1AF */  sw         $s1, 0x14($sp)
     /* 68CEC 800784EC 21888000 */  addu       $s1, $a0, $zero
-    /* 68CF0 800784F0 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 68CF4 800784F4 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 68CF0 800784F0 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 68CF4 800784F4 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 68CF8 800784F8 08100524 */  addiu      $a1, $zero, 0x1008
     /* 68CFC 800784FC 1800BFAF */  sw         $ra, 0x18($sp)
     /* 68D00 80078500 11EE010C */  jal        ClearOTagR

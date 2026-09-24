@@ -124,8 +124,8 @@ glabel func_80069F80
     /* 5A950 8006A150 1C00048E */  lw         $a0, 0x1C($s0)
     /* 5A954 8006A154 92F0010C */  jal        SetDrawMode
     /* 5A958 8006A158 21384000 */   addu      $a3, $v0, $zero
-    /* 5A95C 8006A15C 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A960 8006A160 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A95C 8006A15C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A960 8006A160 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A964 8006A164 1C00058E */  lw         $a1, 0x1C($s0)
     /* 5A968 8006A168 2DEA010C */  jal        AddPrim
     /* 5A96C 8006A16C 0C008424 */   addiu     $a0, $a0, 0xC

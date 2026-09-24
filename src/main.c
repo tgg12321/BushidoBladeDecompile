@@ -14,7 +14,7 @@ extern s16 SsVabOpenHeadWithMode(u8 *, s16, s16, u32);
 extern s32 _SpuSetAnyVoice(s32, u32, s32, s32);
 
 /* Externs for globals */
-extern s16 D_800F66F8;
+extern s16 _svm_damper;
 extern s16 _svm_stereo_mono;
 extern s32 g_spu_busy;
 
@@ -121,9 +121,9 @@ extern void VSyncCallback(s32);
 extern s32 InterruptCallback(s32, s32);
 extern void ResetRCnt(s32);
 extern void SetRCnt(s32, s32, s32);
-extern s32 g_alarm_secondary_cb_ptr;
-static void D_80083EDC(void); /* _SsTrapIntrVSync (ssstart.c static) */
-static void D_80083F1C(void); /* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
+extern s32 _snd_seq_tick_env_plus_0x8;
+static void _SsTrapIntrVSync(void); /* _SsTrapIntrVSync (ssstart.c static) */
+static void _SsSeqCalledTbyT_1per2(void); /* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
 
 /* PsyQ 4.0 LIBSND ssstart: _SsStart + SndSeqTickEnv (_snd_seq_tick_env @
    D_800A26CC) — verbatim-linked Sony object (census 2026-07-09); C ref:
@@ -193,7 +193,7 @@ void _SsStart(s32 arg0) {
 
     if (_snd_seq_tick_env.unk16 != 0) {
         EnterCriticalSection();
-        VSyncCallback(g_alarm_secondary_cb_ptr);
+        VSyncCallback(_snd_seq_tick_env_plus_0x8);
     } else {
         s32 de;
         s32 a1_val;
@@ -204,12 +204,12 @@ void _SsStart(s32 arg0) {
         if (de == 0) {
             s32 ret = InterruptCallback(0, 0);
             de = _snd_seq_tick_env.unk18;
-            a1_val = (s32)&D_80083EDC;
+            a1_val = (s32)&_SsTrapIntrVSync;
             _snd_seq_tick_env.unk12 = ret;
         } else {
-            a1_val = (s32)&D_80083F1C;
+            a1_val = (s32)&_SsSeqCalledTbyT_1per2;
             if (_snd_seq_tick_env.unk17 == 0) {
-                a1_val = g_alarm_secondary_cb_ptr;
+                a1_val = _snd_seq_tick_env_plus_0x8;
             }
         }
         InterruptCallback(de, a1_val);
@@ -244,23 +244,23 @@ void SsStart(void) {
 static void SsStart2(void) {
     _SsStart(0);
 }
-static void D_80083EDC(void) {
+static void _SsTrapIntrVSync(void) {
     if (_snd_seq_tick_env.unk12 != 0) {
         ((void (*)(void))_snd_seq_tick_env.unk12)();
     }
     ((void (*)(void))_snd_seq_tick_env.unk8)();
 }
-static void D_80083F1C(void) {
+static void _SsSeqCalledTbyT_1per2(void) {
     /* The 1-per-2 tick toggle: a standalone word AFTER the declared
        SndSeqTickEnv block (which ends at +0x13) — its own splat symbol
        (dlabel D_800A26E0 in 7D920.data.s; named_syms.txt:
        g_alarm_pending_priority_flag), the only C handle for this memory
        in the TU. */
-    extern s32 D_800A26E0;
-    if (D_800A26E0 == 0) {
-        D_800A26E0 = 1;
+    extern s32 _snd_seq_tick_env_plus_0x14;
+    if (_snd_seq_tick_env_plus_0x14 == 0) {
+        _snd_seq_tick_env_plus_0x14 = 1;
     } else {
-        D_800A26E0 = 0;
+        _snd_seq_tick_env_plus_0x14 = 0;
         ((void (*)(void))_snd_seq_tick_env.unk8)();
     }
 }
@@ -974,12 +974,12 @@ void _SsSndTempo(s16 a0, s16 a1) {
     }
 }
 extern u8 _SsVmMaxVoice;
-extern s16 D_800F4E1A;
-extern s16 D_800F4E1E;
-extern s16 D_800F4E28[];
-extern s16 D_800F4E2A;
-extern s16 D_800F4E2C;
-extern s16 D_800F4E2E;
+extern s16 _svm_voice_plus_0x2;
+extern s16 _svm_voice_plus_0x6;
+extern s16 _svm_voice_plus_0x10[];
+extern s16 _svm_voice_plus_0x12;
+extern s16 _svm_voice_plus_0x14;
+extern s16 _svm_voice_plus_0x16;
 
 /* func_800858D0 (title_mv_exec2) — BYTES PROVEN (s3, 2026-08-20, permuter
  * modality): permuter score 0 vs target.o (--stack-diffs, honest pipeline),
@@ -1038,12 +1038,12 @@ void func_800858D0(void) {
         do {
             offset = var_s0 * 54;
             u = 0x18;
-            *(s16 *)((u8 *)&D_800F4E1A + offset) = u;
-            *(s16 *)((u8 *)&D_800F4E1E + offset) = 0;
-            *(s16 *)((u8 *)D_800F4E28 + offset) = ff;
-            *(s16 *)((u8 *)&D_800F4E2A + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E2C + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E2E + offset) = ff;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x2 + offset) = u;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x6 + offset) = 0;
+            *(s16 *)((u8 *)_svm_voice_plus_0x10 + offset) = ff;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x12 + offset) = 0;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x14 + offset) = 0;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x16 + offset) = ff;
             offset = 1;
             buf[0] = offset << var_s0;
             func_8008B488(buf);
@@ -1083,15 +1083,15 @@ typedef struct {
     s16 reserved[4];
 } VagAtr;
 
-extern s16 D_800F4E18;
-extern s16 D_800F4E1A;
+extern s16 _svm_voice;
+extern s16 _svm_voice_plus_0x2;
 extern s16 D_800F4E26;
-extern s16 D_800F4E28[];
-extern s16 D_800F4E2A;
-extern s16 D_800F4E2C;
-extern s16 D_800F4E2E;
+extern s16 _svm_voice_plus_0x10[];
+extern s16 _svm_voice_plus_0x12;
+extern s16 _svm_voice_plus_0x14;
+extern s16 _svm_voice_plus_0x16;
 extern s16 D_800F4E30;
-extern s8 D_800F4E35;
+extern s8 _svm_voice_plus_0x1D;
 extern ProgAtr *_svm_pg;
 extern VagAtr *_svm_tn;
 extern void vmNoiseOn(u8);
@@ -1153,15 +1153,15 @@ s16 SsUtKeyOnV(s16 voice, s16 vabId, s16 prog, s16 tone, s16 note, s16 fine,
 
     voiceOffset = voice * 54;
     _svm_cur.voice = voice;
-    *(s16 *)((u8 *)D_800F4E28 + voiceOffset) = 0x21;
+    *(s16 *)((u8 *)_svm_voice_plus_0x10 + voiceOffset) = 0x21;
     *(s16 *)((u8 *)&D_800F4E30 + voiceOffset) = vabId;
-    *(s16 *)((u8 *)&D_800F4E2A + voiceOffset) = _svm_cur.field_7_fake_program;
-    *(s16 *)((u8 *)&D_800F4E2C + voiceOffset) = prog;
-    *(s16 *)((u8 *)&D_800F4E18 + voiceOffset) = _svm_cur.tone_vag_idx;
-    *(s16 *)((u8 *)&D_800F4E2E + voiceOffset) = _svm_cur.tone;
+    *(s16 *)((u8 *)&_svm_voice_plus_0x12 + voiceOffset) = _svm_cur.field_7_fake_program;
+    *(s16 *)((u8 *)&_svm_voice_plus_0x14 + voiceOffset) = prog;
+    *(s16 *)((u8 *)&_svm_voice + voiceOffset) = _svm_cur.tone_vag_idx;
+    *(s16 *)((u8 *)&_svm_voice_plus_0x16 + voiceOffset) = _svm_cur.tone;
     *(s16 *)((u8 *)&D_800F4E26 + voiceOffset) = note;
-    *(s8 *)((u8 *)&D_800F4E35 + voiceOffset) = 1;
-    *(s16 *)((u8 *)&D_800F4E1A + voiceOffset) = 0;
+    *(s8 *)((u8 *)&_svm_voice_plus_0x1D + voiceOffset) = 1;
+    *(s16 *)((u8 *)&_svm_voice_plus_0x2 + voiceOffset) = 0;
     _SsVmDoAllocate();
     if (_svm_cur.tone_vag_idx == 0xFF) {
         vmNoiseOn(voice);
@@ -1240,9 +1240,9 @@ void SsUtReverbOff(void) {
     SpuSetReverb(0);
 }
 
-extern s16 D_80102A78[];
+extern s16 _svm_sreg_buf[];
 
-extern u8 D_800F65E0[];
+extern u8 _svm_sreg_dirty[];
 
 void SsUtReverbOn(void) {
     SpuSetReverb(1);
@@ -1259,9 +1259,9 @@ s32 func_80085FD8(s16 a0) {
 s32 SsUtSetDetVVol(s16 idx, s16 x, s16 y)
 {
     if ((u16)idx < 0x18) {
-        D_80102A78[idx * 8 + 1] = y;
-        D_80102A78[idx * 8] = x;
-        D_800F65E0[idx] |= 3;
+        _svm_sreg_buf[idx * 8 + 1] = y;
+        _svm_sreg_buf[idx * 8] = x;
+        _svm_sreg_dirty[idx] |= 3;
         return 0;
     }
     return -1;
@@ -1284,21 +1284,21 @@ s32 func_80086130(s16 idx, s16 x, s16 y)
         s16 vx = x * 129;
         s16 vy = y * 129;
 
-        D_80102A78[idx * 8 + 1] = vy;
-        D_80102A78[idx * 8] = vx;
-        D_800F65E0[idx] |= 3;
+        _svm_sreg_buf[idx * 8 + 1] = vy;
+        _svm_sreg_buf[idx * 8] = vx;
+        _svm_sreg_dirty[idx] |= 3;
         return 0;
     }
     return -1;
 }
-extern s32 D_80107898[];
+extern s32 _svm_envx_hist[];
 /* Sony LIBSND `_SsVmDoAllocate` (psyz vm_aloc2.c analog): set up the
    allocated voice's SPU shadow registers (start address, ADSR) and mark the
    voice's dirty bits. BB2 deltas vs psyz: _svm_voice stride 54, ADSR indexed
    by voiceOffset through the flat s16 shadow view D_80102A78[]. */
 static inline void vmSetStartAddr(u16 addr) {
-    D_80102A78[_svm_cur.voiceOffset + 3] = addr;
-    D_800F65E0[_svm_cur.voice] |= 8;
+    _svm_sreg_buf[_svm_cur.voiceOffset + 3] = addr;
+    _svm_sreg_dirty[_svm_cur.voice] |= 8;
 }
 
 void _SsVmDoAllocate(void) {
@@ -1307,9 +1307,9 @@ void _SsVmDoAllocate(void) {
 
     _svm_cur.voiceOffset = _svm_cur.voice * 8;
     _svm_cur.field_0x1e = _svm_cur.field_7_fake_program * 16 + _svm_cur.tone;
-    *(s16 *)((u8 *)&D_800F4E1E + _svm_cur.voice * 54) = 0x7FFF;
+    *(s16 *)((u8 *)&_svm_voice_plus_0x6 + _svm_cur.voice * 54) = 0x7FFF;
     for (i = 0; i < 16; i++) {
-        D_80107898[i] &= ~(1 << _svm_cur.voice);
+        _svm_envx_hist[i] &= ~(1 << _svm_cur.voice);
     }
     if ((_svm_cur.tone_vag_idx & 1) > 0) {
         progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
@@ -1318,27 +1318,27 @@ void _SsVmDoAllocate(void) {
         progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
         vmSetStartAddr(((ProgAtr *)_svm_pg)[progIdx].reserved3);
     }
-    D_80102A78[_svm_cur.voiceOffset + 4] =
+    _svm_sreg_buf[_svm_cur.voiceOffset + 4] =
         _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr1;
-    D_80102A78[_svm_cur.voiceOffset + 5] =
-        _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr2 + D_800F66F8;
-    D_800F65E0[_svm_cur.voice] |= 0x30;
+    _svm_sreg_buf[_svm_cur.voiceOffset + 5] =
+        _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr2 + _svm_damper;
+    _svm_sreg_dirty[_svm_cur.voice] |= 0x30;
 }
 
 void _SsVmDamperOff(void) {
-    D_800F66F8 = 0;
+    _svm_damper = 0;
 }
 
 INCLUDE_ASM("asm/funcs", _SsVmFlush);
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
 /* _SsVmInit - libsnd voice-manager init (SLUS-00663). */
-extern s32 MarioCam_str[2];
-extern s16 D_800F4E18;
-extern s16 D_800F4E1C;
-extern s8  D_800F4E35;
-extern u16 D_800F1B10;
-extern u16 D_800F1B12;
-extern u16 D_801078D8;
+extern s32 D_800F19D0[2];
+extern s16 _svm_voice;
+extern s16 _svm_voice_plus_0x4;
+extern s8  _svm_voice_plus_0x1D;
+extern u16 _svm_okon1;
+extern u16 _svm_okon2;
+extern u16 _svm_okof1;
 extern u8  _svm_auto_kof_mode;
 extern s16 kMaxPrograms;
 extern u16 _svm_vab_count;
@@ -1364,17 +1364,17 @@ void _SsVmInit(s32 a0) {
     s32 offset;
 
     _spu_setInTransfer(0);
-    D_800F66F8 = 0;
-    SpuInitMalloc(0x20, MarioCam_str);
+    _svm_damper = 0;
+    SpuInitMalloc(0x20, D_800F19D0);
 
     i = 0;
     do {
-        D_80102A78[i] = 0;
+        _svm_sreg_buf[i] = 0;
         i++;
     } while (i < 0xC0);
     i = 0;
     do {
-        D_800F65E0[i] = 0;
+        _svm_sreg_dirty[i] = 0;
         i++;
     } while (i < 0x18);
     _svm_vab_count = 0;
@@ -1405,15 +1405,15 @@ void _SsVmInit(s32 a0) {
     if (_SsVmMaxVoice != 0) {
         do {
             offset = i * 54;
-            *(s16 *)((u8 *)&D_800F4E1A + offset) = 0x18;
-            D_800F4E28[i * 27] = -1;
-            *(s16 *)((u8 *)&D_800F4E18 + offset) = 0xFF;
-            *(s8  *)((u8 *)&D_800F4E35 + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E1C + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E1E + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E2A + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E2C + offset) = 0;
-            *(s16 *)((u8 *)&D_800F4E2E + offset) = 0xFF;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x2 + offset) = 0x18;
+            _svm_voice_plus_0x10[i * 27] = -1;
+            *(s16 *)((u8 *)&_svm_voice + offset) = 0xFF;
+            *(s8  *)((u8 *)&_svm_voice_plus_0x1D + offset) = 0;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x4 + offset) = 0;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x6 + offset) = 0;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x12 + offset) = 0;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x14 + offset) = 0;
+            *(s16 *)((u8 *)&_svm_voice_plus_0x16 + offset) = 0xFF;
             *(s16 *)((u8 *)&D_800F4E20 + offset) = 0;
             *(s16 *)((u8 *)&D_800F4E24 + offset) = 0;
             *(s8  *)((u8 *)&D_800F4E22 + offset) = 0x40;
@@ -1437,9 +1437,9 @@ void _SsVmInit(s32 a0) {
 
     _svm_rattr_plus_0x8 = 0x3FFF;
     _svm_rattr_plus_0xA = 0x3FFF;
-    D_800F1B10 = 0;
-    D_800F1B12 = 0;
-    D_801078D8 = 0;
+    _svm_okon1 = 0;
+    _svm_okon2 = 0;
+    _svm_okof1 = 0;
     D_800F1B14 = 0;
     D_800F2B68 = 0;
     _svm_rattr = 0;
@@ -1523,13 +1523,13 @@ s32 note2pitch2(u16 arg0, u16 arg1) {
     return var_v1;
 }
 INCLUDE_ASM("asm/funcs", vmNoiseOn);
-extern u16 D_800F1B10;
-extern u16 D_800F1B12;
-extern s16 D_800F4E18;
-extern s16 D_800F4E1C;
-extern s8 D_800F4E35;
-extern u16 D_801078D8;
-extern u16 D_801078DA;
+extern u16 _svm_okon1;
+extern u16 _svm_okon2;
+extern s16 _svm_voice;
+extern s16 _svm_voice_plus_0x4;
+extern s8 _svm_voice_plus_0x1D;
+extern u16 _svm_okof1;
+extern u16 _svm_okof2;
 /* Sony LIBSND `_SsVmKeyOffNow` (probable): mark the current voice's pending
    key-off bit, release the voice slot, and drop the matching key-on bit.
    Symbol map: D_801027F0.voice <- _svm_cur.voice; D_800F4E18 <- _svm_voice[] base
@@ -1552,21 +1552,21 @@ void _SsVmKeyOffNow(s32 mode) {
         bitsUpper = 1 << (voice - 16);
     }
     idx = voice * 54;
-    *(s8 *)((u8 *)&D_800F4E35 + idx) = 0;
+    *(s8 *)((u8 *)&_svm_voice_plus_0x1D + idx) = 0;
     /* FAKE: named-intermediate (no-new-park-categories.md 'Named-intermediate
        declaration order' + owner clarification 2026-08-17) - okof1/okof2 stage
        the key-off words across the voice-slot halfword clears; mechanism:
        sched.c cannot move a bare-symbol MEM across a (plus (reg) (symbol_ref))
        store; lever-exhaustion: memory/grind/func_800871D4/hypotheses.md [s3]-[s7]
        + evidence.md (direct Sony form re-measured at 8). */
-    okof1 = D_801078D8 | bitsLower;
-    okof2 = D_801078DA | bitsUpper;
-    *(s16 *)((u8 *)&D_800F4E1C + idx) = 0;
-    *(s16 *)((u8 *)&D_800F4E18 + idx) = 0;
-    D_801078D8 = okof1;
-    D_801078DA = okof2;
-    D_800F1B10 &= ~D_801078D8;
-    D_800F1B12 &= ~D_801078DA;
+    okof1 = _svm_okof1 | bitsLower;
+    okof2 = _svm_okof2 | bitsUpper;
+    *(s16 *)((u8 *)&_svm_voice_plus_0x4 + idx) = 0;
+    *(s16 *)((u8 *)&_svm_voice + idx) = 0;
+    _svm_okof1 = okof1;
+    _svm_okof2 = okof2;
+    _svm_okon1 &= ~_svm_okof1;
+    _svm_okon2 &= ~_svm_okof2;
 }
 /* Sony LIBSND `_SsVmKeyOnNow` (VM_NOWON): compute the current voice's L/R
    volume (VAB master x volume x program/tone volume, score channel volume,
@@ -1627,11 +1627,11 @@ void _SsVmKeyOnNow(s32 vagCount, u16 pitch) {
         voll = (voll * voll) / 0x3FFF;
         volr = (volr * volr) / 0x3FFF;
     }
-    D_80102A78[pos + 2] = pitch;
-    D_80102A78[pos + 0] = voll;
-    D_80102A78[pos + 1] = volr;
-    D_800F65E0[_svm_cur.voice] |= 7;
-    *(s16 *)((u8 *)&D_800F4E1C + _svm_cur.voice * 54) = pitch;
+    _svm_sreg_buf[pos + 2] = pitch;
+    _svm_sreg_buf[pos + 0] = voll;
+    _svm_sreg_buf[pos + 1] = volr;
+    _svm_sreg_dirty[_svm_cur.voice] |= 7;
+    *(s16 *)((u8 *)&_svm_voice_plus_0x4 + _svm_cur.voice * 54) = pitch;
     if (_svm_cur.voice < 16) {
         bitsLower = 1 << _svm_cur.voice;
         bitsUpper = 0;
@@ -1646,10 +1646,10 @@ void _SsVmKeyOnNow(s32 vagCount, u16 pitch) {
         D_800F1B14 &= ~bitsLower;
         D_800F2B68 &= ~bitsUpper;
     }
-    D_800F1B10 |= bitsLower;
-    D_800F1B12 |= bitsUpper;
-    D_801078D8 &= ~D_800F1B10;
-    D_801078DA &= ~D_800F1B12;
+    _svm_okon1 |= bitsLower;
+    _svm_okon2 |= bitsUpper;
+    _svm_okof1 &= ~_svm_okon1;
+    _svm_okof2 &= ~_svm_okon2;
 }
 INCLUDE_ASM("asm/funcs", func_80087770);
 s16 _SsVmGetSeqVol(s32 a0, s16 *a1, s16 *a2) {
@@ -1688,7 +1688,7 @@ s16 func_80087D58(s32 a0) {
     return *(s16 *)(base + 0x5A);
 }
 extern u8 _SsVmMaxVoice;
-extern s16 D_800F4E28[];
+extern s16 _svm_voice_plus_0x10[];
 void _SsVmSeqKeyOff(s16 a0) {
     s32 s0 = 0;
     s16 s1;
@@ -1699,7 +1699,7 @@ void _SsVmSeqKeyOff(s16 a0) {
     do {
         s32 idx = (u8)s0;
         s32 off = ((idx * 8 - idx) * 4 - idx) * 2;
-        if (*(s16 *)((u8 *)D_800F4E28 + off) == s1) {
+        if (*(s16 *)((u8 *)_svm_voice_plus_0x10 + off) == s1) {
             _svm_cur.voice = (u8)s0;
             _SsVmKeyOffNow(0);
         }
@@ -2848,7 +2848,7 @@ typedef struct {
     /* 0x10 */ s32 feedback;
 } SpuReverbAttr;
 
-extern RevParamEntry D_800A2D94[]; /* rev_param preset table */
+extern RevParamEntry _spu_rev_param[]; /* rev_param preset table */
 
 /* Sony _spu_rev_attr — ONE struct (sotn libspu_internal.h:87 struct
    SpuRevAttr), base 0x800A2888. Members == the split splat symbols
@@ -2900,7 +2900,7 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
         var_s4 = 1;
         _spu_rev_attr.mode = var_s0;
         _spu_rev_offsetaddr = _spu_rev_startaddr[_spu_rev_attr.mode];
-        _memcpy((char *)&entry, (char *)&D_800A2D94[_spu_rev_attr.mode],
+        _memcpy((char *)&entry, (char *)&_spu_rev_param[_spu_rev_attr.mode],
                 sizeof(RevParamEntry));
         switch (_spu_rev_attr.mode) {
         case 7: /* SPU_REV_MODE_ECHO */
@@ -2923,7 +2923,7 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
         case 8: /* SPU_REV_MODE_DELAY */
             var_s6 = 1;
             if (!var_s4) {
-                _memcpy((char *)&entry, (char *)&D_800A2D94[_spu_rev_attr.mode],
+                _memcpy((char *)&entry, (char *)&_spu_rev_param[_spu_rev_attr.mode],
                         sizeof(RevParamEntry));
                 entry.flags = 0x0C011C00;
             }
@@ -2946,7 +2946,7 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
             var_fp = 1;
             if (!var_s4) {
                 if (!var_s6) {
-                    _memcpy((char *)&entry, (char *)&D_800A2D94[_spu_rev_attr.mode],
+                    _memcpy((char *)&entry, (char *)&_spu_rev_param[_spu_rev_attr.mode],
                             sizeof(RevParamEntry));
                     entry.flags = 0x80;
                 } else {

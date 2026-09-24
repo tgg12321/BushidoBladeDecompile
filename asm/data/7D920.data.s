@@ -3119,15 +3119,15 @@ dlabel D_8008EC30
     /* 7F433 8008EC33 */ .byte 0x00
 enddlabel D_8008EC30
 
-nonmatching SpecialCam
+nonmatching g_cd_file_table
 
-dlabel SpecialCam
+dlabel g_cd_file_table
     /* 7F434 8008EC34 01086800 */ .word 0x00680801
-enddlabel SpecialCam
+enddlabel g_cd_file_table
 
-nonmatching D_8008EC38
+nonmatching g_cd_file_table_plus_0x4
 
-dlabel D_8008EC38
+dlabel g_cd_file_table_plus_0x4
     /* 7F438 8008EC38 00C07603 */ .word 0x0376C000
     /* 7F43C 8008EC3C 07271900 */ .word 0x00192707
     /* 7F440 8008EC40 140E0000 */ .word 0x00000E14
@@ -3445,7 +3445,7 @@ dlabel D_8008EC38
     /* 7F920 8008F120 00B86102 */ .word 0x0261B800
     /* 7F924 8008F124 61566100 */ .word 0x00615661
     /* 7F928 8008F128 14580200 */ .word 0x00025814
-enddlabel D_8008EC38
+enddlabel g_cd_file_table_plus_0x4
 
 nonmatching D_8008F12C
 
@@ -23947,9 +23947,9 @@ dlabel D_8009BD88
     /* 8C58C 8009BD8C */ .byte 0x00
 enddlabel D_8009BD88
 
-nonmatching D_8009BD8D
+nonmatching _ctype__plus_0x1
 
-dlabel D_8009BD8D
+dlabel _ctype__plus_0x1
     /* 8C58D 8009BD8D */ .byte 0x20
     /* 8C58E 8009BD8E */ .short 0x2020
     /* 8C590 8009BD90 20202020 */ .word 0x20202020
@@ -23984,7 +23984,7 @@ dlabel D_8009BD8D
     /* 8C604 8009BE04 02020202 */ .word 0x02020202
     /* 8C608 8009BE08 10101010 */ .word 0x10101010
     /* 8C60C 8009BE0C 20000000 */ .word 0x00000020
-enddlabel D_8009BD8D
+enddlabel _ctype__plus_0x1
 
 nonmatching D_8009BE10
 

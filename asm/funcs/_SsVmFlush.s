@@ -15,26 +15,26 @@ glabel _SsVmFlush
     /* 76C10 80086410 1080013C */  lui        $at, %hi(D_80103604)
     /* 76C14 80086414 043622AC */  sw         $v0, %lo(D_80103604)($at)
     /* 76C18 80086418 80100200 */  sll        $v0, $v0, 2
-    /* 76C1C 8008641C 1080013C */  lui        $at, %hi(D_80107898)
+    /* 76C1C 8008641C 1080013C */  lui        $at, %hi(_svm_envx_hist)
     /* 76C20 80086420 21082200 */  addu       $at, $at, $v0
-    /* 76C24 80086424 987820AC */  sw         $zero, %lo(D_80107898)($at)
+    /* 76C24 80086424 987820AC */  sw         $zero, %lo(_svm_envx_hist)($at)
     /* 76C28 80086428 1080023C */  lui        $v0, %hi(_SsVmMaxVoice)
     /* 76C2C 8008642C CC1B4290 */  lbu        $v0, %lo(_SsVmMaxVoice)($v0)
-    /* 76C30 80086430 1080033C */  lui        $v1, %hi(D_80107898)
-    /* 76C34 80086434 98786324 */  addiu      $v1, $v1, %lo(D_80107898)
+    /* 76C30 80086430 1080033C */  lui        $v1, %hi(_svm_envx_hist)
+    /* 76C34 80086434 98786324 */  addiu      $v1, $v1, %lo(_svm_envx_hist)
     /* 76C38 80086438 1E004018 */  blez       $v0, .L800864B4
     /* 76C3C 8008643C 21880000 */   addu      $s1, $zero, $zero
     /* 76C40 80086440 21986000 */  addu       $s3, $v1, $zero
-    /* 76C44 80086444 0F80123C */  lui        $s2, %hi(D_800F4E1E)
-    /* 76C48 80086448 1E4E5226 */  addiu      $s2, $s2, %lo(D_800F4E1E)
+    /* 76C44 80086444 0F80123C */  lui        $s2, %hi(_svm_voice_plus_0x6)
+    /* 76C48 80086448 1E4E5226 */  addiu      $s2, $s2, %lo(_svm_voice_plus_0x6)
     /* 76C4C 8008644C 21800000 */  addu       $s0, $zero, $zero
   .L80086450:
     /* 76C50 80086450 21202002 */  addu       $a0, $s1, $zero
     /* 76C54 80086454 7A2F020C */  jal        SpuGetVoiceEnvelope
     /* 76C58 80086458 21284002 */   addu      $a1, $s2, $zero
-    /* 76C5C 8008645C 0F80013C */  lui        $at, %hi(D_800F4E1E)
+    /* 76C5C 8008645C 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x6)
     /* 76C60 80086460 21083000 */  addu       $at, $at, $s0
-    /* 76C64 80086464 1E4E2294 */  lhu        $v0, %lo(D_800F4E1E)($at)
+    /* 76C64 80086464 1E4E2294 */  lhu        $v0, %lo(_svm_voice_plus_0x6)($at)
     /* 76C68 80086468 00000000 */  nop
     /* 76C6C 8008646C 0A004014 */  bnez       $v0, .L80086498
     /* 76C70 80086470 01000324 */   addiu     $v1, $zero, 0x1
@@ -62,8 +62,8 @@ glabel _SsVmFlush
     /* 76CC0 800864C0 29004014 */  bnez       $v0, .L80086568
     /* 76CC4 800864C4 21880000 */   addu      $s1, $zero, $zero
     /* 76CC8 800864C8 FFFF1224 */  addiu      $s2, $zero, -0x1
-    /* 76CCC 800864CC 1080033C */  lui        $v1, %hi(D_80107898)
-    /* 76CD0 800864D0 98786324 */  addiu      $v1, $v1, %lo(D_80107898)
+    /* 76CCC 800864CC 1080033C */  lui        $v1, %hi(_svm_envx_hist)
+    /* 76CD0 800864D0 98786324 */  addiu      $v1, $v1, %lo(_svm_envx_hist)
   .L800864D4:
     /* 76CD4 800864D4 0000628C */  lw         $v0, 0x0($v1)
     /* 76CD8 800864D8 01003126 */  addiu      $s1, $s1, 0x1
@@ -84,9 +84,9 @@ glabel _SsVmFlush
     /* 76D10 80086510 24104202 */  and        $v0, $s2, $v0
     /* 76D14 80086514 0D004010 */  beqz       $v0, .L8008654C
     /* 76D18 80086518 00000000 */   nop
-    /* 76D1C 8008651C 0F80013C */  lui        $at, %hi(D_800F4E35)
+    /* 76D1C 8008651C 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x1D)
     /* 76D20 80086520 21083000 */  addu       $at, $at, $s0
-    /* 76D24 80086524 354E2290 */  lbu        $v0, %lo(D_800F4E35)($at)
+    /* 76D24 80086524 354E2290 */  lbu        $v0, %lo(_svm_voice_plus_0x1D)($at)
     /* 76D28 80086528 00000000 */  nop
     /* 76D2C 8008652C 04005314 */  bne        $v0, $s3, .L80086540
     /* 76D30 80086530 21200000 */   addu      $a0, $zero, $zero
@@ -94,9 +94,9 @@ glabel _SsVmFlush
     /* 76D38 80086538 8926020C */  jal        SpuSetNoiseVoice
     /* 76D3C 8008653C FFFFA534 */   ori       $a1, $a1, (0xFFFFFF & 0xFFFF)
   .L80086540:
-    /* 76D40 80086540 0F80013C */  lui        $at, %hi(D_800F4E35)
+    /* 76D40 80086540 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x1D)
     /* 76D44 80086544 21083000 */  addu       $at, $at, $s0
-    /* 76D48 80086548 354E20A0 */  sb         $zero, %lo(D_800F4E35)($at)
+    /* 76D48 80086548 354E20A0 */  sb         $zero, %lo(_svm_voice_plus_0x1D)($at)
   .L8008654C:
     /* 76D4C 8008654C 1080023C */  lui        $v0, %hi(_SsVmMaxVoice)
     /* 76D50 80086550 CC1B4290 */  lbu        $v0, %lo(_SsVmMaxVoice)($v0)
@@ -107,23 +107,23 @@ glabel _SsVmFlush
   .L80086564:
     /* 76D64 80086564 21880000 */  addu       $s1, $zero, $zero
   .L80086568:
-    /* 76D68 80086568 1080023C */  lui        $v0, %hi(D_801078D8)
-    /* 76D6C 8008656C D8784294 */  lhu        $v0, %lo(D_801078D8)($v0)
-    /* 76D70 80086570 0F80033C */  lui        $v1, %hi(D_800F1B10)
-    /* 76D74 80086574 101B6394 */  lhu        $v1, %lo(D_800F1B10)($v1)
+    /* 76D68 80086568 1080023C */  lui        $v0, %hi(_svm_okof1)
+    /* 76D6C 8008656C D8784294 */  lhu        $v0, %lo(_svm_okof1)($v0)
+    /* 76D70 80086570 0F80033C */  lui        $v1, %hi(_svm_okon1)
+    /* 76D74 80086574 101B6394 */  lhu        $v1, %lo(_svm_okon1)($v1)
     /* 76D78 80086578 27100200 */  nor        $v0, $zero, $v0
     /* 76D7C 8008657C 24186200 */  and        $v1, $v1, $v0
-    /* 76D80 80086580 1080023C */  lui        $v0, %hi(D_801078DA)
-    /* 76D84 80086584 DA784294 */  lhu        $v0, %lo(D_801078DA)($v0)
+    /* 76D80 80086580 1080023C */  lui        $v0, %hi(_svm_okof2)
+    /* 76D84 80086584 DA784294 */  lhu        $v0, %lo(_svm_okof2)($v0)
     /* 76D88 80086588 21800000 */  addu       $s0, $zero, $zero
-    /* 76D8C 8008658C 0F80013C */  lui        $at, %hi(D_800F1B10)
-    /* 76D90 80086590 101B23A4 */  sh         $v1, %lo(D_800F1B10)($at)
-    /* 76D94 80086594 0F80033C */  lui        $v1, %hi(D_800F1B12)
-    /* 76D98 80086598 121B6394 */  lhu        $v1, %lo(D_800F1B12)($v1)
+    /* 76D8C 8008658C 0F80013C */  lui        $at, %hi(_svm_okon1)
+    /* 76D90 80086590 101B23A4 */  sh         $v1, %lo(_svm_okon1)($at)
+    /* 76D94 80086594 0F80033C */  lui        $v1, %hi(_svm_okon2)
+    /* 76D98 80086598 121B6394 */  lhu        $v1, %lo(_svm_okon2)($v1)
     /* 76D9C 8008659C 27100200 */  nor        $v0, $zero, $v0
     /* 76DA0 800865A0 24186200 */  and        $v1, $v1, $v0
-    /* 76DA4 800865A4 0F80013C */  lui        $at, %hi(D_800F1B12)
-    /* 76DA8 800865A8 121B23A4 */  sh         $v1, %lo(D_800F1B12)($at)
+    /* 76DA4 800865A4 0F80013C */  lui        $at, %hi(_svm_okon2)
+    /* 76DA8 800865A8 121B23A4 */  sh         $v1, %lo(_svm_okon2)($at)
   .L800865AC:
     /* 76DAC 800865AC 0F80013C */  lui        $at, %hi(D_800F4E36)
     /* 76DB0 800865B0 21083000 */  addu       $at, $at, $s0
@@ -154,10 +154,10 @@ glabel _SsVmFlush
     /* 76E0C 8008660C E7FF4014 */  bnez       $v0, .L800865AC
     /* 76E10 80086610 36001026 */   addiu     $s0, $s0, 0x36
     /* 76E14 80086614 21880000 */  addu       $s1, $zero, $zero
-    /* 76E18 80086618 0F80103C */  lui        $s0, %hi(D_800F65E0)
-    /* 76E1C 8008661C E0651026 */  addiu      $s0, $s0, %lo(D_800F65E0)
-    /* 76E20 80086620 1080023C */  lui        $v0, %hi(D_80102A78)
-    /* 76E24 80086624 782A4224 */  addiu      $v0, $v0, %lo(D_80102A78)
+    /* 76E18 80086618 0F80103C */  lui        $s0, %hi(_svm_sreg_dirty)
+    /* 76E1C 8008661C E0651026 */  addiu      $s0, $s0, %lo(_svm_sreg_dirty)
+    /* 76E20 80086620 1080023C */  lui        $v0, %hi(_svm_sreg_buf)
+    /* 76E24 80086624 782A4224 */  addiu      $v0, $v0, %lo(_svm_sreg_buf)
     /* 76E28 80086628 0A005624 */  addiu      $s6, $v0, 0xA
     /* 76E2C 8008662C 08005524 */  addiu      $s5, $v0, 0x8
     /* 76E30 80086630 21900000 */  addu       $s2, $zero, $zero
@@ -205,9 +205,9 @@ glabel _SsVmFlush
     /* 76ECC 800866CC 00000000 */  nop
     /* 76ED0 800866D0 80004234 */  ori        $v0, $v0, 0x80
     /* 76ED4 800866D4 1400A2AF */  sw         $v0, 0x14($sp)
-    /* 76ED8 800866D8 1080013C */  lui        $at, %hi(D_80102A7E)
+    /* 76ED8 800866D8 1080013C */  lui        $at, %hi(_svm_sreg_buf_plus_0x6)
     /* 76EDC 800866DC 21083200 */  addu       $at, $at, $s2
-    /* 76EE0 800866E0 7E2A2294 */  lhu        $v0, %lo(D_80102A7E)($at)
+    /* 76EE0 800866E0 7E2A2294 */  lhu        $v0, %lo(_svm_sreg_buf_plus_0x6)($at)
     /* 76EE4 800866E4 00000000 */  nop
     /* 76EE8 800866E8 C0100200 */  sll        $v0, $v0, 3
     /* 76EEC 800866EC 2C00A2AF */  sw         $v0, 0x2C($sp)
@@ -246,18 +246,18 @@ glabel _SsVmFlush
     /* 76F64 80086764 B5FF4014 */  bnez       $v0, .L8008663C
     /* 76F68 80086768 10007326 */   addiu     $s3, $s3, 0x10
     /* 76F6C 8008676C 21200000 */  addu       $a0, $zero, $zero
-    /* 76F70 80086770 1080053C */  lui        $a1, %hi(D_801078DA)
-    /* 76F74 80086774 DA78A590 */  lbu        $a1, %lo(D_801078DA)($a1)
-    /* 76F78 80086778 1080023C */  lui        $v0, %hi(D_801078D8)
-    /* 76F7C 8008677C D8784294 */  lhu        $v0, %lo(D_801078D8)($v0)
+    /* 76F70 80086770 1080053C */  lui        $a1, %hi(_svm_okof2)
+    /* 76F74 80086774 DA78A590 */  lbu        $a1, %lo(_svm_okof2)($a1)
+    /* 76F78 80086778 1080023C */  lui        $v0, %hi(_svm_okof1)
+    /* 76F7C 8008677C D8784294 */  lhu        $v0, %lo(_svm_okof1)($v0)
     /* 76F80 80086780 002C0500 */  sll        $a1, $a1, 16
     /* 76F84 80086784 B52A020C */  jal        SpuSetKey
     /* 76F88 80086788 2528A200 */   or        $a1, $a1, $v0
     /* 76F8C 8008678C 01000424 */  addiu      $a0, $zero, 0x1
-    /* 76F90 80086790 0F80053C */  lui        $a1, %hi(D_800F1B12)
-    /* 76F94 80086794 121BA590 */  lbu        $a1, %lo(D_800F1B12)($a1)
-    /* 76F98 80086798 0F80023C */  lui        $v0, %hi(D_800F1B10)
-    /* 76F9C 8008679C 101B4294 */  lhu        $v0, %lo(D_800F1B10)($v0)
+    /* 76F90 80086790 0F80053C */  lui        $a1, %hi(_svm_okon2)
+    /* 76F94 80086794 121BA590 */  lbu        $a1, %lo(_svm_okon2)($a1)
+    /* 76F98 80086798 0F80023C */  lui        $v0, %hi(_svm_okon1)
+    /* 76F9C 8008679C 101B4294 */  lhu        $v0, %lo(_svm_okon1)($v0)
     /* 76FA0 800867A0 002C0500 */  sll        $a1, $a1, 16
     /* 76FA4 800867A4 B52A020C */  jal        SpuSetKey
     /* 76FA8 800867A8 2528A200 */   or        $a1, $a1, $v0
@@ -269,14 +269,14 @@ glabel _SsVmFlush
     /* 76FC0 800867C0 002C0500 */  sll        $a1, $a1, 16
     /* 76FC4 800867C4 412A020C */  jal        SpuSetReverbVoice
     /* 76FC8 800867C8 2528A200 */   or        $a1, $a1, $v0
-    /* 76FCC 800867CC 1080013C */  lui        $at, %hi(D_801078D8)
-    /* 76FD0 800867D0 D87820A4 */  sh         $zero, %lo(D_801078D8)($at)
-    /* 76FD4 800867D4 1080013C */  lui        $at, %hi(D_801078DA)
-    /* 76FD8 800867D8 DA7820A4 */  sh         $zero, %lo(D_801078DA)($at)
-    /* 76FDC 800867DC 0F80013C */  lui        $at, %hi(D_800F1B10)
-    /* 76FE0 800867E0 101B20A4 */  sh         $zero, %lo(D_800F1B10)($at)
-    /* 76FE4 800867E4 0F80013C */  lui        $at, %hi(D_800F1B12)
-    /* 76FE8 800867E8 121B20A4 */  sh         $zero, %lo(D_800F1B12)($at)
+    /* 76FCC 800867CC 1080013C */  lui        $at, %hi(_svm_okof1)
+    /* 76FD0 800867D0 D87820A4 */  sh         $zero, %lo(_svm_okof1)($at)
+    /* 76FD4 800867D4 1080013C */  lui        $at, %hi(_svm_okof2)
+    /* 76FD8 800867D8 DA7820A4 */  sh         $zero, %lo(_svm_okof2)($at)
+    /* 76FDC 800867DC 0F80013C */  lui        $at, %hi(_svm_okon1)
+    /* 76FE0 800867E0 101B20A4 */  sh         $zero, %lo(_svm_okon1)($at)
+    /* 76FE4 800867E4 0F80013C */  lui        $at, %hi(_svm_okon2)
+    /* 76FE8 800867E8 121B20A4 */  sh         $zero, %lo(_svm_okon2)($at)
     /* 76FEC 800867EC 8400BF8F */  lw         $ra, 0x84($sp)
     /* 76FF0 800867F0 8000B68F */  lw         $s6, 0x80($sp)
     /* 76FF4 800867F4 7C00B58F */  lw         $s5, 0x7C($sp)

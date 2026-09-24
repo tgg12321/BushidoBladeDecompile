@@ -31,30 +31,30 @@ glabel func_800858D0
     /* 76140 80085940 23104500 */  subu       $v0, $v0, $a1
     /* 76144 80085944 40100200 */  sll        $v0, $v0, 1
     /* 76148 80085948 18000324 */  addiu      $v1, $zero, 0x18
-    /* 7614C 8008594C 0F80013C */  lui        $at, %hi(D_800F4E1A)
+    /* 7614C 8008594C 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x2)
     /* 76150 80085950 21082200 */  addu       $at, $at, $v0
-    /* 76154 80085954 1A4E23A4 */  sh         $v1, %lo(D_800F4E1A)($at)
-    /* 76158 80085958 0F80013C */  lui        $at, %hi(D_800F4E1E)
+    /* 76154 80085954 1A4E23A4 */  sh         $v1, %lo(_svm_voice_plus_0x2)($at)
+    /* 76158 80085958 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x6)
     /* 7615C 8008595C 21082200 */  addu       $at, $at, $v0
-    /* 76160 80085960 1E4E20A4 */  sh         $zero, %lo(D_800F4E1E)($at)
-    /* 76164 80085964 0F80013C */  lui        $at, %hi(D_800F4E28)
+    /* 76160 80085960 1E4E20A4 */  sh         $zero, %lo(_svm_voice_plus_0x6)($at)
+    /* 76164 80085964 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x10)
     /* 76168 80085968 21082200 */  addu       $at, $at, $v0
-    /* 7616C 8008596C 284E31A4 */  sh         $s1, %lo(D_800F4E28)($at)
-    /* 76170 80085970 0F80013C */  lui        $at, %hi(D_800F4E2A)
+    /* 7616C 8008596C 284E31A4 */  sh         $s1, %lo(_svm_voice_plus_0x10)($at)
+    /* 76170 80085970 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x12)
     /* 76174 80085974 21082200 */  addu       $at, $at, $v0
-    /* 76178 80085978 2A4E20A4 */  sh         $zero, %lo(D_800F4E2A)($at)
-    /* 7617C 8008597C 0F80013C */  lui        $at, %hi(D_800F4E2C)
+    /* 76178 80085978 2A4E20A4 */  sh         $zero, %lo(_svm_voice_plus_0x12)($at)
+    /* 7617C 8008597C 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x14)
     /* 76180 80085980 21082200 */  addu       $at, $at, $v0
-    /* 76184 80085984 2C4E20A4 */  sh         $zero, %lo(D_800F4E2C)($at)
-    /* 76188 80085988 0F80013C */  lui        $at, %hi(D_800F4E2E)
+    /* 76184 80085984 2C4E20A4 */  sh         $zero, %lo(_svm_voice_plus_0x14)($at)
+    /* 76188 80085988 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x16)
     /* 7618C 8008598C 21082200 */  addu       $at, $at, $v0
-    /* 76190 80085990 2E4E31A4 */  sh         $s1, %lo(D_800F4E2E)($at)
+    /* 76190 80085990 2E4E31A4 */  sh         $s1, %lo(_svm_voice_plus_0x16)($at)
     /* 76194 80085994 01000224 */  addiu      $v0, $zero, 0x1
     /* 76198 80085998 0410A200 */  sllv       $v0, $v0, $a1
     /* 7619C 8008599C 222D020C */  jal        func_8008B488
     /* 761A0 800859A0 1000A2AF */   sw        $v0, 0x10($sp)
-    /* 761A4 800859A4 1080013C */  lui        $at, %hi(D_8010280A)
-    /* 761A8 800859A8 0A2830A4 */  sh         $s0, %lo(D_8010280A)($at)
+    /* 761A4 800859A4 1080013C */  lui        $at, %hi(_svm_cur_plus_0x1A)
+    /* 761A8 800859A8 0A2830A4 */  sh         $s0, %lo(_svm_cur_plus_0x1A)($at)
     /* 761AC 800859AC 751C020C */  jal        _SsVmKeyOffNow
     /* 761B0 800859B0 01000424 */   addiu     $a0, $zero, 0x1
     /* 761B4 800859B4 01000226 */  addiu      $v0, $s0, 0x1

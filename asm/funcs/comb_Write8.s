@@ -57,9 +57,9 @@ glabel comb_Write8
     /* 2AD18 8003A518 600782A3 */  sb         $v0, %gp_rel(D_800A382C)($gp)
     /* 2AD1C 8003A51C 1931020C */  jal        _comb_control
     /* 2AD20 8003A520 21280000 */   addu      $a1, $zero, $zero
-    /* 2AD24 8003A524 0A80053C */  lui        $a1, %hi(D_800A3698)
-    /* 2AD28 8003A528 9836A524 */  addiu      $a1, $a1, %lo(D_800A3698)
-    /* 2AD2C 8003A52C 7006848F */  lw         $a0, %gp_rel(D_800A373C)($gp)
+    /* 2AD24 8003A524 0A80053C */  lui        $a1, %hi(g_comb_send_buf)
+    /* 2AD28 8003A528 9836A524 */  addiu      $a1, $a1, %lo(g_comb_send_buf)
+    /* 2AD2C 8003A52C 7006848F */  lw         $a0, %gp_rel(g_comb_write_fd)($gp)
     /* 2AD30 8003A530 82E2010C */  jal        write
     /* 2AD34 8003A534 08000624 */   addiu     $a2, $zero, 0x8
     /* 2AD38 8003A538 04000424 */  addiu      $a0, $zero, 0x4

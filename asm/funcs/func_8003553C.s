@@ -23,8 +23,8 @@ glabel func_8003553C
     /* 25D90 80035590 1C0000A2 */  sb         $zero, 0x1C($s0)
     /* 25D94 80035594 1D0000A2 */  sb         $zero, 0x1D($s0)
     /* 25D98 80035598 1E0000A2 */  sb         $zero, 0x1E($s0)
-    /* 25D9C 8003559C 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 25DA0 800355A0 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 25D9C 8003559C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 25DA0 800355A0 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 25DA4 800355A4 21280002 */  addu       $a1, $s0, $zero
     /* 25DA8 800355A8 080000A6 */  sh         $zero, 0x8($s0)
     /* 25DAC 800355AC 0A0000A6 */  sh         $zero, 0xA($s0)

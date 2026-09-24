@@ -13,10 +13,10 @@ glabel obj_InitAll
     /* 4BF58 8005B758 21200000 */  addu       $a0, $zero, $zero
     /* 4BF5C 8005B75C 9317020C */  jal        SsUtSetReverbDepth
     /* 4BF60 8005B760 21280000 */   addu      $a1, $zero, $zero
-    /* 4BF64 8005B764 0F80123C */  lui        $s2, %hi(D_800EFB3C)
-    /* 4BF68 8005B768 3CFB5226 */  addiu      $s2, $s2, %lo(D_800EFB3C)
-    /* 4BF6C 8005B76C 0F80113C */  lui        $s1, %hi(D_800EFC3C)
-    /* 4BF70 8005B770 3CFC3126 */  addiu      $s1, $s1, %lo(D_800EFC3C)
+    /* 4BF64 8005B764 0F80123C */  lui        $s2, %hi(g_vab_vb_sbaddr_plus_0x4)
+    /* 4BF68 8005B768 3CFB5226 */  addiu      $s2, $s2, %lo(g_vab_vb_sbaddr_plus_0x4)
+    /* 4BF6C 8005B76C 0F80113C */  lui        $s1, %hi(g_vab_rec_ptr_plus_0x4)
+    /* 4BF70 8005B770 3CFC3126 */  addiu      $s1, $s1, %lo(g_vab_rec_ptr_plus_0x4)
   .L8005B774:
     /* 4BF74 8005B774 00241000 */  sll        $a0, $s0, 16
     /* 4BF78 8005B778 D91F020C */  jal        SsVabClose

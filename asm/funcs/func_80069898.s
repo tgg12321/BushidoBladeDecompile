@@ -35,8 +35,8 @@ glabel func_80069898
     /* 5A11C 8006991C 0E0002A6 */   sh        $v0, 0xE($s0)
     /* 5A120 80069920 21280002 */  addu       $a1, $s0, $zero
     /* 5A124 80069924 10001026 */  addiu      $s0, $s0, 0x10
-    /* 5A128 80069928 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A12C 8006992C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A128 80069928 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A12C 8006992C 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A130 80069930 80981300 */  sll        $s3, $s3, 2
     /* 5A134 80069934 2DEA010C */  jal        AddPrim
     /* 5A138 80069938 21209300 */   addu      $a0, $a0, $s3
@@ -60,8 +60,8 @@ glabel func_80069898
     /* 5A180 80069980 5AEA010C */  jal        SetSemiTrans
     /* 5A184 80069984 0E0002A6 */   sh        $v0, 0xE($s0)
     /* 5A188 80069988 21280002 */  addu       $a1, $s0, $zero
-    /* 5A18C 8006998C 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A190 80069990 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A18C 8006998C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A190 80069990 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A194 80069994 10001026 */  addiu      $s0, $s0, 0x10
     /* 5A198 80069998 2DEA010C */  jal        AddPrim
     /* 5A19C 8006999C 21209300 */   addu      $a0, $a0, $s3
@@ -86,8 +86,8 @@ glabel func_80069898
     /* 5A1E8 800699E8 5AEA010C */  jal        SetSemiTrans
     /* 5A1EC 800699EC 0E0002A6 */   sh        $v0, 0xE($s0)
     /* 5A1F0 800699F0 21280002 */  addu       $a1, $s0, $zero
-    /* 5A1F4 800699F4 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A1F8 800699F8 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A1F4 800699F4 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A1F8 800699F8 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A1FC 800699FC 10001026 */  addiu      $s0, $s0, 0x10
     /* 5A200 80069A00 2DEA010C */  jal        AddPrim
     /* 5A204 80069A04 21209300 */   addu      $a0, $a0, $s3

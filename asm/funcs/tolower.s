@@ -1,9 +1,9 @@
 glabel tolower
     /* 6A0FC 800798FC 21188000 */  addu       $v1, $a0, $zero
     /* 6A100 80079900 FF006230 */  andi       $v0, $v1, 0xFF
-    /* 6A104 80079904 0A80013C */  lui        $at, %hi(D_8009BD8D)
+    /* 6A104 80079904 0A80013C */  lui        $at, %hi(_ctype__plus_0x1)
     /* 6A108 80079908 21082200 */  addu       $at, $at, $v0
-    /* 6A10C 8007990C 8DBD2290 */  lbu        $v0, %lo(D_8009BD8D)($at)
+    /* 6A10C 8007990C 8DBD2290 */  lbu        $v0, %lo(_ctype__plus_0x1)($at)
     /* 6A110 80079910 00000000 */  nop
     /* 6A114 80079914 01004230 */  andi       $v0, $v0, 0x1
     /* 6A118 80079918 02004010 */  beqz       $v0, .L80079924

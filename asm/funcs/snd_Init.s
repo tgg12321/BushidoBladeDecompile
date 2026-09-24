@@ -2,10 +2,10 @@ glabel snd_Init
     /* 4BC3C 8005B43C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 4BC40 8005B440 1000BFAF */  sw         $ra, 0x10($sp)
     /* 4BC44 8005B444 21280000 */  addu       $a1, $zero, $zero
-    /* 4BC48 8005B448 0F80043C */  lui        $a0, %hi(D_800EFB38)
-    /* 4BC4C 8005B44C 38FB8424 */  addiu      $a0, $a0, %lo(D_800EFB38)
-    /* 4BC50 8005B450 0F80033C */  lui        $v1, %hi(D_800EFC38)
-    /* 4BC54 8005B454 38FC6324 */  addiu      $v1, $v1, %lo(D_800EFC38)
+    /* 4BC48 8005B448 0F80043C */  lui        $a0, %hi(g_vab_vb_sbaddr)
+    /* 4BC4C 8005B44C 38FB8424 */  addiu      $a0, $a0, %lo(g_vab_vb_sbaddr)
+    /* 4BC50 8005B450 0F80033C */  lui        $v1, %hi(g_vab_rec_ptr)
+    /* 4BC54 8005B454 38FC6324 */  addiu      $v1, $v1, %lo(g_vab_rec_ptr)
   .L8005B458:
     /* 4BC58 8005B458 000060AC */  sw         $zero, 0x0($v1)
     /* 4BC5C 8005B45C 000080AC */  sw         $zero, 0x0($a0)

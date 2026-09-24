@@ -5,16 +5,16 @@ glabel obj_InitPair
     /* 4C074 8005B874 21200000 */   addu      $a0, $zero, $zero
     /* 4C078 8005B878 D91F020C */  jal        SsVabClose
     /* 4C07C 8005B87C 08000424 */   addiu     $a0, $zero, 0x8
-    /* 4C080 8005B880 0F80013C */  lui        $at, %hi(D_800EFC58)
-    /* 4C084 8005B884 58FC20AC */  sw         $zero, %lo(D_800EFC58)($at)
-    /* 4C088 8005B888 0F80013C */  lui        $at, %hi(D_800EFB58)
-    /* 4C08C 8005B88C 58FB20AC */  sw         $zero, %lo(D_800EFB58)($at)
+    /* 4C080 8005B880 0F80013C */  lui        $at, %hi(g_vab_rec_ptr_plus_0x20)
+    /* 4C084 8005B884 58FC20AC */  sw         $zero, %lo(g_vab_rec_ptr_plus_0x20)($at)
+    /* 4C088 8005B888 0F80013C */  lui        $at, %hi(g_vab_vb_sbaddr_plus_0x20)
+    /* 4C08C 8005B88C 58FB20AC */  sw         $zero, %lo(g_vab_vb_sbaddr_plus_0x20)($at)
     /* 4C090 8005B890 D91F020C */  jal        SsVabClose
     /* 4C094 8005B894 04000424 */   addiu     $a0, $zero, 0x4
-    /* 4C098 8005B898 0F80013C */  lui        $at, %hi(D_800EFC48)
-    /* 4C09C 8005B89C 48FC20AC */  sw         $zero, %lo(D_800EFC48)($at)
-    /* 4C0A0 8005B8A0 0F80013C */  lui        $at, %hi(D_800EFB48)
-    /* 4C0A4 8005B8A4 48FB20AC */  sw         $zero, %lo(D_800EFB48)($at)
+    /* 4C098 8005B898 0F80013C */  lui        $at, %hi(g_vab_rec_ptr_plus_0x10)
+    /* 4C09C 8005B89C 48FC20AC */  sw         $zero, %lo(g_vab_rec_ptr_plus_0x10)($at)
+    /* 4C0A0 8005B8A0 0F80013C */  lui        $at, %hi(g_vab_vb_sbaddr_plus_0x10)
+    /* 4C0A4 8005B8A4 48FB20AC */  sw         $zero, %lo(g_vab_vb_sbaddr_plus_0x10)($at)
     /* 4C0A8 8005B8A8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 4C0AC 8005B8AC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 4C0B0 8005B8B0 0800E003 */  jr         $ra

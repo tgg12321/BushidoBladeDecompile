@@ -43,8 +43,8 @@ glabel func_80036940
     /* 271D4 800369D4 5BDB0008 */  j          .L80036D6C
     /* 271D8 800369D8 03000224 */   addiu     $v0, $zero, 0x3
   jlabel .L800369DC
-    /* 271DC 800369DC 0A80053C */  lui        $a1, %hi(D_800A3760)
-    /* 271E0 800369E0 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
+    /* 271DC 800369DC 0A80053C */  lui        $a1, %hi(g_cd_result)
+    /* 271E0 800369E0 6037A524 */  addiu      $a1, $a1, %lo(g_cd_result)
     /* 271E4 800369E4 7A00020C */  jal        CdSync
     /* 271E8 800369E8 01000424 */   addiu     $a0, $zero, 0x1
     /* 271EC 800369EC 21184000 */  addu       $v1, $v0, $zero
@@ -88,16 +88,16 @@ glabel func_80036940
     /* 2727C 80036A7C 7C1E428C */  lw         $v0, %lo(D_80101E7C)($v0)
     /* 27280 80036A80 1080033C */  lui        $v1, %hi(D_80101E78)
     /* 27284 80036A84 781E638C */  lw         $v1, %lo(D_80101E78)($v1)
-    /* 27288 80036A88 1080013C */  lui        $at, %hi(D_80101E84)
-    /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(D_80101E84)($at)
-    /* 27290 80036A90 1080013C */  lui        $at, %hi(D_80101E80)
-    /* 27294 80036A94 801E23AC */  sw         $v1, %lo(D_80101E80)($at)
+    /* 27288 80036A88 1080013C */  lui        $at, %hi(g_cdread_dest_buffer)
+    /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(g_cdread_dest_buffer)($at)
+    /* 27290 80036A90 1080013C */  lui        $at, %hi(g_cdread_sectors_remaining)
+    /* 27294 80036A94 801E23AC */  sw         $v1, %lo(g_cdread_sectors_remaining)($at)
     /* 27298 80036A98 EA01020C */  jal        CdPosToInt
     /* 2729C 80036A9C 21200002 */   addu      $a0, $s0, $zero
     /* 272A0 80036AA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 272A4 80036AA4 21280002 */  addu       $a1, $s0, $zero
-    /* 272A8 80036AA8 1080013C */  lui        $at, %hi(D_80101EA0)
-    /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(D_80101EA0)($at)
+    /* 272A8 80036AA8 1080013C */  lui        $at, %hi(g_cdread_expected_pos)
+    /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(g_cdread_expected_pos)($at)
     /* 272B0 80036AB0 9600020C */  jal        CdControl
     /* 272B4 80036AB4 21300000 */   addu      $a2, $zero, $zero
     /* 272B8 80036AB8 1080013C */  lui        $at, %hi(D_80101E98)
@@ -105,8 +105,8 @@ glabel func_80036940
     /* 272C0 80036AC0 5BDB0008 */  j          .L80036D6C
     /* 272C4 80036AC4 05000224 */   addiu     $v0, $zero, 0x5
   jlabel .L80036AC8
-    /* 272C8 80036AC8 0A80053C */  lui        $a1, %hi(D_800A3760)
-    /* 272CC 80036ACC 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
+    /* 272C8 80036AC8 0A80053C */  lui        $a1, %hi(g_cd_result)
+    /* 272CC 80036ACC 6037A524 */  addiu      $a1, $a1, %lo(g_cd_result)
     /* 272D0 80036AD0 7A00020C */  jal        CdSync
     /* 272D4 80036AD4 01000424 */   addiu     $a0, $zero, 0x1
     /* 272D8 80036AD8 21184000 */  addu       $v1, $v0, $zero
@@ -141,16 +141,16 @@ glabel func_80036940
     /* 27348 80036B48 5BDB0008 */  j          .L80036D6C
     /* 2734C 80036B4C 00000000 */   nop
   jlabel .L80036B50
-    /* 27350 80036B50 0A80053C */  lui        $a1, %hi(D_800A3760)
-    /* 27354 80036B54 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
+    /* 27350 80036B50 0A80053C */  lui        $a1, %hi(g_cd_result)
+    /* 27354 80036B54 6037A524 */  addiu      $a1, $a1, %lo(g_cd_result)
     /* 27358 80036B58 7A00020C */  jal        CdSync
     /* 2735C 80036B5C 01000424 */   addiu     $a0, $zero, 0x1
     /* 27360 80036B60 21184000 */  addu       $v1, $v0, $zero
     /* 27364 80036B64 02000224 */  addiu      $v0, $zero, 0x2
     /* 27368 80036B68 19006214 */  bne        $v1, $v0, .L80036BD0
     /* 2736C 80036B6C 05000224 */   addiu     $v0, $zero, 0x5
-    /* 27370 80036B70 1080023C */  lui        $v0, %hi(D_80101E80)
-    /* 27374 80036B74 801E428C */  lw         $v0, %lo(D_80101E80)($v0)
+    /* 27370 80036B70 1080023C */  lui        $v0, %hi(g_cdread_sectors_remaining)
+    /* 27374 80036B74 801E428C */  lw         $v0, %lo(g_cdread_sectors_remaining)($v0)
     /* 27378 80036B78 00000000 */  nop
     /* 2737C 80036B7C 03004014 */  bnez       $v0, .L80036B8C
     /* 27380 80036B80 00000000 */   nop
@@ -198,7 +198,7 @@ glabel func_80036940
     /* 2741C 80036C1C 5BDB0008 */  j          .L80036D6C
     /* 27420 80036C20 0A000224 */   addiu     $v0, $zero, 0xA
   jlabel .L80036C24
-    /* 27424 80036C24 94068293 */  lbu        $v0, %gp_rel(D_800A3760)($gp)
+    /* 27424 80036C24 94068293 */  lbu        $v0, %gp_rel(g_cd_result)($gp)
     /* 27428 80036C28 00000000 */  nop
     /* 2742C 80036C2C 10004230 */  andi       $v0, $v0, 0x10
     /* 27430 80036C30 4E004014 */  bnez       $v0, .L80036D6C
@@ -212,15 +212,15 @@ glabel func_80036940
     /* 2744C 80036C4C 32DB0008 */  j          .L80036CC8
     /* 27450 80036C50 0B000224 */   addiu     $v0, $zero, 0xB
   jlabel .L80036C54
-    /* 27454 80036C54 0A80053C */  lui        $a1, %hi(D_800A3760)
-    /* 27458 80036C58 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
+    /* 27454 80036C54 0A80053C */  lui        $a1, %hi(g_cd_result)
+    /* 27458 80036C58 6037A524 */  addiu      $a1, $a1, %lo(g_cd_result)
     /* 2745C 80036C5C 7A00020C */  jal        CdSync
     /* 27460 80036C60 01000424 */   addiu     $a0, $zero, 0x1
     /* 27464 80036C64 21184000 */  addu       $v1, $v0, $zero
     /* 27468 80036C68 02000224 */  addiu      $v0, $zero, 0x2
     /* 2746C 80036C6C 08006214 */  bne        $v1, $v0, .L80036C90
     /* 27470 80036C70 05000224 */   addiu     $v0, $zero, 0x5
-    /* 27474 80036C74 94068293 */  lbu        $v0, %gp_rel(D_800A3760)($gp)
+    /* 27474 80036C74 94068293 */  lbu        $v0, %gp_rel(g_cd_result)($gp)
     /* 27478 80036C78 00000000 */  nop
     /* 2747C 80036C7C 10004230 */  andi       $v0, $v0, 0x10
     /* 27480 80036C80 3A004014 */  bnez       $v0, .L80036D6C
@@ -251,8 +251,8 @@ glabel func_80036940
     /* 274D8 80036CD8 5DDB0008 */  j          .L80036D74
     /* 274DC 80036CDC 00000000 */   nop
   jlabel .L80036CE0
-    /* 274E0 80036CE0 0A80053C */  lui        $a1, %hi(D_800A3760)
-    /* 274E4 80036CE4 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
+    /* 274E0 80036CE0 0A80053C */  lui        $a1, %hi(g_cd_result)
+    /* 274E4 80036CE4 6037A524 */  addiu      $a1, $a1, %lo(g_cd_result)
     /* 274E8 80036CE8 7A00020C */  jal        CdSync
     /* 274EC 80036CEC 01000424 */   addiu     $a0, $zero, 0x1
     /* 274F0 80036CF0 21184000 */  addu       $v1, $v0, $zero

@@ -18,8 +18,8 @@ glabel func_80016918
     /* 7158 80016958 2D000424 */   addiu     $a0, $zero, 0x2D
     /* 715C 8001695C FFFB010C */  jal        SetGeomScreen
     /* 7160 80016960 21204000 */   addu      $a0, $v0, $zero
-    /* 7164 80016964 0F80113C */  lui        $s1, %hi(D_800F7438)
-    /* 7168 80016968 38743126 */  addiu      $s1, $s1, %lo(D_800F7438)
+    /* 7164 80016964 0F80113C */  lui        $s1, %hi(g_gpu_db)
+    /* 7168 80016968 38743126 */  addiu      $s1, $s1, %lo(g_gpu_db)
     /* 716C 8001696C 21202002 */  addu       $a0, $s1, $zero
     /* 7170 80016970 21280000 */  addu       $a1, $zero, $zero
     /* 7174 80016974 21300000 */  addu       $a2, $zero, $zero
@@ -49,8 +49,8 @@ glabel func_80016918
     /* 71D4 800169D4 21300000 */  addu       $a2, $zero, $zero
     /* 71D8 800169D8 DA59000C */  jal        disp_SetFramebufferMode
     /* 71DC 800169DC 21380000 */   addu      $a3, $zero, $zero
-    /* 71E0 800169E0 0A80043C */  lui        $a0, %hi(D_800A30CC)
-    /* 71E4 800169E4 CC308424 */  addiu      $a0, $a0, %lo(D_800A30CC)
+    /* 71E0 800169E0 0A80043C */  lui        $a0, %hi(g_gpu_clear_rect)
+    /* 71E4 800169E4 CC308424 */  addiu      $a0, $a0, %lo(g_gpu_clear_rect)
     /* 71E8 800169E8 21280000 */  addu       $a1, $zero, $zero
     /* 71EC 800169EC 21300000 */  addu       $a2, $zero, $zero
     /* 71F0 800169F0 34ED010C */  jal        ClearImage

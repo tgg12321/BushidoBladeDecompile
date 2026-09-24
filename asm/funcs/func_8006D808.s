@@ -57,8 +57,8 @@ glabel func_8006D808
     /* 5E0E0 8006D8E0 92F0010C */  jal        SetDrawMode
     /* 5E0E4 8006D8E4 21384000 */   addu      $a3, $v0, $zero
     /* 5E0E8 8006D8E8 80201E00 */  sll        $a0, $fp, 2
-    /* 5E0EC 8006D8EC 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 5E0F0 8006D8F0 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 5E0EC 8006D8EC 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 5E0F0 8006D8F0 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 5E0F4 8006D8F4 0000C58E */  lw         $a1, 0x0($s6)
     /* 5E0F8 8006D8F8 2DEA010C */  jal        AddPrim
     /* 5E0FC 8006D8FC 21204400 */   addu      $a0, $v0, $a0
@@ -161,8 +161,8 @@ glabel func_8006D808
     /* 5E268 8006DA68 92F0010C */  jal        SetDrawMode
     /* 5E26C 8006DA6C 21384000 */   addu      $a3, $v0, $zero
     /* 5E270 8006DA70 80201E00 */  sll        $a0, $fp, 2
-    /* 5E274 8006DA74 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 5E278 8006DA78 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 5E274 8006DA74 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 5E278 8006DA78 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 5E27C 8006DA7C 0000C58E */  lw         $a1, 0x0($s6)
     /* 5E280 8006DA80 2DEA010C */  jal        AddPrim
     /* 5E284 8006DA84 21204400 */   addu      $a0, $v0, $a0
@@ -353,8 +353,8 @@ glabel func_8006D808
     /* 5E530 8006DD30 92F0010C */  jal        SetDrawMode
     /* 5E534 8006DD34 21384000 */   addu      $a3, $v0, $zero
     /* 5E538 8006DD38 80201E00 */  sll        $a0, $fp, 2
-    /* 5E53C 8006DD3C 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 5E540 8006DD40 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 5E53C 8006DD3C 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 5E540 8006DD40 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 5E544 8006DD44 0000C58E */  lw         $a1, 0x0($s6)
     /* 5E548 8006DD48 2DEA010C */  jal        AddPrim
     /* 5E54C 8006DD4C 21204400 */   addu      $a0, $v0, $a0

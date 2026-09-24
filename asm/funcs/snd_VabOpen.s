@@ -9,7 +9,7 @@ glabel snd_VabOpen
     /* 4CDC4 8005C5C4 D91F020C */  jal        SsVabClose
     /* 4CDC8 8005C5C8 21200002 */   addu      $a0, $s0, $zero
     /* 4CDCC 8005C5CC 0400248E */  lw         $a0, 0x4($s1)
-    /* 4CDD0 8005C5D0 3803868F */  lw         $a2, %gp_rel(D_800A3404)($gp)
+    /* 4CDD0 8005C5D0 3803868F */  lw         $a2, %gp_rel(g_vab_sticky_sbaddr)($gp)
     /* 4CDD4 8005C5D4 2220020C */  jal        SsVabOpenHeadSticky
     /* 4CDD8 8005C5D8 21280002 */   addu      $a1, $s0, $zero
     /* 4CDDC 8005C5DC 0400228E */  lw         $v0, 0x4($s1)

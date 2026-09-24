@@ -50,8 +50,8 @@ glabel func_800422BC
     /* 32B78 80042378 C32F0500 */  sra        $a1, $a1, 31
     /* 32B7C 8004237C 14008016 */  bnez       $s4, .L800423D0
     /* 32B80 80042380 23884500 */   subu      $s1, $v0, $a1
-    /* 32B84 80042384 0F80103C */  lui        $s0, %hi(D_800F6318)
-    /* 32B88 80042388 18631026 */  addiu      $s0, $s0, %lo(D_800F6318)
+    /* 32B84 80042384 0F80103C */  lui        $s0, %hi(g_gte_color_matrix_data)
+    /* 32B88 80042388 18631026 */  addiu      $s0, $s0, %lo(g_gte_color_matrix_data)
     /* 32B8C 8004238C 000013A6 */  sh         $s3, 0x0($s0)
     /* 32B90 80042390 0F80013C */  lui        $at, %hi(D_800F631E)
     /* 32B94 80042394 1E6332A4 */  sh         $s2, %lo(D_800F631E)($at)
@@ -84,12 +84,12 @@ glabel func_800422BC
   .L800423FC:
     /* 32BFC 800423FC 0F008016 */  bnez       $s4, .L8004243C
     /* 32C00 80042400 00000000 */   nop
-    /* 32C04 80042404 0F80013C */  lui        $at, %hi(D_800F6338)
-    /* 32C08 80042408 386331A0 */  sb         $s1, %lo(D_800F6338)($at)
-    /* 32C0C 8004240C 0F80013C */  lui        $at, %hi(D_800F6339)
-    /* 32C10 80042410 396332A0 */  sb         $s2, %lo(D_800F6339)($at)
-    /* 32C14 80042414 0F80013C */  lui        $at, %hi(D_800F633A)
-    /* 32C18 80042418 3A6330A0 */  sb         $s0, %lo(D_800F633A)($at)
+    /* 32C04 80042404 0F80013C */  lui        $at, %hi(g_gte_back_color_r)
+    /* 32C08 80042408 386331A0 */  sb         $s1, %lo(g_gte_back_color_r)($at)
+    /* 32C0C 8004240C 0F80013C */  lui        $at, %hi(g_gte_back_color_g)
+    /* 32C10 80042410 396332A0 */  sb         $s2, %lo(g_gte_back_color_g)($at)
+    /* 32C14 80042414 0F80013C */  lui        $at, %hi(g_gte_back_color_b)
+    /* 32C18 80042418 3A6330A0 */  sb         $s0, %lo(g_gte_back_color_b)($at)
     /* 32C1C 8004241C 0F80013C */  lui        $at, %hi(D_800F6398)
     /* 32C20 80042420 986331A0 */  sb         $s1, %lo(D_800F6398)($at)
     /* 32C24 80042424 0F80013C */  lui        $at, %hi(D_800F6399)

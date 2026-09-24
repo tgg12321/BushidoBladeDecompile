@@ -1,12 +1,12 @@
 glabel func_80037AA4
     /* 282A4 80037AA4 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 282A8 80037AA8 21280000 */  addu       $a1, $zero, $zero
-    /* 282AC 80037AAC FC07868F */  lw         $a2, %gp_rel(D_800A38C8)($gp)
+    /* 282AC 80037AAC FC07868F */  lw         $a2, %gp_rel(g_memcard_file_count)($gp)
     /* 282B0 80037AB0 00000000 */  nop
     /* 282B4 80037AB4 0900C018 */  blez       $a2, .L80037ADC
     /* 282B8 80037AB8 21200000 */   addu      $a0, $zero, $zero
-    /* 282BC 80037ABC 1080033C */  lui        $v1, %hi(D_80102810)
-    /* 282C0 80037AC0 10286324 */  addiu      $v1, $v1, %lo(D_80102810)
+    /* 282BC 80037ABC 1080033C */  lui        $v1, %hi(g_memcard_file_list)
+    /* 282C0 80037AC0 10286324 */  addiu      $v1, $v1, %lo(g_memcard_file_list)
   .L80037AC4:
     /* 282C4 80037AC4 1800628C */  lw         $v0, 0x18($v1)
     /* 282C8 80037AC8 0100A524 */  addiu      $a1, $a1, 0x1

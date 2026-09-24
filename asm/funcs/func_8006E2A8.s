@@ -5,8 +5,8 @@ glabel func_8006E2A8
     /* 5EAB4 8006E2B4 A8EC010C */  jal        SetDispMask
     /* 5EAB8 8006E2B8 1800B0AF */   sw        $s0, 0x18($sp)
     /* 5EABC 8006E2BC 4C04828F */  lw         $v0, %gp_rel(D_800A3518)($gp)
-    /* 5EAC0 8006E2C0 0F80103C */  lui        $s0, %hi(D_800F7438)
-    /* 5EAC4 8006E2C4 38741026 */  addiu      $s0, $s0, %lo(D_800F7438)
+    /* 5EAC0 8006E2C0 0F80103C */  lui        $s0, %hi(g_gpu_db)
+    /* 5EAC4 8006E2C4 38741026 */  addiu      $s0, $s0, %lo(g_gpu_db)
     /* 5EAC8 8006E2C8 01004230 */  andi       $v0, $v0, 0x1
     /* 5EACC 8006E2CC C0210200 */  sll        $a0, $v0, 7
     /* 5EAD0 8006E2D0 21208200 */  addu       $a0, $a0, $v0

@@ -91,7 +91,7 @@ extern void *D_800A38B4;
 
 
 
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 extern void SetPolyG4(u8 *p);
 extern void AddPrim(u32 *a0, u32 *a1);
@@ -172,7 +172,7 @@ void func_8003553C(void) {
     g->r1 = 0; g->g1 = 0; g->b1 = 0x80;
     g->r2 = 0; g->g2 = 0; g->b2 = 0;
     g->r3 = 0; g->g3 = 0; g->b3 = 0;
-    ot = (u32 *)(D_800A374C + 0x401C);
+    ot = (u32 *)(g_gpu_ot_ptr + 0x401C);
     q = g;
     g += 1;
     AddPrim(ot, (u32 *)q);

@@ -4,8 +4,8 @@ glabel _SsVmGetSeqVol
     /* 784B4 80087CB4 1080013C */  lui        $at, %hi(_ss_score)
     /* 784B8 80087CB8 21082200 */  addu       $at, $at, $v0
     /* 784BC 80087CBC 286F238C */  lw         $v1, %lo(_ss_score)($at)
-    /* 784C0 80087CC0 1080073C */  lui        $a3, %hi(D_80102806)
-    /* 784C4 80087CC4 0628E724 */  addiu      $a3, $a3, %lo(D_80102806)
+    /* 784C0 80087CC0 1080073C */  lui        $a3, %hi(_svm_cur_plus_0x16)
+    /* 784C4 80087CC4 0628E724 */  addiu      $a3, $a3, %lo(_svm_cur_plus_0x16)
     /* 784C8 80087CC8 0000E4A4 */  sh         $a0, 0x0($a3)
     /* 784CC 80087CCC 00FF8430 */  andi       $a0, $a0, 0xFF00
     /* 784D0 80087CD0 03220400 */  sra        $a0, $a0, 8
@@ -29,8 +29,8 @@ glabel _SsVmGetSeqVol
     /* 78518 80087D18 1080013C */  lui        $at, %hi(_ss_score)
     /* 7851C 80087D1C 21082200 */  addu       $at, $at, $v0
     /* 78520 80087D20 286F238C */  lw         $v1, %lo(_ss_score)($at)
-    /* 78524 80087D24 1080013C */  lui        $at, %hi(D_80102806)
-    /* 78528 80087D28 062824A4 */  sh         $a0, %lo(D_80102806)($at)
+    /* 78524 80087D24 1080013C */  lui        $at, %hi(_svm_cur_plus_0x16)
+    /* 78528 80087D28 062824A4 */  sh         $a0, %lo(_svm_cur_plus_0x16)($at)
     /* 7852C 80087D2C 00FF8430 */  andi       $a0, $a0, 0xFF00
     /* 78530 80087D30 03220400 */  sra        $a0, $a0, 8
     /* 78534 80087D34 40100400 */  sll        $v0, $a0, 1
@@ -47,8 +47,8 @@ glabel _SsVmGetSeqVol
     /* 78560 80087D60 1080013C */  lui        $at, %hi(_ss_score)
     /* 78564 80087D64 21082200 */  addu       $at, $at, $v0
     /* 78568 80087D68 286F238C */  lw         $v1, %lo(_ss_score)($at)
-    /* 7856C 80087D6C 1080013C */  lui        $at, %hi(D_80102806)
-    /* 78570 80087D70 062824A4 */  sh         $a0, %lo(D_80102806)($at)
+    /* 7856C 80087D6C 1080013C */  lui        $at, %hi(_svm_cur_plus_0x16)
+    /* 78570 80087D70 062824A4 */  sh         $a0, %lo(_svm_cur_plus_0x16)($at)
     /* 78574 80087D74 00FF8430 */  andi       $a0, $a0, 0xFF00
     /* 78578 80087D78 03220400 */  sra        $a0, $a0, 8
     /* 7857C 80087D7C 40100400 */  sll        $v0, $a0, 1

@@ -26,9 +26,9 @@ glabel putchar
     /* 6A1D8 800799D8 6EE60108 */  j          .L800799B8
     /* 6A1DC 800799DC 00000000 */   nop
   .L800799E0:
-    /* 6A1E0 800799E0 0A80013C */  lui        $at, %hi(D_8009BD8D)
+    /* 6A1E0 800799E0 0A80013C */  lui        $at, %hi(_ctype__plus_0x1)
     /* 6A1E4 800799E4 21082400 */  addu       $at, $at, $a0
-    /* 6A1E8 800799E8 8DBD2290 */  lbu        $v0, %lo(D_8009BD8D)($at)
+    /* 6A1E8 800799E8 8DBD2290 */  lbu        $v0, %lo(_ctype__plus_0x1)($at)
     /* 6A1EC 800799EC 00000000 */  nop
     /* 6A1F0 800799F0 97004230 */  andi       $v0, $v0, 0x97
     /* 6A1F4 800799F4 07004010 */  beqz       $v0, .L80079A14

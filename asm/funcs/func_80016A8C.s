@@ -17,8 +17,8 @@ glabel func_80016A8C
     /* 72C8 80016AC8 A8EC010C */  jal        SetDispMask
     /* 72CC 80016ACC 21200000 */   addu      $a0, $zero, $zero
     /* 72D0 80016AD0 F0000224 */  addiu      $v0, $zero, 0xF0
-    /* 72D4 80016AD4 1080103C */  lui        $s0, %hi(D_800FB524)
-    /* 72D8 80016AD8 24B51026 */  addiu      $s0, $s0, %lo(D_800FB524)
+    /* 72D4 80016AD4 1080103C */  lui        $s0, %hi(g_gpu_db_plus_0x40EC)
+    /* 72D8 80016AD8 24B51026 */  addiu      $s0, $s0, %lo(g_gpu_db_plus_0x40EC)
     /* 72DC 80016ADC 21200002 */  addu       $a0, $s0, $zero
     /* 72E0 80016AE0 21280000 */  addu       $a1, $zero, $zero
     /* 72E4 80016AE4 21300000 */  addu       $a2, $zero, $zero
@@ -97,8 +97,8 @@ glabel func_80016A8C
     /* 73F8 80016BF8 21200000 */   addu      $a0, $zero, $zero
     /* 73FC 80016BFC F0000224 */  addiu      $v0, $zero, 0xF0
     /* 7400 80016C00 1000A2AF */  sw         $v0, 0x10($sp)
-    /* 7404 80016C04 1080043C */  lui        $a0, %hi(D_800FB524)
-    /* 7408 80016C08 24B58424 */  addiu      $a0, $a0, %lo(D_800FB524)
+    /* 7404 80016C04 1080043C */  lui        $a0, %hi(g_gpu_db_plus_0x40EC)
+    /* 7408 80016C08 24B58424 */  addiu      $a0, $a0, %lo(g_gpu_db_plus_0x40EC)
     /* 740C 80016C0C 21280000 */  addu       $a1, $zero, $zero
     /* 7410 80016C10 21300000 */  addu       $a2, $zero, $zero
     /* 7414 80016C14 D3E9010C */  jal        SetDefDispEnv

@@ -240,8 +240,8 @@ glabel func_8005E098
     /* 4EC10 8005E410 000022A6 */   sh        $v0, 0x0($s1)
     /* 4EC14 8005E414 2128A002 */  addu       $a1, $s5, $zero
     /* 4EC18 8005E418 10003126 */  addiu      $s1, $s1, 0x10
-    /* 4EC1C 8005E41C 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 4EC20 8005E420 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 4EC1C 8005E41C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 4EC20 8005E420 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 4EC24 8005E424 1000B526 */  addiu      $s5, $s5, 0x10
     /* 4EC28 8005E428 2DEA010C */  jal        AddPrim
     /* 4EC2C 8005E42C 21209600 */   addu      $a0, $a0, $s6
@@ -283,8 +283,8 @@ glabel func_8005E098
     /* 4ECB8 8005E4B8 21384000 */  addu       $a3, $v0, $zero
     /* 4ECBC 8005E4BC 92F0010C */  jal        SetDrawMode
     /* 4ECC0 8005E4C0 1000A0AF */   sw        $zero, 0x10($sp)
-    /* 4ECC4 8005E4C4 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 4ECC8 8005E4C8 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 4ECC4 8005E4C4 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 4ECC8 8005E4C8 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 4ECCC 8005E4CC 6000A58F */  lw         $a1, 0x60($sp)
     /* 4ECD0 8005E4D0 2DEA010C */  jal        AddPrim
     /* 4ECD4 8005E4D4 21209600 */   addu      $a0, $a0, $s6

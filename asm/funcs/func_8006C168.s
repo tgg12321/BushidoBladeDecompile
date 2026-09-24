@@ -18,8 +18,8 @@ glabel func_8006C168
     /* 5C9A8 8006C1A8 21800302 */  addu       $s0, $s0, $v1
     /* 5C9AC 8006C1AC 00811000 */  sll        $s0, $s0, 4
     /* 5C9B0 8006C1B0 480482AF */  sw         $v0, %gp_rel(D_800A3514)($gp)
-    /* 5C9B4 8006C1B4 0F80023C */  lui        $v0, %hi(D_800F7438)
-    /* 5C9B8 8006C1B8 38744224 */  addiu      $v0, $v0, %lo(D_800F7438)
+    /* 5C9B4 8006C1B4 0F80023C */  lui        $v0, %hi(g_gpu_db)
+    /* 5C9B8 8006C1B8 38744224 */  addiu      $v0, $v0, %lo(g_gpu_db)
     /* 5C9BC 8006C1BC E4B8010C */  jal        func_8006E390
     /* 5C9C0 8006C1C0 21800202 */   addu      $s0, $s0, $v0
     /* 5C9C4 8006C1C4 1000A427 */  addiu      $a0, $sp, 0x10

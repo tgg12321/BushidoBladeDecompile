@@ -121,14 +121,14 @@ extern s32 D_800109BC;
 
 
 
-extern s32 D_800A37DC;
-extern s32 D_800A37F0;
-extern s32 D_800A37FC;
-extern s32 D_800A3800;
-extern s32 D_800A3838;
-extern s32 D_800A383C;
-extern s32 D_800A3848;
-extern s32 D_800A3850;
+extern s32 g_memcard_sw_event_ioe;
+extern s32 g_memcard_sw_event_err;
+extern s32 g_memcard_sw_event_timeout;
+extern s32 g_memcard_sw_event_new;
+extern s32 g_memcard_hw_event_ioe;
+extern s32 g_memcard_hw_event_err;
+extern s32 g_memcard_hw_event_timeout;
+extern s32 g_memcard_hw_event_new;
 
 
 
@@ -136,7 +136,7 @@ extern s32 D_800A3850;
 
 
 
-extern s32 D_800A38C8;
+extern s32 g_memcard_file_count;
 
 
 
@@ -167,7 +167,7 @@ extern void StopCARD(void);
 
 
 extern s32 g_str_memcard_fmt;
-extern s32 D_80102810;
+extern s32 g_memcard_file_list;
 
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
@@ -178,34 +178,34 @@ void memcard_Init(void) {
     _bu_init();
     ChangeClearPAD(0);
     EnterCriticalSection();
-    D_800A37DC = OpenEvent(0xF4000001, 4, 0x2000, 0);
-    D_800A37F0 = OpenEvent(0xF4000001, 0x8000, 0x2000, 0);
-    D_800A37FC = OpenEvent(0xF4000001, 0x100, 0x2000, 0);
-    D_800A3800 = OpenEvent(0xF4000001, 0x2000, 0x2000, 0);
-    D_800A3838 = OpenEvent(0xF0000011, 4, 0x2000, 0);
-    D_800A383C = OpenEvent(0xF0000011, 0x8000, 0x2000, 0);
-    D_800A3848 = OpenEvent(0xF0000011, 0x100, 0x2000, 0);
-    D_800A3850 = OpenEvent(0xF0000011, 0x2000, 0x2000, 0);
+    g_memcard_sw_event_ioe = OpenEvent(0xF4000001, 4, 0x2000, 0);
+    g_memcard_sw_event_err = OpenEvent(0xF4000001, 0x8000, 0x2000, 0);
+    g_memcard_sw_event_timeout = OpenEvent(0xF4000001, 0x100, 0x2000, 0);
+    g_memcard_sw_event_new = OpenEvent(0xF4000001, 0x2000, 0x2000, 0);
+    g_memcard_hw_event_ioe = OpenEvent(0xF0000011, 4, 0x2000, 0);
+    g_memcard_hw_event_err = OpenEvent(0xF0000011, 0x8000, 0x2000, 0);
+    g_memcard_hw_event_timeout = OpenEvent(0xF0000011, 0x100, 0x2000, 0);
+    g_memcard_hw_event_new = OpenEvent(0xF0000011, 0x2000, 0x2000, 0);
     ExitCriticalSection();
-    EnableEvent(D_800A37DC);
-    EnableEvent(D_800A37F0);
-    EnableEvent(D_800A37FC);
-    EnableEvent(D_800A3800);
-    EnableEvent(D_800A3838);
-    EnableEvent(D_800A383C);
-    EnableEvent(D_800A3848);
-    EnableEvent(D_800A3850);
+    EnableEvent(g_memcard_sw_event_ioe);
+    EnableEvent(g_memcard_sw_event_err);
+    EnableEvent(g_memcard_sw_event_timeout);
+    EnableEvent(g_memcard_sw_event_new);
+    EnableEvent(g_memcard_hw_event_ioe);
+    EnableEvent(g_memcard_hw_event_err);
+    EnableEvent(g_memcard_hw_event_timeout);
+    EnableEvent(g_memcard_hw_event_new);
 }
 void memcard_Quit(void) {
     EnterCriticalSection();
-    CloseEvent(D_800A37DC);
-    CloseEvent(D_800A37F0);
-    CloseEvent(D_800A37FC);
-    CloseEvent(D_800A3800);
-    CloseEvent(D_800A3838);
-    CloseEvent(D_800A383C);
-    CloseEvent(D_800A3848);
-    CloseEvent(D_800A3850);
+    CloseEvent(g_memcard_sw_event_ioe);
+    CloseEvent(g_memcard_sw_event_err);
+    CloseEvent(g_memcard_sw_event_timeout);
+    CloseEvent(g_memcard_sw_event_new);
+    CloseEvent(g_memcard_hw_event_ioe);
+    CloseEvent(g_memcard_hw_event_err);
+    CloseEvent(g_memcard_hw_event_timeout);
+    CloseEvent(g_memcard_hw_event_new);
     ExitCriticalSection();
     StopCARD();
 }
@@ -214,15 +214,15 @@ s32 memcard_PollSwEventsTimeout(void) {
     s32 result;
     s32 one;
     s32 temp;
-    result = (TestEvent(D_800A37DC) == 1);
+    result = (TestEvent(g_memcard_sw_event_ioe) == 1);
     one = 1;
-    if (TestEvent(D_800A37F0) == one) {
+    if (TestEvent(g_memcard_sw_event_err) == one) {
         result = 2;
     }
-    if (TestEvent(D_800A37FC) == one) {
+    if (TestEvent(g_memcard_sw_event_timeout) == one) {
         result = 3;
     }
-    if (TestEvent(D_800A3800) == one) {
+    if (TestEvent(g_memcard_sw_event_new) == one) {
         result = 4;
     }
     temp = D_800A3924;
@@ -233,44 +233,44 @@ s32 memcard_PollSwEventsTimeout(void) {
     return result;
 }
 s32 memcard_PollSwEvents(void) {
-    if (TestEvent(D_800A37DC) == 1) {
+    if (TestEvent(g_memcard_sw_event_ioe) == 1) {
         return 1;
     }
-    if (TestEvent(D_800A37F0) == 1) {
+    if (TestEvent(g_memcard_sw_event_err) == 1) {
         return 2;
     }
-    if (TestEvent(D_800A37FC) == 1) {
+    if (TestEvent(g_memcard_sw_event_timeout) == 1) {
         return 3;
     }
-    return (TestEvent(D_800A3800) == 1) * 4;
+    return (TestEvent(g_memcard_sw_event_new) == 1) * 4;
 }
 void memcard_AckSwEvents(void) {
-    TestEvent(D_800A37DC);
-    TestEvent(D_800A37F0);
-    TestEvent(D_800A37FC);
-    TestEvent(D_800A3800);
+    TestEvent(g_memcard_sw_event_ioe);
+    TestEvent(g_memcard_sw_event_err);
+    TestEvent(g_memcard_sw_event_timeout);
+    TestEvent(g_memcard_sw_event_new);
 }
 s32 memcard_WaitHwEvent(void) {
     s32 one = 1;
 loop:
-    if (TestEvent(D_800A3838) == one) { return 1; }
-    if (TestEvent(D_800A383C) == one) { return 2; }
-    if (TestEvent(D_800A3848) == one) { return 3; }
-    if (TestEvent(D_800A3850) != one) { goto loop; }
+    if (TestEvent(g_memcard_hw_event_ioe) == one) { return 1; }
+    if (TestEvent(g_memcard_hw_event_err) == one) { return 2; }
+    if (TestEvent(g_memcard_hw_event_timeout) == one) { return 3; }
+    if (TestEvent(g_memcard_hw_event_new) != one) { goto loop; }
     return 4;
 }
 void memcard_AckHwEvents(void) {
-    TestEvent(D_800A3838);
-    TestEvent(D_800A383C);
-    TestEvent(D_800A3848);
-    TestEvent(D_800A3850);
+    TestEvent(g_memcard_hw_event_ioe);
+    TestEvent(g_memcard_hw_event_err);
+    TestEvent(g_memcard_hw_event_timeout);
+    TestEvent(g_memcard_hw_event_new);
 }
 s32 memcard_CountFiles(s32 arg0, s32 arg1) {
     s32 *var_s0;
     s32 var_s1;
     s32 sp10[8];
 
-    var_s0 = (s32 *)&D_80102810;
+    var_s0 = (s32 *)&g_memcard_file_list;
     sprintf(sp10, (s32)(&g_str_memcard_fmt), arg0, arg1);
     var_s1 = 0;
     if (firstfile(sp10, var_s0) != 0) {
@@ -279,7 +279,7 @@ s32 memcard_CountFiles(s32 arg0, s32 arg1) {
             var_s0 = (s32 *)(((u8 *)var_s0) + 0x28);
         } while (nextfile(var_s0) != 0);
     }
-    D_800A38C8 = var_s1;
+    g_memcard_file_count = var_s1;
     return var_s1;
 }
 s32 func_80037AA4(void) {
@@ -297,9 +297,9 @@ s32 func_80037AA4(void) {
     sh = 0xD;
     var_a1 = 0;
     var_a0 = 0;
-    var_a2 = D_800A38C8;
+    var_a2 = g_memcard_file_count;
     if (var_a1 < var_a2) {
-        var_v1 = (s8 *)&D_80102810;
+        var_v1 = (s8 *)&g_memcard_file_list;
         do {
             var_v0 = *(s32 *)(var_v1 + 0x18);
             var_a1 += 1;
@@ -326,9 +326,9 @@ s32 func_80037B00(u8 *arg0) {
     s32 var_t3;
 
     var_t1 = 0;
-    if (var_t1 < D_800A38C8) {
-        var_t3 = D_800A38C8;
-        var_a3 = (s8 *)&D_80102810;
+    if (var_t1 < g_memcard_file_count) {
+        var_t3 = g_memcard_file_count;
+        var_a3 = (s8 *)&g_memcard_file_list;
         while (var_t1 < var_t3) {
             var_t2 = 0;
             var_a1 = var_a3;
@@ -375,7 +375,7 @@ s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     if (temp_v0 == -1) {
         return -1;
     }
-    D_800A3794 = temp_v0;
+    g_memcard_fd = temp_v0;
     memcard_AckSwEvents();
     memcard_AckHwEvents();
     read(temp_v0, arg3, arg4);
@@ -399,7 +399,7 @@ s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5
     if (temp_v0 == -1) {
         return -1;
     }
-    D_800A3794 = temp_v0;
+    g_memcard_fd = temp_v0;
     memcard_AckSwEvents();
     memcard_AckHwEvents();
     write(temp_v0, arg3, arg5);

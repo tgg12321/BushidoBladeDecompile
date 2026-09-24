@@ -1236,7 +1236,7 @@ extern s32 D_80016304;
    %lo addend, so the sandbox's file-wide cheat strip (which shrinks earlier
    functions) makes the addend diverge from the reference .o — a scorer
    artifact, not a codegen diff (measured s1, 2026-07-18). */
-void D_80082320(void);
+void cb_data(void);
 
 /* PsyQ 4.0 LIBCD cdread.c module .data block — CD_ReadCallbackFunc followed
    by the volatile cdread state struct (SOTN psxsdk names it D_80032DBC); BB2
@@ -1282,7 +1282,7 @@ typedef struct {
    access — measured 2026-07-10, cc1psx-confirmed). Volatile pending the
    Ruling-4 block grant (proposal §3, memory/closer/volatile-grant-proposals.md);
    saEft00Add's interim HEAD body compensates with de-volatile casts. */
-extern volatile s32 D_800A1500;
+extern volatile s32 g_CdReadMode_value;
 extern volatile s32 D_800A14EC;
 extern volatile s32 D_800A14E8;
 extern volatile s32 D_800A14E4;
@@ -1296,7 +1296,7 @@ extern volatile s32 D_800A14F8;
 extern volatile s32 D_800A14FC;
 
 extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
-extern s32 D_800A14CC;   /* CD_ReadCallbackFunc */
+extern s32 g_CdReadCallback_func;   /* CD_ReadCallbackFunc */
 extern s32 D_800162D4;   /* "CdRead: sector error\n" */
 extern s32 CdControlF(u8, s32); /* CdControlF */
 
@@ -1304,7 +1304,7 @@ extern s32 CdControlF(u8, s32); /* CdControlF */
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
    cb_read() (v1.86 deltas: saved result ptr D_800A1504, tsl-mode DMA-chain
    split with deferred advance via the cb_data callback below). */
-static void D_80082050(u8 intr, u8 *result) {
+static void cb_read(u8 intr, u8 *result) {
     s32 pos[3];
     volatile s32 *pp;
     volatile s32 *tsl;
@@ -1313,11 +1313,11 @@ static void D_80082050(u8 intr, u8 *result) {
     if (intr == 1) {
         if (D_800A14E4 > 0) {
             if (D_800A14E0 == 0x200) {
-                if (D_800A1500 & 1) {
+                if (g_CdReadMode_value & 1) {
                     CdDataCallback(0);
                     CdGetSector2((s32)pos, 3);
                     CdDataSync(0);
-                    CdDataCallback((s32)&D_80082320);
+                    CdDataCallback((s32)&cb_data);
                 } else {
                     CdGetSector((s32)pos, 3);
                 }
@@ -1327,7 +1327,7 @@ static void D_80082050(u8 intr, u8 *result) {
                     D_800A14E4 = -1;
                 }
             }
-            tsl = &D_800A1500; /* target la-form read */
+            tsl = &g_CdReadMode_value; /* target la-form read */
             if (*tsl & 1) {
                 CdGetSector2(D_800A14D8, D_800A14E0);
             } else {
@@ -1352,18 +1352,18 @@ static void D_80082050(u8 intr, u8 *result) {
     }
     CdSyncCallback(D_800A14F4);
     CdReadyCallback(D_800A14F8);
-    if (D_800A1500 & 1) {
+    if (g_CdReadMode_value & 1) {
         CdDataCallback(D_800A14FC);
     }
     CdControlF(9, 0);
-    if (D_800A14CC != 0) {
-        ((void (*)(u8, u8 *))D_800A14CC)(D_800A14E4 == 0 ? 2 : 5, result);
+    if (g_CdReadCallback_func != 0) {
+        ((void (*)(u8, u8 *))g_CdReadCallback_func)(D_800A14E4 == 0 ? 2 : 5, result);
     }
 }
 
 /* PsyQ 4.0 LIBCD cdread: cb_data (static) — the tsl-mode data-DMA-complete
    callback installed by cb_read above; performs the deferred buffer advance. */
-void D_80082320(void) {
+void cb_data(void) {
     D_800A14D8 += D_800A14E0 * 4;
     D_800A14E4--;
     D_800A14F0++;
@@ -1372,12 +1372,12 @@ void D_80082320(void) {
     }
     CdSyncCallback(D_800A14F4);
     CdReadyCallback(D_800A14F8);
-    if (D_800A1500 & 1) {
+    if (g_CdReadMode_value & 1) {
         CdDataCallback(D_800A14FC);
     }
     CdControlF(9, 0);
-    if (D_800A14CC != 0) {
-        ((void (*)(u8, u8 *))D_800A14CC)(2, D_800A1504);
+    if (g_CdReadCallback_func != 0) {
+        ((void (*)(u8, u8 *))g_CdReadCallback_func)(2, D_800A1504);
     }
 }
 
@@ -1405,7 +1405,7 @@ s32 cd_read_retry(s32 arg0) {
 
     CdSyncCallback(0);
     CdReadyCallback(0);
-    tsl = &D_800A1500;
+    tsl = &g_CdReadMode_value;
     if (*tsl & 1) {
         CdDataCallback(0);
     }
@@ -1438,9 +1438,9 @@ s32 cd_read_retry(s32 arg0) {
         }
     }
     D_800A14F0 = CdPosToInt(CdLastPos());
-    CdReadyCallback((s32)&D_80082050);
-    if (D_800A1500 & 1) {
-        CdDataCallback((s32)&D_80082320);
+    CdReadyCallback((s32)&cb_read);
+    if (g_CdReadMode_value & 1) {
+        CdDataCallback((s32)&cb_data);
     }
     D_800A14D8 = D_800A14D4;
     CdControlF(6, 0);
@@ -1456,7 +1456,7 @@ s32 cd_read_retry(s32 arg0) {
 /* PsyQ 4.0 LIBCD cdread.c: CdReadBreak — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp psxsdk shape + v1.86 hooks */
 void CdReadBreak(void) {
-    volatile s32 *tsl = &D_800A1500; /* target caches &tslmode in $s0
+    volatile s32 *tsl = &g_CdReadMode_value; /* target caches &tslmode in $s0
         (0x80082638 lui/addiu) and re-reads 0($s0) twice */
     if (*tsl & 1) {
         CdDataSync(0);
@@ -1495,7 +1495,7 @@ s32 CdRead(s32 sectors, s32 buf, s32 mode) {
     *ps = sectors;
     D_800A14F4 = CdSyncCallback(0);
     D_800A14F8 = CdReadyCallback(0);
-    if (D_800A1500 & 1) {
+    if (g_CdReadMode_value & 1) {
         D_800A14FC = CdDataCallback(0);
     }
     D_800A14EC = VSync(-1);

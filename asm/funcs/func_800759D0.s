@@ -62,8 +62,8 @@ glabel func_800759D0
     /* 662B4 80075AB4 21384000 */   addu      $a3, $v0, $zero
     /* 662B8 80075AB8 1800058E */  lw         $a1, 0x18($s0)
     /* 662BC 80075ABC 2C00A48F */  lw         $a0, 0x2C($sp)
-    /* 662C0 80075AC0 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 662C4 80075AC4 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 662C0 80075AC0 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 662C4 80075AC4 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 662C8 80075AC8 80200400 */  sll        $a0, $a0, 2
     /* 662CC 80075ACC 2DEA010C */  jal        AddPrim
     /* 662D0 80075AD0 21204400 */   addu      $a0, $v0, $a0
@@ -342,8 +342,8 @@ glabel func_800759D0
     /* 666C8 80075EC8 21384000 */   addu      $a3, $v0, $zero
     /* 666CC 80075ECC 1800058E */  lw         $a1, 0x18($s0)
     /* 666D0 80075ED0 2C00A48F */  lw         $a0, 0x2C($sp)
-    /* 666D4 80075ED4 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 666D8 80075ED8 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 666D4 80075ED4 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 666D8 80075ED8 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 666DC 80075EDC 80200400 */  sll        $a0, $a0, 2
     /* 666E0 80075EE0 2DEA010C */  jal        AddPrim
     /* 666E4 80075EE4 21204400 */   addu      $a0, $v0, $a0
@@ -362,8 +362,8 @@ glabel func_800759D0
     /* 66718 80075F18 21384000 */   addu      $a3, $v0, $zero
     /* 6671C 80075F1C 1800058E */  lw         $a1, 0x18($s0)
     /* 66720 80075F20 2C00A28F */  lw         $v0, 0x2C($sp)
-    /* 66724 80075F24 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 66728 80075F28 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 66724 80075F24 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 66728 80075F28 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 6672C 80075F2C 80100200 */  sll        $v0, $v0, 2
     /* 66730 80075F30 21208200 */  addu       $a0, $a0, $v0
     /* 66734 80075F34 2DEA010C */  jal        AddPrim

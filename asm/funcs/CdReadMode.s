@@ -1,6 +1,6 @@
 glabel CdReadMode
-    /* 730B4 800828B4 0A80033C */  lui        $v1, %hi(D_800A1500)
-    /* 730B8 800828B8 00156324 */  addiu      $v1, $v1, %lo(D_800A1500)
+    /* 730B4 800828B4 0A80033C */  lui        $v1, %hi(g_CdReadMode_value)
+    /* 730B8 800828B8 00156324 */  addiu      $v1, $v1, %lo(g_CdReadMode_value)
     /* 730BC 800828BC 0000628C */  lw         $v0, 0x0($v1)
     /* 730C0 800828C0 000064AC */  sw         $a0, 0x0($v1)
     /* 730C4 800828C4 0800E003 */  jr         $ra

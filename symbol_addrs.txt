@@ -129,8 +129,8 @@ g_snd_irq_data = 0x80088BA0; // sound IRQ callback data
 g_sys_irq_vtable = 0x800A2600; // interrupt handler vtable
 g_sys_irq_counter = 0x800A2608; // interrupt counter register
 g_sys_vblank_count = 0x800A157A; // VBlank counter
-g_sys_vsync_mode = 0x800A14CC; // VSync wait mode
-g_sys_timer = 0x800A1500; // system timer value
+// data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined
+g_CdReadMode_value = 0x800A1500; // system timer value  // data-wave 2026-09-24: was g_sys_timer
 g_sys_video_mode = 0x800A2664; // video mode (0=NTSC)
 Vcount = 0x800A2634; // DMA memory region  // data-wave 2026-09-07: was g_sys_dma_region
 
@@ -184,13 +184,13 @@ g_snd_config_tbl = 0x800EF7BC; // sound config table
 g_color_mode = 0x800F6652; // grayscale flag
 
 // === Input ===
-g_pad_data = 0x800FF580; // pad data buffer
+g_pad_buf = 0x800FF580; // pad data buffer  // data-wave 2026-09-24: was g_pad_data
 g_pad_selection = 0x800A324A; // active pad/selection
 
 // === Display ===
-g_disp_fb_base = 0x800F7438; // framebuffer base
-g_disp_fb_flag = 0x800F7450; // framebuffer flag
-g_disp_gp_base = 0x800A30CC; // GP register base
+g_gpu_db = 0x800F7438; // framebuffer base  // data-wave 2026-09-24: was g_disp_fb_base
+g_gpu_db_plus_0x18 = 0x800F7450; // framebuffer flag  // data-wave 2026-09-24: was g_disp_fb_flag
+// data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined
 g_disp_enable = 0x800A3768; // display enable
 g_disp_fade = 0x800A36A8; // display fade
 
@@ -241,14 +241,14 @@ g_str_bbm_s123 = 0x800103C0; // S123.BBM
 menuDat = 0x8008DCCC;
 cpu_practice_honmokuroku_data_tbl = 0x8008E778;
 single_dojo_yaburi_char_id_tbl = 0x8008EB56;
-SpecialCam = 0x8008EC34;
+g_cd_file_table = 0x8008EC34;  // data-wave 2026-09-24: was SpecialCam
 StatusUpBuf = 0x800906A6;
 InfoPosYTbl1 = 0x80099D54;
 UesrWorkDef = 0x8009ADD8;
 chractar_use_pset_combo_id_table = 0x8009BA7C;
 light_effect_col = 0x800A3D70;
 videoDec = 0x800F0D80;
-MarioCam_str = 0x800F19D0;
+D_800F19D0 = 0x800F19D0;  // data-wave 2026-09-24: was MarioCam_str
 selCharaID = 0x80102092;
 _start = 0x800836EC; // PS-EXE entry point / crt0 (split out of asm/funcs/ang_hosei.s 2026-08-06); documentation only — bb2.ld is hand-maintained, do not re-run splat
 note2pitch = 0x80086B38; // type:func (XDEF split out of func_80086818 2026-08-10; boundary_fixes.md) — documentation only, bb2.ld is hand-maintained, do not re-run splat

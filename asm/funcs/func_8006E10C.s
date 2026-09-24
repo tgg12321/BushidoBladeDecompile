@@ -40,8 +40,8 @@ glabel func_8006E10C
     /* 5E99C 8006E19C 21200002 */   addu      $a0, $s0, $zero
     /* 5E9A0 8006E1A0 A8EC010C */  jal        SetDispMask
     /* 5E9A4 8006E1A4 21200000 */   addu      $a0, $zero, $zero
-    /* 5E9A8 8006E1A8 0F80103C */  lui        $s0, %hi(D_800F7438)
-    /* 5E9AC 8006E1AC 38741026 */  addiu      $s0, $s0, %lo(D_800F7438)
+    /* 5E9A8 8006E1A8 0F80103C */  lui        $s0, %hi(g_gpu_db)
+    /* 5E9AC 8006E1AC 38741026 */  addiu      $s0, $s0, %lo(g_gpu_db)
     /* 5E9B0 8006E1B0 21200002 */  addu       $a0, $s0, $zero
     /* 5E9B4 8006E1B4 21280000 */  addu       $a1, $zero, $zero
     /* 5E9B8 8006E1B8 21300000 */  addu       $a2, $zero, $zero
@@ -67,14 +67,14 @@ glabel func_8006E10C
     /* 5EA08 8006E208 80020724 */  addiu      $a3, $zero, 0x280
     /* 5EA0C 8006E20C D3E9010C */  jal        SetDefDispEnv
     /* 5EA10 8006E210 1000B1AF */   sw        $s1, 0x10($sp)
-    /* 5EA14 8006E214 0F80013C */  lui        $at, %hi(D_800F74A4)
-    /* 5EA18 8006E218 A47420A0 */  sb         $zero, %lo(D_800F74A4)($at)
-    /* 5EA1C 8006E21C 1080013C */  lui        $at, %hi(D_800FB534)
-    /* 5EA20 8006E220 34B520A0 */  sb         $zero, %lo(D_800FB534)($at)
-    /* 5EA24 8006E224 0F80013C */  lui        $at, %hi(D_800F74A5)
-    /* 5EA28 8006E228 A57420A0 */  sb         $zero, %lo(D_800F74A5)($at)
-    /* 5EA2C 8006E22C 1080013C */  lui        $at, %hi(D_800FB535)
-    /* 5EA30 8006E230 35B520A0 */  sb         $zero, %lo(D_800FB535)($at)
+    /* 5EA14 8006E214 0F80013C */  lui        $at, %hi(g_gpu_db_plus_0x6C)
+    /* 5EA18 8006E218 A47420A0 */  sb         $zero, %lo(g_gpu_db_plus_0x6C)($at)
+    /* 5EA1C 8006E21C 1080013C */  lui        $at, %hi(g_gpu_db_plus_0x40FC)
+    /* 5EA20 8006E220 34B520A0 */  sb         $zero, %lo(g_gpu_db_plus_0x40FC)($at)
+    /* 5EA24 8006E224 0F80013C */  lui        $at, %hi(g_gpu_db_plus_0x6D)
+    /* 5EA28 8006E228 A57420A0 */  sb         $zero, %lo(g_gpu_db_plus_0x6D)($at)
+    /* 5EA2C 8006E22C 1080013C */  lui        $at, %hi(g_gpu_db_plus_0x40FD)
+    /* 5EA30 8006E230 35B520A0 */  sb         $zero, %lo(g_gpu_db_plus_0x40FD)($at)
     /* 5EA34 8006E234 CFEC010C */  jal        DrawSync
     /* 5EA38 8006E238 21200000 */   addu      $a0, $zero, $zero
     /* 5EA3C 8006E23C 1800A427 */  addiu      $a0, $sp, 0x18

@@ -671,7 +671,7 @@ extern s32 D_800A37D4;
     extern s32 D_800A3724;
     extern s32 D_800A34E4;
     extern s32 D_800A34E8;
-    extern s32 D_800A374C;
+    extern s32 g_gpu_ot_ptr;
 
 
 
@@ -900,7 +900,7 @@ s32 func_800784E4(s32 arg0) {
     s32 s0;
     s32 r;
 
-    ClearOTagR(D_800A374C, 0x1008);
+    ClearOTagR(g_gpu_ot_ptr, 0x1008);
     s0 = arg0 + 0x58;
     D_800A35F4 = arg0;
     D_800A35F8 = s0;
@@ -967,7 +967,7 @@ extern s32 SetDrawMode(s32, s32, s32, s32, s32);
 extern s32 AddPrim(s32, s32);
 extern s32 D_800A3608;
 extern s32 *D_800A3610;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 typedef struct {
     s32 a;       /* sp18 - 0x00 */
@@ -1022,7 +1022,7 @@ void func_80078654(s32 *arg0) {
         s.c = arg0[3];
         arg0[3] = func_8007352C(&s.a);
         SetDrawMode(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
-        AddPrim(D_800A374C + (s.f * 4), arg0[5]);
+        AddPrim(g_gpu_ot_ptr + (s.f * 4), arg0[5]);
         arg0[5] = arg0[5] + 0xC;
     }
     s.cd_flag = 0;
@@ -1050,7 +1050,7 @@ loop:
     s.c = arg0[3];
     arg0[3] = func_8007352C(&s.a);
     SetDrawMode(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
-    AddPrim(D_800A374C + (s.f * 4), arg0[5]);
+    AddPrim(g_gpu_ot_ptr + (s.f * 4), arg0[5]);
     var_s0++;
     arg0[5] = arg0[5] + 0xC;
 check:
@@ -1065,7 +1065,7 @@ s32 func_80078824(s32 arg0) {
     s32 s0;
     s32 r;
 
-    ClearOTagR(D_800A374C, 0x1008);
+    ClearOTagR(g_gpu_ot_ptr, 0x1008);
     s0 = arg0 + 0x58;
     D_800A360C = arg0;
     D_800A3610 = s0;
@@ -2044,18 +2044,18 @@ const u32 jtbl_80015A98[121] = {
 };
 
 INCLUDE_ASM("asm/funcs", prnt);
-extern u8 D_8009BD8D;
+extern u8 _ctype__plus_0x1;
 u8 toupper(u8 a0) {
     u8 c = a0;
-    if ((&D_8009BD8D)[c] & 2) {
+    if ((&_ctype__plus_0x1)[c] & 2) {
         c = a0 - 0x20;
     }
     return c;
 }
-extern u8 D_8009BD8D;
+extern u8 _ctype__plus_0x1;
 u8 tolower(u8 a0) {
     u8 c = a0;
-    if ((&D_8009BD8D)[c] & 1) {
+    if ((&_ctype__plus_0x1)[c] & 1) {
         c = a0 + 0x20;
     }
     return c;
@@ -2095,7 +2095,7 @@ loop:
     if ((D_800F1850 & 7) == 0) return;
     goto loop;
 def:
-    if ((&D_8009BD8D)[temp_a0] & 0x97) {
+    if ((&_ctype__plus_0x1)[temp_a0] & 0x97) {
         D_800F1850 += 1;
     }
 tail:

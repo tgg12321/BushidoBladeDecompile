@@ -159,14 +159,14 @@ s32 func_80035EDC(s32 a0) {
     return result;
 }
 extern void CdMix(u8 *);
-extern u8 D_800A3718;
+extern u8 g_cd_atv;
 extern s16 D_800A3854;
 void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    D_800A3718 = (u8)arg0;
-    D_800A3719 = (u8)arg1;
-    D_800A371A = (u8)arg2;
-    D_800A371B = (u8)arg3;
-    CdMix(&D_800A3718);
+    g_cd_atv = (u8)arg0;
+    g_cd_atv_plus_0x1 = (u8)arg1;
+    g_cd_atv_plus_0x2 = (u8)arg2;
+    g_cd_atv_plus_0x3 = (u8)arg3;
+    CdMix(&g_cd_atv);
     D_800A3854 = 0;
 }
 extern u8 D_800A36B8;
@@ -204,27 +204,27 @@ void cdrom_ReadyCallback(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
         D_80101E98 = 0;
-        if (D_80101E80 <= 0) {
+        if (g_cdread_sectors_remaining <= 0) {
             return;
         }
         CdGetSector((s32)sp, 3);
         {
             s32 v0 = CdPosToInt((s32)sp);
-            if (v0 != D_80101EA0) {
-                D_80101E80 = -2;
+            if (v0 != g_cdread_expected_pos) {
+                g_cdread_sectors_remaining = -2;
                 goto do_stop;
             }
         }
-        CdGetSector(D_80101E84, 0x200);
-        D_80101E84 = D_80101E84 + 0x800;
-        D_80101E80 = D_80101E80 - 1;
-        D_80101EA0 = D_80101EA0 + 1;
-        if (D_80101E80 == 0) {
+        CdGetSector(g_cdread_dest_buffer, 0x200);
+        g_cdread_dest_buffer = g_cdread_dest_buffer + 0x800;
+        g_cdread_sectors_remaining = g_cdread_sectors_remaining - 1;
+        g_cdread_expected_pos = g_cdread_expected_pos + 1;
+        if (g_cdread_sectors_remaining == 0) {
             goto do_stop;
         }
         return;
     } else {
-        D_80101E80 = -1;
+        g_cdread_sectors_remaining = -1;
     }
 do_stop:
     CdReadyCallback(0);
@@ -239,7 +239,7 @@ s32 cdrom_IsIdle(void) {
     return D_80101E60.unk02 == 0;
 }
 s32 cdrom_StartRead(s32 a0, s32 a1) {
-    extern u8 SpecialCam;
+    extern u8 g_cd_file_table;
     s32 sval;
     s32 reloaded;
 
@@ -249,7 +249,7 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
 
     sval = ((s32)(a0 << 16)) >> 13;
     D_80101E60.unk00 = a0;
-    D_80101E60.pair = *(CamPair *)((u8 *)&SpecialCam + sval);
+    D_80101E60.pair = *(CamPair *)((u8 *)&g_cd_file_table + sval);
     D_80101E7C = a1;
     D_80101E60.unk08 = 0;
     D_80101E60.unk02 = 2;
@@ -280,7 +280,7 @@ void cdrom_Pause(void) {
     D_80101E5C = 0;
 }
 u32 func_80036F28(s32 arg0) {
-    return (&D_8008EC38)[arg0 * 2];
+    return (&g_cd_file_table_plus_0x4)[arg0 * 2];
 }
 void game_FrameLoop(void) {
     u16 *s0;
@@ -310,7 +310,7 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
     }
 
     {
-        extern u8 SpecialCam;
+        extern u8 g_cd_file_table;
         ReplayCamRec *rec = &D_80101E60;
         s32 idx;
         u8 *cam;
@@ -326,14 +326,14 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
          * position) and materialising the table base BETWEEN them is what puts
          * the three insns in target's sll / lui+addiu / sra order. */
         idx = rec->unk00;
-        cam = &SpecialCam;
+        cam = &g_cd_file_table;
         entry = (CamPair *)(cam + idx * 8);
         rec->pair = *entry;
     }
 
     {
-        extern u8 SpecialCam;
-        D_80101E60.unk14 = CdPosToInt((s32)(&SpecialCam + D_80101E60.unk00 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60.unk00 << 3)) >> 11) - 0x96;
+        extern u8 g_cd_file_table;
+        D_80101E60.unk14 = CdPosToInt((s32)(&g_cd_file_table + D_80101E60.unk00 * 8)) + (*(u32 *)((u8 *)&g_cd_file_table_plus_0x4 + (D_80101E60.unk00 << 3)) >> 11) - 0x96;
     }
 
     if (arg1 < 0) {
@@ -362,7 +362,7 @@ s32 func_80037110(s32 arg0) {
     v0 = cdrom_StartAudio(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
-            v0 = CdPosToInt((s32)&SpecialCam + (s32)D_80101E60.unk00 * 8);
+            v0 = CdPosToInt((s32)&g_cd_file_table + (s32)D_80101E60.unk00 * 8);
             D_80101E60.unk14 = v0 + *(s32 *)(s0 + 4);
         }
         return 1;
@@ -447,7 +447,7 @@ void cdrom_LoadExec(s32 *dest) {
 
     mode = 0x80; /* CdlModeSpeed - double-speed transfer */
     index = func_80036EA8(6, 0) << 3;
-    cam_base = (s32)&SpecialCam;
+    cam_base = (s32)&g_cd_file_table;
 
     for (;;) {
         CdControl(2, index + cam_base, 0);
@@ -501,12 +501,12 @@ void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     s32 v0;
 
     v0 = func_80036EA8(6, a2);
-    sp[0] = (s32)&SpecialCam + v0 * 8;
+    sp[0] = (s32)&g_cd_file_table + v0 * 8;
     sp[1] = a3;
     sp[2] = a0;
     sp[3] = a1;
     v0 = func_80036EA8(6, 2);
-    sp[4] = (s32)&SpecialCam + v0 * 8;
+    sp[4] = (s32)&g_cd_file_table + v0 * 8;
     sp[5] = a4;
     v0 = func_800392B8();
     sys_Exec(6, sp, v0 + 0x7FC);

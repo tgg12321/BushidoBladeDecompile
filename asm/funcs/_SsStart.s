@@ -118,8 +118,8 @@ glabel _SsStart
     /* 745D0 80083DD0 00000000 */   nop
     /* 745D4 80083DD4 6EE2010C */  jal        EnterCriticalSection
     /* 745D8 80083DD8 00000000 */   nop
-    /* 745DC 80083DDC 0A80043C */  lui        $a0, %hi(D_800A26D4)
-    /* 745E0 80083DE0 D426848C */  lw         $a0, %lo(D_800A26D4)($a0)
+    /* 745DC 80083DDC 0A80043C */  lui        $a0, %hi(_snd_seq_tick_env_plus_0x8)
+    /* 745E0 80083DE0 D426848C */  lw         $a0, %lo(_snd_seq_tick_env_plus_0x8)($a0)
     /* 745E4 80083DE4 D40A020C */  jal        VSyncCallback
     /* 745E8 80083DE8 00000000 */   nop
     /* 745EC 80083DEC 9F0F0208 */  j          .L80083E7C
@@ -143,8 +143,8 @@ glabel _SsStart
     /* 74630 80083E30 21280000 */   addu      $a1, $zero, $zero
     /* 74634 80083E34 0A80043C */  lui        $a0, %hi(_snd_seq_tick_env_plus_0x12)
     /* 74638 80083E38 DE268490 */  lbu        $a0, %lo(_snd_seq_tick_env_plus_0x12)($a0)
-    /* 7463C 80083E3C 0880053C */  lui        $a1, %hi(D_80083EDC)
-    /* 74640 80083E40 DC3EA524 */  addiu      $a1, $a1, %lo(D_80083EDC)
+    /* 7463C 80083E3C 0880053C */  lui        $a1, %hi(_SsTrapIntrVSync)
+    /* 74640 80083E40 DC3EA524 */  addiu      $a1, $a1, %lo(_SsTrapIntrVSync)
     /* 74644 80083E44 0A80013C */  lui        $at, %hi(_snd_seq_tick_env_plus_0xC)
     /* 74648 80083E48 D82622AC */  sw         $v0, %lo(_snd_seq_tick_env_plus_0xC)($at)
     /* 7464C 80083E4C 9D0F0208 */  j          .L80083E74
@@ -152,12 +152,12 @@ glabel _SsStart
   .L80083E54:
     /* 74654 80083E54 0A80023C */  lui        $v0, %hi(_snd_seq_tick_env_plus_0x11)
     /* 74658 80083E58 DD264290 */  lbu        $v0, %lo(_snd_seq_tick_env_plus_0x11)($v0)
-    /* 7465C 80083E5C 0880053C */  lui        $a1, %hi(D_80083F1C)
-    /* 74660 80083E60 1C3FA524 */  addiu      $a1, $a1, %lo(D_80083F1C)
+    /* 7465C 80083E5C 0880053C */  lui        $a1, %hi(_SsSeqCalledTbyT_1per2)
+    /* 74660 80083E60 1C3FA524 */  addiu      $a1, $a1, %lo(_SsSeqCalledTbyT_1per2)
     /* 74664 80083E64 03004014 */  bnez       $v0, .L80083E74
     /* 74668 80083E68 00000000 */   nop
-    /* 7466C 80083E6C 0A80053C */  lui        $a1, %hi(D_800A26D4)
-    /* 74670 80083E70 D426A58C */  lw         $a1, %lo(D_800A26D4)($a1)
+    /* 7466C 80083E6C 0A80053C */  lui        $a1, %hi(_snd_seq_tick_env_plus_0x8)
+    /* 74670 80083E70 D426A58C */  lw         $a1, %lo(_snd_seq_tick_env_plus_0x8)($a1)
   .L80083E74:
     /* 74674 80083E74 BC0A020C */  jal        InterruptCallback
     /* 74678 80083E78 00000000 */   nop

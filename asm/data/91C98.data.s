@@ -47,11 +47,11 @@ dlabel D_800A14C0
     /* 91CC8 800A14C8 9C844000 */ .word 0x0040849C
 enddlabel D_800A14C0
 
-nonmatching D_800A14CC
+nonmatching g_CdReadCallback_func
 
-dlabel D_800A14CC
+dlabel g_CdReadCallback_func
     /* 91CCC 800A14CC 00000000 */ .word 0x00000000
-enddlabel D_800A14CC
+enddlabel g_CdReadCallback_func
 
 nonmatching D_800A14D0
 
@@ -125,11 +125,11 @@ dlabel D_800A14FC
     /* 91CFC 800A14FC 00000000 */ .word 0x00000000
 enddlabel D_800A14FC
 
-nonmatching D_800A1500
+nonmatching g_CdReadMode_value
 
-dlabel D_800A1500
+dlabel g_CdReadMode_value
     /* 91D00 800A1500 00000000 */ .word 0x00000000
-enddlabel D_800A1500
+enddlabel g_CdReadMode_value
 
 nonmatching D_800A1504
 
@@ -1437,11 +1437,11 @@ dlabel _snd_seq_tick_env_plus_0x4
     /* 92ED0 800A26D0 01000000 */ .word 0x00000001
 enddlabel _snd_seq_tick_env_plus_0x4
 
-nonmatching D_800A26D4
+nonmatching _snd_seq_tick_env_plus_0x8
 
-dlabel D_800A26D4
+dlabel _snd_seq_tick_env_plus_0x8
     /* 92ED4 800A26D4 6C3F0880 */ .word 0x80083F6C
-enddlabel D_800A26D4
+enddlabel _snd_seq_tick_env_plus_0x8
 
 nonmatching _snd_seq_tick_env_plus_0xC
 
@@ -1468,11 +1468,11 @@ dlabel _snd_seq_tick_env_plus_0x12
     /* 92EDF 800A26DF */ .byte 0x00
 enddlabel _snd_seq_tick_env_plus_0x12
 
-nonmatching D_800A26E0
+nonmatching _snd_seq_tick_env_plus_0x14
 
-dlabel D_800A26E0
+dlabel _snd_seq_tick_env_plus_0x14
     /* 92EE0 800A26E0 00000000 */ .word 0x00000000
-enddlabel D_800A26E0
+enddlabel _snd_seq_tick_env_plus_0x14
 
 nonmatching D_800A26E4
 
@@ -2219,9 +2219,9 @@ dlabel _spu_rev_startaddr
     /* 93590 800A2D90 80070000 */ .word 0x00000780
 enddlabel _spu_rev_startaddr
 
-nonmatching D_800A2D94
+nonmatching _spu_rev_param
 
-dlabel D_800A2D94
+dlabel _spu_rev_param
     /* 93594 800A2D94 00000000 */ .word 0x00000000
     /* 93598 800A2D98 00000000 */ .word 0x00000000
     /* 9359C 800A2D9C 00000000 */ .word 0x00000000
@@ -2394,7 +2394,7 @@ dlabel D_800A2D94
     /* 93838 800A3038 00800080 */ .word 0x80008000
     /* 9383C 800A303C 50730515 */ .word 0x15057350
     /* 93840 800A3040 9C874000 */ .word 0x0040879C
-enddlabel D_800A2D94
+enddlabel _spu_rev_param
 
 nonmatching D_800A3044
 
@@ -2472,12 +2472,12 @@ dlabel D_800A307C
     /* 938C8 800A30C8 48D00880 */ .word 0x8008D048
 enddlabel D_800A307C
 
-nonmatching D_800A30CC
+nonmatching g_gpu_clear_rect
 
-dlabel D_800A30CC
+dlabel g_gpu_clear_rect
     /* 938CC 800A30CC 00000000 */ .word 0x00000000
     /* 938D0 800A30D0 8002E001 */ .word 0x01E00280
-enddlabel D_800A30CC
+enddlabel g_gpu_clear_rect
 
 nonmatching D_800A30D4
 
@@ -2899,13 +2899,13 @@ dlabel D_800A320C
 enddlabel D_800A320C
 
 .align 2
-nonmatching D_800A3210
+nonmatching g_str_sio_800A3210
 
-dlabel D_800A3210
+dlabel g_str_sio_800A3210
     /* 93A10 800A3210 */ .asciz "sio:"
     /* 73696F3A00000000 */
 .align 2
-enddlabel D_800A3210
+enddlabel g_str_sio_800A3210
 
 nonmatching D_800A3218
 
@@ -3548,11 +3548,11 @@ dlabel D_800A3400
     /* 93C02 800A3402 */ .short 0x0000
 enddlabel D_800A3400
 
-nonmatching D_800A3404
+nonmatching g_vab_sticky_sbaddr
 
-dlabel D_800A3404
+dlabel g_vab_sticky_sbaddr
     /* 93C04 800A3404 00000000 */ .word 0x00000000
-enddlabel D_800A3404
+enddlabel g_vab_sticky_sbaddr
 
 nonmatching D_800A3408
 
@@ -4477,11 +4477,11 @@ dlabel D_800A3680
     /* 93E87 800A3687 */ .byte 0x00
 enddlabel D_800A3680
 
-nonmatching D_800A3688
+nonmatching g_comb_recv_buf
 
-dlabel D_800A3688
+dlabel g_comb_recv_buf
     /* 93E88 800A3688 00000000 */ .word 0x00000000
-enddlabel D_800A3688
+enddlabel g_comb_recv_buf
 
 nonmatching D_800A368C
 
@@ -4502,11 +4502,11 @@ dlabel D_800A3690
     /* 93E97 800A3697 */ .byte 0x00
 enddlabel D_800A3690
 
-nonmatching D_800A3698
+nonmatching g_comb_send_buf
 
-dlabel D_800A3698
+dlabel g_comb_send_buf
     /* 93E98 800A3698 00000000 */ .word 0x00000000
-enddlabel D_800A3698
+enddlabel g_comb_send_buf
 
 nonmatching D_800A369C
 
@@ -4793,29 +4793,29 @@ dlabel D_800A3716
     /* 93F17 800A3717 */ .byte 0x00
 enddlabel D_800A3716
 
-nonmatching D_800A3718
+nonmatching g_cd_atv
 
-dlabel D_800A3718
+dlabel g_cd_atv
     /* 93F18 800A3718 */ .byte 0x00
-enddlabel D_800A3718
+enddlabel g_cd_atv
 
-nonmatching D_800A3719
+nonmatching g_cd_atv_plus_0x1
 
-dlabel D_800A3719
+dlabel g_cd_atv_plus_0x1
     /* 93F19 800A3719 */ .byte 0x00
-enddlabel D_800A3719
+enddlabel g_cd_atv_plus_0x1
 
-nonmatching D_800A371A
+nonmatching g_cd_atv_plus_0x2
 
-dlabel D_800A371A
+dlabel g_cd_atv_plus_0x2
     /* 93F1A 800A371A */ .byte 0x00
-enddlabel D_800A371A
+enddlabel g_cd_atv_plus_0x2
 
-nonmatching D_800A371B
+nonmatching g_cd_atv_plus_0x3
 
-dlabel D_800A371B
+dlabel g_cd_atv_plus_0x3
     /* 93F1B 800A371B */ .byte 0x00
-enddlabel D_800A371B
+enddlabel g_cd_atv_plus_0x3
 
 nonmatching D_800A371C
 
@@ -4856,23 +4856,23 @@ dlabel D_800A3730
     /* 93F30 800A3730 00000000 */ .word 0x00000000
 enddlabel D_800A3730
 
-nonmatching D_800A3734
+nonmatching g_comb_read_fd
 
-dlabel D_800A3734
+dlabel g_comb_read_fd
     /* 93F34 800A3734 00000000 */ .word 0x00000000
-enddlabel D_800A3734
+enddlabel g_comb_read_fd
 
-nonmatching D_800A3738
+nonmatching g_comb_event_ioer
 
-dlabel D_800A3738
+dlabel g_comb_event_ioer
     /* 93F38 800A3738 00000000 */ .word 0x00000000
-enddlabel D_800A3738
+enddlabel g_comb_event_ioer
 
-nonmatching D_800A373C
+nonmatching g_comb_write_fd
 
-dlabel D_800A373C
+dlabel g_comb_write_fd
     /* 93F3C 800A373C 00000000 */ .word 0x00000000
-enddlabel D_800A373C
+enddlabel g_comb_write_fd
 
 nonmatching D_800A3740
 
@@ -4911,11 +4911,11 @@ dlabel D_800A3748
     /* 93F4B 800A374B */ .byte 0x00
 enddlabel D_800A3748
 
-nonmatching D_800A374C
+nonmatching g_gpu_ot_ptr
 
-dlabel D_800A374C
+dlabel g_gpu_ot_ptr
     /* 93F4C 800A374C 00000000 */ .word 0x00000000
-enddlabel D_800A374C
+enddlabel g_gpu_ot_ptr
 
 nonmatching D_800A3750
 
@@ -4943,33 +4943,33 @@ dlabel D_800A3758
     /* 93F5F 800A375F */ .byte 0x00
 enddlabel D_800A3758
 
-nonmatching D_800A3760
+nonmatching g_cd_result
 
-dlabel D_800A3760
+dlabel g_cd_result
     /* 93F60 800A3760 */ .byte 0x00
     /* 93F61 800A3761 */ .byte 0x00
     /* 93F62 800A3762 */ .byte 0x00
-enddlabel D_800A3760
+enddlabel g_cd_result
 
-nonmatching D_800A3763
+nonmatching g_cd_result_plus_0x3
 
-dlabel D_800A3763
+dlabel g_cd_result_plus_0x3
     /* 93F63 800A3763 */ .byte 0x00
-enddlabel D_800A3763
+enddlabel g_cd_result_plus_0x3
 
-nonmatching D_800A3764
+nonmatching g_cd_result_plus_0x4
 
-dlabel D_800A3764
+dlabel g_cd_result_plus_0x4
     /* 93F64 800A3764 */ .byte 0x00
-enddlabel D_800A3764
+enddlabel g_cd_result_plus_0x4
 
-nonmatching D_800A3765
+nonmatching g_cd_result_plus_0x5
 
-dlabel D_800A3765
+dlabel g_cd_result_plus_0x5
     /* 93F65 800A3765 */ .byte 0x00
     /* 93F66 800A3766 */ .byte 0x00
     /* 93F67 800A3767 */ .byte 0x00
-enddlabel D_800A3765
+enddlabel g_cd_result_plus_0x5
 
 nonmatching D_800A3768
 
@@ -5089,11 +5089,11 @@ dlabel D_800A3790
     /* 93F90 800A3790 00000000 */ .word 0x00000000
 enddlabel D_800A3790
 
-nonmatching D_800A3794
+nonmatching g_memcard_fd
 
-dlabel D_800A3794
+dlabel g_memcard_fd
     /* 93F94 800A3794 00000000 */ .word 0x00000000
-enddlabel D_800A3794
+enddlabel g_memcard_fd
 
 nonmatching D_800A3798
 
@@ -5244,11 +5244,11 @@ dlabel D_800A37D8
     /* 93FD8 800A37D8 00000000 */ .word 0x00000000
 enddlabel D_800A37D8
 
-nonmatching D_800A37DC
+nonmatching g_memcard_sw_event_ioe
 
-dlabel D_800A37DC
+dlabel g_memcard_sw_event_ioe
     /* 93FDC 800A37DC 00000000 */ .word 0x00000000
-enddlabel D_800A37DC
+enddlabel g_memcard_sw_event_ioe
 
 nonmatching D_800A37E0
 
@@ -5287,11 +5287,11 @@ dlabel D_800A37EC
     /* 93FEE 800A37EE */ .short 0x0000
 enddlabel D_800A37EC
 
-nonmatching D_800A37F0
+nonmatching g_memcard_sw_event_err
 
-dlabel D_800A37F0
+dlabel g_memcard_sw_event_err
     /* 93FF0 800A37F0 00000000 */ .word 0x00000000
-enddlabel D_800A37F0
+enddlabel g_memcard_sw_event_err
 
 nonmatching D_800A37F4
 
@@ -5308,8 +5308,8 @@ dlabel D_800A37F8
     /* 93FFB 800A37FB */ .byte 0x00
 enddlabel D_800A37F8
 
-nonmatching D_800A37FC
+nonmatching g_memcard_sw_event_timeout
 
-dlabel D_800A37FC
+dlabel g_memcard_sw_event_timeout
     /* 93FFC 800A37FC 00000000 */ .word 0x00000000
-enddlabel D_800A37FC
+enddlabel g_memcard_sw_event_timeout

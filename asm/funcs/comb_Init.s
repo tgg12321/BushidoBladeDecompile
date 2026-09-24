@@ -11,7 +11,7 @@ glabel comb_Init
     /* 2A994 8003A194 00200624 */  addiu      $a2, $zero, 0x2000
     /* 2A998 8003A198 5EE2010C */  jal        OpenEvent
     /* 2A99C 8003A19C 21380000 */   addu      $a3, $zero, $zero
-    /* 2A9A0 8003A1A0 6C0682AF */  sw         $v0, %gp_rel(D_800A3738)($gp)
+    /* 2A9A0 8003A1A0 6C0682AF */  sw         $v0, %gp_rel(g_comb_event_ioer)($gp)
     /* 2A9A4 8003A1A4 F9FF5010 */  beq        $v0, $s0, .L8003A18C
     /* 2A9A8 8003A1A8 00F0043C */   lui       $a0, (0xF000000B >> 16)
     /* 2A9AC 8003A1AC FFFF1024 */  addiu      $s0, $zero, -0x1
@@ -21,7 +21,7 @@ glabel comb_Init
     /* 2A9B8 8003A1B8 00200624 */  addiu      $a2, $zero, 0x2000
     /* 2A9BC 8003A1BC 5EE2010C */  jal        OpenEvent
     /* 2A9C0 8003A1C0 21380000 */   addu      $a3, $zero, $zero
-    /* 2A9C4 8003A1C4 440782AF */  sw         $v0, %gp_rel(D_800A3810)($gp)
+    /* 2A9C4 8003A1C4 440782AF */  sw         $v0, %gp_rel(g_comb_event_error)($gp)
     /* 2A9C8 8003A1C8 F9FF5010 */  beq        $v0, $s0, .L8003A1B0
     /* 2A9CC 8003A1CC 00F0043C */   lui       $a0, (0xF000000B >> 16)
     /* 2A9D0 8003A1D0 72E2010C */  jal        ExitCriticalSection
@@ -31,20 +31,20 @@ glabel comb_Init
     /* 2A9E0 8003A1E0 812F020C */  jal        AddCOMB
     /* 2A9E4 8003A1E4 00000000 */   nop
   .L8003A1E8:
-    /* 2A9E8 8003A1E8 0A80043C */  lui        $a0, %hi(D_800A3210)
-    /* 2A9EC 8003A1EC 10328424 */  addiu      $a0, $a0, %lo(D_800A3210)
+    /* 2A9E8 8003A1E8 0A80043C */  lui        $a0, %hi(g_str_sio_800A3210)
+    /* 2A9EC 8003A1EC 10328424 */  addiu      $a0, $a0, %lo(g_str_sio_800A3210)
     /* 2A9F0 8003A1F0 7AE2010C */  jal        open
     /* 2A9F4 8003A1F4 02000524 */   addiu     $a1, $zero, 0x2
-    /* 2A9F8 8003A1F8 700682AF */  sw         $v0, %gp_rel(D_800A373C)($gp)
+    /* 2A9F8 8003A1F8 700682AF */  sw         $v0, %gp_rel(g_comb_write_fd)($gp)
     /* 2A9FC 8003A1FC FAFF5010 */  beq        $v0, $s0, .L8003A1E8
     /* 2AA00 8003A200 00000000 */   nop
     /* 2AA04 8003A204 FFFF1024 */  addiu      $s0, $zero, -0x1
   .L8003A208:
-    /* 2AA08 8003A208 0A80043C */  lui        $a0, %hi(D_800A3210)
-    /* 2AA0C 8003A20C 10328424 */  addiu      $a0, $a0, %lo(D_800A3210)
+    /* 2AA08 8003A208 0A80043C */  lui        $a0, %hi(g_str_sio_800A3210)
+    /* 2AA0C 8003A20C 10328424 */  addiu      $a0, $a0, %lo(g_str_sio_800A3210)
     /* 2AA10 8003A210 7AE2010C */  jal        open
     /* 2AA14 8003A214 01800534 */   ori       $a1, $zero, 0x8001
-    /* 2AA18 8003A218 680682AF */  sw         $v0, %gp_rel(D_800A3734)($gp)
+    /* 2AA18 8003A218 680682AF */  sw         $v0, %gp_rel(g_comb_read_fd)($gp)
     /* 2AA1C 8003A21C FAFF5010 */  beq        $v0, $s0, .L8003A208
     /* 2AA20 8003A220 02000424 */   addiu     $a0, $zero, 0x2
     /* 2AA24 8003A224 21280000 */  addu       $a1, $zero, $zero

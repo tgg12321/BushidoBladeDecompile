@@ -1,15 +1,15 @@
 glabel cdrom_SetMix
     /* 26730 80035F30 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 26734 80035F34 4C0684A3 */  sb         $a0, %gp_rel(D_800A3718)($gp)
-    /* 26738 80035F38 0A80043C */  lui        $a0, %hi(D_800A3718)
-    /* 2673C 80035F3C 18378424 */  addiu      $a0, $a0, %lo(D_800A3718)
+    /* 26734 80035F34 4C0684A3 */  sb         $a0, %gp_rel(g_cd_atv)($gp)
+    /* 26738 80035F38 0A80043C */  lui        $a0, %hi(g_cd_atv)
+    /* 2673C 80035F3C 18378424 */  addiu      $a0, $a0, %lo(g_cd_atv)
     /* 26740 80035F40 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 26744 80035F44 0A80013C */  lui        $at, %hi(D_800A3719)
-    /* 26748 80035F48 193725A0 */  sb         $a1, %lo(D_800A3719)($at)
-    /* 2674C 80035F4C 0A80013C */  lui        $at, %hi(D_800A371A)
-    /* 26750 80035F50 1A3726A0 */  sb         $a2, %lo(D_800A371A)($at)
-    /* 26754 80035F54 0A80013C */  lui        $at, %hi(D_800A371B)
-    /* 26758 80035F58 1B3727A0 */  sb         $a3, %lo(D_800A371B)($at)
+    /* 26744 80035F44 0A80013C */  lui        $at, %hi(g_cd_atv_plus_0x1)
+    /* 26748 80035F48 193725A0 */  sb         $a1, %lo(g_cd_atv_plus_0x1)($at)
+    /* 2674C 80035F4C 0A80013C */  lui        $at, %hi(g_cd_atv_plus_0x2)
+    /* 26750 80035F50 1A3726A0 */  sb         $a2, %lo(g_cd_atv_plus_0x2)($at)
+    /* 26754 80035F54 0A80013C */  lui        $at, %hi(g_cd_atv_plus_0x3)
+    /* 26758 80035F58 1B3727A0 */  sb         $a3, %lo(g_cd_atv_plus_0x3)($at)
     /* 2675C 80035F5C 8001020C */  jal        CdMix
     /* 26760 80035F60 00000000 */   nop
     /* 26764 80035F64 880780A7 */  sh         $zero, %gp_rel(D_800A3854)($gp)

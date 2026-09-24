@@ -12,8 +12,8 @@ glabel func_8003D330
     /* 2DB58 8003D358 01000224 */  addiu      $v0, $zero, 0x1
     /* 2DB5C 8003D35C 030062A0 */  sb         $v0, 0x3($v1)
     /* 2DB60 8003D360 040065AC */  sw         $a1, 0x4($v1)
-    /* 2DB64 8003D364 0A80053C */  lui        $a1, %hi(D_800A374C)
-    /* 2DB68 8003D368 4C37A58C */  lw         $a1, %lo(D_800A374C)($a1)
+    /* 2DB64 8003D364 0A80053C */  lui        $a1, %hi(g_gpu_ot_ptr)
+    /* 2DB68 8003D368 4C37A58C */  lw         $a1, %lo(g_gpu_ot_ptr)($a1)
     /* 2DB6C 8003D36C 0000648C */  lw         $a0, 0x0($v1)
     /* 2DB70 8003D370 0000A28C */  lw         $v0, 0x0($a1)
     /* 2DB74 8003D374 24208700 */  and        $a0, $a0, $a3

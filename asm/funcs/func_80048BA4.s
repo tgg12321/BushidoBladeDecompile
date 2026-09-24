@@ -210,24 +210,24 @@ glabel func_80048BA4
   .L80048ED4:
     /* 396D4 80048ED4 0A80043C */  lui        $a0, %hi(D_800A36AC)
     /* 396D8 80048ED8 AC36848C */  lw         $a0, %lo(D_800A36AC)($a0)
-    /* 396DC 80048EDC 0F80023C */  lui        $v0, %hi(D_800F5768)
-    /* 396E0 80048EE0 68574224 */  addiu      $v0, $v0, %lo(D_800F5768)
+    /* 396DC 80048EDC 0F80023C */  lui        $v0, %hi(g_gpu_ot256_db)
+    /* 396E0 80048EE0 68574224 */  addiu      $v0, $v0, %lo(g_gpu_ot256_db)
     /* 396E4 80048EE4 01008430 */  andi       $a0, $a0, 0x1
     /* 396E8 80048EE8 80220400 */  sll        $a0, $a0, 10
     /* 396EC 80048EEC 21208200 */  addu       $a0, $a0, $v0
-    /* 396F0 80048EF0 0C0884AF */  sw         $a0, %gp_rel(D_800A38D8)($gp)
+    /* 396F0 80048EF0 0C0884AF */  sw         $a0, %gp_rel(g_gpu_ot256_ptr)($gp)
     /* 396F4 80048EF4 11EE010C */  jal        ClearOTagR
     /* 396F8 80048EF8 00010524 */   addiu     $a1, $zero, 0x100
     /* 396FC 80048EFC FF00053C */  lui        $a1, (0xFFFFFF >> 16)
     /* 39700 80048F00 FFFFA534 */  ori        $a1, $a1, (0xFFFFFF & 0xFFFF)
-    /* 39704 80048F04 0C08828F */  lw         $v0, %gp_rel(D_800A38D8)($gp)
+    /* 39704 80048F04 0C08828F */  lw         $v0, %gp_rel(g_gpu_ot256_ptr)($gp)
     /* 39708 80048F08 0A80033C */  lui        $v1, %hi(D_800A378C)
     /* 3970C 80048F0C 8C37638C */  lw         $v1, %lo(D_800A378C)($v1)
     /* 39710 80048F10 FC034224 */  addiu      $v0, $v0, 0x3FC
     /* 39714 80048F14 0000648C */  lw         $a0, 0x0($v1)
     /* 39718 80048F18 24104500 */  and        $v0, $v0, $a1
     /* 3971C 80048F1C 000062AC */  sw         $v0, 0x0($v1)
-    /* 39720 80048F20 0C08828F */  lw         $v0, %gp_rel(D_800A38D8)($gp)
+    /* 39720 80048F20 0C08828F */  lw         $v0, %gp_rel(g_gpu_ot256_ptr)($gp)
     /* 39724 80048F24 00000000 */  nop
     /* 39728 80048F28 000044AC */  sw         $a0, 0x0($v0)
   .L80048F2C:

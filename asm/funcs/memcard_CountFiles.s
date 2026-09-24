@@ -3,8 +3,8 @@ glabel memcard_CountFiles
     /* 28224 80037A24 21308000 */  addu       $a2, $a0, $zero
     /* 28228 80037A28 2138A000 */  addu       $a3, $a1, $zero
     /* 2822C 80037A2C 3000B0AF */  sw         $s0, 0x30($sp)
-    /* 28230 80037A30 1080103C */  lui        $s0, %hi(D_80102810)
-    /* 28234 80037A34 10281026 */  addiu      $s0, $s0, %lo(D_80102810)
+    /* 28230 80037A30 1080103C */  lui        $s0, %hi(g_memcard_file_list)
+    /* 28234 80037A34 10281026 */  addiu      $s0, $s0, %lo(g_memcard_file_list)
     /* 28238 80037A38 1000A427 */  addiu      $a0, $sp, 0x10
     /* 2823C 80037A3C 0180053C */  lui        $a1, %hi(D_800109B0)
     /* 28240 80037A40 B009A524 */  addiu      $a1, $a1, %lo(D_800109B0)
@@ -26,7 +26,7 @@ glabel memcard_CountFiles
     /* 2827C 80037A7C 01003126 */   addiu     $s1, $s1, 0x1
     /* 28280 80037A80 FFFF3126 */  addiu      $s1, $s1, -0x1
   .L80037A84:
-    /* 28284 80037A84 FC0791AF */  sw         $s1, %gp_rel(D_800A38C8)($gp)
+    /* 28284 80037A84 FC0791AF */  sw         $s1, %gp_rel(g_memcard_file_count)($gp)
     /* 28288 80037A88 21102002 */  addu       $v0, $s1, $zero
     /* 2828C 80037A8C 3800BF8F */  lw         $ra, 0x38($sp)
     /* 28290 80037A90 3400B18F */  lw         $s1, 0x34($sp)

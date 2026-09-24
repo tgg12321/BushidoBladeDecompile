@@ -24,7 +24,7 @@ glabel func_800174F4
     /* 7D4C 8001754C 6CEE010C */  jal        PutDrawEnv
     /* 7D50 80017550 3800A0A3 */   sb        $zero, 0x38($sp)
     /* 7D54 80017554 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 7D58 80017558 800684AF */  sw         $a0, %gp_rel(D_800A374C)($gp)
+    /* 7D58 80017558 800684AF */  sw         $a0, %gp_rel(g_gpu_ot_ptr)($gp)
     /* 7D5C 8001755C 11EE010C */  jal        ClearOTagR
     /* 7D60 80017560 02000524 */   addiu     $a1, $zero, 0x2
     /* 7D64 80017564 9C068593 */  lbu        $a1, %gp_rel(D_800A3768)($gp)
@@ -133,7 +133,7 @@ glabel func_800174F4
     /* 7EDC 800176DC 0581010C */  jal        func_80060414
     /* 7EE0 800176E0 21300000 */   addu      $a2, $zero, $zero
   .L800176E4:
-    /* 7EE4 800176E4 8006848F */  lw         $a0, %gp_rel(D_800A374C)($gp)
+    /* 7EE4 800176E4 8006848F */  lw         $a0, %gp_rel(g_gpu_ot_ptr)($gp)
     /* 7EE8 800176E8 4FEE010C */  jal        DrawOTag
     /* 7EEC 800176EC 04008424 */   addiu     $a0, $a0, 0x4
     /* 7EF0 800176F0 CFEC010C */  jal        DrawSync

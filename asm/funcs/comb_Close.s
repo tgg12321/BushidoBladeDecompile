@@ -1,18 +1,18 @@
 glabel comb_Close
-    /* 2AA64 8003A264 6806848F */  lw         $a0, %gp_rel(D_800A3734)($gp)
+    /* 2AA64 8003A264 6806848F */  lw         $a0, %gp_rel(g_comb_read_fd)($gp)
     /* 2AA68 8003A268 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2AA6C 8003A26C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2AA70 8003A270 86E2010C */  jal        close
     /* 2AA74 8003A274 00000000 */   nop
-    /* 2AA78 8003A278 7006848F */  lw         $a0, %gp_rel(D_800A373C)($gp)
+    /* 2AA78 8003A278 7006848F */  lw         $a0, %gp_rel(g_comb_write_fd)($gp)
     /* 2AA7C 8003A27C 86E2010C */  jal        close
     /* 2AA80 8003A280 00000000 */   nop
     /* 2AA84 8003A284 6EE2010C */  jal        EnterCriticalSection
     /* 2AA88 8003A288 00000000 */   nop
-    /* 2AA8C 8003A28C 6C06848F */  lw         $a0, %gp_rel(D_800A3738)($gp)
+    /* 2AA8C 8003A28C 6C06848F */  lw         $a0, %gp_rel(g_comb_event_ioer)($gp)
     /* 2AA90 8003A290 62E2010C */  jal        CloseEvent
     /* 2AA94 8003A294 00000000 */   nop
-    /* 2AA98 8003A298 4407848F */  lw         $a0, %gp_rel(D_800A3810)($gp)
+    /* 2AA98 8003A298 4407848F */  lw         $a0, %gp_rel(g_comb_event_error)($gp)
     /* 2AA9C 8003A29C 62E2010C */  jal        CloseEvent
     /* 2AAA0 8003A2A0 00000000 */   nop
     /* 2AAA4 8003A2A4 72E2010C */  jal        ExitCriticalSection

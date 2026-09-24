@@ -21,7 +21,7 @@ glabel puts
     /* 72844 80082044 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 72848 80082048 0800E003 */  jr         $ra
     /* 7284C 8008204C 00000000 */   nop
-  alabel D_80082050
+  alabel cb_read
     /* 72850 80082050 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 72854 80082054 2000B0AF */  sw         $s0, 0x20($sp)
     /* 72858 80082058 2180A000 */  addu       $s0, $a1, $zero
@@ -42,8 +42,8 @@ glabel puts
     /* 72894 80082094 00020224 */  addiu      $v0, $zero, 0x200
     /* 72898 80082098 25006214 */  bne        $v1, $v0, .L80082130
     /* 7289C 8008209C 00000000 */   nop
-    /* 728A0 800820A0 0A80023C */  lui        $v0, %hi(D_800A1500)
-    /* 728A4 800820A4 0015428C */  lw         $v0, %lo(D_800A1500)($v0)
+    /* 728A0 800820A0 0A80023C */  lui        $v0, %hi(g_CdReadMode_value)
+    /* 728A4 800820A4 0015428C */  lw         $v0, %lo(g_CdReadMode_value)($v0)
     /* 728A8 800820A8 00000000 */  nop
     /* 728AC 800820AC 01004230 */  andi       $v0, $v0, 0x1
     /* 728B0 800820B0 0E004010 */  beqz       $v0, .L800820EC
@@ -55,8 +55,8 @@ glabel puts
     /* 728C8 800820C8 03000524 */   addiu     $a1, $zero, 0x3
     /* 728CC 800820CC A101020C */  jal        CdDataSync
     /* 728D0 800820D0 21200000 */   addu      $a0, $zero, $zero
-    /* 728D4 800820D4 0880043C */  lui        $a0, %hi(D_80082320)
-    /* 728D8 800820D8 20238424 */  addiu      $a0, $a0, %lo(D_80082320)
+    /* 728D4 800820D4 0880043C */  lui        $a0, %hi(cb_data)
+    /* 728D8 800820D8 20238424 */  addiu      $a0, $a0, %lo(cb_data)
     /* 728DC 800820DC 9801020C */  jal        CdDataCallback
     /* 728E0 800820E0 00000000 */   nop
     /* 728E4 800820E4 3D080208 */  j          .L800820F4
@@ -81,8 +81,8 @@ glabel puts
     /* 72928 80082128 0A80013C */  lui        $at, %hi(D_800A14E4)
     /* 7292C 8008212C E41422AC */  sw         $v0, %lo(D_800A14E4)($at)
   .L80082130:
-    /* 72930 80082130 0A80023C */  lui        $v0, %hi(D_800A1500)
-    /* 72934 80082134 00154224 */  addiu      $v0, $v0, %lo(D_800A1500)
+    /* 72930 80082130 0A80023C */  lui        $v0, %hi(g_CdReadMode_value)
+    /* 72934 80082134 00154224 */  addiu      $v0, $v0, %lo(g_CdReadMode_value)
     /* 72938 80082138 0000428C */  lw         $v0, 0x0($v0)
     /* 7293C 8008213C 00000000 */  nop
     /* 72940 80082140 01004230 */  andi       $v0, $v0, 0x1
@@ -180,8 +180,8 @@ glabel puts
     /* 72A98 80082298 F814848C */  lw         $a0, %lo(D_800A14F8)($a0)
     /* 72A9C 8008229C 9000020C */  jal        CdReadyCallback
     /* 72AA0 800822A0 00000000 */   nop
-    /* 72AA4 800822A4 0A80023C */  lui        $v0, %hi(D_800A1500)
-    /* 72AA8 800822A8 0015428C */  lw         $v0, %lo(D_800A1500)($v0)
+    /* 72AA4 800822A4 0A80023C */  lui        $v0, %hi(g_CdReadMode_value)
+    /* 72AA8 800822A8 0015428C */  lw         $v0, %lo(g_CdReadMode_value)($v0)
     /* 72AAC 800822AC 00000000 */  nop
     /* 72AB0 800822B0 01004230 */  andi       $v0, $v0, 0x1
     /* 72AB4 800822B4 06004010 */  beqz       $v0, .L800822D0
@@ -194,8 +194,8 @@ glabel puts
   .L800822D0:
     /* 72AD0 800822D0 E400020C */  jal        CdControlF
     /* 72AD4 800822D4 21280000 */   addu      $a1, $zero, $zero
-    /* 72AD8 800822D8 0A80033C */  lui        $v1, %hi(D_800A14CC)
-    /* 72ADC 800822DC CC14638C */  lw         $v1, %lo(D_800A14CC)($v1)
+    /* 72AD8 800822D8 0A80033C */  lui        $v1, %hi(g_CdReadCallback_func)
+    /* 72ADC 800822DC CC14638C */  lw         $v1, %lo(g_CdReadCallback_func)($v1)
     /* 72AE0 800822E0 00000000 */  nop
     /* 72AE4 800822E4 09006010 */  beqz       $v1, .L8008230C
     /* 72AE8 800822E8 00000000 */   nop
@@ -214,7 +214,7 @@ glabel puts
     /* 72B14 80082314 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 72B18 80082318 0800E003 */  jr         $ra
     /* 72B1C 8008231C 00000000 */   nop
-  alabel D_80082320
+  alabel cb_data
     /* 72B20 80082320 0A80023C */  lui        $v0, %hi(D_800A14E0)
     /* 72B24 80082324 E014428C */  lw         $v0, %lo(D_800A14E0)($v0)
     /* 72B28 80082328 0A80033C */  lui        $v1, %hi(D_800A14D8)
@@ -252,8 +252,8 @@ glabel puts
     /* 72BA8 800823A8 F814848C */  lw         $a0, %lo(D_800A14F8)($a0)
     /* 72BAC 800823AC 9000020C */  jal        CdReadyCallback
     /* 72BB0 800823B0 00000000 */   nop
-    /* 72BB4 800823B4 0A80023C */  lui        $v0, %hi(D_800A1500)
-    /* 72BB8 800823B8 0015428C */  lw         $v0, %lo(D_800A1500)($v0)
+    /* 72BB4 800823B4 0A80023C */  lui        $v0, %hi(g_CdReadMode_value)
+    /* 72BB8 800823B8 0015428C */  lw         $v0, %lo(g_CdReadMode_value)($v0)
     /* 72BBC 800823BC 00000000 */  nop
     /* 72BC0 800823C0 01004230 */  andi       $v0, $v0, 0x1
     /* 72BC4 800823C4 06004010 */  beqz       $v0, .L800823E0
@@ -266,8 +266,8 @@ glabel puts
   .L800823E0:
     /* 72BE0 800823E0 E400020C */  jal        CdControlF
     /* 72BE4 800823E4 21280000 */   addu      $a1, $zero, $zero
-    /* 72BE8 800823E8 0A80023C */  lui        $v0, %hi(D_800A14CC)
-    /* 72BEC 800823EC CC14428C */  lw         $v0, %lo(D_800A14CC)($v0)
+    /* 72BE8 800823E8 0A80023C */  lui        $v0, %hi(g_CdReadCallback_func)
+    /* 72BEC 800823EC CC14428C */  lw         $v0, %lo(g_CdReadCallback_func)($v0)
     /* 72BF0 800823F0 00000000 */  nop
     /* 72BF4 800823F4 05004010 */  beqz       $v0, .L8008240C
     /* 72BF8 800823F8 00000000 */   nop

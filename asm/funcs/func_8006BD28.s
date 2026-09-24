@@ -84,8 +84,8 @@ glabel func_8006BD28
     /* 5C654 8006BE54 21384000 */  addu       $a3, $v0, $zero
     /* 5C658 8006BE58 92F0010C */  jal        SetDrawMode
     /* 5C65C 8006BE5C 1000A0AF */   sw        $zero, 0x10($sp)
-    /* 5C660 8006BE60 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5C664 8006BE64 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5C660 8006BE60 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5C664 8006BE64 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5C668 8006BE68 1406858F */  lw         $a1, %gp_rel(D_800A36E0)($gp)
     /* 5C66C 8006BE6C 2DEA010C */  jal        AddPrim
     /* 5C670 8006BE70 20008424 */   addiu     $a0, $a0, 0x20

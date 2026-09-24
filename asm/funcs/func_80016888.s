@@ -5,8 +5,8 @@ glabel func_80016888
     /* 7094 80016894 21200000 */   addu      $a0, $zero, $zero
     /* 7098 80016898 9FEB010C */  jal        ResetGraph
     /* 709C 8001689C 01000424 */   addiu     $a0, $zero, 0x1
-    /* 70A0 800168A0 0A80043C */  lui        $a0, %hi(D_800A30CC)
-    /* 70A4 800168A4 CC308424 */  addiu      $a0, $a0, %lo(D_800A30CC)
+    /* 70A0 800168A0 0A80043C */  lui        $a0, %hi(g_gpu_clear_rect)
+    /* 70A4 800168A4 CC308424 */  addiu      $a0, $a0, %lo(g_gpu_clear_rect)
     /* 70A8 800168A8 21280000 */  addu       $a1, $zero, $zero
     /* 70AC 800168AC 21300000 */  addu       $a2, $zero, $zero
     /* 70B0 800168B0 34ED010C */  jal        ClearImage

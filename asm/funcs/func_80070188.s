@@ -28,8 +28,8 @@ glabel func_80070188
     /* 609F0 800701F0 1800E48E */  lw         $a0, 0x18($s7)
     /* 609F4 800701F4 92F0010C */  jal        SetDrawMode
     /* 609F8 800701F8 21384000 */   addu      $a3, $v0, $zero
-    /* 609FC 800701FC 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 60A00 80070200 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 609FC 800701FC 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 60A00 80070200 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 60A04 80070204 1800E58E */  lw         $a1, 0x18($s7)
     /* 60A08 80070208 2DEA010C */  jal        AddPrim
     /* 60A0C 8007020C 20008424 */   addiu     $a0, $a0, 0x20

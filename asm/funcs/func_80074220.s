@@ -25,8 +25,8 @@ glabel func_80074220
     /* 64A7C 8007427C 5AEA010C */  jal        SetSemiTrans
     /* 64A80 80074280 0E0002A6 */   sh        $v0, 0xE($s0)
     /* 64A84 80074284 21280002 */  addu       $a1, $s0, $zero
-    /* 64A88 80074288 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 64A8C 8007428C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 64A88 80074288 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 64A8C 8007428C 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 64A90 80074290 10001026 */  addiu      $s0, $s0, 0x10
     /* 64A94 80074294 2DEA010C */  jal        AddPrim
     /* 64A98 80074298 78008424 */   addiu     $a0, $a0, 0x78
@@ -67,8 +67,8 @@ glabel func_80074220
     /* 64B1C 8007431C 1800848E */  lw         $a0, 0x18($s4)
     /* 64B20 80074320 92F0010C */  jal        SetDrawMode
     /* 64B24 80074324 21384000 */   addu      $a3, $v0, $zero
-    /* 64B28 80074328 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 64B2C 8007432C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 64B28 80074328 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 64B2C 8007432C 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 64B30 80074330 1800858E */  lw         $a1, 0x18($s4)
     /* 64B34 80074334 2DEA010C */  jal        AddPrim
     /* 64B38 80074338 7C008424 */   addiu     $a0, $a0, 0x7C
@@ -95,8 +95,8 @@ glabel func_80074220
     /* 64B8C 8007438C 5AEA010C */  jal        SetSemiTrans
     /* 64B90 80074390 160012A6 */   sh        $s2, 0x16($s0)
     /* 64B94 80074394 21280002 */  addu       $a1, $s0, $zero
-    /* 64B98 80074398 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 64B9C 8007439C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 64B98 80074398 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 64B9C 8007439C 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 64BA0 800743A0 18001026 */  addiu      $s0, $s0, 0x18
     /* 64BA4 800743A4 2DEA010C */  jal        AddPrim
     /* 64BA8 800743A8 80008424 */   addiu     $a0, $a0, 0x80
@@ -119,8 +119,8 @@ glabel func_80074220
     /* 64BEC 800743EC 5AEA010C */  jal        SetSemiTrans
     /* 64BF0 800743F0 160002A6 */   sh        $v0, 0x16($s0)
     /* 64BF4 800743F4 21280002 */  addu       $a1, $s0, $zero
-    /* 64BF8 800743F8 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 64BFC 800743FC 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 64BF8 800743F8 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 64BFC 800743FC 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 64C00 80074400 18001026 */  addiu      $s0, $s0, 0x18
     /* 64C04 80074404 2DEA010C */  jal        AddPrim
     /* 64C08 80074408 80008424 */   addiu     $a0, $a0, 0x80
@@ -140,8 +140,8 @@ glabel func_80074220
     /* 64C40 80074440 5AEA010C */  jal        SetSemiTrans
     /* 64C44 80074444 160012A6 */   sh        $s2, 0x16($s0)
     /* 64C48 80074448 21280002 */  addu       $a1, $s0, $zero
-    /* 64C4C 8007444C 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 64C50 80074450 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 64C4C 8007444C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 64C50 80074450 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 64C54 80074454 18001026 */  addiu      $s0, $s0, 0x18
     /* 64C58 80074458 2DEA010C */  jal        AddPrim
     /* 64C5C 8007445C 80008424 */   addiu     $a0, $a0, 0x80

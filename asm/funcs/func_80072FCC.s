@@ -27,8 +27,8 @@ glabel func_80072FCC
   .L8007302C:
     /* 6382C 8007302C 5AEA010C */  jal        SetSemiTrans
     /* 63830 80073030 00000000 */   nop
-    /* 63834 80073034 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 63838 80073038 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 63834 80073034 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 63838 80073038 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 6383C 8007303C 21280002 */  addu       $a1, $s0, $zero
     /* 63840 80073040 2DEA010C */  jal        AddPrim
     /* 63844 80073044 5C008424 */   addiu     $a0, $a0, 0x5C

@@ -1,8 +1,8 @@
 glabel comb_Read8
     /* 2AD74 8003A574 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 2AD78 8003A578 0A80053C */  lui        $a1, %hi(D_800A3688)
-    /* 2AD7C 8003A57C 8836A524 */  addiu      $a1, $a1, %lo(D_800A3688)
-    /* 2AD80 8003A580 6806848F */  lw         $a0, %gp_rel(D_800A3734)($gp)
+    /* 2AD78 8003A578 0A80053C */  lui        $a1, %hi(g_comb_recv_buf)
+    /* 2AD7C 8003A57C 8836A524 */  addiu      $a1, $a1, %lo(g_comb_recv_buf)
+    /* 2AD80 8003A580 6806848F */  lw         $a0, %gp_rel(g_comb_read_fd)($gp)
     /* 2AD84 8003A584 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2AD88 8003A588 7EE2010C */  jal        read
     /* 2AD8C 8003A58C 08000624 */   addiu     $a2, $zero, 0x8

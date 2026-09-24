@@ -231,8 +231,8 @@ glabel func_8005C8A8
     /* 4D414 8005CC14 10001026 */  addiu      $s0, $s0, 0x10
     /* 4D418 8005CC18 10007326 */  addiu      $s3, $s3, 0x10
     /* 4D41C 8005CC1C 5000A88F */  lw         $t0, 0x50($sp)
-    /* 4D420 8005CC20 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 4D424 8005CC24 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 4D420 8005CC20 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 4D424 8005CC24 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 4D428 8005CC28 80200800 */  sll        $a0, $t0, 2
     /* 4D42C 8005CC2C 2DEA010C */  jal        AddPrim
     /* 4D430 8005CC30 21204400 */   addu      $a0, $v0, $a0
@@ -368,8 +368,8 @@ glabel func_8005C8A8
     /* 4D620 8005CE20 10001026 */  addiu      $s0, $s0, 0x10
     /* 4D624 8005CE24 10007326 */  addiu      $s3, $s3, 0x10
     /* 4D628 8005CE28 5000A88F */  lw         $t0, 0x50($sp)
-    /* 4D62C 8005CE2C 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 4D630 8005CE30 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 4D62C 8005CE2C 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 4D630 8005CE30 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 4D634 8005CE34 80200800 */  sll        $a0, $t0, 2
     /* 4D638 8005CE38 2DEA010C */  jal        AddPrim
     /* 4D63C 8005CE3C 21204400 */   addu      $a0, $v0, $a0
@@ -608,8 +608,8 @@ glabel func_8005C8A8
     /* 4D9AC 8005D1AC FEFF03A6 */   sh        $v1, -0x2($s0)
     /* 4D9B0 8005D1B0 21286002 */  addu       $a1, $s3, $zero
     /* 4D9B4 8005D1B4 10001026 */  addiu      $s0, $s0, 0x10
-    /* 4D9B8 8005D1B8 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 4D9BC 8005D1BC 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 4D9B8 8005D1B8 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 4D9BC 8005D1BC 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 4D9C0 8005D1C0 8000A88F */  lw         $t0, 0x80($sp)
     /* 4D9C4 8005D1C4 10007326 */  addiu      $s3, $s3, 0x10
     /* 4D9C8 8005D1C8 2DEA010C */  jal        AddPrim
@@ -696,8 +696,8 @@ glabel func_8005C8A8
     /* 4DAF0 8005D2F0 000002A6 */   sh        $v0, 0x0($s0)
     /* 4DAF4 8005D2F4 21286002 */  addu       $a1, $s3, $zero
     /* 4DAF8 8005D2F8 10001026 */  addiu      $s0, $s0, 0x10
-    /* 4DAFC 8005D2FC 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 4DB00 8005D300 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 4DAFC 8005D2FC 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 4DB00 8005D300 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 4DB04 8005D304 8000A88F */  lw         $t0, 0x80($sp)
     /* 4DB08 8005D308 10007326 */  addiu      $s3, $s3, 0x10
     /* 4DB0C 8005D30C 2DEA010C */  jal        AddPrim
@@ -754,8 +754,8 @@ glabel func_8005C8A8
     /* 4DBD8 8005D3D8 0E0062A6 */   sh        $v0, 0xE($s3)
     /* 4DBDC 8005D3DC 21286002 */  addu       $a1, $s3, $zero
     /* 4DBE0 8005D3E0 5000A88F */  lw         $t0, 0x50($sp)
-    /* 4DBE4 8005D3E4 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 4DBE8 8005D3E8 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 4DBE4 8005D3E4 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 4DBE8 8005D3E8 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 4DBEC 8005D3EC 80800800 */  sll        $s0, $t0, 2
     /* 4DBF0 8005D3F0 2DEA010C */  jal        AddPrim
     /* 4DBF4 8005D3F4 21209000 */   addu      $a0, $a0, $s0
@@ -769,8 +769,8 @@ glabel func_8005C8A8
     /* 4DC14 8005D414 21384000 */  addu       $a3, $v0, $zero
     /* 4DC18 8005D418 92F0010C */  jal        SetDrawMode
     /* 4DC1C 8005D41C 1000A0AF */   sw        $zero, 0x10($sp)
-    /* 4DC20 8005D420 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 4DC24 8005D424 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 4DC20 8005D420 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 4DC24 8005D424 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 4DC28 8005D428 6800A58F */  lw         $a1, 0x68($sp)
     /* 4DC2C 8005D42C 2DEA010C */  jal        AddPrim
     /* 4DC30 8005D430 21209000 */   addu      $a0, $a0, $s0

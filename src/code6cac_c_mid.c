@@ -85,7 +85,7 @@ extern s32 D_80102794;
 
 
 
-extern s32 D_800A3210;
+extern s32 g_str_sio_800A3210;
 extern void AddCOMB(void);
 
 
@@ -116,10 +116,10 @@ extern s16 D_800A37C8;
 extern s32 D_800A31F4;
 extern u8 D_800A38CC;
 extern u8 D_800A382C;
-extern s32 D_800A3734;
-extern s32 D_800A373C;
-extern s32 D_800A3810;
-extern s32 D_800A3738;
+extern s32 g_comb_read_fd;
+extern s32 g_comb_write_fd;
+extern s32 g_comb_event_error;
+extern s32 g_comb_event_ioer;
 extern u8 D_800A320C;
 
 
@@ -139,8 +139,8 @@ extern s32 D_80106A50;
 
 
 extern s32 D_800A3870;
-extern s32 D_800A3688;
-extern s32 D_800A3698;
+extern s32 g_comb_recv_buf;
+extern s32 g_comb_send_buf;
 extern u8 D_800A37D0;
 
 
@@ -170,7 +170,7 @@ extern void func_8001B6F4(void);
 
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
-extern s32 D_800A3794;
+extern s32 g_memcard_fd;
 extern s32 memcard_CountFiles(s32, s32);
 
 extern s32 func_80037AA4(void);
@@ -519,7 +519,7 @@ setup_load:
     func_80038170(D_800F33D8);
     func_80037F40(D_800F33D8 + 0x100);
     if (memcard_WriteFile(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
-        close(D_800A3794);
+        close(g_memcard_fd);
         var_v0 = 3;
         goto finish;
     }
@@ -536,7 +536,7 @@ state_5:
     D_800A379E = 4;
     func_80038148();
     if (memcard_ReadFile(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
-        close(D_800A3794);
+        close(g_memcard_fd);
         var_v0 = 6;
         goto finish;
     }
@@ -575,7 +575,7 @@ void func_80038658(void) {
             fail = 1;
             goto fail_store;
         }
-        close(D_800A3794);
+        close(g_memcard_fd);
         if (ret == 1) {
             D_800A379E = 2;
         } else {
@@ -589,7 +589,7 @@ void func_80038658(void) {
             fail = 4;
             goto fail_store;
         }
-        close(D_800A3794);
+        close(g_memcard_fd);
         if (ret == 1) {
             D_800A379E = 5;
             if (func_8003800C(&D_800F34D8) == 0) {
@@ -1463,33 +1463,33 @@ void comb_Init(void) {
     EnterCriticalSection();
     neg1 = -1;
     do {
-        D_800A3738 = OpenEvent(0xF000000B, 0x400, 0x2000, 0);
-    } while (D_800A3738 == neg1);
+        g_comb_event_ioer = OpenEvent(0xF000000B, 0x400, 0x2000, 0);
+    } while (g_comb_event_ioer == neg1);
     neg1 = -1;
     do {
-        D_800A3810 = OpenEvent(0xF000000B, 0x8000, 0x2000, 0);
-    } while (D_800A3810 == neg1);
+        g_comb_event_error = OpenEvent(0xF000000B, 0x8000, 0x2000, 0);
+    } while (g_comb_event_error == neg1);
     ExitCriticalSection();
     neg1 = -1;
     VSync(2);
     AddCOMB();
     do {
-        D_800A373C = open(&D_800A3210, 2);
-    } while (D_800A373C == neg1);
+        g_comb_write_fd = open(&g_str_sio_800A3210, 2);
+    } while (g_comb_write_fd == neg1);
     neg1 = -1;
     do {
-        D_800A3734 = open(&D_800A3210, 0x8001);
-    } while (D_800A3734 == neg1);
+        g_comb_read_fd = open(&g_str_sio_800A3210, 0x8001);
+    } while (g_comb_read_fd == neg1);
     _comb_control(2, 0, 0);
     _comb_control(1, 3, 0xE100);
     _comb_control(1, 4, 1);
 }
 void comb_Close(void) {
-    close(D_800A3734);
-    close(D_800A373C);
+    close(g_comb_read_fd);
+    close(g_comb_write_fd);
     EnterCriticalSection();
-    CloseEvent(D_800A3738);
-    CloseEvent(D_800A3810);
+    CloseEvent(g_comb_event_ioer);
+    CloseEvent(g_comb_event_error);
     ExitCriticalSection();
     VSync(2);
     DelCOMB();
@@ -1507,8 +1507,8 @@ void comb_ReadCtsSetRts(void) {
     _comb_control(3, 0, 1);
 }
 void comb_EnableEvents(void) {
-    EnableEvent(D_800A3810);
-    EnableEvent(D_800A3738);
+    EnableEvent(g_comb_event_error);
+    EnableEvent(g_comb_event_ioer);
     D_800A320C = 1;
     D_800A3730 = 0;
 }
@@ -1570,13 +1570,13 @@ s32 comb_Write8(void) {
     _comb_control(1, 1, 1);
     D_800A382C = 1;
     _comb_control(4, 0, (s32)&comb_WriteWaitCallback);
-    write(D_800A373C, &D_800A3698, 8);
+    write(g_comb_write_fd, &g_comb_send_buf, 8);
     _comb_control(4, 0, 0);
     _comb_control(1, 1, 0);
     return D_800A382C;
 }
 void comb_Read8(void) {
-    read(D_800A3734, &D_800A3688, 8);
+    read(g_comb_read_fd, &g_comb_recv_buf, 8);
 }
 extern s32 D_800A38D0;
 s32 comb_WaitRead8(void) {
@@ -1596,10 +1596,10 @@ overflow:
     ResetRCnt(0xF2000001);
     s0 = 0;
 loop_check:
-    if (TestEvent(D_800A3738) != 0) {
+    if (TestEvent(g_comb_event_ioer) != 0) {
         goto success;
     }
-    if (TestEvent(D_800A3810) == 0) {
+    if (TestEvent(g_comb_event_error) == 0) {
         goto poll;
     }
     s1 += 1;
@@ -1623,7 +1623,7 @@ poll:
     }
     goto overflow;
 success:
-    a1 = D_800A3688;
+    a1 = g_comb_recv_buf;
     a0 = D_800A368C;
     v0 = a1 ^ (a1 >> 16);
     v0 = v0 ^ (a0 >> 16);
@@ -1707,7 +1707,7 @@ void func_8003A728(s32 a0) {
         zero = 0;
         packed = (vsync << 31) | (D_800A3730 << 30) | ((D_800A3870 & 3) << 28)
                | (*(s16 *)a0 << 16) | (buf8 & 0xFFFF);
-        D_800A3698 = packed;
+        g_comb_send_buf = packed;
         hi16 = D_800A37C4 << 16;
         packed = packed ^ (packed >> 16);
         packed = packed ^ (hi16 >> 16);
@@ -1720,7 +1720,7 @@ void func_8003A728(s32 a0) {
             if (vsync == 0) {
                 comb_Read8();
             } else {
-                if (((FuncBufType)comb_Write8)(&D_800A3698) == 0) {
+                if (((FuncBufType)comb_Write8)(&g_comb_send_buf) == 0) {
                     func_8003A3F0();
                     return;
                 }
@@ -1742,7 +1742,7 @@ void func_8003A728(s32 a0) {
                     return;
                 }
             }
-            if (((FuncBufType)comb_Write8)(&D_800A3698) == 0) {
+            if (((FuncBufType)comb_Write8)(&g_comb_send_buf) == 0) {
                 func_8003A3F0();
                 return;
             }
@@ -1760,7 +1760,7 @@ void func_8003A728(s32 a0) {
             D_800A38FC += func_8003A6FC((u16)D_800A36C0);
             c0lo = (u16)D_800A36C0;
             if (D_800A38A0 == 0) {
-                buf8 = (u16)D_800A3698;
+                buf8 = (u16)g_comb_send_buf;
                 *(s32 *)(a0 + 8) = (c0lo << 16) | buf8;
                 t = D_800A36C2;
                 *(s16 *)(a0 + 2) = t & 0xF;
@@ -1783,7 +1783,7 @@ void func_8003A728(s32 a0) {
             }
         }
         D_800A3916 = 0;
-        D_800A36D0 = D_800A3698;
+        D_800A36D0 = g_comb_send_buf;
         D_800A36D4 = D_800A369C;
     } else {
         D_800A3870 = 0;

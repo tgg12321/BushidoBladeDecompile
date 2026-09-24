@@ -18,8 +18,8 @@ glabel func_8005BF78
     /* 4C7B8 8005BFB8 21202002 */   addu      $a0, $s1, $zero
     /* 4C7BC 8005BFBC 892B020C */  jal        SpuSetTransferStartAddr
     /* 4C7C0 8005BFC0 21200002 */   addu      $a0, $s0, $zero
-    /* 4C7C4 8005BFC4 0F80103C */  lui        $s0, %hi(D_800EFC38)
-    /* 4C7C8 8005BFC8 38FC1026 */  addiu      $s0, $s0, %lo(D_800EFC38)
+    /* 4C7C4 8005BFC4 0F80103C */  lui        $s0, %hi(g_vab_rec_ptr)
+    /* 4C7C8 8005BFC8 38FC1026 */  addiu      $s0, $s0, %lo(g_vab_rec_ptr)
     /* 4C7CC 8005BFCC 80901200 */  sll        $s2, $s2, 2
     /* 4C7D0 8005BFD0 21805002 */  addu       $s0, $s2, $s0
     /* 4C7D4 8005BFD4 0000028E */  lw         $v0, 0x0($s0)
@@ -45,9 +45,9 @@ glabel func_8005BF78
     /* 4C824 8005C024 21306002 */   addu      $a2, $s3, $zero
     /* 4C828 8005C028 FA1F020C */  jal        SsVabFakeBody
     /* 4C82C 8005C02C 21202002 */   addu      $a0, $s1, $zero
-    /* 4C830 8005C030 0F80013C */  lui        $at, %hi(D_800EFB38)
+    /* 4C830 8005C030 0F80013C */  lui        $at, %hi(g_vab_vb_sbaddr)
     /* 4C834 8005C034 21083200 */  addu       $at, $at, $s2
-    /* 4C838 8005C038 38FB33AC */  sw         $s3, %lo(D_800EFB38)($at)
+    /* 4C838 8005C038 38FB33AC */  sw         $s3, %lo(g_vab_vb_sbaddr)($at)
     /* 4C83C 8005C03C 0000028E */  lw         $v0, 0x0($s0)
     /* 4C840 8005C040 00000000 */  nop
     /* 4C844 8005C044 0C00428C */  lw         $v0, 0xC($v0)

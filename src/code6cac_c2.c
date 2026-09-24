@@ -140,7 +140,7 @@ extern s32 D_8009060C;
 
 
 
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 
 
 
@@ -1002,7 +1002,7 @@ void func_8003D330(void) {
     OTag *ot;
     ((u8 *)p)[3] = 1;
     *((u32 *)p + 1) = 0xE100001F;
-    ot = (OTag *)D_800A374C;
+    ot = (OTag *)g_gpu_ot_ptr;
     p->addr = ot->addr;
     ot->addr = (u32)p;
 }
@@ -1030,7 +1030,7 @@ void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     p->v0 = (ch >> 5) * 8 - 0x20;
     p->clut = ((ch >> 3) & 3) << 6 | 0x773F;
     *(u32 *)&p->r0 = (color >> 1) | 0x74000000;
-    ot = (OTag *)D_800A374C;
+    ot = (OTag *)g_gpu_ot_ptr;
     ((OTag *)p)->addr = ot->addr;
     ot->addr = (u32)p;
 }

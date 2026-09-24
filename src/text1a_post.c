@@ -293,7 +293,7 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
 extern s32 D_80094DF0[];
 extern u8 D_80094E08[];
 extern s16 D_800A9A20;
-extern u16 D_800A9A24;
+extern u16 g_gpu_store_buf;
 void func_80041AC8(s16 *arg0)
 {
   s16 rect[4];
@@ -338,7 +338,7 @@ void func_80041AC8(s16 *arg0)
   {
     s32 w = 0x10;
     s32 h = 1;
-    var_s1 = &D_800A9A24;
+    var_s1 = &g_gpu_store_buf;
     do
     {
       u16 v0_val;
@@ -446,7 +446,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     rect[1] = (*(((u16 *) tbl) + 1)) + yoff;
     rect[2] = 0x10;
     rect[3] = 1;
-    LoadImage((s32)rect, (s32)((u8 *)&D_800A9A24 + off));
+    LoadImage((s32)rect, (s32)((u8 *)&g_gpu_store_buf + off));
     DrawSync(0);
     tbl += 2;
     func_80048A7C(rect[0], rect[1], 0x10, r, g, b);
@@ -614,12 +614,12 @@ void func_800421C8(s32 a0) {
     *(s16 *)D_800F62E0 = val & 0xFFF;
     func_80042478(*(s32 *)((u8 *)p + 4));
 }
-extern s16 D_800F6318[];
+extern s16 g_gte_color_matrix_data[];
 extern s16 D_800F631E;
 extern s16 D_800F6324;
-extern u8 D_800F6338;
-extern u8 D_800F6339;
-extern u8 D_800F633A;
+extern u8 g_gte_back_color_r;
+extern u8 g_gte_back_color_g;
+extern u8 g_gte_back_color_b;
 extern s16 D_800F6378;
 extern s16 D_800F637E;
 extern s16 D_800F6384;
@@ -657,7 +657,7 @@ void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     if (a2 != 0) {
         goto alt_scale;
     }
-    new_var = D_800F6318;
+    new_var = g_gte_color_matrix_data;
     *new_var = r2;
     D_800F631E = g2;
     D_800F6324 = b2;
@@ -680,9 +680,9 @@ raw:
     if (a2 != 0) {
         goto alt_raw;
     }
-    D_800F6338 = r;
-    D_800F6339 = g;
-    D_800F633A = b;
+    g_gte_back_color_r = r;
+    g_gte_back_color_g = g;
+    g_gte_back_color_b = b;
     D_800F6398 = r;
     D_800F6399 = g;
     D_800F639A = b;

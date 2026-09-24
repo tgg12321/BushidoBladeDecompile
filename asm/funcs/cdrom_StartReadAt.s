@@ -9,8 +9,8 @@ glabel cdrom_StartReadAt
     /* 27650 80036E50 1000B0AF */   sw        $s0, 0x10($sp)
     /* 27654 80036E54 0C004010 */  beqz       $v0, .L80036E88
     /* 27658 80036E58 00000000 */   nop
-    /* 2765C 80036E5C 1080103C */  lui        $s0, %hi(D_80101E6C)
-    /* 27660 80036E60 6C1E1026 */  addiu      $s0, $s0, %lo(D_80101E6C)
+    /* 2765C 80036E5C 1080103C */  lui        $s0, %hi(g_cd_loc)
+    /* 27660 80036E60 6C1E1026 */  addiu      $s0, $s0, %lo(g_cd_loc)
     /* 27664 80036E64 EA01020C */  jal        CdPosToInt
     /* 27668 80036E68 21200002 */   addu      $a0, $s0, $zero
     /* 2766C 80036E6C 21205100 */  addu       $a0, $v0, $s1

@@ -13,12 +13,12 @@ glabel func_8005B644
     /* 4BE70 8005B670 D91F020C */  jal        SsVabClose
     /* 4BE74 8005B674 03240400 */   sra       $a0, $a0, 16
     /* 4BE78 8005B678 80881100 */  sll        $s1, $s1, 2
-    /* 4BE7C 8005B67C 0F80013C */  lui        $at, %hi(D_800EFC38)
+    /* 4BE7C 8005B67C 0F80013C */  lui        $at, %hi(g_vab_rec_ptr)
     /* 4BE80 8005B680 21083100 */  addu       $at, $at, $s1
-    /* 4BE84 8005B684 38FC20AC */  sw         $zero, %lo(D_800EFC38)($at)
-    /* 4BE88 8005B688 0F80013C */  lui        $at, %hi(D_800EFB38)
+    /* 4BE84 8005B684 38FC20AC */  sw         $zero, %lo(g_vab_rec_ptr)($at)
+    /* 4BE88 8005B688 0F80013C */  lui        $at, %hi(g_vab_vb_sbaddr)
     /* 4BE8C 8005B68C 21083100 */  addu       $at, $at, $s1
-    /* 4BE90 8005B690 38FB20AC */  sw         $zero, %lo(D_800EFB38)($at)
+    /* 4BE90 8005B690 38FB20AC */  sw         $zero, %lo(g_vab_vb_sbaddr)($at)
     /* 4BE94 8005B694 1800BF8F */  lw         $ra, 0x18($sp)
     /* 4BE98 8005B698 1400B18F */  lw         $s1, 0x14($sp)
     /* 4BE9C 8005B69C 1000B08F */  lw         $s0, 0x10($sp)

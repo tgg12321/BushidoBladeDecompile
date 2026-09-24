@@ -16,12 +16,12 @@ glabel comb_WaitRead8
     /* 2ADD4 8003A5D4 01008434 */   ori       $a0, $a0, (0xF2000001 & 0xFFFF)
     /* 2ADD8 8003A5D8 21800000 */  addu       $s0, $zero, $zero
   .L8003A5DC:
-    /* 2ADDC 8003A5DC 6C06848F */  lw         $a0, %gp_rel(D_800A3738)($gp)
+    /* 2ADDC 8003A5DC 6C06848F */  lw         $a0, %gp_rel(g_comb_event_ioer)($gp)
     /* 2ADE0 8003A5E0 66E2010C */  jal        TestEvent
     /* 2ADE4 8003A5E4 00000000 */   nop
     /* 2ADE8 8003A5E8 27004014 */  bnez       $v0, .L8003A688
     /* 2ADEC 8003A5EC 00000000 */   nop
-    /* 2ADF0 8003A5F0 4407848F */  lw         $a0, %gp_rel(D_800A3810)($gp)
+    /* 2ADF0 8003A5F0 4407848F */  lw         $a0, %gp_rel(g_comb_event_error)($gp)
     /* 2ADF4 8003A5F4 66E2010C */  jal        TestEvent
     /* 2ADF8 8003A5F8 00000000 */   nop
     /* 2ADFC 8003A5FC 0E004010 */  beqz       $v0, .L8003A638
@@ -61,7 +61,7 @@ glabel comb_WaitRead8
     /* 2AE80 8003A680 74E90008 */  j          .L8003A5D0
     /* 2AE84 8003A684 00F2043C */   lui       $a0, (0xF2000001 >> 16)
   .L8003A688:
-    /* 2AE88 8003A688 BC05858F */  lw         $a1, %gp_rel(D_800A3688)($gp)
+    /* 2AE88 8003A688 BC05858F */  lw         $a1, %gp_rel(g_comb_recv_buf)($gp)
     /* 2AE8C 8003A68C 0A80043C */  lui        $a0, %hi(D_800A368C)
     /* 2AE90 8003A690 8C36848C */  lw         $a0, %lo(D_800A368C)($a0)
     /* 2AE94 8003A694 03140500 */  sra        $v0, $a1, 16

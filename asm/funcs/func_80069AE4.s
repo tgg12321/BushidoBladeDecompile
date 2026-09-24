@@ -27,8 +27,8 @@ glabel func_80069AE4
     /* 5A348 80069B48 5AEA010C */  jal        SetSemiTrans
     /* 5A34C 80069B4C 0E0070A6 */   sh        $s0, 0xE($s3)
     /* 5A350 80069B50 21286002 */  addu       $a1, $s3, $zero
-    /* 5A354 80069B54 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A358 80069B58 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A354 80069B54 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A358 80069B58 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A35C 80069B5C 10007326 */  addiu      $s3, $s3, 0x10
     /* 5A360 80069B60 2DEA010C */  jal        AddPrim
     /* 5A364 80069B64 44008424 */   addiu     $a0, $a0, 0x44
@@ -81,8 +81,8 @@ glabel func_80069AE4
     /* 5A410 80069C10 5AEA010C */  jal        SetSemiTrans
     /* 5A414 80069C14 21880000 */   addu      $s1, $zero, $zero
     /* 5A418 80069C18 21286002 */  addu       $a1, $s3, $zero
-    /* 5A41C 80069C1C 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A420 80069C20 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A41C 80069C1C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A420 80069C20 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A424 80069C24 10007326 */  addiu      $s3, $s3, 0x10
     /* 5A428 80069C28 2DEA010C */  jal        AddPrim
     /* 5A42C 80069C2C 44008424 */   addiu     $a0, $a0, 0x44
@@ -121,8 +121,8 @@ glabel func_80069AE4
     /* 5A4AC 80069CAC 1C00848E */  lw         $a0, 0x1C($s4)
     /* 5A4B0 80069CB0 92F0010C */  jal        SetDrawMode
     /* 5A4B4 80069CB4 21384000 */   addu      $a3, $v0, $zero
-    /* 5A4B8 80069CB8 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A4BC 80069CBC 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A4B8 80069CB8 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A4BC 80069CBC 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A4C0 80069CC0 1C00858E */  lw         $a1, 0x1C($s4)
     /* 5A4C4 80069CC4 2DEA010C */  jal        AddPrim
     /* 5A4C8 80069CC8 48008424 */   addiu     $a0, $a0, 0x48
@@ -149,8 +149,8 @@ glabel func_80069AE4
     /* 5A51C 80069D1C 5AEA010C */  jal        SetSemiTrans
     /* 5A520 80069D20 160012A6 */   sh        $s2, 0x16($s0)
     /* 5A524 80069D24 21280002 */  addu       $a1, $s0, $zero
-    /* 5A528 80069D28 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A52C 80069D2C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A528 80069D28 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A52C 80069D2C 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A530 80069D30 18001026 */  addiu      $s0, $s0, 0x18
     /* 5A534 80069D34 2DEA010C */  jal        AddPrim
     /* 5A538 80069D38 4C008424 */   addiu     $a0, $a0, 0x4C
@@ -173,8 +173,8 @@ glabel func_80069AE4
     /* 5A57C 80069D7C 5AEA010C */  jal        SetSemiTrans
     /* 5A580 80069D80 160002A6 */   sh        $v0, 0x16($s0)
     /* 5A584 80069D84 21280002 */  addu       $a1, $s0, $zero
-    /* 5A588 80069D88 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A58C 80069D8C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A588 80069D88 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A58C 80069D8C 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A590 80069D90 18001026 */  addiu      $s0, $s0, 0x18
     /* 5A594 80069D94 2DEA010C */  jal        AddPrim
     /* 5A598 80069D98 4C008424 */   addiu     $a0, $a0, 0x4C
@@ -194,8 +194,8 @@ glabel func_80069AE4
     /* 5A5D0 80069DD0 5AEA010C */  jal        SetSemiTrans
     /* 5A5D4 80069DD4 160012A6 */   sh        $s2, 0x16($s0)
     /* 5A5D8 80069DD8 21280002 */  addu       $a1, $s0, $zero
-    /* 5A5DC 80069DDC 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5A5E0 80069DE0 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5A5DC 80069DDC 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5A5E0 80069DE0 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5A5E4 80069DE4 18001026 */  addiu      $s0, $s0, 0x18
     /* 5A5E8 80069DE8 2DEA010C */  jal        AddPrim
     /* 5A5EC 80069DEC 4C008424 */   addiu     $a0, $a0, 0x4C

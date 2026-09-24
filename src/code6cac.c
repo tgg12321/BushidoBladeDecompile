@@ -22,7 +22,7 @@ extern u8 D_8008D118;
 
 
 
-extern s32 D_800FF580;
+extern s32 g_pad_buf;
 
 /* Extern function declarations */
 extern s32 func_80037110(s32);
@@ -722,10 +722,10 @@ void func_80019568(s32 arg0) {
     voice_mask = 0;
     i = 0;
     packets = (u8 *)&sp.packets[0];
-    sp.packets[0] = D_800FF580;
-    sp.packets[1] = D_800FF584;
-    sp.packets[2] = D_800FF5A4;
-    sp.packets[3] = D_800FF5A8;
+    sp.packets[0] = g_pad_buf;
+    sp.packets[1] = g_pad_buf_plus_0x4;
+    sp.packets[2] = g_pad_buf_plus_0x24;
+    sp.packets[3] = g_pad_buf_plus_0x28;
     do {
         u8 *rec = &packets[i * 8];
         s16 *o = &sp.output[i];

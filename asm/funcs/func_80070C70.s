@@ -40,8 +40,8 @@ glabel func_80070C70
     /* 61508 80070D08 1800248E */  lw         $a0, 0x18($s1)
     /* 6150C 80070D0C 92F0010C */  jal        SetDrawMode
     /* 61510 80070D10 21384000 */   addu      $a3, $v0, $zero
-    /* 61514 80070D14 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 61518 80070D18 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 61514 80070D14 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 61518 80070D18 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 6151C 80070D1C 1800258E */  lw         $a1, 0x18($s1)
     /* 61520 80070D20 2DEA010C */  jal        AddPrim
     /* 61524 80070D24 04008424 */   addiu     $a0, $a0, 0x4
@@ -91,8 +91,8 @@ glabel func_80070C70
     /* 615D0 80070DD0 1800248E */  lw         $a0, 0x18($s1)
     /* 615D4 80070DD4 92F0010C */  jal        SetDrawMode
     /* 615D8 80070DD8 21384000 */   addu      $a3, $v0, $zero
-    /* 615DC 80070DDC 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 615E0 80070DE0 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 615DC 80070DDC 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 615E0 80070DE0 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 615E4 80070DE4 1800258E */  lw         $a1, 0x18($s1)
     /* 615E8 80070DE8 2DEA010C */  jal        AddPrim
     /* 615EC 80070DEC 28008424 */   addiu     $a0, $a0, 0x28
@@ -174,8 +174,8 @@ glabel func_80070C70
     /* 61704 80070F04 1800248E */  lw         $a0, 0x18($s1)
     /* 61708 80070F08 92F0010C */  jal        SetDrawMode
     /* 6170C 80070F0C 21384000 */   addu      $a3, $v0, $zero
-    /* 61710 80070F10 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 61714 80070F14 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 61710 80070F10 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 61714 80070F14 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 61718 80070F18 1800258E */  lw         $a1, 0x18($s1)
     /* 6171C 80070F1C 2DEA010C */  jal        AddPrim
     /* 61720 80070F20 04008424 */   addiu     $a0, $a0, 0x4

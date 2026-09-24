@@ -106,8 +106,8 @@ glabel func_8007352C
     /* 63EBC 800736BC 14007326 */  addiu      $s3, $s3, 0x14
     /* 63EC0 800736C0 1400B526 */  addiu      $s5, $s5, 0x14
     /* 63EC4 800736C4 1400848E */  lw         $a0, 0x14($s4)
-    /* 63EC8 800736C8 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 63ECC 800736CC 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 63EC8 800736C8 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 63ECC 800736CC 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 63ED0 800736D0 80200400 */  sll        $a0, $a0, 2
     /* 63ED4 800736D4 2DEA010C */  jal        AddPrim
     /* 63ED8 800736D8 21204400 */   addu      $a0, $v0, $a0

@@ -8,8 +8,8 @@ glabel func_8006E534
     /* 5ED4C 8006E54C 2188C000 */  addu       $s1, $a2, $zero
     /* 5ED50 8006E550 2400B3AF */  sw         $s3, 0x24($sp)
     /* 5ED54 8006E554 2198E000 */  addu       $s3, $a3, $zero
-    /* 5ED58 8006E558 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 5ED5C 8006E55C 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 5ED58 8006E558 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 5ED5C 8006E55C 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 5ED60 8006E560 2800BFAF */  sw         $ra, 0x28($sp)
     /* 5ED64 8006E564 11EE010C */  jal        ClearOTagR
     /* 5ED68 8006E568 08100524 */   addiu     $a1, $zero, 0x1008

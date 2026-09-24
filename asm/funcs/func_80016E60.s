@@ -54,9 +54,9 @@ glabel func_80016E60
     /* 7724 80016F24 C0100200 */  sll        $v0, $v0, 3
     /* 7728 80016F28 21104300 */  addu       $v0, $v0, $v1
     /* 772C 80016F2C 00110200 */  sll        $v0, $v0, 4
-    /* 7730 80016F30 0F80033C */  lui        $v1, %hi(D_800F7438)
-    /* 7734 80016F34 38746324 */  addiu      $v1, $v1, %lo(D_800F7438)
-    /* 7738 80016F38 800684AF */  sw         $a0, %gp_rel(D_800A374C)($gp)
+    /* 7730 80016F30 0F80033C */  lui        $v1, %hi(g_gpu_db)
+    /* 7734 80016F34 38746324 */  addiu      $v1, $v1, %lo(g_gpu_db)
+    /* 7738 80016F38 800684AF */  sw         $a0, %gp_rel(g_gpu_ot_ptr)($gp)
     /* 773C 80016F3C 11EE010C */  jal        ClearOTagR
     /* 7740 80016F40 21804300 */   addu      $s0, $v0, $v1
     /* 7744 80016F44 5A65000C */  jal        func_80019568
@@ -90,7 +90,7 @@ glabel func_80016E60
     /* 77AC 80016FAC 21200002 */   addu      $a0, $s0, $zero
     /* 77B0 80016FB0 4FEE010C */  jal        DrawOTag
     /* 77B4 80016FB4 8C40A426 */   addiu     $a0, $s5, 0x408C
-    /* 77B8 80016FB8 8006848F */  lw         $a0, %gp_rel(D_800A374C)($gp)
+    /* 77B8 80016FB8 8006848F */  lw         $a0, %gp_rel(g_gpu_ot_ptr)($gp)
     /* 77BC 80016FBC 4FEE010C */  jal        DrawOTag
     /* 77C0 80016FC0 00000000 */   nop
     /* 77C4 80016FC4 1000033C */  lui        $v1, (0x100010 >> 16)

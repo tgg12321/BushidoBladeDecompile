@@ -28,8 +28,8 @@ glabel func_80072F30
   .L80072F94:
     /* 63794 80072F94 5AEA010C */  jal        SetSemiTrans
     /* 63798 80072F98 00000000 */   nop
-    /* 6379C 80072F9C 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 637A0 80072FA0 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 6379C 80072F9C 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 637A0 80072FA0 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 637A4 80072FA4 21282002 */  addu       $a1, $s1, $zero
     /* 637A8 80072FA8 2DEA010C */  jal        AddPrim
     /* 637AC 80072FAC 5C008424 */   addiu     $a0, $a0, 0x5C

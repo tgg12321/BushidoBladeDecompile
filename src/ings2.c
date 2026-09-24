@@ -8,7 +8,7 @@ extern void _SsInit(void);
 extern void SpuQuit(void);
 
 /* Externs for globals */
-extern s32 g_sys_vsync_mode;
+extern s32 g_CdReadCallback_func;
 extern s32 g_sys_video_mode;
 extern u16 g_sys_vblank_count;
 extern u16 *g_sys_irq_counter;
@@ -19,8 +19,8 @@ extern void SpuSetCommonAttr(s32 *);
 /* --- Functions 0x8008289C - 0x80083BE4 --- */
 
 s32 CdReadCallback(s32 a0) {
-    s32 old = g_sys_vsync_mode;
-    g_sys_vsync_mode = a0;
+    s32 old = g_CdReadCallback_func;
+    g_CdReadCallback_func = a0;
     return old;
 }
 
@@ -457,18 +457,18 @@ extern s32 D_800A2614[8];
 extern volatile s32 Vcount;
 extern s32 *D_800A2638;
 
-void D_800832F8(void);
-void D_80083370(s32, s32);
+void trapIntrVSync(void);
+void setIntrVSync(s32, s32);
 
 s32 startIntrVSync(void) {
     *D_800A2638 = 0x107;
     Vcount = 0;
     sys_MemClear(&D_800A2614[0], 8);
-    ((void (*)(s32, void *))InterruptCallback)(0, (void *)D_800832F8);
-    return (s32)D_80083370;
+    ((void (*)(s32, void *))InterruptCallback)(0, (void *)trapIntrVSync);
+    return (s32)setIntrVSync;
 }
 
-void D_800832F8(void) {
+void trapIntrVSync(void) {
     s32 i;
     s32 *p;
 
@@ -485,7 +485,7 @@ void D_800832F8(void) {
     }
 }
 
-void D_80083370(s32 a0, s32 a1) {
+void setIntrVSync(s32 a0, s32 a1) {
     if (a1 != D_800A2614[a0]) {
         D_800A2614[a0] = a1;
     }
@@ -500,8 +500,8 @@ extern u32 *D_800A2660;
 extern u8 D_80016394;
 extern u8 D_800163B0;
 
-void D_80083418(void);
-s32 D_8008359C(s32, s32);
+void trapIntrDMA(void);
+s32 setIntrDMA(s32, s32);
 
 void sys_MemClear(s32 *a0, s32 a1) {
     s32 i;
@@ -512,13 +512,13 @@ void sys_MemClear(s32 *a0, s32 a1) {
 s32 startIntrDMA(void) {
     sys_MemClear2((s32 *)&D_800A2640, 8);
     *D_800A263C = 0;
-    ((void (*)(s32, void *))InterruptCallback)(3, (void *)D_80083418);
-    return (s32)D_8008359C;
+    ((void (*)(s32, void *))InterruptCallback)(3, (void *)trapIntrDMA);
+    return (s32)setIntrDMA;
 }
 
 /* PsyQ 4.0 LIBETC INTR_DMA: trapIntrDMA (static) — verbatim-linked Sony
    object (census 2026-07-09); C ref: sotn-decomp libetc/intr_dma.c */
-void D_80083418(void) {
+void trapIntrDMA(void) {
     u32 mask;
     s32 i;
 
@@ -543,7 +543,7 @@ void D_80083418(void) {
 
 /* PsyQ 4.0 LIBETC INTR_DMA: setIntrDMA (static) — verbatim-linked Sony
    object (census 2026-07-09); C ref: sotn-decomp libetc/intr_dma.c */
-s32 D_8008359C(s32 a0, s32 a1) {
+s32 setIntrDMA(s32 a0, s32 a1) {
     s32 prev = D_800A2640[a0];
     if (a1 != prev) {
         if (a1 != 0) {

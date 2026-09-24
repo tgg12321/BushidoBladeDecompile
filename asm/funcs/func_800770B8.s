@@ -9,8 +9,8 @@ glabel func_800770B8
     /* 678D4 800770D4 3800BFAF */  sw         $ra, 0x38($sp)
     /* 678D8 800770D8 2C00B1AF */  sw         $s1, 0x2C($sp)
     /* 678DC 800770DC 08100524 */  addiu      $a1, $zero, 0x1008
-    /* 678E0 800770E0 0A80043C */  lui        $a0, %hi(D_800A374C)
-    /* 678E4 800770E4 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
+    /* 678E0 800770E0 0A80043C */  lui        $a0, %hi(g_gpu_ot_ptr)
+    /* 678E4 800770E4 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 678E8 800770E8 58001126 */  addiu      $s1, $s0, 0x58
     /* 678EC 800770EC 1000A0A7 */  sh         $zero, 0x10($sp)
     /* 678F0 800770F0 11EE010C */  jal        ClearOTagR

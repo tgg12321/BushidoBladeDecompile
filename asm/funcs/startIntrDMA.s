@@ -8,18 +8,18 @@ glabel startIntrDMA
     /* 73BE0 800833E0 03000424 */  addiu      $a0, $zero, 0x3
     /* 73BE4 800833E4 0A80023C */  lui        $v0, %hi(D_800A263C)
     /* 73BE8 800833E8 3C26428C */  lw         $v0, %lo(D_800A263C)($v0)
-    /* 73BEC 800833EC 0880053C */  lui        $a1, %hi(D_80083418)
-    /* 73BF0 800833F0 1834A524 */  addiu      $a1, $a1, %lo(D_80083418)
+    /* 73BEC 800833EC 0880053C */  lui        $a1, %hi(trapIntrDMA)
+    /* 73BF0 800833F0 1834A524 */  addiu      $a1, $a1, %lo(trapIntrDMA)
     /* 73BF4 800833F4 000040AC */  sw         $zero, 0x0($v0)
     /* 73BF8 800833F8 BC0A020C */  jal        InterruptCallback
     /* 73BFC 800833FC 00000000 */   nop
-    /* 73C00 80083400 0880023C */  lui        $v0, %hi(D_8008359C)
-    /* 73C04 80083404 9C354224 */  addiu      $v0, $v0, %lo(D_8008359C)
+    /* 73C00 80083400 0880023C */  lui        $v0, %hi(setIntrDMA)
+    /* 73C04 80083404 9C354224 */  addiu      $v0, $v0, %lo(setIntrDMA)
     /* 73C08 80083408 1000BF8F */  lw         $ra, 0x10($sp)
     /* 73C0C 8008340C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 73C10 80083410 0800E003 */  jr         $ra
     /* 73C14 80083414 00000000 */   nop
-  alabel D_80083418
+  alabel trapIntrDMA
     /* 73C18 80083418 0A80023C */  lui        $v0, %hi(D_800A263C)
     /* 73C1C 8008341C 3C26428C */  lw         $v0, %lo(D_800A263C)($v0)
     /* 73C20 80083420 D0FFBD27 */  addiu      $sp, $sp, -0x30
@@ -125,7 +125,7 @@ glabel startIntrDMA
     /* 73D90 80083590 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 73D94 80083594 0800E003 */  jr         $ra
     /* 73D98 80083598 00000000 */   nop
-  alabel D_8008359C
+  alabel setIntrDMA
     /* 73D9C 8008359C 21308000 */  addu       $a2, $a0, $zero
     /* 73DA0 800835A0 0A80033C */  lui        $v1, %hi(D_800A2640)
     /* 73DA4 800835A4 40266324 */  addiu      $v1, $v1, %lo(D_800A2640)

@@ -109,8 +109,8 @@ glabel func_800600C8
     /* 50A60 80060260 92F0010C */  jal        SetDrawMode
     /* 50A64 80060264 1000A0AF */   sw        $zero, 0x10($sp)
     /* 50A68 80060268 21286002 */  addu       $a1, $s3, $zero
-    /* 50A6C 8006026C 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 50A70 80060270 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 50A6C 8006026C 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 50A70 80060270 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 50A74 80060274 80201400 */  sll        $a0, $s4, 2
     /* 50A78 80060278 2DEA010C */  jal        AddPrim
     /* 50A7C 8006027C 21204400 */   addu      $a0, $v0, $a0

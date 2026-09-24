@@ -40,8 +40,8 @@ glabel func_80074D2C
     /* 655C0 80074DC0 92F0010C */  jal        SetDrawMode
     /* 655C4 80074DC4 21384000 */   addu      $a3, $v0, $zero
     /* 655C8 80074DC8 80201100 */  sll        $a0, $s1, 2
-    /* 655CC 80074DCC 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 655D0 80074DD0 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 655CC 80074DCC 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 655D0 80074DD0 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 655D4 80074DD4 1800058E */  lw         $a1, 0x18($s0)
     /* 655D8 80074DD8 2DEA010C */  jal        AddPrim
     /* 655DC 80074DDC 21204400 */   addu      $a0, $v0, $a0

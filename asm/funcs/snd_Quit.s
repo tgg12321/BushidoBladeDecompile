@@ -15,10 +15,10 @@ glabel snd_Quit
     /* 4BD40 8005B540 CC0E020C */  jal        SsQuit
     /* 4BD44 8005B544 00000000 */   nop
     /* 4BD48 8005B548 21280000 */  addu       $a1, $zero, $zero
-    /* 4BD4C 8005B54C 0F80043C */  lui        $a0, %hi(D_800EFB38)
-    /* 4BD50 8005B550 38FB8424 */  addiu      $a0, $a0, %lo(D_800EFB38)
-    /* 4BD54 8005B554 0F80033C */  lui        $v1, %hi(D_800EFC38)
-    /* 4BD58 8005B558 38FC6324 */  addiu      $v1, $v1, %lo(D_800EFC38)
+    /* 4BD4C 8005B54C 0F80043C */  lui        $a0, %hi(g_vab_vb_sbaddr)
+    /* 4BD50 8005B550 38FB8424 */  addiu      $a0, $a0, %lo(g_vab_vb_sbaddr)
+    /* 4BD54 8005B554 0F80033C */  lui        $v1, %hi(g_vab_rec_ptr)
+    /* 4BD58 8005B558 38FC6324 */  addiu      $v1, $v1, %lo(g_vab_rec_ptr)
   .L8005B55C:
     /* 4BD5C 8005B55C 000060AC */  sw         $zero, 0x0($v1)
     /* 4BD60 8005B560 000080AC */  sw         $zero, 0x0($a0)

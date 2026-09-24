@@ -35,7 +35,7 @@ glabel memcard_WriteFile
     /* 284B4 80037CB4 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 284B8 80037CB8 0F000212 */  beq        $s0, $v0, .L80037CF8
     /* 284BC 80037CBC 00000000 */   nop
-    /* 284C0 80037CC0 C80690AF */  sw         $s0, %gp_rel(D_800A3794)($gp)
+    /* 284C0 80037CC0 C80690AF */  sw         $s0, %gp_rel(g_memcard_fd)($gp)
     /* 284C4 80037CC4 47DE000C */  jal        memcard_AckSwEvents
     /* 284C8 80037CC8 00000000 */   nop
     /* 284CC 80037CCC 76DE000C */  jal        memcard_AckHwEvents

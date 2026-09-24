@@ -21,76 +21,76 @@ glabel memcard_Init
     /* 27E38 80037638 01008434 */  ori        $a0, $a0, (0xF4000001 & 0xFFFF)
     /* 27E3C 8003763C 00800534 */  ori        $a1, $zero, 0x8000
     /* 27E40 80037640 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27E44 80037644 100782AF */  sw         $v0, %gp_rel(D_800A37DC)($gp)
+    /* 27E44 80037644 100782AF */  sw         $v0, %gp_rel(g_memcard_sw_event_ioe)($gp)
     /* 27E48 80037648 5EE2010C */  jal        OpenEvent
     /* 27E4C 8003764C 21380000 */   addu      $a3, $zero, $zero
     /* 27E50 80037650 00F4043C */  lui        $a0, (0xF4000001 >> 16)
     /* 27E54 80037654 01008434 */  ori        $a0, $a0, (0xF4000001 & 0xFFFF)
     /* 27E58 80037658 00010524 */  addiu      $a1, $zero, 0x100
     /* 27E5C 8003765C 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27E60 80037660 240782AF */  sw         $v0, %gp_rel(D_800A37F0)($gp)
+    /* 27E60 80037660 240782AF */  sw         $v0, %gp_rel(g_memcard_sw_event_err)($gp)
     /* 27E64 80037664 5EE2010C */  jal        OpenEvent
     /* 27E68 80037668 21380000 */   addu      $a3, $zero, $zero
     /* 27E6C 8003766C 00F4043C */  lui        $a0, (0xF4000001 >> 16)
     /* 27E70 80037670 01008434 */  ori        $a0, $a0, (0xF4000001 & 0xFFFF)
     /* 27E74 80037674 00200524 */  addiu      $a1, $zero, 0x2000
     /* 27E78 80037678 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27E7C 8003767C 300782AF */  sw         $v0, %gp_rel(D_800A37FC)($gp)
+    /* 27E7C 8003767C 300782AF */  sw         $v0, %gp_rel(g_memcard_sw_event_timeout)($gp)
     /* 27E80 80037680 5EE2010C */  jal        OpenEvent
     /* 27E84 80037684 21380000 */   addu      $a3, $zero, $zero
     /* 27E88 80037688 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27E8C 8003768C 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27E90 80037690 04000524 */  addiu      $a1, $zero, 0x4
     /* 27E94 80037694 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27E98 80037698 340782AF */  sw         $v0, %gp_rel(D_800A3800)($gp)
+    /* 27E98 80037698 340782AF */  sw         $v0, %gp_rel(g_memcard_sw_event_new)($gp)
     /* 27E9C 8003769C 5EE2010C */  jal        OpenEvent
     /* 27EA0 800376A0 21380000 */   addu      $a3, $zero, $zero
     /* 27EA4 800376A4 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27EA8 800376A8 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27EAC 800376AC 00800534 */  ori        $a1, $zero, 0x8000
     /* 27EB0 800376B0 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27EB4 800376B4 6C0782AF */  sw         $v0, %gp_rel(D_800A3838)($gp)
+    /* 27EB4 800376B4 6C0782AF */  sw         $v0, %gp_rel(g_memcard_hw_event_ioe)($gp)
     /* 27EB8 800376B8 5EE2010C */  jal        OpenEvent
     /* 27EBC 800376BC 21380000 */   addu      $a3, $zero, $zero
     /* 27EC0 800376C0 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27EC4 800376C4 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27EC8 800376C8 00010524 */  addiu      $a1, $zero, 0x100
     /* 27ECC 800376CC 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27ED0 800376D0 700782AF */  sw         $v0, %gp_rel(D_800A383C)($gp)
+    /* 27ED0 800376D0 700782AF */  sw         $v0, %gp_rel(g_memcard_hw_event_err)($gp)
     /* 27ED4 800376D4 5EE2010C */  jal        OpenEvent
     /* 27ED8 800376D8 21380000 */   addu      $a3, $zero, $zero
     /* 27EDC 800376DC 00F0043C */  lui        $a0, (0xF0000011 >> 16)
     /* 27EE0 800376E0 11008434 */  ori        $a0, $a0, (0xF0000011 & 0xFFFF)
     /* 27EE4 800376E4 00200524 */  addiu      $a1, $zero, 0x2000
     /* 27EE8 800376E8 00200624 */  addiu      $a2, $zero, 0x2000
-    /* 27EEC 800376EC 7C0782AF */  sw         $v0, %gp_rel(D_800A3848)($gp)
+    /* 27EEC 800376EC 7C0782AF */  sw         $v0, %gp_rel(g_memcard_hw_event_timeout)($gp)
     /* 27EF0 800376F0 5EE2010C */  jal        OpenEvent
     /* 27EF4 800376F4 21380000 */   addu      $a3, $zero, $zero
-    /* 27EF8 800376F8 840782AF */  sw         $v0, %gp_rel(D_800A3850)($gp)
+    /* 27EF8 800376F8 840782AF */  sw         $v0, %gp_rel(g_memcard_hw_event_new)($gp)
     /* 27EFC 800376FC 72E2010C */  jal        ExitCriticalSection
     /* 27F00 80037700 00000000 */   nop
-    /* 27F04 80037704 1007848F */  lw         $a0, %gp_rel(D_800A37DC)($gp)
+    /* 27F04 80037704 1007848F */  lw         $a0, %gp_rel(g_memcard_sw_event_ioe)($gp)
     /* 27F08 80037708 6AE2010C */  jal        EnableEvent
     /* 27F0C 8003770C 00000000 */   nop
-    /* 27F10 80037710 2407848F */  lw         $a0, %gp_rel(D_800A37F0)($gp)
+    /* 27F10 80037710 2407848F */  lw         $a0, %gp_rel(g_memcard_sw_event_err)($gp)
     /* 27F14 80037714 6AE2010C */  jal        EnableEvent
     /* 27F18 80037718 00000000 */   nop
-    /* 27F1C 8003771C 3007848F */  lw         $a0, %gp_rel(D_800A37FC)($gp)
+    /* 27F1C 8003771C 3007848F */  lw         $a0, %gp_rel(g_memcard_sw_event_timeout)($gp)
     /* 27F20 80037720 6AE2010C */  jal        EnableEvent
     /* 27F24 80037724 00000000 */   nop
-    /* 27F28 80037728 3407848F */  lw         $a0, %gp_rel(D_800A3800)($gp)
+    /* 27F28 80037728 3407848F */  lw         $a0, %gp_rel(g_memcard_sw_event_new)($gp)
     /* 27F2C 8003772C 6AE2010C */  jal        EnableEvent
     /* 27F30 80037730 00000000 */   nop
-    /* 27F34 80037734 6C07848F */  lw         $a0, %gp_rel(D_800A3838)($gp)
+    /* 27F34 80037734 6C07848F */  lw         $a0, %gp_rel(g_memcard_hw_event_ioe)($gp)
     /* 27F38 80037738 6AE2010C */  jal        EnableEvent
     /* 27F3C 8003773C 00000000 */   nop
-    /* 27F40 80037740 7007848F */  lw         $a0, %gp_rel(D_800A383C)($gp)
+    /* 27F40 80037740 7007848F */  lw         $a0, %gp_rel(g_memcard_hw_event_err)($gp)
     /* 27F44 80037744 6AE2010C */  jal        EnableEvent
     /* 27F48 80037748 00000000 */   nop
-    /* 27F4C 8003774C 7C07848F */  lw         $a0, %gp_rel(D_800A3848)($gp)
+    /* 27F4C 8003774C 7C07848F */  lw         $a0, %gp_rel(g_memcard_hw_event_timeout)($gp)
     /* 27F50 80037750 6AE2010C */  jal        EnableEvent
     /* 27F54 80037754 00000000 */   nop
-    /* 27F58 80037758 8407848F */  lw         $a0, %gp_rel(D_800A3850)($gp)
+    /* 27F58 80037758 8407848F */  lw         $a0, %gp_rel(g_memcard_hw_event_new)($gp)
     /* 27F5C 8003775C 6AE2010C */  jal        EnableEvent
     /* 27F60 80037760 00000000 */   nop
     /* 27F64 80037764 1000BF8F */  lw         $ra, 0x10($sp)

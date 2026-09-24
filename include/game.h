@@ -6,7 +6,7 @@
 #include "common.h"
 
 /* Named globals */
-extern u8 SpecialCam;
+extern u8 g_cd_file_table;
 extern u8 g_disp_enable;
 extern u8 g_disp_fade;
 extern s16 g_game_mirror_mode;

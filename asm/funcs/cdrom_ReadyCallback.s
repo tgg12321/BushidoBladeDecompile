@@ -4,8 +4,8 @@ glabel cdrom_ReadyCallback
     /* 2686C 8003606C 01000224 */  addiu      $v0, $zero, 0x1
     /* 26870 80036070 27008214 */  bne        $a0, $v0, .L80036110
     /* 26874 80036074 2000BFAF */   sw        $ra, 0x20($sp)
-    /* 26878 80036078 1080023C */  lui        $v0, %hi(D_80101E80)
-    /* 2687C 8003607C 801E428C */  lw         $v0, %lo(D_80101E80)($v0)
+    /* 26878 80036078 1080023C */  lui        $v0, %hi(g_cdread_sectors_remaining)
+    /* 2687C 8003607C 801E428C */  lw         $v0, %lo(g_cdread_sectors_remaining)($v0)
     /* 26880 80036080 1080013C */  lui        $at, %hi(D_80101E98)
     /* 26884 80036084 981E20A4 */  sh         $zero, %lo(D_80101E98)($at)
     /* 26888 80036088 29004018 */  blez       $v0, .L80036130
@@ -14,30 +14,30 @@ glabel cdrom_ReadyCallback
     /* 26894 80036094 03000524 */   addiu     $a1, $zero, 0x3
     /* 26898 80036098 EA01020C */  jal        CdPosToInt
     /* 2689C 8003609C 1000A427 */   addiu     $a0, $sp, 0x10
-    /* 268A0 800360A0 1080033C */  lui        $v1, %hi(D_80101EA0)
-    /* 268A4 800360A4 A01E638C */  lw         $v1, %lo(D_80101EA0)($v1)
+    /* 268A0 800360A0 1080033C */  lui        $v1, %hi(g_cdread_expected_pos)
+    /* 268A4 800360A4 A01E638C */  lw         $v1, %lo(g_cdread_expected_pos)($v1)
     /* 268A8 800360A8 00000000 */  nop
     /* 268AC 800360AC 19004314 */  bne        $v0, $v1, .L80036114
     /* 268B0 800360B0 FEFF0224 */   addiu     $v0, $zero, -0x2
-    /* 268B4 800360B4 1080043C */  lui        $a0, %hi(D_80101E84)
-    /* 268B8 800360B8 841E848C */  lw         $a0, %lo(D_80101E84)($a0)
+    /* 268B4 800360B4 1080043C */  lui        $a0, %hi(g_cdread_dest_buffer)
+    /* 268B8 800360B8 841E848C */  lw         $a0, %lo(g_cdread_dest_buffer)($a0)
     /* 268BC 800360BC 8801020C */  jal        CdGetSector
     /* 268C0 800360C0 00020524 */   addiu     $a1, $zero, 0x200
-    /* 268C4 800360C4 1080023C */  lui        $v0, %hi(D_80101E84)
-    /* 268C8 800360C8 841E428C */  lw         $v0, %lo(D_80101E84)($v0)
-    /* 268CC 800360CC 1080033C */  lui        $v1, %hi(D_80101E80)
-    /* 268D0 800360D0 801E638C */  lw         $v1, %lo(D_80101E80)($v1)
+    /* 268C4 800360C4 1080023C */  lui        $v0, %hi(g_cdread_dest_buffer)
+    /* 268C8 800360C8 841E428C */  lw         $v0, %lo(g_cdread_dest_buffer)($v0)
+    /* 268CC 800360CC 1080033C */  lui        $v1, %hi(g_cdread_sectors_remaining)
+    /* 268D0 800360D0 801E638C */  lw         $v1, %lo(g_cdread_sectors_remaining)($v1)
     /* 268D4 800360D4 00084224 */  addiu      $v0, $v0, 0x800
-    /* 268D8 800360D8 1080013C */  lui        $at, %hi(D_80101E84)
-    /* 268DC 800360DC 841E22AC */  sw         $v0, %lo(D_80101E84)($at)
-    /* 268E0 800360E0 1080023C */  lui        $v0, %hi(D_80101EA0)
-    /* 268E4 800360E4 A01E428C */  lw         $v0, %lo(D_80101EA0)($v0)
+    /* 268D8 800360D8 1080013C */  lui        $at, %hi(g_cdread_dest_buffer)
+    /* 268DC 800360DC 841E22AC */  sw         $v0, %lo(g_cdread_dest_buffer)($at)
+    /* 268E0 800360E0 1080023C */  lui        $v0, %hi(g_cdread_expected_pos)
+    /* 268E4 800360E4 A01E428C */  lw         $v0, %lo(g_cdread_expected_pos)($v0)
     /* 268E8 800360E8 FFFF6324 */  addiu      $v1, $v1, -0x1
-    /* 268EC 800360EC 1080013C */  lui        $at, %hi(D_80101E80)
-    /* 268F0 800360F0 801E23AC */  sw         $v1, %lo(D_80101E80)($at)
+    /* 268EC 800360EC 1080013C */  lui        $at, %hi(g_cdread_sectors_remaining)
+    /* 268F0 800360F0 801E23AC */  sw         $v1, %lo(g_cdread_sectors_remaining)($at)
     /* 268F4 800360F4 01004224 */  addiu      $v0, $v0, 0x1
-    /* 268F8 800360F8 1080013C */  lui        $at, %hi(D_80101EA0)
-    /* 268FC 800360FC A01E22AC */  sw         $v0, %lo(D_80101EA0)($at)
+    /* 268F8 800360F8 1080013C */  lui        $at, %hi(g_cdread_expected_pos)
+    /* 268FC 800360FC A01E22AC */  sw         $v0, %lo(g_cdread_expected_pos)($at)
     /* 26900 80036100 06006010 */  beqz       $v1, .L8003611C
     /* 26904 80036104 00000000 */   nop
     /* 26908 80036108 4CD80008 */  j          .L80036130
@@ -45,8 +45,8 @@ glabel cdrom_ReadyCallback
   .L80036110:
     /* 26910 80036110 FFFF0224 */  addiu      $v0, $zero, -0x1
   .L80036114:
-    /* 26914 80036114 1080013C */  lui        $at, %hi(D_80101E80)
-    /* 26918 80036118 801E22AC */  sw         $v0, %lo(D_80101E80)($at)
+    /* 26914 80036114 1080013C */  lui        $at, %hi(g_cdread_sectors_remaining)
+    /* 26918 80036118 801E22AC */  sw         $v0, %lo(g_cdread_sectors_remaining)($at)
   .L8003611C:
     /* 2691C 8003611C 9000020C */  jal        CdReadyCallback
     /* 26920 80036120 21200000 */   addu      $a0, $zero, $zero

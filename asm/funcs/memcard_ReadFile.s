@@ -20,7 +20,7 @@ glabel memcard_ReadFile
     /* 283D8 80037BD8 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 283DC 80037BDC 0F000212 */  beq        $s0, $v0, .L80037C1C
     /* 283E0 80037BE0 00000000 */   nop
-    /* 283E4 80037BE4 C80690AF */  sw         $s0, %gp_rel(D_800A3794)($gp)
+    /* 283E4 80037BE4 C80690AF */  sw         $s0, %gp_rel(g_memcard_fd)($gp)
     /* 283E8 80037BE8 47DE000C */  jal        memcard_AckSwEvents
     /* 283EC 80037BEC 00000000 */   nop
     /* 283F0 80037BF0 76DE000C */  jal        memcard_AckHwEvents

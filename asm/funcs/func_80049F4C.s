@@ -70,16 +70,16 @@ glabel func_80049F4C
     /* 3A848 8004A048 0800222A */  slti       $v0, $s1, 0x8
     /* 3A84C 8004A04C FAFF4014 */  bnez       $v0, .L8004A038
     /* 3A850 8004A050 60001026 */   addiu     $s0, $s0, 0x60
-    /* 3A854 8004A054 0F80043C */  lui        $a0, %hi(D_800F6318)
-    /* 3A858 8004A058 18638424 */  addiu      $a0, $a0, %lo(D_800F6318)
+    /* 3A854 8004A054 0F80043C */  lui        $a0, %hi(g_gte_color_matrix_data)
+    /* 3A858 8004A058 18638424 */  addiu      $a0, $a0, %lo(g_gte_color_matrix_data)
     /* 3A85C 8004A05C C7FB010C */  jal        SetColorMatrix
     /* 3A860 8004A060 00000000 */   nop
-    /* 3A864 8004A064 0F80043C */  lui        $a0, %hi(D_800F6338)
-    /* 3A868 8004A068 38638490 */  lbu        $a0, %lo(D_800F6338)($a0)
-    /* 3A86C 8004A06C 0F80053C */  lui        $a1, %hi(D_800F6339)
-    /* 3A870 8004A070 3963A590 */  lbu        $a1, %lo(D_800F6339)($a1)
-    /* 3A874 8004A074 0F80063C */  lui        $a2, %hi(D_800F633A)
-    /* 3A878 8004A078 3A63C690 */  lbu        $a2, %lo(D_800F633A)($a2)
+    /* 3A864 8004A064 0F80043C */  lui        $a0, %hi(g_gte_back_color_r)
+    /* 3A868 8004A068 38638490 */  lbu        $a0, %lo(g_gte_back_color_r)($a0)
+    /* 3A86C 8004A06C 0F80053C */  lui        $a1, %hi(g_gte_back_color_g)
+    /* 3A870 8004A070 3963A590 */  lbu        $a1, %lo(g_gte_back_color_g)($a1)
+    /* 3A874 8004A074 0F80063C */  lui        $a2, %hi(g_gte_back_color_b)
+    /* 3A878 8004A078 3A63C690 */  lbu        $a2, %lo(g_gte_back_color_b)($a2)
     /* 3A87C 8004A07C E7FB010C */  jal        SetBackColor
     /* 3A880 8004A080 00000000 */   nop
     /* 3A884 8004A084 4800BF8F */  lw         $ra, 0x48($sp)

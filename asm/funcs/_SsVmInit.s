@@ -6,15 +6,15 @@ glabel _SsVmInit
     /* 77028 80086828 5800BFAF */  sw         $ra, 0x58($sp)
     /* 7702C 8008682C D62B020C */  jal        _spu_setInTransfer
     /* 77030 80086830 5000B0AF */   sw        $s0, 0x50($sp)
-    /* 77034 80086834 0F80053C */  lui        $a1, %hi(MarioCam_str)
-    /* 77038 80086838 D019A524 */  addiu      $a1, $a1, %lo(MarioCam_str)
-    /* 7703C 8008683C 0F80013C */  lui        $at, %hi(D_800F66F8)
-    /* 77040 80086840 F86620A4 */  sh         $zero, %lo(D_800F66F8)($at)
+    /* 77034 80086834 0F80053C */  lui        $a1, %hi(D_800F19D0)
+    /* 77038 80086838 D019A524 */  addiu      $a1, $a1, %lo(D_800F19D0)
+    /* 7703C 8008683C 0F80013C */  lui        $at, %hi(_svm_damper)
+    /* 77040 80086840 F86620A4 */  sh         $zero, %lo(_svm_damper)($at)
     /* 77044 80086844 E124020C */  jal        SpuInitMalloc
     /* 77048 80086848 20000424 */   addiu     $a0, $zero, 0x20
     /* 7704C 8008684C 21800000 */  addu       $s0, $zero, $zero
-    /* 77050 80086850 1080033C */  lui        $v1, %hi(D_80102A78)
-    /* 77054 80086854 782A6324 */  addiu      $v1, $v1, %lo(D_80102A78)
+    /* 77050 80086850 1080033C */  lui        $v1, %hi(_svm_sreg_buf)
+    /* 77054 80086854 782A6324 */  addiu      $v1, $v1, %lo(_svm_sreg_buf)
     /* 77058 80086858 FFFF0232 */  andi       $v0, $s0, 0xFFFF
   .L8008685C:
     /* 7705C 8008685C 40100200 */  sll        $v0, $v0, 1
@@ -28,9 +28,9 @@ glabel _SsVmInit
     /* 7707C 8008687C 21800000 */  addu       $s0, $zero, $zero
     /* 77080 80086880 FFFF0232 */  andi       $v0, $s0, 0xFFFF
   .L80086884:
-    /* 77084 80086884 0F80013C */  lui        $at, %hi(D_800F65E0)
+    /* 77084 80086884 0F80013C */  lui        $at, %hi(_svm_sreg_dirty)
     /* 77088 80086888 21082200 */  addu       $at, $at, $v0
-    /* 7708C 8008688C E06520A0 */  sb         $zero, %lo(D_800F65E0)($at)
+    /* 7708C 8008688C E06520A0 */  sb         $zero, %lo(_svm_sreg_dirty)($at)
     /* 77090 80086890 01001026 */  addiu      $s0, $s0, 0x1
     /* 77094 80086894 FFFF0232 */  andi       $v0, $s0, 0xFFFF
     /* 77098 80086898 1800422C */  sltiu      $v0, $v0, 0x18
@@ -88,35 +88,35 @@ glabel _SsVmInit
     /* 77158 80086958 23104500 */  subu       $v0, $v0, $a1
     /* 7715C 8008695C 40100200 */  sll        $v0, $v0, 1
     /* 77160 80086960 18000324 */  addiu      $v1, $zero, 0x18
-    /* 77164 80086964 0F80013C */  lui        $at, %hi(D_800F4E1A)
+    /* 77164 80086964 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x2)
     /* 77168 80086968 21082200 */  addu       $at, $at, $v0
-    /* 7716C 8008696C 1A4E23A4 */  sh         $v1, %lo(D_800F4E1A)($at)
+    /* 7716C 8008696C 1A4E23A4 */  sh         $v1, %lo(_svm_voice_plus_0x2)($at)
     /* 77170 80086970 FFFF0324 */  addiu      $v1, $zero, -0x1
-    /* 77174 80086974 0F80013C */  lui        $at, %hi(D_800F4E28)
+    /* 77174 80086974 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x10)
     /* 77178 80086978 21082200 */  addu       $at, $at, $v0
-    /* 7717C 8008697C 284E23A4 */  sh         $v1, %lo(D_800F4E28)($at)
+    /* 7717C 8008697C 284E23A4 */  sh         $v1, %lo(_svm_voice_plus_0x10)($at)
     /* 77180 80086980 40000324 */  addiu      $v1, $zero, 0x40
-    /* 77184 80086984 0F80013C */  lui        $at, %hi(D_800F4E18)
+    /* 77184 80086984 0F80013C */  lui        $at, %hi(_svm_voice)
     /* 77188 80086988 21082200 */  addu       $at, $at, $v0
-    /* 7718C 8008698C 184E31A4 */  sh         $s1, %lo(D_800F4E18)($at)
-    /* 77190 80086990 0F80013C */  lui        $at, %hi(D_800F4E35)
+    /* 7718C 8008698C 184E31A4 */  sh         $s1, %lo(_svm_voice)($at)
+    /* 77190 80086990 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x1D)
     /* 77194 80086994 21082200 */  addu       $at, $at, $v0
-    /* 77198 80086998 354E20A0 */  sb         $zero, %lo(D_800F4E35)($at)
-    /* 7719C 8008699C 0F80013C */  lui        $at, %hi(D_800F4E1C)
+    /* 77198 80086998 354E20A0 */  sb         $zero, %lo(_svm_voice_plus_0x1D)($at)
+    /* 7719C 8008699C 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x4)
     /* 771A0 800869A0 21082200 */  addu       $at, $at, $v0
-    /* 771A4 800869A4 1C4E20A4 */  sh         $zero, %lo(D_800F4E1C)($at)
-    /* 771A8 800869A8 0F80013C */  lui        $at, %hi(D_800F4E1E)
+    /* 771A4 800869A4 1C4E20A4 */  sh         $zero, %lo(_svm_voice_plus_0x4)($at)
+    /* 771A8 800869A8 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x6)
     /* 771AC 800869AC 21082200 */  addu       $at, $at, $v0
-    /* 771B0 800869B0 1E4E20A4 */  sh         $zero, %lo(D_800F4E1E)($at)
-    /* 771B4 800869B4 0F80013C */  lui        $at, %hi(D_800F4E2A)
+    /* 771B0 800869B0 1E4E20A4 */  sh         $zero, %lo(_svm_voice_plus_0x6)($at)
+    /* 771B4 800869B4 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x12)
     /* 771B8 800869B8 21082200 */  addu       $at, $at, $v0
-    /* 771BC 800869BC 2A4E20A4 */  sh         $zero, %lo(D_800F4E2A)($at)
-    /* 771C0 800869C0 0F80013C */  lui        $at, %hi(D_800F4E2C)
+    /* 771BC 800869BC 2A4E20A4 */  sh         $zero, %lo(_svm_voice_plus_0x12)($at)
+    /* 771C0 800869C0 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x14)
     /* 771C4 800869C4 21082200 */  addu       $at, $at, $v0
-    /* 771C8 800869C8 2C4E20A4 */  sh         $zero, %lo(D_800F4E2C)($at)
-    /* 771CC 800869CC 0F80013C */  lui        $at, %hi(D_800F4E2E)
+    /* 771C8 800869C8 2C4E20A4 */  sh         $zero, %lo(_svm_voice_plus_0x14)($at)
+    /* 771CC 800869CC 0F80013C */  lui        $at, %hi(_svm_voice_plus_0x16)
     /* 771D0 800869D0 21082200 */  addu       $at, $at, $v0
-    /* 771D4 800869D4 2E4E31A4 */  sh         $s1, %lo(D_800F4E2E)($at)
+    /* 771D4 800869D4 2E4E31A4 */  sh         $s1, %lo(_svm_voice_plus_0x16)($at)
     /* 771D8 800869D8 0F80013C */  lui        $at, %hi(D_800F4E20)
     /* 771DC 800869DC 21082200 */  addu       $at, $at, $v0
     /* 771E0 800869E0 204E20A4 */  sh         $zero, %lo(D_800F4E20)($at)
@@ -160,8 +160,8 @@ glabel _SsVmInit
     /* 77278 80086A78 0410A200 */  sllv       $v0, $v0, $a1
     /* 7727C 80086A7C 222D020C */  jal        func_8008B488
     /* 77280 80086A80 1000A2AF */   sw        $v0, 0x10($sp)
-    /* 77284 80086A84 1080013C */  lui        $at, %hi(D_8010280A)
-    /* 77288 80086A88 0A2830A4 */  sh         $s0, %lo(D_8010280A)($at)
+    /* 77284 80086A84 1080013C */  lui        $at, %hi(_svm_cur_plus_0x1A)
+    /* 77288 80086A88 0A2830A4 */  sh         $s0, %lo(_svm_cur_plus_0x1A)($at)
     /* 7728C 80086A8C 751C020C */  jal        _SsVmKeyOffNow
     /* 77290 80086A90 01000424 */   addiu     $a0, $zero, 0x1
     /* 77294 80086A94 01001026 */  addiu      $s0, $s0, 0x1
@@ -178,12 +178,12 @@ glabel _SsVmInit
     /* 772BC 80086ABC 0F80013C */  lui        $at, %hi(_svm_rattr_plus_0xA)
     /* 772C0 80086AC0 5A5722A4 */  sh         $v0, %lo(_svm_rattr_plus_0xA)($at)
     /* 772C4 80086AC4 80000224 */  addiu      $v0, $zero, 0x80
-    /* 772C8 80086AC8 0F80013C */  lui        $at, %hi(D_800F1B10)
-    /* 772CC 80086ACC 101B20A4 */  sh         $zero, %lo(D_800F1B10)($at)
-    /* 772D0 80086AD0 0F80013C */  lui        $at, %hi(D_800F1B12)
-    /* 772D4 80086AD4 121B20A4 */  sh         $zero, %lo(D_800F1B12)($at)
-    /* 772D8 80086AD8 1080013C */  lui        $at, %hi(D_801078D8)
-    /* 772DC 80086ADC D87820A4 */  sh         $zero, %lo(D_801078D8)($at)
+    /* 772C8 80086AC8 0F80013C */  lui        $at, %hi(_svm_okon1)
+    /* 772CC 80086ACC 101B20A4 */  sh         $zero, %lo(_svm_okon1)($at)
+    /* 772D0 80086AD0 0F80013C */  lui        $at, %hi(_svm_okon2)
+    /* 772D4 80086AD4 121B20A4 */  sh         $zero, %lo(_svm_okon2)($at)
+    /* 772D8 80086AD8 1080013C */  lui        $at, %hi(_svm_okof1)
+    /* 772DC 80086ADC D87820A4 */  sh         $zero, %lo(_svm_okof1)($at)
     /* 772E0 80086AE0 0F80013C */  lui        $at, %hi(D_800F1B14)
     /* 772E4 80086AE4 141B20A4 */  sh         $zero, %lo(D_800F1B14)($at)
     /* 772E8 80086AE8 0F80013C */  lui        $at, %hi(D_800F2B68)

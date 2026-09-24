@@ -466,8 +466,8 @@ glabel func_800646E8
     /* 555E8 80064DE8 FFFFA534 */  ori        $a1, $a1, (0xFFFFFF & 0xFFFF)
   .L80064DEC:
     /* 555EC 80064DEC 0000C38E */  lw         $v1, 0x0($s6)
-    /* 555F0 80064DF0 0A80023C */  lui        $v0, %hi(D_800A374C)
-    /* 555F4 80064DF4 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
+    /* 555F0 80064DF0 0A80023C */  lui        $v0, %hi(g_gpu_ot_ptr)
+    /* 555F4 80064DF4 4C37428C */  lw         $v0, %lo(g_gpu_ot_ptr)($v0)
     /* 555F8 80064DF8 1C0491AF */  sw         $s1, %gp_rel(D_800A34E8)($gp)
     /* 555FC 80064DFC 80180300 */  sll        $v1, $v1, 2
     /* 55600 80064E00 21104300 */  addu       $v0, $v0, $v1

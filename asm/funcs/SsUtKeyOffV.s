@@ -20,8 +20,8 @@ glabel SsUtKeyOffV
     /* 76618 80085E18 8F170208 */  j          .L80085E3C
     /* 7661C 80085E1C 00000000 */   nop
   .L80085E20:
-    /* 76620 80085E20 1080013C */  lui        $at, %hi(D_8010280A)
-    /* 76624 80085E24 0A2825A4 */  sh         $a1, %lo(D_8010280A)($at)
+    /* 76620 80085E20 1080013C */  lui        $at, %hi(_svm_cur_plus_0x1A)
+    /* 76624 80085E24 0A2825A4 */  sh         $a1, %lo(_svm_cur_plus_0x1A)($at)
     /* 76628 80085E28 751C020C */  jal        _SsVmKeyOffNow
     /* 7662C 80085E2C 21200000 */   addu      $a0, $zero, $zero
     /* 76630 80085E30 21100000 */  addu       $v0, $zero, $zero

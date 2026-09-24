@@ -84,7 +84,7 @@ extern void stage_ApplyLighting(void);
 extern void stage_InitCollision(void);
 extern s32 D_80102C00;
 extern u16 D_800A38D6;
-extern s32 D_800A374C;
+extern s32 g_gpu_ot_ptr;
 extern s32 D_800A3808;
 extern s32 D_800A378C;
 extern s32 D_800F62E0;
@@ -280,7 +280,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
     D_800A3820 = (s32)&D_80102C00;
     {
         u16 cnt = D_800A38D6;
-        s32 old_ptr = D_800A374C;
+        s32 old_ptr = g_gpu_ot_ptr;
         new_var2 = cnt - -1;
         D_800A3808 = old_ptr;
         D_800A38D6 = new_var2;
