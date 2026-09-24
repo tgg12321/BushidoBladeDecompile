@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80045B68",
-      "file": "text1a_c",
-      "distance": 302,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "vmNoiseOn",
       "file": "main",
       "distance": 305,
@@ -775,14 +767,14 @@
     }
   ],
   "counts": {
-    "total": 76,
-    "active": 65,
+    "total": 75,
+    "active": 64,
     "by_status": {
-      "active": 65,
+      "active": 64,
       "rotated": 11
     },
     "by_verdict": {
-      "C": 49,
+      "C": 48,
       "ASM-PARTIAL": 16
     }
   },
