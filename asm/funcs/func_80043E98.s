@@ -11,14 +11,14 @@ glabel func_80043E98
     /* 346BC 80043EBC 1400B1AF */  sw         $s1, 0x14($sp)
     /* 346C0 80043EC0 00004486 */  lh         $a0, 0x0($s2)
     /* 346C4 80043EC4 3000B18F */  lw         $s1, 0x30($sp)
-    /* 346C8 80043EC8 E00F010C */  jal        func_80043F80
+    /* 346C8 80043EC8 E00F010C */  jal        gpu_OffsetTPage
     /* 346CC 80043ECC 2180E000 */   addu      $s0, $a3, $zero
     /* 346D0 80043ED0 00841000 */  sll        $s0, $s0, 16
     /* 346D4 80043ED4 032C1000 */  sra        $a1, $s0, 16
     /* 346D8 80043ED8 008C1100 */  sll        $s1, $s1, 16
     /* 346DC 80043EDC 04004486 */  lh         $a0, 0x4($s2)
     /* 346E0 80043EE0 03341100 */  sra        $a2, $s1, 16
-    /* 346E4 80043EE4 F30F010C */  jal        func_80043FCC
+    /* 346E4 80043EE4 F30F010C */  jal        gpu_OffsetClut
     /* 346E8 80043EE8 000042A6 */   sh        $v0, 0x0($s2)
     /* 346EC 80043EEC 040042A6 */  sh         $v0, 0x4($s2)
     /* 346F0 80043EF0 1C00BF8F */  lw         $ra, 0x1C($sp)

@@ -29,7 +29,7 @@ glabel memcard_ReadFile
     /* 283FC 80037BFC 5800A68F */  lw         $a2, 0x58($sp)
     /* 28400 80037C00 7EE2010C */  jal        read
     /* 28404 80037C04 21282002 */   addu      $a1, $s1, $zero
-    /* 28408 80037C08 59DE000C */  jal        func_80037964
+    /* 28408 80037C08 59DE000C */  jal        memcard_WaitHwEvent
     /* 2840C 80037C0C 00000000 */   nop
     /* 28410 80037C10 01004238 */  xori       $v0, $v0, 0x1
     /* 28414 80037C14 2B100200 */  sltu       $v0, $zero, $v0

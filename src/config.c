@@ -23,7 +23,7 @@ extern s32 g_game_flag_b;
 extern s32 g_game_flag_a;
 extern void func_8001924C(s32 *, s32);
 extern void func_80045A28(s32, s32);
-extern void func_80052A20(s32 *, s32 *, s16 *);
+extern void gte_SetMatrixRotTransIR(s32 *, s32 *, s16 *);
 extern void func_80052C10();
 
 /* Externs for globals */
@@ -225,8 +225,8 @@ void func_8003F6D8(s16 *arg0) {
         Func8003F6D8Inner *in = (Func8003F6D8Inner *)((u8 *)arg0 + off + 0x1C);
         for (j = 0; j < in->count; j++) {
             s32 *obj = in->objs[j] + 6;
-            func_80052A20(obj, in->quads[j], in->pairs[j]);
-            func_80052A20(obj, in->quads[j] + 2, in->pairs[j] + 8);
+            gte_SetMatrixRotTransIR(obj, in->quads[j], in->pairs[j]);
+            gte_SetMatrixRotTransIR(obj, in->quads[j] + 2, in->pairs[j] + 8);
         }
     }
 }
@@ -553,7 +553,7 @@ void func_8003FECC(s32 *a0, s32 *a1, s16 *a2)
 
   a1[5] = t2;
 }
-s32 func_8003FFA8(s32 a0) {
+s32 math_AlignUp4(s32 a0) {
     if (a0 & 3) {
         a0 = (a0 + 3) & ~3;
     }

@@ -196,7 +196,7 @@ s32 func_8003AB44(void) {
             D_800A38AC = 1;
             break;
         case 1:
-            func_8003A308();
+            comb_ReadCtsSetRts();
             D_800A37D8 = 0;
             if (D_800A38A0 == 0) {
                 SetDispMask(1);
@@ -229,7 +229,7 @@ s32 func_8003AB44(void) {
             }
             /* fall through */
         fail:
-            func_8003A39C();
+            comb_ResetClose();
             return -1;
         case 4:
             SetDispMask(0);
@@ -239,7 +239,7 @@ s32 func_8003AB44(void) {
             break;
         case 7:
             D_800A3916 = 1;
-            func_8003A360();
+            comb_EnableEvents();
             return 1;
     }
     return 0;

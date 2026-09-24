@@ -156,7 +156,7 @@ glabel func_8003C040
     /* 2CA74 8003C274 AADB000C */  jal        func_80036EA8
     /* 2CA78 8003C278 05000424 */   addiu     $a0, $zero, 0x5
     /* 2CA7C 8003C27C 01000592 */  lbu        $a1, 0x1($s0)
-    /* 2CA80 8003C280 F5DB000C */  jal        func_80036FD4
+    /* 2CA80 8003C280 F5DB000C */  jal        cdrom_StartAudio
     /* 2CA84 8003C284 21204000 */   addu      $a0, $v0, $zero
     /* 2CA88 8003C288 98DC000C */  jal        func_80037260
     /* 2CA8C 8003C28C 00000000 */   nop

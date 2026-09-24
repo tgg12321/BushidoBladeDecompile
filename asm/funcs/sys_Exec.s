@@ -15,7 +15,7 @@ glabel sys_Exec
     /* 27C9C 8003749C 00000000 */   nop
     /* 27CA0 800374A0 436D010C */  jal        snd_Quit
     /* 27CA4 800374A4 00000000 */   nop
-    /* 27CA8 800374A8 DDDD000C */  jal        func_80037774
+    /* 27CA8 800374A8 DDDD000C */  jal        memcard_Quit
     /* 27CAC 800374AC 00000000 */   nop
     /* 27CB0 800374B0 B00A020C */  jal        ResetCallback
     /* 27CB4 800374B4 00000000 */   nop

@@ -13,7 +13,7 @@ glabel func_8003D91C
     /* 2E148 8003D948 1000A0A7 */  sh         $zero, 0x10($sp)
     /* 2E14C 8003D94C 1200B1A7 */  sh         $s1, 0x12($sp)
     /* 2E150 8003D950 1400B0A7 */  sh         $s0, 0x14($sp)
-    /* 2E154 8003D954 68F6000C */  jal        func_8003D9A0
+    /* 2E154 8003D954 68F6000C */  jal        gpu_SetDrawMoveArray
     /* 2E158 8003D958 1600A2A7 */   sh        $v0, 0x16($sp)
     /* 2E15C 8003D95C 1000A427 */  addiu      $a0, $sp, 0x10
     /* 2E160 8003D960 13000524 */  addiu      $a1, $zero, 0x13
@@ -24,7 +24,7 @@ glabel func_8003D91C
     /* 2E174 8003D974 08000224 */  addiu      $v0, $zero, 0x8
     /* 2E178 8003D978 1000B0A7 */  sh         $s0, 0x10($sp)
     /* 2E17C 8003D97C 1200B1A7 */  sh         $s1, 0x12($sp)
-    /* 2E180 8003D980 68F6000C */  jal        func_8003D9A0
+    /* 2E180 8003D980 68F6000C */  jal        gpu_SetDrawMoveArray
     /* 2E184 8003D984 1600A2A7 */   sh        $v0, 0x16($sp)
     /* 2E188 8003D988 2000BF8F */  lw         $ra, 0x20($sp)
     /* 2E18C 8003D98C 1C00B18F */  lw         $s1, 0x1C($sp)

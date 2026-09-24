@@ -32,7 +32,7 @@ glabel func_8003DE14
     /* 2E68C 8003DE8C 06000296 */  lhu        $v0, 0x6($s0)
     /* 2E690 8003DE90 1008A427 */  addiu      $a0, $sp, 0x810
     /* 2E694 8003DE94 21105700 */  addu       $v0, $v0, $s7
-    /* 2E698 8003DE98 F94A010C */  jal        func_80052BE4
+    /* 2E698 8003DE98 F94A010C */  jal        gte_ReadFarColor
     /* 2E69C 8003DE9C 020002A6 */   sh        $v0, 0x2($s0)
     /* 2E6A0 8003DEA0 00800324 */  addiu      $v1, $zero, -0x8000
     /* 2E6A4 8003DEA4 1008B593 */  lbu        $s5, 0x810($sp)

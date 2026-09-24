@@ -1786,13 +1786,13 @@ def test_include_asm_whole_body() -> None:
     honest pure-C distance of 0 and counted as clean (-1 read as <= 0), so
     queue.generate dropped it and mark_done would have recorded it COMPLETED-C.
     """
-    inc = 'INCLUDE_ASM("asm/funcs", func_800836C8);\n'
+    inc = 'INCLUDE_ASM("asm/funcs", PClseek);\n'
 
     # 1. Recognition + attribution.
     eq("include_asm: macro invocation recognised",
-       [f for f, _s, _e in inlineasm.include_asm_spans(inc)], ["func_800836C8"])
+       [f for f, _s, _e in inlineasm.include_asm_spans(inc)], ["PClseek"])
     check("include_asm: named in whole_body_asm_funcs",
-          "func_800836C8" in inlineasm.whole_body_asm_funcs(inc))
+          "PClseek" in inlineasm.whole_body_asm_funcs(inc))
     check("include_asm: a #define of the macro is not an invocation",
           inlineasm.include_asm_spans('#define INCLUDE_ASM(F, N) __asm__()\n') == [])
 
@@ -1804,24 +1804,24 @@ def test_include_asm_whole_body() -> None:
 
     # 3. Counted > 0 despite there being no C body to attribute it to.
     eq("include_asm: attributed to the named function",
-       inlineasm.func_cheat_asm_count(inc, "func_800836C8"), 1)
+       inlineasm.func_cheat_asm_count(inc, "PClseek"), 1)
     # The hand-expanded `.include` spelling is the same fact.
     exp = ('__asm__(\n    ".section .text\\n"\n'
-           '    "    .include \\"asm/funcs/func_800836C8.s\\"\\n"\n);\n')
+           '    "    .include \\"asm/funcs/PClseek.s\\"\\n"\n);\n')
     check("include_asm: hand-expanded .include attributed too",
-          "func_800836C8" in inlineasm.whole_body_asm_funcs(exp))
+          "PClseek" in inlineasm.whole_body_asm_funcs(exp))
     # Genuinely unexplained symbols still report UNKNOWN rather than a fake 1.
     eq("include_asm: unrelated symbol still UNKNOWN",
        inlineasm.func_cheat_asm_count(inc, "some_other_func"), -1)
     # Attribution is spelling-INDEPENDENT: a `glabel` whole-body block is the
     # same fact and must attribute too, or the defect just moves one spelling
     # over. (It is still never STRIPPED — canonical_body behaviour is unchanged.)
-    gl = ('__asm__(\n    ".section .text\\n"\n    "glabel func_800836B8\\n"\n'
-          '    "    jr $ra\\n"\n    "    nop\\n"\n    "endlabel func_800836B8\\n"\n);\n')
+    gl = ('__asm__(\n    ".section .text\\n"\n    "glabel PCclose\\n"\n'
+          '    "    jr $ra\\n"\n    "    nop\\n"\n    "endlabel PCclose\\n"\n);\n')
     eq("include_asm: glabel whole-body block attributed",
-       inlineasm.func_cheat_asm_count(gl, "func_800836B8"), 1)
+       inlineasm.func_cheat_asm_count(gl, "PCclose"), 1)
     check("include_asm: glabel whole-body block still NOT stripped",
-          "glabel func_800836B8" in inlineasm.strip_cheat_asm_file(gl)[0])
+          "glabel PCclose" in inlineasm.strip_cheat_asm_file(gl)[0])
     # ...but a glabel block with NO instructions is a bare SYMBOL marker, not a
     # body (system.c emits one so `&D_80081F1C` resolves). Not decomp work.
     marker = '__asm__(\n    ".set noreorder\\n"\n    "glabel D_80081F1C\\n"\n);\n'

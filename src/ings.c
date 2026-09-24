@@ -9,7 +9,7 @@
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
 extern void ClearImage(void *, s32, s32, s32);
-extern void snd_PlaySystemSe(void);
+extern void rcnt_StartCnt1(void);
 
 /* Externs for globals */
 extern u8 g_file_flags;
@@ -28,11 +28,11 @@ extern u8 g_str_eff_init;
 extern void printf();
 extern void func_800164F8(void);
 extern s16 Judge[];
-extern s32 func_80083698(s32, s32, s32);
-extern s32 func_800836C8(s32, s32, s32);
-extern s32 bios_FileRead(s32, u8 *, s32);
+extern s32 PCopen(s32, s32, s32);
+extern s32 PClseek(s32, s32, s32);
+extern s32 PCread(s32, u8 *, s32);
 extern void close(s32);
-extern void func_800836B8(s32);
+extern void PCclose(s32);
 
 
 extern u8 D_800A30E8;
@@ -47,7 +47,7 @@ extern s32 D_800A30DC;
 extern u8 D_800F33D8;
 extern u8 D_800F7438;
 extern u8 D_800A37A8[];
-extern void replay_camera_Init(s32, s32);
+extern void cdrom_StartRead(s32, s32);
 extern void game_FrameLoop(void);
 extern void PutDispEnv(u8 *);
 extern void LoadImage(u8 *, u8 *);
@@ -135,20 +135,20 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
     s32 remaining;
     s32 chunk;
 
-    fd = func_80083698(a0 + 4, 0, 0);
+    fd = PCopen(a0 + 4, 0, 0);
     if (fd == -1) {
         return -2;
     }
-    total = func_800836C8(fd, 0, 2);
+    total = PClseek(fd, 0, 2);
     remaining = total;
-    func_800836C8(fd, 0, 0);
+    PClseek(fd, 0, 0);
     if (total > 0) {
         do {
             chunk = 0x4000;
             if (remaining < 0x4001) {
                 chunk = remaining;
             }
-            if (bios_FileRead(fd, dest, chunk) != chunk) {
+            if (PCread(fd, dest, chunk) != chunk) {
                 close(fd);
                 return -1;
             }
@@ -156,26 +156,26 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
             dest += chunk;
         } while (remaining > 0);
     }
-    func_800836B8(fd);
+    PCclose(fd);
     return total;
 }
 s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     s32 fd;
     s32 i;
 
-    fd = func_80083698(a0 + 4, 0, 0);
+    fd = PCopen(a0 + 4, 0, 0);
     if (fd == -1) {
         return -2;
     }
-    func_800836C8(fd, sector << 11, 0);
+    PClseek(fd, sector << 11, 0);
     for (i = 0; i < count; i++) {
-        if (bios_FileRead(fd, dest, 0x800) != 0x800) {
+        if (PCread(fd, dest, 0x800) != 0x800) {
             close(fd);
             return -1;
         }
         dest += 0x800;
     }
-    func_800836B8(fd);
+    PCclose(fd);
     return count << 11;
 }
 s32 disp_CalcFov(s32 a0) {
@@ -257,8 +257,8 @@ void gpu_DisableDisplay(void) {
 void sys_StubEmpty(void) {
 }
 
-void sys_InitSound(void) {
-    snd_PlaySystemSe();
+void func_800168F8(void) {
+    rcnt_StartCnt1();
 }
 
 extern void SetGraphDebug(s32);
@@ -302,7 +302,7 @@ void sys_Init(void) {
     g_disp_fade = 0;
     cdrom_Init();
     memcard_Init();
-    sys_InitSound();
+    func_800168F8();
 }
 void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {
     Rect rect;
@@ -313,7 +313,7 @@ void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {
     SetDispMask(0);
     SetDefDispEnv(&D_800FB524, 0, 0, 0x140, 0xF0);
     game_FrameLoop();
-    replay_camera_Init(func_80036EA8(2, 0x61), (s32)arg0);
+    cdrom_StartRead(func_80036EA8(2, 0x61), (s32)arg0);
     game_FrameLoop();
     PutDispEnv(&D_800FB524);
     DrawSync(0);
@@ -375,7 +375,7 @@ void file_LoadOverlay(void) {
     g_file_dma_flag = 1;
 }
 extern void snd_Init(void);
-extern s32 func_8005B7C4(u32);
+extern s32 snd_LoadCommonVab(u32);
 extern void memcpy(u32, u32, s32);
 extern void snd_VabFakeOpen(u32, s32);
 extern void func_8005C614(void);
@@ -383,7 +383,7 @@ void file_LoadSoundData(void) {
     s32 size;
 
     snd_Init();
-    size = func_8005B7C4(0x801D8800);
+    size = snd_LoadCommonVab(0x801D8800);
     if (size >= 0xD01) {
         sys_Panic();
     }
@@ -430,7 +430,7 @@ void sys_GameInit(void) {
     D_800A3928 = 0;
 }
 
-void gpu_SetDrawMode(void) {
+void gpu_WaitDrawSync(void) {
     DrawSync(0);
 }
 

@@ -96,7 +96,7 @@ out:
  * Outputs a1[] = { hue, sat, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the chroma
  * deltas / max-channel compares. */
-void func_80042684(s32 *a0, s32 *a1) {
+void math_RgbToHsv(s32 *a0, s32 *a1) {
     s32 r, g, b;
     s32 max_val, min_val;
     s32 chroma;
@@ -191,7 +191,7 @@ s32 func_80042864(void) {
     return D_800F6650;
 }
 extern s16 Judge[];
-void func_80042874(u16 *a0, s16 *a1) {
+void math_RotMatrixZXY(u16 *a0, s16 *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -339,7 +339,7 @@ void func_80042874(u16 *a0, s16 *a1) {
  *     by any of the 30 spellings measured across s2+s3.
  */
 extern s16 Judge[];
-void func_80042A88(u16 *a0, s16 *a1) {
+void math_RotMatrixYXZ(u16 *a0, s16 *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -410,7 +410,7 @@ void func_80042A88(u16 *a0, s16 *a1) {
     a1[7] = (scb_cosC + sinB_sinC) >> 12;
 }
 extern s16 Judge[];
-void func_80042C80(u16 *a0, s16 *a1) {
+void math_RotMatrixXYZ(u16 *a0, s16 *a1) {
     s32 angA, angB, angC;
     s16 sinA, sinB, sinC, cosA;
     s32 cosB, cosC;
@@ -470,15 +470,15 @@ void func_80042C80(u16 *a0, s16 *a1) {
 extern void func_8004A348(s16 *, s32 *);
 
 
-extern void func_80042C80();
+extern void math_RotMatrixXYZ();
 extern s32 D_800F66A8;
 extern s32 D_800F66B0;
 extern s32 D_800F66B4;
 void func_80042E90(void) {
     g_anim_func_table[0] = (s32)func_8004A348;
-    D_800F66A8 = (s32)func_80042874;
-    D_800F66B0 = (s32)func_80042A88;
-    D_800F66B4 = (s32)func_80042C80;
+    D_800F66A8 = (s32)math_RotMatrixZXY;
+    D_800F66B0 = (s32)math_RotMatrixYXZ;
+    D_800F66B4 = (s32)math_RotMatrixXYZ;
 }
 void func_80042ED8(u16 *a0) {
     /* FAKE: statement staging (2026-07-06 ALLOWED list) — saving one
@@ -500,7 +500,7 @@ void func_80042ED8(u16 *a0) {
     a0[7] = z;
 }
 extern s16 Judge[];
-void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
+void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
     s16 sin_val, cos_val;
     s32 x, y;
     s32 sin_x, cos_x, sin_y, cos_y;
@@ -545,7 +545,7 @@ void func_80042FA0(s32 *a0, s16 *a1) {
     rot[0] = -neg_angle2;
     rot[1] = -angle1;
     rot[2] = 0;
-    func_80042C80(rot, sp28);
+    math_RotMatrixXYZ(rot, sp28);
 
     MulMatrix(sp28, a0);
 
@@ -674,7 +674,7 @@ typedef struct {
  * pages) by du, the tpage y field (256-px pages) and every vertex v by dv,
  * and the clut x (16-px units) / y fields by dcx / dcy.  Each packed u16
  * field is updated in place inside its bit range. */
-void func_80043BD0(POLY_FT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyFT3(POLY_FT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
@@ -713,7 +713,7 @@ typedef struct {
 /* Quad counterpart of func_80043BD0: shift a textured quad's texture source
  * (tpage x/y by du/dv, all four vertex v by dv, clut x/y by dcx/dcy), each
  * packed u16 field updated in place inside its bit range. */
-void func_80043C7C(POLY_FT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyFT4(POLY_FT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
@@ -753,7 +753,7 @@ typedef struct {
  * (64-px pages) by du, the tpage y field (256-px pages) and every vertex v
  * by dv, and the clut x (16-px units) / y fields by dcx / dcy.  Same update
  * as func_80043BD0 on a POLY_GT3. */
-void func_80043D34(POLY_GT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyGT3(POLY_GT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
@@ -795,7 +795,7 @@ typedef struct {
 /* Quad counterpart of func_80043D34: shift a gouraud-textured quad's texture
  * source (tpage x/y by du/dv, all four vertex v by dv, clut x/y by dcx/dcy),
  * each packed u16 field updated in place inside its bit range. */
-void func_80043DE0(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
+void gpu_OffsetTexPolyGT4(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
 
@@ -814,19 +814,19 @@ void func_80043DE0(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
 }
 void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     s16 r1;
-    r1 = func_80043F80(a0[0], a1, a2);
+    r1 = gpu_OffsetTPage(a0[0], a1, a2);
     a0[0] = r1;
-    a0[2] = func_80043FCC(a0[2], a3, a4);
+    a0[2] = gpu_OffsetClut(a0[2], a3, a4);
 }
-extern s16 func_80043F80(s16, s16, s16);
-extern s16 func_80043FCC(s16, s16, s32);
+extern s16 gpu_OffsetTPage(s16, s16, s16);
+extern s16 gpu_OffsetClut(s16, s16, s32);
 void func_80043F0C(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     s16 r1;
-    r1 = func_80043F80(a0[3], a1, a2);
+    r1 = gpu_OffsetTPage(a0[3], a1, a2);
     a0[3] = r1;
-    a0[1] = func_80043FCC(a0[1], a3, a4);
+    a0[1] = gpu_OffsetClut(a0[1], a3, a4);
 }
-s16 func_80043F80(s16 a0, s16 a1, s16 a2) {
+s16 gpu_OffsetTPage(s16 a0, s16 a1, s16 a2) {
     s32 low = (a0 & 0xF) + (a1 >> 6);
     s32 mid;
     low &= 0xF;
@@ -834,7 +834,7 @@ s16 func_80043F80(s16 a0, s16 a1, s16 a2) {
     mid &= 1;
     return (s16)(low | ((a0 & ~0x1F) | (mid << 4)));
 }
-s16 func_80043FCC(s16 a0, s16 a1, s32 a2) {
+s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
     s32 low = (a1 >> 4) + (a0 & 0x3F);
     s32 mid;
     low &= 0x3F;
@@ -1134,7 +1134,7 @@ extern void func_8004A4E0(void);
 extern void game_SetPause(s32);
 void func_80044504(s32 a0) {
     s32 *s0 = &D_80101BD0;
-    func_80042874(&D_800A3678, s0);
+    math_RotMatrixZXY(&D_800A3678, s0);
     MulMatrix(s0, (s32 *)(D_800A3708 + 0x18));
     MulMatrix2((s32 *)(D_800A370C + 0x18), s0);
     MulMatrix0((MATRIX *)(D_800A370C + 0x18), (MATRIX *)(D_800A3708 + 0x18), &D_800FF610);
@@ -1454,14 +1454,14 @@ s32 func_80044E6C(void) {
     return 0x26;
 }
 extern void game_FrameLoop(void);
-extern void func_80036E34(s32, s32, s32, s32);
+extern void cdrom_StartReadAt(s32, s32, s32, s32);
 
 typedef struct { s16 start_sector; s16 length_sectors; } NdataInfEntry;
 extern NdataInfEntry D_800963EC[];
 
 void func_80044E74(s32 a0, s32 a1) {
     game_FrameLoop();
-    func_80036E34(0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
+    cdrom_StartReadAt(0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
     game_FrameLoop();
 }
 void func_80044ED8(s32 a0, s32 a1) {
@@ -1570,7 +1570,7 @@ s32 seq_GetState(void) {
     return D_800A3244;
 }
 void func_800451A0(void) {
-    func_80036E34(1, (s32)D_800963EC, 0, 2);
+    cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2);
 }
 void func_800451D0(void) {
     s32 v1 = -1;

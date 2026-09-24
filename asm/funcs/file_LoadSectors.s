@@ -11,7 +11,7 @@ glabel file_LoadSectors
     /* 6E1C 8001661C 21300000 */  addu       $a2, $zero, $zero
     /* 6E20 80016620 2C00BFAF */  sw         $ra, 0x2C($sp)
     /* 6E24 80016624 2800B4AF */  sw         $s4, 0x28($sp)
-    /* 6E28 80016628 A60D020C */  jal        func_80083698
+    /* 6E28 80016628 A60D020C */  jal        PCopen
     /* 6E2C 8001662C 1C00B1AF */   sw        $s1, 0x1C($sp)
     /* 6E30 80016630 21884000 */  addu       $s1, $v0, $zero
     /* 6E34 80016634 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -26,7 +26,7 @@ glabel file_LoadSectors
     /* 6E54 80016654 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80016658:
     /* 6E58 80016658 C02A1000 */  sll        $a1, $s0, 11
-    /* 6E5C 8001665C B20D020C */  jal        func_800836C8
+    /* 6E5C 8001665C B20D020C */  jal        PClseek
     /* 6E60 80016660 21300000 */   addu      $a2, $zero, $zero
     /* 6E64 80016664 0B00601A */  blez       $s3, .L80016694
     /* 6E68 80016668 21800000 */   addu      $s0, $zero, $zero
@@ -34,7 +34,7 @@ glabel file_LoadSectors
   .L80016670:
     /* 6E70 80016670 21202002 */  addu       $a0, $s1, $zero
     /* 6E74 80016674 21284002 */  addu       $a1, $s2, $zero
-    /* 6E78 80016678 1F0E020C */  jal        bios_FileRead
+    /* 6E78 80016678 1F0E020C */  jal        PCread
     /* 6E7C 8001667C 00080624 */   addiu     $a2, $zero, 0x800
     /* 6E80 80016680 F1FF5414 */  bne        $v0, $s4, .L80016648
     /* 6E84 80016684 01001026 */   addiu     $s0, $s0, 0x1
@@ -42,7 +42,7 @@ glabel file_LoadSectors
     /* 6E8C 8001668C F8FF4014 */  bnez       $v0, .L80016670
     /* 6E90 80016690 00085226 */   addiu     $s2, $s2, 0x800
   .L80016694:
-    /* 6E94 80016694 AE0D020C */  jal        func_800836B8
+    /* 6E94 80016694 AE0D020C */  jal        PCclose
     /* 6E98 80016698 21202002 */   addu      $a0, $s1, $zero
     /* 6E9C 8001669C C0121300 */  sll        $v0, $s3, 11
   .L800166A0:

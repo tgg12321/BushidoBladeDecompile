@@ -116,7 +116,7 @@ glabel func_8003A728
     /* 2B0DC 8003A8DC 05004010 */  beqz       $v0, .L8003A8F4
     /* 2B0E0 8003A8E0 00000000 */   nop
   .L8003A8E4:
-    /* 2B0E4 8003A8E4 E7E8000C */  jal        func_8003A39C
+    /* 2B0E4 8003A8E4 E7E8000C */  jal        comb_ResetClose
     /* 2B0E8 8003A8E8 00000000 */   nop
     /* 2B0EC 8003A8EC 8BEA0008 */  j          .L8003AA2C
     /* 2B0F0 8003A8F0 00000000 */   nop

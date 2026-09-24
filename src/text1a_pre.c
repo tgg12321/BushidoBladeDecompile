@@ -42,7 +42,7 @@ extern u8 D_80094B48[];
 
 extern void SetDrawMove(s32, s16 *, s32, s32);
 
-void func_800401CC(s32 a0, s32 a1, s32 a2) {
+void gpu_AddDrawMove(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
     u16 *tbl;
     s16 u, v;
@@ -101,8 +101,8 @@ void func_80040304(s32 a0, s32 a1) {
             mask = 0x12;
             break;
         case 6:
-            ((void (*)())func_800401CC)(a0, 5);
-            ((void (*)())func_800401CC)(a0, 6);
+            ((void (*)())gpu_AddDrawMove)(a0, 5);
+            ((void (*)())gpu_AddDrawMove)(a0, 6);
             mask = 0;
             break;
         }
@@ -110,7 +110,7 @@ void func_80040304(s32 a0, s32 a1) {
         i = 0;
         do {
             if (mask & 1) {
-                ((void (*)())func_800401CC)(a0, 4 - i);
+                ((void (*)())gpu_AddDrawMove)(a0, 4 - i);
             }
             i++;
             mask >>= 1;

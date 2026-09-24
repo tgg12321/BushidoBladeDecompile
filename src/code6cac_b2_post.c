@@ -75,7 +75,7 @@ extern void func_8003AAB0(void);
 
 
 extern void snd_Quit(void);
-extern void func_80037774(void);
+extern void memcard_Quit(void);
 extern void StopPAD(void);
 extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
@@ -193,14 +193,14 @@ void cdrom_Init(void) {
         D_800A31E4 = 1;
     }
 }
-void func_80036034(void) {
+void cdrom_FlushInit(void) {
     CdFlush();
     CdInit();
     VSync(4);
 }
 extern void CdGetSector(s32, s32);
 extern s32 CdPosToInt(s32);
-void func_80036064(u8 arg0) {
+void cdrom_ReadyCallback(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
         D_80101E98 = 0;
@@ -235,10 +235,10 @@ INCLUDE_ASM("asm/funcs", func_80036140);
 void func_80036940(void);
 INCLUDE_ASM("asm/funcs", func_80036940);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
-s32 func_80036D88(void) {
+s32 cdrom_IsIdle(void) {
     return D_80101E60.unk02 == 0;
 }
-s32 replay_camera_Init(s32 a0, s32 a1) {
+s32 cdrom_StartRead(s32 a0, s32 a1) {
     extern u8 SpecialCam;
     s32 sval;
     s32 reloaded;
@@ -259,8 +259,8 @@ s32 replay_camera_Init(s32 a0, s32 a1) {
     return 1;
 }
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
-s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    if (replay_camera_Init(arg0, arg1) == 0) {
+s32 cdrom_StartReadAt(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    if (cdrom_StartRead(arg0, arg1) == 0) {
         return 0;
     }
     CdIntToPos(CdPosToInt((s32)&D_80101E60.pair) + arg2, (s32)&D_80101E60.pair);
@@ -270,7 +270,7 @@ s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 s32 func_80036EA8(s32 arg0, s32 arg1) {
     return (&D_8008F12C)[arg0] + arg1;
 }
-void game_FrameInit(void) {
+void cdrom_Pause(void) {
     CdReadyCallback(0);
     cdrom_SetMix(0, 0, 0, 0);
     CdFlush();
@@ -287,7 +287,7 @@ void game_FrameLoop(void) {
     func_8003AA78();
     s0 = (u16 *)&D_80101E9E;
     while (1) {
-        if (func_80036D88() != 0) {
+        if (cdrom_IsIdle() != 0) {
             break;
         }
         func_8003AA48();
@@ -302,7 +302,7 @@ void game_FrameLoop(void) {
     func_8003AAB0();
 }
 extern void CdControlB(s32, u8 *, s32);
-s32 func_80036FD4(s32 arg0, s32 arg1) {
+s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
     s16 *s0 = &D_80101E60.unk02;
 
     if (*s0 != 0) {
@@ -359,7 +359,7 @@ s32 func_80037110(s32 arg0) {
     u8 *s0 = (u8 *)&D_8008F13C + (arg0 << 3);
     s32 v0;
     v0 = func_80036EA8(5, s0[0]);
-    v0 = func_80036FD4(v0, s0[1]);
+    v0 = cdrom_StartAudio(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
             v0 = CdPosToInt((s32)&SpecialCam + (s32)D_80101E60.unk00 * 8);
@@ -382,9 +382,9 @@ void func_800371E8(s16 arg0) {
     D_80101E60.unk0A = arg0;
 }
 s32 func_800371F8(void) {
-    extern s32 func_80036FD4();
+    extern s32 cdrom_StartAudio();
 
-    if (((s32 (*)())func_80036FD4)() != 0) {
+    if (((s32 (*)())cdrom_StartAudio)() != 0) {
         D_80101E60.unk04 = 1;
         return 1;
     }
@@ -406,11 +406,11 @@ void func_80037260(void) {
 }
 void func_800372C0(void) {
     if (D_80101E60.unk02 != 0) {
-        game_FrameInit();
+        cdrom_Pause();
     }
     game_FrameLoop();
 }
-s32 func_800372F4(s32 nbytes, s32 buf, s32 mode) {
+s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
     s32 v = nbytes;
     nbytes += 0x7FF;
     if (nbytes < 0) {
@@ -451,7 +451,7 @@ void cdrom_LoadExec(s32 *dest) {
 
     for (;;) {
         CdControl(2, index + cam_base, 0);
-        v0 = func_800372F4(0x800, (s32)sp_buf, mode);
+        v0 = cdrom_ReadWait(0x800, (s32)sp_buf, mode);
         if (v0 != 0) continue;
 
         *(CamRot *)dest = *(CamRot *)&sp_buf[0x10];
@@ -459,7 +459,7 @@ void cdrom_LoadExec(s32 *dest) {
         v0 = CdPosToInt(index + cam_base);
         CdIntToPos(v0 + 1, (s32)sp_buf2);
         CdControl(2, (s32)sp_buf2, 0);
-        v0 = func_800372F4(dest[3], dest[2], mode);
+        v0 = cdrom_ReadWait(dest[3], dest[2], mode);
         if (v0 == 0) break;
     }
 }
@@ -470,7 +470,7 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     SetDispMask(0);
     gpu_EnableDisplay();
     snd_Quit();
-    func_80037774();
+    memcard_Quit();
     ResetCallback();
     CdInit();
     cdrom_LoadExec(sp);

@@ -124,7 +124,7 @@ extern s32 func_8005FA98(s32, s32, s32);
 extern void func_800342A0(void);
 extern s32 func_80022408(s32 *);
 extern void StoreImage(s32 *, u16 *);
-extern void func_80052BE4(u8 *);
+extern void gte_ReadFarColor(u8 *);
 
 
 
@@ -171,7 +171,7 @@ extern void func_80041688(s32, s32);
 extern void func_8004659C(s32);
 extern void snd_SerialMixOn(void);
 extern s32 func_80036EA8(s32, s32);
-extern void func_80036FD4(s32, s32);
+extern void cdrom_StartAudio(s32, s32);
 extern void func_80037260(void);
 extern void func_80041BF4(s32, s32, s32);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
@@ -231,7 +231,7 @@ void func_8003B9D0(void) {
     D_800A36A8 = 0;
     snd_SerialMixOn();
     v0 = func_80036EA8(5, ((u8 *)D_800A3878)[1]);
-    func_80036FD4(v0, ((u8 *)D_800A3878)[2]);
+    cdrom_StartAudio(v0, ((u8 *)D_800A3878)[2]);
     func_80037260();
     D_800A37B8 = 0;
     D_800A3834 = 7;
@@ -300,7 +300,7 @@ extern void file_ResetDmaFlag(void);
 extern void obj_InitAll(void);
 extern void func_80078824(s32);
 extern void snd_SerialMixOn(void);
-extern void func_80036FD4(s32, s32);
+extern void cdrom_StartAudio(s32, s32);
 extern void func_80037260(void);
 void func_8003BE10(void) {
     gpu_EnableDisplay();
@@ -314,7 +314,7 @@ void func_8003BE10(void) {
     snd_SerialMixOn();
     {
         s32 v0 = func_80036EA8(5, 0x20);
-        func_80036FD4(v0, 4);
+        cdrom_StartAudio(v0, 4);
     }
     func_80037260();
     D_800A3834 = 0xB;
@@ -398,7 +398,7 @@ void func_8003BFC4(void) {
 }
 
 extern void func_8003B10C(s32);
-extern void func_80036FD4(s32, s32);
+extern void cdrom_StartAudio(s32, s32);
 
 void func_8003C040(void) {
     s32 a0;
@@ -471,7 +471,7 @@ void func_8003C040(void) {
     p = (s8 *)(((s8 *)(&D_8008EA70)) + (D_800A38A4 << 1));
     if (p[0] >= 0) {
         snd_SerialMixOn();
-        func_80036FD4(func_80036EA8(5, p[0]), (u8)p[1]);
+        cdrom_StartAudio(func_80036EA8(5, p[0]), (u8)p[1]);
         func_80037260();
     }
     D_800A37B8 = 0;
@@ -1142,7 +1142,7 @@ void func_8003D774(s32 arg0, s32 arg1) {
     *(s16 *)((u8 *)ptr + 0xE) = 0;
     *(s16 *)((u8 *)ptr + 0xC) = 0;
 }
-extern s32 func_8003D888(u32 *, s32);
+extern s32 bitstream_ReadBits(u32 *, s32);
 s16 *func_8003D7B4(s32 arg0) {
     s32 i = 0;
     u8 *base = (u8 *)&D_800A3D40 + (arg0 * 24);
@@ -1152,11 +1152,11 @@ s16 *func_8003D7B4(s32 arg0) {
         s16 val;
         s32 sign_bit;
         s32 sval;
-        nbits = func_8003D888((s32 *)base, 4);
+        nbits = bitstream_ReadBits((s32 *)base, 4);
         if (nbits == 0) {
             nbits = 16;
         }
-        val = (s16)func_8003D888((s32 *)base, nbits);
+        val = (s16)bitstream_ReadBits((s32 *)base, nbits);
         sval = val;
         sign_bit = nbits - 1;
         if ((sval >> sign_bit) & 1) {
@@ -1175,7 +1175,7 @@ s16 *func_8003D7B4(s32 arg0) {
    accumulation family (owner ruling 2026-06-13; Judge PASS precedent rob_life_ctrl_2,
    docs/grind/decisions.md:1075) -- both statements are live and the pair folds back
    into one emitted `addiu v0,v0,-1`. */
-s32 func_8003D888(u32 *s, s32 n)
+s32 bitstream_ReadBits(u32 *s, s32 n)
 {
     s32 avail = s[2];
     u32 r;
@@ -1226,15 +1226,15 @@ void func_8003D91C(void) {
     buf[1] = s1;
     buf[2] = s0;
     buf[3] = 1;
-    func_8003D9A0(buf, 0x1F, &light_effect_col);
+    gpu_SetDrawMoveArray(buf, 0x1F, &light_effect_col);
     buf[2] = 0x40;
     buf[0] = s0;
     buf[1] = s1;
     buf[3] = 8;
-    func_8003D9A0(buf, 0x13, &D_800A4340);
+    gpu_SetDrawMoveArray(buf, 0x13, &D_800A4340);
 }
 typedef struct { s32 w[6]; } Copy24;
-void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
+void gpu_SetDrawMoveArray(s16 *a0, s32 a1, u32 *a2) {
     u32 *s1 = a2;
     s32 s4, s3;
     s32 s2;
@@ -1454,7 +1454,7 @@ void func_8003DE14(s16 *rect, s32 count) {
     LoadImage((s32)rect, (s32)src_buf);
     saved_y = rect[1];
     rect[1] = ((u16 *)rect)[3] + saved_y;
-    func_80052BE4(color_info);
+    gte_ReadFarColor(color_info);
 
     r = color_info[0];
     g = color_info[1];
@@ -1817,7 +1817,7 @@ extern s32 D_80094840[];
 extern s32 D_800A7EF0[];
 extern s32 *func_8003EB84(s32, s32, s32 *);
 extern s16 *camera_CalcAngles(void);
-extern void func_80042A88(Unk80101DF0Rot *, s32 *);
+extern void math_RotMatrixYXZ(Unk80101DF0Rot *, s32 *);
 extern s32 ratan2(s32, s32);
 extern s32 stage_GetId(void);
 extern void func_800620B8(s16 *, s32 *);
@@ -1872,7 +1872,7 @@ void func_8003E6D8(s32 arg0) {
     cx = (D_800A3708->work.t[0] + 0x7D00) / 2000;
     cz = (D_800A3708->work.t[2] + 0x7D00) / 2000;
     camera_CalcAngles();
-    func_80042A88(&D_800A3708->xf.rot, mat);
+    math_RotMatrixYXZ(&D_800A3708->xf.rot, mat);
     vec[2] = 0x1000;
     vec[0] = 0;
     vec[1] = 0;

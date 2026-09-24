@@ -4,7 +4,7 @@ glabel func_80016CF8
     /* 7500 80016D00 0F6D010C */  jal        snd_Init
     /* 7504 80016D04 1000B0AF */   sw        $s0, 0x10($sp)
     /* 7508 80016D08 1D80043C */  lui        $a0, (0x801D8800 >> 16)
-    /* 750C 80016D0C F16D010C */  jal        func_8005B7C4
+    /* 750C 80016D0C F16D010C */  jal        snd_LoadCommonVab
     /* 7510 80016D10 00888434 */   ori       $a0, $a0, (0x801D8800 & 0xFFFF)
     /* 7514 80016D14 21804000 */  addu       $s0, $v0, $zero
     /* 7518 80016D18 010D022A */  slti       $v0, $s0, 0xD01

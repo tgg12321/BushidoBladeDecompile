@@ -1218,12 +1218,12 @@ glabel func_80023F08
     /* 1589C 8002509C 96022496 */  lhu        $a0, 0x296($s1)
     /* 158A0 800250A0 98022596 */  lhu        $a1, 0x298($s1)
     /* 158A4 800250A4 9A022696 */  lhu        $a2, 0x29A($s1)
-    /* 158A8 800250A8 0C8F000C */  jal        func_80023C30
+    /* 158A8 800250A8 0C8F000C */  jal        math_RotMatrixZYXAngles
     /* 158AC 800250AC 7801A727 */   addiu     $a3, $sp, 0x178
     /* 158B0 800250B0 1E00A497 */  lhu        $a0, 0x1E($sp)
     /* 158B4 800250B4 2000A597 */  lhu        $a1, 0x20($sp)
     /* 158B8 800250B8 2200A697 */  lhu        $a2, 0x22($sp)
-    /* 158BC 800250BC 0C8F000C */  jal        func_80023C30
+    /* 158BC 800250BC 0C8F000C */  jal        math_RotMatrixZYXAngles
     /* 158C0 800250C0 9801A727 */   addiu     $a3, $sp, 0x198
     /* 158C4 800250C4 7801A487 */  lh         $a0, 0x178($sp)
     /* 158C8 800250C8 8401A587 */  lh         $a1, 0x184($sp)

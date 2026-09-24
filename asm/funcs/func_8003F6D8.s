@@ -39,11 +39,11 @@ glabel func_8003F6D8
     /* 2FF64 8003F764 0400708E */  lw         $s0, 0x4($s3)
     /* 2FF68 8003F768 04007326 */  addiu      $s3, $s3, 0x4
     /* 2FF6C 8003F76C 18001026 */  addiu      $s0, $s0, 0x18
-    /* 2FF70 8003F770 884A010C */  jal        func_80052A20
+    /* 2FF70 8003F770 884A010C */  jal        gte_SetMatrixRotTransIR
     /* 2FF74 8003F774 21200002 */   addu      $a0, $s0, $zero
     /* 2FF78 8003F778 21200002 */  addu       $a0, $s0, $zero
     /* 2FF7C 8003F77C 08004526 */  addiu      $a1, $s2, 0x8
-    /* 2FF80 8003F780 884A010C */  jal        func_80052A20
+    /* 2FF80 8003F780 884A010C */  jal        gte_SetMatrixRotTransIR
     /* 2FF84 8003F784 10002626 */   addiu     $a2, $s1, 0x10
     /* 2FF88 8003F788 0000828E */  lw         $v0, 0x0($s4)
     /* 2FF8C 8003F78C 0100F726 */  addiu      $s7, $s7, 0x1

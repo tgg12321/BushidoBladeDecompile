@@ -570,7 +570,7 @@ void func_80038658(void) {
 
     switch (D_800A31F4) {
     case 4:
-        ret = func_800378A8();
+        ret = memcard_PollSwEvents();
         if (ret == 0) {
             fail = 1;
             goto fail_store;
@@ -584,7 +584,7 @@ void func_80038658(void) {
         D_800A31F4 = 0;
         return;
     case 6:
-        ret = func_800378A8();
+        ret = memcard_PollSwEvents();
         if (ret == 0) {
             fail = 4;
             goto fail_store;
@@ -1495,10 +1495,10 @@ void comb_Close(void) {
     DelCOMB();
     _comb_control(1, 1, 0);
 }
-s32 func_8003A2DC(void) {
+s32 comb_IsCtsDsrClear(void) {
     return (_comb_control(0, 0, 0) & 0x180) == 0;
 }
-void func_8003A308(void) {
+void comb_ReadCtsSetRts(void) {
     if (_comb_control(3, 1, 0) != 0) {
         D_800A38A0 = 1;
     } else {
@@ -1506,13 +1506,13 @@ void func_8003A308(void) {
     }
     _comb_control(3, 0, 1);
 }
-void func_8003A360(void) {
+void comb_EnableEvents(void) {
     EnableEvent(D_800A3810);
     EnableEvent(D_800A3738);
     D_800A320C = 1;
     D_800A3730 = 0;
 }
-void func_8003A39C(void) {
+void comb_ResetClose(void) {
     D_800A320C = 0;
     D_800A3730 = 0;
     _comb_control(2, 0, 0);
@@ -1521,13 +1521,13 @@ void func_8003A39C(void) {
     D_800A3834 = 8;
 }
 void func_8003A3F0(void) {
-    func_8003A39C();
+    comb_ResetClose();
     D_800A3928 = 1;
 }
 void func_8003A41C(void) {
     D_800A3730 = 1;
 }
-s32 func_8003A42C(s32 a0, u32 a1) {
+s32 comb_WriteWaitCallback(s32 a0, u32 a1) {
     if (a1 > 0x10000) {
         D_800A382C = 0;
         return 0;
@@ -1569,7 +1569,7 @@ s32 comb_Write8(void) {
 
     _comb_control(1, 1, 1);
     D_800A382C = 1;
-    _comb_control(4, 0, (s32)&func_8003A42C);
+    _comb_control(4, 0, (s32)&comb_WriteWaitCallback);
     write(D_800A373C, &D_800A3698, 8);
     _comb_control(4, 0, 0);
     _comb_control(1, 1, 0);
@@ -1734,11 +1734,11 @@ void func_8003A728(s32 a0) {
             }
             if (D_800A38A0 == 1) {
                 if (D_800A36C0 & 0x40000000) {
-                    func_8003A39C();
+                    comb_ResetClose();
                     return;
                 }
                 if (D_800A36D0 & 0x40000000) {
-                    func_8003A39C();
+                    comb_ResetClose();
                     return;
                 }
             }
@@ -1750,7 +1750,7 @@ void func_8003A728(s32 a0) {
             comb_Read8();
             if (D_800A38A0 == 0) {
                 if (D_800A3730 != zero || (D_800A36C0 & 0x40000000)) {
-                    func_8003A39C();
+                    comb_ResetClose();
                     return;
                 }
             }

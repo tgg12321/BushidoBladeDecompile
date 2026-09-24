@@ -196,7 +196,7 @@ void memcard_Init(void) {
     EnableEvent(D_800A3848);
     EnableEvent(D_800A3850);
 }
-void func_80037774(void) {
+void memcard_Quit(void) {
     EnterCriticalSection();
     CloseEvent(D_800A37DC);
     CloseEvent(D_800A37F0);
@@ -209,7 +209,7 @@ void func_80037774(void) {
     ExitCriticalSection();
     StopCARD();
 }
-s32 func_80037804(void) {
+s32 memcard_PollSwEventsTimeout(void) {
     extern s32 D_800A3924;
     s32 result;
     s32 one;
@@ -232,7 +232,7 @@ s32 func_80037804(void) {
     }
     return result;
 }
-s32 func_800378A8(void) {
+s32 memcard_PollSwEvents(void) {
     if (TestEvent(D_800A37DC) == 1) {
         return 1;
     }
@@ -250,7 +250,7 @@ void memcard_AckSwEvents(void) {
     TestEvent(D_800A37FC);
     TestEvent(D_800A3800);
 }
-s32 func_80037964(void) {
+s32 memcard_WaitHwEvent(void) {
     s32 one = 1;
 loop:
     if (TestEvent(D_800A3838) == one) { return 1; }
@@ -379,7 +379,7 @@ s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     memcard_AckSwEvents();
     memcard_AckHwEvents();
     read(temp_v0, arg3, arg4);
-    return -(func_80037964() != 1);
+    return -(memcard_WaitHwEvent() != 1);
 }
 extern void close(s32);
 extern void write(s32, s32, s32);
@@ -403,5 +403,5 @@ s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5
     memcard_AckSwEvents();
     memcard_AckHwEvents();
     write(temp_v0, arg3, arg5);
-    return -(func_80037964() != 1);
+    return -(memcard_WaitHwEvent() != 1);
 }

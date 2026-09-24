@@ -11843,9 +11843,9 @@ glabel func_80052930
 endlabel func_80052930
 
 /* Handwritten function */
-nonmatching func_80052A20, 0x68
+nonmatching gte_SetMatrixRotTransIR, 0x68
 
-glabel func_80052A20
+glabel gte_SetMatrixRotTransIR
     /* 43220 80052A20 0000888C */  lw         $t0, 0x0($a0)
     /* 43224 80052A24 0400898C */  lw         $t1, 0x4($a0)
     /* 43228 80052A28 08008A8C */  lw         $t2, 0x8($a0)
@@ -11872,7 +11872,7 @@ glabel func_80052A20
     /* 4327C 80052A7C 0400CAE8 */  swc2       $10, 0x4($a2)
     /* 43280 80052A80 0800E003 */  jr         $ra
     /* 43284 80052A84 0800CBE8 */   swc2      $11, 0x8($a2)
-endlabel func_80052A20
+endlabel gte_SetMatrixRotTransIR
 
 /* Handwritten function */
 nonmatching func_80052A88, 0x78
@@ -11986,9 +11986,9 @@ glabel func_80052B7C
 endlabel func_80052B7C
 
 /* Handwritten function */
-nonmatching func_80052BE4, 0x2C
+nonmatching gte_ReadFarColor, 0x2C
 
-glabel func_80052BE4
+glabel gte_ReadFarColor
     /* 433E4 80052BE4 00A84848 */  cfc2       $t0, $21 /* handwritten instruction */
     /* 433E8 80052BE8 00B04948 */  cfc2       $t1, $22 /* handwritten instruction */
     /* 433EC 80052BEC 00B84A48 */  cfc2       $t2, $23 /* handwritten instruction */
@@ -12000,7 +12000,7 @@ glabel func_80052BE4
     /* 43404 80052C04 02008AA0 */  sb         $t2, 0x2($a0)
     /* 43408 80052C08 0800E003 */  jr         $ra
     /* 4340C 80052C0C 00000000 */   nop
-endlabel func_80052BE4
+endlabel gte_ReadFarColor
 
 nonmatching func_80052C10, 0x14
 
@@ -21828,9 +21828,9 @@ glabel obj_InitAll
     /* 4BFC0 8005B7C0 00000000 */   nop
 endlabel obj_InitAll
 
-nonmatching func_8005B7C4, 0xA4
+nonmatching snd_LoadCommonVab, 0xA4
 
-glabel func_8005B7C4
+glabel snd_LoadCommonVab
     /* 4BFC4 8005B7C4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 4BFC8 8005B7C8 1400B1AF */  sw         $s1, 0x14($sp)
     /* 4BFCC 8005B7CC 21888000 */  addu       $s1, $a0, $zero
@@ -21849,7 +21849,7 @@ glabel func_8005B7C4
     /* 4C000 8005B800 01000524 */   addiu     $a1, $zero, 0x1
     /* 4C004 8005B804 21804000 */  addu       $s0, $v0, $zero
     /* 4C008 8005B808 21200002 */  addu       $a0, $s0, $zero
-    /* 4C00C 8005B80C 66DB000C */  jal        replay_camera_Init
+    /* 4C00C 8005B80C 66DB000C */  jal        cdrom_StartRead
     /* 4C010 8005B810 21282002 */   addu      $a1, $s1, $zero
     /* 4C014 8005B814 CADB000C */  jal        func_80036F28
     /* 4C018 8005B818 21200002 */   addu      $a0, $s0, $zero
@@ -21872,7 +21872,7 @@ glabel func_8005B7C4
     /* 4C05C 8005B85C 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 4C060 8005B860 0800E003 */  jr         $ra
     /* 4C064 8005B864 00000000 */   nop
-endlabel func_8005B7C4
+endlabel snd_LoadCommonVab
 
 nonmatching obj_InitPair, 0x50
 
@@ -21918,7 +21918,7 @@ glabel func_8005B8B8
     /* 4C0EC 8005B8EC D0DB000C */  jal        game_FrameLoop
     /* 4C0F0 8005B8F0 21804000 */   addu      $s0, $v0, $zero
     /* 4C0F4 8005B8F4 21200002 */  addu       $a0, $s0, $zero
-    /* 4C0F8 8005B8F8 66DB000C */  jal        replay_camera_Init
+    /* 4C0F8 8005B8F8 66DB000C */  jal        cdrom_StartRead
     /* 4C0FC 8005B8FC 21286002 */   addu      $a1, $s3, $zero
     /* 4C100 8005B900 CADB000C */  jal        func_80036F28
     /* 4C104 8005B904 21200002 */   addu      $a0, $s0, $zero
@@ -21936,7 +21936,7 @@ glabel func_8005B8B8
     /* 4C134 8005B934 21884000 */   addu      $s1, $v0, $zero
     /* 4C138 8005B938 21202002 */  addu       $a0, $s1, $zero
     /* 4C13C 8005B93C 21907002 */  addu       $s2, $s3, $s0
-    /* 4C140 8005B940 66DB000C */  jal        replay_camera_Init
+    /* 4C140 8005B940 66DB000C */  jal        cdrom_StartRead
     /* 4C144 8005B944 21284002 */   addu      $a1, $s2, $zero
     /* 4C148 8005B948 CADB000C */  jal        func_80036F28
     /* 4C14C 8005B94C 21202002 */   addu      $a0, $s1, $zero
@@ -22010,7 +22010,7 @@ glabel obj_InitTaskCamera
     /* 4C220 8005BA20 D0DB000C */  jal        game_FrameLoop
     /* 4C224 8005BA24 21884000 */   addu      $s1, $v0, $zero
     /* 4C228 8005BA28 21202002 */  addu       $a0, $s1, $zero
-    /* 4C22C 8005BA2C 66DB000C */  jal        replay_camera_Init
+    /* 4C22C 8005BA2C 66DB000C */  jal        cdrom_StartRead
     /* 4C230 8005BA30 21280002 */   addu      $a1, $s0, $zero
     /* 4C234 8005BA34 CADB000C */  jal        func_80036F28
     /* 4C238 8005BA38 21202002 */   addu      $a0, $s1, $zero
@@ -22091,7 +22091,7 @@ glabel func_8005BA8C
     /* 4C338 8005BB38 D0DB000C */  jal        game_FrameLoop
     /* 4C33C 8005BB3C 21804000 */   addu      $s0, $v0, $zero
     /* 4C340 8005BB40 21200002 */  addu       $a0, $s0, $zero
-    /* 4C344 8005BB44 66DB000C */  jal        replay_camera_Init
+    /* 4C344 8005BB44 66DB000C */  jal        cdrom_StartRead
     /* 4C348 8005BB48 21286002 */   addu      $a1, $s3, $zero
     /* 4C34C 8005BB4C CADB000C */  jal        func_80036F28
     /* 4C350 8005BB50 21200002 */   addu      $a0, $s0, $zero
@@ -26572,7 +26572,7 @@ glabel func_8005FBC8
     /* 503E4 8005FBE4 2000B0AF */   sw        $s0, 0x20($sp)
     /* 503E8 8005FBE8 21804000 */  addu       $s0, $v0, $zero
     /* 503EC 8005FBEC 21200002 */  addu       $a0, $s0, $zero
-    /* 503F0 8005FBF0 66DB000C */  jal        replay_camera_Init
+    /* 503F0 8005FBF0 66DB000C */  jal        cdrom_StartRead
     /* 503F4 8005FBF4 21282002 */   addu      $a1, $s1, $zero
     /* 503F8 8005FBF8 D0DB000C */  jal        game_FrameLoop
     /* 503FC 8005FBFC 00000000 */   nop
@@ -27040,7 +27040,7 @@ glabel func_800602AC
     /* 50AC8 800602C8 3400B1AF */   sw        $s1, 0x34($sp)
     /* 50ACC 800602CC 21884000 */  addu       $s1, $v0, $zero
     /* 50AD0 800602D0 21202002 */  addu       $a0, $s1, $zero
-    /* 50AD4 800602D4 66DB000C */  jal        replay_camera_Init
+    /* 50AD4 800602D4 66DB000C */  jal        cdrom_StartRead
     /* 50AD8 800602D8 21280002 */   addu      $a1, $s0, $zero
     /* 50ADC 800602DC D0DB000C */  jal        game_FrameLoop
     /* 50AE0 800602E0 00000000 */   nop
@@ -27771,7 +27771,7 @@ glabel func_80060CB8
     /* 51540 80060D40 AADB000C */  jal        func_80036EA8
     /* 51544 80060D44 DC011024 */   addiu     $s0, $zero, 0x1DC
     /* 51548 80060D48 21204000 */  addu       $a0, $v0, $zero
-    /* 5154C 80060D4C 66DB000C */  jal        replay_camera_Init
+    /* 5154C 80060D4C 66DB000C */  jal        cdrom_StartRead
     /* 51550 80060D50 21282002 */   addu      $a1, $s1, $zero
     /* 51554 80060D54 D0DB000C */  jal        game_FrameLoop
     /* 51558 80060D58 00000000 */   nop
@@ -42636,7 +42636,7 @@ glabel func_8006E10C
     /* 5E97C 8006E17C F0001124 */   addiu     $s1, $zero, 0xF0
     /* 5E980 8006E180 21804000 */  addu       $s0, $v0, $zero
     /* 5E984 8006E184 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
-    /* 5E988 8006E188 66DB000C */  jal        replay_camera_Init
+    /* 5E988 8006E188 66DB000C */  jal        cdrom_StartRead
     /* 5E98C 8006E18C 21200002 */   addu      $a0, $s0, $zero
     /* 5E990 8006E190 D0DB000C */  jal        game_FrameLoop
     /* 5E994 8006E194 00000000 */   nop
@@ -43207,7 +43207,7 @@ glabel func_8006E950
     /* 5F178 8006E978 AADB000C */  jal        func_80036EA8
     /* 5F17C 8006E97C 21280002 */   addu      $a1, $s0, $zero
     /* 5F180 8006E980 21204000 */  addu       $a0, $v0, $zero
-    /* 5F184 8006E984 66DB000C */  jal        replay_camera_Init
+    /* 5F184 8006E984 66DB000C */  jal        cdrom_StartRead
     /* 5F188 8006E988 21282002 */   addu      $a1, $s1, $zero
     /* 5F18C 8006E98C D0DB000C */  jal        game_FrameLoop
     /* 5F190 8006E990 80021224 */   addiu     $s2, $zero, 0x280

@@ -44,7 +44,7 @@ glabel memcard_WriteFile
     /* 284D8 80037CD8 5C00A68F */  lw         $a2, 0x5C($sp)
     /* 284DC 80037CDC 82E2010C */  jal        write
     /* 284E0 80037CE0 21282002 */   addu      $a1, $s1, $zero
-    /* 284E4 80037CE4 59DE000C */  jal        func_80037964
+    /* 284E4 80037CE4 59DE000C */  jal        memcard_WaitHwEvent
     /* 284E8 80037CE8 00000000 */   nop
     /* 284EC 80037CEC 01004238 */  xori       $v0, $v0, 0x1
     /* 284F0 80037CF0 2B100200 */  sltu       $v0, $zero, $v0

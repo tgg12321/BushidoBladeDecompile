@@ -13,7 +13,7 @@ CASES = [
     ("get_ce", "display"),
     ("_dws", "display"),
     # completed controls
-    ("func_8003D9A0", "code6cac_c2"),
+    ("gpu_SetDrawMoveArray", "code6cac_c2"),
     ("func_8003DBE4", "code6cac_c2"),
     ("func_8003DA8C", "code6cac_c2"),
 ]

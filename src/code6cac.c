@@ -117,7 +117,7 @@ extern s32 stage_GetDataPtr(void);
 
 extern u8 D_800F1B18[];
 
-extern s32 replay_camera_Init(s32, s32);
+extern s32 cdrom_StartRead(s32, s32);
 extern s32 rand();
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
@@ -962,7 +962,7 @@ void func_8001A538(s32 *arg0, s32 *arg1) {
     arg1[1] = arg0[1] - ((s32)(m.m[1][2] * arg0[6]) >> 12);
     arg1[2] = arg0[2] - ((s32)(m.m[2][2] * arg0[6]) >> 12);
 }
-s32 func_8001A62C(s32 arg0) {
+s32 math_FloorDiv2000(s32 arg0) {
     if (arg0 < 0) {
         return -((0x7CF - arg0) / 2000);
     }
@@ -1011,8 +1011,8 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
         shift_b = shift_a >> 1;
         log2_val = (((u32)((u8)(*((&D_8008D118) + (dist_sq >> shift_a))))) << 16) >> (0x13 - shift_b);
     }
-    arg0[0] = (s16)func_8001A62C(arg2[0] + ((dx << 10) / ((s32)log2_val)));
-    arg0[2] = (s16)func_8001A62C(arg2[2] + ((dz << 10) / ((s32)log2_val)));
+    arg0[0] = (s16)math_FloorDiv2000(arg2[0] + ((dx << 10) / ((s32)log2_val)));
+    arg0[2] = (s16)math_FloorDiv2000(arg2[2] + ((dz << 10) / ((s32)log2_val)));
 }
 void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3);
 INCLUDE_ASM("asm/funcs", func_8001A820);
@@ -2617,7 +2617,7 @@ void func_80020D70(void) {
     D_800A3864 = (s32)0x80190800;
     func_80020CDC();
 }
-void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    replay_camera_Init(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
+void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    cdrom_StartRead(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
 INCLUDE_ASM("asm/funcs", func_80020E74);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_80021210(void) {
@@ -3756,7 +3756,7 @@ void func_800238C4(u8 *arg0)
     *((s32 *) (arg0 + 0x10C)) += dz_delta;
 }
 /* kengo:HIGH  |  nm_camera/camera_set_zoom  |  219i */
-void func_80023C30(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
+void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
     arg3[0] = 0x1000;
     arg3[1] = 0;
     arg3[2] = 0;

@@ -9,9 +9,9 @@ extern s32 D_800A37F4;
 extern void _card_info(s32);
 extern void _card_load(s32);
 extern void _card_clear(s32);
-extern s32  func_80037804(void);
+extern s32  memcard_PollSwEventsTimeout(void);
 extern void memcard_AckHwEvents(void);
-extern s32  func_80037964(void);
+extern s32  memcard_WaitHwEvent(void);
 extern void memcard_AckSwEvents(void);
 
 s32 func_80037D14(s32 arg0, s32 arg1) {
@@ -27,7 +27,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         D_800A3890 = 0;
         break;
     case 1: {
-        v1 = func_80037804();
+        v1 = memcard_PollSwEventsTimeout();
         if (v1 == 0) break;
         if (v1 == 2) goto c1_e20;
         if (v1 < 3) {
@@ -53,7 +53,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         D_800A37F4 = 2;
         memcard_AckHwEvents();
         _card_clear(p);
-        func_80037964();
+        memcard_WaitHwEvent();
         D_800A31EC = 2;
         D_800A31E8 = 0;
         break;
@@ -72,7 +72,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         D_800A3924 = 0;
         break;
     case 3: {
-        v1 = func_80037804();
+        v1 = memcard_PollSwEventsTimeout();
         if (v1 == 0) break;
         D_800A31EC = 4;
         if (v1 == 2) goto c3_ecc;

@@ -350,10 +350,19 @@ apiscan = {}   # ADDR(no 0x, upper) -> dict(name, evidence, note, origin, tier)
 #                                       owner ruling 2026-09-07, near-tier-ruling-2026-09-07.md)
 #   libscan-desync       (handled by the libscan path below: glabel already Sony, C def is not)
 MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-restatement", "CORROBORATED"),
-             (J("docs", "naming", "libscan", "near_manifest.csv"), None, None)]
+             (J("docs", "naming", "libscan", "near_manifest.csv"), None, None),
+             (J("docs", "naming", "sweep-2026-09-24", "func_manifest.csv"), None, None)]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
-              "libscan-near": ("libscan-near", "CORROBORATED")}
+              "libscan-near": ("libscan-near", "CORROBORATED"),
+              # owner ruling 2026-09-24 (docs/naming/sweep-2026-09-24/ruling-2026-09-24.md)
+              "in-binary-string": ("in-binary-string", "VERIFIED"),
+              "computation-restatement": ("computation-restatement", "CORROBORATED"),
+              "libsn-pcdrv-protocol": ("libsn-pcdrv-protocol", "CORROBORATED")}
+# RESET rows from a verified manifest (evidence_class reset-contradicted, proposed_name =
+# the auto name): the current name is contradicted by the body. Consumed only while the
+# address still carries a semantic name; once reset, the row falls through to AUTO.
+manifest_resets = {}   # ADDR(no 0x, upper) -> dict(evidence, note)
 for ap, dorigin, dtier in MANIFESTS:
     if not os.path.exists(ap):
         continue
@@ -366,6 +375,10 @@ for ap, dorigin, dtier in MANIFESTS:
                 continue
             cls = (r.get("evidence_class") or "").strip()
             if cls == "libscan-desync":
+                continue
+            if cls == "reset-contradicted":
+                manifest_resets[a] = dict(evidence=(r.get("evidence") or "").strip(),
+                                          note=(r.get("verifier_note") or "").strip())
                 continue
             origin, tier = CLASS_TIER.get(cls, (dorigin, dtier))
             if not origin:
@@ -520,6 +533,15 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
                          evidence="; ".join(ev)[:1000],
                          action="KEEP" if same else "RENAME",
                          proposed_name="" if same else e["name"]))
+        continue
+
+    # --- verified RESET (docs/naming/sweep-2026-09-24/): current name contradicted by the body
+    if addr in manifest_resets and not AUTOPAT.match(nm):
+        e = manifest_resets[addr]
+        rows.append(dict(common, origin="contradicted-by-body", tier="SUSPECT",
+                         evidence=("RECORDED CONTRADICTION (verified sweep 2026-09-24): "
+                                   + e["note"][:500] + " | " + e["evidence"][:300])[:1000],
+                         action="RESET", proposed_name=""))
         continue
 
     # --- AUTO

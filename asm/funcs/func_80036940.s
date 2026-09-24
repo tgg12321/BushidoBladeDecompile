@@ -113,8 +113,8 @@ glabel func_80036940
     /* 272DC 80036ADC 02000224 */  addiu      $v0, $zero, 0x2
     /* 272E0 80036AE0 0C006214 */  bne        $v1, $v0, .L80036B14
     /* 272E4 80036AE4 05000224 */   addiu     $v0, $zero, 0x5
-    /* 272E8 80036AE8 0380043C */  lui        $a0, %hi(func_80036064)
-    /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(func_80036064)
+    /* 272E8 80036AE8 0380043C */  lui        $a0, %hi(cdrom_ReadyCallback)
+    /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(cdrom_ReadyCallback)
     /* 272F0 80036AF0 1080103C */  lui        $s0, %hi(D_80101E98)
     /* 272F4 80036AF4 981E1026 */  addiu      $s0, $s0, %lo(D_80101E98)
     /* 272F8 80036AF8 9000020C */  jal        CdReadyCallback

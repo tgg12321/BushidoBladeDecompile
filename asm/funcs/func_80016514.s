@@ -9,7 +9,7 @@ glabel func_80016514
     /* 6D30 80016530 2000B4AF */  sw         $s4, 0x20($sp)
     /* 6D34 80016534 1800B2AF */  sw         $s2, 0x18($sp)
     /* 6D38 80016538 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 6D3C 8001653C A60D020C */  jal        func_80083698
+    /* 6D3C 8001653C A60D020C */  jal        PCopen
     /* 6D40 80016540 1000B0AF */   sw        $s0, 0x10($sp)
     /* 6D44 80016544 21904000 */  addu       $s2, $v0, $zero
     /* 6D48 80016548 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -24,13 +24,13 @@ glabel func_80016514
     /* 6D68 80016568 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L8001656C:
     /* 6D6C 8001656C 21280000 */  addu       $a1, $zero, $zero
-    /* 6D70 80016570 B20D020C */  jal        func_800836C8
+    /* 6D70 80016570 B20D020C */  jal        PClseek
     /* 6D74 80016574 02000624 */   addiu     $a2, $zero, 0x2
     /* 6D78 80016578 21A04000 */  addu       $s4, $v0, $zero
     /* 6D7C 8001657C 21888002 */  addu       $s1, $s4, $zero
     /* 6D80 80016580 21204002 */  addu       $a0, $s2, $zero
     /* 6D84 80016584 21280000 */  addu       $a1, $zero, $zero
-    /* 6D88 80016588 B20D020C */  jal        func_800836C8
+    /* 6D88 80016588 B20D020C */  jal        PClseek
     /* 6D8C 8001658C 21300000 */   addu      $a2, $zero, $zero
     /* 6D90 80016590 0D00801A */  blez       $s4, .L800165C8
     /* 6D94 80016594 00000000 */   nop
@@ -42,14 +42,14 @@ glabel func_80016514
   .L800165A8:
     /* 6DA8 800165A8 21204002 */  addu       $a0, $s2, $zero
     /* 6DAC 800165AC 21286002 */  addu       $a1, $s3, $zero
-    /* 6DB0 800165B0 1F0E020C */  jal        bios_FileRead
+    /* 6DB0 800165B0 1F0E020C */  jal        PCread
     /* 6DB4 800165B4 21300002 */   addu      $a2, $s0, $zero
     /* 6DB8 800165B8 E8FF5014 */  bne        $v0, $s0, .L8001655C
     /* 6DBC 800165BC 23883002 */   subu      $s1, $s1, $s0
     /* 6DC0 800165C0 F5FF201E */  bgtz       $s1, .L80016598
     /* 6DC4 800165C4 21987002 */   addu      $s3, $s3, $s0
   .L800165C8:
-    /* 6DC8 800165C8 AE0D020C */  jal        func_800836B8
+    /* 6DC8 800165C8 AE0D020C */  jal        PCclose
     /* 6DCC 800165CC 21204002 */   addu      $a0, $s2, $zero
     /* 6DD0 800165D0 21108002 */  addu       $v0, $s4, $zero
   .L800165D4:

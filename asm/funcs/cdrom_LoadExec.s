@@ -24,7 +24,7 @@ glabel cdrom_LoadExec
     /* 27B9C 8003739C 21300000 */   addu      $a2, $zero, $zero
     /* 27BA0 800373A0 00080424 */  addiu      $a0, $zero, 0x800
     /* 27BA4 800373A4 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 27BA8 800373A8 BDDC000C */  jal        func_800372F4
+    /* 27BA8 800373A8 BDDC000C */  jal        cdrom_ReadWait
     /* 27BAC 800373AC 21308002 */   addu      $a2, $s4, $zero
     /* 27BB0 800373B0 F8FF4014 */  bnez       $v0, .L80037394
     /* 27BB4 800373B4 02000424 */   addiu     $a0, $zero, 0x2
@@ -59,7 +59,7 @@ glabel cdrom_LoadExec
     /* 27C24 80037424 21300000 */   addu      $a2, $zero, $zero
     /* 27C28 80037428 0C00048E */  lw         $a0, 0xC($s0)
     /* 27C2C 8003742C 0800058E */  lw         $a1, 0x8($s0)
-    /* 27C30 80037430 BDDC000C */  jal        func_800372F4
+    /* 27C30 80037430 BDDC000C */  jal        cdrom_ReadWait
     /* 27C34 80037434 21308002 */   addu      $a2, $s4, $zero
     /* 27C38 80037438 D6FF4014 */  bnez       $v0, .L80037394
     /* 27C3C 8003743C 02000424 */   addiu     $a0, $zero, 0x2

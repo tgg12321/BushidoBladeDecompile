@@ -83,7 +83,7 @@ glabel func_8001A67C
   .L8001A7AC:
     /* AFAC 8001A7AC 12200000 */  mflo       $a0
     /* AFB0 8001A7B0 0000428E */  lw         $v0, 0x0($s2)
-    /* AFB4 8001A7B4 8B69000C */  jal        func_8001A62C
+    /* AFB4 8001A7B4 8B69000C */  jal        math_FloorDiv2000
     /* AFB8 8001A7B8 21204400 */   addu      $a0, $v0, $a0
     /* AFBC 8001A7BC 80221100 */  sll        $a0, $s1, 10
     /* AFC0 8001A7C0 1A009000 */  div        $zero, $a0, $s0
@@ -101,7 +101,7 @@ glabel func_8001A67C
     /* AFE8 8001A7E8 12200000 */  mflo       $a0
     /* AFEC 8001A7EC 000062A6 */  sh         $v0, 0x0($s3)
     /* AFF0 8001A7F0 0800428E */  lw         $v0, 0x8($s2)
-    /* AFF4 8001A7F4 8B69000C */  jal        func_8001A62C
+    /* AFF4 8001A7F4 8B69000C */  jal        math_FloorDiv2000
     /* AFF8 8001A7F8 21204400 */   addu      $a0, $v0, $a0
     /* AFFC 8001A7FC 040062A6 */  sh         $v0, 0x4($s3)
     /* B000 8001A800 2800BF8F */  lw         $ra, 0x28($sp)

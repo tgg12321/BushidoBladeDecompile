@@ -35,7 +35,7 @@ extern void func_8004668C(void);
 extern void func_80046020(void);
 extern void func_80049E1C(void);
 
-extern void func_80042A88(s32 *, s32 *);
+extern void math_RotMatrixYXZ(s32 *, s32 *);
 extern void ApplyMatrix(s32 *, s16 *, s32 *);
 extern s16 ratan2(s32, s32);
 extern s16 Judge[];
@@ -226,12 +226,12 @@ void snd_StopAll(void) {
     snd_StopBgm();
 }
 
-void snd_PlaySystemSe(void) {
+void rcnt_StartCnt1(void) {
     SetRCnt(0xF2000001, -1, 0x2000);
     StartRCnt(0xF2000001);
 }
 
-void snd_StopSystemSe(void) {
+void rcnt_GetCnt1(void) {
     GetRCnt(0xF2000001);
 }
 
@@ -510,7 +510,7 @@ s16 *camera_CalcAngles(void) {
     s32 pos[8];
     s16 s0;
 
-    func_80042A88((s32 *)((u8 *)*(s32 **)&D_800A3708 + 0x10), pos);
+    math_RotMatrixYXZ((s32 *)((u8 *)*(s32 **)&D_800A3708 + 0x10), pos);
     rot[0] = 0;
     rot[1] = 0;
     rot[2] = 0x1000;

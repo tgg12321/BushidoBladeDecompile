@@ -11,7 +11,7 @@ glabel func_80038658
     /* 28E7C 8003867C C8E10008 */  j          .L80038720
     /* 28E80 80038680 00000000 */   nop
   .L80038684:
-    /* 28E84 80038684 2ADE000C */  jal        func_800378A8
+    /* 28E84 80038684 2ADE000C */  jal        memcard_PollSwEvents
     /* 28E88 80038688 00000000 */   nop
     /* 28E8C 8003868C 21804000 */  addu       $s0, $v0, $zero
     /* 28E90 80038690 22000012 */  beqz       $s0, .L8003871C
@@ -26,7 +26,7 @@ glabel func_80038658
     /* 28EB4 800386B4 C3E10008 */  j          .L8003870C
     /* 28EB8 800386B8 02000224 */   addiu     $v0, $zero, 0x2
   .L800386BC:
-    /* 28EBC 800386BC 2ADE000C */  jal        func_800378A8
+    /* 28EBC 800386BC 2ADE000C */  jal        memcard_PollSwEvents
     /* 28EC0 800386C0 00000000 */   nop
     /* 28EC4 800386C4 21804000 */  addu       $s0, $v0, $zero
     /* 28EC8 800386C8 14000012 */  beqz       $s0, .L8003871C

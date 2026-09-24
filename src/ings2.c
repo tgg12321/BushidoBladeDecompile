@@ -578,7 +578,7 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_80083698\n"
+    "glabel PCopen\n"
     "    addu $a2, $a1, $zero\n"
     "    addu $a1, $a0, $zero\n"
     "    .word 0x000040CD\n"
@@ -588,7 +588,7 @@ __asm__(
     ".L800836B0:\n"
     "    jr $ra\n"
     "    nop\n"
-    "endlabel func_80083698\n"
+    "endlabel PCopen\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -596,17 +596,17 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_800836B8\n"
+    "glabel PCclose\n"
     "    addu $a1, $a0, $zero\n"
     "    .word 0x0000410D\n"
     "    jr $ra\n"
     "    nop\n"
-    "endlabel func_800836B8\n"
+    "endlabel PCclose\n"
     "    .set reorder\n"
     "    .set at\n"
 );
-extern s32 func_800836C8(s32, s32, s32);
-INCLUDE_ASM("asm/funcs", func_800836C8);
+extern s32 PClseek(s32, s32, s32);
+INCLUDE_ASM("asm/funcs", PClseek);
 INCLUDE_ASM("asm/funcs", _start);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
 /* motion_Open + motion_Close (paired open/close functions) */
@@ -633,9 +633,9 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-extern s32 bios_FileReadRaw(s32, s32, s32, s32);
+extern s32 pcdrv_ReadRaw(s32, s32, s32, s32);
 
-s32 bios_FileRead(s32 addr, s32 dest, s32 len) {
+s32 PCread(s32 addr, s32 dest, s32 len) {
     s32 total;
     s32 chunk;
     s32 result;
@@ -647,7 +647,7 @@ s32 bios_FileRead(s32 addr, s32 dest, s32 len) {
             if ((u32)0x8000 < (u32)len) {
                 chunk = 0x8000;
             }
-            result = bios_FileReadRaw(0, addr, chunk, dest);
+            result = pcdrv_ReadRaw(0, addr, chunk, dest);
             total += result;
             if (result == -1) {
                 return -1;
@@ -665,7 +665,7 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel bios_FileReadRaw\n"
+    "glabel pcdrv_ReadRaw\n"
     "    .word 0x0000414D\n"
     "    beqz $v0, .L8008394C\n"
     "    addu $v0, $v1, $zero\n"
@@ -673,7 +673,7 @@ __asm__(
     ".L8008394C:\n"
     "    jr $ra\n"
     "    nop\n"
-    "endlabel bios_FileReadRaw\n"
+    "endlabel pcdrv_ReadRaw\n"
     "    .set reorder\n"
     "    .set at\n"
 );

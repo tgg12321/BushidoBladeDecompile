@@ -30,11 +30,11 @@ cdrom_Init
 func_80036140
 func_80036940
 memcard_Init
-func_80037774
-func_80037804
-func_800378A8
+memcard_Quit
+memcard_PollSwEventsTimeout
+memcard_PollSwEvents
 memcard_AckSwEvents
-func_80037964
+memcard_WaitHwEvent
 memcard_AckHwEvents
 memcard_CountFiles
 func_80037AA4
@@ -65,10 +65,10 @@ func_800397D4
 func_8003993C
 comb_Init
 comb_Close
-func_8003A360
-func_8003A39C
+comb_EnableEvents
+comb_ResetClose
 func_8003A41C
-func_8003A42C
+comb_WriteWaitCallback
 comb_Write8
 comb_Read8
 comb_WaitRead8
@@ -94,7 +94,7 @@ game_SetPlayerCount
 game_GetPlayerCount
 stage_ClearLighting
 func_8003F7F4
-func_800401CC
+gpu_AddDrawMove
 func_80041E10
 func_80041EB0
 func_800420D0
@@ -162,7 +162,7 @@ func_8005490C
 snd_Init
 snd_Quit
 obj_InitAll
-func_8005B7C4
+snd_LoadCommonVab
 func_8005C2A8
 snd_VabOpen
 func_8005D554

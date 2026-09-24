@@ -1501,7 +1501,7 @@ INCLUDE_ASM("asm/funcs", func_800527FC);
  * leaf run (siblings func_80052A20/A88/B00/B44/B7C, authorized 2026-08-06).
  * Canonical-asm; see inline_asm_canonical.txt. Owner-authorized 2026-08-11. */
 INCLUDE_ASM("asm/funcs", func_80052930);
-INCLUDE_ASM("asm/funcs", func_80052A20);
+INCLUDE_ASM("asm/funcs", gte_SetMatrixRotTransIR);
 INCLUDE_ASM("asm/funcs", func_80052A88);
 INCLUDE_ASM("asm/funcs", func_80052B00);
 /* func_80052B44 = LIBGTE-style SetRotMatrix + zero-translation. Loads a packed
@@ -1517,7 +1517,7 @@ INCLUDE_ASM("asm/funcs", func_80052B7C);
  * in $t0/$t1/$t2 (natural cc1 allocation picks $v0/$v1/$a1), and the jr $ra
  * delay slot holds a canonical nop where GCC's reorg would fill the last sb.
  * Canonical-asm; see inline_asm_canonical.txt. User-authorized 2026-06-12. */
-INCLUDE_ASM("asm/funcs", func_80052BE4);
+INCLUDE_ASM("asm/funcs", gte_ReadFarColor);
 INCLUDE_ASM("asm/funcs", func_80052C10);
 PAD_NOPS_1; /* padding after InitFadePanel */
 INCLUDE_ASM("asm/funcs", func_80052C28);
@@ -2892,14 +2892,14 @@ extern s32 func_8005C2A8(s32 *, s16, s32);
 
 s32 printf(s32 *, s32);               /* extern */
 s32 game_FrameLoop();                           /* extern */
-s32 replay_camera_Init(s32, s32);               /* extern */
+s32 cdrom_StartRead(s32, s32);               /* extern */
 
 extern s32 D_800158B4;
 extern s32 D_800A3404;
 extern s32 D_800A3408;
 extern s32 D_800A340C;
 
-s32 func_8005B7C4(s32 arg0) {
+s32 snd_LoadCommonVab(s32 arg0) {
     s32 temp_v0;
     u32 temp_s0;
     s32 ret;
@@ -2908,7 +2908,7 @@ s32 func_8005B7C4(s32 arg0) {
     printf(&D_800158B4, arg0);
     game_FrameLoop();
     temp_v0 = func_80036EA8(2, 1);
-    replay_camera_Init(temp_v0, arg0);
+    cdrom_StartRead(temp_v0, arg0);
     temp_s0 = func_80036F28(temp_v0);
     game_FrameLoop();
     D_800A3408 = 0;
@@ -2949,13 +2949,13 @@ s32 func_8005B8B8(s32 arg0) {
     func_800858D0(0);
     t0 = func_80036EA8(2, 0x5D);
     game_FrameLoop();
-    replay_camera_Init(t0, arg0);
+    cdrom_StartRead(t0, arg0);
     size = func_80036F28(t0);
     game_FrameLoop();
     ret = func_8005C2A8(arg0, 8, arg0 + size);
     t0_2 = func_80036EA8(2, 0x5E);
     game_FrameLoop();
-    replay_camera_Init(t0_2, arg0 + ret);
+    cdrom_StartRead(t0_2, arg0 + ret);
     size = func_80036F28(t0_2) + ret;
     game_FrameLoop();
     return func_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
@@ -2978,7 +2978,7 @@ void obj_InitTask(void) {
 void obj_InitTask(void);
 s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
-s32 replay_camera_Init(s32, s32);
+s32 cdrom_StartRead(s32, s32);
 s32 func_80036F28(s32);
 s32 func_8005C2A8(s32 *, s16, s32);
 void obj_InitTaskCamera(s32 a0) {
@@ -2986,7 +2986,7 @@ void obj_InitTaskCamera(s32 a0) {
     obj_InitTask();
     s1 = func_80036EA8(2, 8);
     game_FrameLoop();
-    replay_camera_Init(s1, a0);
+    cdrom_StartRead(s1, a0);
     s1 = func_80036F28(s1);
     game_FrameLoop();
     func_8005C2A8(a0, 9, a0 + s1);
@@ -3010,7 +3010,7 @@ extern void func_800858D0(s32);
 extern void SsVabClose(s16);
 extern s32 func_80036EA8(s32, s32);
 extern s32 game_FrameLoop(void);
-extern s32 replay_camera_Init(s32, s32);
+extern s32 cdrom_StartRead(s32, s32);
 extern s32 func_80036F28(s32);
 
 
@@ -3036,7 +3036,7 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
     }
     task = func_80036EA8(2, arg1 + 9);
     game_FrameLoop();
-    replay_camera_Init(task, (s32)p);
+    cdrom_StartRead(task, (s32)p);
     size = func_80036F28(task);
     game_FrameLoop();
     ((s32 *)p)[12] += (s32)p;
@@ -3713,7 +3713,7 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
     u8 r1[8], r2[8];
     s32 s0;
     s0 = func_80036EA8(2, arg0 + 0x33);
-    replay_camera_Init(s0, (s32)arg1);
+    cdrom_StartRead(s0, (s32)arg1);
     game_FrameLoop();
     func_80036F28(s0);
     __builtin_memcpy(r1, D_800A327C, 8);
@@ -3964,7 +3964,7 @@ void func_800602AC(s32 arg0, s32 *arg1) {
     s32 s1;
     u8 *p;
     s1 = func_80036EA8(2, arg0 + 0x3D);
-    replay_camera_Init(s1, (s32)arg1);
+    cdrom_StartRead(s1, (s32)arg1);
     game_FrameLoop();
     func_80036F28(s1);
     arg1[0] = arg1[0] + (s32)arg1;
@@ -4491,26 +4491,26 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
   v = D_8009BD38 & 0xF;
   if (v == 0)
   {
-    replay_camera_Init(func_80036EA8(2, 0x3C), arg0);
+    cdrom_StartRead(func_80036EA8(2, 0x3C), arg0);
   }
   else
     if (v == 3)
   {
-    replay_camera_Init(func_80036EA8(2, 0x2F), new_var);
+    cdrom_StartRead(func_80036EA8(2, 0x2F), new_var);
   }
   else
     if (v == 2)
   {
-    replay_camera_Init(func_80036EA8(2, 0x30), new_var);
+    cdrom_StartRead(func_80036EA8(2, 0x30), new_var);
   }
   else
     if (v == 5)
   {
-    replay_camera_Init(func_80036EA8(2, 0x31), new_var);
+    cdrom_StartRead(func_80036EA8(2, 0x31), new_var);
   }
   else
   {
-    replay_camera_Init(func_80036EA8(2, 0), new_var);
+    cdrom_StartRead(func_80036EA8(2, 0), new_var);
   }
   game_FrameLoop();
   s.sp10 = 0x380;
@@ -8417,7 +8417,7 @@ extern u8 D_800FB535;
 extern s32 D_800F7438;
 extern s32 func_80036EA8(s32, s32);
 
-extern s32 replay_camera_Init(s32, s32);
+extern s32 cdrom_StartRead(s32, s32);
 
 extern void SetDefDrawEnv(s32, s32, s32, s32, s32);
 extern void SetDefDispEnv(s32, s32, s32, s32, s32);
@@ -8447,7 +8447,7 @@ s32 func_8006E10C(void) {
     }
     do { ff0 = 0xF0; } while (0); /* FAKE: loop notes fence sched1's constant-sink so the li stays at the jal */
     v0 = func_80036EA8(a0v, a1v);
-    replay_camera_Init(v0, D_800A3500);
+    cdrom_StartRead(v0, D_800A3500);
     game_FrameLoop();
     func_80036F28(v0);
     SetDispMask(0);
@@ -8738,7 +8738,7 @@ void func_8006E950(s32 *a0, s32 *a1) {
     s0_addr = (s32)a0;
     game_FrameLoop();
     v0 = func_80036EA8(2, s0_addr);
-    replay_camera_Init(v0, (s32)s1);
+    cdrom_StartRead(v0, (s32)s1);
     game_FrameLoop();
     s2 = 0x280;
     func_8006E440(s1);

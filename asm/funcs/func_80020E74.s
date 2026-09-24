@@ -50,7 +50,7 @@ glabel func_80020E74
     /* 11724 80020F24 C0301000 */  sll        $a2, $s0, 3
     /* 11728 80020F28 2330D000 */  subu       $a2, $a2, $s0
     /* 1172C 80020F2C 0000658E */  lw         $a1, 0x0($s3)
-    /* 11730 80020F30 8DDB000C */  jal        func_80036E34
+    /* 11730 80020F30 8DDB000C */  jal        cdrom_StartReadAt
     /* 11734 80020F34 07000724 */   addiu     $a3, $zero, 0x7
     /* 11738 80020F38 D0DB000C */  jal        game_FrameLoop
     /* 1173C 80020F3C 00000000 */   nop
@@ -175,7 +175,7 @@ glabel func_80020E74
     /* 118E8 800210E8 80801200 */  sll        $s0, $s2, 2
     /* 118EC 800210EC 21800302 */  addu       $s0, $s0, $v1
     /* 118F0 800210F0 0000058E */  lw         $a1, 0x0($s0)
-    /* 118F4 800210F4 66DB000C */  jal        replay_camera_Init
+    /* 118F4 800210F4 66DB000C */  jal        cdrom_StartRead
     /* 118F8 800210F8 21204000 */   addu      $a0, $v0, $zero
     /* 118FC 800210FC D0DB000C */  jal        game_FrameLoop
     /* 11900 80021100 00000000 */   nop

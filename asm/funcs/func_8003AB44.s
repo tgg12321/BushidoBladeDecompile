@@ -22,7 +22,7 @@ glabel func_8003AB44
     /* 2B390 8003AB90 2AEB0008 */  j          .L8003ACA8
     /* 2B394 8003AB94 21100000 */   addu      $v0, $zero, $zero
   jlabel .L8003AB98
-    /* 2B398 8003AB98 C2E8000C */  jal        func_8003A308
+    /* 2B398 8003AB98 C2E8000C */  jal        comb_ReadCtsSetRts
     /* 2B39C 8003AB9C 00000000 */   nop
     /* 2B3A0 8003ABA0 0A80023C */  lui        $v0, %hi(D_800A38A0)
     /* 2B3A4 8003ABA4 A038428C */  lw         $v0, %lo(D_800A38A0)($v0)
@@ -77,7 +77,7 @@ glabel func_8003AB44
     /* 2B454 8003AC54 14004014 */  bnez       $v0, .L8003ACA8
     /* 2B458 8003AC58 21100000 */   addu      $v0, $zero, $zero
   .L8003AC5C:
-    /* 2B45C 8003AC5C E7E8000C */  jal        func_8003A39C
+    /* 2B45C 8003AC5C E7E8000C */  jal        comb_ResetClose
     /* 2B460 8003AC60 00000000 */   nop
     /* 2B464 8003AC64 2AEB0008 */  j          .L8003ACA8
     /* 2B468 8003AC68 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -94,7 +94,7 @@ glabel func_8003AB44
   jlabel .L8003AC8C
     /* 2B48C 8003AC8C 01000224 */  addiu      $v0, $zero, 0x1
     /* 2B490 8003AC90 4A0882A3 */  sb         $v0, %gp_rel(D_800A3916)($gp)
-    /* 2B494 8003AC94 D8E8000C */  jal        func_8003A360
+    /* 2B494 8003AC94 D8E8000C */  jal        comb_EnableEvents
     /* 2B498 8003AC98 00000000 */   nop
     /* 2B49C 8003AC9C 2AEB0008 */  j          .L8003ACA8
     /* 2B4A0 8003ACA0 01000224 */   addiu     $v0, $zero, 0x1
