@@ -22,3 +22,11 @@
   (3) rodata re-attribution — the four strings + jtbl_8001622C (0x800161E4..0x80016240)
   are getintr's own literals, but live mid-text1a_b_post_rodata.c while system.o(.rodata)
   links after display.o. Needs the TU re-split recipe.
+
+## 2026-09-23 — COMPLETED-C in f15cad3e4 (layer-2 PASS; oracle SHA1 match)
+
+- Landed with real TU names; CD_intr/_memcpy hoisted above getintr; jtbl_8001622C now
+  emitted into system.o(.rodata), linked between text1a_b_post_rodata.o and the new
+  text1a_b_tail_rodata.o (split at 0x80016240). candidate.c = landed body.
+- NOTE for future system.c switches: system.o(.rodata) now sits at 0x8001622C; any other
+  function in system.c that emits rodata must fit that slot ordering.

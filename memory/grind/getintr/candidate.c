@@ -1,42 +1,32 @@
-/* MEASUREMENT VARIANT (suffixed names to avoid clashing with later system.c decls).
- * C ref: SOTN src/main/psxsdk/libcd/bios.c getintr (tmp/sotn @8bd7c77), adapted
- * to BB2's bytes (CD_debug-gated printf DiskError path, mask 0x1D). */
-typedef char Result_t_m[8];
-typedef struct {
-    u8 sync;
-    u8 ready;
-    u8 c;
-} CD_intr_m;
-extern volatile CD_intr_m Intr_m;
-extern Result_t_m D_800F19A0_m, D_800F19A8_m, D_800F19B0_m;
-extern s32 CD_status_m;
-extern s32 CD_status1_m;
-extern s32 CD_nopen_m;
-extern s32 D_800A127C_m[];
-extern s32 D_800A137C_m[];
+/* PsyQ 4.0 LIBCD BIOS: getintr — verbatim-linked Sony object (census 2026-07-09);
+ * C ref: SOTN src/main/psxsdk/libcd/bios.c (v1.77; tmp/sotn @8bd7c77). BB2 links
+ * v1.86, whose bytes differ in two places: the DiskError report is two
+ * CD_debug-gated printf()s (not puts + one gated printf), and the error mask
+ * is 0x1D (CdlStatError|SeekError|IdError|ShellOpen = 0x1D, spelled as the
+ * value). CD_status is Sony's `int`; this TU declares the libc-side u_char
+ * view, hence the s32 accesses (as in CD_initintr / CD_init below). */
+typedef char Result_t[8];
+extern s32 g_cd_init_flag; /* 0x800A11C8 = Sony CD_status1 */
+extern s32 D_800A11CC;     /* Sony CD_nopen */
+extern s32 D_800A127C[];   /* per-command "ack is complete" flags */
+extern s32 D_800A137C[];   /* per-command "status valid" flags */
+extern void D_800F19A0;    /* Result_t result buffers */
+extern void D_800F19A8;
+extern void D_800F19B0;
+extern char D_800161E4[]; /* "DiskError: " */
+extern char D_800161F0[]; /* "com=%s,code=(%02x:%02x)\n" */
+extern char D_8001620C[]; /* "CDROM: unknown intr" */
+extern char D_80016220[]; /* "(%d)\n" */
 extern volatile u8 *g_cd_index_reg;
 extern volatile u8 *g_cd_param_fifo;
 extern volatile u8 *g_cd_req_reg;
 extern volatile u8 *g_cd_irq_reg;
-extern const char D_800161E4[], D_800161F0[], D_8001620C[], D_80016220[];
 extern void puts();
 extern void printf();
 
-static inline void _memcpy_m(void *_dst, void *_src, u32 _size)
-{
-    char *pDst = (char *)_dst;
-    char *pSrc = (char *)_src;
-    if (pDst == 0) {
-        return;
-    }
-    while (_size--) {
-        *pDst++ = *pSrc++;
-    }
-}
-
 s32 getintr(void) {
     volatile char nReg;
-    volatile Result_t_m buf;
+    volatile Result_t buf;
     s32 i, j;
     s32 bHasError;
 
@@ -67,13 +57,13 @@ s32 getintr(void) {
     *g_cd_index_reg = 1;
     *g_cd_irq_reg = 7;
     *g_cd_req_reg = 7;
-    if (nReg != 3 || D_800A137C_m[CD_com]) {
-        if (!(CD_status_m & 0x10) && (buf[0] & 0x10)) {
-            CD_nopen_m++;
+    if (nReg != 3 || D_800A137C[CD_com]) {
+        if (!(*(s32 *)&CD_status & 0x10) && (buf[0] & 0x10)) {
+            D_800A11CC++;
         }
-        CD_status_m = buf[0];
-        CD_status1_m = buf[1];
-        bHasError = CD_status_m;
+        *(s32 *)&CD_status = buf[0];
+        g_cd_init_flag = buf[1];
+        bHasError = *(s32 *)&CD_status;
         bHasError &= 0x1D;
     }
     if (nReg == 5) {
@@ -81,46 +71,46 @@ s32 getintr(void) {
             printf(D_800161E4);
         }
         if (CD_debug > 0) {
-            printf(D_800161F0, CD_comstr[CD_com], CD_status_m, CD_status1_m);
+            printf(D_800161F0, CD_comstr[CD_com], *(s32 *)&CD_status, g_cd_init_flag);
         }
     }
     switch (nReg) {
     case 3:
         if (bHasError) {
-            Intr_m.sync = 5;
-            _memcpy_m(&D_800F19A0_m, &buf, sizeof(Result_t_m));
+            Intr.sync = 5;
+            _memcpy(&D_800F19A0, &buf, sizeof(Result_t));
             return 2;
         }
-        if (D_800A127C_m[CD_com]) {
-            Intr_m.sync = 3;
-            _memcpy_m(&D_800F19A0_m, &buf, sizeof(Result_t_m));
+        if (D_800A127C[CD_com]) {
+            Intr.sync = 3;
+            _memcpy(&D_800F19A0, &buf, sizeof(Result_t));
             return 1;
         }
-        Intr_m.sync = 2;
-        _memcpy_m(&D_800F19A0_m, &buf, sizeof(Result_t_m));
+        Intr.sync = 2;
+        _memcpy(&D_800F19A0, &buf, sizeof(Result_t));
         return 2;
     case 2:
-        Intr_m.sync = bHasError ? 5 : 2;
-        _memcpy_m(&D_800F19A0_m, &buf, sizeof(Result_t_m));
+        Intr.sync = bHasError ? 5 : 2;
+        _memcpy(&D_800F19A0, &buf, sizeof(Result_t));
         return 2;
     case 1:
         if (bHasError && i == 1) {
             bHasError = 0;
         }
-        Intr_m.ready = bHasError ? 5 : 1;
-        _memcpy_m(&D_800F19A8_m, &buf, sizeof(Result_t_m));
+        Intr.ready = bHasError ? 5 : 1;
+        _memcpy(&D_800F19A8, &buf, sizeof(Result_t));
         *g_cd_index_reg = 0;
         *g_cd_irq_reg = 0;
         return 4;
     case 4:
-        Intr_m.ready = Intr_m.c = 4;
-        _memcpy_m(&D_800F19B0_m, &buf, sizeof(Result_t_m));
-        _memcpy_m(&D_800F19A8_m, &buf, sizeof(Result_t_m));
+        Intr.ready = Intr.c = 4;
+        _memcpy(&D_800F19B0, &buf, sizeof(Result_t));
+        _memcpy(&D_800F19A8, &buf, sizeof(Result_t));
         return 4;
     case 5:
-        Intr_m.sync = Intr_m.ready = 5;
-        _memcpy_m(&D_800F19A0_m, &buf, sizeof(Result_t_m));
-        _memcpy_m(&D_800F19A8_m, &buf, sizeof(Result_t_m));
+        Intr.sync = Intr.ready = 5;
+        _memcpy(&D_800F19A0, &buf, sizeof(Result_t));
+        _memcpy(&D_800F19A8, &buf, sizeof(Result_t));
         return 6;
     default:
         puts(D_8001620C);

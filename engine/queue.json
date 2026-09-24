@@ -124,14 +124,6 @@
       "status": "active"
     },
     {
-      "func": "getintr",
-      "file": "system",
-      "distance": 354,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8006D808",
       "file": "text1b",
       "distance": 355,
@@ -812,15 +804,15 @@
     }
   ],
   "counts": {
-    "total": 80,
-    "active": 69,
+    "total": 79,
+    "active": 68,
     "by_status": {
-      "active": 69,
+      "active": 68,
       "rotated": 11
     },
     "by_verdict": {
       "ASM-PARTIAL": 17,
-      "C": 52
+      "C": 51
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
