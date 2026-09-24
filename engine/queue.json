@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80067200",
-      "file": "text1b",
-      "distance": 298,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_SsVmKeyOnNow",
       "file": "main",
       "distance": 301,
@@ -791,15 +783,15 @@
     }
   ],
   "counts": {
-    "total": 78,
-    "active": 67,
+    "total": 77,
+    "active": 66,
     "by_status": {
-      "active": 67,
+      "active": 66,
       "rotated": 11
     },
     "by_verdict": {
-      "ASM-PARTIAL": 17,
-      "C": 50
+      "C": 50,
+      "ASM-PARTIAL": 16
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
