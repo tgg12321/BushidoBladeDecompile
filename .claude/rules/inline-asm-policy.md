@@ -188,6 +188,86 @@ needs its own owner ruling and layer-2 review, and this ruling does not
 authorize it. Record: docs/grind/decisions.md 2026-09-23 OWNER RULING —
 verbatim PsyQ GTE macro islands.
 
+### Extension (owner, 2026-09-24) — DMPSX placeholder command words
+
+Question put to the owner (manual session), verbatim: "func_80067200 matches
+the original exactly. It is ordinary C plus five short snippets for the PS1's
+3D math chip, copied from Sony's SDK header. Your 2026-09-23 ruling approved
+such snippets only if they are word-for-word copies. Four of the five are.
+The fifth isn't quite. Sony's header writes the 'rotate vector' command as a
+placeholder number (0x0000013f). A separate Sony tool swapped that placeholder
+for the real command (0x4A486012) after compiling. We don't have that tool, so
+the snippet carries the real command, which is what the original game
+contains. Should a snippet that differs from the header only by this
+placeholder-to-real-command swap count as word-for-word?"
+
+Options, verbatim:
+- "Approve (Recommended)": "Record a standing ruling: under the 2026-09-23
+  rule, swapping a Sony placeholder command word for the real post-tool
+  command still counts as verbatim. Then land func_80067200 with a fresh
+  adversarial review. This also covers future functions in the same
+  situation."
+- "Approve this one only": "Grant func_80067200 alone. Record it first as a
+  separate rules commit, then land the match with a fresh review."
+- "Don't approve": "Leave it as INCLUDE_ASM, save the matching candidate in
+  the ledger, and log the question to borderline.md."
+
+Owner (Trenton) selected, verbatim: **"Approve (Recommended)"**.
+
+**Rule text.** This is the author's narrowing of that answer, not the owner's
+words. It amends condition 1 above ("Verbatim macro, pinned provenance") in
+one respect only. An island still counts as verbatim when its single
+difference from the pinned header macro, beyond separators and whitespace, is
+this substitution, and ALL of the following hold:
+
+- **(A) Only the placeholder word changes.** The header macro's text contains
+  a `.word` directive whose operand is a DMPSX placeholder (a word of the form
+  `0x0000xxxx` that Sony's DMPSX post-processor rewrites into a cop2
+  instruction after compilation, e.g. `gte_rtv0()`'s `.word 0x0000013f`,
+  inline_c.h 4.3 :499-502). The island replaces ONLY that operand with a GTE
+  command word (bits 31-25 = 0100101, COP2 with bit 25 set), still spelled
+  `.word 0x........`. Every other
+  character of the macro's instruction text, its operands, constraints and
+  clobber list stays exactly as condition 1 requires (the macro's own `nop`s
+  included, nothing added, nothing removed).
+- **(B) The word is DMPSX's word for that placeholder, and the original's.**
+  The substituted word is the command word Sony's DMPSX tool emits for that
+  exact placeholder operand. This mapping is shown by a source independent of
+  the BB2 binary: a Sony document or tool output, or a second project's
+  real-command-word (no-DMPSX) spelling of the same macro (for example an SDK header that
+  carries real command words), cited with URL and commit hash. The word is
+  also byte-identical to the instruction at the corresponding position in the
+  original binary (`asm/funcs/<func>.s`). The layer-2 reviewer decodes every
+  field (sf bit 19, mx bits 17-18, v bits 15-16, cv bits 13-14, lm bit 10,
+  funct bits 0-5, and the command-number bits 20-24) and confirms that all of
+  them agree with the independent mapping. For `gte_rtv0()`: 0x0000013f ->
+  0x4A486012 = MVMVA sf=1, mx=rotation, v=V0, cv=none, lm=0; independent
+  sources: pcsx-redux/nugget@22037bd3 `psyq/include/inline_n.h` :516-520
+  ("special version for Nugget (NO DMPSX)") and
+  Lameguy64/PSn00bSDK@5d9aa2d3 `libpsn00b/include/inline_c.h` :1183-1186,
+  both `"nop;" "nop;" "cop2 0x0486012;"`. If only the target shows the word,
+  or any cited independent source disagrees in any field, the island is not
+  admitted.
+- **(C) Disclosed at the island.** The island's source comment names the
+  macro and its header line range, states that the command word is the
+  post-DMPSX word replacing the header's placeholder, and gives both words.
+  The `inline_asm_canonical.txt` row says the same.
+- **(D) Nothing else relaxes.** The rest of condition 1 and conditions 2-5
+  of the 2026-09-23 ruling apply unchanged: pinned provenance with a second independent copy, nothing
+  else in the islands, written inline in `src/*.c`, sandbox 0 + oracle SHA1 +
+  region hashes, the `gcc-cannot-emit:gte_cop2_sdk_macro` tag, the separate
+  `auth:` commit and the Pure-C attempts blocks, and the layer-2
+  cheat-reviewer, who checks the header text AND decodes the substituted
+  word. A word that differs from the original's bytes, a word substituted
+  into a macro whose header text has no placeholder, or any other edit to a
+  macro is not admitted. This Extension is the only exception to the
+  2026-09-23 "edited macros ... are not admitted" sentence. The 2026-09-23
+  "Relation to standing policy" and "Manual path only" paragraphs also apply
+  unchanged; the Grinder driver may not apply this Extension.
+
+Record: docs/grind/decisions.md 2026-09-24 OWNER RULING — DMPSX placeholder
+command words.
+
 # Why this distinction matters
 
 For a long time the BB2 project lumped canonical and cheat asm together as

@@ -28953,3 +28953,57 @@ inaccurate `&buf[0x200 - 4]` comment or require the frame check; (E) could be re
 alone clear the do-while(0) wraps. The reviewer's replacement wordings were applied verbatim. Round 2 FAILed one
 gap: (E)'s parenthetical misquoted do-while-zero-exception.md's prerequisites; it was corrected to cite
 that file exactly (neither adding to nor waiving them).
+
+## 2026-09-24 — OWNER RULING — DMPSX placeholder command words (`.claude/rules/inline-asm-policy.md`)
+
+Question put to the owner (manual session), verbatim: "func_80067200 matches
+the original exactly. It is ordinary C plus five short snippets for the PS1's
+3D math chip, copied from Sony's SDK header. Your 2026-09-23 ruling approved
+such snippets only if they are word-for-word copies. Four of the five are.
+The fifth isn't quite. Sony's header writes the 'rotate vector' command as a
+placeholder number (0x0000013f). A separate Sony tool swapped that placeholder
+for the real command (0x4A486012) after compiling. We don't have that tool, so
+the snippet carries the real command, which is what the original game
+contains. Should a snippet that differs from the header only by this
+placeholder-to-real-command swap count as word-for-word?"
+
+Options, verbatim:
+- "Approve (Recommended)": "Record a standing ruling: under the 2026-09-23
+  rule, swapping a Sony placeholder command word for the real post-tool
+  command still counts as verbatim. Then land func_80067200 with a fresh
+  adversarial review. This also covers future functions in the same
+  situation."
+- "Approve this one only": "Grant func_80067200 alone. Record it first as a
+  separate rules commit, then land the match with a fresh review."
+- "Don't approve": "Leave it as INCLUDE_ASM, save the matching candidate in
+  the ledger, and log the question to borderline.md."
+
+Owner (Trenton) selected, verbatim: **"Approve (Recommended)"**.
+
+Was the owner shown the LOW scan tier or the AUTO-REJECT clause? No; the
+question was framed as above, as for the 2026-09-23 ruling it extends.
+
+Author's context (not shown to the owner): the pinned 4.3 header
+(silent-hill-decomp@a1f407cb inline_c.h, sha256 de1a70ef...; second copy
+xenogears-decomp@54d7ef3e, sha256 2f1261e5...) spells `gte_rtv0()` at
+:499-502 as `"nop;" "nop;" ".word 0x0000013f"`. The original binary holds
+`0x4A486012` at func_80067200+0x430 (0x80067630). Committed islands in
+src/code6cac.c, src/code6cac_b.c, src/code6cac_c2.c and src/display.c already
+carry this post-DMPSX word under their own (earlier) grants; this ruling
+admits it for the verbatim-macro class only.
+
+Independent source for the placeholder-to-word mapping (not the BB2
+binary): two no-DMPSX SDK headers spell the same macro with the real command,
+`gte_rtv0()` = `"nop;" "nop;" "cop2 0x0486012;"`, which assembles to
+0x4A486012: github.com/pcsx-redux/nugget@22037bd3d4e60bf2e19d84be80fb83cd2bdc30bd
+psyq/include/inline_n.h :516-520 ("GTE Macro definitions - special version for
+Nugget (NO DMPSX)", sha256 30093dc5dd716c8def270ef7f4161371907614409b772d1573a1ff663bd673e4)
+and github.com/Lameguy64/PSn00bSDK@5d9aa2d3dfc7d6e51c2eb942ab4cdbae5571a40a
+libpsn00b/include/inline_c.h :1183-1186 (sha256
+aaaf5ee44d96f63ffc763f7879138efe9d64138797f069a7733fe70ffd20031c).
+
+Scope note (not shown to the owner): every GTE command macro in the pinned
+inline_c.h is written as a DMPSX placeholder (65 distinct `.word 0x0000xxxx`
+operands), so this standing ruling applies to any of them that meets prongs
+(A)-(D). The author's narrowing, prongs (A)-(D), is in inline-asm-policy.md
+§ Extension (owner, 2026-09-24).
