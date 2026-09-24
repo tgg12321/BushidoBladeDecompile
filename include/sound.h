@@ -42,6 +42,25 @@ typedef struct {
     u16 reserved3;
 } ProgAtr;
 
+/* PsyQ VabHdr (libsnd) — VAB bank header */
+typedef struct {
+    s32 form;
+    s32 ver;
+    s32 id;
+    u32 fsize;
+    u16 reserved0;
+    u16 ps;
+    u16 ts;
+    u8 vs;
+    u8 vspad;
+    u8 mvol;
+    u8 pan;
+    u8 attr1;
+    u8 attr2;
+    u32 reserved1;
+} VabHdr;
+extern VabHdr *_svm_vh; /* _svm_vh: current VAB header */
+
 /* Functions */
 extern void SsSetSerialAttr(s32, s32, s32);
 
