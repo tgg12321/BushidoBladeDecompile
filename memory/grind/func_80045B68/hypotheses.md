@@ -176,3 +176,17 @@ non-negative entries), so it cannot be a giv of this loop — that route is
 closed, and the mechanism is still unexplained.
 
 Measured neutral: `y = 0` before/after `q = sp18`, before/after `i = 0`.
+
+---
+
+# Closed 2026-09-24 — what was killed on the way from 2 to 0
+
+- 180-spelling header sweep (`tmp/f45b68m/gen_hb.py`: 6 last-forms × 2 n-forms ×
+  5 dl-forms × 3 statement orders): floor 2, no form moved residual item 1.
+- `last` with two sets (`last = x; last += hdr`, `last = hdr` before the call,
+  `offset += hdr; last = offset`, …): 3-43. A second set adds refs, `last` wins
+  $fp/$s4/$s5 in global_alloc, and the spill at 0x160 disappears.
+- Struct views of the header (Codex vAM/vAR/vAP): `addu` operand order flips.
+- decomp-permuter campaign on the honest 2 base (tmp/perm_f45b68, 4 min, best
+  permuter score 120 vs base 210 on its own metric): superseded by the `sec`
+  split, harvested and stopped.

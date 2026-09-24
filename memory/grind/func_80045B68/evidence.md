@@ -89,3 +89,24 @@ hoisted `li` constants; ours sits before the guard test. An explicit guard
   `func_800433E4`.
 - `src/text1a_pre.c:271` / `text1a_post.c:276` — same `func_800480C0` call
   shape with the `{-0x140, 0xE8/0xF0}` constants.
+
+## Closed 9 → 0 (manual lane, 2026-09-24, after an interrupted Codex session)
+
+Codex (tmp/f45b68/v*.c, ~200 variants, scores never banked) reached **2** with
+three changes: `y * 2` / `y++` (ordinary C, kept, it closes residual item 3),
+a split `offset = x >> 2; offset <<= 2;` temp (no longer needed), and a
+`s16 fill = -1` constant holder (flagged construct, dropped). It also called
+func_800433E4 through a function-pointer cast (dropped, see below).
+
+| # | Lever | Δ |
+|---|---|---|
+| 8 | Fill loop as plain count-up `for (i = 0; i < 32; i++) sp108[i] = -1;`. loop.c reverses it, and the reversed counter's `li 31` is emitted after the hoisted `-1` (target order). No holder needed | item 2 closed |
+| 9 | **The header's section pointer is its own variable `sec`** (used only by block 3's func_800480C0 calls), not the reused `dl`. As a single-set pseudo its addu is a *birthing* insn, so sched1's `adjust_priority` (sched.c) boosts it; the boosted chain takes clocks 2-5 and leaves the `last` addu to fill the hdr[n] load-delay slot, which gives the target's `srl;sll` (hdr[1]) before `sll n`. Traced with BB2_SCHED_DEBUG (`tmp/f45b68m/sdbg.sh`, `sblk.py`). | item 1 closed → **0** |
+| 10 | func_800433E4 **old-style (K&R) definition**. The caller passes `y*2` as a bare int (no prototype in scope), while the callee narrows all six args. The s16-prototype + direct call adds caller sll/sra; s32 params + (s16) casts drop the callee's narrowing (23-24 vs 28 insns); only K&R matches both (`tmp/f45b68m/kr/test.sh`, MODE=kr/s32/s32cast) | removes the cast |
+
+Mechanism note for residual item 1: sched1 picks by priority, then class, then
+LUID, and `adjust_priority` raises any ready insn that sets a live, single-set
+pseudo (`birthing_insn_p`: `reg_n_sets == 1`) to max priority. Every attempt
+to make `last` multi-set (to un-boost its addu) raised its global-alloc
+priority (`floor_log2(refs)*refs/livelen`) above arg2's 661, which took $fp
+and cascaded. Boosting the OTHER chain (single-set `sec`) was the way in.

@@ -1,6 +1,5 @@
 extern s16 D_800993FC[];
 extern void func_800480C0(s32, s32, s16, s16, s16, s16);
-typedef void (*F433E4)(s32, s32, s16, s16, s16, s16);
 extern s32 func_80044378(s32, s32 *, s16 *);
 extern s32 func_8004428C(s32 *, s16 *);
 extern void func_80044010(s32, s32);
@@ -20,6 +19,7 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s32 last;
     s32 prev;
     s32 dl;
+    s32 sec;
     s32 n;
     s32 i;
     s32 y;
@@ -38,14 +38,14 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     last = (s32)hdr + (((u32)hdr[1] >> 2) << 2);
     n = hdr[0];
-    dl = (s32)hdr + (((u32)hdr[n] >> 2) << 2);
+    sec = (s32)hdr + (((u32)hdr[n] >> 2) << 2);
     if (n >= 3) {
         prev = (s32)hdr + (((u32)hdr[n - 1] >> 2) << 2);
     } else {
         prev = 0;
     }
 
-    for (i = 31; i >= 0; i--) {
+    for (i = 0; i < 32; i++) {
         sp108[i] = -1;
     }
 
@@ -65,16 +65,16 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         if (sp108[i] >= 0) {
             switch (n) {
             case 0:
-                func_800480C0(dl, i, 0, 0, -0x180, 0xF0);
+                func_800480C0(sec, i, 0, 0, -0x180, 0xF0);
                 break;
             case 1:
-                func_800480C0(dl, i, 0, 0x40, -0x180, 0xF1);
+                func_800480C0(sec, i, 0, 0x40, -0x180, 0xF1);
                 break;
             case 2:
-                func_800480C0(dl, i, 0x80, 0, -0x160, 0xF0);
+                func_800480C0(sec, i, 0x80, 0, -0x160, 0xF0);
                 break;
             case 3:
-                func_800480C0(dl, i, 0x80, 0x40, -0x160, 0xF1);
+                func_800480C0(sec, i, 0x80, 0x40, -0x160, 0xF1);
                 break;
             }
             sp108[i] = n;
@@ -119,19 +119,19 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         if (*q >= 0) {
             switch (sp108[D_800993FC[i]]) {
             case 0:
-                ((F433E4)func_800433E4)(6, y, 0, 0, -0x180, 0xE8);
+                func_800433E4(6, y * 2, 0, 0, -0x180, 0xE8);
                 break;
             case 1:
-                ((F433E4)func_800433E4)(6, y, 0, 0x40, -0x180, 0xE9);
+                func_800433E4(6, y * 2, 0, 0x40, -0x180, 0xE9);
                 break;
             case 2:
-                ((F433E4)func_800433E4)(6, y, 0x80, 0, -0x160, 0xE8);
+                func_800433E4(6, y * 2, 0x80, 0, -0x160, 0xE8);
                 break;
             case 3:
-                ((F433E4)func_800433E4)(6, y, 0x80, 0x40, -0x160, 0xE9);
+                func_800433E4(6, y * 2, 0x80, 0x40, -0x160, 0xE9);
                 break;
             }
-            y += 2;
+            y++;
         }
         q += 2;
         i++;
