@@ -53,6 +53,7 @@ a key, oracle-verified per batch, never hand-applied. Applied so far:
 | apiscan wave | `naming: apiscan wave` (2026-09-07) | **21 RENAMEs** from the API-restatement class (`docs/naming/apiscan/`): 10 fills of auto glabels + 11 retirements of meaningless/wrong aliases (`pad_file_*`, `bios_helper`, `irq_helper`, `obj_helper`, `sys_helper`, `mode_helper`). Names restate the VERIFIED BIOS/PsyQ calls + literal device strings in the body; every row re-derived by a fresh default-refute verifier before landing. Census gained the `apiscan-restatement` -> CORROBORATED origin |
 | near-tier wave | this commit (2026-09-07) | **35 RENAMEs** under the owner's near-tier ruling (`docs/naming/libscan/near-tier-ruling-2026-09-07.md`): 7 `libscan-xref` (an accepted verbatim module's XREF + the EXE's jal target pin the callee — VERIFIED), 11 `libscan-near` (body matches a Sony build except explainable words, unique placement — CORROBORATED), 17 link-map desync corrections (C definition still carried the pre-2026-08-07 misnomer, e.g. SpuFree defined as spu_DmaTransfer). Audit: `near_audit_report.md`, `callee_web.md`; tools `tools/libscan/near_audit.py`, `callee_web.py`. build_census.py now compares the link-map object symbol against the glabel on every row |
 | data wave | this commit (2026-09-07) | **62 globals + 26 field offsets** renamed to Sony's own symbol names (`libscan-xref` for data: HI16/LO16 XREF pairs of accepted verbatim modules resolved through the EXE; `docs/naming/libscan/data_manifest.csv`, `data_candidates.md`, verifier report). New tool `tools/data_wave.py` (data-side sibling of naming_wave.py). Retired demonstrably wrong game names such as g_memcard_slot (= _SsVmMaxVoice), g_blood_spot_pos (= _snd_seq_tick_env), g_seq_bank_table (= _ss_score) |
+| sweep 2026-09-24 | `720d76d4e` + `30fd0271f` + `af90bc947` | **54 function ops + 129 data ops**, four mined veins each re-derived by a fresh default-refute verifier (`docs/naming/sweep-2026-09-24/` — README, manifests, verdicts, rejected lists). Owner ruling `a0e6edf16` admitted `computation-restatement` (formula proven by emulating the EXE's own instruction words) and `libsn-pcdrv-protocol` (SN PCdrv break codes). Corrected the 2026-08-07 display-wrapper override (gpu_EnableDisplay = ResetGraph(1); gpu_DisableDisplay = SetDispMask(1), display ON), SpecialCam = the disc file table, __main, 8 Sony statics still spelled D_; data_wave.py now rewrites sdata_syms.txt |
 
 ---
 
@@ -177,6 +178,9 @@ Every non-AUTO name is attributed to a recorded evidence path:
 | `apiscan-restatement` (name restates VERIFIED library calls + literal strings; `docs/naming/apiscan/`) | 21 | CORROBORATED |
 | `libscan-xref` (accepted verbatim module's XREF + EXE jal target) | 7 | VERIFIED |
 | `libscan-near` (Sony build match except explainable words; owner ruling 2026-09-07) | 11 | CORROBORATED |
+| `computation-restatement` (leaf's computation, emulation-proven; owner ruling 2026-09-24) | 15 | CORROBORATED |
+| `libsn-pcdrv-protocol` (SN PCdrv host-file traps by break code; owner ruling 2026-09-24) | 5 | CORROBORATED |
+| `contradicted-by-body` (verified RESET; `docs/naming/sweep-2026-09-24/`) | — | SUSPECT → RESET |
 | `psyq-family-prefix` | 38 | INFERRED — prefix only |
 | `legacy-renamer-map(verified band)` | 29 | CORROBORATED |
 | `unattributed` | 16 | INFERRED — provenance unknown |
