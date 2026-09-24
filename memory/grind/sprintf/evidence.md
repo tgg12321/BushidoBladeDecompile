@@ -46,3 +46,25 @@
   text1a_b_post_rodata.c, preceded by 0x80015A54..0x80015C7B items. Per the TU re-split
   recipe (.claude/rules/jtbl-rodata-split-infrastructure.md) the intervening items must move
   into text1b_b.c (or text1a_b_post_rodata split) so the literals + jtbl emit at 0x80015C7C.
+
+## 2026-09-23 manual landing attempt — full-build SHA1 == oracle, layer-2 FAIL
+
+- Landed form (rejected/sotn-args-frame-walk-0.c) + rodata re-attribution (jtbl_80015A54
+  and prnt's D_80015A68/7C/84 + jtbl_80015A98 moved into text1b_b.c ahead of their owners;
+  D_80015C7C/C90/jtbl_80015CA4 deleted from text1a_b_post_rodata.c, emitted by sprintf as
+  literals + switch table) + variadic prototype in include/code6cac.h:
+  sandbox 0/535, full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+  The rodata move, prototype, u32 bitfields, extern D_8009BE10, else-if '+', and
+  va_arg(args, s32) were all CLEARED by layer-2.
+- Layer-2 FAIL on (1) SOTN's `bufPtr = (char*)&args - sizeof(printf_info) - 4;` = reaching
+  buf through the address of another local (cross-object derivation, semantic-lie #5), and
+  (2) the four isHalf do-while(0) wraps lacking inline FAKE annotation (load-bearing:
+  dropping them = 25). (2) is a trivial fix; (1) is the blocker.
+- Honest `bufPtr = &buf[sizeof(buf)];` = 96/535 (build 510): args leaves its sp+0x220 stack
+  slot for a register. Target leaves $s7 unused, so args is NOT a pressure spill — the
+  original takes its address. stdarg spellings measured with the honest bufPtr:
+  SOTN macros 96; `*(char **)&ap +=` va_arg 96 (folded); char* va_list 96;
+  `char *va_list[1]` 96 (1-word array stays in a pseudo); GCC ginclude va-mips.h
+  little-endian va_arg 82 (build 534).
+- Frontier: a truthful reason for args to be address-taken (or an owner ruling on the
+  SOTN frame-walk line — docs/grind/borderline.md 2026-09-23 sprintf entry).
