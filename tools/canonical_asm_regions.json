@@ -234,6 +234,16 @@
         "8961b0c8392d0778799f80983fd9e48f800a1fba3f1fa62fe0add30085c540d7",
         "adcf86c232f33923bb694a1ed4312f7d878bf0f98cbaddd438afe4b434e8ce1d"
       ]
+    },
+    "func_80067200": {
+      "file": "text1b",
+      "sha256": [
+        "8961b0c8392d0778799f80983fd9e48f800a1fba3f1fa62fe0add30085c540d7",
+        "6b532f1a79f1fc83f95122d5640b786964a83f8a35c1fabac32b82048c2320e5",
+        "30e785ddbd9be6415db4e74b0f4882afc4bb51ad1ee61bb825bd597441981b7a",
+        "3eb68d1a23a91b4ed55a5d0f4fbec312b8140dec69ed8760357562b778feaace",
+        "7a13443bb92a60ede7b2761e4667423187c4fea71d9f09aa6499d17c576d8eb4"
+      ]
     }
   }
 }
