@@ -65,8 +65,13 @@ DIR_ORDER = [
     ("project",   "Current state — the greenfield engine (the workflow) + durable function facts."),
     ("feedback",  "Guidance the user has given on how agents should work — corrections and confirmed approaches, with the why."),
     ("user",      "User profile + standing directives. Loaded first by the agent harness."),
-    ("history",   "Archived dated session notes. Not auto-loaded; browse for traceability of past sessions."),
+    ("history",   "Archived — superseded or resolved notes. Names only; read one directly if you need the history."),
 ]
+
+# Directories rendered as a single names-only line rather than one described
+# entry per file. MEMORY.md is auto-loaded in full every session, so an archived
+# note costs context on every session to advertise something already resolved.
+COLLAPSED_DIRS = {"history"}
 
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 LINK_RE = re.compile(r"\[\[([a-zA-Z0-9_\-]+)\]\]")
@@ -234,6 +239,16 @@ def main() -> int:
         out_lines.append(f"## {dir_name}/")
         out_lines.append(f"_{dir_desc}_")
         out_lines.append("")
+        if dir_name in COLLAPSED_DIRS:
+            # Archived material is deliberately NOT itemised: every entry here
+            # costs ~130 chars of the auto-loaded index to advertise something
+            # the agent should not be reaching for. The files stay on disk (so
+            # [[links]] to them still resolve and they remain browsable); only
+            # their per-file index lines are suppressed.
+            stems = ", ".join(f"`{e['stem']}`" for e in sorted(items, key=lambda x: x["stem"]))
+            out_lines.append(f"{len(items)} archived: {stems}")
+            out_lines.append("")
+            continue
         items_sorted = sorted(items, key=lambda x: x["stem"])
         for entry in items_sorted:
             summary = first_sentence(entry["description"], max_chars=130)
