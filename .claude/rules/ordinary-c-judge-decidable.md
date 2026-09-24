@@ -544,6 +544,63 @@ Allocator effect alone is never sufficient. This ruling admits the effect only
 when the sharing reads as ordinary one-role C under (A)-(F). Record:
 docs/grind/decisions.md 2026-09-23 OWNER RULING — Ruling 6.
 
+## Ruling 7 (owner, 2026-09-23) — sprintf's SOTN buffer-end line (sprintf only)
+
+**Question as put to the owner** (manual session, plain language; the filed
+form is docs/grind/borderline.md 2026-09-23 sprintf): "sprintf only matches
+using one line copied from SOTN. It finds the end of its local text buffer by
+taking the address of a *different* local variable (the varargs pointer) and
+counting backwards past a neighbouring struct. SOTN ships that line, but our
+reviewer failed it: it relies on how locals happen to be laid out on the
+stack. Every honest way to write it scores 82–96 off, because the compiler
+then keeps the varargs pointer in a register. Should that SOTN line be allowed
+for sprintf?" Options offered: keep it banned / allow it, sprintf only /
+decide later.
+
+Owner (Trenton), selected option verbatim: "Allow it, sprintf only".
+
+**Rule text.** This is the author's narrowing of that answer, not the owner's
+words. It admits ONE statement in ONE function and nothing else:
+
+- **(A) Scope.** Only the function `sprintf` (PsyQ LIBC, 0x80079A30,
+  `src/text1b_b.c`). No other function may cite this ruling; a second function
+  wanting the same shape needs its own owner ruling.
+- **(B) The statement.** Only the SOTN line
+  `bufPtr = (char*)&args - sizeof(printf_info) - 4;`
+  (SOTN `src/main/psxsdk/libc/sprintf.c:90`), appearing EXACTLY ONCE in the
+  body. `bufPtr` is the digit cursor, `args` is the function's own `va_list`
+  local and `printf_info` its own flags struct. The statement's only job is
+  to set the cursor to the end of the local `buf`, and the target frame must
+  confirm the arithmetic: `buf` base + sizeof(buf) == the address of `args` -
+  sizeof(printf_info) - 4 (sprintf.s: buf sp+0x10, info sp+0x210, args
+  sp+0x220 -> sp+0x210). The standard `va_start`/`va_arg` macro expansions
+  (address of the last named parameter, advancing `args`) are exempt. Apart
+  from those, no other statement takes the address of `args`, and no other
+  statement derives an address from the address of a different local or
+  parameter.
+- **(C) Annotation.** The line carries an inline comment that says it is
+  SOTN-verbatim, says that it computes `&buf[sizeof(buf)]` via the frame
+  layout, and cites this ruling. SOTN's own comment claiming
+  `&buf[0x200 - 4]` is inaccurate for this frame and must not be carried
+  over.
+- **(D) Receipts.** The truthful `bufPtr = &buf[sizeof(buf)];` spelling is
+  recorded as measured and failing in `memory/grind/sprintf/` (96/535 on
+  2026-09-23), together with the other stdarg spellings tried.
+- **(E) Everything else is judged normally.** Every other construct in the
+  body passes the ordinary review on its own merits. In particular, each
+  load-bearing do-while(0) must meet every prerequisite of
+  do-while-zero-exception.md exactly as that file states them (an inline
+  FAKE annotation at the wrap naming the observed effect; natural geometry
+  preferred over a wrap; a written single-level-insufficient justification
+  for any nested wrap). This ruling neither adds to nor waives any of them,
+  and the presence of a FAKE comment does not by itself show that the other
+  prerequisites are met. This ruling sanctions nothing but the (B) statement.
+
+This does NOT relax the cross-symbol address-derivation ban (2026-07-05
+ruling, do-while-zero-exception.md forbidden #5) for globals or named
+symbols, nor admit any other derivation between locals. Record:
+docs/grind/decisions.md 2026-09-23 OWNER RULING — Ruling 7.
+
 ## What this ruling does NOT change
 
 - The completion bar, the oracle, the cheat catalog for non-C mechanisms,

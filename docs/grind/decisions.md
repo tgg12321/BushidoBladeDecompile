@@ -28917,3 +28917,39 @@ uniform delta required) was applied, and the final region is now defined as the 
 last other region to the end of the function. Round 3 FAILed one gap: (F) constrained only scored hunks, but
 not-scored also masks section-relative addends. (F) now quantifies over every hunk. func_8001FBE8's 23
 not-scored hunks are all branch/jump targets at the uniform 0x44C8 delta, so its receipts still satisfy (F).
+
+## 2026-09-23 — OWNER RULING — Ruling 7: sprintf's SOTN buffer-end line, sprintf only (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question put to the owner (manual session, plain language; filed as borderline.md 2026-09-23 sprintf
+family-candidate): sprintf's only byte-exact body (sandbox 0/535, full-build SHA1 == oracle with the rodata
+re-attribution) uses SOTN's `bufPtr = (char*)&args - sizeof(printf_info) - 4;`, which reaches the end of the
+local `buf` from the address of the adjacent `va_list` local. Manual-lane layer-2 FAILed it as cross-object
+address derivation between locals. The question quoted the reviewer's objection and the receipts (truthful
+spellings 82-96 off because `args` then stays in a register) and offered three options: keep it banned /
+allow it, sprintf only / decide later.
+
+Owner (Trenton), selected option verbatim: "Allow it, sprintf only".
+
+**Ruling (full text in the rule file, "Ruling 7"; the prongs are the author's narrowing, not the owner's
+words).** (A) function `sprintf` only; (B) only that one SOTN statement, exactly once, setting the digit cursor to the
+end of `buf` (target frame confirms: sp+0x210 == &buf[0x200]); standard va_start/va_arg expansions exempt;
+no other address derived from another local or parameter; (C) inline comment stating it is SOTN-verbatim,
+that it computes `&buf[sizeof(buf)]`, citing this ruling, and NOT carrying SOTN's inaccurate
+`&buf[0x200 - 4]` comment; (D) receipts for the truthful `&buf[sizeof(buf)]` spelling (96/535) and the stdarg
+alternatives recorded in memory/grind/sprintf/; (E) everything else judged normally, each load-bearing
+do-while(0) meeting every do-while-zero-exception.md prerequisite exactly as that file states them (neither
+added to nor waived); nothing but (B) is sanctioned. The cross-symbol ban (2026-07-05) is
+unchanged.
+
+**Evidence (memory/grind/sprintf/):** rejected/sotn-args-frame-walk-0.c (the reviewed body) + evidence.md
+2026-09-23 (honest bufPtr 96/535; `*(char **)&ap` va_arg 96; char* va_list 96; `char *va_list[1]` 96; GCC
+va-mips.h va_arg 82; target leaves $s7 free, so `args` at sp+0x220 is not a pressure spill). Earlier survey
+note: docs/grind/sotn-family-surveys-2026-08-18.md:287 had classed the same SOTN line as varargs frame walking,
+not a named-symbol crossing.
+
+**Rule-text layer-2:** round 1 FAILed on wording: (B) did not exempt the va_start/va_arg expansions (which
+take the address of parameter `f`) or require the line exactly once; (C) did not forbid carrying SOTN's
+inaccurate `&buf[0x200 - 4]` comment or require the frame check; (E) could be read as letting a FAKE note
+alone clear the do-while(0) wraps. The reviewer's replacement wordings were applied verbatim. Round 2 FAILed one
+gap: (E)'s parenthetical misquoted do-while-zero-exception.md's prerequisites; it was corrected to cite
+that file exactly (neither adding to nor waiving them).
