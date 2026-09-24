@@ -37,10 +37,10 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     func_80044F50(arg0, arg1, (s32)hdr);
 
     last = (s32)hdr + (((u32)hdr[1] >> 2) << 2);
-    arg1 = hdr[0];
-    dl = (s32)hdr + (((u32)hdr[arg1] >> 2) << 2);
-    if (arg1 >= 3) {
-        prev = (s32)hdr + (((u32)hdr[arg1 - 1] >> 2) << 2);
+    n = hdr[0];
+    dl = (s32)hdr + (((u32)hdr[n] >> 2) << 2);
+    if (n >= 3) {
+        prev = (s32)hdr + (((u32)hdr[n - 1] >> 2) << 2);
     } else {
         prev = 0;
     }
