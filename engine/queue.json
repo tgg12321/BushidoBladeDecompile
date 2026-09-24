@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_SsVmKeyOnNow",
-      "file": "main",
-      "distance": 301,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80045B68",
       "file": "text1a_c",
       "distance": 302,
@@ -783,14 +775,14 @@
     }
   ],
   "counts": {
-    "total": 77,
-    "active": 66,
+    "total": 76,
+    "active": 65,
     "by_status": {
-      "active": 66,
+      "active": 65,
       "rotated": 11
     },
     "by_verdict": {
-      "C": 50,
+      "C": 49,
       "ASM-PARTIAL": 16
     }
   },
