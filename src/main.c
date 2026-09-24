@@ -37,7 +37,7 @@ extern s32 g_snd_callback;
 
 extern s32 TestEvent(s32);
 extern s32 _spu_init(s32);
-extern void func_80087770(s32, s32, s32, s32);
+extern s16 func_80087770(s16, u16, u16, s16);
 extern s16 _SsVmGetSeqVol(s32, s16 *, s16 *);
 extern void _spu_FsetRXX(s32, u32, s32);
 extern s32 _spu_rev_flag;
