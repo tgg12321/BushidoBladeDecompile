@@ -610,6 +610,107 @@ def test_inlineasm() -> None:
 
 
 # --------------------------------------------------------------------------
+# gtemacro — header-exact PsyQ GTE macro units (owner scorer ruling 2026-09-25)
+# --------------------------------------------------------------------------
+
+_CLOB = '"$12", "$13", "$14", "$15", "memory"'
+_MOVE = '__asm__ volatile("move  $12,%0" : : "r"({op}) : ' + _CLOB + ');'
+_MTC2 = '__asm__ volatile("mtc2  $12,$30" : : : ' + _CLOB + ');'
+_NOP = '__asm__ volatile("nop   " : : : ' + _CLOB + ');'
+_SWC2 = '__asm__ volatile("swc2  $31,($12)" : : : ' + _CLOB + ');'
+
+
+def _gte_src(*stmts: str) -> str:
+    return ("void f(s32 n) {\n    s32 lz;\n    lz = 0;\n    "
+            + "\n    ".join(stmts) + "\n    lz += n;\n}\n")
+
+
+def test_gte_macro_units() -> None:
+    from engine import gtemacro
+
+    # The pinned header text is byte-exact (excerpt hashes re-checked here).
+    for hdr in gtemacro.PINNED:
+        for name, _lines, sha, text in hdr["macros"]:
+            eq(f"gtemacro: pinned excerpt {name} hash", gtemacro.excerpt_sha256(text), sha)
+    macros = gtemacro.pinned_macros()
+    eq("gtemacro: gte_Lzc expands to six statements", len(macros["gte_Lzc"][1]), 6)
+    eq("gtemacro: gte_ldlzc expands to two statements", len(macros["gte_ldlzc"][1]), 2)
+
+    def kept(src):
+        return [m for _s, _e, m in gtemacro.unit_spans(src)]
+
+    def as_today(desc, src):
+        """Negative: the sandbox strip is byte-identical to the pre-ruling strip."""
+        eq(f"gte unit NEGATIVE ({desc}): nothing recognized", kept(src), [])
+        eq(f"gte unit NEGATIVE ({desc}): stripped exactly as today",
+           inlineasm.strip_cheat_asm_file(src, keep_gte_macro_units=True),
+           inlineasm.strip_cheat_asm_file(src))
+
+    lzc = [_MOVE.format(op="n"), _MTC2, _NOP, _NOP, _MOVE.format(op="&lz"), _SWC2]
+
+    # POSITIVE: verbatim six-statement gte_Lzc — whitespace/separator spelling may
+    # differ, comments may sit between statements; the unit is kept whole.
+    six = _gte_src(
+        '__asm__ volatile("move   $12, %0\\n" : : "r"(n) : ' + _CLOB + ');',
+        "/* gte_ldlzc -> mtc2 */", _MTC2,
+        '__asm__ volatile ("nop" :::' + _CLOB + ');', _NOP,
+        _MOVE.format(op="& lz"), _SWC2)
+    eq("gte unit POSITIVE: six-statement gte_Lzc recognized", kept(six), ["gte_Lzc"] * 6)
+    out, n = inlineasm.strip_cheat_asm_file(six, keep_gte_macro_units=True)
+    eq("gte unit POSITIVE: gte_Lzc kept whole (sandbox strips nothing)", (out, n), (six, 0))
+    out0, n0 = inlineasm.strip_cheat_asm_file(six)
+    eq("gte unit: default mode still strips the 4 GPR-only statements", n0, 4)
+    eq("gte unit: scoring is not admission — completion gate still counts 4",
+       inlineasm.func_cheat_asm_count(six, "f"), 4)
+
+    # POSITIVE: two-statement inline_o.h gte_ldlzc followed by ordinary C.
+    ld = _gte_src(_MOVE.format(op="n"), _MTC2)
+    eq("gte unit POSITIVE: gte_ldlzc recognized", kept(ld), ["gte_ldlzc"] * 2)
+    eq("gte unit POSITIVE: gte_ldlzc kept whole",
+       inlineasm.strip_cheat_asm_file(ld, keep_gte_macro_units=True), (ld, 0))
+
+    # A unit does not shelter anything else in the file.
+    mixed = _gte_src(*lzc) + ("void g(s32 n) {\n    "
+                              + _MOVE.format(op="n") + "\n}\n")
+    outm, nm = inlineasm.strip_cheat_asm_file(mixed, keep_gte_macro_units=True)
+    eq("gte unit: unit in f kept, stray move in g stripped", nm, 1)
+    eq("gte unit: exactly two `move` statements survive", outm.count("move  $12"), 2)
+
+    # NEGATIVES — each stripped exactly as today.
+    as_today("lone byte-identical move $12,%0", _gte_src(_MOVE.format(op="n")))
+    as_today("0($12) for the header's ($12)",
+             _gte_src(*lzc[:5], _SWC2.replace("($12)", "0($12)")))
+    as_today("dropped clobber",
+             _gte_src(_MOVE.format(op="n").replace(', "memory"', ""), _MTC2))
+    as_today("changed constraint",
+             _gte_src(_MOVE.format(op="n").replace('"r"(', '"g"('), _MTC2))
+    as_today("changed register in the template",
+             _gte_src(_MOVE.format(op="n").replace("$12,%0", "$13,%0"), _MTC2))
+    as_today("extra nop appended to gte_Lzc", _gte_src(*lzc, _NOP))
+    as_today("extra nop appended to gte_ldlzc", _gte_src(_MOVE.format(op="n"), _MTC2, _NOP))
+    as_today("extra nop inserted", _gte_src(_MOVE.format(op="n"), _NOP, _MTC2))
+    as_today("reordered unit", _gte_src(_MTC2, _MOVE.format(op="n")))
+    as_today("partial gte_Lzc (no final swc2)", _gte_src(*lzc[:5]))
+    as_today("unit split by an intervening C statement",
+             _gte_src(_MOVE.format(op="n"), "lz = 1;", _MTC2))
+    as_today("gte_Lzc split between its nops", _gte_src(*lzc[:3], "lz = 1;", *lzc[3:]))
+    as_today("standalone gte_nop()", _gte_src(_NOP))
+    as_today("hardcoded-$N statement injected between macro statements",
+             _gte_src(_MOVE.format(op="n"), '__asm__ volatile("addu $4,$2,$0");', _MTC2))
+    as_today("hardcoded-$N injected inside gte_Lzc",
+             _gte_src(*lzc[:4], '__asm__ volatile("move $4,$2");', *lzc[4:]))
+    as_today("first statement guarded by if",
+             _gte_src("if (n) " + _MOVE.format(op="n"), _MTC2))
+    as_today("second statement commented out",
+             _gte_src(_MOVE.format(op="n"), "/* " + _MTC2 + " */"))
+    as_today("non-volatile statement",
+             _gte_src(_MOVE.format(op="n").replace(" volatile", ""), _MTC2))
+    as_today("unit reached through a #define in the source",
+             "#define LZC(x) \\\n    " + _MOVE.format(op="x") + " \\\n    " + _MTC2
+             + "\n" + _gte_src("LZC(n);"))
+
+
+# --------------------------------------------------------------------------
 # cheats — regfix masking (other half of cheat-invisibility)
 # --------------------------------------------------------------------------
 
@@ -2937,6 +3038,7 @@ def main() -> int:
     test_score_section_addend_mask()
     test_symtab_data_dlabels()
     test_inlineasm()
+    test_gte_macro_units()
     test_cheats()
     test_prologue_cheat()
     test_addr_coerced_locals()

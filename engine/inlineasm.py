@@ -6,7 +6,9 @@ them so the score reflects pure-C codegen — injecting asm or nudging the
 allocator can't move the score. Canonical inline asm
 (GTE/cop2/.word-cop2/BIOS/HW) is authentic and is KEPT. A mixed block (any
 canonical instruction) is kept whole (canonical GTE sequences include their
-feeder loads).
+feeder loads). For the sandbox only, the cop2-free statements of a
+header-exact PsyQ GTE macro unit are kept too (engine.gtemacro, owner ruling
+2026-09-25).
 
 Category classification reuses tools/classify_inline_asm (single source of truth
 for the canonical-vs-cheat line). Stripping a function's cheat asm doesn't change
@@ -361,7 +363,7 @@ def _strip_spans_cached(text: str) -> tuple[tuple[int, int], ...]:
     return tuple(spans)
 
 
-def strip_cheat_asm_file(text: str) -> tuple[str, int]:
+def strip_cheat_asm_file(text: str, keep_gte_macro_units: bool = False) -> tuple[str, int]:
     """Return (modified text, count) with all cheat-asm blocks, register pins,
     plain `register` hints, AND every volatile-coercion cheat (alias renames,
     `*(volatile T *)&D_x` casts, scalar `extern volatile T D_x;` decls — see
@@ -370,8 +372,20 @@ def strip_cheat_asm_file(text: str) -> tuple[str, int]:
     Both removals serve the same purpose: the sandbox sees the function the
     way `queue done` requires for COMPLETED-C (pure C, no codegen-coercion
     knobs), so the score reflects the honest pure-C distance.
+
+    keep_gte_macro_units (the sandbox only — write_stripped): the statements of
+    a header-exact PsyQ GTE macro unit (engine.gtemacro; owner ruling
+    2026-09-25) are scored as written instead of stripped, and are not counted.
+    The default stays False for every other caller: a whole-file count of 0 is
+    read as "no cheat constructs here" (spot_check_completed), and the
+    completion gate (func_cheat_asm_count) still counts those statements.
     """
-    spans = sorted(_strip_spans(text) + register_hint_spans(text), reverse=True)
+    spans = _strip_spans(text)
+    if keep_gte_macro_units:
+        from . import gtemacro  # local import: gtemacro imports this module
+        kept = {(s, e) for s, e, _m in gtemacro.unit_spans(text)}
+        spans = [sp for sp in spans if sp not in kept]
+    spans = sorted(spans + register_hint_spans(text), reverse=True)
     n_cheat_asm = len(spans)
     for s, e in spans:
         text = text[:s] + text[e:]
@@ -388,10 +402,10 @@ def write_stripped(stem: str, out_path: str, source_text: str | None = None) -> 
     `source_text` overrides what is read from disk, so a caller can substitute a
     candidate body first and still get the cheat-strip applied to the RESULT —
     the order matters: a candidate carrying cheats must not score as if it had
-    none."""
+    none. Header-exact GTE macro units are kept (engine.gtemacro)."""
     text = (source_text if source_text is not None
             else Path(f"src/{stem}.c").read_text(encoding="utf-8"))
-    stripped, n = strip_cheat_asm_file(text)
+    stripped, n = strip_cheat_asm_file(text, keep_gte_macro_units=True)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     Path(out_path).write_text(stripped)
     return n
