@@ -3408,6 +3408,65 @@ def test_queue_remeasure_source_integrity() -> None:
             Q.QUEUE_PATH = orig_path
 
 
+def test_maspsx_fingerprint() -> None:
+    """2026-09-25: the oracle's `maspsx_rev` ran `git -C tools/maspsx rev-parse
+    HEAD`, but tools/maspsx is vendored (no .git), so it read the PARENT repo's
+    HEAD and every commit reported maspsx toolchain drift. The queue's
+    toolchain fingerprint hashed only the maspsx.py wrapper, missing the
+    `maspsx` package where the assembler logic lives. Pinned: both now hash the
+    executed maspsx sources; a package edit moves both; tests/ does not; the
+    oracle identity carries no git-derived maspsx key; a queue fingerprint
+    stored under the old input set re-records without a spurious re-measure."""
+    from engine import oracle as O
+    with tempfile.TemporaryDirectory() as td:
+        orig_path, orig_cwd = Q.QUEUE_PATH, os.getcwd()
+        qp = Path(td) / "queue.json"
+        Q.QUEUE_PATH = str(qp)
+        os.chdir(td)
+        try:
+            pkg = Path("tools/maspsx/maspsx")
+            pkg.mkdir(parents=True)
+            Path("tools/maspsx/tests").mkdir()
+            Path("tools/maspsx/maspsx.py").write_text("from maspsx import main\n")
+            (pkg / "__init__.py").write_text("def main(): pass\n")
+            Path("tools/maspsx/tests/test_x.py").write_text("assert 1\n")
+            eq("maspsx: executed sources = entry + package",
+               [p.as_posix() for p in O.maspsx_source_files()],
+               ["tools/maspsx/maspsx.py", "tools/maspsx/maspsx/__init__.py"])
+            h0, fp0 = O.maspsx_sources_sha1(), Q.toolchain_fingerprint()
+            legacy0 = Q.toolchain_fingerprint(Q._LEGACY_FINGERPRINT_INPUTS)
+            Path("tools/maspsx/tests/test_x.py").write_text("assert 2\n")
+            eq("maspsx: tests/ edit is not toolchain drift", O.maspsx_sources_sha1(), h0)
+            (pkg / "__init__.py").write_text("def main(): return 1\n")
+            check("maspsx: package edit moves the oracle hash", O.maspsx_sources_sha1() != h0)
+            check("maspsx: package edit moves the queue fingerprint",
+                  Q.toolchain_fingerprint() != fp0)
+            eq("maspsx: the old input set was blind to the package",
+               Q.toolchain_fingerprint(Q._LEGACY_FINGERPRINT_INPUTS), legacy0)
+            tc = O._toolchain_identity()
+            check("maspsx: oracle identity has no git-derived maspsx_rev", "maspsx_rev" not in tc)
+            eq("maspsx: oracle identity carries the source hash",
+               tc.get("maspsx_sources_sha1"), O.maspsx_sources_sha1())
+            # a queue that recorded the OLD-definition fingerprint re-records
+            base = {"file": "a", "distance": 1, "verdict": "C", "rules": 0}
+            qp.write_text(json.dumps({"items": [
+                dict(base, func="f_R", status="rotated", rotated_at="2026-01-01T00:00:00+00:00"),
+                dict(base, func="f_A", status="active")], "counts": {},
+                "toolchain_fingerprint": Q.toolchain_fingerprint(Q._LEGACY_FINGERPRINT_INPUTS)}))
+            r = Q.auto_return(rescan=True)
+            eq("maspsx: definition change is not a toolchain move", r["toolchain_moved"], False)
+            eq("maspsx: definition change flagged", r["fingerprint_migrated"], True)
+            eq("maspsx: new fingerprint recorded", Q.load()["toolchain_fingerprint"],
+               Q.toolchain_fingerprint())
+            (pkg / "__init__.py").write_text("def main(): return 2\n")
+            r = Q.auto_return(rescan=True)
+            eq("maspsx: a later package edit IS a toolchain move", r["toolchain_moved"], True)
+            eq("maspsx: ...and not a migration", r["fingerprint_migrated"], False)
+        finally:
+            os.chdir(orig_cwd)
+            Q.QUEUE_PATH = orig_path
+
+
 def test_symtab_data_dlabels() -> None:
     """_symtab() resolves data symbols defined only as `dlabel`s in the data
     asm (2026-09-22): before, `D_800A13FC` vs `D_800A12FC+0x100` (one address)
@@ -3485,6 +3544,7 @@ def main() -> int:
     test_queue_write_serialization()
     test_queue_rotation()
     test_queue_remeasure_source_integrity()
+    test_maspsx_fingerprint()
     test_canonical_build()
     test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")

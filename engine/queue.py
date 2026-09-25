@@ -687,7 +687,11 @@ def mark_done(func: str) -> dict:
 # rotation. Nothing here refuses C; the function stays INCLUDE_ASM on main.
 
 ROTATED = "rotated"
-TOOLCHAIN_FINGERPRINT_INPUTS = (
+# Until 2026-09-25 the maspsx entry was the lone "tools/maspsx/maspsx.py" — a
+# thin argparse wrapper — so an edit to the `maspsx` package it imports (where
+# the assembler logic lives) never moved the fingerprint. The package now
+# rides in via O.maspsx_source_files(), the same file set the oracle hashes.
+_LEGACY_FINGERPRINT_INPUTS = (
     "Makefile", "engine/buildconfig.py", "tools/gcc-2.7.2/build/cc1",
     "tools/maspsx/maspsx.py", "tools/prologue_fix.py", "tools/multu_pad.py",
     "maspsx_prefill_label_funcs.txt",
@@ -696,13 +700,20 @@ TOOLCHAIN_FINGERPRINT_INPUTS = (
 )
 
 
-def toolchain_fingerprint() -> str:
+def toolchain_fingerprint_inputs() -> tuple[str, ...]:
+    maspsx = tuple(p.as_posix() for p in O.maspsx_source_files())
+    rest = tuple(r for r in _LEGACY_FINGERPRINT_INPUTS if r != "tools/maspsx/maspsx.py")
+    return rest[:3] + maspsx + rest[3:]
+
+
+def toolchain_fingerprint(inputs: tuple[str, ...] | None = None) -> str:
     """SHA1 over the inputs that decide codegen for a fixed source: compiler
-    binary, flags (Makefile + engine mirror), the maspsx/prologue/multu stages
-    and every gate list. A change here voids every chassis-relative kill in a
-    rotated ledger, so it is the re-measure trigger."""
+    binary, flags (Makefile + engine mirror), the maspsx sources (entry script
+    + package)/prologue/multu stages and every gate list. A change here voids
+    every chassis-relative kill in a rotated ledger, so it is the re-measure
+    trigger."""
     h = hashlib.sha1()
-    for rel in TOOLCHAIN_FINGERPRINT_INPUTS:
+    for rel in (toolchain_fingerprint_inputs() if inputs is None else inputs):
         p = Path(rel)
         h.update(rel.encode())
         if p.is_file():
@@ -896,7 +907,12 @@ def auto_return(rescan: bool = True, force_rescan: bool = False) -> dict:
         rotated = [it for it in items if it.get("status") == ROTATED]
         fp_now = toolchain_fingerprint()
         fp_prev = q.get("toolchain_fingerprint")
-        toolchain_moved = bool(rescan and fp_prev and fp_prev != fp_now)
+        # A stored fingerprint from the pre-2026-09-25 input set that still
+        # matches today's inputs under that set is a DEFINITION change, not a
+        # toolchain change: re-record it without a re-measure.
+        migrated = bool(fp_prev and fp_prev != fp_now
+                        and fp_prev == toolchain_fingerprint(_LEGACY_FINGERPRINT_INPUTS))
+        toolchain_moved = bool(rescan and fp_prev and fp_prev != fp_now and not migrated)
         remeasure = toolchain_moved or (rescan and force_rescan)
 
         def _ret(it, why):
@@ -944,7 +960,8 @@ def auto_return(rescan: bool = True, force_rescan: bool = False) -> dict:
             save(q, expect=tok)
     return {"ok": True, "returned": returned, "remeasured": remeasured,
             "toolchain_moved": toolchain_moved, "forced": bool(rescan and force_rescan),
-            "fingerprint": fp_now, "sources_restored": restored}
+            "fingerprint": fp_now, "fingerprint_migrated": migrated,
+            "sources_restored": restored}
 
 
 def mark_foreclosed(func: str, reason: str = "") -> dict:

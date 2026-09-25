@@ -7,7 +7,7 @@ builds the original binary. `oracle/manifest.json` freezes:
   * the original EXE's SHA1 + size (the target)
   * the expected build SHA1 (must equal the original)
   * the git commit it was locked at
-  * toolchain identity (cc1 hash, maspsx rev, as/python versions)
+  * toolchain identity (cc1 hash, maspsx source hash, as/python versions)
   * per-file hashes of the matched C corpus
   * per-file hashes of the pipeline config (sdata/gate lists/... )
   * the golden fixtures (pure-C, zero-cheat functions a tool-health gate
@@ -19,6 +19,7 @@ until this is green.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -45,13 +46,38 @@ def _git(args: list[str]) -> str:
     return subprocess.run(["git"] + args, capture_output=True, text=True).stdout.strip()
 
 
+# The maspsx code the build RUNS (cfg.MASPSX = `python3 tools/maspsx/maspsx.py`):
+# the entry script plus the `maspsx` package it imports. tests/ and aspsx/ are
+# not executed by the build and are left out.
+MASPSX_ENTRY = Path("tools/maspsx/maspsx.py")
+MASPSX_PACKAGE = Path("tools/maspsx/maspsx")
+
+
+def maspsx_source_files() -> list[Path]:
+    """Every maspsx source file the build executes, in a stable order."""
+    return [MASPSX_ENTRY] + sorted(MASPSX_PACKAGE.rglob("*.py"))
+
+
+def maspsx_sources_sha1() -> str | None:
+    """SHA1 over maspsx's executed sources (path + content of each file).
+
+    Replaces `git -C tools/maspsx rev-parse HEAD` (2026-09-25): tools/maspsx is
+    vendored into this repo with no .git of its own, so that command answered
+    the PARENT repo's HEAD, and every commit read as maspsx toolchain drift.
+    None when the entry script is missing."""
+    if not MASPSX_ENTRY.is_file():
+        return None
+    h = hashlib.sha1()
+    for p in maspsx_source_files():
+        h.update(p.as_posix().encode() + b"\0" + p.read_bytes() + b"\0")
+    return h.hexdigest()
+
+
 def _toolchain_identity() -> dict:
     cc1 = Path(cfg.CC1)
     return {
         "cc1_sha1": P.sha1(cc1) if cc1.exists() else None,
-        "maspsx_rev": subprocess.run(
-            ["git", "-C", "tools/maspsx", "rev-parse", "HEAD"],
-            capture_output=True, text=True).stdout.strip() or None,
+        "maspsx_sources_sha1": maspsx_sources_sha1(),
         "as_version": subprocess.run(
             ["bash", "-c", "mipsel-linux-gnu-as --version | head -1"],
             capture_output=True, text=True).stdout.strip(),

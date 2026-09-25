@@ -6,10 +6,10 @@
     "size": 606208
   },
   "expected_build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
-  "git_commit": "8454a511fa3032e66907e32196eebad60cfcc473",
+  "git_commit": "b65c5dbafe0ca9143dbc43623747a0ed02fe350a",
   "toolchain": {
     "cc1_sha1": "aa04d7619cd79215788d18d6870ebc6c8d1d822d",
-    "maspsx_rev": "8454a511fa3032e66907e32196eebad60cfcc473",
+    "maspsx_sources_sha1": "c1bb9a7d83e7fbd7090b546078afd9276aad2067",
     "as_version": "GNU assembler (GNU Binutils for Ubuntu) 2.42",
     "python": "Python 3.12.3"
   },
@@ -29,7 +29,7 @@
     "src/config.c": "4f1ccd60555b29c542a75fe9f76e5f223c283faf",
     "src/display.c": "c7ce35b7a32f8d72c5fba49a91081c4163ae790f",
     "src/gpu.c": "ee29ff56ac8e0191dae11ed284104cd74265491e",
-    "src/ings.c": "20775188786927157ba7cc89812c33c280ae145e",
+    "src/ings.c": "c45fca33f1b2f4a72bdf849de1424d24fdce3b13",
     "src/ings2.c": "730c8cf735c3650acdc1e700d3f4a33406337355",
     "src/ings_strings.c": "d16ee08555768a8d3845918c52a3829c4f98958b",
     "src/main.c": "02f96b2eb65b8e5652ed6a698b0017464763363d",
@@ -46,7 +46,7 @@
     "src/text1a_filepaths.c": "c5b9a0cb8d29531771bfe99f4af24320a34c5089",
     "src/text1a_post.c": "06e77095c53e1e14c36fc28aee427cde7bb2534b",
     "src/text1a_pre.c": "6073796710f9db720f6e7044a6bb5070437eb377",
-    "src/text1b.c": "373eabfe168cdfd29e7c56d9d8125fe3580f3de4",
+    "src/text1b.c": "c40c4771e73ac08f0eea84400136d0b84f2197cc",
     "src/text1b_b.c": "193f8ebaa43d4d11dcaa31c1befa2fb9e7751c05"
   },
   "config_files": {
@@ -103,6 +103,7 @@
   ],
   "notes": {
     "cc1_build": "2026-09-25 narrow PLUS->IOR adoption (owner ruling bcdc1648e; docs/ORACLE-COMPILER.md 'Owner ruling 2026-09-25 (second batch)'): build/cc1 = `bash tools/build_oracle_cc1.sh --install` = pinned upstream decompals/mips-gcc-2.7.2@43d1cdb67ed135879869b5266f01efaaada5e35a + tools/cc1-reorg-negate-rtx-decl.patch (the 2026-08-24 crash fix, now a tracked recipe input) + tools/cc1-plus-to-ior-narrow.patch (replaces tools/cc1-no-plus-to-ior.patch); recipe all -O0 -g, combine.o -O, -fgnu89-inline (host gcc 13, x86_64). sha1 aa04d7619cd79215788d18d6870ebc6c8d1d822d, simplify_rtx 0x3a6a. Self-check: identical asm on all 34 TUs vs the retired no-rewrite compiler 0f438e42 (kept as build/cc1.PRE-RECIPE-0f438e42). Diagnostic tools/gcc-2.7.2/cc1 rebuilt with the same patch: 888dda6755596e3ac826c38c36be3103297cbac8, agrees on all 34 TUs. Verified: FULL BUILD SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (verify-oracle --rebuild); engine test 720/720; fixtures 5/5; check_completion_integrity OK.",
-    "cc1_build_2026_08_24": "2026-08-24 crash-fix rebuild (owner ruling, decisions.md 'cc1 fork-crash fix'): source = tmp/cc1build tree + one-line negate_rtx PROTO declaration in reorg.c (64-bit-host implicit-int pointer truncation; same fix mirrored in tools/gcc-2.7.2/reorg.c). Host build: `make cc1` in tmp/cc1build \u2014 cc -DCROSS_COMPILE -DIN_GCC -g (gcc 13, x86_64). Verified: 9/9 crash probes compile; codegen identical on all previously-OK probes; FULL BUILD SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; engine test 332/332. Prior binary banked at tools/gcc-2.7.2/build/cc1.PRE-CRASHFIX-045c9543."
+    "cc1_build_2026_08_24": "2026-08-24 crash-fix rebuild (owner ruling, decisions.md 'cc1 fork-crash fix'): source = tmp/cc1build tree + one-line negate_rtx PROTO declaration in reorg.c (64-bit-host implicit-int pointer truncation; same fix mirrored in tools/gcc-2.7.2/reorg.c). Host build: `make cc1` in tmp/cc1build \u2014 cc -DCROSS_COMPILE -DIN_GCC -g (gcc 13, x86_64). Verified: 9/9 crash probes compile; codegen identical on all previously-OK probes; FULL BUILD SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; engine test 332/332. Prior binary banked at tools/gcc-2.7.2/build/cc1.PRE-CRASHFIX-045c9543.",
+    "maspsx_fingerprint": "2026-09-25 maspsx fingerprint fix (engine bug fix, no toolchain change): toolchain.maspsx_rev was `git -C tools/maspsx rev-parse HEAD`, but tools/maspsx is vendored with no .git, so it recorded the PARENT repo's HEAD (8454a511fa3032e66907e32196eebad60cfcc473, == the locked git_commit) and every later commit read as maspsx drift. Replaced by toolchain.maspsx_sources_sha1 = engine.oracle.maspsx_sources_sha1() (SHA1 over path+content of tools/maspsx/maspsx.py and tools/maspsx/maspsx/**/*.py, the code the build executes) = c1bb9a7d83e7fbd7090b546078afd9276aad2067. maspsx sources are unchanged: `git log` shows no tools/maspsx change after the previous lock. The re-lock also re-records the corpus hashes of src/ings.c and src/text1b.c, changed since the previous lock by the reviewed commits 89a3bc8aa (main) and bcbd223ba (func_80073C78)."
   }
 }
