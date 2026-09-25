@@ -16,8 +16,10 @@ A QUALIFYING UNIT, and nothing else, is kept by the sandbox strip:
       statement matches the header in instruction text, operand constraints and
       clobber list; only separators (`;` / newline) and whitespace may differ.
       A macro parameter binds to one operand expression, the same at every use.
-      A partial, reordered, extended or edited run is not a unit (`0($12)` for
-      the header's `($12)` is an edit);
+      A partial, reordered, extended or edited run is not a unit. One spelling
+      is equal by owner amendment (2026-09-25, second batch): `0($REG)` and
+      `($REG)` in a load/store's memory operand (maspsx cannot parse `($12)`);
+      `4($12)`, `0x0($12)`, `00($12)`, `-0($12)`, `0($13)` stay edits;
   (B) the expansion contains at least one cop2 instruction, so a standalone
       `gte_nop()` is never a unit;
   (C) recognition is against the pinned header text, never a grant hash.
@@ -169,6 +171,27 @@ def _unescape(s: str) -> str:
 def _norm_instr(piece: str) -> str:
     parts = piece.split(None, 1)
     return parts[0] if len(parts) == 1 else parts[0] + " " + "".join(parts[1].split())
+
+
+# Owner scorer amendment 2026-09-25 (second batch, inline-asm-policy.md § "Scorer
+# amendment ... `0(reg)` equals `(reg)`"): maspsx cannot parse the header's
+# `($12)`, so a memory operand written `0($REG)` compares equal to `($REG)`.
+# Only the single character `0` before `($REG)`, only in the memory operand
+# (last operand) of a load/store, never in constraints, clobbers or expressions.
+_MEM_OPS = frozenset({"lb", "lbu", "lh", "lhu", "lw", "lwl", "lwr", "sb", "sh",
+                      "sw", "swl", "swr", "lwc1", "swc1", "lwc2", "swc2"})
+_ZERO_OFFSET_RE = re.compile(r"0(\(\$[A-Za-z0-9_]+\))")
+
+
+def _instr_key(instr: str) -> str:
+    """Comparison key for a normalized instruction: `0($REG)` -> `($REG)` in a
+    load/store's memory operand; every other character compares as written."""
+    mnem, sep, ops = instr.partition(" ")
+    if mnem not in _MEM_OPS or not sep:
+        return instr
+    head, comma, last = ops.rpartition(",")
+    m = _ZERO_OFFSET_RE.fullmatch(last)
+    return f"{mnem} {head}{comma}{m.group(1)}" if m else instr
 
 
 def _templates(section: str) -> tuple[str, ...]:
@@ -356,7 +379,8 @@ def _matches(run: list[Stmt], params: list[str], spec: list[Stmt]) -> bool:
         return True
 
     for s, h in zip(run, spec):
-        if not s.volatile or s.instrs != h.instrs or s.clobbers != h.clobbers:
+        if (not s.volatile or s.clobbers != h.clobbers
+                or tuple(map(_instr_key, s.instrs)) != tuple(map(_instr_key, h.instrs))):
             return False
         if not ops_ok(s.outputs, h.outputs) or not ops_ok(s.inputs, h.inputs):
             return False

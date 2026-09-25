@@ -676,10 +676,35 @@ def test_gte_macro_units() -> None:
     eq("gte unit: unit in f kept, stray move in g stripped", nm, 1)
     eq("gte unit: exactly two `move` statements survive", outm.count("move  $12"), 2)
 
+    # POSITIVE (owner amendment 2026-09-25, second batch): `0($12)` for the
+    # header's `($12)` — maspsx cannot parse the bare form — is equal.
+    swc2_0 = _SWC2.replace("($12)", "0($12)")
+    six0 = _gte_src(*lzc[:5], swc2_0)
+    eq("gte unit POSITIVE: gte_Lzc with 0($12) recognized", kept(six0), ["gte_Lzc"] * 6)
+    eq("gte unit POSITIVE: gte_Lzc with 0($12) kept whole",
+       inlineasm.strip_cheat_asm_file(six0, keep_gte_macro_units=True), (six0, 0))
+    st0 = _gte_src(_MOVE.format(op="&lz"), swc2_0)
+    eq("gte unit POSITIVE: gte_stlzc with 0($12) recognized", kept(st0), ["gte_stlzc"] * 2)
+    eq("gte unit POSITIVE: gte_stlzc with 0($12) kept whole",
+       inlineasm.strip_cheat_asm_file(st0, keep_gte_macro_units=True), (st0, 0))
+    ik = gtemacro._instr_key
+    eq("0(reg) key: swc2 0($12) == ($12)", ik("swc2 $31,0($12)"), ik("swc2 $31,($12)"))
+    check("0(reg) key: header 4($12) != 0($12)", ik("lwc2 $10,4($12)") != ik("lwc2 $10,0($12)"))
+    check("0(reg) key: header 4($12) != ($12)", ik("lwc2 $10,4($12)") != ik("lwc2 $10,($12)"))
+    check("0(reg) key: not outside a memory operand (mtc2 0($30))",
+          ik("mtc2 $12,0($30)") != ik("mtc2 $12,($30)"))
+    check("0(reg) key: not in a non-memory position of a load/store",
+          ik("swc2 0($31),($12)") != ik("swc2 ($31),($12)"))
+
     # NEGATIVES — each stripped exactly as today.
     as_today("lone byte-identical move $12,%0", _gte_src(_MOVE.format(op="n")))
-    as_today("0($12) for the header's ($12)",
-             _gte_src(*lzc[:5], _SWC2.replace("($12)", "0($12)")))
+    for bad in ("4($12)", "0x0($12)", "00($12)", "-0($12)", "+0($12)", "0($13)"):
+        as_today(f"{bad} for the header's ($12)",
+                 _gte_src(*lzc[:5], _SWC2.replace("($12)", bad)))
+    as_today("0(...) rewrite outside a memory operand (mtc2)",
+             _gte_src(_MOVE.format(op="n"), _MTC2.replace("$12,$30", "$12,0($30)")))
+    as_today("0(...) rewrite outside a memory operand (move)",
+             _gte_src(_MOVE.format(op="n").replace("%0", "0(%0)"), _MTC2))
     as_today("dropped clobber",
              _gte_src(_MOVE.format(op="n").replace(', "memory"', ""), _MTC2))
     as_today("changed constraint",
