@@ -1528,7 +1528,7 @@ INCLUDE_ASM("asm/funcs", func_80052D00);
 extern s32 func_80052754(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
-extern void func_80053E9C();
+extern s32 func_80053E9C();
 extern u8 D_800EFA00;
 extern u8 D_800EF9F8;
 extern s32 D_800A33F4;
@@ -1563,7 +1563,7 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
 extern s32 func_80052754(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
-extern void func_80053E9C();
+extern s32 func_80053E9C();
 
 typedef struct { s32 a, b, c, d; } _S16_5344C;
 void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
@@ -1594,7 +1594,7 @@ void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     func_80052D00(arg2, arg3);
 }
 extern s32 func_80052D00(s32, s32);
-extern void func_80053E9C();
+extern s32 func_80053E9C();
 extern u8 D_800EFA00;
 extern u8 D_800EF9F8;
 
