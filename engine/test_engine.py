@@ -877,6 +877,229 @@ void h(int x) {
     eq("lowercase-asm: register pin NOT flagged", len(hits), 0)
 
 
+def test_asm_keyword_recognition() -> None:
+    """cia.find_asm_keywords — inline asm is recognized the way cc1 tokenizes
+    it. Layer-2 finding 2026-09-25: `__asm__ /**/ ("move $5,%0" : : "r"(n));`
+    was counted 0 by the completion gate AND stripped 0 by the sandbox, because
+    the raw-text ASM_KEYWORD_RE allowed only whitespace before the `(`. Every
+    evasion below must be counted by the gate and stripped by the sandbox; every
+    form handled before must still be; a mere MENTION must not count."""
+    import classify_inline_asm as cia
+    import audit_asm_cheats as AAC
+
+    def one(stmt, pre=""):
+        return pre + "void f(s32 n) {\n    " + stmt + "\n    n = 3;\n}\n"
+
+    def caught(desc, src, count=1):
+        eq(f"asm-kw ({desc}): gate counts it", inlineasm.func_cheat_asm_count(src, "f"), count)
+        out, n = inlineasm.strip_cheat_asm_file(src)
+        check(f"asm-kw ({desc}): sandbox strip count >= {count}", n >= count)
+        if "Q(" in src:  # unparseable shape: the bare keyword is stripped (fail-safe)
+            check(f"asm-kw ({desc}): sandbox strips the keyword", "__asm__" not in out)
+        else:
+            check(f"asm-kw ({desc}): sandbox strips the injected insn",
+                  "$5" not in out and "move" not in out)
+        check(f"asm-kw ({desc}): surrounding C survives", "n = 3;" in out)
+        out_k, _ = inlineasm.strip_cheat_asm_file(src, keep_gte_macro_units=True)
+        eq(f"asm-kw ({desc}): sandbox (GTE-unit mode) strips it too", out_k, out)
+
+    mv = '("move $5,%0" : : "r"(n));'
+    evasions = {
+        "comment before (": "__asm__ /**/ " + mv,
+        "comment before qualifier": "__asm__ /* x */ volatile " + mv,
+        "comment between qualifier and (": "__asm__ volatile /* x */ " + mv,
+        "// comment then newline": "__asm__ // hi\n    " + mv,
+        "newlines around qualifier": "__asm__\n    volatile\n    " + mv,
+        "backslash-newline before (": "__asm__ \\\n    " + mv,
+        "backslash-newline inside keyword": "__as\\\nm__ volatile " + mv,
+        "backslash-newline inside qualifier": "__asm__ vola\\\ntile " + mv,
+        "__volatile qualifier": "__asm__ __volatile " + mv,
+        "const qualifier": "__asm const " + mv,
+        "__const__ qualifier": "__asm__ __const__ " + mv,
+        "macro standing for the qualifier": "__asm__ VOL " + mv,
+        "decoy cop2 opcode in a comment in the body":
+            '__asm__("move $5,%0" /* "mtc2 $2,$0" */ : : "r"(n));',
+        "bare asm, comment before qualifier": "asm /**/ volatile " + mv,
+        "bare asm after a statement on the same line": "n = 1; asm" + mv,
+        "bare asm after a leading comment": "/* x */ asm" + mv,
+        "bare asm, backslash-newline in keyword": "as\\\nm volatile " + mv,
+        "keyword with no operand list (macro argument)": 'Q(__asm__)("move $5,%0");',
+    }
+    for desc, stmt in evasions.items():
+        caught(desc, one(stmt))
+    caught("two statements on one line",
+           one('__asm__("move $5,$4"); __asm__ /**/ ("move $5,$6");'), count=2)
+    caught("stray quote in an #if 0 block hides nothing",
+           one("__asm__ " + mv, pre='#if 0\n"\n#endif\n') + '#if 0\n"\n#endif\n')
+
+    # The completion-region scanner and the manual audit see the same blocks.
+    for desc in ("comment before (", "backslash-newline inside keyword", "__volatile qualifier"):
+        eq(f"asm-kw ({desc}): completion.blocks finds it",
+           len(completion.blocks(one(evasions[desc]), "f")), 1)
+        eq(f"asm-kw ({desc}): audit_asm_cheats finds it",
+           len(list(AAC._extract_balanced_asm_blocks(one(evasions[desc])))), 1)
+
+    # Forms handled before are still handled.
+    caught("plain __asm__ volatile", one("__asm__ volatile " + mv))
+    caught("__asm spelling", one("__asm" + mv))
+    caught("__asm__ __volatile__", one("__asm__ __volatile__ " + mv))
+    caught("multi-line operand list", one('__asm__ volatile(\n        "move $5,%0\\n"\n'
+                                          '        : : "r"(n));'))
+    gte = one('__asm__ volatile("mtc2 %0, $0" : : "r"(n));')
+    eq("asm-kw: canonical GTE op not counted", inlineasm.func_cheat_asm_count(gte, "f"), 0)
+    eq("asm-kw: canonical GTE op kept", inlineasm.strip_cheat_asm_file(gte), (gte, 0))
+    gte_c = one('__asm__ /* x */ volatile("mtc2 %0, $0" : : "r"(n));')
+    eq("asm-kw: canonical GTE op behind a comment still canonical (kept)",
+       inlineasm.strip_cheat_asm_file(gte_c), (gte_c, 0))
+    # cc1 2.7.2 accepts a string literal spanning lines (code6cac_c_ab.c has
+    # one); its body must come out whole, not desync the parser.
+    ml = '__asm__(".section .rodata\n\t.word 0\n\t.text");\nvoid g(void) { h(1); }\n'
+    kws = cia.find_asm_keywords(ml)
+    eq("asm-kw: multi-line string literal body intact",
+       [k.body for k in kws], ['".section .rodata\n\t.word 0\n\t.text"'])
+    check("asm-kw: code after a multi-line string survives the strip",
+          "void g(void) { h(1); }" in inlineasm.strip_cheat_asm_file(ml)[0])
+    # A whole-body glabel block is still attributed, also behind a comment.
+    wb = '__asm__ /* body */ (\n    "glabel func_X\\n"\n    "    jr $ra\\n"\n);\n'
+    eq("asm-kw: glabel whole body attributed", inlineasm.whole_body_asm_funcs(wb), {"func_X"})
+    eq("asm-kw: glabel whole body not stripped", inlineasm.strip_cheat_asm_file(wb)[0], wb)
+
+    # A MENTION is not the keyword.
+    for desc, stmt in {
+        "block comment": '/* was: __asm__ ("move $5,$4"); */',
+        "line comment": '// __asm__ volatile("move $5,$4");',
+        "string literal": 'puts("__asm__(\\"move $5,$4\\")");',
+        "char-literal neighbour": "c = '\"'; puts(\"__asm__(x)\");",
+        "identifier containing it": "my__asm__(n); asm_helper(n);",
+    }.items():
+        src = one(stmt)
+        eq(f"asm-kw: {desc} mentioning __asm__ is not counted",
+           inlineasm.func_cheat_asm_count(src, "f"), 0)
+        eq(f"asm-kw: {desc} mentioning __asm__ is not stripped",
+           inlineasm.strip_cheat_asm_file(src), (src, 0))
+
+    # Macro-hidden asm (volatile_cheats pattern 5): every keyword spelling, a
+    # backslash-continued #define, and not a keyword mentioned in a comment/string.
+    for desc, pre in {
+        "__asm__": "#define A __asm__\n",
+        "__asm": "#define A __asm\n",
+        "bare asm": "#define A asm\n",
+        "continued #define": "#define A \\\n    __asm__\n",
+        "comment in the #define": "#define A /**/ __asm__ /**/\n",
+    }.items():
+        src = pre + 'void f(s32 n) {\n    A("move $5,$4");\n}\n'
+        eq(f"macro-asm ({desc}): definition found",
+           [d[2] for d in volatile_cheats.find_macro_asm_defs(src)], ["A"])
+        check(f"macro-asm ({desc}): use counted by the gate",
+              inlineasm.func_cheat_asm_count(src, "f") >= 1)
+        check(f"macro-asm ({desc}): sandbox neutralizes the use",
+              "move" not in inlineasm.strip_cheat_asm_file(src)[0].split("*/", 1)[-1])
+    # Layer-2 round 2: the digraph `%:` IS `#` to the build's cpp, macro chains,
+    # and nested parens in a use.
+    for desc, pre, use in (
+        ("%:define", "%:define A __asm__\n", 'A("move $5,%0" : : "r"(n));'),
+        ("%: define, function-like", "%: define A(x) __asm__ x\n",
+         'A(("move $5,%0" : : "r"(n)));'),
+        ("chain V -> W", "#define V __asm__\n#define W V\n", 'W("move $5,%0" : : "r"(n));'),
+        ("chain of three, digraph link", "#define V __asm__\n%:define W V\n#define X W\n",
+         'X volatile ("move $5,%0" : : "r"(n));'),
+    ):
+        src = pre + "void f(s32 n) {\n    " + use + "\n}\n"
+        check(f"macro-asm ({desc}): use counted by the gate",
+              inlineasm.func_cheat_asm_count(src, "f") >= 1)
+        body = inlineasm.strip_cheat_asm_file(src)[0].rsplit("*/", 1)[-1]
+        check(f"macro-asm ({desc}): sandbox neutralizes the use", "move" not in body)
+    eq("macro-asm: a same-named parameter shadows (not a chain)",
+       [d[2] for d in volatile_cheats.find_macro_asm_defs(
+           "#define V __asm__\n#define W(V) V\nint x;\n")], ["V"])
+    eq("asm-kw: `%:` line is a directive (define body not a statement)",
+       [k.directive for k in cia.find_asm_keywords('%:define B __asm__("nop")\n')], [True])
+
+    # A bare `asm` statement behind a same-file empty macro; a pin is still not one.
+    for desc, stmt in {
+        "empty macro before asm": 'E asm("move $5,%0" : : "r"(n));',
+        "empty macro before asm volatile": 'n = 1; E asm volatile ("move $5,%0" : : "r"(n));',
+        "empty macro, single-string template": 'E asm("move $5,$4");',
+    }.items():
+        caught(desc, one(stmt, pre="#define E\n"))
+    eq("asm-kw: register pin still not a lowercase-asm statement",
+       volatile_cheats.find_lowercase_asm_cheats(
+           one('register s32 t asm("$8") = n;', pre="#define E\n"), 0, 999), [])
+
+    # A `glabel` template inside a C function body is not a whole-function body.
+    caught("glabel decoy inside a function body",
+           one('__asm__("glabel f\\n move $5,%0" : : "r"(n));'))
+
+    for desc, pre in {"string": '#define A "__asm__"\n',
+                      "comment": "#define A 1 /* not __asm__ */\n"}.items():
+        eq(f"macro-asm: keyword only in a {desc} of the #define is not a definition",
+           volatile_cheats.find_macro_asm_defs(pre + "void f(void) {}\n"), [])
+    eq("macro-asm: continued #define spans to its last line",
+       volatile_cheats.find_macro_asm_defs("#define A \\\n  __asm__\nint x;\n"),
+       [(0, 21, "A")])
+
+    # Alias-rename declarations (volatile_cheats patterns 1 and 4) carry the
+    # same keyword: a comment inside the declaration, or the __asm__
+    # spelling, does not hide them.
+    for desc, decl in {
+        "nonvol, comment before (": 'extern u16 D_x_h asm /**/ ("D_80001234");',
+        "nonvol, comment after extern": 'extern /* t */ u16 D_x_h asm("D_80001234");',
+        "nonvol, __asm__ spelling": 'extern u16 D_x_h __asm__("D_80001234");',
+        "nonvol, backslash-newline in keyword": 'extern u16 D_x_h as\\\nm("D_80001234");',
+        "vol, comment before (": 'extern volatile s32 D_x_h asm /**/ ("D_80001234");',
+        "no extern": 's32 D_x_h asm("D_80001234");',
+        "label split into literals": 'extern s32 D_x_h asm("D_8000" "1234");',
+        "trailing __attribute__": 'extern s32 D_x_h asm("D_80001234") __attribute__((unused));',
+        "second declarator": 'extern s32 D_y, D_x_h asm("D_80001234");',
+        "array declarator": 'extern u8 D_x_h[4] asm("D_80001234");',
+    }.items():
+        src = decl + "\nvoid f(void) {\n    g(D_x_h);\n}\n"
+        eq(f"alias ({desc}): found", len(volatile_cheats.find_alias_renames(src))
+           + len(volatile_cheats.find_nonvolatile_alias_renames(src)), 1)
+        eq(f"alias ({desc}): use counted by the gate",
+           inlineasm.func_cheat_asm_count(src, "f"), 1)
+        out = inlineasm.strip_cheat_asm_file(src)[0]
+        check(f"alias ({desc}): sandbox neutralizes it",
+              ("volatile" not in out) if "volatile" in decl else ('"D_80001234"' not in out))
+
+    for desc, src in {
+        "same-name label": 'extern s32 g_x asm("g_x");\nvoid f(void) { g(g_x); }\n',
+        "function declarator label": 'void h(void) asm("g");\nvoid f(void) { h(); }\n',
+        "register pin": 'void f(s32 n) { register s32 t asm("$8") = n; g(t); }\n',
+    }.items():
+        eq(f"alias: {desc} is not an alias rename",
+           volatile_cheats.find_alias_renames(src)
+           + volatile_cheats.find_nonvolatile_alias_renames(src), [])
+
+    # Documented limit: a block mixing a cop2 op with a GPR op is kept whole by
+    # the sandbox (authorized GTE islands carry such feeder instructions); the
+    # completion gate refuses it through completion.blocks' island check.
+    mixed = one('__asm__("mtc2 $2,$0\\n move $5,%0" : : "r"(n));')
+    eq("asm-kw: mixed cop2+GPR block kept by the sandbox (island-gated)",
+       inlineasm.strip_cheat_asm_file(mixed), (mixed, 0))
+    eq("asm-kw: ... and seen by completion.blocks", len(completion.blocks(mixed, "f")), 1)
+
+    # GTE-unit recognition stays strict: a comment or splice inside a
+    # statement is not header-exact, so the run is not a unit (stripped).
+    from engine import gtemacro
+    ld_c = _gte_src(_MOVE.format(op="n").replace("__asm__ volatile", "__asm__ /**/ volatile"),
+                    _MTC2)
+    eq("asm-kw: GTE statement with a comment inside is not a unit",
+       gtemacro.unit_spans(ld_c), ())
+    eq("asm-kw: ... and is stripped in both sandbox modes",
+       inlineasm.strip_cheat_asm_file(ld_c, keep_gte_macro_units=True),
+       inlineasm.strip_cheat_asm_file(ld_c))
+
+    # The classifier report sees the same blocks (one record per statement).
+    with tempfile.TemporaryDirectory(dir=str(Path(cia.ROOT) / "tmp")) as td:
+        p = Path(td) / "t.c"
+        p.write_text(one('__asm__("nop"); __asm__ /**/ ("move $5,$4");'))
+        recs = [r for r in cia.scan_file(p) if r["kind"] == "asm_block"]
+        eq("asm-kw: classify_inline_asm records both statements on the line",
+           [(r["line"], r["func"], r["category"]) for r in recs],
+           [(2, "f", "cheat"), (2, "f", "cheat")])
+
+
 def test_macro_asm_strip_round_trip() -> None:
     """find_macro_asm_defs + strip_volatile_cheats_file — the PAD_NOPS
     macro family pattern that appears in display.c, code6cac*.c. The
@@ -3046,6 +3269,7 @@ def main() -> int:
     test_volatile_extern_allowlist()
     test_memo_and_rule_index_caches()
     test_lowercase_asm_cheats()
+    test_asm_keyword_recognition()
     test_macro_asm_strip_round_trip()
     test_substitute_body()
     test_include_asm_whole_body()

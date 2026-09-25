@@ -9,25 +9,27 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-import re
 
 from . import cheats, inlineasm
 
 REGIONS = Path('tools/canonical_asm_regions.json')
-ASM = re.compile(r'\b(?:__asm__|__asm|asm)\s*(?:(?:volatile|__volatile__)\s*)?\(')
 
 
 def blocks(text: str, func: str) -> list[tuple[int, int]]:
     span = inlineasm._func_body_span(text, func)
     if span is None:
         return []
-    clean = inlineasm._code_without_comments_and_strings(text)
     result = []
-    for match in ASM.finditer(clean, *span):
-        end = inlineasm._match_paren(text, match.end() - 1)
-        if end < 0:
+    # Every asm keyword spelling, found the way cc1 tokenizes (comments and
+    # backslash-newlines before the `(` are whitespace).
+    for kw in inlineasm.cia.find_asm_keywords(text, inlineasm.cia.ASM_SPELLINGS):
+        if not span[0] <= kw.start < span[1]:
+            continue
+        if kw.paren < 0:
+            raise ValueError(f'{func}: assembly keyword without an operand list')
+        if kw.end < 0:
             raise ValueError(f'{func}: unclosed assembly block')
-        result.append((match.start(), end + 1))
+        result.append((kw.start, kw.end + 1))
     return result
 
 

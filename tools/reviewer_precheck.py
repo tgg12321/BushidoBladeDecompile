@@ -166,7 +166,14 @@ def main() -> int:
     if body:
         path, text = body
         pins = re.findall(r"register\s+\w[\w\s\*]*asm\s*\(\s*\"[^\"]+\"\s*\)", text)
-        asms = re.findall(r"__asm__[^;{]*\(|\basm\s+volatile\s*\(", text)
+        # Asm statements as the compiler tokenizes them (a comment or
+        # backslash-newline before the `(` does not hide one): every
+        # `__asm__`/`__asm`, plus a bare `asm` that is qualified or opens a
+        # statement (a bare `asm("$N")` after a declarator is a pin, above).
+        import classify_inline_asm as cia
+        asms = [k for k in cia.find_asm_keywords(text, cia.ASM_SPELLINGS)
+                if k.spelling != "asm" or k.quals or k.bol
+                or k.after in (";", "{", "}", ":", ")", "else", "do")]
         hard_n = re.findall(r"__asm__[^;]*\"[^\"]*\$\d+[^\"]*\"", text)
         ck["body"] = {"file": path, "register_asm_pins": len(pins),
                       "asm_blocks": len(asms),

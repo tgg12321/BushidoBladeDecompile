@@ -39,11 +39,15 @@ without it, and the resulting C compiles with normal (non-coerced) semantics.
 """
 from __future__ import annotations
 
+import bisect
 import contextlib
 import functools
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+import classify_inline_asm as cia  # noqa: E402
 
 # Project hardware/system convention: `g_`-prefixed globals are the legitimate
 # volatile family (CD-ROM registers, SPU/GPU registers, DMA control, scratchpad
@@ -132,18 +136,9 @@ def _load_volatile_extern_allowlist() -> frozenset[str]:
     _volatile_extern_allowlist_cache = (path, mtime, fs)
     return fs
 
-# Pattern 1: alias rename. `extern volatile T name asm("OrigSym");`
-#  - Group "decl" = the full match (for span info)
-#  - Group "name" = the C identifier
-#  - Group "sym"  = the asm-name target symbol
-# Match form supports `T name`, `T *name`, `T **name`, `T name[]`, etc.
-_ALIAS_RENAME_RE = re.compile(
-    r"(?P<decl>\bextern\s+(?P<vol>volatile)\s+"
-    r"(?:\w+\s+)+"           # type words
-    r"\**\s*(?P<name>\w+)"   # optional pointer stars + identifier
-    r"\s*(?:\[[^\]]*\])?"     # optional array suffix
-    r"\s*asm\s*\(\s*\"(?P<sym>\w+)\"\s*\)\s*;)"
-)
+# Pattern 1: alias rename. `extern volatile T name asm("OrigSym");` — a
+# declarator carrying an asm label that names a DIFFERENT symbol, with
+# `volatile` among its specifiers. Found by _asm_label_decls (with pattern 4).
 
 # Pattern 2: inline `*(volatile T *)&<GLOBAL>` cast (game-state global by name)
 # We require the cast target to be `volatile T *` (not `volatile T **`) and the
@@ -173,21 +168,26 @@ _PLAIN_VOLATILE_RE = re.compile(
 # `lhu` over `lw` by aliasing an `s32` as `u16`). The alias-rename via asm()
 # is the smoking gun; there is no legitimate single-TU reason to provide a
 # second C handle for the same memory under a different name.
-_NONVOL_ALIAS_RENAME_RE = re.compile(
-    r"(?P<decl>\bextern\s+(?!volatile\b)(?:const\s+)?"
-    r"(?:\w+\s+)+\**\s*(?P<name>\w+)"
-    r"\s*(?:\[[^\]]*\])?"
-    r"\s*asm\s*\(\s*\"(?P<sym>\w+)\"\s*\)\s*;)"
-)
+#
+# Patterns 1 and 4 are found from the asm keyword TOKEN
+# (cia.find_asm_keywords, the compiler's view) rather than a declaration regex,
+# so no spelling hides them: a comment anywhere in the declaration, any asm
+# keyword spelling, no `extern`, a label split into concatenated literals
+# (`asm("D_" "8001")`), a trailing `__attribute__`, or the renamed declarator
+# not being the first (`extern int Y, X asm("...")`).
+_STRING_LITS_RE = re.compile(r'\s*(?:"(?:[^"\\\n]|\\.)*"\s*)+')
+_STRING_LIT_RE = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+_C_IDENT_RE = re.compile(r"[A-Za-z_]\w*")
 
 # Pattern 5: macro `#define NAME ... __asm__(...)`. The C preprocessor expands
 # uses to `__asm__(...)` AT EVERY USE SITE, but the existing cheat-asm detector
 # (engine/inlineasm.py:_strip_spans) explicitly SKIPS `#define` lines to avoid
 # breaking macro uses. So a macro-hidden inline asm injection slips past
 # detection — yet at every USE site, the expanded asm runs in the build.
-_MACRO_ASM_DEF_RE = re.compile(
-    r"(?m)^[ \t]*#[ \t]*define[ \t]+(?P<name>\w+)(?:\([^)]*\))?[^\n]*__asm__"
-)
+# Matched on a directive's logical line in cia.compiler_view (see
+# find_macro_asm_defs); `%:` is the digraph spelling of `#`.
+_MACRO_DEFINE_RE = re.compile(
+    r"[ \t]*(?:#|%:)[ \t]*define[ \t]+(?P<name>\w+)(?P<params>\([^)\n]*\))?")
 
 # Pattern 6: UNUSED LOCAL ARRAYS for frame-size coercion. The cheat declares a
 # fixed-size array local that is never referenced in the function body, ONLY
@@ -328,39 +328,56 @@ def find_addr_coerced_locals(text: str, body_lo: int, body_hi: int) -> list[tupl
 # scope cheat-asm blocks bypassed the entire cheat-asm gate. The 2026-06-02
 # thorough audit found 5 COMPLETED-C functions affected.
 #
-# This detector catches STATEMENT-SCOPE lowercase-asm (line-starts with
-# `asm`), which distinguishes it from register-pin declarations (which
-# start with `register`).
-_LOWERCASE_ASM_RE = re.compile(
-    r"(?m)^[ \t]*(?:asm)\s*(?:volatile|__volatile__)?\s*\("
-)
+# This detector catches STATEMENT-SCOPE lowercase-asm, which distinguishes it
+# from register-pin / alias declarations (`register T x asm("$N")`, where the
+# keyword follows the declarator). Statement scope = the keyword begins its
+# line, or follows a statement boundary (`;` `{` `}` `:` `)` `else` `do`).
+# Tokens come from cia.find_asm_keywords, the compiler's view: a comment or a
+# backslash-newline before the keyword or its `(` is whitespace, and a
+# comment that merely mentions `asm(` is not the keyword.
+# ("%" / ">" end the brace digraphs `<%` / `%>`; neither can precede `asm` in
+# an expression.)
+_STATEMENT_BOUNDARY = frozenset({";", "{", "}", ":", ")", "else", "do", "%", ">"})
+
+
+def _is_asm_statement(kw, text: str) -> bool:
+    """A bare `asm` keyword opens a statement (not a declarator's asm label)
+    when it begins its line or follows a statement boundary; when it has a
+    qualifier or `:` operand sections (an asm label has neither); or when the
+    only thing between it and a statement boundary is a run of macros defined
+    in this file (`#define E` ... `E asm("...")`)."""
+    if kw.bol or kw.after in _STATEMENT_BOUNDARY or kw.quals:
+        return True
+    if ":" in _STRING_LIT_RE.sub("", kw.body):
+        return True
+    return bool(kw.prefix) and set(kw.prefix) <= _same_file_macros(text)
 
 
 def find_lowercase_asm_cheats(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int]]:
     """Find statement-scope `asm(...)` / `asm volatile(...)` blocks inside
     the function body. These are inline-asm cheats that bypass the
-    ASM_KEYWORD_RE detector (which excludes bare `asm` for register-pin
-    safety). Returns list of (start, end) covering the asm-block including
-    its trailing semicolon."""
-    body = text[body_lo:body_hi]
+    engine.inlineasm statement detector (which excludes bare `asm` for
+    register-pin safety). Returns list of (start, end) covering the asm-block
+    including its trailing semicolon (from the start of the line when the
+    keyword begins it). A keyword with no `( ... )` after it is returned as the
+    bare keyword — a shape nothing parses fails safe (counted and stripped)."""
     out: list[tuple[int, int]] = []
-    for m in _LOWERCASE_ASM_RE.finditer(body):
-        depth = 1
-        i = m.end()
-        while i < len(body) and depth > 0:
-            c = body[i]
-            if c == "(":
-                depth += 1
-            elif c == ")":
-                depth -= 1
-            i += 1
-        if depth != 0:
+    for kw in cia.find_asm_keywords(text, ("asm",)):
+        if not body_lo <= kw.start < body_hi or kw.directive:
             continue
-        while i < len(body) and body[i] in " \t":
+        if not _is_asm_statement(kw, text):
+            continue
+        start = text.rfind("\n", 0, kw.start) + 1 if kw.bol else kw.start
+        start = max(start, body_lo)
+        if kw.end < 0:
+            out.append((start, kw.kw_end))
+            continue
+        i = kw.end
+        while i < len(text) and text[i] in " \t":
             i += 1
-        if i < len(body) and body[i] == ";":
+        if i < len(text) and text[i] == ";":
             i += 1
-        out.append((body_lo + m.start(), body_lo + i))
+        out.append((start, i))
     return out
 
 
@@ -1252,16 +1269,82 @@ def find_alias_renames(text: str) -> list[tuple[int, int, str]]:
 
 @functools.lru_cache(maxsize=8)
 def _find_alias_renames_cached(text: str) -> tuple[tuple[int, int, str], ...]:
+    return tuple((s, e, anchor) for kind, s, e, anchor, _n, _le in _asm_label_decls(text)
+                 if kind == "vol")
+
+
+@functools.lru_cache(maxsize=8)
+def _asm_label_decls(text: str) -> tuple[tuple[str, int, int, int, str, int], ...]:
+    """(kind, start, end, anchor, name, label_end) for every alias-rename
+    declaration: kind "vol" = pattern 1 (anchor = the `volatile` keyword),
+    "nonvol" = pattern 4 (anchor = the asm keyword). label_end is just past the
+    asm label's `)`; start/end span the whole declaration (to its `;`).
+
+    Found from every non-directive asm keyword whose operand list is only
+    string literals spelling a C identifier (the label) and that directly
+    follows a declarator name (an identifier, or `]` of an array declarator).
+    Excluded: a function declarator's label (`f(void) asm("g")` — `)` precedes),
+    a `register` pin (its own detector), a label equal to the name, and a
+    keyword preceded by a statement keyword (`else asm("x")`)."""
+    view = cia.compiler_view(text)
+    masked, pos = view.masked, view.pos
     out = []
-    for m in _ALIAS_RENAME_RE.finditer(text):
-        name, sym = m.group("name"), m.group("sym")
-        if name == sym:
-            continue  # same name; e.g. `extern volatile T g_x asm("g_x");`
-        # legit-name on the ALIASED side? If sym is g_xxx, this is still cheat
-        # (the alias gives access via a non-`g_` name). Treat as cheat regardless.
-        vol_idx = m.start("vol")
-        out.append((m.start(), m.end(), vol_idx))
+    for kw in cia.find_asm_keywords(text, cia.ASM_SPELLINGS):
+        if kw.directive or kw.end < 0 or kw.quals:
+            continue
+        if not _STRING_LITS_RE.fullmatch(kw.body):
+            continue
+        sym = "".join(_STRING_LIT_RE.findall(kw.body))
+        if not _C_IDENT_RE.fullmatch(sym):
+            continue
+        v = bisect.bisect_left(pos, kw.start)
+        if kw.prefix:
+            name, name_v = kw.prefix[-1], v
+        elif kw.after == "]":
+            k, depth = masked.rfind("]", 0, v), 0
+            while k >= 0:  # back to the matching `[`
+                depth += {"]": 1, "[": -1}.get(masked[k], 0)
+                if depth == 0:
+                    break
+                k -= 1
+            name, name_v = cia._prev_token(masked, max(k, 0))[0], max(k, 0)
+        else:
+            continue
+        if not _C_IDENT_RE.fullmatch(name) or name == sym or name in _C_STATEMENT_WORDS:
+            continue
+        # Declaration start: back to `;` `{` `}` or the end of a directive line.
+        b = name_v
+        while b > 0 and masked[b - 1] not in ";{}":
+            if masked[b - 1] == "\n":
+                ls = masked.rfind("\n", 0, b - 1) + 1
+                if cia.is_directive_lead(masked[ls:b - 1]):
+                    break
+            b -= 1
+        while b < name_v and masked[b].isspace():
+            b += 1
+        specifiers = masked[b:v]
+        if re.search(r"\bregister\b", specifiers):
+            continue  # a register pin, not an alias
+        # Declaration end: the `;` after the label (any __attribute__ between).
+        j, depth = bisect.bisect_left(pos, kw.end - 1) + 1, 0
+        while j < len(masked):
+            c = masked[j]
+            depth += {"(": 1, ")": -1}.get(c, 0)
+            if depth == 0 and c in ";{}":
+                break
+            j += 1
+        end = pos[j] + 1 if j < len(masked) and masked[j] == ";" else kw.end
+        vm = re.search(r"\bvolatile\b", specifiers)
+        if vm:
+            out.append(("vol", pos[b], end, pos[b + vm.start()], name, kw.end))
+        else:
+            out.append(("nonvol", pos[b], end, kw.start, name, kw.end))
     return tuple(out)
+
+
+_C_STATEMENT_WORDS = frozenset({"else", "do", "return", "case", "default", "goto",
+                                "break", "continue", "if", "while", "for", "switch",
+                                "sizeof"})
 
 
 def find_global_volatile_casts(text: str) -> list[tuple[int, int, str]]:
@@ -1286,41 +1369,60 @@ def find_nonvolatile_alias_renames(text: str) -> list[tuple[int, int, int]]:
     annotation (turning the alias into a separate scoped declaration with the
     SAME C-level name — link error is acceptable since the sandbox sees the
     function compile-failing in this case)."""
-    out = []
-    for m in _NONVOL_ALIAS_RENAME_RE.finditer(text):
-        name, sym = m.group("name"), m.group("sym")
-        if name == sym:
-            continue
-        # Skip function-name aliases (decl has `()` between type and asm — but
-        # _NONVOL_ALIAS_RENAME_RE doesn't capture those because the regex
-        # requires the identifier+optional-array to come BEFORE asm(...). We
-        # double-check by ensuring there's no `(` between the matched NAME
-        # and the asm keyword.
-        between = text[m.start("name") + len(name):text.find("asm", m.start("name"))]
-        if "(" in between:
-            continue
-        # Find asm keyword position within the match
-        asm_idx = text.find("asm", m.start())
-        if asm_idx < 0:
-            continue
-        out.append((m.start(), m.end(), asm_idx))
-    return out
+    return [(s, e, anchor) for kind, s, e, anchor, _n, _le in _asm_label_decls(text)
+            if kind == "nonvol"]
 
 
 def find_macro_asm_defs(text: str) -> list[tuple[int, int, str]]:
     """All `#define NAME ... __asm__(...)` macro definitions. Returns
     (def_start, def_end_eol, macro_name). The strip removes the macro
     definition; uses of the macro will fail compilation, surfacing the cheat
-    instead of hiding it."""
-    out = []
-    for m in _MACRO_ASM_DEF_RE.finditer(text):
-        name = m.group("name")
-        # Find end of line
-        eol = text.find("\n", m.start())
-        if eol == -1:
-            eol = len(text)
-        out.append((m.start(), eol, name))
-    return out
+    instead of hiding it.
+
+    The keyword is found in the compiler's view (cia.find_asm_keywords): any
+    spelling (`__asm__` / `__asm` / `asm`), anywhere on the directive's
+    LOGICAL line — a backslash-continued `#define` is one directive, and
+    def_end_eol is the end of its last physical line. A keyword inside a
+    comment or string of the directive does not count.
+
+    `#` may be spelled `%:` (digraph). Chains are followed: a macro whose
+    replacement names another asm macro of this file (`#define V __asm__` /
+    `#define W V`) is an asm macro too (transitive closure; a parameter of the
+    same name shadows)."""
+    defs = _directive_defines(text)
+    asm_names = {name for _s, _e, name, _params, idents in defs
+                 if name in cia.ASM_SPELLINGS or idents & set(cia.ASM_SPELLINGS)}
+    grew = True
+    while grew:
+        grew = False
+        for _s, _e, name, params, idents in defs:
+            if name not in asm_names and (idents - params) & asm_names:
+                asm_names.add(name)
+                grew = True
+    return [(s, e, name) for s, e, name, _p, _i in defs if name in asm_names]
+
+
+@functools.lru_cache(maxsize=8)
+def _directive_defines(text: str) -> tuple:
+    """(start, end, name, params, idents) for every `#define` / `%:define`
+    logical line: start/end index `text` (end = its last physical line's end);
+    params = the parameter names of a function-like macro; idents = the
+    identifier tokens of the replacement list (comments and literals blanked)."""
+    view = cia.compiler_view(text)
+    masked, pos = view.masked_eol, view.pos
+    out, vs = [], 0
+    for line in masked.split("\n"):
+        m = _MACRO_DEFINE_RE.match(line)
+        if m:
+            params = frozenset(_C_IDENT_RE.findall(m.group("params") or ""))
+            idents = frozenset(_C_IDENT_RE.findall(line[m.end():]))
+            out.append((pos[vs], pos[vs + len(line)], m.group("name"), params, idents))
+        vs += len(line) + 1
+    return tuple(out)
+
+
+def _same_file_macros(text: str) -> frozenset:
+    return frozenset(name for _s, _e, name, _p, _i in _directive_defines(text))
 
 
 def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
@@ -1437,31 +1539,10 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
 
     # Non-volatile asm() alias annotations to remove (span: from `asm` to `)`).
     nv_alias_spans: list[tuple[int, int]] = []
-    for s, e, asm_pos in find_nonvolatile_alias_renames(text):
-        # Find the closing `)` of asm("...")
-        paren_open = text.find("(", asm_pos)
-        if paren_open < 0:
+    for kind, s, e, asm_pos, _name, i in _asm_label_decls(text):
+        if kind != "nonvol":
             continue
-        depth = 1
-        i = paren_open + 1
-        in_str = False
-        while i < len(text) and depth > 0:
-            c = text[i]
-            if in_str:
-                if c == "\\":
-                    i += 2
-                    continue
-                if c == "\"":
-                    in_str = False
-            elif c == "\"":
-                in_str = True
-            elif c == "(":
-                depth += 1
-            elif c == ")":
-                depth -= 1
-            i += 1
-        if depth != 0:
-            continue
+        # i = just past the closing `)` of asm("...").
         # Trim trailing whitespace BEFORE asm (so we remove ` asm("...")` cleanly)
         strip_start = asm_pos
         while strip_start > 0 and text[strip_start - 1] in " \t":
@@ -1477,16 +1558,21 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
         # `NAME;` becomes a tentative global (`.comm NAME,4,4`) which crashes
         # maspsx and silently truncates the whole-file object. Match the
         # macro name as a standalone statement/expression and neutralize it.
-        # Pattern: `NAME` followed by optional `(args)` and a `;` (with
-        # surrounding whitespace).
-        usage_re = re.compile(
-            r"\b" + re.escape(name) + r"\b(?:\s*\([^)]*\))?\s*;"
-        )
-        for um in usage_re.finditer(text):
-            # Skip the definition itself
-            if s <= um.start() < e:
-                continue
-            macro_usage_spans.append((um.start(), um.end()))
+        # Pattern: `NAME` followed by optional qualifiers + a balanced
+        # `(args)`, then a `;` — matched in the compiler view, so nested parens
+        # (`A("move %0" : : "r"(n));`) and comments do not defeat it.
+        view = cia.compiler_view(text)
+        masked, vpos = view.masked, view.pos
+        for um in re.finditer(r"(?<![\w$])" + re.escape(name) + r"(?![\w$])", masked):
+            start = vpos[um.start()]
+            if s <= start < e:
+                continue  # the definition itself
+            _q, _p, close = cia._operand_list(masked, um.end(), False)
+            j = close + 1 if close >= 0 else um.end()
+            while j < len(masked) and masked[j].isspace():
+                j += 1
+            if j < len(masked) and masked[j] == ";":
+                macro_usage_spans.append((start, vpos[j] + 1))
 
     # Unused local arrays + dead-param assignments inside function bodies.
     # We iterate definitions to get their spans, then enumerate per-func.
@@ -1592,12 +1678,12 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     for s, _e, vp in find_all_cheats(text):
         if lo <= s < hi:
             counted_vol_positions.add(vp)
+    label_decls = _asm_label_decls(text)
     # File-scope alias renames whose alias name is referenced inside body.
-    for s, e, vp in find_alias_renames(text):
-        if lo <= s < hi:
+    for kind, s, _e, vp, name, _le in label_decls:
+        if kind != "vol" or lo <= s < hi:
             continue  # already counted above
-        m = _ALIAS_RENAME_RE.search(text, s, e)
-        if m and m.group("name") in used:
+        if name in used:
             counted_vol_positions.add(vp)
     # File-scope plain volatile externs whose symbol is referenced inside body.
     for s, e, vp in find_plain_volatile_externs(text):
@@ -1607,10 +1693,8 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
         if m and m.group("name") in used:
             counted_vol_positions.add(vp)
     # Non-volatile alias renames (in-body or file-scope-with-body-use).
-    for s, e, asm_pos in find_nonvolatile_alias_renames(text):
-        in_body = lo <= s < hi
-        m = _NONVOL_ALIAS_RENAME_RE.search(text, s, e)
-        if m and (in_body or m.group("name") in used):
+    for kind, s, _e, asm_pos, name, _le in label_decls:
+        if kind == "nonvol" and (lo <= s < hi or name in used):
             counted_vol_positions.add(asm_pos)
     # Macro `__asm__` definitions whose macro name is referenced in body.
     for s, e, name in find_macro_asm_defs(text):
@@ -1650,6 +1734,9 @@ def audit_project(src_dir: str = "src") -> dict:
         cheats_ = find_all_cheats(text)
         if not cheats_:
             continue
+        macro_def_starts = {s for s, _e, _n in find_macro_asm_defs(text)}
+        label_kinds = {s: ("alias_rename" if k == "vol" else "nonvol_alias_rename")
+                       for k, s, _e, _a, _n, _le in _asm_label_decls(text)}
         # Map char-position -> line number
         line_starts = [0]
         for i, c in enumerate(text):
@@ -1663,11 +1750,7 @@ def audit_project(src_dir: str = "src") -> dict:
         for s, e, vp in cheats_:
             line = line_of(s)
             # Categorize by which detector caught it (re-test the spans).
-            kind = "unknown"
-            for m in _ALIAS_RENAME_RE.finditer(text, s, e + 1):
-                if m.start() == s:
-                    kind = "alias_rename"
-                    break
+            kind = label_kinds.get(s, "unknown")
             if kind == "unknown":
                 for m in _GLOBAL_CAST_RE.finditer(text, s, e + 1):
                     if m.start() == s:
@@ -1678,16 +1761,8 @@ def audit_project(src_dir: str = "src") -> dict:
                     if m.start() == s:
                         kind = "plain_extern"
                         break
-            if kind == "unknown":
-                for m in _NONVOL_ALIAS_RENAME_RE.finditer(text, s, e + 1):
-                    if m.start() == s:
-                        kind = "nonvol_alias_rename"
-                        break
-            if kind == "unknown":
-                for m in _MACRO_ASM_DEF_RE.finditer(text, s, e + 1):
-                    if m.start() == s:
-                        kind = "macro_asm"
-                        break
+            if kind == "unknown" and s in macro_def_starts:
+                kind = "macro_asm"
             # Extract name + decl snippet
             name = ""
             for m in _re.finditer(r"\b(\w+)\b", text[s:e]):

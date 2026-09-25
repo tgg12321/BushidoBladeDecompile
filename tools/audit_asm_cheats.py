@@ -648,24 +648,16 @@ def _extract_balanced_asm_blocks(text):
     Properly handles nested parens (offsets like `0($sp)` contain `)`).
 
     The original `__asm__\\s*\\(...\\([^)]+\\)` regex stops at the first `)`,
-    truncating long asm bodies. This generator tracks paren depth."""
+    truncating long asm bodies. Blocks come from the engine's keyword finder
+    (classify_inline_asm.find_asm_keywords): a comment or backslash-newline
+    between `__asm__`/`__asm`, its qualifier and `(` does not hide a block, and
+    the body is the compiler's view (comments blanked)."""
     i = 0
-    while i < len(text):
-        m = re.search(r"__asm__\s*(?:volatile\s*)?\(", text[i:])
-        if not m:
-            return
-        start = i + m.start()
-        body_start = i + m.end()
-        depth = 1
-        j = body_start
-        while j < len(text) and depth > 0:
-            if text[j] == "(":
-                depth += 1
-            elif text[j] == ")":
-                depth -= 1
-            j += 1
-        yield start, j, text[body_start:j - 1]
-        i = j
+    for kw in engine_inlineasm.cia.find_asm_keywords(text):
+        if kw.end < 0 or kw.start < i:
+            continue
+        yield kw.start, kw.end, kw.body
+        i = kw.end
 
 
 def _count_real_insns(block):
@@ -916,14 +908,17 @@ def scan_inline_asm_bodies(content, source_name):
     content for a BIOS-related function. The trampoline-at-start is the
     discriminator."""
     cheats = []
-    for m in re.finditer(r"__asm__\s*(?:volatile\s*)?\(([^)]+)\)", content):
-        block = m.group(1)
+    for kw in engine_inlineasm.cia.find_asm_keywords(content):
+        # The body up to its first `)`, as the original `\(([^)]+)\)` regex read it.
+        block = kw.body.partition(")")[0]
+        if not block or kw.end < 0:
+            continue
         glabel_match = re.search(r"glabel\s+(\w+)", block)
         if not glabel_match:
             continue
         fname = glabel_match.group(1)
         insn_count = block.count("\\n")
-        line_no = content[:m.start()].count("\n") + 1
+        line_no = content[:kw.start].count("\n") + 1
         is_bios = _trampoline_at_start(block)
         cheats.append((source_name, line_no, insn_count, fname, is_bios))
     return cheats

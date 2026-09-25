@@ -56,7 +56,7 @@ _REGISTER_KEYWORD = re.compile(r"\bregister\b")
 #
 # The MACRO spelling is the one that used to escape entirely: this module runs
 # on UNEXPANDED source text, where `INCLUDE_ASM(` is simply not `__asm__(` and
-# so never matches cia.ASM_KEYWORD_RE. It only becomes `__asm__` after cpp,
+# so is never found by cia.find_asm_keywords. It only becomes `__asm__` after cpp,
 # which the stripper never runs. The construct was therefore never even a
 # CANDIDATE for stripping — it was not classified and kept, it was unseen. That
 # blind spot let a function with zero lines of decompiled C report an honest
@@ -134,15 +134,10 @@ def symbol_marker_funcs(text: str) -> set[str]:
     they are not decomp work.
     """
     names: set[str] = set()
-    for m in cia.ASM_KEYWORD_RE.finditer(text):
-        line_start = text.rfind("\n", 0, m.start()) + 1
-        if text[line_start:m.start()].lstrip().startswith("#"):
+    for kw in cia.find_asm_keywords(text):
+        if kw.directive or kw.end < 0:
             continue
-        paren_open = m.end() - 1
-        close = _match_paren(text, paren_open)
-        if close < 0:
-            continue
-        body = text[paren_open + 1:close - 1]
+        body = kw.body
         if _INCLUDE_DIRECTIVE_RE.search(body):
             continue  # pulls in an asm/funcs body — a body, never a marker
         if not _asm_block_has_instructions(body):
@@ -161,15 +156,10 @@ def whole_body_asm_funcs(text: str) -> set[str]:
     canonical-asm membership (inline_asm_canonical.txt), not here.
     """
     names = {f for f, _s, _e in include_asm_spans(text)}
-    for m in cia.ASM_KEYWORD_RE.finditer(text):
-        line_start = text.rfind("\n", 0, m.start()) + 1
-        if text[line_start:m.start()].lstrip().startswith("#"):
+    for kw in cia.find_asm_keywords(text):
+        if kw.directive or kw.end < 0:
             continue
-        paren_open = m.end() - 1
-        close = _match_paren(text, paren_open)
-        if close < 0:
-            continue
-        body = text[paren_open + 1:close - 1]
+        body = kw.body
         names.update(_INCLUDE_DIRECTIVE_RE.findall(body))
         if _asm_block_has_instructions(body):
             names.update(_GLABEL_NAME_RE.findall(body))
@@ -224,7 +214,7 @@ def _code_without_comments_and_strings(text: str) -> str:
 
 def _preprocessor_line(text: str, idx: int) -> bool:
     line_start = text.rfind("\n", 0, idx) + 1
-    return text[line_start:idx].lstrip().startswith("#")
+    return cia.is_directive_lead(text[line_start:idx])
 
 
 def register_hint_spans(text: str) -> list[tuple[int, int]]:
@@ -327,7 +317,8 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
     the sandbox assemble the target bytes straight from asm/funcs/<name>.s and
     report an honest pure-C distance of 0 for a function with no C at all.
     Whole-body `glabel` __asm__ blocks are deliberately NOT stripped here —
-    _block_category calls them "canonical_body" and that behaviour is unchanged.
+    _block_category calls them "canonical_body" and that behaviour is unchanged
+    at file scope; a `glabel` block inside a C function body is a cheat.
 
     Memoized by text: this is a whole-file scan and `func_cheat_asm_count`
     calls it once per FUNCTION, so a 400-function TU used to re-scan itself 400
@@ -340,22 +331,33 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
 @functools.lru_cache(maxsize=8)
 def _strip_spans_cached(text: str) -> tuple[tuple[int, int], ...]:
     spans = [(s, e) for _f, s, e in include_asm_spans(text)]
-    for m in cia.ASM_KEYWORD_RE.finditer(text):
-        line_start = text.rfind("\n", 0, m.start()) + 1
-        if text[line_start:m.start()].lstrip().startswith("#"):
+    # find_asm_keywords sees the keyword the way cc1 does: comments and
+    # backslash-newlines between `__asm__`, its qualifiers and `(` are
+    # whitespace, and a comment/string that merely mentions `__asm__` is not
+    # the keyword. (The raw-text regex it replaces missed
+    # `__asm__ /**/ ("move $5,%0" : : "r"(n));` in both gate and sandbox.)
+    for kw in cia.find_asm_keywords(text):
+        if kw.directive:
             continue  # macro definition — leave (stripping would break uses)
-        paren_open = m.end() - 1
-        close = _match_paren(text, paren_open)
-        if close < 0:
+        if kw.end < 0:
+            # No `( ... )` follows the keyword — a shape nothing here parses
+            # (e.g. a macro argument `Q(__asm__)`). Fail safe: strip the bare
+            # keyword, so the gate counts it and the sandbox cannot compile it.
+            spans.append((kw.start, kw.kw_end))
             continue
-        if _block_category(text[paren_open + 1:close - 1]) != "cheat":
+        category = _block_category(kw.body)
+        if category == "canonical_body" and kw.depth > 0:
+            # A `glabel` inside a C function body is not a whole-function asm
+            # body (those sit at file scope); it is a decoy label on inline asm.
+            category = "cheat"
+        if category != "cheat":
             continue
-        end = close
+        end = kw.end
         while end < len(text) and text[end] in " \t":
             end += 1
         if end < len(text) and text[end] == ";":
             end += 1
-        spans.append((m.start(), end))
+        spans.append((kw.start, end))
     for pm in cia.REGISTER_PIN_RE.finditer(text):
         am = _PIN_QUALIFIER.search(pm.group(0))
         if am:

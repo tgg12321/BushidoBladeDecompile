@@ -294,7 +294,7 @@ def _preprocessor_ranges(masked: str) -> list[tuple[int, int]]:
     i = 0
     while i < len(lines):
         start = pos
-        if lines[i].lstrip().startswith("#"):
+        if cia.is_directive_lead(lines[i]):
             while lines[i].rstrip().endswith("\\") and i + 1 < len(lines):
                 pos += len(lines[i]) + 1
                 i += 1
@@ -311,24 +311,29 @@ def _source_statements(text: str):
     masked = inlineasm._code_without_comments_and_strings(text)
     pp = _preprocessor_ranges(masked)
     out = []
-    for m in cia.ASM_KEYWORD_RE.finditer(text):
-        if masked[m.start():m.end()] != text[m.start():m.end()]:
-            continue  # inside a comment or string
-        if any(s <= m.start() < e for s, e in pp):
+    # The same keyword finder inlineasm._strip_spans uses, so the spans agree.
+    for kw in cia.find_asm_keywords(text):
+        if kw.directive or kw.end < 0:
             continue
-        close = inlineasm._match_paren(text, m.end() - 1)
-        if close < 0:
+        if any(s <= kw.start < e for s, e in pp):
             continue
+        close = kw.end
         end = close
         while end < len(text) and text[end] in " \t":
             end += 1
         if end >= len(text) or text[end] != ";":
             continue
+        raw = text[kw.start:close]
         try:
-            st = parse_asm(text[m.start():m.end() - 1], text[m.end():close - 1])
+            # Parsed from the RAW text: a comment or backslash-newline anywhere
+            # in the statement is not header-exact (the pinned statements
+            # carry neither), so it is never part of a unit.
+            if not cia.is_plain_code(raw):
+                raise ValueError("comment or line splice inside the statement")
+            st = parse_asm(text[kw.start:kw.paren], text[kw.paren + 1:close - 1])
         except ValueError:
             st = None
-        out.append((m.start(), end + 1, st))
+        out.append((kw.start, end + 1, st))
     return out, masked
 
 
