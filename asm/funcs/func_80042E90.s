@@ -1,6 +1,6 @@
 glabel func_80042E90
-    /* 33690 80042E90 0580023C */  lui        $v0, %hi(func_8004A348)
-    /* 33694 80042E94 48A34224 */  addiu      $v0, $v0, %lo(func_8004A348)
+    /* 33690 80042E90 0580023C */  lui        $v0, %hi(math_RotMatrixZYX)
+    /* 33694 80042E94 48A34224 */  addiu      $v0, $v0, %lo(math_RotMatrixZYX)
     /* 33698 80042E98 0F80013C */  lui        $at, %hi(D_800F66A0)
     /* 3369C 80042E9C A06622AC */  sw         $v0, %lo(D_800F66A0)($at)
     /* 336A0 80042EA0 0480023C */  lui        $v0, %hi(math_RotMatrixZXY)

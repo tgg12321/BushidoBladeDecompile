@@ -39,7 +39,7 @@ glabel func_80054604
     /* 44E94 80054694 82E4010C */  jal        printf
     /* 44E98 80054698 00000000 */   nop
   .L8005469C:
-    /* 44E9C 8005469C 711A010C */  jal        snd_LoadSelection
+    /* 44E9C 8005469C 711A010C */  jal        func_800469C4
     /* 44EA0 800546A0 21200002 */   addu      $a0, $s0, $zero
     /* 44EA4 800546A4 0F80013C */  lui        $at, %hi(D_800EFB14)
     /* 44EA8 800546A8 14FB22AC */  sw         $v0, %lo(D_800EFB14)($at)
@@ -124,7 +124,7 @@ glabel func_80054604
     /* 44FD0 800547D0 21200000 */  addu       $a0, $zero, $zero
     /* 44FD4 800547D4 86FC000C */  jal        game_SetPlayerCount
     /* 44FD8 800547D8 080033A6 */   sh        $s3, 0x8($s1)
-    /* 44FDC 800547DC B159000C */  jal        disp_CalcFov
+    /* 44FDC 800547DC B159000C */  jal        math_FovToScreenDist
     /* 44FE0 800547E0 2D000424 */   addiu     $a0, $zero, 0x2D
     /* 44FE4 800547E4 FFFB010C */  jal        SetGeomScreen
     /* 44FE8 800547E8 21204000 */   addu      $a0, $v0, $zero

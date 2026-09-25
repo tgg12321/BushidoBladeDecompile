@@ -12,13 +12,13 @@ glabel func_8003CE18
     /* 2D640 8003CE40 01000424 */  addiu      $a0, $zero, 0x1
     /* 2D644 8003CE44 21280000 */  addu       $a1, $zero, $zero
     /* 2D648 8003CE48 21300000 */  addu       $a2, $zero, $zero
-    /* 2D64C 8003CE4C DA59000C */  jal        disp_SetFramebufferMode
+    /* 2D64C 8003CE4C DA59000C */  jal        func_80016768
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
     /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
     /* 2D658 8003CE58 00000000 */   nop
     /* 2D65C 8003CE5C 86FC000C */  jal        game_SetPlayerCount
     /* 2D660 8003CE60 21200000 */   addu      $a0, $zero, $zero
-    /* 2D664 8003CE64 B159000C */  jal        disp_CalcFov
+    /* 2D664 8003CE64 B159000C */  jal        math_FovToScreenDist
     /* 2D668 8003CE68 2D000424 */   addiu     $a0, $zero, 0x2D
     /* 2D66C 8003CE6C FFFB010C */  jal        SetGeomScreen
     /* 2D670 8003CE70 21204000 */   addu      $a0, $v0, $zero

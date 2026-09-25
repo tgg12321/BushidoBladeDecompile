@@ -25,7 +25,6 @@ g_str_sio_console = 0x8001649C;
 g_str_sio = 0x800164A8;
 g_str_bios_id = 0x80016274;
 g_str_intr_id = 0x80016328;
-data_as_code_lb_table_800164AC = 0x800164AC;
 syscall_wrapper_break_800164F8 = 0x800164F8;  /* MISNAMED: not a syscall wrapper; loop of ~0x270F 'break 1' instrs (debug/breakpoint stub) */
 /* RESET 0x8003043C: retired name 'psyq_memset_8003043C' — preserved note: MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */
 /* RESET 0x80038148: retired name 'psyq_memset_80038148' — preserved note: MISNAMED: clears g_disp_state_buf (D_800F33D8, 512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
@@ -353,7 +352,7 @@ g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the 
 /* SHA1-invariance: same construction (symbol-only adds at known addresses). */
 /* Address-suffixed to avoid colliding with any same-named function elsewhere. */
 /* Getters / setters / stubs (15) */
-snd_GetSeId_8004678C            = 0x8004678C;  /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
+func_8004678C            = 0x8004678C;  /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
 stage_GetVariant_800467A8       = 0x800467A8;  /* lh getter for g_stage_variant (paired with stage_GetId for g_stage_id, +0x2 offset) */
 game_GetDummyFlag_80046DE4      = 0x80046DE4;  /* literal `return 0;` (jr ra; v0 = 0) -- the dummy-flag accessor stub */
 game_GetPlayerData_80046DEC     = 0x80046DEC;  /* func_8004153C() returning +0x1994 offset (player struct data field) */
@@ -368,16 +367,16 @@ game_Stub1_800477BC             = 0x800477BC;  /* literal `jr ra; nop` -- empty 
 game_Stub2_800477C4             = 0x800477C4;  /* literal `jr ra; nop` -- empty hook slot 2 */
 game_Stub3_800477CC             = 0x800477CC;  /* literal `jr ra; nop` -- empty hook slot 3 */
 game_Stub4_800477D4             = 0x800477D4;  /* literal `jr ra; nop` -- empty hook slot 4 */
-snd_SetVolume_800477DC          = 0x800477DC;  /* stores $a0 to g_snd_volume (gp-rel sw) */
+func_800477DC          = 0x800477DC;  /* stores $a0 to g_snd_volume (gp-rel sw) */
 snd_GetMaxFade_80047EC8         = 0x80047EC8;  /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
 /* Lifecycle wrapper grid: each is an 8-9 insn wrapper around one named callee. */
 game_EffInit_8004746C           = 0x8004746C;  /* wrapper -> func_8004473C() */
-game_EffCleanup_8004748C        = 0x8004748C;  /* wrapper -> efc_rob_set_type_flash() */
+/* RESET 0x8004748C: retired name 'game_EffCleanup_8004748C' — preserved note: wrapper -> efc_rob_set_type_flash() */
 game_AnimInit_800474AC          = 0x800474AC;  /* wrapper -> func_80048F58(0, 0) */
-game_AnimCleanup_800474D0       = 0x800474D0;  /* wrapper -> func_80048FFC(0) */
+/* RESET 0x800474D0: retired name 'game_AnimCleanup_800474D0' — preserved note: wrapper -> func_80048FFC(0) */
 game_AnimStart_80047738         = 0x80047738;  /* wrapper -> func_80048F58(1, 0) -- a0=1 differs from AnimInit's a0=0 */
 /* Sound dispatchers (4) */
-snd_PlayBgm_800468B0            = 0x800468B0;  /* saSeMain(8, a0) + saTan5TakeGetPos(0) */
+func_800468B0            = 0x800468B0;  /* saSeMain(8, a0) + saTan5TakeGetPos(0) */
 /* RENAME 0x800469A0: retired name 'snd_PlaySe_800469A0' — preserved note: saSeMain(9, a0) */
 rcnt_StartCnt1       = 0x80046AE8;  /* SsSet stuff with 0xF2000001 (SS event class) */
 /* RENAME 0x80046B20: retired name 'snd_StopSystemSe_80046B20' — preserved note: SsCalledTickMode-style stop using 0xF2000001 */
@@ -396,18 +395,18 @@ g_snd_volume                    = 0x800A33D0;  /* gp-rel word; written by snd_Se
 /* read from asm/funcs/ and verified against call/load pattern. */
 /* Full triage at `docs/naming/LEGACY_RENAMER_AUDIT.md`. */
 /* File-load helpers (5) */
-file_LoadAll_80016514           = 0x80016514;  /* bios_FileOpen + chunked-read (0x4000) + md_gview_init */
-file_LoadSectors_800165F8       = 0x800165F8;  /* sibling of file_LoadAll, sector-based variant */
+/* RENAME 0x80016514: retired name 'file_LoadAll_80016514' — preserved note: bios_FileOpen + chunked-read (0x4000) + md_gview_init */
+/* RENAME 0x800165F8: retired name 'file_LoadSectors_800165F8' — preserved note: sibling of file_LoadAll, sector-based variant */
 file_ResetDmaFlag_80016C74      = 0x80016C74;  /* 3-insn flag-clear setter */
-file_LoadOverlay_80016C80       = 0x80016C80;  /* calls debug_printf + sys_Panic on failure */
+eff_Init       = 0x80016C80;  /* calls debug_printf + sys_Panic on failure */
 file_LoadSoundData_80016CF8     = 0x80016CF8;  /* calls saFidLoad + bb2_memcpy */
 /* File flag getters (3) -- each returns one bit of D_80106A73 */
 file_GetFlag0_800167AC          = 0x800167AC;  /* `return D_80106A73 & 1` */
 file_GetFlag1_800167BC          = 0x800167BC;  /* `return (D_80106A73 >> 1) & 1` */
 file_GetFlag2_800167D4          = 0x800167D4;  /* `return (D_80106A73 >> 2) & 1` */
 /* Display / GPU init (8) */
-disp_CalcFov_800166C4           = 0x800166C4;  /* uses Judge table for trig calc */
-disp_SetFramebufferMode_80016768 = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
+math_FovToScreenDist           = 0x800166C4;  /* uses Judge table for trig calc */
+func_80016768 = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
 /* RENAME 0x80016868: retired name 'gpu_EnableDisplay_80016868' — preserved note: gpu_SetMode(1) wrapper */
 gpu_InitDisplay_80016888        = 0x80016888;  /* gpu_SetDispMask(0) + gpu_SetMode(1) + 8007B4D0(g_disp_gp_base) + DrawSync */
 /* RENAME 0x800168D0: retired name 'gpu_DisableDisplay_800168D0' — preserved note: gpu_SetDispMask(1) wrapper */
@@ -520,7 +519,6 @@ SsSetReservedVoice                         = 0x80087F34;
 /* SPU (1) */
 SpuInit                                = 0x800885AC;
 /* Kengo CPU/camera misc (6) */
-cpu_get_dist_8003032C                            = 0x8003032C;
 cpu_set_move_command_and_dir_80030A2C            = 0x80030A2C;
 cpu_check_same_dir_timer_8003339C                = 0x8003339C;
 /* Kengo Item 7 cross-ref (36) */
@@ -537,18 +535,18 @@ cpu_check_same_dir_timer_8003339C                = 0x8003339C;
 /* helpers, not sound).  See LEGACY_RENAMER_AUDIT.md. */
 /* */
 /* Sound subsystem (8) */
-snd_LoadBgm_800467B8            = 0x800467B8;  /* 62-insn loader using saTan2InfoInit + saTan5TakeGetPos */
-snd_BgmCallback_800468DC        = 0x800468DC;  /* 14-insn callback using saTan5GetTakeCutAnimType */
-snd_LoadSe_8004695C             = 0x8004695C;  /* 17-insn loader using saSeMain_80045600 + saTan5TakeGetPos */
-snd_LoadSelection_800469C4      = 0x800469C4;  /* 39-insn loader using saSeMain + snd_SelectionCallback */
-snd_SelectionCallback_80046A80  = 0x80046A80;  /* 8-insn callback for selection loader */
+func_800467B8            = 0x800467B8;  /* 62-insn loader using saTan2InfoInit + saTan5TakeGetPos */
+/* RESET 0x800468DC: retired name 'snd_BgmCallback_800468DC' — preserved note: 14-insn callback using saTan5GetTakeCutAnimType */
+/* RESET 0x8004695C: retired name 'snd_LoadSe_8004695C' — preserved note: 17-insn loader using saSeMain_80045600 + saTan5TakeGetPos */
+/* RESET 0x800469C4: retired name 'snd_LoadSelection_800469C4' — preserved note: 39-insn loader using saSeMain + snd_SelectionCallback */
+/* RESET 0x80046A80: retired name 'snd_SelectionCallback_80046A80' — preserved note: 8-insn callback for selection loader */
 snd_StopAll_80046AA0            = 0x80046AA0;  /* calls player_Destroy + saTanMainDispGnd + snd_StopBgm */
-snd_CalcFade_80047D94           = 0x80047D94;  /* 50-insn fade calc using D_800EF7BC/C0 */
-snd_GetFadeCurve_80047E5C       = 0x80047E5C;  /* 27-insn fade curve lookup using D_800EF800/04 */
+/* RESET 0x80047D94: retired name 'snd_CalcFade_80047D94' — preserved note: 50-insn fade calc using D_800EF7BC/C0 */
+/* RESET 0x80047E5C: retired name 'snd_GetFadeCurve_80047E5C' — preserved note: 27-insn fade curve lookup using D_800EF800/04 */
 /* Game lifecycle (4) */
 game_Init_80046B44              = 0x80046B44;  /* 44-insn top-level game init */
 game_StageInit_80046DA8         = 0x80046DA8;  /* 15-insn stage init calling game_InitStageSound */
-game_InitStageSound_80046EA0    = 0x80046EA0;  /* 15-insn calling DispHira + stage_GetId + tslLineG5Init */
+/* RESET 0x80046EA0: retired name 'game_InitStageSound_80046EA0' — preserved note: 15-insn calling DispHira + stage_GetId + tslLineG5Init */
 game_StageCleanup_80046EDC      = 0x80046EDC;  /* 14-insn cleanup */
 /* Camera (4) */
 camera_InitMatrix_80046F24      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
@@ -557,10 +555,10 @@ camera_InitRotation_800472C0    = 0x800472C0;  /* 49-insn rotation init referenc
 camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using replay_camera_rob_back_loose3 + single_game_getEnemyCharId (previously proposed as camera_replay_compute_rot_80047384 in batch 6) */
 /* Position-distinct wrapper-grid duplicates (5; bodies identical to earlier-adopted siblings) */
 game_EffInit2_800474F0          = 0x800474F0;  /* same body as game_EffInit (calls func_8004473C) */
-game_EffCleanup2_80047510       = 0x80047510;  /* same body as game_EffCleanup (calls efc_rob_set_type_flash) */
-game_AnimStop_8004775C          = 0x8004775C;  /* same body as game_AnimCleanup (calls func_80048FFC) */
+/* RESET 0x80047510: retired name 'game_EffCleanup2_80047510' — preserved note: same body as game_EffCleanup (calls efc_rob_set_type_flash) */
+/* RESET 0x8004775C: retired name 'game_AnimStop_8004775C' — preserved note: same body as game_AnimCleanup (calls func_80048FFC) */
 game_EffStart_8004777C          = 0x8004777C;  /* same body as game_EffInit (calls func_8004473C) */
-game_EffStop_8004779C           = 0x8004779C;  /* same body as game_EffCleanup (calls efc_rob_set_type_flash) */
+/* RESET 0x8004779C: retired name 'game_EffStop_8004779C' — preserved note: same body as game_EffCleanup (calls efc_rob_set_type_flash) */
 /* Rejected (2): game_SndInit_80047530 (body calls motion_CheckSituation), */
 /* game_SndCleanup_80047550 (body calls saEft03Start) -- names don't match bodies. */
 
@@ -776,7 +774,7 @@ g_str_sio_800A3210                                   = 0x800A3210;  /* 'sio:' se
 /* docs/naming/{evidence,data_evidence}/ for full prose. */
 
 /* Tier 1 -- 2+ newly-named refs (function + data) */
-special_cam_lookup_table_entry_80037110                 = 0x80037110;  /* [func] refs: g_special_cam_command_table, mottest_rob_init */
+/* RESET 0x80037110: retired name 'special_cam_lookup_table_entry_80037110' — preserved note: [func] refs: g_special_cam_command_table, mottest_rob_init */
 prim_buffer_open_slot_80044010                          = 0x80044010;  /* [func] refs: g_tpage_slot_ptr, g_tpage_slot_count */
 prim_buffer_relocate_slot_80044100                      = 0x80044100;  /* [func] refs: g_tpage_slot_ptr, g_tpage_slot_count */
 anim_emit_210009_with_setup_80061250                    = 0x80061250;  /* [func] refs: g_text1b_glyph_cursor, g_text1b_render_state_ptr, g_text1b_render_state, g_text1b_render_arg_cache */
@@ -833,12 +831,12 @@ motion_ex_play_id5_dynamic_80065484                     = 0x80065484;  /* motion
 motion_ex_play_idCE_80065680                            = 0x80065680;  /* motion_SetExMotion(0xC) + (0xE) with 11-play cap */
 /* File-IO / game-input state machine (3) */
 file_io_state_advance_80038658                          = 0x80038658;  /* state-machine advance on D_800A31F4; bios_FileClose_B on completion */
-game_input_tick_80038734                                = 0x80038734;  /* pad_FuncAnalog + file_io_state_advance per-frame; returns g_motion_state_code */
+/* RESET 0x80038734: retired name 'game_input_tick_80038734' — preserved note: pad_FuncAnalog + file_io_state_advance per-frame; returns g_motion_state_code */
 file_io_state_dispatch_80038988                         = 0x80038988;  /* 186-insn higher-level dispatcher on game_input_tick result */
 /* Effect / particle subsystem (5) */
 efc_anim_vehicle_setup_80049718                         = 0x80049718;  /* 197-insn: emits per-effect OT entries; handles free vs vehicle-mounted */
 efc_rob_type_dispatch_80049584                          = 0x80049584;  /* diffs D_80099C50 vs D_800EF980, dispatches efc_rob_set_type_particle on change */
-efc_gte_setup_and_draw_80067200                         = 0x80067200;  /* GTE rotation matrix loaded from g_scratchpad_ptr_30, textured-quad render */
+/* RESET 0x80067200: retired name 'efc_gte_setup_and_draw_80067200' — preserved note: GTE rotation matrix loaded from g_scratchpad_ptr_30, textured-quad render */
 efc_init_phase1_setup_buffer_800678A8                   = 0x800678A8;  /* effect-init phase 1: type code + texture dims + per-mode defaults */
 efc_init_phase2_randomize_80067D14                      = 0x80067D14;  /* effect-init phase 2: per-particle randomisation via bb2_rand + GTE transforms */
 /* SEQ / SPU channel control (3) -- D_80106F28 = g_seq_bank_table */
@@ -854,7 +852,7 @@ anim_emit_21000CD_80061658                              = 0x80061658;  /* 2-vari
 /* AI + utility (5) */
 ai_compute_target_direction_80057094                    = 0x80057094;  /* AI 8-dir command translator using g_grid_pos_vec3 + getEnemyCharId */
 pack_status_nibble_triplet_80019488                     = 0x80019488;  /* returns 12-bit packed status: (D_80106A70/71/72 & 0xF) << {0,4,8} */
-stage_find_far_corners_with_rand_80022224               = 0x80022224;  /* picks 1 of 2 furthest stage corners; uses bb2_rand */
+/* RESET 0x80022224: retired name 'stage_find_far_corners_with_rand_80022224' — preserved note: picks 1 of 2 furthest stage corners; uses bb2_rand */
 gpu_enable_and_state_reset_80033898                     = 0x80033898;  /* mode-transition hook: gpu_EnableDisplay + reset frame_counter + mode=3 */
 sync_flag_check_advance_80069120                        = 0x80069120;  /* 44-byte record table accessor with dirty-bit sync side-effect */
 /* Misc (2) */
@@ -1126,7 +1124,7 @@ eff_FrameUpdate                                         = 0x80061064;  /* per-fr
 /* === Wrapper/curried function names (2026-05-17) -- 6 highs === */
 /* Functions whose body is a clear single-purpose wrapper around a */
 /* named function with extra logic (clamp, walk list, set+return old). */
-snd_ClearAllSeBuffer                                    = 0x8002906C;  /* walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
+/* RESET 0x8002906C: retired name 'snd_ClearAllSeBuffer' — preserved note: walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
 /* RENAME 0x8007B244: retired name 'gpu_DrawSyncCallback' — preserved note: PSX libgpu DrawSyncCallback: saves old g_gpu_draw_mode (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
 /* RENAME 0x80087F64: retired name 'snd_ChannelDmaFlush' — preserved note: if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
 /* RENAME 0x8008AD64: retired name 'spu_TransferDirect_capped' — preserved note: spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
@@ -1155,7 +1153,7 @@ g_practice_lesson_param3                                = 0x800A38EE;  /* lesson
 file_GetFlag2_StageGated                                = 0x8001DB58;  /* range-check on D_800A38DC: if v<2 or v>=5 returns 1; else calls file_GetFlag2() */
 seq_ConditionalReset                                    = 0x80020CDC;  /* if D_800A38C6==0xFFFF calls seq_Reset(); zeroes D_800A3880/38C0-C6 state cluster */
 stage_GetTriple                                         = 0x80021D10;  /* reads 3 s16 from stage_GetDataPtr() at indexed offset, widens to s32 */
-mottest_rob_init_andmark                                = 0x800371F8;  /* mottest_rob_init() + sets D_80101E64=1 on success */
+/* RESET 0x800371F8: retired name 'mottest_rob_init_andmark' — preserved note: mottest_rob_init() + sets D_80101E64=1 on success */
 /* RENAME 0x800378A8: retired name 'memcard_PollEvents' — preserved note: tests 4 events at D_800A37DC/F0/FC/3800; returns 1-4 (which fired) or 0 */
 /* RENAME 0x8003791C: retired name 'memcard_AckEvents' — preserved note: unconditionally acks/consumes 4 memcard events */
 /* RENAME 0x800379D8: retired name 'rcnt0_AckEvents' — preserved note: unconditionally acks/consumes 4 rcnt0 events */
@@ -1588,10 +1586,10 @@ mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirror
 /* Additional handlers identified from body analysis. */
 /* 4 of these are EMPTY functions (no-op placeholders for state transitions */
 /* where no actual work is done -- the dispatch happens elsewhere). */
-mode_handler_03_NoOp                                    = 0x80034708;  /* empty body -- no-op placeholder handler */
-mode_handler_05_NoOp                                    = 0x8003993C;  /* empty body -- no-op */
+/* RESET 0x80034708: retired name 'mode_handler_03_NoOp' — preserved note: empty body -- no-op placeholder handler */
+/* RESET 0x8003993C: retired name 'mode_handler_05_NoOp' — preserved note: empty body -- no-op */
 mode_handler_06_GameTeardownVariant                     = 0x8003B9D0;  /* func_8001DA2C + game_Cleanup + conditional gpu_InitDisplay/gpu_DisableDisplay */
-mode_handler_09_NoOp                                    = 0x80035828;  /* empty body -- no-op */
+/* RESET 0x80035828: retired name 'mode_handler_09_NoOp' — preserved note: empty body -- no-op */
 mode_handler_14_NoOp                                    = 0x80035430;  /* empty body -- no-op */
 mode_handler_20_CountIterator                           = 0x8003C42C;  /* counts D_800A377C[] entries into local 8-cell histogram */
 mode_handler_21_FrameTimerSfx                           = 0x8003C560;  /* increments g_practice_loop_frame, plays SFX 0xA4/0xA7 at counter==0x1E (30 frames) */
@@ -2951,11 +2949,8 @@ breakpoint_trap_loop_800164F8 = 0x800164F8;
 /* subsystem clusters (cpu_, mario_, pad_). Names derived from body */
 /* inspection + dominant-caller-prefix context. The src/ usages still */
 /* reference func_<addr>; these aliases enable semantic grep. */
-cpu_init_replay_mode_80016A8C = 0x80016A8C;
 cpu_exec_match_round_stage_select_80016E60 = 0x80016E60;
-cpu_init_game_objects_8001DA2C = 0x8001DA2C;
 cpu_init_stage_and_camera_setup_8001E404 = 0x8001E404;
-cpu_update_frame_timing_stats_8002006C = 0x8002006C;
 mario_test_init_characters_80021210 = 0x80021210;
 mario_test_move_to_inventory_800218C8 = 0x800218C8;
 mario_test_get_guard_power_80021974 = 0x80021974;
@@ -2969,17 +2964,12 @@ cpu_ai_pick_move_for_situation_80030D7C = 0x80030D7C;
 mario_test_clear_movement_buffer_80032040 = 0x80032040;
 cpu_check_special_move_input_80032C50 = 0x80032C50;
 mario_test_clear_state_flags_80033510 = 0x80033510;
-cpu_frame_init_and_loop_wrapper_800372C0 = 0x800372C0;
-pad_analog_volume_calc_80037AA4 = 0x80037AA4;
-pad_analog_button_test_80037B00 = 0x80037B00;
-pad_controller_init_80038170 = 0x80038170;
 mario_test_init_dialog_memory_800392C8 = 0x800392C8;
 cpu_clear_move_buffers_80039320 = 0x80039320;
 cpu_advance_move_counter_800397A0 = 0x800397A0;
 mario_test_satan_sword_trigger_8003FFE0 = 0x8003FFE0;
 mario_test_set_fade_trigger_800493E4 = 0x800493E4;
 mario_test_record_fade_value_800494D4 = 0x800494D4;
-cpu_apply_move_input_scaling_80054884 = 0x80054884;
 cpu_attenuate_character_damage_800550E8 = 0x800550E8;
 cpu_render_stage_geometry_8005C8A8 = 0x8005C8A8;
 cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
@@ -2988,21 +2978,10 @@ cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
 /* Semantic aliases for previously-unnamed func_* in 5 more subsystem */
 /* clusters (motion_, satan_, replay_camera_, efc_, camera_). Names */
 /* derived from body inspection + dominant-caller-prefix context. */
-replay_camera_state_transition_800355E8 = 0x800355E8;
-replay_camera_wait_for_playback_8003ACB8 = 0x8003ACB8;
-satan_camera_setup_matrix_8003E120 = 0x8003E120;
 replay_camera_check_bounds_and_set_flag_8003F388 = 0x8003F388;
 efc_effect_dispatch_child_recursive_800417D0 = 0x800417D0;
-efc_video_decode_setup_800433E4 = 0x800433E4;
-efc_particle_set_type_dispatch_80044F50 = 0x80044F50;
 efc_particle_queue_entry_800455AC = 0x800455AC;
-efc_palette_convert_rgb555_8004876C = 0x8004876C;
 satan_fire_disp_wrapper_80048A7C = 0x80048A7C;
-satan_line_draw_recursive_8004C1F4 = 0x8004C1F4;
-camera_compute_fixed_point_matrices_80052D00 = 0x80052D00;
-camera_set_zoom_interpolated_8005E098 = 0x8005E098;
-camera_set_zoom_wrapper_8005E51C = 0x8005E51C;
-camera_matrix_compute_loop_8005F1C8 = 0x8005F1C8;
 efc_ptr_array_offset_apply_8006920C = 0x8006920C;
 motion_draw_tilemap_8006BEC4 = 0x8006BEC4;
 camera_init_matrix_table_8006E49C = 0x8006E49C;
@@ -3017,8 +2996,6 @@ camera_ptr_array_apply_offset_80077D10 = 0x80077D10;
 /* clusters: obj_/calc_/disppracticemenutex_/single_game_/se_ (pass 3A) + */
 /* special_camera_/game_/gnd_/action_/md_game_/player_/hirahira_ (pass 3B). */
 /* 2 UNCLEAR stubs deferred (calc_*_stub at 0x8002A458, 0x8002CA8C). */
-disppracticemenutex_DivideAngle_8001A4F0 = 0x8001A4F0;
-single_game_UpdateVoiceMask_8001B138 = 0x8001B138;
 calc_AngleDelta_8001F860 = 0x8001F860;
 single_game_FindStatusUpData_8001FAE4 = 0x8001FAE4;
 single_game_CheckGameState_8001FB34 = 0x8001FB34;
@@ -3027,18 +3004,14 @@ calc_DistanceCategory_800272FC = 0x800272FC;
 calc_NormVector_800274BC = 0x800274BC;
 md_game_rob_anim_offset_8002F770 = 0x8002F770;
 disppracticemenutex_StoreCoords_80033550 = 0x80033550;
-obj_GetValue_80036F28 = 0x80036F28;
 single_game_HashAndStoreData_8003A728 = 0x8003A728;
 game_exec_display_sync_8003AA78 = 0x8003AA78;
 game_exec_display_dma_loop_8003AAB0 = 0x8003AAB0;
 player_sprite_free_8004016C = 0x8004016C;
 disppracticemenutex_SetTextureParam_80044B30 = 0x80044B30;
 hirahira_flap_wing_calc_80044DE4 = 0x80044DE4;
-player_allocate_sprite_80045A50 = 0x80045A50;
 md_game_frame_setup_80054F68 = 0x80054F68;
-se_CalcPitchShift_8005BA8C = 0x8005BA8C;
 se_LoadStreamData_8005BD30 = 0x8005BD30;
-se_ResetChannels_8005BDF0 = 0x8005BDF0;
 gnd_draw_texpage_2poly_8005D46C = 0x8005D46C;
 gnd_render_affine_texpage_8005E54C = 0x8005E54C;
 gnd_draw_single_texpage_80060414 = 0x80060414;
@@ -3054,7 +3027,6 @@ DispSamnailWindow_helper_800343F0 = 0x800343F0;
 DispSamnailWindow_helper_8003B20C = 0x8003B20C;
 AllocRobRmd_helper_80041988 = 0x80041988;
 AllocRobRmd_helper_80043398 = 0x80043398;
-efc_rob_set_type_particle_helper_80049C24 = 0x80049C24;
 DispHira_helper_800620B8 = 0x800620B8;
 
 /* === Medium-tier OTHER -- body-derived names for Kengo misnomers === */
@@ -3164,7 +3136,7 @@ gte_nct_wrapper_80054440                     = 0x80054440;  /* GTE Normal-Color-
 /* RENAME 0x8007B9B0: retired name 'gpu_copy_draw_packet_8007B9B0' — preserved note: GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
 graph_add_edge_80017848                        = 0x80017848;  /* graph edge insertion: nodes at $s2[0xC] stride64 (flag 0x18, adj-counts 0x1C/0x20, adj-lists 0x24/0x2C), edges at $s2[0x */
 calc_fighter_separation_vec_8002BC68           = 0x8002BC68;  /* inter-fighter distance (sqrt LUT D_8008D118) between pts D_80101FA0/A8 & D_801023EC/F4 (0x44C apart=fighter stride); wri */
-math_sqrt_800526A0                             = 0x800526A0;  /* fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT D_80015620, halve  */
+/* RENAME 0x800526A0: retired name 'math_sqrt_800526A0' — preserved note: fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT D_80015620, halve */
 calc_line_seg_intersect_8005763C               = 0x8005763C;  /* 2D line-seg intersection: all coords sra>>3 (1/8 fixed-pt), dx/dy deltas of 2 segs, mult/div cross-products w/ div0(brea */
 coli_find_nearest_edge_hit_80057ACC            = 0x80057ACC;  /* loops polygons($s6: count+vert-array, 8B entries)->edges; intersects each edge vs actor move-seg via func_8005763C; trac */
 /* RENAME 0x8007E8DC: retired name 'matrix_scale_3x3_rows_8007E8DC' — preserved note: scales rows of a GTE 3x3 matrix (5-word/9-halfword packed layout m00,m01|m02,m10|m11,m12|m20,m21|m22) in place: row0*$a1 */
@@ -3215,14 +3187,14 @@ calc_helper_8002C0DC                               = 0x8002C0DC;  /* first-pass 
 calc_helper_8002EECC                               = 0x8002EECC;  /* first-pass subsystem tag (calc); <-calc_fc_frame_800203B4 */
 cpu_helper_80030208                                = 0x80030208;  /* first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
 mario_helper_8003047C                              = 0x8003047C;  /* first-pass subsystem tag (mario); <-mario_test_initialize_match_80022580 */
-cpu_helper_80030D50                                = 0x80030D50;  /* first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
+/* RENAME 0x80030D50: retired name 'cpu_helper_80030D50' — preserved note: first-pass subsystem tag (cpu); <-cpu_ai_pick_move_for_situation_80030D7C */
 cpu_helper_80032064                                = 0x80032064;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 dispsamnailwindow_helper_80033DF4                  = 0x80033DF4;  /* first-pass subsystem tag (dispsamnailwindow); <-DispSamnailWindow */
 mode_helper_80033FE4                               = 0x80033FE4;  /* first-pass subsystem tag (mode); <-mode_handler_31_TimerLoop */
 mode_helper_80034F88                               = 0x80034F88;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
 mode_helper_8003504C                               = 0x8003504C;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
-replay_camera_helper_80035E88                      = 0x80035E88;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
-replay_camera_helper_80035EDC                      = 0x80035EDC;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+/* RENAME 0x80035E88: retired name 'replay_camera_helper_80035E88' — preserved note: first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+/* RENAME 0x80035EDC: retired name 'replay_camera_helper_80035EDC' — preserved note: first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
 mode_helper_80035F78                               = 0x80035F78;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
 /* RENAME 0x80035FA8: retired name 'mode_helper_80035FA8' — preserved note: first-pass subsystem tag (mode); <-mode_handler_18_UnlockAnimDispatch;<-mode_handler_09_NoOp;<-mode_handler_06_GameTeardownVariant */
 /* RENAME 0x80035FE0: retired name 'sys_helper_80035FE0' — preserved note: first-pass subsystem tag (sys); <-sys_Init_80016A18 */
@@ -3230,9 +3202,9 @@ mode_helper_80037540                               = 0x80037540;  /* first-pass 
 motion_helper_800395B4                             = 0x800395B4;  /* first-pass subsystem tag (motion); <-motion_dispatch_event_handler_80032854 */
 cpu_helper_80039680                                = 0x80039680;  /* first-pass subsystem tag (cpu); <-cpu_calc_move_pattern_trajectory_80023F08 */
 /* RENAME 0x8003A264: retired name 'bios_helper_8003A264' — preserved note: first-pass subsystem tag (bios); ->bios_CloseEvent;->bios_FileClose_B */
-single_game_helper_8003A6FC                        = 0x8003A6FC;  /* first-pass subsystem tag (single_game); <-single_game_HashAndStoreData_8003A728 */
+/* RENAME 0x8003A6FC: retired name 'single_game_helper_8003A6FC' — preserved note: first-pass subsystem tag (single_game); <-single_game_HashAndStoreData_8003A728 */
 game_helper_8003AA48                               = 0x8003AA48;  /* first-pass subsystem tag (game); <-game_FrameLoop;<-game_exec_display_dma_loop_8003AAB0;<-game_exec_display_sync_8003AA78 */
-replay_camera_helper_8003AB44                      = 0x8003AB44;  /* first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
+/* RESET 0x8003AB44: retired name 'replay_camera_helper_8003AB44' — preserved note: first-pass subsystem tag (replay_camera); <-replay_camera_wait_for_playback_8003ACB8 */
 mode_helper_8003AF40                               = 0x8003AF40;  /* first-pass subsystem tag (mode); <-mode_handler_18_UnlockAnimDispatch;<-mode_handler_29_StageLeafUpdate;<-mode_handler_07_SubModeTransition */
 mode_helper_8003B328                               = 0x8003B328;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_05_NoOp */
 mode_helper_8003B534                               = 0x8003B534;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_05_NoOp */
@@ -3256,9 +3228,9 @@ calc_helper_800430E4                               = 0x800430E4;  /* first-pass 
 game_helper_8004473C                               = 0x8004473C;  /* first-pass subsystem tag (game); <-game_EffInit2_800474F0;<-game_EffInit_8004746C;<-game_EffStart_8004777C */
 channel_helper_800453E0                            = 0x800453E0;  /* first-pass subsystem tag (channel); <-channel_helper_A_80046A60;<-channel_helper_8_80046914 */
 player_helper_800456F0                             = 0x800456F0;  /* first-pass subsystem tag (player); <-player_allocate_sprite_80045A50 */
-snd_helper_8004574C                                = 0x8004574C;  /* first-pass subsystem tag (snd); <-snd_LoadBgm_800467B8 */
+/* RESET 0x8004574C: retired name 'snd_helper_8004574C' — preserved note: first-pass subsystem tag (snd); <-snd_LoadBgm_800467B8 */
 audio_helper_800457A0                              = 0x800457A0;  /* first-pass subsystem tag (audio); <-audio_chain_fade_load_80046048 */
-snd_helper_8004668C                                = 0x8004668C;  /* first-pass subsystem tag (snd); <-snd_StopAll_80046AA0 */
+/* RESET 0x8004668C: retired name 'snd_helper_8004668C' — preserved note: first-pass subsystem tag (snd); <-snd_StopAll_80046AA0 */
 calc_helper_80047BE0                               = 0x80047BE0;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_8004A940 */
 gnd_helper_800486FC                                = 0x800486FC;  /* first-pass subsystem tag (gnd); <-gnd_init_80041688;<-gnd_land_hit_char_die_main */
 gnd_helper_8004881C                                = 0x8004881C;  /* first-pass subsystem tag (gnd); <-gnd_land_hit_char_die_main;<-gnd_init_80041688 */
@@ -3270,15 +3242,15 @@ game_helper_80049E4C                               = 0x80049E4C;  /* first-pass 
 game_helper_80049F4C                               = 0x80049F4C;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
 satan_helper_8004C388                              = 0x8004C388;  /* first-pass subsystem tag (satan); <-satan_line_draw_recursive_8004C1F4 */
 camera_helper_80053694                             = 0x80053694;  /* first-pass subsystem tag (camera); <-camera_compute_fixed_point_matrices_80052D00 */
-snd_helper_80054FDC                                = 0x80054FDC;  /* first-pass subsystem tag (snd); <-snd_SelectionCallback_80046A80 */
+/* RESET 0x80054FDC: retired name 'snd_helper_80054FDC' — preserved note: first-pass subsystem tag (snd); <-snd_SelectionCallback_80046A80 */
 calc_helper_80055948                               = 0x80055948;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
 calc_helper_80056CB8                               = 0x80056CB8;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
 calc_helper_80058580                               = 0x80058580;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
 /* RENAME 0x8005B43C: retired name 'obj_helper_8005B43C' — preserved note: first-pass subsystem tag (obj); ->obj_SetReverbValue_80085EE4;->obj_SetControlData_80085E4C;->obj_ResetReverbMode_80085F98 */
-spu_helper_8005BF78                                = 0x8005BF78;  /* first-pass subsystem tag (spu); ->spu_TransferDirect_capped;->spu_TransferData_capped */
+/* RENAME 0x8005BF78: retired name 'spu_helper_8005BF78' — preserved note: first-pass subsystem tag (spu); ->spu_TransferDirect_capped;->spu_TransferData_capped */
 /* RESET 0x8005C074: retired name 'tslglobalmemfree_helper_8005C074' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
 /* RESET 0x8005C5A8: retired name 'tslglobalmemfree_helper_8005C5A8' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
-file_helper_8005C614                               = 0x8005C614;  /* first-pass subsystem tag (file); <-file_LoadSoundData_80016CF8 */
+/* RESET 0x8005C614: retired name 'file_helper_8005C614' — preserved note: first-pass subsystem tag (file); <-file_LoadSoundData_80016CF8 */
 mode_helper_8005C650                               = 0x8005C650;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_03_NoOp;<-mode_handler_25_PostBattleSetup */
 mode_helper_800600C8                               = 0x800600C8;  /* first-pass subsystem tag (mode); <-mode_handler_33_RebootBegin */
 gpu_helper_800602AC                                = 0x800602AC;  /* first-pass subsystem tag (gpu); ->gpu_LoadImage;->gpu_DrawSync */
@@ -3373,22 +3345,22 @@ mode_helper_80036EA8                               = 0x80036EA8;  /* first-pass 
 mode_helper_800371E8                               = 0x800371E8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->[] */
 set_global_80037234                                = 0x80037234;  /* structural role; n=7 */
 mode_helper_800388A8                               = 0x800388A8;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_09_NoOp'] ->[] */
-stub_800392B8                                      = 0x800392B8;  /* structural role; n=4 */
+/* RESET 0x800392B8: retired name 'stub_800392B8' — preserved note: structural role; n=4 */
 mode_helper_8003984C                               = 0x8003984C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
 /* RENAME 0x8003A174: retired name 'bios_helper_8003A174' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_OpenEvent'] */
 /* RENAME 0x8003A42C: retired name 'set_global_8003A42C' — preserved note: structural role; n=9 */
 /* RENAME 0x8003A450: retired name 'irq_helper_8003A450' — preserved note: first-pass tag(clean-anchor); irq: <-[] ->['bios_FileWrite_B'] */
 mode_helper_8003AE5C                               = 0x8003AE5C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_23_FrameDelay3'] ->['EndADRSound'] */
 set_field0x0_8003D774                              = 0x8003D774;  /* structural role; n=16 */
-copy_8003E2AC                                      = 0x8003E2AC;  /* structural role; n=7 */
-stub_8003F1C8                                      = 0x8003F1C8;  /* structural role; n=3 */
+/* RESET 0x8003E2AC: retired name 'copy_8003E2AC' — preserved note: structural role; n=7 */
+/* RESET 0x8003F1C8: retired name 'stub_8003F1C8' — preserved note: structural role; n=3 */
 stub_8003F1D4                                      = 0x8003F1D4;  /* structural role; n=4 */
-set_global_8003F1E4                                = 0x8003F1E4;  /* structural role; n=13 */
+/* RESET 0x8003F1E4: retired name 'set_global_8003F1E4' — preserved note: structural role; n=13 */
 stub_8003F268                                      = 0x8003F268;  /* structural role; n=3 */
 set_global_8003F52C                                = 0x8003F52C;  /* structural role; n=8 */
 get_global_8003F54C                                = 0x8003F54C;  /* structural role; n=7 */
 set_global_8003F5A8                                = 0x8003F5A8;  /* structural role; n=9 */
-copy_8004019C                                      = 0x8004019C;  /* structural role; n=12 */
+/* RESET 0x8004019C: retired name 'copy_8004019C' — preserved note: structural role; n=12 */
 copy_800404A0                                      = 0x800404A0;  /* structural role; n=14 */
 rob_helper_80040A78                                = 0x80040A78;  /* first-pass tag(clean-anchor); rob: <-['rob_life_ctrl'] ->[] */
 mode_helper_80040D48                               = 0x80040D48;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
@@ -3398,31 +3370,31 @@ get_field0x2_80041650                              = 0x80041650;  /* structural 
 set_global_800420E8                                = 0x800420E8;  /* structural role; n=13 */
 set_global_8004283C                                = 0x8004283C;  /* structural role; n=10 */
 copy_80042ED8                                      = 0x80042ED8;  /* structural role; n=14 */
-stub_80043244                                      = 0x80043244;  /* structural role; n=13 */
+/* RESET 0x80043244: retired name 'stub_80043244' — preserved note: structural role; n=13 */
 get_val_80043278                                   = 0x80043278;  /* structural role; n=10 */
 get_global_800457E8                                = 0x800457E8;  /* structural role; n=5 */
 player_helper_80045878                             = 0x80045878;  /* first-pass tag(clean-anchor); player: <-['player_rob_Init'] ->[] */
 mode_helper_8004659C                               = 0x8004659C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_06_GameTeardownVariant'] ->['md_game_check_mode'] */
-copy_80047ED0                                      = 0x80047ED0;  /* structural role; n=6 */
+/* RESET 0x80047ED0: retired name 'copy_80047ED0' — preserved note: structural role; n=6 */
 stub_80049710                                      = 0x80049710;  /* structural role; n=2 */
 mode_helper_80049A2C                               = 0x80049A2C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->['InitFadePanel'] */
 stub_8004A938                                      = 0x8004A938;  /* structural role; n=2 */
 stub_8004E564                                      = 0x8004E564;  /* structural role; n=2 */
 stub_8004E56C                                      = 0x8004E56C;  /* structural role; n=2 */
 /* RESET 0x80052720: retired name 'stub_80052720' — preserved note: structural role; n=13 */
-decbs0_helper_80052754                             = 0x80052754;  /* first-pass tag(clean-anchor); decbs0: <-['decBs0'] ->[] */
-robtest_helper_80052930                            = 0x80052930;  /* first-pass tag(clean-anchor); robtest: <-['robtest_disp2'] ->[] */
-get_field0x0_80052B44                              = 0x80052B44;  /* structural role; n=14 */
-stub_80052C28                                      = 0x80052C28;  /* structural role; n=9 */
+/* RENAME 0x80052754: retired name 'decbs0_helper_80052754' — preserved note: first-pass tag(clean-anchor); decbs0: <-['decBs0'] ->[] */
+/* RENAME 0x80052930: retired name 'robtest_helper_80052930' — preserved note: first-pass tag(clean-anchor); robtest: <-['robtest_disp2'] ->[] */
+/* RENAME 0x80052B44: retired name 'get_field0x0_80052B44' — preserved note: structural role; n=14 */
+/* RESET 0x80052C28: retired name 'stub_80052C28' — preserved note: structural role; n=9 */
 myrobgeneidraw2_helper_8005344C                    = 0x8005344C;  /* first-pass tag(clean-anchor); myrobgeneidraw2: <-['myRobGeneiDraw2'] ->[] */
-copy_8005441C                                      = 0x8005441C;  /* structural role; n=6 */
-stub_80054434                                      = 0x80054434;  /* structural role; n=3 */
+/* RESET 0x8005441C: retired name 'copy_8005441C' — preserved note: structural role; n=6 */
+/* RESET 0x80054434: retired name 'stub_80054434' — preserved note: structural role; n=3 */
 set_field0x3B4_80055B44                            = 0x80055B44;  /* structural role; n=7 */
 gpu_helper_80060CB8                                = 0x80060CB8;  /* first-pass tag(clean-anchor); gpu: <-[] ->['saTan1GaugeInit'] */
 eff_helper_80060E38                                = 0x80060E38;  /* first-pass tag(clean-anchor); eff: <-['eff_FrameUpdate'] ->[] */
 mode_helper_800618B4                               = 0x800618B4;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_29_StageLeafUpdate'] ->[] */
 gpu_helper_80068F70                                = 0x80068F70;  /* first-pass tag(clean-anchor); gpu: <-[] ->['efc_rob_Close'] */
-copy_8006E440                                      = 0x8006E440;  /* structural role; n=16 */
+/* RESET 0x8006E440: retired name 'copy_8006E440' — preserved note: structural role; n=16 */
 gpu_helper_8006E534                                = 0x8006E534;  /* first-pass tag(clean-anchor); gpu: <-[] ->['efc_buki_ZanzouClose'] */
 get_global_8006E8AC                                = 0x8006E8AC;  /* structural role; n=8 */
 gpu_helper_8006E8CC                                = 0x8006E8CC;  /* first-pass tag(clean-anchor); gpu: <-[] ->['gpu_LoadImage'] */
@@ -3478,7 +3450,7 @@ gte_mvmva_8002F2D0                                 = 0x8002F2D0;  /* GTE: mvmva 
 gte_mvmva_8002FF20                                 = 0x8002FF20;  /* GTE: mvmva matrix*vector(+translation) */
 gte_mvmva_800300B4                                 = 0x800300B4;  /* GTE: mvmva matrix*vector(+translation) */
 gte_mvmva_80031890                                 = 0x80031890;  /* GTE: mvmva matrix*vector(+translation) */
-gte_gpf_8004A348                                   = 0x8004A348;  /* GTE: gpf scalar interpolation */
+/* RENAME 0x8004A348: retired name 'gte_gpf_8004A348' — preserved note: GTE: gpf scalar interpolation */
 gte_rtpt_batch_8004A76C                            = 0x8004A76C;  /* GTE: rtpt loop: batch triangle perspective projection -> screen XY(swc2 12-14)+Z(mfc2 17-19) */
 gte_rtpt_8004A808                                  = 0x8004A808;  /* GTE: rtpt perspective transform of 3 verts */
 gte_rtpt_8004BB68                                  = 0x8004BB68;  /* GTE: rtpt perspective transform of 3 verts */
@@ -3524,8 +3496,8 @@ gte_nclip_80051B04                                 = 0x80051B04;  /* GTE: nclip 
 gte_nclip_80051D08                                 = 0x80051D08;  /* GTE: nclip backface/cross-z; poly cull-draw family */
 gte_nclip_80051ED4                                 = 0x80051ED4;  /* GTE: nclip backface/cross-z; poly cull-draw family */
 gte_sqr_800525D8                                   = 0x800525D8;  /* GTE: sqr square/magnitude */
-gte_gpf_80052788                                   = 0x80052788;  /* GTE: gpf scalar interpolation */
-gte_gpf_800527FC                                   = 0x800527FC;  /* GTE: gpf scalar interpolation */
+/* RENAME 0x80052788: retired name 'gte_gpf_80052788' — preserved note: GTE: gpf scalar interpolation */
+/* RENAME 0x800527FC: retired name 'gte_gpf_800527FC' — preserved note: GTE: gpf scalar interpolation */
 gte_mtx_apply_vec_80052A88                         = 0x80052A88;  /* GTE: mvmva: transform vector by matrix+translation (ctc2 0-7 matrix, out IR1-3) */
 gte_mvmva_80052B7C                                 = 0x80052B7C;  /* GTE: mvmva matrix*vector(+translation) */
 gte_mvmva_80052C4C                                 = 0x80052C4C;  /* GTE: mvmva matrix*vector(+translation) */
@@ -3541,19 +3513,19 @@ gte_mvmva_80063E10                                 = 0x80063E10;  /* GTE: mvmva 
 /* RENAME 0x8007F150: retired name 'gte_outerprod_8007F150' — preserved note: GTE: op outer/cross product */
 /* RENAME 0x8007F1A8: retired name 'gte_outerprod_8007F1A8' — preserved note: GTE: op outer/cross product */
 /* RENAME 0x8007F24C: retired name 'gte_rtpt_8007F24C' — preserved note: GTE: rtpt perspective transform of 3 verts */
-motion_CheckSituation_wrapper_80047530                 = 0x80047530;  /* thin pass-through wrapper for motion_CheckSituation */
+/* RESET 0x80047530: retired name 'motion_CheckSituation_wrapper_80047530' — preserved note: thin pass-through wrapper for motion_CheckSituation */
 saEft03Start_wrapper_80047550                          = 0x80047550;  /* thin pass-through wrapper for saEft03Start */
 md_menu_logo_init_8003B484                             = 0x8003B484;  /* sets flag D_800A3712 + 3 config bytes from arg, calls func_8003AF40(1)+md_menu_logo_exec; logo-mode init */
 saTan2_gauge_set_disp_param_80069A8C                   = 0x80069A8C;  /* sets arg disp-param bytes 4/5/6 (8/8/8 or 0x31) from saTan2 gauge active-flag */
 saTan2_gauge_set_disp_param_80069A30                   = 0x80069A30;  /* sibling of 80069A8C: sets disp-param bytes 4/5/6 (0x22 or 0x4C/0x6C) from gauge flag */
 rob_genei_draw_check_80027A58                          = 0x80027A58;  /* gated player-afterimage draw: timing check (fields 0x86/0x88/0x8A) then game_GetPlayerData + myRobGeneiDraw, resets trigger */
 /* RENAME 0x80087DA0: retired name 'find_id_in_table_80087DA0' — preserved note: linear search of stride-54 table D_800F4E28 for halfword==arg; records found index to D_8010280A */
-memcard_access_section_list_8003D478                   = 0x8003D478;  /* iterates directive byte-list, calls _McAccessSection per non-skip entry (stride-8 data); 0x20/0x0A control codes */
+/* RESET 0x8003D478: retired name 'memcard_access_section_list_8003D478' — preserved note: iterates directive byte-list, calls _McAccessSection per non-skip entry (stride-8 data); 0x20/0x0A control codes */
 coli_calc_motion_slots_8003D7B4                        = 0x8003D7B4;  /* indexes D_800A3D40 (stride 0x18) by arg; 6-slot loop calling coli_calc_motion, accumulates bits into field 0xC */
 battle_switch_reinit_800342A0                          = 0x800342A0;  /* on battle-switch-data change (D_800A3874!=D_800A389B): reset state flags, reload config tables, gpu_InitDisplay */
 check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan 12-entry table D_80106A7A (stride0x64) for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
-special_camera_check_pos_outside_ground_wrap_800451A0  = 0x800451A0;  /* thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
-title_mv_exec2_wrapper_8005B58C                        = 0x8005B58C;  /* thin pass-through wrapper for title_mv_exec2 */
+/* RESET 0x800451A0: retired name 'special_camera_check_pos_outside_ground_wrap_800451A0' — preserved note: thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
+/* RESET 0x8005B58C: retired name 'title_mv_exec2_wrapper_8005B58C' — preserved note: thin pass-through wrapper for title_mv_exec2 */
 /* RENAME 0x80089A24: retired name 'coli_HitPauseKatana_2_wrapper_80089A24' — preserved note: thin pass-through wrapper for coli_HitPauseKatana_2 */
 efc_spawn_80066EC0                                     = 0x80066EC0;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
 efc_spawn_80066EF4                                     = 0x80066EF4;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
@@ -3575,10 +3547,10 @@ efc_spawn_800671CC                                     = 0x800671CC;  /* effect-
 /* RESET 0x80042864: retired name 'get_D_800F6650_80042864' — preserved note: getter: returns D_800F6650 (no calls/branches) */
 set_D_80101E64_if_valid_800371AC                       = 0x800371AC;  /* calls func_80037110; if result!=0 stores it to D_80101E64 and returns 1, else returns 0 */
 /* RENAME 0x8003A360: retired name 'events_enable_8003A360' — preserved note: bios_EnableEvent on D_800A3810 + D_800A3738, sets enabled-flag D_800A320C=1, clears D_800A3730 */
-gte_load_rot_matrix_80052B00                           = 0x80052B00;  /* loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
+/* RENAME 0x80052B00: retired name 'gte_load_rot_matrix_80052B00' — preserved note: loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
 /* RENAME 0x8007E094: retired name 'gte_set_projection_params_8007E094' — preserved note: loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
 /* RESET 0x8007EFFC: retired name 'gte_set_proj_distance_8007EFFC' — preserved note: loads GTE control reg 26 (H = projection plane distance) */
-calc_rotated_enemy_pos_80042FA0                        = 0x80042FA0;  /* computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
+/* RESET 0x80042FA0: retired name 'calc_rotated_enemy_pos_80042FA0' — preserved note: computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
 init_move_to_target_80053304                           = 0x80053304;  /* stores current+target pos to ctx D_800EF9F8/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
 gpu_build_gradient_quad_80072CD4                       = 0x80072CD4;  /* initPolyG4 + mode-dependent gradient colors + gpu_SetSemiTransp + ot_Link */
 gpu_build_quad_80072BC4                                = 0x80072BC4;  /* initPolyG4 + ot_Link (build+link a Gouraud quad; sibling of gpu_build_gradient_quad) */
@@ -3616,7 +3588,7 @@ gpu_render_80076D74                                = 0x80076D74;  /* builds + OT
 gpu_render_8006F528                                = 0x8006F528;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=277 */
 gpu_render_8006295C                                = 0x8006295C;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=420 */
 gpu_render_800646E8                                = 0x800646E8;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=490 */
-efc_buki_zanzou_drawlist_800481E8 = 0x800481E8;  /* draw-loop over buki-zanzou record list, on-screen cull x<0x280, calls efc_buki_draw_zanzou per entry */
+/* RESET 0x800481E8: retired name 'efc_buki_zanzou_drawlist_800481E8' — preserved note: draw-loop over buki-zanzou record list, on-screen cull x<0x280, calls efc_buki_draw_zanzou per entry */
 motutil_GetWalkDir_all_800644FC = 0x800644FC;  /* bitmask(D_800A3454[idx]) loop over count, calls motutil_GetWalkDir for each active entry (stride 0x20) */
 /* RENAME 0x8007F87C: retired name 'mtx_rotate_8007F87C' — preserved note: in-place rotate matrix rows@+6/+C by angle a0 via sincos LUT D_8009C928 (pairs [6,C],[8,E],[A,10]) */
 motion_ExMotionDrive0_800652F4 = 0x800652F4;  /* calls motion_SetExMotion(0), advances accum D_800F0BA8 += 0x1FF, gated return (<0x1001) */

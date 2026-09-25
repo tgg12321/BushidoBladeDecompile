@@ -162,7 +162,7 @@ extern void DelCOMB(void);
 
 extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
-extern s32 disp_CalcFov(s32);
+extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
 extern void func_8001B6F4(void);
 
@@ -1414,7 +1414,7 @@ void func_800397D4(void) {
     gpu_ResetGraphMode1();
     func_8003E22C();
     game_SetPlayerCount(0);
-    SetGeomScreen(disp_CalcFov(0x2D));
+    SetGeomScreen(math_FovToScreenDist(0x2D));
     func_80041688(0, 0);
     func_80041688(1, 0);
     func_8001B6F4();
@@ -1641,7 +1641,7 @@ match:
     return 1;
 }
 /* kengo:HIGH  |  is_pad/pad_ClearAppliBuffer  |  87i */
-s32 func_8003A6FC(u32 arg0) {
+s32 math_Popcount32(u32 arg0) {
     s32 count = 0;
     s32 i;
     for (i = 0; i < 32; i++) {
@@ -1724,7 +1724,7 @@ void func_8003A728(s32 a0) {
                     func_8003A3F0();
                     return;
                 }
-                D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
+                D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
                 comb_Read8();
             }
         } else {
@@ -1746,7 +1746,7 @@ void func_8003A728(s32 a0) {
                 func_8003A3F0();
                 return;
             }
-            D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
+            D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
             comb_Read8();
             if (D_800A38A0 == 0) {
                 if (D_800A3730 != zero || (D_800A36C0 & 0x40000000)) {
@@ -1757,7 +1757,7 @@ void func_8003A728(s32 a0) {
         }
 
         if (D_800A3916 == 0) {
-            D_800A38FC += func_8003A6FC((u16)D_800A36C0);
+            D_800A38FC += math_Popcount32((u16)D_800A36C0);
             c0lo = (u16)D_800A36C0;
             if (D_800A38A0 == 0) {
                 buf8 = (u16)g_comb_send_buf;

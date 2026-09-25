@@ -72,7 +72,7 @@ glabel func_8001E404
     /* ED00 8001E500 2D000424 */   addiu     $a0, $zero, 0x2D
     /* ED04 8001E504 50000424 */  addiu      $a0, $zero, 0x50
   .L8001E508:
-    /* ED08 8001E508 B159000C */  jal        disp_CalcFov
+    /* ED08 8001E508 B159000C */  jal        math_FovToScreenDist
     /* ED0C 8001E50C 00000000 */   nop
     /* ED10 8001E510 FFFB010C */  jal        SetGeomScreen
     /* ED14 8001E514 21204000 */   addu      $a0, $v0, $zero

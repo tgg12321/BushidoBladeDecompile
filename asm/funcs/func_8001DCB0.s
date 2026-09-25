@@ -3,7 +3,7 @@ glabel func_8001DCB0
     /* E4B4 8001DCB4 2400BFAF */  sw         $ra, 0x24($sp)
     /* E4B8 8001DCB8 2000B2AF */  sw         $s2, 0x20($sp)
     /* E4BC 8001DCBC 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* E4C0 8001DCC0 6B6D010C */  jal        obj_InitChars
+    /* E4C0 8001DCC0 6B6D010C */  jal        func_8005B5AC
     /* E4C4 8001DCC4 1800B0AF */   sw        $s0, 0x18($sp)
     /* E4C8 8001DCC8 0A80033C */  lui        $v1, %hi(D_800A3768)
     /* E4CC 8001DCCC 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)
@@ -36,7 +36,7 @@ glabel func_8001DCB0
     /* E534 8001DD34 2D000424 */   addiu     $a0, $zero, 0x2D
     /* E538 8001DD38 50000424 */  addiu      $a0, $zero, 0x50
   .L8001DD3C:
-    /* E53C 8001DD3C B159000C */  jal        disp_CalcFov
+    /* E53C 8001DD3C B159000C */  jal        math_FovToScreenDist
     /* E540 8001DD40 21800000 */   addu      $s0, $zero, $zero
     /* E544 8001DD44 FFFB010C */  jal        SetGeomScreen
     /* E548 8001DD48 21204000 */   addu      $a0, $v0, $zero
@@ -466,7 +466,7 @@ glabel func_8001DCB0
     /* EB74 8001E374 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
     /* EB78 8001E378 0A80013C */  lui        $at, %hi(D_800A36A8)
     /* EB7C 8001E37C A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
-    /* EB80 8001E380 205B000C */  jal        file_LoadOverlay
+    /* EB80 8001E380 205B000C */  jal        eff_Init
     /* EB84 8001E384 00000000 */   nop
     /* EB88 8001E388 01000224 */  addiu      $v0, $zero, 0x1
     /* EB8C 8001E38C 0A80013C */  lui        $at, %hi(D_800A3670)

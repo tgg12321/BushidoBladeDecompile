@@ -45,7 +45,7 @@ void stage_ExecInitFunc(void) {
         g_stage_init_tbl[stage_GetId()].init();
     }
 }
-s32 game_GetMode(void) {
+s32 func_8003F1C8(void) {
     return g_game_mode;
 }
 
@@ -53,7 +53,7 @@ void *game_GetCharData(void) {
     return &g_char_data;
 }
 
-void game_SetControllerPorts(s32 a0) {
+void func_8003F1E4(s32 a0) {
     if (a0) {
         g_game_p1_ctrl = 3;
         g_game_p2_ctrl = 2;
@@ -72,7 +72,7 @@ void game_SetPlayerCount(s32 a0) {
     }
     g_game_player_count = a0;
     if (!a0) {
-        game_SetControllerPorts(0);
+        func_8003F1E4(0);
     }
     g_game_mirror_mode = (s16)g_game_player_count;
 }

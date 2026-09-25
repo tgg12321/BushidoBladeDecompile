@@ -7,18 +7,18 @@ glabel _comb_control
     /* 7CC78 8008C478 38014010 */  beqz       $v0, .L8008C95C
     /* 7CC7C 8008C47C 1400B1AF */   sw        $s1, 0x14($sp)
     /* 7CC80 8008C480 80100400 */  sll        $v0, $a0, 2
-    /* 7CC84 8008C484 0180013C */  lui        $at, %hi(func_800164AC)
+    /* 7CC84 8008C484 0180013C */  lui        $at, %hi(jtbl_comb_control)
     /* 7CC88 8008C488 21082200 */  addu       $at, $at, $v0
-    /* 7CC8C 8008C48C AC64228C */  lw         $v0, %lo(func_800164AC)($at)
+    /* 7CC8C 8008C48C AC64228C */  lw         $v0, %lo(jtbl_comb_control)($at)
     /* 7CC90 8008C490 00000000 */  nop
     /* 7CC94 8008C494 08004000 */  jr         $v0
     /* 7CC98 8008C498 00000000 */   nop
     /* 7CC9C 8008C49C 0700A22C */  sltiu      $v0, $a1, 0x7
     /* 7CCA0 8008C4A0 2E014010 */  beqz       $v0, .L8008C95C
     /* 7CCA4 8008C4A4 80100500 */   sll       $v0, $a1, 2
-    /* 7CCA8 8008C4A8 0180013C */  lui        $at, %hi(func_800164AC + 0x18)
+    /* 7CCA8 8008C4A8 0180013C */  lui        $at, %hi(jtbl_comb_control + 0x18)
     /* 7CCAC 8008C4AC 21082200 */  addu       $at, $at, $v0
-    /* 7CCB0 8008C4B0 C464228C */  lw         $v0, %lo(func_800164AC + 0x18)($at)
+    /* 7CCB0 8008C4B0 C464228C */  lw         $v0, %lo(jtbl_comb_control + 0x18)($at)
     /* 7CCB4 8008C4B4 00000000 */  nop
     /* 7CCB8 8008C4B8 08004000 */  jr         $v0
     /* 7CCBC 8008C4BC 00000000 */   nop
@@ -90,9 +90,9 @@ glabel _comb_control
     /* 7CDB4 8008C5B4 0500A22C */  sltiu      $v0, $a1, 0x5
     /* 7CDB8 8008C5B8 E8004010 */  beqz       $v0, .L8008C95C
     /* 7CDBC 8008C5BC 80100500 */   sll       $v0, $a1, 2
-    /* 7CDC0 8008C5C0 0180013C */  lui        $at, %hi(func_800164AC + 0x38)
+    /* 7CDC0 8008C5C0 0180013C */  lui        $at, %hi(jtbl_comb_control + 0x38)
     /* 7CDC4 8008C5C4 21082200 */  addu       $at, $at, $v0
-    /* 7CDC8 8008C5C8 E464228C */  lw         $v0, %lo(func_800164AC + 0x38)($at)
+    /* 7CDC8 8008C5C8 E464228C */  lw         $v0, %lo(jtbl_comb_control + 0x38)($at)
     /* 7CDCC 8008C5CC 00000000 */  nop
     /* 7CDD0 8008C5D0 08004000 */  jr         $v0
     /* 7CDD4 8008C5D4 00000000 */   nop

@@ -35,7 +35,7 @@ glabel func_8003B9D0
     /* 2C24C 8003BA4C 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C250 8003BA50 21280000 */  addu       $a1, $zero, $zero
     /* 2C254 8003BA54 21300000 */  addu       $a2, $zero, $zero
-    /* 2C258 8003BA58 DA59000C */  jal        disp_SetFramebufferMode
+    /* 2C258 8003BA58 DA59000C */  jal        func_80016768
     /* 2C25C 8003BA5C 21380000 */   addu      $a3, $zero, $zero
     /* 2C260 8003BA60 0A80023C */  lui        $v0, %hi(D_800A3878)
     /* 2C264 8003BA64 7838428C */  lw         $v0, %lo(D_800A3878)($v0)

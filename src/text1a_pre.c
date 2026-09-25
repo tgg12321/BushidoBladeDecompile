@@ -737,7 +737,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
 extern s32 D_80094CFC[];
 extern s32 D_800A9A10[];
-extern void func_8004A348(s16 *, s32 *);
+extern void math_RotMatrixZYX(s16 *, s32 *);
 extern void func_800523E0(s32 *, s32 *, s32, s32);
 extern void func_80044DE4(s16 *, s16 *, s32, s32);
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
@@ -761,14 +761,14 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
         buf[0] = p[0];
         buf[1] = -p[1];
         buf[2] = -p[2];
-        func_8004A348(buf, a4);
+        math_RotMatrixZYX(buf, a4);
         tbl++;
         offset = offset + (s32) a2;
         p = (u16 *) offset;
         buf[0] = p[0];
         buf[1] = -p[1];
         buf[2] = -p[2];
-        func_8004A348(buf, out2);
+        math_RotMatrixZYX(buf, out2);
         func_800523E0(a4, out2, a3, ents + i * 0x68 + 0x38);
         two = 2;
         *((s16 *) (ents + i * 0x68 + 6)) = two;
@@ -790,14 +790,14 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a1 += 2;
     buf[2] = -(*((u16 *) a1));
     a1 += 2;
-    func_8004A348(buf, a4);
+    math_RotMatrixZYX(buf, a4);
     buf[0] = *((u16 *) a2);
     a2 += 2;
     buf[1] = -(*((u16 *) a2));
     a2 += 2;
     buf[2] = -(*((u16 *) a2));
     a2 += 2;
-    func_8004A348(buf, out3);
+    math_RotMatrixZYX(buf, out3);
     func_800523E0(a4, out3, a3, stptr2 + 0x38);
     *((s16 *) (stptr2 + 6)) = 1;
     stptr2 += 0x68;

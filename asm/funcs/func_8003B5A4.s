@@ -2,7 +2,7 @@ glabel func_8003B5A4
     /* 2BDA4 8003B5A4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2BDA8 8003B5A8 1800BFAF */  sw         $ra, 0x18($sp)
     /* 2BDAC 8003B5AC 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 2BDB0 8003B5B0 6B6D010C */  jal        obj_InitChars
+    /* 2BDB0 8003B5B0 6B6D010C */  jal        func_8005B5AC
     /* 2BDB4 8003B5B4 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2BDB8 8003B5B8 21800000 */  addu       $s0, $zero, $zero
     /* 2BDBC 8003B5BC 1080113C */  lui        $s1, %hi(D_8010277D)

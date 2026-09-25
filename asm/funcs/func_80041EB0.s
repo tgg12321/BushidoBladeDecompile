@@ -80,7 +80,7 @@ glabel func_80041EB0
     /* 327C8 80041FC8 21208002 */   addu      $a0, $s4, $zero
   .L80041FCC:
     /* 327CC 80041FCC 2128A002 */  addu       $a1, $s5, $zero
-    /* 327D0 80041FD0 D549010C */  jal        func_80052754
+    /* 327D0 80041FD0 D549010C */  jal        gte_SumSquares3
     /* 327D4 80041FD4 21304002 */   addu      $a2, $s2, $zero
     /* 327D8 80041FD8 7D01033C */  lui        $v1, (0x17D7840 >> 16)
     /* 327DC 80041FDC 40786334 */  ori        $v1, $v1, (0x17D7840 & 0xFFFF)

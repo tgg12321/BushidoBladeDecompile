@@ -40,7 +40,7 @@ extern u8 *D_800A3894;
 
 
 
-extern void obj_InitChars(void);
+extern void func_8005B5AC(void);
 
 
 
@@ -79,7 +79,7 @@ extern s32 D_800A38B4;
 
 
 
-extern void file_LoadOverlay(void);
+extern void eff_Init(void);
 extern void func_80040510(s32, s32, s32);
 
 
@@ -175,8 +175,8 @@ extern void func_80022568(u8 *);
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 extern void func_80077AE0(void);
 extern void func_80077B00(void);
-extern u16 func_80035E88(s32);
-extern s32 func_80035EDC(s16);
+extern u16 bits_ExtractMask3F83F8(s32);
+extern s32 bits_DepositMask3F83F8(s16);
 extern u16 func_80019488(void);
 extern void func_800194C0(s16);
 extern u16 rand(void);
@@ -263,11 +263,11 @@ s32 func_8003ACB8(void) {
     } while (temp_s0 == 0);
     func_80077B00();
     func_800194F4();
-    D_800A37C4 = func_80035E88(g_file_disc_size);
+    D_800A37C4 = bits_ExtractMask3F83F8(g_file_disc_size);
     func_8003AA48();
     VSync(1);
     func_8003AA48();
-    D_800A38E4 = func_80035EDC(D_800A36C6);
+    D_800A38E4 = bits_DepositMask3F83F8(D_800A36C6);
     D_800A37C4 = func_80019488();
     VSync(1);
     func_8003AA48();
@@ -423,7 +423,7 @@ void func_8003B20C(s32 arg0) {
     D_800A37A0 = 0;
     D_800A37A4 = 0;
     D_800A3844 = ((s32 *)&D_800900EC)[arg0];
-    file_LoadOverlay();
+    eff_Init();
     func_8003AE5C(D_800A3844);
     func_8003AF40(0);
     D_800A376C = (&D_8008D538)[(s8)D_8010277C];
@@ -525,7 +525,7 @@ void func_8003B5A4(void) {
     s32 done;
     u8 *chardata;
 
-    obj_InitChars();
+    func_8005B5AC();
     done = 0;
     chardata = &D_8010277D;
 
@@ -623,9 +623,9 @@ void func_8003B5A4(void) {
 void func_8003B870(void) {
     player_SetCharId(0, D_800A376A);
     player_SetCharId(1, 0);
-    obj_InitChars();
+    func_8005B5AC();
     gpu_InitDisplay();
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x17;
     gpu_SetDispMaskOn();
@@ -648,7 +648,7 @@ void func_8003B8E4(void) {
         g_disp_enable = DISP_ACTIVE;
         func_8001D790();
         func_8003B5A4();
-        disp_SetFramebufferMode(1, 0, 0, 0);
+        func_80016768(1, 0, 0, 0);
         D_800A390D = 1;
     }
 }

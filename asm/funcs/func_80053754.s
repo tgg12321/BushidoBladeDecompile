@@ -430,7 +430,7 @@ glabel func_80053754
     /* 445B4 80053DB4 5000C284 */  lh         $v0, 0x50($a2)
     /* 445B8 80053DB8 B000C68C */  lw         $a2, 0xB0($a2)
     /* 445BC 80053DBC 2328A300 */  subu       $a1, $a1, $v1
-    /* 445C0 80053DC0 D549010C */  jal        func_80052754
+    /* 445C0 80053DC0 D549010C */  jal        gte_SumSquares3
     /* 445C4 80053DC4 2330C200 */   subu      $a2, $a2, $v0
     /* 445C8 80053DC8 28038B8F */  lw         $t3, %gp_rel(D_800A33F4)($gp)
     /* 445CC 80053DCC 00000000 */  nop

@@ -10,7 +10,7 @@ glabel game_SetPlayerCount
     /* 2FA38 8003F238 600184AF */  sw         $a0, %gp_rel(D_800A322C)($gp)
     /* 2FA3C 8003F23C 03008014 */  bnez       $a0, .L8003F24C
     /* 2FA40 8003F240 00000000 */   nop
-    /* 2FA44 8003F244 79FC000C */  jal        game_SetControllerPorts
+    /* 2FA44 8003F244 79FC000C */  jal        func_8003F1E4
     /* 2FA48 8003F248 21200000 */   addu      $a0, $zero, $zero
   .L8003F24C:
     /* 2FA4C 8003F24C 6001828F */  lw         $v0, %gp_rel(D_800A322C)($gp)

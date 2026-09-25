@@ -65,7 +65,7 @@ extern u8 D_8010277D;
 extern u8 D_8010277F;
 
 
-extern s16 *snd_GetSeId(void);
+extern s16 *func_8004678C(void);
 
 
 
@@ -96,7 +96,7 @@ extern void RotMatrixZ(s32, s32 *);
 
 
 
-extern void file_LoadOverlay(void);
+extern void eff_Init(void);
 
 extern s32 stage_GetDataPtr(void);
 
@@ -862,7 +862,7 @@ void func_8002872C(void) {
 INCLUDE_ASM("asm/funcs", func_800288C8);
 /* kengo:HIGH  |  sa_tan3/saTan3MainJump  |  492i  |  +3 near-exact */
 void func_8002906C(void) {
-    s16 *ptr = snd_GetSeId();
+    s16 *ptr = func_8004678C();
     while (*(s16 *)ptr != 0) {
         *(s16 *)((u8 *)ptr + 2) = 0;
         ptr = (s16 *)((u8 *)ptr + 0x10);
@@ -3377,7 +3377,7 @@ next:
     base += 0x64;
     if (i < 12) goto loop;
 }
-void cpu_get_dist(s32 *a0, s16 *a1) {
+void func_8003032C(s32 *a0, s16 *a1) {
     s32 angle;
     s16 cos_val;
     s16 sin_val;
@@ -3721,7 +3721,7 @@ void func_80030D04(void) {
 }
 void func_80030D48(void) {
 }
-s32 func_80030D50(s32 arg0, s32 arg1, s32 arg2) {
+s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
     arg0 = (arg0 - arg1) & 0xFFF;
     if (arg0 >= 0x800) {
         arg0 -= 0x1000;
@@ -5110,7 +5110,7 @@ void func_800344B4(void) {
         }
         D_800A3874 = 0;
         gpu_ResetGraphMode1();
-        file_LoadOverlay();
+        eff_Init();
         func_800342A0();
         goto skip_clear;
 

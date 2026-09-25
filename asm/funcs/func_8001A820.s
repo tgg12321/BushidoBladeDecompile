@@ -309,7 +309,7 @@ glabel func_8001A820
     /* B498 8001AC98 01004238 */  xori       $v0, $v0, 0x1
     /* B49C 8001AC9C 1E00C2A2 */  sb         $v0, 0x1E($s6)
     /* B4A0 8001ACA0 1E00C492 */  lbu        $a0, 0x1E($s6)
-    /* B4A4 8001ACA4 79FC000C */  jal        game_SetControllerPorts
+    /* B4A4 8001ACA4 79FC000C */  jal        func_8003F1E4
     /* B4A8 8001ACA8 00000000 */   nop
     /* B4AC 8001ACAC 2000AA8F */  lw         $t2, 0x20($sp)
     /* B4B0 8001ACB0 00000000 */  nop
@@ -344,7 +344,7 @@ glabel func_8001A820
     /* B51C 8001AD1C 1200C286 */  lh         $v0, 0x12($s6)
     /* B520 8001AD20 00240400 */  sll        $a0, $a0, 16
     /* B524 8001AD24 03240400 */  sra        $a0, $a0, 16
-    /* B528 8001AD28 3C69000C */  jal        func_8001A4F0
+    /* B528 8001AD28 3C69000C */  jal        math_SignExt12Div
     /* B52C 8001AD2C 23208200 */   subu      $a0, $a0, $v0
     /* B530 8001AD30 08000524 */  addiu      $a1, $zero, 0x8
     /* B534 8001AD34 0400E496 */  lhu        $a0, (0x1F800004 & 0xFFFF)($s7)
@@ -354,7 +354,7 @@ glabel func_8001A820
     /* B544 8001AD44 03240400 */  sra        $a0, $a0, 16
     /* B548 8001AD48 23208600 */  subu       $a0, $a0, $a2
     /* B54C 8001AD4C 21186200 */  addu       $v1, $v1, $v0
-    /* B550 8001AD50 3C69000C */  jal        func_8001A4F0
+    /* B550 8001AD50 3C69000C */  jal        math_SignExt12Div
     /* B554 8001AD54 1200C3A6 */   sh        $v1, 0x12($s6)
     /* B558 8001AD58 1400C396 */  lhu        $v1, 0x14($s6)
     /* B55C 8001AD5C 1000CA86 */  lh         $t2, 0x10($s6)
@@ -613,7 +613,7 @@ glabel func_8001A820
     /* B8E0 8001B0E0 08000524 */  addiu      $a1, $zero, 0x8
     /* B8E4 8001B0E4 23202A02 */  subu       $a0, $s1, $t2
     /* B8E8 8001B0E8 4000AA97 */  lhu        $t2, 0x40($sp)
-    /* B8EC 8001B0EC 3C69000C */  jal        func_8001A4F0
+    /* B8EC 8001B0EC 3C69000C */  jal        math_SignExt12Div
     /* B8F0 8001B0F0 1000CAA6 */   sh        $t2, 0x10($s6)
     /* B8F4 8001B0F4 1000C396 */  lhu        $v1, 0x10($s6)
     /* B8F8 8001B0F8 00000000 */  nop

@@ -25,7 +25,7 @@ glabel func_800484A0
     /* 38CFC 800484FC 21200002 */   addu      $a0, $s0, $zero
     /* 38D00 80048500 1400A587 */  lh         $a1, 0x14($sp)
     /* 38D04 80048504 1800B027 */  addiu      $s0, $sp, 0x18
-    /* 38D08 80048508 DB21010C */  jal        func_8004876C
+    /* 38D08 80048508 DB21010C */  jal        math_GrayscaleRgb555
     /* 38D0C 8004850C 21300002 */   addu      $a2, $s0, $zero
   .L80048510:
     /* 38D10 80048510 1000A427 */  addiu      $a0, $sp, 0x10

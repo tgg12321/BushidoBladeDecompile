@@ -43,7 +43,7 @@
 
 extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void obj_InitAll(void);
+extern void func_8005B72C(void);
 extern void func_80077820(s32);
 
 
@@ -135,7 +135,7 @@ void func_80035480(void) {
     player_Destroy(1);
     file_ResetDmaFlag();
     if (D_800A31D8 != 0) {
-        obj_InitAll();
+        func_8005B72C();
         D_800A390E = -1;
     }
     D_800A31D8 = 1;

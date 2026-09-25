@@ -92,7 +92,7 @@ typedef struct {
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel func_800164AC\n"
+    "glabel jtbl_comb_control\n"
     "    .word 0x8008C49C\n"
     "    .word 0x8008C5B4\n"
     "    .word 0x8008C750\n"
@@ -129,7 +129,7 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-s32 file_LoadAll(s32 a0, u8 *dest) {
+s32 pcdrv_LoadFile(s32 a0, u8 *dest) {
     s32 fd;
     s32 total;
     s32 remaining;
@@ -159,7 +159,7 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
     PCclose(fd);
     return total;
 }
-s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
+s32 pcdrv_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     s32 fd;
     s32 i;
 
@@ -178,14 +178,14 @@ s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     PCclose(fd);
     return count << 11;
 }
-s32 disp_CalcFov(s32 a0) {
+s32 math_FovToScreenDist(s32 a0) {
     s32 tmp = (a0 << 12) / 360;
     s32 v1 = tmp / 2;
     s16 cos_val = Judge[(v1 + 0x400) & 0xFFF];
     s16 sin_val = Judge[v1 & 0xFFF];
     return (cos_val * 320) / sin_val;
 }
-void disp_SetFramebufferMode(s32 a0, s32 a1, s32 a2, s32 a3) {
+void func_80016768(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 i;
     u8 *ptr;
     s32 offset;
@@ -275,13 +275,13 @@ void disp_Init(void) {
     SetDispMask(0);
     InitGeom();
     SetGeomOffset(0x140, 0x78);
-    SetGeomScreen(disp_CalcFov(0x2D));
+    SetGeomScreen(math_FovToScreenDist(0x2D));
     base = &g_gpu_db;
     SetDefDrawEnv(base, 0, 0, 0x280, 0xF0);
     SetDefDrawEnv(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
     SetDefDispEnv(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
     SetDefDispEnv(base + 0x40EC, 0, 0, 0x280, 0xF0);
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     ClearImage(&g_gpu_clear_rect, 0, 0, 0);
     DrawSync(0);
 }
@@ -361,7 +361,7 @@ void file_ResetDmaFlag(void) {
     g_file_dma_flag = 0;
 }
 extern s32 func_80060CB8(u32, u32);
-void file_LoadOverlay(void) {
+void eff_Init(void) {
     s32 size;
 
     if (g_file_dma_flag != 0) {

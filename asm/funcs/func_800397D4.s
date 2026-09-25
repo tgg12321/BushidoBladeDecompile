@@ -7,7 +7,7 @@ glabel func_800397D4
     /* 29FE8 800397E8 00000000 */   nop
     /* 29FEC 800397EC 86FC000C */  jal        game_SetPlayerCount
     /* 29FF0 800397F0 21200000 */   addu      $a0, $zero, $zero
-    /* 29FF4 800397F4 B159000C */  jal        disp_CalcFov
+    /* 29FF4 800397F4 B159000C */  jal        math_FovToScreenDist
     /* 29FF8 800397F8 2D000424 */   addiu     $a0, $zero, 0x2D
     /* 29FFC 800397FC FFFB010C */  jal        SetGeomScreen
     /* 2A000 80039800 21204000 */   addu      $a0, $v0, $zero

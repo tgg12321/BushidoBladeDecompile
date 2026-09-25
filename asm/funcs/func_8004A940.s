@@ -69,7 +69,7 @@ glabel func_8004A940
     /* 3B240 8004AA40 21982A01 */  addu       $s3, $t1, $t2
     /* 3B244 8004AA44 18006426 */  addiu      $a0, $s3, 0x18
     /* 3B248 8004AA48 18004526 */  addiu      $a1, $s2, 0x18
-    /* 3B24C 8004AA4C 4C4A010C */  jal        func_80052930
+    /* 3B24C 8004AA4C 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3B250 8004AA50 48002626 */   addiu     $a2, $s1, 0x48
     /* 3B254 8004AA54 4800288E */  lw         $t0, 0x48($s1)
     /* 3B258 8004AA58 4C00298E */  lw         $t1, 0x4C($s1)
@@ -93,7 +93,7 @@ glabel func_8004A940
     /* 3B2A0 8004AAA0 00A0CC48 */  ctc2       $t4, $20 /* handwritten instruction */
     /* 3B2A4 8004AAA4 2120C002 */  addu       $a0, $s6, $zero
     /* 3B2A8 8004AAA8 18004526 */  addiu      $a1, $s2, 0x18
-    /* 3B2AC 8004AAAC 4C4A010C */  jal        func_80052930
+    /* 3B2AC 8004AAAC 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3B2B0 8004AAB0 28002626 */   addiu     $a2, $s1, 0x28
     /* 3B2B4 8004AAB4 0000C88E */  lw         $t0, 0x0($s6)
     /* 3B2B8 8004AAB8 0400C98E */  lw         $t1, 0x4($s6)
@@ -537,7 +537,7 @@ glabel func_8004A940
     /* 3B97C 8004B17C 21982A01 */  addu       $s3, $t1, $t2
     /* 3B980 8004B180 18006426 */  addiu      $a0, $s3, 0x18
     /* 3B984 8004B184 18004526 */  addiu      $a1, $s2, 0x18
-    /* 3B988 8004B188 4C4A010C */  jal        func_80052930
+    /* 3B988 8004B188 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3B98C 8004B18C 48002626 */   addiu     $a2, $s1, 0x48
     /* 3B990 8004B190 4800288E */  lw         $t0, 0x48($s1)
     /* 3B994 8004B194 4C00298E */  lw         $t1, 0x4C($s1)
@@ -647,7 +647,7 @@ glabel func_8004A940
     /* 3BB30 8004B330 21982A01 */  addu       $s3, $t1, $t2
     /* 3BB34 8004B334 18006426 */  addiu      $a0, $s3, 0x18
     /* 3BB38 8004B338 18004526 */  addiu      $a1, $s2, 0x18
-    /* 3BB3C 8004B33C 4C4A010C */  jal        func_80052930
+    /* 3BB3C 8004B33C 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3BB40 8004B340 48002626 */   addiu     $a2, $s1, 0x48
     /* 3BB44 8004B344 4800288E */  lw         $t0, 0x48($s1)
     /* 3BB48 8004B348 4C00298E */  lw         $t1, 0x4C($s1)
@@ -672,7 +672,7 @@ glabel func_8004A940
     /* 3BB94 8004B394 1080043C */  lui        $a0, %hi(D_800FF558)
     /* 3BB98 8004B398 58F58424 */  addiu      $a0, $a0, %lo(D_800FF558)
     /* 3BB9C 8004B39C 18004526 */  addiu      $a1, $s2, 0x18
-    /* 3BBA0 8004B3A0 4C4A010C */  jal        func_80052930
+    /* 3BBA0 8004B3A0 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3BBA4 8004B3A4 28002626 */   addiu     $a2, $s1, 0x28
     /* 3BBA8 8004B3A8 1080023C */  lui        $v0, %hi(D_800FF558)
     /* 3BBAC 8004B3AC 58F54224 */  addiu      $v0, $v0, %lo(D_800FF558)

@@ -1,0 +1,111 @@
+# motion_ai vein — KEEP rows (stay INFERRED)
+
+- 0x80016E60 cpu_exec_match_round_stage_select — menu loop (ClearOTagR/DrawOTag/PutDrawEnv per frame, cursor over 3 or 6 items driven by D_80102794 button bits, beep func_8005C650, selection -> D_800A3834 mode); "stage select" unsupported (derived from main's old refuted name) but not contradicted
+- 0x800194C0 replay_camera_helper — splits a0 nibbles into D_800A3912/13/14; only caller is the SIO-connect 0x8003ACB8 but the helper name carries no concrete claim to contradict
+- 0x800194F4 replay_camera_helper — resets D_80102788/8A=4, D_80102790/94/98=0, D_8010279C=-1 (D_80102794 is read as a button word elsewhere); vacuous helper name
+- 0x8001B690 cpu_helper — if D_800A38BA && D_800A36F6==a0 && folded angle a1 > 0x400: D_800A36FC=0x19, D_800F5344=0x800; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x8001E404 cpu_init_stage_and_camera_setup — game_SetPlayerCount, SetGeomScreen [VERIFIED], disp_CalcFov, stage/effect setup - consistent with stage+camera setup; not proven
+- 0x8001F888 cpu_helper — SquareRoot0 2-D distance between two global points (already examined + dropped 2026-09-24 rejected/func_api.md); vacuous helper name
+- 0x8001F938 cpu_helper — state-code switch on obj+0x6A returning 0x1000-scale factors; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x800200DC cpu_helper — arg-only geometry with SquareRoot0, 182 insns; possible computation-restatement follow-up, not attempted; vacuous helper name
+- 0x80021424 cpu_helper — jump-table state logic on D_80102760/801027B0; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80021A98 cpu_helper — game table update via func_800324D0; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80022408 cpu_find_closest_hotspot — returns index of the nearest of 4 box midpoints (x,z) of stage_GetDataPtr()[D_800A36A4] to point a0 by squared distance - "find closest" is exactly right; "hotspot" unsupported but not contradicted
+- 0x8002304C cpu_helper — vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80023648 cpu_helper — angle logic with calc_AngleDelta + Judge sine table; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80023CB4 cpu_helper — obj+0x31A counter bump, sets 0x318/0x31C/0x152 fields; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80023D08 cpu_helper — func_80023CB4(a0, 0x200); vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80023D28 cpu_helper — scratchpad probe via func_8005344C (grid walk family, see 0x80052D00) storing result to obj+0x1DC; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80023DB8 cpu_helper — same probe, returns hit && angle < -0x800; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80023E40 cpu_helper — per-state probe via func_80053614 storing obj+0x148; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80023F08 cpu_calc_move_pattern_trajectory — 2983-insn AI driver (ratan2, many game callees); not contradicted
+- 0x80026DA4 cpu_helper — vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x8002798C cpu_helper — predicate over obj state codes (+0x6A, +0x40 vs +0xA5/+0xA6, +0x88); vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80029454 cpu_helper — 1025-insn game logic (gte_mvmva, event dispatch); vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x8002C61C cpu_exec_main_game_loop_frame — per-frame game driver calling many AUTO callees; not contradicted
+- 0x80030208 cpu_helper — gte_mvmva + effect setup; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80030A2C cpu_set_move_command_and_dir — p = func_80030580(a0,a1); copies a2 vec3 to p+0x2C, random velocity p+0x44/48/4C and spin p+0x5C/5E via rng_Next; "set dir" loosely fits (random velocity), "move command" unsupported; Kengo-batch name, not contradicted outright
+- 0x80030D7C cpu_ai_pick_move_for_situation — 709-insn AI selector (ratan2, rng_Next, event dispatch); not contradicted
+- 0x80032064 cpu_helper — vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x80032854 motion_dispatch_event_handler — jump-table (jtbl_800105D0) dispatch to ~19 event routines - "dispatch event handler" fits the shape
+- 0x80032C50 cpu_check_special_move_input — 467-insn jump-table logic; input source not traced; not contradicted
+- 0x8003339C cpu_check_same_dir_timer — walks a byte-code list at (base+0x58)+4, compares entries with base+0x40 and calls func_80032C50; "check same dir" fits the comparison; "timer" unsupported
+- 0x8003879C motion_shift_set_mode1 — stores constant set (379E=1, 37C8=1, 38CC=0, 3814=0, 31F4=1) - a mode setter, fine
+- 0x800387C0 motion_shift_set_mode2 — stores constant set (379E=1, 37C8=2, ...) - mode setter, fine
+- 0x800387E8 motion_shift_set_mode3 — stores constant set (379E=9, 37C8=3, ...) - mode setter, fine
+- 0x80039320 cpu_clear_move_buffers — invalidates D_80101BF0 entries matching D_800A36F8 (byte=0xFF), ages D_800F68E0 entries, clears D_800A379C/D_800A3714 - "clear" fits
+- 0x800395B4 motion_helper — appends a 16-byte record to the D_80101BF0 ring (first free slot); vacuous helper name
+- 0x80039680 cpu_helper — packs obj fields into a D_800A36EC table record; vacuous *_helper name; body is game-state logic with no VERIFIED-library contradiction
+- 0x800397A0 cpu_advance_move_counter — D_800A36F8 = (D_800A36F8==0x77) ? 0 (and D_800A3782=1) : +1 - "advance counter" fits
+- 0x8003D7B4 coli_calc_motion_slots — decodes 6 signed variable-width deltas (4-bit width, 0=16) with bitstream_ReadBits [CORROBORATED] into s16 accumulators of the 24-byte record D_800A3D40[a0]; "coli" unsupported but not contradicted
+- 0x8003F388 replay_camera_check_bounds_and_set_flag — grid[(z+16)*32+(x+16)] |= 4 when both in [0,32) (grid D_800A8FB0) - "check bounds and set flag" is exactly right; "replay_camera" unsupported
+- 0x8003F3D4 cpu_helper — same as 0x8003F388 with |= 8; vacuous helper name
+- 0x800400F8 player_helper — for each 0xD0-stride entry of *(a0+0x24): obj_Clear(entry+8); vacuous helper name
+- 0x8004016C player_sprite_free — p = get_global(a0); if p: player_helper(p) (obj_Clear each sub-entry) - "free" fits; "sprite" unsupported
+- 0x80040510 player_rob_Init — player setup chain (8 callees); not contradicted
+- 0x80041584 player_find_empty_slot — returns first i<3 with g_player_ptrs[i]==0 else -1 - exactly "find empty slot"
+- 0x800415C4 player_Destroy — func_8004016C(a0); func_80045A50(a0); g_player_ptrs[a0]=0 - "Destroy" fits
+- 0x80041604 player_SetCharId — if g_player_ptrs[a0] && (ptr[1]&0x1F)!=a1: ptr[3]=-2; g_player_char_ids[a0]=a1 - "SetCharId" fits
+- 0x800418D0 replay_camera_helper — negates obj SVECTOR +0x10, calls rotation fn table D_800F66A0[obj+8], copies 0x38..0x54 -> 0x18..0x34; vacuous helper name
+- 0x800420D0 replay_camera_helper — D_800A3382=0, D_800A3380=0, D_800A3238=-1; vacuous helper name
+- 0x800456F0 player_helper — zeroes word +0xC of the D_800EED10 table entry with id==a0; vacuous helper name
+- 0x80045878 player_helper — player setup chain (effect/sound table callees); vacuous helper name
+- 0x80046F24 camera_InitMatrix — src/sound.c:398 builds a MATRIX (0x1000 diagonal + fov-derived shear) into g_cam_matrix - "InitMatrix" fits
+- 0x8004700C camera_Transform — src/sound.c:417 applies g_cam_matrix via func_80052930 + shear - "Transform" fits
+- 0x80047210 camera_InitBoneData — src/sound.c:457 copies a matrix block into g_cam_bone_data and halves 3 halfwords - "Init" fits loosely
+- 0x800472B0 camera_GetBoneData — returns &g_cam_bone_data - "Get" fits
+- 0x800472C0 camera_InitRotation — src/sound.c:482 zero-inits a rotation record and calls the g_anim_func_table rotation builder - fits
+- 0x80047384 camera_CalcAngles — yaw = ratan2(x,z), pitch = -ratan2(y,horiz) of the rotated forward vector (math_RotMatrixYXZ, ApplyMatrix, ratan2) - "CalcAngles" fits
+- 0x80047570 camera_InitBone2 — camera_InitRotation(&g_cam_bone_data2); g_cam_interp = 4 - fits
+- 0x80053694 camera_helper — converts the grid-walk stop cell of *D_800A33F4 back to world VECTOR + s16[3]; vacuous helper name
+- 0x800550E8 cpu_attenuate_character_damage — halves 8 bytes (+0x415, stride 2) of the D_80101EC8[a0] record - "attenuate" fits the halving, "damage" unsupported
+- 0x80057ACC coli_find_nearest_edge_hit — polygon-edge vs segment intersection (calc_line_seg_intersect [CORROBORATED]) keeping the nearest hit (SquareRoot0) - fits
+- 0x80057E84 coli_check_collision — collision test using calc_line_seg_intersect [CORROBORATED] + SquareRoot0 - fits
+- 0x80060A68 anim_helper — effect-record init + dispatch through chractar_use_pset_combo_id_table; vacuous helper name
+- 0x800611A4 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x80061250 anim_emit_210009_with_setup — effect emitter; the name restates the packed id constant it stores (0x210009 / 0x29000B / 0x21000C-D) - accurate as far as it goes
+- 0x8006133C motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x800613C8 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x80061454 anim_emit_29000B — effect emitter; the name restates the packed id constant it stores (0x210009 / 0x29000B / 0x21000C-D) - accurate as far as it goes
+- 0x800614E0 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x8006156C motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x80061658 anim_emit_21000CD — effect emitter; the name restates the packed id constant it stores (0x210009 / 0x29000B / 0x21000C-D) - accurate as far as it goes
+- 0x80061710 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x800617C8 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x800619A4 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x800619F0 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x80061A3C cpu_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x80061ACC motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x80061C00 motion_helper — effect emitter with RotMatrix/SetRotMatrix/SetTransMatrix/RotTrans [VERIFIED]; vacuous helper name
+- 0x80061D74 motion_helper — effect emitter with RotMatrix/SetRotMatrix/SetTransMatrix/RotTrans [VERIFIED]; vacuous helper name
+- 0x80061EC0 motion_helper — effect-emitter stub: sets D_800A3468 record, stores a packed effect id, calls anim_helper (0x80060A68), copies arg vec3; vacuous helper name
+- 0x80064ED8 motion_ex_Init_id1 — copies a 3-word record from *D_800A347C into a per-id slot, sets a flag, zeroes the id counter - "Init id N" fits the per-slot init
+- 0x80064F20 motion_ex_Init_id2 — copies a 3-word record from *D_800A347C into a per-id slot, sets a flag, zeroes the id counter - "Init id N" fits the per-slot init
+- 0x80064F68 motion_ex_Init_id3 — copies a 3-word record from *D_800A347C into a per-id slot, sets a flag, zeroes the id counter - "Init id N" fits the per-slot init
+- 0x80064FB4 motion_ex_Init_id4 — copies a 3-word record from *D_800A347C into a per-id slot, sets a flag, zeroes the id counter - "Init id N" fits the per-slot init
+- 0x80065000 motion_ex_Init_id5 — copies a 3-word record from *D_800A347C into a per-id slot, sets a flag, zeroes the id counter - "Init id N" fits the per-slot init
+- 0x80065134 motion_ex_init_state_b — copies a 3-word record from *D_800A347C into a per-id slot, sets a flag, zeroes the id counter - "Init id N" fits the per-slot init
+- 0x80065264 motion_ex_init_state_c — copies a 3-word record from *D_800A347C into a per-id slot, sets a flag, zeroes the id counter - "Init id N" fits the per-slot init
+- 0x800652F4 motion_ExMotionDrive0 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065344 motion_ex_play_id1 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065394 motion_ex_play_id2 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x800653E4 motion_ExMotionDrive3 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065434 motion_ex_play_id4 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065484 motion_ex_play_id5_dynamic — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065540 motion_ex_play_id6 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065590 motion_ex_play_id7 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x800655E0 motion_ExMotionDriveA — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065630 motion_ex_play_idB — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065680 motion_ex_play_idCE — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x800656EC motion_ExMotionDriveDF — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x80065760 motion_ex_play_id10 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x800657B0 motion_ExMotionDrive11 — r = func_80065800(id); per-id counter += 0x1FF (step), returns 0 once past 0x1000/0x2000 - a per-id step/drive routine, not contradicted
+- 0x8006BD28 motion_helper — 2-D primitive builder (func_8007352C, SetDrawMode, AddPrim); vacuous helper name
+- 0x8006BEC4 motion_draw_tilemap — draws TILE prims (SetTile/SetSemiTrans/AddPrim) - "draw tilemap" fits loosely
+- 0x8006D7FC replay_camera_helper — D_800A352C = 0; return 1; vacuous helper name
+- 0x8006E49C camera_init_matrix_table — writes a table of 20 base+constant pointers carving a buffer a0 into two sets of sub-buffers (0x9C40, 0x5DC0, ... sizes) into a1; "matrix" unsupported but pointers could address matrix storage - not a hard contradiction
+- 0x8006E950 replay_setup_display — CD-idle wait, cdrom_StartRead(file 2:a0 -> a1), wait, relocate offset table (func_8006E440), LoadImage x2 to VRAM x=640 + func_8006E8CC LoadImage - uploads a screen; "setup display" loose but not contradicted
+- 0x800770B8 replay_camera_helper — sub-mode init: ClearOTagR, snd_StopAll, file load (0x8006E950), pointer relocation, table init; vacuous helper name
+- 0x80077940 replay_camera_decode_player_bits — D_800A35E8 = (a0&0x3FF) + ((a0&0x3FF000)>>2) + ((a0&0x1000000)>>4) + ((a0&0x4000000)>>5) - "decode bits" fits; writes a global so not computation-restatement
+- 0x80077A28 replay_camera_init_framebuffer — D_800A35E4=0; disp_SetFramebufferMode(1,0,0,0) (DRAWENV isbg=1, black bg); func_8006D7FC() - "init framebuffer" fits loosely
+- 0x80077D10 camera_ptr_array_apply_offset — relocates 5 pointer fields (+0x18..+0x28) via func_8006920C, returns a0[1]; "camera" unsupported, "ptr array apply offset" fits

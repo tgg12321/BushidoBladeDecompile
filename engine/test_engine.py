@@ -1626,9 +1626,9 @@ def test_canonical_build() -> None:
     if "func_8002EBDC" in tbl:
         eq("classify(func_8002EBDC): GTE -> ASM-PARTIAL",
            canonical.classify("func_8002EBDC")["verdict"], "ASM-PARTIAL")
-    if "game_GetMode" in tbl:
-        eq("classify(game_GetMode): ordinary C -> C",
-           canonical.classify("game_GetMode")["verdict"], "C")
+    if "func_8003F1C8" in tbl:
+        eq("classify(func_8003F1C8): ordinary C -> C",
+           canonical.classify("func_8003F1C8")["verdict"], "C")
     # no function should be NO-TARGET (the motion_Close-class fix)
     no_target = [r["func"] for r in canonical.scan_all() if r["verdict"] == "NO-TARGET"]
     eq("scan_all: zero NO-TARGET", len(no_target), 0)

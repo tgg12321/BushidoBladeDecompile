@@ -90,7 +90,7 @@ glabel func_8003C714
     /* 2D070 8003C870 1080023C */  lui        $v0, %hi(D_80101ED2)
     /* 2D074 8003C874 D21E4294 */  lhu        $v0, %lo(D_80101ED2)($v0)
     /* 2D078 8003C878 21380000 */  addu       $a3, $zero, $zero
-    /* 2D07C 8003C87C DA59000C */  jal        disp_SetFramebufferMode
+    /* 2D07C 8003C87C DA59000C */  jal        func_80016768
     /* 2D080 8003C880 300002A2 */   sb        $v0, 0x30($s0)
     /* 2D084 8003C884 1F000224 */  addiu      $v0, $zero, 0x1F
     /* 2D088 8003C888 0A80013C */  lui        $at, %hi(D_800A37B8)

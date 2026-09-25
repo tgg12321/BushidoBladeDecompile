@@ -102,7 +102,7 @@ extern void func_800372C0(void);
 extern void func_800548DC(void);
 extern s32 func_8005FC9C(s32, s32);
 extern s32 func_80054F68(void);
-extern void disp_SetFramebufferMode(s32, s32, s32, s32);
+extern void func_80016768(s32, s32, s32, s32);
 extern void func_8003B5A4(void);
 extern s32 func_8005E54C(s32, s32, s32);
 extern void func_8005C650(s32, s32, s32);
@@ -194,7 +194,7 @@ void func_8003B9D0(void) {
     func_800174F4();
     gpu_ResetGraphMode1();
     func_80020D38();
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     if (((u8 *)D_800A3878)[3] & 0x80) {
         func_80020CDC();
         magic = 0x80118800;
@@ -297,7 +297,7 @@ call_bar:
 
 extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void obj_InitAll(void);
+extern void func_8005B72C(void);
 extern void func_80078824(s32);
 extern void snd_SerialMixOn(void);
 extern void cdrom_StartAudio(s32, s32);
@@ -309,7 +309,7 @@ void func_8003BE10(void) {
     player_Destroy(0);
     player_Destroy(1);
     file_ResetDmaFlag();
-    obj_InitAll();
+    func_8005B72C();
     func_80078824((s32)0x80118800);
     snd_SerialMixOn();
     {
@@ -522,7 +522,7 @@ void func_8003C2C0(void) {
 }
 extern u8 D_800A377C[];
 extern u8 D_800F65F8[];
-extern void disp_SetFramebufferMode(s32, s32, s32, s32);
+extern void func_80016768(s32, s32, s32, s32);
 void func_8003C42C(void) {
     s32 counts[8];
     s32 i;
@@ -580,7 +580,7 @@ void func_8003C42C(void) {
             D_800A382D = v0;
         }
     }
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x15;
 }
@@ -708,7 +708,7 @@ void func_8003C714(void) {
     *((u8 *)s0 + 0x2E) = buf[2];
     *((u8 *)s0 + 0x2F) = buf[3];
     *((u8 *)s0 + 0x30) = D_80101ED2;
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x1F;
     gpu_SetDispMaskOn();
@@ -738,7 +738,7 @@ void func_8003C9A4(void) {
     s32 *a0 = (s32 *)&D_800F6608;
     s16 *a1 = (s16 *)((u8 *)a0 + 0x10);
 
-    game_SetControllerPorts(0);
+    func_8003F1E4(0);
     a0[0] = 0;
     D_800F6608.w4 = -0xBB8;
     D_800F6608.w8 = 0;
@@ -820,7 +820,7 @@ void func_8003CD10(void) {
     s16 *a1 = (s16 *)((u8 *)a0 + 0x10);
     s32 ret;
 
-    game_SetControllerPorts(0);
+    func_8003F1E4(0);
     a0[0] = 0;
     D_800F6608.w4 = -0xBB8;
     D_800F6608.w8 = 0;
@@ -843,7 +843,7 @@ void func_8003CD10(void) {
 extern u16 D_80101ED6;
 extern s32 D_800A3818;
 extern void func_8001DA2C(void);
-extern s32 disp_CalcFov(s32);
+extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
 extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
@@ -858,10 +858,10 @@ void func_8003CE18(void) {
     func_800372C0();
     gpu_InitDisplay();
     gpu_ResetGraphMode1();
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     func_8003E22C();
     game_SetPlayerCount(0);
-    v0 = disp_CalcFov(0x2D);
+    v0 = math_FovToScreenDist(0x2D);
     SetGeomScreen(v0);
     player = D_800A3748;
     {

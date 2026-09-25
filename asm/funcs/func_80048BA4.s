@@ -78,11 +78,11 @@ glabel func_80048BA4
     /* 394D0 80048CD0 21186600 */  addu       $v1, $v1, $a2
     /* 394D4 80048CD4 1080013C */  lui        $at, %hi(D_800FF574)
     /* 394D8 80048CD8 74F523AC */  sw         $v1, %lo(D_800FF574)($at)
-    /* 394DC 80048CDC D228010C */  jal        func_8004A348
+    /* 394DC 80048CDC D228010C */  jal        math_RotMatrixZYX
     /* 394E0 80048CE0 1000A527 */   addiu     $a1, $sp, 0x10
     /* 394E4 80048CE4 1000A527 */  addiu      $a1, $sp, 0x10
     /* 394E8 80048CE8 0000648E */  lw         $a0, 0x0($s3)
-    /* 394EC 80048CEC 4C4A010C */  jal        func_80052930
+    /* 394EC 80048CEC 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 394F0 80048CF0 2130A000 */   addu      $a2, $a1, $zero
     /* 394F4 80048CF4 1000A297 */  lhu        $v0, 0x10($sp)
     /* 394F8 80048CF8 1600A397 */  lhu        $v1, 0x16($sp)

@@ -1,0 +1,103 @@
+# mode_ui vein - KEEP rows (stay INFERRED)
+
+"vacuous" = the name (mode_helper / game_helper / hud_helper) makes no checkable claim; nothing in the body contradicts it and no admitted class supports a better name.
+
+- 0x8001979C mode_helper -- vacuous; unpacks 12-bit fields from a u32 stream into a 0x570-stride record of D_800F1B18 (game table). Note D_800F1B18 sits 4 bytes after the held _svm_orev1 (0x800F1B14) -- data-vein follow-up
+- 0x800198D0 mode_helper -- vacuous; 749-insn user of the same D_800F1B18 records, no library call
+- 0x8001A820 mode_helper -- vacuous; ratan2 [VERIFIED] + scratchpad math; toggles a struct flag it passes to 0x8003F1E4
+- 0x8001B6F4 mode_helper -- vacuous; clears D_800F5347/D_800F6627, 0x8003F1E4(0), func_80041688 x2
+- 0x8001BAE4 mode_helper -- vacuous; ratan2 [VERIFIED] + func_8001B748, game globals
+- 0x8001BBD8 mode_helper -- vacuous; ratan2 [VERIFIED] + func_8001B748, game globals
+- 0x8001BE20 mode_helper -- vacuous; 393-insn game-state routine, only AUTO callees
+- 0x8001C8DC mode_helper -- vacuous; per-frame mode-1 tail with a jump table that can change D_800A3834
+- 0x8001E800 mode_helper -- vacuous; wraps func_80048BA4 with game globals
+- 0x8001E878 mode_handler_01_GameFrameUpdate -- handler 01 of D_8008D090 (EXE 0x8008D094); runs its body every frame and does not itself change mode -> "GameFrameUpdate" consistent, unproven
+- 0x8001EA04 mode_handler_12_RoundCleanup -- handler 12 (EXE 0x8008D0C0); func_80041688 x2 + game_Cleanup + global clears -- "RoundCleanup" not contradicted
+- 0x8001EFA0 mode_handler_17_GameContinueFrame -- handler 17 (EXE 0x8008D0D4); per-frame body like handler 01 -- consistent, unproven
+- 0x8001F1C4 mode_helper -- vacuous; func_80027334/md_game_rob_anim_offset x2 on caller structs
+- 0x8001FAE4 single_game_FindStatusUpData -- walks a halfword list (4/8-byte entries by bits 0xC000) and returns the first entry with bit 0x4000; "StatusUp" unproven (StatusUpBuf is itself an unverified data name), not contradicted
+- 0x8001FB34 single_game_CheckGameState -- predicate over D_800A38DC and fighter-struct fields; "CheckGameState" vague but consistent
+- 0x800207C8 mode_helper -- vacuous; ratan2 [VERIFIED] x2 + game_GetPlayerData, game tables
+- 0x80033550 disppracticemenutex_StoreCoords -- finds a free slot in flag bytes D_800A3918[6] and stores 3 words from a0 into D_80107850[slot] -- "StoreCoords" (3-word vector) consistent; prefix unsupported but not contradicted
+- 0x80033FE4 mode_helper -- vacuous; sets game globals incl. D_800A3834
+- 0x80034F88 mode_helper -- vacuous; func_80077D00 + two game bytes
+- 0x8003504C mode_helper -- vacuous; 141-insn game-state routine, AUTO callees only
+- 0x80035438 mode_helper -- vacuous; func_80035280 + 0x80068ECC
+- 0x80035F78 mode_helper -- vacuous setter: stores a0..a3 + stack arg into 5 game globals
+- 0x80036EA8 mode_helper -- return D_8008F12C[a0] + a1 (s16 base-index table into g_cd_file_table); prior 2026-09-24 MEDIUM cdrom_GetEntryIndex stays MEDIUM (table meaning is one inference step) -- vacuous name, not wrong
+- 0x80036F40 game_FrameLoop -- loops VSync(2)/render until cdrom_IsIdle [CORROBORATED]; prior MEDIUM cdrom_WaitIdle -- "FrameLoop" not contradicted (it does run frames)
+- 0x800371E8 mode_helper -- vacuous setter: D_80101E6A = a0 (a CD-state field)
+- 0x800388A8 mode_helper -- vacuous; mode_helper x3 + motion_draw_tilemap (INFERRED)
+- 0x800397D4 mode_handler_04_GameSetup -- handler 04 (EXE 0x8008D0A0); ResetGraph(1) wrapper, 0x8003F218(0), SetGeomScreen(disp_CalcFov(0x2D)), game_Cleanup, mode=5 -- "GameSetup" consistent
+- 0x8003984C mode_helper -- vacuous; averages two 3-vectors of a0 (+0x198/+0x1A4), calls func_80053584/func_80054434
+- 0x8003AA48 game_helper -- vacuous; calls 0x8003A728 (comb exchange) with a {4,4,..} stack packet
+- 0x8003AA78 game_exec_display_sync -- D_800A3870=1; VSync(2) [VERIFIED]; comb exchange; VSync(2) -- "display_sync" not contradicted
+- 0x8003AAB0 game_exec_display_dma_loop -- VSync(2), loop {comb exchange; if comb open: ResetRCnt/GetRCnt(RCntCNT1) busy-wait >= 0x100} while D_800A3870==2 -- "dma" is unsupported (no DMA call in the body; only library internals of VSync in reach), weak, kept
+- 0x8003AE5C mode_helper -- vacuous; ResetGraph(1) wrapper + func_80020D38 + jump table
+- 0x8003AF40 mode_helper -- vacuous; ResetGraph(1) wrapper + func_80020D38 + player_rob_Init
+- 0x8003B328 mode_helper -- vacuous; player_SetCharId + func_80022568 + game globals
+- 0x8003B534 mode_helper -- vacuous setter: D_800A37B0=a0, mode D_800A3834=6, D_800A3878 = D_800A3894 + a0*4+1
+- 0x8003B870 mode_handler_22_VsModeInit -- handler 22 (EXE 0x8008D0E8); player_SetCharId x2, obj_InitChars, display init -- "VsModeInit" unproven, not contradicted
+- 0x8003B8E4 mode_handler_23_FrameDelay3 -- handler 23 (EXE 0x8008D0EC); counts D_800A37B8 frames, setup at frame 3 -- "FrameDelay3" consistent
+- 0x8003B9D0 mode_handler_06_GameTeardownVariant -- handler 06 (EXE 0x8008D0A8); display/sound (snd_SerialMixOn, cdrom_StartAudio [CORROBORATED]) re-init -- "GameTeardownVariant" not contradicted
+- 0x8003BE10 mode_handler_10_GameTeardown -- handler 10 (EXE 0x8008D0B8); player_Destroy x2, obj_InitAll, snd_SerialMixOn/cdrom_StartAudio -- consistent
+- 0x8003BEA8 mode_handler_11_PadInputCheck -- handler 11 (EXE 0x8008D0BC); tests g_pad_input_combined & 0x40 then updates D_80106A50/D_80106A54 bits, mode 0x1A/8 -- "PadInputCheck" consistent
+- 0x8003BFC4 mode_handler_15_TeardownVariant -- handler 15 (EXE 0x8008D0CC); player_Destroy x2, 0x80037540 (exec MOVOVL.EXE with OPENING.STR), game_Init -- "TeardownVariant" not contradicted
+- 0x8003C42C mode_handler_20_CountIterator -- handler 20 (EXE 0x8008D0E0); tallies D_800A377C[] per index, tie-break on D_800F65F8 pairs, D_800A382D=result, mode=21 -- "CountIterator" vague, consistent
+- 0x8003C560 mode_handler_21_FrameTimerSfx -- handler 21 (EXE 0x8008D0E4); frame counter; queues 0xA4/0xA7/0xA8/0xA9 via 0x8005C650 into the D_800EFB78 request table (consumer 0x8005C6D0 snd_FlushKeyOnTable held PLAUSIBLE) -- "Sfx" not contradicted
+- 0x8003C8B4 mode_handler_31_TimerLoop -- handler 31 (EXE 0x8008D10C); frame counter + hud_emit_warning_tiles, exits on pad bits 0x400040 or 0xF1 frames -- consistent
+- 0x8003C958 mode_handler_24_DispatchToMode25 -- handler 24 (EXE 0x8008D0F0); display init, clears 3 globals, sets D_800A3834 = 0x19 -- "DispatchToMode25" proven by the asm
+- 0x8003C9A4 mode_handler_25_PostBattleSetup -- handler 25 (EXE 0x8008D0F4); 202-insn setup -- "PostBattleSetup" unproven, not contradicted
+- 0x8003CCCC mode_handler_32_RebootDispatch -- handler 32 (EXE 0x8008D110); display init + game_Cleanup, mode = 0x21 -- "Reboot" unproven (not a system reset), not contradicted
+- 0x8003CD10 mode_handler_33_RebootBegin -- handler 33 (EXE 0x8008D114); 0x8003F1E4(0), func_80046BF4, game_StageInit ... -- unproven, not contradicted
+- 0x8003CE18 mode_handler_28_PostBattleMisc -- handler 28 (EXE 0x8008D100); unproven, not contradicted
+- 0x8003CF84 mode_handler_29_StageLeafUpdate -- handler 29 (EXE 0x8008D104); unproven, not contradicted
+- 0x8003D91C game_helper -- vacuous; gpu_SetDrawMoveArray [CORROBORATED] x2 over light_effect_col/D_800A4340
+- 0x8003E0E0 game_helper -- vacuous; wraps gpu_helper
+- 0x8003E6A0 mode_helper -- vacuous; func_8003E2D8 over D_80101E3C/44
+- 0x8003F1D4 game_GetCharData -- return &g_char_data (0x800A6690); the same region is walked in 0x68-byte records by func_8003E6D8 -- "CharData" unproven, not contradicted
+- 0x8003F7F4 game_helper -- vacuous; obj_ClearAll + sys_StubEmpty2
+- 0x80040D48 mode_helper -- vacuous; 272-insn object dispatcher with jalr through D_800F66A0
+- 0x8004211C game_helper -- vacuous; wraps func_80041EB0
+- 0x800421C8 game_helper -- vacuous; func_800422BC x4 + disp_set_fade_color over StageLight tables
+- 0x80042E90 game_helper -- vacuous; fills D_800F66A0[0,2,4,5] with func_8004A348 / math_RotMatrixZXY / YXZ / XYZ -- a rename would need func_8004A348 named first (INFERRED gte_gpf)
+- 0x8004473C game_helper -- vacuous; initialises the 0x68-byte records at *D_800A9D04 (frame +0x58 = -1) from game_GetCharData()
+- 0x8004659C mode_helper -- vacuous; five game callees
+- 0x80046B44 game_Init -- calls 9 init helpers then seeds game globals -- "game_Init" consistent
+- 0x80046DE4 game_GetDummyFlag -- return 0 (2 insns); "GetDummyFlag" consistent
+- 0x80046DEC game_GetPlayerData -- return func_8004153C() ? +0x1994 : NULL -- "PlayerData" unproven, not contradicted
+- 0x80046E18 game_GetPlayerBase -- return func_8004153C() ? +0x2C : NULL -- unproven, not contradicted
+- 0x80046EDC game_StageCleanup -- func_800460E4(a0); func_800421C8(a0) (StageLight setup); func_8003E0E0() -- "StageCleanup" unproven, not contradicted
+- 0x8004746C game_EffInit -- stage-table hook slot +0 (g_stage_init_tbl[4]) -> func_8004473C record init -- "EffInit" consistent
+- 0x800474AC game_AnimInit -- stage-table hook slot +0 (g_stage_init_tbl[5]) -> func_80048F58(0,0) zeroes phase + loads params -- "AnimInit" consistent
+- 0x800474F0 game_EffInit2 -- stage-table hook slot +0 (g_stage_init_tbl[7]) -> func_8004473C -- "EffInit2" consistent
+- 0x80047738 game_AnimStart -- stage-table hook slot +0 (g_stage_init_tbl[14]) -> func_80048F58(1,0) -- "AnimStart" (init with param set 1) not contradicted
+- 0x8004777C game_EffStart -- stage-table hook slot +0 (g_stage_init_tbl[18]) -> func_8004473C (marks records inactive, -1) -- "EffStart" loose, not contradicted
+- 0x800477BC game_Stub1 -- empty body; stage-table slot +0 of entry 23 -- "Stub" proven, "game_" prefix unproven
+- 0x800477C4 game_Stub2 -- empty body; stage-table slot +4 of entry 23 -- "Stub" proven
+- 0x800477CC game_Stub3 -- empty body; stage-table slot +0 of entries 8/24/33 -- "Stub" proven
+- 0x800477D4 game_Stub4 -- empty body; stage-table slot +4 of entries 8/24/33 -- "Stub" proven
+- 0x80048F58 game_helper -- vacuous; phase reset + 7-halfword param load for the SetDrawMove animator
+- 0x80048FFC game_helper -- vacuous; the SetDrawMove [VERIFIED] OT animator (see game_AnimCleanup RESET row)
+- 0x80049A2C mode_helper -- vacuous; func_80052C10 + get_global + efc dispatcher
+- 0x80049E4C game_helper -- vacuous; replay_camera_helper x2 over many game globals
+- 0x80049F4C game_helper -- vacuous; copies D_800153F0 into D_800F62E0, func_8004A09C (AUTO), then SetColorMatrix/SetBackColor [VERIFIED] -- mixed body, no clean restatement
+- 0x80054604 game_StageSetup -- printf("Destruction tiny model.\n" @0x80015840) only on a load-failure path; 160-insn stage load -- "StageSetup" consistent
+- 0x8005490C game_StageMain -- 407-insn stage-object setup called from md_game_frame_setup -- unproven, not contradicted
+- 0x8005C650 mode_helper -- queues {&D_8009AA70[a0], a1, a2} into the first free of 24 slots at D_800EFB78 -- vacuous; would need snd_FlushKeyOnTable (held PLAUSIBLE) to name
+- 0x800600C8 mode_helper -- vacuous; AddPrim/SetDrawMode [VERIFIED] sprite emitter over D_8009B6F0.. tables
+- 0x80060544 mode_helper -- vacuous; AddPrim/SetDrawMode [VERIFIED] sprite emitter over D_8009B770.. tables
+- 0x80060768 hud_emit_warning_tiles -- SetTile/SetSemiTrans/AddPrim/SetDrawMode [VERIFIED] tile emitter -- "hud" / "warning" unproven, not contradicted
+- 0x80061178 game_Cleanup -- func_80060C60 (zeroes game tables) + func_800421A4 + D_800A32BC=0 -- "Cleanup" consistent
+- 0x800618B4 mode_helper -- vacuous; anim_helper over D_800F1140 tables
+- 0x80068ECC mode_helper -- vacuous; copies bits 0-2,7 and bits 4-6 (>>1) and bit 3 (<<3) of a0 into D_8009BC04 -- a bit-remap into a game global, not pure
+- 0x8006D808 hud_helper -- vacuous; SetDrawMode/AddPrim [VERIFIED] sprite emitter (rejected 2026-09-24 as not worth a row)
+- 0x80072F30 hud_helper -- SetTile/SetSemiTrans/AddPrim [VERIFIED] fixed-colour tile (2026-09-24 rejected list: hud inference, not contradicted)
+- 0x80072FCC hud_helper -- same as 0x80072F30
+- 0x80073060 hud_layout_emit_tiles -- drives the two tile helpers -- "hud_layout_emit_tiles" unproven, not contradicted
+- 0x80077894 mode_helper -- vacuous; func_800693CC over D_8009BD38
+- 0x80077904 mode_helper -- vacuous; table lookup D_8009BD58/59[(D_8009BD38 & 0xF)*2] into D_800A35E0
+- 0x800779C8 mode_helper -- vacuous; func_8006EACC + func_8005B6FC (SsVabClose wrapper)
+- 0x80077B30 mode_helper -- vacuous; 116-insn jump-table routine
+- 0x8007855C mode_helper -- vacuous; get_global + gpu_helper
+- 0x800788B0 mode_helper -- vacuous; get_global + draw_anim_obj

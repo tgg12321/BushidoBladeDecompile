@@ -9,7 +9,7 @@ glabel func_8001D998
     /* E1B4 8001D9B4 1000B0AF */   sw        $s0, 0x10($sp)
     /* E1B8 8001D9B8 4E83000C */  jal        func_80020D38
     /* E1BC 8001D9BC 00000000 */   nop
-    /* E1C0 8001D9C0 1A6E010C */  jal        obj_InitPair
+    /* E1C0 8001D9C0 1A6E010C */  jal        func_8005B868
     /* E1C4 8001D9C4 00000000 */   nop
     /* E1C8 8001D9C8 1980043C */  lui        $a0, (0x80190800 >> 16)
     /* E1CC 8001D9CC 2E6E010C */  jal        func_8005B8B8

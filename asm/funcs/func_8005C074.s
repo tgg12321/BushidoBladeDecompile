@@ -120,7 +120,7 @@ glabel func_8005C074
     /* 4CA28 8005C228 80100500 */  sll        $v0, $a1, 2
     /* 4CA2C 8005C22C 21105300 */  addu       $v0, $v0, $s3
     /* 4CA30 8005C230 0000478C */  lw         $a3, 0x0($v0)
-    /* 4CA34 8005C234 DE6F010C */  jal        func_8005BF78
+    /* 4CA34 8005C234 DE6F010C */  jal        snd_MoveVabBody
     /* 4CA38 8005C238 21208002 */   addu      $a0, $s4, $zero
     /* 4CA3C 8005C23C 21304000 */  addu       $a2, $v0, $zero
     /* 4CA40 8005C240 01000226 */  addiu      $v0, $s0, 0x1

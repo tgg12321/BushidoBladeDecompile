@@ -10,7 +10,7 @@ glabel func_8004700C
     /* 3782C 8004702C B0ED8424 */  addiu      $a0, $a0, %lo(D_800EEDB0)
     /* 37830 80047030 21280002 */  addu       $a1, $s0, $zero
     /* 37834 80047034 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 37838 80047038 4C4A010C */  jal        func_80052930
+    /* 37838 80047038 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3783C 8004703C 21304002 */   addu      $a2, $s2, $zero
     /* 37840 80047040 1800028E */  lw         $v0, 0x18($s0)
     /* 37844 80047044 0F80033C */  lui        $v1, %hi(D_800EEDB2)

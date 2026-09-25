@@ -351,10 +351,15 @@ apiscan = {}   # ADDR(no 0x, upper) -> dict(name, evidence, note, origin, tier)
 #   libscan-desync       (handled by the libscan path below: glabel already Sony, C def is not)
 MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-restatement", "CORROBORATED"),
              (J("docs", "naming", "libscan", "near_manifest.csv"), None, None),
-             (J("docs", "naming", "sweep-2026-09-24", "func_manifest.csv"), None, None)]
+             (J("docs", "naming", "sweep-2026-09-24", "func_manifest.csv"), None, None),
+             # INFERRED-name audit (docs/naming/sweep-2026-09-25/): RESET/RENAME/UPGRADE rows
+             (J("docs", "naming", "sweep-2026-09-25", "func_manifest.csv"), None, None)]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),
+              # exported Sony name at an exact offset of a verbatim single-placement module whose
+              # XDEF sat mid-function before a boundary split (sweep 2026-09-25 UPGRADE rows)
+              "libscan-verbatim": ("libscan-verbatim", "VERIFIED"),
               # owner ruling 2026-09-24 (docs/naming/sweep-2026-09-24/ruling-2026-09-24.md)
               "in-binary-string": ("in-binary-string", "VERIFIED"),
               "computation-restatement": ("computation-restatement", "CORROBORATED"),
@@ -380,7 +385,8 @@ for ap, dorigin, dtier in MANIFESTS:
                 continue
             if cls == "reset-contradicted":
                 manifest_resets[a] = dict(evidence=(r.get("evidence") or "").strip(),
-                                          note=(r.get("verifier_note") or "").strip())
+                                          note=(r.get("verifier_note") or "").strip(),
+                                          sweep=os.path.basename(os.path.dirname(ap)))
                 continue
             origin, tier = CLASS_TIER.get(cls, (dorigin, dtier))
             if not origin:
@@ -537,11 +543,11 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
                          proposed_name="" if same else e["name"]))
         continue
 
-    # --- verified RESET (docs/naming/sweep-2026-09-24/): current name contradicted by the body
+    # --- verified RESET (docs/naming/sweep-*/): current name contradicted by the body
     if addr in manifest_resets and not AUTOPAT.match(nm):
         e = manifest_resets[addr]
         rows.append(dict(common, origin="contradicted-by-body", tier="SUSPECT",
-                         evidence=("RECORDED CONTRADICTION (verified sweep 2026-09-24): "
+                         evidence=("RECORDED CONTRADICTION (verified %s): " % e.get("sweep", "sweep")
                                    + e["note"][:500] + " | " + e["evidence"][:300])[:1000],
                          action="RESET", proposed_name=""))
         continue

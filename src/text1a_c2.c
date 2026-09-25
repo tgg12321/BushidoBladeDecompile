@@ -15,7 +15,7 @@ extern void func_80045230(s32);
 extern void func_80044010(s32, s32);
 extern void func_8003EDC0(s32, s32);
 extern s32 func_80044670(s32, s32, s32);
-extern void snd_SetVolume(s32);
+extern void func_800477DC(s32);
 extern s32 snd_GetMaxFade(void);
 extern void func_800481E8(s32, s32);
 extern void func_80054410(s32);
@@ -140,7 +140,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         s1 = (s32 *)func_80044670(PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
         break;
     case 11:
-        snd_SetVolume((s32)s1);
+        func_800477DC((s32)s1);
         s1 = (s32 *)((s32)s1 + snd_GetMaxFade());
         break;
     case 13:

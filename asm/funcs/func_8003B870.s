@@ -8,14 +8,14 @@ glabel func_8003B870
     /* 2C088 8003B888 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C08C 8003B88C 8105010C */  jal        player_SetCharId
     /* 2C090 8003B890 21280000 */   addu      $a1, $zero, $zero
-    /* 2C094 8003B894 6B6D010C */  jal        obj_InitChars
+    /* 2C094 8003B894 6B6D010C */  jal        func_8005B5AC
     /* 2C098 8003B898 00000000 */   nop
     /* 2C09C 8003B89C 225A000C */  jal        gpu_InitDisplay
     /* 2C0A0 8003B8A0 00000000 */   nop
     /* 2C0A4 8003B8A4 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C0A8 8003B8A8 21280000 */  addu       $a1, $zero, $zero
     /* 2C0AC 8003B8AC 21300000 */  addu       $a2, $zero, $zero
-    /* 2C0B0 8003B8B0 DA59000C */  jal        disp_SetFramebufferMode
+    /* 2C0B0 8003B8B0 DA59000C */  jal        func_80016768
     /* 2C0B4 8003B8B4 21380000 */   addu      $a3, $zero, $zero
     /* 2C0B8 8003B8B8 17000224 */  addiu      $v0, $zero, 0x17
     /* 2C0BC 8003B8BC 0A80013C */  lui        $at, %hi(D_800A37B8)

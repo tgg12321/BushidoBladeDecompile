@@ -44,7 +44,7 @@ extern s16 D_800A33CA;
 extern s32 D_800A3708;
 extern void func_8004211C(void);
 extern void func_800444BC(void);
-extern void func_80052930(void *, void *, void *);
+extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
 extern void func_80044FA0(s32, s32 *);
 extern s16 g_pad_selection;
 
@@ -107,14 +107,14 @@ extern void func_80044F80(s32, s32 *);
 extern void func_80044010(s32 *, s32);
 extern s16 D_800A3248;
 
-void snd_BgmCallback(s32 a0, s32 a1);
+void func_800468DC(s32 a0, s32 a1);
 
 /* --- Functions 0x80046780 - 0x80047EC8 --- */
 
 s32 snd_GetBgmId(void) {
     return g_snd_bgm_id;
 }
-s32 snd_GetSeId(void) {
+s32 func_8004678C(void) {
     return g_snd_se_id;
 }
 
@@ -126,7 +126,7 @@ s32 stage_GetVariant(void) {
     return g_stage_variant;
 }
 
-s32 *snd_LoadBgm(s32 a0) {
+s32 *func_800467B8(s32 a0) {
     s32 arg = a0;
     s32 chan = 8;
     s32 *s2;
@@ -155,16 +155,16 @@ s32 *snd_LoadBgm(s32 a0) {
             D_800A3248 = arg;
         }
     }
-    func_80045694(chan, snd_BgmCallback);
+    func_80045694(chan, func_800468DC);
     return s2;
 }
 
-void snd_PlayBgm(s32 a0) {
+void func_800468B0(s32 a0) {
     func_80045510(8, a0);
     func_80045230(0);
 }
 
-void snd_BgmCallback(s32 a0, s32 a1) {
+void func_800468DC(s32 a0, s32 a1) {
     func_80048B8C(a1);
     func_80044100(9, a1);
 }
@@ -180,7 +180,7 @@ void snd_AllocSe(void) {
 void snd_SeNullCallback(void) {
 }
 
-void snd_LoadSe(s32 a0) {
+void func_8004695C(s32 a0) {
     func_80045230(a0);
     func_80045600(9, a0);
     func_80045694(9, snd_SeNullCallback);
@@ -190,9 +190,9 @@ void func_800469A0(s32 a0) {
     func_80045510(9, a0);
 }
 
-void snd_SelectionCallback(s32, s32);
+void func_80046A80(s32, s32);
 
-s32 *snd_LoadSelection(s32 a0) {
+s32 *func_800469C4(s32 a0) {
     s32 *v0;
     s32 offset;
 
@@ -205,7 +205,7 @@ s32 *snd_LoadSelection(s32 a0) {
         func_80045600(0xA, (s32)s0);
     }
     g_pad_selection = (s16)a0;
-    func_80045694(0xA, snd_SelectionCallback);
+    func_80045694(0xA, func_80046A80);
     return v0;
 }
 
@@ -213,7 +213,7 @@ void snd_StopSelection(void) {
     func_800453E0(0xA);
 }
 
-void snd_SelectionCallback(s32 a0, s32 a1) {
+void func_80046A80(s32 a0, s32 a1) {
     func_80054FDC(a1);
 }
 
@@ -331,7 +331,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
 }
 void game_StageInit(s32 a0) {
     if (a0 & 1) {
-        game_InitStageSound(g_snd_stage_bgm);
+        func_80046EA0(g_snd_stage_bgm);
     }
     func_8004211C();
     func_800444BC();
@@ -377,7 +377,7 @@ void game_ResetTimer(void) {
     g_game_timer = 0x23;
 }
 
-void game_InitStageSound(s32 a0) {
+void func_80046EA0(s32 a0) {
     func_8003E6D8(a0);
     {
         s32 v0 = stage_GetId();
@@ -417,7 +417,7 @@ void camera_InitMatrix(void) {
 void camera_Transform(s32 *a0, s32 *a1, s32 a2) {
     s32 new_var;
     s32 diff, prod;
-    func_80052930(&g_cam_matrix, a0, a1);
+    gte_MulMatrix0ClearTrans(&g_cam_matrix, a0, a1);
     new_var = a0[5];
     diff = a0[6] - a2;
     prod = diff * D_800EEDB2;
@@ -443,7 +443,7 @@ void func_800470B0(s32 arg0, s32 *arg1, s32 *arg2, s32 arg3) {
     sp10.m[2][0] = 0;
     sp10.m[2][1] = (s16) -((s32)(*(s16 *)((s8 *)&g_cam_fov_z + temp_v1) << 12) / *(s16 *)((s8 *)&g_cam_fov_div + temp_v1));
     sp10.m[2][2] = 0x1000;
-    func_80052930(&sp10, var_s0, arg2);
+    gte_MulMatrix0ClearTrans(&sp10, var_s0, arg2);
     arg2[5] = var_s0[5] + (((var_s0[6] - arg3) * sp10.m[0][1]) >> 12);
     arg2[6] = arg3;
     arg2[7] = var_s0[7] + (((var_s0[6] - arg3) * sp10.m[2][1]) >> 12);
@@ -527,7 +527,7 @@ void game_EffInit(void) {
     func_8004473C();
 }
 
-void game_EffCleanup(void) {
+void func_8004748C(void) {
     func_80044800();
 }
 
@@ -535,7 +535,7 @@ void game_AnimInit(void) {
     func_80048F58(0, 0);
 }
 
-void game_AnimCleanup(void) {
+void func_800474D0(void) {
     func_80048FFC(0);
 }
 
@@ -543,11 +543,11 @@ void game_EffInit2(void) {
     func_8004473C();
 }
 
-void game_EffCleanup2(void) {
+void func_80047510(void) {
     func_80044800();
 }
 
-void game_SndInit(void) {
+void func_80047530(void) {
     func_800477E8();
 }
 
@@ -613,7 +613,7 @@ void game_AnimStart(void) {
     func_80048F58(1, 0);
 }
 
-void game_AnimStop(void) {
+void func_8004775C(void) {
     func_80048FFC(0);
 }
 
@@ -621,7 +621,7 @@ void game_EffStart(void) {
     func_8004473C();
 }
 
-void game_EffStop(void) {
+void func_8004779C(void) {
     func_80044800();
 }
 
@@ -637,7 +637,7 @@ void game_Stub3(void) {
 void game_Stub4(void) {
 }
 
-void snd_SetVolume(s32 a0) {
+void func_800477DC(s32 a0) {
     g_snd_volume = a0;
 }
 extern u32 GetTPage(s32, s32, s32, s32);
@@ -952,7 +952,7 @@ void func_80047BE0(void) {
 }
 extern s32 g_snd_config_tbl[];
 
-s32 snd_CalcFade(s32 a0) {
+s32 func_80047D94(s32 a0) {
     s32 a1 = (a0 + 0x7D00) / 3200;
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
@@ -968,7 +968,7 @@ s32 snd_CalcFade(s32 a0) {
         return ((val1 + val2) >> 12) - 0x3F48;
     }
 }
-s32 snd_GetFadeCurve(void) {
+s32 func_80047E5C(void) {
     s32 v1 = g_snd_fade_pos;
     if ((u32)v1 >= 18) {
         return 0;

@@ -24,7 +24,7 @@ glabel func_80054440
     /* 44C94 80054494 80400200 */  sll        $t0, $v0, 2
     /* 44C98 80054498 20284802 */  add        $a1, $s2, $t0 /* handwritten instruction */
     /* 44C9C 8005449C 0000A58C */  lw         $a1, 0x0($a1)
-    /* 44CA0 800544A0 4C4A010C */  jal        func_80052930
+    /* 44CA0 800544A0 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 44CA4 800544A4 21208002 */   addu      $a0, $s4, $zero
     /* 44CA8 800544A8 2000A88E */  lw         $t0, (0x1F800020 & 0xFFFF)($s5)
     /* 44CAC 800544AC 2400A98E */  lw         $t1, (0x1F800024 & 0xFFFF)($s5)

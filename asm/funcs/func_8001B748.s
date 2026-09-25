@@ -178,14 +178,14 @@ glabel func_8001B748
   .L8001B9F0:
     /* C1F0 8001B9F0 10000486 */  lh         $a0, 0x10($s0)
     /* C1F4 8001B9F4 10000524 */  addiu      $a1, $zero, 0x10
-    /* C1F8 8001B9F8 3C69000C */  jal        func_8001A4F0
+    /* C1F8 8001B9F8 3C69000C */  jal        math_SignExt12Div
     /* C1FC 8001B9FC 23206400 */   subu      $a0, $v1, $a0
     /* C200 8001BA00 10000524 */  addiu      $a1, $zero, 0x10
     /* C204 8001BA04 12000486 */  lh         $a0, 0x12($s0)
     /* C208 8001BA08 10000396 */  lhu        $v1, 0x10($s0)
     /* C20C 8001BA0C 23208402 */  subu       $a0, $s4, $a0
     /* C210 8001BA10 21186200 */  addu       $v1, $v1, $v0
-    /* C214 8001BA14 3C69000C */  jal        func_8001A4F0
+    /* C214 8001BA14 3C69000C */  jal        math_SignExt12Div
     /* C218 8001BA18 100003A6 */   sh        $v1, 0x10($s0)
     /* C21C 8001BA1C 12000396 */  lhu        $v1, 0x12($s0)
     /* C220 8001BA20 140000A6 */  sh         $zero, 0x14($s0)

@@ -5,7 +5,7 @@ glabel func_8005B8B8
     /* 4C0C4 8005B8C4 2000BFAF */  sw         $ra, 0x20($sp)
     /* 4C0C8 8005B8C8 1800B2AF */  sw         $s2, 0x18($sp)
     /* 4C0CC 8005B8CC 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 4C0D0 8005B8D0 1A6E010C */  jal        obj_InitPair
+    /* 4C0D0 8005B8D0 1A6E010C */  jal        func_8005B868
     /* 4C0D4 8005B8D4 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4C0D8 8005B8D8 3416020C */  jal        func_800858D0
     /* 4C0DC 8005B8DC 21200000 */   addu      $a0, $zero, $zero

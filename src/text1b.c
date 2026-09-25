@@ -289,7 +289,7 @@ void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     rect[3] = dim2 >> 16;
     rect[2] = dim2;
     if (func_800486FC() != 0) {
-        func_8004876C((s32)p_alt, rect[2], (s32)buf);
+        math_GrayscaleRgb555((s32)p_alt, rect[2], (s32)buf);
         LoadImage(rect, (s32 *)buf);
         DrawSync(0);
         return;
@@ -351,7 +351,7 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
     rect[3] = dim >> 16;
     rect[2] = dim;
     if (func_800486FC() != 0) {
-        func_8004876C((s32)arg0, rect[2], (s32)buf);
+        math_GrayscaleRgb555((s32)arg0, rect[2], (s32)buf);
         LoadImage(rect, (s32)buf);
         return;
     }
@@ -483,7 +483,7 @@ void func_80048744(s32 a0) {
         g_color_mode = 0;
     }
 }
-void func_8004876C(u16 *arg0, s32 arg1, u16 *arg2) {
+void math_GrayscaleRgb555(u16 *arg0, s32 arg1, u16 *arg2) {
     s32 temp_a3;
     s32 temp_v1;
     s32 var_t0;
@@ -579,8 +579,8 @@ void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
-extern s32 *snd_LoadBgm(s32); /* corrected to the definition (src/sound.c:134) — owner ruling 2026-08-24, escalation packet func_80048AD0 */
-extern s32 snd_PlayBgm(s32);
+extern s32 *func_800467B8(s32); /* corrected to the definition (src/sound.c:134) — owner ruling 2026-08-24, escalation packet func_80048AD0 */
+extern s32 func_800468B0(s32);
 extern u8 D_80099BCC;
 extern s32 D_800A33E0;
 extern s32 D_800A33E4;
@@ -600,7 +600,7 @@ s32 func_80048AD0(s32 arg0) {
     D_800A33E0 = arg0;
     sound = (&D_80099BCC)[idx];
     if (sound == 0xFF) return 0;
-    base = (u8 *)snd_LoadBgm(sound);
+    base = (u8 *)func_800467B8(sound);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
     delta = (s32)(p - base);
     D_800A33E4 = (s32)p;
@@ -619,7 +619,7 @@ s32 func_80048AD0(s32 arg0) {
         *(s8 *)(q - 9 + sound * 0x68) = 0;
         *(s16 *)(q + sound * 0x68) = (s16)arg0;
     }
-    snd_PlayBgm(delta + 0x6E8);
+    func_800468B0(delta + 0x6E8);
     return 1;
 }
 extern s32 g_snd_play_count;
@@ -632,8 +632,8 @@ typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } _struct_copy_func48BA4;
 extern void *game_GetPlayerData();
 extern s16 Judge;
 extern void ApplyMatrix(s32, s16 *, s32 *);
-extern void func_8004A348(s16 *, s16 *);
-extern void func_80052930(s32, s16 *, s16 *);
+extern void math_RotMatrixZYX(s16 *, s16 *);
+extern void gte_MulMatrix0ClearTrans(s32, s16 *, s16 *);
 extern s32 ClearOTagR(s32, s32);
 extern s32 D_800A36AC;
 extern s32 D_800A378C;
@@ -693,8 +693,8 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     rot.vy = 0xC00 - arg0;
     rot.vz = 0;
     indices = D_80099C14;
-    func_8004A348(rotp, mtx.m[0]);
-    func_80052930(*(s32 *)player, mtx.m[0], mtx.m[0]);
+    math_RotMatrixZYX(rotp, mtx.m[0]);
+    gte_MulMatrix0ClearTrans(*(s32 *)player, mtx.m[0], mtx.m[0]);
     D_800FF558 = mtx.m[0][0];
     D_800FF55A = mtx.m[1][0];
     D_800FF55C = mtx.m[2][0];
@@ -1396,7 +1396,7 @@ void func_8004A1FC(arg0) s16 *arg0; {
         i++;
     } while (i < 3);
 }
-INCLUDE_ASM("asm/funcs", func_8004A348);
+INCLUDE_ASM("asm/funcs", math_RotMatrixZYX);
 INCLUDE_ASM("asm/funcs", func_8004A4E0);
 INCLUDE_ASM("asm/funcs", func_8004A76C);
 INCLUDE_ASM("asm/funcs", func_8004A808);
@@ -1470,7 +1470,7 @@ INCLUDE_ASM("asm/funcs", func_800525D8);
  *   - Pure-C+§6.1 attempt reached 27/30 insns; remaining 3 are
  *     GCC-impossible structural patterns.
  * User-authorized 2026-05-16. */
-INCLUDE_ASM("asm/funcs", func_800526A0);
+INCLUDE_ASM("asm/funcs", math_SquareRoot0);
 PAD_NOPS_2; /* padding after func_800526A0 */
 /* func_80052720: GTE sqr tail-call wrapper — mtc2 IR1-3 -> sqr -> sum
  * MAC1-3 into $a0 -> frameless `j func_800526A0` tail-call.
@@ -1480,14 +1480,14 @@ PAD_NOPS_2; /* padding after func_800526A0 */
  * GCC 2.7.2 for the frameless j. Tail-call variant of the authorized
  * sibling func_80052754 below. Canonical-asm; see inline_asm_canonical.txt.
  * User-authorized 2026-06-12. */
-INCLUDE_ASM("asm/funcs", func_80052720);
+INCLUDE_ASM("asm/funcs", math_Length3D);
 /* GTE sqr (squared-vector-length) leaf wrapper: mtc2 IR1-3 -> sqr -> sum MAC1-3.
  * Hand-written asm — mfc2 results land in $t0/$t1/$t2, which natural cc1
  * register allocation cannot pick (GCC chooses $v0/$v1/$a0). Canonical-asm;
  * see inline_asm_canonical.txt. */
-INCLUDE_ASM("asm/funcs", func_80052754);
-INCLUDE_ASM("asm/funcs", func_80052788);
-INCLUDE_ASM("asm/funcs", func_800527FC);
+INCLUDE_ASM("asm/funcs", gte_SumSquares3);
+INCLUDE_ASM("asm/funcs", math_LerpSVector);
+INCLUDE_ASM("asm/funcs", math_LerpMatrix3x3);
 /* func_80052930: LIBGTE 3x3-mvmva matrix x s16-packed-vector transform leaf.
  * 5x lw <- *a0 -> ctc2 $0-$4 (packed R matrix) + ctc2 $zero to $5-$7 (zero
  * translation), 5x lw <- *a1 packed to s16 pairs via a hand-held
@@ -1500,17 +1500,17 @@ INCLUDE_ASM("asm/funcs", func_800527FC);
  * so the bytes are unreachable from any C. Last member of the text1b.c LIBGTE
  * leaf run (siblings func_80052A20/A88/B00/B44/B7C, authorized 2026-08-06).
  * Canonical-asm; see inline_asm_canonical.txt. Owner-authorized 2026-08-11. */
-INCLUDE_ASM("asm/funcs", func_80052930);
+INCLUDE_ASM("asm/funcs", gte_MulMatrix0ClearTrans);
 INCLUDE_ASM("asm/funcs", gte_SetMatrixRotTransIR);
 INCLUDE_ASM("asm/funcs", func_80052A88);
-INCLUDE_ASM("asm/funcs", func_80052B00);
+INCLUDE_ASM("asm/funcs", gte_SetRotTransMatrix);
 /* func_80052B44 = LIBGTE-style SetRotMatrix + zero-translation. Loads a packed
  * 3x3 rotation matrix (5 s32 words) from *a0 into cop2 controls CR0-CR4, then
  * zeroes the translation vector CR5-CR7 (TRX/TRY/TRZ), the last ctc2 in the
  * jr-ra delay slot. All cop2 + mechanical load packaging; hand-written GTE asm
  * (prologue instruction-identical to canonical-body func_8007ED6C, display.c).
  * Canonical-body authorized 2026-07-27 (judge PASS, docs/grind/decisions.md). */
-INCLUDE_ASM("asm/funcs", func_80052B44);
+INCLUDE_ASM("asm/funcs", gte_SetRotMatrixClearTrans);
 INCLUDE_ASM("asm/funcs", func_80052B7C);
 /* func_80052BE4: GTE far-color read wrapper — cfc2 RFC/GFC/BFC (cop2 ctrl
  * 21/22/23) -> srl 4 -> sb to *a0[0..2]. Hand-written asm: cfc2 results land
@@ -1525,7 +1525,7 @@ INCLUDE_ASM("asm/funcs", func_80052C4C);
 INCLUDE_ASM("asm/funcs", func_80052CD4);
 PAD_NOPS_3; /* padding after func_80052CD4 */
 INCLUDE_ASM("asm/funcs", func_80052D00);
-extern s32 func_80052754(s32, s32, s32);
+extern s32 gte_SumSquares3(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
 extern s32 func_80053E9C();
@@ -1540,7 +1540,7 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
     D_800A33F4 = (s32)&D_800EF9F8;
     *(_S16_53304 *)&D_800EFA00 = *(_S16_53304 *)arg0;
     *(_S16_53304 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53304 *)arg1;
-    if (func_80052754(
+    if (gte_SumSquares3(
             *(s32 *)((u8 *)D_800A33F4 + 0x18) - *(s32 *)((u8 *)D_800A33F4 + 0x8),
             *(s32 *)((u8 *)D_800A33F4 + 0x1C) - *(s32 *)((u8 *)D_800A33F4 + 0xC),
             *(s32 *)((u8 *)D_800A33F4 + 0x20) - *(s32 *)((u8 *)D_800A33F4 + 0x10)) <= 0x9C3F) {
@@ -1560,7 +1560,7 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
     }
     func_80052D00(arg2, arg3);
 }
-extern s32 func_80052754(s32, s32, s32);
+extern s32 gte_SumSquares3(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
 extern s32 func_80053E9C();
@@ -1573,7 +1573,7 @@ void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A33F4 = (u8 *)arg4;
     *(_S16_5344C *)((u8 *)D_800A33F4 + 8) = *(_S16_5344C *)arg0;
     *(_S16_5344C *)((u8 *)D_800A33F4 + 0x18) = *(_S16_5344C *)arg1;
-    if (func_80052754(
+    if (gte_SumSquares3(
             *(s32 *)((u8 *)D_800A33F4 + 0x18) - *(s32 *)((u8 *)D_800A33F4 + 0x8),
             *(s32 *)((u8 *)D_800A33F4 + 0x1C) - *(s32 *)((u8 *)D_800A33F4 + 0xC),
             *(s32 *)((u8 *)D_800A33F4 + 0x20) - *(s32 *)((u8 *)D_800A33F4 + 0x10)) <= 0x9C3F) {
@@ -1636,7 +1636,7 @@ s32 func_80053694(s32 *arg0, s16 *arg1) {
 INCLUDE_ASM("asm/funcs", func_80053754);
 extern s32 D_800A33F0;
 extern s32 D_800A33F4;
-extern s32 func_80052754(s32, s32, s32);
+extern s32 gte_SumSquares3(s32, s32, s32);
 extern void func_80052C4C(s32, s32, s32, s32);
 extern void func_80052CD4(s32 *, s32 *);
 
@@ -1774,7 +1774,7 @@ s32 func_80053E9C(s32 arg0, s32 arg1) {
                 data += n * 4;
             }
             if (W->unkE0 != 0) {
-                if ((W->unkE0 = func_80052754(W->unkA8 - W->unk4C, W->unkAC - W->unk4E, W->unkB0 - W->unk50)) < W->unk0) {
+                if ((W->unkE0 = gte_SumSquares3(W->unkA8 - W->unk4C, W->unkAC - W->unk4E, W->unkB0 - W->unk50)) < W->unk0) {
                     W->unk48 = arg0;
                     W->unk4A = arg1;
                     W->unk38 = W->unkA8;
@@ -1818,13 +1818,13 @@ extern const char D_80015840[];
 extern s32 func_80044FA0(s32, s32);
 extern s32 func_80045080(s32);
 extern void snd_StopBgm(void);
-extern s32 *snd_LoadSelection(s32);
+extern s32 *func_800469C4(s32);
 extern s16 *stage_GetDataPtr(void);
 extern s32 stage_GetId(void);
 
 extern void func_8003FFC4(s32);
 extern void game_SetPlayerCount(s32);
-extern s32 disp_CalcFov(s32);
+extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
 extern void gpu_ResetGraphMode1(void);
 extern void game_StageCleanup(s32, s32);
@@ -1853,7 +1853,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
             snd_StopBgm();
             printf(D_80015840);
         }
-        D_800EFAE8.unk2C = (s32)snd_LoadSelection(id);
+        D_800EFAE8.unk2C = (s32)func_800469C4(id);
         ret = 0;
     }
     p = s->unk2C;
@@ -1889,7 +1889,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     }
     s->unk8 = a1;
     game_SetPlayerCount(0);
-    SetGeomScreen(disp_CalcFov(0x2D));
+    SetGeomScreen(math_FovToScreenDist(0x2D));
     if (s->unk4 & 0x3F) {
         n = (s->unk4 & 0x3F) - 1;
         if (a6 != 0) {
@@ -2692,7 +2692,7 @@ extern void func_800858D0(s32);
 extern void func_80086130(s32, s32, s32);
 
 
-void obj_InitChars(void) {
+void func_8005B5AC(void) {
     s32 s1;
     s32 s3;
     u8 *s2;
@@ -2990,11 +2990,11 @@ s32 SsUtReverbOff(void);
 s32 SsUtSetReverbType(s32);
 s32 SsUtSetReverbDepth(s32, s32);
 
-void obj_InitChars(void);
+void func_8005B5AC(void);
 
 
 extern s32 D_800A3408;
-void obj_InitAll(void) {
+void func_8005B72C(void) {
     s32 s0;
     s32 *s2;
     s32 *s1;
@@ -3012,7 +3012,7 @@ void obj_InitAll(void) {
         s1++;
     }
     D_800A3408 = 0;
-    obj_InitChars();
+    func_8005B5AC();
 }
 
 #define NULL ((void *)0)
@@ -3089,7 +3089,7 @@ extern s32 g_vab_rec_ptr_plus_0x10;
 extern s32 g_vab_vb_sbaddr_plus_0x10;
 
 
-void obj_InitPair(void) {
+void func_8005B868(void) {
     func_800858D0(0);
     SsVabClose(8);
     g_vab_rec_ptr_plus_0x20 = 0;
@@ -3101,7 +3101,7 @@ void obj_InitPair(void) {
 extern s32 func_80036EA8(s32, s32);
 extern s32 func_80036F28(s32);
 extern s32 func_8005C2A8(s32 *, s16, s32);
-extern void obj_InitPair(void);
+extern void func_8005B868(void);
 extern void func_800858D0(s32);
 
 s32 func_8005B8B8(s32 arg0) {
@@ -3110,7 +3110,7 @@ s32 func_8005B8B8(s32 arg0) {
     s32 ret;
     s32 t0_2;
 
-    obj_InitPair();
+    func_8005B868();
     func_800858D0(0);
     t0 = func_80036EA8(2, 0x5D);
     game_FrameLoop();
@@ -3134,21 +3134,21 @@ extern s32 g_vab_rec_ptr_plus_0x24;
 extern s32 g_vab_vb_sbaddr_plus_0x24;
 void func_800858D0(s32);
 void SsVabClose(s16);
-void obj_InitTask(void) {
+void func_8005B9C4(void) {
     func_800858D0(0);
     SsVabClose(9);
     g_vab_rec_ptr_plus_0x24 = 0;
     g_vab_vb_sbaddr_plus_0x24 = 0;
 }
-void obj_InitTask(void);
+void func_8005B9C4(void);
 s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
 s32 cdrom_StartRead(s32, s32);
 s32 func_80036F28(s32);
 s32 func_8005C2A8(s32 *, s16, s32);
-void obj_InitTaskCamera(s32 a0) {
+void func_8005B9FC(s32 a0) {
     s32 s1;
-    obj_InitTask();
+    func_8005B9C4();
     s1 = func_80036EA8(2, 8);
     game_FrameLoop();
     cdrom_StartRead(s1, a0);
@@ -3157,7 +3157,7 @@ void obj_InitTaskCamera(s32 a0) {
     func_8005C2A8(a0, 9, a0 + s1);
 }
 s32 snd_VabFakeOpen(s32, s16);
-void obj_ExecTask(s32 a0) {
+void func_8005BA6C(s32 a0) {
     snd_VabFakeOpen(a0, 9);
 }
 typedef struct {
@@ -3314,7 +3314,7 @@ void func_800858D0(s32);
 
 
 
-void obj_Reset(void) {
+void func_8005BF3C(void) {
     func_800858D0(0);
     SsUtReverbOff();
     SsUtSetReverbType(0);
@@ -3330,7 +3330,7 @@ extern s32 SpuIsTransferCompleted();
 extern void func_800858D0(s32);
 
 
-s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     func_800858D0(0);
     SsVabClose((s16) arg1);
     SpuSetTransferStartAddr(arg3);
@@ -3392,7 +3392,7 @@ s32 func_8005C074(s16 vabid, s32 base) {
             addr += g_vab_rec_ptr[order[j]][3];
         } else {
             for (k = j; k < count; k++) {
-                addr = func_8005BF78(base, order[k], addr, g_vab_vb_sbaddr[order[k]]);
+                addr = snd_MoveVabBody(base, order[k], addr, g_vab_vb_sbaddr[order[k]]);
             }
             return 0;
         }
@@ -8768,7 +8768,7 @@ extern void PutDispEnv(s32);
 extern void ClearImage(s32, s32, s32, s32);
 extern void SetDispMask(s32);
 extern void DrawSync(s32);
-extern void disp_SetFramebufferMode(s32, s32, s32, s32);
+extern void func_80016768(s32, s32, s32, s32);
 s32 func_8006E2A8(void) {
     u8 rect[8];
     s32 base;
@@ -8781,7 +8781,7 @@ s32 func_8006E2A8(void) {
     __builtin_memcpy(rect, D_800A32E0, 8);
     ClearImage((s32)rect, 0, 0, 0);
     DrawSync(0);
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     SetDispMask(1);
     return 1;
 }
@@ -12123,10 +12123,10 @@ void func_80077724(s32 arg0, s32 arg1) {
 extern s32 D_800A35E4;
 
 
-void disp_SetFramebufferMode(s32, s32, s32, s32);
+void func_80016768(s32, s32, s32, s32);
 s32 func_80077820(s32 a0) {
     func_80068F70(a0, (s32 *)&D_8009BD24);
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     D_800A35E4 = 0;
     return 1;
 }
@@ -12179,7 +12179,7 @@ extern s32 D_800A35E8;
 s32 func_8006E534(s32, s32, u8*, u32);
 s32 func_80077984(s32 a0) {
     func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     return 1;
 }
 
@@ -12198,11 +12198,11 @@ void func_80077A04(s32 a0, s32 a1) {
     func_8006D74C(a0, a1);
 }
 extern s32 D_800A35E4;
-void disp_SetFramebufferMode(s32, s32, s32, s32);
+void func_80016768(s32, s32, s32, s32);
 s32 func_8006D7FC(void);
 void func_80077A28(void) {
     D_800A35E4 = 0;
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     func_8006D7FC();
 }
 
@@ -12212,10 +12212,10 @@ void func_80077A60(void) {
 extern s32 D_800A35E8;
 
 s32 func_800770B8(s32, s32, s32);
-void disp_SetFramebufferMode(s32, s32, s32, s32);
+void func_80016768(s32, s32, s32, s32);
 s32 func_80077A80(s32 a0) {
     func_800770B8(a0, (s32)&D_8009BD24, D_800A35E8);
-    disp_SetFramebufferMode(1, 0, 0, 0);
+    func_80016768(1, 0, 0, 0);
     return 1;
 }
 

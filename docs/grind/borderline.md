@@ -786,3 +786,11 @@ disposition taken: alias table recorded here; no policy change.
   gpu_OffsetTexPolyFT3 = func_80043BD0 · gpu_OffsetTexPolyFT4 = func_80043C7C · gpu_OffsetTexPolyGT3 = func_80043D34 ·
   gpu_OffsetTexPolyGT4 = func_80043DE0 · gte_SetMatrixRotTransIR = func_80052A20 · PCclose = func_800836B8 ·
   __main = func_80083794 · func_80083804 = motion_Close
+
+## 2026-09-25 — naming sweep (INFERRED-name audit) — name-drift alias table — policy-question
+category: policy-question
+evidence: naming sweep 2026-09-25 (docs/naming/sweep-2026-09-25/) renamed or RESET functions whose rulings / journal entries were filed under the old names; engine/dossier.py aliases() resolves them from this table.
+disposition taken: alias table recorded here; no policy change.
+  pcdrv_LoadFile = file_LoadAll · pcdrv_LoadSectors = file_LoadSectors · func_80016768 = disp_SetFramebufferMode ·
+  func_8003032C = cpu_get_dist · func_800467B8 = snd_LoadBgm · func_800468B0 = snd_PlayBgm ·
+  func_80047E5C = snd_GetFadeCurve · math_Length3D = func_80052720

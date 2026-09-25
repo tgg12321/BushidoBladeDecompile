@@ -24,7 +24,7 @@ glabel func_80035480
     /* 25CD4 800354D4 00000000 */  nop
     /* 25CD8 800354D8 07004010 */  beqz       $v0, .L800354F8
     /* 25CDC 800354DC 01000224 */   addiu     $v0, $zero, 0x1
-    /* 25CE0 800354E0 CB6D010C */  jal        obj_InitAll
+    /* 25CE0 800354E0 CB6D010C */  jal        func_8005B72C
     /* 25CE4 800354E4 00000000 */   nop
     /* 25CE8 800354E8 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 25CEC 800354EC 0A80013C */  lui        $at, %hi(D_800A390E)

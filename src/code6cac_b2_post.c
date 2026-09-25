@@ -40,7 +40,7 @@ extern void VSync(s32);
 
 extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
-extern void obj_InitAll(void);
+extern void func_8005B72C(void);
 extern void func_80077820(s32);
 
 
@@ -111,7 +111,7 @@ void func_80035DC8(void) {
     player_Destroy(0);
     player_Destroy(1);
     file_ResetDmaFlag();
-    obj_InitAll();
+    func_8005B72C();
     func_80077820((s32)0x80118800);
     D_800A3834 = 0x1B;
     gpu_SetDispMaskOn();
@@ -124,7 +124,7 @@ void func_80035E38(void) {
         D_800A36F1 = 2;
     }
 }
-s32 func_80035E88(s32 a0) {
+s32 bits_ExtractMask3F83F8(s32 a0) {
     s32 result = 0;
     s32 i = 0;
     s32 j = 0;
@@ -141,7 +141,7 @@ s32 func_80035E88(s32 a0) {
     } while (i < 0x1B);
     return result;
 }
-s32 func_80035EDC(s32 a0) {
+s32 bits_DepositMask3F83F8(s32 a0) {
     s32 result = 0;
     s32 i = 0;
     s32 j = 0;

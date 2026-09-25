@@ -98,7 +98,7 @@ glabel func_800344B4
     /* 24E1C 8003461C 743820A0 */  sb         $zero, %lo(D_800A3874)($at)
     /* 24E20 80034620 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 24E24 80034624 00000000 */   nop
-    /* 24E28 80034628 205B000C */  jal        file_LoadOverlay
+    /* 24E28 80034628 205B000C */  jal        eff_Init
     /* 24E2C 8003462C 00000000 */   nop
     /* 24E30 80034630 A8D0000C */  jal        func_800342A0
     /* 24E34 80034634 00000000 */   nop

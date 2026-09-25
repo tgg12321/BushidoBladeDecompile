@@ -203,7 +203,7 @@ after2:
 }
 typedef struct { s32 w[4]; } Block16;
 extern s32 g_anim_func_table[];
-extern void func_80052930(void *, void *, void *);
+extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
 extern void func_80052A88(void *, void *, void *);
 void func_800417D0(s32 *a0) {
     void (*func)(s32 *, s32 *);
@@ -219,7 +219,7 @@ void func_800417D0(s32 *a0) {
         if (((s16 *)a0[3])[3] == 0) {
             func_800417D0((s32 *)a0[3]);
         }
-        func_80052930((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x38), (void *)((u8 *)a0 + 0x18));
+        gte_MulMatrix0ClearTrans((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x38), (void *)((u8 *)a0 + 0x18));
         func_80052A88((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x4C), (void *)((u8 *)a0 + 0x2C));
     } else {
         ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
@@ -467,7 +467,7 @@ void func_80041E10(Block16 *a0, s32 a1) {
     g_anim_select[2] = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
-extern s32 func_80052754(s32, s32, s32);
+extern s32 gte_SumSquares3(s32, s32, s32);
 extern s32 ratan2(s32, s32);
 extern s32 rcos(s32);
 extern s32 rsin(s32);
@@ -526,7 +526,7 @@ void func_80041EB0(s32 a0, s32 a1)
         if (-dz >= 0x7000) goto calc;
 
     dist_check:
-        if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
+        if (gte_SumSquares3(dx, dy, dz) > 0x17D7840) { goto skip; }
 
     calc:
         angle = ratan2(dx, dz);
@@ -695,7 +695,7 @@ out:;
 }
 extern s32 func_800486FC();
 extern s32 func_8004881C(s32, s32, s32);
-extern void disp_SetFramebufferMode(s32, s32, s32, s32);
+extern void func_80016768(s32, s32, s32, s32);
 extern void SetFarColor(s32, s32, s32);
 void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
@@ -706,6 +706,6 @@ void func_80042478(s32 a0) {
         g = b;
         r = b;
     }
-    disp_SetFramebufferMode(1, r, g, b);
+    func_80016768(1, r, g, b);
     SetFarColor(r, g, b);
 }

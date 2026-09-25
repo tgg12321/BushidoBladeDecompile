@@ -34,7 +34,7 @@ glabel func_8005344C
     /* 43CCC 800534CC 23206400 */  subu       $a0, $v1, $a0
     /* 43CD0 800534D0 2000438C */  lw         $v1, 0x20($v0)
     /* 43CD4 800534D4 2328E500 */  subu       $a1, $a3, $a1
-    /* 43CD8 800534D8 D549010C */  jal        func_80052754
+    /* 43CD8 800534D8 D549010C */  jal        gte_SumSquares3
     /* 43CDC 800534DC 23306600 */   subu      $a2, $v1, $a2
     /* 43CE0 800534E0 3F9C0334 */  ori        $v1, $zero, 0x9C3F
     /* 43CE4 800534E4 2A186200 */  slt        $v1, $v1, $v0

@@ -44,10 +44,10 @@ extern s32 D_80102794;
 extern u16 D_800A38C4;
 extern s16 D_80101F32;
 
-extern void obj_InitChars(void);
-extern void obj_Reset(void);
-extern void obj_InitTask(void);
-extern void obj_InitPair(void);
+extern void func_8005B5AC(void);
+extern void func_8005BF3C(void);
+extern void func_8005B9C4(void);
+extern void func_8005B868(void);
 
 
 
@@ -70,10 +70,10 @@ extern void func_800324D0(u8 *);
 
 
 extern void sys_Panic(void);
-extern s32 obj_InitTaskCamera(s32);
+extern s32 func_8005B9FC(s32);
 extern s32 D_800A38B4;
 extern s32 memcpy(s32 *, s32, s32);
-extern void obj_ExecTask(s32);
+extern void func_8005BA6C(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
 extern void func_8002EBDC(s16 *, s16 *, s32 *, s32, s32);
@@ -137,7 +137,7 @@ extern s16 Judge;
 
 
 extern void game_SetPlayerCount(s32);
-extern s32 disp_CalcFov(s32);
+extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
 extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
@@ -1220,7 +1220,7 @@ void func_8001A484(u16 *arg0) {
         arg0 += 3;
     } while (i < 0x16);
 }
-s32 func_8001A4F0(s32 arg0, s32 arg1) {
+s32 math_SignExt12Div(s32 arg0, s32 arg1) {
     s32 v = arg0 & 0xFFF;
     if (v >= 0x800) {
         v -= 0x1000;
@@ -1335,8 +1335,8 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30 = 0x64;    D_800F6608.h32 = 0;    D_800F6608.h34 = 0x64;    D_800F6608.h38 = 0x64;    D_800F6608.h3A = 0;    D_800F6608.h3C = 0x64;    game_SetControllerPorts(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
-void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30 = 0x64;    D_800F5328.h32 = 0;    D_800F5328.h34 = 0x64;    D_800F5328.h38 = 0x64;    D_800F5328.h3A = 0;    D_800F5328.h3C = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
+void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30 = 0x64;    D_800F6608.h32 = 0;    D_800F6608.h34 = 0x64;    D_800F6608.h38 = 0x64;    D_800F6608.h3A = 0;    D_800F6608.h3C = 0x64;    func_8003F1E4(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30 = 0x64;    D_800F5328.h32 = 0;    D_800F5328.h34 = 0x64;    D_800F5328.h38 = 0x64;    D_800F5328.h3A = 0;    D_800F5328.h3C = 0x64;    func_8003F1E4(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
 void func_8001B478(s32 arg0) {
     u8 *obj = (u8 *)arg0;
     u8 *s2 = (u8 *)&D_800F5328;
@@ -1344,7 +1344,7 @@ void func_8001B478(s32 arg0) {
     s32 val;
     s32 far;
 
-    game_SetControllerPorts(0);
+    func_8003F1E4(0);
 
     val = (*(s32 *)(obj + 0x19C) + *(s32 *)(obj + 0x1A8)) / 2 - *(s32 *)(obj + 0x184);
     far = val >= 0x391;
@@ -1458,7 +1458,7 @@ void func_8001B6F4(void) {
     D_800A36FA = 1;
     D_800F6608.b1F = 0;
     D_800F5328.b1F = 0;
-    game_SetControllerPorts(0);
+    func_8003F1E4(0);
 }
 void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
@@ -1520,8 +1520,8 @@ void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 va
     } else {
         t = 0x80 - ((frac_s1 << 8) >> 12);
     }
-    dst->h10 = dst->h10 + func_8001A4F0(t - (s16)dst->h10, 0x10);
-    v = func_8001A4F0(val - (s16)dst->h12, 0x10);
+    dst->h10 = dst->h10 + math_SignExt12Div(t - (s16)dst->h10, 0x10);
+    v = math_SignExt12Div(val - (s16)dst->h12, 0x10);
     dst->h14 = 0;
     dst->h12 = dst->h12 + v;
     if (use_high) {
@@ -1575,7 +1575,7 @@ void func_8001BC70(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
     Vec3 *dst;
     Vec3 *src;
-    game_SetControllerPorts(0);
+    func_8003F1E4(0);
     dst = (Vec3 *)&D_800F6608;
     src = (Vec3 *)(arg0 + 0x174);
     *dst = *src;
@@ -1588,7 +1588,7 @@ void func_8001BCF0(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
     s32 diff = 0x1000 - arg1;
 
-    game_SetControllerPorts(0);
+    func_8003F1E4(0);
 
     *(Vec3 *)&D_800F6608 = *(Vec3 *)(arg0 + 0xB8);
 
@@ -1917,14 +1917,14 @@ void func_8001D904(void) {
     s32 *s0;
     gpu_ResetGraphMode1();
     func_80020D38();
-    obj_InitTask();
-    s1 = obj_InitTaskCamera((s32)0x80190800);
+    func_8005B9C4();
+    s1 = func_8005B9FC((s32)0x80190800);
     if (s1 >= 0xE81) {
         sys_Panic();
     }
     s0 = &MotDataBaseAddress;
     memcpy(s0, (s32)0x80190800, s1);
-    obj_ExecTask((s32)s0 - s2);
+    func_8005BA6C((s32)s0 - s2);
 }
 void func_8001D998(void) {
     s32 s2 = (s32)0x80190800;
@@ -1932,7 +1932,7 @@ void func_8001D998(void) {
     s32 *s0;
     gpu_ResetGraphMode1();
     func_80020D38();
-    obj_InitPair();
+    func_8005B868();
     s1 = func_8005B8B8((s32)0x80190800);
     if (s1 >= 0x1B19) {
         sys_Panic();
@@ -1942,13 +1942,13 @@ void func_8001D998(void) {
     func_8005B98C((s32)s0 - s2);
 }
 void func_8001DA2C(void) {
-    obj_InitChars();
-    obj_Reset();
+    func_8005B5AC();
+    func_8005BF3C();
     if (D_800A38DC == 5) {
-        obj_InitTask();
+        func_8005B9C4();
     }
     if (D_800A38DC == 3) {
-        obj_InitPair();
+        func_8005B868();
     }
 }
 void func_8001DA8C(void) {
@@ -2066,7 +2066,7 @@ void func_8001E404(void) {
             if (D_800A36FA == 0) {
                 fov = 0x50;
             }
-            SetGeomScreen(disp_CalcFov(fov));
+            SetGeomScreen(math_FovToScreenDist(fov));
         }
 
         if (D_800A36FA == 0) {

@@ -74,7 +74,7 @@ glabel func_8004DDB4
     /* 3E6D0 8004DED0 0400DE23 */  addi       $fp, $fp, 0x4 /* handwritten instruction */
     /* 3E6D4 8004DED4 2120E002 */  addu       $a0, $s7, $zero
     /* 3E6D8 8004DED8 21284002 */  addu       $a1, $s2, $zero
-    /* 3E6DC 8004DEDC 4C4A010C */  jal        func_80052930
+    /* 3E6DC 8004DEDC 4C4A010C */  jal        gte_MulMatrix0ClearTrans
     /* 3E6E0 8004DEE0 5403C622 */   addi      $a2, $s6, 0x354 /* handwritten instruction */
     /* 3E6E4 8004DEE4 0000E88E */  lw         $t0, 0x0($s7)
     /* 3E6E8 8004DEE8 0400E98E */  lw         $t1, 0x4($s7)

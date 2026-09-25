@@ -13,7 +13,7 @@ glabel func_80035DC8
     /* 265F4 80035DF4 01000424 */   addiu     $a0, $zero, 0x1
     /* 265F8 80035DF8 1D5B000C */  jal        file_ResetDmaFlag
     /* 265FC 80035DFC 00000000 */   nop
-    /* 26600 80035E00 CB6D010C */  jal        obj_InitAll
+    /* 26600 80035E00 CB6D010C */  jal        func_8005B72C
     /* 26604 80035E04 00000000 */   nop
     /* 26608 80035E08 1180043C */  lui        $a0, (0x80118800 >> 16)
     /* 2660C 80035E0C 08DE010C */  jal        func_80077820

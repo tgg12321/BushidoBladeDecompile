@@ -49,7 +49,7 @@ glabel func_800482C8
     /* 38B80 80048380 21200002 */   addu      $a0, $s0, $zero
     /* 38B84 80048384 1400A587 */  lh         $a1, 0x14($sp)
     /* 38B88 80048388 1800B027 */  addiu      $s0, $sp, 0x18
-    /* 38B8C 8004838C DB21010C */  jal        func_8004876C
+    /* 38B8C 8004838C DB21010C */  jal        math_GrayscaleRgb555
     /* 38B90 80048390 21300002 */   addu      $a2, $s0, $zero
     /* 38B94 80048394 1000A427 */  addiu      $a0, $sp, 0x10
     /* 38B98 80048398 80ED010C */  jal        LoadImage

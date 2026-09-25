@@ -31,7 +31,7 @@ glabel func_8003ACB8
     /* 2B528 8003AD28 00000000 */   nop
     /* 2B52C 8003AD2C 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 2B530 8003AD30 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
-    /* 2B534 8003AD34 A2D7000C */  jal        func_80035E88
+    /* 2B534 8003AD34 A2D7000C */  jal        bits_ExtractMask3F83F8
     /* 2B538 8003AD38 00000000 */   nop
     /* 2B53C 8003AD3C F80682A7 */  sh         $v0, %gp_rel(D_800A37C4)($gp)
     /* 2B540 8003AD40 92EA000C */  jal        func_8003AA48
@@ -42,7 +42,7 @@ glabel func_8003ACB8
     /* 2B554 8003AD54 00000000 */   nop
     /* 2B558 8003AD58 0A80043C */  lui        $a0, %hi(D_800A36C6)
     /* 2B55C 8003AD5C C6368484 */  lh         $a0, %lo(D_800A36C6)($a0)
-    /* 2B560 8003AD60 B7D7000C */  jal        func_80035EDC
+    /* 2B560 8003AD60 B7D7000C */  jal        bits_DepositMask3F83F8
     /* 2B564 8003AD64 00000000 */   nop
     /* 2B568 8003AD68 0A80013C */  lui        $at, %hi(D_800A38E4)
     /* 2B56C 8003AD6C E43822AC */  sw         $v0, %lo(D_800A38E4)($at)

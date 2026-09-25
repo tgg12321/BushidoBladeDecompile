@@ -467,7 +467,7 @@ void math_RotMatrixXYZ(u16 *a0, s16 *a1) {
     a1[7] = (csb12_sinC + sinA_cosC) >> 12;
 }
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl_2  |  132i  |  x2 size collision */
-extern void func_8004A348(s16 *, s32 *);
+extern void math_RotMatrixZYX(s16 *, s32 *);
 
 
 extern void math_RotMatrixXYZ();
@@ -475,7 +475,7 @@ extern s32 D_800F66A8;
 extern s32 D_800F66B0;
 extern s32 D_800F66B4;
 void func_80042E90(void) {
-    g_anim_func_table[0] = (s32)func_8004A348;
+    g_anim_func_table[0] = (s32)math_RotMatrixZYX;
     D_800F66A8 = (s32)math_RotMatrixZXY;
     D_800F66B0 = (s32)math_RotMatrixYXZ;
     D_800F66B4 = (s32)math_RotMatrixXYZ;
@@ -1299,7 +1299,7 @@ void func_80044800(void) {
             sv[2] = 0;
             scan = (s16 *)(D_800A9CF8.unk8 + frame * 12);
             sv[1] = angle;
-            func_8004A348(sv, mat);
+            math_RotMatrixZYX(sv, mat);
             sv[0] = *scan++;
             sv[1] = *scan++;
             sv[2] = *scan++;

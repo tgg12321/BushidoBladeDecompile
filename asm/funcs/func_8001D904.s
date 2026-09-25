@@ -9,10 +9,10 @@ glabel func_8001D904
     /* E120 8001D920 1000B0AF */   sw        $s0, 0x10($sp)
     /* E124 8001D924 4E83000C */  jal        func_80020D38
     /* E128 8001D928 00000000 */   nop
-    /* E12C 8001D92C 716E010C */  jal        obj_InitTask
+    /* E12C 8001D92C 716E010C */  jal        func_8005B9C4
     /* E130 8001D930 00000000 */   nop
     /* E134 8001D934 1980043C */  lui        $a0, (0x80190800 >> 16)
-    /* E138 8001D938 7F6E010C */  jal        obj_InitTaskCamera
+    /* E138 8001D938 7F6E010C */  jal        func_8005B9FC
     /* E13C 8001D93C 00088434 */   ori       $a0, $a0, (0x80190800 & 0xFFFF)
     /* E140 8001D940 21884000 */  addu       $s1, $v0, $zero
     /* E144 8001D944 810E222A */  slti       $v0, $s1, 0xE81
@@ -28,7 +28,7 @@ glabel func_8001D904
     /* E168 8001D968 0008A534 */  ori        $a1, $a1, (0x80190800 & 0xFFFF)
     /* E16C 8001D96C 48E4010C */  jal        memcpy
     /* E170 8001D970 21302002 */   addu      $a2, $s1, $zero
-    /* E174 8001D974 9B6E010C */  jal        obj_ExecTask
+    /* E174 8001D974 9B6E010C */  jal        func_8005BA6C
     /* E178 8001D978 23201202 */   subu      $a0, $s0, $s2
     /* E17C 8001D97C 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* E180 8001D980 1800B28F */  lw         $s2, 0x18($sp)
