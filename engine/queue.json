@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "prnt",
-      "file": "text1b_b",
-      "distance": 418,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8006295C",
       "file": "text1b",
       "distance": 420,
@@ -684,18 +676,29 @@
       "rotation": "flat floor 30/417 honest (2 permuter campaigns); 0/416 needs multi-write len/lzc_in + dx/dy/dz point-minus-base reuse (layer-2 FAIL, Ruling 5/6, staged-value bounds 2/4). Islands/canonical row/hashes + do-while(0) ruled sound. Allocator: fresh end-block deltas cannot seat s-regs. See memory/grind/func_8002A458/",
       "rotated_at": "2026-09-25T13:07:07+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "prnt",
+      "file": "text1b_b",
+      "distance": 418,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "owner question (borderline.md): BSD-Reno doprnt shared scratch n; honest per-role floor 21/418, single-n 0/418 oracle-green but layer-2 FAIL (R5 1(a)/(b)/(f); class declined 2026-09-24). Allocator: split digit loops cannot seat s0. See memory/grind/prnt/",
+      "rotated_at": "2026-09-25T13:26:35+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 62,
-    "active": 43,
+    "active": 42,
     "by_status": {
-      "active": 43,
-      "rotated": 19
+      "active": 42,
+      "rotated": 20
     },
     "by_verdict": {
-      "C": 32,
-      "ASM-PARTIAL": 11
+      "ASM-PARTIAL": 11,
+      "C": 31
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
