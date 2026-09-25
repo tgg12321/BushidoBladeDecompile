@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80073C78",
-      "file": "text1b",
-      "distance": 362,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800759D0",
       "file": "text1b",
       "distance": 364,
@@ -674,17 +666,28 @@
       "rotation": "memory/grind/func_800207C8/evidence.md",
       "rotated_at": "2026-09-24T21:09:08+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_80073C78",
+      "file": "text1b",
+      "distance": 362,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "owner question: cc1-no-plus-to-ior patch vs target ori (floor 2 with honest +); see docs/grind/borderline.md",
+      "rotated_at": "2026-09-25T08:00:54+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 63,
-    "active": 50,
+    "active": 49,
     "by_status": {
-      "active": 50,
-      "rotated": 13
+      "active": 49,
+      "rotated": 14
     },
     "by_verdict": {
-      "C": 38,
+      "C": 37,
       "ASM-PARTIAL": 12
     }
   },
