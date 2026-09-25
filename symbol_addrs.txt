@@ -157,11 +157,11 @@ g_stage_light_dir = 0x800A93BC; // light direction [3]
 g_stage_init_tbl = 0x800948BC; // per-stage init functions
 
 // === Game State ===
-g_game_mode = 0x800A336C; // game mode/state
+D_800A336C = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode
 g_game_player_count = 0x800A322C; // player count
 g_game_mirror_mode = 0x800F665C; // player count mirror
 g_game_p1_ctrl = 0x800F6656; // P1 controller port
-g_game_p2_ctrl = 0x800F6658; // P2 controller port
+D_800F6658 = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
 g_game_flag_a = 0x800A3370; // game flag A
 g_game_flag_b = 0x800A3374; // game flag B
 g_game_pause = 0x800F6654; // pause state flag
@@ -170,15 +170,15 @@ g_game_timer = 0x800A3790; // game timer
 // === Sound Config ===
 g_snd_bgm_id = 0x800A33B0; // current BGM track
 g_snd_se_id = 0x800A33B4; // current SE id
-g_snd_stage_bgm = 0x800A33C0; // stage BGM id
+D_800A33C0 = 0x800A33C0; // stage BGM id  // data-wave 2026-09-25: was g_snd_stage_bgm
 g_snd_volume = 0x800A33D0; // master volume
 g_snd_fade_pos = 0x800A33D4; // fade position
 g_snd_fade_amt = 0x800A33D8; // fade amount
 g_snd_play_count = 0x800A33E4; // sound play counter
 g_snd_se_bank = 0x80099C34; // SE bank param table
 g_snd_ch_data = 0x800EF848; // channel data blocks
-g_snd_fade_curve = 0x800EF800; // volume fade curve
-g_snd_config_tbl = 0x800EF7BC; // sound config table
+D_800EF800 = 0x800EF800; // volume fade curve  // data-wave 2026-09-25: was g_snd_fade_curve
+D_800EF7BC = 0x800EF7BC; // sound config table  // data-wave 2026-09-25: was g_snd_config_tbl
 
 // === Color Mode ===
 g_color_mode = 0x800F6652; // grayscale flag

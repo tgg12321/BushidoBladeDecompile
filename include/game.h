@@ -10,7 +10,7 @@ extern u8 g_cd_file_table;
 extern u8 g_disp_enable;
 extern u8 g_disp_fade;
 extern s16 g_game_mirror_mode;
-extern s16 g_game_p2_ctrl;
+extern s16 D_800F6658;
 extern s32 g_game_timer;
 extern s16 g_stage_id;
 extern s16 g_stage_variant;

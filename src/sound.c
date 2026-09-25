@@ -52,11 +52,11 @@ extern s16 g_pad_selection;
 extern s16 g_cam_matrix;
 extern s16 D_800EEDB2;
 extern s16 D_800EEDBE;
-extern s32 g_snd_stage_bgm;
+extern s32 D_800A33C0;
 extern s32 g_snd_fade_pos;
 extern s32 g_snd_fade_amt;
 
-extern s32 g_snd_fade_curve[];
+extern s32 D_800EF800[];
 extern u8 g_stage_data;
 extern s16 g_game_pause;
 extern u8 g_cam_bone_data;
@@ -262,7 +262,7 @@ void game_Init(void) {
     g_color_mode = 0;
     D_800F6650 = 0;
     g_game_p1_ctrl = 0;
-    g_game_p2_ctrl = two;
+    D_800F6658 = two;
     g_game_mirror_mode = 0;
     g_game_timer = 0x23;
     D_800A33BC = 0;
@@ -318,7 +318,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
         camera_InitBoneData();
         stage_InitCollision();
 
-        g_snd_stage_bgm = a2;
+        D_800A33C0 = a2;
     }
 
     base = (u8 *)&D_800F62E0;
@@ -331,7 +331,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
 }
 void game_StageInit(s32 a0) {
     if (a0 & 1) {
-        func_80046EA0(g_snd_stage_bgm);
+        func_80046EA0(D_800A33C0);
     }
     func_8004211C();
     func_800444BC();
@@ -863,7 +863,7 @@ void func_80047A90(void) {
     }
     *pa1 += v1;
     if (i == 8) {
-        *(s32 *)((s8 *)g_snd_fade_curve + a3) = v1;
+        *(s32 *)((s8 *)D_800EF800 + a3) = v1;
         pa1++;
         a3 += 4;
         pa2++;
@@ -950,7 +950,7 @@ void func_80047BE0(void) {
         src += 17;
     }
 }
-extern s32 g_snd_config_tbl[];
+extern s32 D_800EF7BC[];
 
 s32 func_80047D94(s32 a0) {
     s32 a1 = (a0 + 0x7D00) / 3200;
@@ -963,8 +963,8 @@ s32 func_80047D94(s32 a0) {
         return (s32)0xFFFE7960;
     }
     {
-        s32 val1 = g_snd_config_tbl[a1] * odd;
-        s32 val2 = g_snd_config_tbl[a1 + 1] * (0x1000 - odd);
+        s32 val1 = D_800EF7BC[a1] * odd;
+        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - odd);
         return ((val1 + val2) >> 12) - 0x3F48;
     }
 }
@@ -974,10 +974,10 @@ s32 func_80047E5C(void) {
         return 0;
     }
     {
-        s32 v0 = g_snd_fade_curve[v1];
+        s32 v0 = D_800EF800[v1];
         s32 a0 = g_snd_fade_amt;
         s32 val1 = v0 * a0;
-        s32 v3 = g_snd_fade_curve[v1 + 1];
+        s32 v3 = D_800EF800[v1 + 1];
         s32 val2 = v3 * (0x1000 - a0);
         return (val1 + val2) >> 12;
     }

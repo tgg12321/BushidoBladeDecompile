@@ -17,7 +17,7 @@ extern void sys_StubEmpty2(void);
 extern void obj_Clear(s32);
 
 /* Externs for globals */
-extern s32 g_game_mode;
+extern s32 D_800A336C;
 extern s32 g_game_player_count;
 extern s32 g_game_flag_b;
 extern s32 g_game_flag_a;
@@ -46,7 +46,7 @@ void stage_ExecInitFunc(void) {
     }
 }
 s32 func_8003F1C8(void) {
-    return g_game_mode;
+    return D_800A336C;
 }
 
 void *game_GetCharData(void) {
@@ -56,10 +56,10 @@ void *game_GetCharData(void) {
 void func_8003F1E4(s32 a0) {
     if (a0) {
         g_game_p1_ctrl = 3;
-        g_game_p2_ctrl = 2;
+        D_800F6658 = 2;
     } else {
         g_game_p1_ctrl = 0;
-        g_game_p2_ctrl = 1;
+        D_800F6658 = 1;
     }
 }
 

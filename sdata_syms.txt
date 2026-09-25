@@ -313,7 +313,6 @@ D_800A3928
 g_game_player_count
 g_anim_select
 g_pad_selection
-g_game_mode
 g_game_flag_a
 g_game_flag_b
 g_anim_hit_flags
@@ -321,7 +320,6 @@ g_anim_counter
 g_anim_hit_data
 g_snd_bgm_id
 g_snd_se_id
-g_snd_stage_bgm
 g_snd_volume
 g_snd_fade_pos
 g_snd_fade_amt

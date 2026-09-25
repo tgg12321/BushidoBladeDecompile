@@ -124,26 +124,26 @@ g_stage_collision = 0x800A8FB0;
 g_stage_light_pos = 0x800A93B0;
 g_stage_light_dir = 0x800A93BC;
 g_stage_init_tbl = 0x800948BC;
-g_game_mode = 0x800A336C;
+D_800A336C = 0x800A336C;  /* data-wave 2026-09-25: was g_game_mode */
 g_game_player_count = 0x800A322C;
 g_game_mirror_mode = 0x800F665C;
 g_game_p1_ctrl = 0x800F6656;
-g_game_p2_ctrl = 0x800F6658;
+D_800F6658 = 0x800F6658;  /* data-wave 2026-09-25: was g_game_p2_ctrl */
 g_game_flag_a = 0x800A3370;
 g_game_flag_b = 0x800A3374;
 g_game_pause = 0x800F6654;
 g_game_timer = 0x800A3790;
 g_snd_bgm_id = 0x800A33B0;
 g_snd_se_id = 0x800A33B4;
-g_snd_stage_bgm = 0x800A33C0;
+D_800A33C0 = 0x800A33C0;  /* data-wave 2026-09-25: was g_snd_stage_bgm */
 g_snd_volume = 0x800A33D0;
 g_snd_fade_pos = 0x800A33D4;
 g_snd_fade_amt = 0x800A33D8;
 g_snd_play_count = 0x800A33E4;
 g_snd_se_bank = 0x80099C34;
 g_snd_ch_data = 0x800EF848;
-g_snd_fade_curve = 0x800EF800;
-g_snd_config_tbl = 0x800EF7BC;
+D_800EF800 = 0x800EF800;  /* data-wave 2026-09-25: was g_snd_fade_curve */
+D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
 g_color_mode = 0x800F6652;
 g_pad_buf = 0x800FF580;  /* data-wave 2026-09-24: was g_pad_data */
 g_pad_selection = 0x800A324A;
@@ -564,8 +564,6 @@ game_EffStart_8004777C          = 0x8004777C;  /* same body as game_EffInit (cal
 
 /* === Data names landed by the final sound.c sweep (4) === */
 g_camera_matrix_data            = 0x800EEDB0;  /* base of camera matrix struct (9 s16, +0..+0x10); written by camera_InitMatrix. Layout: m[0]=g_cam_matrix=0x1000, m[1]=cos-derived (Y-projection), m[2..6]=0, m[7]=sin-derived (Z-projection), m[8]=0x1000 */
-g_snd_fade_state                = 0x800EF7BC;  /* snd_CalcFade state (paired with D_800EF7C0) */
-g_snd_fade_curve_table          = 0x800EF800;  /* snd_GetFadeCurve lookup table base (paired with D_800EF804) */
 g_camera_rotation_data          = 0x800F66A0;  /* camera_InitRotation state */
 
 /* === Data-symbol batch 6 (2026-05-17) -- ranks 61-90 === */
@@ -1809,7 +1807,7 @@ g_menuctl_effect_handle                                  = 0x800A372C;  /* effec
 g_vab_vb_sbaddr                                      = 0x800EFB38;  /* 16-entry s32 array; cleared in sync with g_effect_struct_b */  /* data-wave 2026-09-24: was g_effect_pool_a_16 */
 g_effect_pool_b_24                                      = 0x800EFB78;  /* 24-entry x 8-byte struct array; +0..3 = s32 (cleared to 0), +4..5 = u8 (set to 0x7F) */
 g_effect_pool_b_24_field_4                              = 0x800EFB7C;  /* u8 field at offset +4 of each 8-byte entry of g_effect_pool_b_24 (init = 0x7F) */
-g_effect_init_flag                                      = 0x800A3408;  /* flag reset to 0 at end of pool-init flow */
+D_800A3408                                      = 0x800A3408;  /* flag reset to 0 at end of pool-init flow */  /* data-wave 2026-09-25: was g_effect_init_flag */
 
 /* === text1b post-render + menu state (2026-05-17) -- 2 highs === */
 g_text1b_post_render_countdown                          = 0x800A32BC;  /* set to 0xA (10) when text1b render-state +0x0 bit 0x200000 is set; decremented per frame; tested >= 2 and == 1 in main loop */
@@ -2495,7 +2493,7 @@ g_gte_color_matrix_data_c_plus_6                        = 0x800F649E;  /* +6 fro
 g_gte_back_color_c_r_plus_1                             = 0x800F64B9;  /* +1 from g_gte_back_color_c_r (0x800F64B8) */
 g_gte_back_color_c_r_plus_2                             = 0x800F64BA;  /* +2 from g_gte_back_color_c_r (0x800F64B8) */
 g_gnd_init_complete_flag_plus_1                         = 0x800F6627;  /* +1 from g_gnd_init_complete_flag (0x800F6626) */
-g_game_p2_ctrl_plus_2                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */
+D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
 g_anim_func_table_plus_8                                = 0x800F66A8;  /* +8 from g_anim_func_table (0x800F66A0) */
 g_snd_callback_func_ptr_plus_4                          = 0x800F66B4;  /* +4 from g_snd_callback_func_ptr (0x800F66B0) */
 g_memcard_slot_plus_4                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */
