@@ -29480,3 +29480,65 @@ Owner (Trenton), verbatim: "Go ahead with your recommendations".
 
 **Rule-text layer-2:** round 1 FAILed on four wording defects and round 2 on the scan-result
 wording; the reviewer's replacement wordings were applied verbatim; round 3 PASS.
+
+## 2026-09-25 — OWNER RULING — Ruling 9 (b′)(3) clarification: past-the-end into unreferenced bytes (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Context. func_800759D0 was re-submitted under Ruling 9 amendment (b′) (bcdc1648e). Layer-2
+(reviewer-759D0-bprime, 2026-09-25) found (b′)(1), (2) and the other prongs hold, and FAILed the
+body as UNDECIDED on (b′)(3). On the placeholder path, loop 2's `cells = table[21] + 0x24` is 0xCA8,
+8 bytes past the end of sheet [21] (0xC84..0xCA0). (3) calls that an anomaly. But 0xCA8 is byte 8,
+the ubase/vbase word, of a header-shaped 12-byte record at 0xCA0 that nothing in D_SEL.BIN points
+to. The text did not settle two things:
+- whether "lands inside a record on a sub-object of a different kind" means BASE's own record or
+  any record;
+- whether an unreferenced header-shaped run counts as a record.
+
+The question and the ledger are in the borderline.md entry "func_800759D0 — (b′)(3) past-the-end
+into unreferenced data" (ledger dddf8fc9c).
+
+Question put to the owner, verbatim: "func_800759D0: in one edge case the game reads 8 bytes past
+the end of a sprite sheet. Those bytes fall in the middle of a neighbouring block of data that no
+code points to. Should that count as a plain 'read past the end' bug (allowed by the new rule, so
+the function lands), or as 'landing on other data with a different meaning' (forbidden, so it
+stays unfinished)?"
+
+Options offered, verbatim:
+- "Past the end (Recommended)": "Record a narrow clarification: the landing point counts as outside
+  the record if it is past the sheet's end and isn't the start of any object the program actually
+  uses. func_800759D0 then re-lands after a fresh review."
+- "Different meaning": "Landing anywhere inside other data fails the rule. func_800759D0 stays
+  unfinished at 25 instructions short, rotated."
+
+Owner (Trenton) selected, verbatim: "Past the end (Recommended)".
+
+**Ruling (full text in the rule file, (b′)(3) "Clarification (owner, 2026-09-25)"; everything
+beyond the option text is the author's narrowing).**
+- A BASE + K past the end of BASE's record counts as outside the record under (3). This holds even
+  when it falls among other bytes of the image, provided it is not the start of any object the
+  program actually references.
+- "Inside a record" means BASE's own record, or a referenced object whose start BASE + K hits.
+- An object is "referenced" if the program reaches it by a code access that uses the address as
+  the object's start or base, including a computed access (a stride, count or offset walk over the
+  containing data) whose reachable range includes the address, by a pointer, offset or table entry in the original EXE or data, or
+  by a symbol that code uses. A used sub-object of a referenced object counts as an object. An
+  unreferenced header-shaped run does not.
+- Hitting the start of a referenced object, or of a used sub-object of one, still fails (b).
+- The ledger records the search that shows the landing address is unreferenced: the file's pointer
+  tables and root slots, other data or EXE words, and every code walk over the containing data,
+  with its reachable range, showing that none reaches the address. An unsearched address fails.
+- The clarification decides only the past-the-end case. It does not decide a before-the-start
+  landing, and nothing else in (b′) or Ruling 9 changes.
+- func_800759D0 (memory/grind/func_800759D0/pending-bprime-0.c) re-lands only after a fresh
+  layer-2 under this text. The outcome is not pre-decided.
+
+**Author's interpretations (flagged for the rule-text layer-2):**
+1. The option says "the program actually uses". The rule text reads this as "actually references",
+   and defines it by three kinds of reference: code access, a pointer or table entry, or a symbol
+   that code uses.
+2. A used field inside a referenced object counts as an object. So hitting such a field fails, even
+   though the option names only an object's "start".
+3. The option says "past the sheet's end". The clarification is limited to past-the-end landings.
+4. The search-evidence requirement is the author's addition.
+
+**Rule-text layer-2:** round 1 FAILed on checkability of 'unreferenced'; replacement wordings applied
+verbatim; round 2 PASS.

@@ -945,6 +945,44 @@ reachable write, only when ALL of (1)-(4) hold:
   A path is an anomaly only if BASE + K lies outside BASE's record (past its end or before its start) as the original data lays it out. A path on which BASE + K lands inside a record on a sub-object of a different kind is a second meaning and fails (b), however the code then uses it. No anomaly record cures it.
   This test is the author's narrowing. A reachable path that the
   ledger neither shows to be normal nor documents as an anomaly fails (b).
+
+  **Clarification (owner, 2026-09-25): past the end, into unreferenced
+  bytes.** The owner chose the option "Past the end (Recommended)", whose
+  text is, verbatim: "Record a narrow clarification: the landing point counts
+  as outside the record if it is past the sheet's end and isn't the start of
+  any object the program actually uses. func_800759D0 then re-lands after a
+  fresh review." The full question, options and answer are in the decision
+  record. What follows is the author's narrowing of that option, not the
+  owner's words.
+  - **Anomaly.** A BASE + K that lies past the end of BASE's record, as the
+    original data lays it out, counts as outside the record under (3). This
+    holds even when the address falls among other bytes of the same image,
+    provided it is not the start of any object the program actually
+    references. "Inside a record" in the sentence above means BASE's own
+    record, or a referenced object whose start BASE + K hits.
+  - **Referenced object** (author's narrowing). An object is referenced if
+    the program reaches it by any of these:
+    - a code access that uses the address as that object's start or base, including a computed access (a stride, count or offset walk over the containing data) whose reachable range includes the address;
+    - a pointer, offset or table entry in the original EXE or data that
+      resolves to it;
+    - a symbol that code uses.
+
+    A field or other sub-object that code accesses within a referenced
+    object counts as an object of its own. A header-shaped run of bytes that
+    nothing references is not an object for this test.
+  - **Still fails.** A BASE + K that is the start of a referenced object, or
+    of a used sub-object of one, is a second meaning and fails (b) as before.
+  - **Evidence.** The ledger records the search that shows the landing
+    address is unreferenced: the containing file's pointer tables and root
+    slots, other data or EXE words that resolve to it, and every code walk over the containing data, with its reachable range, showing that none reaches the address. The measured bytes are recorded as (3) already requires.
+    The search requirement is the author's narrowing. An unsearched address
+    fails (b).
+  - **Scope.** This decides only the past-the-end case the owner was asked
+    about. It does not decide a BASE + K before the start of BASE's record
+    that falls among other bytes. It does not change (1), (2), (4), the
+    rest of (b), or the still-banned list. Record: docs/grind/decisions.md
+    2026-09-25 OWNER RULING — Ruling 9 (b′)(3) clarification: past-the-end
+    into unreferenced bytes.
 - **(4) The comment describes the assumption.** Every source comment on the
   variable describes what the code assumes, never a claim about all the data
   (prong (f) as amended above).
