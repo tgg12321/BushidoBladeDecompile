@@ -11,33 +11,30 @@
  * is func_8002E838's sequence (this file), applied to b as well as a.
  *
  * GTE ISLANDS: census member of the 2026-08-17 owner cluster ruling
- * (.claude/rules/cop2-addressing-preamble-cluster.md:72, 3 idiom sites).
- * Each island is the instruction sequence of a PsyQ GTE macro as spelled in
- * inline_o.h, the "DMPSX version 3" header (vendored copy
- * tmp/croc-ref/include/psyq/inline_o.h; composites from gtemac.h,
- * "Run-time Library Release 3.7"): gte_OuterProduct0 (gtemac.h:190-196) =
- * gte_ldopv1 (inline_o.h:595) / gte_ldopv2 (:626) / gte_op0 (:1866) /
- * gte_stlvnl (:2422); gte_sqr0 (:1749) + gte_stlvnl; gte_Lzc
- * (gtemac.h:230-236) = gte_ldlzc (:645) / 2x gte_nop (:3068) / gte_stlzc
- * (:2999); gte_SetRotMatrix (:860), gte_ldlv0 (:277), gte_rtv0 (:1353),
- * gte_stlvnl. The islands are written in this file's authorized spellings,
- * clobbers included (only the operand expressions differ): the gte_ldopv1 /
- * gte_ldopv2 / gte_op0 islands are character-identical to func_8002FDB0's;
- * every gte_stlvnl and the SetRotMatrix / ldlv0 / rtv0 and gte_Lzc islands
- * to func_8002E838's, the three gte_Lzc islands differing only in the LZCR
- * slot constant (sp+0x10/0x14/0x18, the target's; func_8001F2E4 likewise
- * uses 0x10/0x14). gte_sqr0 has no in-file precedent: it is the macro's
- * nop, nop and command word, with no GPR text. Each `.word` carries the real
- * cop2 command (the
- * target's own bytes) in place of the header's DMPSX placeholder: op0
- * 0x0000127f -> 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f
- * -> 0x4A486012. Island boundaries follow the in-file spellings: the
- * ldopv2 and ldlv0 islands carry the two nops of the command macro that
- * follows (op0 / rtv0), whose own island is then just its command word. In
- * gte_Lzc the two `addu $t4,...,$zero` are gte_ldlzc's and gte_stlzc's
- * `move $12,%0`; only the `addiu $v0,$sp,N` is outside the macro text -- the
- * disclosed cop2 addressing preamble of that ruling (widened anchor, owner
- * grant 2026-09-01). Everything else is ordinary C. */
+ * (.claude/rules/cop2-addressing-preamble-cluster.md:72); owner-instructed
+ * registry row cd61ed9f6 / 83883c4c0. 26 islands, each nothing but PsyQ GTE
+ * macro text as spelled in inline_o.h, the "DMPSX version 3" header
+ * (vendored copy tmp/croc-ref/include/psyq/inline_o.h; composites from
+ * gtemac.h, "Run-time Library Release 3.7"): gte_OuterProduct0
+ * (gtemac.h:190-196) = gte_ldopv1 (inline_o.h:595) / gte_ldopv2 (:626) /
+ * gte_op0 (:1866) / gte_stlvnl (:2422); gte_sqr0 (:1749) + gte_stlvnl;
+ * gte_Lzc (gtemac.h:230-236) = gte_ldlzc (:645) / 2x gte_nop (:3068) /
+ * gte_stlzc (:2999), three times; gte_SetRotMatrix (:860), gte_ldlv0 (:277),
+ * gte_rtv0 (:1353), gte_stlvnl. No island carries GPR text outside its
+ * macro: every operand is left to cc1 through %0 (the target's
+ * `addu $t4,<reg>,$zero` is the macros' `move $12,%0`, and the
+ * `addiu $v0,$sp,N` before each gte_stlzc is cc1 materializing &sp_tmpN).
+ * Island boundaries and clobbers follow this file's authorized spellings
+ * (operand expressions aside): gte_ldopv1 / gte_ldopv2 / gte_op0 as in
+ * func_8002FDB0; gte_stlvnl, gte_SetRotMatrix, gte_ldlv0, gte_rtv0 as in
+ * func_8002E838. The ldopv2, ldlv0 and ldlzc islands carry the two nops of
+ * the macro that follows (gte_op0 / gte_rtv0 / the gte_Lzc pair of
+ * gte_nop), so the op0 and rtv0 islands are just their command words.
+ * gte_sqr0 and the gte_ldlzc / gte_stlzc islands have no in-file precedent
+ * in this form. Each `.word` carries the real cop2 command (the target's own
+ * bytes) in place of the header's DMPSX placeholder: op0 0x0000127f ->
+ * 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f -> 0x4A486012.
+ * Everything else is ordinary C. */
 s32 func_8002CD58(u8 *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
@@ -108,20 +105,18 @@ s32 func_8002CD58(u8 *obj) {
             s32 lzcr = 0;
             if (len_sq >= 0) {
                 /* gte_Lzc(len_sq, &sp_tmp) -- gtemac.h:230-236: gte_ldlzc
-                 * (inline_o.h:645), two gte_nop (:3068), gte_stlzc (:2999),
-                 * with the addressing preamble; identical to func_8002E838's
-                 * island (LZCR slot sp+0x10). */
+                 * (inline_o.h:645) + the two gte_nop (:3068), then gte_stlzc
+                 * (:2999) into the LZCR slot (sp+0x10 in the target). */
                 __asm__ volatile(
-                    "addu   $t4, %1, $zero\n"
-                    "mtc2   $t4, $30\n"
+                    "move   $12, %0\n"
+                    "mtc2   $12, $30\n"
                     "nop\n"
                     "nop\n"
-                    "addiu  $v0, $sp, 0x10\n"
-                    "addu   $t4, $v0, $zero\n"
-                    "swc2   $31, 0($t4)\n"
-                    : "=m"(sp_tmp)
-                    : "r"(len_sq)
-                    : "$2", "$12");
+                    :: "r"(len_sq) : "$12");
+                __asm__ volatile(
+                    "move   $12, %0\n"
+                    "swc2   $31, 0($12)\n"
+                    :: "r"(&sp_tmp) : "$12", "memory");
                 lzcr = sp_tmp;
             }
             {
@@ -140,19 +135,18 @@ s32 func_8002CD58(u8 *obj) {
             } else {
                 s32 lzcr = 0;
                 if (xz_sq >= 0) {
-                    /* gte_Lzc again (see the first island); LZCR slot
-                     * sp+0x14, the target's second site. */
+                    /* gte_Lzc(xz_sq, &sp_tmp2) -- gte_ldlzc (inline_o.h:645) +
+                     * 2x gte_nop (:3068), gte_stlzc (:2999); slot sp+0x14. */
                     __asm__ volatile(
-                        "addu   $t4, %1, $zero\n"
-                        "mtc2   $t4, $30\n"
+                        "move   $12, %0\n"
+                        "mtc2   $12, $30\n"
                         "nop\n"
                         "nop\n"
-                        "addiu  $v0, $sp, 0x14\n"
-                        "addu   $t4, $v0, $zero\n"
-                        "swc2   $31, 0($t4)\n"
-                        : "=m"(sp_tmp2)
-                        : "r"(xz_sq)
-                        : "$2", "$12");
+                        :: "r"(xz_sq) : "$12");
+                    __asm__ volatile(
+                        "move   $12, %0\n"
+                        "swc2   $31, 0($12)\n"
+                        :: "r"(&sp_tmp2) : "$12", "memory");
                     lzcr = sp_tmp2;
                 }
                 {
@@ -248,19 +242,18 @@ s32 func_8002CD58(u8 *obj) {
     } else {
         s32 lzcr = 0;
         if (nxz_sq >= 0) {
-            /* gte_Lzc again (see the first island); LZCR slot sp+0x18, the
-             * target's third site. */
+            /* gte_Lzc(nxz_sq, &sp_tmp3) -- gte_ldlzc (inline_o.h:645) +
+             * 2x gte_nop (:3068), gte_stlzc (:2999); slot sp+0x18. */
             __asm__ volatile(
-                "addu   $t4, %1, $zero\n"
-                "mtc2   $t4, $30\n"
+                "move   $12, %0\n"
+                "mtc2   $12, $30\n"
                 "nop\n"
                 "nop\n"
-                "addiu  $v0, $sp, 0x18\n"
-                "addu   $t4, $v0, $zero\n"
-                "swc2   $31, 0($t4)\n"
-                : "=m"(sp_tmp3)
-                : "r"(nxz_sq)
-                : "$2", "$12");
+                :: "r"(nxz_sq) : "$12");
+            __asm__ volatile(
+                "move   $12, %0\n"
+                "swc2   $31, 0($12)\n"
+                :: "r"(&sp_tmp3) : "$12", "memory");
             lzcr = sp_tmp3;
         }
         {

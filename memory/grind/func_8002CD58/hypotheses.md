@@ -30,8 +30,9 @@ variants lived in tmp/cd58/; the instructive ones are banked in rejected/.
 | i1 | c + `sum3` reused for the table byte at site 3 | **0** | 352 | closes |
 | i2 | c + reuse at all three sites | 0 | 352 | more FAKEs than needed |
 | j1/j2 | h2 + reuse (site 3 / all sites) | 0 | 352 | inline_o.h full-clobber form also closes (rejected/inline-o-h-full-clobbers-0.c; not used — the in-file authorized island spellings are preferred) |
-| k1 | final: no mat/vec pointer locals, sums named len_sq/xz_sq/nxz_sq, reuse at site 3 only | **0** | 352 | = candidate.c |
+| k1 | final: no mat/vec pointer locals, sums named len_sq/xz_sq/nxz_sq, reuse at site 3 only | **0** | 352 | candidate.c until the third layer-2 review (hardcoded-preamble Lzc islands) |
 | k0 | k1 with a fresh `s32 tbl` at site 3 (the FAKE ablated) | 6 | 352 | rejected/fresh-tbl-site3-6.c |
+| k2 | k1 with the three gte_Lzc islands as pure macro text (ldlzc+2 nops / stlzc(&slot), no hardcoded addiu/$v0) | **0** | 352 | = candidate.c after the third layer-2 review; 26 islands |
 
 ## Mechanism of the last residual (RTL-verified, tools/rtl_track dumps + BB2_FINDREG_DEBUG)
 
