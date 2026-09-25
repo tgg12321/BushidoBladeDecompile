@@ -34,6 +34,7 @@ import difflib
 import glob
 import re
 import subprocess
+import time
 
 from . import buildconfig as cfg
 
@@ -44,9 +45,27 @@ def _objdump(*args: str) -> str:
     Object paths reach objdump verbatim, so an absolute path containing spaces
     (this repo's own directory does) can't be word-split into a silently empty
     symbol table — which surfaced as a misleading "<func> not found in <obj>".
-    """
-    return subprocess.run([cfg.OBJDUMP, *args],
-                          capture_output=True, text=True).stdout
+
+    A failed run RAISES. objdump prints at least a "file format" header for any
+    object it can read, so a non-zero exit or empty stdout is never a real
+    answer; returning it read as "function absent" (2026-09-25 scorer study:
+    one pass saw 155 text1b functions "not found" and scored one function 14
+    against 0 target instructions; the rerun was clean). Transient failures
+    on /mnt/c get a short retry first."""
+    for attempt in range(_OBJDUMP_ATTEMPTS):
+        r = subprocess.run([cfg.OBJDUMP, *args], capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout
+        if attempt + 1 < _OBJDUMP_ATTEMPTS:
+            time.sleep(_OBJDUMP_RETRY_DELAY)
+    raise RuntimeError(
+        f"objdump failed ({' '.join(args)}): exit {r.returncode}, "
+        f"{'empty' if not r.stdout.strip() else 'partial'} output; "
+        f"stderr: {r.stderr.strip()[-300:]!r}")
+
+
+_OBJDUMP_ATTEMPTS = 3
+_OBJDUMP_RETRY_DELAY = 0.5
 
 # objdump -t function line:  OFFSET <flags> F <section> SIZE NAME
 _SYMOFF_RE = re.compile(r"^([0-9a-fA-F]+)\s+\S.*\sF\s+\S+\s+([0-9a-fA-F]+)\s+(\S+)\s*$")

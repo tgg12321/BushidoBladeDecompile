@@ -3467,6 +3467,56 @@ def test_maspsx_fingerprint() -> None:
             Q.QUEUE_PATH = orig_path
 
 
+def test_objdump_failure_is_loud() -> None:
+    """2026-09-25: score._objdump returned stdout whatever objdump's exit
+    status, so a transient failure read as an empty symbol table ("<func> not
+    found") or an empty function. It now retries briefly and then RAISES on a
+    non-zero exit or empty output — never a silent "absent"."""
+    import subprocess as sp
+    real_run, real_delay = score.subprocess.run, score._OBJDUMP_RETRY_DELAY
+    calls = []
+
+    def fake(results):
+        seq = list(results)
+
+        def run(argv, capture_output=True, text=True):
+            calls.append(argv)
+            rc, out, err = seq.pop(0) if len(seq) > 1 else seq[0]
+            return sp.CompletedProcess(argv, rc, out, err)
+        return run
+    score._OBJDUMP_RETRY_DELAY = 0
+    try:
+        for label, results in (("non-zero exit", [(1, "", "bfd: file truncated")]),
+                               ("empty stdout, exit 0", [(0, "  \n", "")])):
+            calls.clear()
+            score.subprocess.run = fake(results)
+            raised = ""
+            try:
+                score._objdump("-t", "x.o")
+            except RuntimeError as e:
+                raised = str(e)
+            check(f"objdump: {label} raises", bool(raised))
+            eq(f"objdump: {label} retried before raising", len(calls), score._OBJDUMP_ATTEMPTS)
+            if results[0][2]:
+                check(f"objdump: {label} error carries stderr", results[0][2] in raised)
+        calls.clear()
+        score.subprocess.run = fake([(1, "", "busy"), (0, "x.o: file format elf32\n", "")])
+        eq("objdump: transient failure recovers on retry",
+           score._objdump("-t", "x.o"), "x.o: file format elf32\n")
+        eq("objdump: one retry used", len(calls), 2)
+        score.subprocess.run = fake([(1, "", "nope")])
+        raised = False
+        try:
+            score.normalized_insns("missing.o", "f")
+        except RuntimeError:
+            raised = True
+        except KeyError:
+            raised = False
+        check("objdump: a failed read is not reported as 'function not found'", raised)
+    finally:
+        score.subprocess.run, score._OBJDUMP_RETRY_DELAY = real_run, real_delay
+
+
 def test_symtab_data_dlabels() -> None:
     """_symtab() resolves data symbols defined only as `dlabel`s in the data
     asm (2026-09-22): before, `D_800A13FC` vs `D_800A12FC+0x100` (one address)
@@ -3545,6 +3595,7 @@ def main() -> int:
     test_queue_rotation()
     test_queue_remeasure_source_integrity()
     test_maspsx_fingerprint()
+    test_objdump_failure_is_loud()
     test_canonical_build()
     test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")
