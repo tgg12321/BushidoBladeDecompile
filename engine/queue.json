@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800288C8",
-      "file": "code6cac_b",
-      "distance": 465,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80053754",
       "file": "text1b",
       "distance": 466,
@@ -674,18 +666,29 @@
       "rotation": "flat floor 44/447 honest (2 sessions, permuter ~30min); node ptr (a1) needs one fresh pointer shared across both corner blocks (layer-2 FAIL R5/R6; no real carrier exists). Pending unruled va-borrow reaches 22. PathWalker/i/buf ruled sound. See memory/grind/func_80057E84/hypotheses.md",
       "rotated_at": "2026-09-25T15:29:03+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_800288C8",
+      "file": "code6cac_b",
+      "distance": 465,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "sandbox 90 from scorer-stripped header GPR stmts (owner question, borderline 2026-09-25) + tbl copy FAIL; oracle-green body banked in memory/grind/func_800288C8",
+      "rotated_at": "2026-09-25T16:23:47+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 60,
-    "active": 39,
+    "active": 38,
     "by_status": {
-      "active": 39,
-      "rotated": 21
+      "active": 38,
+      "rotated": 22
     },
     "by_verdict": {
-      "ASM-PARTIAL": 9,
-      "C": 30
+      "C": 30,
+      "ASM-PARTIAL": 8
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
