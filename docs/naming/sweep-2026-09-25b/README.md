@@ -1,0 +1,63 @@
+# Naming sweep 2026-09-25b — second batch
+
+Follow-up to `docs/naming/sweep-2026-09-25/` (the INFERRED-name audit). Same recipe: read-only
+miners (brief: `miner-brief.md`), then a fresh default-refute verifier per vein with its own
+harness; **only CONFIRM rows land**. Every data row was additionally checked for C-type conflicts
+across each translation unit's header closure (the trap that forced three deferrals in the first
+batch) — none found.
+
+| Vein | What | HIGH → verifier | Outcome |
+|---|---|---|---|
+| `snd_followups` | the rest of the sound.c heap family + out-of-vein leads | 7 func + 41 data | 48 CONFIRM |
+| `libsn` | library-scan pass over PsyQ 4.0 LIBSN (never in the committed scan) | 15 | 12 CONFIRM, 3 PLAUSIBLE |
+| `medium_revisit` | the first batch's MEDIUM rows, gaps closed or confirmed open | 20 func + 15 data | 30 CONFIRM (+1 REFUTE applied as its RESET fallback), 4 PLAUSIBLE |
+
+Applied: **25 function ops** (21 RESET, 4 RENAME) + **8 tier upgrades** + **57 data ops** + one hand
+registry edit. Census: INFERRED 553 → 531, VERIFIED 412 → 418, AUTO 383 → 401.
+
+## Files
+`func_manifest.csv`, `data_manifest.csv` (applied rows, evidence + verifier notes), `held.csv`
+(not applied, with reasons), `verify/<vein>[_func|_data].csv` (every verdict), `keep/` + `rejected/`
+per vein — read before re-mining.
+
+## Findings
+
+- **Correction to the first batch:** the Marionation heap is *not* sound-free. Slot 6 (NDATA 0x83+)
+  and the player slots a0+3 (NDATA 0x00–0x1E) hold VAB banks and are freed beside SsVabClose. Only
+  slots **7, 8 and 10** are proven sound-free (every reachable NDATA file read from the disc image,
+  with positive controls finding pBAV in 0x00–0x24 and 0x83+). Every applied RESET rests on those
+  three slots. The first batch's `snd_LoadSe` RESET (slot 9) removed a name without adding one, but
+  its stated reason ("the heap is not sound") was too broad.
+- **snd family, reset:** `snd_StopBgm`, `snd_StopSelection` (C names on auto glabels — build_census
+  now lets a verified RESET retire a LINK-MAP-DESYNC C name), `snd_GetBgmId`, `snd_GetMaxFade`,
+  `game_SndCleanup`/`saEft03Start_wrapper`, `marionation_GetFrameOffset` (the EXE table at
+  0x800963EC is byte-identical to NDATA.INF), and ~40 `g_snd_*` data aliases: heap-relocated
+  pointers into slots 7/8, the wave-mesh grid drawn through RotTransPers3, a transform node, camera
+  angles/translation, two slots of the rotation-matrix function table.
+- **LIBSN:** `pcdrv_ReadRaw` → `_SN_read` (Sony XDEF; the 2026-09-24 ruling admitted the restatement
+  only until SN's symbol was known), `__do_global_dtors`, data `__heapbase`, `_stacksize`, the false
+  alias `g_irq_cdrom_initialized` retired (it is the ctor/dtor once-flag). `PCopen`/`PCclose`/
+  `PClseek`/`PCread` → VERIFIED; `__main`, `main`, `InitHeap` confirmed. LIBGUN and LIBMCRD are not
+  linked.
+- **MEDIUM revisit:** `game_StageInit`, `game_Set/GetPlayerCount`, the three pause functions,
+  `game_ResetTimer`, `calc_dir_from_points`, `get_global`, two `copy`, `…SetTextureParam`, two
+  `replay_camera_helper`, `se_LoadStreamData` reset; `math_Grayscale3`, `gte_SetMatrixRotTransIRVec`
+  renamed; `gte_rtpt_batch` upgraded (== RotTransPers3); data `g_game_timer`/`g_round_timer`,
+  `g_game_pause`/`_flag`, `g_file_vram_timer`, 7 `g_voice_state_*` (camera offsets),
+  `g_game_player_count`, two `g_round_timer_*` (a unit vector) reset.
+- `tools/rename_funcs.py` still maps many retired names — deliberately NOT edited: it is a
+  provenance input build_census reads, and naming_wave excludes it by design.
+
+## Held — see `held.csv`
+
+- **Owner calls:** `_start` → `__SN_ENTRY_POINT` (`_start` is accurate; the 2026-08-07 style ruling
+  only covers stripping a project prefix off a Sony name); `math_Distance3D`/`_16` (approximate —
+  the proposed `_Shr2`/`_Shr4` suffix reads as "distance >> 2"; needs a spelling).
+- **Blocked on a dlabel split** (identity certain; the Sony symbol sits inside a wider asm dlabel,
+  so renaming would make the name cover neighbours): `__heapsize` (0x800A2670, dlabel 0x1C bytes,
+  also covers `__text`…`__bsslen`), `_ramsize` (0x800A2690), `CD_cbread` (inside `CD_cbready`),
+  `DS_active` (inside `CD_com`). The 2026-09-07 wave already landed one such over-wide name
+  (`_spu_rev_offsetaddr` covers `_spu_rev_attr`) — a defect to fix with the same split.
+- 0x80042ED8 is an in-place 3×3 transpose — RESET applied; `math_TransposeMatrixInPlace` unverified.
+- Next leads: `g_sound_3d_cursor` / `g_sound_3d_data_buffer` (0x800A3820 / 0x80102C00) are the GTE
+  renderer's draw list; the six MEDIUM rows that stayed MEDIUM (`keep/medium_revisit.md`).

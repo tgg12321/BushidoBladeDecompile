@@ -7,7 +7,7 @@
 
 /* Named globals */
 extern u8 g_file_disc_type;
-extern s16 g_file_vram_timer;
+extern s16 D_800A3710;
 
 /* Functions */
 extern void ResetCallback(void);

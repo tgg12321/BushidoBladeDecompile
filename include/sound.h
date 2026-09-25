@@ -6,8 +6,8 @@
 #include "common.h"
 
 /* Named globals */
-extern s32 g_snd_bgm_id;
-extern s32 g_snd_se_id;
+extern s32 D_800A33B0;
+extern s32 D_800A33B4;
 extern s32 g_snd_volume;
 
 /* Sony LIBSND `_svm_cur` (vmanager current-voice state; psyz

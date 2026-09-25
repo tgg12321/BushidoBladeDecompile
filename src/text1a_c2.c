@@ -231,8 +231,8 @@ void func_8004659C(s32 a0) {
     func_80044098(7);
     func_80044010(s2, 7);
     func_80054410(s3);
-    g_snd_bgm_id = (s32)s4p;
-    g_snd_se_id = (s32)s1p;
+    D_800A33B0 = (s32)s4p;
+    D_800A33B4 = (s32)s1p;
     func_8003EDC0(s0p, 7);
 }
 extern void func_800453E0(s32);

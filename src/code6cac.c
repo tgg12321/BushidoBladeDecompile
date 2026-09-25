@@ -1311,22 +1311,22 @@ void func_8001B138(s32 *arg0) {
         if (*arg0 & 1) {
             D_800A37E0 = 1;
             if (*arg0 & 8) {
-                g_file_vram_timer = g_file_vram_timer + 0x4CC;
+                D_800A3710 = D_800A3710 + 0x4CC;
             }
             if (*arg0 & 2) {
-                g_file_vram_timer = g_file_vram_timer - 0x4CC;
+                D_800A3710 = D_800A3710 - 0x4CC;
             }
-            if (g_file_vram_timer < -0x1C00) {
-                g_file_vram_timer = -0x1C00;
+            if (D_800A3710 < -0x1C00) {
+                D_800A3710 = -0x1C00;
             }
-            if (g_file_vram_timer >= 0x7401) {
-                g_file_vram_timer = 0x7400;
+            if (D_800A3710 >= 0x7401) {
+                D_800A3710 = 0x7400;
             }
             *arg0 = *arg0 & ~0xB;
         }
         {
             s32 v;
-            v = g_file_vram_timer;
+            v = D_800A3710;
             if (v < 0) {
                 v = v + 0xF;
             }

@@ -46,19 +46,19 @@ extern void func_8004211C(void);
 extern void func_800444BC(void);
 extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
 extern void func_80044FA0(s32, s32 *);
-extern s16 g_pad_selection;
+extern s16 D_800A324A;
 
 /* Externs for globals */
 extern s16 g_cam_matrix;
 extern s16 D_800EEDB2;
 extern s16 D_800EEDBE;
 extern s32 D_800A33C0;
-extern s32 g_snd_fade_pos;
-extern s32 g_snd_fade_amt;
+extern s32 D_800A33D4;
+extern s32 D_800A33D8;
 
 extern s32 D_800EF800[];
 extern u8 g_stage_data;
-extern s16 g_game_pause;
+extern s16 D_800F6654;
 extern u8 g_cam_bone_data;
 extern u8 g_cam_bone_data2;
 
@@ -112,10 +112,10 @@ void func_800468DC(s32 a0, s32 a1);
 /* --- Functions 0x80046780 - 0x80047EC8 --- */
 
 s32 func_80046780(void) {
-    return g_snd_bgm_id;
+    return D_800A33B0;
 }
 s32 func_8004678C(void) {
-    return g_snd_se_id;
+    return D_800A33B4;
 }
 
 s32 stage_GetId(void) {
@@ -204,7 +204,7 @@ s32 *func_800469C4(s32 a0) {
         func_80045230((s32)s0);
         func_80045600(0xA, (s32)s0);
     }
-    g_pad_selection = (s16)a0;
+    D_800A324A = (s16)a0;
     func_80045694(0xA, func_80046A80);
     return v0;
 }
@@ -257,14 +257,14 @@ void game_Init(void) {
        constant sets from being folded into the store tail (measured: without
        it CSE/sched collapse 1/2/0x23 into a single serialized $v0) */
     do { } while (0);
-    g_game_pause = one;
+    D_800F6654 = one;
     D_800F665A = one;
     g_color_mode = 0;
     D_800F6650 = 0;
     g_game_p1_ctrl = 0;
     D_800F6658 = two;
     g_game_mirror_mode = 0;
-    g_game_timer = 0x23;
+    D_800A3790 = 0x23;
     D_800A33BC = 0;
 }
 void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
@@ -358,23 +358,23 @@ void *game_GetPlayerBase(void) {
 }
 
 void func_80046E44(void) {
-    g_game_pause = 0;
+    D_800F6654 = 0;
 }
 
 void func_80046E54(s32 a0) {
     if (a0) {
-        g_game_pause = 1;
+        D_800F6654 = 1;
     } else {
-        g_game_pause = 0;
+        D_800F6654 = 0;
     }
 }
 
 s32 func_80046E7C(void) {
-    return g_game_pause;
+    return D_800F6654;
 }
 
 void func_80046E8C(void) {
-    g_game_timer = 0x23;
+    D_800A3790 = 0x23;
 }
 
 void func_80046EA0(s32 a0) {
@@ -957,8 +957,8 @@ s32 func_80047D94(s32 a0) {
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
     s32 odd = remainder & 1;
-    g_snd_fade_pos = a1;
-    g_snd_fade_amt = odd;
+    D_800A33D4 = a1;
+    D_800A33D8 = odd;
     if ((u32)a1 >= 18) {
         return (s32)0xFFFE7960;
     }
@@ -969,13 +969,13 @@ s32 func_80047D94(s32 a0) {
     }
 }
 s32 func_80047E5C(void) {
-    s32 v1 = g_snd_fade_pos;
+    s32 v1 = D_800A33D4;
     if ((u32)v1 >= 18) {
         return 0;
     }
     {
         s32 v0 = D_800EF800[v1];
-        s32 a0 = g_snd_fade_amt;
+        s32 a0 = D_800A33D8;
         s32 val1 = v0 * a0;
         s32 v3 = D_800EF800[v1 + 1];
         s32 val2 = v3 * (0x1000 - a0);

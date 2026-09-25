@@ -1153,7 +1153,7 @@ void func_80044504(s32 a0) {
     *(s32 *)0x1F80000C = a0;
     {
         s32 v1;
-        if (g_game_timer & 8) {
+        if (D_800A3790 & 8) {
             v1 = func_8003E2C8();
         } else {
             v1 = 0x7FFFFFFF;

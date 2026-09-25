@@ -225,7 +225,7 @@ void func_800167EC(void) {
     u32 c = 0x1A5E0;
     u8 *p;
 
-    g_file_vram_timer = 0;
+    D_800A3710 = 0;
     g_file_flags = 0;
     p = (u8 *)&g_file_disc_size;
     *(s32 *)p = 0x7007;

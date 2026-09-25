@@ -50,6 +50,9 @@ went INFERRED 668 → 553, VERIFIED 406 → 412, CORROBORATED 76 → 106, AUTO 3
   the EXE prints "Destruction tiny model." after freeing it) holds MAR model files — all 54
   reachable NDATA files were read from the disc image, none carries VAB/VAG/SEQ magic; slot 10
   likewise. `snd_LoadBgm`/`snd_PlayBgm`/`snd_LoadSe`/`snd_SetVolume`/`snd_CalcFade`… RESET.
+  **Correction (sweep 2026-09-25b):** the heap is not sound-free everywhere — slot 6 and the player
+  slots hold VAB banks. Only slots 7/8/10 are proven sound-free; the applied RESETs rest on those,
+  except `snd_LoadSe` (slot 9), whose removal adds no name but whose stated reason was too broad.
 - **The `obj_*` family is libsnd/libspu teardown** (SsVabClose, reverb off, SPU voice init) —
   no object state anywhere; `cpu_init_game_objects` calls only them.
 - **Three `mode_handler_NN_NoOp` are 360–544-insn handlers**; several `game_*` / `camera_*` /

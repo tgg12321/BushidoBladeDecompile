@@ -622,9 +622,9 @@ s32 func_80048AD0(s32 arg0) {
     func_800468B0(delta + 0x6E8);
     return 1;
 }
-extern s32 g_snd_play_count;
+extern s32 D_800A33E4;
 void func_80048B8C(s32 a0) {
-    g_snd_play_count += a0;
+    D_800A33E4 += a0;
 }
 typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
 typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;

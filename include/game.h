@@ -11,7 +11,7 @@ extern u8 g_disp_enable;
 extern u8 g_disp_fade;
 extern s16 g_game_mirror_mode;
 extern s16 D_800F6658;
-extern s32 g_game_timer;
+extern s32 D_800A3790;
 extern s16 g_stage_id;
 extern s16 g_stage_variant;
 

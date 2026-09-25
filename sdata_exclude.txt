@@ -27,7 +27,7 @@ func_8003EB84: D_800A3820
 gpu_AddDrawMove: D_800A36AC, D_800A378C
 func_80044504: D_800A36AC
 func_800460E4: D_800A38DC
-game_Init: g_game_timer
+game_Init: D_800A3790
 func_80046BF4: g_gpu_ot_ptr, D_800A378C, D_800A3820
 camera_CalcAngles: D_800A3708
 func_80048BA4: D_800A36AC, D_800A378C, D_800A3820

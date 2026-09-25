@@ -125,28 +125,28 @@ g_stage_light_pos = 0x800A93B0;
 g_stage_light_dir = 0x800A93BC;
 g_stage_init_tbl = 0x800948BC;
 D_800A336C = 0x800A336C;  /* data-wave 2026-09-25: was g_game_mode */
-g_game_player_count = 0x800A322C;
+D_800A322C = 0x800A322C;  /* data-wave 2026-09-25: was g_game_player_count */
 g_game_mirror_mode = 0x800F665C;
 g_game_p1_ctrl = 0x800F6656;
 D_800F6658 = 0x800F6658;  /* data-wave 2026-09-25: was g_game_p2_ctrl */
 g_game_flag_a = 0x800A3370;
 g_game_flag_b = 0x800A3374;
-g_game_pause = 0x800F6654;
-g_game_timer = 0x800A3790;
-g_snd_bgm_id = 0x800A33B0;
-g_snd_se_id = 0x800A33B4;
+D_800F6654 = 0x800F6654;  /* data-wave 2026-09-25: was g_game_pause */
+D_800A3790 = 0x800A3790;  /* data-wave 2026-09-25: was g_game_timer */
+D_800A33B0 = 0x800A33B0;  /* data-wave 2026-09-25: was g_snd_bgm_id */
+D_800A33B4 = 0x800A33B4;  /* data-wave 2026-09-25: was g_snd_se_id */
 D_800A33C0 = 0x800A33C0;  /* data-wave 2026-09-25: was g_snd_stage_bgm */
 g_snd_volume = 0x800A33D0;
-g_snd_fade_pos = 0x800A33D4;
-g_snd_fade_amt = 0x800A33D8;
-g_snd_play_count = 0x800A33E4;
+D_800A33D4 = 0x800A33D4;  /* data-wave 2026-09-25: was g_snd_fade_pos */
+D_800A33D8 = 0x800A33D8;  /* data-wave 2026-09-25: was g_snd_fade_amt */
+D_800A33E4 = 0x800A33E4;  /* data-wave 2026-09-25: was g_snd_play_count */
 g_snd_se_bank = 0x80099C34;
 g_snd_ch_data = 0x800EF848;
 D_800EF800 = 0x800EF800;  /* data-wave 2026-09-25: was g_snd_fade_curve */
 D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
 g_color_mode = 0x800F6652;
 g_pad_buf = 0x800FF580;  /* data-wave 2026-09-24: was g_pad_data */
-g_pad_selection = 0x800A324A;
+D_800A324A = 0x800A324A;  /* data-wave 2026-09-25: was g_pad_selection */
 g_gpu_db = 0x800F7438;  /* data-wave 2026-09-24: was g_disp_fb_base */
 g_gpu_db_plus_0x18 = 0x800F7450;  /* data-wave 2026-09-24: was g_disp_fb_flag */
 /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
@@ -155,7 +155,7 @@ g_disp_fade = 0x800A36A8;
 g_file_flags = 0x80106A73;
 g_file_disc_type = 0x80106A54;
 g_file_disc_size = 0x80106A50;
-g_file_vram_timer = 0x800A3710;
+D_800A3710 = 0x800A3710;  /* data-wave 2026-09-25: was g_file_vram_timer */
 g_file_dma_flag = 0x800A3716;
 g_file_heap_base = 0x800A38BC;
 g_file_data_buf = 0x800F6740;
@@ -380,10 +380,7 @@ rcnt_StartCnt1       = 0x80046AE8;  /* SsSet stuff with 0xF2000001 (SS event cla
 /* RENAME 0x80046B20: retired name 'snd_StopSystemSe_80046B20' — preserved note: SsCalledTickMode-style stop using 0xF2000001 */
 
 /* === Data names landed by the sound.c cluster audit (5) === */
-g_snd_se_id                     = 0x800A33B4;  /* paired with g_snd_bgm_id (=0x800A33B0); accessed by snd_GetSeId_8004678C */
 g_stage_variant                 = 0x8009947A;  /* paired with g_stage_id (=0x80099478) at +0x2; accessed by stage_GetVariant_800467A8 */
-g_game_pause_flag               = 0x800F6654;  /* halfword flag; read/written by game_{Get,Set,Disable}Pause */
-g_round_timer                   = 0x800A3790;  /* word timer; reset to 0x23 (35 frames) by game_ResetTimer */
 g_snd_volume                    = 0x800A33D0;  /* gp-rel word; written by snd_SetVolume */
 
 /* === Legacy renamer audit: ings.c cluster (2026-05-17) === */
@@ -1169,9 +1166,9 @@ g_motion_shift_flag2                                    = 0x800A38CC;  /* zeroed
 /* wave-gen): the engine maintains 9 audio channels x 17 samples each */
 /* for wave synthesis, indexed by per-channel phase counters that step */
 /* through the Judge[] sin/cos lookup table. */
-g_snd_voice_init_block                                  = 0x800EF070;  /* SPU voice descriptor struct passed to func_800417D0 init; first byte = 0xE (cmd), +0x6 +0xC -0xFA0 etc. */
-g_snd_wave_phase_table                                  = 0x800EF558;  /* 17 s32 entries; phase indices stepped by 0x12 per call to func_80047A90; used as Judge[] index */
-g_snd_wave_output_table                                 = 0x800EF59C;  /* 9 channels x 17 s32 samples (153 total, stride 0x44); audio wave-synthesis output via (Judge[idx] * 0x271) >> 10 */
+D_800EF070                                  = 0x800EF070;  /* SPU voice descriptor struct passed to func_800417D0 init; first byte = 0xE (cmd), +0x6 +0xC -0xFA0 etc. */  /* data-wave 2026-09-25: was g_snd_voice_init_block */
+D_800EF558                                  = 0x800EF558;  /* 17 s32 entries; phase indices stepped by 0x12 per call to func_80047A90; used as Judge[] index */  /* data-wave 2026-09-25: was g_snd_wave_phase_table */
+D_800EF59C                                 = 0x800EF59C;  /* 9 channels x 17 s32 samples (153 total, stride 0x44); audio wave-synthesis output via (Judge[idx] * 0x271) >> 10 */  /* data-wave 2026-09-25: was g_snd_wave_output_table */
 
 /* === SPU init/config cluster (2026-05-17) -- 5 highs === */
 /* From main.c func_80088740 (spu_FlushVoiceChannels) and spu init flow */
@@ -1225,7 +1222,7 @@ g_irq_vsync_callbacks                                   = 0x800A2614;  /* 8 x s3
 g_irq_vsync_ctrl_reg_ptr                                = 0x800A2638;  /* pointer to vsync IRQ control register (set to 0x107 in vsync init) */
 g_irq_cdrom_callbacks                                   = 0x800A2640;  /* 8 x s32 callback slots for CD-ROM IRQ; cleared by sys_MemClear2(&D, 8) */
 g_irq_cdrom_ctrl_reg_ptr                                = 0x800A263C;  /* pointer to CD-ROM IRQ control/status register */
-g_irq_cdrom_initialized                                 = 0x800A2668;  /* boolean: 0 = not init, then set to 1 */
+D_800A2668                                 = 0x800A2668;  /* boolean: 0 = not init, then set to 1 */  /* data-wave 2026-09-25: was g_irq_cdrom_initialized */
 g_ings2_vsync_block_ptr                                 = 0x800A1510;  /* pointer to a vsync timing block; *p read for timing calculations */
 
 /* === Intro/video framebuffer + render state (2026-05-17) -- 6 highs === */
@@ -1485,13 +1482,13 @@ g_motion_ex_counter_id5                                 = 0x800F0BB2;
 g_pad_buf_plus_0x4                                   = 0x800FF584;  /* sp.packets[1] base */  /* data-wave 2026-09-24: was g_voice_packet_base_1 */
 g_pad_buf_plus_0x24                                   = 0x800FF5A4;  /* sp.packets[2] base */  /* data-wave 2026-09-24: was g_voice_packet_base_2 */
 g_pad_buf_plus_0x28                                   = 0x800FF5A8;  /* sp.packets[3] base */  /* data-wave 2026-09-24: was g_voice_packet_base_3 */
-g_voice_state_word_a                                    = 0x800FF5C8;  /* state cluster cleared by func_8001B138 (single_game_VoiceContorol helper) */
-g_voice_state_word_b                                    = 0x800FF5CC;
-g_voice_state_word_c                                    = 0x800FF5D0;
-g_voice_state_half_a                                    = 0x800FF5D8;  /* s16 */
-g_voice_state_half_b                                    = 0x800FF5DA;  /* s16 */
-g_voice_state_word_d                                    = 0x800FF5DC;
-g_voice_state_word_e                                    = 0x800FF5E0;
+D_800FF5C8                                    = 0x800FF5C8;  /* state cluster cleared by func_8001B138 (single_game_VoiceContorol helper) */  /* data-wave 2026-09-25: was g_voice_state_word_a */
+D_800FF5CC                                    = 0x800FF5CC;  /* data-wave 2026-09-25: was g_voice_state_word_b */
+D_800FF5D0                                    = 0x800FF5D0;  /* data-wave 2026-09-25: was g_voice_state_word_c */
+D_800FF5D8                                    = 0x800FF5D8;  /* s16 */  /* data-wave 2026-09-25: was g_voice_state_half_a */
+D_800FF5DA                                    = 0x800FF5DA;  /* s16 */  /* data-wave 2026-09-25: was g_voice_state_half_b */
+D_800FF5DC                                    = 0x800FF5DC;  /* data-wave 2026-09-25: was g_voice_state_word_d */
+D_800FF5E0                                    = 0x800FF5E0;  /* data-wave 2026-09-25: was g_voice_state_word_e */
 
 /* === SPU voice volume table (2026-05-17) -- 1 high === */
 /* From main.c spu_InitEx (line 1306): when arg0==0, fills 24 u16 */
@@ -1662,12 +1659,12 @@ _spu_rev_reserve_wa                            = 0x800A2880;  /* current allocat
 _spu_rev_offsetaddr                                = 0x800A2884;  /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset */
 
 /* === Sound subsystem misc state (2026-05-17) -- 6 highs === */
-g_snd_cached_bgm_arg                                    = 0x800A3248;  /* memoization cache for snd_PlayBgm helper -- skip re-init if arg matches */
-g_snd_3d_angle_h_b                                      = 0x800EEE00;  /* sibling pair to g_sound_3d_angle_h/v but for the bone-data2 audio context */
-g_snd_3d_angle_v_b                                      = 0x800EEE02;  /* sibling pair */
-g_snd_3d_pos_x                                          = 0x800EEE1C;  /* position triple X (from D_80101DF0.xf.mat.t[0], 0x80101E1C) */
-g_snd_3d_pos_y                                          = 0x800EEE20;  /* position triple Y (from D_80101DF0.xf.mat.t[1], 0x80101E20) */
-g_snd_3d_pos_z                                          = 0x800EEE24;  /* position triple Z (from D_80101DF0.xf.mat.t[2], 0x80101E24, + 0x6590) */
+D_800A3248                                    = 0x800A3248;  /* memoization cache for snd_PlayBgm helper -- skip re-init if arg matches */  /* data-wave 2026-09-25: was g_snd_cached_bgm_arg */
+D_800EEE00                                      = 0x800EEE00;  /* sibling pair to g_sound_3d_angle_h/v but for the bone-data2 audio context */  /* data-wave 2026-09-25: was g_snd_3d_angle_h_b */
+D_800EEE02                                      = 0x800EEE02;  /* sibling pair */  /* data-wave 2026-09-25: was g_snd_3d_angle_v_b */
+D_800EEE1C                                          = 0x800EEE1C;  /* position triple X (from D_80101DF0.xf.mat.t[0], 0x80101E1C) */  /* data-wave 2026-09-25: was g_snd_3d_pos_x */
+D_800EEE20                                          = 0x800EEE20;  /* position triple Y (from D_80101DF0.xf.mat.t[1], 0x80101E20) */  /* data-wave 2026-09-25: was g_snd_3d_pos_y */
+D_800EEE24                                          = 0x800EEE24;  /* position triple Z (from D_80101DF0.xf.mat.t[2], 0x80101E24, + 0x6590) */  /* data-wave 2026-09-25: was g_snd_3d_pos_z */
 
 /* === Animation interp / camera transition counters (2026-05-17) -- 3 highs === */
 g_anim_stability_counter                                = 0x800A3310;  /* counts consecutive "stable" interp frames in dst[0x1F]-marked struct; >= 0xB switches to high-precision update */
@@ -2226,12 +2223,12 @@ g_char_struct_p1_block_dst_b                            = 0x801020C0;  /* per-ch
 /* === Sound voice-init block byte fields + callback ptr (2026-05-17) -- 6 highs === */
 /* Fields within g_snd_voice_init_block (0x800EF070), accessed by */
 /* offsets +1, +6, +8, +A, +C.  Plus a generic snd callback fn ptr. */
-g_snd_voice_init_byte_1                                 = 0x800EF071;  /* +1 of g_snd_voice_init_block */
-g_snd_voice_init_byte_6                                 = 0x800EF076;  /* +6 */
-g_snd_voice_init_byte_8                                 = 0x800EF078;  /* +8 */
-g_snd_voice_init_byte_A                                 = 0x800EF07A;  /* +A (init = 4) */
-g_snd_voice_init_byte_C                                 = 0x800EF07C;  /* +C */
-g_snd_callback_func_ptr                                 = 0x800F66B0;  /* callback function pointer (void(*)(u8*, s32*)) for sound subsystem */
+D_800EF071                                 = 0x800EF071;  /* +1 of g_snd_voice_init_block */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_1 */
+D_800EF076                                 = 0x800EF076;  /* +6 */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_6 */
+D_800EF078                                 = 0x800EF078;  /* +8 */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_8 */
+D_800EF07A                                 = 0x800EF07A;  /* +A (init = 4) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_A */
+D_800EF07C                                 = 0x800EF07C;  /* +C */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C */
+D_800F66B0                                 = 0x800F66B0;  /* callback function pointer (void(*)(u8*, s32*)) for sound subsystem */  /* data-wave 2026-09-25: was g_snd_callback_func_ptr */
 
 /* === Sound stream stage + camera sector data (2026-05-17) -- 5 highs === */
 g_scratchpad_cached_data_ptr                            = 0x80095328;  /* pointer stashed into scratchpad 0x1F80001C for fast access */
@@ -2380,8 +2377,8 @@ g_input_retry_counter_b_plus_8                          = 0x800A3328;  /* +8 fro
 g_pad_press_countdown_plus_4                            = 0x800A3334;  /* +4 from g_pad_press_countdown (0x800A3330) */
 g_result_timer_complete_flag_plus_4                     = 0x800A3340;  /* +4 from g_result_timer_complete_flag (0x800A333C) */
 g_result_timer_complete_flag_plus_8                     = 0x800A3344;  /* +8 from g_result_timer_complete_flag (0x800A333C) */
-g_snd_se_id_plus_8                                      = 0x800A33BC;  /* +8 from g_snd_se_id (0x800A33B4) */
-g_snd_fade_amt_plus_8                                   = 0x800A33E0;  /* +8 from g_snd_fade_amt (0x800A33D8) */
+D_800A33BC                                      = 0x800A33BC;  /* +8 from g_snd_se_id (0x800A33B4) */  /* data-wave 2026-09-25: was g_snd_se_id_plus_8 */
+D_800A33E0                                   = 0x800A33E0;  /* +8 from g_snd_fade_amt (0x800A33D8) */  /* data-wave 2026-09-25: was g_snd_fade_amt_plus_8 */
 g_particle_slot_bitmap_plus_4                           = 0x800A3448;  /* +4 from g_particle_slot_bitmap (0x800A3444) */
 g_scratchpad_ptr_b8_plus_4                              = 0x800A34F0;  /* +4 from g_scratchpad_ptr_b8 (0x800A34EC) */
 g_scratchpad_ptr_b8_plus_6                              = 0x800A34F2;  /* +6 from g_scratchpad_ptr_b8 (0x800A34EC) */
@@ -2437,8 +2434,8 @@ g_round_total_score_plus_4                              = 0x800A3880;  /* +4 fro
 g_match_round_byte_b_plus_1                             = 0x800A389C;  /* +1 from g_match_round_byte_b (0x800A389B) */
 g_voice_dialog_state_plus_2                             = 0x800A38AE;  /* +2 from g_voice_dialog_state (0x800A38AC) */
 g_cpu_move_pattern_cursor_plus_4                        = 0x800A38B8;  /* +4 from g_cpu_move_pattern_cursor (0x800A38B4) */
-g_file_heap_base_plus_4                                 = 0x800A38C0;  /* +4 from g_file_heap_base (0x800A38BC) */
-g_file_heap_base_plus_5                                 = 0x800A38C1;  /* +5 from g_file_heap_base (0x800A38BC) */
+D_800A38C0                                 = 0x800A38C0;  /* +4 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_4 */
+D_800A38C1                                 = 0x800A38C1;  /* +5 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_5 */
 g_pad_rec_misc_counter_plus_4                           = 0x800A38D4;  /* +4 from g_pad_rec_misc_counter (0x800A38D0) */
 g_gpu_ot256_ptr                        = 0x800A38D8;  /* +2 from g_replay_pos_change_count (0x800A38D6) */  /* data-wave 2026-09-24: was g_replay_pos_change_count_plus_2 */
 g_practice_lesson_param0_plus_1                         = 0x800A38DF;  /* +1 from g_practice_lesson_param0 (0x800A38DE) */
@@ -2454,9 +2451,9 @@ g_pad_rec_bit_count_a_plus_4                            = 0x800A390C;  /* +4 fro
 g_mottest_test_count_plus_1                             = 0x800A3920;  /* +1 from g_mottest_test_count (0x800A391F) */
 g_cpu_pattern_tick_plus_7                               = 0x800A3930;  /* +7 from g_cpu_pattern_tick (0x800A3929) */
 g_motion_table_arg1_saved_plus_2                        = 0x800A9CFA;  /* +2 from g_motion_table_arg1_saved (0x800A9CF8) */
-g_snd_voice_init_byte_C_plus_4                          = 0x800EF080;  /* +4 from g_snd_voice_init_byte_C (0x800EF07C) */
-g_snd_voice_init_byte_C_plus_6                          = 0x800EF082;  /* +6 from g_snd_voice_init_byte_C (0x800EF07C) */
-g_snd_voice_init_byte_C_plus_8                          = 0x800EF084;  /* +8 from g_snd_voice_init_byte_C (0x800EF07C) */
+D_800EF080                          = 0x800EF080;  /* +4 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_4 */
+D_800EF082                          = 0x800EF082;  /* +6 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_6 */
+D_800EF084                          = 0x800EF084;  /* +8 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_8 */
 g_vab_vb_sbaddr_plus_0x4                               = 0x800EFB3C;  /* +4 from g_effect_pool_a_16 (0x800EFB38) */  /* data-wave 2026-09-24: was g_effect_pool_a_16_plus_4 */
 g_vab_vb_sbaddr_plus_0x8                               = 0x800EFB40;  /* +8 from g_effect_pool_a_16 (0x800EFB38) */  /* data-wave 2026-09-24: was g_effect_pool_a_16_plus_8 */
 g_effect_pool_b_24_field_4_plus_1                       = 0x800EFB7D;  /* +1 from g_effect_pool_b_24_field_4 (0x800EFB7C) */
@@ -2492,7 +2489,7 @@ g_gte_back_color_c_r_plus_2                             = 0x800F64BA;  /* +2 fro
 g_gnd_init_complete_flag_plus_1                         = 0x800F6627;  /* +1 from g_gnd_init_complete_flag (0x800F6626) */
 D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
 g_anim_func_table_plus_8                                = 0x800F66A8;  /* +8 from g_anim_func_table (0x800F66A0) */
-g_snd_callback_func_ptr_plus_4                          = 0x800F66B4;  /* +4 from g_snd_callback_func_ptr (0x800F66B0) */
+D_800F66B4                          = 0x800F66B4;  /* +4 from g_snd_callback_func_ptr (0x800F66B0) */  /* data-wave 2026-09-25: was g_snd_callback_func_ptr_plus_4 */
 g_memcard_slot_plus_4                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */
 g_cd_playback_flag_b_plus_2                             = 0x80101E6A;  /* +2 from g_cd_playback_flag_b (0x80101E68) */
 g_replay_frame_offset_plus_4                            = 0x80101E78;  /* +4 from g_replay_frame_offset (0x80101E74) */
@@ -2538,10 +2535,10 @@ _spu_RQvoice                                     = 0x800A289C;  /* 5 refs */  /*
 g_text1b_pad_state_arr                                     = 0x800A35D0;  /* 5 refs */
 g_text1b_ot_prim_cursor                                     = 0x800A36E0;  /* 5 refs */
 g_disp_state_buf_cursor                                     = 0x800A36EC;  /* 5 refs */
-g_snd_data_subblock_1_ptr                                     = 0x800EFB1C;  /* 5 refs */
-g_snd_data_subblock_2_ptr                                     = 0x800EFB20;  /* 5 refs */
-g_snd_data_subblock_3_ptr                                     = 0x800EFB24;  /* 5 refs */
-g_snd_data_subblock_4_ptr                                     = 0x800EFB28;  /* 5 refs */
+D_800EFB1C                                     = 0x800EFB1C;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_1_ptr */
+D_800EFB20                                     = 0x800EFB20;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_2_ptr */
+D_800EFB24                                     = 0x800EFB24;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_3_ptr */
+D_800EFB28                                     = 0x800EFB28;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_4_ptr */
 g_vab_rec_ptr_plus_0xC                                 = 0x800EFC44;  /* 5 refs */  /* data-wave 2026-09-24: was g_effect_struct_b_off_C */
 g_vab_rec_ptr_plus_0x18                                = 0x800EFC50;  /* 5 refs */  /* data-wave 2026-09-24: was g_effect_struct_b_off_18 */
 g_motion_ex_counter_slot10                              = 0x800F0BBC;  /* 6 refs */
@@ -2603,7 +2600,7 @@ g_text1b_addr_80052394                                       = 0x80052394;
 g_text1b_addr_800790B4                                       = 0x800790B4;
 g_text1b_addr_80095488                                       = 0x80095488;
 g_text1b_addr_80095508                                       = 0x80095508;
-g_text1b_sound_id_lookup                                       = 0x80099BCC;
+D_80099BCC                                       = 0x80099BCC;  /* data-wave 2026-09-25: was g_text1b_sound_id_lookup */
 g_text1b_value_99C50                                       = 0x80099C50;
 g_text1b_s16_base_99CC2                                       = 0x80099CC2;
 g_text1b_pair_6byte_99D3C                                       = 0x80099D3C;
@@ -2702,8 +2699,8 @@ g_text1b_arg2_8_save                                   = 0x800A36E4;
 g_text1b_s16_base_ef9f2                                       = 0x800EF9F2;
 g_text1b_state_value_800EF9F4                                       = 0x800EF9F4;
 g_snd_data_header_FB0C                                       = 0x800EFB0C;
-g_snd_data_buf_base                                       = 0x800EFB14;
-g_snd_data_subblock_0_ptr                                       = 0x800EFB18;
+D_800EFB14                                       = 0x800EFB14;  /* data-wave 2026-09-25: was g_snd_data_buf_base */
+D_800EFB18                                       = 0x800EFB18;  /* data-wave 2026-09-25: was g_snd_data_subblock_0_ptr */
 g_vab_vb_sbaddr_plus_0x10                             = 0x800EFB48;  /* data-wave 2026-09-24: was g_effect_pool_a_16_plus_8_plus_8 */
 g_vab_vb_sbaddr_plus_0x14                            = 0x800EFB4C;  /* data-wave 2026-09-24: was g_effect_pool_a_16_plus_8_plus_12 */
 g_vab_vb_sbaddr_plus_0x20                                       = 0x800EFB58;  /* data-wave 2026-09-24: was g_text1b_state_FB58 */
@@ -2844,11 +2841,11 @@ g_round_total_score_plus_4_plus_12                           = 0x800A388C;
 g_c2_value_A7FE0                                  = 0x800A7FE0;
 g_c2_vidx_arr_A87E0                                  = 0x800A87E0;
 g_text1a_value_EED00                                       = 0x800EED00;
-g_snd_voice_init_vol_baseline                                        = 0x800EF0BC;
-g_snd_voice_init_field_at_50                                        = 0x800EF0C0;
-g_snd_voice_init_pitch_baseline                                        = 0x800EF0C4;
-g_snd_voice_envelope_block_a                                        = 0x800EF0D8;
-g_snd_voice_envelope_block_b                                        = 0x800EF168;
+D_800EF0BC                                        = 0x800EF0BC;  /* data-wave 2026-09-25: was g_snd_voice_init_vol_baseline */
+D_800EF0C0                                        = 0x800EF0C0;  /* data-wave 2026-09-25: was g_snd_voice_init_field_at_50 */
+D_800EF0C4                                        = 0x800EF0C4;  /* data-wave 2026-09-25: was g_snd_voice_init_pitch_baseline */
+D_800EF0D8                                        = 0x800EF0D8;  /* data-wave 2026-09-25: was g_snd_voice_envelope_block_a */
+D_800EF168                                        = 0x800EF168;  /* data-wave 2026-09-25: was g_snd_voice_envelope_block_b */
 regs_plus_0x8                                         = 0x800F1AE0;  /* data-wave 2026-09-25: was g_main_addr_800F1AE0 */
 regs_plus_0xA                                         = 0x800F1AE2;  /* data-wave 2026-09-25: was g_main_addr_800F1AE2 */
 regs_plus_0xE                                         = 0x800F1AE6;  /* data-wave 2026-09-25: was g_spu_reg_init_F1AE6 */
@@ -3058,8 +3055,8 @@ g_char_id_saved_d_plus_2_800A36CA                            = 0x800A36CA;  /* 1
 g_pad_rec_prev_hash_plus_4_800A36D8                          = 0x800A36D8;  /* 19 refs; +4 from g_pad_rec_prev_hash (0x800A36D4) */
 g_cd_result                          = 0x800A3760;  /* 71 refs; passed as arg1 to cpu_side_move_dir_4_wrapper_800801E8 (pass-5-renamed from Vu0SetLightColMatrix misnomer) */  /* data-wave 2026-09-24: was g_cpu_side_move_dir_4_arg1_800A3760 */
 g_frame_state_counter_800A377B                               = 0x800A377B;  /* 11 refs; s16 in frame-state cluster; frame-sync counter */
-g_round_timer_reload_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */
-g_round_timer_plus_2_800A37EA                                = 0x800A37EA;  /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */
+D_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
+D_800A37EA                                = 0x800A37EA;  /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
 g_round_timer_plus_4_800A37EC                                = 0x800A37EC;  /* 11 refs; +4 from timer base */
 g_file_state_field_800A381C                                  = 0x800A381C;  /* 16 refs; in file-subsystem state region (agent's plus_8 claim was wrong; using neutral name) */
 g_file_heap_state_flag_800A38B0                              = 0x800A38B0;  /* 40 refs; u8 init/busy flag in file subsystem (lbu/sb access) */

@@ -158,23 +158,23 @@ g_stage_init_tbl = 0x800948BC; // per-stage init functions
 
 // === Game State ===
 D_800A336C = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode
-g_game_player_count = 0x800A322C; // player count
+D_800A322C = 0x800A322C; // player count  // data-wave 2026-09-25: was g_game_player_count
 g_game_mirror_mode = 0x800F665C; // player count mirror
 g_game_p1_ctrl = 0x800F6656; // P1 controller port
 D_800F6658 = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
 g_game_flag_a = 0x800A3370; // game flag A
 g_game_flag_b = 0x800A3374; // game flag B
-g_game_pause = 0x800F6654; // pause state flag
-g_game_timer = 0x800A3790; // game timer
+D_800F6654 = 0x800F6654; // pause state flag  // data-wave 2026-09-25: was g_game_pause
+D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
 
 // === Sound Config ===
-g_snd_bgm_id = 0x800A33B0; // current BGM track
-g_snd_se_id = 0x800A33B4; // current SE id
+D_800A33B0 = 0x800A33B0; // current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id
+D_800A33B4 = 0x800A33B4; // current SE id  // data-wave 2026-09-25: was g_snd_se_id
 D_800A33C0 = 0x800A33C0; // stage BGM id  // data-wave 2026-09-25: was g_snd_stage_bgm
 g_snd_volume = 0x800A33D0; // master volume
-g_snd_fade_pos = 0x800A33D4; // fade position
-g_snd_fade_amt = 0x800A33D8; // fade amount
-g_snd_play_count = 0x800A33E4; // sound play counter
+D_800A33D4 = 0x800A33D4; // fade position  // data-wave 2026-09-25: was g_snd_fade_pos
+D_800A33D8 = 0x800A33D8; // fade amount  // data-wave 2026-09-25: was g_snd_fade_amt
+D_800A33E4 = 0x800A33E4; // sound play counter  // data-wave 2026-09-25: was g_snd_play_count
 g_snd_se_bank = 0x80099C34; // SE bank param table
 g_snd_ch_data = 0x800EF848; // channel data blocks
 D_800EF800 = 0x800EF800; // volume fade curve  // data-wave 2026-09-25: was g_snd_fade_curve
@@ -185,7 +185,7 @@ g_color_mode = 0x800F6652; // grayscale flag
 
 // === Input ===
 g_pad_buf = 0x800FF580; // pad data buffer  // data-wave 2026-09-24: was g_pad_data
-g_pad_selection = 0x800A324A; // active pad/selection
+D_800A324A = 0x800A324A; // active pad/selection  // data-wave 2026-09-25: was g_pad_selection
 
 // === Display ===
 g_gpu_db = 0x800F7438; // framebuffer base  // data-wave 2026-09-24: was g_disp_fb_base
@@ -198,7 +198,7 @@ g_disp_fade = 0x800A36A8; // display fade
 g_file_flags = 0x80106A73; // disc config flags
 g_file_disc_type = 0x80106A54; // disc type
 g_file_disc_size = 0x80106A50; // disc data size
-g_file_vram_timer = 0x800A3710; // VRAM transfer timer
+D_800A3710 = 0x800A3710; // VRAM transfer timer  // data-wave 2026-09-25: was g_file_vram_timer
 g_file_dma_flag = 0x800A3716; // file DMA flag
 g_file_heap_base = 0x800A38BC; // file heap base
 g_file_data_buf = 0x800F6740; // file data buffer

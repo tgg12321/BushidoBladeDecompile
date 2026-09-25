@@ -18,7 +18,7 @@ extern void obj_Clear(s32);
 
 /* Externs for globals */
 extern s32 D_800A336C;
-extern s32 g_game_player_count;
+extern s32 D_800A322C;
 extern s32 g_game_flag_b;
 extern s32 g_game_flag_a;
 extern void func_8001924C(s32 *, s32);
@@ -67,17 +67,17 @@ void func_8003F218(s32 a0) {
     if ((u32)a0 >= 2) {
         return;
     }
-    if (a0 == g_game_player_count) {
+    if (a0 == D_800A322C) {
         return;
     }
-    g_game_player_count = a0;
+    D_800A322C = a0;
     if (!a0) {
         func_8003F1E4(0);
     }
-    g_game_mirror_mode = (s16)g_game_player_count;
+    g_game_mirror_mode = (s16)D_800A322C;
 }
 s32 func_8003F268(void) {
-    return g_game_player_count;
+    return D_800A322C;
 }
 void stage_InitCollision(void) {
     s32 i, j;
