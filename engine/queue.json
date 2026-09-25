@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800759D0",
-      "file": "text1b",
-      "distance": 364,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80052D00",
       "file": "text1b",
       "distance": 385,
@@ -677,17 +669,28 @@
       "rotation": "owner question: cc1-no-plus-to-ior patch vs target ori (floor 2 with honest +); see docs/grind/borderline.md",
       "rotated_at": "2026-09-25T08:00:54+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_800759D0",
+      "file": "text1b",
+      "distance": 364,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "owner question: one role, differing constant offsets (borderline.md). Honest floor 25; 0/364 needs a shared multi-write local (layer-2 FAIL). Session-2 regalloc proof: no per-site spelling can seat \\. See memory/grind/func_800759D0/hypotheses.md",
+      "rotated_at": "2026-09-25T08:42:28+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 63,
-    "active": 49,
+    "active": 48,
     "by_status": {
-      "active": 49,
-      "rotated": 14
+      "active": 48,
+      "rotated": 15
     },
     "by_verdict": {
-      "C": 37,
+      "C": 36,
       "ASM-PARTIAL": 12
     }
   },
