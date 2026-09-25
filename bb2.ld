@@ -42,6 +42,7 @@ SECTIONS
         build/src/code6cac_b.o(.rodata);
         build/src/code6cac_b_rodata_pre.o(.rodata);
         build/src/replay_camera_rob_back_loose2.o(.rodata);
+        build/src/code6cac_b2_post.o(.rodata);
         build/src/code6cac_b_rodata_post.o(.rodata);
         build/src/code6cac_c0.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
@@ -65,7 +66,6 @@ SECTIONS
         build/src/text1a_b_tail_rodata.o(.rodata);
         build/src/main.o(.rodata);
         build/src/code6cac_b2_pre.o(.rodata);
-        build/src/code6cac_b2_post.o(.rodata);
         build/src/sound.o(.rodata);
         build/src/gpu.o(.rodata);
         build/src/display.o(.rodata);
