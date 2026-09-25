@@ -1,10 +1,14 @@
+/* REJECTED (manual s2, 2026-09-25) - permuter find (random mode, output-45-1), respelled on candidate.c.
+ * `sl_rate` is also written with the note block's centre note (`sl_rate = D_800A28A4[voice]; center = sl_rate;`),
+ * so one pseudo spans the note block (a0 busy with call args) and the SL block, and SL's rate gets a1.
+ * Standalone harness: 8/387 (only the SR hunks remain) + the jtbl addend. Inadmissible: one local for two
+ * roles (Ruling 5 1(a)/(b)). Kept as EVIDENCE for the allocator proof in evidence.md, not a lead. */
 /* CANDIDATE - func_8008B488 (src/main.c), best LANDABLE form (manual s1, 2026-09-25).
  * One once-per-block rate local per ADSR block. sandbox --disable all = 12/387
  * with the landing chassis, all operand-only (SR rate/smode seats, SL rate a0 vs a1).
  * The closing form (0/387, full-build SHA1 == oracle) is
- * rejected/sotn-shared-rate-ruling5-0.c: SOTN's shared `u16 rate`, ruled
- * INADMISSIBLE by layer-2 on 2026-09-25 (settled, not an owner question).
- * s2 allocator dump: no one-pseudo-per-block form can close SL or SR (evidence.md).
+ * rejected/sotn-shared-rate-ruling5-0.c: SOTN's shared `u16 rate`, which fails
+ * Ruling 5; owner question in docs/grind/borderline.md 2026-09-25.
  *
  * LANDING CHASSIS (needed by either form; see evidence.md):
  *  1. src/main.c: replace INCLUDE_ASM with this file (typedef + extern + body);
@@ -70,7 +74,8 @@ void func_8008B488(SpuVoiceAttr *attr) {
             u16 center;
             u16 note;
 
-            center = D_800A28A4[voice];
+            sl_rate = D_800A28A4[voice];
+            center = sl_rate;
             note = attr->note;
             *(volatile u16 *)(_spu_RXX + (pos + 2) * 2) =
                 _spu_note2pitch(center >> 8, center & 0xFF, note >> 8, note & 0xFF);

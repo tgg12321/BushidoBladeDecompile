@@ -1,31 +1,55 @@
-# func_8008B488 — hypotheses (manual s1, 2026-09-25)
+# func_8008B488 — hypotheses (manual s1 + s2, 2026-09-25)
+
+## Status (s2, 2026-09-25)
+- Landable floor: candidate.c, **12/387 with the chassis (16 on the clean tree)**,
+  unchanged by s2. All 12 are operand-only: SR (rate/smode seats, 8) + SL (rate
+  a0 vs a1, 4).
+- The shared `u16 rate` closing form (0/387, SHA1 == oracle) is SETTLED
+  INADMISSIBLE by a layer-2 construct ruling (2026-09-25): fails Ruling 5
+  1(a)/(b)/(c)/(e) and Ruling 6; Ruling 8 is vmNoiseOn-only and the owner
+  declined "allow as a class" (decisions.md 2026-09-24 Ruling 8 entry).
+  Function-scope `adsr` written in 5 blocks fails independently. Do NOT pursue
+  any local shared across blocks — that includes the permuter's re-shares.
 
 ## Frontier
-The only open item is `u16 rate` shared across the five ADSR blocks (see
-evidence.md item 3). Two ways forward:
-1. **Owner ruling** (the same question as Ruling 8 / vmNoiseOn: SOTN-verbatim
-   reuse of one scratch variable in the same Sony library function). Logged in
-   docs/grind/borderline.md 2026-09-25. If allowed, land
-   rejected/sotn-shared-rate-ruling5-0.c with the chassis and send it to a fresh
-   layer-2.
-2. **Another spelling**, starting from candidate.c (12 with the chassis), in which
-   the SL block's clamped value gets a1 and SR's rate precedes smode without one
-   pseudo spanning several blocks. Not found.
+evidence.md "Manual s2" shows that under global.c neither residual can close
+with one fresh pseudo per block:
+- SL: the value's allocno conflicts only with v0/v1, so find_reg takes a0. The
+  target's a1 needs that allocno live in another block where a0 is busy.
+- SR: smode (5 refs) always outranks the rate (4 refs, longer life), so smode
+  takes a1 first.
+
+So the remaining search space is NOT more per-block respelling (declaration
+order/scope, clamp shape, field-test order, mask-test spelling and base-pointer
+formation cannot change the SL allocno's conflict set, which only contains what
+is live inside the SL block). A closing form needs one of:
+1. A genuinely different source STRUCTURE in which the SL (and SR) value is
+   legitimately a longer-lived object, without a multiply-written scratch local
+   (e.g. a real per-voice or per-register data object that the older LIBSPU
+   build kept). Nothing concrete found; the refs are sotn s_sva.c, psyz
+   sr_sv.c/s_sva.c, all of which share `var_a2`.
+2. A change in the rule record (owner) — the orchestrator ruled this settled
+   for tonight; do not re-file.
 
 ## Killed (measured, chassis in place unless noted)
-- non-volatile RXX accesses: lbu narrowing, 34
-- volatile without the `adsr &= MASK` split: 38
-- SL split as well: 6
-- block-scoped rate/mode/adsr/vol locals: 12
-- per-block function-scope rate locals, either declaration order: 12
-- rate declared first in each block: 12
-- SOTN if/else clamp: 10 (392 insns: loads the field twice)
-- ternary clamp: 12. s32 per-block rates: 15
-- sharing subsets: {DR,SL} 18, {SR,RR} 4 (the rest close only with SL sharing)
+- s1: non-volatile RXX (34); no `adsr &=` split (38); SL split (6); block-scoped
+  locals (12); per-block function-scope locals, either order (12); rate first in
+  each block (12); SOTN if/else clamp (10, 392 insns); ternary (12); s32 rates (15);
+  sharing subsets {DR,SL} 18, {SR,RR} 4 (sharing = evidence only)
+- s2 (standalone harness, counts include the +1 jtbl addend): sr/sl s32/u32,
+  smode u16/u32, `> 0x7F`, or-operand swaps, SR ternary, SR `a < b ? a : 0x7F`
+  (MIN_EXPR) — all 13 (= floor); inline `clamp_u16` helper on SR 16, on SR+SL 21;
+  block-local load + if/else copy on SR or SL 14 (388 insns)
+- s2 permuter (first campaign; hand workspace tmp/f8b488s2/perm, standalone TU,
+  2 workers, random from candidate.c, ~2.8k iterations, ~9 min): base 65, one
+  find (45) that re-shares `sl_rate` with the note block's `center`, fixing SL
+  exactly as the proof predicts. Evidence only:
+  rejected/perm-sl-shares-center-8.c. Stopped + harvested.
+- s2 sharing probe {AR,SR}: leaves exactly the 4 SL hunks (evidence only)
 
-## Not tried yet
-- permuter campaign from candidate.c. `import.py` cannot take main.c directly:
-  it needs the file in the Makefile's dry-run output, so a hand workspace like
-  tools/mar_perm_workspace.sh (full-TU compile + function extract) is needed
-- instrumented global-alloc dump (tools/gcc-2.7.2/cc1 with BB2_*_DEBUG) to confirm
-  the a0-conflict reading in evidence.md item 3
+## Tools (s2)
+tmp/f8b488s2/ (gitignored; regenerate if lost): head.h (typedef + externs),
+pp.sh (cpp), compile.sh (cc1 | prologue_fix | maspsx | multu_pad | as, Makefile
+flags), score.py (objdump diff vs the target, prints differing insns),
+dump.sh (instrumented cc1 with BB2_ALLOC_DEBUG, FR=<pseudo> for
+BB2_FINDREG_DEBUG, -dl/-dg dumps), mkperm.sh (permuter workspace).

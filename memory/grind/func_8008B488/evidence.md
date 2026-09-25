@@ -76,6 +76,44 @@ The compiler now emits the two ADDR_VECs, so:
 Patches as spliced for the oracle run: tmp/f8b488/landing_main_c.patch and
 tmp/f8b488/landing_build.patch (tmp/ is gitignored; regenerate from this note).
 
+## Manual s2 (2026-09-25): allocator dump — why every per-block form stops at 12
+Standalone harness: tmp/f8b488s2/ (head.h + pp.sh + compile.sh + score.py; the
+standalone TU reproduces the sandbox exactly: candidate 12 + 1 jtbl addend,
+shared-rate form 0 + 1 addend). Instrumented cc1 (tools/gcc-2.7.2/cc1,
+BB2_ALLOC_DEBUG / BB2_FINDREG_DEBUG) on candidate.c, pseudos 77..81 = ar..sl_rate:
+- **SL (4 hunks).** sl_rate (p81, nrefs 8, livelen 10, pri 24000) conflicts
+  ONLY with v0, v1, sp; someone_prefers empty; no own preferences. find_reg
+  therefore takes the first free reg, a0. For the target's a1, the SL value's
+  allocno must conflict with a0 (or a lower-priority conflicting allocno must
+  prefer a0). Nothing in the target's SL block touches a0, the loop-wide
+  pseudos cross calls (so prune_preferences strips call-used regs from their
+  preferences), and there is no call in the block. So the SL value's pseudo
+  has to be live in some OTHER block where a0 is busy, i.e. be one pseudo
+  across blocks. **No per-block spelling can produce a1 for SL** (global.c
+  find_reg/prune_preferences, read 2026-09-25). Measured corroboration:
+  sharing only {AR,SR} leaves exactly the 4 SL hunks (tmp/f8b488s2/probe_arsr.c).
+- **SR (8 hunks).** smode (p253: 5 refs x loop weight 2 = 10, livelen 27,
+  pri 11111) outranks sr_rate (p79: 4 refs = 8, livelen 31, pri 7741), so smode
+  is allocated first and takes a1 (a0 = masked adsr). The target needs rate
+  first. Rate's live range necessarily contains smode's plus the load+clamp,
+  and its RTL at flow has 4 refs (set, zero_extend for the compare, set 0x7F,
+  ior) against smode's 5 (0x100, 0, 0x200, 0x300, ior), so rate can never
+  outrank smode unless its refs come from other blocks (shared pseudo:
+  nrefs 40, pri 21739). Type/spelling probes that leave the output unchanged
+  or worse: sr/sl s32/u32, smode u16/u32, `> 0x7F`, operand swaps, ternary,
+  `a < b ? a : 0x7F` (MIN_EXPR), inline clamp helper (16), block-local
+  load + if/else copy (14, 388 insns), all 13 incl. addend unless noted.
+- **Permuter** (first run on this function; hand workspace tmp/f8b488s2/perm,
+  standalone TU, 2 workers, random mode from candidate.c, ~2.8k iterations):
+  base 65. Its one find (45) writes `sl_rate` in the note block too
+  (`sl_rate = D_800A28A4[voice]; center = sl_rate;`). That makes one pseudo
+  span a block where a0 holds call arguments, and SL moves to a1, exactly as
+  the proof predicts. Inadmissible (two roles), kept as evidence:
+  rejected/perm-sl-shares-center-8.c.
+- Construct status: the shared-`rate` closing form was ruled inadmissible by
+  a layer-2 construct ruling on 2026-09-25 (Ruling 5 1(a)/(b)/(c)/(e), Ruling
+  6; Ruling 8 not citable). That settles it; it is not pending the owner.
+
 ## Rejected bodies
 rejected/*.c: block-scoped-locals-12 and rate-per-adsr-register-multiwrite-0 are
 function-only files (no typedef) and were scored with the chassis in place.
