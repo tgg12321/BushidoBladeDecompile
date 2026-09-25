@@ -4,6 +4,71 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80073C78",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-25T08:00:54+00:00",
+      "rotation_count": 1,
+      "unparked_from": "owner question: cc1-no-plus-to-ior patch vs target ori (floor 2 with honest +); see docs/grind/borderline.md",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 0 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:34+00:00"
+    },
+    {
+      "func": "func_8001BE20",
+      "file": "code6cac",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-25T10:37:13+00:00",
+      "rotation_count": 1,
+      "unparked_from": "flat floor 5/393 after 2 manual sessions + permuter 11.8k iters; regalloc/CSE proof: move a3,a2 needs the pad-shift local referenced outside its CSE unit, only achievable via two-role shift reuse (layer-2 FAIL, Ruling 5). PadState prep landed 91448d225. See memory/grind/func_8001BE20/hypotheses.md",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 5 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:37+00:00"
+    },
+    {
+      "func": "func_8002A458",
+      "file": "code6cac_b",
+      "distance": 30,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-25T13:07:07+00:00",
+      "rotation_count": 1,
+      "unparked_from": "flat floor 30/417 honest (2 permuter campaigns); 0/416 needs multi-write len/lzc_in + dx/dy/dz point-minus-base reuse (layer-2 FAIL, Ruling 5/6, staged-value bounds 2/4). Islands/canonical row/hashes + do-while(0) ruled sound. Allocator: fresh end-block deltas cannot seat s-regs. See memory/grind/func_8002A458/",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 30 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:46+00:00"
+    },
+    {
+      "func": "func_80057E84",
+      "file": "text1b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-25T15:29:03+00:00",
+      "rotation_count": 1,
+      "unparked_from": "flat floor 44/447 honest (2 sessions, permuter ~30min); node ptr (a1) needs one fresh pointer shared across both corner blocks (layer-2 FAIL R5/R6; no real carrier exists). Pending unruled va-borrow reaches 22. PathWalker/i/buf ruled sound. See memory/grind/func_80057E84/hypotheses.md",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 44 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:51+00:00"
+    },
+    {
+      "func": "func_8005490C",
+      "file": "text1b",
+      "distance": 47,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-25T11:46:44+00:00",
+      "rotation_count": 1,
+      "unparked_from": "flat floor 47/399 single-role (permuter 18.9k flat); allocator proof: rotation temp + init player ptrs need multi-write locals vz/obj (layer-2 FAIL, Ruling 5/6); single loop ruled out (unrolled constants). Prep landed a9c634304. See memory/grind/func_8005490C/",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 47 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:43+00:00"
+    },
+    {
       "func": "func_80053754",
       "file": "text1b",
       "distance": 466,
@@ -580,17 +645,6 @@
       "rotation_count": 1
     },
     {
-      "func": "func_80073C78",
-      "file": "text1b",
-      "distance": 362,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "owner question: cc1-no-plus-to-ior patch vs target ori (floor 2 with honest +); see docs/grind/borderline.md",
-      "rotated_at": "2026-09-25T08:00:54+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "func_8008B488",
       "file": "main",
       "distance": 387,
@@ -599,50 +653,6 @@
       "status": "rotated",
       "rotation": "flat floor 12/387 (operand-only) after 2 manual sessions + permuter; global.c allocator proof: per-block locals cannot seat SL/SR regs; only closing form shares rate/adsr across blocks = INADMISSIBLE (Ruling 5/6; owner declined Ruling-8-as-class 2026-09-24). Chassis ruled legitimate. See memory/grind/func_8008B488/evidence.md",
       "rotated_at": "2026-09-25T09:44:20+00:00",
-      "rotation_count": 1
-    },
-    {
-      "func": "func_8001BE20",
-      "file": "code6cac",
-      "distance": 393,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "flat floor 5/393 after 2 manual sessions + permuter 11.8k iters; regalloc/CSE proof: move a3,a2 needs the pad-shift local referenced outside its CSE unit, only achievable via two-role shift reuse (layer-2 FAIL, Ruling 5). PadState prep landed 91448d225. See memory/grind/func_8001BE20/hypotheses.md",
-      "rotated_at": "2026-09-25T10:37:13+00:00",
-      "rotation_count": 1
-    },
-    {
-      "func": "func_8005490C",
-      "file": "text1b",
-      "distance": 399,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "flat floor 47/399 single-role (permuter 18.9k flat); allocator proof: rotation temp + init player ptrs need multi-write locals vz/obj (layer-2 FAIL, Ruling 5/6); single loop ruled out (unrolled constants). Prep landed a9c634304. See memory/grind/func_8005490C/",
-      "rotated_at": "2026-09-25T11:46:44+00:00",
-      "rotation_count": 1
-    },
-    {
-      "func": "func_8002A458",
-      "file": "code6cac_b",
-      "distance": 416,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "flat floor 30/417 honest (2 permuter campaigns); 0/416 needs multi-write len/lzc_in + dx/dy/dz point-minus-base reuse (layer-2 FAIL, Ruling 5/6, staged-value bounds 2/4). Islands/canonical row/hashes + do-while(0) ruled sound. Allocator: fresh end-block deltas cannot seat s-regs. See memory/grind/func_8002A458/",
-      "rotated_at": "2026-09-25T13:07:07+00:00",
-      "rotation_count": 1
-    },
-    {
-      "func": "func_80057E84",
-      "file": "text1b",
-      "distance": 447,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "flat floor 44/447 honest (2 sessions, permuter ~30min); node ptr (a1) needs one fresh pointer shared across both corner blocks (layer-2 FAIL R5/R6; no real carrier exists). Pending unruled va-borrow reaches 22. PathWalker/i/buf ruled sound. See memory/grind/func_80057E84/hypotheses.md",
-      "rotated_at": "2026-09-25T15:29:03+00:00",
       "rotation_count": 1
     },
     {
@@ -659,15 +669,15 @@
   ],
   "counts": {
     "total": 58,
-    "active": 38,
+    "active": 43,
     "by_status": {
-      "active": 38,
-      "rotated": 20
+      "active": 43,
+      "rotated": 15
     },
     "by_verdict": {
-      "C": 30,
-      "ASM-PARTIAL": 8
+      "C": 34,
+      "ASM-PARTIAL": 9
     }
   },
-  "toolchain_fingerprint": "69f8ba78e94cf257"
+  "toolchain_fingerprint": "85cd2a73ee7a8972"
 }
