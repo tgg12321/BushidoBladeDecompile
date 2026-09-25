@@ -10,6 +10,72 @@ function-scope `q` reused at 4 sites, which layer-2 FAILED 2026-09-25 (multi-wri
 Ruling 5 1(b)/1(f), extension (A), Ruling 6): rejected/function-scope-q-multiwrite-0.c.
 Owner question: docs/grind/borderline.md 2026-09-25 "one role, differing constant offsets".
 All measured with `sandbox --disable all --diff`. The q-step below describes the rejected 0.
+Session 3 (2026-09-25, manual lane): the owner answered it as Ruling 9 (c3e7a0b9e,
+ordinary-c-judge-decidable.md). candidate.c is now the rejected 0 body with `q` renamed
+`cells` (sandbox 0/364); the per-site receipt moved to rejected/per-site-locals-25.c.
+
+## Ruling 9 (b) — what +0xC and +0x24 reach (session 3, 2026-09-25)
+**The record.** `s.sp18` is S_80074488 / EnvA `.header` and `s.sp1C` is `.table` of the draw
+descriptor func_8007352C consumes (src/text1b.c:10945-10988): it reads a 12-byte `SprtHdrA`
+(text1b.c:10929; tp, `count` at +2, clut cx/cy at +4/+6, ubase, vbase) at `.header` and walks
+`count` 8-byte `SprtEntA` cells (text1b.c:10939; s16 x,y; u8 u,v,w,h) from `.table`. A sprite
+sheet is N SprtHdrA headers followed by its SprtEntA cell array. Both strides are in the target's
+own bytes: header stride 12 (`s.sp18 + 12 + arg3 * 12`, asm/funcs/func_800759D0.s:112
+`addiu $s7,$v0,0xC` and the loops' copies), cell stride 8 (`s.sp1C += count * 8`).
+func_80073728 (text1b.c:10995-11008, `Ft4Sheet` 12 bytes / `Ft4Cell` 8 bytes) declares the same
+layout for the POLY_FT4 walker.
+
+**The data (original disc, not byte-chasing).** arg0[0] = *(D_800A36A0 + 4) = the buffer
+func_8006E950(6, p_old) loads (text1b.c:12489-12498); func_80076FF8 (text1b.c:12433) relocates
+its root slots [5]..[14] (+0x14..+0x38). That file is disc/TIM2D/D_SEL.BIN (sha256 032e85c7…
+451df12): its root word [2] is the image func_8006E950 LoadImages (0x180x0x1DC + 0x170x0x24
+16-bit = 0x5FB80 bytes) and [3]-[2] = 0x60AF0-0xF70 = 0x5FB80 exactly; and root+0x20/+0x24/
++0x28 hold 3/4/5 sheets, exactly loop 3's `f65 + 3` bound for f65 = 0/1/2. Census
+(tmp/f759d0/sheet_census.py, output tmp/f759d0/sheet_census.txt; a slot is header-shaped iff
+tp1 == 0, pad == 0, count >= 1 and CLUT row 480 <= cy < 512):
+| root slot (reader, K) | sheets | header count |
+|---|---|---|
+| +0x14 [0] (this fn head, func_800753D8:11861/11864, K=0xC) | 1 | 1 (count 2) |
+| +0x14 [1..20] (this fn loops 1-2 `table[entry+1]`/`table[arg2[i]+1]`, func_8007636C:12205-12206, K=0x24) | 20 | 3 each |
+| +0x20/+0x24/+0x28 [i] (this fn loop 3, func_8007636C:12250-12251, K=0x24) | 3+4+5 | 3 each |
+| +0x30 [0,2,..,10] (func_8007636C:12228-12229 `table[idx*2]`, K=0x24) | 6 | 3 each |
+| +0x30 [1,3,..,11] (func_8007636C:12239-12241 `table[idx*2+1]`, K=0xC) and [12] (func_8007636C:12185-12188 `table[12]`, K=0xC) | 7 | 1 each |
+| +0x2C (func_800753D8:11845-11847/11877-11880, K=0xC) | 4 | 1 each |
+| +0x34 (func_80074488:11317-11319, K=0xC) | 15 | 1 each |
+(+0x14 [21] is a 1-header sheet no +0x24 reader reaches: loop 1 indexes `entry + 1` with
+`entry` a D_8009BCF8 byte, whose 20 values in the EXE are 0..19; loop 2's `arg2[i]` is a pick
+of the same 20 entries (func_80075F80:12025-12026 uses it to index the 20-byte D_8009BCE4
+flag table), so both reach [1..20] only.)
+Every sheet any reader reaches with +0xC has exactly one header; every sheet reached with +0x24
+has exactly three (normal + one cursor highlight per player; the three headers share tpage and
+count and differ in CLUT x). So K = 12 x (header count) in every case: both offsets reach the
+SAME sub-object, the first SprtEntA of the sheet's cell array, which every reader stores to
+`.table` (sp1C) and func_8007352C walks the same way. The +0xC/+0x24 choice is the sheet's
+header count, not a different kind of object. First cells: +0x14[0] {x0,y0,u0,v0,w64,h64};
++0x14[1] {x117,y45,u0,v0,w64,h11} (tmp/f759d0/sheet_census.txt).
+
+## Ruling 9 prong walk (candidate.c, session 3)
+- (a) all 4 writes feed `s.sp1C = cells;` (identical text), the descriptor's `.table` member.
+- (b) every write is `cells = s.sp18 + K;`, K in {0xC, 0x24}; BASE `s.sp18` (member of local
+  `s`), just assigned the sheet address at each site (loops 2/3 compute before the highlight
+  step moves sp18 to header 1/2); sub-object: the cell array (section above).
+- (c) head: lines adjacent at function scope; loop 1: both in the `& 1` then-block; loop 2: both
+  in the `arg2[i] >= 0` block with only the highlight if/else between; loop 3: both in the for
+  body with only the highlight if between. No return/break/continue/goto; `cells` has no other
+  reader.
+- (d) target adds: 80075A40 `addiu a1,v1,0xC`; 80075BB4 `addiu a1,a2,0x24`; 80075D14 and
+  80075E24 `addiu a1,v1,0x24`.
+- (e) each consumer store is followed, unconditionally in its own block, by
+  `arg0[4] = func_8007352C((s32)&s);` before any later consumer store or exit.
+- (f) `cells`: true of all four writes.
+- (g) statement list identical to rejected/per-site-locals-25.c (diff: declarations and
+  identifiers only); every write consumed before the next; `s.sp18` is re-written before every
+  write, so no write re-stores a held value; no computation split.
+- (h) one declaration, function scope (the innermost scope enclosing the head and loop writes);
+  no other declaration moved.
+- (i) per-site 25/364 (rejected/per-site-locals-25.c); structural ladder (below), permuter from
+  the carrier-free chassis (hypotheses.md "Permuter"), greg allocation dump (hypotheses.md
+  "Session 2").
 
 ## What closed it (each step measured)
 - Loop 2 highlight test written `if (i != f3C) {sp40 = 0} else {sp40 = 1; sp18 += ...}` with

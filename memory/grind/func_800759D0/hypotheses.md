@@ -1,7 +1,11 @@
 # func_800759D0 — hypotheses / levers (2026-09-25)
 
 ## Status
-Honest floor **25/364** (candidate.c: per-site `q0..q3`, one local per write).
+Session 3 (2026-09-25): owner Ruling 9 (c3e7a0b9e) answers the borderline question.
+candidate.c = the shared-variable body renamed `cells`, sandbox 0/364; (b) layout evidence and
+the prong walk are in evidence.md. The per-site receipt is rejected/per-site-locals-25.c.
+The rest of this section is the pre-ruling state.
+Honest floor **25/364** (per-site `q0..q3`, one local per write).
 The 0/364 form (one function-scope `q` written at 4 sites) was FAILED by layer-2 on
 2026-09-25: rejected/function-scope-q-multiwrite-0.c (reasoning in its header). The owner
 question is logged in docs/grind/borderline.md 2026-09-25 "one role, differing constant
