@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002A458",
-      "file": "code6cac_b",
-      "distance": 416,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "prnt",
       "file": "text1b_b",
       "distance": 418,
@@ -681,18 +673,29 @@
       "rotation": "flat floor 47/399 single-role (permuter 18.9k flat); allocator proof: rotation temp + init player ptrs need multi-write locals vz/obj (layer-2 FAIL, Ruling 5/6); single loop ruled out (unrolled constants). Prep landed a9c634304. See memory/grind/func_8005490C/",
       "rotated_at": "2026-09-25T11:46:44+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_8002A458",
+      "file": "code6cac_b",
+      "distance": 416,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "flat floor 30/417 honest (2 permuter campaigns); 0/416 needs multi-write len/lzc_in + dx/dy/dz point-minus-base reuse (layer-2 FAIL, Ruling 5/6, staged-value bounds 2/4). Islands/canonical row/hashes + do-while(0) ruled sound. Allocator: fresh end-block deltas cannot seat s-regs. See memory/grind/func_8002A458/",
+      "rotated_at": "2026-09-25T13:07:07+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 62,
-    "active": 44,
+    "active": 43,
     "by_status": {
-      "active": 44,
-      "rotated": 18
+      "active": 43,
+      "rotated": 19
     },
     "by_verdict": {
-      "ASM-PARTIAL": 12,
-      "C": 32
+      "C": 32,
+      "ASM-PARTIAL": 11
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
