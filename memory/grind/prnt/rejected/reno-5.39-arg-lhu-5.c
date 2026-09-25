@@ -1,17 +1,11 @@
 /* PsyQ 4.0 LIBC2 PRNT: prnt — verbatim-linked Sony object (census 2026-07-09);
- * C ref: 4.3BSD-Tahoe _doprnt, lib/libc/stdio/doprnt.c
- * "@(#)doprnt.c 5.35 (Berkeley) 6/27/88", with the FILE buffering replaced by
- * putchar and the floating-point conversions removed. The version is fixed by
- * ARG(): the target sign-extends %h for o/u/x (lh at all four ARG sites), which
- * is 5.35's va_arg(argp, short); 5.36 (1988-10-24) changed that to
- * (short unsigned)va_arg(argp, int). Transcription diff and provenance:
- * memory/grind/prnt/evidence.md. BB2's build does not count ordinary
- * characters in the return value. The digit/"(null)" strings are the named
- * arrays above rather than literals: this file also holds LIBC SPRINTF (a
- * separate object in the original link), and GCC pools identical string
- * literals within one translation unit, which would fold sprintf's two digit
- * strings into these and drop 40 bytes of .rodata. The switch table is
- * compiler-emitted. */
+ * C ref: 4.3BSD-Reno _doprnt (vfprintf.c), FILE buffering replaced by putchar.
+ * BB2's build does not count ordinary characters in the return value. The
+ * digit/"(null)" strings are the named arrays above rather than literals:
+ * this file also holds LIBC SPRINTF (a separate object in the original link),
+ * and GCC pools identical string literals within one translation unit, which
+ * would fold sprintf's two digit strings into these and drop 40 bytes of
+ * .rodata. The switch table is compiler-emitted (jtbl_80015A98). */
 #define PRNT_LONGINT 0x01
 #define PRNT_LONGDBL 0x02
 #define PRNT_SHORTINT 0x04
@@ -22,29 +16,21 @@
 #define PRNT_BUF 40
 
 extern u8 _ctype__plus_0x1;
-#define isascii(c) ((u32)(c) <= 0177)
-#define isdigit(c) ((&_ctype__plus_0x1)[c] & 4)
+#define isascii(c) ((u32)(c) < 0x80)
+#define isdigit(c) ((&_ctype__plus_0x1)[(u8)(c)] & 4)
 #define todigit(c) ((c) - '0')
 
 #define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
 #define prnt_va_arg(AP, TYPE) \
     (AP += __va_rounded_size(TYPE), *((TYPE *)(AP - __va_rounded_size(TYPE))))
-#define PRNT_ARG() \
-    _ulong = flags & PRNT_LONGINT ? prnt_va_arg(argp, long) : \
-        flags & PRNT_SHORTINT ? prnt_va_arg(argp, short) : prnt_va_arg(argp, int)
+#define PRNT_ARG(basetype) \
+    _ulong = flags & PRNT_LONGINT ? prnt_va_arg(argp, long basetype) : \
+        flags & PRNT_SHORTINT ? (short basetype)prnt_va_arg(argp, int) : prnt_va_arg(argp, int)
 
 s32 prnt(s32 fd, u8 *fmt0, char *argp) {
     u8 *fmt;
     s32 ch;
     s32 cnt;
-    /* n is the original source's own variable, reused verbatim (owner
-     * Ruling 10, .claude/rules/ordinary-c-judge-decidable.md, c3e7a0b9e):
-     * 4.3BSD-Tahoe doprnt.c 5.35 :64 "register int n; random handy integer",
-     * https://github.com/dspinellis/unix-history-repo/blob/b98826995697c37ced684813f008619460bd7ff8/usr/src/lib/libc/stdio/doprnt.c
-     * Written/read at :148 :150 :152 :155 (precision digits), :167 :169 :171
-     * (width digits), :359 :370 :373 :390 (padding loops), :377 :383 (string
-     * length); its FILE-buffer uses (:92-107, :379-381) are absent with the
-     * FILE code. Evidence: memory/grind/prnt/evidence.md. */
     s32 n;
     char *t;
     u32 _ulong;
@@ -144,7 +130,7 @@ rflag:
             /* FALLTHROUGH */
         case 'd':
         case 'i':
-            PRNT_ARG();
+            PRNT_ARG(int);
             if ((long)_ulong < 0) {
                 _ulong = -_ulong;
                 sign = '-';
@@ -164,7 +150,7 @@ rflag:
             flags |= PRNT_LONGINT;
             /* FALLTHROUGH */
         case 'o':
-            PRNT_ARG();
+            PRNT_ARG(unsigned);
             base = 8;
             goto nosign;
         case 'p':
@@ -195,14 +181,14 @@ rflag:
             flags |= PRNT_LONGINT;
             /* FALLTHROUGH */
         case 'u':
-            PRNT_ARG();
+            PRNT_ARG(unsigned);
             base = 10;
             goto nosign;
         case 'X':
             digs = D_80015A84;
             /* FALLTHROUGH */
         case 'x':
-            PRNT_ARG();
+            PRNT_ARG(unsigned);
             base = 16;
             if (flags & PRNT_ALT && _ulong != 0) {
                 flags |= PRNT_HEXPREFIX;
