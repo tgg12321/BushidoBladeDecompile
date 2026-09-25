@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002CD58",
-      "file": "code6cac_b",
-      "distance": 352,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T03:16:21+00:00",
-      "rotation_count": 1,
-      "unparked_from": "canonical gate routes ASM-PARTIAL: 54/352 GTE/cop2 instructions across 24 regions; ordinary pure-C grind prohibited by docs/DECOMP_WORKFLOW.md; see memory/grind/func_8002CD58/evidence.md",
-      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
-      "returned_at": "2026-09-25T03:34:57+00:00"
-    },
-    {
       "func": "func_80035828",
       "file": "code6cac_b2_post",
       "distance": 360,
@@ -698,15 +685,15 @@
     }
   ],
   "counts": {
-    "total": 65,
-    "active": 52,
+    "total": 64,
+    "active": 51,
     "by_status": {
-      "active": 52,
+      "active": 51,
       "rotated": 13
     },
     "by_verdict": {
-      "ASM-PARTIAL": 13,
-      "C": 39
+      "C": 39,
+      "ASM-PARTIAL": 12
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
