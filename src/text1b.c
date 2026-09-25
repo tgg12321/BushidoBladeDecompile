@@ -12301,7 +12301,12 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     S_80074488 s;
     s32 ot;
     s32 *table;
-    s32 q;
+    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
+       just past the sheet's 12-byte SprtHdrA headers: one header on the
+       single-state sheets (+0xC), three (normal, then one cursor highlight
+       per player) on the highlightable ones (+0x24). D_SEL.BIN layout:
+       memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
+    s32 cells;
     s32 color;
     s16 i;
     /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
@@ -12326,8 +12331,8 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.sp18 = table[12];
         s.sp40 = 0;
         s.sp30 = arg3 * 240;
-        q = s.sp18 + 0xC;
-        s.sp1C = q;
+        cells = s.sp18 + 0xC;
+        s.sp1C = cells;
         s.sp34 = SELWORK_800768DC->f3C[arg3] * 34;
         s.sp2C = ot;
         s.sp20 = arg0[4];
@@ -12344,11 +12349,11 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < SELWORK_800768DC->f65 + 3; i++) {
         s.sp40 = 0;
         s.sp18 = table[arg2[i] + 1];
-        q = s.sp18 + 0x24;
+        cells = s.sp18 + 0x24;
         if (SELWORK_800768DC->f3C[arg3] == i || SELWORK_800768DC->f14[arg3] >= 4) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
-        s.sp1C = q;
+        s.sp1C = cells;
         s.sp1C += *(u8 *)(s.sp18 + 2) * 16;
         s.sp30 = arg3 * 240;
         s.sp34 = i * 34;
@@ -12367,20 +12372,20 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.sp40 = 1;
         }
         s.sp18 = table[(s16)idx * 2];
-        q = s.sp18 + 0x24;
+        cells = s.sp18 + 0x24;
         if (SELWORK_800768DC->f3C[arg3] == i || SELWORK_800768DC->f14[arg3] >= 4) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
         s.sp30 = arg3 * 240;
-        s.sp1C = q;
+        s.sp1C = cells;
         s.sp34 = i * 34;
         s.sp2C = ot;
         s.sp20 = arg0[4];
         arg0[4] = func_8007352C((s32)&s);
         s.sp18 = table[(s16)idx * 2 + 1];
         s.sp40 = 0;
-        q = s.sp18 + 0xC;
-        s.sp1C = q;
+        cells = s.sp18 + 0xC;
+        s.sp1C = cells;
         s.sp20 = arg0[4];
         arg0[4] = func_8007352C((s32)&s);
     }
@@ -12389,11 +12394,11 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < SELWORK_800768DC->f65 + 3; i++) {
         s.sp40 = 0;
         s.sp18 = table[i];
-        q = s.sp18 + 0x24;
+        cells = s.sp18 + 0x24;
         if (SELWORK_800768DC->f3C[arg3] == i || SELWORK_800768DC->f14[arg3] >= 4) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
-        s.sp1C = q;
+        s.sp1C = cells;
         s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
         s.sp30 = arg3 * 240;
         s.sp34 = i * 34;

@@ -1,5 +1,9 @@
 # func_8007636C hypotheses
 
+2026-09-25: Ruling 9 re-audit. `q` was renamed `cells`, and the receipts (per-site 6/348,
+respellings, allocation dump, permuter) are in evidence.md "Ruling 9 re-audit". Where the
+2026-09-24 notes below say `q`, read `cells`.
+
 ## 2026-09-24 manual session (closed 184 -> 0)
 
 Codex s1 (2026-09-24): m2c scalars KILLED (248); descriptor aggregate

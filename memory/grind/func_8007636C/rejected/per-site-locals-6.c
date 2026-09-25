@@ -1,13 +1,16 @@
+/* Ruling 9 receipt (i), 2026-09-25: one local per write (cells0..cells4), otherwise
+ * identical to the landed body. sandbox --disable all 6/348: the two +0xC sites are
+ * single-block pseudos local-alloc ties to the dying sheet value ($v1/$v0, target $a2).
+ * See evidence.md "Ruling 9 re-audit". */
 void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     S_80074488 s;
     s32 ot;
     s32 *table;
-    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
-       just past the sheet's 12-byte SprtHdrA headers: one header on the
-       single-state sheets (+0xC), three (normal, then one cursor highlight
-       per player) on the highlightable ones (+0x24). D_SEL.BIN layout:
-       memory/grind/func_8007636C/evidence.md "Ruling 9 re-audit". */
-    s32 cells;
+    s32 cells0;
+    s32 cells1;
+    s32 cells2;
+    s32 cells3;
+    s32 cells4;
     s32 color;
     s16 i;
     /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
@@ -32,8 +35,8 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.sp18 = table[12];
         s.sp40 = 0;
         s.sp30 = arg3 * 240;
-        cells = s.sp18 + 0xC;
-        s.sp1C = cells;
+        cells0 = s.sp18 + 0xC;
+        s.sp1C = cells0;
         s.sp34 = SELWORK_800768DC->f3C[arg3] * 34;
         s.sp2C = ot;
         s.sp20 = arg0[4];
@@ -50,11 +53,11 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < SELWORK_800768DC->f65 + 3; i++) {
         s.sp40 = 0;
         s.sp18 = table[arg2[i] + 1];
-        cells = s.sp18 + 0x24;
+        cells1 = s.sp18 + 0x24;
         if (SELWORK_800768DC->f3C[arg3] == i || SELWORK_800768DC->f14[arg3] >= 4) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
-        s.sp1C = cells;
+        s.sp1C = cells1;
         s.sp1C += *(u8 *)(s.sp18 + 2) * 16;
         s.sp30 = arg3 * 240;
         s.sp34 = i * 34;
@@ -73,20 +76,20 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.sp40 = 1;
         }
         s.sp18 = table[(s16)idx * 2];
-        cells = s.sp18 + 0x24;
+        cells2 = s.sp18 + 0x24;
         if (SELWORK_800768DC->f3C[arg3] == i || SELWORK_800768DC->f14[arg3] >= 4) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
         s.sp30 = arg3 * 240;
-        s.sp1C = cells;
+        s.sp1C = cells2;
         s.sp34 = i * 34;
         s.sp2C = ot;
         s.sp20 = arg0[4];
         arg0[4] = func_8007352C((s32)&s);
         s.sp18 = table[(s16)idx * 2 + 1];
         s.sp40 = 0;
-        cells = s.sp18 + 0xC;
-        s.sp1C = cells;
+        cells3 = s.sp18 + 0xC;
+        s.sp1C = cells3;
         s.sp20 = arg0[4];
         arg0[4] = func_8007352C((s32)&s);
     }
@@ -95,11 +98,11 @@ void func_8007636C(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < SELWORK_800768DC->f65 + 3; i++) {
         s.sp40 = 0;
         s.sp18 = table[i];
-        cells = s.sp18 + 0x24;
+        cells4 = s.sp18 + 0x24;
         if (SELWORK_800768DC->f3C[arg3] == i || SELWORK_800768DC->f14[arg3] >= 4) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
-        s.sp1C = cells;
+        s.sp1C = cells4;
         s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
         s.sp30 = arg3 * 240;
         s.sp34 = i * 34;
