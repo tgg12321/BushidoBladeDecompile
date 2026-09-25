@@ -62,7 +62,7 @@ func_8003E6D8 cop2-addressing-preamble-cluster.md widened anchor (owner grant 20
 # note and chose "Approve this one" — this function ONLY, no standing rule for
 # inline_o.h carriers); every other gate applies unchanged:
 func_80018300 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :61; owner-instructed row 2026-09-24, this function only; operator-added 2026-09-24)
-# 2026-09-25 � census members func_8002CD58 (row :72) and func_8002DAD0 (row
+# 2026-09-25 — census members func_8002CD58 (row :72) and func_8002DAD0 (row
 # :76) are both at floor 0 with the same class of GTE islands (gte_ldopv1 /
 # gte_ldopv2 / gte_op0 / gte_stlvnl / gte_SetRotMatrix / gte_ldlv0 / gte_rtv0,
 # plus gte_Lzc; func_8002CD58 also gte_sqr0). This class was declined for
@@ -70,5 +70,11 @@ func_80018300 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; cens
 # instruction 2026-09-25 (conversation; the owner was shown that decline and the
 # one-function-at-a-time approvals since, and chose "Approve this and DAD0" --
 # these two functions, no standing rule); every other gate applies unchanged:
+# Correction (2026-09-25, before any code spent these rows): the question put
+# to the owner named func_8002F770 as a one-at-a-time owner approval; its row
+# was operator-added (974ce052c) with no recorded owner instruction. The
+# owner-instructed approvals were func_8002F2D0 (789ce34d7) and func_80018300
+# (eeda6664b), plus func_8003E6D8 under the widened-anchor grant. Re-asked
+# with the correction; the owner answered "Still approve both".
 func_8002CD58 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :72; owner-instructed row 2026-09-25, with func_8002DAD0 only; operator-added 2026-09-25)
 func_8002DAD0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :76; owner-instructed row 2026-09-25, reverses the 2026-09-21 decline for this function; operator-added 2026-09-25)
