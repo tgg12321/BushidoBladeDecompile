@@ -32,7 +32,7 @@ glabel func_80054604
     /* 44E78 80054678 21200002 */   addu      $a0, $s0, $zero
     /* 44E7C 8005467C 07004104 */  bgez       $v0, .L8005469C
     /* 44E80 80054680 00000000 */   nop
-    /* 44E84 80054684 451A010C */  jal        snd_StopBgm
+    /* 44E84 80054684 451A010C */  jal        func_80046914
     /* 44E88 80054688 00000000 */   nop
     /* 44E8C 8005468C 0180043C */  lui        $a0, %hi(D_80015840)
     /* 44E90 80054690 40588424 */  addiu      $a0, $a0, %lo(D_80015840)
@@ -122,7 +122,7 @@ glabel func_80054604
     /* 44FCC 800547CC 21204000 */   addu      $a0, $v0, $zero
   .L800547D0:
     /* 44FD0 800547D0 21200000 */  addu       $a0, $zero, $zero
-    /* 44FD4 800547D4 86FC000C */  jal        game_SetPlayerCount
+    /* 44FD4 800547D4 86FC000C */  jal        func_8003F218
     /* 44FD8 800547D8 080033A6 */   sh        $s3, 0x8($s1)
     /* 44FDC 800547DC B159000C */  jal        math_FovToScreenDist
     /* 44FE0 800547E0 2D000424 */   addiu     $a0, $zero, 0x2D

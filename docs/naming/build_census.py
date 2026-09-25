@@ -353,7 +353,9 @@ MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-re
              (J("docs", "naming", "libscan", "near_manifest.csv"), None, None),
              (J("docs", "naming", "sweep-2026-09-24", "func_manifest.csv"), None, None),
              # INFERRED-name audit (docs/naming/sweep-2026-09-25/): RESET/RENAME/UPGRADE rows
-             (J("docs", "naming", "sweep-2026-09-25", "func_manifest.csv"), None, None)]
+             (J("docs", "naming", "sweep-2026-09-25", "func_manifest.csv"), None, None),
+             # second 2026-09-25 batch: snd heap follow-ups, LIBSN libscan pass, MEDIUM revisit
+             (J("docs", "naming", "sweep-2026-09-25b", "func_manifest.csv"), None, None)]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),
@@ -544,7 +546,9 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
         continue
 
     # --- verified RESET (docs/naming/sweep-*/): current name contradicted by the body
-    if addr in manifest_resets and not AUTOPAT.match(nm):
+    # ...also when the glabel is already auto but the C definition (link map) still carries the
+    # contradicted name (LINK-MAP DESYNC) — the RESET then retires the C name (sweep 2026-09-25b).
+    if addr in manifest_resets and (not AUTOPAT.match(nm) or desync):
         e = manifest_resets[addr]
         rows.append(dict(common, origin="contradicted-by-body", tier="SUSPECT",
                          evidence=("RECORDED CONTRADICTION (verified %s): " % e.get("sweep", "sweep")

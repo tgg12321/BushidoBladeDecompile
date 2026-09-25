@@ -63,7 +63,7 @@ void func_8003F1E4(s32 a0) {
     }
 }
 
-void game_SetPlayerCount(s32 a0) {
+void func_8003F218(s32 a0) {
     if ((u32)a0 >= 2) {
         return;
     }
@@ -76,7 +76,7 @@ void game_SetPlayerCount(s32 a0) {
     }
     g_game_mirror_mode = (s16)g_game_player_count;
 }
-s32 game_GetPlayerCount(void) {
+s32 func_8003F268(void) {
     return g_game_player_count;
 }
 void stage_InitCollision(void) {
@@ -94,7 +94,7 @@ void stage_InitCollision(void) {
         ptr++;
     } while (i >= 0);
 
-    game_GetPlayerCount();
+    func_8003F268();
 
     col_center = (*(s32 *)(D_800A3708 + 0x4C) + 0x7D00) / 2000;
     row_center = (*(s32 *)(D_800A3708 + 0x54) + 0x7D00) / 2000;

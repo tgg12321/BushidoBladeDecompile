@@ -90,8 +90,8 @@ func_8003E6D8
 func_8003EB84
 func_8003EDC0
 func_8003F1C8
-game_SetPlayerCount
-game_GetPlayerCount
+func_8003F218
+func_8003F268
 stage_ClearLighting
 func_8003F7F4
 gpu_AddDrawMove
@@ -124,13 +124,13 @@ func_800457FC
 func_800460E4
 func_8004659C
 func_800466C0
-snd_GetBgmId
+func_80046780
 func_8004678C
 func_800467B8
 func_800469C4
 game_Init
 func_80046BF4
-game_StageInit
+func_80046DA8
 camera_CalcAngles
 func_800477DC
 func_800477E8

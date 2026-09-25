@@ -1620,9 +1620,9 @@ def test_canonical_build() -> None:
     check("func_table: nontrivial function count (>1000)", len(tbl) > 1000)
     # motion_Close lives inside motion_Open.s -> the old asm/funcs gate said
     # NO-TARGET; the ELF gate must resolve it.
-    if "func_80083804" in tbl:
-        eq("classify(func_80083804): resolves (not NO-TARGET)",
-           canonical.classify("func_80083804")["verdict"], "C")
+    if "__do_global_dtors" in tbl:
+        eq("classify(__do_global_dtors): resolves (not NO-TARGET)",
+           canonical.classify("__do_global_dtors")["verdict"], "C")
     if "func_8002EBDC" in tbl:
         eq("classify(func_8002EBDC): GTE -> ASM-PARTIAL",
            canonical.classify("func_8002EBDC")["verdict"], "ASM-PARTIAL")

@@ -513,7 +513,7 @@ void math_GrayscaleRgb555(u16 *arg0, s32 arg1, u16 *arg2) {
         } while (var_t0 != (-1));
     }
 }
-s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
+s32 math_Grayscale3(s32 arg0, s32 arg1, s32 arg2) {
     arg0 = arg0 * 0x547;
     arg1 = arg1 << 11;
     arg2 = arg2 * 0x2B8;
@@ -1502,7 +1502,7 @@ INCLUDE_ASM("asm/funcs", math_LerpMatrix3x3);
  * Canonical-asm; see inline_asm_canonical.txt. Owner-authorized 2026-08-11. */
 INCLUDE_ASM("asm/funcs", gte_MulMatrix0ClearTrans);
 INCLUDE_ASM("asm/funcs", gte_SetMatrixRotTransIR);
-INCLUDE_ASM("asm/funcs", func_80052A88);
+INCLUDE_ASM("asm/funcs", gte_SetMatrixRotTransIRVec);
 INCLUDE_ASM("asm/funcs", gte_SetRotTransMatrix);
 /* func_80052B44 = LIBGTE-style SetRotMatrix + zero-translation. Loads a packed
  * 3x3 rotation matrix (5 s32 words) from *a0 into cop2 controls CR0-CR4, then
@@ -1817,13 +1817,13 @@ extern s32 D_800A3770;
 extern const char D_80015840[];
 extern s32 func_80044FA0(s32, s32);
 extern s32 func_80045080(s32);
-extern void snd_StopBgm(void);
+extern void func_80046914(void);
 extern s32 *func_800469C4(s32);
 extern s16 *stage_GetDataPtr(void);
 extern s32 stage_GetId(void);
 
 extern void func_8003FFC4(s32);
-extern void game_SetPlayerCount(s32);
+extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
 extern void gpu_ResetGraphMode1(void);
@@ -1850,7 +1850,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
         D_800EFAE8.unk2C = a6;
     } else {
         if (func_80045080(id) < 0) {
-            snd_StopBgm();
+            func_80046914();
             printf(D_80015840);
         }
         D_800EFAE8.unk2C = (s32)func_800469C4(id);
@@ -1888,7 +1888,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
         func_8003FFC4(v);
     }
     s->unk8 = a1;
-    game_SetPlayerCount(0);
+    func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     if (s->unk4 & 0x3F) {
         n = (s->unk4 & 0x3F) - 1;
@@ -1911,11 +1911,11 @@ void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a
 }
 void DrawSync(s32);
 void func_8004659C(s32);
-void snd_StopSelection(void);
+void func_80046A60(void);
 void func_800548DC(void) {
     DrawSync(0);
     func_8004659C(-1);
-    snd_StopSelection();
+    func_80046A60();
 }
 INCLUDE_ASM("asm/funcs", func_8005490C);
 extern u32 D_80102C00;

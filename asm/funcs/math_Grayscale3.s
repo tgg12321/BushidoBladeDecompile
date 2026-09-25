@@ -1,4 +1,4 @@
-glabel func_8004881C
+glabel math_Grayscale3
     /* 3901C 8004881C 40100400 */  sll        $v0, $a0, 1
     /* 39020 80048820 21104400 */  addu       $v0, $v0, $a0
     /* 39024 80048824 80110200 */  sll        $v0, $v0, 6
@@ -17,4 +17,4 @@ glabel func_8004881C
     /* 39058 80048858 21104300 */  addu       $v0, $v0, $v1
     /* 3905C 8004885C 0800E003 */  jr         $ra
     /* 39060 80048860 03130200 */   sra       $v0, $v0, 12
-endlabel func_8004881C
+endlabel math_Grayscale3

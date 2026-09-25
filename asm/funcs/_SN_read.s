@@ -1,4 +1,4 @@
-glabel pcdrv_ReadRaw
+glabel _SN_read
     /* 7413C 8008393C 4D410000 */  break      0, 261
     /* 74140 80083940 02004010 */  beqz       $v0, .L8008394C
     /* 74144 80083944 21106000 */   addu      $v0, $v1, $zero
@@ -6,4 +6,4 @@ glabel pcdrv_ReadRaw
   .L8008394C:
     /* 7414C 8008394C 0800E003 */  jr         $ra
     /* 74150 80083950 00000000 */   nop
-endlabel pcdrv_ReadRaw
+endlabel _SN_read

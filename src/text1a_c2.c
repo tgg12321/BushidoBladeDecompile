@@ -16,7 +16,7 @@ extern void func_80044010(s32, s32);
 extern void func_8003EDC0(s32, s32);
 extern s32 func_80044670(s32, s32, s32);
 extern void func_800477DC(s32);
-extern s32 snd_GetMaxFade(void);
+extern s32 func_80047EC8(void);
 extern void func_800481E8(s32, s32);
 extern void func_80054410(s32);
 extern void func_80045600(s32, s32);
@@ -141,7 +141,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         break;
     case 11:
         func_800477DC((s32)s1);
-        s1 = (s32 *)((s32)s1 + snd_GetMaxFade());
+        s1 = (s32 *)((s32)s1 + func_80047EC8());
         break;
     case 13:
         s1 = s2;

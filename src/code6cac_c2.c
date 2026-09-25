@@ -95,7 +95,7 @@ extern void func_800174F4(void);
 
 
 extern void SetDrawMove(u32 *, s16 *, s32, s32);
-extern s32 game_GetPlayerCount(void);
+extern s32 func_8003F268(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
 extern void func_800372C0(void);
@@ -110,7 +110,7 @@ extern s32 *func_80077D00(void);
 extern void func_80060758(void);
 extern void func_8001CD68(u8 *);
 
-extern void game_StageInit(s32);
+extern void func_80046DA8(s32);
 extern s32 func_800600C8(s32, s32, s32);
 extern void func_8001DA2C(void);
 
@@ -747,7 +747,7 @@ void func_8003C9A4(void) {
     D_800F6608.w18 = 0x2710;
     D_800F6608.h12 = (s16)(D_800A36AC << 2);
     func_80046BF4((s16 *)a0, a1, 0x2710);
-    game_StageInit(1);
+    func_80046DA8(1);
 
     if (D_800A3929 == 0) {
         D_800A38B4 = D_800A38B4 + (func_8005C8A8(1, D_800A3817, D_800A38B4, 0) / 4) * 4;
@@ -829,7 +829,7 @@ void func_8003CD10(void) {
     D_800F6608.w18 = 0x2710;
     D_800F6608.h12 = (s16)(D_800A36AC << 2);
     func_80046BF4((s16 *)a0, a1, 0x2710);
-    game_StageInit(1);
+    func_80046DA8(1);
 
     ret = func_800600C8(D_800A391F, D_800A38B4, 1);
     D_800A38B4 = D_800A38B4 + ret * 4;
@@ -846,7 +846,7 @@ extern void func_8001DA2C(void);
 extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
 extern void func_8003E22C(void);
-extern void game_SetPlayerCount(s32);
+extern void func_8003F218(s32);
 extern s32 func_80022408(s32 *);
 extern void func_80054884(s32, s32, s32, s32, s32, s32, s32, s32);
 void func_8003CE18(void) {
@@ -860,7 +860,7 @@ void func_8003CE18(void) {
     gpu_ResetGraphMode1();
     func_80016768(1, 0, 0, 0);
     func_8003E22C();
-    game_SetPlayerCount(0);
+    func_8003F218(0);
     v0 = math_FovToScreenDist(0x2D);
     SetGeomScreen(v0);
     player = D_800A3748;
@@ -1271,7 +1271,7 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
     new_var2 = &D_800906A4 + arg0 * 2;
     if (*new_var2 != 0) {
         {
-            s32 base = game_GetPlayerCount();
+            s32 base = func_8003F268();
             if (base == 0) {
                 base = 0x6590;
             } else {
@@ -1326,7 +1326,7 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
         step = D_80090600;
     } else {
         s32 base_val;
-        if (game_GetPlayerCount() == 0) {
+        if (func_8003F268() == 0) {
             base_val = 0x6590;
         } else {
             base_val = 0x55F0;

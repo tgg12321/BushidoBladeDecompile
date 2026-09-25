@@ -1133,10 +1133,10 @@ extern void MulMatrix2(s32 *, s32 *);
 extern void MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 extern void camera_InitMatrix(void);
 extern s32 func_8003E2C8(void);
-extern s32 game_GetPlayerCount(void);
-extern s32 game_GetPause(void);
+extern s32 func_8003F268(void);
+extern s32 func_80046E7C(void);
 extern void func_8004A4E0(void);
-extern void game_SetPause(s32);
+extern void func_80046E54(s32);
 void func_80044504(s32 a0) {
     s32 *s0 = &D_80101BD0;
     math_RotMatrixZXY(&D_800A3678, s0);
@@ -1161,11 +1161,11 @@ void func_80044504(s32 a0) {
         *(s32 *)0x1F800010 = v1;
     }
     {
-        s32 v0 = game_GetPlayerCount();
+        s32 v0 = func_8003F268();
         if (v0 != 0) {
             v0 = 0xBE;
         } else {
-            v0 = game_GetPause();
+            v0 = func_80046E7C();
             if (v0 != 0) {
                 v0 = 0x182;
             } else {
@@ -1175,7 +1175,7 @@ void func_80044504(s32 a0) {
         *(s32 *)0x1F800018 = v0;
     }
     func_8004A4E0();
-    game_SetPause(1);
+    func_80046E54(1);
     D_800A3820 = (s32)&D_80102C00;
 }
 extern void func_80052C10(void);

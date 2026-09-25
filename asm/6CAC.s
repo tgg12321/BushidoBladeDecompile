@@ -6650,7 +6650,7 @@ glabel func_8001DCB0
     /* E510 8001DD10 00000000 */   nop
     /* E514 8001DD14 0A80043C */  lui        $a0, %hi(D_800A38BA)
     /* E518 8001DD18 BA388484 */  lh         $a0, %lo(D_800A38BA)($a0)
-    /* E51C 8001DD1C 86FC000C */  jal        game_SetPlayerCount
+    /* E51C 8001DD1C 86FC000C */  jal        func_8003F218
     /* E520 8001DD20 00000000 */   nop
     /* E524 8001DD24 0A80023C */  lui        $v0, %hi(D_800A38BA)
     /* E528 8001DD28 BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
@@ -7192,7 +7192,7 @@ glabel func_8001E404
   .L8001E4E0:
     /* ECE0 8001E4E0 0A80043C */  lui        $a0, %hi(D_800A36FA)
     /* ECE4 8001E4E4 FA368490 */  lbu        $a0, %lo(D_800A36FA)($a0)
-    /* ECE8 8001E4E8 86FC000C */  jal        game_SetPlayerCount
+    /* ECE8 8001E4E8 86FC000C */  jal        func_8003F218
     /* ECEC 8001E4EC 0100842C */   sltiu     $a0, $a0, 0x1
     /* ECF0 8001E4F0 0A80023C */  lui        $v0, %hi(D_800A36FA)
     /* ECF4 8001E4F4 FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)
@@ -7533,7 +7533,7 @@ glabel func_8001E878
     /* F1C4 8001E9C4 90368490 */  lbu        $a0, %lo(D_800A3690)($a0)
     /* F1C8 8001E9C8 00000000 */  nop
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
-    /* F1D0 8001E9D0 6A1B010C */  jal        game_StageInit
+    /* F1D0 8001E9D0 6A1B010C */  jal        func_80046DA8
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
     /* F1D8 8001E9D8 9873000C */  jal        func_8001CE60
     /* F1DC 8001E9DC 00000000 */   nop
@@ -7634,7 +7634,7 @@ glabel func_8001EA84
     /* F32C 8001EB2C 00000000 */   nop
     /* F330 8001EB30 E8E5000C */  jal        func_800397A0
     /* F334 8001EB34 00000000 */   nop
-    /* F338 8001EB38 6A1B010C */  jal        game_StageInit
+    /* F338 8001EB38 6A1B010C */  jal        func_80046DA8
     /* F33C 8001EB3C 01000424 */   addiu     $a0, $zero, 0x1
     /* F340 8001EB40 76CD000C */  jal        func_800335D8
     /* F344 8001EB44 00000000 */   nop
@@ -7999,7 +7999,7 @@ glabel func_8001EFA0
     /* F878 8001F078 00000000 */   nop
     /* F87C 8001F07C E8E5000C */  jal        func_800397A0
     /* F880 8001F080 00000000 */   nop
-    /* F884 8001F084 6A1B010C */  jal        game_StageInit
+    /* F884 8001F084 6A1B010C */  jal        func_80046DA8
     /* F888 8001F088 01000424 */   addiu     $a0, $zero, 0x1
     /* F88C 8001F08C 76CD000C */  jal        func_800335D8
     /* F890 8001F090 00000000 */   nop
@@ -38185,7 +38185,7 @@ glabel func_800397D4
     /* 29FE0 800397E0 00000000 */   nop
     /* 29FE4 800397E4 8BF8000C */  jal        func_8003E22C
     /* 29FE8 800397E8 00000000 */   nop
-    /* 29FEC 800397EC 86FC000C */  jal        game_SetPlayerCount
+    /* 29FEC 800397EC 86FC000C */  jal        func_8003F218
     /* 29FF0 800397F0 21200000 */   addu      $a0, $zero, $zero
     /* 29FF4 800397F4 B159000C */  jal        math_FovToScreenDist
     /* 29FF8 800397F8 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -38675,7 +38675,7 @@ glabel func_8003993C
     /* 2A700 80039F00 B400622A */  slti       $v0, $s3, 0xB4
     /* 2A704 80039F04 DCFF4014 */  bnez       $v0, .L80039E78
     /* 2A708 80039F08 10003126 */   addiu     $s1, $s1, 0x10
-    /* 2A70C 80039F0C 6A1B010C */  jal        game_StageInit
+    /* 2A70C 80039F0C 6A1B010C */  jal        func_80046DA8
     /* 2A710 80039F10 01000424 */   addiu     $a0, $zero, 0x1
     /* 2A714 80039F14 76CD000C */  jal        func_800335D8
     /* 2A718 80039F18 00000000 */   nop
@@ -41836,7 +41836,7 @@ glabel func_8003C9A4
     /* 2D204 8003CA04 1A6622A4 */  sh         $v0, %lo(D_800F661A)($at)
     /* 2D208 8003CA08 FD1A010C */  jal        func_80046BF4
     /* 2D20C 8003CA0C 10270624 */   addiu     $a2, $zero, 0x2710
-    /* 2D210 8003CA10 6A1B010C */  jal        game_StageInit
+    /* 2D210 8003CA10 6A1B010C */  jal        func_80046DA8
     /* 2D214 8003CA14 01000424 */   addiu     $a0, $zero, 0x1
     /* 2D218 8003CA18 0A80023C */  lui        $v0, %hi(D_800A3929)
     /* 2D21C 8003CA1C 29394290 */  lbu        $v0, %lo(D_800A3929)($v0)
@@ -42079,7 +42079,7 @@ glabel func_8003CD10
     /* 2D570 8003CD70 1A6622A4 */  sh         $v0, %lo(D_800F661A)($at)
     /* 2D574 8003CD74 FD1A010C */  jal        func_80046BF4
     /* 2D578 8003CD78 10270624 */   addiu     $a2, $zero, 0x2710
-    /* 2D57C 8003CD7C 6A1B010C */  jal        game_StageInit
+    /* 2D57C 8003CD7C 6A1B010C */  jal        func_80046DA8
     /* 2D580 8003CD80 01000424 */   addiu     $a0, $zero, 0x1
     /* 2D584 8003CD84 0A80043C */  lui        $a0, %hi(D_800A391F)
     /* 2D588 8003CD88 1F398490 */  lbu        $a0, %lo(D_800A391F)($a0)
@@ -42142,7 +42142,7 @@ glabel func_8003CE18
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
     /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
     /* 2D658 8003CE58 00000000 */   nop
-    /* 2D65C 8003CE5C 86FC000C */  jal        game_SetPlayerCount
+    /* 2D65C 8003CE5C 86FC000C */  jal        func_8003F218
     /* 2D660 8003CE60 21200000 */   addu      $a0, $zero, $zero
     /* 2D664 8003CE64 B159000C */  jal        math_FovToScreenDist
     /* 2D668 8003CE68 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -43046,7 +43046,7 @@ glabel func_8003DA8C
     /* 2E2C0 8003DAC0 00000000 */  nop
     /* 2E2C4 8003DAC4 40004010 */  beqz       $v0, .L8003DBC8
     /* 2E2C8 8003DAC8 2190A000 */   addu      $s2, $a1, $zero
-    /* 2E2CC 8003DACC 9AFC000C */  jal        game_GetPlayerCount
+    /* 2E2CC 8003DACC 9AFC000C */  jal        func_8003F268
     /* 2E2D0 8003DAD0 00000000 */   nop
     /* 2E2D4 8003DAD4 02004014 */  bnez       $v0, .L8003DAE0
     /* 2E2D8 8003DAD8 F0550224 */   addiu     $v0, $zero, 0x55F0
@@ -43160,7 +43160,7 @@ glabel func_8003DBE4
     /* 2E450 8003DC50 1CF70008 */  j          .L8003DC70
     /* 2E454 8003DC54 00000000 */   nop
   .L8003DC58:
-    /* 2E458 8003DC58 9AFC000C */  jal        game_GetPlayerCount
+    /* 2E458 8003DC58 9AFC000C */  jal        func_8003F268
     /* 2E45C 8003DC5C 00000000 */   nop
     /* 2E460 8003DC60 02004014 */  bnez       $v0, .L8003DC6C
     /* 2E464 8003DC64 F0550224 */   addiu     $v0, $zero, 0x55F0

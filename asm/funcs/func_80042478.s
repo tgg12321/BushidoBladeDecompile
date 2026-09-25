@@ -13,7 +13,7 @@ glabel func_80042478
     /* 32CA4 800424A4 07004010 */  beqz       $v0, .L800424C4
     /* 32CA8 800424A8 21202002 */   addu      $a0, $s1, $zero
     /* 32CAC 800424AC 21284002 */  addu       $a1, $s2, $zero
-    /* 32CB0 800424B0 0722010C */  jal        func_8004881C
+    /* 32CB0 800424B0 0722010C */  jal        math_Grayscale3
     /* 32CB4 800424B4 21300002 */   addu      $a2, $s0, $zero
     /* 32CB8 800424B8 21804000 */  addu       $s0, $v0, $zero
     /* 32CBC 800424BC 21900002 */  addu       $s2, $s0, $zero

@@ -58,7 +58,7 @@ glabel func_80041BF4
     /* 324D4 80041CD4 07004010 */  beqz       $v0, .L80041CF4
     /* 324D8 80041CD8 2120E002 */   addu      $a0, $s7, $zero
     /* 324DC 80041CDC 2128C002 */  addu       $a1, $s6, $zero
-    /* 324E0 80041CE0 0722010C */  jal        func_8004881C
+    /* 324E0 80041CE0 0722010C */  jal        math_Grayscale3
     /* 324E4 80041CE4 21306002 */   addu      $a2, $s3, $zero
     /* 324E8 80041CE8 21984000 */  addu       $s3, $v0, $zero
     /* 324EC 80041CEC 21B06002 */  addu       $s6, $s3, $zero

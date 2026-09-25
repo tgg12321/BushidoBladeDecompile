@@ -90,7 +90,7 @@ s32 func_80041650(s32 a0) {
     return -1;
 }
 extern s32 func_800486FC();
-extern s32 func_8004881C(s32, s32, s32);
+extern s32 math_Grayscale3(s32, s32, s32);
 extern void func_80041398(s32);
 
 /* func_80041688 (gnd_init_80041688) — s17 closing candidate (text1a_post
@@ -192,7 +192,7 @@ after2:
         r = *((u8 *)player + 0x18);
         g = *((u8 *)player + 0x19);
         b = *((u8 *)player + 0x1A);
-        v = func_8004881C(b, g, r);
+        v = math_Grayscale3(b, g, r);
         func_80041398((v << 16) | (v << 8) | v);
     } else {
         r = *((u8 *)player + 0x18);
@@ -204,7 +204,7 @@ after2:
 typedef struct { s32 w[4]; } Block16;
 extern s32 g_anim_func_table[];
 extern void gte_MulMatrix0ClearTrans(void *, void *, void *);
-extern void func_80052A88(void *, void *, void *);
+extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 void func_800417D0(s32 *a0) {
     void (*func)(s32 *, s32 *);
 
@@ -220,7 +220,7 @@ void func_800417D0(s32 *a0) {
             func_800417D0((s32 *)a0[3]);
         }
         gte_MulMatrix0ClearTrans((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x38), (void *)((u8 *)a0 + 0x18));
-        func_80052A88((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x4C), (void *)((u8 *)a0 + 0x2C));
+        gte_SetMatrixRotTransIRVec((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x4C), (void *)((u8 *)a0 + 0x2C));
     } else {
         ((Block16 *)(a0 + 6))[0] = ((Block16 *)(a0 + 14))[0];
         ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
@@ -411,7 +411,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   g = (a1 << 12) / 255;
   b = (a2 << 12) / 255;
   if (func_800486FC()) {
-    b = func_8004881C(r, g, b);
+    b = math_Grayscale3(r, g, b);
     g = b;
     r = b;
   }
@@ -633,7 +633,7 @@ extern u8 D_800F64B8;
 extern u8 D_800F64B9;
 extern u8 D_800F64BA;
 
-extern s32 func_8004881C(s32, s32, s32);
+extern s32 math_Grayscale3(s32, s32, s32);
 
 void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     s32 r = (packed >> 16) & 0xFF;
@@ -644,7 +644,7 @@ void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     s16 *new_var;
     s16 b2;
     if (func_800486FC(a0)) {
-        b = func_8004881C(r, g, b);
+        b = math_Grayscale3(r, g, b);
         g = b;
         r = b;
     }
@@ -694,7 +694,7 @@ alt_raw:
 out:;
 }
 extern s32 func_800486FC();
-extern s32 func_8004881C(s32, s32, s32);
+extern s32 math_Grayscale3(s32, s32, s32);
 extern void func_80016768(s32, s32, s32, s32);
 extern void SetFarColor(s32, s32, s32);
 void func_80042478(s32 a0) {
@@ -702,7 +702,7 @@ void func_80042478(s32 a0) {
     s32 g = (a0 >> 8) & 0xFF;
     s32 b = a0 & 0xFF;
     if (func_800486FC(a0)) {
-        b = func_8004881C(r, g, b);
+        b = math_Grayscale3(r, g, b);
         g = b;
         r = b;
     }

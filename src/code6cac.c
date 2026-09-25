@@ -136,7 +136,7 @@ extern u8 D_800F5F68;
 extern s16 Judge;
 
 
-extern void game_SetPlayerCount(s32);
+extern void func_8003F218(s32);
 extern s32 math_FovToScreenDist(s32);
 extern void SetGeomScreen(s32);
 extern void func_8003F3D4(s16 *);
@@ -152,7 +152,7 @@ extern void func_80030D7C(void);
 
 extern void func_800397A0(void);
 extern void func_8003E6A0(s32, s32);
-extern void game_StageInit(s32);
+extern void func_80046DA8(s32);
 
 extern s32 D_80102030;
 extern s8 D_800A3768;
@@ -2059,7 +2059,7 @@ void func_8001E404(void) {
         s2 = (s32 *)&D_800F6608;
     done_s2:
 
-        game_SetPlayerCount(D_800A36FA < 1);
+        func_8003F218(D_800A36FA < 1);
 
         {
             s32 fov = 0x2D;
@@ -2184,7 +2184,7 @@ void func_8001E878(void) {
         func_8003E6A0(D_80101FBC, D_80101FC4);
         func_8003E6A0(D_80102408, D_80102410);
     }
-    game_StageInit((D_800A3690 ^ 1) != 0);
+    func_80046DA8((D_800A3690 ^ 1) != 0);
     func_8001CE60();
     func_800335D8();
     func_8001C8DC();
@@ -2226,7 +2226,7 @@ void func_8001EA84(void) {
     func_80030D7C();
     func_800321E8();
     func_800397A0();
-    game_StageInit(1);
+    func_80046DA8(1);
     func_800335D8();
     if (D_800A38DC == 3) {
         func_8001CD68(buf);
@@ -2331,7 +2331,7 @@ void func_8001EFA0(void) {
     func_80030D7C();
     func_800321E8();
     func_800397A0();
-    game_StageInit(1);
+    func_80046DA8(1);
     func_800335D8();
 
     if (*(&D_80101F5E + D_800A3748 * 550) != 0 && D_800A38DC == 1) {

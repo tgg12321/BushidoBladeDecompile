@@ -692,9 +692,9 @@ glabel math_GrayscaleRgb555
     /* 39018 80048818 00000000 */   nop
 endlabel math_GrayscaleRgb555
 
-nonmatching func_8004881C, 0x48
+nonmatching math_Grayscale3, 0x48
 
-glabel func_8004881C
+glabel math_Grayscale3
     /* 3901C 8004881C 40100400 */  sll        $v0, $a0, 1
     /* 39020 80048820 21104400 */  addu       $v0, $v0, $a0
     /* 39024 80048824 80110200 */  sll        $v0, $v0, 6
@@ -713,7 +713,7 @@ glabel func_8004881C
     /* 39058 80048858 21104300 */  addu       $v0, $v0, $v1
     /* 3905C 8004885C 0800E003 */  jr         $ra
     /* 39060 80048860 03130200 */   sra       $v0, $v0, 12
-endlabel func_8004881C
+endlabel math_Grayscale3
 
 nonmatching func_80048864, 0x218
 
@@ -11875,9 +11875,9 @@ glabel gte_SetMatrixRotTransIR
 endlabel gte_SetMatrixRotTransIR
 
 /* Handwritten function */
-nonmatching func_80052A88, 0x78
+nonmatching gte_SetMatrixRotTransIRVec, 0x78
 
-glabel func_80052A88
+glabel gte_SetMatrixRotTransIRVec
     /* 43288 80052A88 0000888C */  lw         $t0, 0x0($a0)
     /* 4328C 80052A8C 0400898C */  lw         $t1, 0x4($a0)
     /* 43290 80052A90 08008A8C */  lw         $t2, 0x8($a0)
@@ -11908,7 +11908,7 @@ glabel func_80052A88
     /* 432F4 80052AF4 0400CAE8 */  swc2       $10, 0x4($a2)
     /* 432F8 80052AF8 0800E003 */  jr         $ra
     /* 432FC 80052AFC 0800CBE8 */   swc2      $11, 0x8($a2)
-endlabel func_80052A88
+endlabel gte_SetMatrixRotTransIRVec
 
 /* Handwritten function */
 nonmatching gte_SetRotTransMatrix, 0x44
@@ -13870,7 +13870,7 @@ glabel func_80054604
     /* 44E78 80054678 21200002 */   addu      $a0, $s0, $zero
     /* 44E7C 8005467C 07004104 */  bgez       $v0, .L8005469C
     /* 44E80 80054680 00000000 */   nop
-    /* 44E84 80054684 451A010C */  jal        snd_StopBgm
+    /* 44E84 80054684 451A010C */  jal        func_80046914
     /* 44E88 80054688 00000000 */   nop
     /* 44E8C 8005468C 0180043C */  lui        $a0, %hi(D_80015840)
     /* 44E90 80054690 40588424 */  addiu      $a0, $a0, %lo(D_80015840)
@@ -13960,7 +13960,7 @@ glabel func_80054604
     /* 44FCC 800547CC 21204000 */   addu      $a0, $v0, $zero
   .L800547D0:
     /* 44FD0 800547D0 21200000 */  addu       $a0, $zero, $zero
-    /* 44FD4 800547D4 86FC000C */  jal        game_SetPlayerCount
+    /* 44FD4 800547D4 86FC000C */  jal        func_8003F218
     /* 44FD8 800547D8 080033A6 */   sh        $s3, 0x8($s1)
     /* 44FDC 800547DC B159000C */  jal        math_FovToScreenDist
     /* 44FE0 800547E0 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -14046,7 +14046,7 @@ glabel func_800548DC
     /* 450E8 800548E8 21200000 */   addu      $a0, $zero, $zero
     /* 450EC 800548EC 6719010C */  jal        func_8004659C
     /* 450F0 800548F0 FFFF0424 */   addiu     $a0, $zero, -0x1
-    /* 450F4 800548F4 981A010C */  jal        snd_StopSelection
+    /* 450F4 800548F4 981A010C */  jal        func_80046A60
     /* 450F8 800548F8 00000000 */   nop
     /* 450FC 800548FC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 45100 80054900 1800BD27 */  addiu      $sp, $sp, 0x18

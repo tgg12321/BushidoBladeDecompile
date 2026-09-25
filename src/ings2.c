@@ -618,7 +618,7 @@ INCLUDE_ASM("asm/funcs", _start);
    COMPLETED-INLINE-ASM-CANONICAL per owner ruling 2026-08-30, same prebuilt
    crt0/libgcc object; entry in inline_asm_canonical.txt). */
 INCLUDE_ASM("asm/funcs", __main);
-INCLUDE_ASM("asm/funcs", func_80083804);
+INCLUDE_ASM("asm/funcs", __do_global_dtors);
 /* kengo:HIGH  |  is_motion/motion_Open  |  54i */
 __asm__(
     ".section .text\n"
@@ -633,7 +633,7 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-extern s32 pcdrv_ReadRaw(s32, s32, s32, s32);
+extern s32 _SN_read(s32, s32, s32, s32);
 
 s32 PCread(s32 addr, s32 dest, s32 len) {
     s32 total;
@@ -647,7 +647,7 @@ s32 PCread(s32 addr, s32 dest, s32 len) {
             if ((u32)0x8000 < (u32)len) {
                 chunk = 0x8000;
             }
-            result = pcdrv_ReadRaw(0, addr, chunk, dest);
+            result = _SN_read(0, addr, chunk, dest);
             total += result;
             if (result == -1) {
                 return -1;
@@ -665,7 +665,7 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel pcdrv_ReadRaw\n"
+    "glabel _SN_read\n"
     "    .word 0x0000414D\n"
     "    beqz $v0, .L8008394C\n"
     "    addu $v0, $v1, $zero\n"
@@ -673,7 +673,7 @@ __asm__(
     ".L8008394C:\n"
     "    jr $ra\n"
     "    nop\n"
-    "endlabel pcdrv_ReadRaw\n"
+    "endlabel _SN_read\n"
     "    .set reorder\n"
     "    .set at\n"
 );

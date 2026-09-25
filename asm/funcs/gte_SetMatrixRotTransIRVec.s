@@ -1,4 +1,4 @@
-glabel func_80052A88
+glabel gte_SetMatrixRotTransIRVec
     /* 43288 80052A88 0000888C */  lw         $t0, 0x0($a0)
     /* 4328C 80052A8C 0400898C */  lw         $t1, 0x4($a0)
     /* 43290 80052A90 08008A8C */  lw         $t2, 0x8($a0)
@@ -29,4 +29,4 @@ glabel func_80052A88
     /* 432F4 80052AF4 0400CAE8 */  swc2       $10, 0x4($a2)
     /* 432F8 80052AF8 0800E003 */  jr         $ra
     /* 432FC 80052AFC 0800CBE8 */   swc2      $11, 0x8($a2)
-endlabel func_80052A88
+endlabel gte_SetMatrixRotTransIRVec

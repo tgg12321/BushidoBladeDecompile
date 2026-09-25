@@ -45,7 +45,7 @@ glabel func_8001EA84
     /* F32C 8001EB2C 00000000 */   nop
     /* F330 8001EB30 E8E5000C */  jal        func_800397A0
     /* F334 8001EB34 00000000 */   nop
-    /* F338 8001EB38 6A1B010C */  jal        game_StageInit
+    /* F338 8001EB38 6A1B010C */  jal        func_80046DA8
     /* F33C 8001EB3C 01000424 */   addiu     $a0, $zero, 0x1
     /* F340 8001EB40 76CD000C */  jal        func_800335D8
     /* F344 8001EB44 00000000 */   nop

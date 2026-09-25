@@ -24,7 +24,7 @@ glabel PCread
     /* 740CC 800838CC 21200000 */  addu       $a0, $zero, $zero
     /* 740D0 800838D0 21288002 */  addu       $a1, $s4, $zero
     /* 740D4 800838D4 21302002 */  addu       $a2, $s1, $zero
-    /* 740D8 800838D8 4F0E020C */  jal        pcdrv_ReadRaw
+    /* 740D8 800838D8 4F0E020C */  jal        _SN_read
     /* 740DC 800838DC 21386002 */   addu      $a3, $s3, $zero
     /* 740E0 800838E0 03005514 */  bne        $v0, $s5, .L800838F0
     /* 740E4 800838E4 21904202 */   addu      $s2, $s2, $v0

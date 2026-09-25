@@ -111,7 +111,7 @@ void func_800468DC(s32 a0, s32 a1);
 
 /* --- Functions 0x80046780 - 0x80047EC8 --- */
 
-s32 snd_GetBgmId(void) {
+s32 func_80046780(void) {
     return g_snd_bgm_id;
 }
 s32 func_8004678C(void) {
@@ -169,7 +169,7 @@ void func_800468DC(s32 a0, s32 a1) {
     func_80044100(9, a1);
 }
 
-void snd_StopBgm(void) {
+void func_80046914(void) {
     func_800453E0(8);
 }
 
@@ -209,7 +209,7 @@ s32 *func_800469C4(s32 a0) {
     return v0;
 }
 
-void snd_StopSelection(void) {
+void func_80046A60(void) {
     func_800453E0(0xA);
 }
 
@@ -223,7 +223,7 @@ void snd_StopAll(void) {
     func_8004668C();
     func_80046020();
     func_80049E1C();
-    snd_StopBgm();
+    func_80046914();
 }
 
 void rcnt_StartCnt1(void) {
@@ -329,7 +329,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
     stage_ClearLighting();
     stage_ApplyLighting();
 }
-void game_StageInit(s32 a0) {
+void func_80046DA8(s32 a0) {
     if (a0 & 1) {
         func_80046EA0(D_800A33C0);
     }
@@ -357,11 +357,11 @@ void *game_GetPlayerBase(void) {
     return NULL;
 }
 
-void game_DisablePause(void) {
+void func_80046E44(void) {
     g_game_pause = 0;
 }
 
-void game_SetPause(s32 a0) {
+void func_80046E54(s32 a0) {
     if (a0) {
         g_game_pause = 1;
     } else {
@@ -369,11 +369,11 @@ void game_SetPause(s32 a0) {
     }
 }
 
-s32 game_GetPause(void) {
+s32 func_80046E7C(void) {
     return g_game_pause;
 }
 
-void game_ResetTimer(void) {
+void func_80046E8C(void) {
     g_game_timer = 0x23;
 }
 
@@ -551,7 +551,7 @@ void func_80047530(void) {
     func_800477E8();
 }
 
-void game_SndCleanup(void) {
+void func_80047550(void) {
     func_80047A90();
 }
 
@@ -983,6 +983,6 @@ s32 func_80047E5C(void) {
     }
 }
 
-s32 snd_GetMaxFade(void) {
+s32 func_80047EC8(void) {
     return 0xD00;
 }

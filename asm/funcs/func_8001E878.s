@@ -88,7 +88,7 @@ glabel func_8001E878
     /* F1C4 8001E9C4 90368490 */  lbu        $a0, %lo(D_800A3690)($a0)
     /* F1C8 8001E9C8 00000000 */  nop
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
-    /* F1D0 8001E9D0 6A1B010C */  jal        game_StageInit
+    /* F1D0 8001E9D0 6A1B010C */  jal        func_80046DA8
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
     /* F1D8 8001E9D8 9873000C */  jal        func_8001CE60
     /* F1DC 8001E9DC 00000000 */   nop

@@ -1,4 +1,4 @@
-glabel game_SetPlayerCount
+glabel func_8003F218
     /* 2FA18 8003F218 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2FA1C 8003F21C 0200822C */  sltiu      $v0, $a0, 0x2
     /* 2FA20 8003F220 0D004010 */  beqz       $v0, .L8003F258
@@ -21,4 +21,4 @@ glabel game_SetPlayerCount
     /* 2FA5C 8003F25C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2FA60 8003F260 0800E003 */  jr         $ra
     /* 2FA64 8003F264 00000000 */   nop
-endlabel game_SetPlayerCount
+endlabel func_8003F218
