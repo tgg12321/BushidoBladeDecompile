@@ -126,6 +126,13 @@ Evidence that it **did**:
 Anyone reopening this should start with the scan scripts named in the
 forensics doc and the Phase-0 evidence recorded at `d99ab6a6`.
 
+Study (2026-09-25, scratch-only, NOT adopted):
+[ORACLE-COMPILER-STUDY-2026-09-25.md](ORACLE-COMPILER-STUDY-2026-09-25.md).
+It reports a partial answer: a narrowed rewrite, which skips only
+`(plus REG CONST_INT)`, fits every compiled site. The report also corrects
+two entries in the evidence lists above: sprintf is neutral, and site C's
+natural spelling needs the rewrite.
+
 ### Owner ruling 2026-09-25 — keep the patch; a narrower patch may be STUDIED, not adopted
 
 **Question and answer.** After the 2026-09-25 manual-lane run, the owner asked
