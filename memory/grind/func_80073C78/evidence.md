@@ -10,9 +10,9 @@ AddPrim tail.
 Floor: 362 (INCLUDE_ASM) -> 55 (first spelling) -> **2** (honest `+` form = candidate.c).
 The `|` spelling reached 0 / SHA1 == oracle but was **FAILED by layer-2 (2026-09-25)**:
 banked as rejected/ior-spelling-patch-workaround.c (reviewer reasoning in its header).
-Status: ROTATED pending the owner question in docs/grind/borderline.md 2026-09-25
-(revisit or keep tools/cc1-no-plus-to-ior.patch). If the owner drops the patch, candidate.c
-should land as-is; if kept, this function has no honest oracle-compiler match.
+Status: owner question answered by ruling bcdc1648e; narrow condition adopted in 9bc64b751.
+candidate.c now reaches 0 / oracle SHA1 as-is — see "Landing after the narrow PLUS->IOR
+adoption" at the end.
 
 ## What closed it to 2 (all ordinary C)
 - tpage/clut `u32` (target spills them with `sw`, clut with `andi 0xffff`).
@@ -84,3 +84,14 @@ rewrite; the remaining IOR producers in combine.c (bit-field insertion, (a&b)|(a
 distribution, De Morgan) need an IOR/AND already in the source. `ori rX,rY,0` needs an
 IOR whose second operand reload rewrites to 0, so it needs `|` in the C. `^` gives xori,
 and `+` gives addu/addiu (the `+` variants in the ruled-out list below all measured addu).
+
+## Landing after the narrow PLUS->IOR adoption (2026-09-25)
+Owner ruling bcdc1648e (F) + adoption 9bc64b751: the build compiler now keeps combine.c's
+PLUS->IOR rewrite except for (plus REG CONST_INT). candidate.c (the `+` body, unchanged)
+spliced into src/text1b.c: sandbox --disable all = 0/362 (15 not-scored branch-target
+hunks only); verify-oracle --rebuild = 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+Self-check measurement (tmp/f73c78_selfcheck.sh, all 34 TUs, spliced tree):
+narrow(aa04d761) vs retired no-rewrite(0f438e42) differ in {text1b} only — exactly the
+two UV `addu`->`ori` lines; stock(~/cc1stock) vs no-rewrite differ in {ings text1b}.
+tools/build_oracle_cc1.sh ORACLE_EXPECT_DIFF / STOCK_EXPECT_DIFF updated to match.
+The `|` spelling (rejected/ior-spelling-patch-workaround.c) stays rejected.

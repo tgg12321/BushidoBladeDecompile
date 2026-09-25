@@ -167,8 +167,10 @@ fi
 # change that lands a site where the conditions differ must add its stem here
 # in the same change (e.g. func_80073C78's `+` body in text1b), and the full
 # `engine verify-oracle --rebuild` stays the authoritative gate.
-ORACLE_EXPECT_DIFF=""      # narrow vs historical no-rewrite: none on the adopted tree
-STOCK_EXPECT_DIFF="ings"   # stock vs historical no-rewrite: site A only (study § 1.1)
+#   text1b: func_80073C78's `+` UV stores (Match commit after 9bc64b751) —
+#           narrow and stock emit the target `ori` pair, no-rewrite `addu`.
+ORACLE_EXPECT_DIFF="text1b"      # narrow vs historical no-rewrite
+STOCK_EXPECT_DIFF="ings text1b"  # stock vs historical no-rewrite: site A (study § 1.1) + text1b
 F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
