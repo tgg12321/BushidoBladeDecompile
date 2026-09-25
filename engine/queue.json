@@ -591,6 +591,17 @@
       "rotation_count": 1
     },
     {
+      "func": "func_800759D0",
+      "file": "text1b",
+      "distance": 364,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "owner question: one role, differing constant offsets (borderline.md). Honest floor 25; 0/364 needs a shared multi-write local (layer-2 FAIL). Session-2 regalloc proof: no per-site spelling can seat \\. See memory/grind/func_800759D0/hypotheses.md",
+      "rotated_at": "2026-09-25T08:42:28+00:00",
+      "rotation_count": 1
+    },
+    {
       "func": "func_8008B488",
       "file": "main",
       "distance": 387,
@@ -669,11 +680,11 @@
     }
   ],
   "counts": {
-    "total": 59,
+    "total": 60,
     "active": 38,
     "by_status": {
       "active": 38,
-      "rotated": 21
+      "rotated": 22
     },
     "by_verdict": {
       "C": 30,
