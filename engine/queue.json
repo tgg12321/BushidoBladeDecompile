@@ -17,6 +17,19 @@
       "returned_at": "2026-09-25T22:11:37+00:00"
     },
     {
+      "func": "func_8008B488",
+      "file": "main",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-25T09:44:20+00:00",
+      "rotation_count": 1,
+      "unparked_from": "flat floor 12/387 (operand-only) after 2 manual sessions + permuter; global.c allocator proof: per-block locals cannot seat SL/SR regs; only closing form shares rate/adsr across blocks = INADMISSIBLE (Ruling 5/6; owner declined Ruling-8-as-class 2026-09-24). Chassis ruled legitimate. See memory/grind/func_8008B488/evidence.md",
+      "unpark_reason": "auto-return: forced re-measure floor None -> 16 (fingerprint 85cd2a73ee7a8972 unchanged)",
+      "returned_at": "2026-09-25T22:45:00+00:00"
+    },
+    {
       "func": "func_8002A458",
       "file": "code6cac_b",
       "distance": 30,
@@ -632,17 +645,6 @@
       "rotation_count": 1
     },
     {
-      "func": "func_8008B488",
-      "file": "main",
-      "distance": 387,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "flat floor 12/387 (operand-only) after 2 manual sessions + permuter; global.c allocator proof: per-block locals cannot seat SL/SR regs; only closing form shares rate/adsr across blocks = INADMISSIBLE (Ruling 5/6; owner declined Ruling-8-as-class 2026-09-24). Chassis ruled legitimate. See memory/grind/func_8008B488/evidence.md",
-      "rotated_at": "2026-09-25T09:44:20+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "func_800288C8",
       "file": "code6cac_b",
       "distance": 465,
@@ -656,13 +658,13 @@
   ],
   "counts": {
     "total": 57,
-    "active": 42,
+    "active": 43,
     "by_status": {
-      "active": 42,
-      "rotated": 15
+      "active": 43,
+      "rotated": 14
     },
     "by_verdict": {
-      "C": 33,
+      "C": 34,
       "ASM-PARTIAL": 9
     }
   },
