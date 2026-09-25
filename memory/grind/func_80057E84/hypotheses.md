@@ -88,3 +88,48 @@ ruling on a one-role cursor shared across non-exclusive blocks.
   to n0 (reduced-TU diff 84 lines, same as n0) — tmp/e84/sv.c.
 - `static inline s16 *vtx_at(poly, i)` helper at all four sites: identical to n0
   (inlining makes fresh block-local pseudos) — tmp/e84/inl.c.
+
+## Session 2 (manual, 2026-09-25) — honest floor still 44 (candidate.c = n0)
+Receipts are single edits from n0 unless marked.
+| variant | change | score |
+|---|---|---|
+| pending-va-borrow-22.c | edge-start `va` also carries endpoint b + both corner reads (vb/cv removed) | 22 (all vertex sites match; residual = node only) |
+| rejected/buf-carries-vertex-pun-22.c | `buf` cast-carries the vertex pointer at all 4 sites (PUN, evidence only) | 22 |
+| rejected/node-split-init-36-445insns.c | Ruling 4 split `node = buf->node; node += c;` | 36, 445 insns: CSE folds buf->node to sp+44 (`addiu a0,sp,44`), target keeps buf in t0 and folds +4 into the offset. Dead end, not a floor |
+| bc_n1split (tmp) | pun + node split | 14, 445 insns |
+| rejected/hoisted-vtab-dn-44.c | permuter 630: vertex-table load hoisted above `if (go_dn)` | 44: tie just moves to operand 2 (`addu a0,v1,a0`) |
+| p580 (tmp) | permuter 580: `hit_z = cv[0]` (hit_z is addressable) | 448 insns, worse |
+
+Permuter campaign s2-honest-n0-long (tmp/perm_e84b, 3 workers, ~30 min, ~5.5k
+iterations, stopped + harvested): finds 420/485/630/665/680 (base 680). All are
+value-staging through unrelated or addressable locals (`c`, `next`, `hit_x`,
+`new_var = up_x`) except 420 = the `va` borrow above. None touches the node pointer.
+
+### Why no per-site spelling can close (tie mechanics, local-alloc.c:1211-1300 + combine_regs:1784-1945)
+The tie is attempted at the DEST's birth insn: combine_regs refuses when the dest
+pseudo already has a qty or is global (`reg_qty[sreg] >= -1`), otherwise it ties
+the dest to the first dying LOCAL input (operand 1, then operand 2). The target's
+`addu t0,v1,v0` / `addu a1,t0,v0` tie to neither input, so the dest is global (or
+born earlier, which needs a dead first store: banned). A single write cannot make it
+global: reg_n_deaths is 1 and there is no branch between address and loads at any
+site. So each target register needs ONE pseudo across several sites:
+- vertex ($t0): one pointer across the edge pair AND both corner blocks. The only
+  REAL pointer variables are poly (live), arg0 (live, tail), arg1 (`lw a1,4(a1)`
+  at entry needs it in a1), buf (PathBuf*, pun). The one same-type real variable
+  is n0's own `va` -> pending-va-borrow-22.c.
+- node ($a1): one PathNode* across both corner blocks. No real carrier exists.
+  The tail source is local ($v0, tied), the tail dest is $a0, buf is $t0, every
+  other variable crosses calls (callee-saved) or is addressable (hit_x/z, ofs*,
+  dn/up). Writing node through buf gives $t0. Ruling 5 fails (3 reads per write,
+  1(c); consumers dn_x vs up_x, ext (A)). Ruling 6 fails (both blocks run in one
+  iteration).
+
+## Frontier after s2
+1. Layer-2 question A: is pending-va-borrow-22.c a staged-value borrow (real `va`,
+   same type and kind of value, dead at each staging point, like `buf` which
+   passed), or the FAILED `vtx` under another name? It only matters together with (2).
+2. Node ($a1, 22): needs an owner ruling admitting one per-direction "node being
+   appended" pointer written once in each of the two sequential corner blocks, or a
+   structural discovery that makes the node address a global pseudo from ONE
+   write. Neither exists today. With (1) and (2) both admitted the body is
+   rejected/vtx-node-multiwrite-0.c (0, 447/447).

@@ -49,3 +49,15 @@ candidate.c reproduces it. go_up lives in $fp. Reload spill regs t1/t2
   = c + 1;` with s32 c (slti on the old count; `c = count++` emits andi),
   open-chain arm spelled `go = 0; dist = 100000;` in both blocks (form in
   use at the closing measurement; its isolated effect was not re-measured).
+
+## Session 2 (2026-09-25) — measured facts
+- Target corner block: `addiu t0,sp,0x28` (buf) sits in the delay slot of the
+  `c >= 7` test (fill_simple_delay_slots from before the branch); node =
+  `addu a1,t0,v0` with v0 = c*6+4, meaning buf is not folded into sp. n0 does the
+  same except the dest register (v0, tied).
+- buf and the vertex pointer both being $t0 is consistent with global.c seating two
+  separate call-free global pseudos in the first free register after a0-a3. The pun
+  receipt shows one pseudo would also match; that is evidence, not a spelling.
+- The staged-value rule does not mention type. Layer-2's s1 verdict treats a
+  PathBuf*/PathNode* carrying an s16* as a pun, and Ruling 5 1(b) bans
+  cast-laundered bases. Treat a cast-typed borrow as disqualifying.
