@@ -3467,6 +3467,49 @@ def test_maspsx_fingerprint() -> None:
             Q.QUEUE_PATH = orig_path
 
 
+def test_prologue_config_fingerprint() -> None:
+    """2026-09-25 (layer-2 note on 5ab08e1ce): prologue_fix reads
+    tools/prologue_config.json, delay_slot_ra_funcs.txt and frame_fix_funcs.txt
+    in every faithful build, and the oracle manifest watches the first, but
+    none of the three fed the queue's toolchain fingerprint. Pinned: an edit to
+    each moves it; a fingerprint stored under either retired input set
+    re-records without a re-measure; a later config edit IS a move."""
+    with tempfile.TemporaryDirectory() as td:
+        orig_path, orig_cwd = Q.QUEUE_PATH, os.getcwd()
+        qp = Path(td) / "queue.json"
+        Q.QUEUE_PATH = str(qp)
+        os.chdir(td)
+        try:
+            Path("tools").mkdir()
+            for rel in cheats.PROLOGUE_CONFIGS:
+                Path(rel).write_text("{}\n" if rel.endswith(".json") else "# none\n")
+            check("prologue: all three configs are fingerprint inputs",
+                  all(rel in Q.toolchain_fingerprint_inputs() for rel in cheats.PROLOGUE_CONFIGS))
+            for rel in cheats.PROLOGUE_CONFIGS:
+                before = Q.toolchain_fingerprint()
+                Path(rel).write_text(Path(rel).read_text() + "# edit\n")
+                check(f"prologue: editing {rel} moves the fingerprint",
+                      Q.toolchain_fingerprint() != before)
+            base = {"file": "a", "distance": 1, "verdict": "C", "rules": 0}
+            items = [dict(base, func="f_R", status="rotated",
+                          rotated_at="2026-01-01T00:00:00+00:00"),
+                     dict(base, func="f_A", status="active")]
+            for i, prior in enumerate(Q._prior_fingerprint_input_sets()):
+                qp.write_text(json.dumps({"items": items, "counts": {},
+                                          "toolchain_fingerprint": Q.toolchain_fingerprint(prior)}))
+                r = Q.auto_return(rescan=True)
+                eq(f"prologue: retired input set {i} is not a toolchain move",
+                   r["toolchain_moved"], False)
+                eq(f"prologue: retired input set {i} flagged as migration",
+                   r["fingerprint_migrated"], True)
+            Path(cheats.PROLOGUE_CONFIG).write_text('{"f": []}\n')
+            r = Q.auto_return(rescan=True)
+            eq("prologue: a later config edit IS a toolchain move", r["toolchain_moved"], True)
+        finally:
+            os.chdir(orig_cwd)
+            Q.QUEUE_PATH = orig_path
+
+
 def test_objdump_failure_is_loud() -> None:
     """2026-09-25: score._objdump returned stdout whatever objdump's exit
     status, so a transient failure read as an empty symbol table ("<func> not
@@ -3596,6 +3639,7 @@ def main() -> int:
     test_queue_remeasure_source_integrity()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()
+    test_prologue_config_fingerprint()
     test_canonical_build()
     test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")

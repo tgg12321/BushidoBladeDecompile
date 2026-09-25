@@ -700,10 +700,26 @@ _LEGACY_FINGERPRINT_INPUTS = (
 )
 
 
-def toolchain_fingerprint_inputs() -> tuple[str, ...]:
+def _maspsx_package_inputs() -> tuple[str, ...]:
+    """The 2026-09-25 (5ab08e1ce) input set: legacy + the maspsx package."""
     maspsx = tuple(p.as_posix() for p in O.maspsx_source_files())
     rest = tuple(r for r in _LEGACY_FINGERPRINT_INPUTS if r != "tools/maspsx/maspsx.py")
     return rest[:3] + maspsx + rest[3:]
+
+
+def toolchain_fingerprint_inputs() -> tuple[str, ...]:
+    """Current input set. prologue_fix's three config files (read by every
+    faithful build; the oracle manifest watches tools/prologue_config.json)
+    joined 2026-09-25 — before that an edit to them never moved the
+    fingerprint."""
+    return _maspsx_package_inputs() + tuple(cheats.PROLOGUE_CONFIGS)
+
+
+def _prior_fingerprint_input_sets() -> list[tuple[str, ...]]:
+    """Every retired input-set definition, oldest first. A stored fingerprint
+    equal to one of these computed on today's files is a DEFINITION change,
+    not a toolchain move (auto_return re-records it without re-measuring)."""
+    return [_LEGACY_FINGERPRINT_INPUTS, _maspsx_package_inputs()]
 
 
 def toolchain_fingerprint(inputs: tuple[str, ...] | None = None) -> str:
@@ -907,11 +923,12 @@ def auto_return(rescan: bool = True, force_rescan: bool = False) -> dict:
         rotated = [it for it in items if it.get("status") == ROTATED]
         fp_now = toolchain_fingerprint()
         fp_prev = q.get("toolchain_fingerprint")
-        # A stored fingerprint from the pre-2026-09-25 input set that still
-        # matches today's inputs under that set is a DEFINITION change, not a
+        # A stored fingerprint from a retired input set that still matches
+        # today's files under that set is a DEFINITION change, not a
         # toolchain change: re-record it without a re-measure.
         migrated = bool(fp_prev and fp_prev != fp_now
-                        and fp_prev == toolchain_fingerprint(_LEGACY_FINGERPRINT_INPUTS))
+                        and any(fp_prev == toolchain_fingerprint(s)
+                                for s in _prior_fingerprint_input_sets()))
         toolchain_moved = bool(rescan and fp_prev and fp_prev != fp_now and not migrated)
         remeasure = toolchain_moved or (rescan and force_rescan)
 
