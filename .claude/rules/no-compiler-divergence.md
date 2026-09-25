@@ -44,6 +44,18 @@ There is NO compiler-modification path on this project.
 5. **Asserting "the toolchain is the variable"** as a reason to escalate, park,
    or stop. The toolchain is fixed; therefore the variable is the C.
 
+> **Owner ruling 2026-09-25 — study only.** A scratch-only STUDY of narrowed
+> `combine.c` PLUS->IOR variants is authorized. Its question is which condition
+> separates the sites where the original kept `addu` from those where it
+> emitted `ori`. Variants are built outside the repository and never
+> installed. Nothing in `tools/gcc-2.7.2/`, the Makefile or the build inputs
+> changes, and no function lands on a variant's output. ADOPTING any variant
+> is NOT authorized and returns to the owner with evidence.
+> `tools/cc1-no-plus-to-ior.patch` stays the build compiler, and the
+> `|`-for-`+` spelling stays refused. Full terms: docs/ORACLE-COMPILER.md
+> § "Owner ruling 2026-09-25". Items 1-5 above stand for everything outside
+> that study.
+
 ## What this means for stuck functions
 
 When a function plateaus and the evidence chain ends at "GCC's

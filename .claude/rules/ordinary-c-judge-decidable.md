@@ -86,8 +86,9 @@ not a claim the evidence is line-for-line conclusive.
 **Multi-WRITE carriers remain banned** (the y1 FAIL, decisions.md:1833,
 and the 2026-08-30 21:30 `c` FAIL both stand; a fresh local written more
 than once is admitted ONLY if it meets every prong of Ruling 5
-(2026-09-23; as amended by its 2026-09-23 extension) or of Ruling 6
-(2026-09-23), whichever governs that variable, exclusively: the reused
+(2026-09-23; as amended by its 2026-09-23 extension), of Ruling 6
+(2026-09-23), of Ruling 8 (2026-09-24, vmNoiseOn's `temp` only), of Ruling 9
+(2026-09-25) or of Ruling 10 (2026-09-25), whichever governs that variable, exclusively: the reused
 variable itself may not also claim this entry or
 [[staged-value-reused-variable]]; other locals in the same body,
 including a Ruling 5 1(b)(ii) selector binding, are judged under their
@@ -192,8 +193,9 @@ this is not a cheat".
 
 A FRESH local written more than once is admitted ONLY if it meets EVERY prong
 below (a variable meeting every prong of Ruling 6 is judged under Ruling 6
-instead, and vmNoiseOn's `temp` meeting every prong of Ruling 8 is judged
-under Ruling 8 instead). This ruling governs that case exclusively: the reused variable itself
+instead, vmNoiseOn's `temp` meeting every prong of Ruling 8 is judged
+under Ruling 8 instead, and a variable meeting every prong of Ruling 9 or of
+Ruling 10 is judged under that ruling instead). This ruling governs that case exclusively: the reused variable itself
 may not claim the named-intermediate relaxation (Ruling 1; its reads are
 governed by this ruling's prong 1(c) alone) or [[staged-value-reused-variable]], and no consumer
 of it may be a staged-value borrow. Other locals in the body, including a
@@ -706,6 +708,254 @@ name `temp` alone fails Ruling 5 prong 1(f). `temp` may not also claim Ruling
 extension, or Ruling 6 for any other variable or function. It also does not
 relax the multi-WRITE carrier bans (y1, `c`, `src`/`idx`), which stand.
 Record: docs/grind/decisions.md 2026-09-24 OWNER RULING — Ruling 8.
+
+## Ruling 9 (owner, 2026-09-25) — one meaning, several constant offsets
+
+**Question and answer.** After the 2026-09-25 manual-lane run, the owner asked
+the operator for recommendations on four open questions in
+docs/grind/borderline.md. This one is the 2026-09-25 entry "func_800759D0 (and
+func_8007636C) — one role, differing constant offsets": may one local, stored
+to the same struct member at every site, be written at several sites whose
+right-hand sides differ only by a constant offset (`q = s.sp18 + 0xC;` /
+`q = s.sp18 + 0x24;`)? The operator's recommendation, verbatim:
+
+> **Recommendation: allow it under tight conditions.** In func_800759D0 every
+> write feeds the same consumer (`s.sp1C = q`) and means the same thing: "the
+> sprite image pointer for this draw". The offsets `+0xC` and `+0x24` pick
+> which image, which acts as a selector even though it isn't a subscript. A
+> single-meaning variable assigned at several places is ordinary C. The rule
+> exists to stop meaningless carrier variables, and this isn't one.
+>
+> Conditions I'd attach:
+> - every write has the same meaning and the same kind of consumer;
+> - the variable gets a descriptive name (e.g. `img`, not `q`);
+> - the rule never extends to variables that change meaning between writes.
+>
+> Then rename func_8007636C's `q` in its re-audit instead of reverting it. This
+> differs from the 2026-09-24 class you declined, which was "reuse that matches
+> SOTN". The test here is one meaning, not a precedent.
+
+Owner (Trenton), verbatim, answering all four recommendations together: **"Go
+ahead and do your recommendations then"**.
+
+**Rule text.** This is the author's narrowing of that recommendation, not the
+owner's words. A fresh local written more than once that meets EVERY prong
+(a)-(i) below is judged under this ruling INSTEAD of Ruling 5, its extension
+and Ruling 6 (a variable meeting every prong of Ruling 10 is judged under Ruling 10 instead). A variable that misses any prong gets nothing from this ruling.
+It is judged under Ruling 5 (as amended by its extension) or Ruling 6, and
+fails unless one of them independently admits it. The variable may not also
+claim Ruling 1's named-intermediate relaxation, Ruling 8, Ruling 10 or
+[[staged-value-reused-variable]], and no consumer of it may be a staged-value
+borrow. Other locals in the body are judged under their own entries. No FAKE
+annotation is required for the reuse itself; any other family the body relies
+on keeps its own annotation requirement.
+
+- **(a) One consumer** (Ruling 5 1(a), unchanged). Every write feeds the SAME
+  consumer: the same struct member of the same object, or the same argument
+  slot of the same callee, never another local. The consumer statements are
+  textually identical at every site (e.g. `s.sp1C = img;`). Statements after
+  the consumer that use its destination (e.g. `s.sp1C += ...`) are ordinary
+  program logic, judged on their own merits.
+- **(b) One meaning: one base, constant offsets, sub-objects of one kind**
+  (the recommendation's first and third conditions). Every write statement
+  has the form `VAR = BASE + K;`. The write statements are textually identical
+  except for K, a nonzero integer constant; several writes may use the same K.
+  BASE is ONE AND THE SAME expression, spelled identically at every write: a
+  local variable or parameter of this function, or a member of a local object
+  (e.g. `s.sp18`), read with no side effect. The right-hand side contains no
+  cast, no call and no operator other than that one `+`. At every write, BASE
+  holds the address of a record, and BASE + K is the address of a sub-object
+  of that record. Every write reaches a sub-object of ONE kind: the same type
+  and layout, used in the same way by every other reader of it. The
+  function's ledger must SHOW this, with evidence independent of the
+  byte-chasing: for each K, which sub-object it reaches, the record layout
+  that places it there (a stride or struct visible in the original binary, or
+  an existing declaration), and other readers that use that sub-object the
+  same way (other functions, cited by file and line). An assertion is not
+  evidence. A write that reaches a sub-object of a different kind (e.g. a
+  count at one offset and an image at another), or one that other readers use
+  differently, fails (b). That is what "changes meaning between writes"
+  means here, and this ruling never extends to it.
+- **(c) Read once, beside its write** (Ruling 5 1(c)). Each write is read
+  exactly once, by the consumer. The write and its consumer sit in the same
+  compound statement (the same `{ }` body, or both at function scope), the
+  write first, with no `return`, `break`, `continue` or `goto` between them.
+  A variable with any other reader fails.
+- **(d) Real computation** (Ruling 5 1(e)). Every write's addition appears in
+  the target's own bytes at that site (e.g. `addiu a1,v1,0xC`). A write whose
+  value is a constant, or a bare copy of another variable (K = 0), fails.
+- **(e) Every site is a complete use** (replaces Ruling 5 1(d) and the
+  extension's (C)). Sites need not be sibling blocks, and two sites may share
+  one block. On every path from each consumer store to the next consumer store or, for the last one, to the function's exit, the consumer's object is read by a statement that is not a consumer store (for
+  example `func_8007352C((s32)&s);` draws with it). A consumer store that is
+  overwritten before anything reads the object fails. This prong is the
+  author's interpretation, not a narrowing of Ruling 5 1(d). The
+  recommendation named func_8007636C for re-audit, not reversion, and its
+  third loop holds two sites in one loop body, each followed by its own draw
+  call. Keeping 1(d) would decide that re-audit in advance. The
+  complete-use condition keeps what 1(d) guards against: straight-line
+  staging, where a value is set and then replaced before anything uses it.
+- **(f) A descriptive name** (the recommendation's second condition; replaces
+  Ruling 5 1(f)). The name states the one meaning of prong (b), and it is
+  true of every write (e.g. `img`, the image entry this draw uses).
+  Single-letter names never qualify. Nor do the generic names Ruling 5 1(f)
+  lists (`tmp`, `t`, `temp`, `val`, `v`, `ptr`, `p`, `new_var`,
+  register-style names, `arg`/`argN`/`aN`), or a name true of only some
+  writes (e.g. `frame1`).
+- **(g) Nothing added, nothing reloaded** (Ruling 5 prong 2, unchanged).
+  2(a)-(d) apply as written. In particular, the reuse spelling and the
+  one-local-per-write spelling have the same statement list, and no write
+  stores a value the variable already holds, judged by C semantics as in
+  2(c).
+- **(h) Not a borrow** (Ruling 5 prong 3, unchanged). The variable has no
+  other job, no other declaration is moved or re-scoped, and it is declared
+  once, at the innermost scope that encloses all of its writes.
+- **(i) Receipts and review** (Ruling 5 prong 4, unchanged, plus the (b)
+  evidence). The one-local-per-write spelling is measured and recorded as
+  failing. The ledger shows the ordinary ladder ran before the reuse form was
+  adopted: structural respellings, the permuter from the carrier-free
+  candidate, and an allocation dump. The (b) layout and reader evidence is
+  recorded. Normal review applies: layer-1 and the Judge, or layer-2 on the
+  manual path.
+
+**What stays banned, and why each still fails:** func_800200DC `y1` (fed `dx`
+then `dy`: different consumers and meanings, (a)/(b)); func_80045878 `c`
+(`s1[3]`, `a0 + 3`, `0x8000`: no common base, one write a constant,
+(b)/(d)); func_80060A68 `src`/`idx` (re-load of an unchanged value, (g));
+func_8003FA24 `half` (constants staged in a straight line, (b)/(d)/(e));
+prnt's `n`, and any multi-role scratch of its kind (width and precision
+digits, then padding counts: different consumers and meanings, (a)/(b)/(f);
+only Ruling 10 can admit prnt's `n`); func_8001BE20 `shift` (2026-09-25:
+`arg0 * 16`, then `0` or `arg0 * 4`: different quantities and a constant,
+(b)/(d)); func_8005490C `obj` (2026-09-25: different consumers, each init
+write read twice, the right-hand side a call, (a)/(b)/(c)); func_8002A458
+dx/dy/dz (2026-09-25: each written three times with different quantities,
+(b)); func_8008B488 `rate` (2026-09-25: five different ADSR fields feeding two
+different registers, with clamp constants, (a)/(b)/(d)); func_80057E84 `vtx`/`node` (2026-09-25: a cast, scaled cursor and `&buf->node[c]`, not `BASE + K`, (b)); func_800288C8 `tbl` and func_8002A458 `lzc_in` (2026-09-25: bare copies and loads, (b)/(d)). This ruling does NOT
+reopen the class the owner declined on 2026-09-24 ("a scratch variable reused
+exactly as SOTN's matched code reuses it", decisions.md Ruling 8 entry): its
+test is one meaning shown by layout evidence, and a SOTN or other precedent
+counts for nothing under it.
+
+**func_8007636C directive.** func_8007636C landed COMPLETED-C in d844de59a
+(2026-09-24). Its function-scope `q` has this shape: five writes of
+`s.sp18 + 0xC` / `s.sp18 + 0x24`, each read by `s.sp1C = q;`. No ruling
+admitted it then. As the approved recommendation says, it is re-audited under
+this ruling with `q` renamed to a name that meets (f). It is NOT reverted to
+`INCLUDE_ASM` ahead of that re-audit. The rename must be verified oracle-green.
+The re-audit is a fresh layer-2 cheat-reviewer on the renamed body against
+(a)-(i), including the (b) evidence and the (i) receipts in
+`memory/grind/func_8007636C/`. This ruling does not pre-decide the outcome.
+A FAIL is handled like any other failed re-audit of a landed function.
+func_800759D0's rejected form is likewise re-submitted to a fresh layer-2
+under this text, with `q` renamed.
+
+**Known weakness (carried over from Ruling 5):** the only codegen effect of
+the reuse is one pseudo spanning all sites (func_800759D0: global.c seats it
+in `$a1` at every site as the target does; per-site locals 25/364). Allocator
+effect alone is never sufficient. This ruling admits the effect only when the
+reuse reads as one meaning under (a)-(i). Record: docs/grind/decisions.md
+2026-09-25 OWNER RULING — Ruling 9.
+
+## Ruling 10 (owner, 2026-09-25) — verified original source, verbatim reuse
+
+**Question and answer.** Same exchange as Ruling 9. This is the 2026-09-25
+borderline.md entry "prnt — original-library-source shared scratch `n`".
+prnt (PsyQ LIBC2 PRNT) is a `putchar` port of 4.3BSD-Reno `_doprnt`, whose
+own source declares `register int n; /* random handy integer */` and reuses
+`n` for the width and precision digits and the padding loops. The body
+matches only with that single `n` (sandbox 0/418, full-build SHA1 == oracle);
+split into one variable per job it scores 21/418. The operator's
+recommendation, verbatim:
+
+> **Recommendation: allow a narrow "verified original source" exception.** On
+> its own merits `n` is the multi-purpose scratch variable the rule is meant
+> to ban. But the goal of the project is to recover the original source, and
+> here the original source actually exists: 4.3BSD-Reno's `doprnt.c` is
+> public, and the version is known (sccsid 5.39). Copying its own variable
+> verbatim is the most faithful C possible.
+>
+> This is much narrower than what you declined on 2026-09-24, because SOTN's
+> code is itself a decompilation, not original source. Conditions:
+> - the original source is public and checkable;
+> - the function is shown to be a transcription of it, with the differences
+>   listed;
+> - the reuse is copied verbatim.
+>
+> That would cover only a few library functions.
+
+Owner (Trenton), verbatim: **"Go ahead and do your recommendations then"**.
+
+**Rule text.** This is the author's narrowing of that recommendation, not the
+owner's words. A fresh local written more than once that meets EVERY prong
+(A)-(F) below is judged under this ruling INSTEAD of Ruling 5, its extension,
+Ruling 6 and Ruling 9. A variable that misses any prong gets nothing from this
+ruling. It is judged under those rulings and fails unless one of them
+independently admits it. The variable may not also claim Ruling 1's
+named-intermediate relaxation, Ruling 8 or [[staged-value-reused-variable]].
+Other locals in the body are judged under their own entries.
+
+- **(A) The original source is public and pinned** (the recommendation's first
+  condition). The function's original source text is public and
+  independently checkable. That is the source file the function was compiled
+  from, or the upstream file its port was made from. The ledger records an
+  archive URL pinned to a commit or tag, the version identifier the file
+  itself carries (e.g. the sccsid `@(#)doprnt.c 5.39 (Berkeley) 6/28/90`),
+  and the file's SHA-256. The ledger also confirms, character for character,
+  every cited line against a second, independent copy of the same version
+  (another archive). The SHA-256 and second-copy requirements are the
+  author's narrowing, mirroring the provenance bar of inline-asm-policy.md
+  § Owner ruling 2026-09-23. **A decompilation is NEVER an original source.**
+  SOTN, psyz and every other decompilation project's C is a reconstruction by
+  its authors, whatever its match status. Library code with no public
+  original source (e.g. func_8008B488's LIBSPU body, for which only
+  decompilations were found) cannot use this ruling.
+- **(B) The function is shown to be a transcription** (second condition). The
+  ledger maps the BB2 function onto that source statement by statement, for
+  the whole function. It lists EVERY difference: added, removed or changed
+  statements, parameters, types and expanded macros (for prnt, e.g.:
+  `if (fmt0 == NULL) return 0;`, `putchar` in place of the FILE buffering,
+  ordinary characters not counted, the float cases absent). Where versions of
+  the source differ in any statement that touches the reused variable, the
+  ledger shows that the target follows the cited version. A function that is
+  only similar to the source fails (B).
+- **(C) The original's own variable, verbatim** (third condition). The
+  reused local is a variable the original declares in that function. It keeps
+  the original's name (e.g. `n`), and its type is the original's or the
+  project's direct equivalent (`int` -> `s32` or `int`). It is written and read
+  ONLY at statements that correspond to the original's writes and reads of that
+  variable, in the original's order, with the same expressions up to the
+  differences listed under (B). No write or read the original lacks. A use may
+  be missing only where the whole surrounding code is absent from the port and
+  listed under (B). The original's `register` storage class is not carried
+  over. Plain `register` hints stay under the standing cheat policy, and the
+  sandbox strips them (engine/inlineasm.py).
+- **(D) Annotation.** An inline comment at the declaration says that the
+  reuse is the original source's own variable. It cites the source (archive
+  URL, version identifier, the declaration's line and the lines that reuse
+  it) and this ruling.
+- **(E) Receipts.** The ledger records the one-variable-per-role spelling as
+  measured and failing, and at least one other respelling (e.g. a partial
+  split). Normal review applies: layer-1 and the Judge, or layer-2 on the
+  manual path.
+- **(F) Everything else is judged normally.** Every other construct in the
+  body passes ordinary review on its own merits. Other constructs copied from
+  the original (gotos, macros, casts, statement order) get nothing from this
+  ruling. This ruling sanctions nothing but the (C) variable.
+
+**Scope.** This covers few functions: library code whose original source
+survives publicly, such as prnt from 4.3BSD-Reno. It does NOT reopen the
+class the owner declined on 2026-09-24 ("a scratch variable reused exactly as
+SOTN's matched code reuses it"). SOTN is a decompilation, so such a reuse fails
+(A). func_8008B488's shared `rate` (SOTN's `var_a2` in `_SpuSetVoiceAttr`)
+therefore stays inadmissible. Ruling 8 stays vmNoiseOn-only. Ruling 5, its
+extension, Ruling 6, Ruling 9 and the multi-WRITE carrier bans are unchanged
+for every variable this ruling does not admit. prnt's rejected form is
+re-submitted to a fresh layer-2 under this text. Its ledger
+(`memory/grind/prnt/evidence.md`, 2026-09-25) records the URL, sccsid and
+excerpts, but not yet the SHA-256 or the second-copy confirmation (A). It
+needs them first. Record: docs/grind/decisions.md 2026-09-25 OWNER RULING —
+Ruling 10.
 
 ## What this ruling does NOT change
 

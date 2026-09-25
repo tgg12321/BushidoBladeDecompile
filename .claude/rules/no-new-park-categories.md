@@ -228,7 +228,10 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     every prong of [[ordinary-c-judge-decidable]] Ruling 5 (2026-09-23),
     as amended for identical-text writes by its 2026-09-23 extension, or
     every prong of its Ruling 6 (2026-09-23), or, for vmNoiseOn's `temp`
-    alone, every prong of its Ruling 8 (2026-09-24); whichever ruling
+    alone, every prong of its Ruling 8 (2026-09-24), or every prong of its
+    Ruling 9 (2026-09-25, one meaning at several constant offsets) or of its
+    Ruling 10 (2026-09-25, the verified original source's own variable,
+    verbatim); whichever ruling
     applies governs that variable exclusively: the reused variable itself may
     not also claim this entry or [[staged-value-reused-variable]]; other
     locals in the same body, including a Ruling 5 1(b)(ii) selector

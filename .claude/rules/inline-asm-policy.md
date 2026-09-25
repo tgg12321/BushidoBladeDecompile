@@ -268,6 +268,133 @@ this substitution, and ALL of the following hold:
 Record: docs/grind/decisions.md 2026-09-24 OWNER RULING — DMPSX placeholder
 command words.
 
+### Scorer ruling (owner, 2026-09-25) — header-exact GTE macro statements are scored as written
+
+**Question and answer.** After the 2026-09-25 manual-lane run, the owner asked
+the operator for recommendations on four open questions in
+docs/grind/borderline.md. This one is the 2026-09-25 entry "func_800288C8 —
+scorer strips verbatim header GTE statements". func_800288C8's body writes
+PsyQ `gte_Lzc` (gtemac.h) out as the six statements of its inline_o.h
+expansion. Its full build matches the oracle, but `sandbox --disable all`
+scores it 90. The reason: engine/inlineasm.py strips every `__asm__`
+statement that has no cop2 instruction, which deletes the header's own two
+`move $12,%0` statements and two `nop` statements before compiling. The
+question put to the owner, verbatim: "Sony's header writes this chip snippet
+as six lines. Our scorer deletes two `move` lines and two `nop` lines before
+comparing. Should those header lines count when scoring?" The operator's
+recommendation, verbatim:
+
+> **Recommendation: treat it as a scorer bug and fix it in the engine.** The
+> anti-cheat stripping is meant to remove injected assembly, not lines from
+> Sony's own approved macros. The approval hashes already pin the exact text
+> of each assembly block. So the scorer can recognise an approved block by its
+> hash and score it whole, while still stripping anything unapproved. That
+> keeps the protection against cheats and removes the false score of 90. The
+> full build already matches the oracle.
+>
+> One thing to check first: func_80018300 reached a sandbox score of 0 using
+> the same six-line header form, so the scorer may already handle it in some
+> cases. The change needs `engine test` coverage.
+>
+> Fixing the scorer alone won't complete func_800288C8, because `tbl` failed
+> separately on its merits. It would, however, stop the scorer from pushing
+> future assembly blocks into the joined form that doesn't match.
+
+Owner (Trenton), verbatim: **"Go ahead and do your recommendations then"**.
+
+**Rule text.** This is the author's narrowing of that recommendation, not the
+owner's words. It authorizes an ENGINE BUG-FIX to the sandbox's cheat-stripping
+(`engine/inlineasm.py`), and nothing else. The stripping must not remove the
+statements of a **qualifying macro unit**. Their GPR-only `move $12,%0` and
+`nop` statements are kept and scored as written. A qualifying macro unit meets
+ALL of (A)-(C):
+
+- **(A) The whole verbatim expansion of one named macro.** It is a contiguous
+  run of `__asm__` statements, written inline in `src/*.c`, with only
+  whitespace and comments between them. Statement for statement, the run is
+  the complete expansion of ONE named GTE macro from a pinned PsyQ header:
+  `inline_c.h`, `inline_o.h`, or a `gtemac.h` macro, expanded through the
+  header macros it calls. It has the same number of statements in the same
+  order. Each statement matches the header character for character in
+  instruction text, operand constraints and clobber list. The only
+  differences allowed are separators and whitespace, and the DMPSX
+  placeholder substitution where every prong of § Extension (2026-09-24) is
+  met. The engine recognises a unit by comparing against a committed, pinned
+  copy of the header text. Each macro entry records its header release
+  (`$PSLibId` line), its source URL and commit, the header's SHA-256, its line
+  range, and confirmation against a second, independent copy, as condition 1
+  of the 2026-09-23 ruling requires. A partial unit, a reordered unit, a unit
+  with an added or dropped statement, or a unit with any other edited
+  character is NOT a qualifying unit. That includes an equivalent-encoding
+  respelling such as `0($12)` for the header's `($12)`. Admitting such a
+  respelling needs its own owner ruling.
+- **(B) It talks to the GTE.** The unit's expansion contains at least one
+  GTE/cop2 instruction. A macro whose whole expansion is GPR-only or `nop`,
+  such as a standalone `gte_nop()`, is not a qualifying unit on its own, and
+  its statement is stripped as today. Its statement is kept only inside a
+  larger qualifying unit that expands to it, such as `gte_Lzc`'s two
+  `gte_nop()`.
+- **(C) Recognition is by the pinned header text, not by grant.** The
+  recommendation proposed recognising an approved block by its hash. The
+  per-function region hashes in `tools/canonical_asm_regions.json` are
+  written at grant time, and the grant itself requires sandbox 0 (condition 4
+  above; cluster Check 1). Recognition by grant hash alone would therefore
+  leave every not-yet-granted body unscoreable, including func_800288C8. The
+  author's reading: the pinned header text in (A) is what those hashes pin,
+  so the engine recognises units against it, whether or not the function is
+  granted. The region hashes keep their existing job: an edit to a granted
+  island voids the grant. This is the author's interpretation of the
+  recommendation's mechanism.
+
+**Everything else is stripped exactly as today.** That includes a
+byte-identical `move $12,%0` or `nop` statement outside a qualifying unit,
+register pins, `register` hints, and every other GPR-only `__asm__` statement.
+This ruling admits nothing reached through `#include` or macro-by-name
+(condition 3 above is unchanged).
+
+**Scoring is not admission.** Keeping a unit's statements changes what the
+sandbox measures. It authorizes no island. Every per-function requirement
+stands unchanged:
+- the region grant (hashes in `tools/canonical_asm_regions.json`);
+- the `inline_asm_canonical.txt` row;
+- the admission route. For inline_c.h islands that is the 2026-09-23 route
+  above. For the inline_o.h class (and gtemac.h macros built on it) it is an
+  owner-instructed row in `tools/grinder/owner_cluster_grants.txt`, which the
+  layer-2 cited for func_800288C8. inline_o.h carriers have been approved one
+  function at a time (func_80018300, func_8002CD58, func_8002DAD0).
+
+This ruling does not create that row for func_800288C8 or any other function,
+and the owner's approval of the recommendation is not an instruction to add
+one. func_800288C8 also failed separately on its `tbl` copy.
+
+**Engine-change requirements** (all required before the fix lands):
+1. **Check func_80018300 first.** func_80018300 reached sandbox 0 (307/307)
+   with inline_o.h islands. Its grant row describes joined `move $12,%0` +
+   cop2 statements, which the current stripper keeps whole as mixed blocks,
+   and two bare `nop` (`gte_nop`) islands. Record which of its statements the
+   current stripper keeps or strips, and why its score is 0 anyway. Limit the
+   change to what that finding leaves unhandled.
+2. **`engine test` pins both directions.** Positive cases:
+   - a six-statement `gte_Lzc` expansion is kept whole;
+   - a two-statement inline_o.h `gte_ldlzc` is kept whole.
+
+   Negative cases, each stripped exactly as today:
+   - a lone byte-identical `move $12,%0` with no following macro statement;
+   - a unit with one character edited: a dropped clobber, a changed
+     constraint, or `0($12)`;
+   - a unit with an extra `nop` statement inserted or appended;
+   - a reordered unit;
+   - a unit split by an intervening C statement;
+   - a standalone `gte_nop()` `nop`.
+3. **Tree-wide distance comparison.** The change records sandbox distances
+   before and after for every function. Any function whose distance changes
+   must carry a qualifying unit.
+4. **Review.** An `engine:` commit, with a layer-2 cheat-reviewer on the
+   diff, because it changes cheat-stripping.
+
+Record: docs/grind/decisions.md 2026-09-25 OWNER RULING — scorer:
+header-exact GTE macro statements.
+
 # Why this distinction matters
 
 For a long time the BB2 project lumped canonical and cheat asm together as

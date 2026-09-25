@@ -85,7 +85,9 @@ Phase-0 evidence, below.
 This single documented, owner-elected, match-proven patch is the **only**
 amendment to that rule. It is not a license to patch the compiler again. Any
 further divergence is still forbidden, and the rule's reasoning is otherwise
-unchanged.
+unchanged. (The 2026-09-25 owner ruling below authorizes only a scratch-only
+study of a narrower patch. It changes nothing in the build, and adopting a
+variant would need its own owner ruling.)
 
 ## OPEN QUESTION — did the original compiler perform this conversion?
 
@@ -96,8 +98,11 @@ original executable byte-for-byte; that is the only claim the build rests on.
 Evidence that the original compiler did **not** perform it:
 - The shipped game contains `andi rX,rY,M ; addiu rZ,rX,C` with `M & C == 0`
   at two independent sites — the shape a transform-performing compiler
-  rewrites to `ori`. One of them (`func_80079A30`, `(x & 7) + '0'`) is still
-  raw `INCLUDE_ASM`, so no C reconstruction can be blamed for it.
+  rewrites to `ori`. One of them (`func_80079A30`, `(x & 7) + '0'`) was raw
+  `INCLUDE_ASM` when this was written, so no C reconstruction could be blamed
+  for it. (It has since landed as C, `sprintf` in `src/text1b_b.c`. The
+  target bytes are unchanged: `asm/funcs/sprintf.s` 0x80079F0C `andi v0,a0,0x7`
+  ; `addiu v0,v0,0x30`.)
 - At the real site in `gnd_disp_loop_ctrl`, 21 C spellings were tested and all
   emit `ori` under stock GCC **and** under PsyQ's own `cc1psx` run on the
   actual TU. The current C cannot produce the shipped bytes under either.
@@ -120,6 +125,114 @@ Evidence that it **did**:
 
 Anyone reopening this should start with the scan scripts named in the
 forensics doc and the Phase-0 evidence recorded at `d99ab6a6`.
+
+### Owner ruling 2026-09-25 — keep the patch; a narrower patch may be STUDIED, not adopted
+
+**Question and answer.** After the 2026-09-25 manual-lane run, the owner asked
+the operator for recommendations on four open questions in
+`docs/grind/borderline.md`. This one is the 2026-09-25 entry "func_80073C78 —
+compiler PLUS->IOR patch vs target `ori`". The question put to the owner,
+verbatim: "Our compiler has one deliberate change from standard GCC: it never
+turns `a + b` into `a | b`. This function's original machine code contains
+exactly that rewrite, and standard GCC reproduces it from the natural `+`
+code. Should we revisit that compiler change, or keep it? If we keep it, this
+function stays unfinished rather than landing with a deliberately odd `|` in
+the C." The operator's recommendation, verbatim:
+
+> **Recommendation: keep the patch for now, don't allow the `|` spelling, and
+> approve a study of a narrower patch.**
+>
+> `docs/ORACLE-COMPILER.md` records evidence both ways. At some sites the
+> original game kept `addu`, which only our patched compiler produces; stock
+> GCC and Sony's own cc1psx both emit `ori` there. At other sites, including
+> func_80073C78 and func_80079A30, the original has `ori`, which our patched
+> compiler can't produce. So the original compiler applied this rewrite in
+> some cases and not others. Neither "always rewrite" (stock) nor "never
+> rewrite" (our patch) is correct.
+>
+> Switching back to stock would break the places that currently match.
+> Writing `|` in the C is the workaround the reviewer rightly rejected. The
+> better route is a study of what separates the two groups of sites, for
+> example how the compiler proves the two operands share no bits. If one clear
+> condition explains every site, a narrower patch would make the compiler
+> more faithful, not less.
+>
+> That study would be a new compiler change, and the no-divergence rule
+> reserves those for you. The oracle would check it across the whole game.
+> Until then, func_80073C78 stays rotated.
+
+Owner (Trenton), verbatim: **"Go ahead and do your recommendations then"**.
+
+**Correction to the recommendation (recorded 2026-09-25, before anything
+spends this ruling).** The recommendation lists func_80079A30 among the
+sites where the original has `ori`. It does not. This document lists it under
+evidence that the original did NOT perform the rewrite, and the target has
+`andi v0,a0,0x7 ; addiu v0,v0,0x30` (`asm/funcs/sprintf.s`, 0x80079F0C). The
+known `ori` site is func_80073C78, and site C (`main` in `ings`) points the
+same way with the caveat recorded above. In the author's judgment this does
+not change what the owner approved: the sites still split both ways, so the
+recommendation's premise holds.
+
+**Rule text.** This is the author's narrowing of that recommendation, not the
+owner's words.
+
+- **(A) The patch stays.** `tools/cc1-no-plus-to-ior.patch` remains the build
+  compiler's only divergence from upstream. `tools/gcc-2.7.2/build/cc1`, the
+  recipe, the Makefile and `CC_FLAGS` are unchanged.
+- **(B) The `|`-for-`+` spelling stays refused.** C that writes `|` where the
+  program means `+`, so as to reproduce stock GCC's rewrite under the patched
+  compiler, is a source-level workaround for the patch. The func_80073C78
+  layer-2 FAIL (2026-09-25, `rejected/ior-spelling-patch-workaround.c`) stands.
+- **(C) A STUDY is authorized, in scratch only.** Its question: what condition
+  separates the sites where the original kept `addu`/`addiu` from the sites
+  where it emitted `or`/`ori`? For example, how combine proves the operands
+  share no bits. Limits:
+  - Compiler variants are built outside the repository only (e.g. the WSL home
+    directory, as `~/cc1stock` was for func_80073C78), from the pinned
+    upstream `43d1cdb6` plus the variant's `combine.c` change. They are never
+    installed.
+  - Nothing in the repository changes: `tools/gcc-2.7.2/build/cc1`, the
+    diagnostic `tools/gcc-2.7.2/cc1`, the live `tools/gcc-2.7.2/` sources (the
+    tracked-state manifest above stays as recorded), the Makefile,
+    `CC_FLAGS`, `engine/buildconfig.py`, and every other build input.
+  - Full builds with a variant run on a scratch copy of the tree, never on the
+    repository's `build/`.
+  - No function lands on a variant's output. No `src/` change may be
+    motivated by, or measured only under, a variant. No study result may be
+    cited as grounds for a completion or a construct ruling.
+  - This is the study the recommendation says the no-divergence rule reserves
+    for the owner. `.claude/rules/no-compiler-divergence.md` items 1 and 4
+    stand for everything outside it.
+- **(D) ADOPTING a narrowed patch is NOT authorized by this ruling.** Any
+  candidate returns to the owner with this evidence:
+  - the variant as a diff against upstream `combine.c`;
+  - an oracle-green full build (SHA1
+    `62efab4f73f992798c43e8c730aa43baa10bb4fa`) of the unchanged current tree
+    under it;
+  - a per-site table that explains EVERY known site class in this document's
+    evidence lists above, with the proposed condition evaluated at each site:
+    - the two `andi ; addiu` sites (gnd_disp_loop_ctrl site A, and
+      func_80079A30);
+    - the multiply idiom (e.g. 0x80033F74);
+    - site C (`main` in `ings`);
+    - the forensics' isolated `cc1psx` probes;
+    - func_80073C78's two UV stores;
+  - whether func_80073C78's natural `+` body then reaches 0.
+
+  A site the condition does not explain is reported as unexplained, never
+  omitted. Adoption would change the oracle compiler, so it needs its own
+  owner ruling, landed before any code spends it.
+- **(E) func_80073C78 stays rotated** at its honest floor (2/362, the `+`
+  body in `memory/grind/func_80073C78/candidate.c`) until an owner ruling
+  under (D) lands or an honest spelling is found.
+
+Practical note (not part of the ruling): per the 2026-09-25 borderline entry,
+the live `tools/gcc-2.7.2/reorg.c` no longer matches this document's manifest,
+so `tools/build_oracle_cc1.sh` refuses to run. The study must not work around
+that by re-recording the manifest. Restoring the tree, or re-recording it with
+a rationale, is a separate change.
+
+Record: docs/grind/decisions.md 2026-09-25 OWNER RULING — oracle compiler.
 
 ## The diagnostic compiler
 
@@ -177,3 +290,9 @@ create more.
   of that election (see the open question above). Owner revised it: keep the
   patch, commit it, pin the upstream, script the recipe, swap `build/cc1` to
   the recipe's own output. That is the current state.
+- **2026-09-25** — a research-only stock build reproduced func_80073C78's
+  target `ori` pair from the natural `+` body (see the open question). Owner
+  ruling: keep the patch and keep the `|` spelling refused. A scratch-only study
+  of a narrower patch is authorized. Adopting one returns to the owner with
+  evidence. See § Owner ruling 2026-09-25; record in docs/grind/decisions.md
+  2026-09-25 OWNER RULING — oracle compiler.

@@ -29045,3 +29045,205 @@ elided, `* temp` wrong for the third stage, no bar on an initializer or `&temp`)
 named-intermediate exclusivity clauses did not point to Ruling 8; the record said the alternatives
 were off by register choices and stated the birthing-boost mechanism as fact. The reviewer's
 replacement wordings were applied verbatim.
+
+## 2026-09-25 — OWNER RULING — Ruling 9: one meaning, several constant offsets (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question (after the 2026-09-25 manual-lane run, the owner asked the operator for recommendations on
+the four open borderline.md questions; this one is the 2026-09-25 entry "func_800759D0 (and
+func_8007636C) — one role, differing constant offsets"): may one local, stored to the same struct
+member at every site, be written at several sites whose right-hand sides differ only by a constant
+offset (`q = s.sp18 + 0xC;` at the head, `q = s.sp18 + 0x24;` in three loops, each read by
+`s.sp1C = q;`)? It closes func_800759D0 (sandbox 0/364, full-build SHA1 == oracle; per-site locals
+25/364). Layer-2 FAILed it under Ruling 5 1(b)/1(f), the extension's (A) and Ruling 6.
+func_8007636C (d844de59a, 2026-09-24) landed with the same construct and no ruling.
+
+The operator recommended allowing it under tight conditions. Every write feeds the same consumer and
+means the same thing, "the sprite image pointer for this draw", and the offsets pick which image. The
+conditions: every write has the same meaning and the same kind of consumer; a descriptive name
+(`img`, not `q`); never a variable that changes meaning between writes. Rename func_8007636C's `q`
+in its re-audit instead of reverting it. The recommendation distinguished the class the owner
+declined on 2026-09-24 ("reuse that matches SOTN"): the test here is one meaning, not a precedent.
+The recommendation is quoted verbatim in the rule file.
+
+Owner (Trenton), verbatim, answering all four recommendations together: "Go ahead and do your
+recommendations then".
+
+**Ruling (full text in the rule file, "Ruling 9"; the prongs are the author's narrowing, not the
+owner's words).**
+- (a) one consumer, as Ruling 5 1(a), with identical consumer statements;
+- (b) one meaning: every write is `VAR = BASE + K;`, the writes identical except for the nonzero
+  integer constant K; BASE is one side-effect-free local, parameter or local-object member, spelled
+  identically; no cast or call. Every write reaches a sub-object of ONE kind within the record
+  BASE points to, SHOWN in the ledger by layout and other-reader evidence, not asserted;
+- (c) each write read exactly once, by the consumer, in the same compound statement;
+- (d) real computation, K != 0, the add in the target's bytes;
+- (e) every site a complete use: the consumer's object is read between successive consumer stores;
+- (f) a descriptive name true of every write; single-letter and generic names never qualify;
+- (g) Ruling 5 prong 2, (h) prong 3 and (i) prong 4 receipts, unchanged, plus the (b) evidence.
+
+It governs such a variable exclusively. The rule text lists what stays banned and why each still
+fails: y1, `c`, `src`/`idx`, `half`, prnt's `n`, func_8001BE20 `shift`, func_8005490C `obj`,
+func_8002A458 dx/dy/dz, func_8008B488 `rate`, func_80057E84 `vtx`/`node`, func_800288C8 `tbl`, func_8002A458 `lzc_in`. It does not reopen the 2026-09-24 declined class.
+Directive: func_8007636C is re-audited under Ruling 9 with `q` renamed, and is not reverted ahead of
+that re-audit. The outcome is not pre-decided. func_800759D0's rejected form is re-submitted likewise.
+
+**Author's interpretations (flagged for the rule-text layer-2):**
+1. Prong (e) replaces Ruling 5 1(d)'s distinct-sibling-block requirement. func_8007636C's third loop
+   holds two sites in one loop body, each followed by its own draw call. Keeping 1(d) would decide
+   the re-audit the recommendation asked for.
+2. Prong (b) requires sub-objects of one kind, not "sibling images of one record". func_800759D0's
+   own hypotheses.md:72-73 reads the offsets as the cell block after a one-header sheet (+0xC, head)
+   versus a three-header sheet (+0x24, loops). The recommendation reads them as picking which image.
+   The re-audit must settle which, with evidence. Neither ledger records the (b) layout evidence yet.
+
+**Rule-text layer-2:** round 1 FAILed on three wording defects (Ruling 9's exclusivity clause did
+not route a Ruling 10 variable to Ruling 10; Ruling 9's still-banned list omitted func_80057E84
+`vtx`/`node`, func_800288C8 `tbl` and func_8002A458 `lzc_in`; Ruling 9 (e) did not cover the last
+consumer store). The reviewer's replacement wordings were applied verbatim.
+
+## 2026-09-25 — OWNER RULING — Ruling 10: verified original source, verbatim reuse (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question (same exchange as Ruling 9; the 2026-09-25 borderline.md entry "prnt — original-library-
+source shared scratch `n`"): prnt is Sony PsyQ LIBC2 PRNT, a `putchar` port of 4.3BSD-Reno
+`_doprnt` (doprnt.c, sccsid 5.39). The BSD source declares one `register int n; /* random handy
+integer */` and reuses it for the width and precision digits and every padding loop. prnt matches
+only with that single `n` (sandbox 0/418, full-build SHA1 == oracle). One variable per job scores
+21/418. Layer-2 FAILed the single `n` under Ruling 5 1(a)/(b)/(f).
+
+The operator recommended a narrow "verified original source" exception. On its own merits `n` is
+the multi-purpose scratch the rule bans. But the project's goal is to recover the original source,
+here that source is public and its version known, and copying its own variable verbatim is the most
+faithful C possible. It is much narrower than the class declined on 2026-09-24, because SOTN's code
+is a decompilation, not original source. The conditions: the original source is public and
+checkable; the function is shown to be a transcription of it, with the differences listed; the
+reuse is copied verbatim. It would cover only a few library functions. The recommendation is quoted
+verbatim in the rule file.
+
+Owner (Trenton), verbatim: "Go ahead and do your recommendations then".
+
+**Ruling (full text in the rule file, "Ruling 10"; the prongs are the author's narrowing).**
+- (A) the original source is public and pinned: archive URL at a commit or tag, the file's own
+  version identifier, SHA-256, and every cited line confirmed against a second independent copy. A
+  decompilation (SOTN, psyz, any other) is NEVER an original source;
+- (B) the ledger maps the function onto that source statement by statement and lists every
+  difference;
+- (C) the reused local is the original's own variable, with its name, written and read only at the
+  statements corresponding to the original's, in its order; no extra writes or reads; no `register`;
+- (D) an inline annotation citing the source and this ruling;
+- (E) the one-variable-per-role spelling measured and failing, plus one other respelling;
+- (F) everything else judged normally; nothing but the (C) variable is sanctioned.
+
+It governs such a variable exclusively and does not reopen Ruling 8's declined class.
+func_8008B488's shared `rate` (SOTN's `var_a2`) stays inadmissible under (A). prnt is re-submitted
+to a fresh layer-2 under this text. Its ledger records the URL, sccsid and excerpts, but not yet
+(A)'s SHA-256 and second-copy confirmation (author's narrowing, mirroring the 2026-09-23 provenance
+bar).
+
+**Rule-text layer-2:** round 1 FAILed on three wording defects (Ruling 9's exclusivity clause did
+not route a Ruling 10 variable to Ruling 10; Ruling 9's still-banned list omitted func_80057E84
+`vtx`/`node`, func_800288C8 `tbl` and func_8002A458 `lzc_in`; Ruling 9 (e) did not cover the last
+consumer store). The reviewer's replacement wordings were applied verbatim.
+
+## 2026-09-25 — OWNER RULING — scorer: header-exact GTE macro statements are scored as written (`.claude/rules/inline-asm-policy.md`)
+
+Question (same exchange; the 2026-09-25 borderline.md entry "func_800288C8 — scorer strips verbatim
+header GTE statements"), verbatim as put: "Sony's header writes this chip snippet as six lines. Our
+scorer deletes two `move` lines and two `nop` lines before comparing. Should those header lines
+count when scoring?" func_800288C8 writes gtemac.h `gte_Lzc` out as its six inline_o.h statements;
+its full build matches the oracle, but `sandbox --disable all` scores 90. The cause is that
+engine/inlineasm.py `_block_category` strips every `__asm__` statement without a cop2 instruction.
+
+The operator recommended treating it as a scorer bug and fixing it in the engine. The anti-cheat
+stripping is meant to remove injected assembly, not lines of Sony's own approved macros. The
+approval hashes pin each block's text, so the scorer can recognise an approved block and score it
+whole while still stripping anything unapproved. The recommendation said to check func_80018300 first
+(sandbox 0, reportedly with the same six-line form) and to require `engine test` coverage. It added
+that fixing the scorer alone won't complete func_800288C8, because `tbl` failed separately. The
+recommendation is quoted verbatim in the rule file.
+
+Owner (Trenton), verbatim: "Go ahead and do your recommendations then".
+
+**Ruling (full text in inline-asm-policy.md § "Scorer ruling (owner, 2026-09-25)"; the author's
+narrowing).**
+- An ENGINE BUG-FIX is authorized: the sandbox keeps and scores the statements of a qualifying macro
+  unit.
+- (A) A unit is a contiguous, inline, statement-for-statement, character-for-character expansion
+  of ONE named macro from a pinned inline_c.h / inline_o.h / gtemac.h. Only separators, whitespace
+  and the 2026-09-24 DMPSX substitution may differ. Provenance is pinned as in the 2026-09-23
+  condition 1.
+- (B) The unit's expansion contains a cop2 instruction. A standalone `gte_nop()` stays stripped.
+- (C) Recognition is against the pinned header text.
+- Everything else is stripped exactly as today, including a byte-identical `move $12,%0` outside a
+  unit.
+- Scoring is not admission. The region grant, the auth row and, for the inline_o.h class, an
+  owner-instructed owner_cluster_grants.txt row all stand. None is created for func_800288C8.
+- Engine requirements: the func_80018300 check first; `engine test` positive and negative cases; a
+  tree-wide before/after distance comparison; an `engine:` commit with layer-2.
+
+**Author's interpretations and corrections (flagged for the rule-text layer-2):**
+1. The recommendation's mechanism was recognition "by its hash". Per-function region hashes are
+   written at grant time, and the grant requires sandbox 0, so hash-only recognition would leave
+   every not-yet-granted body (func_800288C8 included) unscoreable. The rule text recognises units
+   against the pinned header text, which is what those hashes pin.
+2. func_80018300's grant row (inline_asm_canonical.txt:396) describes JOINED `move $12,%0` + cop2
+   statements plus two bare `nop` islands, not the six-statement form. The recommendation's "same
+   six-line header form" may not hold, and requirement 1 records the fact.
+3. func_800288C8's islands spell `swc2 $31,0($12)` for the header's `($12)`, per its comment because
+   maspsx cannot parse the bare form. Under (A) that is an edit, so the fix alone would still strip
+   its `gte_stlzc` `move`. Admitting that respelling needs its own ruling.
+
+**Rule-text layer-2:** round 1 FAILed on three wording defects (Ruling 9's exclusivity clause did
+not route a Ruling 10 variable to Ruling 10; Ruling 9's still-banned list omitted func_80057E84
+`vtx`/`node`, func_800288C8 `tbl` and func_8002A458 `lzc_in`; Ruling 9 (e) did not cover the last
+consumer store). The reviewer's replacement wordings were applied verbatim.
+
+## 2026-09-25 — OWNER RULING — oracle compiler: keep the PLUS->IOR patch; a narrower patch may be studied, not adopted (`docs/ORACLE-COMPILER.md`)
+
+Question (same exchange; the 2026-09-25 borderline.md entry "func_80073C78 — compiler PLUS->IOR
+patch vs target `ori`"), verbatim as put: "Our compiler has one deliberate change from standard
+GCC: it never turns `a + b` into `a | b`. This function's original machine code contains exactly
+that rewrite, and standard GCC reproduces it from the natural `+` code. Should we revisit that
+compiler change, or keep it? If we keep it, this function stays unfinished rather than landing with
+a deliberately odd `|` in the C." Evidence: memory/grind/func_80073C78/evidence.md. A research-only
+stock cc1 turns the natural `+` body into the target's `ori a1,v1,0x0` / `ori a0,v0,0x0`, the only
+two differing lines in the TU. The honest `+` floor is 2/362. The `|` spelling reached 0 and was
+FAILed by layer-2.
+
+The operator recommended keeping the patch for now, not allowing `|`, and approving a study of a
+narrower patch. ORACLE-COMPILER.md records sites where the original kept `addu` (only the patched
+compiler produces it) and sites where it has `ori` (only stock produces it). So neither "always
+rewrite" nor "never rewrite" is right. Switching to stock would break sites that currently match,
+and `|` is the workaround the reviewer rejected. A study of what separates the two groups (e.g. how
+combine proves the operands share no bits) could yield a narrower, more faithful patch. That is a
+new compiler change, which the no-divergence rule reserves for the owner. func_80073C78 stays
+rotated meanwhile. The recommendation is quoted verbatim in ORACLE-COMPILER.md.
+
+Owner (Trenton), verbatim: "Go ahead and do your recommendations then".
+
+**Ruling (full text in docs/ORACLE-COMPILER.md § "Owner ruling 2026-09-25"; pointer in
+.claude/rules/no-compiler-divergence.md; the author's narrowing).**
+- (A) tools/cc1-no-plus-to-ior.patch stays; build/cc1, the recipe, the Makefile and CC_FLAGS are
+  unchanged.
+- (B) The `|`-for-`+` spelling stays refused.
+- (C) A scratch-only STUDY is authorized. Variants are built outside the repository and never
+  installed. The live compiler tree and manifest, the Makefile, CC_FLAGS and buildconfig are not
+  touched. Full builds use a scratch copy. No function lands on a variant's output, and no study
+  result is citable for a completion.
+- (D) ADOPTION is NOT authorized. It returns to the owner with the variant diff, an oracle-green
+  full build of the current tree, a per-site table explaining every known site class (the two
+  `andi ; addiu` sites, the multiply idiom, site C, the cc1psx probes, func_80073C78) with
+  unexplained sites reported, and whether func_80073C78's `+` body reaches 0.
+- (E) func_80073C78 stays rotated at 2/362.
+- The OPEN QUESTION section and the History timeline record the authorization.
+
+**Correction to the recommendation (recorded before anything spends this ruling):** it lists
+func_80079A30 among the `ori` sites. The target has `andi v0,a0,0x7 ; addiu v0,v0,0x30`
+(asm/funcs/sprintf.s, 0x80079F0C), and ORACLE-COMPILER.md lists it on the other side (original did
+NOT rewrite). The sites still split both ways, so in the author's judgment the approved
+recommendation is unaffected. Also noted in the same edit: ORACLE-COMPILER.md's "still raw
+INCLUDE_ASM" for func_80079A30 was stale, since sprintf is C in src/text1b_b.c. It is now dated.
+
+**Rule-text layer-2:** round 1 FAILed on three wording defects (Ruling 9's exclusivity clause did
+not route a Ruling 10 variable to Ruling 10; Ruling 9's still-banned list omitted func_80057E84
+`vtx`/`node`, func_800288C8 `tbl` and func_8002A458 `lzc_in`; Ruling 9 (e) did not cover the last
+consumer store). The reviewer's replacement wordings were applied verbatim.
