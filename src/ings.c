@@ -619,15 +619,7 @@ loop:
 
     do {
         s32 cnt = GetRCnt(0xF2000001u);
-        /* FAKE: same-pseudo chain blocks combine's 2->2 split gate
-           (combine.c:1836 reg_referenced_p) — fresh-variable spellings fold
-           to sll;addiu -128. Owner grant 2026-08-11 (docs/grind/decisions.md,
-           split-init-accumulation family extension). */
-        s32 lim = D_800A36F1;
-        lim = lim - 1;
-        lim = lim << 8;
-        lim = lim + 0x80;
-        if (cnt >= lim) break;
+        if (cnt >= ((D_800A36F1 - 1) << 8) + 0x80) break;
         rand();
     } while (1);
 

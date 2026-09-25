@@ -169,8 +169,11 @@ fi
 # `engine verify-oracle --rebuild` stays the authoritative gate.
 #   text1b: func_80073C78's `+` UV stores (Match commit after 9bc64b751) —
 #           narrow and stock emit the target `ori` pair, no-rewrite `addu`.
-ORACLE_EXPECT_DIFF="text1b"      # narrow vs historical no-rewrite
-STOCK_EXPECT_DIFF="ings text1b"  # stock vs historical no-rewrite: site A (study § 1.1) + text1b
+#   ings:   `main`'s natural `((D_800A36F1 - 1) << 8) + 0x80` (site C, de-FAKE
+#           after 9bc64b751) — narrow and stock keep the unfolded
+#           `addiu -1; sll 8; addiu 0x80`, no-rewrite folds to `sll; addiu -128`.
+ORACLE_EXPECT_DIFF="ings text1b" # narrow vs historical no-rewrite: site C + text1b
+STOCK_EXPECT_DIFF="ings text1b"  # stock vs historical no-rewrite: sites A (study § 1.1) and C + text1b
 F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
