@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8008B488",
-      "file": "main",
-      "distance": 387,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8001BE20",
       "file": "code6cac",
       "distance": 393,
@@ -672,17 +664,28 @@
       "rotation": "owner question: one role, differing constant offsets (borderline.md). Honest floor 25; 0/364 needs a shared multi-write local (layer-2 FAIL). Session-2 regalloc proof: no per-site spelling can seat \\. See memory/grind/func_800759D0/hypotheses.md",
       "rotated_at": "2026-09-25T08:42:28+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_8008B488",
+      "file": "main",
+      "distance": 387,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "flat floor 12/387 (operand-only) after 2 manual sessions + permuter; global.c allocator proof: per-block locals cannot seat SL/SR regs; only closing form shares rate/adsr across blocks = INADMISSIBLE (Ruling 5/6; owner declined Ruling-8-as-class 2026-09-24). Chassis ruled legitimate. See memory/grind/func_8008B488/evidence.md",
+      "rotated_at": "2026-09-25T09:44:20+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 62,
-    "active": 47,
+    "active": 46,
     "by_status": {
-      "active": 47,
-      "rotated": 15
+      "active": 46,
+      "rotated": 16
     },
     "by_verdict": {
-      "C": 35,
+      "C": 34,
       "ASM-PARTIAL": 12
     }
   },
