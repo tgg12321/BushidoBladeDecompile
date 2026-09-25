@@ -320,7 +320,6 @@ g_snd_volume
 g_disp_fade
 g_file_dma_flag
 g_disp_enable
-g_file_heap_base
 D_800A3205
 D_800A3207
 D_800A3206

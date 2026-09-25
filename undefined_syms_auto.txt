@@ -1486,7 +1486,6 @@ g_file_data_buf = 0x800F6740;
 g_file_disc_size = 0x80106A50;
 g_file_dma_flag = 0x800A3716;
 g_file_flags = 0x80106A73;
-g_file_heap_base = 0x800A38BC;
 g_game_flag_a = 0x800A3370;
 g_game_flag_b = 0x800A3374;
 D_800A336C = 0x800A336C;  /* data-wave 2026-09-25: was g_game_mode */

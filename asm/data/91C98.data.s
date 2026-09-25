@@ -1381,13 +1381,18 @@ nonmatching D_800A2670
 
 dlabel D_800A2670
     /* 92E70 800A2670 00000000 */ .word 0x00000000
+enddlabel D_800A2670
+
+nonmatching D_800A2674
+
+dlabel D_800A2674
     /* 92E74 800A2674 F8640180 */ .word func_800164F8
     /* 92E78 800A2678 786B0700 */ .word 0x00076B78
     /* 92E7C 800A267C 70D00880 */ .word D_8008D070
     /* 92E80 800A2680 5C600100 */ .word 0x0001605C
     /* 92E84 800A2684 30390A80 */ .word D_800A3930
     /* 92E88 800A2688 B03F0600 */ .word 0x00063FB0
-enddlabel D_800A2670
+enddlabel D_800A2674
 
 nonmatching _stacksize
 
@@ -1399,9 +1404,14 @@ nonmatching D_800A2690
 
 dlabel D_800A2690
     /* 92E90 800A2690 00008000 */ .word 0x00800000
+enddlabel D_800A2690
+
+nonmatching D_800A2694
+
+dlabel D_800A2694
     /* 92E94 800A2694 50731017 */ .word 0x17107350
     /* 92E98 800A2698 E4974040 */ .word 0x404097E4
-enddlabel D_800A2690
+enddlabel D_800A2694
 
 nonmatching D_800A269C
 
@@ -1711,8 +1721,13 @@ nonmatching _spu_rev_offsetaddr
 
 dlabel _spu_rev_offsetaddr
     /* 93084 800A2884 00000000 */ .word 0x00000000
-    /* 93088 800A2888 00000000 */ .word 0x00000000
 enddlabel _spu_rev_offsetaddr
+
+nonmatching _spu_rev_attr
+
+dlabel _spu_rev_attr
+    /* 93088 800A2888 00000000 */ .word 0x00000000
+enddlabel _spu_rev_attr
 
 nonmatching _spu_rev_attr_plus_0x4
 

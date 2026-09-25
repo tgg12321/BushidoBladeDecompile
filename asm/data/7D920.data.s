@@ -30744,8 +30744,13 @@ nonmatching CD_cbready
 
 dlabel CD_cbready
     /* 919B8 800A11B8 00000000 */ .word 0x00000000
-    /* 919BC 800A11BC 00000000 */ .word 0x00000000
 enddlabel CD_cbready
+
+nonmatching CD_cbread
+
+dlabel CD_cbread
+    /* 919BC 800A11BC 00000000 */ .word 0x00000000
+enddlabel CD_cbread
 
 nonmatching CD_debug
 
@@ -30795,11 +30800,16 @@ dlabel CD_com
     /* 919D5 800A11D5 */ .byte 0x00
     /* 919D6 800A11D6 */ .byte 0x00
     /* 919D7 800A11D7 */ .byte 0x00
+enddlabel CD_com
+
+nonmatching DS_active
+
+dlabel DS_active
     /* 919D8 800A11D8 */ .byte 0x00
     /* 919D9 800A11D9 */ .byte 0x00
     /* 919DA 800A11DA */ .byte 0x00
     /* 919DB 800A11DB */ .byte 0x00
-enddlabel CD_com
+enddlabel DS_active
 
 nonmatching CD_comstr
 

@@ -73,6 +73,8 @@ g_cd_status_c = 0x800A1496;
 CD_com = 0x800A11D5;  /* data-wave 2026-09-07: was g_cd_ready_flag2 */
 CD_cbsync = 0x800A11B4;  /* data-wave 2026-09-07: was g_cd_callback_a */
 CD_cbready = 0x800A11B8;  /* data-wave 2026-09-07: was g_cd_callback_b */
+CD_cbread = 0x800A11BC;  /* naming sweep 2026-09-25b: LIBCD BIOS .data XDEF at +0x10 (verbatim module, base 0x800A11AC); split out of the CD_cbready dlabel */
+DS_active = 0x800A11D8;  /* naming sweep 2026-09-25b: LIBCD BIOS .data XDEF at +0x2C; split out of the CD_com dlabel */
 /* data-wave 2026-09-25: g_cd_init_flag = 0x800A11C8 retired; CD_status1 is now object-defined */
 g_cd_dma_bcr = 0x800A14B0;
 g_cd_dma_ctrl_b4 = 0x800A14B4;
@@ -157,7 +159,6 @@ g_file_disc_type = 0x80106A54;
 g_file_disc_size = 0x80106A50;
 D_800A3710 = 0x800A3710;  /* data-wave 2026-09-25: was g_file_vram_timer */
 g_file_dma_flag = 0x800A3716;
-g_file_heap_base = 0x800A38BC;
 g_file_data_buf = 0x800F6740;
 g_anim_func_table = 0x800F66A0;
 g_anim_hit_flags = 0x800A3380;
@@ -617,7 +618,6 @@ g_seq_init_pending              = 0x800A38C6;  /* 0xFFFF = pending init request,
 g_mental_bar_max_packets        = 0x800A38F8;  /* max-count cap for mental-bar busy-wait (paired with g_mental_bar_packet_count) */
 g_motion_ex_counter_p2          = 0x800F0BC4;  /* p2's motion-ex counter (paired with D_800F0BC0 p1) */
 g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
-g_vsync_timeout_deadline        = 0x800F19B8;  /* sys_VSync(-1) + 0x3C0 timeout frame number */
 Alarm = 0x800F19B8;  /* libcd bios.c alarm {time, count, name} (SOTN name; memory/closer/libcd-identity.md) */
 Alarm_plus_0x8          = 0x800F19C0;  /* cached pointer to panic format string (&D_80016240) */  /* data-wave 2026-09-25: was g_panic_msg_format_ptr */
 _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */  /* data-wave 2026-09-07: was g_alarm_armed_flag */

@@ -16,7 +16,7 @@ extern u8 g_file_flags;
 extern u32 g_file_disc_size;
 extern u32 D_80106A5C;
 extern u8 g_file_dma_flag;
-extern s32 g_file_heap_base;
+extern s32 D_800A38BC;
 extern u32 g_gpu_clear_rect;
 extern u8 g_file_data_buf[];
 extern u8 g_gpu_db;
@@ -564,13 +564,13 @@ void func_80016E60(u8 *arg0, s32 arg1) {
     D_800A36B0 = 1;
 }
 void rng_SetSeed(s32 a0) {
-    g_file_heap_base = a0;
+    D_800A38BC = a0;
 }
 s32 rng_Next(void) {
-    s32 seed = g_file_heap_base;
+    s32 seed = D_800A38BC;
     s32 result = seed * 5497 + 0x7FA9;
     seed = (seed >> 16) ^ result;
-    g_file_heap_base = seed;
+    D_800A38BC = seed;
     return seed & 0x7FFF;
 }
 void main(void) {
