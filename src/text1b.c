@@ -1524,7 +1524,202 @@ INCLUDE_ASM("asm/funcs", func_80052C28);
 INCLUDE_ASM("asm/funcs", func_80052C4C);
 INCLUDE_ASM("asm/funcs", func_80052CD4);
 PAD_NOPS_3; /* padding after func_80052CD4 */
-INCLUDE_ASM("asm/funcs", func_80052D00);
+extern s32 D_800A33F4;
+extern s32 func_80053694(s32 *, s16 *);
+
+typedef union {
+    struct {
+        s16 x;
+        s16 z;
+    } c;
+    s32 w;
+} Cell_80052D00;
+
+typedef struct {
+    s32 unk0;
+    s16 unk4;
+    s16 unk6;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+    s32 unk1C;
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2C;
+    s32 unk30;
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    s32 unk40;
+    s32 unk44;
+    s16 unk48;
+    s16 unk4A;
+    s16 unk4C;
+    s16 unk4E;
+    s16 unk50;
+    s16 unk52;
+    s16 unk54;
+    s16 unk56;
+    s16 unk58;
+    s16 unk5A;
+    s32 (*unk5C)(s32, s32);
+    s32 unk60;
+    s32 unk64;
+    s32 unk68;
+    s32 unk6C;
+    s32 unk70;
+    s32 unk74;
+    s32 unk78;
+    s32 unk7C;
+    s32 unk80;
+    s32 unk84;
+    Cell_80052D00 unk88;
+    Cell_80052D00 unk8C;
+    s16 unk90;
+    u8 unk92[0x16];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0;
+    s32 unkB4;
+    s32 unkB8;
+    s32 unkBC;
+    s32 unkC0;
+    s32 unkC4;
+    s32 unkC8;
+    s32 unkCC;
+    s32 unkD0;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    s32 unkE8;
+} Work_80053E9C;
+
+#define W ((Work_80053E9C *)D_800A33F4)
+
+/* Walks the 32x32 grid of 2000-unit cells (origin -32000) along the XZ
+ * segment from the start point (+0x8/+0x10) to the end point (+0x18/+0x20),
+ * DDA style: +0x88/+0x8C are the current and end cells, +0x70/+0x74 the
+ * major/minor extents (swapped when Z dominates), +0x7C the 4.12 slope and
+ * +0x90 the major-axis steps left. Each cell crossed goes to the per-cell
+ * test at +0x5C (func_80053E9C or func_80053754) until one reports a hit;
+ * func_80053694 then reads the result back out. */
+s32 func_80052D00(s32 arg0, s32 arg1) {
+    s32 xdir;
+    s32 zdir;
+    s32 swapped;
+
+    W->unk60 = W->unk8 + 32000;
+    W->unk64 = W->unk10 + 32000;
+    W->unk68 = W->unk18 + 32000;
+    W->unk0 = 0x7FFFFFFF;
+    W->unk6C = W->unk20 + 32000;
+    W->unk70 = W->unk68 - W->unk60;
+    W->unk88.c.x = W->unk60 / 2000;
+    W->unk88.c.z = W->unk64 / 2000;
+    W->unk8C.c.x = W->unk68 / 2000;
+    W->unk8C.c.z = W->unk6C / 2000;
+    W->unk74 = W->unk6C - W->unk64;
+    if (W->unk88.w == W->unk8C.w) {
+        if (W->unk8 == W->unk18 && W->unkC == W->unk1C && W->unk10 == W->unk20) {
+            return 0;
+        }
+        W->unk5C(W->unk88.c.x, W->unk88.c.z);
+    } else {
+        W->unk80 = W->unk88.c.x * 2000 + 1000;
+        W->unk84 = W->unk88.c.z * 2000 + 1000;
+        W->unk60 -= W->unk80;
+        W->unk64 -= W->unk84;
+        W->unk68 -= W->unk80;
+        W->unk6C -= W->unk84;
+        if (W->unk70 < 0) {
+            xdir = -1;
+            W->unk70 = -W->unk70;
+            W->unk60 = -W->unk60;
+            W->unk68 = -W->unk68;
+        } else {
+            xdir = 1;
+        }
+        if (W->unk74 < 0) {
+            zdir = -1;
+            W->unk74 = -W->unk74;
+            W->unk64 = -W->unk64;
+            W->unk6C = -W->unk6C;
+        } else {
+            zdir = 1;
+        }
+        if (W->unk74 > W->unk70) {
+            swapped = 1;
+            W->unk80 = W->unk70;
+            W->unk70 = W->unk74;
+            W->unk74 = W->unk80;
+            W->unk80 = W->unk60;
+            W->unk60 = W->unk64;
+            W->unk64 = W->unk80;
+            W->unk80 = W->unk68;
+            W->unk68 = W->unk6C;
+            W->unk6C = W->unk80;
+        } else {
+            swapped = 0;
+        }
+        W->unk68 += 1000;
+        W->unk60 += 1000;
+        W->unk64 += 1000;
+        W->unk90 = W->unk68 / 2000 - W->unk60 / 2000 + 1;
+        W->unk7C = (W->unk74 << 12) / W->unk70;
+        W->unk64 -= (W->unk60 * W->unk7C) >> 12;
+        W->unk78 = (W->unk7C * 2000) >> 12;
+        while (--W->unk90 != -1) {
+            if ((W->unk80 = W->unk5C(W->unk88.c.x, W->unk88.c.z)) != 0) {
+                break;
+            }
+            W->unk64 %= 2000;
+            W->unk64 += W->unk78;
+            if (W->unk90 == 0) {
+                break;
+            }
+            if (W->unk64 > 2000) {
+                if (swapped) {
+                    if (xdir < 0) {
+                        W->unk88.c.x--;
+                    } else {
+                        W->unk88.c.x++;
+                    }
+                } else {
+                    if (zdir < 0) {
+                        W->unk88.c.z--;
+                    } else {
+                        W->unk88.c.z++;
+                    }
+                }
+                if ((W->unk80 = W->unk5C(W->unk88.c.x, W->unk88.c.z)) != 0) {
+                    break;
+                }
+            }
+            if (swapped) {
+                if (zdir < 0) {
+                    W->unk88.c.z--;
+                } else {
+                    W->unk88.c.z++;
+                }
+            } else {
+                if (xdir < 0) {
+                    W->unk88.c.x--;
+                } else {
+                    W->unk88.c.x++;
+                }
+            }
+        }
+        if (W->unk80 == 0 && W->unk88.w != W->unk8C.w) {
+            W->unk5C(W->unk8C.c.x, W->unk8C.c.z);
+        }
+    }
+    return func_80053694((s32 *)arg0, (s16 *)arg1);
+}
 extern s32 gte_SumSquares3(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
@@ -1639,59 +1834,6 @@ extern s32 D_800A33F4;
 extern s32 gte_SumSquares3(s32, s32, s32);
 extern void func_80052C4C(s32, s32, s32, s32);
 extern void func_80052CD4(s32 *, s32 *);
-
-typedef struct {
-    s32 unk0;
-    s16 unk4;
-    s16 unk6;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    s32 unk1C;
-    s32 unk20;
-    s32 unk24;
-    s32 unk28;
-    s32 unk2C;
-    s32 unk30;
-    s32 unk34;
-    s32 unk38;
-    s32 unk3C;
-    s32 unk40;
-    s32 unk44;
-    s16 unk48;
-    s16 unk4A;
-    s16 unk4C;
-    s16 unk4E;
-    s16 unk50;
-    s16 unk52;
-    s16 unk54;
-    s16 unk56;
-    s16 unk58;
-    s16 unk5A;
-    s32 unk5C;
-    u8 unk60[0x48];
-    s32 unkA8;
-    s32 unkAC;
-    s32 unkB0;
-    s32 unkB4;
-    s32 unkB8;
-    s32 unkBC;
-    s32 unkC0;
-    s32 unkC4;
-    s32 unkC8;
-    s32 unkCC;
-    s32 unkD0;
-    s32 unkD4;
-    s32 unkD8;
-    s32 unkDC;
-    s32 unkE0;
-    s32 unkE4;
-    s32 unkE8;
-} Work_80053E9C;
-
-#define W ((Work_80053E9C *)D_800A33F4)
 
 s32 func_80053E9C(s32 arg0, s32 arg1) {
     s32 n;
