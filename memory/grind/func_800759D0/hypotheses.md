@@ -8,8 +8,11 @@ path is the only reachable write outside the first-cell pattern, and it lands ou
 record). Layer-2 FAILED it as UNDECIDED on (b′)(3): 0xCA8 is past sheet [21] but lands on
 byte 8 of an unreferenced record at 0xCA0, and the text does not say whether "inside a record"
 means BASE's record or any record. Owner question in borderline.md. The body (0/364, SHA1 ==
-oracle) is banked as pending-bprime-0.c; candidate.c stays the per-site 25 form. If the owner
-rules "past the end", re-stage pending-bprime-0.c unchanged.
+oracle) was banked as pending-bprime-0.c. Session 5: the owner ruled "past the end"
+(2fc07a100). The unreferenced-address search is recorded in evidence.md; 0xCA8 is unreferenced.
+The body is re-submitted as candidate.c. The only change is that the comment now says "into bytes
+nothing references". pending-bprime-0.c is removed as superseded; the per-site 25 receipt stays
+at rejected/per-site-locals-25.c.
 Session 3 (2026-09-25): the shared `cells` body landed under owner Ruling 9 (23045f51f) and was
 then FAILED and reverted: Ruling 9 (b)/(f) fail on the reachable 0x14-placeholder path, where
 loop 2 reads `table[21] + 0x24` past the end of a 1-header sheet (evidence.md "Ruling 9 FAIL";

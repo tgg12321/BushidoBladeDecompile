@@ -89,12 +89,13 @@ header count, not a different kind of object. First cells: +0x14[0] {x0,y0,u0,v0
 ## Ruling 9 (b′) (session 4, 2026-09-25; amendment bcdc1648e)
 **Line anchor:** every `text1b.c:N` below is a line of src/text1b.c AT COMMIT bcdc1648e
 (func_800759D0 as INCLUDE_ASM at :11986). With the body spliced in, lines after :11986 shift
-by +146 (e.g. the 0x14 store :12127 becomes :12273). `:N` alone = asm/funcs/func_800759D0.s.
+by +147 with the session-5 body (e.g. the 0x14 store :12127 becomes :12274). `:N` alone = asm/funcs/func_800759D0.s.
 Status: layer-2 FAILED this re-submission 2026-09-25 as UNDECIDED on (b′)(3) (does "lands
 inside a record" mean BASE's own record or any record? 0xCA8 is byte 8 of the unreferenced
 record at 0xCA0). (1), (2), prongs (5)/(6) and `zero` held. Owner question:
 docs/grind/borderline.md 2026-09-25 "func_800759D0 — (b′)(3) past-the-end into
-unreferenced data". Body banked as pending-bprime-0.c; candidate.c stays the per-site 25.
+unreferenced data". The owner ruled "Past the end" (2fc07a100). Session 5 ran the required
+unreferenced-address search below and re-submits the body.
 Census script: tmp/f759d0/bprime_census.py (output tmp/f759d0/bprime_census.txt). It reads
 D_8009BCF8 from the original EXE (disc/SLUS_006.63, file offset 0x8C4F8) and every sheet from
 disc/TIM2D/D_SEL.BIN, and classifies BASE + K per site as first cell / inside the record on
@@ -180,6 +181,57 @@ No reachable write lands INSIDE a record on anything other than its first cell.
   data lays it out: an anomaly under (b′)(3), not a second meaning. It is the only such
   path (census above). func_8007636C is not affected: its pick lists hold confirmed entries
   only (its ledger, 71b14499d).
+
+### (3) clarification (owner, 2fc07a100): 0xCA8 is unreferenced — the search
+Session 5 (2026-09-25). The owner ruled "Past the end": BASE + K past the end of BASE's record
+is an anomaly even among other bytes, unless it is the start of a referenced object or of a
+code-used sub-object of one. Search script: tmp/f759d0/unref_search.py (output
+tmp/f759d0/unref_search.txt). It models every code walk over the loaded D_SEL.BIN image over its
+full reachable index range and records the bytes each access reads. All readers are C in
+src/text1b.c; line numbers at 2fc07a100 (src/ is unchanged since bcdc1648e). The readers were
+found by grepping text1b.c for every root-relative access (`arg0[0] + 0x..`, `*arg0 + 0x..`,
+`D_800A36A0 + 4`) and every loader call (func_8006E950 / func_8006E440 / func_80076FF8 /
+func_8006920C / func_8006E8CC / func_8006E49C). D_800A36A0 is referenced only in text1b.c,
+and every function that touches it is C.
+- **Load-time walks, with reachable range.**
+  - func_8006E440 (text1b.c:9426-9433) relocates root words until -1: 0x0-0x44.
+  - func_8006E950 LoadImage (9654-9669): root[2], 0xF70-0x60AF0.
+  - func_8006E8CC (9619-9636): root[3] or root[4], 0x60AF0-0x74AF0.
+  - func_80076FF8 (12438-12449) calls func_8006920C (7396-7405) on root[5..14]. Each table
+    is walked until its 0 word: +0x14 0x280-0x2DC, +0x18 0x330-0x344, +0x1C 0x344-0x354,
+    +0x20 0x354-0x364, +0x24 0x364-0x378, +0x28 0x378-0x390, +0x2C 0x31C-0x330,
+    +0x30 0x248-0x280, +0x34 0x2DC-0x31C, +0x38 0xA4-0xB4.
+  - func_8006E49C (9440-) builds pointers r + positive constants, with r = root[1] (0xF70),
+    so all of them lie >= 0xF70.
+- **Draw-time walks** (func_8007352C header [h, h+12) plus count x 8-byte cells;
+  func_80073728 the same; func_8006E480 header bytes 0-1), each over every index it can take:
+  - func_80074220 (11160-11174) +0x38[0..2]
+  - func_80074488 (11260-11327) +0x34[0..14]
+  - func_800753D8 (11844-11893) +0x2C[0..3] and +0x14[0] (both cell groups)
+  - func_80074D2C (11603-11615) +0x1C[0..2]
+  - func_80074E08 (11648-11699) +0x18[0..3], plus the FT4 group of [2]
+  - func_80075830 (11960-11962) +0x14[21]: 0xC84-0xC90 header, 0xC90-0xCA0 cells
+  - func_800759D0, normal paths: head [0], loops 1-2 over [1..20] (headers 0-2), loop 3
+  - func_8007636C (12188-12266): picks [1..20] with `+count*16`, +0x30[0..12], loop 3
+  - func_80074B18 (11560-11585): root+0x3C, 12-byte records, j < 8, 0x44-0xA4
+- **Result.** 636 modelled accesses. **No access covers 0xCA8, and none covers 0xCA0**, as an
+  object start or anywhere inside its range. The nearest reads are func_8007636C's +0x14[15]
+  cells ending at 0xC84, and func_80075830's [21] ending at 0xCA0. The loaded image's
+  draw-time reads span 0x44-0xF70 with gaps, and 0xCA0-0xCD0 is one of the gaps.
+- **Pointer / offset / table search.** No u32 anywhere in D_SEL.BIN, aligned or unaligned,
+  equals 0xCA0, 0xCA4, 0xCA8 or 0xCAC. The only file-relative offsets the code resolves are the
+  root words and the root[5..14] table entries relocated by the two walks above; none resolves
+  to 0xCA0-0xCAC. The runtime address is not a link-time constant: the image is loaded at
+  func_800770B8's arg0 + 0x58 (text1b.c:12494-12497), a caller-supplied buffer. So no EXE word
+  or symbol can resolve to it, and no symbol names it.
+- **The anomaly access itself** (the write under judgment, listed separately): loop 2 on [21]
+  reads the moved header at 0xC90-0xC9C (arg3 0) or 0xC9C-0xCA8 (arg3 1). It reads cells from
+  0xCA8 + count*8, i.e. 0xE10-0xF78 (count 0x2D) or 0xDC8-0xEE8 (count 0x24). `cells` =
+  0xCA8 itself is only a base; nothing dereferences it.
+- **Classification under the clarification.** 0xCA8 is past the end of BASE's record (0xCA0),
+  and it is neither the start of a referenced object nor a code-used field of one. The
+  header-shaped run from 0xCA0 is referenced by nothing, so it is not an object for this
+  test. The path is an anomaly under (b′)(3).
 
 ### (4) The comment
 The `cells` declaration comment states what the code assumes ("The code treats each sheet
