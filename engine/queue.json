@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007636C",
-      "file": "text1b",
-      "distance": 348,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T03:15:28+00:00",
-      "rotation_count": 1,
-      "unparked_from": "honest floor 184/348 after fresh m2c and evidenced stack-descriptor reconstruction; unresolved SSA-local spill/frame and three-loop source geometry; see memory/grind/func_8007636C/evidence.md",
-      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
-      "returned_at": "2026-09-25T03:34:57+00:00"
-    },
-    {
       "func": "func_8002CD58",
       "file": "code6cac_b",
       "distance": 352,
@@ -724,15 +711,15 @@
     }
   ],
   "counts": {
-    "total": 67,
-    "active": 54,
+    "total": 66,
+    "active": 53,
     "by_status": {
-      "active": 54,
+      "active": 53,
       "rotated": 13
     },
     "by_verdict": {
-      "C": 41,
-      "ASM-PARTIAL": 13
+      "ASM-PARTIAL": 13,
+      "C": 40
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
