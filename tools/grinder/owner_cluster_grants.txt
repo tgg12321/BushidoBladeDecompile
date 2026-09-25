@@ -62,3 +62,13 @@ func_8003E6D8 cop2-addressing-preamble-cluster.md widened anchor (owner grant 20
 # note and chose "Approve this one" â€” this function ONLY, no standing rule for
 # inline_o.h carriers); every other gate applies unchanged:
 func_80018300 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :61; owner-instructed row 2026-09-24, this function only; operator-added 2026-09-24)
+# 2026-09-25 — census members func_8002CD58 (row :72) and func_8002DAD0 (row
+# :76) are both at floor 0 with the same class of GTE islands (gte_ldopv1 /
+# gte_ldopv2 / gte_op0 / gte_stlvnl / gte_SetRotMatrix / gte_ldlv0 / gte_rtv0,
+# plus gte_Lzc; func_8002CD58 also gte_sqr0). This class was declined for
+# func_8002DAD0 on 2026-09-21 (9bdfcc6cc). Operator-added at the owner's
+# instruction 2026-09-25 (conversation; the owner was shown that decline and the
+# one-function-at-a-time approvals since, and chose "Approve this and DAD0" --
+# these two functions, no standing rule); every other gate applies unchanged:
+func_8002CD58 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :72; owner-instructed row 2026-09-25, with func_8002DAD0 only; operator-added 2026-09-25)
+func_8002DAD0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :76; owner-instructed row 2026-09-25, reverses the 2026-09-21 decline for this function; operator-added 2026-09-25)
