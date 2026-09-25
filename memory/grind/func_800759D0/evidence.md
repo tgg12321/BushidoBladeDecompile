@@ -47,6 +47,13 @@ All measured with `sandbox --disable all --diff`. The q-step below describes the
 | `rec = &D_8009BCF8[i]` held across the func_8007352C call | 123 |
 | `(&D_8009BCF8[i])->unk0` at all three sites | 0 (same tree as `+ i`) |
 
+## Allocation provenance (session 2, 2026-09-25)
+greg dump of the shared-q form: q = pseudo 80 -> $a1, hard conflicts {v0, v1, a0, sp}. In the
+target's loop-1 and head q ranges, $v1/$a0 are free. So the $a1 seat comes from the union of
+conflicts across sites (loop 2 holds the table value in $v1 and arg3*2 in $a0 live across its
+q). One variable was shared in the original source. Details and measurements: hypotheses.md
+"Session 2".
+
 ## Tools
 tmp/f759d0/gen.py (variant generator), tmp/f759d0/rtl.py (splice + cc1 -da, per-function
 dumps), tmp/f759d0/hk.py (scored hunks). tmp is gitignored.

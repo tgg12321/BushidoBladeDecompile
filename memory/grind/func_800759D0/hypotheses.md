@@ -44,11 +44,42 @@ arg1 byte term, or store q0 before assigning it). All banned (multi-write carrie
 staged-value borrow); they confirm the data flow the target needs, nothing more.
 Workspace: tools/decomp-permuter/nonmatchings/func_800759D0 (built by tmp/f759d0/mkperm.sh).
 
+## Session 2 (manual lane, 2026-09-25) — floor still 25; why no per-site form can close
+Allocation-dump finding (tmp/f759d0/rtl.py on rejected/function-scope-q-multiwrite-0.c, greg
+dump): the shared q is pseudo 80, allocated to $a1, and its ONLY hard-register conflicts are
+{v0, v1, a0, sp}. In the target's loop-1 then-block, over q's def->store range
+(`addiu a1,a2,0x24` .. `sw a1,0x1C(sp)`), $v1 and $a0 hold no live value (entry dies at the
+`sll v0,v1,2` in the beqz delay slot; `lh a0` comes after the store). So even a per-site q made
+multi-block by some other means would conflict only with $v0 there, and global.c's find_reg pass 0
+(registers already used, in register order) would give it $v1, not $a1. The $v1/$a0 exclusions come
+from the OTHER sites: loop 2 keeps the table value in $v1 and arg3*2 in $a0 live across its q.
+Likewise at the head a lone q gets $v0/$v1, never $a1. Conclusion: $a1 at the head and in loop 1
+is the union of conflicts of ONE pseudo shared across the sites. The target was compiled from a
+shared variable (as in the same author's func_800753D8 `body` and func_8007636C `q` on main).
+No per-site spelling, and no construct that only makes one site multi-block, can reach it.
+This is provenance evidence for the borderline.md "one role, differing constant offsets" question.
+
+Measured this session (all from candidate.c, `sandbox --disable all`):
+- head: `q0 = table[0] + 0xC; s.sp1C = q0; s.sp18 = table[0];` (keep table[0] live past q) — 37 (365 insns)
+- head: q0 computed before the sp18/sp30/sp34 stores, stored after — 25 (no change)
+- loop 1: `q1 = table[entry + 1] + 0x24;` before the sp18 store — 25 (no change)
+- cc1psx self-disproof (`engine cc1psx-check`): per-site candidate psx 90 vs ours 25; shared-q
+  form psx 63 vs ours 0. Not closer: SOURCE-SIDE.
+- Ruled out by analysis: Ruling 6 (the four sites are sequential, not mutually exclusive regions);
+  Ruling 5 extension (B) (loop 1 and loop 2 pick the record with `table[entry + 1]` /
+  `table[arg2[i] + 1]`, and loop 3 reassigns `table` in its body); a shared record pointer
+  (`hdr`) instead of q (the table value sits in $v1 at head/loops 2-3 but $a2 in loop 1, so one
+  shared pseudo cannot match); a typed sheet struct (`SprtHdrA hdr[3]` + cells at +0x24, the
+  head sheet has one header, cells at +0xC) is a good semantic spelling but creates no
+  shared pseudo, so it cannot move the allocation.
+
 ## Frontier
-- No honest single-write mechanism found that makes the head/loop-1 sum a multi-block
-  pseudo. Untried ideas: a real record type for the sprite header (so s.sp1C is spelled as
-  `&hdr->frame[k]` from a pointer local shared under Ruling 6's exclusive-region shape —
-  check whether the regions qualify), or a restructure where loop 1's descriptor fill
-  happens in a block that ends before the grid lookup.
+- Session 2 showed that making the head/loop-1 sum multi-block is not enough anyway: the
+  $a1 seat needs the conflict union of one pseudo shared across the sites (see Session 2).
+  Ruling 6's regions do not qualify (the sites are sequential). The function is blocked on the
+  owner's answer to the borderline.md question, not on an unfound spelling of the per-site form.
+- Only remaining non-policy directions: a legal shared variable (one that meets Ruling 5 or
+  its extension). None found: the head's +0xC and the loops' +0x24 are different templates,
+  and the loops' record picks fail extension (B).
 - If the owner allows the one-role reuse (borderline.md), the 0 form lands as-is
   (re-review with the ruling cited; rename q to a role name for R5 1(f)).
