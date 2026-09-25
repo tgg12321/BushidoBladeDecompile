@@ -18,6 +18,9 @@ rejected/ruling9-cells-placeholder-overrun-0.c. candidate.c is back to the hones
 form (also kept as rejected/per-site-locals-25.c, the Ruling 9 (i) receipt).
 Owner question: docs/grind/borderline.md 2026-09-25 "func_800759D0 — Ruling 9 (b) on a
 latent-bug path".
+Session 4 (2026-09-25, manual lane): the owner answered it as Ruling 9 amendment (b′)
+(bcdc1648e). The same body, with only the `cells` declaration comment rewritten for (b′)(4),
+is re-submitted; the (b′)(1)-(3) record is the section "Ruling 9 (b′)" below.
 
 ## Ruling 9 (b) — what +0xC and +0x24 reach (session 3, 2026-09-25)
 **The record.** `s.sp18` is S_80074488 / EnvA `.header` and `s.sp1C` is `.table` of the draw
@@ -68,7 +71,8 @@ header count, not a different kind of object. First cells: +0x14[0] {x0,y0,u0,v0
   `s.sp18 += 12 + arg3 * 12`.
 - **The data.** D_SEL.BIN root+0x14 [21] is the sheet at 0xC84: 1 header (count 2, CLUT
   (32,480)), cells {98,45,63x12} and {161,45,36x12}. The record ends at 0xCA0, and a run of
-  12-byte header-like records follows (0xC9C: tp 0x1A, count 2, CLUT (16,505)).
+  12-byte header-like records follows (from 0xCA0: tp 0x1A, count 2, CLUT (16,505); session 4
+  correction, this line said 0xC9C).
   `+0x24` = 0xCA8 is past the end of the record, inside that next run. The highlight step
   reads 0xC90 (arg3 = 0, which is cell data read as a header, `count` 0x2D) or 0xC9C (arg3 = 1).
   This looks like a latent bug in the original game: loop 2 treats every sheet as 3-header.
@@ -81,6 +85,107 @@ header count, not a different kind of object. First cells: +0x14[0] {x0,y0,u0,v0
   question is in docs/grind/borderline.md: should (b) be judged by the layout the code
   assumes rather than by the data on a buggy path? func_8007636C is NOT affected: in cases
   3-5 its pick list holds only confirmed entries (evidence in its ledger, 71b14499d).
+
+## Ruling 9 (b′) (session 4, 2026-09-25; amendment bcdc1648e)
+**Line anchor:** every `text1b.c:N` below is a line of src/text1b.c AT COMMIT bcdc1648e
+(func_800759D0 as INCLUDE_ASM at :11986). With the body spliced in, lines after :11986 shift
+by +146 (e.g. the 0x14 store :12127 becomes :12273). `:N` alone = asm/funcs/func_800759D0.s.
+Status: layer-2 FAILED this re-submission 2026-09-25 as UNDECIDED on (b′)(3) (does "lands
+inside a record" mean BASE's own record or any record? 0xCA8 is byte 8 of the unreferenced
+record at 0xCA0). (1), (2), prongs (5)/(6) and `zero` held. Owner question:
+docs/grind/borderline.md 2026-09-25 "func_800759D0 — (b′)(3) past-the-end into
+unreferenced data". Body banked as pending-bprime-0.c; candidate.c stays the per-site 25.
+Census script: tmp/f759d0/bprime_census.py (output tmp/f759d0/bprime_census.txt). It reads
+D_8009BCF8 from the original EXE (disc/SLUS_006.63, file offset 0x8C4F8) and every sheet from
+disc/TIM2D/D_SEL.BIN, and classifies BASE + K per site as first cell / inside the record on
+something else / outside the record. Record extent = 12 x (header count) + 8 x (header 0 count).
+
+### (1) The assumed layout, from accesses other than the `cells` writes
+- **Header block, 12-byte stride, headers 1 and 2 addressed.** The highlight step moves
+  sp18 (`.header`) from header 0 to header 1 + arg3, i.e. +12 or +24:
+  loop 1 asm/funcs/func_800759D0.s:109-112 (`$s7 = arg3*12 + 0xC`), applied :150
+  (`addu $v0,$a2,$s7`, `sw 0x18($sp)`); loop 2 :228-234 (`(arg3*2 + arg3)*4 + 0xC`, then
+  `sw 0x18($sp)`); loop 3 :274-277 (`$s6 = arg3*12 + 0xC`), applied :298-299. So on the
+  sheets loops 1-3 draw, the code reads SprtHdrA records at +0, +12 and +24 (header 2
+  occupies +24..+35).
+- **Each addressed header is read as a SprtHdrA.** Loop 2 reads the moved header's `count`
+  at +2 (:243 `lbu $v0,0x2($a0)`, $a0 = sp18); the head reads header 0's `count` (:43).
+  func_8007352C (src/text1b.c:10945-10987) reads `.header` as SprtHdrA (text1b.c:10929:
+  count +2, cx/cy +4/+6, ubase +8, vbase +10) and func_8006E480 reads header 0 at the head
+  and tail (:55, :335, :355).
+- **Cells are 8-byte SprtEntA records walked from `.table`.** func_8007352C walks
+  `(SprtEntA *)env->table + i` for i < count (text1b.c:10955-10957; SprtEntA text1b.c:10939,
+  8 bytes). This function advances `.table` by `count * 8` (:45 and :245, `sll 3`).
+- **Other readers of the same records** (not writes under judgment): func_8007636C's loops
+  over root+0x14 (via its pick list) and root+0x20/+0x24/+0x28 apply the same highlight step
+  (text1b.c:12212-12213, 12257-12258) and read the moved header's count (12216, 12261);
+  func_800753D8 draws root+0x14[0] from header 0 only and advances by `count << 3`
+  (text1b.c:11861-11869), the same one-header use the head makes of that record.
+- **Assumed layout.** Head: the table[0] page sheet is header 0 then cells (no header past 0
+  is ever addressed on it, here or in func_800753D8), so the first cell is at +0xC.
+  Loops 1-3: the sheet is headers 0, 1, 2 (normal, then one highlight per player) then
+  cells, so the first cell is at +0x24. In both cases BASE + K is the sheet's first SprtEntA
+  cell: K = 12 x (headers the code addresses on that sheet).
+
+### (2) Every normal path reaches the first cell (census, every value each index can take)
+Value sets, from every writer of each index (all writers are C in src/text1b.c):
+- Head: table = root+0x14, fixed index [0].
+- Loop 1: `entry = D_8009BCF8[i].unk0`, i in [arg1*10, arg1*10+9]. arg1 = work+0x68+player,
+  which is only ever 0 or 1 (init :12540 `= t0`; func_80075670 :11912-11914 `+1` then `&= 1`,
+  :11926 `(x+1) & 1`), so i in 0..19. D_8009BCF8 is read-only (no store in src/ or
+  asm/funcs/; only readers func_800759D0, func_80075F80, func_80076D74) and its 20 unk0
+  bytes in the EXE are a permutation of 0..19. So table[entry+1] is [1..20].
+- Loop 2: `arg2[i]`, i in [0, f3C]. arg2 = rows[player] (work+0x6A+player*10, 5 s16). Its
+  only writers: func_800770B8 :12546 (-1), func_80075F80 :12023 (-1), :12103 (`entry`, a
+  D_8009BCF8 grid byte, index `(f1C*5+f20)*2 + arg1*20` <= 38, so 0..19) and :12127 (0x14).
+  f3C in state 2 is 0..f65+2 <= 4 (entered as f38 via func_8007526C :11762/:11771, f38 in
+  {0, f65+2}; func_80075F80 :12109-12113 caps it at f65+2; :12024 decrements only from
+  != 0), so i stays inside the 5-entry row. The guard `arg2[i] >= 0` drops -1. So
+  table[arg2[i]+1] is [1..20] or [21].
+- Loop 3: table = root[0x20 + f65*4], i < f65+3. f65 is written only at :12600 (0) and in
+  func_800747D8 :11448-11468 (cycles 0..f64); f64 <= 2 (:12594-12595). So f65 in {0,1,2}.
+
+| site (K) | records reached | result |
+|---|---|---|
+| head (0xC) | root+0x14[0] 0xD90 (1 header, count 2, ends 0xDAC) | +0xC = first cell |
+| loop 1 (0x24) | root+0x14[1..20] | all 3 headers; +0x24 = first cell (20/20) |
+| loop 2 (0x24) | root+0x14[1..20] | all 3 headers; +0x24 = first cell (20/20) |
+| loop 2 (0x24) | root+0x14[21] 0xC84 (arg2[i] == 0x14) | OUTSIDE the record: the anomaly below |
+| loop 3 (0x24) | root+0x20 [0..2], +0x24 [0..3], +0x28 [0..4] | all 3 headers; +0x24 = first cell (12/12) |
+No reachable write lands INSIDE a record on anything other than its first cell.
+
+### (3) The one anomaly path (documented; a latent bug in the original)
+- **Trigger.** The cursor of a player in select state 2 sits on a cell that is not
+  selectable (D_8009BCE4[entry] bit 0 clear) or that this player already took (bit 4<<p).
+  func_80075F80 then stores the placeholder `arg2[f3C] = 0x14` (text1b.c:12127). In the same
+  frame func_80077374 case 2 (text1b.c:12649-12655) calls func_800759D0, whose loop 2 draws
+  slot i == f3C: `s.sp18 = table[0x14 + 1]`, `cells = s.sp18 + 0x24`. (After a confirm the
+  cursor stays on the character just taken, so the next frame already takes this path.)
+- **Measured bytes (disc/TIM2D/D_SEL.BIN).** root+0x14 table at 0x280; entry [21] (0x2D4)
+  = 0xC84. The record at 0xC84: header `0a000200 2000e001 b000f400` (count 2, CLUT
+  (32,480)), then cells 0xC90 `62002d00 00003f0c` and 0xC98 `a1002d00 0000240c`; it ends at
+  0xCA0. BASE + K = 0xC84 + 0x24 = **0xCA8**, 8 bytes past the end. 0xCA8 holds `d000b400`,
+  the ubase/vbase word of the 12-byte header-shaped record at 0xCA0 (`1a000200 1000f901
+  d000b400`), the first of a run no table in the file points to (no u32 in 0x0-0x1000
+  equals 0xCA0/0xCAC/0xCB8/0xCC4).
+- **Why it is malformed under the assumed layout.** Loop 2 imposes the three-header layout
+  on every sheet it draws, but the code's own other reader of this record, func_80075830
+  (text1b.c:11960-11962: `*(tbl + 0x54)` = [21], `.table = +0xC`), draws [21] as ONE header
+  followed by cells, which matches the data. Under the three-header view the headers would
+  be 0xC84/0xC90/0xC9C, but 0xC90 and 0xC98 are cells, and the "cell array" at +0x24 starts
+  past the record. The highlight step on this path moves sp18 to 0xC90 (arg3 0: cell 0 read
+  as a header, count byte 0x2D) or 0xC9C (arg3 1: count byte 0x24), so func_8007352C also
+  walks 45 or 36 "cells" from 0xCA8 + count*8 (0xE10 / 0xDC8), all outside the record.
+- **Classification.** BASE + K lies outside BASE's record (past its end), as the original
+  data lays it out: an anomaly under (b′)(3), not a second meaning. It is the only such
+  path (census above). func_8007636C is not affected: its pick lists hold confirmed entries
+  only (its ledger, 71b14499d).
+
+### (4) The comment
+The `cells` declaration comment states what the code assumes ("The code treats each sheet
+it draws here as ...", "loops 1-3 treat their sheets as three headers"), names the
+placeholder path and where it runs past the sheet, and points here. It makes no claim about
+all the data.
 
 ## Ruling 9 prong walk (the rejected cells body, session 3; (b) FAILED, see above)
 - (a) all 4 writes feed `s.sp1C = cells;` (identical text), the descriptor's `.table` member.

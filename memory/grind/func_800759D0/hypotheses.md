@@ -1,6 +1,15 @@
 # func_800759D0 — hypotheses / levers (2026-09-25)
 
 ## Status
+Session 4 (2026-09-25, manual lane): the owner answered the latent-bug question as Ruling 9
+amendment (b′) (bcdc1648e). The shared-`cells` body is re-submitted with a rewritten
+declaration comment; the (b′)(1)-(3) record is evidence.md "Ruling 9 (b′)" (the placeholder
+path is the only reachable write outside the first-cell pattern, and it lands outside the
+record). Layer-2 FAILED it as UNDECIDED on (b′)(3): 0xCA8 is past sheet [21] but lands on
+byte 8 of an unreferenced record at 0xCA0, and the text does not say whether "inside a record"
+means BASE's record or any record. Owner question in borderline.md. The body (0/364, SHA1 ==
+oracle) is banked as pending-bprime-0.c; candidate.c stays the per-site 25 form. If the owner
+rules "past the end", re-stage pending-bprime-0.c unchanged.
 Session 3 (2026-09-25): the shared `cells` body landed under owner Ruling 9 (23045f51f) and was
 then FAILED and reverted: Ruling 9 (b)/(f) fail on the reachable 0x14-placeholder path, where
 loop 2 reads `table[21] + 0x24` past the end of a 1-header sheet (evidence.md "Ruling 9 FAIL";
