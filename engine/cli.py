@@ -135,6 +135,9 @@ def main() -> int:
     qp.add_argument("--reason", default="", help="reason / record pointer (for rotate/unpark/reopen; foreclose, escalate and park are legacy aliases for rotate — owner ruling 2026-09-08)")
     qp.add_argument("--file", default="", help="src file stem (required for reopen)")
     qp.add_argument("--no-rescan", action="store_true", help="auto-return: skip the toolchain-fingerprint re-measure")
+    qp.add_argument("--force-rescan", action="store_true",
+                    help="auto-return: re-measure every rotated candidate even though the "
+                         "fingerprint did not move (recovery after a corrupted re-measure)")
     ccp = sub.add_parser("cc1psx-check", help="self-disproof: score a function's candidate under our cc1 AND the original cc1psx (out of tree); a closer cc1psx = fidelity lead")
     ccp.add_argument("func")
     ccp.add_argument("--candidate", default="", help="candidate body (default memory/grind/<func>/candidate.c)")
@@ -274,7 +277,7 @@ def main() -> int:
             print(json.dumps(it, indent=2))
             return 0
         if a.action == "auto-return":
-            r = Q.auto_return(rescan=not a.no_rescan)
+            r = Q.auto_return(rescan=not a.no_rescan, force_rescan=a.force_rescan)
             print(json.dumps(r, indent=2))
             MET.record_event("queue-auto-return", None, r, exit_code=0)
             return 0

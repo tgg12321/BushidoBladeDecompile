@@ -43,6 +43,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -140,6 +141,22 @@ def find_function_span(text: str, func: str) -> tuple[int, int]:
     raise ValueError(f"definition of {func} not found")
 
 
+def write_retry(p: Path, data: bytes, attempts: int = 20, delay: float = 0.25) -> None:
+    """write_bytes that rides out DrvFS's transient EINVAL on /mnt/c. Measured
+    2026-09-25: reopening src/<stem>.c for write right after the sandbox build
+    read it failed in 6 of 9 runs and cleared within ~0.5 s. A single failed
+    restore used to leave the candidate spliced into src/ (queue commit
+    c144a8556)."""
+    for i in range(attempts):
+        try:
+            p.write_bytes(data)
+            return
+        except OSError:
+            if i == attempts - 1:
+                raise
+            time.sleep(delay)
+
+
 def run_sandbox(func: str) -> dict:
     p = subprocess.run(
         [sys.executable, "-m", "engine.cli", "sandbox", func, "--disable", "all"],
@@ -200,7 +217,7 @@ def main() -> int:
             if not body.endswith("\n"):
                 body += "\n"
             new_text = text[:start] + body + text[end:]
-            src.write_bytes(new_text.encode("utf-8"))
+            write_retry(src, new_text.encode("utf-8"))
             r = run_sandbox(a.func)
             rec = {"variant": str(p), "score": r.get("score"),
                    "build_insns": r.get("build_insns")}
@@ -219,9 +236,9 @@ def main() -> int:
                                                    errors="replace")
             if not body.endswith("\n"):
                 body += "\n"
-            src.write_bytes((text[:start] + body + text[end:]).encode("utf-8"))
+            write_retry(src, (text[:start] + body + text[end:]).encode("utf-8"))
         else:
-            src.write_bytes(original)
+            write_retry(src, original)
 
     results.sort(key=lambda r: (r["score"] is None, r["score"]))
     if a.json:

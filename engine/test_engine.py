@@ -3238,6 +3238,176 @@ def test_queue_rotation() -> None:
             Q.QUEUE_PATH = orig_path
 
 
+def test_queue_remeasure_source_integrity() -> None:
+    """2026-09-25 (queue commit c144a8556): the toolchain re-measure spliced
+    candidates into src/ through tools/sweep_variants.py, whose single restore
+    write DrvFS transiently refuses — candidates stayed spliced over
+    INCLUDE_ASM and later items measured against that dirt as null floors.
+    The re-measure now scores OUT OF TREE (sandbox candidate= copy) and runs
+    under a src/+include/ snapshot guard. Pinned: src/ + include/ come back
+    byte-identical on the normal path, when the scorer raises, and when an
+    exception escapes auto_return mid-loop; the scorer is handed the ledger
+    candidate (never a src/ splice); a scorer failure is a null floor WITH
+    its reason; --force-rescan re-measures on an unchanged fingerprint."""
+    import errno
+
+    def seed(qp: Path, items, fp) -> None:
+        qp.write_text(json.dumps({"items": items, "counts": {},
+                                  "toolchain_fingerprint": fp}, indent=2) + "\n")
+
+    def tree() -> dict:
+        return {p.as_posix(): p.read_bytes() for d in ("src", "include")
+                for p in sorted(Path(d).rglob("*")) if p.is_file()}
+
+    with tempfile.TemporaryDirectory() as td:
+        qp = Path(td) / "queue.json"
+        orig_path, orig_cwd = Q.QUEUE_PATH, os.getcwd()
+        orig_score = Q.sandbox.sandbox_score
+        Q.QUEUE_PATH = str(qp)
+        os.chdir(td)
+        try:
+            Path("src").mkdir()
+            Path("include").mkdir()
+            Path("src/a.c").write_bytes(b'#include "x.h"\nINCLUDE_ASM("asm/funcs", f_R);\n')
+            Path("include/x.h").write_bytes(b"typedef int s32;\n")
+            for f in ("f_R", "f_S"):
+                led = Path("memory/grind") / f
+                led.mkdir(parents=True)
+                (led / "candidate.c").write_text(f"s32 {f}(void) {{ return 0; }}\n")
+            before = tree()
+            base = {"file": "a", "distance": 9, "verdict": "C", "rules": 0,
+                    "status": "rotated", "rotated_at": "2026-01-01T00:00:00+00:00"}
+            items = [dict(base, func="f_R"), dict(base, func="f_S"),
+                     dict(base, func="f_N"),                       # no candidate.c
+                     {"func": "f_A", "file": "a", "distance": 1, "verdict": "C",
+                      "rules": 0, "status": "active"}]
+            calls = []
+
+            def dirty_scorer(func, disable="all", strip_cheat_asm=False, candidate=""):
+                # Simulates a scorer that splices in place and never restores.
+                calls.append((func, disable, strip_cheat_asm, candidate, tree() == before))
+                Path("src/a.c").write_bytes(b"s32 f_R(void) { return 0; }\n")
+                if func == "f_R":
+                    # files CREATED during the re-measure must go too
+                    Path("src/new.h").write_bytes(b"#define X 1\n")
+                    Path("include/sub").mkdir(exist_ok=True)
+                    Path("include/sub/new2.h").write_bytes(b"x\n")
+                if func == "f_S":
+                    Path("include/x.h").unlink()
+                    raise RuntimeError("C build failed for a\nSTDERR:\nsrc/a.c:1: parse error")
+                return {"score": 4, "scorable": True}
+
+            # 1. normal + scorer-error paths, fingerprint moved
+            seed(qp, items, "stale-fingerprint")
+            Q.sandbox.sandbox_score = dirty_scorer
+            r = Q.auto_return(rescan=True)
+            eq("remeasure: src/ + include/ byte-identical after a dirtying scorer",
+               tree(), before)
+            eq("remeasure: restored + removed paths reported",
+               sorted(set(r["sources_restored"])),
+               ["include/sub/new2.h", "include/x.h", "src/a.c", "src/new.h"])
+            check("remeasure: files created during a re-measure are removed",
+                  not Path("src/new.h").exists() and not Path("include/sub/new2.h").exists())
+            eq("remeasure: scorer handed the ledger candidate out of tree",
+               [(c[0], c[1], c[2], Path(c[3]).as_posix()) for c in calls],
+               [("f_R", "all", True, "memory/grind/f_R/candidate.c"),
+                ("f_S", "all", True, "memory/grind/f_S/candidate.c")])
+            rows = {x["func"]: x for x in r["remeasured"]}
+            eq("remeasure: measured floor", rows["f_R"]["new"], 4)
+            eq("remeasure: scorer failure is a null floor", rows["f_S"]["new"], None)
+            check("remeasure: scorer failure carries its reason",
+                  "parse error" in rows["f_S"].get("error", ""))
+            eq("remeasure: missing candidate reason", rows["f_N"].get("error"), "no candidate.c")
+            eq("remeasure: only the measured mover returns",
+               [x["func"] for x in r["returned"]], ["f_R"])
+
+            check("remeasure: each item scored against a clean tree (no cascade)",
+                  all(c[4] for c in calls))
+
+            # 2. an interrupt ESCAPING the scorer and auto_return mid-loop
+            #    (BaseException: _remeasure_candidate's `except Exception`
+            #    does not catch it) still restores
+            class Abort(BaseException):
+                pass
+
+            def aborting_scorer(func, disable="all", strip_cheat_asm=False, candidate=""):
+                Path("src/a.c").write_bytes(b"half-spliced")
+                raise Abort()
+            seed(qp, items, "stale-fingerprint")
+            Q.sandbox.sandbox_score = aborting_scorer
+            raised = False
+            try:
+                Q.auto_return(rescan=True)
+            except Abort:
+                raised = True
+            check("remeasure: escaping interrupt propagates", raised)
+            eq("remeasure: src/ + include/ byte-identical after an escaping interrupt",
+               tree(), before)
+
+            # 2b. a file the guard cannot READ back is rewritten, not given up on
+            import pathlib
+            real_read = pathlib.Path.read_bytes
+            state = {"armed": False}
+
+            def flaky_read(self):
+                if state["armed"] and self.as_posix() == "src/a.c":
+                    state["armed"] = False
+                    raise OSError(errno.EINVAL, "Invalid argument")
+                return real_read(self)
+
+            def unreadable_scorer(func, disable="all", strip_cheat_asm=False, candidate=""):
+                Path("src/a.c").write_bytes(b"spliced")
+                state["armed"] = True          # the guard's comparison read fails once
+                return {"score": 4, "scorable": True}
+            seed(qp, items, "stale-fingerprint")
+            Q.sandbox.sandbox_score = unreadable_scorer
+            pathlib.Path.read_bytes = flaky_read
+            try:
+                r = Q.auto_return(rescan=True)
+            finally:
+                pathlib.Path.read_bytes = real_read
+            check("remeasure: unreadable file is rewritten and reported",
+                  "src/a.c" in r["sources_restored"])
+            eq("remeasure: src/ + include/ byte-identical after an unreadable read-back",
+               tree(), before)
+            Q.sandbox.sandbox_score = dirty_scorer
+
+            # 3. unchanged fingerprint: no re-measure unless forced
+            seed(qp, items, Q.toolchain_fingerprint())
+            calls.clear()
+            r = Q.auto_return(rescan=True)
+            eq("remeasure: unchanged fingerprint re-measures nothing", calls, [])
+            r = Q.auto_return(rescan=True, force_rescan=True)
+            eq("remeasure: --force-rescan re-measures", [c[0] for c in calls], ["f_R", "f_S"])
+            check("remeasure: forced return names itself",
+                  "forced re-measure" in r["returned"][0]["reason"])
+            eq("remeasure: src/ + include/ byte-identical after a forced re-measure",
+               tree(), before)
+
+            # 4. the restore write rides out DrvFS's transient EINVAL
+            class Flaky:
+                def __init__(self, fails):
+                    self.fails, self.data = fails, None
+                def write_bytes(self, data):
+                    if self.fails:
+                        self.fails -= 1
+                        raise OSError(errno.EINVAL, "Invalid argument")
+                    self.data = data
+            fl = Flaky(2)
+            Q._write_bytes_retry(fl, b"x", delay=0)
+            eq("remeasure: restore retries transient EINVAL", fl.data, b"x")
+            raised = False
+            try:
+                Q._write_bytes_retry(Flaky(99), b"x", attempts=3, delay=0)
+            except OSError:
+                raised = True
+            check("remeasure: a persistent write failure is loud", raised)
+        finally:
+            Q.sandbox.sandbox_score = orig_score
+            os.chdir(orig_cwd)
+            Q.QUEUE_PATH = orig_path
+
+
 def test_symtab_data_dlabels() -> None:
     """_symtab() resolves data symbols defined only as `dlabel`s in the data
     asm (2026-09-22): before, `D_800A13FC` vs `D_800A12FC+0x100` (one address)
@@ -3314,6 +3484,7 @@ def main() -> int:
     test_queue_hand_coded_tier()
     test_queue_write_serialization()
     test_queue_rotation()
+    test_queue_remeasure_source_integrity()
     test_canonical_build()
     test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")

@@ -783,35 +783,111 @@ def _sibling_moved_since(func: str, since: str) -> str | None:
     return None
 
 
-def _remeasure_candidate(func: str, stem: str):
+def _remeasure_candidate(func: str, stem: str) -> tuple[int | None, str]:
     """Honest floor of memory/grind/<func>/candidate.c on the CURRENT toolchain,
-    via tools/sweep_variants.py (in-tree splice + sandbox, source restored
-    byte-exact). None when there is no candidate or the sweep fails."""
+    as (score, error). Scored OUT OF TREE — the sandbox substitutes the body
+    into a copy of src/<stem>.c under tmp/sandbox/ — so src/ is never written.
+
+    Until 2026-09-25 this spliced the candidate into src/ via
+    tools/sweep_variants.py and relied on that subprocess to restore it. The
+    restore was one write that DrvFS transiently refuses (EINVAL on reopen,
+    right after the sandbox build reads the file); the sweep's `finally`
+    re-raised, the candidate stayed spliced over INCLUDE_ASM, the next item in
+    the same file then measured against that dirt, and the swallowed failure
+    read as a null floor (queue commit c144a8556)."""
     cand = Path(f"memory/grind/{func}/candidate.c")
     if not cand.is_file():
-        return None
+        return None, "no candidate.c"
     try:
-        r = subprocess.run([sys.executable, "tools/sweep_variants.py", "--func", func,
-                            "--file", stem, "--variants", str(cand), "--json"],
-                           capture_output=True, text=True, timeout=900)
-        res = json.loads(r.stdout)
-    except Exception:
-        return None
-    for row in res.get("results", []):
-        if row.get("variant") != "<baseline>" and isinstance(row.get("score"), int):
-            return row["score"]
-    return None
+        r = sandbox.sandbox_score(func, disable="all", strip_cheat_asm=True,
+                                  candidate=str(cand))
+    except Exception as e:
+        lines = [ln.strip() for ln in str(e).split("STDERR:", 1)[-1].splitlines()
+                 if ln.strip() and "warning" not in ln]
+        errs = [ln for ln in lines if re.search(
+            r"(?i)\berror\b|undeclared|conflicting types|already defined", ln)]
+        return None, f"{type(e).__name__}: {((errs or lines) or [''])[0]}"[:300]
+    score_ = r.get("score")
+    if isinstance(score_, int):
+        return score_, ""
+    return None, str(r.get("error") or "unscorable")[:300]
 
 
-def auto_return(rescan: bool = True) -> dict:
+# The trees a re-measure must leave byte-identical: the sources and headers
+# every src/<stem>.c compiles against.
+_REMEASURE_GUARDED = ("src", "include")
+
+
+def _write_bytes_retry(p: Path, data: bytes, attempts: int = 20,
+                       delay: float = 0.25) -> None:
+    """write_bytes that rides out DrvFS's transient EINVAL on /mnt/c (measured
+    2026-09-25: clears within ~0.5 s of a sandbox build reading the file)."""
+    for i in range(attempts):
+        try:
+            p.write_bytes(data)
+            return
+        except OSError:
+            if i == attempts - 1:
+                raise
+            time.sleep(delay)
+
+
+@contextlib.contextmanager
+def _source_tree_unchanged(restored: list[str]):
+    """Snapshot src/ + include/ bytes; on EVERY exit (normal, early return,
+    exception) put back any file that changed or vanished and append its path
+    to `restored`, and delete any file CREATED there (also appended). The
+    re-measure no longer writes src/ at all — this is the belt to that brace,
+    so no future scorer can leave a splice behind. A file that cannot be
+    restored or removed raises: silent dirt is the failure being fixed."""
+    def _files() -> list[Path]:
+        return [p for d in _REMEASURE_GUARDED
+                for p in sorted(Path(d).rglob("*")) if p.is_file()]
+
+    snap = {p: p.read_bytes() for p in _files()}
+    try:
+        yield
+    finally:
+        failed = []
+        for p, data in snap.items():
+            try:
+                same = p.is_file() and p.read_bytes() == data
+            except OSError:
+                same = False      # unreadable now: rewrite it rather than give up
+            if same:
+                continue
+            try:
+                _write_bytes_retry(p, data)
+                restored.append(p.as_posix())
+            except OSError as e:
+                failed.append(f"{p.as_posix()}: {e}")
+        for p in _files():
+            if p in snap:
+                continue
+            try:
+                p.unlink()
+                restored.append(p.as_posix())
+            except OSError as e:
+                failed.append(f"{p.as_posix()} (created during re-measure): {e}")
+        if failed:
+            raise RuntimeError("re-measure left source files changed and they could "
+                               "not be restored: " + "; ".join(failed))
+
+
+def auto_return(rescan: bool = True, force_rescan: bool = False) -> dict:
     """Bring rotated items back to active on the three mechanical triggers
     (ruling 1): (a) the active list is empty -> the oldest rotated item
     returns; (b) the toolchain fingerprint moved -> every rotated candidate is
     re-measured and any mover returns with its new floor; (c) a coupled
     sibling moved after the rotation -> the item returns for the transplant
     session. Each return carries an `unpark_reason`, so the driver's existing
-    unpark sync resets the exhaustion window. Also normalises legacy statuses."""
-    returned, remeasured = [], []
+    unpark sync resets the exhaustion window. Also normalises legacy statuses.
+
+    `force_rescan` re-measures as though the fingerprint had moved — the
+    recovery path when an earlier re-measure was corrupted (2026-09-25: the
+    in-tree splice bug fed later items dirty sources). It returns exactly
+    what a real move would: only items whose floor differs."""
+    returned, remeasured, restored = [], [], []
     with _locked():
         q = load()
         tok = _fingerprint()
@@ -821,6 +897,7 @@ def auto_return(rescan: bool = True) -> dict:
         fp_now = toolchain_fingerprint()
         fp_prev = q.get("toolchain_fingerprint")
         toolchain_moved = bool(rescan and fp_prev and fp_prev != fp_now)
+        remeasure = toolchain_moved or (rescan and force_rescan)
 
         def _ret(it, why):
             it["status"] = "active"
@@ -836,14 +913,24 @@ def auto_return(rescan: bool = True) -> dict:
             if moved:
                 _ret(it, f"auto-return: coupled sibling moved after rotation — {moved}")
                 continue
-            if toolchain_moved:
-                new = _remeasure_candidate(it["func"], it.get("file", ""))
+            if remeasure:
+                # Guarded PER ITEM, so one item's dirt can never become the
+                # next item's baseline (the c144a8556 cascade in src/main.c).
+                with _source_tree_unchanged(restored):
+                    new, err = _remeasure_candidate(it["func"], it.get("file", ""))
                 old = _ledger_floor(it["func"])
-                remeasured.append({"func": it["func"], "old": old, "new": new})
+                row = {"func": it["func"], "old": old, "new": new}
+                if err:
+                    row["error"] = err
+                remeasured.append(row)
                 if isinstance(new, int) and (old is None or new != old):
                     it["distance"] = new
-                    _ret(it, f"auto-return: toolchain change re-measure floor {old} -> {new} "
-                             f"(fingerprint {fp_prev} -> {fp_now})")
+                    if toolchain_moved:
+                        _ret(it, f"auto-return: toolchain change re-measure floor "
+                                 f"{old} -> {new} (fingerprint {fp_prev} -> {fp_now})")
+                    else:
+                        _ret(it, f"auto-return: forced re-measure floor {old} -> {new} "
+                                 f"(fingerprint {fp_now} unchanged)")
         if not any(it.get("status") == "active" for it in items):
             still = sorted((it for it in items if it.get("status") == ROTATED),
                            key=lambda it: str(it.get("rotated_at") or ""))
@@ -856,7 +943,8 @@ def auto_return(rescan: bool = True) -> dict:
             q["counts"] = _counts(items)
             save(q, expect=tok)
     return {"ok": True, "returned": returned, "remeasured": remeasured,
-            "toolchain_moved": toolchain_moved, "fingerprint": fp_now}
+            "toolchain_moved": toolchain_moved, "forced": bool(rescan and force_rescan),
+            "fingerprint": fp_now, "sources_restored": restored}
 
 
 def mark_foreclosed(func: str, reason: str = "") -> dict:

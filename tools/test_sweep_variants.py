@@ -2,7 +2,31 @@
 """Unit tests for tools/sweep_variants.py span finder. Run: python tools/test_sweep_variants.py -v"""
 import os, sys, unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from tools.sweep_variants import find_function_span
+from tools.sweep_variants import find_function_span, write_retry
+
+
+class TestWriteRetry(unittest.TestCase):
+    """The restore write must ride out DrvFS's transient EINVAL (2026-09-25:
+    one refused restore left candidates spliced into src/)."""
+
+    class Flaky:
+        def __init__(self, fails):
+            self.fails, self.data = fails, None
+
+        def write_bytes(self, data):
+            if self.fails:
+                self.fails -= 1
+                raise OSError(22, "Invalid argument")
+            self.data = data
+
+    def test_transient_failure_retried(self):
+        p = self.Flaky(3)
+        write_retry(p, b"orig", delay=0)
+        self.assertEqual(p.data, b"orig")
+
+    def test_persistent_failure_raises(self):
+        with self.assertRaises(OSError):
+            write_retry(self.Flaky(99), b"orig", attempts=3, delay=0)
 
 
 class TestSpan(unittest.TestCase):
