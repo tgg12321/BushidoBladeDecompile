@@ -327,7 +327,7 @@ ALL of (A)-(C):
   with an added or dropped statement, or a unit with any other edited
   character is NOT a qualifying unit. That includes an equivalent-encoding
   respelling such as `0($12)` for the header's `($12)`. Admitting such a
-  respelling needs its own owner ruling.
+  respelling needs its own owner ruling. (One such ruling exists, for scoring only: the second-batch amendment below makes the recognizer treat `0(reg)` as equal to `(reg)` in a memory operand, and nothing else. It does not rule on admission.)
 - **(B) It talks to the GTE.** The unit's expansion contains at least one
   GTE/cop2 instruction. A macro whose whole expansion is GPR-only or `nop`,
   such as a standalone `gte_nop()`, is not a qualifying unit on its own, and
@@ -365,7 +365,9 @@ stands unchanged:
 
 This ruling does not create that row for func_800288C8 or any other function,
 and the owner's approval of the recommendation is not an instruction to add
-one. func_800288C8 also failed separately on its `tbl` copy.
+one. func_800288C8 also failed separately on its `tbl` copy. (The
+second-batch ruling below settles func_800288C8's row: none is granted now,
+and it is granted when a body passes review.)
 
 **Engine-change requirements** (all required before the fix lands):
 1. **Check func_80018300 first.** func_80018300 reached sandbox 0 (307/307)
@@ -381,7 +383,8 @@ one. func_800288C8 also failed separately on its `tbl` copy.
    Negative cases, each stripped exactly as today:
    - a lone byte-identical `move $12,%0` with no following macro statement;
    - a unit with one character edited: a dropped clobber, a changed
-     constraint, or `0($12)`;
+     constraint, or `0($12)` (the second-batch amendment below moves
+     `0($12)` to the positive cases and adds its own negatives);
    - a unit with an extra `nop` statement inserted or appended;
    - a reordered unit;
    - a unit split by an intervening C statement;
@@ -394,6 +397,82 @@ one. func_800288C8 also failed separately on its `tbl` copy.
 
 Record: docs/grind/decisions.md 2026-09-25 OWNER RULING — scorer:
 header-exact GTE macro statements.
+
+#### Scorer amendment (owner, 2026-09-25, second batch) — `0(reg)` equals `(reg)`
+
+**Question and answer.** The first-batch record flagged a gap in (A).
+func_800288C8's islands write the header's `swc2 $31,($12)` as
+`swc2 $31,0($12)`, because maspsx cannot parse the bare form. Under (A) that
+is an edit, so even the fixed scorer (de71fb41f, which pins `0($12)` as a
+negative in `engine test`) strips the unit. After the first batch was carried
+out, the operator reported three open decisions and the owner asked,
+verbatim, "What are your recommendations?". The operator's recommendation on
+func_800288C8, verbatim:
+
+> ## 3. func_800288C8's approval entry: don't grant it yet
+> **Recommendation: no per-function entry until a body passes review.** The
+> body separately failed on `tbl`, a pointless copy, so an entry now would
+> authorise a function that can't land.
+>
+> One narrow fix is worth making now. Our assembler (maspsx) can't parse the
+> header's `($12)`, so it has to be written `0($12)`, which assembles to
+> identical bytes. I'd let the macro recogniser treat `0(reg)` and `(reg)` as
+> the same. It's a forced difference in assembler syntax, not an edit to the
+> macro, and without it the verbatim-macro fix can never apply to the store
+> macros. Every other part of the match stays exact. When func_800288C8 later
+> has a passing body, grant its entry then.
+
+Owner (Trenton), verbatim, answering all three recommendations together:
+**"Go ahead with your recommendations"**.
+
+**Rule text.** This is the author's narrowing of that recommendation, not the
+owner's words. When the engine's unit recognizer (`engine/gtemacro.py`)
+compares a statement with the pinned header text under (A), it treats a
+memory operand written `0(REG)` as equal to one written `(REG)`, in either
+direction, when REG is the header's register. The grounds are the
+recommendation's: maspsx cannot parse the header's `($12)`, and the two
+spellings assemble to identical bytes. **Nothing else is normalized.** Each of
+these is still an edit: the run is not a qualifying unit and is stripped
+exactly as today.
+- **Any other offset.** `4($12)` for `($12)`, `($12)` or `0($12)` for a
+  header `4($12)`, and every other spelling of zero: `0x0($12)`, `00($12)`,
+  `-0($12)`, `+0($12)`. Only the single character `0` is equal to an empty
+  offset. The zero-spelling list is the author's narrowing.
+- **Any other register.** `0($13)` for `($12)`, or `$12` spelled any other
+  way.
+- **Any other edit.** Everything (A) lists stays an edit. The equivalence
+  applies only to a memory operand inside an instruction's text. It never
+  applies to operand constraints, clobber lists or operand expressions.
+
+**Engine requirements** (an `engine:` commit with a layer-2 cheat-reviewer, as
+for the scorer ruling):
+- `engine test` moves `0($12)` for the header's `($12)` into the positive
+  cases: a six-statement `gte_Lzc` whose `swc2` is written `0($12)` is kept
+  whole.
+- It pins each negative above: `4($12)`, `0x0($12)`, `00($12)`, `0($13)`, and
+  a `0(...)` rewrite outside a memory operand.
+- It records the tree-wide before/after distances, and every function whose
+  distance changes must carry a unit that the equivalence completes.
+
+**Scope.** This amends the recognizer only. "Scoring is not admission" holds
+unchanged. The region hashes pin each island as written, and every admission
+route keeps its own terms and its own reviewer.
+
+**func_800288C8's row.** No per-function `tools/grinder/owner_cluster_grants.txt`
+row is granted now. Per the approved recommendation ("When func_800288C8
+later has a passing body, grant its entry then"), the row is granted when a
+func_800288C8 body passes review. The author's reading of "passes review" is
+that all of the following hold:
+- `sandbox --disable all` is 0 under the fixed scorer;
+- the full-build SHA1 matches the oracle;
+- a fresh layer-2 cheat-reviewer PASSes every construct in the body and states
+  that the missing row is the only outstanding item.
+
+The operator then adds the row, citing this ruling, in its own commit before
+the body lands. The body that lands is byte-identical to the body the layer-2 PASSed. No new owner question is needed. A body that still carries
+the `tbl` copy, or anything else a reviewer FAILs, gets no row. Record:
+docs/grind/decisions.md 2026-09-25 OWNER RULING — scorer amendment `0(reg)`
+≡ `(reg)`, and 2026-09-25 OWNER RULING — func_800288C8 owner-cluster row.
 
 # Why this distinction matters
 

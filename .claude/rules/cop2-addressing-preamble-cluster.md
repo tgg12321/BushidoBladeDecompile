@@ -109,7 +109,9 @@ check, not a lever — it does not lower anyone's distance:
    this is measured, not the bar. Once its engine fix lands, pinned by
    `engine test`, the statements of a qualifying header macro unit are scored
    as written. Until then the check is computed as today. The ruling admits
-   no island; the rest of this check applies unchanged;
+   no island; the rest of this check applies unchanged. (Its second-batch
+   amendment, 2026-09-25, makes `0(reg)` equal to `(reg)` in a memory
+   operand when units are recognized. Nothing else is normalized.);
 2. **zero** register pins, zero `move %0,%1` aliasing blocks, zero scheduling
    barriers anywhere in the body;
 3. in-island GPR instructions limited to the **cop2 addressing preamble** —

@@ -29247,3 +29247,236 @@ INCLUDE_ASM" for func_80079A30 was stale, since sprintf is C in src/text1b_b.c. 
 not route a Ruling 10 variable to Ruling 10; Ruling 9's still-banned list omitted func_80057E84
 `vtx`/`node`, func_800288C8 `tbl` and func_8002A458 `lzc_in`; Ruling 9 (e) did not cover the last
 consumer store). The reviewer's replacement wordings were applied verbatim.
+
+## 2026-09-25 — OWNER RULING — Ruling 9 amendment (b′): the layout the code assumes (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question (second batch, 2026-09-25; the borderline.md entry "func_800759D0 — Ruling 9 (b) on a
+latent-bug path"). After the first batch (c3e7a0b9e) was carried out, the operator reported three
+open decisions and the owner asked, verbatim, "What are your recommendations?". The operator's report
+of the questions is not recorded verbatim. This paraphrase follows the recommendation and the
+borderline entry. func_800759D0 landed under Ruling 9 in 23045f51f and was reverted in da429a8c2. A
+combined layer-2 re-review found that on the unavailable-cell path, where func_80075F80 writes the
+placeholder 0x14, loop 2 computes `table[21] + 0x24`. D_SEL.BIN sheet [21] has one header and ends
+at 0xCA0, so 0xCA8 is past the record. Prong (b) failed at that write, and (f) failed on the false
+"three headers" comment. Should (b) be judged by the layout the code assumes rather than by the data
+on what looks like a latent bug in the original game?
+
+The operator recommended amending prong (b) narrowly and re-landing the function. Prong (b) exists to
+show that a variable has one meaning in the code, and that is a property of the source. Here the code
+consistently treats the sheets as 3-header sheets: the target addresses headers 1 and 2 at +12/+24,
+and the draw function walks the table as cells. Failing the function over one placeholder sheet read
+out of bounds would mean refusing to reproduce the original's own bug. The recommendation attached
+four conditions against a loophole:
+- the layout is established by the code's own accesses, not argued;
+- every write reaches a same-kind sub-object on every normal path;
+- every path where it doesn't is documented in the ledger as a reachable anomaly in the original,
+  with its trigger;
+- the source comment describes what the code assumes, not a claim about all the data.
+
+The recommendation is quoted verbatim in the rule file.
+
+Owner (Trenton), verbatim, answering all three recommendations together: "Go ahead with your
+recommendations".
+
+**Ruling (full text in the rule file, "Amendment (b′)"; the wording is the author's narrowing of the
+recommendation's four conditions, not the owner's words).** Prong (b)'s "at every write" is judged by
+the layout the code consistently imposes only when all four hold:
+- (1) the layout is established by the code's own accesses: target instructions and other readers of
+  the same object, cited by file and line;
+- (2) every write reaches a same-kind sub-object on every path the ledger shows to be normal;
+- (3) every other reachable path is documented in the ledger as an anomaly in the original (bad
+  data, placeholder, bug), with its trigger, the measured bytes, and why the access is malformed
+  under the assumed layout;
+- (4) the source comment describes the assumption. Prong (f) is amended to match.
+
+Every other prong is unchanged. (b′) does NOT admit a variable whose writes differ in meaning on
+normal paths, and does not reopen any banned item or the 2026-09-24 declined class. func_800759D0's
+reverted body may be re-submitted to a fresh layer-2 once its ledger and comment meet (b′). The
+outcome is not pre-decided. func_8007636C's re-audit PASS (71b14499d) is unaffected.
+
+**Author's interpretations (flagged for the rule-text layer-2):**
+1. "Measured bytes" in (3) is the author's addition. The recommendation named only the trigger.
+2. Anomaly test: A path is an anomaly only if BASE + K lies outside BASE's record (past its end or
+   before its start) as the original data lays it out. A path on which BASE + K lands inside a record
+   on a sub-object of a different kind is a second meaning and fails (b), however the code then uses
+   it. No anomaly record cures it. Without this test, any disagreeing path could be labelled an
+   "anomaly". Also, the `VAR = BASE + K` writes under judgment are not evidence of the layout; (1)
+   requires accesses other than those writes.
+3. "Normal" is defined by exclusion. A reachable path the ledger neither shows normal (census) nor
+   documents as an anomaly fails (b).
+
+**Rule-text layer-2:** round 1 FAILed on four wording defects and round 2 on the scan-result
+wording; the reviewer's replacement wordings were applied verbatim; round 3 PASS.
+
+## 2026-09-25 — OWNER RULING — oracle compiler adoption (second batch): the narrowed PLUS->IOR condition, after a register-plus-register scan (`docs/ORACLE-COMPILER.md`)
+
+Question (second batch, 2026-09-25; the borderline.md entry "func_80073C78 — compiler PLUS->IOR patch
+vs target `ori`", and § 9 of docs/ORACLE-COMPILER-STUDY-2026-09-25.md, ac5d2b0bb). This paraphrase
+follows the recommendation and the study's plain-language question. The study found a narrowed
+condition: rewrite `a + b` as `a | b` when the bits are disjoint, except for `(plus REG CONST_INT)`.
+Under it the unchanged tree builds to the oracle SHA1, func_80073C78's honest `+` body matches, `main`'s
+natural spelling matches, and site A keeps its `addiu`. A second condition, `exprop`, also fits every
+compiled site; the two differ only on register+register sums. Should the project switch to the
+narrowed compiler, or keep the current patch and re-test later?
+
+The operator recommended adopting, after one check. The current "never rewrite" patch is wrong in two
+places: func_80073C78 cannot match, and `main` needed a source workaround (granted 2026-08-11). The
+narrow rule reproduces the whole game and gets every known site right. Both give the oracle build, so
+adoption can't break the match, and it is more faithful. Before adopting, scan the target binary for
+register-plus-register `or`/`addu` sites whose operands provably share no bits. If one exists, it
+decides between the two rules. If none, adopt narrow and record `exprop` as a live alternative, with
+any future discriminating site reopening the choice. The adoption steps:
+- update the out-of-date manifest and fix the `--stock` self-check;
+- commit the patch to tools/;
+- rebuild the build compiler from the recipe;
+- confirm the oracle, engine tests and fixtures.
+
+The rotated functions are re-measured automatically. Then func_80073C78 lands from its natural code,
+and `main`'s workaround can be replaced. Among the "smaller items" handled without a ruling was the
+manifest: re-record the crash fix and the current build/cc1 hash, and fix `--stock`, "paperwork; the
+build doesn't change". The recommendation is quoted verbatim in ORACLE-COMPILER.md.
+
+Owner (Trenton), verbatim: "Go ahead with your recommendations".
+
+**Ruling (full text in docs/ORACLE-COMPILER.md § "Owner ruling 2026-09-25 (second batch)"; pointer in
+.claude/rules/no-compiler-divergence.md; the author's narrowing).**
+- (A) The register+register scan of `asm/funcs/*.s` comes first. The adoption commit records the
+  method, every site found, and a verdict for each.
+- (B) A site discriminates only when compiling the same C (committed C, or the ledger's honest
+  candidate) gives different bytes under narrow and `exprop`, and exactly one equals the shipped
+  bytes. A shipped-binary site whose function has no such C is recorded as pending.
+- (C) If discriminating sites exist and agree, adopt the selected candidate. If none exist, adopt
+  narrow (the study's § 4 patch exactly) and record `exprop` as live. If they disagree, or a site
+  matches neither candidate, nothing is adopted and the question returns to the owner. A selected
+  `exprop` must first be written as a fixed patch and pass the study's § 3 checks and full builds.
+- (D) The adopted condition is recorded as the best fit, not a recovered compiler. A later
+  discriminating site reopens the choice (borderline policy-question; a switch needs a fresh owner
+  ruling). No source-level workaround in either direction.
+- (E) Adoption steps, each required:
+  1. re-record the manifest (the 2026-08-24 reorg.c crash-fix block and the build/cc1 hash), with
+     the recipe applying the crash-fix declaration, and fix the `--stock` self-check;
+  2. commit the patch under tools/, replacing tools/cc1-no-plus-to-ior.patch, and re-record the
+     `simplify_rtx` invariant;
+  3. rebuild build/cc1 from the recipe, and the diagnostic cc1 with the same patch;
+  4. verify: `verify-oracle --rebuild` SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa, `engine test`,
+     `fixtures-verify`, and an oracle-manifest re-lock;
+  5. confirm the toolchain-fingerprint auto-return ran.
+
+  A layer-2 cheat-reviewer reviews the adoption diff.
+- (F) Afterwards, func_80073C78 may land from its honest `+` body, and `main`'s 2026-08-11 FAKE chain
+  may be replaced by the natural spelling. Each is an ordinary commit with its own layer-2 review,
+  and neither outcome is pre-decided.
+- (G) Items 1-5 of no-compiler-divergence stand for everything else. The adopted patch replaces the
+  old one as the only PLUS->IOR amendment.
+
+The ruling is phrased so that it does not depend on the scan result.
+
+**Scan result (2026-09-25): NO-DISCRIMINATING-SITE** (full text in ORACLE-COMPILER.md, "Scan
+result"). No site in the shipped binary currently decides between narrow and `exprop`, so under (C)
+narrow is selected, provisionally. Before adoption, the adoption commit compiles under both narrow and
+exprop every scanned site whose function has a `memory/grind/<func>/candidate.c` (at least
+func_8005D554), and records a per-site (B) verdict. If any of those sites discriminates, (C) applies to
+that result instead. `exprop` is recorded as a live alternative.
+- Why: the two rules differ only when a disjoint reg+reg sum's single use is a return value, a call
+  argument, or a copy (including into a u16/u8 local). None of the 14 in-block `addu` sites or 181
+  `or` sites in INCLUDE_ASM functions is consumed that way. The COMPLETED-C tree compiles identically
+  under both rules.
+- Sites to re-check when worked: func_800620B8 @0x800624B4, func_800646E8 @0x80064908 and
+  func_80065800 @0x80065F2C. These favour `exprop` only if their honest C needs a u16 temporary,
+  which would reopen the choice under (D).
+- Limits: confidence that no shipped site decides is moderate, because the scanner walks each block
+  linearly. Confidence that the COMPLETED-C tree cannot decide is high.
+- The adoption commit records the scanner and its site list in-tree, as (A) requires.
+
+**Author's interpretations (flagged for the rule-text layer-2):**
+1. "Discriminating" is read as compile-proven. The recommendation says a scan site "decides". The
+   study already lists register+register kept-`addu` sites in INCLUDE_ASM functions (func_80067D14,
+   func_80063084 and others), and says their C may again make them neutral: under stock, 280 of 281
+   rewrites never reached the final code. Treating a raw binary site as decisive would pick `exprop`
+   on evidence the study calls untested. Those sites are recorded as pending instead.
+2. The recipe applies the crash-fix declaration. Study § 7 found that the recipe applies only the
+   PLUS->IOR patch, so "rebuild from the recipe" would otherwise drop an owner-approved fix.
+3. The author added three steps: the diagnostic-compiler rebuild (ORACLE-COMPILER.md requires the two
+   compilers to agree), the oracle-manifest re-lock (the fea9fa2ac precedent), and the layer-2 on the
+   adoption diff.
+4. The case where discriminating sites disagree, or a site matches neither candidate, is not covered
+   by the owner's words. It returns to the owner.
+
+**Rule-text layer-2:** round 1 FAILed on four wording defects and round 2 on the scan-result
+wording; the reviewer's replacement wordings were applied verbatim; round 3 PASS.
+
+## 2026-09-25 — OWNER RULING — scorer amendment `0(reg)` ≡ `(reg)` (`.claude/rules/inline-asm-policy.md`)
+
+Question (second batch, 2026-09-25; the borderline.md entry "func_800288C8 — scorer strips verbatim
+header GTE statements", and interpretation 3 of the first-batch scorer record). This paraphrase
+follows the recommendation. func_800288C8's islands write the header's `swc2 $31,($12)` as
+`0($12)`, because maspsx cannot parse the bare form. Under the scorer ruling's (A) that is an edit,
+and the fixed scorer (de71fb41f) pins it as a negative, so the unit is stripped. Should the
+recognizer treat the two spellings as equal?
+
+The operator recommended one narrow fix. The two spellings assemble to identical bytes, and the
+difference is forced by assembler syntax rather than being an edit to the macro. Without the fix, the
+verbatim-macro fix can never apply to the store macros. Every other part of the match stays exact.
+The recommendation is quoted verbatim in the rule file.
+
+Owner (Trenton), verbatim: "Go ahead with your recommendations".
+
+**Ruling (full text in inline-asm-policy.md § "Scorer amendment (owner, 2026-09-25, second batch)";
+the author's narrowing).**
+- The GTE-macro unit recognizer treats a memory operand `0(REG)` as equal to `(REG)`, in either
+  direction, when REG is the header's register. Nothing else is normalized.
+- Negatives, each still an edit:
+  - any other offset (`4($12)`, and `0x0`, `00`, `-0` and `+0` as spellings of zero);
+  - any other register (`0($13)`, or `$12` spelled another way);
+  - any other edit;
+  - the equivalence applied outside a memory operand in an instruction's text.
+- `engine test` moves `0($12)` to the positive cases and pins each negative. An `engine:` commit
+  records tree-wide before/after distances and gets a layer-2 cheat-reviewer.
+- Scoring is not admission: region hashes pin islands as written, and every admission route keeps
+  its own terms and reviewer.
+
+**Author's interpretations (flagged for the rule-text layer-2):**
+1. Only the single character `0` equals an empty offset. The other spellings of zero are the author's
+   narrowing.
+2. The amendment is scoped to the scorer's recognizer, as the recommendation worded it. It does not
+   itself rule on whether an admission reviewer treats `0($12)` as verbatim. The recommendation's
+   ground ("a forced difference in assembler syntax, not an edit to the macro") is on record for that
+   reviewer.
+
+**Rule-text layer-2:** round 1 FAILed on four wording defects and round 2 on the scan-result
+wording; the reviewer's replacement wordings were applied verbatim; round 3 PASS.
+
+## 2026-09-25 — OWNER RULING — func_800288C8 owner-cluster row: none now; granted when a body passes review (`.claude/rules/inline-asm-policy.md`)
+
+Question (second batch, 2026-09-25; the borderline.md entry "func_800288C8 — scorer strips verbatim
+header GTE statements"). This paraphrase follows the recommendation. The first-batch scorer ruling
+kept every admission requirement for func_800288C8, including an owner-instructed
+tools/grinder/owner_cluster_grants.txt row for the inline_o.h class, and created none. Should that
+per-function row be granted now?
+
+The operator recommended no per-function entry until a body passes review. The body separately
+failed on `tbl`, a pointless copy, so an entry now would authorise a function that can't land. "When
+func_800288C8 later has a passing body, grant its entry then." The recommendation is quoted verbatim
+in the rule file.
+
+Owner (Trenton), verbatim: "Go ahead with your recommendations".
+
+**Ruling (inline-asm-policy.md § "Scorer amendment (owner, 2026-09-25, second batch)", paragraph
+"func_800288C8's row"; the author's narrowing).**
+- No owner_cluster_grants.txt row for func_800288C8 is granted now.
+- The row is granted, with no new owner question, when a func_800288C8 body passes review. All three
+  of these must hold:
+  - `sandbox --disable all` is 0;
+  - the full-build SHA1 == oracle;
+  - a fresh layer-2 PASSes every construct and states that the row is the only outstanding item.
+- The operator adds the row, citing this ruling, in its own commit before the body lands. The body
+  that lands is byte-identical to the body the layer-2 PASSed.
+- A body still carrying the `tbl` copy, or anything else a reviewer FAILs, gets no row.
+
+**Author's interpretations (flagged for the rule-text layer-2):**
+1. "Passes review" is read as the three conditions above. A reviewer cannot PASS a body whose island
+   admission is missing, so the review states that the row is the only outstanding item.
+2. The approval is read as a standing instruction for this one function. It is not a class grant.
+
+**Rule-text layer-2:** round 1 FAILed on four wording defects and round 2 on the scan-result
+wording; the reviewer's replacement wordings were applied verbatim; round 3 PASS.

@@ -56,6 +56,25 @@ There is NO compiler-modification path on this project.
 > § "Owner ruling 2026-09-25". Items 1-5 above stand for everything outside
 > that study.
 
+> **Owner ruling 2026-09-25 (second batch) — adoption authorized, conditionally.**
+> The study's narrowed PLUS->IOR condition may REPLACE
+> `tools/cc1-no-plus-to-ior.patch`. First, a register-plus-register scan of the
+> target binary must be run. If a compile-proven discriminating site selects
+> `exprop`, `exprop` is adopted instead. If no site discriminates, narrow is
+> adopted and `exprop` stays a live alternative, and a later discriminating
+> site reopens the choice for the owner. If discriminating sites disagree, or a site matches neither candidate, nothing is adopted and the question returns to the owner. Adoption requires every step in the full terms, including:
+> - re-record the manifest, including the 2026-08-24 crash fix;
+> - fix the `--stock` self-check;
+> - commit the patch under `tools/`;
+> - rebuild the compiler from the recipe;
+> - pass the oracle SHA1, `engine test` and `fixtures-verify`;
+> - let the toolchain-fingerprint auto-return run.
+>
+> The adopted patch becomes the rule's only PLUS->IOR amendment. Items 1-5
+> above stand for everything else, and the `|`-for-`+` spelling stays
+> refused. Full terms: docs/ORACLE-COMPILER.md § "Owner ruling 2026-09-25
+> (second batch)".
+
 ## What this means for stuck functions
 
 When a function plateaus and the evidence chain ends at "GCC's

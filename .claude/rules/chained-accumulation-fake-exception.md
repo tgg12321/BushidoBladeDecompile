@@ -18,6 +18,15 @@ through the independent-review path (fresh layer-2 cheat-reviewer on this
 text, landed as its own commit, NOT shipped inside the match that uses it —
 [[review-discipline-before-commit]]).
 
+> **Note (owner ruling 2026-09-25, second batch; docs/ORACLE-COMPILER.md
+> § "Owner ruling 2026-09-25 (second batch)").** The PLUS->IOR study
+> (docs/ORACLE-COMPILER-STUDY-2026-09-25.md § 6.2) found that `main`'s natural
+> fresh-expression spelling matches under both candidate narrowed conditions
+> (narrow and `exprop`, study § 3). The fold that this family's grant works
+> around comes from the current patch. Once either condition is adopted, `main`'s chain MAY be replaced by the natural
+> spelling, in an ordinary commit with its own layer-2 review. This family and
+> its prongs are unchanged.
+
 ## What is sanctioned (exact scope — the grant's condition 4)
 
 A run of consecutive ordinary-C assignments to ONE live local variable that

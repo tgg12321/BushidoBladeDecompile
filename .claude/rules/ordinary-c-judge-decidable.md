@@ -775,7 +775,10 @@ on keeps its own annotation requirement.
   evidence. A write that reaches a sub-object of a different kind (e.g. a
   count at one offset and an image at another), or one that other readers use
   differently, fails (b). That is what "changes meaning between writes"
-  means here, and this ruling never extends to it.
+  means here, and this ruling never extends to it. Where every condition of
+  amendment (b′) below holds (owner, 2026-09-25, second batch), "at every
+  write" is judged by the layout the code assumes, and a documented anomaly
+  path does not by itself fail (b). Nothing else in this prong changes.
 - **(c) Read once, beside its write** (Ruling 5 1(c)). Each write is read
   exactly once, by the consumer. The write and its consumer sit in the same
   compound statement (the same `{ }` body, or both at function scope), the
@@ -801,7 +804,12 @@ on keeps its own annotation requirement.
   Single-letter names never qualify. Nor do the generic names Ruling 5 1(f)
   lists (`tmp`, `t`, `temp`, `val`, `v`, `ptr`, `p`, `new_var`,
   register-style names, `arg`/`argN`/`aN`), or a name true of only some
-  writes (e.g. `frame1`).
+  writes (e.g. `frame1`). Where (b) relies on amendment (b′), the name and
+  every source comment on the variable describe the meaning under the layout
+  the code assumes, and say so as what the code assumes (e.g. "loop 2 treats
+  every sheet as three headers"). A comment that states it as a fact about
+  all the data (e.g. "every sheet has three headers") fails (f) when a (b′)
+  anomaly path exists.
 - **(g) Nothing added, nothing reloaded** (Ruling 5 prong 2, unchanged).
   2(a)-(d) apply as written. In particular, the reuse spelling and the
   one-local-per-write spelling have the same statement list, and no write
@@ -856,6 +864,110 @@ in `$a1` at every site as the target does; per-site locals 25/364). Allocator
 effect alone is never sufficient. This ruling admits the effect only when the
 reuse reads as one meaning under (a)-(i). Record: docs/grind/decisions.md
 2026-09-25 OWNER RULING — Ruling 9.
+
+### Amendment (b′) (owner, 2026-09-25, second batch) — the layout the code assumes
+
+**Question and answer.** func_800759D0's body landed under Ruling 9 in
+23045f51f and was reverted in da429a8c2. A combined layer-2 re-review found
+one reachable write that is not a sub-object of its record. When the cursor
+is on an unavailable cell, func_80075F80 writes the placeholder 0x14 into the
+pick slot. In the same frame, loop 2 of func_800759D0 computes
+`cells = table[0x14 + 1] + 0x24`. D_SEL.BIN sheet [21] has one header and ends
+at 0xCA0, so +0x24 = 0xCA8 lies past the record. Prong (b) failed at that
+write, and (f) failed because the "three headers" comment was false there.
+The docs/grind/borderline.md entry "func_800759D0 — Ruling 9 (b) on a
+latent-bug path" asked the owner whether (b) should be judged by the layout
+the code assumes rather than by the data on a buggy path. After the first
+batch was carried out, the operator reported three open decisions and the
+owner asked, verbatim, "What are your recommendations?". The operator's
+recommendation on this one, verbatim:
+
+> ## 1. func_800759D0: judge Ruling 9 by the layout the code assumes
+> **Recommendation: amend prong (b) narrowly, then re-land the function.**
+>
+> The purpose of prong (b) is to show that a variable has one meaning in the
+> code, and that is a property of the source the programmer wrote. Here the
+> code consistently treats these sheets as 3-header sheets. The target itself
+> addresses headers 1 and 2 at +12/+24, and the draw function walks the table
+> as cells. The only problem is one placeholder sheet that is read out of
+> bounds. That's a data or state bug in the original game. Failing the
+> function for it means refusing to reproduce the original's own bug, which is
+> the opposite of the project's goal.
+>
+> To keep this from becoming a loophole, the amendment should require:
+> - the assumed layout is established by the code's own accesses (target
+>   instructions, other readers), not just argued;
+> - every write reaches a same-kind sub-object on every path shown to be
+>   normal;
+> - any path where it doesn't is documented in the ledger as a reachable
+>   anomaly in the original (bad data, a placeholder, a bug), with its
+>   trigger;
+> - the source comment describes what the code assumes, not a claim about all
+>   the data. The old "three headers" comment was false, which is why prong
+>   (f) failed.
+
+Owner (Trenton), verbatim, answering all three recommendations together:
+**"Go ahead with your recommendations"**.
+
+**Rule text.** This is the author's narrowing of that recommendation, not the
+owner's words. Conditions (1)-(4) are the recommendation's four, tightened
+where marked. In prong (b), "at every write, BASE + K is the address of a
+sub-object of that record, of ONE kind" is judged by the layout the code
+consistently imposes on BASE's record, instead of by the data at every
+reachable write, only when ALL of (1)-(4) hold:
+
+- **(1) The layout is established by the code, not argued.** The assumed
+  layout (record stride, header count, the sub-object at BASE + K) is shown by
+  the code's own accesses: instructions in the target function's bytes, and
+  other readers of the same object, cited by file and line. For
+  func_800759D0 these are the highlight step `s.sp18 + 12 + arg3 * 12`
+  (`asm/funcs/func_800759D0.s`:112 `addiu $s7,$v0,0xC` and the loops'
+  copies, per its ledger), which addresses headers 1 and 2, and
+  func_8007352C, which walks `.table` as 8-byte cells. A layout inferred only
+  from the data, from a name, or from the fact that the body matches is not
+  established. The `VAR = BASE + K` writes under judgment are not evidence of the layout. (1) requires accesses other than those writes.
+- **(2) Every normal path reaches a same-kind sub-object.** On every path the
+  ledger shows to be normal, every write reaches a sub-object of the kind the
+  assumed layout places at BASE + K. This is shown with (b)'s ordinary
+  evidence, for example a census of every record each write site reaches.
+  A path is normal unless (3) documents it as an anomaly.
+- **(3) Every other reachable path is a documented anomaly in the original.**
+  Each reachable path on which a write does not reach such a sub-object is
+  recorded in the ledger as an anomaly in the original game: bad data, a
+  placeholder, or a bug. The record gives:
+  - its trigger, meaning the state or input that reaches it (e.g. the 0x14
+    placeholder func_80075F80 writes for an unavailable cell);
+  - the measured bytes: the address BASE + K takes there and what the
+    original disc or EXE holds at it (e.g. sheet [21] at 0xC84 ends at 0xCA0;
+    +0x24 = 0xCA8). This requirement is the author's addition;
+  - why the access is malformed under the assumed layout.
+
+  A path is an anomaly only if BASE + K lies outside BASE's record (past its end or before its start) as the original data lays it out. A path on which BASE + K lands inside a record on a sub-object of a different kind is a second meaning and fails (b), however the code then uses it. No anomaly record cures it.
+  This test is the author's narrowing. A reachable path that the
+  ledger neither shows to be normal nor documents as an anomaly fails (b).
+- **(4) The comment describes the assumption.** Every source comment on the
+  variable describes what the code assumes, never a claim about all the data
+  (prong (f) as amended above).
+
+**What (b′) does not change.** Every other requirement of (b) stands: the
+`VAR = BASE + K;` form, one BASE spelled identically, no cast, call or other
+operator, K a nonzero integer constant, and the layout and reader evidence.
+Prongs (a) and (c)-(i), the exclusivity clause and the Known weakness stand
+unchanged. **(b′) does NOT admit a variable whose writes differ in meaning on
+normal paths.** If any normal path reaches a sub-object of a different kind,
+(b) fails exactly as before, and no anomaly record cures it. It does not
+reopen any item on the still-banned list above, nor the class the owner
+declined on 2026-09-24.
+
+**Application.** func_800759D0's reverted body
+(`memory/grind/func_800759D0/rejected/ruling9-cells-placeholder-overrun-0.c`)
+may be re-submitted to a fresh layer-2 under Ruling 9 with (b′). First, its
+ledger records (1)-(3) in the form above, and its declaration comment is
+rewritten to meet (4). The re-landing is an ordinary completion with its own
+layer-2 review, and this amendment does not pre-decide the outcome.
+func_8007636C's re-audit PASS (71b14499d) did not rely on (b′) and is
+unaffected. Record: docs/grind/decisions.md 2026-09-25 OWNER RULING — Ruling 9
+amendment (b′).
 
 ## Ruling 10 (owner, 2026-09-25) — verified original source, verbatim reuse
 
