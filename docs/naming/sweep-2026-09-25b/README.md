@@ -53,7 +53,11 @@ per vein — read before re-mining.
 - **Owner calls:** `_start` → `__SN_ENTRY_POINT` (`_start` is accurate; the 2026-08-07 style ruling
   only covers stripping a project prefix off a Sony name); `math_Distance3D`/`_16` (approximate —
   the proposed `_Shr2`/`_Shr4` suffix reads as "distance >> 2"; needs a spelling).
-- **Blocked on a dlabel split** (identity certain; the Sony symbol sits inside a wider asm dlabel,
+- **APPLIED in follow-up (c781d1760 + next commit, `data_manifest_followup.csv`):** the five dlabels were
+  split (byte-neutral) and `__heapsize`, `_ramsize`, `CD_cbread`, `DS_active` landed; `_spu_rev_offsetaddr`
+  no longer covers `_spu_rev_attr`; `g_vsync_timeout_deadline` and `g_file_heap_base` retired
+  (`g_rng_state` untouched). The six SNMAIN `__text`..`__bsslen` words stay unnamed (no code reference).
+- **Was blocked on a dlabel split** (identity certain; the Sony symbol sits inside a wider asm dlabel,
   so renaming would make the name cover neighbours): `__heapsize` (0x800A2670, dlabel 0x1C bytes,
   also covers `__text`…`__bsslen`), `_ramsize` (0x800A2690), `CD_cbread` (inside `CD_cbready`),
   `DS_active` (inside `CD_com`). The 2026-09-07 wave already landed one such over-wide name

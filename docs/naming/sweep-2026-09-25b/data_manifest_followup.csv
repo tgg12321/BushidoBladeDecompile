@@ -1,0 +1,3 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+0x800A2670,D_800A2670,__heapsize,libscan-verbatim,"LIBSN SNMAIN .data+8 XDEF __heapsize (SNMAIN .data base 0x800A2668 from its own relocs); _start stores the heap size there (sw a1 @0x80083750)",CONFIRM,"verify3-libsn: identity CONFIRM-grade; held only for dlabel extent (0x1C), split in c781d1760"
+0x800A2690,D_800A2690,_ramsize,libscan-xref,"SNDEF .data XDEF _ramsize (8 unique SNDEF bytes at 0x800A268C; default 0x800000 matches); _start loads it (lw @0x80083714)",CONFIRM,"verify3-libsn: identity CONFIRM-grade; held only for dlabel extent (0xC), split in c781d1760"

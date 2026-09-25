@@ -1377,11 +1377,11 @@ dlabel __heapbase
     /* 92E6C 800A266C 00000000 */ .word 0x00000000
 enddlabel __heapbase
 
-nonmatching D_800A2670
+nonmatching __heapsize
 
-dlabel D_800A2670
+dlabel __heapsize
     /* 92E70 800A2670 00000000 */ .word 0x00000000
-enddlabel D_800A2670
+enddlabel __heapsize
 
 nonmatching D_800A2674
 
@@ -1400,11 +1400,11 @@ dlabel _stacksize
     /* 92E8C 800A268C 00800000 */ .word 0x00008000
 enddlabel _stacksize
 
-nonmatching D_800A2690
+nonmatching _ramsize
 
-dlabel D_800A2690
+dlabel _ramsize
     /* 92E90 800A2690 00008000 */ .word 0x00800000
-enddlabel D_800A2690
+enddlabel _ramsize
 
 nonmatching D_800A2694
 
