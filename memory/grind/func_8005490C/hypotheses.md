@@ -41,5 +41,7 @@ Frontier (2026-09-25):
   locality honestly. None was found by reading the target.
 - Does any single-role structure make the subtract result live past the shift (for example a real
   second use of `z*c - x*sn`)? The target shows none.
-- Permuter, from the 47 candidate: not yet run. Earlier campaigns started from 38-42
-  multi-carrier bases.
+- Permuter from the 47 candidate (tmp/perm_490c_c, 3 workers, 18,864 iterations, 2026-09-25):
+  1660 -> 1453 permuter units, then flat. Finds were an addend swap (`s->unk14 + vec.vz`) and an
+  `i = s->unk10` counter-reuse carrier (inadmissible). The random basin is exhausted; the next
+  run should use directed PERM_* or a new structure.
