@@ -35,7 +35,6 @@ extern void game_Cleanup(void);
 
 
 
-extern s32 D_80102794;
 
 
 
@@ -713,7 +712,7 @@ s32 func_800388A8(void) {
         D_800A3204 = 0;
         D_800A3318 = 0;
     }
-    buttons = D_80102794;
+    buttons = D_80102788.pressed;
     if (buttons & 0x400040) {
         func_8005C650(1, 0x7F, 0x7F);
         if (D_800A3318 == 0) {
@@ -874,7 +873,7 @@ s32 func_80038988(void) {
 
 timer:
     D_800A3330--;
-    if ((u8)D_800A3330 == 0 || (D_80102794 & 0x100010)) {
+    if ((u8)D_800A3330 == 0 || (D_80102788.pressed & 0x100010)) {
         func_8005C650(2, 0x7F, 0x7F);
         result = 1;
     }
@@ -920,7 +919,7 @@ s32 func_80038C70(void) {
     if (D_800A3354 != 0) {
         func_8006BEC4(0xA, -1);
         D_800A334C--;
-        if (((u8)D_800A334C) == 0 || (D_80102794 & 0x100010)) {
+        if (((u8)D_800A334C) == 0 || (D_80102788.pressed & 0x100010)) {
             func_8005C650(2, 0x7F, 0x7F);
             D_800A3207 = 1;
             D_800A334C = 0x5A;
@@ -988,7 +987,7 @@ s32 func_80038C70(void) {
         if (D_800A3206 == 0) {
             D_800A3350 = 1;
         }
-        if (D_80102794 & 0x400040) {
+        if (D_80102788.pressed & 0x400040) {
             D_800A3206 = 0;
             func_8005C650(1, 0x7F, 0x7F);
             sel = 0xD;
@@ -1004,7 +1003,7 @@ s32 func_80038C70(void) {
             goto sel_dispatch;
         }
         sel = 0xC;
-        if ((D_80102794 & 0xA000A000U) != 0) {
+        if ((D_80102788.pressed & 0xA000A000U) != 0) {
             D_800A3206 = 1;
         }
         goto load_sel2;
@@ -1078,7 +1077,7 @@ sel_dispatch:
             break;
         case 6:
             D_800A334C--;
-            if (((u8)D_800A334C) == 0 || (D_80102794 & 0x100010)) {
+            if (((u8)D_800A334C) == 0 || (D_80102788.pressed & 0x100010)) {
                 func_8005C650(2, 0x7F, 0x7F);
                 result = 1;
                 break;
@@ -1093,7 +1092,7 @@ sel_dispatch:
             break;
         case 2: case 3: case 7: case 12:
             D_800A334C--;
-            if (((u8)D_800A334C) == 0 || (D_80102794 & 0x100010)) {
+            if (((u8)D_800A334C) == 0 || (D_80102788.pressed & 0x100010)) {
                 func_8005C650(2, 0x7F, 0x7F);
                 if (v0 != 7) {
                     result = 1;
@@ -1125,7 +1124,7 @@ sel_dispatch:
             goto sw4_L2;
         case 17:
         sw4_L2:
-            if (D_80102794 & 0x400040) {
+            if (D_80102788.pressed & 0x400040) {
                 func_8005C650(1, 0x7F, 0x7F);
                 if (v0 == 0) {
                     if (D_800A3350 != 0) {
@@ -1153,12 +1152,12 @@ sel_dispatch:
             goto sw4_buttons;
         case 10:
         sw4_buttons:
-            if (D_80102794 & 0x80008000U) {
+            if (D_80102788.pressed & 0x80008000U) {
                 func_8005C650(0, 0x7F, 0x7F);
                 D_800A3350 = 0;
                 break;
             }
-            if (D_80102794 & 0x20002000) {
+            if (D_80102788.pressed & 0x20002000) {
                 func_8005C650(0, 0x7F, 0x7F);
                 D_800A3350 = 1;
             }

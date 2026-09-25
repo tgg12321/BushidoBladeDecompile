@@ -35,7 +35,6 @@ extern void VSync(s32);
 
 
 
-extern s32 D_80102794;
 extern u8 *D_800A3894;
 
 
@@ -206,7 +205,7 @@ s32 func_8003AB44(void) {
             D_800A38AC = 3;
             break;
         case 2:
-            if (D_80102794 & 0x10) {
+            if (D_80102788.pressed & 0x10) {
                 goto fail;
             }
             if (_comb_control(3, 1, 0) == 0) {

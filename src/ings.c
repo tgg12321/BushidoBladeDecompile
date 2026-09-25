@@ -40,7 +40,6 @@ extern u8 D_800A30D4;
 extern u8 g_gpu_db_plus_0x40EC;
 extern u8 *g_gpu_ot_ptr;
 extern u32 D_800A38B4;
-extern u32 D_80102794;
 extern s32 D_800A30DC;
 
 
@@ -504,7 +503,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         DrawOTag(g_gpu_ot_ptr);
         D_800A36AC++;
 
-        padbits = D_80102794;
+        padbits = D_80102788.pressed;
         if (padbits & 0x100010) {
             func_8005C650(1, 0x7F, 0x7F);
             select = 0;
@@ -523,7 +522,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         }
 
         if ((special != 0) && (select >= 3)) {
-            if (D_80102794 & 0x80008000) {
+            if (D_80102788.pressed & 0x80008000) {
                 u8 shift;
                 s32 mask;
                 s32 bits;
@@ -534,7 +533,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
                 bits = D_800A3788;
                 bits |= mask;
                 D_800A3788 = bits;
-            } else if (D_80102794 & 0x20002000) {
+            } else if (D_80102788.pressed & 0x20002000) {
                 u8 shift;
                 s32 mask;
                 s32 bits;
@@ -667,7 +666,7 @@ loop:
 
     if (D_800A3834 != 1) goto loop;
     if (voice != 0) goto loop;
-    if (D_80102794 & 0x08000800u) goto call_func;
+    if (D_80102788.pressed & 0x08000800u) goto call_func;
     if (D_800A38DC != 2) goto loop;
     if (D_800A3713 == 0) goto loop;
     D_800A3713--;

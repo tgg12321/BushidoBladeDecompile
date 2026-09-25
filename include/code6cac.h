@@ -31,10 +31,28 @@ typedef struct {
  * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
  * far are named; the rest is reserved padding. */
 typedef struct PracticeMenuRec {
-    u8  unk_00[0x12];
+    u8  unk_00[0x6];
+    s16 unk_06;                    /* != 0: func_8001BE20 hands pad input to func_80055B60 */
+    u8  unk_08[0x12 - 0x8];
     s16 unk_12;
-    u8  unk_14[0x438];
+    u8  unk_14[0x34E - 0x14];
+    u8  unk_34E;                   /* written by func_8001BE20 for the OTHER record */
+    u8  unk_34F[0x44C - 0x34F];
 } PracticeMenuRec;                 /* sizeof == 0x44C */
+
+/* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
+ * frame from the two pads (one u16 half per player in each word):
+ * held = current bits, pressed = held & ~previous, released = ~held & previous,
+ * unheld = ~held; func_800194F4 resets it (4, 4, 0, 0, 0, -1).  func_8001BE20
+ * copies the whole record to its caller's buffer, and func_8001BE08 clears the
+ * four bit words of such a buffer. */
+typedef struct PadState {
+    s16 unk_00[4];                 /* [0..1] and [2..3] filled pairwise by func_80019568 */
+    u32 held;                      /* 0x08 */
+    u32 pressed;                   /* 0x0C */
+    u32 released;                  /* 0x10 */
+    u32 unheld;                    /* 0x14 */
+} PadState;                        /* sizeof == 0x18 */
 
 extern PracticeMenuRec g_practice_menu_table[];
 
@@ -415,7 +433,6 @@ extern u16 D_80101E9E;
 extern s32 g_cdread_expected_pos;
 extern s32 D_80101EA4;
 extern u8 D_80101EC8;
-extern s16 D_80101ECE;
 extern s16 D_80101ED2;
 extern s16 D_80101EDC;
 extern s16 D_80101EE8;
@@ -484,7 +501,6 @@ extern s32 D_80102110;
 extern s16 D_8010214E;
 extern s32 D_80102154;
 extern s16 D_801021E2;
-extern u8 D_80102216;
 extern s16 D_8010231A;
 extern u16 D_80102322;
 extern s16 D_80102334;
@@ -522,14 +538,7 @@ extern u8 D_80102784;
 extern u8 D_80102785;
 extern u8 D_80102786;
 extern u8 D_80102787;
-extern s16 D_80102788;
-extern s16 D_8010278A;
-extern s16 D_8010278C;
-extern s16 D_8010278E;
-extern s32 D_80102790;
-extern u8 D_80102795;
-extern s32 D_80102798;
-extern s32 D_8010279C;
+extern PadState D_80102788;
 extern s32 D_801027B0[][5];
 extern s32 D_801027B4;
 extern s32 D_801027B8;

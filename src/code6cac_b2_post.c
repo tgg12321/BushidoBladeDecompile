@@ -106,7 +106,6 @@ extern void file_LoadSoundData(void);
 extern u8 D_800A3740;
 extern u8 D_800A31D8;
 extern u8 D_800A31D9;
-extern s32 D_80102794;
 extern s32 D_80106A50;
 extern s32 rand(void);
 extern void func_80035618(s32);
@@ -186,13 +185,13 @@ void func_80035828(void) {
             func_800371E8(1);
         }
         D_800A37B8++;
-        if (D_80102790 != 0) {
+        if (D_80102788.held != 0) {
             D_800A37B8 = 1;
         }
         if (D_800A37B8 >= 0xCA9) {
             D_800A3834 = 0xF;
         }
-        ret = func_80077894(D_80102790, D_80102794);
+        ret = func_80077894(D_80102788.held, D_80102788.pressed);
         if (ret == 0) {
             break;
         }
@@ -221,7 +220,7 @@ void func_80035828(void) {
         }
         break;
     case 2:
-        switch (func_80077B30(D_80102790, D_80102794)) {
+        switch (func_80077B30(D_80102788.held, D_80102788.pressed)) {
         case -1:
         case 1:
             func_800372C0();
@@ -262,7 +261,7 @@ void func_80035828(void) {
         }
         break;
     case 3:
-        ret = func_800779C8(D_80102790, D_80102794);
+        ret = func_800779C8(D_80102788.held, D_80102788.pressed);
         if (ret == 0) {
             break;
         }
@@ -271,7 +270,7 @@ void func_80035828(void) {
         }
         goto check_quit;
     case 4:
-        ret = func_8007855C(D_80102794);
+        ret = func_8007855C(D_80102788.pressed);
         if (ret == 0) {
             break;
         }
@@ -280,7 +279,7 @@ void func_80035828(void) {
         }
         goto check_quit;
     case 5:
-        ret = func_80077A04(D_80102790, D_80102794);
+        ret = func_80077A04(D_80102788.held, D_80102788.pressed);
         if (ret == 0) {
             break;
         }
@@ -289,7 +288,7 @@ void func_80035828(void) {
         }
         goto check_cancel;
     case 6:
-        ret = func_80077A60(D_80102790, D_80102794);
+        ret = func_80077A60(D_80102788.held, D_80102788.pressed);
         if (ret == 0) {
             break;
         }
@@ -311,7 +310,7 @@ void func_80035828(void) {
         }
         break;
     case 10:
-        ret = func_80077AC0(D_80102790, D_80102794);
+        ret = func_80077AC0(D_80102788.held, D_80102788.pressed);
         if (ret == 0) {
             break;
         }

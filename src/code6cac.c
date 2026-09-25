@@ -39,7 +39,6 @@ extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
 extern void seq_Start(s32, s32);
 
-extern s32 D_80102794;
 
 extern u16 D_800A38C4;
 extern s16 D_80101F32;
@@ -970,17 +969,17 @@ void func_800194C0(s32 arg0) {
     D_800A3914 = (arg0 >> 8) & 0xF;
 }
 void func_800194F4(void) {
-    D_80102788 = 4;
-    D_8010278A = 4;
-    D_80102790 = 0;
-    D_80102794 = 0;
-    D_80102798 = 0;
-    D_8010279C = -1;
+    D_80102788.unk_00[0] = 4;
+    D_80102788.unk_00[1] = 4;
+    D_80102788.held = 0;
+    D_80102788.pressed = 0;
+    D_80102788.released = 0;
+    D_80102788.unheld = -1;
 }
 void func_80019534(void) {
     func_800194F4();
-    D_8010278C = 1;
-    D_8010278E = 1;
+    D_80102788.unk_00[2] = 1;
+    D_80102788.unk_00[3] = 1;
 }
 void func_80019568(s32 arg0) {
     struct {
@@ -996,7 +995,7 @@ void func_80019568(s32 arg0) {
     s32 i;
     s32 voice_mask;
     s32 old_mask;
-    s32 *p;
+    u32 *p;
     s16 *base_addr;
     s16 *dst1;
     s16 *dst0;
@@ -1076,7 +1075,7 @@ void func_80019568(s32 arg0) {
             switch (voice_state) {
             case 4:
             case 5:
-                if (D_8010278E == 0) {
+                if (D_80102788.unk_00[3] == 0) {
                     sp.voice_mask |= 0x08000800;
                 }
             case 0:
@@ -1084,7 +1083,7 @@ void func_80019568(s32 arg0) {
             case 2:
             case 3:
             case 6:
-                if (D_8010278C == 0) {
+                if (D_80102788.unk_00[2] == 0) {
                     sp.voice_mask |= 0x08000800;
                 }
                 break;
@@ -1095,7 +1094,7 @@ void func_80019568(s32 arg0) {
     func_8003A728((s32)&sp.output[0]);
 
     i = 0;
-    base_addr = &D_80102788;
+    base_addr = D_80102788.unk_00;
     dst1 = base_addr + 2;
     dst0 = base_addr;
     src = &sp.output[0];
@@ -1109,12 +1108,12 @@ void func_80019568(s32 arg0) {
         dst1++;
     } while (i < 2);
 
-    p = &D_80102790;
+    p = &D_80102788.held;
     old_mask = *p;
     *p = sp.voice_mask;
-    D_80102794 = sp.voice_mask & ~old_mask;
-    D_8010279C = ~sp.voice_mask;
-    D_80102798 = ~sp.voice_mask & old_mask;
+    D_80102788.pressed = sp.voice_mask & ~old_mask;
+    D_80102788.unheld = ~sp.voice_mask;
+    D_80102788.released = ~sp.voice_mask & old_mask;
 }
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 void func_8001979C(s32 arg0, u32 *arg1) {
@@ -1607,13 +1606,13 @@ void func_8001BCF0(u8 *arg0, s32 arg1) {
         D_800F6608.h12 = val - lhu_val;
     }
 }
-void func_8001BE08(s32 *arg0) {
-    arg0[2] = 0;
-    arg0[3] = 0;
-    arg0[4] = 0;
-    arg0[5] = -1;
+void func_8001BE08(PadState *arg0) {
+    arg0->held = 0;
+    arg0->pressed = 0;
+    arg0->released = 0;
+    arg0->unheld = -1;
 }
-void func_8001BE20(s32 arg0, GameObj *arg1);
+void func_8001BE20(s32 arg0, PadState *arg1);
 INCLUDE_ASM("asm/funcs", func_8001BE20);
 void func_8001C444(void) {
     D_80102778[1] = 0x800;
@@ -2156,7 +2155,7 @@ void func_8001E800(void) {
     }
 }
 void func_8001E878(void) {
-    s32 buf[6];
+    PadState buf;
     s32 v0;
     s32 *a0 = &D_80102030;
     u8 *s0;
@@ -2170,10 +2169,10 @@ void func_8001E878(void) {
     func_8001E404();
     func_80039320();
     func_8002006C();
-    func_8001BE20(0, (s32)buf);
-    func_80023F08(0, (s32)buf);
-    func_8001BE20(1, (s32)buf);
-    func_80023F08(1, (s32)buf);
+    func_8001BE20(0, &buf);
+    func_80023F08(0, (s32)&buf);
+    func_8001BE20(1, &buf);
+    func_80023F08(1, (s32)&buf);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2204,7 +2203,7 @@ void func_8001EA04(void) {
     D_800A3817 = v < 1;
 }
 void func_8001EA84(void) {
-    s32 sp10[6];
+    PadState sp10;
     s16 buf[4];
     s32 ret;
     u8 *base;
@@ -2219,9 +2218,9 @@ void func_8001EA84(void) {
     func_8001E404();
     func_80039320();
     func_8002006C();
-    func_8001BE08(sp10);
-    func_80023F08(0, (s32)sp10);
-    func_80023F08(1, (s32)sp10);
+    func_8001BE08(&sp10);
+    func_80023F08(0, (s32)&sp10);
+    func_80023F08(1, (s32)&sp10);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2234,14 +2233,14 @@ void func_8001EA84(void) {
     }
     if (D_800A3929 == 0) {
         D_800A38B4 = D_800A38B4 + ((func_8005C8A8(1, D_800A3817, D_800A38B4, 0) / 4) * 4);
-        if ((D_80102794 & 0x10001000) != 0) {
+        if ((D_80102788.pressed & 0x10001000) != 0) {
             func_8005C650(0, 0x7F, 0x7F);
             if (D_800A3817 != D_800A3804) {
                 D_800A3817 = D_800A3817 - 1;
             } else {
                 D_800A3817 = 2;
             }
-        } else if ((D_80102794 & 0x40004000) != 0) {
+        } else if ((D_80102788.pressed & 0x40004000) != 0) {
             func_8005C650(0, 0x7F, 0x7F);
             if (D_800A3817 == 2) {
                 D_800A3817 = D_800A3804;
@@ -2249,7 +2248,7 @@ void func_8001EA84(void) {
                 D_800A3817 = D_800A3817 + 1;
             }
         }
-        if ((D_80102794 & 0x400040) != 0) {
+        if ((D_80102788.pressed & 0x400040) != 0) {
             func_8005C650(1, 0x7F, 0x7F);
             D_800A3929 = (D_800A3817 == 0) ? 1 : 0x3C;
             if (D_800A3817 != 0) return;
@@ -2315,7 +2314,7 @@ void func_8001EEB4(void) {
     D_800A3834 = 0x11;
 }
 void func_8001EFA0(void) {
-    s32 sp10[6];
+    PadState sp10;
     s16 var_v0;
 
     D_800A37B8 += 1;
@@ -2324,9 +2323,9 @@ void func_8001EFA0(void) {
     func_8001E404();
     func_80039320();
     func_8002006C();
-    func_8001BE08(sp10);
-    func_80023F08(0, (s32)sp10);
-    func_80023F08(1, (s32)sp10);
+    func_8001BE08(&sp10);
+    func_80023F08(0, (s32)&sp10);
+    func_80023F08(1, (s32)&sp10);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2338,7 +2337,7 @@ void func_8001EFA0(void) {
         D_800A37B8 = 0x69;
     }
 
-    if (D_800A37B8 >= 0x69 || (D_80102794 & 0x400040)) {
+    if (D_800A37B8 >= 0x69 || (D_80102788.pressed & 0x400040)) {
         switch (D_800A38DC) {
         case 4:
             var_v0 = 0xC;
