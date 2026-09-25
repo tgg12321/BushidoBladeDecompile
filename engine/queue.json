@@ -9,7 +9,12 @@
       "distance": 347,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "rotated_at": "2026-09-25T03:11:32+00:00",
+      "rotation_count": 1,
+      "unparked_from": "honest floor 217/347 after independent semantic and m2c reconstructions; unresolved source-level fixed-point normalization, spill provenance, and polygon-loop geometry; see memory/grind/func_80053E9C/evidence.md",
+      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
+      "returned_at": "2026-09-25T03:34:56+00:00"
     },
     {
       "func": "func_8007636C",
@@ -17,7 +22,12 @@
       "distance": 348,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "rotated_at": "2026-09-25T03:15:28+00:00",
+      "rotation_count": 1,
+      "unparked_from": "honest floor 184/348 after fresh m2c and evidenced stack-descriptor reconstruction; unresolved SSA-local spill/frame and three-loop source geometry; see memory/grind/func_8007636C/evidence.md",
+      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
+      "returned_at": "2026-09-25T03:34:57+00:00"
     },
     {
       "func": "func_8002CD58",
@@ -25,7 +35,12 @@
       "distance": 352,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "rotated_at": "2026-09-25T03:16:21+00:00",
+      "rotation_count": 1,
+      "unparked_from": "canonical gate routes ASM-PARTIAL: 54/352 GTE/cop2 instructions across 24 regions; ordinary pure-C grind prohibited by docs/DECOMP_WORKFLOW.md; see memory/grind/func_8002CD58/evidence.md",
+      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
+      "returned_at": "2026-09-25T03:34:57+00:00"
     },
     {
       "func": "func_8006D808",
@@ -33,7 +48,12 @@
       "distance": 355,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "rotated_at": "2026-09-25T03:20:53+00:00",
+      "rotation_count": 1,
+      "unparked_from": "honest C floor 200/355 (202/355 signed-local variant); nested decimal renderer still source-level divergent and frame 0x90 vs 0x88; see memory/grind/func_8006D808/evidence.md",
+      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
+      "returned_at": "2026-09-25T03:34:58+00:00"
     },
     {
       "func": "func_80035828",
