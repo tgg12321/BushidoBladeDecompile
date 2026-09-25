@@ -292,7 +292,8 @@ at the point of use.
 **Resolution (2026-08-07).** The cause was found: only `build/cc1` carried a
 removal of `combine.c`'s PLUS→IOR conversion — an undocumented 2026-05-18
 compiler-patch experiment that had silently become the project compiler. That
-patch is now committed (`tools/cc1-no-plus-to-ior.patch`), the oracle compiler
+patch was committed (`tools/cc1-no-plus-to-ior.patch`; replaced on 2026-09-25 by
+the narrowed `tools/cc1-plus-to-ior-narrow.patch`, owner ruling `bcdc1648e`), the oracle compiler
 is rebuilt from it by `tools/build_oracle_cc1.sh`, and the instrumented cc1 is
 rebuilt from the same hooked sources **plus the same patch** by
 `tools/build_diagnostic_cc1.sh`. The two now agree on **all 32 TUs**, so

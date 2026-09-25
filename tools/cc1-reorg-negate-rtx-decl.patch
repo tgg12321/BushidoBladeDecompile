@@ -1,0 +1,40 @@
+Host-ABI crash fix for GCC 2.7.2's reorg.c: declare negate_rtx.
+
+Adopted 2026-08-24 (owner ruling 262930f1b, adoption fea9fa2ac;
+docs/grind/decisions.md 2026-08-24 "cc1 fork-crash fix"). It has been in the
+operative build/cc1 since then. It was pinned as a tracked recipe input on
+2026-09-25 under owner ruling bcdc1648e (docs/ORACLE-COMPILER.md, ruling item
+(E)1), because the recipe applied only the PLUS->IOR patch. A rebuild "from
+the recipe" would otherwise have silently dropped the approved fix.
+
+negate_rtx is declared only in expr.h, which reorg.c does not include. On a
+64-bit host the K&R implicit declaration truncates the returned rtx pointer to
+32 bits, and cc1 crashes in fill_slots_from_thread. The 32-bit original
+cc1psx never crashed. Codegen is unchanged wherever the unfixed compiler
+survives, and the full-build SHA1 pins it.
+
+This hunk reproduces byte-for-byte the block present in the live
+tools/gcc-2.7.2/reorg.c. Removing exactly that block from the live file gives
+the pre-crash-fix manifest hash 73a15a5245d2e7ad55fa9e3c42d724488b1892d6. It
+adds nothing else. Applied by tools/build_oracle_cc1.sh to the pinned
+upstream 43d1cdb67ed135879869b5266f01efaaada5e35a.
+
+diff --git a/reorg.c b/reorg.c
+--- a/reorg.c
++++ b/reorg.c
+@@ -130,6 +130,15 @@
+ #include "obstack.h"
+ #include "insn-attr.h"
+ 
++/* BB2 crash fix 2026-08-24 (owner ruling, decisions.md "cc1 fork-crash fix"):
++   negate_rtx is declared only in expr.h, which this file does not include.
++   On a 64-bit host the K&R implicit declaration truncates the returned rtx
++   pointer to 32 bits, and the garbage operand SIGSEGVs insn-recog via
++   arith_operand (fill_slots_from_thread increment-compensation path,
++   line ~3646). One-line acceptance fix; codegen pinned by the full-build
++   SHA1 oracle. */
++extern rtx negate_rtx PROTO((enum machine_mode, rtx));
++
+ #ifdef DELAY_SLOTS
+ 
+ #define obstack_chunk_alloc xmalloc

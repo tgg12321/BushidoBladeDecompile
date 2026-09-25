@@ -75,6 +75,12 @@ There is NO compiler-modification path on this project.
 > refused. Full terms: docs/ORACLE-COMPILER.md § "Owner ruling 2026-09-25
 > (second batch)".
 
+**Executed 2026-09-25.** No scanned site discriminated, so narrow was adopted:
+`tools/cc1-plus-to-ior-narrow.patch` replaced `tools/cc1-no-plus-to-ior.patch`,
+and the crash fix is pinned as `tools/cc1-reorg-negate-rtx-decl.patch`.
+`exprop` stays a live alternative. Record: docs/ORACLE-COMPILER.md § "Adoption
+record (2026-09-25)".
+
 ## What this means for stuck functions
 
 When a function plateaus and the evidence chain ends at "GCC's

@@ -71,7 +71,8 @@ SUGG_FFR = re.compile(
 # waived. It had never been about the BB2 hooks — the two binaries were simply
 # different builds, and only the build compiler carried the combine.c PLUS->IOR
 # removal. The instrumented cc1 is now rebuilt from the same hooked sources PLUS
-# tools/cc1-no-plus-to-ior.patch (tools/build_diagnostic_cc1.sh), and the two
+# the oracle's PLUS->IOR patch (tools/cc1-plus-to-ior-narrow.patch since the
+# 2026-09-25 adoption; tools/build_diagnostic_cc1.sh), and the two
 # agree on all 32 TUs — so every dump describes what the project actually
 # builds. Re-verify with `bash tools/build_diagnostic_cc1.sh` (no --install):
 # it reports the divergent stems, and "none" is the contract.

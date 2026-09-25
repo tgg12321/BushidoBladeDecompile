@@ -2,24 +2,31 @@
 # tools/build_oracle_cc1.sh — rebuild the project's cc1 from source.
 #
 # The oracle compiler is GCC 2.7.2 from the pinned upstream commit, built with
-# the recipe recovered by the 2026-08-07 forensics, plus ONE committed patch:
+# the recipe recovered by the 2026-08-07 forensics, plus TWO committed patches:
 #
 #   upstream : decompals/mips-gcc-2.7.2 @ 43d1cdb67ed135879869b5266f01efaaada5e35a
-#   patch    : tools/cc1-no-plus-to-ior.patch   (removes combine.c's PLUS->IOR
-#              conversion; read that file's header for the full rationale)
+#   patch    : tools/cc1-plus-to-ior-narrow.patch  (narrows combine.c's
+#              PLUS->IOR conversion: no rewrite of (plus REG CONST_INT); read
+#              that file's header for the full rationale)
+#   crashfix : tools/cc1-reorg-negate-rtx-decl.patch  (the owner-approved
+#              2026-08-24 host-ABI negate_rtx declaration in reorg.c;
+#              applied in EVERY mode — it is not a codegen change)
 #   recipe   : every object at -O0 (`-g`), combine.o ALONE at `-O`,
 #              `-fgnu89-inline` throughout (without it modern hosts fail to
 #              link: c-gperf.h's is_reserved_word is `__inline` without
 #              `static`)
 #
-# Owner election: docs/grind/decisions.md 2026-08-07 (d99ab6a6), background in
-# docs/ORACLE-COMPILER.md. Retention of the patch is MATCH-PROVEN, not a
-# fidelity claim; the fidelity question is logged open in that doc.
+# Owner rulings: docs/grind/decisions.md 2026-08-07 (d99ab6a6: reproducible
+# baseline), 2026-08-24 (262930f1b: crash fix), 2026-09-25 (bcdc1648e: the
+# narrowed PLUS->IOR condition replaces the old no-rewrite patch). Background
+# in docs/ORACLE-COMPILER.md. The narrowed condition is the best fit to the
+# evidence, not a recovered historical compiler; the question stays open there.
 #
 # Modes:
-#   (default)        the operative oracle compiler: pristine + the patch.
-#   --stock          pristine upstream, patch NOT applied. Research only — it
-#                    diverges from the oracle on ings + code6cac_b.
+#   (default)        the operative oracle compiler: pristine + both patches.
+#   --stock          pristine upstream + the crash fix only, PLUS->IOR patch
+#                    NOT applied. Research only — on the current tree it
+#                    diverges from the oracle at site A only (ings).
 #   --install        after a PASSing self-check, install over
 #                    tools/gcc-2.7.2/build/cc1, preserving the previous binary.
 #   --record-manifest  refresh tools/cc1_tu_expectation.txt from this build.
@@ -37,7 +44,8 @@ set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 1
 LIVE=tools/gcc-2.7.2
 SCRATCH=tmp/cc1build
-PATCH=tools/cc1-no-plus-to-ior.patch
+PATCH=tools/cc1-plus-to-ior-narrow.patch
+CRASHFIX=tools/cc1-reorg-negate-rtx-decl.patch
 EXPECT=tools/cc1_tu_expectation.txt
 UPSTREAM_PIN=43d1cdb67ed135879869b5266f01efaaada5e35a
 MODE=oracle
@@ -64,7 +72,7 @@ read -r -d '' MANIFEST <<'EOF'
 9b8f822a79a1945ac4b58ebfb243017d67b828c5  jump.c
 3fb248a6b2c85cd7e9e57b19f5df7daf62b3d5fe  local-alloc.c
 7ddde6b0f2b65172c5cc83be6165789f445953d9  reload1.c
-73a15a5245d2e7ad55fa9e3c42d724488b1892d6  reorg.c
+6e1cf6a97c169204304efd7427e066facb49d69f  reorg.c
 3668555e9cb7970b335a505aca4cfdda26e8fc49  sched.c
 24c5952113d88cbb96f5c9f7e7152147d1efb8a7  combine.c
 EOF
@@ -106,15 +114,22 @@ if [ "$HEADREV" != "$UPSTREAM_PIN" ]; then
   exit 1
 fi
 
+echo "== applying $CRASHFIX (every mode)"
+if ! git -C "$SCRATCH" apply --check "$PWD/$CRASHFIX" 2>&1; then
+  echo "FATAL: $CRASHFIX does not apply to the pinned upstream source" >&2; exit 1
+fi
+git -C "$SCRATCH" apply "$PWD/$CRASHFIX" || exit 1
+echo "   applied ($(git -C "$SCRATCH" diff --numstat -- reorg.c | awk '{print $1}') lines added to reorg.c)"
+
 if [ "$MODE" = oracle ]; then
   echo "== applying $PATCH"
   if ! git -C "$SCRATCH" apply --check "$PWD/$PATCH" 2>&1; then
     echo "FATAL: $PATCH does not apply to the pinned upstream source" >&2; exit 1
   fi
   git -C "$SCRATCH" apply "$PWD/$PATCH" || exit 1
-  echo "   applied ($(git -C "$SCRATCH" diff --numstat -- combine.c | awk '{print $2}') lines removed from combine.c)"
+  echo "   applied (combine.c +$(git -C "$SCRATCH" diff --numstat -- combine.c | awk '{print $1}') -$(git -C "$SCRATCH" diff --numstat -- combine.c | awk '{print $2}'))"
 else
-  echo "== --stock: patch NOT applied (research build; diverges from the oracle)"
+  echo "== --stock: PLUS->IOR patch NOT applied (research build; diverges from the oracle)"
 fi
 
 # ------------------------------------------------------------------ build ---
@@ -132,10 +147,10 @@ SR=$(nm --defined-only -S "$SCRATCH/cc1" 2>/dev/null | awk '$4=="simplify_rtx"{p
 SR=0x$(echo "$SR" | sed 's/^0*//')
 echo "   built : $SCRATCH/cc1  ($(stat -c%s "$SCRATCH/cc1") bytes)"
 echo "   sha1  : $SH"
-echo "   simplify_rtx: $SR   (oracle=0x39ab, stock=0x3a11)"
+echo "   simplify_rtx: $SR   (oracle/narrow=0x3a6a, stock=0x3a11; retired no-rewrite=0x39ab)"
 # The binary's own sha1 is NOT stable across rebuilds (host-toolchain metadata
 # leaks in); simplify_rtx's size and the emitted asm are the real invariants.
-EXPECT_SR=$([ "$MODE" = oracle ] && echo 0x39ab || echo 0x3a11)
+EXPECT_SR=$([ "$MODE" = oracle ] && echo 0x3a6a || echo 0x3a11)
 if [ "$SR" != "$EXPECT_SR" ]; then
   echo "FATAL: simplify_rtx is $SR, expected $EXPECT_SR for mode=$MODE" >&2; exit 1
 fi
@@ -144,13 +159,28 @@ fi
 # Behaviour over the project's TUs, not bytes. Reference preference order puts
 # a PRESERVED HISTORICAL binary first: comparing against the in-use build/cc1
 # would be circular once the recipe's own output is installed there.
+#
+# Since the 2026-09-25 adoption (bcdc1648e) the historical binary implements
+# the RETIRED no-rewrite condition, so it is an identity reference only where
+# the two conditions agree. They agree on every TU of the tree as adopted. The
+# expected divergence per mode, as measured, is listed below. A future src/
+# change that lands a site where the conditions differ must add its stem here
+# in the same change (e.g. func_80073C78's `+` body in text1b), and the full
+# `engine verify-oracle --rebuild` stays the authoritative gate.
+ORACLE_EXPECT_DIFF=""      # narrow vs historical no-rewrite: none on the adopted tree
+STOCK_EXPECT_DIFF="ings"   # stock vs historical no-rewrite: site A only (study § 1.1)
 F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
 W=tmp/cc1build_check; mkdir -p $W
 
 REF=""
+# cc1.PRE-RECIPE-0f438e42 is the retired no-rewrite compiler WITH the crash
+# fix (the operative binary 2026-08-24 .. 2026-09-25, kept by the adoption's
+# --install). The 045c9543 binaries predate the crash fix and segfault on five
+# current TUs, so they are only last-resort references.
 for c in "${REF_CC1:-}" \
+         "$LIVE/build/cc1.PRE-RECIPE-0f438e42" \
          "$LIVE/build/cc1.PRE-RECIPE-045c9543" \
          "$LIVE/build/cc1.ORACLE-BACKUP" \
          "/mnt/c/Users/Trenton/bb2-oracle-cc1-backup/cc1.oracle-compiler-045c9543"; do
@@ -183,14 +213,15 @@ if [ -n "$REF" ]; then
   done
   echo "   differing: ${bad:-none}${bad:+  ($lines line(s))}"
   case "$MODE" in
-    oracle)
-      if [ -z "$bad" ]; then echo "   PASS — behaviourally identical to the historical oracle on all $n TUs."
-      else echo "   FAIL — the oracle build must match the historical compiler exactly."; rc=1; fi ;;
-    stock)
-      if [ "$(echo $bad | tr ' ' '\n' | sort | tr '\n' ' ')" = "code6cac_b ings " ]; then
-        echo "   PASS — stock diverges only at the documented PLUS->IOR sites."
-      else echo "   FAIL — stock divergence outside the documented sites."; rc=1; fi ;;
+    oracle) WANT="$ORACLE_EXPECT_DIFF" ;;
+    stock)  WANT="$STOCK_EXPECT_DIFF" ;;
   esac
+  norm() { echo $* | tr ' ' '\n' | sed '/^$/d' | sort | tr '\n' ' '; }
+  if [ "$(norm $bad)" = "$(norm $WANT)" ]; then
+    echo "   PASS — divergence from the no-rewrite reference is exactly the expected set {${WANT:-none}}."
+  else
+    echo "   FAIL — expected divergence {${WANT:-none}}, measured {${bad:- none} }."; rc=1
+  fi
 elif [ -f "$EXPECT" ] && [ "$MODE" = oracle ]; then
   echo "== self-check: no reference binary on disk; using $EXPECT"
   RECDIG=$(awk '/^# src-digest /{print $3}' "$EXPECT")
@@ -212,7 +243,8 @@ fi
 
 if [ "$RECORD" = 1 ]; then
   { echo "# Per-TU asm digests emitted by the oracle compiler built from"
-    echo "# tools/build_oracle_cc1.sh + tools/cc1-no-plus-to-ior.patch."
+    echo "# tools/build_oracle_cc1.sh + tools/cc1-plus-to-ior-narrow.patch"
+    echo "# + tools/cc1-reorg-negate-rtx-decl.patch."
     echo "# Keyed to the source tree: they change whenever src/ or include/ does."
     echo "# Refresh with: bash tools/build_oracle_cc1.sh --record-manifest"
     echo "# src-digest $SRCDIG"

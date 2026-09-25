@@ -4,15 +4,17 @@
 from committed inputs by a committed script. It is no longer a binary that
 exists only as a file on one disk.
 
-> **Pending adoption (owner ruling 2026-09-25, second batch).** Replacing the
-> patch below with a narrowed PLUS->IOR condition is authorized, subject to a
-> register-plus-register scan of the target binary. See § "Owner ruling
-> 2026-09-25 (second batch)". Until the adoption commit lands, this page
-> describes the build as it stands.
+> **Adopted 2026-09-25 (owner ruling `bcdc1648e`, second batch).** The
+> narrowed PLUS->IOR condition replaced the old no-rewrite patch. The
+> per-site record the ruling requires is in § "Adoption record (2026-09-25)"
+> under the OPEN QUESTION.
 
 ```
 upstream : decompals/mips-gcc-2.7.2 @ 43d1cdb67ed135879869b5266f01efaaada5e35a
-patch    : tools/cc1-no-plus-to-ior.patch      (9 lines removed from combine.c)
+patch    : tools/cc1-plus-to-ior-narrow.patch     (combine.c: no PLUS->IOR
+           rewrite of (plus REG CONST_INT); +6 -1)
+crashfix : tools/cc1-reorg-negate-rtx-decl.patch  (reorg.c: the 2026-08-24
+           host-ABI negate_rtx declaration; +9, applied in every mode)
 recipe   : every object at -O0 (`-g`), combine.o ALONE at `-O`,
            `-fgnu89-inline` throughout
 build it : bash tools/build_oracle_cc1.sh              # verify in scratch
@@ -21,82 +23,91 @@ build it : bash tools/build_oracle_cc1.sh              # verify in scratch
 
 `tools/gcc-2.7.2/build/cc1` (Makefile:12) is the operative binary and is
 **exactly what that script produces**. `tools/gcc-2.7.2/` is gitignored, which
-is why the patch is tracked in `tools/` rather than applied in place; the
+is why the patches are tracked in `tools/` rather than applied in place. The
 script copies the tree to scratch, restores it to the pinned commit, applies
-the patch there, and never modifies the live tree.
+the patches there, and never modifies the live tree.
 
-The binary's own SHA1 is **not** the invariant — host-toolchain metadata leaks
-into it across environments. The invariants are `simplify_rtx`'s size
-(`0x39ab`) and, decisively, the assembly emitted for the project's TUs. The
-script's self-check asserts the latter; a full
-`engine verify-oracle --rebuild` against
-`62efab4f73f992798c43e8c730aa43baa10bb4fa` remains the authoritative gate.
+The binary's own SHA1 is **not** the invariant. Host-toolchain metadata leaks
+into it across environments, although on this host the recipe rebuilt
+`aa04d761…` identically twice. The invariants are `simplify_rtx`'s size
+(`0x3a6a`) and, decisively, the assembly emitted for the project's TUs. The
+script's self-check asserts the latter. A full `engine verify-oracle --rebuild`
+against `62efab4f73f992798c43e8c730aa43baa10bb4fa` remains the authoritative
+gate.
 
 | binary | SHA1 | what it is |
 |---|---|---|
-| operative `build/cc1` | `ea11be50d12f24c464123b705c29007efc04e4a8` | recipe output (2026-08-07 swap) |
-| `build/cc1.PRE-RECIPE-045c9543` | `045c9543d39ab8109583b92137c7adde084f7a25` | the historical binary it replaced |
+| operative `build/cc1` | `aa04d7619cd79215788d18d6870ebc6c8d1d822d` | recipe output, narrow + crash fix (2026-09-25 adoption) |
+| `build/cc1.PRE-RECIPE-0f438e42` | `0f438e42548d29798db86d50a76e54bd6f04b64a` | retired no-rewrite compiler with the crash fix. Operative 2026-08-24 to 2026-09-25. The self-check's no-rewrite reference. |
+| `build/cc1.PRE-CRASHFIX-045c9543` | `ea11be50d12f24c464123b705c29007efc04e4a8` | recipe output of the 2026-08-07 swap, operative until 2026-08-24. **The suffix is wrong**: the file is `ea11be50`, not `045c9543`. It is kept under that name because `oracle/manifest.json` `notes.cc1_build_2026_08_24` cites it. |
+| `build/cc1.PRE-RECIPE-045c9543` | `045c9543d39ab8109583b92137c7adde084f7a25` | the historical 2026-05-18 binary. Segfaults on 5 current TUs (no crash fix). |
 | `build/cc1.ORACLE-BACKUP` | `045c9543d39ab8109583b92137c7adde084f7a25` | same, kept as a backup |
 | off-tree backup | `045c9543d39ab8109583b92137c7adde084f7a25` | `C:\Users\Trenton\bb2-oracle-cc1-backup\cc1.oracle-compiler-045c9543` |
-| diagnostic `cc1` | `4096c6fddbc4125a2100507e1e0ac08e289008aa` | hooks + the same patch (see below) |
-| `cc1.PRE-PATCH-8384fd47` | `8384fd47cb51da369462a0ba0b83590eea88513a` | the unpatched diagnostic it replaced |
+| diagnostic `cc1` | `888dda6755596e3ac826c38c36be3103297cbac8` | hooks + the same narrow patch; the live `reorg.c` carries the crash fix (see below) |
+| `cc1.PRE-PATCH-4096c6fd` | `4096c6fddbc4125a2100507e1e0ac08e289008aa` | the diagnostic it replaced. It was no-rewrite and predated the crash fix, and segfaulted on 5 current TUs. |
+| `cc1.PRE-PATCH-8384fd47` | `8384fd47cb51da369462a0ba0b83590eea88513a` | the unpatched diagnostic before that |
 
-The two binaries are behaviourally identical: rebuilt-from-recipe vs the
-historical `045c9543` shows **zero** differing lines across all 32 TUs. That
-equivalence is what let the swap happen without touching a single source file.
+On the tree as adopted, the narrowed compiler and the retired no-rewrite
+compiler emit **identical** assembly on all 34 TUs. The sites where they
+differ, func_80073C78's `+` body and site C's natural spelling, need source
+that does not exist yet (study § 1.1). That equivalence is why the adoption
+changed no source file.
 
 **Verify the backups periodically — do not assume they persist.** The off-tree
-backup has been found missing twice, on both occasions after being created and
+backup has been found missing twice, both times after it had been created and
 hash-verified (once by the owner, once during the 2026-08-07 prep). Nothing
-explains the disappearances yet, so treat that path as unreliable until
-something does: re-check it with `sha1sum` rather than trusting its last known
-state, and keep the two in-tree copies as the working redundancy. The reason
-this matters is unchanged even now that the compiler is reproducible — the
-historical binary is the only non-circular reference the recipe's self-check
-has.
+explains the disappearances yet. Treat that path as unreliable until something
+does: re-check it with `sha1sum` rather than trusting its last known state,
+and keep the in-tree copies as the working redundancy.
 
 ## What the patch does, and what it does not claim
 
 Stock GCC 2.7.2 rewrites `a + b` into `a | b` whenever it can prove the
-operands share no bits. The patch removes that conversion, so the compiler
-emits `addu`/`addiu` where stock emits `or`/`ori`. That is the only
-behavioural difference — a from-pristine build with the patch is
-output-identical to the historical oracle on every TU, and `simplify_rtx`
-matches its size to the byte.
+operands share no bits. The adopted patch keeps that rewrite, **except** when
+the addition is a plain register plus a constant, `(plus REG CONST_INT)`.
+There the compiler emits `addu`/`addiu` where stock emits `or`/`ori`. Every
+other disjoint-bits addition is rewritten as stock does.
 
-Retention is **match-proven**: the full build links to the original
-executable's SHA1. It is **not** a claim about what the original PsyQ compiler
-did — see the open question below.
+The condition is the **best fit to the evidence**
+([ORACLE-COMPILER-STUDY-2026-09-25.md](ORACLE-COMPILER-STUDY-2026-09-25.md)).
+It is **not** a recovered historical compiler. The full build links to the
+original executable's SHA1, and the condition explains every compiled
+discriminating site:
+- site A keeps its `addiu`;
+- site C's natural spelling matches;
+- func_80073C78's `+` body gets its `ori`.
 
-The patch's origin is accidental. It came from a 2026-05-18 compiler-patch
-experiment whose output binary became the project compiler and was never
-reverted; `tools/gcc-2.7.2/` being gitignored is why that left no trace. The
+The study's `exprop` condition also fits and stays a live alternative. See
+the open question below.
+
+**History of the patch slot.** The previous patch,
+`tools/cc1-no-plus-to-ior.patch` (removed 2026-09-25), deleted the rewrite
+outright. Its origin was accidental: a 2026-05-18 compiler-patch experiment
+whose output binary became the project compiler and was never reverted. The
 2026-08-07 forensics
 ([docs/grind/cc1-forensics-2026-08-07.md](grind/cc1-forensics-2026-08-07.md))
-identified it.
+identified it. It was retained, match-proven, on the SOTN pattern (below),
+until the 2026-09-25 study showed that it was wrong at two sites.
 
-### Why it is kept rather than removed (owner election, `d99ab6a6`)
+### Why the compiler is a pinned, patched build (owner election, `d99ab6a6`)
 
-On the SOTN pattern. That project's `cc1-psx-26` is itself a **patched** GCC
-built from a pinned `decompals/old-gcc` commit and distributed as a
-hash-verified binary. The community bar is *visible, pinned, reproducible* —
-not *unpatched stock*. With the patch tracked, the upstream commit pinned, and
-the recipe scripted, this project now meets that bar.
+This follows the SOTN pattern. That project's `cc1-psx-26` is itself a
+**patched** GCC, built from a pinned `decompals/old-gcc` commit and
+distributed as a hash-verified binary. The community bar is *visible, pinned,
+reproducible*, not *unpatched stock*. With the patches tracked, the upstream
+commit pinned, and the recipe scripted, this project meets that bar.
 
 Removing the patch was the original 2026-08-07 election. It was revised on
 Phase-0 evidence, below.
 
 ### Scope note — `no-compiler-divergence`
 
-This single documented, owner-elected, match-proven patch is the **only**
-amendment to that rule. It is not a license to patch the compiler again. Any
-further divergence is still forbidden, and the rule's reasoning is otherwise
-unchanged. (The 2026-09-25 owner ruling below authorizes only a scratch-only
-study of a narrower patch. It changes nothing in the build, and adopting a
-variant would need its own owner ruling. That ruling is the second-batch
-ruling below: once adopted, the narrowed patch REPLACES this one as the
-rule's only PLUS->IOR amendment. The 2026-08-24 crash-fix declaration stays
-under its own owner ruling.)
+The adopted PLUS->IOR patch (owner ruling `bcdc1648e`) is that rule's
+**only** PLUS->IOR amendment. The 2026-08-24 crash-fix declaration stays in
+the recipe under its own owner ruling (`262930f1b`). It is not a codegen
+change. Neither is a license to patch the compiler again. Any further
+divergence is still forbidden, and the rule's reasoning is otherwise
+unchanged.
 
 ## OPEN QUESTION — did the original compiler perform this conversion?
 
@@ -141,6 +152,94 @@ It reports a partial answer: a narrowed rewrite, which skips only
 `(plus REG CONST_INT)`, fits every compiled site. The report also corrects
 two entries in the evidence lists above: sprintf is neutral, and site C's
 natural spelling needs the rewrite.
+
+### Adoption record (2026-09-25, owner ruling `bcdc1648e`)
+
+**Adopted condition: narrow**, meaning no PLUS->IOR rewrite of
+`(plus REG CONST_INT)`, in `tools/cc1-plus-to-ior-narrow.patch`. It is the
+**best fit to the evidence, not a recovered historical compiler**.
+
+**Live alternative: `exprop`.** `exprop` rewrites only when some operand is
+neither a REG nor a CONST_INT, or when a REG operand is known to be zero. It
+fits every compiled site, as narrow does. The two differ only on a disjoint
+register+register sum whose single use is a return value, a call argument or
+a copy (§ "Scan result" above). Under ruling item (D):
+- A later site that discriminates under (B) reopens the choice. It is
+  recorded here and logged to `docs/grind/borderline.md` as a
+  `policy-question`.
+- Switching needs a fresh owner ruling.
+- Until then, the function with that site stays INCOMPLETE.
+- No source-level workaround for either condition is admitted.
+
+**(A) Scan record.**
+- Scanner: `tools/rrscan_plus_ior.py`, committed. Run
+  `python3 tools/rrscan_plus_ior.py <out.tsv>` from the repo root.
+- Method: for every `addu`/`or` with two register operands in
+  `asm/funcs/*.s`, it traces each operand's producer backward (`andi`,
+  `lbu`/`lhu`, `sll`/`srl`, `slt*`, `lui`/`li`, `and`/`or`/`xor`, moves). It
+  derives a nonzero-bits mask from that producer and keeps the site when the
+  two masks are disjoint. It flags a site XBLOCK when the trace crosses a
+  label or branch, and it classifies the consumer of the result.
+- Site list: `docs/ORACLE-COMPILER-RRSCAN-2026-09-25.tsv`, 547 sites. Each
+  row gives the site's class (kept `addu` or `or`), its function's state
+  (C or INCLUDE_ASM, as of this adoption), and its (B) verdict.
+- Totals by function state:
+
+  | state | class | sites | (B) verdict |
+  |---|---|---|---|
+  | C | `addu` | 118 | not discriminating |
+  | C | `or` | 141 | not discriminating |
+  | INCLUDE_ASM with a ledger candidate | `addu` | 2 | not discriminating |
+  | INCLUDE_ASM with a ledger candidate | `or` | 29 | not discriminating |
+  | INCLUDE_ASM without C | `addu` | 105 | **pending** |
+  | INCLUDE_ASM without C | `or` | 152 | **pending** |
+
+  - Sites in COMPLETED-C functions are not discriminating. The committed
+    tree compiles to identical asm on all 34 TUs under narrow, under
+    `exprop` and under the retired no-rewrite compiler.
+  - Pending sites become (B) tests under (D) once their function's C
+    exists.
+  - `tmp/rrscan/report.md`, the pre-adoption run, found the same 547 sites.
+    Since then only func_800759D0's two sites have moved, from
+    INCLUDE_ASM to C.
+
+**Per-site (B) check before adoption.** Every scanned function with a
+`memory/grind/<func>/candidate.c` was compiled under both conditions:
+- narrow as the fixed recipe binary;
+- `exprop` as the study compiler's run-time policy.
+
+Each ledger candidate was spliced over its INCLUDE_ASM line with nothing else
+written. Committed C was compiled from its TU as it stands. The functions:
+
+| function | state | sites | narrow vs `exprop` | verdict |
+|---|---|---|---|---|
+| func_8001BE20 | INCLUDE_ASM + candidate | 16 | identical | not discriminating |
+| func_800204C0 | INCLUDE_ASM + candidate | 1 | identical | not discriminating |
+| func_8002DAD0 | INCLUDE_ASM + candidate | 2 | identical | not discriminating |
+| **func_8005D554** | INCLUDE_ASM + candidate | 1 | identical | not discriminating |
+| func_80073C78 | INCLUDE_ASM + candidate | 1 | identical (both emit the target `ori` pair; the retired compiler did not) | not discriminating |
+| func_8008B488 | INCLUDE_ASM + candidate | 10 | identical | not discriminating |
+| PutDispEnv, _SsVmKeyOnNow, func_8002CD58, func_8002EBDC, func_80031B24, func_8003FA24, func_80053E9C, func_8006295C, func_80063E10, func_800678A8, func_8006B578, func_8006D808, func_8006ECF4, func_80073728, func_800759D0, func_8007636C, prnt, vmNoiseOn | committed C (each also has a ledger candidate file) | 2–6 each | identical | not discriminating |
+
+Under (C): **no site discriminates, so narrow is adopted** and `exprop` stays
+the live alternative above.
+
+**(E) steps.** The manifest, `--stock` self-check and binary table are
+re-recorded (see § "Tracked state manifest" and the table at the top). The
+patch has been replaced. `build/cc1` and the diagnostic were rebuilt from the
+recipe. Verification:
+- `verify-oracle --rebuild`: `62efab4f73f992798c43e8c730aa43baa10bb4fa`,
+  drift empty after the re-lock;
+- `engine test`: 720/720;
+- `fixtures-verify`: 5/5;
+- `check_completion_integrity.py`: OK;
+- `oracle/manifest.json`: re-locked, with a `notes.cc1_build` provenance
+  entry.
+
+The toolchain fingerprint moved from `69f8ba78e94cf257` to `85cd2a73ee7a8972`.
+`queue auto-return` runs once this change has landed, on a clean tree,
+because queue operations can revert uncommitted tracked edits. The items it
+returns are recorded in the commit that follows.
 
 ### Owner ruling 2026-09-25 — keep the patch; a narrower patch may be STUDIED, not adopted
 
@@ -470,28 +569,36 @@ adoption (second batch).
 ## The diagnostic compiler
 
 `tools/gcc-2.7.2/cc1` is the same GCC carrying the `BB2_*_DEBUG` hooks that
-`ra_solver` / `sched_solver` read their dumps from. It is now built from the
-hooked sources **plus the same patch**, so it agrees with the oracle on all 32
-TUs. Rebuild it with `bash tools/build_diagnostic_cc1.sh [--install]`.
+`ra_solver` / `sched_solver` read their dumps from. It is built from the
+hooked live sources **plus the same PLUS->IOR patch** as the oracle
+(`tools/cc1-plus-to-ior-narrow.patch` since 2026-09-25), so it agrees with
+the oracle on all 34 TUs. The live `reorg.c` already carries the crash-fix
+declaration. Rebuild it with `bash tools/build_diagnostic_cc1.sh [--install]`.
 
-Before 2026-08-07 it lacked the patch and therefore disagreed with the build
-compiler on `ings` and `code6cac_b` — the gap formerly carried as
-`UNFAITHFUL_STEMS` in `tools/ra_solver/local_extract.py`. That set is now
-empty **on the merits**: the divergence was removed, not waived.
+The rebuild on 2026-09-25 (`888dda67…`) also brought the diagnostic up to the
+crash fix. Its predecessor (`4096c6fd…`, 2026-08-07) predated the fix and
+segfaulted on 5 current TUs: `code6cac_c`, `config`, `main`, `text1a_pre` and
+`text1b_b`.
 
-Hook inertness still holds: a cc1 built from pristine reverted sources is
-behaviourally identical to the fully instrumented one on all 32 TUs
+Before 2026-08-07 it lacked the oracle's PLUS->IOR patch, and so disagreed
+with the build compiler on `ings` and `code6cac_b`. That gap was formerly
+carried as `UNFAITHFUL_STEMS` in `tools/ra_solver/local_extract.py`. The set
+is now empty **on the merits**: the divergence was removed, not waived.
+
+Hook inertness still holds. A cc1 built from pristine reverted sources is
+behaviourally identical to the fully instrumented one on every TU
 (`cc1_hooks.patch.md` carries the details and the two behavioural-knob
-declaration rule). The oracle build reverts the hooks anyway — it must not
-depend on their inertness.
+declaration rule). The oracle build reverts the hooks anyway, because it must
+not depend on their inertness.
 
 ## Tracked state manifest of the gitignored compiler tree
 
-Edits inside `tools/gcc-2.7.2/` leave no trace in git; that is exactly how the
+Edits inside `tools/gcc-2.7.2/` leave no trace in git. That is exactly how the
 `combine.c` patch went unnoticed for three months. This manifest makes the
-tree's state detectable. `tools/build_oracle_cc1.sh` **refuses to run** if it
-drifts. Verify with `sha1sum` from `tools/gcc-2.7.2/`; any drift means the tree
-changed and must be re-recorded here, with rationale, in the same change.
+tree's state detectable, and `tools/build_oracle_cc1.sh` and
+`tools/build_diagnostic_cc1.sh` **refuse to run** if the sources drift. Verify
+with `sha1sum` from `tools/gcc-2.7.2/`. Any drift means the tree changed, and
+it must be re-recorded here, with rationale, in the same change.
 
 ```
 80c8088750a91b37ef53bea6da51d402c58801c8  flow.c            (BB2 debug hooks)
@@ -500,17 +607,29 @@ changed and must be re-recorded here, with rationale, in the same change.
 9b8f822a79a1945ac4b58ebfb243017d67b828c5  jump.c            (BB2 debug hooks)
 3fb248a6b2c85cd7e9e57b19f5df7daf62b3d5fe  local-alloc.c     (BB2 debug hooks incl. SUGG)
 7ddde6b0f2b65172c5cc83be6165789f445953d9  reload1.c         (BB2 debug hooks)
-73a15a5245d2e7ad55fa9e3c42d724488b1892d6  reorg.c           (BB2 hooks + 2 BEHAVIORAL knobs, inert unless set)
+6e1cf6a97c169204304efd7427e066facb49d69f  reorg.c           (BB2 hooks + 2 BEHAVIORAL knobs, inert unless set, + the 2026-08-24 crash-fix block)
 3668555e9cb7970b335a505aca4cfdda26e8fc49  sched.c           (BB2 debug hooks)
 24c5952113d88cbb96f5c9f7e7152147d1efb8a7  combine.c         (pristine — the patch is applied in scratch, never here)
-4096c6fddbc4125a2100507e1e0ac08e289008aa  cc1               (instrumented DIAGNOSTIC binary, patched)
-ea11be50d12f24c464123b705c29007efc04e4a8  build/cc1         (THE ORACLE COMPILER — recipe output)
+888dda6755596e3ac826c38c36be3103297cbac8  cc1               (instrumented DIAGNOSTIC binary, narrow patch)
+aa04d7619cd79215788d18d6870ebc6c8d1d822d  build/cc1         (THE ORACLE COMPILER — recipe output)
 ```
+
+**Re-recorded 2026-09-25 (owner ruling `bcdc1648e`, item (E)1).**
+- `reorg.c`: `73a15a52…` → `6e1cf6a9…`. The only change is the 2026-08-24
+  crash-fix block (owner ruling `262930f1b`, adopted in `fea9fa2ac`). That
+  adoption did not re-record this manifest. Removing exactly that block (the
+  comment, the `extern rtx negate_rtx PROTO(...)` line and one blank line)
+  from the live file gives `73a15a5245d2e7ad55fa9e3c42d724488b1892d6` again,
+  byte for byte. The same block is now the tracked recipe input
+  `tools/cc1-reorg-negate-rtx-decl.patch`, and nothing else is in that input.
+- `build/cc1`: `ea11be50…` became `0f438e42…` at the 2026-08-24 crash fix
+  (unrecorded here). The 2026-09-25 adoption then made it `aa04d761…`.
+- The diagnostic `cc1`: `4096c6fd…` → `888dda67…` (2026-09-25 rebuild).
 
 Note that `combine.c` in the live tree is and stays **pristine**: the patch is
 applied only to the scratch copy. Stale `.bb2bak` leftovers are exactly the
-untracked-edit pattern this manifest exists to catch — clean them, don't
-create more.
+untracked-edit pattern this manifest exists to catch. Clean them, don't create
+more.
 
 ## History
 
@@ -538,3 +657,12 @@ create more.
   `exprop` stays a live alternative. Adoption follows the steps in § Owner ruling
   2026-09-25 (second batch) and has not yet been executed. Record in docs/grind/decisions.md 2026-09-25
   OWNER RULING — oracle compiler adoption (second batch).
+- **2026-09-25 (adoption executed)** — the per-site (B) check found no
+  discriminating site among the scanned functions with a grind candidate, so
+  narrow was adopted under (C). `tools/cc1-plus-to-ior-narrow.patch` replaced
+  `tools/cc1-no-plus-to-ior.patch`, and the crash fix was pinned as
+  `tools/cc1-reorg-negate-rtx-decl.patch`. `build/cc1` was rebuilt from the
+  recipe (`aa04d761…`, `simplify_rtx` 0x3a6a), and so was the diagnostic
+  (`888dda67…`). Results: full build SHA1 `62efab4f…`, engine test 720/720,
+  fixtures 5/5, and the oracle manifest re-locked. See § Adoption record
+  (2026-09-25).

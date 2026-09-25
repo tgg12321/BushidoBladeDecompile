@@ -4,12 +4,16 @@
 #
 # tools/gcc-2.7.2/cc1 is the diagnostic compiler: the same GCC 2.7.2 carrying
 # the BB2_*_DEBUG hooks that ra_solver / sched_solver read their dumps from.
-# It was built WITHOUT tools/cc1-no-plus-to-ior.patch, so on ings and
-# code6cac_b it described a compiler the project does not ship — the gap
-# recorded as UNFAITHFUL_STEMS in tools/ra_solver/local_extract.py.
+# Before 2026-08-07 it was built without the oracle's PLUS->IOR patch, so on
+# ings and code6cac_b it described a compiler the project does not ship — the
+# gap recorded as UNFAITHFUL_STEMS in tools/ra_solver/local_extract.py.
 #
 # This rebuilds it from the LIVE (hooked) sources PLUS the same committed
-# patch, so diagnostic and oracle agree on every TU.
+# PLUS->IOR patch as the oracle (tools/cc1-plus-to-ior-narrow.patch since the
+# 2026-09-25 adoption, owner ruling bcdc1648e), so diagnostic and oracle agree
+# on every TU. The live reorg.c already carries the 2026-08-24 crash-fix
+# declaration (the oracle recipe applies it from
+# tools/cc1-reorg-negate-rtx-decl.patch), so it is not applied again here.
 #
 #   bash tools/build_diagnostic_cc1.sh            # build + verify in scratch
 #   bash tools/build_diagnostic_cc1.sh --install  # then install over tools/gcc-2.7.2/cc1
@@ -20,7 +24,7 @@ set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 1
 LIVE=tools/gcc-2.7.2
 SCRATCH=tmp/cc1diag
-PATCH=tools/cc1-no-plus-to-ior.patch
+PATCH=tools/cc1-plus-to-ior-narrow.patch
 ORACLE=$LIVE/build/cc1
 INSTALL=0
 for a in "$@"; do case "$a" in --install) INSTALL=1 ;; *) echo "unknown option: $a" >&2; exit 2 ;; esac; done
@@ -32,7 +36,7 @@ read -r -d '' MANIFEST <<'EOF'
 9b8f822a79a1945ac4b58ebfb243017d67b828c5  jump.c
 3fb248a6b2c85cd7e9e57b19f5df7daf62b3d5fe  local-alloc.c
 7ddde6b0f2b65172c5cc83be6165789f445953d9  reload1.c
-73a15a5245d2e7ad55fa9e3c42d724488b1892d6  reorg.c
+6e1cf6a97c169204304efd7427e066facb49d69f  reorg.c
 3668555e9cb7970b335a505aca4cfdda26e8fc49  sched.c
 24c5952113d88cbb96f5c9f7e7152147d1efb8a7  combine.c
 EOF

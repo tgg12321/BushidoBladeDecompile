@@ -162,7 +162,9 @@ compiler-patch experiment. The suspected causes at the time — the touched
 `jump.c` / `global.c` / `local-alloc.c` / `reorg.c` and regenerated `insn-*.c`
 — were not it.
 
-The patch is now committed (`tools/cc1-no-plus-to-ior.patch`) and both
+The patch was committed (`tools/cc1-no-plus-to-ior.patch`; replaced on
+2026-09-25 by the narrowed `tools/cc1-plus-to-ior-narrow.patch`, owner ruling
+`bcdc1648e`) and both
 binaries are built from it: `tools/build_oracle_cc1.sh` for `build/cc1`,
 `tools/build_diagnostic_cc1.sh` for the instrumented one. Re-verify with the
 latter (no `--install`); it names divergent stems and `none` is the contract.

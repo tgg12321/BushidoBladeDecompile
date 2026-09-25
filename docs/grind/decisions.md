@@ -29542,3 +29542,42 @@ beyond the option text is the author's narrowing).**
 
 **Rule-text layer-2:** round 1 FAILed on checkability of 'unreferenced'; replacement wordings applied
 verbatim; round 2 PASS.
+
+## 2026-09-25 — oracle compiler: narrow PLUS->IOR condition ADOPTED (per owner ruling bcdc1648e)
+
+Executed under docs/ORACLE-COMPILER.md § "Owner ruling 2026-09-25 (second batch)". The full record is
+in that document's § "Adoption record (2026-09-25)".
+- (A)/(B) scan: `tools/rrscan_plus_ior.py` (committed) found 547 sites, listed with verdicts in
+  docs/ORACLE-COMPILER-RRSCAN-2026-09-25.tsv. The 259 sites in COMPLETED-C functions do not
+  discriminate: all 34 TUs are identical under narrow, exprop and the retired no-rewrite compiler.
+  The 31 sites in INCLUDE_ASM functions that have a ledger candidate do not discriminate either.
+  Those candidates are func_8001BE20, func_800204C0, func_8002DAD0, func_8005D554, func_80073C78
+  and func_8008B488; each compiles to identical bytes under narrow and exprop. The other 257 sites
+  are pending, because their functions have no C yet.
+- (C): no site discriminates, so narrow is adopted. exprop stays a live alternative under (D).
+- (E)1: manifest re-recorded.
+  - reorg.c 73a15a52 -> 6e1cf6a9. The difference is exactly the 2026-08-24 crash-fix block; removing
+    it restores 73a15a52 byte-for-byte.
+  - build/cc1 is now aa04d761. The chain was ea11be50 -> 0f438e42 (unrecorded, 2026-08-24) -> aa04d761.
+  - The crash fix is pinned as tools/cc1-reorg-negate-rtx-decl.patch, which contains that block and
+    nothing else.
+  - The --stock self-check now expects {ings} (site A), measured.
+  - The historical 045c9543 references segfault on 5 current TUs. The self-check reference is now
+    build/cc1.PRE-RECIPE-0f438e42, the retired no-rewrite compiler with the crash fix.
+- (E)2: tools/cc1-plus-to-ior-narrow.patch replaces tools/cc1-no-plus-to-ior.patch. simplify_rtx is
+  0x3a6a.
+- (E)3: build/cc1 rebuilt via the recipe and installed: aa04d7619cd79215788d18d6870ebc6c8d1d822d.
+  The diagnostic tools/gcc-2.7.2/cc1 was rebuilt with the same patch:
+  888dda6755596e3ac826c38c36be3103297cbac8. It agrees on all 34 TUs; its predecessor 4096c6fd
+  segfaulted on 5 of them.
+- (E)4:
+  - verify-oracle --rebuild: 62efab4f73f992798c43e8c730aa43baa10bb4fa, drift empty after the re-lock.
+  - engine test: 720/720.
+  - fixtures-verify: 5/5.
+  - check_completion_integrity: OK.
+  - oracle/manifest.json re-locked, with a notes.cc1_build provenance entry; the 2026-08-24 entry is
+    kept as cc1_build_2026_08_24.
+- (E)5: the toolchain fingerprint moved (69f8ba78e94cf257 -> 85cd2a73ee7a8972). `queue auto-return`
+  runs after this change lands, on a clean tree, and its result is recorded in the commit that
+  follows.
+- Layer-2 cheat-reviewer on the adoption diff: pending before commit.

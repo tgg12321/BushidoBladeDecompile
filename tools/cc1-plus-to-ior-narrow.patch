@@ -1,0 +1,66 @@
+Narrow combine.c's PLUS->IOR conversion in GCC 2.7.2's simplify_rtx: keep it,
+except for (plus REG CONST_INT).
+
+ADOPTED 2026-09-25 under owner ruling bcdc1648e (docs/ORACLE-COMPILER.md
+"Owner ruling 2026-09-25 (second batch)"; docs/grind/decisions.md 2026-09-25
+OWNER RULING -- oracle compiler adoption (second batch)). It replaces
+tools/cc1-no-plus-to-ior.patch, which deleted the conversion outright.
+
+This is THE patch that defines the Bushido Blade 2 oracle compiler. It is
+applied by tools/build_oracle_cc1.sh to a pristine checkout of
+decompals/mips-gcc-2.7.2 @ 43d1cdb67ed135879869b5266f01efaaada5e35a inside a
+scratch tree, together with the host-ABI crash-fix declaration
+tools/cc1-reorg-negate-rtx-decl.patch. tools/gcc-2.7.2/ is gitignored, which
+is why both patches live here, tracked, instead of as edits in the compiler
+tree.
+
+WHAT IT DOES
+  Stock GCC rewrites `a + b` into `a | b` whenever it can prove the two
+  operands have no bits in common (`nonzero_bits(a) & nonzero_bits(b) == 0`).
+  This patch keeps that rewrite, except when the addition is a plain
+  register plus a constant, `(plus REG CONST_INT)`. That is the machine's
+  add-immediate and address form, and an IOR of an opaque register cannot
+  simplify further. Every other disjoint-bits addition is rewritten, as stock
+  does: shift and mask expressions, register plus register.
+  `simplify_rtx` measures 0x3a6a (stock 0x3a11; the retired no-rewrite
+  patch 0x39ab).
+
+WHY (docs/ORACLE-COMPILER-STUDY-2026-09-25.md)
+  The shipped game shows both behaviours:
+  - site A (func_800174F4, `(plus (reg) (const_int 4))`): the original KEPT
+    addiu;
+  - site C (`main`, `(plus (ashift ...) (const_int 128))`) and func_80073C78
+    (`(plus (subreg du0) (reg u))`): the original performed the rewrite.
+  Neither stock ("always") nor the retired patch ("never") explains all
+  three. This condition does, and it builds the whole current tree to the
+  oracle SHA1.
+
+  It is the best fit to the evidence, NOT a recovered historical compiler.
+  The study's `exprop` condition also fits every compiled site and stays a
+  live alternative. A later discriminating site reopens the choice for the
+  owner (ruling item (D)). The `|`-for-`+` spelling stays refused in both
+  directions.
+
+  This does not loosen the no-compiler-divergence rule. This patch and the
+  owner-approved crash-fix declaration are its only in-scope amendments.
+
+diff --git a/combine.c b/combine.c
+--- a/combine.c
++++ b/combine.c
+@@ -3618,10 +3618,15 @@ simplify_rtx (x, op0_mode, last, in_dest)
+       /* If we are adding two things that have no bits in common, convert
+ 	 the addition into an IOR.  This will often be further simplified,
+ 	 for example in cases like ((a & 1) + (a & 2)), which can
+-	 become a & 3.  */
++	 become a & 3.
++
++	 A register plus a constant is left alone: it is the add-immediate
++	 and address form, and an IOR of an opaque register cannot simplify.  */
+
+       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
++	  && ! (GET_CODE (XEXP (x, 0)) == REG
++		&& GET_CODE (XEXP (x, 1)) == CONST_INT)
+ 	  && (nonzero_bits (XEXP (x, 0), mode)
+ 	      & nonzero_bits (XEXP (x, 1), mode)) == 0)
+ 	return gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
+       break;
