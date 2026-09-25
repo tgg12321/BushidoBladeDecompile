@@ -37,3 +37,15 @@ used only to store the function's address). The sandbox fails with
 "conflicting types" unless those are retyped to `extern s32 func_80053E9C();`
 — with that edit the 217/347 floor reproduces. The retype must land together
 with the eventual match.
+
+## 2026-09-24 CLOSED — COMPLETED-C (manual lane, commit f99bc2d66)
+
+candidate.c is the landed body (sandbox 0 at 347/347, oracle SHA1 match,
+layer-2 PASS after dropping an invented third arg on func_80052CD4).
+Levers, in order: real struct for the D_800A33F4 work area (MEM_IN_STRUCT_P
+lets loop.c hoist and cse keep the pointer) 217->83; `n = hdr; CC = n >> 8;
+n &= 0xFF` 83->48; `DC = (hi << 16) | DC` ->45; one-statement normalization
+`v = (v < 0 ? -1 : 1) * ((v < 0 ? -v : v) >> 14)` (lhs address copy is a
+sched1 birthing insn) ->2; inner loop `while (--n != -1)` (n crosses calls,
+so the decrement is not call-anchored) ->0. Diagnosed with the instrumented
+cc1 (BB2_SCHED_DEBUG/BB2_PRIO_DEBUG); scripts in tmp/e9c/.

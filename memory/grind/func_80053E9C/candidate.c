@@ -1,191 +1,166 @@
 extern s32 D_800A33F0;
 extern s32 D_800A33F4;
 extern s32 func_80052754(s32, s32, s32);
-extern void func_80052C4C(s16 *, s32, s32, s32);
-extern void func_80052CD4(s32 *, s32 *, s16);
+extern void func_80052C4C(s32, s32, s32, s32);
+extern void func_80052CD4(s32 *, s32 *);
 
-#define WORK8(offset)  (*(s8 *)((u8 *)D_800A33F4 + (offset)))
-#define WORK16(offset) (*(s16 *)((u8 *)D_800A33F4 + (offset)))
-#define WORK32(offset) (*(s32 *)((u8 *)D_800A33F4 + (offset)))
+typedef struct {
+    s32 unk0;
+    s16 unk4;
+    s16 unk6;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+    s32 unk1C;
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2C;
+    s32 unk30;
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    s32 unk40;
+    s32 unk44;
+    s16 unk48;
+    s16 unk4A;
+    s16 unk4C;
+    s16 unk4E;
+    s16 unk50;
+    s16 unk52;
+    s16 unk54;
+    s16 unk56;
+    s16 unk58;
+    s16 unk5A;
+    s32 unk5C;
+    u8 unk60[0x48];
+    s32 unkA8;
+    s32 unkAC;
+    s32 unkB0;
+    s32 unkB4;
+    s32 unkB8;
+    s32 unkBC;
+    s32 unkC0;
+    s32 unkC4;
+    s32 unkC8;
+    s32 unkCC;
+    s32 unkD0;
+    s32 unkD4;
+    s32 unkD8;
+    s32 unkDC;
+    s32 unkE0;
+    s32 unkE4;
+    s32 unkE8;
+} Work_80053E9C;
+
+#define W ((Work_80053E9C *)D_800A33F4)
 
 s32 func_80053E9C(s32 arg0, s32 arg1) {
+    s32 n;
     s32 data;
     s32 count;
-    s32 sign;
-    s32 value;
-    s32 normalized;
-    s32 x0;
-    s32 y0;
-    s32 z0;
-    s32 x1;
-    s32 y1;
-    s32 z1;
-    s32 packed;
-    s32 distance;
-    s32 cross;
-    s32 xEnd;
-    s32 yEnd;
-    u16 offset;
+    s32 x;
+    s32 z;
+    s32 y;
+    s16 hdr;
 
     if (arg0 < 0 || arg1 < 0 || arg0 >= 32 || arg1 >= 32) {
         return 0;
     }
-
-    offset = *(u16 *)(D_800A33F0 + ((arg1 * 32 + arg0) * 2));
-    WORK32(0xE0) = offset;
-    if (offset == 0xFFFF) {
+    W->unkE0 = ((u16 *)D_800A33F0)[arg1 * 32 + arg0];
+    if (W->unkE0 == 0xFFFF) {
         return 0;
     }
+    data = D_800A33F0 + W->unkE0;
+    x = arg0 * 2000 - 32000;
+    z = arg1 * 2000 - 32000;
+    W->unk4C = W->unk8 - x;
+    W->unk4E = W->unkC;
+    W->unk50 = W->unk10 - z;
+    W->unk54 = W->unk18 - x;
+    W->unk56 = W->unk1C;
+    W->unk58 = W->unk20 - z;
 
-    x0 = arg0 * 0x7D0 - 0x7D00;
-    z0 = arg1 * 0x7D0 - 0x7D00;
-    WORK16(0x4E) = WORK32(0x0C);
-    WORK16(0x4C) = WORK32(0x08) - x0;
-    WORK16(0x56) = WORK32(0x1C);
-    WORK16(0x50) = WORK32(0x10) - z0;
-    WORK16(0x58) = WORK32(0x20) - z0;
-    WORK16(0x54) = WORK32(0x18) - x0;
-
-    data = D_800A33F0 + offset;
     count = *(s16 *)data;
-    count--;
     data += 2;
-    if (count != -1) do {
-        WORK32(0xD0) = *(s16 *)data;
+    while (--count != -1) {
+        W->unkD0 = *(s16 *)data;
         data += 2;
-        WORK32(0xD4) = *(s16 *)data;
+        W->unkD4 = *(s16 *)data;
         data += 2;
-        WORK32(0xD8) = *(s16 *)data;
+        W->unkD8 = *(s16 *)data;
         data += 2;
-        WORK32(0xDC) = *(u16 *)data;
-        packed = (*(s16 *)(data + 2) << 16) | *(u16 *)data;
-        data += 4;
+        W->unkDC = *(u16 *)data;
+        data += 2;
+        W->unkDC = (*(s16 *)data << 16) | W->unkDC;
+        data += 2;
+        W->unkE4 = W->unkD0 * W->unk4C + W->unkD4 * W->unk4E + W->unkD8 * W->unk50 + W->unkDC;
+        W->unkE8 = W->unkD0 * W->unk54 + W->unkD4 * W->unk56 + W->unkD8 * W->unk58 + W->unkDC;
 
-        WORK32(0xE4) = WORK32(0xD0) * WORK16(0x4C)
-                     + WORK32(0xD4) * WORK16(0x4E)
-                     + WORK32(0xD8) * WORK16(0x50) + packed;
-        WORK32(0xDC) = packed;
-        WORK32(0xE8) = WORK32(0xD0) * WORK16(0x54)
-                     + WORK32(0xD4) * WORK16(0x56)
-                     + WORK32(0xD8) * WORK16(0x58) + WORK32(0xDC);
+        W->unkE4 = (W->unkE4 < 0 ? -1 : 1) * ((W->unkE4 < 0 ? -W->unkE4 : W->unkE4) >> 14);
+        W->unkE8 = (W->unkE8 < 0 ? -1 : 1) * ((W->unkE8 < 0 ? -W->unkE8 : W->unkE8) >> 14);
 
-        sign = 1;
-        if (WORK32(0xE4) < 0) {
-            sign = -1;
-        }
-        value = WORK32(0xE4);
-        if (value < 0) {
-            value = -value;
-        }
-        normalized = sign * (value >> 14);
-        WORK32(0xE4) = normalized;
-
-        sign = 1;
-        if (WORK32(0xE8) < 0) {
-            sign = -1;
-        }
-        value = WORK32(0xE8);
-        if (value < 0) {
-            value = -value;
-        }
-        normalized = sign * (value >> 14);
-        WORK32(0xE8) = normalized;
-
-        x0 = WORK32(0xE4);
-        y0 = WORK32(0xE8);
-        distance = x0 - y0;
-        if (x0 >= 0 && y0 < 0) {
-            WORK32(0xE0) = distance;
-            x1 = ((WORK16(0x54) - WORK16(0x4C)) * WORK32(0xE4)) / distance
-               + WORK16(0x4C);
-            y1 = ((WORK16(0x56) - WORK16(0x4E)) * WORK32(0xE4)) / WORK32(0xE0)
-               + WORK16(0x4E);
-            z1 = ((WORK16(0x58) - WORK16(0x50)) * WORK32(0xE4)) / WORK32(0xE0)
-               + WORK16(0x50);
-            WORK32(0xA8) = x1;
-            WORK32(0xAC) = y1;
-            WORK32(0xB0) = z1;
-            func_80052C4C((s16 *)data, WORK32(0xA8), WORK32(0xAC), z1);
-
+        if (W->unkE4 >= 0 && W->unkE8 < 0) {
+            W->unkE0 = W->unkE4 - W->unkE8;
+            W->unkA8 = (W->unk54 - W->unk4C) * W->unkE4 / W->unkE0 + W->unk4C;
+            W->unkAC = (W->unk56 - W->unk4E) * W->unkE4 / W->unkE0 + W->unk4E;
+            W->unkB0 = (W->unk58 - W->unk50) * W->unkE4 / W->unkE0 + W->unk50;
+            func_80052C4C(data, W->unkA8, W->unkAC, W->unkB0);
             data += 18;
-            value = *(u16 *)data;
+            hdr = *(u16 *)data;
             data += 2;
-            {
-            s32 vertexCount;
-            s32 nextY;
-            s16 header;
-            header = value;
-            vertexCount = header;
-            vertexCount &= 0xFF;
-            WORK32(0xCC) = header >> 8;
-            vertexCount--;
-            WORK32(0xB4) = *(s16 *)data;
+            n = hdr;
+            W->unkCC = n >> 8;
+            n &= 0xFF;
+            W->unkB4 = *(s16 *)data;
             data += 2;
-            nextY = *(s16 *)data;
+            y = *(s16 *)data;
             data += 2;
-            WORK32(0xE0) = 1;
-            WORK32(0xB8) = nextY;
-            func_80052CD4((s32 *)((u8 *)D_800A33F4 + 0xC4),
-                          (s32 *)((u8 *)D_800A33F4 + 0xC8), nextY);
-
-            if (vertexCount != -1) {
-            xEnd = WORK32(0xC4);
-            yEnd = WORK32(0xC8);
-            do {
-                WORK32(0xBC) = *(s16 *)data;
+            W->unkE0 = 1;
+            W->unkB8 = y;
+            func_80052CD4(&W->unkC4, &W->unkC8);
+            while (--n != -1) {
+                W->unkBC = *(s16 *)data;
                 data += 2;
-                WORK32(0xC0) = *(s16 *)data;
-                cross = (xEnd - WORK32(0xB4))
-                      * (WORK32(0xC0) - WORK32(0xB8))
-                      - (yEnd - WORK32(0xB8))
-                      * (WORK32(0xBC) - WORK32(0xB4));
+                W->unkC0 = *(s16 *)data;
                 data += 2;
-                if (cross > 0) {
-                    WORK32(0xE0) = 0;
+                if ((W->unkC4 - W->unkB4) * (W->unkC0 - W->unkB8)
+                    - (W->unkC8 - W->unkB8) * (W->unkBC - W->unkB4) > 0) {
+                    W->unkE0 = 0;
                     break;
                 }
-                vertexCount--;
-                WORK32(0xB4) = WORK32(0xBC);
-                WORK32(0xB8) = WORK32(0xC0);
-            } while (vertexCount != -1);
+                W->unkB4 = W->unkBC;
+                W->unkB8 = W->unkC0;
             }
-            if (vertexCount > 0) {
-                data += vertexCount * 4;
+            if (n > 0) {
+                data += n * 4;
             }
-            if (WORK32(0xE0) != 0) {
-                WORK32(0xE0) = func_80052754(WORK32(0xA8) - WORK16(0x4C),
-                                             WORK32(0xAC) - WORK16(0x4E),
-                                             WORK32(0xB0) - WORK16(0x50));
-                if (WORK32(0xE0) < WORK32(0)) {
-                    WORK16(0x48) = arg0;
-                    WORK16(0x4A) = arg1;
-                    WORK32(0x38) = WORK32(0xA8);
-                    WORK32(0x3C) = WORK32(0xAC);
-                    WORK32(0x40) = WORK32(0xB0);
-                    WORK32(0x28) = WORK32(0xD0);
-                    WORK32(0x2C) = WORK32(0xD4);
-                    WORK32(0x30) = WORK32(0xD8);
-                    WORK32(0x34) = WORK32(0xDC);
-                    WORK32(0) = WORK32(0xE0);
-                    WORK16(4) = WORK32(0xCC);
+            if (W->unkE0 != 0) {
+                if ((W->unkE0 = func_80052754(W->unkA8 - W->unk4C, W->unkAC - W->unk4E, W->unkB0 - W->unk50)) < W->unk0) {
+                    W->unk48 = arg0;
+                    W->unk4A = arg1;
+                    W->unk38 = W->unkA8;
+                    W->unk3C = W->unkAC;
+                    W->unk40 = W->unkB0;
+                    W->unk28 = W->unkD0;
+                    W->unk2C = W->unkD4;
+                    W->unk30 = W->unkD8;
+                    W->unk34 = W->unkDC;
+                    W->unk0 = W->unkE0;
+                    W->unk4 = W->unkCC;
                 }
-            }
             }
         } else {
             data += 18;
-            {
-            s32 vertexCount;
-            vertexCount = *(s16 *)data;
+            n = *(s16 *)data;
             data += 2;
-            vertexCount &= 0xFF;
-            data += (vertexCount + 1) * 4;
-            }
+            n &= 0xFF;
+            data += (n + 1) * 4;
         }
-        count--;
-    } while (count != -1);
-    return WORK32(0) != 0x7FFFFFFF;
+    }
+    return W->unk0 != 0x7FFFFFFF;
 }
 
-#undef WORK8
-#undef WORK16
-#undef WORK32
+#undef W

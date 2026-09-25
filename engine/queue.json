@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80053E9C",
-      "file": "text1b",
-      "distance": 347,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T03:11:32+00:00",
-      "rotation_count": 1,
-      "unparked_from": "honest floor 217/347 after independent semantic and m2c reconstructions; unresolved source-level fixed-point normalization, spill provenance, and polygon-loop geometry; see memory/grind/func_80053E9C/evidence.md",
-      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
-      "returned_at": "2026-09-25T03:34:56+00:00"
-    },
-    {
       "func": "func_8007636C",
       "file": "text1b",
       "distance": 348,
@@ -737,14 +724,14 @@
     }
   ],
   "counts": {
-    "total": 68,
-    "active": 55,
+    "total": 67,
+    "active": 54,
     "by_status": {
-      "active": 55,
+      "active": 54,
       "rotated": 13
     },
     "by_verdict": {
-      "C": 42,
+      "C": 41,
       "ASM-PARTIAL": 13
     }
   },
