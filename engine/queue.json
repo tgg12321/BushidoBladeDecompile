@@ -17,19 +17,6 @@
       "returned_at": "2026-09-25T03:34:57+00:00"
     },
     {
-      "func": "func_8006D808",
-      "file": "text1b",
-      "distance": 355,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T03:20:53+00:00",
-      "rotation_count": 1,
-      "unparked_from": "honest C floor 200/355 (202/355 signed-local variant); nested decimal renderer still source-level divergent and frame 0x90 vs 0x88; see memory/grind/func_8006D808/evidence.md",
-      "unpark_reason": "Improper rotation by interrupted Codex session 2026-09-24: one ~4-min session (or zero attempts), no ladder/cc1psx-check per rotation-not-foreclosure; returned to active",
-      "returned_at": "2026-09-25T03:34:58+00:00"
-    },
-    {
       "func": "func_80035828",
       "file": "code6cac_b2_post",
       "distance": 360,
@@ -711,15 +698,15 @@
     }
   ],
   "counts": {
-    "total": 66,
-    "active": 53,
+    "total": 65,
+    "active": 52,
     "by_status": {
-      "active": 53,
+      "active": 52,
       "rotated": 13
     },
     "by_verdict": {
       "ASM-PARTIAL": 13,
-      "C": 40
+      "C": 39
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
