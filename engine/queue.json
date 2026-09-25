@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8005490C",
-      "file": "text1b",
-      "distance": 399,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8002A458",
       "file": "code6cac_b",
       "distance": 416,
@@ -678,18 +670,29 @@
       "rotation": "flat floor 5/393 after 2 manual sessions + permuter 11.8k iters; regalloc/CSE proof: move a3,a2 needs the pad-shift local referenced outside its CSE unit, only achievable via two-role shift reuse (layer-2 FAIL, Ruling 5). PadState prep landed 91448d225. See memory/grind/func_8001BE20/hypotheses.md",
       "rotated_at": "2026-09-25T10:37:13+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_8005490C",
+      "file": "text1b",
+      "distance": 399,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "flat floor 47/399 single-role (permuter 18.9k flat); allocator proof: rotation temp + init player ptrs need multi-write locals vz/obj (layer-2 FAIL, Ruling 5/6); single loop ruled out (unrolled constants). Prep landed a9c634304. See memory/grind/func_8005490C/",
+      "rotated_at": "2026-09-25T11:46:44+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 62,
-    "active": 45,
+    "active": 44,
     "by_status": {
-      "active": 45,
-      "rotated": 17
+      "active": 44,
+      "rotated": 18
     },
     "by_verdict": {
-      "C": 33,
-      "ASM-PARTIAL": 12
+      "ASM-PARTIAL": 12,
+      "C": 32
     }
   },
   "toolchain_fingerprint": "69f8ba78e94cf257"
