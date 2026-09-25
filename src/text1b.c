@@ -5568,6 +5568,23 @@ s32 func_8006288C(void) {
 out:
     return 1;
 }
+/* PsyQ LIBGPU.H POLY_FT4 (0x28 bytes), same layout as text1a_c.c's. */
+typedef struct {
+    u32 tag;
+    u8 r0, g0, b0, code;
+    s16 x0, y0;
+    u8 u0, v0;
+    u16 clut;
+    s16 x1, y1;
+    u8 u1, v1;
+    u16 tpage;
+    s16 x2, y2;
+    u8 u2, v2;
+    u16 pad1;
+    s16 x3, y3;
+    u8 u3, v3;
+    u16 pad2;
+} POLY_FT4;
 INCLUDE_ASM("asm/funcs", func_8006295C);
 extern s32 D_800A347C;
 
@@ -10511,24 +10528,6 @@ s32 func_8007352C(s32 env_addr) {
     return (s32)sp;
 }
 /* END func_8007352C */
-
-/* PsyQ LIBGPU.H POLY_FT4 (0x28 bytes), same layout as text1a_c.c's. */
-typedef struct {
-    u32 tag;
-    u8 r0, g0, b0, code;
-    s16 x0, y0;
-    u8 u0, v0;
-    u16 clut;
-    s16 x1, y1;
-    u8 u1, v1;
-    u16 tpage;
-    s16 x2, y2;
-    u8 u2, v2;
-    u16 pad1;
-    s16 x3, y3;
-    u8 u3, v3;
-    u16 pad2;
-} POLY_FT4;
 
 extern void SetPolyFT4(void *);
 
