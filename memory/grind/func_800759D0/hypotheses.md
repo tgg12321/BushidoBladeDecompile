@@ -1,9 +1,13 @@
 # func_800759D0 — hypotheses / levers (2026-09-25)
 
 ## Status
-Session 3 (2026-09-25): owner Ruling 9 (c3e7a0b9e) answers the borderline question.
-candidate.c = the shared-variable body renamed `cells`, sandbox 0/364; (b) layout evidence and
-the prong walk are in evidence.md. The per-site receipt is rejected/per-site-locals-25.c.
+Session 3 (2026-09-25): the shared `cells` body landed under owner Ruling 9 (23045f51f) and was
+then FAILED and reverted: Ruling 9 (b)/(f) fail on the reachable 0x14-placeholder path, where
+loop 2 reads `table[21] + 0x24` past the end of a 1-header sheet (evidence.md "Ruling 9 FAIL";
+rejected/ruling9-cells-placeholder-overrun-0.c). candidate.c is the honest per-site 25 form.
+Frontier: the borderline.md 2026-09-25 policy question (judge (b) by the layout the code
+assumes?). Otherwise, find a per-site spelling that seats the head and loop-1 sums in $a1
+(Session 2 argues none exists).
 The rest of this section is the pre-ruling state.
 Honest floor **25/364** (per-site `q0..q3`, one local per write).
 The 0/364 form (one function-scope `q` written at 4 sites) was FAILED by layer-2 on

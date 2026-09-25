@@ -1,3 +1,12 @@
+/* REJECTED 2026-09-25 by a combined layer-2 re-review (FAIL), after landing as 23045f51f
+ * (reverted to INCLUDE_ASM). Score 0/364, SHA1 == oracle. Construct: function-scope `cells`
+ * written 4 times (+0xC head, +0x24 x3) under Ruling 9 (c3e7a0b9e). FAILS Ruling 9 (b)/(f):
+ * on the reachable unavailable-cell path, func_80075F80 writes the placeholder 0x14 into
+ * arg2[f3C], and loop 2 then does `cells = table[21] + 0x24`. D_SEL.BIN sheet [21] (0xC84)
+ * has 1 header and 2 cells and ends at 0xCA0, so +0x24 = 0xCA8 is past the record, not a
+ * sub-object of it, and the declaration comment's "three headers" claim is false there.
+ * This looks like a latent bug in the original game. A block-local loop-2 site = 30.
+ * See evidence.md "Ruling 9 FAIL" and the borderline.md 2026-09-25 policy question. */
 extern u8 D_8009BCE4;
 
 /* Character-select grid renderer (select-screen case 2 of func_80077374; the
@@ -26,10 +35,12 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        func_800753D8 (`zero`) and func_8007636C (`mode`). */
     s32 zero;
     s16 i;
-    s32 q0;
-    s32 q1;
-    s32 q2;
-    s32 q3;
+    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts
+       just past the sheet's 12-byte SprtHdrA headers: one header on the
+       table[0] page sheet (+0xC), three (normal, then one cursor
+       highlight per player) on the per-entry sheets (+0x24). D_SEL.BIN layout:
+       memory/grind/func_800759D0/evidence.md "Ruling 9 (b)". */
+    s32 cells;
 
     zero = 0;
     s.sp28 = 0;
@@ -38,8 +49,8 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s.sp18 = table[0];
     s.sp30 = arg3 * 240 + 0x88;
     s.sp34 = 0x33;
-    q0 = s.sp18 + 0xC;
-    s.sp1C = q0;
+    cells = s.sp18 + 0xC;
+    s.sp1C = cells;
     if (arg3 != 0) {
         s.sp2C = 0x16;
     } else {
@@ -70,8 +81,8 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s32 index;
 
             s.sp18 = table[entry + 1];
-            q1 = s.sp18 + 0x24;
-            s.sp1C = q1;
+            cells = s.sp18 + 0x24;
+            s.sp1C = cells;
             state = (s16 *)(arg3 * 2 + (s32)D_800A36A0);
             index = (((state[0x1C / 2] * 5) + state[0x20 / 2]) * 2) + (arg1 * 20);
             if (((u8 *)D_8009BCF8)[index] == (D_8009BCF8 + i)->unk0) {
@@ -94,7 +105,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C) + 1; i++) {
         if (arg2[i] >= 0) {
             s.sp18 = table[arg2[i] + 1];
-            q2 = s.sp18 + 0x24;
+            cells = s.sp18 + 0x24;
             if (i != *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C)) {
                 s.sp40 = 0;
             } else {
@@ -102,7 +113,7 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
                 s.sp18 = s.sp18 + 12 + arg3 * 12;
             }
             s.sp34 = i * 17;
-            s.sp1C = q2;
+            s.sp1C = cells;
             s.sp1C += *(u8 *)(s.sp18 + 2) * 8;
             s.sp20 = arg0[4];
             arg0[4] = func_8007352C((s32)&s);
@@ -113,11 +124,11 @@ void func_800759D0(s32 *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < *(u8 *)(D_800A36A0 + 0x65) + 3; i++) {
         table = *(s32 **)(arg0[0] + *(u8 *)(D_800A36A0 + 0x65) * 4 + 0x20);
         s.sp18 = table[i];
-        q3 = s.sp18 + 0x24;
+        cells = s.sp18 + 0x24;
         if (i == *(s16 *)(D_800A36A0 + arg3 * 2 + 0x3C)) {
             s.sp18 = s.sp18 + 12 + arg3 * 12;
         }
-        s.sp1C = q3;
+        s.sp1C = cells;
         s.sp30 = arg3 * 240;
         s.sp34 = i * 17;
         if (arg3 != 0) {
