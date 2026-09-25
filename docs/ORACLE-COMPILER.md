@@ -110,6 +110,13 @@ Evidence that it **did**:
   rules; the function's C was admittedly unfaithful, so the signal is muddy).
 - The forensics' isolated probes had `cc1psx` performing the conversion on
   every reachable shape.
+- (2026-09-25) `func_80073C78` in `text1b`: the shipped bytes contain the
+  conversion (`ori rX,rY,0` at the UV stores). A stock recipe build compiles
+  the natural `u + du0` body to exactly those bytes. Across the TU up to that
+  function, the only difference from the oracle compiler is those two lines.
+  The oracle compiler cannot reach them from any `+` spelling. Evidence:
+  `memory/grind/func_80073C78/evidence.md`; owner question logged in
+  `docs/grind/borderline.md` (2026-09-25).
 
 Anyone reopening this should start with the scan scripts named in the
 forensics doc and the Phase-0 evidence recorded at `d99ab6a6`.
