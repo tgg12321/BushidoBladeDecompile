@@ -51,9 +51,11 @@ overwrite I2DEST if its value is still used by NEWPAT" (`reg_referenced_p
 (i2dest, newpat)` is true because the chain root is the same pseudo). The
 3-insn path is blocked by the same guard. The chain therefore stays UNFOLDED
 (`addiu -1; sll 8; addiu 0x80`), which is exactly what the target bytes carry
-(asm/funcs/main.s 0x7B58-0x7B6C). Every fresh-variable spelling of the same
-expression folds to `sll; addiu -128` — so the stepwise spelling plausibly
-reconstructs the original source shape rather than bolting a trick onto it.
+(asm/funcs/main.s 0x7B58-0x7B6C). Under the RETIRED no-rewrite compiler
+(tools/cc1-no-plus-to-ior.patch, retired in 9bc64b751) every fresh-variable
+spelling of the same expression folded to `sll; addiu -128`, which is why the
+stepwise spelling was granted. Under the adopted narrow compiler the natural
+spelling matches instead (see `main`, commit 89a3bc8aa).
 
 This is the split-init family ([[split-init-accumulation-sanctioned]], owner
 2026-06-13; made ordinary C by [[ordinary-c-judge-decidable]] Ruling 4,
@@ -107,7 +109,13 @@ not be claimed under that clause.
 
 ## Instances
 
-- `main` (src/ings.c poll loop) — the grant's exhibit; first instance.
+- ~~`main` (src/ings.c poll loop) — the grant's exhibit; first instance.~~
+  **Retired 2026-09-25** (`cheat-cleanup: main`, after the narrow PLUS->IOR
+  adoption 9bc64b751, ruling bcdc1648e item (F)): the natural
+  `if (cnt >= ((D_800A36F1 - 1) << 8) + 0x80) break;` now byte-matches, so
+  prerequisite 4 (fresh spellings fold) no longer holds for it. The family is
+  unchanged and currently has NO instances; a new instance must re-measure
+  prerequisite 4 under the adopted compiler.
 
 ## Related
 
