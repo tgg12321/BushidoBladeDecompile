@@ -20,7 +20,7 @@ extern volatile u32 *g_gpu_data_reg;
 extern volatile u32 *g_gpu_dma_madr;
 extern u32 *g_gpu_dma_bcr;
 extern volatile u32 *g_gpu_dma_chcr;
-extern u8 g_gpu_color_table[];
+extern u8 ctlbuf[];
 extern u8 g_gpu_draw_env;
 extern u8 g_gpu_disp_env;
 extern u8 D_8009BE74;
@@ -933,10 +933,10 @@ s32 _drs(GpuRect *rect, s32 *data) {
 }
 void _ctl(u32 a0) {
     *g_gpu_stat_reg = a0;
-    g_gpu_color_table[a0 >> 24] = a0;
+    ctlbuf[a0 >> 24] = a0;
 }
 u32 _getctl(s32 a0) {
-    return g_gpu_color_table[a0];
+    return ctlbuf[a0];
 }
 s32 _cwb(u32 *a0, s32 a1) {
     s32 i;
@@ -960,8 +960,8 @@ void _addque(s32 a0, s32 a1, s32 a2) {
     _addque2(a0, a1, 0, a2);
 }
 extern volatile s32 *D_8009BF48;
-extern volatile s32 D_8009BF78;
-extern volatile s32 D_8009BF7C;
+extern volatile s32 _qin;
+extern volatile s32 _qout;
 
 
 void _exeque();                           /* extern */
@@ -972,7 +972,7 @@ extern u8 D_8009BE75;
 extern s32 D_8009BE7C;
 extern s32 D_8009BE80;
 extern volatile s32 *D_8009BF54;
-extern volatile s32 D_8009BF68[];
+extern volatile s32 _qlog[];
 extern s32 *D_8009BF6C;
 extern s32 D_8009BF70;
 extern s32 D_8009BF80;
@@ -988,7 +988,7 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     s32 i;
 
     set_alarm();
-    while (((D_8009BF78 + 1) & 0x3F) == D_8009BF7C) {
+    while (((_qin + 1) & 0x3F) == _qout) {
         if (get_alarm() != 0) {
             return -1;
         }
@@ -997,11 +997,11 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     D_8009BF80 = SetIntrMask(0);
     D_8009BE7C = 1;
     if (D_8009BE75 == 0 ||
-        (D_8009BF78 == D_8009BF7C && !(*D_8009BF54 & 0x01000000) && D_8009BE80 == 0)) {
+        (_qin == _qout && !(*D_8009BF54 & 0x01000000) && D_8009BE80 == 0)) {
         while (!(*D_8009BF48 & 0x04000000)) {
         }
         func(arg, count);
-        D_8009BF68[0] = (s32)func;
+        _qlog[0] = (s32)func;
         D_8009BF6C = (s32)arg;
         D_8009BF70 = count;
         SetIntrMask(D_8009BF80);
@@ -1010,18 +1010,18 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     DMACallback(2, _exeque);
     if (len != 0) {
         for (i = 0; i < len / 4; i++) {
-            _que[D_8009BF78].data[i] = arg[i];
+            _que[_qin].data[i] = arg[i];
         }
-        _que[D_8009BF78].arg = _que[D_8009BF78].data;
+        _que[_qin].arg = _que[_qin].data;
     } else {
-        _que[D_8009BF78].arg = arg;
+        _que[_qin].arg = arg;
     }
-    _que[D_8009BF78].count = count;
-    _que[D_8009BF78].func = func;
-    D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
+    _que[_qin].count = count;
+    _que[_qin].func = func;
+    _qin = (_qin + 1) & 0x3F;
     SetIntrMask(D_8009BF80);
     _exeque();
-    return (D_8009BF78 - D_8009BF7C) & 0x3F;
+    return (_qin - _qout) & 0x3F;
 }
 /* ADDQUE2-END */
 INCLUDE_ASM("asm/funcs", _exeque);
@@ -1030,29 +1030,29 @@ extern s32 SetIntrMask(s32);
 extern s32 _version(s32);
 extern volatile s32 *D_8009BF48;
 extern volatile s32 *D_8009BF54;
-extern volatile s32 D_8009BF7C;
-extern volatile s32 D_8009BF78;
+extern volatile s32 _qout;
+extern volatile s32 _qin;
 extern s32 D_8009BF88;
-extern u8 D_800F189C[];
+extern u8 ctlbuf[];
 extern s32 g_str_gpu_timeout;
 extern s32 D_80016044;
 extern volatile u32 *g_gpu_dma_madr;
 extern volatile int *D_8009BF64;
-extern volatile s32 D_8009BF68[];
+extern volatile s32 _qlog[];
 
 extern s32 D_8009BF70;
 extern s32 printf();
 s32 _reset(s32 arg0) {
     D_8009BF88 = SetIntrMask(0);
-    D_8009BF7C = 0;
-    D_8009BF78 = D_8009BF7C;
+    _qout = 0;
+    _qin = _qout;
     switch (arg0 & 7) {
     case 5:
     case 0:
         *D_8009BF54 = 0x401;
         *D_8009BF64 |= 0x800;
         *D_8009BF48 = 0;
-        memset(D_800F189C, 0, 0x100);
+        memset(ctlbuf, 0, 0x100);
         memset((u8 *)_que, 0, 0x1800);
         break;
     case 1:
@@ -1076,7 +1076,7 @@ s32 _sync(s32 arg0) {
 
     if (arg0 == 0) {
         set_alarm();
-        while (D_8009BF78 != D_8009BF7C) {
+        while (_qin != _qout) {
             _exeque();
             if (get_alarm() != 0) return -1;
         }
@@ -1085,7 +1085,7 @@ s32 _sync(s32 arg0) {
         }
         return 0;
     }
-    temp_s0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
+    temp_s0 = (_qin - _qout) & 0x3F;
     if (temp_s0 != 0) {
         _exeque();
     }
@@ -1108,12 +1108,12 @@ s32 get_alarm(void) {
     s32 temp_v0;
     if (g_gpu_vcount < VSync(-1) || g_gpu_draw_count++ > 0xF0000) {
         *g_gpu_stat_reg;
-        printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
-        printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
+        printf(&g_str_gpu_timeout, (_qin - _qout) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
+        printf(&D_80016044, _qlog[0], D_8009BF6C, D_8009BF70);
         temp_v0 = SetIntrMask(0);
-        D_8009BF7C = 0;
+        _qout = 0;
         D_8009BF88 = temp_v0;
-        D_8009BF78 = D_8009BF7C;
+        _qin = _qout;
         *g_gpu_dma_chcr = 0x401;
         *D_8009BF64 |= 0x800;
         *g_gpu_stat_reg = 0x02000000;

@@ -3,8 +3,8 @@ glabel RemovePatchPad
     /* 69624 80078E24 1000BFAF */  sw         $ra, 0x10($sp)
     /* 69628 80078E28 6EE2010C */  jal        EnterCriticalSection
     /* 6962C 80078E2C 00000000 */   nop
-    /* 69630 80078E30 0F80053C */  lui        $a1, %hi(D_800F1838)
-    /* 69634 80078E34 3818A524 */  addiu      $a1, $a1, %lo(D_800F1838)
+    /* 69630 80078E30 0F80053C */  lui        $a1, %hi(patch0)
+    /* 69634 80078E34 3818A524 */  addiu      $a1, $a1, %lo(patch0)
     /* 69638 80078E38 D4E3010C */  jal        SysDeqIntRP
     /* 6963C 80078E3C 01000424 */   addiu     $a0, $zero, 0x1
     /* 69640 80078E40 72E2010C */  jal        ExitCriticalSection

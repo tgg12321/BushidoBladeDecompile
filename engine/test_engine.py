@@ -397,15 +397,15 @@ def test_score_section_addend_mask() -> None:
     #     0 and two different addresses still score. Pinned both ways, including
     #     the %hi carry and the unresolvable fallback.
     saved_tab = score._SYMTAB_CACHE
-    score._SYMTAB_CACHE = {"D_800F19B8": 0x800F19B8, "D_800F19BC": 0x800F19BC,
+    score._SYMTAB_CACHE = {"D_800F19B8": 0x800F19B8, "Alarm_plus_0x4": 0x800F19BC,
                            "g_known": 0x80100000, "g_alias": 0x80100002,
                            "g_edge": 0x80107FFC}
     try:
         with _stub_objdump(obj("4", sym="D_800F19B8")):
             a = score.normalized_insns("a.o", "f")
-        with _stub_objdump(obj("0", sym="D_800F19BC")):
+        with _stub_objdump(obj("0", sym="Alarm_plus_0x4")):
             b = score.normalized_insns("b.o", "f")
-        eq("named-addend: D_800F19B8+4 vs D_800F19BC scores 0 (the CD_datasync s58 artifact)",
+        eq("named-addend: D_800F19B8+4 vs Alarm_plus_0x4 scores 0 (the CD_datasync s58 artifact)",
            score._levenshtein(a, b), 0)
         eq("named-addend: lui token is the linked %hi", a[0], "lui a0,@hi(0x800f)")
         eq("named-addend: lo token is the linked %lo", a[1], "addiu a0,a0,@lo(0x19bc)")

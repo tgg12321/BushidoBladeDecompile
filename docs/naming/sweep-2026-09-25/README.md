@@ -65,8 +65,17 @@ went INFERRED 668 → 553, VERIFIED 406 → 412, CORROBORATED 76 → 106, AUTO 3
   DPCR's GPU-DMA enable bit, so "enable" is not contradicted (stays INFERRED).
 - **PsyQ 4.0 libraries** (psyz `psyq400.tar.gz`, sha256-verified, gitignored under
   `tmp/libscan/psyq40/`): CDREAD.OBJ carries **no** names for its initialized `.data` statics, so
-  the libcd cdread.c statics block stays unnamed; Sony OBJs do name `.bss` statics — a separate
-  verified batch.
+  the libcd cdread.c statics block stays unnamed (closed, KEEP).
+- **Sony `.bss` statics + missed data XDEFs** (`data_manifest_bss.csv`, verify/followups_bss.csv): PsyQ
+  OBJs DO record LOCAL names for uninitialized statics. Each module's .bss/.data base was recovered
+  from its own HI16/LO16 relocations read back against the EXE (unanimous per module; validated on
+  `Alarm`, `n`=g_rand_state and 10 already-named CD_*/GPU_printf XDEFs). 31 CONFIRM applied:
+  `patch0`, `column`, `Result`, `regs`, `CombWaitCallback`, `sen`, `ctlbuf` (was `g_gpu_color_table` —
+  it is the GP1 control-command shadow `_ctl` writes), 13 `<base>_plus_0xN` members, 6 false-alias
+  RESETs inside LIBGPU SYS `p0.87`, and the exported `CD_status1`, `CD_nopen`, `_qlog`, `_qin`, `_qout`.
+  The `g_spu_xfer_*` names on the LIBCOMB block were contradicted (serial-link code only).
+  LIBMCRD is not linked. The download also carries LIBSN (verbatim at 0x800836EC SNMAIN, OPEN/CLOSE/
+  LSEEK/READ/WRITE/SNREAD) — a future libscan pass.
 
 ## Held (not applied) — see `held.csv`
 
@@ -81,6 +90,11 @@ went INFERRED 668 → 553, VERIFIED 406 → 412, CORROBORATED 76 → 106, AUTO 3
   needs a type reconciliation inside matched C bodies (its own oracle proof), not a rename;
   `g_file_heap_base` (0x800A38BC) — data_wave cannot retire one alias while keeping the held
   `g_rng_state` untouched.
+- `.bss` held: `Alarm` UPGRADE (a data_wave would retype `extern s32 D_800F19B8` into a clash with
+  `extern Alarm_t Alarm` in system.c — drop the 0-use duplicate `g_vsync_timeout_deadline` by hand
+  instead); `rec` + 2 members and `n` (one-letter/185-local global spellings) and `p0.87`/`p1.88`
+  (dotted GCC static names; psyz spells `p0_dot_87`) await an owner spelling ruling; `CD_cbread`,
+  `DS_active` (exact XDEF placement, but no code reference).
 - Deferred: 0x80046954 `empty_stub` (src defines it as the unsupported `snd_SeNullCallback` —
   link-map desync to resolve by hand); retiring the false data alias `g_snd_irq_data` on the
   `_spu_FiDMA` function (live C use at src/main.c needs a prototype + oracle run).

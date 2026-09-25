@@ -54791,20 +54791,20 @@ glabel SetPatchPad
     /* 695A8 80078DA8 6EE2010C */  jal        EnterCriticalSection
     /* 695AC 80078DAC 1000B0AF */   sw        $s0, 0x10($sp)
     /* 695B0 80078DB0 01000424 */  addiu      $a0, $zero, 0x1
-    /* 695B4 80078DB4 0F80033C */  lui        $v1, %hi(D_800F183C)
-    /* 695B8 80078DB8 3C186324 */  addiu      $v1, $v1, %lo(D_800F183C)
+    /* 695B4 80078DB4 0F80033C */  lui        $v1, %hi(patch0_plus_0x4)
+    /* 695B8 80078DB8 3C186324 */  addiu      $v1, $v1, %lo(patch0_plus_0x4)
     /* 695BC 80078DBC FCFF7024 */  addiu      $s0, $v1, -0x4
     /* 695C0 80078DC0 0880023C */  lui        $v0, %hi(_Pad1)
     /* 695C4 80078DC4 588E4224 */  addiu      $v0, $v0, %lo(_Pad1)
     /* 695C8 80078DC8 000062AC */  sw         $v0, 0x0($v1)
     /* 695CC 80078DCC 0880023C */  lui        $v0, %hi(_IsVSync)
     /* 695D0 80078DD0 C08E4224 */  addiu      $v0, $v0, %lo(_IsVSync)
-    /* 695D4 80078DD4 0F80013C */  lui        $at, %hi(D_800F1840)
-    /* 695D8 80078DD8 401822AC */  sw         $v0, %lo(D_800F1840)($at)
-    /* 695DC 80078DDC 0F80013C */  lui        $at, %hi(D_800F1838)
-    /* 695E0 80078DE0 381820AC */  sw         $zero, %lo(D_800F1838)($at)
-    /* 695E4 80078DE4 0F80013C */  lui        $at, %hi(D_800F1844)
-    /* 695E8 80078DE8 441820AC */  sw         $zero, %lo(D_800F1844)($at)
+    /* 695D4 80078DD4 0F80013C */  lui        $at, %hi(patch0_plus_0x8)
+    /* 695D8 80078DD8 401822AC */  sw         $v0, %lo(patch0_plus_0x8)($at)
+    /* 695DC 80078DDC 0F80013C */  lui        $at, %hi(patch0)
+    /* 695E0 80078DE0 381820AC */  sw         $zero, %lo(patch0)($at)
+    /* 695E4 80078DE4 0F80013C */  lui        $at, %hi(patch0_plus_0xC)
+    /* 695E8 80078DE8 441820AC */  sw         $zero, %lo(patch0_plus_0xC)($at)
     /* 695EC 80078DEC D4E3010C */  jal        SysDeqIntRP
     /* 695F0 80078DF0 21280002 */   addu      $a1, $s0, $zero
     /* 695F4 80078DF4 01000424 */  addiu      $a0, $zero, 0x1
@@ -54827,8 +54827,8 @@ glabel RemovePatchPad
     /* 69624 80078E24 1000BFAF */  sw         $ra, 0x10($sp)
     /* 69628 80078E28 6EE2010C */  jal        EnterCriticalSection
     /* 6962C 80078E2C 00000000 */   nop
-    /* 69630 80078E30 0F80053C */  lui        $a1, %hi(D_800F1838)
-    /* 69634 80078E34 3818A524 */  addiu      $a1, $a1, %lo(D_800F1838)
+    /* 69630 80078E30 0F80053C */  lui        $a1, %hi(patch0)
+    /* 69634 80078E34 3818A524 */  addiu      $a1, $a1, %lo(patch0)
     /* 69638 80078E38 D4E3010C */  jal        SysDeqIntRP
     /* 6963C 80078E3C 01000424 */   addiu     $a0, $zero, 0x1
     /* 69640 80078E40 72E2010C */  jal        ExitCriticalSection
@@ -55790,15 +55790,15 @@ glabel putchar
     /* 6A19C 8007999C 00000000 */   nop
     /* 6A1A0 800799A0 5FE6010C */  jal        putchar
     /* 6A1A4 800799A4 0D000424 */   addiu     $a0, $zero, 0xD
-    /* 6A1A8 800799A8 0F80013C */  lui        $at, %hi(D_800F1850)
-    /* 6A1AC 800799AC 501820AC */  sw         $zero, %lo(D_800F1850)($at)
+    /* 6A1A8 800799A8 0F80013C */  lui        $at, %hi(column)
+    /* 6A1AC 800799AC 501820AC */  sw         $zero, %lo(column)($at)
     /* 6A1B0 800799B0 85E60108 */  j          .L80079A14
     /* 6A1B4 800799B4 01000424 */   addiu     $a0, $zero, 0x1
   .L800799B8:
     /* 6A1B8 800799B8 5FE6010C */  jal        putchar
     /* 6A1BC 800799BC 20000424 */   addiu     $a0, $zero, 0x20
-    /* 6A1C0 800799C0 0F80023C */  lui        $v0, %hi(D_800F1850)
-    /* 6A1C4 800799C4 5018428C */  lw         $v0, %lo(D_800F1850)($v0)
+    /* 6A1C0 800799C0 0F80023C */  lui        $v0, %hi(column)
+    /* 6A1C4 800799C4 5018428C */  lw         $v0, %lo(column)($v0)
     /* 6A1C8 800799C8 00000000 */  nop
     /* 6A1CC 800799CC 07004230 */  andi       $v0, $v0, 0x7
     /* 6A1D0 800799D0 13004010 */  beqz       $v0, .L80079A20
@@ -55813,12 +55813,12 @@ glabel putchar
     /* 6A1F0 800799F0 97004230 */  andi       $v0, $v0, 0x97
     /* 6A1F4 800799F4 07004010 */  beqz       $v0, .L80079A14
     /* 6A1F8 800799F8 01000424 */   addiu     $a0, $zero, 0x1
-    /* 6A1FC 800799FC 0F80023C */  lui        $v0, %hi(D_800F1850)
-    /* 6A200 80079A00 5018428C */  lw         $v0, %lo(D_800F1850)($v0)
+    /* 6A1FC 800799FC 0F80023C */  lui        $v0, %hi(column)
+    /* 6A200 80079A00 5018428C */  lw         $v0, %lo(column)($v0)
     /* 6A204 80079A04 00000000 */  nop
     /* 6A208 80079A08 01004224 */  addiu      $v0, $v0, 0x1
-    /* 6A20C 80079A0C 0F80013C */  lui        $at, %hi(D_800F1850)
-    /* 6A210 80079A10 501822AC */  sw         $v0, %lo(D_800F1850)($at)
+    /* 6A20C 80079A0C 0F80013C */  lui        $at, %hi(column)
+    /* 6A210 80079A10 501822AC */  sw         $v0, %lo(column)($at)
   .L80079A14:
     /* 6A214 80079A14 1000A527 */  addiu      $a1, $sp, 0x10
     /* 6A218 80079A18 82E2010C */  jal        write

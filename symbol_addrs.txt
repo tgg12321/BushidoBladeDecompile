@@ -63,7 +63,7 @@ g_gpu_dma_bcr = 0x8009BF50; // GPU DMA block count reg ptr
 g_gpu_dma_chcr = 0x8009BF54; // GPU DMA channel ctrl reg ptr
 g_gpu_vcount = 0x8009BF8C; // VSync counter
 g_gpu_draw_count = 0x8009BF90; // draw call counter
-g_gpu_color_table = 0x800F189C; // GPU color index table
+ctlbuf = 0x800F189C; // GPU color index table  // data-wave 2026-09-25: was g_gpu_color_table
 
 // === GPU: Sine/Cosine LUTs (display.c) ===
 // data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined
@@ -92,7 +92,7 @@ g_cd_status_c = 0x800A1496; // CD status byte C
 CD_com = 0x800A11D5; // CD ready status 2  // data-wave 2026-09-07: was g_cd_ready_flag2
 CD_cbsync = 0x800A11B4; // CD callback A  // data-wave 2026-09-07: was g_cd_callback_a
 CD_cbready = 0x800A11B8; // CD callback B  // data-wave 2026-09-07: was g_cd_callback_b
-g_cd_init_flag = 0x800A11C8; // CD initialized flag
+// data-wave 2026-09-25: g_cd_init_flag = 0x800A11C8 retired; CD_status1 is now object-defined
 g_cd_dma_bcr = 0x800A14B0; // CD DMA BCR ptr
 g_cd_dma_ctrl_b4 = 0x800A14B4; // CD DMA control B4 ptr
 g_cd_dma_dest = 0x800A14B8; // CD DMA destination ptr

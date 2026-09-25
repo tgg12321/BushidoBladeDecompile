@@ -24265,11 +24265,11 @@ dlabel D_8009BF64
     /* 8C764 8009BF64 F010801F */ .word 0x1F8010F0
 enddlabel D_8009BF64
 
-nonmatching D_8009BF68
+nonmatching _qlog
 
-dlabel D_8009BF68
+dlabel _qlog
     /* 8C768 8009BF68 00000000 */ .word 0x00000000
-enddlabel D_8009BF68
+enddlabel _qlog
 
 nonmatching D_8009BF6C
 
@@ -24284,17 +24284,17 @@ dlabel D_8009BF70
     /* 8C774 8009BF74 00000000 */ .word 0x00000000
 enddlabel D_8009BF70
 
-nonmatching D_8009BF78
+nonmatching _qin
 
-dlabel D_8009BF78
+dlabel _qin
     /* 8C778 8009BF78 00000000 */ .word 0x00000000
-enddlabel D_8009BF78
+enddlabel _qin
 
-nonmatching D_8009BF7C
+nonmatching _qout
 
-dlabel D_8009BF7C
+dlabel _qout
     /* 8C77C 8009BF7C 00000000 */ .word 0x00000000
-enddlabel D_8009BF7C
+enddlabel _qout
 
 nonmatching D_8009BF80
 
@@ -30762,17 +30762,17 @@ dlabel CD_status
     /* 919C7 800A11C7 */ .byte 0x00
 enddlabel CD_status
 
-nonmatching D_800A11C8
+nonmatching CD_status1
 
-dlabel D_800A11C8
+dlabel CD_status1
     /* 919C8 800A11C8 00000000 */ .word 0x00000000
-enddlabel D_800A11C8
+enddlabel CD_status1
 
-nonmatching D_800A11CC
+nonmatching CD_nopen
 
-dlabel D_800A11CC
+dlabel CD_nopen
     /* 919CC 800A11CC 00000000 */ .word 0x00000000
-enddlabel D_800A11CC
+enddlabel CD_nopen
 
 nonmatching CD_pos
 

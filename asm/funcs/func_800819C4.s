@@ -19,8 +19,8 @@ glabel CD_init
     /* 72208 80081A08 B81120AC */  sw         $zero, %lo(CD_cbready)($at)
     /* 7220C 80081A0C 0A80013C */  lui        $at, %hi(CD_cbsync)
     /* 72210 80081A10 B41120AC */  sw         $zero, %lo(CD_cbsync)($at)
-    /* 72214 80081A14 0A80013C */  lui        $at, %hi(D_800A11C8)
-    /* 72218 80081A18 C81120AC */  sw         $zero, %lo(D_800A11C8)($at)
+    /* 72214 80081A14 0A80013C */  lui        $at, %hi(CD_status1)
+    /* 72218 80081A18 C81120AC */  sw         $zero, %lo(CD_status1)($at)
     /* 7221C 80081A1C 0A80013C */  lui        $at, %hi(CD_status)
     /* 72220 80081A20 C41120AC */  sw         $zero, %lo(CD_status)($at)
     /* 72224 80081A24 B00A020C */  jal        ResetCallback

@@ -359,7 +359,7 @@ extern s32 D_800F1138;
 
 
 
-extern s32 D_800F1850;
+extern s32 column;
 
 
 
@@ -1508,18 +1508,18 @@ extern void SysDeqIntRP(s32, u32 *);
 extern void SysEnqIntRP(s32, u32 *);
 
 extern s32 _IsVSync(void);
-extern u32 D_800F183C;
-extern u32 D_800F1840;
-extern u32 D_800F1838;
-extern u32 D_800F1844;
+extern u32 patch0_plus_0x4;
+extern u32 patch0_plus_0x8;
+extern u32 patch0;
+extern u32 patch0_plus_0xC;
 s32 SetPatchPad(void) {
-    u32 *v1 = &D_800F183C;
+    u32 *v1 = &patch0_plus_0x4;
     u32 *s0 = v1 - 1;
     EnterCriticalSection();
     *v1 = (u32)_Pad1;
-    D_800F1840 = (u32)_IsVSync;
-    D_800F1838 = 0;
-    D_800F1844 = 0;
+    patch0_plus_0x8 = (u32)_IsVSync;
+    patch0 = 0;
+    patch0_plus_0xC = 0;
     SysDeqIntRP(1, s0);
     SysEnqIntRP(1, s0);
     ExitCriticalSection();
@@ -1531,7 +1531,7 @@ void ExitCriticalSection(void);
 
 s32 RemovePatchPad(void) {
     EnterCriticalSection();
-    SysDeqIntRP(1, &D_800F1838);
+    SysDeqIntRP(1, &patch0);
     ExitCriticalSection();
     return 1;
 }
@@ -2086,17 +2086,17 @@ void putchar(s8 arg0) {
     if (temp_a0 == 9) goto loop;
     if (temp_a0 == 0xA) {
         putchar(0xD);
-        D_800F1850 = 0;
+        column = 0;
         goto tail;
     }
     goto def;
 loop:
     putchar(0x20);
-    if ((D_800F1850 & 7) == 0) return;
+    if ((column & 7) == 0) return;
     goto loop;
 def:
     if ((&_ctype__plus_0x1)[temp_a0] & 0x97) {
-        D_800F1850 += 1;
+        column += 1;
     }
 tail:
     write(1, &sp10, 1);

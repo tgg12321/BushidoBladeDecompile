@@ -5,15 +5,15 @@ glabel _reset
     /* 6E1D0 8007D9D0 1400BFAF */  sw         $ra, 0x14($sp)
     /* 6E1D4 8007D9D4 0F0B020C */  jal        SetIntrMask
     /* 6E1D8 8007D9D8 21200000 */   addu      $a0, $zero, $zero
-    /* 6E1DC 8007D9DC 0A80013C */  lui        $at, %hi(D_8009BF7C)
-    /* 6E1E0 8007D9E0 7CBF20AC */  sw         $zero, %lo(D_8009BF7C)($at)
-    /* 6E1E4 8007D9E4 0A80033C */  lui        $v1, %hi(D_8009BF7C)
-    /* 6E1E8 8007D9E8 7CBF638C */  lw         $v1, %lo(D_8009BF7C)($v1)
+    /* 6E1DC 8007D9DC 0A80013C */  lui        $at, %hi(_qout)
+    /* 6E1E0 8007D9E0 7CBF20AC */  sw         $zero, %lo(_qout)($at)
+    /* 6E1E4 8007D9E4 0A80033C */  lui        $v1, %hi(_qout)
+    /* 6E1E8 8007D9E8 7CBF638C */  lw         $v1, %lo(_qout)($v1)
     /* 6E1EC 8007D9EC 0A80013C */  lui        $at, %hi(D_8009BF88)
     /* 6E1F0 8007D9F0 88BF22AC */  sw         $v0, %lo(D_8009BF88)($at)
     /* 6E1F4 8007D9F4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 6E1F8 8007D9F8 0A80013C */  lui        $at, %hi(D_8009BF78)
-    /* 6E1FC 8007D9FC 78BF23AC */  sw         $v1, %lo(D_8009BF78)($at)
+    /* 6E1F8 8007D9F8 0A80013C */  lui        $at, %hi(_qin)
+    /* 6E1FC 8007D9FC 78BF23AC */  sw         $v1, %lo(_qin)($at)
     /* 6E200 8007DA00 07000332 */  andi       $v1, $s0, 0x7
     /* 6E204 8007DA04 25006210 */  beq        $v1, $v0, .L8007DA9C
     /* 6E208 8007DA08 02006228 */   slti      $v0, $v1, 0x2
@@ -36,8 +36,8 @@ glabel _reset
     /* 6E244 8007DA44 000062AC */  sw         $v0, 0x0($v1)
     /* 6E248 8007DA48 0A80033C */  lui        $v1, %hi(D_8009BF64)
     /* 6E24C 8007DA4C 64BF638C */  lw         $v1, %lo(D_8009BF64)($v1)
-    /* 6E250 8007DA50 0F80043C */  lui        $a0, %hi(D_800F189C)
-    /* 6E254 8007DA54 9C188424 */  addiu      $a0, $a0, %lo(D_800F189C)
+    /* 6E250 8007DA50 0F80043C */  lui        $a0, %hi(ctlbuf)
+    /* 6E254 8007DA54 9C188424 */  addiu      $a0, $a0, %lo(ctlbuf)
     /* 6E258 8007DA58 0000628C */  lw         $v0, 0x0($v1)
     /* 6E25C 8007DA5C 21280000 */  addu       $a1, $zero, $zero
     /* 6E260 8007DA60 00084234 */  ori        $v0, $v0, 0x800

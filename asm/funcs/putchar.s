@@ -10,15 +10,15 @@ glabel putchar
     /* 6A19C 8007999C 00000000 */   nop
     /* 6A1A0 800799A0 5FE6010C */  jal        putchar
     /* 6A1A4 800799A4 0D000424 */   addiu     $a0, $zero, 0xD
-    /* 6A1A8 800799A8 0F80013C */  lui        $at, %hi(D_800F1850)
-    /* 6A1AC 800799AC 501820AC */  sw         $zero, %lo(D_800F1850)($at)
+    /* 6A1A8 800799A8 0F80013C */  lui        $at, %hi(column)
+    /* 6A1AC 800799AC 501820AC */  sw         $zero, %lo(column)($at)
     /* 6A1B0 800799B0 85E60108 */  j          .L80079A14
     /* 6A1B4 800799B4 01000424 */   addiu     $a0, $zero, 0x1
   .L800799B8:
     /* 6A1B8 800799B8 5FE6010C */  jal        putchar
     /* 6A1BC 800799BC 20000424 */   addiu     $a0, $zero, 0x20
-    /* 6A1C0 800799C0 0F80023C */  lui        $v0, %hi(D_800F1850)
-    /* 6A1C4 800799C4 5018428C */  lw         $v0, %lo(D_800F1850)($v0)
+    /* 6A1C0 800799C0 0F80023C */  lui        $v0, %hi(column)
+    /* 6A1C4 800799C4 5018428C */  lw         $v0, %lo(column)($v0)
     /* 6A1C8 800799C8 00000000 */  nop
     /* 6A1CC 800799CC 07004230 */  andi       $v0, $v0, 0x7
     /* 6A1D0 800799D0 13004010 */  beqz       $v0, .L80079A20
@@ -33,12 +33,12 @@ glabel putchar
     /* 6A1F0 800799F0 97004230 */  andi       $v0, $v0, 0x97
     /* 6A1F4 800799F4 07004010 */  beqz       $v0, .L80079A14
     /* 6A1F8 800799F8 01000424 */   addiu     $a0, $zero, 0x1
-    /* 6A1FC 800799FC 0F80023C */  lui        $v0, %hi(D_800F1850)
-    /* 6A200 80079A00 5018428C */  lw         $v0, %lo(D_800F1850)($v0)
+    /* 6A1FC 800799FC 0F80023C */  lui        $v0, %hi(column)
+    /* 6A200 80079A00 5018428C */  lw         $v0, %lo(column)($v0)
     /* 6A204 80079A04 00000000 */  nop
     /* 6A208 80079A08 01004224 */  addiu      $v0, $v0, 0x1
-    /* 6A20C 80079A0C 0F80013C */  lui        $at, %hi(D_800F1850)
-    /* 6A210 80079A10 501822AC */  sw         $v0, %lo(D_800F1850)($at)
+    /* 6A20C 80079A0C 0F80013C */  lui        $at, %hi(column)
+    /* 6A210 80079A10 501822AC */  sw         $v0, %lo(column)($at)
   .L80079A14:
     /* 6A214 80079A14 1000A527 */  addiu      $a1, $sp, 0x10
     /* 6A218 80079A18 82E2010C */  jal        write

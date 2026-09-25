@@ -3881,10 +3881,10 @@ s32 SioAnsyncRead(int a0, int a1) {
     }
     return 0;
 }
-extern volatile u16 D_800F1AE0;
-extern volatile u16 D_800F1AE2;
-extern u16 D_800F1AE6;
-extern s32 (*D_800F1AE8)(s32, s32);
+extern volatile u16 regs_plus_0x8;
+extern volatile u16 regs_plus_0xA;
+extern u16 regs_plus_0xE;
+extern s32 (*CombWaitCallback)(s32, s32);
 extern s16 D_800A3074[4];
 extern void DeliverEvent(s32, s32);
 
@@ -3906,10 +3906,10 @@ cleanup_A:
         *((volatile u16 *)(spu + 0xA)) = 0x50;
         {
             /* FAKE: redundant second handle to D_800F1AE0, mechanism: MEM_VOLATILE_P blocks combine.c's single-use symbol-address fold into the load (non-volatile handle measured folded: 159i vs target 160), lever-exhaustion: memory/grind/SioSyncroRead/hypotheses.md [s1-H2]; volatility copied from the granted decl (Ruling-4 grant, docs/grind/decisions.md 2026-08-25 10:34) */
-            volatile u16 *p_ae0 = &D_800F1AE0;
+            volatile u16 *p_ae0 = &regs_plus_0x8;
             *((volatile u16 *)(spu + 8)) = *p_ae0;
         }
-        *((volatile u16 *)(spu + 0xE)) = D_800F1AE6;
+        *((volatile u16 *)(spu + 0xE)) = regs_plus_0xE;
         *((volatile u16 *)(spu + 0xA)) |= 0x10;
         *((volatile u16 *)(spu + 0xA)) = saved;
         *((volatile u16 *)(spu + 0xA)) &= 0xFFDF;
@@ -3936,7 +3936,7 @@ cleanup_B:
 main_work:
     {
         /* FAKE: redundant second handle to D_800F1AE2, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: twin precedent SioSyncroWrite s4-M1 (main.c:3044); s1's direct-global form measured 158i/24 (variant A) */
-        volatile u16 *p_ae2 = &D_800F1AE2;
+        volatile u16 *p_ae2 = &regs_plus_0xA;
         u32 mode = *p_ae2;
         pkt_len = *(s16 *)((s32)D_800A3074 + ((mode & 0x300) >> 7));
     }
@@ -3955,7 +3955,7 @@ main_work:
             if ((*((volatile u16 *)(spu + 4))) & 0x38) goto cleanup_A;
             if (!((*((volatile u16 *)(spu + 4))) & 2)) {
                 do {
-                    cb = D_800F1AE8;
+                    cb = CombWaitCallback;
                     if (cb != 0) {
                         s32 prev = retries;
                         retries += 1;
@@ -3990,28 +3990,28 @@ return_val:
 /* PsyQ LIBCOMB comb: SioAnsyncWrite (static) — verbatim-linked Sony object.
    D_800F1AF0/AF4/AF8 are mutated at interrupt time by HandleSio — volatile
    is original semantics (operator-audited grant 2026-07-10). */
-extern volatile s32 D_800F1AEC;
-extern volatile s32 D_800F1AF0;
-extern volatile s32 D_800F1AF4;
-extern volatile s32 D_800F1AF8;
+extern volatile s32 sen;
+extern volatile s32 sen_plus_0x4;
+extern volatile s32 sen_plus_0x8;
+extern volatile s32 sen_plus_0xC;
 extern s32 D_800A3044;
 s32 SioAnsyncWrite(int a0, int a1) {
-    volatile s32 *flag = &D_800F1AEC;
+    volatile s32 *flag = &sen;
     if (*flag != 0) {
         return -1;
     }
-    D_800F1AF4 = a1;
-    D_800F1AF0 = a0;
+    sen_plus_0x8 = a1;
+    sen_plus_0x4 = a0;
     {
         s32 reg = D_800A3044;
         *flag = 1;
-        D_800F1AF8 = *(volatile u16 *)(reg + 4) & 0x80;
+        sen_plus_0xC = *(volatile u16 *)(reg + 4) & 0x80;
         *(volatile u16 *)(reg + 0xA) |= 0x400;
     }
     return 0;
 }
 s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
-    volatile s32 *flag = &D_800F1AEC;
+    volatile s32 *flag = &sen;
     s32 retries;
     s32 pkt_len;
     s32 i;
@@ -4021,20 +4021,20 @@ s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
     if (*flag != 0) return -1;
     {
         /* FAKE: redundant second handle to D_800F1AE2, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: memory/grind/SioSyncroWrite/hypotheses.md [s4-M1] (direct-global form measured 158i/mismatch) */
-        volatile u16 *p_ae2 = &D_800F1AE2;
+        volatile u16 *p_ae2 = &regs_plus_0xA;
         u32 mode;
         mode = *p_ae2;
         pkt_len = *(s16 *)((s32)D_800A3074 + ((mode & 0x300) >> 7));
     }
-    D_800F1AF4 = arg1;
-    D_800F1AF0 = (s32)arg0;
+    sen_plus_0x8 = arg1;
+    sen_plus_0x4 = (s32)arg0;
     i = 0;
-    if (D_800F1AF4 == 0) goto done;
+    if (sen_plus_0x8 == 0) goto done;
     for (;;) {
         volatile s32 *st = flag;
 
         while ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 5) != 5) {
-            cb = D_800F1AE8;
+            cb = CombWaitCallback;
             if (cb != 0) {
                 s32 prev = retries;
                 retries += 1;
@@ -4045,24 +4045,24 @@ s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
             }
         }
         if (i == 0) {
-            D_800F1AF8 = (*((volatile u16 *)(((s32)D_800A3044) + 4))) & 0x80;
+            sen_plus_0xC = (*((volatile u16 *)(((s32)D_800A3044) + 4))) & 0x80;
         }
-        *((u8 *)D_800A3044) = *((u8 *)D_800F1AF0);
+        *((u8 *)D_800A3044) = *((u8 *)sen_plus_0x4);
         st[1]++;
         i += 1;
         st[2]--;
         if (i == pkt_len) {
             if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 0x80) == st[3]) {
                 /* FAKE: redundant second handle to D_800F1AF8, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-M2] (direct-global form measured 158i/mismatch) */
-                volatile s32 *p_af8 = &D_800F1AF8;
+                volatile s32 *p_af8 = &sen_plus_0xC;
                 do {
-                    cb = D_800F1AE8;
+                    cb = CombWaitCallback;
                     if (cb != 0) {
                         s32 prev = retries;
                         retries += 1;
                         if (cb(2, prev) == 0) {
                             /* FAKE: redundant second handle to D_800F1AF4, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-M3] (direct-global form measured 158i/mismatch) */
-                            volatile s32 *p_af4b = &D_800F1AF4;
+                            volatile s32 *p_af4b = &sen_plus_0x8;
                             DeliverEvent(0xF000000B, 0x100);
                             return (arg1 - *p_af4b) - 1;
                         }
@@ -4073,7 +4073,7 @@ s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
         }
         {
             /* FAKE: redundant second handle to D_800F1AF4, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-H1/H2] (plain-global and function-scope-pointer forms both measured negative) */
-            volatile s32 *remaining = &D_800F1AF4;
+            volatile s32 *remaining = &sen_plus_0x8;
             if (*remaining == 0) break;
         }
     }
@@ -4081,7 +4081,7 @@ s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
 done:
     {
         /* FAKE: redundant second handle to D_800F1AF4, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-M4] (direct-global form measured 158i/mismatch) */
-        volatile s32 *p_af4 = &D_800F1AF4;
+        volatile s32 *p_af4 = &sen_plus_0x8;
         return arg1 - *p_af4;
     }
 }

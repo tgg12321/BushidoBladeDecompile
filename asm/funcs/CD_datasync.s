@@ -19,10 +19,10 @@ glabel CD_datasync
     /* 723F4 80081BF4 B81922AC */  sw         $v0, %lo(D_800F19B8)($at)
     /* 723F8 80081BF8 0180023C */  lui        $v0, %hi(D_800162C0)
     /* 723FC 80081BFC C0624224 */  addiu      $v0, $v0, %lo(D_800162C0)
-    /* 72400 80081C00 0F80013C */  lui        $at, %hi(D_800F19BC)
-    /* 72404 80081C04 BC1920AC */  sw         $zero, %lo(D_800F19BC)($at)
-    /* 72408 80081C08 0F80013C */  lui        $at, %hi(D_800F19C0)
-    /* 7240C 80081C0C C01922AC */  sw         $v0, %lo(D_800F19C0)($at)
+    /* 72400 80081C00 0F80013C */  lui        $at, %hi(Alarm_plus_0x4)
+    /* 72404 80081C04 BC1920AC */  sw         $zero, %lo(Alarm_plus_0x4)($at)
+    /* 72408 80081C08 0F80013C */  lui        $at, %hi(Alarm_plus_0x8)
+    /* 7240C 80081C0C C01922AC */  sw         $v0, %lo(Alarm_plus_0x8)($at)
   .L80081C10:
     /* 72410 80081C10 330A020C */  jal        VSync
     /* 72414 80081C14 FFFF0424 */   addiu     $a0, $zero, -0x1
@@ -32,12 +32,12 @@ glabel CD_datasync
     /* 72424 80081C24 2A186200 */  slt        $v1, $v1, $v0
     /* 72428 80081C28 0B006014 */  bnez       $v1, .L80081C58
     /* 7242C 80081C2C 00000000 */   nop
-    /* 72430 80081C30 0F80033C */  lui        $v1, %hi(D_800F19BC)
-    /* 72434 80081C34 BC19638C */  lw         $v1, %lo(D_800F19BC)($v1)
+    /* 72430 80081C30 0F80033C */  lui        $v1, %hi(Alarm_plus_0x4)
+    /* 72434 80081C34 BC19638C */  lw         $v1, %lo(Alarm_plus_0x4)($v1)
     /* 72438 80081C38 00000000 */  nop
     /* 7243C 80081C3C 01006224 */  addiu      $v0, $v1, 0x1
-    /* 72440 80081C40 0F80013C */  lui        $at, %hi(D_800F19BC)
-    /* 72444 80081C44 BC1922AC */  sw         $v0, %lo(D_800F19BC)($at)
+    /* 72440 80081C40 0F80013C */  lui        $at, %hi(Alarm_plus_0x4)
+    /* 72444 80081C44 BC1922AC */  sw         $v0, %lo(Alarm_plus_0x4)($at)
     /* 72448 80081C48 3C00023C */  lui        $v0, (0x3C0000 >> 16)
     /* 7244C 80081C4C 2A104300 */  slt        $v0, $v0, $v1
     /* 72450 80081C50 1D004010 */  beqz       $v0, .L80081CC8
@@ -49,8 +49,8 @@ glabel CD_datasync
     /* 72464 80081C64 00000000 */   nop
     /* 72468 80081C68 00002492 */  lbu        $a0, 0x0($s1)
     /* 7246C 80081C6C 01002292 */  lbu        $v0, 0x1($s1)
-    /* 72470 80081C70 0F80053C */  lui        $a1, %hi(D_800F19C0)
-    /* 72474 80081C74 C019A58C */  lw         $a1, %lo(D_800F19C0)($a1)
+    /* 72470 80081C70 0F80053C */  lui        $a1, %hi(Alarm_plus_0x8)
+    /* 72474 80081C74 C019A58C */  lw         $a1, %lo(Alarm_plus_0x8)($a1)
     /* 72478 80081C78 80100200 */  sll        $v0, $v0, 2
     /* 7247C 80081C7C 21105000 */  addu       $v0, $v0, $s0
     /* 72480 80081C80 80200400 */  sll        $a0, $a0, 2
