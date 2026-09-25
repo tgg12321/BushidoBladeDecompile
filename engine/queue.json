@@ -646,17 +646,6 @@
       "rotation_count": 1
     },
     {
-      "func": "prnt",
-      "file": "text1b_b",
-      "distance": 418,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "owner question (borderline.md): BSD-Reno doprnt shared scratch n; honest per-role floor 21/418, single-n 0/418 oracle-green but layer-2 FAIL (R5 1(a)/(b)/(f); class declined 2026-09-24). Allocator: split digit loops cannot seat s0. See memory/grind/prnt/",
-      "rotated_at": "2026-09-25T13:26:35+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "func_80057E84",
       "file": "text1b",
       "distance": 447,
@@ -680,11 +669,11 @@
     }
   ],
   "counts": {
-    "total": 60,
+    "total": 59,
     "active": 38,
     "by_status": {
       "active": 38,
-      "rotated": 22
+      "rotated": 21
     },
     "by_verdict": {
       "C": 30,
