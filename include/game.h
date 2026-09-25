@@ -157,12 +157,16 @@ extern Unk8009B400Record D_8009B458[3][2];
  * forms $s1 = %hi/%lo(D_800EFAE8) once in its prologue and reaches offsets
  * 0x00/0x02/0x04/0x08/0x0C/0x10/0x14/0x1C/0x1E/0x20/0x2C/0x44/0x46/0x48/0x4A as
  * displacements off that single register (`lw $v1, 0x2C($s1)`, `sh $s5, 0x44($s1)`,
- * ...), and the still-asm per-frame handler asm/funcs/func_8005490C.s addresses
- * the same block the same way. The relocator func_80054FDC bumps the 0x2C..0x40
- * word group together by one base offset. Base+offset addressing of one object,
- * not symbol adjacency. Replaces the splat per-word scalars D_800EFAE8 /
+ * ...), and the per-frame handler func_8005490C addresses the same block the
+ * same way. The relocator func_80054FDC bumps the 0x2C..0x40 word group
+ * together by one base offset. Base+offset addressing of one object, not
+ * symbol adjacency. Replaces the splat per-word scalars D_800EFAE8 /
  * D_800EFB0C / D_800EFB14 / D_800EFB18 / D_800EFB1C / D_800EFB20 / D_800EFB24 /
- * D_800EFB28. */
+ * D_800EFB28.
+ * The per-player pairs are arrays: asm/funcs/func_8005490C.s walks
+ * 0x34/0x38 with one pointer (`lw 0x34($s0)`, `$s0 += 4`, i < 2), 0x34/0x3C with
+ * `$s4 += 4` and 0x44/0x48 with `$s2 += 2` in its i < 2 player loop; 0x24/0x26/0x28
+ * are the halfword stores of the negated camera rotation. */
 typedef struct {
     /* 0x00 */ s16 unk0;    /* phase (func_8005490C: -1 = done, 0 = init) */
     /* 0x02 */ s16 unk2;
@@ -177,18 +181,13 @@ typedef struct {
     /* 0x1E */ s16 unk1E;
     /* 0x20 */ s16 unk20;
     /* 0x22 */ s16 unk22;
-    /* 0x24 */ s32 unk24;   /* returned by address from func_8005507C */
-    /* 0x28 */ s32 unk28;
+    /* 0x24 */ s16 unk24[4]; /* negated camera rotation vx/vy/vz; returned by address from func_8005507C */
     /* 0x2C */ s32 unk2C;   /* loaded data base (census g_snd_data_buf_base); relocated by func_80054FDC */
     /* 0x30 */ s32 unk30;   /* relocated by func_80054FDC */
-    /* 0x34 */ s32 unk34;   /* relocated by func_80054FDC when nonzero */
-    /* 0x38 */ s32 unk38;   /* relocated by func_80054FDC when nonzero */
-    /* 0x3C */ s32 unk3C;   /* relocated by func_80054FDC when nonzero */
-    /* 0x40 */ s32 unk40;   /* relocated by func_80054FDC when nonzero */
-    /* 0x44 */ s16 unk44;
-    /* 0x46 */ s16 unk46;
-    /* 0x48 */ s16 unk48;
-    /* 0x4A */ s16 unk4A;
+    /* 0x34 */ s32 unk34[2]; /* per player; relocated by func_80054FDC when nonzero */
+    /* 0x3C */ s32 unk3C[2]; /* per player; relocated by func_80054FDC when nonzero */
+    /* 0x44 */ s16 unk44[2]; /* per player */
+    /* 0x48 */ s16 unk48[2]; /* per player */
 } Unk800EFAE8Ctrl;
 
 extern Unk800EFAE8Ctrl D_800EFAE8;

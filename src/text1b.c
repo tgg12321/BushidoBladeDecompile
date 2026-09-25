@@ -628,6 +628,7 @@ void func_80048B8C(s32 a0) {
 }
 typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
 typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
 typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } _struct_copy_func48BA4;
 extern void *game_GetPlayerData();
 extern s16 Judge;
@@ -949,7 +950,7 @@ typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } _struct_copy_func49718;
 
 extern u8 *D_800A38B4;
 extern s16 D_800EF980[];
-extern s32 (*g_anim_func_table)(s16 *, s16 *);
+extern s32 (*g_anim_func_table[])(s16 *, s16 *);
 
 extern void func_80052C10(void);
 extern void MulMatrix0(s16 *, s16 *, s16 *);
@@ -991,7 +992,7 @@ void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
             *((u16 *) (obj + 0x10)) = *((u16 *) (p_arg3 + 0));
             *((u16 *) (obj + 0x12)) = *((u16 *) (p_arg3 + 2));
             *((u16 *) (obj + 0x14)) = *((u16 *) (p_arg3 + 4));
-            g_anim_func_table((s16 *) (obj + 0x10), (s16 *) (obj + 0x18));
+            g_anim_func_table[0]((s16 *) (obj + 0x10), (s16 *) (obj + 0x18));
             *((s32 *) (obj + 0x2C)) = arg2[0];
             *((s32 *) (obj + 0x30)) = arg2[1];
             *((s32 *) (obj + 0x34)) = arg2[2];
@@ -2010,16 +2011,16 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     s->unk14 = *t++;
     s->unk1C = 0;
     s->unk20 = 0;
-    s->unk44 = a2;
-    s->unk46 = a3;
-    s->unk48 = a4;
-    s->unk4A = a5;
+    s->unk44[0] = a2;
+    s->unk44[1] = a3;
+    s->unk48[0] = a4;
+    s->unk48[1] = a5;
     s->unk1E = (((s->unk4 >> 8) & 0x7F) << 14) / 360;
     if (s->unk4 >= 0) {
-        s->unk44 = -1;
+        s->unk44[0] = -1;
     }
     if (!(s->unk4 & 0x40000000)) {
-        s->unk46 = -1;
+        s->unk44[1] = -1;
     }
     v = func_8004153C(0);
     if (v != 0) {
@@ -2083,21 +2084,21 @@ void func_80054FDC(s32 a0) {
     s32 *p = &D_800EFAE8.unk2C;
     *p = a0 + *p;
     D_800EFAE8.unk30 = a0 + D_800EFAE8.unk30;
-    if (D_800EFAE8.unk34) {
-        D_800EFAE8.unk34 = a0 + D_800EFAE8.unk34;
+    if (D_800EFAE8.unk34[0]) {
+        D_800EFAE8.unk34[0] = a0 + D_800EFAE8.unk34[0];
     }
-    if (D_800EFAE8.unk38) {
-        D_800EFAE8.unk38 = a0 + D_800EFAE8.unk38;
+    if (D_800EFAE8.unk34[1]) {
+        D_800EFAE8.unk34[1] = a0 + D_800EFAE8.unk34[1];
     }
-    if (D_800EFAE8.unk3C) {
-        D_800EFAE8.unk3C = a0 + D_800EFAE8.unk3C;
+    if (D_800EFAE8.unk3C[0]) {
+        D_800EFAE8.unk3C[0] = a0 + D_800EFAE8.unk3C[0];
     }
-    if (D_800EFAE8.unk40) {
-        D_800EFAE8.unk40 = a0 + D_800EFAE8.unk40;
+    if (D_800EFAE8.unk3C[1]) {
+        D_800EFAE8.unk3C[1] = a0 + D_800EFAE8.unk3C[1];
     }
 }
 s32* func_8005507C(void) {
-    return &D_800EFAE8.unk24;
+    return (s32 *)D_800EFAE8.unk24;
 }
 s32* func_8005508C(void) {
     return D_80101DF0.xf.mat.t;
@@ -3163,7 +3164,6 @@ typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
 typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
 typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
 typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
-typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
 typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
 typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
 
