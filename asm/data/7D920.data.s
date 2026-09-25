@@ -2911,11 +2911,6 @@ nonmatching D_8008EB54
 
 dlabel D_8008EB54
     /* 7F354 8008EB54 */ .short 0x0000
-enddlabel D_8008EB54
-
-nonmatching single_dojo_yaburi_char_id_tbl
-
-dlabel single_dojo_yaburi_char_id_tbl
     /* 7F356 8008EB56 */ .short 0xFB00
     /* 7F358 8008EB58 */ .short 0xFF6B
     /* 7F35A 8008EB5A */ .short 0xFD58
@@ -2927,7 +2922,7 @@ dlabel single_dojo_yaburi_char_id_tbl
     /* 7F366 8008EB66 */ .short 0xFB00
     /* 7F368 8008EB68 */ .short 0x0095
     /* 7F36A 8008EB6A */ .short 0xFD58
-enddlabel single_dojo_yaburi_char_id_tbl
+enddlabel D_8008EB54
 
 nonmatching D_8008EB6C
 

@@ -330,9 +330,9 @@ glabel func_80026DA4
     /* 17A44 80027244 03130900 */  sra        $v0, $t1, 12
     /* 17A48 80027248 21208200 */  addu       $a0, $a0, $v0
     /* 17A4C 8002724C 1000A4AF */  sw         $a0, 0x10($sp)
-    /* 17A50 80027250 0980013C */  lui        $at, %hi(single_dojo_yaburi_char_id_tbl)
+    /* 17A50 80027250 0980013C */  lui        $at, %hi(D_8008EB54 + 0x2)
     /* 17A54 80027254 21082700 */  addu       $at, $at, $a3
-    /* 17A58 80027258 56EB2284 */  lh         $v0, %lo(single_dojo_yaburi_char_id_tbl)($at)
+    /* 17A58 80027258 56EB2284 */  lh         $v0, %lo(D_8008EB54 + 0x2)($at)
     /* 17A5C 8002725C 00000000 */  nop
     /* 17A60 80027260 21186200 */  addu       $v1, $v1, $v0
     /* 17A64 80027264 1400A3AF */  sw         $v1, 0x14($sp)

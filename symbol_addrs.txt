@@ -240,7 +240,6 @@ g_str_bbm_s123 = 0x800103C0; // S123.BBM
 // === Kengo-derived data symbol names ===
 menuDat = 0x8008DCCC;
 cpu_practice_honmokuroku_data_tbl = 0x8008E778;
-single_dojo_yaburi_char_id_tbl = 0x8008EB56;
 g_cd_file_table = 0x8008EC34;  // data-wave 2026-09-24: was SpecialCam
 StatusUpBuf = 0x800906A6;
 InfoPosYTbl1 = 0x80099D54;

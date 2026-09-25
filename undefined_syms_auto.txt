@@ -37,7 +37,6 @@ D_8008EA44 = 0x8008EA44;
 D_8008EA45 = 0x8008EA45;  /* alias of D_8008EA44+1; retire with func_800335D8 (asm/funcs/func_800335D8.s is its only referrer) */
 D_8008EB06 = 0x8008EB06;
 D_8008EB0A = 0x8008EB0A;
-single_dojo_yaburi_char_id_tbl = 0x8008EB56;
 D_8008EB8E = 0x8008EB8E;
 D_8008EBFC = 0x8008EBFC;
 D_8008EBFD = 0x8008EBFD;  /* alias of D_8008EBFC+1; retire with func_800335D8 (asm/funcs/func_800335D8.s is its only referrer) */

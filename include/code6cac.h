@@ -10,7 +10,6 @@ extern s16 StatusUpBuf;
 extern u8 cpu_practice_honmokuroku_data_tbl;
 extern u8 g_module_type_tbl;
 extern s32 menuDat;
-extern s16 single_dojo_yaburi_char_id_tbl;
 
 /* Per-character record pointed to by D_800A3860[ch] (ch = rec+0x4A). f14 is
  * the modulus func_800213A0 / func_80021424 wrap rec+0x86 with. The u16
@@ -96,8 +95,15 @@ extern s32 D_8008EB14;
 extern s32 D_8008EB18;
 extern u8 D_8008EB1C;
 extern u8 D_8008EB38;
-extern s16 D_8008EB54;
-extern u8 D_8008EB6C;
+/* 6-row tables func_80026DA4 selects by D_80101F32 mode (row 0..5): unk0
+ * scales the Judge sin/cos offset, unk2 is added to y; D_8008EB6C[row] is
+ * passed as func_80032854's arg1. */
+typedef struct {
+    s16 unk0;
+    s16 unk2;
+} Tbl8008EB54Entry;
+extern Tbl8008EB54Entry D_8008EB54[6];
+extern u8 D_8008EB6C[6];
 extern u8 D_8008EB80;
 extern u8 D_8008EB8E;
 extern u16 D_8008EBA0;

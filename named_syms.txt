@@ -1033,7 +1033,6 @@ g_data_start                                            = 0x8008D070;  /* start 
 g_module_func_tbl                                       = 0x8008D090;  /* mode dispatch table (D_800A3834 indexes into this) */
 menuDat                                                 = 0x8008DCCC;  /* menu data block */
 cpu_practice_honmokuroku_data_tbl                       = 0x8008E778;  /* CPU practice exercise list ("honmokuroku") */
-single_dojo_yaburi_char_id_tbl                          = 0x8008EB56;  /* single-player dojo-challenge character IDs */
 g_cd_file_table                                              = 0x8008EC34;  /* special camera data block (referenced by replay-camera) */  /* data-wave 2026-09-24: was SpecialCam */
 StatusUpBuf                                             = 0x800906A6;  /* status-up display buffer */
 InfoPosYTbl1                                            = 0x80099D54;  /* info Y-position table */
