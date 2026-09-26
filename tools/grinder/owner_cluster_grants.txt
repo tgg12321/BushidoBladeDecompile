@@ -78,3 +78,13 @@ func_80018300 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; cens
 # with the correction; the owner answered "Still approve both".
 func_8002CD58 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :72; owner-instructed row 2026-09-25, with func_8002DAD0 only; operator-added 2026-09-25)
 func_8002DAD0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :76; owner-instructed row 2026-09-25, reverses the 2026-09-21 decline for this function; operator-added 2026-09-25)
+# 2026-09-26 — census member func_8002DE20 (cop2-addressing-preamble-cluster.md).
+# Its GTE islands are header-exact PsyQ 4.3 inline_o.h / gtemac.h statements
+# (inline-asm-policy.md § Owner ruling 2026-09-26, inline_o.h class), with ONE
+# exception the class does not cover: gte_rtv0's DMPSX placeholder
+# `.word 0x0000013f` is carried as the post-DMPSX command word `.word 0x4A486012`
+# (three statements; no DMPSX pass in this build). Operator-added at the
+# owner's instruction 2026-09-26 (owner Q11, recorded in ae96881fc): this
+# row covers ONLY that word substitution, for this function only; every other
+# gate applies unchanged:
+func_8002DE20 inline-asm-policy.md § Per-function grant: func_8002DE20 (owner Q11 2026-09-26, ae96881fc): gte_rtv0 post-DMPSX word 0x4A486012 for placeholder 0x0000013f, 3 statements only; this function only; operator-added 2026-09-26
