@@ -102,3 +102,25 @@ uses the nibble shift), so this is low-probability. An owner ruling on the
 `shift` reuse (one "per-player field shift" variable, re-set per field width)
 is the other path. It is a candidate policy question for the orchestrator or
 owner. s2 did not file it and did not self-authorize it.
+
+## Manual s3 (2026-09-25, after the toolchain auto-return): floor unchanged at 5/393
+The return was triggered by the narrow PLUS->IOR adoption. decisions.md records this candidate as
+byte-identical under narrow and exprop, and the re-measure gives 5 again. Scratch: tmp/f1be20s3/.
+- **`enumerate` rung, the one ladder instrument not yet run (tools/spelling_enum.py):** the
+  extraction block in fully-named form (`half` + four named pad-word loads `wh/wp/wr/wu`,
+  every inline subset x every declaration order x the `arg0 * 16` swap) gives 326 distinct
+  spellings, and **all 326 score 5**. Note: local names that equal a member name (`held`, `pressed`)
+  self-match the tool's `\bname\b` dependency regex through `.held`, which leaves only 2 spellings.
+  Rename them first.
+- Structural one-offs, all KILLED: `u32 half` 5; `arg0 << 4` 5; block-scoped `half` 5; `u32 shift`
+  5; `(u16)` cast in place of `& 0xFFFF` 5; `half` before the struct copy 5; nibble shift as
+  `shift = arg0 * 4; if (mode == 6) shift = 0;` 5; nibble shift as a ternary 8; struct copy after
+  the extraction 47.
+- Status of the policy path: the rule file (ordinary-c-judge-decidable.md, Ruling 9's
+  "what stays banned" list, owner-approved 2026-09-25) now names func_8001BE20 `shift`
+  explicitly: `arg0 * 16`, then `0` or `arg0 * 4`, is different quantities plus a constant,
+  failing (b)/(d). The policy question the s2 frontier floated is therefore ANSWERED (no). Do not
+  re-file it.
+- Every ladder instrument has now run at floor 5: structural respellings, dumps, permuter,
+  enumerate, cc1psx (33). Rotated. It returns on a toolchain change that moves the floor, on
+  sibling movement, or on queue drain.
