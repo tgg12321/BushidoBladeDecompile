@@ -72,6 +72,21 @@ out in memory/grind/func_80034708/evidence.md [s3]-[s4] (F12-F22 + tables):
    follows them; the clock records are read through `FileTimeRec *base`
    (base[i].unk_4 / base[i].unk_0; the FAKE comment's first line updated).
    code6cac_b.c's two `s32 *flags = &D_80106A50;` point at &D_80106A50.unk_00.
+   (d) every other consumer names the record's members (ledger [s8]):
+   ings.c func_800167EC `FileRecord *rec`, rec->unk_00 / rec->times[i].*;
+   code6cac_c2.c func_8003C714 `FileTimeRec *base = D_80106A50.times`;
+   code6cac_b.c func_80033D38 rec->times[j] / [k] / [n] (was a local HitRec
+   view of the record); code6cac_c_mid.c func_8003800C `D_80106A50 =
+   *(FileRecord *)src;` (was a CopyBlock view; typedef removed) — all
+   byte-neutral on the unsplit tree.
+   FOR THE REVIEWER: func_80037F40 keeps (a) its checksum, a byte sum over the
+   record's 0x24-byte object representation, and (b) its Quad copy of the
+   record ending at .color plus one word. The struct-assignment form
+   `*(FileRecord *)dst = D_80106A50;` matches instruction for instruction
+   except 5 words: GCC's block move places its end pointer after the
+   preheader moves, the target computes it before them (an explicit end
+   pointer in the original source). Only the cast form reproduces the bytes
+   (ledger [s8] F34).
 Makefile line 77 still says text1a is "the project's sole -G8 file"; that
 comment is left for the owner (rule (v) limits the Makefile change to lists).
 
