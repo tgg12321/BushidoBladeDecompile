@@ -114,6 +114,8 @@ wr(R + '/src/code6cac_b.c', b)
 c = rd(R + '/src/code6cac_c_ab.c')
 assert '    chardata = &D_80102778.unk_4[1];\n' in c and '                chardata[2] = p[1];\n' in c
 
+subprocess.run(['python3', 'tmp/func_80034708/record_members.py'], check=True)
+
 if os.environ.get('NOSPLIT'):
     print('stage3 (no split) ok')
     raise SystemExit(0)

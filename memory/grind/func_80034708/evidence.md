@@ -347,3 +347,48 @@ relocations (R_MIPS_HI16 / R_MIPS_LO16 D_800A37B8, addend 0 in the word), at the
 D_800A3690 and D_800A36F9 need no exemption (both are in sdata_syms.txt; sdata_exclude'd for
 func_80034708 as before), but the same listing shows their 12 / 14 relocated instructions are
 byte- and relocation-identical at -G8 and -G0 too.
+
+## [s8] slotB4 2026-09-26 — third layer-2 FAIL (prong (d) on D_80106A50 consumers) and the fixes
+FAIL objections: ings.c func_800167EC byte offsets, code6cac_c_mid.c func_80037F40 Quad walk,
+code6cac_c2.c func_8003C714 byte stride; minor: stale D_8010277C name in the code6cac.c:1880 FAKE
+comment. Everything else (scope, body, build files, Q8, comment, every D_80102778 consumer)
+held. Reverted, rebuilt == oracle, lock released; staged diff = integration/landing-s7-rejected.patch.
+
+Sweep of every consumer of both merged objects (integ src, all `&D_…`, casts, offset forms) and
+the fixes (integration/record_members.py, applied BEFORE the split; integration/inplace.sh: every TU
+rebuilt, SHA1 == oracle with func_80034708 still INCLUDE_ASM):
+F30. ings.c func_800167EC: `FileRecord *rec = &D_80106A50; rec->unk_00 = 0x7007;
+  rec->times[i].unk_0 / unk_1 / unk_4 = …` (was `(u8 *)&D_80106A50` + `p[i*8+8]`, `*(s32 *)p`,
+  `*(u32 *)(p+i*8+0xC)`): relocation-only diff.
+F31. code6cac_c2.c func_8003C714: `FileTimeRec *base = D_80106A50.times; src = &base[i];
+  src->unk_4 / src->unk_0` (was `(u8 *)` + `*(s32 *)(src + 4)`, stride 8): relocation-only.
+F32. code6cac_b.c func_80033D38 (found by the sweep, not in the objection list: a local
+  `struct HitRec` view of &D_80106A50 indexed [j + 1]): `FileRecord *rec = &D_80106A50;
+  rec->times[j].unk_4`, `rec->times[k] = rec->times[k - 1]`, `rec->times[n].unk_0/1/4` —
+  byte-IDENTICAL. Measured alternatives: `p = &rec->times[j]` pointer local 49 insns (cse folds
+  j = n - 1 into the scaled index), `rec->times + j` 49, `&rec->times[n - 1]` 47 but different,
+  `D_80106A50.times[j]` direct 53, a `FileTimeRec *recs = D_80106A50.times` base 47 but base+8.
+F33. code6cac_c_mid.c func_8003800C (found by the sweep: `CopyBlock *dst = (CopyBlock *)&D_80106A50`
+  + a 16-byte copy loop): `D_80106A50 = *(FileRecord *)src;` — byte-IDENTICAL (GCC's block move
+  is that loop); the now-unused CopyBlock typedef is removed. The cast is on the save-slot buffer,
+  not on the merged object.
+F34. code6cac_c_mid.c func_80037F40 KEEPS its whole-record forms, flagged for the reviewer:
+  (a) the checksum `p = (u8 *)&D_80106A50; checksum += *p++` over 0x24 bytes — a byte sum over the
+  object representation (C's unsigned-char access to any object); it is the record's own
+  evidence (the checksum spans exactly the 0x24-byte record).
+  (b) the per-slot copy `Quad *end = (Quad *)D_80106A50.color; Quad *src = (Quad *)&D_80106A50;
+  … *dst = *src … *(s32 *)dst = *(s32 *)src`. Measured member-respecting alternative:
+  `*(FileRecord *)(offset + (s32)base) = D_80106A50;` reproduces the loop body instruction for
+  instruction but differs in 5 words (0x80037F6C..7C): GCC's block move materialises its end
+  pointer (&D_80106A50 + 0x20) as a loop.c movable placed AFTER the preheader's `base`/`base2`/
+  `offset` moves, while the target sets it BEFORE them — i.e. the original computed the end
+  pointer as its own statement between `i = 0` and `base = a0`: a hand-written 16-byte copy of the
+  record up to its colour bytes plus one final word. Only the cast form reproduces those bytes.
+F35. code6cac.c:1880 FAKE comment now names D_80102778.unk_4[0].
+F36. Remaining pointer uses of both objects, all to ONE member with no step outside it:
+  `u8 *p = &D_80102778.unk_4[0 or 1]` (deref / chardata[0,2] within unk_4[6]), `tbl =
+  D_80102778.unk_0` (walks the u16[2]), `&D_80106A50.flags` (func_80034F88), `&D_80106A50.unk_00`,
+  `&D_80106A50.unk_04`, `FileRecord *rec` (member access only), `src = D_80106A50.color` (walks the
+  3 colour bytes), `FileTimeRec *base = D_80106A50.times`.
+F37. Split build: SHA1 == oracle, func_80034708 score 8 (relocation spelling), moved block
+  byte-identical (291 lines), Q8 proof re-run: identical.
