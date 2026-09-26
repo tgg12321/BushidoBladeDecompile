@@ -80,3 +80,6 @@ label-shared mode-2 cases (tmp/func_80043454/w0.c) = 109.
   counts) on the closing body: 13 (header value leaves s3) -> the target used one
   `count` variable for the header and the per-group counts.
 - func_80052C10 declared noreturn (probe only): 122, wrong direction.
+
+## LANDED 2026-09-26 — COMPLETED-C
+Layer-2 cheat-reviewer PASS (duplicated-statement-into-arms 2026-07-01 covers the mode-2 per-kind bodies; count one role; s16 param honest). Match commit + queue done on main; full-build SHA1 == oracle; check_completion_integrity OK.
