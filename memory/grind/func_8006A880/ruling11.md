@@ -52,22 +52,53 @@ ord=8  pseudo=73  hardreg=19 (arg1)          ord=9  pseudo=145 hardreg=20 (0x30 
 ord=10 pseudo=349 hardreg=21 (sheet giv)     ord=11 pseudo=76 hardreg=22 (row_mask, 8 refs, livelen 228)
 ord=12 pseudo=159 hardreg=23 (1)             ord=13 pseudo=182 hardreg=30 (1, Phase D)
 ```
-.lreg: `Register 75 used 11 times across 183 insns; dies in 5 places; crosses 11 calls`.
+Verbatim, reuse spelling (final.lreg / final.greg; 75 = `sheets`, 76 = `row_mask`,
+77 = `cells`, 79 = `bit`, 80 = `i`):
+```
+Register 75 used 11 times across 183 insns; dies in 5 places; crosses 11 calls; GR_REGS or none; pointer.
+Register 76 used 8 times across 228 insns; crosses 20 calls; GR_REGS or none.
+Register 77 used 12 times across 15 insns; dies in 5 places; GR_REGS or none.
+Register 78 used 6 times across 19 insns; GR_REGS or none.
+Register 79 used 7 times across 28 insns; dies in 0 places; crosses 2 calls; GR_REGS or none.
+Register 80 used 13 times across 119 insns; dies in 0 places; crosses 9 calls; GR_REGS or none.
+Register 81 used 2 times across 4 insns in block 0; GR_REGS or none; pointer.
+Register 82 used 2 times across 7 insns in block 0; GR_REGS or none.
+;; Register dispositions:
+72 in 16  73 in 19  75 in 18  76 in 22  77 in 5  78 in 3
+79 in 17  80 in 17  81 in 2  82 in 4  84 in 4  86 in 2
+```
 
-Per-value spelling (pv_both): `Register 76 ... in block 11` (the +0x40 value) and the
-+0x24 values `used 2 times across 3 insns in block 17` are LOCAL (one basic block, no
-call crossed) -> local-alloc gives $a0 / $v1 (dispositions `76 in 4`, `76 in 3`); the
-BC08 value (pseudo 80) is allocated at ord=7 to $s2; the row-7 table value to $s1:
+Verbatim, per-value spelling (pv_both.lreg / pv_both.greg). Pseudo map, from the
++offset loads in pv_both.lreg: 75 = +0x18 row table (value 1), 79 = +0x40 counter table
+(value 2), 78 = row-7 table (value 3), 77 = +0x24 icons table (value 4), 76 = +0x24 FT4
+table (value 5), 80 = BC08 value, 81 = BC04 value, 82 = `cells`:
 ```
-ord=7  pseudo=80 hardreg=18 (BC08 value, 4 refs, livelen 44)   ord=13 pseudo=75 hardreg=21 (+0x18 row table)
-ord=14 pseudo=81 hardreg=30 (BC04 value)                        ord=15 pseudo=78 hardreg=17 (row-7 table)
+Register 75 used 3 times across 60 insns; crosses 5 calls; GR_REGS or none; pointer.
+Register 76 used 2 times across 3 insns in block 17; GR_REGS or none; pointer.
+Register 77 used 2 times across 3 insns in block 17; GR_REGS or none; pointer.
+Register 78 used 2 times across 102 insns; crosses 6 calls; GR_REGS or none; pointer.
+Register 79 used 2 times across 12 insns in block 11; GR_REGS or none; pointer.
+Register 80 used 4 times across 44 insns; dies in 0 places; crosses 5 calls; GR_REGS or none.
+Register 81 used 4 times across 182 insns; crosses 15 calls; GR_REGS or none.
+Register 82 used 12 times across 15 insns; dies in 5 places; GR_REGS or none.
+;; Register dispositions:
+72 in 16  73 in 19  75 in 21  76 in 3  77 in 3  78 in 17
+79 in 4  80 in 18  81 in 30  82 in 5  83 in 3  84 in 17
 ```
-FINDREG traces for the split values (pass-0 sets, hard reg numbers; s0=16 .. s7=23, fp=30):
+So values 2, 4 and 5 are LOCAL (one basic block, no call crossed): local-alloc gives
+value 2 (79, block 11) $a0 and values 4 and 5 (77, 76, block 17) $v1. The target has all
+three in $s2. The BC08 value (80) goes to $s2 and the row-7 value (78) to $s1; the target
+has them in $s6 and $s2.
+
+FINDREG traces for the split values (BB2_FINDREG_DEBUG=76, pass-0 sets, hard reg numbers;
+s0=16 .. s7=23, fp=30). In pv_mask, 76 is the BC08 value (`Register 76 used 4 times across
+44 insns; dies in 0 places; crosses 5 calls`). In abl_rows7, 76 is the row-7 table value
+(`Register 76 used 2 times across 102 insns; crosses 6 calls; ... pointer`):
 ```
-pv_mask BC08 value (pseudo 76): conflicts 2-7 16 17 29; someone_prefers {}; used_so_far ... 16 17 18 ...
-                                -> pass 0 picks 18 ($s2) = lowest used-so-far non-conflicting
-abl_rows7 row-7 table (pseudo 76): conflicts 2-5 16 19 22 29 30; someone_prefers {};
-                                used_so_far ... 16-23 30 -> pass 0 picks 17 ($s1)
+pv_mask   76: conflicts: 2 3 4 5 6 7 16 17 29   someone_prefers: (none)
+              used_so_far: 0-15 16 17 18 24-29 31  -> pass 0 picks 18 ($s2)
+abl_rows7 76: conflicts: 2 3 4 5 16 19 22 29 30   someone_prefers: (none)
+              used_so_far: 0-31                    -> pass 0 picks 17 ($s1)
 ```
 
 ## (D)(2) Mechanism

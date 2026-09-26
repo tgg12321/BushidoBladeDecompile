@@ -38,13 +38,16 @@
 - **Ruling 11** governs `sheets` (5 values) and `row_mask` (2 values): full (D) proof,
   dumps, mechanism, necessity and ablations in ruling11.md.
 - **Ruling 9 (`cells = s.header + 0xC; s.table = cells;`, 5 sites, K = 0xC at every site)**:
-  (b) layout: SprtHdrA / SprtEntA (src/text1b.c SprtHdrA 12 bytes, SprtEntA 8 bytes) walked by
-  func_8007352C, and Ft4Sheet / Ft4Cell (12 / 8 bytes) walked by func_80073728: a sheet is
-  header(s) followed by cells, and `.table` (+4 of the descriptor) is the first cell. Other
-  readers that store `sheet + 0xC` to `.table` the same way: func_8006A3CC and func_8006A494
-  (src/text1b.c `*(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;`), func_8006B120
-  (`p1 = s.p0 + 0xC; s.p1 = p1;`), func_80069F80 / func_8006A1A0 (`tbl = s.sp18 + 0xC;
-  s.sp1C = tbl;`), func_8006A564 (`v1 = *(s32 *)(arg1 + 0); v1 += 0xC;`), and the Ruling 9
+  (Line numbers: src/text1b.c with this function's body spliced, as staged for the
+  2026-09-26 landing.) (b) layout: SprtHdrA (text1b.c:11455, 12 bytes) / SprtEntA (8 bytes)
+  walked by func_8007352C, and Ft4Sheet (text1b.c:11521, 12 bytes) / Ft4Cell (8 bytes)
+  walked by func_80073728: a sheet is header(s) followed by cells, and `.table` (+4 of the
+  descriptor) is the first cell. Other readers that store `sheet + 0xC` to `.table` the same
+  way: func_8006A3CC (text1b.c:8300) and func_8006A494 (:8317)
+  (`*(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;`), func_8006B120 (:8717
+  `p1 = s.p0 + 0xC; s.p1 = p1;`), func_80069F80 (:8155) / func_8006A1A0 (:8258)
+  (`tbl = s.sp18 + 0xC; s.sp1C = tbl;`), func_8006A564 (:8424 `v1 += 0xC;` on
+  `*(s32 *)(arg1 + 0)`), and the Ruling 9
   precedents func_8007636C / func_800759D0 (`cells = s.sp18 + 0xC`). Data: the root at
   ctx[1] (= D_800A34FC[9] = the func_8006E950(2, …) buffer, func_80068F70) is
   disc/TIM2D/MOD.BIN (sha256 9ef17b95…d140): it is the only TIM2D resource whose
@@ -52,8 +55,14 @@
   census and STAFF/D_SEL do not fit (memory/grind/func_8006A880/census.py). Every sheet a
   write reaches (root+0x18 [0..7], +0x40 [0..7], +0x24 [8..15] SPRT, +0x24 [0..7] FT4 — the
   nibble D_800A34F8 & 0xF is kept 0..7 by func_800693CC: +1 wraps at 8, -1 wraps 0 -> 7) has
-  exactly ONE 12-byte header, confirmed by the packed layout (next sheet at
-  s + 12 + 8*count) for 22 of 32 sheets (census_MOD.txt). So +0xC is the first cell at every
+  exactly ONE 12-byte header, confirmed by the packed layout for ALL 32 sheets. Sorted by
+  address, the 32 sheets form two runs (0xDB8..0x104C: 16 sheets, count 4; 0x121C..0x13F0:
+  16 sheets, counts 2-4). Each of 30 ends exactly at the next reached sheet
+  (s + 12 + 8*count). The two run-ends end at a header-shaped slot of another sheet:
+  0x104C + 0x2C = 0x1078 {tp 0x1F/0, count 2, pad 0, cy 481} and 0x13F0 + 0x24 = 0x1414
+  {tp 0x0A/0, count 3, pad 0, cy 484}. (census_MOD.txt's per-table "next sheet" column
+  compares against the next TABLE entry, which for root+0x18 is not in address order; the
+  address-order check is this paragraph, re-run 2026-09-26.) So +0xC is the first cell at every
   write; no anomaly path, no (b′) needed. The Phase G sheets are exactly the FT4-shaped ones
   (tp1 = 1), matching func_80073728 — independent corroboration of the slot reading.
   (i) receipts: per-write `s.table = s.header + 0xC` 15/552 (final_cdirect), one block-local
