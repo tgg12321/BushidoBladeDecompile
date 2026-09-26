@@ -5,10 +5,16 @@ extern void gpu_OffsetTexPolyGT3();
 extern void gpu_OffsetTexPolyGT4();
 void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
 void func_80043F0C(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
+/* Read cursor into the primitive packet stream, kept in scratchpad word 0. */
 #define SCRATCH_PTR (*(u16 **)0x1F800000)
+/* Walk a packet stream of primitive groups (the cursor starts at the
+ * scratchpad word) and shift every textured primitive's texture source by
+ * (arg0, arg1) and its CLUT by (arg2, arg3): via gpu_OffsetTexPoly* for
+ * mode-0 groups, via func_80043E98 / func_80043F0C plus a per-vertex v shift
+ * for mode-1 / mode-2 groups.  Untextured groups are skipped using the
+ * per-type halfword sizes in D_80095588. */
 void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
     s32 count;
-    s32 i;
     s32 mode;
     s32 type;
     s32 kind;
@@ -54,8 +60,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                 }
                 switch (mode) {
                 case 0:
-                    i = count;
-                    while (--i != -1) {
+                    while (--count != -1) {
                         switch (kind) {
                         case 0:
                             gpu_OffsetTexPolyFT3(SCRATCH_PTR, arg0, arg1, arg2, arg3);
@@ -78,8 +83,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     }
                     break;
                 case 1:
-                    i = count;
-                    while (--i != -1) {
+                    while (--count != -1) {
                         func_80043E98((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
@@ -116,19 +120,35 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     }
                     break;
                 case 2:
-                    i = count;
-                    while (--i != -1) {
+                    while (--count != -1) {
                         func_80043F0C((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
                         case 0:
-                        case 2:
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
                             SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x14);
                             break;
                         case 1:
+                            b[1] += arg1;
+                            b[5] += arg1;
+                            b[9] += arg1;
+                            b[13] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            break;
+                        case 2:
+                            /* FAKE: cases 2/3 repeat cases 0/1 (one body per kind, as in
+                               mode 1) instead of sharing their labels. jump2 cross-jump
+                               re-merges the copies (bytes identical to `case 0: case 2:`),
+                               but flow.c counts them before global RA: the extra refs and
+                               live length seat count/base/kind in s3/s4/s5 as the target
+                               does (ledger: memory/grind/func_80043454/evidence.md). */
+                            b[1] += arg1;
+                            b[5] += arg1;
+                            b[9] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x14);
+                            break;
                         case 3:
                             b[1] += arg1;
                             b[5] += arg1;

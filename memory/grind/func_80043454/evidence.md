@@ -62,3 +62,21 @@ lever is pre-RA pseudo structure / live ranges, not statement count.
 Best ordinary so far: candidate.c = per-case counter `i = count; while (--i != -1)`
 (57): kind 17679 -> s3, base -> s4, i 12500 -> s5, header/skip count -> a0.
 Ruled out this session: explicit case-0 arg locals (234 / 146).
+
+## 2026-09-26 manual session (slotA) — ordinary real-loop form reaches 0
+candidate.c = all three counted loops as plain `while (--count != -1)` (no goto, no
+c3/d1, no per-case counter) + mode-2's `switch (kind)` written one body per kind
+(cases 0/1/2/3, 2 and 3 repeating 0 and 1) instead of `case 0: case 2:` / `case 1:
+case 3:` label sharing. Sandbox 0/479 (tmp/f43454/score.py with the s16 forward-decl
+substitution). Mechanism (prio.py on the dump): the duplicate bodies exist at flow
+time and are re-merged by jump2 cross-jump after reload, so final bytes equal the
+label-shared form, but they add live length inside the mode-2 loop and base refs:
+count 105/302 = 20861 (< r160 22727), base 184/768 = 16771 (> kind), kind 66/253 =
+15652 (> type 12039) -> count/base/kind = s3/s4/s5 = target. Same body with
+label-shared mode-2 cases (tmp/func_80043454/w0.c) = 109.
+- cc1psx calibration on the all-while w0 body: count in $18, kind in $20 — same
+  seats as our cc1, so the residual was source shape, not compiler fidelity.
+- Separate header variable (`nverts` for the stream header, count only for group
+  counts) on the closing body: 13 (header value leaves s3) -> the target used one
+  `count` variable for the header and the per-group counts.
+- func_80052C10 declared noreturn (probe only): 122, wrong direction.
