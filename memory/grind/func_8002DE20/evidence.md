@@ -47,3 +47,35 @@ struct member/arg slot; writes are different expressions), and Rulings 6/9/10 do
 Filed as a policy-question in docs/grind/borderline.md (2026-09-26). Everything else is ordinary C:
 struct view with unk pads (bytes-decided layout), loop min/max scan, divide-by-zero guard counter
 (D_800A314C, gp-relative, sdata_syms.txt), dz_a/dz_b each one role with a zero clamp.
+
+## Role analysis of cross_a / cross_b (renamed from side_a/side_b, 2026-09-26, orchestrator request)
+Every write stores the same quantity: the 2D cross product (edge vector) x (point - edge start)
+for the edge under test, i.e. which side of that edge the point lies on. cross_a is always the
+first point of the pair, cross_b the second. Every read is the same consumer shape,
+`(cross_a ^ cross_b) >= 0` ("both points on the same side"), in the block of the write. No write
+is a constant, a copy, a staged value or a split computation; no value is carried across tests.
+- Ruling 5 (full text): passes 1(c)/1(d)/1(e)/2(a)-(d)/3; FAILS 1(a) as written (the consumer is
+  a sign test, not a struct member or call-argument slot) and 1(b) (writes are different cross
+  products, not one template + subscript selector). 1(f): names now state the role.
+- Ruling 5 extension: fails (A) (writes not textually identical).
+- Ruling 6: not a record pointer; fails (C)/(D).
+- Ruling 8: vmNoiseOn only. Ruling 9: fails (a) (no struct-member consumer) and (b) (no base +
+  constant offsets). Ruling 10: no public original source.
+- Precedent that is a ruling, not a commit: docs/grind/decisions.md:25911, Judge final call PASS
+  2026-09-08 on func_8002E6B0 (same file, same test idiom): "two function-scope cross-product
+  locals re-assigned per edge (same quantity each time, not a variable-reuse borrow)". That Judge
+  classified the pair as primary variables holding one quantity, not carriers. It predates Ruling 5
+  (2026-09-23), which is written for "a fresh local written more than once"; whether a primary
+  one-quantity variable falls under Ruling 5 at all is the question layer-2 has to decide (compare
+  func_80043454 `count`, layer-2 PASS 2026-09-26, commit 3b2e8b8f0, "primary variable").
+- Honest distinction from the banned carriers: y1 fed dx then dy (two consumers); `c` held
+  different templates incl. a constant; src/idx re-loaded an unchanged value; tmp in func_8002D780
+  held `z2 - z0` then a LUT value. Here each write is a new cross product consumed by the same test.
+
+## Registry row (cluster grant) — NOT authorized by any landed ruling
+func_8002DE20 is named in the 2026-08-17 cluster census, but every owner_cluster_grants.txt row
+since 2026-09-21 was owner-instructed per function (9bdfcc6cc, 789ce34d7, 1de410a11, eeda6664b,
+cd61ed9f6). Ruling 3 (decisions.md:27024) names func_80018094 alone; layer-2 FAILed func_80018300's
+landing for a row self-added "under Ruling 3 terms" (eeda6664b body). The islands here are the
+inline_o.h class (move $12 preamble + "$12"-"$15","memory" clobbers), which the 2026-09-25 scorer
+ruling routes to "an owner-instructed row" (inline-asm-policy.md). So the row needs the owner.
