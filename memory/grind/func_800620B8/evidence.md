@@ -1,11 +1,40 @@
 # func_800620B8 — evidence (manual lane, slotC, 2026-09-26)
 
-## Status (2026-09-26, session 3b slotA5)
-`candidate.c` = **0 / 501** split-symbol body: four FAKE pointer aliases of D_8009BA00/BA30/BA50/BA58
-(strip32 set at the loop top) + two FAKE combine-foldable chain-extenders (`x - p + p`). The TexRec[12]
-merge (also 0/501) is DEFEATED under (a1) by this spelling (session 3b) and banked as rejected.
-Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0) island (same verbatim
-inline_c.h macro island func_8006295C landed with, c3eff5ec6).
+## Status (2026-09-26, session 3c slotA5)
+`candidate.c` = **0 / 501** split-symbol body (cand_split1): four FAKE pointer aliases of
+D_8009BA00/BA30/BA50/BA58 (strip32 set at the loop top) + ONE FAKE combine-foldable chain-extender on
+the sel_a address; both frame addresses spelled `index * sizeof(*table) + (s32)table`. The TexRec[12]
+merge is defeated under (a1) (session 3b); the 3b two-extender body is rejected (3c).
+Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0) island.
+
+## Session 3c (2026-09-26, slotA5) — layer-2 FAIL on the 3b split landing; permuter + extender scope
+Layer-2 FAILED the 3b split landing (cand_split0: 4 aliases + 2 extenders) on: (1) no permuter from a
+clean base (dead-store-fake-exception prereq 1); (2) the strip16 extender is outside the
+chain-extender family — its effect is operand order, not reg_n_refs. Strip32 + aliases "likely
+reviewable".
+- Dumps (tmp/func_800620B8/s3/d/x0,x1,x2,xq1,xq2; -df -dc added): CONFIRMED the reviewer on (2):
+  strip16's pseudo 94 is unallocated with or without its extender (nrefs 3 -> 7 changes nothing);
+  the only effect is combine rebuilding the add as (plus idx p). Worse, the cand_split0 strip32
+  extender ALSO reordered: direct `(s32)strip32[n]` is (plus p idx) in combine.fn, extended is
+  (plus idx p). So both pointer-form extenders steered order.
+- Fix: spell both frame selections as `index * sizeof(*table) + (s32)table` (ordinary C integer
+  address arithmetic; D_800A3488/348C are s32 words). Direct form combine.fn: (plus idx p) already
+  (xq2), so the sel_a extender `... + (s32)strip32 - (s32)strip32 + (s32)strip32` now folds back to
+  exactly the direct RTL (xq1 combine.fn insn 249 == xq2 insn 245 shape) and its only effect is
+  flow's count: strip32 nrefs 3 -> 7, pri 45 -> 212, -> $fp. Scores: q2 direct 35, q1 extended 0,
+  parenthesised detour q3 35 (tree-folded, no refs), q4 reordered detour 0. sel_b needs no extender.
+- cand_split1 (candidate.c) = 4 FAKE aliases + ONE FAKE chain-extender + integer frame addresses:
+  0/501. Minimisation on this chassis: BA50 direct 3, BA58 direct 7, BA30 direct 3, all three 12.
+- Permuter (tools/permuter_campaign.py, -j1 each, --stack-diffs, fresh seeds, workspaces
+  tmp/func_800620B8/perm/, builder prong_a/extender/mkws.py):
+  * split-direct-47 (FAKE-free split base s3/split.c): 6948 iters / 28.8 min, 35 finds all within
+    ~3 min, best perm 260 = sandbox 23 (a rediscovered loop-top BA00 alias `new_var`); others 23-30.
+  * h2-noX16-1 (m_no_x16, the 1-insn operand residual): 6955 iters / 28.8 min, 0 finds.
+  * f1-aliases-39 (four function-scope aliases, no extenders): 7221 iters / 28.9 min, best perm 355
+    = sandbox 14.
+  * h2-aliases-looptop (h2_bare: aliases, strip32 at loop top, no extenders): 7221 iters / 28.9 min,
+    best perm 70 = sandbox 8 (a do { sel_a tail } while (0) wrap); next 230/280 = 10.
+  No campaign reached 0 from any FAKE-extender-free base; ~28.3k iterations total.
 
 ## Session 3b (2026-09-26, slotA5) — layer-2 FAIL on (a1); SPLIT SPELLING REACHES 0 -> merge defeated
 Layer-2 (orchestrator relay) FAILED the TexRec[12] merge landing on ONE (a1) gap, accepting

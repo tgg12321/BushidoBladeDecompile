@@ -27,10 +27,10 @@ Session 2 (2026-09-26, slotC2) — ruled out, with proof (evidence.md "Session 2
   indexed table in the region is indexed over exactly its own label; no census/config row; no data
   pointers; no symbol files. Only func_800620B8 references BA00/BA30/BA50/BA58.
 
-Frontier (2026-09-26, session 3b slotA5):
-1. candidate.c (split + 4 FAKE aliases + 2 FAKE chain-extenders) = 0/501; landing it. The TexRec[12]
-   merge is defeated under (a1) (evidence.md Session 3b) -- do not re-land it.
-2. Session-2 "split floor 47 is structural" and session-3 "no separate-object spelling" are REFUTED:
-   they assumed extra refs must survive as $fp uses; a combine-folded detour adds them at zero bytes.
+Frontier (2026-09-26, session 3c slotA5):
+1. candidate.c (cand_split1: 4 FAKE aliases + 1 FAKE chain-extender + integer frame addresses) = 0/501;
+   landing it. Permuter from four bases (split 47, m_no_x16 1, f1 39, h2_bare) ~28.3k iters: best 8.
+2. Rejected: TexRec[12] merge (a1-defeated); 3b body with the strip16 extender (operand-order effect,
+   outside the chain-extender family). Pointer-form extenders reorder the add; the integer form does not.
 
 (Session-1 frontier items 2-3 are closed by the session-2 search and proof above.)
