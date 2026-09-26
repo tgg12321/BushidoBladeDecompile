@@ -214,7 +214,8 @@ scoring, so they cannot move it. They are inert here by construction.
    tools/check_completion_integrity.py`.
    **FAIL** → revert `src/` to `INCLUDE_ASM`, bank the body as
    `memory/grind/<func>/rejected/<slug>.c` with the reviewer's reasoning, and
-   treat the objection as the next session's frontier.
+   treat the objection as the next session's frontier. The item stays active:
+   a FAIL is never grounds to rotate (§5).
 
 **After fixing anything a reviewer flagged, re-stage before committing.** A
 post-review edit leaves the file `MM` — corrected in the working tree, FAILED
@@ -267,6 +268,15 @@ sitting.
    ledger and the session's `metrics/events.jsonl` (separate `metrics:` commit),
    lists the session's commits, relaunches the Grinder (`-NoRelaunch` to leave
    it down).
+3. **Do NOT `queue rotate` the function.** It stays active at the top. Owner
+   ruling 2026-09-26 ([[rotation-not-foreclosure]] Ruling 4): rotate only when
+   agents are truly stuck and have burned multiple sessions without progress.
+   One session without a match is not grounds. A layer-2 FAIL bans a
+   construct, not the function; the objection becomes the next frontier. An
+   open owner question in borderline.md is not grounds either. A close item,
+   such as one with a register-seat-only diff, always stays. (func_80043454
+   was rotated after one session at 57/479, every instruction correct, and
+   the owner reversed it.)
 
 The Grinder picks up your ledger and continues. Nothing is lost between lanes —
 that's why this lane writes `memory/grind/<func>/` rather than `memory/wip/`.

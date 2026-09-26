@@ -29581,3 +29581,31 @@ in that document's § "Adoption record (2026-09-25)".
   runs after this change lands, on a clean tree, and its result is recorded in the commit that
   follows.
 - Layer-2 cheat-reviewer on the adoption diff: pending before commit.
+
+## 2026-09-26 — OWNER RULING — rotate only when truly stuck across multiple sessions (`.claude/rules/rotation-not-foreclosure.md` Ruling 4)
+
+Context. func_80043454 was rotated by hand (44e7c0b86) after ONE manual session. Its best
+ordinary body was 57/479 with every instruction correct: 0 source-level hunks, only three
+register seats wrong. The rotation reason was a layer-2 FAIL on the goto-loop chassis, the one
+construct that closed it. The owner asked how far off it was and reversed the rotation
+(3a91e7322).
+
+Owner, verbatim: "I dont want things rotated if they are close, i only want items rotated if
+agents are truly stuck and we feel we are burning multiple sessions wasting time on it." And:
+"Save the new policy to ensure future agents dont rotate so early too."
+
+Ruling. Rotation needs multi-session stuckness: a flat honest floor across several sessions with
+the instruments run (Ruling 3). The driver's mechanical exhaustion path already meets this bar.
+The ruling binds every hand-run `queue rotate`.
+
+These are never grounds to rotate:
+- one session without a match;
+- one layer-2 / Judge FAIL (it bans a construct; the objection is the next frontier);
+- an open owner question.
+
+A close item (small or operand-only diff) stays at the top. Instead of rotating, bank the ledger
+and leave the item active. A rotation commit states the session count and flat-floor history it
+rests on.
+
+Recorded in: `.claude/rules/rotation-not-foreclosure.md` Ruling 4; `.claude/skills/decomp-manual/SKILL.md`
+§4 FAIL step and §5; `CLAUDE.md` queue table; `docs/DECOMP_WORKFLOW.md` §4.

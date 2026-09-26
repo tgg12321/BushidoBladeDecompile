@@ -94,6 +94,17 @@ hard, change your *approach* — deeper analysis, different lever, more measurem
 your *target*. A function that defeats you gets rotated to the back of the worklist with a
 recorded reason; it is never abandoned.
 
+**Rotate only when truly stuck across multiple sessions** (owner, 2026-09-26: "i only want
+items rotated if agents are truly stuck and we feel we are burning multiple sessions wasting
+time on it"). The following are never grounds to rotate:
+- one session without a match;
+- one adversarial-review FAIL, which bans a construct, not the function;
+- an open owner question.
+
+A close item, such as one whose remaining diff is register assignment only, stays at the top.
+Bank what you learned in `memory/grind/<func>/` and leave the item active. Full rule:
+`.claude/rules/rotation-not-foreclosure.md` Ruling 4.
+
 If you rotate or reclassify anything, **say so in the commit message**. A queue change that
 appears only in the JSON diff is an undisclosed change.
 

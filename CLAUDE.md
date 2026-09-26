@@ -114,7 +114,7 @@ the top each session; `queue status` shows progress.
 |---|---|
 | `queue next` | print the top active item (func, file, verdict, distance) |
 | `queue done <func>` | mark complete — re-checks ZERO non-canonical cheat-asm + build SHA1 == oracle (refuses otherwise). On success the function is REMOVED from the queue. `python3 tools/check_completion_integrity.py` audits the invariants still hold. |
-| `queue rotate <func> --reason "…"` | rotate an exhausted item to the BACK of the active worklist (owner ruling 2026-09-08, [[rotation-not-foreclosure]] — `foreclosed`/`escalated`/`parked` are retired; `foreclose`/`escalate`/`park` are legacy aliases). Never terminal: it returns automatically |
+| `queue rotate <func> --reason "…"` | rotate an exhausted item to the BACK of the active worklist (owner ruling 2026-09-08, [[rotation-not-foreclosure]] — `foreclosed`/`escalated`/`parked` are retired; `foreclose`/`escalate`/`park` are legacy aliases). Never terminal: it returns automatically. **Only when truly stuck across multiple sessions** (owner 2026-09-26): never after one session, one layer-2 FAIL, or when the item is close — bank the ledger and leave it at the top |
 | `queue auto-return` | bring rotated items back: queue drain, toolchain-fingerprint change (candidates re-measured), coupled-sibling movement. The driver runs it at every session boundary |
 | `queue status` | counts by status/verdict + the current top |
 | `queue regen` | rebuild the queue (preserves rotated/directives); run after big changes |
