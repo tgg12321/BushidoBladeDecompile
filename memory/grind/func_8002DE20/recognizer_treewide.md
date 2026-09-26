@@ -35,3 +35,15 @@ engine. Q11 strips nothing from these bodies, so the "after" figure equals the
 | r11/ext_dead.c | 112 | 102 |
 | r11/ext_alias.c | 188 | 179 |
 Every changed body carries qualifying units (item 3's condition); no other function changes.
+
+## Landing-time rescan (2026-09-26, lock held by slotE, Q11 set applied)
+Before = `git show HEAD:engine/gtemacro.py`; after = the Q11 gtemacro (== the applied tree).
+Scanned 1165 files (36 src + 1129 banked). Default strip identical everywhere. Keep-mode
+stripped input changes in 18 files:
+- src/code6cac_b.c: 23 -> 11 stripped. The 12 kept statements are func_8002DE20's (now
+  spliced); the other 11 are other functions' statements, stripped identically both ways.
+- 17 func_8002DE20 bodies: candidate.c, and r11/ variants incl. the new dup_*.c / hoist_T2.c.
+  All other 35 src files are identical. Raw: r11/treewide_landing.json.
+Queue impact: only func_8002DE20. Landing sandbox (default strip) 0/506, versus 10 with the
+HEAD recognizer. The r11 variants are scored with the islands kept (table above; dup_* /
+hoist_T2 in ruling11.md addendum 2).
