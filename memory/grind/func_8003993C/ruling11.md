@@ -97,7 +97,7 @@ CC_FLAGS `-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-bu
 `BB2_ALLOC_DEBUG=1` for global.c's order. The instrumented compiler's func_8003993C assembly is
 identical to the build cc1's for both bodies (checked). Outputs:
 tmp/func_8003993C/r11/rtl/<tag>.{c,i,rtl,flow,lreg,greg,alloc,fn.s} (scratch; excerpts below
-are the record). Re-dumped at landing (HEAD ee397fcfc, include/code6cac.h having changed since the first dumps):
+are the record). Re-dumped at landing (HEAD ee397fcfc and again at HEAD 98ca77e5d for the resubmission, include/code6cac.h having changed since the first dumps):
 `cand` and `v_pv` .lreg/.greg/.flow/.alloc/.fn.s byte-identical to the first dumps; `rtl/cand.c`
 is byte-identical to the spliced src/code6cac_c_mid.c staged in the Match commit.
 - tag `cand` = memory/grind/func_8003993C/candidate.c exactly.
