@@ -22,7 +22,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
     extern s32 D_800A32B8;
     extern s32 D_800A37D4;
     extern s32 D_800A3720;
-    extern s32 D_8009BD44;
+    extern s32 D_8009BD44[];
     extern u16 D_8009BA00[6][4];
     extern u16 D_8009BA30[4][4];
     extern u16 D_8009BA50[4];
@@ -92,7 +92,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
             *(s16 *)D_800A34AC = 0xE1;
         sel_a:
             D_800A348C = D_800A3488 = (s32)D_8009BA00[(u32)D_800A32B8 % 6];
-            if (D_8009BD44 & 1) {
+            if (D_8009BD44[0] & 1) {
                 D_800A348C = (s32)D_8009BA50;
             }
             *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
@@ -107,7 +107,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
             *(s16 *)D_800A34AC = 0x78;
         sel_b:
             D_800A348C = D_800A3488 = (s32)D_8009BA30[D_800A32B8 & 3];
-            if (D_8009BD44 & 1) {
+            if (D_8009BD44[0] & 1) {
                 D_800A348C = (s32)D_8009BA58;
             }
             *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0xF;

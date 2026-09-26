@@ -82,3 +82,7 @@ Why each is what the original did (mechanism, from dumps in tmp/func_800620B8/du
 - Landing needs: header declaration of the 12-record table (aggregate-merge prong (d)), POLY_FT4
   typedef moved above the function (it is defined after it in text1b.c), auth: row for the gte_stsz
   island (inline_asm_canonical.txt + tools/canonical_asm_regions.json), oracle rebuild.
+
+## D_8009BD44 spelling (2026-09-26)
+Adopted `extern s32 D_8009BD44[];` / `D_8009BD44[0] & 1` to agree with slotB's func_800646E8 (which needs the array form; the scalar form scores 5 there). Byte-neutral here: split body 47/501 either way, merged body 0/501 either way. The dlabel is a 5-word object (0x8009BD44..0x8009BD57), so the array declaration is accurate.
+
