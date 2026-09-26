@@ -1,3 +1,6 @@
+/* func_8007352C's draw descriptor (same 0x2C-byte layout as EnvA/EnvB):
+   .header = the sprite sheet's SprtHdrA, .table = its SprtEntA cell array,
+   .out = the SPRT cursor, +0x20/+0x24 = 8.8 fixed-point scales (0x100). */
 typedef struct DescF97C {
     s32 header;
     s32 table;
@@ -18,9 +21,13 @@ extern void func_80070188(s32);
 extern void func_80073200(s32);
 void func_8006F97C(s32 *arg0) {
     DescF97C s;
-    s16 shift[4];
+    s16 shift[2];
     u16 rect[4];
     s32 *ctx;
+    /* the sprite sheet's cell array (8-byte SprtEntA cells), which starts just
+       past the sheet's 12-byte SprtHdrA headers: three on ctx[0] (normal, then
+       one highlight per player, +0x24), one on every other sheet (+0xC).
+       SEL.BIN/SEL1.BIN/SEL2.BIN census: memory/grind/func_8006F97C/evidence.md. */
     s32 cells;
     s16 i;
     s16 row;
@@ -93,8 +100,8 @@ void func_8006F97C(s32 *arg0) {
 
     for (row = 0; row < 4; row++) {
         for (col = 0; col < 5; col++) {
-            if (((u32)D_800A35BC < 2 || D_800A35BC == 2 || D_800A35BC == 3) && col == 4 &&
-                (row == 1 || row == 3)) {
+            if ((D_800A35BC == 0 || D_800A35BC == 1 || D_800A35BC == 2 || D_800A35BC == 3) &&
+                col == 4 && (row == 1 || row == 3)) {
                 continue;
             }
             if (D_8009BC7C[D_8009BC40[col][row].value] & 1) {
@@ -102,6 +109,17 @@ void func_8006F97C(s32 *arg0) {
                 s.x = 0;
                 s.has_color = 0;
                 for (i = 0; i < 1 + D_800A35B0 + D_800A3554; i++) {
+                    /* FAKE: named intermediate for player i's 3-byte D_800A3560
+                     * record offset (named-intermediate entry, no-new-park-categories.md).
+                     * mechanism: loop.c scan_loop -- the inline `D_800A3560[i * 3]`
+                     * expands the symbol load BEFORE the index insns (expr.c:4659
+                     * INDIRECT_REF, EXPAND_SUM MULT), so that pseudo lives 3 insns and
+                     * threshold*savings*lifetime >= insn_count (loop.c:1631) hoists it,
+                     * leaving `lui/addiu/addu/lbu 0()`; with the index already in a
+                     * pseudo it lives 1 insn, stays put, and combine folds it into the
+                     * target's `lbu %lo(D_800A3560)(at)`. Lever exhaustion: inline index,
+                     * `*(D_800A3560 + i * 3)` and `D_800A3560[i + i * 2]` all 31/515
+                     * (memory/grind/func_8006F97C/hypotheses.md). */
                     s32 rec = i * 3;
 
                     if (D_800A3560[rec] == 0xFF) {
@@ -126,6 +144,13 @@ void func_8006F97C(s32 *arg0) {
                 s.y = col << 4;
                 s.x = row * 116 + (row >> 1) * 20;
                 s.has_color = 0;
+                /* FAKE: the draw tail is written in both arms (duplicated-statement-into-
+                 * arms). The target shows two tails that jump2 cross-jumped: this arm
+                 * ends `lw v0,84(fp); addiu a0,sp,24` BEFORE .L80070014, and the other
+                 * arm reaches .L80070014 by `j` with `addiu a0,sp,24` in the delay slot
+                 * (asm/funcs/func_8006F97C.s:409-410, 444-447). One shared tail after
+                 * the if/else puts the a0 setup after the label (sched cannot cross the
+                 * join): 7/515. Byte-neutral: the copies re-merge into the one call. */
                 s.header = ctx[21];
                 cells = s.header + 0xC;
                 s.table = cells;

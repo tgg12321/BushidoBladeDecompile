@@ -37,6 +37,44 @@ number from `sandbox --disable all`, variants in tmp/func_8006F97C/):
 = 3 SprtHdrA headers (counts 2,2,2, cells at +0x24), entries [1..22] = 1 header each (cells at
 +0xC). tmp/func_8006F97C/census.py (sha256s in its output). So K = 12 x header count at every
 write: +0x24 on ctx[0], +0xC on ctx[1+idx], ctx[21], ctx[22] — always the first SprtEntA cell.
+idx = D_8009BC40[col][row].value for rows 0..3 is 0..19 (EXE .data 0x8009BC40, read-only: only
+`lbu` references in asm/funcs), so ctx[1+idx] ranges over [1..20]; all 1-header sheets.
+
+## Ruling 9 prong walk for `cells` (v11 = candidate.c, 2026-09-26)
+Sites: block 1 `cells = s.header + 0x24;` (ctx[0]); grid animated arm and grid static arm
+`cells = s.header + 0xC;` (ctx[1+idx], ctx[21]); tail `cells = s.header + 0xC;` (ctx[22]).
+- (a) every write feeds `s.table = cells;` (identical text), the descriptor's `.table` member.
+- (b) every write is `cells = s.header + K;`, K in {0x24, 0xC}; BASE `s.header` (member of the
+  local `s`) is assigned the sheet address immediately before each write (block 1 before the
+  highlight advance). Sub-object: the first SprtEntA cell of the sheet (census above). Layout
+  in this function's own bytes: header stride 12 (`s.header + 12 + i * 12`, asm:66-71
+  `addu v1,a1,a0; sll v1,v1,2; addiu v1,v1,0xC`), cell stride 8 (`s.table += count * 8`,
+  asm:261-265 `lbu v0,2(v0); sll v0,v0,3`). Other readers of `.table` as cells: func_8007352C
+  (src/text1b.c:11242 as of 65de4bb16, `e = (SprtEntA *)env->table + i`); the same K scheme on D_SEL.BIN sheets in
+  func_8007636C (text1b.c:12745/12763/12786/12798/12808) and func_800759D0.
+- (c) grid arms and tail: write, then the consumer as the next statement. Block 1: write and
+  consumer both at function scope, write first; between them sits loop 1 (the `== 5` scan),
+  whose body contains a `break` that exits THAT loop and lands before the consumer — no
+  statement between them can bypass the consumer. OPEN READING: whether a nested loop's own
+  `break` counts as "a break between them" under Ruling 9 (c). The value must be computed
+  before loop 1 (loop 1 advances s.header in memory; target `addiu s1,v0,36` asm:40, store
+  `sw s1,0x1C(sp)` asm:148 after the loop), and the store must follow the loop.
+- (d) target adds: 8006FA40 `addiu s1,v0,0x24`; 80070014 `addiu s1,v0,0xC` (shared by both
+  cross-jumped grid arms); 8007008C `addiu s1,v0,0xC`.
+- (e) every consumer store is followed, unconditionally in its block, by
+  `arg0[4] = func_8007352C((s32)&s);` before the next consumer store or the exit.
+- (f) `cells`: true of all four writes (same name as func_8007636C's re-audited carrier).
+- (g) same statement list as ps1.c (declarations/identifiers only differ); every write is
+  consumed before the next; s.header is re-assigned before every write; no split computation.
+- (h) one declaration at function scope, the innermost scope enclosing all four writes.
+- (i) receipts: hypotheses.md s2 (per-site 98, partial 96/98, allocation dump, permuter).
+
+**permuter** (tmp/perm_f97c, per-site chassis ps1.c, 2 workers, --stack-diffs, 17:07-17:23 UTC,
+~9,000 iterations, harvested + stopped): base 1800 (permuter-weighted) -> best 500, no zero.
+The best finds all press a per-site cells local into service as a carrier of an unrelated
+value: 500 `cells0 = i` (loop index), 515 `cells3 = col`, 650 `cells0 = shift[i]`, 665
+`cells0 = col` — banned multi-role reuse. They confirm the target needs one callee-saved
+pseudo live from block 1 through the grid; no legal per-site form appeared.
 
 - [s1] [fable-blitz 2026-07-07] Rule inventory: ONE rule -- asmfix.txt:180 replace_with_asmfile; stub src/text1b.c:16465 `void func_8006F97C(s32 arg0, ...)` (only arg0=s4 is used -- real signature is (s32 arg0) or (GameObj*)). Distance 513; floor 513. Park = rejected distance>500 canonical misroute.
 
