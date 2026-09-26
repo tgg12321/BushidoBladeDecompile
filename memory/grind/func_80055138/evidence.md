@@ -88,3 +88,27 @@ inflate it -- wf 102). integration/candidate-wf.c = the same body with the real
 `extern StatusFlagRec D_80099D88[];` for `python3 memory/grind/func_80055138/integration/wf.py <file>`.
 probe-shared-scratch-v.c (sandbox 12, all from the g_sfr scaffold) / integration/probe-shared-scratch-v-wf0.c
 (wf 0/516) = the policy-blocked single-scratch body. NOT landable as is.
+
+### [s2, later] permuter + full-build proof
+- Permuter campaign 1 (per-job body, 1600+ iters, -j2): best finds put a single-write
+  intermediate into the hi2 condition. Adopted the only clean one as a named intermediate:
+  `low_cat = cat < 2; if (hi2 < s2 && (e[3] & 0xF) * 4 < 0x10 && (low_cat || cat == 7))`
+  -> per-job floor **35/516** (header model, integration/wf2.py `--only`), sandbox 47
+  (+12 from the g_sfr scaffold). candidate.c = that body; integration/candidate-hdr.c = the same
+  body for the header model. Its extra pseudo lands in a2 and realigns the loop registers.
+- Campaign 2 (from the 35 body, 2900 iters): only constant carriers (`s1 = 0; p[..] = s1`) and
+  offset-in-variable forms (29-32). Rejected as banned shapes; stopped.
+- Header model (integration/wf2.py, integration/apply_model.py): code6cac.h gains
+  `StatusFlagRec D_80099D88[]` and `cpu_practice_honmokuroku_data_tbl[][4]`; text1b.c drops
+  its local `extern u16 D_80099D88;` and respells func_80055948's read; code6cac_b.c
+  func_80033DF4 reads `cpu_practice_honmokuroku_data_tbl[tableIndex]`. Scratch compare: all
+  408 text1b functions and 88 code6cac_b functions instruction-identical with the one-scratch
+  body. **Full-build SHA1 == oracle** (62efab4f...) 2026-09-26 with the one-scratch body
+  (integration/probe-shared-scratch-v-hdr0.c) spliced + the header model applied under the
+  landing lock, then reverted and rebuilt (oracle again).
+- Why no per-job spelling reaches 0 (mechanism, checked against our builds): the target's
+  case-2 level `andi a2,v0,0xff` and the loop's flag word `or a2,v0,v1` write $a2 while their
+  other input dies in the same insn. A variable used inside one basic block is tied to that
+  dying input by local-alloc (ours: `andi v1,v1,0xff`, `or v0,v0,v1`). So in the target these
+  values sit in a variable that is live in other blocks too -- the shared scratch. Any
+  per-job floor keeps at least those hunks plus the stat copies' seats.

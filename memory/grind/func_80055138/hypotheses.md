@@ -28,3 +28,15 @@
   "Variable reuse for codegen control" family + FAKE annotation, as owner-ruled for func_8003800C
   (decisions.md 2026-08-25, same `< 8U` / `< 2` signedness split); (d) the `c` staging is
   staged-value-reused-variable (c's real job is the 0x404 value) with FAKE annotation.
+- DONE: permuter from the per-job body -- campaign 1 found `low_cat = cat < 2` (102 -> 35, kept);
+  campaign 2 (from 35) found only constant carriers / offset-in-variable forms (29-32, banned
+  shapes), stopped. Honest per-job floor 35/516.
+- KILLED (mechanism, local-alloc.c combine_regs): a per-job variable used in one block is tied to
+  the dying input of the insn that sets it, so the target's untied `andi a2,v0,0xff` (case-2
+  level) and `or a2,v0,v1` (flag word) prove a variable live in other blocks. No per-job spelling
+  reaches 0.
+- OPEN (owner): docs/grind/borderline.md 2026-09-26 "func_80055138 — one scratch variable reused for
+  five different values". The 0/516 body is full-build SHA1 == oracle with the header model.
+- Siblings: func_80022F34 / func_80062020 / func_8005509C share no code block with this function
+  (func_8005509C is the callee; its record-pointer spelling `(u8 *)&D_80101EC8 + arg0 * 0x44C` is
+  used here). Nothing to transplant.

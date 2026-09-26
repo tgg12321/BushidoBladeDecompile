@@ -1,13 +1,5 @@
-typedef struct {
-    u16 flags;
-    u8 unk2;
-    u8 unk3;
-    u8 unk4[0x18 - 4];
-} StatusFlagRec;
-extern StatusFlagRec g_sfr[] asm("D_80099D88");
 extern u8 D_8009A8C4[][8][4];
 extern u8 D_8009A9B4[][2];
-extern u8 g_cpt[][4] asm("cpu_practice_honmokuroku_data_tbl");
 extern u32 file_GetFlag1(void);
 extern s32 rand(void);
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
@@ -50,7 +42,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         if (D_800A3680 == D_800A3671) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        if (g_sfr[p[0x443]].flags & 0x300) {
+        if (D_80099D88[p[0x443]].flags & 0x300) {
             row = D_8009A8C4[*(s16 *)(p + 0x86)];
             src = row[D_800A37A0];
             p[0x424] = src[0];
@@ -81,13 +73,13 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         }
         break;
     case 3:
-        p[0x443] = g_cpt[D_800A38E2 - 1][0] + 0x1B;
+        p[0x443] = cpu_practice_honmokuroku_data_tbl[D_800A38E2 - 1][0] + 0x1B;
         base = D_800A38E2 / 10;
         *(s16 *)(p + 0x438) = base * 16 + 0x80;
-        if (g_sfr[p[0x443]].flags & 0x3000) {
+        if (D_80099D88[p[0x443]].flags & 0x3000) {
             *(s16 *)(p + 0x438) = base * 16 + 0x180;
         }
-        if (g_sfr[p[0x443]].flags & 0x4000) {
+        if (D_80099D88[p[0x443]].flags & 0x4000) {
             *(s16 *)(p + 0x438) += 0x200;
         }
         if ((D_800A38E2 - 1) % 10 == 0) {
@@ -105,13 +97,13 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     if (file_GetFlag1() && D_800A38DC != 3) {
         *(s16 *)(p + 0x438) = *(s16 *)(p + 0x438) * 11 >> 4;
     }
-    if (!(g_sfr[p[0x443]].flags & 0xFF00)) {
+    if (!(D_80099D88[p[0x443]].flags & 0xFF00)) {
         p[0x424] = 0x11 - (*(s16 *)(p + 0x438) >> 8);
     }
     *(s16 *)(p + 0x39A) = 0x8000 / *(s16 *)(p + 0x1C);
     p[0x3BD] = 0x10 - (*(s16 *)(p + 0x438) >> 8);
-    if (g_sfr[p[0x443]].flags & 0x100) {
-        g_sfr[p[0x443]].unk3 = (rand() & 3) + 1;
+    if (D_80099D88[p[0x443]].flags & 0x100) {
+        D_80099D88[p[0x443]].unk3 = (rand() & 3) + 1;
     }
     for (i = 0; i < 8U; i++) {
         (p + i)[0x444] = 0;

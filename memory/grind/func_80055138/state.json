@@ -1,31 +1,32 @@
 {
- "func": "single_game_SetStatusUpData",
+ "func": "func_80055138",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "manual",
  "floor_history": [
   {
    "session": 1,
    "floor": 514,
    "modality": "recon",
    "headline": "fable-blitz recon: per-player status-up initializer over the 0x44C player struct (mode switch on D_800A38DC computes char id + XP field 0x438, then a 2-player x 3-section movelist scan derives 3 stat "
+  },
+  {
+   "session": 2,
+   "floor": 35,
+   "modality": "manual (slotB3 2026-09-26)",
+   "headline": "per-job locals floor 35/516 (header model; sandbox 47 with the g_sfr scaffold); one shared scratch variable for five jobs = 0/516 and full-build SHA1 == oracle, but fails ordinary-c-judge-decidable Ruling 1/5 -> borderline.md policy-question 2026-09-26"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function drafts directly from the m2c output + the neighbor-pinned struct spelling; the mode switch is a real source switch(D_800A38DC) and the scan is a straightforward triple-nested loop with local min/max trackers -- first sandbox floor lands well under 100.",
-   "mechanism": "no jtbl, no calls in the hot loop, all-local register allocation; GCC 2.7.2 emits the balanced beq/slti case tree for a 0..3 switch.",
-   "next_probe": "Transcribe phase-by-phase into src/text1b.c (m2c divisors as ground truth), then sandbox single_game_SetStatusUpData --disable all."
+   "hypothesis": "Owner admits the shared scratch (borderline.md 2026-09-26 func_80055138): land integration/probe-shared-scratch-v-hdr0.c with integration/apply_model.py's header model.",
+   "mechanism": "one pseudo spanning case 2, case 3 and the scan loop inherits the case-2 hard-reg conflicts that seat it in a2, as in the target",
+   "next_probe": "re-run apply_model.py + verify-oracle under the lock; layer-2 with the counter-reuse (func_8003800C ruling) and c staging (staged-value-reused-variable) annotations"
   },
   {
-   "hypothesis": "The byte-assembled big-endian-looking mask read (entry[8]<<24 | entry[7]<<16 | entry[6]<<8 | entry[5]) is a source-level unaligned-safe u32 composition (4 lbu + 3 or), not a lw -- and GCC preserves the exact or-tree association order written in source.",
-   "mechanism": "GCC 2.7.2 evaluates left-to-right for parenthesized or-chains; the emitted or order ((b8|b7)|b6)|b5 fingerprints the source association (see or-tree-shape-shift rule if the tree comes out rotated).",
-   "next_probe": "Draft with ((e[8]<<24)|(e[7]<<16))|((e[6]<<8)) style variants and diff the :407-413 window; consult or-tree-shape-shift on mismatch."
-  },
-  {
-   "hypothesis": "The interleaved opp/self zero-init tail (sb opp->0x440; sb p->0x440; sb opp->0x441; sb p->0x441; ...) reproduces only with the same statement ORDER in source (alternating targets), and the duplicate p->0x440=0 at :540 is literally written twice in the original.",
-   "mechanism": "GCC 2.7.2 does not reorder independent volatile-free global stores across each other at -O2 here (no scheduling window that big); store order = statement order; dead-store elimination does not fire on the duplicate because of the intervening opp-pointer stores.",
-   "next_probe": "Write the tail in asm store order including the duplicate; if the scheduler shuffles pairs, check store-const-reload-cse / dead-store-fake-exception rules for the known counter-moves."
+   "hypothesis": "A per-job spelling can still drop below 35 (not to 0: the case-2 `andi a2` and loop `or a2` outputs cannot be seated in a2 by a block-local variable, local-alloc ties them to the dying input).",
+   "mechanism": "extra named intermediates in the scan loop shift allocno order (low_cat found this way)",
+   "next_probe": "permuter from candidate.c with the constant-carrier / var-reuse finds filtered out"
   }
  ],
  "judge_constraints": [],
@@ -38,7 +39,7 @@
    "session": 10,
    "at": "2026-09-05T20:47:24.077090+00:00",
    "headline": "SOLVED in pure C and re-proven on clean HEAD this session: sandbox --disable all = 0 (70/70 insns, rules_dropped 0, zero cheat-asm) and full-tree verify-oracle SHA1 == oracle; blocked ONLY by two out-",
-   "consumed": null
+   "consumed": "2026-09-26 s2: func_80022F34 shares no block with this function (its ledger names this one only in a list); nothing to transplant"
   }
  ]
 }

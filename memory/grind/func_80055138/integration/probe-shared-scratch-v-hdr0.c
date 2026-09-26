@@ -1,13 +1,5 @@
-typedef struct {
-    u16 flags;
-    u8 unk2;
-    u8 unk3;
-    u8 unk4[0x18 - 4];
-} StatusFlagRec;
-extern StatusFlagRec g_sfr[] asm("D_80099D88");
 extern u8 D_8009A8C4[][8][4];
 extern u8 D_8009A9B4[][2];
-extern u8 g_cpt[][4] asm("cpu_practice_honmokuroku_data_tbl");
 extern u32 file_GetFlag1(void);
 extern s32 rand(void);
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
@@ -26,14 +18,10 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     s32 mask;
     s32 bit;
     s32 lo, hi1, hi2;
-    s32 n;
-    s32 s1;
-    s32 s2;
+    s32 v;
     s32 m;
     u32 cat;
-    s32 low_cat;
-    s32 slot;
-    s32 nib;
+    s32 bonus;
     s32 a, b, c;
     u8 *other;
 
@@ -50,7 +38,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         if (D_800A3680 == D_800A3671) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        if (g_sfr[p[0x443]].flags & 0x300) {
+        if (D_80099D88[p[0x443]].flags & 0x300) {
             row = D_8009A8C4[*(s16 *)(p + 0x86)];
             src = row[D_800A37A0];
             p[0x424] = src[0];
@@ -59,8 +47,8 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         break;
     case 2:
         if (D_800A389A) {
-            lv = D_800A37D2 / 5;
-            *(s16 *)(p + 0x438) = lv * 0x180 + 0x280;
+            v = D_800A37D2 / 5;
+            *(s16 *)(p + 0x438) = v * 0x180 + 0x280;
             if (*(s16 *)(p + 0x438) > 0x1000) {
                 *(s16 *)(p + 0x438) = 0x1000;
             }
@@ -68,36 +56,36 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 func_8005509C(*(s16 *)(p + 4));
             }
         } else {
-            n = D_800A37D2 / 3;
-            if (n >= 3) {
+            v = D_800A37D2 / 3;
+            if (v >= 3) {
                 D_800A37D2 = 0;
-                n = 0;
+                v = 0;
             }
             p[0x443] = 0x19;
-            *(s16 *)(p + 0x1C) = (n + 2) << 10;
+            *(s16 *)(p + 0x1C) = (v + 2) << 10;
             *(s16 *)(p + 0x438) = 0;
             p[0x424] = 0;
-            p[0x3F6] = 0x3C - n * 15;
+            p[0x3F6] = 0x3C - v * 15;
         }
         break;
     case 3:
-        p[0x443] = g_cpt[D_800A38E2 - 1][0] + 0x1B;
+        p[0x443] = cpu_practice_honmokuroku_data_tbl[D_800A38E2 - 1][0] + 0x1B;
         base = D_800A38E2 / 10;
         *(s16 *)(p + 0x438) = base * 16 + 0x80;
-        if (g_sfr[p[0x443]].flags & 0x3000) {
+        if (D_80099D88[p[0x443]].flags & 0x3000) {
             *(s16 *)(p + 0x438) = base * 16 + 0x180;
         }
-        if (g_sfr[p[0x443]].flags & 0x4000) {
+        if (D_80099D88[p[0x443]].flags & 0x4000) {
             *(s16 *)(p + 0x438) += 0x200;
         }
         if ((D_800A38E2 - 1) % 10 == 0) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        idx = (u8)(D_800A38E2 / 10) * 2;
+        v = (u8)(D_800A38E2 / 10) * 2;
         if ((u8)(D_800A38E2 % 10) == 0) {
-            idx--;
+            v--;
         }
-        pair = D_8009A9B4[idx];
+        pair = D_8009A9B4[v];
         p[0x424] = pair[0];
         p[0x3F6] = pair[1];
         break;
@@ -105,13 +93,13 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     if (file_GetFlag1() && D_800A38DC != 3) {
         *(s16 *)(p + 0x438) = *(s16 *)(p + 0x438) * 11 >> 4;
     }
-    if (!(g_sfr[p[0x443]].flags & 0xFF00)) {
+    if (!(D_80099D88[p[0x443]].flags & 0xFF00)) {
         p[0x424] = 0x11 - (*(s16 *)(p + 0x438) >> 8);
     }
     *(s16 *)(p + 0x39A) = 0x8000 / *(s16 *)(p + 0x1C);
     p[0x3BD] = 0x10 - (*(s16 *)(p + 0x438) >> 8);
-    if (g_sfr[p[0x443]].flags & 0x100) {
-        g_sfr[p[0x443]].unk3 = (rand() & 3) + 1;
+    if (D_80099D88[p[0x443]].flags & 0x100) {
+        D_80099D88[p[0x443]].unk3 = (rand() & 3) + 1;
     }
     for (i = 0; i < 8U; i++) {
         (p + i)[0x444] = 0;
@@ -141,26 +129,25 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             while (*cursor != 0) {
                 u8 *e = list + *cursor;
                 if (e[4] == 0x40) {
-                    m = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
-                    if (!(m & bit)) {
+                    v = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
+                    if (!(v & bit)) {
                         goto next;
                     }
                 }
                 if (e[1] != 0 && e[1] != 0xFF) {
-                    s1 = e[1];
-                    if (s1 < lo) {
-                        lo = s1;
+                    v = e[1];
+                    if (v < lo) {
+                        lo = v;
                     }
                 }
                 if (e[2] != 0 && e[2] != 0xFF) {
-                    s2 = e[2];
-                    if (hi1 < s2) {
-                        hi1 = s2;
+                    v = e[2];
+                    if (hi1 < v) {
+                        hi1 = v;
                     }
                     cat = e[0] & 7;
-                    low_cat = cat < 2;
-                    if (hi2 < s2 && (e[3] & 0xF) * 4 < 0x10 && (low_cat || cat == 7)) {
-                        hi2 = s2;
+                    if (hi2 < v && (e[3] & 0xF) * 4 < 0x10 && (cat < 2 || cat == 7)) {
+                        hi2 = v;
                     }
                 }
             next:
