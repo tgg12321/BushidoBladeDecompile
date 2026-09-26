@@ -1,0 +1,2 @@
+tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -ds -dL -dl -dg t.i   (t.i = tmp/func_8005D814/psx_split/t.i, cpp of src/text1b.c with the candidate spliced; Makefile CPP_FLAGS+CPP_DEFS)
+BB2_ALLOC_DEBUG=1 tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float t.i -o /dev/null

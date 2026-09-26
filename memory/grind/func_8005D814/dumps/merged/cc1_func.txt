@@ -1,0 +1,545 @@
+  0 addiu	sp,sp,-160
+  1 sw	s6,144(sp)
+  2 move	s6,a0
+  3 addiu	a1,a1,-1
+  4 sw	s0,120(sp)
+  5 move	s0,zero
+  6 sw	s1,124(sp)
+  7 lui	s1,0x0   ; R_MIPS_HI16 D_8009B3C8
+  8 addiu	s1,s1,0   ; R_MIPS_LO16 D_8009B3C8
+  9 sw	s8,152(sp)
+ 10 sw	a2,88(sp)
+ 11 lw	s8,88(sp)
+ 12 lui	v0,0x0   ; R_MIPS_HI16 D_8009B398
+ 13 addiu	v0,v0,0   ; R_MIPS_LO16 D_8009B398
+ 14 sw	ra,156(sp)
+ 15 sw	s7,148(sp)
+ 16 sw	s5,140(sp)
+ 17 sw	s4,136(sp)
+ 18 sw	s3,132(sp)
+ 19 sw	s2,128(sp)
+ 20 sw	a1,80(sp)
+ 21 sb	zero,64(sp)
+ 22 sw	zero,52(sp)
+ 23 sw	zero,48(sp)
+ 24 sw	a3,96(sp)
+ 25 sw	a3,44(sp)
+ 26 sw	zero,40(sp)
+ 27 sw	v0,24(sp)
+ 28 move	t4,s8
+ 29 addiu	s3,t4,160
+ 30 addiu	t5,t4,760
+ 31 addiu	t4,t4,772
+ 32 sw	t5,104(sp)
+ 33 sw	t4,112(sp)
+ 34 addiu	a0,sp,24
+ 35 sll	v0,s0,0x10
+ 36 sra	v0,v0,0xd
+ 37 addu	v0,v0,s1
+ 38 sw	v0,28(sp)
+ 39 jal	0 <func_80047ED0>   ; R_MIPS_26 func_8007352C
+ 40 sw	s3,32(sp)
+ 41 move	s3,v0
+ 42 addiu	v0,s0,1
+ 43 move	s0,v0
+ 44 sll	v0,v0,0x10
+ 45 sra	v0,v0,0x10
+ 46 slti	v0,v0,3
+ 47 bnez	v0,159d0 <func_8005D814+0x8c>
+ 48 addiu	a0,sp,24
+ 49 lui	v0,0x0   ; R_MIPS_HI16 D_8009B398
+ 50 addiu	v0,v0,12   ; R_MIPS_LO16 D_8009B398
+ 51 sw	v0,24(sp)
+ 52 move	s0,zero
+ 53 lui	s2,0x0   ; R_MIPS_HI16 D_8009B3E0
+ 54 addiu	s2,s2,0   ; R_MIPS_LO16 D_8009B3E0
+ 55 li	s1,1
+ 56 sll	v1,s0,0x10
+ 57 sra	v1,v1,0x10
+ 58 sll	v0,v1,0x3
+ 59 addu	a0,v0,s2
+ 60 beqz	v1,15a54 <func_8005D814+0x110>
+ 61 sw	a0,28(sp)
+ 62 lw	t5,80(sp)
+ 63 nop
+ 64 bne	t5,s1,15a50 <func_8005D814+0x10c>
+ 65 li	v0,60
+ 66 li	v0,45
+ 67 sb	v0,6(a0)
+ 68 sw	s3,32(sp)
+ 69 jal	0 <func_80047ED0>   ; R_MIPS_26 func_8007352C
+ 70 addiu	a0,sp,24
+ 71 move	s3,v0
+ 72 addiu	v0,s0,1
+ 73 move	s0,v0
+ 74 sll	v0,v0,0x10
+ 75 sra	v0,v0,0x10
+ 76 slti	v0,v0,2
+ 77 bnez	v0,15a28 <func_8005D814+0xe4>
+ 78 sll	v1,s0,0x10
+ 79 move	s4,zero
+ 80 li	s7,1
+ 81 addiu	s2,sp,24
+ 82 lui	s1,0x6666
+ 83 ori	s1,s1,0x6667
+ 84 lw	t4,96(sp)
+ 85 lui	v0,0x0   ; R_MIPS_HI16 D_8009B398
+ 86 addiu	v0,v0,0   ; R_MIPS_LO16 D_8009B398
+ 87 sw	v0,24(sp)
+ 88 li	v0,22
+ 89 sb	zero,64(sp)
+ 90 sw	v0,52(sp)
+ 91 sw	zero,40(sp)
+ 92 sw	t4,44(sp)
+ 93 move	s0,zero
+ 94 sll	v0,s4,0x10
+ 95 sra	s5,v0,0x10
+ 96 beq	s5,s7,15c00 <func_8005D814+0x2bc>
+ 97 slti	v0,s5,2
+ 98 beqz	v0,15ae4 <func_8005D814+0x1a0>
+ 99 nop
+100 beqz	s5,15af8 <func_8005D814+0x1b4>
+101 sll	v0,s0,0x10
+102 j	15e10 <func_8005D814+0x4cc>   ; R_MIPS_26 .text
+103 sw	s3,32(sp)
+104 li	v0,2
+105 beq	s5,v0,15d0c <func_8005D814+0x3c8>
+106 sll	v0,s0,0x10
+107 j	15e10 <func_8005D814+0x4cc>   ; R_MIPS_26 .text
+108 sw	s3,32(sp)
+109 sra	v0,v0,0x10
+110 sll	v1,v0,0x1
+111 lhu	a0,0(s6)
+112 addu	a1,v1,s2
+113 beqz	v0,15b44 <func_8005D814+0x200>
+114 sh	a0,48(a1)
+115 sll	v0,a0,0x10
+116 sra	a0,v0,0x10
+117 mult	a0,s1
+118 sra	v0,v0,0x1f
+119 mfhi	t5
+120 sra	v1,t5,0x2
+121 subu	v1,v1,v0
+122 sll	v0,v1,0x2
+123 addu	v0,v0,v1
+124 sll	v0,v0,0x1
+125 subu	a0,a0,v0
+126 j	15b98 <func_8005D814+0x254>   ; R_MIPS_26 .text
+127 sh	a0,48(a1)
+128 lhu	v0,72(sp)
+129 nop
+130 sll	v0,v0,0x10
+131 sra	v1,v0,0x10
+132 mult	v1,s1
+133 sra	v0,v0,0x1f
+134 mfhi	t4
+135 sra	v1,t4,0x2
+136 subu	v1,v1,v0
+137 sll	v1,v1,0x10
+138 sra	a1,v1,0x10
+139 mult	a1,s1
+140 sra	v1,v1,0x1f
+141 mfhi	t5
+142 sra	a0,t5,0x2
+143 subu	a0,a0,v1
+144 sll	v0,a0,0x2
+145 addu	v0,v0,a0
+146 sll	v0,v0,0x1
+147 subu	a1,a1,v0
+148 sh	a1,72(sp)
+149 sll	v0,s0,0x10
+150 sra	a1,v0,0x10
+151 sll	a0,a1,0x1
+152 addu	a0,a0,s2
+153 lh	v0,48(a0)
+154 lui	v1,0x0   ; R_MIPS_HI16 D_8009B400
+155 addiu	v1,v1,0   ; R_MIPS_LO16 D_8009B400
+156 sll	v0,v0,0x3
+157 addu	v0,v0,v1
+158 sw	v0,28(sp)
+159 lh	v0,48(a0)
+160 nop
+161 bne	v0,s7,15be4 <func_8005D814+0x2a0>
+162 nop
+163 sll	v0,a1,0x2
+164 addu	v0,v0,a1
+165 sll	v0,v0,0x2
+166 j	15bf0 <func_8005D814+0x2ac>   ; R_MIPS_26 .text
+167 addiu	v0,v0,3
+168 sll	v0,a1,0x2
+169 addu	v0,v0,a1
+170 sll	v0,v0,0x2
+171 sw	v0,48(sp)
+172 lw	v1,28(sp)
+173 j	15e08 <func_8005D814+0x4c4>   ; R_MIPS_26 .text
+174 li	v0,418
+175 sll	v0,s0,0x10
+176 sra	v0,v0,0x10
+177 sll	v1,v0,0x1
+178 lbu	a0,2(s6)
+179 addu	a1,v1,s2
+180 beqz	v0,15c50 <func_8005D814+0x30c>
+181 sh	a0,48(a1)
+182 sll	v0,a0,0x10
+183 sra	a0,v0,0x10
+184 mult	a0,s1
+185 sra	v0,v0,0x1f
+186 mfhi	t4
+187 sra	v1,t4,0x2
+188 subu	v1,v1,v0
+189 sll	v0,v1,0x2
+190 addu	v0,v0,v1
+191 sll	v0,v0,0x1
+192 subu	a0,a0,v0
+193 j	15ca4 <func_8005D814+0x360>   ; R_MIPS_26 .text
+194 sh	a0,48(a1)
+195 lhu	v0,72(sp)
+196 nop
+197 sll	v0,v0,0x10
+198 sra	v1,v0,0x10
+199 mult	v1,s1
+200 sra	v0,v0,0x1f
+201 mfhi	t5
+202 sra	v1,t5,0x2
+203 subu	v1,v1,v0
+204 sll	v1,v1,0x10
+205 sra	a1,v1,0x10
+206 mult	a1,s1
+207 sra	v1,v1,0x1f
+208 mfhi	t4
+209 sra	a0,t4,0x2
+210 subu	a0,a0,v1
+211 sll	v0,a0,0x2
+212 addu	v0,v0,a0
+213 sll	v0,v0,0x1
+214 subu	a1,a1,v0
+215 sh	a1,72(sp)
+216 sll	v0,s0,0x10
+217 sra	a1,v0,0x10
+218 sll	a0,a1,0x1
+219 addu	a0,a0,s2
+220 lh	v0,48(a0)
+221 lui	v1,0x0   ; R_MIPS_HI16 D_8009B400
+222 addiu	v1,v1,0   ; R_MIPS_LO16 D_8009B400
+223 sll	v0,v0,0x3
+224 addu	v0,v0,v1
+225 sw	v0,28(sp)
+226 lh	v0,48(a0)
+227 nop
+228 bne	v0,s7,15cf0 <func_8005D814+0x3ac>
+229 nop
+230 sll	v0,a1,0x2
+231 addu	v0,v0,a1
+232 sll	v0,v0,0x2
+233 j	15cfc <func_8005D814+0x3b8>   ; R_MIPS_26 .text
+234 addiu	v0,v0,3
+235 sll	v0,a1,0x2
+236 addu	v0,v0,a1
+237 sll	v0,v0,0x2
+238 sw	v0,48(sp)
+239 lw	v1,28(sp)
+240 j	15e08 <func_8005D814+0x4c4>   ; R_MIPS_26 .text
+241 li	v0,467
+242 sra	v0,v0,0x10
+243 sll	v1,v0,0x1
+244 lbu	a0,3(s6)
+245 addu	a1,v1,s2
+246 beqz	v0,15d58 <func_8005D814+0x414>
+247 sh	a0,48(a1)
+248 sll	v0,a0,0x10
+249 sra	a0,v0,0x10
+250 mult	a0,s1
+251 sra	v0,v0,0x1f
+252 mfhi	t5
+253 sra	v1,t5,0x2
+254 subu	v1,v1,v0
+255 sll	v0,v1,0x2
+256 addu	v0,v0,v1
+257 sll	v0,v0,0x1
+258 subu	a0,a0,v0
+259 j	15dac <func_8005D814+0x468>   ; R_MIPS_26 .text
+260 sh	a0,48(a1)
+261 lhu	v0,72(sp)
+262 nop
+263 sll	v0,v0,0x10
+264 sra	v1,v0,0x10
+265 mult	v1,s1
+266 sra	v0,v0,0x1f
+267 mfhi	t4
+268 sra	v1,t4,0x2
+269 subu	v1,v1,v0
+270 sll	v1,v1,0x10
+271 sra	a1,v1,0x10
+272 mult	a1,s1
+273 sra	v1,v1,0x1f
+274 mfhi	t5
+275 sra	a0,t5,0x2
+276 subu	a0,a0,v1
+277 sll	v0,a0,0x2
+278 addu	v0,v0,a0
+279 sll	v0,v0,0x1
+280 subu	a1,a1,v0
+281 sh	a1,72(sp)
+282 sll	v0,s0,0x10
+283 sra	a1,v0,0x10
+284 sll	a0,a1,0x1
+285 addu	a0,a0,s2
+286 lh	v0,48(a0)
+287 lui	v1,0x0   ; R_MIPS_HI16 D_8009B400
+288 addiu	v1,v1,0   ; R_MIPS_LO16 D_8009B400
+289 sll	v0,v0,0x3
+290 addu	v0,v0,v1
+291 sw	v0,28(sp)
+292 lh	v0,48(a0)
+293 nop
+294 bne	v0,s7,15df4 <func_8005D814+0x4b0>
+295 sll	v0,a1,0x2
+296 addu	v0,v0,a1
+297 sll	v0,v0,0x2
+298 j	15dfc <func_8005D814+0x4b8>   ; R_MIPS_26 .text
+299 addiu	v0,v0,3
+300 addu	v0,v0,a1
+301 sll	v0,v0,0x2
+302 sw	v0,48(sp)
+303 lw	v1,28(sp)
+304 li	v0,521
+305 sh	v0,0(v1)
+306 sw	s3,32(sp)
+307 jal	0 <func_80047ED0>   ; R_MIPS_26 func_8007352C
+308 addiu	a0,sp,24
+309 move	s3,v0
+310 addiu	v0,s0,1
+311 move	s0,v0
+312 sll	v0,v0,0x10
+313 sra	v0,v0,0x10
+314 slti	v0,v0,2
+315 bnez	v0,15ac4 <func_8005D814+0x180>
+316 addiu	v0,s4,1
+317 move	s4,v0
+318 sll	v0,v0,0x10
+319 sra	v0,v0,0x10
+320 slti	v0,v0,3
+321 bnez	v0,15abc <func_8005D814+0x178>
+322 move	s0,zero
+323 lui	v0,0x6666
+324 lw	t4,80(sp)
+325 ori	v0,v0,0x6667
+326 sll	t1,t4,0x10
+327 sra	t0,t1,0x10
+328 mult	t0,v0
+329 sra	t1,t1,0x1f
+330 mfhi	v1
+331 sra	a2,v1,0x2
+332 subu	a2,a2,t1
+333 sll	a0,a2,0x10
+334 sra	a3,a0,0x10
+335 mult	a3,v0
+336 lui	t2,0x51eb
+337 ori	t2,t2,0x851f
+338 move	s4,zero
+339 addiu	s1,sp,24
+340 lui	v0,0x0   ; R_MIPS_HI16 D_8009B398
+341 addiu	v0,v0,0   ; R_MIPS_LO16 D_8009B398
+342 mfhi	v1
+343 sw	v0,24(sp)
+344 lhu	v0,80(sp)
+345 mult	t0,t2
+346 sra	a0,a0,0x1f
+347 sh	v0,76(sp)
+348 sh	v0,74(sp)
+349 sh	v0,72(sp)
+350 sra	v1,v1,0x2
+351 subu	v1,v1,a0
+352 sll	v0,v1,0x2
+353 addu	v0,v0,v1
+354 sll	v0,v0,0x1
+355 subu	a3,a3,v0
+356 sll	a0,a3,0x10
+357 mfhi	t3
+358 sra	a1,a0,0x10
+359 li	v0,41
+360 mult	a1,t2
+361 sw	v0,52(sp)
+362 sll	v0,a2,0x2
+363 addu	v0,v0,a2
+364 sll	v0,v0,0x1
+365 subu	t0,t0,v0
+366 sra	a0,a0,0x1f
+367 sh	t0,76(sp)
+368 sh	a3,74(sp)
+369 sra	v0,t3,0x5
+370 subu	v0,v0,t1
+371 sh	v0,72(sp)
+372 mfhi	v1
+373 sra	v1,v1,0x5
+374 subu	v1,v1,a0
+375 sll	v0,v1,0x1
+376 addu	v0,v0,v1
+377 sll	v0,v0,0x3
+378 addu	v0,v0,v1
+379 sll	v0,v0,0x2
+380 subu	a1,a1,v0
+381 sh	a1,74(sp)
+382 move	v0,s0
+383 bnez	v0,15f74 <func_8005D814+0x630>
+384 sll	v0,s4,0x10
+385 sra	v1,v0,0x10
+386 sll	v0,v1,0x1
+387 addu	v0,v0,s1
+388 lh	v0,48(v0)
+389 nop
+390 bnez	v0,15f74 <func_8005D814+0x630>
+391 sll	v0,s4,0x10
+392 li	v0,2
+393 bne	v1,v0,15ff0 <func_8005D814+0x6ac>
+394 addiu	v0,s4,1
+395 sll	v0,s4,0x10
+396 sra	a1,v0,0x10
+397 sll	a0,a1,0x1
+398 addu	a0,a0,s1
+399 lh	v1,48(a0)
+400 lui	v0,0x0   ; R_MIPS_HI16 D_8009B400
+401 addiu	v0,v0,0   ; R_MIPS_LO16 D_8009B400
+402 sll	v1,v1,0x3
+403 addu	v1,v1,v0
+404 li	v0,499
+405 sw	v1,28(sp)
+406 sh	v0,0(v1)
+407 lh	v1,48(a0)
+408 li	v0,1
+409 bne	v1,v0,15fc8 <func_8005D814+0x684>
+410 li	s0,1
+411 sll	v0,a1,0x2
+412 addu	v0,v0,a1
+413 sll	v0,v0,0x2
+414 addu	v0,v0,a1
+415 j	15fd8 <func_8005D814+0x694>   ; R_MIPS_26 .text
+416 addiu	v0,v0,3
+417 sll	v0,a1,0x2
+418 addu	v0,v0,a1
+419 sll	v0,v0,0x2
+420 addu	v0,v0,a1
+421 sw	v0,48(sp)
+422 sw	s3,32(sp)
+423 jal	0 <func_80047ED0>   ; R_MIPS_26 func_8007352C
+424 addiu	a0,sp,24
+425 move	s3,v0
+426 addiu	v0,s4,1
+427 move	s4,v0
+428 sll	v0,v0,0x10
+429 sra	v0,v0,0x10
+430 slti	v0,v0,3
+431 bnez	v0,15f40 <func_8005D814+0x5fc>
+432 move	v0,s0
+433 move	s4,zero
+434 li	s5,16
+435 lui	s7,0x0   ; R_MIPS_HI16 D_8009B398
+436 addiu	s7,s7,24   ; R_MIPS_LO16 D_8009B398
+437 lui	s6,0x0   ; R_MIPS_HI16 D_8009B3F0
+438 addiu	s6,s6,0   ; R_MIPS_LO16 D_8009B3F0
+439 addiu	s1,s8,14
+440 lw	t4,96(sp)
+441 li	v0,255
+442 sb	v0,65(sp)
+443 li	v0,16
+444 sb	v0,67(sp)
+445 sb	v0,66(sp)
+446 li	v0,1
+447 sb	v0,64(sp)
+448 sw	zero,48(sp)
+449 sw	zero,40(sp)
+450 sw	t4,44(sp)
+451 jal	0 <func_80047ED0>   ; R_MIPS_26 SetTile
+452 move	a0,s8
+453 li	v0,255
+454 sll	s0,s4,0x10
+455 sra	s0,s0,0xe
+456 sb	v0,-10(s1)
+457 sb	s5,-9(s1)
+458 sb	s5,-8(s1)
+459 lui	at,0x0   ; R_MIPS_HI16 D_8009B450
+460 addu	at,at,s0
+461 lhu	v0,0(at)   ; R_MIPS_LO16 D_8009B450
+462 move	a0,s8
+463 sh	v0,-6(s1)
+464 lui	at,0x0   ; R_MIPS_HI16 D_8009B450
+465 addu	at,at,s0
+466 lhu	v0,2(at)   ; R_MIPS_LO16 D_8009B450
+467 move	a1,zero
+468 sh	v0,-4(s1)
+469 lui	at,0x0   ; R_MIPS_HI16 D_8009B450
+470 addu	at,at,s0
+471 lhu	v1,0(at)   ; R_MIPS_LO16 D_8009B450
+472 li	v0,1
+473 sh	v0,0(s1)
+474 li	v0,568
+475 subu	v0,v0,v1
+476 jal	0 <func_80047ED0>   ; R_MIPS_26 SetSemiTrans
+477 sh	v0,-2(s1)
+478 move	a1,s8
+479 addiu	s1,s1,16
+480 addiu	s8,s8,16
+481 lw	t5,96(sp)
+482 lui	a0,0x0   ; R_MIPS_HI16 g_gpu_ot_ptr
+483 lw	a0,0(a0)   ; R_MIPS_LO16 g_gpu_ot_ptr
+484 sll	s2,t5,0x2
+485 jal	0 <func_80047ED0>   ; R_MIPS_26 AddPrim
+486 addu	a0,a0,s2
+487 lui	at,0x0   ; R_MIPS_HI16 D_8009B450
+488 addu	at,at,s0
+489 lh	v0,2(at)   ; R_MIPS_LO16 D_8009B450
+490 addiu	a0,sp,24
+491 sw	s7,24(sp)
+492 sw	s6,28(sp)
+493 sw	s3,32(sp)
+494 jal	0 <func_80047ED0>   ; R_MIPS_26 func_8007352C
+495 sw	v0,52(sp)
+496 addiu	a0,sp,24
+497 lui	t4,0x0   ; R_MIPS_HI16 D_8009B398
+498 addiu	t4,t4,36   ; R_MIPS_LO16 D_8009B398
+499 lui	t5,0x0   ; R_MIPS_HI16 D_8009B3F0
+500 addiu	t5,t5,8   ; R_MIPS_LO16 D_8009B3F0
+501 sw	t4,24(sp)
+502 sw	t5,28(sp)
+503 jal	0 <func_80047ED0>   ; R_MIPS_26 func_8007352C
+504 sw	v0,32(sp)
+505 move	s3,v0
+506 addiu	v0,s4,1
+507 move	s4,v0
+508 sll	v0,v0,0x10
+509 sra	v0,v0,0x10
+510 slti	v0,v0,2
+511 bnez	v0,16050 <func_8005D814+0x70c>
+512 nop
+513 lui	a0,0x0   ; R_MIPS_HI16 D_8009B398
+514 addiu	a0,a0,0   ; R_MIPS_LO16 D_8009B398
+515 jal	0 <func_80047ED0>   ; R_MIPS_26 func_8006E480
+516 move	a1,zero
+517 li	a1,1
+518 move	a2,zero
+519 lw	a0,104(sp)
+520 move	a3,v0
+521 jal	0 <func_80047ED0>   ; R_MIPS_26 SetDrawMode
+522 sw	zero,16(sp)
+523 lui	a0,0x0   ; R_MIPS_HI16 g_gpu_ot_ptr
+524 lw	a0,0(a0)   ; R_MIPS_LO16 g_gpu_ot_ptr
+525 lw	a1,104(sp)
+526 jal	0 <func_80047ED0>   ; R_MIPS_26 AddPrim
+527 addu	a0,a0,s2
+528 lw	t4,112(sp)
+529 lw	t5,88(sp)
+530 nop
+531 subu	v0,t4,t5
+532 lw	ra,156(sp)
+533 lw	s8,152(sp)
+534 lw	s7,148(sp)
+535 lw	s6,144(sp)
+536 lw	s5,140(sp)
+537 lw	s4,136(sp)
+538 lw	s3,132(sp)
+539 lw	s2,128(sp)
+540 lw	s1,124(sp)
+541 lw	s0,120(sp)
+542 addiu	sp,sp,160
+543 jr	ra
+544 nop
