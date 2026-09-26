@@ -80,3 +80,12 @@
   shared `new_var = s.p0 + 0xC; s.p1 = new_var;` carrier — the Ruling 9 `cells` shape —
   and none shares the sheet tables or the masks (variable identity is out of the
   permuter's mutation reach, as in the func_8003800C finding).
+
+## LANDED 2026-09-26 (manual lane, slotA4) — COMPLETED-C
+Match commit 50ffe0a97 (`Match: func_8006A880 — COMPLETED-C (manual)`), queue commit
+faa558681; `queue done` re-checked SHA1 == oracle 62efab4f…; check_completion_integrity OK.
+Layer-2: two FAILs on the proof record only (mislabelled pv_both pseudos; dumps taken
+from final.c instead of candidate.c), both fixed (7bf1c12c6, 75df71fd9); the third review
+PASSed after one commit-message line was reworded (permuter base = v/ord0.c). Constructs:
+`sheets` / `row_mask` under Ruling 11 (proof: ruling11.md), `cells` under Ruling 9.
+Ledger closed.
