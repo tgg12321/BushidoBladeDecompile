@@ -110,3 +110,17 @@ F11. Landing package (integration/*.py, applied by integration/apply.py from the
   62efab4f73f992798c43e8c730aa43baa10bb4fa. func_80034708 in code6cac_b3.o scores 8 =
   4x gp_rel(D_800A3174+2) vs (D_800A3176) + 1x jtbl lo16 section addend — relocation
   spelling only.
+
+## [s2 cont.] cc1psx calibration (owner ruling Q2 2026-09-26: compiler-necessity + cc1psx)
+F12. The landed src/code6cac_b3.c compiled by the ORIGINAL PsyQ cc1psx (tools/cc1psx_wrapper.sh,
+  integration/psx_calib.sh): at -G8 it emits the 16 gp-direct cursor reads (`lh $2,D_800A3174[+2]`)
+  exactly as our cc1 and the target; at -G0 it emits ZERO (all 20 cursor reads off a register),
+  frame vars=8 at both. With the merged declarations cc1psx also produces the target's
+  related addressing: `la $23,D_80102778+12` + `addu $19/$18/$17,$23,-4/-6/-8`, `lb $6,10/11($21)`
+  for rows 11/12, `la $18,D_80106A50+35` (flags address CSE'd). Normalized cc1psx-vs-ours diff =
+  104 lines, all scheduling of the per-iteration pad-word load (known cc1psx/KMC scheduling skew);
+  the -G and object-model effects are identical in both compilers.
+  Minimal span: the PracticeParams span 0x78..0x87 is the labels this TU and its consumers
+  address (row-1 fold proves base <= 0x78; func_8001C444 initialises exactly 0x78..0x87);
+  FileRecord 0x50..0x73 is the checksummed record (flags needs a >8-byte object; the record
+  is the documented one).
