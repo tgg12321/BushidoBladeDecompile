@@ -285,6 +285,46 @@ Failing any prong is a FAIL(CONSTRUCT) under Ruling 1, exactly as before.
        targets a distinct object (the same base with a non-overlapping
        constant offset). Re-loading the same lvalue with no intervening write
        to that lvalue fails (func_80060A68 `src`/`idx`).
+       **Clarification (owner, 2026-09-26, fifth batch): "already holds"
+       means on EVERY feasible path.** The question put to the owner, verbatim: "The
+       reused-variable rules forbid 'a write that stores a value the
+       variable already holds'. In func_8002DE20 two writes re-store the
+       same value on ONE of the paths reaching them, but on the other paths
+       the variable holds something else, so the write is needed there and
+       removing it breaks the program. Does that count as the banned
+       redundant write?" Owner (Trenton) chose, verbatim: **"No — only if
+       redundant on all paths (Recommended)"**, whose text is: "A write is
+       banned only when it's removable: the variable already holds that
+       value on EVERY path reaching it. A write needed on some path is
+       allowed." (Record: docs/grind/owner-rulings-2026-09-26.md, batch 5.)
+       The author's narrowing. A feasible incoming path is a path reaching
+       the write whose branch conditions are jointly satisfiable under C
+       semantics; a path whose conditions contradict each other is not
+       feasible and never counts. A write fails this prong only when,
+       judged by C semantics as above, the variable already holds the
+       written value on EVERY feasible incoming path, so that deleting the
+       write leaves the program's behaviour unchanged. A write that stores
+       a value the variable holds on some feasible incoming paths but not on
+       at least one other is not a re-store under this prong. It is audited
+       mechanically: for each write that re-stores a held value on any
+       feasible incoming path, the ledger names at least one feasible
+       incoming path (by its branch conditions) on which the variable holds
+       a different value at the write, and states the value it holds there.
+       A write without that record fails. Nothing else in this prong
+       changes: the intervening-store rule (ignored only when it provably
+       targets a distinct object) stands, and so does the re-load ban,
+       which is this same test applied to a load: a re-load of the same
+       lvalue into the variable fails only when, on EVERY feasible incoming
+       path, the variable was loaded from that lvalue and neither the lvalue
+       nor the variable has been written since (func_80060A68 `src`/`idx`).
+       A re-load that is admitted because this does not hold on some path
+       carries the same ledger record: a feasible incoming path, named by
+       its branch conditions, on which the lvalue or the variable has been
+       written since the last load, stating that write. Every
+       rule that applies this prong by reference (the Ruling 5 extension's
+       (D), whose additional member re-assignment requirement is unchanged,
+       Ruling 9 (g), Ruling 11 (B)(2)) reads it with this clarification. Record: docs/grind/decisions.md 2026-09-26 OWNER
+       RULING — path-wise re-store.
    (d) No single computation is split across writes (Ruling 4 governs
        same-statement splits separately).
 3. **Not a borrow.** The variable has no other job, and no declaration OTHER
@@ -1189,7 +1229,14 @@ values.
   whose stored value is never read (a dead store in Ruling 2's store-level
   sense) fails; this ruling admits nothing the dead-store family would need.
   (2) No write stores a value the variable already holds, judged by C
-  semantics exactly as in Ruling 5 prong 2(c).
+  semantics exactly as in Ruling 5 prong 2(c), including its 2026-09-26
+  clarification: a write (including a re-load) fails only when the
+  variable already holds the written value on EVERY feasible incoming path
+  (branch conditions jointly satisfiable), and each write that re-stores a
+  held value on some feasible incoming path carries the ledger record of a
+  feasible incoming path where the variable holds a different value (for a
+  re-load, where the lvalue or the variable has been written since the last
+  load).
 - **(C) The one-variable-per-value spelling has the same statements.**
   (1) The ledger records the one-variable-per-value spelling: each value gets
   its own fresh local, declared at the innermost scope enclosing that value's

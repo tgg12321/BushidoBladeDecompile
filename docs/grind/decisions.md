@@ -29868,3 +29868,36 @@ island is class-exact; the engine recognizer update is an engine: commit with en
 (4) Conditions 2-5 of the 2026-09-23 ruling and a fresh layer-2 on the parser fix, the recognizer
 update, the row and the body. The row, the parser fix and the recognizer update land with the
 function, not in the rules commit. The body's C is judged on its own merits (Ruling 11).
+
+## 2026-09-26 — OWNER RULING — path-wise re-store (`.claude/rules/ordinary-c-judge-decidable.md` Ruling 5 2(c), Ruling 11 (B)(2))
+
+Fifth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 5). Context:
+layer-2 review of func_8002DE20 (src/code6cac_b.c:2353 `cross_a` re-stores A x c on the
+test-1-fail path; :2368 `cross_b` re-stores A x p2 on the test-4-fail path; on the other incoming
+paths each variable holds a different value, so each write is necessary). Ruling 11 (B)(2) /
+Ruling 5 2(c) said "no write stores a value the variable already holds, judged by C semantics" with
+no path quantifier. Question, verbatim: "The reused-variable rules forbid 'a write that stores a
+value the variable already holds'. In func_8002DE20 two writes re-store the same value on ONE of
+the paths reaching them, but on the other paths the variable holds something else, so the write is
+needed there and removing it breaks the program. Does that count as the banned redundant write?"
+Owner (Trenton) chose, verbatim: "No — only if redundant on all paths (Recommended)" — "A write is
+banned only when it's removable: the variable already holds that value on EVERY path reaching it. A
+write needed on some path is allowed."
+
+**Ruling (full text in the rule file, Ruling 5 2(c) "Clarification (owner, 2026-09-26, fifth
+batch)"; the author's narrowing).** A feasible incoming path is one whose branch conditions are
+jointly satisfiable under C semantics; a contradictory path never counts. A write fails 2(c) only
+when the variable already holds the written value on EVERY feasible incoming path (deleting it
+changes nothing). A write needed on at least one feasible incoming path is not a re-store under
+2(c). Audit: for each write that re-stores a held value on some feasible incoming path, the ledger
+names at least one feasible incoming path (by its branch conditions) where the variable holds a
+different value, and states that value; a write without that record fails. The intervening-store
+rule stands, and so does the re-load ban, which is the same test applied to a load: a re-load of
+the same lvalue into the variable fails only when, on EVERY feasible incoming path, the variable
+was loaded from that lvalue and neither the lvalue nor the variable has been written since
+(func_80060A68 `src`/`idx`). An admitted re-load carries the same ledger record: a feasible
+incoming path, named by its branch conditions, on which the lvalue or the variable has been
+written since the last load, stating that write.
+Rules that apply 2(c) by reference (Ruling 5 extension (D), Ruling 9 (g), Ruling 11 (B)(2)) read
+it with this clarification; Ruling 11 (B)(2) states it explicitly. func_8002DE20 is judged fresh;
+nothing is pre-decided.
