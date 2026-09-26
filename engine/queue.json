@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80043454",
-      "file": "text1a_c",
-      "distance": 479,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800646E8",
       "file": "text1b",
       "distance": 490,
@@ -627,18 +619,29 @@
       "rotation": "sandbox 90 from scorer-stripped header GPR stmts (owner question, borderline 2026-09-25) + tbl copy FAIL; oracle-green body banked in memory/grind/func_800288C8",
       "rotated_at": "2026-09-25T16:23:47+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_80043454",
+      "file": "text1a_c",
+      "distance": 479,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotation": "layer-2 FAIL 2026-09-25: only closing form (sandbox 0, SHA1==oracle) is the unsanctioned goto-loop chassis; best ordinary 57/479; owner question in borderline.md; frontier in memory/grind/func_80043454/evidence.md",
+      "rotated_at": "2026-09-26T04:48:46+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 53,
-    "active": 34,
+    "active": 33,
     "by_status": {
-      "active": 34,
-      "rotated": 19
+      "active": 33,
+      "rotated": 20
     },
     "by_verdict": {
-      "C": 26,
-      "ASM-PARTIAL": 8
+      "ASM-PARTIAL": 8,
+      "C": 25
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
