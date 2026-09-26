@@ -8,7 +8,7 @@
   "disable": "all",
   "strip_cheat_asm": true,
   "rules_dropped": 0,
-  "cheat_asm_stripped": 99,
+  "cheat_asm_stripped": 98,
   "disabled_o": "tmp/sandbox/func_80055138/text1b.o"
 }
 
