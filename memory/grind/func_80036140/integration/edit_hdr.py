@@ -30,4 +30,5 @@ for d in ["extern s32 D_80101E78;", "extern s32 D_80101E7C;", "extern s32 g_cdre
           "extern s16 D_80101E9C;", "extern u16 D_80101E9E;", "extern s32 g_cdread_expected_pos;", "extern s32 D_80101EA4;"]:
     assert t.count(d + "\n") == 1, d
     t = t.replace(d + "\n", "")
-p.write_text(t)
+open(p, 'w', newline='
+').write(t)

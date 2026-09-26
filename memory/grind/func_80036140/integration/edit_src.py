@@ -10,4 +10,5 @@ m = {"D_80101E78": "D_80101E60.unk18", "D_80101E7C": "D_80101E60.unk1C",
      "g_cdread_expected_pos": "D_80101E60.expected_pos", "D_80101EA4": "D_80101E60.unk44"}
 for k, v in m.items():
     t = re.sub(r"\b" + k + r"\b", v, t)
-p.write_text(t)
+open(p, 'w', newline='
+').write(t)
