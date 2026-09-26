@@ -1,0 +1,4 @@
+80055140 addu $s2, $a1, $zero -> a1 with s2
+8005560C sll $v0, $a1, 1 -> a1 with v0
+800557F0 addu $a1, $v0, $t8 -> a1 with v0
+8005582C addu $a1, $v1, $v0 -> a1 with v1

@@ -24,7 +24,10 @@ HDR_BLOCK = (
     '    u8 unk4[0x18 - 4];\n'
     '} StatusFlagRec;\n'
     'extern StatusFlagRec D_80099D88[];\n'
-    'extern u8 D_8009A8C4[][8][4];      /* rows of eight 4-byte entries (func_80055138) */\n'
+    '/* Rows of eight 4-byte entries: func_80055138 reads [row][col][0..1] (row*0x20 + col*4);\n'
+    ' * func_80058580 reads the halfword at byte 2 of [row][col-1] (row<<5 + (col-1)*4 + 6 at\n'
+    ' * 0x8005A854-78, through the alias row D_8009A8CA = D_8009A8C4+6). */\n'
+    'extern u8 D_8009A8C4[][8][4];\n'
     'extern u8 D_8009A9B4[][2];         /* byte pairs (func_80055138) */\n')
 
 ALIASES = [  # (symbol, offset, referrers)
@@ -37,6 +40,7 @@ ALIASES = [  # (symbol, offset, referrers)
     ('D_80099D97', 0xF, 'func_80058580'),
     ('D_80099D9C', 0x14, 'func_80058580'),
     ('D_80099D9D', 0x15, 'func_80058580'),
+    ('D_8009A8CA', 0x6, 'func_80058580'),
 ]
 
 
@@ -67,8 +71,10 @@ def t_syms(s):
         old = '%s = 0x%s;\n' % (sym, sym[2:])
         refs = ('asm/funcs/%s.s is its only assembled referrer' % who) if ' and ' not in who else \
             'asm/funcs/%s.s are its assembled referrers' % who.replace(' and ', '.s and asm/funcs/')
-        s = one(s, old, '%s = 0x%s;  /* alias of D_80099D88+0x%X (StatusFlagRec record 0); '
-                        'retire with %s (%s) */\n' % (sym, sym[2:], off, who, refs))
+        what = ('D_80099D88+0x%X (StatusFlagRec record 0)' % off if sym.startswith('D_80099D')
+                else 'D_8009A8C4+0x%X (entry [0][1], byte 2)' % off)
+        s = one(s, old, '%s = 0x%s;  /* alias of %s; '
+                        'retire with %s (%s) */\n' % (sym, sym[2:], what, who, refs))
     return s
 
 

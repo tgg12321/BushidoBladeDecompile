@@ -245,23 +245,102 @@ d. **the counter.** idx (89) is live across the whole scan loop, so its conflict
    2..11, 16, 29 -> pass 0 -> 12 ($t4), the target's register for both loops. Split, the
    clear loop's counter (90) conflicts only with 2 29 -> $v1.
 
-## (D)(3) Necessity (every one-variable-per-value spelling)
-- **temp.** Property of the reuse spelling: the values 1 and 4 sit in a pseudo referenced
-  in more than one basic block, so local-alloc neither allocates nor ties it (a). In ANY
-  one-variable-per-value spelling, value 1 has its own variable whose only references are
-  its write and the two reads in `... = lvl5 * 0x180 + 0x280;`, and value 4 its own
-  variable read only by `if (!(move_mask & bit))`; the target's instruction stream fixes
-  both ranges as straight-line code with no label or branch between write and last read
-  (0x800552E4..0x800552EC; 0x80055738..0x8005573C), and a C local is referenced exactly by
-  its own write and reads. So each is referenced in one block and dies once whatever its
-  declaration order, scope, type (s_u8), initializer form (s_decl_init) or the
-  surrounding statement order, and combine_regs ties it to the dying input: the output
-  register equals an input register (`andi X,X,0xff`, `or X,X,Y`). The target's
-  `andi a2,v0,0xff` and `or a2,v0,v1` write a register that is neither input, so no
-  one-variable-per-value spelling reproduces them. Values 2, 3, 5 and 6 are in the same
-  variable because the target seats them in the same register, and each, split alone,
-  leaves it (ablations below; mechanisms b and c).
-- **idx.** Property: one pseudo live across the scan loop, whose conflicts fill 2..11 (d).
+## (D)(3) Necessity — every value of `temp`, every one-variable-per-value spelling
+(Rewritten after the 2026-09-26 layer-2 FAIL. The argument is made per value, and it covers
+per-value spellings with ANY added sanctioned construct — FAKE dead store, self-assignment,
+combine-foldable chain-extender / live-use detour, pointer alias, `do { } while (0);` —
+because it constrains only what the allocators can choose given the instructions a matching
+spelling must emit. The measurements in (D)(3b) confirm it construct by construct.)
+
+**Frame.** A spelling matches only if it emits the target's instructions, so in any matching
+spelling the values live in each hard register at each point, and the instructions that pair
+two registers, are the target's. A value in its own variable is seated either by local-alloc
+(single-block pseudo: combine_regs ties it to a dying input, :1784-1928; otherwise
+find_free_reg, :2135, takes a suggested register — suggestions come only from insns in the
+block that pair it with a hard register, combine_regs :1858-1898 — or the lowest free one;
+MIPS defines no REG_ALLOC_ORDER) or by global.c find_reg (:952): pass 0 = the lowest register
+in regs_used_so_far that is neither in the allocno's conflicts nor in regs_someone_prefers,
+pass 1 = the lowest non-conflicting register; a call-crossing allocno starts from
+call_used_reg_set (:970-975), which contains every register below $s0. So a separate pseudo
+can be seated in $a2 (6) only if each of $v0..$a1 (2-5) is excluded for it, and a register R
+is excluded only by
+- **a conflict**: R holds a value live at some point of the pseudo's range (in a matching
+  spelling, a target register live there); or
+- **a preference** (pass 0 only): R is in regs_someone_prefers, the union of the full
+  preferences of lower-priority allocnos B that conflict with it (prune_preferences
+  :882-930). set_preference (:1671, called from mark_reg_store :1484) records a preference of
+  B for R only for an insn that sets B from R (or from an operation whose first operand is
+  R), or sets R from B, with R a hard register or a locally allocated pseudo. These are the
+  insns at global_conflicts time (after combine), i.e. emitted instructions; and :902 strips
+  every call-used register from the preferences of a call-crossing B.
+
+**Target facts** (asm/funcs/func_80055138.s; r11/pairs.py prints the pairings):
+- $a1 holds a live value only: the incoming arg1 up to its copy (0x80055140), while $a2 still
+  holds the incoming arg2 up to 0x800551A4; `lbu a1,0x443(s0)` 0x800555F4..0x80055610; `e`
+  across the scan loop (set at 0x800557F0); lo_val in the section tail 0x80055804..0x80055854.
+  `jal file_GetFlag1` (0x80055530) lies on every path from the switch arms to 0x800555F4.
+- Instructions pairing $a1 with another register (`python3 tmp/func_80055138/r11/pairs.py a1`,
+  r11/pairs_a1.txt): the arg1 copy `addu s2,a1,zero` (0x80055140), `sll v0,a1,1` (0x8005560C,
+  after the call), `addu a1,v0,t8` (0x800557F0, `e`) and `addu a1,v1,v0` (0x8005582C, tail).
+- In the scan loop $a0 is live only 0x8005571C..0x80055734 (`lbu a0,6(a1)` -> `or v0,v0,a0`);
+  $v1 only 0x80055704..0x8005570C, 0x80055718..0x80055728, 0x80055730..0x80055738 (the mask's
+  inputs) and 0x800557A0..0x800557D4 (`cat`). The loop instructions pairing $v1 or $a0 with
+  another register are only `andi v1,v0,7` (0x800557A0) and `sltiu v0,v1,2` (0x800557C8):
+  `cat` with $v0 values. None pairs a loop-live allocno with $a0.
+
+**Case values — 1 (D_800A37D2 / 5), 2 (D_800A37D2 / 3), 3 (the D_8009A9B4 row).** Each needs
+$a1 excluded. No conflict can do it: the only $a1 values are arg1 at entry — a range reaching
+it starts before any write, i.e. reads an indeterminate value, and also overlaps arg2 in
+$a2, so $a2 is excluded with it (measured ce_l_entry_uninit: `conflicts: 2 3 4 5 6 16 29`
+-> $a3) — and values after `jal file_GetFlag1`, which a case-2/3 range reaches only by
+crossing the call, and then $a2 is excluded as a call-used register. No preference can do it:
+of the $a1 pairings, the arg1 copy gives only arg1's pseudo an $a1 preference, and that
+pseudo crosses calls (it is read at 0x80055680 after `jal rand`), so :902 prunes it (a fresh
+local initialised from arg1 is cse-merged into it: ce_l_arg1alias_glob -> still $a1); the
+other three lie after `jal file_GetFlag1`, and an allocno they involve can conflict with a
+case value only by being live across that call, which again prunes its call-used
+preferences. A local
+seat is no better: value 1 as a single-block local is tied to its dying input
+(`andi X,X,0xff`), and a local's lowest free register in case 2/3 is below $a2 because $a1 is
+free there. Measured per-value seats: value 1 tied, or $a1 when a surviving chain-extender
+makes it global; value 2 $a0; value 3 $a1 (FINDREG traces in (D)(1) and (D)(3b)). So no
+one-variable-per-value spelling, with or without added constructs, seats 1, 2 or 3 in $a2.
+The reuse gets $a1 excluded from its loop segments: temp's one pseudo also holds values
+4-6, whose ranges overlap `e` in $a1, and it crosses no call ("Register 99 used 53 times
+across 49 insns; dies in 6 places", no "crosses").
+
+**Loop values — 4 (the mask word), 5 (e[1]), 6 (e[2]).** Each needs $a0 excluded, and 4 and 5
+also $v1. A conflict needs the range to include a point where $a0 (or $v1) holds a live value.
+The mask's range 0x80055738..0x8005573C, stat1's 0x8005575C..0x8005576C and stat2's
+0x80055784..0x800557DC (which does contain `cat` in $v1, so $v1 is excluded for value 6)
+contain none, and extending a range to one crosses another loop value's range: every path
+from the range to a later $v1/$a0 value either enters stat1's or stat2's range (the next $v1
+value after the mask on the fall-through path is `cat`, inside stat2's range) or goes around
+the loop back-edge; a variable live at the loop head is live into block 0x800557E0, i.e. out
+of the stat blocks, and so across the stat values' ranges (for stat2 reaching the
+0x8005571C..34 $a0 value: live along the skip path 0x80055770 -> 0x800557E0 and so across
+stat1's range). In a matching spelling those values sit in $a2 too, and two pseudos
+whose ranges overlap cannot share $a2 — so such an extension breaks the match itself. No
+preference can do it: no emitted loop instruction pairs a loop-live allocno with $a0, and the
+$v1 pairings involve only `cat` and the e[0] load, which live inside stat2's range. Pass 1
+therefore yields $a0 or lower (the mask and stat1: $v1 or lower). A local seat is no better:
+the mask as a single-block local is tied (`or X,X,Y`), and $a0 is free in all three ranges.
+Values 5 and 6 need, besides, their copy `move a2,v0` to survive cse: with its own variable,
+cse.c make_regs_eqv (:826-857) keeps the byte load canonical unless the variable outlives
+the cse block, so the plain per-value spellings lose the copy (dumps in (D)(1)); the
+permuter's `do { } while (0);` keeps stat2's copy by ending the cse block, and then stat2
+lands in $v1 (x/abl_stat2_dw.c: 11/516, 516 insns). So no one-variable-per-value spelling
+seats 4, 5 or 6 in $a2. The reuse gets $v1 and $a0 excluded from its case segments (value
+2's range holds the n*15 temporary in $v1, 0x8005539C..0x800553A0; value 1's holds the
+0xCCCCCCCD constant in $a0) and from regs_someone_prefers (trace: `someone_prefers: 4`).
+
+So every value needs the shared pseudo: the case values take $a1's exclusion from the loop
+values' ranges, the loop values take $v1's and $a0's from the case values' ranges, and no
+one-variable-per-value spelling — whatever its declarations, scope, types, statement order
+or added sanctioned constructs — gets either.
+
+## (D)(3c) `idx`
+Property: one pseudo live across the scan loop, whose conflicts fill 2..11 (d).
   In ANY one-variable-per-value spelling the clear loop has its own counter, referenced
   only by that loop (init, `(p + zero_i)[0x444]`, `zero_i++`, the test). In any spelling
   that reproduces the rest of the target, the only registers live with it are $v0 (the
@@ -279,48 +358,24 @@ d. **the counter.** idx (89) is live across the whole scan loop, so its conflict
   (someone_prefers is empty in the trace). So the split counter is never seated in $t4
   (measured: $v1).
 
-## (D)(3b) Per-value spellings that add sanctioned constructs (chain-extenders, dead stores, self-assignments, a pointer alias)
-The (D)(3) argument above covers spellings with the reuse body's statement list. This section
-covers per-value spellings that ADD FAKE constructs from the sanctioned families
-(dead-store-fake-exception.md: self-assignment, dead store, combine-foldable chain-extender;
-a pointer alias) on the split values' pseudos, whose extra references could change what
-flow/local-alloc/global-alloc see. Each variant is v/pv.c (or v/ctr_split.c) plus the one
-construct (r11/mk3.py; the entry/alias/goto2/after/bit/rec/e/tail variants were one-off
-edits of the same bases; the banked r11/v/ce_*.c files are exactly the measured bodies); each was sandboxed in the tree under the lock
-(r11/sbx_ce.ps1) and its TU dumped (r11/dump_sbx.sh; r11/ce_report.py prints the key sites).
+## (D)(3b) Sanctioned-construct escapes, measured
+Each variant is v/pv.c (or v/ctr_split.c) plus ONE construct (r11/mk3.py; the entry, alias,
+goto2, after, bit, rec, e, tail and do-while variants were one-off edits of the same bases;
+the banked r11/v/ce_*.c and x/*.c files are exactly the measured bodies). Rows without
+"(model)" were sandboxed in the tree under the landing lock (r11/sbx_ce.ps1) and dumped from
+the sandbox TU (r11/dump_sbx.sh, r11/ce_report.py); "(model)" rows are r11/model.py scores
+with r11/dump.sh dumps.
+How each class behaves (dumps): self-assignments and dead stores are gone before flow; a
+detour that fold-const or cse folds (`x - x` in one expression, same-block detours) leaves
+no reference; `do { } while (0);` adds neither a reference nor a block boundary for flow
+(lvl5 stays "used 3 times across 3 insns in block 14", the mask "used 8 times across 2 insns
+in block 48") — all of these stay tied. A detour that survives to flow in another block
+(ce_l_chain_callarg: `(insn 241 239 243 (set (reg:SI 189) (minus:SI (reg:SI 188) (reg/v:SI
+158)))` is still in .flow, and .combine leaves only `(insn 1298 231 233 (use (reg/v:SI 158))`;
+"Register 158 used 5 times across 22 insns") makes the value global, and find_reg then
+gives value 1 `conflicts: 2 3 4 16 29`, `someone_prefers: 4` -> $a1, and the mask
+`conflicts: 2 29` -> $v1, as (D)(3) predicts.
 
-Mechanism, value 1 (the level D_800A37D2 / 5; its seat $a2 at 0x800552E4):
-1. If its variable is referenced in one basic block when flow runs, local-alloc ties it to the
-   dying srl result ((D)(2) a): `andi X,X,0xff`. A self-assignment or dead store is deleted
-   before flow (jump.c no-op move / flow dead store), and a chain-extender whose detour
-   fold-const or cse folds (`x - x` in one expression, same-block detours) leaves no
-   reference either: all of these stay tied (table: 102/104, `andi $3,$3`).
-2. A chain-extender that survives to flow in ANOTHER block (the call-if's argument or
-   condition: `... + lvl5 - lvl5`) makes the pseudo global. Pass trace (ce_l_chain_callarg):
-   `(insn 241 ... (minus:SI (reg:SI 188) (reg/v:SI 158)))` is still in .flow, and .combine
-   leaves only `(insn 1298 231 233 (use (reg/v:SI 158)) ...)`; lreg: "Register 158 used 5
-   times across 22 insns" (no block). global.c find_reg then scans upward for the lowest
-   register not excluded (pass 0: not conflicting, not in regs_someone_prefers; pass 1: not
-   conflicting). Trace: `conflicts: 2 3 4 16 29`, `someone_prefers: 4` -> $a1 (5).
-3. So $a2 needs $a1 excluded. (i) By conflict: in the target, $a1 holds the incoming arg1
-   until 0x80055140 (while $a2 still holds arg2 until 0x800551A4, so a range reaching back
-   there also conflicts with $a2: ce_l_entry_uninit, `conflicts: 2 3 4 5 6 16 29` -> $a3),
-   then `lbu a1` at 0x800555F4..0x80055610, `e` in the scan loop and lo_val in the tail;
-   every path from case 2 to those passes `jal file_GetFlag1` (0x80055530), and a pseudo
-   that crosses a call starts find_reg from call_used_reg_set (global.c:970-975), which
-   excludes $a2 as well. (ii) By regs_someone_prefers: prune_preferences (global.c:882-930)
-   strips call-used registers from the preferences of call-crossing allocnos (:902) and
-   merges only conflicting allocnos' preferences; the only copy with hard $a1 is the entry
-   copy of arg1, whose pseudo crosses calls (it is read at 0x80055680, after jal rand), and a
-   fresh local initialised from arg1 is merged into that pseudo by cse (ce_l_arg1alias_glob:
-   still `conflicts: 2 3 4 16 29`, `someone_prefers: 4` -> $a1). (iii) By call crossing:
-   excludes $a2 too. Hence no one-variable-per-value spelling, with or without these
-   sanctioned constructs, seats value 1 in $a2.
-Value 4 (the mask word): tied when single-block; a surviving chain-extender in the goto arm
-or after the test makes it global, and it is allocated early (16 refs over 4 insns) with
-`conflicts: 2 29` -> $v1 (ce_m_chain_goto2 / ce_m_chain_after); read before its write at the
-loop top (ce_m_chain_e1, an uninitialised read) it lives from function entry across five
-calls -> $s1.
 The clear loop's counter: $t4 for both loops means the two counters share a register, which
 two distinct pseudos can do only if their ranges do not overlap. A split counter kept out
 of the scan loop conflicts only with what is live in the clear loop (`conflicts: 2 29` ->
@@ -345,7 +400,12 @@ extensions do not even fold to zero bytes (518 insns).
 | ce_m_chain_e1 | `e[1] + move_mask - move_mask` (read before write) | 91 (515) | global, crosses 5 calls, $s1 |
 | ce_z_self_after / ce_z_dead_end / ce_z_chain_ploop / ce_z_chain_scan | self-assign / dead store / folding detours | 25 (516) each | counter $v1 |
 | ce_z_chain_bit / _rec / _e / _tail | `+ zero_i - zero_i` inside the section loop | 59/59/53/53 (518) | $t7/$t7/$t5/$t5, not zero-byte |
-None reaches 0; none seats value 1 or 4 in $a2 or the clear loop's counter in $t4.
+| ce_l_dw_between / ce_l_dw_wrapuse (model) | `do { } while (0);` after the write / around the store | 102 (512) each | tied, "in block 14" |
+| ce_l_dw_wrap (model) | `do { lvl5 = ...; } while (0);` | 109 (512) | tied `andi $2,$2` |
+| ce_m_dw_between / ce_m_dw_wrap (model) | the same for the mask | 102 (512) each | tied, "in block 48" |
+| x/abl_stat2_dw.c / x/abl_stat1_dw.c (model) | stat2 / stat1 alone split, plus `do { } while (0);` after its write | 11 (516) / 6 (515) | stat2's copy kept, stat2 in $v1 |
+| x/pv_dw_stats.c (model) | the twin plus both stat wraps (the permuter's find, extended) | 33 (515) | |
+None reaches 0; none seats a value of temp in $a2 or the clear loop's counter in $t4.
 
 ## (D)(4) Measured alternatives
 `sandbox --disable all` scores were measured 2026-09-26 in the tree under the landing lock,

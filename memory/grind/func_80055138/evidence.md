@@ -155,7 +155,13 @@ reused local on allocator-dump necessity. Full (A)-(H) record: **ruling11.md** (
 - `extern u8 D_8009A8C4[][8][4];` (rows of eight 4-byte entries: 0x8009A8C4..0x8009A927,
   the target adds row*0x20 before col*4) and `extern u8 D_8009A9B4[][2];` in the same
   header. D_8009A8CA (+6, u16 read by still-INCLUDE_ASM func_80058580) lies inside the
-  first; it has no config row (asm/data dlabel only) and no C name.
+  first; it HAS a config row (undefined_syms_auto.txt `D_8009A8CA = 0x8009A8CA;`, corrected
+  after the layer-2 FAIL below — the earlier "no config row" was wrong), which the landing
+  suffixes `alias of D_8009A8C4+0x6 (entry [0][1], byte 2); retire with func_80058580`; no C
+  name. Prong (a) for the [][8][4] shape, independent of this function: func_80058580 reads
+  the halfword at byte 2 of entry [row][col-1] with row<<5 + (col-1)*4 (0x8005A854-78:
+  `lbu v0,D_800A37A0; lbu v1,0x440(s0); addiu v0,-1; sll v0,2; sll v1,5; addu; lhu
+  s3,%lo(D_8009A8CA)(at)`), the same 0x20-byte rows of 4-byte entries func_80055138 indexes.
 
 ## [s3] layer-2 FAIL 2026-09-26 (body: rejected/r11-six-value-temp-l2fail.c)
 Grounds (orchestrator relay): (1) (D)(3) did not exclude sanctioned-family per-value
