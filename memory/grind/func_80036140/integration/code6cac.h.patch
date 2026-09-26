@@ -1,0 +1,65 @@
+--- include/code6cac.h	2026-09-25 22:36:22.983230700 -0500
++++ include/code6cac.h	2026-09-26 11:48:20.067210100 -0500
+@@ -169,9 +169,11 @@
+ extern s16 D_800A36A4;
+ extern s32 D_800A36AC;
+ extern s32 D_800A36B4;
+-extern u8 D_800A36B9;
+-extern u8 D_800A36BA;
+-extern u8 D_800A36BB;
++typedef struct {
++    u8 val0, val1, val2, val3;
++} CdlATV;
++extern CdlATV D_800A36B8;
++extern CdlATV g_cd_atv;
+ extern s16 D_800A36C2;
+ extern s32 D_800A36C4;
+ extern s16 D_800A36C6;
+@@ -192,9 +194,6 @@
+ extern s16 D_800A36FC;
+ extern u8 D_800A3712;
+ extern u8 D_800A3713;
+-extern u8 g_cd_atv_plus_0x1;
+-extern u8 g_cd_atv_plus_0x2;
+-extern u8 g_cd_atv_plus_0x3;
+ extern s32 D_800A371C;
+ extern u8 D_800A3728;
+ extern s8 D_800A3748;
+@@ -424,23 +423,23 @@
+     s16 unk0A; /* 0x80101E6A */
+     CamPair pair; /* 0x80101E6C .. 0x80101E73 */
+     s32 unk14; /* 0x80101E74 */
++    s32 unk18; /* 0x80101E78 */
++    s32 unk1C; /* 0x80101E7C */
++    s32 sectors_remaining; /* 0x80101E80 */
++    s32 dest_buffer; /* 0x80101E84 */
++    s32 unk28; /* 0x80101E88 */
++    s32 unk2C; /* 0x80101E8C */
++    u8 unk30; /* 0x80101E90 */
++    s32 unk34; /* 0x80101E94 */
++    s16 unk38; /* 0x80101E98 */
++    s16 unk3A; /* 0x80101E9A */
++    s16 unk3C; /* 0x80101E9C */
++    u16 unk3E; /* 0x80101E9E */
++    s32 expected_pos; /* 0x80101EA0 */
++    s32 unk44; /* 0x80101EA4 */
+ } ReplayCamRec;
+ 
+ extern ReplayCamRec D_80101E60;
+-extern s32 D_80101E78;
+-extern s32 D_80101E7C;
+-extern s32 g_cdread_sectors_remaining;
+-extern s32 g_cdread_dest_buffer;
+-extern s32 D_80101E88;
+-extern s32 D_80101E8C;
+-extern u8 D_80101E90;
+-extern s32 D_80101E94;
+-extern s16 D_80101E98;
+-extern s16 D_80101E9A;
+-extern s16 D_80101E9C;
+-extern u16 D_80101E9E;
+-extern s32 g_cdread_expected_pos;
+-extern s32 D_80101EA4;
+ extern u8 D_80101EC8;
+ extern s16 D_80101EE8;
+ extern s32 D_80101F04;
