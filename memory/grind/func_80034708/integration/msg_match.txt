@@ -1,0 +1,93 @@
+Match: func_80034708 — COMPLETED-C (manual)
+
+Practice-parameter menu in its own -G8 translation unit (src/code6cac_b3.c):
+prints sixteen rows through the printf-style func_8003D52C, each highlighted
+("~c737" vs "~c777") when a player's cursor is on it, then runs a two-player pad
+loop (up/down move the cursor with wrap, left/right step the selected value
+through two 12-case switches), normalises every value into range and, on
+start/select, clicks and calls func_800344B4. HEAD carried
+INCLUDE_ASM("asm/funcs", func_80034708) per asm-until-matched.
+
+Body constructs (all ordinary C):
+  - two locals `off` / `on` for the unselected / selected colour strings, each
+    assigned once and read sixteen times (the target holds them in s0/s1);
+  - `(i != 0) ? 3 : 11` for the per-player row count in the up/down wrap;
+  - (s8) value casts where the target reads a u8 parameter byte with lb.
+
+Admitted under the 2026-09-26 owner rulings (965b3a001); every prong is laid
+out in memory/grind/func_80034708/evidence.md [s3]-[s4] (F12-F22 + tables):
+
+1. Per-file -G8 by proof (compiler-flags-canonical.md (i)-(vi), (iv-a)):
+   (i) 16 gp-relative reads of the s16[2] cursor D_800A3174 in the original
+   bytes (table in the ledger); adjacent func_800344B4 / func_80034F88 have
+   none; best -G0 score 90 (an array element's address stays in a register
+   under -G0: explow.c memory_address + cse.c find_best_addr).
+   (ii) cc1psx on the new TU: 16 gp reads at -G8, 0 at -G0 (banked outputs).
+   (iii) code6cac_b3.c holds only func_80034708, no file-scope asm; keeps
+   code6cac_b's EXPAND_LB_FILES membership (inert: expand_lb_funcs.txt names
+   only func_8003047C). Small externs outside sdata_syms (owner ruling Q8):
+   D_800A37B8 (and D_800A3690 / D_800A36F9, which are listed) compile to
+   byte-identical relocated instructions at -G0 and -G8 (q8proof.py: 4 / 12 / 14
+   instructions, ledger [s6] F29), so -G8 changes none of them.
+   (iv) func_80034F88, func_8003504C, func_80035280, func_80035430 move to
+   src/code6cac_b3_post.c as a textually identical block (movecheck.py:
+   291 lines byte-identical to the pre-split converted file), with the one
+   extern only they use; -G0, EXPAND_LB_FILES as the source file. Every
+   respelling (the merges, the consumer conversions, the pun removals below)
+   was proven byte-neutral on the UNSPLIT tree first (inplace.sh: full rebuild
+   SHA1 == oracle with func_80034708 still INCLUDE_ASM).
+   (iv-a) code6cac_b3 emits jump tables at 0x8001086C and 0x8001089C (4 mod 8)
+   -> RODATA_ALIGN2_FILES; code6cac_b3_post emits none -> not listed.
+   (v) Makefile / engine/buildconfig.py: only the list memberships; bb2.ld:
+   only the new objects' section lines; no LINKED_ASM_FUNCS. The two
+   hand-copied tables leave src/code6cac_b_rodata_pre.c (b3.o emits them).
+
+2. include/code6cac.h: PracticeParams D_80102778, one 16-byte mixed-field
+   struct over 0x80102778..0x80102787 (aggregate-merge (a1), (a2), (a4')):
+   replaces u16 D_80102778[2], s16 D_8010277A, PlayerBytePairs D_8010277C and
+   D_80102782..87. (a1) dumps for the split, 0x7C-based and 0x78-based
+   spellings; the target's s7-relative walker inits and s5+0xA/0xB reads, and
+   its row-1 fold pattern, exist only with one object based at 0x78.
+   (a2) cc1psx: split -> all direct, no base registers; 0x7C-based -> rows 2/3
+   base-relative; 0x78-based -> exactly the target. (a4') span = the bytes the
+   function itself touches (0x78 row 7 / case 3 .. 0x87); member table with all
+   98 accessing instructions; u8 members with (s8) value casts for the lb reads;
+   the three per-player pairs 0x7C..0x81 are ONE member u8 unk_4[6]
+   (unk_4[2 * k + player]; the function walks all three with i = 0..1, the
+   reachable range); the one unaccessed gap 0x82..0x83 is the offset-named
+   filler unk_A[2]. (d) no per-use pointer pun remains in any consumer:
+   func_8003504C names unk_4[i] / unk_D (was `(u8 *)&D_80102785 - 9`);
+   func_8003B5A4's chardata[0] / chardata[2] stay inside unk_4[6];
+   func_8003AF40's other-player read is `(&D_80102778.unk_4[2])[(u32)arg0 < 1u]`
+   (`unk_4[2 + cond]` makes fold() branch: 47 -> 52 insns). Header comment:
+   func_8001C444 sets every byte of the block except 0x82/0x83.
+
+3. include/system.h: FileRecord D_80106A50 — the 0x24-byte record func_80037F40
+   checksums as one block (flags byte at +0x23, whose address the target CSEs),
+   replacing g_file_disc_type and the C handles g_file_disc_size, g_file_flags,
+   D_80106A58/5C/70/73. ings.c func_800167EC takes `p = (u8 *)&D_80106A50;`
+   before its first store (flags-address-first makes cse relate the base).
+   func_80035280 (moved): its FAKE second handle `f = &flags; src = f - 3` is
+   removed — flag reads name D_80106A50.flags and `src = D_80106A50.color;`
+   follows them; the clock records are read through `FileTimeRec *base`
+   (base[i].unk_4 / base[i].unk_0; the FAKE comment's first line updated).
+   code6cac_b.c's two `s32 *flags = &D_80106A50;` point at &D_80106A50.unk_00.
+Makefile line 77 still says text1a is "the project's sole -G8 file"; that
+comment is left for the owner (rule (v) limits the Makefile change to lists).
+
+Every other consumer converted mechanically (code6cac.c, code6cac_b.c,
+code6cac_b2_pre/post.c, code6cac_c2.c, code6cac_c_ab.c, code6cac_c_mid.c,
+replay_camera_rob_back_loose2.c, ings.c): only relocation addends change.
+Prong (c): retired per-word names removed from undefined_syms_auto, named_syms,
+symbol_addrs and sdata_syms; D_8010277C / D_80106A70 rows stay suffixed for
+INCLUDE_ASM func_8003993C / func_8001BE20. asm/data/91C98.data.s: one dlabel for
+the s16[2] cursor.
+
+Verification:
+  - lock.ps1 rebuild (verify-oracle --rebuild --allow-dirty): ok, build_sha1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa == expected
+  - sandbox func_80034708 --disable all --diff: score 0, 544/544, 0 hunks
+  - engine test green
+  - no register pins, no __asm__, no scheduling barriers, no FAKE constructs
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
