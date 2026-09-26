@@ -23,3 +23,53 @@
 - [s1] [fable-blitz 2026-07-07] Callee set: func_80079154(void) (extern src/code6cac_b.c:92), DispSleepMenuTex (include/code6cac.h:441, declared (s32,s32,s32,s32) -- NOTE rows pass only 3 args; 4th arg gap to check when drafting), func_8005C650(s32,s32,s32) (extern :2900, used nearby at :3106/:3499 -- same-file sibling func at :3499 also does the func_8005C650(counter,val,val) click idiom), DispSamnailWindow(void). Row 7/8 values: (u16)D_80102778 >> 8 and (u16)D_8010277A >> 8 (lhu+srl -- D_80102778 declared s16 include/code6cac.h:399, needs u16 view or cast for lhu; check srl vs sra).
 
 - [s1] [fable-blitz 2026-07-07] m2c reference generated with jump tables supplied (tmp/blitz/m2c_func_80034708.c, 305 lines, 0 M2C_ERROR; tables at tmp/blitz/jtbl_80034708.s). Cursor state: D_800A3174/D_800A3176 are gp-rel s16 (lh %gp_rel) -- the 2-iteration loop walks them as an s16[2] via s0.
+
+## [s2] manual lane slotB4 2026-09-26 — first C body, floor 542 -> 8 (under -G8), 90 (under -G0)
+
+Renames since s1 (naming sweep 2026-09-25): func_80079154 -> `rand`, DispSleepMenuTex ->
+`func_8003D52C` (printf-style debug print, defined src/code6cac_c2.c:1062 as
+`(u8 *fmt, s32 first_arg, ...)`), DispSamnailWindow -> `func_800344B4`; D_80102794 is
+`D_80102788.pressed` (PadState at 0x80102788, +0xC).
+
+Measured (tmp/func_80034708/gscore.py = engine scorer on a whole-file build of a COPY of
+src/code6cac_b.c; reproduces the sandbox number exactly at -G0; `--g8` swaps only -G0->-G8):
+- v1 per-symbol transcription: 268. v2 + aggregate 0x78..0x87: 199. v3 + colour locals: 155.
+- v5 + flags byte as member +3 of an aggregate at 0x80106A70: -G0 144, **-G8 49**.
+- v6 (= candidate.c) + ternary cursor wrap forms: **-G8 8, 544/544 insns, frame 64 matches**;
+  -G0 90. The 8 at -G8 are all relocation-form artifacts (see F4).
+
+F1. **The 0x7C..0x87 bytes are ONE aggregate in the original** (hard evidence, compiler-proved):
+  the loop preheader derives &7C/&7E/&80/&86 from &84 (`addiu s1,s7,-8` / `-6` / `-4` /
+  `fp = s7+2`); cse.c use_related_value only relates constants with the SAME symbol base.
+  Rows 11/12 (`lb 0xA(s5)`, `lb 0xB(s5)`) and row 1 (`lb 0(s5)`) come out of the SAME
+  mechanism with the aggregate declared: cse1 relates every phase-A byte to row 1's forced
+  address reg; cse2 folds rows 2-10 back to constants inside its PATHLENGTH window and cannot
+  for rows 11/12 (dump-verified, dump_v4 f.cse vs f.cse2, insn 76). With separate scalars
+  none of this appears (v1). Tested with base 0x78 (`g_practice_lesson_size_a`, resolvable
+  name) — the function does not discriminate 0x78 vs 0x7C as the base (case 3's
+  D_80102778[i] block materializes its own base).
+F2. **0x80106A73 (file flags) is a member at +3 of an aggregate at 0x80106A70 (>8 bytes)**:
+  target CSEs its address in phase A (s2, rows 13/14) and copies it into the loop's s5;
+  a plain scalar is a VAR_DECL mem (never forced into a reg) and stays direct (v3).
+  func_80035280's FAKE `f = &D_80106A73; src = f - 3;` is the same base-relative shape.
+F3. **The cursor s16[2] at 0x800A3174 is an array AND the TU was compiled -G8.**
+  Phase A reads cursor[0]/cursor[1] gp-direct; the loop walks s0 = &cursor[i].
+  Under -G0 an ARRAY_REF address is force_reg'd (explow.c memory_address) and a bare (reg)
+  address is never folded back (find_best_addr only folds non-REG addresses), so cursor[0]
+  stays in a register (v3: `lh 0(s0)` everywhere). Under -G8, ENCODE_SECTION_INFO sets
+  SYMBOL_REF_FLAG on the 4-byte extern, mips_address_cost(symbol)=1 == reg, and cse
+  substitutes the symbol -> direct gp reads exactly as target. Only other way to get the
+  target phase A at -G0 is two scalars + `(&D_800A3174)[i]` in the loop (v4, score 75) —
+  a cross-object pun, not admissible. Corroboration that the ORIGINAL TU was -G8: the
+  <=8-byte strings of this function ("~c777", "%s%5d", "%sO%4d\n") sit in .sdata at
+  0x800A3178.., the 9-byte ones ("%sCR%3d\n") in .rodata — mips_select_section's -G8 rule.
+F4. Residual at -G8 (score 8) = relocation spelling only: 4x `%gp_rel(D_800A3174+2)` vs target
+  `%gp_rel(D_800A3176)` (same linked bytes) + 2x jtbl `lw %lo(.rodata+0x43C)` vs the external
+  jtbl_8001086C/8001089C (rodata placement; certified only by the full build).
+F5. Frame: the target reserves vars=8 = ONE combine-orphan reload slot (BB2_FRAME_DEBUG);
+  the if/else nest for the down-key wrap made three (sign-extend pairs whose HI value is
+  reused). `cursor[i] < ((i != 0) ? 3 : 11)` + `cursor[i] = (i != 0) ? 3 : 11` gives exactly
+  the target's two-compare / two-zero-store / shared-lhu-increment shape and vars=8.
+F6. Whole-file -G8 on today's src/code6cac_b.c changes 19 functions (objdiff) and file-scope
+  INCLUDE_ASM/INCLUDE_RODATA float under -G8 (TARGET_FILE_SWITCHING) — so landing needs a TU
+  split: func_80034708 is followed only by func_80034F88/8003504C/80035280/80035430 in the file.
