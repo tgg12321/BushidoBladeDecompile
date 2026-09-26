@@ -26,3 +26,44 @@
 
 - [s2 manual 2026-09-26] FIRST FULL C BODY: floor 550 -> 0 (sandbox --disable all, 552/552) with candidate.c. Signature `void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2)` (caller func_800693CC passes a2 = lbu D_8009BC0D[..]; unused here). Levers that each moved the floor (measured): (1) ctx accessed as `*(s32 *)(arg0 + off)` with u8 *arg0 (the func_8006A564 sibling spelling) — NOT in-struct, so the `arg0+0x24 += 0xC` store blocks the D_800A34F8 load (Phase D keeps its load-delay nop): 56 -> 39; (2) `u32 mask` + literal `1 << i`: the u32 promotion wraps the shift in a NOP_EXPR so fold-const's (1<<n)&x -> (x>>n)&1 rewrite does not fire -> target's hoisted `li a0,1; sllv; and` (no opaque `one` needed); (3) `cells = s.p0 + 0xC; s.p1 = cells;` as ONE function-scope local at all 5 sites -> the value seats in $a1 at every site (per-site/direct spelling puts it in v0: 86-era hunks 22/23); (4) the loop's sheet pointer and y are GIVs: `s.p0 = tbl[i]` and `y = i * 0x18 + 0x3F` in the body -> loop.c strength-reduction inits land after the hoisted 0x30/1 movables = target's pre-loop order (cursor/`y += 0x18` explicit bivs: 25); (5) Phase G store order w, x, y, h: 2 -> 0.
 - [s2] ALLOCATION FACT (BB2_ALLOC_DEBUG, tmp/func_8006A880/rtl/*.alloc): target seats the D_8009BC08 scan mask AND the D_8009BC04 alive mask in the SAME callee-save $s6. As two C locals they are two pseudos; the scan mask (4 refs, livelen 44) gets pass-0 $s3/$s2 and the rest cascades: g2_sep (separate `alive`) = 46/551. One variable holding BC08 then BC04 = 0. global.c find_reg (pass 0 = used-so-far minus conflicts minus someone_prefers; prefs only from hard-reg copies) gives a separate non-overlapping pseudo the lowest free reg ($s4), so no two-local spelling can reach $s6 — the shared pseudo IS the target's shape. Policy: that is a multi-write local; admissible only as a staged-value borrow (alive = the real variable) or not at all — see hypotheses.md.
+
+## s2 (manual lane, 2026-09-26, continued) — landing form and admission evidence
+- **Landing form** = candidate.c (tmp/func_8006A880/v/final.c): sandbox --disable all 0/552.
+  Full-build SHA1 == oracle 62efab4f… was proven 2026-09-26 with the equivalent pend.c body
+  (same code; `i` shared by both loops) spliced over INCLUDE_ASM, then reverted. The landing
+  form gives the row scan its own counter `bit`, initialised at the top with `row_mask`
+  (`bit = 0` before the first call): score 0 (g2_bit3). Initialising it in the `for` header
+  instead scores 7 (553 insns): the counter then crosses no call, so sched1 cannot lift
+  `move s1,zero` above SetDrawArea and local-alloc gives it $v1 (target: $s1 at 0x8006A914).
+- **Ruling 11** governs `sheets` (5 values) and `row_mask` (2 values): full (D) proof,
+  dumps, mechanism, necessity and ablations in ruling11.md.
+- **Ruling 9 (`cells = s.header + 0xC; s.table = cells;`, 5 sites, K = 0xC at every site)**:
+  (b) layout: SprtHdrA / SprtEntA (src/text1b.c SprtHdrA 12 bytes, SprtEntA 8 bytes) walked by
+  func_8007352C, and Ft4Sheet / Ft4Cell (12 / 8 bytes) walked by func_80073728: a sheet is
+  header(s) followed by cells, and `.table` (+4 of the descriptor) is the first cell. Other
+  readers that store `sheet + 0xC` to `.table` the same way: func_8006A3CC and func_8006A494
+  (src/text1b.c `*(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;`), func_8006B120
+  (`p1 = s.p0 + 0xC; s.p1 = p1;`), func_80069F80 / func_8006A1A0 (`tbl = s.sp18 + 0xC;
+  s.sp1C = tbl;`), func_8006A564 (`v1 = *(s32 *)(arg1 + 0); v1 += 0xC;`), and the Ruling 9
+  precedents func_8007636C / func_800759D0 (`cells = s.sp18 + 0xC`). Data: the root at
+  ctx[1] (= D_800A34FC[9] = the func_8006E950(2, …) buffer, func_80068F70) is
+  disc/TIM2D/MOD.BIN (sha256 9ef17b95…d140): it is the only TIM2D resource whose
+  root+0x18 / +0x40 / +0x24 tables hold 8 / 8 / 16 sheets; SEL/SEL1/SEL2/NAR fail the
+  census and STAFF/D_SEL do not fit (memory/grind/func_8006A880/census.py). Every sheet a
+  write reaches (root+0x18 [0..7], +0x40 [0..7], +0x24 [8..15] SPRT, +0x24 [0..7] FT4 — the
+  nibble D_800A34F8 & 0xF is kept 0..7 by func_800693CC: +1 wraps at 8, -1 wraps 0 -> 7) has
+  exactly ONE 12-byte header, confirmed by the packed layout (next sheet at
+  s + 12 + 8*count) for 22 of 32 sheets (census_MOD.txt). So +0xC is the first cell at every
+  write; no anomaly path, no (b′) needed. The Phase G sheets are exactly the FT4-shaped ones
+  (tp1 = 1), matching func_80073728 — independent corroboration of the slot reading.
+  (i) receipts: per-write `s.table = s.header + 0xC` 15/552 (final_cdirect), one block-local
+  `cells` per site 15/552 (final_cblock); dumps: final.alloc `ord=0 pseudo=77 hardreg=5`
+  (one pseudo, $a1 at all five sites as in the target: `addiu a1,v0,0xC`); per-site pseudos
+  are local-alloc'd into $v0 (p0 dies at the add). Structural respellings (explicit bivs 25,
+  arg0[N] in-struct 39, s32 mask 86-era) and the permuter below.
+- **Permuter** (tmp/perm_a880, per-value/carrier-free body ord0 = v/ord0.c, 2 workers,
+  --stack-diffs, 13:16-13:38 CDT, 14,393 iterations, harvested + stopped): base 1840 ->
+  best 1334 (found 13:20; no novel find in the last 18 min). Every find below base adds a
+  shared `new_var = s.p0 + 0xC; s.p1 = new_var;` carrier — the Ruling 9 `cells` shape —
+  and none shares the sheet tables or the masks (variable identity is out of the
+  permuter's mutation reach, as in the func_8003800C finding).
