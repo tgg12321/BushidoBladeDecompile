@@ -85,6 +85,26 @@ in the target (e.g. T1: 0x8002E2BC..0x8002E2F8; T4 recomputes A.vy*cx at 0x8002E
   path; no spelling that avoids the re-store reaches the target. Whether (B)(2) reads "already
   holds" path-wise (fail) or as a redundant, removable write (this write is neither) is not
   settled by the text. Flagged to the orchestrator for the rules draft (2026-09-26).
+  **Settled by the owner, 9a0543e05** (Ruling 5 2(c) clarification, read by Ruling 11 (B)(2)):
+  a write fails only when the variable already holds the written value on EVERY feasible
+  incoming path. Each write that re-stores on some feasible path needs a record: one feasible
+  incoming path, named by its branch conditions, where the variable holds a different value,
+  and that value. Records (witness input and trace: tools/witness_b2.py, run 2026-09-26):
+  - **a4** (test 4, `cross_a = A x c`, src/code6cac_b.c:2353 / candidate.c:176). Path: test 1
+    TRUE (`(cross_a ^ cross_b) >= 0` with a1 = A x c, b1 = A x p1), test 2 FALSE (a2 = B x c,
+    b2 = B x p1). On it cross_a holds **B x c** (test 2's value), not A x c. Witness:
+    unkA8 = (vx 4, vy 0), unkB8 = (0, 4), rotated points unk118 = (-1,1,-1), (-1,1,1),
+    (-3,5,1), i.e. p_k - origin under an identity rotation. That gives cx,cy = 1,1;
+    x1,y1 = -1,1; x2,y2 = -2,3. T1: (-4, -4) true; T2: (4, -4) false. cross_a holds 4 and the
+    write stores -4.
+  - **b7** (test 7, `cross_b = A x p2`, src:2368 / candidate.c:191). Path: test 1 TRUE, test 2
+    FALSE, test 4 TRUE (a4 = A x c, b4 = A x p2), test 5 FALSE (a5 = B x c, b5 = B x p2). On it
+    cross_b holds **B x p2** (test 5's value), not A x p2. Same witness: T4 (-4, -12) true, T5
+    (4, -8) false. cross_b holds -8 and the write stores -12.
+  Both paths are feasible (the witness satisfies every branch condition on them, including
+  the early `min_z > 0 || max_z < 0` / `min_z == max_z == 0` exits). So neither write is
+  redundant on every feasible path, and both pass (B)(2) as clarified.
+  No other write re-stores a held value on any path; the per-path value check is in Values.
 - **(C)(1)** r11/final_pv.c is recorded. **(C)(2)** same statement list, only declarations and
   identifiers differ (by construction of gen_pv.py; `diff candidate.c r11/final_pv.c` shows
   only declaration lines, renamed identifiers, and the dropped shared declarations/annotation).
