@@ -7,7 +7,7 @@
 
 /* Named globals */
 extern s16 StatusUpBuf;
-extern u8 cpu_practice_honmokuroku_data_tbl;
+extern u8 cpu_practice_honmokuroku_data_tbl[][4];
 extern u8 g_module_type_tbl;
 extern s32 menuDat;
 
@@ -152,6 +152,25 @@ extern s32 D_80090604;
 extern s16 D_80090608;
 extern s16 D_800906A4;
 extern u16 D_80094C68[];
+/* 0x18-byte per-character status record table (named_syms.txt:
+ * g_status_flag_record_table_80099D88). The original binary indexes it by character id
+ * with stride 0x18 (id*3<<3) in func_80055138, func_80055948, func_80055B60 and
+ * func_80058580: flags halfword at +0, bytes at +3..+8, +0xC, +0xF, +0x14, +0x15. The
+ * splat symbols D_80099D8B..D_80099D9D are fields of record 0 (alias rows in
+ * undefined_syms_auto.txt, retired with func_80055B60 / func_80058580). */
+typedef struct StatusFlagRec {
+    u16 flags;
+    u8 unk2;
+    u8 unk3;
+    u8 unk4[0x18 - 4];
+} StatusFlagRec;
+extern StatusFlagRec D_80099D88[];
+/* Rows of eight 4-byte entries: func_80055138 reads [row][col][0..1] (row*0x20 + col*4);
+ * func_80058580 reads the halfword at byte 2 of [row][col] (D_8009A8CA + row<<5 +
+ * (col-1)*4 = D_8009A8C4 + row*0x20 + col*4 + 2, 0x8005A854-78; D_8009A8CA is the alias
+ * row D_8009A8C4+6). */
+extern u8 D_8009A8C4[][8][4];
+extern u8 D_8009A9B4[][2];         /* byte pairs (func_80055138) */
 extern u8 D_800A3100[][4];         /* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
 extern s16 D_800A310C;
 extern s32 D_800A3134;
