@@ -1,5 +1,12 @@
 # Evidence bank — func_8006F97C
 
+## LANDED 2026-09-26 (slotD) — COMPLETED-C
+The rejected/ruling9-block1-break-span-0.c body landed unchanged after the owner's Ruling 9 (c)
+clarification (262db111c: a `break` that exits a for/while/do loop lying wholly between write
+and consumer does not violate (c)). Layer-2 PASS. Spliced src: sandbox 0/515, lock rebuild
+SHA1 == oracle; `queue done` OK; check_completion_integrity OK. The file name `rejected/` is
+historical: that body is the one on main.
+
 ## s2 (manual lane slotC3, 2026-09-26): 513 -> 0 (sandbox --disable all, 515/515)
 
 candidate.c = the sandbox-0 body (s32-field descriptor, func_8007636C style). Ladder (every
