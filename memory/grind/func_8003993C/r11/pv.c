@@ -16,10 +16,7 @@ void func_8003993C(void) {
     u8 *p;
     PracticeMenuRec *rob;
     u8 *e;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): `temp` holds two values, the 0/1 weapon-set
-     * selector (flags >> 1) & 1 in the per-player loop and the replay window of the event loop.
-     * Allocator-necessity proof: memory/grind/func_8003993C/ruling11.md. */
-    s32 temp;
+    s32 window;
     u8 save40;
     s32 save58;
 
@@ -40,11 +37,6 @@ void func_8003993C(void) {
     func_8001E6E4(prog);
 
     for (i = 0; i < 2; i++) {
-        /* Ruling 11 (ordinary-c-judge-decidable.md): `entry` holds two values, the address of the
-         * frame's 4-byte entry in the practice weapon table (if arm) and in the character's weapon
-         * table (else arm). Allocator-necessity proof: memory/grind/func_8003993C/ruling11.md. */
-        s32 entry;
-
         p = (u8 *)(D_800A36EC + idx * 56) + i * 28;
         rob = &g_practice_menu_table[i];
         func_800198D0((*(s16 *)(p + 0xE) >> 14) & 3, *(s16 *)(p + 0xE) & 0x3FFF, work[0], sp1C0);
@@ -82,12 +74,17 @@ void func_8003993C(void) {
         *(u16 *)((u8 *)rob + 0x40) = *(u8 *)(p + 0x19);
         save58 = *(s32 *)((u8 *)rob + 0x58);
         if (*(u8 *)(p + 0x17) & 1) {
-            entry = D_80102764 + *(u16 *)(*(s32 *)p + 4) * 4;
-            *(s32 *)((u8 *)rob + 0x58) = D_80102768 + *(u16 *)(entry + 2);
+            s32 entry_a;
+
+            entry_a = D_80102764 + *(u16 *)(*(s32 *)p + 4) * 4;
+            *(s32 *)((u8 *)rob + 0x58) = D_80102768 + *(u16 *)(entry_a + 2);
         } else {
-            temp = (*(u8 *)(p + 0x17) >> 1) & 1;
-            entry = D_801027B0[temp][1] + *(u16 *)(*(s32 *)p + 4) * 4;
-            *(s32 *)((u8 *)rob + 0x58) = D_801027B0[temp][2] + *(u16 *)(entry + 2);
+            s32 sel;
+            s32 entry_b;
+
+            sel = (*(u8 *)(p + 0x17) >> 1) & 1;
+            entry_b = D_801027B0[sel][1] + *(u16 *)(*(s32 *)p + 4) * 4;
+            *(s32 *)((u8 *)rob + 0x58) = D_801027B0[sel][2] + *(u16 *)(entry_b + 2);
         }
         if (*(u8 *)(p + 0x18) & 0x40) {
             cpu_check_same_dir_timer(rob);
@@ -113,17 +110,17 @@ void func_8003993C(void) {
     }
 
     if (D_800A3782 != 0) {
-        temp = 0x77 - D_800A37D0;
+        window = 0x77 - D_800A37D0;
     } else {
         /* FAKE: named intermediate (Ruling 1, once-written). Unnamed, fold-const.c `associate`
          * (split_tree) rewrites D_800A36F8 - (D_800A37D0 + 1) as (D_800A36F8 - 1) - D_800A37D0 at
          * tree level; the target adds 1 to the counter first (addiu; subu). Without it: 2/526. */
         s32 next = D_800A37D0 + 1;
-        temp = D_800A36F8 - next;
+        window = D_800A36F8 - next;
     }
     e = (u8 *)D_800F68E0;
     for (i = 0; i < 0xB4; i++, e += 0x10) {
-        if (*(s16 *)e >= temp && *(s16 *)e - e[2] <= temp) {
+        if (*(s16 *)e >= window && *(s16 *)e - e[2] <= window) {
             pos[0] = *(s16 *)(e + 4);
             pos[1] = *(s16 *)(e + 6);
             pos[2] = *(s16 *)(e + 8);

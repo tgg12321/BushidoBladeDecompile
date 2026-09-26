@@ -1,0 +1,115 @@
+cand
+    sel 80(reg/v) -> s2 [12 times across 38 insns; crosses 1 call; GR_REGS or none.]
+    entry 163(reg/v) -> a0 [8 times across 4 insns; dies in 2 places; GR_REGS or none.]
+    if-arm: addu	$4,$3,$2 | else-arm: andi	$18,$2,0x0001
+v_ext_entry_a_alias
+    sel 335(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 329(reg) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_ann
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 163(reg/v) -> None [6 times across 230 insns; dies in 0 places; crosses 17 calls; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_chain
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 163(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_dead
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 163(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_dowhile
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 321(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_hoist
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 163(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_pre
+    sel 335(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 81(reg/v) -> s6 [5 times across 59 insns; dies in 2 places; crosses 2 calls; GR_REGS or none.]
+    if-arm: addu	$22,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_self
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 163(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_entry_a_use
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 163(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_alias
+    sel 341(reg) -> v0 [4 times across 2 insns in block 21; GR_REGS or none.]
+    entry 323(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_ann
+    sel 163(reg/v) -> s7 [8 times across 233 insns; dies in 0 places; crosses 17 calls; GR_REGS or none.]
+    entry 322(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$23,$2,0x0001
+v_ext_sel_chain
+    sel 163(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 322(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_dead
+    sel 163(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 322(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_dowhile
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 321(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_dowhile2
+    sel 332(reg/v) -> v0 [8 times across 3 insns in block 21; GR_REGS or none.]
+    entry 321(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_dup
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 321(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_hoist
+    sel 163(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 322(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_pre
+    sel 81(reg/v) -> s4 [7 times across 60 insns; dies in 2 places; crosses 2 calls; GR_REGS or none.]
+    entry 325(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$20,$2,0x0001
+v_ext_sel_self
+    sel 163(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 322(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_ext_sel_use
+    sel 163(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 322(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_h_nonext
+    sel 80(reg/v) -> s2 [12 times across 38 insns; crosses 1 call; GR_REGS or none.]
+    entry 163(reg/v) -> a0 [8 times across 4 insns; dies in 2 places; GR_REGS or none.]
+    if-arm: addu	$4,$3,$2 | else-arm: andi	$18,$2,0x0001
+v_h_rec
+    sel 81(reg/v) -> s2 [12 times across 38 insns; crosses 1 call; GR_REGS or none.]
+    entry 147(reg/v) -> a0 [8 times across 4 insns; dies in 2 places; GR_REGS or none.]
+    if-arm: addu	$4,$3,$2 | else-arm: andi	$18,$2,0x0001
+v_pv
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 321(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_pv_entry
+    sel 80(reg/v) -> s2 [12 times across 38 insns; crosses 1 call; GR_REGS or none.]
+    entry 321(reg/v) -> v1 [4 times across 2 insns in block 20; GR_REGS or none.]
+    if-arm: addu	$3,$3,$2 | else-arm: andi	$18,$2,0x0001
+v_pv_temp
+    sel 332(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    entry 163(reg/v) -> a0 [8 times across 4 insns; dies in 2 places; GR_REGS or none.]
+    if-arm: addu	$4,$3,$2 | else-arm: andi	$2,$2,0x0001
+v_st_cond
+    sel 321(reg/v) -> a0 [6 times across 8 insns; GR_REGS or none.]
+    if-arm: addu	$2,$2,$3 | else-arm: ?
+v_st_noentry
+    sel 333(reg/v) -> v0 [6 times across 3 insns in block 21; GR_REGS or none.]
+    if-arm: addu	$2,$2,$3 | else-arm: andi	$2,$2,0x0001
+Traceback (most recent call last):
+  File "C:\Users\Trenton\desktop\Bushido Blade 2 Decompile\tmp\func_8003993C\r11\table.py", line 35, in <module>
+    k = next(i for i, l in enumerate(s) if "D_801027B0+4" in l)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
