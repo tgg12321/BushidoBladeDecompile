@@ -156,3 +156,25 @@ F15. (a3) minimal span: the function references 0x78 (rows 7/8 lhu, case 3 [i]) 
   not an array of one record. No single-record array spelling is honest (byte fields read as u8,
   0x78/0x7A read as u16). The only other evidence for the grouping is the 2026-05-17 naming census
   ("lesson parameters at 0x80102778-80102787", 60a758c35), which named the words separately.
+
+## [s3 cont.] proof package for the re-landing (owner Q5 per-file -G8 + Q7 mixed-field struct, rules pending)
+F16. Three spellings of 0x78..0x87 in the -G8 TU (integration/vscore.py; dumps in integration/dumps/,
+  cse + cse2, gzip; cc1psx outputs in integration/cc1psx/):
+  - A fully split (today's header: u16 D_80102778[2], 6-byte PlayerBytePairs D_8010277C, u8
+    D_80102784..87): our cc1 102; cc1psx reads every row direct (`lb $6,D_8010277C..+5`,
+    `D_80102784..87`) with no s7/s5 base registers (psx-G8-split.s). Under -G8 the 6-byte
+    PlayerBytePairs is itself small data, so the base registers vanish entirely.
+  - B 0x7C..0x87 one object, 0x78 separate: our cc1 12; cc1psx rows 2/3 base-relative
+    (psx-G8-base7C.s).
+  - C 0x78..0x87 one object (PracticeParams): our cc1 8 = relocation spelling only (0 on the landed
+    tree); cc1psx exactly the target (psx-G8-base78.s).
+F17. Draft -G8 prong (i): best honest -G0 score = 90 (every array/struct cursor spelling, F10);
+  the -G0 floor 4 needs the cross-object `(&D_800A3174)[i]` pun (banned; set aside).
+F18. Re-landing memberships (draft prongs iii-v), measured by integration/reland_check.sh
+  (RELAND=1 builds every TU, relinks): code6cac_b3 in GP_FILES + EXPAND_LB_FILES +
+  RODATA_ALIGN2_FILES; code6cac_b3_post in EXPAND_LB_FILES + RODATA_ALIGN2_FILES (both inherit
+  code6cac_b's memberships; expand_lb_funcs.txt names only func_8003047C, so --expand-lb is inert for
+  both; ALIGN2 is inert for b3 because its second table starts at 0x30, and b3_post has no .rodata).
+  Result: SHA1 == oracle, func_80034708 score 8 (relocation spelling). bb2.ld: only the six
+  code6cac_b3/_post section lines; no LINKED_ASM_FUNCS entry. The banked landing-s2-g8.patch lacks
+  these four list memberships — add them to Makefile + engine/buildconfig.py when re-applying.
