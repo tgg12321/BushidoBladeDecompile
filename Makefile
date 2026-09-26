@@ -121,19 +121,19 @@ $(EXE): $(BIN) $(TARGET_EXE) tools/make_psexe.py
 # -- Per-file GP-relative opt-in --
 # List C files (without path/extension) that need GP-relative addressing.
 # These are compiled with -G8 and use sdata_syms.txt for selective GP-rel.
-GP_FILES := text1a_pre text1a_post
+GP_FILES := text1a_pre text1a_post code6cac_b3
 
 # -- Per-file lb/lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.
 # These flags replicate that behavior via maspsx for files that need it.
-EXPAND_LB_FILES := code6cac_b
+EXPAND_LB_FILES := code6cac_b code6cac_b3 code6cac_b3_post
 EXPAND_LH_FILES :=
 
 # -- Per-file rodata alignment fix --
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
 # When rodata is split across objects, this creates unwanted padding.
 # Downgrade to .align 2 (4-byte) for files whose rodata is sandwiched.
-RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c2 text1a_pre text1a_post text1a_b text1a_c text1a_c2 text1b text1b_b main
+RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_b3 code6cac_c code6cac_c0 code6cac_c_ab code6cac_c2 text1a_pre text1a_post text1a_b text1a_c text1a_c2 text1b text1b_b main
 
 # -- Per-file -fno-strength-reduce opt-in --
 # Some functions were originally compiled without GCC's loop strength-reduction.

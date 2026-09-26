@@ -12,9 +12,6 @@ extern void ClearImage(void *, s32, s32, s32);
 extern void rcnt_StartCnt1(void);
 
 /* Externs for globals */
-extern u8 g_file_flags;
-extern u32 g_file_disc_size;
-extern u32 D_80106A5C;
 extern u8 g_file_dma_flag;
 extern s32 g_rng_state;
 extern u32 g_gpu_clear_rect;
@@ -208,33 +205,33 @@ loop:
 /* --- Decompiled functions --- */
 
 u32 file_GetFlag0(void) {
-    return g_file_flags & 1;
+    return D_80106A50.flags & 1;
 }
 
 u32 file_GetFlag1(void) {
-    return (g_file_flags >> 1) & 1;
+    return (D_80106A50.flags >> 1) & 1;
 }
 
 u32 file_GetFlag2(void) {
-    return (g_file_flags >> 2) & 1;
+    return (D_80106A50.flags >> 2) & 1;
 }
 
 void func_800167EC(void) {
     s32 i = 0;
     u32 c = 0x1A5E0;
-    u8 *p;
+    FileRecord *rec;
 
+    rec = &D_80106A50;
     D_800A3710 = 0;
-    g_file_flags = 0;
-    p = (u8 *)&g_file_disc_size;
-    *(s32 *)p = 0x7007;
-    g_file_disc_type = 0;
+    D_80106A50.flags = 0;
+    rec->unk_00 = 0x7007;
+    D_80106A50.unk_04 = 0;
     for (i = 0; i < 3; i++) {
-        p[i * 8 + 8] = 0;
-        p[i * 8 + 9] = 0;
-        *(u32 *)(p + i * 8 + 0xC) = c;
+        rec->times[i].unk_0 = 0;
+        rec->times[i].unk_1 = 0;
+        rec->times[i].unk_4 = c;
     }
-    D_80106A5C = 0x6978;
+    D_80106A50.times[0].unk_4 = 0x6978;
     func_8001945C();
 }
 

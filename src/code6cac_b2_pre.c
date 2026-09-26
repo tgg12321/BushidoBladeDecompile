@@ -114,7 +114,7 @@ void func_80035438(void) {
     s32 a0;
     D_800A3740 = 1;
     func_80035280();
-    if (g_file_disc_type == 0x3F) {
+    if (D_80106A50.unk_04 == 0x3F) {
         a0 = 0xFF;
     } else {
         a0 = 0xF7;

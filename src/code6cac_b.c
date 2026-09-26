@@ -84,7 +84,6 @@ extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern u8 D_800A384C;
 extern u8 D_8008E908[][5];
 extern u8 D_8008EC24[][5];
-extern s32 D_80106A50;
 extern s32 ratan2(s32, s32);
 extern s32 rand(void);
 extern void RotMatrixX(s32, s32 *);
@@ -121,10 +120,7 @@ extern u8 D_800F65F8;
 
 
 
-extern u8 D_80106A73;
 extern u8 D_80106A78;
-extern s32 *func_80077D00(void);
-extern s32 D_80106A58;
 
 
 extern s32 D_80102410;
@@ -4791,11 +4787,11 @@ void func_800338CC(void) {
     s32 one;
 
     {
-        s32 mask = ~(1 << D_8008D538[(s8)D_8010277C.unk_0[0]]) & 0x3EF3DF;
+        s32 mask = ~(1 << D_8008D538[(s8)D_80102778.unk_4[0]]) & 0x3EF3DF;
         s32 bits;
         count = 0;
         i = 0;
-        bits = D_80106A50 & mask;
+        bits = D_80106A50.unk_00 & mask;
         one = 1;
         ptr = &D_801077B0;
         do {
@@ -4820,9 +4816,9 @@ void func_800338CC(void) {
         }
     } while (i < 0x6C);
 
-    if (D_80106A50 & 0x10020) {
-        s32 v1 = D_80106A50 & 0x20;
-        s32 v0 = D_80106A50 & 0x10000;
+    if (D_80106A50.unk_00 & 0x10020) {
+        s32 v1 = D_80106A50.unk_00 & 0x20;
+        s32 v0 = D_80106A50.unk_00 & 0x10000;
         sp[0] = v1;
         sp[1] = v0;
         if (v1 == 0) {
@@ -4873,15 +4869,15 @@ block_12:
         }
     }
     {
-        u8 lookup = D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]];
+        u8 lookup = D_8008D9EC[D_8008D538[(s8)D_80102778.unk_4[0]]];
         s32 val;
         if (lookup != 0) {
-            if (D_80106A50 & 0x04000000) {
+            if (D_80106A50.unk_00 & 0x04000000) {
                 val = 0x1A;
                 goto append_last;
             }
         } else {
-            if (D_80106A50 & 0x01000000) {
+            if (D_80106A50.unk_00 & 0x01000000) {
                 val = 0x18;
                 goto append_last;
             }
@@ -4918,25 +4914,25 @@ void func_80033BC0(void) {
         D_800A376B = 0;
         D_800A3783 = a0 + 1;
         a1 = (&D_801077B0)[a0];
-        D_8010277C.unk_0[1] = (&D_8008D55C)[a1];
+        D_80102778.unk_4[1] = (&D_8008D55C)[a1];
         if (a1 == 5) {
-            D_8010277C.unk_2[1] = 6;
+            D_80102778.unk_4[3] = 6;
         } else if (a1 == 0x10) {
-            D_8010277C.unk_2[1] = 7;
+            D_80102778.unk_4[3] = 7;
         } else {
             u8 x = D_800A37BC;
             s8 y;
             D_800A37BC = x + 1;
             y = (&D_8008E748)[x];
-            D_8010277C.unk_2[1] = y;
+            D_80102778.unk_4[3] = y;
             if (y == 4) {
                 u8 v = D_8008D9EC[a1];
                 if (v != 0) {
-                    D_8010277C.unk_2[1] = 5;
+                    D_80102778.unk_4[3] = 5;
                 }
             }
         }
-        D_8010277A = 0x800;
+        D_80102778.unk_0[1] = 0x800;
         {
             s16 v = (&D_8008E75C)[a1];
             D_800A3834 = 0;
@@ -4945,21 +4941,14 @@ void func_80033BC0(void) {
     }
 }
 void func_80033D38(void) {
-    struct HitRec {
-        u8 x;
-        u8 y;
-        s32 t;
-    };
-    struct HitRec *recs = (struct HitRec *)&D_80106A50;
+    FileRecord *rec = &D_80106A50;
     s32 n = 3;
     s32 j;
     s32 k;
 
     while (1) {
-        struct HitRec *p;
         j = n - 1;
-        p = recs + j + 1;
-        if (p->t < D_800A3858) {
+        if (rec->times[j].unk_4 < D_800A3858) {
             break;
         }
         n = j;
@@ -4969,14 +4958,12 @@ void func_80033D38(void) {
     }
     D_800A38E9 = (u8)n;
     if (n < 3) {
-        struct HitRec *ins;
         for (k = 2; k > n; k--) {
-            recs[k + 1] = recs[k];
+            rec->times[k] = rec->times[k - 1];
         }
-        ins = recs + n + 1;
-        ins->x = (u8)g_practice_menu_table[0].unk_0A;
-        ins->y = (u8)g_practice_menu_table[0].unk_0E;
-        ins->t = D_800A3858;
+        rec->times[n].unk_0 = (u8)g_practice_menu_table[0].unk_0A;
+        rec->times[n].unk_1 = (u8)g_practice_menu_table[0].unk_0E;
+        rec->times[n].unk_4 = D_800A3858;
     }
 }
 s32 func_80033DF4(void) {
@@ -4995,10 +4982,10 @@ s32 func_80033DF4(void) {
             s32 mask;
 
             mask = 0x20;
-            if (D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]] != 0) {
+            if (D_8008D9EC[D_8008D538[(s8)D_80102778.unk_4[0]]] != 0) {
                 mask = 0x10000;
             }
-            flags = &D_80106A50;
+            flags = &D_80106A50.unk_00;
             word = *flags;
             D_800A36F0 = (u32)(word & mask) < 1;
             *flags = word | mask;
@@ -5010,10 +4997,10 @@ s32 func_80033DF4(void) {
             s32 mask;
 
             mask = 0x1000000;
-            if (D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]] != 0) {
+            if (D_8008D9EC[D_8008D538[(s8)D_80102778.unk_4[0]]] != 0) {
                 mask = 0x4000000;
             }
-            flags = &D_80106A50;
+            flags = &D_80106A50.unk_00;
             word = *flags;
             D_800A3781 = (u32)(word & mask) < 1;
             *flags = word | mask;
@@ -5033,13 +5020,13 @@ s32 func_80033DF4(void) {
         D_800A376B = 0;
         entry = table[0];
         D_800A384C = entry;
-        row = D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]] == 0;
+        row = D_8008D9EC[D_8008D538[(s8)D_80102778.unk_4[0]]] == 0;
         entry &= 0xFF;
         D_800A38DE = ranks[row][entry];
         D_800A38EC = table[1];
         D_800A38ED = table[2];
         D_800A38EE = table[3];
-        D_8010277C.unk_0[1] = moves[row][entry];
+        D_80102778.unk_4[1] = moves[row][entry];
         return 1;
     }
 }
@@ -5177,14 +5164,14 @@ loop:
             v0 = v0 << 1;
             v0 = v0 + (s32)a1;
             v0 = *((u8 *)v0 + v1);
-            D_8010277C.unk_0[v1] = v0;
+            D_80102778.unk_4[v1] = v0;
         }
         {
             s32 v0 = D_800A3874;
             v0 = v0 << 1;
             v0 = v0 + (s32)a0;
             v0 = *((u8 *)v0 + v1);
-            D_8010277C.unk_2[v1] = v0;
+            D_80102778.unk_4[2 + v1] = v0;
         }
         v1++;
         if (v1 < 2) goto loop;
@@ -5196,10 +5183,10 @@ loop:
 
 
 void func_800343F0(void) {
-    s8 val_85 = (s8)D_80102785;
-    s8 val_86 = (s8)D_80102786;
-    s8 val_84 = (s8)D_80102784;
-    s32 val_87 = (s8)D_80102787;
+    s8 val_85 = (s8)D_80102778.unk_D;
+    s8 val_86 = (s8)D_80102778.unk_E;
+    s8 val_84 = (s8)D_80102778.unk_C;
+    s32 val_87 = (s8)D_80102778.unk_F;
 
     D_800A36F6 = 0;
     D_800A38DC = val_85;
@@ -5227,30 +5214,30 @@ void func_800344B4(void) {
 
     switch (D_800A38DC) {
     case 6:
-        D_80102786 = 1;
+        D_80102778.unk_E = 1;
         D_800A3768 = 1;
         D_800A3834 = 0;
         D_800A36F6 = (D_800A38A0 != 0);
         goto skip_clear;
 
     case 0:
-        func_8003B20C(D_8008D538[(s8)D_8010277C.unk_0[0]]);
-        D_8010277C.unk_0[1] = 0;
+        func_8003B20C(D_8008D538[(s8)D_80102778.unk_4[0]]);
+        D_80102778.unk_4[1] = 0;
         func_8003B5A4();
         func_8005509C(1);
         goto skip_clear;
 
     case 1:
-        D_8010277C.unk_4[1] = 1;
+        D_80102778.unk_4[5] = 1;
         func_800338CC();
         D_800A3768 = 1;
         func_80033BC0();
         goto skip_clear;
 
     case 3:
-        D_8010277C.unk_4[1] = 1;
-        D_8010277C.unk_2[1] = 0;
-        D_8010277C.unk_2[0] = 0;
+        D_80102778.unk_4[5] = 1;
+        D_80102778.unk_4[3] = 0;
+        D_80102778.unk_4[2] = 0;
         D_800A38E2 = 0;
         D_800A38E0 = 0;
         D_800A3858 = 0;
@@ -5280,16 +5267,16 @@ void func_800344B4(void) {
                 s32 da = (v1 != 0) ? 0x24 : 0x23;
                 D_800A36A4 = da;
             }
-            D_8010277C.unk_4[1] = 1;
+            D_80102778.unk_4[5] = 1;
             if (v1 != 0) {
                 break;
             }
         }
         {
-            u8 idx = D_8008D538[(s8)D_8010277C.unk_0[0]];
+            u8 idx = D_8008D538[(s8)D_80102778.unk_4[0]];
             u8 val = D_8008D9EC[idx];
             s32 tmp = (val != 0) ? 0x0E : 0x1D;
-            D_8010277C.unk_0[1] = tmp;
+            D_80102778.unk_4[1] = tmp;
         }
         break;
 
@@ -5301,311 +5288,7 @@ void func_800344B4(void) {
     D_800A3834 = 0;
 
 skip_clear:
-    if ((s8)D_8010277C.unk_4[1] != 0) {
+    if ((s8)D_80102778.unk_4[5] != 0) {
         func_8005509C(1);
     }
-}
-/* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
-INCLUDE_ASM("asm/funcs", func_80034708);
-/* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for g_file_flags address — unreproducible register allocation pattern */
-/* s66 (solver, 2026-09-05) -- FLOOR 2 -> 0, and the whole body is confined to
- * src/code6cac_b.c.  49/49 instructions, byte-identical to
- * asm/funcs/func_80034F88.s; full clean-driver build SHA1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle with ONLY this file edited.
- *
- * WHAT CLOSED THE BYTES.  s65 fitted GCC 2.7.2's global.c allocation priority
- * exactly (pri = floor_log2(nrefs) * nrefs * 10000 / live_length) and reduced
- * the residual to two arithmetic branches.  Branch (A): block 0's address
- * object reaches the target seating iff it is allocated before block 0's value
- * (pri 17500), i.e. iff floor_log2(n)*n > 49, i.e. n >= 16 references; its own
- * five references at live length 28 price at 3571.  s65 measured every obvious
- * byte-neutral reference lift dead (duplicated store into arms, split reads,
- * merged mask).  The lift that is free is a variable reuse: block 0's address
- * object and the copy loop's counter are ONE variable, so the loop's eleven
- * counter references (flow.c weights by loop depth) land on the address
- * allocno, AFTER its last pointer use, so the live length rises only 14 -> 21.
- * Measured model (tmp/grind/func_80034F88/s66/z2.model.json):
- *
- *   ord0 p74 c (flag/result)      19 refs / len 21 / pri 36190 -> $v0  TARGET
- *   ord1 p76 q (address + index)  16 refs / len 21 / pri 30476 -> $v1  TARGET
- *   ord2 p75 u (block-0 value)     7 refs / len  8 / pri 17500 -> $a0  TARGET
- *   ord3 p73 v (blocks-1/2 value)  6 refs / len 10 / pri 12000 -> $v1  TARGET
- *   ord4 p80 r (blocks-1/2 addr)   6 refs / len 19 / pri  6315 -> $a0  TARGET
- *   ord5 p72 p                     6 refs / len 34 / pri  3529 -> $a1  TARGET
- *
- * Block 0's value is no longer blocked out of $v1 by a conflict (the s64 route,
- * capped at score 2 because global.c:1275 gives one allocno one hard register):
- * $v1 is simply already held by the higher-priority address/counter allocno, so
- * find_reg scans on to $a0 -- the target register -- and the loop's byte temp
- * stays a plain block-local that local-alloc seats at $v0, also as the target.
- *
- * INTEGRATION HANDOFF (unchanged from s62-s65; s66 proved the bytes).  The
- * target's copy loop stores through
- * `lui $at,%hi(D_80106A70); addu $at,$at,$v1; sb $v0,%lo(D_80106A70)($at)` --
- * an indexed store into a three-byte array whose elements the census names
- * D_80106A70/71/72.  This body therefore needs the honest aggregate
- * declaration at its canonical extern: `extern u8 D_80106A70[3];` in
- * include/code6cac.h absorbing D_80106A71/D_80106A72, their two consumers in
- * src/code6cac.c converted to element form, and `extern u8 D_80106A73;` left
- * as its own scalar.  Per no-new-park-categories.md:238 prong (d) that
- * declaration must be header-canonical and never TU-local, so the two paths
- * are load-bearing and must be in tools/grinder/scope_allow.txt before this
- * body can land.  s66 measured the TU-local spelling at score 0 as well and
- * banked it as inadmissible
- * (rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c).
- * One-command installer for the admissible form:
- * `python3 tmp/grind/func_80034F88/s63/apply.py <body.c>`.
- * Measured s66: sandbox score 0 (49/49) AND full clean-driver build SHA1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
- */
-void func_80034F88(void) {
-    s32 *p;
-    s32 v;
-    s32 c;
-    s32 u;
-
-    p = func_80077D00();
-    {
-        /* FAKE: block 0's own address object (a second C handle on
-         * D_80106A73), mechanism: global.c allocation priority
-         * floor_log2(nrefs)*nrefs*10000/live_length -- blocks 1 and 2 cannot be
-         * reached from this handle because global.c:1275 assigns exactly one
-         * hard register per allocno and GCC 2.7.2 does no live-range splitting.
-         * lever-exhaustion: memory/grind/func_80034F88/hypotheses.md s53-s65. */
-        u8 *q = &D_80106A73;
-
-        u = *q;
-        u = u & 0xF8;
-        *q = u;
-        u = 0; /* FAKE: cse2 value invalidator, mechanism: cse2 (cse.c) forwards
-                * the sb into the following lbu only while the stored value's
-                * pseudo still holds it. lever-exhaustion: hypotheses.md s57-s62. */
-        u = *q;
-        c = p[8] & 1;
-        if (c) {
-            c = u | 1;
-        } else {
-            c = u;
-        }
-        *q = c;
-        {
-            /* FAKE: the address object for flag blocks 1 and 2, mechanism:
-             * global.c:1275 assigns exactly one hard register per allocno and
-             * GCC 2.7.2 does no live-range splitting, so blocks 1/2 cannot be
-             * reached from the block-0 object. lever-exhaustion: as above. */
-            u8 *r = &D_80106A73;
-
-            v = *r;
-            c = p[8] & 2;
-            if (c) {
-                c = v | 2;
-            } else {
-                c = v;
-            }
-            *r = c;
-
-            r = &D_80106A73;
-            v = *r;
-            c = p[8] & 4;
-            if (c) {
-                c = v | 4;
-            } else {
-                c = v;
-            }
-            *r = c;
-        }
-
-        /* FAKE: the copy loop's counter is staged through q, whose pointer
-         * value is dead from block 0's store above and is never read again,
-         * mechanism: flow.c counts REG_N_REFS per RTL insn weighted by loop
-         * depth, so the loop's eleven counter references lift this allocno from
-         * 5 refs / pri 3571 to 16 refs / pri 30476 and global.c seats it in $v1
-         * before block 0's value allocno (pri 17500) is considered, which sends
-         * that value to $a0 as the target has it.  Both values are real and
-         * used; the loop adds no instruction anywhere in the function.
-         * lever-exhaustion: hypotheses.md s53-s65 -- s65's branch (A), whose
-         * other byte-neutral spellings (duplicated store into arms, split
-         * reads, merged mask) are all banked dead. */
-        for (q = 0; (s32)q < 3; q++) {
-            c = *((u8 *)p + (s32)q + 0x17);
-            D_80106A70[(s32)q] = c;
-        }
-    }
-}
-void func_8003504C(void) {
-    s32 *p;
-    s32 i;
-    u8 *s;
-    /* FAKE: 5 and 20 held in locals so their `li`s are pre-loop SOURCE insns
-       whose LUIDs are lower than the walker copy `s = p`; mechanism: sched.c
-       rank_for_schedule's INSN_LUID tie-break inside sched1's backward list
-       schedule (written as literals they are loop.c movables, and move_movables
-       inserts every movable after ALL pre-loop statements, which emits them
-       behind the two p-copies); lever-exhaustion: sessions 1-9 of
-       memory/grind/func_8003504C/hypotheses.md. */
-    s32 new_var;
-    s32 new_var2;
-    s32 *q;
-    s8 val;
-    u8 tmp;
-
-    p = func_80077D00();
-    i = 0;
-    new_var = 5;
-    new_var2 = 20;
-    s = (u8 *)p;
-
-    do {
-        s8 *b = &D_80102785;
-        u8 *w = (u8 *)b - 9;
-        s32 lv = (&D_8008D55C)[s[0]];
-        w[i] = lv;
-        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 || (s8)lv == new_var2) {
-            if (*b == 0) {
-                w[i] = w[i] - 3;
-            }
-        }
-        tmp = s[1];
-        s += 10;
-        D_8010277C.unk_4[i] = 0;
-        D_8010277C.unk_2[i] = tmp;
-        i++;
-    } while (i < 2);
-
-    D_80102784 = ((u32)p[5] >> 4) & 0x3F;
-    q = &p[8];
-    D_80102786 = ((u32)*q >> 3) & 1;
-    D_800A36F6 = 0;
-    val = D_80102785;
-
-    if (val == 2) {
-        D_800A389A = ((u32)p[5] >> 17) & 1;
-        D_800A3788 = ((u32)p[5] >> 18) & 7;
-    } else if (val == 5) {
-        u32 idx;
-        s32 sel;
-
-        D_800A389B = (((u32)p[5] >> 10) & 3) + 3;
-        idx = ((u32)p[5] >> 12) & 3;
-        D_800A36CC = (&D_8008EC30)[idx];
-        sel = 1;
-        if ((u32)p[5] & 0x4000) {
-            sel = 2;
-        }
-        D_800A37F8 = sel;
-        s = &D_801027D8;
-        D_800A38E1 = ((u32)p[5] >> 15) & 3;
-        {
-            s32 j = 0;
-            u8 *dst_d = s;
-            u8 *dst_a = &D_801027A0;
-            do {
-                s32 k = 0;
-                u8 *da = dst_d;
-                u8 *db = dst_a;
-                s32 off = j << 1;
-            loop_inner:
-                {
-                    u8 *pp = (u8 *)p + off;
-                    *db = (&D_8008D55C)[pp[0]];
-                    off += 10;
-                    k++;
-                    *da = pp[1];
-                    db++;
-                    da++;
-                }
-                if (k < 2) goto loop_inner;
-                dst_d += 2;
-                j++;
-                dst_a += 2;
-            } while (j < 5);
-        }
-    }
-
-    func_800344B4();
-}
-
-void func_80035280(void) {
-    s32 *p;
-    /* FAKE: `f` is a redundant second handle to D_80106A73 -- the walker `src`
-     * could be spelled `&D_80106A73 - 3` directly; mechanism: cse.c materialises
-     * the %hi/%lo address pair once for `f` and reuses that pseudo for both the
-     * `src[3]` flag reads and the loop-1 walker, which is the base-register
-     * shape the target carries ($a1 = &D_80106A73, $a2 = $a1 - 3); spelling it
-     * directly measures 50 diffs (tmp/grind/func_80035280/s5/m2.c),
-     * lever-exhaustion: memory/grind/func_80035280/hypotheses.md s1-s5 */
-    u8 *f;
-    u8 *src;
-    /* FAKE: typed re-view of the global D_80106A58 as the byte-strided base of
-     * the three 8-byte clock records, hoisted above the loop rather than
-     * respelled at each use; mechanism: loop.c move_movables hoists the
-     * address-materialisation movable into the loop-2 preheader exactly once,
-     * giving the target's single $a2 record cursor -- writing the symbol inline
-     * at the use sites creates a second address movable and measures 39 diffs
-     * (tmp/grind/func_80035280/s5/xB.c),
-     * lever-exhaustion: memory/grind/func_80035280/hypotheses.md s1-s5 */
-    u8 *base;
-    s32 i;
-    s32 flags;
-    /* FAKE: the flag merge is staged through one fresh named intermediate per
-     * merged bit instead of re-using a single accumulator; mechanism:
-     * local-alloc.c:472's `reg_n_deaths == 1` eligibility test -- one death per
-     * pseudo makes each merge result eligible for the target's seat, where a
-     * single re-used accumulator has three deaths and is refused (single
-     * accumulator measures 44 diffs, tmp/grind/func_80035280/s5/m4.c),
-     * lever-exhaustion: memory/grind/func_80035280/hypotheses.md s3 + s5 */
-    s32 flags0;
-    s32 flags1;
-    s32 flags2;
-
-    p = func_80077D00();
-    i = 0;
-    f = &D_80106A73;
-    src = f - 3;
-    flags = p[8];
-    flags0 = (flags & ~1) | (src[3] & 1);
-    p[8] = flags0;
-    flags1 = (flags0 & ~2) | (src[3] & 2);
-    p[8] = flags1;
-    flags2 = (flags1 & ~4) | (src[3] & 4);
-    p[8] = flags2;
-    for (; i < 3; i++) {
-        ((u8 *)p + i)[0x17] = *src;
-        ((u8 *)p + i)[0x1D] = *src;
-        src++;
-    }
-    base = (u8 *)&D_80106A58;
-    for (i = 0; i < 3; i++) {
-        /* FAKE: the three clock fields and the raw record byte are each staged
-         * through a fresh named intermediate before their store; mechanism:
-         * loop.c:1631's move_movables desirability test
-         * `threshold * savings * m->lifetime >= insn_count`. The 0x91A2B3C5
-         * (/1800) magic is a movable with savings 1 and lifetime 1, and
-         * loop.c:532 fixes `threshold = (loop_has_call ? 1 : 2) *
-         * (1 + n_non_fixed_regs)` = 58 on this -msoft-float configuration, so
-         * the constant is hoisted into the loop-2 preheader for any
-         * insn_count <= 58. These four intermediates raise loop 2's real-insn
-         * count from 55 to 59 (measured in the -dL dump,
-         * tmp/grind/func_80035280/s5/last.loop), which is the first count that
-         * refuses the hoist and leaves the lui/ori inside the loop exactly as
-         * the target carries it. Every one of them holds a real value that is
-         * stored to the target's own bytes, and combine folds the copies away
-         * (build_insns 108 == target_insns 108),
-         * lever-exhaustion: memory/grind/func_80035280/hypotheses.md s1-s5 */
-        u8 mn;
-        u8 sc;
-        u8 hs;
-        s32 t;
-
-        mn = *(s32 *)(base + i * 8 + 4) / 1800;
-        ((u8 *)p)[i * 4 + 0x21] = mn;
-        sc = (*(s32 *)(base + i * 8 + 4) / 30) % 60;
-        ((u8 *)p)[i * 4 + 0x22] = sc;
-        hs = (*(s32 *)(base + i * 8 + 4) % 30) * 100 / 30;
-        ((u8 *)p)[i * 4 + 0x23] = hs;
-        t = base[i * 8];
-        ((u8 *)p)[i * 4 + 0x24] = t;
-    }
-}
-void func_80035430(void) {
 }

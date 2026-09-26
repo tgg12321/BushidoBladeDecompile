@@ -102,7 +102,6 @@ extern u8 D_800A37A8;
 
 
 
-extern s32 g_file_disc_size;
 
 /* GP-relative extern data (for decompiled functions) */
 
@@ -257,7 +256,7 @@ s32 func_8003ACB8(void) {
     } while (temp_s0 == 0);
     func_80077B00();
     func_800194F4();
-    D_800A37C4 = bits_ExtractMask3F83F8(g_file_disc_size);
+    D_800A37C4 = bits_ExtractMask3F83F8(D_80106A50.unk_00);
     func_8003AA48();
     VSync(1);
     func_8003AA48();
@@ -334,13 +333,13 @@ __asm__(".section .rodata
 	.word 0
 	.text");
 void func_8003AF40(s32 arg0) {
-    if (D_8010277C.unk_2[arg0] == 0xFF) {
-        D_8010277C.unk_2[arg0] = D_8010277C.unk_2[(u32)arg0 < 1u];
+    if (D_80102778.unk_4[2 + arg0] == 0xFF) {
+        D_80102778.unk_4[2 + arg0] = (&D_80102778.unk_4[2])[(u32)arg0 < 1u];
     }
-    func_80022580(arg0, (s8)D_8010277C.unk_4[arg0], (s8)D_8010277C.unk_0[arg0], (s8)D_8010277C.unk_2[arg0], 0);
+    func_80022580(arg0, (s8)D_80102778.unk_4[4 + arg0], (s8)D_80102778.unk_4[arg0], (s8)D_80102778.unk_4[2 + arg0], 0);
     gpu_ResetGraphMode1();
     func_80020D38();
-    func_80040510(arg0, D_8008D578[(s8)D_8010277C.unk_0[arg0]], (s32)0x80190800);
+    func_80040510(arg0, D_8008D578[(s8)D_80102778.unk_4[arg0]], (s32)0x80190800);
 }
 void func_8003AFFC(void) {
     s32 addr = (s32)0x80190800;
@@ -395,8 +394,8 @@ void func_8003B10C(s32 arg0) {
     func_80049584(addr);
 }
 void func_8003B20C(s32 arg0) {
-    D_8010277C.unk_4[0] = 0;
-    D_8010277C.unk_4[1] = 1;
+    D_80102778.unk_4[4] = 0;
+    D_80102778.unk_4[5] = 1;
     D_800A3894 = 0;
     D_800A385C = 0;
     D_800A3836 = 0xFF;
@@ -408,12 +407,12 @@ void func_8003B20C(s32 arg0) {
     eff_Init();
     func_8003AE5C(D_800A3844);
     func_8003AF40(0);
-    D_800A376C = D_8008D538[(s8)D_8010277C.unk_0[0]];
+    D_800A376C = D_8008D538[(s8)D_80102778.unk_4[0]];
 }
 extern u8 *D_800A3894;
 extern void player_SetCharId(s32, s32);
 void func_8003B2C8(void) {
-    u8 *p = &D_8010277C.unk_0[0];
+    u8 *p = &D_80102778.unk_4[0];
     D_800A3836 = *p;
     {
         u8 *base = D_800A3894;
@@ -426,7 +425,7 @@ void func_8003B2C8(void) {
     player_SetCharId(0, 0);
 }
 void func_8003B328(void) {
-    u8 *p = &D_8010277C.unk_0[0];
+    u8 *p = &D_80102778.unk_4[0];
     u8 v_277C = *p;
     u8 v_376A = D_800A376A;
     u8 v_3836 = D_800A3836;
@@ -443,7 +442,7 @@ s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
     u8 a1;
     D_800A3712 = 0;
-    idx = D_8008D538[(s8)D_8010277C.unk_0[0]];
+    idx = D_8008D538[(s8)D_80102778.unk_4[0]];
     a1 = D_8008D9EC[idx];
     if (a1 != 0 && D_800A37A0 == 1) {
         a1 = 0;
@@ -454,20 +453,20 @@ s32 func_8003B3A4(u8 *arg0) {
            local makes it an RA-visible pseudo materialized into $v1 pre-branch,
            matching target. Direct/ternary/diamond/offset forms measured 6/6/8/6.
            Sanctioned per owner ruling 2026-07-14 (decisions.md), per-instance. */
-        u8 *p = &D_8010277C.unk_0[1];
+        u8 *p = &D_80102778.unk_4[1];
         if (a1 != 0) {
             *p = 0xE;
         } else {
             *p = 0x1D;
         }
     }
-    D_8010277C.unk_2[1] = 0;
+    D_80102778.unk_4[3] = 0;
     {
         u8 v = arg0[0];
         D_800A3680 = v;
         D_800A3671 = v;
     }
-    D_80102783 = arg0[1];
+    D_80102778.unk_A[1] = arg0[1];
     D_800A37B4 = arg0[2];
     D_800A37B5 = arg0[3];
     D_800A37B6 = arg0[4];
@@ -477,18 +476,18 @@ s32 func_8003B3A4(u8 *arg0) {
 }
 s32 func_8003B484(u8 *arg0) {
     D_800A3712 = 1;
-    D_8010277C.unk_0[1] = arg0[0];
-    D_8010277C.unk_2[1] = arg0[1];
-    D_80102783 = arg0[2];
+    D_80102778.unk_4[1] = arg0[0];
+    D_80102778.unk_4[3] = arg0[1];
+    D_80102778.unk_A[1] = arg0[2];
     func_8003AF40(1);
     func_8003AFFC();
     return 3;
 }
 void func_8003B4DC(void) {
     D_800A3712 = 1;
-    D_8010277C.unk_2[0] = 0;
-    D_8010277C.unk_0[1] = 0x1F;
-    D_8010277C.unk_2[1] = 0;
+    D_80102778.unk_4[2] = 0;
+    D_80102778.unk_4[1] = 0x1F;
+    D_80102778.unk_4[3] = 0;
     func_8003AF40(0);
     func_8003AF40(1);
     func_8003AFFC();
@@ -509,7 +508,7 @@ void func_8003B5A4(void) {
 
     func_8005B5AC();
     done = 0;
-    chardata = &D_8010277C.unk_0[1];
+    chardata = &D_80102778.unk_4[1];
 
     do {
         s32 ptr = D_800A3844;

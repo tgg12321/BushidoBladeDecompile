@@ -194,9 +194,6 @@ g_disp_enable = 0x800A3768; // display enable
 g_disp_fade = 0x800A36A8; // display fade
 
 // === File I/O ===
-g_file_flags = 0x80106A73; // disc config flags
-g_file_disc_type = 0x80106A54; // disc type
-g_file_disc_size = 0x80106A50; // disc data size
 D_800A3710 = 0x800A3710; // VRAM transfer timer  // data-wave 2026-09-25: was g_file_vram_timer
 g_file_dma_flag = 0x800A3716; // file DMA flag
 g_file_data_buf = 0x800F6740; // file data buffer

@@ -147,8 +147,6 @@ extern s32 g_gpu_ot_ptr;
 
 
 
-extern s32 g_file_disc_size;
-extern s32 D_80106A58;
 extern u8 D_800A3768;
 extern u8 D_800A36A8;
 extern u8 D_800A376C;
@@ -220,7 +218,7 @@ void func_8003B9D0(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
     if (((u8 *)D_800A3878)[3] & 0x40) func_8004659C(-1);
-    if ((s8)D_8010277C.unk_0[1] == 0xE || (s8)D_8010277C.unk_0[1] == 0x1D) {
+    if ((s8)D_80102778.unk_4[1] == 0xE || (s8)D_80102778.unk_4[1] == 0x1D) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }
     func_8001DBE4();
@@ -331,7 +329,7 @@ void func_8003BEA8(void) {
     if (v0 != 0) {
         func_800372C0();
         {
-            s32 *ptr = &g_file_disc_size;
+            s32 *ptr = &D_80106A50.unk_00;
             s32 old_val = *ptr;
             s32 new_val = old_val | D_800A37A4;
             if (new_val != old_val) {
@@ -365,7 +363,7 @@ void func_8003BEA8(void) {
                 bit = bit - 9;
             }
             {
-                u8 *vptr = &g_file_disc_type;
+                u8 *vptr = &D_80106A50.unk_04;
                 val = *vptr;
                 if (!((val >> bit) & 1)) {
                     *vptr = val | (1 << bit);
@@ -408,27 +406,27 @@ void func_8003C040(void) {
     }
     {
         if (D_800A38A4 == 6) {
-            D_8010277C.unk_0[0] = 8;
-            D_8010277C.unk_2[0] = 6;
+            D_80102778.unk_4[0] = 8;
+            D_80102778.unk_4[2] = 6;
             a0 = 0;
             goto after_dispatch;
         }
         if (D_800A38A4 == 7) {
-            D_8010277C.unk_0[0] = 0x16;
-            D_8010277C.unk_2[0] = 7;
+            D_80102778.unk_4[0] = 0x16;
+            D_80102778.unk_4[2] = 7;
             a0 = 0;
             goto after_dispatch;
         }
         if (D_800A38A4 == 8) {
             a0 = 0;
-            D_8010277C.unk_0[0] = 0x1E;
+            D_80102778.unk_4[0] = 0x1E;
             goto write_e_zero;
         }
         if (D_800A38A4 == 9) {
             a0 = 0;
-            D_8010277C.unk_0[0] = 0x20;
+            D_80102778.unk_4[0] = 0x20;
         write_e_zero:
-            D_8010277C.unk_2[0] = 0;
+            D_80102778.unk_4[2] = 0;
 
         after_dispatch:
             func_8003AF40(a0);
@@ -453,9 +451,9 @@ void func_8003C040(void) {
                 goto skip_copy;
             }
         do_copy:
-            D_8010277C.unk_0[0] = D_8010277C.unk_0[1];
+            D_80102778.unk_4[0] = D_80102778.unk_4[1];
 
-            D_8010277C.unk_2[0] = D_8010277C.unk_2[1];
+            D_80102778.unk_4[2] = D_80102778.unk_4[3];
             func_8003AF40(0);
             func_8003B10C(0);
         }
@@ -635,8 +633,9 @@ void func_8003C560(void) {
  * `extern u8 D_80106A58[24]`. BOTH are on this function's banned_constructs
  * list, so that body can never be submitted. This session proved that NEITHER
  * is load-bearing: the same distance 0 is reachable from THIS body plus pure
- * insn_count padding, with `base = (u8 *)&D_80106A58;` unchanged and the
- * `extern s32 D_80106A58;` declaration at src/code6cac_c2.c:156 untouched.
+ * insn_count padding, without retyping the clock records. (Since 2026-09-26
+ * they are D_80106A50.times of the FileRecord in include/system.h, read through
+ * a FileTimeRec pointer.)
  * The two "declaration puns" the brief listed as a hard submission blocker are
  * therefore NOT part of the residual at all -- they were artefacts of the s18b
  * carrier, not of the match. See hypotheses.md s19 (H35/K57) and evidence.md s19.
@@ -668,8 +667,8 @@ void func_8003C714(void) {
     s32 *s0;
     s32 i;
     s32 a, b, c, v;
-    u8 *base;
-    u8 *src;
+    FileTimeRec *base;
+    FileTimeRec *src;
     u8 *dst;
 
     s0 = func_80077D00();
@@ -677,23 +676,23 @@ void func_8003C714(void) {
     gpu_InitDisplay();
     func_80060758();
     i = 0;
-    base = (u8 *)&D_80106A58;
+    base = D_80106A50.times;
     do {
-        src = base + i * 8;
+        src = &base[i];
         dst = (u8 *)s0 + i * 4;
-        a = *(s32 *)(src + 4);
+        a = src->unk_4;
         a = a / 1800;
         dst[0x21] = a;
-        b = *(s32 *)(src + 4);
+        b = src->unk_4;
         b = b / 30;
         b = b % 60;
         dst[0x22] = b;
-        c = *(s32 *)(src + 4);
+        c = src->unk_4;
         c = c % 30;
         c = c * 100;
         c = c / 30;
         dst[0x23] = c;
-        v = *src;
+        v = src->unk_0;
         dst[0x24] = v;
         i += 1;
         if (i >= 3) {

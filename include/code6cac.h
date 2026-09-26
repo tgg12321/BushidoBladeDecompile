@@ -531,22 +531,23 @@ extern s32 D_80102760;
 extern s32 D_80102764;
 extern s32 D_80102768;
 extern s32 D_80102770;
-extern u16 D_80102778[2];
-extern s16 D_8010277A;
-/* Three per-player byte pairs at 0x8010277C ([0] = P1, [1] = P2).
- * func_8001DCB0 and func_8003AF40 index each pair by player. */
+/* Practice-lesson parameter block 0x80102778..0x80102787 (func_8001C444 sets
+ * every byte of it except 0x82/0x83): two u16 values, three per-player byte
+ * pairs kept as one array (unk_4[2 * k + player], [0] = P1, [1] = P2), a
+ * fourth per-player pair only other functions touch (unk_A, indexed by player
+ * in func_80022F34) and four single bytes. One object: func_80034708 reaches
+ * unk_4 and unk_E as offsets from the address of unk_C (layout evidence:
+ * memory/grind/func_80034708/evidence.md [s4]-[s5]). */
 typedef struct {
-    u8 unk_0[2];
-    u8 unk_2[2];
-    u8 unk_4[2];
-} PlayerBytePairs;
-extern PlayerBytePairs D_8010277C;
-extern u8 D_80102782[];
-extern u8 D_80102783;
-extern u8 D_80102784;
-extern u8 D_80102785;
-extern u8 D_80102786;
-extern u8 D_80102787;
+    u16 unk_0[2];
+    u8 unk_4[6];
+    u8 unk_A[2];
+    u8 unk_C;
+    u8 unk_D;
+    u8 unk_E;
+    u8 unk_F;
+} PracticeParams;
+extern PracticeParams D_80102778;
 extern PadState D_80102788;
 extern s32 D_801027B0[][5];
 extern s32 D_801027B4;
@@ -556,7 +557,6 @@ extern s32 D_801027C0;
 extern s32 D_801027D4;
 extern u8 D_80104E88;
 extern s32 MotDataBaseAddress;
-extern u8 D_80106A70[3];
 extern s16 D_80106A7A;
 extern u8 D_80106A80;
 extern u8 D_80106A82;

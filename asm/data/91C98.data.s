@@ -2680,13 +2680,8 @@ nonmatching D_800A3174
 
 dlabel D_800A3174
     /* 93974 800A3174 */ .short 0x0000
-enddlabel D_800A3174
-
-nonmatching D_800A3176
-
-dlabel D_800A3176
     /* 93976 800A3176 */ .short 0x0000
-enddlabel D_800A3176
+enddlabel D_800A3174
 
 .align 2
 nonmatching D_800A3178

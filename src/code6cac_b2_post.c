@@ -106,7 +106,6 @@ extern void file_LoadSoundData(void);
 extern u8 D_800A3740;
 extern u8 D_800A31D8;
 extern u8 D_800A31D9;
-extern s32 D_80106A50;
 extern s32 rand(void);
 extern void func_80035618(s32);
 extern void func_8003553C(void);
@@ -209,8 +208,8 @@ void func_80035828(void) {
     case 11:
         if (--D_800A37B8 == 0) {
             func_800372C0();
-            D_80102785 = func_80077904();
-            func_80035618((s8)D_80102785);
+            D_80102778.unk_D = func_80077904();
+            func_80035618((s8)D_80102778.unk_D);
         }
         break;
     case 12:
@@ -227,7 +226,7 @@ void func_80035828(void) {
             D_800A3740 = 1;
             func_80034F88();
             D_800A37B8 = 0;
-            if (g_file_disc_type == 0x3F) {
+            if (D_80106A50.unk_04 == 0x3F) {
                 func_80068ECC(0xFF);
             } else {
                 func_80068ECC(0xF7);
@@ -297,7 +296,7 @@ void func_80035828(void) {
         }
     load:
         func_800372C0();
-        func_80077940(D_80106A50 & 0x3EF3DF);
+        func_80077940(D_80106A50.unk_00 & 0x3EF3DF);
         func_80077984(0x80118800);
         D_800A3740 = 3;
         func_800355E8();

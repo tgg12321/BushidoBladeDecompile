@@ -41,6 +41,8 @@ SECTIONS
         build/src/code6cac.o(.rodata);
         build/src/code6cac_b.o(.rodata);
         build/src/code6cac_b_rodata_pre.o(.rodata);
+        build/src/code6cac_b3.o(.rodata);
+        build/src/code6cac_b3_post.o(.rodata);
         build/src/replay_camera_rob_back_loose2.o(.rodata);
         build/src/code6cac_b2_post.o(.rodata);
         build/src/code6cac_b_rodata_post.o(.rodata);
@@ -76,6 +78,8 @@ SECTIONS
         build/src/ings.o(.text);
         build/src/code6cac.o(.text);
         build/src/code6cac_b.o(.text);
+        build/src/code6cac_b3.o(.text);
+        build/src/code6cac_b3_post.o(.text);
         build/src/code6cac_b2_pre.o(.text);
         build/src/replay_camera_rob_back_loose2.o(.text);
         build/src/code6cac_b2_post.o(.text);
@@ -104,6 +108,8 @@ SECTIONS
         main_DATA_START = .;
         build/src/code6cac.o(.data);
         build/src/code6cac_b.o(.data);
+        build/src/code6cac_b3.o(.data);
+        build/src/code6cac_b3_post.o(.data);
         build/src/code6cac_b2_pre.o(.data);
         build/src/code6cac_b2_post.o(.data);
         build/src/code6cac_c.o(.data);
@@ -133,6 +139,8 @@ SECTIONS
         main_BSS_START = .;
         build/src/code6cac.o(.bss);
         build/src/code6cac_b.o(.bss);
+        build/src/code6cac_b3.o(.bss);
+        build/src/code6cac_b3_post.o(.bss);
         build/src/code6cac_b2_pre.o(.bss);
         build/src/code6cac_b2_post.o(.bss);
         build/src/code6cac_c.o(.bss);

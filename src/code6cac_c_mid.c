@@ -105,7 +105,6 @@ extern s32 D_800A36C0;
 
 
 
-extern s32 g_file_disc_size;
 
 /* GP-relative extern data (for decompiled functions) */
 extern s32 D_800A3730;
@@ -134,7 +133,6 @@ extern s32 D_800A36EC;
 extern u8 D_800A3782;
 
 extern u8 D_800A31FC;
-extern s32 D_80106A50;
 
 
 extern s32 D_800A3870;
@@ -185,38 +183,25 @@ s32 memcard_Format(s32 a0, s32 a1) {
     return format(buf);
 }
 
-typedef struct { s32 w[4]; } Quad;
 void func_80037F40(u8 *a0) {
     s32 checksum;
     u8 *p;
     s32 i;
 
     checksum = 0;
-    p = (u8 *)&g_file_disc_size;
+    p = (u8 *)&D_80106A50;
     i = 0;
     do {
         checksum += *p++;
         i++;
     } while ((u32)i < 0x24);
 
-    i = 0;
     {
-        Quad *end = (Quad *)&D_80106A70;
         u8 *base = a0;
-        u8 *base2 = base;
-        s32 offset = 0;
+        i = 0;
         do {
-            Quad *dst = (Quad *)(offset + (s32)base);
-            Quad *src = (Quad *)&g_file_disc_size;
-            for (;;) {
-                *dst = *src;
-                src++;
-                dst++;
-                if (src != end) continue;
-                *(s32 *)dst = *(s32 *)src;
-                break;
-            }
-            *(s32 *)(base2 + 0x6C) = checksum;
+            ((FileRecord *)base)[i] = D_80106A50;
+            *(s32 *)(base + i * 4 + 0x6C) = checksum;
             {
                 s32 j = 0;
                 s16 *hp = (s16 *)base;
@@ -229,14 +214,11 @@ void func_80037F40(u8 *a0) {
                     bp += 4;
                 } while (j < 0x16);
             }
-            base2 += 4;
             i++;
-            offset += 0x24;
         } while (i < 3);
         *(s32 *)(base + 0xFC) = 0;
     }
 }
-typedef struct { s32 w0, w1, w2, w3; } CopyBlock;
 
 s32 func_8003800C(s32 *arg0) {
     u8 *base = (u8 *)arg0;
@@ -285,15 +267,7 @@ s32 func_8003800C(s32 *arg0) {
         u8 *src = base + i * 0x24;
 
         if (!(*(src + 0x23) & 0x80)) {
-            CopyBlock *dst = (CopyBlock *)&D_80106A50;
-            CopyBlock *sp2 = (CopyBlock *)src;
-            CopyBlock *end = (CopyBlock *)((u8 *)src + 0x20);
-            do {
-                *dst = *sp2;
-                sp2++;
-                dst++;
-            } while (sp2 != end);
-            *(s32 *)dst = *(s32 *)sp2;
+            D_80106A50 = *(FileRecord *)src;
         }
 
         j = 0;
@@ -355,7 +329,7 @@ void func_80038170(u8 *out) {
     s3 = 0;
     s2 = 0;
     s1 = 0;
-    mask = D_80106A50;
+    mask = D_80106A50.unk_00;
 
     for (i = 0; i < 0x1B; i++) {
         bit = 1 << i;

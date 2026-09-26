@@ -9,7 +9,6 @@
 #include "system.h"
 #include "code6cac.h"
 
-extern s32 D_80106A50;
 extern u8 D_800A3740;
 
 void func_80035618(s32 arg0) {
@@ -60,7 +59,7 @@ void func_80035618(s32 arg0) {
 
         temp = func_8003ACB8();
         if (temp == 1) {
-            func_80077940((D_80106A50 | D_800A38E4 | 0x7007) & 0x003FF3FF);
+            func_80077940((D_80106A50.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
             func_80077984(0x80118800);
             D_800A3740 = 3;
             func_800355E8();
@@ -76,21 +75,21 @@ void func_80035618(s32 arg0) {
         return;
 
     case 1:
-        func_80077940(D_80106A50 & 0x003EF3DF);
+        func_80077940(D_80106A50.unk_00 & 0x003EF3DF);
         func_80077984(0x80118800);
         D_800A3740 = 3;
         func_800355E8();
         return;
 
     case 5:
-        func_80077940(D_80106A50 & 0x003FF3FF);
+        func_80077940(D_80106A50.unk_00 & 0x003FF3FF);
         func_80077A80(0x80118800);
         D_800A3740 = 0xA;
         func_800355E8();
         return;
 
     case 4:
-        func_80077940(D_80106A50 & 0x053FF3FF);
+        func_80077940(D_80106A50.unk_00 & 0x053FF3FF);
         func_80077984(0x80118800);
         D_800A3740 = 3;
         func_800355E8();

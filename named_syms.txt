@@ -153,9 +153,6 @@ g_gpu_db_plus_0x18 = 0x800F7450;  /* data-wave 2026-09-24: was g_disp_fb_flag */
 /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
 g_disp_enable = 0x800A3768;
 g_disp_fade = 0x800A36A8;
-g_file_flags = 0x80106A73;
-g_file_disc_type = 0x80106A54;
-g_file_disc_size = 0x80106A50;
 D_800A3710 = 0x800A3710;  /* data-wave 2026-09-25: was g_file_vram_timer */
 g_file_dma_flag = 0x800A3716;
 g_file_data_buf = 0x800F6740;
@@ -432,7 +429,6 @@ scratchpad_Restore_80017F5C     = 0x80017F5C;  /* opposite direction (g_scratchp
 
 /* === Data names landed by the ings.c cluster audit (3) === */
 g_rng_state                     = 0x800A38BC;  /* LCG state word; written by rng_SetSeed, read+written by rng_Next */
-g_file_flags_byte               = 0x80106A73;  /* 8-bit flag byte; bits 0/1/2 read by file_GetFlag0/1/2 */
 g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of PSX scratchpad RAM (0x1F800000); used by IRQ context save/restore */
 
 /* === Legacy renamer audit: ings2.c cluster (2026-05-17) === */
@@ -1410,15 +1406,9 @@ g_gnd_gauge_d_max                                       = 0x800F6644;  /* gauge 
 
 /* === Practice-lesson init cluster (2026-05-17) -- 11 highs === */
 /* From code6cac.c:1345 func_8001C444 (init): sets up the lesson */
-/* parameters at 0x80102778-80102787.  0x8010277C-81 are three per-player */
-/* byte pairs, declared in C as PlayerBytePairs D_8010277C (code6cac.h, */
-/* merged 2026-09-25); their per-byte names are retired. */
-g_practice_lesson_size_a                                = 0x80102778;  /* = 0x800 (lesson dimension A) */
-g_practice_lesson_size_b                                = 0x8010277A;  /* = 0x800 (lesson dimension B) */
-g_practice_lesson_count_a                               = 0x80102784;  /* lesson count A (= 0xC) */
-g_practice_lesson_count_b                               = 0x80102785;  /* lesson count B (= 4) */
-g_practice_lesson_flag_a                                = 0x80102786;  /* lesson flag A (init 0) */
-g_practice_lesson_flag_b                                = 0x80102787;  /* lesson flag B (init 0) */
+/* parameters at 0x80102778-80102787, declared in C as the one aggregate */
+/* PracticeParams D_80102778 (code6cac.h, merged 2026-09-26 with */
+/* func_80034708); its per-word names are retired. */
 
 /* === Motion-ex state IDs 2-7 (2026-05-17) -- 18 highs === */
 /* Extension of the existing motion-ex state cluster (IDs 0-1 named */
@@ -1631,7 +1621,6 @@ g_ot_used_max                                           = 0x800A30E8;  /* high-w
 g_voice_skip_count                                      = 0x800A390D;  /* voice frame-skip counter; decrements before frame submit */
 g_select_pause_countdown                                = 0x800A3713;  /* countdown gating the SELECT-pause submenu entry; main_loop.md step 13 */
 g_global_frame_counter                                  = 0x800A37C0;  /* global frame counter (monotonic, never reset) */
-g_intro_demo_duration                                   = 0x80106A5C;  /* intro/demo duration cap (= 0x6978 = 27000 frames) */
 g_intro_select_packed_state                             = 0x800A3788;  /* packed state value combined with menu `select` in func_8005C8A8 call */
 
 /* === Cross-cutting unnamed state used in 3+ named functions (2026-05-17) -- 4 highs === */
@@ -1961,7 +1950,6 @@ g_result_screen_state_c                                  = 0x800A3350;  /* compa
 /* (0 = primary, 1 = alternate). */
 g_practice_lesson_arg_format                            = 0x800A3712;  /* 0 = primary arg-format, 1 = alternate */
 g_lesson_override_flag                                   = 0x800A37A0;  /* when 1, forces a1 to 0 (overrides D_8008D9EC[class] lookup) */
-g_practice_lesson_byte_6                                = 0x80102783;  /* +6 in practice lesson range; arg0[1] passthrough */
 g_lesson_extra_arg_b                                    = 0x800A37B4;  /* arg0[2] passthrough */
 g_lesson_extra_arg_c                                    = 0x800A37B5;
 g_lesson_extra_arg_d                                    = 0x800A37B6;
@@ -2192,9 +2180,6 @@ g_misc_init_flag_390F                                   = 0x800A390F;  /* reset 
 /* From code6cac.c func_8001945C / func_80019488 / func_800194C0: */
 /* RGB-like triple stored as 3 separate bytes (low nibble of each) */
 /* combined into a 12-bit packed value (R | G<<4 | B<<8). */
-g_default_color_r                                       = 0x80106A70;  /* default nibble for component R (init = 0x11) */
-g_default_color_g                                       = 0x80106A71;  /* init = 0x44 */
-g_default_color_b                                       = 0x80106A72;  /* init = 0x88 */
 g_current_color_r                                       = 0x800A3912;  /* unpacked component R (arg0 & 0xF) */
 g_current_color_g                                       = 0x800A3913;  /* (arg0 >> 4) & 0xF */
 g_current_color_b                                       = 0x800A3914;  /* (arg0 >> 8) & 0xF */
@@ -2486,7 +2471,6 @@ g_char_world_pos_z_plus_8                               = 0x80101FB0;  /* +8 fro
 g_char_struct_p1_field_FC_plus_8                        = 0x80101FCC;  /* +8 from g_char_struct_p1_field_FC (0x80101FC4) */
 g_practice_halfword_table_plus_4                        = 0x80102764;  /* +4 from g_practice_halfword_table (0x80102760) */
 g_practice_halfword_table_plus_8                        = 0x80102768;  /* +8 from g_practice_halfword_table (0x80102760) */
-g_practice_lesson_init_param_plus_1                     = 0x80102782;  /* +1 from 0x80102781 (D_8010277C.unk_4[1]) */
 g_practice_lesson_flag_b_plus_1                         = 0x80102788;  /* +1 from g_practice_lesson_flag_b (0x80102787) */
 g_practice_lesson_flag_b_plus_3                         = 0x8010278A;  /* +3 from g_practice_lesson_flag_b (0x80102787) */
 g_practice_lesson_init_done_plus_2                      = 0x8010278E;  /* +2 from g_practice_lesson_init_done (0x8010278C) */
@@ -2500,7 +2484,6 @@ _svm_sreg_buf_plus_0x6                            = 0x80102A7E;  /* +4 from g_vo
 _svm_sreg_buf_plus_0x8                            = 0x80102A80;  /* +6 from g_voice_slot_24_arr_b (0x80102A7A) */  /* data-wave 2026-09-24: was g_voice_slot_24_arr_b_plus_6 */
 _svm_sreg_buf_plus_0xA                            = 0x80102A82;  /* +8 from g_voice_slot_24_arr_b (0x80102A7A) */  /* data-wave 2026-09-24: was g_voice_slot_24_arr_b_plus_8 */
 _que_plus_0x8                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684); alias of D_80103680+0x8 (GpuQueueItem.count, include/gpu.h); retire with _exeque */  /* data-wave 2026-09-07: was g_gpu_packet_buffer_64x96_plus_4 */
-g_file_disc_type_plus_4                                 = 0x80106A58;  /* +4 from g_file_disc_type (0x80106A54) */
 g_file_flags_plus_5                                     = 0x80106A78;  /* +5 from g_file_flags (0x80106A73) */
 g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 from g_active_slot_flags_12 (0x80106A80) */
 
@@ -3030,8 +3013,6 @@ hirahira_w_ctrl_helper_800523E0                    = 0x800523E0;  /* extern-only
 g_scratchpad_ptr_c_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC); IRQ-save region */
 g_ot_used_max_plus_8_800A30F0                                = 0x800A30F0;  /* 19 refs; +8 from g_ot_used_max (0x800A30E8) */
 g_game_pad_index_800A3144                                    = 0x800A3144;  /* 11 refs; gp-relative; game state region; pad/player index */
-g_motion_id_current_800A3174                                 = 0x800A3174;  /* 31 refs; gp-relative s16 read in motion-dispatch loop */
-g_game_flag_c_800A3176                                       = 0x800A3176;  /* 11 refs; gp-relative s16; game-state flags region */
 g_motion_init_flag_800A3207                                  = 0x800A3207;  /* 20 refs; u8 init-once flag (set to 1 on first motion_SetMotion) */
 g_motion_table_entry_800A35C8                                = 0x800A35C8;  /* 13 refs; in motion subsystem region (offset 0x1F8 into cluster) */
 g_char_id_saved_d_plus_2_800A36CA                            = 0x800A36CA;  /* 15 refs; +2 into g_char_id_saved_d (character ID save context) */
