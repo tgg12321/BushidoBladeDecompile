@@ -1,13 +1,39 @@
 # func_800620B8 — evidence (manual lane, slotC, 2026-09-26)
 
-## Status (2026-09-26, session 3 slotA5, under owner ruling 262db111c Q2)
-`candidate.c` = **0 / 501** (sandbox --disable all, 2026-09-26): the merged table spelled as
-`TexRec D_8009BA00[12]` (the 8-byte {clut_x, clut_y, u, v} record type func_800646E8 already uses),
-record reads through `((TexRec *)D_800A3488)->u` etc. Split-symbol floor 47 (same body, four
-labels). Prong-(a) evidence package for the 2026-09-26 amendment (a1)-(a4): section "Session 3" below,
-artifacts in `prong_a/`. Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0)
-island (same verbatim inline_c.h macro island func_8006295C landed with, c3eff5ec6).
-Floor path: 144 -> ... -> 47 (split) / 0 (merge).
+## Status (2026-09-26, session 3b slotA5)
+`candidate.c` = **0 / 501** split-symbol body: four FAKE pointer aliases of D_8009BA00/BA30/BA50/BA58
+(strip32 set at the loop top) + two FAKE combine-foldable chain-extenders (`x - p + p`). The TexRec[12]
+merge (also 0/501) is DEFEATED under (a1) by this spelling (session 3b) and banked as rejected.
+Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0) island (same verbatim
+inline_c.h macro island func_8006295C landed with, c3eff5ec6).
+
+## Session 3b (2026-09-26, slotA5) — layer-2 FAIL on (a1); SPLIT SPELLING REACHES 0 -> merge defeated
+Layer-2 (orchestrator relay) FAILED the TexRec[12] merge landing on ONE (a1) gap, accepting
+everything else ((a2), (a3), (a4), (b)-(e), TexRec move, comment fixes, D_8009BD44[] array, region
+hash, island/grant/goto tails/SetTransMatrix/rot/tag link): the target only needs the BA00 pseudo to
+reach nrefs >= 4 with one in-loop use, and the sanctioned combine-foldable chain-extender
+(dead-store-fake-exception.md:51-65) adds reg_n_refs flow.c counts and combine folds to zero bytes —
+untested. Tested it: **it closes the split spelling.** The session-3 "no separate-object spelling"
+argument was wrong: it assumed every extra reference would survive as a `$fp` use in the bytes.
+Measurements (sandbox --disable all, tmp/func_800620B8/s4, generators in prong_a/extender/):
+- f1 chassis (four function-scope table pointers, 39) + extender on the BA00 use:
+  `x - p + p` 7, `p + (x - p)` 11, u8 round trip 11, `x + p - p` 11, index `+1 -1` 51,
+  self-assign 39 (no insn, no refs), pre-loop `+1 / -1` 11.
+- a4 chassis (alias at loop top, 50) + the same: 12 / 16 / 50 / 16 / 62 / 16.
+- f1 + E1 residual = BA00 set placed before the entry test -> move ONLY strip32's set to the loop
+  top (loop.c hoists it into the pre-header after the entry test): 1 (h2), residual = operand order
+  `addu $v0,$t0,$v0` vs target `addu $v0,$v0,$t0` in sel_b; spelling-order probes (`strip16 + n`,
+  `n + strip16`) 1; the same round trip on the strip16 use: **0/501** (h2_ba00_top_r1).
+- Minimisation (every construct load-bearing): BA50 direct 3, BA58 direct 7, both direct 10,
+  BA30 direct 3, no strip16 extender 1, no strip32 extender 15.
+- Dump (tmp/func_800620B8/s3/d/x0, prong_a/extender/h2_r1_alloc.txt): strip32 pseudo 92 nrefs 7,
+  live 660, pri 212 -> $fp; sv/flag pri 88 -> spilled; the three other aliases unallocated ->
+  reload rebuilds their constants in $t0 — the target's allocation, with separate symbols.
+Consequence: (a1) is NOT met (its defeat clause: an admissible split spelling reaching the target's
+codegen). The merge body is banked as rejected/table-merge-TexRec12-0-a1-defeated.c. candidate.c =
+the split body with four FAKE-annotated pointer aliases (pointer-alias-fake-exception) and two
+FAKE-annotated chain-extenders (dead-store-fake-exception combine-foldable chain-extender), 0/501.
+Session-3 (a2)/(a3)/(a4) material below stays as a record; it no longer carries a landing.
 
 ## Session 3 (2026-09-26, slotA5) — prong (a) via the 2026-09-26 amendment (a1)-(a4)
 Rule text: .claude/rules/no-new-park-categories.md "Amendment (owner ruling 2026-09-26) —

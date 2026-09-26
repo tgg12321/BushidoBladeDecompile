@@ -27,13 +27,10 @@ Session 2 (2026-09-26, slotC2) — ruled out, with proof (evidence.md "Session 2
   indexed table in the region is indexed over exactly its own label; no census/config row; no data
   pointers; no symbol files. Only func_800620B8 references BA00/BA30/BA50/BA58.
 
-Frontier (2026-09-26, session 3 slotA5):
-1. The owner ANSWERED the borderline.md question: 262db111c Q2 "Accept, minimal span" (prong (a)
-   alternative (a1)-(a4)). Evidence package banked (evidence.md "Session 3", prong_a/). candidate.c =
-   TexRec D_8009BA00[12] merge, 0/501. Next: landing (auth: row for the gte_stsz island, then Match with
-   src/text1b.c + include/game.h [TexRec typedef moved from text1b.c + the table decl] +
-   tools/canonical_asm_regions.json) and a fresh layer-2.
-2. If layer-2 FAILs the package: the objection is the frontier; the split 47 is proven structural
-   (no ordinary separate-object body exists), so only an evidence/declaration fix can move it.
+Frontier (2026-09-26, session 3b slotA5):
+1. candidate.c (split + 4 FAKE aliases + 2 FAKE chain-extenders) = 0/501; landing it. The TexRec[12]
+   merge is defeated under (a1) (evidence.md Session 3b) -- do not re-land it.
+2. Session-2 "split floor 47 is structural" and session-3 "no separate-object spelling" are REFUTED:
+   they assumed extra refs must survive as $fp uses; a combine-folded detour adds them at zero bytes.
 
 (Session-1 frontier items 2-3 are closed by the session-2 search and proof above.)
