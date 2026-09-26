@@ -313,3 +313,19 @@ F28. Objection (1) is NOT fixed — no honest declaration exists: D_800A37B8 is 
   <=8-byte externs outside sdata_syms = 1 (D_800A37B8); the approved -G8 files carry 29
   (text1a_pre 7, text1a_post 22, several outside gp range, e.g. D_800F64BA). Filed as a
   policy-question in docs/grind/borderline.md.
+
+## [s6] slotB4 2026-09-26 — owner Q8 (screen only code-changing small externs): the proof
+F29. integration/q8proof.py builds the landing's src/code6cac_b3.c through the real pipeline twice,
+  identical except for the cc1 -G flag (-G0 / -G8; maspsx, EXPAND_LB, RODATA_ALIGN2 as in the
+  landing), disassembles both objects (integration/q8/b3-G0.dis, b3-G8.dis) and lists every
+  instruction carrying a relocation against each small extern outside the listed gp set:
+  - D_800A37B8 (s32, 4 B): 4 relocated instructions at -G0 and at -G8, byte-identical
+    (3c020000 lui v0 / 8c420000 lw v0,0(v0) / 3c010000 lui at / ac220000 sw v0,0(at); HI16/LO16).
+  - D_800A3690 (u8): 12 relocated instructions each, byte-identical (row 16 lbu, case 11 dec/inc,
+    tail `&= 1`).
+  - D_800A36F9 (u8): 14 relocated instructions each, byte-identical (row 15 lbu, case 10 dec/inc,
+    tail %4).
+  So -G8 changes none of these externs' compiled instructions: under Q8 none of them needs a
+  sdata_syms.txt listing (D_800A3690 / D_800A36F9 are listed anyway, sdata_exclude'd here as before).
+  These forms are also the target's own (asm/funcs/func_80034708.s: lui/%lo for all three, no
+  gp_rel). Machine-readable: integration/q8/q8.json.

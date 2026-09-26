@@ -1,0 +1,739 @@
+
+tmp/func_80034708/q8/b3-G8.o:     file format elf32-tradlittlemips
+
+
+Disassembly of section .text:
+
+00000000 <func_80034708>:
+   0:	3c020000 	lui	v0,0x0
+			0: R_MIPS_HI16	D_800A37B8
+   4:	8c420000 	lw	v0,0(v0)
+			4: R_MIPS_LO16	D_800A37B8
+   8:	27bdffc0 	addiu	sp,sp,-64
+   c:	afbf003c 	sw	ra,60(sp)
+  10:	afbe0038 	sw	s8,56(sp)
+  14:	afb70034 	sw	s7,52(sp)
+  18:	afb60030 	sw	s6,48(sp)
+  1c:	afb5002c 	sw	s5,44(sp)
+  20:	afb40028 	sw	s4,40(sp)
+  24:	afb30024 	sw	s3,36(sp)
+  28:	afb20020 	sw	s2,32(sp)
+  2c:	afb1001c 	sw	s1,28(sp)
+  30:	afb00018 	sw	s0,24(sp)
+  34:	24420001 	addiu	v0,v0,1
+  38:	3c010000 	lui	at,0x0
+			38: R_MIPS_HI16	D_800A37B8
+  3c:	ac220000 	sw	v0,0(at)
+			3c: R_MIPS_LO16	D_800A37B8
+  40:	0c000000 	jal	0 <func_80034708>
+			40: R_MIPS_26	rand
+  44:	00000000 	nop
+  48:	3c100000 	lui	s0,0x0
+			48: R_MIPS_HI16	D_800A3178
+  4c:	26100000 	addiu	s0,s0,0
+			4c: R_MIPS_LO16	D_800A3178
+  50:	3c110000 	lui	s1,0x0
+			50: R_MIPS_HI16	D_800A3180
+  54:	26310000 	addiu	s1,s1,0
+			54: R_MIPS_LO16	D_800A3180
+  58:	87820000 	lh	v0,0(gp)
+			58: R_MIPS_GPREL16	D_800A3174
+  5c:	3c140000 	lui	s4,0x0
+			5c: R_MIPS_HI16	D_800A3188
+  60:	26940000 	addiu	s4,s4,0
+			60: R_MIPS_LO16	D_800A3188
+  64:	14400002 	bnez	v0,70 <func_80034708+0x70>
+  68:	02002821 	move	a1,s0
+  6c:	02202821 	move	a1,s1
+  70:	3c150000 	lui	s5,0x0
+			70: R_MIPS_HI16	D_80102778
+  74:	26b50004 	addiu	s5,s5,4
+			74: R_MIPS_LO16	D_80102778
+  78:	82a60000 	lb	a2,0(s5)
+  7c:	0c000000 	jal	0 <func_80034708>
+			7c: R_MIPS_26	func_8003D52C
+  80:	02802021 	move	a0,s4
+  84:	87820002 	lh	v0,2(gp)
+			84: R_MIPS_GPREL16	D_800A3174
+  88:	3c130000 	lui	s3,0x0
+			88: R_MIPS_HI16	D_800A3190
+  8c:	26730000 	addiu	s3,s3,0
+			8c: R_MIPS_LO16	D_800A3190
+  90:	14400002 	bnez	v0,9c <func_80034708+0x9c>
+  94:	02002821 	move	a1,s0
+  98:	02202821 	move	a1,s1
+  9c:	3c060000 	lui	a2,0x0
+			9c: R_MIPS_HI16	D_80102778
+  a0:	80c60005 	lb	a2,5(a2)
+			a0: R_MIPS_LO16	D_80102778
+  a4:	0c000000 	jal	0 <func_80034708>
+			a4: R_MIPS_26	func_8003D52C
+  a8:	02602021 	move	a0,s3
+  ac:	87820000 	lh	v0,0(gp)
+			ac: R_MIPS_GPREL16	D_800A3174
+  b0:	24120001 	li	s2,1
+  b4:	14520002 	bne	v0,s2,c0 <func_80034708+0xc0>
+  b8:	02002821 	move	a1,s0
+  bc:	02202821 	move	a1,s1
+  c0:	3c060000 	lui	a2,0x0
+			c0: R_MIPS_HI16	D_80102778
+  c4:	80c60006 	lb	a2,6(a2)
+			c4: R_MIPS_LO16	D_80102778
+  c8:	0c000000 	jal	0 <func_80034708>
+			c8: R_MIPS_26	func_8003D52C
+  cc:	02802021 	move	a0,s4
+  d0:	87820002 	lh	v0,2(gp)
+			d0: R_MIPS_GPREL16	D_800A3174
+  d4:	00000000 	nop
+  d8:	14520002 	bne	v0,s2,e4 <func_80034708+0xe4>
+  dc:	02002821 	move	a1,s0
+  e0:	02202821 	move	a1,s1
+  e4:	3c060000 	lui	a2,0x0
+			e4: R_MIPS_HI16	D_80102778
+  e8:	80c60007 	lb	a2,7(a2)
+			e8: R_MIPS_LO16	D_80102778
+  ec:	0c000000 	jal	0 <func_80034708>
+			ec: R_MIPS_26	func_8003D52C
+  f0:	02602021 	move	a0,s3
+  f4:	87820000 	lh	v0,0(gp)
+			f4: R_MIPS_GPREL16	D_800A3174
+  f8:	24120002 	li	s2,2
+  fc:	14520002 	bne	v0,s2,108 <func_80034708+0x108>
+ 100:	02002821 	move	a1,s0
+ 104:	02202821 	move	a1,s1
+ 108:	3c060000 	lui	a2,0x0
+			108: R_MIPS_HI16	D_80102778
+ 10c:	80c60008 	lb	a2,8(a2)
+			10c: R_MIPS_LO16	D_80102778
+ 110:	3c040000 	lui	a0,0x0
+			110: R_MIPS_HI16	D_800A3198
+ 114:	24840000 	addiu	a0,a0,0
+			114: R_MIPS_LO16	D_800A3198
+ 118:	0c000000 	jal	0 <func_80034708>
+			118: R_MIPS_26	func_8003D52C
+ 11c:	00000000 	nop
+ 120:	87820002 	lh	v0,2(gp)
+			120: R_MIPS_GPREL16	D_800A3174
+ 124:	00000000 	nop
+ 128:	14520002 	bne	v0,s2,134 <func_80034708+0x134>
+ 12c:	02002821 	move	a1,s0
+ 130:	02202821 	move	a1,s1
+ 134:	3c060000 	lui	a2,0x0
+			134: R_MIPS_HI16	D_80102778
+ 138:	80c60009 	lb	a2,9(a2)
+			138: R_MIPS_LO16	D_80102778
+ 13c:	0c000000 	jal	0 <func_80034708>
+			13c: R_MIPS_26	func_8003D52C
+ 140:	02602021 	move	a0,s3
+ 144:	87820000 	lh	v0,0(gp)
+			144: R_MIPS_GPREL16	D_800A3174
+ 148:	24120003 	li	s2,3
+ 14c:	14520002 	bne	v0,s2,158 <func_80034708+0x158>
+ 150:	02002821 	move	a1,s0
+ 154:	02202821 	move	a1,s1
+ 158:	3c060000 	lui	a2,0x0
+			158: R_MIPS_HI16	D_80102778
+ 15c:	94c60000 	lhu	a2,0(a2)
+			15c: R_MIPS_LO16	D_80102778
+ 160:	3c040000 	lui	a0,0x0
+			160: R_MIPS_HI16	D_800A31A0
+ 164:	24840000 	addiu	a0,a0,0
+			164: R_MIPS_LO16	D_800A31A0
+ 168:	0c000000 	jal	0 <func_80034708>
+			168: R_MIPS_26	func_8003D52C
+ 16c:	00063202 	srl	a2,a2,0x8
+ 170:	87820002 	lh	v0,2(gp)
+			170: R_MIPS_GPREL16	D_800A3174
+ 174:	00000000 	nop
+ 178:	14520002 	bne	v0,s2,184 <func_80034708+0x184>
+ 17c:	02002821 	move	a1,s0
+ 180:	02202821 	move	a1,s1
+ 184:	3c060000 	lui	a2,0x0
+			184: R_MIPS_HI16	D_80102778
+ 188:	94c60002 	lhu	a2,2(a2)
+			188: R_MIPS_LO16	D_80102778
+ 18c:	3c040000 	lui	a0,0x0
+			18c: R_MIPS_HI16	D_800A31A8
+ 190:	24840000 	addiu	a0,a0,0
+			190: R_MIPS_LO16	D_800A31A8
+ 194:	0c000000 	jal	0 <func_80034708>
+			194: R_MIPS_26	func_8003D52C
+ 198:	00063202 	srl	a2,a2,0x8
+ 19c:	3c120000 	lui	s2,0x0
+			19c: R_MIPS_HI16	D_800A31B0
+ 1a0:	26520000 	addiu	s2,s2,0
+			1a0: R_MIPS_LO16	D_800A31B0
+ 1a4:	87830000 	lh	v1,0(gp)
+			1a4: R_MIPS_GPREL16	D_800A3174
+ 1a8:	24020004 	li	v0,4
+ 1ac:	14620002 	bne	v1,v0,1b8 <func_80034708+0x1b8>
+ 1b0:	02002821 	move	a1,s0
+ 1b4:	02202821 	move	a1,s1
+ 1b8:	3c060000 	lui	a2,0x0
+			1b8: R_MIPS_HI16	D_80102778
+ 1bc:	80c6000c 	lb	a2,12(a2)
+			1bc: R_MIPS_LO16	D_80102778
+ 1c0:	0c000000 	jal	0 <func_80034708>
+			1c0: R_MIPS_26	func_8003D52C
+ 1c4:	02402021 	move	a0,s2
+ 1c8:	87830000 	lh	v1,0(gp)
+			1c8: R_MIPS_GPREL16	D_800A3174
+ 1cc:	24020005 	li	v0,5
+ 1d0:	14620002 	bne	v1,v0,1dc <func_80034708+0x1dc>
+ 1d4:	02002821 	move	a1,s0
+ 1d8:	02202821 	move	a1,s1
+ 1dc:	3c060000 	lui	a2,0x0
+			1dc: R_MIPS_HI16	D_80102778
+ 1e0:	80c6000d 	lb	a2,13(a2)
+			1e0: R_MIPS_LO16	D_80102778
+ 1e4:	0c000000 	jal	0 <func_80034708>
+			1e4: R_MIPS_26	func_8003D52C
+ 1e8:	02402021 	move	a0,s2
+ 1ec:	87830000 	lh	v1,0(gp)
+			1ec: R_MIPS_GPREL16	D_800A3174
+ 1f0:	24020006 	li	v0,6
+ 1f4:	14620002 	bne	v1,v0,200 <func_80034708+0x200>
+ 1f8:	02002821 	move	a1,s0
+ 1fc:	02202821 	move	a1,s1
+ 200:	82a6000a 	lb	a2,10(s5)
+ 204:	3c040000 	lui	a0,0x0
+			204: R_MIPS_HI16	D_800A31B8
+ 208:	24840000 	addiu	a0,a0,0
+			208: R_MIPS_LO16	D_800A31B8
+ 20c:	0c000000 	jal	0 <func_80034708>
+			20c: R_MIPS_26	func_8003D52C
+ 210:	00000000 	nop
+ 214:	87830000 	lh	v1,0(gp)
+			214: R_MIPS_GPREL16	D_800A3174
+ 218:	24020007 	li	v0,7
+ 21c:	14620002 	bne	v1,v0,228 <func_80034708+0x228>
+ 220:	02002821 	move	a1,s0
+ 224:	02202821 	move	a1,s1
+ 228:	82a6000b 	lb	a2,11(s5)
+ 22c:	3c040000 	lui	a0,0x0
+			22c: R_MIPS_HI16	D_80010834
+ 230:	24840000 	addiu	a0,a0,0
+			230: R_MIPS_LO16	D_80010834
+ 234:	0c000000 	jal	0 <func_80034708>
+			234: R_MIPS_26	func_8003D52C
+ 238:	00000000 	nop
+ 23c:	87830000 	lh	v1,0(gp)
+			23c: R_MIPS_GPREL16	D_800A3174
+ 240:	24020008 	li	v0,8
+ 244:	14620002 	bne	v1,v0,250 <func_80034708+0x250>
+ 248:	02002821 	move	a1,s0
+ 24c:	02202821 	move	a1,s1
+ 250:	3c120000 	lui	s2,0x0
+			250: R_MIPS_HI16	D_80106A50
+ 254:	26520023 	addiu	s2,s2,35
+			254: R_MIPS_LO16	D_80106A50
+ 258:	92460000 	lbu	a2,0(s2)
+ 25c:	3c040000 	lui	a0,0x0
+			25c: R_MIPS_HI16	D_80010840
+ 260:	24840000 	addiu	a0,a0,0
+			260: R_MIPS_LO16	D_80010840
+ 264:	0c000000 	jal	0 <func_80034708>
+			264: R_MIPS_26	func_8003D52C
+ 268:	30c60001 	andi	a2,a2,0x1
+ 26c:	87830000 	lh	v1,0(gp)
+			26c: R_MIPS_GPREL16	D_800A3174
+ 270:	24020009 	li	v0,9
+ 274:	14620002 	bne	v1,v0,280 <func_80034708+0x280>
+ 278:	02002821 	move	a1,s0
+ 27c:	02202821 	move	a1,s1
+ 280:	92460000 	lbu	a2,0(s2)
+ 284:	3c040000 	lui	a0,0x0
+			284: R_MIPS_HI16	D_800A31C0
+ 288:	24840000 	addiu	a0,a0,0
+			288: R_MIPS_LO16	D_800A31C0
+ 28c:	00063042 	srl	a2,a2,0x1
+ 290:	0c000000 	jal	0 <func_80034708>
+			290: R_MIPS_26	func_8003D52C
+ 294:	30c60001 	andi	a2,a2,0x1
+ 298:	87830000 	lh	v1,0(gp)
+			298: R_MIPS_GPREL16	D_800A3174
+ 29c:	2402000a 	li	v0,10
+ 2a0:	14620002 	bne	v1,v0,2ac <func_80034708+0x2ac>
+ 2a4:	02002821 	move	a1,s0
+ 2a8:	02202821 	move	a1,s1
+ 2ac:	3c060000 	lui	a2,0x0
+			2ac: R_MIPS_HI16	D_800A36F9
+ 2b0:	90c60000 	lbu	a2,0(a2)
+			2b0: R_MIPS_LO16	D_800A36F9
+ 2b4:	3c040000 	lui	a0,0x0
+			2b4: R_MIPS_HI16	D_800A31C8
+ 2b8:	24840000 	addiu	a0,a0,0
+			2b8: R_MIPS_LO16	D_800A31C8
+ 2bc:	0c000000 	jal	0 <func_80034708>
+			2bc: R_MIPS_26	func_8003D52C
+ 2c0:	00000000 	nop
+ 2c4:	87830000 	lh	v1,0(gp)
+			2c4: R_MIPS_GPREL16	D_800A3174
+ 2c8:	2402000b 	li	v0,11
+ 2cc:	14620002 	bne	v1,v0,2d8 <func_80034708+0x2d8>
+ 2d0:	02002821 	move	a1,s0
+ 2d4:	02202821 	move	a1,s1
+ 2d8:	3c040000 	lui	a0,0x0
+			2d8: R_MIPS_HI16	D_800A31D0
+ 2dc:	24840000 	addiu	a0,a0,0
+			2dc: R_MIPS_LO16	D_800A31D0
+ 2e0:	3c060000 	lui	a2,0x0
+			2e0: R_MIPS_HI16	D_800A3690
+ 2e4:	90c60000 	lbu	a2,0(a2)
+			2e4: R_MIPS_LO16	D_800A3690
+ 2e8:	0000a021 	move	s4,zero
+ 2ec:	3c170000 	lui	s7,0x0
+			2ec: R_MIPS_HI16	D_80102778
+ 2f0:	26f7000c 	addiu	s7,s7,12
+			2f0: R_MIPS_LO16	D_80102778
+ 2f4:	26fe0002 	addiu	s8,s7,2
+ 2f8:	0240a821 	move	s5,s2
+ 2fc:	26f3fffc 	addiu	s3,s7,-4
+ 300:	26f2fffa 	addiu	s2,s7,-6
+ 304:	26f1fff8 	addiu	s1,s7,-8
+ 308:	3c100000 	lui	s0,0x0
+			308: R_MIPS_HI16	D_800A3174
+ 30c:	26100000 	addiu	s0,s0,0
+			30c: R_MIPS_LO16	D_800A3174
+ 310:	0c000000 	jal	0 <func_80034708>
+			310: R_MIPS_26	func_8003D52C
+ 314:	0000b021 	move	s6,zero
+ 318:	00142100 	sll	a0,s4,0x4
+ 31c:	24021000 	li	v0,4096
+ 320:	3c030000 	lui	v1,0x0
+			320: R_MIPS_HI16	D_80102788
+ 324:	8c63000c 	lw	v1,12(v1)
+			324: R_MIPS_LO16	D_80102788
+ 328:	00821004 	sllv	v0,v0,a0
+ 32c:	00621024 	and	v0,v1,v0
+ 330:	10400013 	beqz	v0,380 <func_80034708+0x380>
+ 334:	2405007f 	li	a1,127
+ 338:	00002021 	move	a0,zero
+ 33c:	0c000000 	jal	0 <func_80034708>
+			33c: R_MIPS_26	func_8005C650
+ 340:	2406007f 	li	a2,127
+ 344:	86020000 	lh	v0,0(s0)
+ 348:	00000000 	nop
+ 34c:	18400004 	blez	v0,360 <func_80034708+0x360>
+ 350:	00401821 	move	v1,v0
+ 354:	2462ffff 	addiu	v0,v1,-1
+ 358:	080001a5 	j	694 <func_80034708+0x694>
+			358: R_MIPS_26	.text
+ 35c:	a6020000 	sh	v0,0(s0)
+ 360:	12800004 	beqz	s4,374 <func_80034708+0x374>
+ 364:	00000000 	nop
+ 368:	24020003 	li	v0,3
+ 36c:	080001a5 	j	694 <func_80034708+0x694>
+			36c: R_MIPS_26	.text
+ 370:	a6020000 	sh	v0,0(s0)
+ 374:	2402000b 	li	v0,11
+ 378:	080001a5 	j	694 <func_80034708+0x694>
+			378: R_MIPS_26	.text
+ 37c:	a6020000 	sh	v0,0(s0)
+ 380:	24024000 	li	v0,16384
+ 384:	00821004 	sllv	v0,v0,a0
+ 388:	00621024 	and	v0,v1,v0
+ 38c:	10400016 	beqz	v0,3e8 <func_80034708+0x3e8>
+ 390:	34028000 	li	v0,0x8000
+ 394:	00002021 	move	a0,zero
+ 398:	0c000000 	jal	0 <func_80034708>
+			398: R_MIPS_26	func_8005C650
+ 39c:	2406007f 	li	a2,127
+ 3a0:	86020000 	lh	v0,0(s0)
+ 3a4:	12800006 	beqz	s4,3c0 <func_80034708+0x3c0>
+ 3a8:	00000000 	nop
+ 3ac:	28420003 	slti	v0,v0,3
+ 3b0:	14400006 	bnez	v0,3cc <func_80034708+0x3cc>
+ 3b4:	00000000 	nop
+ 3b8:	080001a5 	j	694 <func_80034708+0x694>
+			3b8: R_MIPS_26	.text
+ 3bc:	a6000000 	sh	zero,0(s0)
+ 3c0:	2842000b 	slti	v0,v0,11
+ 3c4:	10400006 	beqz	v0,3e0 <func_80034708+0x3e0>
+ 3c8:	00000000 	nop
+ 3cc:	96020000 	lhu	v0,0(s0)
+ 3d0:	00000000 	nop
+ 3d4:	24420001 	addiu	v0,v0,1
+ 3d8:	080001a5 	j	694 <func_80034708+0x694>
+			3d8: R_MIPS_26	.text
+ 3dc:	a6020000 	sh	v0,0(s0)
+ 3e0:	080001a5 	j	694 <func_80034708+0x694>
+			3e0: R_MIPS_26	.text
+ 3e4:	a6000000 	sh	zero,0(s0)
+ 3e8:	00821004 	sllv	v0,v0,a0
+ 3ec:	00621024 	and	v0,v1,v0
+ 3f0:	1040004c 	beqz	v0,524 <func_80034708+0x524>
+ 3f4:	2405003f 	li	a1,63
+ 3f8:	24040004 	li	a0,4
+ 3fc:	0c000000 	jal	0 <func_80034708>
+			3fc: R_MIPS_26	func_8005C650
+ 400:	2406003f 	li	a2,63
+ 404:	86030000 	lh	v1,0(s0)
+ 408:	00000000 	nop
+ 40c:	2c62000c 	sltiu	v0,v1,12
+ 410:	104000a1 	beqz	v0,698 <func_80034708+0x698>
+ 414:	3c023e0f 	lui	v0,0x3e0f
+ 418:	00031080 	sll	v0,v1,0x2
+ 41c:	3c010000 	lui	at,0x0
+			41c: R_MIPS_HI16	.rodata
+ 420:	00220821 	addu	at,at,v0
+ 424:	8c220000 	lw	v0,0(at)
+			424: R_MIPS_LO16	.rodata
+ 428:	00000000 	nop
+ 42c:	00400008 	jr	v0
+ 430:	00000000 	nop
+ 434:	92220000 	lbu	v0,0(s1)
+ 438:	00000000 	nop
+ 43c:	2442ffff 	addiu	v0,v0,-1
+ 440:	080001a5 	j	694 <func_80034708+0x694>
+			440: R_MIPS_26	.text
+ 444:	a2220000 	sb	v0,0(s1)
+ 448:	92420000 	lbu	v0,0(s2)
+ 44c:	00000000 	nop
+ 450:	2442ffff 	addiu	v0,v0,-1
+ 454:	080001a5 	j	694 <func_80034708+0x694>
+			454: R_MIPS_26	.text
+ 458:	a2420000 	sb	v0,0(s2)
+ 45c:	92620000 	lbu	v0,0(s3)
+ 460:	00000000 	nop
+ 464:	2442ffff 	addiu	v0,v0,-1
+ 468:	080001a5 	j	694 <func_80034708+0x694>
+			468: R_MIPS_26	.text
+ 46c:	a2620000 	sb	v0,0(s3)
+ 470:	3c030000 	lui	v1,0x0
+			470: R_MIPS_HI16	D_80102778
+ 474:	24630000 	addiu	v1,v1,0
+			474: R_MIPS_LO16	D_80102778
+ 478:	02c31821 	addu	v1,s6,v1
+ 47c:	94620000 	lhu	v0,0(v1)
+ 480:	00000000 	nop
+ 484:	2442ff80 	addiu	v0,v0,-128
+ 488:	080001a5 	j	694 <func_80034708+0x694>
+			488: R_MIPS_26	.text
+ 48c:	a4620000 	sh	v0,0(v1)
+ 490:	92e20000 	lbu	v0,0(s7)
+ 494:	00000000 	nop
+ 498:	2442ffff 	addiu	v0,v0,-1
+ 49c:	080001a5 	j	694 <func_80034708+0x694>
+			49c: R_MIPS_26	.text
+ 4a0:	a2e20000 	sb	v0,0(s7)
+ 4a4:	3c020000 	lui	v0,0x0
+			4a4: R_MIPS_HI16	D_80102778
+ 4a8:	9042000d 	lbu	v0,13(v0)
+			4a8: R_MIPS_LO16	D_80102778
+ 4ac:	00000000 	nop
+ 4b0:	2442ffff 	addiu	v0,v0,-1
+ 4b4:	3c010000 	lui	at,0x0
+			4b4: R_MIPS_HI16	D_80102778
+ 4b8:	a022000d 	sb	v0,13(at)
+			4b8: R_MIPS_LO16	D_80102778
+ 4bc:	080001a6 	j	698 <func_80034708+0x698>
+			4bc: R_MIPS_26	.text
+ 4c0:	3c023e0f 	lui	v0,0x3e0f
+ 4c4:	93c20000 	lbu	v0,0(s8)
+ 4c8:	00000000 	nop
+ 4cc:	2442ffff 	addiu	v0,v0,-1
+ 4d0:	080001a5 	j	694 <func_80034708+0x694>
+			4d0: R_MIPS_26	.text
+ 4d4:	a3c20000 	sb	v0,0(s8)
+ 4d8:	3c030000 	lui	v1,0x0
+			4d8: R_MIPS_HI16	D_80102778
+ 4dc:	2463000f 	addiu	v1,v1,15
+			4dc: R_MIPS_LO16	D_80102778
+ 4e0:	90620000 	lbu	v0,0(v1)
+ 4e4:	00000000 	nop
+ 4e8:	2442ffff 	addiu	v0,v0,-1
+ 4ec:	080001a5 	j	694 <func_80034708+0x694>
+			4ec: R_MIPS_26	.text
+ 4f0:	a0620000 	sb	v0,0(v1)
+ 4f4:	3c020000 	lui	v0,0x0
+			4f4: R_MIPS_HI16	D_800A36F9
+ 4f8:	90420000 	lbu	v0,0(v0)
+			4f8: R_MIPS_LO16	D_800A36F9
+ 4fc:	00000000 	nop
+ 500:	2442ffff 	addiu	v0,v0,-1
+ 504:	3c010000 	lui	at,0x0
+			504: R_MIPS_HI16	D_800A36F9
+ 508:	a0220000 	sb	v0,0(at)
+			508: R_MIPS_LO16	D_800A36F9
+ 50c:	080001a6 	j	698 <func_80034708+0x698>
+			50c: R_MIPS_26	.text
+ 510:	3c023e0f 	lui	v0,0x3e0f
+ 514:	3c020000 	lui	v0,0x0
+			514: R_MIPS_HI16	D_800A3690
+ 518:	90420000 	lbu	v0,0(v0)
+			518: R_MIPS_LO16	D_800A3690
+ 51c:	080001a3 	j	68c <func_80034708+0x68c>
+			51c: R_MIPS_26	.text
+ 520:	2442ffff 	addiu	v0,v0,-1
+ 524:	24022000 	li	v0,8192
+ 528:	00821004 	sllv	v0,v0,a0
+ 52c:	00621024 	and	v0,v1,v0
+ 530:	10400058 	beqz	v0,694 <func_80034708+0x694>
+ 534:	24040004 	li	a0,4
+ 538:	2405003f 	li	a1,63
+ 53c:	0c000000 	jal	0 <func_80034708>
+			53c: R_MIPS_26	func_8005C650
+ 540:	2406003f 	li	a2,63
+ 544:	86030000 	lh	v1,0(s0)
+ 548:	00000000 	nop
+ 54c:	2c62000c 	sltiu	v0,v1,12
+ 550:	10400051 	beqz	v0,698 <func_80034708+0x698>
+ 554:	3c023e0f 	lui	v0,0x3e0f
+ 558:	00031080 	sll	v0,v1,0x2
+ 55c:	3c010000 	lui	at,0x0
+			55c: R_MIPS_HI16	.rodata
+ 560:	00220821 	addu	at,at,v0
+ 564:	8c220030 	lw	v0,48(at)
+			564: R_MIPS_LO16	.rodata
+ 568:	00000000 	nop
+ 56c:	00400008 	jr	v0
+ 570:	00000000 	nop
+ 574:	92220000 	lbu	v0,0(s1)
+ 578:	00000000 	nop
+ 57c:	24420001 	addiu	v0,v0,1
+ 580:	080001a5 	j	694 <func_80034708+0x694>
+			580: R_MIPS_26	.text
+ 584:	a2220000 	sb	v0,0(s1)
+ 588:	92420000 	lbu	v0,0(s2)
+ 58c:	00000000 	nop
+ 590:	24420001 	addiu	v0,v0,1
+ 594:	080001a5 	j	694 <func_80034708+0x694>
+			594: R_MIPS_26	.text
+ 598:	a2420000 	sb	v0,0(s2)
+ 59c:	92620000 	lbu	v0,0(s3)
+ 5a0:	00000000 	nop
+ 5a4:	24420001 	addiu	v0,v0,1
+ 5a8:	080001a5 	j	694 <func_80034708+0x694>
+			5a8: R_MIPS_26	.text
+ 5ac:	a2620000 	sb	v0,0(s3)
+ 5b0:	3c030000 	lui	v1,0x0
+			5b0: R_MIPS_HI16	D_80102778
+ 5b4:	24630000 	addiu	v1,v1,0
+			5b4: R_MIPS_LO16	D_80102778
+ 5b8:	02c31821 	addu	v1,s6,v1
+ 5bc:	94620000 	lhu	v0,0(v1)
+ 5c0:	00000000 	nop
+ 5c4:	24420080 	addiu	v0,v0,128
+ 5c8:	080001a5 	j	694 <func_80034708+0x694>
+			5c8: R_MIPS_26	.text
+ 5cc:	a4620000 	sh	v0,0(v1)
+ 5d0:	92e20000 	lbu	v0,0(s7)
+ 5d4:	00000000 	nop
+ 5d8:	24420001 	addiu	v0,v0,1
+ 5dc:	080001a5 	j	694 <func_80034708+0x694>
+			5dc: R_MIPS_26	.text
+ 5e0:	a2e20000 	sb	v0,0(s7)
+ 5e4:	3c020000 	lui	v0,0x0
+			5e4: R_MIPS_HI16	D_80102778
+ 5e8:	9042000d 	lbu	v0,13(v0)
+			5e8: R_MIPS_LO16	D_80102778
+ 5ec:	00000000 	nop
+ 5f0:	24420001 	addiu	v0,v0,1
+ 5f4:	3c010000 	lui	at,0x0
+			5f4: R_MIPS_HI16	D_80102778
+ 5f8:	a022000d 	sb	v0,13(at)
+			5f8: R_MIPS_LO16	D_80102778
+ 5fc:	080001a6 	j	698 <func_80034708+0x698>
+			5fc: R_MIPS_26	.text
+ 600:	3c023e0f 	lui	v0,0x3e0f
+ 604:	93c20000 	lbu	v0,0(s8)
+ 608:	00000000 	nop
+ 60c:	24420001 	addiu	v0,v0,1
+ 610:	080001a5 	j	694 <func_80034708+0x694>
+			610: R_MIPS_26	.text
+ 614:	a3c20000 	sb	v0,0(s8)
+ 618:	3c030000 	lui	v1,0x0
+			618: R_MIPS_HI16	D_80102778
+ 61c:	2463000f 	addiu	v1,v1,15
+			61c: R_MIPS_LO16	D_80102778
+ 620:	90620000 	lbu	v0,0(v1)
+ 624:	00000000 	nop
+ 628:	24420001 	addiu	v0,v0,1
+ 62c:	080001a5 	j	694 <func_80034708+0x694>
+			62c: R_MIPS_26	.text
+ 630:	a0620000 	sb	v0,0(v1)
+ 634:	92a20000 	lbu	v0,0(s5)
+ 638:	00000000 	nop
+ 63c:	38420001 	xori	v0,v0,0x1
+ 640:	080001a5 	j	694 <func_80034708+0x694>
+			640: R_MIPS_26	.text
+ 644:	a2a20000 	sb	v0,0(s5)
+ 648:	92a20000 	lbu	v0,0(s5)
+ 64c:	00000000 	nop
+ 650:	38420002 	xori	v0,v0,0x2
+ 654:	080001a5 	j	694 <func_80034708+0x694>
+			654: R_MIPS_26	.text
+ 658:	a2a20000 	sb	v0,0(s5)
+ 65c:	3c020000 	lui	v0,0x0
+			65c: R_MIPS_HI16	D_800A36F9
+ 660:	90420000 	lbu	v0,0(v0)
+			660: R_MIPS_LO16	D_800A36F9
+ 664:	00000000 	nop
+ 668:	24420001 	addiu	v0,v0,1
+ 66c:	3c010000 	lui	at,0x0
+			66c: R_MIPS_HI16	D_800A36F9
+ 670:	a0220000 	sb	v0,0(at)
+			670: R_MIPS_LO16	D_800A36F9
+ 674:	080001a6 	j	698 <func_80034708+0x698>
+			674: R_MIPS_26	.text
+ 678:	3c023e0f 	lui	v0,0x3e0f
+ 67c:	3c020000 	lui	v0,0x0
+			67c: R_MIPS_HI16	D_800A3690
+ 680:	90420000 	lbu	v0,0(v0)
+			680: R_MIPS_LO16	D_800A3690
+ 684:	00000000 	nop
+ 688:	24420001 	addiu	v0,v0,1
+ 68c:	3c010000 	lui	at,0x0
+			68c: R_MIPS_HI16	D_800A3690
+ 690:	a0220000 	sb	v0,0(at)
+			690: R_MIPS_LO16	D_800A3690
+ 694:	3c023e0f 	lui	v0,0x3e0f
+ 698:	82240000 	lb	a0,0(s1)
+ 69c:	344283e1 	ori	v0,v0,0x83e1
+ 6a0:	24840021 	addiu	a0,a0,33
+ 6a4:	00820018 	mult	a0,v0
+ 6a8:	000417c3 	sra	v0,a0,0x1f
+ 6ac:	00005810 	mfhi	t3
+ 6b0:	000b18c3 	sra	v1,t3,0x3
+ 6b4:	00621823 	subu	v1,v1,v0
+ 6b8:	00031140 	sll	v0,v1,0x5
+ 6bc:	00431021 	addu	v0,v0,v1
+ 6c0:	00822023 	subu	a0,a0,v0
+ 6c4:	a2240000 	sb	a0,0(s1)
+ 6c8:	82440000 	lb	a0,0(s2)
+ 6cc:	00000000 	nop
+ 6d0:	24830008 	addiu	v1,a0,8
+ 6d4:	04610002 	bgez	v1,6e0 <func_80034708+0x6e0>
+ 6d8:	00601021 	move	v0,v1
+ 6dc:	2482000f 	addiu	v0,a0,15
+ 6e0:	000210c3 	sra	v0,v0,0x3
+ 6e4:	000210c0 	sll	v0,v0,0x3
+ 6e8:	00621023 	subu	v0,v1,v0
+ 6ec:	a2420000 	sb	v0,0(s2)
+ 6f0:	26520001 	addiu	s2,s2,1
+ 6f4:	26310001 	addiu	s1,s1,1
+ 6f8:	26d60002 	addiu	s6,s6,2
+ 6fc:	26100002 	addiu	s0,s0,2
+ 700:	82630000 	lb	v1,0(s3)
+ 704:	26940001 	addiu	s4,s4,1
+ 708:	24630002 	addiu	v1,v1,2
+ 70c:	000317c2 	srl	v0,v1,0x1f
+ 710:	00621021 	addu	v0,v1,v0
+ 714:	00021043 	sra	v0,v0,0x1
+ 718:	00021040 	sll	v0,v0,0x1
+ 71c:	00621823 	subu	v1,v1,v0
+ 720:	a2630000 	sb	v1,0(s3)
+ 724:	2a820002 	slti	v0,s4,2
+ 728:	1440fefb 	bnez	v0,318 <func_80034708+0x318>
+ 72c:	26730001 	addiu	s3,s3,1
+ 730:	3c026bca 	lui	v0,0x6bca
+ 734:	3c060000 	lui	a2,0x0
+			734: R_MIPS_HI16	D_80102778
+ 738:	24c6000c 	addiu	a2,a2,12
+			738: R_MIPS_LO16	D_80102778
+ 73c:	80c50000 	lb	a1,0(a2)
+ 740:	34421af3 	ori	v0,v0,0x1af3
+ 744:	24a50026 	addiu	a1,a1,38
+ 748:	00a20018 	mult	a1,v0
+ 74c:	3c039249 	lui	v1,0x9249
+ 750:	34632493 	ori	v1,v1,0x2493
+ 754:	3c0a0000 	lui	t2,0x0
+			754: R_MIPS_HI16	D_800A36F9
+ 758:	914a0000 	lbu	t2,0(t2)
+			758: R_MIPS_LO16	D_800A36F9
+ 75c:	3c040000 	lui	a0,0x0
+			75c: R_MIPS_HI16	D_80102778
+ 760:	8084000d 	lb	a0,13(a0)
+			760: R_MIPS_LO16	D_80102778
+ 764:	25470004 	addiu	a3,t2,4
+ 768:	3c020000 	lui	v0,0x0
+			768: R_MIPS_HI16	D_80102778
+ 76c:	9042000e 	lbu	v0,14(v0)
+			76c: R_MIPS_LO16	D_80102778
+ 770:	24840007 	addiu	a0,a0,7
+ 774:	30420001 	andi	v0,v0,0x1
+ 778:	3c010000 	lui	at,0x0
+			778: R_MIPS_HI16	D_80102778
+ 77c:	a022000e 	sb	v0,14(at)
+			77c: R_MIPS_LO16	D_80102778
+ 780:	3c020000 	lui	v0,0x0
+			780: R_MIPS_HI16	D_80102778
+ 784:	9042000f 	lbu	v0,15(v0)
+			784: R_MIPS_LO16	D_80102778
+ 788:	00004010 	mfhi	t0
+ 78c:	30420001 	andi	v0,v0,0x1
+ 790:	3c010000 	lui	at,0x0
+			790: R_MIPS_HI16	D_80102778
+ 794:	a022000f 	sb	v0,15(at)
+			794: R_MIPS_LO16	D_80102778
+ 798:	00830018 	mult	a0,v1
+ 79c:	000517c3 	sra	v0,a1,0x1f
+ 7a0:	00081903 	sra	v1,t0,0x4
+ 7a4:	00621823 	subu	v1,v1,v0
+ 7a8:	00031080 	sll	v0,v1,0x2
+ 7ac:	00431021 	addu	v0,v0,v1
+ 7b0:	00021080 	sll	v0,v0,0x2
+ 7b4:	00431023 	subu	v0,v0,v1
+ 7b8:	00021040 	sll	v0,v0,0x1
+ 7bc:	00a22823 	subu	a1,a1,v0
+ 7c0:	000417c3 	sra	v0,a0,0x1f
+ 7c4:	a0c50000 	sb	a1,0(a2)
+ 7c8:	00006010 	mfhi	t4
+ 7cc:	01841821 	addu	v1,t4,a0
+ 7d0:	00031883 	sra	v1,v1,0x2
+ 7d4:	00621823 	subu	v1,v1,v0
+ 7d8:	000310c0 	sll	v0,v1,0x3
+ 7dc:	00431023 	subu	v0,v0,v1
+ 7e0:	00822023 	subu	a0,a0,v0
+ 7e4:	3c010000 	lui	at,0x0
+			7e4: R_MIPS_HI16	D_80102778
+ 7e8:	a024000d 	sb	a0,13(at)
+			7e8: R_MIPS_LO16	D_80102778
+ 7ec:	04e10002 	bgez	a3,7f8 <func_80034708+0x7f8>
+ 7f0:	00e04821 	move	t1,a3
+ 7f4:	25490007 	addiu	t1,t2,7
+ 7f8:	3c040800 	lui	a0,0x800
+ 7fc:	34840800 	ori	a0,a0,0x800
+ 800:	312201fc 	andi	v0,t1,0x1fc
+ 804:	00e21023 	subu	v0,a3,v0
+ 808:	3c010000 	lui	at,0x0
+			808: R_MIPS_HI16	D_800A36F9
+ 80c:	a0220000 	sb	v0,0(at)
+			80c: R_MIPS_LO16	D_800A36F9
+ 810:	3c020000 	lui	v0,0x0
+			810: R_MIPS_HI16	D_800A3690
+ 814:	90420000 	lbu	v0,0(v0)
+			814: R_MIPS_LO16	D_800A3690
+ 818:	3c030000 	lui	v1,0x0
+			818: R_MIPS_HI16	D_80102788
+ 81c:	8c63000c 	lw	v1,12(v1)
+			81c: R_MIPS_LO16	D_80102788
+ 820:	30420001 	andi	v0,v0,0x1
+ 824:	00641824 	and	v1,v1,a0
+ 828:	3c010000 	lui	at,0x0
+			828: R_MIPS_HI16	D_800A3690
+ 82c:	a0220000 	sb	v0,0(at)
+			82c: R_MIPS_LO16	D_800A3690
+ 830:	10600006 	beqz	v1,84c <func_80034708+0x84c>
+ 834:	24040001 	li	a0,1
+ 838:	2405007f 	li	a1,127
+ 83c:	0c000000 	jal	0 <func_80034708>
+			83c: R_MIPS_26	func_8005C650
+ 840:	2406007f 	li	a2,127
+ 844:	0c000000 	jal	0 <func_80034708>
+			844: R_MIPS_26	func_800344B4
+ 848:	00000000 	nop
+ 84c:	8fbf003c 	lw	ra,60(sp)
+ 850:	8fbe0038 	lw	s8,56(sp)
+ 854:	8fb70034 	lw	s7,52(sp)
+ 858:	8fb60030 	lw	s6,48(sp)
+ 85c:	8fb5002c 	lw	s5,44(sp)
+ 860:	8fb40028 	lw	s4,40(sp)
+ 864:	8fb30024 	lw	s3,36(sp)
+ 868:	8fb20020 	lw	s2,32(sp)
+ 86c:	8fb1001c 	lw	s1,28(sp)
+ 870:	8fb00018 	lw	s0,24(sp)
+ 874:	27bd0040 	addiu	sp,sp,64
+ 878:	03e00008 	jr	ra
+ 87c:	00000000 	nop
