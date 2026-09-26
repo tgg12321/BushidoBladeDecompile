@@ -54,12 +54,9 @@ extern void func_8005B868(void);
 
 
 
-extern s8 D_80102781;
 extern u16 D_800A3310;
 
 
-extern s8 D_8010277D;
-extern s8 D_8010277F;
 
 extern s32 file_GetFlag2(void);
 
@@ -1617,13 +1614,13 @@ INCLUDE_ASM("asm/funcs", func_8001BE20);
 void func_8001C444(void) {
     D_80102778[1] = 0x800;
     D_80102778[0] = 0x800;
-    D_8010277C = 1;
-    D_8010277D = 0x10;
+    D_8010277C.unk_0[0] = 1;
+    D_8010277C.unk_0[1] = 0x10;
     D_80102784 = 0xC;
-    D_8010277E = 0;
-    D_8010277F = 0;
-    D_80102781 = 0;
-    D_80102780 = 0;
+    D_8010277C.unk_2[0] = 0;
+    D_8010277C.unk_2[1] = 0;
+    D_8010277C.unk_4[1] = 0;
+    D_8010277C.unk_4[0] = 0;
     D_80102785 = 4;
     D_80102786 = 0;
     D_80102787 = 0;
@@ -1644,9 +1641,9 @@ void func_8001C51C(void) {
     s32 v0;
     func_8001C4C0();
     if (D_800A38DC == 3 && D_800A3728 != 0) {
-        func_80022580(1, D_80102781, D_8010277D, D_8010277F, 0);
+        func_80022580(1, (s8)D_8010277C.unk_4[1], (s8)D_8010277C.unk_0[1], (s8)D_8010277C.unk_2[1], 0);
     } else {
-        func_80022580(1, D_80102781, D_8010277D, D_8010277F, 1);
+        func_80022580(1, (s8)D_8010277C.unk_4[1], (s8)D_8010277C.unk_0[1], (s8)D_8010277C.unk_2[1], 1);
     }
     func_80022F34();
     func_800218C8(1);
@@ -1878,8 +1875,8 @@ void func_8001D790(void) {
     gpu_ResetGraphMode1();
 
     if (D_800A36A4 != D_800A390E
-        || D_8008E5A8[(s8)D_8010277C] != D_800A30FC
-        || D_8008E5A8[D_8010277D] != D_800A30FD) {
+        || D_8008E5A8[(s8)D_8010277C.unk_0[0]] != D_800A30FC
+        || D_8008E5A8[(s8)D_8010277C.unk_0[1]] != D_800A30FD) {
         /* FAKE: block-local address cache for D_8010277C. Every &-free spelling
          * re-materializes the symbol at both body reads instead of holding it in
          * a callee-save register across func_8005BA8C (subspace floor 6, swept).
@@ -1887,18 +1884,18 @@ void func_8001D790(void) {
          * plain scalar; no expression-level form produces one. Precedented in
          * COMPLETED-C for this same global (func_8003B2C8/func_8003B328).
          * See memory/grind/se_data_set/. */
-        u8 *p = &D_8010277C;
+        u8 *p = &D_8010277C.unk_0[0];
 
         func_80020D38();
         game_StageCleanup(D_800A36A4, s2);
         func_8002906C();
         func_8005BDF0();
 
-        s1 = func_8005BA8C(s2, D_800A36A4, D_8008E5A8[(s8)*p], D_8008E5A8[D_8010277D]);
+        s1 = func_8005BA8C(s2, D_800A36A4, D_8008E5A8[(s8)*p], D_8008E5A8[(s8)D_8010277C.unk_0[1]]);
 
         D_800A390E = D_800A36A4;
         D_800A30FC = D_8008E5A8[(s8)*p];
-        D_800A30FD = D_8008E5A8[D_8010277D];
+        D_800A30FD = D_8008E5A8[(s8)D_8010277C.unk_0[1]];
 
         if (s1 >= 0x2519) {
             sys_Panic();
@@ -2021,7 +2018,177 @@ void func_8001DBE4(void) {
     gpu_InitDisplay();
     gpu_SetDispMaskOn();
 }
-INCLUDE_ASM("asm/funcs", func_8001DCB0);
+extern void func_8003E164(s32);
+extern s32 func_80048AD0(s32);
+extern void func_80020D38(void);
+extern void func_80020E74(s32, s32, s32, s32);
+extern void func_80021210(void);
+extern void func_80021280(s32);
+extern void func_80022F34(void);
+extern void func_800218C8(s32);
+extern s32 func_80021974(s32);
+extern s32 func_80021904(s32);
+extern s32 func_800219E4(s32);
+extern void func_8001B294(s32 *, s32 *);
+extern void func_8001B3C0(s32 *, s32 *);
+extern void func_80033510(void);
+extern s32 func_8005BE84(s32);
+extern void rng_SetSeed(s32);
+extern void player_SetCharId(s32, s32);
+void func_8001DCB0(void) {
+    s32 i;
+    s32 addr;
+
+    func_8005B5AC();
+    if (g_disp_enable != DISP_ACTIVE) {
+        gpu_InitDisplay();
+        gpu_SetDispMaskOn();
+    }
+    func_800174F4();
+    gpu_ResetGraphMode1();
+    func_8003E22C();
+    func_8003043C();
+    func_80032040();
+    func_8003F218(D_800A38BA);
+    SetGeomScreen(math_FovToScreenDist(D_800A38BA != 0 ? 0x50 : 0x2D));
+    for (i = 0; i < 2; i++) {
+        if (D_800A38DC != 0) {
+            player_SetCharId(0, 0);
+        }
+        func_80022580(i, (s8)D_8010277C.unk_4[i], (s8)D_8010277C.unk_0[i], (s8)D_8010277C.unk_2[i], 0);
+        if (D_800A38BA != 0 && D_800A36F6 == i) {
+            func_8003E164(i == 0);
+        }
+    }
+    func_8003FFE0(0);
+    func_8003FFE0(1);
+    if (D_800A3670 == 0) {
+        func_8004939C();
+        addr = (s32)0x80190800;
+        func_80020D38();
+        for (i = 0; i < 2; i++) {
+            if (D_800A38BA != 0 && D_800A36F6 == i) {
+                func_80040510(i, D_8008D578[(s8)D_8010277C.unk_0[i]], addr);
+                func_80048AD0(i);
+            } else if (D_800A38DC == 3 && i == 1) {
+                func_80040510(1, D_800A38DE, 0);
+            } else {
+                func_80040510(i, D_8008D578[(s8)D_8010277C.unk_0[i]], addr);
+            }
+            func_800493E4(g_practice_menu_table[i].unk_12);
+            if (D_800A38DC != 3 || i != 1) {
+                if ((D_800A38DC == 2 && D_800A389A == 0) || D_800A38DC == 5) {
+                    func_800494D4(i, D_8008E6A4[g_practice_menu_table[i].unk_0A][g_practice_menu_table[i].unk_0E]);
+                } else {
+                    func_800494D4(i, D_8008E5CC[g_practice_menu_table[i].unk_0A][g_practice_menu_table[i].unk_0E]);
+                }
+            }
+            if (g_practice_menu_table[i].unk_14 != -1) {
+                func_800493E4(D_8008EB80[g_practice_menu_table[i].unk_14]);
+                if (g_practice_menu_table[i].unk_14 == 14) {
+                    func_800493E4(D_8008EB80[14] + 3);
+                }
+            }
+        }
+        func_80049584(addr);
+        func_80041688(0, 0);
+        func_80041688(1, 0);
+        if (D_800A38DC == 0 && D_800A3712 == 0) {
+            func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
+        } else if (D_800A38DC == 3) {
+            func_80041BF4(D_800A38EC, D_800A38ED, D_800A38EE);
+        } else if (D_800A38DC == 2) {
+            u8 *p = D_800A3100[D_8008D9EC[g_practice_menu_table[0].unk_0A]];
+            if (D_800A389A == 0) {
+                func_80041BF4(p[0], p[1], p[2]);
+            }
+        }
+        func_8001D790();
+        if (D_800A38DC == 5) {
+            func_8001D904();
+        }
+        if (D_800A38DC == 3) {
+            func_8001D998();
+            func_8001DB9C();
+        }
+        func_80020E74(D_8008D538[(s8)D_8010277C.unk_0[0]], (s8)D_8010277C.unk_2[0],
+                      D_8008D538[(s8)D_8010277C.unk_0[1]], (s8)D_8010277C.unk_2[1]);
+    } else if (D_800A38DC == 5) {
+        D_800A391E = 1;
+    }
+    func_80021210();
+    func_80021280(0);
+    func_80021280(1);
+    func_80022F34();
+    if (D_800A38DC == 2 || D_800A38DC == 5) {
+        if (D_800A3670 != 0) {
+            func_800218C8(0);
+            {
+                s32 v = func_80021974(0);
+                g_practice_menu_table[0].unk_5E = 0;
+                func_80021A98(0, (u8 *)v, 0);
+            }
+            if (D_800A38DC == 2 && D_800A389A == 0) {
+                s32 v = func_80021904(1);
+                g_practice_menu_table[1].unk_5E = 0;
+                func_80021A98(1, (u8 *)v, 0);
+            } else {
+                s32 v;
+                func_800218C8(1);
+                v = func_80021974(1);
+                g_practice_menu_table[1].unk_5E = 0;
+                func_80021A98(1, (u8 *)v, 0);
+            }
+        } else {
+            func_800218C8(0);
+            func_800218C8(1);
+            {
+                s32 v = func_800219E4(0);
+                g_practice_menu_table[0].unk_5E = 1;
+                func_80021A98(0, (u8 *)v, 1);
+            }
+            {
+                s32 v = func_800219E4(1);
+                g_practice_menu_table[1].unk_5E = 1;
+                func_80021A98(1, (u8 *)v, 1);
+            }
+        }
+    } else {
+        func_800218C8(0);
+        func_800218C8(1);
+        {
+            s32 v = func_80021974(0);
+            g_practice_menu_table[0].unk_5E = 0;
+            func_80021A98(0, (u8 *)v, 0);
+        }
+        {
+            s32 v = func_80021974(1);
+            g_practice_menu_table[1].unk_5E = 0;
+            func_80021A98(1, (u8 *)v, 0);
+        }
+    }
+    D_800A382E = 0;
+    D_800A3748 = -1;
+    func_8001B294((s32 *)&g_practice_menu_table[0], (s32 *)&g_practice_menu_table[1]);
+    if (D_800A38BA != 0) {
+        func_8001B3C0((s32 *)&g_practice_menu_table[0], (s32 *)&g_practice_menu_table[1]);
+    }
+    func_800392C8();
+    game_Cleanup();
+    func_8001DBE4();
+    g_disp_enable = DISP_DISABLED;
+    g_disp_fade = 0;
+    eff_Init();
+    D_800A3670 = 0;
+    D_800A3834 = 1;
+    func_8001C820();
+    func_8001DA8C();
+    func_80033510();
+    func_8005BE84(D_800A36A4);
+    if (D_800A38DC == 6) {
+        rng_SetSeed(D_800A3904);
+    }
+}
 /* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
 typedef struct {
     s32 vx, vy, vz;

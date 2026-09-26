@@ -1103,7 +1103,6 @@ g_practice_p2_move_unlock_pending                       = 0x800A3781;  /* bool: 
 g_practice_mode_dispatch_idx                            = 0x800A3834;  /* mode-dispatch index into g_module_func_tbl (0x4 = continue, 0x12 = unlock anim, 0x1A = end) */
 g_practice_unlock_anim_id                               = 0x800A38A4;  /* unlock-celebration animation ID (6/7 for P1, 8/9 for P2) */
 g_practice_lesson_progress                              = 0x800A38E2;  /* lesson progress counter (0x64 = complete) */
-g_practice_lesson_char_id                               = 0x8010277C;  /* character ID being practiced */
 
 /* === Function names from debug-string analysis (2026-05-17) -- 4 highs === */
 /* Functions whose debug_printf strings reveal their purpose. */
@@ -1411,17 +1410,11 @@ g_gnd_gauge_d_max                                       = 0x800F6644;  /* gauge 
 
 /* === Practice-lesson init cluster (2026-05-17) -- 11 highs === */
 /* From code6cac.c:1345 func_8001C444 (init): sets up the lesson */
-/* parameters at 0x80102778-80102787.  D_8010277C is already named */
-/* g_practice_lesson_char_id (the lesson character).  These siblings */
-/* hold size/class/slot/state/count/flag fields used by lesson dispatch */
-/* (func_80022580 takes class+slots+flag as args). */
+/* parameters at 0x80102778-80102787.  0x8010277C-81 are three per-player */
+/* byte pairs, declared in C as PlayerBytePairs D_8010277C (code6cac.h, */
+/* merged 2026-09-25); their per-byte names are retired. */
 g_practice_lesson_size_a                                = 0x80102778;  /* = 0x800 (lesson dimension A) */
 g_practice_lesson_size_b                                = 0x8010277A;  /* = 0x800 (lesson dimension B) */
-g_practice_lesson_class                                 = 0x8010277D;  /* = 0x10 (lesson class ID, passed as arg3 to func_80022580) */
-g_practice_lesson_slot_0                                = 0x8010277E;  /* lesson slot 0 (init 0) */
-g_practice_lesson_slot_1                                = 0x8010277F;  /* lesson slot 1 (init 0; passed as arg4 to func_80022580) */
-g_practice_lesson_state                                 = 0x80102780;  /* lesson state (init 0) */
-g_practice_lesson_init_param                            = 0x80102781;  /* lesson init param (init 0; passed as arg2 to func_80022580; distinct from g_practice_lesson_param0 at 0x800A38DE) */
 g_practice_lesson_count_a                               = 0x80102784;  /* lesson count A (= 0xC) */
 g_practice_lesson_count_b                               = 0x80102785;  /* lesson count B (= 4) */
 g_practice_lesson_flag_a                                = 0x80102786;  /* lesson flag A (init 0) */
@@ -1643,7 +1636,6 @@ g_intro_select_packed_state                             = 0x800A3788;  /* packed
 
 /* === Cross-cutting unnamed state used in 3+ named functions (2026-05-17) -- 4 highs === */
 g_seq_active_flag                                       = 0x800A3244;  /* seq subsystem state: 1=active, 0=stopped; set by seq_Start, cleared by seq_Reset, read by seq_GetState */
-g_char_class_idx_p1                                     = 0x80101ED2;  /* per-character class idx (P1 entry of g_practice_menu_table, offset +0xA); indexes into &D_8008D9EC for char-class lookup */
 g_vsync_target_frames                                   = 0x800A36F1;  /* vsync target frame count (default 2 = 30 FPS); main loop uses `(D-1)<<8 + 0x80` for vsync window deadline */
 g_stage_id_arg                                          = 0x800A3228;  /* stage ID set by single_game_SetStageId; read by gnd_open + camera_SetMatrix_8003E164 */
 
@@ -1684,8 +1676,6 @@ g_memcard_section_state                                 = 0x800A3358;  /* paired
 /* override.  D_80101EDA / D_80102326 are the same field at offset */
 /* +0x12 in P1/P2 entries of g_practice_menu_table (stride 0x44C). */
 g_menuctl_player_select_struct_ptr                      = 0x800A3878;  /* state struct ptr; bits at +3 control which player's char-struct fields the menu modifies */
-g_char_struct_p1_field12                                = 0x80101EDA;  /* per-char field at +0x12 of g_practice_menu_table entry 0 (P1) */
-g_char_struct_p2_field12                                = 0x80102326;  /* same field at +0x12 of entry 1 (P2); = g_char_struct_p1_field12 + 0x44C */
 
 /* === code6cac_c2.c misc state names (2026-05-17) -- 4 highs === */
 g_menuctl_current_char_idx                              = 0x800A382D;  /* current char-struct index (0/1/2); used as `D_*0x44C` to compute g_practice_menu_table offset */
@@ -2177,7 +2167,6 @@ g_eff_particle_remaining                                = 0x800A326C;  /* signed
 g_eff_particle_template_table                           = 0x8009B2E0;  /* particle effect templates (0x3C-byte stride per entry, arg1 indexes it) */
 
 /* === Char struct +0xE field + lookup tables (2026-05-17) -- 4 highs === */
-g_char_struct_p1_field_E                                = 0x80101ED6;  /* per-char field at +0xE; sibling to g_char_class_idx_p1 (+0xA); s16 access via (D + s0) where s0 = 0 or 0x44C */
 g_char_lookup_table_b                                   = 0x8008E5CC;  /* sibling to g_char_class_id_table (D_8008D538); per-char data lookup */
 g_char_lookup_table_c                                   = 0x8008E6A4;  /* another per-char data table */
 g_char_id_saved_d                                       = 0x800A36C8;  /* companion to g_char_id_saved_a/b; preserved during char_id context-save */
@@ -2492,13 +2481,12 @@ g_memcard_slot_plus_4                                   = 0x80101BD0;  /* +4 fro
 g_cd_playback_flag_b_plus_2                             = 0x80101E6A;  /* +2 from g_cd_playback_flag_b (0x80101E68) */
 g_replay_frame_offset_plus_4                            = 0x80101E78;  /* +4 from g_replay_frame_offset (0x80101E74) */
 g_replay_frame_offset_plus_8                            = 0x80101E7C;  /* +8 from g_replay_frame_offset (0x80101E74) */
-g_char_struct_p1_field12_plus_2                         = 0x80101EDC;  /* +2 from g_char_struct_p1_field12 (0x80101EDA) */
 g_char_struct_p1_field_BC_plus_4                        = 0x80101F88;  /* +4 from g_char_struct_p1_field_BC (0x80101F84) */
 g_char_world_pos_z_plus_8                               = 0x80101FB0;  /* +8 from g_char_world_pos_z (0x80101FA8) */
 g_char_struct_p1_field_FC_plus_8                        = 0x80101FCC;  /* +8 from g_char_struct_p1_field_FC (0x80101FC4) */
 g_practice_halfword_table_plus_4                        = 0x80102764;  /* +4 from g_practice_halfword_table (0x80102760) */
 g_practice_halfword_table_plus_8                        = 0x80102768;  /* +8 from g_practice_halfword_table (0x80102760) */
-g_practice_lesson_init_param_plus_1                     = 0x80102782;  /* +1 from g_practice_lesson_init_param (0x80102781) */
+g_practice_lesson_init_param_plus_1                     = 0x80102782;  /* +1 from 0x80102781 (D_8010277C.unk_4[1]) */
 g_practice_lesson_flag_b_plus_1                         = 0x80102788;  /* +1 from g_practice_lesson_flag_b (0x80102787) */
 g_practice_lesson_flag_b_plus_3                         = 0x8010278A;  /* +3 from g_practice_lesson_flag_b (0x80102787) */
 g_practice_lesson_init_done_plus_2                      = 0x8010278E;  /* +2 from g_practice_lesson_init_done (0x8010278C) */
@@ -2792,7 +2780,6 @@ g_winanim_particle_offset_x                                  = 0x8008EB10;
 g_winanim_particle_offset_y                                  = 0x8008EB14;
 g_winanim_particle_offset_z                                  = 0x8008EB18;
 g_winanim_event_subtable_eb1c                                     = 0x8008EB1C;
-g_lookup_14entries_8008EB80_plus_14                          = 0x8008EB8E;
 g_angle_raw_u16_lookup_EBA0                                   = 0x8008EBA0;
 g_c6cb_data_ptr_EC24                                   = 0x8008EC24;
 g_char_id_saved_d_init_tbl_EC30                                   = 0x8008EC30;
@@ -2872,7 +2859,6 @@ g_cdread_dest_buffer_plus_12                                 = 0x80101E90;
 g_cdread_dest_buffer_plus_16                                 = 0x80101E94;
 g_c6cb2_state_E98                                  = 0x80101E98;
 g_c6cb2_state_E9E                                  = 0x80101E9E;
-g_char_p1_field_5E                                           = 0x80101F26;
 g_char_prev_keyframe_idx_plus_16                             = 0x80101F5E;
 g_char_p1_field_AD                                           = 0x80101F75;
 g_char_p1_field_B3                                           = 0x80101F7B;
@@ -2898,7 +2884,6 @@ g_char_p1_field_152                                          = 0x8010201A;
 g_char_p1_field_168                                          = 0x80102030;
 g_char_p1_field_31A                                          = 0x801021E2;
 g_practice_menu_table_p2_plus_6                              = 0x8010231A;
-g_char_p2_field_5E                                           = 0x80102372;
 g_char_p2_field_96                                           = 0x801023AA;
 g_char_p2_field_AD                                           = 0x801023C1;
 g_char_p2_field_31A                                          = 0x8010262E;

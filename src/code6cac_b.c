@@ -56,13 +56,10 @@ extern void player_SetCharId(s32, s32);
 
 
 
-extern s8 D_80102781;
 extern u8 D_800A3768;
 extern u8 D_800A36A8;
 
 
-extern u8 D_8010277D;
-extern u8 D_8010277F;
 
 
 extern s16 *func_8004678C(void);
@@ -4794,7 +4791,7 @@ void func_800338CC(void) {
     s32 one;
 
     {
-        s32 mask = ~(1 << D_8008D538[(s8)D_8010277C]) & 0x3EF3DF;
+        s32 mask = ~(1 << D_8008D538[(s8)D_8010277C.unk_0[0]]) & 0x3EF3DF;
         s32 bits;
         count = 0;
         i = 0;
@@ -4876,7 +4873,7 @@ block_12:
         }
     }
     {
-        u8 lookup = D_8008D9EC[D_8008D538[(s8)D_8010277C]];
+        u8 lookup = D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]];
         s32 val;
         if (lookup != 0) {
             if (D_80106A50 & 0x04000000) {
@@ -4921,21 +4918,21 @@ void func_80033BC0(void) {
         D_800A376B = 0;
         D_800A3783 = a0 + 1;
         a1 = (&D_801077B0)[a0];
-        D_8010277D = (&D_8008D55C)[a1];
+        D_8010277C.unk_0[1] = (&D_8008D55C)[a1];
         if (a1 == 5) {
-            D_8010277F = 6;
+            D_8010277C.unk_2[1] = 6;
         } else if (a1 == 0x10) {
-            D_8010277F = 7;
+            D_8010277C.unk_2[1] = 7;
         } else {
             u8 x = D_800A37BC;
             s8 y;
             D_800A37BC = x + 1;
             y = (&D_8008E748)[x];
-            D_8010277F = y;
+            D_8010277C.unk_2[1] = y;
             if (y == 4) {
                 u8 v = D_8008D9EC[a1];
                 if (v != 0) {
-                    D_8010277F = 5;
+                    D_8010277C.unk_2[1] = 5;
                 }
             }
         }
@@ -4998,7 +4995,7 @@ s32 func_80033DF4(void) {
             s32 mask;
 
             mask = 0x20;
-            if (D_8008D9EC[D_8008D538[(s8)D_8010277C]] != 0) {
+            if (D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]] != 0) {
                 mask = 0x10000;
             }
             flags = &D_80106A50;
@@ -5013,7 +5010,7 @@ s32 func_80033DF4(void) {
             s32 mask;
 
             mask = 0x1000000;
-            if (D_8008D9EC[D_8008D538[(s8)D_8010277C]] != 0) {
+            if (D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]] != 0) {
                 mask = 0x4000000;
             }
             flags = &D_80106A50;
@@ -5036,13 +5033,13 @@ s32 func_80033DF4(void) {
         D_800A376B = 0;
         entry = table[0];
         D_800A384C = entry;
-        row = D_8008D9EC[D_8008D538[(s8)D_8010277C]] == 0;
+        row = D_8008D9EC[D_8008D538[(s8)D_8010277C.unk_0[0]]] == 0;
         entry &= 0xFF;
         D_800A38DE = ranks[row][entry];
         D_800A38EC = table[1];
         D_800A38ED = table[2];
         D_800A38EE = table[3];
-        D_8010277D = moves[row][entry];
+        D_8010277C.unk_0[1] = moves[row][entry];
         return 1;
     }
 }
@@ -5180,14 +5177,14 @@ loop:
             v0 = v0 << 1;
             v0 = v0 + (s32)a1;
             v0 = *((u8 *)v0 + v1);
-            *((u8 *)&D_8010277C + v1) = v0;
+            D_8010277C.unk_0[v1] = v0;
         }
         {
             s32 v0 = D_800A3874;
             v0 = v0 << 1;
             v0 = v0 + (s32)a0;
             v0 = *((u8 *)v0 + v1);
-            *((u8 *)&D_8010277E + v1) = v0;
+            D_8010277C.unk_2[v1] = v0;
         }
         v1++;
         if (v1 < 2) goto loop;
@@ -5237,23 +5234,23 @@ void func_800344B4(void) {
         goto skip_clear;
 
     case 0:
-        func_8003B20C(D_8008D538[(s8)D_8010277C]);
-        D_8010277D = 0;
+        func_8003B20C(D_8008D538[(s8)D_8010277C.unk_0[0]]);
+        D_8010277C.unk_0[1] = 0;
         func_8003B5A4();
         func_8005509C(1);
         goto skip_clear;
 
     case 1:
-        D_80102781 = 1;
+        D_8010277C.unk_4[1] = 1;
         func_800338CC();
         D_800A3768 = 1;
         func_80033BC0();
         goto skip_clear;
 
     case 3:
-        D_80102781 = 1;
-        D_8010277F = 0;
-        D_8010277E = 0;
+        D_8010277C.unk_4[1] = 1;
+        D_8010277C.unk_2[1] = 0;
+        D_8010277C.unk_2[0] = 0;
         D_800A38E2 = 0;
         D_800A38E0 = 0;
         D_800A3858 = 0;
@@ -5283,16 +5280,16 @@ void func_800344B4(void) {
                 s32 da = (v1 != 0) ? 0x24 : 0x23;
                 D_800A36A4 = da;
             }
-            D_80102781 = 1;
+            D_8010277C.unk_4[1] = 1;
             if (v1 != 0) {
                 break;
             }
         }
         {
-            u8 idx = D_8008D538[(s8)D_8010277C];
+            u8 idx = D_8008D538[(s8)D_8010277C.unk_0[0]];
             u8 val = D_8008D9EC[idx];
             s32 tmp = (val != 0) ? 0x0E : 0x1D;
-            D_8010277D = tmp;
+            D_8010277C.unk_0[1] = tmp;
         }
         break;
 
@@ -5304,7 +5301,7 @@ void func_800344B4(void) {
     D_800A3834 = 0;
 
 skip_clear:
-    if (D_80102781 != 0) {
+    if ((s8)D_8010277C.unk_4[1] != 0) {
         func_8005509C(1);
     }
 }
@@ -5470,8 +5467,8 @@ void func_8003504C(void) {
         }
         tmp = s[1];
         s += 10;
-        (&D_80102780)[i] = 0;
-        (&D_8010277E)[i] = tmp;
+        D_8010277C.unk_4[i] = 0;
+        D_8010277C.unk_2[i] = tmp;
         i++;
     } while (i < 2);
 

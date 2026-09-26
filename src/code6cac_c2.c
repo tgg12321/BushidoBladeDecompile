@@ -51,8 +51,6 @@ extern u32 D_800A3D30;
 
 extern s32 D_800A3894;
 
-extern s8 D_8010277D;
-extern u8 D_8010277F;
 
 extern s32 D_800A3368;
 extern u8 D_800A4750[];
@@ -222,7 +220,7 @@ void func_8003B9D0(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
     if (((u8 *)D_800A3878)[3] & 0x40) func_8004659C(-1);
-    if (D_8010277D == 0xE || D_8010277D == 0x1D) {
+    if ((s8)D_8010277C.unk_0[1] == 0xE || (s8)D_8010277C.unk_0[1] == 0x1D) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }
     func_8001DBE4();
@@ -410,27 +408,27 @@ void func_8003C040(void) {
     }
     {
         if (D_800A38A4 == 6) {
-            D_8010277C = 8;
-            D_8010277E = 6;
+            D_8010277C.unk_0[0] = 8;
+            D_8010277C.unk_2[0] = 6;
             a0 = 0;
             goto after_dispatch;
         }
         if (D_800A38A4 == 7) {
-            D_8010277C = 0x16;
-            D_8010277E = 7;
+            D_8010277C.unk_0[0] = 0x16;
+            D_8010277C.unk_2[0] = 7;
             a0 = 0;
             goto after_dispatch;
         }
         if (D_800A38A4 == 8) {
             a0 = 0;
-            D_8010277C = 0x1E;
+            D_8010277C.unk_0[0] = 0x1E;
             goto write_e_zero;
         }
         if (D_800A38A4 == 9) {
             a0 = 0;
-            D_8010277C = 0x20;
+            D_8010277C.unk_0[0] = 0x20;
         write_e_zero:
-            D_8010277E = 0;
+            D_8010277C.unk_2[0] = 0;
 
         after_dispatch:
             func_8003AF40(a0);
@@ -455,9 +453,9 @@ void func_8003C040(void) {
                 goto skip_copy;
             }
         do_copy:
-            D_8010277C = D_8010277D;
+            D_8010277C.unk_0[0] = D_8010277C.unk_0[1];
 
-            D_8010277E = D_8010277F;
+            D_8010277C.unk_2[0] = D_8010277C.unk_2[1];
             func_8003AF40(0);
             func_8003B10C(0);
         }

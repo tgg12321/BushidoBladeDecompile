@@ -98,7 +98,7 @@ extern u8 D_8008E338;
 extern u16 D_8008E3C0;
 extern u8 D_8008E5A8[];
 extern u8 D_8008E5CC[][8];         /* [unk_0A][unk_0E] of g_practice_menu_table */
-extern u8 D_8008E6A4[][6];         /* [unk_0A][unk_0E], alternate lesson table */
+extern u8 D_8008E6A4[][6];         /* [unk_0A][unk_0E] of g_practice_menu_table */
 extern u8 D_8008E748;
 extern u8 D_8008E75C;
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries (types 2..6);
@@ -152,6 +152,7 @@ extern s32 D_80090604;
 extern s16 D_80090608;
 extern s16 D_800906A4;
 extern u16 D_80094C68[];
+extern u8 D_800A3100[][4];         /* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
 extern s16 D_800A310C;
 extern s32 D_800A3134;
 extern s32 D_800A3140;
@@ -291,6 +292,7 @@ extern u8 D_800A38EE;
 extern s32 D_800A38F0;
 extern s32 D_800A38F4;
 extern u8 D_800A38F8;
+extern u16 D_800A3904;
 extern u8 D_800A3906;
 extern u8 D_800A3907;
 extern u8 D_800A390C;
@@ -531,9 +533,14 @@ extern s32 D_80102768;
 extern s32 D_80102770;
 extern u16 D_80102778[2];
 extern s16 D_8010277A;
-extern u8 D_8010277C;
-extern u8 D_8010277E;
-extern u8 D_80102780;
+/* Three per-player byte pairs at 0x8010277C ([0] = P1, [1] = P2).
+ * func_8001DCB0 and func_8003AF40 index each pair by player. */
+typedef struct {
+    u8 unk_0[2];
+    u8 unk_2[2];
+    u8 unk_4[2];
+} PlayerBytePairs;
+extern PlayerBytePairs D_8010277C;
 extern u8 D_80102782[];
 extern u8 D_80102783;
 extern u8 D_80102784;
