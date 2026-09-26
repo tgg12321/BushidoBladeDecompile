@@ -23,6 +23,64 @@ ACCEPTED by the same reviewer (do not re-litigate): the gte_stsz island + canoni
 goto into the sibling case tails, SetTransMatrix((u8 *)tv - 0x14), the `rot` local, the scratch-word
 tag link; no pins/barriers/FAKEs.
 
+## Session 2 (2026-09-26, slotC2) — split-symbol floor PROVEN, prong-(a) search exhausted
+Harness: tmp/func_800620B8/s2/dump.sh (splice variant, instrumented cc1 dumps), alloc.sh
+(BB2_ALLOC_DEBUG priorities), psx.sh (original cc1psx, calibration only); copies of the scanner
+and the key numbers are in this ledger (scan_base.py).
+
+**Proof that no ordinary split-symbol body reaches the target (not a score argument).**
+1. Target facts (asm/funcs/func_800620B8.s): `$fp` = 0x8009BA00 is set in the loop PRE-HEADER (after
+   the entry `beqz`, next to the loop.c-hoisted `addiu $s0,$s1,0x25`) and used exactly ONCE in the
+   loop (`addu $a0,$a0,$fp`, 0x800622AC). sv (base+0x34) and flag (base+0x3C) are spilled to
+   0x10/0x18(sp). BA30/50/58 are rebuilt in `$t0` (the reload register) at each use.
+2. A pre-header placement can only come from loop.c (a user statement before the `for` lands before
+   the entry test; a3 variant, 50). loop.c hoists a constant load only if 27*savings*life >= 348
+   (loop has calls: threshold 1+n_non_fixed_regs; life 10 not desirable, life 47 moved).
+3. global.c priority = floor_log2(nrefs)*nrefs/live_length, refs weighted by loop depth (1 outside,
+   2 inside), live_length DOUBLED for REG_EQUIV constants (local-alloc.c:1063). sv and flag: nrefs 3,
+   live 339 -> 88. A hoisted BA00 pseudo with its one in-loop use: nrefs 1+2 = 3, live ~666 -> 45:
+   it loses the ninth callee-saved register to sv/flag (a3, a4 dumps). It wins ($fp) only with
+   nrefs >= 4. Model check (tmp .../m1_modelcheck_pun.c, a pun, NOT landable): a second in-loop use
+   gives nrefs 5 -> pri 150 -> `$fp`, sv/flag spilled, exactly as predicted.
+4. In the merged build the extra refs are the pre-header sets `(plus reg_BA00 48/80/88)` that combine
+   forms from cse's related-value constants (BA00 nrefs 6, pri 180); those three pseudos lose
+   allocation and reload rematerialises them as absolute constants in `$t0` — the target's bytes.
+   The target has ONE in-loop `$fp` use, so its extra refs cannot be in-loop uses: they must be
+   pre-header references, i.e. other hoisted pseudos computed from the BA00 register. With four
+   distinct symbols cse cannot relate the addresses, so no such reference exists (a duplicated
+   in-loop use would show a second `$fp` use the target does not have). No ordinary split-symbol
+   body exists; the floor for split symbols is structural, not a search gap.
+5. **Original compiler agrees** (tools/cc1psx_wrapper.sh, PsyQ GCC 2.7.2.SN.1, calibration only):
+   split symbols -> `$fp` = base+60 (flag), each table `la $2/$3,D_8009BAxx` separately (the 47 shape);
+   one 12-record table -> `la $fp,D_8009BA00` ... `addu $4,$4,$fp`, `la $8,D_8009BA00+80`,
+   `la $8,D_8009BA00+48`, `la $8,D_8009BA00+88` — the target's registers exactly.
+
+Split-symbol variants this session: a1 alias set in sel_a before `%6` 47 (life 10, not hoisted);
+a3 function-scope alias before the `for` 50 (not allocated, remat); a4 alias at loop top 50 (hoisted
+life 47, pri 45, loses to sv); a5 alias per tail for both frame tables 47.
+
+**Prong-(a) evidence search (all negative, 2026-09-26).**
+- scan_base.py over the ORIGINAL main EXE (0x80010000..0x8008D080) and MOVOVL.EXE: tracks every
+  lui/addiu pointer into 0x8009B7F0..0x8009BA5F and every addiu/load/store offset off it. 40 address
+  formations, every one to a distinct splat label; ONE derived offset (0x800606D0, D_8009B840+8,
+  inside its own label); zero cross-label offsets; zero data words pointing into the region; nothing
+  in the overlay.
+- Every indexed table in the region is indexed over EXACTLY its own label extent: B8E8 by frame<7
+  (func_800646E8), B920 by `&3` (func_80063E10 via func_80063B34 `(>>17)&3`), B998/B9B8 by a value
+  clamped to <=3 (func_800678A8), BA00 by `%6`, BA30 by `&3`. The alternates (B940..B9F0) are only
+  ever loaded as single absolute records in branch arms. No sibling reaches across a label.
+- No census row / symbol-config row for BA00/BA30/BA50/BA58 (docs/, include/, *.txt). No symbol or
+  map file on the disc. Only this function references the four labels.
+- Data bounds: 0x8009BA60 begins a u8 sequence (different type) — the object ends at 0x8009BA5F.
+  The start is not fixed by any byte: 0x8009B9F8 is a same-shape record referenced by nothing.
+Conclusion: the only evidence that 0x8009BA00..0x8009BA5F is one object is this function's own
+register assignment (items 1-5 above). That is the owner question (borderline.md 2026-09-26 + the
+session-2 addendum): it is not a score, but it is derived from this function.
+
+Context-bundle note: the dossier flags D_8009BD44 as a naming-alias "plus_1" piece of
+g_menu_screen_live_byte_c (0x8009BD43). The dlabel is a 5-word object and func_800646E8 landed with
+`extern s32 D_8009BD44[]` (layer-2 PASS, 119ff2237); candidate.c uses the same form.
+
 ## Why split symbols cannot reach the target (mechanism, 2026-09-26 loop dumps)
 The target keeps 0x8009BA00 in callee-saved `$fp` (a loop.c movable placed after the entry test) and
 rebuilds BA30/50/58 in `$t0` (reload rematerialising hoisted-but-unallocated constant pseudos). In the

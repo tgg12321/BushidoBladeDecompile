@@ -16,19 +16,27 @@ Ruled out (measured, see evidence.md table for the final-chassis receipts):
 FAILED at layer-2 (2026-09-26): the 12-record `D_8009BA00[12][4]` merge (prong (a)); body in
 rejected/table-merge-BA00x12-0.c. See evidence.md.
 
+Session 2 (2026-09-26, slotC2) — ruled out, with proof (evidence.md "Session 2"):
+- ANY ordinary split-symbol body: the target's one-use `$fp` = BA00 needs weighted nrefs >= 4, which
+  only pre-header `(plus reg_BA00 N)` pseudos provide (one object). Measured aliases: sel_a alias 47,
+  pre-loop alias 50, loop-top alias 50 (hoisted, pri 45 < sv 88), per-tail aliases 47. The original
+  cc1psx reproduces both sides (split -> 47 shape; one table -> target's `$fp`/`$t0` exactly).
+- Permuter on split symbols: NOT run — dominated by the proof (any find must add a second in-loop BA00
+  reference, which the target's bytes rule out, or be a pun). Run it only if the proof is refuted.
+- Independent prong-(a) evidence: binary-wide base+offset scan (main EXE + MOVOVL) negative; every
+  indexed table in the region is indexed over exactly its own label; no census/config row; no data
+  pointers; no symbol files. Only func_800620B8 references BA00/BA30/BA50/BA58.
+
 Frontier:
-1. Owner answer to the 2026-09-26 borderline.md policy question (codegen-relation evidence for an
-   aggregate merge). If YES: re-land rejected/table-merge-BA00x12-0.c with the corrected
-   declaration comment (record [11] = frame 9's uv; BA30/50/58 rebuilt as absolute constants).
-   Prefer the file's existing record type TexRec {clut_x, clut_y, u, v} (src/text1b.c:6448, used by
-   the matched drawer that indexes D_8009B8E8[0..6]) over u16[4]. Each other drawer has its own
-   bounded frame table, which argues against a region-wide merge.
-2. Independent prong-(a) evidence for ONE object covering 0x8009BA00..0x8009BA5F (or a wider
-   same-shape run, e.g. from D_8009B8E8 / D_8009B920 to 0x8009BA5F): a function (any TU, incl. still
-   INCLUDE_ASM ones) that forms one base and reaches records across the label boundaries by offset or
-   stride, or a data word pointing into the run. Searched 2026-09-26: no data pointers; func_80063E10
-   indexes D_8009B920 records 0..3 only; func_8006295C/func_80063084/func_80065800 use absolute
-   per-record labels. Not yet searched: MOVOVL / overlay, the other text1b effect drawers' indexing
-   of the B8xx records.
-3. Any split-symbol spelling that relates the four addresses (would need one C object; the
-   cross-symbol `(u8 *)D_8009BA00 + 0x50` pun is F4-refused, so none is known).
+1. OWNER ANSWER to the borderline.md 2026-09-26 question (+ session-2 addendum). The function is
+   policy-stuck, not technique-stuck: 0/501 exists (rejected/table-merge-BA00x12-0.c, oracle-proven)
+   and the split-symbol 47 is structural. If YES: re-land the merge as a record struct in
+   include/game.h (TexRec-shaped {clut_x, clut_y, u, v}; TexRec is currently TU-local at
+   src/text1b.c ~6448, after this function — declare the header type or move it), 12 records
+   0x8009BA00..0x8009BA5F (end fixed by the u8 table at 0x8009BA60), comment citing the register
+   evidence; record [11] = frame 9's uv; BA30/50/58 are rebuilt as absolute constants by reload.
+   Prong (c): the four dlabels are referenced only by asm/funcs/func_800620B8.s -> nothing to keep.
+2. If NO: nothing in the current binary can supply prong (a); the function waits for a ruling change
+   or new evidence (e.g. another build of the game with symbols).
+
+(Session-1 frontier items 2-3 are closed by the session-2 search and proof above.)
