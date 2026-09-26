@@ -49,3 +49,20 @@ Owner chose: **"Allow with same proof (Recommended)"** — option text: "Same du
 ## Q8 — -G8 screening scope
 Question: "The -G8 screening rule says every small variable a -G8 file mentions must be on the small-data list. func_80034708's file mentions one 4-byte counter (D_800A37B8) that can't go on that list — other functions access it the normal way — and its code is identical at -G0 and -G8. The already-approved text1a -G8 files have 29 such variables. Should screening only require listing the variables whose compiled code actually changes under -G8?"
 Owner chose: **"Only if code changes (Recommended)"** — option text: "A small variable must be listed only when -G8 changes its compiled instructions; proven by building it both ways (bytes identical). Unblocks func_80034708; matches existing text1a practice."
+
+<!-- Batch 4: appended verbatim from tmp/orch/owner_rulings_2026-09-26d.md (line endings normalized to LF; blank separator line added). -->
+# Owner rulings 2026-09-26 (fourth batch, via AskUserQuestion) — VERBATIM RECORD
+Context: research report memory/grind/func_80036140/research-common-gp.md (commit 2974e2e6b): Sony ASPSX 2.34 run under dosemu2 shows tentative (.comm) definitions get gp only for the first byte, never sym+k; census of 2,271 gp accesses in the shipped binary, zero exceptions; proposed gated list maspsx_comm_syms.txt (--comm-syms); all 34 src objects byte-identical with it.
+
+## Q9 — maspsx COMMON (tentative-definition) gated list
+Question: "Add a small per-function list telling our assembler shim which variables were plain 'declared, no initial value' in the original source (so it stops using the gp register for their byte offsets) — proven by Sony's own ASPSX assembler reproducing the shipped bytes, zero exceptions across the binary, and all current files byte-identical with it?"
+Owner chose: **"Allow, gated list (Recommended)"** — option text: "maspsx_comm_syms.txt naming only functions whose listed variables are proven by Sony's assembler; full oracle + layer-2 before use."
+
+## Q10 — func_80036140's -G8 neighbour func_80036940
+Question: "func_80036140 shares a gp-read variable with its not-yet-decompiled neighbour func_80036940 (currently rotated), so the original compiled both at -G8. How to proceed?"
+Owner chose: **"Do 36940 first, then both (Recommended)"** — option text: "Bring func_80036940 back from rotation now and decompile it, then move both into one -G8 file together. No rule change."
+
+## Q11 — func_8002DE20 GTE blocks: maspsx `($12)` parser fix + per-function DMPSX-word row
+Context: slotE's banked ledger memory/grind/func_8002DE20/ (commit 72c3b4d41): islands written as separate verbatim inline_o.h macro statements; two residual deviations: D1 `0($12)` for `($12)` (6 statements; forced by maspsx's load/store parser tools/maspsx/maspsx/__init__.py:182-194 requiring a non-empty offset; a 2-line parser fix makes the verbatim form build to identical .text), D2 `.word 0x4A486012` for `.word 0x0000013f` (3 statements; the DMPSX post-pass substitution, mapping backed by the 2026-09-24 Extension).
+Question: "For func_8002DE20's GTE blocks: fix our assembler shim so it accepts the header's exact `($12)` spelling (2-line parser fix, all builds byte-identical), and grant a per-function row for the one remaining difference — the 3 command words Sony's DMPSX tool would have patched in?"
+Owner chose: **"Fix parser + grant row (Recommended)"** — option text: "Blocks become header-exact except the DMPSX-patched word; per-function owner_cluster_grants row for that only. Plus the engine recognizer update. Layer-2 reviews everything."

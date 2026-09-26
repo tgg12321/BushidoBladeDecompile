@@ -232,9 +232,11 @@ pipeline stage is added.
 
 **What this does not decide.** func_80036140's other build-model change, the
 maspsx COMMON-no-gp model (a maspsx behaviour change under
-[[no-compiler-divergence]] item 2), is NOT decided; the owner left it for
-separate investigation. A `-G8` TU whose match depends on that model is not
-admitted by this ruling alone. This ruling does not reopen flag-hunting:
+[[no-compiler-divergence]] item 2), was not decided by this ruling. The owner
+ruled it later the same day (fourth batch) as a gated per-function list,
+`maspsx_comm_syms.txt`, with its own admission prongs in
+[[maspsx-gate-lists]]. A `-G8` TU whose match depends on that gate is
+admitted only when both rulings are met. This ruling does not reopen flag-hunting:
 the flag set stays frozen, and `-G8` is admitted only when every condition
 (i)-(vi) holds, including (iv-a), never by a measured score improvement. It
 pre-decides no landing: func_80034708's split

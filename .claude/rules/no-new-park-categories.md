@@ -404,9 +404,11 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     build-model question. Of its two parts, per-file `-G8` was ruled
     separately later the same day (owner ruling 2026-09-26, second batch,
     [[compiler-flags-canonical]] § "Per-file -G8 by proof", its own prongs
-    (i)-(vi)). The maspsx COMMON model remains undecided: the owner left it
-    for separate investigation, and a merge that depends on it is not
-    admitted by this amendment. Record:
+    (i)-(vi)). The maspsx COMMON model was ruled in the fourth batch the
+    same day, as the gated list `maspsx_comm_syms.txt` with its own prongs
+    (a)-(d) in [[maspsx-gate-lists]]. A merge that depends on that gate is
+    admitted only when its rows meet those prongs; this amendment admits no
+    gate row. Record:
     docs/grind/decisions.md 2026-09-26 OWNER RULING — aggregate-merge prong
     (a): compiler-necessity evidence, minimal span.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)

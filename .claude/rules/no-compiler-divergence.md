@@ -32,7 +32,15 @@ There is NO compiler-modification path on this project.
 2. **Patching `tools/maspsx/`** beyond bug-fix scope. The remaining
    per-function gates (`maspsx_prefill_label_funcs.txt`, `expand_lb_funcs.txt`,
    `expand_dest_funcs.txt`) are the established mechanism for assembler-fidelity
-   gaps; new GLOBAL behaviour changes require owner policy sign-off. Bug-fix
+   gaps; new GLOBAL behaviour changes require owner policy sign-off. (The
+   owner signed off on one new per-function gate on 2026-09-26, fourth batch:
+   `maspsx_comm_syms.txt`, admitted only under its prongs in
+   [[maspsx-gate-lists]].) The same batch authorized a bug-fix-scope
+   parser fix: maspsx's load/store parser accepts an empty-offset `($REG)`
+   operand, as Sony's ASPSX 2.34 does (calibration check, commit 4ef521cdd,
+   `memory/grind/func_8002DE20/aspsx-paren-check/`), provided every object
+   builds byte-identical with and without it (inline-asm-policy.md § "Per-function grant:
+   func_8002DE20"). Bug-fix
    scope IS permitted and has been exercised: on 2026-09-14 the owner signed off
    on globalizing the `.L`-label load-delay arm after a missing `$at`/`$gp`
    expansion guard was found in it, which retired `maspsx_label_nop_funcs.txt`

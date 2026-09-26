@@ -583,6 +583,79 @@ does not make. Until then the class applies on the manual path only. Record:
 docs/grind/decisions.md 2026-09-26 OWNER RULING — inline_o.h GTE macro
 blocks as a class.
 
+**Second batch (owner, 2026-09-26): prong (C) kept strict.** The owner chose
+"Keep strict wording" ("Only exact character copies; func_8002DE20's blocks
+need a per-function grant."). Prong (C) stands exactly as written above.
+
+### Per-function grant: func_8002DE20 (owner, 2026-09-26, fourth batch)
+
+**Question and answer** (record: docs/grind/owner-rulings-2026-09-26.md,
+batch 4, Q11). func_8002DE20's banked islands (commit 72c3b4d41) are written as
+separate verbatim inline_o.h macro statements with two tool-forced deviations:
+D1, `0($12)` for the header's `($12)` in 6 statements, forced by maspsx's
+load/store parser (`tools/maspsx/maspsx/__init__.py` `parse_load_or_store`,
+which requires a non-empty offset); and D2, `.word 0x4A486012` for the
+header's `.word 0x0000013f` in 3 statements, the DMPSX post-pass substitution.
+The question put to the owner, verbatim: "For func_8002DE20's GTE blocks: fix
+our assembler shim so it accepts the header's exact `($12)` spelling (2-line
+parser fix, all builds byte-identical), and grant a per-function row for the
+one remaining difference — the 3 command words Sony's DMPSX tool would have
+patched in?" Owner (Trenton) chose, verbatim: **"Fix parser + grant row
+(Recommended)"**, whose text is: "Blocks become header-exact except the
+DMPSX-patched word; per-function owner_cluster_grants row for that only. Plus
+the engine recognizer update. Layer-2 reviews everything."
+
+**This is a named per-function grant, not a class widening.** The class's
+prong (C) ("No respelling of any kind") is unchanged for every other function.
+No other function may cite this grant; another function with a placeholder
+word needs its own owner ruling. What follows is the author's narrowing.
+
+1. **The maspsx parser fix (a tool-fidelity fix).** maspsx's load/store parser
+   is fixed to accept a memory operand with an empty offset, `($REG)`, exactly
+   as the pinned header writes it. Sony's ASPSX 2.34 accepts the bare form:
+   a calibration run through the real assembler (commit 4ef521cdd,
+   `memory/grind/func_8002DE20/aspsx-paren-check/`) assembles `($12)` with 0
+   errors to the same words as `0($12)` (c9800000, e9990000, c9810004).
+   maspsx rejecting it is a gap in our shim, not a property of the original
+   tools. The fix is bug-fix scope under [[no-compiler-divergence]] item 2 and must be BYTE-NEUTRAL: built
+   once with the stock maspsx and once with the fixed one, using the
+   Makefile's exact per-file recipe, every `src/*.c` object is byte-identical,
+   and `verify-oracle --rebuild` and `engine test` are green. With the fix in
+   place, func_8002DE20's islands spell every `($12)` exactly as the header
+   does; D1 no longer exists, so no `0($12)` statement is admitted by this
+   grant. The § Scorer amendment's scoring equivalence is unaffected.
+2. **The owner-row scope: the DMPSX word only.** func_8002DE20's
+   `tools/grinder/owner_cluster_grants.txt` row admits exactly its three
+   `gte_rtv0()` units, each identical to the pinned header's expansion except
+   that the `.word 0x0000013f` operand is `.word 0x4A486012`. Each of those
+   three substitutions meets prongs (A)-(C) of § Extension (owner, 2026-09-24),
+   whose word mapping (MVMVA sf=1, mx=rotation, v=V0, cv=none, lm=0) and
+   independent sources are recorded there, and the word is byte-identical to
+   the instruction at that position in `asm/funcs/func_8002DE20.s`. The row
+   admits nothing else.
+3. **Every other island is class-exact.** Every other island in the body is a
+   qualifying unit under § Owner ruling 2026-09-26 prongs (A), (B) and (D):
+   statement for statement and character for character (whitespace only)
+   against the pinned `PINNED` excerpts. The engine recognizer update the
+   owner approved (the pinned `engine/gtemacro.py` excerpts for the macros the
+   body uses, and the Extension-bounded placeholder substitution that the
+   2026-09-25 scorer ruling already allows for scoring) is an `engine:` commit
+   with `engine test` positive and negative cases and its own layer-2.
+4. **Everything else stands.** Conditions 2-5 of § Owner ruling 2026-09-23
+   apply: inline in `src/*.c`, sandbox 0 and full-build SHA1 == oracle, region
+   hashes in `tools/canonical_asm_regions.json`, the `inline_asm_canonical.txt`
+   row in its own `auth:` commit with the Pure-C attempts blocks. A fresh
+   layer-2 `cheat-reviewer` reviews the parser fix, the recognizer update, the
+   row and the body. The body's C, including its shared cross-product
+   variables, is judged under [[ordinary-c-judge-decidable]] (Ruling 11) on
+   its own merits.
+
+**Not in the rules commit.** The owner_cluster_grants.txt row, the maspsx
+parser fix and the engine recognizer update land with the function, each
+under the terms above, not in the commit that records this ruling. Record:
+docs/grind/decisions.md 2026-09-26 OWNER RULING — func_8002DE20 per-function
+GTE grant.
+
 # Why this distinction matters
 
 For a long time the BB2 project lumped canonical and cheat asm together as

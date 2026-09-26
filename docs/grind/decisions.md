@@ -29799,3 +29799,72 @@ side-by-side access listing. Any differing access means the extern must be liste
 as before. The file-scope __asm__ half of the screening rule and the rest of the Per-file -G8
 ruling are unchanged; the approved text1a files are not re-screened. func_80034708's landing is
 judged fresh against it.
+
+## 2026-09-26 — OWNER RULING — maspsx COMMON gate (`maspsx_comm_syms.txt`) (`.claude/rules/maspsx-gate-lists.md`)
+
+Fourth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 4). Filed
+question: borderline.md 2026-09-26 func_80036140, item (a). Evidence:
+memory/grind/func_80036140/research-common-gp.md (2974e2e6b): Sony ASPSX 2.34 run under dosemu2
+gives a tentative (.comm) definition gp for its first byte only, never sym+k; census of 2,271 gp
+accesses in the shipped binary, zero exceptions; all 34 src objects byte-identical with the
+proposed list. Question, verbatim: "Add a small per-function list telling our assembler shim which
+variables were plain 'declared, no initial value' in the original source (so it stops using the gp
+register for their byte offsets) — proven by Sony's own ASPSX assembler reproducing the shipped
+bytes, zero exceptions across the binary, and all current files byte-identical with it?" Owner
+(Trenton) chose, verbatim: "Allow, gated list (Recommended)" — "maspsx_comm_syms.txt naming only
+functions whose listed variables are proven by Sony's assembler; full oracle + layer-2 before use."
+
+**Ruling (full text in the rule file, § "`maspsx_comm_syms.txt`"; the author's narrowing).** A
+fidelity-class, per-function gate, never global. A row (`func: sym, sym`) is admitted only when:
+(a) for that function and symbol the ledger banks the shipped signature (base gp, a direct
+lui/%lo sym+N), Sony's ASPSX 2.34 on cc1psx -G8 output reproducing the shipped words with the
+symbol as a tentative definition, and the extern / static / initialized / -G0 variants differing
+(calibration use only, never a build path); (b) the gate only moves sym+N (N != 0) operands of
+listed symbols in listed functions to maspsx's ordinary non-gp form, nothing else; (c) the maspsx
+change and first rows land with verify-oracle --rebuild, engine test green, every object proven
+byte-identical built both ways, the flag on MASPSX_FLAGS and MASPSX_FLAGS_GP mirrored in
+engine/buildconfig.py, and full gate-list registration including both halves of the
+add-scope-allow denylist pair; (d) a fresh layer-2 before use, and on every row addition. It admits
+no C construct and pre-decides no landing. The maspsx code is not part of the rules commit.
+Pointers updated in no-compiler-divergence.md, compiler-flags-canonical.md and
+no-new-park-categories.md, which had recorded the COMMON model as undecided.
+
+## 2026-09-26 — OWNER RULING — func_80036140's -G8 neighbour func_80036940: do it first (no rule change)
+
+Fourth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 4).
+Question, verbatim: "func_80036140 shares a gp-read variable with its not-yet-decompiled neighbour
+func_80036940 (currently rotated), so the original compiled both at -G8. How to proceed?" Owner
+(Trenton) chose, verbatim: "Do 36940 first, then both (Recommended)" — "Bring func_80036940 back
+from rotation now and decompile it, then move both into one -G8 file together. No rule change."
+
+**Ruling.** No rule change. func_80036940 returns from rotation (queue unpark c4e2f96c3) and is
+worked first; func_80036140 lands afterwards with it in one -G8 file, under the Per-file -G8
+ruling (compiler-flags-canonical.md) as written. Neither landing is pre-decided.
+
+## 2026-09-26 — OWNER RULING — func_8002DE20 per-function GTE grant (`.claude/rules/inline-asm-policy.md`)
+
+Fourth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 4, Q11).
+func_8002DE20's banked islands (72c3b4d41) are separate verbatim inline_o.h statements with two
+tool-forced deviations: D1 `0($12)` for `($12)` (6 statements; maspsx's load/store parser requires
+a non-empty offset) and D2 `.word 0x4A486012` for `.word 0x0000013f` (3 statements; the DMPSX
+post-pass word). Question, verbatim: "For func_8002DE20's GTE blocks: fix our assembler shim so it
+accepts the header's exact `($12)` spelling (2-line parser fix, all builds byte-identical), and
+grant a per-function row for the one remaining difference — the 3 command words Sony's DMPSX tool
+would have patched in?" Owner (Trenton) chose, verbatim: "Fix parser + grant row (Recommended)" —
+"Blocks become header-exact except the DMPSX-patched word; per-function owner_cluster_grants row
+for that only. Plus the engine recognizer update. Layer-2 reviews everything."
+
+**Ruling (full text in the rule file, § "Per-function grant: func_8002DE20"; the author's
+narrowing).** A named per-function grant, not a class widening: the inline_o.h class's prong (C)
+"no respelling" stands unchanged for every other function. (1) maspsx's load/store parser accepts
+an empty-offset `($REG)` operand, a bug-fix-scope tool-fidelity fix (Sony's ASPSX 2.34 accepts the
+bare form, 0 errors, same words as `0($12)`: calibration check, commit 4ef521cdd,
+memory/grind/func_8002DE20/aspsx-paren-check/); it must be byte-neutral: every src object identical built
+both ways, verify-oracle --rebuild and engine test green. With it, D1 disappears and no `0($12)`
+statement is admitted. (2) func_8002DE20's owner_cluster_grants.txt row admits only its three
+gte_rtv0 units, identical to the header except `.word 0x4A486012` for `.word 0x0000013f`, each
+meeting the 2026-09-24 Extension prongs (A)-(C) and byte-identical to the original. (3) Every other
+island is class-exact; the engine recognizer update is an engine: commit with engine test cases.
+(4) Conditions 2-5 of the 2026-09-23 ruling and a fresh layer-2 on the parser fix, the recognizer
+update, the row and the body. The row, the parser fix and the recognizer update land with the
+function, not in the rules commit. The body's C is judged on its own merits (Ruling 11).
