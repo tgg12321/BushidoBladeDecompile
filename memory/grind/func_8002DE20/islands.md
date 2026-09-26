@@ -138,3 +138,18 @@ them; no gtemac.h macro is exactly `ldv0; rtv0` (grep of the pinned gtemac.h).
 ## Owner question this produces (for the orchestrator)
 A per-function owner_cluster_grants.txt row admitting, for func_8002DE20 only, deviations D1 and
 D2 above (nothing else), OR: D2 by row + D1 removed by a maspsx empty-offset fidelity fix.
+
+## 2026-09-26 owner Q11 — landing prep (scratch; nothing landed yet)
+Owner approved: (1) the maspsx empty-offset parser fix, which makes D1 go away: candidate.c now
+carries the header's `($12)` verbatim; (2) a per-function owner_cluster_grants.txt row for D2
+only (the three `.word 0x4A486012` statements); (3) the engine recognizer update.
+Prepared in tmp/func_8002DE20/landing/: maspsx_init.diff (+ maspsx_fix/tests/test_empty_offset.py),
+gtemacro.diff, test_engine.diff, grant_row.txt, iac_row.txt, regions_entry.json (30 hashes,
+drafted on the landing splice), msg_{maspsx,engine,auth,match}.txt.
+- maspsx fix: byte-neutral over all 36 src stems, both the maspsx text output and the .o
+  (tmp/func_8002DE20/maspsx_neutral.py). Unit tests: the same 2 pre-existing failures,
+  and the 3 new tests pass.
+- engine: 801 passed / 0 failed (771 stock). All 30 island statements of candidate.c are
+  recognized (ldv0 x2, rtv0 x2, stlvnl x2, ApplyRotMatrix x1).
+- Pure-C attempts for the auth body: islands removed 58 (477 insns); libgte ApplyRotMatrix
+  calls 219; inline_c.h-form islands 29 (the move $t4 preambles missing); verbatim 0.

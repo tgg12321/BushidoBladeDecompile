@@ -1,12 +1,11 @@
-/* func_8002DE20 - manual lane (slotE), 2026-09-26. Ordinary C plus nine GTE
- * islands, each the separate header statements of one PsyQ Run-time Library
- * Release 4.3 inline_o.h macro (engine/gtemacro.py provenance: sha256
- * 76f28032...c6e47d): gte_ldv0 :16-20, gte_rtv0 :426-430, gte_stlvnl :904-909.
- * Two deviations from the header text remain, both tool-forced (see
- * memory/grind/func_8002DE20/islands.md): `0($12)` for the header's `($12)`
- * (maspsx cannot parse an empty offset) and gte_rtv0's DMPSX placeholder
- * `.word 0x0000013f` carried as the post-DMPSX word 0x4A486012 (no DMPSX pass
- * in this build). cross_a/cross_b: Ruling 11 (see their declarations). */
+/* func_8002DE20 - manual lane (slotE), 2026-09-26. Ordinary C plus GTE islands,
+ * each the separate header statements of a PsyQ Run-time Library Release 4.3
+ * macro, character for character (engine/gtemacro.py PINNED): inline_o.h
+ * gte_ldv0 :16-20, gte_rtv0 :426-430, gte_stlvnl :904-909, and gtemac.h
+ * gte_ApplyRotMatrix :354-357. One deviation: gte_rtv0's DMPSX placeholder
+ * `.word 0x0000013f` is carried as the post-DMPSX word 0x4A486012 (no DMPSX pass
+ * in this build; owner-granted, tools/grinder/owner_cluster_grants.txt).
+ * cross_a / cross_b: Ruling 11 (see their declaration). */
 extern s32 D_800A314C;
 
 /* Layout of the object func_80029454 passes in, as far as this function uses it. */
@@ -56,9 +55,9 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     obj->unkF8.vx = p0[0] - obj->unk60[0];
     obj->unkF8.vy = p0[1] - obj->unk60[1];
     obj->unkF8.vz = p0[2] - obj->unk60[2];
-    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20; header `($12)` written `0($12)` (maspsx) */
+    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $0,0($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
     /* gte_rtv0(): inline_o.h 4.3 :426-430; post-DMPSX word 0x4A486012 for the
      * header's placeholder `.word 0x0000013f` (no DMPSX pass in this build) */
@@ -68,14 +67,14 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     obj->unkF8.vx = p1[0] - obj->unk60[0];
     obj->unkF8.vy = p1[1] - obj->unk60[1];
     obj->unkF8.vz = p1[2] - obj->unk60[2];
-    /* gte_stlvnl(&obj->unk118[0]): inline_o.h 4.3 :904-909; header `($12)` written `0($12)` (maspsx) */
+    /* gte_stlvnl(&obj->unk118[0]): inline_o.h 4.3 :904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[0]):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $25,0($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20; header `($12)` written `0($12)` (maspsx) */
+    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $0,0($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
     /* gte_rtv0(): inline_o.h 4.3 :426-430; post-DMPSX word 0x4A486012 for the
      * header's placeholder `.word 0x0000013f` (no DMPSX pass in this build) */
@@ -85,21 +84,21 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     obj->unkF8.vx = p2[0] - obj->unk60[0];
     obj->unkF8.vy = p2[1] - obj->unk60[1];
     obj->unkF8.vz = p2[2] - obj->unk60[2];
-    /* gte_stlvnl(&obj->unk118[1]): inline_o.h 4.3 :904-909; header `($12)` written `0($12)` (maspsx) */
+    /* gte_stlvnl(&obj->unk118[1]): inline_o.h 4.3 :904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[1]):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $25,0($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
     /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk118[2]): gtemac.h 4.3 :354-357,
-     * i.e. gte_ldv0 / gte_rtv0 / gte_stlvnl as above (same two deviations) */
+     * i.e. gte_ldv0 / gte_rtv0 / gte_stlvnl as above */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $0,0($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[2]):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $25,0($12)": : :"$12","$13","$14","$15","memory");
+    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 

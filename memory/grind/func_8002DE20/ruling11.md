@@ -7,12 +7,22 @@ record pointer; 8 vmNoiseOn only; 9 no struct-member consumer / no base+offset w
 public original). So Ruling 11 governs both, each on its own.
 
 ## Bodies
-- **reuse spelling** = memory/grind/func_8002DE20/candidate.c (sha256 bf84246240a994ac...), the
-  body this ledger commit banks. `sandbox --disable all --keep-cheat-asm` **0/506, 0 hunks**.
-  (Default strip: 10 — the GTE islands' `move`/`nop` statements are stripped until
-  engine/gtemacro.py pins these macros; see islands.md. Every row below keeps the islands
+- **Re-anchored 2026-09-26 (landing prep, owner Q11).** candidate.c now carries the header's
+  verbatim `($12)` in the six gte_ldv0 / gte_stlvnl statements (was `0($12)`), plus comment-only
+  edits. The C tokens are unchanged. The measurements below were taken on the `0($12)` text
+  (candidate sha256 bf84246240a994ac..., twin c30e799a215c9ff3...). The two texts are
+  byte-identical: the maspsx empty-offset fix emits the `($12)` line unchanged and GNU as
+  assembles it as `0($12)` (islands.md; the all-src proof in tmp/func_8002DE20/maspsx_neutral.py).
+  The (D)(1) dumps were RE-TAKEN on the new text: tags `final2` / `final2_pv`. Their .lreg
+  register lines (md5 3f8ae2d3... / 691c2de5...) and all twelve xor maps are identical to
+  `final` / `final_pv`, and ALLOCDBG is identical. The excerpts below therefore stand for both.
+- **reuse spelling** = memory/grind/func_8002DE20/candidate.c (current sha256 8c342831edbb1613...),
+  the landing body. `sandbox --disable all --keep-cheat-asm` **0/506, 0 hunks** (0($12) text).
+  (Default strip: 10 today — the islands' `move`/`nop` statements are stripped until the
+  engine: change pins these macros. With the scratch engine change every one of the 30 island
+  statements is recognized: tmp/func_8002DE20/recog.py. Every row below keeps the islands
   identical, so `--keep-cheat-asm` isolates the C question.)
-- **one-variable-per-value spelling** = r11/final_pv.c (sha256 c30e799a215c9ff3...), generated
+- **one-variable-per-value spelling** = r11/final_pv.c (current sha256 27d3e8539bcdf290...), generated
   by `python3 tools/gen_pv.py candidate.c r11/final_pv.c` (tools/ = copies of tmp/func_8002DE20/
   scripts). It differs from candidate.c ONLY in declarations and identifiers: the 23 shared
   values of cross_a/cross_b become `cross_aT` / `cross_bT` (T = test number), each declared at the
@@ -31,20 +41,20 @@ read can see two writes, so each write is its own value. `E x P` below = `E.vy*P
 as spelled (cross of edge E with point P relative to the edge start); c = (cx,cy), p1 = (x1,y1),
 p2 = (x2,y2), A/B = obj->unkA8/unkB8.
 
-| test T | lines | group | cross_a value aT | cross_b value bT |
+| test T | lines (candidate.c, verbatim-($12) text) | group | cross_a value aT | cross_b value bT |
 |---|---|---|---|---|
-| 1 | 163-165 | p1 inside | A x c | A x p1 |
-| 2 | 166-168 | | B x c | B x p1 |
-| 3 | 169-171 | | (B-A) x (c-A) | (B-A) x (p1-A) |
-| 4 | 177-179 | p2 inside | A x c | A x p2 |
-| 5 | 180-182 | | B x c | B x p2 |
-| 6 | 183-185 | | (B-A) x (c-A) | (B-A) x (p2-A) |
-| 7 | 191-193 | edge 0-A | A x p1 | A x p2 |
-| 8 | 194-196 | | (p2-p1) x (A-p1) | (p2-p1) x (0-p1) |
-| 9 | 201-203 | edge 0-B | B x p1 | B x p2 |
-| 10 | 204-206 | | (p2-p1) x (B-p1) | (p2-p1) x (0-p1) |
-| 11 | 211-213 | edge A-B | (B-A) x (p1-A) | (own local `cross_ab2`: (B-A) x (p2-A)) |
-| 12 | 214-216 | | (p2-p1) x (A-p1) | (p2-p1) x (B-p1) |
+| 1 | 162-164 | p1 inside | A x c | A x p1 |
+| 2 | 165-167 | | B x c | B x p1 |
+| 3 | 168-170 | | (B-A) x (c-A) | (B-A) x (p1-A) |
+| 4 | 176-178 | p2 inside | A x c | A x p2 |
+| 5 | 179-181 | | B x c | B x p2 |
+| 6 | 182-184 | | (B-A) x (c-A) | (B-A) x (p2-A) |
+| 7 | 190-192 | edge 0-A | A x p1 | A x p2 |
+| 8 | 193-195 | | (p2-p1) x (A-p1) | (p2-p1) x (0-p1) |
+| 9 | 200-202 | edge 0-B | B x p1 | B x p2 |
+| 10 | 203-205 | | (p2-p1) x (B-p1) | (p2-p1) x (0-p1) |
+| 11 | 210-212 | edge A-B | (B-A) x (p1-A) | (own local `cross_ab2`: (B-A) x (p2-A)) |
+| 12 | 213-215 | | (p2-p1) x (A-p1) | (p2-p1) x (B-p1) |
 
 cross_a: 12 values; cross_b: 11 values. Each is a mult/sub computation whose instructions are
 in the target (e.g. T1: 0x8002E2BC..0x8002E2F8; T4 recomputes A.vy*cx at 0x8002E3A8).
@@ -64,6 +74,17 @@ in the target (e.g. T1: 0x8002E2BC..0x8002E2F8; T4 recomputes A.vy*cx at 0x8002E
   2(c)'s banned case is an unconditional re-load of an unchanged lvalue (func_80060A68); here
   the textual program has intervening writes (a2/a3, b5/b6) between the two statements. This
   reading is the author's; layer-2 decides it.
+  **Restructuring attempt (2026-09-26):** swapping test 4's roles (`cross_b = A x c;
+  cross_a = A x p2;`) removes BOTH path-wise re-stores. Values were checked on every incoming
+  path of tests 4-12, and no write then stores a held value. Measured in all four
+  statement/operand orders (tmp/func_8002DE20/mk_swap.py, keep-asm): sw1 48, sw2 **4**,
+  sw3 51, sw4 **4**. sw2's four hunks are operand-only. The target keeps test 4's `A x c` in
+  $a0 and `A x p2` in $v1, i.e. `A x c` sits in the pseudo that held test 1's `A x c` (cross_a,
+  ALLOCDBG hardreg=4). Splitting a4 or b7 into its own local costs 9 / 11 (ablations). So the
+  bytes show the original rewrote `A x c` into the variable that held it on the test-1-fail
+  path; no spelling that avoids the re-store reaches the target. Whether (B)(2) reads "already
+  holds" path-wise (fail) or as a redundant, removable write (this write is neither) is not
+  settled by the text. Flagged to the orchestrator for the rules draft (2026-09-26).
 - **(C)(1)** r11/final_pv.c is recorded. **(C)(2)** same statement list, only declarations and
   identifiers differ (by construction of gen_pv.py; `diff candidate.c r11/final_pv.c` shows
   only declaration lines, renamed identifiers, and the dropped shared declarations/annotation).
@@ -72,7 +93,7 @@ in the target (e.g. T1: 0x8002E2BC..0x8002E2F8; T4 recomputes A.vy*cx at 0x8002E
 - **(E)** (ii): every value of each variable is a 2D cross product of an edge vector with a
   point-minus-edge-start vector; `cross_a` / `cross_b` state exactly that kind and nothing more
   (the `_a`/`_b` suffix = first / second point of the pair, true of every write).
-- **(F)** the declaration comment (candidate.c:47-51) says they hold one value per same-side
+- **(F)** the declaration comment (candidate.c:46-50) says they hold one value per same-side
   test, names the kind, cites Ruling 11 and this file.
 - **(G)** needs a fresh layer-2 (not done: the island admission is pending the owner).
 - **(H)** other constructs: struct view, mid_i, return form, z nudge were cleared by the
@@ -87,8 +108,11 @@ exactly the landing splice; cpp with engine.buildconfig CPP_DEFS; then tools/rtl
 -mno-abicalls -fno-builtin -w -mel -msoft-float`) for .flow/.lreg/.greg, and the instrumented
 tools/gcc-2.7.2/cc1 with `BB2_ALLOC_DEBUG=1` for the global.c order. Outputs:
 tmp/func_8002DE20/rtl/<tag>.{c,i,flow,lreg,greg,alloc} (scratch; the excerpts below are the record).
-- tag `final` = candidate.c exactly (the spliced TU tmp/func_8002DE20/rtl/final.c).
-- tag `final_pv` = r11/final_pv.c exactly (derived from candidate.c as above).
+- tag `final` = candidate.c as of 72c3b4d41 (`0($12)` text; spliced TU tmp/func_8002DE20/rtl/final.c).
+- tag `final_pv` = r11/final_pv.c as of 72c3b4d41.
+- tags `final2` / `final2_pv` = the current candidate.c (verbatim `($12)`) and its re-derived
+  twin. The excerpts below were taken from `final`/`final_pv`; `final2`/`final2_pv` are
+  identical in every excerpted line (Bodies, above).
 Pseudo map: from the xor insns' operands (source `(cross_aT ^ cross_bT)`, operand 1 = a, 2 = b)
 and the .lreg register lines. `final`: 91 = cross_a, 92 = cross_b, 93 = cross_ab2.
 `final_pv`: function-scope a1/a4/a7/a9/a11 = 91..95, b1/b4/b7/b9/b11 = 96..100 (declaration
