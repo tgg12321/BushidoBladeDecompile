@@ -1,0 +1,4 @@
+# per-function COMMON gate (proposal)
+cdrom_SetMix: g_cd_atv, D_800A36B8
+func_80035F78: g_cd_atv, D_800A36B8
+func_80036140: g_cd_atv, D_800A36B8

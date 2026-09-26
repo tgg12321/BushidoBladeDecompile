@@ -1,0 +1,310 @@
+unresolved symbols: 46 ['_svm_voice_plus_0x2', '_svm_voice_plus_0x4', 'jtbl_80010414', 'jtbl_8001042C', 'jtbl_80010498', 'jtbl_800104F0', 'jtbl_800105A0', 'jtbl_800105D0', 'jtbl_80010698', 'jtbl_800107C0', 'jtbl_8001084C', 'jtbl_800108CC', 'jtbl_800108EC', 'jtbl_80010924', 'jtbl_80010AC4', 'jtbl_80010AF4', 'jtbl_80010B24', 'jtbl_80010B54', 'jtbl_80010B84', 'jtbl_80010BB4', 'jtbl_80010BFC', 'jtbl_80010C2C', 'jtbl_80010C5C', 'jtbl_80010CA4', 'jtbl_80010CC4', 'jtbl_80010D1C', 'jtbl_80010D74', 'jtbl_80010D9C', 'jtbl_80010DB8', 'jtbl_80010DD4', 'jtbl_800152B4', 'jtbl_80015334', 'jtbl_800153B4', 'jtbl_80015988', 'jtbl_800159B0', 'jtbl_800159D0', 'jtbl_80015A0C', 'jtbl_80015A24', 'jtbl_80015A3C', 'jtbl_80015A54', 'jtbl_80015A98', 'jtbl_80015CA4', 'jtbl_8001622C', 'jtbl_800163C0', 'jtbl_80016420', 'jtbl_80016440']
+gp-accessed address range: 0x800a30dc..0x800a3928  (sdata part < 0x800a3308, sbss part >=)
+total gp-window accesses: 5507; gp=2271 lui=2503 la=431
+functions with >=1 gp access: 325
+
+== lui/la accesses into the small-data region [lo,hi] from gp-using functions ==
+0x800a31da func_80016E60                sb    lui @0x80017118  k(same)=[] k(any)=[1, 2]  -> X gp elsewhere
+0x800a31da main                         sb    lui @0x80017318  k(same)=[] k(any)=[1, 2]  -> X gp elsewhere
+0x800a3678 func_8003EDC0                sh    lui @0x8003f130  k(same)=[] k(any)=[]  -> no gp near
+0x800a367a func_8003EDC0                sh    lui @0x8003f138  k(same)=[] k(any)=[]  -> no gp near
+0x800a367c func_8003EDC0                sh    lui @0x8003f140  k(same)=[] k(any)=[]  -> no gp near
+0x800a368c comb_WaitRead8               lw    lui @0x8003a690  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3690 func_80034708                lbu   lui @0x800349ec  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3690 func_80034708                lbu   lui @0x80034c20  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3690 func_80034708                lbu   lui @0x80034d88  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3690 func_80034708                lbu   lui @0x80034f1c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3690 func_80034708                sb    lui @0x80034d98  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3690 func_80034708                sb    lui @0x80034f34  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a369c func_8003A728                lw    lui @0x8003aa0c  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a369c func_8003A728                sw    lui @0x8003a7b4  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36a4 func_8001D790                lh    lui @0x8001d7b0  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a36a4 func_8001D790                lh    lui @0x8001d81c  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a36a4 func_8001D790                lh    lui @0x8001d844  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a36a4 func_8001D790                lhu   lui @0x8001d878  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a36a8 func_80031B24                sb    lui @0x80031f0c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a36ac func_80044504                lw    lui @0x80044578  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_80048BA4                lw    lui @0x80048ed8  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8005FC9C                lw    lui @0x8005fcd0  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_800693CC                lw    lui @0x800693e0  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006B898                lw    lui @0x8006b8b0  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006BEC4                lw    lui @0x8006bee4  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006C168                lw    lui @0x8006c180  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006D338                lw    lui @0x8006d350  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006D74C                lw    lui @0x8006d76c  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006D808                lw    lui @0x8006dab4  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006E068                lw    lui @0x8006e088  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_8006EACC                lw    lui @0x8006ead0  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac func_80077724                lw    lui @0x80077734  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36ac gpu_AddDrawMove              lw    lui @0x800401d4  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a36b9 func_80035F78                sb    lui @0x80035f84  k(same)=[1] k(any)=[1]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36b9 func_80036140                lbu   lui @0x800361b0  k(same)=[1] k(any)=[1]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36ba func_80035F78                sb    lui @0x80035f8c  k(same)=[2] k(any)=[2]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36ba func_80036140                lbu   lui @0x8003620c  k(same)=[2] k(any)=[2]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36bb func_80035F78                sb    lui @0x80035f9c  k(same)=[3] k(any)=[3]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36bb func_80036140                lbu   lui @0x80036268  k(same)=[3] k(any)=[3]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36c2 func_8003A728                lh    lui @0x8003a948  k(same)=[2] k(any)=[2]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36c2 func_8003A728                lh    lui @0x8003a96c  k(same)=[2] k(any)=[2]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36c4 comb_WaitRead8               sw    lui @0x8003a6e0  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36c6 func_8003ACB8                lh    lui @0x8003ad5c  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a36c6 func_8003ACB8                lh    lui @0x8003adb0  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a36c6 func_8003ACB8                lh    lui @0x8003ae1c  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a36d2 func_8003A728                lh    lui @0x8003a980  k(same)=[2] k(any)=[2]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36d4 func_8003A728                sw    lui @0x8003aa1c  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a36f1 func_80035828                sb    lui @0x80035838  k(same)=[] k(any)=[5]  -> X gp elsewhere
+0x800a36f1 func_80035828                sb    lui @0x80035db4  k(same)=[] k(any)=[5]  -> X gp elsewhere
+0x800a36f9 func_80034708                lbu   lui @0x800349b8  k(same)=[] k(any)=[1, 7]  -> X gp elsewhere
+0x800a36f9 func_80034708                lbu   lui @0x80034c00  k(same)=[] k(any)=[1, 7]  -> X gp elsewhere
+0x800a36f9 func_80034708                lbu   lui @0x80034d68  k(same)=[] k(any)=[1, 7]  -> X gp elsewhere
+0x800a36f9 func_80034708                lbu   lui @0x80034e60  k(same)=[] k(any)=[1, 7]  -> X gp elsewhere
+0x800a36f9 func_80034708                sb    lui @0x80034c10  k(same)=[] k(any)=[1, 7]  -> X gp elsewhere
+0x800a36f9 func_80034708                sb    lui @0x80034d78  k(same)=[] k(any)=[1, 7]  -> X gp elsewhere
+0x800a36f9 func_80034708                sb    lui @0x80034f14  k(same)=[] k(any)=[1, 7]  -> X gp elsewhere
+0x800a3708 func_8003E6D8                lw    lui @0x8003e6e0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3708 func_8003E6D8                lw    lui @0x8003e740  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3708 func_80047384                lw    lui @0x80047394  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a370c func_80044504                lw    lui @0x80044544  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a370c func_80044504                lw    lui @0x80044560  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3712 func_8003993C                lbu   lui @0x80039fa8  k(same)=[] k(any)=[2]  -> near gp elsewhere
+0x800a3712 func_8003993C                lbu   lui @0x8003a02c  k(same)=[] k(any)=[2]  -> near gp elsewhere
+0x800a3712 func_8003993C                lbu   lui @0x8003a0b4  k(same)=[] k(any)=[2]  -> near gp elsewhere
+0x800a3719 cdrom_SetMix                 sb    lui @0x80035f48  k(same)=[1] k(any)=[1, 3, 5]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3719 func_80036140                lbu   lui @0x800361c4  k(same)=[1] k(any)=[1, 3, 5]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a371a cdrom_SetMix                 sb    lui @0x80035f50  k(same)=[2] k(any)=[2, 4, 6]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a371a func_80036140                lbu   lui @0x80036220  k(same)=[2] k(any)=[2, 4, 6]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a371b cdrom_SetMix                 sb    lui @0x80035f58  k(same)=[3] k(any)=[3, 5, 7]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a371b func_80036140                lbu   lui @0x8003627c  k(same)=[3] k(any)=[3, 5, 7]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3745 func_80016D78                sb    lui @0x80016e04  k(same)=[1] k(any)=[1, 5]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3746 func_80016D78                sb    lui @0x80016e0c  k(same)=[2] k(any)=[2, 6]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3748 func_8001B748                lb    lui @0x8001b764  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003993C                lb    lui @0x80039a2c  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003993C                lb    lui @0x80039a64  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003993C                sb    lui @0x8003a080  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003CE18                lb    lui @0x8003ce78  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003CE18                lb    lui @0x8003cedc  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003CF84                lb    lui @0x8003cf9c  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003CF84                lb    lui @0x8003d030  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003CF84                lb    lui @0x8003d06c  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003CF84                lb    lui @0x8003d0a8  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a3748 func_8003CF84                lb    lui @0x8003d1e0  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a374c func_8003D330                lw    lui @0x8003d368  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8003D39C                lw    lui @0x8003d438  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80046BF4                lw    lui @0x80046c1c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8005FC9C                lw    lui @0x8005fd60  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8005FC9C                lw    lui @0x8005ff54  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8005FC9C                lw    lui @0x8005fff0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8005FC9C                lw    lui @0x80060054  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80060768                lw    lui @0x80060890  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80060768                lw    lui @0x8006094c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80060768                lw    lui @0x800609a4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80060768                lw    lui @0x800609f8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80060768                lw    lui @0x80060a24  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800620B8                lw    lui @0x800627d0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006295C                lw    lui @0x80062f74  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80063084                lw    lui @0x800639a4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80063E10                lw    lui @0x80064468  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800646E8                lw    lui @0x80064df4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80065800                lw    lui @0x80066dd4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80065800                lw    lui @0x80066e30  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80068D88                lw    lui @0x80068e24  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80069F80                lw    lui @0x8006a160  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A1A0                lw    lui @0x8006a388  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A564                lw    lui @0x8006a61c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A564                lw    lui @0x8006a6ac  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A564                lw    lui @0x8006a744  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A564                lw    lui @0x8006a83c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006a8f0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006a948  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006a9c0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006ab40  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006ac10  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006ac70  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006acb8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006ae4c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006aeb8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006af00  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006af98  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006b084  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006A880                lw    lui @0x8006b0cc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006B120                lw    lui @0x8006b1b8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006B120                lw    lui @0x8006b508  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006BB68                lw    lui @0x8006bbfc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006BB68                lw    lui @0x8006bcbc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006BD28                lw    lui @0x8006be64  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006BEC4                lw    lui @0x8006c044  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006BEC4                lw    lui @0x8006c120  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006C21C                lw    lui @0x8006c2d0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006C21C                lw    lui @0x8006c3fc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006C21C                lw    lui @0x8006c560  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006C21C                lw    lui @0x8006c624  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006C21C                lw    lui @0x8006c89c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006C21C                lw    lui @0x8006cafc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006C21C                lw    lui @0x8006cb48  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006CFBC                lw    lui @0x8006d29c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006D3DC                lw    lui @0x8006d548  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006D808                lw    lui @0x8006d8f0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006D808                lw    lui @0x8006da78  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006D808                lw    lui @0x8006dd40  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006DD94                lw    lui @0x8006dec0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006E534                lw    lui @0x8006e55c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F038                lw    lui @0x8006f09c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F038                lw    lui @0x8006f0c8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F528                lw    lui @0x8006f71c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F528                lw    lui @0x8006f77c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F528                lw    lui @0x8006f804  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F528                lw    lui @0x8006f850  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F528                lw    lui @0x8006f8d4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F97C                lw    lui @0x8006fa00  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F97C                lw    lui @0x8006fdbc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8006F97C                lw    lui @0x800700d8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80070188                lw    lui @0x80070200  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80070C70                lw    lui @0x80070d18  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80070C70                lw    lui @0x80070de0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80070C70                lw    lui @0x80070f14  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80070F78                lw    lui @0x80070fe0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800720FC                lw    lui @0x80072190  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800720FC                lw    lui @0x800721e4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800720FC                lw    lui @0x80072364  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800720FC                lw    lui @0x80072578  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800720FC                lw    lui @0x800725d8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800720FC                lw    lui @0x80072628  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80072BC4                lw    lui @0x80072ca8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80072CD4                lw    lui @0x80072de4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80072FCC                lw    lui @0x80073038  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80073200                lw    lui @0x80073264  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80073200                lw    lui @0x80073390  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80073200                lw    lui @0x80073434  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80073200                lw    lui @0x800734ec  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074488                lw    lui @0x80074764  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074B18                lw    lui @0x80074c94  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074E08                lw    lui @0x80074e9c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074E08                lw    lui @0x80075054  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074E08                lw    lui @0x800750ec  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074E08                lw    lui @0x80075170  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074E08                lw    lui @0x800751cc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80074E08                lw    lui @0x80075228  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800753D8                lw    lui @0x80075574  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800753D8                lw    lui @0x80075614  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800759D0                lw    lui @0x80075ac4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800759D0                lw    lui @0x80075ed8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800759D0                lw    lui @0x80075f28  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8007636C                lw    lui @0x80076450  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_8007636C                lw    lui @0x80076888  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80076D74                lw    lui @0x80076f88  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80076D74                lw    lui @0x80076fb4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800770B8                lw    lui @0x800770e4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80077D94                lw    lui @0x80077fac  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80077D94                lw    lui @0x8007809c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80077D94                lw    lui @0x80078198  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80077D94                lw    lui @0x800782e4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80077D94                lw    lui @0x80078484  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_800784E4                lw    lui @0x800784f4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80078654                lw    lui @0x80078754  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80078654                lw    lui @0x800787d8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a374c func_80078824                lw    lui @0x80078834  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3764 func_80036140                lbu   lui @0x80036584  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3774 func_80016D78                sw    lui @0x80016dc4  k(same)=[4] k(any)=[4]  -> OFFSET-SIG(same fn: base-k gp)
+0x800a3778 func_8003993C                sw    lui @0x80039a14  k(same)=[] k(any)=[]  -> no gp near
+0x800a378c func_80046BF4                sw    lui @0x80046c50  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a378c func_80048BA4                lw    lui @0x80048f0c  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a378c gpu_AddDrawMove              lw    lui @0x800402bc  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a3790 func_80046B44                sw    lui @0x80046bdc  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a3794 func_800383A4                lw    lui @0x80038578  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a3794 func_800383A4                lw    lui @0x80038600  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a3794 func_80038658                lw    lui @0x8003869c  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a3794 func_80038658                lw    lui @0x800386d4  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a37a4 func_8003993C                lw    lui @0x80039fe8  k(same)=[] k(any)=[4, 6]  -> near gp elsewhere
+0x800a37a4 func_8003993C                sw    lui @0x80039ff8  k(same)=[] k(any)=[4, 6]  -> near gp elsewhere
+0x800a37b8 func_80034708                lw    lui @0x8003470c  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80034708                sw    lui @0x80034744  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035480                sw    lui @0x80035518  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035618                sw    lui @0x80035774  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                lw    lui @0x80035960  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                lw    lui @0x8003598c  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                lw    lui @0x800359b8  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                lw    lui @0x80035a54  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                lw    lui @0x80035aa0  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                sw    lui @0x800359a0  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                sw    lui @0x800359b0  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                sw    lui @0x80035a44  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                sw    lui @0x80035a64  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                sw    lui @0x80035ab0  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                sw    lui @0x80035b40  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_80035828                sw    lui @0x80035d24  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003AB44                lw    lui @0x8003ab48  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003AB44                sw    lui @0x8003ab60  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003ACB8                sw    lui @0x8003acd4  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CE18                sw    lui @0x8003cf5c  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                lw    lui @0x8003cfe4  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                lw    lui @0x8003d01c  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                lw    lui @0x8003d058  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                lw    lui @0x8003d094  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                lw    lui @0x8003d0d4  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                lw    lui @0x8003d0fc  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                lw    lui @0x8003d298  k(same)=[] k(any)=[]  -> no gp near
+0x800a37b8 func_8003CF84                sw    lui @0x8003d2a8  k(same)=[] k(any)=[]  -> no gp near
+0x800a3808 func_80046BF4                sw    lui @0x80046c3c  k(same)=[] k(any)=[]  -> no gp near
+0x800a3820 func_8003E6D8                lw    lui @0x8003e9b8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_8003E6D8                lw    lui @0x8003ea98  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_8003E6D8                lw    lui @0x8003eaac  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_8003E6D8                lw    lui @0x8003eac4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_8003E6D8                sw    lui @0x8003e9c8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_8003E6D8                sw    lui @0x8003ead4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_8003EB84                lw    lui @0x8003ed1c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_8003EB84                sw    lui @0x8003ed2c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_80046BF4                sw    lui @0x80046c0c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_80048BA4                lw    lui @0x80048dc4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_80048BA4                lw    lui @0x80048e44  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_80048BA4                lw    lui @0x80048eb8  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_80048BA4                sw    lui @0x80048dd4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_80048BA4                sw    lui @0x80048e58  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3820 func_80048BA4                sw    lui @0x80048ecc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 comb_ResetClose              sh    lui @0x8003a3dc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80035480                sh    lui @0x80035520  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80035618                sh    lui @0x80035768  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80035828                lh    lui @0x80035da0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80035828                sh    lui @0x800359d0  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80035828                sh    lui @0x80035acc  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80035828                sh    lui @0x80035d68  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80035828                sh    lui @0x80035d94  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_800397D4                sh    lui @0x80039838  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_8003993C                sh    lui @0x8003a13c  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_8003CE18                sh    lui @0x8003cf64  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_8003CF84                sh    lui @0x8003d290  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80065800                lh    lui @0x80065b08  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80065800                lh    lui @0x80065c08  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80065800                lh    lui @0x80065c54  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80065800                lh    lui @0x80065cc4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80065800                lh    lui @0x80066948  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80065800                lh    lui @0x80066984  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3834 func_80065800                lh    lui @0x80066aa4  k(same)=[] k(any)=[]  -> X gp elsewhere
+0x800a3836 func_8003993C                lbu   lui @0x80039fa0  k(same)=[] k(any)=[2]  -> near gp elsewhere
+0x800a3836 func_8003993C                lbu   lui @0x8003a078  k(same)=[] k(any)=[2]  -> near gp elsewhere
+0x800a3836 func_8003CF84                lbu   lui @0x8003d24c  k(same)=[] k(any)=[2]  -> near gp elsewhere
+0x800a3876 func_8002AB08                sh    lui @0x8002bad4  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a3894 func_8003993C                lw    lui @0x8003a018  k(same)=[] k(any)=[]  -> no gp near
+0x800a38a0 func_8003A728                lw    lui @0x8003a750  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38a0 func_8003A728                lw    lui @0x8003a82c  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38a0 func_8003A728                lw    lui @0x8003a8b0  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38a0 func_8003A728                lw    lui @0x8003a920  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38a0 func_8003A728                lw    lui @0x8003a994  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38a0 func_8003AB44                lw    lui @0x8003aba4  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38a0 func_8003ACB8                lw    lui @0x8003adfc  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38a8 func_8002AB08                sh    lui @0x8002bacc  k(same)=[] k(any)=[]  -> no gp near
+0x800a38ae func_8002AB08                lh    lui @0x8002ab74  k(same)=[] k(any)=[2]  -> near gp elsewhere
+0x800a38c6 func_80016D78                sh    lui @0x80016e24  k(same)=[] k(any)=[]  -> no gp near
+0x800a38d4 func_8003993C                sb    lui @0x80039fc0  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a38d6 func_80046BF4                lhu   lui @0x80046c14  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38d6 func_80046BF4                sh    lui @0x80046c48  k(same)=[] k(any)=[6]  -> near gp elsewhere
+0x800a38dc func_80030D7C                lh    lui @0x80031644  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a38dc func_80035828                lh    lui @0x80035880  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a38dc func_8003993C                lh    lui @0x80039f68  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a38dc func_8003CF84                lh    lui @0x8003d1c4  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a38dc func_8003CF84                lh    lui @0x8003d238  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a38dc func_800460E4                lh    lui @0x80046470  k(same)=[] k(any)=[4]  -> X gp elsewhere
+0x800a38e4 func_80035618                lw    lui @0x8003571c  k(same)=[] k(any)=[]  -> no gp near
+0x800a38e4 func_8003ACB8                sw    lui @0x8003ad6c  k(same)=[] k(any)=[]  -> no gp near
+0x800a3904 func_8003ACB8                sh    lui @0x8003ae24  k(same)=[] k(any)=[4]  -> near gp elsewhere
+0x800a390e func_8001D790                lb    lui @0x8001d7b8  k(same)=[] k(any)=[1, 6]  -> near gp elsewhere
+0x800a390e func_8001D790                sb    lui @0x8001d884  k(same)=[] k(any)=[1, 6]  -> near gp elsewhere
+0x800a390e func_80035480                sb    lui @0x800354f0  k(same)=[] k(any)=[1, 6]  -> near gp elsewhere
