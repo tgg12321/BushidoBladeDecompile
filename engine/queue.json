@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8008B488",
-      "file": "main",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T09:44:20+00:00",
-      "rotation_count": 1,
-      "unparked_from": "flat floor 12/387 (operand-only) after 2 manual sessions + permuter; global.c allocator proof: per-block locals cannot seat SL/SR regs; only closing form shares rate/adsr across blocks = INADMISSIBLE (Ruling 5/6; owner declined Ruling-8-as-class 2026-09-24). Chassis ruled legitimate. See memory/grind/func_8008B488/evidence.md",
-      "unpark_reason": "auto-return: forced re-measure floor None -> 16 (fingerprint 85cd2a73ee7a8972 unchanged)",
-      "returned_at": "2026-09-25T22:45:00+00:00"
-    },
-    {
       "func": "func_8002A458",
       "file": "code6cac_b",
       "distance": 30,
@@ -514,6 +501,20 @@
       "rotation": "flat floor 5/393 after 3 manual sessions; s3 ran the last unrun instrument (spelling_enum, 326/326 at 5) + 9 structural one-offs; only closing form is the two-role shift reuse, named banned in Ruling 9's list (2026-09-25). See memory/grind/func_8001BE20/hypotheses.md"
     },
     {
+      "func": "func_8008B488",
+      "file": "main",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotated_at": "2026-09-26T01:26:43+00:00",
+      "rotation_count": 2,
+      "unparked_from": "flat floor 12/387 (operand-only) after 2 manual sessions + permuter; global.c allocator proof: per-block locals cannot seat SL/SR regs; only closing form shares rate/adsr across blocks = INADMISSIBLE (Ruling 5/6; owner declined Ruling-8-as-class 2026-09-24). Chassis ruled legitimate. See memory/grind/func_8008B488/evidence.md",
+      "unpark_reason": "auto-return: forced re-measure floor None -> 16 (fingerprint 85cd2a73ee7a8972 unchanged)",
+      "returned_at": "2026-09-25T22:45:00+00:00",
+      "rotation": "flat floor 16 clean-tree (12 + 4 jtbl addend) after 3 manual sessions; s3 ran the enumerate-rung equivalent over SR/SL (11 variants, none below 16). Closing shared-rate form named inadmissible by Ruling 9 list + Ruling 10 scope (2026-09-25). s3 return was a None->16 engine bounce, fixed 07e77ac51. See memory/grind/func_8008B488/hypotheses.md"
+    },
+    {
       "func": "func_800204C0",
       "file": "code6cac",
       "distance": 52,
@@ -659,14 +660,14 @@
   ],
   "counts": {
     "total": 57,
-    "active": 42,
+    "active": 41,
     "by_status": {
-      "active": 42,
-      "rotated": 15
+      "active": 41,
+      "rotated": 16
     },
     "by_verdict": {
-      "C": 33,
-      "ASM-PARTIAL": 9
+      "ASM-PARTIAL": 9,
+      "C": 32
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
