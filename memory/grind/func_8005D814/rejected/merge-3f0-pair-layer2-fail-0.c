@@ -29,8 +29,7 @@ typedef struct {
 } Unk8009B450Record;
 extern Unk8009B400Record D_8009B3C8[3];
 extern Unk8009B400Record D_8009B3E0[2];
-extern Unk8009B400Record D_8009B3F0;
-extern Unk8009B400Record D_8009B3F8;
+extern Unk8009B400Record D_8009B3F0[2];
 extern Unk8009B450Record D_8009B450[2];
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
@@ -191,11 +190,11 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
         tile++;
         s.y = D_8009B450[j].y;
         s.header = &D_8009B398[2];
-        s.table = &D_8009B3F0;
+        s.table = &D_8009B3F0[0];
         s.out = cur;
         cur = func_8007352C((s32)&s);
         s.header = &D_8009B398[3];
-        s.table = &D_8009B3F8;
+        s.table = &D_8009B3F0[1];
         s.out = cur;
         cur = func_8007352C((s32)&s);
     }
