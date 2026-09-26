@@ -156,3 +156,17 @@ reused local on allocator-dump necessity. Full (A)-(H) record: **ruling11.md** (
   the target adds row*0x20 before col*4) and `extern u8 D_8009A9B4[][2];` in the same
   header. D_8009A8CA (+6, u16 read by still-INCLUDE_ASM func_80058580) lies inside the
   first; it has no config row (asm/data dlabel only) and no C name.
+
+## [s3] layer-2 FAIL 2026-09-26 (body: rejected/r11-six-value-temp-l2fail.c)
+Grounds (orchestrator relay): (1) (D)(3) did not exclude sanctioned-family per-value
+spellings (dead store, self-assign, chain-extender, live-use detour, pointer alias,
+do-while(0)); the permuter's do-while(0) find (102 -> 33) was dismissed as "adds a statement"
+without a mechanism; model: memory/grind/func_8002DE20/ruling11.md (~272 on). (2) temp's values
+2, 3, 5, 6 were admitted on measured effect (ablations) only: each needs a universal mechanism
+argument or must come out of temp. (3) record error: D_8009A8CA HAS a config row
+(undefined_syms_auto.txt:64) and func_80058580 uses it inside the D_8009A8C4 span: add
+`/* alias of D_8009A8C4+6; retire with func_80058580 */` and cite func_80058580's
+row<<5 + (col-1)*4 indexing (0x8005A868-78) as prong (a) evidence. (The s3 evidence line
+"D_8009A8CA ... has no config row" is WRONG.) Passed, not to be relitigated: D_80099D88
+stride evidence, the nine alias suffixes, the func_80055948/func_80033DF4 rewrites, `idx`,
+the hi2_val staging, the staged scope. Tree reverted, rebuilt to the oracle, lock released.
