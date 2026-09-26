@@ -15,18 +15,19 @@
    "floor": 97,
    "modality": "manual",
    "headline": "manual slotA3: full C body; legit floor 97 (candidate.c); byte-closest 8 needs two multi-write locals (weapon key across arms, sel/win shared scratch) + loop insn_count >= 249 for giv threshold"
+  },
+  {
+   "session": 2,
+   "floor": 82,
+   "modality": "manual",
+   "headline": "s16 packed-angle reads fix the loop giv threshold; named `next` fixes the window; sandbox 0 only with shared sel/win scratch + key across arms (policy)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The per-player loop needs >= 249 RTL insns at loop time so the three scratchpad givs (i*264/i*36/i*24) are 'not worth while' (248 threshold). (hw>>14)&3 gives +2 (247).",
-   "mechanism": "loop.c strength_reduce: lifetime*threshold*benefit < insn_count",
-   "next_probe": "Find +2 more RTL insns from an ordinary spelling (struct-typed record, bitfield flags, explicit conversions) and confirm the scratch arg code matches."
-  },
-  {
-   "hypothesis": "Target allocation needs one pseudo for sel+win (s2) and a weapon-arm key pseudo spanning both if/else arms (untied a0).",
-   "mechanism": "global-alloc vs local-alloc gate (local-alloc.c:472) and combine_regs tie refusal for non-local pseudos",
-   "next_probe": "Search for a single-write construct with the same allocation; otherwise policy question in borderline.md."
+   "hypothesis": "The last 82 points are the allocation of ONE pseudo for the replay window and the weapon-set selector (s2), and the weapon-arm key pseudo spanning both arms (a0).",
+   "mechanism": "local-alloc.c:472 (sel local -> v0 when separate); combine_regs refuses non-local pseudos (key untied a0); shared allocno reorders global.c priority for idx/prog/loop regs",
+   "next_probe": "Owner policy question filed (borderline.md 2026-09-26 func_8003993C); meanwhile search for a single-write construct that makes sel call-crossing / global without a second meaning."
   }
  ],
  "judge_constraints": [],

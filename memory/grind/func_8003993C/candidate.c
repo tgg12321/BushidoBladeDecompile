@@ -37,8 +37,8 @@ void func_8003993C(void) {
     for (i = 0; i < 2; i++) {
         p = (u8 *)(D_800A36EC + idx * 56) + i * 28;
         rob = &g_practice_menu_table[i];
-        func_800198D0((*(u16 *)(p + 0xE) >> 14) & 3, *(u16 *)(p + 0xE) & 0x3FFF, work[0], sp1C0);
-        func_800198D0((*(u16 *)(p + 0x10) >> 14) & 3, *(u16 *)(p + 0x10) & 0x3FFF, work[1], sp1C0);
+        func_800198D0((*(s16 *)(p + 0xE) >> 14) & 3, *(s16 *)(p + 0xE) & 0x3FFF, work[0], sp1C0);
+        func_800198D0((*(s16 *)(p + 0x10) >> 14) & 3, *(s16 *)(p + 0x10) & 0x3FFF, work[1], sp1C0);
         func_8001F1C4(rob, p, work[0], work[1]);
         func_80041188(i, work[0], work[1], *(s16 *)(p + 0x12), sp120);
         pos[0] = *(s16 *)(p + 4);
@@ -105,7 +105,8 @@ void func_8003993C(void) {
     if (D_800A3782 != 0) {
         win = 0x77 - D_800A37D0;
     } else {
-        win = D_800A36F8 - (s16)(D_800A37D0 + 1);
+        s32 next = D_800A37D0 + 1;
+        win = D_800A36F8 - next;
     }
     e = (u8 *)D_800F68E0;
     for (i = 0; i < 0xB4; i++, e += 0x10) {
