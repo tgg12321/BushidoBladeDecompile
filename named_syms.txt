@@ -128,7 +128,7 @@ g_stage_init_tbl = 0x800948BC;
 D_800A336C = 0x800A336C;  /* data-wave 2026-09-25: was g_game_mode */
 D_800A322C = 0x800A322C;  /* data-wave 2026-09-25: was g_game_player_count */
 g_game_mirror_mode = 0x800F665C;
-g_game_p1_ctrl = 0x800F6656;
+D_800F6656 = 0x800F6656;  /* data-wave 2026-09-25: was g_game_p1_ctrl */
 D_800F6658 = 0x800F6658;  /* data-wave 2026-09-25: was g_game_p2_ctrl */
 g_game_flag_a = 0x800A3370;
 g_game_flag_b = 0x800A3374;
@@ -137,7 +137,7 @@ D_800A3790 = 0x800A3790;  /* data-wave 2026-09-25: was g_game_timer */
 D_800A33B0 = 0x800A33B0;  /* data-wave 2026-09-25: was g_snd_bgm_id */
 D_800A33B4 = 0x800A33B4;  /* data-wave 2026-09-25: was g_snd_se_id */
 D_800A33C0 = 0x800A33C0;  /* data-wave 2026-09-25: was g_snd_stage_bgm */
-g_snd_volume = 0x800A33D0;
+D_800A33D0 = 0x800A33D0;  /* data-wave 2026-09-25: was g_snd_volume */
 D_800A33D4 = 0x800A33D4;  /* data-wave 2026-09-25: was g_snd_fade_pos */
 D_800A33D8 = 0x800A33D8;  /* data-wave 2026-09-25: was g_snd_fade_amt */
 D_800A33E4 = 0x800A33E4;  /* data-wave 2026-09-25: was g_snd_play_count */
@@ -381,7 +381,6 @@ rcnt_StartCnt1       = 0x80046AE8;  /* SsSet stuff with 0xF2000001 (SS event cla
 
 /* === Data names landed by the sound.c cluster audit (5) === */
 g_stage_variant                 = 0x8009947A;  /* paired with g_stage_id (=0x80099478) at +0x2; accessed by stage_GetVariant_800467A8 */
-g_snd_volume                    = 0x800A33D0;  /* gp-rel word; written by snd_SetVolume */
 
 /* === Legacy renamer audit: ings.c cluster (2026-05-17) === */
 /* 32 high-confidence cross-validated names from `tools/rename_funcs.py` */

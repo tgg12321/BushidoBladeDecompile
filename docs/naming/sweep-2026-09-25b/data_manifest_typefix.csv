@@ -1,0 +1,3 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+0x800F6656,g_game_p1_ctrl,D_800F6656,reset,"render bit field {0,3}: written by func_8003F1E4 (3/0), read only for bits 0/1 by stage-render code; no pad code touches it",CONFIRM,"mode_ui verifier CONFIRM (docs/naming/sweep-2026-09-25/verify/mode_ui.csv); deferred for a C-type conflict, resolved by f20df7b12 (layer-2 PASS)"
+0x800A33D0,g_snd_volume,D_800A33D0,reset,"stage-buffer halfword write cursor (heap-relocated pointer; func_800477E8 writes GetTPage/GetClut through it); not a volume",CONFIRM,"sys_snd_io heap verifier CONFIRM (docs/naming/sweep-2026-09-25/verify/sys_snd_io_heap.csv); deferred for a C-type conflict, resolved by f20df7b12 (layer-2 PASS)"

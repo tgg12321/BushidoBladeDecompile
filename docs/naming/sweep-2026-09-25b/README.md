@@ -65,3 +65,20 @@ per vein — read before re-mining.
 - 0x80042ED8 is an in-place 3×3 transpose — RESET applied; `math_TransposeMatrixInPlace` unverified.
 - Next leads: `g_sound_3d_cursor` / `g_sound_3d_data_buffer` (0x800A3820 / 0x80102C00) are the GTE
   renderer's draw list; the six MEDIUM rows that stayed MEDIUM (`keep/medium_revisit.md`).
+
+## Owner ruling 2026-09-25 — applied (see `ruling-2026-09-25.md`)
+
+- `_start` → `__SN_ENTRY_POINT`; 0x80016768 → `gpu_SetDrawEnvBg` (sony-struct-restatement);
+  `math_Distance3D`/`_16`, `rng_SetSeed`/`rng_Next`, `scratchpad_Save`/`_Restore` upgraded as-is;
+  0x800A38BC → `g_rng_state`; the `rec` block's contradicted `g_spu_xfer_*` aliases RESET
+  (`func_manifest_ruling.csv`, `data_manifest_ruling.csv`). `n`, `rec`, `p0.87`, `p1.88` not applied;
+  `gte_NormalizeIR` not applied.
+- Deferred first-batch data rows landed via the manual lane (layer-2 cheat-reviewer PASS):
+  `g_snd_irq_data` retired (SpuStart now passes `_spu_FiDMA`, as Sony's s_ini.c does);
+  `g_game_p1_ctrl` → `D_800F6656` and `g_snd_volume` → `D_800A33D0` after their C-type conflicts were
+  reconciled (`data_manifest_typefix.csv`).
+- `snd_SeNullCallback` (0x80046954): a fresh verifier REFUTED a contradiction RESET
+  (`verify/senull_verdict.md`) — the function is heap slot 9's relocation callback, so "NullCallback"
+  is accurate; slot 9 is dead code, so "snd_Se" is unsupported, not contradicted. It stays a recorded
+  link-map desync (census `empty_stub`, C `snd_SeNullCallback`). Side note: `docs/engine/sound.md`
+  describes this as a "sample finished" callback — it is a heap-relocation callback.

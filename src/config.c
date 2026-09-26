@@ -28,7 +28,7 @@ extern void func_80052C10();
 
 /* Externs for globals */
 extern u8 g_char_data;
-extern s16 g_game_p1_ctrl;
+extern s16 D_800F6656;
 extern u8 g_stage_collision[];
 extern s32 D_80094A6C[];
 extern u8 *D_800A3708;
@@ -55,10 +55,10 @@ void *game_GetCharData(void) {
 
 void func_8003F1E4(s32 a0) {
     if (a0) {
-        g_game_p1_ctrl = 3;
+        D_800F6656 = 3;
         D_800F6658 = 2;
     } else {
-        g_game_p1_ctrl = 0;
+        D_800F6656 = 0;
         D_800F6658 = 1;
     }
 }

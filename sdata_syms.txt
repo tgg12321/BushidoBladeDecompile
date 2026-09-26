@@ -316,7 +316,6 @@ g_game_flag_b
 g_anim_hit_flags
 g_anim_counter
 g_anim_hit_data
-g_snd_volume
 g_disp_fade
 g_file_dma_flag
 g_disp_enable

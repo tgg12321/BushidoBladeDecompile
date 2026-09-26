@@ -8,7 +8,7 @@
 /* Named globals */
 extern s32 D_800A33B0;
 extern s32 D_800A33B4;
-extern s16 *g_snd_volume;
+extern s16 *D_800A33D0;
 
 /* Sony LIBSND `_svm_cur` (vmanager current-voice state; psyz
    libsnd_private.h `struct struct_svm`), base 0x801027F0. One object: the

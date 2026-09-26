@@ -98,7 +98,7 @@ extern void func_800404D8(void);
 extern void func_8003F7F4(void);
 extern s16 D_800F6650;
 extern s16 g_color_mode;
-extern s16 g_game_p1_ctrl;
+extern s16 D_800F6656;
 extern s16 D_800F665A;
 extern s32 D_800A33BC;
 extern s32 func_800486FC(void);
@@ -261,7 +261,7 @@ void game_Init(void) {
     D_800F665A = one;
     g_color_mode = 0;
     D_800F6650 = 0;
-    g_game_p1_ctrl = 0;
+    D_800F6656 = 0;
     D_800F6658 = two;
     g_game_mirror_mode = 0;
     D_800A3790 = 0x23;
@@ -638,7 +638,7 @@ void game_Stub4(void) {
 }
 
 void func_800477DC(s32 a0) {
-    g_snd_volume = (s16 *)a0;
+    D_800A33D0 = (s16 *)a0;
 }
 extern u32 GetTPage(s32, s32, s32, s32);
 extern u32 GetClut(s32, s32);

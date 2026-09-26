@@ -15,7 +15,7 @@ extern s32 func_8005C2A8(s32 *, s16, s32);
 /* --- Functions from text1b segment (0x80047ED0 - 0x80079A30) --- */
 
 void func_80047ED0(s32 a0) {
-    g_snd_volume = (s16 *)((u8 *)g_snd_volume + a0);
+    D_800A33D0 = (s16 *)((u8 *)D_800A33D0 + a0);
 }
 
 void func_80047EE8(s32 arg0, s32 arg1)
