@@ -1,6 +1,7 @@
-/* func_8003993C — sandbox 0/526 (2026-09-26, manual slotA3). NOT REVIEWED, NOT LANDABLE under current rules:
- * `win` doubles as the weapon-set selector, and `key` is written in both weapon arms from
- * two different tables (Ruling 6 (C)). Pending the borderline.md 2026-09-26 owner question. */
+/* func_8003993C — sandbox 0/526 and full-build SHA1 == oracle (spliced + rebuilt 2026-09-26 under the landing lock,
+ * then reverted). manual slotA3. NOT REVIEWED, NOT LANDABLE under current rules: `win` doubles as the
+ * weapon-set selector, and `key` is written in both weapon arms from two different tables (Ruling 6 (C)).
+ * Pending the borderline.md 2026-09-26 func_8003993C owner question. */
 extern s32 camera_GetBoneData(void);
 extern u8 D_800A3208;
 extern u8 *D_800A3894;
@@ -132,11 +133,10 @@ void func_8003993C(void) {
         switch (D_800A38DC) {
         case 0:
             if (D_80101F5E == 0) {
-                u8 ch = D_800A3836;
-                s32 valid = ch != 0xFF;
+                s32 valid = D_800A3836 != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
-                    if (ch != 0xFF) {
+                    if (D_800A3836 != 0xFF) {
                         D_800A37A4 |= 1 << D_8008D538[(s8)D_8010277C.unk_0[0]];
                     }
                     if (valid) {

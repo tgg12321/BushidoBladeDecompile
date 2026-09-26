@@ -128,11 +128,10 @@ void func_8003993C(void) {
         switch (D_800A38DC) {
         case 0:
             if (D_80101F5E == 0) {
-                u8 ch = D_800A3836;
-                s32 valid = ch != 0xFF;
+                s32 valid = D_800A3836 != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
-                    if (ch != 0xFF) {
+                    if (D_800A3836 != 0xFF) {
                         D_800A37A4 |= 1 << D_8008D538[(s8)D_8010277C.unk_0[0]];
                     }
                     if (valid) {
