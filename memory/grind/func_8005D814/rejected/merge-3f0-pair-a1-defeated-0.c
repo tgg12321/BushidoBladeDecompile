@@ -29,8 +29,7 @@ typedef struct {
 } Unk8009B450Record;
 extern Unk8009B400Record D_8009B3C8[3];
 extern Unk8009B400Record D_8009B3E0[2];
-extern Unk8009B400Record D_8009B3F0;
-extern Unk8009B400Record D_8009B3F8;
+extern Unk8009B400Record D_8009B3F0[2];
 extern Unk8009B450Record D_8009B450[2];
 extern s32 func_8007352C(s32);
 extern s32 func_8006E480(s32, s32);
@@ -49,10 +48,6 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 j;
     s16 num_tens;
     s16 shown;
-    Unk8009B398Record *hdr2_end; /* FAKE: chain-extender, see the tile loop */
-    Unk8009B398Record *hdr3; /* FAKE: pointer alias of D_8009B398[3] */
-    Unk8009B400Record *cell2_end; /* FAKE: chain-extender, see the tile loop */
-    Unk8009B400Record *cell3; /* FAKE: pointer alias of D_8009B3F8 */
 
     arg1--;
     tile = (Tile5D814 *)arg2;
@@ -158,15 +153,6 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     digit[0] = digit[0] / 100;
     digit[1] = digit[1] % 100;
     s.y = 0x29;
-    /* FAKE: pointer aliases (pointer-alias-fake-exception) for the second
-     * sheet/cell pair of the tile loop below. Set here, ahead of the digit
-     * loop, their pseudos span both loops, so global.c ranks them last and
-     * they are spilled and rematerialized in-loop ($t4/$t5) while the first
-     * pair keeps $s6/$s7; set in the tile loop's preheader, cse2 would relate
-     * header[2] to header[3] (use_related_value) and reverse that order.
-     * Measurements: memory/grind/func_8005D814/evidence.md. */
-    hdr3 = &D_8009B398[3]; /* FAKE: pointer alias */
-    cell3 = &D_8009B3F8; /* FAKE: pointer alias */
     shown = 0;
     for (j = 0; j < 3; j++) {
         if (shown || digit[j] != 0 || j == 2) {
@@ -203,19 +189,12 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
         AddPrim(g_gpu_ot_ptr + arg3 * 4, (s32)tile);
         tile++;
         s.y = D_8009B450[j].y;
-        /* FAKE: combine-foldable chain-extenders (dead-store-fake-exception):
-         * the one-past-the-end detour folds back to the plain address with
-         * zero bytes, but gives each constant a second use so loop.c hoists
-         * it (loop.c:1631, savings 2); the first pair then outranks the
-         * aliases above in global.c. */
-        hdr2_end = &D_8009B398[2] + 1; /* FAKE: chain-extender */
-        s.header = hdr2_end - 1;
-        cell2_end = &D_8009B3F0 + 1; /* FAKE: chain-extender */
-        s.table = cell2_end - 1;
+        s.header = &D_8009B398[2];
+        s.table = &D_8009B3F0[0];
         s.out = cur;
         cur = func_8007352C((s32)&s);
-        s.header = hdr3;
-        s.table = cell3;
+        s.header = &D_8009B398[3];
+        s.table = &D_8009B3F0[1];
         s.out = cur;
         cur = func_8007352C((s32)&s);
     }
