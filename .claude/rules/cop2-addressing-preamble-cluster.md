@@ -187,6 +187,14 @@ line required) — never COMPLETED-C. Since 2026-09-02 the driver enforces this 
 the Judge PASS path (island count > 0 and not allowlisted ⇒ grant door or refuse).
 Preferred future form: a BB2-local GTE macro header so the source reads
 `gte_ldlv0(vec)` (same bytes, the SOTN idiom).
-(Not for islands admitted under inline-asm-policy.md § Owner ruling 2026-09-23:
-there the islands must be inline in src/*.c; header forms are not admitted, per
-Judge ruling func_8002DAD0 2026-09-18.)
+(Not for islands admitted under inline-asm-policy.md § Owner ruling 2026-09-23
+or § Owner ruling 2026-09-26: there the islands must be inline in src/*.c;
+header forms are not admitted, per Judge ruling func_8002DAD0 2026-09-18.)
+
+**inline_o.h class (owner ruling 2026-09-26).** A census member whose islands
+all meet inline-asm-policy.md § Owner ruling 2026-09-26 (verbatim inline_o.h
+macro units, statement for statement, against the `engine/gtemacro.py`
+pinned copy) needs no `tools/grinder/owner_cluster_grants.txt` row; the
+4-point check above still applies. Islands outside that class keep the
+per-function row route. That ruling applies on the manual path only until the
+driver's grant door is taught the class.

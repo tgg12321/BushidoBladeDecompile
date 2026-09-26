@@ -88,13 +88,17 @@ and the 2026-08-30 21:30 `c` FAIL both stand; a fresh local written more
 than once is admitted ONLY if it meets every prong of Ruling 5
 (2026-09-23; as amended by its 2026-09-23 extension), of Ruling 6
 (2026-09-23), of Ruling 8 (2026-09-24, vmNoiseOn's `temp` only), of Ruling 9
-(2026-09-25) or of Ruling 10 (2026-09-25), whichever governs that variable, exclusively: the reused
+(2026-09-25) or of Ruling 10 (2026-09-25), or, when none of those admits
+it, every prong of Ruling 11 (2026-09-26, allocator-necessity proof),
+whichever governs that variable, exclusively: the reused
 variable itself may not also claim this entry or
 [[staged-value-reused-variable]]; other locals in the same body,
 including a Ruling 5 1(b)(ii) selector binding, are judged under their
 own entries.) All other prongs (real value, byte-neutral, fresh not
 borrowed, destination not live-pre-initialized, standard prerequisites)
-are unchanged.
+are unchanged. Where Rulings 5-10 below say that a variable they do not
+admit "fails", that is read subject to Ruling 11: such a variable is
+admitted if, and only if, it meets every prong of Ruling 11.
 
 ## Ruling 2 — dead-store deadness is STORE-level
 
@@ -784,6 +788,36 @@ on keeps its own annotation requirement.
   compound statement (the same `{ }` body, or both at function scope), the
   write first, with no `return`, `break`, `continue` or `goto` between them.
   A variable with any other reader fails.
+
+  **Clarification (owner, 2026-09-26): a `break` that only exits a loop in
+  between.** The question put to the owner, verbatim: "Ruling 9 prong (c):
+  may a `break` that only exits an inner loop sit between the write and its
+  use?" The owner chose "Yes, inner-loop break OK (Recommended)", whose text
+  is, verbatim: "The break never skips the use. Unblocks func_8006F97C (full
+  match, everything else already accepted)." What follows is the author's
+  narrowing of that option, not the owner's words.
+  - **Admitted.** A `break` statement between a write and its consumer does
+    not violate (c) when BOTH hold: (1) the statement it exits under C's
+    rules (the innermost `for`, `while`, `do` or `switch` enclosing it) is a
+    `for`, `while` or `do` loop, not a `switch`; and (2) that whole loop
+    statement, its header included, lies after the write and before the
+    consumer, inside the compound statement that holds both of them. Such a
+    `break` transfers control to the point just after that loop, which is
+    still before the consumer, so it cannot skip the consumer.
+  - **Still violates (c).** A `return` or `goto` anywhere between the write
+    and the consumer, including inside the nested loop. A `break` whose
+    loop begins before the write, ends after the consumer, or encloses
+    either of them. A `break` that exits a `switch`, and any `continue`: the
+    question put to the owner was about a `break` that exits a loop, and
+    this clarification decides nothing else, so the unclarified text
+    governs them and they violate (c).
+  - **Nothing else changes.** Each write is still read exactly once, by the
+    consumer. The nested loop neither reads nor writes the variable (a read
+    there is another reader and fails (c); a write there fails (g)). The
+    loop itself is ordinary program logic, judged on its own merits. Every
+    other prong, amendment (b′) and the still-banned list stand unchanged.
+    Record: docs/grind/decisions.md 2026-09-26 OWNER RULING — Ruling 9 (c)
+    clarification: a `break` confined to a loop in between.
 - **(d) Real computation** (Ruling 5 1(e)). Every write's addition appears in
   the target's own bytes at that site (e.g. `addiu a1,v1,0xC`). A write whose
   value is a constant, or a bare copy of another variable (K = 0), fails.
@@ -1106,6 +1140,153 @@ re-submitted to a fresh layer-2 under this text. Its ledger
 excerpts, but not yet the SHA-256 or the second-copy confirmation (A). It
 needs them first. Record: docs/grind/decisions.md 2026-09-25 OWNER RULING —
 Ruling 10.
+
+## Ruling 11 (owner, 2026-09-26) — a reused local proven necessary by the allocator
+
+**Question and answer.** Three 2026-09-26 docs/grind/borderline.md entries
+asked whether a local may hold values that no earlier ruling lets one
+variable share: func_80055138 (one `s32 v` for five values), func_8003993C
+(`win` for a weapon-set selector and the replay window; `key` set from a
+different table in each arm of an if/else) and func_8002DE20 (one
+`side_a`/`side_b` pair shared by twelve same-side tests). The question put to
+the owner, verbatim: "Allow a local reused for several unrelated values when
+compiler dumps prove no one-variable-per-value spelling can match?" The
+framing, which the owner approved: "Allow it only with proof: the worker must
+show from compiler dumps that no single-purpose spelling can match, give the
+variable an honest generic name, and still pass layer-2."
+
+Owner (Trenton) chose, verbatim: **"Allow with proof (Recommended)"**, whose
+text is: "Admit only when allocator-dump proof shows necessity, honest generic
+name, and layer-2 still reviews. Unblocks 80055138, 8003993C, 8002DE20 (C
+part)."
+
+**Rule text.** This is the author's narrowing of that answer, not the
+owner's words. It applies only to a fresh local written more than once that
+none of Ruling 5 (with its extension), Ruling 6, Ruling 8, Ruling 9 or
+Ruling 10 admits. A variable one of them admits is judged under that ruling
+and gets nothing from this one. A variable in scope here is admitted ONLY if
+it meets EVERY prong (A)-(H) below; missing any prong is a FAIL(CONSTRUCT)
+under Ruling 1. The variable may not also claim Ruling 1's named-intermediate
+relaxation or [[staged-value-reused-variable]], and no consumer of it may be
+a staged-value borrow. Each variable is judged on its own: a pair such as
+func_8002DE20's `side_a`/`side_b` is two variables, and each must meet every
+prong. Other locals in the body are judged under their own entries.
+
+"Value", in this ruling, means one group of writes that can reach a common
+read: two writes of the variable belong to the same value when some read of
+the variable can read either one. For example, in
+`t = x / 3; if (t > 9) t = 0; use(t);` both writes reach `use(t)`, so they
+are one value. Writes that no common read can reach belong to different
+values.
+
+- **(A) A fresh local, not a borrow.** The variable is a local of this
+  function: not a parameter, a global, or a `static` or `register` variable.
+  It is declared once, at the innermost scope that encloses all of its writes,
+  and no other declaration is moved or re-scoped. Its address is never taken
+  (no `&var` anywhere in the function).
+- **(B) Every write is live.** (1) Each write's value is read on at least one
+  path before the variable is next written or goes out of scope. A write
+  whose stored value is never read (a dead store in Ruling 2's store-level
+  sense) fails; this ruling admits nothing the dead-store family would need.
+  (2) No write stores a value the variable already holds, judged by C
+  semantics exactly as in Ruling 5 prong 2(c).
+- **(C) The one-variable-per-value spelling has the same statements.**
+  (1) The ledger records the one-variable-per-value spelling: each value gets
+  its own fresh local, declared at the innermost scope enclosing that value's
+  writes. (2) That spelling and the reuse spelling have the SAME statement
+  list: they differ only in declarations and identifiers (Ruling 5 prong
+  2(b)). A write or read that exists only in the reuse form fails.
+  (3) Every value is a real computation: at least one of its writes is a
+  load, an arithmetic computation or a call result whose instructions appear
+  in the target's own bytes. A value whose writes are all literal constants,
+  or bare copies of another named variable or parameter, fails.
+  Constant-holders stay under [[named-local-fake-exception]], staging copies
+  under [[staged-value-reused-variable]], and the F1 constant-staging chain
+  stays refused.
+- **(D) Allocator-dump proof of necessity** (the owner's first condition).
+  The function's ledger (`memory/grind/<func>/`) banks all of:
+  (1) **The dumps.** The compiler's allocation dumps for BOTH the reuse
+  spelling and the one-variable-per-value spelling, compiled with the build's
+  flags: the `.lreg`, `.greg` and `.flow` dumps (cc1 `-dl -dg -df`) and/or the
+  instrumented cc1's `BB2_*_DEBUG` output (`tools/gcc-2.7.2/cc1`), with the
+  command lines. Excerpts are enough if they carry the pseudo numbers, the
+  register each value receives and the allocator decision at issue.
+  (2) **The mechanism.** The allocator decision that seats the target's
+  register(s) is named by pass and by source location in `tools/gcc-2.7.2`
+  (e.g. local-alloc.c `combine_regs` tying a pseudo that lives in one basic
+  block to a dying input; global.c's allocno priority order). The dumps show
+  that decision going the target's way in the reuse spelling and the other
+  way in the one-variable-per-value spelling.
+  (3) **Necessity, not effect.** The ledger states the property of the reuse
+  spelling that the decision depends on (e.g. "the pseudo is live in more
+  than one basic block, so local-alloc does not allocate it"), and shows that
+  EVERY one-variable-per-value spelling lacks that property BECAUSE each value
+  has its own variable, whatever its declaration order, scope, type,
+  statement order or other respelling. An argument that covers only the
+  spellings that were measured fails (D). So does one showing only that the
+  reuse spelling scores better: that is an allocator effect, not necessity.
+  (4) **Measured alternatives.** `sandbox --disable all` scores for: the full
+  one-variable-per-value spelling; where the variable holds three or more
+  values, each value split out on its own with the rest still shared (the
+  ablation); at least one structural respelling; and a permuter campaign from
+  the one-variable-per-value body, with its best score and what its finds
+  reuse ([[permuter-fresh-seed-discipline]]).
+- **(E) An honest generic name** (the owner's second condition). The name
+  claims nothing false about any value the variable holds. It is either
+  (i) a generic scratch word, `temp`, `tmp`, `work` or `scratch`, optionally
+  followed by digits or by `_` and one lowercase letter to tell two such
+  variables apart (e.g. `temp2`, `tmp_a`); or (ii), when every value is the
+  same kind of quantity, a name for that kind that is true of every write,
+  judged as in Ruling 9 prong (f) (e.g. `cross_a` when every write is a cross
+  product). A name that states the role of only some values fails (e.g. `win`
+  for a variable that also holds a weapon-set selector). Single-letter names,
+  register-style names (`v0`, `a1`, `s2`), `new_var`, `arg`/`argN`/`aN`, and
+  the coercion-announcing names of [[no-new-park-categories]] (`pad`, `dummy`,
+  `spill`, `slack`, `_unused`, `_tmp`) never qualify. Form (ii) is the
+  author's reading of "honest generic name" for same-kind values.
+- **(F) Annotation** (the author's addition). An inline comment at the
+  declaration says that the variable holds several values, names each value
+  (or, under (E)(ii), their kind), and cites this ruling and the ledger file
+  that holds the (D) proof.
+- **(G) Layer-2 still reviews** (the owner's third condition). Admission
+  needs a fresh layer-2 `cheat-reviewer` PASS on the body, given the (D)
+  ledger, that walks every prong of (A)-(H). On the Grinder path a Judge PASS
+  is not enough: the Judge may not admit a variable under this ruling, and a
+  body that relies on it lands only through the manual path's layer-2. The
+  ordinary completion gates (sandbox 0, full-build SHA1 == oracle) apply.
+- **(H) Everything else is judged normally.** Every other construct in the
+  body passes ordinary review on its own merits. This ruling sanctions
+  nothing but the variable that meets (A)-(G).
+
+**Relation to "allocator effect alone is never sufficient".** Rulings 5, 6
+and 9 each close with a Known weakness: the only codegen effect of their
+reuse is one pseudo spanning several sites, and allocator effect alone is
+never sufficient. That sentence stands for those rulings and for every
+variable this ruling does not admit. Ruling 11 is the owner's one exception to
+it: it admits a variable on allocator NECESSITY, proven under (D) for every
+one-variable-per-value spelling, never on a measured effect.
+
+**What stays banned, and what is not reopened.** A re-load of an unchanged
+value (func_80060A68 `src`/`idx`) fails (B)(2). Constants staged through a
+local (func_8003FA24 `half`, the F1 chain) and bare copies (func_800288C8
+`tbl`, func_8002A458 `lzc_in`) fail (C)(3). A write whose value is never read
+fails (B)(1). A variable whose per-value spelling needs an extra or a missing
+statement fails (C)(2). This ruling reopens no earlier FAIL by itself:
+func_800200DC `y1`, func_80045878 `c`, func_8008B488 `rate` and every other
+variable on the still-banned lists of Rulings 5, 6 and 9 can return only as a
+fresh submission that meets every prong, and nothing here pre-decides one.
+It does NOT reopen the class the owner declined on 2026-09-24 ("a scratch
+variable reused exactly as SOTN's matched code reuses it", decisions.md
+Ruling 8 entry): a SOTN or other precedent counts for nothing under this
+ruling. Only the (D) proof admits.
+
+**Application.** func_80055138 (`v`), func_8003993C (`win` and `key`) and
+func_8002DE20 (`side_a`/`side_b`) may each be submitted to a fresh layer-2
+under this text once their ledgers carry the (D) proof and their variables
+meet (E) (`v` and `win` need new names) and (F). The outcomes are not
+pre-decided. func_8002DE20's GTE islands are a separate admission step
+(inline-asm-policy.md § Owner ruling 2026-09-26). Record:
+docs/grind/decisions.md 2026-09-26 OWNER RULING — Ruling 11.
 
 ## What this ruling does NOT change
 

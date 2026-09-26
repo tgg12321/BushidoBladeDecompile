@@ -29609,3 +29609,95 @@ rests on.
 
 Recorded in: `.claude/rules/rotation-not-foreclosure.md` Ruling 4; `.claude/skills/decomp-manual/SKILL.md`
 §4 FAIL step and §5; `CLAUDE.md` queue table; `docs/DECOMP_WORKFLOW.md` §4.
+
+## 2026-09-26 — OWNER RULING — Ruling 11: a reused local proven necessary by the allocator (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question (borderline.md 2026-09-26 entries func_80055138, func_8003993C and func_8002DE20; put to
+the owner by the orchestrator, verbatim record tmp/orch/owner_rulings_2026-09-26.md): "Allow a
+local reused for several unrelated values when compiler dumps prove no one-variable-per-value
+spelling can match?" Approved framing: "Allow it only with proof: the worker must show from
+compiler dumps that no single-purpose spelling can match, give the variable an honest generic
+name, and still pass layer-2."
+
+Owner (Trenton) chose, verbatim: "Allow with proof (Recommended)" — "Admit only when
+allocator-dump proof shows necessity, honest generic name, and layer-2 still reviews. Unblocks
+80055138, 8003993C, 8002DE20 (C part)."
+
+**Ruling (full text in the rule file, "Ruling 11"; the prongs are the author's narrowing, not the
+owner's words).** A fresh local written more than once that none of Rulings 5 (with its
+extension), 6, 8, 9 or 10 admits is admitted only when: (A) it is a fresh, address-never-taken
+local declared once at the innermost enclosing scope; (B) every write is read on some path and
+none re-stores a held value; (C) the one-variable-per-value spelling has the same statement list
+and every value is a real computation (no constant-holders or bare copies); (D) the ledger banks
+allocation dumps for both spellings, names the allocator decision by pass and source location,
+and shows that EVERY one-variable-per-value spelling lacks the property the decision depends on
+(necessity, not effect), with the measured alternatives (full split, per-value ablation, a
+structural respelling, a permuter campaign); (E) the name is an honest generic scratch word or a
+kind name true of every write; (F) a declaration comment lists the values and cites the ruling;
+(G) a fresh layer-2 PASS (a Judge PASS alone is not enough); (H) everything else judged normally.
+Ruling 1's multi-WRITE paragraph and the named-intermediate entry in no-new-park-categories.md
+now list Ruling 11, and Ruling 1 gains one sentence: where Rulings 5-10 say that a variable they
+do not admit "fails", that is read subject to Ruling 11 (admitted if, and only if, it meets every
+prong of Ruling 11). The "allocator effect alone is never sufficient" sentence stands for Rulings
+5, 6 and 9; Ruling 11 is the owner's one exception, on proven necessity. No earlier FAIL is
+reopened by itself, and the class declined on 2026-09-24 (SOTN reuse) is not reopened.
+
+## 2026-09-26 — OWNER RULING — aggregate-merge prong (a): compiler-necessity evidence, minimal span (`.claude/rules/no-new-park-categories.md`)
+
+Question (borderline.md 2026-09-26 func_800620B8 and its session-2 addendum), verbatim: "Accept
+'only one object compiles to these bytes' (confirmed by the original PsyQ compiler) as evidence
+for merging adjacent data labels into one table?" Approved framing: "accept compiler necessity as
+evidence when it's confirmed by the original compiler and the merged object is the smallest span
+that covers the labels actually used."
+
+Owner (Trenton) chose, verbatim: "Accept, minimal span (Recommended)" — "Compiler-necessity proof
++ cc1psx confirmation + merged object limited to the labels actually used. Unblocks 800620B8,
+likely 8005D814."
+
+**Ruling (full text in the rule file, aggregate-merge entry, "Amendment (owner ruling
+2026-09-26)"; the author's narrowing).** Prong (a) may be met by compiler-necessity evidence when
+(a1) dumps prove the target's codegen depends on the addresses being offsets of one object, for
+every separate-object spelling (only split spellings resting on refused or banned constructs are set
+aside; one admissible under a sanctioned family counts); (a2) cc1psx (tools/cc1psx_wrapper.sh, calibration use only, never
+a build path) produces the non-target shape from the split declarations and the target's shape
+from the merged one; (a3) the merged object is exactly the span from the lowest- to the
+highest-addressed label the function references, nothing outside it; (a4) one record layout
+across the span, declared as an array of that record. Prongs (b)-(e) unchanged. func_80036140's
+build-model question is not decided.
+
+## 2026-09-26 — OWNER RULING — Ruling 9 (c) clarification: a `break` confined to a loop in between (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Question (borderline.md 2026-09-26 func_8006F97C), verbatim: "Ruling 9 prong (c): may a `break`
+that only exits an inner loop sit between the write and its use?" Owner (Trenton) chose,
+verbatim: "Yes, inner-loop break OK (Recommended)" — "The break never skips the use. Unblocks
+func_8006F97C (full match, everything else already accepted)."
+
+**Ruling (the author's narrowing).** A `break` between the write and its consumer does not
+violate (c) when it exits a `for`/`while`/`do` loop (not a `switch`) whose whole statement lies
+after the write and before the consumer, inside the compound statement holding both. `return`,
+`goto`, a `break` whose loop encloses or straddles the write or consumer, a `switch` `break`,
+and any `continue` still violate (c); the question covered only a loop-exiting `break`. The
+nested loop may not read or write the variable. Nothing else in Ruling 9 changes.
+
+## 2026-09-26 — OWNER RULING — inline_o.h GTE macro blocks as a class (`.claude/rules/inline-asm-policy.md`)
+
+Question (borderline.md 2026-09-26 func_8002DE20 addendum, item (2)), verbatim: "Grant GTE blocks
+copied verbatim from PsyQ's inline_o.h (with its `move $12` setup step) as a class?" Owner
+(Trenton) chose, verbatim: "Grant as a class (Recommended)" — "Character-identical to a pinned
+inline_o.h copy; no per-function owner row needed." Framing: "grant this class, provided the
+block matches a pinned header copy character for character."
+
+**Ruling (full text in the rule file, "Owner ruling 2026-09-26"; the author's narrowing).** No
+per-function tools/grinder/owner_cluster_grants.txt row is needed for islands that are, statement
+for statement and character for character (whitespace only), the complete expansion of one macro
+in the pinned PsyQ 4.3 inline_o.h / gtemac.h text recorded in engine/gtemacro.py PINNED
+(silent-hill-decomp@a1f407cb, SHA-256 76f28032…, second copy xenogears-decomp@54d7ef3e), with the
+header's own `move $12,%0` statements and `"$12"-"$15","memory"` clobbers. The DMPSX
+placeholder substitution is NOT covered (not character-identical; the 2026-09-24 Extension is
+scoped to the 2026-09-23 inline_c.h rule), the scoring-only `0(REG)` ≡ `(REG)` equivalence does not
+extend to admission, and joined-statement islands are not covered; all three keep the
+per-function row route. All other 2026-09-23 conditions (inline in src/*.c, sandbox
+0 + SHA1, region hashes, auth: row with the gte_cop2_sdk_macro tag and Pure-C attempts blocks)
+and a layer-2 apply. The croc copy (tmp/croc-ref) is formatter-rewritten and is not the
+reference. The Grinder driver's grant door still requires a row or a STRONG tier, so the class
+applies on the manual path until that door is taught it in a separate reviewed change.

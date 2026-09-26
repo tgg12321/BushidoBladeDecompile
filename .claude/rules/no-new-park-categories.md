@@ -231,7 +231,9 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     alone, every prong of its Ruling 8 (2026-09-24), or every prong of its
     Ruling 9 (2026-09-25, one meaning at several constant offsets) or of its
     Ruling 10 (2026-09-25, the verified original source's own variable,
-    verbatim); whichever ruling
+    verbatim), or, when none of those admits it, every prong of its
+    Ruling 11 (2026-09-26, a reused local proven necessary by allocator
+    dumps, with an honest generic name and layer-2); whichever ruling
     applies governs that variable exclusively: the reused variable itself may
     not also claim this entry or [[staged-value-reused-variable]]; other
     locals in the same body, including a Ruling 5 1(b)(ii) selector
@@ -255,7 +257,9 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   aggregate declaration. Prongs, ALL mandatory: (a) the object model is
   established by evidence independent of and predating the byte-chasing
   session — cross-TU stride indexing, base+offset addressing in the
-  original binary, or a committed naming-census schema; (b) the merged
+  original binary, or a committed naming-census schema — OR by
+  compiler-necessity evidence meeting every condition (a1)-(a4) of the
+  2026-09-26 amendment below; (b) the merged
   declaration reflects that documented shape (a struct/record table where
   the evidence shows records; a flat array only where the evidence shows
   a flat array) — an index that encodes a record stride as a magic number
@@ -272,6 +276,80 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   declaration in the shared header, never TU-local, never a per-use
   pointer pun; (e) byte-neutrality verified for every other consumer,
   full `verify-oracle --rebuild`, layer-2 cheat-reviewer.
+  - **Amendment (owner ruling 2026-09-26) — compiler-necessity evidence for
+    prong (a).** Filed question: docs/grind/borderline.md 2026-09-26
+    func_800620B8 (four adjacent sprite-table labels) and its session-2
+    addendum. The question put to the owner, verbatim: "Accept 'only one
+    object compiles to these bytes' (confirmed by the original PsyQ
+    compiler) as evidence for merging adjacent data labels into one
+    table?" The framing: "accept compiler necessity as evidence when it's
+    confirmed by the original compiler and the merged object is the
+    smallest span that covers the labels actually used." Owner (Trenton)
+    chose, verbatim: **"Accept, minimal span (Recommended)"**, whose text
+    is: "Compiler-necessity proof + cc1psx confirmation + merged object
+    limited to the labels actually used. Unblocks 800620B8, likely
+    8005D814." What follows is the author's narrowing, not the owner's
+    words. Prong (a) is met by compiler-necessity evidence only when ALL of
+    (a1)-(a4) hold:
+    - **(a1) Necessity, proven from dumps.** The function's ledger banks the
+      compiler dumps (cc1 RTL dumps such as `.cse`, `.loop`, `.lreg`,
+      `.greg`, and/or the instrumented cc1's `BB2_*_DEBUG` output,
+      `tools/gcc-2.7.2/cc1`, with command lines) for the split-label
+      spelling and the merged spelling. It names the compiler decision that
+      yields the target's codegen, by pass and source location in
+      `tools/gcc-2.7.2` (e.g. cse relating the addresses as offsets of one
+      symbol, so loop.c hoists the base). It shows that decision depends on
+      the addresses being offsets of ONE object, so that no spelling with
+      separate objects can produce it, not only the spellings measured. The
+      best split-label floor and at least one structural respelling are
+      recorded with their `sandbox --disable all` scores. Only a split
+      spelling that relies on a REFUSED or BANNED construct (e.g. F4
+      cross-symbol arithmetic, a per-use pointer pun) is set aside: it does
+      not count against (a1) and does not land. A split spelling whose every
+      construct is admissible under a sanctioned family with that family's
+      prerequisites met (e.g. a FAKE-annotated pointer alias under
+      [[pointer-alias-fake-exception]]) counts: if it reaches the target's
+      codegen, (a1) is not met.
+    - **(a2) The original compiler agrees** (a calibration use). The
+      original PsyQ compiler, run through `tools/cc1psx_wrapper.sh` on the
+      same preprocessed translation unit with the build's cc1 flags, is run
+      twice: once with the split declarations and once with the merged
+      declaration. With the split declarations it does NOT produce the
+      target's shape; with the merged declaration it DOES. "The target's
+      shape" means the instructions that form and hold the merged labels'
+      addresses match the target's in opcode, register and offset. The
+      ledger banks both outputs and their diff against the target. If
+      cc1psx produces the target's shape from the split declarations too,
+      or does not produce it from the merged one, (a) is not met. This is a
+      calibration use of cc1psx under [[cc1psx-calibration-only]] and
+      [[no-compiler-divergence]]: cc1psx is never a build path, the
+      committed build compiles with the project's cc1, and the oracle SHA1
+      decides the match.
+    - **(a3) The minimal span.** The merged object covers exactly the bytes
+      from the start of the lowest-addressed label the function under
+      judgment references to the end of the highest-addressed label it
+      references. Every splat label inside that span is merged (prong (c)
+      applies to each, including any another function references); a label
+      inside the span that no code references is included only because it
+      lies inside the span. No label outside the span is merged in, even
+      when records of the same shape continue past either end (as they do
+      before 0x8009BA00 for func_800620B8).
+    - **(a4) One element shape.** Every element in the span has one record
+      layout (the same size, with the same field types at the same offsets),
+      shown by the function's own accesses and by the original data. The
+      declaration is an array of that record type, with a length of exactly
+      the span divided by the record size. Prong (b) applies unchanged,
+      including its ban on encoding a record stride as a magic number.
+
+    Prongs (b)-(e) are unchanged: the declaration is canonical in the shared
+    header, the merge is complete, and byte-neutrality for every other
+    consumer, `verify-oracle --rebuild` and a layer-2 cheat-reviewer are
+    required. The amendment decides nothing about func_80036140's
+    build-model question (per-file `-G8`, the maspsx COMMON model), which
+    the owner left for separate investigation; a merge that depends on that
+    model is not admitted by this amendment alone. Record:
+    docs/grind/decisions.md 2026-09-26 OWNER RULING — aggregate-merge prong
+    (a): compiler-necessity evidence, minimal span.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)
   ([[do-while-zero-exception]] / [[sotn-do-while-zero-research-2026-06-04]]):
   sanctioned as a pure-C match device for ANY codegen effect, including

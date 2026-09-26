@@ -51,7 +51,8 @@ never a wait on the owner.
    GTE-wrapper auto-authorize precedent ([[gte-wrapper-misroute-park]]).
    Without STRONG evidence, asm remains refused — nothing here lowers the
    evidence bar.
-   (Exception: verbatim PsyQ GTE macro islands, inline-asm-policy.md § Owner ruling 2026-09-23.)
+   (Exception: verbatim PsyQ GTE macro islands, inline-asm-policy.md § Owner ruling 2026-09-23,
+   and verbatim inline_o.h GTE macro blocks, § Owner ruling 2026-09-26.)
 
 4. **The frozen SOTN family list remains OWNER-ONLY to extend — but
    extension requests never wait.** A candidate family extension, even

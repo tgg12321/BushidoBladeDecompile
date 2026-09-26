@@ -362,6 +362,8 @@ stands unchanged:
   owner-instructed row in `tools/grinder/owner_cluster_grants.txt`, which the
   layer-2 cited for func_800288C8. inline_o.h carriers have been approved one
   function at a time (func_80018300, func_8002CD58, func_8002DAD0).
+  (Since 2026-09-26, islands that meet every prong of § Owner ruling
+  2026-09-26 below need no per-function row; islands that do not still do.)
 
 This ruling does not create that row for func_800288C8 or any other function,
 and the owner's approval of the recommendation is not an instruction to add
@@ -473,6 +475,113 @@ the body lands. The body that lands is byte-identical to the body the layer-2 PA
 the `tbl` copy, or anything else a reviewer FAILs, gets no row. Record:
 docs/grind/decisions.md 2026-09-25 OWNER RULING — scorer amendment `0(reg)`
 ≡ `(reg)`, and 2026-09-25 OWNER RULING — func_800288C8 owner-cluster row.
+
+## Owner ruling 2026-09-26 — verbatim inline_o.h GTE macro blocks, granted as a class
+
+**Question and answer.** Filed question: docs/grind/borderline.md 2026-09-26
+"func_8002DE20 — addendum: layer-2 FAIL; TWO owner items", item (2). The
+question put to the owner, verbatim: "Grant GTE blocks copied verbatim from
+PsyQ's inline_o.h (with its `move $12` setup step) as a class?" Owner
+(Trenton) chose, verbatim: **"Grant as a class (Recommended)"**, whose text is:
+"Character-identical to a pinned inline_o.h copy; no per-function owner row
+needed." The framing: "grant this class, provided the block matches a pinned
+header copy character for character."
+
+**Rule text.** This is the author's narrowing of that answer, not the owner's
+words. A C function body may carry GTE islands written in PsyQ inline_o.h
+form and be classified COMPLETED-INLINE-ASM-CANONICAL WITHOUT a per-function
+row in `tools/grinder/owner_cluster_grants.txt` and without a STRONG
+`scan_hand_coded` tier, when every island meets ALL of (A)-(E):
+
+- **(A) The pinned copy is the reference.** The reference text is PsyQ
+  Run-time Library Release 4.3 `inline_o.h` ("Macro definitions of DMPSX
+  version 3"), and `gtemac.h` for macros built on it, exactly as
+  `engine/gtemacro.py` `PINNED` records them: source
+  `github.com/shdecompilations/silent-hill-decomp@a1f407cb1ed0992997ace33a024e52b47001fdac`
+  `include/psyq/inline_o.h`, SHA-256
+  `76f28032e381a78a4c96347eeee753150cfb55b9f0f0be414fd5040bf4c6e47d`, confirmed
+  byte-identical against a second, independent copy,
+  `github.com/ladysilverberg/xenogears-decomp@54d7ef3e221578afc39d39f34fcd8c15ed83928c`
+  `include/psyq/inline_o.h`; for `gtemac.h`, the same two projects'
+  `include/psyq/gtemac.h`, SHA-256
+  `9fe028fd2a187bed8147a67a2c98210b6f1663c2e05d2e36bb1243512c3357d5`, recorded
+  the same way. A macro is in the pinned copy for this ruling only
+  once its verbatim header lines are an entry in `PINNED`, with their line
+  range and excerpt SHA-256, which `engine test` re-hashes. That is also the
+  text the sandbox recognizes units against, so the admission reference and
+  the scoring reference are one text. Adding a macro's lines to `PINNED` is an
+  `engine:` commit, reviewed by a layer-2 cheat-reviewer who checks the
+  excerpt against the pinned header. Other copies are not the reference.
+  Xeeynamo/croc@f30ff1ee `include/psyq/inline_o.h` (the copy at
+  `tmp/croc-ref/`, which the func_8002DE20 ledger and its 2026-09-26 layer-2
+  treated as the only copy) is reformatted by a code formatter and carries an unexpanded
+  `$PSLibId$`, so it is not character-identical to Sony's text.
+  `tmp/libscan/psyq40/INCLUDE/INLINE_O.H` (Release 4.0, CRLF) is an
+  unpinned local file.
+- **(B) Character for character, statement for statement.** Each island is a
+  qualifying macro unit as § Scorer ruling (owner, 2026-09-25) (A)-(B)
+  defines it: a contiguous run of inline `__asm__ volatile` statements that
+  is, statement for statement and in order, the complete expansion of ONE
+  named macro in the pinned copy, with at least one cop2 instruction. Each
+  statement matches its header statement character for character in
+  instruction text, operand constraints and clobber list, including the
+  header's own `move $12,%0` statements and every statement's
+  `"$12","$13","$14","$15","memory"` clobbers. Only whitespace may differ.
+  Joining several header statements into one `__asm__` statement (the form
+  in which func_80018300, func_8002CD58 and func_8002DAD0 were approved one
+  at a time) is not character-identical and is not covered by this class.
+- **(C) No respelling of any kind.** The class admits no substitution. Each
+  of these is not character-identical and is not admitted by this class:
+  - **DMPSX placeholder command words.** An island that replaces a header
+    `.word` DMPSX placeholder with the real command word (e.g. `gte_rtv0()`'s
+    `.word 0x0000013f` as `.word 0x4A486012`) is not character-identical.
+    § Extension (owner, 2026-09-24) scoped that swap to the 2026-09-23
+    inline_c.h rule, and this ruling does not extend it.
+  - **`0(REG)` for `(REG)`.** The § Scorer amendment's `0(REG)` ≡ `(REG)`
+    equivalence is for scoring only; that amendment says it "does not rule
+    on admission", and this ruling does not either. A macro with a header
+    `($12)` memory operand (for example `gte_ldv0`, `lwc2 $0,($12)`) cannot
+    be admitted under this ruling while maspsx cannot assemble `($12)`.
+  - **Every other edit**: a dropped or added clobber, a changed constraint,
+    a reordered, added or dropped statement, a partial expansion, any GPR
+    instruction outside the macro text.
+
+  Islands excluded here stay on the per-function owner-row route.
+- **(D) Every other requirement stands.** Conditions 2-5 of § Owner ruling
+  2026-09-23 apply unchanged, with this class in place of the inline_c.h
+  route: nothing else in the islands and no register pins; written inline
+  in `src/*.c` (no `#include`, no BB2-local header, no macro-by-name);
+  `sandbox --disable all` == 0 and full-build SHA1 == oracle; island hashes in
+  `tools/canonical_asm_regions.json`; the `inline_asm_canonical.txt` row,
+  tagged `gcc-cannot-emit:gte_cop2_sdk_macro`, citing this ruling and the
+  `PINNED` entries, in its own `auth:` commit before the body; a `Pure-C
+  attempts:` block with at least 3 entries on each of the two commits. The
+  engine's `canonical <func>` gate is run and its route recorded: each island
+  sits inside a span the gate routes to asm by its cop2 signal. Each island's
+  source comment names the macro and its pinned line range.
+- **(E) Layer-2.** A fresh layer-2 `cheat-reviewer` checks every island
+  against the pinned `PINNED` excerpt, statement for statement, and walks
+  (A)-(D), as well as reviewing the C body.
+
+**What this changes, and what it does not.** It removes only the
+per-function owner row for islands that meet (A)-(E); those need no new
+owner question. Islands outside the class (joined statements, DMPSX placeholder
+substitutions, `0($12)` respellings, anything else in (C)) keep the existing route: an
+owner-instructed row, as for func_80018300, func_8002CD58 and func_8002DAD0.
+The rows already granted are unaffected. The Relation-to-standing-policy
+paragraph of § Owner ruling 2026-09-23 applies to this class too: an owner
+exception to [[judge-sole-gate]] rule 3 and to the [[escalation-not-parked]]
+AUTO-REJECT bullet for this class only.
+
+**Manual path, until the driver learns the class.** The Grinder driver
+cannot apply this ruling today. Its PASS path (`tools/grinder/grind.ps1`,
+owner Ruling C 2026-09-02) sends every island-carrying body through
+`grindlib.grant_canonical_asm`, which admits only a STRONG scan tier or an
+`owner_cluster_grants.txt` row, and otherwise refuses the merge. Teaching it
+this class is a separate reviewed `engine:`/`rules:` change that this ruling
+does not make. Until then the class applies on the manual path only. Record:
+docs/grind/decisions.md 2026-09-26 OWNER RULING — inline_o.h GTE macro
+blocks as a class.
 
 # Why this distinction matters
 
