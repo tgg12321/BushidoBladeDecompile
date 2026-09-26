@@ -178,3 +178,27 @@ F18. Re-landing memberships (draft prongs iii-v), measured by integration/reland
   Result: SHA1 == oracle, func_80034708 score 8 (relocation spelling). bb2.ld: only the six
   code6cac_b3/_post section lines; no LINKED_ASM_FUNCS entry. The banked landing-s2-g8.patch lacks
   these four list memberships — add them to Makefile + engine/buildconfig.py when re-applying.
+
+## [s3 cont.] re-landing conformed to the draft -G8 prongs (owner Q5 + Q7 approved; rules pending)
+F19. Neighbours: the target's only gp-relative accesses in this region are func_80034708's own 16
+  (`%gp_rel(D_800A3174)` x12, `%gp_rel(D_800A3176)` x4). func_800343F0, func_800344B4 (code6cac_b.c
+  side) and func_80034F88, func_8003504C, func_80035280, func_80035430 (moved side) have ZERO
+  gp-relative accesses, and no asm/funcs file other than func_80034708.s names D_800A3174/D_800A3176.
+F20. Respellings proven byte-neutral BEFORE the split (integration/inplace.sh): both merges, every
+  consumer conversion and the ings.c func_800167EC base-first reorder applied in place, with
+  func_80034708 still INCLUDE_ASM in code6cac_b.c, no -G8, bb2.ld and all symbol files untouched ->
+  every TU rebuilt, relinked: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. objdiff:
+  every changed function differs only in relocation addends.
+F21. The move is textually identical (integration/movecheck.py): the 302-line / 12600-byte block
+  after func_80034708 in the in-place code6cac_b.c is byte-identical to the tail of
+  code6cac_b3_post.c; the split code6cac_b.c differs from the in-place file only by the removed
+  `/* kengo ... */` + INCLUDE_ASM(func_80034708) lines, the moved block, and the one extern used
+  only by the moved block (`extern s32 *func_80077D00(void);`), which moves with it.
+F22. Memberships (apply.py): code6cac_b3 -> GP_FILES, EXPAND_LB_FILES (inert: expand_lb_funcs.txt
+  names only func_8003047C), RODATA_ALIGN2_FILES (mechanical: it emits jump tables at 0x8001086C and
+  0x8001089C, both 4 mod 8; object .rodata now 2**2); code6cac_b3_post -> EXPAND_LB_FILES (inert),
+  NOT RODATA_ALIGN2 (it emits no jump table / no .rodata). bb2.ld: six section lines only; no
+  LINKED_ASM_FUNCS. integration/reland_check.sh with exactly these memberships: every TU rebuilt,
+  relinked, SHA1 == oracle, func_80034708 score 8 (relocation spelling only).
+  Best honest -G0 score: 90 (F17). landing-s2-g8.patch is superseded by apply.py (regenerates from
+  the live tree, includes the memberships).

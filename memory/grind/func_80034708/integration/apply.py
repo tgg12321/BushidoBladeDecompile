@@ -32,5 +32,15 @@ edit('Makefile', 'GP_FILES := text1a_pre text1a_post\n', 'GP_FILES := text1a_pre
 edit('Makefile', "# project's sole -G8 file, and under -G8", "# project's first -G8 file, and under -G8")
 edit('engine/buildconfig.py', 'GP_FILES = {"text1a_pre", "text1a_post"}\n',
      'GP_FILES = {"text1a_pre", "text1a_post", "code6cac_b3"}\n')
+# Split TUs keep code6cac_b's memberships (draft prongs iii/iv). --expand-lb is inert for both
+# (expand_lb_funcs.txt names only func_8003047C). RODATA_ALIGN2 is mechanical: code6cac_b3 emits
+# jump tables at 0x8001086C and 0x8001089C (both 4 mod 8); code6cac_b3_post emits none.
+edit('Makefile', 'EXPAND_LB_FILES := code6cac_b\n', 'EXPAND_LB_FILES := code6cac_b code6cac_b3 code6cac_b3_post\n')
+edit('Makefile', 'RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c ',
+     'RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_b3 code6cac_c ')
+edit('engine/buildconfig.py', 'EXPAND_LB_FILES = {"code6cac_b"}\n',
+     'EXPAND_LB_FILES = {"code6cac_b", "code6cac_b3", "code6cac_b3_post"}\n')
+edit('engine/buildconfig.py', '    "code6cac", "code6cac_b", "code6cac_c", ',
+     '    "code6cac", "code6cac_b", "code6cac_b3", "code6cac_c", ')
 print('\n'.join(changed))
 open('tmp/func_80034708/applied_paths.txt', 'w', newline='\n').write('\n'.join(changed) + '\n')

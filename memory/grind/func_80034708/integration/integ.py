@@ -10,7 +10,8 @@ import engine.buildconfig as cfg
 if os.environ.get('RELAND'):
     cfg.GP_FILES.add('code6cac_b3')
     for st in ('code6cac_b3', 'code6cac_b3_post'):
-        cfg.EXPAND_LB_FILES.add(st); cfg.RODATA_ALIGN2_FILES.add(st)
+        cfg.EXPAND_LB_FILES.add(st)
+    cfg.RODATA_ALIGN2_FILES.add('code6cac_b3')
 
 ROOT = 'tmp/func_80034708/integ'
 for arg in sys.argv[1:]:

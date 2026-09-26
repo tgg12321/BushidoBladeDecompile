@@ -36,6 +36,10 @@ s = re.sub(r'\bg_file_flags\b', 'D_80106A50.flags', s)
 assert not re.search(r'\bg_file_(flags|disc_size|disc_type)\b|D_80106A5C', s)
 wr(R + '/src/ings.c', s)
 
+if os.environ.get('NOSPLIT'):
+    print('stage3 (no split) ok')
+    raise SystemExit(0)
+
 # ---- split code6cac_b.c
 b = rd(R + '/src/code6cac_b.c')
 k = b.index('/* kengo:LOW  |  su_menu_vs/_DispSamnailWindow')
