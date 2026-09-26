@@ -42,3 +42,10 @@ Not decided: func_80036140's maspsx COMMON-no-gp model (a maspsx behaviour chang
 ## Q7 — Mixed-field struct under the aggregate-merge compiler-necessity alternative
 Question: "Your table-merge ruling covered one repeated record type. func_80034708 needs 0x78–0x87 declared as ONE struct with mixed fields (a u16 pair, four byte pairs, four bytes). Both compilers, including the original PsyQ one, match the shipped code only with that struct, and it spans exactly the bytes the function uses. Extend the ruling to mixed-field structs under the same proof?"
 Owner chose: **"Allow with same proof (Recommended)"** — option text: "Same dump proof + cc1psx confirmation + minimal span of bytes actually used; layer-2 still reviews. Unblocks func_80034708 (with -G8)."
+
+<!-- Batch 3: appended verbatim from tmp/orch/owner_rulings_2026-09-26c.md (line endings normalized to LF; blank separator line added). -->
+# Owner rulings 2026-09-26 (third batch, via AskUserQuestion) — VERBATIM RECORD
+
+## Q8 — -G8 screening scope
+Question: "The -G8 screening rule says every small variable a -G8 file mentions must be on the small-data list. func_80034708's file mentions one 4-byte counter (D_800A37B8) that can't go on that list — other functions access it the normal way — and its code is identical at -G0 and -G8. The already-approved text1a -G8 files have 29 such variables. Should screening only require listing the variables whose compiled code actually changes under -G8?"
+Owner chose: **"Only if code changes (Recommended)"** — option text: "A small variable must be listed only when -G8 changes its compiled instructions; proven by building it both ways (bytes identical). Unblocks func_80034708; matches existing text1a practice."

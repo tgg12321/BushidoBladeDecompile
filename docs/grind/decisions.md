@@ -29775,3 +29775,27 @@ padding or one offset-named filler (`u8 unkNN[k];`) of exactly the gap, no other
 instruction by address and opcode; (5) prongs (b)-(e) unchanged, including no per-use pointer pun for other consumers,
 byte-neutrality, verify-oracle --rebuild and a fresh layer-2. func_80034708's struct is judged
 fresh against (a1), (a2) and (1)-(5); nothing here pre-decides it.
+
+## 2026-09-26 — OWNER RULING — -G8 screening scope (`.claude/rules/compiler-flags-canonical.md`)
+
+Third 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 3). Filed
+question: borderline.md 2026-09-26 "func_80034708 — -G8 screening rule vs plain small externs".
+Question, verbatim: "The -G8 screening rule says every small variable a -G8 file mentions must be
+on the small-data list. func_80034708's file mentions one 4-byte counter (D_800A37B8) that can't go
+on that list — other functions access it the normal way — and its code is identical at -G0 and -G8.
+The already-approved text1a -G8 files have 29 such variables. Should screening only require listing
+the variables whose compiled code actually changes under -G8?" Owner (Trenton) chose, verbatim:
+"Only if code changes (Recommended)" — "A small variable must be listed only when -G8 changes its
+compiled instructions; proven by building it both ways (bytes identical). Unblocks func_80034708;
+matches existing text1a practice."
+
+**Ruling (full text in the rule file, § "Screening scope"; the author's narrowing).** An extern of
+8 bytes or less that a -G8 TU references, not in sdata_syms.txt and not honestly typed larger, is
+exempt from the listing requirement only when the TU, built through the full per-file pipeline once
+as -G8 and once as -G0, has every instruction that accesses the extern or forms its address
+identical in bytes and relocation (type, symbol, addend), with the same number of such
+instructions, and the ledger banks the size, the reason it is unlisted, both command lines and the
+side-by-side access listing. Any differing access means the extern must be listed or typed larger,
+as before. The file-scope __asm__ half of the screening rule and the rest of the Per-file -G8
+ruling are unchanged; the approved text1a files are not re-screened. func_80034708's landing is
+judged fresh against it.

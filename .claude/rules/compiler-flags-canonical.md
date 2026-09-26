@@ -75,13 +75,58 @@ the authoritative record of the original configuration.
 
 | Mechanism (Makefile) | Flag | Why |
 |---|---|---|
-| `GP_FILES` | `-G8` instead of `-G0` | small-data threshold for GP-relative files. **First member: text1a (owner-approved 2026-08-05** — target %gp_rel loads + MEM_IN_STRUCT_P dependence + cost-model proof; PsyQ's ccpsx defaulted to -G8 and the maspsx sdata_syms machinery had been compensating). Census screening rule for further adoptions: a file is G8-safe only if every <=8-byte extern is in-gp-range (sdata_syms.txt) or honestly non-small-typed, and any file-scope `__asm__` is extracted to asm/funcs first (-G8 defers function bodies; top-level asm floats to .text 0). |
+| `GP_FILES` | `-G8` instead of `-G0` | small-data threshold for GP-relative files. **First member: text1a (owner-approved 2026-08-05** — target %gp_rel loads + MEM_IN_STRUCT_P dependence + cost-model proof; PsyQ's ccpsx defaulted to -G8 and the maspsx sdata_syms machinery had been compensating). Census screening rule for further adoptions: a file is G8-safe only if every <=8-byte extern whose compiled instructions -G8 changes is in-gp-range (sdata_syms.txt) or honestly non-small-typed (scope narrowed by owner ruling 2026-09-26, third batch: see § "Screening scope" below), and any file-scope `__asm__` is extracted to asm/funcs first (-G8 defers function bodies; top-level asm floats to .text 0). |
 | `NO_SR_FILES` | `-fno-strength-reduce` | files where strength-reduction diverges |
 | `FIX_LWL_FILES` | RETIRED 2026-08-04 (empty) | fix_lwl XOR-corrected big-endian lwl/lwr offsets; obsolete under -mel |
 
 These ARE the per-file flag variation the original build used. Nothing else.
 If a file isn't on these lists, it is plain `-O2 -G0`. The one route for adding
 a file to `GP_FILES` is the owner ruling of 2026-09-26 below.
+
+### Screening scope (owner ruling 2026-09-26, third batch)
+
+**Question and answer.** Filed question: docs/grind/borderline.md 2026-09-26
+"func_80034708 — -G8 screening rule vs plain small externs". The question put
+to the owner, verbatim (record: docs/grind/owner-rulings-2026-09-26.md, batch
+3): "The -G8 screening rule says every small variable a -G8 file mentions must
+be on the small-data list. func_80034708's file mentions one 4-byte counter
+(D_800A37B8) that can't go on that list — other functions access it the
+normal way — and its code is identical at -G0 and -G8. The already-approved
+text1a -G8 files have 29 such variables. Should screening only require
+listing the variables whose compiled code actually changes under -G8?" Owner
+(Trenton) chose, verbatim: **"Only if code changes (Recommended)"**, whose
+text is: "A small variable must be listed only when -G8 changes its compiled
+instructions; proven by building it both ways (bytes identical). Unblocks
+func_80034708; matches existing text1a practice."
+
+**Rule text** (the author's narrowing, not the owner's words). The screening
+rule's "every <=8-byte extern" is narrowed to the externs whose compiled
+instructions `-G8` changes. An extern of 8 bytes or less that a `-G8` TU
+references, that is not in `sdata_syms.txt` and is not honestly typed larger
+than 8 bytes, is exempt from the listing requirement ONLY when all of the
+following hold:
+1. **Built both ways.** The TU is compiled through the full per-file pipeline
+   (cc1, maspsx and the assembler, with every other flag and per-file list
+   exactly as in the build) once as a `-G8` TU and once as a `-G0` TU.
+2. **Every access identical.** In the two objects, every instruction that
+   accesses the extern or forms its address has identical bytes and an
+   identical relocation (type, symbol and addend), and the two objects have
+   the same number of such instructions. One differing access, or an access
+   present in only one object, means `-G8` changes its compiled instructions,
+   and the extern must be listed in `sdata_syms.txt` (in gp range) or be
+   honestly typed larger than 8 bytes, exactly as before.
+3. **Banked.** The function's ledger (`memory/grind/<func>/`) records, for
+   each exempt extern: its size, why it is not in `sdata_syms.txt`, the two
+   build command lines, and the side-by-side listing of every access (offset,
+   bytes, relocation) from both objects.
+
+Nothing else changes. The file-scope `__asm__` half of the screening rule, the
+rest of the Per-file -G8 ruling below and the full-build oracle SHA1 all apply
+unchanged. The exemption covers only the listing requirement; it never admits
+an access whose `-G8` bytes differ. As before, screening applies to further
+adoptions only: the two text1a `-G8` files approved on 2026-08-05 are not
+re-screened by this ruling. Record:
+docs/grind/decisions.md 2026-09-26 OWNER RULING — -G8 screening scope.
 
 ## Per-file -G8 by proof (owner ruling 2026-09-26)
 
@@ -132,9 +177,11 @@ pipeline stage is added.
   meets (i) and (ii) on its own. The functions are contiguous in the original
   address order. The TU has no file-scope `__asm__`, `INCLUDE_ASM` or
   `INCLUDE_RODATA` (under `-G8` cc1 buffers function bodies, so those float to
-  the top of the TU). The existing screening rule in the table above applies:
-  every extern of 8 bytes or less that the TU references is in gp range
-  (`sdata_syms.txt`) or is honestly typed larger than 8 bytes. Its only
+  the top of the TU). The existing screening rule in the table above applies,
+  with its 2026-09-26 scope (§ "Screening scope" above): every extern of 8
+  bytes or less that the TU references is in gp range (`sdata_syms.txt`) or
+  is honestly typed larger than 8 bytes, unless that section's both-ways
+  build proves `-G8` leaves every access to it unchanged. Its only
   compile-flag difference from the file it came from is `GP_FILES`
   membership: it keeps that file's `NO_SR_FILES`, `EXPAND_LB_FILES` and
   `EXPAND_LH_FILES` membership exactly.
