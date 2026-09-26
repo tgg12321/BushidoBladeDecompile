@@ -48,3 +48,8 @@ from the siblings func_80063E10 / func_8006295C (inline_c.h 4.3 :297-310,
 - prim re-walks the quads in the tail (fresh cursor = 34, rejected/).
 - `SetTransMatrix((u8 *)trans - 0x14)`: target keeps base+0x18 in a spill slot
   and computes -0x14; a MATRIX view at base+4 = 5 (rejected/matrix-view-trans-5.c).
+
+## Single-lever ablations (k1 body, one construct reverted, spliced src, control x0 = 0)
+tail E8-first 8 · y via ((s16 *)D_800A34B8)[1] 32 · `* 4` for `<< 2` 6 ·
+zp init before loop 2 · scalar D_8009BD44 5 · u16-cast table reads (no TexRec) 15.
+(Supersedes the rough +N figures above, which were measured on older bases.)
