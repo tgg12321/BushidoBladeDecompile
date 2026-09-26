@@ -21,9 +21,11 @@ typedef struct {
 
 extern s32 D_8009BC04;
 extern s32 D_8009BC08;
-extern s32 SetDrawOffset();
+extern void SetDrawOffset();
 
-/* Option-menu HUD painter (MOD.BIN resource at ctx+4). arg0 = the draw
+/* Draws the eight-row list screen from the MOD.BIN resource (ctx+4): the row
+ * sheets (cursor row flashing, rows switched on in D_8009BC04 lit), a counter
+ * frame, row 7, the frame icons and a TILE. arg0 = the draw
  * context func_8006E390 fills (+0x8 POLY_FT4 cursor, +0x14 SPRT cursor,
  * +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20 DR_AREA cursor,
  * +0x24 DR_OFFSET cursor), accessed as byte offsets like func_8006A564;
@@ -230,7 +232,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     *(s16 *)(*(u8 **)(arg0 + 0x18) + 0xC) = 0x100;
     *(s16 *)(*(u8 **)(arg0 + 0x18) + 0xE) = 0x59;
     SetSemiTrans(*(u8 **)(arg0 + 0x18), 0);
-    AddPrim(g_gpu_ot_ptr + 4, *(u8 **)(arg0 + 0x18));
+    AddPrim(g_gpu_ot_ptr + 4, *(s32 *)(arg0 + 0x18));
     *(u8 **)(arg0 + 0x18) += 0x10;
 
     SetDrawMode(*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
