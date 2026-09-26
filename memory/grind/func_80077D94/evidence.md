@@ -10,8 +10,11 @@ Oracle green with the body spliced + jtbl array deleted.
 
 - Prologue fade: compute `v` first, then `has_color = 1`, then `r = g = b = v`
   (b stored first) — otherwise in[] is reloaded after the has_color store.
-- Header tables: walking `hp` (single variable, seats $s1; arg0 → $s2). Indexed
-  `hp[i]` in the case loops gives the right schedule but swaps $s1/$s2 (+40).
+- Header tables: walking `hp` (single variable, seats $s1; arg0 → $s2). On an
+  earlier base, indexed `hp[i]` in all case loops gave the right schedule but
+  swapped $s1/$s2 (+40). On the final body (layer-2 re-measure 2026-09-25):
+  `hp[i]` in cases 0/4 only is also 0/468; in cases 2/1 it costs 12/468
+  ($s1/$s3 swap).
 - For-increment order: `hp++, i++` (cases 0/4); `x += 0x80, hp++, i++` (cases 2/1).
   Found by a 192-variant permutation sweep of statement order × increment order
   (4! statement orders × 8 increment placements).
