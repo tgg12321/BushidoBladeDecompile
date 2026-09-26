@@ -1,0 +1,392 @@
+SUGGDBG-QTY func=func_8003993C blk=0 qty=0 reg1=84 birth=2 death=4 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=0 ord=0 qty=0 reg1=84 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=1 qty=0 reg1=91 birth=2 death=16 refs=3 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=1 reg1=89 birth=4 death=32 refs=7 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=2 reg1=106 birth=6 death=40 refs=9 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=3 reg1=-1 birth=11 death=13 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=4 reg1=-1 birth=11 death=13 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=5 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=6 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=7 reg1=93 birth=18 death=24 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=8 reg1=94 birth=22 death=24 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=9 reg1=98 birth=26 death=32 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=1 qty=10 reg1=105 birth=34 death=40 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=9 class=1 mode=4 jts=0 acc=0 born=26 dead=32 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=1 ord=0 qty=9 reg1=98 birth=26 death=32 refs=6 got=2
+SUGGDBG-FFR qty=7 class=1 mode=4 jts=0 acc=0 born=18 dead=24 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=1 ord=1 qty=7 reg1=93 birth=18 death=24 refs=4 got=2
+SUGGDBG-FFR qty=10 class=1 mode=4 jts=0 acc=0 born=34 dead=40 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=1 ord=2 qty=10 reg1=105 birth=34 death=40 refs=4 got=2
+SUGGDBG-FFR qty=8 class=1 mode=4 jts=0 acc=0 born=22 dead=24 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=1 ord=3 qty=8 reg1=94 birth=22 death=24 refs=2 got=3
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=6 dead=40 used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=1 ord=4 qty=2 reg1=106 birth=6 death=40 refs=9 got=4
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=4 dead=32 used=0,1,2,3,4,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=1 ord=5 qty=1 reg1=89 birth=4 death=32 refs=7 got=5
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=16 used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=1 ord=6 qty=0 reg1=91 birth=2 death=16 refs=3 got=2
+SUGGDBG-FFR qty=3 class=4 mode=4 jts=0 acc=0 born=11 dead=13 used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,66,67,
+QTYDBG blk=1 ord=7 qty=3 reg1=-1 birth=11 death=13 refs=1 got=65
+SUGGDBG-FFR qty=4 class=5 mode=4 jts=0 acc=0 born=11 dead=13 used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67,
+QTYDBG blk=1 ord=8 qty=4 reg1=-1 birth=11 death=13 refs=1 got=66
+SUGGDBG-FFR qty=5 class=4 mode=4 jts=0 acc=0 born=15 dead=17 used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,66,67,
+QTYDBG blk=1 ord=9 qty=5 reg1=-1 birth=15 death=17 refs=1 got=65
+SUGGDBG-FFR qty=6 class=5 mode=4 jts=0 acc=0 born=15 dead=17 used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67,
+QTYDBG blk=1 ord=10 qty=6 reg1=-1 birth=15 death=17 refs=1 got=66
+SUGGDBG-QTY func=func_8003993C blk=2 qty=0 reg1=110 birth=6 death=10 refs=3 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=2 qty=1 reg1=108 birth=8 death=10 refs=3 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=2 qty=2 reg1=112 birth=10 death=11 refs=1 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=2 qty=3 reg1=-1 birth=9 death=11 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=2 qty=4 reg1=-1 birth=9 death=11 refs=1 size=4 mode=4 minclass=3 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=2 qty=5 reg1=-1 birth=9 death=11 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=8 dead=10 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=2 ord=0 qty=1 reg1=108 birth=8 death=10 refs=3 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=6 dead=10 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=2 ord=1 qty=0 reg1=110 birth=6 death=10 refs=3 got=3
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=10 dead=11 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=2 ord=2 qty=2 reg1=112 birth=10 death=11 refs=1 got=2
+SUGGDBG-FFR qty=3 class=4 mode=4 jts=0 acc=0 born=9 dead=11 used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,66,67,
+QTYDBG blk=2 ord=3 qty=3 reg1=-1 birth=9 death=11 refs=1 got=65
+SUGGDBG-FFR qty=4 class=3 mode=4 jts=0 acc=0 born=9 dead=11 used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,65,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,65,66,67,
+QTYDBG blk=2 ord=4 qty=4 reg1=-1 birth=9 death=11 refs=1 got=64
+SUGGDBG-FFR qty=5 class=5 mode=4 jts=0 acc=0 born=9 dead=11 used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67,
+QTYDBG blk=2 ord=5 qty=5 reg1=-1 birth=9 death=11 refs=1 got=66
+SUGGDBG-QTY func=func_8003993C blk=3 qty=0 reg1=116 birth=8 death=14 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=3 qty=1 reg1=119 birth=12 death=20 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=3 qty=2 reg1=121 birth=18 death=30 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=3 qty=3 reg1=126 birth=22 death=28 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=3 class=1 mode=4 jts=0 acc=0 born=22 dead=28 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=3 ord=0 qty=3 reg1=126 birth=22 death=28 refs=6 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=8 dead=14 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=3 ord=1 qty=0 reg1=116 birth=8 death=14 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=12 dead=20 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=3 ord=2 qty=1 reg1=119 birth=12 death=20 refs=4 got=3
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=18 dead=30 used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=3 ord=3 qty=2 reg1=121 birth=18 death=30 refs=4 got=4
+SUGGDBG-QTY func=func_8003993C blk=5 qty=0 reg1=143 birth=12 death=18 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=5 qty=1 reg1=145 birth=16 death=28 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=5 qty=2 reg1=150 birth=20 death=26 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=12 dead=18 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=5 ord=0 qty=0 reg1=143 birth=12 death=18 refs=4 got=2
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=20 dead=26 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=5 ord=1 qty=2 reg1=150 birth=20 death=26 refs=6 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=16 dead=28 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=5 ord=2 qty=1 reg1=145 birth=16 death=28 refs=4 got=3
+SUGGDBG-QTY func=func_8003993C blk=8 qty=0 reg1=167 birth=6 death=14 refs=12 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=1 reg1=169 birth=10 death=22 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=2 reg1=173 birth=18 death=22 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=3 reg1=184 birth=24 death=30 refs=6 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=2 copysugg= sugg=4,5,
+SUGGDBG-QTY func=func_8003993C blk=8 qty=4 reg1=182 birth=32 death=34 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=5 reg1=198 birth=40 death=46 refs=6 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=2 copysugg= sugg=4,5,
+SUGGDBG-QTY func=func_8003993C blk=8 qty=6 reg1=215 birth=66 death=72 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=1 nsugg=0 copysugg=7, sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=7 reg1=217 birth=68 death=70 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=30,
+SUGGDBG-QTY func=func_8003993C blk=8 qty=8 reg1=219 birth=76 death=78 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=9 reg1=222 birth=80 death=84 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=10 reg1=225 birth=86 death=92 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=11 reg1=227 birth=94 death=100 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=12 reg1=231 birth=104 death=108 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=8 qty=13 reg1=235 birth=112 death=116 refs=8 size=1 mode=1 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=6 class=1 mode=4 jts=1 acc=0 born=66 dead=72 used=0,1,4,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=8 ord=10 qty=6 reg1=215 birth=66 death=72 refs=4 got=7
+SUGGDBG-FFR qty=7 class=1 mode=4 jts=1 acc=0 born=68 dead=70 used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=8 ord=11 qty=7 reg1=217 birth=68 death=70 refs=4 got=-1
+SUGGDBG-FFR qty=3 class=1 mode=2 jts=1 acc=0 born=24 dead=30 used=0,1,4,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=8 ord=12 qty=3 reg1=184 birth=24 death=30 refs=6 got=5
+SUGGDBG-FFR qty=5 class=1 mode=2 jts=1 acc=0 born=40 dead=46 used=0,1,4,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=8 ord=13 qty=5 reg1=198 birth=40 death=46 refs=6 got=5
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=18 dead=22 used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=0 qty=2 reg1=173 birth=18 death=22 refs=8 got=2
+SUGGDBG-FFR qty=13 class=1 mode=1 jts=0 acc=0 born=112 dead=116 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=1 qty=13 reg1=235 birth=112 death=116 refs=8 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=6 dead=14 used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=2 qty=0 reg1=167 birth=6 death=14 refs=12 got=2
+SUGGDBG-FFR qty=4 class=1 mode=4 jts=0 acc=0 born=32 dead=34 used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=3 qty=4 reg1=182 birth=32 death=34 refs=4 got=2
+SUGGDBG-FFR qty=7 class=1 mode=4 jts=0 acc=0 born=68 dead=70 used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=4 qty=7 reg1=217 birth=68 death=70 refs=4 got=2
+SUGGDBG-FFR qty=8 class=1 mode=4 jts=0 acc=0 born=76 dead=78 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=5 qty=8 reg1=219 birth=76 death=78 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=10 dead=22 used=0,1,2,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=6 qty=1 reg1=169 birth=10 death=22 refs=8 got=3
+SUGGDBG-FFR qty=9 class=1 mode=4 jts=0 acc=0 born=80 dead=84 used=0,1,4,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=9 qty=9 reg1=222 birth=80 death=84 refs=4 got=2
+SUGGDBG-FFR qty=12 class=1 mode=4 jts=0 acc=0 born=104 dead=108 used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=10 qty=12 reg1=231 birth=104 death=108 refs=4 got=2
+SUGGDBG-FFR qty=10 class=1 mode=4 jts=0 acc=0 born=86 dead=92 used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=12 qty=10 reg1=225 birth=86 death=92 refs=4 got=2
+SUGGDBG-FFR qty=11 class=1 mode=2 jts=0 acc=0 born=94 dead=100 used=0,1,4,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=8 ord=13 qty=11 reg1=227 birth=94 death=100 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=9 qty=0 reg1=242 birth=4 death=6 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=5,
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=1 acc=0 born=4 dead=6 used=0,1,4,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=9 ord=0 qty=0 reg1=242 birth=4 death=6 refs=4 got=5
+SUGGDBG-QTY func=func_8003993C blk=10 qty=0 reg1=245 birth=4 death=8 refs=8 size=1 mode=1 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=1 jts=0 acc=0 born=4 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=10 ord=0 qty=0 reg1=245 birth=4 death=8 refs=8 got=2
+SUGGDBG-QTY func=func_8003993C blk=11 qty=0 reg1=255 birth=2 death=4 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=5,
+SUGGDBG-QTY func=func_8003993C blk=11 qty=1 reg1=247 birth=6 death=10 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=1 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=11 ord=1 qty=0 reg1=255 birth=2 death=4 refs=4 got=5
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=10 used=0,1,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=11 ord=1 qty=1 reg1=247 birth=6 death=10 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=12 qty=0 reg1=258 birth=6 death=8 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=12 ord=0 qty=0 reg1=258 birth=6 death=8 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=13 qty=0 reg1=267 birth=6 death=8 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=6,
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=1 acc=0 born=6 dead=8 used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=13 ord=0 qty=0 reg1=267 birth=6 death=8 refs=4 got=6
+SUGGDBG-QTY func=func_8003993C blk=14 qty=0 reg1=273 birth=6 death=8 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=14 ord=0 qty=0 reg1=273 birth=6 death=8 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=15 qty=0 reg1=275 birth=2 death=6 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=15 qty=1 reg1=286 birth=8 death=10 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=6,
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=1 acc=0 born=8 dead=10 used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=15 ord=1 qty=1 reg1=286 birth=8 death=10 refs=4 got=6
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=6 used=0,1,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=15 ord=1 qty=0 reg1=275 birth=2 death=6 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=16 qty=0 reg1=295 birth=4 death=20 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=5,
+SUGGDBG-QTY func=func_8003993C blk=16 qty=1 reg1=307 birth=8 death=34 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=7,
+SUGGDBG-QTY func=func_8003993C blk=16 qty=2 reg1=293 birth=14 death=20 refs=12 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=5,
+SUGGDBG-QTY func=func_8003993C blk=16 qty=3 reg1=299 birth=22 death=28 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=6,
+SUGGDBG-QTY func=func_8003993C blk=16 qty=4 reg1=301 birth=26 death=28 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=6,
+SUGGDBG-QTY func=func_8003993C blk=16 qty=5 reg1=305 birth=30 death=34 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=7,
+SUGGDBG-QTY func=func_8003993C blk=16 qty=6 reg1=311 birth=48 death=50 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=1 acc=0 born=14 dead=20 used=0,1,4,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=16 ord=1 qty=2 reg1=293 birth=14 death=20 refs=12 got=5
+SUGGDBG-FFR qty=5 class=1 mode=4 jts=1 acc=0 born=30 dead=34 used=0,1,4,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=16 ord=2 qty=5 reg1=305 birth=30 death=34 refs=8 got=7
+SUGGDBG-FFR qty=3 class=1 mode=4 jts=1 acc=0 born=22 dead=28 used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=16 ord=3 qty=3 reg1=299 birth=22 death=28 refs=8 got=6
+SUGGDBG-FFR qty=4 class=1 mode=4 jts=1 acc=0 born=26 dead=28 used=0,1,4,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=16 ord=4 qty=4 reg1=301 birth=26 death=28 refs=4 got=-1
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=1 acc=0 born=4 dead=20 used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=16 ord=5 qty=0 reg1=295 birth=4 death=20 refs=4 got=-1
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=1 acc=0 born=8 dead=34 used=0,1,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=16 ord=6 qty=1 reg1=307 birth=8 death=34 refs=4 got=-1
+SUGGDBG-FFR qty=4 class=1 mode=4 jts=0 acc=0 born=26 dead=28 used=0,1,4,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=16 ord=3 qty=4 reg1=301 birth=26 death=28 refs=4 got=2
+SUGGDBG-FFR qty=6 class=1 mode=4 jts=0 acc=0 born=48 dead=50 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=16 ord=4 qty=6 reg1=311 birth=48 death=50 refs=4 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=20 used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,4,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=16 ord=5 qty=0 reg1=295 birth=4 death=20 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=8 dead=34 used=0,1,2,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,4,5,6,7,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=16 ord=6 qty=1 reg1=307 birth=8 death=34 refs=4 got=3
+SUGGDBG-QTY func=func_8003993C blk=17 qty=0 reg1=314 birth=6 death=8 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=17 ord=0 qty=0 reg1=314 birth=6 death=8 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=19 qty=0 reg1=318 birth=4 death=8 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=19 qty=1 reg1=321 birth=12 death=16 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=2 jts=0 acc=0 born=4 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=19 ord=0 qty=0 reg1=318 birth=4 death=8 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=12 dead=16 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=19 ord=1 qty=1 reg1=321 birth=12 death=16 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=20 qty=0 reg1=322 birth=2 death=4 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=20 qty=1 reg1=326 birth=4 death=10 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=20 qty=2 reg1=327 birth=6 death=10 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=20 qty=3 reg1=329 birth=12 death=16 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=20 qty=4 reg1=331 birth=14 death=18 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=4 class=1 mode=4 jts=0 acc=0 born=14 dead=18 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=20 ord=0 qty=4 reg1=331 birth=14 death=18 refs=8 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=20 ord=1 qty=0 reg1=322 birth=2 death=4 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=4 dead=10 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=20 ord=2 qty=1 reg1=326 birth=4 death=10 refs=8 got=2
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=6 dead=10 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=20 ord=3 qty=2 reg1=327 birth=6 death=10 refs=4 got=3
+SUGGDBG-FFR qty=3 class=1 mode=4 jts=0 acc=0 born=12 dead=16 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=20 ord=4 qty=3 reg1=329 birth=12 death=16 refs=4 got=3
+SUGGDBG-QTY func=func_8003993C blk=21 qty=0 reg1=335 birth=4 death=6 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=21 qty=1 reg1=341 birth=8 death=26 refs=14 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=21 qty=2 reg1=344 birth=12 death=16 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=21 qty=3 reg1=348 birth=16 death=22 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=21 qty=4 reg1=349 birth=18 death=22 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=21 qty=5 reg1=357 birth=24 death=28 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=21 qty=6 reg1=359 birth=26 death=30 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=6 class=1 mode=4 jts=0 acc=0 born=26 dead=30 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=21 ord=0 qty=6 reg1=359 birth=26 death=30 refs=8 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=21 ord=1 qty=0 reg1=335 birth=4 death=6 refs=4 got=2
+SUGGDBG-FFR qty=3 class=1 mode=4 jts=0 acc=0 born=16 dead=22 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=21 ord=2 qty=3 reg1=348 birth=16 death=22 refs=8 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=8 dead=26 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=21 ord=3 qty=1 reg1=341 birth=8 death=26 refs=14 got=3
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=12 dead=16 used=0,1,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=21 ord=4 qty=2 reg1=344 birth=12 death=16 refs=4 got=2
+SUGGDBG-FFR qty=4 class=1 mode=4 jts=0 acc=0 born=18 dead=22 used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=21 ord=5 qty=4 reg1=349 birth=18 death=22 refs=4 got=4
+SUGGDBG-FFR qty=5 class=1 mode=4 jts=0 acc=0 born=24 dead=28 used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=21 ord=6 qty=5 reg1=357 birth=24 death=28 refs=4 got=4
+SUGGDBG-QTY func=func_8003993C blk=22 qty=0 reg1=362 birth=4 death=8 refs=8 size=1 mode=1 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=1 jts=0 acc=0 born=4 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=22 ord=0 qty=0 reg1=362 birth=4 death=8 refs=8 got=2
+SUGGDBG-QTY func=func_8003993C blk=24 qty=0 reg1=367 birth=14 death=20 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=1 copysugg= sugg=5,
+SUGGDBG-QTY func=func_8003993C blk=24 qty=1 reg1=162 birth=24 death=26 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=1 acc=0 born=14 dead=20 used=0,1,4,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG-SUGG blk=24 ord=1 qty=0 reg1=367 birth=14 death=20 refs=8 got=5
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=24 dead=26 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=24 ord=1 qty=1 reg1=162 birth=24 death=26 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=26 qty=0 reg1=373 birth=4 death=6 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=26 ord=0 qty=0 reg1=373 birth=4 death=6 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=27 qty=0 reg1=375 birth=2 death=4 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=27 qty=1 reg1=378 birth=6 death=8 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=27 qty=2 reg1=381 birth=10 death=12 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=27 qty=3 reg1=383 birth=14 death=16 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=27 qty=4 reg1=384 birth=18 death=22 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=27 qty=5 reg1=385 birth=24 death=30 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=27 qty=6 reg1=386 birth=26 death=28 refs=4 size=1 mode=1 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=27 ord=0 qty=0 reg1=375 birth=2 death=4 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=27 ord=1 qty=1 reg1=378 birth=6 death=8 refs=4 got=2
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=10 dead=12 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=27 ord=2 qty=2 reg1=381 birth=10 death=12 refs=4 got=2
+SUGGDBG-FFR qty=3 class=1 mode=2 jts=0 acc=0 born=14 dead=16 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=27 ord=3 qty=3 reg1=383 birth=14 death=16 refs=4 got=2
+SUGGDBG-FFR qty=6 class=1 mode=1 jts=0 acc=0 born=26 dead=28 used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=27 ord=4 qty=6 reg1=386 birth=26 death=28 refs=4 got=2
+SUGGDBG-FFR qty=4 class=1 mode=2 jts=0 acc=0 born=18 dead=22 used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=27 ord=5 qty=4 reg1=384 birth=18 death=22 refs=4 got=2
+SUGGDBG-FFR qty=5 class=1 mode=2 jts=0 acc=0 born=24 dead=30 used=0,1,2,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=27 ord=6 qty=5 reg1=385 birth=24 death=30 refs=4 got=3
+SUGGDBG-QTY func=func_8003993C blk=28 qty=0 reg1=371 birth=10 death=12 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=10 dead=12 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=28 ord=0 qty=0 reg1=371 birth=10 death=12 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=29 qty=0 reg1=394 birth=2 death=4 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=29 ord=0 qty=0 reg1=394 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=30 qty=0 reg1=396 birth=2 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=30 qty=1 reg1=397 birth=4 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=30 ord=0 qty=1 reg1=397 birth=4 death=6 refs=2 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=6 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=30 ord=1 qty=0 reg1=396 birth=2 death=6 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=31 qty=0 reg1=398 birth=4 death=10 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=31 qty=1 reg1=402 birth=6 death=10 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=10 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=31 ord=0 qty=0 reg1=398 birth=4 death=10 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=10 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=31 ord=1 qty=1 reg1=402 birth=6 death=10 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=33 qty=0 reg1=407 birth=6 death=8 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=33 ord=0 qty=0 reg1=407 birth=6 death=8 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=34 qty=0 reg1=414 birth=2 death=8 refs=12 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=34 ord=0 qty=0 reg1=414 birth=2 death=8 refs=12 got=2
+SUGGDBG-QTY func=func_8003993C blk=35 qty=0 reg1=416 birth=2 death=4 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=35 qty=1 reg1=419 birth=6 death=8 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=35 qty=2 reg1=422 birth=10 death=12 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=35 qty=3 reg1=424 birth=14 death=16 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=35 qty=4 reg1=425 birth=18 death=22 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=35 qty=5 reg1=426 birth=24 death=28 refs=4 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=35 ord=0 qty=0 reg1=416 birth=2 death=4 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=35 ord=1 qty=1 reg1=419 birth=6 death=8 refs=4 got=2
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=10 dead=12 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=35 ord=2 qty=2 reg1=422 birth=10 death=12 refs=4 got=2
+SUGGDBG-FFR qty=3 class=1 mode=2 jts=0 acc=0 born=14 dead=16 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=35 ord=3 qty=3 reg1=424 birth=14 death=16 refs=4 got=2
+SUGGDBG-FFR qty=4 class=1 mode=2 jts=0 acc=0 born=18 dead=22 used=0,1,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,5,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=35 ord=4 qty=4 reg1=425 birth=18 death=22 refs=4 got=2
+SUGGDBG-FFR qty=5 class=1 mode=2 jts=0 acc=0 born=24 dead=28 used=0,1,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,5,6,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=35 ord=5 qty=5 reg1=426 birth=24 death=28 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=36 qty=0 reg1=403 birth=10 death=12 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=10 dead=12 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=36 ord=0 qty=0 reg1=403 birth=10 death=12 refs=4 got=2
+SUGGDBG-QTY func=func_8003993C blk=37 qty=0 reg1=431 birth=8 death=12 refs=2 size=1 mode=1 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=37 qty=1 reg1=435 birth=10 death=16 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=1 jts=0 acc=0 born=8 dead=12 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=37 ord=0 qty=0 reg1=431 birth=8 death=12 refs=2 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=10 dead=16 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=37 ord=1 qty=1 reg1=435 birth=10 death=16 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=38 qty=0 reg1=437 birth=2 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=38 qty=1 reg1=438 birth=4 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=38 ord=0 qty=1 reg1=438 birth=4 death=6 refs=2 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=6 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=38 ord=1 qty=0 reg1=437 birth=2 death=6 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=40 qty=0 reg1=442 birth=4 death=8 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=40 qty=1 reg1=441 birth=6 death=8 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=40 ord=0 qty=1 reg1=441 birth=6 death=8 refs=2 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=8 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=40 ord=1 qty=0 reg1=442 birth=4 death=8 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=41 qty=0 reg1=446 birth=4 death=10 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=41 qty=1 reg1=445 birth=6 death=12 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=12 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=41 ord=0 qty=1 reg1=445 birth=6 death=12 refs=4 got=2
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=10 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=41 ord=1 qty=0 reg1=446 birth=4 death=10 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=43 qty=0 reg1=507 birth=2 death=4 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=43 ord=0 qty=0 reg1=507 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=45 qty=0 reg1=448 birth=4 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=45 ord=0 qty=0 reg1=448 birth=4 death=6 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=46 qty=0 reg1=454 birth=4 death=8 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=46 qty=1 reg1=456 birth=6 death=10 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=46 ord=0 qty=0 reg1=454 birth=4 death=8 refs=2 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=10 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=46 ord=1 qty=1 reg1=456 birth=6 death=10 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=47 qty=0 reg1=457 birth=2 death=4 refs=2 size=1 mode=1 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=47 qty=1 reg1=460 birth=6 death=8 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=1 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=47 ord=0 qty=0 reg1=457 birth=2 death=4 refs=2 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=6 dead=8 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=47 ord=1 qty=1 reg1=460 birth=6 death=8 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=48 qty=0 reg1=463 birth=2 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=48 qty=1 reg1=468 birth=4 death=12 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=48 qty=2 reg1=467 birth=6 death=10 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=48 qty=3 reg1=471 birth=8 death=14 refs=4 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=3 class=1 mode=4 jts=0 acc=0 born=8 dead=14 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=48 ord=0 qty=3 reg1=471 birth=8 death=14 refs=4 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=4 dead=12 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=48 ord=1 qty=1 reg1=468 birth=4 death=12 refs=4 got=3
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=6 used=0,1,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=48 ord=2 qty=0 reg1=463 birth=2 death=6 refs=2 got=2
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=6 dead=10 used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,3,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=48 ord=3 qty=2 reg1=467 birth=6 death=10 refs=2 got=4
+SUGGDBG-QTY func=func_8003993C blk=52 qty=0 reg1=474 birth=2 death=4 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=52 ord=0 qty=0 reg1=474 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=60 qty=0 reg1=481 birth=4 death=6 refs=2 size=1 mode=1 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=60 qty=1 reg1=483 birth=8 death=12 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8003993C blk=60 qty=2 reg1=484 birth=10 death=12 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=1 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=60 ord=0 qty=0 reg1=481 birth=4 death=6 refs=2 got=2
+SUGGDBG-FFR qty=2 class=1 mode=4 jts=0 acc=0 born=10 dead=12 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=60 ord=1 qty=2 reg1=484 birth=10 death=12 refs=2 got=2
+SUGGDBG-FFR qty=1 class=1 mode=4 jts=0 acc=0 born=8 dead=12 used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,2,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=60 ord=2 qty=1 reg1=483 birth=8 death=12 refs=2 got=3
+SUGGDBG-QTY func=func_8003993C blk=61 qty=0 reg1=485 birth=2 death=4 refs=2 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=2 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=61 ord=0 qty=0 reg1=485 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=62 qty=0 reg1=487 birth=14 death=16 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=14 dead=16 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=62 ord=0 qty=0 reg1=487 birth=14 death=16 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=63 qty=0 reg1=489 birth=2 death=4 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=63 ord=0 qty=0 reg1=489 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=66 qty=0 reg1=492 birth=4 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=66 ord=0 qty=0 reg1=492 birth=4 death=6 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=67 qty=0 reg1=494 birth=2 death=4 refs=2 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=2 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=67 ord=0 qty=0 reg1=494 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=68 qty=0 reg1=495 birth=4 death=6 refs=2 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=2 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=68 ord=0 qty=0 reg1=495 birth=4 death=6 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=69 qty=0 reg1=497 birth=4 death=6 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=69 ord=0 qty=0 reg1=497 birth=4 death=6 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=70 qty=0 reg1=500 birth=2 death=4 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=4 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=70 ord=0 qty=0 reg1=500 birth=2 death=4 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=71 qty=0 reg1=502 birth=4 death=6 refs=2 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=2 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=71 ord=0 qty=0 reg1=502 birth=4 death=6 refs=2 got=2
+SUGGDBG-QTY func=func_8003993C blk=72 qty=0 reg1=503 birth=4 death=6 refs=2 size=1 mode=2 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-FFR qty=0 class=1 mode=2 jts=0 acc=0 born=4 dead=6 used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67, first_used=0,1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+QTYDBG blk=72 ord=0 qty=0 reg1=503 birth=4 death=6 refs=2 got=2
