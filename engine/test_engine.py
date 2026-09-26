@@ -3384,6 +3384,17 @@ def test_queue_remeasure_source_integrity() -> None:
             eq("remeasure: src/ + include/ byte-identical after a forced re-measure",
                tree(), before)
 
+            # 3b. no state.json floor_history (a manual-lane ledger): the
+            #     queue's recorded distance is the old floor, so an unchanged
+            #     floor does not return the item
+            seed(qp, [dict(base, func="f_R", distance=4), items[3]], Q.toolchain_fingerprint())
+            calls.clear()
+            r = Q.auto_return(rescan=True, force_rescan=True)
+            eq("remeasure: no ledger floor, unchanged distance -> stays rotated",
+               r["returned"], [])
+            eq("remeasure: no ledger floor falls back to queue distance",
+               r["remeasured"][0]["old"], 4)
+
             # 4. the restore write rides out DrvFS's transient EINVAL
             class Flaky:
                 def __init__(self, fails):

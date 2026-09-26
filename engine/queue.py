@@ -952,6 +952,13 @@ def auto_return(rescan: bool = True, force_rescan: bool = False) -> dict:
                 with _source_tree_unchanged(restored):
                     new, err = _remeasure_candidate(it["func"], it.get("file", ""))
                 old = _ledger_floor(it["func"])
+                if old is None and isinstance(it.get("distance"), int):
+                    # Manual-lane ledgers keep no state.json floor_history, so
+                    # without this every re-measure read "None -> N" as a
+                    # moved floor and bounced unchanged rotations straight
+                    # back to the top (2026-09-25: four policy-locked items).
+                    # The queue's own distance is the floor it rotated at.
+                    old = it["distance"]
                 row = {"func": it["func"], "old": old, "new": new}
                 if err:
                     row["error"] = err
