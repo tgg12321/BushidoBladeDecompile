@@ -10,7 +10,7 @@ own `move`/`nop` statements and the sandbox compiled a different program
 (func_800288C8: oracle-green, sandbox 90).
 
 A QUALIFYING UNIT, and nothing else, is kept by the sandbox strip:
-  (A) a MAXIMAL run of `__asm__` statements, inline in the source, with only
+  (A) a run of `__asm__` statements, inline in the source, with only
       whitespace and comments between them, that is — statement for statement,
       in order — the complete expansion of ONE pinned macro below. Every
       statement matches the header in instruction text, operand constraints and
@@ -19,29 +19,38 @@ A QUALIFYING UNIT, and nothing else, is kept by the sandbox strip:
       A partial, reordered, extended or edited run is not a unit. One spelling
       is equal by owner amendment (2026-09-25, second batch): `0($REG)` and
       `($REG)` in a load/store's memory operand (maspsx cannot parse `($12)`);
-      `4($12)`, `0x0($12)`, `00($12)`, `-0($12)`, `0($13)` stay edits;
-  (B) the expansion contains at least one cop2 instruction, so a standalone
-      `gte_nop()` is never a unit;
+      `4($12)`, `0x0($12)`, `00($12)`, `-0($12)`, `0($13)` stay edits. A
+      second is equal by owner ruling 2026-09-26 (func_8002DE20, Q11): a
+      header DMPSX placeholder `.word` and the post-DMPSX command word DMPSX
+      emits for it, for the placeholders in DMPSX_WORDS only (each with an
+      independent source);
+  (B) the expansion contains at least one cop2 instruction (a DMPSX
+      placeholder in DMPSX_WORDS counts: DMPSX turns it into one), so a
+      standalone `gte_nop()` is never a unit;
   (C) recognition is against the pinned header text, never a grant hash.
+A contiguous run of statements is kept when it splits, in order and with
+nothing left over, into consecutive units (owner ruling 2026-09-26, Q11:
+macros written back to back, e.g. `gte_ldv0(v); gte_rtv0();`). Any statement
+of the run that no unit covers disqualifies the WHOLE run.
 Everything outside a unit is stripped exactly as before. Recognition changes
 what the sandbox MEASURES only: `func_cheat_asm_count` (the completion gate) and
 `strip_cheat_asm_file`'s default mode are untouched, so a unit's GPR-only
 statements still count as cheat-asm for any function without a grant.
 
 Conservative choices (each strips as before when in doubt):
-  * the run is maximal, so two macros written back to back form one run that
-    matches neither and is stripped whole (the ruling's "extra statement
-    appended" negative);
+  * the run is split into units only when EVERY statement is covered, so a
+    statement appended to, inserted into or left over from a macro strips the
+    whole run (the ruling's "extra statement appended" negative); a
+    standalone `gte_nop()` between two units is left over too;
   * the run's first statement must start a statement (preceded by `;`, `{`,
     `}` or a label's `:`), so an `if (c)` / `else` guarding only its first
     statement disqualifies it;
   * the statement must be `volatile`, as every header statement is;
-  * no statement inside a comment, a string or a preprocessor directive counts;
-  * the DMPSX placeholder substitution the ruling also allows is NOT
-    implemented: no pinned macro carries a placeholder `.word`.
+  * no statement inside a comment, a string or a preprocessor directive counts.
 
 PINNED holds only the macros needed today (the LZC family of func_800288C8,
-func_8002A458, func_8002CD58 and func_80018300). Each excerpt is the header's
+func_8002A458, func_8002CD58 and func_80018300; gte_ldv0 / gte_rtv0 /
+gte_stlvnl / gte_ApplyRotMatrix of func_8002DE20). Each excerpt is the header's
 own lines, byte for byte; `engine test` re-hashes them. Adding a macro means
 adding its verbatim lines with the same provenance fields.
 """
@@ -93,6 +102,31 @@ PINNED = (
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
 }
 '''),
+            ("gte_ldv0", (16, 20),
+             "5c1022524d6230c07244c6a1319d7e4d9a3edeff79ab2bb6b105dcc87d505e53",
+             r'''#define gte_ldv0(r1) { \
+  __asm__ volatile ("move  $12,%0": :"r"(r1):"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_rtv0", (426, 430),
+             "fecc6d755f2e63f8e41f49bfa584b80d2324d2c581b54f7c3d687a8a3a841c69",
+             r'''#define gte_rtv0() { \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000013f": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
+            ("gte_stlvnl", (904, 909),
+             "3098a5b8d2f9339f7ad7ceb289180c5231635922a28217fb97ec7b52dfd38b83",
+             r'''#define gte_stlvnl(r1) { \
+  __asm__ volatile ("move  $12,%0": :"r"(r1):"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory"); \
+}
+'''),
         ),
     },
     {
@@ -109,9 +143,31 @@ PINNED = (
              "\t\t\t\t\tgte_nop();\t\t\\\n"
              "\t\t\t\t\tgte_nop();\t\t\\\n"
              "\t\t\t\t\tgte_stlzc(r2);\t}\n"),
+            ("gte_ApplyRotMatrix", (354, 357),
+             "4a4e57bca9f8d5dcea5758b07ce49c2ad31e47dcfb01d0caaf4349c0e20f9cee",
+             "#define gte_ApplyRotMatrix(r1,r2)\t\t\t\t\\\n"
+             "\t\t\t\t{\tgte_ldv0(r1);\t\t\\\n"
+             "\t\t\t\t\tgte_rtv0();\t\t\\\n"
+             "\t\t\t\t\tgte_stlvnl(r2);\t\t}\n"),
         ),
     },
 )
+
+# --- DMPSX placeholder command words ----------------------------------------
+# Owner ruling 2026-09-26 (func_8002DE20, Q11): Sony's DMPSX post-processor
+# rewrote each header placeholder `.word` into the GTE command word after
+# compilation; this build has no DMPSX pass, so a unit may carry the post-DMPSX
+# word where the header has the placeholder, and the two compare EQUAL.
+# placeholder -> post-DMPSX word, only for placeholders whose word is shown by
+# a source independent of the BB2 binary (inline-asm-policy.md § Extension
+# 2026-09-24 (B)):
+#   0x0000013f (gte_rtv0) -> 0x4A486012 = MVMVA sf=1 mx=rotation v=V0 cv=none
+#   lm=0: pcsx-redux/nugget@22037bd3 psyq/include/inline_n.h :516-520 and
+#   Lameguy64/PSn00bSDK@5d9aa2d3 libpsn00b/include/inline_c.h :1183-1186
+#   ("cop2 0x0486012" = 0x4A486012).
+DMPSX_WORDS = {
+    0x0000013F: 0x4A486012,
+}
 
 
 def excerpt_sha256(text: str) -> str:
@@ -183,9 +239,19 @@ _MEM_OPS = frozenset({"lb", "lbu", "lh", "lhu", "lw", "lwl", "lwr", "sb", "sh",
 _ZERO_OFFSET_RE = re.compile(r"0(\(\$[A-Za-z0-9_]+\))")
 
 
+_DOTWORD_RE = re.compile(r"\.word 0x([0-9A-Fa-f]{8})")
+_POST_DMPSX = {post: ph for ph, post in DMPSX_WORDS.items()}
+
+
 def _instr_key(instr: str) -> str:
     """Comparison key for a normalized instruction: `0($REG)` -> `($REG)` in a
-    load/store's memory operand; every other character compares as written."""
+    load/store's memory operand, and a post-DMPSX command word (`.word
+    0x4A486012`, exactly eight hex digits) -> the header's placeholder
+    spelling (`.word 0x0000013f`) for the pairs in DMPSX_WORDS; every other
+    character compares as written."""
+    m = _DOTWORD_RE.fullmatch(instr)
+    if m and int(m.group(1), 16) in _POST_DMPSX:
+        return f".word 0x{_POST_DMPSX[int(m.group(1), 16)]:08x}"
     mnem, sep, ops = instr.partition(" ")
     if mnem not in _MEM_OPS or not sep:
         return instr
@@ -304,8 +370,12 @@ def pinned_macros() -> dict[str, tuple[list[str], list[Stmt]]]:
 
 
 def _is_cop2(instr: str) -> bool:
+    """A cop2 instruction, a GTE command word, or a header DMPSX placeholder in
+    DMPSX_WORDS (DMPSX turns it into a GTE command word)."""
+    m = _DOTWORD_RE.fullmatch(instr)
     return (instr.split(" ", 1)[0].lower() in _COP2_OPS
-            or bool(cia.CANONICAL_DOTWORD_RE.search(instr)))
+            or bool(cia.CANONICAL_DOTWORD_RE.search(instr))
+            or bool(m and int(m.group(1), 16) in DMPSX_WORDS))
 
 
 # --- recognition in a source file ------------------------------------------
@@ -419,7 +489,33 @@ def _unit_spans_cached(text: str) -> tuple[tuple[int, int, str], ...]:
         before = masked[:run[0][0]].rstrip()
         if not before or before[-1] not in ";{}:":
             continue  # not at a statement boundary (if/else/for guard, file scope)
-        name = match_unit([st for _s, _e, st in run])
-        if name:
-            kept.extend((s, e, name) for s, e, _st in run)
+        for (i, j), name in split_units([st for _s, _e, st in run]):
+            kept.extend((s, e, name) for s, e, _st in run[i:j])
     return tuple(kept)
+
+
+def split_units(run: list[Stmt]) -> list[tuple[tuple[int, int], str]]:
+    """Split `run` into consecutive qualifying units covering EVERY statement
+    (owner ruling 2026-09-26, Q11: macros written back to back). Returns
+    [((start, end), macro), ...] with the fewest units (so a whole composite
+    such as gte_ApplyRotMatrix wins over its three callees), or [] when some
+    statement is left over — then nothing in the run is a unit."""
+    longest = max(len(spec) for _p, spec in pinned_macros().values())
+    n = len(run)
+    best: list[tuple[int, int, str] | None] = [None] * (n + 1)  # (units, prev, name)
+    best[0] = (0, -1, "")
+    for j in range(1, n + 1):
+        for i in range(max(0, j - longest), j):
+            if best[i] is None:
+                continue
+            name = match_unit(run[i:j])
+            if name and (best[j] is None or best[i][0] + 1 < best[j][0]):
+                best[j] = (best[i][0] + 1, i, name)
+    if best[n] is None:
+        return []
+    out, j = [], n
+    while j > 0:
+        _k, i, name = best[j]
+        out.append(((i, j), name))
+        j = i
+    return out[::-1]

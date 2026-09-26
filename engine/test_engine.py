@@ -734,6 +734,65 @@ def test_gte_macro_units() -> None:
              "#define LZC(x) \\\n    " + _MOVE.format(op="x") + " \\\n    " + _MTC2
              + "\n" + _gte_src("LZC(n);"))
 
+    # --- owner ruling 2026-09-26 (func_8002DE20, Q11): gte_ldv0 / gte_rtv0 /
+    # gte_stlvnl / gte_ApplyRotMatrix pinned; back-to-back macros; the DMPSX
+    # post-pass word equals the header placeholder (DMPSX_WORDS only).
+    eq("gtemacro: gte_ApplyRotMatrix expands to ten statements",
+       len(macros["gte_ApplyRotMatrix"][1]), 10)
+    eq("gtemacro: DMPSX_WORDS is exactly the evidenced rtv0 pair",
+       gtemacro.DMPSX_WORDS, {0x0000013F: 0x4A486012})
+
+    def stmt(t, op=None):
+        ins = f'"r"({op})' if op else ""
+        return f'__asm__ volatile ("{t}": :{ins}:' + _CLOB.replace(" ", "") + ');'
+    ldv0 = [stmt("move  $12,%0", "&v"), stmt("lwc2  $0,($12)"), stmt("lwc2  $1,4($12)")]
+    rtv0_ph = [stmt("nop   "), stmt("nop   "), stmt(".word 0x0000013f")]
+    rtv0 = [stmt("nop   "), stmt("nop   "), stmt(".word 0x4A486012")]
+    stl = [stmt("move  $12,%0", "&out"), stmt("swc2  $25,($12)"),
+           stmt("swc2  $26,4($12)"), stmt("swc2  $27,8($12)")]
+
+    def vsrc(*stmts: str) -> str:
+        return ("void f(s32 n) {\n    s32 v[2];\n    s32 out[3];\n    v[0] = n;\n    "
+                + "\n    ".join(stmts) + "\n    out[0] += n;\n}\n")
+
+    eq("gte unit POSITIVE: gte_ldv0 (header ($12)) recognized", kept(vsrc(*ldv0)), ["gte_ldv0"] * 3)
+    eq("gte unit POSITIVE: gte_stlvnl recognized", kept(vsrc(*stl)), ["gte_stlvnl"] * 4)
+    eq("gte unit POSITIVE: gte_rtv0 with the header placeholder recognized",
+       kept(vsrc(*rtv0_ph)), ["gte_rtv0"] * 3)
+    eq("gte unit POSITIVE: gte_rtv0 with the post-DMPSX word recognized",
+       kept(vsrc(*rtv0)), ["gte_rtv0"] * 3)
+    pair = vsrc(*ldv0, *rtv0)
+    eq("gte unit POSITIVE: back-to-back gte_ldv0 + gte_rtv0 split into two units",
+       kept(pair), ["gte_ldv0"] * 3 + ["gte_rtv0"] * 3)
+    eq("gte unit POSITIVE: back-to-back pair kept whole",
+       inlineasm.strip_cheat_asm_file(pair, keep_gte_macro_units=True), (pair, 0))
+    triple = vsrc(*ldv0, *rtv0, *stl)
+    eq("gte unit POSITIVE: ldv0+rtv0+stlvnl is one gte_ApplyRotMatrix",
+       kept(triple), ["gte_ApplyRotMatrix"] * 10)
+    split = vsrc(*ldv0, *rtv0, "out[1] = n;", *stl)
+    eq("gte unit POSITIVE: ldv0+rtv0, C, stlvnl -> three units",
+       kept(split), ["gte_ldv0"] * 3 + ["gte_rtv0"] * 3 + ["gte_stlvnl"] * 4)
+    eq("gte unit: scoring is not admission — gate still counts the 4 GPR-only statements",
+       inlineasm.func_cheat_asm_count(split, "f"), 4)
+    ik = gtemacro._instr_key
+    eq("dmpsx key: post word == placeholder", ik(".word 0x4A486012"), ik(".word 0x0000013f"))
+    check("dmpsx key: another GTE word is not the rtv0 placeholder",
+          ik(".word 0x4A486013") != ik(".word 0x0000013f"))
+    check("dmpsx key: a non-8-digit spelling of the word is not equal",
+          ik(".word 0x04A486012") != ik(".word 0x0000013f"))
+
+    # NEGATIVES (Q11 additions) — each stripped exactly as today.
+    as_today("rtv0 with a different GTE word", vsrc(*rtv0[:2], stmt(".word 0x4A486013")))
+    as_today("rtv0 missing a nop", vsrc(rtv0[0], rtv0[2]))
+    as_today("standalone gte_nop left between two units",
+             vsrc(*ldv0, stmt("nop   "), *rtv0))
+    as_today("hardcoded-$N statement between back-to-back units",
+             vsrc(*ldv0, '__asm__ volatile("move $4,$2");', *rtv0))
+    as_today("back-to-back run with a partial trailing macro",
+             vsrc(*ldv0, *rtv0, *stl[:3]))
+    as_today("DMPSX word outside a placeholder position (appended to ldv0)",
+             vsrc(*ldv0, stmt(".word 0x4A486012")))
+
 
 # --------------------------------------------------------------------------
 # cheats — regfix masking (other half of cheat-invisibility)
