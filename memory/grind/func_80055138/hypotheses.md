@@ -40,3 +40,17 @@
 - Siblings: func_80022F34 / func_80062020 / func_8005509C share no code block with this function
   (func_8005509C is the callee; its record-pointer spelling `(u8 *)&D_80101EC8 + arg0 * 0x44C` is
   used here). Nothing to transplant.
+
+## [s3] manual lane slotF 2026-09-26 (after owner Ruling 11, 262db111c)
+- CONFIRMED (dumps, ruling11.md): no one-variable-per-value spelling reproduces
+  `andi a2,v0,0xff` (0x800552E4) or `or a2,v0,v1` (0x80055738): each of those values alone
+  is a single-block local that local-alloc ties to its dying input.
+- CONFIRMED: the two-loop counter is one variable in the target ($t4 for both); split,
+  the clear loop's counter takes $v1 (25/516).
+- KILLED: separate base local for the three section values (6/6/8); kept hi2_val staging
+  (staged-value-reused-variable, FAKE-annotated).
+- KILLED: two-variable partitions of temp (98 / 2 / 11); every single-value ablation
+  (4/33/33/2/6/11).
+- DONE: permuter from the per-value twin (base 1069 -> 285 permuter units = 33/516; finds
+  add `do { } while (0);`, reuse `cat`, or carry constants).
+- OPEN -> landing: submit candidate.c under Ruling 11 with the data model in evidence.md s3.

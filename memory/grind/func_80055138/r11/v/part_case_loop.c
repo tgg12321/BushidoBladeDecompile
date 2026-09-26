@@ -25,6 +25,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
      * Admitted under Ruling 11 (.claude/rules/ordinary-c-judge-decidable.md);
      * allocator-dump proof in memory/grind/func_80055138/ruling11.md. */
     s32 temp;
+    s32 temp2;
     u32 cat;
     s32 lo_val, hi1_val, hi2_val;
     u8 *other;
@@ -51,8 +52,8 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         break;
     case 2:
         if (D_800A389A) {
-            temp = D_800A37D2 / 5;
-            *(s16 *)(p + 0x438) = temp * 0x180 + 0x280;
+            temp2 = D_800A37D2 / 5;
+            *(s16 *)(p + 0x438) = temp2 * 0x180 + 0x280;
             if (*(s16 *)(p + 0x438) > 0x1000) {
                 *(s16 *)(p + 0x438) = 0x1000;
             }
@@ -60,16 +61,16 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 func_8005509C(*(s16 *)(p + 4));
             }
         } else {
-            temp = D_800A37D2 / 3;
-            if (temp >= 3) {
+            temp2 = D_800A37D2 / 3;
+            if (temp2 >= 3) {
                 D_800A37D2 = 0;
-                temp = 0;
+                temp2 = 0;
             }
             p[0x443] = 0x19;
-            *(s16 *)(p + 0x1C) = (temp + 2) << 10;
+            *(s16 *)(p + 0x1C) = (temp2 + 2) << 10;
             *(s16 *)(p + 0x438) = 0;
             p[0x424] = 0;
-            p[0x3F6] = 0x3C - temp * 15;
+            p[0x3F6] = 0x3C - temp2 * 15;
         }
         break;
     case 3:
@@ -85,11 +86,11 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         if ((D_800A38E2 - 1) % 10 == 0) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        temp = (u8)(D_800A38E2 / 10) * 2;
+        temp2 = (u8)(D_800A38E2 / 10) * 2;
         if ((u8)(D_800A38E2 % 10) == 0) {
-            temp--;
+            temp2--;
         }
-        pair = D_8009A9B4[temp];
+        pair = D_8009A9B4[temp2];
         p[0x424] = pair[0];
         p[0x3F6] = pair[1];
         break;

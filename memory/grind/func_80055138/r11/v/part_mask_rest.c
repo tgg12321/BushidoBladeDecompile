@@ -25,6 +25,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
      * Admitted under Ruling 11 (.claude/rules/ordinary-c-judge-decidable.md);
      * allocator-dump proof in memory/grind/func_80055138/ruling11.md. */
     s32 temp;
+    s32 temp2;
     u32 cat;
     s32 lo_val, hi1_val, hi2_val;
     u8 *other;
@@ -133,8 +134,8 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             while (*cursor != 0) {
                 u8 *e = list + *cursor;
                 if (e[4] == 0x40) {
-                    temp = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
-                    if (!(temp & bit)) {
+                    temp2 = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
+                    if (!(temp2 & bit)) {
                         goto next;
                     }
                 }

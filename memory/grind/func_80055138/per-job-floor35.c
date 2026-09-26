@@ -1,3 +1,13 @@
+typedef struct {
+    u16 flags;
+    u8 unk2;
+    u8 unk3;
+    u8 unk4[0x18 - 4];
+} StatusFlagRec;
+extern StatusFlagRec g_sfr[] asm("D_80099D88");
+extern u8 D_8009A8C4[][8][4];
+extern u8 D_8009A9B4[][2];
+extern u8 g_cpt[][4] asm("cpu_practice_honmokuroku_data_tbl");
 extern u32 file_GetFlag1(void);
 extern s32 rand(void);
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
@@ -5,28 +15,26 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     u8 *src;
     u8 *pair;
     u8 (*row)[4];
-    u8 base;
-    /* idx counts two loops: the eight bytes cleared at 0x444, then the two
-     * players (0 = this record, 1 = the opponent's). Admitted under Ruling 11
-     * (.claude/rules/ordinary-c-judge-decidable.md); allocator-dump proof in
-     * memory/grind/func_80055138/ruling11.md. */
+    s32 lv;
     s32 idx;
+    u8 base;
+    s32 i;
     s32 sec;
     u8 *rec;
     u16 *cursor;
     u8 *list;
-    s32 chr;
+    s32 mask;
     s32 bit;
     s32 lo, hi1, hi2;
-    /* temp holds six values in turn; each is read before temp is written again:
-     * case 2's level D_800A37D2 / 5; case 2's practice level D_800A37D2 / 3
-     * (0 once it reaches 3); case 3's row in D_8009A9B4; a move entry's
-     * byte-assembled character mask; the entry's stat bytes e[1] and e[2].
-     * Admitted under Ruling 11 (.claude/rules/ordinary-c-judge-decidable.md);
-     * allocator-dump proof in memory/grind/func_80055138/ruling11.md. */
-    s32 temp;
+    s32 n;
+    s32 s1;
+    s32 s2;
+    s32 m;
     u32 cat;
-    s32 lo_val, hi1_val, hi2_val;
+    s32 low_cat;
+    s32 slot;
+    s32 nib;
+    s32 a, b, c;
     u8 *other;
 
     p[0x443] = *(u16 *)(p + 0xA);
@@ -42,7 +50,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         if (D_800A3680 == D_800A3671) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        if (D_80099D88[p[0x443]].flags & 0x300) {
+        if (g_sfr[p[0x443]].flags & 0x300) {
             row = D_8009A8C4[*(s16 *)(p + 0x86)];
             src = row[D_800A37A0];
             p[0x424] = src[0];
@@ -51,8 +59,8 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         break;
     case 2:
         if (D_800A389A) {
-            temp = D_800A37D2 / 5;
-            *(s16 *)(p + 0x438) = temp * 0x180 + 0x280;
+            lv = D_800A37D2 / 5;
+            *(s16 *)(p + 0x438) = lv * 0x180 + 0x280;
             if (*(s16 *)(p + 0x438) > 0x1000) {
                 *(s16 *)(p + 0x438) = 0x1000;
             }
@@ -60,36 +68,36 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 func_8005509C(*(s16 *)(p + 4));
             }
         } else {
-            temp = D_800A37D2 / 3;
-            if (temp >= 3) {
+            n = D_800A37D2 / 3;
+            if (n >= 3) {
                 D_800A37D2 = 0;
-                temp = 0;
+                n = 0;
             }
             p[0x443] = 0x19;
-            *(s16 *)(p + 0x1C) = (temp + 2) << 10;
+            *(s16 *)(p + 0x1C) = (n + 2) << 10;
             *(s16 *)(p + 0x438) = 0;
             p[0x424] = 0;
-            p[0x3F6] = 0x3C - temp * 15;
+            p[0x3F6] = 0x3C - n * 15;
         }
         break;
     case 3:
-        p[0x443] = cpu_practice_honmokuroku_data_tbl[D_800A38E2 - 1][0] + 0x1B;
+        p[0x443] = g_cpt[D_800A38E2 - 1][0] + 0x1B;
         base = D_800A38E2 / 10;
         *(s16 *)(p + 0x438) = base * 16 + 0x80;
-        if (D_80099D88[p[0x443]].flags & 0x3000) {
+        if (g_sfr[p[0x443]].flags & 0x3000) {
             *(s16 *)(p + 0x438) = base * 16 + 0x180;
         }
-        if (D_80099D88[p[0x443]].flags & 0x4000) {
+        if (g_sfr[p[0x443]].flags & 0x4000) {
             *(s16 *)(p + 0x438) += 0x200;
         }
         if ((D_800A38E2 - 1) % 10 == 0) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        temp = (u8)(D_800A38E2 / 10) * 2;
+        idx = (u8)(D_800A38E2 / 10) * 2;
         if ((u8)(D_800A38E2 % 10) == 0) {
-            temp--;
+            idx--;
         }
-        pair = D_8009A9B4[temp];
+        pair = D_8009A9B4[idx];
         p[0x424] = pair[0];
         p[0x3F6] = pair[1];
         break;
@@ -97,89 +105,81 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     if (file_GetFlag1() && D_800A38DC != 3) {
         *(s16 *)(p + 0x438) = *(s16 *)(p + 0x438) * 11 >> 4;
     }
-    if (!(D_80099D88[p[0x443]].flags & 0xFF00)) {
+    if (!(g_sfr[p[0x443]].flags & 0xFF00)) {
         p[0x424] = 0x11 - (*(s16 *)(p + 0x438) >> 8);
     }
     *(s16 *)(p + 0x39A) = 0x8000 / *(s16 *)(p + 0x1C);
     p[0x3BD] = 0x10 - (*(s16 *)(p + 0x438) >> 8);
-    if (D_80099D88[p[0x443]].flags & 0x100) {
-        D_80099D88[p[0x443]].unk3 = (rand() & 3) + 1;
+    if (g_sfr[p[0x443]].flags & 0x100) {
+        g_sfr[p[0x443]].unk3 = (rand() & 3) + 1;
     }
-    for (idx = 0; idx < 8U; idx++) {
-        (p + idx)[0x444] = 0;
+    for (i = 0; i < 8U; i++) {
+        (p + i)[0x444] = 0;
     }
     *(u16 **)(p + 0x3A4) = arg1;
-    for (idx = 0; idx < 2; idx++) {
-        if (idx) {
+    for (i = 0; i < 2; i++) {
+        if (i) {
             rec = *(u8 **)p;
             cursor = arg2;
-            list = (u8 *)arg2;
-            chr = *(s16 *)(rec + 0xA);
+            list = (u8 *)cursor;
+            mask = *(s16 *)(rec + 0xA);
         } else {
             rec = p;
             cursor = arg1;
-            list = (u8 *)arg1;
-            chr = p[0x443];
+            list = (u8 *)cursor;
+            mask = p[0x443];
         }
         *(s16 *)(rec + 0x40A) = (*(s16 *)(rec + 0x1A) - 0x1000) * 225 >> 11;
         for (sec = 0; sec < 3; sec++) {
-            bit = 1 << chr;
+            bit = 1 << mask;
             lo = 0xFFFF;
             hi2 = 0;
             hi1 = 0;
-            if (idx == 0) {
+            if (i == 0) {
                 *(u16 **)(p + 0x3A8 + sec * 4) = cursor;
             }
             while (*cursor != 0) {
                 u8 *e = list + *cursor;
                 if (e[4] == 0x40) {
-                    temp = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
-                    if (!(temp & bit)) {
+                    m = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
+                    if (!(m & bit)) {
                         goto next;
                     }
                 }
                 if (e[1] != 0 && e[1] != 0xFF) {
-                    temp = e[1];
-                    if (temp < lo) {
-                        lo = temp;
+                    s1 = e[1];
+                    if (s1 < lo) {
+                        lo = s1;
                     }
                 }
                 if (e[2] != 0 && e[2] != 0xFF) {
-                    temp = e[2];
-                    if (hi1 < temp) {
-                        hi1 = temp;
+                    s2 = e[2];
+                    if (hi1 < s2) {
+                        hi1 = s2;
                     }
                     cat = e[0] & 7;
-                    if (hi2 < temp && (e[3] & 0xF) * 4 < 0x10 && (cat < 2 || cat == 7)) {
-                        hi2 = temp;
+                    low_cat = cat < 2;
+                    if (hi2 < s2 && (e[3] & 0xF) * 4 < 0x10 && (low_cat || cat == 7)) {
+                        hi2 = s2;
                     }
                 }
             next:
                 cursor++;
             }
             if (*(s16 *)(rec + 0xE) >= 6) {
-                lo_val = 0;
-                hi2_val = 0x7530;
-                hi1_val = 0x7530;
+                a = 0;
+                c = 0x7530;
+                b = 0x7530;
             } else {
-                /* FAKE: the shared base (rec's 0x40A halfword + 100) is staged
-                 * through hi2_val, whose own value (base + hi2 * 40) is
-                 * completed below; staged-value-reused-variable. Mechanism: a
-                 * separate base local lives in one basic block, so
-                 * local-alloc.c combine_regs ties it to the dying lh result
-                 * (lh v1; addiu v1,v1,100); hi2_val is set in both arms and
-                 * read after the join, so it is global-allocated and untied
-                 * (target: lh v0; addiu v1,v0,100). Lever exhaustion:
-                 * memory/grind/func_80055138/ruling11.md. */
-                hi2_val = *(s16 *)(rec + 0x40A) + 100;
-                lo_val = hi2_val + lo * 40;
-                hi1_val = hi2_val + hi1 * 40;
-                hi2_val += hi2 * 40;
+                c = *(s16 *)(rec + 0x40A) + 100;
+                a = c + lo * 40;
+                b = c + hi1 * 40;
+                c += hi2 * 40;
             }
             cursor++;
-            ((s16 *)(rec + 0x3F8))[sec] = lo_val;
-            ((s16 *)(rec + 0x3FE))[sec] = hi1_val;
-            ((s16 *)(rec + 0x404))[sec] = hi2_val;
+            ((s16 *)(rec + 0x3F8))[sec] = a;
+            ((s16 *)(rec + 0x3FE))[sec] = b;
+            ((s16 *)(rec + 0x404))[sec] = c;
         }
     }
     other = *(u8 **)p;

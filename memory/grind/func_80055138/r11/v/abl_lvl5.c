@@ -51,8 +51,9 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         break;
     case 2:
         if (D_800A389A) {
-            temp = D_800A37D2 / 5;
-            *(s16 *)(p + 0x438) = temp * 0x180 + 0x280;
+            s32 lvl5;
+            lvl5 = D_800A37D2 / 5;
+            *(s16 *)(p + 0x438) = lvl5 * 0x180 + 0x280;
             if (*(s16 *)(p + 0x438) > 0x1000) {
                 *(s16 *)(p + 0x438) = 0x1000;
             }

@@ -18,13 +18,12 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     s32 chr;
     s32 bit;
     s32 lo, hi1, hi2;
-    /* temp holds six values in turn; each is read before temp is written again:
-     * case 2's level D_800A37D2 / 5; case 2's practice level D_800A37D2 / 3
-     * (0 once it reaches 3); case 3's row in D_8009A9B4; a move entry's
-     * byte-assembled character mask; the entry's stat bytes e[1] and e[2].
-     * Admitted under Ruling 11 (.claude/rules/ordinary-c-judge-decidable.md);
-     * allocator-dump proof in memory/grind/func_80055138/ruling11.md. */
-    s32 temp;
+    s32 stat2;
+    s32 stat1;
+    s32 move_mask;
+    s32 row_idx;
+    s32 lvl3;
+    s32 lvl5;
     u32 cat;
     s32 lo_val, hi1_val, hi2_val;
     u8 *other;
@@ -51,8 +50,8 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         break;
     case 2:
         if (D_800A389A) {
-            temp = D_800A37D2 / 5;
-            *(s16 *)(p + 0x438) = temp * 0x180 + 0x280;
+            lvl5 = D_800A37D2 / 5;
+            *(s16 *)(p + 0x438) = lvl5 * 0x180 + 0x280;
             if (*(s16 *)(p + 0x438) > 0x1000) {
                 *(s16 *)(p + 0x438) = 0x1000;
             }
@@ -60,16 +59,16 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 func_8005509C(*(s16 *)(p + 4));
             }
         } else {
-            temp = D_800A37D2 / 3;
-            if (temp >= 3) {
+            lvl3 = D_800A37D2 / 3;
+            if (lvl3 >= 3) {
                 D_800A37D2 = 0;
-                temp = 0;
+                lvl3 = 0;
             }
             p[0x443] = 0x19;
-            *(s16 *)(p + 0x1C) = (temp + 2) << 10;
+            *(s16 *)(p + 0x1C) = (lvl3 + 2) << 10;
             *(s16 *)(p + 0x438) = 0;
             p[0x424] = 0;
-            p[0x3F6] = 0x3C - temp * 15;
+            p[0x3F6] = 0x3C - lvl3 * 15;
         }
         break;
     case 3:
@@ -85,11 +84,11 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         if ((D_800A38E2 - 1) % 10 == 0) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        temp = (u8)(D_800A38E2 / 10) * 2;
+        row_idx = (u8)(D_800A38E2 / 10) * 2;
         if ((u8)(D_800A38E2 % 10) == 0) {
-            temp--;
+            row_idx--;
         }
-        pair = D_8009A9B4[temp];
+        pair = D_8009A9B4[row_idx];
         p[0x424] = pair[0];
         p[0x3F6] = pair[1];
         break;
@@ -133,25 +132,25 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             while (*cursor != 0) {
                 u8 *e = list + *cursor;
                 if (e[4] == 0x40) {
-                    temp = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
-                    if (!(temp & bit)) {
+                    move_mask = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
+                    if (!(move_mask & bit)) {
                         goto next;
                     }
                 }
                 if (e[1] != 0 && e[1] != 0xFF) {
-                    temp = e[1];
-                    if (temp < lo) {
-                        lo = temp;
+                    stat1 = e[1];
+                    if (stat1 < lo) {
+                        lo = stat1;
                     }
                 }
                 if (e[2] != 0 && e[2] != 0xFF) {
-                    temp = e[2];
-                    if (hi1 < temp) {
-                        hi1 = temp;
+                    stat2 = e[2];
+                    if (hi1 < stat2) {
+                        hi1 = stat2;
                     }
                     cat = e[0] & 7;
-                    if (hi2 < temp && (e[3] & 0xF) * 4 < 0x10 && (cat < 2 || cat == 7)) {
-                        hi2 = temp;
+                    if (hi2 < stat2 && (e[3] & 0xF) * 4 < 0x10 && (cat < 2 || cat == 7)) {
+                        hi2 = stat2;
                     }
                 }
             next:

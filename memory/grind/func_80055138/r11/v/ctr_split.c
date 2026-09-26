@@ -11,6 +11,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
      * (.claude/rules/ordinary-c-judge-decidable.md); allocator-dump proof in
      * memory/grind/func_80055138/ruling11.md. */
     s32 idx;
+    s32 zero_i;
     s32 sec;
     u8 *rec;
     u16 *cursor;
@@ -105,8 +106,8 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     if (D_80099D88[p[0x443]].flags & 0x100) {
         D_80099D88[p[0x443]].unk3 = (rand() & 3) + 1;
     }
-    for (idx = 0; idx < 8U; idx++) {
-        (p + idx)[0x444] = 0;
+    for (zero_i = 0; zero_i < 8U; zero_i++) {
+        (p + zero_i)[0x444] = 0;
     }
     *(u16 **)(p + 0x3A4) = arg1;
     for (idx = 0; idx < 2; idx++) {

@@ -32,6 +32,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     p[0x443] = *(u16 *)(p + 0xA);
     *(s16 *)(p + 0x438) = *(u16 *)(p + 8);
     switch (D_800A38DC) {
+        s32 row_idx;
     case 1:
         *(s16 *)(p + 0x438) = (D_800A3783 - 1) / 5 * 0x300 + 0x400;
         if (*(s16 *)(p + 0x438) > 0xD00) {
@@ -85,11 +86,11 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         if ((D_800A38E2 - 1) % 10 == 0) {
             func_8005509C(*(s16 *)(p + 4));
         }
-        temp = (u8)(D_800A38E2 / 10) * 2;
+        row_idx = (u8)(D_800A38E2 / 10) * 2;
         if ((u8)(D_800A38E2 % 10) == 0) {
-            temp--;
+            row_idx--;
         }
-        pair = D_8009A9B4[temp];
+        pair = D_8009A9B4[row_idx];
         p[0x424] = pair[0];
         p[0x3F6] = pair[1];
         break;

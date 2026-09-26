@@ -112,3 +112,47 @@ probe-shared-scratch-v.c (sandbox 12, all from the g_sfr scaffold) / integration
   dying input by local-alloc (ours: `andi v1,v1,0xff`, `or v0,v0,v1`). So in the target these
   values sit in a variable that is live in other blocks too -- the shared scratch. Any
   per-job floor keeps at least those hunks plus the stat copies' seats.
+
+## [s3] manual lane slotF 2026-09-26 — Ruling 11 landing preparation
+
+Owner Ruling 11 (commit 262db111c; .claude/rules/ordinary-c-judge-decidable.md) admits a
+reused local on allocator-dump necessity. Full (A)-(H) record: **ruling11.md** (this dir).
+- Body: candidate.c (= r11/cand.c) is the s2 one-scratch body with `v` renamed `temp`
+  (E)(i), the two-loop counter `i` renamed `idx` (also under Ruling 11, (E)(ii)), `mask`
+  renamed `chr` (it is the character id; `bit = 1 << chr`), a/b/c renamed
+  lo_val/hi1_val/hi2_val, `list = (u8 *)arg1/arg2` (was `(u8 *)cursor`, 0 either way), the
+  four unused s2 declarations (lv, idx, m, bonus) dropped (0 either way), and declaration
+  comments (F) plus the FAKE staged-value annotation on hi2_val.
+- Scores (r11/model.py, header model, scratch TU vs build/src/text1b.o): reuse 0/516;
+  per-value twin 102; ablations 4/33/33/2/6/11; counter split 25; unstaged base 6/6/8;
+  two-variable partitions 98/2/11; structural twins 102/105/102/102. Whole-file: text1b 408
+  functions and code6cac_b all instruction-identical with the model applied (r11/all.log).
+- Mechanisms (dumps in ruling11.md): values 1 and 4 need a multi-block pseudo
+  (local-alloc.c:472 + combine_regs tie in any per-value spelling); the $a2 seat is global.c
+  find_reg over the union of the six values' conflicts; values 5/6 keep their copies only
+  while temp is cse's canonical register (cse.c make_regs_eqv); idx's $t4 needs the pseudo
+  live across the scan loop; hi2_val staging: a separate base local is single-block and
+  tied to the dying lh result.
+
+### Data model shipped with the body (r11/model.py `apply`)
+- include/code6cac.h: `StatusFlagRec` (u16 flags; u8 unk2; u8 unk3; u8 unk4[0x14]) and
+  `extern StatusFlagRec D_80099D88[];` — aggregate merge, prong (a) by base+offset
+  addressing in the original binary: stride 0x18 (`sll 1; addu; sll 3` of the character
+  id p[0x443]) in func_80055138 (+0 lhu x5, +3 sb), func_80055948 (+0 lhu), func_80055B60
+  (+0 lhu x6, +5 lbu, +7 lbu), func_80058580 (+0 lhu x20, +3/+4/+6/+7/+0xC/+0x14/+0x15 lbu,
+  +8/+0xF addiu bases); committed census name g_status_flag_record_table_80099D88
+  (named_syms.txt row since 2026-05-17, 75434af56: "12-byte stride; u16 record" = 12 u16 = 0x18 bytes). (b) a record
+  table of the evidenced size; (c) no C names D_80099D8B..D_80099D9D; their
+  undefined_syms_auto.txt rows get the `alias of D_80099D88+0xN; retire with <sibling>`
+  suffix (func_80055B60 / func_80058580 still INCLUDE_ASM); D_80099D90 (+8) has no config
+  row (asm/data dlabel only); (d) canonical in the shared header; the TU-local
+  `extern u16 D_80099D88;` in text1b.c is removed and func_80055948's per-use pun
+  `*(&D_80099D88 + idx * 12)` becomes `D_80099D88[idx].flags`; (e) byte-neutral (text1b
+  whole-file identical; full-build SHA1 at landing).
+- `cpu_practice_honmokuroku_data_tbl` retyped `u8 [][4]` (named_syms.txt comment: 4-byte
+  entries); code6cac_b.c func_80033DF4 `&tbl + (tableIndex * 4)` -> `tbl[tableIndex]`
+  (code6cac_b whole-file identical).
+- `extern u8 D_8009A8C4[][8][4];` (rows of eight 4-byte entries: 0x8009A8C4..0x8009A927,
+  the target adds row*0x20 before col*4) and `extern u8 D_8009A9B4[][2];` in the same
+  header. D_8009A8CA (+6, u16 read by still-INCLUDE_ASM func_80058580) lies inside the
+  first; it has no config row (asm/data dlabel only) and no C name.

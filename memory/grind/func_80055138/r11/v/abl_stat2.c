@@ -145,13 +145,14 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                     }
                 }
                 if (e[2] != 0 && e[2] != 0xFF) {
-                    temp = e[2];
-                    if (hi1 < temp) {
-                        hi1 = temp;
+                    s32 stat2;
+                    stat2 = e[2];
+                    if (hi1 < stat2) {
+                        hi1 = stat2;
                     }
                     cat = e[0] & 7;
-                    if (hi2 < temp && (e[3] & 0xF) * 4 < 0x10 && (cat < 2 || cat == 7)) {
-                        hi2 = temp;
+                    if (hi2 < stat2 && (e[3] & 0xF) * 4 < 0x10 && (cat < 2 || cat == 7)) {
+                        hi2 = stat2;
                     }
                 }
             next:

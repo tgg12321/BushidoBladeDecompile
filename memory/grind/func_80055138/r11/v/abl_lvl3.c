@@ -60,16 +60,17 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 func_8005509C(*(s16 *)(p + 4));
             }
         } else {
-            temp = D_800A37D2 / 3;
-            if (temp >= 3) {
+            s32 lvl3;
+            lvl3 = D_800A37D2 / 3;
+            if (lvl3 >= 3) {
                 D_800A37D2 = 0;
-                temp = 0;
+                lvl3 = 0;
             }
             p[0x443] = 0x19;
-            *(s16 *)(p + 0x1C) = (temp + 2) << 10;
+            *(s16 *)(p + 0x1C) = (lvl3 + 2) << 10;
             *(s16 *)(p + 0x438) = 0;
             p[0x424] = 0;
-            p[0x3F6] = 0x3C - temp * 15;
+            p[0x3F6] = 0x3C - lvl3 * 15;
         }
         break;
     case 3:

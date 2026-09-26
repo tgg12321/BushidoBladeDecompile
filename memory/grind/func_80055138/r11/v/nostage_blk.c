@@ -162,19 +162,11 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 hi2_val = 0x7530;
                 hi1_val = 0x7530;
             } else {
-                /* FAKE: the shared base (rec's 0x40A halfword + 100) is staged
-                 * through hi2_val, whose own value (base + hi2 * 40) is
-                 * completed below; staged-value-reused-variable. Mechanism: a
-                 * separate base local lives in one basic block, so
-                 * local-alloc.c combine_regs ties it to the dying lh result
-                 * (lh v1; addiu v1,v1,100); hi2_val is set in both arms and
-                 * read after the join, so it is global-allocated and untied
-                 * (target: lh v0; addiu v1,v0,100). Lever exhaustion:
-                 * memory/grind/func_80055138/ruling11.md. */
-                hi2_val = *(s16 *)(rec + 0x40A) + 100;
-                lo_val = hi2_val + lo * 40;
-                hi1_val = hi2_val + hi1 * 40;
-                hi2_val += hi2 * 40;
+                s32 base_val;
+                base_val = *(s16 *)(rec + 0x40A) + 100;
+                lo_val = base_val + lo * 40;
+                hi1_val = base_val + hi1 * 40;
+                hi2_val = base_val + hi2 * 40;
             }
             cursor++;
             ((s16 *)(rec + 0x3F8))[sec] = lo_val;

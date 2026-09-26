@@ -133,8 +133,9 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             while (*cursor != 0) {
                 u8 *e = list + *cursor;
                 if (e[4] == 0x40) {
-                    temp = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
-                    if (!(temp & bit)) {
+                    s32 move_mask;
+                    move_mask = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
+                    if (!(move_mask & bit)) {
                         goto next;
                     }
                 }

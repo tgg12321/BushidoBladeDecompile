@@ -139,9 +139,10 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                     }
                 }
                 if (e[1] != 0 && e[1] != 0xFF) {
-                    temp = e[1];
-                    if (temp < lo) {
-                        lo = temp;
+                    s32 stat1;
+                    stat1 = e[1];
+                    if (stat1 < lo) {
+                        lo = stat1;
                     }
                 }
                 if (e[2] != 0 && e[2] != 0xFF) {
