@@ -40583,7 +40583,7 @@ glabel func_8003B870
     /* 2C0A4 8003B8A4 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C0A8 8003B8A8 21280000 */  addu       $a1, $zero, $zero
     /* 2C0AC 8003B8AC 21300000 */  addu       $a2, $zero, $zero
-    /* 2C0B0 8003B8B0 DA59000C */  jal        func_80016768
+    /* 2C0B0 8003B8B0 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2C0B4 8003B8B4 21380000 */   addu      $a3, $zero, $zero
     /* 2C0B8 8003B8B8 17000224 */  addiu      $v0, $zero, 0x17
     /* 2C0BC 8003B8BC 0A80013C */  lui        $at, %hi(D_800A37B8)
@@ -40653,7 +40653,7 @@ glabel func_8003B8E4
     /* 2C1A0 8003B9A0 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C1A4 8003B9A4 21280000 */  addu       $a1, $zero, $zero
     /* 2C1A8 8003B9A8 21300000 */  addu       $a2, $zero, $zero
-    /* 2C1AC 8003B9AC DA59000C */  jal        func_80016768
+    /* 2C1AC 8003B9AC DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2C1B0 8003B9B0 21380000 */   addu      $a3, $zero, $zero
     /* 2C1B4 8003B9B4 01000224 */  addiu      $v0, $zero, 0x1
     /* 2C1B8 8003B9B8 0A80013C */  lui        $at, %hi(D_800A390D)
@@ -40704,7 +40704,7 @@ glabel func_8003B9D0
     /* 2C24C 8003BA4C 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C250 8003BA50 21280000 */  addu       $a1, $zero, $zero
     /* 2C254 8003BA54 21300000 */  addu       $a2, $zero, $zero
-    /* 2C258 8003BA58 DA59000C */  jal        func_80016768
+    /* 2C258 8003BA58 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2C25C 8003BA5C 21380000 */   addu      $a3, $zero, $zero
     /* 2C260 8003BA60 0A80023C */  lui        $v0, %hi(D_800A3878)
     /* 2C264 8003BA64 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
@@ -41486,7 +41486,7 @@ glabel func_8003C42C
     /* 2CD28 8003C528 01000424 */  addiu      $a0, $zero, 0x1
     /* 2CD2C 8003C52C 21280000 */  addu       $a1, $zero, $zero
     /* 2CD30 8003C530 21300000 */  addu       $a2, $zero, $zero
-    /* 2CD34 8003C534 DA59000C */  jal        func_80016768
+    /* 2CD34 8003C534 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2CD38 8003C538 21380000 */   addu      $a3, $zero, $zero
     /* 2CD3C 8003C53C 15000224 */  addiu      $v0, $zero, 0x15
     /* 2CD40 8003C540 0A80013C */  lui        $at, %hi(D_800A37B8)
@@ -41717,7 +41717,7 @@ glabel func_8003C714
     /* 2D070 8003C870 1080023C */  lui        $v0, %hi(D_80101ED2)
     /* 2D074 8003C874 D21E4294 */  lhu        $v0, %lo(D_80101ED2)($v0)
     /* 2D078 8003C878 21380000 */  addu       $a3, $zero, $zero
-    /* 2D07C 8003C87C DA59000C */  jal        func_80016768
+    /* 2D07C 8003C87C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2D080 8003C880 300002A2 */   sb        $v0, 0x30($s0)
     /* 2D084 8003C884 1F000224 */  addiu      $v0, $zero, 0x1F
     /* 2D088 8003C888 0A80013C */  lui        $at, %hi(D_800A37B8)
@@ -42138,7 +42138,7 @@ glabel func_8003CE18
     /* 2D640 8003CE40 01000424 */  addiu      $a0, $zero, 0x1
     /* 2D644 8003CE44 21280000 */  addu       $a1, $zero, $zero
     /* 2D648 8003CE48 21300000 */  addu       $a2, $zero, $zero
-    /* 2D64C 8003CE4C DA59000C */  jal        func_80016768
+    /* 2D64C 8003CE4C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
     /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
     /* 2D658 8003CE58 00000000 */   nop

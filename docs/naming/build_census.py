@@ -355,7 +355,9 @@ MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-re
              # INFERRED-name audit (docs/naming/sweep-2026-09-25/): RESET/RENAME/UPGRADE rows
              (J("docs", "naming", "sweep-2026-09-25", "func_manifest.csv"), None, None),
              # second 2026-09-25 batch: snd heap follow-ups, LIBSN libscan pass, MEDIUM revisit
-             (J("docs", "naming", "sweep-2026-09-25b", "func_manifest.csv"), None, None)]
+             (J("docs", "naming", "sweep-2026-09-25b", "func_manifest.csv"), None, None),
+             # owner ruling 2026-09-25 (docs/naming/sweep-2026-09-25b/ruling-2026-09-25.md)
+             (J("docs", "naming", "sweep-2026-09-25b", "func_manifest_ruling.csv"), None, None)]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),
@@ -366,6 +368,8 @@ CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "in-binary-string": ("in-binary-string", "VERIFIED"),
               "computation-restatement": ("computation-restatement", "CORROBORATED"),
               "libsn-pcdrv-protocol": ("libsn-pcdrv-protocol", "CORROBORATED"),
+              # owner ruling 2026-09-25 (docs/naming/sweep-2026-09-25b/ruling-2026-09-25.md)
+              "sony-struct-restatement": ("sony-struct-restatement", "CORROBORATED"),
               # __main: sole first call of main(), where cc1psx inserts `jal __main` (probe)
               "crt0-convention": ("hardware-role", "VERIFIED")}
 # RESET rows from a verified manifest (evidence_class reset-contradicted, proposed_name =

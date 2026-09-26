@@ -736,7 +736,7 @@ extern s32 D_800A37D4;
 
 
 
-extern void func_80016768(s32, s32, s32, s32);
+extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 
 
 
@@ -1075,7 +1075,7 @@ s32 func_80078824(s32 arg0) {
     D_800A3304 = 0;
     D_800A3608 = 0;
     D_800A3614 = 0;
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
 extern s32 D_800A3304;

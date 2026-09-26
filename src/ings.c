@@ -184,7 +184,7 @@ s32 math_FovToScreenDist(s32 a0) {
     s16 sin_val = Judge[v1 & 0xFFF];
     return (cos_val * 320) / sin_val;
 }
-void func_80016768(s32 a0, s32 a1, s32 a2, s32 a3) {
+void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 i;
     u8 *ptr;
     s32 offset;
@@ -280,7 +280,7 @@ void disp_Init(void) {
     SetDefDrawEnv(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
     SetDefDispEnv(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
     SetDefDispEnv(base + 0x40EC, 0, 0, 0x280, 0xF0);
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     ClearImage(&g_gpu_clear_rect, 0, 0, 0);
     DrawSync(0);
 }

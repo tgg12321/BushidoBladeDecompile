@@ -607,7 +607,7 @@ __asm__(
 );
 extern s32 PClseek(s32, s32, s32);
 INCLUDE_ASM("asm/funcs", PClseek);
-INCLUDE_ASM("asm/funcs", _start);
+INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
 /* motion_Open + motion_Close (paired open/close functions) */
 /* 0x80083794 = libgcc __main / crt0 ctor-walker — COMPLETED-INLINE-ASM-CANONICAL

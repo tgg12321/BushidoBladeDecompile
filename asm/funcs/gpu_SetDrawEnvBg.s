@@ -1,4 +1,4 @@
-glabel func_80016768
+glabel gpu_SetDrawEnvBg
     /* 6F68 80016768 21480000 */  addu       $t1, $zero, $zero
     /* 6F6C 8001676C 0F80033C */  lui        $v1, %hi(g_gpu_db)
     /* 6F70 80016770 38746324 */  addiu      $v1, $v1, %lo(g_gpu_db)
@@ -17,4 +17,4 @@ glabel func_80016768
     /* 6FA0 800167A0 90400825 */   addiu     $t0, $t0, 0x4090
     /* 6FA4 800167A4 0800E003 */  jr         $ra
     /* 6FA8 800167A8 00000000 */   nop
-endlabel func_80016768
+endlabel gpu_SetDrawEnvBg

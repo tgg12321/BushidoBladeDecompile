@@ -42761,7 +42761,7 @@ glabel func_8006E2A8
     /* 5EB5C 8006E35C 01000424 */  addiu      $a0, $zero, 0x1
     /* 5EB60 8006E360 21280000 */  addu       $a1, $zero, $zero
     /* 5EB64 8006E364 21300000 */  addu       $a2, $zero, $zero
-    /* 5EB68 8006E368 DA59000C */  jal        func_80016768
+    /* 5EB68 8006E368 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 5EB6C 8006E36C 21380000 */   addu      $a3, $zero, $zero
     /* 5EB70 8006E370 A8EC010C */  jal        SetDispMask
     /* 5EB74 8006E374 01000424 */   addiu     $a0, $zero, 0x1
@@ -53073,7 +53073,7 @@ glabel func_80077820
     /* 68038 80077838 01000424 */  addiu      $a0, $zero, 0x1
     /* 6803C 8007783C 21280000 */  addu       $a1, $zero, $zero
     /* 68040 80077840 21300000 */  addu       $a2, $zero, $zero
-    /* 68044 80077844 DA59000C */  jal        func_80016768
+    /* 68044 80077844 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 68048 80077848 21380000 */   addu      $a3, $zero, $zero
     /* 6804C 8007784C 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
     /* 68050 80077850 1000BF8F */  lw         $ra, 0x10($sp)
@@ -53193,7 +53193,7 @@ glabel func_80077984
     /* 681A4 800779A4 01000424 */  addiu      $a0, $zero, 0x1
     /* 681A8 800779A8 21280000 */  addu       $a1, $zero, $zero
     /* 681AC 800779AC 21300000 */  addu       $a2, $zero, $zero
-    /* 681B0 800779B0 DA59000C */  jal        func_80016768
+    /* 681B0 800779B0 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 681B4 800779B4 21380000 */   addu      $a3, $zero, $zero
     /* 681B8 800779B8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 681BC 800779BC 01000224 */  addiu      $v0, $zero, 0x1
@@ -53245,7 +53245,7 @@ glabel func_80077A28
     /* 68234 80077A34 21300000 */  addu       $a2, $zero, $zero
     /* 68238 80077A38 1000BFAF */  sw         $ra, 0x10($sp)
     /* 6823C 80077A3C 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
-    /* 68240 80077A40 DA59000C */  jal        func_80016768
+    /* 68240 80077A40 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 68244 80077A44 21380000 */   addu      $a3, $zero, $zero
     /* 68248 80077A48 FFB5010C */  jal        func_8006D7FC
     /* 6824C 80077A4C 00000000 */   nop
@@ -53281,7 +53281,7 @@ glabel func_80077A80
     /* 6829C 80077A9C 01000424 */  addiu      $a0, $zero, 0x1
     /* 682A0 80077AA0 21280000 */  addu       $a1, $zero, $zero
     /* 682A4 80077AA4 21300000 */  addu       $a2, $zero, $zero
-    /* 682A8 80077AA8 DA59000C */  jal        func_80016768
+    /* 682A8 80077AA8 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 682AC 80077AAC 21380000 */   addu      $a3, $zero, $zero
     /* 682B0 80077AB0 1000BF8F */  lw         $ra, 0x10($sp)
     /* 682B4 80077AB4 01000224 */  addiu      $v0, $zero, 0x1
@@ -54294,7 +54294,7 @@ glabel func_80078824
     /* 69080 80078880 380280AF */  sw         $zero, %gp_rel(D_800A3304)($gp)
     /* 69084 80078884 3C0580AF */  sw         $zero, %gp_rel(D_800A3608)($gp)
     /* 69088 80078888 480580AF */  sw         $zero, %gp_rel(D_800A3614)($gp)
-    /* 6908C 8007888C DA59000C */  jal        func_80016768
+    /* 6908C 8007888C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 69090 80078890 21380000 */   addu      $a3, $zero, $zero
     /* 69094 80078894 01000224 */  addiu      $v0, $zero, 0x1
     /* 69098 80078898 1800BF8F */  lw         $ra, 0x18($sp)

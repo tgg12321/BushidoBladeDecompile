@@ -12,7 +12,7 @@ glabel func_8003CE18
     /* 2D640 8003CE40 01000424 */  addiu      $a0, $zero, 0x1
     /* 2D644 8003CE44 21280000 */  addu       $a1, $zero, $zero
     /* 2D648 8003CE48 21300000 */  addu       $a2, $zero, $zero
-    /* 2D64C 8003CE4C DA59000C */  jal        func_80016768
+    /* 2D64C 8003CE4C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
     /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
     /* 2D658 8003CE58 00000000 */   nop

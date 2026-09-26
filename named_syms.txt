@@ -402,7 +402,7 @@ file_GetFlag1_800167BC          = 0x800167BC;  /* `return (D_80106A73 >> 1) & 1`
 file_GetFlag2_800167D4          = 0x800167D4;  /* `return (D_80106A73 >> 2) & 1` */
 /* Display / GPU init (8) */
 math_FovToScreenDist           = 0x800166C4;  /* uses Judge table for trig calc */
-func_80016768 = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
+gpu_SetDrawEnvBg = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
 /* RENAME 0x80016868: retired name 'gpu_EnableDisplay_80016868' — preserved note: gpu_SetMode(1) wrapper */
 gpu_InitDisplay_80016888        = 0x80016888;  /* gpu_SetDispMask(0) + gpu_SetMode(1) + 8007B4D0(g_disp_gp_base) + DrawSync */
 /* RENAME 0x800168D0: retired name 'gpu_DisableDisplay_800168D0' — preserved note: gpu_SetDispMask(1) wrapper */

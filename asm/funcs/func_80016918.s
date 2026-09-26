@@ -47,7 +47,7 @@ glabel func_80016918
     /* 71CC 800169CC 01000424 */  addiu      $a0, $zero, 0x1
     /* 71D0 800169D0 21280000 */  addu       $a1, $zero, $zero
     /* 71D4 800169D4 21300000 */  addu       $a2, $zero, $zero
-    /* 71D8 800169D8 DA59000C */  jal        func_80016768
+    /* 71D8 800169D8 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 71DC 800169DC 21380000 */   addu      $a3, $zero, $zero
     /* 71E0 800169E0 0A80043C */  lui        $a0, %hi(g_gpu_clear_rect)
     /* 71E4 800169E4 CC308424 */  addiu      $a0, $a0, %lo(g_gpu_clear_rect)

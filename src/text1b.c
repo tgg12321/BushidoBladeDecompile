@@ -9386,7 +9386,7 @@ extern void PutDispEnv(s32);
 extern void ClearImage(s32, s32, s32, s32);
 extern void SetDispMask(s32);
 extern void DrawSync(s32);
-extern void func_80016768(s32, s32, s32, s32);
+extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_8006E2A8(void) {
     u8 rect[8];
     s32 base;
@@ -9399,7 +9399,7 @@ s32 func_8006E2A8(void) {
     __builtin_memcpy(rect, D_800A32E0, 8);
     ClearImage((s32)rect, 0, 0, 0);
     DrawSync(0);
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     SetDispMask(1);
     return 1;
 }
@@ -12994,10 +12994,10 @@ void func_80077724(s32 arg0, s32 arg1) {
 extern s32 D_800A35E4;
 
 
-void func_80016768(s32, s32, s32, s32);
+void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_80077820(s32 a0) {
     func_80068F70(a0, (s32 *)&D_8009BD24);
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A35E4 = 0;
     return 1;
 }
@@ -13050,7 +13050,7 @@ extern s32 D_800A35E8;
 s32 func_8006E534(s32, s32, u8*, u32);
 s32 func_80077984(s32 a0) {
     func_8006E534(a0, D_800A35E0, D_8009BD24, D_800A35E8);
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
 
@@ -13069,11 +13069,11 @@ void func_80077A04(s32 a0, s32 a1) {
     func_8006D74C(a0, a1);
 }
 extern s32 D_800A35E4;
-void func_80016768(s32, s32, s32, s32);
+void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_8006D7FC(void);
 void func_80077A28(void) {
     D_800A35E4 = 0;
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     func_8006D7FC();
 }
 
@@ -13083,10 +13083,10 @@ void func_80077A60(void) {
 extern s32 D_800A35E8;
 
 s32 func_800770B8(s32, s32, s32);
-void func_80016768(s32, s32, s32, s32);
+void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 s32 func_80077A80(s32 a0) {
     func_800770B8(a0, (s32)&D_8009BD24, D_800A35E8);
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
 

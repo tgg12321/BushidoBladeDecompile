@@ -1,4 +1,4 @@
-glabel _start
+glabel __SN_ENTRY_POINT
     /* 73EEC 800836EC 0A80023C */  lui        $v0, %hi(D_800A3308)
     /* 73EF0 800836F0 08334224 */  addiu      $v0, $v0, %lo(D_800A3308)
     /* 73EF4 800836F4 1080033C */  lui        $v1, %hi(D_801078E0)
@@ -42,4 +42,4 @@ glabel _start
     /* 73F88 80083788 805C000C */  jal        main
     /* 73F8C 8008378C 00000000 */   nop
     /* 73F90 80083790 4D000000 */  break      0, 1
-endlabel _start
+endlabel __SN_ENTRY_POINT

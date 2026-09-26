@@ -624,7 +624,7 @@ void func_8003B870(void) {
     player_SetCharId(1, 0);
     func_8005B5AC();
     gpu_InitDisplay();
-    func_80016768(1, 0, 0, 0);
+    gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x17;
     gpu_SetDispMaskOn();
@@ -647,7 +647,7 @@ void func_8003B8E4(void) {
         g_disp_enable = DISP_ACTIVE;
         func_8001D790();
         func_8003B5A4();
-        func_80016768(1, 0, 0, 0);
+        gpu_SetDrawEnvBg(1, 0, 0, 0);
         D_800A390D = 1;
     }
 }
