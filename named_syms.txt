@@ -102,7 +102,6 @@ g_snd_callback = 0x800A307C;
 _svm_vab_used = 0x80102A68;  /* data-wave 2026-09-07: was g_snd_ch_status */
 _svm_vab_start = 0x80107810;  /* data-wave 2026-09-07: was g_snd_ch_addr */
 _svm_vab_count = 0x80107808;  /* data-wave 2026-09-07: was g_snd_ch_count */
-g_snd_irq_data = 0x80088BA0;
 g_sys_irq_vtable = 0x800A2600;
 g_sys_irq_counter = 0x800A2608;
 g_sys_vblank_count = 0x800A157A;

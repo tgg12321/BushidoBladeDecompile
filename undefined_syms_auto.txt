@@ -1518,7 +1518,6 @@ D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
 D_800A33D8 = 0x800A33D8;  /* data-wave 2026-09-25: was g_snd_fade_amt */
 D_800EF800 = 0x800EF800;  /* data-wave 2026-09-25: was g_snd_fade_curve */
 D_800A33D4 = 0x800A33D4;  /* data-wave 2026-09-25: was g_snd_fade_pos */
-g_snd_irq_data = 0x80088BA0;
 D_800A33E4 = 0x800A33E4;  /* data-wave 2026-09-25: was g_snd_play_count */
 g_snd_se_bank = 0x80099C34;
 D_800A33C0 = 0x800A33C0;  /* data-wave 2026-09-25: was g_snd_stage_bgm */

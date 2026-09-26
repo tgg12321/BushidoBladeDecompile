@@ -2112,14 +2112,14 @@ void _SpuInit(s32 arg0) {
 }
 extern s32 _spu_isCalled;
 extern s32 _spu_EVdma;
-extern s32 g_snd_irq_data;
+void _spu_FiDMA(void);
 
 void SpuStart(void) {
     s32 v0;
     if (_spu_isCalled == 0) {
         _spu_isCalled = 1;
         EnterCriticalSection();
-        _SpuDataCallback((s32)&g_snd_irq_data);
+        _SpuDataCallback((s32)_spu_FiDMA);
         v0 = OpenEvent((s32)0xF0000009, 0x20, 0x2000, 0);
         _spu_EVdma = v0;
         EnableEvent(v0);

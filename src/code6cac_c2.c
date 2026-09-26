@@ -1661,9 +1661,8 @@ extern s32 D_800A3228;
 s32 func_8003E2A0(void) {
     return D_800A3228;
 }
-extern u16 g_game_p1_ctrl;
 void func_8003E2AC(void) {
-    u16 *p = &g_game_p1_ctrl;
+    u16 *p = (u16 *)&D_800F6656;
     *p = *p & 0xFFFD;
 }
 u32 func_8003E2C8(void) {

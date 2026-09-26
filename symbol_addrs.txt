@@ -123,7 +123,6 @@ g_snd_callback = 0x800A307C; // sound completion callback
 _svm_vab_used = 0x80102A68; // per-channel status array  // data-wave 2026-09-07: was g_snd_ch_status
 _svm_vab_start = 0x80107810; // per-channel SPU address  // data-wave 2026-09-07: was g_snd_ch_addr
 _svm_vab_count = 0x80107808; // active sound channel count  // data-wave 2026-09-07: was g_snd_ch_count
-g_snd_irq_data = 0x80088BA0; // sound IRQ callback data
 
 // === System / IRQ ===
 g_sys_irq_vtable = 0x800A2600; // interrupt handler vtable

@@ -638,7 +638,7 @@ void game_Stub4(void) {
 }
 
 void func_800477DC(s32 a0) {
-    g_snd_volume = a0;
+    g_snd_volume = (s16 *)a0;
 }
 extern u32 GetTPage(s32, s32, s32, s32);
 extern u32 GetClut(s32, s32);
