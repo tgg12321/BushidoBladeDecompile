@@ -273,3 +273,43 @@ psx-G8-split.s / psx-G8-base7C.s / psx-G8-base78.s).
 ### (iv-a) RODATA_ALIGN2
 code6cac_b3 emits jump tables at 0x8001086C and 0x8001089C in the shipped binary (both 4 mod 8) ->
 ON the list. code6cac_b3_post emits no jump table (no .rodata) -> OFF the list.
+
+## [s5] slotB4 2026-09-26 — second layer-2 FAIL (re-land under 965b3a001) and the fixes
+FAIL objections: (1) -G8 (iii) screening: D_800A37B8 (s32) referenced, not in sdata_syms, not typed
+>8 (reviewer also named D_800A36F9 / D_800A3690); (2) (a4')(5)/(d): cross-member pointer puns in
+func_8003504C (`(u8 *)&unk_D - 9`) and func_8003B5A4 (`chardata = &unk_4[1]; chardata[2]` = the
+next pair); (3) false header comment ("func_8001C444 initialises exactly this range"). Everything
+else (body, FileRecord, move, bb2.ld, buildconfig, gp table, neighbours) passed. Reverted, rebuilt
+== oracle, lock released; the staged diff is integration/landing-s4-rejected.patch.
+
+Fixes (all in the generator, applied in place BEFORE the split; integration/inplace.sh: every TU
+rebuilt, SHA1 == oracle with func_80034708 still INCLUDE_ASM; every changed function differs only
+in relocation addends):
+F23. PracticeParams now keeps the three per-player pairs 0x7C..0x81 as ONE member `u8 unk_4[6]`
+  (unk_4[2 * k + player]). func_80034708 walks all three pairs with i in 0..1, so the reachable
+  range is exactly 0x7C..0x81 ((a4')(2)); 0x82/0x83 stay the offset-named filler unk_A[2].
+  Consequences: func_8003B5A4's `chardata = &D_80102778.unk_4[1]; chardata[0] / chardata[2]` now
+  stays inside one array member (unchanged text, no cross-member step); func_8003AF40's other-player
+  read is `(&D_80102778.unk_4[2])[(u32)arg0 < 1u]` (the flat `unk_4[2 + (cond)]` spelling makes
+  fold() turn the index into a branch: 47 -> 52, measured). func_80034708's body uses unk_4[0..5],
+  unk_4[i], unk_4[2 + i], unk_4[4 + i]; score unchanged (8, relocation spelling).
+F24. func_8003504C (moves to b3_post): the `s8 *b = &unk_D; u8 *w = (u8 *)b - 9;` pair is gone;
+  `D_80102778.unk_4[i] = lv; ... if ((s8)D_80102778.unk_D == 0) D_80102778.unk_4[i] = ... - 3;`
+  — with one object cse derives the target's `a1 = t0 - 9` itself: byte-neutral.
+F25. func_80035280 (moves to b3_post): the FAKE second handle `f = &flags; src = f - 3` (a step
+  from the flags member into the colour member) is gone: flag reads name D_80106A50.flags and
+  `src = D_80106A50.color;` follows them (order measured: src first = 110 insns, flags via a pointer
+  = 104, this order = byte-neutral). Its clock-record byte re-view became `FileTimeRec *base =
+  D_80106A50.times; base[i].unk_4 / base[i].unk_0` (byte-neutral; its FAKE comment's first line now
+  describes the pointer). code6cac_b.c's two `s32 *flags = &D_80106A50;` became `&D_80106A50.unk_00`.
+F26. Header comment corrected: "func_8001C444 sets every byte of it except 0x82/0x83".
+F27. Move identity re-checked (291 lines, byte-identical); full split build SHA1 == oracle,
+  func_80034708 score 8.
+F28. Objection (1) is NOT fixed — no honest declaration exists: D_800A37B8 is a 4-byte word (splat
+  dlabel 0x800A37B8..BB, next label 0x800A37BC), D_800A3690 an 8-byte-or-smaller blob, D_800A36F9
+  one byte; none is truthfully >8 bytes, and D_800A37B8 cannot join sdata_syms (sdata_funcs members
+  func_80035480 / func_80035618 / func_80035828 read it with lui/%lo). D_800A3690 / D_800A36F9 ARE in
+  sdata_syms (sdata_exclude'd for this function, as before). Census (tmp ext_b3.sh): the new TU's
+  <=8-byte externs outside sdata_syms = 1 (D_800A37B8); the approved -G8 files carry 29
+  (text1a_pre 7, text1a_post 22, several outside gp range, e.g. D_800F64BA). Filed as a
+  policy-question in docs/grind/borderline.md.

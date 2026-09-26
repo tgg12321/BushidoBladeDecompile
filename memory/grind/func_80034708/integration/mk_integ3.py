@@ -36,6 +36,84 @@ s = re.sub(r'\bg_file_flags\b', 'D_80106A50.flags', s)
 assert not re.search(r'\bg_file_(flags|disc_size|disc_type)\b|D_80106A5C', s)
 wr(R + '/src/ings.c', s)
 
+# ---- (a4')(5)/(d): the two consumers that reached PracticeParams bytes through cross-member
+# pointer arithmetic now name the members they write.
+b = rd(R + '/src/code6cac_b.c')
+old = '''    do {
+        s8 *b = &D_80102778.unk_D;
+        u8 *w = (u8 *)b - 9;
+        s32 lv = (&D_8008D55C)[s[0]];
+        w[i] = lv;
+        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 || (s8)lv == new_var2) {
+            if (*b == 0) {
+                w[i] = w[i] - 3;
+            }
+        }'''
+new = '''    do {
+        s32 lv = (&D_8008D55C)[s[0]];
+        D_80102778.unk_4[i] = lv;
+        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 || (s8)lv == new_var2) {
+            if ((s8)D_80102778.unk_D == 0) {
+                D_80102778.unk_4[i] = D_80102778.unk_4[i] - 3;
+            }
+        }'''
+assert old in b, 'func_8003504C pun block not found'
+b = b.replace(old, new)
+
+# func_80035280: the flag reads name the flags member and the colour walker starts at the colour
+# member (the old `f - 3` stepped from one member into another); the clock-record view is a
+# FileTimeRec pointer instead of a byte re-view with record offsets.
+F_COMMENT_START = '    /* FAKE: `f` is a redundant second handle to D_80106A73'
+i0 = b.index(F_COMMENT_START)
+i1 = b.index('    u8 *f;\n', i0) + len('    u8 *f;\n')
+b = b[:i0] + b[i1:]
+reps = [
+    ('''    p = func_80077D00();
+    i = 0;
+    f = &D_80106A50.flags;
+    src = f - 3;
+    flags = p[8];
+    flags0 = (flags & ~1) | (src[3] & 1);
+    p[8] = flags0;
+    flags1 = (flags0 & ~2) | (src[3] & 2);
+    p[8] = flags1;
+    flags2 = (flags1 & ~4) | (src[3] & 4);
+    p[8] = flags2;
+''', '''    p = func_80077D00();
+    i = 0;
+    flags = p[8];
+    flags0 = (flags & ~1) | (D_80106A50.flags & 1);
+    p[8] = flags0;
+    flags1 = (flags0 & ~2) | (D_80106A50.flags & 2);
+    p[8] = flags1;
+    flags2 = (flags1 & ~4) | (D_80106A50.flags & 4);
+    p[8] = flags2;
+    src = D_80106A50.color;
+'''),
+    ('''    /* FAKE: typed re-view of the global D_80106A58 as the byte-strided base of
+     * the three 8-byte clock records, hoisted above the loop rather than
+     * respelled at each use;''', '''    /* FAKE: one pointer to the three 8-byte clock records (D_80106A50.times),
+     * hoisted above the loop rather than indexing D_80106A50.times[i] at each
+     * use;'''),
+    ('    u8 *base;\n    s32 i;\n    s32 flags;\n', '    FileTimeRec *base;\n    s32 i;\n    s32 flags;\n'),
+    ('    base = (u8 *)D_80106A50.times;\n', '    base = D_80106A50.times;\n'),
+    ('        mn = *(s32 *)(base + i * 8 + 4) / 1800;\n', '        mn = base[i].unk_4 / 1800;\n'),
+    ('        sc = (*(s32 *)(base + i * 8 + 4) / 30) % 60;\n', '        sc = (base[i].unk_4 / 30) % 60;\n'),
+    ('        hs = (*(s32 *)(base + i * 8 + 4) % 30) * 100 / 30;\n', '        hs = (base[i].unk_4 % 30) * 100 / 30;\n'),
+    ('        t = base[i * 8];\n', '        t = base[i].unk_0;\n'),
+]
+for o, n in reps:
+    assert b.count(o) == 1, o[:60]
+    b = b.replace(o, n)
+# func_80033DF4-area flag word pointers: the s32 flags word is the record's first member
+assert b.count('            flags = &D_80106A50;\n') == 2
+b = b.replace('            flags = &D_80106A50;\n', '            flags = &D_80106A50.unk_00;\n')
+wr(R + '/src/code6cac_b.c', b)
+# func_8003B5A4 keeps its `chardata = &D_80102778.unk_4[1]; chardata[0] / chardata[2]`:
+# with the pairs one u8[6] member, [1] and [3] of that array are in bounds (no cross-member step).
+c = rd(R + '/src/code6cac_c_ab.c')
+assert '    chardata = &D_80102778.unk_4[1];\n' in c and '                chardata[2] = p[1];\n' in c
+
 if os.environ.get('NOSPLIT'):
     print('stage3 (no split) ok')
     raise SystemExit(0)
