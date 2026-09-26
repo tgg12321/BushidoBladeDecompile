@@ -1,366 +1,432 @@
 {
- "-G0": [
-  [
-   "D_800A37B8",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
+ "rows": {
+  "-G8": [
+   {
+    "sym": "D_800A37B8",
+    "off": "0",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A37B8",
+    "off": "4",
+    "word": "8c420000",
+    "insn": "lw v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A37B8",
+    "off": "38",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A37B8",
+    "off": "3c",
+    "word": "ac220000",
+    "insn": "sw v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "2ac",
+    "word": "3c060000",
+    "insn": "lui a2,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "2b0",
+    "word": "90c60000",
+    "insn": "lbu a2,0(a2)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "2e0",
+    "word": "3c060000",
+    "insn": "lui a2,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "2e4",
+    "word": "90c60000",
+    "insn": "lbu a2,0(a2)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "4f4",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "4f8",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "504",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "508",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "514",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "518",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "65c",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "660",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "66c",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "670",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "67c",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "680",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "68c",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "690",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "754",
+    "word": "3c0a0000",
+    "insn": "lui t2,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "758",
+    "word": "914a0000",
+    "insn": "lbu t2,0(t2)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "808",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "80c",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "810",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "814",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "828",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "82c",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   }
   ],
-  [
-   "D_800A37B8",
-   "8c420000",
-   "lw v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A37B8",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A37B8",
-   "ac220000",
-   "sw v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c060000",
-   "lui a2,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "90c60000",
-   "lbu a2,0(a2)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c060000",
-   "lui a2,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90c60000",
-   "lbu a2,0(a2)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c0a0000",
-   "lui t2,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "914a0000",
-   "lbu t2,0(t2)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
+  "-G0": [
+   {
+    "sym": "D_800A37B8",
+    "off": "0",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A37B8",
+    "off": "4",
+    "word": "8c420000",
+    "insn": "lw v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A37B8",
+    "off": "38",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A37B8",
+    "off": "3c",
+    "word": "ac220000",
+    "insn": "sw v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "2b4",
+    "word": "3c060000",
+    "insn": "lui a2,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "2b8",
+    "word": "90c60000",
+    "insn": "lbu a2,0(a2)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "2e8",
+    "word": "3c060000",
+    "insn": "lui a2,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "2ec",
+    "word": "90c60000",
+    "insn": "lbu a2,0(a2)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "4fc",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "500",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "50c",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "510",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "51c",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "520",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "664",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "668",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "674",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "678",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "684",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "688",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "694",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "698",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "75c",
+    "word": "3c0a0000",
+    "insn": "lui t2,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "760",
+    "word": "914a0000",
+    "insn": "lbu t2,0(t2)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "810",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A36F9",
+    "off": "814",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "818",
+    "word": "3c020000",
+    "insn": "lui v0,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "81c",
+    "word": "90420000",
+    "insn": "lbu v0,0(v0)",
+    "reloc": "R_MIPS_LO16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "830",
+    "word": "3c010000",
+    "insn": "lui at,0x0",
+    "reloc": "R_MIPS_HI16"
+   },
+   {
+    "sym": "D_800A3690",
+    "off": "834",
+    "word": "a0220000",
+    "insn": "sb v0,0(at)",
+    "reloc": "R_MIPS_LO16"
+   }
   ]
- ],
- "-G8": [
-  [
-   "D_800A37B8",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A37B8",
-   "8c420000",
-   "lw v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A37B8",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A37B8",
-   "ac220000",
-   "sw v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c060000",
-   "lui a2,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "90c60000",
-   "lbu a2,0(a2)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c060000",
-   "lui a2,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90c60000",
-   "lbu a2,0(a2)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c0a0000",
-   "lui t2,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "914a0000",
-   "lbu t2,0(t2)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A36F9",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A36F9",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c020000",
-   "lui v0,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "90420000",
-   "lbu v0,0(v0)",
-   "R_MIPS_LO16"
-  ],
-  [
-   "D_800A3690",
-   "3c010000",
-   "lui at,0x0",
-   "R_MIPS_HI16"
-  ],
-  [
-   "D_800A3690",
-   "a0220000",
-   "sb v0,0(at)",
-   "R_MIPS_LO16"
-  ]
- ]
+ },
+ "cmds": {
+  "-G8": "mipsel-linux-gnu-cpp -Itmp/func_80034708/integ/include -Iinclude -undef -Wall -lang-c -fno-builtin -Isrc -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C tmp/func_80034708/integ/src/code6cac_b3.c | tools/gcc-2.7.2/build/cc1 -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float | python3 tools/prologue_fix.py | python3 tools/maspsx/maspsx.py --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --expand-lb | sed \"s/\\.align\\t3/.align\\t2/\" | python3 tools/multu_pad.py --funcs multu_pad_funcs.txt | mipsel-linux-gnu-as -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o tmp/func_80034708/q8/b3-G8.o",
+  "-G0": "mipsel-linux-gnu-cpp -Itmp/func_80034708/integ/include -Iinclude -undef -Wall -lang-c -fno-builtin -Isrc -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C tmp/func_80034708/integ/src/code6cac_b3.c | tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float | python3 tools/prologue_fix.py | python3 tools/maspsx/maspsx.py --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --expand-lb | sed \"s/\\.align\\t3/.align\\t2/\" | python3 tools/multu_pad.py --funcs multu_pad_funcs.txt | mipsel-linux-gnu-as -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o tmp/func_80034708/q8/b3-G0.o"
+ }
 }

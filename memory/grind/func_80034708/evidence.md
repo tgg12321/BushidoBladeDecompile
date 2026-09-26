@@ -329,3 +329,21 @@ F29. integration/q8proof.py builds the landing's src/code6cac_b3.c through the r
   sdata_syms.txt listing (D_800A3690 / D_800A36F9 are listed anyway, sdata_exclude'd here as before).
   These forms are also the target's own (asm/funcs/func_80034708.s: lui/%lo for all three, no
   gp_rel). Machine-readable: integration/q8/q8.json.
+
+## [s7] Q8 screening-scope record (compiler-flags-canonical.md § "Screening scope", c8f0f7e42)
+Exempt extern: **D_800A37B8** — s32, 4 bytes (splat dlabel 0x800A37B8..0x800A37BB, next label
+0x800A37BC). Not in sdata_syms.txt because no original function addresses it gp-relative: all 10
+referrers (func_8001EA04, func_8001EA84, func_8001EEB4, func_8001EFA0, func_80033898,
+func_80034708, func_80035480, func_80035618, func_80035828, func_8003AB44) use lui/%lo, and three of
+them (func_80035480, func_80035618, func_80035828) are sdata_funcs members, so listing it would
+make maspsx gp-address their accesses. It belongs to another translation unit's data.
+Proof (integration/q8proof.py -> integration/q8/q8_proof.md, q8.json, b3-G8.dis, b3-G0.dis):
+code6cac_b3.c built through the full per-file pipeline (cpp, cc1, prologue_fix, maspsx,
+rodata-align sed, multu_pad, as; the landing's EXPAND_LB / RODATA_ALIGN2 memberships) once as a
+-G8 TU and once as a -G0 TU — both command lines are in q8_proof.md. Every instruction accessing
+D_800A37B8 or forming its address: 4 at -G8, 4 at -G0, byte-identical words and identical
+relocations (R_MIPS_HI16 / R_MIPS_LO16 D_800A37B8, addend 0 in the word), at the same offsets
+(0x0, 0x4, 0x38, 0x3c) — side-by-side table in q8_proof.md.
+D_800A3690 and D_800A36F9 need no exemption (both are in sdata_syms.txt; sdata_exclude'd for
+func_80034708 as before), but the same listing shows their 12 / 14 relocated instructions are
+byte- and relocation-identical at -G8 and -G0 too.
