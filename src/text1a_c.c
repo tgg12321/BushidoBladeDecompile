@@ -618,7 +618,7 @@ s32 func_80043278(s32 a0) {
 }
 extern s32 *D_80103608[];
 extern u16 D_80103658[];
-extern void func_80043454(s32, s16, s16, s16);
+extern void func_80043454(s16, s16, s16, s16);
 void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = *(u16 *)&arg4;
     s32 idx = arg0;
@@ -657,7 +657,199 @@ void func_800433E4(arg0, arg1, arg2, arg3, arg4, arg5)
     *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
     func_80043454(arg2, arg3, arg4, arg5);
 }
-INCLUDE_ASM("asm/funcs", func_80043454);
+extern s16 D_80095588[];
+extern void gpu_OffsetTexPolyFT3();
+extern void gpu_OffsetTexPolyFT4();
+extern void gpu_OffsetTexPolyGT3();
+extern void gpu_OffsetTexPolyGT4();
+void func_80043E98(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
+void func_80043F0C(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
+/* Read cursor into the primitive packet stream, kept in scratchpad word 0. */
+#define SCRATCH_PTR (*(u16 **)0x1F800000)
+/* Walk a packet stream of primitive groups (the cursor starts at the
+ * scratchpad word) and shift every textured primitive's texture source by
+ * (arg0, arg1) and its CLUT by (arg2, arg3): via gpu_OffsetTexPoly* for
+ * mode-0 groups, via func_80043E98 / func_80043F0C plus a per-vertex v shift
+ * for mode-1 / mode-2 groups.  Untextured groups are skipped using the
+ * per-type halfword sizes in D_80095588. */
+void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
+    s32 count;
+    s32 mode;
+    s32 type;
+    s32 kind;
+    s32 packed;
+    s32 blocks;
+    u16 *p;
+    u8 *b;
+
+    blocks = 0;
+    do {
+        p = SCRATCH_PTR;
+        SCRATCH_PTR = p + 1;
+        count = *p;
+        if (count & 0x8000) {
+            packed = 1;
+            mode = 2;
+            SCRATCH_PTR = SCRATCH_PTR + (count & 0x7FFF) + 1;
+            if ((u32)SCRATCH_PTR & 3) {
+                SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + (4 - ((u32)SCRATCH_PTR & 3)));
+            }
+        } else {
+            SCRATCH_PTR = p + 2;
+            mode = p[1];
+            packed = 0;
+            if (mode == 0) {
+                SCRATCH_PTR += count * 12;
+            } else {
+                SCRATCH_PTR += count * 3;
+            }
+        }
+        if (mode == 1) {
+            if ((u32)SCRATCH_PTR & 3) {
+                SCRATCH_PTR++;
+            }
+        }
+        while ((count = *SCRATCH_PTR++) != 0) {
+            type = *SCRATCH_PTR++;
+            if ((type & 4) || (u32)(type - 0x26) < 4) {
+                if ((u32)(type - 0x26) < 4) {
+                    kind = type - 0x26;
+                } else {
+                    kind = (type >> 3) & 3;
+                }
+                switch (mode) {
+                case 0:
+                    while (--count != -1) {
+                        switch (kind) {
+                        case 0:
+                            gpu_OffsetTexPolyFT3(SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT3((u8 *)SCRATCH_PTR + 0x20, arg0, arg1, arg2, arg3);
+                            break;
+                        case 1:
+                            gpu_OffsetTexPolyFT4(SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT4((u8 *)SCRATCH_PTR + 0x28, arg0, arg1, arg2, arg3);
+                            break;
+                        case 2:
+                            gpu_OffsetTexPolyGT3(SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT3((u8 *)SCRATCH_PTR + 0x28, arg0, arg1, arg2, arg3);
+                            break;
+                        case 3:
+                            gpu_OffsetTexPolyGT4(SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT4((u8 *)SCRATCH_PTR + 0x34, arg0, arg1, arg2, arg3);
+                            break;
+                        }
+                        SCRATCH_PTR += D_80095588[type];
+                    }
+                    break;
+                case 1:
+                    while (--count != -1) {
+                        func_80043E98((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                        b = (u8 *)SCRATCH_PTR;
+                        switch (kind) {
+                        case 0:
+                            b[7] += arg1;
+                            b[9] += arg1;
+                            b[11] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            break;
+                        case 1:
+                            b[7] += arg1;
+                            b[9] += arg1;
+                            b[11] += arg1;
+                            b[13] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            break;
+                        case 2:
+                            b[7] += arg1;
+                            b[9] += arg1;
+                            b[11] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x24);
+                            break;
+                        case 3:
+                            b[7] += arg1;
+                            b[9] += arg1;
+                            b[11] += arg1;
+                            b[13] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x2C);
+                            break;
+                        default:
+                            func_80052C10();
+                            break;
+                        }
+                    }
+                    break;
+                case 2:
+                    while (--count != -1) {
+                        func_80043F0C((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                        b = (u8 *)SCRATCH_PTR;
+                        switch (kind) {
+                        case 0:
+                            b[1] += arg1;
+                            b[5] += arg1;
+                            b[9] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x14);
+                            break;
+                        case 1:
+                            b[1] += arg1;
+                            b[5] += arg1;
+                            b[9] += arg1;
+                            b[13] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            break;
+                        case 2:
+                            /* FAKE: cases 2/3 repeat cases 0/1 (one body per kind, as in
+                               mode 1) instead of sharing their labels. jump2 cross-jump
+                               re-merges the copies (bytes identical to `case 0: case 2:`),
+                               but flow.c counts them before global RA: the extra refs and
+                               live length seat count/base/kind in s3/s4/s5 as the target
+                               does (ledger: memory/grind/func_80043454/evidence.md). */
+                            b[1] += arg1;
+                            b[5] += arg1;
+                            b[9] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x14);
+                            break;
+                        case 3:
+                            b[1] += arg1;
+                            b[5] += arg1;
+                            b[9] += arg1;
+                            b[13] += arg1;
+                            SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + 0x18);
+                            break;
+                        default:
+                            func_80052C10();
+                            break;
+                        }
+                    }
+                    break;
+                }
+            } else if (!packed) {
+                SCRATCH_PTR += (s16)(count * D_80095588[type]);
+            } else {
+                switch (type) {
+                case 0:
+                    SCRATCH_PTR += count * 26;
+                    break;
+                case 8:
+                    SCRATCH_PTR += count * 32;
+                    break;
+                default:
+                    SCRATCH_PTR += (s16)(count * D_80095588[type]);
+                    break;
+                }
+            }
+        }
+        if (packed) {
+            if (blocks == 12) {
+                return;
+            }
+            blocks++;
+            while (*SCRATCH_PTR != 0xFFFF) {
+                SCRATCH_PTR += 3;
+            }
+            SCRATCH_PTR++;
+        }
+    } while (*SCRATCH_PTR++ != 0);
+}
 /* PsyQ LIBGPU.H POLY_FT3 (0x20 bytes) -- the only libgpu primitive with a
  * u16 clut at +0xE, u16 tpage at +0x16 and v0/v1/v2 at +0xD/+0x15/+0x1D;
  * the caller (func_80043454) walks a 0x20-stride primitive array. */
