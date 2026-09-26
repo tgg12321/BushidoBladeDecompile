@@ -380,10 +380,11 @@ Property: one pseudo live across the scan loop, whose conflicts fill 2..11 (d).
 ## (D)(3b) Sanctioned-construct escapes, measured
 Each variant is v/pv.c (or v/ctr_split.c) plus ONE construct (r11/mk3.py; the entry, alias,
 goto2, after, bit, rec, e, tail and do-while variants were one-off edits of the same bases;
-the banked r11/v/ce_*.c and x/*.c files are exactly the measured bodies). Rows without
-"(model)" were sandboxed in the tree under the landing lock (r11/sbx_ce.ps1) and dumped from
-the sandbox TU (r11/dump_sbx.sh, r11/ce_report.py); "(model)" rows are r11/model.py scores
-with r11/dump.sh dumps.
+the banked r11/v/ce_*.c and x/*.c files are exactly the measured bodies). Every row was
+sandboxed in the tree under the landing lock (ce_* rows: r11/sbx_ce.ps1, dumped from the
+sandbox TU with r11/dump_sbx.sh / r11/ce_report.py; the do-while, x/*_dw and dup_* rows:
+r11/sbx_new.ps1 at the second landing, 2026-09-26, with the same scores as r11/model.py, and
+dumped with r11/dump.sh / r11/site_report.py).
 How each class behaves (dumps): self-assignments and dead stores are gone before flow; a
 detour that fold-const or cse folds (`x - x` in one expression, same-block detours) leaves
 no reference; `do { } while (0);` adds neither a reference nor a block boundary for flow
@@ -419,17 +420,17 @@ extensions do not even fold to zero bytes (518 insns).
 | ce_m_chain_e1 | `e[1] + move_mask - move_mask` (read before write) | 91 (515) | global, crosses 5 calls, $s1 |
 | ce_z_self_after / ce_z_dead_end / ce_z_chain_ploop / ce_z_chain_scan | self-assign / dead store / folding detours | 25 (516) each | counter $v1 |
 | ce_z_chain_bit / _rec / _e / _tail | `+ zero_i - zero_i` inside the section loop | 59/59/53/53 (518) | $t7/$t7/$t5/$t5, not zero-byte |
-| ce_l_dw_between / ce_l_dw_wrapuse (model) | `do { } while (0);` after the write / around the store | 102 (512) each | tied, "in block 14" |
-| ce_l_dw_wrap (model) | `do { lvl5 = ...; } while (0);` | 109 (512) | tied `andi $2,$2` |
-| ce_m_dw_between / ce_m_dw_wrap (model) | the same for the mask | 102 (512) each | tied, "in block 48" |
-| x/abl_stat2_dw.c / x/abl_stat1_dw.c (model) | stat2 / stat1 alone split, plus `do { } while (0);` after its write | 11 (516) / 6 (515) | stat2's copy kept, stat2 in $v1 |
-| x/pv_dw_stats.c (model) | the twin plus both stat wraps (the permuter's find, extended) | 33 (515) | |
-| dup_lvl5_tail (model) | the call-if duplicated into both arms of the clamp (no statement of value 1 itself can be put into arms: its write opens the D_800A389A arm and its only read is the next statement) | 115 (507) | level `andi $3,$4` ($v1, not $a2) |
-| dup_lvl3 (model) | the five statements after `if (lvl3 >= 3)` duplicated into both arms | 108 (518) | practice level `andi $4,$2` ($a0) |
-| dup_row_idx (model) | `pair = ...; p[0x424] = ...; p[0x3F6] = ...;` into both arms of `if (... % 10 == 0)` | 118 (519) | row in $a1 (`sll $5,$6,1`, `addu $5,$5,-1`) |
-| dup_stat1 (model) | the e[1] block duplicated into both arms of `if (e[4] == 0x40)` (an else added) | 98 (512) | mask tied `or $2,$2,$3`; no stat1 copy |
-| dup_stat2 (model) | `cat = ...; if (hi2 < stat2 ...)` into both arms of `if (hi1 < stat2)` | 97 (533, not merged) | no stat copies |
-| dup_zero_i (model) | the clear loop duplicated into both arms of the rand() test | 33 (524) | counter `sltu $2,$5,8` ($a1) |
+| ce_l_dw_between / ce_l_dw_wrapuse | `do { } while (0);` after the write / around the store | 102 (512) each | tied, "in block 14" |
+| ce_l_dw_wrap | `do { lvl5 = ...; } while (0);` | 109 (512) | tied `andi $2,$2` |
+| ce_m_dw_between / ce_m_dw_wrap | the same for the mask | 102 (512) each | tied, "in block 48" |
+| x/abl_stat2_dw.c / x/abl_stat1_dw.c | stat2 / stat1 alone split, plus `do { } while (0);` after its write | 11 (516) / 6 (515) | stat2's copy kept, stat2 in $v1 |
+| x/pv_dw_stats.c | the twin plus both stat wraps (the permuter's find, extended) | 33 (515) | |
+| dup_lvl5_tail | the call-if duplicated into both arms of the clamp (no statement of value 1 itself can be put into arms: its write opens the D_800A389A arm and its only read is the next statement) | 115 (507) | level `andi $3,$4` ($v1, not $a2) |
+| dup_lvl3 | the five statements after `if (lvl3 >= 3)` duplicated into both arms | 108 (518) | practice level `andi $4,$2` ($a0) |
+| dup_row_idx | `pair = ...; p[0x424] = ...; p[0x3F6] = ...;` into both arms of `if (... % 10 == 0)` | 118 (519) | row in $a1 (`sll $5,$6,1`, `addu $5,$5,-1`) |
+| dup_stat1 | the e[1] block duplicated into both arms of `if (e[4] == 0x40)` (an else added) | 98 (512) | mask tied `or $2,$2,$3`; no stat1 copy |
+| dup_stat2 | `cat = ...; if (hi2 < stat2 ...)` into both arms of `if (hi1 < stat2)` | 97 (533, not merged) | no stat copies |
+| dup_zero_i | the clear loop duplicated into both arms of the rand() test | 33 (524) | counter `sltu $2,$5,8` ($a1) |
 None reaches 0; none seats a value of temp in $a2 or the clear loop's counter in $t4.
 
 ## (D)(4) Measured alternatives
