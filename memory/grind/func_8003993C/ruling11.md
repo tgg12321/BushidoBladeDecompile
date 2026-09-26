@@ -401,18 +401,23 @@ pre-reload insn, or (ii) was given by local-alloc to a quantity.
   call-free quantity lands in 18 only if all of 2..17 are busy over its life. The third is that
   it crosses a call and $s0/$s1 are busy (thanks to slotF for the correction: the "lowest free"
   scan can also seat a call-free local in a callee-saved register).
-  In a matching spelling, a local-alloc quantity in 18 shows in the output as a single-block value
-  held in $s2. The target's $s2 holds three values:
-  - `i << 3`: 0x80039AC4..0x80039C64, spanning the flag-test branches, so multi-block;
-  - the selector: the else arm, one block, call-free;
-  - the window: from 0x80039E54 through the event loop, multi-block.
-  Only the selector is single-block. Over its life (0x80039D10..0x80039D18) the target keeps only
-  $v1 (written 0x80039D14) busy among 2..17, besides $s0/$s1, so a local selector quantity scans to $v0 or
-  $a-registers, never 18. That is the local case of (D)(3). No other local-alloc quantity of a
-  matching spelling is in 18. This is the output-visible pairing argument slotF used for
-  func_80055138: a preference for R needs a pre-reload pairing with hard R or with a local seated
-  in R, and such a pairing survives into the output except as a no-op move (both sides in R) or a
-  reorg / cross-jump duplicate (§ "Post-allocation deletions").
+  Whether ANY other local quantity sits in 18 is not needed; it is not asserted here. An earlier
+  wording claimed "a local in 18 shows as a single-block $s2 value" and "no other local
+  quantity is in 18". Layer-2 flagged both as overclaims: a local can continue into a global
+  through a copy that jump2 then deletes as a no-op move. The claim that carries the argument
+  (layer-2's reasoning, PASS 2026-09-26) concerns the selector only. The selector can reach $s2
+  through a suggestion or preference only if one of the insns pairing it with another register
+  (a copy, or it as first operand) has $s2 on the other side, or a local seated in $s2 there.
+  The selector's own insns are:
+  - its definition `(and (lshiftrt <flags byte> 1) 1)`;
+  - its uses in the `D_801027B0[sel]` index arithmetic (`sll v1,s2,2` / `addu v1,v1,s2`).
+  They pair it only with the srl temporary and the index temporaries, which the target holds in
+  $v0/$v1. Its data flow starts from a memory load (`lbu v1,0x17(s0)`, 0x80039CC8), so no chain
+  of pairings from it reaches a register that is, or prefers, $s2. So the selector has no $s2
+  suggestion or preference in any spelling whose instructions are the target's. Its seat is then
+  the plain scan: local (the case above; only $v1 busy below 18 over its life) or global
+  (§ "Selector: the seat without preferences"). Neither returns 18 unless it crosses a call,
+  which is the two-write case.
 - Measured: in every dump taken (cand, v_pv and the eight variants below), local-alloc's `got=`
   values are only 2..7 or hi/lo/accum. Every `copysugg=` / `sugg=` set in v_pv.sugg is empty or
   one of {4,5}, {5}, {6}, {7}, {30} ($fp), or copysugg {7}. `someone_prefers` is {30} or empty and
