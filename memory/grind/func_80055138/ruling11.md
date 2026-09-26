@@ -67,9 +67,16 @@ Flags (engine.buildconfig CC_FLAGS): `-O2 -G0 -funsigned-char -quiet -mcpu=3000 
 instrumented cc1's func_80055138 asm == the build cc1's for every dumped body ("IDENTITY
 OK"). Whole run: r11/all.sh -> r11/all.log. Tags: `cand` = v/cand.c (== candidate.c),
 `pv` = v/pv.c, `ctr` = v/ctr_split.c, `nostage` = v/nostage_fs.c.
-Tree check (r11/treecheck.sh, 2026-09-26, landing edits applied under the lock): cpp of the
-landed src/text1b.c == rtl/cand.i with line markers stripped, so the `cand` dumps are of the
-exact landed TU; every other tag is that TU with only the function body replaced.
+Tree check, second landing (2026-09-26, landing edits applied under the lock). Other
+workers' header edits landed between the first and second landing, so the preprocessed
+landed text1b.c is no longer byte-identical to rtl/cand.i (the earlier "tree == dumped TU"
+check, and the same claim in the ledger commit before this one, held only at the first
+landing). Re-dumped instead: r11/dump_landed.sh dumps the landed src/text1b.c itself (tag
+`landed`) and r11/redump_tree.ps1 the landed tree with each body spliced by the sandbox
+(tags tcand, tpv, tctr); r11/cmp_dumps.py: Register lines, dispositions, ALLOCDBG and the
+function's asm IDENTICAL to cand / pv / ctr, and the FINDREG traces for pseudos 99, 89
+(landed, tcand), 188, 106 (tpv) and 90 (tctr) IDENTICAL. The excerpts below therefore are
+the landed TU's.
 
 Pseudo map, from the RTL sets (verbatim below): cand — 99 = temp, 89 = idx, 103 = hi2_val,
 158 = case 2's srl result, 417/424 = the e[1]/e[2] byte loads. pv — 158 = lvl5 (159 = its
