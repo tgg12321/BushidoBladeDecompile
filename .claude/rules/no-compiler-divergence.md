@@ -115,7 +115,9 @@ function genuinely won't close, the only valid escalations are:
    for "GCC won't produce this." For genuinely no-C-form constructs only.
 2. **Project-wide architecture decisions** — e.g. rodata reorder
    ([[jtbl-rodata-split-infrastructure]]), per-file flag list extension
-   ([[compiler-flags-canonical]]). These are user policy.
+   ([[compiler-flags-canonical]]). These are user policy. (One standing
+   route exists: a per-file `-G8` TU by proof, owner ruling 2026-09-26,
+   compiler-flags-canonical.md § "Per-file -G8 by proof".)
 3. **Out-of-budget** — token cap reached; surface what was tried and the
    exact partial state for the next session to resume from.
 

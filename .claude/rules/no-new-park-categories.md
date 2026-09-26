@@ -259,7 +259,8 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   session — cross-TU stride indexing, base+offset addressing in the
   original binary, or a committed naming-census schema — OR by
   compiler-necessity evidence meeting every condition (a1)-(a4) of the
-  2026-09-26 amendment below; (b) the merged
+  2026-09-26 amendment below (for a mixed-field struct, (a1), (a2) and
+  (a4′) in place of (a3)-(a4)); (b) the merged
   declaration reflects that documented shape (a struct/record table where
   the evidence shows records; a flat array only where the evidence shows
   a flat array) — an index that encodes a record stride as a magic number
@@ -290,7 +291,8 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     limited to the labels actually used. Unblocks 800620B8, likely
     8005D814." What follows is the author's narrowing, not the owner's
     words. Prong (a) is met by compiler-necessity evidence only when ALL of
-    (a1)-(a4) hold:
+    (a1)-(a4) hold, or, for a mixed-field struct, (a1), (a2) and every part
+    of (a4′):
     - **(a1) Necessity, proven from dumps.** The function's ledger banks the
       compiler dumps (cc1 RTL dumps such as `.cse`, `.loop`, `.lreg`,
       `.greg`, and/or the instrumented cc1's `BB2_*_DEBUG` output,
@@ -340,14 +342,71 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
       declaration is an array of that record type, with a length of exactly
       the span divided by the record size. Prong (b) applies unchanged,
       including its ban on encoding a record stride as a magic number.
+      - **(a4′) Mixed-field struct (owner ruling 2026-09-26, second
+        batch, Q7).** The question put to the owner, verbatim: "Your
+        table-merge ruling covered one repeated record type. func_80034708
+        needs 0x78–0x87 declared as ONE struct with mixed fields (a u16
+        pair, four byte pairs, four bytes). Both compilers, including the
+        original PsyQ one, match the shipped code only with that struct,
+        and it spans exactly the bytes the function uses. Extend the ruling
+        to mixed-field structs under the same proof?" Owner (Trenton)
+        chose, verbatim: **"Allow with same proof (Recommended)"**, whose
+        text is: "Same dump proof + cc1psx confirmation + minimal span of
+        bytes actually used; layer-2 still reviews. Unblocks func_80034708
+        (with -G8)." What follows is the author's narrowing. In place of
+        (a4) and of (a3)'s label bounds, a single struct with fields of
+        different types is admitted ONLY when (a1) and (a2) hold for that
+        struct against the separate labels AND all of (1)-(5) hold:
+        1. **The span is exactly the bytes the function uses.** It runs from
+           the lowest-addressed byte to the highest-addressed byte that the
+           function under judgment accesses, as its original instructions
+           show: every load, store and address formation into the span,
+           including indexed or walking accesses over their reachable range.
+           Every splat label inside the span is merged (prong (c)); no label
+           or byte outside it is.
+        2. **Members for used bytes only.** Each named member covers only
+           bytes the function accesses. Its width comes from the width of
+           the function's accesses to it. Its signedness comes from ONE
+           declared type under which every one of the function's accesses
+           to that member is ordinary C: explicit value casts are allowed,
+           pointer puns are not. (A byte read both with `lb` and with `lbu`,
+           such as D_80102785, gets one declared type, and the other
+           accesses are spelled with ordinary casts.) An array member is
+           used only where the function indexes or walks those bytes, and
+           its length is exactly the reachable range.
+        3. **Gaps, and nothing else.** A byte inside the span that the
+           function never accesses is covered either by alignment padding
+           the compiler inserts, or by one filler member named by its
+           offset (`u8 unkNN[k];`, no role name) whose size is exactly that
+           gap. No other padding or filler member is admitted, and no member
+           may cover a byte outside the span.
+        4. **The layout is shown member by member.** The ledger lists each
+           member: offset, width, declared type, and every one of the
+           function's instructions that access it, by address and opcode
+           (or, for a filler, that none does).
+        5. **Everything else unchanged.** Prongs (b)-(e) apply: the struct
+           is the canonical declaration in the shared header, the merge is
+           complete, every other consumer of a byte in the span is respelled
+           through the struct's members with no per-use pointer pun (prong
+           (d)), and byte-neutrality, `verify-oracle --rebuild` and a fresh
+           layer-2 cheat-reviewer are required. A struct whose members a
+           necessary other consumer cannot use without a pun fails.
+
+        func_80034708's struct is judged fresh against (a1), (a2) and
+        (1)-(5); nothing here pre-decides it. Record:
+        docs/grind/decisions.md 2026-09-26 OWNER RULING —
+        aggregate-merge (a4′): mixed-field struct.
 
     Prongs (b)-(e) are unchanged: the declaration is canonical in the shared
     header, the merge is complete, and byte-neutrality for every other
     consumer, `verify-oracle --rebuild` and a layer-2 cheat-reviewer are
     required. The amendment decides nothing about func_80036140's
-    build-model question (per-file `-G8`, the maspsx COMMON model), which
-    the owner left for separate investigation; a merge that depends on that
-    model is not admitted by this amendment alone. Record:
+    build-model question. Of its two parts, per-file `-G8` was ruled
+    separately later the same day (owner ruling 2026-09-26, second batch,
+    [[compiler-flags-canonical]] § "Per-file -G8 by proof", its own prongs
+    (i)-(vi)). The maspsx COMMON model remains undecided: the owner left it
+    for separate investigation, and a merge that depends on it is not
+    admitted by this amendment. Record:
     docs/grind/decisions.md 2026-09-26 OWNER RULING — aggregate-merge prong
     (a): compiler-necessity evidence, minimal span.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)

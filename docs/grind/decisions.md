@@ -29613,7 +29613,7 @@ Recorded in: `.claude/rules/rotation-not-foreclosure.md` Ruling 4; `.claude/skil
 ## 2026-09-26 — OWNER RULING — Ruling 11: a reused local proven necessary by the allocator (`.claude/rules/ordinary-c-judge-decidable.md`)
 
 Question (borderline.md 2026-09-26 entries func_80055138, func_8003993C and func_8002DE20; put to
-the owner by the orchestrator, verbatim record tmp/orch/owner_rulings_2026-09-26.md): "Allow a
+the owner by the orchestrator, verbatim record docs/grind/owner-rulings-2026-09-26.md (batch 1)): "Allow a
 local reused for several unrelated values when compiler dumps prove no one-variable-per-value
 spelling can match?" Approved framing: "Allow it only with proof: the worker must show from
 compiler dumps that no single-purpose spelling can match, give the variable an honest generic
@@ -29701,3 +29701,77 @@ per-function row route. All other 2026-09-23 conditions (inline in src/*.c, sand
 and a layer-2 apply. The croc copy (tmp/croc-ref) is formatter-rewritten and is not the
 reference. The Grinder driver's grant door still requires a row or a STRONG tier, so the class
 applies on the manual path until that door is taught it in a separate reviewed change.
+
+## 2026-09-26 — OWNER RULING — per-file -G8 by proof (`.claude/rules/compiler-flags-canonical.md`)
+
+Second 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md (batch 2)). Context given to
+the owner: func_80034708 (and func_80036140) need a new per-file -G8 TU; for func_80034708 the
+target reads D_800A3174 gp-relative 16 times, the neighbouring functions none; the original PsyQ
+cc1psx emits those gp reads at -G8 and none at -G0. The first batch had left per-file -G8
+undecided.
+
+Question, verbatim: "Allow giving a function its own source file compiled at -G8 (small-data
+setting) when the shipped code proves it — gp-relative reads in the original bytes that neighbours
+lack, confirmed by the original PsyQ compiler producing them only at -G8?" Owner (Trenton) chose,
+verbatim: "Allow with that proof (Recommended)" — "Requires gp-relative accesses in the original
+bytes + cc1psx confirmation + neighbours moved unchanged; layer-2 still reviews. Unblocks
+func_80034708 (and part of func_80036140)."
+
+**Ruling (full text in the rule file, "Per-file -G8 by proof"; the prongs are the author's
+narrowing, not the owner's words).** A function may move into a new TU that joins GP_FILES only
+when: (i) the ledger lists every gp-relative access in its original bytes, no adjacent function
+staying outside has a gp-relative access to any symbol in that listed set, and the best -G0 score
+is recorded; (ii) cc1psx (tools/cc1psx_wrapper.sh, calibration use only, never a build path)
+emits the listed accesses at -G8 and none at -G0; (iii) the -G8 TU holds only functions that each
+meet (i)-(ii), contiguous, with no file-scope asm/INCLUDE_ASM/INCLUDE_RODATA, passing the existing
+G8 screening rule, and differing from its source file's flags only by GP_FILES membership (it
+keeps the source file's NO_SR/EXPAND_LB/EXPAND_LH memberships exactly); (iv) the move is a
+textually identical diff (a respelling under another rule, e.g. an aggregate merge, lands first in
+its own commit or is proven byte-neutral on the unsplit tree), and every -G0 TU from the split keeps
+the source file's exact cc1 and maspsx flags; (iv-a) RODATA_ALIGN2_FILES membership is mechanical
+for every new TU, the -G8 one included: on the list exactly when the TU emits a jump table whose
+own address in the shipped binary is 4 mod 8 (census: 2026-09-20 func_800747D8 entry), each
+address recorded; (v) the Makefile changes only by the new TU names in the per-file
+lists, engine/buildconfig.py mirrors them verbatim, bb2.ld stays hand-maintained with object lines
+only (no other linker-script change, no LINKED_ASM_FUNCS entry); (vi) verify-oracle --rebuild,
+engine test and a fresh layer-2 PASS; manual path only. The flag set stays frozen and -G8 is
+admitted only when every condition (i)-(vi) holds, never by a score. The ruling amends
+compiler-flags-canonical.md's "answered: no" finer-TU conclusion for this case only. func_80036140's maspsx COMMON-no-gp model (a maspsx
+behaviour change) is NOT decided. No landing is pre-decided.
+
+## 2026-09-26 — OWNER RULING — `0($12)` in the inline_o.h class: keep strict (no rule change)
+
+Second 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md (batch 2)). Question,
+verbatim: "Should the inline_o.h class grant also accept the `0($12)` spelling our assembler tool
+forces in place of the header's `($12)`?" Owner (Trenton) chose, verbatim: "Keep strict wording" —
+"Only exact character copies; func_8002DE20's blocks need a per-function grant."
+
+**Ruling.** No rule change. `.claude/rules/inline-asm-policy.md` § Owner ruling 2026-09-26 prong
+(C) stands as committed in 262db111c: an island that writes the header's `($12)` as `0($12)` is
+not character-identical and is not admitted by the class. Such islands, including
+func_8002DE20's, take the per-function owner-row route.
+
+## 2026-09-26 — OWNER RULING — aggregate-merge (a4′): mixed-field struct (`.claude/rules/no-new-park-categories.md`)
+
+Second 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md (batch 2)). Question,
+verbatim: "Your table-merge ruling covered one repeated record type. func_80034708 needs 0x78–0x87
+declared as ONE struct with mixed fields (a u16 pair, four byte pairs, four bytes). Both compilers,
+including the original PsyQ one, match the shipped code only with that struct, and it spans exactly
+the bytes the function uses. Extend the ruling to mixed-field structs under the same proof?" Owner
+(Trenton) chose, verbatim: "Allow with same proof (Recommended)" — "Same dump proof + cc1psx
+confirmation + minimal span of bytes actually used; layer-2 still reviews. Unblocks func_80034708
+(with -G8)."
+
+**Ruling (full text in the rule file, aggregate-merge amendment, "(a4′)"; the author's
+narrowing).** In place of (a4) and (a3)'s label bounds, one struct with fields of different types
+meets prong (a) only when (a1) dump proof and (a2) cc1psx confirmation hold for that struct against
+the separate labels, and: (1) the span is exactly the lowest- to highest-addressed byte the function
+under judgment accesses (indexed/walking accesses over their reachable range), every splat label
+inside merged, nothing outside; (2) each named member covers only bytes the function accesses, its width from the access width
+and its signedness from ONE declared type under which every access is ordinary C (explicit casts
+allowed, no puns), arrays only where it indexes or walks, of exactly the reachable length; (3) an unaccessed byte inside the span is covered only by compiler alignment
+padding or one offset-named filler (`u8 unkNN[k];`) of exactly the gap, no other padding member;
+(4) the ledger lists every member with offset, width, declared type and each accessing
+instruction by address and opcode; (5) prongs (b)-(e) unchanged, including no per-use pointer pun for other consumers,
+byte-neutrality, verify-oracle --rebuild and a fresh layer-2. func_80034708's struct is judged
+fresh against (a1), (a2) and (1)-(5); nothing here pre-decides it.

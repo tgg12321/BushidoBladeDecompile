@@ -80,7 +80,120 @@ the authoritative record of the original configuration.
 | `FIX_LWL_FILES` | RETIRED 2026-08-04 (empty) | fix_lwl XOR-corrected big-endian lwl/lwr offsets; obsolete under -mel |
 
 These ARE the per-file flag variation the original build used. Nothing else.
-If a file isn't on these lists, it is plain `-O2 -G0`.
+If a file isn't on these lists, it is plain `-O2 -G0`. The one route for adding
+a file to `GP_FILES` is the owner ruling of 2026-09-26 below.
+
+## Per-file -G8 by proof (owner ruling 2026-09-26)
+
+**Question and answer.** Filed questions: docs/grind/borderline.md
+2026-09-26 func_80036140 (its build-model question, which the first 2026-09-26
+batch left undecided) and func_80034708. The context given to the owner
+(verbatim record: docs/grind/owner-rulings-2026-09-26.md (batch 2)): func_80034708 (and
+func_80036140) need a new per-file -G8 translation unit; for func_80034708
+the target reads D_800A3174 gp-relative 16 times, the neighbouring functions
+none, and the original PsyQ cc1psx emits those gp reads at -G8 and none at
+-G0. The question put to the owner, verbatim: "Allow giving a function its own
+source file compiled at -G8 (small-data setting) when the shipped code proves
+it — gp-relative reads in the original bytes that neighbours lack, confirmed
+by the original PsyQ compiler producing them only at -G8?" Owner (Trenton)
+chose, verbatim: **"Allow with that proof (Recommended)"**, whose text is:
+"Requires gp-relative accesses in the original bytes + cc1psx confirmation +
+neighbours moved unchanged; layer-2 still reviews. Unblocks func_80034708 (and
+part of func_80036140)."
+
+**Rule text.** This is the author's narrowing of that answer, not the owner's
+words. A function may be moved out of its splat `.c` file into a new
+translation unit (TU) that joins `GP_FILES` (compiled `-G8`) ONLY when ALL of
+(i)-(vi) hold, including (iv-a). The flag set itself is unchanged:
+`CC_FLAGS_GP` is the existing text1a flag line, and no other flag, list or
+pipeline stage is added.
+
+- **(i) gp-relative accesses in the original bytes, which the neighbours
+  lack.** The function's ledger (`memory/grind/<func>/`) lists every
+  gp-relative access in the function's ORIGINAL bytes (`asm/funcs/<func>.s`
+  and the original EXE): address, instruction and symbol. It also lists, for
+  each function that stays outside the new TU and is adjacent to it in
+  address order, that function's gp-relative accesses in its original bytes.
+  No such neighbour has a gp-relative access to any symbol in the function's
+  listed set. The ledger also records the best `-G0` score of the
+  function's body under the existing build, with the reason `-G0` cannot
+  produce the listed accesses.
+- **(ii) The original compiler agrees** (a calibration use). The original
+  PsyQ compiler, run through `tools/cc1psx_wrapper.sh` on the new TU's
+  preprocessed source with the build's cc1 flags, is run twice: at `-G8` it
+  emits the listed gp-relative accesses, and at `-G0` it emits none of them.
+  The ledger banks both outputs and the counts. If cc1psx emits them at `-G0`
+  too, or does not emit them at `-G8`, this ruling does not apply. This is a
+  calibration use under [[cc1psx-calibration-only]] and
+  [[no-compiler-divergence]]: cc1psx is never a build path, the committed
+  build compiles with the project's cc1, and the oracle SHA1 decides the
+  match.
+- **(iii) The new -G8 TU holds only proven functions.** Each function in it
+  meets (i) and (ii) on its own. The functions are contiguous in the original
+  address order. The TU has no file-scope `__asm__`, `INCLUDE_ASM` or
+  `INCLUDE_RODATA` (under `-G8` cc1 buffers function bodies, so those float to
+  the top of the TU). The existing screening rule in the table above applies:
+  every extern of 8 bytes or less that the TU references is in gp range
+  (`sdata_syms.txt`) or is honestly typed larger than 8 bytes. Its only
+  compile-flag difference from the file it came from is `GP_FILES`
+  membership: it keeps that file's `NO_SR_FILES`, `EXPAND_LB_FILES` and
+  `EXPAND_LH_FILES` membership exactly.
+- **(iv) The neighbours move unchanged.** Every other function of the
+  original file moves to the remaining original file or to a new adjacent
+  `-G0` TU, in its original order. That includes `INCLUDE_ASM` lines,
+  `INCLUDE_RODATA` lines and file-scope declarations. The move is a
+  textually identical diff: every moved line appears in the new file exactly
+  as it stood in the source file at the commit before the split. A
+  respelling that falls under another rule (e.g. an aggregate merge under
+  the aggregate-merge entry in [[no-new-park-categories]]) is not part of the
+  move: it lands FIRST, in its own earlier commit under its own rule, or is
+  proven byte-neutral (full-build SHA1 == oracle) on the unsplit tree before
+  the split. The ledger shows the move diff. Every `-G0` TU produced by the
+  split has exactly the source file's compile flags: the same cc1 flags and
+  the same maspsx flags, so the same memberships in `GP_FILES` (none),
+  `NO_SR_FILES`, `EXPAND_LB_FILES` and `EXPAND_LH_FILES`. Every moved
+  function's bytes are unchanged in the full build.
+- **(iv-a) RODATA_ALIGN2 membership is mechanical.** For EVERY new TU,
+  including the `-G8` one, membership in `RODATA_ALIGN2_FILES` is decided by
+  one test, from the jump-table census in docs/grind/decisions.md (2026-09-20
+  func_800747D8 entry: ASPSX/psylink did not 8-align jump tables, and a file
+  whose table sits at an address that is 4 mod 8 needs the list). The TU is
+  on the list exactly when it emits at least one jump table whose own
+  address in the shipped binary is 4 mod 8, and off it otherwise. The ledger
+  records each such table's address in the shipped binary, or that the TU
+  emits none.
+- **(v) Build files updated verbatim, bb2.ld stays hand-maintained.** The
+  Makefile change is limited to the new TU names: `GP_FILES` gains the `-G8`
+  TU, and the per-file lists gain the memberships (iii), (iv) and (iv-a)
+  require.
+  `engine/buildconfig.py` mirrors those lists verbatim in the same commit
+  ([[buildconfig-mirror-drift-false-mismatch]]). `bb2.ld` stays
+  hand-maintained (never `make setup`). Its only change is object lines for
+  the new TUs, each at its place in the original address order within the
+  source file's section runs. No other linker-script change (alignment,
+  section moves, new sections) is admitted by this ruling. No
+  `LINKED_ASM_FUNCS` entry is admitted by this ruling either; a function that
+  cannot sit in a C TU needs its own ruling. All build files keep LF line
+  endings.
+- **(vi) Bytes and review.** `verify-oracle --rebuild` passes (full-build
+  SHA1 == oracle) and `engine test` stays green. A fresh layer-2
+  `cheat-reviewer` PASS covers the split diff, the build-file diff and the
+  (i)-(iv-a) ledger, together with the function's own completion review. The
+  Grinder cannot apply this ruling: Makefile, `bb2.ld` and `engine/` are
+  outside session scope ([[integration-handoff-self-serve]] denylist), so it
+  lands on the manual path.
+
+**What this does not decide.** func_80036140's other build-model change, the
+maspsx COMMON-no-gp model (a maspsx behaviour change under
+[[no-compiler-divergence]] item 2), is NOT decided; the owner left it for
+separate investigation. A `-G8` TU whose match depends on that model is not
+admitted by this ruling alone. This ruling does not reopen flag-hunting:
+the flag set stays frozen, and `-G8` is admitted only when every condition
+(i)-(vi) holds, including (iv-a), never by a measured score improvement. It
+pre-decides no landing: func_80034708's split
+(memory/grind/func_80034708/integration/) is judged fresh against (i)-(vi),
+including (iv-a). Record: docs/grind/decisions.md 2026-09-26 OWNER
+RULING — per-file -G8 by proof.
 
 ## The 24-flag sweep (empirical, on the hardest case)
 
@@ -99,6 +212,11 @@ files. The only theoretical hole is if the ORIGINAL had finer TU boundaries than
 splat's `.c` files AND a bridged function sat in a sub-TU with different flags —
 but step 3 rules this out per file (mixed-flag sub-TUs would leave non-bridged
 functions unmatched, and none are). Treat "maybe it's the flags" as answered: no.
+(Amendment, owner ruling 2026-09-26: this note amends the "answered: no"
+conclusion just above. The finer-TU case is exactly what the per-file -G8
+ruling above covers, and a finer `-G8` TU is admitted only when every
+condition (i)-(vi) of that ruling holds. Outside that ruling the conclusion
+stands.)
 
 ## Related
 - [[no-compiler-divergence]] — the standing HARD RULE: no cc1/maspsx patches, no cc1psx-switch, no fork. The compiler is frozen; this rule (flags) is a corollary.
