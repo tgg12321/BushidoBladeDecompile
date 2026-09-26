@@ -31,7 +31,7 @@ out in memory/grind/func_80034708/evidence.md [s3]-[s4] (F12-F22 + tables):
    instructions, ledger [s6] F29), so -G8 changes none of them.
    (iv) func_80034F88, func_8003504C, func_80035280, func_80035430 move to
    src/code6cac_b3_post.c as a textually identical block (movecheck.py:
-   291 lines byte-identical to the pre-split converted file), with the one
+   280 lines byte-identical to the pre-split converted file), with the one
    extern only they use; -G0, EXPAND_LB_FILES as the source file. Every
    respelling (the merges, the consumer conversions, the pun removals below)
    was proven byte-neutral on the UNSPLIT tree first (inplace.sh: full rebuild
@@ -79,14 +79,15 @@ out in memory/grind/func_80034708/evidence.md [s3]-[s4] (F12-F22 + tables):
    view of the record); code6cac_c_mid.c func_8003800C `D_80106A50 =
    *(FileRecord *)src;` (was a CopyBlock view; typedef removed) — all
    byte-neutral on the unsplit tree.
-   FOR THE REVIEWER: func_80037F40 keeps (a) its checksum, a byte sum over the
-   record's 0x24-byte object representation, and (b) its Quad copy of the
-   record ending at .color plus one word. The struct-assignment form
-   `*(FileRecord *)dst = D_80106A50;` matches instruction for instruction
-   except 5 words: GCC's block move places its end pointer after the
-   preheader moves, the target computes it before them (an explicit end
-   pointer in the original source). Only the cast form reproduces the bytes
-   (ledger [s8] F34).
+   code6cac_c_mid.c func_80037F40 copies the record into each save slot by
+   struct assignment, `((FileRecord *)base)[i] = D_80106A50;` (slot stride
+   0x24 == sizeof(FileRecord); the slot checksum word at base + i*4 + 0x6C),
+   byte-identical (ledger [s9] F38, eight other spellings scored 2-43); the
+   Quad typedef is gone. Its checksum stays a u8 byte sum over the record's
+   object representation — the only remaining cast of either merged object.
+   Stale comments naming the retired declarations are corrected
+   (code6cac_b3_post.c TABLED line / s66 note / FAKE comment, code6cac_c2.c
+   note above func_8003C714), before the split.
 Makefile line 77 still says text1a is "the project's sole -G8 file"; that
 comment is left for the owner (rule (v) limits the Makefile change to lists).
 
