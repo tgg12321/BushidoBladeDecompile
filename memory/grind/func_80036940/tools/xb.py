@@ -1,7 +1,9 @@
 """Scratch whole-file build of code6cac_b2_post.c for func_80036940 modelling.
 usage: python3 tmp/func_80036940/xb.py <cand.c> [--inc DIR] [--g8] [--comm a,b] [--b36140 FILE] [--diff] [--tag NAME]
 Scores func_80036940 (and reports every other function in the file that is nonzero) vs build/src."""
-import sys, subprocess, json
+import os, sys, subprocess, json
+if os.name == 'nt':  # Windows python + bash -c eats the backslashes: 'tmp\x' -> 'tmpx' at the repo root
+    sys.exit('xb.py must run under WSL (bash tools/wsl.sh ...), not Windows python')
 from pathlib import Path
 sys.path.insert(0, '.')
 from engine import inlineasm, score
