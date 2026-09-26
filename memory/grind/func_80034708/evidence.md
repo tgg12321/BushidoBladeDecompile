@@ -427,3 +427,12 @@ F39. Comments fixed before the split: the TABLED line names D_80106A50.flags; th
 F40. Sweep: the only remaining cast of either merged object is func_80037F40's u8 checksum pointer
   (accepted by layer-2). Split build SHA1 == oracle, func_80034708 score 8 (relocation spelling),
   moved block byte-identical (280 lines), Q8 proof identical.
+
+## LANDED 2026-09-26 — COMPLETED-C (manual lane, slotB4)
+Match commit 65897593b (22 files: func_80034708 in its own -G8 TU src/code6cac_b3.c under the
+2026-09-26 per-file -G8 ruling; PracticeParams D_80102778 (a4') and FileRecord D_80106A50 merges;
+the four following functions moved verbatim to src/code6cac_b3_post.c); queue commit 98ae66a11
+(queue item's file corrected code6cac_b -> code6cac_b3 before `queue done`). Fifth layer-2 review
+PASS; full-build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa; sandbox 0 (544/544);
+check_completion_integrity OK. Non-blocking leftover the reviewer noted: code6cac_b3_post.c:18's
+TABLED line still says "unreproducible" (historical note, left as is).
