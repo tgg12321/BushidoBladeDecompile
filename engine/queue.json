@@ -4,45 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002A458",
-      "file": "code6cac_b",
-      "distance": 30,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T13:07:07+00:00",
-      "rotation_count": 1,
-      "unparked_from": "flat floor 30/417 honest (2 permuter campaigns); 0/416 needs multi-write len/lzc_in + dx/dy/dz point-minus-base reuse (layer-2 FAIL, Ruling 5/6, staged-value bounds 2/4). Islands/canonical row/hashes + do-while(0) ruled sound. Allocator: fresh end-block deltas cannot seat s-regs. See memory/grind/func_8002A458/",
-      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 30 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
-      "returned_at": "2026-09-25T22:11:46+00:00"
-    },
-    {
-      "func": "func_80057E84",
-      "file": "text1b",
-      "distance": 44,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T15:29:03+00:00",
-      "rotation_count": 1,
-      "unparked_from": "flat floor 44/447 honest (2 sessions, permuter ~30min); node ptr (a1) needs one fresh pointer shared across both corner blocks (layer-2 FAIL R5/R6; no real carrier exists). Pending unruled va-borrow reaches 22. PathWalker/i/buf ruled sound. See memory/grind/func_80057E84/hypotheses.md",
-      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 44 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
-      "returned_at": "2026-09-25T22:11:51+00:00"
-    },
-    {
-      "func": "func_8005490C",
-      "file": "text1b",
-      "distance": 47,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-25T11:46:44+00:00",
-      "rotation_count": 1,
-      "unparked_from": "flat floor 47/399 single-role (permuter 18.9k flat); allocator proof: rotation temp + init player ptrs need multi-write locals vz/obj (layer-2 FAIL, Ruling 5/6); single loop ruled out (unrolled constants). Prep landed a9c634304. See memory/grind/func_8005490C/",
-      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 47 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
-      "returned_at": "2026-09-25T22:11:43+00:00"
-    },
-    {
       "func": "func_80053754",
       "file": "text1b",
       "distance": 466,
@@ -515,6 +476,48 @@
       "rotation": "flat floor 16 clean-tree (12 + 4 jtbl addend) after 3 manual sessions; s3 ran the enumerate-rung equivalent over SR/SL (11 variants, none below 16). Closing shared-rate form named inadmissible by Ruling 9 list + Ruling 10 scope (2026-09-25). s3 return was a None->16 engine bounce, fixed 07e77ac51. See memory/grind/func_8008B488/hypotheses.md"
     },
     {
+      "func": "func_8002A458",
+      "file": "code6cac_b",
+      "distance": 30,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "rotated",
+      "rotated_at": "2026-09-26T01:27:17+00:00",
+      "rotation_count": 2,
+      "unparked_from": "flat floor 30/417 honest (2 permuter campaigns); 0/416 needs multi-write len/lzc_in + dx/dy/dz point-minus-base reuse (layer-2 FAIL, Ruling 5/6, staged-value bounds 2/4). Islands/canonical row/hashes + do-while(0) ruled sound. Allocator: fresh end-block deltas cannot seat s-regs. See memory/grind/func_8002A458/",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 30 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:46+00:00",
+      "rotation": "restore rotation: the 2026-09-25 return was the engine None->30 bounce (floor unchanged at 30/417; fixed 07e77ac51). Prior rotation stands: closing form needs multi-write len/lzc_in + dx/dy/dz reuse, named banned in Ruling 9 list. See memory/grind/func_8002A458/hypotheses.md"
+    },
+    {
+      "func": "func_80057E84",
+      "file": "text1b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotated_at": "2026-09-26T01:27:18+00:00",
+      "rotation_count": 2,
+      "unparked_from": "flat floor 44/447 honest (2 sessions, permuter ~30min); node ptr (a1) needs one fresh pointer shared across both corner blocks (layer-2 FAIL R5/R6; no real carrier exists). Pending unruled va-borrow reaches 22. PathWalker/i/buf ruled sound. See memory/grind/func_80057E84/hypotheses.md",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 44 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:51+00:00",
+      "rotation": "restore rotation: the 2026-09-25 return was the engine None->44 bounce (floor unchanged at 44/447; fixed 07e77ac51). Prior rotation stands: node ptr needs one pointer shared across both corner blocks, vtx/node named banned in Ruling 9 list; va-borrow question moot without it. See memory/grind/func_80057E84/hypotheses.md"
+    },
+    {
+      "func": "func_8005490C",
+      "file": "text1b",
+      "distance": 47,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "rotated_at": "2026-09-26T01:27:18+00:00",
+      "rotation_count": 2,
+      "unparked_from": "flat floor 47/399 single-role (permuter 18.9k flat); allocator proof: rotation temp + init player ptrs need multi-write locals vz/obj (layer-2 FAIL, Ruling 5/6); single loop ruled out (unrolled constants). Prep landed a9c634304. See memory/grind/func_8005490C/",
+      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 47 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
+      "returned_at": "2026-09-25T22:11:43+00:00",
+      "rotation": "restore rotation: the 2026-09-25 return was the engine None->47 bounce (floor unchanged at 47/399; fixed 07e77ac51). Prior rotation stands: needs multi-write vz/obj, obj named banned in Ruling 9 list. See memory/grind/func_8005490C/hypotheses.md"
+    },
+    {
       "func": "func_800204C0",
       "file": "code6cac",
       "distance": 52,
@@ -660,14 +663,14 @@
   ],
   "counts": {
     "total": 57,
-    "active": 41,
+    "active": 38,
     "by_status": {
-      "active": 41,
-      "rotated": 16
+      "active": 38,
+      "rotated": 19
     },
     "by_verdict": {
-      "ASM-PARTIAL": 9,
-      "C": 32
+      "C": 30,
+      "ASM-PARTIAL": 8
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
