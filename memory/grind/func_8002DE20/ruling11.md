@@ -115,7 +115,8 @@ in the target (e.g. T1: 0x8002E2BC..0x8002E2F8; T4 recomputes A.vy*cx at 0x8002E
   (the `_a`/`_b` suffix = first / second point of the pair, true of every write).
 - **(F)** the declaration comment (candidate.c:46-50) says they hold one value per same-side
   test, names the kind, cites Ruling 11 and this file.
-- **(G)** needs a fresh layer-2 (not done: the island admission is pending the owner).
+- **(G)** fresh layer-2 cheat-reviewer: PASS on 2026-09-26 for the whole Q11 set (maspsx fix,
+  engine recognizer, auth rows, body), after one FAIL on three gaps that were then closed.
 - **(H)** other constructs: struct view, mid_i, return form, z nudge were cleared by the
   2026-09-26 layer-2; `cross_ab2` is a single-write local; the islands are islands.md's question.
 
@@ -352,6 +353,12 @@ stores before counting (addendum 1). Inventing an if/else to create arms is not 
 sanctioned family (its non-extension clause).
 Hoisting a nested test's write above the parent's branch (it is then written and read in two
 blocks) runs it on the fail path too. Measured for T2 (r11/hoist_T2.c): **158** (512 insns).
+Target placement rules it out for every nested test. In asm/funcs/func_8002DE20.s each nested
+test's products sit AFTER the parent test's branch (e.g. T2's mults follow T1's
+`bltz v0` at 0x8002E300, apart from the one reorg delay-slot fill). GCC 2.7.2 has no pass
+that sinks a computation from before a branch into one successor: it has no code sinking or
+partial-dead-code elimination, and loop.c moves invariants only out of loops. So a write
+placed before the parent branch stays before it, and cannot reproduce the target's placement.
 T1's block (after cx/cy) is also a single-predecessor tail of the dz_b join.
 So for 14 of the 23 shared values, among them both operands of T2/T3/T5/T6/T8/T10/T12, every
 per-value spelling in this family leaves a single-block, single-death pseudo. By local-alloc.c
