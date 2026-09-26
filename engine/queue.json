@@ -12,14 +12,6 @@
       "status": "active"
     },
     {
-      "func": "func_8002DE20",
-      "file": "code6cac_b",
-      "distance": 506,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80036140",
       "file": "code6cac_b2_post",
       "distance": 512,
@@ -564,14 +556,14 @@
     }
   ],
   "counts": {
-    "total": 47,
-    "active": 29,
+    "total": 46,
+    "active": 28,
     "by_status": {
-      "active": 29,
+      "active": 28,
       "rotated": 18
     },
     "by_verdict": {
-      "ASM-PARTIAL": 7,
+      "ASM-PARTIAL": 6,
       "C": 22
     }
   },
