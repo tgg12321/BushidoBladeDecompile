@@ -1878,8 +1878,8 @@ void func_8001D790(void) {
     gpu_ResetGraphMode1();
 
     if (D_800A36A4 != D_800A390E
-        || *(&D_8008E5A8 + (s8)D_8010277C) != D_800A30FC
-        || *(&D_8008E5A8 + D_8010277D) != D_800A30FD) {
+        || D_8008E5A8[(s8)D_8010277C] != D_800A30FC
+        || D_8008E5A8[D_8010277D] != D_800A30FD) {
         /* FAKE: block-local address cache for D_8010277C. Every &-free spelling
          * re-materializes the symbol at both body reads instead of holding it in
          * a callee-save register across func_8005BA8C (subspace floor 6, swept).
@@ -1894,11 +1894,11 @@ void func_8001D790(void) {
         func_8002906C();
         func_8005BDF0();
 
-        s1 = func_8005BA8C(s2, D_800A36A4, *(&D_8008E5A8 + (s8)*p), *(&D_8008E5A8 + D_8010277D));
+        s1 = func_8005BA8C(s2, D_800A36A4, D_8008E5A8[(s8)*p], D_8008E5A8[D_8010277D]);
 
         D_800A390E = D_800A36A4;
-        D_800A30FC = *(&D_8008E5A8 + (s8)*p);
-        D_800A30FD = *(&D_8008E5A8 + D_8010277D);
+        D_800A30FC = D_8008E5A8[(s8)*p];
+        D_800A30FD = D_8008E5A8[D_8010277D];
 
         if (s1 >= 0x2519) {
             sys_Panic();
