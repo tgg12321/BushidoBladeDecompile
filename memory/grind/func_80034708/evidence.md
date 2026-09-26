@@ -392,3 +392,38 @@ F36. Remaining pointer uses of both objects, all to ONE member with no step outs
   3 colour bytes), `FileTimeRec *base = D_80106A50.times`.
 F37. Split build: SHA1 == oracle, func_80034708 score 8 (relocation spelling), moved block
   byte-identical (291 lines), Q8 proof re-run: identical.
+
+## [s9] slotB4 2026-09-26 — fourth layer-2 FAIL (func_80037F40 Quad copy) and the fix
+FAIL: func_80037F40's record copy walked `Quad *` across the record's members and read color[0..2]
++ flags as one s32 (prong (d) / (a4')(5)); minor: stale comments in code6cac_b3_post.c (TABLED line,
+s66 integration paragraph, FAKE "second handle on D_80106A73") and code6cac_c2.c:632-637. The u8
+checksum and every other consumer passed. Reverted, rebuilt == oracle, lock released; staged diff =
+integration/landing-s8-rejected.patch.
+
+F38. Member-respecting copy search (integration/f37f40_try.py, engine score_func on the unsplit
+  in-place build; score 0 = byte-identical after linking):
+  | variant | score |
+  | s1 struct assignment `*(FileRecord *)(offset + base) = D_80106A50`, original preheader | 6 |
+  | s2 same, `i = 0` first then base / base2 / offset inits | 4 |
+  | s3 named `FileRecord *rec` source, `= *rec` | 23 |
+  | s4 walking `FileRecord *slot` destination | 6 |
+  | s5 `((FileRecord *)base)[i] = D_80106A50` + base2 walker | 4 |
+  | s6 member-wise copy (unk_00, unk_04, times[0..2]) | 43 (50 insns) |
+  | s7 struct assignment + an `&times[3]` end statement first | 4 |
+  | s8 s5 on a0 directly, checksum word `a0 + i*4 + 0x6C` | 2 |
+  | **s9 `u8 *base = a0; ((FileRecord *)base)[i] = D_80106A50; *(s32 *)(base + i*4 + 0x6C) = checksum`** | **0** |
+  The 2-6 residuals were all the block move's end pointer (&D_80106A50 + 0x20) scheduled among
+  the preheader moves: with the save slots indexed by i (no base2 / offset walkers), GCC's
+  strength reduction creates both walkers after the hoisted end pointer, exactly the target's
+  order. s9 names the whole record (struct assignment, GCC's block move is the 16-byte loop plus
+  a final word); the only casts are on the save buffer a0 (FileRecord slots of 0x24 bytes = the
+  slot stride; the per-slot checksum word at +0x6C + 4*i), never on the merged object. The now
+  unused `Quad` typedef is removed. In-place proof: every TU rebuilt, SHA1 == oracle.
+F39. Comments fixed before the split: the TABLED line names D_80106A50.flags; the s66 integration
+  paragraph now states the colour bytes / flags are D_80106A50.color[3] / .flags of the FileRecord
+  in include/system.h; the FAKE comment's "second C handle" names D_80106A50.flags;
+  code6cac_c2.c's note says the clock records were not retyped and are now D_80106A50.times read
+  through a FileTimeRec pointer.
+F40. Sweep: the only remaining cast of either merged object is func_80037F40's u8 checksum pointer
+  (accepted by layer-2). Split build SHA1 == oracle, func_80034708 score 8 (relocation spelling),
+  moved block byte-identical (280 lines), Q8 proof identical.

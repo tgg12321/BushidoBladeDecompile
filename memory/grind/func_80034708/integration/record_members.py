@@ -110,9 +110,54 @@ s = sub(s, '''    s32 i = 0;
     }''', p)
 wr(p, s)
 
-# ---- code6cac_c_mid.c func_80037F40 keeps its whole-record checksum (u8 walk over the
-# object) and its Quad copy ending at .color: the struct-assignment form differs by the end
-# pointer's schedule (5 words; ledger [s8]), so only the cast form reproduces the bytes.
+# ---- code6cac_c_mid.c func_80037F40: the checksum stays a byte sum over the record's object
+# representation; each save slot receives the record by struct assignment into the save buffer's
+# FileRecord slots (slot stride 0x24 == sizeof(FileRecord)); the slot's checksum word is indexed
+# like the slot. Measured alternatives: integration/f37f40_try.py (ledger [s9]).
+p = R + '/src/code6cac_c_mid.c'
+s = rd(p)
+i0 = s.index('void func_80037F40(u8 *a0) {')
+i1 = s.index('\n}\n', i0) + 3
+s = s[:i0] + '''void func_80037F40(u8 *a0) {
+    s32 checksum;
+    u8 *p;
+    s32 i;
+
+    checksum = 0;
+    p = (u8 *)&D_80106A50;
+    i = 0;
+    do {
+        checksum += *p++;
+        i++;
+    } while ((u32)i < 0x24);
+
+    {
+        u8 *base = a0;
+        i = 0;
+        do {
+            ((FileRecord *)base)[i] = D_80106A50;
+            *(s32 *)(base + i * 4 + 0x6C) = checksum;
+            {
+                s32 j = 0;
+                s16 *hp = (s16 *)base;
+                u8 *bp = base;
+                do {
+                    *(s32 *)(bp + 0x78) = 0;
+                    *(s16 *)((u8 *)hp + 0xD0) = 0;
+                    hp++;
+                    j++;
+                    bp += 4;
+                } while (j < 0x16);
+            }
+            i++;
+        } while (i < 3);
+        *(s32 *)(base + 0xFC) = 0;
+    }
+}
+''' + s[i1:]
+if s.count('Quad') == 1:
+    s = sub(s, 'typedef struct { s32 w[4]; } Quad;\n', '', p)
+wr(p, s)
 
 # ---- code6cac_c_mid.c func_8003800C: restore the record from a save slot by struct assignment
 # (was a CopyBlock view of D_80106A50); byte-identical.
@@ -200,5 +245,28 @@ p = R + '/src/code6cac.c'
 s = rd(p)
 s = sub(s, '        /* FAKE: block-local address cache for D_8010277C. Every &-free spelling',
         '        /* FAKE: block-local address cache for D_80102778.unk_4[0]. Every &-free spelling', p)
+wr(p, s)
+
+# ---- comments that still named the retired declarations (fixed in place, BEFORE the split)
+p = R + '/src/code6cac_b.c'
+s = rd(p)
+s = sub(s, 'Target alternates v1/a0 for g_file_flags address', 'Target alternates v1/a0 for D_80106A50.flags address', p)
+a = s.index(' * INTEGRATION HANDOFF (unchanged from s62-s65; s66 proved the bytes).')
+b = s.index(" * `python3 tmp/grind/func_80034F88/s63/apply.py <body.c>`.\n") + len(" * `python3 tmp/grind/func_80034F88/s63/apply.py <body.c>`.\n")
+s = s[:a] + ''' * INTEGRATION (s62-s66 history). The copy loop's indexed store
+ * `lui $at,%hi(..); addu $at,$at,$v1; sb $v0,%lo(..)($at)` targets the three
+ * colour bytes 0x80106A70..72; since 2026-09-26 they are D_80106A50.color[3]
+ * and the flags byte is D_80106A50.flags, members of the 0x24-byte FileRecord
+ * declared in include/system.h.
+''' + s[b:]
+s = sub(s, '(a second C handle on\n         * D_80106A73)', '(a second C handle on\n         * D_80106A50.flags)', p)
+wr(p, s)
+p = R + '/src/code6cac_c2.c'
+s = rd(p)
+s = sub(s, ''' * insn_count padding, with `base = (u8 *)&D_80106A58;` unchanged and the
+ * `extern s32 D_80106A58;` declaration at src/code6cac_c2.c:156 untouched.''',
+        ''' * insn_count padding, without retyping the clock records. (Since 2026-09-26
+ * they are D_80106A50.times of the FileRecord in include/system.h, read through
+ * a FileTimeRec pointer.)''', p)
 wr(p, s)
 print('record members ok')
