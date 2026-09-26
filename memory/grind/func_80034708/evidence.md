@@ -202,3 +202,74 @@ F22. Memberships (apply.py): code6cac_b3 -> GP_FILES, EXPAND_LB_FILES (inert: ex
   relinked, SHA1 == oracle, func_80034708 score 8 (relocation spelling only).
   Best honest -G0 score: 90 (F17). landing-s2-g8.patch is superseded by apply.py (regenerates from
   the live tree, includes the memberships).
+
+## [s4] slotB4 2026-09-26 — ledger for the re-landing under 965b3a001
+
+### -G8 by proof, prong (i): every gp-relative access in func_80034708's original bytes
+(asm/funcs/func_80034708.s; the listed set is {D_800A3174, D_800A3176} = the s16[2] cursor array)
+
+| address | instruction |
+|---|---|
+| 0x80034760 | `lh $v0, %gp_rel(D_800A3174)($gp)` |
+| 0x8003478C | `lh $v0, %gp_rel(D_800A3176)($gp)` |
+| 0x800347B4 | `lh $v0, %gp_rel(D_800A3174)($gp)` |
+| 0x800347D8 | `lh $v0, %gp_rel(D_800A3176)($gp)` |
+| 0x800347FC | `lh $v0, %gp_rel(D_800A3174)($gp)` |
+| 0x80034828 | `lh $v0, %gp_rel(D_800A3176)($gp)` |
+| 0x8003484C | `lh $v0, %gp_rel(D_800A3174)($gp)` |
+| 0x80034878 | `lh $v0, %gp_rel(D_800A3176)($gp)` |
+| 0x800348AC | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+| 0x800348D0 | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+| 0x800348F4 | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+| 0x8003491C | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+| 0x80034944 | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+| 0x80034974 | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+| 0x800349A0 | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+| 0x800349CC | `lh $v1, %gp_rel(D_800A3174)($gp)` |
+
+Adjacent functions that stay outside the new TU: func_800344B4 (before, stays in code6cac_b.c) and
+func_80034F88 (after, moves to code6cac_b3_post.c) — ZERO gp-relative accesses each (so none to the
+listed set). No asm/funcs file other than func_80034708.s names D_800A3174 or D_800A3176.
+Best -G0 score: 90 (every honest array/struct spelling; F10), because under -G0 an ARRAY_REF
+address is force_reg'd (explow.c memory_address) and a bare-REG address is never folded back by
+cse.c find_best_addr, so cursor[0]/[1] stay register-based instead of the 16 gp reads above.
+(ii): integration/cc1psx/psx-G8-base78.s = 16 gp-direct cursor reads (`lh $2,D_800A3174[+2]`),
+psx-G0-base78.s = 0 (F12).
+(iii) screening: the TU's <=8-byte data externs are D_800A3174 (4 B, sdata_syms), D_800A3690 /
+D_800A36F9 (1 B, sdata_syms; sdata_exclude'd for func_80034708 as before) and D_800A37B8 (s32).
+D_800A37B8 lies inside gp range (0x800A37B8 - _gp = +0x6EC) but is not in sdata_syms because no
+original function addresses it gp-relative (10 referrers, all lui/%lo) — it belongs to another TU's
+data; its only access here is the scalar `D_800A37B8++` (lw %lo / sw %lo), identical at -G0 and
+-G8 (dumped: plain VAR_DECL MEMs are never force_reg'd). Every other extern is typed > 8 bytes
+(PracticeParams 16, FileRecord 36, PadState 24) or is an incomplete string array.
+
+### (a4′)(4) PracticeParams D_80102778 member table (every func_80034708 access, target bytes)
+Base registers in the target: s5 = &0x7C (0x80034778), s7 = &0x84 (0x800349F4), s1 = s7-8 (&0x7C,
+walks +1), s2 = s7-6 (&0x7E, walks +1), s3 = s7-4 (&0x80, walks +1), fp = s7+2 (&0x86),
+s6 = 2*i (case 3 index).
+
+| off | addr | member | width | type | accesses (address opcode) |
+|---|---|---|---|---|---|
+| 0x0 | 0x80102778 | unk_0[2] | 2x2 | u16 | 0x80034864 lhu (row 7, [0]); 0x80034890 lhu (row 8, [1]); case 3 [i], i=0..1: 0x80034B78 lui / 0x80034B7C addiu / 0x80034B80 addu s6 / 0x80034B84 lhu / 0x80034B94 sh, 0x80034CB8 lui / 0x80034CBC addiu / 0x80034CC0 addu s6 / 0x80034CC4 lhu / 0x80034CD4 sh |
+| 0x4 | 0x8010277C | unk_4[2] | 1x2 | u8 | 0x80034778 lui / 0x8003477C addiu s5 / 0x80034780 lb 0(s5) (row 1, [0]); 0x800347A4 lui / 0x800347A8 lb (row 2, [1]); walker s1 [i], i=0..1: 0x80034A0C addiu s1,s7,-8; 0x80034B3C lbu / 0x80034B4C sb (case 0 dec); 0x80034C7C lbu / 0x80034C8C sb (case 0 inc); 0x80034DA0 lb / 0x80034DCC sb (wrap %33); 0x80034DFC addiu s1,+1 |
+| 0x6 | 0x8010277E | unk_6[2] | 1x2 | u8 | 0x800347C8 lui / 0x800347CC lb (row 3, [0]); 0x800347EC lui / 0x800347F0 lb (row 4, [1]); walker s2: 0x80034A08 addiu s2,s7,-6; 0x80034B50 lbu / 0x80034B60 sb (case 1 dec); 0x80034C90 lbu / 0x80034CA0 sb (case 1 inc); 0x80034DD0 lb / 0x80034DF4 sb (wrap %8); 0x80034DF8 addiu s2,+1 |
+| 0x8 | 0x80102780 | unk_8[2] | 1x2 | u8 | 0x80034810 lui / 0x80034814 lb (row 5, [0]); 0x8003483C lui / 0x80034840 lb (row 6, [1]); walker s3: 0x80034A04 addiu s3,s7,-4; 0x80034B64 lbu / 0x80034B74 sb (case 2 dec); 0x80034CA4 lbu / 0x80034CB4 sb (case 2 inc); 0x80034E08 lb / 0x80034E28 sb (wrap %2); 0x80034E34 addiu s3,+1 |
+| 0xA | 0x80102782 | unk_A[2] (offset-named filler) | 2 | u8 | none — gap filler exactly 2 bytes (other consumers: func_80022F34 indexes [player], func_8003B3A4/func_8003B484 write [1]) |
+| 0xC | 0x80102784 | unk_C | 1 | u8 | 0x800348C0 lui / 0x800348C4 lb (row 9); 0x800349F4 lui / 0x800349F8 addiu s7 (base); 0x80034B98 lbu / 0x80034BA8 sb (case 4 dec); 0x80034CD8 lbu / 0x80034CE8 sb (case 4 inc); 0x80034E3C lui / 0x80034E40 addiu a2 / 0x80034E44 lb / 0x80034ECC sb (wrap %38) |
+| 0xD | 0x80102785 | unk_D | 1 | u8 | 0x800348E4 lui / 0x800348E8 lb (row 10); 0x80034BAC lui / 0x80034BB0 lbu / 0x80034BBC lui / 0x80034BC0 sb (case 5 dec); 0x80034CEC lui / 0x80034CF0 lbu / 0x80034CFC lui / 0x80034D00 sb (case 5 inc); 0x80034E64 lui / 0x80034E68 lb / 0x80034EEC lui / 0x80034EF0 sb (wrap %7) |
+| 0xE | 0x80102786 | unk_E | 1 | u8 | 0x80034908 lb 0xA(s5) (row 11); 0x800349FC addiu fp,s7,2; 0x80034BCC lbu / 0x80034BDC sb 0(fp) (case 6 dec); 0x80034D0C lbu / 0x80034D1C sb 0(fp) (case 6 inc); 0x80034E70 lui / 0x80034E74 lbu / 0x80034E80 lui / 0x80034E84 sb (&= 1) |
+| 0xF | 0x80102787 | unk_F | 1 | u8 | 0x80034930 lb 0xB(s5) (row 12); 0x80034BE0 lui / 0x80034BE4 addiu / 0x80034BE8 lbu / 0x80034BF8 sb (case 7 dec); 0x80034D20 lui / 0x80034D24 addiu / 0x80034D28 lbu / 0x80034D38 sb (case 7 inc); 0x80034E88 lui / 0x80034E8C lbu / 0x80034E98 lui / 0x80034E9C sb (&= 1) |
+
+(a4′)(1) span: lowest byte the function accesses = 0x80102778 (row 7 lhu, case-3 [0]); highest =
+0x80102787 (row 12, case 7, tail) — span 0x78..0x87 exactly; no byte outside it.
+(a4′)(2) signedness: every byte member is declared u8; the `lb` reads are `(s8)` value casts
+(rows 1-6 / 9-12 and the wrap reads), the `lbu` read-modify-writes and `&= 1` use the u8 member as
+declared — no pointer pun. unk_0 is u16 (lhu everywhere). Arrays exactly where the function indexes
+or walks (unk_0 [i], unk_4/unk_6/unk_8 walkers), length 2 = the reachable range (i = 0..1).
+(a4′)(3) gap: 0x82..0x83 only, one offset-named filler `u8 unk_A[2]`.
+(a1)/(a2) against the separate labels: F13/F14/F16 (dumps integration/dumps/, cc1psx
+psx-G8-split.s / psx-G8-base7C.s / psx-G8-base78.s).
+
+### (iv-a) RODATA_ALIGN2
+code6cac_b3 emits jump tables at 0x8001086C and 0x8001089C in the shipped binary (both 4 mod 8) ->
+ON the list. code6cac_b3_post emits no jump table (no .rodata) -> OFF the list.
