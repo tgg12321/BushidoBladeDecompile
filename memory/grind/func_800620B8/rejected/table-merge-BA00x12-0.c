@@ -23,10 +23,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
     extern s32 D_800A37D4;
     extern s32 D_800A3720;
     extern s32 D_8009BD44;
-    extern u16 D_8009BA00[6][4];
-    extern u16 D_8009BA30[4][4];
-    extern u16 D_8009BA50[4];
-    extern u16 D_8009BA58[4];
+    extern u16 D_8009BA00[12][4];
     extern void ApplyRotMatrixLV(VECTOR *, VECTOR *);
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
@@ -93,7 +90,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
         sel_a:
             D_800A348C = D_800A3488 = (s32)D_8009BA00[(u32)D_800A32B8 % 6];
             if (D_8009BD44 & 1) {
-                D_800A348C = (s32)D_8009BA50;
+                D_800A348C = (s32)D_8009BA00[10];
             }
             *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0x1F;
             *(u16 *)D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x1F;
@@ -106,9 +103,9 @@ void func_800620B8(s16 *pos, s32 *trans) {
             *(s16 *)D_800A34A8 = 0x64;
             *(s16 *)D_800A34AC = 0x78;
         sel_b:
-            D_800A348C = D_800A3488 = (s32)D_8009BA30[D_800A32B8 & 3];
+            D_800A348C = D_800A3488 = (s32)D_8009BA00[(D_800A32B8 & 3) + 6];
             if (D_8009BD44 & 1) {
-                D_800A348C = (s32)D_8009BA58;
+                D_800A348C = (s32)D_8009BA00[11];
             }
             *(u16 *)D_800A349C = ((u16 *)D_800A3488)[2] + 0xF;
             *(u16 *)D_800A34A4 = ((u16 *)D_800A3488)[3] + 0x13;

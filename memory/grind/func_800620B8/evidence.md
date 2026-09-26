@@ -1,10 +1,40 @@
 # func_800620B8 — evidence (manual lane, slotC, 2026-09-26)
 
-## Status (2026-09-26)
-`candidate.c` measures **0 / 501** on `sandbox --disable all --diff` (every remaining hunk
-`not-scored`: branch displacements / section addends). Canonical gate: ASM-PARTIAL, 1/501 insns =
-the `swc2 $19` gte_stsz(r0) island (same verbatim inline_c.h macro island func_8006295C landed with,
-c3eff5ec6). Floor path: 144 (first natural spelling) -> 127 -> 124 -> 83 -> 61 -> 52 -> 3 -> 0.
+## Status (2026-09-26, after layer-2 FAIL)
+`candidate.c` = the landable ordinary body, **47 / 501** (the four sprite tables as the four split
+splat symbols). The 0/501 body is banked as `rejected/table-merge-BA00x12-0.c` (full-build SHA1 ==
+oracle 2026-09-26 with it spliced and `extern u16 D_8009BA00[12][4];` in include/game.h).
+Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0) island (same verbatim
+inline_c.h macro island func_8006295C landed with, c3eff5ec6). Floor path: 144 -> ... -> 0 (merge).
+
+## Layer-2 FAIL (manual lane, 2026-09-26) — the aggregate merge only
+A fresh cheat-reviewer FAILED the `D_8009BA00[12][4]` merge on prong (a)
+(no-new-park-categories.md:250-274): only this function references BA00/BA30/BA50/BA58 (no
+cross-TU evidence); the original loads BA30/50/58 as absolute lui/addiu, not off the BA00 base
+register; no census row; the 12-record boundary is arbitrary (same-shape 8-byte sprite records
+continue backwards through D_8009B9B8..B9F0 and on to at least D_8009B8E8, used by func_80065800
+and others); the loop.c-hoisting argument is evidence from this session's own scores, which the
+prong excludes (decisions.md:27263 precedent: accepted (a) evidence = one base register reaching a
+span of offsets in the original binary, or sibling functions forming the base and reading at stride).
+Factual corrections to the rejected comment/message: record [11] (BA58) has u=0x30,v=0x80 = frame 9's
+uv, not frame 0's ([10] BA50 does share frame 0's uv); the [6]/[10]/[11] addresses are rebuilt as
+absolute constants by reload, not "rematerialised from $fp".
+ACCEPTED by the same reviewer (do not re-litigate): the gte_stsz island + canonical row + region hash,
+goto into the sibling case tails, SetTransMatrix((u8 *)tv - 0x14), the `rot` local, the scratch-word
+tag link; no pins/barriers/FAKEs.
+
+## Why split symbols cannot reach the target (mechanism, 2026-09-26 loop dumps)
+The target keeps 0x8009BA00 in callee-saved `$fp` (a loop.c movable placed after the entry test) and
+rebuilds BA30/50/58 in `$t0` (reload rematerialising hoisted-but-unallocated constant pseudos). In the
+merged build cse's use_related_value writes `D_8009BA00+80` etc. as `(plus reg_BA00 N)`, so the BA00
+movable gets life 9 / savings 2 and the other three are `forces`-moved with it; with four distinct
+symbols every constant load has life 1 and nothing is hoisted (47). Measured with split symbols:
+per-tail table-pointer locals 47/55 (cse propagates the constant), four function-scope table pointers
+39 (all four spill; sv wins $s8 since their live length is ~2x). No split-symbol spelling can create
+the relation: it needs one C object (array or struct) spanning the four records. Merging the whole
+same-shape region instead (`D_8009B920[40][4]`, indices 28..39) also measures 0 but has the same
+prong-(a) gap (only func_80063E10 indexes from B920, records 0..3). Policy question filed in
+docs/grind/borderline.md 2026-09-26.
 
 ## Proven constructs and their receipts (all measured on the final chassis, 2026-09-26)
 Each row = candidate with ONLY that construct respelled.
