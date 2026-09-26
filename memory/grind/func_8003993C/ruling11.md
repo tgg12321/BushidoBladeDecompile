@@ -405,7 +405,7 @@ pre-reload insn, or (ii) was given by local-alloc to a quantity.
   in 18.
 - Measured: in every dump taken (cand, v_pv and the eight variants below), local-alloc's `got=`
   values are only 2..7 or hi/lo/accum. Every `copysugg=` / `sugg=` set in v_pv.sugg is empty or
-  one of {4,5}, {5}, {6}, {7}, {30} ($fp), or copysugg {7}. `someone_prefers` is {30} and
+  one of {4,5}, {5}, {6}, {7}, {30} ($fp), or copysugg {7}. `someone_prefers` is {30} or empty and
   own_copy_prefs / own_full_prefs ⊆ {3, 4, 6} in every FINDREG dump (r11/rtl/*.findreg.*,
   banked in r11/prefs/).
 
