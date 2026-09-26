@@ -4,19 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80036940",
-      "file": "code6cac_b2_post",
-      "distance": 274,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "rotated_at": "2026-09-23T04:00:17+00:00",
-      "rotation_count": 1,
-      "unparked_from": "pre-existing WIP proves multi-owner jump-table rodata attribution blocker; pure-C floor 69 and integration leaves 14 external .L80036xxx references (memory/wip/func_80036940/notes.md); resolving requires broader 4-sibling TU/rodata architecture change",
-      "unpark_reason": "owner 2026-09-26 (Q10): decompile func_80036940 first so it and func_80036140 can land together in one -G8 file (shared gp-read variable g_cd_result); research memory/grind/func_80036140/research-common-gp.md",
-      "returned_at": "2026-09-26T21:24:31+00:00"
-    },
-    {
       "func": "func_800620B8",
       "file": "text1b",
       "distance": 501,
@@ -577,15 +564,15 @@
     }
   ],
   "counts": {
-    "total": 48,
-    "active": 30,
+    "total": 47,
+    "active": 29,
     "by_status": {
-      "active": 30,
+      "active": 29,
       "rotated": 18
     },
     "by_verdict": {
-      "C": 23,
-      "ASM-PARTIAL": 7
+      "ASM-PARTIAL": 7,
+      "C": 22
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
