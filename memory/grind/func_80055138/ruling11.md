@@ -274,6 +274,25 @@ is excluded only by
   insns at global_conflicts time (after combine), i.e. emitted instructions; and :902 strips
   every call-used register from the preferences of a call-crossing B.
 
+**Folds after allocation (jump2 cross-jump).** "Emitted instructions" above means the stream
+the allocators see, and one pass rewrites that stream after them: the cross-jumping
+jump_optimize (toplev.c:3142, `jump_optimize (insns, 1, 1, 0)`, after local_alloc :3052,
+global_alloc :3080 and reload :3082; the earlier jump passes :2827-2929 run with
+cross_jump = 0). It merges identical instruction sequences that end at a common join — the
+mechanism behind the sanctioned duplicated-statement-into-arms / F7 families. So a per-value
+spelling may carry, at allocation time, copies of the value's statements in several arms
+that the output shows once. This does not escape the argument: (i) each copy is a separate
+reference in its own block, so the variable is multi-block and global-allocated, and the
+find_reg exclusion test applies; (ii) cross-jump merges only a common TAIL, so each arm's copy
+is followed by the same code as the merged copy, and liveness after each of its instructions
+(which depends only on the code that follows) equals the merged copy's: its ranges add no
+conflict the merged copy lacks, and its register pairings are the merged instructions', so
+they add no preference. A matching spelling's allocation-time constraints are therefore still
+the target's. Measured: one duplicated-into-arms variant per value (dup_* rows in (D)(3b)):
+none reaches 0; the case-2 level is tied or $v1, the practice level $a0, the row $a1, the
+mask tied, the stat values lose their copy or do not merge, and the clear loop's counter
+duplicated into the rand() arms lands in $a1.
+
 **Target facts** (asm/funcs/func_80055138.s; r11/pairs.py prints the pairings):
 - $a1 holds a live value only: the incoming arg1 up to its copy (0x80055140), while $a2 still
   holds the incoming arg2 up to 0x800551A4; `lbu a1,0x443(s0)` 0x800555F4..0x80055610; `e`
@@ -405,6 +424,12 @@ extensions do not even fold to zero bytes (518 insns).
 | ce_m_dw_between / ce_m_dw_wrap (model) | the same for the mask | 102 (512) each | tied, "in block 48" |
 | x/abl_stat2_dw.c / x/abl_stat1_dw.c (model) | stat2 / stat1 alone split, plus `do { } while (0);` after its write | 11 (516) / 6 (515) | stat2's copy kept, stat2 in $v1 |
 | x/pv_dw_stats.c (model) | the twin plus both stat wraps (the permuter's find, extended) | 33 (515) | |
+| dup_lvl5_tail (model) | the call-if duplicated into both arms of the clamp (no statement of value 1 itself can be put into arms: its write opens the D_800A389A arm and its only read is the next statement) | 115 (507) | level `andi $3,$4` ($v1, not $a2) |
+| dup_lvl3 (model) | the five statements after `if (lvl3 >= 3)` duplicated into both arms | 108 (518) | practice level `andi $4,$2` ($a0) |
+| dup_row_idx (model) | `pair = ...; p[0x424] = ...; p[0x3F6] = ...;` into both arms of `if (... % 10 == 0)` | 118 (519) | row in $a1 (`sll $5,$6,1`, `addu $5,$5,-1`) |
+| dup_stat1 (model) | the e[1] block duplicated into both arms of `if (e[4] == 0x40)` (an else added) | 98 (512) | mask tied `or $2,$2,$3`; no stat1 copy |
+| dup_stat2 (model) | `cat = ...; if (hi2 < stat2 ...)` into both arms of `if (hi1 < stat2)` | 97 (533, not merged) | no stat copies |
+| dup_zero_i (model) | the clear loop duplicated into both arms of the rand() test | 33 (524) | counter `sltu $2,$5,8` ($a1) |
 None reaches 0; none seats a value of temp in $a2 or the clear loop's counter in $t4.
 
 ## (D)(4) Measured alternatives
