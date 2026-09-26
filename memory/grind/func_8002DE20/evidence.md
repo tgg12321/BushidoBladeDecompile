@@ -135,3 +135,11 @@ duplicated-into-arms family -> ruling11.md addendum 2 (join-point dup 171/148/10
 the 7 single-predecessor tests have no arms; T2 hoist 158); (3) Pure-C attempts block added to
 landing/msg_match.txt. The staged set is saved in tmp/func_8002DE20/staged/ (+ staged.patch).
 Revert: 8 files restored and the new test file deleted; lock.ps1 rebuild -> oracle; lock released.
+
+## LANDED 2026-09-26 — COMPLETED-INLINE-ASM-CANONICAL (manual lane, slotE)
+Layer-2 PASS on the whole Q11 set. Commits: maspsx 56d7fba01, engine 3ee2634d9, auth 06659977d,
+Match 4eb7f2312, queue ce66fba5c. `queue done` ok (SHA1 62efab4f...), check_completion_integrity OK.
+Rulings spent: inline-asm-policy.md § Owner ruling 2026-09-26 (inline_o.h class) + § Per-function
+grant: func_8002DE20 (ae96881fc); Ruling 11 for cross_a/cross_b with the (B)(2) clarification
+9a0543e05. This ledger is closed; the proof files (ruling11.md, islands.md,
+recognizer_treewide.md, r11/, tools/) stay as the record.
