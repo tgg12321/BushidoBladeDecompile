@@ -124,3 +124,35 @@ F12. The landed src/code6cac_b3.c compiled by the ORIGINAL PsyQ cc1psx (tools/cc
   address (row-1 fold proves base <= 0x78; func_8001C444 initialises exactly 0x78..0x87);
   FileRecord 0x50..0x73 is the checksummed record (flags needs a >8-byte object; the record
   is the documented one).
+
+## [s3] slotB4 2026-09-26 — layer-2 FAIL (s2 landing) and the PracticeParams frontier
+Layer-2 FAIL of the s2 landing (integration/landing-s2-g8.patch = the exact staged diff, 22 files;
+re-apply with `git apply --index` once -G8 is authorized): (1) new -G8 file unauthorized at the time
+(owner Q5 since approved, rules pending); (2) PracticeParams 0x78..0x87 fails prong (a): mixed
+layout blocks the compiler-necessity route's (a4), the 0x78 base rested on this function's scores,
+and "func_8001C444 initialises exactly 0x78..0x87" was overstated (it never stores 0x82/0x83).
+ACCEPTED by layer-2: the body, the FileRecord merge, the verbatim b3_post move, build-file edits.
+(The ings.c func_800167EC base-first reorder belongs to the FileRecord merge, not PracticeParams.)
+
+F13. **cc1psx (a2) test for the 0x78 base.** Same preprocessed code6cac_b3.c, -G8, two declarations:
+  - base 0x7C (12-byte object over 0x7C..0x87, `u16 D_80102778[2]` separate):
+    cc1psx emits rows 2/3 as `lb $6,1($21)` / `lb $6,2($21)` (base-relative) —
+    NOT the target (integration/cc1psx/psx-G8-base7C.s); our cc1 identical (score 12, 542 insns).
+  - base 0x78 (16-byte object): cc1psx emits `lb $6,D_80102778+5 / +6` exactly as the target
+    (integration/cc1psx/psx-G8-base78.s); our cc1 score 8 = relocation spelling only.
+F14. (a1) mechanism, dumps banked (tmp i7c/i78 .cse/.cse2 via integration/vdump.sh): row 1's
+  address is force_reg'd. With base 0x7C that address is the bare SYMBOL_REF; cse1 relates rows 2/3
+  to it and row 11 (S+10) is then related to row 2's pseudo (reg96 = reg85+1, `+9`), which keeps
+  reg96's set live, so cse2 cannot fold rows 2/3 back to constants. With base 0x78 row 1 is
+  CONST S+4, every later row relates to reg85 directly and cse2 folds rows 2-10 (not 11/12,
+  PATHLENGTH window) exactly as the target. The decision depends on 0x7C NOT being the
+  object's first byte: no spelling with the object starting at 0x7C reproduces it.
+  Measured 7C-base respellings (all 12 or worse): s8-typed fields 12, `u8 unk_0[4][2]` 12,
+  rows 1-6 through one block pointer 14.
+F15. (a3) minimal span: the function references 0x78 (rows 7/8 lhu, case 3 [i]) through 0x87 —
+  the 16-byte span is exactly the minimal span; 0x82/0x83 lie inside (merged per prong (c);
+  func_80022F34 indexes 0x82[player], func_8003B3A4/B484 write 0x83).
+  (a4) is NOT met literally: the span is a heterogeneous block (u16[2], four u8[2] pairs, four u8),
+  not an array of one record. No single-record array spelling is honest (byte fields read as u8,
+  0x78/0x7A read as u16). The only other evidence for the grouping is the 2026-05-17 naming census
+  ("lesson parameters at 0x80102778-80102787", 60a758c35), which named the words separately.
