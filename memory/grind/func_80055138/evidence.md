@@ -188,3 +188,10 @@ not all covered; (2) the header comment said func_80058580 reads [row][col-1] by
 [row][col] byte 2 (D_8009A8CA + row<<5 + (col-1)*4). Fixed: ruling11.md (D)(3) Frame third
 revision with routes (L)/(G1)/(G2) per value, full FINDREG traces (own_* lines empty for every
 per-value allocno), and the corrected header comment in the landing model.
+
+## [s3] LANDED 2026-09-26 — COMPLETED-C under Ruling 11
+Layer-2 PASS on the third submission (the round-1/2 items held; value 5's (G2) accepted as
+universal without a trace). Commits (newest first): 0800261f4 0245d4bf7 f90d2ec01  — queue done, then the Match commit
+(src/text1b.c, src/code6cac_b.c, include/code6cac.h, undefined_syms_auto.txt). queue done
+reported COMPLETED-C with SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa;
+check_completion_integrity: OK. Ledger proof: ruling11.md (third revision).
