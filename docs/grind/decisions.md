@@ -29901,3 +29901,41 @@ written since the last load, stating that write.
 Rules that apply 2(c) by reference (Ruling 5 extension (D), Ruling 9 (g), Ruling 11 (B)(2)) read
 it with this clarification; Ruling 11 (B)(2) states it explicitly. func_8002DE20 is judged fresh;
 nothing is pre-decided.
+
+## 2026-09-26 — OWNER RULING — aggregate-merge (a4′): forced-in bytes typed by their real users (`.claude/rules/no-new-park-categories.md`)
+
+Sixth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 6). Context,
+as given to the owner by the orchestrator from slotI's func_80036140 ledger; these are the
+worker's claims, NOT verified by this record, and they are judged at landing: at -G8 no
+separate-object spelling reaches the target's `la; lX 0(reg)` at the E9C/EA4 read-modify-write
+sites, so (claimed) E9C and EA4 must sit in one object over 8 bytes, which would cover E9E and EA0,
+bytes func_80036140 never touches but which other functions are said to access with their own
+widths (cdrom_StartRead, game_FrameLoop: E9E as u16; cdrom_ReadyCallback, func_80036940: EA0 as
+s32). (a4′)(2)/(3) required such bytes to be an offset-named filler, which would force pointer puns
+in those consumers and fail (a4′)(5). Question, verbatim: "func_80036140
+needs a struct that must cover a few bytes it never touches itself. Other functions DO use those
+bytes: one as a 16-bit value, another as a 32-bit value. The mixed-struct rule says untouched bytes
+must be an anonymous filler, but then those other functions would need pointer tricks to reach
+them, which is banned. May such forced-in bytes be proper named fields, typed by how the other
+functions actually access them?" Owner (Trenton) chose, verbatim: "Yes, typed by real users
+(Recommended)" — "Only bytes the necessity proof forces inside the span; each field's type must
+match another function's actual access width/signedness in the original bytes; layer-2 reviews."
+
+**Ruling (full text in the rule file, (a4′) "Amendment (owner ruling 2026-09-26, sixth batch,
+Q13)"; the author's narrowing).** A forced-in byte is one inside the (1) span that the function
+under judgment never accesses; the span itself does not move. Forced-in bytes may be a named member
+instead of the (3) filler only when another function accesses exactly those bytes in its original
+bytes: the member's offset and width equal those accesses' (several accessors must all agree), its
+declared signedness equals the signedness at least one accessor shows in its original bytes (the
+load opcode, lb/lh vs lbu/lhu, for a byte or halfword; for a word or a store-only member, named
+evidence limited to choices GCC makes by signedness: an ordered compare slt/slti vs sltu/sltiu, a
+plain sra vs srl not inside a divide-by-2^n expansion, or div vs divu; equality/zero tests
+(sltiu x,1, sltu $0,x), jump-table bounds, shifts inside divide expansions and mult/multu are not
+evidence; there is no default: without admissible evidence the member is not admitted and the
+bytes stay a filler), every such access is then
+ordinary C under that type (casts allowed, no puns), and its name follows the naming-evidence
+rules. Forced-in bytes no other function
+accesses that way stay fillers per (3). The (4) member table lists every other function's access
+by function, address and opcode, and the signedness evidence by address. A fresh layer-2
+reviews. func_80036140's struct is judged fresh;
+nothing is pre-decided.

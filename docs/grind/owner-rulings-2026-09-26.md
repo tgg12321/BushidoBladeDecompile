@@ -74,3 +74,11 @@ Context: layer-2 review of func_8002DE20 (src/code6cac_b.c:2353 cross_a re-store
 ## Q12 — path-wise re-store
 Question: "The reused-variable rules forbid 'a write that stores a value the variable already holds'. In func_8002DE20 two writes re-store the same value on ONE of the paths reaching them, but on the other paths the variable holds something else, so the write is needed there and removing it breaks the program. Does that count as the banned redundant write?"
 Owner chose: **"No — only if redundant on all paths (Recommended)"** — option text: "A write is banned only when it's removable: the variable already holds that value on EVERY path reaching it. A write needed on some path is allowed."
+
+<!-- Batch 6: appended verbatim from tmp/orch/owner_rulings_2026-09-26f.md (line endings normalized to LF; blank separator line added). -->
+# Owner rulings 2026-09-26 (sixth batch, via AskUserQuestion) — VERBATIM RECORD
+Context: func_80036140 (slotI). At -G8, no separate-object spelling reaches the target's `la; lX 0(reg)` at the E9C/EA4 read-modify-write sites (plain 18, pointer-RMW locals 18, function-scope alias 42); a <=8-byte variable is small data at -G8 so cse folds the pointer into a direct access. So E9C and EA4 must sit in one object >8 bytes, which necessarily covers E9E and EA0 — bytes func_80036140 never touches, but which other functions access with their own widths (cdrom_StartRead, game_FrameLoop: E9E as u16; cdrom_ReadyCallback, func_80036940: EA0 as s32). (a4')(2)/(3) require such bytes to be an offset-named filler, which would force pointer puns in those consumers, failing (a4')(5).
+
+## Q13 — forced-in bytes in a mixed-field struct
+Question: "func_80036140 needs a struct that must cover a few bytes it never touches itself. Other functions DO use those bytes: one as a 16-bit value, another as a 32-bit value. The mixed-struct rule says untouched bytes must be an anonymous filler, but then those other functions would need pointer tricks to reach them, which is banned. May such forced-in bytes be proper named fields, typed by how the other functions actually access them?"
+Owner chose: **"Yes, typed by real users (Recommended)"** — option text: "Only bytes the necessity proof forces inside the span; each field's type must match another function's actual access width/signedness in the original bytes; layer-2 reviews."

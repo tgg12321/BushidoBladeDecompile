@@ -397,6 +397,76 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
         docs/grind/decisions.md 2026-09-26 OWNER RULING —
         aggregate-merge (a4′): mixed-field struct.
 
+        **Amendment (owner ruling 2026-09-26, sixth batch, Q13): forced-in
+        bytes typed by their real users.** The question put to the owner,
+        verbatim: "func_80036140 needs a struct that must cover a few bytes
+        it never touches itself. Other functions DO use those bytes: one as
+        a 16-bit value, another as a 32-bit value. The mixed-struct rule
+        says untouched bytes must be an anonymous filler, but then those
+        other functions would need pointer tricks to reach them, which is
+        banned. May such forced-in bytes be proper named fields, typed by
+        how the other functions actually access them?" Owner (Trenton)
+        chose, verbatim: **"Yes, typed by real users (Recommended)"**, whose
+        text is: "Only bytes the necessity proof forces inside the span;
+        each field's type must match another function's actual access
+        width/signedness in the original bytes; layer-2 reviews." (Record:
+        docs/grind/owner-rulings-2026-09-26.md, batch 6.) What follows is
+        the author's narrowing. It amends (2)-(4) only:
+        - **Forced-in bytes.** A byte is forced in when it lies inside the
+          span of (1) and the function under judgment never accesses it:
+          the (a1) proof requires the one object, and the object is
+          contiguous, so it must cover that byte. This amendment does not
+          move the span. (1) stands unchanged, and no byte outside the span
+          of the function's own accesses is admitted.
+        - **A named member for a forced-in byte.** In place of the (3)
+          filler, forced-in bytes may be covered by a named member ONLY
+          when some other function accesses exactly those bytes in its
+          ORIGINAL bytes (`asm/funcs/<func>.s`). The member's offset and
+          width equal those accesses' offset and width. When several
+          functions access the same bytes, they all use that one offset and
+          width, or the member is not admitted. Its declared signedness
+          EQUALS the signedness that at least one of those accessors shows
+          in its original bytes, and the ledger cites that evidence:
+          - for a byte or halfword member, the load opcode (`lb`/`lh` is
+            signed, `lbu`/`lhu` is unsigned);
+          - for a word member, or where the accessors only store (`sw`,
+            `sh`, `sb` carry no signedness), named evidence from an
+            accessor's original instructions acting on the value, limited
+            to choices GCC makes BY signedness: an ordered compare (`slt`/
+            `slti` versus `sltu`/`sltiu` testing less-than or greater-than);
+            a plain shift right (`sra` versus `srl`) that is not part of a
+            divide-by-a-power-of-two expansion; or a divide (`div` versus
+            `divu`). These are NOT evidence: an equality or zero test
+            (`sltiu x,1`, `sltu $0,x`), a jump-table bounds check, a shift
+            inside a divide expansion, and `mult`/`multu` (the low word is
+            the same, and GCC 2.7.2 emits `mult` for both). No rule sets a
+            default signedness for such a member: without admissible
+            evidence it is not admitted, and its bytes stay a filler per
+            (3).
+          Every one of those accesses is then ordinary C under that declared
+          type (explicit value casts are allowed, pointer puns are not), as
+          in (2). The name follows the project's naming-evidence
+          rules: an offset-derived name is always admissible, and a role
+          name needs its own evidence ([[names-require-evidence]]).
+        - **Everything else is a filler.** A forced-in byte that no other
+          function's original bytes access in that way stays covered by
+          compiler alignment padding or an offset-named filler exactly as
+          (3) says.
+        - **The ledger shows it.** (4)'s member table lists each such
+          member with its offset, width and declared type, and every other
+          function's access to it by function, address and opcode, marked
+          as not accessed by the function under judgment, and the
+          signedness evidence (the load opcode, or the named ordered
+          compare, plain shift or divide) by address.
+        - **Review.** A fresh layer-2 `cheat-reviewer` reviews the struct
+          with the member table, as (5) already requires. Everything else in
+          (a1), (a2) and (1)-(5) stands.
+
+        func_80036140's struct is judged fresh against (a1), (a2), (1)-(5)
+        and this amendment; nothing here pre-decides it. Record:
+        docs/grind/decisions.md 2026-09-26 OWNER RULING — aggregate-merge
+        (a4′): forced-in bytes typed by their real users.
+
     Prongs (b)-(e) are unchanged: the declaration is canonical in the shared
     header, the merge is complete, and byte-neutrality for every other
     consumer, `verify-oracle --rebuild` and a layer-2 cheat-reviewer are
