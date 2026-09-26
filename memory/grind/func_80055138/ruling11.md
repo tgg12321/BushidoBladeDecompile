@@ -112,11 +112,23 @@ FINDREG, verbatim:
 FINDREGDBG func=func_80055138 pseudo=99 alt=0 acc=0 retry=0
 FINDREGDBG  conflicts: 2 3 4 5 29
 FINDREGDBG  someone_prefers: 4
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 31
 FINDREGDBG  pass0_used: 0 1 2 3 4 5 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
 FINDREGDBG func=func_80055138 pseudo=89 alt=0 acc=0 retry=0
 FINDREGDBG  conflicts: 2 3 4 5 6 7 8 9 10 11 16 29
 FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
 FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 8 9 10 11 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 8 9 10 11 16 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
 ```
 temp's writes in cand.lreg (verbatim, abridged to the value writes):
 ```
@@ -160,11 +172,23 @@ FINDREG, verbatim:
 FINDREGDBG func=func_80055138 pseudo=188 alt=0 acc=0 retry=0
 FINDREGDBG  conflicts: 2 3 16 29
 FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
 FINDREGDBG  pass0_used: 0 1 2 3 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 16 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
 FINDREGDBG func=func_80055138 pseudo=106 alt=0 acc=0 retry=0
 FINDREGDBG  conflicts: 2 3 4 16 29
 FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 24 25 26 27 28 29 31
 FINDREGDBG  pass0_used: 0 1 2 3 4 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 16 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
 ```
 pv's writes (in.i.rtl / pv.lreg, verbatim):
 ```
@@ -212,7 +236,13 @@ ALLOCDBG func=func_80055138 ord=28 pseudo=89 hardreg=15 nrefs=12 livelen=112 pri
 FINDREGDBG func=func_80055138 pseudo=90 alt=0 acc=0 retry=0
 FINDREGDBG  conflicts: 2 29
 FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 31
 FINDREGDBG  pass0_used: 0 1 2 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
 ```
 
 ## (D)(2) Mechanism
@@ -232,7 +262,7 @@ a. **local-alloc (values 1 and 4).** local-alloc.c:470-478 gives a pseudo `reg_q
    an untied, global pseudo.
 b. **global.c find_reg (values 2 and 3; the seat $a2 for all six).** find_reg (:952)
    takes, in pass 0, the lowest hard register in regs_used_so_far that is not in the
-   allocno's conflicts nor in regs_someone_prefers (FINDREGDBG pass0_used), pass 1 the
+   allocno's conflicts nor in regs_someone_prefers (
    lowest non-conflicting one. temp's allocno spans all six values, so its conflicts are
    the union over their ranges: 2 3 4 5 29, plus someone_prefers 4 -> pass 0 -> 6 ($a2).
    ($a0 conflicts through case 2, where the 0xCCCCCCCD constant stays in $a0 across value 1
@@ -253,52 +283,71 @@ d. **the counter.** idx (89) is live across the whole scan loop, so its conflict
    clear loop's counter (90) conflicts only with 2 29 -> $v1.
 
 ## (D)(3) Necessity — every value of `temp`, every one-variable-per-value spelling
-(Rewritten after the 2026-09-26 layer-2 FAIL. The argument is made per value, and it covers
+(Rewritten after the 2026-09-26 layer-2 FAILs; third revision adds own preferences (G2),
+local seats (L) and every post-allocation rewrite. The argument is made per value, and it covers
 per-value spellings with ANY added sanctioned construct — FAKE dead store, self-assignment,
 combine-foldable chain-extender / live-use detour, pointer alias, `do { } while (0);` —
 because it constrains only what the allocators can choose given the instructions a matching
 spelling must emit. The measurements in (D)(3b) confirm it construct by construct.)
 
-**Frame.** A spelling matches only if it emits the target's instructions, so in any matching
-spelling the values live in each hard register at each point, and the instructions that pair
-two registers, are the target's. A value in its own variable is seated either by local-alloc
-(single-block pseudo: combine_regs ties it to a dying input, :1784-1928; otherwise
-find_free_reg, :2135, takes a suggested register — suggestions come only from insns in the
-block that pair it with a hard register, combine_regs :1858-1898 — or the lowest free one;
-MIPS defines no REG_ALLOC_ORDER) or by global.c find_reg (:952): pass 0 = the lowest register
-in regs_used_so_far that is neither in the allocno's conflicts nor in regs_someone_prefers,
-pass 1 = the lowest non-conflicting register; a call-crossing allocno starts from
-call_used_reg_set (:970-975), which contains every register below $s0. So a separate pseudo
-can be seated in $a2 (6) only if each of $v0..$a1 (2-5) is excluded for it, and a register R
-is excluded only by
-- **a conflict**: R holds a value live at some point of the pseudo's range (in a matching
-  spelling, a target register live there); or
-- **a preference** (pass 0 only): R is in regs_someone_prefers, the union of the full
-  preferences of lower-priority allocnos B that conflict with it (prune_preferences
-  :882-930). set_preference (:1671, called from mark_reg_store :1484) records a preference of
-  B for R only for an insn that sets B from R (or from an operation whose first operand is
-  R), or sets R from B, with R a hard register or a locally allocated pseudo. These are the
-  insns at global_conflicts time (after combine), i.e. emitted instructions; and :902 strips
-  every call-used register from the preferences of a call-crossing B.
+**Frame (checked line by line against tools/gcc-2.7.2, third revision).**
 
-**Folds after allocation (jump2 cross-jump).** "Emitted instructions" above means the stream
-the allocators see, and one pass rewrites that stream after them: the cross-jumping
-jump_optimize (toplev.c:3142, `jump_optimize (insns, 1, 1, 0)`, after local_alloc :3052,
-global_alloc :3080 and reload :3082; the earlier jump passes :2827-2929 run with
-cross_jump = 0). It merges identical instruction sequences that end at a common join — the
-mechanism behind the sanctioned duplicated-statement-into-arms / F7 families. So a per-value
-spelling may carry, at allocation time, copies of the value's statements in several arms
-that the output shows once. This does not escape the argument: (i) each copy is a separate
-reference in its own block, so the variable is multi-block and global-allocated, and the
-find_reg exclusion test applies; (ii) cross-jump merges only a common TAIL, so each arm's copy
-is followed by the same code as the merged copy, and liveness after each of its instructions
-(which depends only on the code that follows) equals the merged copy's: its ranges add no
-conflict the merged copy lacks, and its register pairings are the merged instructions', so
-they add no preference. A matching spelling's allocation-time constraints are therefore still
-the target's. Measured: one duplicated-into-arms variant per value (dup_* rows in (D)(3b)):
-none reaches 0; the case-2 level is tied or $v1, the practice level $a0, the row $a1, the
-mask tied, the stat values lose their copy or do not merge, and the clear loop's counter
-duplicated into the rand() arms lands in $a1.
+*What the allocators see vs. what is emitted.* After global allocation, rest_of_compilation
+(toplev.c) runs, in order: reload (:3082), which replaces each pseudo by the hard register it
+was given and deletes moves whose two sides got the same register (a pseudo left without one
+would be spilled to the stack; the target keeps every value of temp in a register, and its
+frame saves only $s0-$s5/$ra, so no spill is admissible); sched2 (:3117), which reorders
+instructions inside blocks; the second jump pass (:3142, `jump_optimize (insns, 1, 1, 0)`:
+cross_jump = 1, noop_moves = 1), which deletes no-op moves and cross-jumps identical tails
+into their join; and delay-slot filling (dbr_schedule, :3167), which moves or copies instructions into
+delay slots (MACHINE_DEPENDENT_REORG, :3158, is not defined for MIPS). After cc1 the build's
+prologue_fix / maspsx / multu_pad adjust the prologue order, expand macros and insert
+load-delay nops; they do not reassign these operands.
+None of these changes which hard register an operand uses. So (i) the output's
+register usage is the allocation-time assignment, and every emitted instruction existed at
+allocation time; (ii) the allocation-time stream may additionally hold moves later deleted as
+no-ops, and duplicate tails later merged. Both extras are covered below: a no-op move is a
+pairing like any other (own preferences, below), and a duplicated tail is followed by the
+same code as the merged copy, so its liveness — and hence its conflicts — equals the merged
+copy's (measured: dup_* rows).
+
+*Local-alloc* (local-alloc.c, before global). A pseudo referenced in one basic block that dies
+once gets a quantity (:470-478). block_alloc ties an insn's output to an input that dies there
+(combine_regs :1784, tie :1916-1928): the output then shares the input's register. An untied
+quantity is placed by find_free_reg (:2135): `used` = fixed_reg_set (call_used_reg_set if it
+crosses a call) plus every register marked live in regs_live_at over its life — hard
+registers live there and locals already placed (post_mark_life); global pseudos are not yet
+assigned and occupy nothing. It is first restricted to the quantity's suggested registers
+(qty_phys_copy_sugg / qty_phys_sugg), which combine_regs records only from an insn of the
+block that pairs it with a HARD register (:1858-1898); otherwise the lowest register not in
+`used` wins (no REG_ALLOC_ORDER on MIPS).
+
+*Global* (global.c). global_conflicts (:777) calls mark_reg_store, which calls set_preference
+(:1484 -> :1671) for every SET: when one side (the destination, or the source or its first
+operand) is a global allocno and the other a hard register or a locally allocated pseudo
+(reg_renumber), the allocno gets that register in its OWN hard_reg_preferences (and
+hard_reg_copy_preferences for a plain copy, and hard_reg_full_preferences). expand_preferences
+(:824-871, called at :552) then merges the preferences of two non-conflicting allocnos when
+one dies in an insn that sets the other. prune_preferences (:882-930, called at :577) removes
+from each allocno's own preferences its conflicts and, if it crosses a call, every call-used
+register (:902), and builds regs_someone_prefers from lower-priority conflicting allocnos.
+find_reg (:952) scans for best_reg: pass 0 = the lowest register not in
+`used` = fixed/call-used ∪ conflicts ∪ ¬regs_used_so_far ∪ regs_someone_prefers; if none,
+pass 1 = the lowest register not in used1 = fixed/call-used ∪ conflicts. It then REPLACES
+best_reg by the lowest register of the allocno's own copy preferences not in `used`
+(:1097-1131), else of its own preferences not in `used` (:1133-1166). (`used`/used1 also carry no_global_alloc_regs, the `losers` of a reload retry and
+the complement of the allocno's class, :970-983. The caller-saves retry after :1166 runs only
+when no register was found at all, which never happens here: $s6, $s7 and $fp stay free in
+the target.)
+
+*Therefore* a separate pseudo V that holds one value of temp ends in $a2 (6) only by one of:
+- (L) local-alloc: tied to an input that is in $a2, or suggested $a2, or with $v0..$a1 (2-5)
+  all in `used` over its life and $a2 not;
+- (G1) find_reg's scan: 2-5 all excluded (conflict, preference of another, or not yet used)
+  and 6 not;
+- (G2) own preference: 6 in V's own copy preferences or preferences after prune, and 6 not
+  in `used`.
+Each value is checked against all three below.
 
 **Target facts** (asm/funcs/func_80055138.s; r11/pairs.py prints the pairings):
 - $a1 holds a live value only: the incoming arg1 up to its copy (0x80055140), while $a2 still
@@ -313,6 +362,48 @@ duplicated into the rand() arms lands in $a1.
   inputs) and 0x800557A0..0x800557D4 (`cat`). The loop instructions pairing $v1 or $a0 with
   another register are only `andi v1,v0,7` (0x800557A0) and `sltiu v0,v1,2` (0x800557C8):
   `cat` with $v0 values. None pairs a loop-live allocno with $a0.
+
+**(G2) own preferences and (L) local seats — every value.** In the output, $a2 is written
+only by the instructions of temp's six values; its only other content is the incoming arg2,
+copied out at 0x800551A4 (`python3 tmp/func_80055138/r11/pairs.py a2`, r11/pairs_a2.txt:
+every $a2 pairing is a value of temp with $v0/$v1/$t0-$t2, plus `addu s4,a2,zero`).
+Hard $a2 appears in the allocation-time RTL only as that entry copy: no call in the
+function takes a third argument (func_8005509C takes one, file_GetFlag1 and rand none) and
+results return in $v0.
+- (L), every value. Value 1's and value 4's writes tie to their dying inputs, whose register
+  holds no value of temp and so is not $a2 (target: $v0). For any value placed by
+  find_free_reg: a suggestion of $a2 needs an insn of its block pairing it with hard $a2 —
+  only block 0 has one, and no value of temp is written there; and lowest-free reaches $a2
+  only if $v0..$a1 are all in `used` over its life, but $a1 is never in `used` in a block
+  holding a value of temp: case 2/3 blocks hold no $a1 value at all, and in the scan loop
+  $a1's only value is the global `e`, which occupies nothing at local-alloc time. So no value
+  of temp, nor any local copy of one (a copy lies in the value's range, hence in such a
+  block), is locally placed in $a2.
+- (G2), every value. An allocno gets $a2 into its own preferences only (a) from a SET pairing
+  it with hard $a2 or a local placed in $a2 (set_preference :1671-1745), or (b) by
+  expand_preferences (:824-871) from an allocno W that has it. For (a): the hard case is the
+  entry copy, whose allocno is arg2's pseudo, not a value of temp (a FAKE dead store of arg2
+  into a value's variable is deleted by flow before allocation — Ruling 2's store-level
+  deadness; measured ce_l_dead_* / ce_m_dead_goto); the local case needs a local in $a2,
+  which (L) excludes wherever a value of temp lives, and elsewhere such a local would write
+  $a2 in a block where the target has no $a2 instruction, unless its writes are no-op moves
+  from another register in $a2, which bottoms out in the same two sources. A move deleted
+  after allocation as a no-op (reload / jump2 noop_moves) is such a pairing and adds nothing
+  beyond this. For (b): the only allocno with $a2 from (a) is arg2's pseudo; expand links it
+  only through an insn that sets one allocno while the other dies there; arg2's pseudo is set
+  only by the entry copy and read only at 0x80055694 (`cursor = arg2`), inside the player
+  loop, where it stays live around the back edge (no REG_DEAD) — so it links to nothing, and
+  a fresh local copied from arg2 is cse-merged into it (ce_l_arg1alias_glob shows the same
+  for arg1). So no allocno holding a value of temp has $a2 in its own preferences; :902 also
+  strips it from any call-crossing one. Traces: own_copy_prefs and own_full_prefs are EMPTY
+  for every per-value allocno dumped — value 1 (ce_l_chain_callarg 158, ce_l_arg1alias_glob
+  159, ce_l_entry_uninit 89), value 2 (tpv 188), value 3 (tpv 106), value 4
+  (ce_m_chain_goto2 404), value 6 (abl_stat2_dw 428: `conflicts: 2 29`, `someone_prefers:`
+  empty, `own_copy_prefs:` / `own_full_prefs:` empty -> $v1), the counter (tctr 90) — and for
+  temp and idx in the reuse (tcand 99, 89). Value 5 has no surviving allocno in any measured
+  per-value spelling (its copy is deleted by cse; abl_stat1_keep / _keep2 with a do-while and
+  a chain-extender still lose it), and the argument above covers it when it does survive.
+With (L) and (G2) closed, only (G1) remains, argued per value next.
 
 **Case values — 1 (D_800A37D2 / 5), 2 (D_800A37D2 / 3), 3 (the D_8009A9B4 row).** Each needs
 $a1 excluded. No conflict can do it: the only $a1 values are arg1 at entry — a range reaching
@@ -383,6 +474,14 @@ Property: one pseudo live across the scan loop, whose conflicts fill 2..11 (d).
   are p and the two list parameters, which have no copy preference for those registers
   (someone_prefers is empty in the trace). So the split counter is never seated in $t4
   (measured: $v1).
+  (L) and (G2), as in the Frame above: in the output $t4 holds only the two counters
+  (`addu t4,zero,zero`, `addu v0,s0,t4`, `addiu t4,t4,1`, `sltiu v0,t4,8`, `beqz`/`bnez t4`,
+  `slti v0,t4,2`); hard $t4 never appears in the RTL (it is no argument or return register),
+  so an own preference for $t4 would need a pairing with a local placed in $t4, and a local
+  reaches $t4 by lowest-free only with $v0..$t3 all in `used`, which the clear loop and its
+  preheader do not have ($v1..$t3 dead there, listed above). The trace's `own_copy_prefs:` and
+  `own_full_prefs:` lines are empty (tctr 90, verbatim in (D)(1)). The split counter spans the
+  loop's blocks, so it is never local.
 
 ## (D)(3b) Sanctioned-construct escapes, measured
 Each variant is v/pv.c (or v/ctr_split.c) plus ONE construct (r11/mk3.py; the entry, alias,

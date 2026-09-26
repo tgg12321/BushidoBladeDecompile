@@ -159,7 +159,9 @@ reused local on allocator-dump necessity. Full (A)-(H) record: **ruling11.md** (
   after the layer-2 FAIL below — the earlier "no config row" was wrong), which the landing
   suffixes `alias of D_8009A8C4+0x6 (entry [0][1], byte 2); retire with func_80058580`; no C
   name. Prong (a) for the [][8][4] shape, independent of this function: func_80058580 reads
-  the halfword at byte 2 of entry [row][col-1] with row<<5 + (col-1)*4 (0x8005A854-78:
+  the halfword at byte 2 of entry [row][col] (D_8009A8CA + row<<5 + (col-1)*4 = D_8009A8C4 +
+  row*0x20 + col*4 + 2; corrected from "[row][col-1]" after the second layer-2 FAIL)
+  (0x8005A854-78:
   `lbu v0,D_800A37A0; lbu v1,0x440(s0); addiu v0,-1; sll v0,2; sll v1,5; addu; lhu
   s3,%lo(D_8009A8CA)(at)`), the same 0x20-byte rows of 4-byte entries func_80055138 indexes.
 
@@ -176,3 +178,13 @@ row<<5 + (col-1)*4 indexing (0x8005A868-78) as prong (a) evidence. (The s3 evide
 "D_8009A8CA ... has no config row" is WRONG.) Passed, not to be relitigated: D_80099D88
 stride evidence, the nine alias suffixes, the func_80055948/func_80033DF4 rewrites, `idx`,
 the hi2_val staging, the staged scope. Tree reverted, rebuilt to the oracle, lock released.
+
+## [s3] second layer-2 FAIL 2026-09-26 (same body, rejected/r11-six-value-temp-l2fail.c)
+Grounds: (1) the (D)(3) Frame misdescribed find_reg: it omitted the allocno's OWN preferences
+(global.c :1097-1166 replace best_reg by an own copy-/preference register not in `used`;
+expand_preferences :824-871), the FINDREG excerpts dropped the own_copy_prefs / own_full_prefs
+lines, and the post-allocation rewrites (reload, sched2, jump2 noop-move deletion, dbr) were
+not all covered; (2) the header comment said func_80058580 reads [row][col-1] byte 2; it is
+[row][col] byte 2 (D_8009A8CA + row<<5 + (col-1)*4). Fixed: ruling11.md (D)(3) Frame third
+revision with routes (L)/(G1)/(G2) per value, full FINDREG traces (own_* lines empty for every
+per-value allocno), and the corrected header comment in the landing model.

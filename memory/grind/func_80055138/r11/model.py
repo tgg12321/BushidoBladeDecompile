@@ -25,8 +25,9 @@ HDR_BLOCK = (
     '} StatusFlagRec;\n'
     'extern StatusFlagRec D_80099D88[];\n'
     '/* Rows of eight 4-byte entries: func_80055138 reads [row][col][0..1] (row*0x20 + col*4);\n'
-    ' * func_80058580 reads the halfword at byte 2 of [row][col-1] (row<<5 + (col-1)*4 + 6 at\n'
-    ' * 0x8005A854-78, through the alias row D_8009A8CA = D_8009A8C4+6). */\n'
+    ' * func_80058580 reads the halfword at byte 2 of [row][col] (D_8009A8CA + row<<5 +\n'
+    ' * (col-1)*4 = D_8009A8C4 + row*0x20 + col*4 + 2, 0x8005A854-78; D_8009A8CA is the alias\n'
+    ' * row D_8009A8C4+6). */\n'
     'extern u8 D_8009A8C4[][8][4];\n'
     'extern u8 D_8009A9B4[][2];         /* byte pairs (func_80055138) */\n')
 
