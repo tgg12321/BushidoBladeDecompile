@@ -1,5 +1,43 @@
 # Evidence bank — func_8006F97C
 
+## s2 (manual lane slotC3, 2026-09-26): 513 -> 0 (sandbox --disable all, 515/515)
+
+candidate.c = the sandbox-0 body (s32-field descriptor, func_8007636C style). Ladder (every
+number from `sandbox --disable all`, variants in tmp/func_8006F97C/):
+- 115 first draft (v1). 95: player-count bound spelled `1 + D_800A35B0 + D_800A3554` (the
+  func_80070C70 spelling; the other 4 orders 105-134).
+- Header advance: target computes `(i*2 + i)*4 + 12` THEN adds s.header (asm:66-72). fold's
+  associate (fold-const.c:3703-3757) turns `hdr + (i*12 + 12)` into `(hdr+12) + i*12` (95),
+  and `(i+1)*12` keeps the +1 inside (79, 518 insns). `s.header + 12 + i * 12` (the
+  func_8007636C spelling, text1b.c:12765) splits arg0 -> `hdr + (i*12 + 12)` = target. A
+  12-byte-record pointer `+= i + 1` also works (pointer_int_sum distribution) — 71.
+- 41: `s32 rec = i * 3; D_800A3560[rec]`. Mechanism (loop.c dump, tmp/func_8006F97C/dump):
+  the inline index `D_800A3560[i * 3]` expands as sym-load THEN index insns (expr.c:4659
+  INDIRECT_REF + EXPAND_SUM MULT), so the symbol pseudo has life 3 and loop.c hoists it
+  (`Insn 809: regno 356 (life 3), move-insn savings 1 moved`; threshold*savings*life >=
+  insn_count, loop.c:1631), leaving the register form `lui t1; addiu t1; addu; lbu 0()`. With
+  the index already in a pseudo the sym set sits right before the plus (life 1, not moved) and
+  combine folds it into `lbu %lo(D_800A3560)(at)` = target. D_800A358C keeps life 2 -> hoisted
+  and rematerialized in t0, exactly as the target (asm:370-372).
+- 40/37: `col == D_800A358C[i] && row == D_800A3588[i]` (target `bne a3,v0`).
+- 7: grid arms each end with their own `s.header = ...; cells = s.header + 0xC; s.table = cells;
+  s.out; s.ot_idx = 0xA; call`. Target proof: the static arm ends `lw v0,84(fp); addiu a0,sp,24`
+  and the label .L80070014 is AFTER that addiu (asm:444-447), while the animated arm reaches it
+  by `j .L80070014` with `addiu a0,sp,24` in the delay slot (asm:409-410). That is jump2
+  cross-jumping two identical tails + reorg stealing the tail's first insn; a join-block tail
+  cannot put `addiu a0` before the label (7 -> the nop/addiu hunk).
+- 0: `s.x = row * 116 + (row >> 1) * 20;` (the (5*(row>>1) + 29*row)*4 forms 7-11).
+- `cells` MUST be one variable spanning block 1 and the grid/tail: with a separate block-1
+  local, the grid/tail pseudo is single-block -> $v1, the row counter gets $s8 instead of the
+  target's spill at sp+0x58, frame 0x80 not 0x88 (96/510, tmp/func_8006F97C/v8.c).
+
+**Sheet census (Ruling 9 (b) data).** root = D_800A35A8 = the buffer func_8006E950(3|4|5) loads
+(text1b.c:9815-9838); ctx = *(root+0x60). disc/TIM2D/SEL.BIN / SEL1.BIN / SEL2.BIN (root word
+[3]-[2] = 0x5FB80, the same LoadImage size as D_SEL.BIN): root+0x60 -> table @0x1C0, entry [0]
+= 3 SprtHdrA headers (counts 2,2,2, cells at +0x24), entries [1..22] = 1 header each (cells at
++0xC). tmp/func_8006F97C/census.py (sha256s in its output). So K = 12 x header count at every
+write: +0x24 on ctx[0], +0xC on ctx[1+idx], ctx[21], ctx[22] — always the first SprtEntA cell.
+
 - [s1] [fable-blitz 2026-07-07] Rule inventory: ONE rule -- asmfix.txt:180 replace_with_asmfile; stub src/text1b.c:16465 `void func_8006F97C(s32 arg0, ...)` (only arg0=s4 is used -- real signature is (s32 arg0) or (GameObj*)). Distance 513; floor 513. Park = rejected distance>500 canonical misroute.
 
 - [s1] [fable-blitz 2026-07-07] PRIMARY TEMPLATE: func_80070C70 (src/text1b.c:16512, INCOMPLETE-with-cheats but structurally proven) declares the exact request struct PrimC70 (:16492): p_geom(+0)/p_static(+4)/link(+8)/zero10/code(+0x14)/mode(+0x18)/zero1C(+0x1C)/width(+0x20)/height(+0x24)/byte28(+0x28), lives at sp+0x18 so code=sp+0x2C, mode=sp+0x30(x), zero1C=sp+0x34(y), width/height=sp+0x38/0x3C(=0x100 scale), byte28=sp+0x40(flag). THIS function extends it identically to func_8005D814's needs: u8 rgb triplet at +0x29..0x2B (sp+0x41..0x43, init 0x70,0x70,0x70; wobble writes sin-derived value to all three) and an s16 tail array at +0x30.. (sp+0x48+k*2, per-slot glyph codes 7 or 9). CROSS-LINK: func_8005D814's ledger (same blitz batch) needs the same extended struct -- solving either pins the shared typedef.
