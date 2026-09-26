@@ -40,6 +40,34 @@ write: +0x24 on ctx[0], +0xC on ctx[1+idx], ctx[21], ctx[22] — always the firs
 idx = D_8009BC40[col][row].value for rows 0..3 is 0..19 (EXE .data 0x8009BC40, read-only: only
 `lbu` references in asm/funcs), so ctx[1+idx] ranges over [1..20]; all 1-header sheets.
 
+## Layer-2 FAIL (2026-09-26, manual lane) — rejected/ruling9-block1-break-span-0.c
+Sandbox 0/515, full-build SHA1 == oracle with it spliced (reverted, oracle re-confirmed).
+Objection (sole ground): block 1's `cells` fails Ruling 9 prong (c) — loop 1, which contains
+`break;`, sits between `cells = s.header + 0x24;` and `s.table = cells;`, and the text makes no
+nested-loop exception; that loop-spanning site is what makes the pseudo callee-saved ($s1),
+i.e. allocator effect. Ruling 5 1(c) (write and read in one block) fails too. Reviewer: a
+borderline owner-policy question, not a hard ban. ACCEPTED (do not relitigate): `rec` named
+intermediate, the duplicated grid draw tail (cross-jump byte-neutral; decisions.md:1425
+precedent), the void* casts on D_800A35C4, `shift[2]`, the ordinary spellings.
+
+Frontier after the FAIL — break-free block-1 forms (v11 chassis, only loop 1 changed):
+- L1 `for (i = 0; i < n && D_800A3588[i] != 5; i++) {}` + `if (i < n) {...}`: 55/520.
+- L2 same as a `while`: 55/520.
+- L3 found-path exits by `i = n;` (no break): 6/519 — the target's found path is a direct
+  `j .L8006FBB4` (asm:135/105); `i = n` must reload n and fall through the increment/compare
+  (4 extra insns). Every exact form needs a jump out of loop 1 from the found path, i.e.
+  break/goto/return inside the write->consume span.
+- Moving the block-1 write after loop 1 is impossible: loop 1 advances s.header in memory and
+  calls rsin/rcos, so `ctx[0] + 0x24` after the loop needs an extra `lw 0(fp)`; the target
+  computes it at 0x8006FA40 before the loop.
+- Per-site at block 1 only (grid+tail still sharing `cells`): 96/510 (ps3.c) — the grid/tail
+  pseudo is callee-saved only because block 1 makes it live across loop 1's calls.
+- Permuter from L3 (tmp/perm_f97c_l3, 2 workers, ~6,800 iterations, stopped): no find below
+  base 600 (permuter-weighted); the base-equal finds only respell the `i = n` bound.
+- candidate.c is now L3 (best body with no break in the span, 6/519); the 0/515 body is
+  rejected/ruling9-block1-break-span-0.c. Owner policy-question filed in
+  docs/grind/borderline.md 2026-09-26 "func_8006F97C".
+
 ## Ruling 9 prong walk for `cells` (v11 = candidate.c, 2026-09-26)
 Sites: block 1 `cells = s.header + 0x24;` (ctx[0]); grid animated arm and grid static arm
 `cells = s.header + 0xC;` (ctx[1+idx], ctx[21]); tail `cells = s.header + 0xC;` (ctx[22]).

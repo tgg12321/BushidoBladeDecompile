@@ -61,7 +61,7 @@ void func_8006F97C(s32 *arg0) {
             if (((s16 *)D_800A35C4)[i] != 0x1E) {
                 s.y += (((s16 *)D_800A35C4)[i] * rsin((((s32 *)D_800A35C4)[2] * 288) & 0xFE0)) >> 12;
             }
-            i = 1 + D_800A35B0 + D_800A3554;
+            break;
         }
     }
     s.table = cells;
