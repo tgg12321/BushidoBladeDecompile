@@ -23,3 +23,37 @@
 - [s1] [fable-blitz 2026-07-07] Callee status: func_8007352C active dist-54 rules-11 (near-done), all others COMPLETED (saMotionSet, initTexPage, ot_Link, initTile, gpu_SetSemiTransp). Same-family siblings for later: func_8005D814 (PARKED 544 - the mode-3 record painter, likely same phases), func_8005E098 (active 288). The COMPLETED small siblings func_8005E51C (text1b.c:12857) and func_800600C8 (12967) establish the local-struct + chained-func_8007352C idiom AND the div/mod-10 digit decomposition spelling ('s.d0 = arg % 10; hi = arg / 10; s.d1 = hi % 10') - the divmod-coalesce-reuse-var reference memory documents the quotient/remainder register pattern.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference captured at tmp/blitz/m2c_func_8005F1C8.c (clean, 10.1KB). No jump table, no GTE, ~12 mults (all magic-div/mod-10 or small-constant multiplies by shift-add). The block-struct offsets MUST be pinned by a struct typedef (like S60C8) since its address escapes to func_8007352C.
+
+## s2 (manual lane, slotJ, 2026-09-26) — first full C body: 562 -> 0
+
+candidate.c reaches sandbox --disable all 0/564 (564/564 insns). Measured ladder
+(scores are sandbox --disable all): first draft 268 -> 247 (x formula `i*8 + 0x1C2 -
+step*k`: fold-const.c associate keeps `s5 - (t3 - 450)` only from this operand order;
+`i*8 - (step*k - 0x1C2)` is re-associated to `(i*8+450) - step*k`) -> 217 (P3 x is
+j*550 not j*170; tile stores in the func_8005E098 order r0,g0,b0,x0,y0,w,h so loop.c's
+giv base is &tile->h = target's s1=tile+0xE) -> 214 (case-0 /100 vs /10 as ONE
+if/else-if, so the /10 block is shared by the k==0 and k==1 paths = target's L740 with a
+generic &d[k] address) -> 186/182 (s16 count: its HImode conversion gives target's
+`move s6,v0` + hoisted `slt t0,zero,s6`) -> 78 (P1 outer/middle counters i,row distinct
+from the later phases' counters: one `i` spanning P1..P4 crossed 5 calls and was
+spilled to a stack slot; target keeps P1.i in caller-saved a2) -> 61 (prologue order
+tile, cur, mode_off, end = increasing offsets; reload then inherits t2 exactly as
+target) -> 6 (x0 = 0x48 + j*431 + j*(k << 4): `j*(k*16)` is re-associated by fold to
+(j*16)*k = 61) -> 0 (wins s16: target masks at the assignment, andi t1 at i-level; s32
+wins lets loop.c hoist the srav chain out of the pip loop (109), u8 wins re-extends in
+the loop (6)).
+- Empty pip = `s.p1++` after `s.p1 = &D_8009B5B8[i][0]`: target forms s7 = s0 + 8 from
+  the filled-pip address (cse sees the stored s.p1 and adds 8); `&[i][1]` directly
+  gives i*16 + (sym+8) instead (247 -> 230 before the frame fix).
+- Counters: target register map P1 (i=a2, row=s4, k=s2), P3/P4 (outer s2, inner s3),
+  P5 (outer s3, inner s2). Candidate uses k for {P1 inner, P3/P4 outer, P5 inner} and j
+  for {P3/P4 inner, P5 outer}. Fully separate counters per phase measured 73 (sep_all),
+  38 (P5 only separate), 73 (P3/P4 separate).
+- count if/else (two writes, one value in Ruling 11's sense: both reach the same reads):
+  the ternary `count = (i != 0) ? 2 : ...` measures 5 because fold swaps the constant arm
+  first (branch layout flips). `x` (case 1) as a single ternary write = 0.
+- Data: D_8009B5A0 = 2 x 12-byte Unk8009B398Record; D_8009B5B8 = [2][2] 8-byte records
+  (single label, 0x20 bytes); D_8009B5D8 = 2 records; D_8009B5E8 = 1 record;
+  0x8009B5F0..0x8009B60F = [2][2] records reached as 5F0 + j*16 and 5F8 + j*16 (the
+  ORIGINAL binary adds one `sll s0,4` stride to both %lo(D_8009B5F0) and %lo(D_8009B5F8))
+  -> needs the per-word-label aggregate merge of D_8009B5F8 into D_8009B5F0[2][2].

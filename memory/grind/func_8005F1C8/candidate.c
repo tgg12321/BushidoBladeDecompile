@@ -31,7 +31,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 j;
     s16 k;
     s16 row;
-    u8 wins;
+    s16 wins;
     s16 count;
     s32 x;
 
@@ -152,11 +152,7 @@ s32 func_8005F1C8(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
 
                         s.d[k] = tens % 10;
                     }
-                    if ((D_8009BD38 & 0x3000) == 0x2000) {
-                        x = k * 20 + 0x48;
-                    } else {
-                        x = k * 20 + 0x34;
-                    }
+                    x = ((D_8009BD38 & 0x3000) == 0x2000) ? k * 20 + 0x48 : k * 20 + 0x34;
                     s.p1 = &D_8009B400[s.d[k]];
                     if (s.d[k] == 1) {
                         s.width = x + 3;
