@@ -67,6 +67,30 @@ if A.ext == 'rec':
     c = rep(c, 'g_cdread_expected_pos', 'D_80101E58.rec.expected_pos', count=4)
     c = rep(c, '    D_80101E9E = 0;\n', '    D_80101E58.rec.unk3E = 0;\n')
     c = rep(c, '    s0 = (u16 *)&D_80101E9E;\n', '    s0 = (u16 *)&D_80101E58.rec.unk3E;\n')
+    h = rep(h, ' * record now runs on to 0x80101E9B (unk18..unk3A, see "Honest evidence split").\n',
+            ' * record now runs on to 0x80101EA7 (unk18..unk44, see "Honest evidence split").\n')
+    h = rep(h, ' *     member.  Member widths follow the accesses; 0x80101E91..93 is the\n'
+               ' *     compiler\'s alignment padding.\n */\n',
+            ' *     member.  Member widths follow the accesses; 0x80101E91..93 is the\n'
+            ' *     compiler\'s alignment padding.\n'
+            ' *   - The extension unk3C..unk44 (0x80101E9C..0x80101EA7, 2026-09-26) is\n'
+            ' *     compiler-necessity evidence (aggregate-merge prong (a), (a1)/(a2)/(a4\')):\n'
+            ' *     under -G8 (code6cac_b5.c) func_80036140\'s read-modify-writes of\n'
+            ' *     0x80101E9C / 0x80101EA4 keep their address in a register (la; lX 0(r);\n'
+            ' *     sX 0(r)) only for a variable larger than 8 bytes -- a small one is\n'
+            ' *     small data and cse folds any pointer back to the symbol -- and\n'
+            ' *     cdrom_ReadyCallback reads expected_pos directly only as an offset of\n'
+            ' *     THIS symbol (cse relates it to its &unk38 register); as a separate\n'
+            ' *     record both differ.  unk3E and expected_pos are the fields\n'
+            ' *     cdrom_StartRead / game_FrameLoop and cdrom_ReadyCallback / func_80036940\n'
+            ' *     use, typed by those accesses.  Dumps and the original compiler\'s runs:\n'
+            ' *     memory/grind/func_80036140/evidence.md.\n */\n')
+    h = rep(h, '/* The CD module\'s state block, 0x80101E58..0x80101E9B, declared as ONE object.\n',
+            '/* The CD module\'s state block, 0x80101E58..0x80101EA7, declared as ONE object.\n')
+    h = rep(h, ' *   - 0x80101E6C..0x80101E9B: see ReplayCamRec\'s evidence split above.\n',
+            ' *   - 0x80101E6C..0x80101EA7: see ReplayCamRec\'s evidence split above.\n')
+    h = rep(h, '    ReplayCamRec rec; /* 0x80101E60 .. 0x80101E9B */\n',
+            '    ReplayCamRec rec; /* 0x80101E60 .. 0x80101EA7 */\n')
 if A.ext == 'sep':   # experiment: a separate 12-byte record at 0x80101E9C
     h = rep(h, 'extern s16 D_80101E9C;\nextern u16 D_80101E9E;\nextern s32 g_cdread_expected_pos;\nextern s32 D_80101EA4;\n',
             'typedef struct { s16 unk0; u16 unk2; s32 expected_pos; s32 unk8; } CdReadTail;\n'

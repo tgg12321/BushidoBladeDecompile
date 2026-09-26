@@ -37,3 +37,9 @@
    split (apply_model.py --split final --merge --ext rec), symbol-row retirement still to script
    (D_800A36B9..BB, g_cd_atv_plus_0x1..3, the "retire with func_80036140" alias rows, E9C/E9E/EA0/EA4
    rows, named_syms comment 0x80101E9B -> 0x80101EA7), header comment update, move-identity check.
+3. Landing driver ready (landing/tools/land.sh, run under the lock only): gate.py + register.py
+   (saves commit-1 Makefile / engine/buildconfig.py to tmp/func_80036140/c1/), apply_model.py
+   --split final --merge --ext rec, symfiles.py (prong (c) rows + one dlabel per CdlATV), the
+   gate-lists "current completions" line. Scratch `t_final.sh` = oracle; `movecheck.py` = every moved
+   line identical. Commit plan: (1) msg_gate.txt (maspsx gate + registration; commit with the c1/
+   versions of Makefile + buildconfig in the worktree), (2) msg_match.txt. Fill @OWNER_RULING@ etc.

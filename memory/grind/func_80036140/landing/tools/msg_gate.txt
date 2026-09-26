@@ -1,0 +1,63 @@
+maspsx: per-function COMMON gate (--comm-syms, maspsx_comm_syms.txt) + registration [infra-rule: maspsx-comm]
+
+Builds the gate authorized by the owner ruling of 2026-09-26 (fourth batch, Q9;
+.claude/rules/maspsx-gate-lists.md § "maspsx_comm_syms.txt", decisions.md "OWNER
+RULING — maspsx COMMON gate"). Sony ASPSX 2.34 gives a COMMON (tentative-definition)
+symbol gp addressing at its base only, never at sym+N; our C declares such
+variables `extern`, so maspsx needs the storage class per function.
+
+tools/maspsx/maspsx/__init__.py, maspsx.py
+- `--comm-syms FILE` (`func: sym, sym`, the sdata_exclude.txt format) ->
+  MaspsxProcessor(comm_sym_map=...). `_is_comm(symbol)` = upstream `.comm`
+  knowledge OR listed for the current function (current_func comes from `.ent`,
+  so INCLUDE_ASM bodies are never touched). The three existing
+  `gp_allowed = gp_allow_offset or symbol not in comm_symbols` sites use it;
+  they apply only to `sym+N` operands, so the gate only removes gp, only from
+  sym+N (N != 0) of a listed symbol in a listed function; no storage is emitted,
+  no instruction added/removed beyond maspsx's ordinary non-gp form (prong (b)).
+- tests/test_comm_syms.py: listed offset non-gp / base gp / unlisted symbol
+  keeps gp; inert for unlisted functions and without the list; the gate only
+  turns gp lines into non-gp `sym+N` lines.
+
+maspsx_comm_syms.txt — first rows (prong (a) evidence:
+memory/grind/func_80036140/evidence.md CURRENT STATE, calibration outputs in
+memory/grind/func_80036140/landing/calib/):
+- cdrom_SetMix: g_cd_atv — shipped 80035F34 `sb a0,%gp_rel(g_cd_atv)`,
+  80035F44-58 lui + `sb %lo(g_cd_atv+1/+2/+3)`; cc1psx -G8 + ASPSX 2.34 from
+  `CdlATV g_cd_atv;` reproduce the shipped 18 words exactly (0 differ);
+  extern / static / initialized / -G0 differ (4-6 words; gp 0 / 5 / 5 / 0).
+- func_80035F78: D_800A36B8 — shipped 80035F7C `sb a1,%gp_rel(D_800A36B8)`,
+  80035F80-9C lui + `sb %lo(D_800A36B8+1/+2/+3)`; reproduced exactly (0 of 12);
+  the alternatives differ (6 words each).
+- func_80036140: g_cd_atv, D_800A36B8 — shipped 80036154 / 80036168 base reads
+  gp-relative, the six +1..+3 reads lui/%lo. cc1psx -G8 + ASPSX: all 10 gp
+  accesses identical in symbol and order and every +k read non-gp (81 other
+  words differ: 64 are this ASPSX's `li`->`ori` expansion, the rest cc1psx
+  scheduling); our cc1's -G8 output assembled by ASPSX 2.34 differs from the
+  shipped words only in `li` expansions. extern -> 0 gp, static/initialized ->
+  16 gp (+k gp'd), -G0 -> 0 gp.
+Inert until those functions' C names the records as CdlATV (today every row's
+function uses the per-byte splat externs; func_80036140 is INCLUDE_ASM).
+
+Registration (prong (c)): Makefile MASPSX_FLAGS + MASPSX_FLAGS_GP and
+PIPELINE_DEPS; engine/buildconfig.py mirror; engine/cheats.py MASPSX_GATE_LISTS
+"fidelity" (+ `func:` rows parse to func in _prologue_txt_funcs, engine test);
+engine/oracle.py CONFIG_FILES + dirty watch; engine/dossier.py memberships;
+engine/buildstamp.py CONFIGS; engine/queue.py toolchain-fingerprint inputs (the
+previous input set joins _prior_fingerprint_input_sets); tools/check_root_cleanliness.py;
+tools/desync_audit.py KEYED; tools/naming_wave.py RULE_FILES (keys and body names);
+tools/libscan/manifest.py KEYFILES; tools/grinder/grindlib.py _SCOPE_GRANT_DENY
++ GATE_FILES and .claude/rules/integration-handoff-self-serve.md (both halves of
+the pair); hooks park_src_guard / main_reintegration_lock /
+worktree_contamination_guard; maspsx-gate-lists.md table row (built).
+
+Verification:
+- lock.ps1 rebuild (verify-oracle --rebuild --allow-dirty): SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
+- every src/*.c built with the Makefile's exact per-file recipe, stock maspsx vs
+  gated maspsx + rows (scratch trees at the same rev): 36/36 objects byte-identical
+- engine test: @ENGINE_TEST@
+- maspsx tests: the 4 new tests pass; the 2 pre-existing failures
+  (test_div_expand_li_nop, test_expand_li_0x1) are unchanged
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
