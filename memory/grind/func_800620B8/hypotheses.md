@@ -20,6 +20,9 @@ Frontier:
 1. Owner answer to the 2026-09-26 borderline.md policy question (codegen-relation evidence for an
    aggregate merge). If YES: re-land rejected/table-merge-BA00x12-0.c with the corrected
    declaration comment (record [11] = frame 9's uv; BA30/50/58 rebuilt as absolute constants).
+   Prefer the file's existing record type TexRec {clut_x, clut_y, u, v} (src/text1b.c:6448, used by
+   the matched drawer that indexes D_8009B8E8[0..6]) over u16[4]. Each other drawer has its own
+   bounded frame table, which argues against a region-wide merge.
 2. Independent prong-(a) evidence for ONE object covering 0x8009BA00..0x8009BA5F (or a wider
    same-shape run, e.g. from D_8009B8E8 / D_8009B920 to 0x8009BA5F): a function (any TU, incl. still
    INCLUDE_ASM ones) that forms one base and reaches records across the label boundaries by offset or
