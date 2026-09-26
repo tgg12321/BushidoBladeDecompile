@@ -1,5 +1,22 @@
-/* This menu's two cursors ([0] = P1 row 0..11, [1] = P2 row 0..3) and its
- * colour / format strings. */
+typedef struct {
+    u8 rgb[3];
+    u8 flags;
+    u8 unk_4[8];
+} SaveCfg;
+extern SaveCfg g_default_color_r;
+typedef struct {
+    u16 size[2];
+    u8 unk_0[2];
+    u8 unk_2[2];
+    u8 unk_4[2];
+    u8 unk_6[2];
+    u8 count_a;
+    u8 count_b;
+    u8 flag_a;
+    u8 flag_b;
+} LessonParams;
+extern LessonParams g_practice_lesson_size_a;
+#define LP g_practice_lesson_size_a
 extern s16 D_800A3174[2];
 extern u8 D_800A3178[];
 extern u8 D_800A3180[];
@@ -25,20 +42,20 @@ void func_80034708(void) {
     rand();
     off = D_800A3178;
     on = D_800A3180;
-    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 0 ? on : off), (s8)D_80102778.unk_4[0]);
-    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 0 ? on : off), (s8)D_80102778.unk_4[1]);
-    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 1 ? on : off), (s8)D_80102778.unk_6[0]);
-    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 1 ? on : off), (s8)D_80102778.unk_6[1]);
-    func_8003D52C(D_800A3198, (s32)(D_800A3174[0] == 2 ? on : off), (s8)D_80102778.unk_8[0]);
-    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 2 ? on : off), (s8)D_80102778.unk_8[1]);
-    func_8003D52C(D_800A31A0, (s32)(D_800A3174[0] == 3 ? on : off), D_80102778.unk_0[0] >> 8);
-    func_8003D52C(D_800A31A8, (s32)(D_800A3174[1] == 3 ? on : off), D_80102778.unk_0[1] >> 8);
-    func_8003D52C(D_800A31B0, (s32)(D_800A3174[0] == 4 ? on : off), (s8)D_80102778.unk_C);
-    func_8003D52C(D_800A31B0, (s32)(D_800A3174[0] == 5 ? on : off), (s8)D_80102778.unk_D);
-    func_8003D52C(D_800A31B8, (s32)(D_800A3174[0] == 6 ? on : off), (s8)D_80102778.unk_E);
-    func_8003D52C(D_80010834, (s32)(D_800A3174[0] == 7 ? on : off), (s8)D_80102778.unk_F);
-    func_8003D52C(D_80010840, (s32)(D_800A3174[0] == 8 ? on : off), D_80106A50.flags & 1);
-    func_8003D52C(D_800A31C0, (s32)(D_800A3174[0] == 9 ? on : off), (D_80106A50.flags >> 1) & 1);
+    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 0 ? on : off), (s8)LP.unk_0[0]);
+    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 0 ? on : off), (s8)LP.unk_0[1]);
+    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 1 ? on : off), (s8)LP.unk_2[0]);
+    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 1 ? on : off), (s8)LP.unk_2[1]);
+    func_8003D52C(D_800A3198, (s32)(D_800A3174[0] == 2 ? on : off), (s8)LP.unk_4[0]);
+    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 2 ? on : off), (s8)LP.unk_4[1]);
+    func_8003D52C(D_800A31A0, (s32)(D_800A3174[0] == 3 ? on : off), LP.size[0] >> 8);
+    func_8003D52C(D_800A31A8, (s32)(D_800A3174[1] == 3 ? on : off), LP.size[1] >> 8);
+    func_8003D52C(D_800A31B0, (s32)(D_800A3174[0] == 4 ? on : off), (s8)LP.count_a);
+    func_8003D52C(D_800A31B0, (s32)(D_800A3174[0] == 5 ? on : off), (s8)LP.count_b);
+    func_8003D52C(D_800A31B8, (s32)(D_800A3174[0] == 6 ? on : off), (s8)LP.flag_a);
+    func_8003D52C(D_80010834, (s32)(D_800A3174[0] == 7 ? on : off), (s8)LP.flag_b);
+    func_8003D52C(D_80010840, (s32)(D_800A3174[0] == 8 ? on : off), g_default_color_r.flags & 1);
+    func_8003D52C(D_800A31C0, (s32)(D_800A3174[0] == 9 ? on : off), (g_default_color_r.flags >> 1) & 1);
     func_8003D52C(D_800A31C8, (s32)(D_800A3174[0] == 10 ? on : off), D_800A36F9);
     func_8003D52C(D_800A31D0, (s32)(D_800A3174[0] == 11 ? on : off), D_800A3690);
 
@@ -61,34 +78,34 @@ void func_80034708(void) {
             func_8005C650(4, 0x3F, 0x3F);
             switch (D_800A3174[i]) {
             case 0:
-                D_80102778.unk_4[i]--;
+                LP.unk_0[i]--;
                 break;
             case 1:
-                D_80102778.unk_6[i]--;
+                LP.unk_2[i]--;
                 break;
             case 2:
-                D_80102778.unk_8[i]--;
+                LP.unk_4[i]--;
                 break;
             case 3:
-                D_80102778.unk_0[i] -= 0x80;
+                LP.size[i] -= 0x80;
                 break;
             case 4:
-                D_80102778.unk_C--;
+                LP.count_a--;
                 break;
             case 5:
-                D_80102778.unk_D--;
+                LP.count_b--;
                 break;
             case 6:
-                D_80102778.unk_E--;
+                LP.flag_a--;
                 break;
             case 7:
-                D_80102778.unk_F--;
+                LP.flag_b--;
                 break;
             case 8:
-                D_80106A50.flags ^= 1;
+                g_default_color_r.flags ^= 1;
                 break;
             case 9:
-                D_80106A50.flags ^= 2;
+                g_default_color_r.flags ^= 2;
                 break;
             case 10:
                 D_800A36F9--;
@@ -101,34 +118,34 @@ void func_80034708(void) {
             func_8005C650(4, 0x3F, 0x3F);
             switch (D_800A3174[i]) {
             case 0:
-                D_80102778.unk_4[i]++;
+                LP.unk_0[i]++;
                 break;
             case 1:
-                D_80102778.unk_6[i]++;
+                LP.unk_2[i]++;
                 break;
             case 2:
-                D_80102778.unk_8[i]++;
+                LP.unk_4[i]++;
                 break;
             case 3:
-                D_80102778.unk_0[i] += 0x80;
+                LP.size[i] += 0x80;
                 break;
             case 4:
-                D_80102778.unk_C++;
+                LP.count_a++;
                 break;
             case 5:
-                D_80102778.unk_D++;
+                LP.count_b++;
                 break;
             case 6:
-                D_80102778.unk_E++;
+                LP.flag_a++;
                 break;
             case 7:
-                D_80102778.unk_F++;
+                LP.flag_b++;
                 break;
             case 8:
-                D_80106A50.flags ^= 1;
+                g_default_color_r.flags ^= 1;
                 break;
             case 9:
-                D_80106A50.flags ^= 2;
+                g_default_color_r.flags ^= 2;
                 break;
             case 10:
                 D_800A36F9++;
@@ -138,14 +155,14 @@ void func_80034708(void) {
                 break;
             }
         }
-        D_80102778.unk_4[i] = ((s8)D_80102778.unk_4[i] + 33) % 33;
-        D_80102778.unk_6[i] = ((s8)D_80102778.unk_6[i] + 8) % 8;
-        D_80102778.unk_8[i] = ((s8)D_80102778.unk_8[i] + 2) % 2;
+        LP.unk_0[i] = ((s8)LP.unk_0[i] + 33) % 33;
+        LP.unk_2[i] = ((s8)LP.unk_2[i] + 8) % 8;
+        LP.unk_4[i] = ((s8)LP.unk_4[i] + 2) % 2;
     }
-    D_80102778.unk_C = ((s8)D_80102778.unk_C + 38) % 38;
-    D_80102778.unk_D = ((s8)D_80102778.unk_D + 7) % 7;
-    D_80102778.unk_E &= 1;
-    D_80102778.unk_F &= 1;
+    LP.count_a = ((s8)LP.count_a + 38) % 38;
+    LP.count_b = ((s8)LP.count_b + 7) % 7;
+    LP.flag_a &= 1;
+    LP.flag_b &= 1;
     D_800A36F9 = (D_800A36F9 + 4) % 4;
     D_800A3690 &= 1;
     if (D_80102788.pressed & 0x08000800) {

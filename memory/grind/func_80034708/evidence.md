@@ -73,3 +73,40 @@ F5. Frame: the target reserves vars=8 = ONE combine-orphan reload slot (BB2_FRAM
 F6. Whole-file -G8 on today's src/code6cac_b.c changes 19 functions (objdiff) and file-scope
   INCLUDE_ASM/INCLUDE_RODATA float under -G8 (TARGET_FILE_SWITCHING) — so landing needs a TU
   split: func_80034708 is followed only by func_80034F88/8003504C/80035280/80035430 in the file.
+
+## [s2 cont.] slotB4 2026-09-26 — full integration proven: scratch full link SHA1 == oracle
+
+F7. **The aggregate base is 0x80102778, not 0x8010277C** (compiler-proved): with the byte
+  block based at 0x7C, row 1's address is a bare symbol and rows 2/3 stay s5-relative
+  (score 12, 542 insns); based at 0x78 (row 1 = S+4) they fold back exactly as target
+  (score 8, 544/544). Independent corroboration: func_8001C444 initialises exactly
+  0x78..0x87 (named_syms' "parameters at 0x80102778-80102787").
+F8. **The file flags byte is +0x23 of the 0x24-byte file record at 0x80106A50**
+  (func_80037F40 checksums 0x24 bytes from 0x80106A50 as one block; func_800167EC
+  initialises it; func_80035280 walks colour bytes from the flags address). Size > 8 is
+  required under -G8 (a 4-byte colour+flags struct measures 46, not 8).
+F9. **Every other consumer is byte-neutral** under both merges (objdiff of all 34 TUs rebuilt
+  with the new headers: only relocation-addend lines differ), with ONE respelling:
+  ings.c func_800167EC takes `p = (u8 *)&D_80106A50;` first (with the record merged, taking
+  the flags address first makes cse relate the base to it; base-first folds back to the
+  target's direct stores — measured variants a/b/c/d, tmp ings_try.py).
+F10. -G0 closing forms: every honest array/struct spelling of the cursor measures 90
+  (g0a `*D_800A3174`, g0b struct{c[2]}, g0c struct{p1,p2}); only two scalars + a
+  `(&D_800A3174)[i]` cross-object loop reaches the artifact floor (4, rejected/
+  g0-scalar-cursor-pun-score4.c) — a per-use pun, not admissible.
+F11. Landing package (integration/*.py, applied by integration/apply.py from the live tree):
+  include/code6cac.h `PracticeParams D_80102778` (0x78..0x87, 16 B) replacing D_80102778[2],
+  D_8010277A, PlayerBytePairs D_8010277C, D_80102782..87; include/system.h `FileRecord
+  D_80106A50` (0x24 B) replacing g_file_disc_type (and C uses of g_file_disc_size,
+  g_file_flags, D_80106A58/5C/70/73); consumers converted in code6cac, code6cac_b,
+  code6cac_b2_pre/post, code6cac_c2, code6cac_c_ab, code6cac_c_mid, replay_camera_rob_back_loose2,
+  ings; TU split code6cac_b.c | code6cac_b3.c (func_80034708, -G8) | code6cac_b3_post.c
+  (4 tail functions, verbatim); code6cac_b_rodata_pre.c loses the two hand-copied jtbls
+  (b3.o emits them at 0x8001086C behind the pre file's lead word; SUBALIGN(2) keeps
+  placement); prong-(c) retirements in undefined_syms_auto/named_syms/symbol_addrs/sdata_syms
+  (D_8010277C and D_80106A70 rows stay, suffixed, for INCLUDE_ASM func_8003993C /
+  func_8001BE20); asm/data/91C98.data.s one dlabel for the s16[2] cursor.
+  tmp/func_80034708/fullbuild.sh: every TU rebuilt from the package + relink =
+  62efab4f73f992798c43e8c730aa43baa10bb4fa. func_80034708 in code6cac_b3.o scores 8 =
+  4x gp_rel(D_800A3174+2) vs (D_800A3176) + 1x jtbl lo16 section addend — relocation
+  spelling only.
