@@ -183,8 +183,12 @@ def parse_load_or_store(rest):
     if match := re.match(r"(\$[a-z0-9]+),\s*%lo\(([^(]+)\)\(([^(]+)\)", rest):
         r_dest, operand, r_source = match.group(1, 2, 3)
         needs_expanding = False
-    elif match := re.match(r"(\$[a-z0-9]+),\s*([^(]+)\(([^)]+)\)", rest):
+    elif match := re.match(r"(\$[a-z0-9]+),\s*([^(]*)\(([^)]+)\)", rest):
         r_dest, operand, r_source = match.group(1, 2, 3)
+        # An empty offset, `lwc2 $0,($12)`, is offset 0: ASPSX accepted it (PsyQ's
+        # own inline_o.h writes its GTE loads/stores that way) and GNU as
+        # assembles it as `0($12)`. The line itself is passed through unchanged.
+        operand = operand or "0"
         needs_expanding = True
     elif match := re.match(r"(\$[a-z0-9]+),\s*([^(]+)", rest):
         r_dest, operand = match.group(1, 2)
