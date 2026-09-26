@@ -4,6 +4,19 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80036940",
+      "file": "code6cac_b2_post",
+      "distance": 274,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "rotated_at": "2026-09-23T04:00:17+00:00",
+      "rotation_count": 1,
+      "unparked_from": "pre-existing WIP proves multi-owner jump-table rodata attribution blocker; pure-C floor 69 and integration leaves 14 external .L80036xxx references (memory/wip/func_80036940/notes.md); resolving requires broader 4-sibling TU/rodata architecture change",
+      "unpark_reason": "owner 2026-09-26 (Q10): decompile func_80036940 first so it and func_80036140 can land together in one -G8 file (shared gp-read variable g_cd_result); research memory/grind/func_80036140/research-common-gp.md",
+      "returned_at": "2026-09-26T21:24:31+00:00"
+    },
+    {
       "func": "func_800620B8",
       "file": "text1b",
       "distance": 501,
@@ -543,17 +556,6 @@
       "rotation_count": 1
     },
     {
-      "func": "func_80036940",
-      "file": "code6cac_b2_post",
-      "distance": 274,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "pre-existing WIP proves multi-owner jump-table rodata attribution blocker; pure-C floor 69 and integration leaves 14 external .L80036xxx references (memory/wip/func_80036940/notes.md); resolving requires broader 4-sibling TU/rodata architecture change",
-      "rotated_at": "2026-09-23T04:00:17+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "func_800693CC",
       "file": "text1b",
       "distance": 307,
@@ -589,14 +591,14 @@
   ],
   "counts": {
     "total": 49,
-    "active": 30,
+    "active": 31,
     "by_status": {
-      "active": 30,
-      "rotated": 19
+      "active": 31,
+      "rotated": 18
     },
     "by_verdict": {
-      "ASM-PARTIAL": 7,
-      "C": 23
+      "C": 24,
+      "ASM-PARTIAL": 7
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
