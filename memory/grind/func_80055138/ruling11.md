@@ -262,8 +262,9 @@ a. **local-alloc (values 1 and 4).** local-alloc.c:470-478 gives a pseudo `reg_q
    an untied, global pseudo.
 b. **global.c find_reg (values 2 and 3; the seat $a2 for all six).** find_reg (:952)
    takes, in pass 0, the lowest hard register in regs_used_so_far that is not in the
-   allocno's conflicts nor in regs_someone_prefers (
-   lowest non-conflicting one. temp's allocno spans all six values, so its conflicts are
+   allocno's conflicts nor in regs_someone_prefers (FINDREGDBG pass0_used), pass 1 the
+   lowest non-conflicting one, and then an own copy-preference / preference register not in
+   `used` overrides it (:1097-1166; full account in the (D)(3) Frame). temp's allocno spans all six values, so its conflicts are
    the union over their ranges: 2 3 4 5 29, plus someone_prefers 4 -> pass 0 -> 6 ($a2).
    ($a0 conflicts through case 2, where the 0xCCCCCCCD constant stays in $a0 across value 1
    for the second multu at 0x80055320; $a1 through the scan loop, where the entry pointer
@@ -286,7 +287,9 @@ d. **the counter.** idx (89) is live across the whole scan loop, so its conflict
 (Rewritten after the 2026-09-26 layer-2 FAILs; third revision adds own preferences (G2),
 local seats (L) and every post-allocation rewrite. The argument is made per value, and it covers
 per-value spellings with ANY added sanctioned construct — FAKE dead store, self-assignment,
-combine-foldable chain-extender / live-use detour, pointer alias, `do { } while (0);` —
+combine-foldable chain-extender, cancelling / annihilating use (live-use detour), pointer
+alias, `do { } while (0);`, duplicated-into-arms + cross-jump, hoisting or sinking a write
+across a branch —
 because it constrains only what the allocators can choose given the instructions a matching
 spelling must emit. The measurements in (D)(3b) confirm it construct by construct.)
 
@@ -294,7 +297,7 @@ spelling must emit. The measurements in (D)(3b) confirm it construct by construc
 
 *What the allocators see vs. what is emitted.* After global allocation, rest_of_compilation
 (toplev.c) runs, in order: reload (:3082), which replaces each pseudo by the hard register it
-was given and deletes moves whose two sides got the same register (a pseudo left without one
+was given (a pseudo left without one
 would be spilled to the stack; the target keeps every value of temp in a register, and its
 frame saves only $s0-$s5/$ra, so no spill is admissible); sched2 (:3117), which reorders
 instructions inside blocks; the second jump pass (:3142, `jump_optimize (insns, 1, 1, 0)`:
@@ -304,22 +307,30 @@ delay slots (MACHINE_DEPENDENT_REORG, :3158, is not defined for MIPS). After cc1
 prologue_fix / maspsx / multu_pad adjust the prologue order, expand macros and insert
 load-delay nops; they do not reassign these operands.
 None of these changes which hard register an operand uses. So (i) the output's
-register usage is the allocation-time assignment, and every emitted instruction existed at
-allocation time; (ii) the allocation-time stream may additionally hold moves later deleted as
-no-ops, and duplicate tails later merged. Both extras are covered below: a no-op move is a
+register usage is the allocation-time assignment, and every emitted instruction that uses one
+of these registers comes from an allocation-time insn (reload inserts its own moves only for a
+pseudo without a hard register or an operand its constraints reject; neither applies to these
+general-register operands, and the target has no spill code); (ii) the allocation-time stream
+may additionally hold moves later deleted as no-ops (jump2 noop_moves), duplicate tails later
+merged (jump2 cross-jump) and insns reorg deletes as redundant (redundant_insn, reorg.c ~1693,
+~1783, ~3442, ~4005) — each such redundant insn repeats an emitted insn with the same
+registers, so it pairs nothing the output does not. Both extras are covered below: a no-op move is a
 pairing like any other (own preferences, below), and a duplicated tail is followed by the
 same code as the merged copy, so its liveness — and hence its conflicts — equals the merged
 copy's (measured: dup_* rows).
 
 *Local-alloc* (local-alloc.c, before global). A pseudo referenced in one basic block that dies
 once gets a quantity (:470-478). block_alloc ties an insn's output to an input that dies there
-(combine_regs :1784, tie :1916-1928): the output then shares the input's register. An untied
+(combine_regs :1784, tie :1916-1928): the output then shares the input's register (and the combined quantity is placed as one:
+its life and suggestions are the union of both). An untied
 quantity is placed by find_free_reg (:2135): `used` = fixed_reg_set (call_used_reg_set if it
 crosses a call) plus every register marked live in regs_live_at over its life — hard
 registers live there and locals already placed (post_mark_life); global pseudos are not yet
-assigned and occupy nothing. It is first restricted to the quantity's suggested registers
-(qty_phys_copy_sugg / qty_phys_sugg), which combine_regs records only from an insn of the
-block that pairs it with a HARD register (:1858-1898); otherwise the lowest register not in
+assigned and occupy nothing. block_alloc first places every quantity that has suggestions with just_try_suggested = 1
+(:1512; :2207-2212 restrict the scan to qty_phys_copy_sugg, else qty_phys_sugg; :2283-2291
+fall back from copy- to arithmetic suggestions), then places the rest normally (:1578); the
+suggestions are hard registers that combine_regs records only from an insn of the block
+pairing the quantity with a HARD register (:1858-1898); otherwise the lowest register not in
 `used` wins (no REG_ALLOC_ORDER on MIPS).
 
 *Global* (global.c). global_conflicts (:777) calls mark_reg_store, which calls set_preference
@@ -332,7 +343,9 @@ one dies in an insn that sets the other. prune_preferences (:882-930, called at 
 from each allocno's own preferences its conflicts and, if it crosses a call, every call-used
 register (:902), and builds regs_someone_prefers from lower-priority conflicting allocnos.
 find_reg (:952) scans for best_reg: pass 0 = the lowest register not in
-`used` = fixed/call-used ∪ conflicts ∪ ¬regs_used_so_far ∪ regs_someone_prefers; if none,
+`used` = fixed/call-used ∪ conflicts ∪ ¬regs_used_so_far ∪ regs_someone_prefers (every
+call-used register, $v0..$t9, is in regs_used_so_far from the start, global.c:364-367, so
+"not yet used" never excludes any of $v0..$a2); if none,
 pass 1 = the lowest register not in used1 = fixed/call-used ∪ conflicts. It then REPLACES
 best_reg by the lowest register of the allocno's own copy preferences not in `used`
 (:1097-1131), else of its own preferences not in `used` (:1133-1166). (`used`/used1 also carry no_global_alloc_regs, the `losers` of a reload retry and
@@ -343,7 +356,7 @@ the target.)
 *Therefore* a separate pseudo V that holds one value of temp ends in $a2 (6) only by one of:
 - (L) local-alloc: tied to an input that is in $a2, or suggested $a2, or with $v0..$a1 (2-5)
   all in `used` over its life and $a2 not;
-- (G1) find_reg's scan: 2-5 all excluded (conflict, preference of another, or not yet used)
+- (G1) find_reg's scan: 2-5 all excluded by a conflict or (pass 0 only) regs_someone_prefers,
   and 6 not;
 - (G2) own preference: 6 in V's own copy preferences or preferences after prune, and 6 not
   in `used`.
