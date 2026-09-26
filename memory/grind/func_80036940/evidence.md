@@ -60,3 +60,23 @@ the -G8 model; g_cd_result's gp read comes from the existing sdata_funcs.txt mem
 ## Scratch tools (tools/ here; run from the repo root under WSL)
 - `xb.py` whole-file scratch build + per-function score vs build/src (`--base`, `--inc`, `--g8`,
   `--comm`, `--diff`); `mk_model4.py` builds the in-place landing model (header + src).
+
+## LANDED 2026-09-26 — COMPLETED-C (687f92c3d, queue 78ea341ca)
+Landed at -G0 in place in src/code6cac_b2_post.c (layer-2 PASS after one paperwork FAIL: prong (c)
+named_syms.txt rows + honest ReplayCamRec/CdState annotations). Oracle SHA1 on full rebuild;
+sandbox 0, 274/274. The E58..E9B CdState merge, rodata move (jtbl_80010938[16] now in
+code6cac_b2_post.c) and RODATA_ALIGN2 membership landed with it.
+
+**Next (owner Q10 plan, not done yet):** func_80036940 moves TOGETHER with func_80036140 into one
+-G8 TU once func_80036140 is COMPLETED-C and the pending maspsx COMMON gate ruling lands (both
+gp-read g_cd_result, 0x800A3760, so ruling (i) forbids splitting them). For that joint landing:
+- this body already scores 2 (jtbl operand only) in the -G8 model (tools/xb.py `--g8`);
+- still to bank for ruling (ii): cc1psx -G8 vs -G0 on the new TU for func_80036940's two
+  `lbu %gp_rel(g_cd_result)` reads (80036C24, 80036C74);
+- until then g_cd_result's gp read comes from func_80036940's pre-existing sdata_funcs.txt row;
+- func_80036140's body must respell D_80101E60.* as D_80101E58.rec.* (record now in the header);
+  its E9C..EA7 extension (unk3C.., expected_pos, unk44) still needs its own evidence;
+- when func_80036140 lands, delete the transcribed jtbl_80010938[16] from code6cac_b2_post.c
+  (the compiler emits it) — the trailing zero word at 0x80010974 must then come from somewhere
+  (open: see hypotheses.md) — and retire the `alias ... retire with func_80036140` rows in
+  undefined_syms_auto.txt / named_syms.txt (g_cd_loc).
