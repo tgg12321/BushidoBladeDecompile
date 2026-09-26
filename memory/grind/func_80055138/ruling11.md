@@ -451,7 +451,11 @@ of the stat blocks, and so across the stat values' ranges (for stat2 reaching th
 0x8005571C..34 $a0 value: live along the skip path 0x80055770 -> 0x800557E0 and so across
 stat1's range). In a matching spelling those values sit in $a2 too, and two pseudos
 whose ranges overlap cannot share $a2 — so such an extension breaks the match itself. No
-preference can do it: no emitted loop instruction pairs a loop-live allocno with $a0, and the
+preference can do it: no emitted instruction anywhere in the function pairs a loop-live
+allocno with $a0 (`python3 tmp/func_80055138/r11/pairs.py a0`: outside the loop the only $a0
+pairings are arg0 at entry (0x80055144), the mfhi value in $s5 in the switch (0x80055328),
+$v0/$v1 locals, and hi1_val in the section tail (0x8005583C); none of these is live in the
+loop), and the
 $v1 pairings involve only `cat` and the e[0] load, which live inside stat2's range. Pass 1
 therefore yields $a0 or lower (the mask and stat1: $v1 or lower). A local seat is no better:
 the mask as a single-block local is tied (`or X,X,Y`), and $a0 is free in all three ranges.
