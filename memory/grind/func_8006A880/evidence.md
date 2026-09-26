@@ -28,7 +28,9 @@
 - [s2] ALLOCATION FACT (BB2_ALLOC_DEBUG, tmp/func_8006A880/rtl/*.alloc): target seats the D_8009BC08 scan mask AND the D_8009BC04 alive mask in the SAME callee-save $s6. As two C locals they are two pseudos; the scan mask (4 refs, livelen 44) gets pass-0 $s3/$s2 and the rest cascades: g2_sep (separate `alive`) = 46/551. One variable holding BC08 then BC04 = 0. global.c find_reg (pass 0 = used-so-far minus conflicts minus someone_prefers; prefs only from hard-reg copies) gives a separate non-overlapping pseudo the lowest free reg ($s4), so no two-local spelling can reach $s6 — the shared pseudo IS the target's shape. Policy: that is a multi-write local; admissible only as a staged-value borrow (alive = the real variable) or not at all — see hypotheses.md.
 
 ## s2 (manual lane, 2026-09-26, continued) — landing form and admission evidence
-- **Landing form** = candidate.c (tmp/func_8006A880/v/final.c): sandbox --disable all 0/552.
+- **Landing form** = candidate.c (as committed de40849e9 = the body staged in src/text1b.c;
+  the earlier tmp/func_8006A880/v/final.c differs only in the SetDrawOffset prototype, the
+  header comment and the TILE AddPrim argument type): sandbox --disable all 0/552.
   Full-build SHA1 == oracle 62efab4f… was proven 2026-09-26 with the equivalent pend.c body
   (same code; `i` shared by both loops) spliced over INCLUDE_ASM, then reverted. The landing
   form gives the row scan its own counter `bit`, initialised at the top with `row_mask`
@@ -65,8 +67,10 @@
   address-order check is this paragraph, re-run 2026-09-26.) So +0xC is the first cell at every
   write; no anomaly path, no (b′) needed. The Phase G sheets are exactly the FT4-shaped ones
   (tp1 = 1), matching func_80073728 — independent corroboration of the slot reading.
-  (i) receipts: per-write `s.table = s.header + 0xC` 15/552 (final_cdirect), one block-local
-  `cells` per site 15/552 (final_cblock); dumps: final.alloc `ord=0 pseudo=77 hardreg=5`
+  (i) receipts: per-write `s.table = s.header + 0xC` 15/552 (v/c_cdirect.c), one block-local
+  `cells` per site 15/552 (v/c_cblock.c), both derived from candidate.c exactly by
+  tmp/func_8006A880/mkrecv2.py; dumps: cand.alloc (tag `cand` = candidate.c, ruling11.md)
+  `ord=0 pseudo=77 hardreg=5`
   (one pseudo, $a1 at all five sites as in the target: `addiu a1,v0,0xC`); per-site pseudos
   are local-alloc'd into $v0 (p0 dies at the add). Structural respellings (explicit bivs 25,
   arg0[N] in-struct 39, s32 mask 86-era) and the permuter below.
