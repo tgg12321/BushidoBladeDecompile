@@ -109,3 +109,29 @@ Ruling 11 (D) proof for cross_a/cross_b: ruling11.md (dumps of the exact candida
 derived per-value twin r11/final_pv.c, mechanism local-alloc.c :470-478 / :1824-1827 /
 :1905-1922, necessity argument, 23 single-value ablations all > 0, structural respellings 90,
 permuter from the per-value body). Open point for layer-2: (B)(2) path-wise re-store of a4/b7.
+
+## 2026-09-26 landing staged (lock held by slotE; NOT committed, awaiting layer-2 of the whole set)
+Rules: ae96881fc (inline-asm-policy.md § Per-function grant: func_8002DE20). Staged:
+- maspsx fix: tools/maspsx/maspsx/__init__.py + tests/test_empty_offset.py. Byte-neutral over all
+  36 objects: pristine HEAD maspsx copy vs fixed, same per-file pipeline, HEAD TU for code6cac_b
+  (tmp/func_8002DE20/neutral2.log). maspsx unittests: 138 run, the same 2 pre-existing failures.
+- engine: gtemacro.py + test_engine.py. engine test 801/0 (771 on HEAD).
+- auth: inline_asm_canonical.txt row + owner_cluster_grants.txt row (DMPSX word only).
+- Match: src/code6cac_b.c splice + canonical_asm_regions.json (30 hashes).
+Results: lock.ps1 rebuild -> build_sha1 62efab4f... == oracle; sandbox --disable all (default
+strip) 0/506 (0 source/operand hunks); completion.source_issues == []; canonical ASM-PARTIAL.
+Precheck: tmp/func_8002DE20/precheck.txt. Its one flag, "hardcoded-$N asm", is the header's
+own `$12`/`$0`.. cop2 register text. Messages: tmp/func_8002DE20/landing/msg_{maspsx,engine,auth,match}.txt.
+Incident (fixed): a Windows-python rewrite truncated inline_asm_canonical.txt and wrote
+owner_cluster_grants.txt as cp1252. Both were restored from HEAD and the rows re-appended in
+UTF-8 via WSL. The staged diffs are +1 line and +10 lines.
+
+## 2026-09-26 layer-2 FAIL of the Q11 set (3 gaps) — lock released, tree reverted
+Accepted: the maspsx fix + its neutrality method, the engine change in substance, both rows,
+the islands, and the commit split. Owner, on (B)(2): a write is banned only if it is redundant on
+ALL paths (rule text pending; do not cite until the lead confirms the commit). Gaps closed:
+(1) tree-wide recognizer before/after record -> recognizer_treewide.md; (2) jump2 cross-jump /
+duplicated-into-arms family -> ruling11.md addendum 2 (join-point dup 171/148/106/162/204;
+the 7 single-predecessor tests have no arms; T2 hoist 158); (3) Pure-C attempts block added to
+landing/msg_match.txt. The staged set is saved in tmp/func_8002DE20/staged/ (+ staged.patch).
+Revert: 8 files restored and the new test file deleted; lock.ps1 rebuild -> oracle; lock released.

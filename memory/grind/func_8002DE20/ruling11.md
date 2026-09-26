@@ -310,3 +310,48 @@ extended basic blocks) does the copy case whenever the copy is visible in Y's ex
 Where the copy is NOT visible (a join block), combine cannot see the equality either, so the
 `subu`/`xor` survives and costs bytes. No zero-byte sanctioned construct therefore changes the
 locality that forces the tie.
+
+**Correction (layer-2, 2026-09-26):** "combine is the only fold after flow" is WRONG. jump2 also
+runs after flow and after register allocation: toplev.c `jump_optimize(insns, 1, 1, 0)`, with
+cross-jump through jump.c `find_cross_jump`. It merges identical insn tails of two predecessors
+of a common label. That is the mechanism of the sanctioned duplicated-statement-into-arms
+family (.claude/rules/duplicated-statement-into-arms.md): a per-value local written in every
+arm that reaches its test is multi-block for local-alloc, and cross-jump may re-merge the
+copies. The next section measures and bounds that family.
+
+## (D)(3) addendum 2 — duplicated-statement-into-arms + jump2 cross-jump (layer-2 objection 2)
+Where arms exist. A value's write can only be duplicated into arms that REACH its test. In
+the target, and in every spelling with this statement list, only four tests sit at a join of
+several failing arms: T4 (reached from the failures of T1, T2, T3), T7 (T4-T6), T9 (T7, T8)
+and T11 (T9, T10). The other seven tests, T2, T3, T5, T6, T8, T10 and T12, are the then-blocks
+of the previous test. Their block has exactly ONE predecessor: the fall-through of that
+test's `bltz`/`bgez`, with no label before their products in asm/funcs/func_8002DE20.s.
+There is no arm to duplicate into. Duplicating the write into the parent's else-path would
+be a dead store there (prerequisite 1 of the family: "REAL on its path"). flow deletes dead
+stores before counting (addendum 1). Inventing an if/else to create arms is not the
+sanctioned family (its non-extension clause).
+Hoisting a nested test's write above the parent's branch (it is then written and read in two
+blocks) runs it on the fail path too. Measured for T2 (r11/hoist_T2.c): **158** (512 insns).
+T1's block (after cx/cy) is also a single-predecessor tail of the dz_b join.
+So for 14 of the 23 shared values, among them both operands of T2/T3/T5/T6/T8/T10/T12, every
+per-value spelling in this family leaves a single-block, single-death pseudo. By local-alloc.c
+:470-478 / :1905-1922 each xor there ties its output to an operand, while the target has
+`xor v0,a0,v1` at all seven.
+Measured anyway: tools/gen_duparms.py duplicates the join-point writes into every arm of the
+per-value twin, each copy `/* FAKE */`-annotated (r11/dup_*.c, 0($12) text,
+--keep-cheat-asm):
+| spelling | score |
+|---|---|
+| T4's pair into its 3 arms | 171 (503 insns) |
+| T7's pair into its 3 arms | 148 (501) |
+| T9's pair into its 2 arms | 106 (509) |
+| T11's pair into its 2 arms | 162 (508) |
+| all four join points | 204 (540 insns: cross-jump does not merge all copies) |
+Dump of the all-four body (tag dup_all, tmp/func_8002DE20/rtl/dup_all.lreg):
+- The join-point locals become multi-block, e.g. `Register 92 used 4 times across 9 insns;
+  GR_REGS or none.` (no `in block`).
+- CSE substitutes cross_a1 into test 4's T1-else copy, so a1 `dies in 3 places`.
+- The single-predecessor values stay `in block N` (429/430 block 22, 440/441 block 23,
+  492/493 29, 503/504 30, 555/556 36, 589/590 41, 655/656 46), and every one of those xors
+  ties to an operand (xormap).
+The duplication costs bytes and reaches none of the seven single-predecessor tests.
