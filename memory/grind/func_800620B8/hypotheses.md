@@ -27,16 +27,13 @@ Session 2 (2026-09-26, slotC2) — ruled out, with proof (evidence.md "Session 2
   indexed table in the region is indexed over exactly its own label; no census/config row; no data
   pointers; no symbol files. Only func_800620B8 references BA00/BA30/BA50/BA58.
 
-Frontier:
-1. OWNER ANSWER to the borderline.md 2026-09-26 question (+ session-2 addendum). The function is
-   policy-stuck, not technique-stuck: 0/501 exists (rejected/table-merge-BA00x12-0.c, oracle-proven)
-   and the split-symbol 47 is structural. If YES: re-land the merge as a record struct in
-   include/game.h (TexRec-shaped {clut_x, clut_y, u, v}; TexRec is currently TU-local at
-   src/text1b.c ~6448, after this function — declare the header type or move it), 12 records
-   0x8009BA00..0x8009BA5F (end fixed by the u8 table at 0x8009BA60), comment citing the register
-   evidence; record [11] = frame 9's uv; BA30/50/58 are rebuilt as absolute constants by reload.
-   Prong (c): the four dlabels are referenced only by asm/funcs/func_800620B8.s -> nothing to keep.
-2. If NO: nothing in the current binary can supply prong (a); the function waits for a ruling change
-   or new evidence (e.g. another build of the game with symbols).
+Frontier (2026-09-26, session 3 slotA5):
+1. The owner ANSWERED the borderline.md question: 262db111c Q2 "Accept, minimal span" (prong (a)
+   alternative (a1)-(a4)). Evidence package banked (evidence.md "Session 3", prong_a/). candidate.c =
+   TexRec D_8009BA00[12] merge, 0/501. Next: landing (auth: row for the gte_stsz island, then Match with
+   src/text1b.c + include/game.h [TexRec typedef moved from text1b.c + the table decl] +
+   tools/canonical_asm_regions.json) and a fresh layer-2.
+2. If layer-2 FAILs the package: the objection is the frontier; the split 47 is proven structural
+   (no ordinary separate-object body exists), so only an evidence/declaration fix can move it.
 
 (Session-1 frontier items 2-3 are closed by the session-2 search and proof above.)

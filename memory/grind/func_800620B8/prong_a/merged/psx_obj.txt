@@ -1,0 +1,617 @@
+addiu	sp,sp,-80
+sw	ra,76(sp)
+sw	s8,72(sp)
+sw	s7,68(sp)
+sw	s6,64(sp)
+sw	s5,60(sp)
+sw	s4,56(sp)
+sw	s3,52(sp)
+sw	s2,48(sp)
+sw	s1,44(sp)
+jal	0 <func_80047ED0>
+			1a280: R_MIPS_26	func_80060E38
+sw	s0,40(sp)
+lw	v1,0(gp)
+			1a288: R_MIPS_GPREL16	D_800A3468
+sll	zero,zero,0x0
+lw	v0,4(v1)
+lw	a0,0(gp)
+			1a294: R_MIPS_GPREL16	D_800A346C
+lhu	v0,0(v0)
+sll	zero,zero,0x0
+sh	v0,0(a0)
+lw	v0,4(v1)
+sll	zero,zero,0x0
+lhu	v0,2(v0)
+sll	zero,zero,0x0
+sh	v0,2(a0)
+lw	v0,4(v1)
+sll	zero,zero,0x0
+lhu	v0,4(v0)
+sll	zero,zero,0x0
+sh	v0,4(a0)
+lw	v0,8(v1)
+lw	a1,0(gp)
+			1a2d0: R_MIPS_GPREL16	D_800A3470
+lw	s1,0(gp)
+			1a2d4: R_MIPS_GPREL16	D_800A37D4
+lw	a2,0(gp)
+			1a2d8: R_MIPS_GPREL16	D_800A3474
+lw	v0,0(v0)
+sll	zero,zero,0x0
+sw	v0,0(a1)
+lw	v0,8(v1)
+sll	zero,zero,0x0
+lw	v0,4(v0)
+sll	zero,zero,0x0
+sw	v0,4(a1)
+lw	v1,8(v1)
+lw	s0,0(gp)
+			1a300: R_MIPS_GPREL16	D_800A34EC
+lw	v0,0(gp)
+			1a304: R_MIPS_GPREL16	D_800A32B8
+lw	v1,8(v1)
+addiu	v0,v0,1
+sw	v0,0(gp)
+			1a310: R_MIPS_GPREL16	D_800A32B8
+jal	0 <func_80047ED0>
+			1a314: R_MIPS_26	func_80061FAC
+sw	v1,8(a1)
+lw	a0,0(gp)
+			1a31c: R_MIPS_GPREL16	D_800A3474
+jal	0 <func_80047ED0>
+			1a320: R_MIPS_26	SetRotMatrix
+addu	s5,zero,zero
+sh	zero,56(s0)
+sh	zero,54(s0)
+jal	0 <func_80047ED0>
+			1a330: R_MIPS_26	ReadGeomScreen
+sh	zero,52(s0)
+lw	v1,0(gp)
+			1a338: R_MIPS_GPREL16	D_800A34B0
+sll	v0,v0,0x8
+addiu	s3,s0,16
+sw	v0,0(v1)
+lw	v1,0(gp)
+			1a348: R_MIPS_GPREL16	D_800A3490
+addiu	s2,s0,18
+addiu	s7,s0,20
+addiu	v0,zero,47
+sw	v0,0(v1)
+lui	v0,0x0
+			1a35c: R_MIPS_HI16	D_800F1198
+lw	v0,0(v0)
+			1a360: R_MIPS_LO16	D_800F1198
+addiu	s4,s0,36
+addiu	t0,s0,52
+addiu	s6,s0,68
+sw	t0,16(sp)
+addiu	t0,s0,60
+andi	v0,v0,0x1
+beq	v0,zero,1aa04 <func_800620B8+0x7ac>
+sw	t0,24(sp)
+lui	s8,0x0
+			1a384: R_MIPS_HI16	D_8009BA00
+addiu	s8,s8,0
+			1a388: R_MIPS_LO16	D_8009BA00
+addiu	s0,s1,37
+sll	v1,s5,0x10
+sra	v1,v1,0x10
+sll	v0,v1,0x1
+addu	v0,v0,v1
+sll	v0,v0,0x2
+lui	at,0x0
+			1a3a4: R_MIPS_HI16	D_800F1198
+addu	at,at,v0
+lw	v0,4(at)
+			1a3ac: R_MIPS_LO16	D_800F1198
+sll	zero,zero,0x0
+andi	v1,v0,0x7
+addiu	v0,zero,1
+beq	v1,v0,1a4bc <func_800620B8+0x264>
+slti	v0,v1,2
+beq	v0,zero,1a3dc <func_800620B8+0x184>
+sll	zero,zero,0x0
+beq	v1,zero,1a40c <func_800620B8+0x1b4>
+addiu	v0,zero,450
+j	1a540 <func_800620B8+0x2e8>
+			1a3d4: R_MIPS_26	.text
+sll	v1,s5,0x10
+addiu	v0,zero,2
+beq	v1,v0,1a4a4 <func_800620B8+0x24c>
+addiu	v0,zero,80
+addiu	v0,zero,3
+bne	v1,v0,1a540 <func_800620B8+0x2e8>
+sll	v1,s5,0x10
+lw	v1,0(gp)
+			1a3f4: R_MIPS_GPREL16	D_800A34A8
+addiu	v0,zero,337
+sh	v0,0(v1)
+lw	v1,0(gp)
+			1a400: R_MIPS_GPREL16	D_800A34AC
+j	1a420 <func_800620B8+0x1c8>
+			1a404: R_MIPS_26	.text
+addiu	v0,zero,168
+lw	v1,0(gp)
+			1a40c: R_MIPS_GPREL16	D_800A34A8
+sll	zero,zero,0x0
+sh	v0,0(v1)
+lw	v1,0(gp)
+			1a418: R_MIPS_GPREL16	D_800A34AC
+addiu	v0,zero,225
+sh	v0,0(v1)
+lw	a0,0(gp)
+			1a424: R_MIPS_GPREL16	D_800A32B8
+lui	v0,0xaaaa
+ori	v0,v0,0xaaab
+multu	a0,v0
+mfhi	t0
+srl	v1,t0,0x2
+sll	v0,v1,0x1
+addu	v0,v0,v1
+sll	v0,v0,0x1
+lui	v1,0x0
+			1a448: R_MIPS_HI16	D_8009BD44
+lw	v1,0(v1)
+			1a44c: R_MIPS_LO16	D_8009BD44
+subu	a0,a0,v0
+sll	a0,a0,0x3
+addu	a0,a0,s8
+sw	a0,0(gp)
+			1a45c: R_MIPS_GPREL16	D_800A3488
+sw	a0,0(gp)
+			1a460: R_MIPS_GPREL16	D_800A348C
+andi	v1,v1,0x1
+beq	v1,zero,1a47c <func_800620B8+0x224>
+sll	zero,zero,0x0
+lui	t0,0x0
+			1a470: R_MIPS_HI16	D_8009BA00
+addiu	t0,t0,80
+			1a474: R_MIPS_LO16	D_8009BA00
+sw	t0,0(gp)
+			1a478: R_MIPS_GPREL16	D_800A348C
+lhu	v0,4(a0)
+lw	v1,0(gp)
+			1a480: R_MIPS_GPREL16	D_800A349C
+addiu	v0,v0,31
+sh	v0,0(v1)
+lw	v0,0(gp)
+			1a48c: R_MIPS_GPREL16	D_800A3488
+sll	zero,zero,0x0
+lhu	v0,6(v0)
+lw	v1,0(gp)
+			1a498: R_MIPS_GPREL16	D_800A34A4
+j	1a538 <func_800620B8+0x2e0>
+			1a49c: R_MIPS_26	.text
+addiu	v0,v0,31
+lw	v1,0(gp)
+			1a4a4: R_MIPS_GPREL16	D_800A34A8
+sll	zero,zero,0x0
+sh	v0,0(v1)
+lw	v1,0(gp)
+			1a4b0: R_MIPS_GPREL16	D_800A34AC
+j	1a4d0 <func_800620B8+0x278>
+			1a4b4: R_MIPS_26	.text
+addiu	v0,zero,60
+lw	v1,0(gp)
+			1a4bc: R_MIPS_GPREL16	D_800A34A8
+addiu	v0,zero,100
+sh	v0,0(v1)
+lw	v1,0(gp)
+			1a4c8: R_MIPS_GPREL16	D_800A34AC
+addiu	v0,zero,120
+sh	v0,0(v1)
+lw	v0,0(gp)
+			1a4d4: R_MIPS_GPREL16	D_800A32B8
+lui	v1,0x0
+			1a4d8: R_MIPS_HI16	D_8009BD44
+lw	v1,0(v1)
+			1a4dc: R_MIPS_LO16	D_8009BD44
+lui	t0,0x0
+			1a4e0: R_MIPS_HI16	D_8009BA00
+addiu	t0,t0,48
+			1a4e4: R_MIPS_LO16	D_8009BA00
+andi	v0,v0,0x3
+sll	v0,v0,0x3
+addu	v0,v0,t0
+andi	v1,v1,0x1
+sw	v0,0(gp)
+			1a4f8: R_MIPS_GPREL16	D_800A3488
+sw	v0,0(gp)
+			1a4fc: R_MIPS_GPREL16	D_800A348C
+beq	v1,zero,1a514 <func_800620B8+0x2bc>
+sll	zero,zero,0x0
+lui	t0,0x0
+			1a508: R_MIPS_HI16	D_8009BA00
+addiu	t0,t0,88
+			1a50c: R_MIPS_LO16	D_8009BA00
+sw	t0,0(gp)
+			1a510: R_MIPS_GPREL16	D_800A348C
+lhu	v0,4(v0)
+lw	v1,0(gp)
+			1a518: R_MIPS_GPREL16	D_800A349C
+addiu	v0,v0,15
+sh	v0,0(v1)
+lw	v0,0(gp)
+			1a524: R_MIPS_GPREL16	D_800A3488
+sll	zero,zero,0x0
+lhu	v0,6(v0)
+lw	v1,0(gp)
+			1a530: R_MIPS_GPREL16	D_800A34A4
+addiu	v0,v0,19
+sh	v0,0(v1)
+sll	v1,s5,0x10
+sra	v1,v1,0x10
+sll	v0,v1,0x1
+addu	v0,v0,v1
+sll	a1,v0,0x2
+lw	a2,0(gp)
+			1a550: R_MIPS_GPREL16	D_800A3470
+lui	at,0x0
+			1a554: R_MIPS_HI16	D_800F1198
+addu	at,at,a1
+lw	v0,0(at)
+			1a55c: R_MIPS_LO16	D_800F1198
+lw	a0,0(a2)
+srl	v1,v0,0x1f
+addu	v0,v0,v1
+sra	v0,v0,0x1
+subu	v0,v0,a0
+sw	v0,0(s4)
+lui	at,0x0
+			1a578: R_MIPS_HI16	D_800F1198
+addu	at,at,a1
+lw	v0,4(at)
+			1a580: R_MIPS_LO16	D_800F1198
+sll	zero,zero,0x0
+bgez	v0,1a594 <func_800620B8+0x33c>
+sll	zero,zero,0x0
+addiu	v0,v0,7
+lw	v1,4(a2)
+sra	v0,v0,0x3
+subu	v0,v0,v1
+sw	v0,4(s4)
+lui	at,0x0
+			1a5a4: R_MIPS_HI16	D_800F1198
+addu	at,at,a1
+lw	v0,8(at)
+			1a5ac: R_MIPS_LO16	D_800F1198
+lw	v1,8(a2)
+addu	a0,s4,zero
+addu	a1,s7,zero
+subu	v0,v0,v1
+jal	0 <func_80047ED0>
+			1a5c0: R_MIPS_26	ApplyRotMatrixLV
+sw	v0,8(s4)
+jal	0 <func_80047ED0>
+			1a5c8: R_MIPS_26	SetTransMatrix
+addiu	a0,s7,-20
+lw	a1,0(gp)
+			1a5d0: R_MIPS_GPREL16	D_800A34B8
+lw	a3,0(gp)
+			1a5d4: R_MIPS_GPREL16	D_800A34CC
+lw	a0,16(sp)
+lw	a2,24(sp)
+jal	0 <func_80047ED0>
+			1a5e0: R_MIPS_26	RotTransPers
+sll	zero,zero,0x0
+lw	t0,0(gp)
+			1a5e8: R_MIPS_GPREL16	D_800A34D0
+sll	zero,zero,0x0
+swc2	$19,0(t0)
+lw	v0,0(gp)
+			1a5f4: R_MIPS_GPREL16	D_800A34D0
+sll	zero,zero,0x0
+lw	a0,0(v0)
+jal	0 <func_80047ED0>
+			1a600: R_MIPS_26	func_80052C28
+addu	a1,zero,zero
+addu	v1,v0,zero
+sltiu	v0,v1,4101
+beq	v0,zero,1a9d0 <func_800620B8+0x778>
+sw	v1,0(s6)
+lw	v0,0(gp)
+			1a618: R_MIPS_GPREL16	D_800A34B0
+sll	zero,zero,0x0
+lw	v0,0(v0)
+sll	zero,zero,0x0
+bgez	v0,1a634 <func_800620B8+0x3dc>
+sll	zero,zero,0x0
+addiu	v0,v0,255
+sra	v0,v0,0xc
+sltu	v0,v0,v1
+beq	v0,zero,1a9d4 <func_800620B8+0x77c>
+addiu	a0,s5,1
+lw	v1,0(gp)
+			1a644: R_MIPS_GPREL16	D_800A348C
+sll	zero,zero,0x0
+lhu	v0,0(v1)
+lhu	v1,2(v1)
+lw	a0,0(gp)
+			1a654: R_MIPS_GPREL16	D_800A3494
+srl	v0,v0,0x4
+andi	v0,v0,0x3f
+sll	v1,v1,0x6
+addu	v0,v0,v1
+andi	v0,v0,0xffff
+sw	v0,0(a0)
+lw	v0,0(gp)
+			1a670: R_MIPS_GPREL16	D_800A3488
+lw	v1,0(gp)
+			1a674: R_MIPS_GPREL16	D_800A3498
+lhu	v0,4(v0)
+sll	zero,zero,0x0
+sh	v0,0(v1)
+lw	v0,0(gp)
+			1a684: R_MIPS_GPREL16	D_800A3488
+lw	v1,0(gp)
+			1a688: R_MIPS_GPREL16	D_800A34A0
+lhu	v0,6(v0)
+sll	zero,zero,0x0
+sh	v0,0(v1)
+lw	v1,0(gp)
+			1a698: R_MIPS_GPREL16	D_800A34D0
+sll	zero,zero,0x0
+lw	v0,0(v1)
+sll	zero,zero,0x0
+bne	v0,zero,1a6b4 <func_800620B8+0x45c>
+sll	zero,zero,0x0
+addiu	v0,zero,1
+sw	v0,0(v1)
+lw	v0,0(gp)
+			1a6b8: R_MIPS_GPREL16	D_800A34B0
+lw	a0,0(gp)
+			1a6bc: R_MIPS_GPREL16	D_800A34D0
+lw	v1,0(v0)
+lw	v0,0(a0)
+sll	zero,zero,0x0
+div	zero,v1,v0
+bne	v0,zero,1a6dc <func_800620B8+0x484>
+sll	zero,zero,0x0
+break	0x7
+addiu	at,zero,-1
+bne	v0,at,1a6f4 <func_800620B8+0x49c>
+lui	at,0x8000
+bne	v1,at,1a6f4 <func_800620B8+0x49c>
+sll	zero,zero,0x0
+break	0x6
+mflo	v1
+lw	v0,0(gp)
+			1a6f8: R_MIPS_GPREL16	D_800A34B4
+sll	zero,zero,0x0
+sw	v1,0(v0)
+lw	v0,0(gp)
+			1a704: R_MIPS_GPREL16	D_800A34A8
+lw	v1,0(gp)
+			1a708: R_MIPS_GPREL16	D_800A34B4
+lh	a0,0(v0)
+lw	v0,0(v1)
+sll	zero,zero,0x0
+mult	a0,v0
+mflo	a0
+slti	v0,a0,513
+bne	v0,zero,1a730 <func_800620B8+0x4d8>
+addiu	v0,zero,2
+srl	v0,a0,0x8
+sll	v0,v0,0x10
+sra	v1,v0,0x10
+srl	v0,v0,0x1f
+addu	v1,v1,v0
+sra	v1,v1,0x1
+sh	v1,0(s3)
+lw	v0,0(gp)
+			1a748: R_MIPS_GPREL16	D_800A34AC
+lw	v1,0(gp)
+			1a74c: R_MIPS_GPREL16	D_800A34B4
+lh	a0,0(v0)
+lw	v0,0(v1)
+sll	zero,zero,0x0
+mult	a0,v0
+mflo	a0
+slti	v0,a0,513
+bne	v0,zero,1a774 <func_800620B8+0x51c>
+addiu	v0,zero,2
+srl	v0,a0,0x8
+jal	0 <func_80047ED0>
+			1a774: R_MIPS_26	rand
+sh	v0,0(s2)
+lh	a1,0(s2)
+sll	zero,zero,0x0
+mult	a1,v0
+mflo	v0
+lui	v1,0x6666
+ori	v1,v1,0x6667
+mult	v0,v1
+addu	a0,s1,zero
+sra	v0,v0,0x1f
+mfhi	t0
+sra	v1,t0,0x2
+subu	v1,v1,v0
+sra	v1,v1,0xe
+addu	a1,a1,v1
+jal	0 <func_80047ED0>
+			1a7b4: R_MIPS_26	SetPolyFT4
+sh	a1,0(s2)
+lw	v0,0(gp)
+			1a7bc: R_MIPS_GPREL16	D_800A3490
+lw	v1,0(gp)
+			1a7c0: R_MIPS_GPREL16	D_800A3494
+lw	v0,0(v0)
+sll	zero,zero,0x0
+sh	v0,-15(s0)
+lw	v1,0(v1)
+addiu	v0,zero,255
+sb	v0,-33(s0)
+addiu	v0,zero,128
+sb	v0,-32(s0)
+sb	v0,-31(s0)
+lw	a0,0(gp)
+			1a7e8: R_MIPS_GPREL16	D_800A34B8
+sh	v1,-23(s0)
+lw	v0,0(a0)
+lhu	v1,0(s3)
+sll	zero,zero,0x0
+subu	v0,v0,v1
+sh	v0,-29(s0)
+lh	v0,2(a0)
+lhu	v1,0(s2)
+sll	zero,zero,0x0
+subu	v0,v0,v1
+sh	v0,-27(s0)
+lw	v1,0(a0)
+lhu	v0,0(s3)
+sll	zero,zero,0x0
+addu	v0,v0,v1
+sh	v0,-21(s0)
+lh	v0,2(a0)
+lhu	v1,0(s2)
+sll	zero,zero,0x0
+subu	v0,v0,v1
+sh	v0,-19(s0)
+lw	v0,0(a0)
+lhu	v1,0(s3)
+sll	zero,zero,0x0
+subu	v0,v0,v1
+sh	v0,-13(s0)
+lh	v0,2(a0)
+sll	zero,zero,0x0
+sh	v0,-11(s0)
+lw	v1,0(a0)
+lhu	v0,0(s3)
+sll	zero,zero,0x0
+addu	v0,v0,v1
+sh	v0,-5(s0)
+lh	v0,2(a0)
+lw	v1,0(gp)
+			1a878: R_MIPS_GPREL16	D_800A3498
+sh	v0,-3(s0)
+lhu	v0,0(v1)
+sll	zero,zero,0x0
+sb	v0,-25(s0)
+lw	v0,0(gp)
+			1a88c: R_MIPS_GPREL16	D_800A34A0
+sll	zero,zero,0x0
+lhu	v0,0(v0)
+sll	zero,zero,0x0
+sb	v0,-24(s0)
+lw	v0,0(gp)
+			1a8a0: R_MIPS_GPREL16	D_800A349C
+sll	zero,zero,0x0
+lhu	v0,0(v0)
+sll	zero,zero,0x0
+sb	v0,-17(s0)
+lw	v0,0(gp)
+			1a8b4: R_MIPS_GPREL16	D_800A34A0
+sll	zero,zero,0x0
+lhu	v0,0(v0)
+sll	zero,zero,0x0
+sb	v0,-16(s0)
+lw	v0,0(gp)
+			1a8c8: R_MIPS_GPREL16	D_800A3498
+sll	zero,zero,0x0
+lhu	v0,0(v0)
+sll	zero,zero,0x0
+sb	v0,-9(s0)
+lw	v0,0(gp)
+			1a8dc: R_MIPS_GPREL16	D_800A34A4
+sll	zero,zero,0x0
+lhu	v0,0(v0)
+sll	zero,zero,0x0
+sb	v0,-8(s0)
+lw	v0,0(gp)
+			1a8f0: R_MIPS_GPREL16	D_800A349C
+sll	zero,zero,0x0
+lhu	v0,0(v0)
+sll	zero,zero,0x0
+sb	v0,-1(s0)
+lw	v0,0(gp)
+			1a904: R_MIPS_GPREL16	D_800A34A4
+sll	zero,zero,0x0
+lhu	v0,0(v0)
+addiu	a1,zero,1
+addu	a0,s1,zero
+jal	0 <func_80047ED0>
+			1a918: R_MIPS_26	SetShadeTex
+sb	v0,0(s0)
+addu	a0,s1,zero
+jal	0 <func_80047ED0>
+			1a924: R_MIPS_26	SetSemiTrans
+addiu	a1,zero,1
+lw	v1,0(gp)
+			1a92c: R_MIPS_GPREL16	D_800A3720
+sll	zero,zero,0x0
+subu	v1,s1,v1
+sll	v0,v1,0x1
+addu	v0,v0,v1
+sll	v1,v0,0x4
+addu	v0,v0,v1
+sll	v1,v0,0x8
+addu	v0,v0,v1
+sll	v1,v0,0x10
+addu	v0,v0,v1
+negu	v0,v0
+sra	v0,v0,0x3
+slti	v0,v0,449
+beq	v0,zero,1a9d4 <func_800620B8+0x77c>
+addiu	a0,s5,1
+lw	v0,0(s6)
+lui	v1,0x0
+			1a970: R_MIPS_HI16	g_gpu_ot_ptr
+lw	v1,0(v1)
+			1a974: R_MIPS_LO16	g_gpu_ot_ptr
+lui	a2,0xff
+sw	s1,0(gp)
+			1a97c: R_MIPS_GPREL16	D_800A34E8
+sll	v0,v0,0x2
+addu	v1,v1,v0
+sw	v1,0(gp)
+			1a988: R_MIPS_GPREL16	D_800A34E4
+lw	v0,0(s1)
+lw	v1,0(v1)
+ori	a2,a2,0xffff
+lui	a1,0xff00
+and	v0,v0,a1
+and	v1,v1,a2
+or	v0,v0,v1
+sw	v0,0(s1)
+lw	a0,0(gp)
+			1a9ac: R_MIPS_GPREL16	D_800A34E4
+lw	v0,0(gp)
+			1a9b0: R_MIPS_GPREL16	D_800A34E8
+lw	v1,0(a0)
+addiu	s0,s0,40
+addiu	s1,s1,40
+and	v0,v0,a2
+and	v1,v1,a1
+or	v0,v0,v1
+sw	v0,0(a0)
+addiu	a0,s5,1
+sll	v1,a0,0x10
+sra	v1,v1,0x10
+sll	v0,v1,0x1
+addu	v0,v0,v1
+sll	v0,v0,0x2
+lui	at,0x0
+			1a9e8: R_MIPS_HI16	D_800F1198
+addu	at,at,v0
+lw	v0,0(at)
+			1a9f0: R_MIPS_LO16	D_800F1198
+sll	zero,zero,0x0
+andi	v0,v0,0x1
+bne	v0,zero,1a390 <func_800620B8+0x138>
+addu	s5,a0,zero
+sw	s1,0(gp)
+			1aa04: R_MIPS_GPREL16	D_800A37D4
+lw	ra,76(sp)
+lw	s8,72(sp)
+lw	s7,68(sp)
+lw	s6,64(sp)
+lw	s5,60(sp)
+lw	s4,56(sp)
+lw	s3,52(sp)
+lw	s2,48(sp)
+lw	s1,44(sp)
+lw	s0,40(sp)
+addiu	sp,sp,80
+jr	ra
+sll	zero,zero,0x0

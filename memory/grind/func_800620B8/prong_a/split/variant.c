@@ -29,7 +29,10 @@ void func_800620B8(s16 *pos, s32 *trans) {
     extern s32 D_800A37D4;
     extern s32 D_800A3720;
     extern s32 D_8009BD44[];
-    extern TexRec D_8009BA00[12];
+    extern TexRec D_8009BA00[6];
+    extern TexRec D_8009BA30[4];
+    extern TexRec D_8009BA50;
+    extern TexRec D_8009BA58;
     extern void ApplyRotMatrixLV(VECTOR *, VECTOR *);
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
@@ -96,7 +99,7 @@ void func_800620B8(s16 *pos, s32 *trans) {
         sel_a:
             D_800A348C = D_800A3488 = (s32)&D_8009BA00[(u32)D_800A32B8 % 6];
             if (D_8009BD44[0] & 1) {
-                D_800A348C = (s32)&D_8009BA00[10];
+                D_800A348C = (s32)&D_8009BA50;
             }
             *(u16 *)D_800A349C = ((TexRec *)D_800A3488)->u + 0x1F;
             *(u16 *)D_800A34A4 = ((TexRec *)D_800A3488)->v + 0x1F;
@@ -109,9 +112,9 @@ void func_800620B8(s16 *pos, s32 *trans) {
             *(s16 *)D_800A34A8 = 0x64;
             *(s16 *)D_800A34AC = 0x78;
         sel_b:
-            D_800A348C = D_800A3488 = (s32)&D_8009BA00[(D_800A32B8 & 3) + 6];
+            D_800A348C = D_800A3488 = (s32)&D_8009BA30[D_800A32B8 & 3];
             if (D_8009BD44[0] & 1) {
-                D_800A348C = (s32)&D_8009BA00[11];
+                D_800A348C = (s32)&D_8009BA58;
             }
             *(u16 *)D_800A349C = ((TexRec *)D_800A3488)->u + 0xF;
             *(u16 *)D_800A34A4 = ((TexRec *)D_800A3488)->v + 0x13;

@@ -1,11 +1,116 @@
 # func_800620B8 — evidence (manual lane, slotC, 2026-09-26)
 
-## Status (2026-09-26, after layer-2 FAIL)
-`candidate.c` = the landable ordinary body, **47 / 501** (the four sprite tables as the four split
-splat symbols). The 0/501 body is banked as `rejected/table-merge-BA00x12-0.c` (full-build SHA1 ==
-oracle 2026-09-26 with it spliced and `extern u16 D_8009BA00[12][4];` in include/game.h).
-Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0) island (same verbatim
-inline_c.h macro island func_8006295C landed with, c3eff5ec6). Floor path: 144 -> ... -> 0 (merge).
+## Status (2026-09-26, session 3 slotA5, under owner ruling 262db111c Q2)
+`candidate.c` = **0 / 501** (sandbox --disable all, 2026-09-26): the merged table spelled as
+`TexRec D_8009BA00[12]` (the 8-byte {clut_x, clut_y, u, v} record type func_800646E8 already uses),
+record reads through `((TexRec *)D_800A3488)->u` etc. Split-symbol floor 47 (same body, four
+labels). Prong-(a) evidence package for the 2026-09-26 amendment (a1)-(a4): section "Session 3" below,
+artifacts in `prong_a/`. Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0)
+island (same verbatim inline_c.h macro island func_8006295C landed with, c3eff5ec6).
+Floor path: 144 -> ... -> 47 (split) / 0 (merge).
+
+## Session 3 (2026-09-26, slotA5) — prong (a) via the 2026-09-26 amendment (a1)-(a4)
+Rule text: .claude/rules/no-new-park-categories.md "Amendment (owner ruling 2026-09-26) —
+compiler-necessity evidence for prong (a)" (commit 262db111c; owner record
+docs/grind/owner-rulings-2026-09-26.md Q2, "Accept, minimal span (Recommended)").
+Artifacts (all regenerable): `prong_a/tools/` (gen.py makes the variants from the old split candidate;
+dump.sh = instrumented project cc1 dumps; psx.sh / psx_obj.sh = cc1psx; cmp.py = normalised diff vs
+target; the scripts run from tmp/func_800620B8/s3/), `prong_a/split/` and `prong_a/merged/`
+(each: variant.c, cmd.txt = exact command lines, cse.fn / loop.fn / cse2.fn / lreg.fn / greg.fn =
+the func_800620B8 section of each RTL dump, alloc.txt = BB2_ALLOC_DEBUG global-alloc order, f.s =
+our cc1's asm, psx_f.s / psx_obj.txt = cc1psx asm and its assembled objdump, focus.txt = the
+table-address instructions vs the target, psx_vs_target.diff = whole-function normalised diff).
+The two variants differ ONLY in the table declaration and the four address expressions
+(split: `TexRec D_8009BA00[6], D_8009BA30[4], D_8009BA50, D_8009BA58`; merged: `TexRec D_8009BA00[12]`
+with `&D_8009BA00[10]`, `[(n & 3) + 6]`, `[11]`). Sandbox --disable all: split 47, merged 0.
+
+**(a1) Necessity, from the dumps.** Target: `lui/addiu $fp, D_8009BA00` in the loop pre-header
+(target insns 72-73), ONE in-loop use `addu $a0,$a0,$fp` (0x800622AC); BA50/BA30/BA58 each rebuilt
+`lui/addiu $t0` at the use (0x800622C4, 0x80062328, 0x8006235C); sv (base+0x34) and flag (base+0x3C)
+spilled. The chain that produces this, with source locations in tools/gcc-2.7.2:
+1. cse (merged/cse.fn insn 252, insn 344): the alternate-record address `(const (plus
+   (symbol_ref D_8009BA00) 80))` is rewritten as `(plus (reg 142) 80)` where reg 142 holds
+   D_8009BA00 — cse.c:6531-6535 calls use_related_value (cse.c:1781), which can only find a
+   register through get_related_value (rtlanal.c:211-224): it returns the base of a
+   `(const (plus SYM N))` and **0 for a bare symbol_ref** (rtlanal.c:214). split/cse.fn insn 252 /
+   344: `(symbol_ref D_8009BA50)` / `(symbol_ref D_8009BA58)` — no relation is possible.
+2. loop (merged/loop.fn lines 15-22): `Insn 232: regno 142 (life 10), move-insn savings 2 moved`,
+   insn 252 (BA00+80) `forces 232 ... moved`, same for 324/344 (BA00+48 / +88). split/loop.fn
+   lines 15-22: every table load `(life 1), move-insn savings 1 not desirable`. The decision is
+   loop.c:1631 `threshold * savings * m->lifetime >= insn_count` with m->lifetime / m->savings =
+   n_times_used from loop.c:791-793: the related use in insn 252 is what gives reg 142 a second use
+   and a 10-insn life. With separate symbols reg 142 has one use and dies in its block.
+3. cse2 (merged/cse2.fn insns 1064-1070): in the pre-header the hoisted sets become
+   `142 = D_8009BA00; 148 = 142+80; 169 = 142+48; 175 = 142+88`, each with a REG_EQUAL constant.
+4. global alloc (merged/alloc.txt; priority = floor_log2(nrefs)*nrefs/live_length, global.c:642-648 allocno_compare; order printed by the BB2_ALLOC_DEBUG hook global.c:605-616):
+   pseudo 142 nrefs 6 live 666 pri 180 -> hard reg 30 ($fp); 148/169/175 nrefs 3 pri 45 -> -1
+   (unallocated; reload rematerialises their REG_EQUIV constants at each use = the target's
+   `lui/addiu $t0` rebuilds); sv (79) / flag (80) pri 88 -> -1 (spilled, as in the target).
+   split/alloc.txt: sv (79) pri 88 -> $fp, flag spilled; no table pseudo crosses the loop (47).
+Why no separate-object spelling can produce it: the target's `$fp` = D_8009BA00 has exactly one
+in-loop use, so its set (1) + that use (weight 2) give nrefs 3, pri ~45 < sv/flag's 88 — it loses
+`$fp`. It wins only with more references that do NOT appear as `$fp` uses in the bytes, i.e. the
+pre-header `(plus reg N)` sets whose pseudos are then rematerialised as constants (step 4). Those
+sets exist only if cse relates the other addresses to D_8009BA00's register, which rtlanal.c:214
+refuses for any address that is not `D_8009BA00 + N` — i.e. unless the addresses are offsets of ONE
+object. Any extra in-loop use would be a second `$fp` use the target does not have (model check,
+s2 m1_modelcheck_pun: nrefs 5 -> $fp, but 17 and a pun). This covers every split spelling, not only
+the measured ones. Split spellings resting on refused/banned constructs, set aside per (a1):
+`D_8009BA00 + 6`/`[10]` through a [6]-declared symbol (F4 cross-symbol arithmetic,
+no-new-park-categories.md:587), and per-use pointer puns.
+Admissible split spellings measured (re-measured 2026-09-26 on current main, sandbox --disable all;
+none reaches 0, so (a1)'s defeat clause does not fire): plain split 47 (split_tex / split.c);
+FAKE-style pointer aliases under [[pointer-alias-fake-exception]]: alias set in the sel_a tail 47
+(s2/a1.c), function-scope alias before the loop 50 (s2/a3.c), alias at the loop top 50 (s2/a4.c,
+hoisted life 47 but pri 45 < 88), per-tail aliases for both frame tables 47 (s2/a5.c); structural
+respellings: four function-scope table pointers 39 (s/f1.c..f6.c, all four unallocated, sv takes
+`$fp`), per-tail table-pointer locals 55 / 47 / 55 (s/l1_locals4.c, l2_frames_only.c, l3_alt_first.c);
+duplicated switch tails 49; 11 tail-order permutations 52-117 (sw/).
+
+**(a2) Original compiler agrees** (calibration only: tools/cc1psx_wrapper.sh, PsyQ GCC 2.7.2.SN.1, on
+the SAME t.i each variant built from, with the build's cc1 flags `-O2 -G0 -funsigned-char -quiet
+-mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float`; output run through the build's
+prologue_fix | maspsx | align fix | multu_pad | as and objdumped; normalised diff by cmp.py).
+merged/focus.txt: `lui $fp,%hi / addiu $fp,$fp,%lo(0x8009BA00)`, `addu $a0,$a0,$fp`, and
+`lui/addiu $t0` for 0x8009BA50 / 0x8009BA30 / 0x8009BA58 — opcode, register and offset identical to
+the target's nine table-address instructions; frame -80 as the target (cc1psx asm:
+`la $fp,D_8009BA00` ... `la $8,D_8009BA00+80`, `+48`, `+88`).
+split/focus.txt: `$fp` = s0+60 (flag), the four tables formed in $v0/$v1 at their uses, frame -72 —
+not the target's shape. Whole-function normalised diffs are banked (merged 430/501 lines equal,
+split 390/501; cc1psx is not our build compiler — the oracle decides the match).
+
+**(a3) Minimal span.** func_800620B8 references exactly four labels (asm/funcs/func_800620B8.s
+lines 74-75, 137-138, 166-167, 179-180): D_8009BA00 (6 records, indexed `% 6` * 8), D_8009BA30
+(4 records, `& 3` * 8), D_8009BA50 (1 record), D_8009BA58 (1 record). Lowest label start 0x8009BA00;
+highest label end 0x8009BA5F (D_8009BA58 is 8 bytes, enddlabel before D_8009BA60). Span =
+0x8009BA00..0x8009BA5F = 0x60 bytes. Splat labels inside the span: exactly those four
+(asm/data/7D920.data.s:23262-23304) — no unreferenced label inside, none outside merged. The
+same-shape records before 0x8009BA00 (D_8009B9F0 etc.) and the u8 table D_8009BA60 (used by
+func_80060A68 / func_80060B70 / text1b.c:3029) are NOT merged.
+
+**(a4) One element shape.** Every 8-byte element of the span is {u16 clut_x, u16 clut_y, u16 u,
+u16 v} (asm/data/7D920.data.s:23262-23304):
+  [0..5]  (BA00..BA28) clut 0x3C0,0xFD  u 0x00,0x20,0x40,0x60,0x80,0xA0  v 0x94
+  [6..9]  (BA30..BA48) clut 0x3F0,0xFC  u 0x00,0x10,0x20,0x30            v 0x80
+  [10]    (BA50)       clut 0x3C0,0xFE  u 0x00 v 0x94 (record [0]'s u/v)
+  [11]    (BA58)       clut 0x3F0,0xFD  u 0x30 v 0x80 (record [9]'s u/v)
+The function's own accesses read the element as four halfwords at +0/+2/+4/+6 (`lhu 0x0/0x2($v1)`
+through D_800A348C at 0x800624A0/A4 = clut x/y; `lhu 0x4/0x6` through D_800A3488 at 0x800622D0,
+0x800622E8, 0x80062368, 0x80062380, 0x800624CC, 0x800624E0 = u/v) and index both strips with an
+8-byte stride (`sll $a0,$a0,3` 0x800622A0, `sll $v0,$v0,3` 0x80062340). Records [10]/[11] are only
+reached through D_800A348C (clut fields); their u/v words hold the same kind of values as the
+others. Declaration: `TexRec D_8009BA00[12]` (0x60 / 8 = 12); TexRec is the existing text1b.c record
+type (comment: PsyQ getClut(x, y) fields + u/v origin), moved to include/game.h with the table.
+
+Prong (b): array of the record type, index = record number (`[n % 6]`, `[(n & 3) + 6]`, `[10]`,
+`[11]`), no stride-as-magic-number. (c): D_8009BA30/50/58 have no C handle and no symbol-config row
+(undefined_syms_auto.txt / named_syms.txt / symbol_addrs.txt: none); only the data .s dlabels remain,
+referenced by no code once func_800620B8.s is no longer included. (d): canonical declaration in
+include/game.h. (e): no other consumer of any byte in the span (grep asm/funcs, src, include).
+
+Corrections carried from the session-1 layer-2 FAIL: record [11] has record [9]'s u/v (not frame
+0's); [10] has record [0]'s u/v; the [6]/[10]/[11] addresses are rebuilt as absolute constants by
+reload (REG_EQUIV rematerialisation), not formed from `$fp`.
 
 ## Layer-2 FAIL (manual lane, 2026-09-26) — the aggregate merge only
 A fresh cheat-reviewer FAILED the `D_8009BA00[12][4]` merge on prong (a)
