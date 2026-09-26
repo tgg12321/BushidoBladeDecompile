@@ -406,8 +406,8 @@ pre-reload insn, or (ii) was given by local-alloc to a quantity.
   - `i << 3`: 0x80039AC4..0x80039C64, spanning the flag-test branches, so multi-block;
   - the selector: the else arm, one block, call-free;
   - the window: from 0x80039E54 through the event loop, multi-block.
-  Only the selector is single-block. Over its life (0x80039D10..0x80039D18) the target keeps just
-  $v1 (and $at) busy among 2..17, besides $s0/$s1, so a local selector quantity scans to $v0 or
+  Only the selector is single-block. Over its life (0x80039D10..0x80039D18) the target keeps only
+  $v1 (written 0x80039D14) busy among 2..17, besides $s0/$s1, so a local selector quantity scans to $v0 or
   $a-registers, never 18. That is the local case of (D)(3). No other local-alloc quantity of a
   matching spelling is in 18. This is the output-visible pairing argument slotF used for
   func_80055138: a preference for R needs a pre-reload pairing with hard R or with a local seated
