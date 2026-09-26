@@ -1,11 +1,13 @@
 # func_800620B8 — evidence (manual lane, slotC, 2026-09-26)
 
-## Status (2026-09-26, session 3c slotA5)
-`candidate.c` = **0 / 501** split-symbol body (cand_split1): four FAKE pointer aliases of
-D_8009BA00/BA30/BA50/BA58 (strip32 set at the loop top) + ONE FAKE combine-foldable chain-extender on
-the sel_a address; both frame addresses spelled `index * sizeof(*table) + (s32)table`. The TexRec[12]
-merge is defeated under (a1) (session 3b); the 3b two-extender body is rejected (3c).
-Canonical gate: ASM-PARTIAL, 1/501 insns = the `swc2 $19` gte_stsz(r0) island.
+## Status (2026-09-26) — LANDED COMPLETED-INLINE-ASM-CANONICAL; ledger closed
+auth 1fa01e822 (gte_stsz island row), Match 96db91246, queue 99c3a6c12. Layer-2 PASS on the
+session-3c body (candidate.c = cand_split1: 4 FAKE pointer aliases + ONE FAKE chain-extender on the
+sel_a address + integer frame addresses `index * sizeof(*table) + (s32)table`). Oracle SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa; sandbox --disable all 0/501; check_completion_integrity OK.
+Reviewer non-blocking notes (recorded as asked): (1) the h2-noX16-1 permuter base (m_no_x16) was not
+FAKE-clean -- it carried the strip32 pointer-form extender; (2) no permuter campaign ran on the final
+integer-address chassis without the extender (q2, sandbox 35).
 
 ## Session 3c (2026-09-26, slotA5) — layer-2 FAIL on the 3b split landing; permuter + extender scope
 Layer-2 FAILED the 3b split landing (cand_split0: 4 aliases + 2 extenders) on: (1) no permuter from a
