@@ -279,6 +279,74 @@ d. **the counter.** idx (89) is live across the whole scan loop, so its conflict
   (someone_prefers is empty in the trace). So the split counter is never seated in $t4
   (measured: $v1).
 
+## (D)(3b) Per-value spellings that add sanctioned constructs (chain-extenders, dead stores, self-assignments, a pointer alias)
+The (D)(3) argument above covers spellings with the reuse body's statement list. This section
+covers per-value spellings that ADD FAKE constructs from the sanctioned families
+(dead-store-fake-exception.md: self-assignment, dead store, combine-foldable chain-extender;
+a pointer alias) on the split values' pseudos, whose extra references could change what
+flow/local-alloc/global-alloc see. Each variant is v/pv.c (or v/ctr_split.c) plus the one
+construct (r11/mk3.py; the entry/alias/goto2/after/bit/rec/e/tail variants were one-off
+edits of the same bases; the banked r11/v/ce_*.c files are exactly the measured bodies); each was sandboxed in the tree under the lock
+(r11/sbx_ce.ps1) and its TU dumped (r11/dump_sbx.sh; r11/ce_report.py prints the key sites).
+
+Mechanism, value 1 (the level D_800A37D2 / 5; its seat $a2 at 0x800552E4):
+1. If its variable is referenced in one basic block when flow runs, local-alloc ties it to the
+   dying srl result ((D)(2) a): `andi X,X,0xff`. A self-assignment or dead store is deleted
+   before flow (jump.c no-op move / flow dead store), and a chain-extender whose detour
+   fold-const or cse folds (`x - x` in one expression, same-block detours) leaves no
+   reference either: all of these stay tied (table: 102/104, `andi $3,$3`).
+2. A chain-extender that survives to flow in ANOTHER block (the call-if's argument or
+   condition: `... + lvl5 - lvl5`) makes the pseudo global. Pass trace (ce_l_chain_callarg):
+   `(insn 241 ... (minus:SI (reg:SI 188) (reg/v:SI 158)))` is still in .flow, and .combine
+   leaves only `(insn 1298 231 233 (use (reg/v:SI 158)) ...)`; lreg: "Register 158 used 5
+   times across 22 insns" (no block). global.c find_reg then scans upward for the lowest
+   register not excluded (pass 0: not conflicting, not in regs_someone_prefers; pass 1: not
+   conflicting). Trace: `conflicts: 2 3 4 16 29`, `someone_prefers: 4` -> $a1 (5).
+3. So $a2 needs $a1 excluded. (i) By conflict: in the target, $a1 holds the incoming arg1
+   until 0x80055140 (while $a2 still holds arg2 until 0x800551A4, so a range reaching back
+   there also conflicts with $a2: ce_l_entry_uninit, `conflicts: 2 3 4 5 6 16 29` -> $a3),
+   then `lbu a1` at 0x800555F4..0x80055610, `e` in the scan loop and lo_val in the tail;
+   every path from case 2 to those passes `jal file_GetFlag1` (0x80055530), and a pseudo
+   that crosses a call starts find_reg from call_used_reg_set (global.c:970-975), which
+   excludes $a2 as well. (ii) By regs_someone_prefers: prune_preferences (global.c:882-930)
+   strips call-used registers from the preferences of call-crossing allocnos (:902) and
+   merges only conflicting allocnos' preferences; the only copy with hard $a1 is the entry
+   copy of arg1, whose pseudo crosses calls (it is read at 0x80055680, after jal rand), and a
+   fresh local initialised from arg1 is merged into that pseudo by cse (ce_l_arg1alias_glob:
+   still `conflicts: 2 3 4 16 29`, `someone_prefers: 4` -> $a1). (iii) By call crossing:
+   excludes $a2 too. Hence no one-variable-per-value spelling, with or without these
+   sanctioned constructs, seats value 1 in $a2.
+Value 4 (the mask word): tied when single-block; a surviving chain-extender in the goto arm
+or after the test makes it global, and it is allocated early (16 refs over 4 insns) with
+`conflicts: 2 29` -> $v1 (ce_m_chain_goto2 / ce_m_chain_after); read before its write at the
+loop top (ce_m_chain_e1, an uninitialised read) it lives from function entry across five
+calls -> $s1.
+The clear loop's counter: $t4 for both loops means the two counters share a register, which
+two distinct pseudos can do only if their ranges do not overlap. A split counter kept out
+of the scan loop conflicts only with what is live in the clear loop (`conflicts: 2 29` ->
+$v1); one extended into the scan loop by a chain-extender overlaps the player counter, which
+holds $t4 there (ce_z_chain_e: `conflicts: 2 3 4 5 6 7 8 9 10 11 12 16 29` -> $t5), and those
+extensions do not even fold to zero bytes (518 insns).
+
+| variant (v/ce_*.c) | construct | sandbox | outcome at the site |
+|---|---|---|---|
+| ce_l_self_same / _self_clamp / _self_after | `lvl5 = lvl5;` in its block / clamp arm / after the call-if | 102 (512) each | tied `andi $3,$3,0xff` |
+| ce_l_dead_clamp / ce_l_dead_init | dead `lvl5 = 0;` in the clamp arm / at function entry | 102 (512) each | tied |
+| ce_l_chain_same | `(lvl5 + 1) * 0x180 + 0x280 - 0x180` | 104 (513) | tied |
+| ce_l_chain_clamp | `0x1000 + lvl5 - lvl5` in the clamp arm | 102 (512) | tied (folded before flow) |
+| ce_l_chain_callarg | `func_8005509C(... + lvl5 - lvl5)` | 102 (512) | global, $a1 (`andi $5,$2`) |
+| ce_l_chain_callif | `(u8)(D_800A37D2 % 5) + lvl5 - lvl5 == 0` | 104 (513) | global, $a1 |
+| ce_l_entry_uninit | `+ lvl5 - lvl5` at the first statement (read before write) | 103 (512) | global, $a3 |
+| ce_lm_entry_uninit | same for lvl5 and the mask | 41 (514) | $t0 / $a3 |
+| ce_l_arg1alias / _glob | `u16 *list_alias = arg1;` read by a folding detour (+ callarg chain) | 102 (512) each | tied / $a1 |
+| ce_l_alias | `lvl5_p = &lvl5;` | 111 (513) | tied `andi $3,$3` |
+| ce_m_self_after / ce_m_dead_goto / ce_m_chain_goto | self-assign / dead store / `cursor += m - m` | 102 (512) each | tied `or $2,$2,$3` |
+| ce_m_chain_goto2 / ce_m_chain_after | `lo = lo + move_mask - move_mask;` in the goto arm / after the test | 98 (512) each | global, $v1 |
+| ce_m_chain_e1 | `e[1] + move_mask - move_mask` (read before write) | 91 (515) | global, crosses 5 calls, $s1 |
+| ce_z_self_after / ce_z_dead_end / ce_z_chain_ploop / ce_z_chain_scan | self-assign / dead store / folding detours | 25 (516) each | counter $v1 |
+| ce_z_chain_bit / _rec / _e / _tail | `+ zero_i - zero_i` inside the section loop | 59/59/53/53 (518) | $t7/$t7/$t5/$t5, not zero-byte |
+None reaches 0; none seats value 1 or 4 in $a2 or the clear loop's counter in $t4.
+
 ## (D)(4) Measured alternatives
 `sandbox --disable all` scores were measured 2026-09-26 in the tree under the landing lock,
 with the landing's edits applied (r11/model.py `apply`; full-build SHA1 == oracle) and
