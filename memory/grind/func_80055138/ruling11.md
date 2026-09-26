@@ -311,7 +311,10 @@ register usage is the allocation-time assignment, and every emitted instruction 
 of these registers comes from an allocation-time insn (reload inserts its own moves only for a
 pseudo without a hard register or an operand its constraints reject; neither applies to these
 general-register operands, and the target has no spill code); (ii) the allocation-time stream
-may additionally hold moves later deleted as no-ops (jump2 noop_moves), duplicate tails later
+may additionally hold moves later deleted as no-ops (jump2 noop_moves; also sched2 after
+reload, sched.c:4962-4977, and final's same-register move skip, final.c:1796-1806 — added
+post-landing 2026-09-26 from slotH's func_8003993C audit; the argument is unchanged, since a
+no-op move is covered as a pairing whichever pass deletes it), duplicate tails later
 merged (jump2 cross-jump) and insns reorg deletes as redundant (redundant_insn, reorg.c ~1693,
 ~1783, ~3442, ~4005) — each such redundant insn repeats an emitted insn with the same
 registers, so it pairs nothing the output does not. Both extras are covered below: a no-op move is a
