@@ -260,7 +260,9 @@ By mechanism:
 - A block boundary inside V's arm at zero bytes does not reach flow: jump.c :268-275 deletes
   every unreferenced label on each jump_optimize run and flow.c :354-360 starts blocks only at
   surviving labels and after jumps/barriers; do-while(0)'s labels and jumps are gone by flow
-  (measured, both placements). A surviving label/jump in the arm is a branch the target lacks.
+  (measured, both placements). A label/jump that survives to flow is emitted as a branch unless a
+  pass after flow removes it; see "Folds after flow and after allocation" below (redundant
+  conditions, measured: the branch survives).
 - A LIVE reference outside the arm is a read of V. It reads either (a) the value written in the
   arm, so V is live-in at the join block; the join is also entered from the other arm, so V is
   live back through that arm, the loop body and the latch — across 0x80039AC4..0x80039C64, where
@@ -269,11 +271,99 @@ By mechanism:
   before its only write): an indeterminate value, undefined behavior in C90 (Annex G.2: "the
   value of an uninitialized object that has automatic storage duration is used before a value is
   assigned") — not ordinary C, and no sanctioned family admits it (the chain-extender entry is a
-  detour of a LIVE, defined computation); measured anyway: $s4 / $s6, not the target. A read
-  that sees an initializer is a second value in V, i.e. not a one-variable-per-value spelling.
+  detour of a LIVE, defined computation); measured anyway: $s4 / $s6, not the target. (A read
+  that sees both A's write and some other write of V -- an initializer, or a write in the other
+  arm -- makes those writes ONE value under Ruling 11's definition; that is the two-write case of
+  the next section, not a separate value.)
 - An address-taken V lives in memory; the target keeps both values in registers.
-So no per-value spelling, with or without these constructs, reproduces `andi s2,v0,1` or
-`addu a0,v1,v0`.
+
+### Folds after flow and after allocation; writes in the other arm (layer-2 FAIL 2026-09-26 frontier)
+Notation: A = the arm holding V's own write and reads (else arm for the selector, 0x80039D0C..
+0x80039D50; if arm for `entry_a`, 0x80039CDC..0x80039D08), A' = the other arm, J = the join
+block (0x80039D54..). Pass order (tools/gcc-2.7.2/toplev.c): flow, combine, local_alloc (:3052),
+global_alloc (:3080), reload (:3082), then the only post-allocation jump pass
+`jump_optimize (insns, 1, 1, 0)` (:3142: cross_jump = 1, noop_moves = 1); every earlier jump
+pass (:2827-2929) runs with cross_jump = 0. combine.c only READS basic_block_live_at_start
+(:730, :2311, :2334, :10243) and global_conflicts (global.c :688-693) builds conflicts from it,
+so a read that combine later folds still keeps V live, as flow computed, for both allocators.
+
+**The two-write case (duplicated-into-arms, and any other write in A').** Case (a) above: a read
+R of V outside A (in J or later) leaves V live around the loop unless V is also written on every
+path from the loop head to R that avoids A, i.e. in A' (a write W). W and A's write then reach R
+together: one value, one variable written in both arms. W costs no emitted instruction only if a
+pass after allocation deletes it:
+- **jump2 cross-jump** (:3142, find_cross_jump) merges identical instruction sequences that END at
+  a common label, replacing one copy by a jump to the other; the merged copy is still emitted
+  once. So a W that cross-jump merges is an instruction the target must have in a merged tail.
+  The target's arms end with no common instruction before J (if arm: `lui v0; lw
+  v0,%lo(D_80102768)(v0); j .L80039D54; addu v0,v0,v1`; else arm: `lw v0,%lo(D_801027B8)(at);
+  nop; addu v0,v0,a0`), and J begins `sw v0,0x58(s1)`: there is no merged tail for W to live in.
+  A write of V standing in both tails would also have to FOLLOW A's own reads of V (a tail ends
+  at the join; A's reads of V end at 0x80039D48 / 0x80039CF8), so it is an extra instruction in
+  A as well.
+- **no-op move deletion** (noop_moves = 1, same call) deletes `(set (reg R) (reg R))`: W must
+  copy into V a value already in V's register at W.
+  - `entry_a`: the register is $a0 and A' is the else arm, where $a0 holds the else entry only
+    from 0x80039D38 (`addu a0,a0,v0`) to 0x80039D3C (`lhu a0,2(a0)`). W must sit there, and V
+    stays live after it to R (flow's liveness), across 0x80039D3C where the target rewrites $a0
+    with a value live to 0x80039D50: a conflict, so V is not $a0 there. Measured on the
+    temp-shared chassis (only `entry` split, `temp` as in candidate.c), W between the else
+    entry's write and read: v/arm_pe_copymid_ann.c 4/526, `entry_a` in $a1 (`addu a1,v1,v0` in
+    the if arm); W at the else-arm tail instead: arm_pe_copy_ann 10/526, the copy survives as
+    `move a0,v1`.
+  - selector: the register is $s2 and A' is the if arm, where the target never writes $s2 and
+    $s2 still holds only `i << 3` (written 0x80039AC4, last read 0x80039C64). W would have to
+    copy the `i << 3` value into the selector's variable. That variable is then written in both
+    arms with two different meanings (an index multiple, a 0/1 table selector), read together
+    only by the folded R: a multi-write local that Rulings 5/6/8/9/10 do not admit (5 fails
+    1(a)/(b); not a record pointer; no BASE + K; not vmNoiseOn; no original source) -- the same
+    kind of variable this package asks Ruling 11 to admit, with a different partner, not an
+    admissible per-value spelling. Measured anyway (a named `i8` so that W is a register copy):
+    v/arm_sel_i8var_ann.c 47/526 and the arm_i8_* R placements 47-55/526; V in $a2 (crosses no
+    call) or $s0 (R after a call), never $s2.
+- Otherwise W is an emitted instruction in A', whose target code is fixed and has none.
+
+Measured, one duplicated-into-arms variant per value (the value's own statement copied into the
+other arm, R = the annihilated J-test read `& (0x40 + ((V & 1) >> 1))`; without R the copy is dead
+and flow deletes it: arm_sel_dup / arm_ent_dup, both 89, V local):
+| variant | score (insns) | V after allocation (dump v_<variant>) |
+|---|---|---|
+| arm_sel_dup_ann: `sel = (*(u8 *)(p + 0x17) >> 1) & 1;` also at the if-arm tail | 95 (530) | global (`used 10 times across 17 insns`), $a1; the if-arm copy emitted |
+| arm_ent_dup_ann: `entry_a = D_80102764 + frame * 4;` also at the else-arm tail | 96 (533) | global, $a0, if arm untied (`addu $4,$3,$2`), but the else-arm copy emitted (+7 insns) |
+Other A' writes with R: selector `sel = 0` / `sel = i * 8` 88 (525), V $a1; `entry_a = 0` 88
+(524) / `entry_a = entry_b` 86 (525), V $a0 but the write emitted; temp-shared chassis
+`entry_a = 0` 12 (525).
+
+**Hoisting / sinking across the branch.** A write of V hoisted above the weapon branch makes V
+two-block without a second write, but the computation then executes before `beqz
+v0,.L80039D0C` (0x80039CD4, nop in its delay slot), where the target has none: arm_sel_hoist 94
+(524; V `6 times across 6 insns`, $v0, crosses no call), arm_ent_hoist 104 (529). A write cannot
+sink below its own reads.
+
+**Redundant conditions inside A (F6 class).** An empty `if (c) { }` is deleted by the pre-flow
+jump passes (a jump to the next label; rc_ent_empty.c 89, V local). A condition around A's reads
+that only combine's nonzero_bits can prove constant (`if (((V & 1) >> 1) == 0) { ... }`; the
+pre-flow passes do not fold it) does split A at flow and makes V two-block, but combine folds
+only the condition's value and the conditional branch survives into the output (`move $2,$0;
+bne $2,$0,...`): rc_sel 90 (526; V global, $v1), rc_ent 92 (527), rc_pe_ent 16 (528, temp-shared
+chassis; `entry_a` global but in $v1, the if-arm sum again output = input -- global.c honours the
+preference from the local-allocated input, set_preference :1671). An emitted branch is an
+instruction A lacks.
+
+**Why a call-free global V still misses $s2 (selector).** Every variant above that made the
+selector's variable global without making it cross a call seated it in a call-clobbered register
+($v0 / $v1 / $a1 / $a2): global.c find_reg (:952) starts from fixed_reg_set when the allocno
+crosses no call (:970-975), so pass 0 (lowest register already used that neither conflicts with
+V nor is preferred by a conflicting allocno) and pass 1 (lowest non-conflicting) both consider
+$v0..$t9 before $s2; only a call-crossing allocno starts from call_used_reg_set (callee-saved
+registers only). Crossing a call needs V live across one of the loop's calls, i.e. a read after
+the call, which is the two-write case above (measured arm_i8_*: $s0).
+
+Receipts: every body above is banked verbatim in r11/arms/ (arm_*: mkarms.py from v/pv.c; the
+arm_pe_* / rc_pe_* bodies from v/pv_entry.c; arm_i8_* / arm_sel_i8var_ann from arm_sel_i8_ann);
+scores r11/sweep_arms.txt; dump tables r11/table_arms.txt.
+So no admissible per-value spelling, with or without these constructs (including the folds after
+flow and after allocation above), reproduces `andi s2,v0,1` or `addu a0,v1,v0`.
 
 ## (D)(4) Measured alternatives (sandbox --disable all, /526; all bodies generated from candidate.c by mkall.py; r11/sweep_final.txt)
 | spelling | score |
