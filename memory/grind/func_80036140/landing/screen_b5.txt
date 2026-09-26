@@ -1,0 +1,24 @@
+# -G8 screening, code6cac_b5.c (tree p3)
+# -G8 recipe: mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C src/code6cac_b5.c | tools/gcc-2.7.2/build/cc1 -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float | python3 tools/prologue_fix.py | python3 tools/maspsx/maspsx.py --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt |  python3 tools/multu_pad.py --funcs multu_pad_funcs.txt | mipsel-linux-gnu-as -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o build/src/code6cac_b5.G8.o
+# -G0 recipe: mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C src/code6cac_b5.c | tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float | python3 tools/prologue_fix.py | python3 tools/maspsx/maspsx.py --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt |  python3 tools/multu_pad.py --funcs multu_pad_funcs.txt | mipsel-linux-gnu-as -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0 -o build/src/code6cac_b5.G0.o
+# externs cc1 -G8 reports (.extern name,size): 9; <= 8 bytes and not in sdata_syms.txt: ['g_cd_result_plus_0x3', 'g_cd_result_plus_0x4', 'g_cd_result_plus_0x5']
+
+## g_cd_result_plus_0x3 (size 1): 2 accesses at -G8, 2 at -G0 -> IDENTICAL
+  G8 func_80036140+0x458  3c040000 	lui	a0,0x0  R_MIPS_HI16 g_cd_result_plus_0x3
+  G8 func_80036140+0x45c  24840000 	addiu	a0,a0,0  R_MIPS_LO16 g_cd_result_plus_0x3
+  G0 func_80036140+0x45c  3c040000 	lui	a0,0x0  R_MIPS_HI16 g_cd_result_plus_0x3
+  G0 func_80036140+0x460  24840000 	addiu	a0,a0,0  R_MIPS_LO16 g_cd_result_plus_0x3
+
+## g_cd_result_plus_0x4 (size 1): 2 accesses at -G8, 2 at -G0 -> IDENTICAL
+  G8 func_80036140+0x440  3c020000 	lui	v0,0x0  R_MIPS_HI16 g_cd_result_plus_0x4
+  G8 func_80036140+0x444  90420000 	lbu	v0,0(v0)  R_MIPS_LO16 g_cd_result_plus_0x4
+  G0 func_80036140+0x444  3c020000 	lui	v0,0x0  R_MIPS_HI16 g_cd_result_plus_0x4
+  G0 func_80036140+0x448  90420000 	lbu	v0,0(v0)  R_MIPS_LO16 g_cd_result_plus_0x4
+
+## g_cd_result_plus_0x5 (size 1): 2 accesses at -G8, 2 at -G0 -> IDENTICAL
+  G8 func_80036140+0x58c  3c040000 	lui	a0,0x0  R_MIPS_HI16 g_cd_result_plus_0x5
+  G8 func_80036140+0x590  24840000 	addiu	a0,a0,0  R_MIPS_LO16 g_cd_result_plus_0x5
+  G0 func_80036140+0x590  3c040000 	lui	a0,0x0  R_MIPS_HI16 g_cd_result_plus_0x5
+  G0 func_80036140+0x594  24840000 	addiu	a0,a0,0  R_MIPS_LO16 g_cd_result_plus_0x5
+
+RESULT: every screened access identical

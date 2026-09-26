@@ -1,0 +1,4 @@
+OURS_b5comm    func_80036140: 512 target words; differing: li-expansion (addiu vs ori, same reg+imm) = 68, other = 0
+OURS_b5comm    func_80036940: 274 target words; differing: li-expansion (addiu vs ori, same reg+imm) = 47, other = 0
+b5_comm-G8     func_80036140: 512 target words; differing: li-expansion (addiu vs ori, same reg+imm) = 64, other = 25
+b5_comm-G8     func_80036940: 274 target words; differing: li-expansion (addiu vs ori, same reg+imm) = 47, other = 0

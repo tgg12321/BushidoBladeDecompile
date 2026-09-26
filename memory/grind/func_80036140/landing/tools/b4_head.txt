@@ -1,0 +1,13 @@
+/* The CD-mix setters cdrom_SetMix and func_80035F78 in their own translation
+ * unit compiled -G8 (Makefile GP_FILES), moved out of code6cac_b2_post.c. The
+ * original compiler knew the CdlATV blocks g_cd_atv / D_800A36B8 and the fade
+ * counters D_800A3854 / D_800A3840 were small data: both functions write them
+ * straight off $gp, and under -G0 cdrom_SetMix keeps &g_cd_atv in a register
+ * for its first store instead. */
+#include "common.h"
+#include "gpu.h"
+#include "sound.h"
+#include "game.h"
+#include "system.h"
+#include "code6cac.h"
+

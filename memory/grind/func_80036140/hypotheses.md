@@ -17,18 +17,23 @@
 - **Real `.comm` definitions in C** — cc1 emits 3-arg `.comm sym,4,1` (maspsx parse crash, cf. CD_cw);
   and maspsx would emit .bss storage in the object (conflicts with the linker-script address).
 - **-G8 alone** — 14 (the +1..+3 bytes still gp-rel'd); **.comm knowledge alone (-G0)** — 22.
+- **(slotI 2026-09-26) E9C/EA4 as anything other than CdState members** — at -G8: separate
+  variables 18, pointer read-modify-write locals 18, function-scope pointer aliases 42 (small-data
+  address cost folds the pointer back, cse find_best_addr); a separate 12-byte record at 0x80101E9C:
+  func_80036140 8 + cdrom_ReadyCallback 12 (no use_related_value with the CdState base). Dumps in
+  landing/dumps/. Only the CdState extension through 0x80101EA7 reaches the oracle.
+- **(slotI) cdrom_SetMix at -G0 with the CdlATV merge** — 5 (address register shared with CdMix's
+  argument); cc1psx+ASPSX COMMON -G0 differs too. Hence the second -G8 file (cdrom_SetMix +
+  func_80035F78).
 
-## Open (the frontier)
-1. **Owner ruling needed** (docs/grind/borderline.md 2026-09-26 func_80036140): may the build model
-   (i) compile the CD module TU with -G8 and (ii) tell maspsx that g_cd_atv / D_800A36B8 were COMMON
-   in the original TU (offset forms not gp-rel, no storage emitted)? With both + the record
-   extension the body is instruction-complete (scratch score 2 = jtbl operand only).
-2. Record extension past 0x80101E99 (E9A..EA7) rests on this function's member-form codegen only —
-   same evidence class as the func_800620B8 question (compiler-behavior evidence for a merge).
-   Independent-evidence search done: main EXE lui 0x8010 formations into 0x80101E58..EC7 (117,
-   every one at a label's own address) and MOVOVL.EXE (0) — integration/scan_ovl.py.
-   Nothing but the func_80036940 E8C-0x20 / E98-0x2C pair crosses a label.
-3. Landing mechanics once ruled: split the CD module into its own TU (rodata base 0x80010938),
-   -G8 via GP_FILES (+ engine/buildconfig.py mirror), func_80036940 linked as asm
-   (LINKED_ASM_FUNCS) or split around; delete jtbl_80010938 from code6cac_b_rodata_post.c and keep a
-   leading zero word there until func_80036940 lands; oracle + all siblings.
+## Open (the frontier) — 2026-09-26 evening, slotI
+1. **Owner question (borderline.md 2026-09-26 "the CD state record must run to 0x80101EA7")**: the
+   E9C..EA7 extension is forced by mechanism (evidence.md § Record extension) but (a4′)(2)/(3) would
+   make 0x80101E9E..0x80101EA3 an anonymous filler, which (a4′)(5) then fails (other consumers need
+   puns). If the owner allows named members typed by the other consumers' accesses, the landing
+   below is ready; if not, func_80036140 cannot land (no admissible spelling reaches the target).
+2. Everything else is built and oracle-verified in scratch (evidence.md CURRENT STATE): maspsx
+   COMMON gate + registration (landing/tools/gate.py, register.py; engine test 805/0), five-file
+   split (apply_model.py --split final --merge --ext rec), symbol-row retirement still to script
+   (D_800A36B9..BB, g_cd_atv_plus_0x1..3, the "retire with func_80036140" alias rows, E9C/E9E/EA0/EA4
+   rows, named_syms comment 0x80101E9B -> 0x80101EA7), header comment update, move-identity check.

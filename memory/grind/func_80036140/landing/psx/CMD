@@ -1,0 +1,1 @@
+cc1psx: bash tools/cc1psx_wrapper.sh -O2 <G> -funsigned-char -quiet -mcpu=3000 -mips1 -msoft-float -w < code6cac_b5.i

@@ -1,0 +1,8 @@
+[b5_init-G8] code6cac_b5 class=init cc1psx -G8 syms=g_cd_result,g_cd_atv,D_800A36B8,D_800A3840,D_800A3854
+  func_80036140: 512 target words, 86 differ after alignment (reloc imm masked); gp accesses target=10 ours=16
+      target gp: ['D_800A3854', 'D_800A36B8', 'D_800A3840', 'g_cd_atv', 'D_800A3840', 'D_800A3854', 'D_800A3840', 'D_800A3854', 'g_cd_result', 'g_cd_result']
+      ours   gp: ['.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata', '.sdata+.sdata']
+  func_80036940: 274 target words, 47 differ after alignment (reloc imm masked); gp accesses target=2 ours=2
+      target gp: ['g_cd_result', 'g_cd_result']
+      ours   gp: ['.sdata+.sdata', '.sdata+.sdata']
+  total words ours=784 target=786
