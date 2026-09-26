@@ -44,60 +44,51 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     s32 y2;
     s32 cx;
     s32 cy;
-    /* cross_a / cross_b hold one value per same-side test (cross_a twelve,
-     * cross_b eleven): the 2D cross product (edge) x (point - edge start) for
-     * the edge under test, cross_a for the first point of the pair, cross_b
-     * for the second. Ruling 11 (ordinary-c-judge-decidable.md); proof in
-     * memory/grind/func_8002DE20/ruling11.md. */
-    s32 cross_a;
-    s32 cross_b;
-    s32 cross_ab2; /* edge A-B x ((x2,y2) - A): its own value, see ruling11.md */
 
     obj->unkF8.vx = p0[0] - obj->unk60[0];
     obj->unkF8.vy = p0[1] - obj->unk60[1];
     obj->unkF8.vz = p0[2] - obj->unk60[2];
-    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20; header `($12)` written `0($12)` (maspsx) */
+    /* gte_ldv0(&obj->unkF8): inline_o.h:16-20 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $0,0($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_rtv0(): inline_o.h 4.3 :426-430; post-DMPSX word 0x4A486012 for the
-     * header's placeholder `.word 0x0000013f` (no DMPSX pass in this build) */
+    /* gte_rtv0(): inline_o.h:426-430 */
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
     obj->unkF8.vx = p1[0] - obj->unk60[0];
     obj->unkF8.vy = p1[1] - obj->unk60[1];
     obj->unkF8.vz = p1[2] - obj->unk60[2];
-    /* gte_stlvnl(&obj->unk118[0]): inline_o.h 4.3 :904-909; header `($12)` written `0($12)` (maspsx) */
+    /* gte_stlvnl(&obj->unk118[0]): inline_o.h:904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[0]):"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $25,0($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20; header `($12)` written `0($12)` (maspsx) */
+    /* gte_ldv0(&obj->unkF8): inline_o.h:16-20 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $0,0($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_rtv0(): inline_o.h 4.3 :426-430; post-DMPSX word 0x4A486012 for the
-     * header's placeholder `.word 0x0000013f` (no DMPSX pass in this build) */
+    /* gte_rtv0(): inline_o.h:426-430 */
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
     obj->unkF8.vx = p2[0] - obj->unk60[0];
     obj->unkF8.vy = p2[1] - obj->unk60[1];
     obj->unkF8.vz = p2[2] - obj->unk60[2];
-    /* gte_stlvnl(&obj->unk118[1]): inline_o.h 4.3 :904-909; header `($12)` written `0($12)` (maspsx) */
+    /* gte_stlvnl(&obj->unk118[1]): inline_o.h:904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[1]):"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $25,0($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk118[2]): gtemac.h 4.3 :354-357,
-     * i.e. gte_ldv0 / gte_rtv0 / gte_stlvnl as above (same two deviations) */
+    /* gte_ldv0(&obj->unkF8): inline_o.h:16-20 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $0,0($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
+    /* gte_rtv0(): inline_o.h:426-430 */
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
+    /* gte_stlvnl(&obj->unk118[2]): inline_o.h:904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[2]):"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $25,0($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
@@ -160,60 +151,36 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     cy = (obj->unkA8.vy + obj->unkB8.vy) / 3;
 
     /* (x1,y1) inside the triangle */
-    cross_a = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
-    cross_b = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
-        cross_b = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
-        if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
-            cross_b = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
-            if ((cross_a ^ cross_b) >= 0) {
+    if (((obj->unkA8.vy * cx - obj->unkA8.vx * cy) ^ (obj->unkA8.vy * x1 - obj->unkA8.vx * y1)) >= 0) {
+        if (((obj->unkB8.vy * cx - obj->unkB8.vx * cy) ^ (obj->unkB8.vy * x1 - obj->unkB8.vx * y1)) >= 0) {
+            if ((((obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy)) ^ ((obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy))) >= 0) {
                 return 1;
             }
         }
     }
     /* (x2,y2) inside the triangle */
-    cross_a = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
-    cross_b = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
-        cross_b = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
-        if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
-            cross_b = (obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy);
-            if ((cross_a ^ cross_b) >= 0) {
+    if (((obj->unkA8.vy * cx - obj->unkA8.vx * cy) ^ (obj->unkA8.vy * x2 - obj->unkA8.vx * y2)) >= 0) {
+        if (((obj->unkB8.vy * cx - obj->unkB8.vx * cy) ^ (obj->unkB8.vy * x2 - obj->unkB8.vx * y2)) >= 0) {
+            if ((((obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy)) ^ ((obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy))) >= 0) {
                 return 1;
             }
         }
     }
     /* the segment against edge (0,0)-A */
-    cross_a = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
-    cross_b = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
-        cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
-        if ((cross_a ^ cross_b) >= 0) {
+    if (((obj->unkA8.vy * x1 - obj->unkA8.vx * y1) ^ (obj->unkA8.vy * x2 - obj->unkA8.vx * y2)) >= 0) {
+        if ((((y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1)) ^ ((y2 - y1) * -x1 - (x2 - x1) * -y1)) >= 0) {
             return 1;
         }
     }
     /* the segment against edge (0,0)-B */
-    cross_a = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
-    cross_b = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
-        cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
-        if ((cross_a ^ cross_b) >= 0) {
+    if (((obj->unkB8.vy * x1 - obj->unkB8.vx * y1) ^ (obj->unkB8.vy * x2 - obj->unkB8.vx * y2)) >= 0) {
+        if ((((y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1)) ^ ((y2 - y1) * -x1 - (x2 - x1) * -y1)) >= 0) {
             return 1;
         }
     }
     /* the segment against edge A-B */
-    cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
-    cross_ab2 = (obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy);
-    if ((cross_a ^ cross_ab2) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
-        cross_b = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
-        if ((cross_a ^ cross_b) >= 0) {
+    if ((((obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy)) ^ ((obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy))) >= 0) {
+        if ((((y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1)) ^ ((y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1))) >= 0) {
             return 1;
         }
     }

@@ -1,0 +1,13 @@
+--- tools/maspsx/maspsx/__init__.py	2026-09-14 22:35:49.260903900 -0500
++++ tmp/func_8002DE20/maspsx_fix/maspsx/__init__.py	2026-09-26 15:53:00.157789900 -0500
+@@ -183,8 +183,9 @@
+     if match := re.match(r"(\$[a-z0-9]+),\s*%lo\(([^(]+)\)\(([^(]+)\)", rest):
+         r_dest, operand, r_source = match.group(1, 2, 3)
+         needs_expanding = False
+-    elif match := re.match(r"(\$[a-z0-9]+),\s*([^(]+)\(([^)]+)\)", rest):
++    elif match := re.match(r"(\$[a-z0-9]+),\s*([^(]*)\(([^)]+)\)", rest):
+         r_dest, operand, r_source = match.group(1, 2, 3)
++        operand = operand or "0"  # PROTOTYPE: ASPSX accepts an empty offset, `($12)`
+         needs_expanding = True
+     elif match := re.match(r"(\$[a-z0-9]+),\s*([^(]+)", rest):
+         r_dest, operand = match.group(1, 2)

@@ -44,13 +44,15 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     s32 y2;
     s32 cx;
     s32 cy;
-    /* cross_a / cross_b hold one value per same-side test (cross_a twelve,
-     * cross_b eleven): the 2D cross product (edge) x (point - edge start) for
-     * the edge under test, cross_a for the first point of the pair, cross_b
-     * for the second. Ruling 11 (ordinary-c-judge-decidable.md); proof in
-     * memory/grind/func_8002DE20/ruling11.md. */
-    s32 cross_a;
-    s32 cross_b;
+    s32 cross_a1;
+    s32 cross_a4;
+    s32 cross_a7;
+    s32 cross_a9;
+    s32 cross_a11;
+    s32 cross_b1;
+    s32 cross_b4;
+    s32 cross_b7;
+    s32 cross_b9;
     s32 cross_ab2; /* edge A-B x ((x2,y2) - A): its own value, see ruling11.md */
 
     obj->unkF8.vx = p0[0] - obj->unk60[0];
@@ -160,60 +162,74 @@ s32 func_8002DE20(Unk8002DE20Obj *obj, s32 *p0, s32 *p1, s32 *p2)
     cy = (obj->unkA8.vy + obj->unkB8.vy) / 3;
 
     /* (x1,y1) inside the triangle */
-    cross_a = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
-    cross_b = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
-        cross_b = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
-        if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
-            cross_b = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
-            if ((cross_a ^ cross_b) >= 0) {
+    cross_a1 = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
+    cross_b1 = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
+    if ((cross_a1 ^ cross_b1) >= 0) {
+        s32 cross_a2;
+        s32 cross_b2;
+        cross_a2 = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
+        cross_b2 = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
+        if ((cross_a2 ^ cross_b2) >= 0) {
+            s32 cross_a3;
+            s32 cross_b3;
+            cross_a3 = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
+            cross_b3 = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
+            if ((cross_a3 ^ cross_b3) >= 0) {
                 return 1;
             }
         }
     }
     /* (x2,y2) inside the triangle */
-    cross_a = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
-    cross_b = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
-        cross_b = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
-        if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
-            cross_b = (obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy);
-            if ((cross_a ^ cross_b) >= 0) {
+    cross_a4 = obj->unkA8.vy * cx - obj->unkA8.vx * cy;
+    cross_b4 = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
+    if ((cross_a4 ^ cross_b4) >= 0) {
+        s32 cross_a5;
+        s32 cross_b5;
+        cross_a5 = obj->unkB8.vy * cx - obj->unkB8.vx * cy;
+        cross_b5 = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
+        if ((cross_a5 ^ cross_b5) >= 0) {
+            s32 cross_a6;
+            s32 cross_b6;
+            cross_a6 = (obj->unkB8.vy - obj->unkA8.vy) * (cx - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (cy - obj->unkA8.vy);
+            cross_b6 = (obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy);
+            if ((cross_a6 ^ cross_b6) >= 0) {
                 return 1;
             }
         }
     }
     /* the segment against edge (0,0)-A */
-    cross_a = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
-    cross_b = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
-        cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
-        if ((cross_a ^ cross_b) >= 0) {
+    cross_a7 = obj->unkA8.vy * x1 - obj->unkA8.vx * y1;
+    cross_b7 = obj->unkA8.vy * x2 - obj->unkA8.vx * y2;
+    if ((cross_a7 ^ cross_b7) >= 0) {
+        s32 cross_a8;
+        s32 cross_b8;
+        cross_a8 = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
+        cross_b8 = (y2 - y1) * -x1 - (x2 - x1) * -y1;
+        if ((cross_a8 ^ cross_b8) >= 0) {
             return 1;
         }
     }
     /* the segment against edge (0,0)-B */
-    cross_a = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
-    cross_b = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
-    if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
-        cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
-        if ((cross_a ^ cross_b) >= 0) {
+    cross_a9 = obj->unkB8.vy * x1 - obj->unkB8.vx * y1;
+    cross_b9 = obj->unkB8.vy * x2 - obj->unkB8.vx * y2;
+    if ((cross_a9 ^ cross_b9) >= 0) {
+        s32 cross_a10;
+        s32 cross_b10;
+        cross_a10 = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
+        cross_b10 = (y2 - y1) * -x1 - (x2 - x1) * -y1;
+        if ((cross_a10 ^ cross_b10) >= 0) {
             return 1;
         }
     }
     /* the segment against edge A-B */
-    cross_a = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
+    cross_a11 = (obj->unkB8.vy - obj->unkA8.vy) * (x1 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y1 - obj->unkA8.vy);
     cross_ab2 = (obj->unkB8.vy - obj->unkA8.vy) * (x2 - obj->unkA8.vx) - (obj->unkB8.vx - obj->unkA8.vx) * (y2 - obj->unkA8.vy);
-    if ((cross_a ^ cross_ab2) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
-        cross_b = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
-        if ((cross_a ^ cross_b) >= 0) {
+    if ((cross_a11 ^ cross_ab2) >= 0) {
+        s32 cross_a12;
+        s32 cross_b12;
+        cross_a12 = (y2 - y1) * (obj->unkA8.vx - x1) - (x2 - x1) * (obj->unkA8.vy - y1);
+        cross_b12 = (y2 - y1) * (obj->unkB8.vx - x1) - (x2 - x1) * (obj->unkB8.vy - y1);
+        if ((cross_a12 ^ cross_b12) >= 0) {
             return 1;
         }
     }

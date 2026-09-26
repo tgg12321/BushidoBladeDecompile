@@ -42,3 +42,19 @@
 - Try a sides array (`s32 side[2]` written per test) — check whether it stays in registers.
 - Islands: independent of the C question, landing needs an owner-instructed registry row and
   pinned inline_o.h provenance (a second independent header copy).
+
+## slotE 2026-09-26 (after the Ruling 11 + inline_o.h class rulings)
+- CONFIRMED: separate-statement verbatim islands byte-match (keep-asm 0). The joined form is not
+  needed. Minimal residual = D1 `0($12)` (6 stmts, byte-neutral) + D2 post-DMPSX word (3 stmts).
+- CONFIRMED: fully verbatim `($12)` builds and byte-matches under a 2-line maspsx prototype
+  (tools/maspsx_empty_offset_prototype.diff) — D1 could be removed by a maspsx fidelity fix.
+- KILLED: `static inline` cross-product helper as a way around sharing (90 per-value, 90 inline
+  calls; 0 only with the shared pair) — inlined params/temps are single-block like any per-value
+  local. Inline-expression form 90. KILLED: sides array `s32 side[2]` for the shared pair
+  (tmp s_sides_array.c): 265, 578 insns — GCC 2.7.2 keeps it on the stack (and it would be the
+  same multi-value reuse anyway).
+- KILLED: sharing cross_b's test-11 value is unnecessary (X ablation b11 = 0) -> split out.
+- Frontier: (1) owner: per-function owner_cluster_grants.txt row for D1+D2 (or D2 + maspsx fix);
+  (2) engine: PINNED gte_ldv0/gte_rtv0/gte_stlvnl/gte_ApplyRotMatrix + recognizer (adjacent
+  macros, DMPSX word) so default-strip sandbox reaches 0; (3) landing build + fresh layer-2 on
+  candidate.c walking R11 (A)-(H) and the class/row prongs.

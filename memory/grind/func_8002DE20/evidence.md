@@ -91,3 +91,21 @@ ruling routes to "an owner-instructed row" (inline-asm-policy.md). So the row ne
     provenance unpinned (one copy only: tmp/croc-ref, $PSLibId unexpanded).
 Cleared by the reviewer: the struct view (backed by target bytes), mid_i, the final return form,
 the z nudge. candidate.c stays the 0/506 body as the reference byte-proof; it is NOT landable.
+
+## slotE 2026-09-26 — islands un-joined + Ruling 11 package (candidate.c REPLACED)
+candidate.c is now the slotE body (the layer-2-failed body stays banked as
+rejected/layer2-fail-cross-pair-inline-o-islands-0.c). Changes: (1) the nine GTE islands are the
+pinned PsyQ 4.3 inline_o.h header statements written SEPARATELY, character for character except
+two tool-forced deviations — `0($12)` for `($12)` (maspsx parse) and gte_rtv0's `.word
+0x4A486012` for the DMPSX placeholder `.word 0x0000013f` (no DMPSX pass): full listing and proofs
+in islands.md; `vin` dropped (macro arg `&obj->unkF8`). (2) cross_b's test-11 value split into its
+own single-write local `cross_ab2` (its ablation is byte-identical; target's `xor v1,a0,v1` there
+is the tie to a local operand 2). (3) (F) annotation on cross_a/cross_b.
+Scores: `--disable all --keep-cheat-asm` 0/506, 0 hunks. Default strip 10 (497 insns): engine
+PINNED lacks these macros + recognizer gaps (islands.md "What else landing needs").
+NOT oracle-built in this form (bank-only task; the predecessor was oracle-proven and the sandbox
+objects are identical, 0 hunks).
+Ruling 11 (D) proof for cross_a/cross_b: ruling11.md (dumps of the exact candidate.c and its
+derived per-value twin r11/final_pv.c, mechanism local-alloc.c :470-478 / :1824-1827 /
+:1905-1922, necessity argument, 23 single-value ablations all > 0, structural respellings 90,
+permuter from the per-value body). Open point for layer-2: (B)(2) path-wise re-store of a4/b7.
