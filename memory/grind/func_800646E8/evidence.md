@@ -53,3 +53,7 @@ from the siblings func_80063E10 / func_8006295C (inline_c.h 4.3 :297-310,
 tail E8-first 8 · y via ((s16 *)D_800A34B8)[1] 32 · `* 4` for `<< 2` 6 ·
 zp init before loop 2 · scalar D_8009BD44 5 · u16-cast table reads (no TexRec) 15.
 (Supersedes the rough +N figures above, which were measured on older bases.)
+
+## LANDED 2026-09-26 (manual lane, slotB)
+COMPLETED-INLINE-ASM-CANONICAL: auth 81911fb17, Match 119ff2237, queue ed45e33dd.
+Layer-2 cheat-reviewer PASS. Lock rebuild SHA1 == oracle; check_completion_integrity OK.
