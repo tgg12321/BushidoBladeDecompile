@@ -272,6 +272,37 @@ So no per-value spelling, with or without these constructs, reproduces `andi s2,
 | structural: `s32 *row = D_801027B0[sel];` row pointer (v/st_row.c) | 94 (523) |
 | structural: window as one `?:` expression (v/st_tern.c) | 94 (524) |
 | structural: the weapon store as one `?:` expression, `frame`/`sel` locals (v/st_cond.c) | 100 (527) |
-| permuter from v/pv.c | see below |
+| permuter from the per-value body (19,486 iterations) | best transplanted find 8 (a `window` carrier + do-while(0)); carrier-free best 39 (see below) |
 (Each variable holds two values, so the ablation clause — three or more values — does not apply;
 the two single-variable splits are recorded above.)
+
+## (D)(4) Permuter from the one-variable-per-value body
+Workspace tmp/func_8003993C/r11/perm_pv, built by `bash tmp/func_8003993C/mkperm.sh r11/pv_both
+r11/perm_pv` from tmp/func_8003993C/r11/pv_both.c (the per-value twin of the pre-annotation reuse
+body; token-identical to v/pv.c once comments are stripped — the only differences between the two
+reuse bodies are the two FAKE/F3 comments). Launched `tools/permuter_campaign.py launch --label
+r11-per-value-89 -j 2` 2026-09-26T21:53Z, stopped by `harvest --stop` after 2204 s / 19,486
+iterations. Permuter base 1515 -> best 95 (646 output dirs). Classified by what each diff adds
+(tmp/func_8003993C/r11/classify.py, output banked as r11/classify.txt; the script flags any
+non-base assignment to an existing local as `carrier`, so a few `other`-class respellings are
+over-counted as carriers): 437 carrier, 167 copy, 42 other.
+- Every find below permuter score 485 re-creates a MULTI-VALUE variable: `window` or `prog`
+  made to carry a weapon-arm value (95-1/240-1 `entry_b = (window = D_801027B0[sel][1]) + ...`;
+  295-1 `window = *(u16 *)(entry_a + 2)`; 325-1 `prog = *(u16 *)(entry_b + 2)`; 450-1
+  `window = *(u8 *)(p + 0x17)`; 455-1, 485-1) — the reuse's own mechanism (a per-value spelling
+  no longer), banned outside a Ruling 11 admission of its own.
+- Copy class (`new_var = (u8 *)rob` / `= p` / `= rob + 0x40` ...): fresh copies of existing
+  locals (`new_var` fails every naming rule); best 495.
+- `other`: operand respellings (e.g. `p - -0x10`), >= 785.
+Measured in the real sandbox (transplanted onto v/pv.c, bodies banked in r11/perm_*.c; dump tags
+v_perm_*):
+| find | what it adds | sandbox | selector / if-arm entry (dump) |
+|---|---|---|---|
+| 95-1 | `window` carries D_801027B0[sel][1] + do-while(0) around the event block | 8 | `sel` 332 `in block 21` -> $v0; `entry_a` 321 `in block 20`, `addu $3,$3,$2` |
+| 240-1 | the same carrier alone | 31 | same |
+| 295-1 | `window` carries the if-arm halfword | 36 | same |
+| 500-1 | `u8 *new_var = (u8 *)rob` copy | 39 | same |
+| 540-1 | `window` carries flags & 1 | 40 | same |
+Every find leaves the selector and the if-arm entry exactly where (D)(3) says a per-value spelling
+must: local, $v0, tied. The permuter's gains are global-allocation effects of extra sharing; none
+reaches `andi s2,v0,1` or `addu a0,v1,v0`.
