@@ -77,7 +77,7 @@ GP_FILES = {"text1a_pre", "text1a_post", "code6cac_b3"}
 EXPAND_LB_FILES = {"code6cac_b", "code6cac_b3", "code6cac_b3_post"}
 EXPAND_LH_FILES = set()
 RODATA_ALIGN2_FILES = {
-    "code6cac", "code6cac_b", "code6cac_b3", "code6cac_c", "code6cac_c0", "code6cac_c_ab",
+    "code6cac", "code6cac_b", "code6cac_b2_post", "code6cac_b3", "code6cac_c", "code6cac_c0", "code6cac_c_ab",
     "code6cac_c2", "text1a_pre", "text1a_post", "text1a_b", "text1a_c",
     "text1a_c2", "text1b", "text1b_b", "main",
 }

@@ -417,7 +417,7 @@ void cdrom_Init(void) {
     CdInit();
     CdSetDebug(0);
     cdrom_SetMix(0, 0, 0, 0);
-    D_80101E60.unk02 = 0;
+    D_80101E58.rec.unk02 = 0;
     if (D_800A31E4 == 0) {
         D_800A31E4 = 1;
     }
@@ -432,59 +432,202 @@ extern s32 CdPosToInt(s32);
 void cdrom_ReadyCallback(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
-        D_80101E98 = 0;
-        if (g_cdread_sectors_remaining <= 0) {
+        D_80101E58.rec.unk38 = 0;
+        if (D_80101E58.rec.sectors_remaining <= 0) {
             return;
         }
         CdGetSector((s32)sp, 3);
         {
             s32 v0 = CdPosToInt((s32)sp);
             if (v0 != g_cdread_expected_pos) {
-                g_cdread_sectors_remaining = -2;
+                D_80101E58.rec.sectors_remaining = -2;
                 goto do_stop;
             }
         }
-        CdGetSector(g_cdread_dest_buffer, 0x200);
-        g_cdread_dest_buffer = g_cdread_dest_buffer + 0x800;
-        g_cdread_sectors_remaining = g_cdread_sectors_remaining - 1;
+        CdGetSector(D_80101E58.rec.dest_buffer, 0x200);
+        D_80101E58.rec.dest_buffer = D_80101E58.rec.dest_buffer + 0x800;
+        D_80101E58.rec.sectors_remaining = D_80101E58.rec.sectors_remaining - 1;
         g_cdread_expected_pos = g_cdread_expected_pos + 1;
-        if (g_cdread_sectors_remaining == 0) {
+        if (D_80101E58.rec.sectors_remaining == 0) {
             goto do_stop;
         }
         return;
     } else {
-        g_cdread_sectors_remaining = -1;
+        D_80101E58.rec.sectors_remaining = -1;
     }
 do_stop:
     CdReadyCallback(0);
     CdControlF(9, 0);
 }
+/* func_80036140's jump table (func_80036140 is still INCLUDE_ASM, so the table is
+ * transcribed; its last word is the zero word at 0x80010974 before
+ * func_80036940's compiler-emitted table). */
+const u32 jtbl_80010938[16] = {
+    0x80036360, 0x800363A4, 0x800363DC, 0x80036434,
+    0x80036490, 0x800364C0, 0x80036634, 0x8003683C,
+    0x8003686C, 0x80036880, 0x800368CC, 0x800368E0,
+    0x800367B0, 0x800367D8, 0x80036808, 0x00000000,
+};
 INCLUDE_ASM("asm/funcs", func_80036140);
 /* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
 void func_80036940(void);
-INCLUDE_ASM("asm/funcs", func_80036940);
+extern s32 CdSync(s32, u8 *);
+extern void CdControl(s32, s32, s32);
+extern u8 g_cd_result;
+extern void func_80036140(void);
+void func_80036940(void) {
+    u8 param[4];
+
+    if (D_80101E58.rec.unk02 >= 0x10) {
+        func_80036140();
+        return;
+    }
+    switch (D_80101E58.rec.unk02) {
+    case 0:
+        break;
+    case 2:
+        if (D_80101E58.rec.unk08 != 0) {
+            D_80101E58.rec.unk02 = 0;
+            break;
+        }
+        param[0] = 0xA0;
+        CdControlF(0xE, (s32)param);
+        D_80101E58.rec.unk06 = 0;
+        D_80101E58.rec.unk38 = 0;
+        D_80101E58.rec.unk02 = 3;
+        break;
+    case 3: {
+        s32 ret = CdSync(1, &g_cd_result);
+        if (ret == 2) {
+            D_80101E58.rec.unk02 = 4;
+            D_80101E58.rec.unk2C = 0;
+        } else if (ret == 5) {
+            D_80101E58.rec.unk02 = 9;
+        } else if (++D_80101E58.rec.unk38 > 0x3C) {
+            D_80101E58.rec.unk02 = 0xA;
+        }
+        break;
+    }
+    case 4:
+        if (++D_80101E58.rec.unk2C >= 3) {
+            D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
+            D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
+            g_cdread_expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
+            CdControl(2, (s32)&D_80101E58.rec.pair, 0);
+            D_80101E58.rec.unk38 = 0;
+            D_80101E58.rec.unk02 = 5;
+        }
+        break;
+    case 5: {
+        s32 ret = CdSync(1, &g_cd_result);
+        if (ret == 2) {
+            D_80101E58.rec.unk38 = 0;
+            CdReadyCallback((s32)cdrom_ReadyCallback);
+            CdControlF(6, (s32)&D_80101E58.rec.pair);
+            D_80101E58.rec.unk02 = 6;
+        } else if (ret == 5) {
+            D_80101E58.rec.unk02 = 9;
+        } else if (++D_80101E58.rec.unk38 > 0x3C) {
+            D_80101E58.rec.unk02 = 0xA;
+        }
+        break;
+    }
+    case 6: {
+        s32 ret = CdSync(1, &g_cd_result);
+        if (ret == 2) {
+            if (D_80101E58.rec.sectors_remaining == 0) {
+                D_80101E58.rec.unk02 = 8;
+            } else if (D_80101E58.rec.sectors_remaining < 0) {
+                D_80101E58.rec.unk02 = 9;
+            } else if (++D_80101E58.rec.unk38 > 0x3C) {
+                CdReadyCallback(0);
+                D_80101E58.rec.unk02 = 0xA;
+            }
+        } else if (ret == 5) {
+            CdReadyCallback(0);
+            D_80101E58.rec.unk02 = 9;
+        } else if (++D_80101E58.rec.unk38 > 0x3C) {
+            CdReadyCallback(0);
+            D_80101E58.rec.unk02 = 0xA;
+        }
+        break;
+    }
+    case 8:
+        D_80101E58.rec.unk02 = 0;
+        break;
+    case 9:
+        if (g_cd_result & 0x10) {
+            D_80101E58.rec.unk02 = 0xA;
+        } else {
+            D_80101E58.rec.unk02 = 0xC;
+        }
+        break;
+    case 0xA:
+        CdControlF(1, 0);
+        D_80101E58.rec.unk02 = 0xB;
+        D_80101E58.unk04 = 0;
+        break;
+    case 0xB: {
+        s32 ret = CdSync(1, &g_cd_result);
+        if (ret == 2) {
+            if (g_cd_result & 0x10) {
+                D_80101E58.rec.unk02 = 0xA;
+            } else {
+                D_80101E58.rec.unk02 = 0xC;
+            }
+        } else if (ret == 5) {
+            D_80101E58.rec.unk02 = 0xA;
+        } else if (++D_80101E58.unk04 > 0xA) {
+            CdFlush();
+            D_80101E58.rec.unk02 = 0xA;
+        }
+        break;
+    }
+    case 0xC:
+        CdControlF(0x13, 0);
+        D_80101E58.rec.unk02 = 0xD;
+        D_80101E58.unk04 = 0;
+        break;
+    case 0xD: {
+        s32 ret = CdSync(1, &g_cd_result);
+        if (ret == 2) {
+            D_80101E58.rec.unk02 = 2;
+            VSync(4);
+            VSync(4);
+            VSync(4);
+            VSync(4);
+        } else if (ret == 5) {
+            D_80101E58.rec.unk02 = 9;
+        } else if (++D_80101E58.unk04 > 0x1E) {
+            CdFlush();
+            D_80101E58.rec.unk02 = 0xA;
+        }
+        break;
+    }
+    }
+}
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 s32 cdrom_IsIdle(void) {
-    return D_80101E60.unk02 == 0;
+    return D_80101E58.rec.unk02 == 0;
 }
 s32 cdrom_StartRead(s32 a0, s32 a1) {
     extern u8 g_cd_file_table;
     s32 sval;
     s32 reloaded;
 
-    if (D_80101E60.unk02 != 0) {
+    if (D_80101E58.rec.unk02 != 0) {
         return 0;
     }
 
     sval = ((s32)(a0 << 16)) >> 13;
-    D_80101E60.unk00 = a0;
-    D_80101E60.pair = *(CamPair *)((u8 *)&g_cd_file_table + sval);
-    D_80101E7C = a1;
-    D_80101E60.unk08 = 0;
-    D_80101E60.unk02 = 2;
-    reloaded = D_80101E60.pair.b;
+    D_80101E58.rec.unk00 = a0;
+    D_80101E58.rec.pair = *(CamPair *)((u8 *)&g_cd_file_table + sval);
+    D_80101E58.rec.unk1C = a1;
+    D_80101E58.rec.unk08 = 0;
+    D_80101E58.rec.unk02 = 2;
+    reloaded = D_80101E58.rec.pair.b;
     D_80101E9E = 0;
-    D_80101E78 = (u32)(reloaded + 0x7FF) >> 11;
+    D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
 }
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
@@ -492,8 +635,8 @@ s32 cdrom_StartReadAt(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (cdrom_StartRead(arg0, arg1) == 0) {
         return 0;
     }
-    CdIntToPos(CdPosToInt((s32)&D_80101E60.pair) + arg2, (s32)&D_80101E60.pair);
-    D_80101E78 = arg3;
+    CdIntToPos(CdPosToInt((s32)&D_80101E58.rec.pair) + arg2, (s32)&D_80101E58.rec.pair);
+    D_80101E58.rec.unk18 = arg3;
     return 1;
 }
 s32 func_80036EA8(s32 arg0, s32 arg1) {
@@ -504,9 +647,9 @@ void cdrom_Pause(void) {
     cdrom_SetMix(0, 0, 0, 0);
     CdFlush();
     CdControlF(9, 0);
-    D_80101E60.unk08 = 1;
-    D_80101E60.unk02 = 0xB;
-    D_80101E5C = 0;
+    D_80101E58.rec.unk08 = 1;
+    D_80101E58.rec.unk02 = 0xB;
+    D_80101E58.unk04 = 0;
 }
 u32 func_80036F28(s32 arg0) {
     return (&g_cd_file_table_plus_0x4)[arg0 * 2];
@@ -532,7 +675,7 @@ void game_FrameLoop(void) {
 }
 extern void CdControlB(s32, u8 *, s32);
 s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
-    s16 *s0 = &D_80101E60.unk02;
+    s16 *s0 = &D_80101E58.rec.unk02;
 
     if (*s0 != 0) {
         return 0;
@@ -540,7 +683,7 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
 
     {
         extern u8 g_cd_file_table;
-        ReplayCamRec *rec = &D_80101E60;
+        ReplayCamRec *rec = &D_80101E58.rec;
         s32 idx;
         u8 *cam;
         CamPair *entry;
@@ -562,25 +705,24 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
 
     {
         extern u8 g_cd_file_table;
-        D_80101E60.unk14 = CdPosToInt((s32)(&g_cd_file_table + D_80101E60.unk00 * 8)) + (*(u32 *)((u8 *)&g_cd_file_table_plus_0x4 + (D_80101E60.unk00 << 3)) >> 11) - 0x96;
+        D_80101E58.rec.unk14 = CdPosToInt((s32)(&g_cd_file_table + D_80101E58.rec.unk00 * 8)) + (*(u32 *)((u8 *)&g_cd_file_table_plus_0x4 + (D_80101E58.rec.unk00 << 3)) >> 11) - 0x96;
     }
 
     if (arg1 < 0) {
-        D_80101E94 = 0;
-        D_80101E90 = 5;
+        D_80101E58.rec.unk34 = 0;
+        D_80101E58.rec.unk30 = 5;
     } else {
-        u8 *base = (u8 *)s0 - 0xA;
-        D_80101E94 = 1;
-        *base = 1;
-        D_80101E59 = arg1;
-        CdControlB(0xD, base, 0);
-        D_80101E90 = 0xC8;
+        D_80101E58.rec.unk34 = 1;
+        D_80101E58.filter.file = 1;
+        D_80101E58.filter.chan = arg1;
+        CdControlB(0xD, (u8 *)&D_80101E58.filter, 0);
+        D_80101E58.rec.unk30 = 0xC8;
     }
 
-    D_80101E60.unk04 = 0;
-    D_80101E60.unk08 = 0;
-    D_80101E60.unk0A = 0;
-    D_80101E60.unk02 = 0x10;
+    D_80101E58.rec.unk04 = 0;
+    D_80101E58.rec.unk08 = 0;
+    D_80101E58.rec.unk0A = 0;
+    D_80101E58.rec.unk02 = 0x10;
 
     return 1;
 }
@@ -591,8 +733,8 @@ s32 func_80037110(s32 arg0) {
     v0 = cdrom_StartAudio(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
-            v0 = CdPosToInt((s32)&g_cd_file_table + (s32)D_80101E60.unk00 * 8);
-            D_80101E60.unk14 = v0 + *(s32 *)(s0 + 4);
+            v0 = CdPosToInt((s32)&g_cd_file_table + (s32)D_80101E58.rec.unk00 * 8);
+            D_80101E58.rec.unk14 = v0 + *(s32 *)(s0 + 4);
         }
         return 1;
     }
@@ -602,39 +744,39 @@ s32 func_80037110(s32 arg0) {
 s32 func_800371AC(void) {
     s32 ret = ((s32 (*)())func_80037110)();
     if (ret) {
-        D_80101E60.unk04 = 1;
+        D_80101E58.rec.unk04 = 1;
         return 1;
     }
     return 0;
 }
 void func_800371E8(s16 arg0) {
-    D_80101E60.unk0A = arg0;
+    D_80101E58.rec.unk0A = arg0;
 }
 s32 func_800371F8(void) {
     extern s32 cdrom_StartAudio();
 
     if (((s32 (*)())cdrom_StartAudio)() != 0) {
-        D_80101E60.unk04 = 1;
+        D_80101E58.rec.unk04 = 1;
         return 1;
     }
     return 0;
 }
 void func_80037234(void) {
-    D_80101E60.unk04 = 0;
-    D_80101E60.unk08 = 1;
+    D_80101E58.rec.unk04 = 0;
+    D_80101E58.rec.unk08 = 1;
 }
 void func_80037250(void) {
-    D_80101E60.unk04 = 0;
+    D_80101E58.rec.unk04 = 0;
 }
 void func_80037260(void) {
-    while (D_80101E60.unk02 != 0x16) {
+    while (D_80101E58.rec.unk02 != 0x16) {
         func_8003AA48();
         func_80036940();
         VSync(2);
     }
 }
 void func_800372C0(void) {
-    if (D_80101E60.unk02 != 0) {
+    if (D_80101E58.rec.unk02 != 0) {
         cdrom_Pause();
     }
     game_FrameLoop();

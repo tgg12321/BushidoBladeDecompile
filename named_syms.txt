@@ -647,7 +647,6 @@ g_text1a_size_cursor            = 0x800A33A8;  /* upper-bound position cursor */
 g_pad_press_countdown           = 0x800A3330;  /* 0x5A-frame countdown (pad press handler) */
 g_sleep_menu_cursor_y           = 0x800A3360;  /* row (paired with g_sleep_menu_cursor_x at D_800A335C) */
 sen_plus_0x8          = 0x800F1AF4;  /* volatile DMA-list address for SetPacketData */  /* data-wave 2026-09-25: was g_packet_data_dma_addr */
-g_cdread_sectors_remaining       = 0x80101E80;  /* marionation_camera_Init settle counter (-2 sentinel) */  /* data-wave 2026-09-24: was g_camera_settle_countdown */
 g_pad_press_tick_counter        = 0x800A3924;  /* tick counter in pad-press code */
 
 /* === Data-symbol auto-classifier pass (2026-05-17) -- final scratchpad ptr === */
@@ -797,7 +796,6 @@ g_sound_buf_b                                           = 0x800EFB78;  /* ref: a
 g_text1b_glyph_buf_b                                    = 0x800F1154;  /* ref: g_text1b_glyph_cursor */
 g_mdec_fp_buf                                           = 0x800F62E0;  /* ref: replay_camera_rob_back_win_near */
 g_grid_pos_vec3                                         = 0x800F6608;  /* ref: suLeagueSystemInit */
-g_replay_frame_offset                                   = 0x80101E74;  /* ref: mottest_rob_init */
 g_char_state                                            = 0x80101F00;  /* per-character struct base, 1100-byte stride (ref: g_motion_data_base_ptr) */
 g_replay_camera_target_a                                = 0x80101FBC;  /* ref: g_practice_menu_index */
 g_motion_keyframe_table_ptr                             = 0x801027B0;  /* ref: g_motion_data_base_ptr */
@@ -1580,8 +1578,6 @@ mode_handler_29_StageLeafUpdate                         = 0x8003CF84;  /* calls 
 /* These names appear in docs/engine/recent_naming_findings.md but */
 /* hadn't been promoted into named_syms.txt yet.  Adding so the doc's */
 /* references resolve correctly. */
-g_replay_camera_state                                   = 0x80101E70;  /* volatile state (concurrent with IRQ?) */
-g_replay_camera_init_done                               = 0x80101E62;  /* init-done flag */
 g_replay_camera_mode                                    = 0x800A3740;  /* mode enum {1, 3, 4} */
 g_text1b_glyph_buf_e                                    = 0x800F1168;  /* additional glyph buffer slot in the same family as g_text1b_slot_a/b/c_flags */
 Alarm_plus_0x4                                  = 0x800F19BC;  /* IRQ dispatch sequence counter (already noted as g_cdrom_init_counter elsewhere in IRQ subsystem) */  /* data-wave 2026-09-25: was g_irq_dispatch_counter */
@@ -1725,10 +1721,9 @@ g_char_id_saved_b                                       = 0x800A3915;  /* paired
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
 /* playback state.  D_80101E6C is the current BCD frame position; */
 /* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
-g_cd_playback_arg                                       = 0x80101E60;  /* stored arg0 (playback start address?) */
-g_cd_playback_flag_a                                    = 0x80101E64;  /* 0/1 state flag */
-g_cd_playback_flag_b                                    = 0x80101E68;  /* 0/1 state flag (paired) */
-g_cd_loc                                   = 0x80101E6C;  /* BCD-encoded current CD frame position */  /* data-wave 2026-09-24: was g_cd_playback_bcd_pos */
+/* 2026-09-26: 0x80101E58..0x80101E9B is ONE object, CdState D_80101E58 */
+/* (include/code6cac.h); the per-word rows in that span are retired. */
+g_cd_loc                                   = 0x80101E6C;  /* BCD-encoded current CD frame position */  /* data-wave 2026-09-24: was g_cd_playback_bcd_pos */  /* alias of D_80101E58+0x14 (CdState rec.pair, include/code6cac.h); retire with func_80036140 (asm/funcs/func_80036140.s is its only live referrer) */
 
 /* === Memcard file-list state (2026-05-17) -- 3 highs === */
 g_memcard_file_list                                     = 0x80102810;  /* base of memcard file-list array (filled by bios_firstfile_B; stride 0x28 per file entry) */
@@ -1999,8 +1994,6 @@ g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base p
 /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
 /* reads sectors into a buffer, checking BCD position for sync. */
-g_cdread_sectors_remaining                              = 0x80101E80;  /* sectors left to read; decremented per chunk; 0 = done, -1 = error, -2 = position mismatch */
-g_cdread_dest_buffer                                    = 0x80101E84;  /* destination buffer ptr; advances by 0x800 (2048 = sector size) per read */
 g_cdread_expected_pos                             = 0x80101EA0;  /* next-expected CD position in BCD; mismatch with cdrom_BcdToFrames triggers error */  /* data-wave 2026-09-24: was g_cdread_expected_bcd_frame */
 /* data-wave 2026-09-24: g_event_class_lookup_table = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
 /* data-wave 2026-09-24: g_special_cam_lengths = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
@@ -2463,9 +2456,6 @@ D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2
 g_anim_func_table_plus_8                                = 0x800F66A8;  /* +8 from g_anim_func_table (0x800F66A0) */
 D_800F66B4                          = 0x800F66B4;  /* +4 from g_snd_callback_func_ptr (0x800F66B0) */  /* data-wave 2026-09-25: was g_snd_callback_func_ptr_plus_4 */
 g_memcard_slot_plus_4                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */
-g_cd_playback_flag_b_plus_2                             = 0x80101E6A;  /* +2 from g_cd_playback_flag_b (0x80101E68) */
-g_replay_frame_offset_plus_4                            = 0x80101E78;  /* +4 from g_replay_frame_offset (0x80101E74) */
-g_replay_frame_offset_plus_8                            = 0x80101E7C;  /* +8 from g_replay_frame_offset (0x80101E74) */
 g_char_struct_p1_field_BC_plus_4                        = 0x80101F88;  /* +4 from g_char_struct_p1_field_BC (0x80101F84) */
 g_char_world_pos_z_plus_8                               = 0x80101FB0;  /* +8 from g_char_world_pos_z (0x80101FA8) */
 g_char_struct_p1_field_FC_plus_8                        = 0x80101FCC;  /* +8 from g_char_struct_p1_field_FC (0x80101FC4) */
@@ -2836,11 +2826,6 @@ _snd_ev_flag                                        = 0x800FF630;  /* data-wave 
 g_voice_state_ptr_plus_8                                   = 0x800FF6A8;
 _svm_vh                                         = 0x80101BC4;  /* data-wave 2026-09-07: was g_main_value_101BC4 */
 g_slot_array_16x256_80101BF0                               = 0x80101BF0;
-g_c6cb2_field_E59_arg1_save                                  = 0x80101E59;
-g_c6cb2_state_E5C                                  = 0x80101E5C;
-g_cdread_dest_buffer_plus_12                                 = 0x80101E90;
-g_cdread_dest_buffer_plus_16                                 = 0x80101E94;
-g_c6cb2_state_E98                                  = 0x80101E98;
 g_c6cb2_state_E9E                                  = 0x80101E9E;
 g_char_prev_keyframe_idx_plus_16                             = 0x80101F5E;
 g_char_p1_field_AD                                           = 0x80101F75;
@@ -3027,9 +3012,6 @@ g_file_heap_state_flag_800A38B0                              = 0x800A38B0;  /* 4
 D_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_column_counter (0x800F1850) */  /* data-wave 2026-09-25: was g_stdout_column_counter_plus_8_800F1858 */
 D_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to g_per_char_motion_buffer_table_1392 at 0x800F1B18 */  /* data-wave 2026-09-24: was g_per_char_motion_buffer_table_prefix_800F1B14 */
 D_800F2B68                      = 0x800F2B68;  /* 20 refs; 8 bytes before g_text1b_gte_rgb_lookup_1024 at 0x800F2B70 */  /* data-wave 2026-09-24: was g_text1b_gte_rgb_lookup_prefix_800F2B68 */
-g_cdread_dest_buffer_plus_4_80101E88                         = 0x80101E88;  /* 16 refs; +4 from g_cdread_dest_buffer (0x80101E84) */
-g_cdread_state_counter_80101E8C                              = 0x80101E8C;  /* 16 refs; incremented from 0; CD-read sequence counter */
-g_cdread_state_9A_80101E9A                                   = 0x80101E9A;  /* 12 refs; s16 halfword cleared in CD-read sequence */
 g_cdread_state_9C_80101E9C                                   = 0x80101E9C;  /* 12 refs; s16 halfword paired pattern with 0x80101E9A; CD-read flag */
 D_80101EA4                  = 0x80101EA4;  /* 16 refs; +4 from g_cdread_expected_bcd_frame (0x80101EA0) */  /* data-wave 2026-09-24: was g_cdread_expected_bcd_frame_plus_4_80101EA4 */
 g_char_struct_p1_field_286_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */

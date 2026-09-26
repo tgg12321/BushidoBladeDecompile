@@ -382,8 +382,6 @@ typedef struct {
 } Unk80101DF0Record;      /* 0x58 */
 extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
-extern u8 D_80101E59;
-extern s32 D_80101E5C;
 typedef struct {
     s32 a;
     s32 b;
@@ -391,8 +389,10 @@ typedef struct {
 
 /* FAKE structure (owner ruling 2026-08-10, docs/grind/decisions.md).
  *
- * The replay/special-camera words at 0x80101E60..0x80101E77 are declared as ONE
- * record rather than eight per-word symbols.  What the bundling buys is a
+ * The replay/special-camera words at 0x80101E60..0x80101E77 (unk00..unk14) were
+ * declared as ONE record rather than per-word symbols by that grant; the
+ * record now runs on to 0x80101E9B (unk18..unk3A, see "Honest evidence split").
+ * What the 0x80101E60..0x80101E77 bundling buys is a
  * memory dependence: cc1's scheduler asks true_dependence() ->
  * memrefs_conflict_p(), where SIZE_FOR_MODE(BLKmode) == 0 makes the aggregate
  * store at `pair` conflict with the halfword load at `unk00` ONLY when the two
@@ -407,13 +407,21 @@ typedef struct {
  *   - The CdPosToInt/CdIntToPos call chain evidences ONLY `pair.a`:
  *     CdIntToPos (src/system.c) writes just p[0..2], three bytes of the first
  *     word.  Those calls say nothing about `pair.b` (0x80101E70).
- *   - The pointer func_80036FD4 hands onward has base 0x80101E58 — 8 bytes
- *     BEFORE this record.  It addresses preceding globals, is outside the
- *     record, and is NOT evidence for the record's interior layout.
+ *   - The CdlFILTER cdrom_StartAudio hands to CdControlB is at 0x80101E58, 8
+ *     bytes BEFORE this record: the head of the enclosing CdState below.  It
+ *     is NOT evidence for this record's interior layout.
  *   - The FULL-SPAN bundling (unk00..unk0A into the same object as `pair`)
  *     rests ONLY on the scheduler-dependence mechanism above.  It is covered
  *     by the owner grant as annotated FAKE structure and is NOT claimed as the
  *     proven original object layout.
+ *   - The extension unk18..unk3A (0x80101E78..0x80101E9B, 2026-09-26) is
+ *     evidenced by base+offset addressing in the original binary, not by the
+ *     grant: func_80036940 forms &pair (0x80101E6C) as &0x80101E8C - 0x20
+ *     (80036A74) and as &0x80101E98 - 0x2C (80036B08), so 0x80101E6C..0x80101E99
+ *     is one object; it has 4-byte members, so its size is a multiple of 4 and
+ *     it covers 0x80101E9A..9B, which is accessed as a halfword (unk3A), i.e. a
+ *     member.  Member widths follow the accesses; 0x80101E91..93 is the
+ *     compiler's alignment padding.
  */
 typedef struct {
     s16 unk00; /* 0x80101E60 */
@@ -424,19 +432,43 @@ typedef struct {
     s16 unk0A; /* 0x80101E6A */
     CamPair pair; /* 0x80101E6C .. 0x80101E73 */
     s32 unk14; /* 0x80101E74 */
+    s32 unk18; /* 0x80101E78 */
+    s32 unk1C; /* 0x80101E7C */
+    s32 sectors_remaining; /* 0x80101E80 */
+    s32 dest_buffer; /* 0x80101E84 */
+    s32 unk28; /* 0x80101E88 */
+    s32 unk2C; /* 0x80101E8C */
+    u8 unk30; /* 0x80101E90 */
+    s32 unk34; /* 0x80101E94 */
+    s16 unk38; /* 0x80101E98 */
+    s16 unk3A; /* 0x80101E9A */
 } ReplayCamRec;
 
-extern ReplayCamRec D_80101E60;
-extern s32 D_80101E78;
-extern s32 D_80101E7C;
-extern s32 g_cdread_sectors_remaining;
-extern s32 g_cdread_dest_buffer;
-extern s32 D_80101E88;
-extern s32 D_80101E8C;
-extern u8 D_80101E90;
-extern s32 D_80101E94;
-extern s16 D_80101E98;
-extern s16 D_80101E9A;
+/* libcd CdlFILTER, the CdlSetfilter (0xD) parameter. */
+typedef struct {
+    u8 file;
+    u8 chan;
+    u16 pad;
+} CdlFILTER;
+
+/* The CD module's state block, 0x80101E58..0x80101E9B, declared as ONE object.
+ * Two pieces of it are evidenced by base+offset addressing in the original
+ * binary (cse relates two constant addresses only when they are offsets of one
+ * symbol):
+ *   - 0x80101E58..0x80101E62: cdrom_StartAudio forms the CdlFILTER at
+ *     0x80101E58 as &0x80101E62 - 0xA (800370AC addiu a1,s0,-0xA; 800370B0
+ *     sb v0,-0xA(s0));
+ *   - 0x80101E6C..0x80101E9B: see ReplayCamRec's evidence split above.
+ * The link between them (0x80101E62 and 0x80101E6C in one object) is NOT
+ * independently evidenced: it rests on ReplayCamRec's 0x80101E60..0x80101E77
+ * bundling, which is the owner-granted FAKE structure above (2026-08-10). */
+typedef struct {
+    CdlFILTER filter; /* 0x80101E58 */
+    s32 unk04; /* 0x80101E5C */
+    ReplayCamRec rec; /* 0x80101E60 .. 0x80101E9B */
+} CdState;
+
+extern CdState D_80101E58;
 extern s16 D_80101E9C;
 extern u16 D_80101E9E;
 extern s32 g_cdread_expected_pos;
