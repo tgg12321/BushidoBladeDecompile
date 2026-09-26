@@ -13,6 +13,16 @@
   $t6/$t7 instead of $s0.
 - Every no-multi-write spelling of the cross products: see evidence.md receipts (90/90/72/54).
 
+- Permuter from the carrier-free body (one fresh pair per test, sandbox 90): workspace
+  tmp/func_8002DE20/perm (built by tmp/func_8002DE20/mkperm.py: minimal-TU base.c with the asm
+  statements as `#pragma _permuter b64literal`, target.o from asm/funcs with mvmva -> .word).
+  2026-09-26, -j 2, 2106 iterations, base 1080 -> best 1060 (last novel find at 207 s). Both
+  1060 finds borrow the function-scope `dz` or add a `new_var` spanning blocks: the same
+  multi-block-carrier mechanism as the shared pair, i.e. the banned class, not an ordinary lever.
+- Allocation dumps (tmp/func_8002DE20/d_*: instrumented cc1 BB2_ALLOC_DEBUG + -dlg): the cross
+  temps and xor results are local; only a pseudo referenced in more than one block avoids the
+  local-alloc tie, which is what the target shows at every test.
+
 ## Open
 - An ordinary spelling that makes the xor operands non-local without one reused pair. Mechanism
   needs the cross values to be global pseudos (referenced in >1 block or dying more than once).

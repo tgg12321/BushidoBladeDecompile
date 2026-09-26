@@ -14,7 +14,7 @@ long-vector sub-family). No `tools/grinder/owner_cluster_grants.txt` row as of 2
 | `mid_i = 3 - min_i - max_i` | 8 | fold emits (3 - max) - min; max_i then outranks min_i in global.c (7 refs, 62 vs 63 insns) -> $t3/$t5 as target |
 | island clobbers "$12","$13","$14","$15","memory" | **0** | reload spill regs: target reloads four LO/HI results into $s0; $t6/$t7 are in bad_spill_regs only when an asm names them (reload1.c regs_explicitly_used) |
 
-Final candidate.c: 0 (506/506), also 0 with dz split into dz_a/dz_b, VECTOR/SVECTOR/Vec3i members.
+Final candidate.c: 0 (506/506). Full-build SHA1 == oracle 62efab4f with it spliced (2026-09-26, lock-held landing build, reverted after).
 
 ## What the target proves
 - Object model: the three rotated points are an array member of the object (obj + i*12 + 0x120 with
