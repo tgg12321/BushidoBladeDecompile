@@ -21,3 +21,70 @@
 - [s1] [fable-blitz 2026-07-07] Divide/magic inventory for the draft: /5 signed x2 (0x66666667 sra1... case1 uses sra 1: /5; case3's func_8005509C gate uses sra 2 on (E2-1): also written %5? verify: :228-236 computes (E2-1) - ((E2-1)/5)*10?? -- sll2+add,sll1 = *10 -- so it is (E2-1)%10==0, NOT %5; recheck when drafting), /10 unsigned x3 (0xCCCCCCCD srl 3; one spelled srl 2 = /5 unsigned at :113 -- case2's first div is srl 2: D_800A37D2/5 not /10! verify each shift), /6 unsigned (0xAAAAAAB srl 1... 0xAAAAAAAB srl 1 = /3? unsigned /6 uses srl 2 -- :151 srl s5,1 with 0xAAAAAAAB = x/3; then slti <3... so n = D_800A37D2/3?? RECHECK all magic shifts against a reference table when drafting -- getting each divisor right is the main transcription risk), *11>>4, *15, *40, *225>>11, 0x8000/x runtime.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference: tmp/blitz/m2c_single_game_SetStatusUpData.c (257 lines, clean, no jtbl needed) -- use it to settle every divisor/shift question flagged above; mfhi results consistently land in s5 (an UNUSED callee-saved reg claimed by maspsx multu expansion -- s5 is saved in the prologue solely for this, plus s1/s3 for constants 0xFF/1 in the scan: expect GCC to allocate the 0xCCCCCCCD constant to s1 in case 3 since it is reused across the two multu sites).
+
+## [s2] manual lane slotB3 2026-09-26 (function renamed single_game_SetStatusUpData -> func_80055138 by the naming sweep)
+
+Floor table (all measured, sandbox `--disable all`; "wf" = whole-file scratch build
+`integration/wf.py`, which splices the body into a COPY of src/text1b.c with the
+D_80099D88 record-table declaration applied and func_80055948's use respelled
+`D_80099D88[idx].flags`, then scores against build/src/text1b.o):
+- first transcription (per-role locals): 156 -> 134 (bit test hoisted) -> 130
+- honest per-role locals + every source-level fix below: sandbox 114, **wf 102**
+  (candidate.c). Every remaining scored hunk is register seats + the frame
+  (one callee-saved register fewer than target: s5).
+- ONE function-scope scratch `v` for five roles (case-2 level `D_800A37D2/5`,
+  case-2 else level `D_800A37D2/3` with its reset, case-3 table index, the loop's
+  byte-assembled mask word, the loop's e[1] and e[2] stat values): **wf 0/516**
+  (probe-shared-scratch-v-0.c), func_80055948 stays 0/127. Sandbox shows 12 only
+  because the asm-label scaffold `g_sfr asm("D_80099D88")` leaves unresolved
+  relocs; wf with the real declaration is 0.
+
+Source-level facts proven by measurement (keep these in any spelling):
+1. `switch (D_800A38DC)` cases 0-3, GCC's beq/slti tree; default falls through.
+2. case 3 table: `cpu_practice_honmokuroku_data_tbl` is `u8 [][4]` (the target
+   computes `(E2-1)*4` then indexes; the pointer-pun `&tbl + (E2-1)*4` folds the -1
+   into the offset `-4(at)` — wrong). Needs the header retype (code6cac.h:10) and
+   code6cac_b.c:5026 respelled `tbl[tableIndex]`; byte-neutrality of that consumer
+   NOT yet measured.
+3. case 0 table D_8009A8C4 is `u8 [][8][4]`; the target adds row*32+base BEFORE
+   col*4: spell with a row pointer `row = D_8009A8C4[(s16)p->0x86]; src = row[col];`
+   (every single-expression form, 8 measured, reassociates to row*32+(col*4+base)).
+4. case 3 pair D_8009A9B4 is `u8 [][2]`; use a SEPARATE pointer local from case 0's
+   (`pair = D_8009A9B4[idx]`), shared `src` costs 14.
+5. mask bit: `bit = 1 << chr;` at the top of the section loop body (loop.c hoists
+   it to the player loop and the constant 1 out of both, into s3 as in target);
+   inside the while it folds to `srav/andi 1`.
+6. per-player binding: `list = (u8 *)cursor;` inside each if/else arm (at the join
+   costs 4).
+7. zero loop `(p + i)[0x444] = 0` with an unsigned compare (`i < 8U`) gives
+   `addu v0,s0,t4` operand order.
+8. stat tests: `if (e[1] != 0 && e[1] != 0xFF) { s = e[1]; if (s < lo) lo = s; }`
+   (assignment inside the test body -> the target's `move a2,v0` copy).
+   `cat = e[0] & 7` computed after the hi1 update, before the hi2 test, u32.
+9. tail: `c = rec->0x40A + 100; a = c + lo*40; b = c + hi1*40; c += hi2*40;`
+   (a separate `bonus` local ties the lh into v1 = 6 pts); >=6 arm order
+   `a = 0; c = 0x7530; b = 0x7530;`.
+10. zero-init tail: `other = *(u8 **)p` read once; 0x40D/0x40C are s8 (-1 via
+   `li -1`), stored 0x40D first.
+
+Ablation from the 0 form (one role at a time moved to its own local; wf-equivalent
+sandbox): zero-loop counter separate 37; m separate 14; case-3 index separate 45;
+case-2 first level separate 16; stat values separate 29; case-2 else level separate
+45; all five separate 114. Every role contributes.
+
+Mechanism (instrumented cc1, BB2_ALLOC_DEBUG, idump.sh): the stat/mask pseudo gets
+a2 in the target because the single pseudo is also live across case 2, where
+local-alloc put the 0xCCCCCCCD constant in a0 and the `n*15` temp in v1; those
+hard-reg conflicts push it off v1/a0 (e takes a1). Separate pseudos carry no such
+conflicts and take v1, which shifts every loop register one seat (cursor a2, lo a3,
+..., 0xFF into t9 instead of s1), drops s5 from the frame and moves mfhi to s4.
+GCC 2.7.2 does not coalesce distinct user variables, so no per-role spelling can
+inherit those conflicts.
+
+Ledger files (s2): candidate.c = honest per-role body with the asm-label scaffold
+(`g_sfr asm("D_80099D88")`, `g_cpt asm("cpu_practice_honmokuroku_data_tbl")`) so a bare
+`sandbox --candidate` builds against today's text1b.c (sandbox 114; the unresolved g_sfr relocs
+inflate it -- wf 102). integration/candidate-wf.c = the same body with the real
+`extern StatusFlagRec D_80099D88[];` for `python3 memory/grind/func_80055138/integration/wf.py <file>`.
+probe-shared-scratch-v.c (sandbox 12, all from the g_sfr scaffold) / integration/probe-shared-scratch-v-wf0.c
+(wf 0/516) = the policy-blocked single-scratch body. NOT landable as is.
