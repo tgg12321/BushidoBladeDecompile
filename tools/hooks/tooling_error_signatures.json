@@ -26,7 +26,7 @@
       "class": "crlf",
       "tier": "block",
       "tools": ["Bash", "PowerShell"],
-      "substrings": ["$'\\r'", "'\\r': command not found", ": bad interpreter"],
+      "substrings": ["$'\\r': command not found", "'\\r': command not found", "\\r': bad interpreter", ": bad interpreter: No such file or directory"],
       "regexes": [],
       "summary": "A shell script/command was parsed with Windows CRLF line endings -- bash choked on a trailing carriage return (\\r).",
       "root_cause": "A .sh / .py / build file was saved with CRLF (\\r\\n) instead of LF. Usually a Windows-side editor or the Edit/Write tool introduced it silently. See memory rules crlf-via-edit-write and file-editing-wsl.",

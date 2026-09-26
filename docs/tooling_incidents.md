@@ -157,3 +157,15 @@ mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC
 - **Permanent guard:** `tools/hooks/shell_footgun_guard.py` (committed in dc773f76)
 - **Verified by:** guard rule 4 blocks the exact triggering spelling; test_shell_footgun_guard.py 12 allow + 8 block, 0 failures; offending files normalized with sed -i (grep -c CR = 0)
 - **Occurrences this incident:** 1
+
+## 2026-09-26 17:31:06 — FALSE POSITIVE (crlf/crlf-shell-token)
+- **Triggering command:** `cat "/c/Users/Trenton/.claude/projects/C--Users-Trenton-desktop-Bushido-Blade-2-Decompile/memory/workflow/windows-python-crlf-write-text.md"`
+- **Why not a real failure:** cat of a memory note whose prose quotes the literal text grep -c $'\r'; no CRLF file or shell parse failure was involved (the cat succeeded)
+- **Action:** tighten signature `crlf-shell-token` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-09-26 18:03:38 — RESOLVED (crlf/crlf-shell-token)
+- **Triggering command:** `git diff --stat -- docs/tooling_incidents.md; git diff -- docs/tooling_incidents.md | Select-Object -First 30`
+- **Root cause:** crlf-shell-token substring $'\r' matched any output that merely quotes that text (e.g. git diff of docs/tooling_incidents.md); real bash CRLF errors always read "$'\r': command not found" or "bad interpreter"
+- **Permanent guard:** `tools/hooks/tooling_error_signatures.json` (uncommitted change)
+- **Verified by:** signature narrowed to full error phrases; JSON validates; file LF (0 CR); same false positive fired twice today
+- **Occurrences this incident:** 1
