@@ -65,8 +65,8 @@ def t_c6b(s):
 def t_syms(s):
     for sym, off, who in ALIASES:
         old = '%s = 0x%s;\n' % (sym, sym[2:])
-        refs = ('asm/funcs/%s.s is its only referrer' % who) if ' and ' not in who else \
-            'asm/funcs/%s.s are its referrers' % who.replace(' and ', '.s and asm/funcs/')
+        refs = ('asm/funcs/%s.s is its only assembled referrer' % who) if ' and ' not in who else \
+            'asm/funcs/%s.s are its assembled referrers' % who.replace(' and ', '.s and asm/funcs/')
         s = one(s, old, '%s = 0x%s;  /* alias of D_80099D88+0x%X (StatusFlagRec record 0); '
                         'retire with %s (%s) */\n' % (sym, sym[2:], off, who, refs))
     return s

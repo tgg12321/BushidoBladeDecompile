@@ -67,6 +67,9 @@ Flags (engine.buildconfig CC_FLAGS): `-O2 -G0 -funsigned-char -quiet -mcpu=3000 
 instrumented cc1's func_80055138 asm == the build cc1's for every dumped body ("IDENTITY
 OK"). Whole run: r11/all.sh -> r11/all.log. Tags: `cand` = v/cand.c (== candidate.c),
 `pv` = v/pv.c, `ctr` = v/ctr_split.c, `nostage` = v/nostage_fs.c.
+Tree check (r11/treecheck.sh, 2026-09-26, landing edits applied under the lock): cpp of the
+landed src/text1b.c == rtl/cand.i with line markers stripped, so the `cand` dumps are of the
+exact landed TU; every other tag is that TU with only the function body replaced.
 
 Pseudo map, from the RTL sets (verbatim below): cand — 99 = temp, 89 = idx, 103 = hi2_val,
 158 = case 2's srl result, 417/424 = the e[1]/e[2] byte loads. pv — 158 = lvl5 (159 = its
@@ -277,27 +280,31 @@ d. **the counter.** idx (89) is live across the whole scan loop, so its conflict
   (measured: $v1).
 
 ## (D)(4) Measured alternatives
-Scores are `sandbox --disable all` measured in the tree under the landing lock with the
-landing's header/consumer edits applied (each variant spliced by `sandbox --candidate`),
-and the same bodies through r11/model.py `score` (identical build pipeline, scratch TU):
+`sandbox --disable all` scores were measured 2026-09-26 in the tree under the landing lock,
+with the landing's edits applied (r11/model.py `apply`; full-build SHA1 == oracle) and
+each variant given as `--candidate memory/grind/func_80055138/r11/v/<name>.c`
+(r11/sbx_all.ps1). The model.py column is the scratch-TU build of the same bodies:
 | spelling | model.py | sandbox |
 |---|---|---|
-| reuse (candidate.c) | 0/516 | SBX_cand |
-| full one-variable-per-value twin, innermost scopes (v/pv.c) | 102 (512 insns) | SBX_pv |
-| structural: twin, all at function scope (v/pv_fs.c) | 102 (512) | SBX_pv_fs |
-| structural: twin, values typed u8 (v/s_u8.c) | 105 (515) | SBX_s_u8 |
-| structural: twin, declared with initializers (v/s_decl_init.c) | 102 (512) | - |
-| structural: twin, e[1] tests read stat1 (v/s_tests.c) | 102 (512) | - |
-| ablation: value 1 (lvl5) alone split (v/abl_lvl5.c) | 4 | SBX_abl_lvl5 |
-| ablation: value 2 (lvl3) alone (v/abl_lvl3.c) | 33 | SBX_abl_lvl3 |
-| ablation: value 3 (row_idx) alone (v/abl_row_idx.c) | 33 | SBX_abl_row_idx |
-| ablation: value 4 (move_mask) alone (v/abl_move_mask.c) | 2 | SBX_abl_move_mask |
-| ablation: value 5 (stat1) alone (v/abl_stat1.c) | 6 (515) | SBX_abl_stat1 |
-| ablation: value 6 (stat2) alone (v/abl_stat2.c) | 11 (515) | SBX_abl_stat2 |
-| two variables: case values / loop values (v/part_case_loop.c) | 98 (514) | - |
-| two variables: mask / the rest (v/part_mask_rest.c) | 2 | - |
-| two variables: case values + mask / stats (v/part_casemask_stats.c) | 11 | - |
-| idx split: clear loop's own counter (v/ctr_split.c) | 25 | SBX_ctr_split |
+| reuse (candidate.c) | 0/516 | 0/516 (516 insns) |
+| full one-variable-per-value twin, innermost scopes (v/pv.c) | 102 (512 insns) | 102 (512) |
+| structural: twin, all at function scope (v/pv_fs.c) | 102 (512) | 102 (512) |
+| structural: twin, values typed u8 (v/s_u8.c) | 105 (515) | 105 (515) |
+| structural: twin, declared with initializers (v/s_decl_init.c) | 102 (512) | 102 (512) |
+| structural: twin, e[1] tests read stat1 (v/s_tests.c) | 102 (512) | 102 (512) |
+| ablation: value 1 (lvl5) alone split (v/abl_lvl5.c) | 4 | 4 (516) |
+| ablation: value 2 (lvl3) alone (v/abl_lvl3.c) | 33 | 33 (516) |
+| ablation: value 3 (row_idx) alone (v/abl_row_idx.c) | 33 | 33 (516) |
+| ablation: value 4 (move_mask) alone (v/abl_move_mask.c) | 2 | 2 (516) |
+| ablation: value 5 (stat1) alone (v/abl_stat1.c) | 6 (515) | 6 (515) |
+| ablation: value 6 (stat2) alone (v/abl_stat2.c) | 11 (515) | 11 (515) |
+| two variables: case values / loop values (v/part_case_loop.c) | 98 (514) | 98 (514) |
+| two variables: mask / the rest (v/part_mask_rest.c) | 2 | 2 (516) |
+| two variables: case values + mask / stats (v/part_casemask_stats.c) | 11 | 11 (516) |
+| idx split: clear loop's own counter (v/ctr_split.c) | 25 | 25 (516) |
+| hi2_val staging receipts: base_val at function scope (v/nostage_fs.c) | 6 (515) | 6 (515) |
+| base_val at block scope (v/nostage_blk.c) | 6 (515) | 6 (515) |
+| base inline three times (v/nostage_inline.c) | 8 (517) | 8 (517) |
 | permuter from v/pv.c (tmp/func_80055138/r11/perm_pv, -j2, --stack-diffs) | base 1069 -> best 285 permuter units | |
 
 Permuter campaign (tools/permuter_campaign.py, label r11-pv-twin, launched 2026-09-26
