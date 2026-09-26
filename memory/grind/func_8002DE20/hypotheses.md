@@ -31,3 +31,14 @@
   owner_cluster_grants.txt row (Ruling 3 terms, 2026-09-15) or the 2026-09-23 verbatim-macro route
   (inline_o.h form, so owner-instructed rows have been used: 80018300/CD58/DAD0). Provenance pinning
   (4.3 copy sha + second copy) not done yet.
+
+## Frontier after the layer-2 FAIL (2026-09-26) — next pure-C session starts here
+- Start from rejected/reuse-per-group-scope-score54.c (per-group pair, 54) — but note it is still
+  a multi-write pair inside each group; the landable baseline is the one-pair-per-test body (90).
+- Try an inline static helper for the same-side test (per-call parameter locals), e.g.
+  `static s32 same_side(s32 ax, s32 ay, s32 bx, s32 by, s32 px, s32 py, s32 qx, s32 qy)`; GCC 2.7.2
+  inlining gives per-call pseudos and may change local/global classification. Watch the return
+  value: a store-flag result then `bnez` differs from the target's direct `xor; bltz`.
+- Try a sides array (`s32 side[2]` written per test) — check whether it stays in registers.
+- Islands: independent of the C question, landing needs an owner-instructed registry row and
+  pinned inline_o.h provenance (a second independent header copy).

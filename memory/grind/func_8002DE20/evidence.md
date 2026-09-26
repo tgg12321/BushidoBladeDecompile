@@ -79,3 +79,15 @@ cd61ed9f6). Ruling 3 (decisions.md:27024) names func_80018094 alone; layer-2 FAI
 landing for a row self-added "under Ruling 3 terms" (eeda6664b body). The islands here are the
 inline_o.h class (move $12 preamble + "$12"-"$15","memory" clobbers), which the 2026-09-25 scorer
 ruling routes to "an owner-instructed row" (inline-asm-policy.md). So the row needs the owner.
+
+## Layer-2 FAIL (2026-09-26, manual lane) — body banked as rejected/layer2-fail-cross-pair-inline-o-islands-0.c
+(1) cross_a/cross_b = banned multi-write carrier under Ruling 1: no Ruling 5/6/8/9/10 admits it.
+    decisions.md:25911 (func_8002E6B0 Judge call) is a one-body call that predates Ruling 5 and
+    does not transfer; the owner declined "Allow as a class" 2026-09-24; the mechanism is allocator
+    effect (Ruling 5 "Known weakness": never sufficient); the borderline question is unanswered and
+    cannot be spent (ruling-record-lands-before-code).
+(2) The islands are the inline_o.h preamble form: excluded from the 2026-09-23 route; per
+    inline-asm-policy.md:360-364 they need an owner-instructed owner_cluster_grants.txt row; header
+    provenance unpinned (one copy only: tmp/croc-ref, $PSLibId unexpanded).
+Cleared by the reviewer: the struct view (backed by target bytes), mid_i, the final return form,
+the z nudge. candidate.c stays the 0/506 body as the reference byte-proof; it is NOT landable.
