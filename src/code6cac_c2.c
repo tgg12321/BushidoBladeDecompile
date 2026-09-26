@@ -342,7 +342,7 @@ void func_8003BEA8(void) {
             }
         }
         {
-            s32 stage_u = (s32)(u16)D_80101ED2;
+            s32 stage_u = (s32)(u16)g_practice_menu_table[0].unk_0A;
             s16 stage;
             if ((u32)stage_u < 2u) {
                 goto check_bit;
@@ -361,7 +361,7 @@ void func_8003BEA8(void) {
         }
     check_bit:
         {
-            s32 bit = (s16)D_80101ED2;
+            s32 bit = (s16)g_practice_menu_table[0].unk_0A;
             u8 val;
             if (bit >= 0xC) {
                 bit = bit - 9;
@@ -446,12 +446,12 @@ void func_8003C040(void) {
     func_8005FBC8(a0, (s32)0x80118800);
     {
         if (D_800A38A4 == 4) {
-            if ((&D_8008D9EC)[D_80101ED2] != 0) {
+            if (D_8008D9EC[g_practice_menu_table[0].unk_0A] != 0) {
                 goto do_copy;
             }
         }
         if (D_800A38A4 == 5) {
-            if ((&D_8008D9EC)[D_80101ED2] != 0) {
+            if (D_8008D9EC[g_practice_menu_table[0].unk_0A] != 0) {
                 goto skip_copy;
             }
         do_copy:
@@ -486,9 +486,9 @@ void func_8003C2C0(void) {
     D_800A38B4 = D_800A38B4 + ret * 4;
     if (func_80054F68() == 0 || (D_80102788.pressed & 0x400040) != 0) {
         if ((u32)(D_800A38A4 - 6) < 2u && D_800A3781 != 0) {
-            s32 stage = (s16)D_80101ED2;
+            s32 stage = (s16)g_practice_menu_table[0].unk_0A;
             s32 newval = 8;
-            if (*((u8 *)&D_8008D9EC + stage) != 0) {
+            if (D_8008D9EC[stage] != 0) {
                 newval = 9;
             }
             D_800A38A4 = newval;
@@ -598,7 +598,7 @@ void func_8003C560(void) {
     } else {
         if (counter == 0x1E) {
             id = 0xA7;
-            if (*((u8 *)&D_8008D9EC + *(s16 *)((u8 *)&D_80101ED2 + D_800A382D * 0x44C)) != 0) {
+            if (D_8008D9EC[g_practice_menu_table[D_800A382D].unk_0A] != 0) {
                 id = 0xA8;
             }
             func_8005C650(id, 0x7F, 0x7F);
@@ -615,7 +615,7 @@ void func_8003C560(void) {
         } else {
             func_800372C0();
             a4val = 4;
-            if (*((u8 *)&D_8008D9EC + *(s16 *)((u8 *)&D_80101ED2 + D_800A382D * 0x44C)) != 0) {
+            if (D_8008D9EC[g_practice_menu_table[D_800A382D].unk_0A] != 0) {
                 a4val = 5;
             }
             D_800A38A4 = a4val;
@@ -706,7 +706,7 @@ void func_8003C714(void) {
     *((u8 *)s0 + 0x2D) = *(u16 *)buf;
     *((u8 *)s0 + 0x2E) = buf[2];
     *((u8 *)s0 + 0x2F) = buf[3];
-    *((u8 *)s0 + 0x30) = D_80101ED2;
+    *((u8 *)s0 + 0x30) = g_practice_menu_table[0].unk_0A;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x1F;
@@ -839,7 +839,6 @@ void func_8003CD10(void) {
         D_800A3834 = 8;
     }
 }
-extern u16 D_80101ED6;
 extern s32 D_800A3818;
 extern void func_8001DA2C(void);
 extern s32 math_FovToScreenDist(s32);
@@ -864,7 +863,7 @@ void func_8003CE18(void) {
     SetGeomScreen(v0);
     player = D_800A3748;
     {
-        u16 val = *((u16 *)((u8 *)&D_80101ED6 + player * 1100));
+        u16 val = (u16)g_practice_menu_table[player].unk_0E;
         if ((u16)(val - 6) < 2) {
             s0 = 8;
             if (player != 0) {
@@ -919,7 +918,7 @@ void func_8003CF84(void) {
 
     func_800335D8();
     p = D_800A3748;
-    stage = *(s16 *)((u8 *)&D_80101ED2 + p * 0x44C);
+    stage = g_practice_menu_table[p].unk_0A;
     if (D_800A37B8 == (&D_8008EAC0)[stage]) {
         func_8005C650(40 * p + 0x2D, 0x7F, 0x7F);
     }

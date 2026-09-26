@@ -33,9 +33,16 @@ typedef struct {
 typedef struct PracticeMenuRec {
     u8  unk_00[0x6];
     s16 unk_06;                    /* != 0: func_8001BE20 hands pad input to func_80055B60 */
-    u8  unk_08[0x12 - 0x8];
+    u8  unk_08[0xA - 0x8];
+    s16 unk_0A;                    /* class idx: row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
+    u8  unk_0C[0xE - 0xC];
+    s16 unk_0E;                    /* column of D_8008E5CC / D_8008E6A4 */
+    u8  unk_10[0x12 - 0x10];
     s16 unk_12;
-    u8  unk_14[0x34E - 0x14];
+    s16 unk_14;                    /* -1 == none, else index of D_8008EB80 */
+    u8  unk_16[0x5E - 0x16];
+    s16 unk_5E;                    /* 0/1, set alongside func_80021A98 */
+    u8  unk_60[0x34E - 0x60];
     u8  unk_34E;                   /* written by func_8001BE20 for the OTHER record */
     u8  unk_34F[0x44C - 0x34F];
 } PracticeMenuRec;                 /* sizeof == 0x44C */
@@ -60,14 +67,14 @@ extern PracticeMenuRec g_practice_menu_table[];
 extern s32 D_800100A4;
 extern s32 D_800109C8;
 extern u8 D_8008D518;
-extern u8 D_8008D538;
+extern u8 D_8008D538[];
 extern u8 D_8008D55C;
-extern u8 D_8008D578;
+extern u8 D_8008D578[];
 extern u16 D_8008D59E;
 extern u8 D_8008D864;
 extern s32 D_8008D86C;
 extern s32 D_8008D88C;
-extern u8 D_8008D9EC;
+extern u8 D_8008D9EC[];
 extern u8 D_8008DA08;
 extern s16 D_8008DA50;
 extern s16 D_8008DA94;
@@ -90,7 +97,8 @@ extern Tbl8008E194 D_8008E194[];
 extern u8 D_8008E338;
 extern u16 D_8008E3C0;
 extern u8 D_8008E5A8[];
-extern u8 D_8008E5CC;
+extern u8 D_8008E5CC[][8];         /* [unk_0A][unk_0E] of g_practice_menu_table */
+extern u8 D_8008E6A4[][6];         /* [unk_0A][unk_0E], alternate lesson table */
 extern u8 D_8008E748;
 extern u8 D_8008E75C;
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries (types 2..6);
@@ -122,8 +130,7 @@ typedef struct {
 } Tbl8008EB54Entry;
 extern Tbl8008EB54Entry D_8008EB54[6];
 extern u8 D_8008EB6C[6];
-extern u8 D_8008EB80;
-extern u8 D_8008EB8E;
+extern u8 D_8008EB80[];
 extern u16 D_8008EBA0;
 extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
@@ -433,15 +440,12 @@ extern u16 D_80101E9E;
 extern s32 g_cdread_expected_pos;
 extern s32 D_80101EA4;
 extern u8 D_80101EC8;
-extern s16 D_80101ED2;
-extern s16 D_80101EDC;
 extern s16 D_80101EE8;
 extern s32 D_80101F04;
 extern s16 D_80101F08;
 extern s16 D_80101F10;
 extern s16 D_80101F12;
 extern s16 D_80101F14;
-extern s16 D_80101F26;
 extern s16 D_80101F42;
 extern s16 D_80101F4C;
 extern s16 D_80101F4E;
@@ -502,11 +506,9 @@ extern s16 D_8010214E;
 extern s32 D_80102154;
 extern s16 D_801021E2;
 extern s16 D_8010231A;
-extern u16 D_80102322;
 extern s16 D_80102334;
 extern s32 D_80102350;
 extern s16 D_8010235C;
-extern s16 D_80102372;
 extern u16 D_8010237E;
 extern s16 D_8010238E;
 extern s16 D_801023AA;

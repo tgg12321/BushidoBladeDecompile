@@ -92,7 +92,6 @@ extern void func_80040510(s32, s32, s32);
 
 
 extern s32 func_8004939C(void);
-extern u8 D_8008E6A4;
 
 
 
@@ -106,7 +105,6 @@ extern s16 D_800A3904;
 
 
 
-extern s16 D_80101ED6;
 extern s32 g_file_disc_size;
 
 /* GP-relative extern data (for decompiled functions) */
@@ -345,7 +343,7 @@ void func_8003AF40(s32 arg0) {
     func_80022580(arg0, ((s8 *)&D_80102780)[arg0], ((s8 *)&D_8010277C)[arg0], ((s8 *)&D_8010277E)[arg0], 0);
     gpu_ResetGraphMode1();
     func_80020D38();
-    func_80040510(arg0, (&D_8008D578)[(s8)(&D_8010277C)[arg0]], (s32)0x80190800);
+    func_80040510(arg0, D_8008D578[(s8)(&D_8010277C)[arg0]], (s32)0x80190800);
 }
 void func_8003AFFC(void) {
     s32 addr = (s32)0x80190800;
@@ -359,21 +357,21 @@ void func_8003AFFC(void) {
     func_80020D38();
     func_8004939C();
 
-    tbl = &D_8008E5CC;
+    tbl = D_8008E5CC[0];
     s2 = 0;
-    edcp = &D_80101EDC;
+    edcp = &g_practice_menu_table[0].unk_14;
     s0 = 0;
 loop:
-    /* interim: byte-offset pun on g_practice_menu_table, inherited from pre-struct code (9cb130a8); naturalize to .unk_12 when func_8003AFFC is matched */
+    /* interim: byte-offset puns on g_practice_menu_table (.unk_12 / .unk_0A / .unk_0E), inherited from pre-struct code (9cb130a8); naturalize when func_8003AFFC is matched */
     func_800493E4(*(s16 *)((u8 *)g_practice_menu_table + s0 + 0x12));
-    func_800494D4(s2, *(tbl + *(s16 *)((u8 *)&D_80101ED2 + s0) * 8 + *(s16 *)((u8 *)&D_80101ED6 + s0)));
+    func_800494D4(s2, *(tbl + *(s16 *)((u8 *)&g_practice_menu_table[0].unk_0A + s0) * 8 + *(s16 *)((u8 *)&g_practice_menu_table[0].unk_0E + s0)));
 
     v1 = *edcp;
     if (v1 != -1) {
-        func_800493E4((&D_8008EB80)[v1]);
+        func_800493E4(D_8008EB80[v1]);
         v1 = *edcp;
         if (v1 == 14) {
-            func_800493E4(D_8008EB8E + 3);
+            func_800493E4(D_8008EB80[14] + 3);
         }
     }
     edcp = (s16 *)((u8 *)edcp + 0x44C);
@@ -385,29 +383,17 @@ loop:
 }
 void func_8003B10C(s32 arg0) {
     s32 addr = (s32)0x80190800;
-    s32 v0;
-    u8 *tbl;
 
     gpu_ResetGraphMode1();
     func_80020D38();
     func_8004939C();
 
-    /* interim: byte-offset pun on g_practice_menu_table, inherited from pre-struct code (9cb130a8); naturalize to .unk_12 when func_8003B10C is matched */
-    func_800493E4(*(s16 *)((u8 *)g_practice_menu_table + arg0 * 1100 + 0x12));
+    func_800493E4(g_practice_menu_table[arg0].unk_12);
 
     if (D_800A38DC == 5) {
-        s32 v1;
-        tbl = &D_8008E6A4;
-        v0 = *(s16 *)((u8 *)&D_80101ED2 + arg0 * 1100) * 3;
-        v1 = *(s16 *)((u8 *)&D_80101ED6 + arg0 * 1100);
-        v0 *= 2;
-        func_800494D4(arg0, *(tbl + v0 + v1));
+        func_800494D4(arg0, D_8008E6A4[g_practice_menu_table[arg0].unk_0A][g_practice_menu_table[arg0].unk_0E]);
     } else {
-        s32 v1;
-        tbl = &D_8008E5CC;
-        v0 = *(s16 *)((u8 *)&D_80101ED2 + arg0 * 1100) * 8;
-        v1 = *(s16 *)((u8 *)&D_80101ED6 + arg0 * 1100);
-        func_800494D4(arg0, *(tbl + v0 + v1));
+        func_800494D4(arg0, D_8008E5CC[g_practice_menu_table[arg0].unk_0A][g_practice_menu_table[arg0].unk_0E]);
     }
     func_80049584(addr);
 }
@@ -425,7 +411,7 @@ void func_8003B20C(s32 arg0) {
     eff_Init();
     func_8003AE5C(D_800A3844);
     func_8003AF40(0);
-    D_800A376C = (&D_8008D538)[(s8)D_8010277C];
+    D_800A376C = D_8008D538[(s8)D_8010277C];
 }
 extern u8 *D_800A3894;
 extern void player_SetCharId(s32, s32);
@@ -460,8 +446,8 @@ s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
     u8 a1;
     D_800A3712 = 0;
-    idx = (&D_8008D538)[(s8)D_8010277C];
-    a1 = (&D_8008D9EC)[idx];
+    idx = D_8008D538[(s8)D_8010277C];
+    a1 = D_8008D9EC[idx];
     if (a1 != 0 && D_800A37A0 == 1) {
         a1 = 0;
     }
@@ -581,7 +567,7 @@ void func_8003B5A4(void) {
 
             case 0:
                 if (D_800A380C == 0) {
-                    D_800A38A4 = ((&D_8008D9EC)[(s16)D_80101ED2] != 0);
+                    D_800A38A4 = (D_8008D9EC[g_practice_menu_table[0].unk_0A] != 0);
                     D_800A3834 = 18;
                 } else {
                     D_800A3834 = 10;

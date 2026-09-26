@@ -128,7 +128,6 @@ extern u8 D_80106A73;
 extern u8 D_80106A78;
 extern s32 *func_80077D00(void);
 extern s32 D_80106A58;
-extern s16 D_80101ED6;
 
 
 extern s32 D_80102410;
@@ -3323,7 +3322,7 @@ void func_800300B4(u8 *arg0) {
     MulMatrix0(mat, (s32 *)(arg0 + 0xC), mtx);
     func_8002F2D0(mtx, dir);
 
-    lookup = (&D_8008EB80)[*(s16 *)(arg0 + 2)];
+    lookup = D_8008EB80[*(s16 *)(arg0 + 2)];
     func_80049718(lookup, 1, mac, dir);
     func_800393C8(arg0[10], lookup, mac, dir);
 }
@@ -3349,7 +3348,7 @@ loop:
     }
     if (*(s16 *)base < 2) goto increment;
 
-    lookup = (&D_8008EB80)[v1];
+    lookup = D_8008EB80[v1];
     if ((u16)(v1 - 0x12) < 0xC) {
         lookup = *(u8 *)(p + 1);
         goto call_funcs;
@@ -4795,7 +4794,7 @@ void func_800338CC(void) {
     s32 one;
 
     {
-        s32 mask = ~(1 << (&D_8008D538)[(s8)D_8010277C]) & 0x3EF3DF;
+        s32 mask = ~(1 << D_8008D538[(s8)D_8010277C]) & 0x3EF3DF;
         s32 bits;
         count = 0;
         i = 0;
@@ -4877,7 +4876,7 @@ block_12:
         }
     }
     {
-        u8 lookup = (&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]];
+        u8 lookup = D_8008D9EC[D_8008D538[(s8)D_8010277C]];
         s32 val;
         if (lookup != 0) {
             if (D_80106A50 & 0x04000000) {
@@ -4909,7 +4908,7 @@ void func_80033BC0(void) {
         D_800A3768 = 0xFF;
         D_800A36A8 = 0;
         if (a0 == 0x14) {
-            u8 z = (&D_8008D9EC)[D_80101ED2];
+            u8 z = D_8008D9EC[g_practice_menu_table[0].unk_0A];
             s32 val = 2;
             if (z != 0) val = 3;
             D_800A38A4 = val;
@@ -4934,7 +4933,7 @@ void func_80033BC0(void) {
             y = (&D_8008E748)[x];
             D_8010277F = y;
             if (y == 4) {
-                u8 v = (&D_8008D9EC)[a1];
+                u8 v = D_8008D9EC[a1];
                 if (v != 0) {
                     D_8010277F = 5;
                 }
@@ -4978,8 +4977,8 @@ void func_80033D38(void) {
             recs[k + 1] = recs[k];
         }
         ins = recs + n + 1;
-        ins->x = (u8)D_80101ED2;
-        ins->y = (u8)D_80101ED6;
+        ins->x = (u8)g_practice_menu_table[0].unk_0A;
+        ins->y = (u8)g_practice_menu_table[0].unk_0E;
         ins->t = D_800A3858;
     }
 }
@@ -4999,7 +4998,7 @@ s32 func_80033DF4(void) {
             s32 mask;
 
             mask = 0x20;
-            if ((&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]] != 0) {
+            if (D_8008D9EC[D_8008D538[(s8)D_8010277C]] != 0) {
                 mask = 0x10000;
             }
             flags = &D_80106A50;
@@ -5014,7 +5013,7 @@ s32 func_80033DF4(void) {
             s32 mask;
 
             mask = 0x1000000;
-            if ((&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]] != 0) {
+            if (D_8008D9EC[D_8008D538[(s8)D_8010277C]] != 0) {
                 mask = 0x4000000;
             }
             flags = &D_80106A50;
@@ -5037,7 +5036,7 @@ s32 func_80033DF4(void) {
         D_800A376B = 0;
         entry = table[0];
         D_800A384C = entry;
-        row = (&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]] == 0;
+        row = D_8008D9EC[D_8008D538[(s8)D_8010277C]] == 0;
         entry &= 0xFF;
         D_800A38DE = ranks[row][entry];
         D_800A38EC = table[1];
@@ -5051,7 +5050,7 @@ void func_80033FE4(void) {
     s32 v1;
     if (D_800A36F0 != 0) {
         v1 = 6;
-        if (*((u8 *)&D_8008D9EC + D_80101ED2) != 0) {
+        if (D_8008D9EC[g_practice_menu_table[0].unk_0A] != 0) {
             v1 = 7;
         }
         D_800A38A4 = v1;
@@ -5060,7 +5059,7 @@ void func_80033FE4(void) {
     }
     if (D_800A3781 != 0) {
         v1 = 8;
-        if (*((u8 *)&D_8008D9EC + D_80101ED2) != 0) {
+        if (D_8008D9EC[g_practice_menu_table[0].unk_0A] != 0) {
             v1 = 9;
         }
         D_800A38A4 = v1;
@@ -5238,7 +5237,7 @@ void func_800344B4(void) {
         goto skip_clear;
 
     case 0:
-        func_8003B20C((&D_8008D538)[(s8)D_8010277C]);
+        func_8003B20C(D_8008D538[(s8)D_8010277C]);
         D_8010277D = 0;
         func_8003B5A4();
         func_8005509C(1);
@@ -5290,8 +5289,8 @@ void func_800344B4(void) {
             }
         }
         {
-            u8 idx = (&D_8008D538)[(s8)D_8010277C];
-            u8 val = (&D_8008D9EC)[idx];
+            u8 idx = D_8008D538[(s8)D_8010277C];
+            u8 val = D_8008D9EC[idx];
             s32 tmp = (val != 0) ? 0x0E : 0x1D;
             D_8010277D = tmp;
         }
