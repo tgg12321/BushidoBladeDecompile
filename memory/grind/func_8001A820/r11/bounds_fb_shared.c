@@ -155,7 +155,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     base_pitch = cam->h10;
 
     for (p = 0; p < 2; p++) {
-        s32 hi, lo;
+        s32 other;
 
         work = base_pitch;
         cam->h10 = work;
@@ -180,32 +180,23 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
             } else if (D_800A30F4[p] > 0x200) {
                 D_800A30F4[p] = 0x200;
             }
-            hi = work + D_800A30F4[p] / 8;
-            /* FAKE: cancellation pair (semantically-null pair family, owner ruling
-             * 2026-08-18, no-new-park-categories.md), mechanism: global.c
-             * allocno_compare priority -- the pair adds references to `hi`
-             * (allocno_n_refs 13 -> 21, pri 11142 -> 23333 against work's 13253), so
-             * the bounds are allocated before `work` and take $s0 and `work` $s1, as
-             * in the target; combine folds the pair to nothing (576/576 insns).
-             * lever-exhaustion: memory/grind/func_8001A820/ruling11.md § `hi`/`lo`. */
-            hi++;
-            hi--;
+            other = work + D_800A30F4[p] / 8;
             for (i = 0; i < 2; i++) {
-                s32 d = (work - hi) & 0xFFF;
+                s32 d = (work - other) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->h10 = hi + d / 2;
+                cam->h10 = other + d / 2;
                 func_8001A538((s32 *)cam, (s32 *)&scr->eye);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     work = cam->h10;
                 } else {
-                    hi = cam->h10;
+                    other = cam->h10;
                 }
             }
-            work = hi;
+            work = other;
             D_800A30F0[p] = 1;
         } else {
             if (D_800A30F0[p]) {
@@ -219,19 +210,19 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
             } else if (D_800A30F4[p] > 0x100) {
                 D_800A30F4[p] = 0x100;
             }
-            lo = work - D_800A30F4[p] / 8;
+            other = work - D_800A30F4[p] / 8;
             for (j = 0; j < 2; j++) {
-                s32 d = (work - lo) & 0xFFF;
+                s32 d = (work - other) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->h10 = lo + d / 2;
+                cam->h10 = other + d / 2;
                 func_8001A538((s32 *)cam, (s32 *)&scr->eye);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     func_8001A67C((s16 *)((u8 *)cam + 0x30 + p * 8), (s32 *)&scr->eye, scr->hit);
-                    lo = cam->h10;
+                    other = cam->h10;
                 } else {
                     work = cam->h10;
                 }

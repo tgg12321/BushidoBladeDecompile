@@ -181,15 +181,6 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
                 D_800A30F4[p] = 0x200;
             }
             hi = work + D_800A30F4[p] / 8;
-            /* FAKE: cancellation pair (semantically-null pair family, owner ruling
-             * 2026-08-18, no-new-park-categories.md), mechanism: global.c
-             * allocno_compare priority -- the pair adds references to `hi`
-             * (allocno_n_refs 13 -> 21, pri 11142 -> 23333 against work's 13253), so
-             * the bounds are allocated before `work` and take $s0 and `work` $s1, as
-             * in the target; combine folds the pair to nothing (576/576 insns).
-             * lever-exhaustion: memory/grind/func_8001A820/ruling11.md § `hi`/`lo`. */
-            hi++;
-            hi--;
             for (i = 0; i < 2; i++) {
                 s32 d = (work - hi) & 0xFFF;
                 if (d >= 0x800) {
@@ -220,6 +211,8 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
                 D_800A30F4[p] = 0x100;
             }
             lo = work - D_800A30F4[p] / 8;
+            lo++;
+            lo--;
             for (j = 0; j < 2; j++) {
                 s32 d = (work - lo) & 0xFFF;
                 if (d >= 0x800) {

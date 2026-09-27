@@ -56,6 +56,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
      * (ordinary-c-judge-decidable.md); proof in
      * memory/grind/func_8001A820/ruling11.md. */
     s32 work;
+    s32 tgt;
     s32 i, j;
 
     scr = (CamScratch *)0x1F800000;
@@ -244,14 +245,14 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
             pitch0 = work;
         }
     }
-    work = (pitch0 < pitch1) ? pitch1 : pitch0;
-    if (work < 0x80) {
-        work = 0x80;
+    tgt = (pitch0 < pitch1) ? pitch1 : pitch0;
+    if (tgt < 0x80) {
+        tgt = 0x80;
     }
-    if (work > 0x1C0) {
-        work = 0x1C0;
+    if (tgt > 0x1C0) {
+        tgt = 0x1C0;
     }
     cam->h10 = base_pitch;
-    work = math_SignExt12Div(work - base_pitch, 8);
+    work = math_SignExt12Div(tgt - base_pitch, 8);
     cam->h10 += work;
 }

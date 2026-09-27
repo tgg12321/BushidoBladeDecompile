@@ -1,10 +1,10 @@
 extern u8 D_800A30F0[];
 extern s32 D_800A30F4[];
 typedef struct { s32 vx, vy, vz, pad; } CamVec;
-/* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw/roll
+/* Scratchpad ang area (0x1F800000) used by func_8001A820: the target yaw/roll
  * that D_800F6608's h12/h14 ease toward, the camera focus, the eye position
  * func_8001A538 computes, a fighter's head position, and the hit position,
- * surface normal and work area func_80053614 is given (its 3rd/4th/5th
+ * surface normal and ang area func_80053614 is given (its 3rd/4th/5th
  * arguments; its other callers pass a VECTOR hit and an s16[4] normal). */
 typedef struct {
     s16 unk0;       /* 0x00 */
@@ -50,11 +50,12 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     s32 pitch0, pitch1;
     s32 base_pitch;
     s32 p;
-    /* work holds three values, all h10 (rot_x) quantities: the per-fighter
+    /* ang holds three values, all h10 (rot_x) quantities: the per-fighter
      * bisection angle (loop), the target angle max(pitch0, pitch1) clamped to
      * 0x80..0x1C0, and the final eased step. Ruling 11
      * (ordinary-c-judge-decidable.md); proof in
      * memory/grind/func_8001A820/ruling11.md. */
+    s32 ang;
     s32 work;
     s32 i, j;
 
@@ -157,8 +158,8 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     for (p = 0; p < 2; p++) {
         s32 hi, lo;
 
-        work = base_pitch;
-        cam->h10 = work;
+        ang = base_pitch;
+        cam->h10 = ang;
         func_8001A538((s32 *)cam, (s32 *)&scr->eye);
         if (p != 0) {
             scr->head = *(CamVec *)(arg3 + 0xB8);
@@ -173,25 +174,25 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
                 D_800A30F4[p] += 0x20;
             } else {
                 D_800A30F4[p] = 0x10;
-                work--;
+                ang--;
             }
             if (D_800A30F4[p] < 0x10) {
                 D_800A30F4[p] = 0x10;
             } else if (D_800A30F4[p] > 0x200) {
                 D_800A30F4[p] = 0x200;
             }
-            hi = work + D_800A30F4[p] / 8;
+            hi = ang + D_800A30F4[p] / 8;
             /* FAKE: cancellation pair (semantically-null pair family, owner ruling
              * 2026-08-18, no-new-park-categories.md), mechanism: global.c
              * allocno_compare priority -- the pair adds references to `hi`
-             * (allocno_n_refs 13 -> 21, pri 11142 -> 23333 against work's 13253), so
-             * the bounds are allocated before `work` and take $s0 and `work` $s1, as
+             * (allocno_n_refs 13 -> 21, pri 11142 -> 23333 against ang's 13253), so
+             * the bounds are allocated before `ang` and take $s0 and `ang` $s1, as
              * in the target; combine folds the pair to nothing (576/576 insns).
              * lever-exhaustion: memory/grind/func_8001A820/ruling11.md § `hi`/`lo`. */
             hi++;
             hi--;
             for (i = 0; i < 2; i++) {
-                s32 d = (work - hi) & 0xFFF;
+                s32 d = (ang - hi) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
@@ -200,17 +201,17 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit, (s32 *)scr->nrm,
                                   (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
-                    work = cam->h10;
+                    ang = cam->h10;
                 } else {
                     hi = cam->h10;
                 }
             }
-            work = hi;
+            ang = hi;
             D_800A30F0[p] = 1;
         } else {
             if (D_800A30F0[p]) {
                 D_800A30F4[p] = 0x10;
-                work++;
+                ang++;
             } else {
                 D_800A30F4[p] += 0x10;
             }
@@ -219,9 +220,9 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
             } else if (D_800A30F4[p] > 0x100) {
                 D_800A30F4[p] = 0x100;
             }
-            lo = work - D_800A30F4[p] / 8;
+            lo = ang - D_800A30F4[p] / 8;
             for (j = 0; j < 2; j++) {
-                s32 d = (work - lo) & 0xFFF;
+                s32 d = (ang - lo) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
@@ -233,15 +234,15 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
                     func_8001A67C((s16 *)((u8 *)cam + 0x30 + p * 8), (s32 *)&scr->eye, scr->hit);
                     lo = cam->h10;
                 } else {
-                    work = cam->h10;
+                    ang = cam->h10;
                 }
             }
             D_800A30F0[p] = 0;
         }
         if (p != 0) {
-            pitch1 = work;
+            pitch1 = ang;
         } else {
-            pitch0 = work;
+            pitch0 = ang;
         }
     }
     work = (pitch0 < pitch1) ? pitch1 : pitch0;
