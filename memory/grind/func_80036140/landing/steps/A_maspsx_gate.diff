@@ -1,0 +1,503 @@
+--- a/.claude/rules/integration-handoff-self-serve.md
++++ b/.claude/rules/integration-handoff-self-serve.md
+@@ -58,8 +58,10 @@
+ - `inline_asm_canonical.txt` — has its own evidence-gated grant path
+   (scan_hand_coded STRONG tier, [[canonical-asm-authorization-recipe]]).
+ - The maspsx fidelity-gate lists (`maspsx_prefill_label_funcs.txt`,
+-  `expand_lb_funcs.txt`, `expand_dest_funcs.txt`, `multu_funcs.txt`,
+-  `multu_pad_funcs.txt`) — assembler-behavior gates are substrate-adjacent.
++  `maspsx_comm_syms.txt`, `expand_lb_funcs.txt`, `expand_dest_funcs.txt`,
++  `multu_funcs.txt`, `multu_pad_funcs.txt`) — assembler-behavior gates are
++  substrate-adjacent. (`maspsx_comm_syms.txt` joined both halves of the pair
++  with the gate itself, 2026-09-26.)
+   (`maspsx_label_nop_funcs.txt` was on this denylist until it was retired and
+   deleted on 2026-09-14 — [[maspsx-label-nop-gate]].)
+   **This list is a doc/code pair with `_SCOPE_GRANT_DENY` in
+--- a/.claude/rules/maspsx-gate-lists.md
++++ b/.claude/rules/maspsx-gate-lists.md
+@@ -1,7 +1,7 @@
+ ---
+ name: maspsx-gate-lists
+ paths: ["maspsx_prefill_label_funcs.txt", "maspsx_comm_syms.txt", "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt", "multu_pad_funcs.txt", "engine/cheats.py"]
+-description: "Adjudication (2026-07-13 audit) of the per-function maspsx gate lists (FIVE at the time; label-nop RETIRED 2026-09-14, four remain; a fifth, maspsx_comm_syms.txt, authorized 2026-09-26 and not yet built): label-nop / expand-lb / expand-dest are FIDELITY shims (no C spelling exists — probe-proven), multu / multu-pad are CHEAT-PATHWAY (a pure-C spelling exists; current entries vestigial/dormant). Engine + integrity checker + commit guard now track them; growth requires the [infra-rule] tag."
++description: "Adjudication (2026-07-13 audit) of the per-function maspsx gate lists (FIVE at the time; label-nop RETIRED 2026-09-14, four remain; a fifth, maspsx_comm_syms.txt, authorized and built 2026-09-26): label-nop / expand-lb / expand-dest are FIDELITY shims (no C spelling exists — probe-proven), multu / multu-pad are CHEAT-PATHWAY (a pure-C spelling exists; current entries vestigial/dormant). Engine + integrity checker + commit guard now track them; growth requires the [infra-rule] tag."
+ metadata:
+   type: rule
+ ---
+@@ -32,7 +32,7 @@
+ | List | Class | Evidence |
+ |---|---|---|
+ | `maspsx_prefill_label_funcs.txt` | **fidelity** (assembler label placement; owner ruling 2026-09-04) | ASPSX "retarget iff filled": it filled a branch's delay slot with the instruction at the target label and pointed THAT branch one word past it; an unfilled branch kept pointing at the label. Our cc1's reorg does the filling itself and, having proven the instruction redundant on the unfilled paths, deletes the pre-instruction label and retargets the unfilled branches too — two branch words differ, no C spelling can move an assembler label (main: 7 escape hatches probed, permuter blind by design; cc1psx on the identical `ings.i` keeps the single label). The gate re-emits the label before P for opted-in functions only: an unfilled reorder-mode branch to L whose preceding instruction P is verbatim a filled branch's delay slot is retargeted to a fresh `L_pf` label before P. No instruction added/removed/reordered; the label emits no bytes. Per-function because a read-only census found 36 target sites in 33 matched functions that legitimately sit on the post-P label — never globalize. Growth tag: `[infra-rule: maspsx-prefill-label]` + target-site evidence. Record: decisions.md 2026-09-04 OWNER RULING (main). |
+-| `maspsx_comm_syms.txt` | **fidelity** (assembler storage-class knowledge; owner ruling 2026-09-26, fourth batch) | Sony ASPSX 2.34 gives a tentative (`.comm`) definition gp for its base byte only, never for `sym+N`; our C declares every such variable `extern`, so maspsx cannot know the storage class. Per-function rows, each proven by ASPSX reproducing the shipped bytes; admission prongs (a)-(d) in § "`maspsx_comm_syms.txt`" below. Authorized; not yet built at the time of the ruling. Growth tag: `[infra-rule: maspsx-comm]`. Record: decisions.md 2026-09-26 OWNER RULING — maspsx COMMON gate. |
++| `maspsx_comm_syms.txt` | **fidelity** (assembler storage-class knowledge; owner ruling 2026-09-26, fourth batch) | Sony ASPSX 2.34 gives a tentative (`.comm`) definition gp for its base byte only, never for `sym+N`; our C declares every such variable `extern`, so maspsx cannot know the storage class. Per-function rows, each proven by ASPSX reproducing the shipped bytes; admission prongs (a)-(d) in § "`maspsx_comm_syms.txt`" below. Built 2026-09-26 (`--comm-syms`, first rows cdrom_SetMix / func_80035F78 / func_80036140; evidence memory/grind/func_80036140/evidence.md). Growth tag: `[infra-rule: maspsx-comm]`. Record: decisions.md 2026-09-26 OWNER RULING — maspsx COMMON gate. |
+ | `expand_lb_funcs.txt` | **fidelity** (unmodeled context) | The target's adjacent `lbu; sll 24; sra 24` (e.g. func_8003047C @ 0x800304AC) is UNREACHABLE from any C in this fork: a 4-spelling probe (2026-07-13, tmp/lb_probe.c — explicit shifts, (s8) cast, plain s8 load, named-temp shifts) all fold to `lb` in combine. The Makefile documents the expansion as ASPSX behavior "in certain contexts" (Makefile:106-108); the per-site list encodes which sites the original expanded. |
+ | `expand_dest_funcs.txt` | **fidelity** (assembler-internal) | Which scratch register ($at vs $rdest) the assembler uses to expand a macro load is not controllable from C at all. The list models an ASPSX-internal choice our maspsx doesn't fully capture. |
+ | `multu_funcs.txt` | **cheat-pathway; current entries VESTIGIAL** | `mult`→`multu` IS reachable from C (unsigned operand types emit `multu` naturally) — gating a C function through this list instead of fixing the types is a cheat by config. The 2 current entries (func_8007F87C, func_8007FA1C) are DEAD: both are now whole-body canonical asm writing `multu` literally, and glabel bodies never emit `.ent`, so maspsx `current_func` never matches them. |
+--- a/Makefile
++++ b/Makefile
+@@ -17,8 +17,8 @@
+ PROLOGUE_FIX := python3 tools/prologue_fix.py
+ MULTU_PAD    := python3 tools/multu_pad.py --funcs multu_pad_funcs.txt
+ MASPSX       := python3 tools/maspsx/maspsx.py
+-MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt
+-MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt
++MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt
++MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --prefill-label-funcs=maspsx_prefill_label_funcs.txt --comm-syms=maspsx_comm_syms.txt
+ 
+ # GNU MIPS cross-tools
+ AS           := mipsel-linux-gnu-as
+@@ -151,7 +151,7 @@
+ PIPELINE_DEPS := Makefile \
+ 	$(CC1) engine/buildconfig.py \
+ 	tools/prologue_config.json \
+-	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt maspsx_prefill_label_funcs.txt \
++	sdata_syms.txt sdata_funcs.txt sdata_exclude.txt expand_lb_funcs.txt multu_funcs.txt multu_pad_funcs.txt expand_dest_funcs.txt maspsx_prefill_label_funcs.txt maspsx_comm_syms.txt \
+ 	tools/prologue_fix.py tools/multu_pad.py \
+ 	$(wildcard tools/maspsx/*.py tools/maspsx/maspsx/*.py) \
+ 	$(wildcard include/* src/*.h asm/funcs/*.s)
+--- a/engine/buildconfig.py
++++ b/engine/buildconfig.py
+@@ -54,7 +54,8 @@
+     "--sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb "
+     "--expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt "
+     "--expand-dest-funcs=expand_dest_funcs.txt "
+-    "--prefill-label-funcs=maspsx_prefill_label_funcs.txt"
++    "--prefill-label-funcs=maspsx_prefill_label_funcs.txt "
++    "--comm-syms=maspsx_comm_syms.txt"
+ )
+ # MUST mirror Makefile MASPSX_FLAGS_GP verbatim (the 2026-08-05 text1a landing
+ # brought it to full parity with MASPSX_FLAGS — 7 options — and dropped the
+@@ -66,7 +67,8 @@
+     "--sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb "
+     "--expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt "
+     "--expand-dest-funcs=expand_dest_funcs.txt "
+-    "--prefill-label-funcs=maspsx_prefill_label_funcs.txt"
++    "--prefill-label-funcs=maspsx_prefill_label_funcs.txt "
++    "--comm-syms=maspsx_comm_syms.txt"
+ )
+ 
+ # -- Per-file opt-ins (C file stem, no path/extension) ----------------------
+--- a/engine/buildstamp.py
++++ b/engine/buildstamp.py
+@@ -20,6 +20,7 @@
+     'Makefile', 'bb2.ld', 'bb2.sha1', 'sdata_syms.txt', 'sdata_funcs.txt',
+     'sdata_exclude.txt', 'expand_lb_funcs.txt', 'expand_dest_funcs.txt',
+     'multu_funcs.txt', 'multu_pad_funcs.txt', 'maspsx_prefill_label_funcs.txt',
++    'maspsx_comm_syms.txt',
+     'undefined_funcs_auto.txt', 'undefined_syms_auto.txt', 'named_syms.txt',
+     'tools/prologue_config.json', 'delay_slot_ra_funcs.txt', 'frame_fix_funcs.txt',
+     'tools/prologue_fix.py', 'tools/multu_pad.py', 'tools/make_psexe.py',
+--- a/engine/cheats.py
++++ b/engine/cheats.py
+@@ -48,6 +48,7 @@
+ #                   gating a C function through it is a cheat by config.
+ MASPSX_GATE_LISTS: dict[str, str] = {
+     "maspsx_prefill_label_funcs.txt": "fidelity",  # ASPSX "retarget iff filled" label placement (owner ruling 2026-09-04)
++    "maspsx_comm_syms.txt": "fidelity",            # ASPSX: a COMMON symbol is gp at its base, never at sym+N (owner ruling 2026-09-26)
+     "expand_lb_funcs.txt": "fidelity",             # lb->lbu+sll+sra; all C spellings fold to lb (probe 2026-07-13)
+     "expand_dest_funcs.txt": "fidelity",           # $rdest-vs-$at macro-expansion temp; assembler-internal choice
+     "multu_funcs.txt": "cheat-pathway",            # mult->multu; C spelling exists (unsigned operands)
+@@ -59,7 +60,8 @@
+     """(list_file, classification) for every maspsx gate list that names
+     `func`. Empty list == the function's bytes have no per-function assembler
+     toggle behind them. Names are the first whitespace token per non-comment
+-    line (same format as the other one-name-per-line sidecars)."""
++    line (same format as the other one-name-per-line sidecars); a `func: sym, sym`
++    row (maspsx_comm_syms.txt) counts by its func."""
+     out: list[tuple[str, str]] = []
+     for path, cls in MASPSX_GATE_LISTS.items():
+         if func in _prologue_txt_funcs(path):
+@@ -237,7 +239,8 @@
+ 
+ def _prologue_txt_funcs(path: str) -> set[str]:
+     """Function names in a one-name-per-line prologue list (delay_slot_ra /
+-    frame_fix); first whitespace token, '#'/blank lines ignored."""
++    frame_fix); first whitespace token, '#'/blank lines ignored. A trailing
++    ':' is dropped, so a `func: sym, sym` row (maspsx_comm_syms.txt) yields func."""
+     p = Path(path)
+     if not p.exists():
+         return set()
+@@ -245,7 +248,7 @@
+     for ln in p.read_text(encoding="utf-8").splitlines():
+         tok = ln.strip().split()
+         if tok and not tok[0].startswith("#"):
+-            out.add(tok[0])
++            out.add(tok[0].rstrip(":"))
+     return out
+ 
+ 
+--- a/engine/dossier.py
++++ b/engine/dossier.py
+@@ -99,6 +99,10 @@
+         t = _read(f)
+         if any(re.search(r"^" + re.escape(n) + r"\s*$", t, re.M) for n in names):
+             out.append(f)
++    # `func: sym, sym` rows (the sdata_exclude.txt format)
++    t = _read("maspsx_comm_syms.txt")
++    if any(re.search(r"^" + re.escape(n) + r"\s*:", t, re.M) for n in names):
++        out.append("maspsx_comm_syms.txt")
+     try:
+         cfg = json.loads(_read("tools/prologue_config.json") or "{}")
+         if any(n in cfg for n in names):
+--- a/engine/oracle.py
++++ b/engine/oracle.py
+@@ -39,6 +39,7 @@
+     "expand_dest_funcs.txt", "named_syms.txt",
+     "undefined_funcs_auto.txt", "undefined_syms_auto.txt",
+     "bb2.ld", "tools/prologue_config.json", "maspsx_prefill_label_funcs.txt",
++    "maspsx_comm_syms.txt",
+ ]
+ 
+ 
+@@ -144,7 +145,8 @@
+     # list and INTO maspsx source, so a dirty maspsx must refuse --rebuild too.
+     watch_prefixes = ("src/", "include/", "tools/maspsx/")
+     watch_files = set(CONFIG_FILES) | {"Makefile",
+-                                       "maspsx_prefill_label_funcs.txt"}
++                                       "maspsx_prefill_label_funcs.txt",
++                                       "maspsx_comm_syms.txt"}
+     dirty = []
+     for line in out.splitlines():
+         path = line[3:].strip().strip('"')
+--- a/engine/queue.py
++++ b/engine/queue.py
+@@ -711,7 +711,13 @@
+     """Current input set. prologue_fix's three config files (read by every
+     faithful build; the oracle manifest watches tools/prologue_config.json)
+     joined 2026-09-25 — before that an edit to them never moved the
+-    fingerprint."""
++    fingerprint. maspsx_comm_syms.txt (the COMMON gate list) joined
++    2026-09-26 with the gate itself."""
++    return _prologue_inputs() + ("maspsx_comm_syms.txt",)
++
++
++def _prologue_inputs() -> tuple[str, ...]:
++    """The 2026-09-25 input set: the maspsx package set + prologue_fix's configs."""
+     return _maspsx_package_inputs() + tuple(cheats.PROLOGUE_CONFIGS)
+ 
+ 
+@@ -719,7 +725,7 @@
+     """Every retired input-set definition, oldest first. A stored fingerprint
+     equal to one of these computed on today's files is a DEFINITION change,
+     not a toolchain move (auto_return re-records it without re-measuring)."""
+-    return [_LEGACY_FINGERPRINT_INPUTS, _maspsx_package_inputs()]
++    return [_LEGACY_FINGERPRINT_INPUTS, _maspsx_package_inputs(), _prologue_inputs()]
+ 
+ 
+ def toolchain_fingerprint(inputs: tuple[str, ...] | None = None) -> str:
+--- a/engine/test_engine.py
++++ b/engine/test_engine.py
+@@ -923,6 +923,16 @@
+         check("canonical_asm_funcs: missing file -> empty set",
+               cheats.canonical_asm_funcs("/nonexistent") == set())
+ 
++    # maspsx_comm_syms.txt (owner ruling 2026-09-26): `func: sym, sym` rows count by func,
++    # so queue done / the integrity audit see a function that depends on the gate
++    with tempfile.TemporaryDirectory() as td:
++        cl = Path(td) / "comm.txt"
++        cl.write_text("# header\ncdrom_SetMix: g_cd_atv\nfunc_B: x, y\n\nfunc_C\n")
++        eq("gate list: `func: syms` rows yield the func name",
++           cheats._prologue_txt_funcs(str(cl)), {"cdrom_SetMix", "func_B", "func_C"})
++    eq("gate list: maspsx_comm_syms.txt is a fidelity gate",
++       cheats.MASPSX_GATE_LISTS.get("maspsx_comm_syms.txt"), "fidelity")
++
+ 
+ def test_lowercase_asm_cheats() -> None:
+     """find_lowercase_asm_cheats — closes the bare `asm(...)` loophole that
+--- a/maspsx_comm_syms.txt
++++ b/maspsx_comm_syms.txt
+@@ -0,0 +1,21 @@
++# maspsx per-function COMMON gate — FIDELITY class (owner ruling 2026-09-26, fourth batch, Q9;
++# docs/grind/decisions.md "OWNER RULING — maspsx COMMON gate (maspsx_comm_syms.txt)";
++# .claude/rules/maspsx-gate-lists.md § "maspsx_comm_syms.txt").
++#
++# Sony ASPSX 2.34 gives a COMMON symbol (a tentative definition `T sym;` in the file, `.comm`)
++# gp addressing for its base `sym` only, never for `sym+N`; `static` and initialized objects get
++# gp at every offset. Our C declares every such variable `extern`, so maspsx cannot tell them
++# apart. Format `func: sym, sym` (the sdata_exclude.txt format): inside `func`, an operand
++# `sym+N` (N != 0) of a listed symbol is assembled in maspsx's ordinary non-gp form. Nothing
++# else changes (not the base access, no other symbol or function, no storage emitted). The gate
++# only removes gp. Each row needs, in the landing function's ledger, the shipped signature
++# (base gp + a direct lui/%lo sym+N in that function's original bytes) and Sony's ASPSX 2.34
++# reproducing it from a tentative definition (extern / static / initialized / -G0 differing).
++# Net additions require the commit tag [infra-rule: maspsx-comm] plus that evidence and a fresh
++# layer-2. Never globalize (initialized/static objects are legitimately gp at an offset:
++# g_anim_select+2/+4, D_800A34F0+2, D_800A3588+2 / D_800A358C+2).
++#
++# Evidence for the rows below: memory/grind/func_80036140/evidence.md § "maspsx_comm_syms rows".
++cdrom_SetMix: g_cd_atv
++func_80035F78: D_800A36B8
++func_80036140: g_cd_atv, D_800A36B8, g_cd_result
+--- a/tools/check_root_cleanliness.py
++++ b/tools/check_root_cleanliness.py
+@@ -47,6 +47,7 @@
+     "reloc_addrs.txt",
+     "cheat_retirement_debt.txt",
+     "maspsx_prefill_label_funcs.txt",
++    "maspsx_comm_syms.txt",
+     "volatile_extern_allowlist.txt",
+ }
+ 
+--- a/tools/desync_audit.py
++++ b/tools/desync_audit.py
+@@ -87,6 +87,7 @@
+     "regfix_stage2.txt": r"^\s*([A-Za-z_]\w*)\s*:",
+     "inline_asm_canonical.txt": r"^\s*([A-Za-z_]\w*)\b",
+     "maspsx_prefill_label_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
++    "maspsx_comm_syms.txt": r"^\s*([A-Za-z_]\w*)\s*:",
+     "expand_lb_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
+     "expand_dest_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
+     "multu_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
+--- a/tools/grinder/grindlib.py
++++ b/tools/grinder/grindlib.py
+@@ -468,6 +468,7 @@
+ _SCOPE_GRANT_DENY = {
+     "inline_asm_canonical.txt",          # has its own evidence-gated grant path
+     "maspsx_prefill_label_funcs.txt",    # assembler fidelity gates: substrate-adjacent,
++    "maspsx_comm_syms.txt",              # (COMMON gate: owner ruling 2026-09-26)
+     "expand_lb_funcs.txt",               # owner-only
+     "expand_dest_funcs.txt",
+     "multu_funcs.txt",
+@@ -1823,6 +1824,7 @@
+     "expand_dest_funcs.txt",
+     "expand_lb_funcs.txt",
+     "maspsx_prefill_label_funcs.txt",
++    "maspsx_comm_syms.txt",
+     "multu_funcs.txt",
+     "multu_pad_funcs.txt",
+     "sdata_funcs.txt",
+--- a/tools/hooks/main_reintegration_lock.py
++++ b/tools/hooks/main_reintegration_lock.py
+@@ -80,7 +80,7 @@
+     r"(?:^|[\\/])(?:"
+     r"src[\\/].*\.c|include[\\/].*\.h|.*\.h"
+     r"|regfix(?:_stage2)?\.txt|asmfix\.txt|.*\.ld"
+-    r"|prologue_config\.json|inline_asm_canonical\.txt|maspsx_prefill_label_funcs\.txt|expand_dest_funcs\.txt"
++    r"|prologue_config\.json|inline_asm_canonical\.txt|maspsx_prefill_label_funcs\.txt|maspsx_comm_syms\.txt|expand_dest_funcs\.txt"
+     r"|sdata\w*\.txt|named_syms\.txt|expand_lb_funcs\.txt"
+     r")$",
+     re.IGNORECASE,
+--- a/tools/hooks/park_src_guard.py
++++ b/tools/hooks/park_src_guard.py
+@@ -25,7 +25,7 @@
+   src/*.c, src/*.h, include/*, *.s, *.h
+   sdata*.txt, named_syms.txt, undefined_syms_auto.txt, undefined_funcs_auto.txt,
+   expand_lb_funcs.txt, expand_dest_funcs.txt, multu_funcs.txt,
+-  multu_pad_funcs.txt, maspsx_prefill_label_funcs.txt
++  multu_pad_funcs.txt, maspsx_prefill_label_funcs.txt, maspsx_comm_syms.txt
+   *.ld, splat.yaml, Makefile
+   tools/prologue_config.json
+ 
+@@ -64,6 +64,7 @@
+     re.compile(r"^expand_dest_funcs\.txt$"),
+     re.compile(r"^multu(_pad)?_funcs\.txt$"),
+     re.compile(r"^maspsx_prefill_label_funcs\.txt$"),
++    re.compile(r"^maspsx_comm_syms\.txt$"),
+     re.compile(r"^inline_asm_canonical\.txt$"),
+     re.compile(r"^.+\.ld$"),
+     re.compile(r"^splat\.yaml$"),
+--- a/tools/hooks/worktree_contamination_guard.py
++++ b/tools/hooks/worktree_contamination_guard.py
+@@ -150,7 +150,7 @@
+     r"|.*\.h"
+     r"|regfix(?:_stage2)?\.txt|asmfix\.txt"
+     r"|.*\.ld"
+-    r"|prologue_config\.json|inline_asm_canonical\.txt|maspsx_prefill_label_funcs\.txt|expand_dest_funcs\.txt"
++    r"|prologue_config\.json|inline_asm_canonical\.txt|maspsx_prefill_label_funcs\.txt|maspsx_comm_syms\.txt|expand_dest_funcs\.txt"
+     r"|sdata\w*\.txt|named_syms\.txt|expand_lb_funcs\.txt"
+     r")$",
+     re.IGNORECASE,
+--- a/tools/libscan/manifest.py
++++ b/tools/libscan/manifest.py
+@@ -557,7 +557,8 @@
+ # collides with an existing key silently re-points a gate ([[name-keyed-gates-in-tool-source]]).
+ KEYFILES = ["regfix.txt", "asmfix.txt", "inline_asm_canonical.txt",
+             "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt",
+-            "multu_pad_funcs.txt", "maspsx_prefill_label_funcs.txt", "sdata.txt"]
++            "multu_pad_funcs.txt", "maspsx_prefill_label_funcs.txt", "maspsx_comm_syms.txt",
++            "sdata.txt"]
+ keys = collections.defaultdict(list)
+ for fn in KEYFILES:
+     p = os.path.join(REPO, fn)
+--- a/tools/maspsx/maspsx.py
++++ b/tools/maspsx/maspsx.py
+@@ -45,6 +45,12 @@
+                         help="Path to file listing function names that should use GP-relative sdata addressing")
+     parser.add_argument("--sdata-exclude", type=str, default=None,
+                         help="Path to file listing per-function sdata symbol exclusions (func: sym1, sym2)")
++    parser.add_argument("--comm-syms", type=str, default=None,
++                        help="Path to file listing, per function, symbols that were COMMON "
++                             "(tentative definitions) in the original translation unit "
++                             "(func: sym1, sym2): ASPSX 2.34 never gives such a symbol gp at an "
++                             "offset (sym+N), only at its base (owner ruling 2026-09-26). "
++                             "Per-function-scoped; never global.")
+     # decomp.me debugging
+     parser.add_argument("--print-output", action="store_true")
+     parser.add_argument("--print-input", action="store_true")
+@@ -168,6 +174,19 @@
+                         sdata_exclude_map[func_name].update(sym_set)
+                     else:
+                         sdata_exclude_map[func_name] = sym_set
++
++    # Load the per-function COMMON gate (same format as --sdata-exclude)
++    comm_sym_map = {}
++    if args.comm_syms:
++        with open(args.comm_syms, "r", encoding="utf") as f:
++            for line in f:
++                line = line.strip()
++                if not line or line.startswith("#"):
++                    continue
++                if ":" in line:
++                    func_name, syms = line.split(":", 1)
++                    comm_sym_map.setdefault(func_name.strip(), set()).update(
++                        s.strip() for s in syms.split(",") if s.strip())
+ 
+     # Load per-function lb/lh expansion lists
+     expand_lb_func_list = []
+@@ -220,6 +239,7 @@
+         sdata_sym_list=sdata_sym_list,
+         sdata_func_list=sdata_func_list,
+         sdata_exclude_map=sdata_exclude_map,
++        comm_sym_map=comm_sym_map,
+     )
+     try:
+         out_lines = maspsx_processor.process_lines()
+--- a/tools/maspsx/maspsx/__init__.py
++++ b/tools/maspsx/maspsx/__init__.py
+@@ -521,6 +521,7 @@
+         sdata_sym_list=None,
+         sdata_func_list=None,
+         sdata_exclude_map=None,
++        comm_sym_map=None,
+     ):
+         self.lines = [x.strip() for x in lines]
+ 
+@@ -560,7 +561,19 @@
+         self.sdata_sym_list = sdata_sym_list or []
+         self.sdata_func_set = set(sdata_func_list) if sdata_func_list else set()
+         self.sdata_exclude_map = sdata_exclude_map or {}
++        # Per-function COMMON gate (maspsx_comm_syms.txt): func -> symbols that were
++        # tentative definitions in that function's original translation unit.
++        self.comm_sym_map = comm_sym_map or {}
+         self.current_func = None
++
++    def _is_comm(self, symbol) -> bool:
++        """ASPSX 2.34 never gives a COMMON (`.comm`) symbol gp at an offset (`sym+N`).
++        True for a symbol declared `.comm` in this file (upstream behaviour) or listed
++        for the current function in maspsx_comm_syms.txt (owner ruling 2026-09-26,
++        .claude/rules/maspsx-gate-lists.md): our C declares such variables `extern`,
++        so their storage class must come from the list. Only ever removes gp, only
++        from `sym+N` operands; the base access `sym` is unaffected."""
++        return symbol in self.comm_symbols or symbol in self.comm_sym_map.get(self.current_func, ())
+ 
+     def _sdata_allowed_for_current_func(self, symbol=None) -> bool:
+         if not self.sdata_func_set:
+@@ -787,7 +800,7 @@
+ 
+                 if operand.count("+") == 1:
+                     symbol, _ = operand.split("+")
+-                    gp_allowed = self.gp_allow_offset or symbol not in self.comm_symbols
++                    gp_allowed = self.gp_allow_offset or not self._is_comm(symbol)
+                 else:
+                     symbol = operand
+                     gp_allowed = True
+@@ -1173,7 +1186,7 @@
+                 if operand.count("+") == 1:
+                     symbol, offset = operand.split("+")
+                     gp_rel = f"%gp_rel({symbol}+{offset})($gp)"
+-                    gp_allowed = self.gp_allow_offset or symbol not in self.comm_symbols
++                    gp_allowed = self.gp_allow_offset or not self._is_comm(symbol)
+                 else:
+                     symbol = operand
+                     gp_rel = f"%gp_rel({symbol})($gp)"
+@@ -1284,7 +1297,7 @@
+                 if operand.count("+") == 1:
+                     symbol, offset = operand.split("+")
+                     gp_rel = f"%gp_rel({symbol}+{offset})($gp)"
+-                    gp_allowed = self.gp_allow_offset or symbol not in self.comm_symbols
++                    gp_allowed = self.gp_allow_offset or not self._is_comm(symbol)
+                 else:
+                     symbol = operand
+                     gp_rel = f"%gp_rel({symbol})($gp)"
+--- a/tools/maspsx/tests/test_comm_syms.py
++++ b/tools/maspsx/tests/test_comm_syms.py
+@@ -0,0 +1,67 @@
++"""Per-function COMMON gate (maspsx_comm_syms.txt; owner ruling 2026-09-26, fourth batch).
++
++Sony ASPSX 2.34 gives a COMMON (tentative-definition, `.comm`) symbol gp for its
++base only, never for `sym+N`. Our C declares such variables `extern` and the
++sdata_syms list makes them gp, so maspsx needs the storage class per function:
++inside a listed function an operand `sym+N` of a listed symbol keeps maspsx's
++ordinary non-gp form; the base access, unlisted symbols and unlisted functions
++are untouched. Shape taken from cdrom_SetMix (asm/funcs/cdrom_SetMix.s)."""
++import unittest
++
++from maspsx import MaspsxProcessor
++
++from .util import strip_comments
++
++
++def body(func):
++    return [
++        f".ent\t{func}",
++        "sb\t$4,g_cd_atv",
++        "sb\t$5,g_cd_atv+1",
++        "lbu\t$2,g_cd_atv+3",
++        "sb\t$6,D_800A36B8+2",
++        f".end\t{func}",
++    ]
++
++
++def run(lines, comm_sym_map=None):
++    mp = MaspsxProcessor(
++        lines,
++        sdata_sym_list=["g_cd_atv", "D_800A36B8"],
++        comm_sym_map=comm_sym_map,
++    )
++    return [l for l in strip_comments(mp.process_lines()) if not l.startswith(".")]
++
++
++class TestCommSymsGate(unittest.TestCase):
++    def test_listed_symbol_offset_is_not_gp_base_is(self):
++        res = run(body("cdrom_SetMix"), {"cdrom_SetMix": {"g_cd_atv"}})
++        self.assertEqual(res[0], "sb\t$4,%gp_rel(g_cd_atv)($gp)")
++        self.assertEqual(res[1], "sb\t$5,g_cd_atv+1")
++        self.assertIn("lbu\t$2,g_cd_atv+3", res)
++        # an unlisted symbol in the same function keeps gp at its offset
++        self.assertIn("sb\t$6,%gp_rel(D_800A36B8+2)($gp)", res)
++
++    def test_inert_for_unlisted_function(self):
++        stock = run(body("other"))
++        self.assertEqual(run(body("other"), {"cdrom_SetMix": {"g_cd_atv"}}), stock)
++        self.assertIn("sb\t$5,%gp_rel(g_cd_atv+1)($gp)", stock)
++
++    def test_inert_without_list(self):
++        self.assertEqual(run(body("cdrom_SetMix"), {}), run(body("cdrom_SetMix")))
++
++    def test_only_removes_gp(self):
++        # every line the gate changes is a gp-relative line in the stock output
++        stock = run(body("cdrom_SetMix"))
++        gated = run(body("cdrom_SetMix"), {"cdrom_SetMix": {"g_cd_atv", "D_800A36B8"}})
++        changed = [(a, b) for a, b in zip(stock, gated) if a != b]
++        self.assertEqual(len(stock), len(gated))
++        self.assertTrue(changed)
++        for a, b in changed:
++            self.assertIn("%gp_rel(", a)
++            self.assertNotIn("%gp_rel(", b)
++            self.assertIn("+", b)
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tools/naming_wave.py
++++ b/tools/naming_wave.py
+@@ -69,7 +69,8 @@
+ ]
+ 
+ # Rule files: `func: rule...` — the key before ':' plus any name in the body.
+-RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt"]
++RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt",
++              "maspsx_comm_syms.txt"]  # `func: sym, sym` — keys AND body names are pipeline keys
+ 
+ # One-name-per-line (optionally `name  # comment`) gate lists.
+ LIST_FILES = [

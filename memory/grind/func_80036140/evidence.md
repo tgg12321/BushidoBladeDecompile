@@ -1,5 +1,33 @@
 # func_80036140 — evidence
 
+## LAYER-2 FAIL #1 (2026-09-26 evening) and the restructure — READ FIRST
+
+The single-landing package (gate commit + one Match commit carrying the split, the merges and the
+body) failed layer-2 on two hard objections, both taken to the owner and answered favourably:
+1. comm_syms row func_80036140, prong (a)(2): cc1psx+ASPSX differs from the shipped words (81/512;
+   our cc1+ASPSX 68). Owner Q15: the row stands when EVERY gp/sym+N decision matches AND every
+   other differing word is classified by address. Done: landing/q15/func_80036140.cc1psx-G8.txt
+   (66 li-expansion, 10 cc1psx-scheduled instructions incl. 2 moved li's, 4 hazard nops,
+   1 branch displacement; 0 unclassified; 25/25 gp/sym+N OK) and .ourcc1-G8.txt (68 li only).
+2. -G8 (iv): the CdlATV merge rode in the split commit. Owner Q16: reverse order allowed as
+   SEPARATE commits. Restructured into five commits, each built to the oracle from clean
+   (landing/tools/apply2.py steps, t_steps.sh; per-commit diffs landing/steps/*.diff):
+   A maspsx gate + registration | B split (cdrom_SetMix + func_80035F78 -> -G8 code6cac_b4.c,
+   rest -> code6cac_b4_post.c; verbatim) | C merges (CdlATV + CdState through 0x80101EA7;
+   func_80036140 still INCLUDE_ASM, its per-word rows kept as aliases) | D Match (func_80036140 +
+   func_80036940 -> -G8 code6cac_b5.c, tail -> code6cac_b5_post.c, verbatim; the C body;
+   alias rows retire) | E g_cd_result as libcd's u8[8] (see 3).
+3. Soft objection: the body used per-byte handles g_cd_result_plus_0x3/4/5 inside the 8-byte
+   result buffer while treating the CdlATV records as COMMON objects. Now merged (commit E) and
+   the buffer joins the func_80036140 comm row. It cannot precede D: with an array,
+   func_80036940 at -G0 keeps &g_cd_result in $s0 (score 5); byte-neutral once it is -G8.
+Rejected body (single-commit landing): rejected/joint-g8-single-commit-2026-09-26.c (the D body).
+Measured at rev da540504a: all six states (stock, A..E) SHA1 == oracle; A vs stock 36/36 objects
+identical; commit-B TU through cc1psx+ASPSX (bases tentative, per-byte handles extern) reproduces
+cdrom_SetMix / func_80035F78 exactly (0/18, 0/12), -G0 none; screening at every state identical
+(landing/steps/screen_*); movecheck B and D byte-identical (landing/steps/movecheck.txt);
+Q14 per-accessor identity on the final state (landing/q14_accessors.txt, 40/40 objects).
+
 ## CURRENT STATE (slotI, 2026-09-26, measured on scratch trees built from HEAD 97d8c71a7)
 
 The whole landing is built and verified in scratch full builds (make run INSIDE a scratch copy of

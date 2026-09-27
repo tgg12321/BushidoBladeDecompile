@@ -1,0 +1,8 @@
+[B4split_comm-G0] code6cac_b4 class=comm cc1psx -G0 syms=g_cd_atv,D_800A36B8,D_800A3840,D_800A3854
+  cdrom_SetMix: 18 target words, 4 differ after alignment (reloc imm masked); gp accesses target=2 ours=0
+      target gp: ['g_cd_atv', 'D_800A3854']
+      ours   gp: []
+  func_80035F78: 12 target words, 6 differ after alignment (reloc imm masked); gp accesses target=3 ours=0
+      target gp: ['D_800A36B8', 'D_800A3854', 'D_800A3840']
+      ours   gp: []
+  total words ours=35 target=30

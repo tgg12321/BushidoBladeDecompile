@@ -1,0 +1,74 @@
+maspsx: per-function COMMON gate (--comm-syms, maspsx_comm_syms.txt) + registration [infra-rule: maspsx-comm]
+
+Commit 1 of 5 (func_80036140 joint -G8 landing; owner rulings 2026-09-26 Q9, Q10,
+Q13-Q16). Builds the gate authorized by Q9 (.claude/rules/maspsx-gate-lists.md §
+"maspsx_comm_syms.txt"). Sony ASPSX 2.34 gives a COMMON (tentative-definition)
+symbol gp addressing at its base only, never at sym+N; our C declares such
+variables `extern`, so maspsx needs the storage class per function.
+
+tools/maspsx/maspsx/__init__.py, maspsx.py
+- `--comm-syms FILE` (`func: sym, sym`, the sdata_exclude.txt format) ->
+  MaspsxProcessor(comm_sym_map=...). `_is_comm(symbol)` = upstream `.comm`
+  knowledge OR listed for the current function (current_func comes from `.ent`,
+  so INCLUDE_ASM bodies are never touched). The three existing
+  `gp_allowed = gp_allow_offset or symbol not in comm_symbols` sites use it; they
+  apply only to `sym+N` operands, so the gate only removes gp, only from sym+N
+  (N != 0) of a listed symbol in a listed function; no storage is emitted, no
+  instruction added/removed beyond maspsx's ordinary non-gp form (prong (b)).
+- tests/test_comm_syms.py: listed offset non-gp / base gp / unlisted symbol keeps
+  gp; inert for unlisted functions and without the list; the gate only turns gp
+  lines into non-gp `sym+N` lines.
+
+maspsx_comm_syms.txt — first rows. Prong (a) evidence, calibration only (PsyQ
+cc1psx -> Sony ASPSX 2.34, psyq3.5, under dosemu2; symbols re-declared as the
+original file's storage class; memory/grind/func_80036140/landing/calib*/,
+landing/q15/):
+- cdrom_SetMix: g_cd_atv — shipped 80035F34 `sb a0,%gp_rel(g_cd_atv)`, 80035F44-58
+  lui + `sb %lo(g_cd_atv+1/+2/+3)`. COMMON (`CdlATV g_cd_atv;`) at -G8 reproduces
+  the shipped 18 words exactly (0 differ); extern / static / initialized / -G0
+  differ (4 / 6 / 6 / 6 words; gp 0 / 5 / 5 / 0).
+- func_80035F78: D_800A36B8 — shipped 80035F7C `sb a1,%gp_rel(D_800A36B8)`,
+  80035F80-9C lui + `sb %lo(D_800A36B8+1/+2/+3)`; reproduced exactly (0 of 12); the
+  alternatives differ (6 words each).
+- func_80036140: g_cd_atv, D_800A36B8, g_cd_result — shipped base reads
+  gp-relative (80036154 D_800A36B8, 80036168 g_cd_atv, 80036850 / 800368A0
+  g_cd_result), every sym+N access lui/%lo (the six ATV byte reads, result[4] at
+  80036584, the la's). Per owner ruling Q15 the row stands on: (1) EVERY gp / sym+N
+  decision for the three symbols matches the shipped bytes — 25 of 25, listed
+  in landing/q15/func_80036140.cc1psx-G8.txt; (2) EVERY other differing word is
+  classified there by address: cc1psx -G8 + ASPSX vs the shipped 512 words gives
+  66 `li` expansions (ASPSX 2.34 assembles `li rt,imm` as `ori`, the shipped bytes
+  and our build have `addiu`; upstream maspsx's own test pins `ori` for 2.34);
+  cc1psx scheduling: 10 shipped instructions that cc1psx emits at another
+  position (the g_cd_atv val0 lbu, three mflo, two D_80101E94 lui/lw pairs, two
+  `li`s which are also ori-expanded), the 4 hazard nops that reordering adds, and
+  1 branch (80036140+0xC blez) whose displacement those nops shift; no
+  unclassified word. Our cc1's -G8 output of the same TU through ASPSX 2.34
+  differs ONLY in 68 `li` words (landing/q15/func_80036140.ourcc1-G8.txt), all 25
+  gp / sym+N decisions matching. Alternatives: extern -> 0 gp; static /
+  initialized -> 17 gp (the +k accesses gp'd); -G0 -> 0 gp.
+All rows are inert in this commit (every listed function still uses per-byte
+splat externs, and func_80036140 is INCLUDE_ASM).
+
+Registration (prong (c)): Makefile MASPSX_FLAGS + MASPSX_FLAGS_GP and
+PIPELINE_DEPS; engine/buildconfig.py mirror; engine/cheats.py MASPSX_GATE_LISTS
+"fidelity" (+ `func:` rows parse to func in _prologue_txt_funcs, engine test);
+engine/oracle.py CONFIG_FILES + dirty watch; engine/dossier.py memberships;
+engine/buildstamp.py CONFIGS; engine/queue.py toolchain-fingerprint inputs (the
+previous input set joins _prior_fingerprint_input_sets); tools/check_root_cleanliness.py;
+tools/desync_audit.py KEYED; tools/naming_wave.py RULE_FILES (keys and body names);
+tools/libscan/manifest.py KEYFILES; tools/grinder/grindlib.py _SCOPE_GRANT_DENY
++ GATE_FILES and .claude/rules/integration-handoff-self-serve.md (both halves of
+the pair); hooks park_src_guard / main_reintegration_lock /
+worktree_contamination_guard; maspsx-gate-lists.md table row (built).
+
+Verification:
+- this commit alone, scratch full clean build at rev @REV@: SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle; every src/*.c built with the
+  Makefile's exact per-file recipe, stock maspsx vs gated maspsx + rows: 36/36
+  objects byte-identical
+- engine test: 805 passed, 0 failed (stock 801/0)
+- maspsx tests: the 4 new tests pass; the 2 pre-existing failures
+  (test_div_expand_li_nop, test_expand_li_0x1) are unchanged
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

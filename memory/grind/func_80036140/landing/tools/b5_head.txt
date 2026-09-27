@@ -1,16 +1,6 @@
 /* The CD module's two state-machine steppers, func_80036140 and func_80036940,
- * in their own translation unit compiled -G8 (Makefile GP_FILES), moved out of
- * code6cac_b2_post.c together (owner ruling 2026-09-26, Q10). The original
- * compiler knew g_cd_result, g_cd_atv, D_800A36B8, D_800A3840 and D_800A3854
- * were small data: both functions read them straight off $gp. */
-#include "common.h"
-#include "gpu.h"
-#include "sound.h"
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
-
-extern void VSync(s32);
-extern s32 CdPosToInt(s32);
-extern void cdrom_ReadyCallback(u8);
-
+ * moved out of code6cac_b4_post.c together into their own translation unit
+ * compiled -G8 (Makefile GP_FILES; owner ruling 2026-09-26, Q10): both read
+ * g_cd_result (and func_80036140 g_cd_atv, D_800A36B8, D_800A3840, D_800A3854)
+ * straight off $gp, which the original compiler emits only at -G8. The
+ * declarations below are the source file's own, for the names this code uses. */

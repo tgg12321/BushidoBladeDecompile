@@ -1,16 +1,4 @@
-/* The code6cac_b2_post.c functions that follow func_80036940, moved unchanged
- * so that func_80036140 and func_80036940 can sit in their own -G8 unit
- * (code6cac_b5.c) before them. */
-#include "common.h"
-#include "include_asm.h"
-#include "gpu.h"
-#include "sound.h"
-#include "game.h"
-#include "system.h"
-#include "code6cac.h"
-
-extern void VSync(s32);
-extern s32 CdPosToInt(s32);
-extern void cdrom_SetMix(s32, s32, s32, s32);
-extern void func_80036940(void);
-
+/* The code6cac_b4_post.c functions that follow func_80036940, moved unchanged so
+ * that func_80036140 and func_80036940 can sit in their own -G8 unit
+ * (code6cac_b5.c) before them. The declarations below are the source file's own,
+ * for the names this code uses. */

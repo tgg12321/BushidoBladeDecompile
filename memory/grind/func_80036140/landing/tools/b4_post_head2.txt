@@ -1,0 +1,4 @@
+/* The code6cac_b2_post.c functions that follow func_80035F78, moved unchanged so
+ * that the CD-mix setters can sit in their own -G8 unit (code6cac_b4.c) before
+ * them. The declarations below are the source file's own, for the names this code
+ * uses. */

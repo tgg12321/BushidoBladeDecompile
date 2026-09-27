@@ -1,0 +1,64 @@
+code6cac.h: CdlATV (g_cd_atv, D_800A36B8) and CdState through 0x80101EA7 (aggregate merges)
+
+Commit 3 of 5 (func_80036140 joint -G8 landing). Respellings only; func_80036140
+is still INCLUDE_ASM (its asm names the per-word symbols, so those rows stay as
+"retire with func_80036140" aliases, prong (c) amendment 2026-09-03). This is the
+second half of the reverse-order (iv) proof (owner ruling Q16): the CdlATV merge
+is byte-neutral only with cdrom_SetMix already -G8 (at -G0 it scores 5), which
+commit 2 made so.
+
+1. CdlATV — libcd's 4-byte attenuator block (CdMix(CdlATV *)) over
+   D_800A36B8..BB and g_cd_atv..+3. Prong (a) by independent evidence in the
+   original binary: in cdrom_SetMix / func_80035F78 / func_80036140 byte 0 is
+   gp-relative and bytes 1..3 lui/%lo, which ASPSX 2.34 produces only from ONE
+   COMMON object (separate variables: all gp or none — calibration); the
+   unaligned 4-byte lwl/lwr/swl/swr copy between the two objects (80036310-20)
+   is a struct assignment; the committed naming census (apiscan 9a7da73f5, the
+   2026-09-24 data manifest) names g_cd_atv libcd's CdlATV. (b) four u8 fields
+   (libcd layout); (c) the per-byte rows stay as aliases until commit 4, the
+   named_syms duplicates go, asm/data/91C98.data.s has one dlabel per record
+   (bytes unchanged); (d) declared in include/code6cac.h, cdrom_SetMix /
+   func_80035F78 name `.valN`, code6cac_b4.c's CdMix prototype takes CdlATV *;
+   (e) this commit == oracle. The rows of maspsx_comm_syms.txt (commit 1) keep
+   bytes 1..3 non-gp.
+2. ReplayCamRec (inside CdState D_80101E58) extended through 0x80101EA7: unk3C
+   s16, unk3E u16, expected_pos s32, unk44 s32 — prong (a) by compiler necessity,
+   (a1)/(a2)/(a4′) with the Q13/Q14 forced-in-byte amendments (evidence.md CURRENT
+   STATE, landing/dumps, landing/psx, landing/member_table.md,
+   landing/q14_accessors.txt):
+   (a1) at -G8 (func_80036140's unit) a variable of <= 8 bytes is small data:
+   mips.h ENCODE_SECTION_INFO sets SYMBOL_REF_FLAG, mips_address_cost prices it 1
+   = a register, and cse.c find_best_addr folds any pointer back to the symbol,
+   so the shipped `la; lX 0(r); sX 0(r)` read-modify-writes of 0x80101E9C /
+   0x80101EA4 need an object over 8 bytes (separate variables 18, pointer RMW
+   locals 18, function-scope pointer aliases 42; sanctioned split families do
+   not change an address's small-data flag, cost or symbol base). That object
+   cannot overlap CdState, so it is CdState or starts at 0x80101E9C and covers
+   0x80101E9C..A7; as a separate 12-byte record cdrom_ReadyCallback scores 12
+   and func_80036140 8, because cse.c use_related_value relates expected_pos's
+   address to the &unk38 register only under the same symbol. (a2) cc1psx: the
+   separate variables -> direct `lhu/lw sym`; the record -> `la $2,D_80101E58+68;
+   lhu $3,0($2)`, the shipped registers.
+   (a4′) span 0x80101E62..0x80101EA7 = the bytes func_80036140 accesses (member
+   table lists every member with func_80036140's accesses). Forced-in bytes:
+   unk3E (Q13): every original access is 2 bytes at 0x80101E9E — cdrom_StartRead
+   80036E0C sh; game_FrameLoop 80036F54 la, 80036F9C lhu, 80036FAC sh —
+   unsigned by the lhu at 80036F9C. expected_pos (Q14, "when the binary cannot
+   tell"): every original access is 4 bytes at 0x80101EA0 — cdrom_ReadyCallback
+   800360A4 lw -> only 800360AC bne (equality); 800360E4 lw -> 800360F4 addiu +1
+   -> 800360FC sw; func_80036940 80036AAC sw of CdPosToInt's result — none
+   signedness-dependent; cdrom_ReadyCallback and func_80036940 built with the
+   member s32 vs u32 are byte-identical (function SHA1s and whole objects, with
+   the recipes, in landing/q14_accessors.txt; all 40 objects identical); kept
+   type = main's include/code6cac.h:493 `extern s32 g_cdread_expected_pos;`.
+   Consumers respelled: cdrom_ReadyCallback / func_80036940 `.rec.expected_pos`,
+   cdrom_StartRead `.rec.unk3E = 0`, game_FrameLoop `s0 = &D_80101E58.rec.unk3E;`
+   (its now-redundant `(u16 *)` cast dropped). D_80101E9C / D_80101EA4 stay as
+   aliases for func_80036140.s; the D_80101E9E / g_cdread_expected_pos rows and
+   their census names retire.
+
+Verification: commits 1-3, scratch full clean build at rev @REV@: SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. The record-extension
+respellings alone are also byte-neutral in place on the unsplit tree.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

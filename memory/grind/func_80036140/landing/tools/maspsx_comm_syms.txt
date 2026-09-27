@@ -18,4 +18,4 @@
 # Evidence for the rows below: memory/grind/func_80036140/evidence.md § "maspsx_comm_syms rows".
 cdrom_SetMix: g_cd_atv
 func_80035F78: D_800A36B8
-func_80036140: g_cd_atv, D_800A36B8
+func_80036140: g_cd_atv, D_800A36B8, g_cd_result

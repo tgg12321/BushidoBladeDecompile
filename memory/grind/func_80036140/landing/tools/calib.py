@@ -26,17 +26,18 @@ cpp = ['mipsel-linux-gnu-cpp', f'-I{T}/include', '-undef', '-Wall', '-lang-c', '
 i = subprocess.run(cpp, capture_output=True, text=True).stdout
 # re-declare each listed symbol: every `extern <type> sym;` line for it becomes the chosen storage class
 for s in syms:
-    pat = re.compile(r'^extern\s+([^;()]*?)\b' + re.escape(s) + r'\s*;\s*$', re.M)
+    pat = re.compile(r'^extern\s+([^;()]*?)\b' + re.escape(s) + r'\s*(\[[^\]]*\])?\s*;\s*$', re.M)
     hits = pat.findall(i)
     assert hits, s
     first = [True]
     def sub(m):
         t = m.group(1)
+        a = m.group(2) or ''
         if not first[0]:
             return ''                       # drop duplicate declarations
         first[0] = False
-        return {'comm': f'{t}{s};', 'static': f'static {t}{s};', 'extern': f'extern {t}{s};',
-                'init': f'{t}{s} = {{0}};' if 'CdlATV' in t else f'{t}{s} = 1;'}[cls]
+        return {'comm': f'{t}{s}{a};', 'static': f'static {t}{s}{a};', 'extern': f'extern {t}{s}{a};',
+                'init': f'{t}{s}{a} = {{0}};' if ('CdlATV' in t or a) else f'{t}{s} = 1;'}[cls]
     i = pat.sub(sub, i)
 (O / f'{stem}.i').write_text(i)
 s_path = O / f'{stem}{G}.s'

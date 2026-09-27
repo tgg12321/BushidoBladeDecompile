@@ -1,0 +1,276 @@
+--- a/asm/data/91C98.data.s
++++ b/asm/data/91C98.data.s
+@@ -4929,27 +4929,12 @@
+     /* 93F60 800A3760 */ .byte 0x00
+     /* 93F61 800A3761 */ .byte 0x00
+     /* 93F62 800A3762 */ .byte 0x00
+-enddlabel g_cd_result
+-
+-nonmatching g_cd_result_plus_0x3
+-
+-dlabel g_cd_result_plus_0x3
+     /* 93F63 800A3763 */ .byte 0x00
+-enddlabel g_cd_result_plus_0x3
+-
+-nonmatching g_cd_result_plus_0x4
+-
+-dlabel g_cd_result_plus_0x4
+     /* 93F64 800A3764 */ .byte 0x00
+-enddlabel g_cd_result_plus_0x4
+-
+-nonmatching g_cd_result_plus_0x5
+-
+-dlabel g_cd_result_plus_0x5
+     /* 93F65 800A3765 */ .byte 0x00
+     /* 93F66 800A3766 */ .byte 0x00
+     /* 93F67 800A3767 */ .byte 0x00
+-enddlabel g_cd_result_plus_0x5
++enddlabel g_cd_result
+ 
+ nonmatching D_800A3768
+ 
+--- a/include/code6cac.h
++++ b/include/code6cac.h
+@@ -231,7 +231,13 @@
+    last element down (asm/funcs/func_80033510.s starts at 0x800A3756). */
+ extern s16 D_800A3750[4];
+ extern u8 D_800A3758;
+-extern u8 g_cd_result_plus_0x4;
++/* libcd's 8-byte CD status/result buffer (u_char result[8]) that CdSync / CdReady
++ * fill: func_80036940 and func_80036140 test result[0] (the status byte) and
++ * func_80036140 reads result[4] and hands &result[3] / &result[5] (the reported
++ * position) to CdPosToInt. A tentative definition in the CD module's file, like
++ * the CdlATV blocks: result[0] is read gp-relative, result[4] with lui/%lo
++ * (maspsx_comm_syms.txt). */
++extern u8 g_cd_result[8];
+ extern u8 D_800A3769;
+ extern u8 D_800A376A;
+ extern u8 D_800A376B;
+--- a/named_syms.txt
++++ b/named_syms.txt
+@@ -1033,7 +1033,6 @@
+ g_satan0_gauge_state_word                               = 0x800A2D30;  /* zero-init state cell; consumer: saTan0GaugeDraw */
+ g_special_cam_win_byte_a                                = 0x800A36B8;  /* byte state for special_camera_set_win_cam */
+ g_cd_atv                                = 0x800A3718;  /* byte state for special_camera_set_win_cam */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
+-g_cd_result_plus_0x3                                = 0x800A3763;  /* byte state for special_camera_set_win_cam */  /* data-wave 2026-09-24: was g_special_cam_win_byte_c */
+ g_replay_motion_shared_state_a                          = 0x800A3578;  /* halfword pair; shared between replay_camera_attack + motion_ShiftControl */
+ g_replay_motion_shared_state_b                          = 0x800A35A0;  /* word; same consumers */
+ g_replay_motion_shared_state_c                          = 0x800A35BC;  /* word; same consumers */
+@@ -3024,8 +3023,6 @@
+ g_game_state_field_8_800A3260                      = 0x800A3260;  /* 7 refs; +4 final field */
+ g_game_battle_flag_a_800A367A                      = 0x800A367A;  /* 7 refs; byte pair companion at +2 */
+ g_game_battle_flag_b_800A367C                      = 0x800A367C;  /* 7 refs; +2 from _a */
+-g_cd_result_plus_0x4                  = 0x800A3764;  /* 7 refs; byte pair companion at +1 */  /* data-wave 2026-09-24: was g_game_state_byte_pair_a_800A3764 */
+-g_cd_result_plus_0x5                  = 0x800A3765;  /* 7 refs; +1 from _a */  /* data-wave 2026-09-24: was g_game_state_byte_pair_b_800A3765 */
+ D_800F185C                 = 0x800F185C;  /* 8 refs; first of 5-field 4-byte-stride cluster */  /* data-wave 2026-09-25: was g_gpu_color_table_field_0_800F185C */
+ D_800F1860                 = 0x800F1860;  /* 8 refs; +4 stride */  /* data-wave 2026-09-25: was g_gpu_color_table_field_4_800F1860 */
+ D_800F1864                 = 0x800F1864;  /* 8 refs; +4 stride */  /* data-wave 2026-09-25: was g_gpu_color_table_field_8_800F1864 */
+--- a/src/code6cac_b5.c
++++ b/src/code6cac_b5.c
+@@ -21,9 +21,6 @@
+ extern void cdrom_SetMix(s32, s32, s32, s32);
+ extern s32 CdSync(s32, u8 *);
+ extern s32 CdReady(s32, u8 *);
+-extern u8 g_cd_result;
+-extern u8 g_cd_result_plus_0x3;
+-extern u8 g_cd_result_plus_0x5;
+ void func_80036140(void) {
+     CdlATV atv;
+ 
+@@ -49,7 +46,7 @@
+         D_80101E58.rec.unk02 = 0x11;
+         break;
+     case 0x11: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             CdControlF(2, (s32)&D_80101E58.rec.pair);
+             D_80101E58.rec.unk02 = 0x12;
+@@ -60,7 +57,7 @@
+     }
+     case 0x12:
+         if (++D_80101E58.rec.unk2C >= 3) {
+-            s32 ret = CdSync(1, &g_cd_result);
++            s32 ret = CdSync(1, g_cd_result);
+             if (ret == 2) {
+                 CdControlF(0x16, 0);
+                 D_80101E58.rec.unk02 = 0x13;
+@@ -70,7 +67,7 @@
+         }
+         break;
+     case 0x13: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             if (D_80101E58.rec.unk04 == 0) {
+                 CdControlF(D_80101E58.rec.unk34 ? 0x1B : 3, 0);
+@@ -82,7 +79,7 @@
+         break;
+     }
+     case 0x14: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             D_80101E58.rec.unk3C = 0;
+             D_80101E58.rec.unk02 = 0x15;
+@@ -101,17 +98,17 @@
+         }
+         D_80101E58.rec.unk02 = 0x16;
+         if (D_80101E58.rec.unk34 != 0) {
+-            CdControlF(0x11, (s32)&g_cd_result);
++            CdControlF(0x11, (s32)g_cd_result);
+             D_80101E58.rec.unk3A = 0;
+             break;
+         }
+         CdControlF(1, 0);
+         {
+-            s32 ret = CdReady(1, &g_cd_result);
++            s32 ret = CdReady(1, g_cd_result);
+             if (ret == 1) {
+-                if (!(g_cd_result_plus_0x4 & 0x80)) {
++                if (!(g_cd_result[4] & 0x80)) {
+                     D_80101E58.rec.unk3C = 0;
+-                    if (CdPosToInt((s32)&g_cd_result_plus_0x3) >= D_80101E58.rec.unk14) {
++                    if (CdPosToInt((s32)&g_cd_result[3]) >= D_80101E58.rec.unk14) {
+                         cdrom_SetMix(0, 0, 0, 0);
+                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
+                     }
+@@ -134,11 +131,11 @@
+             }
+         }
+         {
+-            s32 ret = CdSync(1, &g_cd_result);
++            s32 ret = CdSync(1, g_cd_result);
+             if (ret == 2) {
+                 D_80101E58.rec.unk02 = 0x15;
+                 if (D_80101E58.rec.unk34 != 0) {
+-                    s32 pos = CdPosToInt((s32)&g_cd_result_plus_0x5);
++                    s32 pos = CdPosToInt((s32)&g_cd_result[5]);
+                     if (pos >= D_80101E58.rec.unk14) {
+                         cdrom_SetMix(0, 0, 0, 0);
+                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
+@@ -164,7 +161,7 @@
+         D_80101E58.rec.unk02 = 0x1D;
+         break;
+     case 0x1D: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             D_80101E58.rec.unk28 = 0;
+             D_80101E58.rec.unk02 = 0x1E;
+@@ -180,7 +177,7 @@
+         break;
+     case 0x17:
+         cdrom_SetMix(0, 0, 0, 0);
+-        if (g_cd_result & 0x10) {
++        if (g_cd_result[0] & 0x10) {
+             D_80101E58.rec.unk02 = 0x18;
+         } else {
+             D_80101E58.rec.unk02 = 0x1A;
+@@ -191,9 +188,9 @@
+         D_80101E58.rec.unk02 = 0x19;
+         break;
+     case 0x19: {
+-        s32 ret = CdSync(1, &g_cd_result);
+-        if (ret == 2) {
+-            if (g_cd_result & 0x10) {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            if (g_cd_result[0] & 0x10) {
+                 D_80101E58.rec.unk02 = 0x18;
+             } else {
+                 D_80101E58.rec.unk02 = 0x1A;
+@@ -208,7 +205,7 @@
+         D_80101E58.rec.unk02 = 0x1B;
+         break;
+     case 0x1B: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             D_80101E58.rec.unk02 = D_80101E58.rec.unk08 ? 0 : 0x10;
+         } else if (ret == 5) {
+@@ -222,7 +219,6 @@
+ void func_80036940(void);
+ extern s32 CdSync(s32, u8 *);
+ extern void CdControl(s32, s32, s32);
+-extern u8 g_cd_result;
+ extern void func_80036140(void);
+ void func_80036940(void) {
+     u8 param[4];
+@@ -246,7 +242,7 @@
+         D_80101E58.rec.unk02 = 3;
+         break;
+     case 3: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             D_80101E58.rec.unk02 = 4;
+             D_80101E58.rec.unk2C = 0;
+@@ -268,7 +264,7 @@
+         }
+         break;
+     case 5: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             D_80101E58.rec.unk38 = 0;
+             CdReadyCallback((s32)cdrom_ReadyCallback);
+@@ -282,7 +278,7 @@
+         break;
+     }
+     case 6: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             if (D_80101E58.rec.sectors_remaining == 0) {
+                 D_80101E58.rec.unk02 = 8;
+@@ -305,7 +301,7 @@
+         D_80101E58.rec.unk02 = 0;
+         break;
+     case 9:
+-        if (g_cd_result & 0x10) {
++        if (g_cd_result[0] & 0x10) {
+             D_80101E58.rec.unk02 = 0xA;
+         } else {
+             D_80101E58.rec.unk02 = 0xC;
+@@ -317,9 +313,9 @@
+         D_80101E58.unk04 = 0;
+         break;
+     case 0xB: {
+-        s32 ret = CdSync(1, &g_cd_result);
+-        if (ret == 2) {
+-            if (g_cd_result & 0x10) {
++        s32 ret = CdSync(1, g_cd_result);
++        if (ret == 2) {
++            if (g_cd_result[0] & 0x10) {
+                 D_80101E58.rec.unk02 = 0xA;
+             } else {
+                 D_80101E58.rec.unk02 = 0xC;
+@@ -338,7 +334,7 @@
+         D_80101E58.unk04 = 0;
+         break;
+     case 0xD: {
+-        s32 ret = CdSync(1, &g_cd_result);
++        s32 ret = CdSync(1, g_cd_result);
+         if (ret == 2) {
+             D_80101E58.rec.unk02 = 2;
+             VSync(4);
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -133,8 +133,6 @@
+ D_800A3716 = 0x800A3716;
+ D_800A3745 = 0x800A3745;
+ D_800A3746 = 0x800A3746;
+-g_cd_result_plus_0x3 = 0x800A3763;  /* data-wave 2026-09-24: was D_800A3763 */
+-g_cd_result_plus_0x5 = 0x800A3765;  /* data-wave 2026-09-24: was D_800A3765 */
+ D_800A3769 = 0x800A3769;
+ D_800A376A = 0x800A376A;
+ D_800A376B = 0x800A376B;
+@@ -984,7 +982,6 @@
+ D_800A3750 = 0x800A3750;
+ D_800A3758 = 0x800A3758;
+ g_cd_result = 0x800A3760;  /* data-wave 2026-09-24: was D_800A3760 */
+-g_cd_result_plus_0x4 = 0x800A3764;  /* data-wave 2026-09-24: was D_800A3764 */
+ D_800A3768 = 0x800A3768;
+ D_800A376C = 0x800A376C;
+ D_800A3770 = 0x800A3770;
