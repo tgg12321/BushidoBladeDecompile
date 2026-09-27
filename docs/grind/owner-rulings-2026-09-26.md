@@ -133,3 +133,11 @@ Owner chose: **"Allow with R11-style proof (Recommended)"** — option text: "Du
 ## Q20 — per-branch constants as a Ruling 11 value
 Question: "func_8001CE60: it matches only when ONE local holds both an announcement length (set to 80 or 100 in if/else branches) and, later, the clock's frames-left. The reused-variable ruling currently refuses a value that is just a constant. Allow a per-branch constant (different constants on different paths) to count as a real value there, under the same proof?"
 Owner chose: **"Allow per-branch constants (Recommended)"** — option text: "Only when the constant differs by path (a real choice made at runtime); a single unconditional constant still doesn't count; same R11 necessity proof and layer-2."
+
+<!-- Batch 12: appended verbatim from tmp/orch/owner_rulings_2026-09-26l.md (line endings normalized to LF; blank separator line added). -->
+# Owner ruling 2026-09-26/27 (twelfth batch, via AskUserQuestion) — VERBATIM RECORD
+Context: func_8001CE60 (slotM) matches (sandbox 0/588; full build == oracle) only with D_800A3898[2] and D_800A38AA[2] declared as 2-element arrays in code6cac.c; with those arrays in scope func_800340A0 (COMPLETED-C, code6cac_b.c) drops to 5/88 because GCC (and Sony's cc1psx) keeps an array element's address in a register when the element is used twice; every array respelling of func_800340A0 stays at 5. Borderline entry filed 2026-09-26; edits in memory/grind/func_8001CE60/probes/per-tu-landing.diff.
+
+## Q21 — per-file declarations of the same bytes
+Question: "func_8001CE60 needs two player byte-pairs declared as 2-element arrays, but a completed neighbour in a different file (func_800340A0) only matches with the same bytes declared as separate single bytes — the original compiler (confirmed with Sony's cc1psx) can't produce both from one declaration. SOTN keeps annotated declaration mismatches when the original bytes require them. May each file declare those bytes the way its own code needs (arrays in code6cac.c, single bytes in code6cac_b.c), annotated, with the compiler evidence? A full build of this form matches the original."
+Owner chose: **"Allow, per file, annotated (Recommended)"** — option text: "Only when proven that no single declaration compiles both files (dumps + cc1psx), declarations kept file-local (not in a shared header), each annotated; layer-2 reviews."

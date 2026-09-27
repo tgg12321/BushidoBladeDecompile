@@ -539,6 +539,125 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     gate row. Record:
     docs/grind/decisions.md 2026-09-26 OWNER RULING — aggregate-merge prong
     (a): compiler-necessity evidence, minimal span.
+  - **Exception to prongs (c)/(d): per-file declarations of the same bytes
+    (owner ruling 2026-09-26/27, twelfth batch, Q21).** The question put to
+    the owner, verbatim: "func_8001CE60 needs two player byte-pairs declared
+    as 2-element arrays, but a completed neighbour in a different file
+    (func_800340A0) only matches with the same bytes declared as separate
+    single bytes — the original compiler (confirmed with Sony's cc1psx)
+    can't produce both from one declaration. SOTN keeps annotated
+    declaration mismatches when the original bytes require them. May each
+    file declare those bytes the way its own code needs (arrays in
+    code6cac.c, single bytes in code6cac_b.c), annotated, with the compiler
+    evidence? A full build of this form matches the original." Owner
+    (Trenton) chose, verbatim: **"Allow, per file, annotated
+    (Recommended)"**, whose text is: "Only when proven that no single
+    declaration compiles both files (dumps + cc1psx), declarations kept
+    file-local (not in a shared header), each annotated; layer-2 reviews."
+    (Record: docs/grind/owner-rulings-2026-09-26.md, batch 12.) The SOTN
+    norm the question cites is the prototype-contradiction practice: the
+    byte match decides the declaration, and a mismatch is kept, isolated and
+    annotated, only where the original binary demands it (2026-08-10 SOTN
+    master precedent research, recorded in the Claude harness memory, not in
+    this repo: e.g. `src/main/psxsdk/libsnd/stop.c:5` "seems to require
+    wrong prototype"). Its prototype-norm examples are function prototypes; applying the
+    norm to data declarations is this owner ruling, not the research. What
+    follows is the author's narrowing. Two TUs may declare the same bytes
+    with different C types ONLY when ALL of (1)-(6) hold:
+    1. **Proven: no single declaration compiles both files.** The ledger
+       banks every single-declaration respelling attempted (each type or
+       layout tried for those bytes, with the respellings of each file's
+       functions under it) and its score. The ledger banks the compiler
+       dumps (cc1 RTL dumps such as `.cse`, `.loop`, `.lreg`, `.greg`,
+       and/or the instrumented cc1's `BB2_*_DEBUG` output,
+       `tools/gcc-2.7.2/cc1`, with command lines) for each file's functions
+       under its own declaration and under each banked single declaration.
+       They name, by pass and source
+       location in `tools/gcc-2.7.2`, the compiler decision each file's
+       target depends on, and show that it depends on a property of the
+       declaration itself, so that EVERY spelling of that file's functions
+       under a declaration lacking the property misses the target, whatever
+       its statement order, locals or respelling, including spellings that
+       use any construct on the frozen sanctioned list with that entry's
+       prerequisites met. An argument that covers only the spellings
+       measured fails (1). The ledger then shows, for every admissible
+       single declaration, which file's property it lacks, so that no
+       admissible declaration has both files' properties. A declaration for
+       which this is not shown defeats (1). The single declarations considered are every
+       admissible declaration of those bytes: at least each file's own form
+       used as the one shared declaration, plus any struct or other
+       aggregate the evidence admits. A single-declaration spelling that
+       relies on a REFUSED or BANNED construct (a per-use pointer pun, F4,
+       F5 union CLOBBER, an asm alias rename) is set aside. One whose every
+       construct is admissible counts, and if it compiles both files, (1) is
+       not met. The original PsyQ cc1psx (`tools/cc1psx_wrapper.sh`,
+       calibration use only, never a build path), run on the same
+       preprocessed TUs with the build's cc1 flags, gives the same result
+       for every single declaration banked under (1): at least one of the
+       two files' functions misses its target shape. Under each file's own
+       declaration, that file's functions reach it. "Target shape" means the
+       instructions the (1) mechanism governs match the target's in opcode,
+       register and offset. The ledger banks every cc1psx output and its
+       diff against the target.
+    2. **Same bytes, same accesses.** The two declarations cover exactly the
+       same bytes and differ only in grouping: an array of an element type
+       against separate scalars of that type, or a struct against its
+       members as scalars. Every element's width equals the width of every
+       access to it in that file's original instructions
+       (`asm/funcs/<func>.s`). Its signedness is one declared type under
+       which each of that file's accesses is ordinary C, with explicit value
+       casts allowed and pointer puns not. A declaration that covers bytes
+       at a different width than the other file's (e.g. a `u16` over two
+       `u8`), or that is reached through a cast, a pointer pun, a union or
+       an `asm("sym")` alias, is refused. Prong (d)'s ban on per-use pointer
+       puns applies unchanged.
+    3. **File-local.** Each declaration sits in its own `.c` file. No shared
+       header declares those bytes in either form. The exception covers only
+       the files whose functions the (1) proof covers, and each of them
+       keeps exactly one C handle per storage location within itself.
+       Splat symbol rows that either declaration needs stay (prong (c)'s
+       one-handle rule is relaxed only across these files). A function in
+       any other file that later references those bytes is admitted only by
+       a fresh (1)-(6) submission that extends the proof to it. Until then
+       no other file declares them.
+    4. **Annotated.** Each declaration carries an inline comment that names
+       the other file's declaration (file and line), states that the
+       mismatch is kept because no single declaration compiles both files,
+       and cites the ledger evidence and this ruling.
+    5. **Bytes.** `verify-oracle --rebuild` (full-build SHA1 == oracle) and
+       sandbox 0 for the functions landing with it.
+    6. **Review.** Admission needs a fresh layer-2 `cheat-reviewer` PASS
+       that walks (1)-(5) against the ledger. On the Grinder path a Judge
+       PASS is not enough: the Judge may not admit a declaration under this
+       exception, and a body that relies on it lands only through the
+       manual path's layer-2.
+
+    This does NOT license mismatched declarations for convenience: a
+    mismatch without the (1) proof is refused, and a declaration a single
+    shared form can serve stays unified in the header as prongs (c)/(d)
+    require. Prongs (a), (b) and (e) apply unchanged to each declaration
+    that merges splat symbols, except that where (a3) or (a4′)(5) restate
+    prong (c) (merge completeness) or prong (d) (the canonical declaration
+    in the shared header), they are read with this exception's relaxations
+    of (c) and (d), and only across the proven files. The per-file array still needs its (a)
+    object-model evidence and its (b) shape, and every other consumer in
+    each file stays byte-neutral. Prong (d)'s pun ban also stands; only its
+    shared-header and never-TU-local requirements are relaxed, and only for
+    the proven files. On data declarations, the same research found
+    volatile-in-one-TU essentially absent ecosystem-wide, and cross-TU
+    width/type conflicts common but concentrated in imported library code,
+    with curated game code unified. Its data-side findings on second typed
+    views are SOTN's local cast re-views (`(T*)&D_80xxxxxx`), which ship in
+    matched code carrying !FAKE/TODO debt markers and which cleanup PRs move
+    away from, and Silent Hill's practice, where a unified view cannot
+    re-match, of keeping two typed views through a union and a second linker
+    symbol at the same address, each annotated @hack. (2) refuses both
+    spellings. The extension to data
+    declarations in game code therefore rests on this owner ruling alone.
+    func_8001CE60's per-file form is judged fresh
+    against (1)-(6); nothing here pre-decides it. Record:
+    docs/grind/decisions.md 2026-09-27 OWNER RULING — per-file declarations
+    of the same bytes.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)
   ([[do-while-zero-exception]] / [[sotn-do-while-zero-research-2026-06-04]]):
   sanctioned as a pure-C match device for ANY codegen effect, including

@@ -30148,3 +30148,52 @@ reaches the value's read depends on a runtime condition. A single unconditional 
 writes of one constant, or a choice not made by a runtime condition still fails. The (D) necessity
 proof and (G) layer-2 apply unchanged. func_8001CE60's later form (borderline update line) does not
 rely on it.
+
+## 2026-09-27 — OWNER RULING — per-file declarations of the same bytes (`.claude/rules/no-new-park-categories.md`)
+
+Twelfth batch (2026-09-26/27; verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 12).
+Context, as given to the owner from slotM's func_8001CE60 ledger (the worker's measurements, judged
+at landing): func_8001CE60 matches (sandbox 0/588; full build == oracle) only with D_800A3898[2]
+and D_800A38AA[2] declared as 2-element arrays in code6cac.c; with those arrays in scope
+func_800340A0 (COMPLETED-C, code6cac_b.c) drops to 5/88 because GCC (and Sony's cc1psx) keeps an
+array element's address in a register when the element is used twice; every array respelling of
+func_800340A0 stays at 5. Question, verbatim: "func_8001CE60 needs two player byte-pairs declared as
+2-element arrays, but a completed neighbour in a different file (func_800340A0) only matches with
+the same bytes declared as separate single bytes — the original compiler (confirmed with Sony's
+cc1psx) can't produce both from one declaration. SOTN keeps annotated declaration mismatches when
+the original bytes require them. May each file declare those bytes the way its own code needs
+(arrays in code6cac.c, single bytes in code6cac_b.c), annotated, with the compiler evidence? A full
+build of this form matches the original."
+Owner (Trenton) chose, verbatim: "Allow, per file, annotated (Recommended)" — "Only when proven
+that no single declaration compiles both files (dumps + cc1psx), declarations kept file-local (not
+in a shared header), each annotated; layer-2 reviews."
+
+**Ruling (summary; the full text in the rule file, aggregate-merge entry, "Exception to prongs
+(c)/(d): per-file declarations of the same bytes", governs; the author's narrowing).** Two TUs may
+declare the same bytes with different C types only when: (1) the ledger banks every
+single-declaration respelling attempted with scores, and banks the compiler dumps (with command
+lines) that name, by pass and source location in tools/gcc-2.7.2, the decision each file's target
+depends on and show it depends on a property of the declaration itself, so that EVERY spelling of
+that file's functions under a declaration lacking it misses (sanctioned-list constructs included;
+spellings relying on refused/banned constructs set aside); the ledger shows, for every admissible
+single declaration, which file's property it lacks (an admissible single declaration that compiles
+both files, or one for which this is not shown, defeats (1)); cc1psx (calibration only, same
+preprocessed TUs and flags) agrees, its outputs and diffs banked; (2) the two declarations cover
+the same bytes and differ only in grouping (array vs scalars of the element type, struct vs its
+members), at the widths the original instructions access, with no cast, pun, union or asm alias;
+(3) each declaration is file-local in its own .c, no shared header declares those bytes in either
+form, each file keeps exactly one C handle per storage location, the exception covers only the
+proven files, and any later file needs a fresh submission; (4) each declaration is annotated,
+naming the other file's declaration (file and line), stating that it is kept because no single
+declaration compiles both files, and citing the ledger evidence and this ruling; (5) verify-oracle
+--rebuild and sandbox 0; (6) a fresh layer-2 PASS, never a Judge PASS alone. Prongs (a), (b), (e)
+and prong (d)'s pun ban stand ((a3) and (a4′)(5) read with the (c)/(d) relaxations across the
+proven files only). It does not license mismatches for convenience. The SOTN
+prototype-contradiction norm cited in the question is recorded in the 2026-08-10 precedent
+research (Claude harness memory; its prototype-norm examples are function prototypes; on data it
+found volatile-in-one-TU essentially absent and cross-TU type conflicts concentrated in imported
+library code with curated game code unified; its data-side second-view findings (SOTN local cast
+re-views carrying !FAKE/TODO debt markers; Silent Hill's union + second linker symbol, annotated
+@hack, kept where a unified view cannot re-match) are spellings this rule refuses; so extending
+the norm to data declarations rests on this owner ruling). func_8001CE60 is judged fresh. The rule
+text was revised after four layer-2 rule-text FAILs (rounds 1-4) before commit.
