@@ -6,6 +6,28 @@
 #include "bb2_const.h"
 #include "gte.h"
 
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+} Rect;
+
+/* PsyQ libgpu DRAWENV (libgpu.h): 0x5C bytes, isbg at +0x18. */
+typedef struct {
+    Rect clip;
+    s16 ofs[2];
+    Rect tw;
+    u16 tpage;
+    u8 dtd;
+    u8 dfe;
+    u8 isbg;
+    u8 r0;
+    u8 g0;
+    u8 b0;
+    u32 dr_env[16];
+} DrawEnv;
+
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
 extern void ClearImage(void *, s32, s32, s32);
@@ -48,12 +70,12 @@ extern void game_FrameLoop(void);
 extern void PutDispEnv(u8 *);
 extern void LoadImage(u8 *, u8 *);
 extern void VSync(s32);
-extern void ClearOTagR(u8 *, s32);
+extern u32 *ClearOTagR(u32 *, s32);
 
 extern s32 func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
-extern void PutDrawEnv(u8 *);
-extern void DrawOTag(u8 *);
+extern DrawEnv *PutDrawEnv(DrawEnv *);
+extern void DrawOTag(u32 *);
 extern void ResetRCnt(u32);
 extern s32 GetRCnt(u32);
 extern s32 rand(void);
@@ -76,13 +98,6 @@ extern void func_80060414(s32, u8 *, s32);
 
 
 
-
-typedef struct {
-    s16 x;
-    s16 y;
-    s16 w;
-    s16 h;
-} Rect;
 
 /* --- Non-decompiled functions (INCLUDE_ASM) --- */
 __asm__(
@@ -261,7 +276,7 @@ extern void SetGraphDebug(s32);
 extern void InitGeom(void);
 extern void SetGeomOffset(s32, s32);
 extern void SetGeomScreen(s32);
-extern void SetDefDrawEnv(u8 *, s32, s32, s32, s32);
+extern DrawEnv *SetDefDrawEnv(DrawEnv *, s32, s32, s32, s32);
 extern void SetDefDispEnv(u8 *, s32, s32, s32, s32);
 void disp_Init(void) {
     u8 *base;
@@ -273,8 +288,8 @@ void disp_Init(void) {
     SetGeomOffset(0x140, 0x78);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     base = &g_gpu_db;
-    SetDefDrawEnv(base, 0, 0, 0x280, 0xF0);
-    SetDefDrawEnv(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
+    SetDefDrawEnv((DrawEnv *)base, 0, 0, 0x280, 0xF0);
+    SetDefDrawEnv((DrawEnv *)(base + 0x4090), 0, 0xF0, 0x280, 0xF0);
     SetDefDispEnv(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
     SetDefDispEnv(base + 0x40EC, 0, 0, 0x280, 0xF0);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -473,7 +488,7 @@ void func_80016E60(u8 *arg0, s32 arg1) {
         g_gpu_ot_ptr = (u8 *)&ot[idx];
         env = &g_gpu_db + (idx * 0x4090);
 
-        ClearOTagR(g_gpu_ot_ptr, 1);
+        ClearOTagR((u32 *)g_gpu_ot_ptr, 1);
         func_80019568();
         if (special != 0) {
             func_8005C8A8(2, select | (D_800A3788 << 16), D_800A38B4, 0);
@@ -494,10 +509,10 @@ void func_80016E60(u8 *arg0, s32 arg1) {
            [s6] E-s6-7/E-s6-8 - the honest env split-init routes measure 22 vs 21). */
         do {
             PutDispEnv(env + 0x5C);
-            PutDrawEnv(env);
+            PutDrawEnv((DrawEnv *)env);
         } while (0);
-        DrawOTag(ot_base + 0x408C);
-        DrawOTag(g_gpu_ot_ptr);
+        DrawOTag((u32 *)(ot_base + 0x408C));
+        DrawOTag((u32 *)g_gpu_ot_ptr);
         D_800A36AC++;
 
         padbits = D_80102788.pressed;
@@ -594,7 +609,7 @@ loop:
     idx = D_800A36AC & 1;
     env = &g_gpu_db + idx * 0x4090;
     ot = env + 0x70;
-    ClearOTagR(ot, 0x1008);
+    ClearOTagR((u32 *)ot, 0x1008);
     g_gpu_ot_ptr = ot;
     D_800A38B4 = tbl[idx];
     func_80060E04(idx);
@@ -628,7 +643,7 @@ loop:
     voice = D_800A390D;
     if (voice == 0) {
         PutDispEnv(env + 0x5C);
-        PutDrawEnv(env);
+        PutDrawEnv((DrawEnv *)env);
     }
 
     {
@@ -649,7 +664,7 @@ loop:
     if (D_800A390D != 0) {
         D_800A390D--;
     } else {
-        DrawOTag(env + 0x408C);
+        DrawOTag((u32 *)(env + 0x408C));
         D_800A36AC++;
     }
 
@@ -665,7 +680,82 @@ call_func:
     goto loop;
 }
 
-INCLUDE_ASM("asm/funcs", func_800174F4);
+void func_800174F4(void) {
+    u32 ot[2];
+    DrawEnv env;
+    /* temp: holds two values, the case-1/2 fade loop's iteration count and
+     * the case-20 D_800A37A8[] code passed to func_80060414. Ruling 11
+     * (ordinary-c-judge-decidable.md); (D) proof in
+     * memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
+    s32 temp;
+    u8 *prim;
+    /* temp2: holds two values, the g_disp_enable switch selector and the
+     * case-20 D_800A37A0 limit. Ruling 11; (D) proof in
+     * memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
+    s32 temp2;
+
+    prim = &D_800F33D8;
+    if (g_disp_enable == DISP_DISABLED) {
+        return;
+    }
+    SetDefDrawEnv(&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
+    env.isbg = 0;
+    PutDrawEnv(&env);
+    g_gpu_ot_ptr = (u8 *)ot;
+    ClearOTagR(ot, 2);
+    temp2 = g_disp_enable;
+    switch (temp2) {
+    case 1:
+    case 2:
+        prim = func_8005D46C(prim);
+        if (g_disp_fade != 0) {
+            s32 i;
+            temp = (rand() & 3) + 4;
+            for (i = 0; i < temp; i++) {
+                prim = func_8005D554(prim, g_disp_enable);
+            }
+        }
+        else if ((rand() & 7) == 0) {
+            func_8005D554(prim, g_disp_enable);
+        }
+        break;
+    case 10:
+        func_8005E54C(D_800A3784, prim, 0);
+        break;
+    case 20: {
+        u8 cur;
+
+        temp2 = D_800A37A0;
+        cur = D_800A38F8;
+        if ((u32)temp2 < cur) {
+            break;
+        }
+        if (0xF0 / (temp2 + 1) >= ++D_800A37C0) {
+            break;
+        }
+        /* FAKE: the common `D_800A38F8 = cur + 1` store is written in both
+         * arms (unconditional-common-store duplication, F7, no-new-park-
+         * categories.md 2026-08-18). Target computes `addiu v0,a2,1` in each
+         * arm; one store hoisted above the `if` measures 6 (131 insns),
+         * `next` hoisted with a store per arm measures 1 (135). */
+        if (cur == temp2) {
+            D_800A38F8 = cur + 1;
+        } else {
+            u8 next = cur + 1;
+            D_800A38F8 = next;
+            D_800A37C0 = 0;
+            temp = D_800A37A8[cur];
+            if (next == temp2) {
+                temp |= 0x8000;
+            }
+            func_80060414(temp, prim, 0);
+        }
+        break;
+    }
+    }
+    DrawOTag((u32 *)(g_gpu_ot_ptr + 4));
+    DrawSync(0);
+}
 void obj_ClearAll(void) {
     s32 i;
     for (i = 0x16C; i >= 0; i -= 0x34) {
