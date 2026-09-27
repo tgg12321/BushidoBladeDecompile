@@ -27,14 +27,6 @@
       "hand_coded_tier": "LOW"
     },
     {
-      "func": "func_8001A820",
-      "file": "code6cac",
-      "distance": 574,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8001CE60",
       "file": "code6cac",
       "distance": 586,
@@ -480,15 +472,15 @@
     }
   ],
   "counts": {
-    "total": 40,
-    "active": 22,
+    "total": 39,
+    "active": 21,
     "by_status": {
-      "active": 22,
+      "active": 21,
       "rotated": 18
     },
     "by_verdict": {
       "C": 17,
-      "ASM-PARTIAL": 5
+      "ASM-PARTIAL": 4
     }
   },
   "toolchain_fingerprint": "85cd2a73ee7a8972"
