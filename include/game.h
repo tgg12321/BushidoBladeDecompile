@@ -151,6 +151,20 @@ typedef struct {
 extern Unk8009B400Record D_8009B400[10];
 extern Unk8009B400Record D_8009B458[3][2];
 
+/* 0x8009B450: two {x, y} screen points (.short 0x01A2,0x0024,0x01F7,0x0037).
+ * Object model evidence from the original binary: asm/funcs/func_8005D814.s
+ * forms ONE index $s0 = j << 2 and reads both %lo(D_8009B450)($at) and
+ * %lo(D_8009B452)($at) through it -- 4-byte records with halfword fields at
+ * +0 and +2. func_8005D814 uses x as a TILE's x0 (and w = 0x238 - x) and y as
+ * its y0 and the text row. Replaces the splat per-word scalars D_8009B450 /
+ * D_8009B452 in C (per-word splat symbol -> aggregate merge family). */
+typedef struct {
+    s16 x;
+    s16 y;
+} Unk8009B450Record;
+
+extern Unk8009B450Record D_8009B450[2];
+
 /* 0x8009B5F0: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
  * 0x8009B5F0..0x8009B60F. Object model evidence from the original binary,
  * independent of the byte-chasing session: asm/funcs/func_8005F1C8.s forms ONE
