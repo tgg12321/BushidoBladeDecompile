@@ -105,3 +105,21 @@
   `pass`); every other find is an uninitialized/partial `ch + 0x286` pointer or a bare copy. No valid
   lead; it did confirm that a 10th long-lived pseudo spills thresh.
 - [s2] find_duplicates.py (threshold 0.4, unmatched functions): no near-clone of func_80027AD8.
+- [s2] bank 4: probes/final1-two-copies.c = sandbox 2/574. The only hunk left is the jump-table
+  relocation (`lw v0,%lo(jtbl)(at)` addend; the compiled table replaces INCLUDE_RODATA jtbl_80010548,
+  so only a full build can certify it). Steps from 8:
+  - the code dispatch keeps `else return 0;`, and the d2 test is written `if (*(s16 *)(ch + 0x286) != 2)
+    return 0;` + the unconditional vec test (gb, 4). jump.c:1827's then/else swap no longer fires; the
+    `goto done` form also reaches 4 but is the forbidden goto-end family, so it is rejected.
+  - `dot_lo = dot < 0x400;` computed before the limb-bit test (named intermediate): the target's
+    `slti v1,v1,0x400` sits in the bit test's delay slot with v0 (the bit) still live, so the compare
+    is evaluated before the bit branch (fa, 2). Merely respelling the || condition does nothing
+    (t2/t3/t5/t6 all 8).
+  - measured and killed: symmetric `if (flag) {T8}` for case 4-5 (37); a final `return 0;` (56);
+    `if ((u32)limb >= 0x16) return 0;` (64); d2 test duplicated into each code arm (124, vec refs
+    triple).
+- [s2] Necessity of the two copies, measured on the final body: without `tbl` (fields via rec) 35;
+  without `tbl_arg` (tbl passed) 52; with both 2. The mechanism is in bank 3 (REG_EQUIV doubling of the
+  stack parameter + a 10th long-lived pseudo for fp). Policy: no ruling admits a single-value bare copy
+  of a parameter, so docs/grind/borderline.md gets a policy-question (2026-09-26 func_80027AD8).
+- [s2] Honest fallback (no copies) with every other lever: candidate.c = 80 (was 97).

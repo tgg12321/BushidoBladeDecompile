@@ -21,9 +21,20 @@
    "floor": 8,
    "modality": "manual (slotK 2026-09-26, bank 3)",
    "headline": "REG_EQUIV doubling explains the fp copy: two locals copied from rec (hit s5, hd fp) + duplicated count blocks give the target allocation; probe k1 = 8 (policy status of the two copies open)"
+  },
+  {
+   "session": 2,
+   "floor": 80,
+   "modality": "manual (slotK 2026-09-26, bank 4)",
+   "headline": "honest candidate 80; probes/final1-two-copies.c = 2/574 (jtbl relocation only) but needs an owner ruling for two local copies of the rec parameter (borderline.md policy-question)"
   }
  ],
  "frontier": [
+  {
+   "hypothesis": "Owner admits two local copies of a stack-passed parameter (borderline.md 2026-09-26 func_80027AD8): land probes/final1-two-copies.c",
+   "mechanism": "local-alloc update_equiv_regs doubles a single-set REG_EQUIV parameter's live length; the target holds the pointer in s5 and fp",
+   "next_probe": "splice final1 (drop INCLUDE_RODATA jtbl_80010548), full build, layer-2"
+  },
   {
    "hypothesis": "k1 (8) residual: R2 `slti v1,v1,0x400` dest reg and the jump.c:1827 code==2 swap; then policy for the two rec copies",
    "mechanism": "local-alloc qty tie for the compare temp; jump.c 'if (foo) bar; else break;'",
