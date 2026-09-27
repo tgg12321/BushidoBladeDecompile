@@ -6,7 +6,12 @@ per-byte splat handles while passing the buffer itself as &g_cd_result — the s
 COMMON / sym+N situation the maspsx gate models, now treated the same way.
 
 Prong (a) by independent evidence: libcd's CdSync / CdReady fill an 8-byte result
-buffer (`u_char result[8]`, their `u_char *` parameter); in the original binary
+buffer — psyz (Xeeynamo/psyz a438bda, the PsyQ 4.0 libcd decomp) include/libcd.h:
+344/347 `@param result Pointer to result buffer (8 bytes)` / `int CdSync(int mode,
+u_char* result);`, and its decomp/src/libcd/type.c CdDiskReady declares
+`u_char result[8];` and tests `result[0] & CdlStatShellOpen` (0x10, libcd.h:127) —
+the same `result[0] & 0x10` test func_80036140 and func_80036940 make. In the
+original binary
 func_80036140 reads result[0] gp-relative (80036850, 800368A0) and result[4] with
 lui/%lo (80036580/84) — with Sony's ASPSX 2.34 that shape arises only from ONE
 COMMON object (calibration: static / initialized -> result[4] gp'd, 17 gp

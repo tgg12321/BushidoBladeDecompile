@@ -1,4 +1,14 @@
-# Q16 (1): each respelling that lands after a split, applied to the tree BEFORE that split (rev da540504a76329a6aa95200f26ebc89f6a53a425)
+# Q16 (1): each respelling that lands after a split, applied to the tree BEFORE that split (landing rev 27ac1a933adcdf095404f305f55c2c8dfbed258e; build cc1 sha1 ac80146bf50a)
+# Re-banked on the stock cc1: both builds reproduce the SHA1s banked at da540504a on the previous cc1 byte for byte,
+# so the per-function breakdown below (scored then against a same-rev reference) is unchanged. (A per-function
+# re-score now would read the staged landing's symbol files, which no longer define the retired per-byte names.)
+
+## CdlATV merge (commit C) on the unsplit tree: HEAD + gate + the CdlATV respellings, code6cac_b2_post.c whole, -G0
+SHA1 2b33e05f844f3f5718b3ebf33ade9aedc3bb11ff != oracle
+## g_cd_result u8[8] (commit E) before commit D's split: commit-C state + the respelling of func_80036940 in code6cac_b4_post.c (-G0)
+SHA1 52b8d51687af38db18f3701ccbe59e26bb66ec29 != oracle
+
+--- breakdown banked at da540504a:
 
 ## CdlATV merge (commit C) on the unsplit tree: HEAD + gate + the CdlATV respellings, code6cac_b2_post.c whole, -G0
 SHA1 2b33e05f844f3f5718b3ebf33ade9aedc3bb11ff != oracle

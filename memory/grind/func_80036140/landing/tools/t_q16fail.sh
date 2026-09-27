@@ -1,9 +1,9 @@
 #!/bin/bash
 # Q16 (1): bank the FAILING builds of each post-split respelling applied before its split.
 cd "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"; source .venv/bin/activate
-H=tmp/func_80036140; REV=$(head -1 $H/t_steps.log | cut -d" " -f2); OUT=memory/grind/func_80036140/landing/steps/q16_failing_builds.txt
+H=tmp/func_80036140; REV=$(cat $H/land_rev.txt); OUT=memory/grind/func_80036140/landing/steps/q16_failing_builds.txt
 {
-echo "# Q16 (1): each respelling that lands after a split, applied to the tree BEFORE that split (rev $REV)"
+echo "# Q16 (1): each respelling that lands after a split, applied to the tree BEFORE that split (landing rev $REV; build cc1 sha1 $(sha1sum tools/gcc-2.7.2/build/cc1 | cut -c1-12))"
 echo; echo "## CdlATV merge (commit C) on the unsplit tree: HEAD + gate + the CdlATV respellings, code6cac_b2_post.c whole, -G0"
 bash $H/mktree.sh q16_atv $REV >/dev/null
 python3 $H/gate.py $H/q16_atv && python3 $H/apply_model.py $H/q16_atv --split none --merge --ext split

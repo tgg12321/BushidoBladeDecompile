@@ -193,3 +193,13 @@ scored hunks; gp_off_census.py = census below. Headers/src used: integration/*.p
 - externs added locally: CdSync, CdReady, g_cd_result (+_plus_0x3, _plus_0x5) as u8 (8-byte
   CdlResult split by splat; base gp-rel, +3/+4/+5 lui — same .comm story; the split spelling matches
   and no aggregate is needed for it).
+
+## Layer-2 PASS follow-ups (2026-09-26 night)
+- (a) Full Q15 (i) pairing for every reordered block, incl. the companion lui/lbu words in blocks 6/11/16
+  and the lui s0/addiu s0 pairs in blocks 60/89: landing/q15/func_80036140.pairs_full.txt (tools/pairs.py).
+- (b) Q16 failing pre-split builds re-banked at the landing rev 27ac1a933 on the stock cc1 ac80146b:
+  landing/steps/q16_failing_builds.txt (same SHA1s as on the previous cc1).
+- (c) g_cd_result's 8-byte shape: psyz (Xeeynamo/psyz a438bda) include/libcd.h:344/347 `@param result
+  Pointer to result buffer (8 bytes)` / `int CdSync(int mode, u_char* result);`; decomp/src/libcd/type.c
+  CdDiskReady `u_char result[8]; ... if (result[0] & CdlStatShellOpen)` (CdlStatShellOpen 0x10,
+  libcd.h:127) — the same result[0] & 0x10 test as func_80036140 / func_80036940.
