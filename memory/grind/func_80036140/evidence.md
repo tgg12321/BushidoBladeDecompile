@@ -203,3 +203,11 @@ scored hunks; gp_off_census.py = census below. Headers/src used: integration/*.p
   Pointer to result buffer (8 bytes)` / `int CdSync(int mode, u_char* result);`; decomp/src/libcd/type.c
   CdDiskReady `u_char result[8]; ... if (result[0] & CdlStatShellOpen)` (CdlStatShellOpen 0x10,
   libcd.h:127) — the same result[0] & 0x10 test as func_80036140 / func_80036940.
+
+## LANDED 2026-09-26 — COMPLETED-C (layer-2 PASS)
+Five commits, each byte-equal to its oracle-proven scratch state (tmp verify_commits.sh):
+014401021 maspsx gate + registration [infra-rule: maspsx-comm] | 90e325bba split -> -G8 code6cac_b4.c |
+cbc69187b CdlATV + CdState through 0x80101EA7 | a6daf00b6 Match: func_80036140 (-G8 code6cac_b5.c) |
+f601fc2ae g_cd_result u8[8]; queue 82243f747. Landed tree: lock.ps1 rebuild SHA1 == oracle, sandbox 0
+(512/512), engine test 805/0, check_completion_integrity OK (cdrom_SetMix, func_80035F78, func_80036140
+listed as maspsx_comm_syms.txt fidelity-gate completions). Ledger closed.
