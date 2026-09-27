@@ -82,3 +82,26 @@
   alloc.sh (BB2_ALLOC_DEBUG priorities), quick.sh + sig.py (frame / opp reg / rec reg / fp copy /
   a3 spill signature), sdbg.sh (sched1 BB2_SCHED_DEBUG), dump.sh (cc1 -d dumps), hunks.py (scored
   hunks only), sweep.ps1 (sequential sandbox scores).
+- [s2] BREAKTHROUGH (bank 3): the parameter's REG_EQUIV doubling. local-alloc.c update_equiv_regs
+  (~1058-1064) doubles reg_live_length of a single-set pseudo carrying a REG_EQUIV note; assign_parms
+  puts that note on every stack-passed parameter (rec = 0x64(sp)). So `rec` used directly has half the
+  global-alloc priority (c2: 7 refs / 266 -> 526; the flow dump says 165, lreg 266) and never wins a
+  callee-saved register. A LOCAL copy made while the parameter dies (optimize_reg_copy_2 retargets the
+  load) carries no doubling. The target's `lw s5,0x64(sp)` + `addu fp,s5` = TWO locals initialized
+  from rec: `hit` (field reads + R2 NULL test; s5) and `hd` (func_800278C0's 4th arg; fp). Measured on
+  the sandbox: both copies 8 (probes/k1-two-copies-8.c); drop hd (hit passed) 58; drop hit (fields via
+  rec) 41; `hd = (s32)hit` instead of `(s32)rec` 8 (CSE makes them the same).
+- [s2] Count block DUPLICATED per case (case 0, 1-3, 4-5 each `if (flag) {T; return 1;} count...;
+  return 0;`, no fallthrough) adds hit/pass refs at flow time that cross-jumping later removes: hit 9
+  refs / 137 -> pri 1970 (between pass 2234 and cat 1666) -> hit takes s5 before opp, opp s6, vec s7,
+  hd fp, thresh unallocated = the target's full allocation (c7, 97 -> 27).
+- [s2] Further levers (all measured): entry order vec, player, opp, hit, hd, scr (24);
+  `code = *(s16 *)(ch + 0x286) = D_8008EB74[cat][sign][same];` reproduces the target's `lbu v0;
+  move v1,v0; bnez v1; sh v0` (21); `scr = (u8 *)0x1F8000A8 + player * 0x108 + limb * 12;` (13);
+  `ang = (...) >> 12; ang &= 0x1FFF;` (Ruling 4 compound split) and the R2 store written directly as
+  `*(s16 *)(opp + 0x286) = hit == NULL ? 0xB : 0x19;` -> 8. Declaration order: zero effect (24 random
+  permutations, tools/declsearch.py).
+- [s2] Permuter campaign base97 (2 workers, ~3500 iterations, stopped): best 1399 (a bare copy of
+  `pass`); every other find is an uninitialized/partial `ch + 0x286` pointer or a bare copy. No valid
+  lead; it did confirm that a 10th long-lived pseudo spills thresh.
+- [s2] find_duplicates.py (threshold 0.4, unmatched functions): no near-clone of func_80027AD8.
