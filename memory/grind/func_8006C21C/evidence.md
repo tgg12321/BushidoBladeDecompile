@@ -21,3 +21,32 @@
 - [s1] [fable-blitz 2026-07-07] All callees known + completed-precedented in TU: func_8007352C (25 sites), saMotionSet, initTexPage, ot_Link, initTile, initPolyG4, gpu_SetSemiTransp, math_Cos. Family neighbor saTan3GaugeMain_80073200 is named (called from func_800720FC) -- check its src state for a style template before drafting: it is the closest sibling by name and role.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference: tmp/blitz/m2c_saTan4GaugeMain.c (329 lines, valid syntax, exit 0) -- clean decode, good for cross-checking the bar vertex arithmetic signs/biases.
+
+## s2 [manual slotO 2026-09-26] — first full draft, 620 -> 49 (sandbox --disable all)
+Names now: saMotionSet=func_8006E480, initTexPage=SetDrawMode, ot_Link=AddPrim, initTile=SetTile,
+initPolyG4=SetPolyG4, gpu_SetSemiTransp=SetSemiTrans, math_Cos=rcos; ctx is `s32 *arg0` (caller
+passes its s32 sp10[] — landing must change the later `extern void func_8006C21C(s32);` at
+text1b.c ~10232 to `(s32 *)`; sandbox candidates mask it with a trailing #define, NOT for landing).
+- Frame forensics: target vars=128 = Env(0x2C->48) + TEN 8-byte reload slots (reload1.c alter_reg,
+  align -1 -> BIGGEST_ALIGNMENT). Slots in regno order: 0x48 arg0, 0x50 j, 0x58 recs, 0x60-0x78 FOUR
+  untouched (phantom), 0x80/0x88/0x90 the three bevel accumulators. Slot 0x50 is ONE pseudo used as the
+  2-count counter in phase 4 inner, phase 6 inner AND phase 8 outer (distinct spilled pseudos never
+  share a from_reg==-1 slot) -> one `j` variable across those loops (ordinary counter reuse).
+- `y - k + (2 + d4)` grouping: fold-const.c associate (VAR+CON)+ARG1 -> VAR+(ARG1+CON) re-groups
+  `y - k + 2 + d4` into `(y-k) + (d4+2)`; target is ((y-k)+2)+d4 which only `y - k + (2 + d4)` yields
+  (mini-TU m1.c proof: fa/fb match, fc/fd/fe/ff don't). Same for (1+d2), (4+d8), (2+d4).
+- k (s7, -1 then ++) must be its own variable: `y - (row - 1)` reassociates to `(y+1)-row` (fe).
+- Bevel accumulators d4/d8/d2 (0, -=4/-8/-2 per row) must be explicit; `- row*4` forms make loop.c
+  givs with +4 stride and subu (v1).
+- Phase 6: `rec = &recs[i];` at top of the i loop -> loop.c DEST_REG giv replaced in place (s1, no
+  copy). `recs[i].f` gives an inner-loop invariant copy (move s1,s4); `rec++` biv splits an
+  offset-6 giv (v13).
+- Phase 8 uses `rec[row]` (address giv = move s2,s1), not a separate `next++` pointer (extra
+  offset-2 giv, v4).
+- `cells` (header+0xC) seats a1 ONLY as one function-scope pseudo written at all 4 sites (global.c:
+  conflicts with v0/v1/a0 across sites) — per-site expressions get v1/v0. POLICY: Ruling 5 ext.
+  fails (B)/(C) here (table re-assigned between sites; 2 function-scope sites) -> needs Ruling 11
+  proof or another form. OPEN.
+- level must share `i`'s pseudo (fp) for global.c priority to spill j and seat level in fp:
+  separate `level` pri 1487 < j 5182 (level spilled); merged i/level 40 refs/353 livelen pri 5665 >
+  j 5105 -> j spilled, fp = i/level (v8: 131 -> 68). POLICY: multi-role local -> Ruling 11 needed. OPEN.
