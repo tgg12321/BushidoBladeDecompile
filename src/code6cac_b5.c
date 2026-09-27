@@ -21,9 +21,6 @@ extern s16 D_800A3840;
 extern void cdrom_SetMix(s32, s32, s32, s32);
 extern s32 CdSync(s32, u8 *);
 extern s32 CdReady(s32, u8 *);
-extern u8 g_cd_result;
-extern u8 g_cd_result_plus_0x3;
-extern u8 g_cd_result_plus_0x5;
 void func_80036140(void) {
     CdlATV atv;
 
@@ -49,7 +46,7 @@ void func_80036140(void) {
         D_80101E58.rec.unk02 = 0x11;
         break;
     case 0x11: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             CdControlF(2, (s32)&D_80101E58.rec.pair);
             D_80101E58.rec.unk02 = 0x12;
@@ -60,7 +57,7 @@ void func_80036140(void) {
     }
     case 0x12:
         if (++D_80101E58.rec.unk2C >= 3) {
-            s32 ret = CdSync(1, &g_cd_result);
+            s32 ret = CdSync(1, g_cd_result);
             if (ret == 2) {
                 CdControlF(0x16, 0);
                 D_80101E58.rec.unk02 = 0x13;
@@ -70,7 +67,7 @@ void func_80036140(void) {
         }
         break;
     case 0x13: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             if (D_80101E58.rec.unk04 == 0) {
                 CdControlF(D_80101E58.rec.unk34 ? 0x1B : 3, 0);
@@ -82,7 +79,7 @@ void func_80036140(void) {
         break;
     }
     case 0x14: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             D_80101E58.rec.unk3C = 0;
             D_80101E58.rec.unk02 = 0x15;
@@ -101,17 +98,17 @@ void func_80036140(void) {
         }
         D_80101E58.rec.unk02 = 0x16;
         if (D_80101E58.rec.unk34 != 0) {
-            CdControlF(0x11, (s32)&g_cd_result);
+            CdControlF(0x11, (s32)g_cd_result);
             D_80101E58.rec.unk3A = 0;
             break;
         }
         CdControlF(1, 0);
         {
-            s32 ret = CdReady(1, &g_cd_result);
+            s32 ret = CdReady(1, g_cd_result);
             if (ret == 1) {
-                if (!(g_cd_result_plus_0x4 & 0x80)) {
+                if (!(g_cd_result[4] & 0x80)) {
                     D_80101E58.rec.unk3C = 0;
-                    if (CdPosToInt((s32)&g_cd_result_plus_0x3) >= D_80101E58.rec.unk14) {
+                    if (CdPosToInt((s32)&g_cd_result[3]) >= D_80101E58.rec.unk14) {
                         cdrom_SetMix(0, 0, 0, 0);
                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
                     }
@@ -134,11 +131,11 @@ void func_80036140(void) {
             }
         }
         {
-            s32 ret = CdSync(1, &g_cd_result);
+            s32 ret = CdSync(1, g_cd_result);
             if (ret == 2) {
                 D_80101E58.rec.unk02 = 0x15;
                 if (D_80101E58.rec.unk34 != 0) {
-                    s32 pos = CdPosToInt((s32)&g_cd_result_plus_0x5);
+                    s32 pos = CdPosToInt((s32)&g_cd_result[5]);
                     if (pos >= D_80101E58.rec.unk14) {
                         cdrom_SetMix(0, 0, 0, 0);
                         D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
@@ -164,7 +161,7 @@ void func_80036140(void) {
         D_80101E58.rec.unk02 = 0x1D;
         break;
     case 0x1D: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             D_80101E58.rec.unk28 = 0;
             D_80101E58.rec.unk02 = 0x1E;
@@ -180,7 +177,7 @@ void func_80036140(void) {
         break;
     case 0x17:
         cdrom_SetMix(0, 0, 0, 0);
-        if (g_cd_result & 0x10) {
+        if (g_cd_result[0] & 0x10) {
             D_80101E58.rec.unk02 = 0x18;
         } else {
             D_80101E58.rec.unk02 = 0x1A;
@@ -191,9 +188,9 @@ void func_80036140(void) {
         D_80101E58.rec.unk02 = 0x19;
         break;
     case 0x19: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
-            if (g_cd_result & 0x10) {
+            if (g_cd_result[0] & 0x10) {
                 D_80101E58.rec.unk02 = 0x18;
             } else {
                 D_80101E58.rec.unk02 = 0x1A;
@@ -208,7 +205,7 @@ void func_80036140(void) {
         D_80101E58.rec.unk02 = 0x1B;
         break;
     case 0x1B: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             D_80101E58.rec.unk02 = D_80101E58.rec.unk08 ? 0 : 0x10;
         } else if (ret == 5) {
@@ -222,7 +219,6 @@ void func_80036140(void) {
 void func_80036940(void);
 extern s32 CdSync(s32, u8 *);
 extern void CdControl(s32, s32, s32);
-extern u8 g_cd_result;
 extern void func_80036140(void);
 void func_80036940(void) {
     u8 param[4];
@@ -246,7 +242,7 @@ void func_80036940(void) {
         D_80101E58.rec.unk02 = 3;
         break;
     case 3: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             D_80101E58.rec.unk02 = 4;
             D_80101E58.rec.unk2C = 0;
@@ -268,7 +264,7 @@ void func_80036940(void) {
         }
         break;
     case 5: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             D_80101E58.rec.unk38 = 0;
             CdReadyCallback((s32)cdrom_ReadyCallback);
@@ -282,7 +278,7 @@ void func_80036940(void) {
         break;
     }
     case 6: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             if (D_80101E58.rec.sectors_remaining == 0) {
                 D_80101E58.rec.unk02 = 8;
@@ -305,7 +301,7 @@ void func_80036940(void) {
         D_80101E58.rec.unk02 = 0;
         break;
     case 9:
-        if (g_cd_result & 0x10) {
+        if (g_cd_result[0] & 0x10) {
             D_80101E58.rec.unk02 = 0xA;
         } else {
             D_80101E58.rec.unk02 = 0xC;
@@ -317,9 +313,9 @@ void func_80036940(void) {
         D_80101E58.unk04 = 0;
         break;
     case 0xB: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
-            if (g_cd_result & 0x10) {
+            if (g_cd_result[0] & 0x10) {
                 D_80101E58.rec.unk02 = 0xA;
             } else {
                 D_80101E58.rec.unk02 = 0xC;
@@ -338,7 +334,7 @@ void func_80036940(void) {
         D_80101E58.unk04 = 0;
         break;
     case 0xD: {
-        s32 ret = CdSync(1, &g_cd_result);
+        s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
             D_80101E58.rec.unk02 = 2;
             VSync(4);

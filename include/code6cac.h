@@ -339,7 +339,13 @@ extern s8 D_800A3748;
    last element down (asm/funcs/func_80033510.s starts at 0x800A3756). */
 extern s16 D_800A3750[4];
 extern u8 D_800A3758;
-extern u8 g_cd_result_plus_0x4;
+/* libcd's 8-byte CD status/result buffer (u_char result[8]) that CdSync / CdReady
+ * fill: func_80036940 and func_80036140 test result[0] (the status byte) and
+ * func_80036140 reads result[4] and hands &result[3] / &result[5] (the reported
+ * position) to CdPosToInt. A tentative definition in the CD module's file, like
+ * the CdlATV blocks: result[0] is read gp-relative, result[4] with lui/%lo
+ * (maspsx_comm_syms.txt). */
+extern u8 g_cd_result[8];
 extern u8 D_800A3769;
 extern u8 D_800A376A;
 extern u8 D_800A376B;

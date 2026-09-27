@@ -4929,27 +4929,12 @@ dlabel g_cd_result
     /* 93F60 800A3760 */ .byte 0x00
     /* 93F61 800A3761 */ .byte 0x00
     /* 93F62 800A3762 */ .byte 0x00
-enddlabel g_cd_result
-
-nonmatching g_cd_result_plus_0x3
-
-dlabel g_cd_result_plus_0x3
     /* 93F63 800A3763 */ .byte 0x00
-enddlabel g_cd_result_plus_0x3
-
-nonmatching g_cd_result_plus_0x4
-
-dlabel g_cd_result_plus_0x4
     /* 93F64 800A3764 */ .byte 0x00
-enddlabel g_cd_result_plus_0x4
-
-nonmatching g_cd_result_plus_0x5
-
-dlabel g_cd_result_plus_0x5
     /* 93F65 800A3765 */ .byte 0x00
     /* 93F66 800A3766 */ .byte 0x00
     /* 93F67 800A3767 */ .byte 0x00
-enddlabel g_cd_result_plus_0x5
+enddlabel g_cd_result
 
 nonmatching D_800A3768
 
