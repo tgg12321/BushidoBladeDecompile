@@ -45,6 +45,8 @@ SECTIONS
         build/src/code6cac_b3_post.o(.rodata);
         build/src/replay_camera_rob_back_loose2.o(.rodata);
         build/src/code6cac_b2_post.o(.rodata);
+        build/src/code6cac_b4.o(.rodata);
+        build/src/code6cac_b4_post.o(.rodata);
         build/src/code6cac_b_rodata_post.o(.rodata);
         build/src/code6cac_c0.o(.rodata);
         build/src/code6cac_c_mid.o(.rodata);
@@ -83,6 +85,8 @@ SECTIONS
         build/src/code6cac_b2_pre.o(.text);
         build/src/replay_camera_rob_back_loose2.o(.text);
         build/src/code6cac_b2_post.o(.text);
+        build/src/code6cac_b4.o(.text);
+        build/src/code6cac_b4_post.o(.text);
         build/src/code6cac_c.o(.text);
         build/src/code6cac_c0.o(.text);
         build/src/code6cac_c_mid.o(.text);
@@ -112,6 +116,8 @@ SECTIONS
         build/src/code6cac_b3_post.o(.data);
         build/src/code6cac_b2_pre.o(.data);
         build/src/code6cac_b2_post.o(.data);
+        build/src/code6cac_b4.o(.data);
+        build/src/code6cac_b4_post.o(.data);
         build/src/code6cac_c.o(.data);
         build/src/code6cac_c0.o(.data);
         build/src/code6cac_c_mid.o(.data);
@@ -143,6 +149,8 @@ SECTIONS
         build/src/code6cac_b3_post.o(.bss);
         build/src/code6cac_b2_pre.o(.bss);
         build/src/code6cac_b2_post.o(.bss);
+        build/src/code6cac_b4.o(.bss);
+        build/src/code6cac_b4_post.o(.bss);
         build/src/code6cac_c.o(.bss);
         build/src/code6cac_c0.o(.bss);
         build/src/code6cac_c_mid.o(.bss);
