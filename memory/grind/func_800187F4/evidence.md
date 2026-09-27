@@ -92,3 +92,32 @@ Added to the 2-insn chassis:
 Policy exposure still to reduce before any landing: `byte` copy (banned
 shape), shared counter j (3 loops), n/bits/d/dist rewrites, `t`, lz[6],
 shift split; islands need PINNED entries + DMPSX words (4 command words).
+
+## [s2 close] slotQ 2026-09-27 — honest floor, load-bearing reuses, frontier
+Two banked bodies (both real-pipeline, tools/fast.sh; generate with gen.py):
+- template.c / candidate.c (= g2): 662/662 BYTE MATCH, but carries the LZC-1
+  input copy in `byte` (banned tbl shape) + a `t` single ground store.
+- template_copyfree.c / candidate_copyfree.c (= h5): copy-free, real-pipeline
+  2 lines off (only the LZC-1 copy: target `move a0,a1` [beqz delay] and
+  `move t4,a0`; ours nop / `move t4,a1`). `sandbox --disable all` = 147/644
+  (570 build insns): the sandbox strips the 41 non-PINNED `move $12,%0`/`nop`
+  header statements (ldlvl/stlvl/lddp/sqr0/gpf0/gpl12/rtv0tr), so it is NOT
+  the honest measure until those macros are PINNED (engine: commit + layer-2).
+Load-bearing reuses measured on the copy-free chassis (each split alone):
+  counter j shared by force loops + sphere loop (split 85->152 at s2 start);
+  n (node[7], node[8]) split 21; d (ground delta + six sphere-axis deltas):
+  ground-only or axis-only split 6; `byte` shared by both LUT roots split 42;
+  dist1/dist2 in place (squared length -> root -> pen/dist scale): root split
+  85 vs 66, scale split 53; pen compute-then-clamp (?: clamp 57).
+Byte-neutral splits (use them): bits/bits2 per force loop (0), shift/shift2
+  per root block (2 = unchanged).
+Every one of j, n, d, byte, dist1, dist2 needs a Ruling 11 (D) dump proof +
+honest generic/kind name + annotation, or an equivalent single-role form.
+Borderline question filed 2026-09-27 (docs/grind/borderline.md): the LZC-input
+copy (shared idiom with func_800288C8/func_8002A458; func_80018094 landed it).
+Islands: verbatim inline_o.h statements are REQUIRED (joined -> 19 hoisted).
+Admission needs PINNED entries for 7 macros and the 4 command words are DMPSX
+placeholders (0x4A480012 rtv0tr, 0x4AA00428 sqr0, 0x4B90003D gpf0, 0x4BA8003E
+gpl12) -> class route excludes them; needs per-function owner row (func_8002DE20
+Q11 precedent) with independent word sources (nugget inline_n.h / PSn00bSDK).
+cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
