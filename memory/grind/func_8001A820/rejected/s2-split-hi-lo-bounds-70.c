@@ -29,8 +29,9 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     s32 yaw0, yaw1;
     s32 base_yaw;
     s32 p;
-    s32 yaw, other;
-    s32 i, j;
+    s32 yaw, hi, lo;
+    s32 i;
+    s32 d;
 
     scr = (CamScratch *)0x1F800000;
     cam = &D_800F6608;
@@ -150,23 +151,23 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
             } else if (D_800A30F4[p] > 0x200) {
                 D_800A30F4[p] = 0x200;
             }
-            other = yaw + D_800A30F4[p] / 8;
+            hi = yaw + D_800A30F4[p] / 8;
             for (i = 0; i < 2; i++) {
-                s32 d = (yaw - other) & 0xFFF;
+                d = (yaw - hi) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->h10 = other + d / 2;
+                cam->h10 = hi + d / 2;
                 func_8001A538((s32 *)cam, (s32 *)&scr->eye);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->unk38, (s32 *)&scr->unk58,
                                   (s32)&scr->unk60) &&
                     (s16)scr->unk5A < -0x320) {
                     yaw = cam->h10;
                 } else {
-                    other = cam->h10;
+                    hi = cam->h10;
                 }
             }
-            yaw = other;
+            yaw = hi;
             D_800A30F0[p] = 1;
         } else {
             if (D_800A30F0[p]) {
@@ -180,19 +181,19 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
             } else if (D_800A30F4[p] > 0x100) {
                 D_800A30F4[p] = 0x100;
             }
-            other = yaw - D_800A30F4[p] / 8;
-            for (j = 0; j < 2; j++) {
-                s32 d = (yaw - other) & 0xFFF;
+            lo = yaw - D_800A30F4[p] / 8;
+            for (i = 0; i < 2; i++) {
+                d = (yaw - lo) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->h10 = other + d / 2;
+                cam->h10 = lo + d / 2;
                 func_8001A538((s32 *)cam, (s32 *)&scr->eye);
                 if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->unk38, (s32 *)&scr->unk58,
                                   (s32)&scr->unk60) &&
                     (s16)scr->unk5A < -0x320) {
                     func_8001A67C((s16 *)((u8 *)cam + 0x30 + p * 8), (s32 *)&scr->eye, scr->unk38);
-                    other = cam->h10;
+                    lo = cam->h10;
                 } else {
                     yaw = cam->h10;
                 }

@@ -30,7 +30,8 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     s32 base_yaw;
     s32 p;
     s32 yaw, other;
-    s32 i, j;
+    s32 i;
+    s32 d;
 
     scr = (CamScratch *)0x1F800000;
     cam = &D_800F6608;
@@ -85,7 +86,8 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
         }
     }
     dist <<= shift;
-    q = 0x2000000U / (dist + 0x4000) + 0x400;
+    q = 0x2000000U / (dist + 0x4000);
+    q += 0x400;
     if (*(u16 *)(arg2 + 0x6A) == 0x13 || *(u16 *)(arg2 + 0x6A) == 0x1B || *(u16 *)(arg2 + 0x6A) == 0x30 ||
         *(u16 *)(arg3 + 0x6A) == 0x13 || *(u16 *)(arg3 + 0x6A) == 0x1B || *(u16 *)(arg3 + 0x6A) == 0x30) {
         q += 0x1000;
@@ -121,8 +123,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
     }
-    scr->roll = 0;
-    cam->h12 += math_SignExt12Div((s16)scr->yaw - cam->h12, 8);
+    { u16 t = scr->yaw; scr->roll = 0; cam->h12 += math_SignExt12Div((s16)t - cam->h12, 8); }
     cam->h14 += math_SignExt12Div((s16)scr->roll - cam->h14, 8);
     base_yaw = cam->h10;
 
@@ -152,7 +153,7 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
             }
             other = yaw + D_800A30F4[p] / 8;
             for (i = 0; i < 2; i++) {
-                s32 d = (yaw - other) & 0xFFF;
+                d = (yaw - other) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
@@ -181,8 +182,8 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
                 D_800A30F4[p] = 0x100;
             }
             other = yaw - D_800A30F4[p] / 8;
-            for (j = 0; j < 2; j++) {
-                s32 d = (yaw - other) & 0xFFF;
+            for (i = 0; i < 2; i++) {
+                d = (yaw - other) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
@@ -216,6 +217,5 @@ void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
         yaw = 0x1C0;
     }
     cam->h10 = base_yaw;
-    yaw = math_SignExt12Div(yaw - base_yaw, 8);
-    cam->h10 += yaw;
+    cam->h10 += math_SignExt12Div(yaw - base_yaw, 8);
 }
