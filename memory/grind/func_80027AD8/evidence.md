@@ -123,3 +123,23 @@
   stack parameter + a 10th long-lived pseudo for fp). Policy: no ruling admits a single-value bare copy
   of a parameter, so docs/grind/borderline.md gets a policy-question (2026-09-26 func_80027AD8).
 - [s2] Honest fallback (no copies) with every other lever: candidate.c = 80 (was 97).
+- [s2] bank 5 (2026-09-27): Ruling 12 (owner Q19, 6b4b62b99) proof package in q19/ (proof.md +
+  bodies v/, dumps rtl/, scripts/). All re-measured on the STOCK cc1 (PLUS->IOR retired d94fef9a0):
+  cand 2/574 (jtbl addend only), no_tbl 35, no_arg 52, no_arg_rec 57, neither 80. Ruling 12 (B)
+  forbids a cast in the copy, so `tbl_arg` is now `Tbl8008E194 *tbl_arg = rec;` and the calls pass
+  `(s32)tbl_arg` (same bytes). candidate.c = q19/v/cand.c.
+- [s2] Necessity findings that go beyond the priority argument: a cancelling live use
+  (`(s32)rec + (s32)rec - (s32)rec`) adds 2 refs per pair; 3 pairs (15 refs) rank the PARAMETER
+  between opp and pass and reproduce the target's register assignment without `tbl`
+  (no_tbl_cancel3, 6/574). What still fails is the load position: assign_parms emits the parameter load
+  before every statement, and sched1 (LUID tie-break among birthing-boosted loads) and sched2 keep it ahead
+  of the player/opp loads, while the target loads the record after `lw $s6,0($s1)`. So copy A's
+  necessity rests on the load position, not on priority alone. For copy B, the record copy into $fp
+  must come from $s5's pseudo; with the parameter passed to the calls, its load targets the parameter
+  and the field copy copies FROM it (reversed direction), whatever its priority (no_arg_rec_cancel*).
+- [s2] The missing final return: the default path `.L80028198: beqz $v0,.L8002839C` is entered only from
+  three branches whose delay slots set `$v0 = limb < 22`. It is taken only when $v0 == 0, and the
+  epilogue never writes $v0, so the original returns a guaranteed 0 without materializing it. A final
+  `return 0;` costs 56.
+- [s2] Permuter r11-neither80 (32413 iterations): best 1679. Its finds 1703/1719 rediscover copy B
+  (`new_var = (s32)rec` passed to func_800278C0).

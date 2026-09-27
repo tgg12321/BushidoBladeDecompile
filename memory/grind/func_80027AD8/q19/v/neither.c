@@ -1,11 +1,6 @@
 extern void func_800203B4(u8 *, s32, s16 *);
 extern u8 D_8008EB74[3][2][2];
 s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
-    /* tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept because GCC 2.7.2
-     * halves the register priority of an unmodified stack parameter (local-alloc doubles
-     * its live length); Ruling 12, proof in memory/grind/func_80027AD8/q19/proof.md. */
-    Tbl8008E194 *tbl;     /* the record, read field by field */
-    Tbl8008E194 *tbl_arg; /* the record, passed on to func_800278C0 */
     s16 *vec;
     u8 *scr;
     s32 player;
@@ -22,8 +17,6 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     vec = &D_800A37E8;
     player = *(s16 *)(ch + 4);
     opp = *(u8 **)ch;
-    tbl = rec;
-    tbl_arg = rec;
     scr = (u8 *)0x1F8000A8 + player * 0x108 + limb * 12;
     *out = 0;
     if (*(s16 *)(ch + 0xC) == 0x1C) {
@@ -39,7 +32,7 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
                 *(s16 *)(ch + 0x286) = 0x1E;
             }
             if (pass == 0 && *(s16 *)(opp + 0x286) == -1) {
-                *(s16 *)(opp + 0x286) = tbl == NULL ? 0xB : 0x19;
+                *(s16 *)(opp + 0x286) = rec == NULL ? 0xB : 0x19;
             }
             func_80032854(player, 0x12, scr, 0);
             return 0;
@@ -52,12 +45,12 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     st = *(u16 *)(ch + 0x6A);
     if (st == 4 || st == 0x14) {
         func_800203B4(ch, limb, vec);
-        func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
+        func_800278C0(pass, (s32 *)ch, limb, (s32)rec, scr, arg6);
         return 1;
     }
     if (*(s16 *)(ch + 0xC) == 0x1F) {
         func_800203B4(ch, limb, vec);
-        func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
+        func_800278C0(pass, (s32 *)ch, limb, (s32)rec, scr, arg6);
         *(s16 *)(ch + 0x286) = 7;
         return 1;
     }
@@ -96,14 +89,14 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
             return 0;
         }
         if (pass == 1) {
-            if (tbl->unkC == 0) {
+            if (rec->unkC == 0) {
                 func_80032854(player, 2, scr, 0);
                 func_80032854(player, 0x25, scr, 0);
                 *(s16 *)(ch + 0x286) = 0;
                 *out = pass;
                 return 0;
             }
-            if (tbl->unkC == 1) {
+            if (rec->unkC == 1) {
                 func_80032854(player, 2, scr, 0);
                 func_80032854(player, 0x25, scr, 0);
                 *(s16 *)(ch + 0x286) = 1;
@@ -118,7 +111,7 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     if (D_800A38DC == 0 && player == 0) {
         func_8002738C(0, limb);
     }
-    func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
+    func_800278C0(pass, (s32 *)ch, limb, (s32)rec, scr, arg6);
     st = *(u16 *)(ch + 0x6A);
     if (st == 6 || st == 9) {
         if (flag) {
@@ -131,10 +124,10 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
         func_80027438(ch, limb, 1);
         return 0;
     }
-    if (pass == 1 && tbl->unk0 == 4) {
+    if (pass == 1 && rec->unk0 == 4) {
         s16 kind = *(s16 *)(ch + 0xA);
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
-            func_80027438(ch, limb, tbl->unkD == 2 ? 2 : 1);
+            func_80027438(ch, limb, rec->unkD == 2 ? 2 : 1);
             *(s16 *)(ch + 0x286) = 0x1B;
             func_80032854(player, 3, scr, 0);
             return 0;
@@ -148,7 +141,7 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
             func_80027A58((s32 *)ch);
             return 1;
         }
-        if (pass == 1 && tbl->unkD == 2) {
+        if (pass == 1 && rec->unkD == 2) {
             (*(u16 *)(ch + 0x272))++;
         }
         if (D_800A38DC != 5) {
@@ -167,7 +160,7 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
             func_80027A58((s32 *)ch);
             return 1;
         }
-        if (pass == 1 && tbl->unkD == 2) {
+        if (pass == 1 && rec->unkD == 2) {
             (*(u16 *)(ch + 0x272))++;
         }
         if (D_800A38DC != 5) {
@@ -180,7 +173,7 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     case 4:
     case 5:
         if (!flag) {
-            if (pass == 1 && tbl->unkD == 2) {
+            if (pass == 1 && rec->unkD == 2) {
                 (*(u16 *)(ch + 0x272))++;
             }
             if (D_800A38DC != 5) {

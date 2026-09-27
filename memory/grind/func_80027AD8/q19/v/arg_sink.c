@@ -23,7 +23,6 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     player = *(s16 *)(ch + 4);
     opp = *(u8 **)ch;
     tbl = rec;
-    tbl_arg = rec;
     scr = (u8 *)0x1F8000A8 + player * 0x108 + limb * 12;
     *out = 0;
     if (*(s16 *)(ch + 0xC) == 0x1C) {
@@ -52,11 +51,13 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     st = *(u16 *)(ch + 0x6A);
     if (st == 4 || st == 0x14) {
         func_800203B4(ch, limb, vec);
+        tbl_arg = tbl;
         func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
         return 1;
     }
     if (*(s16 *)(ch + 0xC) == 0x1F) {
         func_800203B4(ch, limb, vec);
+        tbl_arg = tbl;
         func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
         *(s16 *)(ch + 0x286) = 7;
         return 1;
@@ -118,6 +119,7 @@ s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 
     if (D_800A38DC == 0 && player == 0) {
         func_8002738C(0, limb);
     }
+    tbl_arg = tbl;
     func_800278C0(pass, (s32 *)ch, limb, (s32)tbl_arg, scr, arg6);
     st = *(u16 *)(ch + 0x6A);
     if (st == 6 || st == 9) {

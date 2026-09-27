@@ -27,9 +27,20 @@
    "floor": 80,
    "modality": "manual (slotK 2026-09-26, bank 4)",
    "headline": "honest candidate 80; probes/final1-two-copies.c = 2/574 (jtbl relocation only) but needs an owner ruling for two local copies of the rec parameter (borderline.md policy-question)"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "manual (slotK 2026-09-27, bank 5)",
+   "headline": "Ruling 12 two-copy body 2/574 on stock cc1 (jtbl addend only); proof package q19/proof.md; awaiting orchestrator go for landing + layer-2"
   }
  ],
  "frontier": [
+  {
+   "hypothesis": "Land q19/v/cand.c under Ruling 12",
+   "mechanism": "see q19/proof.md",
+   "next_probe": "lock, splice (drop INCLUDE_RODATA jtbl_80010548), rebuild, SHA1, layer-2 with q19/proof.md"
+  },
   {
    "hypothesis": "Owner admits two local copies of a stack-passed parameter (borderline.md 2026-09-26 func_80027AD8): land probes/final1-two-copies.c",
    "mechanism": "local-alloc update_equiv_regs doubles a single-set REG_EQUIV parameter's live length; the target holds the pointer in s5 and fp",

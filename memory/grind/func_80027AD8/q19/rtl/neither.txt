@@ -1,0 +1,1318 @@
+# neither: verbatim excerpts (tmp/func_80027AD8/r11/dump.sh neither r11/v/neither.c)
+
+## .flow Register lines (pseudos 72-99)
+Register 72 used 14 times across 238 insns; dies in 8 places; crosses 10 calls.
+Register 73 used 94 times across 579 insns; dies in 19 places; crosses 36 calls; pointer.
+Register 74 used 18 times across 226 insns; dies in 8 places; crosses 5 calls.
+Register 75 used 4 times across 151 insns; dies in 3 places; crosses 2 calls.
+Register 76 used 5 times across 148 insns; dies in 4 places; crosses 2 calls.
+Register 77 used 11 times across 189 insns; dies in 7 places; crosses 4 calls; pointer.
+Register 78 used 4 times across 118 insns; dies in 3 places; crosses 3 calls.
+Register 79 used 4 times across 155 insns; dies in 2 places; crosses 6 calls; pointer.
+Register 80 used 16 times across 358 insns; dies in 8 places; crosses 19 calls; pointer.
+Register 81 used 26 times across 397 insns; dies in 16 places; crosses 14 calls; pointer.
+Register 82 used 26 times across 369 insns; dies in 14 places; crosses 12 calls.
+Register 83 used 7 times across 121 insns; dies in 3 places; crosses 1 call; pointer.
+Register 84 used 7 times across 8 insns.
+Register 86 used 4 times across 4 insns; dies in 2 places; 2 bytes.
+Register 87 used 3 times across 5 insns in block 28; crosses 1 call.
+Register 88 used 2 times across 22 insns; crosses 1 call.
+Register 89 used 2 times across 23 insns; crosses 1 call.
+Register 90 used 2 times across 18 insns; crosses 1 call.
+Register 91 used 4 times across 6 insns.
+Register 92 used 2 times across 2 insns in block 0; 2 bytes.
+Register 93 used 2 times across 2 insns in block 0.
+Register 95 used 2 times across 2 insns in block 0.
+Register 96 used 2 times across 2 insns in block 0.
+Register 97 used 2 times across 7 insns in block 0.
+Register 99 used 2 times across 2 insns in block 0.
+
+## .sched life updates (sched1 recomputation of reg_live_length)
+;; register 72 life shortened from 238 to 187
+;; register 73 life shortened from 579 to 477
+;; register 74 life shortened from 226 to 187
+;; register 75 life shortened from 151 to 122
+;; register 76 life shortened from 148 to 119
+;; register 77 life shortened from 189 to 153
+;; register 78 life shortened from 118 to 106
+;; register 79 life shortened from 155 to 120
+;; register 80 life shortened from 358 to 288
+;; register 81 life shortened from 397 to 333
+;; register 82 life shortened from 369 to 299
+;; register 83 life shortened from 121 to 91
+;; register 84 life shortened from 8 to 6
+;; register 87 life extended from 5 to 13
+;; register 88 life shortened from 22 to 12
+;; register 89 life shortened from 23 to 13
+;; register 90 life shortened from 18 to 14
+;; register 97 life shortened from 7 to 6
+
+## .lreg Register lines (pseudos 72-99)
+Register 72 used 14 times across 187 insns; dies in 8 places; crosses 10 calls; GR_REGS or none.
+Register 73 used 94 times across 477 insns; dies in 19 places; crosses 36 calls; GR_REGS or none; pointer.
+Register 74 used 18 times across 187 insns; dies in 8 places; crosses 5 calls; GR_REGS or none.
+Register 75 used 4 times across 122 insns; dies in 3 places; crosses 2 calls; GR_REGS or none.
+Register 76 used 5 times across 238 insns; dies in 4 places; crosses 2 calls; GR_REGS or none.
+Register 77 used 11 times across 306 insns; dies in 7 places; crosses 4 calls; GR_REGS or none; pointer.
+Register 78 used 4 times across 212 insns; dies in 3 places; crosses 3 calls; GR_REGS or none.
+Register 79 used 4 times across 240 insns; dies in 2 places; crosses 6 calls; GR_REGS or none; pointer.
+Register 80 used 16 times across 576 insns; dies in 8 places; crosses 19 calls; GR_REGS or none; pointer.
+Register 81 used 26 times across 333 insns; dies in 16 places; crosses 14 calls; GR_REGS or none; pointer.
+Register 82 used 26 times across 299 insns; dies in 14 places; crosses 12 calls; GR_REGS or none.
+Register 83 used 7 times across 91 insns; dies in 3 places; crosses 1 call; GR_REGS or none; pointer.
+Register 84 used 7 times across 6 insns; GR_REGS or none.
+Register 87 used 3 times across 13 insns in block 28; crosses 1 call; GR_REGS or none.
+Register 88 used 2 times across 12 insns; crosses 1 call; GR_REGS or none.
+Register 89 used 2 times across 13 insns; crosses 1 call; GR_REGS or none.
+Register 90 used 2 times across 14 insns; crosses 1 call; GR_REGS or none.
+Register 91 used 4 times across 6 insns; GR_REGS or none.
+Register 95 used 2 times across 2 insns in block 0; GR_REGS or none.
+Register 96 used 2 times across 2 insns in block 0; GR_REGS or none.
+Register 97 used 2 times across 6 insns in block 0; GR_REGS or none.
+Register 99 used 2 times across 2 insns in block 0; GR_REGS or none.
+
+## .lreg entry insns (parameter load / copies)
+(insn 14 12 16 (set (reg/v:SI 77)
+        (mem:SI (plus:SI (reg:SI 0 $0)
+                (const_int 20)))) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUIV (mem:SI (plus:SI (reg:SI 0 $0)
+                (const_int 20)))
+(insn 16 14 18 (set (reg/v:SI 78)
+        (mem:SI (plus:SI (reg:SI 0 $0)
+                (const_int 24)))) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUIV (mem:SI (plus:SI (reg:SI 0 $0)
+                (const_int 24)))
+(insn 18 16 30 (set (reg/v:SI 79)
+        (mem:SI (plus:SI (reg:SI 0 $0)
+                (const_int 28)))) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUIV (mem:SI (plus:SI (reg:SI 0 $0)
+                (const_int 28)))
+(insn 25 55 37 (set (reg/v:SI 80)
+        (symbol_ref:SI ("D_800A37E8"))) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUIV (symbol_ref:SI ("D_800A37E8"))
+        (nil)))
+(insn 52 50 60 (set (reg/v:SI 81)
+        (plus:SI (reg:SI 97)
+            (reg:SI 102))) 3 {addsi3_internal} (insn_list 40 (insn_list 50 (nil)))
+    (expr_list:REG_DEAD (reg:SI 97)
+        (expr_list:REG_DEAD (reg:SI 102)
+
+## .greg dispositions
+72 in 20  73 in 17  74 in 16  75 in 30  77 in 23  80 in 22  
+81 in 19  82 in 18  83 in 21  84 in 3  87 in 16  88 in 20  
+89 in 16  90 in 21  91 in 3  95 in 3  96 in 3  97 in 3  
+99 in 2  100 in 2  101 in 2  102 in 2  103 in 4  105 in 3  
+107 in 2  109 in 3  111 in 2  112 in 5  114 in 3  116 in 2  
+117 in 4  118 in 2  120 in 3  122 in 2  123 in 3  124 in 2  
+125 in 2  126 in 3  127 in 2  128 in 2  129 in 2  131 in 2  
+133 in 2  135 in 3  137 in 2  139 in 2  140 in 2  142 in 3  
+144 in 2  146 in 2  149 in 3  150 in 2  151 in 4  152 in 2  
+154 in 2  156 in 3  158 in 2  159 in 3  161 in 2  163 in 2  
+165 in 2  167 in 2  169 in 2  172 in 3  173 in 2  175 in 16  
+178 in 2  182 in 3  183 in 4  184 in 3  185 in 3  186 in 4  
+187 in 5  189 in 2  191 in 3  192 in 3  194 in 2  195 in 2  
+196 in 2  198 in 2  204 in 2  208 in 2  213 in 3  215 in 2  
+217 in 2  222 in 9  224 in 4  229 in 6  231 in 5  236 in 3  
+237 in 2  238 in 2  250 in 3  251 in 3  253 in 2  254 in 2  
+259 in 3  260 in 3  262 in 2  263 in 2  264 in 2  266 in 2  
+270 in 2  282 in 3  283 in 3  285 in 2  286 in 2  291 in 4  
+292 in 4  294 in 3  295 in 3  297 in 2  299 in 3  300 in 2  
+302 in 2  303 in 3  306 in 2  308 in 3  311 in 2  313 in 2  
+315 in 5  317 in 2  318 in 3  319 in 4  321 in 2  325 in 2  
+326 in 2  327 in 2  328 in 6  331 in 3  332 in 2  333 in 2  
+335 in 2  336 in 2  337 in 2  338 in 2  340 in 3  341 in 2  
+342 in 2  344 in 2  346 in 3  348 in 2  349 in 2  351 in 2  
+352 in 2  354 in 2  355 in 2  356 in 2  357 in 2  359 in 3  
+360 in 2  361 in 2  363 in 2  365 in 3  367 in 2  368 in 2  
+370 in 2  371 in 2  372 in 2  374 in 3  375 in 2  376 in 2  
+378 in 2  380 in 3  382 in 2  383 in 2  385 in 2  386 in 2  
+388 in 2  389 in 2  390 in 2  392 in 3  394 in 2  395 in 2  
+397 in 3  399 in 2  400 in 2  402 in 2  403 in 2  405 in 3  
+407 in 2  408 in 2  410 in 2  411 in 2  412 in 2  415 in 2  
+417 in 2  
+
+## ALLOCDBG (global.c allocation order)
+ALLOCDBG func=func_80027AD8 seed_used=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,
+ALLOCDBG func=func_80027AD8 ord=0 pseudo=84 hardreg=3 nrefs=7 livelen=6 pri=23333
+ALLOCDBG func=func_80027AD8 ord=1 pseudo=250 hardreg=3 nrefs=5 livelen=5 pri=20000
+ALLOCDBG func=func_80027AD8 ord=2 pseudo=259 hardreg=3 nrefs=5 livelen=5 pri=20000
+ALLOCDBG func=func_80027AD8 ord=3 pseudo=282 hardreg=3 nrefs=5 livelen=5 pri=20000
+ALLOCDBG func=func_80027AD8 ord=4 pseudo=291 hardreg=4 nrefs=5 livelen=6 pri=16666
+ALLOCDBG func=func_80027AD8 ord=5 pseudo=91 hardreg=3 nrefs=4 livelen=6 pri=13333
+ALLOCDBG func=func_80027AD8 ord=6 pseudo=73 hardreg=17 nrefs=94 livelen=477 pri=11823
+ALLOCDBG func=func_80027AD8 ord=7 pseudo=266 hardreg=2 nrefs=3 livelen=3 pri=10000
+ALLOCDBG func=func_80027AD8 ord=8 pseudo=320 hardreg=-1 nrefs=2 livelen=2 pri=10000
+ALLOCDBG func=func_80027AD8 ord=9 pseudo=231 hardreg=5 nrefs=4 livelen=9 pri=8888
+ALLOCDBG func=func_80027AD8 ord=10 pseudo=151 hardreg=4 nrefs=7 livelen=16 pri=8750
+ALLOCDBG func=func_80027AD8 ord=11 pseudo=224 hardreg=4 nrefs=4 livelen=10 pri=8000
+ALLOCDBG func=func_80027AD8 ord=12 pseudo=303 hardreg=3 nrefs=3 livelen=4 pri=7500
+ALLOCDBG func=func_80027AD8 ord=13 pseudo=308 hardreg=3 nrefs=3 livelen=4 pri=7500
+ALLOCDBG func=func_80027AD8 ord=14 pseudo=123 hardreg=65 nrefs=2 livelen=3 pri=6666
+ALLOCDBG func=func_80027AD8 ord=15 pseudo=222 hardreg=65 nrefs=2 livelen=3 pri=6666
+ALLOCDBG func=func_80027AD8 ord=16 pseudo=299 hardreg=3 nrefs=3 livelen=5 pri=6000
+ALLOCDBG func=func_80027AD8 ord=17 pseudo=318 hardreg=3 nrefs=3 livelen=5 pri=6000
+ALLOCDBG func=func_80027AD8 ord=18 pseudo=236 hardreg=3 nrefs=2 livelen=4 pri=5000
+ALLOCDBG func=func_80027AD8 ord=19 pseudo=319 hardreg=4 nrefs=3 livelen=6 pri=5000
+ALLOCDBG func=func_80027AD8 ord=20 pseudo=117 hardreg=4 nrefs=2 livelen=5 pri=4000
+ALLOCDBG func=func_80027AD8 ord=21 pseudo=74 hardreg=16 nrefs=18 livelen=187 pri=3850
+ALLOCDBG func=func_80027AD8 ord=22 pseudo=328 hardreg=6 nrefs=3 livelen=8 pri=3750
+ALLOCDBG func=func_80027AD8 ord=23 pseudo=82 hardreg=18 nrefs=26 livelen=299 pri=3478
+ALLOCDBG func=func_80027AD8 ord=24 pseudo=126 hardreg=3 nrefs=2 livelen=6 pri=3333
+ALLOCDBG func=func_80027AD8 ord=25 pseudo=229 hardreg=6 nrefs=2 livelen=6 pri=3333
+ALLOCDBG func=func_80027AD8 ord=26 pseudo=315 hardreg=5 nrefs=3 livelen=9 pri=3333
+ALLOCDBG func=func_80027AD8 ord=27 pseudo=81 hardreg=19 nrefs=26 livelen=333 pri=3123
+ALLOCDBG func=func_80027AD8 ord=28 pseudo=112 hardreg=5 nrefs=2 livelen=8 pri=2500
+ALLOCDBG func=func_80027AD8 ord=29 pseudo=187 hardreg=5 nrefs=3 livelen=13 pri=2307
+ALLOCDBG func=func_80027AD8 ord=30 pseudo=72 hardreg=20 nrefs=14 livelen=187 pri=2245
+ALLOCDBG func=func_80027AD8 ord=31 pseudo=88 hardreg=20 nrefs=2 livelen=12 pri=1666
+ALLOCDBG func=func_80027AD8 ord=32 pseudo=83 hardreg=21 nrefs=7 livelen=91 pri=1538
+ALLOCDBG func=func_80027AD8 ord=33 pseudo=89 hardreg=16 nrefs=2 livelen=13 pri=1538
+ALLOCDBG func=func_80027AD8 ord=34 pseudo=90 hardreg=21 nrefs=2 livelen=14 pri=1428
+ALLOCDBG func=func_80027AD8 ord=35 pseudo=80 hardreg=22 nrefs=16 livelen=576 pri=1111
+ALLOCDBG func=func_80027AD8 ord=36 pseudo=77 hardreg=23 nrefs=11 livelen=306 pri=1078
+ALLOCDBG func=func_80027AD8 ord=37 pseudo=75 hardreg=30 nrefs=4 livelen=122 pri=655
+ALLOCDBG func=func_80027AD8 ord=38 pseudo=76 hardreg=-1 nrefs=5 livelen=238 pri=420
+ALLOCDBG func=func_80027AD8 ord=39 pseudo=78 hardreg=-1 nrefs=4 livelen=212 pri=377
+ALLOCDBG func=func_80027AD8 ord=40 pseudo=79 hardreg=-1 nrefs=4 livelen=240 pri=333
+
+## FINDREG neither.findreg.75
+FINDREGDBG func=func_80027AD8 pseudo=75 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 16 17 18 19 20 21 22 23 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+
+## FINDREG neither.findreg.77
+FINDREGDBG func=func_80027AD8 pseudo=77 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 5 6 7 16 17 18 19 20 21 22 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  used_so_far: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 24 25 26 27 28 29 31
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+FINDREGDBG  pass1_used: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 24 25 26 27 28 29 31
+FINDREGDBG  used2_noconflict: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 31
+FINDREGDBG  class=1 mode=4 size=1
+
+## local-alloc quantities (SUGGDBG-QTY) whose reg1 is a long-lived pseudo 72-99
+SUGGDBG-QTY func=func_80027AD8 blk=0 qty=1 reg1=97 birth=30 death=44 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_80027AD8 blk=28 qty=0 reg1=87 birth=2 death=30 refs=5 size=1 mode=4 minclass=1 altclass=0 calls=1 chgsize=0 ncopysugg=1 nsugg=0 copysugg=4, sugg=
+
+## function asm (build cc1; identity-checked against the instrumented cc1)
+
+func_80027AD8:
+	.frame	$sp,72,$31		# vars= 8, regs= 10/0, args= 24, extra= 0
+	.mask	0xc0ff0000,-4
+	.fmask	0x00000000,0
+	subu	$sp,$sp,72
+	sw	$20,48($sp)
+	move	$20,$4
+	sw	$17,36($sp)
+	move	$17,$5
+	sw	$16,32($sp)
+	move	$16,$6
+	sw	$fp,64($sp)
+	li	$4,0x1f800000		# 528482304
+	ori	$4,$4,0x00a8
+	sw	$22,56($sp)
+	la	$22,D_800A37E8
+	sll	$2,$16,1
+	addu	$2,$2,$16
+	sll	$2,$2,2
+	sw	$23,60($sp)
+	lw	$23,92($sp)
+	addu	$2,$2,$4
+	sw	$31,68($sp)
+	sw	$21,52($sp)
+	sw	$19,44($sp)
+	sw	$18,40($sp)
+	lh	$18,4($17)
+	lw	$21,0($17)
+	lw	$8,100($sp)
+	sll	$3,$18,5
+	addu	$3,$3,$18
+	sll	$3,$3,3
+	addu	$19,$3,$2
+	sw	$0,0($8)
+	lh	$3,12($17)
+	li	$2,0x0000001c		# 28
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L273
+	move	$fp,$7
+	.set	macro
+	.set	reorder
+
+	lh	$3,D_800A37E8
+	lw	$2,492($17)
+	#nop
+	mult	$2,$3
+	lh	$3,D_800A37EA
+	mflo	$5
+	#nop
+	lw	$2,496($17)
+	#nop
+	mult	$2,$3
+	lh	$3,D_800A37EC
+	mflo	$4
+	#nop
+	lw	$2,500($17)
+	#nop
+	mult	$2,$3
+	addu	$2,$5,$4
+	mflo	$3
+	#nop
+	#nop
+	addu	$2,$2,$3
+	sra	$3,$2,12
+	andi	$3,$3,0x1fff
+	slt	$2,$3,4096
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L265
+	li	$2,0x0000000e		# 14
+	.set	macro
+	.set	reorder
+
+	addu	$3,$3,-8192
+.L265:
+	sra	$2,$2,$16
+	andi	$2,$2,0x0001
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L166
+	slt	$3,$3,1024
+	.set	macro
+	.set	reorder
+
+	beq	$3,$0,.L163
+.L166:
+	lh	$2,150($17)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L167
+	li	$2,0x0000001e		# 30
+	.set	macro
+	.set	reorder
+
+	sh	$2,646($17)
+.L167:
+	.set	noreorder
+	.set	nomacro
+	bne	$20,$0,.L266
+	move	$4,$18
+	.set	macro
+	.set	reorder
+
+	lh	$3,646($21)
+	li	$2,-1			# 0xffffffff
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L253
+	li	$5,0x00000012		# 18
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	bne	$23,$0,.L169
+	li	$2,0x00000019		# 25
+	.set	macro
+	.set	reorder
+
+	li	$2,0x0000000b		# 11
+.L169:
+	sh	$2,646($21)
+	move	$4,$18
+.L266:
+	.set	noreorder
+	.set	nomacro
+	j	.L253
+	li	$5,0x00000012		# 18
+	.set	macro
+	.set	reorder
+
+.L163:
+	lh	$3,12($17)
+.L273:
+	li	$2,0x0000000d		# 13
+	bne	$3,$2,.L171
+	lh	$2,150($17)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L171
+	li	$2,0x0000002e		# 46
+	.set	macro
+	.set	reorder
+
+	lhu	$3,106($17)
+	#nop
+	beq	$3,$2,.L171
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027640
+	move	$4,$17
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	li	$2,0x00000002		# 2
+	.set	macro
+	.set	reorder
+
+.L171:
+	lhu	$4,106($17)
+	li	$2,0x00000004		# 4
+	.set	noreorder
+	.set	nomacro
+	beq	$4,$2,.L173
+	li	$2,0x00000014		# 20
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	bne	$4,$2,.L172
+	li	$2,0x0000001f		# 31
+	.set	macro
+	.set	reorder
+
+.L173:
+	move	$4,$17
+	move	$5,$16
+	.set	noreorder
+	.set	nomacro
+	jal	func_800203B4
+	move	$6,$22
+	.set	macro
+	.set	reorder
+
+	move	$4,$20
+	move	$5,$17
+	move	$6,$16
+	lw	$8,96($sp)
+	move	$7,$23
+	sw	$19,16($sp)
+	.set	noreorder
+	.set	nomacro
+	jal	func_800278C0
+	sw	$8,20($sp)
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	li	$2,0x00000001		# 1
+	.set	macro
+	.set	reorder
+
+.L172:
+	lh	$3,12($17)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L174
+	li	$2,0x00000002		# 2
+	.set	macro
+	.set	reorder
+
+	move	$4,$17
+	move	$5,$16
+	.set	noreorder
+	.set	nomacro
+	jal	func_800203B4
+	move	$6,$22
+	.set	macro
+	.set	reorder
+
+	move	$4,$20
+	move	$5,$17
+	move	$6,$16
+	lw	$8,96($sp)
+	move	$7,$23
+	sw	$19,16($sp)
+	.set	noreorder
+	.set	nomacro
+	jal	func_800278C0
+	sw	$8,20($sp)
+	.set	macro
+	.set	reorder
+
+	li	$2,0x00000001		# 1
+	li	$3,0x00000007		# 7
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	sh	$3,646($17)
+	.set	macro
+	.set	reorder
+
+.L174:
+	.set	noreorder
+	.set	nomacro
+	beq	$4,$2,.L176
+	li	$2,0x0000001b		# 27
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	beq	$4,$2,.L176
+	li	$2,0x00000028		# 40
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	beq	$4,$2,.L176
+	li	$2,0x00000026		# 38
+	.set	macro
+	.set	reorder
+
+	bne	$4,$2,.L175
+.L176:
+	lh	$2,64($17)
+	lbu	$3,160($17)
+	#nop
+	slt	$2,$2,$3
+	beq	$2,$0,.L175
+	.set	noreorder
+	.set	nomacro
+	bne	$20,$0,.L177
+	li	$2,0x00000001		# 1
+	.set	macro
+	.set	reorder
+
+	lh	$16,32($21)
+	lh	$2,32($17)
+	#nop
+	subu	$16,$16,$2
+	.set	noreorder
+	.set	nomacro
+	jal	func_800272FC
+	move	$4,$16
+	.set	macro
+	.set	reorder
+
+	li	$5,0x00000002		# 2
+	move	$20,$2
+	lbu	$3,175($17)
+	lbu	$4,175($21)
+	srl	$16,$16,31
+	xor	$3,$3,$4
+	sltu	$3,$3,1
+	move	$4,$3
+	sb	$4,180($21)
+	move	$21,$3
+	.set	noreorder
+	.set	nomacro
+	beq	$3,$0,.L178
+	sb	$4,180($17)
+	.set	macro
+	.set	reorder
+
+	li	$5,0x0000000f		# 15
+.L178:
+	move	$4,$18
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	la	$2,D_8008EB74
+	sll	$3,$20,2
+	addu	$3,$3,$2
+	sll	$2,$16,1
+	addu	$2,$2,$3
+	addu	$2,$2,$21
+	lbu	$2,0($2)
+	#nop
+	move	$3,$2
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$0,.L180
+	sh	$2,646($17)
+	.set	macro
+	.set	reorder
+
+	sltu	$4,$18,1
+	li	$5,0x00000025		# 37
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$18
+	.set	noreorder
+	.set	nomacro
+	j	.L254
+	li	$5,0x00000025		# 37
+	.set	macro
+	.set	reorder
+
+.L180:
+	li	$2,0x00000001		# 1
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L182
+	li	$2,0x00000002		# 2
+	.set	macro
+	.set	reorder
+
+	sltu	$4,$18,1
+	li	$5,0x00000026		# 38
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$18
+	li	$5,0x00000025		# 37
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$18
+	li	$5,0x0000002d		# 45
+.L254:
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	j	.L181
+.L182:
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L162
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	sltu	$4,$18,1
+	li	$5,0x00000026		# 38
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$18
+	li	$5,0x00000026		# 38
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$18
+	li	$5,0x0000002d		# 45
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027A58
+	move	$4,$17
+	.set	macro
+	.set	reorder
+
+.L181:
+	lh	$3,646($17)
+	li	$2,0x00000002		# 2
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L162
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	lh	$4,0($22)
+	#nop
+	mult	$4,$4
+	mflo	$6
+	#nop
+	lh	$5,4($22)
+	#nop
+	mult	$5,$5
+	mflo	$3
+	#nop
+	lh	$2,2($22)
+	#nop
+	mult	$2,$2
+	addu	$2,$6,$3
+	mflo	$9
+	#nop
+	#nop
+	slt	$2,$9,$2
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L162
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+	jal	ratan2
+	move	$4,$17
+	.set	noreorder
+	.set	nomacro
+	jal	func_8001F860
+	move	$5,$2
+	.set	macro
+	.set	reorder
+
+	lh	$3,0($22)
+	#nop
+	bgez	$3,.L188
+	addu	$3,$3,15
+.L188:
+	lw	$2,308($17)
+	sra	$3,$3,4
+	subu	$2,$2,$3
+	sw	$2,308($17)
+	lh	$3,4($22)
+	#nop
+	bgez	$3,.L189
+	addu	$3,$3,15
+.L189:
+	lw	$2,316($17)
+	sra	$3,$3,4
+	subu	$2,$2,$3
+	.set	noreorder
+	.set	nomacro
+	j	.L262
+	sw	$2,316($17)
+	.set	macro
+	.set	reorder
+
+.L177:
+	bne	$20,$2,.L175
+	lbu	$2,12($23)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L191
+	move	$4,$18
+	.set	macro
+	.set	reorder
+
+	li	$5,0x00000002		# 2
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$18
+	li	$5,0x00000025		# 37
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L257
+	sh	$0,646($17)
+	.set	macro
+	.set	reorder
+
+.L191:
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$20,.L175
+	li	$5,0x00000002		# 2
+	.set	macro
+	.set	reorder
+
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$18
+	li	$5,0x00000025		# 37
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	li	$2,0x00000001		# 1
+	sh	$2,646($17)
+	lh	$4,0($22)
+	lh	$5,4($22)
+	jal	ratan2
+	move	$4,$17
+	.set	noreorder
+	.set	nomacro
+	jal	func_8001F860
+	move	$5,$2
+	.set	macro
+	.set	reorder
+
+	lh	$3,0($22)
+	#nop
+	bgez	$3,.L193
+	addu	$3,$3,15
+.L193:
+	lw	$2,308($17)
+	sra	$3,$3,4
+	subu	$2,$2,$3
+	sw	$2,308($17)
+	lh	$4,4($22)
+	#nop
+	bgez	$4,.L194
+	addu	$4,$4,15
+.L194:
+	lw	$3,316($17)
+	sra	$4,$4,4
+	subu	$3,$3,$4
+	sw	$3,316($17)
+.L257:
+	lw	$8,100($sp)
+	move	$2,$0
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	sw	$20,0($8)
+	.set	macro
+	.set	reorder
+
+.L175:
+	lh	$2,D_800A38DC
+	#nop
+	.set	noreorder
+	.set	nomacro
+	bne	$2,$0,.L267
+	move	$4,$20
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	bne	$18,$0,.L268
+	move	$5,$17
+	.set	macro
+	.set	reorder
+
+	move	$4,$0
+	.set	noreorder
+	.set	nomacro
+	jal	func_8002738C
+	move	$5,$16
+	.set	macro
+	.set	reorder
+
+	move	$4,$20
+.L267:
+	move	$5,$17
+.L268:
+	move	$6,$16
+	lw	$8,96($sp)
+	move	$7,$23
+	sw	$19,16($sp)
+	.set	noreorder
+	.set	nomacro
+	jal	func_800278C0
+	sw	$8,20($sp)
+	.set	macro
+	.set	reorder
+
+	lhu	$3,106($17)
+	li	$2,0x00000006		# 6
+	.set	noreorder
+	.set	nomacro
+	beq	$3,$2,.L197
+	li	$2,0x00000009		# 9
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L196
+	li	$2,0x00000001		# 1
+	.set	macro
+	.set	reorder
+
+.L197:
+	lw	$8,88($sp)
+	#nop
+	beq	$8,$0,.L198
+	lh	$2,474($17)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L199
+	li	$3,0x00000007		# 7
+	.set	macro
+	.set	reorder
+
+	li	$3,0x00000006		# 6
+.L199:
+	sh	$3,646($17)
+	move	$4,$17
+	move	$5,$16
+	.set	noreorder
+	.set	nomacro
+	jal	func_800203B4
+	move	$6,$22
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	li	$2,0x00000001		# 1
+	.set	macro
+	.set	reorder
+
+.L198:
+	lh	$2,474($17)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L201
+	li	$3,0x00000004		# 4
+	.set	macro
+	.set	reorder
+
+	li	$3,0x00000003		# 3
+.L201:
+	sh	$3,646($17)
+	move	$4,$18
+	li	$5,0x00000003		# 3
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	move	$4,$17
+	move	$5,$16
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027438
+	li	$6,0x00000001		# 1
+	.set	macro
+	.set	reorder
+
+.L262:
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+.L196:
+	.set	noreorder
+	.set	nomacro
+	bne	$20,$2,.L269
+	sltu	$2,$16,22
+	.set	macro
+	.set	reorder
+
+	lh	$5,0($23)
+	li	$2,0x00000004		# 4
+	.set	noreorder
+	.set	nomacro
+	bne	$5,$2,.L269
+	sltu	$2,$16,22
+	.set	macro
+	.set	reorder
+
+	lh	$4,10($17)
+	li	$2,0x00000002		# 2
+	.set	noreorder
+	.set	nomacro
+	beq	$4,$2,.L205
+	move	$3,$4
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	beq	$4,$5,.L205
+	addu	$2,$3,-14
+	.set	macro
+	.set	reorder
+
+	andi	$2,$2,0xffff
+	sltu	$2,$2,2
+	.set	noreorder
+	.set	nomacro
+	beq	$2,$0,.L203
+	sltu	$2,$16,22
+	.set	macro
+	.set	reorder
+
+.L205:
+	lbu	$3,13($23)
+	li	$2,0x00000002		# 2
+	.set	noreorder
+	.set	nomacro
+	bne	$3,$2,.L206
+	li	$6,0x00000001		# 1
+	.set	macro
+	.set	reorder
+
+	li	$6,0x00000002		# 2
+.L206:
+	move	$4,$17
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027438
+	move	$5,$16
+	.set	macro
+	.set	reorder
+
+	li	$2,0x0000001b		# 27
+	sh	$2,646($17)
+	move	$4,$18
+	li	$5,0x00000003		# 3
+.L253:
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+.L203:
+.L269:
+	beq	$2,$0,.L162
+	sll	$2,$16,2
+	lw	$2,.L249($2)
+	#nop
+	j	$2
+.section	.rodata
+	.align	3
+	.align	2
+.L249:
+	.word	.L209
+	.word	.L217
+	.word	.L217
+	.word	.L217
+	.word	.L224
+	.word	.L224
+	.word	.L233
+	.word	.L233
+	.word	.L233
+	.word	.L233
+	.word	.L238
+	.word	.L238
+	.word	.L238
+	.word	.L238
+	.word	.L247
+	.word	.L247
+	.word	.L247
+	.word	.L247
+	.word	.L247
+	.word	.L247
+	.word	.L247
+	.word	.L247
+	.text
+.L209:
+	lw	$8,88($sp)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	beq	$8,$0,.L264
+	slt	$2,$fp,1025
+	.set	macro
+	.set	reorder
+
+	bne	$2,$0,.L228
+	.set	noreorder
+	.set	nomacro
+	j	.L259
+	li	$2,0x00000006		# 6
+	.set	macro
+	.set	reorder
+
+.L217:
+	lw	$8,88($sp)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	beq	$8,$0,.L264
+	slt	$2,$fp,1025
+	.set	macro
+	.set	reorder
+
+	bne	$2,$0,.L228
+	.set	noreorder
+	.set	nomacro
+	j	.L259
+	li	$2,0x00000007		# 7
+	.set	macro
+	.set	reorder
+
+.L224:
+	lw	$8,88($sp)
+	#nop
+	.set	noreorder
+	.set	nomacro
+	bne	$8,$0,.L225
+	slt	$2,$fp,1025
+	.set	macro
+	.set	reorder
+
+.L264:
+	li	$2,0x00000001		# 1
+	.set	noreorder
+	.set	nomacro
+	bne	$20,$2,.L226
+	li	$2,0x00000002		# 2
+	.set	macro
+	.set	reorder
+
+	lbu	$3,13($23)
+	#nop
+	bne	$3,$2,.L226
+	lhu	$2,626($17)
+	#nop
+	addu	$2,$2,1
+	sh	$2,626($17)
+.L226:
+	lh	$3,D_800A38DC
+	li	$2,0x00000005		# 5
+	.set	noreorder
+	.set	nomacro
+	beq	$3,$2,.L270
+	li	$2,0x00000005		# 5
+	.set	macro
+	.set	reorder
+
+	lhu	$2,626($17)
+	#nop
+	addu	$2,$2,1
+	.set	noreorder
+	.set	nomacro
+	j	.L239
+	sh	$2,626($17)
+	.set	macro
+	.set	reorder
+
+.L225:
+	bne	$2,$0,.L228
+	.set	noreorder
+	.set	nomacro
+	j	.L259
+	li	$2,0x00000008		# 8
+	.set	macro
+	.set	reorder
+
+.L228:
+	li	$2,0x00000009		# 9
+.L259:
+	sh	$2,646($17)
+	move	$4,$17
+	move	$5,$16
+	.set	noreorder
+	.set	nomacro
+	jal	func_800203B4
+	move	$6,$22
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027A58
+	move	$4,$17
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	li	$2,0x00000001		# 1
+	.set	macro
+	.set	reorder
+
+.L233:
+	lh	$3,D_800A38DC
+	li	$2,0x00000005		# 5
+	.set	noreorder
+	.set	nomacro
+	beq	$3,$2,.L271
+	move	$4,$18
+	.set	macro
+	.set	reorder
+
+	sh	$0,620($17)
+.L271:
+	li	$5,0x00000003		# 3
+	move	$6,$19
+	move	$7,$0
+	li	$2,0x00000004		# 4
+	sh	$2,646($17)
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	sh	$0,144($17)
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027A58
+	move	$4,$17
+	.set	macro
+	.set	reorder
+
+	move	$2,$0
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	sh	$0,138($17)
+	.set	macro
+	.set	reorder
+
+.L238:
+	lh	$3,D_800A38DC
+	li	$2,0x00000005		# 5
+	.set	noreorder
+	.set	nomacro
+	beq	$3,$2,.L270
+	li	$2,0x00000005		# 5
+	.set	macro
+	.set	reorder
+
+	lhu	$2,624($17)
+	#nop
+	addu	$2,$2,1
+	sh	$2,624($17)
+.L239:
+	li	$2,0x00000005		# 5
+.L270:
+	sh	$2,646($17)
+	move	$4,$18
+	li	$5,0x00000003		# 3
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027A58
+	move	$4,$17
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	j	.L162
+	move	$2,$0
+	.set	macro
+	.set	reorder
+
+.L247:
+	lh	$3,D_800A38DC
+	li	$2,0x00000005		# 5
+	.set	noreorder
+	.set	nomacro
+	beq	$3,$2,.L272
+	li	$2,0x00000003		# 3
+	.set	macro
+	.set	reorder
+
+	lhu	$2,622($17)
+	#nop
+	addu	$2,$2,1
+	sh	$2,622($17)
+	li	$2,0x00000003		# 3
+.L272:
+	sh	$2,646($17)
+	move	$4,$18
+	li	$5,0x00000003		# 3
+	move	$6,$19
+	.set	noreorder
+	.set	nomacro
+	jal	func_80032854
+	move	$7,$0
+	.set	macro
+	.set	reorder
+
+	.set	noreorder
+	.set	nomacro
+	jal	func_80027A58
+	move	$4,$17
+	.set	macro
+	.set	reorder
+
+	move	$2,$0
+.L162:
+	lw	$31,68($sp)
+	lw	$fp,64($sp)
+	lw	$23,60($sp)
+	lw	$22,56($sp)
+	lw	$21,52($sp)
+	lw	$20,48($sp)
+	lw	$19,44($sp)
+	lw	$18,40($sp)
+	lw	$17,36($sp)
+	lw	$16,32($sp)
+	addu	$sp,$sp,72
+	j	$31
+	.end	func_80027AD8
