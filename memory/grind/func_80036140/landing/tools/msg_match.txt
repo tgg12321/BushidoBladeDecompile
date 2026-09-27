@@ -103,7 +103,12 @@ No register pins, no __asm__, no scheduling barriers, no FAKE constructs.
    with `u32 expected_pos` instead is byte-identical (40/40 objects, SHA1 ==
    oracle), so it keeps its declared type on main, `extern s32
    g_cdread_expected_pos;`, which is also CdPosToInt's return type (src/system.c
-   `s32 CdPosToInt(u8 *)`; libcd `int`) — owner ruling Q14 @Q14_COMMIT@.
+   `s32 CdPosToInt(u8 *)`; libcd `int`) — owner ruling Q14 (1ceadb0a1, "When the binary cannot tell"): the
+   no-reveal listing (each access and every instruction its value flows into) and
+   the per-accessor byte identity (cdrom_ReadyCallback and func_80036940 function
+   bytes and whole objects, s32 vs u32, with their build recipes) are in
+   memory/grind/func_80036140/landing/q14_accessors.txt; kept type = main's
+   include/code6cac.h:493 `extern s32 g_cdread_expected_pos;` (the symbol replaced).
    Respelled from D_80101E9E /
    g_cdread_expected_pos.
 
