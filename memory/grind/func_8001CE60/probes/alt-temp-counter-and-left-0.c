@@ -21,11 +21,10 @@ void func_8001CE60(void) {
     } else if ((D_800A38DC == 2 && D_800A389A == 1) || D_800A38DC == 4) {
         D_800A38B4 += func_8005E098(D_800A37D2, D_800A37D3, D_800A38B4, 1) / 4 * 4;
     } else if (D_800A38DC == 5) {
-        /* temp holds two values (ordinary-c-judge-decidable Ruling 11, with
-         * its per-branch constants clause): the announcement length in
-         * frames (0x50 after a draw, 0x64 otherwise), then the match clock's
-         * frames left for the on-screen timer. Allocator dump proof:
-         * memory/grind/func_8001CE60/evidence.md (s2). */
+        /* temp holds two values (ordinary-c-judge-decidable Ruling 11): the
+         * announcement counter D_800A36E8 read by the announcer arm, then
+         * the match clock's frames remaining for the on-screen timer.
+         * Allocator dump proof: memory/grind/func_8001CE60/evidence.md (s2). */
         s32 temp;
 
         if (D_800A381E != 0) {
@@ -92,22 +91,24 @@ void func_8001CE60(void) {
             if (--D_800A391E == 0) {
                 func_8005C650(0x9C, 0x7F, 0x7F);
             }
-        } else if (D_800A36E8 != 0) {
+        } else if ((temp = D_800A36E8) != 0) {
+            u8 end;
+
             if (D_800A377C[D_800A3874 - 1] == 2) {
-                if (D_800A36E8 == 1) {
+                if (temp == 1) {
                     func_8005C650(0xA4, 0x7F, 0x7F);
                 }
-                temp = 0x50;
+                end = 0x50;
             } else {
-                if (D_800A36E8 == 1) {
+                if (temp == 1) {
                     func_8005C650(0xA6, 0x7F, 0x7F);
                 }
                 if (D_800A36E8 == 0x14) {
                     func_8005C650(D_8008D9EC[g_practice_menu_table[D_800A377C[D_800A3874 - 1]].unk_0A] ? 0xA8 : 0xA7, 0x7F, 0x7F);
                 }
-                temp = 0x64;
+                end = 0x64;
             }
-            if (++D_800A36E8 == temp) {
+            if (++D_800A36E8 == end) {
                 D_800A36E8 = 0;
                 func_800342A0();
             }
