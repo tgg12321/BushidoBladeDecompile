@@ -634,7 +634,73 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        preprocessed TUs with the build's cc1 flags, gives the same result
        for every single declaration banked under (1): at least one of the
        two files' functions misses its target shape. Under each file's own
-       declaration, that file's functions reach it. "Target shape" means the
+       declaration, that file's functions reach it. **Owner ruling
+       2026-09-27, thirteenth batch, Q24 ("cc1psx only where it can"):**
+       the owner chose "cc1psx only where it can (Recommended)", whose text
+       is: "cc1psx must agree on every part of the proof where it
+       reproduces the already-matching form; for parts it can't reproduce
+       even there (like this store structure), our compiler's dumps and
+       measurements decide. Record that as a narrow clarification, then
+       land func_8001CE60 per-file after a fresh layer-2." (Question and
+       other options verbatim: docs/grind/owner-rulings-2026-09-26.md,
+       batch 13.) The author's narrowing, applied instruction by
+       instruction: (i) a file's REFERENCE form is the exact body, in the
+       exact translation unit, that will be on main after the landing (for
+       an already-completed function the landing leaves unchanged, its
+       committed body in its committed TU), and no other spelling; every
+       banked spelling is measured in that same TU. (ii) Take the reference form's `.s` from the
+       build's cc1 (byte-identical to the target) and from cc1psx: each
+       compiler's own `-S` output of the same preprocessed TU under the
+       build's cc1 flags, before maspsx (as
+       memory/grind/func_8001CE60/probes/calib_800340A0/calib_b.sh
+       produces), cut to the function. Strip directives, blank lines,
+       comments and label lines; compare symbol operands by the address
+       they resolve to (a spelling's own name for the same bytes, plus
+       offset, is canonicalised to the target's symbol, e.g. a probe's
+       `g_sc+1` to `D_800A3899`); replace every register operand except
+       `$0` and every label operand with a placeholder BEFORE aligning;
+       align the two instruction lists with Python
+       `difflib.SequenceMatcher(autojunk=False)` and bank that alignment.
+       After alignment, a branch or jump counts as equal to its aligned
+       counterpart only if the counterpart's destination is the cc1psx
+       instruction aligned, in an equal run, with the instruction at its
+       own destination, or both leave the function; one failing this is
+       treated as an instruction of a changed run with no equal
+       counterpart. Wherever target shape is judged, branch and jump
+       destinations are compared the same way, by aligned position, never
+       by label name. (iii) A governed instruction is EXEMPT only if it
+       lies in a changed run of that alignment AND no instruction on the
+       cc1psx side of that run equals it after the placeholders; for an
+       exempt instruction the build's cc1 dumps and measurements alone
+       decide. Every other governed instruction, including one with an
+       equal counterpart inside a changed run, is subject to AGREEMENT:
+       for every spelling banked under (1) and not set aside under Q22 or
+       Q23, each file's functions hit or miss the non-exempt governed
+       instructions under cc1psx exactly as they do under the build's
+       cc1 (a miss = at least one non-exempt governed instruction of the
+       reference form differs from the spelling's output under that
+       compiler, compared by the same procedure; under cc1psx the governed
+       instructions are the equal counterparts, in the reference
+       alignment, of the non-exempt target-side governed instructions, and
+       cc1psx-only instructions are not governed; a spelling whose only
+       differences are inserted instructions counts as a hit, which can
+       only block a landing). GRAIN: the ledger states, for each part of
+       the (1) mechanism, whether the position of its governed
+       instructions is part of what that mechanism decides (e.g. a store
+       and branch structure: yes; an addressing mode: no). For a part
+       where position is not decided, both the exemption test and the
+       hit/miss test count a governed instruction as reproduced when an
+       instruction equal to it after the placeholders is present anywhere
+       in the compared function's output, counted with multiplicity (a
+       displacement-only difference is a hit, which can only block); for
+       a part where position is decided, the aligned-position procedure
+       above applies. (iv) The ledger banks
+       the script, the alignment, the governed instructions (by target
+       address, with the (1) mechanism each belongs to; "every instruction
+       of the function" is allowed when stated), and the list of exempt
+       instructions with their target addresses. Where any governed instruction is
+       exempt, the two cc1psx sentences above are read as this agreement
+       test on the non-exempt governed instructions. "Target shape" means the
        instructions the (1) mechanism governs match the target's in opcode
        and in every operand the mechanism decides (for an addressing
        mechanism: an absolute symbol versus a base register, how that base

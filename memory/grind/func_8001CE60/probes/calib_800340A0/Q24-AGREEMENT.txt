@@ -1,0 +1,82 @@
+# Q24 evidence, measured in the LANDING translation units (rule (i): the exact bodies and TUs on main after the landing).
+# Scripts: q24lib.py (the procedure), q24_run.py <dir> (func_800340A0 + every banked spelling), q24_run_ce60.py <dir>
+# (func_8001CE60). Run from the repo root. Listing form: each compiler's own -S output of the same preprocessed TU, before
+# maspsx (calib_b.sh for code6cac_b.c; landing_tu_func_8001CE60/calib_a.sh for code6cac.c). Symbol operands are compared
+# by resolved address (q24lib SYM table: probe names and `sym+1` aliases canonicalised to the target's symbols).
+# GRAIN per mechanism part: score-byte addressing — position NOT decided (presence with multiplicity); func_800340A0's
+# round-result store structure — position decided (aligned-position procedure with the destination test).
+
+## func_800340A0 (landing_tu/: reference A340_0.c = the landing body, `D_800A377C[round] = K;` under the shared
+## `extern u8 D_800A377C[];`; every spelling respelled from the committed-TU probes only in that store). Part 1 = the 8
+## score/tiebreak accesses (target 0x800340A4 lbu D_800A3898, 0x800340C0 lbu D_800A3899, 0x80034124 lbu D_800A38AA,
+## 0x8003412C lbu D_800A38AB, 0x8003414C sb D_800A3898, 0x8003417C sb D_800A3899, 0x800341AC lbu D_800A3898, 0x800341CC
+## lbu D_800A3899, each with its lui); part 2 = every other instruction. Part-2 exempt: A340_0.cc1.s:76 `j` (0x80034180)
+## and :77 `li $2,1` (0x80034184). Array/struct/pointer/expression spellings miss part 1; winner-index spellings (rv9)
+## reproduce part 1 but miss part 2; cc1psx agrees with the build's cc1 on every counting row.
+== func_800340A0 reference form: build cc1 (== target) vs cc1psx
+part 1 governed (8): ['lbu REG,D_800A3898', 'lbu REG,D_800A3899', 'lbu REG,D_800A38AA', 'lbu REG,D_800A38AB', 'sb REG,D_800A3898', 'sb REG,D_800A3899', 'lbu REG,D_800A3898', 'lbu REG,D_800A3899']
+part 1 EXEMPT (absent from cc1psx reference output): none
+   equal    target[0:34] cc1psx[0:34]
+   insert   target[34:34] cc1psx[34:36]
+   equal    target[34:35] cc1psx[36:37]
+   delete   target[35:36] cc1psx[37:37]
+   equal    target[36:51] cc1psx[37:52]
+part 2 EXEMPT target-side: [(76, 'j LBL'), (77, 'li REG,0x00000001')]
+part 2 EXEMPT cc1psx-side: [(74, 'li REG,0x00000001'), (75, 'sb REG,D_800A377C(REG)'), (76, 'j LBL')]
+
+== agreement (Q22/Q23 set-aside spellings listed but excluded from the test)
+A340_1                         cc1 miss (part-1 forms short: 2, part-2 differing: 0) | cc1psx miss (part-1 forms short: 2, part-2 differing: 0) | AGREE
+A340_2                         cc1 miss (part-1 forms short: 2, part-2 differing: 0) | cc1psx miss (part-1 forms short: 2, part-2 differing: 0) | AGREE
+A340_a                         cc1 miss (part-1 forms short: 2, part-2 differing: 0) | cc1psx miss (part-1 forms short: 2, part-2 differing: 0) | AGREE
+A340_b                         cc1 miss (part-1 forms short: 2, part-2 differing: 0) | cc1psx miss (part-1 forms short: 2, part-2 differing: 0) | AGREE
+A340_base_ptr                  cc1 miss (part-1 forms short: 3, part-2 differing: 0) | cc1psx miss (part-1 forms short: 3, part-2 differing: 0) | AGREE
+A340_c                         cc1 miss (part-1 forms short: 2, part-2 differing: 0) | cc1psx miss (part-1 forms short: 2, part-2 differing: 0) | AGREE
+A340_elem_ptr                  cc1 miss (part-1 forms short: 4, part-2 differing: 0) | cc1psx miss (part-1 forms short: 4, part-2 differing: 0) | AGREE
+A340_ptr_end-Q23-set-aside     cc1 HIT  (part-1 forms short: 0, part-2 differing: 0) | cc1psx HIT  (part-1 forms short: 0, part-2 differing: 0) | set aside (Q22/Q23)
+A340_rv7_p1xor                 cc1 miss (part-1 forms short: 5, part-2 differing: 9) | cc1psx miss (part-1 forms short: 5, part-2 differing: 9) | AGREE
+A340_rv7_shr_a                 cc1 miss (part-1 forms short: 5, part-2 differing: 10) | cc1psx miss (part-1 forms short: 5, part-2 differing: 10) | AGREE
+A340_rv7_shr_b                 cc1 miss (part-1 forms short: 5, part-2 differing: 9) | cc1psx miss (part-1 forms short: 5, part-2 differing: 9) | AGREE
+A340_rv7_shr_c                 cc1 miss (part-1 forms short: 5, part-2 differing: 7) | cc1psx miss (part-1 forms short: 5, part-2 differing: 7) | AGREE
+A340_rv7_xor                   cc1 miss (part-1 forms short: 5, part-2 differing: 8) | cc1psx miss (part-1 forms short: 5, part-2 differing: 8) | AGREE
+A340_rv8_S4                    cc1 miss (part-1 forms short: 2, part-2 differing: 0) | cc1psx miss (part-1 forms short: 2, part-2 differing: 0) | AGREE
+A340_rv8_S5-Q22-refused        cc1 HIT  (part-1 forms short: 0, part-2 differing: 0) | cc1psx HIT  (part-1 forms short: 0, part-2 differing: 0) | set aside (Q22/Q23)
+A340_rv9_V1                    cc1 miss (part-1 forms short: 0, part-2 differing: 11) | cc1psx miss (part-1 forms short: 0, part-2 differing: 11) | AGREE
+A340_rv9_V2                    cc1 miss (part-1 forms short: 0, part-2 differing: 8) | cc1psx miss (part-1 forms short: 0, part-2 differing: 8) | AGREE
+A340_rv9_W8                    cc1 miss (part-1 forms short: 0, part-2 differing: 21) | cc1psx miss (part-1 forms short: 0, part-2 differing: 21) | AGREE
+A340_rv9_W9                    cc1 miss (part-1 forms short: 0, part-2 differing: 9) | cc1psx miss (part-1 forms short: 0, part-2 differing: 9) | AGREE
+A340_s                         cc1 miss (part-1 forms short: 2, part-2 differing: 0) | cc1psx miss (part-1 forms short: 2, part-2 differing: 0) | AGREE
+A340_zero_one-Q22-refused      cc1 HIT  (part-1 forms short: 0, part-2 differing: 0) | cc1psx HIT  (part-1 forms short: 0, part-2 differing: 0) | set aside (Q22/Q23)
+
+DISAGREE rows: 0
+
+## func_8001CE60 (landing_tu_func_8001CE60/: land.* = its landing body with `extern u8 D_800A3898[2]; extern u8
+## D_800A38AA[2];`; sel.* = the admissible spelling under the other file's SCALAR declaration, ordinary conditional
+## selects on D_800A38B0 in place of indexing (sel_body.c, built by make_sel_tu.py) — it cannot produce the target's
+## player-indexed accesses and misses under both compilers).
+instructions: build cc1 407, cc1psx 407
+governed (part 1, score-byte addressing; position not decided), program order = target order:
+   0x8001D0E0  land.s.fn:230  lbu REG,D_800A38AA(REG)
+   0x8001D0F4  land.s.fn:232  sb REG,D_800A38AA(REG)
+   0x8001D150  land.s.fn:251  lbu REG,D_800A38AA(REG)
+   0x8001D164  land.s.fn:259  la REG,D_800A3898
+   0x8001D190  land.s.fn:266  sb $0,D_800A38AA(REG)
+   0x8001D280  land.s.fn:349  lbu REG,D_800A3898(REG)
+   0x8001D480  land.s.fn:518  lbu REG,D_800A3898
+   0x8001D49C  land.s.fn:522  sb REG,D_800A3898
+   0x8001D4C0  land.s.fn:533  lbu REG,D_800A3899
+   0x8001D4DC  land.s.fn:537  sb REG,D_800A3899
+   0x8001D714  land.s.fn:762  lbu REG,D_800A38AA
+   0x8001D724  land.s.fn:764  lbu REG,D_800A3898
+   0x8001D72C  land.s.fn:765  lbu REG,D_800A3899
+   0x8001D740  land.s.fn:769  lbu REG,D_800A38AB
+EXEMPT (governed forms absent from the cc1psx reference output): none
+
+agreement:
+  reference (arrays, landing body)
+     cc1: HIT
+     cc1psx: HIT
+     => AGREE
+  sel: scalar declaration, conditional selects
+     cc1: miss lbu REG,D_800A38AA(REG) need 2 have 0; sb REG,D_800A38AA(REG) need 1 have 0; la REG,D_800A3898 need 1 have 0; sb $0,D_800A38AA(REG) need 1 have 0; lbu REG,D_800A3898(REG) need 1 have 0
+     cc1psx: miss lbu REG,D_800A38AA(REG) need 2 have 0; sb REG,D_800A38AA(REG) need 1 have 0; la REG,D_800A3898 need 1 have 0; sb $0,D_800A38AA(REG) need 1 have 0; lbu REG,D_800A3898(REG) need 1 have 0
+     => AGREE

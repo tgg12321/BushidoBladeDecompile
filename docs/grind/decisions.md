@@ -30282,3 +30282,40 @@ per-file form must itself carry no FAKE-annotated construct in the functions the
 spellings needing no FAKE annotation still count. The every-spelling sentence of (1) was reconciled
 to say so. This rests on Ruling 1 (4) (simplest known form). Q22's general refusal
 stands. func_8001CE60 is judged fresh at landing.
+
+## 2026-09-27 — OWNER RULING — cc1psx corroboration only where it reproduces the matching form (`.claude/rules/no-new-park-categories.md`)
+
+Thirteenth batch (2026-09-27; verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 13, Q24).
+Context: the Q21 (1) proof for func_8001CE60 has two parts. cc1psx reproduces the score-byte
+addressing (arrays with constant subscripts give `la` + `0($7)` under both compilers; scalars are
+direct). The round-result store structure, which rules out ordinary winner-index spellings under one
+shared declaration (A340_rv9_W8/W9/V1/V2: 30-64 lines off under the build's cc1), is not reproduced by
+cc1psx even for the committed scalar func_800340A0 (16-line jump-structure hunk), so cc1psx cannot
+judge that part. (Correction before commit, from the layer-2 rule-text review: that overstates
+it. cc1psx reproduces the round-result store structure of the committed scalar form except ONE arm,
+the P2 tie-break arm, A340_0.cc1psx.diff hunk 72,81c72,77, where cc1psx stores inline and jumps to the
+tail instead of joining the shared `sb $v0`; the P1 inline `sb $zero` stores and the shared join
+store fed by per-arm 1/2 are reproduced up to register and label names. The question put to the
+owner carried the overstatement; the owner's option text is location-based ("where it reproduces")
+and the rule applies it at that grain.) Owner (Trenton) chose, verbatim: "cc1psx only where it can (Recommended)" — "cc1psx must agree on every part of the proof where it reproduces the already-matching form; for parts it can't reproduce even there (like this store structure), our compiler's dumps and measurements decide. Record that as a narrow clarification, then land func_8001CE60 per-file after a fresh layer-2."
+
+**Ruling (summary; the rule text in the Q21 exception's condition (1) governs; the author's
+narrowing).** Applied instruction by instruction. The reference form is pinned: the exact body, in
+the exact TU, that will be on main after the landing (the committed body in its committed TU when the
+landing leaves it unchanged), no other spelling, and every banked spelling is measured in that TU. Its
+build-cc1 and cc1psx `-S` output (same preprocessed TU, before maspsx) is stripped of directives, blank
+lines, comments and label lines; symbol operands are compared by resolved address (a spelling's own
+name for the same bytes canonicalised to the target's symbol); register operands except `$0` and label operands are replaced by
+placeholders BEFORE aligning; the lists are aligned with Python difflib.SequenceMatcher(autojunk=False);
+a branch or jump is equal to its counterpart only if their destinations are aligned (never by label
+name). A governed instruction is exempt (decided by the build's cc1 alone) only if it lies in a changed
+run and no cc1psx instruction in that run equals it; every other governed instruction requires cc1psx
+to AGREE with the build's cc1 (same hit/miss on the non-exempt governed instructions; under cc1psx the
+governed instructions are their equal counterparts in the reference alignment; inserted-only
+differences count as hits; for a mechanism part whose governed instructions' position the mechanism does
+not decide, as the ledger states per part, exemption and hit/miss count an equal instruction present
+anywhere in the output, with multiplicity) for every banked
+spelling not set aside under Q22/Q23. Where any governed instruction is exempt, the whole-declaration
+cc1psx sentences of (1) are read as this agreement test. The ledger banks the script, the alignment,
+the governed instructions with their mechanism, and the exempt instructions with target addresses.
+func_8001CE60 is judged fresh at landing.
