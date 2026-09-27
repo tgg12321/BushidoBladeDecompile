@@ -47,6 +47,152 @@ candidate.c = the new body; sandbox --disable all = 0, 136/136, 0 hunks
   D_800A37A0. Split (G01): 6; the selector lands in $v1 (target $a1). Both
   split: 11. Ruling 11 (D) proofs not yet banked.
 
+## Session 7b (2026-09-27) — landing-form candidate (still sandbox 0)
+
+candidate.c = tmp/func_800174F4/v/M2.c: `DrawEnv env` (PsyQ DRAWENV layout,
+typedef placed before the function) and `u32 ot[2]` replace the byte
+buffers (0); the case-20 `u32 idx` copy dropped for `(u32)temp2 < cur` (0);
+the two reused locals renamed `temp`/`temp2` with Ruling 11 (F) comments;
+the both-arms `D_800A38F8 = cur + 1` store FAKE-annotated as F7 (hoisted
+store: 6, 131 insns; `next` hoisted with a store per arm: 1, 135 insns).
+Frame: vars = 8 (ot) + 96 (env) + 8 (reload slot of the for loop's
+combined entry test, BB2_FRAME_DEBUG spill_new_p128) = 112 = target.
+Other probes this session, all 0: `idx` kept as `u32 idx = cur`; the case-20
+divide/counter spelled with locals; `& 0xFF` masks. Not 0: `u32 temp2` 10
+(130 insns, dispatch turns unsigned), `u8 temp2` 6, `u32 cur` 10, `idx` only
+10.
+
+## Ruling 11 proof (session 7, 2026-09-27) — `temp` and `temp2`
+
+Reuse spelling = candidate.c (tmp/func_800174F4/v/M2.c). One-variable-per-value
+spelling = tmp/func_800174F4/v/M2_split.c: `temp` -> `count` (declared in the
+case-1/2 fade block) + `code` (declared in the case-20 else arm); `temp2` ->
+`mode` (function scope, the switch) + `limit` (declared in the case-20 block).
+Same statement list; only declarations and identifiers differ.
+
+Dumps (banked verbatim in r11_dumps.txt next to this file). Commands, repo
+root, WSL: `bash tmp/func_800174F4/alloc.sh <cand>` (BB2_ALLOC_DEBUG=1,
+tools/gcc-2.7.2/cc1, build CC_FLAGS, -dg -dl), `bash
+tmp/func_800174F4/findreg.sh <cand> <pseudo>` (BB2_FINDREG_DEBUG=<pseudo>),
+`bash tmp/func_800174F4/rtl.sh <cand> -dl -dg -df` (.lreg "Register N ..."
+lines). The candidate is spliced over the INCLUDE_ASM line of src/ings.c.
+
+### (A) fresh locals
+Both are plain function-scope locals of func_800174F4 (the innermost scope
+enclosing all their writes: `temp` is written in case 1/2 and in case 20,
+`temp2` before the switch and in case 20). No `&temp`/`&temp2`. No other
+declaration moved.
+
+### (B) every write live, none redundant
+`temp = (rand() & 3) + 4` is read by the loop test; `temp = D_800A37A8[cur]`
+is read by `|=`/the call; `temp |= 0x8000` is read by the call.
+`temp2 = g_disp_enable` is read by the switch; `temp2 = D_800A37A0` by the
+compares and the divide. The two values of each variable sit on disjoint
+paths (case 1/2 vs case 20; dispatch vs case 20), so no write stores a value
+the variable already holds on every path: on the case-20 path `temp2` holds
+g_disp_enable (== 20) before `temp2 = D_800A37A0`, and `temp` is
+uninitialised on entry to case 20.
+
+### (C) same statements, real values
+(C)(2): M2.c and M2_split.c differ only in declarations and identifiers.
+(C)(3): every value is a load or arithmetic present in the target bytes
+(`andi/addiu s1` for the count, `lbu s1`/`ori s1` for the code, `lbu a1` for
+each selector byte).
+
+### (D)(1)-(2) the allocator decision, both spellings
+`temp`:
+- reuse: pseudo 72, `.lreg`: "used 8 times across 15 insns; crosses 1 call".
+  find_reg conflicts {2,4,5,16,29}; allocated $17 (s1).
+- split: `count` p88 "crosses 1 call" -> $17 (same as reuse); `code` p117
+  "used 4 times across 5 insns" (no call crossed), conflicts {2,29},
+  own_copy_prefs {4} -> $4 (a0).
+- decision: global.c find_reg 970-975. An allocno with
+  allocno_calls_crossed != 0 starts from call_used_reg_set, so only
+  callee-saved registers are candidates (s0 is taken by `i` -> s1). An
+  allocno crossing no call starts from fixed_reg_set, and its copy preference
+  (hard_reg_copy_preferences, global.c 1097-1110; the `move a0,<code>`
+  argument copy) seats it in $a0. The now-redundant argument move is then a
+  no-op and is deleted: 134 insns, `lbu a0`/`ori a0` in place of target's
+  `lbu s1`/`ori s1`/`move a0,s1`.
+`temp2`:
+- reuse: p74 "used 11 times across 28 insns", conflicts {2,3,17,29},
+  someone_prefers {4} (the conflicting zero-extended `cur`, p101 = `andi a0,a2,0xff`, the table index, prefers a0) ->
+  pass0 excludes 0-4 -> $5 (a1), target's register at the switch AND in case 20.
+- split: `mode` p73 "used 6 times across 10 insns", conflicts {2,29},
+  someone_prefers {} -> first free hard reg in numeric order (mips.h has no
+  REG_ALLOC_ORDER) = $3 (v1); `limit` p99 conflicts {2,3,4,29},
+  someone_prefers {4} -> $5 (a1). Case 20 is unchanged; only the dispatch
+  selector moves to v1 (score 6, insns 28/30/31/33/35/41).
+- decision: global.c find_reg 985-1001 (used1 |= hard_reg_conflicts; pass 0
+  also excludes regs_someone_prefers).
+Both values are global allocnos (live in more than one basic block: the
+dispatch compare chain; the case-20 compare/divide/branches; the loop), so
+local-alloc does not allocate them and its suggestion passes
+(qty_phys_sugg / qty_phys_copy_sugg) never see them.
+
+### (D)(3) necessity: the property, and why every split spelling lacks it
+`temp`: the property is "the table code's pseudo crosses a call". The code
+value's reads are the `|= 0x8000` and the argument of func_80060414; its
+writes are the table load and the `|=`, all after the last call before
+func_80060414 (case 20 has no earlier call). So a variable holding only that
+value is live only between the load and the argument copy, whatever its
+declaration order, scope or type, and allocno_calls_crossed is 0. It
+therefore starts from fixed_reg_set, not call_used_reg_set, and its argument
+copy gives it $a0 (or, with no preference, the lowest free call-clobbered
+register). It can reach $s1 only by sharing a pseudo with a call-crossing
+value, i.e. by the reuse.
+`temp2`: the property is "the selector's pseudo is also live in case 20,
+where v1 (limit+1, the divisor) is live and the cur allocno prefers a0".
+A variable holding only the g_disp_enable byte is read only by the dispatch
+compare chain (the cases re-load g_disp_enable into a1 themselves, as the
+target does), so its live range is the dispatch block chain, where the only
+other live values are the compare constants/flags in v0. Its conflict set is
+{v0} and no conflicting allocno prefers a register, so find_reg returns $v1
+regardless of priority order, declaration order, scope or type (u8: 6,
+tmp/func_800174F4/v/X_sel_u8.c).
+
+Sanctioned families, by name (each acts on the wrong quantity or is removed
+before flow; measured where applicable; the X_* probes were measured on the
+session's K8 twin, whose case 20 differs from M2 only by an extra `u32 idx`
+copy of `cur`):
+- dead store: a store never read is deleted by flow (life analysis), adds no
+  liveness or conflict.
+- self-assign: `code = code;` after the call / `mode = mode;` in case 20 is a
+  no-op move deleted before flow: X_code_selfassign 5, X_sel_selfassign 6.
+- cancelling pair: `code++; code--;` after the call, `mode++; mode--;` in
+  case 20: both sets dead, deleted by flow: X_code_cancel 5, X_sel_cancel 6.
+- chain-extender: adds reg_n_refs (priority) only; neither decision depends
+  on priority (calls-crossed and conflicts/preferences decide), and the
+  selector gets v1 at any priority because nothing conflicting holds v1.
+- pointer alias: `u8 *tbl = D_800A37A8` 5 (X_code_tblalias); `*penable`
+  for the selector 6 (X_sel_alias).
+- do {} while (0): changes loop-depth ref weighting only: X_code_dowhile 7,
+  X_sel_dowhile 6.
+- duplicated-into-arms + cross-jump: the code value split into per-arm
+  writes (`code = tbl|0x8000` / `code = tbl`) 8, 139 insns
+  (X_code_arms); the selector has one write, nothing to duplicate.
+- hoisting/sinking writes across branches: moving the D_800A37A0 load or
+  the table load changes the instruction stream (a load in the dispatch
+  block / before the stores), which the target does not have.
+- post-allocation: jump2 cross-jump, sched2 and reorg do not change
+  register assignment; the only post-allocation effect is the deletion of
+  the no-op `move a0,a0` in the split `code` spelling (above).
+
+### (D)(4) measured alternatives (sandbox --disable all)
+- full one-variable-per-value (M2_split.c): 11, 134 insns.
+- ablation (each variable split alone; each has two values): `temp` split
+  5, 134 insns (M2_split_temp.c); `temp2` split 6 (M2_split_temp2.c).
+- structural respellings of the split body: case 20 as nested ifs 11
+  (Y_split_nestedif.c); switch as an if/else chain 21, 132 insns
+  (Y_split_ifchain.c).
+- permuter: campaign `split-all-s7` from the split body (the K8 twin,
+  tmp/func_800174F4/perm_split, -j2, stack diffs on), see the harvest note
+  below for time, iterations and finds.
+
+### (E)/(F)
+Names `temp`, `temp2` (Ruling 11 (E)(i)). Declaration comments name both
+values of each and cite Ruling 11 and this section.
+
 ## CHEATED — reopened 2026-09-26 (owner ruling Q17)
 
 CHEATED — matched only under the PLUS->IOR cc1 patch (owner Q17 2026-09-26);

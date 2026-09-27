@@ -1,37 +1,48 @@
-/* func_800174F4 — working candidate, manual session 2026-09-26 (slotP, post-Q17).
- *
- * Sandbox --disable all = 0 (136/136) under the STOCK compiler, with no
- * do-while(0) wraps, no goto loop and no `unsigned short h`. What changed
- * against rejected/compiler-patch-dependent.c (evidence.md "Session 7"):
- *   - the loop limit is an int, so no u16 narrowing chain reaches combine and
- *     `(rand() & 3) + 4` stays an addiu (the old u16 `h` gave combine a
- *     3-insn subreg chain it rewrote to IOR; cc1psx does the same);
- *   - the loop is the natural `for (i = 0; i < n; i++)`;
- *   - the DRAWENV buffer is its real size (0x5C): the for-loop's entry-test
- *     combine leaves one 8-byte reload slot, which is exactly the frame
- *     difference the old 0x68 buffer was absorbing;
- *   - 240 is a literal at both uses (cse keeps it in $s1 by itself).
- * Two locals still hold two values each (`temp`, `sel`): Ruling 11 candidates,
- * proof pending in evidence.md.
+/* func_800174F4 — working candidate, manual session 7 (slotP, 2026-09-27).
+ * Sandbox --disable all = 0 (136/136) under the stock build compiler.
+ * Evidence: memory/grind/func_800174F4/evidence.md "Session 7" and
+ * "Ruling 11 proof" (the two reused locals temp/temp2).
  */
+/* PsyQ libgpu DRAWENV (libgpu.h): 0x5C bytes, isbg at +0x18. */
+typedef struct {
+    Rect clip;
+    s16 ofs[2];
+    Rect tw;
+    u16 tpage;
+    u8 dtd;
+    u8 dfe;
+    u8 isbg;
+    u8 r0;
+    u8 g0;
+    u8 b0;
+    u32 dr_env[16];
+} DrawEnv;
+
 void func_800174F4(void) {
-    u8 ot[8];
-    u8 env[0x5C];
+    u32 ot[2];
+    DrawEnv env;
+    /* temp: holds two values, the case-1/2 fade loop's iteration count and
+     * the case-20 D_800A37A8[] code passed to func_80060414. Ruling 11
+     * (ordinary-c-judge-decidable.md); (D) proof in
+     * memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
     s32 temp;
     u8 *prim;
-    s32 sel;
+    /* temp2: holds two values, the g_disp_enable switch selector and the
+     * case-20 D_800A37A0 limit. Ruling 11; (D) proof in
+     * memory/grind/func_800174F4/evidence.md "Ruling 11 proof". */
+    s32 temp2;
 
     prim = &D_800F33D8;
     if (g_disp_enable == DISP_DISABLED) {
         return;
     }
-    SetDefDrawEnv(env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
-    env[0x18] = 0;
-    PutDrawEnv(env);
-    g_gpu_ot_ptr = ot;
-    ClearOTagR(ot, 2);
-    sel = g_disp_enable;
-    switch (sel) {
+    SetDefDrawEnv((u8 *)&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
+    env.isbg = 0;
+    PutDrawEnv((u8 *)&env);
+    g_gpu_ot_ptr = (u8 *)ot;
+    ClearOTagR((u8 *)ot, 2);
+    temp2 = g_disp_enable;
+    switch (temp2) {
     case 1:
     case 2:
         prim = func_8005D46C(prim);
@@ -51,25 +62,28 @@ void func_800174F4(void) {
         break;
     case 20: {
         u8 cur;
-        u32 idx;
 
-        sel = D_800A37A0;
+        temp2 = D_800A37A0;
         cur = D_800A38F8;
-        idx = cur;
-        if (sel < idx) {
+        if ((u32)temp2 < cur) {
             break;
         }
-        if (0xF0 / (sel + 1) >= ++D_800A37C0) {
+        if (0xF0 / (temp2 + 1) >= ++D_800A37C0) {
             break;
         }
-        if (idx == sel) {
+        /* FAKE: the common `D_800A38F8 = cur + 1` store is written in both
+         * arms (unconditional-common-store duplication, F7, no-new-park-
+         * categories.md 2026-08-18). Target computes `addiu v0,a2,1` in each
+         * arm; one store hoisted above the `if` measures 6 (131 insns),
+         * `next` hoisted with a store per arm measures 1 (135). */
+        if (cur == temp2) {
             D_800A38F8 = cur + 1;
         } else {
             u8 next = cur + 1;
             D_800A38F8 = next;
             D_800A37C0 = 0;
-            temp = D_800A37A8[idx];
-            if (next == sel) {
+            temp = D_800A37A8[cur];
+            if (next == temp2) {
                 temp |= 0x8000;
             }
             func_80060414(temp, prim, 0);

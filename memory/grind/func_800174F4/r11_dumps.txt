@@ -1,0 +1,81 @@
+# Ruling 11 (D)(1) dumps — func_800174F4 session 7 (2026-09-27)
+# reuse = tmp/func_800174F4/v/M2.c (== candidate.c body); split = tmp/func_800174F4/v/M2_split.c
+# cmds (WSL, repo root): bash tmp/func_800174F4/alloc.sh <cand>   (BB2_ALLOC_DEBUG=1 tools/gcc-2.7.2/cc1, build CC_FLAGS + -dg -dl)
+#                       bash tmp/func_800174F4/findreg.sh <cand> <pseudo>   (BB2_FINDREG_DEBUG=<pseudo>)
+#                       bash tmp/func_800174F4/rtl.sh <cand> -dl -dg -df   (.lreg 'Register N' lines)
+# pseudo map  reuse: 72=temp 74=temp2 88=i 101=(u32)cur 73=prim 83=240   split: 88=count 117=code 73=mode 99=limit 87=i 102=(u32)cur
+
+== ALLOCDBG M2 (reuse)
+ALLOCDBG func=func_800174F4 ord=0 pseudo=88 hardreg=16 nrefs=8 livelen=9 pri=26666
+ALLOCDBG func=func_800174F4 ord=1 pseudo=128 hardreg=-1 nrefs=2 livelen=1 pri=20000
+ALLOCDBG func=func_800174F4 ord=2 pseudo=72 hardreg=17 nrefs=8 livelen=15 pri=16000
+ALLOCDBG func=func_800174F4 ord=3 pseudo=74 hardreg=5 nrefs=11 livelen=28 pri=11785
+ALLOCDBG func=func_800174F4 ord=4 pseudo=99 hardreg=6 nrefs=4 livelen=15 pri=5333
+ALLOCDBG func=func_800174F4 ord=5 pseudo=101 hardreg=4 nrefs=4 livelen=15 pri=5333
+ALLOCDBG func=func_800174F4 ord=6 pseudo=73 hardreg=18 nrefs=10 livelen=75 pri=4000
+ALLOCDBG func=func_800174F4 ord=7 pseudo=83 hardreg=17 nrefs=4 livelen=58 pri=1379
+== ALLOCDBG M2_split
+ALLOCDBG func=func_800174F4 ord=0 pseudo=87 hardreg=16 nrefs=8 livelen=11 pri=21818
+ALLOCDBG func=func_800174F4 ord=1 pseudo=130 hardreg=-1 nrefs=2 livelen=1 pri=20000
+ALLOCDBG func=func_800174F4 ord=2 pseudo=117 hardreg=4 nrefs=4 livelen=5 pri=16000
+ALLOCDBG func=func_800174F4 ord=3 pseudo=73 hardreg=3 nrefs=6 livelen=10 pri=12000
+ALLOCDBG func=func_800174F4 ord=4 pseudo=88 hardreg=17 nrefs=4 livelen=9 pri=8888
+ALLOCDBG func=func_800174F4 ord=5 pseudo=99 hardreg=5 nrefs=5 livelen=18 pri=5555
+ALLOCDBG func=func_800174F4 ord=6 pseudo=100 hardreg=6 nrefs=4 livelen=15 pri=5333
+ALLOCDBG func=func_800174F4 ord=7 pseudo=102 hardreg=4 nrefs=4 livelen=15 pri=5333
+ALLOCDBG func=func_800174F4 ord=8 pseudo=72 hardreg=18 nrefs=10 livelen=75 pri=4000
+ALLOCDBG func=func_800174F4 ord=9 pseudo=82 hardreg=17 nrefs=4 livelen=58 pri=1379
+
+== M2 p72
+FINDREGDBG func=func_800174F4 pseudo=72 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 4 5 16 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+== M2 p74
+FINDREGDBG func=func_800174F4 pseudo=74 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 17 29
+FINDREGDBG  someone_prefers: 4
+FINDREGDBG  pass0_used: 0 1 2 3 4 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+== M2_split p88
+FINDREGDBG func=func_800174F4 pseudo=88 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 4 5 16 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  pass0_used: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+== M2_split p117
+FINDREGDBG func=func_800174F4 pseudo=117 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  pass0_used: 0 1 2 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs: 4
+FINDREGDBG  own_full_prefs: 4
+== M2_split p73
+FINDREGDBG func=func_800174F4 pseudo=73 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 29
+FINDREGDBG  someone_prefers:
+FINDREGDBG  pass0_used: 0 1 2 17 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+== M2_split p99
+FINDREGDBG func=func_800174F4 pseudo=99 alt=0 acc=0 retry=0
+FINDREGDBG  conflicts: 2 3 4 29
+FINDREGDBG  someone_prefers: 4
+FINDREGDBG  pass0_used: 0 1 2 3 4 18 19 20 21 22 23 26 27 28 29 30 31
+FINDREGDBG  own_copy_prefs:
+FINDREGDBG  own_full_prefs:
+== lreg M2
+Register 72 used 8 times across 15 insns; crosses 1 call; GR_REGS or none.
+Register 74 used 11 times across 28 insns; dies in 3 places; GR_REGS or none.
+Register 99 used 4 times across 15 insns; dies in 2 places; 1 bytes; GR_REGS or none.
+Register 101 used 4 times across 15 insns; GR_REGS or none.
+== lreg M2_split
+Register 73 used 6 times across 10 insns; dies in 2 places; GR_REGS or none.
+Register 88 used 4 times across 9 insns; dies in 0 places; crosses 1 call; GR_REGS or none.
+Register 99 used 5 times across 18 insns; GR_REGS or none.
+Register 102 used 4 times across 15 insns; GR_REGS or none.
+Register 117 used 4 times across 5 insns; GR_REGS or none.
