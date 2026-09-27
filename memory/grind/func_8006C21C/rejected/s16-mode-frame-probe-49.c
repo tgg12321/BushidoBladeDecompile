@@ -1,19 +1,3 @@
-/* func_8006C21C candidate (manual slotO s2, 2026-09-27) -- sandbox --disable all = 47/622
- * (instruction count equal). NOT landing-ready; see evidence.md s2 + hypotheses.md.
- * Open items: (1) frame: target vars=128 has FOUR untouched 8-byte reload slots at
- * 0x60-0x78 (regno between recs and the d4/d8/d2 block locals); this body has 96.
- * (2) the else-arm 0x80 constants are hoisted by loop.c (combine_movables matches the
- * two arms, savings 2 x life 8 x threshold 58 >= 259) -> li t0 instead of li v0.
- * (3) row++/k++ order at the row-loop tail (2 insns).
- * Policy-bound constructs still to be admitted before any landing:
- *   `cells`  -> Ruling 9 (VAR = s.header + 0xC, one meaning; func_8007636C precedent),
- *               needs `s.header` typed so the RHS has no cast.
- *   `i`      -> is ALSO phase 8's `level` (Ruling 11 necessity; must be renamed `idx`
- *               or similar and annotated, proof banked in evidence.md).
- *   `mode`   -> FAKE constant-holder (named-local-fake-exception; func_800753D8 /
- *               func_800759D0 / func_8007636C precedents) -- annotation not yet written.
- * The trailing #define is SANDBOX-ONLY (masks the later `extern void func_8006C21C(s32)`);
- * at landing change that extern (text1b.c ~10232) to `(s32 *)` instead. */
 typedef struct {
     s32 *header;
     s32 table;
@@ -53,7 +37,7 @@ void func_8006C21C(s32 *arg0) {
     Rec_8006C21C *rec;
     Tile *tile;
     PolyG4_8006C21C *poly;
-    s32 mode;
+    s16 mode;
     s32 i;
     s32 pl;
     s32 x;

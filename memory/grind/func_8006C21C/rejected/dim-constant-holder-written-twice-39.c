@@ -1,19 +1,3 @@
-/* func_8006C21C candidate (manual slotO s2, 2026-09-27) -- sandbox --disable all = 47/622
- * (instruction count equal). NOT landing-ready; see evidence.md s2 + hypotheses.md.
- * Open items: (1) frame: target vars=128 has FOUR untouched 8-byte reload slots at
- * 0x60-0x78 (regno between recs and the d4/d8/d2 block locals); this body has 96.
- * (2) the else-arm 0x80 constants are hoisted by loop.c (combine_movables matches the
- * two arms, savings 2 x life 8 x threshold 58 >= 259) -> li t0 instead of li v0.
- * (3) row++/k++ order at the row-loop tail (2 insns).
- * Policy-bound constructs still to be admitted before any landing:
- *   `cells`  -> Ruling 9 (VAR = s.header + 0xC, one meaning; func_8007636C precedent),
- *               needs `s.header` typed so the RHS has no cast.
- *   `i`      -> is ALSO phase 8's `level` (Ruling 11 necessity; must be renamed `idx`
- *               or similar and annotated, proof banked in evidence.md).
- *   `mode`   -> FAKE constant-holder (named-local-fake-exception; func_800753D8 /
- *               func_800759D0 / func_8007636C precedents) -- annotation not yet written.
- * The trailing #define is SANDBOX-ONLY (masks the later `extern void func_8006C21C(s32)`);
- * at landing change that extern (text1b.c ~10232) to `(s32 *)` instead. */
 typedef struct {
     s32 *header;
     s32 table;
@@ -60,6 +44,7 @@ void func_8006C21C(s32 *arg0) {
     s32 row;
     s32 pulse;
     s32 cells;
+    u8 dim;
 
     s.ot_idx = 10;
     s.has_color = 0;
@@ -199,10 +184,11 @@ void func_8006C21C(s32 *arg0) {
                 poly->r1 = pulse;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r2 = 0x80;
+                dim = 0x80;
+                poly->r2 = dim;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = 0x80;
+                poly->r3 = dim;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec[row].x + x;
@@ -247,10 +233,11 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r1 = 0x80;
+                dim = 0x80;
+                poly->r1 = dim;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = 0x80;
+                poly->r3 = dim;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;

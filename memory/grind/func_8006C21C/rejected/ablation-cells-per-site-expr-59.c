@@ -1,19 +1,3 @@
-/* func_8006C21C candidate (manual slotO s2, 2026-09-27) -- sandbox --disable all = 47/622
- * (instruction count equal). NOT landing-ready; see evidence.md s2 + hypotheses.md.
- * Open items: (1) frame: target vars=128 has FOUR untouched 8-byte reload slots at
- * 0x60-0x78 (regno between recs and the d4/d8/d2 block locals); this body has 96.
- * (2) the else-arm 0x80 constants are hoisted by loop.c (combine_movables matches the
- * two arms, savings 2 x life 8 x threshold 58 >= 259) -> li t0 instead of li v0.
- * (3) row++/k++ order at the row-loop tail (2 insns).
- * Policy-bound constructs still to be admitted before any landing:
- *   `cells`  -> Ruling 9 (VAR = s.header + 0xC, one meaning; func_8007636C precedent),
- *               needs `s.header` typed so the RHS has no cast.
- *   `i`      -> is ALSO phase 8's `level` (Ruling 11 necessity; must be renamed `idx`
- *               or similar and annotated, proof banked in evidence.md).
- *   `mode`   -> FAKE constant-holder (named-local-fake-exception; func_800753D8 /
- *               func_800759D0 / func_8007636C precedents) -- annotation not yet written.
- * The trailing #define is SANDBOX-ONLY (masks the later `extern void func_8006C21C(s32)`);
- * at landing change that extern (text1b.c ~10232) to `(s32 *)` instead. */
 typedef struct {
     s32 *header;
     s32 table;
@@ -59,7 +43,7 @@ void func_8006C21C(s32 *arg0) {
     s32 x;
     s32 row;
     s32 pulse;
-    s32 cells;
+
 
     s.ot_idx = 10;
     s.has_color = 0;
@@ -68,8 +52,7 @@ void func_8006C21C(s32 *arg0) {
     s.x = 0;
     s.header = (s32 *)table[0];
     s.semi = 0;
-    cells = (s32)s.header + 0xC;
-    s.table = cells;
+    s.table = (s32)s.header + 0xC;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
@@ -89,8 +72,7 @@ void func_8006C21C(s32 *arg0) {
                     ((1 << i) << (pl * 4))) {
                     s.header = (s32 *)table[i + 13];
                     s.semi = 0;
-                    cells = (s32)s.header + 0xC;
-                    s.table = cells;
+                    s.table = (s32)s.header + 0xC;
                     s.out = arg0[5];
                     arg0[5] = func_8007352C((s32)&s);
                 }
@@ -109,8 +91,7 @@ void func_8006C21C(s32 *arg0) {
     table = *(s32 **)(arg0[1] + 0x30);
     s.header = (s32 *)table[1];
     s.semi = 0;
-    cells = (s32)s.header + 0xC;
-    s.table = cells;
+    s.table = (s32)s.header + 0xC;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     for (i = 0; i < 6; i++) {
@@ -119,8 +100,7 @@ void func_8006C21C(s32 *arg0) {
         s.has_color = 0;
         s.semi = 0;
         s.y = 0;
-        cells = (s32)s.header + 0xC;
-        s.table = cells;
+        s.table = (s32)s.header + 0xC;
         for (j = 0; j < 2; j++) {
             s.x = j ? 280 : 0;
             s.out = arg0[5];

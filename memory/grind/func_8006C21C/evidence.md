@@ -50,3 +50,47 @@ text1b.c ~10232 to `(s32 *)`; sandbox candidates mask it with a trailing #define
 - level must share `i`'s pseudo (fp) for global.c priority to spill j and seat level in fp:
   separate `level` pri 1487 < j 5182 (level spilled); merged i/level 40 refs/353 livelen pri 5665 >
   j 5105 -> j spilled, fp = i/level (v8: 131 -> 68). POLICY: multi-role local -> Ruling 11 needed. OPEN.
+
+## s2 (cont.) [manual slotO 2026-09-27] — 49 -> 47; the three remaining gaps, measured
+All scores `sandbox --disable all` against build/ at 55d9efbbd-era main; candidate = w4 form.
+- **Loop-tail/init order (fixed, 49->47):** `for (row = 0, k = -1; row < 2; row++, k++)` puts
+  row=0 before k=-1 (target 8006C68C/690) and k++ after the rec[row] giv add (8006CAE0). k MUST be
+  a user variable: `k = row - 1;` per iteration is a DEST_REG giv loop.c refuses ("giv of insn
+  754 not worth while, 0 vs 259", add-giv benefit 0), so it stays an in-loop addiu (g1, 103).
+  Residual: target `lw t0,0x80; addiu s6` (row++ fills the d4 load delay), ours has row++
+  before the load. 360 tail permutations of {d4,d8,d2 updates, k++} x body/for-header
+  (tmp/func_8006C21C/gen_tail.py + tailscan.py) never produce giv,k++,lw,row++.
+- **0x80 hoist (4 hunks):** target keeps `li v0,0x80` in each else arm; ours hoists it and
+  reloads into spill reg t0. Mechanism (loop.c scan_loop/combine_movables/move_movables,
+  dump tmp/.../dump_v14 F_loop): bar1-else 0x80 (life 4) and bar2-else 0x80 (life 4) are
+  matched (same QImode const, both set once) -> savings 2, life 8 -> 58*2*8=928 >= 259 insns
+  -> moved twice (out of row loop, then p loop), spilled, reg_equiv_constant. Unmatched, each
+  is 58*1*4=232 < 259 (not moved) -> the target's arms did NOT match. Only measured form that
+  reproduces it: ONE function-scope u8 written `dim = 0x80` in both else arms (n_times_set=2 ->
+  not a movable): score 39, 2 source hunks left (rejected/dim-constant-holder-written-twice-39.c).
+  Policy: a constant written twice fails R5 1(e)/R11 (C)(3) (not per-branch-different);
+  named-local-fake-exception covers once-initialized holders -> needs an owner ruling.
+  do-while(0) wraps (80 placements, tmp/.../dx/, gen_dw2.py + armscan.py) never seat v0 in
+  both arms (best dw2 45: bar1 right, bar2 still t0). cc1psx-check on w4: psx 128 vs ours 47
+  -> SOURCE-SIDE (cc1psx hoists too, frame 96 too).
+- **Frame (largest remaining block):** target 0x60-0x78 never touched (spcensus of t.s);
+  FRAMEDBG on ours: spill_new p72(arg0) p73(j) p75(recs) p209-211(d4,d8,d2) — target has four
+  more spill_new slots with regnos between recs and d4. Mechanism class confirmed in-TU: combine
+  distribute_notes plants `(use (reg N))` after a CODE_LABEL for a dead i2dest (orphans in
+  func_8005BA8C: `for (i=0;i<n;...)` entry test slt+branch -> blez; func_80048BA4/80057CC8:
+  `Judge[idx]` sym+idx*2; func_80049584: HImode var sign-extension). Probed and ruled out (all
+  vars=96, identical insns): 6 global-access respellings (p1-p4, `((s16*)(D+0x28))[pl]`,
+  `((u8*)(D3524+0x17))[lv]`, `recs = ((Rec**)..)[17]`, rcos `*128`/`<<5`), arg0[7] = arg0[7]+0xC,
+  `1 << i << pl*4`, if/else for `j ? 280 : 0`, `recs + i + 1`, `(table+13)[i]`, inline helper for
+  the 4 SetDrawMode/AddPrim/+=0xC triples, s16/u8 typing of k/x/pulse/d4-d2/level/i, s16 280
+  holder, s16 rcos-arg and phase-2 level temps. `s16 mode` DOES add 2 orphan slots (vars 112,
+  p145/p173 between recs and d's = the target's slot pattern) but combine then folds the arg to
+  `move a1,zero` (target keeps `addu a1,s5,zero`) -> wrong mechanism, rejected/s16-mode-*.
+- **Permuter** (tmp/func_8006C21C/perm, standalone TU == full-TU codegen, --stack-diffs, 5501
+  iterations, 2 workers): best finds `short mode` (above) and a do-while(0) around bar2 r3
+  stores; `new_var = arg0` copies. No closing form.
+- **Ablation receipts:** level as its own variable 114 (rejected/ablation-level-own-variable-114.c);
+  per-site `s.table = (s32)s.header + 0xC` (no cells) 59 (rejected/ablation-cells-per-site-expr-59.c).
+- **Sibling precedent found:** func_8007636C (landed; Ruling 9 re-audit PASS 71b14499d) uses the
+  same `cells` and a FAKE `s32 mode` holder for func_8006E480's 2nd arg; func_800753D8/800759D0
+  use a FAKE `zero` holder (same target shape `addu a1,s5/fp,zero`). Mirror their annotations.

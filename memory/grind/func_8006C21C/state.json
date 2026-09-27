@@ -1,7 +1,7 @@
 {
  "func": "saTan4GaugeMain",
  "file": "text1b",
- "session_count": 1,
+ "session_count": 2,
  "current_modality": "recon",
  "floor_history": [
   {
@@ -9,6 +9,12 @@
    "floor": 620,
    "modality": "recon",
    "headline": "fable-blitz recon: Tan-mode gauge/HUD renderer -- 8 sequential draw phases (frame sprite, unlock icons, 6x2 sprite grid, 11x2 tiles, 2x2x2 gradient POLY_G4 gauge bars with pulse color), ZERO GTE, buil"
+  },
+  {
+   "session": 2,
+   "floor": 47,
+   "modality": "manual",
+   "headline": "manual slotO: full draft 620->47 (622/622 insns); open: 4 phantom frame slots, 0x80 loop hoist, tail order; policy: cells R9, i=level R11, mode FAKE"
   }
  ],
  "frontier": [
