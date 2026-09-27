@@ -64,3 +64,21 @@
   v0=0). Ours `beq -> body; j ret` because jump.c:1827 ("if (foo) bar; else break;") swaps the then/else
   ranges in jump1 (x.i.jump dump). Dropping the else (e1, 95) sends code>2 to the ch->0x286 re-test
   instead of the epilogue.
+- [s2] PROBE m10 (memory/grind/func_80027AD8/probes/m10-param-reuse-copy.c; banned, NOT a candidate):
+  `hd = (s32)rec;` at entry passed to func_800278C0, and `rec` itself reused as the R6a same-side flag.
+  Sandbox 55 (candidate 97). It reproduces frame 0x50, opp s6, vec s7, `move fp,<rec>`, `sw a3,0x18(sp)`.
+  Remaining: rec in s4 / pass in s5 (rec pri 2171 = 11 refs / 152 > pass 1956; the target's rec has
+  9 refs, which would give 1776 and the full target allocation by the priority walk), the R6a shape
+  (`sltu s4,...` direct instead of `sltiu v1; move a0,v1; move s5,v1`), the code copy (`move v1,v0`),
+  and the jump.c:1827 swap. The two extra refs are exactly the R6a shape difference: the entry-live
+  holder is CSE-canonical (cse.c make_regs_eqv:844-857, first use before the block), so the stores/jump
+  read it and combine folds the sltiu into it. That makes the target internally inconsistent with ANY
+  entry-live holder (param or local); the tension is unresolved: the allocation wants the s5 holder to
+  be entry-live or non-birthing, the R6a shape wants it block-local. Variants w1-w3 (u8 cast, copy after
+  stores, copy before stores) and m7-m9 (read back ch/opp[0xB4]) all keep the holder canonical or add
+  `andi`/`lbu`.
+- [s2] Helper scripts: memory/grind/func_80027AD8/tools/ (copy into tmp/func_80027AD8/ first; they
+  splice a candidate into src/code6cac_b.c in a scratch dir and run the instrumented cc1):
+  alloc.sh (BB2_ALLOC_DEBUG priorities), quick.sh + sig.py (frame / opp reg / rec reg / fp copy /
+  a3 spill signature), sdbg.sh (sched1 BB2_SCHED_DEBUG), dump.sh (cc1 -d dumps), hunks.py (scored
+  hunks only), sweep.ps1 (sequential sandbox scores).

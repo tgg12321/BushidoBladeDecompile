@@ -19,6 +19,11 @@
  ],
  "frontier": [
   {
+   "hypothesis": "Resolve the m10 contradiction: find the construct that seats the R6a same-side flag in rec's register s5 (conflicting with opp) while the sltiu result stays the CSE-canonical temp",
+   "mechanism": "global.c priority walk from m10 gives the full target allocation once rec has 9 refs; cse.c make_regs_eqv makes any entry-live holder canonical (2 extra refs + folded sltiu)",
+   "next_probe": "look for a holder whose regno_first_uid is inside the R6a CSE block but which shares s5 with rec by a mechanism other than being the same pseudo (reload inheritance / local-alloc tie), using tools/alloc.sh + dump.sh -dl -dg"
+  },
+  {
    "hypothesis": "The R6a s5 holder (same) conflicts with opp in the target; find an ordinary spelling that keeps same's def above the opp->0xB4 store",
    "mechanism": "sched.c birthing_insn_p boosts a single-set pseudo's def below independent stores; cse.c make_regs_eqv rules out an entry-live holder",
    "next_probe": "BB2_SCHED_DEBUG on spellings where the store operand depends on same's def"

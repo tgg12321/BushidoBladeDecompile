@@ -27,3 +27,10 @@
 - OPEN: jump.c:1827 swap on `else if (code == 2) {..} else return 0;`: need a spelling where the else
   label has two uses or the then-range does not end in a jump to the label after the else.
 - OPEN: permuter campaign from candidate.c (not yet run).
+- KILLED: code dispatch guards `if (code != 0 && code != 1 && code != 2) return 0;` (h1, 105) and
+  `if (code > 2) return 0;` (h2, 102) ahead of the chain.
+- PARTIAL (banned family, measurement only): m10 param-reuse + local copy = 55; see evidence.md s2.
+  Its open contradiction (allocation wants an entry-live or non-birthing s5 holder, the R6a byte shape
+  wants a block-local one) is the sharpest frontier. If the next worker proves the m10 family is the
+  ONLY reachable form, it needs a borderline.md policy-question (Ruling 11 (A) bars parameters,
+  (C)(3) bars bare copies) - not written yet because m10 does not reach 0.
