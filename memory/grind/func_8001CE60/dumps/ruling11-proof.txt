@@ -1,0 +1,79 @@
+# Ruling 11 (D)(1) dumps — landing form (candidate.c, measured as tmp final_meas.c) vs one-variable-per-value (probes/per-value-split-21.c)
+# commands: tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float X.i -dl -dg ; instrumented tools/gcc-2.7.2/cc1 same flags with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 BB2_ALLOC_DEBUG=1 (output .s byte-identical to build/cc1: cmp IDENTICAL for both)
+# X.i = cpp (Makefile CPP_FLAGS/CPP_DEFS) of src/code6cac.c with its INCLUDE_ASM line replaced by the variant (tmp/func_8001CE60/cc.sh)
+## SHARED (temp): flow
+Register 143 used 9 times across 19 insns; dies in 3 places; GR_REGS or none.
+## SHARED: global-alloc
+ALLOCDBG func=func_8001CE60 ord=6 pseudo=143 hardreg=3 nrefs=9 livelen=19 pri=14210
+## SHARED: timer block 101 local-alloc (qty 1 = 30n chain 428..430 alone, short, gets $2)
+QTYDBG blk=101 ord=0 qty=7 reg1=448 birth=26 death=40 refs=10 got=2
+QTYDBG blk=101 ord=1 qty=8 reg1=460 birth=34 death=54 refs=14 got=3
+QTYDBG blk=101 ord=2 qty=1 reg1=430 birth=6 death=14 refs=6 got=2
+QTYDBG blk=101 ord=3 qty=11 reg1=455 birth=48 death=56 refs=6 got=2
+QTYDBG blk=101 ord=4 qty=6 reg1=437 birth=22 death=24 refs=2 got=2
+QTYDBG blk=101 ord=5 qty=5 reg1=432 birth=18 death=46 refs=8 got=4
+QTYDBG blk=101 ord=6 qty=2 reg1=431 birth=10 death=14 refs=2 got=3
+QTYDBG blk=101 ord=7 qty=0 reg1=434 birth=2 death=44 refs=3 got=5
+QTYDBG blk=101 ord=8 qty=3 reg1=-1 birth=15 death=17 refs=1 got=65
+QTYDBG blk=101 ord=9 qty=4 reg1=-1 birth=15 death=17 refs=1 got=66
+QTYDBG blk=101 ord=10 qty=9 reg1=-1 birth=43 death=45 refs=1 got=65
+QTYDBG blk=101 ord=11 qty=10 reg1=-1 birth=43 death=45 refs=1 got=66
+## SHARED: dispositions (greg)
+143 in 3 421 in 3 422 in 2 424 in 3 428 in 2 429 in 2 430 in 2 431 in 3 432 in 4 433 in 64 434 in 5 435 in 4 436 in 4 437 in 2 
+## SPLIT (count 143 + left 425): flow
+Register 143 used 4 times across 9 insns; dies in 2 places; GR_REGS or none.
+Register 425 used 5 times across 10 insns in block 101; GR_REGS or none.
+## SPLIT: timer block 101 local-alloc (qty 1 reg1=449 birth 6..death 40 = chain+left+frac tied by combine_regs; loses $2 to qty 7/8)
+QTYDBG blk=101 ord=0 qty=8 reg1=461 birth=34 death=54 refs=14 got=2
+QTYDBG blk=101 ord=1 qty=7 reg1=448 birth=26 death=32 refs=6 got=2
+QTYDBG blk=101 ord=2 qty=11 reg1=456 birth=48 death=56 refs=6 got=3
+QTYDBG blk=101 ord=3 qty=1 reg1=449 birth=6 death=40 refs=15 got=3
+QTYDBG blk=101 ord=4 qty=6 reg1=438 birth=22 death=24 refs=2 got=2
+QTYDBG blk=101 ord=5 qty=5 reg1=433 birth=18 death=46 refs=8 got=4
+QTYDBG blk=101 ord=6 qty=2 reg1=432 birth=10 death=14 refs=2 got=2
+QTYDBG blk=101 ord=7 qty=0 reg1=435 birth=2 death=44 refs=3 got=5
+QTYDBG blk=101 ord=8 qty=3 reg1=-1 birth=15 death=17 refs=1 got=65
+QTYDBG blk=101 ord=9 qty=4 reg1=-1 birth=15 death=17 refs=1 got=66
+QTYDBG blk=101 ord=10 qty=9 reg1=-1 birth=43 death=45 refs=1 got=65
+QTYDBG blk=101 ord=11 qty=10 reg1=-1 birth=43 death=45 refs=1 got=66
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=0 reg1=435 birth=2 death=44 refs=3 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=1 reg1=449 birth=6 death=40 refs=15 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=2 reg1=432 birth=10 death=14 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=3 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=4 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=5 reg1=433 birth=18 death=46 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=6 reg1=438 birth=22 death=24 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=7 reg1=448 birth=26 death=32 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=8 reg1=461 birth=34 death=54 refs=14 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=9 reg1=-1 birth=43 death=45 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=10 reg1=-1 birth=43 death=45 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=11 reg1=456 birth=48 death=56 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+## SPLIT: dispositions (greg)
+143 in 3 421 in 3 422 in 2 424 in 2 425 in 3 429 in 3 430 in 3 431 in 3 432 in 2 433 in 4 434 in 64 435 in 5 436 in 4 437 in 4 438 in 2 
+## cc1psx calibration (tools/cc1psx_wrapper.sh, same .i): timer block
+final_meas:
+	lbu	$4,D_800A36CC
+	#nop
+	beq	$4,$0,$L354
+	sll	$2,$4,4
+
+	li	$5,-2004353024			# 0x88880000
+	ori	$5,$5,0x8889
+	lw	$3,D_800A38F4
+	subu	$2,$2,$4
+	sll	$2,$2,1
+	subu	$3,$2,$3
+	mult	$3,$5
+final_split:
+	lbu	$4,D_800A36CC
+	#nop
+	beq	$4,$0,$L354
+	sll	$3,$4,4
+
+	li	$5,-2004353024			# 0x88880000
+	ori	$5,$5,0x8889
+	lw	$2,D_800A38F4
+	subu	$3,$3,$4
+	sll	$3,$3,1
+	subu	$3,$3,$2
+	mult	$3,$5

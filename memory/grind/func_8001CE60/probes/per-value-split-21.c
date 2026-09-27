@@ -21,11 +21,7 @@ void func_8001CE60(void) {
     } else if ((D_800A38DC == 2 && D_800A389A == 1) || D_800A38DC == 4) {
         D_800A38B4 += func_8005E098(D_800A37D2, D_800A37D3, D_800A38B4, 1) / 4 * 4;
     } else if (D_800A38DC == 5) {
-        /* temp holds two values (ordinary-c-judge-decidable Ruling 11): the
-         * announcement counter D_800A36E8 read by the announcer arm, then
-         * the match clock's frames remaining for the on-screen timer.
-         * Allocator dump proof: memory/grind/func_8001CE60/evidence.md (s2). */
-        s32 temp;
+        s32 count;
 
         if (D_800A381E != 0) {
             if (D_800A381E == 0x2D) {
@@ -91,16 +87,16 @@ void func_8001CE60(void) {
             if (--D_800A391E == 0) {
                 func_8005C650(0x9C, 0x7F, 0x7F);
             }
-        } else if ((temp = D_800A36E8) != 0) {
+        } else if ((count = D_800A36E8) != 0) {
             u8 end;
 
             if (D_800A377C[D_800A3874 - 1] == 2) {
-                if (temp == 1) {
+                if (count == 1) {
                     func_8005C650(0xA4, 0x7F, 0x7F);
                 }
                 end = 0x50;
             } else {
-                if (temp == 1) {
+                if (count == 1) {
                     func_8005C650(0xA6, 0x7F, 0x7F);
                 }
                 if (D_800A36E8 == 0x14) {
@@ -154,9 +150,10 @@ void func_8001CE60(void) {
             }
         }
         if (D_800A36CC != 0) {
-            temp = D_800A36CC * 30 - D_800A38F4;
-            buf[2] = temp / 30;
-            buf[3] = temp % 30 * 100 / 30;
+            s32 left = D_800A36CC * 30 - D_800A38F4;
+
+            buf[2] = left / 30;
+            buf[3] = left % 30 * 100 / 30;
         }
         D_800A38B4 += func_8005F1C8(buf, D_800A3898[0] | (D_800A38AA[0] << 8) | (D_800A3898[1] << 4) | (D_800A38AA[1] << 12), D_800A38B4, 1) / 4 * 4;
     }
