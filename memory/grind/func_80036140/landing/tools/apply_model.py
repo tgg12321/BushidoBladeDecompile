@@ -66,7 +66,7 @@ if A.ext == 'rec':
     h = rep(h, 'extern s16 D_80101E9C;\nextern u16 D_80101E9E;\nextern s32 g_cdread_expected_pos;\nextern s32 D_80101EA4;\n', '')
     c = rep(c, 'g_cdread_expected_pos', 'D_80101E58.rec.expected_pos', count=4)
     c = rep(c, '    D_80101E9E = 0;\n', '    D_80101E58.rec.unk3E = 0;\n')
-    c = rep(c, '    s0 = (u16 *)&D_80101E9E;\n', '    s0 = (u16 *)&D_80101E58.rec.unk3E;\n')
+    c = rep(c, '    s0 = (u16 *)&D_80101E9E;\n', '    s0 = &D_80101E58.rec.unk3E;\n')
     h = rep(h, ' * record now runs on to 0x80101E9B (unk18..unk3A, see "Honest evidence split").\n',
             ' * record now runs on to 0x80101EA7 (unk18..unk44, see "Honest evidence split").\n')
     h = rep(h, ' *     member.  Member widths follow the accesses; 0x80101E91..93 is the\n'
@@ -81,9 +81,12 @@ if A.ext == 'rec':
             ' *     small data and cse folds any pointer back to the symbol -- and\n'
             ' *     cdrom_ReadyCallback reads expected_pos directly only as an offset of\n'
             ' *     THIS symbol (cse relates it to its &unk38 register); as a separate\n'
-            ' *     record both differ.  unk3E and expected_pos are the fields\n'
-            ' *     cdrom_StartRead / game_FrameLoop and cdrom_ReadyCallback / func_80036940\n'
-            ' *     use, typed by those accesses.  Dumps and the original compiler\'s runs:\n'
+            ' *     record both differ.  unk3E and expected_pos lie inside that span but\n'
+            ' *     func_80036140 never touches them: they are typed by their other users\'\n'
+            ' *     original accesses (aggregate-merge (a4\') forced-in bytes, owner ruling\n'
+            ' *     2026-09-26 Q13): unk3E by game_FrameLoop / cdrom_StartRead (u16, lhu),\n'
+            ' *     expected_pos by cdrom_ReadyCallback / func_80036940 (@EA0_BASIS@).\n'
+            ' *     Dumps, the original compiler\'s runs and the member table:\n'
             ' *     memory/grind/func_80036140/evidence.md.\n */\n')
     h = rep(h, '/* The CD module\'s state block, 0x80101E58..0x80101E9B, declared as ONE object.\n',
             '/* The CD module\'s state block, 0x80101E58..0x80101EA7, declared as ONE object.\n')
