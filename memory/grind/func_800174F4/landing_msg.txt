@@ -1,0 +1,36 @@
+Match: func_800174F4 — COMPLETED-C (manual)
+
+Re-lands func_800174F4 under the stock compiler after owner Q17 (compiler
+patches are cheats) reverted the old body (d94fef9a0). Sandbox --disable all
+0, 136/136; full build SHA1 == oracle.
+
+What closed the stock-compiler `ori s1,v0,0x4` residual: the loop count is an
+int. The old `unsigned short h` narrowed `(rand() & 3) + 4` through a subreg
+chain that combine merged and rewrote PLUS->IOR (nonzero_bits = 3);
+cc1psx does the same with that spelling, so the original did not narrow it.
+With an int count the plus has no combine partner and stays an addiu.
+
+Constructs:
+- natural `for (i = 0; i < temp; i++)` loop; the old goto loop and its two
+  FAKE do-while(0) wraps are gone. The for loop's inverted entry test gives
+  `i` the extra ref that seats it in $s0 (BB2_ALLOC_DEBUG pri 26666 vs 16000).
+- `DrawEnv env` (PsyQ DRAWENV layout, 0x5C, `env.isbg = 0` at +0x18) and
+  `u32 ot[2]` replace the old `u8 sp20[0x68]`/`u8 sp18[8]` buffers. The frame
+  matches without padding: the for loop's inverted entry test leaves one
+  8-byte reload slot (combine keeps `i = 0` as newi2pat; BB2_FRAME_DEBUG
+  spill_new_p128), and 0x60 + 8 + 8 = the target's 112 bytes of locals.
+- 240 written as a literal at both uses; `(D_800A36AC & 1) ? 0xF0 : 0`.
+- `temp` (fade-loop count, case-20 D_800A37A8[] code) and `temp2` (switch
+  selector, case-20 D_800A37A0): Ruling 11 (ordinary-c-judge-decidable.md,
+  2026-09-26). (D) proof, dumps and measurements:
+  memory/grind/func_800174F4/evidence.md "Ruling 11 proof" +
+  r11_dumps.txt. One variable per value: 11 (134 insns); `temp` alone 5
+  (the code value crosses no call, so global.c find_reg 970-975 seats it in
+  a0 and the argument move vanishes); `temp2` alone 6 (the selector alone
+  conflicts only with v0 and takes v1). Permuter from the split body: see
+  evidence.md.
+- case 20: the common `D_800A38F8 = cur + 1` store is in both arms
+  (F7 unconditional-common-store duplication, FAKE-annotated; hoisted: 6,
+  131 insns); `(u32)temp2 < cur` gives the target's sltu.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
