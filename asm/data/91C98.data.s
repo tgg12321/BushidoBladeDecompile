@@ -4571,29 +4571,14 @@ nonmatching D_800A36B8
 
 dlabel D_800A36B8
     /* 93EB8 800A36B8 */ .byte 0x00
-enddlabel D_800A36B8
-
-nonmatching D_800A36B9
-
-dlabel D_800A36B9
     /* 93EB9 800A36B9 */ .byte 0x00
-enddlabel D_800A36B9
-
-nonmatching D_800A36BA
-
-dlabel D_800A36BA
     /* 93EBA 800A36BA */ .byte 0x00
-enddlabel D_800A36BA
-
-nonmatching D_800A36BB
-
-dlabel D_800A36BB
     /* 93EBB 800A36BB */ .byte 0x00
     /* 93EBC 800A36BC */ .byte 0x00
     /* 93EBD 800A36BD */ .byte 0x00
     /* 93EBE 800A36BE */ .byte 0x00
     /* 93EBF 800A36BF */ .byte 0x00
-enddlabel D_800A36BB
+enddlabel D_800A36B8
 
 nonmatching D_800A36C0
 
@@ -4807,25 +4792,10 @@ nonmatching g_cd_atv
 
 dlabel g_cd_atv
     /* 93F18 800A3718 */ .byte 0x00
-enddlabel g_cd_atv
-
-nonmatching g_cd_atv_plus_0x1
-
-dlabel g_cd_atv_plus_0x1
     /* 93F19 800A3719 */ .byte 0x00
-enddlabel g_cd_atv_plus_0x1
-
-nonmatching g_cd_atv_plus_0x2
-
-dlabel g_cd_atv_plus_0x2
     /* 93F1A 800A371A */ .byte 0x00
-enddlabel g_cd_atv_plus_0x2
-
-nonmatching g_cd_atv_plus_0x3
-
-dlabel g_cd_atv_plus_0x3
     /* 93F1B 800A371B */ .byte 0x00
-enddlabel g_cd_atv_plus_0x3
+enddlabel g_cd_atv
 
 nonmatching D_800A371C
 

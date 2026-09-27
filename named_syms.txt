@@ -1720,7 +1720,7 @@ g_char_id_saved_b                                       = 0x800A3915;  /* paired
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
 /* playback state.  D_80101E6C is the current BCD frame position; */
 /* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
-/* 2026-09-26: 0x80101E58..0x80101E9B is ONE object, CdState D_80101E58 */
+/* 2026-09-26: 0x80101E58..0x80101EA7 is ONE object, CdState D_80101E58 */
 /* (include/code6cac.h); the per-word rows in that span are retired. */
 g_cd_loc                                   = 0x80101E6C;  /* BCD-encoded current CD frame position */  /* data-wave 2026-09-24: was g_cd_playback_bcd_pos */  /* alias of D_80101E58+0x14 (CdState rec.pair, include/code6cac.h); retire with func_80036140 (asm/funcs/func_80036140.s is its only live referrer) */
 
@@ -1993,7 +1993,6 @@ g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base p
 /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
 /* reads sectors into a buffer, checking BCD position for sync. */
-g_cdread_expected_pos                             = 0x80101EA0;  /* next-expected CD position in BCD; mismatch with cdrom_BcdToFrames triggers error */  /* data-wave 2026-09-24: was g_cdread_expected_bcd_frame */
 /* data-wave 2026-09-24: g_event_class_lookup_table = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
 /* data-wave 2026-09-24: g_special_cam_lengths = 0x8008EC38 retired; g_cd_file_table_plus_0x4 is now object-defined */
 
@@ -2362,17 +2361,11 @@ g_replay_motion_shared_state_c_plus_4                   = 0x800A35C0;  /* +4 fro
 g_mode_state_arg_alt_plus_4                             = 0x800A35DC;  /* +4 from g_mode_state_arg_alt (0x800A35D8) */
 g_leaf_muki_buffer_plus_8                               = 0x800A3680;  /* +8 from g_leaf_muki_buffer (0x800A3678) */
 g_comb_recv_buf_plus_4                          = 0x800A368C;  /* +4 from g_comb_recv_buf (0x800A3688) */
-g_special_cam_win_byte_a_plus_1                         = 0x800A36B9;  /* +1 from g_special_cam_win_byte_a (0x800A36B8) */
-g_special_cam_win_byte_a_plus_2                         = 0x800A36BA;  /* +2 from g_special_cam_win_byte_a (0x800A36B8) */
-g_special_cam_win_byte_a_plus_3                         = 0x800A36BB;  /* +3 from g_special_cam_win_byte_a (0x800A36B8) */
 g_pad_rec_validated_packed_plus_2                       = 0x800A36C2;  /* +2 from g_pad_rec_validated_packed (0x800A36C0) */
 g_pad_rec_validated_hash_plus_2                         = 0x800A36C6;  /* +2 from g_pad_rec_validated_hash (0x800A36C4) */
 g_char_id_saved_d_plus_4                                = 0x800A36CC;  /* +4 from g_char_id_saved_d (0x800A36C8) */
 g_pad_rec_prev_packed_plus_2                            = 0x800A36D2;  /* +2 from g_pad_rec_prev_packed (0x800A36D0) */
 g_char_class_state_array_plus_2                         = 0x800A36F4;  /* +2 from g_char_class_state_array (0x800A36F2) */
-g_cd_atv_plus_0x1                         = 0x800A3719;  /* +1 from g_special_cam_win_byte_b (0x800A3718) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b_plus_1 */
-g_cd_atv_plus_0x2                         = 0x800A371A;  /* +2 from g_special_cam_win_byte_b (0x800A3718) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b_plus_2 */
-g_cd_atv_plus_0x3                         = 0x800A371B;  /* +3 from g_special_cam_win_byte_b (0x800A3718) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b_plus_3 */
 g_gnd_fog_prev_plus_4                                   = 0x800A3724;  /* +4 from g_gnd_fog_prev (0x800A3720) */
 g_gnd_fog_prev_plus_8                                   = 0x800A3728;  /* +8 from g_gnd_fog_prev (0x800A3720) */
 g_leaf_random_buffer_plus_8                             = 0x800A3758;  /* +8 from g_leaf_random_buffer (0x800A3750) */
@@ -2824,7 +2817,6 @@ _snd_ev_flag                                        = 0x800FF630;  /* data-wave 
 g_voice_state_ptr_plus_8                                   = 0x800FF6A8;
 _svm_vh                                         = 0x80101BC4;  /* data-wave 2026-09-07: was g_main_value_101BC4 */
 g_slot_array_16x256_80101BF0                               = 0x80101BF0;
-g_c6cb2_state_E9E                                  = 0x80101E9E;
 g_char_prev_keyframe_idx_plus_16                             = 0x80101F5E;
 g_char_p1_field_AD                                           = 0x80101F75;
 g_char_p1_field_B3                                           = 0x80101F7B;
@@ -3010,8 +3002,6 @@ g_file_heap_state_flag_800A38B0                              = 0x800A38B0;  /* 4
 D_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_column_counter (0x800F1850) */  /* data-wave 2026-09-25: was g_stdout_column_counter_plus_8_800F1858 */
 D_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to g_per_char_motion_buffer_table_1392 at 0x800F1B18 */  /* data-wave 2026-09-24: was g_per_char_motion_buffer_table_prefix_800F1B14 */
 D_800F2B68                      = 0x800F2B68;  /* 20 refs; 8 bytes before g_text1b_gte_rgb_lookup_1024 at 0x800F2B70 */  /* data-wave 2026-09-24: was g_text1b_gte_rgb_lookup_prefix_800F2B68 */
-g_cdread_state_9C_80101E9C                                   = 0x80101E9C;  /* 12 refs; s16 halfword paired pattern with 0x80101E9A; CD-read flag */
-D_80101EA4                  = 0x80101EA4;  /* 16 refs; +4 from g_cdread_expected_bcd_frame (0x80101EA0) */  /* data-wave 2026-09-24: was g_cdread_expected_bcd_frame_plus_4_80101EA4 */
 g_char_struct_p1_field_286_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */
 g_char_struct_p1_field_6D2_8010259A                          = 0x8010259A;  /* 24 refs; per-character struct offset +0x6D2 */
 

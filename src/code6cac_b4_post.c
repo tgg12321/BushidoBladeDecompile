@@ -56,7 +56,7 @@ void cdrom_ReadyCallback(u8 arg0) {
         CdGetSector((s32)sp, 3);
         {
             s32 v0 = CdPosToInt((s32)sp);
-            if (v0 != g_cdread_expected_pos) {
+            if (v0 != D_80101E58.rec.expected_pos) {
                 D_80101E58.rec.sectors_remaining = -2;
                 goto do_stop;
             }
@@ -64,7 +64,7 @@ void cdrom_ReadyCallback(u8 arg0) {
         CdGetSector(D_80101E58.rec.dest_buffer, 0x200);
         D_80101E58.rec.dest_buffer = D_80101E58.rec.dest_buffer + 0x800;
         D_80101E58.rec.sectors_remaining = D_80101E58.rec.sectors_remaining - 1;
-        g_cdread_expected_pos = g_cdread_expected_pos + 1;
+        D_80101E58.rec.expected_pos = D_80101E58.rec.expected_pos + 1;
         if (D_80101E58.rec.sectors_remaining == 0) {
             goto do_stop;
         }
@@ -129,7 +129,7 @@ void func_80036940(void) {
         if (++D_80101E58.rec.unk2C >= 3) {
             D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
             D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
-            g_cdread_expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
+            D_80101E58.rec.expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
             CdControl(2, (s32)&D_80101E58.rec.pair, 0);
             D_80101E58.rec.unk38 = 0;
             D_80101E58.rec.unk02 = 5;
@@ -243,7 +243,7 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     D_80101E58.rec.unk08 = 0;
     D_80101E58.rec.unk02 = 2;
     reloaded = D_80101E58.rec.pair.b;
-    D_80101E9E = 0;
+    D_80101E58.rec.unk3E = 0;
     D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
 }
@@ -274,7 +274,7 @@ u32 func_80036F28(s32 arg0) {
 void game_FrameLoop(void) {
     u16 *s0;
     func_8003AA78();
-    s0 = (u16 *)&D_80101E9E;
+    s0 = &D_80101E58.rec.unk3E;
     while (1) {
         if (cdrom_IsIdle() != 0) {
             break;

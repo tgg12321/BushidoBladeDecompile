@@ -296,9 +296,20 @@ extern s32 D_800A369C;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
 extern s32 D_800A36B4;
-extern u8 D_800A36B9;
-extern u8 D_800A36BA;
-extern u8 D_800A36BB;
+/* libcd CdlATV, the attenuator block CdMix takes (CdMix(CdlATV *)): the CD-audio
+ * mix currently applied (g_cd_atv, cdrom_SetMix) and the fade target
+ * (D_800A36B8, func_80035F78) that func_80036140 steps toward and finally copies
+ * over it with one struct assignment (the unaligned lwl/lwr/swl/swr at 80036310).
+ * Both were tentative definitions in the CD module's file: ASPSX 2.34 gives such
+ * a COMMON symbol gp only at its base, so byte 0 is gp-relative and bytes 1..3
+ * are lui/%lo in all three accessors (maspsx_comm_syms.txt). */
+typedef struct {
+    u8 val0;
+    u8 val1;
+    u8 val2;
+    u8 val3;
+} CdlATV;
+extern CdlATV D_800A36B8;
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
 extern s16 D_800A36C6;
@@ -319,9 +330,7 @@ extern u8 D_800A36FA;
 extern s16 D_800A36FC;
 extern u8 D_800A3712;
 extern u8 D_800A3713;
-extern u8 g_cd_atv_plus_0x1;
-extern u8 g_cd_atv_plus_0x2;
-extern u8 g_cd_atv_plus_0x3;
+extern CdlATV g_cd_atv;
 extern s32 D_800A371C;
 extern u8 D_800A3728;
 extern s8 D_800A3748;
@@ -518,7 +527,7 @@ typedef struct {
  *
  * The replay/special-camera words at 0x80101E60..0x80101E77 (unk00..unk14) were
  * declared as ONE record rather than per-word symbols by that grant; the
- * record now runs on to 0x80101E9B (unk18..unk3A, see "Honest evidence split").
+ * record now runs on to 0x80101EA7 (unk18..unk44, see "Honest evidence split").
  * What the 0x80101E60..0x80101E77 bundling buys is a
  * memory dependence: cc1's scheduler asks true_dependence() ->
  * memrefs_conflict_p(), where SIZE_FOR_MODE(BLKmode) == 0 makes the aggregate
@@ -549,6 +558,23 @@ typedef struct {
  *     it covers 0x80101E9A..9B, which is accessed as a halfword (unk3A), i.e. a
  *     member.  Member widths follow the accesses; 0x80101E91..93 is the
  *     compiler's alignment padding.
+ *   - The extension unk3C..unk44 (0x80101E9C..0x80101EA7, 2026-09-26) is
+ *     compiler-necessity evidence (aggregate-merge prong (a), (a1)/(a2)/(a4')):
+ *     func_80036140 is compiled -G8, and there its read-modify-writes of
+ *     0x80101E9C / 0x80101EA4 keep their address in a register (la; lX 0(r);
+ *     sX 0(r)) only for a variable larger than 8 bytes -- a small one is
+ *     small data and cse folds any pointer back to the symbol -- and
+ *     cdrom_ReadyCallback reads expected_pos directly only as an offset of
+ *     THIS symbol (cse relates it to its &unk38 register); as a separate
+ *     record both differ.  unk3E and expected_pos lie inside that span but
+ *     func_80036140 never touches them: they are typed by their other users'
+ *     original accesses (aggregate-merge (a4') forced-in bytes, owner rulings
+ *     2026-09-26 Q13/Q14): unk3E by game_FrameLoop / cdrom_StartRead (u16, the
+ *     lhu at 80036F9C); expected_pos by cdrom_ReadyCallback / func_80036940
+ *     (s32: no access reveals its signedness -- lw, an equality test, +1, sw --
+ *     and s32 / u32 build byte-identical, so it keeps its declared type on main).
+ *     Dumps, the original compiler's runs and the member table:
+ *     memory/grind/func_80036140/evidence.md.
  */
 typedef struct {
     s16 unk00; /* 0x80101E60 */
@@ -569,6 +595,10 @@ typedef struct {
     s32 unk34; /* 0x80101E94 */
     s16 unk38; /* 0x80101E98 */
     s16 unk3A; /* 0x80101E9A */
+    s16 unk3C; /* 0x80101E9C */
+    u16 unk3E; /* 0x80101E9E */
+    s32 expected_pos; /* 0x80101EA0 */
+    s32 unk44; /* 0x80101EA4 */
 } ReplayCamRec;
 
 /* libcd CdlFILTER, the CdlSetfilter (0xD) parameter. */
@@ -578,28 +608,24 @@ typedef struct {
     u16 pad;
 } CdlFILTER;
 
-/* The CD module's state block, 0x80101E58..0x80101E9B, declared as ONE object.
+/* The CD module's state block, 0x80101E58..0x80101EA7, declared as ONE object.
  * Two pieces of it are evidenced by base+offset addressing in the original
  * binary (cse relates two constant addresses only when they are offsets of one
  * symbol):
  *   - 0x80101E58..0x80101E62: cdrom_StartAudio forms the CdlFILTER at
  *     0x80101E58 as &0x80101E62 - 0xA (800370AC addiu a1,s0,-0xA; 800370B0
  *     sb v0,-0xA(s0));
- *   - 0x80101E6C..0x80101E9B: see ReplayCamRec's evidence split above.
+ *   - 0x80101E6C..0x80101EA7: see ReplayCamRec's evidence split above.
  * The link between them (0x80101E62 and 0x80101E6C in one object) is NOT
  * independently evidenced: it rests on ReplayCamRec's 0x80101E60..0x80101E77
  * bundling, which is the owner-granted FAKE structure above (2026-08-10). */
 typedef struct {
     CdlFILTER filter; /* 0x80101E58 */
     s32 unk04; /* 0x80101E5C */
-    ReplayCamRec rec; /* 0x80101E60 .. 0x80101E9B */
+    ReplayCamRec rec; /* 0x80101E60 .. 0x80101EA7 */
 } CdState;
 
 extern CdState D_80101E58;
-extern s16 D_80101E9C;
-extern u16 D_80101E9E;
-extern s32 g_cdread_expected_pos;
-extern s32 D_80101EA4;
 extern u8 D_80101EC8;
 extern s16 D_80101EE8;
 extern s32 D_80101F04;
