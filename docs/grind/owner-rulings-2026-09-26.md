@@ -113,3 +113,11 @@ Owner (verbatim): "Withdraw that option, consider a compiler patch a cheat. Upda
 ## Scoping note (orchestrator to owner, same conversation, after Q17; owner has not responded to it)
 Orchestrator (verbatim excerpt): "One scoping point for you. Today's assembler-shim changes (the `($12)` parser fix and the "declared, no value" list) are changes to maspsx, not the compiler. SOTN uses maspsx too. I'm treating those as outside this ruling. The census will list them separately so you can decide if you disagree."
 Owner: no reply to this point as of recording. Status: orchestrator's scoping, not an owner ruling; open for the owner to overrule.
+
+<!-- Batch 10: appended verbatim from tmp/orch/owner_rulings_2026-09-26j.md (line endings normalized to LF; blank separator line added). -->
+# Owner ruling 2026-09-26 (tenth batch, via AskUserQuestion) — VERBATIM RECORD
+Context: func_80036140's maspsx_comm_syms row under Q15 (0134264b7): cc1psx -G8 + ASPSX 2.34 gives 516 words vs shipped 512; 68 li expansions and 8 one-to-one scheduling moves classify; all 25 gp/sym+N decisions match; unclassifiable under the strict text: 4 nop words (blocks 1, 6, 11, 16), each at a spot cc1psx's own output marks `#nop` after a reordered instruction (ASPSX materialises them; the shipped order needs none), and 1 branch (8003614C blez $t0, offset 0x79 vs 0x75) differing only because those 4 nops lie between it and its target. (slotI ledger 44b97560b, landing/q15/func_80036140.cc1psx-G8.strict.txt.)
+
+## Q18 — nop pads and shifted branch offsets as scheduling fallout
+Question: "func_80036140's assembler-list row: Sony's archived compiler orders a few instructions differently. At 4 of those spots the archived assembler inserts a no-op timing pad (the shipped order doesn't need one), so one branch's jump distance grows by those 4 pads. Every gp/offset decision matches and nothing else is unexplained. May those 4 pads and that one branch distance count as part of the already-allowed 'scheduling' differences?"
+Owner chose: **"Yes, as scheduling fallout (Recommended)"** — option text: "Only nops the archived compiler itself marked (#nop) at a reordered spot, and branches whose only difference is offset shifted by exactly those nops; each listed by address; layer-2 checks."

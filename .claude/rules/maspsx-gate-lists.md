@@ -128,7 +128,45 @@ and the gate may be used, ONLY when all of (a)-(d) hold:
        and `imm` in 0..0x7FFF (the range where `addiu` and `ori` from
        `$zero` yield the same value).
        A differing word that is unclassified, or that fits neither kind,
-       fails the row.
+       fails the row, except as the Q18 class below allows.
+     - **Third class: scheduling fallout (owner ruling 2026-09-26, tenth
+       batch, Q18).** The question put to the owner, verbatim:
+       "func_80036140's assembler-list row: Sony's archived compiler orders
+       a few instructions differently. At 4 of those spots the archived
+       assembler inserts a no-op timing pad (the shipped order doesn't need
+       one), so one branch's jump distance grows by those 4 pads. Every
+       gp/offset decision matches and nothing else is unexplained. May those
+       4 pads and that one branch distance count as part of the
+       already-allowed 'scheduling' differences?" Owner (Trenton) chose,
+       verbatim: **"Yes, as scheduling fallout (Recommended)"**, whose text
+       is: "Only nops the archived compiler itself marked (#nop) at a
+       reordered spot, and branches whose only difference is offset shifted
+       by exactly those nops; each listed by address; layer-2 checks."
+       (Record: docs/grind/owner-rulings-2026-09-26.md, batch 10.) The
+       author's narrowing: a differing word is scheduling fallout ONLY when
+       it is one of these two, and nothing else is:
+       - **(iii-a) A marked nop at a reordered spot.** The word is a `nop`
+         in the archived output that has no counterpart in the shipped
+         words, and cc1psx's own `.s` output for the function marks it with
+         a `#nop` line directly before or after an instruction that is
+         classified as scheduling under (i). ASPSX materialised that marked
+         nop. The ledger lists the word by address and cites the `#nop`
+         line (file and line) in the banked cc1psx output.
+       - **(iii-b) A branch shifted by exactly those nops.** The archived
+         and shipped words are the same branch instruction, with the same
+         opcode and registers, and their ONLY difference is the branch
+         offset. The difference equals exactly the number of (iii-a) nops
+         that lie between the branch and its target in the archived output.
+         The ledger lists the branch by address, the two offsets, and the
+         (iii-a) nops it counts.
+       (iii-a) nops are set aside before the (i) pairing, so the one-to-one
+       permutation requirement of (i) applies to the non-nop words. Any
+       other `nop` (unmarked, or marked but not beside a scheduling-
+       classified instruction), and any other offset difference, fails the
+       row. The layer-2 reviewer checks each fallout word against the cited
+       `#nop` lines and the offset arithmetic. Record: docs/grind/decisions.md
+       2026-09-26 OWNER RULING — scheduling fallout (nops and shifted branch
+       offsets).
      The layer-2 reviewer checks the classification word by word. Under
      this comparison, each (3) variant must still differ from the shipped
      words in at least one gp or `sym+N` decision; a variant that differs

@@ -30066,3 +30066,30 @@ batch-9 record; the owner has not replied): not an owner ruling, open for the ow
 on the output-changing PLUS->IOR patch. The revert to INCLUDE_ASM and its return to the queue land in
 a separate commit right after this one, as does returning the build compiler to the pinned upstream
 plus the one kept host fix (262930f1b).
+
+## 2026-09-26 — OWNER RULING — scheduling fallout (nops and shifted branch offsets) (`.claude/rules/maspsx-gate-lists.md`)
+
+Tenth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 10). Context,
+as given to the owner from slotI's func_80036140 ledger (44b97560b; the worker's measurements,
+judged at landing): under Q15 (0134264b7) cc1psx -G8 + ASPSX 2.34 gives 516 words vs shipped 512;
+68 li expansions and 8 one-to-one scheduling moves classify; all 25 gp/sym+N decisions match;
+unclassifiable under the strict text: 4 nop words (blocks 1, 6, 11, 16), each at a spot cc1psx's
+own output marks `#nop` after a reordered instruction, and 1 branch (8003614C blez $t0, offset 0x79
+vs 0x75) differing only because those 4 nops lie between it and its target. Question, verbatim:
+"func_80036140's assembler-list row: Sony's archived compiler orders a few instructions
+differently. At 4 of those spots the archived assembler inserts a no-op timing pad (the shipped
+order doesn't need one), so one branch's jump distance grows by those 4 pads. Every gp/offset
+decision matches and nothing else is unexplained. May those 4 pads and that one branch distance
+count as part of the already-allowed 'scheduling' differences?" Owner (Trenton) chose, verbatim:
+"Yes, as scheduling fallout (Recommended)" — "Only nops the archived compiler itself marked (#nop)
+at a reordered spot, and branches whose only difference is offset shifted by exactly those nops;
+each listed by address; layer-2 checks."
+
+**Ruling (full text in the rule file, prong (a)(2) "Third class: scheduling fallout"; the author's
+narrowing).** Two word kinds only: (iii-a) a `nop` with no shipped counterpart that cc1psx's own
+`.s` output marks `#nop` directly before or after an instruction classified as scheduling under
+(i), listed by address with the `#nop` line cited; (iii-b) a branch identical in opcode and
+registers whose only difference is an offset shifted by exactly the number of (iii-a) nops between
+it and its target, listed with both offsets and the counted nops. (iii-a) nops are set aside before
+the (i) pairing, so the one-to-one permutation applies to the non-nop words. Any other nop or
+offset difference fails the row; layer-2 checks. The row is judged fresh at landing.
