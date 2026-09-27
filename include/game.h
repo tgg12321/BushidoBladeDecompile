@@ -119,7 +119,7 @@ extern Unk8009BC94Record D_8009BC94[][6];
  * word 2 = 0). Replaces the splat per-word scalars D_8009B398 / D_8009B3A4 /
  * D_8009B3B0 / D_8009B3BC in C (per-word splat symbol -> aggregate merge family,
  * owner ruling 2026-08-17); the dlabels stay in asm/data for the still-asm
- * func_8005D814 / func_8005F1C8 / func_8005E54C. */
+ * func_8005D814 / func_8005E54C. */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -150,6 +150,18 @@ typedef struct {
 
 extern Unk8009B400Record D_8009B400[10];
 extern Unk8009B400Record D_8009B458[3][2];
+
+/* 0x8009B5F0: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
+ * 0x8009B5F0..0x8009B60F. Object model evidence from the original binary,
+ * independent of the byte-chasing session: asm/funcs/func_8005F1C8.s forms ONE
+ * stride `sll $s0,$s0,4` (row counter * 16) and adds it to both
+ * %lo(D_8009B5F0) (column 0: 0x8009B5F0 / 0x8009B600) and %lo(D_8009B5F8)
+ * (column 1: 0x8009B5F8 / 0x8009B608) -- rows of two 8-byte records. Data:
+ * all four records share the {s16, s16, u8 x4} shape (u8 [3] = 0x01 in each);
+ * D_8009B610 (a 12-byte sheet header) follows. Replaces the splat per-word
+ * scalars D_8009B5F0 / D_8009B5F8 in C (per-word splat symbol -> aggregate
+ * merge family, owner ruling 2026-08-17). */
+extern Unk8009B400Record D_8009B5F0[2][2];
 
 /* Stage/match control block at 0x800EFAE8 (0x4C bytes). Object model evidence
  * (independent of and predating any byte-chasing): the original binary
