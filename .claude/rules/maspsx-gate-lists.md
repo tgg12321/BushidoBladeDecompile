@@ -247,6 +247,8 @@ RULING — maspsx COMMON gate (`maspsx_comm_syms.txt`).
 label-nop: RETIRED 2026-09-14 — the list is deleted and no completion depends
 on it. The 9 functions that were listed still byte-match with the arm global.
 prefill-label (fidelity): main — first and only entry (owner ruling 2026-09-04).
+comm (fidelity): cdrom_SetMix (g_cd_atv), func_80035F78 (D_800A36B8), func_80036140
+(g_cd_atv, D_800A36B8, g_cd_result) — the first rows, landed with func_80036140 (2026-09-26).
 expand-lb (fidelity): func_8003047C — COMPLETED-C stands.
 expand-dest: func_8007CE0C — in queue (its other debt); the gate entry is
 fidelity and may remain when it completes.

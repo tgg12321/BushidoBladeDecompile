@@ -1722,7 +1722,6 @@ g_char_id_saved_b                                       = 0x800A3915;  /* paired
 /* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
 /* 2026-09-26: 0x80101E58..0x80101EA7 is ONE object, CdState D_80101E58 */
 /* (include/code6cac.h); the per-word rows in that span are retired. */
-g_cd_loc                                   = 0x80101E6C;  /* BCD-encoded current CD frame position */  /* data-wave 2026-09-24: was g_cd_playback_bcd_pos */  /* alias of D_80101E58+0x14 (CdState rec.pair, include/code6cac.h); retire with func_80036140 (asm/funcs/func_80036140.s is its only live referrer) */
 
 /* === Memcard file-list state (2026-05-17) -- 3 highs === */
 g_memcard_file_list                                     = 0x80102810;  /* base of memcard file-list array (filled by bios_firstfile_B; stride 0x28 per file entry) */

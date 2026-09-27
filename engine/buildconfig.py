@@ -75,7 +75,7 @@ MASPSX_FLAGS_GP = (
 # Mirrors the Makefile GP_FILES / EXPAND_LB_FILES /
 # RODATA_ALIGN2_FILES / NO_SR_FILES lists. Byte-parity (task 4) is the proof
 # these are correct; do not edit without re-running `engine parity`.
-GP_FILES = {"text1a_pre", "text1a_post", "code6cac_b3", "code6cac_b4"}
+GP_FILES = {"text1a_pre", "text1a_post", "code6cac_b3", "code6cac_b4", "code6cac_b5"}
 EXPAND_LB_FILES = {"code6cac_b", "code6cac_b3", "code6cac_b3_post"}
 EXPAND_LH_FILES = set()
 RODATA_ALIGN2_FILES = {
