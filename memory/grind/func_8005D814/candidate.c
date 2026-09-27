@@ -206,7 +206,7 @@ s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
          * named a few insns before their stores so loop.c hoists them
          * (lifetime >= 3 at loop.c:1631), header then cell; the cell's
          * shorter live range ranks it first in global.c ($s6), the header
-         * second ($s7). */
+         * second ($s7). memory/grind/func_8005D814/evidence.md. */
         hdr2 = &D_8009B398[2]; /* FAKE: pointer alias */
         cell2 = &D_8009B3F0;   /* FAKE: pointer alias */
         s.y = D_8009B450[j].y;
