@@ -1,5 +1,12 @@
 # Layer-2 review notes — func_800174F4 (session 7, 2026-09-27)
 
+## Session 8 correction
+
+Fresh review of the session-7 body FAILed its under-typed GPU API declarations
+and pointer casts. The final source corrects those declarations and removes
+the casts from `DrawEnv env` and `u32 ot[2]`; see `session8.md`. Because the
+reviewed body changed, the earlier verdict does not carry forward.
+
 Landing body: landing_body.c (typedef + function; candidate.c is the same plus
 a header comment). Splice it over `INCLUDE_ASM("asm/funcs", func_800174F4);` in
 src/ings.c, leaving one blank line after it. Verified 2026-09-27 under the lock:

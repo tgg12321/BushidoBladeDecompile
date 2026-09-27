@@ -19,6 +19,9 @@ Constructs:
   matches without padding: the for loop's inverted entry test leaves one
   8-byte reload slot (combine keeps `i = 0` as newi2pat; BB2_FRAME_DEBUG
   spill_new_p128), and 0x60 + 8 + 8 = the target's 112 bytes of locals.
+- The `ings.c` GPU declarations now carry their truthful PsyQ object-pointer
+  types. The target passes `&env` and `ot` directly; existing byte-addressed
+  composite buffers convert only at their `DrawEnv *`/`u32 *` API boundaries.
 - 240 written as a literal at both uses; `(D_800A36AC & 1) ? 0xF0 : 0`.
 - `temp` (fade-loop count, case-20 D_800A37A8[] code) and `temp2` (switch
   selector, case-20 D_800A37A0): Ruling 11 (ordinary-c-judge-decidable.md,
@@ -33,4 +36,10 @@ Constructs:
   (F7 unconditional-common-store duplication, FAKE-annotated; hoisted: 6,
   131 insns); `(u32)temp2 < cur` gives the target's sltu.
 
+Fresh layer-2 PASS on whole-file blob
+cabf6782ee338bc84ce9f782dae729be889701c8 and function blob
+bd1bcff7c240e60ada38bbbca8d1a7a3ebf6d2e1. Both Ruling 11 locals passed
+A-H; F7, the object model, and all API-boundary casts passed.
+
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Co-Authored-By: OpenAI Codex <noreply@openai.com>

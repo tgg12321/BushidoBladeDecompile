@@ -36,11 +36,11 @@ void func_800174F4(void) {
     if (g_disp_enable == DISP_DISABLED) {
         return;
     }
-    SetDefDrawEnv((u8 *)&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
+    SetDefDrawEnv(&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
     env.isbg = 0;
-    PutDrawEnv((u8 *)&env);
+    PutDrawEnv(&env);
     g_gpu_ot_ptr = (u8 *)ot;
-    ClearOTagR((u8 *)ot, 2);
+    ClearOTagR(ot, 2);
     temp2 = g_disp_enable;
     switch (temp2) {
     case 1:
@@ -91,6 +91,6 @@ void func_800174F4(void) {
         break;
     }
     }
-    DrawOTag((u8 *)(g_gpu_ot_ptr + 4));
+    DrawOTag((u32 *)(g_gpu_ot_ptr + 4));
     DrawSync(0);
 }

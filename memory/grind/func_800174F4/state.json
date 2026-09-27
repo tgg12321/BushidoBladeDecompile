@@ -1,8 +1,8 @@
 {
  "func": "func_800174F4",
  "file": "ings",
- "session_count": 6,
- "current_modality": "permuter",
+ "session_count": 8,
+ "current_modality": "manual",
  "floor_history": [
   {
    "session": 1,
@@ -45,15 +45,15 @@
    "floor": 1,
    "modality": "reopen-remeasure",
    "headline": "Q17 reopen 2026-09-26, no new session: the session-6 form re-measured under the STOCK compiler scores 1 \u2014 `h = v0 + 4` becomes `ori` (target `addiu`). The match held only under the PLUS->IOR patch, now a cheat."
-  }
- ],
- "frontier": [
+  },
   {
-   "hypothesis": "The last residual is combine.c simplify_rtx's PLUS->IOR rewrite of `h = (rand() & 3) + 4`; a spelling whose operands combine cannot prove disjoint at that point keeps the `addiu` the original shows.",
-   "mechanism": "tools/gcc-2.7.2/combine.c simplify_rtx, the PLUS case: when (nonzero_bits(op0) & nonzero_bits(op1)) == 0 it returns gen_binary(IOR, ...). The retired narrow patch skipped exactly (plus REG CONST_INT).",
-   "next_probe": "Read the combine dump (-dc) for the case-1/2 block: find the insn where the PLUS becomes IOR and what nonzero_bits sees for v0 there; then look for an ordinary-C spelling of the same value whose nonzero bits are not known at that combine step."
+   "session": 8,
+   "floor": 0,
+   "modality": "manual",
+   "headline": "Stock-compiler COMPLETED-C: int loop limit preserves target addiu; truthful DrawEnv/OT API types pass fresh layer-2. Sandbox 0/136 and full oracle SHA1 match; commits ea58bac02 + d702fabe3."
   }
  ],
+ "frontier": [],
  "judge_constraints": [],
  "banned_constructs": [],
  "ladder_skip": 0,
