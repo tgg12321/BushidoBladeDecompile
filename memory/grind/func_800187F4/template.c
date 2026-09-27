@@ -25,6 +25,7 @@ void func_800187F4(s32 arg0, s32 *arg1) {
     s32 r, d;
     s32 shift, half;
     s32 byte;
+    s32 t;
     s32 dist1, dist2, tot, pen;
     s32 lz[6];
 
@@ -101,10 +102,11 @@ void func_800187F4(s32 arg0, s32 *arg1) {
             d = SCR->pos[1] - SCR->ground;
             if (d > 0) {
                 if (d > 0x3200) {
-                    SCR->vel[1] = vy - 0x400;
+                    t = vy - 0x400;
                 } else {
-                    SCR->vel[1] = vy - d / 8;
+                    t = vy - d / 8;
                 }
+                SCR->vel[1] = t;
             }
             SCR->cpos[0] = SCR->pos[0] >> 5;
             SCR->cpos[1] = SCR->pos[1] >> 5;
@@ -130,10 +132,11 @@ void func_800187F4(s32 arg0, s32 *arg1) {
                 @gte_sqr0();
                 @gte_stlvnl(SCR->sq);
                 dist1 = SCR->sq[0] + SCR->sq[1] + SCR->sq[2];
+                byte = dist1;
                 if (dist1 < 0x400) {
                     dist1 = (&D_8008D118)[dist1] >> 3;
                 } else {
-                    @gte_Lzc(dist1, &lz[0]);
+                    @gte_Lzc(byte, &lz[0]);
                     shift = lz[0];
                     shift = 0x16 - (shift & ~1);
                     byte = (&D_8008D118)[dist1 >> shift];

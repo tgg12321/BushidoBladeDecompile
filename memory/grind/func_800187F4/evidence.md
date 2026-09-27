@@ -74,3 +74,21 @@ Load-bearing findings (each measured, fast.sh):
    pseudos (combine distribute_notes, combine.c ~10839) — target = 4 + a
    24-byte locals object, the same oversized LZC-output object func_80018300
    (lz[6]) and func_80018094 (sp_tmp[4]) carry.
+
+## [s2 cont.] REAL-PIPELINE BYTE MATCH (diff 0/662) — candidate.c = template g2
+Added to the 2-insn chassis:
+8. LZC-1 input copy staged in `byte` (`byte = dist1;` before the if; gte_Lzc(byte,
+   ...); byte later = LUT byte) — the func_800288C8 `tbl` / func_8002A458
+   `lzc_in` shape (Ruling 11 (C)(3) names those as FAILED bare copies). A FRESH
+   single-write copy (`lzin = dist1`) survives cse (asm operands are not
+   canonicalized when the arm is a separate path) but global.c seats it in $v1
+   (conflicts only $v0/$t4-7; lowest free), target $a0 = 2 insns.
+9. The copy adds 1 RTL insn in the particle loop, which pushes the hoisted `-2`
+   (pri 140000/len) from 157 to 156 = tie with `3` -> s6/s7 swap. Fixed by
+   ONE ground-collision store: `if (d > 0x3200) t = vy - 0x400; else t = vy -
+   d / 8; SCR->vel[1] = t;` (target's single `sw` at 0x80018CB8 is shared;
+   two stores = one extra RTL insn that jump2 cross-jumps away). A `?:` into
+   the store keeps two stores (expand stores per arm).
+Policy exposure still to reduce before any landing: `byte` copy (banned
+shape), shared counter j (3 loops), n/bits/d/dist rewrites, `t`, lz[6],
+shift split; islands need PINNED entries + DMPSX words (4 command words).
