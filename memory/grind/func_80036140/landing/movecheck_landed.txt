@@ -1,0 +1,52 @@
+== (1) respellings in place (src/code6cac_b2_post.c @ 3e425e1e56e83ea87de9aca59c8bc9446ac4827f -> converted, unsplit):
+    --- HEAD
+    +++ inplace
+    @@ -390,2 +390 @@
+    -extern void CdMix(u8 *);
+    -extern u8 g_cd_atv;
+    +extern void CdMix(CdlATV *);
+    @@ -394,4 +393,4 @@
+    -    g_cd_atv = (u8)arg0;
+    -    g_cd_atv_plus_0x1 = (u8)arg1;
+    -    g_cd_atv_plus_0x2 = (u8)arg2;
+    -    g_cd_atv_plus_0x3 = (u8)arg3;
+    +    g_cd_atv.val0 = (u8)arg0;
+    +    g_cd_atv.val1 = (u8)arg1;
+    +    g_cd_atv.val2 = (u8)arg2;
+    +    g_cd_atv.val3 = (u8)arg3;
+    @@ -401 +399,0 @@
+    -extern u8 D_800A36B8;
+    @@ -404,3 +402,3 @@
+    -    D_800A36B8 = (u8)arg1;
+    -    D_800A36B9 = (u8)arg2;
+    -    D_800A36BA = (u8)arg3;
+    +    D_800A36B8.val0 = (u8)arg1;
+    +    D_800A36B8.val1 = (u8)arg2;
+    +    D_800A36B8.val2 = (u8)arg3;
+    @@ -409 +407 @@
+    -    D_800A36BB = (u8)arg4;
+    +    D_800A36B8.val3 = (u8)arg4;
+    @@ -442 +440 @@
+    -            if (v0 != g_cdread_expected_pos) {
+    +            if (v0 != D_80101E58.rec.expected_pos) {
+    @@ -450 +448 @@
+    -        g_cdread_expected_pos = g_cdread_expected_pos + 1;
+    +        D_80101E58.rec.expected_pos = D_80101E58.rec.expected_pos + 1;
+    @@ -515 +513 @@
+    -            g_cdread_expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
+    +            D_80101E58.rec.expected_pos = CdPosToInt((s32)&D_80101E58.rec.pair);
+    @@ -629 +627 @@
+    -    D_80101E9E = 0;
+    +    D_80101E58.rec.unk3E = 0;
+    @@ -660 +658 @@
+    -    s0 = (u16 *)&D_80101E9E;
+    +    s0 = &D_80101E58.rec.unk3E;
+
+== (2) the split
+  src/code6cac_b2_post.c: header 0 lines + moved slice of 389 lines (in-place lines 1..389) -> IDENTICAL
+  src/code6cac_b4.c: header 13 lines + moved slice of 19 lines (in-place lines 390..408) -> IDENTICAL
+  src/code6cac_b4_post.c: header 14 lines + moved slice of 51 lines (in-place lines 409..459) -> IDENTICAL
+  src/code6cac_b5.c: header 219 lines + moved slice of 138 lines (in-place lines 470..607) -> IDENTICAL
+  src/code6cac_b5_post.c: header 16 lines + moved slice of 276 lines (in-place lines 608..883) -> IDENTICAL
+  dropped from the in-place file: lines 460..468 (the transcribed jtbl_80010938 comment + array, now emitted by the compiler) and line 469 (INCLUDE_ASM, replaced by the C body)
+RESULT: every moved line byte-identical

@@ -1,0 +1,21 @@
+=== reviewer precheck: func_80036140 ===
+{
+  "rules": {
+    "count": 0,
+    "hits": {}
+  },
+  "body": {
+    "file": "src/code6cac_b5.c",
+    "register_asm_pins": 0,
+    "asm_blocks": 0,
+    "hardcoded_dollarN_asm": 0
+  },
+  "claude_rules_in_diff": [
+    ".claude/rules/integration-handoff-self-serve.md",
+    ".claude/rules/maspsx-gate-lists.md"
+  ],
+  "canonical_registry_additions": [],
+  "new_extern_volatile": []
+}
+MECHANICAL FLAGS (resolve or explain in the reviewer brief):
+  - .claude/rules/ doc rides along (self-sanctioning check!)
