@@ -82,3 +82,11 @@ Context: func_80036140 (slotI). At -G8, no separate-object spelling reaches the 
 ## Q13 — forced-in bytes in a mixed-field struct
 Question: "func_80036140 needs a struct that must cover a few bytes it never touches itself. Other functions DO use those bytes: one as a 16-bit value, another as a 32-bit value. The mixed-struct rule says untouched bytes must be an anonymous filler, but then those other functions would need pointer tricks to reach them, which is banned. May such forced-in bytes be proper named fields, typed by how the other functions actually access them?"
 Owner chose: **"Yes, typed by real users (Recommended)"** — option text: "Only bytes the necessity proof forces inside the span; each field's type must match another function's actual access width/signedness in the original bytes; layer-2 reviews."
+
+<!-- Batch 7: appended verbatim from tmp/orch/owner_rulings_2026-09-26g.md (line endings normalized to LF; blank separator line added). -->
+# Owner rulings 2026-09-26 (seventh batch, via AskUserQuestion) — VERBATIM RECORD
+Context: func_80036140 (slotI). Under (a4') as amended by Q13 (61f37ea5b), forced-in byte 0x80101EA0 (g_cdread_expected_pos, s32 on main) is accessed in the original bytes only by cdrom_ReadyCallback 800360A4 lw + bne (equality), 800360E4 lw / addiu +1 / 800360FC sw, and func_80036940 80036AAC sw of CdPosToInt's return — no ordered slt/sltu, no plain sra/srl, no div/divu anywhere, so the committed no-default clause leaves it a filler and (a4')(5) then fails. s32 and u32 compile identically for these accesses.
+
+## Q14 — signedness when the binary cannot distinguish
+Question: "For func_80036140's struct, one forced-in 32-bit field (the expected disc position at 0x80101EA0) is only ever loaded, compared for equality, incremented and stored — so the shipped code can't reveal whether it was signed; signed and unsigned compile to identical bytes. May it keep the type it already has on main (s32, which also matches libcd's CdPosToInt returning int), when no instruction in the binary can tell them apart?"
+Owner chose: **"Keep existing type (Recommended)"** — option text: "When no signedness-revealing instruction exists anywhere and both choices are byte-identical, the member keeps its current declared type on main (or the SDK type it's assigned from); layer-2 checks byte-identity."

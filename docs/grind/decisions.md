@@ -29939,3 +29939,39 @@ accesses that way stay fillers per (3). The (4) member table lists every other f
 by function, address and opcode, and the signedness evidence by address. A fresh layer-2
 reviews. func_80036140's struct is judged fresh;
 nothing is pre-decided.
+
+## 2026-09-26 — OWNER RULING — aggregate-merge (a4′): signedness when the binary cannot tell (`.claude/rules/no-new-park-categories.md`)
+
+Seventh 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 7). Context,
+as given to the owner by the orchestrator from slotI's func_80036140 ledger (the worker's claims,
+judged at landing): under (a4′) as amended by Q13 (61f37ea5b), forced-in byte 0x80101EA0
+(g_cdread_expected_pos, s32 on main) is accessed in the original bytes only by
+cdrom_ReadyCallback (800360A4 lw + bne, an equality test; 800360E4 lw / addiu +1 / 800360FC sw) and
+func_80036940 (80036AAC sw of CdPosToInt's return); no ordered slt/sltu, plain sra/srl or
+div/divu, so the committed no-default clause left it a filler and (a4′)(5) then failed; s32 and
+u32 compile identically for these accesses. Question, verbatim: "For func_80036140's struct, one
+forced-in 32-bit field (the expected disc position at 0x80101EA0) is only ever loaded, compared for
+equality, incremented and stored — so the shipped code can't reveal whether it was signed; signed
+and unsigned compile to identical bytes. May it keep the type it already has on main (s32, which
+also matches libcd's CdPosToInt returning int), when no instruction in the binary can tell them
+apart?" Owner (Trenton) chose, verbatim: "Keep existing type (Recommended)" — "When no
+signedness-revealing instruction exists anywhere and both choices are byte-identical, the member
+keeps its current declared type on main (or the SDK type it's assigned from); layer-2 checks
+byte-identity."
+
+**Ruling (full text in the rule file, (a4′) Q13 amendment, "When the binary cannot tell"; the
+author's narrowing).** A word or store-only forced-in member with no admissible signedness evidence
+is admitted with a kept signedness only when: (1) the ledger lists every access in every accessor's
+original bytes and every instruction the loaded value flows into, and none is ANY instruction whose
+choice depends on signedness (wider than the Q13 evidence list: sign-test branches bltz/bgez/bgtz/
+blez, the sign fix-up of a divide-by-2^n sequence, lb/lh vs lbu/lhu sub-word reads, and the like);
+admissible evidence means the evidence clause governs, any other signedness-dependent instruction
+means the member is not admitted and stays a filler; (2) every accessor compiled from C builds
+byte-identical as a whole function with the member signed and unsigned, both full listings or both
+object hashes banked with the command lines, byte-identity checked by layer-2; an INCLUDE_ASM
+accessor assembles from its .s, so its bytes cannot depend on the type and the (1) no-reveal
+listing covers it instead; (3) the kept signedness is main's current
+declaration for those bytes (file and line), or, only when main has none, the SDK type of the value
+assigned to it (prototype cited). Width still comes from the accesses. It sets no default where
+evidence exists and changes nothing else. func_80036140's struct is judged fresh; nothing is
+pre-decided.

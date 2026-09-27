@@ -442,7 +442,61 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
             the same, and GCC 2.7.2 emits `mult` for both). No rule sets a
             default signedness for such a member: without admissible
             evidence it is not admitted, and its bytes stay a filler per
-            (3).
+            (3), except as the Q14 clause below allows.
+          - **When the binary cannot tell (owner ruling 2026-09-26, seventh
+            batch, Q14).** The question put to the owner, verbatim: "For
+            func_80036140's struct, one forced-in 32-bit field (the expected
+            disc position at 0x80101EA0) is only ever loaded, compared for
+            equality, incremented and stored — so the shipped code can't
+            reveal whether it was signed; signed and unsigned compile to
+            identical bytes. May it keep the type it already has on main
+            (s32, which also matches libcd's CdPosToInt returning int), when
+            no instruction in the binary can tell them apart?" Owner
+            (Trenton) chose, verbatim: **"Keep existing type
+            (Recommended)"**, whose text is: "When no signedness-revealing
+            instruction exists anywhere and both choices are byte-identical,
+            the member keeps its current declared type on main (or the SDK
+            type it's assigned from); layer-2 checks byte-identity."
+            (Record: docs/grind/owner-rulings-2026-09-26.md, batch 7.) The
+            author's narrowing: a member that the word/store-only clause
+            above would leave a filler for lack of evidence is admitted,
+            with a kept signedness, ONLY when all of these hold:
+            1. **Nothing reveals it, anywhere.** The ledger lists, for every
+               function whose original bytes access the member, each access
+               (function, address, opcode) and each instruction that the
+               loaded value flows into up to its last use, and shows that
+               none is an instruction whose choice depends on signedness.
+               That test is wider than the evidence list above, which only
+               says what counts as positive evidence. Any
+               signedness-dependent instruction blocks this clause,
+               including a sign test on the value (`bltz`, `bgez`, `bgtz`,
+               `blez`), the sign fix-up of a divide-by-a-power-of-two
+               sequence, and a sub-word read of it with `lb`/`lh` versus
+               `lbu`/`lhu`. If such an instruction is admissible evidence,
+               the evidence clause governs; if it is not, the member is not
+               admitted and its bytes stay a filler per (3).
+            2. **Both choices are byte-identical.** Every accessor compiled
+               from C is built with the build's exact per-file recipe twice,
+               once with the member declared signed and once unsigned, and
+               the two builds of that whole function are byte-identical. The
+               ledger banks, for each such accessor, either both full
+               listings of the function or both object hashes, with the
+               build command lines, and the layer-2 reviewer checks the
+               byte-identity. An accessor still committed as `INCLUDE_ASM`
+               assembles from its `.s` file, so its bytes cannot depend on
+               the declared type; for it, the (1) no-reveal listing of its
+               original instructions stands in for this proof, and it is
+               not a reason to refuse the member.
+            3. **The kept type is named.** The member keeps the signedness
+               of the type main declares today for those bytes (the symbol
+               it replaces, cited by file and line). Only when main has no
+               declaration for them does it take the signedness of the SDK
+               type of the value assigned to it (a PsyQ/SDK prototype,
+               cited). The ledger names which source applies. Width still
+               comes from the accesses, as above.
+            This clause sets no default where evidence exists, admits no
+            byte the function under judgment accesses (those follow (2)),
+            and changes nothing else in this amendment.
           Every one of those accesses is then ordinary C under that declared
           type (explicit value casts are allowed, pointer puns are not), as
           in (2). The name follows the project's naming-evidence
@@ -457,7 +511,9 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
           function's access to it by function, address and opcode, marked
           as not accessed by the function under judgment, and the
           signedness evidence (the load opcode, or the named ordered
-          compare, plain shift or divide) by address.
+          compare, plain shift or divide) by address, or, for a member
+          under the Q14 clause, the no-reveal listing, the byte-identity
+          proof and the named source of the kept type.
         - **Review.** A fresh layer-2 `cheat-reviewer` reviews the struct
           with the member table, as (5) already requires. Everything else in
           (a1), (a2) and (1)-(5) stands.
