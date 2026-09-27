@@ -46,13 +46,15 @@ gate.
 
 | binary | SHA1 | what it is |
 |---|---|---|
-| operative `build/cc1` | `aa04d7619cd79215788d18d6870ebc6c8d1d822d` | recipe output, narrow + crash fix (2026-09-25 adoption) |
+| operative `build/cc1` | `ac80146bf50af58f719868de74c860fcdf617d30` | recipe output: pinned upstream + crash fix only, NO codegen patch (2026-09-26, owner Q17) |
+| `build/cc1.PRE-RECIPE-aa04d761` | `aa04d7619cd79215788d18d6870ebc6c8d1d822d` | retired NARROW PLUS->IOR compiler (narrow + crash fix). Operative 2026-09-25 to 2026-09-26; retired by Q17 (a compiler patch is a cheat). The recipe self-check's first reference (expects no divergent TU). |
 | `build/cc1.PRE-RECIPE-0f438e42` | `0f438e42548d29798db86d50a76e54bd6f04b64a` | retired no-rewrite compiler with the crash fix. Operative 2026-08-24 to 2026-09-25. The self-check's no-rewrite reference. |
 | `build/cc1.PRE-CRASHFIX-045c9543` | `ea11be50d12f24c464123b705c29007efc04e4a8` | recipe output of the 2026-08-07 swap, operative until 2026-08-24. **The suffix is wrong**: the file is `ea11be50`, not `045c9543`. It is kept under that name because `oracle/manifest.json` `notes.cc1_build_2026_08_24` cites it. |
 | `build/cc1.PRE-RECIPE-045c9543` | `045c9543d39ab8109583b92137c7adde084f7a25` | the historical 2026-05-18 binary. Segfaults on 5 current TUs (no crash fix). |
 | `build/cc1.ORACLE-BACKUP` | `045c9543d39ab8109583b92137c7adde084f7a25` | same, kept as a backup |
 | off-tree backup | `045c9543d39ab8109583b92137c7adde084f7a25` | `C:\Users\Trenton\bb2-oracle-cc1-backup\cc1.oracle-compiler-045c9543` |
-| diagnostic `cc1` | `888dda6755596e3ac826c38c36be3103297cbac8` | hooks + the same narrow patch; the live `reorg.c` carries the crash fix (see below) |
+| diagnostic `cc1` | `3f796363f33649712006f2eefb47c2f8c4539ffc` | hooks, NO codegen patch (2026-09-26, Q17); the live `reorg.c` carries the crash fix (see below) |
+| `cc1.PRE-PATCH-888dda67` | `888dda6755596e3ac826c38c36be3103297cbac8` | the retired diagnostic: hooks + the narrow PLUS->IOR patch (2026-09-25 to 2026-09-26) |
 | `cc1.PRE-PATCH-4096c6fd` | `4096c6fddbc4125a2100507e1e0ac08e289008aa` | the diagnostic it replaced. It was no-rewrite and predated the crash fix, and segfaulted on 5 current TUs. |
 | `cc1.PRE-PATCH-8384fd47` | `8384fd47cb51da369462a0ba0b83590eea88513a` | the unpatched diagnostic before that |
 

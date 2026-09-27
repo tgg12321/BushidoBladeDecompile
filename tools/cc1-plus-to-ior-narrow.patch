@@ -1,3 +1,10 @@
+SUPERSEDED — owner ruling 2026-09-26 Q17: "consider a compiler patch a
+cheat". This patch is NOT applied by any build recipe. It is kept for history
+only (the 2026-09-25 study and the functions that matched under it cite it).
+The one function that depended on it, func_800174F4, returned to INCLUDE_ASM
+and the queue in the same change that retired it. Everything below is the
+original, now-historical header.
+
 Narrow combine.c's PLUS->IOR conversion in GCC 2.7.2's simplify_rtx: keep it,
 except for (plus REG CONST_INT).
 

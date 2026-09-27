@@ -19,6 +19,12 @@ the pre-crash-fix manifest hash 73a15a5245d2e7ad55fa9e3c42d724488b1892d6. It
 adds nothing else. Applied by tools/build_oracle_cc1.sh to the pinned
 upstream 43d1cdb67ed135879869b5266f01efaaada5e35a.
 
+Since owner ruling 2026-09-26 Q17 ("consider a compiler patch a cheat";
+.claude/rules/no-compiler-divergence.md) this is the ONLY patch the recipe
+applies: the PLUS->IOR patch named above is retired. It is kept as the one
+named host-build fix, the author's reading of Q17 and open for the owner to
+overrule.
+
 diff --git a/reorg.c b/reorg.c
 --- a/reorg.c
 +++ b/reorg.c

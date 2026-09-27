@@ -171,3 +171,7 @@ latter (no `--install`); it names divergent stems and `none` is the contract.
 The same fix closed `ra_solver`'s `UNFAITHFUL_STEMS`. Background, and the
 still-open question of what the original PsyQ compiler did, are in
 `docs/ORACLE-COMPILER.md`.
+
+Since owner ruling 2026-09-26 Q17 ("consider a compiler patch a cheat") the
+PLUS→IOR patch is retired: both scripts build from unpatched `combine.c`, and
+the two binaries still agree on every TU.

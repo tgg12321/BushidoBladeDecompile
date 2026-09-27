@@ -70,10 +70,10 @@ SUGG_FFR = re.compile(
 # emit different code. EMPTY since 2026-08-07: the divergence was removed, not
 # waived. It had never been about the BB2 hooks — the two binaries were simply
 # different builds, and only the build compiler carried the combine.c PLUS->IOR
-# removal. The instrumented cc1 is now rebuilt from the same hooked sources PLUS
-# the oracle's PLUS->IOR patch (tools/cc1-plus-to-ior-narrow.patch since the
-# 2026-09-25 adoption; tools/build_diagnostic_cc1.sh), and the two
-# agree on all 32 TUs — so every dump describes what the project actually
+# removal. Since owner ruling 2026-09-26 Q17 (a compiler patch is a cheat)
+# NEITHER binary carries a codegen patch: both are built from unpatched
+# combine.c (tools/build_oracle_cc1.sh, tools/build_diagnostic_cc1.sh), and the
+# two agree on every TU — so every dump describes what the project actually
 # builds. Re-verify with `bash tools/build_diagnostic_cc1.sh` (no --install):
 # it reports the divergent stems, and "none" is the contract.
 # Keep the machinery below: if the binaries ever drift again, refill this dict

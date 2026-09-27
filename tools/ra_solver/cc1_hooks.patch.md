@@ -301,6 +301,11 @@ rebuilt from the same hooked sources **plus the same patch** by
 `saTan2KabutoWareMove` (the consumer this blocked, in `code6cac_b`) has
 faithful solver evidence available again.
 
+**Update (2026-09-26, owner ruling Q17: "consider a compiler patch a
+cheat").** The PLUS→IOR patch is retired: neither `tools/build_oracle_cc1.sh`
+nor `tools/build_diagnostic_cc1.sh` applies it, so both compilers are built
+from unpatched `combine.c` and still agree on every TU.
+
 Re-verify at any time with `bash tools/build_diagnostic_cc1.sh` (no
 `--install`): it names the divergent stems, and `none` is the contract. Full
 background, including the still-open question of whether the ORIGINAL PsyQ

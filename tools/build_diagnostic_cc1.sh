@@ -8,11 +8,11 @@
 # ings and code6cac_b it described a compiler the project does not ship — the
 # gap recorded as UNFAITHFUL_STEMS in tools/ra_solver/local_extract.py.
 #
-# This rebuilds it from the LIVE (hooked) sources PLUS the same committed
-# PLUS->IOR patch as the oracle (tools/cc1-plus-to-ior-narrow.patch since the
-# 2026-09-25 adoption, owner ruling bcdc1648e), so diagnostic and oracle agree
-# on every TU. The live reorg.c already carries the 2026-08-24 crash-fix
-# declaration (the oracle recipe applies it from
+# This rebuilds it from the LIVE (hooked) sources with NO codegen patch, the
+# same as the oracle (owner ruling 2026-09-26 Q17: a compiler patch is a cheat;
+# the PLUS->IOR patch this script applied 2026-08-07 .. 2026-09-26 is retired),
+# so diagnostic and oracle agree on every TU. The live reorg.c already carries
+# the 2026-08-24 crash-fix declaration (the oracle recipe applies it from
 # tools/cc1-reorg-negate-rtx-decl.patch), so it is not applied again here.
 #
 #   bash tools/build_diagnostic_cc1.sh            # build + verify in scratch
@@ -24,7 +24,6 @@ set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 1
 LIVE=tools/gcc-2.7.2
 SCRATCH=tmp/cc1diag
-PATCH=tools/cc1-plus-to-ior-narrow.patch
 ORACLE=$LIVE/build/cc1
 INSTALL=0
 for a in "$@"; do case "$a" in --install) INSTALL=1 ;; *) echo "unknown option: $a" >&2; exit 2 ;; esac; done
@@ -50,10 +49,10 @@ rm -rf "$SCRATCH"; mkdir -p "$SCRATCH"
 cp -a "$LIVE/." "$SCRATCH/" || exit 1
 [ "$(readlink -f "$SCRATCH")" != "$(readlink -f "$LIVE")" ] || { echo "FATAL: scratch == live" >&2; exit 1; }
 
-echo "== applying $PATCH"
-git -C "$SCRATCH" apply --check "$PWD/$PATCH" 2>&1 || { echo "FATAL: patch does not apply" >&2; exit 1; }
-git -C "$SCRATCH" apply "$PWD/$PATCH" || exit 1
-echo "   applied"
+# Q17: combine.c must be the pinned upstream file (the live tree's hooks never
+# touch it); a patched combine.c is exactly what the ruling retired.
+git -C "$SCRATCH" diff --quiet -- combine.c || {
+  echo "FATAL: combine.c differs from upstream — no codegen patch may be applied" >&2; exit 1; }
 # Confirm the hooks really are still in the scratch sources.
 H=$(grep -lc 'BB2_.*DEBUG' "$SCRATCH"/{flow,function,global,jump,local-alloc,reload1,reorg,sched}.c 2>/dev/null | wc -l)
 echo "   hooked source files present in scratch: $H/8"
@@ -109,7 +108,10 @@ if [ "$INSTALL" = 1 ]; then
   KEEP="$LIVE/cc1.PRE-PATCH-${PREV:0:8}"
   echo "== installing over $LIVE/cc1"
   [ -f "$KEEP" ] || cp -a "$LIVE/cc1" "$KEEP"
-  cp "$SCRATCH/cc1" "$LIVE/cc1"
+  # cp-then-rename: a plain cp fails ("Text file busy") while another
+  # process runs the compiler; the rename leaves running processes on the old inode.
+  cp "$SCRATCH/cc1" "$LIVE/cc1.new" && mv -f "$LIVE/cc1.new" "$LIVE/cc1" || {
+    echo "FATAL: could not install $LIVE/cc1" >&2; exit 1; }
   echo "   installed $SH   (previous $PREV retained as $(basename "$KEEP"))"
   echo "   REMEMBER: update the cc1 hash in docs/ORACLE-COMPILER.md's manifest."
 fi
