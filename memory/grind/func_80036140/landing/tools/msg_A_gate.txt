@@ -33,17 +33,22 @@ landing/q15/):
 - func_80036140: g_cd_atv, D_800A36B8, g_cd_result — shipped base reads
   gp-relative (80036154 D_800A36B8, 80036168 g_cd_atv, 80036850 / 800368A0
   g_cd_result), every sym+N access lui/%lo (the six ATV byte reads, result[4] at
-  80036584, the la's). Per owner ruling Q15 the row stands on: (1) EVERY gp / sym+N
-  decision for the three symbols matches the shipped bytes — 25 of 25, listed
-  in landing/q15/func_80036140.cc1psx-G8.txt; (2) EVERY other differing word is
-  classified there by address: cc1psx -G8 + ASPSX vs the shipped 512 words gives
-  66 `li` expansions (ASPSX 2.34 assembles `li rt,imm` as `ori`, the shipped bytes
-  and our build have `addiu`; upstream maspsx's own test pins `ori` for 2.34);
-  cc1psx scheduling: 10 shipped instructions that cc1psx emits at another
-  position (the g_cd_atv val0 lbu, three mflo, two D_80101E94 lui/lw pairs, two
-  `li`s which are also ori-expanded), the 4 hazard nops that reordering adds, and
-  1 branch (80036140+0xC blez) whose displacement those nops shift; no
-  unclassified word. Our cc1's -G8 output of the same TU through ASPSX 2.34
+  80036584, the la's). Per owner rulings Q15 (0134264b7) + Q18 (c2e38269e,
+  "scheduling fallout") the row stands on: (1) EVERY
+  gp / sym+N decision for the three symbols matches the shipped bytes — 25 of 25,
+  listed by address in landing/q15/func_80036140.cc1psx-G8.txt; (2) EVERY other
+  differing word of cc1psx -G8 + ASPSX (516 words) vs the shipped 512 is classified
+  by address in landing/q15/func_80036140.cc1psx-G8.strict.txt + .q18_nops_branch.txt:
+  68 ASPSX `li` expansions (shipped addiu rt,$zero,imm vs ori, imm <= 0x7FFF; our
+  build has addiu, upstream maspsx's own test pins ori for 2.34); 9 archived-cc1psx
+  scheduling pairs, each word paired 1:1 with a distinct shipped word of the same
+  basic block at another position (the g_cd_atv val0 lbu and the mflo it swaps
+  with, three more mflo, two D_80101E94 lui/lw pairs); and the Q18 scheduling
+  fallout: 4 nops (archived +0x030, +0x08c, +0x0ec, +0x14c), each marked `#nop` in
+  cc1psx's own .s directly after one of those scheduled mflo (lines 54, 67, 80, 93
+  of landing/calib2/E5_comm-G8.code6cac_b5-G8.s), and the blez at 8003614C whose only
+  difference is its offset, grown by exactly the 4 such nops between it and its
+  target (0x75 -> 0x79). 0 unclassified (landing/q15/*.strict.txt + q18_nops_branch.txt). Our cc1's -G8 output of the same TU through ASPSX 2.34
   differs ONLY in 68 `li` words (landing/q15/func_80036140.ourcc1-G8.txt), all 25
   gp / sym+N decisions matching. Alternatives: extern -> 0 gp; static /
   initialized -> 17 gp (the +k accesses gp'd); -G0 -> 0 gp.
