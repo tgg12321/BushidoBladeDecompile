@@ -37,9 +37,9 @@
  ],
  "frontier": [
   {
-   "hypothesis": "Land q19/v/cand.c under Ruling 12",
-   "mechanism": "see q19/proof.md",
-   "next_probe": "lock, splice (drop INCLUDE_RODATA jtbl_80010548), rebuild, SHA1, layer-2 with q19/proof.md"
+   "hypothesis": "Land q19/v/cand.c (2/574) under Ruling 12; the no-cast issue is resolved (tbl_arg typed Tbl8008E194 *, cast only at the call)",
+   "mechanism": "q19/proof.md",
+   "next_probe": "lock, splice, rebuild SHA1, sandbox diff, precheck, layer-2 on (A)-(G); stress copy A's load-position argument"
   },
   {
    "hypothesis": "Owner admits two local copies of a stack-passed parameter (borderline.md 2026-09-26 func_80027AD8): land probes/final1-two-copies.c",

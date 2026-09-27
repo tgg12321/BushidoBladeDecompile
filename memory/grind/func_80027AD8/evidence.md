@@ -143,3 +143,19 @@
   `return 0;` costs 56.
 - [s2] Permuter r11-neither80 (32413 iterations): best 1679. Its finds 1703/1719 rediscover copy B
   (`new_var = (s32)rec` passed to func_800278C0).
+
+## [s2] FRONTIER (slotK, session close 2026-09-27)
+- Floor: candidate.c (= q19/v/cand.c, Ruling 12 two-copy body) 2/574 on the stock cc1; the only hunk is
+  the jump-table relocation addend (INCLUDE_RODATA jtbl_80010548 is dropped at splice), certifiable
+  only by the full build. Honest copy-free body (q19/v/neither.c) 80.
+- Ruling 12 status: the no-cast issue is RESOLVED. `Tbl8008E194 *tbl_arg; tbl_arg = rec;` (the
+  parameter's own type, bare parameter, no cast); the calls pass `(s32)tbl_arg`, and the cast on the use
+  is outside prong (B). Same bytes as the old `s32 tbl_arg = (s32)rec` form. The (D) package is in
+  q19/proof.md, all measured on the stock cc1 after the d94fef9a0 unpatch swap.
+- Next steps: (1) lock (foreground), splice q19/v/cand.c replacing the INCLUDE_RODATA jtbl_80010548 +
+  INCLUDE_ASM lines (tmp/func_80027AD8/splice.py; banked copy q19/scripts), rebuild, SHA1 must be the
+  oracle; (2) sandbox --diff on the spliced tree; (3) reviewer_precheck, then layer-2 walking Ruling 12
+  (A)-(G) against q19/proof.md. Layer-2 should look hardest at copy A's necessity: priority alone is
+  beatable by cancelling uses (no_tbl_cancel3 = 6/574), and the argument rests on the parameter load's
+  emission position (assign_parms, LUID) under sched1/sched2. (4) Flag the missing final return with
+  the target-byte justification (proof.md last section).
