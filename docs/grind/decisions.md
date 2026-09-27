@@ -30197,3 +30197,88 @@ re-views carrying !FAKE/TODO debt markers; Silent Hill's union + second linker s
 @hack, kept where a unified view cannot re-match) are spellings this rule refuses; so extending
 the norm to data declarations rests on this owner ruling). func_8001CE60 is judged fresh. The rule
 text was revised after four layer-2 rule-text FAILs (rounds 1-4) before commit.
+
+## 2026-09-27 — OWNER RULING — dummy constant locals as array subscripts (`.claude/rules/named-local-fake-exception.md`)
+
+Thirteenth batch (2026-09-27; verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 13).
+Context: the layer-2 review of the func_8001CE60 landing FAILed Q21 condition (1) with a
+counterexample: under one shared `u8 [2]` declaration, func_800340A0 compiles to exactly the output of its per-file scalar form (A340_0: the target under our
+cc1; the same cc1psx output) when its score subscripts are `s32 zero = 0; s32 one = 1; /* FAKE */` locals (an index held in a
+register gives the address `(plus sym reg)`, which cse's find_best_addr folds to a constant; a
+literal subscript leaves a bare-register address it never folds). The FAKE-local families covered
+constant-holders across calls, dead RA-biasing declarations and opaque `one` against bit-test
+transforms, not this purpose. Owner (Trenton) chose, verbatim: "Doesn't count (Recommended)" — "Dummy constant locals used only as array indices are outside the sanctioned FAKE-local scope. The per-file declarations stay (no FAKE constructs anywhere). I fix the ledger proof and the file comments to cover this trick, then re-run layer-2."
+
+**Ruling (the author's narrowing; the rule text in named-local-fake-exception.md governs).** A DUMMY local
+is one whose value at EVERY one of its reads (its own updates included) is fixed at compile time,
+the same on every feasible path at that read, the values possibly differing between reads, whatever
+its name, its annotation or the spelling of its writes (e.g. `s32 zero = 0;`, `one - 1`, or a
+stepped cursor `s32 i = 1; a[i - 1]; i++; a[i - 1];` whose every read is fixed). A read of a dummy local that is an array subscript or pointer offset (C pointer or array
+arithmetic, not integer-typed address arithmetic such as func_8006E49C's `base2 + tail`), alone or
+inside a larger index or offset expression, is REFUSED; no FAKE-local family admits it (existing
+opaque-arithmetic admissions for other effects are unaffected). The author's
+addition, beyond the owner's "only": the refusal applies whatever the dummy local's OTHER reads are
+(plain reads of the same fixed value, or admission for another mechanism, do not help; the read is
+not a sanctioned mechanism, not nameable under prerequisite 2, and is spelled with the literal
+constant). A local with at least one read whose value is chosen at run time is not a dummy local
+and is outside the refusal (e.g. SetDrawEnv's packet cursor, whose final `var_a3 - 1` is 7 or 10
+depending on `r->flag`; COMPLETED-C); a local fixed at its subscript reads and later given an
+unrelated run-time value is a reused local under Rulings 5-12, where an all-literal-constant value
+fails Ruling 11 (C)(3). (This narrowing was revised before commit: a per-read draft would have
+refused SetDrawEnv's cursor, layer-2 rule-text round 7; a one-value draft let a fixed stepped cursor
+escape, round 8, tmp/rv8/S5.c, banked as
+memory/grind/func_8001CE60/probes/calib_800340A0/A340_rv8_S5-Q22-refused.c.)
+Under the Q21 per-file-declaration exception's condition (1), a single-declaration spelling relying
+on a subscript or pointer-offset read of a dummy local is set aside. A subscript variable whose value at the subscript read can differ between
+feasible paths or between executions (read from state, computed from such a value, a loop counter
+taking two or more values at that read, or different constants on different feasible paths in
+Ruling 11 (C)(3)'s per-branch sense) is ordinary C and unaffected; a value computed but the same on
+every feasible path falls under the refusal. func_8001CE60's per-file form is still judged fresh
+at landing, against the corrected (1) proof.
+
+## 2026-09-27 — rule correction — Q21 condition (1) "target shape" under cc1psx (`.claude/rules/no-new-park-categories.md`)
+
+Author's correction to its own narrowing of owner ruling Q21 (not the owner's words; no owner text
+changes). The committed text defined "target shape" as the governed instructions matching the
+target "in opcode, register and offset", and required each file's functions to reach it under
+cc1psx with their own declaration. The committed COMPLETED-C scalar form of func_800340A0 does not
+meet that: under cc1psx it differs from the target (70 differing lines: 30 differ in label name only, 20 in register only, 4 in both register and label, and 16 in one tie-break hunk whose jump structure differs (it also holds the governed D_800A3899 store's register difference); the governed differences are
+loads of D_800A3899/D_800A38AA/D_800A38AB in $3/$5/$4 where the target has $a1/$a0/$v1 and the
+governed D_800A3899 tie-break store from $3 where the target has $v0, plus one difference outside the
+governed instructions: in that tie-break arm cc1psx writes the D_800A377C store inline and jumps to
+the function tail, where the target jumps to the shared store with `li $v0,1` in the delay slot.
+Every governed access keeps the target opcode and the absolute %hi/%lo(symbol) address), while under the build's cc1 it is identical
+(memory/grind/func_8001CE60/probes/calib_800340A0/SUMMARY.txt). cc1psx is calibration-only and its
+allocation, and outside the governed instructions its jump structure, differ from the target's across
+the whole function, so the register clause tested cc1psx fidelity, not the
+mechanism. Corrected: "target shape" is opcode plus every operand the mechanism decides (for an
+addressing mechanism: absolute symbol versus base register, how the base register is formed, the
+offset); registers chosen by allocation outside the mechanism are compared under the build's cc1
+only (sandbox 0 and the full build). Found by the layer-2 rule-text review of Q22 (round 3).
+Interest disclosed: the author's pending func_8001CE60 per-file landing depends on this correction;
+under the earlier text the committed scalar form A340_0 did not satisfy the cc1psx positive clause. The correction also
+tightens the negative clause: a single declaration whose only cc1psx difference from the target is
+allocation now counts as reaching the target shape and defeats (1).
+
+## 2026-09-27 — OWNER RULING — per-file declarations win over FAKE-construct spellings (`.claude/rules/no-new-park-categories.md`)
+
+Thirteenth batch (2026-09-27; verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 13, Q23).
+Context: after Q22, the round-5 layer-2 rule-text review found a second single-declaration spelling
+of func_800340A0 under one shared `u8 [2]` declaration: a FAKE pointer to the array end
+(`u8 *se = &g_sc[2]; u8 *te = &g_tb[2]; /* FAKE */`, then `se[-2]` / `se[-1]`), identical to the
+target under our cc1 and to the per-file scalar form A340_0 under cc1psx (tmp/rv5/ptr_end2.c,
+banked as memory/grind/func_8001CE60/probes/calib_800340A0/A340_ptr_end-Q23-set-aside.c). It falls
+under the owner-sanctioned pointer-alias FAKE family, not Q22. Owner (Trenton) chose, verbatim:
+"Per-file wins over FAKE (Recommended)" — "For the per-file-declaration rule, a one-declaration spelling that needs any FAKE-annotated construct (any family) doesn't count against it. The per-file form (zero FAKE constructs) lands, still with the compiler proof, annotations and layer-2. This matches the existing 'fewest no-purpose constructs wins' principle."
+
+**Ruling (summary; the rule text in the Q21 exception's condition (1) governs; the author's
+narrowing).** Under the per-file-declaration exception's condition (1), a single-declaration
+spelling that needs any construct its family requires to carry a FAKE annotation (any family on the
+frozen sanctioned list) is set aside and does not count against (1): the construct's frozen-list entry
+(or its linked rule) must EXPRESSLY require a FAKE or !FAKE annotation, and for each spelling set aside
+the ledger names the family and quotes the requiring sentence; a construct whose entry does not
+expressly require it, or that reads truthfully as ordinary C, counts (in doubt, it counts). The
+per-file form must itself carry no FAKE-annotated construct in the functions the proof covers;
+spellings needing no FAKE annotation still count. The every-spelling sentence of (1) was reconciled
+to say so. This rests on Ruling 1 (4) (simplest known form). Q22's general refusal
+stands. func_8001CE60 is judged fresh at landing.

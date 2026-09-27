@@ -188,7 +188,9 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   `randy = basePoint.x; baseX = randy;` with "FAKE but makes register
   allocation work" comments.
 - **Opaque arithmetic variables** ([[loop-rotation-two-shift]]):
-  `s32 one = 1;` to prevent compiler bit-test transforms. SOTN's
+  `s32 one = 1;` to prevent compiler bit-test transforms (not as a
+  dummy array subscript or pointer offset: refused, owner ruling
+  2026-09-27 Q22, [[named-local-fake-exception]]). SOTN's
   official wiki endorses `(Random() & 3) + 1 - 1;` as the canonical
   shape.
 - **Sub-word param reads** ([[narrow-stack-param-subword-offset]]):
@@ -578,8 +580,11 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        declaration itself, so that EVERY spelling of that file's functions
        under a declaration lacking the property misses the target, whatever
        its statement order, locals or respelling, including spellings that
-       use any construct on the frozen sanctioned list with that entry's
-       prerequisites met. An argument that covers only the spellings
+       use any construct on the frozen sanctioned list that needs no FAKE
+       annotation, with that entry's prerequisites met (spellings that need
+       a FAKE-annotated construct are set aside under owner ruling Q23
+       below, and those relying on a refused or banned construct are set
+       aside as stated below). An argument that covers only the spellings
        measured fails (1). The ledger then shows, for every admissible
        single declaration, which file's property it lacks, so that no
        admissible declaration has both files' properties. A declaration for
@@ -588,17 +593,67 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        used as the one shared declaration, plus any struct or other
        aggregate the evidence admits. A single-declaration spelling that
        relies on a REFUSED or BANNED construct (a per-use pointer pun, F4,
-       F5 union CLOBBER, an asm alias rename) is set aside. One whose every
-       construct is admissible counts, and if it compiles both files, (1) is
-       not met. The original PsyQ cc1psx (`tools/cc1psx_wrapper.sh`,
+       F5 union CLOBBER, an asm alias rename, an array subscript or
+       pointer offset read of a dummy local, one whose value at every one
+       of its reads is fixed at compile time (the same on every feasible
+       path at that read, possibly differing between reads), per owner
+       ruling 2026-09-27 Q22 in
+       [[named-local-fake-exception]]) is set aside. **Owner ruling
+       2026-09-27, thirteenth batch, Q23 ("Per-file wins over FAKE"):** a
+       single-declaration spelling that needs any construct whose frozen-list
+       entry, or the rule file that entry links, expressly requires a FAKE
+       or !FAKE annotation (for example a constant-holder or dead scalar
+       local, [[named-local-fake-exception]] prerequisite 3; a C-level
+       pointer alias, [[pointer-alias-fake-exception]] prerequisite 3; a
+       dead store or self-assign, [[dead-store-fake-exception]]; a
+       do-while(0) wrap, [[do-while-zero-exception]]) is also set aside: it
+       does not count against (1), and the ledger need not show that it
+       misses. For each spelling set aside under Q23, the ledger names the
+       family and quotes the sentence of its entry (or linked rule) that
+       requires the annotation. A construct whose entry does not expressly
+       require a FAKE annotation, or that has a truthful semantic reading as
+       ordinary C, is not set aside and counts; in doubt, it counts. The question put
+       to the owner, the answer and the other options are verbatim in
+       docs/grind/owner-rulings-2026-09-26.md (batch 13); the owner chose
+       "Per-file wins over FAKE (Recommended)", whose text is: "For the
+       per-file-declaration rule, a one-declaration spelling that needs any
+       FAKE-annotated construct (any family) doesn't count against it. The
+       per-file form (zero FAKE constructs) lands, still with the compiler
+       proof, annotations and layer-2. This matches the existing 'fewest
+       no-purpose constructs wins' principle." The author's narrowing: the
+       per-file form itself must then carry no FAKE-annotated construct in
+       the functions the (1) proof covers (otherwise it is not the "zero
+       FAKE constructs" form the owner preferred, and (1) is judged without
+       this set-aside); spellings whose constructs need no FAKE annotation
+       (e.g. ordinary C, a Ruling 11 reused local) still count. One whose
+       every construct is admissible and that needs no FAKE annotation
+       counts, and if it compiles both files, (1) is not met. Record:
+       docs/grind/decisions.md 2026-09-27 OWNER RULING — per-file
+       declarations win over FAKE-construct spellings. The original PsyQ cc1psx (`tools/cc1psx_wrapper.sh`,
        calibration use only, never a build path), run on the same
        preprocessed TUs with the build's cc1 flags, gives the same result
        for every single declaration banked under (1): at least one of the
        two files' functions misses its target shape. Under each file's own
        declaration, that file's functions reach it. "Target shape" means the
-       instructions the (1) mechanism governs match the target's in opcode,
-       register and offset. The ledger banks every cc1psx output and its
-       diff against the target.
+       instructions the (1) mechanism governs match the target's in opcode
+       and in every operand the mechanism decides (for an addressing
+       mechanism: an absolute symbol versus a base register, how that base
+       register is formed, and the offset). Destination and other registers
+       chosen by allocation outside the mechanism are compared under the
+       build's cc1 only (sandbox 0 and the full build), because cc1psx is
+       calibration-only and its allocation (and, outside the governed
+       instructions, its jump structure) can differ from the target's
+       across a whole function. (Correction, 2026-09-27, to the author's own
+       narrowing: the earlier text required every register of the governed
+       instructions to match under cc1psx, which the committed COMPLETED-C
+       scalar form of func_800340A0 does not: 70 differing lines under
+       cc1psx (30 differ in label name only, 20 in register only, 4 in
+       both, and 16 in one tie-break hunk whose jump structure differs;
+       no governed address operand differs), identical under the build's cc1;
+       memory/grind/func_8001CE60/probes/calib_800340A0/SUMMARY.txt. Record:
+       docs/grind/decisions.md 2026-09-27 rule correction — Q21 condition
+       (1) "target shape" under cc1psx.) The ledger banks every cc1psx
+       output and its diff against the target.
     2. **Same bytes, same accesses.** The two declarations cover exactly the
        same bytes and differ only in grouping: an array of an element type
        against separate scalars of that type, or a struct against its
