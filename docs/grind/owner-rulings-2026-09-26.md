@@ -102,3 +102,14 @@ Owner chose: **"Yes, if all differences explained (Recommended)"** — option te
 ## Q16 — -G8 split / respelling order
 Question: "The -G8 rule says any struct/type respelling must land BEFORE the file split (or be proven harmless before it). func_80036140's CdlATV merge only builds correctly AFTER cdrom_SetMix moves to its -G8 file. May the order be reversed — split commit first (proven identical to the original), then the merge commit (also proven identical)?"
 Owner chose: **"Allow reverse order (Recommended)"** — option text: "Separate commits, split first then merge, each independently proven to build the exact original; layer-2 reviews both."
+
+<!-- Batch 9: appended verbatim from tmp/orch/owner_rulings_2026-09-26i.md (line endings normalized to LF; blank separator line added). -->
+# Owner ruling 2026-09-26 (ninth batch, conversation) — VERBATIM RECORD
+Context: the orchestrator proposed a scratch-only study of a narrow cc1 fidelity patch for func_8001A820 (our GCC 2.7.2 merges `lhu; sll 16; sra 16` into `lh` for signed halfword reads through a lui-only scratchpad pointer; Sony's cc1psx keeps the shipped three-instruction form), citing the adopted PLUS->IOR patch (9bc64b751) as precedent. The owner asked "SOTN doesn't do compiler patches do they?"; the orchestrator answered that, to its knowledge, SOTN-style PS1 decomps use a rebuild of the original compiler version patched only to build on modern hosts, and switch compiler versions rather than patch output; recommended withdrawing the study.
+
+## Q17 — compiler patches
+Owner (verbatim): "Withdraw that option, consider a compiler patch a cheat. Update documentation, mark relevant funcs as cheated and add them back to the queue"
+
+## Scoping note (orchestrator to owner, same conversation, after Q17; owner has not responded to it)
+Orchestrator (verbatim excerpt): "One scoping point for you. Today's assembler-shim changes (the `($12)` parser fix and the "declared, no value" list) are changes to maspsx, not the compiler. SOTN uses maspsx too. I'm treating those as outside this ruling. The census will list them separately so you can decide if you disagree."
+Owner: no reply to this point as of recording. Status: orchestrator's scoping, not an owner ruling; open for the owner to overrule.

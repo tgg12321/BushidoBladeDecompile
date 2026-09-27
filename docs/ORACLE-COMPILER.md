@@ -4,6 +4,15 @@
 from committed inputs by a committed script. It is no longer a binary that
 exists only as a file on one disk.
 
+> **SUPERSEDED 2026-09-26 (owner ruling Q17, ninth batch): a compiler patch
+> is a cheat.** Any modification of the build compiler that changes its
+> output is a cheat. The narrow PLUS->IOR patch below is output-changing and
+> is superseded. The reorg.c `negate_rtx` crash fix (ruling 262930f1b) is kept
+> as a host-build fix, as the author's reading, open for the owner to
+> overrule; any new host fix needs its own owner ruling. Rule text:
+> `.claude/rules/no-compiler-divergence.md` § "Owner ruling 2026-09-26
+> (ninth batch, Q17)". The rest of this document is history.
+>
 > **Adopted 2026-09-25 (owner ruling `bcdc1648e`, second batch).** The
 > narrowed PLUS->IOR condition replaced the old no-rewrite patch. The
 > per-site record the ruling requires is in § "Adoption record (2026-09-25)"
@@ -657,6 +666,12 @@ more.
   `exprop` stays a live alternative. Adoption follows the steps in § Owner ruling
   2026-09-25 (second batch) and has not yet been executed. Record in docs/grind/decisions.md 2026-09-25
   OWNER RULING — oracle compiler adoption (second batch).
+- **2026-09-26 (Q17)** — owner ruling: a compiler patch is a cheat. The
+  narrow PLUS->IOR adoption is superseded; func_800174F4, the one function
+  depending on it, is reverted to `INCLUDE_ASM` and re-queued; the build
+  compiler returns to the pinned upstream plus the one kept host fix
+  (262930f1b) in a separate change. See `.claude/rules/no-compiler-divergence.md` § "Owner ruling
+  2026-09-26 (ninth batch, Q17)".
 - **2026-09-25 (adoption executed)** — the per-site (B) check found no
   discriminating site among the scanned functions with a grind candidate, so
   narrow was adopted under (C). `tools/cc1-plus-to-ior-narrow.patch` replaced

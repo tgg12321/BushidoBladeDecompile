@@ -18,6 +18,11 @@ through the independent-review path (fresh layer-2 cheat-reviewer on this
 text, landed as its own commit, NOT shipped inside the match that uses it —
 [[review-discipline-before-commit]]).
 
+> **SUPERSEDED by owner ruling Q17 (2026-09-26, a compiler patch is a cheat;
+> no-compiler-divergence.md). Kept as history: the "current patch" and the
+> adoption it describes are superseded, and the 2026-09-26 census found that
+> `main`'s natural spelling matches under the unpatched compiler.**
+>
 > **Note (owner ruling 2026-09-25, second batch; docs/ORACLE-COMPILER.md
 > § "Owner ruling 2026-09-25 (second batch)").** The PLUS->IOR study
 > (docs/ORACLE-COMPILER-STUDY-2026-09-25.md § 6.2) found that `main`'s natural
@@ -54,8 +59,9 @@ overwrite I2DEST if its value is still used by NEWPAT" (`reg_referenced_p
 (asm/funcs/main.s 0x7B58-0x7B6C). Under the RETIRED no-rewrite compiler
 (tools/cc1-no-plus-to-ior.patch, retired in 9bc64b751) every fresh-variable
 spelling of the same expression folded to `sll; addiu -128`, which is why the
-stepwise spelling was granted. Under the adopted narrow compiler the natural
-spelling matches instead (see `main`, commit 89a3bc8aa).
+stepwise spelling was granted. Under the unpatched compiler (2026-09-26
+census; the narrow-patch adoption is superseded by owner ruling Q17) the
+natural spelling matches instead (see `main`, commit 89a3bc8aa).
 
 This is the split-init family ([[split-init-accumulation-sanctioned]], owner
 2026-06-13; made ordinary C by [[ordinary-c-judge-decidable]] Ruling 4,
@@ -111,7 +117,10 @@ not be claimed under that clause.
 
 - ~~`main` (src/ings.c poll loop) — the grant's exhibit; first instance.~~
   **Retired 2026-09-25** (`cheat-cleanup: main`, after the narrow PLUS->IOR
-  adoption 9bc64b751, ruling bcdc1648e item (F)): the natural
+  adoption 9bc64b751, ruling bcdc1648e item (F); that adoption is SUPERSEDED
+  by owner ruling Q17, 2026-09-26, no-compiler-divergence.md, and the
+  2026-09-26 census found `main` matches under the unpatched compiler): the
+  natural
   `if (cnt >= ((D_800A36F1 - 1) << 8) + 0x80) break;` now byte-matches, so
   prerequisite 4 (fresh spellings fold) no longer holds for it. The family is
   unchanged and currently has NO instances; a new instance must re-measure

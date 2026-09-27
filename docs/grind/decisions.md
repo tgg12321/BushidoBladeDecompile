@@ -30028,3 +30028,41 @@ respelling are separate commits, split first, the split commit holding the text-
 nothing of the respelling and reaching the oracle SHA1 under verify-oracle --rebuild; (3) the
 respelling commit follows under its own rule and also reaches the oracle SHA1; (4) a fresh layer-2
 reviews both commits. The text-identical-move requirement is unchanged in both orders.
+
+## 2026-09-26 — OWNER RULING — a compiler patch is a cheat (Q17) (`.claude/rules/no-compiler-divergence.md`)
+
+Ninth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 9). Context:
+the orchestrator proposed a scratch-only study of a narrow cc1 fidelity patch for func_8001A820,
+citing the adopted PLUS->IOR patch (9bc64b751) as precedent. The owner asked "SOTN doesn't do
+compiler patches do they?"; the orchestrator answered that, to its knowledge, SOTN-style PS1
+decomps use a rebuild of the original compiler version patched only to build on modern hosts, and
+switch compiler versions rather than patch output, and recommended withdrawing the study. Owner
+(Trenton), verbatim: "Withdraw that option, consider a compiler patch a cheat. Update
+documentation, mark relevant funcs as cheated and add them back to the queue".
+
+Census (tmp/patchcensus/, 2026-09-26): the build cc1 is pristine decompals/mips-gcc-2.7.2 @43d1cdb6
+plus two patches (tools/build_oracle_cc1.sh): (a) OUTPUT-CHANGING tools/cc1-plus-to-ior-narrow.patch
+(combine.c; adopted 9bc64b751 under ruling bcdc1648e, replacing tools/cc1-no-plus-to-ior.patch);
+(b) HOST-ONLY tools/cc1-reorg-negate-rtx-decl.patch (crash fix, ruling 262930f1b: without it 6 TUs
+segfault; on the TUs that survive, output is identical to stock). The BB2_*_DEBUG hooks exist only
+in the diagnostic cc1. The one function depending on (a) is func_800174F4 (src/ings.c): without it
+`addiu s1,v0,4` becomes `ori s1,v0,0x4`. func_80073C78 and `main` match under stock.
+
+**Ruling (full text in no-compiler-divergence.md § "Owner ruling 2026-09-26 (ninth batch, Q17)";
+the author's narrowing).** Any modification to the build compiler that changes its output is a
+cheat; a function whose match depends on one is not COMPLETED and returns to the queue as
+INCLUDE_ASM. One named host-build fix is kept, as the author's reading and open for the owner to
+overrule: the reorg.c negate_rtx crash fix (ruling 262930f1b; census: without it 6 TUs crash, and
+the surviving TUs compile identically with and without it). The carve-out covers that fix only;
+any NEW host-build fix needs its own owner ruling, and there is no general test by which an agent
+may admit one.
+Compile flags (-mel, -msoft-float) are not patches. Diagnostic compilers stay diagnostic-only. The
+2026-09-25 PLUS->IOR rulings (bcdc1648e and its first-batch study ruling) and the adoption
+(9bc64b751) are SUPERSEDED and kept as history. The maspsx gates and the maspsx parser fix are
+outside Q17 only as the orchestrator's stated scoping (its verbatim note to the owner is in the
+batch-9 record; the owner has not replied): not an owner ruling, open for the owner to overrule.
+
+**func_800174F4: cheated (compiler patch), reverted to INCLUDE_ASM, re-queued.** Its match depended
+on the output-changing PLUS->IOR patch. The revert to INCLUDE_ASM and its return to the queue land in
+a separate commit right after this one, as does returning the build compiler to the pinned upstream
+plus the one kept host fix (262930f1b).

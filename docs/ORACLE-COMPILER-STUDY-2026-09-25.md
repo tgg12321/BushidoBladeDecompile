@@ -1,5 +1,10 @@
 # Oracle-compiler study — what separates the kept `addu` sites from the `ori` sites (2026-09-25)
 
+> **Superseded as policy (owner ruling 2026-09-26, Q17):** a compiler patch is a cheat.
+> This study and the narrow-patch adoption it led to (9bc64b751) are history; its findings
+> no longer justify patching the build compiler. See `.claude/rules/no-compiler-divergence.md`
+> § "Owner ruling 2026-09-26 (ninth batch, Q17)".
+
 **Scope.** This is the scratch-only study authorized by the 2026-09-25 owner ruling
 ([ORACLE-COMPILER.md](ORACLE-COMPILER.md) § "Owner ruling 2026-09-25", item (C)).
 Every compiler variant was built in the WSL home directory (`~/cc1study/`). Every

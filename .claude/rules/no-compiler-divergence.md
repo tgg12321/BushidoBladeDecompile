@@ -23,6 +23,67 @@ User policy, made explicit 2026-05-30 after a worker spiraled toward
 This is a HARD RULE. Not a heuristic, not a tier, not a last-resort gate.
 There is NO compiler-modification path on this project.
 
+## Owner ruling 2026-09-26 (ninth batch, Q17) — a compiler patch is a cheat
+
+Context (record: docs/grind/owner-rulings-2026-09-26.md, batch 9): the
+orchestrator proposed a scratch-only study of a narrow cc1 fidelity patch for
+func_8001A820, citing the adopted PLUS->IOR patch (9bc64b751) as precedent. The
+owner asked "SOTN doesn't do compiler patches do they?". The orchestrator
+answered that, to its knowledge, SOTN-style PS1 decomps use a rebuild of the
+original compiler version patched only to build on modern hosts, and switch
+compiler versions rather than patch output, and recommended withdrawing the
+study. Owner (Trenton), verbatim: **"Withdraw that option, consider a compiler
+patch a cheat. Update documentation, mark relevant funcs as cheated and add
+them back to the queue"**.
+
+**Rule text** (the author's narrowing, not the owner's words):
+- **A compiler patch is a cheat.** Any modification to the build compiler
+  (`tools/gcc-2.7.2/build/cc1`, built from the pinned upstream
+  decompals/mips-gcc-2.7.2 @43d1cdb6) that changes the compiler's output is a
+  cheat. A function whose match depends on such a modification is NOT
+  COMPLETED: it is reverted to `INCLUDE_ASM` and returns to the queue.
+- **One named host-build fix is kept, as the author's reading.** The
+  2026-08-24 reorg.c `negate_rtx` declaration crash fix
+  (`tools/cc1-reorg-negate-rtx-decl.patch`, owner ruling 262930f1b) stays in
+  the build compiler. It is a host-build fix: without it six TUs crash on this
+  host, and every TU that survives compiles identically with and without it
+  (census 2026-09-26, `tmp/patchcensus/`); this matches the practice the
+  orchestrator described to the owner, a rebuild of the original compiler with
+  host fixes only. Keeping it is the author's reading of Q17, not an owner
+  ruling, and stays open for the owner to overrule. The carve-out covers that
+  one fix only. There is no general test by which an agent may admit a
+  change to the compiler: any NEW host-build fix needs its own owner ruling.
+- **Compile flags are not patches.** The canonical `CC_FLAGS` (including
+  `-mel` and `-msoft-float`, [[compiler-flags-canonical]]) configure the
+  unmodified compiler and are outside this ruling.
+- **Diagnostic compilers are not the build compiler.** The instrumented
+  diagnostic cc1 (`tools/gcc-2.7.2/cc1`, `BB2_*_DEBUG` hooks) and cc1psx stay
+  diagnostic-only; no function lands on their output, as before.
+- **Superseded.** The PLUS->IOR rulings below (owner, 2026-09-25, study and
+  second-batch adoption, recorded in bcdc1648e) and the adoption itself
+  (9bc64b751, `tools/cc1-plus-to-ior-narrow.patch`, which replaced
+  `tools/cc1-no-plus-to-ior.patch`) are SUPERSEDED by this ruling. They stay
+  below as history. The census (`tmp/patchcensus/`, 2026-09-26) found one
+  output-changing patch in the build compiler, the narrow PLUS->IOR patch in
+  `combine.c`, and one function depending on it: func_800174F4
+  (`src/ings.c`), whose `addiu s1,v0,4` becomes `ori s1,v0,0x4` without it.
+  func_80073C78 and `main` match under the unpatched compiler. Returning the
+  build compiler to the pinned upstream plus the one kept host fix, and
+  reverting
+  func_800174F4, are separate changes after the commit that records this
+  ruling.
+- **Scope: the compiler only, by the orchestrator's stated scoping.** The
+  owner's words address the compiler. After the ruling, the orchestrator told
+  the owner, verbatim: "Today's assembler-shim changes (the `($12)` parser fix
+  and the "declared, no value" list) are changes to maspsx, not the compiler.
+  SOTN uses maspsx too. I'm treating those as outside this ruling." The owner
+  has not replied to that point. So the maspsx gates ([[maspsx-gate-lists]])
+  and the maspsx parser fix are outside Q17 as the orchestrator's stated
+  scoping, NOT an owner ruling. It stays open for the owner to overrule, and
+  those changes keep their own rulings meanwhile.
+Record: docs/grind/decisions.md 2026-09-26 OWNER RULING — a compiler patch is a
+cheat (Q17).
+
 ## What is forbidden
 
 1. **Patching `tools/gcc-2.7.2/`** (cc1, the linker, anything in the toolchain).
@@ -52,6 +113,9 @@ There is NO compiler-modification path on this project.
 5. **Asserting "the toolchain is the variable"** as a reason to escalate, park,
    or stop. The toolchain is fixed; therefore the variable is the C.
 
+> **SUPERSEDED by the owner ruling of 2026-09-26 (Q17) above; kept as
+> history.**
+>
 > **Owner ruling 2026-09-25 — study only.** A scratch-only STUDY of narrowed
 > `combine.c` PLUS->IOR variants is authorized. Its question is which condition
 > separates the sites where the original kept `addu` from those where it
@@ -64,6 +128,9 @@ There is NO compiler-modification path on this project.
 > § "Owner ruling 2026-09-25". Items 1-5 above stand for everything outside
 > that study.
 
+> **SUPERSEDED by the owner ruling of 2026-09-26 (Q17) above; kept as
+> history.**
+>
 > **Owner ruling 2026-09-25 (second batch) — adoption authorized, conditionally.**
 > The study's narrowed PLUS->IOR condition may REPLACE
 > `tools/cc1-no-plus-to-ior.patch`. First, a register-plus-register scan of the
@@ -83,7 +150,8 @@ There is NO compiler-modification path on this project.
 > refused. Full terms: docs/ORACLE-COMPILER.md § "Owner ruling 2026-09-25
 > (second batch)".
 
-**Executed 2026-09-25.** No scanned site discriminated, so narrow was adopted:
+**Executed 2026-09-25 (SUPERSEDED 2026-09-26 by Q17 above; history).** No
+scanned site discriminated, so narrow was adopted:
 `tools/cc1-plus-to-ior-narrow.patch` replaced `tools/cc1-no-plus-to-ior.patch`,
 and the crash fix is pinned as `tools/cc1-reorg-negate-rtx-decl.patch`.
 `exprop` stays a live alternative. Record: docs/ORACLE-COMPILER.md § "Adoption

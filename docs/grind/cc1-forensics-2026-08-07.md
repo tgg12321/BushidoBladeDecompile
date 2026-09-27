@@ -1,5 +1,10 @@
 # cc1 forensics — what the shipped oracle compiler actually does differently
 
+> **Superseded as policy (owner ruling 2026-09-26, Q17):** a compiler patch is a cheat.
+> This document is kept as history; its findings no longer justify patching the build
+> compiler. See `.claude/rules/no-compiler-divergence.md` § "Owner ruling 2026-09-26
+> (ninth batch, Q17)".
+
 **Date:** 2026-08-07 · **Scope:** Phase 1 of the oracle-compiler baseline
 resolution ([docs/ORACLE-COMPILER.md](../ORACLE-COMPILER.md)) · **Tree
 changes:** none (scratch compiles only; `tools/gcc-2.7.2/` verified
