@@ -1,0 +1,67 @@
+# command (both): tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float <func>.i  (env BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1; instrumented cc1, codegen-identical to build/cc1 on these .i: dbg.sh cmp IDENTICAL); .lreg/.greg via build/cc1 -dl -dg
+# .i = src/code6cac.c with the INCLUDE_ASM line replaced by the variant (tmp/func_8001CE60/cc.sh)
+## SPLIT (per-value; B4 = candidate.c 2026-09-26): timer block 101 local-alloc
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=0 reg1=444 birth=2 death=44 refs=3 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=1 reg1=458 birth=6 death=40 refs=15 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=2 reg1=441 birth=10 death=14 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=3 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=4 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=5 reg1=442 birth=18 death=46 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=6 reg1=447 birth=22 death=24 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=7 reg1=457 birth=26 death=32 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=8 reg1=470 birth=34 death=54 refs=14 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=9 reg1=-1 birth=43 death=45 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=10 reg1=-1 birth=43 death=45 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=11 reg1=465 birth=48 death=56 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+QTYDBG blk=101 ord=0 qty=8 reg1=470 birth=34 death=54 refs=14 got=2
+QTYDBG blk=101 ord=1 qty=7 reg1=457 birth=26 death=32 refs=6 got=2
+QTYDBG blk=101 ord=2 qty=11 reg1=465 birth=48 death=56 refs=6 got=3
+QTYDBG blk=101 ord=3 qty=1 reg1=458 birth=6 death=40 refs=15 got=3
+QTYDBG blk=101 ord=4 qty=6 reg1=447 birth=22 death=24 refs=2 got=2
+QTYDBG blk=101 ord=5 qty=5 reg1=442 birth=18 death=46 refs=8 got=4
+QTYDBG blk=101 ord=6 qty=2 reg1=441 birth=10 death=14 refs=2 got=2
+QTYDBG blk=101 ord=7 qty=0 reg1=444 birth=2 death=44 refs=3 got=5
+QTYDBG blk=101 ord=8 qty=3 reg1=-1 birth=15 death=17 refs=1 got=65
+QTYDBG blk=101 ord=9 qty=4 reg1=-1 birth=15 death=17 refs=1 got=66
+QTYDBG blk=101 ord=10 qty=9 reg1=-1 birth=43 death=45 refs=1 got=65
+QTYDBG blk=101 ord=11 qty=10 reg1=-1 birth=43 death=45 refs=1 got=66
+Register 433 used 4 times across 6 insns; GR_REGS or none.
+Register 434 used 5 times across 10 insns in block 101; GR_REGS or none.
+Register 440 used 2 times across 2 insns in block 101; GR_REGS or none.
+Register 441 used 2 times across 6 insns in block 101; GR_REGS or none.
+Register 441 used 19 times across 77 insns; dies in 0 places; crosses 9 calls; GR_REGS or none.
+## SHARED (probe shared-limit-left-n-0.c, pseudo 72 = n): timer block 101 local-alloc
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=0 reg1=442 birth=2 death=44 refs=3 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=1 reg1=438 birth=6 death=14 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=2 reg1=439 birth=10 death=14 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=3 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=4 reg1=-1 birth=15 death=17 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=5 reg1=440 birth=18 death=46 refs=8 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=6 reg1=445 birth=22 death=24 refs=2 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=7 reg1=456 birth=26 death=40 refs=10 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=8 reg1=468 birth=34 death=54 refs=14 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=9 reg1=-1 birth=43 death=45 refs=1 size=4 mode=4 minclass=4 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=10 reg1=-1 birth=43 death=45 refs=1 size=4 mode=4 minclass=5 altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg= sugg=
+SUGGDBG-QTY func=func_8001CE60 blk=101 qty=11 reg1=463 birth=48 death=56 refs=6 size=1 mode=4 minclass=1 altclass=0 calls=0 chgsize=1 ncopysugg=0 nsugg=0 copysugg= sugg=
+QTYDBG blk=101 ord=0 qty=7 reg1=456 birth=26 death=40 refs=10 got=2
+QTYDBG blk=101 ord=1 qty=8 reg1=468 birth=34 death=54 refs=14 got=3
+QTYDBG blk=101 ord=2 qty=1 reg1=438 birth=6 death=14 refs=6 got=2
+QTYDBG blk=101 ord=3 qty=11 reg1=463 birth=48 death=56 refs=6 got=2
+QTYDBG blk=101 ord=4 qty=6 reg1=445 birth=22 death=24 refs=2 got=2
+QTYDBG blk=101 ord=5 qty=5 reg1=440 birth=18 death=46 refs=8 got=4
+QTYDBG blk=101 ord=6 qty=2 reg1=439 birth=10 death=14 refs=2 got=3
+QTYDBG blk=101 ord=7 qty=0 reg1=442 birth=2 death=44 refs=3 got=5
+QTYDBG blk=101 ord=8 qty=3 reg1=-1 birth=15 death=17 refs=1 got=65
+QTYDBG blk=101 ord=9 qty=4 reg1=-1 birth=15 death=17 refs=1 got=66
+QTYDBG blk=101 ord=10 qty=9 reg1=-1 birth=43 death=45 refs=1 got=65
+QTYDBG blk=101 ord=11 qty=10 reg1=-1 birth=43 death=45 refs=1 got=66
+Register 72 used 8 times across 18 insns; dies in 2 places; GR_REGS or none.
+Register 432 used 4 times across 6 insns; GR_REGS or none.
+Register 436 used 2 times across 2 insns in block 101; GR_REGS or none.
+Register 437 used 2 times across 3 insns in block 101; GR_REGS or none.
+Register 438 used 2 times across 2 insns in block 101; GR_REGS or none.
+Register 439 used 2 times across 6 insns in block 101; GR_REGS or none.
+Register 440 used 4 times across 12 insns in block 101; GR_REGS or none.
+## SHARED global-alloc dispositions (K.i.greg)
+4:;; 72 conflicts: 72 441 2 4 5 29 65 66
+72 in 3 432 in 3 436 in 2 437 in 2 438 in 2 439 in 3 440 in 4 
