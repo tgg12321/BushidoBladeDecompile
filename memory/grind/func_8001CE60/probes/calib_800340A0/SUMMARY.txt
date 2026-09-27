@@ -1,0 +1,32 @@
+A340_0 cc1: IDENTICAL to target shape
+A340_0 cc1psx: 70 differing lines
+A340_1 cc1: 5 differing lines
+A340_1 cc1psx: 75 differing lines
+A340_2 cc1: 5 differing lines
+A340_2 cc1psx: 75 differing lines
+A340_a cc1: 5 differing lines
+A340_a cc1psx: 75 differing lines
+A340_b cc1: 5 differing lines
+A340_b cc1psx: 75 differing lines
+A340_c cc1: 5 differing lines
+A340_c cc1psx: 75 differing lines
+A340_s cc1: 5 differing lines
+A340_s cc1psx: 75 differing lines
+
+== governed instructions (accesses to the score/tiebreak bytes), in program order ==
+target (asm/funcs/func_800340A0.s):
+lui $a2, %hi(D_800A3898);lbu $a2, %lo(D_800A3898)($a2);lui $a1, %hi(D_800A3899);lbu $a1, %lo(D_800A3899)($a1);lui $a0, %hi(D_800A38AA);lbu $a0, %lo(D_800A38AA)($a0);lui $v1, %hi(D_800A38AB);lbu $v1, %lo(D_800A38AB)($v1);lui $at, %hi(D_800A3898);sb $v0, %lo(D_800A3898)($at);lui $at, %hi(D_800A3899);sb $v0, %lo(D_800A3899)($at);lui $v1, %hi(D_800A3898);lbu $v1, %lo(D_800A3898)($v1);lui $v1, %hi(D_800A3899);lbu $v1, %lo(D_800A3899)($v1);
+A340_0 cc1   :  lbu $6,D_800A3898; lbu $5,D_800A3899; lbu $4,D_800A38AA; lbu $3,D_800A38AB; sb $2,D_800A3898; sb $2,D_800A3899; lbu $3,D_800A3898; lbu $3,D_800A3899;
+A340_0 cc1psx:  lbu $6,D_800A3898; lbu $3,D_800A3899; lbu $5,D_800A38AA; lbu $4,D_800A38AB; sb $2,D_800A3898; sb $3,D_800A3899; lbu $3,D_800A3898; lbu $3,D_800A3899;
+A340_1 cc1   :  la $7,g_match_p1_score; lbu $6,0($7); lbu $5,g_match_p1_score+1; lbu $4,g_match_p1_tiebreaker; lbu $3,g_match_p1_tiebreaker+1; sb $2,0($7); sb $2,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_1 cc1psx:  la $7,g_match_p1_score; lbu $6,0($7); lbu $3,g_match_p1_score+1; lbu $5,g_match_p1_tiebreaker; lbu $4,g_match_p1_tiebreaker+1; sb $2,0($7); sb $3,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_2 cc1   :  la $7,g_match_p1_score; lbu $6,0($7); lbu $5,g_match_p1_score+1; lbu $4,g_match_p1_tiebreaker; lbu $3,g_match_p1_tiebreaker+1; sb $2,0($7); sb $2,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_2 cc1psx:  la $7,g_match_p1_score; lbu $6,0($7); lbu $3,g_match_p1_score+1; lbu $5,g_match_p1_tiebreaker; lbu $4,g_match_p1_tiebreaker+1; sb $2,0($7); sb $3,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_a cc1   :  la $7,g_match_p1_score; lbu $6,0($7); lbu $5,g_match_p1_score+1; lbu $4,g_match_p1_tiebreaker; lbu $3,g_match_p1_tiebreaker+1; sb $2,0($7); sb $2,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_a cc1psx:  la $7,g_match_p1_score; lbu $6,0($7); lbu $3,g_match_p1_score+1; lbu $5,g_match_p1_tiebreaker; lbu $4,g_match_p1_tiebreaker+1; sb $2,0($7); sb $3,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_b cc1   :  la $7,g_match_p1_score; lbu $6,0($7); lbu $5,g_match_p1_score+1; lbu $4,g_match_p1_tiebreaker; lbu $3,g_match_p1_tiebreaker+1; sb $2,0($7); sb $2,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_b cc1psx:  la $7,g_match_p1_score; lbu $6,0($7); lbu $3,g_match_p1_score+1; lbu $5,g_match_p1_tiebreaker; lbu $4,g_match_p1_tiebreaker+1; sb $2,0($7); sb $3,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_c cc1   :  la $7,g_match_p1_score; lbu $6,0($7); lbu $5,g_match_p1_score+1; lbu $4,g_match_p1_tiebreaker; lbu $3,g_match_p1_tiebreaker+1; sb $2,0($7); sb $2,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_c cc1psx:  la $7,g_match_p1_score; lbu $6,0($7); lbu $3,g_match_p1_score+1; lbu $5,g_match_p1_tiebreaker; lbu $4,g_match_p1_tiebreaker+1; sb $2,0($7); sb $3,g_match_p1_score+1; lbu $3,g_match_p1_score; lbu $3,g_match_p1_score+1;
+A340_s cc1   :  la $7,g_match_score; lbu $6,0($7); lbu $5,g_match_score+1; lbu $4,g_match_tiebreaker; lbu $3,g_match_tiebreaker+1; sb $2,0($7); sb $2,g_match_score+1; lbu $3,g_match_score; lbu $3,g_match_score+1;
+A340_s cc1psx:  la $7,g_match_score; lbu $6,0($7); lbu $3,g_match_score+1; lbu $5,g_match_tiebreaker; lbu $4,g_match_tiebreaker+1; sb $2,0($7); sb $3,g_match_score+1; lbu $3,g_match_score; lbu $3,g_match_score+1;

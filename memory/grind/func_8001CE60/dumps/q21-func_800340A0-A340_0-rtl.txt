@@ -1,0 +1,20 @@
+===== rtl: pseudos set to &D_800A3898: []
+   (insn 9 6 12 (set (reg/v:QI 72) (mem:QI (symbol_ref:SI ("D_800A3898")))) -1 (nil) (nil))
+   (insn 114 112 117 (set (mem:QI (symbol_ref:SI ("D_800A3898"))) (subreg:QI (reg:SI 102) 0)) -1 (nil) (nil))
+   (insn 191 189 193 (set (reg:QI 123) (mem:QI (symbol_ref:SI ("D_800A3898")))) -1 (nil) (nil))
+===== cse: pseudos set to &D_800A3898: []
+   (insn 9 6 12 (set (reg/v:QI 72) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (nil))
+   (insn 114 112 117 (set (mem:QI (symbol_ref:SI ("D_800A3898"))) (subreg:QI (reg:SI 102) 0)) 166 {movqi_internal2} (nil) (nil))
+   (insn 191 189 193 (set (reg:QI 123) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (nil))
+===== cse2: pseudos set to &D_800A3898: []
+   (insn 9 6 12 (set (reg/v:QI 72) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (nil))
+   (insn 114 112 117 (set (mem:QI (symbol_ref:SI ("D_800A3898"))) (subreg:QI (reg:SI 102) 0)) 166 {movqi_internal2} (nil) (nil))
+   (insn 191 189 193 (set (reg:QI 123) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (nil))
+===== combine: pseudos set to &D_800A3898: []
+   (insn 9 6 12 (set (reg/v:QI 72) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (nil))
+   (insn 114 112 117 (set (mem:QI (symbol_ref:SI ("D_800A3898"))) (subreg:QI (reg:SI 102) 0)) 166 {movqi_internal2} (insn_list 112 (nil)) (expr_list:REG_DEAD (reg:SI 102) (nil)))
+   (insn 191 189 193 (set (reg:QI 123) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (nil))
+===== lreg: pseudos set to &D_800A3898: []
+   (insn 9 12 14 (set (reg/v:QI 72) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (nil))
+   (insn 114 112 123 (set (mem:QI (symbol_ref:SI ("D_800A3898"))) (subreg:QI (reg:SI 102) 0)) 166 {movqi_internal2} (insn_list 112 (nil)) (expr_list:REG_DEAD (reg:SI 102) (nil)))
+   (insn 191 182 187 (set (reg:QI 123) (mem:QI (symbol_ref:SI ("D_800A3898")))) 166 {movqi_internal2} (nil) (expr_list:REG_EQUIV (mem:QI (symbol_ref:SI ("D_800A3898"))) (nil)))

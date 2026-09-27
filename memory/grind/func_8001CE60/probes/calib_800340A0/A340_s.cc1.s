@@ -2,11 +2,12 @@ func_800340A0:
 	.frame	$sp,0,$31		# vars= 0, regs= 0/0, args= 0, extra= 0
 	.mask	0x00000000,0
 	.fmask	0x00000000,0
-	lbu	$6,D_800A3898
+	la	$7,g_match_score
+	lbu	$6,0($7)
 	lbu	$2,D_800A37F8
 	andi	$4,$6,0x00ff
 	beq	$4,$2,.L1200
-	lbu	$5,D_800A3899
+	lbu	$5,g_match_score+1
 	andi	$3,$5,0x00ff
 	.set	noreorder
 	.set	nomacro
@@ -46,8 +47,8 @@ func_800340A0:
 	lbu	$3,D_800A3874
 	j	.L1201
 .L1194:
-	lbu	$4,D_800A38AA
-	lbu	$3,D_800A38AB
+	lbu	$4,g_match_tiebreaker
+	lbu	$3,g_match_tiebreaker+1
 	sltu	$2,$4,$3
 	.set	noreorder
 	.set	nomacro
@@ -57,7 +58,7 @@ func_800340A0:
 	.set	reorder
 
 	lbu	$3,D_800A3874
-	sb	$2,D_800A3898
+	sb	$2,0($7)
 	sb	$0,D_800A377C($3)
 	j	.L1189
 .L1196:
@@ -70,7 +71,7 @@ func_800340A0:
 	.set	reorder
 
 	lbu	$3,D_800A3874
-	sb	$2,D_800A3899
+	sb	$2,g_match_score+1
 	.set	noreorder
 	.set	nomacro
 	j	.L1201
@@ -85,11 +86,11 @@ func_800340A0:
 	sb	$2,D_800A377C($3)
 .L1189:
 	lbu	$2,D_800A3874
-	lbu	$3,D_800A3898
+	lbu	$3,g_match_score
 	sll	$2,$2,1
 	sb	$3,D_800F65F8($2)
 	lbu	$2,D_800A3874
-	lbu	$3,D_800A3899
+	lbu	$3,g_match_score+1
 	sll	$2,$2,1
 	sb	$3,D_800F65F9($2)
 	lbu	$2,D_800A3874

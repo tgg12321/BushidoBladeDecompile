@@ -6,12 +6,12 @@ func_800340A0:
 	lbu	$6,0($7)
 	lbu	$2,D_800A37F8
 	andi	$4,$6,0x00ff
-	beq	$4,$2,.L1087
+	beq	$4,$2,.L1200
 	lbu	$5,g_match_p1_score+1
 	andi	$3,$5,0x00ff
 	.set	noreorder
 	.set	nomacro
-	bne	$3,$2,.L1077
+	bne	$3,$2,.L1190
 	sltu	$2,$3,$4
 	.set	macro
 	.set	reorder
@@ -19,40 +19,40 @@ func_800340A0:
 	lbu	$3,D_800A3874
 	.set	noreorder
 	.set	nomacro
-	j	.L1088
+	j	.L1201
 	li	$2,0x00000001		# 1
 	.set	macro
 	.set	reorder
 
-.L1077:
+.L1190:
 	.set	noreorder
 	.set	nomacro
-	beq	$2,$0,.L1079
+	beq	$2,$0,.L1192
 	sltu	$2,$4,$3
 	.set	macro
 	.set	reorder
 
-.L1087:
+.L1200:
 	lbu	$2,D_800A3874
 	sb	$0,D_800A377C($2)
-	j	.L1076
-.L1079:
+	j	.L1189
+.L1192:
 	.set	noreorder
 	.set	nomacro
-	beq	$2,$0,.L1081
+	beq	$2,$0,.L1194
 	li	$2,0x00000001		# 1
 	.set	macro
 	.set	reorder
 
 	lbu	$3,D_800A3874
-	j	.L1088
-.L1081:
+	j	.L1201
+.L1194:
 	lbu	$4,g_match_p1_tiebreaker
 	lbu	$3,g_match_p1_tiebreaker+1
 	sltu	$2,$4,$3
 	.set	noreorder
 	.set	nomacro
-	beq	$2,$0,.L1083
+	beq	$2,$0,.L1196
 	addu	$2,$6,1
 	.set	macro
 	.set	reorder
@@ -60,12 +60,12 @@ func_800340A0:
 	lbu	$3,D_800A3874
 	sb	$2,0($7)
 	sb	$0,D_800A377C($3)
-	j	.L1076
-.L1083:
+	j	.L1189
+.L1196:
 	sltu	$2,$3,$4
 	.set	noreorder
 	.set	nomacro
-	beq	$2,$0,.L1085
+	beq	$2,$0,.L1198
 	addu	$2,$5,1
 	.set	macro
 	.set	reorder
@@ -74,17 +74,17 @@ func_800340A0:
 	sb	$2,g_match_p1_score+1
 	.set	noreorder
 	.set	nomacro
-	j	.L1088
+	j	.L1201
 	li	$2,0x00000001		# 1
 	.set	macro
 	.set	reorder
 
-.L1085:
+.L1198:
 	lbu	$3,D_800A3874
 	li	$2,0x00000002		# 2
-.L1088:
+.L1201:
 	sb	$2,D_800A377C($3)
-.L1076:
+.L1189:
 	lbu	$2,D_800A3874
 	lbu	$3,g_match_p1_score
 	sll	$2,$2,1
