@@ -1,0 +1,5 @@
+Q14 byte-identity (tmp/func_80036140/t_u32.sh, rev 09659d0cbdec82471a629bb4392e7a4083c4c37c):
+final landing (t_final.sh) twice; fin_u32 differs only in include/code6cac.h: `u32 expected_pos; /* 0x80101EA0 */`
+fin_s32: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE
+fin_u32: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE
+40 C objects compared (s32 vs u32 expected_pos), 0 differ

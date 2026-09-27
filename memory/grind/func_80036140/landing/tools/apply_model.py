@@ -85,7 +85,10 @@ if A.ext == 'rec':
             ' *     func_80036140 never touches them: they are typed by their other users\'\n'
             ' *     original accesses (aggregate-merge (a4\') forced-in bytes, owner ruling\n'
             ' *     2026-09-26 Q13): unk3E by game_FrameLoop / cdrom_StartRead (u16, lhu),\n'
-            ' *     expected_pos by cdrom_ReadyCallback / func_80036940 (@EA0_BASIS@).\n'
+            ' *     expected_pos by cdrom_ReadyCallback / func_80036940 (s32: no access\n'
+            ' *     reveals its signedness -- lw, an equality test, +1, sw -- and s32 / u32\n'
+            ' *     build byte-identical, so it keeps its declared type on main, which is\n'
+            ' *     also CdPosToInt\'s return type; owner ruling 2026-09-26 Q14).\n'
             ' *     Dumps, the original compiler\'s runs and the member table:\n'
             ' *     memory/grind/func_80036140/evidence.md.\n */\n')
     h = rep(h, '/* The CD module\'s state block, 0x80101E58..0x80101E9B, declared as ONE object.\n',

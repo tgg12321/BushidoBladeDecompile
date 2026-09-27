@@ -31,13 +31,17 @@ No register pins, no __asm__, no scheduling barriers, no FAKE constructs.
    (i) gp accesses in the original bytes: cdrom_SetMix 2, func_80035F78 3,
    func_80036140 10, func_80036940 2 (table in the ledger); outside neighbours
    bits_DepositMask3F83F8, snd_SerialMixOn, cdrom_ReadyCallback, cdrom_IsIdle have
-   none. Best -G0 scores: func_80036140 22 and cdrom_SetMix 5 (with the CdlATV
-   declarations: -G0 prices a symbol address 2, so the forced address registers are
-   shared — ATV bases across CdMix; &g_cd_atv between the val0 store and CdMix's
-   argument); func_80035F78 and func_80036940 0 at -G0 in our build only through
-   the sdata_syms/sdata_funcs lists (cc1 emits no gp; cc1psx+ASPSX at -G0 none).
-   They join because (i) forbids an outside neighbour gp-accessing a moved
-   function's symbol (D_800A3854 / g_cd_result).
+   none. Every function in b4 / b5 has its own gp accesses in its original bytes,
+   and (ii) below holds for each on its own. Our build's -G0 scores: func_80036140
+   22 and cdrom_SetMix 5 (with the CdlATV declarations: -G0 prices a symbol address
+   2, so the forced address registers are shared — ATV bases across CdMix;
+   &g_cd_atv between the val0 store and CdMix's argument). func_80035F78 and
+   func_80036940 score 0 at -G0 in our build, but only because maspsx's
+   sdata_syms/sdata_funcs lists emulate the gp accesses: cc1 emits none, and the
+   original toolchain at -G0 emits none (cc1psx+ASPSX COMMON -G0: 0 gp accesses;
+   func_80035F78 6 of 12 words differ after alignment, func_80036940 62). Each also
+   shares a gp symbol with its TU partner (D_800A3854 with cdrom_SetMix; g_cd_result
+   with func_80036140, owner ruling Q10), so (i) forbids leaving it outside.
    (ii) original toolchain, calibration only (cc1psx -> ASPSX 2.34, the gp symbols
    as the original file's tentative definitions): -G8 emits exactly the listed gp
    accesses (b4: 0 words differ; b5: gp lists identical in symbol and order), -G0
@@ -52,10 +56,15 @@ No register pins, no __asm__, no scheduling barriers, no FAKE constructs.
    below) cut at four lines, every moved line byte-identical; dropped only the
    transcribed jtbl_80010938 (now compiler-emitted) and the INCLUDE_ASM line. Each
    new file adds an include block and the prototypes its moved code needs. The
-   respellings: the record extension is byte-neutral in place on the unsplit tree
-   (full-build SHA1 == oracle); the CdlATV merge is byte-neutral only with
-   cdrom_SetMix at -G8, so its proof runs split-first: the textual split alone
-   == oracle, then split + merges == oracle (ledger CURRENT STATE table).
+   respellings are not part of the move: the record extension (and game_FrameLoop
+   dropping its now-redundant `(u16 *)` cast) is byte-neutral in place on the
+   unsplit tree (full-build SHA1 == oracle). The CdlATV merge CANNOT be byte-neutral
+   on the unsplit tree (cdrom_SetMix is 5 at -G0 once g_cd_atv is a CdlATV — the very
+   reason it needs -G8), so its (iv) proof runs in the reverse order, stated here for
+   layer-2 to judge: (1) the textual split alone (cdrom_SetMix + func_80035F78 moved
+   verbatim into -G8 code6cac_b4.c, per-byte symbols unchanged) == oracle; (2) the
+   merge applied on top of that split == oracle; (3) the final layout == oracle
+   (ledger CURRENT STATE table, scratch full builds).
    (iv-a) b5 emits func_80036140's table at 0x80010938 and func_80036940's at
    0x80010978 (both 0 mod 8) -> not on RODATA_ALIGN2_FILES (with .align 3 the
    zero word at 0x80010974 is that table's alignment pad); b4, b4_post, b5_post
@@ -82,9 +91,21 @@ No register pins, no __asm__, no scheduling barriers, no FAKE constructs.
    and cse.c find_best_addr folds the pointer back); cdrom_ReadyCallback reads
    expected_pos directly only as an offset of CdState (separate 12-byte record:
    cdrom_ReadyCallback 12, func_80036140 8; cse.c use_related_value). cc1psx: the
-   same split -> direct, record -> `la; lhu 0()`. unk3E / expected_pos are typed by
-   their users' accesses (cdrom_StartRead / game_FrameLoop; cdrom_ReadyCallback /
-   func_80036940), respelled from D_80101E9E / g_cdread_expected_pos.
+   same split -> direct, record -> `la; lhu 0()`. Forced-in bytes (owner ruling Q13,
+   61f37ea5b), member table memory/grind/func_80036140/landing/member_table.md:
+   unk3E u16 at 0x80101E9E — every original access 2 bytes there (cdrom_StartRead
+   80036E0C sh; game_FrameLoop 80036F54 la, 80036F9C lhu, 80036FAC sh), signedness
+   from the lhu at 80036F9C; expected_pos at 0x80101EA0 — every original access 4
+   bytes there (cdrom_ReadyCallback 800360A4 lw, 800360E4 lw, 800360FC sw;
+   func_80036940 80036AAC sw). None of them reveals signedness (the loaded values
+   feed only 800360AC `bne` — an equality test — and 800360F4 `addiu +1`; the
+   stored values are CdPosToInt's result and that +1), and the whole landing built
+   with `u32 expected_pos` instead is byte-identical (40/40 objects, SHA1 ==
+   oracle), so it keeps its declared type on main, `extern s32
+   g_cdread_expected_pos;`, which is also CdPosToInt's return type (src/system.c
+   `s32 CdPosToInt(u8 *)`; libcd `int`) — owner ruling Q14 @Q14_COMMIT@.
+   Respelled from D_80101E9E /
+   g_cdread_expected_pos.
 
 Prong (c): retired from undefined_syms_auto.txt / named_syms.txt: D_800A36B9..BB,
 g_cd_atv_plus_0x1..3 (+ their census names), the eleven "retire with
