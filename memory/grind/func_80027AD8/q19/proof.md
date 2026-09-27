@@ -29,7 +29,7 @@ before every dump here was taken).
 - (B) Both copies are fresh locals of the parameter's own type `Tbl8008E194 *`, declared once at
   function scope, written exactly once with the bare parameter and NO cast, never written again, and
   their addresses are never taken.
-- (C) `tbl` carries every field read of the record (`tbl->unkC` x1, `tbl->unk0` x1, `tbl->unkD` x4) and
+- (C) `tbl` carries every field read of the record (`tbl->unkC` x2, `tbl->unk0` x1, `tbl->unkD` x4) and
   the R2 NULL test; `tbl_arg` carries every pass of the record to func_800278C0 (3 calls). `rec` itself
   is read only by the two copies. Neither copy feeds the other in the source.
 - (E) `tbl` (the record, read field by field) and `tbl_arg` (the record, passed on) are the ruling's
