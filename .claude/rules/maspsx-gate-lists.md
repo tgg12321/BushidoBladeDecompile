@@ -93,6 +93,49 @@ and the gate may be used, ONLY when all of (a)-(d) hold:
      original PsyQ cc1psx's `-G8` output for the function (or its TU) with
      the symbol as a tentative definition (`T sym;`), and the result matches
      the shipped words of that function, relocation immediates masked.
+     **Amendment (owner ruling 2026-09-26, eighth batch, Q15).** The
+     question put to the owner, verbatim: "For the new 'declared, no value'
+     assembler list: func_80036140's row needs Sony's archived assembler to
+     reproduce the shipped bytes. Every gp/offset decision matches, but 81
+     of 512 words differ, all explained: the archived compiler schedules a
+     few things differently, and the archived assembler expands `li` as
+     `ori` where the shipped game has `addiu` (so the archive isn't
+     byte-identical to what Square shipped). May the row count as proven
+     when every gp/offset decision matches and the leftover differences are
+     fully explained this way?" Owner (Trenton) chose, verbatim: **"Yes, if
+     all differences explained (Recommended)"**, whose text is: "Every gp
+     and sym+N decision must match; every other differing word must be
+     classified (scheduling or li-expansion) in the ledger; layer-2 checks.
+     The two neighbour rows already match 100%." (Record:
+     docs/grind/owner-rulings-2026-09-26.md, batch 8.) The author's
+     narrowing: when the words do not all match, (2) is still met ONLY when
+     both of these hold:
+     - **Every gp and sym+N decision matches.** For every instruction in the
+       function that accesses or forms the address of a symbol, the archived
+       output makes the same choice as the shipped words: gp-relative or
+       not, and for a `sym+N` operand the same form. The ledger lists every
+       such instruction in both, by address.
+     - **Every other differing word is classified, by address, as one of
+       exactly two kinds.** (i) *Archived-cc1psx scheduling:* the word is
+       paired one to one with a DISTINCT shipped word in the same basic
+       block, at a different position, with the same opcode, registers and
+       (masked) immediate; no shipped word is paired twice. Within each basic
+       block, the words classified this way are therefore a permutation of
+       the shipped block's words at those positions, and the ledger lists
+       each pair by address (archived word, shipped word). (ii) *ASPSX
+       `li` expansion:* the shipped word is `addiu rt,$zero,imm` and the
+       archived word is `ori rt,$zero,imm`, with the same `rt` and `imm`,
+       and `imm` in 0..0x7FFF (the range where `addiu` and `ori` from
+       `$zero` yield the same value).
+       A differing word that is unclassified, or that fits neither kind,
+       fails the row.
+     The layer-2 reviewer checks the classification word by word. Under
+     this comparison, each (3) variant must still differ from the shipped
+     words in at least one gp or `sym+N` decision; a variant that differs
+     only in classified words does not count as differing. Nothing else in
+     (a)-(d) changes. Record: docs/grind/decisions.md 2026-09-26 OWNER
+     RULING — COMMON-list row proof when the archived toolchain is not
+     byte-faithful.
   3. **The alternatives do not.** The same run with the symbol declared
      `extern`, `static` and initialized, and with the tentative definition
      compiled at `-G0`, each differs from the shipped words.

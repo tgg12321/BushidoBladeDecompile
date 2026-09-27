@@ -195,7 +195,28 @@ pipeline stage is added.
   the aggregate-merge entry in [[no-new-park-categories]]) is not part of the
   move: it lands FIRST, in its own earlier commit under its own rule, or is
   proven byte-neutral (full-build SHA1 == oracle) on the unsplit tree before
-  the split. The ledger shows the move diff. Every `-G0` TU produced by the
+  the split. **Reverse order (owner ruling 2026-09-26, eighth batch, Q16).**
+  The question put to the owner, verbatim: "The -G8 rule says any
+  struct/type respelling must land BEFORE the file split (or be proven
+  harmless before it). func_80036140's CdlATV merge only builds correctly
+  AFTER cdrom_SetMix moves to its -G8 file. May the order be reversed —
+  split commit first (proven identical to the original), then the merge
+  commit (also proven identical)?" Owner (Trenton) chose, verbatim: **"Allow
+  reverse order (Recommended)"**, whose text is: "Separate commits, split
+  first then merge, each independently proven to build the exact original;
+  layer-2 reviews both." (Record: docs/grind/owner-rulings-2026-09-26.md,
+  batch 8.) The author's narrowing: a respelling may land AFTER the split
+  only when all of these hold. (1) The ledger shows it cannot be byte-neutral
+  before the split: the respelling applied to the unsplit tree is built and
+  does not reach the oracle SHA1, and the failing build is banked. (2) The
+  split and the respelling are separate commits, split first. The split
+  commit contains the move and nothing of the respelling, its move is the
+  textually identical diff required above, and at that commit
+  `verify-oracle --rebuild` reaches the oracle SHA1. (3) The respelling
+  commit follows, judged under its own rule, and at that commit
+  `verify-oracle --rebuild` also reaches the oracle SHA1. (4) A fresh
+  layer-2 `cheat-reviewer` reviews both commits. The text-identical-move
+  requirement is unchanged in both orders. The ledger shows the move diff. Every `-G0` TU produced by the
   split has exactly the source file's compile flags: the same cc1 flags and
   the same maspsx flags, so the same memberships in `GP_FILES` (none),
   `NO_SR_FILES`, `EXPAND_LB_FILES` and `EXPAND_LH_FILES`. Every moved

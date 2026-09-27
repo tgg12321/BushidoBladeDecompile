@@ -29975,3 +29975,56 @@ declaration for those bytes (file and line), or, only when main has none, the SD
 assigned to it (prototype cited). Width still comes from the accesses. It sets no default where
 evidence exists and changes nothing else. func_80036140's struct is judged fresh; nothing is
 pre-decided.
+
+## 2026-09-26 — OWNER RULING — COMMON-list row proof when the archived toolchain is not byte-faithful (`.claude/rules/maspsx-gate-lists.md`)
+
+Eighth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 8). Context,
+as given to the owner by the orchestrator from the layer-2 review of slotI's func_80036140 joint
+landing (the worker's measurements, judged at landing): maspsx_comm_syms.txt prong (a)(2) requires
+ASPSX to match "the shipped words of that function, relocation immediates masked"; for
+func_80036140, cc1psx + ASPSX 2.34 differs in 81/512 words (64 = ASPSX li->ori expansion where the
+shipped words have addiu; the rest cc1psx scheduling) though every gp and sym+N decision matches;
+cdrom_SetMix (0/18) and func_80035F78 (0/12) match fully. Question, verbatim: "For the new
+'declared, no value' assembler list: func_80036140's row needs Sony's archived assembler to
+reproduce the shipped bytes. Every gp/offset decision matches, but 81 of 512 words differ, all
+explained: the archived compiler schedules a few things differently, and the archived assembler
+expands `li` as `ori` where the shipped game has `addiu` (so the archive isn't byte-identical to
+what Square shipped). May the row count as proven when every gp/offset decision matches and the
+leftover differences are fully explained this way?" Owner (Trenton) chose, verbatim: "Yes, if all
+differences explained (Recommended)" — "Every gp and sym+N decision must match; every other
+differing word must be classified (scheduling or li-expansion) in the ledger; layer-2 checks. The
+two neighbour rows already match 100%."
+
+**Ruling (full text in the rule file, prong (a)(2) "Amendment (owner ruling 2026-09-26, eighth
+batch, Q15)"; the author's narrowing).** When the words do not all match, (a)(2) is met only when
+every instruction accessing or forming the address of a symbol makes the same gp / sym+N choice as
+the shipped words (listed by address), and every other differing word is classified by address as
+exactly one of: archived-cc1psx scheduling (each such word paired one to one with a distinct
+shipped word in the same basic block, at a different position, with the same opcode/registers/
+masked immediate, so each block's reordered words are a permutation of the shipped block's words,
+pairs listed by address) or ASPSX li expansion
+(shipped `addiu rt,$zero,imm`, archived `ori rt,$zero,imm`, same rt and imm, imm in 0..0x7FFF
+where both yield the same value). Any unclassified or
+other-kind word fails the row; layer-2 checks the classification word by word. Each (a)(3) variant
+must still differ in at least one gp or sym+N decision. Nothing else changes; the row is judged
+fresh at landing.
+
+## 2026-09-26 — OWNER RULING — -G8 split / respelling order (`.claude/rules/compiler-flags-canonical.md`)
+
+Eighth 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 8). Context
+(as given to the owner; judged at landing): -G8 prong (iv) requires respellings to land first or be
+byte-neutral on the unsplit tree; the CdlATV merge is only byte-neutral after cdrom_SetMix moves to
+its -G8 file. Question, verbatim: "The -G8 rule says any struct/type respelling must land BEFORE the
+file split (or be proven harmless before it). func_80036140's CdlATV merge only builds correctly
+AFTER cdrom_SetMix moves to its -G8 file. May the order be reversed — split commit first (proven
+identical to the original), then the merge commit (also proven identical)?" Owner (Trenton) chose,
+verbatim: "Allow reverse order (Recommended)" — "Separate commits, split first then merge, each
+independently proven to build the exact original; layer-2 reviews both."
+
+**Ruling (full text in the rule file, prong (iv) "Reverse order (owner ruling 2026-09-26, eighth
+batch, Q16)"; the author's narrowing).** A respelling may land after the split only when (1) the
+ledger banks a build of it on the unsplit tree that misses the oracle SHA1; (2) the split and the
+respelling are separate commits, split first, the split commit holding the text-identical move and
+nothing of the respelling and reaching the oracle SHA1 under verify-oracle --rebuild; (3) the
+respelling commit follows under its own rule and also reaches the oracle SHA1; (4) a fresh layer-2
+reviews both commits. The text-identical-move requirement is unchanged in both orders.
