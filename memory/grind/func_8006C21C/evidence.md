@@ -94,3 +94,41 @@ All scores `sandbox --disable all` against build/ at 55d9efbbd-era main; candida
 - **Sibling precedent found:** func_8007636C (landed; Ruling 9 re-audit PASS 71b14499d) uses the
   same `cells` and a FAKE `s32 mode` holder for func_8006E480's 2nd arg; func_800753D8/800759D0
   use a FAKE `zero` holder (same target shape `addu a1,s5/fp,zero`). Mirror their annotations.
+
+## s3 [manual slotO 2026-09-27, stock cc1 d94fef9a0] — frame phantoms: mechanism narrowed, not found
+Re-measured on stock cc1: candidate 47 (622/622), t1 39 — unchanged.
+- **Expand-time locals are excluded by frame order (measured).** A block-local `s32 probe[4]`
+  lands at 0x48 and pushes arg0's reload slot to 0x58 (FRAMEDBG stack_temp before every
+  spill_new). Assignment-as-value and struct locals likewise allocate at expand time. The
+  target keeps arg0 at 0x48 directly after Env, so the four untouched 0x60-0x78 slots are
+  reload `alter_reg` spill_new slots of pseudos whose regno lies between recs and d4. A
+  local array / VECTOR-sized struct / address-taken local cannot produce them.
+- **Caller-save save areas ruled out for ours:** `-fno-caller-saves` gives byte-identical
+  output, and BB2_FINDREG_DEBUG shows no acc=1 find_reg retry for d4 (nrefs 20 vs 8 calls
+  crossed, so CALLER_SAVE_PROFITABLE fails).
+- **Orphan census with a private logging cc1** (/tmp/gccdbg, a copy of tools/gcc-2.7.2 with
+  COMBDBG/ORPHAN fprintf in combine.c; output verified byte-identical to build/cc1 on the TU;
+  never a build path; tmp/func_8006C21C/patch_comb.py + comb.sh + combsum.py). Our function
+  has 28 combinations and ZERO 3->2 (newi2pat) ones, so no orphans are possible. Orphan-
+  producing shapes elsewhere in this TU: (a) global ARRAY indexed by a register (`Judge[idx]`,
+  newi2 keeps the symbol pseudo); (b) a loop entry test against a non-constant bound (newi2
+  keeps `i = 0`; func_8005BA8C/80063E10/8006F100); (c) an s16 LOCAL loaded from an s16 field and
+  then sign-extended into an int context while the HImode local survives (func_8006CCC8's
+  `field`, func_800646E8/80049584). None fits the target cheaply: (a) no global arrays here
+  (all globals are loaded pointers); (b) every target loop test is an slti immediate; (c) the
+  only lh reads are phase-2 lv (used once), phase-8 level (merged with the int counter i;
+  s16 i adds visible sll/sra, i16.c), bar-2 w (re-read at each vertex).
+- **Sweeps with no frame change and identical code:** 138 single-site spelling mutations
+  (mut.py), 427 single/pair retypings of every scalar local (typesweep.py; only `mode` s16/s8
+  (+2 slots, but a1 folds to a constant) and `x` u8/s8 change the frame, all with different
+  code), every for-loop as do-while/while (loopsweep.sh, 18 variants), do-while(0) around every
+  statement and statement pair (wrapsweep.py), a pointer-to-field DR_MODE spelling, a
+  descriptor-through-pointer spelling, -G8, an inline helper, and separate s16/u16/s32 level.
+  Second permuter campaign: 3.5k iterations, no frame-changing find.
+- **Sibling datum:** func_800720FC (INCLUDE_ASM, same family) has 2 untouched slots after its
+  one spill slot, with 2 SetDrawMode/func_8006E480 pairs. Ours has 4 SetDrawMode (3
+  func_8006E480) and 4 phantoms. The correlation is suggestive but no mechanism is found.
+- **Gap 2 policy check (lead's Q20 pointer):** both else-arm writes store the SAME constant
+  (0x80), so R11 (C)(3) plus the Q20 per-branch clause still refuses the twice-written holder.
+  It is not yet proven to be the only closing form (80 do-while(0) placements fail; other
+  families remain untried), so no policy question has been filed.
