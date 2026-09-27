@@ -23,3 +23,18 @@
 4. Policy packaging before landing: `cells` (R9, type s.header so no cast), `idx` (R11 proof:
    fp chosen by find_reg only when s0-s7 all conflict; s6/s7 are used ONLY in phase 8, so every
    fp holder in phases 2/4/6 must be live in phase 8 => the same pseudo as level), `mode` FAKE.
+
+## Frontier after s3 (2026-09-27, stock cc1) — floor 47 (622/622)
+1. GAP 1 phantom frame slots (biggest, ~35 pts): four untouched reload spill_new slots,
+   regno between recs and d4. Expand-time locals and caller-save are excluded. Lead: combine
+   orphans (3->2 newi2pat + dead i2dest -> `(use (reg))` at a label). Our body has zero 3->2
+   combines (logging cc1 copy: tmp/func_8006C21C/patch_comb.py + comb.sh). The only
+   frame-moving leads: s16 level temp used in bar-1 compare (o4: +2 slots but spills lv, code
+   differs) and `s16 mode` (+2 slots, a1 folds to const). Next: original-style struct access
+   for D_800A34FC (func_8006CCC8's `s16 field` pattern) and per-phase s16 locals whose HImode
+   value stays live; study sibling func_800720FC (2 SetDrawMode, 2 phantoms).
+2. GAP 2 0x80 hoist: only a twice-written constant holder (t1, 39) closes it. Both writes are
+   0x80, so R11 (C)(3) + Q20 per-branch clause refuses. File a policy question ONLY after
+   showing no ordinary form (do-while(0) x80 placements failed; the others are untried).
+3. GAP 3 row++/k++ tail order (2 insns): 360 statement orders fail; revisit after gap 1,
+   because frame and allocation changes can shift sched.
