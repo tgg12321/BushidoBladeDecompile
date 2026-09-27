@@ -23,3 +23,44 @@
 - [s1] [fable-blitz 2026-07-07] Codegen inventory: ONE jump table (22 entries, 6 distinct targets - a dense switch on limbIdx), NO GTE, 6 mults (3 in the R2 dot product + 3 squares in R6a's d2 test), no divisions, no lwl/lwr. ALL 10 callee-saves + fp used but conventionally (args cached). The dominant construct is the 14x repeated func_80032854(player, ID, s3, 0) call - a candidate for GCC keeping s2/s3 in registers across the whole body (they are; s3 never spills). Return-value discipline: v0 set in j-delay slots (addu v0,zero / addiu v0,1 / 2) - multi-return function, shared epilogue .L8002839C.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference captured at tmp/blitz/m2c_calc_teasi_loc_fw.c (329 lines, clean AFTER supplying the jump table - m2c needs BOTH files: asm/funcs/calc_teasi_loc_fw.s + tmp/blitz/jtbl_80010548.s; the raw asm/rodata/jtbl_80010548.s uses 'nonmatching/dlabel' directives m2c rejects, the converted copy is already in tmp/blitz/). The switch reconstruction in m2c is the fastest route to the case bodies.
+
+## [s2] manual lane slotK 2026-09-26 (name reset: calc_teasi_loc_fw -> func_80027AD8; mk_g2l = func_800278C0, calc_fc_frame = func_800203B4, cpu_side_move_dir = func_80027640, calc_DistanceCategory = func_800272FC, tslDrTex1Init = func_8002738C, _CardCheckPulled = func_80027438)
+
+- [s2] Full-body draft from the s1 region map: 572 -> 133 (first draft) -> 97 (candidate.c, 2026-09-26).
+  Signature `s32 func_80027AD8(s32 pass, u8 *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 *rec,
+  s32 arg6, s32 *out)` matches the caller decl at src/code6cac_b.c:4035. D_8008EB74 = `u8 [3][2][2]`
+  (12 bytes, asm/data/7D920.data.s:2940); [cat][sign][same] reproduces the lookup exactly.
+- [s2] Switch cases 0..5 (MEASURED 133 -> 117 -> 97): the target has ONE count block (in case 4-5) and
+  three thresh tests. Reproduced by case 0 `if (flag) {T6; return 1;}` FALLING THROUGH into case 1-3
+  `if (flag) {T7; return 1;}` falling into case 4-5 `if (!flag) {count; return 0;} T8; return 1;` -
+  jump threading sends case 0/1-3's !flag straight to the count block. Duplicating the count block in
+  every case cross-jumps the wrong way (the earlier copy survives; 137/139). Thresh polarity:
+  `thresh > 0x400 ? N : 9` gives the target's `bnez -> 9-block` (`<= 0x400 ? 9 : N` inverts it).
+- [s2] No final `return` (MEASURED 117 -> 97): the target's switch-default branch goes to the epilogue
+  with v0 still holding the `sltiu v0,s0,0x16` result (0); nothing materializes the return value. A
+  trailing `return 0;` adds `move v0,zero` and changes which 5-state tail the count block cross-jumps
+  into (case 10-13's in the target, case 14-21's with a trailing return).
+- [s2] RESIDUAL = register allocation (all operand hunks + the prologue source-level hunks).
+  Target: s0 limb/diff/sign, s1 ch, s2 player, s3 scr, s4 pass/cat, s5 rec/same, s6 opp, s7 vec,
+  fp = a COPY of rec (`lw s5,0x64(sp)` ... `addu fp,s5,zero` in the first branch's delay slot; fp is
+  read ONLY as func_800278C0's 4th arg at its three call sites); thresh has NO register
+  (`sw a3,0x18(sp)` / `lw t0,0x18(sp)`); frame 0x50. Ours: opp s5, vec s6, rec s7, thresh s8, frame 0x48.
+  A binary-wide scan (tmp/func_80027AD8/findcopy.py) finds this stack-param -> callee-saved copy in NO
+  other function.
+- [s2] Allocator facts (instrumented cc1 BB2_ALLOC_DEBUG via tmp/func_80027AD8/alloc.sh), candidate.c:
+  pass 1967, cat 1666, sign 1538, opp 1538 (7 refs/91; 6 refs -> 1318 when the `rec ? 0x19 : 0xB`
+  value is staged: a COND_EXPR stored to a MEM whose condition is a register expands to TWO stores,
+  expr.c COND_EXPR safe_from_p), same 1428, vec 1114, rec 912-918, thresh 655.
+  `same` is single-set, so sched1 boosts its def (sched.c adjust_priority/birthing_insn_p; BB2_SCHED_DEBUG
+  `ADJPRI insn=378 birth=1`) below the opp->0xB4 store: no conflict with opp, so opp takes s5 in
+  find_reg pass 0. In the target opp is NOT in s5, so the s5 holder at opp's turn conflicts with opp.
+- [s2] Mechanism probe m2 (tmp/func_80027AD8/m2.c; NOT a candidate): param declared s32 and REUSED for
+  `same` in R6a + a local copy `hd = arg5` passed to func_800278C0 gives frame 80, opp s6,
+  `move fp,<rec>`, `sw a3,24(sp)` (thresh spilled) - the target's shape - but rec lands in s4
+  (pri 2156 > pass 1956) and R6a becomes `sltu <rec>,...` directly (cse.c make_regs_eqv makes the
+  entry-live variable canonical, so the temp copy vanishes). Both constructs are banned anyway
+  (Ruling 11 (A): no parameters; (C)(3): bare copies).
+- [s2] code==2 branch: target `bne v1,v0,<epilogue>` (the else-return cross-jumped to the final
+  v0=0). Ours `beq -> body; j ret` because jump.c:1827 ("if (foo) bar; else break;") swaps the then/else
+  ranges in jump1 (x.i.jump dump). Dropping the else (e1, 95) sends code>2 to the ch->0x286 re-test
+  instead of the epilogue.
