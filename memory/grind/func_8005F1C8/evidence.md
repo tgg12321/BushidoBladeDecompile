@@ -57,3 +57,10 @@ the loop (6)).
   0x8009B5F0..0x8009B60F = [2][2] records reached as 5F0 + j*16 and 5F8 + j*16 (the
   ORIGINAL binary adds one `sll s0,4` stride to both %lo(D_8009B5F0) and %lo(D_8009B5F8))
   -> needs the per-word-label aggregate merge of D_8009B5F8 into D_8009B5F0[2][2].
+
+## LANDED 2026-09-26 — COMPLETED-C (commit 43012cbed, queue ddfec3a2c)
+Layer-2 PASS (merge accepted on all five prongs; spellings, count, k/j counter reuse,
+(u32) cast, s16 wins accepted). Landed body = candidate.c plus an explanatory comment at
+the counter declarations (func_8005E098 / func_8003800C counter-reuse precedent; separate
+counters 38-73). D_8009B5F0[2][2] declared in include/game.h. Full rebuild SHA1 ==
+oracle; check_completion_integrity OK. Ledger closed.
