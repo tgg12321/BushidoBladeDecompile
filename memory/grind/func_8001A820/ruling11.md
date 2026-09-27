@@ -127,3 +127,16 @@ into the d-fold arms 102 (bounds_fb_dup_hi; not re-merged), declaration order hi
 (s2, older chassis), block-scoped hi/lo/i/d 62 (s2), permuter from clean base (s2b, N4, 2,310
 iterations, no valid find; s3 per-value body, 7,851 iterations, no find). Family: semantically-null
 cancellation pair (no-new-park-categories.md 2026-08-18 additions), FAKE-annotated at the site.
+
+## Addenda (2026-09-27, landing)
+- (D)(4) F6 empty-condition reads: an empty `if (tgt) {}` / `if (work) {}` read placed after the last
+  base_pitch use is inert as a split-spelling rescue. GCC's first jump pass deletes an empty `if`
+  before flow and cse run, so it adds no reference for make_regs_eqv or find_reg (layer-2 review
+  finding, 2026-09-27).
+- (D)(1) command lines. The allocator dumps come from
+  `python3 memory/grind/func_8001A820/r11/dumps/alloc.py <body.c> <tag> [<pseudo>]` (WSL, repo root).
+  It substitutes the body into src/code6cac.c, runs cpp with engine.buildconfig CPP flags, then runs
+  the INSTRUMENTED `tools/gcc-2.7.2/cc1 <engine.buildconfig CC_FLAGS> -dg -dl in.i` with
+  BB2_ALLOC_DEBUG=1 (and BB2_FINDREG_DEBUG=<pseudo> when given). The RTL pass dumps
+  (insn703_*_rtl/_cse.txt) come from `python3 memory/grind/func_8001A820/r11/dumps/mk.py <body.c> <tag>`,
+  which calls tools/rtl_track/dump.py. They are extracted with `r11/dumps/fx.py <dump> "insn 703 "`.
