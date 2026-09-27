@@ -23,3 +23,54 @@
 - [s1] [fable-blitz 2026-07-07] m2c reference: tmp/blitz/m2c_single_game_setModeRequest.c (303 lines, valid syntax; cop2 ops become M2C_ERROR stubs). No memory/wip. No near-dup lead in tmp/duplicates_leads.txt (the GTE siblings above are better leads than any dup-scan hit).
 
 - [s1] [fable-blitz 2026-07-07] Naming action for the closing session: the function should eventually be renamed (marionation rope/cloth particle sim -- e.g. mario_himo/cloth_Exec family); renaming touches named_syms.txt (build input) so it belongs to the implementing session with a full oracle rebuild, NOT recon; until then keep the symbol as-is to avoid oracle churn.
+
+## [s2] manual worker slotQ, 2026-09-26/27 — chassis to 2 insns (real pipeline)
+
+Name note: `single_game_setModeRequest` above is the retired name; the symbol is
+func_800187F4 (rope/cloth particle integrator; caller func_8001924C).
+
+Measurement: tmp/func_800187F4/fast.sh = the Makefile's exact per-file recipe
+(cpp | build cc1 | prologue_fix | maspsx | multu_pad | as) on code6cac.c with the
+body spliced, objdump'd and difflib-compared to build/src/code6cac.o (NO cheat
+stripping). `sandbox --disable all` cannot score the verbatim form yet: the
+engine keeps only PINNED header units (engine/gtemacro.py) and strips the
+`move $12,%0` / `nop` statements of ldlvl, stlvl, lddp, sqr0, gpf0, gpl12,
+rtv0tr (not pinned).
+
+candidate.c (= template.c through gen.py, verbatim inline_o.h statements):
+real-pipeline diff = 2 lines, 662/662 insns: ONLY the LZC-1 input copy
+(target `beqz v0; move a0,a1` [delay] ... `move t4,a0`; ours `nop` ...
+`move t4,a1`). Frame, every s-register, every loop, both LZC blocks otherwise exact.
+
+Load-bearing findings (each measured, fast.sh):
+1. VERBATIM header statements are load-bearing, not cosmetic: joined islands
+   (one __asm__ per macro) are ~39 RTL insns short inside the sphere loop, so
+   loop.c's desirability test (threshold*savings*lifetime >= insn_count,
+   threshold -3 per move, loop.c:1631/1719) hoists the `19` constant (target
+   keeps `li v0,19` in-loop). Separate statements: sphere loop N=199, 22 moves
+   (50*4=200>=199), 19 does not (47*4=188<199) — exactly the target. Same fact
+   func_800288C8/func_8002A458 found (+RTL insns fix seats).
+2. Scratchpad as `#define SCR ((RopeScratch *)0x1F800000)` constant-pointer
+   struct (all accesses fold to constant addresses; a local pointer var puts
+   everything through a register — t1 score 413). The `sw v1,0(fp)` d0[0]
+   store is cse's canonical 0x1F800000 temp from `SCR->rad[j]` indexing,
+   hoisted twice by loop.c (fp) — falls out once allocation matches.
+3. Counts: `n = node[7]` / `n = node[8]` locals (else loop.c adds a move).
+4. ONE counter `j` for both force loops AND the sphere loop: global.c
+   priority floor_log2(45)*45/244 = 9221 < node+8 giv (10135) and n (10000) so
+   the counter lands in $t2 after them (target). Separate counters: 34042 ->
+   $a0, shifts vx/vy/vz/bits by one reg (diff 152 -> 85).
+5. dist1/dist2 hold the squared length in place (`dist1 = sq0+sq1+sq2; if
+   (dist1 < 0x400) dist1 = LUT[dist1] >> 3; else {...}`): r -> $a2, dist -> $a1
+   / $a0 as target (diff 85 -> 66).
+6. LZC arm: `shift = lz[k]; shift = 0x16 - (shift & ~1); byte =
+   LUT[dist >> shift]; dist = (byte << 16) >> (0x13 - (shift >> 1));`
+   (func_80018300's `len = lz[0]; len = 0x16 - (len & ~1);` split). Every other
+   spelling of the and/shift measured worse (tmp/func_800187F4/mklzc.py sweep:
+   no-half/half/byte/in-place/`&-2`//2 variants 30-395).
+7. Frame 0x78: `s32 lz[6]` (lz[0]/lz[1] = the two LZC outputs, sp+0x10/0x14);
+   lz[5]/[6] match, lz[2] or two scalars leave vars=48 (count slot 0x38 vs
+   0x48). Phantom 8-byte spill slots come from the 4 loop-guard orphan-USE
+   pseudos (combine distribute_notes, combine.c ~10839) — target = 4 + a
+   24-byte locals object, the same oversized LZC-output object func_80018300
+   (lz[6]) and func_80018094 (sp_tmp[4]) carry.
