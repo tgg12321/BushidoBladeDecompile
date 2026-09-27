@@ -1,5 +1,52 @@
 # Evidence — func_800174F4 (src/ings.c)
 
+## Session 7 (manual, slotP, 2026-09-26) — stock-compiler floor 1 -> 0 (sandbox)
+
+candidate.c = the new body; sandbox --disable all = 0, 136/136, 0 hunks
+(stock build cc1, 2026-09-26). Not yet landed; two Ruling-11 locals pending.
+
+- The ori is a SPELLING problem, not a compiler one. cc1psx (calibration,
+  tools/cc1psx_wrapper.sh via tmp/func_800174F4/psx.sh) on the old body emits
+  the same `ori $17,$2,0x0004` as our stock cc1; with an int loop limit both
+  emit `addu $17,$2,4`. So the original did not narrow the loop limit to u16.
+- Mechanism (stock cc1 -dc): `h = v0 + 4` into `unsigned short h` expands to
+  117 `(set r88:HI (subreg:HI r86))`, 119 `(set r89 (plus (subreg:SI r88) 4))`,
+  121 `(set h:HI (subreg:HI r89))`; combine merges 117+119+121 into
+  `(set (subreg:SI h) (ior r86 4))` because nonzero_bits(r86) = 3 via
+  reg_last_set_value (combine.c:3623 PLUS->IOR, :6887 last-set nonzero bits).
+  With an int limit the plus has no narrowing partner: the only combine
+  attempt (plus <- and, 2 insns, no split without i1, combine.c:1737) yields an
+  unrecognisable IOR and is discarded, so the addiu survives. Every
+  u16/u8/s16 spelling of the limit or of v0 measured ori (15 spellings,
+  tmp/func_800174F4/v/v*.c).
+- Frame: the natural `for (i = 0; i < n; i++)` leaves one combine-orphan
+  reload slot (pseudo 124: the inverted entry test `(lt i n)` 3->2-combined
+  with `i = 0`, newi2pat kept, its REG_DEAD note becomes `(use (reg 124))`;
+  BB2_FRAME_DEBUG ctx=spill_new_p124 size=8). cc1psx gives the same 160 frame
+  with the old 0x68 buffer. The old `u8 sp20[0x68]` was 0x5C (sizeof
+  DRAWENV; isbg at +0x18) + 8 + align; with the real 0x5C buffer the orphan
+  slot fills exactly that gap: frame 152 = target.
+- Allocation: with the for loop, i gets $s0 and the limit $s1 with NO wraps
+  (BB2_ALLOC_DEBUG: i p87 nrefs 8 ll 9 pri 26666 > limit p74 nrefs 8 ll 15
+  pri 16000). The goto/do-while forms give i 7 refs (no entry-test ref) and
+  lose $s0 when `i = 0` precedes the guard (15555 < 16000), or lose the rand
+  jal delay slot when it follows (score 2). This is what the old
+  do-while(0) wraps were papering over.
+- 240: no local needed. `SetDefDrawEnv(env, 0, ..., 0x280, 0xF0)` and
+  `0xF0 / (sel + 1)` both literal still seat 240 in $s1 (score 0); u16, s32,
+  s16 and u8 `h` locals are all 0 too.
+- Cleanups, each measured 0: `(D_800A36AC & 1) ? 0xF0 : 0` replaces the
+  two-statement mask; the `s32 env` alias dropped; `u8 *prim`; case 20
+  `u32 idx = cur` replaces the `(u32)` casts and `& 0xFF`;
+  `if (0xF0 / (sel + 1) >= ++D_800A37C0)` replaces div_result/counter;
+  `next == sel`. `next` itself is needed (dropping it: 1, 135 insns).
+- Remaining multi-value locals (both measured necessary so far):
+  `temp` = loop limit + case-20 table code. Split (G02): 5, 134 insns; the
+  table code takes $a0 directly (it crosses no call, so it is never seated
+  callee-saved) and the `move a0,s1` disappears. `sel` = switch selector +
+  D_800A37A0. Split (G01): 6; the selector lands in $v1 (target $a1). Both
+  split: 11. Ruling 11 (D) proofs not yet banked.
+
 ## CHEATED — reopened 2026-09-26 (owner ruling Q17)
 
 CHEATED — matched only under the PLUS->IOR cc1 patch (owner Q17 2026-09-26);

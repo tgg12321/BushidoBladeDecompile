@@ -1,111 +1,78 @@
-/* func_800174F4 — working frontier, reopened 2026-09-26 (owner Q17).
+/* func_800174F4 — working candidate, manual session 2026-09-26 (slotP, post-Q17).
  *
- * The committed COMPLETED-C body (d9660d9b5) matched only under a combine.c
- * PLUS->IOR compiler patch, now ruled a cheat; it is banked unchanged as
- * rejected/compiler-patch-dependent.c. This candidate is that same body — it is
- * still the best-known form — and its honest floor under the STOCK compiler is
- * 1 (136 vs 136 insns): the case-1/2 `h = v0 + 4;` compiles
- * to `ori s1,v0,0x4` (simplify_rtx turns a disjoint-bits PLUS into IOR),
- * target `addiu s1,v0,4`. See evidence.md "CHEATED — reopened 2026-09-26".
- *
- * Earlier header (sessions 1-6, written under the patched compiler) is in git:
- * `git show 336826804^:memory/grind/func_800174F4/candidate.c`.
+ * Sandbox --disable all = 0 (136/136) under the STOCK compiler, with no
+ * do-while(0) wraps, no goto loop and no `unsigned short h`. What changed
+ * against rejected/compiler-patch-dependent.c (evidence.md "Session 7"):
+ *   - the loop limit is an int, so no u16 narrowing chain reaches combine and
+ *     `(rand() & 3) + 4` stays an addiu (the old u16 `h` gave combine a
+ *     3-insn subreg chain it rewrote to IOR; cc1psx does the same);
+ *   - the loop is the natural `for (i = 0; i < n; i++)`;
+ *   - the DRAWENV buffer is its real size (0x5C): the for-loop's entry-test
+ *     combine leaves one 8-byte reload slot, which is exactly the frame
+ *     difference the old 0x68 buffer was absorbing;
+ *   - 240 is a literal at both uses (cse keeps it in $s1 by itself).
+ * Two locals still hold two values each (`temp`, `sel`): Ruling 11 candidates,
+ * proof pending in evidence.md.
  */
-/* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action_2  |  189i  |  x2 size collision */
 void func_800174F4(void) {
-    u8 sp18[8];
-    u8 sp20[0x68];
-    s32 env;
-    unsigned short h;
-    s32 prim;
-    s32 mask;
-    s32 mode;
+    u8 ot[8];
+    u8 env[0x5C];
+    s32 temp;
+    u8 *prim;
+    s32 sel;
 
-    prim = (s32)(&D_800F33D8);
+    prim = &D_800F33D8;
     if (g_disp_enable == DISP_DISABLED) {
         return;
     }
-    env = (s32)sp20;
-    h = 0xF0;
-    mask = D_800A36AC & 1;
-    mask = -mask;
-    SetDefDrawEnv((u8 *)env, 0, mask & 0xF0, 0x280, h);
-    sp20[0x18] = 0;
-    PutDrawEnv((u8 *)env);
-    g_gpu_ot_ptr = sp18;
-    ClearOTagR(sp18, 2);
-    mode = g_disp_enable;
-    switch (mode) {
+    SetDefDrawEnv(env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
+    env[0x18] = 0;
+    PutDrawEnv(env);
+    g_gpu_ot_ptr = ot;
+    ClearOTagR(ot, 2);
+    sel = g_disp_enable;
+    switch (sel) {
     case 1:
     case 2:
-        prim = (s32)func_8005D46C((u8 *)prim);
+        prim = func_8005D46C(prim);
         if (g_disp_fade != 0) {
-            s32 v0;
             s32 i;
-            /* FAKE: do-while(0) wrap, mechanism: flow.c loop-note reference
-             * weighting (reg_n_refs += loop_depth) feeding
-             * global.c:allocno_compare, lever-exhaustion: memory/grind/
-             * func_800174F4/hypotheses.md K5/K10/K11/K12/H-S4-2/H-S5-1/H-S5-2.
-             * Effect: seats the loop counter in $s0 and h in $s1 while the
-             * counter is initialised before rand(). */
-            do { i = 0; } while (0);
-            v0 = rand();
-            v0 &= 3;
-            h = v0 + 4;
-            if (h == 0) {
-                break;
+            temp = (rand() & 3) + 4;
+            for (i = 0; i < temp; i++) {
+                prim = func_8005D554(prim, g_disp_enable);
             }
-        inner_loop:
-            /* FAKE: do-while(0) wrap, mechanism: flow.c loop-note reference
-             * weighting (reg_n_refs += loop_depth) feeding
-             * global.c:allocno_compare, lever-exhaustion: as above.
-             * Effect: the companion wrap for the counter's in-loop refs; it
-             * must span the whole body so no code label lands between the
-             * call and `i++` (that placement costs reorg.c the jal delay
-             * slot). */
-            do {
-                prim = (s32)func_8005D554((u8 *)prim, g_disp_enable);
-                i++;
-            } while (0);
-            if (i >= h) {
-                break;
-            }
-            goto inner_loop;
         }
         else if ((rand() & 7) == 0) {
-            func_8005D554((u8 *)prim, g_disp_enable);
+            func_8005D554(prim, g_disp_enable);
         }
         break;
     case 10:
-        func_8005E54C(D_800A3784, (u8 *)prim, 0);
+        func_8005E54C(D_800A3784, prim, 0);
         break;
-    case 20:
-        mode = D_800A37A0;
-    {
-        u8 a2_val = D_800A38F8;
-        s32 a0_val = a2_val & 0xFF;
-        s32 div_result;
-        s32 counter;
-        if (((u32)mode) < (u32)a0_val) {
+    case 20: {
+        u8 cur;
+        u32 idx;
+
+        sel = D_800A37A0;
+        cur = D_800A38F8;
+        idx = cur;
+        if (sel < idx) {
             break;
         }
-        div_result = h / (mode + 1);
-        counter = D_800A37C0 + 1;
-        D_800A37C0 = counter;
-        if (div_result >= counter) {
+        if (0xF0 / (sel + 1) >= ++D_800A37C0) {
             break;
         }
-        if (a0_val == mode) {
-            D_800A38F8 = a2_val + 1;
+        if (idx == sel) {
+            D_800A38F8 = cur + 1;
         } else {
-            u8 new_val = a2_val + 1;
-            D_800A38F8 = new_val;
+            u8 next = cur + 1;
+            D_800A38F8 = next;
             D_800A37C0 = 0;
-            h = D_800A37A8[a0_val];
-            if ((new_val & 0xFF) == mode) {
-                h |= 0x8000;
+            temp = D_800A37A8[idx];
+            if (next == sel) {
+                temp |= 0x8000;
             }
-            func_80060414(h, (u8 *)prim, 0);
+            func_80060414(temp, prim, 0);
         }
         break;
     }
