@@ -241,7 +241,9 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     (2) real value — the intermediate holds a computation that appears in
     the target's own bytes and only relocates where the value is named;
     pure no-op copies stay with the dead-store family and its
-    prerequisites; (3) byte-neutral — `build_insns == target_insns`, the
+    prerequisites (a copy of a stack-passed parameter is admitted only
+    under [[ordinary-c-judge-decidable]] Ruling 12, 2026-09-26, and every
+    prong there); (3) byte-neutral — `build_insns == target_insns`, the
     compiler folds the copy; (4) fresh local, not a borrow —
     [[staged-value-reused-variable]] keeps its own bounds; (5) destination
     not live-pre-initialized (the `x/tx` FAIL, decisions.md:4251, stands);

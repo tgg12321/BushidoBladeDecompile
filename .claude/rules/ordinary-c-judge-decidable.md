@@ -1246,10 +1246,34 @@ values.
   (3) Every value is a real computation: at least one of its writes is a
   load, an arithmetic computation or a call result whose instructions appear
   in the target's own bytes. A value whose writes are all literal constants,
-  or bare copies of another named variable or parameter, fails.
+  or bare copies of another named variable or parameter, fails, except as
+  the per-branch-constant clause below allows.
   Constant-holders stay under [[named-local-fake-exception]], staging copies
   under [[staged-value-reused-variable]], and the F1 constant-staging chain
   stays refused.
+  **Per-branch constants (owner ruling 2026-09-26, eleventh batch, Q20).**
+  The question put to the owner, verbatim: "func_8001CE60: it matches only
+  when ONE local holds both an announcement length (set to 80 or 100 in
+  if/else branches) and, later, the clock's frames-left. The reused-variable
+  ruling currently refuses a value that is just a constant. Allow a
+  per-branch constant (different constants on different paths) to count as a
+  real value there, under the same proof?" Owner (Trenton) chose, verbatim:
+  **"Allow per-branch constants (Recommended)"**, whose text is: "Only when
+  the constant differs by path (a real choice made at runtime); a single
+  unconditional constant still doesn't count; same R11 necessity proof and
+  layer-2." (Record: docs/grind/owner-rulings-2026-09-26.md, batch 11.) The
+  author's narrowing: a value whose writes are all literal constants counts
+  as a real value under (3) ONLY when it has at least two writes storing
+  DIFFERENT constants, each on a different feasible path (branch conditions
+  jointly satisfiable, as in Ruling 5 2(c)), so which constant reaches the
+  value's read depends on a condition evaluated at runtime (for example the
+  two arms of an if/else, each assigning once, read after the arms join). A
+  single unconditional constant, several writes of the same constant, or
+  constants whose choice does not depend on a runtime condition still fail
+  (3). Every other prong of this ruling, including the (D) necessity proof
+  and the (G) layer-2 review, applies unchanged. Record:
+  docs/grind/decisions.md 2026-09-26 OWNER RULING — per-branch constants as
+  a Ruling 11 value.
 - **(D) Allocator-dump proof of necessity** (the owner's first condition).
   The function's ledger (`memory/grind/<func>/`) banks all of:
   (1) **The dumps.** The compiler's allocation dumps for BOTH the reuse
@@ -1334,6 +1358,89 @@ meet (E) (`v` and `win` need new names) and (F). The outcomes are not
 pre-decided. func_8002DE20's GTE islands are a separate admission step
 (inline-asm-policy.md § Owner ruling 2026-09-26). Record:
 docs/grind/decisions.md 2026-09-26 OWNER RULING — Ruling 11.
+
+## Ruling 12 (owner, 2026-09-26) — a local copy of a stack-passed parameter, proven necessary
+
+**Question and answer.** The 2026-09-26 docs/grind/borderline.md entry
+"func_80027AD8 — two local copies of a stack-passed pointer parameter". The
+question put to the owner, verbatim: "func_80027AD8: the original reads a
+stack-passed argument through TWO local copies (one for field reads, one
+passed to another function). Dumps show GCC gives an unmodified stack
+argument half priority, so the shipped register use only happens if the code
+copied it into locals; with both copies it matches. Plain copies of a
+parameter are banned today as a classic cheat device. Allow them under the
+same mechanism-proof standard as the reused-variable ruling?" Owner (Trenton)
+chose, verbatim: **"Allow with R11-style proof (Recommended)"**, whose text
+is: "Dumps must prove necessity by mechanism for each copy (no spelling
+without it matches, incl. all FAKE families), honest role names, each copy
+genuinely used; layer-2 reviews." (Record:
+docs/grind/owner-rulings-2026-09-26.md, batch 11.)
+
+**The mechanism, as the owner was told it.** GCC 2.7.2 halves the allocation
+priority of a stack-passed argument that the function never reassigns
+(local-alloc doubles its live length), so such an argument itself never gets
+a saved register; a local copy of it is an ordinary pseudo with ordinary
+priority.
+
+**Rule text.** This is the author's narrowing of that answer, not the owner's
+words. A local whose only write copies a parameter unchanged (`T copy =
+param;`, or one assignment of the bare parameter) is otherwise a no-op copy
+that the named-intermediate entry refuses ([[no-new-park-categories]] prong
+(2)). Such a copy is admitted ONLY if it meets EVERY prong (A)-(G) below;
+each copy is judged on its own, and a function with two copies of one
+parameter proves each separately. This is not a general copy license: it
+admits nothing but copies of a parameter meeting (A)-(G).
+
+- **(A) The parameter.** The copied parameter is passed on the stack (not in
+  an argument register) and is never written anywhere in the function (no
+  assignment, compound assignment, `++`/`--`, and no `&param`).
+- **(B) The copy.** The copy is a fresh local whose declared type is the
+  parameter's type or a typedef-equivalent of it, in the sense Ruling 10 (C)
+  uses (the same underlying type spelled through a project typedef, e.g.
+  `int` -> `s32`). It is declared once, written exactly once with the bare
+  parameter as the whole right-hand side, with NO cast, never written again,
+  and its address is never taken. A copy through a cast (for example a
+  pointer converted to an integer, or to a different pointer type) is not
+  admitted under this ruling and would need its own owner ruling. It is not also claimed under Ruling 1's
+  named-intermediate relaxation, Ruling 11 or [[staged-value-reused-variable]].
+- **(C) Genuinely used.** The copy is read, and its reads are the function's
+  real uses of the parameter: field reads through it, passing it to a callee,
+  and so on. A copy whose only read feeds another copy, or that is read only
+  where the parameter is also read for the same purpose, fails.
+- **(D) Dump proof of necessity, for EACH copy** (Ruling 11 (D) standard).
+  The ledger banks, for each copy: (1) the allocation dumps (`.lreg`,
+  `.greg`, `.flow`, and/or the instrumented cc1's `BB2_*_DEBUG` output) for
+  the spelling with the copy and the spelling without it, with command lines;
+  (2) the mechanism, named by pass and source location in `tools/gcc-2.7.2`,
+  showing the parameter's halved priority and the seat the copy receives;
+  (3) necessity, not effect: the argument shows that EVERY spelling without
+  that copy lacks the property the target's allocation depends on, including
+  spellings that use any construct on the frozen sanctioned list
+  ([[no-new-park-categories]] § SOTN-accepted), and it is checked against the
+  real allocator, not only the priority order: local-alloc's register
+  suggestions, `find_reg`'s own preferences, global.c's
+  `expand_preferences`, and the post-allocation passes (reload, reorg). An
+  argument that covers only the spellings measured fails; so does one that
+  shows only a better score; (4) measured alternatives: the body without the
+  copy, the body without each other copy, at least one structural
+  respelling, and a permuter campaign from the copy-free body
+  ([[permuter-fresh-seed-discipline]]).
+- **(E) An honest role name.** The name states what the copy is used for,
+  true of every read (e.g. `tbl` for field reads of a table record, `tbl_arg`
+  for the pointer passed on); generic, single-letter, register-style and
+  coercion-announcing names never qualify.
+- **(F) Annotation.** An inline comment at the declaration says it is a copy
+  of the stack-passed parameter kept for the allocator mechanism above, and
+  cites this ruling and the ledger file that holds the (D) proof.
+- **(G) Layer-2 reviews.** Admission needs a fresh layer-2 `cheat-reviewer`
+  PASS that walks (A)-(F); a Grinder Judge PASS is not enough, and a body
+  relying on this ruling lands on the manual path. Sandbox 0 and full-build
+  SHA1 == oracle apply as always.
+
+A copy that misses any prong gets nothing from this ruling and stays refused
+as a no-op copy. func_80027AD8's copies are judged fresh against this text;
+nothing here pre-decides them. Record: docs/grind/decisions.md 2026-09-26
+OWNER RULING — Ruling 12: local copies of a stack-passed parameter.
 
 ## What this ruling does NOT change
 

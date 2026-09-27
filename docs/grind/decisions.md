@@ -30093,3 +30093,58 @@ registers whose only difference is an offset shifted by exactly the number of (i
 it and its target, listed with both offsets and the counted nops. (iii-a) nops are set aside before
 the (i) pairing, so the one-to-one permutation applies to the non-nop words. Any other nop or
 offset difference fails the row; layer-2 checks. The row is judged fresh at landing.
+
+## 2026-09-26 — OWNER RULING — Ruling 12: local copies of a stack-passed parameter (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Eleventh 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 11).
+Context, as given to the owner from slotK's func_80027AD8 ledger (the worker's measurements, judged
+at landing): the target reads a stack-passed argument `rec` through two local copies (`tbl` for
+field reads, `tbl_arg` passed to func_800278C0); GCC 2.7.2 halves allocation priority for a
+never-reassigned stack-passed argument (local-alloc doubles its live length), so `rec` itself
+never gets a saved register; without tbl 35, without tbl_arg 52, both 2 (jump-table relocation
+only). Ruling 11 admits only multi-value locals and excludes bare copies of a parameter. Question,
+verbatim: "func_80027AD8: the original reads a stack-passed argument through TWO local copies (one
+for field reads, one passed to another function). Dumps show GCC gives an unmodified stack argument
+half priority, so the shipped register use only happens if the code copied it into locals; with
+both copies it matches. Plain copies of a parameter are banned today as a classic cheat device.
+Allow them under the same mechanism-proof standard as the reused-variable ruling?" Owner (Trenton)
+chose, verbatim: "Allow with R11-style proof (Recommended)" — "Dumps must prove necessity by
+mechanism for each copy (no spelling without it matches, incl. all FAKE families), honest role
+names, each copy genuinely used; layer-2 reviews."
+
+**Ruling (full text in the rule file, "Ruling 12"; the author's narrowing).** A once-written local
+holding the bare value of a stack-passed parameter that the function never writes is admitted only
+when, for EACH copy: (A)-(B) the parameter and the copy meet those scope prongs (the copy's type is
+the parameter's or a typedef-equivalent, and the right-hand side is the bare parameter with no cast;
+a cast is not admitted and would need its own owner ruling); (C) the copy's
+reads are real uses of the parameter; (D) the ledger banks allocation dumps with and without the
+copy, the mechanism by pass and source location (the halved priority of the never-reassigned stack
+argument), a necessity argument covering every copy-free spelling including any sanctioned FAKE
+family, checked against the real allocator (local-alloc suggestions, find_reg preferences,
+expand_preferences, reload/reorg), and the measured alternatives; (E) an honest role name; (F) an
+annotation; (G) a fresh layer-2 (a Judge PASS alone is not enough). Not a general copy license;
+the named-intermediate entry in no-new-park-categories.md points here. func_80027AD8 is judged
+fresh.
+
+## 2026-09-26 — OWNER RULING — per-branch constants as a Ruling 11 value (`.claude/rules/ordinary-c-judge-decidable.md`)
+
+Eleventh 2026-09-26 batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 11).
+Context, as given to the owner from slotM's func_8001CE60 ledger (judged at landing): the function
+matches (0/588) only when one local holds both the announcement length (80 or 100, set in if/else
+arms) and later the clock's frames-left; shared, it is not block-local, so local-alloc
+combine_regs does not tie it (cc1psx agrees); Ruling 11 (C)(3) refused an all-constant value.
+Question, verbatim: "func_8001CE60: it matches only when ONE local holds both an announcement
+length (set to 80 or 100 in if/else branches) and, later, the clock's frames-left. The
+reused-variable ruling currently refuses a value that is just a constant. Allow a per-branch
+constant (different constants on different paths) to count as a real value there, under the same
+proof?" Owner (Trenton) chose, verbatim: "Allow per-branch constants (Recommended)" — "Only when the
+constant differs by path (a real choice made at runtime); a single unconditional constant still
+doesn't count; same R11 necessity proof and layer-2."
+
+**Ruling (full text in the rule file, Ruling 11 (C)(3) "Per-branch constants"; the author's
+narrowing).** A value whose writes are all literal constants counts under (C)(3) only when it has
+at least two writes storing different constants on different feasible paths, so which constant
+reaches the value's read depends on a runtime condition. A single unconditional constant, several
+writes of one constant, or a choice not made by a runtime condition still fails. The (D) necessity
+proof and (G) layer-2 apply unchanged. func_8001CE60's later form (borderline update line) does not
+rely on it.
