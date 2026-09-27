@@ -62,7 +62,7 @@
  
 --- a/include/code6cac.h
 +++ b/include/code6cac.h
-@@ -188,9 +188,20 @@
+@@ -296,9 +296,20 @@
  extern s16 D_800A36A4;
  extern s32 D_800A36AC;
  extern s32 D_800A36B4;
@@ -86,7 +86,7 @@
  extern s16 D_800A36C2;
  extern s32 D_800A36C4;
  extern s16 D_800A36C6;
-@@ -211,9 +222,7 @@
+@@ -319,9 +330,7 @@
  extern s16 D_800A36FC;
  extern u8 D_800A3712;
  extern u8 D_800A3713;
@@ -97,7 +97,7 @@
  extern s32 D_800A371C;
  extern u8 D_800A3728;
  extern s8 D_800A3748;
-@@ -410,7 +419,7 @@
+@@ -518,7 +527,7 @@
   *
   * The replay/special-camera words at 0x80101E60..0x80101E77 (unk00..unk14) were
   * declared as ONE record rather than per-word symbols by that grant; the
@@ -106,7 +106,7 @@
   * What the 0x80101E60..0x80101E77 bundling buys is a
   * memory dependence: cc1's scheduler asks true_dependence() ->
   * memrefs_conflict_p(), where SIZE_FOR_MODE(BLKmode) == 0 makes the aggregate
-@@ -441,6 +450,23 @@
+@@ -549,6 +558,23 @@
   *     it covers 0x80101E9A..9B, which is accessed as a halfword (unk3A), i.e. a
   *     member.  Member widths follow the accesses; 0x80101E91..93 is the
   *     compiler's alignment padding.
@@ -130,7 +130,7 @@
   */
  typedef struct {
      s16 unk00; /* 0x80101E60 */
-@@ -461,6 +487,10 @@
+@@ -569,6 +595,10 @@
      s32 unk34; /* 0x80101E94 */
      s16 unk38; /* 0x80101E98 */
      s16 unk3A; /* 0x80101E9A */
@@ -141,7 +141,7 @@
  } ReplayCamRec;
  
  /* libcd CdlFILTER, the CdlSetfilter (0xD) parameter. */
-@@ -470,28 +500,24 @@
+@@ -578,28 +608,24 @@
      u16 pad;
  } CdlFILTER;
  

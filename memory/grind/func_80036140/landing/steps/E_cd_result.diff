@@ -31,7 +31,7 @@
  
 --- a/include/code6cac.h
 +++ b/include/code6cac.h
-@@ -231,7 +231,13 @@
+@@ -339,7 +339,13 @@
     last element down (asm/funcs/func_80033510.s starts at 0x800A3756). */
  extern s16 D_800A3750[4];
  extern u8 D_800A3758;

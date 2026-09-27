@@ -57,7 +57,7 @@ commit 2 made so.
    aliases for func_80036140.s; the D_80101E9E / g_cdread_expected_pos rows and
    their census names retire.
 
-Verification: commits 1-3, scratch full clean build at rev @REV@: SHA1
+Verification: commits 1-3, scratch full clean build at rev d94fef9a0 (stock cc1 ac80146b): SHA1
 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. The record-extension
 respellings alone are also byte-neutral in place on the unsplit tree.
 

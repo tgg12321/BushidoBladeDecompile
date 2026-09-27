@@ -38,6 +38,6 @@ compiler-flags-canonical.md § "Per-file -G8 by proof", for code6cac_b4:
 (vi) layer-2 with the rest of the landing.
 
 Verification: this commit on top of commit 1, scratch full clean build at rev
-@REV@: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+d94fef9a0 (stock cc1 ac80146b): SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

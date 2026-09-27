@@ -1,0 +1,9 @@
+src/code6cac_b4_post.c
+src/code6cac_b5.c
+src/code6cac_b5_post.c
+Makefile
+engine/buildconfig.py
+bb2.ld
+undefined_syms_auto.txt
+named_syms.txt
+.claude/rules/maspsx-gate-lists.md

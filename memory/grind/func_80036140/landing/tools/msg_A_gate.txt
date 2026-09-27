@@ -68,7 +68,7 @@ the pair); hooks park_src_guard / main_reintegration_lock /
 worktree_contamination_guard; maspsx-gate-lists.md table row (built).
 
 Verification:
-- this commit alone, scratch full clean build at rev @REV@: SHA1
+- this commit alone, scratch full clean build at rev d94fef9a0 (stock cc1 ac80146b): SHA1
   62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle; every src/*.c built with the
   Makefile's exact per-file recipe, stock maspsx vs gated maspsx + rows: 36/36
   objects byte-identical

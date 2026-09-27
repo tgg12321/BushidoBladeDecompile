@@ -60,11 +60,11 @@ names them.
 maspsx-gate-lists.md: the comm rows join "Current gate-dependent completions".
 
 Verification:
-  - commits 1-4, scratch full clean build at rev @REV@: SHA1
+  - commits 1-4, scratch full clean build at rev d94fef9a0 (stock cc1 ac80146b): SHA1
     62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (every function of the five
     files scores 0 against the shipped objects except func_80036140's jump-table
     `lw %lo(jtbl)` operand, settled by the link)
   - the landed tree (commits 1-5): lock.ps1 rebuild == oracle, sandbox
-    func_80036140 --disable all --diff: @SANDBOX_E@
+    func_80036140 --disable all --diff: score 0, 512/512 instructions, 0 hunks (file code6cac_b5)
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>

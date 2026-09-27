@@ -22,8 +22,8 @@ This respelling could not come before commit 4: with g_cd_result an array,
 func_80036940 at -G0 keeps &g_cd_result in $s0 for its result[0] read (score 5);
 it is byte-neutral only once func_80036940 is -G8, which commit 4 made so.
 
-Verification: commits 1-5, scratch full clean build at rev @REV@ == oracle;
-lock.ps1 rebuild on the landed tree: @SHA_E@; sandbox func_80036140
---disable all: @SANDBOX_E@.
+Verification: commits 1-5, scratch full clean build at rev d94fef9a0 (stock cc1 ac80146b) == oracle;
+lock.ps1 rebuild on the landed tree: ok, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected (landing rev 27ac1a933; engine test 805/0); sandbox func_80036140
+--disable all: score 0, 512/512 instructions, 0 hunks (file code6cac_b5).
 
 Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
