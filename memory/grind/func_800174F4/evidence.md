@@ -212,6 +212,48 @@ reached 0. Finds:
 The permuter's own improvements on the split body come from merging values
 back into one variable, never from a split spelling.
 
+## FRONTIER (session 7 close, 2026-09-27) — ready for layer-2, not landed
+
+State: candidate.c is sandbox 0 (136/136). It was spliced over the
+INCLUDE_ASM line of src/ings.c under the landing lock, and the full build
+matched the oracle (build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa).
+The session closed before layer-2, so the splice was reverted: main still
+carries INCLUDE_ASM, and the rebuild after the revert matches the oracle.
+The commit message is drafted in tmp/func_800174F4/msg_match.txt and the
+precheck output (mechanically clean) is in tmp/func_800174F4/precheck.txt.
+
+Next worker:
+1. Take the lock.
+2. Splice candidate.c's typedef + function over the INCLUDE_ASM line.
+3. Run `lock.ps1 rebuild`, then the sandbox.
+4. Stage src/ings.c and run the precheck.
+5. Send it to layer-2 with the Ruling 11 proof above.
+
+What layer-2 must judge:
+- `temp` and `temp2`, two values each, under Ruling 11.
+- The F7 both-arms store.
+- The `DrawEnv` typedef.
+- `(u32)temp2 < cur`.
+
+Mechanism (addiu vs ori): combine.c:3623 rewrites a PLUS whose operands
+share no nonzero bits into IOR. That rule only fires when some combination
+simplifies the plus. An `unsigned short` loop count supplies such a
+combination: the subreg narrowing chain 3-merges into
+`(set (subreg:SI h) (ior v0 4))`, recognised as iorsi3. cc1psx does the
+same, so the original was not written that way. An int count leaves the
+plus with only a 2-insn and->plus attempt, which is unrecognised and
+discarded, so the addiu survives.
+
+Spellings tried for the loop count / v0 (all emit ori):
+- u16, u8 and s16 types for v0.
+- One expression `(rand()&3)+4`.
+- The count staged through `h`.
+- `4 + v0`.
+- `(u32)rand()%4+4`.
+- Casts on the sum.
+
+Spellings that keep the addiu: s32/u32 `h`, or an int split limit.
+
 ## CHEATED — reopened 2026-09-26 (owner ruling Q17)
 
 CHEATED — matched only under the PLUS->IOR cc1 patch (owner Q17 2026-09-26);
