@@ -58,8 +58,10 @@ grant path:
 - `inline_asm_canonical.txt` — has its own evidence-gated grant path
   (scan_hand_coded STRONG tier, [[canonical-asm-authorization-recipe]]).
 - The maspsx fidelity-gate lists (`maspsx_prefill_label_funcs.txt`,
-  `expand_lb_funcs.txt`, `expand_dest_funcs.txt`, `multu_funcs.txt`,
-  `multu_pad_funcs.txt`) — assembler-behavior gates are substrate-adjacent.
+  `maspsx_comm_syms.txt`, `expand_lb_funcs.txt`, `expand_dest_funcs.txt`,
+  `multu_funcs.txt`, `multu_pad_funcs.txt`) — assembler-behavior gates are
+  substrate-adjacent. (`maspsx_comm_syms.txt` joined both halves of the pair
+  with the gate itself, 2026-09-26.)
   (`maspsx_label_nop_funcs.txt` was on this denylist until it was retired and
   deleted on 2026-09-14 — [[maspsx-label-nop-gate]].)
   **This list is a doc/code pair with `_SCOPE_GRANT_DENY` in

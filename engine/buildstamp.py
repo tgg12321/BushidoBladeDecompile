@@ -20,6 +20,7 @@ CONFIGS = (
     'Makefile', 'bb2.ld', 'bb2.sha1', 'sdata_syms.txt', 'sdata_funcs.txt',
     'sdata_exclude.txt', 'expand_lb_funcs.txt', 'expand_dest_funcs.txt',
     'multu_funcs.txt', 'multu_pad_funcs.txt', 'maspsx_prefill_label_funcs.txt',
+    'maspsx_comm_syms.txt',
     'undefined_funcs_auto.txt', 'undefined_syms_auto.txt', 'named_syms.txt',
     'tools/prologue_config.json', 'delay_slot_ra_funcs.txt', 'frame_fix_funcs.txt',
     'tools/prologue_fix.py', 'tools/multu_pad.py', 'tools/make_psexe.py',

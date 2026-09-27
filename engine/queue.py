@@ -711,7 +711,13 @@ def toolchain_fingerprint_inputs() -> tuple[str, ...]:
     """Current input set. prologue_fix's three config files (read by every
     faithful build; the oracle manifest watches tools/prologue_config.json)
     joined 2026-09-25 — before that an edit to them never moved the
-    fingerprint."""
+    fingerprint. maspsx_comm_syms.txt (the COMMON gate list) joined
+    2026-09-26 with the gate itself."""
+    return _prologue_inputs() + ("maspsx_comm_syms.txt",)
+
+
+def _prologue_inputs() -> tuple[str, ...]:
+    """The 2026-09-25 input set: the maspsx package set + prologue_fix's configs."""
     return _maspsx_package_inputs() + tuple(cheats.PROLOGUE_CONFIGS)
 
 
@@ -719,7 +725,7 @@ def _prior_fingerprint_input_sets() -> list[tuple[str, ...]]:
     """Every retired input-set definition, oldest first. A stored fingerprint
     equal to one of these computed on today's files is a DEFINITION change,
     not a toolchain move (auto_return re-records it without re-measuring)."""
-    return [_LEGACY_FINGERPRINT_INPUTS, _maspsx_package_inputs()]
+    return [_LEGACY_FINGERPRINT_INPUTS, _maspsx_package_inputs(), _prologue_inputs()]
 
 
 def toolchain_fingerprint(inputs: tuple[str, ...] | None = None) -> str:

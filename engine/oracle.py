@@ -39,6 +39,7 @@ CONFIG_FILES = [
     "expand_dest_funcs.txt", "named_syms.txt",
     "undefined_funcs_auto.txt", "undefined_syms_auto.txt",
     "bb2.ld", "tools/prologue_config.json", "maspsx_prefill_label_funcs.txt",
+    "maspsx_comm_syms.txt",
 ]
 
 
@@ -144,7 +145,8 @@ def dirty_build_inputs() -> list[str]:
     # list and INTO maspsx source, so a dirty maspsx must refuse --rebuild too.
     watch_prefixes = ("src/", "include/", "tools/maspsx/")
     watch_files = set(CONFIG_FILES) | {"Makefile",
-                                       "maspsx_prefill_label_funcs.txt"}
+                                       "maspsx_prefill_label_funcs.txt",
+                                       "maspsx_comm_syms.txt"}
     dirty = []
     for line in out.splitlines():
         path = line[3:].strip().strip('"')

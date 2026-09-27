@@ -468,6 +468,7 @@ _SCOPE_GRANT_ALLOWED_RE = re.compile(r"^(include/[\w.\-/]+\.h|src/[\w.\-/]+\.c|[
 _SCOPE_GRANT_DENY = {
     "inline_asm_canonical.txt",          # has its own evidence-gated grant path
     "maspsx_prefill_label_funcs.txt",    # assembler fidelity gates: substrate-adjacent,
+    "maspsx_comm_syms.txt",              # (COMMON gate: owner ruling 2026-09-26)
     "expand_lb_funcs.txt",               # owner-only
     "expand_dest_funcs.txt",
     "multu_funcs.txt",
@@ -1823,6 +1824,7 @@ GATE_FILES = (
     "expand_dest_funcs.txt",
     "expand_lb_funcs.txt",
     "maspsx_prefill_label_funcs.txt",
+    "maspsx_comm_syms.txt",
     "multu_funcs.txt",
     "multu_pad_funcs.txt",
     "sdata_funcs.txt",

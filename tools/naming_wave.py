@@ -69,7 +69,8 @@ SYMBOL_FILES = [
 ]
 
 # Rule files: `func: rule...` — the key before ':' plus any name in the body.
-RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt"]
+RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt",
+              "maspsx_comm_syms.txt"]  # `func: sym, sym` — keys AND body names are pipeline keys
 
 # One-name-per-line (optionally `name  # comment`) gate lists.
 LIST_FILES = [

@@ -521,6 +521,7 @@ class MaspsxProcessor:
         sdata_sym_list=None,
         sdata_func_list=None,
         sdata_exclude_map=None,
+        comm_sym_map=None,
     ):
         self.lines = [x.strip() for x in lines]
 
@@ -560,7 +561,19 @@ class MaspsxProcessor:
         self.sdata_sym_list = sdata_sym_list or []
         self.sdata_func_set = set(sdata_func_list) if sdata_func_list else set()
         self.sdata_exclude_map = sdata_exclude_map or {}
+        # Per-function COMMON gate (maspsx_comm_syms.txt): func -> symbols that were
+        # tentative definitions in that function's original translation unit.
+        self.comm_sym_map = comm_sym_map or {}
         self.current_func = None
+
+    def _is_comm(self, symbol) -> bool:
+        """ASPSX 2.34 never gives a COMMON (`.comm`) symbol gp at an offset (`sym+N`).
+        True for a symbol declared `.comm` in this file (upstream behaviour) or listed
+        for the current function in maspsx_comm_syms.txt (owner ruling 2026-09-26,
+        .claude/rules/maspsx-gate-lists.md): our C declares such variables `extern`,
+        so their storage class must come from the list. Only ever removes gp, only
+        from `sym+N` operands; the base access `sym` is unaffected."""
+        return symbol in self.comm_symbols or symbol in self.comm_sym_map.get(self.current_func, ())
 
     def _sdata_allowed_for_current_func(self, symbol=None) -> bool:
         if not self.sdata_func_set:
@@ -787,7 +800,7 @@ class MaspsxProcessor:
 
                 if operand.count("+") == 1:
                     symbol, _ = operand.split("+")
-                    gp_allowed = self.gp_allow_offset or symbol not in self.comm_symbols
+                    gp_allowed = self.gp_allow_offset or not self._is_comm(symbol)
                 else:
                     symbol = operand
                     gp_allowed = True
@@ -1173,7 +1186,7 @@ class MaspsxProcessor:
                 if operand.count("+") == 1:
                     symbol, offset = operand.split("+")
                     gp_rel = f"%gp_rel({symbol}+{offset})($gp)"
-                    gp_allowed = self.gp_allow_offset or symbol not in self.comm_symbols
+                    gp_allowed = self.gp_allow_offset or not self._is_comm(symbol)
                 else:
                     symbol = operand
                     gp_rel = f"%gp_rel({symbol})($gp)"
@@ -1284,7 +1297,7 @@ class MaspsxProcessor:
                 if operand.count("+") == 1:
                     symbol, offset = operand.split("+")
                     gp_rel = f"%gp_rel({symbol}+{offset})($gp)"
-                    gp_allowed = self.gp_allow_offset or symbol not in self.comm_symbols
+                    gp_allowed = self.gp_allow_offset or not self._is_comm(symbol)
                 else:
                     symbol = operand
                     gp_rel = f"%gp_rel({symbol})($gp)"

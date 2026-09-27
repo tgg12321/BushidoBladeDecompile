@@ -48,6 +48,7 @@ FRAME_FIX = "tools/frame_fix_funcs.txt"
 #                   gating a C function through it is a cheat by config.
 MASPSX_GATE_LISTS: dict[str, str] = {
     "maspsx_prefill_label_funcs.txt": "fidelity",  # ASPSX "retarget iff filled" label placement (owner ruling 2026-09-04)
+    "maspsx_comm_syms.txt": "fidelity",            # ASPSX: a COMMON symbol is gp at its base, never at sym+N (owner ruling 2026-09-26)
     "expand_lb_funcs.txt": "fidelity",             # lb->lbu+sll+sra; all C spellings fold to lb (probe 2026-07-13)
     "expand_dest_funcs.txt": "fidelity",           # $rdest-vs-$at macro-expansion temp; assembler-internal choice
     "multu_funcs.txt": "cheat-pathway",            # mult->multu; C spelling exists (unsigned operands)
@@ -59,7 +60,8 @@ def maspsx_gate_entries(func: str) -> list[tuple[str, str]]:
     """(list_file, classification) for every maspsx gate list that names
     `func`. Empty list == the function's bytes have no per-function assembler
     toggle behind them. Names are the first whitespace token per non-comment
-    line (same format as the other one-name-per-line sidecars)."""
+    line (same format as the other one-name-per-line sidecars); a `func: sym, sym`
+    row (maspsx_comm_syms.txt) counts by its func."""
     out: list[tuple[str, str]] = []
     for path, cls in MASPSX_GATE_LISTS.items():
         if func in _prologue_txt_funcs(path):
@@ -237,7 +239,8 @@ def all_keyed_functions() -> set[str]:
 
 def _prologue_txt_funcs(path: str) -> set[str]:
     """Function names in a one-name-per-line prologue list (delay_slot_ra /
-    frame_fix); first whitespace token, '#'/blank lines ignored."""
+    frame_fix); first whitespace token, '#'/blank lines ignored. A trailing
+    ':' is dropped, so a `func: sym, sym` row (maspsx_comm_syms.txt) yields func."""
     p = Path(path)
     if not p.exists():
         return set()
@@ -245,7 +248,7 @@ def _prologue_txt_funcs(path: str) -> set[str]:
     for ln in p.read_text(encoding="utf-8").splitlines():
         tok = ln.strip().split()
         if tok and not tok[0].startswith("#"):
-            out.add(tok[0])
+            out.add(tok[0].rstrip(":"))
     return out
 
 

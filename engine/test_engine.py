@@ -923,6 +923,16 @@ def test_cheats() -> None:
         check("canonical_asm_funcs: missing file -> empty set",
               cheats.canonical_asm_funcs("/nonexistent") == set())
 
+    # maspsx_comm_syms.txt (owner ruling 2026-09-26): `func: sym, sym` rows count by func,
+    # so queue done / the integrity audit see a function that depends on the gate
+    with tempfile.TemporaryDirectory() as td:
+        cl = Path(td) / "comm.txt"
+        cl.write_text("# header\ncdrom_SetMix: g_cd_atv\nfunc_B: x, y\n\nfunc_C\n")
+        eq("gate list: `func: syms` rows yield the func name",
+           cheats._prologue_txt_funcs(str(cl)), {"cdrom_SetMix", "func_B", "func_C"})
+    eq("gate list: maspsx_comm_syms.txt is a fidelity gate",
+       cheats.MASPSX_GATE_LISTS.get("maspsx_comm_syms.txt"), "fidelity")
+
 
 def test_lowercase_asm_cheats() -> None:
     """find_lowercase_asm_cheats — closes the bare `asm(...)` loophole that

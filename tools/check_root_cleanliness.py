@@ -47,6 +47,7 @@ ALLOWED_BUILD_TXT = {
     "reloc_addrs.txt",
     "cheat_retirement_debt.txt",
     "maspsx_prefill_label_funcs.txt",
+    "maspsx_comm_syms.txt",
     "volatile_extern_allowlist.txt",
 }
 

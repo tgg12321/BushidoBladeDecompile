@@ -45,6 +45,12 @@ def main() -> None:
                         help="Path to file listing function names that should use GP-relative sdata addressing")
     parser.add_argument("--sdata-exclude", type=str, default=None,
                         help="Path to file listing per-function sdata symbol exclusions (func: sym1, sym2)")
+    parser.add_argument("--comm-syms", type=str, default=None,
+                        help="Path to file listing, per function, symbols that were COMMON "
+                             "(tentative definitions) in the original translation unit "
+                             "(func: sym1, sym2): ASPSX 2.34 never gives such a symbol gp at an "
+                             "offset (sym+N), only at its base (owner ruling 2026-09-26). "
+                             "Per-function-scoped; never global.")
     # decomp.me debugging
     parser.add_argument("--print-output", action="store_true")
     parser.add_argument("--print-input", action="store_true")
@@ -169,6 +175,19 @@ def main() -> None:
                     else:
                         sdata_exclude_map[func_name] = sym_set
 
+    # Load the per-function COMMON gate (same format as --sdata-exclude)
+    comm_sym_map = {}
+    if args.comm_syms:
+        with open(args.comm_syms, "r", encoding="utf") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if ":" in line:
+                    func_name, syms = line.split(":", 1)
+                    comm_sym_map.setdefault(func_name.strip(), set()).update(
+                        s.strip() for s in syms.split(",") if s.strip())
+
     # Load per-function lb/lh expansion lists
     expand_lb_func_list = []
     if args.expand_lb_funcs:
@@ -220,6 +239,7 @@ def main() -> None:
         sdata_sym_list=sdata_sym_list,
         sdata_func_list=sdata_func_list,
         sdata_exclude_map=sdata_exclude_map,
+        comm_sym_map=comm_sym_map,
     )
     try:
         out_lines = maspsx_processor.process_lines()

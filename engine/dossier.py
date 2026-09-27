@@ -99,6 +99,10 @@ def _memberships(names: list[str]) -> list[str]:
         t = _read(f)
         if any(re.search(r"^" + re.escape(n) + r"\s*$", t, re.M) for n in names):
             out.append(f)
+    # `func: sym, sym` rows (the sdata_exclude.txt format)
+    t = _read("maspsx_comm_syms.txt")
+    if any(re.search(r"^" + re.escape(n) + r"\s*:", t, re.M) for n in names):
+        out.append("maspsx_comm_syms.txt")
     try:
         cfg = json.loads(_read("tools/prologue_config.json") or "{}")
         if any(n in cfg for n in names):

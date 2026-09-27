@@ -25,7 +25,7 @@ Per CLAUDE.md / AGENTS.md (the same set that requires LF line endings):
   src/*.c, src/*.h, include/*, *.s, *.h
   sdata*.txt, named_syms.txt, undefined_syms_auto.txt, undefined_funcs_auto.txt,
   expand_lb_funcs.txt, expand_dest_funcs.txt, multu_funcs.txt,
-  multu_pad_funcs.txt, maspsx_prefill_label_funcs.txt
+  multu_pad_funcs.txt, maspsx_prefill_label_funcs.txt, maspsx_comm_syms.txt
   *.ld, splat.yaml, Makefile
   tools/prologue_config.json
 
@@ -64,6 +64,7 @@ BUILD_FILE_PATTERNS = [
     re.compile(r"^expand_dest_funcs\.txt$"),
     re.compile(r"^multu(_pad)?_funcs\.txt$"),
     re.compile(r"^maspsx_prefill_label_funcs\.txt$"),
+    re.compile(r"^maspsx_comm_syms\.txt$"),
     re.compile(r"^inline_asm_canonical\.txt$"),
     re.compile(r"^.+\.ld$"),
     re.compile(r"^splat\.yaml$"),
