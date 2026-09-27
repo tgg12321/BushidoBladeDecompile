@@ -185,13 +185,32 @@ copy of `cur`):
 - structural respellings of the split body: case 20 as nested ifs 11
   (Y_split_nestedif.c); switch as an if/else chain 21, 132 insns
   (Y_split_ifchain.c).
-- permuter: campaign `split-all-s7` from the split body (the K8 twin,
-  tmp/func_800174F4/perm_split, -j2, stack diffs on), see the harvest note
-  below for time, iterations and finds.
+- permuter: campaign `split-all-s7` from the split body (the K8 twin): no
+  zero in 18,209 iterations; its finds re-merge values into one variable.
+  See "Ruling 11 (D)(4) permuter harvest".
 
 ### (E)/(F)
 Names `temp`, `temp2` (Ruling 11 (E)(i)). Declaration comments name both
 values of each and cite Ruling 11 and this section.
+
+## Ruling 11 (D)(4) permuter harvest (2026-09-27)
+
+Campaign `split-all-s7`: tmp/func_800174F4/perm_split (minimal-TU workspace,
+build cc1 + maspsx recipe for src/ings.c, verified byte-identical to target
+with the K8 reuse body), seeded from the one-variable-per-value body (K8
+split twin), -j2, stack diffs on. Base 445 (permuter score). Stopped after
+18,209 iterations; last new find 26 min after launch, then none for the rest
+of the run (it overran: 39,825 s wall, harvested with --stop). No find
+reached 0. Finds:
+- 205: moves `D_800A37C0 = 0` below the `|=` (store reorder, not target
+  order); 215: a `new_var` copy of the table load; 335/355: reorder the
+  call or the D_800A38F8 store; 345: `short code` (changes the value passed).
+- REUSE finds: 415 `mode = sel;` and 425 `sel = (mode = D_800A37A0)` (the
+  selector variable re-used for D_800A37A0 — the `temp2` reuse),
+  445-3 `mode = idx`, 445-2 `mode = 0x8000` (constant holder), 430 a
+  `new_var` + do-while(0).
+The permuter's own improvements on the split body come from merging values
+back into one variable, never from a split spelling.
 
 ## CHEATED — reopened 2026-09-26 (owner ruling Q17)
 
