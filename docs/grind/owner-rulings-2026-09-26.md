@@ -185,3 +185,41 @@ Question put to the owner (AskUserQuestion), verbatim: "Correction: the SOTN exa
 The operator's assessment (summary): not ordinary C (the variable holds a compile-time constant at every read; its only purpose is loop.c's hoisting decision); not an explicit cheat either (no asm/pin/dead code); in SOTN terms a `// FAKE` constant holder, closest SOTN shape `src/st/cat/e_hellfire_beast.c:819-823` (`fake = 8;` stored to `prim->drawMode` in a loop, written once); if ever admitted it should be as a FAKE constant-holder extension, not as a Ruling 11 real value; recommended withdrawing for now since the frame gap keeps func_8006C21C at 37 regardless.
 Owner (Trenton), verbatim: **"Then withdraw for now"**.
 Disposition: no rule change. Ruling 11 and the per-branch-constants paragraph stand as before.
+
+# Owner exchange 2026-09-28 (fifteenth batch, in conversation) — VERBATIM RECORD — GRANTED
+Context: manual session s9 on func_8006C21C (ledger commit 2d2a64e6d). The operator measured a
+frame-exact spelling (memory/grind/func_8006C21C/probes/s9/POLICY-BLOCKED-frame-exact-dtd-tw-xy-4.c,
+sandbox 4/622, frame 0xC0) and, with the per-arm colour local, sandbox 0/622
+(probes/s9/POLICY-BLOCKED-frame-plus-col-0.c). The session report closed with, verbatim: "**Decision for
+you:** this function byte-matches if two things are allowed: - four `short` locals that are always 0
+(dither flag, texture-window, sprite x/y), used in the first half of the function while the second half
+writes a literal 0; - the 0x80 colour going through a local. SOTN has one similar always-zero local, but it
+uses it everywhere. You withdrew the colour-local approval earlier today, so I haven't asked or filed
+anything."
+
+## Q27 — always-zero narrow frame locals + per-branch colour holder, as FAKE locals
+Owner (Trenton), verbatim: "What do you think about allowing a construct like that? valid or a cheat?"
+The operator's assessment (summary): valid C with a FAKE label, not a cheat. Plain C through the
+unmodified compiler, no asm/pins/compiler change. The target's four untouched frame slots are
+combine-orphan slots, and the census shows a zero-cost orphan here only from narrow values known to be 0
+read in one block, so the original likely had something of that shape; the unhoisted in-arm 0x80 likewise
+says the original's two constants were not a loop.c matching pair. SOTN keeps `// !FAKE` locals and has one
+always-zero narrow local (st0 2DAC8.c func_801AF380 `u8 uBase`). Weak spots stated: the reads stop at
+phase 4 only because later reads cost code (a hand-tuned-fake look), and the names are guesses. Risk
+stated: precedent creep ("add zero locals until the frame fits"). Proposed conditions: (1) the target
+proves the mechanism exactly (untouched-slot count and layout, zero instruction cost), not just a lower
+score; (2) recorded evidence that no ordinary form works; (3) FAKE comment on every such local and the full
+adversarial review at landing.
+Owner (Trenton), verbatim: **"We can grant it with a FAKE comment"**
+Scope question put to the owner (AskUserQuestion), verbatim: "Does the grant cover both constructs
+func_8006C21C needs, with the conditions I proposed? The two constructs: (1) the always-zero short locals
+that fix the stack frame; (2) the local that holds the 0x80 colour in each branch. The conditions: the
+bytes must prove the effect exactly, other forms must already be shown not to work, a FAKE comment goes on
+each local, and the adversarial review still runs."
+Owner chose: **"Both, with conditions (Recommended)"** — option text: "Grant both constructs as
+FAKE-annotated locals under the three conditions. func_8006C21C can then reach 0/622 and land after
+review."
+Other options offered: "Frame locals only" — "Grant only the always-zero short locals for the frame. The
+colour local stays refused, so the function stays at 4/622 and does not land yet."; "Both, no extra
+conditions" — "Grant both as FAKE-annotated locals, relying on the existing FAKE-local prerequisites (lever
+exhaustion, named mechanism, annotation, review) without the new exact-proof condition."

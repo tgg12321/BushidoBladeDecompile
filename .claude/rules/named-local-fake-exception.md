@@ -67,12 +67,59 @@ the 2026-06/07 re-audit flagged: **constant-holders across calls** and
 4. **Layer-1 + layer-2 cheat-reviewer** per
    [[review-discipline-before-commit]].
 
+## Owner ruling 2026-09-28 (Q27) — always-zero narrow frame locals and per-branch constant holders
+
+Fifteenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md,
+batch 15). Owner (Trenton), verbatim: **"We can grant it with a FAKE
+comment"**; scope, verbatim option chosen: **"Both, with conditions
+(Recommended)"** — "Grant both constructs as FAKE-annotated locals under
+the three conditions." Record: docs/grind/decisions.md 2026-09-28 OWNER
+RULING — always-zero narrow frame locals and per-branch constant holders.
+
+**Rule text** (the author's narrowing of the owner's grant):
+
+- **(A) Always-zero narrow frame local.** A SCALAR local of a narrow
+  integer type (`s16`/`u16`/`s8`/`u8`) whose every write is the literal
+  0, read as an ordinary value, whose purpose is combine's fold of its
+  sign/zero extension: combine (distribute_notes REG_DEAD) plants a
+  `(use (reg))` of the dead extension temp at the block label, the
+  temp is never allocated, and reload gives it a frame slot no
+  instruction touches.
+- **(B) Per-branch constant holder.** A SCALAR local written a constant in
+  each arm of a branch and read only inside that arm, whose purpose is
+  loop.c's movable matching: the arms' constants no longer form one
+  matched movable (combine_movables), so the constant is not hoisted and
+  stays loaded in each arm.
+- **Conditions (all required; cheat-reviewer FAILs if any is missing):**
+  1. **Exact target proof.** The target itself shows the effect, and the
+     candidate reproduces it exactly: for (A), the number and positions
+     of the target's untouched frame slots (dump or SLOTDBG receipt) with
+     zero instruction-count cost; for (B), the constant loaded in-arm in
+     the target, with the loop.c movable arithmetic recorded. A lower
+     score alone is not proof.
+  2. **Ordinary forms fail, on record.** The ledger records the ordinary
+     spellings, and the other mechanisms that could produce the effect,
+     as measured-negative (for (A): the other orphan families; for (B):
+     literal, chained and restructured forms).
+  3. **Annotation.** `/* FAKE: ... */` at every such local's declaration,
+     naming the mechanism and pointing at the ledger receipts.
+  4. **Review.** Layer-1 + layer-2 cheat-reviewer per
+     [[review-discipline-before-commit]].
+- **Not extended:** arrays, pads, unused/dead locals whose mechanism is
+  frame reservation, locals of non-narrow type for (A), and any
+  always-zero local whose read is an array subscript or pointer offset
+  (Q22 above still refuses those). Supersedes the 2026-09-28 fourteenth-
+  batch withdrawal for shape (B) only as a FAKE local (Ruling 11's
+  per-branch-constants clause is unchanged: such a local is still not a
+  Ruling 11 value). First application: func_8006C21C.
+
 ## What stays FORBIDDEN (non-extension)
 
 - **Unused ARRAYS / oversized arrays / frame-size coercion** —
   [[dead-vars-local-array]] unchanged. The sanction is SCALAR locals
-  whose mechanism is RA/scheduling; anything whose mechanism is "reserve
-  frame bytes" stays forbidden pending its own evidence request.
+  whose mechanism is RA/scheduling (plus the narrow Q27 (A) shape above);
+  anything else whose mechanism is "reserve frame bytes" stays forbidden
+  pending its own evidence request.
 - **Address-coerced locals** (`(void)&local;`, `&local` passed nowhere)
   — unchanged.
 - **Register pins, asm injection, barriers** — unchanged.

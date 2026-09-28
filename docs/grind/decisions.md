@@ -30064,3 +30064,18 @@ compile time at every read; purpose = loop.c movable matching), not an ordinary-
 admission would be a named-local-fake-exception question (SOTN's closest shape: e_hellfire_beast.c:819-823
 `fake = 8; ... prim->drawMode = fake;`, written once), best asked only once func_8006C21C's frame gap has
 a legitimate closer. The escalation-not-parked AUTO-REJECT class (no in-hand SOTN precedent) applies.
+
+## 2026-09-28 — OWNER RULING — always-zero narrow frame locals and per-branch constant holders, as FAKE locals (`.claude/rules/named-local-fake-exception.md`)
+
+Fifteenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 15, Q27). Asked whether
+func_8006C21C's two remaining constructs are valid or a cheat, the owner answered "We can grant it with a
+FAKE comment" and, on the scope question, chose "Both, with conditions (Recommended)". Admitted, as two
+narrow extensions of the named-local-fake-exception (full text and conditions in the rule file,
+§ "Owner ruling 2026-09-28 (Q27)"): (A) an always-zero narrow scalar local whose reads reproduce the
+target's untouched combine-orphan frame slots; (B) a per-branch constant holder that keeps loop.c from
+matching and hoisting an in-arm constant. Both require: exact target proof of the mechanism, recorded
+evidence that ordinary forms fail, a `/* FAKE: ... */` annotation at each declaration, and layer-1 +
+layer-2 review. This supersedes, for these two shapes only, the 2026-09-28 fourteenth-batch withdrawal
+(which stays as history) and the rule file's "frame-size coercion stays forbidden" line. Arrays, pads,
+unused locals and frame reservation by any other mechanism stay forbidden. First application:
+func_8006C21C.
