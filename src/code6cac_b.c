@@ -112,7 +112,23 @@ extern u16 D_8008EBA0;
 
 
 
-extern u8 D_800A377C;
+/* P1/P2 round scores and tiebreakers (per-file declarations: owner rulings Q21-Q25,
+ * .claude/rules/no-new-park-categories.md aggregate-merge exception). Declared here
+ * as single u8s: every measured counting aggregate spelling of func_800340A0
+ * misses the shipped code (constant subscripts put element 0 behind a base
+ * register; the index-variable and regrouped-condition spellings that avoid that
+ * miss its round-result stores or compares; dummy-index and pointer-alias
+ * spellings that match are refused/set aside, Q22/Q23). src/code6cac.c:2135
+ * declares the same bytes as D_800A3898[2] / D_800A38AA[2] for func_8001CE60,
+ * which indexes them by player and does not produce those accesses from single
+ * bytes. The mismatch is kept because no single declaration compiles both files
+ * with a counting spelling (Q22/Q23 set-asides excluded).
+ * Evidence: memory/grind/func_8001CE60/evidence.md (s3),
+ * probes/calib_800340A0/ (Q24-AGREEMENT*.txt). */
+extern u8 D_800A3898;
+extern u8 D_800A3899;
+extern u8 D_800A38AA;
+extern u8 D_800A38AB;
 
 
 extern u8 D_800F65F8;
@@ -5525,30 +5541,30 @@ void func_800340A0(void) {
     p1 = D_800A3898;
     if ((u8)p1 == D_800A37F8) {
         round = D_800A3874;
-        *(&D_800A377C + round) = 0;
+        D_800A377C[round] = 0;
     } else {
         p2 = D_800A3899;
         if ((u8)p2 == D_800A37F8) {
             round = D_800A3874;
-            *(&D_800A377C + round) = 1;
+            D_800A377C[round] = 1;
         } else if ((u8)p2 < (u8)p1) {
             round = D_800A3874;
-            *(&D_800A377C + round) = 0;
+            D_800A377C[round] = 0;
         } else if ((u8)p1 < (u8)p2) {
             round = D_800A3874;
-            *(&D_800A377C + round) = 1;
+            D_800A377C[round] = 1;
         } else {
             if ((u8)D_800A38AA < (u8)D_800A38AB) {
                 D_800A3898 = p1 + 1;
                 round = D_800A3874;
-                *(&D_800A377C + round) = 0;
+                D_800A377C[round] = 0;
             } else if ((u8)D_800A38AB < (u8)D_800A38AA) {
                 D_800A3899 = p2 + 1;
                 round = D_800A3874;
-                *(&D_800A377C + round) = 1;
+                D_800A377C[round] = 1;
             } else {
                 round = D_800A3874;
-                *(&D_800A377C + round) = 2;
+                D_800A377C[round] = 2;
             }
         }
     }

@@ -515,7 +515,6 @@ void func_8003C2C0(void) {
         }
     }
 }
-extern u8 D_800A377C[];
 extern u8 D_800F65F8[];
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 void func_8003C42C(void) {
