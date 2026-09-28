@@ -136,3 +136,14 @@ would be the row/column itself. The mips.h CALL_USED list is corrected (also 24-
 Housekeeping: the reviewer restored metrics/events.jsonl to HEAD after its sandbox runs. The
 only uncommitted change at that time was its own sandbox lines, since this session had
 committed metrics before the review.
+
+### Layer-2 #3 (s2, 2026-09-28): PASS
+Fresh cheat-reviewer, given the corrected ledger. Walked (A)-(H) for tmp_a and tmp_b separately,
+re-ran the gates (splice == candidate.c, sandbox 0 231/231, full build SHA1 MATCH, integrity OK,
+find_all_cheats []), verified every GCC source citation and the banked dumps, and compiled its own
+counter-spellings on the dw_init base: register row/col, reordered or function-scope declarations,
+u32 col, column statement first, vtx operand order, and F6 empty-condition reads after
+func_8004678C and inside the marker loop. None scored below 4 or moved the row off v0 or the
+column off v1. It noted three wording slips, which it judged not disqualifying: the
+index-split-temp case in point 5, disjoint-live-range pseudos for the a3 preference, and the
+(C)(2) citation in point 1. All three are corrected in ruling11.md in the landing commit.

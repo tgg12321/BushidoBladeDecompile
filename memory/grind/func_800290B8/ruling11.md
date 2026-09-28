@@ -149,8 +149,9 @@ column pseudo in s0 (`andi s0,a1,0x1` 0x8002915C).
    `i & 1`) and the reads in the `vtx` computation, all inside loop 1, which contains no call.
    A sanctioned family can only add copies of these statements in loop 1 (duplication into
    arms), a wrap (do-while(0)), or a self-assign or dead store (deleted before flow counts
-   references). Making the value live past loop 1 would need a read after it (an added
-   statement, (C)(2)), and it would then cross `jal func_8004678C` (0x80029238). So
+   references). Making the value live past loop 1 would need a read after it: a real read emits bytes
+   the target lacks, and FAKE-family reads/stores are deleted before flow (reviewer F6 probes);
+   such a read would also cross `jal func_8004678C` (0x80029238). So
    `allocno_calls_crossed == 0` / `qty_n_calls_crossed == 0`.
 2. **Which allocator sees it depends on the spelling, and the proof covers both.**
    local-alloc takes a pseudo only when `reg_basic_block >= 0 && reg_n_deaths == 1`
@@ -185,7 +186,8 @@ column pseudo in s0 (`andi s0,a1,0x1` 0x8002915C).
      every call-used register from the preferences of an allocno that crosses calls
      (global.c:851-862). So only a conflicting allocno that crosses no calls can make a3 "someone
      prefers". Such an allocno is live over the row's or column's life and crosses no calls, so
-     it cannot live into the marker loop (1.: `jal func_8004678C` lies between). Its
+     it cannot live into the marker loop (1.: `jal func_8004678C` lies between); a pseudo with
+     disjoint live ranges (another variable's reuse) is closed by the target below. Its
      preferences come from `set_preference` on its own sets (global.c:1348, 1535-1600) and
      from `expand_preferences` over REG_DEAD pairs (global.c:781-818, run before pruning,
      global.c:523/548). `set_preference` gives an a3 preference only at the one insn that
@@ -194,7 +196,9 @@ column pseudo in s0 (`andi s0,a1,0x1` 0x8002915C).
      preferences only between NON-conflicting allocnos (global.c:797-802). `scr` is set in the
      prologue and read in the marker loop, so it is live across all of loop 1 and conflicts
      with every allocno that lives there. So no loop-1 allocno can receive an a3 preference
-     from it, directly or through a chain. So a3 is never in `regs_someone_prefers` for the
+     from it, directly or through a chain. If the setup's first operand were instead a
+     non-call-crossing pseudo in s3, it would have taken a free t2-t9 in pass 0, so it is
+     call-crossing and pruning drops a3; a pseudo seated in a3 would show a3 in loop 1. So a3 is never in `regs_someone_prefers` for the
      row or column, and pass 0 returns a register of at most 7 (a3 is eligible: not a
      conflict, not someone-preferred, in `regs_used_so_far`). Pass 1 is never reached.
    - **The preference steps** (copy preferences, global.c:1001-1035; then preferences,
@@ -210,8 +214,11 @@ column pseudo in s0 (`andi s0,a1,0x1` 0x8002915C).
      an output equal to the target, be a block-local quantity whose value sits in t0 or s0 within
      one block. In the target, t0 carries only the row (0x80029158-60) and the marker index (live
      across calls), and s0 only the column (0x8002915C-68) and the triangle index (live across
-     func_8002E6B0). The two indices are not block-local, so such a seat would have to be the row
-     or the column itself, seated by local-alloc, which 4. excludes. So no preference chain
+     func_8002E6B0). Any block-local quantity there (the row or column itself, or a block-local
+     temp a respelling splits off an index) is seated by local-alloc's lowest-first scan, which
+     always finds a free register at or below 7 in the t0 regions (a3 is live only across a
+     call, where local-alloc may not use call-used registers) and at or below 15 in the s0
+     regions (t2-t9 are never used), as in 4. So no preference chain
      carries 8 or 16, and neither step can move `best_reg` to t0 or s0.
    So global.c never seats the row or the column in t0 or s0. The dumps agree:
    in every multi-block probe the row is global allocno 92 with ";; 92 preferences: 2", seated
