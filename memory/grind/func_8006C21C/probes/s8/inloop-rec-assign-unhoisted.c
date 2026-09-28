@@ -7,7 +7,6 @@
  * hunks remain. The i reuse, cells reuse, and mode holder still need their full
  * respective admission evidence; this checkpoint does not claim approval.
  * Trailing macro remains SANDBOX ONLY: fix the TU prototype at any landing.
- * s8 (2026-09-28): bar 1's vertices use PsyQ setXYWH (byte-neutral, 41/622).
  */
 typedef struct {
     u8 *header;
@@ -41,7 +40,6 @@ typedef struct {
     s16 x3, y3;
 } PolyG4_8006C21C;
 
-#define setXYWH(p, _x0, _y0, _w, _h)     (p)->x0 = (_x0), (p)->y0 = (_y0),     (p)->x1 = (_x0) + (_w), (p)->y1 = (_y0),     (p)->x2 = (_x0), (p)->y2 = (_y0) + (_h),     (p)->x3 = (_x0) + (_w), (p)->y3 = (_y0) + (_h)
 void func_8006C21C(s32 *arg0) {
     Env_8006C21C s;
     s32 j;
@@ -157,8 +155,8 @@ void func_8006C21C(s32 *arg0) {
     for (j = 0; j < 2; j++) {
 
         i = *(s16 *)(D_800A34FC + j * 2 + 0x28);
-        rec = &recs[i + 1];
         for (row = 0; row < 2; row++) {
+            rec = &recs[i + 1];
             SetPolyG4(poly);
             if (i == 5) {
                 SetSemiTrans(poly, 1);
@@ -175,7 +173,14 @@ void func_8006C21C(s32 *arg0) {
                 poly->r3 = 0;
                 poly->g3 = 0;
                 poly->b3 = 0;
-                setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -4 * row + 2);
+                poly->x0 = rec[row].x + x;
+                poly->y0 = rec[row].y + 1 - row;
+                poly->x1 = rec[row].w + (rec[row].x + x);
+                poly->y1 = rec[row].y + 1 - row;
+                poly->x2 = rec[row].x + x;
+                poly->y2 = rec[row].y + 1 - row + (2 + row * -4);
+                poly->x3 = rec[row].w + (rec[row].x + x);
+                poly->y3 = rec[row].y + 1 - row + (2 + row * -4);
             } else {
                 SetSemiTrans(poly, 0);
 
@@ -185,12 +190,20 @@ void func_8006C21C(s32 *arg0) {
                 poly->r1 = pulse;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = poly->r2 = 0x80;
+                poly->r2 = 0x80;
                 poly->g2 = 0;
                 poly->b2 = 0;
+                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
-                setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -2 * row + 1);
+                poly->x0 = rec[row].x + x;
+                poly->y0 = rec[row].y + 1 - row;
+                poly->x1 = rec[row].w + (rec[row].x + x);
+                poly->y1 = rec[row].y + 1 - row;
+                poly->x2 = rec[row].x + x;
+                poly->y2 = rec[row].y + 1 - row + (1 + row * -2);
+                poly->x3 = rec[row].w + (rec[row].x + x);
+                poly->y3 = rec[row].y + 1 - row + (1 + row * -2);
             }
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
             poly++;
@@ -227,18 +240,19 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = poly->r1 = 0x80;
+                poly->r1 = 0x80;
                 poly->g1 = 0;
                 poly->b1 = 0;
+                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
                 poly->y0 = rec->y + 1;
-                poly->x1 = rec->x + rec->w * row + x + (-4 * row + 2);
+                poly->x1 = rec->x + rec->w * row + x + (2 + row * -4);
                 poly->y1 = rec->y + 1;
                 poly->x2 = rec->x + rec->w * row + x;
                 poly->y2 = rec[1].y - 1;
-                poly->x3 = rec->x + rec->w * row + x + (-4 * row + 2);
+                poly->x3 = rec->x + rec->w * row + x + (2 + row * -4);
                 poly->y3 = rec[1].y - 1;
             }
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);

@@ -295,3 +295,44 @@ Re-scored the exact saved s7 candidate: 41/622, four source-level diff hunks
 exited 1 because build/verified-inputs.json was temporarily absent. Re-run after
 the successful rebuild: exit 0, "OK: all completed functions satisfy their
 category's invariants." This is repository validation, not candidate approval.
+
+## s8 [manual, Claude, local WSL, 2026-09-28] — mechanisms pinned for both gaps; floor 41 unchanged
+Resumed the open manual session; re-scored the s7 candidate at 41/622 (4 source-level hunks =
+the two early r3 stores; 14 operand-only = frame offsets). Receipts in probes/s8/.
+- **0x80 hoist, loop.c arithmetic (dumps, tmp/c21c/loops.sh).** Natural per-arm literals: each
+  else-arm constant is a movable of life 4, the two arms MATCH in combine_movables (life 8,
+  savings 2), threshold 29 (loops with calls): 29*2*8 = 464 >= 264 (row loop) and >= 312 (j loop),
+  so it is hoisted twice. Matching needs n_times_set == 1 on both, same set_src, m1 not global;
+  the only escapes are (a) one variable written in both arms (n_times_set 2 -> not movable: the
+  refused dim/col shapes), (b) a user variable read outside its basic block, (c) threshold cut
+  by >= 5 earlier moves in the SAME loop (loop.c:1719 `threshold -= 3`), (d) insn_count > 464.
+  Measured: (c) `rec = &recs[i + 1]` inside the row loop is not hoisted (first chain insn life 2,
+  116 < 269); indexing `recs[i + 1 (+row)]` inside the loop moves the chain but AFTER the 0x80 in
+  list order, and CSE folds i == 5 into the if-arm addresses (190-238/609-639). (d) s16 k / x /
+  row do not change the loop's pre-combine insn count (264). No natural (a)/(b) found.
+- **Frame orphans, exact mechanism (private logging cc1, output byte-identical to build cc1).**
+  Candidate: 28 combines, zero 3->2, zero orphans. The s6 holder file's orphans come from 2->1
+  combines, not 3->2: i2 = (ashiftrt t1 16), i3 = store; t1 = (ashift Z 16) with Z known zero, so
+  the store folds to 0; distribute_notes (combine.c REG_DEAD case) deletes t1's now-dead setter
+  and STILL plants `(use t1)` after the block's label (the backward scan continues past the
+  deleted TEM). t1 is then used-never-set -> live from entry -> unallocated -> untouched slot.
+  So a slot needs a narrow value whose known bits make its extension fold to a CONSTANT, read
+  after a label, outside any loop (inside a loop, loop.c hoists the extension pair: life 2,
+  savings 2 -> 116 >= loop size, and the fold is lost, +insns).
+- **Zero-cost reproduction of 3 of the 4 slots:** `s16 xpos = 0, ypos = 0, semi = 0` read only at
+  the phase-1, phase-2-head and phase-4-head descriptor x/y/semi stores: vars 96 -> 120, cc1 code
+  identical (probes/s8/zero-s16-descriptor-locals-vars120.c). Reading them at the in-loop sites
+  too (the consistent, natural form) costs 4-34 lines and loses the slots. This is the refused
+  holder class (named-local-fake-exception: frame-reservation mechanisms stay forbidden); banked
+  as mechanism evidence, not as a candidate.
+- **Other sweeps, all vars 96 / no orphans:** 40 single-site respellings (rcos angle, pulse,
+  bit mask, level reads, rec base, x offsets, w*row order, OT adds) — probes/s8/tools/sweep1.py;
+  19 struct field signedness variants (Rec x/y/w/h, PolyG4 coords/colours, Env bytes) — sweep2.py.
+- **Naturalness gain (byte-neutral):** bar 1's vertex block is exactly PsyQ `setXYWH(p, x, y, w, h)`
+  — `setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -4 * row + 2)` (else arm
+  `-2 * row + 1`) compiles identically. The macro's `(_y0)+(_h)` is the grouping s2 found
+  necessary, and its re-evaluated arguments explain the per-coordinate reloads. `2 - row * 4`
+  costs +4 insns. Bar 2 is not setXYWH (y2/y3 read rec[1].y).
+- **Dead ends:** Kengo's `saTan4GaugeMain` (src/sato/sa_tan4.c, 0x1504C0) is an unrelated float
+  state machine; Kengo gives nothing for this function. Caller-save save areas cannot explain the
+  32 bytes (the target has one spill reg, t0, and no saves). -fno-caller-saves irrelevant.

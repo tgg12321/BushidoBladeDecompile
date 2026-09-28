@@ -94,3 +94,19 @@
 4. i/cells/mode still require full admission evidence or removal. plain-s7.c
    records a combined-removal baseline (123/605); one-at-a-time failures are not
    proof of necessity. See review-s7.md and probes/s7/ for receipts.
+
+## Frontier after s8 (2026-09-28) — floor 41 (622/622)
+Both gaps now reduce to one question: which ordinary construct makes a constant not a lone
+per-site literal. Mechanisms are pinned (evidence s8); every zero-cost reproducer found is a
+variable written/held with a constant, which current policy refuses.
+1. FRAME: need 4 folds of a known-zero narrow value, read after a label, outside loops, at zero
+   cost. Untried: narrow values that are zero by KNOWN BITS rather than by a constant init (a
+   masked/shifted real value whose extension folds to 0 — e.g. a byte/halfword extracted from a
+   word whose bits are provably clear); zero-valued narrow reads in the phase-3/5 blocks
+   (SetDrawMode dtd/tw) with a semantic origin. Do not re-run respelling or field-type sweeps.
+2. 0x80: escapes (a)-(d) in evidence s8. (c) is the only non-variable one: needs >= 5 movables
+   moved from the row loop AND the j loop before the else-arm constant in insn order. The row loop
+   has none today; find a natural in-loop invariant (not i-dependent in the if-arm, since CSE folds
+   i == 5 there) that the original may have computed per row.
+3. candidate.c now uses setXYWH for bar 1 (s8, byte-neutral); bar 2 stays explicit.
+4. Policy status unchanged: i/cells/mode admissions (review-s7.md) still open.

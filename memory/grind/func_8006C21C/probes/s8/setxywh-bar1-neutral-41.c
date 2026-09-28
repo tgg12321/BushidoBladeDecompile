@@ -7,7 +7,6 @@
  * hunks remain. The i reuse, cells reuse, and mode holder still need their full
  * respective admission evidence; this checkpoint does not claim approval.
  * Trailing macro remains SANDBOX ONLY: fix the TU prototype at any landing.
- * s8 (2026-09-28): bar 1's vertices use PsyQ setXYWH (byte-neutral, 41/622).
  */
 typedef struct {
     u8 *header;

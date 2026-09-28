@@ -7,7 +7,6 @@
  * hunks remain. The i reuse, cells reuse, and mode holder still need their full
  * respective admission evidence; this checkpoint does not claim approval.
  * Trailing macro remains SANDBOX ONLY: fix the TU prototype at any landing.
- * s8 (2026-09-28): bar 1's vertices use PsyQ setXYWH (byte-neutral, 41/622).
  */
 typedef struct {
     u8 *header;
@@ -41,8 +40,10 @@ typedef struct {
     s16 x3, y3;
 } PolyG4_8006C21C;
 
-#define setXYWH(p, _x0, _y0, _w, _h)     (p)->x0 = (_x0), (p)->y0 = (_y0),     (p)->x1 = (_x0) + (_w), (p)->y1 = (_y0),     (p)->x2 = (_x0), (p)->y2 = (_y0) + (_h),     (p)->x3 = (_x0) + (_w), (p)->y3 = (_y0) + (_h)
 void func_8006C21C(s32 *arg0) {
+    s16 semi;
+    s16 xpos;
+    s16 ypos;
     Env_8006C21C s;
     s32 j;
     s32 *table;
@@ -59,13 +60,16 @@ void func_8006C21C(s32 *arg0) {
     s32 pulse;
     u8 *cells;
 
+    xpos = 0;
+    semi = 0;
+    ypos = 0;
     s.ot_idx = 10;
     s.has_color = 0;
     table = *(s32 **)(arg0[1] + 0x30);
-    s.y = 0;
-    s.x = 0;
+    s.y = ypos;
+    s.x = xpos;
     s.header = (u8 *)table[0];
-    s.semi = 0;
+    s.semi = semi;
     cells = s.header + 0xC;
     s.table = cells;
     s.out = arg0[5];
@@ -78,7 +82,7 @@ void func_8006C21C(s32 *arg0) {
     s.ot_idx = 9;
     s.has_color = 0;
     table = *(s32 **)(arg0[1] + 0x30);
-    s.y = 0;
+    s.y = ypos;
     for (pl = 0; pl < 2; pl++) {
         s.x = pl * 280;
         if (*(s16 *)(D_800A34FC + pl * 2 + 0x28) < 3) {
@@ -100,13 +104,13 @@ void func_8006C21C(s32 *arg0) {
     AddPrim(g_gpu_ot_ptr + 0x24, arg0[7]);
     arg0[7] += 0xC;
 
-    s.x = 0;
-    s.y = 0;
+    s.x = xpos;
+    s.y = ypos;
     s.ot_idx = 10;
     s.has_color = 0;
     table = *(s32 **)(arg0[1] + 0x30);
     s.header = (u8 *)table[1];
-    s.semi = 0;
+    s.semi = semi;
     cells = s.header + 0xC;
     s.table = cells;
     s.out = arg0[5];
@@ -175,7 +179,14 @@ void func_8006C21C(s32 *arg0) {
                 poly->r3 = 0;
                 poly->g3 = 0;
                 poly->b3 = 0;
-                setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -4 * row + 2);
+                poly->x0 = rec[row].x + x;
+                poly->y0 = rec[row].y + 1 - row;
+                poly->x1 = rec[row].w + (rec[row].x + x);
+                poly->y1 = rec[row].y + 1 - row;
+                poly->x2 = rec[row].x + x;
+                poly->y2 = rec[row].y + 1 - row + (2 + row * -4);
+                poly->x3 = rec[row].w + (rec[row].x + x);
+                poly->y3 = rec[row].y + 1 - row + (2 + row * -4);
             } else {
                 SetSemiTrans(poly, 0);
 
@@ -190,7 +201,14 @@ void func_8006C21C(s32 *arg0) {
                 poly->b2 = 0;
                 poly->g3 = 0;
                 poly->b3 = 0;
-                setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -2 * row + 1);
+                poly->x0 = rec[row].x + x;
+                poly->y0 = rec[row].y + 1 - row;
+                poly->x1 = rec[row].w + (rec[row].x + x);
+                poly->y1 = rec[row].y + 1 - row;
+                poly->x2 = rec[row].x + x;
+                poly->y2 = rec[row].y + 1 - row + (1 + row * -2);
+                poly->x3 = rec[row].w + (rec[row].x + x);
+                poly->y3 = rec[row].y + 1 - row + (1 + row * -2);
             }
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
             poly++;
@@ -234,11 +252,11 @@ void func_8006C21C(s32 *arg0) {
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
                 poly->y0 = rec->y + 1;
-                poly->x1 = rec->x + rec->w * row + x + (-4 * row + 2);
+                poly->x1 = rec->x + rec->w * row + x + (2 + row * -4);
                 poly->y1 = rec->y + 1;
                 poly->x2 = rec->x + rec->w * row + x;
                 poly->y2 = rec[1].y - 1;
-                poly->x3 = rec->x + rec->w * row + x + (-4 * row + 2);
+                poly->x3 = rec->x + rec->w * row + x + (2 + row * -4);
                 poly->y3 = rec[1].y - 1;
             }
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
