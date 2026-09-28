@@ -96,7 +96,21 @@ phase-2 inner `if`; phase-4 head; phase-4 `work` loop).
 
 ## Scores
 
-(sandbox --disable all; pending — the peer session's staged src edit blocks engine runs)
+`sandbox --disable all`, 2026-09-28, main e3cd78f85 (score / build insns vs target 622):
+
+| spelling | score | insns | scored hunks |
+|---|---|---|---|
+| candidate.c (work shared, cells carrier, mode holder) | 41 | 622 | 4 source-level (the two early r3 stores) |
+| spl_p6 (phase-6 row split out) | 44 | 622 | 4 source-level |
+| spl_p4 (phase-4 index split out) | 46 | 622 | 4 source-level |
+| lvl10 = spl_lv (level split out) | 108 | 605 | 28 source-level |
+| spl_all (all four values split) | 130 | 605 | 28 source-level |
+| spl_p2 (phase-2 index split out) | 133 | 611 | 31 source-level |
+| nocells10 (no cells carrier) | 53 | 622 | 12 source-level |
+| modelit10 (literal 0 at every func_8006E480 call) | 44 | 622 | 5 source-level |
+
+Every alternative is worse than the candidate; the candidate's own residual (frame + r3 order) is
+unrelated to these three constructs.
 
 ## Campaigns
 
