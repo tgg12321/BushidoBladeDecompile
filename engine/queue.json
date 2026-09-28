@@ -233,20 +233,6 @@
       "rotation_count": 1
     },
     {
-      "func": "func_8001BE20",
-      "file": "code6cac",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotated_at": "2026-09-26T01:22:52+00:00",
-      "rotation_count": 2,
-      "unparked_from": "flat floor 5/393 after 2 manual sessions + permuter 11.8k iters; regalloc/CSE proof: move a3,a2 needs the pad-shift local referenced outside its CSE unit, only achievable via two-role shift reuse (layer-2 FAIL, Ruling 5). PadState prep landed 91448d225. See memory/grind/func_8001BE20/hypotheses.md",
-      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 5 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
-      "returned_at": "2026-09-25T22:11:37+00:00",
-      "rotation": "flat floor 5/393 after 3 manual sessions; s3 ran the last unrun instrument (spelling_enum, 326/326 at 5) + 9 structural one-offs; only closing form is the two-role shift reuse, named banned in Ruling 9's list (2026-09-25). See memory/grind/func_8001BE20/hypotheses.md"
-    },
-    {
       "func": "func_8008B488",
       "file": "main",
       "distance": 16,
@@ -436,11 +422,11 @@
     }
   ],
   "counts": {
-    "total": 36,
+    "total": 35,
     "active": 18,
     "by_status": {
       "active": 18,
-      "rotated": 18
+      "rotated": 17
     },
     "by_verdict": {
       "C": 14,
