@@ -12,3 +12,6 @@
 - Corner index written inline without `vtx` (r11/no_vtx.c): 89.
 - Markers read as `list[mark].field` instead of a walking pointer (r11/r_index.c): 40.
 - SOTN self-assign / dead-store probes on the per-value body (r11/f_*.c): 21, no effect.
+- Sanctioned families on the per-value body (fam/*.c, s2): best 4 (init do-while(0) wrap seats
+  the marker index in t0; row/column stay v0/v1). Permuter from the per-value body (two runs,
+  78k iterations): best 20/1070 (permuter weights), finds stage loop-1 values through `mark`.

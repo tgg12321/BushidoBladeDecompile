@@ -1,0 +1,69 @@
+# bash memory/grind/func_800290B8/fam/dump_fam.sh (cc1 flags: -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dl -dg -df)
+=== dw_init
+  Register 72 used 24 times across 132 insns; crosses 2 calls; GR_REGS or none.  ->  hard reg 23
+  Register 73 used 6 times across 132 insns; dies in 0 places; crosses 2 calls; GR_REGS or none.  ->  hard reg NONE (stack)
+  Register 74 used 26 times across 132 insns; dies in 0 places; crosses 2 calls; GR_REGS or none; pointer.  ->  hard reg 22
+  Register 75 used 44 times across 140 insns; crosses 2 calls; GR_REGS or none; pointer.  ->  hard reg 19
+  Register 76 used 12 times across 72 insns; dies in 0 places; crosses 1 call; GR_REGS or none; pointer.  ->  hard reg 30
+  Register 77 used 15 times across 30 insns; crosses 3 calls; GR_REGS or none; pointer.  ->  hard reg 20
+  Register 78 used 12 times across 20 insns; crosses 1 call; GR_REGS or none; pointer.  ->  hard reg 18
+  Register 79 used 12 times across 17 insns; crosses 1 call; GR_REGS or none; pointer.  ->  hard reg 17
+  Register 80 used 13 times across 49 insns; dies in 0 places; GR_REGS or none.  ->  hard reg 5
+  Register 81 used 9 times across 76 insns; crosses 2 calls; GR_REGS or none.  ->  hard reg 8
+  Register 97 used 14 times across 31 insns; GR_REGS or none.  ->  hard reg 4
+  Register 99 used 3 times across 48 insns; dies in 0 places; GR_REGS or none.  ->  hard reg 6
+  Register 108 used 10 times across 9 insns; dies in 2 places; GR_REGS or none.  ->  hard reg 3
+  Register 136 used 10 times across 9 insns; dies in 2 places; GR_REGS or none.  ->  hard reg 3
+  Register 164 used 6 times across 5 insns; GR_REGS or none.  ->  hard reg 3
+  Register 176 used 17 times across 32 insns; dies in 0 places; crosses 1 call; GR_REGS or none.  ->  hard reg 16
+  Register 183 used 8 times across 15 insns; GR_REGS or none.  ->  hard reg 4
+  Register 189 used 6 times across 6 insns; GR_REGS or none.  ->  hard reg 3
+  Register 249 used 18 times across 79 insns; crosses 4 calls; GR_REGS or none; pointer.  ->  hard reg 21
+  Spilling reg 9.
+  Spilling reg 9.
+=== dw_init: the bounding-box loop's i/2 and i&1 insns, .lreg
+(insn 52 51 54 (set (reg/v:SI 92)
+        (ashiftrt:SI (reg:SI 95)
+            (const_int 1))) 191 {ashrsi3} (insn_list 51 (nil))
+    (expr_list:REG_DEAD (reg:SI 95)
+--
+(insn 54 52 61 (set (reg/v:SI 96)
+        (and:SI (reg/v:SI 80)
+            (const_int 1))) 92 {andsi3} (nil)
+    (nil))
+--
+(insn 557 556 559 (set (reg:SI 238)
+        (ashiftrt:SI (reg:SI 241)
+=== dw_init: block-local pseudos seated by local-alloc (';; Register N in R.')
+;; Register 83 in 2.
+;; Register 84 in 2.
+;; Register 85 in 2.
+;; Register 86 in 2.
+;; Register 87 in 3.
+;; Register 91 in 2.
+;; Register 92 in 2.
+;; Register 94 in 2.
+;; Register 95 in 2.
+;; Register 96 in 3.
+;; Register 101 in 2.
+;; Register 102 in 2.
+;; Register 104 in 2.
+;; Register 105 in 2.
+;; Register 106 in 2.
+;; Register 107 in 2.
+;; Register 109 in 2.
+;; Register 110 in 2.
+;; Register 122 in 2.
+;; Register 124 in 2.
+=== dw_init: .s lines of the bounding-box index math and the marker index
+44:	sra	$2,$2,1
+45:	andi	$3,$5,0x0001
+136:	move	$8,$0
+215:	sw	$8,24($sp)
+219:	lw	$8,24($sp)
+261:	sw	$8,24($sp)
+265:	lw	$8,24($sp)
+270:	move	$4,$8
+299:	addu	$8,$8,1
+310:	sra	$3,$3,1
+319:	addu	$8,$8,1

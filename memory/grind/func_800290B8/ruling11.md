@@ -86,70 +86,141 @@ In both spellings the nine call-saved registers (16-23, 30) go to the same nine 
 target's `sw a1,0x10(sp)`).
 
 ## (D)(2) The mechanism
-- **tmp_a -> t0.** The target keeps the marker index in the call-clobbered t0 and saves/restores
-  it around both calls it crosses (`sw t0,0x18(sp)` / `lw t0,0x18(sp)` around `jal func_8002E6B0`
-  and `jal func_8002FC80`). global.c `find_reg` gives a pseudo that crosses calls a
-  call-clobbered register only on its caller-save retry (global.c:1073-1094, `flag_caller_saves
-  && best_reg < 0`, then `CALLER_SAVE_PROFITABLE (allocno_n_refs, allocno_calls_crossed)`),
-  and regs.h:165 defines `CALLER_SAVE_PROFITABLE(REFS, CALLS)` as `4 * (CALLS) < (REFS)`. All
-  call-saved registers are taken first (above), so `best_reg < 0` in both spellings; the retry
-  then passes for the reuse pseudo (4 * 2 = 8 < 12) and fails for the per-value `mark`
-  (8 < 8 is false), which is left without a register and lives in the stack slot (`sw zero`,
-  `lw`/`sw` per use: the 21-point diff). Refs are counted by flow.c as `reg_n_refs[regno] +=
-  loop_depth` per reference (flow.c:2067, 2315, 2501, 2711): mark's references are the init
-  (depth 1: 1), the step's use and set (depth 2: 2 + 2) and the func_80044B30 argument (depth
-  3, inside the triangle loop: 3) = 8; the shared pseudo adds loop 1's `i / 2` set and its read
-  in the `vtx` statement (depth 2: 2 + 2) = 12, matching the dumps.
-- **tmp_b -> s0 for the column.** The target computes the column straight into s0
-  (`andi s0,a1,0x1`), the triangle counter's global seat. In the per-value spelling the column
-  pseudo's only write (insn 54) and only read (the `vtx` addition) lie in loop 1's first basic
-  block, so flow records it as local to that block and local-alloc allocates it
-  (local-alloc.c `block_alloc` -> `find_free_reg`, local-alloc.c:2073): with
-  `qty_n_calls_crossed == 0` the exclusion set starts from `fixed_reg_set`, and the scan runs
-  from hard reg 0 upward (MIPS defines no `REG_ALLOC_ORDER`) returning the first register not
-  live over the quantity's life: v1 (3) in the dump. global.c never sees an allocated local
-  pseudo. In the reuse spelling the column is the triangle counter's pseudo, which lives in
-  several blocks and crosses func_8002E6B0, so global.c seats it (and therefore the column) in
-  s0.
+The target seats the two loop-1 values in the registers of the two marker-loop values: the corner
+row `i / 2` is computed straight into t0 (`sra t0,v0,0x1` 0x80029158, read by `sll v0,t0,0x1`
+0x80029160), the marker index's register, and the corner column `i & 1` straight into s0
+(`andi s0,a1,0x1` 0x8002915C, read by `addu a0,v0,s0` 0x80029168), the triangle index's
+register. These two seats are what the reuse is necessary for (D)(3). The marker index's own t0
+seat is NOT a necessity ground: a sanctioned do-while(0) wrap reaches it without any reuse (below).
+
+- **tmp_a -> t0 (both values).** The target keeps the marker index in the call-clobbered t0 and
+  saves/restores it around both calls it crosses (`sw t0,0x18(sp)` / `lw t0,0x18(sp)` around
+  `jal func_8002E6B0` and `jal func_8002FC80`). global.c `find_reg` gives a pseudo that crosses
+  calls a call-clobbered register only on its caller-save retry (global.c:1078-1094,
+  `flag_caller_saves && best_reg < 0`, then `CALLER_SAVE_PROFITABLE (allocno_n_refs,
+  allocno_calls_crossed)`), and regs.h:165 defines `CALLER_SAVE_PROFITABLE(REFS, CALLS)` as
+  `4 * (CALLS) < (REFS)`. All call-saved registers are taken first (above), so `best_reg < 0`;
+  the retry passes for the reuse pseudo 82 (4 * 2 = 8 < 12) and seats it in t0. Refs are counted
+  by flow.c as `reg_n_refs[regno] += loop_depth` per reference (flow.c:2067, 2315, 2501, 2711):
+  the marker-loop references are the init (depth 1: 1), the step's use and set (depth 2: 2 + 2)
+  and the func_80044B30 argument (depth 3: 3) = 8; loop 1's `i / 2` set and its read in the
+  `vtx` statement add 2 + 2 = 12, matching the dump. Because the row value IS pseudo 82, its
+  write lands in t0.
+  - Per-value (pv.c): `mark` (pseudo 81) has 8 refs, the retry fails (8 < 8 is false), no hard
+    reg, stack slot (the 21-point diff); `row` (pseudo 92) is block-local and local-alloc seats
+    it in v0 (";; Register 92 in 2.").
+  - Per-value + do-while(0) around the init (fam/dw_init.c, `do { mark = 0; } while (0);`): the
+    wrap's loop notes put the init at depth 2, `mark` has 9 refs, 8 < 9 passes and global.c
+    seats it in t0 ("Register 81 used 9 times ... -> hard reg 8", dumps/fam-dw_init-dumps.txt)
+    with the target's caller-save spills. The row is still pseudo 92 in v0 and the column
+    pseudo 96 in v1 (";; Register 92 in 2.", ";; Register 96 in 3."; .s `sra $2,$2,1`,
+    `andi $3,$5,0x0001`). Score 4/231: the four operands above and nothing else.
+- **tmp_b -> s0 for the column.** In the reuse spelling the column is the triangle counter's
+  pseudo 83, which lives in several blocks and crosses func_8002E6B0, so global.c seats it (and
+  therefore the column write) in s0. In the per-value spelling the column pseudo's only write
+  (insn 54) and only read (the `vtx` addition) lie in loop 1's first basic block, so flow records
+  it as local to that block and local-alloc allocates it; global.c never sees an allocated local
+  pseudo.
+- **local-alloc's seat for a block-local row or column** (local-alloc.c `block_alloc` ->
+  `find_free_reg`, local-alloc.c:2073-2185). With `qty_n_calls_crossed == 0` the exclusion set
+  starts from `fixed_reg_set`; the first try is restricted to the quantity's copy/arithmetic
+  suggestions (`qty_phys_copy_sugg` / `qty_phys_sugg`, local-alloc.c:2145-2151), which
+  `combine_regs` sets only when the pseudo is tied by an insn to a HARD register
+  (local-alloc.c:1805-1835); the row and column meet no hard register in their insns (a shift
+  or AND of pseudos, read by an add of pseudos), so they have none. The scan then runs from
+  hard reg 0 upward (MIPS defines no `REG_ALLOC_ORDER`, local-alloc.c:2158-2179) and returns
+  the first register not live over the quantity's life: v0 for the row (its input pseudo 95
+  dies at insn 52, freeing v0) and v1 for the column in every dump.
 
 ## (D)(3) Necessity for EVERY per-value spelling
-- **Marker index.** In any per-value spelling the marker index is its own variable, so its
-  references are exactly its own occurrences, fixed by the shared statement list: the init
-  before the marker loop, the once-per-marker step, and the func_80044B30 argument inside the
-  hit path of the triangle loop. Their loop depths are fixed by the statement list's loop nest
-  (for/while/do all emit the same loop notes; a goto-built loop only lowers the depth), so its
-  weighted ref count is at most 8 whatever the declaration order, scope, statement order or
-  loop spelling (r_while.c: 21). It crosses at least 2 calls in every spelling: it is read after
-  func_8002E6B0 returns (by the step when no triangle hits) and after func_8002FC80 returns
-  (GCC evaluates the nested call before loading func_80044B30's other argument; loading the
-  index earlier needs an extra statement). 4 * 2 < 8 is false, so global.c refuses it every
-  call-clobbered register, t0 included, and the target's t0 seat with caller-save
-  spills is unreachable. A narrower type adds extension instructions the target does not have;
-  `register`, `static` or an address-taken variable fail (A) or change the code. Only a second
-  value in the same pseudo adds references, which is the reuse.
-- **Corner column.** In any per-value spelling the column value is its own variable, written by
-  `col = i & 1` and read once by the `vtx` statement, both at the top of loop 1's body before its
-  first branch (the statement list and data dependences fix this; the write needs `i`, so it
-  cannot move out of the loop). It is therefore always local to one block and always allocated
-  by local-alloc's lowest-first scan, which returns s0 only if every register below 16 is live
-  over its two-insn life; loop 1's block holds only a handful of quantities (the dump gives it
-  v1), and no hard register in its insns suggests s0. Only making the column the triangle
-  counter's pseudo puts it in s0, which is the reuse.
+The property the target's allocation depends on, for each variable: **the loop-1 value is the
+same pseudo as a marker-loop value that global.c seats** (row with the marker index in t0,
+column with the triangle index in s0). No per-value spelling has it, because there each loop-1
+value is its own variable:
+- **Its references are fixed and block-local.** The row (column) variable is written once, by
+  `i / 2` (`i & 1`), and read once, by the `vtx` statement; the statement list fixes these as
+  its only references (a second read or write would be an extra statement, (C)(2)). Both sit at
+  the top of loop 1's body before its first branch: the write needs `i`, so it cannot leave the
+  loop, and the `vtx` statement precedes every compare that reads `vtx`. flow therefore records
+  the pseudo as local to that one block whatever the declaration's scope (block scope pv.c: 21;
+  function scope abl_a.c: 22, dwi_abl_a.c: 5), declaration order, or statement order (the two
+  writes commute; either order leaves both in the block).
+- **A block-local pseudo is seated by local-alloc's lowest-first scan** (D)(2), which can return
+  t0 (8) for the row only if v0-a3 (2-7) are all live over its life, and s0 (16) for the column
+  only if every register 2-15 is: in loop 1's first block v0 is freed by the row's own input and
+  v1 is free (every dump), and a per-value spelling cannot add live values there without adding
+  statements. No hard-register suggestion can point it elsewhere (none of its insns touches a
+  hard register).
+- **Type:** the target's `sra t0,v0,1` / `andi s0,a1,1` feed the index arithmetic directly; a
+  narrower type adds extension instructions the target does not have. `register`, `static` or an
+  address-taken variable fail (A) or put the value in memory.
+- **Sanctioned families** (no-new-park-categories § SOTN-accepted; do-while-zero-exception)
+  cannot give the row or column another pseudo's register: a self-assign or a dead store is
+  deleted before flow counts references (f_self*.c, f_dead.c: 21); a do-while(0) wrap adds loop
+  notes but no block boundary, so the value stays block-local (dw_col.c 21, dw_l1.c 50, and with
+  the marker index already in t0: dwi_rc.c 4, dwi_rcv.c 4, dwi_col.c 4, dwi_l1.c 34); a chain
+  extender folds in the same insn (ce_*.c: 21); a pointer alias forces memory (pa.c: 53);
+  duplicating a statement into arms only adds references in other blocks of the SAME variable
+  it duplicates, and the loop-1 values have no arm to duplicate into (their read is the
+  unconditional `vtx` statement); a named intermediate is one more block-local pseudo. The only
+  way to make a loop-1 value share a global pseudo's register is to make it that pseudo, i.e.
+  the reuse. This holds for each variable separately: splitting only tmp_a leaves the row in v0
+  (abl_a.c 22, dwi_abl_a.c 5), splitting only tmp_b leaves the column in v1 (abl_b.c 2,
+  dwi_abl_b.c 2).
+- **Post-allocation passes.** jump2 (cross-jump, no-op move deletion), sched2 and reorg never
+  change a pseudo's hard-register assignment. reload changes one only by spilling a hard
+  register it needs and re-seating the pseudos that lived in it (reload1.c `spill_hard_reg`,
+  then `retry_global_alloc`); every dump spills reg 8 or 9 only ("Spilling reg 8/9." in the
+  .greg excerpts), never v0/v1, and a re-seat goes through global.c's `find_reg`, not to a
+  register another pseudo holds. So they cannot move a v0/v1 row or column into t0/s0.
+- **What does NOT carry necessity (withdrawn 2026-09-28 s2):** s1 argued the marker index's
+  ref count is at most 8 in every per-value spelling. That is false once sanctioned families
+  are admitted: the single-level init wrap fam/dw_init.c raises it to 9 and seats `mark` in t0
+  (score 4, the residual is exactly the row/column operands). The reuse of tmp_a is therefore
+  necessary for the corner row's t0 seat, not for the marker index's.
 
-## (D)(4) Measured alternatives (`sandbox --disable all --candidate`, r11/*.c from mkall.py)
+## (D)(4) Measured alternatives (`sandbox --disable all --candidate`)
+r11/*.c from `python3 memory/grind/func_800290B8/r11/mkall.py memory/grind/func_800290B8/candidate.c memory/grind/func_800290B8/r11`;
+fam/*.c from `python3 memory/grind/func_800290B8/fam/mkfam.py` (per-value body + one sanctioned
+family each; `/* FAKE */` marks the construct). Re-measured 2026-09-28 s2 on HEAD a6aa639c.
 | body | score | insns |
 |---|---|---|
 | candidate.c (reuse) | 0 | 231 |
-| pv.c (one variable per value) | 21 | 229 |
-| abl_a.c (only tmp_a split: row / mark; tmp_b shared) | 22 | 229 |
-| abl_b.c (only tmp_b split: col / tri; tmp_a shared) | 2 | 231 (exactly `andi s0` -> `andi v1`, `addu a0,v0,s0` -> `v1`) |
-| r_inline.c (pv, corner index written inline, no row/col) | 22 | 229 |
-| r_while.c (pv, marker loop as while + gotos) | 21 | 229 |
-| r_index.c (pv, markers read as list[mark].field) | 40 | 227 |
-| f_self.c (pv + SOTN self-assign `mark = mark;` in the triangle loop) | 21 | 229 |
-| f_self1.c (pv + `mark = mark;` in loop 1) | 21 | 229 |
-| f_dead.c (pv + dead store `mark = row;` in loop 1) | 21 | 229 |
+| r11/pv.c (one variable per value) | 21 | 229 |
+| r11/abl_a.c (only tmp_a split: row / mark; tmp_b shared) | 22 | 229 |
+| r11/abl_b.c (only tmp_b split: col / tri; tmp_a shared) | 2 | 231 (exactly `andi s0` -> `andi v1`, `addu a0,v0,s0` -> `v1`) |
+| r11/r_inline.c (pv, corner index written inline, no row/col) | 22 | 229 |
+| r11/r_while.c (pv, marker loop as while + gotos) | 21 | 229 |
+| r11/r_index.c (pv, markers read as list[mark].field) | 40 | 227 |
+| r11/no_vtx.c (corner index inline at each of the seven uses) | 89 | 235 |
+| r11/f_self.c (pv + self-assign `mark = mark;` in the triangle loop) | 21 | 229 |
+| r11/f_self1.c (pv + `mark = mark;` in loop 1) | 21 | 229 |
+| r11/f_dead.c (pv + dead store `mark = row;` in loop 1) | 21 | 229 |
+| fam/dw_init.c (pv + `do { mark = 0; } while (0);`) | 4 | 231 (row v0, column v1; marker index t0) |
+| fam/dwi_abl_a.c (abl_a + init wrap) | 5 | 231 |
+| fam/dwi_abl_b.c (abl_b + init wrap) | 2 | 231 |
+| fam/dwi_rc.c (dw_init + row/col writes wrapped) | 4 | 231 |
+| fam/dwi_rcv.c (dw_init + row/col/vtx writes wrapped) | 4 | 231 |
+| fam/dwi_col.c (dw_init + `vtx` statement wrapped) | 4 | 231 |
+| fam/dwi_l1.c (dw_init + loop-1 compare body wrapped) | 34 | 231 |
+| fam/dw_call.c (pv + wrap around the func_80044B30 call) | 47 | 231 |
+| fam/dw2_call.c (pv + nested wrap around the call) | 47 | 231 |
+| fam/dw_tloop.c (pv + wrap around the triangle loop) | 62 | 231 |
+| fam/dw_mloop.c (pv + wrap around the marker loop) | 65 | 231 |
+| fam/dw_col.c (pv + `vtx` statement wrapped) | 21 | 229 |
+| fam/dw_l1.c (pv + loop-1 compare body wrapped) | 50 | 229 |
+| fam/ce_step.c (pv + chain extender `mark = mark + 2 - 1`) | 21 | 229 |
+| fam/ce_arg.c (pv + `mark + 1 - 1` argument) | 21 | 229 |
+| fam/dup_step.c (pv, step duplicated into every continue arm) | 112 | 227 |
+| fam/pa.c (pv + pointer alias `*pmark`) | 53 | 233 |
 
-Permuter campaigns from the per-value body (decomp-permuter, workspace tmp/perm290*, minimal TU
-checked faithful: the reuse body scores 0 there): see evidence.md "permuter" for the runs, best
-scores and what the finds reuse.
+**Permuter (decomp-permuter, from the per-value body, `--best-only`).** Minimal TU (the file's
+prelude + the body) checked faithful: the reuse candidate scores 0 there (tmp/perm290_chk2,
+2026-09-28 s2), the per-value body 1070 (permuter weights, not the sandbox metric).
+| run | seed body | iterations | best | what the best find does |
+|---|---|---|---|---|
+| 1 (tmp/perm290_run1) | per-value body before the s1 trim (`list` copy, `n` index) | 7,722 | 20 (from 1070) | stages the loop-1 x maximum through `mark` (`mark = quads[n].x; *(scr + 0x84) = mark;`) |
+| 2 (tmp/perm290, 45 min, -j4) | r11/pv.c exactly | 70,787 | 20 (from 1070) | stages the loop-1 z maximum through `mark` (`mark = quads[vtx].z; *(scr + 0x8C) = mark;`) |
+No zero in either run. Both best finds reuse the marker index `mark` for a loop-1 value (a second
+value in mark's pseudo, the same lever as tmp_a, in a form that is a staged-value borrow and not
+admissible); neither reaches the row/column seats.

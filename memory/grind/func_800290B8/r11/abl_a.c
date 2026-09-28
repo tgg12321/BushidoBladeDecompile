@@ -20,7 +20,7 @@ s32 func_800290B8(s32 side, s32 swap, LeafPos *quads) {
      * then the marker index in the marker loop. tmp_b holds two values: the
      * corner column (i & 1), then the triangle index (0/1) of the quad being
      * tested. Shared per ordinary-c-judge-decidable Ruling 11; allocator
-     * proof in memory/grind/func_800290B8/evidence.md. */
+     * proof in memory/grind/func_800290B8/ruling11.md. */
     s32 tmp_a;
     s32 tmp_b;
 

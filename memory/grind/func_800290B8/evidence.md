@@ -62,6 +62,7 @@ scripts in r11/.
 - `sandbox func_800290B8 --disable all` on the spliced src: 0 (231/231).
 - `build` (full clean build): SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa MATCH.
 - `tools/check_completion_integrity.py`: OK.
+(Re-run 2026-09-28 s2 on HEAD a6aa639c: all three still hold.)
 
 ### Environment note
 The cloud container has no `disc/`; disc/SLUS_006.63 was rebuilt from build/bb2.bin plus the
@@ -69,3 +70,38 @@ standard PS-X EXE header (pc0 0x800836EC, t_addr 0x80010000, t_size 0x93800, s_a
 0x801FFFF0, NA license string) and proven by its SHA1 == the oracle (tmp/rebuild_header.py).
 The permuter was cloned into tools/decomp-permuter (gitignored) with pycparser; the mips objdump
 it looks for is a symlink to mipsel-linux-gnu-objdump.
+
+## s2 [manual, cloud Linux container 2026-09-28] — landing package completed (0, unchanged body)
+
+Picked from the rotated set again (the queue top is being worked by other agents). Body
+unchanged; this session completed the Ruling 11 (D)(4) receipts and corrected (D)(3).
+
+### permuter
+Both campaigns from the per-value body ran to completion (details, iteration counts and the
+finds in ruling11.md (D)(4)): best 20 from 1070 in each, no zero; each best find stages a loop-1
+bounding-box value through `mark`, i.e. puts a second value in the marker index's pseudo (the
+tmp_a lever, spelled as a staged-value borrow, not admissible). Faithfulness: the reuse
+candidate scores 0 in the same minimal TU (tmp/perm290_chk2).
+
+### sanctioned families on the per-value body (fam/, mkfam.py)
+18 probes (do-while(0) wraps at seven sites incl. nested, chain extenders, step duplicated
+into every continue arm, pointer alias; plus the init wrap combined with the ablations and with
+loop-1 wraps). Result: `do { mark = 0; } while (0);` (fam/dw_init.c) scores **4/231**: the wrap
+lifts mark's weighted refs to 9, so the caller-save retry passes and mark gets t0 with the
+target's spills (dumps/fam-dw_init-dumps.txt). The residual is exactly the loop-1 row (v0 vs
+t0) and column (v1 vs s0) operands. No family moves those: every family probe keeps them in
+v0/v1 (all 4 or worse).
+
+### Consequence for the Ruling 11 proof
+s1's necessity argument for tmp_a (the marker index can never exceed 8 refs) was wrong: a
+sanctioned wrap exceeds it. ruling11.md (D)(2)/(D)(3) are rewritten: tmp_a's necessity is the
+corner row's t0 seat (the row is block-local in every per-value spelling, local-alloc's
+lowest-first scan with no hard-register suggestions gives v0), exactly parallel to tmp_b's
+column/s0 argument. The withdrawn claim is recorded in (D)(3).
+
+### Landing checks (s2, spliced over INCLUDE_ASM in src/code6cac_b.c)
+- `sandbox func_800290B8 --disable all`: 0 (231/231).
+- `build` (full clean build): SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa MATCH.
+- `tools/check_completion_integrity.py`: OK. `dossier`: CONSISTENCY OK.
+- cc1psx calibration: not available in this container (no tools/cc1psx.exe); Ruling 11 does not
+  require it.
