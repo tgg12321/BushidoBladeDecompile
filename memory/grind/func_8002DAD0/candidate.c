@@ -1,49 +1,10 @@
-/* func_8002DAD0 - session 6 (synthesis). MEASURED THIS SESSION: `sandbox
- * func_8002DAD0 --disable all` == 0 (204/204 insns) with this body applied to
- * src/code6cac_b.c. The C body is UNCHANGED from the session-6/7/8 form (same
- * body hash); this pass only re-cites the island comments, which the two
- * layer-1 citation FAILs of 2026-09-18 were about.
- *
- * ISLAND PROVENANCE (the finding that closes those FAILs): the islands are
- * NOT hand-written and are NOT inline_c.h macro bodies. Each one is the
- * verbatim expansion of a named Sony macro from PsyQ's DMPSX header
- * `inline_o.h` ("Macro definitions of DMPSX version 3", $PSLibId: Run-time
- * Library Release 4.5$, Copyright(C) 1996 Sony Computer Entertainment Inc.),
- * which spells every GTE primitive as a run of single-instruction
- * `__asm__ volatile` blocks that stage the address through a hard `$12`
- * (`move $12,%0`) and hard-code `$13/$14/$15`. inline_c.h spells the same
- * primitives `%0`-relative with no preamble - which is why every earlier
- * attribution left the `move`/`addu` preamble and the delay `nop`s
- * unaccounted for. Full island-by-island table, with header line numbers and
- * the header banner:  memory/grind/func_8002DAD0/psyq_inline_o_provenance.md
- *
- * MEASURED ALTERNATIVES (session 6, all on this chassis):
- *   - island 3 respelled as the authentic inline_c.h `%0`-relative
- *     gte_stlvnl (no `move $12` preamble, zero hard GPRs): score 0 -> 4,
- *     build_insns 204 -> 203. The preamble instruction is IN the target
- *     bytes; C cannot supply it.  rejected/s6-stlvnl-pct0-offset-score4.c
- *   - island 1 respelled as the VERBATIM inline_o.h per-instruction form:
- *     the engine's cheat-stripper classifies each GPR-only single-insn block
- *     as cheat-asm (stripped 21 -> 25) and the function no longer builds in
- *     the sandbox - unscorable.  rejected/s6-inline-o-per-insn-stripped.c
- *   - whole body rewritten as Sony macro INVOCATIONS with the macro set
- *     defined TU-locally: the stripper removes the macro bodies too (21 ->
- *     46 stripped, score 83). Only a HEADER (include/gte.h) can host them -
- *     write_stripped only ever rewrites src/<stem>.c - and that file is
- *     outside a grind session's scope.  rejected/s6-sdk-macro-tu-local-score83.c
- *
- * Apply in place of the INCLUDE_ASM("asm/funcs", func_8002DAD0); line in
- * src/code6cac_b.c (after func_8002D780, before func_8002DE20). Needs the
- * existing `extern u8 D_8008D118;` (src/code6cac_b.c:278) and
- * `extern void RotMatrixX(s32, s32 *); extern void RotMatrixY(s32, s32 *);`
- * (src/code6cac_b.c:93-94) in scope - no new externs. The `(u8 *)&D_8008D118`
- * indexing spelling is the one already committed on main in this same file
- * for its matched siblings (src/code6cac_b.c:1468 and :1490).
- *
- * INTEGRATION: the 9 islands are cop2/canonical but carry the macros' own
- * GPR preamble instructions, so the driver's island gate (owner Ruling C
- * 2026-09-02) refuses the merge until func_8002DAD0 is admitted by a grant
- * door. See the 2026-09-18 INTEGRATION HANDOFF entry in docs/grind/decisions.md.
+/* func_8002DAD0 -- canonical GTE islands and C body.
+ * Owner cluster grant: tools/grinder/owner_cluster_grants.txt (2026-09-25).
+ * The LZC load and store are separate Sony macro statements. GCC supplies
+ * the &sp_tmp register and materializes its stack address outside the island.
+ * Provenance: memory/grind/func_8002DAD0/psyq_inline_o_provenance.md.
+ * Sandbox --disable all: 0/204; full build SHA1 matches oracle (2026-09-28).
+ * Fresh adversarial body review: PASS; plain dist-reuse ablation: 6/204.
  */
 s32 func_8002DAD0(u8 *obj) {
     s32 *mat;
@@ -62,7 +23,7 @@ s32 func_8002DAD0(u8 *obj) {
     *(s32 *)(obj + 0xC0) = (*(s32 **)(obj + 0x68))[2] - (*(s32 **)(obj + 0x60))[2];
 
     /* Sony PsyQ DMPSX macro gte_ldopv1(r1) - inline_o.h:192-200, expanded
-     * verbatim (`move $12,%0` · `lw $13,($12)` · `lw $14,4($12)` ·
+     * equivalent to (`move $12,%0` · `lw $13,($12)` · `lw $14,4($12)` ·
      * `ctc2 $13,$0` · `lw $15,8($12)` · `ctc2 $14,$2` · `ctc2 $15,$4`).
      * Loads the OP diagonal (RT11/RT22/RT33) into cop2 control regs
      * $0/$2/$4 from vecA. Table: memory/grind/func_8002DAD0/psyq_inline_o_provenance.md
@@ -78,7 +39,7 @@ s32 func_8002DAD0(u8 *obj) {
         :: "r"(obj + 0xA8) : "$12", "$13", "$14", "$15");
 
     /* Sony PsyQ DMPSX macro gte_ldopv2(r1) - inline_o.h:201-206, expanded
-     * verbatim (`move $12,%0` · `lwc2 $11,8($12)` · `lwc2 $9,($12)` ·
+     * equivalent to (`move $12,%0` · `lwc2 $11,8($12)` · `lwc2 $9,($12)` ·
      * `lwc2 $10,4($12)`): loads IR1/IR2/IR3 from vecB. The trailing
      * `nop; nop; .word` is gte_op0() (inline_o.h:711-715 / inline_c.h:784-787),
      * the GTE OP (outer product) invocation; the SDK headers carry the DMPSX
@@ -96,7 +57,7 @@ s32 func_8002DAD0(u8 *obj) {
         :: "r"(obj + 0xB8) : "$12");
 
     /* Sony PsyQ DMPSX macro gte_stlvnl(r1) - inline_o.h:904-909, expanded
-     * verbatim (`move $12,%0` · `swc2 $25,($12)` · `swc2 $26,4($12)` ·
+     * equivalent to (`move $12,%0` · `swc2 $25,($12)` · `swc2 $26,4($12)` ·
      * `swc2 $27,8($12)`): stores MAC1/MAC2/MAC3 (the unclamped cross
      * product) to obj+0xC8/CC/D0. */
     __asm__ volatile(
@@ -148,21 +109,22 @@ s32 func_8002DAD0(u8 *obj) {
             /* Sony PsyQ macro gte_Lzc(r1,r2) - gtemac.h:174-178, whose
              * body is gte_ldlzc (inline_o.h:207-211) + 2x gte_nop
              * (inline_o.h:1095) + gte_stlzc (inline_o.h:1074-1077), each
-             * expanded verbatim: `move $12,%0` · `mtc2 $12,$30` · `nop` ·
+             * expanded to equivalent instructions: `move $12,%0` · `mtc2 $12,$30` · `nop` ·
              * `nop` · `move $12,%0` · `swc2 $31,($12)`. The second
-             * `move $12,%0` takes &sp_tmp, which is why GCC materialises
-             * `addiu $v0,$sp,0x10` ahead of it. LZCS in, LZCR out. */
+             * `move $12,%0` takes &sp_tmp through an r operand. GCC
+             * materialises its stack address before this island. LZCS in, LZCR out. */
             __asm__ volatile(
-                "addu   $t4, %1, $zero\n"
+                "addu   $t4, %0, $zero\n"
                 "mtc2   $t4, $30\n"
                 "nop\n"
                 "nop\n"
-                "addiu  $v0, $sp, 0x10\n"
-                "addu   $t4, $v0, $zero\n"
+                :: "r"(dist_sq)
+                : "$12", "$13", "$14", "$15", "memory");
+            __asm__ volatile(
+                "addu   $t4, %0, $zero\n"
                 "swc2   $31, 0($t4)\n"
-                : "=m"(sp_tmp)
-                : "r"(dist_sq)
-                : "$2", "$12");
+                :: "r"(&sp_tmp)
+                : "$12", "$13", "$14", "$15", "memory");
             lzcr = sp_tmp;
         }
         {
@@ -190,7 +152,7 @@ s32 func_8002DAD0(u8 *obj) {
     RotMatrixX(*(s16 *)(obj + 0xF8), mat);
 
     /* Sony PsyQ DMPSX macro gte_SetRotMatrix(r1) - inline_o.h:272-284,
-     * expanded verbatim (all 11 instructions, including the $13/$14 re-use
+     * expanded to equivalent instructions (all 11 instructions, including the $13/$14 re-use
      * order): loads the 5 packed rotation-matrix words at r into cop2
      * control regs $0..$4. */
     __asm__ volatile(
@@ -208,7 +170,7 @@ s32 func_8002DAD0(u8 *obj) {
         :: "r"(mat) : "$12", "$13", "$14", "$15");
 
     /* Sony PsyQ DMPSX macro gte_ldlv0(r1) - inline_o.h:95-103, expanded
-     * verbatim (`move $12,%0` · `lhu $14,4($12)` · `lhu $13,($12)` ·
+     * equivalent to (`move $12,%0` · `lhu $14,4($12)` · `lhu $13,($12)` ·
      * `sll $14,$14,16` · `or $13,$13,$14` · `mtc2 $13,$0` ·
      * `lwc2 $1,8($12)`): packs VX0/VY0 into one word and loads VZ0. The
      * trailing `nop; nop` belongs to the following op-invocation macro

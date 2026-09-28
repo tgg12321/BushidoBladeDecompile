@@ -322,17 +322,6 @@
       "rotation_count": 1
     },
     {
-      "func": "func_8002DAD0",
-      "file": "code6cac_b",
-      "distance": 204,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "Byte-perfect GTE/cop2 candidate remains banked; operator-only canonical grant is outside current 100%-C scope (2026-09-19).",
-      "rotated_at": "2026-09-19T22:32:16+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "func_80020E74",
       "file": "code6cac",
       "distance": 231,
@@ -422,11 +411,11 @@
     }
   ],
   "counts": {
-    "total": 35,
+    "total": 34,
     "active": 18,
     "by_status": {
       "active": 18,
-      "rotated": 17
+      "rotated": 16
     },
     "by_verdict": {
       "C": 14,

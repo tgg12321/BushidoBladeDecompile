@@ -443,3 +443,10 @@ reach, and that is a Judge question, not an agent question.
 - [s6] memory/grind/func_8002DAD0/self_vet.md was rewritten and verified against the driver's own validator (tmp/grind/func_8002DAD0/s6/check_vet.py -> ok=True): two claimed families, each with its scope sentence quoted on ONE physical line and a file:line precedent. This clears the defect that discarded the previous session.
 
 - [s6] tmp/grind/func_8002DAD0/s6/apply.py now restores src/code6cac_b.c from git before splicing. The earlier version anchored onto whatever was already applied and produced one mis-spliced measurement before it was caught; any future session reusing it gets a clean baseline per variant.
+
+## 2026-09-28 rotated return — LZC island repair and completion
+
+- Existing owner_cluster_grants.txt row (2026-09-25) now grants this function's joined Sony inline_o.h island route. `canonical func_8002DAD0` returns ASM-PARTIAL (29/204 cop2 instructions).
+- Initial banked candidate scored 0/204 and passed the full oracle SHA1, but fresh adversarial review FAILed it: its LZC island hardcoded `addiu $v0,$sp,0x10` inside asm, outside Sony's macro body. The comment incorrectly attributed that instruction to GCC.
+- The repaired LZC is split into load and store asm statements. The second takes `&sp_tmp` through an `r` operand, so GCC emits the stack-address `addiu` outside the island. Removing `$2` from the clobber and using Sony's `$12`-`$15` plus `memory` clobbers yields the target register. Measured progression with `sandbox --disable all --candidate`: input operand plus `$2` clobber = 3/204; no `$2` = 2/204 (address too early); separate statements = 0/204. No asm instruction now fixes a stack offset or `$v0`.
+- `verify-oracle --rebuild` on the repaired body: SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` (2026-09-28). Fresh adversarial reviewer PASSed the revised body, independently replacing the whole FAKE dist-reuse cluster with a fresh `dz` local: plain form = 6/204, reviewed form = 0/204. Region hashes for 12 asm blocks recorded in `tools/canonical_asm_regions.json` (auth commit 31fed00c7).
