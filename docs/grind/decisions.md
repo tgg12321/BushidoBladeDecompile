@@ -6,7 +6,7 @@
 > them; (2) a `DISCARDED-SESSION MARKER (driver-stamped)` heading VOIDS the
 > ruling-shaped text immediately ABOVE it (the discarded session's append) —
 > read downward past a marker before crediting any entry; (3) entries are
-> historical, dated records — for current state read `engine/queue.json`.
+> historical, dated records — for current state read `engine/queue.json`. Exception to append-only (owner ruling 2026-09-28, entry at the end of this file): outdated OWNER RULING entries are deleted by owner-directed cleanup; a cited entry that is no longer here resolves against the pin commit named in that entry (`git show <pin>:docs/grind/decisions.md`).
 
 ## 2026-07-07 00:08 — camera_SetMatrix_8001DBE4 — final call — **PASS**
 
@@ -30349,3 +30349,36 @@ a landing. With Q25 the rule text
 also reads (1)'s whole-declaration cc1psx sentences as the Q24 agreement test UNCONDITIONALLY (on all
 governed instructions when none is exempt), not only where an instruction is exempt as the Q24 entry
 above records. func_8001CE60 is judged fresh at landing.
+
+## 2026-09-28 — OWNER RULING — outdated ledger entries are deleted (`.claude/rules/judge-sole-gate.md` § The borderline ledger)
+
+Context: the owner asked, verbatim, "Of all those borderline items and owner ruling entries, how many are
+still active and how many are outdated? I want to clean up out of date entries". A read-only audit
+classified all 131 docs/grind/borderline.md entries and all 111 `OWNER RULING` headings in this file as
+ACTIVE-OPEN / ACTIVE-RULE / PARTIAL (still in force) or SPENT / SUPERSEDED / MOOT (outdated), each with its
+evidence and live-surface citations. The owner was told that many outdated entries are still cited from
+.claude/rules/, engine/ and queue.json, that engine/dossier.py reads alias pairs from borderline.md, that
+canonical-asm grants need their borderline entry, and that both ledgers were append-only.
+Question put to the owner, verbatim: "How should outdated entries be cleaned up?" Options offered:
+"Archive + stub (Recommended)", "Archive, no stubs", "Annotate in place", "Delete outdated".
+Owner (Trenton) chose, verbatim: **"Delete outdated"**, whose text is: "Remove outdated entries outright
+(git history keeps them); re-point or drop citations. Breaks the append-only rule, loses in-tree audit
+trail."
+
+**Ruling (the author's narrowing).**
+1. **What is deleted.** Entries the audit classified SPENT, SUPERSEDED or MOOT: in borderline.md any entry;
+   in this file only `OWNER RULING` entries. Entries classified ACTIVE-OPEN, ACTIVE-RULE or PARTIAL stay whole
+   (a PARTIAL entry is not trimmed). Entries whose status turns on an open owner question stay until it is
+   answered (2026-08-27 func_80041188 split-increment ALLOWED). Non-ruling records in this file (session
+   verdicts, match records, markers) are out of scope.
+2. **Pin.** Deleted entries remain in git history at commit `f2bf53757` (the last commit before any
+   deletion). A citation by date and title of an entry no longer present resolves against that commit.
+3. **Citations.** Line-number citations (`decisions.md:N`, `borderline.md:N`, `… line N`) in tracked files
+   are renumbered to the post-deletion file; those pointing into a deleted entry become
+   `<ledger>.md@f2bf53757:N`. Alias pairs that engine/dossier.py would lose are carried into a surviving
+   alias table first.
+4. **Going forward.** New entries are still appended. A later cleanup of outdated entries follows the same
+   shape (audit, owner direction, pin commit, citation renumbering); nothing is deleted without one.
+5. **Unchanged.** No standard, rule, grant, ban or gate list changes: only records of settled questions are
+   removed. A deleted refusal that is still in force was already carried by a live rule file or kept entry
+   (the audit's PARTIAL/ACTIVE-RULE classes).

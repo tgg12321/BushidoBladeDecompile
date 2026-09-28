@@ -74,7 +74,12 @@ never a wait on the owner.
 
 ## The borderline ledger — `docs/grind/borderline.md`
 
-Append-only, informational (nothing in it is pending). Entry schema:
+Informational (nothing in it is pending). New entries are appended; outdated
+entries (answered, superseded or moot) may be DELETED by an owner-directed
+cleanup (owner ruling 2026-09-28, decisions.md "outdated ledger entries are
+deleted"). Deleted entries stay in git history: the ledger header names the
+pin commit, and a citation of an entry that is no longer present resolves
+against that commit (`git show <pin>:docs/grind/borderline.md`). Entry schema:
 
 ```
 ## YYYY-MM-DD — <function or scope> — <category>
