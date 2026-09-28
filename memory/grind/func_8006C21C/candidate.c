@@ -1,10 +1,18 @@
-/* func_8006C21C candidate (manual slotO s2, 2026-09-27) -- sandbox --disable all = 47/622
- * (instruction count equal). NOT landing-ready; see evidence.md s2 + hypotheses.md.
- * Open items: (1) frame: target vars=128 has FOUR untouched 8-byte reload slots at
- * 0x60-0x78 (regno between recs and the d4/d8/d2 block locals); this body has 96.
- * (2) the else-arm 0x80 constants are hoisted by loop.c (combine_movables matches the
- * two arms, savings 2 x life 8 x threshold 58 >= 259) -> li t0 instead of li v0.
- * (3) row++/k++ order at the row-loop tail (2 insns).
+/* func_8006C21C candidate (manual s5, 2026-09-28) -- sandbox --disable all = 41/622
+ * (instruction count equal). NOT landing-ready; see evidence.md s5 + hypotheses.md.
+ * s5 levers (47 -> 41):
+ *   - else-arm 0x80 hoist: `poly->r3 = poly->r2 = 0x80;` / `poly->r3 = poly->r1 = 0x80;`
+ *     shrink the constant's loop lifetime (2+2 < threshold) so loop.c keeps `li v0,0x80`
+ *     in both arms; residual = the r3 store now sits right after r2 (target: after b2).
+ *   - row-loop tail: `k++, row++` + bar 1 through `next = rec + 1; next[k]` ties the
+ *     rec giv to biv k, giving the target's giv / k++ / lw / row++ order.
+ *   - bevel terms as givs `row * -4` / `row * -8` / `row * -2` (byte-identical to the old
+ *     d4/d8/d2 accumulators; loop.c-created regs = highest regnos, needed for the frame).
+ * Open items: (1) frame: target vars=128. Mechanism found (evidence s5): four orphan
+ *   entry-test pseudos from jump.c's duplicated exit tests of the four 2-count loops
+ *   (phase-4 inner j, phase-6 inner j, phase-8 j, row); a variable bound `n = 2` reproduces
+ *   the exact slot layout but leaves `li t0,2; beqz` entry tests -- need a bound form that
+ *   combine (not CSE) folds away. (2) r3 store position (above).
  * Policy-bound constructs still to be admitted before any landing:
  *   `cells`  -> Ruling 9 (VAR = s.header + 0xC, one meaning; func_8007636C precedent),
  *               needs `s.header` typed so the RHS has no cast.
@@ -12,6 +20,8 @@
  *               or similar and annotated, proof banked in evidence.md).
  *   `mode`   -> FAKE constant-holder (named-local-fake-exception; func_800753D8 /
  *               func_800759D0 / func_8007636C precedents) -- annotation not yet written.
+ *   `next`   -> second pointer into recs (rec + 1) indexed by k; needs review.
+ *   chained 0x80 stores -> needs review (plain C, but chosen for a loop.c threshold).
  * The trailing #define is SANDBOX-ONLY (masks the later `extern void func_8006C21C(s32)`);
  * at landing change that extern (text1b.c ~10232) to `(s32 *)` instead. */
 typedef struct {
@@ -51,6 +61,7 @@ void func_8006C21C(s32 *arg0) {
     s32 *table;
     Rec_8006C21C *recs;
     Rec_8006C21C *rec;
+    Rec_8006C21C *next;
     Tile *tile;
     PolyG4_8006C21C *poly;
     s32 mode;
@@ -158,16 +169,11 @@ void func_8006C21C(s32 *arg0) {
     x = 0;
     for (j = 0; j < 2; j++) {
         s32 k;
-        s32 d4;
-        s32 d8;
-        s32 d2;
 
-        d4 = 0;
-        d8 = 0;
-        d2 = 0;
         i = *(s16 *)(D_800A34FC + j * 2 + 0x28);
         rec = &recs[i + 1];
-        for (row = 0, k = -1; row < 2; row++, k++) {
+        next = rec + 1;
+        for (row = 0, k = -1; row < 2; k++, row++) {
             SetPolyG4(poly);
             if (i == 5) {
                 SetSemiTrans(poly, 1);
@@ -183,14 +189,14 @@ void func_8006C21C(s32 *arg0) {
                 poly->r3 = 0;
                 poly->g3 = 0;
                 poly->b3 = 0;
-                poly->x0 = rec[row].x + x;
-                poly->y0 = rec[row].y - k;
-                poly->x1 = rec[row].w + (rec[row].x + x);
-                poly->y1 = rec[row].y - k;
-                poly->x2 = rec[row].x + x;
-                poly->y2 = rec[row].y - k + (2 + d4);
-                poly->x3 = rec[row].w + (rec[row].x + x);
-                poly->y3 = rec[row].y - k + (2 + d4);
+                poly->x0 = next[k].x + x;
+                poly->y0 = next[k].y - k;
+                poly->x1 = next[k].w + (next[k].x + x);
+                poly->y1 = next[k].y - k;
+                poly->x2 = next[k].x + x;
+                poly->y2 = next[k].y - k + (2 + row * -4);
+                poly->x3 = next[k].w + (next[k].x + x);
+                poly->y3 = next[k].y - k + (2 + row * -4);
             } else {
                 SetSemiTrans(poly, 0);
                 poly->r0 = pulse;
@@ -199,20 +205,19 @@ void func_8006C21C(s32 *arg0) {
                 poly->r1 = pulse;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r2 = 0x80;
+                poly->r3 = poly->r2 = 0x80;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
-                poly->x0 = rec[row].x + x;
-                poly->y0 = rec[row].y - k;
-                poly->x1 = rec[row].w + (rec[row].x + x);
-                poly->y1 = rec[row].y - k;
-                poly->x2 = rec[row].x + x;
-                poly->y2 = rec[row].y - k + (1 + d2);
-                poly->x3 = rec[row].w + (rec[row].x + x);
-                poly->y3 = rec[row].y - k + (1 + d2);
+                poly->x0 = next[k].x + x;
+                poly->y0 = next[k].y - k;
+                poly->x1 = next[k].w + (next[k].x + x);
+                poly->y1 = next[k].y - k;
+                poly->x2 = next[k].x + x;
+                poly->y2 = next[k].y - k + (1 + row * -2);
+                poly->x3 = next[k].w + (next[k].x + x);
+                poly->y3 = next[k].y - k + (1 + row * -2);
             }
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
             poly++;
@@ -233,11 +238,11 @@ void func_8006C21C(s32 *arg0) {
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
                 poly->y0 = rec->y + 1;
-                poly->x1 = rec->x + rec->w * row + x + (4 + d8);
+                poly->x1 = rec->x + rec->w * row + x + (4 + row * -8);
                 poly->y1 = rec->y + 1;
                 poly->x2 = rec->x + rec->w * row + x;
                 poly->y2 = rec[1].y - 1;
-                poly->x3 = rec->x + rec->w * row + x + (4 + d8);
+                poly->x3 = rec->x + rec->w * row + x + (4 + row * -8);
                 poly->y3 = rec[1].y - 1;
             } else {
                 SetSemiTrans(poly, 0);
@@ -247,26 +252,22 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r1 = 0x80;
+                poly->r3 = poly->r1 = 0x80;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
                 poly->y0 = rec->y + 1;
-                poly->x1 = rec->x + rec->w * row + x + (2 + d4);
+                poly->x1 = rec->x + rec->w * row + x + (2 + row * -4);
                 poly->y1 = rec->y + 1;
                 poly->x2 = rec->x + rec->w * row + x;
                 poly->y2 = rec[1].y - 1;
-                poly->x3 = rec->x + rec->w * row + x + (2 + d4);
+                poly->x3 = rec->x + rec->w * row + x + (2 + row * -4);
                 poly->y3 = rec[1].y - 1;
             }
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
             poly++;
-            d4 -= 4;
-            d8 -= 8;
-            d2 -= 2;
         }
         SetDrawMode(arg0[7], 1, 0, 0x40, 0);
         AddPrim(g_gpu_ot_ptr + 0x20, arg0[7]);
