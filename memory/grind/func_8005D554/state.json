@@ -140,7 +140,7 @@
    "session": 23,
    "floor": 6,
    "modality": "escalation",
-   "headline": "Disposition filed (decisions.md:26228, LADDER EXHAUSTED non-endgame residual floor 6: ROTATED): both gates FAIL (scan LOW 0/8; SOTN precedent census negative), and both remaining LICM escapes for an i"
+   "headline": "Disposition filed (decisions.md:26067, LADDER EXHAUSTED non-endgame residual floor 6: ROTATED): both gates FAIL (scan LOW 0/8; SOTN precedent census negative), and both remaining LICM escapes for an i"
   }
  ],
  "frontier": [
@@ -643,7 +643,7 @@
    "kill_scope": "class",
    "measured_on": "source predicate read at HEAD main @ 465f9fd0; candidate.c chassis, no FAKE constructs present",
    "predicate_cite": "tools/gcc-2.7.2/loop.c:1062",
-   "result": "A second set is exactly the Judge-banned fresh multi-write staging carrier (decisions.md:26224) or the existing-local bo"
+   "result": "A second set is exactly the Judge-banned fresh multi-write staging carrier (decisions.md:26063) or the existing-local bo"
   }
  ],
  "ladder_skip": 0,

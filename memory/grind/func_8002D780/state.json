@@ -766,7 +766,7 @@
    "hash": "0c1c2575292db696",
    "when": "2026-09-22T04:28:20.248856+00:00",
    "ref": "decisions.md 2026-09-21 23:28 ruling PASS",
-   "justification": "RULING (Q1): GRANTED. The LZCS sqrt macro in memory/grind/func_8002D780/candidate.c may carry the full conservative PsyQ footprint \"$12\",\"$13\",\"$14\",\"$15\", identical on both halves. This body may be submitted as candidate-ready.\nFAMILY + PREREQUISITES (reload-spill-reg-reveals-asm-clobbers.md; judge grant 2026-07-28, docs/grind/decisions.md:1852): the island is already routed ASM-PARTIAL, the residual is provably unreachable from C, and the island is not enlarged. The family's operative test is its Bounds section -- \"widened only to registers the bytes force.\" I verified the forcing myself rat"
+   "justification": "RULING (Q1): GRANTED. The LZCS sqrt macro in memory/grind/func_8002D780/candidate.c may carry the full conservative PsyQ footprint \"$12\",\"$13\",\"$14\",\"$15\", identical on both halves. This body may be submitted as candidate-ready.\nFAMILY + PREREQUISITES (reload-spill-reg-reveals-asm-clobbers.md; judge grant 2026-07-28, docs/grind/decisions.md:1750): the island is already routed ASM-PARTIAL, the residual is provably unreachable from C, and the island is not enlarged. The family's operative test is its Bounds section -- \"widened only to registers the bytes force.\" I verified the forcing myself rat"
   }
  ]
 }

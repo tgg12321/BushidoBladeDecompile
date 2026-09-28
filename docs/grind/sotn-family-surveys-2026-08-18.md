@@ -27,7 +27,7 @@ Sweep scripts (reproducible): `tmp/fam/sweep.py` (F1/F2/F6), `tmp/fam/f3.py` (F3
 
 ## F1 — constant-staging-through-a-reused-live-local
 
-### Definition (quoted, `docs/grind/decisions.md:1361`, 2026-07-23 escalation, func_80061658)
+### Definition (quoted, `docs/grind/decisions.md:1313`, 2026-07-23 escalation, func_80061658)
 
 > **(a) SANCTION the constant-staging-through-a-reused-live-local family**, contingent on an
 > owner-run SOTN-master-branch census finding community precedent for "stage a CONSTANT through
@@ -129,7 +129,7 @@ its 2026-07-27 park cites the same wall).
 
 ## F2 — signedness-split dual read
 
-### Definition (quoted, `docs/grind/decisions.md:1474`, 2026-07-23 escalation, func_8001F938)
+### Definition (quoted, `docs/grind/decisions.md:1426`, 2026-07-23 escalation, func_8001F938)
 
 > The distance-0 pure-C form is the signedness-split / redundant dual-typed-memory-read CSE-defeat
 > family — one field at +0x270 read signed (`lh` → `slti` compare) AND unsigned (`lhu` → `sll` index),
@@ -337,7 +337,7 @@ category-A "family refused" park).
 
 ## F6 — fabricated cancellation-pair increment split
 
-### Definition (quoted, `docs/grind/decisions.md:1785`, 2026-07-27 17:57 Judge FAIL, func_80044098)
+### Definition (quoted, `docs/grind/decisions.md:1683`, 2026-07-27 17:57 Judge FAIL, func_80044098)
 
 > The request asks me to sanction `v1++; v1--;` (an in-loop cancellation pair after the real `v1++`)
 > as a new `/* FAKE */` family. … net +1 spelled as +1,+1,-1 … It has zero semantic purpose, no human
@@ -413,7 +413,7 @@ literal MIPS sibling of the same function.
 
 ## F7 — store-scheduling duplication beyond `duplicated-statement-into-arms` scope
 
-### Definition (quoted, `docs/grind/decisions.md:1624`, 2026-07-24 16:38 Judge FAIL, func_80072CD4)
+### Definition (quoted, `docs/grind/decisions.md:1576`, 2026-07-24 16:38 Judge FAIL, func_80072CD4)
 
 > The construct … duplicates the two UNCONDITIONAL common-tail stores `*(arg1+4)=fc_const` and
 > `*(arg1+0xC)=fc_const` into both inner if/else arms; jump2 cross-jump re-merges the copies

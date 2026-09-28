@@ -2066,7 +2066,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * CITATION for the `ud = disc;` re-store. The 2026-08-19 07:16 layer-1 review
  * FAILed the old citation (an arms-family rule whose scope does not describe this
  * code shape) and the 2026-08-19 07:34 Judge ruling
- * (docs/grind/decisions.md:6521) narrowed the ban to that citation alone,
+ * (docs/grind/decisions.md:6419) narrowed the ban to that citation alone,
  * ordering re-derivation under dead-store-fake-exception. Both the in-source
  * /* FAKE *\/ annotation and memory/grind/func_8002D518/self_vet.md now cite
  * dead-store-fake-exception (.claude/rules/dead-store-fake-exception.md:24, the
@@ -2375,7 +2375,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * none of $12-$15 is SDK text. The "$12","$13","$14","$15" set is
                  * the PROJECT-established conservative t4-t7 footprint for this
                  * hand-written LZCS island, granted 2026-07-28
-                 * (docs/grind/decisions.md:1852) and shipped byte-identically by
+                 * (docs/grind/decisions.md:1750) and shipped byte-identically by
                  * the two matched siblings in this same file (func_8002BC68 at
                  * src/code6cac_b.c:766, func_8002BEA0 at :829; both registry-listed
                  * in inline_asm_canonical.txt). Per register, honestly: $12 is
@@ -2904,7 +2904,7 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
              * ADDRESSING PREAMBLE: the "addiu $v0,$sp,0x10; addu $t4,$v0,$zero"
              * pair is not macro text -- it is the widened materialize-then-copy
              * anchor admitted by the owner grant of 2026-09-01
-             * (docs/grind/decisions.md:18082), materialising &sp_tmp for
+             * (docs/grind/decisions.md:17921), materialising &sp_tmp for
              * gte_stlzc's %0.
              * CLOBBER PROVENANCE: neither half publishes a GPR clobber --
              * gte_ldlzc publishes none at all and gte_stlzc publishes only
@@ -2955,7 +2955,7 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     /* PsyQ libgte macro gte_SetRotMatrix(r) --- inline_c.h:297-310. Loads the
      * 5 packed rotation-matrix words at r into cop2 control regs $0..$4.
      * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-     * (owner grant 2026-09-01, docs/grind/decisions.md:18082), not macro text.
+     * (owner grant 2026-09-01, docs/grind/decisions.md:17921), not macro text.
      * CLOBBER PROVENANCE: the macro publishes "$12","$13","$14" only; "$15" is
      * ADDED here, a consequence of the island's register shift (the macro's
      * $12/$13/$14 become $13/$14/$15 once $12 holds the anchored base). It is
@@ -2979,7 +2979,7 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
      * text, admitted by cluster condition 3), mtc2 to $0, lwc2 VZ0 into $1,
      * then the 2-cycle GTE load delay.
      * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-     * (owner grant 2026-09-01, docs/grind/decisions.md:18082).
+     * (owner grant 2026-09-01, docs/grind/decisions.md:17921).
      * CLOBBER PROVENANCE: the macro publishes "$12","$13" only; "$14" is ADDED
      * here by the same register shift and is truthful (the island writes $14).
      * Same island as func_8002E838. */
@@ -3000,22 +3000,22 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
      * NOT gte_rtv0: that macro (inline_c.h:499-502) emits .word 0x0000013f, a
      * different encoding. gte_mvmva over gte_mvmva_core is the cite the Judge
      * accepted for this same word class in func_80019310
-     * (docs/grind/decisions.md:24676). No clobber list on either side. */
+     * (docs/grind/decisions.md:24515). No clobber list on either side. */
     __asm__ volatile(".word 0x4A486012");
     vec = (s32 *)(scr + 0xA8);
     /* PsyQ libgte macro gte_stlvnl(r) --- inline_c.h:1111-1117. Stores
      * MAC1/MAC2/MAC3 ($25/$26/$27) to r (the rotated input vector, in
      * scratchpad).
      * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-     * (owner grant 2026-09-01, docs/grind/decisions.md:18082).
+     * (owner grant 2026-09-01, docs/grind/decisions.md:17921).
      * CLOBBER PROVENANCE: the macro publishes only "memory" (inline_c.h:1117);
      * "$12" is ADDED here and is truthful -- the preamble writes it. Same
      * addition as func_8002D320's committed lwc2 read island in this file,
      * whose clobber line is `: : "r"(vin) : "$12", "memory"` (:1123 at time of
      * writing -- anchored to the function because this reference has already
-     * drifted twice in the record, cited as :935 at decisions.md:20650 and
-     * :1038 at decisions.md:26389 as the file grew). That addition was accepted
-     * in the func_800300B4 PASS (docs/grind/decisions.md:20650). */
+     * drifted twice in the record, cited as :935 at decisions.md:20489 and
+     * :1038 at decisions.md:26228 as the file grew). That addition was accepted
+     * in the func_800300B4 PASS (docs/grind/decisions.md:20489). */
     __asm__ volatile(
         "move   $12, %0\n"
         "swc2   $25, 0($12)\n"
@@ -3178,7 +3178,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
              * ADDRESSING PREAMBLE: the "addu $t4,%1,$zero" copy and the
              * "addiu $v0,$sp,0x10; addu $t4,$v0,$zero" pair are not macro text
              * -- they are the widened materialize-then-copy anchor admitted by
-             * the owner grant of 2026-09-01 (docs/grind/decisions.md:18082).
+             * the owner grant of 2026-09-01 (docs/grind/decisions.md:17921).
              * CLOBBER PROVENANCE: neither half publishes a GPR clobber, so "$2"
              * ($v0, written by the preamble) and "$12" ($t4, written by both
              * copies) are ADDED here and are truthful. The "=m"(sp_tmp) output
@@ -3234,7 +3234,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
          * the 5 packed rotation-matrix words at r into cop2 control regs
          * $0..$4.
          * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-         * (owner grant 2026-09-01, docs/grind/decisions.md:18082), not macro
+         * (owner grant 2026-09-01, docs/grind/decisions.md:17921), not macro
          * text.
          * CLOBBER PROVENANCE: the macro publishes "$12","$13","$14" only; "$15"
          * is ADDED here, a consequence of the island's register shift (the
@@ -3264,7 +3264,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
      * text, admitted by cluster condition 3), mtc2 to $0, lwc2 VZ0 into $1,
      * then the 2-cycle GTE load delay.
      * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-     * (owner grant 2026-09-01, docs/grind/decisions.md:18082).
+     * (owner grant 2026-09-01, docs/grind/decisions.md:17921).
      * CLOBBER PROVENANCE: the macro publishes "$12","$13" only; "$14" is ADDED
      * here by the same register shift and is truthful (the island writes $14).
      * Character-identical to the matched func_8002EBDC island. */
@@ -3288,7 +3288,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     /* PsyQ libgte macro gte_stlvnl(r) --- inline_c.h:1111-1117. Stores
      * MAC1/MAC2/MAC3 ($25/$26/$27) back to r.
      * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-     * (owner grant 2026-09-01, docs/grind/decisions.md:18082).
+     * (owner grant 2026-09-01, docs/grind/decisions.md:17921).
      * CLOBBER PROVENANCE: the macro publishes only "memory" (inline_c.h:1117);
      * "$12" is ADDED here and is truthful -- the preamble writes it. Same
      * addition as the matched func_8002EBDC gte_stlvnl island. */
@@ -3613,7 +3613,7 @@ s32 func_8002FDB0(s32 *arg0) {
  * spellings. Each island is the verbatim body of the named Sony PsyQ GTE macro (PsyQ 4.5
  * inline_c.h) -- cluster condition 3 as clarified by owner Ruling A 2026-09-02
  * (.claude/rules/cop2-addressing-preamble-cluster.md:163). Confirmed carrier under the
- * 2026-09-01 widened cop2 materialize-then-copy owner GRANT (docs/grind/decisions.md:18082;
+ * 2026-09-01 widened cop2 materialize-then-copy owner GRANT (docs/grind/decisions.md:17921;
  * registry row tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here are
  * $v0/$v0/$v0 (.s L60, L72, L84). Honest bucket: COMPLETED-INLINE-ASM-CANONICAL (allowlist
  * line required). Measured 2026-09-01 (s1) and re-measured 2026-09-02 on the current chassis:

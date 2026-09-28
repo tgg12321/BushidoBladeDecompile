@@ -22,39 +22,39 @@ func_8002D518 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; regi
 func_8002E838 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
 func_800300B4 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
 func_800325E0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
-# 2026-09-01 widened-anchor owner GRANT (decisions.md:18082) — confirmed
+# 2026-09-01 widened-anchor owner GRANT (decisions.md:17921) — confirmed
 # handwritten-tagged carriers named in the grant; rows added by the operator
 # 2026-09-02 per owner Ruling A (decisions.md 2026-09-02 OWNER RULING):
-func_80031890 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
-func_8002FF20 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
-func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-06 foreclosed-bucket review)
-# 2026-09-15 Ruling 3 (decisions.md:27024) — func_80018094 reached floor 0 after
+func_80031890 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:17921; row per owner ruling 2026-09-02)
+func_8002FF20 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:17921; row per owner ruling 2026-09-02)
+func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:17921; row per owner ruling 2026-09-06 foreclosed-bucket review)
+# 2026-09-15 Ruling 3 (decisions.md:26863) — func_80018094 reached floor 0 after
 # the 2026-08-30 proven-or-near-floor cut was drawn; the owner ruled it earns a
 # row "on exactly the terms func_80019310 got one", added by the operator:
-func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row per owner Ruling 3, 2026-09-15, decisions.md:27024)
+func_80018094 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; row per owner Ruling 3, 2026-09-15, decisions.md:26863)
 # 2026-09-21 — two further census members reached floor 0 after the 2026-08-30
 # proven-or-near-floor cut was drawn, so they earn rows on exactly the terms
-# Ruling 3 (2026-09-15, decisions.md:27024) gave func_80018094, which in turn
+# Ruling 3 (2026-09-15, decisions.md:26863) gave func_80018094, which in turn
 # tracked func_80019310's 2026-09-06 row. Operator-added at the owner's
 # instruction 2026-09-21; every other gate applies unchanged:
-func_8002D780 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :75; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-21)
-func_8002EBDC cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :80; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-21)
+func_8002D780 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :75; row per owner Ruling 3 terms, 2026-09-15, decisions.md:26863; operator-added 2026-09-21)
+func_8002EBDC cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :80; row per owner Ruling 3 terms, 2026-09-15, decisions.md:26863; operator-added 2026-09-21)
 # 2026-09-22 — one further census member reached floor 0 in a manual session,
 # so it earns a row on exactly the Ruling 3 terms the two 2026-09-21 rows got.
 # Operator-added at the owner's instruction 2026-09-22 (conversation, the
 # manual-lane landing of func_8002F2D0); every other gate applies unchanged:
-func_8002F2D0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :81; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-22)
+func_8002F2D0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :81; row per owner Ruling 3 terms, 2026-09-15, decisions.md:26863; operator-added 2026-09-22)
 # 2026-09-23 — the next census member reached floor 0 in a manual session and
 # earns a row on the same Ruling 3 terms as func_8002F2D0. Operator-added while
 # landing func_8002F770; every other mechanical and review gate still applies:
-func_8002F770 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :82; row per owner Ruling 3 terms, 2026-09-15, decisions.md:27024; operator-added 2026-09-23)
+func_8002F770 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :82; row per owner Ruling 3 terms, 2026-09-15, decisions.md:26863; operator-added 2026-09-23)
 # 2026-09-23 — a named carrier of the 2026-09-01 widened-anchor owner grant
-# (decisions.md:18082, which lists func_8003E6D8 among the confirmed
+# (decisions.md:17921, which lists func_8003E6D8 among the confirmed
 # handwritten-tagged carriers) reached floor 0 in a manual session, so it earns
 # a row on the same terms as func_80031890 / func_8002FF20 / func_80019310.
 # Operator-added at the owner's instruction 2026-09-23 (conversation, the
 # manual-lane landing of func_8003E6D8); every other gate applies unchanged:
-func_8003E6D8 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; operator-added 2026-09-23)
+func_8003E6D8 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:17921; operator-added 2026-09-23)
 # 2026-09-24 — census member func_80018300 (row :61, the rule's "one hybrid —
 # check it by hand") reached floor 0 in a manual session with PsyQ inline_o.h
 # macro islands. Operator-added at the owner's instruction 2026-09-24

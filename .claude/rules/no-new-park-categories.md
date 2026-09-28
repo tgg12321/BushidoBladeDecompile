@@ -225,7 +225,7 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     fresh RA-purposed locals in SOTN PSX master, not a line-for-line shape
     match; the owner ruled with that caveat presented): a fresh local
     holding a real, consumed value may be read any number of times.** Multi-WRITE carriers remain NOT this entry (the `y1` FAIL,
-    decisions.md:1833, and the 2026-08-30 func_80045878 `c` FAIL stand;
+    decisions.md:1731, and the 2026-08-30 func_80045878 `c` FAIL stand;
     a fresh local written more than once is admitted ONLY if it meets
     every prong of [[ordinary-c-judge-decidable]] Ruling 5 (2026-09-23),
     as amended for identical-text writes by its 2026-09-23 extension, or
@@ -248,7 +248,7 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
     prong there); (3) byte-neutral — `build_insns == target_insns`, the
     compiler folds the copy; (4) fresh local, not a borrow —
     [[staged-value-reused-variable]] keeps its own bounds; (5) destination
-    not live-pre-initialized (the `x/tx` FAIL, decisions.md:4251, stands);
+    not live-pre-initialized (the `x/tx` FAIL, decisions.md:4149, stands);
     (6) standard prerequisites: dump-proven named mechanism, documented
     lever exhaustion, `/* FAKE: ... */` annotation, layer-1 + layer-2
     review. Does not relax any other frozen entry; licenses no extra
@@ -983,7 +983,7 @@ annotation, layer-1+2 review):
   `src/dra/5D5BC.c:770` (`if (!i) { }`, "permuter found it") and
   `src/st/st0/cutscene.c:203` (`if (prim && prim)`). Sanctions ONLY the
   exact cancellation pair and empty-condition shapes — the `+= 2 / -= 1`
-  respelling FAILed by the Judge (decisions.md:1833 lineage) remains
+  respelling FAILed by the Judge (decisions.md:1731 lineage) remains
   banned. Prerequisites: `!FAKE`-style annotation; exhaustion ledger.
 - **Unconditional-common-store duplication into both branch arms** (F7
   survey, ESTABLISHED as construct): duplicating common-tail stores into

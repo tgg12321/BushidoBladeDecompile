@@ -1376,7 +1376,7 @@ exactly the insn that then loses the sched2 LUID tie.
   docs/grind/decisions.md that matches BOTH `OWNER-ESCALATION|CANONICAL-ASM GRANT PATH` AND the
   function name. s13's title (`## <date> — func_8002D780 — **RESOLVED BY STANDING RULING
   (2026-07-27): FORECLOSED**`) is the wording the brief prescribes but carries neither token, so
-  the entry was invisible to the check. The re-filed entry at docs/grind/decisions.md:25758 uses
+  the entry was invisible to the check. The re-filed entry at docs/grind/decisions.md:25597 uses
   `## 2026-09-08 — func_8002D780 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING
   (2026-07-27): FORECLOSED**`, which satisfies the line check while still routing to the SILENT
   foreclosure branch (grind.ps1:1436 keys on `RESOLVED BY STANDING RULING` in escalation_ref).
@@ -1398,7 +1398,7 @@ exactly the insn that then loses the sched2 LUID tie.
   product (also 3). Both mult operand orders are matched bytes. Banked as
   rejected/first-product-operand-swap-3.c.
 
-- [s13] The s13 session was discarded on HEADING FORMAT alone, not on merit: grind.ps1:1339 requires a SINGLE line in docs/grind/decisions.md matching BOTH 'OWNER-ESCALATION|CANONICAL-ASM GRANT PATH' AND the function name, and the brief-prescribed title '## <date> - func_8002D780 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' carries neither token. The re-filed entry (docs/grind/decisions.md:25758) reads '## 2026-09-08 - func_8002D780 - OWNER-ESCALATION - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**', which passes the line check while still routing to the SILENT foreclosure branch (grind.ps1:1436 keys on 'RESOLVED BY STANDING RULING' in escalation_ref).
+- [s13] The s13 session was discarded on HEADING FORMAT alone, not on merit: grind.ps1:1339 requires a SINGLE line in docs/grind/decisions.md matching BOTH 'OWNER-ESCALATION|CANONICAL-ASM GRANT PATH' AND the function name, and the brief-prescribed title '## <date> - func_8002D780 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' carries neither token. The re-filed entry (docs/grind/decisions.md:25597) reads '## 2026-09-08 - func_8002D780 - OWNER-ESCALATION - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**', which passes the line check while still routing to the SILENT foreclosure branch (grind.ps1:1436 keys on 'RESOLVED BY STANDING RULING' in escalation_ref).
 
 - [s13] Floor re-measured this session at HEAD 551f3dae (-mel -msoft-float) with candidate.c spliced into src/code6cac_b.c: sandbox func_8002D780 --disable all = {score 2, target_insns 202, build_insns 202, cheat_asm_stripped 24}. Floor 2 <= 5, so the 2026-07-27 standing ruling is the governing disposition.
 
@@ -1416,7 +1416,7 @@ exactly the insn that then loses the sched2 LUID tie.
 
 - [s14] ENUMERATION (operator, 2026-09-08, tools/spelling_enum.py, out-of-tree scorer with the engine metric against build/src/code6cac_b.o at HEAD e1e1b977): test-3 region in fully-named form (ax, dz, dx, az, bx, bz; kc/kp assignments; the if as anchor) -> 3,914 distinct spellings across name/inline x declaration order x kc/kp order, operand order held as candidate.c. Histogram: 981 at floor 2, 488 at 4, 488 at 9, 523 at 29, 488 at 30, 458 at 35, 488 at 37. ZERO below 2. CLASS KILL for that axis set: no naming/ordering of the six differences reaches the target's dx-before-az order without losing the seats. The 62,624-spelling run that adds the commutative operand-swap axis (both products of kc and kp) is running; its histogram will be banked when it completes (partial: 13k scored, best still 2).
 
-- [s14] ROTATION RULING CONTEXT (2026-09-08): this function's foreclosure record (decisions.md 25758) claimed only a class grant or a toolchain change could reopen it. The cc1psx self-disproof (engine cc1psx-check: ours 2/202, original cc1psx 46/202, same az-before-dx order) proves the residual is SOURCE-SIDE. Policy does not block this function; a pure-C preimage exists by construction. Item is now `rotated` and returns automatically (queue drain / toolchain change / sibling movement). Next instruments when it returns: enumerate with a WIDER region (fold the test-2 block and the cx/cz centroid computation into the marked region; try dz/dx declared at function scope vs block scope), and the declaration-scope axis the enumerator does not yet cover.
+- [s14] ROTATION RULING CONTEXT (2026-09-08): this function's foreclosure record (decisions.md 25597) claimed only a class grant or a toolchain change could reopen it. The cc1psx self-disproof (engine cc1psx-check: ours 2/202, original cc1psx 46/202, same az-before-dx order) proves the residual is SOURCE-SIDE. Policy does not block this function; a pure-C preimage exists by construction. Item is now `rotated` and returns automatically (queue drain / toolchain change / sibling movement). Next instruments when it returns: enumerate with a WIDER region (fold the test-2 block and the cx/cz centroid computation into the marked region; try dz/dx declared at function scope vs block scope), and the declaration-scope axis the enumerator does not yet cover.
 
 
 ## s14 (rederive, 2026-09-08) - sibling transplant executed; residual re-attributed from sched2 to source order + a local-alloc span tie
@@ -2458,7 +2458,7 @@ Artifacts: `tmp/grind/func_8002D780/s23/` (`base.sh`, `gen_s23.py`, `sweep.sh`, 
 
 - [s22] s21's last open frontier item (symmetric kp-multiply distance) closed this session by a 12-body sweep, best non-base score 4 against a floor of 2 (tmp/grind/func_8002D780/s23/v23.json). The other two frontier items (L2 gap-filler; allocno_compare n_refs) were closed by measurement in the preceding session and are recorded in evidence.md.
 
-- [s22] Disposition filed by this session: docs/grind/decisions.md:26057, '## 2026-09-08 — func_8002D780 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**'. It supersedes the earlier FORECLOSED entry and the driver-DISCARDED ROTATED entry at line 25915, and re-takes every measurement rather than citing them.
+- [s22] Disposition filed by this session: docs/grind/decisions.md:25896, '## 2026-09-08 — func_8002D780 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**'. It supersedes the earlier FORECLOSED entry and the driver-DISCARDED ROTATED entry at line 25754, and re-takes every measurement rather than citing them.
 
 - [s22] src/code6cac_b.c is unmodified on disk (the function remains INCLUDE_ASM on main); the session's only tracked-file changes are docs/grind/decisions.md, memory/grind/func_8002D780/evidence.md, hypotheses.md and six new rejected/ bodies.
 
@@ -2616,7 +2616,7 @@ tmp/grind/func_8002D780/s23/r2/trA/trace.txt (clobber-free) and trK/trace.txt (b
   only from pseudo<->hard-register copy insns; this function's are the a0-a3/v0 argument and
   return moves and the "$12" asm operand).
 This is the SAME two-predicate signature the 2026-07-28 Judge ruling
-(docs/grind/decisions.md:1852) granted func_8002BC68 / func_8002BEA0 the $12-$15 clobber list
+(docs/grind/decisions.md:1750) granted func_8002BC68 / func_8002BEA0 the $12-$15 clobber list
 for ("$13-$15 have zero pseudo uses in target ... explicit RTL mention is the ONLY route by
 which the frozen compiler skips them"). The layer-1 reviewer's objection is that here $14
 (t6) DOES carry a pseudo in the target (119, test 1), so the grant's zero-uses premise does
@@ -2676,7 +2676,7 @@ src restored; `git status` clean apart from metrics/events.jsonl.
 **Why the merge is refused, precisely.** grind.ps1:915-926 runs island-count on the applied
 body (4 non-whitelist cop2 islands) and grindlib.grant_canonical_asm: scan_hand_coded tier
 LOW 1/8 (s22, whole-function scanner artifact for GTE-island bodies — the same 1/8 the Judge
-noted for func_8002FF20 at decisions.md:19971) and no registry row -> returns None ->
+noted for func_8002FF20 at decisions.md:19810) and no registry row -> returns None ->
 "grant REFUSED". The registry (tools/grinder/owner_cluster_grants.txt) is operator-only by
 construction (grindlib.py:1806-1810). Its admission test is by-name enumeration in a landed
 owner cluster ruling; func_8002D780 is census row .claude/rules/cop2-addressing-preamble-
@@ -2711,7 +2711,7 @@ tmp/grind/judge_func_8002D780.json.
 
 - [s23] Merge refused 2026-09-15 23:31 solely by the registry gate: 4 non-whitelist cop2 islands, scan tier LOW 1/8, no owner_cluster_grants.txt row (state.json candidate_blocks merge-refused-islands|45e0221bc2dba1f8|ccd5c7d5c8af).
 
-- [s23] func_8002D780 is census row .claude/rules/cop2-addressing-preamble-cluster.md:75 of the landed 2026-08-17 cluster ruling; the registry admission test is by-name enumeration in a landed owner cluster ruling (decisions.md:14814 ruling 4).
+- [s23] func_8002D780 is census row .claude/rules/cop2-addressing-preamble-cluster.md:75 of the landed 2026-08-17 cluster ruling; the registry admission test is by-name enumeration in a landed owner cluster ruling (decisions.md:14653 ruling 4).
 
 - [s23] The four islands (gte_ldlv0/gte_rtv0 mvmva .word 0x4A486012/gte_stlvnl, gte_Lzc mtc2 $30 + swc2 $31) are identical to the authorized islands of func_8002BC68/func_8002BEA0/func_8002D518/func_8002EA24/func_8002E838 (inline_asm_canonical.txt:368-373).
 
@@ -2807,7 +2807,7 @@ tmp/grind/judge_func_8002D780.json.
   COMPLETED-C on main, both computing the identical D_8008D118 / 0x400 / 0x16 / 0x13 LZCS sqrt
   idiom — ship the PsyQ mtc2/swc2 island with the FULL CONSERVATIVE clobber list
   `"$12", "$13", "$14", "$15"`, granted by the 2026-07-28 Judge ruling
-  (`docs/grind/decisions.md:1852`). That is the same footprint this function's bytes demand, and
+  (`docs/grind/decisions.md:1750`). That is the same footprint this function's bytes demand, and
   the 2026-09-16 layer-2 FAIL objected to the s23 body precisely because it was a hand-picked
   SUBSET of it ("no hand-written GTE macro clobbers t4/t6/t7 but not t5").
 

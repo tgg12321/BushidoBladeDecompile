@@ -81,5 +81,5 @@
 ## [s1] The merge refusal's blocking surface is exactly one operator row in tools/grinder/owner_cluster_grants.txt; with that row the driver's PASS path writes the inline_asm_canonical.txt line itself.
 - mechanism: grind.ps1 PASS path: island-count (audit_asm_cheats whitelist: 7 of 9 islands flagged, MVMVA .words whitelisted) -> grant_canonical_asm(tier LOW) -> registry lookup -> REFUSED; with a row, tier OWNER-CLUSTER -> allowlist line -> queue done as COMPLETED-INLINE-ASM-CANONICAL.
 - probe: Read tools/grinder/grind.ps1:838-870, tools/grinder/grindlib.py:1648-1734, tools/audit_asm_cheats.py:694-711; scan_hand_coded --single func_8002EBDC (tier LOW 1/8).
-- result: Confirmed from the driver source and the banked constraint text; precedent func_80019310 (decisions.md:24678 -> row 2cef233c -> merged 3869ca31).
+- result: Confirmed from the driver source and the banked constraint text; precedent func_80019310 (decisions.md:24517 -> row 2cef233c -> merged 3869ca31).
 - verdict: CONFIRMED

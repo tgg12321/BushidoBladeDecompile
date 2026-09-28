@@ -58,7 +58,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
              * ADDRESSING PREAMBLE: the "addu $t4,%1,$zero" copy and the
              * "addiu $v0,$sp,0x10; addu $t4,$v0,$zero" pair are not macro text
              * -- they are the widened materialize-then-copy anchor admitted by
-             * the owner grant of 2026-09-01 (docs/grind/decisions.md:18082).
+             * the owner grant of 2026-09-01 (docs/grind/decisions.md:17921).
              * CLOBBER PROVENANCE: neither half publishes a GPR clobber, so "$2"
              * ($v0, written by the preamble) and "$12" ($t4, written by both
              * copies) are ADDED here and are truthful. The "=m"(sp_tmp) output
@@ -114,7 +114,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
          * the 5 packed rotation-matrix words at r into cop2 control regs
          * $0..$4.
          * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-         * (owner grant 2026-09-01, docs/grind/decisions.md:18082), not macro
+         * (owner grant 2026-09-01, docs/grind/decisions.md:17921), not macro
          * text.
          * CLOBBER PROVENANCE: the macro publishes "$12","$13","$14" only; "$15"
          * is ADDED here, a consequence of the island's register shift (the
@@ -144,7 +144,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
      * text, admitted by cluster condition 3), mtc2 to $0, lwc2 VZ0 into $1,
      * then the 2-cycle GTE load delay.
      * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-     * (owner grant 2026-09-01, docs/grind/decisions.md:18082).
+     * (owner grant 2026-09-01, docs/grind/decisions.md:17921).
      * CLOBBER PROVENANCE: the macro publishes "$12","$13" only; "$14" is ADDED
      * here by the same register shift and is truthful (the island writes $14).
      * Character-identical to the matched func_8002EBDC island. */
@@ -168,7 +168,7 @@ void func_8002F2D0(s32 *a0, s32 *a1) {
     /* PsyQ libgte macro gte_stlvnl(r) --- inline_c.h:1111-1117. Stores
      * MAC1/MAC2/MAC3 ($25/$26/$27) back to r.
      * ADDRESSING PREAMBLE: "move $12, %0" is the granted anchor
-     * (owner grant 2026-09-01, docs/grind/decisions.md:18082).
+     * (owner grant 2026-09-01, docs/grind/decisions.md:17921).
      * CLOBBER PROVENANCE: the macro publishes only "memory" (inline_c.h:1117);
      * "$12" is ADDED here and is truthful -- the preamble writes it. Same
      * addition as the matched func_8002EBDC gte_stlvnl island. */

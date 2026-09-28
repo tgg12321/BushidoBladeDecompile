@@ -55,7 +55,7 @@ materialisations and LICM-hoisted constants are inert levers.
    - **(c)** flow-analysis→global_alloc deletion-window dump + matching
      ra_solver atom class (func_80078654's gap).
 2. **Methodology exemplar (already done): func_80045294.** Session 47
-   (2026-08-25, decisions.md:11915) ran the full inverse chain: sched model
+   (2026-08-25, decisions.md:11777) ran the full inverse chain: sched model
    baseline-exact, all 960 single atoms enumerated (13 vectors, one shared C
    intent), RA inverse isolated to one atom (`reg_n_refs(a0) 3→4`), and BOTH
    proven mutually exclusive in pure C — a typed foreclosure over an

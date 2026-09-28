@@ -1153,7 +1153,7 @@ in the new candidate header and its trap variant in
 - [s13] The honest floor is REPRODUCED at 13 on today's tree with memory/grind/motion_Close/candidate.c applied to src/ings2.c: `sandbox motion_Close --disable all` -> score 13, target_insns 26, build_insns 25, scorable true, rules_dropped 9, cheat_asm_stripped 10. src/ings2.c was reverted to HEAD immediately afterwards, so main is clean apart from metrics/events.jsonl.
 - [s13] What holds the byte-match on main is now enumerated in one place: NINE regfix rules at regfix.txt:115-124 (a `$2 <-> $8` prologue rename over insns 0-4, `insert "nop" @ 6`, `reorder 2,3,5,4 @ 2-5`, and five `subst` rules rewriting the three save and three restore offsets) PLUS the cheat-asm body in src/ings2.c (register-asm pins p->$s0 and count->$s1, a third pin f->$t0, a `jalr %0` inline-asm call, and a hardcoded-$N `__asm__ volatile("addiu $17, $17, -1")`). Both surfaces are forbidden families; the function is INCOMPLETE by the completion standard notwithstanding the SHA1 match.
 - [s13] scan_hand_coded RE-MEASURED (gate 1): tier=LOW score=0/8, "no strong hand-coded indicators", S1/S2/S6 all negative, S3/S4 skipped (26 < 40 insns). Reproduction note for any future session: the scanner's `--single` resolves asm/funcs/<func>.s but then re-parses via analyze_all, whose parser only recognises the `glabel <name>` + `/* off addr bytes */ insn` form - copying tmp/grind/motion_Close/s4/target.s verbatim yields a file that EXISTS but parses to nothing, and the tool prints the misleading "asm/funcs/motion_Close.s not found". Convert to glabel form first (script inline in the s13 transcript; output log tmp/grind/motion_Close/s13/scan_hand_coded_s13.log).
-- [s13] DISPOSITION FILED: docs/grind/decisions.md:4801 - "## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**". It records both gates' evidence, the full exhaustion record (13 sessions, six modalities, floor flat at 13 for nine, four permuter campaigns ~15k+ iterations, 21 banked rejected forms, six measured-dead input axes F10-F14 + the dead-store substitution), and the three backend-level disproofs (H1 REG_PARM_STACK_SPACE=16, F5 ascending hard-reg scan, F7a/F7b). Nothing is pending on the owner - the entry is terminal, not a request.
+- [s13] DISPOSITION FILED: docs/grind/decisions.md:4699 - "## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**". It records both gates' evidence, the full exhaustion record (13 sessions, six modalities, floor flat at 13 for nine, four permuter campaigns ~15k+ iterations, 21 banked rejected forms, six measured-dead input axes F10-F14 + the dead-store substitution), and the three backend-level disproofs (H1 REG_PARM_STACK_SPACE=16, F5 ascending hard-reg scan, F7a/F7b). Nothing is pending on the owner - the entry is terminal, not a request.
 
 - [s13] Honest floor re-measured THIS session at 13 with candidate.c applied: {score 13, target_insns 26, build_insns 25, rules_dropped 9, cheat_asm_stripped 10}. src/ings2.c reverted to HEAD afterwards.
 
@@ -1171,7 +1171,7 @@ in the new candidate header and its trap variant in
 
 - [s13] H1 in particular means no member of this C family can reach distance 0 at ANY score, so candidate.c is explicitly not a candidate-ready form - it is the best honest measurement (13, 25 emitted instructions) with a single-level FAKE-annotated do { p++; } while (0) as its only policy device, and wrap depth 0 both measured (20) and derived unreachable in closed form.
 
-- [s13] Terminal entry filed at docs/grind/decisions.md:4801 titled '## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'. It is a record of the standing ruling being applied, not a request: nothing is pending on the owner and the driver may park motion_Close terminally.
+- [s13] Terminal entry filed at docs/grind/decisions.md:4699 titled '## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'. It is a record of the standing ruling being applied, not a request: nothing is pending on the owner and the driver may park motion_Close terminally.
 
 ---
 
@@ -1249,7 +1249,7 @@ which is precisely the property the owner's 2026-08-24 grant to the twin rested 
 the non-existence proof, not scanner tier", borderline.md 2026-08-24). The twin also scored LOW 0/8.
 
 ### Disposition
-Packet filed at `docs/grind/decisions.md` 2026-08-26 (line 13618), titled
+Packet filed at `docs/grind/decisions.md` 2026-08-26 (line 13480), titled
 `## 2026-08-26 — motion_Close (0x80083804, src/ings2.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION
 PACKET**`. Its single decidable question is whether the 2026-08-24 prebuilt-object canonical routing
 granted to `func_80083794` extends to `motion_Close`. It is a routing/provenance question — it asks for
@@ -1259,7 +1259,7 @@ class. Session 14 returns `owner-gated` citing that entry.
 ### SESSION 14 RE-RUN NOTE (the first s14 attempt was discarded for a repo-wide encoding bug, not on merit)
 The driver discarded the first session-14 run with a `UnicodeDecodeError` from `grindlib.py:549`:
 `docs/grind/decisions.md` carried five raw cp1252 `0x97` em-dash bytes inside the COMMITTED
-`func_80037A20` entry (`docs/grind/decisions.md:13574`), so the validator could not read the file at
+`func_80037A20` entry (`docs/grind/decisions.md:13436`), so the validator could not read the file at
 all. That would have discarded ANY session on ANY function. This re-run repaired those five bytes to
 proper UTF-8 (leaving the file's legitimate `0xC3 0x97` `x` multiplication sequences intact) and swept
 `docs/grind/` + `memory/grind/` for the same class: 49 ledger/doc files carried invalid UTF-8 and were
@@ -1276,11 +1276,11 @@ Everything else in this re-run reproduces the discarded run's measurements indep
   `motion_Close` (frame 16, saves 4/8/12).
 * `tools/scan_hand_coded.py --single motion_Close` = tier LOW, score 0/8 (log
   `tmp/grind/motion_Close/s14/scan_hand_coded_s14b.log`).
-The packet is RE-FILED at `docs/grind/decisions.md:13770`
+The packet is RE-FILED at `docs/grind/decisions.md:13632`
 (`## 2026-08-26 - motion_Close ... ESCALATED WITH DECISION PACKET (RE-FILED)`); the earlier span at
-13618 is void per the driver's discard marker and is superseded by it.
+13480 is void per the driver's discard marker and is superseded by it.
 
-- [s14] Validator blocker fixed repo-wide: five invalid cp1252 0x97 bytes in the committed func_80037A20 entry (docs/grind/decisions.md:13574) made the whole file undecodable at grindlib.py:549; repaired, plus 49 further ledger/doc files under docs/grind/ and memory/grind/ swept clean of invalid UTF-8 and of pre-existing double-mangled sequences. Line endings preserved per file.
+- [s14] Validator blocker fixed repo-wide: five invalid cp1252 0x97 bytes in the committed func_80037A20 entry (docs/grind/decisions.md:13436) made the whole file undecodable at grindlib.py:549; repaired, plus 49 further ledger/doc files under docs/grind/ and memory/grind/ swept clean of invalid UTF-8 and of pre-existing double-mangled sequences. Line endings preserved per file.
 
 - [s14] Floor re-measured this session at 13 (target 26 / build 25 insns, 0 rules dropped) with candidate.c applied; canonical verdict C, asm_insns 0. src/ings2.c restored to HEAD; motion_Close carries ZERO regfix/asmfix rules and ZERO cheat-asm on main (own asm/funcs/motion_Close.s + INCLUDE_ASM).
 
@@ -1298,4 +1298,4 @@ The packet is RE-FILED at `docs/grind/decisions.md:13770`
 
 - [s14] Exhaustion: 14 sessions, 7 distinct modalities (permuter s4-s5, forensics s6-s7, rederive s8-s9, synthesis s10, structural s11-s12, escalation s13-s14), floor FLAT at 13 for ten consecutive sessions, ~15k permuter iterations across 4 campaigns, 21 disproven forms banked in memory/grind/motion_Close/rejected/, and every cc1 input outside the loop walk measured codegen-inert (F10 whole-TU/signature, F11 ten declaration forms, F12 twenty loop constructs, F13 guard/materialisation shape, F14 thirty-five wrap-placement cells, M1 dead-store substitution).
 
-- [s14] Packet RE-FILED at docs/grind/decisions.md:13770 as a ROUTING/PROVENANCE question (does the 2026-08-24 prebuilt-object grant to func_80083794 extend to motion_Close?), explicitly NOT the 2026-08-24 auto-reject class: it asks for no new coercion family, no permanent-rule sanction, no 'accept the debt' wording and no override of the canonical evidence bar. It supersedes the voided span at decisions.md:13618.
+- [s14] Packet RE-FILED at docs/grind/decisions.md:13632 as a ROUTING/PROVENANCE question (does the 2026-08-24 prebuilt-object grant to func_80083794 extend to motion_Close?), explicitly NOT the 2026-08-24 auto-reject class: it asks for no new coercion family, no permanent-rule sanction, no 'accept the debt' wording and no override of the canonical evidence bar. It supersedes the voided span at decisions.md:13480.

@@ -825,7 +825,7 @@ end of the session (`git checkout -- src/text1b.c`); the working tree carries no
 
 - [s12] Judge history that binds future sessions: the s11 INTEGRATION HANDOFF entry was ruled FAIL on 2026-09-16 20:50 — "the handoff bar is sandbox==0 AND a measured full-build SHA1==oracle with the banked form applied, and bb2.ld/Makefile are denylisted surfaces the Judge cannot grant". Do not re-file the handoff shape. The only two live routes are the func_80065800 sibling route and an operator/linker-authorized pass.
 
-- [s12] Disposition filed: `## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**` at docs/grind/decisions.md:28138, carrying both failed endgame-lock gates, the cc1psx self-disproof (ours 2 / cc1psx 44 / closer=false), the exhaustion record, and five named re-activation triggers (sibling movement, toolchain-fingerprint change, queue drain, an LD_SYM_FILES/named_syms.txt instrument change, an operator/linker-authorized pass).
+- [s12] Disposition filed: `## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**` at docs/grind/decisions.md:27977, carrying both failed endgame-lock gates, the cc1psx self-disproof (ours 2 / cc1psx 44 / closer=false), the exhaustion record, and five named re-activation triggers (sibling movement, toolchain-fingerprint change, queue drain, an LD_SYM_FILES/named_syms.txt instrument change, an operator/linker-authorized pass).
 
 - [s12] s12 re-measurement: candidate.c applied to src/text1b.c gives sandbox --disable all score 2, 200 target insns / 200 build insns, rules_dropped 0 — matching the driver's dispatch-time CHASSIS CHECK.
 
@@ -843,6 +843,6 @@ end of the session (`git checkout -- src/text1b.c`); the working tree carries no
 
 - [s12] Exhaustion: floor flat at 2 since s3 across 9 distinct modalities over 12 sessions (recon, structural, permuter x2, enumerate, synthesis, solver, forensics, rederive, escalation x2); 21 instance kills banked, 0 class kills.
 
-- [s12] Rotation record filed this session at docs/grind/decisions.md:28138 — '## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**' — carrying both gates' evidence, the cc1psx result, the exhaustion record, and five named re-activation triggers.
+- [s12] Rotation record filed this session at docs/grind/decisions.md:27977 — '## 2026-09-16 — func_8006B578 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**' — carrying both gates' evidence, the cc1psx result, the exhaustion record, and five named re-activation triggers.
 
 - [s12] src/text1b.c is at HEAD; git status --short shows only docs/grind/decisions.md, memory/grind/func_8006B578/{evidence,hypotheses}.md and the driver's own metrics/events.jsonl.

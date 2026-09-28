@@ -564,7 +564,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
  * gte_rtv0()-class operation encoded directly. The islands use the same `move $12, %0`
  * macro-body spelling as func_800203B4 (owner grant 2026-09-01, widened cop2
  * materialize-then-copy anchor; func_80019310 is named in that grant record,
- * docs/grind/decisions.md:18082 and .claude/rules/cop2-addressing-preamble-cluster.md:154).
+ * docs/grind/decisions.md:17921 and .claude/rules/cop2-addressing-preamble-cluster.md:154).
  *
  * CLOBBER PROVENANCE (do not read the "memory" clobbers as SDK text): of the four macros
  * above, ONLY gte_stlvnl publishes "memory" in its own clobber list (inline_c.h:1116);
@@ -572,7 +572,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
  * clobber list at all, for gte_ldv0). The "memory" clobber on those three islands is ADDED
  * here, and is cited to the committed same-file precedent func_8002D320
  * (src/code6cac_b.c:935), whose lwc2 read island carries exactly that added truthful
- * clobber; func_800300B4's Judge PASS (docs/grind/decisions.md:20650) accepted the same
+ * clobber; func_800300B4's Judge PASS (docs/grind/decisions.md:20489) accepted the same
  * addition. It is truthful in each case: islands 1-2 read the MATRIX through $12, island 3
  * reads the SVECTOR through $12, island 4 writes out[] which the C below reads. Its
  * byte-visible effect is on island 1, where it makes GCC re-read the MATRIX pointer before
@@ -2024,7 +2024,7 @@ s32 func_8001F888(void) {
  *
  * PROVENANCE OF THIS BODY. It is the body previously banked as
  * memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c, installed VERBATIM per the
- * Judge PASS ruling of 2026-09-04 12:39 (docs/grind/decisions.md:22276), which holds that the
+ * Judge PASS ruling of 2026-09-04 12:39 (docs/grind/decisions.md:22115), which holds that the
  * standing pre-ban on the "+0x270 signedness-split / dual-typed-view" family does NOT reach
  * this body: the ban's own text enumerates five SOURCE-level spellings, every one of which
  * writes a second view or a reinterpreting cast into the C, and this body has none of them --

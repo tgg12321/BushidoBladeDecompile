@@ -71,7 +71,7 @@ SOTN-master PSX `new_var_temp` declarations
 `src/st/rnz0/e_fire_demon.c:494`, `libsnd/vmanager.c` ×6).
 
 **Evidence caveat, carried verbatim from the record and PRESENTED TO THE
-OWNER before approval** (decisions.md:16536-16539): "the index carries
+OWNER before approval** (decisions.md:16375-16378): "the index carries
 declaration lines only. Whether those temporaries are written once or
 several times is NOT verifiable from this repo, so this is precedent for
 the existence of fresh RA-purposed locals in SOTN PSX master, not a
@@ -83,7 +83,7 @@ yours, once, as a class ruling." The owner ruled WITH that caveat in hand;
 this relaxation is an owner judgment call on flagged-as-partial evidence,
 not a claim the evidence is line-for-line conclusive.
 
-**Multi-WRITE carriers remain banned** (the y1 FAIL, decisions.md:1833,
+**Multi-WRITE carriers remain banned** (the y1 FAIL, decisions.md:1731,
 and the 2026-08-30 21:30 `c` FAIL both stand; a fresh local written more
 than once is admitted ONLY if it meets every prong of Ruling 5
 (2026-09-23; as amended by its 2026-09-23 extension), of Ruling 6

@@ -458,7 +458,7 @@
  * folding.  (2) The regno_first_uid route (loop.c:1062) needs the base MENTIONED at a lower uid
  * than its set, which is either a second set (Judge-banned fresh multi-write carrier, or the
  * s17-swept existing-local borrow) or a read before the only set (uninitialised first iteration
- * = a semantic change, not a spelling).  Disposition filed at docs/grind/decisions.md:26228.
+ * = a semantic change, not a spelling).  Disposition filed at docs/grind/decisions.md:26067.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

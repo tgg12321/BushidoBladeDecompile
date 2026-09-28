@@ -420,7 +420,7 @@ GATE MECHANICS (read before proposing an island respelling):
     HEADER are outside the stripper's reach entirely.
 
 DISPOSITION: filed as an INTEGRATION HANDOFF in docs/grind/decisions.md
-(2026-09-18 entry, line ~28314) with the two doors that land it: (1) one row in
+(2026-09-18 entry, line ~28153) with the two doors that land it: (1) one row in
 tools/grinder/owner_cluster_grants.txt, the same row seven sibling cluster
 members already carry; (2) a Judge scope grant for include/gte.h so the Sony
 macro set can live in the project header and the body can be written as macro

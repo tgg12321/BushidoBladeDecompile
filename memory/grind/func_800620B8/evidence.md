@@ -176,7 +176,7 @@ cross-TU evidence); the original loads BA30/50/58 as absolute lui/addiu, not off
 register; no census row; the 12-record boundary is arbitrary (same-shape 8-byte sprite records
 continue backwards through D_8009B9B8..B9F0 and on to at least D_8009B8E8, used by func_80065800
 and others); the loop.c-hoisting argument is evidence from this session's own scores, which the
-prong excludes (decisions.md:27263 precedent: accepted (a) evidence = one base register reaching a
+prong excludes (decisions.md:27102 precedent: accepted (a) evidence = one base register reaching a
 span of offsets in the original binary, or sibling functions forming the base and reading at stride).
 Factual corrections to the rejected comment/message: record [11] (BA58) has u=0x30,v=0x80 = frame 9's
 uv, not frame 0's ([10] BA50 does share frame 0's uv); the [6]/[10]/[11] addresses are rebuilt as

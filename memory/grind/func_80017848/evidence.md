@@ -3195,7 +3195,7 @@ is therefore unbuyable for loop 2 on every chassis measured to date.
 The queue item's directive (`docs/grind/decisions.md`, the 2026-08-30
 escalation-batch entry, ruling 10) returns func_80017848 to ACTIVE "with modality
 change per escalation-not-parked" because its own latest ledger entry (the
-2026-08-25 disposition, `docs/grind/decisions.md:12080`) states nothing pends the
+2026-08-25 disposition, `docs/grind/decisions.md:11942`) states nothing pends the
 owner. This session executed that directive: a structural modality, six new cells,
 two kills, no re-measurement of any dead axis, and NO fourth escalation packet —
 the owner has already ruled three times on this residual and a packet restating
@@ -3221,7 +3221,7 @@ classifies as not-a-packet and directs to be returned as `progress` instead.
 
 - [s26] CONSEQUENCE for every future session: loop 2 has NO free out-of-block use site anywhere. Post-loop sites are 19-22 (s10/s11, register pressure - target already burns s0-s5 and a seventh callee-save would grow the prologue), the loop body is 6 (this session), and a pre-join carrier is 12 (this session). The second-use lever that buys loop 1's copy is therefore unbuyable for loop 2 on every chassis measured to date.
 
-- [s26] The owner's 2026-08-30 escalation-batch ruling 10 (docs/grind/decisions.md, the 2026-08-30 escalation-batch entry) returns func_80017848 to ACTIVE 'with modality change per escalation-not-parked' on the ground that its own latest ledger entry states nothing pends the owner. This session executed that directive as a structural modality and deliberately did NOT file a fourth escalation packet: three dispositions already exist (docs/grind/decisions.md:5752, :5988, :12080), both endgame-lock gates were re-run and FAILED as recently as s25 (scan_hand_coded tier=LOW 0/8; no SOTN-master file:line precedent), and a packet restating 'both gates fail' carries no decidable question - which .claude/rules/escalation-not-parked.md (owner ruling 2026-08-24, second) classifies as not-a-packet and directs to be returned as `progress` with the kills banked.
+- [s26] The owner's 2026-08-30 escalation-batch ruling 10 (docs/grind/decisions.md, the 2026-08-30 escalation-batch entry) returns func_80017848 to ACTIVE 'with modality change per escalation-not-parked' on the ground that its own latest ledger entry states nothing pends the owner. This session executed that directive as a structural modality and deliberately did NOT file a fourth escalation packet: three dispositions already exist (docs/grind/decisions.md:5650, :5886, :11942), both endgame-lock gates were re-run and FAILED as recently as s25 (scan_hand_coded tier=LOW 0/8; no SOTN-master file:line precedent), and a packet restating 'both gates fail' carries no decidable question - which .claude/rules/escalation-not-parked.md (owner ruling 2026-08-24, second) classifies as not-a-packet and directs to be returned as `progress` with the kills banked.
 
 - [s26] src/ings.c was restored to its committed INCLUDE_ASM state at the end of the session (git status clean for src/); the only tree changes are the ledger files under memory/grind/func_80017848/.
 
@@ -6730,4 +6730,4 @@ expression - forbidden family, not a candidate.
 
 - [s64] E-s64-6: exhaustion at disposition: 64 sessions, floor flat at 3 since s9, 10 modalities (recon 1, structural 13, permuter 4, forensics 13, rederive 10, synthesis 8, escalation 9, solver 4, object-model 1, enumerate 1), >= 180,472 permuter iterations, 1,420-spelling enumeration, RA-solver full-goal inverse (one vector, class-killed), 13 class + 48 instance kills, 362 rejected forms
 
-- [s64] E-s64-7: docs/grind/decisions.md:27356 '2026-09-15 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): ROTATED' filed with gate evidence, cc1psx result, exhaustion and re-activation triggers; src/ings.c restored to HEAD (INCLUDE_ASM anchor)
+- [s64] E-s64-7: docs/grind/decisions.md:27195 '2026-09-15 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): ROTATED' filed with gate evidence, cc1psx result, exhaustion and re-activation triggers; src/ings.c restored to HEAD (INCLUDE_ASM anchor)

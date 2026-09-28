@@ -40,7 +40,7 @@ scheduling / flow analysis upstream of DCE):
   store). The scope sentence above always said this; the earlier bullet
   wording "`dest` is never read" mis-stated it and is superseded. The
   owner approved this resolution with its consequence stated explicitly
-  (it was surfaced by the func_80045878 packet, decisions.md:16508-16515
+  (it was surfaced by the func_80045878 packet, decisions.md:16347-16354
   — see [[ordinary-c-judge-decidable]] § Informed-approval record). It
   does NOT by itself legalize any previously-FAILed instance: every
   candidate is adjudicated fresh, with ALL of this rule's prerequisites

@@ -11,7 +11,7 @@ metadata:
 
 ## Why this file exists
 
-The owner's 2026-08-17 ruling on `func_8002FDB0` (docs/grind/decisions.md:5610,
+The owner's 2026-08-17 ruling on `func_8002FDB0` (docs/grind/decisions.md:5508,
 authorization line at `inline_asm_canonical.txt:268`) ends with a **CLUSTER
 RULING**:
 

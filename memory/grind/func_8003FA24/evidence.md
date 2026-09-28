@@ -179,7 +179,7 @@ each step measured (`tmp/fa24/*` scratch):
 The score-0 body (`rejected/half-multiwrite-carrier.c`, oracle GREEN) was **FAILED by
 layer-2**: `s16 half` is a *fresh* local written 11 times to stage the bare constants
 4/3/2. That is the multi-write carrier shape the frozen list excludes (y1 FAIL
-decisions.md:1833/1838, the 2026-08-30 `c` FAIL at :16474, and :6631/:10732). The
+decisions.md:1731/1736, the 2026-08-30 `c` FAIL at :16313, and :6529/:10630). The
 reviewer **cleared** everything else, which carries forward: the identical-arm type-3
 `if (packet_type & 2)`, `for (n = *(s16*)src++, count = n; n != 0; ...)` with `s32 n`,
 the unprototyped file-scope `extern void func_80052C10();` (drop the cast call), the

@@ -93,7 +93,7 @@
   {
    "hypothesis": "FR1 \u2014 the only open question on motion_Close is the owner's routing call on the crt0-block boundary; no C-side probe remains.",
    "mechanism": "Both endgame gates FAIL for any pure-C close (scan LOW 0/8; no SOTN precedent for a frame-layout / hard-register-scan-order residual), and each of the three residual components carries a backend-level disproof rather than a plateau observation (H1 REG_PARM_STACK_SPACE, F5 ascending hard-register scan with no MIPS REG_ALLOC_ORDER, F7a mips.c:4680 save emission, F7b four eligible insns in the target's branch block).",
-   "next_probe": "None on the C side. If the owner answers YES, the next session writes the inline_asm_canonical.txt entry and the whole-body __asm__(\"glabel motion_Close \u2026\") form into src/ings2.c (zero rules, zero cheat-asm added \u2014 the function carries none today). If NO, the function stays INCLUDE_ASM at floor 13 under the 2026-07-27 standing refusal already filed at decisions.md:4808 and no further grind session should be dispatched."
+   "next_probe": "None on the C side. If the owner answers YES, the next session writes the inline_asm_canonical.txt entry and the whole-body __asm__(\"glabel motion_Close \u2026\") form into src/ings2.c (zero rules, zero cheat-asm added \u2014 the function carries none today). If NO, the function stays INCLUDE_ASM at floor 13 under the 2026-07-27 standing refusal already filed at decisions.md:4706 and no further grind session should be dispatched."
   },
   {
    "hypothesis": "FR2 (CLOSED, unchanged from session 12) \u2014 the policy device cannot be made lighter than one do-while(0) level.",

@@ -85,7 +85,7 @@ Flagged for a re-check, not asserted as a wrong call. Each of these was parked O
 |---|---|---|---|---|---|---|
 | `CD_sync` | 0x80080DB0 | 7 | 5 | LIBCD/BIOS | `src/main/psxsdk/libcd/bios.c:232-258` | OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt |
 | `func_8007DC9C` | 0x8007DC9C | 9 | 4 | LIBGPU/SYS | `src/main/psxsdk/libgpu/sys.c:937-946` | OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA/sched endgame-lock (axis-A combine offset-0 fold + axis-B sched1 8-op volatile-order lock); held by 4 regfix rules; both endgame-lock gates fail (scan LOW 1/8, no SOTN precedent |
-| `CD_datasync` | 0x80081BB0 | 18 | 15 | LIBCD/BIOS | `src/main/psxsdk/libcd/bios.c:459-478` | OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 — '2026-08-01 — saEft01Init (src/system.c) — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' |
+| `CD_datasync` | 0x80081BB0 | 18 | 15 | LIBCD/BIOS | `src/main/psxsdk/libcd/bios.c:459-478` | OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2687 — '2026-08-01 — saEft01Init (src/system.c) — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' |
 
 ## Census / queue disagreements and cautions
 

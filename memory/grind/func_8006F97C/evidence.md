@@ -54,7 +54,7 @@ Objection (sole ground): block 1's `cells` fails Ruling 9 prong (c) — loop 1, 
 nested-loop exception; that loop-spanning site is what makes the pseudo callee-saved ($s1),
 i.e. allocator effect. Ruling 5 1(c) (write and read in one block) fails too. Reviewer: a
 borderline owner-policy question, not a hard ban. ACCEPTED (do not relitigate): `rec` named
-intermediate, the duplicated grid draw tail (cross-jump byte-neutral; decisions.md:1425
+intermediate, the duplicated grid draw tail (cross-jump byte-neutral; decisions.md:1377
 precedent), the void* casts on D_800A35C4, `shift[2]`, the ordinary spellings.
 
 Frontier after the FAIL — break-free block-1 forms (v11 chassis, only loop 1 changed):

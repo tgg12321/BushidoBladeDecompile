@@ -1073,7 +1073,7 @@ journal.
 
 - [s12] docs/grind/owner_actions.md carries a committed (c1a2311b) OPEN entry for func_80018094 dated 2026-09-20 stating the pipeline never waits on it and it is rotated/returns automatically.
 
-- [s12] docs/grind/decisions.md:28560 records a same-day (2026-09-20 01:40) Judge FAIL on an identical integration-handoff filing: the requested owner_cluster_grants.txt row is refused both because grindlib.py:466-497 blocks driver writes under tools/ by path class, and because the 2026-09-15 ruling itself named that widening as REFUSED (decisions.md:27036).
+- [s12] docs/grind/decisions.md:28399 records a same-day (2026-09-20 01:40) Judge FAIL on an identical integration-handoff filing: the requested owner_cluster_grants.txt row is refused both because grindlib.py:466-497 blocks driver writes under tools/ by path class, and because the 2026-09-15 ruling itself named that widening as REFUSED (decisions.md:26875).
 
 - [s12] The same 01:40 ruling independently re-ran tools/scan_hand_coded.py --single func_80018094 and got tier=LOW score=1/8 (S4 only) — the canonical-asm endgame-lock door is also shut, not just the cluster-grant door.
 

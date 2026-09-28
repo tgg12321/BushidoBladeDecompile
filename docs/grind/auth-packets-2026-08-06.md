@@ -97,7 +97,7 @@ give both rather than guess silently:
    correct.**
 2. **The three LIBGTE siblings deferred by the func_80052B44 ruling** —
    `func_80052A88` / `func_80052B00` / `func_80052B7C`, which that ruling
-   (`docs/grind/decisions.md` line 1805) explicitly held over: *"This authorization
+   (`docs/grind/decisions.md` line 1703) explicitly held over: *"This authorization
    covers func_80052B44 ONLY — siblings ... each require their own per-function ruling
    when they reach the queue top."*
 

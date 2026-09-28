@@ -8,7 +8,7 @@
   site L44 `addu $t4,$a0,$zero -> mtc2 $t4,$30 ; nop ; nop`). It is NOT in
   `tools/grinder/owner_cluster_grants.txt` (operator-only registry); the landed
   cluster ruling naming it in the rule's census table is the authority, the
-  same situation the Judge accepted for func_80031890 (decisions.md:20268).
+  same situation the Judge accepted for func_80031890 (decisions.md:20107).
 - FUNCTION SHAPE: exact structural twin of the merged sibling func_8002E838
   (src/code6cac_b.c:1366, inline_asm_canonical.txt:373). Differences: the
   object base is the scratchpad constant 0x1F8002B8 instead of a param; the
@@ -73,7 +73,7 @@
   L44 addu $t4,$a0,$zero -> mtc2 $t4,$30 ; nop ; nop`, LZCS sub-family). Its
   other six preambles copy from $s1 (gte_SetRotMatrix x2, .s L93/L155-ish) and
   $s3 (gte_ldlv0 / gte_stlvnl) — non-$aN sources, covered by the 2026-09-01
-  widened-anchor owner GRANT (decisions.md:18082; rule :140-160). Ten splat
+  widened-anchor owner GRANT (decisions.md:17921; rule :140-160). Ten splat
   `/* handwritten instruction */` tags in asm/funcs/func_8002EBDC.s (L45, L92-99,
   L105, L113-114, L163...). Island spelling character-identical to the merged
   siblings func_8002E838 (inline_asm_canonical.txt:373) / func_80031890 (:374).
@@ -87,9 +87,9 @@
   probe_c_pack_objdump.txt lines ~163-168 vs asm/funcs/func_8002EBDC.s L100-106.
   Same class result as func_800204C0 s1b H5, func_80019310 s3 H10,
   func_800300B4 H4/H29/H30 (local-alloc.c:2207/2249).
-- PRECEDENT FOR THE DISPOSITION: func_80019310 (decisions.md:24678, s1 recon ->
+- PRECEDENT FOR THE DISPOSITION: func_80019310 (decisions.md:24517, s1 recon ->
   owner-gated -> operator row 2cef233c -> unpark -> merged 3869ca31
-  COMPLETED-INLINE-ASM-CANONICAL) and func_800204C0 (decisions.md:25556, rotated,
+  COMPLETED-INLINE-ASM-CANONICAL) and func_800204C0 (decisions.md:25395, rotated,
   awaiting its row). This session files the same-shaped record (decisions.md
   2026-09-10 entry) and returns owner-gated. NOTHING is grindable here: the body
   is at 0 and Judge-PASSed; the only missing surface is operator-only.
@@ -100,7 +100,7 @@
 
 - [s1] Island census against the driver's whitelist (tools/audit_asm_cheats.py:694-711): 9 islands, 2 whitelisted (MVMVA .word 0x4A486012 x2), 7 flagged (LZCS, gte_SetRotMatrix x2, gte_ldlv0 x2, gte_stlvnl x2) — the '7 non-cop2-whitelist islands' in the banked constraint.
 
-- [s1] Grant coverage: func_8002EBDC is enumerated by name in the cluster rule census table (.claude/rules/cop2-addressing-preamble-cluster.md:80, $a0-source LZCS site .s L44); its seven other preambles copy from $v0/$s1/$s3/$s6 (.s L49, L89, L100, L111, L160, L171, L181), covered by the 2026-09-01 widened-anchor grant (decisions.md:18082); ten splat handwritten-instruction tags in asm/funcs/func_8002EBDC.s.
+- [s1] Grant coverage: func_8002EBDC is enumerated by name in the cluster rule census table (.claude/rules/cop2-addressing-preamble-cluster.md:80, $a0-source LZCS site .s L44); its seven other preambles copy from $v0/$s1/$s3/$s6 (.s L49, L89, L100, L111, L160, L171, L181), covered by the 2026-09-01 widened-anchor grant (decisions.md:17921); ten splat handwritten-instruction tags in asm/funcs/func_8002EBDC.s.
 
 - [s1] scan_hand_coded --single func_8002EBDC = tier LOW 1/8 (S4 only), so the STRONG door is closed; no row in tools/grinder/owner_cluster_grants.txt (operator-only), so the registry door is closed until the operator adds it.
 

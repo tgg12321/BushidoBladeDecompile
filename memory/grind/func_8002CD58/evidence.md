@@ -61,7 +61,7 @@ LZC islands, so it is not a precedent for this set. src reverted to
 INCLUDE_ASM. Wording fixes from the review applied to candidate.c (Lzc
 preamble sentence, E838-tail overstatement, per-island header citations).
 Remaining commit-message fixes: drop the F2E4 analogy, disclose 9bdfcc6cc and
-eeda6664b, cite decisions.md:5617 (not :5610).
+eeda6664b, cite decisions.md:5515 (not :5508).
 
 Frontier: an owner decision on a registry row / grant for this function (the
 bytes are proven; the C needs no change).

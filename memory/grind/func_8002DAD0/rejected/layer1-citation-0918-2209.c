@@ -1220,7 +1220,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
  * CITATION for the `ud = disc;` re-store. The 2026-08-19 07:16 layer-1 review
  * FAILed the old citation (an arms-family rule whose scope does not describe this
  * code shape) and the 2026-08-19 07:34 Judge ruling
- * (docs/grind/decisions.md:6521) narrowed the ban to that citation alone,
+ * (docs/grind/decisions.md:6419) narrowed the ban to that citation alone,
  * ordering re-derivation under dead-store-fake-exception. Both the in-source
  * /* FAKE *\/ annotation and memory/grind/func_8002D518/self_vet.md now cite
  * dead-store-fake-exception (.claude/rules/dead-store-fake-exception.md:24, the
@@ -2011,7 +2011,7 @@ s32 func_8002FDB0(s32 *arg0) {
  * spellings. Each island is the verbatim body of the named Sony PsyQ GTE macro (PsyQ 4.5
  * inline_c.h) -- cluster condition 3 as clarified by owner Ruling A 2026-09-02
  * (.claude/rules/cop2-addressing-preamble-cluster.md:163). Confirmed carrier under the
- * 2026-09-01 widened cop2 materialize-then-copy owner GRANT (docs/grind/decisions.md:18082;
+ * 2026-09-01 widened cop2 materialize-then-copy owner GRANT (docs/grind/decisions.md:17921;
  * registry row tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here are
  * $v0/$v0/$v0 (.s L60, L72, L84). Honest bucket: COMPLETED-INLINE-ASM-CANONICAL (allowlist
  * line required). Measured 2026-09-01 (s1) and re-measured 2026-09-02 on the current chassis:

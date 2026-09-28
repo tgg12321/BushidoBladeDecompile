@@ -2373,7 +2373,7 @@ by a mechanism the original did not use.
 
 Modality: `escalation` (driver-assigned; floor flat at 6 across s1–s22 and eight
 distinct modalities). Outcome: `owner-gated`, disposition entry filed at
-`docs/grind/decisions.md:26228` ("LADDER EXHAUSTED (non-endgame residual,
+`docs/grind/decisions.md:26067` ("LADDER EXHAUSTED (non-endgame residual,
 floor 6): ROTATED"). The item is rotated to the back of the active worklist and
 returns automatically on queue drain / toolchain change / sibling movement.
 
@@ -2479,7 +2479,7 @@ mention) are now closed with source citations and, for the first, a measurement.
 Do not re-derive them. The only construct ever measured at distance 0 remains the
 Judge-FAILed fresh multi-write carrier; re-activation requires an owner class
 grant or an exhibited sotn-decomp master body for that shape (see the
-re-activation triggers in `docs/grind/decisions.md:26228`).
+re-activation triggers in `docs/grind/decisions.md:26067`).
 
 - [s23] Chassis re-measured this session: candidate.c applied to src/text1b.c scores 6 with target_insns 176, build_insns 176, rules_dropped 0, cheat_asm_stripped 155 (the stripped 155 is the INCLUDE_ASM body on main, not a coercion). The brief's chassis check said 'measurement unavailable'; the ledger's floor of 6 is confirmed.
 
@@ -2495,8 +2495,8 @@ re-activation triggers in `docs/grind/decisions.md:26228`).
 
 - [s23] The residual is two identical 3-instruction rotations, one per loop half: we emit [addiu a2,s4,-K][addiu a0,sp,16][lw v1,gp][move a1,zero], the target emits [addiu a0,sp,16][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K] (asm/funcs/func_8005D554.s 0x4DEB4-0x4DEC0). Registers and frame are byte-identical to the target at 176/176.
 
-- [s23] The only body ever measured at distance 0 is rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c, FAILed by the Judge at FINAL CALL on 2026-09-08 (docs/grind/decisions.md:26224) with a binding ban on fresh multi-write staging carriers; the driver rejects that body on resubmission without review.
+- [s23] The only body ever measured at distance 0 is rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c, FAILed by the Judge at FINAL CALL on 2026-09-08 (docs/grind/decisions.md:26063) with a binding ban on fresh multi-write staging carriers; the driver rejects that body on resubmission without review.
 
-- [s23] Disposition entry filed this session at docs/grind/decisions.md:26228, titled '2026-09-09 - func_8005D554 (src/text1b.c) - OWNER-ESCALATION - LADDER EXHAUSTED (non-endgame residual, floor 6): ROTATED' (floor 6 > ENDGAME_LOCK_MAX_FLOOR 5, so the 2026-07-27 standing ruling is not this function's subject, per owner ruling 2026-09-02).
+- [s23] Disposition entry filed this session at docs/grind/decisions.md:26067, titled '2026-09-09 - func_8005D554 (src/text1b.c) - OWNER-ESCALATION - LADDER EXHAUSTED (non-endgame residual, floor 6): ROTATED' (floor 6 > ENDGAME_LOCK_MAX_FLOOR 5, so the 2026-07-27 standing ruling is not this function's subject, per owner ruling 2026-09-02).
 
 - [s23] src/text1b.c was restored to its pristine INCLUDE_ASM state at the end of the session; the only modified surfaces are docs/grind/decisions.md and memory/grind/func_8005D554/.

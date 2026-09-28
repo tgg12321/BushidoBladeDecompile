@@ -61,7 +61,7 @@ is a constant, a copy, a staged value or a split computation; no value is carrie
 - Ruling 6: not a record pointer; fails (C)/(D).
 - Ruling 8: vmNoiseOn only. Ruling 9: fails (a) (no struct-member consumer) and (b) (no base +
   constant offsets). Ruling 10: no public original source.
-- Precedent that is a ruling, not a commit: docs/grind/decisions.md:25911, Judge final call PASS
+- Precedent that is a ruling, not a commit: docs/grind/decisions.md:25750, Judge final call PASS
   2026-09-08 on func_8002E6B0 (same file, same test idiom): "two function-scope cross-product
   locals re-assigned per edge (same quantity each time, not a variable-reuse borrow)". That Judge
   classified the pair as primary variables holding one quantity, not carriers. It predates Ruling 5
@@ -75,14 +75,14 @@ is a constant, a copy, a staged value or a split computation; no value is carrie
 ## Registry row (cluster grant) — NOT authorized by any landed ruling
 func_8002DE20 is named in the 2026-08-17 cluster census, but every owner_cluster_grants.txt row
 since 2026-09-21 was owner-instructed per function (9bdfcc6cc, 789ce34d7, 1de410a11, eeda6664b,
-cd61ed9f6). Ruling 3 (decisions.md:27024) names func_80018094 alone; layer-2 FAILed func_80018300's
+cd61ed9f6). Ruling 3 (decisions.md:26863) names func_80018094 alone; layer-2 FAILed func_80018300's
 landing for a row self-added "under Ruling 3 terms" (eeda6664b body). The islands here are the
 inline_o.h class (move $12 preamble + "$12"-"$15","memory" clobbers), which the 2026-09-25 scorer
 ruling routes to "an owner-instructed row" (inline-asm-policy.md). So the row needs the owner.
 
 ## Layer-2 FAIL (2026-09-26, manual lane) — body banked as rejected/layer2-fail-cross-pair-inline-o-islands-0.c
 (1) cross_a/cross_b = banned multi-write carrier under Ruling 1: no Ruling 5/6/8/9/10 admits it.
-    decisions.md:25911 (func_8002E6B0 Judge call) is a one-body call that predates Ruling 5 and
+    decisions.md:25750 (func_8002E6B0 Judge call) is a one-body call that predates Ruling 5 and
     does not transfer; the owner declined "Allow as a class" 2026-09-24; the mechanism is allocator
     effect (Ruling 5 "Known weakness": never sufficient); the borderline question is unanswered and
     cannot be spent (ruling-record-lands-before-code).

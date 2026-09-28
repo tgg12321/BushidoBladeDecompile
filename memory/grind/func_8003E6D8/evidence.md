@@ -46,5 +46,5 @@ bits refs 17->18, bits livelen -2, a3 refs -1, a3 livelen +2.
 ## Island provenance
 Four islands, spelled as func_80019310 / func_800203B4: gte_SetRotMatrix,
 gte_ldv0 (lwc2 pair + 2 nops), MVMVA .word 0x4A486012, gte_stlvnl. Covered by
-the 2026-09-01 widened-anchor owner grant (decisions.md:18082 names this
+the 2026-09-01 widened-anchor owner grant (decisions.md:17921 names this
 function); registry row 1de410a11 (owner-instructed 2026-09-23).

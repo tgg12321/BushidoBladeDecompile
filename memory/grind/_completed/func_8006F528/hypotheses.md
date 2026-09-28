@@ -16,7 +16,7 @@ Ablations on final form: no_p1 19, one_base 12, no_offset 7, no_x 13, s32_state 
 
 ## Layer-2 round 1 (2026-09-23): FAIL
 Fresh function-scope `s32 *p1` written 5x = banned fresh multi-write carrier (y1 lineage,
-decisions.md:1840/6631/10732). Reviewer ablation: single-write `p1` per block = 14/277.
+decisions.md:1738/6529/10630). Reviewer ablation: single-write `p1` per block = 14/277.
 Body banked in rejected/fn-scope-p1-carrier.c. All other constructs reviewed OK.
 
 ## H6 (round 2): staged-value-reused-variable
@@ -27,7 +27,7 @@ shared base 12, read back from s.p0 5 (with fn-scope p1), direct ctx[N] 25/45.
 
 ## Layer-2 round 2 (2026-09-23): FAIL
 Borrowing `offset` needed its declaration hoisted out of the switch case = invented borrow
-(func_800460E4 declaration-hoist FAIL; decisions.md:6627). Body in rejected/offset-hoist-borrow-carrier.c.
+(func_800460E4 declaration-hoist FAIL; decisions.md:6525). Body in rejected/offset-hoist-borrow-carrier.c.
 
 ## Frontier (carrier-free), 14/277 = candidate.c
 Diagnosis: target homes every block's base+0xC in a1, which only a single pseudo spanning several

@@ -51,7 +51,7 @@
  *    original LZCS macro mentioned $t6 and $t7. The file's two MATCHED siblings that
  *    compute this identical sqrt idiom - func_8002BC68 (src/code6cac_b.c:766) and
  *    func_8002BEA0 (src/code6cac_b.c:829), both COMPLETED on main under the
- *    2026-07-28 Judge grant (docs/grind/decisions.md:1852) - ship exactly
+ *    2026-07-28 Judge grant (docs/grind/decisions.md:1750) - ship exactly
  *    "$12","$13","$14","$15" on the same six-instruction mtc2/swc2 island. This body
  *    now ships that same list, unchanged, on both halves of the macro: the same
  *    footprint on every statement of one macro, and the same footprint as the two
@@ -201,7 +201,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                  * macro footprint, byte-identical to the list the two matched
                  * siblings in this file ship on the same island (func_8002BC68 at
                  * src/code6cac_b.c:766, func_8002BEA0 at :829) under the judge
-                 * ruling of 2026-07-28 (docs/grind/decisions.md:1852). It is a
+                 * ruling of 2026-07-28 (docs/grind/decisions.md:1750). It is a
                  * bytes-forced reconstruction of the original island's asm-level
                  * register footprint, NOT a register pin: reload1.c:3730-3739 puts
                  * every regs_explicitly_used[] hard reg into bad_spill_regs, and

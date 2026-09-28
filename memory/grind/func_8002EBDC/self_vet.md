@@ -26,7 +26,7 @@ SANCTIONED-FAMILY-CLAIMS:
   PRECEDENT: `.claude/rules/cop2-addressing-preamble-cluster.md:80`
   PRECEDENT: `inline_asm_canonical.txt:373`
   PRECEDENT: `inline_asm_canonical.txt:367`
-  PRECEDENT: `docs/grind/decisions.md:20268`
+  PRECEDENT: `docs/grind/decisions.md:20107`
   FAMILY: canonical inline asm (GTE/cop2) — inline-asm-policy
   SCOPE: "Two-category inline-asm policy: CANONICAL (GTE/cop2/BIOS/HW) is authentic and fine; CHEAT (register pins, INLINE_MOVE_ALIASING, scheduling barriers) is forbidden — a function carrying any cheat-asm is INCOMPLETE."
   PRECEDENT: `.claude/rules/inline-asm-policy.md:4`
@@ -34,4 +34,4 @@ SANCTIONED-FAMILY-CLAIMS:
 
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct. Every island comment names the SDK macro it reproduces (gte_SetRotMatrix / gte_ldlv0 with inline_c.h:101-110 / gte_rtv0 / gte_stlvnl; LZCS/LZCR block citing func_8002E838 / func_8001A67C) per the 2026-09-02 Ruling A comment requirement.
 
-HONEST BUCKET: COMPLETED-INLINE-ASM-CANONICAL (islands present, not yet allowlisted) — the driver must route a Judge PASS through the owner-cluster grant door and write the inline_asm_canonical.txt line before `queue done`, exactly as for func_8002E838 / func_8002EA24 / func_80031890. func_8002EBDC has no row in tools/grinder/owner_cluster_grants.txt (operator-only); the landed 2026-08-17 cluster ruling's census table naming it is the authority (same as the func_80031890 PASS, decisions.md:20268).
+HONEST BUCKET: COMPLETED-INLINE-ASM-CANONICAL (islands present, not yet allowlisted) — the driver must route a Judge PASS through the owner-cluster grant door and write the inline_asm_canonical.txt line before `queue done`, exactly as for func_8002E838 / func_8002EA24 / func_80031890. func_8002EBDC has no row in tools/grinder/owner_cluster_grants.txt (operator-only); the landed 2026-08-17 cluster ruling's census table naming it is the authority (same as the func_80031890 PASS, decisions.md:20107).

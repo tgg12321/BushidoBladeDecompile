@@ -3018,7 +3018,7 @@ extern s16 Judge;
  * of its five use sites rather than bound to one pointer local (F3
  * compound-address duplication across call arg-lists, .claude/rules/no-new-park-categories.md:377,
  * owner ruling 2026-08-18; re-adjudication granted for this function by owner ruling
- * 6b of the 2026-08-30 escalation batch, docs/grind/decisions.md:14846).
+ * 6b of the 2026-08-30 escalation batch, docs/grind/decisions.md:14685).
  * mechanism: cse1 (cse.c:1948 hash_arg_in_memory / cse.c:7241-7246
  * `if (! CONST_CALL_P (insn)) invalidate_memory (&everything);`) folds the five
  * front-end loads down to the target's two, the intervening ratan2 CALL_INSN being
@@ -8913,7 +8913,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
        (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object
        (`s`, address passed to both descriptor callees) rather than adding a dead
        pad local.  In-tree precedent for this carve-out: func_8006DD94 in this TU
-       (same callee func_8007352C; Judge PASS docs/grind/decisions.md:26632) and
+       (same callee func_8007352C; Judge PASS docs/grind/decisions.md:26471) and
        src/text1a_post.c:387-400 (func_80041BF4, accepted on main).
        Lever-exhaustion: memory/grind/func_80069F80/hypotheses.md - s1 H2 (0x2C
        form scores 12, every save/restore offset wrong), s3 180-variant sweep of
@@ -9017,8 +9017,8 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
        Family: .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
        (owner ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object
        rather than adding a dead pad local.  In-tree precedent: func_80069F80
-       (this TU, Judge PASS docs/grind/decisions.md:27053) and func_8006DD94
-       (this TU, Judge PASS docs/grind/decisions.md:26632).
+       (this TU, Judge PASS docs/grind/decisions.md:26892) and func_8006DD94
+       (this TU, Judge PASS docs/grind/decisions.md:26471).
        Lever-exhaustion: memory/grind/func_8006A1A0/hypotheses.md - s1 H2 (0x2C
        form scores 14, every save/restore offset wrong; no other residual). */
     S_69F80 s;

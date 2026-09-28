@@ -747,7 +747,7 @@ tmp/grind/motion_Close/s5b/wsA/_base.txt before reusing the s7 residual table.
 ## [s13] ESCALATION/DISPOSITION - both endgame-lock AND-gates are FAILED for motion_Close, so the owner's 2026-07-27 standing auto-ruling disposes of the function terminally.
 - mechanism: The driver assigned `escalation` modality after the honest floor stayed FLAT at 13 for nine sessions across six distinct modalities (permuter s4/s5, forensics s6/s7, rederive s8/s9, synthesis s10, structural s11/s12). Gate 1 (canonical-asm) needs a STRONG scan_hand_coded tier (S1/S2/S6); gate 2 (coercion/spelling family) needs an in-hand SOTN-master precedent citable as file:line or a commit hash. If both fail, the owner has pre-decided the outcome: REFUSED / OWNER-ACCEPTED INCOMPLETE, filed as a terminal entry, no owner wait.
 - probe: (a) Re-ran `python3 tools/scan_hand_coded.py --single motion_Close` from scratch this session - the function is C-routed so asm/funcs/motion_Close.s does not exist; synthesised it from the byte-verified tmp/grind/motion_Close/s4/target.s in the glabel form the scanner's parser accepts (the raw target.s form parses to nothing and the tool reports "not found"), ran the scan, deleted the file. Log tmp/grind/motion_Close/s13/scan_hand_coded_s13.log. (b) Enumerated what holds the byte-match on main: regfix.txt:115-124 (9 rules) plus the cheat-asm body (two register-asm pins, a third pin on the fn-ptr temp, a `jalr %0` inline asm and a hardcoded-$N `addiu $17,$17,-1`). (c) Re-measured the honest floor with candidate.c applied to src/ings2.c, then reverted src to HEAD.
-- result: Gate 1 FAILS - tier=LOW score 0/8, S1 (0 multu/mflo pairs), S2 (no empty-body branch) and S6 (no BIOS jumptable) all negative, S3/S4 skipped as too short (26 < 40 insns); this reproduces s6's measurement exactly. Gate 2 FAILS - the 13-point residual is frame layout (H1), hard-register scan order (F5) and prologue save order / delay slot (F7), and the only constructs that close those bytes are register-asm pins, hardcoded-$N __asm__ injection and regfix-style rewriting, for which the 2026-07-01 SOTN census found ZERO precedent; there is no file:line or commit citation for a construct that alters outgoing-arg-area size, the allocator's ascending hard-reg scan, or save_restore_insns' emission order. Floor re-measured at 13 (target_insns 26, build_insns 25, rules_dropped 9, cheat_asm_stripped 10), confirming candidate.c still reproduces the banked floor on today's tree. Terminal entry appended at docs/grind/decisions.md:4801.
+- result: Gate 1 FAILS - tier=LOW score 0/8, S1 (0 multu/mflo pairs), S2 (no empty-body branch) and S6 (no BIOS jumptable) all negative, S3/S4 skipped as too short (26 < 40 insns); this reproduces s6's measurement exactly. Gate 2 FAILS - the 13-point residual is frame layout (H1), hard-register scan order (F5) and prologue save order / delay slot (F7), and the only constructs that close those bytes are register-asm pins, hardcoded-$N __asm__ injection and regfix-style rewriting, for which the 2026-07-01 SOTN census found ZERO precedent; there is no file:line or commit citation for a construct that alters outgoing-arg-area size, the allocator's ascending hard-reg scan, or save_restore_insns' emission order. Floor re-measured at 13 (target_insns 26, build_insns 25, rules_dropped 9, cheat_asm_stripped 10), confirming candidate.c still reproduces the banked floor on today's tree. Terminal entry appended at docs/grind/decisions.md:4699.
 - verdict: CONFIRMED (both gates measured FAILED; disposition applied)
 
 ## [s13] Endgame-lock gate 1 (canonical-asm authorization) passes for motion_Close, i.e. tools/scan_hand_coded.py reports a STRONG signal tier (S1 multu pacing, S2 empty-body branch, or S6 BIOS jumptable).
@@ -844,7 +844,7 @@ which is precisely the property the owner's 2026-08-24 grant to the twin rested 
 the non-existence proof, not scanner tier", borderline.md 2026-08-24). The twin also scored LOW 0/8.
 
 ### Disposition
-Packet filed at `docs/grind/decisions.md` 2026-08-26 (line 13618), titled
+Packet filed at `docs/grind/decisions.md` 2026-08-26 (line 13480), titled
 `## 2026-08-26 — motion_Close (0x80083804, src/ings2.c) — **OWNER-ESCALATION — ESCALATED WITH DECISION
 PACKET**`. Its single decidable question is whether the 2026-08-24 prebuilt-object canonical routing
 granted to `func_80083794` extends to `motion_Close`. It is a routing/provenance question — it asks for
@@ -854,7 +854,7 @@ class. Session 14 returns `owner-gated` citing that entry.
 ### SESSION 14 RE-RUN NOTE (the first s14 attempt was discarded for a repo-wide encoding bug, not on merit)
 The driver discarded the first session-14 run with a `UnicodeDecodeError` from `grindlib.py:549`:
 `docs/grind/decisions.md` carried five raw cp1252 `0x97` em-dash bytes inside the COMMITTED
-`func_80037A20` entry (`docs/grind/decisions.md:13574`), so the validator could not read the file at
+`func_80037A20` entry (`docs/grind/decisions.md:13436`), so the validator could not read the file at
 all. That would have discarded ANY session on ANY function. This re-run repaired those five bytes to
 proper UTF-8 (leaving the file's legitimate `0xC3 0x97` `x` multiplication sequences intact) and swept
 `docs/grind/` + `memory/grind/` for the same class: 49 ledger/doc files carried invalid UTF-8 and were
@@ -871,12 +871,12 @@ Everything else in this re-run reproduces the discarded run's measurements indep
   `motion_Close` (frame 16, saves 4/8/12).
 * `tools/scan_hand_coded.py --single motion_Close` = tier LOW, score 0/8 (log
   `tmp/grind/motion_Close/s14/scan_hand_coded_s14b.log`).
-The packet is RE-FILED at `docs/grind/decisions.md:13770`
+The packet is RE-FILED at `docs/grind/decisions.md:13632`
 (`## 2026-08-26 - motion_Close ... ESCALATED WITH DECISION PACKET (RE-FILED)`); the earlier span at
-13618 is void per the driver's discard marker and is superseded by it.
+13480 is void per the driver's discard marker and is superseded by it.
 
 ## [s14] The previous session's discard was caused by invalid UTF-8 in docs/grind/decisions.md, not by anything that session produced.
-- mechanism: tools/grinder/grindlib.py:549 opens docs/grind/decisions.md as UTF-8 text; five raw cp1252 0x97 em-dash bytes sat at offsets 1931946/1931981/1932003/1932662/1933239 inside the COMMITTED func_80037A20 entry (decisions.md:13574), so validate_outcome raised UnicodeDecodeError before evaluating any outcome. Any session on any function would have been discarded identically.
+- mechanism: tools/grinder/grindlib.py:549 opens docs/grind/decisions.md as UTF-8 text; five raw cp1252 0x97 em-dash bytes sat at offsets 1931946/1931981/1932003/1932662/1933239 inside the COMMITTED func_80037A20 entry (decisions.md:13436), so validate_outcome raised UnicodeDecodeError before evaluating any outcome. Any session on any function would have been discarded identically.
 - probe: Byte-scan of decisions.md located exactly those five invalid bytes and confirmed they predate the discarded session (they are inside a committed entry about a different function). Repaired each to UTF-8 '—' while leaving the file's legitimate 0xC3 0x97 ('×') sequences untouched; then swept docs/grind/ and memory/grind/ for the same class — 49 further ledger/doc files carried invalid UTF-8 and were repaired, plus the pre-existing double-mangled 'â€"'/'â†''/'âœ"' sequences restored to '—'/'→'/'✓'. Line endings preserved per file (decisions.md keeps its 35 CRLF lines; killed-hypotheses-index.md restored to CRLF).
 - result: docs/grind and memory/grind now decode as UTF-8 with zero mojibake; git diff shows content-only changes.
 - verdict: CONFIRMED

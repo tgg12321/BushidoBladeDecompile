@@ -115,7 +115,7 @@ GTE macro, so it passes the human-writable test.
   genuinely-remaining floor-4 residual (a pure-C RA/strength-reduce diff in the
   `/100` division subtree, outside the GTE block).
 
-Ruling text: `docs/grind/decisions.md:1845` (commit `104fc679`). Sibling
+Ruling text: `docs/grind/decisions.md:1743` (commit `104fc679`). Sibling
 precedent for the island itself: `func_8001A67C`, `func_800274BC`
 (`inline_asm_canonical.txt:266-267`, owner-authorized 2026-06-10).
 
