@@ -1,8 +1,8 @@
 {
  "func": "saTan4GaugeMain",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "recon",
+ "session_count": 3,
+ "current_modality": "manual",
  "floor_history": [
   {
    "session": 1,
@@ -15,6 +15,12 @@
    "floor": 47,
    "modality": "manual",
    "headline": "manual slotO: full draft 620->47 (622/622 insns); open: 4 phantom frame slots, 0x80 loop hoist, tail order; policy: cells R9, i=level R11, mode FAKE"
+  },
+  {
+   "session": 5,
+   "floor": 41,
+   "modality": "manual",
+   "headline": "manual s5: 47->41 (0x80 hoist via r3 chains, tail order via next[k]/k++,row++, bevels as row*-N givs); frame phantoms = 4 orphaned duplicated loop-entry tests (n=2 bound reproduces exact layout, entry tests remain); open: fold entry tests, r3 order"
   }
  ],
  "frontier": [

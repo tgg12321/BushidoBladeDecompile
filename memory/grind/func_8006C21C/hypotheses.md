@@ -47,3 +47,17 @@
    combine, rather than retaining either value through a comparison/call.
 3. `switch (i)` and an unsigned one-value range canonicalize to the same RTL as `i == 5`; they
    do not separate the two movable 0x80 constants. A new CFG family is required.
+
+## Frontier after s5 (2026-09-28) — floor 41 (622/622)
+1. FRAME (largest block): the four phantoms are the orphaned slt temps of the duplicated
+   entry tests of the four 2-count loops after phase 2 (proof: `n = 2` bound, evidence s5).
+   Find the bound/init spelling where CSE1/CSE2 cannot fold the entry test but combine folds
+   it to a no-op branch. Untried: `j < n` with n assigned in the SAME block as the loop but
+   through something CSE cannot see (e.g. a struct/array element, a call-free copy chain);
+   a bound that is a sizeof/element-count of a local array; bounds on the pl loop too.
+   Instrument: tmp/orphans.py on a -dc dump lists orphan pseudos per function.
+2. r3 store order (2 hunks): the chains fix the hoist but store r3 early. Needs a target-order
+   form whose per-arm 0x80 lifetime is <= 2, or two arms that do not match in
+   combine_movables (different set_src rtx, n_times_set > 1, or m1->global).
+3. Policy packaging before landing: `cells` (R9), `i` doubling as level (R11), `mode` (FAKE),
+   `next` (second recs pointer), the 0x80 chains.

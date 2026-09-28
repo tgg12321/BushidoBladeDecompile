@@ -151,3 +151,50 @@ Re-measured on stock cc1: candidate 47 (622/622), t1 39 — unchanged.
 - Recasting the second `if (i == 5)` as a `switch`, and as the equivalent unsigned range test,
   compiled byte-identically. Neither prevents loop.c from matching and hoisting the two 0x80
   constants. The best honest candidate therefore remains 47 / 622 with equal instruction count.
+
+## s5 [manual, cloud Linux container 2026-09-28] — 47 -> 41; frame mechanism identified
+Environment: no WSL/pwsh; cc1 rebuilt per tools/build_oracle_cc1.sh recipe (pinned upstream
+43d1cdb + crash fix, `--host=i386-pc-linux`, all -O0 -g, combine.o -O; simplify_rtx 0x3a11).
+Reproduced the banked candidate at 47/622 before changing anything. No disc/ EXE here, so the
+full-SHA1 oracle was not run; every score is `engine sandbox --disable all`.
+- **0x80 hoist (fixed, -4):** loop.c move_movables moves the matched else-arm constants when
+  `threshold * savings * lifetime >= insn_count`; the row loop has calls, so threshold = 29
+  (not 58), insn_count 259. Base form: life 4+4, savings 2 -> 464 >= 259 -> hoisted.
+  `poly->r3 = poly->r2 = 0x80;` (bar 1) and `poly->r3 = poly->r1 = 0x80;` (bar 2) make each
+  arm's life 2 -> 232 < 259 -> `li v0,0x80` stays in both arms. Both chains are needed (one
+  alone: 47). Residual: the r3 store now follows r2 directly (target: after b2) -- 2 hunks.
+  100-combo sweep of chain direction x position (tmp/sweep_chain.py): best 43 on the old base,
+  i.e. no position fixes the order. Any target-order form with one pseudo per arm has life 4
+  (-> hoisted), so the target's arms are either unmatched or shorter-lived by a mechanism not
+  yet found. Swapping arms (`i != 5`): 61-81.
+- **Tail order (fixed, -2):** sched's tie-break is insn order (rank_for_schedule -> LUID), and
+  loop.c inserts a giv increment right before its biv's increment. `for (...; k++, row++)` plus
+  bar 1 addressed as `next[k]` with `next = rec + 1` (same address as rec[row]) ties the giv to
+  k, giving target order `s2 += 12; k++; lw d4; row++`. `rec[k + 1]` also fixes the order but
+  splits the +12 into the displacement (`addiu s2,s1,-12`, 62).
+- **Bevel accumulators as givs (neutral, 41 = 41):** `(2 + row * -4)`, `(1 + row * -2)`,
+  `(4 + row * -8)` in place of d4/d2/d8 is byte-identical to the explicit accumulators;
+  `2 - row * 4` / `<< 2` / unparenthesised forms give subu (69-80). As givs they are created by
+  loop.c, so they get the highest regnos -> their reload slots land LAST in the frame.
+- **Frame phantoms: mechanism found (not closed).** Confirmed via -dg: an orphan
+  `(use (reg N))` pseudo (combine distribute_notes, REG_DEAD note with no home before a label)
+  sits in global's allocno list with no conflicts, is never allocated, and alter_reg(i, -1)
+  gives it a slot nothing touches. A function-scope `s32 n = 2;` used as the bound of all five
+  2-count loops gives EXACTLY four orphans: the duplicated loop-entry tests (jump.c
+  duplicate_loop_exit_test) of phase-4 inner j, phase-6 inner j, phase-8 j and the row loop.
+  Phase 2's pl loop gets none: its entry test is in the same CSE block as `n = 2`, so CSE1
+  folds it. With the giv bevel form the slots land at 0x60/0x68/0x70/0x78 and the givs at
+  0x80/0x88/0x90 = the target layout exactly (rejected/nbound-frame-exact-entrytests-remain-117.c,
+  vars=128). Blocker: combine turns each entry test into `(eq n 0)` (nonzero_bits proves n >= 0,
+  not n != 0), so `li t0,2; beqz t0` survives and the allocation shifts (score 117).
+  The target needs a bound/init form where CSE cannot fold the entry test but combine folds it
+  completely (3->2 with i1 `j = 0` kept as newi2pat). CSE leaves `(lt j n)` alone because
+  slt_si needs a register first operand.
+- **Ruled out this session (all vars=96):** s16 level locals in phase 2 (outer, inner, both,
+  block-scope) and phase 8 (`lv` then `i = lv`) -- byte-identical; s16/u16/s8/u8 `mode` with
+  1-3 assignments (49-52); zero-holder loop inits `j = mode` / `j = z` (166-169, no orphans:
+  combine does not fold `(lt z 2)` via nonzero_bits here); loop-form variants of the phase-6 j
+  loop (`<= 1`, `!= 2`, `2 > j`, `2u`, casts, while, do-while, `&& j >= 0`): no slot, 41-47;
+  bound types s32/u32/s16/u16/s8/u8 with `< n`, `<= n`, `< n + 1`, `<= n - 1`, `< n - 1`:
+  the `< n`-style forms give the four slots but keep entry tests (117-140); `<= n` forms give
+  no orphans (CSE substitutes j into the second slt operand).
