@@ -63,3 +63,16 @@ W['dwi_rcv'] = sub(V['dw_init'], RCV, '        s32 row, col, vtx;\n\n        do 
 for k, s in W.items():
     open(os.path.join(here, k + '.c'), 'w', newline='\n').write(s)
     print(k)
+
+# --- loop-1 values made multi-block (layer-2 s2 counterexample class): the vtx statement
+# duplicated into the arms of a test on col / on row, so the row and column pseudos are used
+# in several blocks and go to global.c instead of local-alloc.
+VTX = '        s32 vtx = side * 4 + row * 2 + col;\n'
+def arms(src, key):
+    return sub(src, VTX, '        s32 vtx;\n\n        if (%s) { /* FAKE */\n            vtx = side * 4 + row * 2 + col;\n'
+               '        } else {\n            vtx = side * 4 + row * 2 + col;\n        }\n' % key)
+X = {'dup_vtx_col': arms(pv, 'col'), 'dup_vtx_row': arms(pv, 'row'),
+     'dwi_dup_col': arms(V['dw_init'], 'col'), 'dwi_dup_row': arms(V['dw_init'], 'row')}
+for k, s in X.items():
+    open(os.path.join(here, k + '.c'), 'w', newline='\n').write(s)
+    print(k)

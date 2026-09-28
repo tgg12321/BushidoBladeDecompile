@@ -105,3 +105,18 @@ column/s0 argument. The withdrawn claim is recorded in (D)(3).
 - `tools/check_completion_integrity.py`: OK. `dossier`: CONSISTENCY OK.
 - cc1psx calibration: not available in this container (no tools/cc1psx.exe); Ruling 11 does not
   require it.
+
+### Layer-2 #1 (s2, 2026-09-28): FAIL — (D)(3) premise, body not at issue
+Reviewer passed (A), (B), (C), (E), (F), (H) and the (D)(2) citations. It failed (D)(3): "row
+and column are block-local in every per-value spelling" is false. Duplicating the `vtx`
+statement into the arms of a test (duplicated-statement-into-arms family) makes both pseudos
+multi-block, so global.c seats them, and that path was not argued. Response:
+- Probes banked: fam/dup_vtx_col.c 25, dup_vtx_row.c 24, dwi_dup_col.c 8, dwi_dup_row.c 7
+  (mkfam.py); dumps dumps/fam-dup-dumps.txt (fam/dump_dup.sh + fam/gexcerpt.py). In each, row is
+  global allocno 92, preference {v0} only, seated in v0; column allocno 96, no preference, v1.
+- ruling11.md (D)(3) rewritten as a two-allocator contradiction argument keyed to the target:
+  a3 is referenced once (0x80029338, marker loop), so it is free over the row/column lives. That
+  bounds local-alloc's lowest-first scan and global.c `find_reg` pass 0 (call-used regs are in
+  regs_used_so_far; a3 cannot be someone-preferred because call-crossing allocnos lose call-used
+  preferences in pruning, and the only a3 preference goes to `scr`, which conflicts with every
+  loop-1 allocno) at <= 7, and the preference step can only name v0/a0/a1. Never t0/s0.

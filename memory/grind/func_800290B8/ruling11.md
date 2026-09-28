@@ -133,51 +133,100 @@ seat is NOT a necessity ground: a sanctioned do-while(0) wrap reaches it without
   dies at insn 52, freeing v0) and v1 for the column in every dump.
 
 ## (D)(3) Necessity for EVERY per-value spelling
+(Rewritten 2026-09-28 s2 twice: after the marker-index claim was withdrawn, and again after the
+first s2 layer-2 FAIL showed that the "block-local in every spelling" premise is false under
+duplicated-statement-into-arms. The argument below covers both allocators.)
+
 The property the target's allocation depends on, for each variable: **the loop-1 value is the
-same pseudo as a marker-loop value that global.c seats** (row with the marker index in t0,
-column with the triangle index in s0). No per-value spelling has it, because there each loop-1
-value is its own variable:
-- **Its references are fixed and block-local.** The row (column) variable is written once, by
-  `i / 2` (`i & 1`), and read once, by the `vtx` statement; the statement list fixes these as
-  its only references (a second read or write would be an extra statement, (C)(2)). Both sit at
-  the top of loop 1's body before its first branch: the write needs `i`, so it cannot leave the
-  loop, and the `vtx` statement precedes every compare that reads `vtx`. flow therefore records
-  the pseudo as local to that one block whatever the declaration's scope (block scope pv.c: 21;
-  function scope abl_a.c: 22, dwi_abl_a.c: 5), declaration order, or statement order (the two
-  writes commute; either order leaves both in the block).
-- **A block-local pseudo is seated by local-alloc's lowest-first scan** (D)(2), which can return
-  t0 (8) for the row only if v0-a3 (2-7) are all live over its life, and s0 (16) for the column
-  only if every register 2-15 is: in loop 1's first block v0 is freed by the row's own input and
-  v1 is free (every dump), and a per-value spelling cannot add live values there without adding
-  statements. No hard-register suggestion can point it elsewhere (none of its insns touches a
-  hard register).
-- **Type:** the target's `sra t0,v0,1` / `andi s0,a1,1` feed the index arithmetic directly; a
-  narrower type adds extension instructions the target does not have. `register`, `static` or an
-  address-taken variable fail (A) or put the value in memory.
-- **Sanctioned families** (no-new-park-categories § SOTN-accepted; do-while-zero-exception)
-  cannot give the row or column another pseudo's register: a self-assign or a dead store is
-  deleted before flow counts references (f_self*.c, f_dead.c: 21); a do-while(0) wrap adds loop
-  notes but no block boundary, so the value stays block-local (dw_col.c 21, dw_l1.c 50, and with
-  the marker index already in t0: dwi_rc.c 4, dwi_rcv.c 4, dwi_col.c 4, dwi_l1.c 34); a chain
-  extender folds in the same insn (ce_*.c: 21); a pointer alias forces memory (pa.c: 53);
-  duplicating a statement into arms only adds references in other blocks of the SAME variable
-  it duplicates, and the loop-1 values have no arm to duplicate into (their read is the
-  unconditional `vtx` statement); a named intermediate is one more block-local pseudo. The only
-  way to make a loop-1 value share a global pseudo's register is to make it that pseudo, i.e.
-  the reuse. This holds for each variable separately: splitting only tmp_a leaves the row in v0
-  (abl_a.c 22, dwi_abl_a.c 5), splitting only tmp_b leaves the column in v1 (abl_b.c 2,
-  dwi_abl_b.c 2).
-- **Post-allocation passes.** jump2 (cross-jump, no-op move deletion), sched2 and reorg never
-  change a pseudo's hard-register assignment. reload changes one only by spilling a hard
-  register it needs and re-seating the pseudos that lived in it (reload1.c `spill_hard_reg`,
-  then `retry_global_alloc`); every dump spills reg 8 or 9 only ("Spilling reg 8/9." in the
-  .greg excerpts), never v0/v1, and a re-seat goes through global.c's `find_reg`, not to a
-  register another pseudo holds. So they cannot move a v0/v1 row or column into t0/s0.
-- **What does NOT carry necessity (withdrawn 2026-09-28 s2):** s1 argued the marker index's
-  ref count is at most 8 in every per-value spelling. That is false once sanctioned families
-  are admitted: the single-level init wrap fam/dw_init.c raises it to 9 and seats `mark` in t0
-  (score 4, the residual is exactly the row/column operands). The reuse of tmp_a is therefore
-  necessary for the corner row's t0 seat, not for the marker index's.
+same pseudo as a marker-loop value that global.c seats in a register above a3** (row with the
+marker index in t0 = 8, column with the triangle index in s0 = 16). In a per-value spelling each
+loop-1 value is its own variable, and such a pseudo can never be seated in t0 or s0 by either
+allocator. The argument is by contradiction: suppose some per-value spelling compiled to the
+target's bytes, so its row pseudo sits in t0 (its write is `sra t0,v0,0x1` 0x80029158) or its
+column pseudo in s0 (`andi s0,a1,0x1` 0x8002915C).
+
+1. **The row and column pseudos cross no calls.** Their references are the write (`i / 2`,
+   `i & 1`) and the reads in the `vtx` computation, all inside loop 1, which contains no call.
+   A sanctioned family can only add copies of these statements in loop 1 (duplication into
+   arms), a wrap (do-while(0)), or a self-assign or dead store (deleted before flow counts
+   references). Making the value live past loop 1 would need a read after it (an added
+   statement, (C)(2)), and it would then cross `jal func_8004678C` (0x80029238). So
+   `allocno_calls_crossed == 0` / `qty_n_calls_crossed == 0`.
+2. **Which allocator sees it depends on the spelling, and the proof covers both.**
+   local-alloc takes a pseudo only when `reg_basic_block >= 0 && reg_n_deaths == 1`
+   (local-alloc.c:470-476). That holds for the plain per-value body (pv.c, dw_init.c: ";;
+   Register 92 in 2.", ";; Register 96 in 3."). A spelling that puts the value in several
+   blocks or gives it several deaths (fam/dup_vtx_*.c, fam/dwi_dup_*.c: the `vtx` statement
+   duplicated into the arms of a test, 'dies in 2 places', no 'in block') sends it to global.c.
+3. **Register a3 is free over both lives in the target.** a3 is referenced once in the whole
+   function, the write `addiu a3,s3,0x100` at 0x80029338 in the marker loop (func_8002E6B0's
+   fourth argument). So no value is live in a3 over the row's or column's life in any output
+   equal to the target, and neither pseudo has a hard conflict with a3. (v1 is also free: its
+   next reference after the prologue is the write `lw v1,0(v0)` 0x8002917C.)
+4. **local-alloc cannot return t0 or s0.** `find_free_reg` (local-alloc.c:2073-2185) first tries
+   the quantity's copy/arithmetic suggestions. `combine_regs` sets these only from an insn that
+   ties the pseudo to a hard register (local-alloc.c:1805-1835). In the target the row's other
+   operands are v0 (the `sra` input, the `sll` output), and the column's are a1, v0 and a0. So
+   a suggestion can only name 2, 4 or 5. It then scans from hard reg 0 upward (MIPS defines no
+   `REG_ALLOC_ORDER`; config/mips has no `REG_ALLOC_ORDER`, local-alloc.c:2158-2179) for the
+   first register free over the quantity's life. a3 (7) is free (3.), so the result is at most
+   7: never t0 (8), never s0 (16).
+5. **global.c cannot return t0 or s0.** `find_reg` (global.c:904-1060), for an allocno that
+   crosses no calls:
+   - `used1` = `fixed_reg_set` + the class complement + `hard_reg_conflicts`. The call-used
+     registers are not excluded (global.c:921-926).
+   - **Pass 0** also excludes registers not in `regs_used_so_far` and those in
+     `regs_someone_prefers` (global.c:951-953). `regs_used_so_far` starts with every
+     call-used register (global.c:350-356; MIPS has no `LEAF_REGISTERS`, and
+     `CALL_USED_REGISTERS` in mips.h:1205 marks 1-15). The scan is lowest-first
+     (global.c:955-982).
+   - `regs_someone_prefers` (prune_preferences, global.c:836-880) is the union of the pruned
+     full preferences of lower-priority allocnos that conflict with this one. Pruning removes
+     every call-used register (1-15) from the preferences of an allocno that crosses calls
+     (global.c:851-862). So only a conflicting allocno that crosses no calls can make a3 "someone
+     prefers". Such an allocno is live over the row's or column's life and crosses no calls, so
+     it cannot live into the marker loop (1.: `jal func_8004678C` lies between). Its
+     preferences come from `set_preference` on its own sets (global.c:1348, 1535-1600) and
+     from `expand_preferences` over REG_DEAD pairs (global.c:781-818, run before pruning,
+     global.c:523/548). `set_preference` gives an a3 preference only at the one insn that
+     names a3, the argument setup at 0x80029338 (`(set a3 (plus scr 0x100))`: the preference
+     goes to `scr`, the first operand, global.c:1545-1546). `expand_preferences` passes
+     preferences only between NON-conflicting allocnos (global.c:797-802). `scr` is set in the
+     prologue and read in the marker loop, so it is live across all of loop 1 and conflicts
+     with every allocno that lives there. So no loop-1 allocno can receive an a3 preference
+     from it, directly or through a chain. So a3 is never in `regs_someone_prefers` for the
+     row or column, and pass 0 returns a register of at most 7 (a3 is eligible: not a
+     conflict, not someone-preferred, in `regs_used_so_far`). Pass 1 is never reached.
+   - The preference step (global.c:1036-1060+) can only move `best_reg` to one of the allocno's
+     own preferred registers. Those come from insns that tie it to a hard register or to a
+     local-alloc-seated pseudo. In the target those are v0 for the row and a1/v0/a0 for the
+     column, so the step can only name 2, 4 or 5.
+   So global.c seats the row and the column at or below a3, never in t0 or s0. The dumps agree:
+   in every multi-block probe the row is global allocno 92 with ";; 92 preferences: 2", seated
+   in v0, and the column is allocno 96 with no preferences, seated in v1. No allocno in the
+   function has any other surviving preference (dumps/fam-dup-dumps.txt, the full
+   `;; N conflicts/preferences` list of dup_vtx_col).
+6. **Post-allocation passes.** jump2 (cross-jump, no-op move deletion), sched2 and reorg never
+   change a pseudo's hard register. reload changes one only by spilling a hard register it
+   needs and re-seating the pseudos from that register through global.c's `find_reg`
+   (reload1.c:3445-3497 `spill_hard_reg` -> `retry_global_alloc`). Such a re-seat is bound by
+   the same scan as 5., and every dump spills only reg 8 or 9, never the row's or column's
+   register.
+7. **Conclusion, for each variable separately.** The contradiction holds for the row alone
+   (tmp_a split, tmp_b shared: abl_a.c 22, dwi_abl_a.c 5) and for the column alone (tmp_b
+   split: abl_b.c 2, dwi_abl_b.c 2). It holds whatever the declaration's scope or order, the
+   type (a narrower type adds extension instructions the target lacks; `register`, `static` or
+   `&` fail (A)), the statement order, the loop spelling or the sanctioned family used. The
+   only way to put a loop-1 value in t0/s0 is to make it the call-crossing marker-loop pseudo
+   itself, which is the reuse.
+
+**Withdrawn claims (kept for the record).** (i) s1: "the marker index has at most 8 weighted
+refs in every per-value spelling". False: the single-level init wrap fam/dw_init.c raises it to 9
+and seats `mark` in t0 (score 4). The marker index's t0 seat is not a necessity ground.
+(ii) s2 first version: "the row/column are block-local in every per-value spelling / have no arm
+to duplicate into". False: duplicating the `vtx` statement into the arms of a test makes them
+multi-block (fam/dup_vtx_*.c, fam/dwi_dup_*.c; layer-2 s2 counterexample). Point 5 above
+covers that case.
 
 ## (D)(4) Measured alternatives (`sandbox --disable all --candidate`)
 r11/*.c from `python3 memory/grind/func_800290B8/r11/mkall.py memory/grind/func_800290B8/candidate.c memory/grind/func_800290B8/r11`;
@@ -213,6 +262,10 @@ family each; `/* FAKE */` marks the construct). Re-measured 2026-09-28 s2 on HEA
 | fam/ce_arg.c (pv + `mark + 1 - 1` argument) | 21 | 229 |
 | fam/dup_step.c (pv, step duplicated into every continue arm) | 112 | 227 |
 | fam/pa.c (pv + pointer alias `*pmark`) | 53 | 233 |
+| fam/dup_vtx_col.c (pv, `vtx` statement duplicated into the arms of `if (col)`: row/column multi-block -> global.c) | 25 | 233 |
+| fam/dup_vtx_row.c (same, `if (row)`) | 24 | 232 |
+| fam/dwi_dup_col.c (dw_init + `vtx` into the arms of `if (col)`) | 8 | 235 |
+| fam/dwi_dup_row.c (dw_init + `vtx` into the arms of `if (row)`) | 7 | 234 |
 
 **Permuter (decomp-permuter, from the per-value body, `--best-only`).** Minimal TU (the file's
 prelude + the body) checked faithful: the reuse candidate scores 0 there (tmp/perm290_chk2,
