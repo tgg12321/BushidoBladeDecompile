@@ -30319,3 +30319,33 @@ spelling not set aside under Q22/Q23. Where any governed instruction is exempt, 
 cc1psx sentences of (1) are read as this agreement test. The ledger banks the script, the alignment,
 the governed instructions with their mechanism, and the exempt instructions with target addresses.
 func_8001CE60 is judged fresh at landing.
+
+## 2026-09-27 — OWNER RULING — proof standard for Q21 (1): mechanism + search (`.claude/rules/no-new-park-categories.md`)
+
+Thirteenth batch (2026-09-27; verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 13, Q25).
+Context: the func_8001CE60 landing's layer-2 (after Q22-Q24) FAILed Q21 (1) because condition-structure
+respellings of func_800340A0 (`&&`/`||` groupings; banked as
+memory/grind/func_8001CE60/probes/calib_800340A0/landing_tu_cond/; R1/R1w/R2/R2w fix the score-byte
+addressing, R7/R7n do not) under one shared declaration all miss the full target (both compilers agree), and the ledger had no universal
+argument for that kind of spelling. Owner (Trenton) chose, verbatim: "Mechanism + search (Recommended)" — "Accept when: the core compiler mechanism is shown with dumps + cc1psx, every rewrite a reviewer proposes is measured and misses the original, and no reviewer can produce one that matches. A new kind of rewrite that still misses gets banked as more evidence, not a FAIL. Only an actual matching rewrite defeats the per-file form."
+
+**Ruling (summary; the rule text in the Q21 exception's condition (1) governs; the author's
+narrowing).** Supersedes (1)'s universal "EVERY spelling" / "argument covering only the spellings
+measured fails" requirements. (1)'s proof burden is met when (a) the core mechanism is named by pass and
+source location from banked dumps, with Q24 cc1psx corroboration; (b) every single-declaration spelling
+proposed by the author or any reviewer is banked and measured under both compilers, the ledger records
+whether each counting one hits or misses its file's full target under the build's cc1 (every covered
+function byte-identical), and each passes the Q24 agreement test, the hit/miss defeat decision being left to (c);
+(c) no single declaration is DEFEATING — defeating means that for EVERY covered
+file some counting spelling of that file's functions under it (from anyone) hits that file's full
+target, files judged separately in their own TUs. A reviewer's new counting spelling that does not make its
+declaration defeating, banked and passing Q24, is evidence, not a FAIL ground (an unbanked proposal is a
+banking step before landing); only a defeating declaration defeats (1). The "which file's property it
+lacks" sentence is replaced by: the ledger records hit/miss for each banked counting spelling under each
+declaration and names a covered file for which none hits (with at least one banked counting spelling
+of each covered file under each declaration considered), and condition (4)'s annotation says no single declaration compiles both files with a counting spelling
+(Q22/Q23 set-asides excluded). A reviewer's proposal is banked and measured before a fresh layer-2 PASSes
+a landing. With Q25 the rule text
+also reads (1)'s whole-declaration cc1psx sentences as the Q24 agreement test UNCONDITIONALLY (on all
+governed instructions when none is exempt), not only where an instruction is exempt as the Q24 entry
+above records. func_8001CE60 is judged fresh at landing.

@@ -1,0 +1,22 @@
+# Condition-structure respellings of func_800340A0 (layer-2 probes tmp/l2rev_ce60/R*.c) under one shared u8[2]
+# declaration, landing TU, Q24 procedure (q24_run.py). A340_0.* = the landing reference (copy of ../landing_tu/).
+== func_800340A0 reference form: build cc1 (== target) vs cc1psx
+part 1 governed (8): ['lbu REG,D_800A3898', 'lbu REG,D_800A3899', 'lbu REG,D_800A38AA', 'lbu REG,D_800A38AB', 'sb REG,D_800A3898', 'sb REG,D_800A3899', 'lbu REG,D_800A3898', 'lbu REG,D_800A3899']
+part 1 EXEMPT (absent from cc1psx reference output): none
+   equal    target[0:34] cc1psx[0:34]
+   insert   target[34:34] cc1psx[34:36]
+   equal    target[34:35] cc1psx[36:37]
+   delete   target[35:36] cc1psx[37:37]
+   equal    target[36:51] cc1psx[37:52]
+part 2 EXEMPT target-side: [(76, 'j LBL'), (77, 'li REG,0x00000001')]
+part 2 EXEMPT cc1psx-side: [(74, 'li REG,0x00000001'), (75, 'sb REG,D_800A377C(REG)'), (76, 'j LBL')]
+
+== agreement (Q22/Q23 set-aside spellings listed but excluded from the test)
+A340_l2_R1                     cc1 miss (part-1 forms short: 0, part-2 differing: 11) | cc1psx miss (part-1 forms short: 0, part-2 differing: 11) | AGREE
+A340_l2_R1w                    cc1 miss (part-1 forms short: 0, part-2 differing: 11) | cc1psx miss (part-1 forms short: 0, part-2 differing: 11) | AGREE
+A340_l2_R2                     cc1 miss (part-1 forms short: 0, part-2 differing: 7) | cc1psx miss (part-1 forms short: 0, part-2 differing: 7) | AGREE
+A340_l2_R2w                    cc1 miss (part-1 forms short: 0, part-2 differing: 7) | cc1psx miss (part-1 forms short: 0, part-2 differing: 7) | AGREE
+A340_l2_R7                     cc1 miss (part-1 forms short: 2, part-2 differing: 7) | cc1psx miss (part-1 forms short: 2, part-2 differing: 7) | AGREE
+A340_l2_R7n                    cc1 miss (part-1 forms short: 2, part-2 differing: 7) | cc1psx miss (part-1 forms short: 2, part-2 differing: 7) | AGREE
+
+DISAGREE rows: 0

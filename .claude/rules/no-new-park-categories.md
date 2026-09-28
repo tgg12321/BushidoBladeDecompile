@@ -629,7 +629,59 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        every construct is admissible and that needs no FAKE annotation
        counts, and if it compiles both files, (1) is not met. Record:
        docs/grind/decisions.md 2026-09-27 OWNER RULING — per-file
-       declarations win over FAKE-construct spellings. The original PsyQ cc1psx (`tools/cc1psx_wrapper.sh`,
+       declarations win over FAKE-construct spellings. **Owner ruling
+       2026-09-27, thirteenth batch, Q25 ("Mechanism + search"):** the
+       owner chose "Mechanism + search (Recommended)", whose text is:
+       "Accept when: the core compiler mechanism is shown with dumps +
+       cc1psx, every rewrite a reviewer proposes is measured and misses the
+       original, and no reviewer can produce one that matches. A new kind
+       of rewrite that still misses gets banked as more evidence, not a
+       FAIL. Only an actual matching rewrite defeats the per-file form."
+       (Question and other options verbatim:
+       docs/grind/owner-rulings-2026-09-26.md, batch 13.) The author's
+       narrowing: this SUPERSEDES the universal requirements above that
+       the dumps show EVERY spelling misses and that "an argument that
+       covers only the spellings measured fails (1)", and it replaces the
+       sentence "The ledger then shows, for every admissible single
+       declaration, which file's property it lacks ... A declaration for
+       which this is not shown defeats (1)" with: for every admissible
+       single declaration, the ledger records, for each banked counting
+       spelling under it, whether it hits or misses its file's full
+       target, and names a covered file for which no counting spelling
+       under that declaration hits. Minimum measurement: for each single
+       declaration considered (at least each file's own form used as the
+       shared one, plus every aggregate the evidence admits), the ledger
+       banks at least one counting spelling of each covered file under it;
+       without that, it may not name a file "for which no counting
+       spelling hits". (1)'s proof
+       burden is met when ALL of: (a) the core compiler mechanism by which each
+       file's target depends on its declaration is named, by pass and
+       source location in `tools/gcc-2.7.2`, from banked dumps, with the
+       cc1psx corroboration below (Q24); (b) every single-declaration
+       spelling proposed by the author or by any reviewer is banked in the
+       ledger and measured under the build's cc1 and cc1psx, and for each
+       one that counts (not relying on a refused or banned construct, not
+       set aside under Q23) the ledger records whether it hits or misses
+       its file's full target under the build's cc1 ("full target": the
+       instructions of every function of that file the proof covers are
+       byte-identical to the target's), and it passes the Q24 agreement
+       test; the hit/miss defeat decision is left to (c); (c) no single
+       declaration is DEFEATING. A single declaration is defeating when,
+       for EVERY file the proof covers, some counting spelling of that
+       file's functions under that declaration (from anyone, banked or
+       proposed) hits that file's full target under the build's cc1; the
+       files' spellings are judged separately, each in its own TU. A
+       reviewer's new counting spelling that does not make its declaration
+       defeating, once banked and passing the Q24 agreement test, is
+       evidence and not a FAIL ground under (1); a reviewer proposal not
+       yet banked is a banking step before landing, not a (1) failure;
+       only a defeating declaration defeats (1). The annotation
+       required by (4) states only what the banked measurements show
+       (e.g. "no single declaration compiles both files with a counting
+       spelling": for each banked shared declaration, a covered file whose
+       counting spellings all miss; spellings set aside under Q22/Q23 are
+       excluded), not an unproven universal. A reviewer's proposal is
+       banked and measured before a fresh layer-2 PASSes the landing. The original PsyQ cc1psx (`tools/cc1psx_wrapper.sh`,
        calibration use only, never a build path), run on the same
        preprocessed TUs with the build's cc1 flags, gives the same result
        for every single declaration banked under (1): at least one of the
@@ -698,9 +750,10 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        the script, the alignment, the governed instructions (by target
        address, with the (1) mechanism each belongs to; "every instruction
        of the function" is allowed when stated), and the list of exempt
-       instructions with their target addresses. Where any governed instruction is
-       exempt, the two cc1psx sentences above are read as this agreement
-       test on the non-exempt governed instructions. "Target shape" means the
+       instructions with their target addresses. The two cc1psx sentences
+       above are always read as this agreement test on the non-exempt
+       governed instructions (all governed instructions when none is
+       exempt); together with Q25's (c) it is the only defeat test. "Target shape" means the
        instructions the (1) mechanism governs match the target's in opcode
        and in every operand the mechanism decides (for an addressing
        mechanism: an absolute symbol versus a base register, how that base
@@ -743,8 +796,11 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
        no other file declares them.
     4. **Annotated.** Each declaration carries an inline comment that names
        the other file's declaration (file and line), states that the
-       mismatch is kept because no single declaration compiles both files,
-       and cites the ledger evidence and this ruling.
+       mismatch is kept because no single declaration compiles both files
+       with a counting spelling (for each banked shared declaration the
+       ledger names a covered file whose counting spellings all miss;
+       spellings set aside under Q22/Q23 are excluded; owner ruling Q25 in
+       (1)), and cites the ledger evidence and this ruling.
     5. **Bytes.** `verify-oracle --rebuild` (full-build SHA1 == oracle) and
        sandbox 0 for the functions landing with it.
     6. **Review.** Admission needs a fresh layer-2 `cheat-reviewer` PASS
