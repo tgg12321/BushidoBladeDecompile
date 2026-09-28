@@ -38,3 +38,12 @@
    showing no ordinary form (do-while(0) x80 placements failed; the others are untried).
 3. GAP 3 row++/k++ tail order (2 insns): 360 statement orders fail; revisit after gap 1,
    because frame and allocation changes can shift sched.
+
+## Frontier after s4 (2026-09-27)
+1. The four cursor advances are not the missing-slot source: typed pointer arithmetic is
+   byte-identical. Typed header/cell access is also excluded (score 59, vars unchanged).
+2. A live `s16 level` comparison produces exactly two reload slots but necessarily emits five
+   extra instructions. Look for a source-natural pair of HImode values eliminated later than
+   combine, rather than retaining either value through a comparison/call.
+3. `switch (i)` and an unsigned one-value range canonicalize to the same RTL as `i == 5`; they
+   do not separate the two movable 0x80 constants. A new CFG family is required.

@@ -132,3 +132,22 @@ Re-measured on stock cc1: candidate 47 (622/622), t1 39 — unchanged.
   (0x80), so R11 (C)(3) plus the Q20 per-branch clause still refuses the twice-written holder.
   It is not yet proven to be the only closing form (80 do-while(0) placements fail; other
   families remain untried), so no policy question has been filed.
+
+## s4 [Codex manual lane 2026-09-27] — source-natural follow-ups, floor remains 47
+- A single-use `s16 zero` passed to the first `func_8006E480` call compiled byte-identically;
+  it did not allocate either of the missing reload slots. Four typed primitive-cursor advances
+  (`arg0[7] = (s32)((u8 *)arg0[7] + 0xC)`) were also byte-identical.
+- Replacing the four header-plus-12 intermediates with typed `Sheet *` / `Cell *` expressions
+  kept vars=96 and regressed 47 -> 59: each store used the header result register instead of
+  the target's shared `a1` pseudo. Byte-offset spellings for the draw-mode cursor regressed to
+  51 / 624 instructions. Both were reverted.
+- A once-initialized `s16 player_count = 2` used as the first player-loop bound regressed to
+  65. A reusable `s16 level` assigned at both phase-2 loads and copied into `i` in phase 8
+  compiled byte-identically to the 47 baseline when only `i` was consumed.
+- Consuming that `s16 level` in the first bar comparison confirmed the earlier orphan mechanism:
+  frame vars grew from 96 to 112 (two 8-byte reload slots), but the build grew to 627 instructions
+  and score 57 due an `lhu`/stack store/reload/sign-extension sequence absent from the target.
+  It is not a viable half-solution and was reverted.
+- Recasting the second `if (i == 5)` as a `switch`, and as the equivalent unsigned range test,
+  compiled byte-identically. Neither prevents loop.c from matching and hoisting the two 0x80
+  constants. The best honest candidate therefore remains 47 / 622 with equal instruction count.
