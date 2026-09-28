@@ -333,17 +333,6 @@
       "rotation_count": 1
     },
     {
-      "func": "func_800290B8",
-      "file": "code6cac_b",
-      "distance": 231,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "rotation": "Recon shows 28-branch nested collision/audio search with substantial scratchpad state; selecting the next C candidate with only five branches for a clean completion.",
-      "rotated_at": "2026-09-21T00:36:21+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "func_80048FFC",
       "file": "text1b",
       "distance": 232,
@@ -411,11 +400,11 @@
     }
   ],
   "counts": {
-    "total": 34,
+    "total": 33,
     "active": 18,
     "by_status": {
       "active": 18,
-      "rotated": 16
+      "rotated": 15
     },
     "by_verdict": {
       "C": 14,
