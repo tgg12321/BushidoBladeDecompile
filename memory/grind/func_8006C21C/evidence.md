@@ -336,3 +336,17 @@ the two early r3 stores; 14 operand-only = frame offsets). Receipts in probes/s8
 - **Dead ends:** Kengo's `saTan4GaugeMain` (src/sato/sa_tan4.c, 0x1504C0) is an unrelated float
   state machine; Kengo gives nothing for this function. Caller-save save areas cannot explain the
   32 bytes (the target has one spill reg, t0, and no saves). -fno-caller-saves irrelevant.
+- **s8 addendum — sandbox 0/622 reached with two policy-blocked levers combined** (probes/s8/
+  POLICY-BLOCKED-*.c, sandbox --disable all = 0, 0 scored hunks; full-build oracle NOT run):
+  (1) `s32 col` written 0x80 at the top of each else arm and read only in that arm's r2/r3 (or r1/r3)
+  stores — keeps the constants unmatched in loop.c, natural store order; the `col` form (also 0 in
+  the if-arms) and the `dim` form (else arms only) both score 0 when combined with (2).
+  (2) four `s16 = 0` locals (xpos, ypos, semi, dtd) read at the phase-1/2-head/phase-4-head
+  descriptor stores and as phase-3 SetDrawMode's dtd argument; in-loop sites keep literal 0.
+  Alone: (1) = 37 (frame only), (2) = 40. SOTN precedent (tmp/sotn-decomp aa53500, PSX-only):
+  per-arm different constants read only in-arm: src/st/lib/e_shop.c:3514-3557 `posX` (1 hit);
+  frame-reservation locals: ~40 `stackpad[N]`/`pad[N]` arrays + `volatile u32 pad; // !FAKE`
+  (st/sel/2C048.c:563), always declared first — a first-declared pad cannot reach this target's
+  untouched region (0x60-0x7F sits after the arg0/j/recs spill slots). Zero-valued s16 holders:
+  no SOTN precedent (SOTN's `s16 three = 3; s16 one = 1;` are non-zero, arithmetic operands).
+  Both levers need owner rulings before any landing; i/cells/mode admissions also still open.
