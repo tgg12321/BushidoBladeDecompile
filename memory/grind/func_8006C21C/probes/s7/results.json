@@ -1,0 +1,277 @@
+[
+  {
+    "name": "col_s16",
+    "score": 37,
+    "insns": 622
+  },
+  {
+    "name": "col_u16",
+    "score": 37,
+    "insns": 622
+  },
+  {
+    "name": "col_u8",
+    "score": 37,
+    "insns": 622
+  },
+  {
+    "name": "pulse_s16",
+    "score": 37,
+    "insns": 622
+  },
+  {
+    "name": "pulse_u16",
+    "score": 37,
+    "insns": 622
+  },
+  {
+    "name": "pulse_u8",
+    "score": 38,
+    "insns": 622
+  },
+  {
+    "name": "x_s16",
+    "score": 50,
+    "insns": 622
+  },
+  {
+    "name": "x_u16",
+    "score": 50,
+    "insns": 622
+  },
+  {
+    "name": "x_u8",
+    "score": 58,
+    "insns": 626
+  },
+  {
+    "name": "row_s16",
+    "score": 93,
+    "insns": 617
+  },
+  {
+    "name": "row_u16",
+    "score": 137,
+    "insns": 599
+  },
+  {
+    "name": "row_u8",
+    "score": 137,
+    "insns": 599
+  },
+  {
+    "name": "j_s16",
+    "score": 99,
+    "insns": 627
+  },
+  {
+    "name": "j_u16",
+    "score": 77,
+    "insns": 623
+  },
+  {
+    "name": "j_u8",
+    "score": 77,
+    "insns": 623
+  },
+  {
+    "name": "pl_s16",
+    "score": 75,
+    "insns": 635
+  },
+  {
+    "name": "pl_u16",
+    "score": 73,
+    "insns": 631
+  },
+  {
+    "name": "pl_u8",
+    "score": 73,
+    "insns": 631
+  },
+  {
+    "name": "coord_x_s16_3",
+    "score": 133,
+    "insns": 610
+  },
+  {
+    "name": "coord_x_s16_12",
+    "score": 97,
+    "insns": 616
+  },
+  {
+    "name": "coord_x_s16_15",
+    "score": 153,
+    "insns": 604
+  },
+  {
+    "name": "coord_x_s32_3",
+    "score": 133,
+    "insns": 610
+  },
+  {
+    "name": "coord_x_s32_12",
+    "score": 97,
+    "insns": 616
+  },
+  {
+    "name": "coord_x_s32_15",
+    "score": 153,
+    "insns": 604
+  },
+  {
+    "name": "coord_y_s16_3",
+    "score": 173,
+    "insns": 573
+  },
+  {
+    "name": "coord_y_s16_12",
+    "score": 61,
+    "insns": 614
+  },
+  {
+    "name": "coord_y_s16_15",
+    "score": 197,
+    "insns": 565
+  },
+  {
+    "name": "coord_y_s32_3",
+    "score": 173,
+    "insns": 573
+  },
+  {
+    "name": "coord_y_s32_12",
+    "score": 61,
+    "insns": 614
+  },
+  {
+    "name": "coord_y_s32_15",
+    "score": 197,
+    "insns": 565
+  },
+  {
+    "name": "coord_w_s16_3",
+    "score": 47,
+    "insns": 622
+  },
+  {
+    "name": "coord_w_s16_12",
+    "score": 188,
+    "insns": 585
+  },
+  {
+    "name": "coord_w_s16_15",
+    "score": 194,
+    "insns": 585
+  },
+  {
+    "name": "coord_w_s32_3",
+    "score": 47,
+    "insns": 622
+  },
+  {
+    "name": "coord_w_s32_12",
+    "score": 188,
+    "insns": 585
+  },
+  {
+    "name": "coord_w_s32_15",
+    "score": 194,
+    "insns": 585
+  },
+  {
+    "name": "col_literals",
+    "score": 45,
+    "insns": 622
+  },
+  {
+    "name": "col_runtime_row",
+    "score": 186,
+    "insns": 629
+  },
+  {
+    "name": "col_runtime_player",
+    "score": 59,
+    "insns": 632
+  },
+  {
+    "name": "cluster_next_k",
+    "score": 45,
+    "insns": 622
+  },
+  {
+    "name": "cells_direct",
+    "score": 57,
+    "insns": 622
+  },
+  {
+    "name": "level_separate",
+    "score": 112,
+    "insns": 605
+  },
+  {
+    "name": "mode_literal",
+    "score": 48,
+    "insns": 622
+  },
+  {
+    "name": "rec_separate",
+    "score": 45,
+    "insns": 622
+  },
+  {
+    "name": "local_x_s16",
+    "score": 53,
+    "insns": 622
+  },
+  {
+    "name": "local_x_u16",
+    "score": 53,
+    "insns": 622
+  },
+  {
+    "name": "typed_cells",
+    "score": 45,
+    "insns": 622
+  },
+  {
+    "name": "typed_cells_split_rec",
+    "score": 45,
+    "insns": 622
+  },
+  {
+    "name": "direct_cells_mode",
+    "score": 60,
+    "insns": 622
+  },
+  {
+    "name": "all_clusters_removed",
+    "score": 123,
+    "insns": 605
+  },
+  {
+    "name": "clean_level_s16",
+    "score": 123,
+    "insns": 605
+  },
+  {
+    "name": "clean_level_u16",
+    "score": 124,
+    "insns": 605
+  },
+  {
+    "name": "clean_chains_1",
+    "score": 45,
+    "insns": 622
+  },
+  {
+    "name": "clean_chains_2",
+    "score": 45,
+    "insns": 622
+  },
+  {
+    "name": "clean_chains_3",
+    "score": 41,
+    "insns": 622
+  }
+]

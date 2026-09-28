@@ -1,16 +1,6 @@
-/* func_8006C21C checkpoint s7 (Codex, 2026-09-28): score 41 / 622 insns.
- * INCOMPLETE; not approved to land. See evidence.md s7 and review-s7.md.
- * Removed rejected s6 col carrier. Chained corner colors recover the s5 score.
- * Removed the entire next/k cluster and split the tile-record pointer, without
- * increasing the score. Header/cell addresses now use truthful byte pointers;
- * descriptor color bytes are explicit. Four frame slots and two store-order
- * hunks remain. The i reuse, cells reuse, and mode holder still need their full
- * respective admission evidence; this checkpoint does not claim approval.
- * Trailing macro remains SANDBOX ONLY: fix the TU prototype at any landing.
- */
 typedef struct {
-    u8 *header;
-    u8 *table;
+    s32 *header;
+    s32 table;
     s32 out;
     s32 pad0C;
     s32 semi;
@@ -20,7 +10,6 @@ typedef struct {
     s32 pad20;
     s32 pad24;
     u8 has_color;
-    u8 col_r, col_g, col_b;
 } Env_8006C21C;
 
 typedef struct {
@@ -46,7 +35,6 @@ void func_8006C21C(s32 *arg0) {
     s32 *table;
     Rec_8006C21C *recs;
     Rec_8006C21C *rec;
-    Rec_8006C21C *tile_rec;
     Tile *tile;
     PolyG4_8006C21C *poly;
     s32 mode;
@@ -55,16 +43,16 @@ void func_8006C21C(s32 *arg0) {
     s32 x;
     s32 row;
     s32 pulse;
-    u8 *cells;
+    s32 cells;
 
     s.ot_idx = 10;
     s.has_color = 0;
     table = *(s32 **)(arg0[1] + 0x30);
     s.y = 0;
     s.x = 0;
-    s.header = (u8 *)table[0];
+    s.header = (s32 *)table[0];
     s.semi = 0;
-    cells = s.header + 0xC;
+    cells = (s32)s.header + 0xC;
     s.table = cells;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
@@ -83,9 +71,9 @@ void func_8006C21C(s32 *arg0) {
             for (i = 0; i < 4; i++) {
                 if (*(u8 *)(D_800A3524 + *(s16 *)(D_800A34FC + pl * 2 + 0x28) + 0x17) &
                     ((1 << i) << (pl * 4))) {
-                    s.header = (u8 *)table[i + 13];
+                    s.header = (s32 *)table[i + 13];
                     s.semi = 0;
-                    cells = s.header + 0xC;
+                    cells = (s32)s.header + 0xC;
                     s.table = cells;
                     s.out = arg0[5];
                     arg0[5] = func_8007352C((s32)&s);
@@ -93,7 +81,7 @@ void func_8006C21C(s32 *arg0) {
             }
         }
     }
-    s.header = (u8 *)table[13];
+    s.header = (s32 *)table[13];
     SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), 0);
     AddPrim(g_gpu_ot_ptr + 0x24, arg0[7]);
     arg0[7] += 0xC;
@@ -103,19 +91,19 @@ void func_8006C21C(s32 *arg0) {
     s.ot_idx = 10;
     s.has_color = 0;
     table = *(s32 **)(arg0[1] + 0x30);
-    s.header = (u8 *)table[1];
+    s.header = (s32 *)table[1];
     s.semi = 0;
-    cells = s.header + 0xC;
+    cells = (s32)s.header + 0xC;
     s.table = cells;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     for (i = 0; i < 6; i++) {
-        s.header = (u8 *)table[i + 2];
+        s.header = (s32 *)table[i + 2];
         s.ot_idx = 10;
         s.has_color = 0;
         s.semi = 0;
         s.y = 0;
-        cells = s.header + 0xC;
+        cells = (s32)s.header + 0xC;
         s.table = cells;
         for (j = 0; j < 2; j++) {
             s.x = j ? 280 : 0;
@@ -124,7 +112,7 @@ void func_8006C21C(s32 *arg0) {
         }
     }
     table = *(s32 **)(arg0[1] + 0x30);
-    s.header = (u8 *)table[1];
+    s.header = (s32 *)table[1];
     SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
@@ -132,16 +120,16 @@ void func_8006C21C(s32 *arg0) {
     recs = *(Rec_8006C21C **)(*(s32 *)(D_800A34FC + 0x24) + 0x44);
     tile = (Tile *)arg0[6];
     for (i = 0; i < 11; i++) {
-        tile_rec = &recs[i];
+        rec = &recs[i];
         for (j = 0; j < 2; j++) {
             SetTile(tile);
-            tile->r0 = tile_rec->r;
-            tile->g0 = tile_rec->g;
-            tile->b0 = tile_rec->b;
-            tile->x0 = tile_rec->x + j * 280;
-            tile->y0 = tile_rec->y;
-            tile->w = tile_rec->w;
-            tile->h = tile_rec->h;
+            tile->r0 = rec->r;
+            tile->g0 = rec->g;
+            tile->b0 = rec->b;
+            tile->x0 = rec->x + j * 280;
+            tile->y0 = rec->y;
+            tile->w = rec->w;
+            tile->h = rec->h;
             SetSemiTrans(tile, 0);
             AddPrim(g_gpu_ot_ptr + 0x30, (s32)tile);
             tile++;
@@ -190,9 +178,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r1 = pulse;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = poly->r2 = 0x80;
+                poly->r2 = 0x80;
                 poly->g2 = 0;
                 poly->b2 = 0;
+                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec[row].x + x;
@@ -239,9 +228,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = poly->r1 = 0x80;
+                poly->r1 = 0x80;
                 poly->g1 = 0;
                 poly->b1 = 0;
+                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;

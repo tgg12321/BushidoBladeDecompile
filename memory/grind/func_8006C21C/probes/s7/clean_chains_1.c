@@ -1,13 +1,3 @@
-/* func_8006C21C checkpoint s7 (Codex, 2026-09-28): score 41 / 622 insns.
- * INCOMPLETE; not approved to land. See evidence.md s7 and review-s7.md.
- * Removed rejected s6 col carrier. Chained corner colors recover the s5 score.
- * Removed the entire next/k cluster and split the tile-record pointer, without
- * increasing the score. Header/cell addresses now use truthful byte pointers;
- * descriptor color bytes are explicit. Four frame slots and two store-order
- * hunks remain. The i reuse, cells reuse, and mode holder still need their full
- * respective admission evidence; this checkpoint does not claim approval.
- * Trailing macro remains SANDBOX ONLY: fix the TU prototype at any landing.
- */
 typedef struct {
     u8 *header;
     u8 *table;
@@ -239,9 +229,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = poly->r1 = 0x80;
+                poly->r1 = 0x80;
                 poly->g1 = 0;
                 poly->b1 = 0;
+                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;

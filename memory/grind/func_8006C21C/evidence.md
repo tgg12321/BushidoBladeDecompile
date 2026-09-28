@@ -249,3 +249,49 @@ tmp/s6/{patch_alter2,patch_comb,patch_la}.py, mkcc1.sh, slots.sh, comball.sh, co
   site costs code (block-0 reads fold in CSE; natural `s16 px, py` for all Env x/y stores:
   96-104, +1..+8 insns).
 - **`col` per-branch colour (41 -> 37, zero source-level hunks):** see candidate header.
+
+## s7 [Codex local WSL, 2026-09-28] — adversarial correction and cluster ablation
+
+Started after owner pulled main e6feac99c. queue next still selects this function;
+canonical routes C. Reproduced s6 at 37/622. A fresh independent checkpoint
+review FAILed the s6 col reuse under R11's common-read definition/C(3) and
+redundant same-value write B(2); see review-s7.md. No completion PASS was obtained.
+The rejected body is retained as rejected/s6-col-carrier-37.c, not a best admitted
+candidate. Its numeric score is real; its claimed policy admission is not.
+
+Measurements (all sandbox --disable all, project compiler):
+- Remove col and use literals: 45/622. Genuine runtime color selection once per
+  row: 186/629; once per player: 59/632. Neither closes.
+- WHOLE next/k cluster removed together (rec[row], y + 1 - row): 45/622.
+- Split tile rec from gauge rec: 45/622. Byte-pointer header/cells and explicit
+  descriptor color bytes: 45/622. Combine all these simplifications: 45/622.
+- On that simplified body, chain only bar 1: 45/622; only bar 2: 45/622; both:
+  41/622. candidate.c now contains the simplified two-chain checkpoint.
+  Thus the old claim that next/k is needed for score 41 is disproven by cluster
+  ablation. No new no-semantic-purpose construct was added.
+- Direct cells expression without carrier: 57/622; literal mode: 48/622;
+  separate level: 112/605 (each on the direct-color s6 base). On the combined
+  simplified body, direct cells plus literal mode: 60/622; also split level:
+  123/605. This final whole-cluster ablation is banked as plain-s7.c.
+- Color/pulse narrowing to s16/u16: unchanged 37/622 on s6; u8 col unchanged,
+  u8 pulse 38/622. These were diagnostics on rejected s6, not admissions.
+  Naming coordinate fields within the four bar arms: scores 47-197, no closer
+  candidate. The local-only x s16/u16 forms: 53/622 on the simplified base.
+  See probes/s7/results.json and README for negative tests and script-error caveat.
+
+Open: 32-byte frame gap, two color-store orderings, and full policy evidence for
+i/cells/mode. The changed pointer typing fixes cells' cast-form defect but does
+not itself supply R9's other prerequisites. Neither numerical closeness nor
+these ablations constitutes R11 necessity proof. Do not rotate or mark done.
+No src, asm, build configuration, compiler, gate list, or queue edit was made.
+
+Verification of the UNCHANGED main source (not of the checkpoint as a landed C body):
+`verify-oracle --rebuild` returned ok=true, build_matches=true, artifact_matches=true,
+fresh=true; SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. The function remains
+INCLUDE_ASM in that build. `tools/audit_asm_cheats.py --check-new` exited 0 silently.
+Re-scored the exact saved s7 candidate: 41/622, four source-level diff hunks
+(two moved stores), fourteen operand-only hunks, fifteen masked cascade hunks.
+`tools/check_completion_integrity.py` was first started during the rebuild and
+exited 1 because build/verified-inputs.json was temporarily absent. Re-run after
+the successful rebuild: exit 0, "OK: all completed functions satisfy their
+category's invariants." This is repository validation, not candidate approval.

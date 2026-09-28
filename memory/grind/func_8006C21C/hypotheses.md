@@ -81,3 +81,16 @@
 3. If no natural producer exists, ask the owner (borderline.md policy-question): the target's
    four slots are provably narrow-holder orphans; is a named s16 constant local read only at
    those sites admissible when no other spelling reproduces the frame?
+
+## Frontier after s7 (2026-09-28) — checkpoint 41; s6 37 rejected
+1. s6 col does NOT qualify under Q20: branch-local reads never join, and the
+   second bar re-stores the value already held on every feasible path. The old
+   "frame is the only gap" headline is no longer the accepted frontier.
+2. next/k cluster and tile/gauge rec reuse are unnecessary: combined removal,
+   truthful byte-pointer cells, and both color chains still score 41/622.
+3. Find an ordinary frame producer and natural-order color spelling. No holder
+   whose mechanism is frame reservation is admitted. Prior suggestions to ask
+   for a new exception are not part of this session's plan.
+4. i/cells/mode still require full admission evidence or removal. plain-s7.c
+   records a combined-removal baseline (123/605); one-at-a-time failures are not
+   proof of necessity. See review-s7.md and probes/s7/ for receipts.

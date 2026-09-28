@@ -1,13 +1,4 @@
-/* func_8006C21C checkpoint s7 (Codex, 2026-09-28): score 41 / 622 insns.
- * INCOMPLETE; not approved to land. See evidence.md s7 and review-s7.md.
- * Removed rejected s6 col carrier. Chained corner colors recover the s5 score.
- * Removed the entire next/k cluster and split the tile-record pointer, without
- * increasing the score. Header/cell addresses now use truthful byte pointers;
- * descriptor color bytes are explicit. Four frame slots and two store-order
- * hunks remain. The i reuse, cells reuse, and mode holder still need their full
- * respective admission evidence; this checkpoint does not claim approval.
- * Trailing macro remains SANDBOX ONLY: fix the TU prototype at any landing.
- */
+/* s7 whole-cluster ablation: score 123 / 605; not a match. */
 typedef struct {
     u8 *header;
     u8 *table;
@@ -49,13 +40,12 @@ void func_8006C21C(s32 *arg0) {
     Rec_8006C21C *tile_rec;
     Tile *tile;
     PolyG4_8006C21C *poly;
-    s32 mode;
     s32 i;
+    s32 level;
     s32 pl;
     s32 x;
     s32 row;
     s32 pulse;
-    u8 *cells;
 
     s.ot_idx = 10;
     s.has_color = 0;
@@ -64,15 +54,13 @@ void func_8006C21C(s32 *arg0) {
     s.x = 0;
     s.header = (u8 *)table[0];
     s.semi = 0;
-    cells = s.header + 0xC;
-    s.table = cells;
+    s.table = s.header + 0xC;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
 
-    mode = 0;
     s.ot_idx = 9;
     s.has_color = 0;
     table = *(s32 **)(arg0[1] + 0x30);
@@ -85,8 +73,7 @@ void func_8006C21C(s32 *arg0) {
                     ((1 << i) << (pl * 4))) {
                     s.header = (u8 *)table[i + 13];
                     s.semi = 0;
-                    cells = s.header + 0xC;
-                    s.table = cells;
+                    s.table = s.header + 0xC;
                     s.out = arg0[5];
                     arg0[5] = func_8007352C((s32)&s);
                 }
@@ -94,7 +81,7 @@ void func_8006C21C(s32 *arg0) {
         }
     }
     s.header = (u8 *)table[13];
-    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), 0);
+    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x24, arg0[7]);
     arg0[7] += 0xC;
 
@@ -105,8 +92,7 @@ void func_8006C21C(s32 *arg0) {
     table = *(s32 **)(arg0[1] + 0x30);
     s.header = (u8 *)table[1];
     s.semi = 0;
-    cells = s.header + 0xC;
-    s.table = cells;
+    s.table = s.header + 0xC;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
     for (i = 0; i < 6; i++) {
@@ -115,8 +101,7 @@ void func_8006C21C(s32 *arg0) {
         s.has_color = 0;
         s.semi = 0;
         s.y = 0;
-        cells = s.header + 0xC;
-        s.table = cells;
+        s.table = s.header + 0xC;
         for (j = 0; j < 2; j++) {
             s.x = j ? 280 : 0;
             s.out = arg0[5];
@@ -125,7 +110,7 @@ void func_8006C21C(s32 *arg0) {
     }
     table = *(s32 **)(arg0[1] + 0x30);
     s.header = (u8 *)table[1];
-    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), 0);
+    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
 
@@ -154,11 +139,11 @@ void func_8006C21C(s32 *arg0) {
     x = 0;
     for (j = 0; j < 2; j++) {
 
-        i = *(s16 *)(D_800A34FC + j * 2 + 0x28);
-        rec = &recs[i + 1];
+        level = *(s16 *)(D_800A34FC + j * 2 + 0x28);
+        rec = &recs[level + 1];
         for (row = 0; row < 2; row++) {
             SetPolyG4(poly);
-            if (i == 5) {
+            if (level == 5) {
                 SetSemiTrans(poly, 1);
 
                 poly->r0 = pulse;
@@ -190,9 +175,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r1 = pulse;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = poly->r2 = 0x80;
+                poly->r2 = 0x80;
                 poly->g2 = 0;
                 poly->b2 = 0;
+                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec[row].x + x;
@@ -207,7 +193,7 @@ void func_8006C21C(s32 *arg0) {
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
             poly++;
             SetPolyG4(poly);
-            if (i == 5) {
+            if (level == 5) {
                 SetSemiTrans(poly, 1);
 
                 poly->r0 = pulse;
@@ -239,9 +225,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = poly->r1 = 0x80;
+                poly->r1 = 0x80;
                 poly->g1 = 0;
                 poly->b1 = 0;
+                poly->r3 = 0x80;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
