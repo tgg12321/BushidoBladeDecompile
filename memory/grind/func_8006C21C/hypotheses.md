@@ -110,3 +110,12 @@ variable written/held with a constant, which current policy refuses.
    i == 5 there) that the original may have computed per row.
 3. candidate.c now uses setXYWH for bar 1 (s8, byte-neutral); bar 2 stays explicit.
 4. Policy status unchanged: i/cells/mode admissions (review-s7.md) still open.
+
+## Frontier after the s8 policy outcome (2026-09-28)
+1. Both remaining gaps need a construct policy currently refuses (colour holder: withdrawn;
+   frame-only s16 zero locals: refused). Continue the ordinary-C search only for (a) a natural
+   known-zero narrow value read after a label (frame) and (b) a natural invariant that cuts
+   loop.c's threshold (0x80); if (a) ever closes the frame, the colour holder can be put to the
+   owner as a FAKE constant-holder question (SOTN shape: e_hellfire_beast.c:819-823).
+2. admission.md holds the work/cells/mode records; open item: census of which sprite sheets the
+   four `cells` sites reach (all must be single-header for K = 0xC).

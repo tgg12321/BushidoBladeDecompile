@@ -350,3 +350,12 @@ the two early r3 stores; 14 operand-only = frame offsets). Receipts in probes/s8
   untouched region (0x60-0x7F sits after the arg0/j/recs spill slots). Zero-valued s16 holders:
   no SOTN precedent (SOTN's `s16 three = 3; s16 one = 1;` are non-zero, arithmetic operands).
   Both levers need owner rulings before any landing; i/cells/mode admissions also still open.
+- **s8 policy outcome (2026-09-28):** the owner approved, then WITHDREW, extending Ruling 11's
+  per-branch constants to in-branch reads (decisions.md 2026-09-28 OWNER DECISION, rules commit
+  7b29c8c2b). A fresh layer-2 FAILed the draft rule text: the e_shop.c `posX` "precedent" is a
+  running coordinate, not a held constant, and SOTN has no example of the shape. Accepted reading:
+  the colour local (0 / 0x80 per arm) is a FAKE-class constant holder, not an ordinary-C value;
+  the frame-only s16 zero locals stay refused. Both POLICY-BLOCKED probes remain unlandable.
+- **Admission records** for `work` (was `i`, Ruling 11), `cells` (Ruling 9) and `mode`
+  (named-local-fake-exception): admission.md. candidate.c now sets `mode` once at the top and uses
+  it at all three func_8006E480 calls (byte-identical), and names `i` `work` with the annotations.

@@ -7,8 +7,7 @@
  * hunks remain. The i reuse, cells reuse, and mode holder still need their full
  * respective admission evidence; this checkpoint does not claim approval.
  * Trailing macro remains SANDBOX ONLY: fix the TU prototype at any landing.
- * s8 (2026-09-28): bar 1's vertices use PsyQ setXYWH (byte-neutral, 41/622);
- * mode set once and used at all three calls; i renamed `work` (Ruling 11 E).
+ * s8 (2026-09-28): bar 1's vertices use PsyQ setXYWH (byte-neutral, 41/622).
  */
 typedef struct {
     u8 *header;
@@ -44,6 +43,7 @@ typedef struct {
 
 #define setXYWH(p, _x0, _y0, _w, _h)     (p)->x0 = (_x0), (p)->y0 = (_y0),     (p)->x1 = (_x0) + (_w), (p)->y1 = (_y0),     (p)->x2 = (_x0), (p)->y2 = (_y0) + (_h),     (p)->x3 = (_x0) + (_w), (p)->y3 = (_y0) + (_h)
 void func_8006C21C(s32 *arg0) {
+    s32 red;
     Env_8006C21C s;
     s32 j;
     s32 *table;
@@ -52,29 +52,13 @@ void func_8006C21C(s32 *arg0) {
     Rec_8006C21C *tile_rec;
     Tile *tile;
     PolyG4_8006C21C *poly;
-    /* FAKE: constant-holder (named-local-fake-exception) -- the 0 passed as
-       func_8006E480's second argument at all three call sites. Set once and
-       live across every call, so global.c gives the once-set constant pseudo
-       callee-save $s5 (target: `addu $s5,$zero,$zero`, then `addu $a1,$s5,$zero`
-       at the phase-3 and phase-5 calls; cse folds the phase-1 read to 0 inside
-       the entry block). Literal 0 at every call measured worse; receipts in
-       memory/grind/func_8006C21C/admission.md "mode". Same shape as the
-       siblings func_800753D8 (`zero`) and func_8007636C (`mode`). */
     s32 mode;
-    /* Holds several values (Ruling 11, ordinary-c-judge-decidable.md): the
-       phase-2 unlock-bit index, the phase-4 sprite index, the phase-6 tile
-       row, and the phase-8 gauge level read per player. One variable is what
-       the target's allocation requires (global.c: the merged pseudo outranks
-       `j` for $fp); proof in memory/grind/func_8006C21C/admission.md "work". */
-    s32 work;
+    s32 i;
+    s16 level;
     s32 pl;
     s32 x;
     s32 row;
     s32 pulse;
-    /* the sprite sheet's 8-byte cell array, which starts just past the sheet's
-       12-byte header (SprtHdrA / SprtEntA, read by func_8007352C). Ruling 9:
-       one meaning, header + 0xC at every write; memory/grind/func_8006C21C/
-       admission.md "cells". */
     u8 *cells;
 
     mode = 0;
@@ -100,10 +84,10 @@ void func_8006C21C(s32 *arg0) {
     for (pl = 0; pl < 2; pl++) {
         s.x = pl * 280;
         if (*(s16 *)(D_800A34FC + pl * 2 + 0x28) < 3) {
-            for (work = 0; work < 4; work++) {
+            for (i = 0; i < 4; i++) {
                 if (*(u8 *)(D_800A3524 + *(s16 *)(D_800A34FC + pl * 2 + 0x28) + 0x17) &
-                    ((1 << work) << (pl * 4))) {
-                    s.header = (u8 *)table[work + 13];
+                    ((1 << i) << (pl * 4))) {
+                    s.header = (u8 *)table[i + 13];
                     s.semi = 0;
                     cells = s.header + 0xC;
                     s.table = cells;
@@ -129,8 +113,8 @@ void func_8006C21C(s32 *arg0) {
     s.table = cells;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
-    for (work = 0; work < 6; work++) {
-        s.header = (u8 *)table[work + 2];
+    for (i = 0; i < 6; i++) {
+        s.header = (u8 *)table[i + 2];
         s.ot_idx = 10;
         s.has_color = 0;
         s.semi = 0;
@@ -151,8 +135,8 @@ void func_8006C21C(s32 *arg0) {
 
     recs = *(Rec_8006C21C **)(*(s32 *)(D_800A34FC + 0x24) + 0x44);
     tile = (Tile *)arg0[6];
-    for (work = 0; work < 11; work++) {
-        tile_rec = &recs[work];
+    for (i = 0; i < 11; i++) {
+        tile_rec = &recs[i];
         for (j = 0; j < 2; j++) {
             SetTile(tile);
             tile->r0 = tile_rec->r;
@@ -174,12 +158,13 @@ void func_8006C21C(s32 *arg0) {
     x = 0;
     for (j = 0; j < 2; j++) {
 
-        work = *(s16 *)(D_800A34FC + j * 2 + 0x28);
-        rec = &recs[work + 1];
+        level = *(s16 *)(D_800A34FC + j * 2 + 0x28);
+        rec = &recs[level + 1];
         for (row = 0; row < 2; row++) {
             SetPolyG4(poly);
-            if (work == 5) {
+            if (level == 5) {
                 SetSemiTrans(poly, 1);
+                red = 0;
 
                 poly->r0 = pulse;
                 poly->g0 = pulse;
@@ -187,15 +172,16 @@ void func_8006C21C(s32 *arg0) {
                 poly->r1 = pulse;
                 poly->g1 = pulse;
                 poly->b1 = pulse;
-                poly->r2 = 0;
+                poly->r2 = red;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = 0;
+                poly->r3 = red;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -4 * row + 2);
             } else {
                 SetSemiTrans(poly, 0);
+                red = 0x80;
 
                 poly->r0 = pulse;
                 poly->g0 = 0;
@@ -203,9 +189,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r1 = pulse;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = poly->r2 = 0x80;
+                poly->r2 = red;
                 poly->g2 = 0;
                 poly->b2 = 0;
+                poly->r3 = red;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w, -2 * row + 1);
@@ -213,8 +200,9 @@ void func_8006C21C(s32 *arg0) {
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
             poly++;
             SetPolyG4(poly);
-            if (work == 5) {
+            if (level == 5) {
                 SetSemiTrans(poly, 1);
+                red = 0;
 
                 poly->r0 = pulse;
                 poly->g0 = pulse;
@@ -222,10 +210,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = pulse;
                 poly->b2 = pulse;
-                poly->r1 = 0;
+                poly->r1 = red;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = 0;
+                poly->r3 = red;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
@@ -238,6 +226,7 @@ void func_8006C21C(s32 *arg0) {
                 poly->y3 = rec[1].y - 1;
             } else {
                 SetSemiTrans(poly, 0);
+                red = 0x80;
 
                 poly->r0 = pulse;
                 poly->g0 = 0;
@@ -245,9 +234,10 @@ void func_8006C21C(s32 *arg0) {
                 poly->r2 = pulse;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = poly->r1 = 0x80;
+                poly->r1 = red;
                 poly->g1 = 0;
                 poly->b1 = 0;
+                poly->r3 = red;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
