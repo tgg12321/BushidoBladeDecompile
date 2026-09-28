@@ -52,7 +52,8 @@ DISAGREE rows: 0
 ## func_8001CE60 (landing_tu_func_8001CE60/: land.* = its landing body with `extern u8 D_800A3898[2]; extern u8
 ## D_800A38AA[2];`; sel.* = the admissible spelling under the other file's SCALAR declaration, ordinary conditional
 ## selects on D_800A38B0 in place of indexing (sel_body.c, built by make_sel_tu.py) — it cannot produce the target's
-## player-indexed accesses and misses under both compilers).
+## player-indexed accesses and misses under both compilers; struct.* = the same selects under the banked struct
+## score_pair declaration (struct_body.c, make_struct_tu.py), also a miss under both).
 instructions: build cc1 407, cc1psx 407
 governed (part 1, score-byte addressing; position not decided), program order = target order:
    0x8001D0E0  land.s.fn:230  lbu REG,D_800A38AA(REG)
@@ -79,4 +80,8 @@ agreement:
   sel: scalar declaration, conditional selects
      cc1: miss lbu REG,D_800A38AA(REG) need 2 have 0; sb REG,D_800A38AA(REG) need 1 have 0; la REG,D_800A3898 need 1 have 0; sb $0,D_800A38AA(REG) need 1 have 0; lbu REG,D_800A3898(REG) need 1 have 0
      cc1psx: miss lbu REG,D_800A38AA(REG) need 2 have 0; sb REG,D_800A38AA(REG) need 1 have 0; la REG,D_800A3898 need 1 have 0; sb $0,D_800A38AA(REG) need 1 have 0; lbu REG,D_800A3898(REG) need 1 have 0
+     => AGREE
+  struct: struct score_pair declaration, member selects
+     cc1: miss lbu REG,D_800A38AA(REG) need 2 have 0; sb REG,D_800A38AA(REG) need 1 have 0; sb $0,D_800A38AA(REG) need 1 have 0; lbu REG,D_800A3898(REG) need 1 have 0; sb REG,D_800A3898 need 1 have 0; sb REG,D_800A3899 need 1 have 0
+     cc1psx: miss lbu REG,D_800A38AA(REG) need 2 have 0; sb REG,D_800A38AA(REG) need 1 have 0; sb $0,D_800A38AA(REG) need 1 have 0; lbu REG,D_800A3898(REG) need 1 have 0; sb REG,D_800A3898 need 1 have 0; sb REG,D_800A3899 need 1 have 0
      => AGREE

@@ -24,7 +24,8 @@ ex = L.presence_exempt(norms, psx)
 print(f"EXEMPT (governed forms absent from the cc1psx reference output): {dict(ex) if ex else 'none'}")
 print("\nagreement:")
 for name, a, b in (("reference (arrays, landing body)", "land.s.fn", "land.psx.s.fn"),
-                   ("sel: scalar declaration, conditional selects", "sel.s.fn", "sel.psx.s.fn")):
+                   ("sel: scalar declaration, conditional selects", "sel.s.fn", "sel.psx.s.fn"),
+                   ("struct: struct score_pair declaration, member selects", "struct.s.fn", "struct.psx.s.fn")):
     m1 = L.presence_miss(norms, ex, L.parse(O / a))
     m2 = L.presence_miss(norms, ex, L.parse(O / b))
     v = "AGREE" if bool(m1) == bool(m2) else "DISAGREE"
