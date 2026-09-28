@@ -30049,3 +30049,18 @@ trail."
 5. **Unchanged.** No standard, rule, grant, ban or gate list changes: only records of settled questions are
    removed. A deleted refusal that is still in force was already carried by a live rule file or kept entry
    (the audit's PARTIAL/ACTIVE-RULE classes).
+
+## 2026-09-28 — OWNER DECISION — per-branch constants read only inside their branch: approved, then WITHDRAWN (no rule change)
+
+Fourteenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 14, Q26). The owner first
+approved extending Ruling 11's per-branch constants to values read only inside their own branch
+(func_8006C21C's 0 / 0x80 colour local), on an operator claim that SOTN src/st/lib/e_shop.c:3514-3557 was
+an exact precedent. A fresh layer-2 on the draft rule text FAILed it: `posX` there is a running coordinate
+(per-arm start, then `+=` in the arm), not a constant held in a local; no SOTN-master PSX example of the
+shape exists. Told of the correction and asked whether the construct is realistic C, the owner withdrew
+the approval: "Then withdraw for now". The draft was never committed. Standing reading, per the
+operator's assessment the owner accepted: the construct is a FAKE-class constant holder (value fixed at
+compile time at every read; purpose = loop.c movable matching), not an ordinary-C value; any future
+admission would be a named-local-fake-exception question (SOTN's closest shape: e_hellfire_beast.c:819-823
+`fake = 8; ... prim->drawMode = fake;`, written once), best asked only once func_8006C21C's frame gap has
+a legitimate closer. The escalation-not-parked AUTO-REJECT class (no in-hand SOTN precedent) applies.
