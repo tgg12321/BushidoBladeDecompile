@@ -119,3 +119,17 @@ variable written/held with a constant, which current policy refuses.
    owner as a FAKE constant-holder question (SOTN shape: e_hellfire_beast.c:819-823).
 2. admission.md holds the work/cells/mode records; open item: census of which sprite sheets the
    four `cells` sites reach (all must be single-header for K = 0xC).
+
+## Frontier after s9 (2026-09-28) — floor 41; byte-complete spelling exists but is policy-blocked
+1. The frame gap now has a measured zero-cost closer: family-5 zero-valued s16 locals whose reads
+   all sit in phases 1-4 (probes/s9/POLICY-BLOCKED-frame-exact-dtd-tw-xy-4.c, sandbox 4; + col = 0).
+   Do not re-derive the mechanism; the open item is ADMISSION, not discovery.
+2. Owner question (plain language, not yet asked): "func_8006C21C byte-matches if (a) four short
+   locals that are always 0 (the dither and texture-window flags passed to SetDrawMode, and the
+   sprite x/y) are used in the first half of the function while the second half writes literal 0,
+   and (b) the 0x80 colour goes through a local. SOTN has one always-zero narrow local (uBase in
+   st0) but uses it everywhere. Allow either?" Ask only with the owner's go-ahead; the 2026-09-28
+   withdrawal stands until then.
+3. Ordinary-C search that remains open: a reason, visible in the code, for the variables to stop at
+   phase 4 (e.g. a block scope or helper that ends there) that keeps every read in B3; and a natural
+   0x80 form (s8 (a)-(d)). Census and loop.c reading say no non-variable form exists for either.

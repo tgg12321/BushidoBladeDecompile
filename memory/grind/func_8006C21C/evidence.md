@@ -359,3 +359,36 @@ the two early r3 stores; 14 operand-only = frame offsets). Receipts in probes/s8
 - **Admission records** for `work` (was `i`, Ruling 11), `cells` (Ruling 9) and `mode`
   (named-local-fake-exception): admission.md. candidate.c now sets `mode` once at the top and uses
   it at all three func_8006E480 calls (byte-identical), and names `i` `work` with the annotations.
+
+## s9 [manual, Claude, local WSL, 2026-09-28] — frame closer located; floor 41 unchanged (policy)
+Receipts in probes/s9/ (README lists every file). Candidate re-scored 41/622 at main bbf3d07de.
+- **0x80 matching re-read (loop.c 1244-1287):** a movable matches only if BOTH regs have
+  n_times_used == 1, !m1->global, equal set_src, compatible int modes (the wider absorbs), equal
+  dependencies. Candidate dump: row loop has two matched pairs, const 5 (749/1271, life 2+1) and
+  0x80 (1028/1489, QImode const_int 128, life 2+2 via the chains) -> 29*2*4 = 232 < 264, kept.
+  No new non-variable escape exists; s8's (a)-(d) list stands.
+- **Frame-mechanism alternatives ruled out:** bar-2 `mflo $t0` is NOT a spilled pseudo (the mult
+  results are allocated to `lo`, reg 65; t0 is the reload reg). reload1.c delete_output_reload
+  (spilled block-local pseudo whose store is deleted -> untouched slot) needs a block-local pseudo
+  that crosses no call; not available here.
+- **Project-wide orphan census (tools/census.py, all src/*.c):** 134 combine-planted `(use (reg))`
+  orphans. All 20 narrow USER-VARIABLE orphans are family 2 (s16 local loaded from memory, used
+  sign-extended, HImode copy kept for a later use; e.g. func_80075F80, func_80049584). ZERO matched
+  functions get an orphan from a known-zero narrow variable (family 5). So the target's four slots
+  have no in-project precedent mechanism other than family 5 (or 1/3/4, which cost code here).
+- **Phase-8 `s16 lv` (family 2):** lv then `work = lv` / index via lv -> no orphan (CSE shares one
+  extension); lv in one bar test -> 1 orphan (vars 112) but 10 code lines differ.
+- **Zero-cost placement rule for family-5 reads:** reads are free only when every after-label read
+  sits in block B3 (phase-3 SetDrawMode + phase-4 head, before the phase-4 loop). A read at phase 5
+  plants `(use Z)` at the phase-5 label, Z lives across phase 4's calls and takes a callee-saved
+  reg (+1..+2 insns, mode s5->s7). Block-0 reads (phase 1, phase-2 head) are CSE-folded, free.
+- **Frame-exact spelling with a semantic role per local:** `s16 dtd, tw` (SetDrawMode dither /
+  texture-window) at the phase-1 and phase-3 calls + `s16 xpos, ypos` at the phase-1, phase-2-head
+  and phase-4-head descriptor stores -> vars 128, code identical, sandbox 4/622 (r3 order only);
+  + the withdrawn `col` -> sandbox 0/622. Both POLICY-BLOCKED: the reads stop at phase 4 (literals
+  from phase 5 on), which is what makes them free; that selectivity is the frame-only-holder shape.
+- **SOTN precedent (new, tmp/sotn-decomp aa53500, tools/sotn_zero_narrow.py):** one US-PSX
+  function has a narrow local whose every write is 0: src/st/st0/2DAC8.c func_801AF380 `u8 uBase;`
+  (`uBase = 0;` twice, read 8x as `uBase + points[...]`, paired with `vBase` = 0 / 0x80;
+  config/splat.us.stst0.yaml). Corrects s8's "no SOTN precedent" for zero-valued narrow locals.
+  Differences to ours: uBase is read at EVERY same-meaning site (in loops), ours only up to phase 4.
