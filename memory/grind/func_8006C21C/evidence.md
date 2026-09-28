@@ -198,3 +198,54 @@ full-SHA1 oracle was not run; every score is `engine sandbox --disable all`.
   bound types s32/u32/s16/u16/s8/u8 with `< n`, `<= n`, `< n + 1`, `<= n - 1`, `< n - 1`:
   the `< n`-style forms give the four slots but keep entry tests (117-140); `<= n` forms give
   no orphans (CSE substitutes j into the second slt operand).
+
+## s6 [manual, cloud Linux container 2026-09-28] — phantom-slot mechanism survey (floor 41 unchanged)
+Tooling (scratch only, never a build path): a copy of tools/gcc-2.7.2 in the session scratchpad
+with SLOTDBG in reload1.c alter_reg (prints every stack slot's pseudo, from_reg, refs, live,
+and whether any insn still mentions it) and COMBDBG in combine.c (prints every 3->2 combine
+whose i2dest vanishes). Output verified byte-identical to build/cc1 on text1b. Scripts:
+tmp/s6/{patch_alter2,patch_comb,patch_la}.py, mkcc1.sh, slots.sh, comball.sh, combcat.py, phx.py.
+- **Ours:** exactly 6 slots, all `from -1` with live code: arg0 p72, j p73, recs p75, and the
+  three row-loop givs (d4/d8/d2, loop-created, highest regnos). Zero 3->2 vanishes.
+- **Project-wide catalog** (every src/*.c TU, 183 vanish events, 60 untouched slots): every
+  untouched slot in a matched function comes from combine, except 3 from `/ 255` division
+  expansion (func_80041E10). The combine families are:
+  (1) loop entry test against a non-constant bound (41×): the branch survives as `blez`/`beqz`;
+  (2) s16 memory value shared by a sign-extended use and a narrow use (64×): `lh` + HI copy;
+  (3) global array `SYM[reg]` addressing (40×): `$at` macro forms;
+  (4) decrement-and-test (`n - 1 != -1`, `while (n--)`) (7×);
+  (5) 3->1 fold of a narrow local's extension where the i1 death note becomes an orphan USE
+  (the `s16 mode` case: +2 slots, but combine folds the arg to `move a1,zero`).
+  The target body has no `blez/bgtz`, no `$at`, no `lh` whose value also feeds a narrow
+  store/add, and no decrement tests, so families 1-4 cannot supply its four slots at zero
+  code cost.
+- **Loop-entry route ruled out by exhaustion** (mini-TU harness tmp/s6/mini/, nested 2-count
+  loop, n set once outside): 1458 + 182 bound/init/type/test forms. Every form that leaves an
+  orphan costs +4 insns (the entry branch survives). Combine can fold a comparison only against
+  0 via nonzero_bits/sign bits, never `0 < n` or `z < 2`.
+- **0x80 hoist mechanics pinned:** loop.c move_movables needs `threshold*savings*lifetime <
+  insn_count` to keep the constant in-loop; the row loop has 264 real insns, threshold 29
+  (loop has calls), and the two else-arm constants always match in combine_movables (same
+  const, either mode order: the wider one absorbs the narrower). lifetime counts NOTE_INSN_DELETED
+  luids. Not moved requires life ≤ 4 total, or ≥5 other movables moved first in the same loop
+  (threshold -= 3 each), or m1->global. None of these has a natural source form yet.
+- **PsyQ setRGBn / setXY4 macro spellings** of the bar arms compile byte-identically to the
+  statement form (45 = natural-order baseline): comma expressions do not change the RTL.
+- **Other probes, no frame change:** s16/u16/s8/u8 holders for the rcos angle and the first
+  func_8006E480 zero (CSE folds them in-block); phase-8 `s16 lv` level with `i = lv` (41,
+  byte-identical); lv used directly in the `== 5` tests (605 insns: jump threading merges the
+  bar1/bar2 tests); lv loaded in a separate block-scope decl (same).
+- Sibling func_800720FC's two untouched slots are explained by family (2): its `lh` of a
+  `D_8009BCD0[]` element feeds both an abs() compare and a narrow `*p + d` store. The earlier
+  "SetDrawMode count" correlation is coincidental.
+- **Frame reproduced (policy-blocked).** s16 zero holders read only after block 0 give one
+  untouched slot per folded read: `Z` as SetDrawMode's 5th arg in phases 3/5/8 (+3, vars 120,
+  622 insns) plus a second holder at the phase-4 `s.x = 0` (or `s.y = 0`, `s.semi = 0`, or a
+  phase-3/5 dtd arg) (+1) = vars 128, EXACT target layout (arg0, j, recs, 4 phantoms, givs).
+  Score 6 alone, 2 with `col` (rejected/s16-zero-holders-frame-exact-2.c). Residual 2 =
+  phase-8 `sw zero,16(sp)` scheduled early because that call's tw is the holder; with a
+  literal there, no pair of extra holder sites reaches 128 at 622 (78-combo sweep,
+  tmp/s6/mkcomb2.py; several dtd3 pairs hang cc1). Reusing ONE holder at every same-meaning
+  site costs code (block-0 reads fold in CSE; natural `s16 px, py` for all Env x/y stores:
+  96-104, +1..+8 insns).
+- **`col` per-branch colour (41 -> 37, zero source-level hunks):** see candidate header.
