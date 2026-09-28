@@ -78,3 +78,22 @@ flag = mode 2 && !D_800A389A && arg0 == 0 && bit 8 of pressed.
 ## cc1psx self-disproof
 candidate (honest, v15 shape): ours 5, cc1psx 33 -> SOURCE-SIDE (not a
 fidelity lead).
+
+## Manual s4 (2026-09-28): Ruling 11 submission — 0/393, oracle match
+Picked from the rotated tail: the 2026-09-25 rotation reason ("two-role shift form inadmissible")
+predates Ruling 11 (owner 2026-09-26, reused local admitted on allocator-necessity proof).
+- Chassis drift since s3: 0x80106A70..72 became `D_80106A50.color[3]` (FileRecord merge,
+  65897593b); bodies respelled `D_80106A50.color[k]`. Re-measured on the current (stock + crash
+  fix) compiler: reuse form 0/393, one-var-per-value form 5/393 (unchanged).
+- Proof package: r11/proof.md (every prong A-H), r11/dumps.txt (f.cse / f.lreg / f.greg /
+  ALLOCDBG / FINDREGDBG for both spellings; stock and instrumented cc1 emit identical asm),
+  r11/*.c both spellings. Variable renamed `temp` (R11 (E)(i)); codegen name-independent.
+- Fresh permuter from the one-var body on the current compiler (tmp/perm_1be20_s4, 9,412 iters):
+  3 finds, all invalid (read `half` before its write).
+- Landing: body spliced + D_80106A70 alias row retired; verify-oracle --rebuild --allow-dirty
+  == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- Layer-2 (fresh cheat-reviewer, 2026-09-28): **PASS** on every Ruling 11 prong (A)-(H) and on
+  ordinary review of the rest; D_80106A70 row removal verified (no linked referrer). Noted
+  weakness: the s4 permuter ran ~6 min, judged adequate together with s2's ~16 min campaign.
+- LANDED f7fe651e9 `Match: func_8001BE20 — COMPLETED-C (manual)`; `queue done` OK;
+  check_completion_integrity OK.
