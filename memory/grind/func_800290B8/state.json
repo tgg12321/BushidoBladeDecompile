@@ -1,0 +1,27 @@
+{
+ "func": "func_800290B8",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "manual",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 62,
+   "modality": "manual",
+   "headline": "first full C body (list[j] indexing, flat corner index)"
+  },
+  {
+   "session": 1,
+   "floor": 46,
+   "modality": "manual",
+   "headline": "walking marker pointer + e->y > max operand order"
+  },
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "manual",
+   "headline": "corner row/column through the two index variables (Ruling 11 reuse, proof in ruling11.md); oracle MATCH"
+  }
+ ],
+ "frontier": []
+}
