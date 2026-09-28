@@ -178,11 +178,11 @@ column pseudo in s0 (`andi s0,a1,0x1` 0x8002915C).
    - **Pass 0** also excludes registers not in `regs_used_so_far` and those in
      `regs_someone_prefers` (global.c:951-953). `regs_used_so_far` starts with every
      call-used register (global.c:350-356; MIPS has no `LEAF_REGISTERS`, and
-     `CALL_USED_REGISTERS` in mips.h:1205 marks 1-15). The scan is lowest-first
+     `CALL_USED_REGISTERS` in mips.h:1205 marks 1-15, 24-29 and 31). The scan is lowest-first
      (global.c:955-982).
    - `regs_someone_prefers` (prune_preferences, global.c:836-880) is the union of the pruned
      full preferences of lower-priority allocnos that conflict with this one. Pruning removes
-     every call-used register (1-15) from the preferences of an allocno that crosses calls
+     every call-used register from the preferences of an allocno that crosses calls
      (global.c:851-862). So only a conflicting allocno that crosses no calls can make a3 "someone
      prefers". Such an allocno is live over the row's or column's life and crosses no calls, so
      it cannot live into the marker loop (1.: `jal func_8004678C` lies between). Its
@@ -197,21 +197,70 @@ column pseudo in s0 (`andi s0,a1,0x1` 0x8002915C).
      from it, directly or through a chain. So a3 is never in `regs_someone_prefers` for the
      row or column, and pass 0 returns a register of at most 7 (a3 is eligible: not a
      conflict, not someone-preferred, in `regs_used_so_far`). Pass 1 is never reached.
-   - The preference step (global.c:1036-1060+) can only move `best_reg` to one of the allocno's
-     own preferred registers. Those come from insns that tie it to a hard register or to a
-     local-alloc-seated pseudo. In the target those are v0 for the row and a1/v0/a0 for the
-     column, so the step can only name 2, 4 or 5.
-   So global.c seats the row and the column at or below a3, never in t0 or s0. The dumps agree:
+   - **The preference steps** (copy preferences, global.c:1001-1035; then preferences,
+     global.c:1037-1071) can move `best_reg` to a register in the allocno's own pruned
+     preference sets that is not in `used` and is in `best_reg`'s class. Those sets hold the
+     allocno's own `set_preference` bits plus whatever `expand_preferences` ORed in from
+     REG_DEAD-linked, non-conflicting partners, and from their partners, in insn order
+     (global.c:781-818, before pruning). Every bit starts at a `set_preference` call whose other
+     side is a hard register named in the pre-allocation RTL, or a pseudo local-alloc has already
+     seated (`reg_renumber`, global.c:1571-1577). No pre-allocation RTL of this function names t0
+     or s0. It has no asm and no register variables; its hard registers are the argument
+     registers a0-a3, the return register v0, sp and ra. A local-alloc seat in t0 or s0 would, in
+     an output equal to the target, be a block-local quantity whose value sits in t0 or s0 within
+     one block. In the target, t0 carries only the row (0x80029158-60) and the marker index (live
+     across calls), and s0 only the column (0x8002915C-68) and the triangle index (live across
+     func_8002E6B0). The two indices are not block-local, so such a seat would have to be the row
+     or the column itself, seated by local-alloc, which 4. excludes. So no preference chain
+     carries 8 or 16, and neither step can move `best_reg` to t0 or s0.
+   So global.c never seats the row or the column in t0 or s0. The dumps agree:
    in every multi-block probe the row is global allocno 92 with ";; 92 preferences: 2", seated
    in v0, and the column is allocno 96 with no preferences, seated in v1. No allocno in the
    function has any other surviving preference (dumps/fam-dup-dumps.txt, the full
    `;; N conflicts/preferences` list of dup_vtx_col).
-6. **Post-allocation passes.** jump2 (cross-jump, no-op move deletion), sched2 and reorg never
-   change a pseudo's hard register. reload changes one only by spilling a hard register it
-   needs and re-seating the pseudos from that register through global.c's `find_reg`
-   (reload1.c:3445-3497 `spill_hard_reg` -> `retry_global_alloc`). Such a re-seat is bound by
-   the same scan as 5., and every dump spills only reg 8 or 9, never the row's or column's
-   register.
+6. **Nothing evicts the row or column from its seat afterwards.** A seat from 4./5. could be
+   lost in two ways, and neither can happen in an output equal to the target:
+   - **reload's spill** (`spill_hard_reg`, reload1.c:3445-3497) evicts every pseudo seated in a
+     register chosen as a spill register (`reg_renumber = -1`). A global allocno is re-seated by
+     `retry_global_alloc` -> `find_reg(..., retrying = 1)`, which is bound by 5.
+     (global.c:1203-1216). A local-alloc pseudo has no allocno (`reg_allocno = -1`,
+     global.c:388-402), so `retry_global_alloc` does nothing for it. It moves to a stack slot and
+     reload registers drawn from the spill registers serve its references. In pv.c the spill
+     register is reg 8 = t0 ("Spilling reg 8."), so eviction itself must be excluded, not only
+     re-seating. It is excluded because the seat R (at most 7, and not $at, which is fixed) is
+     never chosen as a spill register:
+     - R in {v0, a0, a1, a2, a3}: each is named in the pre-reload RTL (v0 by the return values of
+       func_8004678C / func_8002E6B0 / func_8002FC80; a0-a3 by argument setup, a3 by
+       func_8002E6B0's fourth argument). So `regs_ever_live[R]` is set before reload,
+       `regs_explicitly_used` copies it before pseudo homes are merged (reload1.c:483-486), and
+       `order_regs_for_reload` puts R in `bad_spill_regs` (reload1.c:3651-3660). Spill
+       selection skips `bad_spill_regs` (reload1.c:1637, 2067-2074; `forbidden_regs` starts from
+       it, reload1.c:708).
+     - R = v1 (3): v1 need not be named in the RTL, but it holds local-alloc pseudos, so
+       `hard_reg_n_uses[3] > 0` (reload1.c:3622-3636). `potential_reload_regs` lists every
+       zero-use call-used register first (reload1.c:3690-3699). In an output equal to the target,
+       those include t2-t7, t8 and t9 (10-15, 24, 25): they appear nowhere in the target, so no
+       pseudo is seated there. That is 8 registers ahead of v1. Spill registers are taken from
+       the front of that order (reload1.c:1838-1856; MIPS SImode GR reloads need no groups).
+       Their number is the maximum per-insn GR reload need, which a MIPS insn bounds by its
+       register operands (at most 3). So v1 is never a spill register. (The target's own reload
+       register is t1: `lw t1,0x10(sp)` reloads `swap` at 0x80029360 and 0x800293C8.)
+   - **global.c's kick-out** (global.c:1096-1159) runs in `find_reg` only when `best_reg < 0`
+     and `!retrying`. It evicts every pseudo in a hard register `regno` that has local refs and
+     is not in `used2`.
+     - For a call-crossing allocno's outer call (`accept_call_clobbered = 0`),
+       `used1`/`used2` contain `call_used_reg_set` (global.c:921-926, 935), so no call-used
+       register is a candidate. The row's or column's seat (at most 7) is call-used.
+     - For the nested caller-save call (global.c:1088, `accept_call_clobbered = 1`, same
+       `retrying = 0`) and for an allocno that crosses no calls, kick-out needs passes 0 and 1 to
+       fail. That requires every allocatable GR to be in `used1` = fixed registers + hard
+       conflicts over the allocno's life. t2-t9 are named nowhere in the pre-allocation RTL, so
+       they are no hard conflict. In an output equal to the target no pseudo is seated in them,
+       so no allocation adds them to anyone's conflicts (global.c:1184-1190). So `best_reg >= 0`, and
+       kick-out never runs.
+     - reload's re-seat calls `find_reg` with `retrying = 1` and never kicks out.
+   jump2 (cross-jump, no-op move deletion), sched2 and reorg never change a pseudo's hard
+   register. So the seat from 4./5. is the register in the output.
 7. **Conclusion, for each variable separately.** The contradiction holds for the row alone
    (tmp_a split, tmp_b shared: abl_a.c 22, dwi_abl_a.c 5) and for the column alone (tmp_b
    split: abl_b.c 2, dwi_abl_b.c 2). It holds whatever the declaration's scope or order, the
@@ -226,7 +275,12 @@ and seats `mark` in t0 (score 4). The marker index's t0 seat is not a necessity 
 (ii) s2 first version: "the row/column are block-local in every per-value spelling / have no arm
 to duplicate into". False: duplicating the `vtx` statement into the arms of a test makes them
 multi-block (fam/dup_vtx_*.c, fam/dwi_dup_*.c; layer-2 s2 counterexample). Point 5 above
-covers that case.
+covers that case. (iii) s2 second version, point 6: "reload re-seats evicted
+pseudos through find_reg; every dump spills only reg 8 or 9". Wrong for local-alloc pseudos,
+which have no allocno and are served from spill registers (t0 in pv.c), and closed only by
+measurement. The second s2 layer-2 found this. It also found that the preference-step bullet
+ignored expand_preferences merges and that the global.c kick-out path was not argued. The
+rewritten points 5 and 6 cover all three.
 
 ## (D)(4) Measured alternatives (`sandbox --disable all --candidate`)
 r11/*.c from `python3 memory/grind/func_800290B8/r11/mkall.py memory/grind/func_800290B8/candidate.c memory/grind/func_800290B8/r11`;

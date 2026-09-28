@@ -120,3 +120,19 @@ multi-block, so global.c seats them, and that path was not argued. Response:
   regs_used_so_far; a3 cannot be someone-preferred because call-crossing allocnos lose call-used
   preferences in pruning, and the only a3 preference goes to `scr`, which conflicts with every
   loop-1 allocno) at <= 7, and the preference step can only name v0/a0/a1. Never t0/s0.
+
+### Layer-2 #2 (s2, 2026-09-28): FAIL — (D)(3) completeness, body not at issue
+Reviewer passed (A), (B), (C), (E), (F), (G precondition), (H) and verified all other citations. Gaps:
+(1) point 6 claimed reload re-seats evicted pseudos through find_reg. Local-alloc pseudos have no
+allocno and are served from spill registers (t0 in pv.c), and point 6 was closed only by
+measurement. (2) global.c's kick-out path (1096-1159) was not argued. (3) The preference-step
+bullet ignored expand_preferences merges into the allocno's own sets. Response: ruling11.md (D)(3)
+points 5 and 6 rewritten. Seats <= 7 are never spill registers: v0/a0-a3 are explicitly used, so
+they go into bad_spill_regs; v1 is behind 8 zero-use call-used registers (t2-t9, absent from the
+target) in potential_reload_regs, and an insn needs at most 3. Kick-out cannot target call-used
+registers for call-crossing allocnos, and never runs for the others while t2-t9 are free. No
+preference chain can carry t0/s0: no pre-allocation RTL names them, and a local-alloc seat there
+would be the row/column itself. The mips.h CALL_USED list is corrected (also 24-29, 31).
+Housekeeping: the reviewer restored metrics/events.jsonl to HEAD after its sandbox runs. The
+only uncommitted change at that time was its own sandbox lines, since this session had
+committed metrics before the review.
