@@ -1,27 +1,33 @@
-/* func_8006C21C candidate (manual s6, 2026-09-28) -- sandbox --disable all = 37/622
- * (instruction count equal, ZERO source-level hunks: every remaining scored hunk is an
- * sp-offset of the 32-byte frame gap). NOT landing-ready; see evidence.md s6 + hypotheses.md.
- * s6 lever (41 -> 37): the bar colour for the lower corners is one variable per bar, set
- *   per branch (`col = 0` when level == 5, `col = 0x80` otherwise) and stored to r2/r3
- *   (bar 1) and r1/r3 (bar 2) in natural order. Written twice per arm pair with DIFFERENT
- *   values, so loop.c sees n_times_set = 4, no movable, no 0x80 hoist; the then-arm stores
- *   fold to $zero. Replaces s5's `r3 = r2 = 0x80` chains (which left r3 stored early).
- * s5 levers kept: tail order via next[k]/k++,row++; bevel terms as row givs.
- * Open item: frame. target vars=128, ours 96. Four untouched reload slots between recs and
- *   the bevel givs. Evidence s6: they are reproduced EXACTLY (score 2, and 6 without col)
- *   by narrow (s16) locals holding a constant, set once in block 0 and read only in later
- *   blocks at s32 stores / stack args (combine 3->1 folds the extension, the shift temp's
- *   death note becomes an orphan USE, alter_reg pays a slot). Those holders are frame
- *   coercion (named-local-fake-exception: "reserve frame bytes" stays forbidden;
- *   phantom-slot-frame-lever: no-semantic-purpose uses are forbidden), so they are NOT in
- *   this candidate. Need: a source-natural narrow value with the same shape, or a ruling.
+/* REJECTED (policy, not bytes): s16 zero holders Z (SetDrawMode 5th arg, phases 3/5/8) + H (phase-4 s.x = 0).
+ * sandbox --disable all = 2/622, vars=128 (frame exact). Residual: phase-8 SetDrawMode 'sw zero,16(sp)'
+ * scheduled 2 slots early (Z in that call). Mechanism: combine 3->1 folds each holder's sign
+ * extension (nonzero_bits 0) and the ashift temp's REG_DEAD note becomes an orphan (use) ->
+ * alter_reg slot. Holders have no semantic purpose beyond reserving frame slots: forbidden by
+ * named-local-fake-exception ('reserve frame bytes') and phantom-slot-frame-lever boundaries. */
+/* func_8006C21C candidate (manual s5, 2026-09-28) -- sandbox --disable all = 41/622
+ * (instruction count equal). NOT landing-ready; see evidence.md s5 + hypotheses.md.
+ * s5 levers (47 -> 41):
+ *   - else-arm 0x80 hoist: `poly->r3 = poly->r2 = 0x80;` / `poly->r3 = poly->r1 = 0x80;`
+ *     shrink the constant's loop lifetime (2+2 < threshold) so loop.c keeps `li v0,0x80`
+ *     in both arms; residual = the r3 store now sits right after r2 (target: after b2).
+ *   - row-loop tail: `k++, row++` + bar 1 through `next = rec + 1; next[k]` ties the
+ *     rec giv to biv k, giving the target's giv / k++ / lw / row++ order.
+ *   - bevel terms as givs `row * -4` / `row * -8` / `row * -2` (byte-identical to the old
+ *     d4/d8/d2 accumulators; loop.c-created regs = highest regnos, needed for the frame).
+ * Open items: (1) frame: target vars=128. Mechanism found (evidence s5): four orphan
+ *   entry-test pseudos from jump.c's duplicated exit tests of the four 2-count loops
+ *   (phase-4 inner j, phase-6 inner j, phase-8 j, row); a variable bound `n = 2` reproduces
+ *   the exact slot layout but leaves `li t0,2; beqz` entry tests -- need a bound form that
+ *   combine (not CSE) folds away. (2) r3 store position (above).
  * Policy-bound constructs still to be admitted before any landing:
- *   `cells`  -> Ruling 9 (VAR = s.header + 0xC, one meaning; func_8007636C precedent).
- *   `i`      -> is ALSO phase 8's `level` (Ruling 11 necessity; rename + annotate).
+ *   `cells`  -> Ruling 9 (VAR = s.header + 0xC, one meaning; func_8007636C precedent),
+ *               needs `s.header` typed so the RHS has no cast.
+ *   `i`      -> is ALSO phase 8's `level` (Ruling 11 necessity; must be renamed `idx`
+ *               or similar and annotated, proof banked in evidence.md).
  *   `mode`   -> FAKE constant-holder (named-local-fake-exception; func_800753D8 /
  *               func_800759D0 / func_8007636C precedents) -- annotation not yet written.
  *   `next`   -> second pointer into recs (rec + 1) indexed by k; needs review.
- *   `col`    -> per-branch-different constant (Ruling 11 (C)(3) per-branch clause); review.
+ *   chained 0x80 stores -> needs review (plain C, but chosen for a loop.c threshold).
  * The trailing #define is SANDBOX-ONLY (masks the later `extern void func_8006C21C(s32)`);
  * at landing change that extern (text1b.c ~10232) to `(s32 *)` instead. */
 typedef struct {
@@ -71,8 +77,12 @@ void func_8006C21C(s32 *arg0) {
     s32 row;
     s32 pulse;
     s32 cells;
+    s16 Z;
+    s16 H;
     s32 col;
 
+    Z = 0;
+    H = 0;
     s.ot_idx = 10;
     s.has_color = 0;
     table = *(s32 **)(arg0[1] + 0x30);
@@ -84,7 +94,7 @@ void func_8006C21C(s32 *arg0) {
     s.table = cells;
     s.out = arg0[5];
     arg0[5] = func_8007352C((s32)&s);
-    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), 0);
+    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, 0), Z);
     AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
 
@@ -110,11 +120,11 @@ void func_8006C21C(s32 *arg0) {
         }
     }
     s.header = (s32 *)table[13];
-    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), 0);
+    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), Z);
     AddPrim(g_gpu_ot_ptr + 0x24, arg0[7]);
     arg0[7] += 0xC;
 
-    s.x = 0;
+    s.x = H;
     s.y = 0;
     s.ot_idx = 10;
     s.has_color = 0;
@@ -141,7 +151,7 @@ void func_8006C21C(s32 *arg0) {
     }
     table = *(s32 **)(arg0[1] + 0x30);
     s.header = (s32 *)table[1];
-    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), 0);
+    SetDrawMode(arg0[7], 1, 0, func_8006E480((s32)s.header, mode), Z);
     AddPrim(g_gpu_ot_ptr + 0x28, arg0[7]);
     arg0[7] += 0xC;
 
@@ -276,7 +286,7 @@ void func_8006C21C(s32 *arg0) {
             AddPrim(g_gpu_ot_ptr + 0x20, (s32)poly);
             poly++;
         }
-        SetDrawMode(arg0[7], 1, 0, 0x40, 0);
+        SetDrawMode(arg0[7], 1, 0, 0x40, Z);
         AddPrim(g_gpu_ot_ptr + 0x20, arg0[7]);
         arg0[7] += 0xC;
         x += 280;

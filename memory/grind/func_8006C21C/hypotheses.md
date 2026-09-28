@@ -61,3 +61,23 @@
    combine_movables (different set_src rtx, n_times_set > 1, or m1->global).
 3. Policy packaging before landing: `cells` (R9), `i` doubling as level (R11), `mode` (FAKE),
    `next` (second recs pointer), the 0x80 chains.
+
+## Frontier after s6 (2026-09-28) — floor 37 (622/622, zero source-level hunks)
+1. FRAME is now the ONLY gap (all scored hunks are sp offsets). Mechanism pinned (evidence s6):
+   the four slots are orphan pseudos from combine 3->1 folds of a NARROW local's sign
+   extension, where the local's value is known (constant, nonzero_bits 0) and it is read in a
+   block CSE cannot see its set from. Proof: s16 zero holders at SetDrawMode's 5th arg
+   (phases 3/5/8) + phase-4 `s.x = 0` give vars=128 and score 2
+   (rejected/s16-zero-holders-frame-exact-2.c; 6 without `col`). Holders are forbidden
+   frame coercion, so the task is to find the source-natural narrow value that does this.
+   Leads: (a) a genuinely-used s16/u16 local initialised once near the top whose later reads
+   land in s32 stores or stack args (Env x/y fields, the tw/RECT arg, a SetDrawMode flag);
+   (b) a narrow value whose extension is droppable because its sign is known (lh load,
+   `& mask`) read in a later block. Using one holder at ALL same-meaning sites costs code
+   (block-0 sites fold in CSE; some later sites leave the holder live), so the natural form
+   must only be read after block 0.
+2. Not yet tried for (a): Env declared with s16 x/y locals mirrored into the struct; a RECT
+   local; SetDrawMode's real PsyQ prototype (RECT *tw) with a narrow NULL-ish source.
+3. If no natural producer exists, ask the owner (borderline.md policy-question): the target's
+   four slots are provably narrow-holder orphans; is a named s16 constant local read only at
+   those sites admissible when no other spelling reproduces the frame?
