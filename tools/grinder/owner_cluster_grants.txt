@@ -88,3 +88,10 @@ func_8002DAD0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; cens
 # row covers ONLY that word substitution, for this function only; every other
 # gate applies unchanged:
 func_8002DE20 inline-asm-policy.md § Per-function grant: func_8002DE20 (owner Q11 2026-09-26, ae96881fc): gte_rtv0 post-DMPSX word 0x4A486012 for placeholder 0x0000013f, 3 statements only; this function only; operator-added 2026-09-26
+# 2026-09-28 -- census member func_8002A458 (row :69, LZCS/LZCR sub-family) reached
+# floor 0 in a manual session (sandbox --disable all 0 at 416/416) with two joined
+# PsyQ inline_o.h gte_Lzc islands, the same form approved for func_8002CD58 /
+# func_8002DAD0 on 2026-09-25. Operator-added at the owner's instruction 2026-09-28
+# (AskUserQuestion, owner chose "Approve this one (Recommended)": this function
+# only, same terms as func_8002CD58 / func_8002DAD0); every other gate applies unchanged:
+func_8002A458 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; census row :69; owner-instructed row 2026-09-28, this function only; operator-added 2026-09-28)
