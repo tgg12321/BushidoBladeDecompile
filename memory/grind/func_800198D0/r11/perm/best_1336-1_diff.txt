@@ -1,0 +1,14 @@
+--- before
++++ after
+@@ -511,9 +511,9 @@
+           }
+           else
+           {
++          }
++          delta = (mag1 & 1) ? ((-(mag1 / 2)) - 1) : (mag1 / 2);
+             mag1 = zeros;
+-          }
+-          delta = (mag1 & 1) ? ((-(mag1 / 2)) - 1) : (mag1 / 2);
+           break;
+         }
+ 

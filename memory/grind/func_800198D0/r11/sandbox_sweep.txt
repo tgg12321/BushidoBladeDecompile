@@ -1,0 +1,64 @@
+
+variants/abl_field_h0.c      score    6   insns 749/749
+variants/abl_field_h1.c      score    6   insns 749/749
+variants/abl_field_h2.c      score    6   insns 749/749
+variants/abl_field_h3.c      score    6   insns 749/749
+variants/abl_field_h4.c      score    6   insns 749/749
+variants/abl_field_h5.c      score    6   insns 749/749
+variants/abl_field_kflag.c   score  151   insns 749/749
+variants/abl_field_lo.c      score  215   insns 755/749
+variants/abl_temp_final.c    score  419   insns 752/749
+variants/abl_temp_flag.c     score    3   insns 749/749
+variants/abl_temp_mag1.c     score  223   insns 750/749
+variants/abl_temp_mag3.c     score    6   insns 749/749
+variants/fs_field.c          score  209   insns 749/749
+variants/fs_idx.c            score  146   insns 745/749
+variants/fs_nbits.c          score    7   insns 749/749
+variants/fs_nbits2.c         score    7   insns 749/749
+variants/fs_temp.c           score  283   insns 750/749
+variants/landing.c           score    0   insns 749/749
+variants/pv_all.c            score  311   insns 748/749   (regenerated: col in the row-loop body)
+variants/pv_all_colfn.c      score  311   insns 748/749   (col at function scope; the permuter campaign's base)
+variants/pv_field.c          score  209   insns 749/749
+variants/pv_idx.c            score  146   insns 745/749   (regenerated: col in the row-loop body)
+variants/pv_idx2.c           score   21   insns 749/749
+variants/pv_nbits.c          score    7   insns 749/749
+variants/pv_nbits2.c         score    7   insns 749/749
+variants/pv_temp.c           score  283   insns 750/749
+
+
+variants/st_idx_while.c      score  146   insns 745/749
+variants/st_idx_colfn.c      score  146   insns 745/749   (col at function scope, kidx in the keyframe block)
+variants/st_idx2_rowblk.c    score   21   insns 749/749
+variants/st_idx2_dowhile.c   score   21   insns 749/749
+
+
+# declaration-position probes (r11/tools/mkdecl.py) and type probes
+
+variants/dp_flag_chbody_after_temp.c score    3   insns 749/749
+variants/dp_flag_chbody_before_temp.c score    3   insns 749/749
+variants/dp_flag_fnscope_first.c score    3   insns 749/749
+variants/dp_flag_fnscope.c score    3   insns 749/749
+variants/dp_h0_fnscope_first.c score    6   insns 749/749
+variants/dp_h0_fnscope.c score    6   insns 749/749
+variants/dp_h3_fnscope.c score    6   insns 749/749
+variants/dp_len_before_zeros.c score    7   insns 749/749
+variants/dp_len_caseblock.c score    7   insns 749/749
+variants/dp_mag3_before_nbits2.c score    6   insns 749/749
+variants/dp_mag3_chbody.c score    6   insns 749/749
+variants/dp_mag3_fnscope.c score    6   insns 749/749
+
+
+variants/ty_flag_s32.c score    4   insns 748/749
+variants/ty_flag_s8.c score    3   insns 749/749
+variants/ty_flag_u16.c score    3   insns 749/749
+variants/ty_flag_u32.c score    4   insns 748/749
+variants/ty_flag_u8.c score    3   insns 749/749
+variants/ty_h0_s32.c score    6   insns 749/749
+variants/ty_h0_u16.c score   24   insns 749/749
+variants/ty_len_s16.c score   26   insns 750/749
+variants/ty_len_u32.c score    8   insns 749/749
+variants/ty_mag3_s32.c score    6   insns 749/749
+variants/ty_mag3_u16.c score    6   insns 749/749
+
+variants/landing_annotated.c  score    0   insns 749/749   (= candidate.c)

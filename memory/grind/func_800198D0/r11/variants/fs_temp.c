@@ -47,13 +47,6 @@ extern s32 D_800A30EC;
         }                                                       \
     }
 
-/* Decode motion frame `frame` of object `obj` into `out` (33 words). Frames are
-   keyframes every 8 plus up to 7 delta sub-frames; the record at
-   D_800F1B18[obj * 0x570] caches the last four decoded frames with the reader
-   state after each, so a frame is either copied from the cache, continued from
-   the cached previous frame, or decoded from its keyframe. `work` holds the
-   current pose (+0x00), the per-channel rates (+0x84) and the channel codes
-   (+0x108). */
 void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     u8 *rec;
     u8 *tbl;
@@ -65,23 +58,19 @@ void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     s32 sub;
     s32 key;
     s32 ctr;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): two values, both loop indices --
-     * the keyframe channel loop's and the post-pass column loop's. (D) proof:
-     * memory/grind/func_800198D0/r11/proof.md */
     s32 idx;
     s32 ch;
-    /* Ruling 11: two values, both loop indices -- the sub-frame loop's and the
-     * post-pass row loop's. (D) proof: memory/grind/func_800198D0/r11/proof.md */
     s32 idx2;
     s32 off;
     s32 shift;
     u16 *p;
     u16 code;
-    /* Ruling 11: eight values, each a bit field read by GETBITS -- the three
-     * keyframe header words, the per-channel keyframe flag, the three
-     * sub-frame header words and case 3's 4-bit low code. (D) proof: memory/grind/func_800198D0/r11/proof.md */
     u32 field;
     s16 x;
+    s16 delta;
+    s16 mag1;
+    s16 flag;
+    s16 mag3;
 
     sub = frame & 7;
     key = frame >> 3;
@@ -165,19 +154,12 @@ decode:
         }
         work[2] = field;
         for (ch = 0; ch < 63; ch++) {
-            /* Ruling 11: four values -- the channel's decoded delta, case 1's
-             * magnitude, case 2's zero flag and case 3's magnitude. (D) proof:
-             * memory/grind/func_800198D0/r11/proof.md */
-            s16 temp;
-
             code = work[ch + 0x87];
             if (code == 0) {
                 continue;
             }
             switch (code) {
             case 1: {
-                /* Ruling 11: two values, both bit counts -- the zero-run length and
-                 * the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
                 s32 nbits;
 
                 nbits = 0;
@@ -197,30 +179,28 @@ decode:
                     nbits++;
                 } while (nbits < 12);
                 if (nbits == 12) {
-                    GETBITS_PRE(temp, 11, 0x800);
+                    GETBITS_PRE(mag1, 11, 0x800);
                 } else if (nbits >= 2) {
                     nbits = nbits - 1;
-                    GETBITS_PRE(temp, nbits, 1 << nbits);
+                    GETBITS_PRE(mag1, nbits, 1 << nbits);
                 } else {
-                    temp = nbits;
+                    mag1 = nbits;
                 }
-                temp = (temp & 1) ? -(temp / 2) - 1 : temp / 2;
+                delta = (mag1 & 1) ? -(mag1 / 2) - 1 : mag1 / 2;
                 break;
             }
             case 2: {
-                GETBITS(temp, 1);
-                if (temp) {
-                    temp = 0;
+                GETBITS(flag, 1);
+                if (flag) {
+                    delta = 0;
                 } else {
-                    GETBITS(temp, 12);
+                    GETBITS(delta, 12);
                 }
                 break;
             }
             case 3: {
-                GETBITS(temp, 1);
-                if (temp) {
-                    /* Ruling 11: two values, both bit counts -- the zero-run length
-                     * and the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
+                GETBITS(delta, 1);
+                if (delta) {
                     s32 nbits2;
 
                     GETBITS(field, 4);
@@ -241,27 +221,27 @@ decode:
                         nbits2++;
                     } while (nbits2 < 8);
                     if (nbits2 == 8) {
-                        GETBITS_PRE(temp, 7, 0x80);
+                        GETBITS_PRE(mag3, 7, 0x80);
                     } else if (nbits2 >= 2) {
                         nbits2 = nbits2 - 1;
-                        GETBITS_PRE(temp, nbits2, 1 << nbits2);
+                        GETBITS_PRE(mag3, nbits2, 1 << nbits2);
                     } else {
-                        temp = nbits2;
+                        mag3 = nbits2;
                     }
-                    temp = ((temp << 3) | (field & 7)) + 1;
+                    delta = ((mag3 << 3) | (field & 7)) + 1;
                     if (field & 8) {
-                        temp = -temp;
+                        delta = -delta;
                     }
                 }
                 break;
             }
             }
             if (idx2 == 0) {
-                work[ch + 0x45] = temp;
-                work[ch + 3] += temp;
+                work[ch + 0x45] = delta;
+                work[ch + 3] += delta;
             } else {
-                work[ch + 3] += work[ch + 0x45] + temp;
-                work[ch + 0x45] += temp;
+                work[ch + 3] += work[ch + 0x45] + delta;
+                work[ch + 0x45] += delta;
             }
         }
     }

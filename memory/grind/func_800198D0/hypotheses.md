@@ -6,6 +6,7 @@
 - Any spelling that assigns `bits = 32 - need` directly (17 micro variants incl. nested assignment, bits += 20, u32/s16/u8 need, separate lo): no bits copy.
 - Index-form copy loops `((u32*)d)[k] = ((u32*)s)[k]`: offset folds into the lw displacement.
 - `~(delta / 2)` in the zigzag ternary: expand_expr singleton path hoists the division.
+- One-variable-per-value spellings of the six reused locals (r11/proof.md section 2): all miss (3 .. 419).
 
-## OPEN (s2)
-- v12 = 305: remaining is register assignment only (plus the order of two hoisted li constants). Frontier: allocation work with BB2_ALLOC_DEBUG dumps (tmp/func_800198D0/alloc.sh).
+## CONFIRMED (s2)
+- The landing form (candidate.c) scores 0 and builds to the oracle SHA1 (2026-09-29). Remaining gate: layer-2 review of the Ruling 11 record (r11/proof.md).

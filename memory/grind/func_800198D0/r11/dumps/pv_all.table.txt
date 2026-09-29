@@ -1,0 +1,43 @@
+### pv_all  (instrumented cc1 BB2_ALLOC_DEBUG=1 -dr -dl -dg; tmp/func_800198D0/alloc.sh memory/grind/func_800198D0/r11/variants/pv_all.c)
+name       type   pseudo  reg  allocator
+obj        param      72   a0  local-alloc
+frame      param      73   s1  global ord=75 nrefs=7 livelen=670 pri=208
+out        param      74   s2  global ord=77 nrefs=4 livelen=663 pri=120
+work       param      75   a3  global ord=66 nrefs=24 livelen=681 pri=1409
+rec        u8         76   t2  global ord=58 nrefs=13 livelen=83 pri=4698
+tbl        u8         77   t6  global ord=71 nrefs=2 livelen=44 pri=454
+slot       u8         78   s0  global ord=69 nrefs=15 livelen=660 pri=681
+prev       u8         79   v0  global ord=45 nrefs=4 livelen=8 pri=10000
+ptr        u32        80   t3  global ord=17 nrefs=168 livelen=618 pri=19029
+cur        u32        81   t0  global ord=7 nrefs=403 livelen=612 pri=52679
+bits       s32        82   t2  global ord=9 nrefs=357 livelen=589 pri=48488
+sub        s32        83   a1  global ord=74 nrefs=7 livelen=668 pri=209
+key        s32        84   t3  global ord=70 nrefs=3 livelen=55 pri=545
+ctr        s32        85   t0  global ord=64 nrefs=3 livelen=14 pri=2142
+ch         s32        86    -  no hard reg (eliminated/unused)
+step       s32        87   t9  global ord=68 nrefs=12 livelen=366 pri=983
+row        s32        88   t4  global ord=51 nrefs=7 livelen=19 pri=7368
+off        s32        89   v1  local-alloc
+shift      s32        90   v1  local-alloc
+p          u16        91   a0  global ord=11 nrefs=20 livelen=20 pri=40000
+code       u16        92    -  no hard reg (eliminated/unused)
+x          s16        93   v1  global ord=1 nrefs=12 livelen=5 pri=72000
+kidx       s32       151   t5  global ord=62 nrefs=7 livelen=45 pri=3111
+h2         u32       152   a0  global ord=47 nrefs=6 livelen=14 pri=8571
+h1         u32       153   a0  global ord=48 nrefs=6 livelen=14 pri=8571
+h0         u32       154   a0  global ord=49 nrefs=6 livelen=14 pri=8571
+kflag      u32       249   v1  global ord=25 nrefs=6 livelen=7 pri=17142
+h5         u32       295   v1  global ord=13 nrefs=12 livelen=14 pri=25714
+h4         u32       296   v1  global ord=14 nrefs=12 livelen=14 pri=25714
+h3         u32       297   v1  global ord=15 nrefs=12 livelen=14 pri=25714
+delta      s16       356   t7  global ord=57 nrefs=42 livelen=442 pri=4751
+zeros      s32       362   v1  global ord=2 nrefs=27 livelen=18 pri=60000
+mag1       s16       363   t1  global ord=8 nrefs=24 livelen=19 pri=50526
+len        s32       389   a0  global ord=3 nrefs=21 livelen=14 pri=60000
+flag       s16       433   v0  global ord=12 nrefs=9 livelen=7 pri=38571
+zeros2     s32       478   a0  global ord=4 nrefs=27 livelen=18 pri=60000
+mag3       s16       479   v0  global ord=10 nrefs=18 livelen=16 pri=45000
+lo         u32       480   t6  global ord=55 nrefs=12 livelen=73 pri=4931
+len2       s32       516   a0  global ord=5 nrefs=21 livelen=14 pri=60000
+col        s32       597   t1  global ord=16 nrefs=11 livelen=13 pri=25384
+

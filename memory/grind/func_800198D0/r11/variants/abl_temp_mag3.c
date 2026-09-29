@@ -47,13 +47,6 @@ extern s32 D_800A30EC;
         }                                                       \
     }
 
-/* Decode motion frame `frame` of object `obj` into `out` (33 words). Frames are
-   keyframes every 8 plus up to 7 delta sub-frames; the record at
-   D_800F1B18[obj * 0x570] caches the last four decoded frames with the reader
-   state after each, so a frame is either copied from the cache, continued from
-   the cached previous frame, or decoded from its keyframe. `work` holds the
-   current pose (+0x00), the per-channel rates (+0x84) and the channel codes
-   (+0x108). */
 void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     u8 *rec;
     u8 *tbl;
@@ -65,21 +58,13 @@ void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     s32 sub;
     s32 key;
     s32 ctr;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): two values, both loop indices --
-     * the keyframe channel loop's and the post-pass column loop's. (D) proof:
-     * memory/grind/func_800198D0/r11/proof.md */
     s32 idx;
     s32 ch;
-    /* Ruling 11: two values, both loop indices -- the sub-frame loop's and the
-     * post-pass row loop's. (D) proof: memory/grind/func_800198D0/r11/proof.md */
     s32 idx2;
     s32 off;
     s32 shift;
     u16 *p;
     u16 code;
-    /* Ruling 11: eight values, each a bit field read by GETBITS -- the three
-     * keyframe header words, the per-channel keyframe flag, the three
-     * sub-frame header words and case 3's 4-bit low code. (D) proof: memory/grind/func_800198D0/r11/proof.md */
     u32 field;
     s16 x;
 
@@ -165,9 +150,6 @@ decode:
         }
         work[2] = field;
         for (ch = 0; ch < 63; ch++) {
-            /* Ruling 11: four values -- the channel's decoded delta, case 1's
-             * magnitude, case 2's zero flag and case 3's magnitude. (D) proof:
-             * memory/grind/func_800198D0/r11/proof.md */
             s16 temp;
 
             code = work[ch + 0x87];
@@ -176,8 +158,6 @@ decode:
             }
             switch (code) {
             case 1: {
-                /* Ruling 11: two values, both bit counts -- the zero-run length and
-                 * the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
                 s32 nbits;
 
                 nbits = 0;
@@ -219,9 +199,8 @@ decode:
             case 3: {
                 GETBITS(temp, 1);
                 if (temp) {
-                    /* Ruling 11: two values, both bit counts -- the zero-run length
-                     * and the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
                     s32 nbits2;
+                    s16 mag3;
 
                     GETBITS(field, 4);
                     nbits2 = 0;
@@ -241,14 +220,14 @@ decode:
                         nbits2++;
                     } while (nbits2 < 8);
                     if (nbits2 == 8) {
-                        GETBITS_PRE(temp, 7, 0x80);
+                        GETBITS_PRE(mag3, 7, 0x80);
                     } else if (nbits2 >= 2) {
                         nbits2 = nbits2 - 1;
-                        GETBITS_PRE(temp, nbits2, 1 << nbits2);
+                        GETBITS_PRE(mag3, nbits2, 1 << nbits2);
                     } else {
-                        temp = nbits2;
+                        mag3 = nbits2;
                     }
-                    temp = ((temp << 3) | (field & 7)) + 1;
+                    temp = ((mag3 << 3) | (field & 7)) + 1;
                     if (field & 8) {
                         temp = -temp;
                     }

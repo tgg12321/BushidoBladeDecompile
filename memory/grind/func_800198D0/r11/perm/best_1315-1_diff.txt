@@ -1,0 +1,12 @@
+--- before
++++ after
+@@ -513,7 +513,8 @@
+           {
+             mag1 = zeros;
+           }
+-          delta = (mag1 & 1) ? ((-(mag1 / 2)) - 1) : (mag1 / 2);
++          h4 = mag1 & 1;
++          delta = (h4) ? ((-(mag1 / 2)) - 1) : (mag1 / 2);
+           break;
+         }
+ 

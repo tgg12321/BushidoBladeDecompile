@@ -47,13 +47,6 @@ extern s32 D_800A30EC;
         }                                                       \
     }
 
-/* Decode motion frame `frame` of object `obj` into `out` (33 words). Frames are
-   keyframes every 8 plus up to 7 delta sub-frames; the record at
-   D_800F1B18[obj * 0x570] caches the last four decoded frames with the reader
-   state after each, so a frame is either copied from the cache, continued from
-   the cached previous frame, or decoded from its keyframe. `work` holds the
-   current pose (+0x00), the per-channel rates (+0x84) and the channel codes
-   (+0x108). */
 void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     u8 *rec;
     u8 *tbl;
@@ -65,22 +58,14 @@ void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     s32 sub;
     s32 key;
     s32 ctr;
-    /* Ruling 11 (ordinary-c-judge-decidable.md): two values, both loop indices --
-     * the keyframe channel loop's and the post-pass column loop's. (D) proof:
-     * memory/grind/func_800198D0/r11/proof.md */
-    s32 idx;
+    s32 col;
     s32 ch;
-    /* Ruling 11: two values, both loop indices -- the sub-frame loop's and the
-     * post-pass row loop's. (D) proof: memory/grind/func_800198D0/r11/proof.md */
-    s32 idx2;
+    s32 step;
+    s32 row;
     s32 off;
     s32 shift;
     u16 *p;
     u16 code;
-    /* Ruling 11: eight values, each a bit field read by GETBITS -- the three
-     * keyframe header words, the per-channel keyframe flag, the three
-     * sub-frame header words and case 3's 4-bit low code. (D) proof: memory/grind/func_800198D0/r11/proof.md */
-    u32 field;
     s16 x;
 
     sub = frame & 7;
@@ -108,34 +93,40 @@ void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
         if (*(s32 *)prev == frame - 1) {
             slot = prev;
         } else {
+            s32 kidx;
+            u32 h2;
+            u32 h1;
+            u32 h0;
             off = ((tbl[key * 3] << 16) | (tbl[key * 3 + 1] << 8) | tbl[key * 3 + 2]) + 0x380;
             ptr = *(u32 **)rec + (off >> 5);
             shift = off & 0x1F;
             bits = 32 - shift;
             cur = *ptr++ << shift;
             COPY33(work, rec + 4);
-            GETBITS(field, 1);
-            if (field) {
-                GETBITS(field, 16);
+            GETBITS(h0, 1);
+            if (h0) {
+                GETBITS(h0, 16);
             }
-            work[0] = field;
-            GETBITS(field, 1);
-            if (field) {
-                GETBITS(field, 16);
+            work[0] = h0;
+            GETBITS(h1, 1);
+            if (h1) {
+                GETBITS(h1, 16);
             }
-            work[1] = field;
-            GETBITS(field, 1);
-            if (field) {
-                GETBITS(field, 16);
+            work[1] = h1;
+            GETBITS(h2, 1);
+            if (h2) {
+                GETBITS(h2, 16);
             }
-            work[2] = field;
-            for (idx = 0; idx < 63; idx++) {
-                GETBITS(field, 1);
-                if (field) {
-                    GETBITS(work[idx + 3], 12);
+            work[2] = h2;
+            for (kidx = 0; kidx < 63; kidx++) {
+                u32 kflag;
+
+                GETBITS(kflag, 1);
+                if (kflag) {
+                    GETBITS(work[kidx + 3], 12);
                 }
             }
-            idx2 = 0;
+            step = 0;
             goto decode;
         }
     }
@@ -146,29 +137,32 @@ void func_800198D0(s32 obj, s32 frame, u32 *out, u16 *work) {
     if (sub >= 2) {
         COPY33(work + 0x42, slot + 0x88);
     }
-    idx2 = sub - 1;
+    step = sub - 1;
 decode:
-    for (; idx2 < sub; idx2++) {
-        GETBITS(field, 1);
-        if (field) {
-            GETBITS(field, 16);
+    for (; step < sub; step++) {
+        u32 h5;
+
+        u32 h4;
+
+        u32 h3;
+
+        GETBITS(h3, 1);
+        if (h3) {
+            GETBITS(h3, 16);
         }
-        work[0] = field;
-        GETBITS(field, 1);
-        if (field) {
-            GETBITS(field, 16);
+        work[0] = h3;
+        GETBITS(h4, 1);
+        if (h4) {
+            GETBITS(h4, 16);
         }
-        work[1] = field;
-        GETBITS(field, 1);
-        if (field) {
-            GETBITS(field, 16);
+        work[1] = h4;
+        GETBITS(h5, 1);
+        if (h5) {
+            GETBITS(h5, 16);
         }
-        work[2] = field;
+        work[2] = h5;
         for (ch = 0; ch < 63; ch++) {
-            /* Ruling 11: four values -- the channel's decoded delta, case 1's
-             * magnitude, case 2's zero flag and case 3's magnitude. (D) proof:
-             * memory/grind/func_800198D0/r11/proof.md */
-            s16 temp;
+            s16 delta;
 
             code = work[ch + 0x87];
             if (code == 0) {
@@ -176,11 +170,10 @@ decode:
             }
             switch (code) {
             case 1: {
-                /* Ruling 11: two values, both bit counts -- the zero-run length and
-                 * the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
-                s32 nbits;
+                s32 zeros;
+                s16 mag1;
 
-                nbits = 0;
+                zeros = 0;
                 do {
                     u32 bit;
 
@@ -194,37 +187,41 @@ decode:
                     if (bit) {
                         break;
                     }
-                    nbits++;
-                } while (nbits < 12);
-                if (nbits == 12) {
-                    GETBITS_PRE(temp, 11, 0x800);
-                } else if (nbits >= 2) {
-                    nbits = nbits - 1;
-                    GETBITS_PRE(temp, nbits, 1 << nbits);
+                    zeros++;
+                } while (zeros < 12);
+                if (zeros == 12) {
+                    GETBITS_PRE(mag1, 11, 0x800);
+                } else if (zeros >= 2) {
+                    s32 len;
+
+                    len = zeros - 1;
+                    GETBITS_PRE(mag1, len, 1 << len);
                 } else {
-                    temp = nbits;
+                    mag1 = zeros;
                 }
-                temp = (temp & 1) ? -(temp / 2) - 1 : temp / 2;
+                delta = (mag1 & 1) ? -(mag1 / 2) - 1 : mag1 / 2;
                 break;
             }
             case 2: {
-                GETBITS(temp, 1);
-                if (temp) {
-                    temp = 0;
+                s16 flag;
+
+                GETBITS(flag, 1);
+                if (flag) {
+                    delta = 0;
                 } else {
-                    GETBITS(temp, 12);
+                    GETBITS(delta, 12);
                 }
                 break;
             }
             case 3: {
-                GETBITS(temp, 1);
-                if (temp) {
-                    /* Ruling 11: two values, both bit counts -- the zero-run length
-                     * and the suffix length (one less). (D) proof: memory/grind/func_800198D0/r11/proof.md */
-                    s32 nbits2;
+                GETBITS(delta, 1);
+                if (delta) {
+                    s32 zeros2;
+                    s16 mag3;
+                    u32 lo;
 
-                    GETBITS(field, 4);
-                    nbits2 = 0;
+                    GETBITS(lo, 4);
+                    zeros2 = 0;
                     do {
                         u32 bit;
 
@@ -238,36 +235,38 @@ decode:
                         if (bit) {
                             break;
                         }
-                        nbits2++;
-                    } while (nbits2 < 8);
-                    if (nbits2 == 8) {
-                        GETBITS_PRE(temp, 7, 0x80);
-                    } else if (nbits2 >= 2) {
-                        nbits2 = nbits2 - 1;
-                        GETBITS_PRE(temp, nbits2, 1 << nbits2);
+                        zeros2++;
+                    } while (zeros2 < 8);
+                    if (zeros2 == 8) {
+                        GETBITS_PRE(mag3, 7, 0x80);
+                    } else if (zeros2 >= 2) {
+                        s32 len2;
+
+                        len2 = zeros2 - 1;
+                        GETBITS_PRE(mag3, len2, 1 << len2);
                     } else {
-                        temp = nbits2;
+                        mag3 = zeros2;
                     }
-                    temp = ((temp << 3) | (field & 7)) + 1;
-                    if (field & 8) {
-                        temp = -temp;
+                    delta = ((mag3 << 3) | (lo & 7)) + 1;
+                    if (lo & 8) {
+                        delta = -delta;
                     }
                 }
                 break;
             }
             }
-            if (idx2 == 0) {
-                work[ch + 0x45] = temp;
-                work[ch + 3] += temp;
+            if (step == 0) {
+                work[ch + 0x45] = delta;
+                work[ch + 3] += delta;
             } else {
-                work[ch + 3] += work[ch + 0x45] + temp;
-                work[ch + 0x45] += temp;
+                work[ch + 3] += work[ch + 0x45] + delta;
+                work[ch + 0x45] += delta;
             }
         }
     }
     p = &work[0x36];
-    for (idx2 = 0; idx2 < 2; idx2++) {
-        for (idx = 0; idx < 3; idx++) {
+    for (row = 0; row < 2; row++) {
+        for (col = 0; col < 3; col++) {
             x = *p;
             *p = (x & 0x800) ? (x | ~0xFFF) : (x & 0xFFF);
             p++;
