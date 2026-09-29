@@ -101,3 +101,20 @@
     from the split body). Split measured: one-local-per-value (first block `tbl`, rest `cells`) = 119.
   - the dead 0x100 scale stores before the 0x180/0x120 override (asm 356-367: both pairs are in the bytes;
     GCC 2.7.2 keeps dead stores to the escaping stack struct) -> dead-store family FAKE annotation + receipts.
+- [s2, after the split FAIL] SINGLE-DECLARATION FORM FOUND — memory/grind/func_800720FC/landing_body.c:
+  - timers: `timer = D_800A35C8; timer[0] = 0xF; timer[1] = 0x14;` (FAKE pointer alias; mechanism, exhaustion
+    table and cc1 vs cc1psx agreement in timers/README.md, dump excerpts timers/dump_excerpts.txt).
+  - page table: `D_8009BCC4[D_800A3584 - 4][i] - D_8009BCC4[D_800A3580 - 4][i]`. The scroll reads the page
+    origins through the SAME table the mode offset uses (pages 4..6 = entries 0..2). So D_8009BCB4 is not
+    referenced at all, and no handle reaches past its object. The measured costs:
+    `D_8009BCB4[mode + 4]` 14, `(D_8009BCB4 + 4)[mode]` 32, `[4 + mode]` 14, `((s16 *)D_8009BCB4)[mode*2+8]` 32,
+    pointer locals 24/18, `(D_8009BCC4 - 4)[page]` 24; the chosen form scores 1 (the gp artifact only).
+  - D_800A3578 retyped s16 in text1b.c (both declaration lines): byte-neutral for the whole object
+    (split/retype.py), and the body tests `D_800A3578 == 0` (lh).
+  - Spliced + retype: verify-oracle --rebuild --allow-dirty SHA1 == oracle and sandbox 0/690 (2026-09-29,
+    reverted and rebuilt green after).
+  - dead 0x100 scale stores: without them 687/690 insns (score 4: the li + two sw are missing) — the shipped
+    bytes contain them (asm 356-358 then 364-367, no read or call between); annotated FAKE per
+    dead-store-fake-exception.
+  - `cells`: Ruling 11 package in r11/ (per-value split 124; each value split alone: V1 120, V5 120, V2/V3/V4/V6 4;
+    no-variable respelling 131; allocation dumps; permuter campaign from the split body).

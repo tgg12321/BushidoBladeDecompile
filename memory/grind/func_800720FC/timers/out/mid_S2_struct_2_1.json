@@ -1,0 +1,11 @@
+{
+ "name": "mid_S2_struct_2_1",
+ "tu": "tmp/func_800720FC/q21tu/v/mid_S2_struct_2_1.c",
+ "scores": {
+  "func_800720FC": {
+   "score": 6,
+   "target_insns": 690,
+   "build_insns": 692
+  }
+ }
+}

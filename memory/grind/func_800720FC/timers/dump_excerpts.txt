@@ -1,0 +1,87 @@
+==== ARRAY  D_800A35C8[0]/[1] (timers/out/mid_A1) .cse ====
+
+(insn 1602 1600 1604 (set (mem:HI (symbol_ref:SI ("D_800A3580")))
+        (reg:HI 531)) 163 {movhi_internal2} (nil)
+    (nil))
+
+(code_label 1604 1602 1607 169 "")
+
+(insn 1607 1604 1609 (set (reg:SI 532)
+        (symbol_ref:SI ("D_800A35C8"))) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUAL (symbol_ref:SI ("D_800A35C8"))
+        (nil)))
+
+(insn 1609 1607 1611 (set (reg:HI 533)
+        (const_int 15)) 163 {movhi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 15)
+        (nil)))
+
+
+==== ARRAY  D_800A35C8[0]/[1] (timers/out/mid_A1) .loop (loop decisions, first loop listed = the player loop) ====
+;; Function func_800720FC
+
+
+Loop from 1500 to 1646: 42 real insns.
+Continue at insn 1637.
+Insn 1518: regno 513 (life 18), move-insn savings 1  moved to 1808
+Insn 1551: regno 523 (life 12), move-insn savings 1  moved to 1810
+Insn 1556: regno 524 (life 1), move-insn savings 1 not desirable
+Insn 1600: regno 531 (life 1), move-insn savings 1 not desirable
+Insn 1607: regno 532 (life 4), move-insn savings 1  moved to 1812
+Insn 1609: regno 533 (life 1), move-insn savings 1 not desirable
+Insn 1616: regno 535 (life 1), move-insn savings 1 not desirable
+Insn 1556: possible biv, reg 524, const = 5
+Insn 1600: possible biv, reg 531, const = 1
+
+==== POINTER timer[0]/[1] (timers/out/mid_A3) .cse ====
+
+(insn 1602 1600 1604 (set (mem:HI (symbol_ref:SI ("D_800A3580")))
+        (reg:HI 531)) 163 {movhi_internal2} (nil)
+    (nil))
+
+(code_label 1604 1602 1606 169 "")
+
+(note 1606 1604 1608 "" NOTE_INSN_BLOCK_BEG)
+
+(insn 1608 1606 1611 (set (reg/v:SI 532)
+        (symbol_ref:SI ("D_800A35C8"))) 159 {movsi_internal2} (nil)
+    (expr_list:REG_EQUAL (symbol_ref:SI ("D_800A35C8"))
+        (nil)))
+
+(insn 1611 1608 1613 (set (reg:HI 533)
+        (const_int 15)) 163 {movhi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 15)
+        (nil)))
+
+(insn 1613 1611 1616 (set (mem:HI (reg/v:SI 532))
+        (reg:HI 533)) 163 {movhi_internal2} (nil)
+    (nil))
+
+(insn 1616 1613 1618 (set (reg:HI 534)
+        (const_int 20)) 163 {movhi_internal2} (nil)
+    (expr_list:REG_EQUAL (const_int 20)
+        (nil)))
+
+(insn 1618 1616 1620 (set (mem/s:HI (const:SI (plus:SI (symbol_ref:SI ("D_800A35C8"))
+                    (const_int 2))))
+        (reg:HI 534)) 163 {movhi_internal2} (nil)
+    (nil))
+
+(note 1620 1618 1623 "" NOTE_INSN_BLOCK_END)
+
+
+==== POINTER timer[0]/[1] (timers/out/mid_A3) .loop (loop decisions, first loop listed = the player loop) ====
+;; Function func_800720FC
+
+
+Loop from 1500 to 1648: 42 real insns.
+Continue at insn 1639.
+Insn 1518: regno 513 (life 18), move-insn savings 1  moved to 1810
+Insn 1551: regno 523 (life 12), move-insn savings 1  moved to 1812
+Insn 1556: regno 524 (life 1), move-insn savings 1 not desirable
+Insn 1600: regno 531 (life 1), move-insn savings 1 not desirable
+Insn 1611: regno 533 (life 1), move-insn savings 1 not desirable
+Insn 1616: regno 534 (life 1), move-insn savings 1 not desirable
+Insn 1556: possible biv, reg 524, const = 5
+Insn 1600: possible biv, reg 531, const = 1
+Insn 1611: possible biv, reg 533, const = 15

@@ -2,6 +2,7 @@
  * shows page m + 4). */
 extern s16 D_8009BCC4[][2];
 extern s16 D_8009BCD0[2];
+extern s32 D_800A354C;
 typedef struct {
     s32 header;     /* sprite sheet header */
     s32 cells;      /* its cell table */
@@ -208,6 +209,8 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
         s32 row;
 
         for (j = 0, row = i * 2; j < 2; j++) {
+            s32 cells5;
+
             if (i == D_800A359C && j == D_800A3598 && (D_800A3578 & 0xFF) == 0) {
                 s.has_color = 1;
             } else {
@@ -218,8 +221,8 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
             } else {
                 s.header = ((Sheets720FC *)arg1)->hdr30;
             }
-            cells = s.header + 0xC;
-            s.cells = cells;
+            cells5 = s.header + 0xC;
+            s.cells = cells5;
             s.ft4_out = ((s32 *)arg0)[1];
             ((s32 *)arg0)[1] = func_80073728(&s, 0);
         }

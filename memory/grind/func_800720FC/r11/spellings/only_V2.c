@@ -2,6 +2,7 @@
  * shows page m + 4). */
 extern s16 D_8009BCC4[][2];
 extern s16 D_8009BCD0[2];
+extern s32 D_800A354C;
 typedef struct {
     s32 header;     /* sprite sheet header */
     s32 cells;      /* its cell table */
@@ -38,6 +39,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     u16 rect[4];
     u8 *menu;
     s32 *sheets;
+    s32 cells2;
     s32 cells; /* several values of one kind: the cell table following the
                 * header(s) of each sheet drawn (s.header + 0x18 for the
                 * two-header sheet, s.header + 0xC for the others). Ruling 11
@@ -98,8 +100,8 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     s.x = 0x90;
     s.y = 0x28;
     s.header = ((Sheets720FC *)arg1)->hdr0;
-    cells = s.header + 0xC;
-    s.cells = cells;
+    cells2 = s.header + 0xC;
+    s.cells = cells2;
     s.sprt_out = ((s32 *)arg0)[4];
     ((s32 *)arg0)[4] = func_8007352C(&s);
     ((u16 *)D_800A35C4)[8] = ((u16 *)D_800A35C0)[4] - D_8009BCC4[mode][0];

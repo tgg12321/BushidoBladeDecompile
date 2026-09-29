@@ -2,6 +2,7 @@
  * shows page m + 4). */
 extern s16 D_8009BCC4[][2];
 extern s16 D_8009BCD0[2];
+extern s32 D_800A354C;
 typedef struct {
     s32 header;     /* sprite sheet header */
     s32 cells;      /* its cell table */
@@ -38,11 +39,6 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     u16 rect[4];
     u8 *menu;
     s32 *sheets;
-    s32 cells; /* several values of one kind: the cell table following the
-                * header(s) of each sheet drawn (s.header + 0x18 for the
-                * two-header sheet, s.header + 0xC for the others). Ruling 11
-                * (ordinary-c-judge-decidable.md), proof in
-                * memory/grind/func_800720FC/r11/. */
     s32 i;
     s32 j;
     s32 d;
@@ -74,9 +70,8 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
         s.y = -5;
         sheets = *(s32 **)(D_800A35A8 + 0x74);
         s.header = sheets[4];
-        cells = s.header + 0x18;
         if (!(D_800A359C * 2 + D_800A3598 == 3 && D_800A35BC == 6 && mode == 2)) {
-            s.cells = cells;
+            s.cells = (sheets[4] + 0x18);
             s.cells += ((D_800A359C + mode * 3) * 2 + D_800A3598) * 8;
             s.sprt_out = ((s32 *)arg0)[4];
             ((s32 *)arg0)[4] = func_8007352C(&s);
@@ -84,7 +79,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
         s.header += 0xC;
         for (i = 0; i < 6; i++) {
             if (!(i == 3 && D_800A35BC == 6 && mode == 2) && D_800A359C * 2 + D_800A3598 != i) {
-                s.cells = cells + (mode * 6 + i) * 8;
+                s.cells = (sheets[4] + 0x18) + (mode * 6 + i) * 8;
                 s.sprt_out = ((s32 *)arg0)[4];
                 ((s32 *)arg0)[4] = func_8007352C(&s);
             }
@@ -98,8 +93,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     s.x = 0x90;
     s.y = 0x28;
     s.header = ((Sheets720FC *)arg1)->hdr0;
-    cells = s.header + 0xC;
-    s.cells = cells;
+    s.cells = (s.header + 0xC);
     s.sprt_out = ((s32 *)arg0)[4];
     ((s32 *)arg0)[4] = func_8007352C(&s);
     ((u16 *)D_800A35C4)[8] = ((u16 *)D_800A35C0)[4] - D_8009BCC4[mode][0];
@@ -148,8 +142,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     s.header = ((Sheets720FC *)arg1)->hdr4;
     s.scale_x = 0x180;
     s.scale_y = 0x120;
-    cells = s.header + 0xC;
-    s.cells = cells;
+    s.cells = (s.header + 0xC);
     s.ft4_out = ((s32 *)arg0)[1];
     ((s32 *)arg0)[1] = func_80073728(&s, 0);
     s.cells += *(u8 *)(s.header + 2) * 8;
@@ -194,8 +187,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     s.x = 0;
     s.ot_idx = 1;
     s.header = ((Sheets720FC *)arg1)->hdr8;
-    cells = s.header + 0xC;
-    s.cells = cells;
+    s.cells = (s.header + 0xC);
     s.ft4_out = ((s32 *)arg0)[1];
     ((s32 *)arg0)[1] = func_80073728(&s, 0);
     rect2[2] = 0x111;
@@ -218,16 +210,14 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
             } else {
                 s.header = ((Sheets720FC *)arg1)->hdr30;
             }
-            cells = s.header + 0xC;
-            s.cells = cells;
+            s.cells = (s.header + 0xC);
             s.ft4_out = ((s32 *)arg0)[1];
             ((s32 *)arg0)[1] = func_80073728(&s, 0);
         }
     }
     s.has_color = 0;
     s.header = ((Sheets720FC *)arg1)->hdr2C;
-    cells = s.header + 0xC;
-    s.cells = cells;
+    s.cells = (s.header + 0xC);
     s.ft4_out = ((s32 *)arg0)[1];
     ((s32 *)arg0)[1] = func_80073728(&s, 0);
 

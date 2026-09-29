@@ -1,7 +1,12 @@
-/* Page origins for the three scroll pages 4..6 (the page's (x, y) pair; mode m
- * shows page m + 4). */
+/* Page-scroll positions: D_8009BCB4 holds the pages' (x, y) pairs and
+ * D_8009BCC4 the three per-mode page offsets that follow it in the data.
+ * The scroll code indexes D_8009BCB4 by page number (4..6), which reads the
+ * pairs D_8009BCC4 names (the original's own indexing, asm lines 220-230);
+ * the mode offset is addressed through its own symbol (asm lines 187-197). */
+extern s16 D_8009BCB4[][2];
 extern s16 D_8009BCC4[][2];
 extern s16 D_8009BCD0[2];
+extern s32 D_800A354C;
 typedef struct {
     s32 header;     /* sprite sheet header */
     s32 cells;      /* its cell table */
@@ -107,7 +112,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     if (((D_800A3578 & 0xFF) == 1 || (D_800A3578 & 0xFF) == 3) &&
         D_800A3584 >= 4 && D_800A3584 < 7 && D_800A3580 >= 4 && D_800A3580 < 7) {
         for (i = 0; i < 2; i++) {
-            d = D_8009BCC4[D_800A3584 - 4][i] - D_8009BCC4[D_800A3580 - 4][i];
+            d = D_8009BCB4[D_800A3584][i] - D_8009BCB4[D_800A3580][i];
             d *= 30;
             if ((d >= 0 ? d : -d) > (D_8009BCD0[i] >= 0 ? D_8009BCD0[i] : -D_8009BCD0[i])) {
                 D_8009BCD0[i] += d * 32 / 488;
@@ -248,18 +253,7 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
                 } else {
                     D_800A3580 = 1;
                 }
-                timer = D_800A35C8; /* FAKE: pointer alias (pointer-alias-fake-exception.md):
-                                     * `D_800A35C8[0] = 0xF; D_800A35C8[1] = 0x14;` gives
-                                     * each element address its own pseudo; cse.c
-                                     * use_related_value rewrites the second as
-                                     * (plus base 2), so the base is used twice and loop.c
-                                     * hoists it out of the player loop (asm then stores
-                                     * via a callee-saved base). Through the local, the
-                                     * [1] address folds to a constant in the MEM and the
-                                     * single remaining use of the local is substituted
-                                     * by loop.c's large-loop single-usage rule, giving
-                                     * the target's two direct gp_rel stores. Receipts:
-                                     * memory/grind/func_800720FC/q21/ + evidence.md. */
+                timer = D_800A35C8;
                 timer[0] = 0xF;
                 timer[1] = 0x14;
                 ((s16 *)D_800A35C4)[3] = 0;

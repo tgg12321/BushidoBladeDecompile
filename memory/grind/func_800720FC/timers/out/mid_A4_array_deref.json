@@ -1,0 +1,11 @@
+{
+ "name": "mid_A4_array_deref",
+ "tu": "tmp/func_800720FC/q21tu/v/mid_A4_array_deref.c",
+ "scores": {
+  "func_800720FC": {
+   "score": 4,
+   "target_insns": 690,
+   "build_insns": 692
+  }
+ }
+}

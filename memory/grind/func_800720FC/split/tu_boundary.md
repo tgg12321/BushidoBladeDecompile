@@ -1,3 +1,22 @@
+# SUPERSEDED 2026-09-29 — no split is needed
+
+The layer-2 review of the split failed it on evidence (2026-09-29). It noted that
+§2 was the Q21 (1) necessity claim itself, and it pointed to D_800A3518 /
+D_800A350C, which show both access forms inside one TU. Following that lead, the
+investigation found a single-declaration spelling: a local pointer to the timer
+array, under pointer-alias-fake-exception, see ../timers/README.md. It reaches the
+target with text1b.c's existing `extern s16 D_800A35C8[];`. The split was
+unstaged and is not proposed. The rest of this file is kept as the record of what
+was submitted.
+
+On the review's counter-examples: D_800A3518 / D_800A350C are scalars. The
+lui/addiu forms in 693CC / B898 / E068 are `&D_800A3518` taken as a call argument,
+and the gp_rel forms are loads of the value. Neither is two constant-index
+element stores of one array in a loop with calls, so they say nothing about
+array versus scalars. §2's reading of func_8006F100's lui/addiu base as proof of a
+non-small array is weak for the same reason. The rodata-alignment finding (§1)
+stands on its own. Nothing here depends on it now.
+
 # text1b.c TU boundary at func_8006F97C — evidence (2026-09-29, manual s2)
 
 Split: `src/text1b.c` keeps 0x80047ED0..0x8006F97C (func_80047ED0 .. func_8006F528);

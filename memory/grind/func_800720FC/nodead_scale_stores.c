@@ -2,6 +2,7 @@
  * shows page m + 4). */
 extern s16 D_8009BCC4[][2];
 extern s16 D_8009BCD0[2];
+extern s32 D_800A354C;
 typedef struct {
     s32 header;     /* sprite sheet header */
     s32 cells;      /* its cell table */
@@ -134,14 +135,6 @@ void func_800720FC(s32 arg0, s32 arg1, s32 mode) {
     AddPrim(g_gpu_ot_ptr + s.ot_idx * 4, ((s32 *)arg0)[6]);
     ((s32 *)arg0)[6] += 0xC;
 
-    s.scale_x = 0x100; /* FAKE: dead store (overwritten by 0x180 below before any
-                        * read) - the shipped code performs it: asm lines 356-358
-                        * store 0x100 to both scales and lines 364-367 then store
-                        * 0x180/0x120; GCC 2.7.2 has no dead-store elimination for
-                        * the stack descriptor, so only a source that stores both
-                        * emits both. dead-store-fake-exception.md; receipts in
-                        * memory/grind/func_800720FC/evidence.md. */
-    s.scale_y = 0x100; /* FAKE: same dead store as above (asm line 358). */
     s.y = 0;
     s.x = 0;
     s.ot_idx = 0xB;

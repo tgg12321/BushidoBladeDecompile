@@ -11,14 +11,14 @@ the original file; it gets a head block made of
 Function definitions, INCLUDE_ASM/__asm__ items and object definitions are
 never copied.
 
-usage: tusplit.py <split_before_func> <out_pre.c> <out_post.c> <report.txt>
+usage: tusplit.py <split_before_func> <out_pre.c> <out_post.c> <report.txt> [<source.c>]
 """
 import re
 import sys
 
-SRC = 'src/text1b.c'
 split_func = sys.argv[1]
 out_pre, out_post, report = sys.argv[2:5]
+SRC = sys.argv[5] if len(sys.argv) > 5 else 'src/text1b.c'
 
 text = open(SRC, encoding='utf-8', newline='').read()
 
@@ -279,4 +279,4 @@ with open(report, 'w', encoding='utf-8', newline='') as f:
     f.write('decls %d, macros %d, prototypes %d\n' % (len(chosen), len(chosen_macros), len(protos)))
     for s, p in entries:
         f.write('%6d  %s\n' % (text.count('\n', 0, s) + 1, p.replace('\n', ' ')[:110]))
-print(open(report).read()[:4000])
+print(open(report).read()[:300])

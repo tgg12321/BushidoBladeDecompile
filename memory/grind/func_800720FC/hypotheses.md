@@ -13,3 +13,14 @@
   shared `i*2+j` becomes its own biv); `cellp = (s32 *)arg1 + i*2 + j; cellp[3]` (147).
 - confirm `action` as s32 (no andi at all), u16/s16/u8 with explicit masks (see evidence).
 - `j += 3` biv form of ctx (126: address giv still reduced to a pointer).
+
+## s2 closing (2026-09-29)
+- WITHDRAWN: TU split of text1b.c at func_8006F97C + Q21 per-file D_800A35C8 declarations (layer-2 FAIL on
+  evidence; split/tu_boundary.md "Superseded"). Not needed: the timer pointer alias reaches the target with
+  the single array declaration (timers/README.md).
+- RULED OUT for the timers (all measured, cc1 and cc1psx agree): array [0]/[1] either order, *(p+1),
+  sized [2], struct fields either order (4-6, hoisted base). Second scalar handle D_800A35CA reaches 0 but is
+  a second C handle for the bytes -> rejected.
+- RULED OUT for the page table: every one-base spelling on D_8009BCB4 (14-32); resolved by reading pages
+  through D_8009BCC4[page - 4] (one table, no out-of-object reach).
+- `cells`: split / partial splits / no-variable all miss (r11/README.md) -> Ruling 11 package.
