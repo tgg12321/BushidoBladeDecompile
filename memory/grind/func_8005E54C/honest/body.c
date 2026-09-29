@@ -15,8 +15,6 @@ typedef struct {
     u8 col_r;
     u8 col_g;
     u8 col_b;
-    s32 unk2C;
-    s16 unk30[2];
 } Env5E54C;
 extern Unk8009B398Record D_8009ADB4;
 extern Unk8009B400Record D_8009ADC0[3];
@@ -152,7 +150,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.table = &D_8009B514;
     s.sprt_out = cur;
     cur = func_8007352C((s32)&s);
-    *(s32 *)vals = 0;
+    vals[0] = vals[1] = 0;
     for (i = 0; i < D_8009BD38.unk10 + 3; i++) {
         if (((arg0 >> (i * 4)) & 3) != 3) {
             vals[0] += (arg0 >> (i * 4)) & 3;
@@ -161,7 +159,6 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             vals[1] += (arg0 >> (i * 4 + 2)) & 3;
         }
     }
-    i = y;
     for (j = 0; j < 2; j++) {
         s.header = &D_8009B4F0;
         s.table = &D_8009B51C;
@@ -171,7 +168,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             } else {
                 s.x = 0xF2 - (k >> 1) * 20;
             }
-            s.y = i + (k & 1) * 12;
+            s.y = y + (k & 1) * 12;
             s.sprt_out = cur;
             cur = func_8007352C((s32)&s);
         }

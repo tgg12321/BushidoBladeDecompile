@@ -92,3 +92,35 @@ func_80068F70. So D_8009BD38 is member +0x14 of the D_8009BD24 object (base+offs
 binary: func_8006E534.s) and the chr table is 2-byte records. A landing must respell every consumer (2026-09-29
 run lesson 1: no byte-offset pointer arithmetic left on the merged bytes, incl. the D_800A3568-based sites):
 not attempted yet.
+
+### [s2 later, 2026-09-29] refined model — no merge needed: record table + bitfield flag word
+
+match0/ now holds the refined zero (supersedes the struct-merge version committed earlier today):
+match0/body.c + match0/tu_patch.py score 0/799 (tools/sbxp.py, with and without cheat-asm stripping), and a
+whole-TU object comparison (`tools/objdiff.py` of the patched build vs build/src/text1b.o) shows 456/457 functions
+identical; func_8005E54C differs only in relocation addends (`D_8009B490+8` vs `D_8009B498`, `D_8009B398+24` vs
+`D_8009B3B0`, link-equivalent). The TU patch changes two declarations and respells their text1b.c consumers:
+- D_8009BD24 (text1b.c:5058 `extern u8 D_8009BD24[];`) -> `Unk8009BD24Record D_8009BD24[2][5]`, a 2-byte record
+  `{ u8 chr; u8 unk1; }` per player per round; consumers: func_80060414 `D_8009BD24[0][0].chr`, func_80077904's
+  call `(u8 *)D_8009BD24`. The 20-byte table ends exactly at 0x8009BD38.
+- D_8009BD38 (text1b.c:3272 `extern s32 D_8009BD38;`) -> a u32 bitfield word `Unk8009BD38Flags` (fields at bits
+  0,4,10,12,14,15,17,18, named by bit offset). Consumers respelled: func_8005F1C8 (`.unk14 + 1`, `.unk12 == 2`
+  x6), the text1b.c:5554 function (`.unk0`), func_80077894 (`D_8009BD38.unk0 = result;` replaces the `s32 *p`
+  read-modify-write and reproduces its `la`-form RMW exactly), func_80077904 (`.unk0 * 2`).
+Why bitfields: every cast the s32 spelling needed is what an `unsigned : n` field gives for free — the target
+shifts LOGICALLY (srl) but compares SIGNED (slt) and shifts the extracted value arithmetically (`srav`), i.e. a
+2-bit unsigned field promoted to int; `(w & 0xC00) == 0x800` is fold-const.c optimize_bit_field_compare of
+`field == 2`; and a COMPONENT_REF read forces the constant address into a pseudo (explow.c:398), which is what
+makes R2's body reload the word (evidence [s2] item 2). The +0x14 word is already modelled as bitfields in-tree
+(`Cfg720FC`, text1b.c:12721-12726, func_800720FC's `unk14_4` store).
+The "mode" tests are the same 2-bit field as the round count: unk10 = rounds - 3, and the y layout is chosen by
+it (5 rounds: i*24 + 0x44; 4 rounds: i*24 + 0x4F; 3 rounds: i*34 + 0x4F).
+
+Single-device ablations on match0 (each device removed alone; tools/sbxp.py + match0/tu_patch.py):
+- without `i = y;` (y used directly in R4): 6
+- without `*(s32 *)vals = 0;` (`vals[0] = vals[1] = 0;`): 2
+- without the descriptor trailing members `unk2C` / `unk30[2]`: 47
+- without all three: 55 = honest/body.c (the best body with only ordinary constructs, under the tu_patch
+  declarations). candidate.c (88) is the best body under main's current declarations.
+So the declaration model closes every source-level hunk; the three devices are each individually required and
+each needs an owner-level decision (see hypotheses [s2 OPEN]).

@@ -21,7 +21,10 @@ if patch:
 text = inlineasm.substitute_body(base, func, Path(cand).read_text(encoding='utf-8'))
 src_ovr = str(wd / 'src' / f'{stem}.c')
 Path(src_ovr).parent.mkdir(parents=True, exist_ok=True)
-inlineasm.write_stripped(stem, src_ovr, text)
+if '--nostrip' in sys.argv:
+    Path(src_ovr).write_text(text, encoding='utf-8')
+else:
+    inlineasm.write_stripped(stem, src_ovr, text)
 ov['src_override'] = src_ovr
 out_o = str(wd / f'{stem}.o')
 pipeline.build_c_object(stem, out_o, cheat_overrides=ov)
