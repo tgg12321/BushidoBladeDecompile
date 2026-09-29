@@ -3,8 +3,9 @@
 import os
 import sys
 
-D = 'tmp/perm_a458_onevar'
-O = 'tmp/func_8002A458/perm'
+import sys as _s
+D = _s.argv[2] if len(_s.argv) > 2 else 'tmp/perm_a458_onevar'
+O = _s.argv[3] if len(_s.argv) > 3 else 'tmp/func_8002A458/perm'
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 24
 os.makedirs(O, exist_ok=True)
 base = open('tmp/func_8002A458/r11v/onevar_full.c', encoding='utf-8').read()

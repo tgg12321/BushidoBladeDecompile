@@ -250,7 +250,12 @@ declaring it `u32` changes nothing (M4 = 2).
     the gte_ldlzc/nop statements (the LZC result stored before its input is loaded: a changed
     island, invalid); the lowest valid one (38) splits a segment delta `dy = base.y; dy = tip.y -
     dy;` (one value each, no reuse). perm_scores.txt.
-  - Campaign 2 (tmp/perm_a458_onevar_he, header-exact one-var body, fresh seed): CAMPAIGN2.
+  - Campaign 2 (tmp/perm_a458_onevar_he, header-exact one-var body, fresh seed): about 35,300
+    iterations, 1,518 s, 99 finds, best permuter score 275. The 16 lowest, sandbox-scored:
+    37-59, none at 0. The ten with fewer than 416 insns move an island statement (e.g. the
+    lowest, 37, moves gte_ldlzc's `mtc2` statement away from its `move`: no longer a unit, so
+    stripped; invalid); the lowest intact find (45) splits a segment delta `dy = tip.y; dy = dy
+    - base.y;` (one value, no reuse). perm2_scores.txt.
 
 ## (E) Honest names
 - `temp`, `temp2`: form (i) generic scratch words.
