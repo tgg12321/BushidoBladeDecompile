@@ -23,3 +23,32 @@
 - [s1] [fable-blitz 2026-07-07] Register plan observed: s4=ctx, fp=texArr, s7=mode live whole body; loop regs recycled per phase (s1/s0/s3/s5/s6 in grid loop; s1/s0/s2/s3 in player loop with 0xFF/0x10 as REGISTER constants -- loop.c invariant motion again); scratch t-regs only inside the call-free scroll loop. The heavy jal density (18 calls) forces everything live-across-call into s-regs/stack -- low RA risk compared to leaf decoders.
 
 - [s1] [fable-blitz 2026-07-07] m2c reference: tmp/blitz/m2c_func_800720FC.c (369 lines, valid syntax, exit 0) -- good semantic decode including both magic divisions.
+
+## Manual session 2026-09-29 (s2) — from scratch, 175 -> 25
+
+- [s2] First full body (m2c-guided, tmp/func_800720FC/m2c.c) scored 175/690. Levers that moved it, each measured:
+  - `D_8009BCC4[mode][0|1]` as its OWN extern (`extern s16 D_8009BCC4[][2];`), not `D_8009BCB4[mode + 4]`: the ARRAY_REF
+    index `(mode+4)*4` is not distributed (only c-typeck pointer_int_sum distributes a constant term), and
+    `(D_8009BCB4 + 4)[mode]` distributes but cse.c use_related_value then relates the scroll loop's D_8009BCB4 base to
+    the +16 register (same symbol base). A separate symbol base is the only form with neither effect (103 -> 94).
+    The asm/data labels agree: D_8009BCB4 (4 pairs) and D_8009BCC4 (3 pairs) are separate dlabels; the scroll loop
+    reads D_8009BCB4[page] with page in [4,6], i.e. past its 4 entries into D_8009BCC4 (original out-of-range read).
+  - grid loop: a per-row local `row = i * 2` + `((s32 *)arg1 + i * 2)[j + 3]` (pointer giv s3 walks from the row
+    pointer, +12 stays in the lw offset) + the `!=`/`||` condition form (normal arm first, `beq s7,2 -> alt`): 93 -> 44.
+  - headers read back through the descriptor (`s.header = X; cells = s.header + 0xC; s.cells = cells;`), one
+    function-scope `cells` (s2 at every site, as the target): 44 -> 30. NOTE: `cells` is a multi-write local — the
+    admission ruling must be settled before landing (Ruling 9 fails prong (c) because the first block reads the
+    +0x18 write many times; see hypotheses.md).
+  - confirm: separate `action` local from the L/R `code` local (target: a0 vs s0) -> first lookup matches.
+  - confirm write as a 6-bit BITFIELD store (`Cfg720FC.sel` at +0x14 bits 4..9): the target's in-place
+    `andi s0,s0,0xff` + `andi 0x3f; sll 4` order is exactly store_bit_field of a u8 value (zero_extend shared with
+    the `!= 0xD` compare). Explicit-mask forms: `(action & 0x3F) << 4` is shortened to QImode by c-typeck
+    (andi into a new reg); `(action << 4) & 0x3F0` keeps the in-place andi but emits sll-then-andi. 27 -> 25.
+  - player loop: `slot = D_800A3560[ctx]` (s32, block-local) and the `[ctx]` store spelled `D_800A3560[i * 3]`:
+    stops loop.c combining the two sym+ctx address givs (combined benefit > threshold -> pointer reduction); the
+    target keeps `sym(s0)` addressing for all three. `other = i == 0 ? 3 : 0;` gives the target's sltiu/negu/andi.
+- [s2] Remaining at 25 (sandbox --diff): (1) scroll-loop ABS registers (v0/v1 swapped, source-level class by
+  alignment only); (2) rsin block `li 256` register/schedule; (3) `sll s5` vs `move s0,zero` order (row local is
+  source-ordered before j=0; target has loop.c's hoist order); (4) D_800A35C8/CA: -G0 prices a symbol address 2
+  insns, so cse relates `D_800A35C8+2` to the `D_800A35C8` register and loop.c hoists it (life 4, 29*1*4 >= 42);
+  target has both stores direct gp_rel (the original's small-data pricing, cost 1, no relation). Open.
