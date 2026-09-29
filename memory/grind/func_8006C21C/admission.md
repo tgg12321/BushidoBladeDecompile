@@ -2,10 +2,12 @@
 
 Admission evidence for the three reused/holder locals in candidate.c, written against the s8
 candidate (setXYWH bar 1, chained 0x80 stores, `mode` set once at the top, `i` renamed `work`).
-These records do NOT make the function landable: the frame gap (4 untouched slots) and the r3
-store order remain (floor 41), and the colour-variable loosening was withdrawn by the owner on
-2026-09-28 (decisions.md "per-branch constants read only inside their branch: approved, then
-WITHDRAWN"). A landing still needs sandbox 0, the oracle, and a fresh layer-2 on the final body.
+Update s9 (2026-09-28): the frame and colour gaps are closed by the owner-granted Q27 FAKE locals
+(rules commit 32a6b3626); the landing body is landing-body-q27.c (sandbox 0/622, full-build SHA1 ==
+oracle, measured 2026-09-28). Its first layer-2 FAILed on this file's `cells` (b) census gap and on
+`work`'s (D) proof, which covered only lvl10; both are now banked below (§ `cells` (b) census,
+§ `work` (D) on the Q27 landing body). These are the author's records; admission is a fresh
+layer-2's call.
 
 Instruments (all in probes/s8/tools, run from tmp/c21c/): `orph.py` (cc1 `.s` + frame),
 `dump.sh -dl -dg`, `alloc.sh` (BB2_ALLOC_DEBUG from the private /tmp/gccdbg cc1, output checked
@@ -52,6 +54,53 @@ work++)`), V4 phase-4 sprite index (`< 6`), V6 phase-6 tile row (`< 11`), V8 pha
 - (E) name `work`: a generic scratch word (E)(i); the values are different kinds (indices, a level).
 - (F) annotation at the declaration in candidate.c.
 
+### `work` (D) on the Q27 landing body (s9, 2026-09-28; supersedes the cand10/lvl10 receipts above)
+Reuse spelling = landing-body-q27.c (= tmp/c21c9/land_sb.c). One-variable-per-value spelling
+(C)(1) = probes/s9/work-r11/w_spl_all.c: `bit` (declared in the phase-2 `if` body), `sprite`,
+`trow` (function scope, top-level loops), `level` (declared in the phase-8 j-loop body); same
+statement list as the reuse body (tmp/c21c9/mk_split9.py renames identifiers only).
+- (D)(1) dumps, both spellings (probes/s9/work-r11/dumps/: `<n>.excerpt.txt` = every `.lreg`
+  "Register N used" summary + the `.greg` register dispositions for func_8006C21C; `<n>.allocdbg` =
+  the full BB2_ALLOC_DEBUG global.c order; the full `-dl -dg -df` dumps regenerate with
+  work-r11/alloc9.sh after tmp/c21c/orph.py builds the `.i`). Commands:
+  `tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls
+  -fno-builtin -w -mel -msoft-float -dl -dg -df <tu>.i` and `BB2_ALLOC_DEBUG=1
+  tools/gcc-2.7.2/cc1 <same flags> <tu>.i`; the diagnostic cc1's func_8006C21C `.s` is identical
+  to the build cc1's (842 / 820 lines; the TU files differ only in the `-d` flags echoed in the
+  header comment), tmp/c21c9/fncmp.sh.
+- (D)(2) global.c allocno priority order (floor_log2(refs) * refs / live_length):
+  reuse: `ord=27 pseudo=81 hardreg=30 nrefs=40 livelen=353 pri=5665` (work -> $fp) before
+  `ord=28 pseudo=73 hardreg=-1 nrefs=34 livelen=333 pri=5105` (j spilled to 0x50) = the target.
+  one-variable-per-value: `ord=28 pseudo=73 hardreg=30 nrefs=34 livelen=333 pri=5105` (j -> $fp)
+  and `ord=40 pseudo=234 hardreg=-1 nrefs=12 livelen=244 pri=1475` (level spilled) = not the target.
+- (D)(3) unchanged (above): the level's own pseudo has the target-fixed refs/live range whatever
+  its declaration, scope, type or statement order, so its priority stays below j's.
+- (D)(4) `sandbox --disable all` (main 2d2a64e6d-era build/, 2026-09-28):
+  | spelling | score | insns |
+  |---|---|---|
+  | reuse (landing body) | 0 | 622 |
+  | full one-variable-per-value (w_spl_all, block-scoped bit/level) | 91 | 605 |
+  | same, all four at function scope | 90 | 605 |
+  | ablation: phase-2 bit split out | 93 | 611 |
+  | ablation: phase-4 sprite split out | 5 | 622 |
+  | ablation: phase-6 tile row split out | 3 | 622 |
+  | ablation: phase-8 level split out | 69 | 605 |
+  | structural: split + counters as `while` loops | 91 | 605 |
+  | structural: split + `s16 level` | 91 | 605 |
+  | structural: split + bar tests re-read the level from memory | 241 | 587 |
+  | structural: split + bar tests compare `rec == &recs[6]` | 159 | 623 |
+  Permuter campaign from the one-variable-per-value body (tmp/c21c9/perm_w_spl_all,
+  -j 2, --stack-diffs, --stop-on-zero), two windows on the same seed (harvest telemetry in
+  metrics/events.jsonl): `r11-spl-all-q27`, launched 2026-09-28T23:47:27Z, harvested after 114.3 s,
+  677 iterations; `r11-spl-all-q27-long`, launched 23:50:51Z, harvested and stopped at 1126.6 s,
+  1342 iterations. Base 4313; best 1695 (first window), best of the long window 1855. The reuse
+  body scores 0 on the same scorer (workspace perm_w_reuse, base_score 0). What the finds reuse:
+  the best (1695) reuses the phase-4 counter `sprite` as a phase-8 temp (`sprite = rec[row].x;`),
+  i.e. the search moves back toward merging values into one variable; others add `new_var = poly`
+  aliases (2030, 2245) or rewrite a loop test (`(sprite + 1) <= 6`, 1855). No find that keeps the
+  four values separate approaches the reuse body. Best find banked as
+  probes/s9/work-r11/perm-spl-all-best-1695.c.
+
 ## `cells` — Ruling 9 (one meaning, several writes at a constant offset)
 
 Four writes, each `cells = s.header + 0xC;` immediately followed by `s.table = cells;` (phase 1;
@@ -65,8 +114,23 @@ phase-2 inner `if`; phase-4 head; phase-4 `work` loop).
   `env->table` as `SprtEntA[]`; func_80073728's `Ft4Sheet`/`Ft4Cell` (text1b.c:12512-12527) has the
   same 12-byte header + 8-byte cells; other builders store `header + 0xC` into the same field
   (text1b.c:12422 `s1 = idx + 0xC`; func_800753D8 `body = s.sp18 + 0xC`; func_8007636C `cells`).
-  Data gap, stated honestly: the census of which sheets the four sites reach (all single-header,
-  as K = 0xC assumes) is not yet done for this function's sprite set (`*(arg0[1] + 0x30)`).
+  **Census (s9, closes the former data gap).** The sprite set is disc/TIM2D/MOD.BIN: arg0[1] =
+  D_800A34FC->0x24 (func_8006E390) = the buffer func_80068F70 fills with func_8006E950(2, buf) ->
+  func_80036EA8(2, 2) = D_8008F12C[2] + 2 = CD file #23, whose g_cd_file_table entry size 0xA0608
+  is exactly MOD.BIN's size (the same decoder maps file #156 to MOVOVL.EXE, as the source comment
+  on D_8008F12C[6] says). Header word +0x30 (relocated by func_8006E440) -> sheet table @0x5F8,
+  whose entries func_8006919C relocates (header words +0x14..+0x40). Every slot the four sites can
+  reach, tested two ways (header shape: tp1 == 0, pad == 0, count >= 1, CLUT row 480..511; cells
+  after the headers all have nonzero w/h), is a ONE-header sheet, so K = 12 * 1 = 0xC at every site:
+  | site | slots | headers N | K |
+  |---|---|---|---|
+  | phase 1 | table[0] (@0x1438, 4 cells) | 1 | 0xC |
+  | phase-2 inner | table[13..16] (@0xB60/0xB74/0xB88/0xB9C, 1 cell each) | 1 | 0xC |
+  | phase-4 head | table[1] (@0xB00, 6 cells) | 1 | 0xC |
+  | phase-4 loop | table[2..7] (@0xB3C/0xA08/0xA24/0xA40/0xA5C/0xA70; 3,2,2,2,1,1 cells) | 1 | 0xC |
+  Independent check: consecutive sheets are exactly 12 + 8 * count apart (0xA08 -> 0xA24 = 0x1C
+  for 2 cells; 0xA5C -> 0xA70 and 0xB60 -> 0xB74 = 0x14 for 1 cell). Receipts:
+  probes/s9/cells-census/ (mod_sheet_census.py + output, cdfile.py).
 - (c) each write is read once, by the next statement, in the same compound statement.
 - (d) the addition is in the target at every site (`addiu $a1,$v0,0xC`).
 - (e) every consumer store is followed by a read of `s` (func_8007352C) before the next store

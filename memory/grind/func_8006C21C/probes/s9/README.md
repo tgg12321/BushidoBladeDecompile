@@ -14,3 +14,13 @@ candidate, frame lines included) and `sandbox --disable all` at main bbf3d07de.
 tools/: `census.py` (orphan census, run under WSL with the venv), `orphdetail.py` (chain for one
 orphan), `sotn_zero_narrow.py` (SOTN scan for narrow locals whose every write is 0),
 `mkvar.py` / `mkdtd.py` (variant generators; expect `tmp/c21c9/`).
+
+## Layer-2 FAIL remediation (s9, after the Q27 grant)
+- `landing-body-q27.c` (ledger root): the body spending owner ruling Q27 (rules 32a6b3626); sandbox
+  0/622, full-build SHA1 == oracle. First layer-2: FAIL on `cells` (Ruling 9 (b) census) and `work`
+  (Ruling 11 (D) for the full one-variable-per-value spelling). Body unchanged; evidence added:
+- `cells-census/`: MOD.BIN resolution (cdfile.py) + sheet census (mod_sheet_census.py/.txt): all 12
+  reachable slots are one-header sheets, K = 0xC holds.
+- `work-r11/`: w_spl_all (+ function-scope variant), per-value ablations w_spl_p2/p4/p6/lv,
+  structural respellings st_*, generators, dump excerpts + BB2_ALLOC_DEBUG for reuse vs split,
+  permuter best find (1695). Scores and campaign data: admission.md § `work` (D) on the Q27 body.
