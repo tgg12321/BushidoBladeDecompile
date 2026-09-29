@@ -40,8 +40,9 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define dist t3
 #define coin t3
 #define score t3
-#define mask t3
 #define ok t3
+#define mask t3
+#define cmask t3
 #define script4 t3
 #define n449 t1
 #define base t1
@@ -420,14 +421,20 @@ s32 func_80058580(u8 *p) {
                         }
                     } else {
                         dist = SquareRoot0(CPU_SQ(wx - CPU_S32(0xF4)) + CPU_SQ(wy - CPU_S32(0xFC)));
-                        while (j >= 2) {
-                            u8 *a;
-                            u8 *b;
-                            a = CPU_WP(j);
-                            b = CPU_WP(j - 1);
-                            j = j - 1;
-                            dist += SquareRoot0(CPU_SQ(*(s16 *)(a + 0x364) - *(s16 *)(b + 0x364)) +
-                                                CPU_SQ(*(s16 *)(a + 0x366) - *(s16 *)(b + 0x366)));
+                        if (j >= 2) {
+                        leg_loop:
+                            {
+                                u8 *a;
+                                u8 *b;
+                                a = CPU_WP(j);
+                                b = CPU_WP(j - 1);
+                                j = j - 1;
+                                dist += SquareRoot0(CPU_SQ(*(s16 *)(a + 0x364) - *(s16 *)(b + 0x364)) +
+                                                    CPU_SQ(*(s16 *)(a + 0x366) - *(s16 *)(b + 0x366)));
+                            }
+                            if (j >= 2) {
+                                goto leg_loop;
+                            }
                         }
                         {
                             x1 = CPU_S16(0x36A);
@@ -605,7 +612,9 @@ s32 func_80058580(u8 *p) {
             if (p[0x440] == 4 ? r < (tired >> 2) : r < tired) {
                 best = -1;
                 besti = -1;
-                for (j = 0; j < 7; j++) {
+                j = 0;
+            pick_loop:
+                {
                     score = ((rand() & 0xFFF) * ((u8 *)&D_80099D88[p[0x443]] + 8)[j]) >> 12;
                     if (score != 0) {
                         flip = 0;
@@ -615,7 +624,7 @@ s32 func_80058580(u8 *p) {
                             if (rand() & 1) {
                                 flip = 1;
                             } else if (p[0x447] != 0) {
-                                continue;
+                                goto pick_next;
                             }
                             vc = CPU_S16(0x3F0);
                             if (CPU_TBL(7) < (vc >= 0 ? vc : -vc)) {
@@ -632,10 +641,10 @@ s32 func_80058580(u8 *p) {
                             if (rand() & 1) {
                                 flip = 1;
                                 if (p[0x449] != 0) {
-                                    continue;
+                                    goto pick_next;
                                 }
                             } else if (p[0x445] != 0) {
-                                continue;
+                                goto pick_next;
                             }
                             if (CPU_S32(0x430) & 0x20000) {
                                 score += 0x80;
@@ -649,7 +658,7 @@ s32 func_80058580(u8 *p) {
                             if ((p[0x44A] == 1 || p[0x44A] == 2) || !(D_800A387C >= 3000 && D_800A387C <= 5000) ||
                                 CPU_S16(0x43C) >= 0x201 || p[0x440] == 4 || *(u16 *)(CPU_OPP + 0x6A) == 0x18 ||
                                 *(u16 *)(CPU_OPP + 0x6A) == 0x2A) {
-                                continue;
+                                goto pick_next;
                             }
                             break;
                         }
@@ -659,6 +668,10 @@ s32 func_80058580(u8 *p) {
                             bestflip = flip;
                         }
                     }
+                }
+            pick_next:
+                if (++j < 7) {
+                    goto pick_loop;
                 }
                 if ((t1 = (s8)besti) != -1) {
                     CPU_S32(0x394) = 0;
@@ -768,7 +781,7 @@ s32 func_80058580(u8 *p) {
                                 mask = D_8009A8CA[p[0x440]][D_800A37A0 - 1][0];
                                 break;
                             }
-                            if ((e[3] >> 4) == 0 || !(mask & (1 << ((e[3] >> 4) - 1)))) {
+                            if ((e[3] >> 4) == 0 || !((u32)mask & (1 << ((e[3] >> 4) - 1)))) {
                                 goto next;
                             }
                         }
@@ -776,7 +789,8 @@ s32 func_80058580(u8 *p) {
                             goto next;
                         }
                         if (q[0] == 0x40) {
-                            if (!((q[4] << 24 | q[3] << 16 | q[2] << 8 | q[1]) & (1 << p[0x443]))) {
+                            cmask = q[4] << 24 | q[3] << 16 | q[2] << 8 | q[1];
+                            if (!((u32)cmask & (1 << p[0x443]))) {
                                 goto next;
                             }
                             ep += 5;
@@ -958,8 +972,9 @@ s32 func_80058580(u8 *p) {
 #undef dist
 #undef coin
 #undef score
-#undef mask
 #undef ok
+#undef mask
+#undef cmask
 #undef script4
 #undef n449
 #undef base

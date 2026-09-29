@@ -27,13 +27,19 @@
    "floor": 245,
    "modality": "manual",
    "headline": "stack slots exact (spill order = declaration order), cross-jump stubs, fold/range spellings, D_800A38DC switch (case 3 first), u16 state local, abs form, per-region temps; candidate.c"
+  },
+  {
+   "session": 2,
+   "floor": 116,
+   "modality": "manual",
+   "headline": "t1..t5 now seat s1..s5 exactly: mask/char-mask kept in t3 with a (u32) operand (stops fold's (x&(1<<n))==0 -> (x>>n)&1 rewrite), random-pick and nav leg loops spelled as goto loops (loop-depth ref weighting decides the global.c order t2>t3>t4)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "t2 (s2) and t3 (s3) swap registers because global.c orders t3 (7*138/1381=0.6995) ahead of t2 (6*70/617=0.6807); the target orders t2 first.",
-   "mechanism": "global.c allocno_priority = floor_log2(refs)*refs/live_length; the two are within 3%, so any remaining structural diff that changes either variable's refs/live length can flip it",
-   "next_probe": "close the remaining structural hunks first (big loop et/ok/mask, R1B load order), then re-run tmp/w/greg_report.py equivalent (cc1 -dg -dl on the sandbox source) and compare priorities"
+   "hypothesis": "Remaining register diffs are local: R1B 447/445/449 load order, R2 u16 st copy (a0/v1), 0xF-case value reg (v1 vs a1), nav leg-loop a0/a1, random-loop D90 address shape, big-loop et copies.",
+   "mechanism": "local-alloc/global tie-breaks and scheduler order; t1..t5 priorities are now t1 0.67 > t2 0.66 > t3 0.66 > t4 > t5 in the target's order (see cc1 -dg dump)",
+   "next_probe": "work the register diff list region by region with the greg dump"
   },
   {
    "hypothesis": "The three switch jump tables can be emitted by cc1 at 0x8001585C/84/9C once text1a_b_pre_rodata.c is split at 0x8001585C and the tail (jtbls onward) moves after text1b.o(.rodata) in bb2.ld.",
