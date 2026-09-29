@@ -15,15 +15,6 @@ void func_80030D7C(void) {
     scr = (u8 *)0x1F8002B8;
     obj = (u8 *)&D_80106A78;
     for (i = 0; i < 12; i++, obj += 0x64) {
-        /* work holds two values: the clamped turn amount (turn block) and the
-         * bounce restitution factor D_8008E194[state].unkA. One local, not two:
-         * ordinary-c-judge-decidable.md Ruling 11; (D) record in
-         * memory/grind/func_80030D7C/evidence.md (s2) and d_proof_dumps.txt. */
-        s32 work;
-        /* temp holds two values: the ratan2() heading of the velocity (turn block) and
-         * the func_8005344C() collision result (cleared when func_80054434() == 7).
-         * One local, not two: ordinary-c-judge-decidable.md Ruling 11; (D) record in
-         * memory/grind/func_80030D7C/evidence.md (s2) and d_proof_dumps.txt. */
         s32 temp;
 
         if (*(s16 *)(obj + 2) == -1) {
@@ -39,12 +30,14 @@ void func_80030D7C(void) {
         }
         if (*(s16 *)(obj + 2) == 0x10 && *(s32 *)(obj + 0x50) != 0 && *(u8 *)(obj + 5) == 0
             && *(s16 *)obj >= 14) {
+            s32 amt;
+
             temp = ratan2(*(s32 *)(obj + 0x44), *(s32 *)(obj + 0x4C));
-            work = (0x4E - *(s16 *)obj) * 96 / 64;
-            if (work < 0) {
-                work = 0;
-            } else if (work > 0x42) {
-                work = 0x42;
+            amt = (0x4E - *(s16 *)obj) * 96 / 64;
+            if (amt < 0) {
+                amt = 0;
+            } else if (amt > 0x42) {
+                amt = 0x42;
             }
             *(s32 *)(scr + 0x10) = ((&Judge)[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x44)
                                     - (&Judge)[temp & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
@@ -52,16 +45,16 @@ void func_80030D7C(void) {
             *(s32 *)(scr + 0x18) = ((&Judge)[temp & 0xFFF] * *(s32 *)(obj + 0x44)
                                     + (&Judge)[(temp + 0x400) & 0xFFF] * *(s32 *)(obj + 0x4C)) >> 12;
             *(s32 *)(scr + 0x20) = *(s32 *)(scr + 0x10);
-            half = work / 2;
+            half = amt / 2;
             *(s32 *)(scr + 0x24) = ((&Judge)[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x14)
                                     - (&Judge)[half & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
             *(s32 *)(scr + 0x28) = ((&Judge)[half & 0xFFF] * *(s32 *)(scr + 0x14)
                                     + (&Judge)[(half + 0x400) & 0xFFF] * *(s32 *)(scr + 0x18)) >> 12;
-            *(s32 *)(obj + 0x44) = ((&Judge)[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x20)
-                                    - (&Judge)[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
+            *(s32 *)(obj + 0x44) = ((&Judge)[(amt - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x20)
+                                    - (&Judge)[(amt - temp) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
             *(s32 *)(obj + 0x48) = *(s32 *)(scr + 0x24);
-            *(s32 *)(obj + 0x4C) = ((&Judge)[(work - temp) & 0xFFF] * *(s32 *)(scr + 0x20)
-                                    + (&Judge)[(work - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
+            *(s32 *)(obj + 0x4C) = ((&Judge)[(amt - temp) & 0xFFF] * *(s32 *)(scr + 0x20)
+                                    + (&Judge)[(amt - temp + 0x400) & 0xFFF] * *(s32 *)(scr + 0x28)) >> 12;
             *(s16 *)(obj + 0x5C) = *(s16 *)(obj + 0x5C) * 63 / 64;
             *(s16 *)(obj + 0x5E) = *(s16 *)(obj + 0x5E) * 63 / 64;
             *(s16 *)(obj + 0x60) = *(s16 *)(obj + 0x60) * 63 / 64;
@@ -84,6 +77,8 @@ void func_80030D7C(void) {
             temp = 0;
         }
         if (temp != 0) {
+            s32 rest;
+
             if (*(s16 *)(obj + 2) == 0xF) {
                 func_80032854(*(u8 *)(obj + 6), 0xE, scr + 0x10, nrm);
                 *(s16 *)(obj + 2) = -1;
@@ -97,11 +92,11 @@ void func_80030D7C(void) {
             *(s32 *)(obj + 0x4C) -= nrm[2] * dot / 4096;
             *(Vec3i32 *)(obj + 0x2C) = *(Vec3i32 *)(scr + 0x10);
             state = *(s16 *)(obj + 2);
-            work = D_8008E194[state].unkA;
+            rest = D_8008E194[state].unkA;
             if (*(s32 *)(obj + 0x50) != 0) {
-                *(s32 *)(obj + 0x44) = *(s32 *)(obj + 0x44) * work / 4096;
-                *(s32 *)(obj + 0x48) = *(s32 *)(obj + 0x48) * work / 4096;
-                *(s32 *)(obj + 0x4C) = *(s32 *)(obj + 0x4C) * work / 4096;
+                *(s32 *)(obj + 0x44) = *(s32 *)(obj + 0x44) * rest / 4096;
+                *(s32 *)(obj + 0x48) = *(s32 *)(obj + 0x48) * rest / 4096;
+                *(s32 *)(obj + 0x4C) = *(s32 *)(obj + 0x4C) * rest / 4096;
                 spd = *(s32 *)(obj + 0x44) * *(s32 *)(obj + 0x44)
                     + *(s32 *)(obj + 0x4C) * *(s32 *)(obj + 0x4C);
                 if (*(s16 *)(scr + 0x32) >= -0x7FF) {

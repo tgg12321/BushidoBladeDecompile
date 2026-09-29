@@ -63,34 +63,35 @@
 - [s2] Tbl8008E194.unkA gives `lh %lo(D_8008E194)+10`; target's reloc names D_8008E19E. Same bytes;
   the sandbox shows it inside the rest hunk — confirm at the oracle build.
 
-## s2 (cont.) — Ruling 11 (D) record for `temp` and `work` (2026-09-29, corrected after layer-2 FAIL #1)
+## s2 (cont.) — Ruling 11 (D) record for `temp` and `work` (2026-09-29, rev. 3 after layer-2 FAIL #2)
 
-Layer-2 FAIL #1 (2026-09-29): the first version of this record measured bodies other than the
-landed one (onevar_P0 read the normal through scr+0x30/32/34, not nrm[0..2]; the dumps were on
-F3.c, whose `ang` also held the relaunch angle, and X.c, which still had the relaunch local). Those
-probes are kept under probes/superseded/ and are NOT evidence for the landing. The record below is
-measured on the exact landing body and its exact per-value spelling. Also: prong (c) — the
-landing removes undefined_syms_auto.txt's `D_8008E19E ... retire with func_80030D7C` alias row.
+History: FAIL #1 — the first record measured other bodies (superseded probes in
+probes/superseded/). FAIL #2 — prong (A): `temp`/`work` were declared at function scope while all
+their writes are in the for body; both declarations now sit at the top of the loop body (the
+reviewer's A_scoped.c, 0/709). The landing also removes undefined_syms_auto.txt's
+`D_8008E19E ... retire with func_80030D7C` alias row (aggregate-merge prong (c)).
 
-Reuse spelling = probes/landed_body_L1-0.c (the exact body spliced into src/code6cac_b.c;
-sandbox 0/709). One-variable-per-value spelling = probes/onevar_PV-21.c (21/709), generated from
-the landed body by probes/mkpv.py: `temp` -> `ang` (turn block) / `hit` (collision result),
-`work` -> `amt` (turn block) / `rest` (restitution). Only declarations and identifiers differ
-(checked by renaming PV back and diffing against the landed body: identical statements).
+Reuse spelling = probes/landed_body_L2-0.c (the exact body spliced into src/code6cac_b.c;
+sandbox 0/709). One-variable-per-value spelling = probes/onevar_PV2-21.c (21/709), generated from
+the landed body by probes/mkpv2.py with each value's local at its innermost scope (Ruling 11
+(C)(1)): `ang`/`amt` at the top of the turn block, `hit` at the top of the loop body (where `temp`
+was), `rest` at the top of the `if (hit != 0)` block. Only declarations and identifiers differ
+(checked by diff). PV2 compiles to the same 709 instructions as the function-scope per-value
+body that seeded campaign C (objdump comparison of the two permuter base.o files: identical).
 
 ### (D)(1) dumps
 d_proof_dumps.txt, built by probes/dproof.sh (-> probes/dump.sh: cpp | tools/gcc-2.7.2/cc1 -O2
 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -da,
-BB2_ALLOC_DEBUG=1, BB2_FINDREG_DEBUG=<pseudo>) on tmp copies of onevar_PV-21.c and
-landed_body_L1-0.c (identical to the banked probes).
-- per-value (PV): pseudo 78 `ang`: .lreg "used 8 times across 68 insns" (crosses no call);
+BB2_ALLOC_DEBUG=1, BB2_FINDREG_DEBUG=<pseudo>) on tmp copies of onevar_PV2-21.c and
+landed_body_L2-0.c (identical to the banked probes).
+- per-value (PV2): pseudo 106 `ang`: .lreg "used 8 times across 68 insns" (crosses no call);
   FINDREG conflicts {2-7,16,19,29}; pass 0 may take 8 -> hardreg 8 (t0). Target: s4.
-- per-value: pseudo 79 `hit`: crosses 8 calls; pass 0 has no candidate -> pass 1 -> 20 (s4).
-- per-value: pseudo 76 `rest`: 14 insns, conflicts {2,3,4,16,29} -> hardreg 5 (a1). Target: a3.
-- per-value: pseudo 75 `amt`: 65 insns, conflicts {2-6,16,29} -> 7 (a3).
-- reuse (landed body): pseudo 77 `temp` (heading + collision result): 288 insns, crosses 8 calls,
+- per-value: pseudo 81 `hit`: crosses 8 calls; pass 0 has no candidate -> pass 1 -> 20 (s4).
+- per-value: pseudo 342 `rest`: 14 insns, conflicts {2,3,4,16,29} -> hardreg 5 (a1). Target: a3.
+- per-value: pseudo 107 `amt`: 65 insns, conflicts {2-6,16,29} -> 7 (a3).
+- reuse (landed body): pseudo 82 `temp` (heading + collision result): 288 insns, crosses 8 calls,
   conflicts {2-8,16-19,29} -> 20 (s4) for both values.
-- reuse: pseudo 75 `work` (turn amount + restitution): 79 insns, conflicts {2-6,16,29} -> 7 (a3)
+- reuse: pseudo 81 `work` (turn amount + restitution): 79 insns, conflicts {2-6,16,29} -> 7 (a3)
   for both values.
 
 ### (D)(2) mechanism
@@ -110,23 +111,29 @@ crosses no call gets the lowest-numbered caller-saved register it does not confl
   (vx) is live wherever a1 (vx*nx) or a2 (nx) is (target 325-354), so a restitution load placed
   earlier conflicts with a3 as well (probe Rb, on an earlier chassis: t0, 57).
 
-### (D)(3)/(4) measured one-variable-per-value spellings of the landed body (sandbox --disable all, full TU)
-- onevar_PV 21 (full per-value spelling).
-- Ablation: only `temp` shared (ablate_temp_only_PVa) 4 = the work cluster; only `work` shared
-  (ablate_work_only_PVb) 17 = the temp cluster; each merge fixes exactly its own cluster.
-- Structural respellings of PV (onevar_PV_struct_*): S1 turn-block locals block-scoped 21; S5
-  declaration order reversed 21; S6 operand order rest*v 21; S10 nested hit test 21; S4 `s16 ang`
-  53; S8 sin/cos locals 46.
-- Permuter: campaign C from onevar_PV (see the next entry). Earlier campaigns A/B ran from the
-  superseded chassis (scr+0x30 reads); their finds were likewise all new reuses of the heading's
-  variable (permuter_B_harvest.txt) — kept as corroboration only.
+### (D)(3)/(4) measured one-variable-per-value spellings (sandbox --disable all, full TU)
+- onevar_PV2 21 (exact per-value spelling of the landed body).
+- Ablation on PV2: only `temp` shared (ablate_temp_only_PV2a) 4 = the work cluster; only `work`
+  shared (ablate_work_only_PV2b) 17 = the temp cluster; each merge fixes exactly its own cluster.
+- Reviewer Q31 proposals (probes/reviewer_q31/, copied from the layer-2 reviewer's
+  tmp/rev30d7c/): R1_inner (per-value, every local at innermost scope, incl. `half`) 21;
+  R2_inline_rest (no restitution local, table read inline) 71; R3_order (declaration order
+  swapped) 21; R4_rest_s16 (`s16 rest`) 24. None reaches the target.
+- Structural respellings of the function-scope per-value variant (onevar_PV_struct_*; same
+  statements, declarations at function scope): S1 turn-block locals block-scoped 21; S5
+  declaration order reversed 21; S6 operand order rest*v 21; S10 nested hit test 21; S4
+  `s16 ang` 53; S8 sin/cos locals 46.
+- Permuter campaign C (next entry) seeded from the function-scope per-value body, whose code is
+  identical to PV2's (see above). Earlier campaigns A/B ran from a superseded chassis; their finds
+  were likewise all new reuses of the heading's variable (permuter_B_harvest.txt) —
+  corroboration only.
 - nrm: `s16 *nrm = scr + 0x30` once-written, read by the reflection (nrm[0..2]) and passed to both
   calls. Using nrm also in the two later ny >= -0x7FF tests: 3 (reuse_nrm_all_N1-3.c); the tests
   stay on scr+0x32. Inline scr+0x30 everywhere (no local): loop.c hoists the compiler temp and cse2
   folds it to a spilled constant (v1 178).
-- permuter campaign C (tmp/func_80030D7C/permC, base = onevar_PV-21.c exactly, permuter score 735,
-  -j 2, --stack-diffs; mini TU byte-identical to the full TU by probes/cmpmini.sh): 15,261
-  iterations in 26 min, stopped at the fresh-seed window, best 75, no 0. Every find below 500 makes
-  `ang` (the heading's variable) carry a further value (state, a flag byte, rest, a velocity, a
-  LerpAngle result, -1, ...) or turns it into `long long` (225). No counting one-variable-per-value
-  spelling reaches the target. Harvest: permuter_C_harvest.txt.
+- permuter campaign C (tmp/func_80030D7C/permC, permuter score 735, -j 2, --stack-diffs; mini TU
+  byte-identical to the full TU by probes/cmpmini.sh): 15,261 iterations in 26 min, stopped at the
+  fresh-seed window, best 75, no 0. Every find below 500 makes `ang` (the heading's variable) carry
+  a further value (state, a flag byte, rest, a velocity, a LerpAngle result, -1, ...) or turns it
+  into `long long` (225). No counting one-variable-per-value spelling reaches the target.
+  Harvest: permuter_C_harvest.txt.

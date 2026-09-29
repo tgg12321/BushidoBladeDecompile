@@ -17,3 +17,5 @@
 - s2 layer-2 FAIL #1 (record, not body): per-value probes/dumps did not match the landed body.
   Re-measured on the exact body (onevar_PV 21, PVa 4, PVb 17, PV structural 21-53, campaign C best
   75/no 0). Alias row D_8008E19E removed at landing (prong (c)).
+- s2 layer-2 FAIL #2 (prong (A) scope): temp/work moved to the top of the loop body (0/709);
+  per-value PV2 re-scoped per (C)(1) (21), ablations 4/17, reviewer proposals R1-R4 21/71/21/24.

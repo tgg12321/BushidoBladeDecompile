@@ -1,5 +1,5 @@
 #!/bin/bash
-# (D)(1) dump excerpts for the Ruling 11 record: per-value spelling (F3) vs reuse (X).
+# (D)(1) dump excerpts for the Ruling 11 record: exact per-value spelling (PV2 = probes/onevar_PV2-21.c) vs the exact landed body (L2 = probes/landed_body_L2-0.c).
 # usage: dproof.sh <out.txt>
 cd "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
 OUT="$1"
@@ -18,6 +18,6 @@ run() {  # $1 label, $2 candidate, $3.. pseudos
     grep "FINDREGDBG" $D/stderr.txt | grep -A11 "func=func_80030D7C pseudo=$p " | head -12 >> "$OUT"
   done
 }
-run perval tmp/func_80030D7C/PV.c 75 76 78 79
-run reuse tmp/func_80030D7C/L1.c 75 77
+run perval tmp/func_80030D7C/PV2.c 106 107 342 81
+run reuse tmp/func_80030D7C/L2.c 81 82
 echo done
