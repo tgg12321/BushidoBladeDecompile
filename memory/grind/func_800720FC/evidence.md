@@ -125,3 +125,20 @@
   FAILed documentation only: the q21/ citation, the session count, the split-TU note on timers/README.md).
 - The split route (split/, TU re-attribution at func_8006F97C + Q21 per-file declarations) is WITHDRAWN; its
   tooling stays here as history only (split/tu_boundary.md "Superseded"). Ledger closed.
+
+## Cleanup 2026-09-29 — the grid loop's `row` named intermediate (retro-audit finding)
+- `row` (single-use named intermediate, no FAKE annotation) measured against every ordinary spelling
+  (cleanup-row/gen.py; sandbox --disable all, whole text1b.c TU; landed body = 0):
+  inline `i * 2` in the condition (either operand order) 54; `i + i + j` condition with `i * 2` address 54;
+  `((s32 *)arg1 + i + i)[j + 3]` (pointer advanced twice) 54; struct view `->hdrC[i][j]` 55 (i*2 cond) / 55
+  (i+i cond) / 2 (with row); flat `((s32 *)arg1)[i * 2 + j + 3]` 102; `i != 1 || j != 1` 12; `row` declared with
+  initializer before the loop 2. **`(i + i)` shared by condition and address — `if (i + i + j != 3 ...)` and
+  `((s32 *)arg1 + (i + i))[j + 3]` — scores 0/690 with no named intermediate.**
+- Mechanism (cleanup-row/rtl_excerpts.txt, instrumented cc1 -dr -dL): spelled `i * 2`, c-typeck
+  pointer_int_sum folds the address's `(i * 2) * 4` to `i * 8` (rtl insn 1380), so the condition's `i * 2`
+  (insn 1356) is a lone movable with savings 1, "not desirable" in loop.c scan_loop, and stays in the inner
+  loop. Spelled `(i + i)`, the address keeps `(mult (i+i) 4)` of the same `i + i` the condition computes; loop.c
+  records insn 1375 as "matches 1355", the pair has savings 2 and move_movables hoists it to the inner loop's
+  preheader after `j = 0` (the target's `move s0,zero; sll s5,s1,1`). `row` reached the same by being one pseudo.
+- LANDING: row removed, `(i + i)` form spliced; sandbox 0/690, verify-oracle --rebuild --allow-dirty SHA1 ==
+  oracle (2026-09-29).

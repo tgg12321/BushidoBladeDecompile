@@ -1,0 +1,126 @@
+# RTL (.rtl, expand) excerpts, grid loop address of s.header = ((s32 *)arg1 + ROW)[j + 3]
+# cmd: cmd: tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float -dr -dL -dl -dg t.i -o t.s
+
+## inl_i2: ROW spelled i * 2 -> c-typeck pointer_int_sum folds (i*2)*4 to i*8 (insn 1380): the address no longer uses the condition's i*2
+(code_label 1372 1371 1374 2383 "")
+
+(note 1374 1372 1376 "" NOTE_INSN_DELETED)
+
+(insn 1376 1374 1377 (set (reg:SI 488)
+        (reg/v:SI 79)) -1 (nil)
+    (nil))
+
+(insn 1377 1376 1379 (set (reg:SI 489)
+        (ashift:SI (reg:SI 488)
+            (const_int 2))) -1 (nil)
+    (expr_list:REG_EQUAL (mult:SI (reg/v:SI 79)
+            (const_int 4))
+        (nil)))
+
+(insn 1379 1377 1380 (set (reg:SI 490)
+        (reg/v:SI 78)) -1 (nil)
+    (nil))
+
+(insn 1380 1379 1382 (set (reg:SI 491)
+        (ashift:SI (reg:SI 490)
+            (const_int 3))) -1 (nil)
+    (expr_list:REG_EQUAL (mult:SI (reg/v:SI 78)
+            (const_int 8))
+        (nil)))
+
+(insn 1382 1380 1384 (set (reg:SI 492)
+        (plus:SI (reg:SI 491)
+            (reg/v:SI 73))) -1 (nil)
+    (nil))
+
+(insn 1384 1382 1386 (set (reg:SI 493)
+        (plus:SI (reg:SI 489)
+            (reg:SI 492))) -1 (nil)
+    (nil))
+
+
+## ipi_both2: ROW spelled (i + i) -> address is (mult (i+i) 4) of the same i + i the condition computes (insns 1375/1380/1381)
+
+(note 1373 1371 1375 "" NOTE_INSN_DELETED)
+
+(insn 1375 1373 1377 (set (reg:SI 487)
+        (plus:SI (reg/v:SI 78)
+            (reg/v:SI 78))) -1 (nil)
+    (nil))
+
+(insn 1377 1375 1378 (set (reg:SI 488)
+        (reg/v:SI 79)) -1 (nil)
+    (nil))
+
+(insn 1378 1377 1380 (set (reg:SI 489)
+        (ashift:SI (reg:SI 488)
+            (const_int 2))) -1 (nil)
+    (expr_list:REG_EQUAL (mult:SI (reg/v:SI 79)
+            (const_int 4))
+        (nil)))
+
+(insn 1380 1378 1381 (set (reg:SI 490)
+        (reg:SI 487)) -1 (nil)
+    (nil))
+
+(insn 1381 1380 1383 (set (reg:SI 491)
+        (ashift:SI (reg:SI 490)
+            (const_int 2))) -1 (nil)
+    (expr_list:REG_EQUAL (mult:SI (reg:SI 487)
+            (const_int 4))
+        (nil)))
+
+(insn 1383 1381 1385 (set (reg:SI 492)
+
+## .loop excerpts (inner grid loop, loop.c scan_loop/move_movables)
+### ipi_both2 ((i + i) in condition AND address): 1375 (address i+i) 'matches' 1355 (condition i+i) -> one movable, savings 2, hoisted
+
+Loop from 1308 to 1439: 49 real insns.
+Continue at insn 1430.
+Insn 1340: regno 480 (life 1), move-insn savings 1 not desirable
+Insn 1355: regno 481 (life 1), savings 2  moved to 1816
+Insn 1359: regno 483 (life 1), move-insn savings 1 not desirable
+Insn 1364: regno 485 (life 1), move-insn savings 1 not desirable
+Insn 1367: regno 486 (life 1), move-insn savings 1 not desirable
+Insn 1375: regno 487 (life 0), done matches 1355 
+Insn 1381: regno 491 (life 2), savings 2  moved to 1817
+Insn 1383: regno 492 (life 1), cond forces 1381 savings 1  moved to 1818
+Insn 1340: possible biv, reg 480, const = 1
+Insn 1359: possible biv, reg 483, const = 3
+Insn 1364: possible biv, reg 485, const = 6
+Insn 1367: possible biv, reg 486, const = 2
+Insn 1433: possible biv, reg 79, const = 1
+Reg 79: biv verified
+Reg 486: biv discarded, never incremented
+Reg 485: biv discarded, never incremented
+Reg 483: biv discarded, never incremented
+Reg 480: biv discarded, never incremented
+Biv 79 initialized at insn 1307: initial value 0
+Insn 1357: giv reg 482 src reg 79 benefit 2 used 1 lifetime 2 mult 1 add (reg:SI 481)
+Insn 1378: giv reg 489 src reg 79 benefit 2 used 1 lifetime 3 replaceable mult 4 add 0
+
+### inl_i2 (i * 2 inline): condition i*2 (1356) savings 1 'not desirable' -> stays in the inner loop; address is i*8, no match
+
+Loop from 1308 to 1438: 48 real insns.
+Continue at insn 1429.
+Insn 1340: regno 480 (life 1), move-insn savings 1 not desirable
+Insn 1356: regno 482 (life 1), savings 1 not desirable
+Insn 1360: regno 484 (life 1), move-insn savings 1 not desirable
+Insn 1365: regno 486 (life 1), move-insn savings 1 not desirable
+Insn 1368: regno 487 (life 1), move-insn savings 1 not desirable
+Insn 1380: regno 491 (life 2), savings 2  moved to 1815
+Insn 1382: regno 492 (life 1), cond forces 1380 savings 1  moved to 1816
+Insn 1340: possible biv, reg 480, const = 1
+Insn 1360: possible biv, reg 484, const = 3
+Insn 1365: possible biv, reg 486, const = 6
+Insn 1368: possible biv, reg 487, const = 2
+Insn 1432: possible biv, reg 79, const = 1
+Reg 79: biv verified
+Reg 487: biv discarded, never incremented
+Reg 486: biv discarded, never incremented
+Reg 484: biv discarded, never incremented
+Reg 480: biv discarded, never incremented
+Biv 79 initialized at insn 1307: initial value 0
+Insn 1377: giv reg 489 src reg 79 benefit 2 used 1 lifetime 3 replaceable mult 4 add 0
+Insn 1384: giv reg 493 src reg 79 benefit 4 used 1 lifetime 1 replaceable mult 4 add (reg:SI 492)
+Cannot eliminate biv 79: biv used in insn 1329.
