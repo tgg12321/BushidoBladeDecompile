@@ -33,6 +33,12 @@
    "floor": 116,
    "modality": "manual",
    "headline": "t1..t5 now seat s1..s5 exactly: mask/char-mask kept in t3 with a (u32) operand (stops fold's (x&(1<<n))==0 -> (x>>n)&1 rewrite), random-pick and nav leg loops spelled as goto loops (loop-depth ref weighting decides the global.c order t2>t3>t4)"
+  },
+  {
+   "session": 2,
+   "floor": 87,
+   "modality": "manual",
+   "headline": "R1/R2 register-exact (447/449/445 statement order, table-loop state var split from st, 0xF-case value split); nav leg loop kept a C while loop (reorg fills its delay slot from the loop head only with a LOOP_BEG note); random-pick `score` is its own local (ablation: best of 11 single-role splits)"
   }
  ],
  "frontier": [

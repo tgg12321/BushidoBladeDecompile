@@ -39,7 +39,6 @@ extern void func_80057E84(u8 *, u8 *, s32, s32);
 #define idx t3
 #define dist t3
 #define coin t3
-#define score t3
 #define ok t3
 #define mask t3
 #define cmask t3
@@ -87,6 +86,7 @@ s32 func_80058580(u8 *p) {
     s32 t1, t2, t3, t4, t5;
     s32 k;
     s32 va;
+    s32 vd;
     s32 vb;
     s32 vn;
     s32 vc;
@@ -103,6 +103,8 @@ s32 func_80058580(u8 *p) {
     u16 off;
     s16 pbest;
     u16 st;
+    u16 st2;
+    s32 score;
 
     if (*(u16 *)(CPU_OPP + 0x6A) == 4 || *(u16 *)(CPU_OPP + 0x6A) == 0x14) {
         return 0;
@@ -136,8 +138,8 @@ s32 func_80058580(u8 *p) {
         } else if (CPU_U16(0x6A) == 0x15) {
             mode = 4;
             n447 = p[0x447] == 0;
-            n445 = p[0x445] == 0;
             n449 = p[0x449] == 0;
+            n445 = p[0x445] == 0;
             if (p[0x426] == 2) {
                 if (CPU_S16(0x42E) * CPU_S16(0x42E) <
                     CPU_SQ(CPU_S16(0x42A) - CPU_S32(0xF4)) + CPU_SQ(CPU_S16(0x42C) - CPU_S32(0xFC))) {
@@ -224,19 +226,19 @@ s32 func_80058580(u8 *p) {
             if (CPU_U16(0x6A) == 0x1D && (rand() & 0xFF) < CPU_TBL(4) && p[0x447] == 0) {
                 CPU_S32(0x3CC) = 0x8000;
             } else {
-                va = 0x80;
+                vd = 0x80;
                 if (CPU_U16(0x3E8) % (0x12 - (CPU_S16(0x438) >> 8)) == 0) {
-                    va = 0x20;
+                    vd = 0x20;
                 }
-                CPU_S32(0x3CC) = va;
+                CPU_S32(0x3CC) = vd;
                 if (p[0x447] != 0) {
                     if (p[0x446] != 0) {
-                        CPU_S32(0x3CC) = va | 0x1000;
+                        CPU_S32(0x3CC) = vd | 0x1000;
                     } else if (p[0x448] != 0) {
-                        CPU_S32(0x3CC) = va | 0x4000;
+                        CPU_S32(0x3CC) = vd | 0x4000;
                     }
                 } else if (p[0x44B] == 0) {
-                    CPU_S32(0x3CC) = (p[0x443] & 1) ? va | 0x1000 : va | 0x4000;
+                    CPU_S32(0x3CC) = (p[0x443] & 1) ? vd | 0x1000 : vd | 0x4000;
                 }
             }
         } else if (st == 0x11) {
@@ -277,7 +279,7 @@ s32 func_80058580(u8 *p) {
                              (far || (D_8009A850[i][3] & 4))) ||
                             force) {
                             if (D_8009A850[i][0] == CPU_U16(0x6A) &&
-                                ((u8)(st = D_8009A850[i][1]) == 0xFF || st == CPU_OPP[0x6A])) {
+                                ((u8)(st2 = D_8009A850[i][1]) == 0xFF || st2 == CPU_OPP[0x6A])) {
                                 if (D_8009A850[i][3] & 2) {
                                     vb = 0x40;
                                     if (CPU_U16(0x3E8) & 1) {
@@ -421,20 +423,14 @@ s32 func_80058580(u8 *p) {
                         }
                     } else {
                         dist = SquareRoot0(CPU_SQ(wx - CPU_S32(0xF4)) + CPU_SQ(wy - CPU_S32(0xFC)));
-                        if (j >= 2) {
-                        leg_loop:
-                            {
-                                u8 *a;
-                                u8 *b;
-                                a = CPU_WP(j);
-                                b = CPU_WP(j - 1);
-                                j = j - 1;
-                                dist += SquareRoot0(CPU_SQ(*(s16 *)(a + 0x364) - *(s16 *)(b + 0x364)) +
-                                                    CPU_SQ(*(s16 *)(a + 0x366) - *(s16 *)(b + 0x366)));
-                            }
-                            if (j >= 2) {
-                                goto leg_loop;
-                            }
+                        while (j >= 2) {
+                            u8 *a;
+                            u8 *b;
+                            a = CPU_WP(j);
+                            b = CPU_WP(j - 1);
+                            j = j - 1;
+                            dist += SquareRoot0(CPU_SQ(*(s16 *)(a + 0x364) - *(s16 *)(b + 0x364)) +
+                                                CPU_SQ(*(s16 *)(a + 0x366) - *(s16 *)(b + 0x366)));
                         }
                         {
                             x1 = CPU_S16(0x36A);
@@ -971,7 +967,6 @@ s32 func_80058580(u8 *p) {
 #undef idx
 #undef dist
 #undef coin
-#undef score
 #undef ok
 #undef mask
 #undef cmask
