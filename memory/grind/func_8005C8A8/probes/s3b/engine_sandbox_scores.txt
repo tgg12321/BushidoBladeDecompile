@@ -1,0 +1,7 @@
+# engine sandbox --disable all --diff --candidate <file> (tmp/orch/sbx.ps1), src/text1b.c at HEAD (INCLUDE_ASM), include/game.h + undefined_syms_auto.txt as landed
+landed  memory/grind/func_8005C8A8/candidate.c    "score": 0,    0 source-level · 0 operand-only (reg-alloc/scheduling) · 39 not-scored (masked cascade artifact)
+lit  memory/grind/func_8005C8A8/probes/s3b/lit.c    "score": 33,    2 source-level · 11 operand-only (reg-alloc/scheduling) · 39 not-scored (masked cascade artifact)
+paren  memory/grind/func_8005C8A8/probes/s3b/paren.c    "score": 33,    2 source-level · 11 operand-only (reg-alloc/scheduling) · 39 not-scored (masked cascade artifact)
+modeoff18  memory/grind/func_8005C8A8/probes/s3b/modeoff18.c    "score": 30,    0 source-level · 12 operand-only (reg-alloc/scheduling) · 39 not-scored (masked cascade artifact)
+tilecast1  memory/grind/func_8005C8A8/probes/s3b/tilecast1.c    "score": 0,    0 source-level · 0 operand-only (reg-alloc/scheduling) · 39 not-scored (masked cascade artifact)
+end_off  memory/grind/func_8005C8A8/probes/s3b/end_off.c    "score": 0,    0 source-level · 0 operand-only (reg-alloc/scheduling) · 39 not-scored (masked cascade artifact)

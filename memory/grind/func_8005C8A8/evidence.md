@@ -127,11 +127,13 @@ Ordinary forms and the other orphan families, measured negative on the s2 body (
 
 Q27 (A) reproduces the hole exactly (condition 1). One `s16 xpos`, written `xpos = 0;` once at entry and read as
 `s.x = xpos;` at case 0's first draw (the site after the case-0 label): vars=120 (frame 0xB8), code identical
-(asm diff 0 with sp offsets masked), slot list p72,p75,p78,p79,p80,p82,p226,p493,p540 — the new p226 lands between
+(asm diff 0 with sp offsets masked), slot list (first s3 body) p72,p75,p78,p79,p80,p82,p226,p493,p540; on the s3b landed body p72,p75,p78,p79,p80,p81,
+p226,p493,p540 (end_off gone) — the new p226 lands between
 size and the ot*4 pseudo, i.e. exactly the target's 0x78 (probes/s3/landed_frame.txt). Mechanism, dumped on the
-landed body (probes/s3/landed_orphan.txt): xpos is reg/v:HI 88; case 0's `s.x = xpos` expands to
+landed body (probes/s3/landed_orphan.txt, regenerated on the s3b body): xpos is reg/v:HI 87 (88 on the first s3
+body); case 0's `s.x = xpos` expands to
 p226 = (ashift (subreg xpos) 16), p225 = (ashiftrt p226 16); combine folds the extension of the once-set-to-0
-pseudo and distribute_notes plants `(use (reg:SI 226))` + REG_DEAD at code_label 567 (the case-0 label); p226 is
+pseudo and distribute_notes plants `(use (reg:SI 226))` + REG_DEAD at code_label 566 (567 on the first s3 body; the case-0 label); p226 is
 never allocated and reload gives it the first-pass slot. Sandbox (tmp/orch/sbx.ps1, --disable all): score 0,
 0 source-level, 0 operand-only hunks (58 not-scored relocation/branch-target artifacts).
 
@@ -143,3 +145,50 @@ the final-section s.x reads cost 2-7 lines. Reading xpos at every s.x write: var
 (q27a_combos.txt). Pairs (q27a_pairs.txt) and subsets (q27a_subsets.txt): at most one read after the case-0 label
 can be taken; two such reads either add a second slot (vars=128) or cost 92-136 lines. The landed body takes the
 first such site. Declaration/initialisation placement is neutral (q27a_placement.txt, 24/24 placements identical).
+
+## s3b (2026-09-29, laneB) — layer-2 FAIL round 1 fixes (bytes unchanged: SHA1 == oracle, sandbox 0)
+
+Layer-2 round 1 (orchestrator relay, 2026-09-29) passed xpos (every Q27 (A) prong), the case 2->0 fallthrough,
+`*(s16 *)&arg1`, `j * s.header->count` and `D_8009B2BC[2]`, and FAILed two things; both are fixed here.
+
+1. Aggregate merges were TU-local. The five merges now sit in include/game.h after D_8009B490, each with its
+   object-model evidence (base+offset / one-stride addressing in asm/funcs/func_8005C8A8.s):
+   - Unk8009B0E0Record D_8009B0E0[9] (merges D_8009B0F8 / D_8009B110 / D_8009B11C);
+   - D_8009B14C (merges its count byte D_8009B14E);
+   - D_8009B164[2][2] (D_8009B16C / D_8009B17C);
+   - D_8009B184[2] (D_8009B18C);
+   - Unk8009B2BCRecord D_8009B2BC[3] (D_8009B2BE / D_8009B2C4).
+   D_8009B158 (a single header, no merge) moved with its siblings. The retired labels' undefined_syms_auto.txt rows
+   (D_8009B14E, D_8009B2BE, D_8009B16C, D_8009B17C, D_8009B18C, D_8009B2C4) are removed: after the landing only the
+   no-longer-assembled asm/funcs/func_8005C8A8.s names them. The dlabels stay in asm/data/7D920.data.s. No other C
+   consumer of any merged byte exists (grep of src/ and include/).
+   Naming, for a tools/naming_wave.py reset, not hand-edited: named_syms.txt `g_cpu_no_action_table_24x3 = 0x8009B0E0`
+   ("3 x 24-byte records") and `g_cpu_no_action_table_16x3 = 0x8009B1AC` ("3 x 16-byte records") contradict the
+   evidenced 9 x 12-byte sheet headers at 0x8009B0E0 and the 2 x 8-byte cell records at 0x8009B1AC (and D_8009B1BC
+   right after). No code names either symbol.
+2. `end_off = arg2 + 0x4F0; size = end_off - arg2;` was a round trip that is not in the target's bytes (the target
+   only has `li t0,0x4F0; sw t0,0x70(sp)` at entry and `lw v0,0x70(sp)` at the return). It is now claimed under the
+   named-local-fake-exception constant-holder family: `size` holds the constant 0x4F0 in a frame slot across every
+   call instead of being rematerialized. The spelling is one statement, `size = (s32)tile + 0x4F0 - arg2;` (the
+   buffer's end minus its start), with no second local. The `/* FAKE: */` annotation is at size's declaration.
+   Mechanism (probes/s3b/size_dumps.txt, dumps of the landed body and of the literal form with command lines):
+   - landed: f.cse insn 40 is `(minus (reg/v 76) (reg 89))` with no note; combine folds it to `(const_int 1264)`
+     with no REG_EQUAL; local-alloc leaves it; p81 is spilled (slot 0x70) and the return loads it: `li $8,0x4f0`
+     at entry, `lw $2,112($sp)`, frame 184 (vars 120).
+   - literal `size = 0x4F0;`: f.cse insn 38 carries REG_EQUAL 1264, which local-alloc.c update_equiv_regs turns
+     into REG_EQUIV (1024-1032). Since p81 is read once (reg_n_refs == 2, 1078-1081), it rewrites the return to
+     `(set v0 (const_int 1264))` and deletes the set (1103-1110). Result: no slot, frame 176 (vars 112).
+   Literal-form failure and the alternatives (probes/s3b/engine_sandbox_scores.txt; engine sandbox --disable all,
+   variant files alongside):
+   - literal 33 (2 source-level + 11 operand-only hunks);
+   - `(arg2 + 0x4F0) - arg2` 33 (cse folds it: the same REG_EQUAL path);
+   - `mode_off + 0x18 - arg2` 30 (a second orphan slot shifts every offset);
+   - `arg2 + 0x4F0 - (s32)tile` 0;
+   - the old end_off form 0.
+   Boundaries: size is s32, not a narrow always-zero local (Q27 (A) does not apply). It is read once, as the
+   return value, never as an array subscript or pointer offset, so Q22's dummy-local refusal does not reach it.
+   The spelling's only cast is `(s32)tile`, a pointer converted to an integer for arithmetic, not a memory access.
+Verification on the spliced src (lock held): `tmp/orch/lock.ps1 rebuild laneB` build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true; `sandbox func_8005C8A8 --disable all --diff` 0,
+0 source-level / 0 operand-only (39 not-scored); engine test 862 passed. probes/s3/landed_frame.txt and
+landed_orphan.txt are regenerated on this body.

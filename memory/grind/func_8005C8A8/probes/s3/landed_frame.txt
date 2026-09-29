@@ -1,24 +1,14 @@
-$ python3 tmp/func_8005C8A8/fp.py -v memory/grind/func_8005C8A8/candidate.c memory/grind/func_8005C8A8/v/s2_floor30.c   (instrumented tools/gcc-2.7.2/cc1, BB2_FRAME_DEBUG, CC_FLAGS from engine/buildconfig.py; SAME = asm identical to the landed body with sp offsets masked)
-memory/grind/func_8005C8A8/candidate.c   vars=120 SAME lines=975
-    FRAMEDBG func=func_8005C8A8 ctx=stack_temp mode=26 size=48 align=-1 alignment=8 frame_offset=48
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p72 mode=4 size=8 align=-1 alignment=8 frame_offset=56
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p75 mode=4 size=8 align=-1 alignment=8 frame_offset=64
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p78 mode=2 size=8 align=-1 alignment=8 frame_offset=72
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p79 mode=2 size=8 align=-1 alignment=8 frame_offset=80
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p80 mode=4 size=8 align=-1 alignment=8 frame_offset=88
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p82 mode=4 size=8 align=-1 alignment=8 frame_offset=96
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p226 mode=4 size=8 align=-1 alignment=8 frame_offset=104
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p493 mode=4 size=8 align=-1 alignment=8 frame_offset=112
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p540 mode=4 size=8 align=-1 alignment=8 frame_offset=120
-    FRAMEDBG func=func_8005C8A8 ctx=round_frame mode=26 size=0 align=0 alignment=8 frame_offset=120
-memory/grind/func_8005C8A8/v/s2_floor30.c vars=112 SAME lines=975
-    FRAMEDBG func=func_8005C8A8 ctx=stack_temp mode=26 size=48 align=-1 alignment=8 frame_offset=48
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p72 mode=4 size=8 align=-1 alignment=8 frame_offset=56
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p75 mode=4 size=8 align=-1 alignment=8 frame_offset=64
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p78 mode=2 size=8 align=-1 alignment=8 frame_offset=72
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p79 mode=2 size=8 align=-1 alignment=8 frame_offset=80
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p80 mode=4 size=8 align=-1 alignment=8 frame_offset=88
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p82 mode=4 size=8 align=-1 alignment=8 frame_offset=96
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p490 mode=4 size=8 align=-1 alignment=8 frame_offset=104
-    FRAMEDBG func=func_8005C8A8 ctx=spill_new_p537 mode=4 size=8 align=-1 alignment=8 frame_offset=112
-    FRAMEDBG func=func_8005C8A8 ctx=round_frame mode=26 size=0 align=0 alignment=8 frame_offset=112
+$ bash tmp/func_8005C8A8/dbg.sh memory/grind/func_8005C8A8/candidate.c tmp/func_8005C8A8/dbgL BB2_FRAME_DEBUG   (instrumented tools/gcc-2.7.2/cc1, build CC_FLAGS; HEAD src/text1b.c with the landed body spliced over INCLUDE_ASM; landed body = s3b revision: shared-header merges, constant-holder size)
+FRAMEDBG func=func_8005C8A8 ctx=stack_temp mode=26 size=48 align=-1 alignment=8 frame_offset=48
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p72 mode=4 size=8 align=-1 alignment=8 frame_offset=56
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p75 mode=4 size=8 align=-1 alignment=8 frame_offset=64
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p78 mode=2 size=8 align=-1 alignment=8 frame_offset=72
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p79 mode=2 size=8 align=-1 alignment=8 frame_offset=80
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p80 mode=4 size=8 align=-1 alignment=8 frame_offset=88
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p81 mode=4 size=8 align=-1 alignment=8 frame_offset=96
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p226 mode=4 size=8 align=-1 alignment=8 frame_offset=104
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p493 mode=4 size=8 align=-1 alignment=8 frame_offset=112
+FRAMEDBG func=func_8005C8A8 ctx=spill_new_p540 mode=4 size=8 align=-1 alignment=8 frame_offset=120
+FRAMEDBG func=func_8005C8A8 ctx=round_frame mode=26 size=0 align=0 alignment=8 frame_offset=120
+slot = args(24) + frame_offset - 8: p72 mode 0x48, p75 ot 0x50, p78 sel 0x58, p79 y_base 0x60, p80 mode_off 0x68, p81 size 0x70, p226 (xpos extension temp) 0x78, p493 ot*4 0x80, p540 (s16)j 0x88
+	.frame	$sp,184,$31		# vars= 120, regs= 10/0, args= 24, extra= 0

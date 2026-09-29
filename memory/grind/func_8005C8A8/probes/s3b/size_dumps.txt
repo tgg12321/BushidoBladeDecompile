@@ -1,0 +1,15 @@
+== LANDED: $ bash tmp/func_8005C8A8/dump.sh memory/grind/func_8005C8A8/candidate.c tmp/func_8005C8A8/d5_landed '-ds -dc -dl -dg'   (instrumented tools/gcc-2.7.2/cc1, build CC_FLAGS; HEAD src/text1b.c with the body spliced over INCLUDE_ASM)
+   .frame	$sp,184,$31		# vars= 120, regs= 10/0, args= 24, extra= 0
+   f.s: li	$8,0x000004f0		# 1264
+   f.s: lw	$2,112($sp)
+   f.cse: (insn 40 38 44 (set (reg/v:SI 81) (minus:SI (reg/v:SI 76) (reg:SI 89))) 16 {subsi3_internal} (nil) (nil))
+   f.combine: (insn 40 38 44 (set (reg/v:SI 81) (const_int 1264)) 159 {movsi_internal2} (nil) (nil))
+   f.lreg: (insn 40 35 939 (set (reg/v:SI 81) (const_int 1264)) 159 {movsi_internal2} (nil) (nil))
+== LITERAL: $ bash tmp/func_8005C8A8/dump.sh memory/grind/func_8005C8A8/probes/s3b/lit.c tmp/func_8005C8A8/d5_lit '-ds -dc -dl -dg'   (instrumented tools/gcc-2.7.2/cc1, build CC_FLAGS; HEAD src/text1b.c with the body spliced over INCLUDE_ASM)
+   .frame	$sp,176,$31		# vars= 112, regs= 10/0, args= 24, extra= 0
+   f.s: li	$2,0x000004f0		# 1264
+   f.cse: (insn 38 35 42 (set (reg/v:SI 81) (const_int 1264)) 159 {movsi_internal2} (nil) (expr_list:REG_EQUAL (const_int 1264) (nil)))
+   f.combine: (insn 38 35 42 (set (reg/v:SI 81) (const_int 1264)) 159 {movsi_internal2} (nil) (expr_list:REG_EQUAL (const_int 1264) (nil)))
+
+== LITERAL f.lreg: the single use at the return after local-alloc.c update_equiv_regs (1024-1032 REG_EQUAL constant -> REG_EQUIV; 1078-1081 reg_n_refs == 2 -> reg_equiv_replacement; 1103-1110 the use is rewritten to the constant and the init insn deleted): p81 is gone
+ (expr_list (use (reg:SI 4 a0)) (nil)))) (insn 1911 1908 1912 (set (reg/i:SI 2 v0) (const_int 1264)) 159 {movsi_internal2} (insn_list:REG_DEP_ANTI 1908 (nil)) (nil)) 
