@@ -41,10 +41,6 @@ void func_8008B488(SpuVoiceAttr *attr) {
     mask = attr->mask;
     bSetAll = mask == 0;
     for (voice = 0; voice < 24; voice++) {
-        u16 temp; /* two values: the clamped sustain rate (SR block), then the
-                   * clamped sustain level (SL block); Ruling 11, proof in
-                   * memory/grind/func_8008B488/r11/proof.md */
-
         if ((attr->voice & (1 << voice)) == 0) {
             continue;
         }
@@ -189,12 +185,13 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = adsr | (dr_rate << 4);
         }
         if (bSetAll || (mask & 0x2000)) {
+            u16 sr_rate;
             s32 smode;
             s32 adsr;
 
-            temp = attr->sr;
-            if (temp >= 0x80) {
-                temp = 0x7F;
+            sr_rate = attr->sr;
+            if (sr_rate >= 0x80) {
+                sr_rate = 0x7F;
             }
             smode = 0x100;
             if (bSetAll || (mask & 0x200)) {
@@ -212,7 +209,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
             }
             adsr = *(volatile u16 *)(_spu_RXX + (pos + 5) * 2);
             adsr &= 0x3F;
-            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | ((temp | smode) << 6);
+            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | (((sr_rate | smode) + sr_rate - sr_rate) << 6); /* FAKE */
         }
         if (bSetAll || (mask & 0x4000)) {
             u16 rr_rate;
@@ -238,14 +235,15 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | (rr_rate | rmode);
         }
         if (bSetAll || (mask & 0x8000)) {
+            u16 sl_rate;
             s32 adsr;
 
-            temp = attr->sl;
-            if (temp >= 0x10) {
-                temp = 0xF;
+            sl_rate = attr->sl;
+            if (sl_rate >= 0x10) {
+                sl_rate = 0xF;
             }
             adsr = *(volatile u16 *)(_spu_RXX + (pos + 4) * 2);
-            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = (adsr & 0xFFF0) | temp;
+            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = (adsr & 0xFFF0) | sl_rate;
         }
     }
     v = 1;

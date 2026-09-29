@@ -1,4 +1,19 @@
-# func_8008B488 — hypotheses (manual s1 + s2, 2026-09-25)
+# func_8008B488 — hypotheses (manual s1-s4)
+
+## Status (s4, 2026-09-28)
+- Submitted under Ruling 11: candidate.c = r11/final.c, one loop-body `u16 temp` shared by the SR
+  and SL values only; standalone 1 (the jtbl addend), engine sandbox 4 on the clean tree / 0 with
+  the landing chassis. Proof package: r11/proof.md, r11/dumps.txt, r11/all.log.
+- The s2/s3 "settled inadmissible" status below is the pre-Ruling-11 record. It stands for the
+  five-value `rate` + function-scope `adsr` body; Ruling 11 lets a fresh submission meeting every
+  prong return, which is what s4 is.
+- Open risk for layer-2: the SR half of `temp` is not independently necessary (a FAKE
+  chain-extender on sr_rate closes SR alone). The package argues the partner choice by Ruling 1 (4)
+  simplest-known-form: every closing form shares SL with another value, and {SR,SL} is the only
+  one with a single two-value variable and no FAKE construct (layer-2 round 1 accepted this
+  argument). If a later review rejects it, the next frontier is {AR,SL} or {RR,SL}
+  sharing + the FAKE chain-extender on sr_rate (alt/arsl_srchain.c, alt/rrsl_srchain.c: both 1),
+  which needs the dead-store-fake-exception prerequisites on top of Ruling 11.
 
 ## Status (s2, 2026-09-25)
 - Landable floor: candidate.c, **12/387 with the chassis (16 on the clean tree)**,

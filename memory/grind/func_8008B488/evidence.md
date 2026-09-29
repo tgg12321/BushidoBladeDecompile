@@ -114,8 +114,62 @@ BB2_ALLOC_DEBUG / BB2_FINDREG_DEBUG) on candidate.c, pseudos 77..81 = ar..sl_rat
   a layer-2 construct ruling on 2026-09-25 (Ruling 5 1(a)/(b)/(c)/(e), Ruling
   6; Ruling 8 not citable). That settles it; it is not pending the owner.
 
+## Manual s4 (2026-09-28): Ruling 11 submission — only SR and SL share
+
+Returned from rotation by hand (the owner asked for a rotated item to be worked while another
+session held the queue top). The frontier recorded at rotation was "a change in the rule record";
+that change is Ruling 11 (owner, 2026-09-26), whose text lets this function's `rate` return as a
+fresh submission with an allocator-necessity proof. Everything below is under stock cc1 (the
+PLUS->IOR patch is gone since Q17); the s1-s3 numbers reproduce unchanged (candidate 13 incl. the
+jtbl addend, the old shared form 1).
+
+- **Minimal sharing (tmp/f8b488s4/gen_part.py: all 52 partitions of {AR,DR,SR,RR,SL} into shared
+  locals, `adsr` block-scoped throughout).** 24 partitions reach 1 (= the jtbl addend); every one
+  shares SL with another value AND puts SR in a shared group. The only single two-value variable
+  that reaches it is **{SR, SL}**. SL alone never gets below 5; {AR,SL} and {RR,SL} fix SL (9 = the
+  8 SR hunks + addend); {DR,SL} 19.
+- **Submitted body = r11/final.c** (candidate.c): `u16 temp` in the loop body holds the clamped
+  sustain rate (SR block) then the clamped sustain level (SL block); `ar_rate`/`dr_rate`/`rr_rate`
+  stay one per block (now block-scoped); the no-op `(s16)` casts on the two volume-mode switches
+  dropped (byte-identical). Standalone 1, engine sandbox 4 on the clean tree (0 source-level, the
+  two jtbl addends), 0 with the chassis. One-var twin r11/one-var-per-value-form.c: 13 / engine 16.
+- **Mechanism (r11/dumps.txt).** SR: global.c allocno order — `temp` has n_refs 16 / livelen 41 →
+  pri 15609, allocated before smode (11111) → $a1, smode $a2; split sr_rate 8/31 → 7741, after
+  smode → $a2. SL: find_reg — `temp` is live in the SR block where $a0 holds the masked adsr, so $a0
+  is in its conflicts; split sl_rate's conflicts are only v0/v1/sp → $a0. No preferences anywhere.
+- **Sanctioned families on the split body (fam/, fam2/).** Self-assign, dead store and
+  constant-base chain-extenders on SL: 13, SL pseudo unchanged in the dumps. Non-constant-base
+  chain-extenders survive to flow and DO extend the SL pseudo — around the whole loop (live 319
+  insns, crosses 3 calls) → call-saved $s5, 19-73. A same-iteration FAKE write + chain-extender
+  read in the SR/DR/RR block (fam3/, raised by layer-2 round 1) is live there at flow but combine
+  folds both away before global_conflicts, so the conflicts stay v0/v1/sp → $a0 (13-14; 5-6 with
+  the SR chain). **SR is different: a FAKE chain-extender `+ sr_rate - sr_rate` in the SR
+  store lifts sr_rate to 12 refs / pri 11612 and closes SR alone (5).** So the necessity is the
+  SL value's; SR is the SL value's partner because {SR,SL} is the only closing form with a single
+  two-value variable and no FAKE construct (two-variable FAKE-free forms such as {AR,SL}+{SR,RR}
+  also reach 1, and {AR,SL} / {RR,SL} + the SR chain-extender do). Ruling 1 (4)
+  simplest-known-form. Disclosed in proof.md.
+- Layer-2 round 1 (fresh reviewer, 2026-09-28): FAIL(EVIDENCE), ledger/message only — the
+  construct was ruled admissible under Ruling 11 (SR-half argument accepted, chassis and C clean),
+  but proof.md said "{SR,SL} is the only form with no FAKE construct" (false: two-variable
+  FAKE-free forms exist) and did not cover the write + chain-extender-read class. Both fixed;
+  src reverted and the lock released meanwhile.
+- Layer-2 round 2 (fresh reviewer, on current main incl. func_8006C21C): FAIL(EVIDENCE), ledger
+  only again — prongs A-H, body, chassis and message confirmed. Defects: proof said $a0 is not
+  used after 0x8008B92C (false: RR block B9B0/B9B8; conclusion unchanged); the write+read argument
+  missed a FAKE write in a DIFFERENT basic block from its chain-extender read, and same-register
+  copies deleted after allocation; one fam3 score range misquoted. Fixed: fam4/ (20 cross-block
+  variants, 6-29, dumps: combine puts the death USE at the start of the read's block, before the
+  $a0 mask; the write is emitted as an extra insn; a pre-RR write goes loop-wide to $s5), the
+  complete $a0 window list, and the definitional point that any FAKE write read by a
+  chain-extender is a second value of the SL variable under Ruling 11's value definition.
+- Permuter from the split body: see r11/proof.md (D)(4).
+
 ## Rejected bodies
 rejected/*.c: block-scoped-locals-12 and rate-per-adsr-register-multiwrite-0 are
 function-only files (no typedef) and were scored with the chassis in place.
 sotn-shared-rate-ruling5-0, sotn-ifelse-clamp-10 and volatile-no-and-split-38
 carry the typedef.
+s4 (2026-09-28) adds one-var-per-value-12 (the Ruling 11 (C)(1) twin), sr-fake-chain-extender-sr-only-4,
+sl-chain-extender-loopwide-s5-18 and arsl-share-plus-sr-fake-chain-0 (scores with the chassis;
+all carry the typedef).

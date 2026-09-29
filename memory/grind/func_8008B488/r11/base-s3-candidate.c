@@ -1,9 +1,18 @@
-/* func_8008B488: per-voice SPU attribute setter with the shape of PsyQ
- * LIBSPU's SpuSetVoiceAttr (C ref: sotn-decomp src/main/psxsdk/libspu/s_sva.c
- * and psyz decomp/src/libspu/sr_sv.c). BB2 links an older build: no min/max
- * voice range, a different block order, and the SR mode defaulting to 0x100.
- * The name stays auto (near-tier-ruling-2026-09-07: no verbatim caller pins
- * it). SpuVoiceAttr per PsyQ libspu.h (sizeof = 0x40, the callers' s32[16]). */
+/* CANDIDATE - func_8008B488 (src/main.c), best LANDABLE form (manual s1, 2026-09-25).
+ * One once-per-block rate local per ADSR block. sandbox --disable all = 12/387
+ * with the landing chassis, all operand-only (SR rate/smode seats, SL rate a0 vs a1).
+ * The closing form (0/387, full-build SHA1 == oracle) is
+ * rejected/sotn-shared-rate-ruling5-0.c: SOTN's shared `u16 rate`, ruled
+ * INADMISSIBLE by layer-2 on 2026-09-25 (settled, not an owner question).
+ * s2 allocator dump: no one-pseudo-per-block form can close SL or SR (evidence.md).
+ *
+ * LANDING CHASSIS (needed by either form; see evidence.md):
+ *  1. src/main.c: replace INCLUDE_ASM with this file (typedef + extern + body);
+ *     DELETE the hand-transcribed const jtbl_80016460[8] / jtbl_80016480[7]
+ *     at the end of main.c (the compiler now emits both ADDR_VECs).
+ *  2. Makefile:136: drop `main` from RODATA_ALIGN2_FILES.
+ *  3. engine/buildconfig.py RODATA_ALIGN2_FILES: drop "main" (mirror).
+ */
 typedef struct {
     /* 0x00 */ u32 voice;
     /* 0x04 */ u32 mask;
@@ -31,20 +40,21 @@ typedef struct {
 extern u16 D_800A28A4[];
 
 void func_8008B488(SpuVoiceAttr *attr) {
-    volatile s32 i;
-    volatile s32 v;
+    volatile s32 sp10;
+    volatile s32 sp14;
     s32 voice;
     s32 pos;
     u32 mask;
     s32 bSetAll;
+    u16 ar_rate;
+    u16 dr_rate;
+    u16 sr_rate;
+    u16 rr_rate;
+    u16 sl_rate;
 
     mask = attr->mask;
     bSetAll = mask == 0;
     for (voice = 0; voice < 24; voice++) {
-        u16 temp; /* two values: the clamped sustain rate (SR block), then the
-                   * clamped sustain level (SL block); Ruling 11, proof in
-                   * memory/grind/func_8008B488/r11/proof.md */
-
         if ((attr->voice & (1 << voice)) == 0) {
             continue;
         }
@@ -72,7 +82,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
             vol_left = attr->volume.left & 0x7FFF;
             volmode_left = 0;
             if (bSetAll || (mask & 0x4)) {
-                switch (attr->volmode.left) {
+                switch ((s16)attr->volmode.left) {
                 case 1:
                     volmode_left = 0x8000;
                     break;
@@ -112,7 +122,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
             vol_right = attr->volume.right & 0x7FFF;
             volmode_right = 0;
             if (bSetAll || (mask & 0x8)) {
-                switch (attr->volmode.right) {
+                switch ((s16)attr->volmode.right) {
                 case 1:
                     volmode_right = 0x8000;
                     break;
@@ -158,7 +168,6 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = attr->adsr2;
         }
         if (bSetAll || (mask & 0x800)) {
-            u16 ar_rate;
             s32 amode;
             s32 adsr;
 
@@ -177,7 +186,6 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = adsr | ((ar_rate | amode) << 8);
         }
         if (bSetAll || (mask & 0x1000)) {
-            u16 dr_rate;
             s32 adsr;
 
             dr_rate = attr->dr;
@@ -192,9 +200,9 @@ void func_8008B488(SpuVoiceAttr *attr) {
             s32 smode;
             s32 adsr;
 
-            temp = attr->sr;
-            if (temp >= 0x80) {
-                temp = 0x7F;
+            sr_rate = attr->sr;
+            if (sr_rate >= 0x80) {
+                sr_rate = 0x7F;
             }
             smode = 0x100;
             if (bSetAll || (mask & 0x200)) {
@@ -212,10 +220,9 @@ void func_8008B488(SpuVoiceAttr *attr) {
             }
             adsr = *(volatile u16 *)(_spu_RXX + (pos + 5) * 2);
             adsr &= 0x3F;
-            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | ((temp | smode) << 6);
+            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | ((sr_rate | smode) << 6);
         }
         if (bSetAll || (mask & 0x4000)) {
-            u16 rr_rate;
             s32 rmode;
             s32 adsr;
 
@@ -240,16 +247,16 @@ void func_8008B488(SpuVoiceAttr *attr) {
         if (bSetAll || (mask & 0x8000)) {
             s32 adsr;
 
-            temp = attr->sl;
-            if (temp >= 0x10) {
-                temp = 0xF;
+            sl_rate = attr->sl;
+            if (sl_rate >= 0x10) {
+                sl_rate = 0xF;
             }
             adsr = *(volatile u16 *)(_spu_RXX + (pos + 4) * 2);
-            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = (adsr & 0xFFF0) | temp;
+            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = (adsr & 0xFFF0) | sl_rate;
         }
     }
-    v = 1;
-    for (i = 0; i < 2; i++) {
-        v *= 13;
+    sp14 = 1;
+    for (sp10 = 0; sp10 < 2; sp10++) {
+        sp14 *= 13;
     }
 }

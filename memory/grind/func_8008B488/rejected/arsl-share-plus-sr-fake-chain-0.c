@@ -1,9 +1,3 @@
-/* func_8008B488: per-voice SPU attribute setter with the shape of PsyQ
- * LIBSPU's SpuSetVoiceAttr (C ref: sotn-decomp src/main/psxsdk/libspu/s_sva.c
- * and psyz decomp/src/libspu/sr_sv.c). BB2 links an older build: no min/max
- * voice range, a different block order, and the SR mode defaulting to 0x100.
- * The name stays auto (near-tier-ruling-2026-09-07: no verbatim caller pins
- * it). SpuVoiceAttr per PsyQ libspu.h (sizeof = 0x40, the callers' s32[16]). */
 typedef struct {
     /* 0x00 */ u32 voice;
     /* 0x04 */ u32 mask;
@@ -31,8 +25,8 @@ typedef struct {
 extern u16 D_800A28A4[];
 
 void func_8008B488(SpuVoiceAttr *attr) {
-    volatile s32 i;
-    volatile s32 v;
+    volatile s32 sp10;
+    volatile s32 sp14;
     s32 voice;
     s32 pos;
     u32 mask;
@@ -41,10 +35,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
     mask = attr->mask;
     bSetAll = mask == 0;
     for (voice = 0; voice < 24; voice++) {
-        u16 temp; /* two values: the clamped sustain rate (SR block), then the
-                   * clamped sustain level (SL block); Ruling 11, proof in
-                   * memory/grind/func_8008B488/r11/proof.md */
-
+        u16 temp;
         if ((attr->voice & (1 << voice)) == 0) {
             continue;
         }
@@ -72,7 +63,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
             vol_left = attr->volume.left & 0x7FFF;
             volmode_left = 0;
             if (bSetAll || (mask & 0x4)) {
-                switch (attr->volmode.left) {
+                switch ((s16)attr->volmode.left) {
                 case 1:
                     volmode_left = 0x8000;
                     break;
@@ -112,7 +103,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
             vol_right = attr->volume.right & 0x7FFF;
             volmode_right = 0;
             if (bSetAll || (mask & 0x8)) {
-                switch (attr->volmode.right) {
+                switch ((s16)attr->volmode.right) {
                 case 1:
                     volmode_right = 0x8000;
                     break;
@@ -158,13 +149,12 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = attr->adsr2;
         }
         if (bSetAll || (mask & 0x800)) {
-            u16 ar_rate;
             s32 amode;
             s32 adsr;
 
-            ar_rate = attr->ar;
-            if (ar_rate >= 0x80) {
-                ar_rate = 0x7F;
+            temp = attr->ar;
+            if (temp >= 0x80) {
+                temp = 0x7F;
             }
             amode = 0;
             if (bSetAll || (mask & 0x100)) {
@@ -174,7 +164,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
             }
             adsr = *(volatile u16 *)(_spu_RXX + (pos + 4) * 2);
             adsr &= 0xFF;
-            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = adsr | ((ar_rate | amode) << 8);
+            *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = adsr | ((temp | amode) << 8);
         }
         if (bSetAll || (mask & 0x1000)) {
             u16 dr_rate;
@@ -189,12 +179,13 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = adsr | (dr_rate << 4);
         }
         if (bSetAll || (mask & 0x2000)) {
+            u16 sr_rate;
             s32 smode;
             s32 adsr;
 
-            temp = attr->sr;
-            if (temp >= 0x80) {
-                temp = 0x7F;
+            sr_rate = attr->sr;
+            if (sr_rate >= 0x80) {
+                sr_rate = 0x7F;
             }
             smode = 0x100;
             if (bSetAll || (mask & 0x200)) {
@@ -212,7 +203,7 @@ void func_8008B488(SpuVoiceAttr *attr) {
             }
             adsr = *(volatile u16 *)(_spu_RXX + (pos + 5) * 2);
             adsr &= 0x3F;
-            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | ((temp | smode) << 6);
+            *(volatile u16 *)(_spu_RXX + (pos + 5) * 2) = adsr | (((sr_rate | smode) + sr_rate - sr_rate) << 6); /* FAKE */
         }
         if (bSetAll || (mask & 0x4000)) {
             u16 rr_rate;
@@ -248,8 +239,8 @@ void func_8008B488(SpuVoiceAttr *attr) {
             *(volatile u16 *)(_spu_RXX + (pos + 4) * 2) = (adsr & 0xFFF0) | temp;
         }
     }
-    v = 1;
-    for (i = 0; i < 2; i++) {
-        v *= 13;
+    sp14 = 1;
+    for (sp10 = 0; sp10 < 2; sp10++) {
+        sp14 *= 13;
     }
 }
