@@ -82,6 +82,11 @@ FAKE comment. `other` = count of FAKE / !FAKE annotations not on the lz declarat
 | r11/reviewer_probes/rv8_nb_r4split.c | 6 | yes | 0 |  |
 | r11/reviewer_probes/rv8_wk_distnode.c | 6 | yes | 0 |  |
 | r11/reviewer_probes/rv8_wk_inv.c | 6 | yes | 0 |  |
+| r11/reviewer_probes/rv9_dl_rnd.c | 6 | no | 0 |  |
+| r11/reviewer_probes/rv9_dl_rndif.c | 6 | no | 0 |  |
+| r11/reviewer_probes/rv9_nb_shl.c | 6 | no | 0 |  |
+| r11/reviewer_probes/rv9_nf_bitsfirst.c | 6 | no | 0 |  |
+| r11/reviewer_probes/rv9_nf_bothfirst.c | 6 | no | 0 |  |
 | r11/reviewer_probes/rv_both.c | 6 | no | 2 | FAKE@216 FAKE@218 |
 | r11/reviewer_probes/rv_nf0.c | 6 | yes | 2 | FAKE@262 FAKE@310 |
 | r11/reviewer_probes/rv_nfA1.c | 6 | yes | 4 | FAKE@123 FAKE@138 FAKE@262 FAKE@310 |
@@ -224,7 +229,7 @@ Summary (top dir, lz size, has other FAKE): count
 - ('r11', '4', False): 2
 - ('r11', '5', False): 2
 - ('r11', '5', True): 3
-- ('r11', '6', False): 119
+- ('r11', '6', False): 124
 - ('r11', '6', True): 38
 - ('r11', '7', False): 2
 - ('r11', '8', False): 3

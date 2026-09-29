@@ -167,7 +167,7 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   (r11/measurements.md: 67 / 21 / 40 (27, 33, 29 ablations) / 2 / 2; all 98) with systematic FAKE sweeps:
   dead stores at six anchors (72 variants + 5 per-value baselines) and self-assigns + chain-extenders (132):
   none reaches 0.
-- lz[6]: phantom-slot producer census (r11/frame_census.md): 14 ordinary spellings of the lz[2] form,
+- lz[6]: phantom-slot producer census (r11/frame_census.md): 14 spellings of the lz[2] form on the v2 chassis c6,
   none gives frame 0x78 at zero cost.
 
 ## [s3 cont. 2] 2026-09-28 — owner Q30 (45ecac2fc); v3 = v1 code (c7)

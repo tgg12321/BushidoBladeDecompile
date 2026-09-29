@@ -402,5 +402,10 @@ Every other measured body misses (lines > 0).
 | r11/reviewer_probes/rv8_wk_inv.c | 63 | 663 | 0x78 |
 | r11/banked/w1.c | 0 | 662 | 0x78 |
 | r11/banked/w2.c | 0 | 662 | 0x78 |
+| r11/reviewer_probes/rv9_dl_rnd.c | 53 | 660 | 0x78 |
+| r11/reviewer_probes/rv9_dl_rndif.c | 47 | 661 | 0x78 |
+| r11/reviewer_probes/rv9_nb_shl.c | 71 | 661 | 0x78 |
+| r11/reviewer_probes/rv9_nf_bitsfirst.c | 21 | 662 | 0x78 |
+| r11/reviewer_probes/rv9_nf_bothfirst.c | 25 | 662 | 0x78 |
 
 r11/banked/pc_joined.c under GENMODE=--joined (each macro one __asm__): 180 lines, 661 insns.

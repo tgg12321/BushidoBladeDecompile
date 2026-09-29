@@ -211,3 +211,8 @@ mf_209	tmp:rv8_wk_distnode.c
 mf_210	tmp:rv8_wk_inv.c
 mf_211	tmp:w1.c
 mf_212	tmp:w2.c
+mf_213	tmp:rv9_dl_rnd.c
+mf_214	tmp:rv9_dl_rndif.c
+mf_215	tmp:rv9_nb_shl.c
+mf_216	tmp:rv9_nf_bitsfirst.c
+mf_217	tmp:rv9_nf_bothfirst.c

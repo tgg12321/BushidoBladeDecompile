@@ -1,0 +1,15 @@
+rv3I_1000000_ff_loop_lz8 diff=3 tgt=662 ours=662 li19=2
+rv3_rv_wd_end_lz5 diff=0 tgt=662 ours=662 li19=2
+rv3_rv_both_lz5 diff=0 tgt=662 ours=662 li19=2
+rv3_nfdw_lz5 diff=0 tgt=662 ours=662 li19=2
+pc_noislands diff=425 tgt=662 ours=491 li19=0
+pc_joined  diff=0 tgt=662 ours=662 li19=2
+rv3_c7     diff=0 tgt=662 ours=662 li19=2
+rv3I_1000000_ff_loop_lz8 addiu sp,sp,-120
+rv3_rv_wd_end_lz5 addiu sp,sp,-120
+rv3_rv_both_lz5 addiu sp,sp,-120
+rv3_nfdw_lz5 addiu sp,sp,-120
+pc_noislands addiu sp,sp,-96
+pc_joined addiu sp,sp,-120
+rv3_c7 addiu sp,sp,-120
+pc_joined  diff=180 tgt=662 ours=661 li19=0
