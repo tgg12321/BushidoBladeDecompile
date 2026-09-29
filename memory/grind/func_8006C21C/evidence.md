@@ -392,3 +392,8 @@ Receipts in probes/s9/ (README lists every file). Candidate re-scored 41/622 at 
   (`uBase = 0;` twice, read 8x as `uBase + points[...]`, paired with `vBase` = 0 / 0x80;
   config/splat.us.stst0.yaml). Corrects s8's "no SOTN precedent" for zero-valued narrow locals.
   Differences to ours: uBase is read at EVERY same-meaning site (in loops), ours only up to phase 4.
+
+## LANDED 2026-09-28 — COMPLETED-C (manual), commit 982620094
+Body = landing-body-q27.c, spending owner ruling Q27 (32a6b3626). sandbox 0/622; full build SHA1 ==
+oracle; `queue done` ok; check_completion_integrity OK. Review chain on the same body: layer-2 #1
+FAIL (cells (b), work (D)) -> 022fa80c5; #2 FAIL (cells (i)) -> 5fcb99e30; #3 fresh PASS.
