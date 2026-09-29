@@ -62,3 +62,63 @@
   Neither is a Ruling-11 claim yet: needs the (D) search first.
 - [s2] Tbl8008E194.unkA gives `lh %lo(D_8008E194)+10`; target's reloc names D_8008E19E. Same bytes;
   the sandbox shows it inside the rest hunk — confirm at the oracle build.
+
+## s2 (cont.) — Ruling 11 (D) record for `temp` and `work` (2026-09-29)
+
+Reuse spelling = probes/reuse_nrm_N2-0.c (sandbox 0/709; landing body = the same with the
+renames temp/work and comments). One-variable-per-value spelling = probes/onevar_P0-21.c
+(21/709): `ang` (ratan2 result), `hit` (collision result), `amt` (turn amount), `rest`
+(restitution) each its own local; statement list identical (ids/decls only, Ruling 11 (C)(2)).
+
+### (D)(1) dumps
+d_proof_dumps.txt (built by probes/dproof.sh -> probes/dump.sh: cpp | tools/gcc-2.7.2/cc1
+-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float
+-da, BB2_ALLOC_DEBUG=1, BB2_FINDREG_DEBUG=<pseudo>). The per-value run is on F3.c, which has the
+same four variables and allocations as P0 (P0 only drops F3's relaunch `ang` write; P0 = 21 = F3).
+- per-value: pseudo 75 `ang`: .lreg "used 12 times across 68 insns" (no calls crossed); FINDREG
+  conflicts {2-7,16,19,29}; pass0 candidates include 8 -> hardreg 8 (t0). Target: s4.
+- per-value: pseudo 78 `hit`: crosses 8 calls -> pass 0 empty, pass 1 -> 20 (s4).
+- per-value: pseudo 80 `rest`: conflicts {2,3,4,16,29}, 14 insns -> hardreg 5 (a1). Target: a3.
+- per-value: pseudo 76 `amt`: conflicts {2-6,16,29} -> 7 (a3).
+- reuse: pseudo 78 (`temp` = heading + collision result): crosses 8 calls, conflicts
+  {2-8,16-19,29} -> 20 (s4) for both values. pseudo 76 (`work` = turn amount + restitution):
+  conflicts {2-6,16,29}, 79 insns -> 7 (a3) for both values.
+
+### (D)(2) mechanism
+global.c find_reg: line 972-975 (allocno_calls_crossed == 0 -> used1 = fixed regs only, else
+call_used_reg_set excluded); line 999-1001 + 1052-1065 (pass 0 only takes a register already in
+regs_used_so_far, in ascending regno order, skipping conflicts). regs_used_so_far is seeded at
+global.c:344-372 with every call-used GPR (seed printed by BB2_ALLOC_DEBUG: 0-15,24,25,...), so a
+pseudo that crosses no call gets the lowest-numbered caller-saved register it does not conflict with.
+- temp: the heading's only reads are in the turn block, before any later call of the iteration, so a
+  variable holding only the heading never crosses a call and pass 0 gives it t0 (its conflicts are
+  the turn block's v0-a3 temps). Sharing one pseudo with the collision result (live across
+  func_80054434 / rng_Next / func_80032854) makes the pseudo cross 8 calls -> call-saved only ->
+  s4, the target's register for both values.
+- work: the restitution factor's live range (its load to the third velocity multiply) touches only
+  v0, v1, a0, so alone it gets a1 (lowest free). Shared with the turn amount, the pseudo also
+  conflicts with the turn block's a1/a2 temps -> a3, the target's register for both values. In the
+  bounce block a3 (vx) is live wherever a1 (vx*nx) or a2 (nx) is (target 325-354), so moving the
+  restitution load earlier conflicts with a3 too (probe Rb: t0, 57).
+
+### (D)(3)/(4) measured one-variable-per-value spellings (sandbox --disable all, full TU)
+- onevar_P0 21 (full per-value spelling). Ablation: temp only shared (Xa2) 4 = the work cluster;
+  work only shared (Xb2) 17 = the temp cluster; each merge fixes exactly its own cluster.
+- structural: S1 turn-block locals block-scoped 21; S5 declaration order reversed 21; S6 operand
+  order rest*v 21; S10 nested hit test 21; S4 `s16 ang` 53; S8 sin/cos locals 46; S7 index-computed
+  obj pointer 234. Earlier (s2): `s16 rest` 24; rest before the dot product 57.
+- permuter: campaign A (tmp/func_80030D7C/permA, base F3 which still carried a relaunch `ang`
+  write) finds 355/645/75 (permuter score, base 735) were ALL new reuses of `ang` (a byte from
+  obj+7, a -0x7FF constant) — the search itself converges on "make the heading's variable carry
+  another value". Campaign B from onevar_P0: see the next entry.
+- nrm: `s16 *nrm = scr + 0x30` once-written, read by the reflection (nrm[0..2]) and both calls.
+  Using nrm also in the two later ny >= -0x7FF tests: 3 (N1); the tests stay on scr+0x32.
+  Inline scr+0x30 everywhere (no local): loop.c hoists the compiler temp and cse2 folds it to a
+  spilled constant (v1 178).
+- permuter campaign B (tmp/func_80030D7C/permB, base = onevar_P0, permuter score 735, -j 2,
+  --stack-diffs; mini TU verified byte-identical to the full TU by probes/cmpmini.sh): 15,814
+  iterations in 26 min, stopped at the fresh-seed window, best 75, no 0. Every find below 400 makes
+  the heading's variable `ang` carry another value (a byte of obj+4, the unk0 table byte, the rng
+  result, a scratch load, `ang = 8`, `ang = 0xF`, ...) or turns it into `long long` (225/235/540).
+  None is a one-variable-per-value spelling that reaches the target. Harvest:
+  permuter_B_harvest.txt.
