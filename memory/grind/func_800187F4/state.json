@@ -25,9 +25,9 @@
  ],
  "frontier": [
   {
-   "hypothesis": "Land: auth rows + region hashes + fresh layer-2 on the whole landing",
-   "mechanism": "inline-asm-policy.md \u00a7 Owner ruling 2026-09-26 + \u00a7 Per-function grant: func_800187F4",
-   "next_probe": "auth: commit, then Match: commit after layer-2 PASS"
+   "hypothesis": "Land v2 (c6): auth rows + region hashes + fresh layer-2",
+   "mechanism": "see r11/proof.md v2",
+   "next_probe": "auth: then Match: after layer-2 PASS"
   }
  ],
  "judge_constraints": [],

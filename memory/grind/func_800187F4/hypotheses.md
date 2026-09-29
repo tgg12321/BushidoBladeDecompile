@@ -26,3 +26,8 @@
   variables), f and five of the six sphere deltas turned out byte-neutral to split and are split.
 - Remaining before landing: auth rows (inline_asm_canonical.txt + owner_cluster_grants.txt), region
   hashes, fresh layer-2 on the whole landing.
+
+## [s3 cont.] 2026-09-28
+- KILLED by layer-2 (not a lever): reusing `work` / `delta` under Ruling 11 — a FAKE dead store on the
+  split form closes each, so necessity fails. Replaced by the dead-store form (v2).
+- Remaining before landing: re-staged landing on c6, fresh layer-2.

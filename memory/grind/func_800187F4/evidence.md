@@ -150,3 +150,19 @@ cc1psx-check (s2): ours 2, cc1psx 113 -> SOURCE-SIDE.
   reaches 0 (cse counts the dead use before flow deletes it); not landed (adds a FAKE construct, the
   reuse adds none; Ruling 1(4), func_8008B488 precedent).
 - **lz[6]**: lz[5]/[6] frame 0x78 (0), lz[2]-[4] 0x68 and lz[7]/[8] 0x80 (24) on the landing body.
+
+## [s3 cont.] 2026-09-28 — layer-2 FAIL of the first landing, v2 chassis c6
+
+- The first landing (637f8431b's body) FAILed a fresh layer-2 (rejected/r11-work-delta-reuse-layer2-fail-0.md):
+  `work` and `delta` each byte-match as one-variable-per-value spellings plus one sanctioned FAKE dead store,
+  so their Ruling 11 (D)(3) necessity fails (regno_last_uid counts sets, regclass.c:1763-1764; my v1 work
+  probe had put the store before temp's last use). Nothing was committed; src reverted.
+- **v2 (template.c = c6)**: `sq1` + `dist1` and `depth` + `dy0` single-value locals, each closed by a
+  FAKE-annotated dead store (`sq1 = 0;` before `tot`, `depth = 0;` after the ellipsoid loop;
+  dead-store-fake-exception): 0/662, sandbox 0 (644/644); each store load-bearing (4 / 26; both 30).
+  Scratchpad type renamed Scr1F800000; header text: the state -0xFF..-1 path pulls then integrates.
+- Five Ruling 11 locals remain (idx, nforce, temp incl. the Q28 copy, nbits, nbits2), re-measured on c6
+  (r11/measurements.md: 67 / 21 / 40 (27, 33, 29 ablations) / 2 / 2; all 98) with systematic FAKE sweeps:
+  dead stores at six anchors (77 variants) and self-assigns + chain-extenders (132): none reaches 0.
+- lz[6]: phantom-slot producer census (r11/frame_census.md): 14 ordinary spellings of the lz[2] form,
+  none gives frame 0x78 at zero cost.
