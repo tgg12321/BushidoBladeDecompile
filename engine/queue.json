@@ -220,20 +220,6 @@
       "rotation_count": 1
     },
     {
-      "func": "func_8002A458",
-      "file": "code6cac_b",
-      "distance": 30,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "rotated",
-      "rotated_at": "2026-09-26T01:27:17+00:00",
-      "rotation_count": 2,
-      "unparked_from": "flat floor 30/417 honest (2 permuter campaigns); 0/416 needs multi-write len/lzc_in + dx/dy/dz point-minus-base reuse (layer-2 FAIL, Ruling 5/6, staged-value bounds 2/4). Islands/canonical row/hashes + do-while(0) ruled sound. Allocator: fresh end-block deltas cannot seat s-regs. See memory/grind/func_8002A458/",
-      "unpark_reason": "auto-return: toolchain change re-measure floor None -> 30 (fingerprint 69f8ba78e94cf257 -> 85cd2a73ee7a8972)",
-      "returned_at": "2026-09-25T22:11:46+00:00",
-      "rotation": "restore rotation: the 2026-09-25 return was the engine None->30 bounce (floor unchanged at 30/417; fixed 07e77ac51). Prior rotation stands: closing form needs multi-write len/lzc_in + dx/dy/dz reuse, named banned in Ruling 9 list. See memory/grind/func_8002A458/hypotheses.md"
-    },
-    {
       "func": "func_80057E84",
       "file": "text1b",
       "distance": 44,
@@ -373,11 +359,11 @@
     }
   ],
   "counts": {
-    "total": 31,
+    "total": 30,
     "active": 17,
     "by_status": {
       "active": 17,
-      "rotated": 14
+      "rotated": 13
     },
     "by_verdict": {
       "ASM-PARTIAL": 4,
