@@ -7,13 +7,13 @@ Nothing else. No FAKE-annotated construct, asm, pin, volatile or build change an
 
 ## 0. Bodies, tools, commands
 
-- **Landing** = `memory/grind/func_800198D0/candidate.c` = `r11/variants/landing_annotated.c`.
-  `r11/variants/landing.c` is the same text without the six Ruling 11 comments and the function
-  header comment; cpp strips comments, so the two compile to the same function (both sandbox 0,
-  749/749; identical allocation tables `r11/dumps/landing.table.txt` and
-  `landing_annotated.table.txt`). Every per-value / ablation / structural variant is GENERATED
-  from `landing.c` by `r11/tools/mkpv.py` and `r11/tools/mkst.py` (exact-text renames and
-  declaration moves, each asserting its hit count), never hand-edited.
+- **Landing** = `memory/grind/func_800198D0/candidate.c` = `r11/variants/landing.c`
+  (byte-identical; it is also the exact text spliced into `src/code6cac.c` for the landing).
+  Every per-value / ablation / structural / declaration / type variant is GENERATED from that
+  exact text by `r11/tools/mkpv.py`, `mkst.py`, `mkdecl.py` and `mkty.py` (exact-text renames and
+  declaration moves, each asserting its hit count; comments are left as they are), never
+  hand-edited. So each variant differs from the landed body only in declarations and
+  identifiers.
 - **Full build**: the landing spliced into `src/code6cac.c` in place of its `INCLUDE_ASM` line
   builds to SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa (verify-oracle --rebuild --allow-dirty,
   2026-09-29).
@@ -66,7 +66,7 @@ Target registers (asm/funcs/func_800198D0.s): `idx` $t4 in both loops (0x80019C9
 
 | body | score |
 |---|---|
-| landing (landing.c; landing_annotated.c = candidate.c) | **0** (749/749) |
+| landing (variants/landing.c = candidate.c) | **0** (749/749) |
 | pv_idx (kidx, col) | 146 (745 insns) |
 | pv_idx2 (step, row) | 21 |
 | pv_field (h0-h5, kflag, lo) | 209 |
@@ -152,13 +152,13 @@ local-alloc'd), so their seats are global.c's `allocno_compare` order plus `find
 
 (a) Mechanisms: section 3, from the banked dumps of the landing and of each variable's
 one-variable-per-value spelling.
-(b) Every spelling proposed by the author is banked and measured: the 54 bodies in
-`r11/variants/` (the two landing texts and 52 generated spellings; scores in
+(b) Every spelling proposed by the author is banked and measured: the 53 bodies in
+`r11/variants/` (the landing and 52 generated spellings; scores in
 r11/sandbox_sweep.txt and section 2) and the 28 earlier probes in `r11/early/` (on the v17 / v18
 chassis, also banked there; scores in r11/early/scores.txt). Reviewer proposals are banked the same way before a
 landing.
 (c) No counting spelling reaches the target. The only bodies that score 0 are the landing
-(`landing.c`, `landing_annotated.c`) and, among the early probes, the chassis steps that split a
+(`landing.c`) and, among the early probes, the chassis steps that split a
 value which the landing therefore also splits (`sp_S_ich`: channel-loop index, `sp_S_m`: case-3
 count, `sp_B_ch_m`, `misc_M_off`: `shift`); none of them splits any of the six reused locals
 (each keeps the landing's sharing). No spelling carries a FAKE- or !FAKE-annotated construct, so
@@ -221,7 +221,9 @@ the body, cpp-expanded; compile.sh = the Makefile's code6cac recipe (cc1 | prolo
 with the code6cac gates | align fix | multu_pad | as); target.o = asm/funcs/func_800198D0.s after
 the permuter prelude. Control: the landing's workspace builds 749/749 instructions.
 - Campaign (tmp/func_800198D0/perm_pvall, from `pv_all_colfn.c` = all six locals split, the column
-  index at function scope, sandbox 311 like pv_all; `-j 2`, fresh seed): base 2565 (permuter score),
+  index at function scope; the campaign's base.c, built by mkperm.sh before the landing's comments
+  were added, is token-identical after cpp to the one mkperm.sh builds from today's
+  variants/pv_all_colfn.c; sandbox 311 like pv_all; `-j 2`, fresh seed): base 2565 (permuter score),
   32,322 iterations in 3,151 s, 194 finds, best 1315 found at ~1,200 s; stopped after 23 minutes with
   no new best (harvest record r11/perm/campaign_meta.json, log tail r11/perm/campaign_log_tail.txt,
   base r11/perm/base.c). The landing's own workspace builds 749/749 against the same target.

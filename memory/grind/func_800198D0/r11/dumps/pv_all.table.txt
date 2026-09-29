@@ -1,4 +1,4 @@
-### pv_all  (instrumented cc1 BB2_ALLOC_DEBUG=1 -dr -dl -dg; tmp/func_800198D0/alloc.sh memory/grind/func_800198D0/r11/variants/pv_all.c)
+### pv_all  (instrumented cc1 BB2_ALLOC_DEBUG=1 -dr -dl -dg; tmp/func_800198D0/alloc.sh tmp/func_800198D0/pv3/pv_all.c)
 name       type   pseudo  reg  allocator
 obj        param      72   a0  local-alloc
 frame      param      73   s1  global ord=75 nrefs=7 livelen=670 pri=208

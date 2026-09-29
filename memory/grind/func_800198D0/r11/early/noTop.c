@@ -6,17 +6,16 @@ extern s32 D_800A30EC;
    an escape/VLC code). */
 #define GETBITS_PRE(dst, nb, pre)                               \
     {                                                           \
-        u32 top = (pre);                                        \
         if (bits < (nb)) {                                      \
             s32 need = (nb) - bits;                             \
             u32 hi = cur >> (32 - bits);                        \
             s32 left = 32 - need;                               \
             cur = *ptr++;                                       \
-            dst = top | ((hi << need) | (cur >> left));         \
+            dst = (pre) | ((hi << need) | (cur >> left));       \
             cur <<= need;                                       \
             bits = left;                                        \
         } else {                                                \
-            dst = top | (cur >> (32 - (nb)));                   \
+            dst = (pre) | (cur >> (32 - (nb)));                 \
             cur <<= (nb);                                       \
             bits -= (nb);                                       \
         }                                                       \

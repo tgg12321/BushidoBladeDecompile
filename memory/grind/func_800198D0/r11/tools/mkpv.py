@@ -31,7 +31,7 @@ I8, I12, I16, I20, I24 = " " * 8, " " * 12, " " * 16, " " * 20, " " * 24
 ELSE_TOP = "            slot = prev;\n        } else {\n"   # full-decode block start
 DEC_TOP = "    for (; idx2 < sub; idx2++) {\n"                 # sub-frame loop body start
 KF_FOR = "            for (idx = 0; idx < 63; idx++) {\n"      # keyframe loop head
-C1_TOP = "            case 1: {\n                s32 nbits;\n"
+C1_TOP = "                s32 nbits;\n"
 C2_TOP = "            case 2: {\n"
 C3_IF = "                    s32 nbits2;\n"
 CH_TOP = "        for (ch = 0; ch < 63; ch++) {\n            s16 temp;\n"
@@ -131,7 +131,7 @@ FLAG2 = "                GETBITS(temp, 1);\n                if (temp) {\n       
 MAG3 = [("GETBITS_PRE(temp, 7, 0x80);", "GETBITS_PRE(mag3, 7, 0x80);"),
         ("GETBITS_PRE(temp, nbits2, 1 << nbits2);", "GETBITS_PRE(mag3, nbits2, 1 << nbits2);"),
         ("                        temp = nbits2;\n", "                        mag3 = nbits2;\n")]
-C3FLAG = "                GETBITS(temp, 1);\n                if (temp) {\n                    s32 nbits2;\n"
+C3FLAG = "                GETBITS(temp, 1);\n                if (temp) {\n                    /* Ruling 11"
 C3VAL = ["temp = ((temp << 3) | (", "                        temp = -temp;\n"]
 ACC = ["                work[ch + 0x45] = temp;\n                work[ch + 3] += temp;\n",
        "                work[ch + 3] += work[ch + 0x45] + temp;\n                work[ch + 0x45] += temp;\n"]
