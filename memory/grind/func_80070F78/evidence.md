@@ -27,3 +27,53 @@
 - [s1] Function family: sibling UI functions func_8007352C / func_80073728 (sprite-emit helpers, both called here) and func_8005C650 (SE play) — check their completion status when drafting; the misapplied name is from Kengo matching but no kengo annotation exists on this function's stub.
 
 - [s1] Ledger existed as empty skeleton (session_count=0); no WIP checkpoint.
+
+## Manual session 2026-09-29 (s2, laneA) — from scratch, 808 -> 6 (record model, mini TU)
+
+Tooling (memory/grind/func_80070F78/tools/, copies of tmp/func_80070F78/): sc.py (sandbox clone,
+`--mini --pre=<prefix>`), mkpre.py (text1b.c prefix up to the INCLUDE_ASM line with bodies
+stripped; sc_reps.py retypes the `func_80070F78` prototype + caller cast to DescF97C *), gen.py
+(variant generator), dump.py (RTL dumps on the mini prefix), scr.sh (scores against
+tmp/func_80070F78/mini/pre_rec.c = mini prefix with `u8 D_800A3560[]` replaced by a 3-byte
+record array `{u8 unk0, unk1, unk2}` — the record model, NOT on main).
+
+Measured path (mini TU, sandbox-equivalent score):
+- First draft (m2c-guided, u8 array model `D_800A3560[i * 3 + k]`, per-byte scalars for constant
+  offsets): 242/827. Same body in the record model: 116. Record-model bounds as siblings
+  (`1 + D_800A35B0 + D_800A3558`, loop 2 `(port_ofs = D_800A3558)`): included.
+- Loop 1: the two arms each carry their own `flag = 1; timer = 0;` (cross-jump re-merges them):
+  cse sees the top block's i*2 in both arms (target's shared `a0`). 118 -> 75 with the timer
+  if/else below and the tail order fixes.
+- else-arm order x, y, ot_idx (as func_80070188).
+- Loop 3 prologue: `s->header = sheets[0];` BEFORE the scale/has_color/ot_idx stores: any store
+  through `s` invalidates cse's memory table (cse.c note_mem_written: varying address -> nonscalar;
+  QImode -> all), so `cells = s->header + 0x24` reloads as the target does (70 -> 63).
+- vram: `vram = *(u8 **)(D_800A35A8 + 0x7C); vram += i << 6;` (Ruling 4 compound split) at both
+  sites: the load lands in vram's own register (target `lw s4,0x7C(v0)`); one-statement form puts
+  it in a temp (expr.c binop subtarget is cleared inside loops, preserve_subexpressions_p). 63 -> 51,
+  insn count 810/810.
+- Draw tail order: colors, x, y, pad0C, ot_idx (permutation sweep of 5 items, 120 bodies: only
+  CXYPO = 43).
+- Image-table load `LoadImage(vram + id * 8, <slot>)`: the target computes id*8, +0x14, + base,
+  + k*4, then lw 0 — every address-context spelling (INDIRECT_REF, ARRAY_REF, 2-D cast, struct view)
+  expands under EXPAND_SUM, where expr.c both_summands floats the constant outward (lw 20(...)).
+  Only an ASSIGNMENT (modifier 0 -> binop) keeps (id8 + 20) as its own insn: a pointer local
+  `tim = (s32 *)(D_800A35A8 + 0x14 + id * 8 + k * 4); LoadImage(vram + id * 8, *tim);` (43 -> 21).
+- Selector variables: ==3 site `k` (if/else -> jump.c store-flag, sltiu), confirm site `sel`
+  (1 / special / 0), locked site `k2`: the target has three different registers (a1 local, a1 global,
+  v1 local), so one shared selector cannot be it (l_* sweep).
+- Locked site: `id` must be a single-set value there (inline `D_800A3560[i].unk2` twice, cse'd):
+  sched1 adjust_priority birthing boost (reg_n_sets == 1) puts the unk2 load after the store-flag,
+  as the target (21 -> 6).
+- Remaining 6: (a) GPREL-name artifact `%gp_rel(D_800A35C8+2)` vs `D_800A35CA` (operand-only);
+  (b) locked-arm other-player timer select: target `lw v0,D_800A35C4; bnez s0; addiu v1,v0,4;
+  addiu v1,v0,6; lh v0,0(v1)` (base v0, pointer v1, beq delay slot filled from the target);
+  ours base v1 / pointer v0. Forms measured: pointer local if/else both orders, ?: forms,
+  `&[i==0?3:2]`, `+= ?:` all 27-30 (extra insns); `+2; if (i==0) +3` / `timer++` / `&[2]`/`&[3]`
+  / block-local = 6.
+
+Open construct questions for landing (not yet settled):
+- Record model needs the 0x800A3560 record merge across all consumers + func_8006E534's word
+  store (union word view = Q33, being encoded 2026-09-29) — or a per-byte fallback with per-site
+  FAKE record-offset locals (70188 style), unmeasured on this body yet.
+- `tim` pointer locals (three sites) and the selector variables `k`/`k2` separate from `sel`.
