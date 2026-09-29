@@ -7,8 +7,9 @@
   callback variable that legitimately go through memory_address (none known that keep
   CombWaitCallback a separate scalar object, which the OBJ's LOCAL symbol requires).
 - F2 (landing): TU split + bb2.ld + ings.c blob removal + aggregate-merge paperwork per
-  evidence.md [s2] landing plan — applied under the landing lock 2026-09-29, oracle SHA1
-  green; awaiting layer-2.
+  evidence.md [s2] landing plan — LANDED 2026-09-29: layer-2 PASS, Match d53210e2e,
+  queue done 88cc61551 (COMPLETED-C), check_completion_integrity OK. F1 stays open as a
+  possible future cleanup of the case-4 FAKE alias only.
 
 ## Ruled out ([s2])
 - Per-word volatile externs for regs/sen/rec: plain volatile scalars fold every access;
