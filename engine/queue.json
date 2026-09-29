@@ -205,21 +205,6 @@
       "hand_coded_tier": "LOW"
     },
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "unpark_reason": "auto-return: coupled sibling moved after rotation \u2014 func_8005BA8C -> floor 0 (2026-09-15T20:48)",
-      "unparked_from": "FORECLOSED (standing ruling 2026-07-27, auto-filed backstop; silent per owner ruling 2026-08-31): 2026-09-07 \u0393\u00c7\u00f6 func_80017848 \u0393\u00c7\u00f6 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
-      "rotated_from_legacy": "foreclosed",
-      "rotated_at": "2026-09-16T01:28:09+00:00",
-      "returned_at": "2026-09-15T20:48:34+00:00",
-      "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md:27195 \u2014 2026-09-15 \u2014 func_80017848 (src/ings.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): ROTATED",
-      "rotation_count": 1
-    },
-    {
       "func": "func_80057E84",
       "file": "text1b",
       "distance": 44,
@@ -359,11 +344,11 @@
     }
   ],
   "counts": {
-    "total": 30,
+    "total": 29,
     "active": 17,
     "by_status": {
       "active": 17,
-      "rotated": 13
+      "rotated": 12
     },
     "by_verdict": {
       "ASM-PARTIAL": 4,
