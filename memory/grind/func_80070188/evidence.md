@@ -123,3 +123,24 @@ Landing-time config needed (tools/*.landing.diff), each a no-op for the current 
   condition; the record declaration (struct or union) needs none. Under the
   fewest-no-purpose-constructs principle the union form is the landing candidate if the
   owner allows it (borderline.md 2026-09-29).
+
+### No-merge close: slot accessors (2026-09-29) — candidate.c, sandbox 0 + oracle
+- Five `static inline` accessors for the record bytes (`slot_get0/1(rec)`,
+  `slot_set0/1/2(rec, v)`, `rec` = slot * 3 byte offset). An inline call's argument is
+  expanded into its own register before the body is integrated, so inside the body
+  `D_800A3560[rec + k]` has a REG index: memory_address keeps `(plus rec sym+k)` in the
+  MEM (the target's `lui at; addu at,at,idx; lbu/sb %lo(D_800A356k)(at)`), and cse
+  shares the `i * 3` argument inside an extended block / recomputes it after a join,
+  exactly the target's pattern. Declarations untouched (u8 D_800A3560[] as on main).
+  Measured (mini TU, sc.py MERGE=0): plain u8 spellings 76; accessors with a u8-returning
+  getter 37-39 (all operand-only: cse matches the QImode return pseudo with the constant
+  0xFF on the `== 0xFF` path, so the confirm store is `sb v1` instead of the hoisted 0xFF
+  register, which drops that pseudo's refs and swaps s6/s7/s8 seats); getter returning
+  s32: 10 = GPREL-name artifacts only (full TU 12, same class). Constant-offset accesses
+  direct or through the accessors are byte-equal (d_z/d_post/d_all 10); the landing uses
+  the accessors for every record byte (one handle in this function, D_800A3561/64 not used).
+- Landing (tools/land2.py): body + accessors over INCLUDE_ASM; SelectEntryE534
+  `pad`->`unk1`; sdata_exclude func_80070188 row -> `g_gpu_ot_ptr` only (D_800A3588 /
+  D_800A358C blocked the target's gp stores to D_800A358A/358E; D_800A3562 is not named by
+  this C at all); sdata_syms + D_800A3590. verify-oracle --rebuild --allow-dirty SHA1 ==
+  62efab4f... and sandbox 0/698 (2026-09-29).

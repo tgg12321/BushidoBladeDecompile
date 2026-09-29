@@ -1,3 +1,20 @@
+/* The two 3-byte selection-slot records at D_800A3560: byte +0, +1 or +2 of the
+ * record at byte offset `rec` (slot * 3). */
+static inline s32 slot_get0(s32 rec) {
+    return D_800A3560[rec];
+}
+static inline s32 slot_get1(s32 rec) {
+    return D_800A3560[rec + 1];
+}
+static inline void slot_set0(s32 rec, u8 v) {
+    D_800A3560[rec] = v;
+}
+static inline void slot_set1(s32 rec, u8 v) {
+    D_800A3560[rec + 1] = v;
+}
+static inline void slot_set2(s32 rec, u8 v) {
+    D_800A3560[rec + 2] = v;
+}
 extern s16 D_800A3530[];
 extern s16 D_800A3534[];
 void func_80070188(s32 arg0) {
@@ -23,9 +40,9 @@ void func_80070188(s32 arg0) {
         col = &D_800A3588[i];
         row = &D_800A358C[i];
         flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-        D_800A3560[i].unk1 = D_8009BC40[*row][*col].value;
+        slot_set1(i * 3, D_8009BC40[*row][*col].value);
         port = i - port_ofs;
-        if (D_800A3560[i].unk0 == 0xFF) {
+        if (slot_get0(i * 3) == 0xFF) {
             ((s16 *)D_800A35C4)[i] = 0x1E;
             if (D_800A354C & (0x4000 << (port * 16))) {
                 func_8005C650(0, 0x7F, 0x7F);
@@ -36,7 +53,7 @@ void func_80070188(s32 arg0) {
                         *row = 0;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    D_800A3560[i].unk1 = D_8009BC40[*row][*col].value;
+                    slot_set1(i * 3, D_8009BC40[*row][*col].value);
                 } while (*flags & 4);
                 *flags |= 4;
             } else if (D_800A354C & (0x1000 << (port * 16))) {
@@ -48,7 +65,7 @@ void func_80070188(s32 arg0) {
                         *row = 4;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    D_800A3560[i].unk1 = D_8009BC40[*row][*col].value;
+                    slot_set1(i * 3, D_8009BC40[*row][*col].value);
                 } while (*flags & 4);
                 *flags |= 4;
             }
@@ -61,7 +78,7 @@ void func_80070188(s32 arg0) {
                         *col = 0;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    D_800A3560[i].unk1 = D_8009BC40[*row][*col].value;
+                    slot_set1(i * 3, D_8009BC40[*row][*col].value);
                 } while ((!(*flags & 1) && *col >= 4) || (*flags & 4));
                 *flags |= 4;
             } else if (D_800A354C & (0x8000 << (port * 16))) {
@@ -73,7 +90,7 @@ void func_80070188(s32 arg0) {
                         *col = D_800A35B4;
                     }
                     flags = &D_8009BC7C[D_8009BC40[*row][*col].value];
-                    D_800A3560[i].unk1 = D_8009BC40[*row][*col].value;
+                    slot_set1(i * 3, D_8009BC40[*row][*col].value);
                 } while ((!(*flags & 1) && *col >= 4) || (*flags & 4));
                 *flags |= 4;
             }
@@ -97,23 +114,23 @@ void func_80070188(s32 arg0) {
             s.out = ((s32 *)arg0)[4];
             ((s32 *)arg0)[4] = func_8007352C((s32)&s);
         }
-        if ((D_800A354C & (0x40 << (port * 16))) && D_800A3560[i].unk0 == 0xFF) {
+        if ((D_800A354C & (0x40 << (port * 16))) && slot_get0(i * 3) == 0xFF) {
             if (*flags & 1) {
-                D_800A3560[i].unk2 = 0xFF;
+                slot_set2(i * 3, 0xFF);
                 D_800A3590[i] = 2;
-                D_800A3560[i].unk0 = D_8009BC40[*row][*col].unk1;
+                slot_set0(i * 3, D_8009BC40[*row][*col].unk1);
                 func_8005C650(D_8009BC40[*row][*col].value + 0xB, 0x7F, 0x7F);
                 D_800A35C8[0] = 0xF;
                 D_800A35C8[1] = 0x14;
                 if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000) && i == 0) {
-                    if (D_8009BC7C[D_800A3560[0].unk1] & 2) {
+                    if (D_8009BC7C[slot_get1(0)] & 2) {
                         D_800A3588[1] = 2;
                     } else {
                         D_800A3588[1] = 0;
                     }
                     D_800A358C[1] = 0;
                     if (((s16 *)D_800A35C4)[0] == 0) {
-                        D_800A3560[1].unk1 = D_8009BC40[0][D_800A3588[1]].value;
+                        slot_set1(3, D_8009BC40[0][D_800A3588[1]].value);
                         D_8009BC7C[D_8009BC40[0][D_800A3588[1]].value] |= 4;
                     }
                     break;
@@ -124,18 +141,18 @@ void func_80070188(s32 arg0) {
         } else if (D_800A354C & (0x10 << (port * 16))) {
             if (D_800A3578 == 0) {
                 func_8005C650(2, 0x7F, 0x7F);
-                if (D_800A3560[i].unk0 == 0xFF && D_800A3554 == 0) {
+                if (slot_get0(i * 3) == 0xFF && D_800A3554 == 0) {
                     D_800A35A0 = -1;
                 } else if (D_800A3554 == 1) {
-                    if (D_800A3560[D_800A3554].unk0 == 0xFF) {
+                    if (slot_get0(3) == 0xFF) {
                         D_800A3554 = 0;
-                        D_800A3560[0].unk0 = 0xFF;
+                        slot_set0(0, 0xFF);
                     } else {
-                        D_800A3560[D_800A3554].unk0 = 0xFF;
+                        slot_set0(3, 0xFF);
                     }
                     *flags &= ~4;
-                } else if (D_800A3560[i].unk0 != 0xFF && (*flags & 1)) {
-                    D_800A3560[i].unk0 = 0xFF;
+                } else if (slot_get0(i * 3) != 0xFF && (*flags & 1)) {
+                    slot_set0(i * 3, 0xFF);
                 }
             }
         }
@@ -160,15 +177,15 @@ void func_80070188(s32 arg0) {
         s.out = ((s32 *)arg0)[4];
         ((s32 *)arg0)[4] = func_8007352C((s32)&s);
     }
-    if (D_800A3580 == 0 && D_800A3560[0].unk0 != 0xFF && ((s16 *)D_800A35C4)[0] == 0) {
+    if (D_800A3580 == 0 && slot_get0(0) != 0xFF && ((s16 *)D_800A35C4)[0] == 0) {
         if (D_800A35BC == 2 && (*(s32 *)(D_800A3568 + 0x14) & 0x20000)) {
             D_800A3554 = 1;
         }
-        if ((D_800A3560[1].unk0 != 0xFF && ((s16 *)D_800A35C4)[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
+        if ((slot_get0(3) != 0xFF && ((s16 *)D_800A35C4)[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
             D_800A3578 = 1;
             D_800A3558 = 0;
             if (D_800A35BC == 2) {
-                D_800A3560[1].unk2 = 0xFF;
+                slot_set2(3, 0xFF);
                 D_800A3590[1] = 2;
             }
             D_800A3584 = 1;
