@@ -333,3 +333,39 @@ BLKmode, consistent with an s16 array). The single site is 0x8005EA44 `sw zero,0
 Question, verbatim: "Follow-up on the union answer. For func_8005E54C's local pair of 16-bit counters, measurement shows the union can't reproduce the shipped code. GCC 2.7.2 keeps a 4-byte union in a register and moves it to the stack too late, leaving the function 197 instructions off. The only matching form is almost certainly what the original programmer wrote: a local `s16 vals[2]` cleared with one cast store, `*(s32 *)vals = 0;`, at a single site. May that one cast store on a local array be allowed?"
 Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only a local array, written once through a 32-bit cast at a site where the target bytes show exactly that one word store covering exactly the array, after the union form was measured and failed. It must be annotated and pass layer-2. The union answer still covers globals like 0x800A3560."
 Other option offered: "Don't allow" — "func_8005E54C stays unfinished (2 instructions off) and keeps grinding for another spelling."
+
+# Owner exchange 2026-09-29 (twenty-first batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: retro-audit of the 101 Match/cheat-cleanup commits landed since the 2026-09-19 integrity audit
+(tmp/audit-2026-09-29/SUMMARY.md; 7 fresh default-refute cheat-reviewers + 1 mechanical pass, read-only).
+Mechanically clean (integrity checker, asm-cheat audit, sandbox 0 for all, rulings precede landings), but 20
+landings on main FAIL semantically and 23 have no recorded layer-2 PASS. Separately, func_8004A4E0's
+canonical authorization was re-audited (tmp/audit-2026-09-29/8004a4e0/FINDINGS.md): the whole-body form is
+correct (custom callee-saved-register ABI across jal), but its entry text cites false or incomplete grounds.
+The owner was present and answered all four in one call.
+
+## Q37 — remediation route for the 20 FAILed landings
+Question, verbatim: "How should the 20 FAILed landings be remediated?"
+Owner chose: **"Fix-forward by class (Recommended)"** — option text: "Add the missing FAKE comments and records for the 7, redo the Ruling 11 proof for the 4, and put the 10 forbidden-construct functions back in the queue (swapping in the original assembly keeps the output byte-identical). Each fix gets a fresh second review."
+Other options offered: "Reopen all 20" — "Put every FAIL back in the queue as assembly and re-land it properly. Simplest and strictest, but it adds 20 items to the queue."; "Reopen only the 10" — "Reopen the forbidden-construct functions; leave the other 11 on main as recorded debt for now."
+Classes (SUMMARY.md): A (sanctioned family, annotation/exhaustion record missing) _SsSndDecrescendo,
+func_80022580, func_80034708 (+func_80033D38), func_8002C22C, func_80048BA4, func_8001F2E4, func_80063E10;
+B (variable reuse, re-prove under Ruling 11) func_80026DA4, func_8002CD58, func_80074E08, func_8006CFBC
+(`value`); C (reopen) func_8001C8DC, PutDispEnv, CD_cw, func_80075F80, func_800759D0, func_80036940,
+func_8006E534, func_8006CFBC (union), func_80052D00, func_8002F770 (see Q38). A class-A/B fix that fails its
+fresh layer-2 falls to class C.
+
+## Q38 — grant rows with no recorded owner instruction
+Question, verbatim: "Three approval entries are marked 'owner-instructed', but there's no record of you approving them: func_8002F770, func_8002D780 and func_8002EBDC. Did you approve them?"
+Owner chose: **"Check under 09-26 grant"** — option text: "Keep a function only if its assembly pieces are exact copies of Sony's inline_o.h, which your 09-26 ruling allows without a per-function entry; otherwise reopen it."
+Other options offered: "I approved them" — "Record your approval now as a rules: commit so the entries have something on file."; "Revoke and reopen" — "Remove the entries and put all three functions back in the queue."
+The 09-26 ruling is .claude/rules/inline-asm-policy.md § Owner ruling 2026-09-26 (inline_o.h class).
+
+## Q39 — layer-2 PASS gate on `queue done`
+Question, verbatim: "Add a hard gate so a function can't be marked done (`queue done`) without a recorded second-review PASS for the exact code being landed?"
+Owner chose: **"Yes, add the gate (Recommended)"** — option text: "Closes the gap behind most of the 20 FAILs: the second review was skipped and nothing caught it."
+Other option offered: "No" — "Keep relying on process discipline."
+
+## Q40 — func_8004A4E0 entry-text corrections
+Question, verbatim: "Apply the func_8004A4E0 corrections (fix the false and missing reasons in its entry; the authorization itself stays)?"
+Owner chose: **"Yes, correct the text"** — option text: "Commit your approval as a rules: commit first, then fix the text in inline_asm_canonical.txt, known_psyq_stdlib.txt and the func_8004A808 entry."
+Other option offered: "Leave as is" — "The authorization is right; the wrong text stays as history."
