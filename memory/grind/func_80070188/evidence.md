@@ -144,3 +144,34 @@ Landing-time config needed (tools/*.landing.diff), each a no-op for the current 
   D_800A358C blocked the target's gp stores to D_800A358A/358E; D_800A3562 is not named by
   this C at all); sdata_syms + D_800A3590. verify-oracle --rebuild --allow-dirty SHA1 ==
   62efab4f... and sandbox 0/698 (2026-09-29).
+
+### Layer-2 FAIL 2026-09-29 (landing attempt 2) — rejected/slot-accessors-0.c
+- Objection: the five static inline accessors are the named-intermediate device in
+  another spelling (identity wrappers whose only effect is a fresh index pseudo per
+  site), with none of the family's tests (FAKE annotation, mechanism, exhaustion);
+  precedent decisions.md:21698. The message's cancel-arm sentence also misdescribed
+  the measured direct-[3] result (measured: [3] read + [3] store = 12 at 700/698,
+  i.e. two extra insns; the `lui/addiu v1` base appears with the [D_800A3554 * 3] read,
+  nomerge_best.c 14).
+- PASSED unchanged: loop-bound assignment, `flags`, the sdata edits (incl. dropping
+  D_800A3562), pad->unk1, the s32 getter type.
+- Orchestrator frontier: per-site FRESH once-written FAKE named intermediates.
+
+### Per-site named intermediates (2026-09-29, after attempt 2)
+- nomerge_best.c already is that form: top `rec`, a do-body `idx` per walk (assigned
+  just before the store), confirm `sel` (assigned in the && operand), cancel `k`, L9B4
+  `k2` — one fresh once-written local per site. Score 14 = 10 GPREL-name artifacts +
+  4 in the slot-1 cancel arm only.
+- Slot-1 cancel arm (`if (slot1 byte0 == 0xFF) { D_800A3554 = 0; slot0 byte0 = 0xFF; }
+  else slot1 byte0 = 0xFF;`), every direct spelling measured: read [D_800A3554*3]
+  + store [3] + [0] 14 (the read's force_operand leaves `sym` in a pseudo that cse gives
+  the slot-0 store: `lui/addiu v1` + `sb s6,0(v1)`); [3]/[3] 12 at 700; [3] read +
+  [D_800A3554*3] store 12 at 700; both [D_800A3554*3] 14; slot-0 store as
+  `[(D_800A3554 - 1) * 3]` before zeroing 14; `[D_800A3554]` after zeroing 14;
+  `[D_800A3554 + D_800A3554 + D_800A3554]` 14 (v14 sweep).
+- What closes it (accessor `slot_get0(3)` / `slot_set0(3, 0xFF)`, and the struct
+  `[D_800A3554].unk0`): the index must already be a register when the address is
+  expanded, and cse then folds it to 3, leaving `(mem (const sym+3))` direct (gp).
+  With the u8 array that needs a local index whose value on that path is 3 — a dummy
+  constant local in a subscript, refused by Q22 (named-local-fake-exception.md:128-154).
+  No ordinary spelling found.

@@ -10,3 +10,10 @@
 
 ## Open
 - Landing: full oracle build with the record merge in include/game.h + consumers.
+
+## s2 later (2026-09-29)
+- KILLED by layer-2: record merge (func_8006E534 word pun, prong (d)); inline slot
+  accessors (un-annotated named-intermediate device). Union declaration: owner question
+  (borderline.md 2026-09-29).
+- Per-site FAKE named intermediates: everything but the slot-1 cancel arm (nomerge_best.c
+  14). Open: a cancel-arm spelling with a register index that is not a Q22 dummy local.
