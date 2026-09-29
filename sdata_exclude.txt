@@ -76,7 +76,7 @@ func_8006F038: g_gpu_ot_ptr
 func_8006F100: D_800A3562, D_800A35C8
 func_8006F528: g_gpu_ot_ptr
 func_8006F97C: D_800A3560, D_800A3588, D_800A358C, g_gpu_ot_ptr
-func_80070188: D_800A3562, D_800A3588, D_800A358C, g_gpu_ot_ptr
+func_80070188: D_800A3562, g_gpu_ot_ptr
 func_80070C70: D_800A3560, g_gpu_ot_ptr
 func_80070F78: D_800A3560, g_gpu_ot_ptr
 func_80071C4C: D_800A3560, D_800A3562
