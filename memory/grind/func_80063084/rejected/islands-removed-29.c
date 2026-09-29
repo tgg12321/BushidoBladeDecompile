@@ -38,19 +38,7 @@ s32 func_80063084(void) {
     /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- PsyQ Run-time Library
      * Release 4.3 inline_c.h (DMPSX v3) :297-310,
      * verbatim body, operand and clobbers. */
-    __asm__ volatile(
-        "lw     $12, 0(%0)\n"
-        "lw     $13, 4(%0)\n"
-        "ctc2   $12, $0\n"
-        "ctc2   $13, $1\n"
-        "lw     $12, 8(%0)\n"
-        "lw     $13, 12(%0)\n"
-        "lw     $14, 16(%0)\n"
-        "ctc2   $12, $2\n"
-        "ctc2   $13, $3\n"
-        "ctc2   $14, $4\n"
-        :: "r"(D_800A3474) : "$12", "$13", "$14");
-    v->vz = 0;
+        v->vz = 0;
     v->vy = 0;
     v->vx = 0;
     *(s32 *)D_800A34B0 = ReadGeomScreen() * 1000;
@@ -82,10 +70,7 @@ s32 func_80063084(void) {
                 /* PsyQ libgte inline macro gte_stsz(r0) --- PsyQ Run-time
                  * Library Release 4.3 inline_c.h (DMPSX v3) :1042-1046,
                  * verbatim body, operand and clobbers. */
-                __asm__ volatile(
-                    "swc2   $19, 0(%0)\n"
-                    :: "r"(D_800A34D0) : "memory");
-                if (j == 0) {
+                                if (j == 0) {
                     D_800A3488 = (s32)D_8009B940;
                 } else if (D_800F0BEC[i] < 11) {
                     D_800A3488 = (s32)D_8009B948;
