@@ -30079,3 +30079,27 @@ layer-2 review. This supersedes, for these two shapes only, the 2026-09-28 fourt
 (which stays as history) and the rule file's "frame-size coercion stays forbidden" line. Arrays, pads,
 unused locals and frame reservation by any other mechanism stay forbidden. First application:
 func_8006C21C.
+
+## 2026-09-28 — OWNER RULING — a GTE-macro-input copy as a Ruling 11 value (`.claude/rules/ordinary-c-judge-decidable.md` § Ruling 11 (C)(3))
+
+Sixteenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 16, Q28; filed question
+docs/grind/borderline.md 2026-09-27 func_800187F4 policy-question, option A). The owner chose "Allow narrowly
+(Recommended)". Admitted (full text and conditions in the rule file, Ruling 11 (C)(3) § "GTE-macro input
+copies"): a value whose only write is a bare copy of a still-live local counts as a real value under Ruling 11
+(C)(3) only when every read of it is the input operand of an admitted GTE macro unit, the copy is its own
+register move in the target's bytes, the same variable later (after the copy) holds a value that is a real computation, and
+every other Ruling 11 prong holds, including the (D) dump proof that no one-variable-per-value spelling seats
+the copy where the target has it. Every other bare copy stays refused. func_800187F4 is the first
+application; func_800288C8 `tbl` and func_8002A458 `lzc_in` may return only as fresh submissions. Nothing is
+pre-decided.
+
+## 2026-09-28 — OWNER RULING — func_800187F4 per-function GTE grant: four DMPSX command words (`.claude/rules/inline-asm-policy.md` § Per-function grant: func_800187F4)
+
+Sixteenth batch (verbatim record docs/grind/owner-rulings-2026-09-26.md, batch 16, Q29). The owner chose
+"Grant, this function (Recommended)". A per-function `tools/grinder/owner_cluster_grants.txt` row, landing with
+the function, admits exactly func_800187F4's seven command units, each header-exact (pinned inline_o.h 4.3)
+except the DMPSX placeholder word: gte_rtv0tr 0x0000027f -> 0x4A480012 (x2), gte_sqr0 0x00000f3f -> 0x4AA00428
+(x2), gte_gpf0 0x000012ff -> 0x4B90003D (x1), gte_gpl12 0x0000133f -> 0x4BA8003E (x2), each meeting § Extension
+(2026-09-24) (A)-(C) with two independent no-DMPSX sources (pcsx-redux/nugget@22037bd3 inline_n.h,
+Lameguy64/PSn00bSDK@5d9aa2d3 inline_c.h) and the word byte-identical at the target position. The class ruling's
+prong (C) is unchanged for every other function; no other function may cite this grant.

@@ -1274,6 +1274,37 @@ values.
   and the (G) layer-2 review, applies unchanged. Record:
   docs/grind/decisions.md 2026-09-26 OWNER RULING — per-branch constants as
   a Ruling 11 value.
+  **GTE-macro input copies (owner ruling 2026-09-28, sixteenth batch, Q28).**
+  The question put to the owner, verbatim: "func_800187F4's square-root step: the original copies the squared length into a second variable only to feed the 3D chip's 'count leading zeros' command, and that same variable later holds the lookup-table result. Our rules ban a variable that is just a plain copy of another. With the copy, all 644 instructions match exactly; every spelling without it is 2 instructions off. The finished neighbour func_80018094 already carries this exact copy on main. Allow it?" Owner (Trenton) chose, verbatim: **"Allow narrowly
+  (Recommended)"**, whose text is: "Only a copy whose sole reader is a Sony chip-macro input, in a variable that later holds a real computed value; compiler-dump proof, honest name, fresh reviewer. Also covers the two unfinished siblings with the same routine (func_800288C8, func_8002A458)." (Record: docs/grind/owner-rulings-2026-09-26.md, batch 16; the
+  filed form is docs/grind/borderline.md 2026-09-27 func_800187F4, option A.) The author's narrowing: a value
+  whose only write is a bare copy counts as a real value under (3) ONLY when ALL of (a)-(e) hold:
+  (a) **One copy of a still-live local.** The value has exactly one write, `var = src;`, whose whole
+      right-hand side is a named local variable of this function (not a parameter, global, field or
+      expression), with no cast; and `src` is read again after the copy on at least one feasible path, so
+      that the copy, not the move of a dying value, is what puts the two values in two registers. A copy of
+      a parameter stays under Ruling 12.
+  (b) **Its only readers are GTE macro inputs.** Every read of the value is the bare variable, written as
+      the whole input operand expression of a qualifying GTE macro unit (inline-asm-policy.md § Scorer ruling (owner, 2026-09-25) (A)-(B))
+      that is itself admitted in the same body, under § Owner ruling 2026-09-26 or a per-function owner
+      grant. No C statement reads the value.
+  (c) **The same variable later holds a real computed value.** After the copy, on a feasible path from
+      it, the variable is written with at least one other value, in the sense defined above, that meets
+      (3) on its own (a load, an arithmetic computation or a call result whose instructions appear in the
+      target's bytes), not a copy and not a constant.
+  (d) **The copy is in the target's bytes.** The target contains the register move that implements the
+      copy (func_800187F4: `addu $a0,$a1,$zero` at 0x80018E18, in the delay slot of the branch into the
+      leading-zero-count arm), and the build emits it at the same position. A copy the compiler folds away
+      is not admitted here.
+  (e) **Everything else in Ruling 11 applies.** (A), (B), (C)(1)-(2) and (D)-(H) hold unchanged. In
+      particular (D)(3) shows that EVERY one-variable-per-value spelling, including a fresh local for the
+      copy wherever it is declared and placed, misses the target's register for the copy, and (D)(4)'s
+      measured alternatives include the body with no copy at all.
+  Every other bare copy stays refused under (3): a copy read by a C statement, a copy of a parameter, a copy
+  into a variable whose other values are copies or constants, and a copy absent from the target's bytes.
+  This is not a staged-value borrow ([[staged-value-reused-variable]] stays separate, and the variable may
+  not claim it). Record: docs/grind/decisions.md 2026-09-28 OWNER RULING — a GTE-macro-input copy as a
+  Ruling 11 value.
 - **(D) Allocator-dump proof of necessity** (the owner's first condition).
   The function's ledger (`memory/grind/<func>/`) banks all of:
   (1) **The dumps.** The compiler's allocation dumps for BOTH the reuse
@@ -1340,7 +1371,9 @@ one-variable-per-value spelling, never on a measured effect.
 **What stays banned, and what is not reopened.** A re-load of an unchanged
 value (func_80060A68 `src`/`idx`) fails (B)(2). Constants staged through a
 local (func_8003FA24 `half`, the F1 chain) and bare copies (func_800288C8
-`tbl`, func_8002A458 `lzc_in`) fail (C)(3). A write whose value is never read
+`tbl`, func_8002A458 `lzc_in`) fail (C)(3); those two may return only as fresh
+submissions meeting (C)(3)'s 2026-09-28 GTE-macro input copy clause and every
+other prong. A write whose value is never read
 fails (B)(1). A variable whose per-value spelling needs an extra or a missing
 statement fails (C)(2). This ruling reopens no earlier FAIL by itself:
 func_800200DC `y1`, func_80045878 `c`, func_8008B488 `rate` and every other

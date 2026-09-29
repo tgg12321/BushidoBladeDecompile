@@ -656,6 +656,56 @@ under the terms above, not in the commit that records this ruling. Record:
 docs/grind/decisions.md 2026-09-26 OWNER RULING — func_8002DE20 per-function
 GTE grant.
 
+### Per-function grant: func_800187F4 (owner, 2026-09-28, sixteenth batch)
+
+**Question and answer** (record: docs/grind/owner-rulings-2026-09-26.md, batch 16, Q29). func_800187F4's
+islands are written as separate verbatim inline_o.h macro statements. Seven of them are units of four
+command macros whose header text carries a DMPSX placeholder `.word`: `gte_rtv0tr()` (twice), `gte_sqr0()`
+(twice), `gte_gpf0()` (once) and `gte_gpl12()` (twice). The question put to the owner, verbatim: "The same function uses four chip commands (a rotate, a square and two interpolation commands) that Sony's header writes as placeholder numbers; Sony's separate post-compile tool swapped in the real command numbers. We don't have that tool, so the snippets must carry the real numbers. Two independent SDK projects confirm each number, and they match the game's bytes exactly. You approved this same swap for func_8002DE20 as a one-function grant. Grant it here?"
+Owner (Trenton) chose, verbatim: **"Grant, this function (Recommended)"**, whose text is: "A per-function approval row like func_8002DE20's, covering only these four commands; everything else in the snippets must be character-exact."
+
+**This is a named per-function grant, not a class widening.** The class's prong (C) ("No respelling of any
+kind") is unchanged for every other function. No other function may cite this grant; another function with
+a placeholder word needs its own owner ruling. What follows is the author's narrowing.
+
+1. **The owner-row scope: the four DMPSX words only.** func_800187F4's
+   `tools/grinder/owner_cluster_grants.txt` row admits exactly those seven units, each identical to the
+   pinned header's expansion (PsyQ Release 4.3 `inline_o.h`, the `engine/gtemacro.py` PINNED source and
+   SHA-256 of § Owner ruling 2026-09-26 (A); `gte_rtv0tr` :451-455, `gte_sqr0` :646-650, `gte_gpf0`
+   :721-725, `gte_gpl12` :726-730) except that the `.word` operand is the post-DMPSX command word:
+
+   | macro | header placeholder | post-DMPSX word | fields (cmd bits 20-24, sf 19, mx 17-18, v 15-16, cv 13-14, lm 10, funct 0-5) | target |
+   |---|---|---|---|---|
+   | `gte_rtv0tr` | `0x0000027f` | `0x4A480012` | MVMVA: cmd 4, sf=1, mx=rotation, v=V0, cv=TR, lm=0, funct 0x12 | 0x800188B4, 0x80018A98 |
+   | `gte_sqr0` | `0x00000f3f` | `0x4AA00428` | SQR: cmd 10, sf=0, lm=1, funct 0x28 | 0x80018DD4, 0x80018F4C |
+   | `gte_gpf0` | `0x000012ff` | `0x4B90003D` | GPF: cmd 25, sf=0, lm=0, funct 0x3D | 0x80019034 |
+   | `gte_gpl12` | `0x0000133f` | `0x4BA8003E` | GPL: cmd 26, sf=1, lm=0, funct 0x3E | 0x800190A8, 0x80019104 |
+
+   Each substitution meets prongs (A)-(C) of § Extension (owner, 2026-09-24). Independent sources, each a
+   no-DMPSX spelling `"nop;" "nop;" "cop2 IMM;"` whose word is 0x4A000000 | IMM:
+   pcsx-redux/nugget@22037bd3 `psyq/include/inline_n.h` (`gte_rtv0tr` :546-550 `cop2 0x0480012`,
+   `gte_sqr0` :780-784 `cop2 0x0A00428`, `gte_gpf0` :870-874 `cop2 0x0190003D`, `gte_gpl12` :876-880
+   `cop2 0x01A8003E`) and Lameguy64/PSn00bSDK@5d9aa2d3 `libpsn00b/include/inline_c.h` (:1208-1211,
+   :1404-1407, :1516-1519, :1521-1524, the same four words). Each word is byte-identical to the instruction
+   at the listed position in `asm/funcs/func_800187F4.s`. The layer-2 reviewer decodes every field against
+   both sources. The row admits nothing else.
+2. **Every other island is class-exact.** Every other island in the body is a qualifying unit under § Owner
+   ruling 2026-09-26 prongs (A), (B) and (D), statement for statement and character for character
+   (whitespace only) against the pinned `PINNED` excerpts. The engine recognizer update (the pinned
+   `engine/gtemacro.py` excerpts for the macros the body uses, and the four words in `DMPSX_WORDS`, the
+   Extension-bounded scoring substitution that § Scorer ruling (owner, 2026-09-25) (A) already allows) is an
+   `engine:` commit with `engine test` positive and negative cases and its own layer-2.
+3. **Everything else stands.** Conditions 2-5 of § Owner ruling 2026-09-23 apply: inline in `src/*.c`,
+   sandbox 0 and full-build SHA1 == oracle, region hashes in `tools/canonical_asm_regions.json`, the
+   `inline_asm_canonical.txt` row in its own `auth:` commit with the Pure-C attempts blocks. A fresh layer-2
+   `cheat-reviewer` reviews the recognizer update, the row and the body. The body's C is judged under
+   [[ordinary-c-judge-decidable]] on its own merits (its reused locals under Ruling 11, the leading-zero-count
+   input copy under Ruling 11 (C)(3)'s 2026-09-28 GTE-macro input copy clause).
+
+**Not in the rules commit.** The owner_cluster_grants.txt row and the engine recognizer update land with
+the function, each under the terms above, not in the commit that records this ruling. Record:
+docs/grind/decisions.md 2026-09-28 OWNER RULING — func_800187F4 per-function GTE grant.
+
 # Why this distinction matters
 
 For a long time the BB2 project lumped canonical and cheat asm together as

@@ -223,3 +223,26 @@ Other options offered: "Frame locals only" — "Grant only the always-zero short
 colour local stays refused, so the function stays at 4/622 and does not land yet."; "Both, no extra
 conditions" — "Grant both as FAKE-annotated locals, relying on the existing FAKE-local prerequisites (lever
 exhaustion, named mechanism, annotation, review) without the new exact-proof condition."
+
+# Owner exchange 2026-09-28 (sixteenth batch, AskUserQuestion) — VERBATIM RECORD — GRANTED
+Context: manual session on func_800187F4 (the queue top, 2026-09-28). The banked template
+(memory/grind/func_800187F4/template.c, expanded to candidate.c by gen.py) byte-matches the target on the
+Makefile's real per-file recipe, and the copy-free template (template_copyfree.c) is 2 instructions off; both
+were re-measured on this date (tmp/func_800187F4/fast.sh, tags cur_g2 = 0 and cur_h5 = 2 differing lines).
+The filed form of Q28 is docs/grind/borderline.md 2026-09-27 "func_800187F4 (also func_800288C8,
+func_8002A458) — the square-root routine's copy of the squared length for the GTE instruction". Both questions
+were asked in one AskUserQuestion call.
+
+## Q28 — the square-root routine's copy of the squared length for the GTE instruction
+Question, verbatim: "func_800187F4's square-root step: the original copies the squared length into a second variable only to feed the 3D chip's 'count leading zeros' command, and that same variable later holds the lookup-table result. Our rules ban a variable that is just a plain copy of another. With the copy, all 644 instructions match exactly; every spelling without it is 2 instructions off. The finished neighbour func_80018094 already carries this exact copy on main. Allow it?"
+Owner chose: **"Allow narrowly (Recommended)"** — option text: "Only a copy whose sole reader is a Sony chip-macro input, in a variable that later holds a real computed value; compiler-dump proof, honest name, fresh reviewer. Also covers the two unfinished siblings with the same routine (func_800288C8, func_8002A458)."
+Other options offered: "This function only" — "Grant it for func_800187F4 alone; the two siblings would each need their own ruling."; "Don't allow" — "The function stays unfinished and the search for copy-free C continues (2 instructions off today)."
+Author's note (2026-09-28, the transcript above is unchanged): "every spelling without it is 2 instructions
+off" is accurate for the best measured copy-free spelling (template_copyfree.c); other measured copy-free
+spellings are further off (memory/grind/func_800187F4/evidence.md [s2]). "all 644 instructions" is the
+engine's instruction count for the target (`sandbox` target_insns 644).
+
+## Q29 — DMPSX placeholder command words, func_800187F4
+Question, verbatim: "The same function uses four chip commands (a rotate, a square and two interpolation commands) that Sony's header writes as placeholder numbers; Sony's separate post-compile tool swapped in the real command numbers. We don't have that tool, so the snippets must carry the real numbers. Two independent SDK projects confirm each number, and they match the game's bytes exactly. You approved this same swap for func_8002DE20 as a one-function grant. Grant it here?"
+Owner chose: **"Grant, this function (Recommended)"** — option text: "A per-function approval row like func_8002DE20's, covering only these four commands; everything else in the snippets must be character-exact."
+Other options offered: "Standing rule" — "Any function may use the real command number when two independent sources confirm it and it matches the game's bytes; the reviewer decodes every field."; "Don't grant" — "The function can't be finished with these snippets; it stays unfinished."
