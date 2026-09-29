@@ -62,3 +62,37 @@
 - `tools/check_completion_integrity.py`: clean (silent success).
 - `tools/audit_asm_cheats.py --check-new`: clean (silent success).
 - `git diff --check`: clean.
+
+## Cleanup 2026-09-29 — per-local measurement of the tail copy loops' `dst`/`ctx` (retro-audit finding)
+
+The 2026-09-29 retro-audit found only a six-local cluster ablation (52/270) for the four copy-loop locals.
+Each was re-measured on its own (cleanup-locals/gen.py; `sandbox --disable all`, landed body = 0/270).
+Name AxxBxx = loop 1 (D_800A3554 bound) / loop 2 (D_800A3558 bound); digits = dst, ctx; 1 kept, 0 inlined.
+
+| variant | score | insns | | variant | score | insns |
+|---|---:|---:|---|---|---:|---:|
+| A11_B11 (landed) | 0 | 270 | | A00_B00 (all four inlined) | 12 | 268 |
+| A01_B11 (loop 1 dst inlined) | 4 | 270 | | A11_B01 (loop 2 dst inlined) | 4 | 270 |
+| A10_B11 (loop 1 ctx inlined) | 5 | 269 | | A11_B10 (loop 2 ctx inlined) | 5 | 269 |
+| A01_B01 | 8 | 270 | | A10_B10 | 10 | 268 |
+
+Every one of the four is individually load-bearing; none can be removed. Respellings measured
+(no locals unless stated): `((u8 *)D_800A3568)[i * 10]` 12, `+ 1` base variant 12, `10 * i`/`3 * i` 12,
+`((u8 (*)[10])D_800A3568)[i][k]` with either source form 12, `*(D_800A3560 + i * 3)` 12; with `ctx` only:
+`((u8 (*)[10])D_800A3568)[i][k]` 8, embedded `D_800A3560[ctx = i * 3]` 2; ctx declared before dst 8;
+`u8 *rec = (u8 *)(D_800A3568 + i * 10); ... *rec / rec[1]` 0 (same two locals per loop, no reduction).
+
+Mechanisms (instrumented cc1 `tools/gcc-2.7.2/cc1`, dumps in cleanup-locals/):
+- `ctx` (both loops): with the index in a named local the read's address is `(plus (reg/v ctx)
+  (symbol_ref D_800A3560))`, accepted as is by explow.c memory_address (explow.c:419
+  GO_IF_LEGITIMATE_ADDRESS); inlined, the address is `(plus (mult i 3) sym)`, which is not legitimate, so
+  memory_address forces the whole sum into a pseudo (explow.c:447 force_operand; rtl insn 598). loop.c
+  strength_reduce (loop.c:5527/3992, "giv at 600 combined with giv at 598 ... reduced to reg 335") then turns
+  the entire address into one pointer giv (`lui/addiu` init, `lbu 0(a1)`), where the target keeps the
+  `D_800A3560(a1)` sym+index form and the `i*3` giv. Loop 2 identical (insns 662/664).
+- `dst` (both loops): loop.c strength_reduce reduces both the i*10 and i*3 givs to new pseudos; the giv that
+  comes first in the loop body gets live length 14, the other 15 (BB2_ALLOC_DEBUG, alloc_*.txt). global.c
+  allocno_compare (global.c:643, floor_log2(refs)*refs/live_length) allocates the live-length-14 one first,
+  into $4. With `dst` computed before `ctx`, i*10 is first -> $a0, i*3 -> $a1 (target). Inlined, i*10 is
+  computed inside the store after the `ctx` statement, so i*3 takes $a0 (loop 1: pseudo 335 = i*3 in $4,
+  333 = i*10 in $5; loop 2: 331 = i*3 in $4, 329 = i*10 in $5): the 4-point operand-only swap.
