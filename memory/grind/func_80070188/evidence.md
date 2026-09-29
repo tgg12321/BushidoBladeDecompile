@@ -261,3 +261,14 @@ no independent evidence of a word-sized member. The only cast-free word lvalue i
 (borderline.md 2026-09-29). A 2-D `u8 D_800A3560[][3]` reaches get_inner_reference like the struct
 (expr.c:4620 only takes the *(&arr+i) path for a variable OUTER index), so it would close the same
 way, but E534's pun stays a pun over it: not proposed.
+
+### LANDED 2026-09-29 (s3) — COMPLETED-C
+- Match commit 9e69a87c7 (src/text1b.c body + SelectEntryE534 pad->unk1, sdata_exclude row drops
+  D_800A3588/D_800A358C, sdata_syms + D_800A3590); queue done 1ed9c8db5. Layer-2 PASS (fresh
+  reviewer re-ran sandbox 0/698; all seven FAKE record-offset locals met every prong, none a Q22
+  dummy; D_800A3563/D_800A3565 scalars follow the per-byte model). Only fix: the message now says
+  func_80071C4C / func_800720FC `ctx` locals carry no FAKE annotation.
+- Still open, not blocking: the union question (docs/grind/borderline.md 2026-09-29). The
+  zero-FAKE record-merge form stays banked (rejected/record-merge-e534-word-pun-0.c,
+  tools/union_candidate.c); if the owner allows the union, it could replace the seven FAKE locals
+  here and the FAKE `rec`/`ctx` in func_8006F97C / func_80070C70.

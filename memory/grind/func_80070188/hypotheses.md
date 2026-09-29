@@ -26,3 +26,4 @@
   cancel arm (14 -> 6 full TU, all GPREL-name); `k` no longer needed.
 - KILLED: idx initializer at do-body top (8); `sel` statement before the if (19).
 - KILLED (E534 side): no pun-free single-sw spelling under records/2-D (see evidence [s3]).
+- LANDED 2026-09-29 (9e69a87c7 / 1ed9c8db5); union question open in borderline.md.
