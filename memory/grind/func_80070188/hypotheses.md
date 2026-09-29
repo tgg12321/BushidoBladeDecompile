@@ -17,3 +17,6 @@
   (borderline.md 2026-09-29).
 - Per-site FAKE named intermediates: everything but the slot-1 cancel arm (nomerge_best.c
   14). Open: a cancel-arm spelling with a register index that is not a Q22 dummy local.
+- KILLED (2026-09-29): port_ofs in the cancel arm (72-77); all slot*3 product spellings
+  (14); permuter campaigns A (region) and B (plain) — only Q22-class finds.
+- OPEN: cancel-arm restructure with a real (non-fixed) index variable; union (owner).

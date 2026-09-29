@@ -175,3 +175,41 @@ Landing-time config needed (tools/*.landing.diff), each a no-op for the current 
   With the u8 array that needs a local index whose value on that path is 3 — a dummy
   constant local in a subscript, refused by Q22 (named-local-fake-exception.md:128-154).
   No ordinary spelling found.
+
+### After the Q22 ruling on `ofs` (2026-09-29)
+- port_ofs lead (tools/port_ofs_sweep.py): `D_800A3560[port_ofs * 3]` read/store 72-73
+  (710 insns), `port_ofs == 1` test 72-77: port_ofs then lives across the calls in a
+  callee-saved register and the index is a runtime multiply (cse cannot fold it: the
+  target tests the global), so the arm no longer compiles to constant gp addresses.
+- Cancel-arm expression sweeps (tools/cancel_arm_sweep2/3.py): every product spelling
+  of slot*3 (`D*3`, `3*D`, `D*2+D`, `D+D*2`, `(D<<1)+D`, `D*3+0`, pointer form) 14;
+  [3]/[D+2] mixes 12 at 700. ONLY `D_800A3560[D_800A3554 + 2]` for both the read and the
+  store closes it (10 = GPREL artifacts only; m3): PLUS(load, const) keeps the load in a
+  register inside `(plus reg sym+2)`, which cse folds to `sym+3`. It is the Q22 device
+  without a local (an index expression fixed at 3 on that path, `+2` has no reading of
+  its own), so it is NOT proposed as ordinary C.
+- Permuter campaign A (tools/mkws.sh workspace, PERM_RANDOMIZE on the D_800A3578 == 0
+  block, -j 2, launched 2026-09-29T10:57Z): best early find output-120 = `new_var = 3;`
+  constant holder as the multiplier (`D_800A3560[D_800A3554 * new_var]`) — a Q22 dummy
+  local in a subscript; refused.
+  Campaign A harvested/stopped after ~25 min: later finds (180-220) were the same
+  dummy index (`new_var = D_800A3554 * 3`) or moved `D_800A3560[0] = 0xFF` out of its
+  arm (changes the program). Nothing admissible.
+- Permuter campaign B (plain u8 body nm/base.c = sandbox 76; full randomization, -j 2,
+  ~20 min): base 3610 -> best 2715, which re-derives the index local itself
+  (`D_800A3560[new_var = i * 3]` in the confirm test, the `sel` of nomerge_best.c);
+  no novel find in the last 10-minute window; stopped.
+
+### Session-end state (s2 bank, 2026-09-29)
+- Floor without the merge: 14 (nomerge_best.c): per-site FAKE named intermediates
+  (rec / idx x4 / sel / k / k2; annotations still to be written) reach everything except
+  the slot-1 cancel arm (4 points; the rest are GPREL-name artifacts).
+- Known closes, none landable today: (1) union declaration (owner question,
+  borderline.md 2026-09-29); (2) struct records + a pun-free func_8006E534 word store
+  (none found); (3) Q22-class fixed-value index in the cancel arm (`new_var = 3`,
+  `ofs = D_800A3554 * 3`, `[D_800A3554 + 2]`) — refused / not proposed.
+- Killed: record merge (FAIL, pun), inline accessors (FAIL, un-annotated device),
+  port_ofs (72-77), every slot*3 product spelling (14), permuter A/B.
+- Frontier: an ordinary cancel-arm spelling whose index is a register at expansion
+  without being a fixed-value dummy (e.g. a restructure where the arm is reached with the
+  slot index in a real variable), or the owner's answer on the union.
